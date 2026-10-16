@@ -6,6 +6,18 @@
 
 #define YY_NEVER_INTERACTIVE 1
 
+// Drop carriage returns while reading, as Windows text mode does, so CRLF
+// sources scan the same everywhere (otherwise `.*` swallows "%}\r").
+#define YY_INPUT(buf, result, max_size) {                  \
+  int c = 0; size_t n = 0;                                  \
+  while (n < (size_t)(max_size) && (c = getc(yyin)) != EOF) {\
+    if (c == '\r') continue;                                \
+    buf[n++] = (char)c;                                     \
+    if (c == '\n') break;                                   \
+  }                                                         \
+  result = n;                                               \
+}
+
 
 int iLastLine = -1;
 
@@ -13,14 +25,17 @@ int iLastLine = -1;
   if (iLastLine==_iLinesCt || !_bTrackLineInformation){\
     yylval = yytext;                  \
   } else {                            \
-    char strLine[200];                \
-    sprintf(strLine, "\n#line %d \"%s\"\n", _iLinesCt, _strInputFileName);\
+    char strLine[1024];                \
+    snprintf(strLine, sizeof(strLine), "\n#line %d \"%s\"\n", _iLinesCt, _strInputFileName);\
     yylval = SType(strLine)+yytext;  \
     iLastLine=_iLinesCt;             \
   }                                  \
   return symbolname;
 
-char *_strCppBlock;
+// Accumulates %{ ... %} blocks; growing a std::string keeps this linear
+// (re-copying the whole block per line needed gigabytes for Player.es).
+#include <string>
+static std::string _strCppBlock;
 char *_strPreProc;
 
 %}
@@ -134,28 +149,28 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
 
  /* specially bracketed cpp blocks */
 "%{" {
-  char strLine[80];
-  sprintf(strLine, "#line %d \"%s\"\n", _iLinesCt, _strInputFileName );
-  _strCppBlock = strdup(strLine);
+  char strLine[1024];
+  snprintf(strLine, sizeof(strLine), "#line %d \"%s\"\n", _iLinesCt, _strInputFileName );
+  _strCppBlock = strLine;
   BEGIN(CPPBLOCK);
 }
 <CPPBLOCK>"%}" {
   BEGIN(INITIAL);
-  yylval = SType(_strCppBlock);
+  yylval = SType(_strCppBlock.c_str());
   return cppblock;
 }
 <CPPBLOCK>\n	{
   _iLinesCt++;
-  _strCppBlock = (SType(_strCppBlock)+yytext).strString;
+  _strCppBlock += yytext;
  }
 <CPPBLOCK>.*   {
-  _strCppBlock = (SType(_strCppBlock)+yytext).strString;
+  _strCppBlock += yytext;
 }
 
  /* special handling for preprocessor directives */
 "#" {
-  char strLine[80];
-  sprintf(strLine, "#line %d \"%s\"\n#", _iLinesCt, _strInputFileName );
+  char strLine[1024];
+  snprintf(strLine, sizeof(strLine), "#line %d \"%s\"\n#", _iLinesCt, _strInputFileName );
   _strPreProc = strdup(strLine);
   BEGIN(PREPROC);
 }
@@ -178,7 +193,7 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
 "//"[^\n]*\n { _iLinesCt++; }
 
  /* eat up whitespace */
-[ \t]+	 {
+[ \t\r]+	 {
 }
  /* eat up linefeeds and count lines in all conditions */
 <*>\n	{
@@ -187,8 +202,8 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
  /* for all unrecognized characters */
 . {
   // report an error
-  char strError[80];
-  sprintf(strError, "Unrecognized character '%c' (ASCII 0x%02x)\n", 
+  char strError[1024];
+  snprintf(strError, sizeof(strError), "Unrecognized character '%c' (ASCII 0x%02x)\n", 
 	  yytext[0], yytext[0] );
   yyerror(strError);
 }

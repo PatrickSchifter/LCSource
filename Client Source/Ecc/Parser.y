@@ -3,6 +3,11 @@
 #include "Ecc/StdH.h"
 #include "Ecc/Main.h"
 
+// YYSTYPE (SType) is a C++ class, so bison cannot grow its stack; start it big
+// enough for the deeply nested procedures in EntitiesMP/Player.es.
+#define YYINITDEPTH 100000
+#define YYMAXDEPTH 100000
+
 static char *_strCurrentClass;
 static int _iCurrentClassID;
 static char *_strCurrentBase;

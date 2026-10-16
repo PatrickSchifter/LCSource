@@ -26,3 +26,9 @@ ipch/
 /Server Source/GameServer/GameServer
 /Server Source/CharDBServer/INC/test
 run/
+
+# Entity Class Compiler (Ecc) outputs generated from *.es
+/Client Source/EntitiesMP/*_tables.h
+/Client Source/Engine/Classes/*_tables.h
+*.cpp_tmp
+*.h_tmp

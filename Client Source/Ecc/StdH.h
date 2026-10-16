@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef PLATFORM_UNIX
 #include <malloc.h>
+#endif
 #include <stdarg.h>
 #include <math.h>
 
