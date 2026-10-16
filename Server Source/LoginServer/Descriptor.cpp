@@ -919,6 +919,12 @@ FIRST_CONNECT:
 	catch (MSG_FAIL_TYPE failtype)
 	{
 		{
+			const RequestClient::LoginFromClient* loginPacket = reinterpret_cast<const RequestClient::LoginFromClient*>(msg->m_buf);
+			LOG_INFO("LOGIN reject: fail[%d] mtype[%d] size[%d] version[%d] (server %d) nation[%d] (server %d) ip[%s]",
+				(int)failtype, (int)msg->m_mtype, (int)msg->m_size, (int)loginPacket->version, (int)VERSION_FOR_CLIENT,
+				(int)loginPacket->nation, (int)gserver.m_national, service_->ip().c_str());
+		}
+		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			FailMsg(rmsg, failtype);
 			SEND_Q(rmsg, this);

@@ -570,6 +570,14 @@ void rnSocketIOServiceTcp::HandleReadBody(const boost::system::error_code& error
 		return;
 	}
 
+	if (getenv("LC_DEBUG_PACKETS"))
+	{
+		std::string hex;
+		char tmp[4];
+		for (int i = 0; i < now_packet_->m_size + (int)sizeof(int) && i < 512; ++i) { snprintf(tmp, sizeof(tmp), "%02X", (unsigned char)now_packet_->m_buf[i]); hex += tmp; }
+		LOG_INFO("packet raw - ip : %s : reliable[%d] seq[%d] size[%d] crypt[%d] body+crc[%s]", ip().c_str(), (int)packet_header_.reliable, (int)packet_header_.seq, (int)packet_header_.size, (int)this->crypt_flag_, hex.c_str());
+	}
+
 	if (this->crypt_flag_)
 	{
 		now_packet_->decrypt();
