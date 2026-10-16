@@ -25,3 +25,4 @@ ipch/
 /Server Source/SubHelper/SubHelper
 /Server Source/GameServer/GameServer
 /Server Source/CharDBServer/INC/test
+run/
