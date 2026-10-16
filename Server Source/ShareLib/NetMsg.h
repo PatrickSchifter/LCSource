@@ -21,6 +21,7 @@
 #define NTOHLL(n)		(n) = ntohll((n))
 #endif
 
+#ifndef ntohll
 inline LONGLONG ntohll(LONGLONG n)
 {
 	char* p = (char*)&n;
@@ -58,6 +59,7 @@ inline LONGLONG htonll(LONGLONG n)
 	p[4] = ch;
 	return n;
 }
+#endif
 
 #pragma pack(push, 1)
 struct MsgHeader

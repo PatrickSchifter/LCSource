@@ -30,6 +30,18 @@ bool regist_signal_stack()
 #endif
 
 #ifndef WIN32
+#if defined(__APPLE__) && (defined(__aarch64__) || defined(__arm64__))
+#define LC_FAULT_PC(uc) ((void*)__darwin_arm_thread_state64_get_pc((uc)->uc_mcontext->__ss))
+#elif defined(__APPLE__)
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext->__ss.__rip)
+#elif defined(__x86_64__)
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext.gregs[REG_RIP])
+#else
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext.gregs[REG_EIP])
+#endif
+#endif
+
+#ifndef WIN32
 static const int exceptionSignals[] =
 {
 	SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS, SIGINT, SIGHUP, -1
@@ -46,13 +58,13 @@ void PrintStack(int sig, siginfo_t* info, void* secret) {
   if (sig == SIGSEGV)
     LOG_INFO("Got signal %d, faulty address is %p, "
            "from %p\n", sig, info->si_addr, 
-           uc->uc_mcontext.gregs[REG_EIP]);
+           LC_FAULT_PC(uc));
   else
     LOG_INFO("Got signal %d#92;\n", sig);
 
   trace_size = backtrace(trace, 16);
   /* overwrite sigaction with caller's address */
-  trace[1] = (void *) uc->uc_mcontext.gregs[REG_EIP];
+  trace[1] = LC_FAULT_PC(uc);
 
   messages = backtrace_symbols(trace, trace_size);
   /* skip first stack frame (points here) */

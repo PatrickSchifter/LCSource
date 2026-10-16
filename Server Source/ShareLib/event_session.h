@@ -12,7 +12,7 @@ public:
 	typedef std::pair<int, boost::any> type_t;
 
 public:
-	explicit EventSession(boost::asio::io_service& io_service);
+	explicit EventSession(boost::asio::io_context& io_service);
 	~EventSession(void);
 
 	void push(type_t);

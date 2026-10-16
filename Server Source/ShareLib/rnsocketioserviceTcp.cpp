@@ -11,7 +11,7 @@ namespace
 	boost::atomic<int>		local_unique_id(1);
 }
 
-rnSocketIOServiceTcp::rnSocketIOServiceTcp(boost::asio::io_service& io_service)
+rnSocketIOServiceTcp::rnSocketIOServiceTcp(boost::asio::io_context& io_service)
 	: rnSocketIOService(io_service, SessionBase::SESSION)
 	, socket_(io_service)
 	, read_wait_timer_(io_service)
@@ -75,9 +75,8 @@ bool rnSocketIOServiceTcp::AsyncConnect( const std::string& host, int port )
 	std::string port_string = oss.str();
 
 	boost::asio::ip::tcp::resolver resolver(io_service_);
-	boost::asio::ip::tcp::resolver::query query(host, port_string);
 
-	boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+	boost::asio::ip::tcp::resolver::results_type::iterator endpoint_iterator = resolver.resolve( host, port_string ).begin();
 	boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
 
 	LOG_DEBUG( "bnf async connecting - ip(to) :  %s : port : %d : unique id : %010d", host.c_str(), port, this->getUniqueId());
@@ -124,7 +123,7 @@ void rnSocketIOServiceTcp::Close( std::string err_str )
 	LOG_INFO( "bnf manual close - ip : %s : unique id : %010d : reason : %s",
 		ip().c_str(), this->getUniqueId(), err_str.c_str());
 
-	boost_strand_.post( boost::bind( &rnSocketIOServiceTcp::__close, this ) );
+	boost::asio::post( boost_strand_, boost::bind( &rnSocketIOServiceTcp::__close, this ) );
 }
 
 void rnSocketIOServiceTcp::deliver( CNetMsg::SP packet)
@@ -151,7 +150,7 @@ void rnSocketIOServiceTcp::deliver( CNetMsg::SP packet)
 		packet->makeCRC32();
 	}
 
-	boost_strand_.post(boost::bind( &rnSocketIOServiceTcp::__deliver, this, packet ));
+	boost::asio::post( boost_strand_, boost::bind( &rnSocketIOServiceTcp::__deliver, this, packet ));
 }
 
 void rnSocketIOServiceTcp::deliver( CBPacket::SP packet )
@@ -168,7 +167,7 @@ void rnSocketIOServiceTcp::deliver( CBPacket::SP packet )
 		packet->makeHeader();
 	}
 
-	boost_strand_.post(boost::bind( &rnSocketIOServiceTcp::__deliver_for_cbpacket, this, packet ));
+	boost::asio::post( boost_strand_, boost::bind( &rnSocketIOServiceTcp::__deliver_for_cbpacket, this, packet ));
 }
 
 std::string& rnSocketIOServiceTcp::ip()
@@ -323,27 +322,23 @@ void rnSocketIOServiceTcp::BroadcastOff()
 
 void rnSocketIOServiceTcp::NonBlockingIoOn()
 {
-	boost::asio::socket_base::non_blocking_io command(true);
-
 	boost::system::error_code error;
-	socket_.io_control(command, error);
+	socket_.non_blocking(true, error);
 }
 
 void rnSocketIOServiceTcp::NonBlockingIoOff()
 {
-	boost::asio::socket_base::non_blocking_io command(false);
-
 	boost::system::error_code error;
-	socket_.io_control(command, error);
+	socket_.non_blocking(false, error);
 }
 
 void rnSocketIOServiceTcp::closeOnExecOn()
 {
 #ifndef WIN32
-	int oldflags = fcntl (socket_.native(), F_GETFD, 0);
+	int oldflags = fcntl (socket_.native_handle(), F_GETFD, 0);
 	if ( oldflags >= 0 )
 	{
-		fcntl( socket_.native(), F_SETFD, oldflags | FD_CLOEXEC );
+		fcntl( socket_.native_handle(), F_SETFD, oldflags | FD_CLOEXEC );
 	}
 #endif
 }
@@ -351,10 +346,10 @@ void rnSocketIOServiceTcp::closeOnExecOn()
 void rnSocketIOServiceTcp::closeOnExecOff()
 {
 #ifndef WIN32
-	int oldflags = fcntl (socket_.native(), F_GETFD, 0);
+	int oldflags = fcntl (socket_.native_handle(), F_GETFD, 0);
 	if ( oldflags >= 0 )
 	{
-		fcntl( socket_.native(), F_SETFD, oldflags & ~FD_CLOEXEC );
+		fcntl( socket_.native_handle(), F_SETFD, oldflags & ~FD_CLOEXEC );
 	}
 #endif
 }
@@ -367,12 +362,12 @@ void rnSocketIOServiceTcp::_getIp()
 	if(error)
 	{
 		LOG_ERROR( "bnf - socket_.remote_endpoint error. error[%s] / fd[%d] / handle[%X]",
-				   error.message().c_str(), socket_.native(), GetHandle());
+				   error.message().c_str(), socket_.native_handle(), GetHandle());
 		return;
 	}
 
-	ip_ =  remode_endpoint.address().to_string(error);
-	ipnumber_ =  remode_endpoint.address().to_v4().to_ulong();
+	ip_ =  remode_endpoint.address().to_string();
+	ipnumber_ =  remode_endpoint.address().to_v4().to_uint();
 }
 
 void rnSocketIOServiceTcp::Init()
@@ -440,7 +435,7 @@ void rnSocketIOServiceTcp::SetWriteWaitTimer()
 	}
 }
 
-void rnSocketIOServiceTcp::HandleAsyncConnect( const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator )
+void rnSocketIOServiceTcp::HandleAsyncConnect( const boost::system::error_code& error, boost::asio::ip::tcp::resolver::results_type::iterator endpoint_iterator )
 {
 	if( !error )
 	{
@@ -452,7 +447,7 @@ void rnSocketIOServiceTcp::HandleAsyncConnect( const boost::system::error_code& 
 
 		Run();
 	}
-	else if( endpoint_iterator != boost::asio::ip::tcp::resolver::iterator() )
+	else if( endpoint_iterator != boost::asio::ip::tcp::resolver::results_type::iterator() )
 	{
 		// 다른 ip가 있다면 다른 ip로 접속 시도
 		boost::system::error_code error;
@@ -851,7 +846,7 @@ void rnSocketIOServiceTcp::deliverForTLDBilling( CNetMsg::SP packet)
 		packet->makeHeader();
 	}
 
-	boost_strand_.post(boost::bind( &rnSocketIOServiceTcp::__deliver__for_tld_billing, this, packet ));
+	boost::asio::post( boost_strand_, boost::bind( &rnSocketIOServiceTcp::__deliver__for_tld_billing, this, packet ));
 }
 
 void rnSocketIOServiceTcp::HandleReadHeaderForTLDBilling(const boost::system::error_code& error)

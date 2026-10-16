@@ -24,7 +24,7 @@ public:
 //	typedef boost::shared_ptr<rnSocketIOService>	SP;
 
 public:
-	rnSocketIOService(boost::asio::io_service& io_service, session_type type)
+	rnSocketIOService(boost::asio::io_context& io_service, session_type type)
 		: SessionBase(io_service, type)
 		, crypt_flag_(false)
 	{

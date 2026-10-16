@@ -2,7 +2,7 @@
 #include "bnf.h"
 #include <ctime>
 
-TimerSession::TimerSession( boost::asio::io_service& io_service )
+TimerSession::TimerSession( boost::asio::io_context& io_service )
 	: SessionBase(io_service, SessionBase::TIMER_SESSION), timer_( io_service )
 {
 	running_ = true;
@@ -17,7 +17,7 @@ TimerSession::~TimerSession()
 
 void TimerSession::Close()
 {
-	io_service_.post( boost::bind( &TimerSession::Stop, this ) );
+	boost::asio::post( io_service_, boost::bind( &TimerSession::Stop, this ) );
 }
 
 void TimerSession::Stop()
@@ -28,7 +28,7 @@ void TimerSession::Stop()
 
 //////////////////////////////////////////////////////////////////////////
 // MSecTimerSession
-MSecTimerSession::MSecTimerSession(boost::asio::io_service& io_service, int start_msec, int period_msec)
+MSecTimerSession::MSecTimerSession(boost::asio::io_context& io_service, int start_msec, int period_msec)
 	: TimerSession( io_service )
 {
 	millisecond_ = period_msec;
@@ -59,7 +59,7 @@ void MSecTimerSession::handle_process(const boost::system::error_code& error)
 
 //////////////////////////////////////////////////////////////////////////
 // SecTimerSession
-SecTimerSession::SecTimerSession(boost::asio::io_service& io_service, int start_sec, int period_sec)
+SecTimerSession::SecTimerSession(boost::asio::io_context& io_service, int start_sec, int period_sec)
 	: TimerSession( io_service )
 {
 	second_ = period_sec;
@@ -90,7 +90,7 @@ void SecTimerSession::handle_process(const boost::system::error_code& error)
 
 //////////////////////////////////////////////////////////////////////////
 // AbsoluteTimerSession
-AbsoluteTimerSession::AbsoluteTimerSession( boost::asio::io_service& io_service, int start_sec, int period_sec ) :
+AbsoluteTimerSession::AbsoluteTimerSession( boost::asio::io_context& io_service, int start_sec, int period_sec ) :
 	TimerSession( io_service )
 {
 	second_ = period_sec;

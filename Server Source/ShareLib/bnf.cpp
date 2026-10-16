@@ -6,7 +6,7 @@
 #include "logsystem.h"
 #include "NetMsg.h"
 
-bnf::bnf() : io_service_work_( new boost::asio::io_service::work( io_service_ ) )
+bnf::bnf() : io_service_work_( new boost::asio::executor_work_guard<boost::asio::io_context::executor_type>( io_service_.get_executor() ) )
 	, stopped_(false)
 	, run_flag_(false)
 	, session_process_func_(NULL)
@@ -51,7 +51,7 @@ bnf* bnf::instance()
 void bnf::WorkerThread()
 {
 	boost::system::error_code ec;
-	io_service_.run( ec );
+	try { io_service_.run(); } catch (const boost::system::system_error&) {}
 }
 
 void bnf::RemoveSessionThread()
@@ -437,10 +437,9 @@ session_handle bnf::CreateConnect( std::string& host, std::string& port, void* u
 	boost::asio::ip::tcp::socket& socket = pSession->Socket();
 
 	boost::asio::ip::tcp::resolver resolver(io_service_);
-	boost::asio::ip::tcp::resolver::query query(host, port);
 
-	boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-	boost::asio::ip::tcp::resolver::iterator end;
+	boost::asio::ip::tcp::resolver::results_type::iterator endpoint_iterator = resolver.resolve( host, port ).begin();
+	boost::asio::ip::tcp::resolver::results_type::iterator end;
 
 	boost::system::error_code ec = boost::asio::error::host_not_found;
 
@@ -464,7 +463,7 @@ session_handle bnf::CreateConnect( std::string& host, std::string& port, void* u
 	pSession->SetType(SessionBase::CONNECT_SESSION);
 	pSession->_getIp();
 
-	LOG_INFO( "bnf [%s] CreateConnect - connected. fd: %d, handle: %d", pSession->ip().c_str(), pSession->Socket().native(), pSession->GetHandle() );
+	LOG_INFO( "bnf [%s] CreateConnect - connected. fd: %d, handle: %d", pSession->ip().c_str(), pSession->Socket().native_handle(), pSession->GetHandle() );
 
 	pSession->Run();
 
@@ -667,10 +666,9 @@ std::vector<std::string> bnf::getMyIp()
 	std::vector<std::string> vec;
 
 	boost::asio::ip::tcp::resolver resolver(io_service_);
-	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(),"");
-	boost::asio::ip::tcp::resolver::iterator it=resolver.resolve(query);
+	boost::asio::ip::tcp::resolver::results_type::iterator it=resolver.resolve( boost::asio::ip::host_name(),"" ).begin();
 
-	while(it!=boost::asio::ip::tcp::resolver::iterator())
+	while(it!=boost::asio::ip::tcp::resolver::results_type::iterator())
 	{
 		boost::asio::ip::address addr=(it++)->endpoint().address();
 		if(addr.is_v4())
