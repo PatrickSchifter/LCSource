@@ -6,6 +6,14 @@ anote o commit/PR ao lado quando fizer sentido.
 **Alvo:** macOS 14+ em Apple Silicon (arm64), clang/Xcode atual, CMake.
 **Fork:** `origin` = PatrickSchifter/LCSource, `upstream` = pwesty/LCSource.
 
+**Como compilar (servidor):**
+
+```sh
+scripts/macos-deps.sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
+ninja -C build            # binários em build/Server Source/
+```
+
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` pronto · `[-]` descartado
 
 ---
@@ -25,11 +33,11 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 
 ## Decisões em aberto
 
-- [ ] **D1. Ordem:** servidor primeiro (mais rápido de ver rodando e serve para testar o cliente) ou cliente primeiro?
+- [x] **D1. Ordem:** servidor primeiro (decidido em 2026-10-16)
 - [ ] **D2. Renderizador do cliente:** Metal nativo · OpenGL 4.1 core (deprecado no macOS, mas mais simples) · Vulkan via MoltenVK
 - [ ] **D3. Camada de plataforma do cliente:** SDL2/SDL3 (janela, input, IME, áudio, threads) ou Cocoa nativo
-- [ ] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar
-- [ ] **D5. Origem dos assets e do banco:** de qual cliente/servidor vamos tirar os dados para testar
+- [~] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar. Padrão provisório: `USA` (`-DLC_REGION`); confirmar quando os assets do cliente Windows chegarem
+- [~] **D5. Origem dos assets e do banco:** assets virão da instalação Windows do usuário (pendente); banco ainda sem origem
 - [ ] **D6. Ferramentas (WorldEditor, Modeler, SKA Studio...):** usam MFC; proposta é ficar fora do escopo
 
 ---
@@ -39,17 +47,17 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [x] Fork em PatrickSchifter/LCSource e clone local com remote `upstream`
 - [x] Análise inicial do cliente e do servidor (resultado neste documento)
 - [x] Criar este checklist
-- [ ] Restaurar os 21 arquivos que estão no `.svn/pristine` mas faltam no working copy:
+- [x] Restaurar os 21 arquivos que estão no `.svn/pristine` mas faltam no working copy (+ `LoginServer/IPCheck.cpp` e `GameServer.vcxproj` do servidor):
   - `Client Source/Nksp/Nksp.cpp` (WinMain/loop principal), `GameMP/Map.cpp`, `EngineGUI/EngineGUI.cpp`
   - `Shaders/Common.cpp`, `Shaders/Common.h`, `Shaders/DisplaceShader.cpp`
   - `Engine/SEED_256_KISA/*` (3 arquivos)
   - `include/`: `LCCrypt.h`, `ijl.h`, `vld.h`, `F_*.h`, `SharedMemory_queue.*`, `LCCRC32.h`
-- [ ] Remover `.svn/` do controle de versão e adicionar `.gitignore` (`.o`, binários, `*.sdf`, `*.suo`, `build/`)
-- [ ] Remover do git os artefatos compilados (cerca de 120 `.o` ELF 32-bit, binários Linux antigos)
+- [x] Remover `.svn/` do controle de versão e adicionar `.gitignore` (`.o`, binários, `*.sdf`, `*.suo`, `build/`)
+- [x] Remover do git os artefatos compilados (cerca de 120 `.o` ELF 32-bit, binários Linux antigos)
 - [ ] Converter os fontes com acentos de CP949 para UTF-8 (549 arquivos, quase tudo em comentários) e normalizar CRLF via `.gitattributes`
 - [ ] Revisar `Server Source/docs/`: há arquivos com credenciais de produção em texto puro (já estavam públicos no upstream)
-- [ ] Estrutura CMake raiz (`CMakeLists.txt`) com opções `LC_BUILD_SERVER` / `LC_BUILD_CLIENT` e `LC_REGION`
-- [ ] Script de bootstrap de dependências via Homebrew (`scripts/macos-deps.sh`)
+- [x] Estrutura CMake raiz (`CMakeLists.txt`) com opções `LC_BUILD_SERVER` / `LC_BUILD_CLIENT` e `LC_REGION`
+- [x] Script de bootstrap de dependências via Homebrew (`scripts/macos-deps.sh`)
 - [ ] CI no GitHub Actions (runner `macos-14`) compilando o que já estiver portado
 
 ---
@@ -57,38 +65,40 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 ## Trilha S — Servidor
 
 ### S1. Build e dependências
-- [ ] CMake para `ShareLib` (lib estática) e para cada servidor, substituindo `Makefile`/`makefile.inc`
-- [ ] Dependências Homebrew: boost, mysql-client (ou mariadb-connector-c), log4cxx, apr, apr-util, expat, jsoncpp, curl, openssl, botan
-- [ ] Boost: fixar ≤1.86 **ou** migrar `io_service` → `io_context` (54 ocorrências em ShareLib)
-- [ ] Botan 1.10 → Botan 2/3 (Connector, LoginServer)
-- [ ] Remover `-lrt` e as `.a` 32-bit pré-compiladas em `LIB/` (LCCrypt, LCSha256, LCHttps já têm fonte em ShareLib)
-- [ ] Definir as macros de região (`LC_USA` etc.) e `__GAME_SERVER__` no CMake
+- [x] CMake para `ShareLib` (lib estática) e para cada servidor, substituindo `Makefile`/`makefile.inc`
+- [x] Dependências Homebrew: boost, mysql-client (ou mariadb-connector-c), log4cxx, apr, apr-util, expat, jsoncpp, curl, openssl, botan
+- [x] Boost: migrado `io_service` → `io_context` e demais APIs removidas (testado com Boost 1.92)
+- [x] Botan 1.10 → Botan 3 (só `check_bcrypt` em `CheckPassword.cpp`, compilado em C++20)
+- [x] Sem `-lrt` e sem as `.a` 32-bit de `LIB/` (LCCrypt, LCSha256, LCHttps compilam da fonte em ShareLib)
+- [x] Definir as macros de região (`LC_USA` etc.) e `__GAME_SERVER__` no CMake
 
 ### S2. Portabilidade de código
-- [ ] `ShareLib/SignalProcess.cpp`: `uc_mcontext.gregs[REG_EIP]` → `__ss.__pc` (arm64) ou remover
-- [ ] `ShareLib/PrintExcuteInfo.cpp`: `/proc/cpuinfo`, `/proc/meminfo` → `sysctl`
-- [ ] Trocar `malloc.h` por `stdlib.h`; Windows-isms (`_snprintf`, `stricmp`, `itoa`) em cerca de 21 arquivos
-- [ ] Desativar XTrap (`GameServer/XTrap4Server.cpp`) e `detours.h` (use o equivalente aos alvos `noxtrap`)
-- [ ] Corrigir os avisos e erros do clang moderno (C++ da época do gcc 4: `register`, string literal → `char*`, conversões implícitas)
+- [x] `ShareLib/SignalProcess.cpp`: `uc_mcontext.gregs[REG_EIP]` → `__ss.__pc` (arm64) ou remover
+- [-] Trocar `malloc.h` por `stdlib.h`; Windows-isms (`_snprintf`, `stricmp`, `itoa`): não foi necessário, ficam atrás de `#ifdef WIN32`
+- [x] Corrigir os erros do clang moderno (`register`, `binary_function`, comparações ponteiro/bool, funções sem `return`, use-after-erase em `Notice.cpp`)
+- [ ] Revisar os warnings restantes que indicam bug: `-Wsizeof-pointer-memaccess` (5), `-Wmemset-transposed-args`, `-Wformat-extra-args`, `-Wstring-compare`, `-Wnull-conversion`, `-Wdynamic-class-memaccess`
 
 ### S3. 64-bit (LP64)
-- [ ] `ShareLib/SEED_256_KISA.h`: `typedef unsigned long DWORD` → `uint32_t` (quebra a criptografia em 64-bit)
+- [x] `ShareLib/SEED_256_KISA.h`: `typedef unsigned long DWORD` → `uint32_t` (confirmado: em 64-bit gerava ciphertext errado)
+- [x] `ShareLib/il_values.h`: `ILUInt32` (SHA-256) → `uint32_t`; SHA-256 validado com vetor de teste oficial
 - [ ] `ShareLib/rntype.h`: `tLONG` e similares → tipos de largura fixa
 - [ ] Auditar as 84 structs com `#pragma pack` (pacotes de rede): nenhum `long`, `time_t` ou ponteiro dentro
 - [ ] Auditar a leitura de arquivos `.bin` binários feita via struct
 - [ ] Testes de `static_assert(sizeof(...))` para os pacotes principais
 
 ### S4. Componentes (ordem sugerida)
-- [ ] ShareLib compila
-- [ ] Messenger
-- [ ] Helper
-- [ ] SubHelper
-- [ ] Connector
-- [ ] LoginServer
-- [ ] GameServer (cerca de 300 arquivos)
+- [x] ShareLib compila
+- [x] Messenger compila e linka
+- [x] Helper compila e linka
+- [x] SubHelper compila e linka
+- [x] Connector compila e linka
+- [x] LoginServer compila e linka
+- [x] GameServer compila e linka (cerca de 180 arquivos)
 - [-] Billing, Authentication, CharDBServer (legados ou só Windows; reavaliar se forem necessários)
 
 ### S5. Execução local
+- [ ] `ShareLib/PrintExcuteInfo.cpp`: compila, mas lê `/proc` em tempo de execução; trocar por `sysctl`
+- [ ] Confirmar que XTrap (`dlopen`) e `detours.h` ficam desativados em tempo de execução
 - [ ] Obter ou reconstruir o schema MySQL (bancos data, user/auth, char)
 - [ ] Gerar `newStobm.bin` (INI ofuscado), `log.xml`, `data/event.ini`
 - [ ] Script `scripts/run-server.sh` subindo na ordem MySQL → Messenger → Connector → Helper → SubHelper → GameServer → LoginServer
@@ -182,4 +192,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 
 | Data | O que foi feito | Commit |
 |---|---|---|
-| 2026-10-16 | Fork, clone, análise inicial, criação do checklist | — |
+| 2026-10-16 | Fork, clone, análise inicial, criação do checklist | 5aeb119 |
+| 2026-10-16 | Fase 0: arquivos restaurados do SVN, limpeza de `.svn`/`.o`/binários, `.gitignore` | b5fbad4 |
+| 2026-10-16 | CMake + ShareLib portado (Boost 1.92, Botan 3, OpenSSL 3, arm64) | 7bd9559 |
+| 2026-10-16 | Os 6 servidores compilam e linkam em arm64; correções LP64 no SEED/SHA-256 | 222197b |
