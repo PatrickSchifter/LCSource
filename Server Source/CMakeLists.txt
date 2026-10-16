@@ -39,8 +39,13 @@ execute_process(
 
 # Flags every server target shares (was CXXFLAGS/OPT_LDOBJ in makefile.inc).
 add_library(lc_server_common INTERFACE)
+option(LC_XTRAP "Enable the XTrap anti-cheat (needs Linux libXTrap4Server.so)" OFF)
+option(LC_SERVER_AUTHENTICATION "Enable the publisher's 30-day build expiry and call-home check" OFF)
+
 target_compile_definitions(lc_server_common INTERFACE
   _THREAD_SAFE
+  $<$<NOT:$<BOOL:${LC_XTRAP}>>:LC_NO_XTRAP>
+  $<$<NOT:$<BOOL:${LC_SERVER_AUTHENTICATION}>>:LC_NO_SERVER_AUTHENTICATION>
   ${LC_REGION_DEFINE}
   LC_VER="macos-${LC_GIT_REV}"
 )

@@ -14,6 +14,8 @@ BIN_DIR="$ROOT/build/Server Source"
 RUN_DIR="$ROOT/run"
 CONFIG_DIR="$ROOT/server-config"
 ALL=(Messenger Connector Helper SubHelper GameServer LoginServer)
+# Address clients connect to (LoginServer/GameServer bind here). Override with LC_PUBLIC_IP.
+PUBLIC_IP=${LC_PUBLIC_IP:-$(ipconfig getifaddr en0 || echo 127.0.0.1)}
 
 pid_of() {
   local pidfile="$RUN_DIR/$1/pid"
@@ -24,13 +26,13 @@ prepare() {
   local name=$1 dir="$RUN_DIR/$1"
   mkdir -p "$dir" "$RUN_DIR/LogFiles"
   cp "$CONFIG_DIR/log.xml" "$RUN_DIR/log.xml"
+  local ini="$dir/newStobm.bin"
   if [[ $name == GameServer ]]; then
     mkdir -p "$dir/data"
-    cp "$CONFIG_DIR/$name.ini" "$dir/data/newStobm.bin"
+    ini="$dir/data/newStobm.bin"
     cp "$CONFIG_DIR/GameServer-event.ini" "$dir/data/event.ini"
-  else
-    cp "$CONFIG_DIR/$name.ini" "$dir/newStobm.bin"
   fi
+  sed "s/@PUBLIC_IP@/$PUBLIC_IP/g" "$CONFIG_DIR/$name.ini" >"$ini"
 }
 
 start() {

@@ -198,7 +198,9 @@
 
 ////// 가미고 공통 디파인 /////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef LC_NO_SERVER_AUTHENTICATION	// 30-day build expiry + call-home to the publisher
 #define SERVER_AUTHENTICATION		// 서버 기동 제한 시스템
+#endif
 
 #define DURABILITY
 #define PREMIUM_CHAR
@@ -250,7 +252,9 @@
 #define LACARETTE_SYSTEM
 #define DUNGEON_TIME_SAVEFILE	".dungeontime"	// 던전타임 세팅 저장 파일.
 
+#ifndef LC_NO_XTRAP	// XTrap server library is Linux 32-bit only
 #define XTRAP
+#endif
 #define	_COMPOSITE_ITEM_UPGRADE_BUG_FIX
 #define CHECK_CASTLE_AREA						// 공성지역 체크 안되는 버그 수정
 #define BUGFIX_WARP_TO_WARZONE								// 소환마법서 아이템을 이용하여 공성지역 이동불가
