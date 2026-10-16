@@ -1,0 +1,27 @@
+# Legacy SVN working-copy metadata (kept locally only for recovery)
+.svn/
+
+# Build outputs
+build/
+build-*/
+*.o
+*.obj
+*.ilk
+*.pdb
+*.ncb
+*.sdf
+*.suo
+*.opensdf
+*.user
+ipch/
+.DS_Store
+
+# Linux server binaries from the original tree
+/Server Source/Billing/Billing
+/Server Source/Connector/Connector
+/Server Source/Helper/Helper
+/Server Source/LoginServer/LoginServer
+/Server Source/Messenger/Messenger
+/Server Source/SubHelper/SubHelper
+/Server Source/GameServer/GameServer
+/Server Source/CharDBServer/INC/test
