@@ -303,7 +303,7 @@ bool CServer::LoadSettings()
 	{
 		// 테이블에 내용이 없을때
 		cmdNewGuild.SetQuery("insert into t_characters_guildpoint select a_index, 0, 0 from t_characters");
-		cmdNewGuild.Open();
+		cmdNewGuild.Update();
 	}
 
 	cmdNewGuild.SetQuery("SELECT count(*) FROM t_extend_guild");
@@ -319,8 +319,8 @@ bool CServer::LoadSettings()
 	if(cnt == 0)
 	{
 		// 테이블에 내용이 없을때
-		cmdNewGuild.SetQuery("insert into t_extend_guild select a_index, 0, 5+a_level*5, 0, '', '', '' from t_guild");
-		cmdNewGuild.Open();
+		cmdNewGuild.SetQuery("insert into t_extend_guild (a_guild_index, a_guild_point, a_guild_maxmember, a_guild_incline, a_guild_land, a_skill_index, a_skill_level) select a_index, 0, 5+a_level*5, 0, '', '', '' from t_guild");
+		cmdNewGuild.Update();
 	}
 
 	cmdNewGuild.SetQuery("SELECT count(*) FROM t_extend_guildmember");
@@ -336,8 +336,8 @@ bool CServer::LoadSettings()
 	if(cnt == 0)
 	{
 		// 테이블에 내용이 없을때
-		cmdNewGuild.SetQuery("insert into t_extend_guildmember select a_guild_index, a_char_index, '', 0, 0, 0 from t_guildmember");
-		cmdNewGuild.Open();
+		cmdNewGuild.SetQuery("insert into t_extend_guildmember (a_guild_index, a_char_index, a_position_name, a_contribute_exp, a_contribute_fame, a_point) select a_guild_index, a_char_index, '', 0, 0, 0 from t_guildmember");
+		cmdNewGuild.Update();
 	}
 	//!===>
 

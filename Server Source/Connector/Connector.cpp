@@ -60,7 +60,12 @@ int main(int argc, char* argv[], char* envp[])
 	}
 
 	// 빌링 서버에 연결
-	gserver.m_billing.connect();
+	// An empty [Billing Server] IP disables billing (no billing server in local development).
+	const char* billing_ip = gserver.m_config.Find("Billing Server", "IP");
+	if (billing_ip && *billing_ip)
+		gserver.m_billing.connect();
+	else
+		LOG_INFO("Billing server disabled: [Billing Server] IP is empty");
 
 	// HeartBeat timer
 	bnf::instance()->CreateMSecTimer(1 * 1000, (void *)HeartBeatTimer::instance());

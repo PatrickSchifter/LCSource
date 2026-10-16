@@ -27,6 +27,7 @@ prepare() {
   if [[ $name == GameServer ]]; then
     mkdir -p "$dir/data"
     cp "$CONFIG_DIR/$name.ini" "$dir/data/newStobm.bin"
+    cp "$CONFIG_DIR/GameServer-event.ini" "$dir/data/event.ini"
   else
     cp "$CONFIG_DIR/$name.ini" "$dir/newStobm.bin"
   fi
