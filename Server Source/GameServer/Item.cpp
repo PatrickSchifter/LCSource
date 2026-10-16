@@ -1236,7 +1236,7 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 	{
 #ifdef SYSTEM_MONSTER_MERCENARY_CARD_EX
 		if( !gserver->m_MonsterMercenary.SetMercenaryData( item ) )
-			return false;
+			return NULL;
 #else
 		MonsterMercenaryInfo * mmd = gserver->m_MonsterMercenary.GetClassInfo();
 		if( mmd == NULL )

@@ -44,8 +44,8 @@ void Notice::_delete( int index )
 	{
 		if((*it)->index == index)
 		{
-			_vec.erase(it);
 			delete *it;
+			_vec.erase(it);
 			return;
 		}
 	}
@@ -63,6 +63,7 @@ NoticeStr* Notice::_find(int index)
 			return (*it);
 		}
 	}
+	return NULL;
 }
 
 bool Notice::SendNoticeList( int charIndex, CNetMsg::SP& msg)
@@ -122,6 +123,7 @@ bool Notice::SendNoticeList( int charIndex, CNetMsg::SP& msg)
 
 	rmsg->setSize( sizeof(ResponseClient::NoticeList) + (sizeof(NoticeData) * packet->count));
 	SEND_Q(rmsg, pc->m_desc);
+	return true;
 }
 
 void Notice::load()

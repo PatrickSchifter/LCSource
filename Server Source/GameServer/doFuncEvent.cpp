@@ -1910,7 +1910,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 			// 4. 공 아이템 검사
 			item_search_t vec;
 			int sc = ch->m_inventory.searchItemByCondition(GOLDENBALL_BALL_INDEX, 0, 0, vec);
-			if (sc == 0 || sc < pItemBall->Count() < nNeedBallCount)
+			if (sc == 0 || pItemBall->Count() < nNeedBallCount)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventGoldenballVoteMsg(rmsg, nTeam1Score, nTeam2Score, MSG_EVENT_GOLDENBALL_ERROR_VOTE_NOITEM);

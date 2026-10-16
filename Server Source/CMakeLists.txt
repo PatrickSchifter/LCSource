@@ -48,6 +48,7 @@ target_compile_options(lc_server_common INTERFACE
   -Wno-write-strings
   -Wno-char-subscripts
   -Wno-register          # gcc-4 era code still uses the `register` keyword
+  -Werror=return-type   # falling off a non-void function is UB that clang exploits
 )
 target_include_directories(lc_server_common INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/ShareLib")
 target_link_libraries(lc_server_common INTERFACE

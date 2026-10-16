@@ -103,7 +103,7 @@ void ProcDead(CPC* df, CCharacter* of)
 	if(IS_NPC(of))
 	{
 		CNPC* npc = TO_NPC(of);
-		if(npc->m_owner > 0)
+		if(npc->m_owner != NULL)
 		{
 			bPvP = false;
 			bPKPenalty = true;

@@ -154,7 +154,7 @@ Fortune_head *Fortune_proto_list::Get_fortune_head_proto(int Item_index)
 
 	Fortune_head *p = new Fortune_head(Item_index, 0);
 
-	itr = std::find_if(fh.begin(), fh.end(), std::bind2nd(Compare_fortune_list(), p));
+	itr = std::find_if(fh.begin(), fh.end(), [p](Fortune_head* x) { return Compare_fortune_list()(x, p); });
 	if (itr == fh.end())
 		return NULL;
 

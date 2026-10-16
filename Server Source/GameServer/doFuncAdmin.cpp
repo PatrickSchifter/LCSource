@@ -3846,7 +3846,7 @@ void do_GMSilenceMulti(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 	sec = atoi(tmpBuf);
 
-	if(distance <= 0 || time <= 0)
+	if(distance <= 0 || sec <= 0)
 		return ;
 
 	int sx = ch->m_cellX - 2;
@@ -4651,7 +4651,7 @@ void do_GMBattleStop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	arg = AnyOneArg(arg, tmpBuf);
 	guildindex2 = atoi(tmpBuf);
 
-	if (guildindex1 < 0 || guildindex2 < 0 || time < 0)
+	if (guildindex1 < 0 || guildindex2 < 0)
 		return;
 
 	g1 = gserver->m_guildlist.findguild(guildindex1);

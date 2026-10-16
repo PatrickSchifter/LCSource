@@ -19,13 +19,10 @@
 
 #ifndef TYPE_DEFINITION
 #define TYPE_DEFINITION
-#if defined(__alpha)
-typedef unsigned int        DWORD;
-typedef unsigned short      WORD;
-#else
-typedef unsigned long int   DWORD;
-typedef unsigned short int  WORD;
-#endif
+// Fixed-width: the cipher needs DWORD to be exactly 32 bits (`unsigned long` is 64-bit on LP64).
+#include <stdint.h>
+typedef uint32_t            DWORD;
+typedef uint16_t            WORD;
 typedef unsigned char           BYTE;
 #endif
 

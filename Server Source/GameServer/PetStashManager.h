@@ -42,6 +42,7 @@ public:
 	int setProxyPetItemvIndex( int index )
 	{
 		proxyPetItemVIndex = index;
+		return proxyPetItemVIndex;
 	}
 	int getProxyPetItemPlus()
 	{
@@ -50,6 +51,7 @@ public:
 	int setProxyPetItemPlus( int plus )
 	{
 		proxyPetItemPlus = plus;
+		return proxyPetItemPlus;
 	}
 	void setEffect(int effectNo)
 	{
