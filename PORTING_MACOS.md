@@ -12,6 +12,8 @@ anote o commit/PR ao lado quando fizer sentido.
 scripts/macos-deps.sh
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
 ninja -C build            # binários em build/Server Source/
+brew install mariadb && brew services start mariadb   # banco local; importar os dumps de openlastchaos/lastchaos-database
+scripts/make-placeholder-maps.py && scripts/run-server.sh start
 ```
 
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` pronto · `[-]` descartado
@@ -37,7 +39,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [ ] **D2. Renderizador do cliente:** Metal nativo · OpenGL 4.1 core (deprecado no macOS, mas mais simples) · Vulkan via MoltenVK
 - [ ] **D3. Camada de plataforma do cliente:** SDL2/SDL3 (janela, input, IME, áudio, threads) ou Cocoa nativo
 - [~] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar. Padrão provisório: `USA` (`-DLC_REGION`); confirmar quando os assets do cliente Windows chegarem
-- [~] **D5. Origem dos assets e do banco:** assets virão da instalação Windows do usuário (pendente); banco ainda sem origem
+- [~] **D5. Origem dos assets e do banco:** banco = [openlastchaos/lastchaos-database](https://github.com/openlastchaos/lastchaos-database) (dump oficial de fev/2016, clonado fora do repo); assets virão da instalação Windows do usuário (pendente)
 - [ ] **D6. Ferramentas (WorldEditor, Modeler, SKA Studio...):** usam MFC; proposta é ficar fora do escopo
 
 ---
@@ -99,10 +101,18 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 ### S5. Execução local
 - [ ] `ShareLib/PrintExcuteInfo.cpp`: compila, mas lê `/proc` em tempo de execução; trocar por `sysctl`
 - [ ] Confirmar que XTrap (`dlopen`) e `detours.h` ficam desativados em tempo de execução
-- [ ] Obter ou reconstruir o schema MySQL (bancos data, user/auth, char)
-- [ ] Gerar `newStobm.bin` (INI ofuscado), `log.xml`, `data/event.ini`
-- [ ] Script `scripts/run-server.sh` subindo na ordem MySQL → Messenger → Connector → Helper → SubHelper → GameServer → LoginServer
-- [ ] Servidor sobe e aceita login de um cliente Windows original (teste de protocolo)
+- [x] Banco: MariaDB local (Homebrew, só 127.0.0.1) com `newproject_data`, `newproject_db`, `newproject_db_auth` importados do dump
+- [x] Configs em `server-config/` (`newStobm.bin` é INI puro), `log.xml` para log4cxx 1.x, `event.ini`
+- [x] `scripts/run-server.sh start|stop|status|log` na ordem Messenger → Connector → Helper → SubHelper → GameServer → LoginServer
+- [x] **Os 6 servidores sobem e se conectam entre si**; LoginServer enxerga o GameServer (porta 4010)
+- [x] Helper: `x = x++` virava loop infinito em C++17 (`ServerRun.cpp`)
+- [x] Connector: billing opcional (`[Billing Server] IP=` vazio)
+- [ ] Mapas reais `.sat`/`.sht` (hoje são provisórios, planos e 100% andáveis, de `scripts/make-placeholder-maps.py`): portar o exportador do World Editor (`Engine/World/WorldIO.cpp`, `Terrain/TRGenerate.cpp`) e gerar a partir dos `.wld` do cliente
+- [ ] Tabelas que o código usa e o dump não tem: `t_autobuffs`, `t_raid_zone_data`, `t_reports`, `t_key_log` (+ `t_promo_*` só GER)
+- [ ] Dados que faltam no GameServer: `ComposeItem`, `EquipExchangeExtend`, NPCs 893/1254 ativos mas "Not found", 6 "Can't Create Item"
+- [ ] Criar conta de teste em `bg_user` (definir formato de senha: texto puro / MD5 / bcrypt em `CheckPassword.cpp`)
+- [ ] Servidor aceita login de um cliente Windows original via rede local (servidores hoje escutam só em 127.0.0.1)
+- [ ] Higiene: dois OpenSSL carregados (3 e 4, via curl/mysqlclient); `svn_info.h` regenerado a cada configure força rebuild do ShareLib
 
 ---
 
@@ -117,6 +127,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [ ] Includes com caixa errada (`Console_Internal.h`, `GFX_wrapper_OpenGL.cpp`...); vamos padronizar e não depender de APFS case-insensitive
 
 ### C2. Tipos e 64-bit
+- [ ] Procurar `x = x++` (no-op em C++17; já causou loop infinito no Helper)
 - [ ] `Engine/Base/Types.h`: `SLONG`, `ULONG`, `INDEX` → `int32_t`/`uint32_t` (**crítico**: todos os streams dependem disso)
 - [ ] Cerca de 185 casts de ponteiro para `ULONG`/`SLONG`/`INDEX` → `uintptr_t`/`intptr_t`
 - [ ] `__int64` (107 arquivos) → `int64_t`
@@ -196,3 +207,5 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 | 2026-10-16 | Fase 0: arquivos restaurados do SVN, limpeza de `.svn`/`.o`/binários, `.gitignore` | b5fbad4 |
 | 2026-10-16 | CMake + ShareLib portado (Boost 1.92, Botan 3, OpenSSL 3, arm64) | 7bd9559 |
 | 2026-10-16 | Os 6 servidores compilam e linkam em arm64; correções LP64 no SEED/SHA-256 | 222197b |
+| 2026-10-16 | Configs locais, `log.xml` log4cxx 1.x, `run-server.sh` | 76092bb |
+| 2026-10-16 | MariaDB + dump importado; os 6 servidores rodando e conectados | cf9da11 |
