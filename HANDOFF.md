@@ -20,8 +20,7 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` que o motor já tem,
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
 
-1. **C3 — testar em jogo os caminhos C** no Windows (`LC_USE_PORTABLE_C`, ver abaixo).
-2. C4/C5 (dependências só de Windows e camada de plataforma), depois o restante da C1 e o primeiro
+1. C4/C5 (dependências só de Windows e camada de plataforma), depois o restante da C1 e o primeiro
    link no Mac.
 
 ## Assembly x86 (C3) — como ficou
@@ -45,6 +44,8 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
   cliente). O que exercitar: mundo (lightmaps: LayerMixer, FilterBitmap), modelos animados com
   luz/névoa (RenderModel_View, Shader), água/fogo animados (TextureEffects), texturas (mipmaps,
   conversão de cor D3D), UI (cores), som ambiente e de combate (SoundMixer). Depois voltar para OFF.
+  Testado em 2026-10-17 (login, Juno, combate, som): sem diferença visível em relação ao asm. O
+  build do Windows (`C:\LCSource-build`) voltou para OFF.
 - Achado à parte: `Stream.cpp` usa `ScanF("%I64x")`, formato só do MSVC (`vsscanf` do Mac não
   entende); `Shader.cpp` ~1461 liga referência não-const a temporário (erro no clang, C1).
 

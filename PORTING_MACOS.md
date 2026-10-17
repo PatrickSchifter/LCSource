@@ -169,7 +169,7 @@ Detalhes em `HANDOFF.md` ("Assembly x86 (C3) — como ficou").
 - [x] C novo para os blocos sem fallback: `Graphics.cpp`, `Color.cpp`, `Gfx_Direct3D_Colors.cpp`, `SoundMixer.cpp`, `LayerMixer.cpp`, `Fog.cpp`, `RendMisc.cpp`, `Memory.h`, `Vertex.h`
 - [x] `Timer.cpp`/`Profiling.cpp` (`rdtsc` → `steady_clock`), CPUID, `ScanF` (`naked`), breakpoints, `OBFUSCATE`, anti-debug
 - [x] Zero erros de asm no check do Mac (`-DLC_CHECK_DIRS=ALL`)
-- [ ] Testar em jogo no Windows com `LC_USE_PORTABLE_C=ON`
+- [x] Testar em jogo no Windows com `LC_USE_PORTABLE_C=ON` (2026-10-17: login, Juno, combate, som; igual ao asm)
 - [ ] Checagem automática no CI
 
 ### C4. Remover ou isolar dependências só de Windows
