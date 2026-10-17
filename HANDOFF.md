@@ -28,12 +28,35 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 ## C5 — andamento (2026-10-17)
 
 Feitos e commitados (um commit por item, Engine separado de Nksp/jogo): itens **1–7**
-(`6842344`..`24271f5`, mais `4b6f076`), **8a** (`0e1689a`, camada SDL3 no Engine) e **8b**
-(`a75341f`, loop/janela do Nksp e opção `LC_PLATFORM_SDL`). Check do Mac (agora com o Nksp no
-conjunto `ALL`): 12.065 → 7.395 erros únicos; o que sobra é quase todo D3D (C8), som (C7), rede
-(C6), IME (item 10), `MessageBox`/cursores (itens 9 e 11) e conformidade C++ (C1).
-Windows: itens 1–7 compilam sem erros e chegam à tela de login (falta o teste em jogo).
-Pendentes: **8c** (testar o modo SDL no Windows), **9** (input), **10** (IME), **11** (resto).
+(`6842344`..`24271f5`, mais `4b6f076`), **8** (`0e1689a`, `a75341f`, `55dfacd`), **9**
+(`ee9d8f1`, `2a1a209`, `64dce5e`), **10** (`e7c707a`) e **11** (`46ed8a1`,
+`c755cd9`). Check do Mac (com o Nksp no conjunto `ALL`): 12.065 → 6.998 erros únicos; o que
+sobra é D3D/D3DX (C8), som (C7), rede/web/IPC do launcher (C6), conformidade C++ (C1) e o
+`exploration3d` (ferramentas).
+Testado em jogo no Windows: itens 1–7 com o cliente Win32 (Juno, combate, loja, chat, print) e,
+no **modo SDL** (`LC_PLATFORM_SDL=ON`), janela, minimizar/maximizar, digitação e atalhos (8c).
+Os itens 9–11 compilam e chegam ao login no modo SDL, mas **ainda não foram testados em jogo**
+(lista de testes no fim da sessão de 2026-10-17; ver "C5 — testes pendentes" abaixo).
+**O build do Windows (`C:\LCSource-build`) está com `LC_PLATFORM_SDL=ON`**, e é essa versão que
+está instalada em `C:\LC-BR2014\Bin`.
+No Mac, a camada SDL (janela, eventos → `MSG`, cursores `.cur`) foi exercitada num programa de
+teste com o SDL3 do Homebrew.
+
+Depois da C5: restante da C1 (CMake do cliente no Mac, link) e as fases C6/C7/C8. O que ficou
+para elas: joystick pelo SDL (hoje sem joystick fora do Windows), Retina/HiDPI e o contexto
+OpenGL (C8), `Web.cpp`/IPC/`ThreadWrapper` (C6). O link no Mac precisa de `-liconv` e SDL3, e
+os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.
+
+### C5 — testes pendentes (modo SDL no Windows)
+
+1. Cursores do jogo: normal, ataque (sobre monstro), conversa (sobre NPC), pegar item.
+2. Câmera e movimento: girar com o botão direito segurado, zoom com a roda, clique para andar.
+3. Teclas seguradas: Ctrl/Alt/Shift + clique, Alt+1/2/3 na barra rápida, Tab para alvo.
+4. Copiar e colar no chat (Ctrl+C / Ctrl+V), incluindo texto com acentos vindo de fora do jogo.
+5. Clique duplo (equipar item do inventário), roda do mouse em listas (loja, chat).
+6. Janela: perder e ganhar foco (Alt+Tab), minimizar e voltar; tela cheia nas opções de vídeo.
+7. Fechar pelo X da janela e pelo menu do jogo.
+8. Depois, voltar o build para `LC_PLATFORM_SDL=OFF` e conferir o cliente Win32 de novo.
 
 Decisões e lições:
 - `Engine/Base/Win32Compat.h` (+ `.cpp`), só fora do Windows: tipos, mensagens e funções
