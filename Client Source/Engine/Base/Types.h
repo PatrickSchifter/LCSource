@@ -99,6 +99,10 @@ typedef long int INDEX;     // for indexed values and quantities
 // Win32 types, messages and CRT names outside Windows
 #ifdef PLATFORM_UNIX
   #include <Engine/Base/Win32Compat.h>
+  // a path for the C++ streams and other calls that do not go through the emulated ones
+  #define HOSTPATH(strPath) (LC_HostPath(strPath).c_str())
+#else
+  #define HOSTPATH(strPath) (strPath)
 #endif
 
 #define FALSE 0

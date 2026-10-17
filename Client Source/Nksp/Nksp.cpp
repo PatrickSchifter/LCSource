@@ -1876,7 +1876,7 @@ void GetWindowSizeFromTxt()
 
 	fstream fs;
 
-	fs.open(fileName, ios::in | ios::out);
+	fs.open(HOSTPATH(fileName), ios::in | ios::out);
 
 	if(fs.is_open())
 	{
@@ -1902,7 +1902,7 @@ void SaveWindowSizeToTxt()
 	
 	ofstream fs;
 
-	fs.open(fileName);
+	fs.open(HOSTPATH(fileName));
 	
 	if(fs.is_open())
 	{

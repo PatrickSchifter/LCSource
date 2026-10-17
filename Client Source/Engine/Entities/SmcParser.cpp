@@ -176,7 +176,7 @@ bool CSmcParser::LoadSmcParse(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(sFilename.c_str());
+	File.open(HOSTPATH(sFilename.c_str()));
 	if(!File.good())
 		return HandleError("ERROR: file %s can't be opened for parsing.\n",(const char*)sFilename.c_str());
 
@@ -406,7 +406,7 @@ bool CSmcParserList::SmcInfoWriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(sFilename.c_str(), ios::out | ios::binary | ios::trunc);
+	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::binary | ios::trunc);
 
 	if(!File.good())
 		return false; // 에러
@@ -419,7 +419,7 @@ bool CSmcParserList::SmcParsingLogWritetxt(std::string sFilename)
 	ofstream fout;
 	std::vector<std::string>::iterator strItor;
 
-	fout.open(sFilename.c_str(), ios_base::out | ios_base::trunc);//|ios_base::app);
+	fout.open(HOSTPATH(sFilename.c_str()), ios_base::out | ios_base::trunc);//|ios_base::app);
 
 	if (!fout.good())
 		return false;
@@ -463,7 +463,7 @@ bool CSmcParserList::SmcInfoReadBin(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(sFilename.c_str(), ios::binary);
+	File.open(HOSTPATH(sFilename.c_str()), ios::binary);
 
 	if( !File.good() )
 		return false; // 에러
@@ -475,7 +475,7 @@ void CSmcParserList::WriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(sFilename.c_str(), ios::out | ios::trunc);
+	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::trunc);
 
 	if(!File.good())
 		return; // 에러
@@ -654,7 +654,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 		}
 	}
 
- 	std::ofstream file(saveFilePath, std::ios::trunc);
+ 	std::ofstream file(HOSTPATH(saveFilePath), std::ios::trunc);
 	file << "<< Item Resource : START Check ! >>" << endl << endl;
 	file << "Total : " << nTotalCount << endl;
 	file << "Missing : " << nMissingCount << endl << endl;

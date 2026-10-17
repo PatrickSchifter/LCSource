@@ -2131,11 +2131,7 @@ BOOL CTDeleteFile(const CTFileName &fnmFile)
   CTFileName fnmExpanded;
   INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmExpanded);
   if (iFile==EFP_FILE) {
-#ifdef PLATFORM_WIN32
-    int ires = remove(fnmExpanded);
-#else
-    int ires = remove(LC_HostPath(fnmExpanded).c_str());
-#endif
+    int ires = remove(HOSTPATH(fnmExpanded));
     return ires==0;
   } else {
     return FALSE;
@@ -2151,11 +2147,7 @@ BOOL CTMoveFile(const CTFileName &fnmFileOld, const CTFileName &fnmFileNew)
   INDEX iFileOld = ExpandFilePath(EFP_WRITE, fnmFileOld, fnmExpandedOld);
   INDEX iFileNew = ExpandFilePath(EFP_WRITE, fnmFileNew, fnmExpandedNew);
   if(iFileOld==EFP_FILE && iFileNew==EFP_FILE) {
-#ifdef PLATFORM_WIN32
-    int ires = rename(fnmExpandedOld,fnmExpandedNew);
-#else
-    int ires = rename(LC_HostPath(fnmExpandedOld).c_str(),LC_HostPath(fnmExpandedNew).c_str());
-#endif
+    int ires = rename(HOSTPATH(fnmExpandedOld),HOSTPATH(fnmExpandedNew));
     return ires==0;
   } else {
     return FALSE;
