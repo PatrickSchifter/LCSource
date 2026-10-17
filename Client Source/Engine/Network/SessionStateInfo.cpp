@@ -49,9 +49,6 @@
 #include <Engine/Contents/function/News.h>
 #include <Engine/Contents/function/ItemCompose.h>
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-	#include <Engine/XTrapInterface/XTrapInterface.h>
-#endif
 #include <Engine/Info/MyInfo.h>
 
 // 속성 시스템 속성 갯수 디파인
@@ -250,17 +247,6 @@ void CSessionState::updateStatus( CNetworkMessage* istr )
 	pUIManager->GetSimplePlayerInfo()->UpdatePlayerBaseInfo();
 	pUIManager->GetCharacterInfo()->UpdateStatus( pPack->attack, pPack->magic, pPack->defense, pPack->resist);		// yjpark
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-	if (g_pXTrap_C_SetUserInfoEx_Interface)
-	{
-		g_pXTrap_C_SetUserInfoEx_Interface("ssss",
-			"",
-			"",
-			"",
-			0,
-			0);
-	}
-#endif
 
 	//[ttos_2009_1_15]:쿨타임 감소 및 MP량 감소 옵션을 클라에서 계산하지 않고 서버에서 받음
 	pUIManager->SetCoolTimeReductionRate(pPack->prob);

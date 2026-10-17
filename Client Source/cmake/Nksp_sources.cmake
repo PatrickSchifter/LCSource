@@ -8,7 +8,6 @@ set(NKSP_SOURCES
   "Nksp/SplashScreen.cpp"
   "Nksp/StdH.cpp"
   "Nksp/VarList.cpp"
-  "Nksp/xTrapWrapper.cpp"
 )
 
 set(NKSP_PCH_CREATE

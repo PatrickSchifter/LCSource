@@ -67,7 +67,6 @@
 #define MODEL_TREASURE	("Data\\Item\\Common\\ITEM_treasure02.smc")
 // #include <map>
 // #include <algorithm>
-//#define XTRAP_LOG_ENABLE
 // ----------------------------------------------------------------------------
 // Name : CheckDratanSiegewarfareError()
 // Desc : 
@@ -253,9 +252,6 @@ BOOL CheckCashItemMessage(UBYTE errcode)
 }
 void CheckSocketSystemError(UBYTE errcode);
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    #include <Engine/XTrapInterface/XTrapInterface.h>
-#endif
 
 void CheckTimerEvent()
 {
@@ -2153,32 +2149,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			RecieveSocketSystemMessage( istr );
 		}
 		break;
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    case MSG_EX_XTRAP:
-        {
-            if (g_pXTrap_CS_Step2Func)
-            {
-                CNetworkMessage nmMessageTest(MSG_EXTEND);
-                #define XTRAP_CMD_STEP_TWO  0x002
-                nmMessageTest << (ULONG)MSG_EX_XTRAP;
-                nmMessageTest << (BYTE)XTRAP_CMD_STEP_TWO;
-                char szBuf[128] , szSendBuf[128];
-                
-				istr->Read(szBuf, 128);
-#ifdef XTRAP_LOG_ENABLE
-				g_pHexaDump4XTrap_V1("TestXtrapLog.txt", szBuf, 128, "XTrap_stap1_RecBufData");
-#endif
-                g_pXTrap_CS_Step2Func(szBuf, szSendBuf);
-
-                nmMessageTest.Write(szSendBuf , 128 );
-#ifdef XTRAP_LOG_ENABLE
-				g_pHexaDump4XTrap_V1("TestXtrapLog.txt", szSendBuf, 128, "XTrap_stap2_SendBufData");
-#endif
-                _pNetwork->SendToServerNew( nmMessageTest );
-            }
-        }
-        break;
-#endif
 		case MSG_EX_TUTORIAL_RENEWER_2010:
 		{
 			pUIManager->GetHelp()->RepBeginnerTitle( istr );

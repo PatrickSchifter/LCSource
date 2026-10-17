@@ -57,12 +57,6 @@ HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
 
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    #include "xTrapWrapper.h"
-#endif
-#endif
-
 #ifdef KALYDO
 #include <Engine/Kalydo/PackageManager.h>
 #include <Nksp/social/TLastChaosApplication.h>
@@ -74,8 +68,6 @@ extern ENGINE_API char *g_szExitError;
 
 using namespace std;
 
-
-//#undef XTRAP_SECURE_CKBANG_2010_07_20
 
 //CTString _fnmForCDCheck = "Bin\\SeriousSam.exe";
 
@@ -690,15 +682,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	}
 	// prepare main window
 	MainWindow_Init();
-
-#ifndef _DEBUG
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-
-    if (XTRAP())
-        XTRAP()->EngineConfirm();
-
-#endif
-#endif
 
 	OpenMainWindowInvisible();
 
@@ -1701,12 +1684,6 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    CREATE_XTRAP_WRAPPER("");
-#endif
-#endif
-
 #ifdef CKBANG_UI_TWITTER
 
     LUA_OPEN();
@@ -1721,12 +1698,6 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	CheckModReload();
 
-
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    DESTROY_XTRAP_WRAPPER();
-#endif
-#endif
 
 #ifdef CKBANG_UI_TWITTER
     

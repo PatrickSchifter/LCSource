@@ -63,13 +63,6 @@
 #include <Engine/Help/LoadString.h>
 #include <Engine/Help/Util_Help.h>
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-#include <Engine/XTrapInterface/XTrapInterface.h>
-XTrap_CS_Step2_Interface g_pXTrap_CS_Step2Func = NULL;
-XTrap_C_SetUserInfoEx_Interface g_pXTrap_C_SetUserInfoEx_Interface = NULL;
-pHexaDump4XTrap_V1 g_pHexaDump4XTrap_V1 = NULL;
-
-#endif
 
 
 ENGINE_API cWeb g_web;
