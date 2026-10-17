@@ -14,7 +14,7 @@
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
 
-template CDynamicArray<CBrushSector>;
+template class CDynamicArray<CBrushSector>;
 
 // tolerance value for csg selection
 #define CSG_RANGE_EPSILON (0.25f)

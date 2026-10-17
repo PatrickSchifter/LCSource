@@ -292,10 +292,10 @@ void CZoneInfo::GetLoadingInfo( int nZoneIndex, float& fStep, CTString& strTex1,
 
 //안태훈 수정 끝	//(Zone Change System)(0.1)
 
-template CDynamicContainer<CEntity>;
-template CBrushPolygonSelection;
-template CBrushSectorSelection;
-template CEntitySelection;
+template class CDynamicContainer<CEntity>;
+template class CSelection<CBrushPolygon, BPOF_SELECTED>;  // CBrushPolygonSelection
+template class CSelection<CBrushSector, BSCF_SELECTED>;  // CBrushSectorSelection
+template class CSelection<CEntity, ENF_SELECTED>;  // CEntitySelection
 
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;

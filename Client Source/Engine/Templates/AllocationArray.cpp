@@ -73,7 +73,7 @@ void CAllocationArray<Type>::PreAllocate(INDEX ctCount)
   // must be empty when calling this
   ASSERT(aa_aiFreeElements.Count()==0 && CStaticArray<Type>::Count()==0);
   // expand the array to that size
-  Expand(ctCount);
+  this->Expand(ctCount);
 
   // fill all elements as free
   INDEX *piNewFree = aa_aiFreeElements.Push(ctCount);
@@ -92,7 +92,7 @@ inline INDEX CAllocationArray<Type>::Allocate(void)
     // remember old size
     INDEX ctOldSize = CStaticArray<Type>::Count();
     // expand the array by the allocation step
-    Expand(ctOldSize+aa_ctAllocationStep);
+    this->Expand(ctOldSize+aa_ctAllocationStep);
     // create new free indices
     INDEX *piNewFree = aa_aiFreeElements.Push(aa_ctAllocationStep);
     // fill them up

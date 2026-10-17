@@ -5,6 +5,7 @@
 #endif
 
 #include <Engine/Base/Assert.h>
+#include <Engine/Math/Functions.h>
 
 /*
  * Template class for plane in space of arbitrary dimensions and arbitrary type of coordinates
@@ -91,7 +92,7 @@ inline Plane<Type, iDimensions>::Plane(const Vector<Type, iDimensions> &normal, 
   : Vector<Type, iDimensions>(normal)
 {
   // normalize normal vector
-  Normalize();
+  this->Normalize();
   pl_distance = (*this)%point;   // distance = normalized_normal * point (dot product)
 }
 

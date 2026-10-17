@@ -25,7 +25,7 @@
 
 #include <Engine/World/WorldSettings.h>
 
-template CStaticArray<CSoundListener>;
+template class CStaticArray<CSoundListener>;
 
 
 

@@ -6,6 +6,7 @@
 
 #include <Engine/Base/Assert.h>
 #include <Engine/Math/Functions.h>
+#include <Engine/Base/Stream.h>  // the stream operators below use CTStream's members
 
 /*
  * Template class for quaternion of arbitrary precision.

@@ -19,7 +19,7 @@ void EncodePersistentSymbols(unsigned char *buf, int dummyLen, const unsigned ch
 		val = bufSrc[i];
 		val = val << shift;
 		val = (val & 0x000000FF) | ((val & 0x0000FF00) >> 8);
-		buf[i] = unsigned char(val) ^ seed[(len + 23*i) % seedLen];
+		buf[i] = (unsigned char)(val) ^ seed[(len + 23*i) % seedLen];
 	}
 }
 
@@ -34,7 +34,7 @@ void DecodePersistentSymbols(unsigned char *buf, int dummyLen, const unsigned ch
 		val = bufSrc[i] ^ seed[(len + 23*i) % seedLen];
 		val = (val << 16) << shift;
 		val = (val & 0x00FF0000) | ((val & 0xFF000000) >> 8);
-		buf[i] = unsigned char(val >> 16);
+		buf[i] = (unsigned char)(val >> 16);
 	}
 }
 #endif //__PERSISTENTSYMBOLSENCODE_H__

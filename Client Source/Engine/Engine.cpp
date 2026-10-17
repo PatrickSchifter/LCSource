@@ -934,8 +934,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	GetVolumeInformation(strDrive, NULL, 0, &dwSerial, NULL, NULL, NULL, 0);
 	GetDiskFreeSpace(strDrive, &dwSectors, &dwBytes, &dwFreeClusters, &dwClusters);
-	sys_iHDDSize = __int64(dwSectors)*dwBytes*dwClusters/MB;
-	sys_iHDDFree = __int64(dwSectors)*dwBytes*dwFreeClusters/MB;
+	sys_iHDDSize = (__int64)(dwSectors)*dwBytes*dwClusters/MB;
+	sys_iHDDFree = (__int64)(dwSectors)*dwBytes*dwFreeClusters/MB;
 	sys_iHDDMisc = dwSerial;
  
 	// add console variables

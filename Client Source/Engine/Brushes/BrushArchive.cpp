@@ -16,7 +16,7 @@
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Loading.h>
-template CDynamicArray<CBrush3D>;
+template class CDynamicArray<CBrush3D>;
 
 extern BOOL _bPortalSectorLinksPreLoaded = FALSE;
 extern BOOL _bEntitySectorLinksPreLoaded = FALSE;

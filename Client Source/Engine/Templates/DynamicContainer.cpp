@@ -57,7 +57,7 @@ template<class Type>
 void CDynamicContainer<Type>::Add(Type *ptNewObject)
 {
   // set the new pointer
-  Push() = ptNewObject;
+  this->Push() = ptNewObject;
 }
 
 /*
@@ -75,12 +75,12 @@ void CDynamicContainer<Type>::Remove(Type *ptOldObject)
   // find its index
   INDEX iMember=GetIndex(ptOldObject);
   // move last pointer here
-  if( iMember > Count()-1 )
+  if( iMember > this->Count()-1 )
 	  return;
 
-  sa_Array[iMember]=sa_Array[Count()-1];
-  sa_Array[Count()-1] = NULL;
-  Pop();
+  this->sa_Array[iMember]=this->sa_Array[this->Count()-1];
+  this->sa_Array[this->Count()-1] = NULL;
+  this->Pop();
 }
 
 /* Test if a given object is in the container. */
@@ -90,8 +90,8 @@ BOOL CDynamicContainer<Type>::IsMember(Type *ptOldObject)
   ASSERT(this!=NULL);
   // slow !!!!
   // check all members
-  for (INDEX iMember=0; iMember<Count(); iMember++) {
-    if(sa_Array[iMember]==ptOldObject) {
+  for (INDEX iMember=0; iMember<this->Count(); iMember++) {
+    if(this->sa_Array[iMember]==ptOldObject) {
       return TRUE;
     }
   }
@@ -110,7 +110,7 @@ Type *CDynamicContainer<Type>::Pointer(INDEX iMember) {
   // check that locked for indices
   ASSERT(dc_LockCt>0);
 #endif
-  return sa_Array[iMember];
+  return this->sa_Array[iMember];
 }
 template<class Type>
 const Type *CDynamicContainer<Type>::Pointer(INDEX iMember) const {
@@ -121,7 +121,7 @@ const Type *CDynamicContainer<Type>::Pointer(INDEX iMember) const {
   // check that locked for indices
   ASSERT(dc_LockCt>0);
 #endif
-  return sa_Array[iMember];
+  return this->sa_Array[iMember];
 }
 
 /*
@@ -170,8 +170,8 @@ INDEX CDynamicContainer<Type>::GetIndex(Type *ptMember) {
   ASSERT(this!=NULL);
   // slow !!!!
   // check all members
-  for (INDEX iMember=0; iMember<Count(); iMember++) {
-    if(sa_Array[iMember]==ptMember) {
+  for (INDEX iMember=0; iMember<this->Count(); iMember++) {
+    if(this->sa_Array[iMember]==ptMember) {
       return iMember;
     }
   }
@@ -184,7 +184,7 @@ template<class Type>
 Type &CDynamicContainer<Type>::GetFirst(void)
 {
   ASSERT(Count()>=1);
-  return *sa_Array[0];
+  return *this->sa_Array[0];
 }
 
 /*

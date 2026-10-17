@@ -288,7 +288,7 @@ inline AABBox<Type, iDimensions> AABBox<Type, iDimensions>::operator&(const AABB
 
 
 /* Check if intersects or touches another bounding box - OPTIMIZED FOR 'FLOAT3D'! */
-__forceinline BOOL AABBox<FLOAT,3>::HasContactWith(const AABBox<FLOAT,3> &b) const
+template<> __forceinline BOOL AABBox<FLOAT,3>::HasContactWith(const AABBox<FLOAT,3> &b) const
 {
   SLONG slRes = 0;
   FLOAT fRes;
