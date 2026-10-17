@@ -173,14 +173,16 @@ Detalhes em `HANDOFF.md` ("Assembly x86 (C3) — como ficou").
 - [ ] Checagem automática no CI
 
 ### C4. Remover ou isolar dependências só de Windows
-- [ ] nProtect GameGuard (`Nksp/GameGuard.*`, `NPGameLib.h`)
-- [ ] XTrap (`Nksp/XTrap`, `Engine/XTrap`, `xTrapWrapper`)
-- [ ] Kalydo (`KALYDO`, `Engine/Kalydo`, `Nksp/Social`, KRFReadLib, presente em 27 arquivos)
-- [ ] `Engine/Base/Protection.cpp`, `Engine/Secure/FileSecure` (manter o que for necessário para ler os assets)
-- [ ] IFeel, Visual Leak Detector, `MiniDump.cpp`/dbghelp
-- [ ] Intel IJL (JPEG) → stb_image; dxtlib → decodificador DXT próprio ou GPU nativa
+Roteiro detalhado (arquivos, linhas, ordem) em `HANDOFF.md` ("C4 — roteiro").
+- [ ] Remover `Engine/XBox/*` (e o include em `Engine/StdH.h`)
+- [ ] nProtect GameGuard (`Nksp/GameGuard.*`, `Engine/GameGuardInterface.h`, blocos `NO_GAMEGUARD`)
+- [ ] XTrap (`Nksp/XTrap`, `Engine/XTrap`, `xTrapWrapper`, `XTrapInterface`)
+- [ ] Kalydo (`KALYDO`, `Engine/Kalydo`, `Kalydo/`, `Nksp/Social`, KRFReadLib; manter os ramos `#else`)
+- [ ] `Engine/Base/Protection.cpp` (`COPY_PROTECTION`=0); manter `Engine/Secure/FileSecure` (checksum portátil usado pelos dados)
+- [ ] IFeel (stubs), Visual Leak Detector, `MiniDump.cpp`/`StackDump.cpp`/dbghelp só no Windows
+- [ ] Intel IJL (screenshot JPEG) → stb_image_write; apagar dxtlib (manter `DXTC.cpp`)
 - [x] LCCrypt: compilar a partir de `Server Source/ShareLib/LCCrypt.cpp`
-- [ ] Remover `Engine/XBox/*`
+- [ ] Limpar `.lib` pré-compilados não usados, `CDCheck.h`, `FGC_Net.*`
 
 ### C5. Camada de plataforma
 - [ ] Janela e loop principal (substituir `Nksp/MainWindow.cpp`, WinMain e HWND, que aparece em 44 arquivos)

@@ -20,8 +20,62 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` que o motor já tem,
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
 
-1. C4/C5 (dependências só de Windows e camada de plataforma), depois o restante da C1 e o primeiro
-   link no Mac.
+1. **C4 — remover/isolar dependências só de Windows**: roteiro pronto na seção abaixo.
+2. C5 (camada de plataforma: janela, input, timers, threads, arquivos, registry), depois o restante
+   da C1 e o primeiro link no Mac.
+
+## C4 — roteiro (levantado em 2026-10-17)
+
+Caminhos relativos a `Client Source/`. Arquivos em ISO-8859-1/CRLF: buscar com `LC_ALL=C grep -a` e
+editar preservando a codificação. A lista de fontes do CMake está em `cmake/*_sources.cmake`.
+`CMakeLists.txt:49` (e `cmake/ClientCheck.cmake:52`) definem `LC_NO_XTRAP NO_GAMEGUARD`; `KALYDO`,
+`USE_GAMEGUARD` e `COPY_PROTECTION` não estão ligados em lugar nenhum. Ou seja: quase tudo da C4 já é
+código morto; o trabalho é **apagar mantendo o ramo `#else` que hoje compila**, para o Windows dar
+o mesmo binário. Um commit por item; depois de cada um, check do Mac (`-DLC_CHECK_DIRS=ALL`, sem
+erro novo) e build do Windows (`scripts/windows/build.sh`, 0 erros); no fim, deploy e um login.
+
+1. **Engine/XBox** (fácil, começar por aqui): o único uso é `Engine/StdH.h:37`
+   `#include <Engine/Xbox/XKeyboard.h>` (header vazio, e a caixa `Xbox`≠`XBox` quebra em FS
+   case-sensitive). Tirar o include e apagar o diretório; nenhum `.cpp` dele está no CMake.
+2. **GameGuard**: `Nksp/GameGuard.cpp/.h`, `Engine/GameGuardInterface.h`, a lógica de
+   `NO_GAMEGUARD`/`USE_GAMEGUARD` em `Engine/LocalDefine.h:149-150` e os blocos `#ifndef NO_GAMEGUARD`
+   em `Engine.cpp`, `Contents/Login/UILoginNew.cpp`, `LoginNew.cpp`, `Interface/UILogin.cpp`,
+   `Network/CNetwork.h/.cpp` (~9792-9855), `SessionState.h/.cpp`, `SessionStateExten.cpp:1074`
+   (`MSG_EX_NPROTECT`: manter o case lendo e descartando o pacote, se o servidor ainda manda),
+   `Nksp/Nksp.cpp`. Remover o `.cpp` de `cmake/Nksp_sources.cmake` e o `NO_GAMEGUARD` do CMake.
+3. **XTrap**: `Nksp/xTrapWrapper.*`, `Nksp/XTrap/` (com `.lib`), `Engine/XTrap/` (duplicata morta),
+   `Engine/XTrapInterface/`, os blocos `XTRAP_SECURE_CKBANG_2010_07_20` em `Define_BRA/USA/RUS/GAMIGO.h`
+   e nos usos (`Engine.cpp`, `SessionStateExten.cpp` `MSG_EX_XTRAP`, `SessionStateInfo.cpp`,
+   `Nksp.cpp`). Tirar `LC_NO_XTRAP` do CMake no fim.
+4. **Kalydo**: apagar cada `#ifdef KALYDO` mantendo o `#else` (loaders de asset em `Texture.cpp`,
+   `Ska/Mesh/AnimSet/Skeleton.cpp`, `SoundData.cpp`, `Base/Serial.*`, `CTString.h` e os headers
+   correspondentes; `Engine.cpp/.h`, `UIOption.*`, `UILogin.cpp`, `SessionState.*`, `GameMP/Game.cpp`,
+   `Map.cpp`, `Nksp.cpp/.h`, `MainWindow.cpp`). Nos `!defined(KALYDO)` (`LocalDefine.h:156`,
+   `Engine.cpp:753`, `CNetwork.cpp:2293`, `Nksp.cpp:1215`) manter o corpo e tirar só a condição.
+   Apagar `Engine/Kalydo/` (tirar `PackageManager.cpp` de `Engine_sources.cmake`: ele inclui
+   `KRFReadLib.h` incondicionalmente), `Kalydo/`, `Nksp/Social/`, `Nksp/Nksp_Kalydo*`, `*.kcproj`,
+   `*.kpprofile`.
+5. **Protection.cpp** (`#if COPY_PROTECTION`, =0): apagar e manter os `#else` em `Base/Stream.cpp`
+   (~282-327, só seta `sys_iCPUMisc=1`) e `Nksp/Nksp.cpp` (~737-781). **Não** mexer em
+   `Engine/Secure/FileSecure.*` (checksum portátil exigido por `Entities/Skill.cpp:135`), nem em
+   `SEED_256_KISA`/LCCrypt.
+6. **IFeel** (force feedback, `LoadLibrary` em runtime): trocar `Base/IFeel.cpp` por stubs no-op
+   (as ~45 chamadas em `Player.es`/`PlayerWeapons.es` ficam), ou apagar as chamadas fora dos `.es`.
+7. **MiniDump/dbghelp**: `Engine/MiniDump.*` (global `g_MiniDumper` em `Engine.cpp:46,88`) só no
+   Windows (`#ifdef _WIN32`); `Base/StackDump.cpp` idem, com stubs fora do Windows (depois: handler
+   de sinal + `backtrace()` na C5). `dbghelp` continua linkado só no Windows.
+8. **VLD**: ninguém inclui `vld.h`; apagar `include/vld*.h`, `Visual Leak Detector/`, `Lib/VC100/vld*`.
+9. **IJL (JPEG)**: só `CImageInfo::SaveJPG_t` (`Graphics/ImageInfo.cpp:402-456`), chamado pelo
+   screenshot (`GameMP/Game.cpp:2880`). Trocar por `stb_image_write` (vendorizar o header) ou salvar
+   TGA; tirar `IJL15L.LIB` do CMake e `include/ijl.h`.
+10. **dxtlib**: `Graphics/dxtlib.h` e o bloco `_MSC_VER < 1600` em `Texture.cpp:34-37,1640-1720`
+    (compressão, só editor; hoje devolve NULL). Apagar. **Manter `Graphics/DXTC.cpp`** (descompressor
+    DXT em C, usado ao carregar texturas).
+11. Limpeza: `.lib` pré-compilados não linkados (`Lib/*.lib`, `Lib/VC100/*` exceto o que ainda for
+    usado), `Nksp/CDCheck.h`, `Nksp/FGC_Net.*` (fora do CMake). Conferir antes com `git grep`.
+
+Fica para outras fases: D3D8/D3DX (C8), DirectSound/winmm (C7), Winsock/wininet/F_Socket/SharedMemory
+(C6), imm32/registry/janela (C5), ODBC (`odbc32` linkado no Engine/Nksp: ver se algo usa, C5).
 
 ## Assembly x86 (C3) — como ficou
 
