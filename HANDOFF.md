@@ -10,8 +10,8 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
 - Cliente Mac: só a preparação. Tipos e 64 bits (C2), assembly x86 (C3) e dependências só de
-  Windows (C4) feitos; o código do cliente compila no Mac apenas no modo de verificação
-  (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
+  Windows (C4) feitos; camada de plataforma (C5) em andamento. O código do cliente compila no Mac
+  apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -23,7 +23,56 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
 1. **C5** (camada de plataforma), seguindo o roteiro abaixo; depois o restante da C1 e o primeiro
-   link no Mac.
+   link no Mac. Andamento em "C5 — andamento" logo abaixo.
+
+## C5 — andamento (2026-10-17)
+
+Feitos e commitados (um commit por item, Engine separado de Nksp/jogo): itens **1–7**
+(`6842344`..`24271f5`, mais `4b6f076`), **8a** (`0e1689a`, camada SDL3 no Engine) e **8b**
+(`a75341f`, loop/janela do Nksp e opção `LC_PLATFORM_SDL`). Check do Mac (agora com o Nksp no
+conjunto `ALL`): 12.065 → 7.395 erros únicos; o que sobra é quase todo D3D (C8), som (C7), rede
+(C6), IME (item 10), `MessageBox`/cursores (itens 9 e 11) e conformidade C++ (C1).
+Windows: itens 1–7 compilam sem erros e chegam à tela de login (falta o teste em jogo).
+Pendentes: **8c** (testar o modo SDL no Windows), **9** (input), **10** (IME), **11** (resto).
+
+Decisões e lições:
+- `Engine/Base/Win32Compat.h` (+ `.cpp`), só fora do Windows: tipos, mensagens e funções
+  autocontidas do Win32/CRT (tempo, timers multimídia, memória, arquivos, INI, `LoadLibrary`,
+  codepages). O que mexe em janela/cursor está em `Engine/Platform/Win32WindowSDL.cpp`.
+- **Caminhos:** dentro do motor tudo continua com `\`; no Mac o caminho absoluto começa com uma `\`
+  (`\Users\...\LastChaos\`). A conversão para `/`, com resolução sem diferenciar maiúsculas, é feita
+  só na fronteira (`fopen` é um macro para `LC_fopen`; `std::fstream`, `remove` e `rename` usam
+  `HOSTPATH()`). `GetModuleFileName(NULL)` devolve o executável nesse formato, então o diretório do
+  jogo continua sendo o pai de `Bin\` (no Mac: `<jogo>/Bin/Nksp`). Testado num volume APFS
+  case-sensitive. Gravação continua no diretório do jogo, como no Windows (separar fica para a Fase F).
+- **Streams:** o Windows carrega o arquivo página a página por falta de página (VirtualAlloc + SEH).
+  Fora dele o buffer é `mmap` anônimo, o arquivo é lido inteiro na abertura (`FileLoadBuffer_t`) e o
+  fechamento grava até a posição máxima. Custo: `FileExists()` abre o arquivo e agora lê tudo (16
+  chamadas, quase sempre seguidas da carga do mesmo arquivo).
+- `.gro`: `pread` síncrono (o caminho "9X" do `Unzip.cpp`). Registry: não existe fora do Windows
+  (só o importador das ferramentas e a velocidade da CPU o usavam). `GetACP()` = codepage do país
+  (BR 1252, KOR 949...); `iconv` com `UTF-32LE` (o `WCHAR_T` do iconv do macOS depende do locale).
+  **O link no Mac vai precisar de `-liconv`.**
+- DLLs do motor: `LoadLibrary("...\\X.dll")` abre `X.dylib` no mesmo lugar (`dlopen`).
+- Só no Windows (como o GameGuard na C4): varredura de processos à procura de bots AutoIt, IPC e
+  autoatualização do launcher, versão lida do recurso do executável, instância única, trava do
+  diretório, recarga de mod, multimonitor do Win9x, gancho de teclado, pretouch de memória, SEH.
+- SDL3: eventos viram `MSG` (teclas com `VK_*` do Windows; `WM_CHAR` para Enter/Tab/Backspace/Esc
+  e Ctrl+letra, texto digitado convertido para o codepage do cliente; clique duplo a cada 2º clique;
+  roda em unidades de 120 com coordenadas de tela). Por ora 1 ponto da janela = 1 pixel (Retina é
+  da C8); a tela cheia usa o modo de vídeo mais próximo pelo SDL. Cursores do jogo (recursos `.cur`)
+  ainda não existem no modo SDL (item 9); `MessageBox` no Mac é do item 11.
+
+**Testar o modo SDL no Windows** (o mesmo código que o Mac usa para janela e eventos, com o D3D8
+desenhando na janela do SDL):
+```
+scripts/windows/wps.sh <<'EOF'
+cmd /c "call ""C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars32.bat"" >nul && ""C:\Program Files\CMake\bin\cmake.exe"" -DLC_PLATFORM_SDL=ON -DSDL3_DIR=C:/LCSource-deps/SDL3-3.4.18/cmake C:\LCSource-build"
+EOF
+LC_NO_SYNC=1 scripts/windows/build.sh && scripts/windows/deploy.sh
+```
+Depois voltar com `-DLC_PLATFORM_SDL=OFF` (cada troca recompila tudo, ~15 min). O SDL3 3.4.18
+(pacote VC, sha256 conferido) está em `C:\LCSource-deps\SDL3-3.4.18`; no Mac, `brew install sdl3`.
 
 ## C5 — roteiro (levantado em 2026-10-17)
 
