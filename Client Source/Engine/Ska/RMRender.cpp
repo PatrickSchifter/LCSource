@@ -1609,6 +1609,7 @@ ENGINE_API extern BOOL RM_AreHardwareShadersAvailable(void)
 {
 //강동민 수정 시작 접속 시퀀스 작업	06.01
 	extern INDEX ska_bUseHardwareShaders;			// 원본.
+	if (getenv("LC_NO_HW_SHADERS") != NULL) return FALSE;  // dev switch, see GfxLibrary.cpp
 	return ska_bUseHardwareShaders && 
 		(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM) && 
 		(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM) && 
@@ -4639,6 +4640,47 @@ extern void CalculateRenderingData(CModelInstance &mi, BOOL bRenderToScreen)
 
 
 // Render one SKA model with its children
+// Debug aid (LC_DEBUG_SKA set): log to ThrowLog.txt how the first frames of each model are rendered.
+static void LogRenderedModel(CModelInstance &mi)
+{
+	static INDEX iEnabled = -1;
+	if (iEnabled < 0) iEnabled = getenv("LC_DEBUG_SKA") != NULL;
+	if (!iEnabled) return;
+	static CTString astrSeen[256];
+	static INDEX ctSeen = 0;
+	static INDEX actFrames[256];
+	INDEX iSeen = 0;
+	for (; iSeen < ctSeen; iSeen++) if (astrSeen[iSeen] == mi.GetName()) break;
+	if (iSeen == ctSeen) {
+		if (ctSeen >= 256) return;
+		astrSeen[ctSeen] = mi.GetName(); actFrames[ctSeen] = 0; ctSeen++;
+	}
+	if (actFrames[iSeen]++ >= 3) return;
+	FILE *fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return;
+	fseek(fLog, 0, SEEK_END);
+	fprintf(fLog, "SKA '%s' color=%08lX dist=%g stretch=(%g,%g,%g) renmodels=%d renmeshes=%d bones=%d hw=%d\n",
+		(const char*)mi.GetName(), (unsigned long)_colModel, _fDistanceFactor,
+		mi.mi_vStretch(1), mi.mi_vStretch(2), mi.mi_vStretch(3),
+		_aRenModels.Count()-1, _aRenMeshes.Count(), _aRenBones.Count(), _bUseHardwareShaders);
+	for (INDEX irm = 1; irm < _aRenModels.Count(); irm++) {
+		RenModel &rm = _aRenModels[irm];
+		fprintf(fLog, "   model '%s' meshes=%d", (const char*)rm.rm_pmiModel->GetName(), rm.rm_ctMeshes);
+		for (INDEX im = 0; im < rm.rm_pmiModel->mi_aMeshInst.Count(); im++) {
+			CMesh &msh = *rm.rm_pmiModel->mi_aMeshInst[im].mi_pMesh;
+			fprintf(fLog, " [lods=%d", msh.msh_aMeshLODs.Count());
+			for (INDEX il = 0; il < msh.msh_aMeshLODs.Count(); il++) fprintf(fLog, " max=%g", msh.msh_aMeshLODs[il].mlod_fMaxDistance);
+			fprintf(fLog, "]");
+		}
+		fprintf(fLog, "\n");
+	}
+	if (_aRenBones.Count() > 1) {
+		const Matrix12 &m = _aRenBones[1].rb_mBonePlacement;
+		fprintf(fLog, "   bone1 %g %g %g %g | %g %g %g %g | %g %g %g %g\n", m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11]);
+	}
+	fclose(fLog);
+}
+
 void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 {
 	TRACKMEM(Mem, "RenderSKA()");
@@ -4702,6 +4744,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 		gfxSetColorMask(CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 		// calculate all rendering data for this model instance
 		CalculateRenderingData(mi, bRenderToScreen);
+		LogRenderedModel(mi);
 		const INDEX ctrm = _aRenModels.Count();
 		_sfStats.IncrementCounter( CStatForm::SCI_SKAMESHES_RENDERED, ctrm-1); // meshes rendered
 		// render each RenModel to view

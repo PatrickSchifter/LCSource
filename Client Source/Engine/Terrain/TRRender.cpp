@@ -409,6 +409,7 @@ static void SetViewMatrix(const Matrix12 &mView12)
 ENGINE_API extern BOOL TR_AreHardwareShadersAvailable(void)
 {
 	extern INDEX ter_bUseHardwareShaders;
+	if (getenv("LC_NO_HW_SHADERS") != NULL) return FALSE;  // dev switch, see GfxLibrary.cpp
 	return ter_bUseHardwareShaders && 
 				 (_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM) && 
 				 (_pGfx->gl_ulFlags&GLF_PIXELPROGRAM) && 
