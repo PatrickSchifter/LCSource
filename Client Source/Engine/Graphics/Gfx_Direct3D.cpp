@@ -32,7 +32,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
 extern ULONG _fog_ulTexture;
@@ -1820,8 +1824,8 @@ elemEnd:
 		const INDEX iIndex = puwIndices[idx];
 		puwLockedBuffer[idx] = iIndex;
 		if( !bSetRange) continue;
-				 if( iMinIndex>iAdj) iMinIndex = iIndex;
-		else if( iMaxIndex<iAdj) iMaxIndex = iIndex;
+		if( iMinIndex>iIndex) iMinIndex = iIndex;
+		if( iMaxIndex<iIndex) iMaxIndex = iIndex;
 	}
 	// set range?
 	if( bSetRange) { 

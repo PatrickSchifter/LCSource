@@ -17,7 +17,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
 static const __int64 mm1LO   = 0x0000000000000001;
@@ -1419,24 +1423,27 @@ pixLoop:
 
 #else
 
-		PIX pixPos, pixDU, pixDV;
-		slHeightMapStep  = _pixBufferWidth/pixBaseWidth
+		PIX pixDU, pixDV;
+		slHeightMapStep  = _pixBufferWidth/_pixTexWidth;
 		slHeightRowStep  = (slHeightMapStep-1)*_pixBufferWidth;
-		mmShift = DISTORSION+ FastLog2(slHeightMapStep) +2;
+		const SLONG slShift = DISTORSION+ FastLog2(slHeightMapStep) +2;
+		ULONG ulPosVU = 0; // pixV|pixU words as in asm (U not reset per row and carries into V)
 		for( PIX pixV=0; pixV<_pixTexHeight; pixV++)
 		{ // row loop
 			for( PIX pixU=0; pixU<_pixTexWidth; pixU++)
 			{ // texel loop
-				pixPos =  pswHeightMap[0];
-				pixDU  = (pswHeightMap[1]               - pixPos) >>(SLONG&)mmShift;
-				pixDV  = (pswHeightMap[_pixBufferWidth] - pixPos) >>(SLONG&)mmShift;
-				pixDU  = (pixU +pixDU) & (SLONG&)mmBaseWidthMask;
-				pixDV  = (pixV +pixDV) & (SLONG&)mmBaseHeightMask;
+				// asm quirk: U gets vertical diff, V gets OR of both horizontal diffs (16-bit words)
+				pixDU  = (SWORD)(pswHeightMap[_pixBufferWidth] - pswHeightMap[0]);
+				pixDV  = (SWORD)( (SWORD)(pswHeightMap[1] - pswHeightMap[0]) | (SWORD)(pswHeightMap[_pixBufferWidth+1] - pswHeightMap[1]));
+				pixDU  = ((pixDU>>slShift) + (SLONG)(ulPosVU&0xFFFF)) & (SLONG&)mmBaseWidthMask;
+				pixDV  = ((pixDV>>slShift) + (SLONG)(ulPosVU>>16))    & (SLONG&)mmBaseHeightMask;
 				*pulTexture++ = pulTextureBase[pixDV*pixBaseWidth + pixDU];
 				// advance to next texel in height map
 				pswHeightMap += slHeightMapStep;
+				ulPosVU += 0x00000001;
 			}
 			pswHeightMap += slHeightRowStep;
+			ulPosVU += 0x00010000;
 		}
 
 #endif
@@ -1586,32 +1593,37 @@ pixLoop2:
 
 #else
 
-		SLONG slU_00, slU_01, slU_10, slU_11;
-		SLONG slV_00, slV_01, slV_10, slV_11;
+		// asm subtracts unaligned 32-bit pairs of heights, not single words
+		#define HPAIR(i) ((ULONG)(UWORD)pswHeightMap[i] | ((ULONG)(UWORD)pswHeightMap[(i)+1]<<16))
+		ULONG ulU_00, ulU_01, ulU_10, ulU_11;
+		ULONG ulV_00, ulV_01, ulV_10, ulV_11;
+		ULONG ulPixU = 0; // asm doesn't reset pixU per row
 		for( PIX pixV=0; pixV<_pixBufferHeight; pixV++)
 		{ // row loop
 			for( PIX pixU=0; pixU<_pixBufferWidth; pixU++)
 			{ // texel loop
-				slU_00 = pswHeightMap[_pixBufferWidth*0+1] - pswHeightMap[_pixBufferWidth*0+0] + ((pixU+0)<<(DISTORSION+1+1));
-				slV_00 = pswHeightMap[_pixBufferWidth*1+0] - pswHeightMap[_pixBufferWidth*0+0] + ((pixV+0)<<(DISTORSION+1+1));
-				slU_01 = pswHeightMap[_pixBufferWidth*0+2] - pswHeightMap[_pixBufferWidth*0+1] + ((pixU+1)<<(DISTORSION+1+1));
-				slV_01 = pswHeightMap[_pixBufferWidth*1+1] - pswHeightMap[_pixBufferWidth*0+1] + ((pixV+0)<<(DISTORSION+1+1));
-				slU_10 = pswHeightMap[_pixBufferWidth*1+1] - pswHeightMap[_pixBufferWidth*1+0] + ((pixU+0)<<(DISTORSION+1+1));
-				slV_10 = pswHeightMap[_pixBufferWidth*2+0] - pswHeightMap[_pixBufferWidth*1+0] + ((pixV+1)<<(DISTORSION+1+1));
-				slU_11 = pswHeightMap[_pixBufferWidth*1+2] - pswHeightMap[_pixBufferWidth*1+1] + ((pixU+1)<<(DISTORSION+1+1));
-				slV_11 = pswHeightMap[_pixBufferWidth*2+1] - pswHeightMap[_pixBufferWidth*1+1] + ((pixV+1)<<(DISTORSION+1+1));
+				ulU_00 = HPAIR(_pixBufferWidth*0+1) - HPAIR(_pixBufferWidth*0+0) + ((ulPixU+0)<<(DISTORSION+1+1));
+				ulV_00 = HPAIR(_pixBufferWidth*1+0) - HPAIR(_pixBufferWidth*0+0) + ((pixV+0)<<(DISTORSION+1+1));
+				ulU_01 = HPAIR(_pixBufferWidth*0+2) - HPAIR(_pixBufferWidth*0+1) + ((ulPixU+1)<<(DISTORSION+1+1));
+				ulV_01 = HPAIR(_pixBufferWidth*1+1) - HPAIR(_pixBufferWidth*0+1) + ((pixV+0)<<(DISTORSION+1+1));
+				ulU_10 = HPAIR(_pixBufferWidth*1+1) - HPAIR(_pixBufferWidth*1+0) + ((ulPixU+0)<<(DISTORSION+1+1));
+				ulV_10 = HPAIR(_pixBufferWidth*2+0) - HPAIR(_pixBufferWidth*1+0) + ((pixV+1)<<(DISTORSION+1+1));
+				ulU_11 = HPAIR(_pixBufferWidth*1+2) - HPAIR(_pixBufferWidth*1+1) + ((ulPixU+1)<<(DISTORSION+1+1));
+				ulV_11 = HPAIR(_pixBufferWidth*2+1) - HPAIR(_pixBufferWidth*1+1) + ((pixV+1)<<(DISTORSION+1+1));
 
-				pulTexture[_pixTexWidth*0+0] = PIXEL( (slU_00                     ) >>(DISTORSION+1  ), (slV_00                     ) >>(DISTORSION+1  ) );
-				pulTexture[_pixTexWidth*0+1] = PIXEL( (slU_00+slU_01              ) >>(DISTORSION+1+1), (slV_00+slV_01              ) >>(DISTORSION+1+1) );
-				pulTexture[_pixTexWidth*1+0] = PIXEL( (slU_00       +slU_10       ) >>(DISTORSION+1+1), (slV_00       +slV_10       ) >>(DISTORSION+1+1) );
-				pulTexture[_pixTexWidth*1+1] = PIXEL( (slU_00+slU_01+slU_10+slU_11) >>(DISTORSION+1+2), (slV_00+slV_01+slV_10+slV_11) >>(DISTORSION+1+2) );
+				pulTexture[_pixTexWidth*0+0] = PIXEL( (SLONG)(ulU_00                     ) >>(DISTORSION+1  ), (SLONG)(ulV_00                     ) >>(DISTORSION+1  ) );
+				pulTexture[_pixTexWidth*0+1] = PIXEL( (SLONG)(ulU_00+ulU_01              ) >>(DISTORSION+1+1), (SLONG)(ulV_00+ulV_01              ) >>(DISTORSION+1+1) );
+				pulTexture[_pixTexWidth*1+0] = PIXEL( (SLONG)(ulU_00       +ulU_10       ) >>(DISTORSION+1+1), (SLONG)(ulV_00       +ulV_10       ) >>(DISTORSION+1+1) );
+				pulTexture[_pixTexWidth*1+1] = PIXEL( (SLONG)(ulU_00+ulU_01+ulU_10+ulU_11) >>(DISTORSION+1+2), (SLONG)(ulV_00+ulV_01+ulV_10+ulV_11) >>(DISTORSION+1+2) );
 
 				// advance to next texel
 				pulTexture+=2;
 				pswHeightMap++;
+				ulPixU++;
 			}
 			pulTexture+=_pixTexWidth;
 		}
+		#undef HPAIR
 
 #endif
 
@@ -1976,48 +1988,53 @@ pixLoop4:
 
 #else
 
-		SLONG slU_00, slU_01, slU_10, slU_11;
-		SLONG slV_00, slV_01, slV_10, slV_11;
+		// asm subtracts unaligned 32-bit pairs of heights, not single words
+		#define HPAIR(i) ((ULONG)(UWORD)pswHeightMap[i] | ((ULONG)(UWORD)pswHeightMap[(i)+1]<<16))
+		ULONG ulU_00, ulU_01, ulU_10, ulU_11;
+		ULONG ulV_00, ulV_01, ulV_10, ulV_11;
+		ULONG ulPixU = 0; // asm doesn't reset pixU per row
 		mmBaseWidthShift = FastLog2( pixBaseWidth);        // faster multiplying with shift
 		for( PIX pixV=0; pixV<_pixBufferHeight; pixV++)
 		{ // row loop
 			for( PIX pixU=0; pixU<_pixBufferWidth; pixU++)
 			{ // texel loop
-				slU_00 = pswHeightMap[_pixBufferWidth*0+1] - pswHeightMap[_pixBufferWidth*0+0] + ((pixU+0)<<(DISTORSION+2));
-				slV_00 = pswHeightMap[_pixBufferWidth*1+0] - pswHeightMap[_pixBufferWidth*0+0] + ((pixV+0)<<(DISTORSION+2));
-				slU_01 = pswHeightMap[_pixBufferWidth*0+2] - pswHeightMap[_pixBufferWidth*0+1] + ((pixU+1)<<(DISTORSION+2));
-				slV_01 = pswHeightMap[_pixBufferWidth*1+1] - pswHeightMap[_pixBufferWidth*0+1] + ((pixV+0)<<(DISTORSION+2));
-				slU_10 = pswHeightMap[_pixBufferWidth*1+1] - pswHeightMap[_pixBufferWidth*1+0] + ((pixU+0)<<(DISTORSION+2));
-				slV_10 = pswHeightMap[_pixBufferWidth*2+0] - pswHeightMap[_pixBufferWidth*1+0] + ((pixV+1)<<(DISTORSION+2));
-				slU_11 = pswHeightMap[_pixBufferWidth*1+2] - pswHeightMap[_pixBufferWidth*1+1] + ((pixU+1)<<(DISTORSION+2));
-				slV_11 = pswHeightMap[_pixBufferWidth*2+1] - pswHeightMap[_pixBufferWidth*1+1] + ((pixV+1)<<(DISTORSION+2));
+				ulU_00 = HPAIR(_pixBufferWidth*0+1) - HPAIR(_pixBufferWidth*0+0) + ((ulPixU+0)<<(DISTORSION+2));
+				ulV_00 = HPAIR(_pixBufferWidth*1+0) - HPAIR(_pixBufferWidth*0+0) + ((pixV+0)<<(DISTORSION+2));
+				ulU_01 = HPAIR(_pixBufferWidth*0+2) - HPAIR(_pixBufferWidth*0+1) + ((ulPixU+1)<<(DISTORSION+2));
+				ulV_01 = HPAIR(_pixBufferWidth*1+1) - HPAIR(_pixBufferWidth*0+1) + ((pixV+0)<<(DISTORSION+2));
+				ulU_10 = HPAIR(_pixBufferWidth*1+1) - HPAIR(_pixBufferWidth*1+0) + ((ulPixU+0)<<(DISTORSION+2));
+				ulV_10 = HPAIR(_pixBufferWidth*2+0) - HPAIR(_pixBufferWidth*1+0) + ((pixV+1)<<(DISTORSION+2));
+				ulU_11 = HPAIR(_pixBufferWidth*1+2) - HPAIR(_pixBufferWidth*1+1) + ((ulPixU+1)<<(DISTORSION+2));
+				ulV_11 = HPAIR(_pixBufferWidth*2+1) - HPAIR(_pixBufferWidth*1+1) + ((pixV+1)<<(DISTORSION+2));
 
-				pulTexture[_pixTexWidth*0+0] = PIXEL( (slU_00                                 ) >>(DISTORSION  ), (slV_00                                 ) >>(DISTORSION  ) );
-				pulTexture[_pixTexWidth*0+1] = PIXEL( (slU_00* 3+slU_01* 1                    ) >>(DISTORSION+2), (slV_00* 3+slV_01* 1                    ) >>(DISTORSION+2) );
-				pulTexture[_pixTexWidth*0+2] = PIXEL( (slU_00   +slU_01                       ) >>(DISTORSION+1), (slV_00   +slV_01                       ) >>(DISTORSION+1) );
-				pulTexture[_pixTexWidth*0+3] = PIXEL( (slU_00* 1+slU_01* 3                    ) >>(DISTORSION+2), (slV_00* 1+slV_01* 3                    ) >>(DISTORSION+2) );
+				pulTexture[_pixTexWidth*0+0] = PIXEL( (SLONG)(ulU_00                                 ) >>(DISTORSION  ), (SLONG)(ulV_00                                 ) >>(DISTORSION  ) );
+				pulTexture[_pixTexWidth*0+1] = PIXEL( (SLONG)(ulU_00* 3+ulU_01* 1                    ) >>(DISTORSION+2), (SLONG)(ulV_00* 3+ulV_01* 1                    ) >>(DISTORSION+2) );
+				pulTexture[_pixTexWidth*0+2] = PIXEL( (SLONG)(ulU_00   +ulU_01                       ) >>(DISTORSION+1), (SLONG)(ulV_00   +ulV_01                       ) >>(DISTORSION+1) );
+				pulTexture[_pixTexWidth*0+3] = PIXEL( (SLONG)(ulU_00* 1+ulU_01* 3                    ) >>(DISTORSION+2), (SLONG)(ulV_00* 1+ulV_01* 3                    ) >>(DISTORSION+2) );
 
-				pulTexture[_pixTexWidth*1+0] = PIXEL( (slU_00* 3          +slU_10* 1          ) >>(DISTORSION+2), (slV_00* 3          +slV_10             ) >>(DISTORSION+2) );
-				pulTexture[_pixTexWidth*1+1] = PIXEL( (slU_00* 9+slU_01* 3+slU_10* 3+slU_11* 1) >>(DISTORSION+4), (slV_00* 9+slV_01* 3+slV_10* 3+slV_11* 1) >>(DISTORSION+4) );
-				pulTexture[_pixTexWidth*1+2] = PIXEL( (slU_00* 3+slU_01* 3+slU_10* 1+slU_11* 1) >>(DISTORSION+3), (slV_00* 3+slV_01* 3+slV_10* 1+slV_11* 1) >>(DISTORSION+3) );
-				pulTexture[_pixTexWidth*1+3] = PIXEL( (slU_00* 3+slU_01* 9+slU_10* 1+slU_11* 3) >>(DISTORSION+4), (slV_00* 3+slV_01* 9+slV_10* 1+slV_11* 3) >>(DISTORSION+4) );
+				pulTexture[_pixTexWidth*1+0] = PIXEL( (SLONG)(ulU_00* 3          +ulU_10* 1          ) >>(DISTORSION+2), (SLONG)(ulV_00* 3          +ulV_10             ) >>(DISTORSION+2) );
+				pulTexture[_pixTexWidth*1+1] = PIXEL( (SLONG)(ulU_00* 9+ulU_01* 3+ulU_10* 3+ulU_11* 1) >>(DISTORSION+4), (SLONG)(ulV_00* 9+ulV_01* 3+ulV_10* 3+ulV_11* 1) >>(DISTORSION+4) );
+				pulTexture[_pixTexWidth*1+2] = PIXEL( (SLONG)(ulU_00* 3+ulU_01* 3+ulU_10* 1+ulU_11* 1) >>(DISTORSION+3), (SLONG)(ulV_00* 3+ulV_01* 3+ulV_10* 1+ulV_11* 1) >>(DISTORSION+3) );
+				pulTexture[_pixTexWidth*1+3] = PIXEL( (SLONG)(ulU_00* 3+ulU_01* 9+ulU_10* 1+ulU_11* 3) >>(DISTORSION+4), (SLONG)(ulV_00* 3+ulV_01* 9+ulV_10* 1+ulV_11* 3) >>(DISTORSION+4) );
 
-				pulTexture[_pixTexWidth*2+0] = PIXEL( (slU_00             +slU_10             ) >>(DISTORSION+1), (slV_00             +slV_10             ) >>(DISTORSION+1) );
-				pulTexture[_pixTexWidth*2+1] = PIXEL( (slU_00* 3+slU_01* 1+slU_10* 3+slU_11* 1) >>(DISTORSION+3), (slV_00* 3+slV_01* 1+slV_10* 3+slV_11* 1) >>(DISTORSION+3) );
-				pulTexture[_pixTexWidth*2+2] = PIXEL( (slU_00   +slU_01   +slU_10   +slU_11   ) >>(DISTORSION+2), (slV_00   +slV_01   +slV_10   +slV_11   ) >>(DISTORSION+2) );
-				pulTexture[_pixTexWidth*2+3] = PIXEL( (slU_00* 1+slU_01* 3+slU_10* 1+slU_11* 3) >>(DISTORSION+3), (slV_00* 1+slV_01* 3+slV_10* 1+slV_11* 3) >>(DISTORSION+3) );
+				pulTexture[_pixTexWidth*2+0] = PIXEL( (SLONG)(ulU_00             +ulU_10             ) >>(DISTORSION+1), (SLONG)(ulV_00             +ulV_10             ) >>(DISTORSION+1) );
+				pulTexture[_pixTexWidth*2+1] = PIXEL( (SLONG)(ulU_00* 3+ulU_01* 1+ulU_10* 3+ulU_11* 1) >>(DISTORSION+3), (SLONG)(ulV_00* 3+ulV_01* 1+ulV_10* 3+ulV_11* 1) >>(DISTORSION+3) );
+				pulTexture[_pixTexWidth*2+2] = PIXEL( (SLONG)(ulU_00   +ulU_01   +ulU_10   +ulU_11   ) >>(DISTORSION+2), (SLONG)(ulV_00   +ulV_01   +ulV_10   +ulV_11   ) >>(DISTORSION+2) );
+				pulTexture[_pixTexWidth*2+3] = PIXEL( (SLONG)(ulU_00* 1+ulU_01* 3+ulU_10* 1+ulU_11* 3) >>(DISTORSION+3), (SLONG)(ulV_00* 1+ulV_01* 3+ulV_10* 1+ulV_11* 3) >>(DISTORSION+3) );
 
-				pulTexture[_pixTexWidth*3+0] = PIXEL( (slU_00* 1          +slU_10* 3          ) >>(DISTORSION+2), (slV_00* 1          +slV_10* 3          ) >>(DISTORSION+2) );
-				pulTexture[_pixTexWidth*3+1] = PIXEL( (slU_00* 3+slU_01* 1+slU_10* 9+slU_11* 3) >>(DISTORSION+4), (slV_00* 3+slV_01* 1+slV_10* 9+slV_11* 3) >>(DISTORSION+4) );
-				pulTexture[_pixTexWidth*3+2] = PIXEL( (slU_00* 1+slU_01* 1+slU_10* 3+slU_11* 3) >>(DISTORSION+3), (slV_00* 1+slV_01* 1+slV_10* 3+slV_11* 3) >>(DISTORSION+3) );
-				pulTexture[_pixTexWidth*3+3] = PIXEL( (slU_00* 1+slU_01* 3+slU_10* 3+slU_11* 9) >>(DISTORSION+4), (slV_00* 1+slV_01* 3+slV_10* 3+slV_11* 9) >>(DISTORSION+4) );
+				pulTexture[_pixTexWidth*3+0] = PIXEL( (SLONG)(ulU_00* 1          +ulU_10* 3          ) >>(DISTORSION+2), (SLONG)(ulV_00* 1          +ulV_10* 3          ) >>(DISTORSION+2) );
+				pulTexture[_pixTexWidth*3+1] = PIXEL( (SLONG)(ulU_00* 3+ulU_01* 1+ulU_10* 9+ulU_11* 3) >>(DISTORSION+4), (SLONG)(ulV_00* 3+ulV_01* 1+ulV_10* 9+ulV_11* 3) >>(DISTORSION+4) );
+				pulTexture[_pixTexWidth*3+2] = PIXEL( (SLONG)(ulU_00* 1+ulU_01* 1+ulU_10* 3+ulU_11* 3) >>(DISTORSION+3), (SLONG)(ulV_00* 1+ulV_01* 1+ulV_10* 3+ulV_11* 3) >>(DISTORSION+3) );
+				pulTexture[_pixTexWidth*3+3] = PIXEL( (SLONG)(ulU_00* 1+ulU_01* 3+ulU_10* 3+ulU_11* 9) >>(DISTORSION+4), (SLONG)(ulV_00* 1+ulV_01* 3+ulV_10* 3+ulV_11* 9) >>(DISTORSION+4) );
 
 				// advance to next texel
 				pulTexture+=4;
-				pHeightMap++;
+				pswHeightMap++;
+				ulPixU++;
 			}
 			pulTexture+=_pixTexWidth*3;
 		}
+		#undef HPAIR
 
 #endif
 
@@ -2470,14 +2487,17 @@ pixDone:
 		SLONG slOffset = pixU;
 		for( PIX pixV=1; pixV<_pixBufferHeight-1; pixV++)
 		{
-			ULONG ulNew = ((ULONG)pubNew[_pixBufferWidth+slOffset] + (ULONG)pubNew[_pixBufferWidth*2+slOffset]) >>1;
-			if( ulNew>slDensity) 
+			// asm uses static _slDensity (density of the first call)
+			SLONG slNew = ((SLONG)pubNew[_pixBufferWidth+slOffset] + (SLONG)pubNew[_pixBufferWidth*2+slOffset]) >>1;
+			if( slNew>_slDensity) 
 			{
-				ULONG ulNewDensity = RNDW&slDensity;
-				ulNew -= ulNewDensity;
-				SLONG slDifusion = (SLONG)asbMod3Sub1Table[ulNewDensity]; // (SLONG)(ulNewDensity%3-1);
+				// asm uses current seed (signed >>16) and advances it afterwards
+				SLONG slNewDensity = ((SLONG)ulRNDSeed>>16) & _slDensity;
+				slNew -= slNewDensity;
+				SLONG slDifusion = (SLONG)asbMod3Sub1Table[slNewDensity]; // (SLONG)(ulNewDensity%3-1);
 				SLONG slPos = (slDifusion+slOffset) & slBufferMask;
-				pubNew[slPos] = ulNew;
+				pubNew[slPos] = (UBYTE)slNew;
+				ulRNDSeed *= 262147;
 			}
 			else 
 			{

@@ -30,7 +30,11 @@
 #define B  byte ptr
 
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
 
@@ -1422,17 +1426,24 @@ colorDone:
 
 #else
 
+	// same integer math as the asm above
+	const FLOAT fLightX = _vLightDir(1)*127.0f; // boost for conversion to integer
+	const FLOAT fLightY = _vLightDir(2)*127.0f;
+	const FLOAT fLightZ = _vLightDir(3)*127.0f;
+	const SLONG slSA = colSurface.a; 
+
 	// for each vertex color
 	for(INDEX ivx=0;ivx<_ctVertices;ivx++) {
-		// calculate vertex light
-		FLOAT3D vNorm(_paNormals[ivx].nx,_paNormals[ivx].ny,_paNormals[ivx].nz);
-		FLOAT fDot = vNorm % _vLightDir;
-		fDot = Clamp(fDot,0.0f,1.0f);
-		SLONG slDot = NormFloatToByte(fDot);
-		_acolVtxColors[ivx].r = ClampUp( slAR + ((slLR*slDot)>>8), 255L);
-		_acolVtxColors[ivx].g = ClampUp( slAG + ((slLG*slDot)>>8), 255L);
-		_acolVtxColors[ivx].b = ClampUp( slAB + ((slLB*slDot)>>8), 255L);
-		_acolVtxColors[ivx].a = colSurface.a;
+		// calculate vertex shade (fistp rounds to nearest, asm keeps only low 16 bits)
+		const GFXNormal &nor = _paNormals[ivx];
+		const SWORD swShade = (SWORD)lrint( (DOUBLE)nor.nx*fLightX + (DOUBLE)nor.ny*fLightY + (DOUBLE)nor.nz*fLightZ);
+		// packuswb to byte, then byte doubled to word (b*257) and taken as signed for pmulhw
+		const SLONG slShade = (SWORD)(Clamp( (SLONG)swShade, (SLONG)0, (SLONG)255) * 257);
+		// pmulhw with light*2, paddsw ambient, packuswb
+		_acolVtxColors[ivx].r = Clamp( slAR + ((slShade*(slLR*2))>>16), (SLONG)0, (SLONG)255);
+		_acolVtxColors[ivx].g = Clamp( slAG + ((slShade*(slLG*2))>>16), (SLONG)0, (SLONG)255);
+		_acolVtxColors[ivx].b = Clamp( slAB + ((slShade*(slLB*2))>>16), (SLONG)0, (SLONG)255);
+		_acolVtxColors[ivx].a = slSA;  // light alpha is 0 in asm (0x01FE0000<<16 overflows)
 	}
 
 #endif // ASMOPT

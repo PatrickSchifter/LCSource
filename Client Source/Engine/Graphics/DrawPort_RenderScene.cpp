@@ -22,7 +22,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 #define SHADOWTEXTURE 3
 
@@ -541,12 +545,16 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
 
 	// determine maximum used groups
 	ASSERT( _ctGroupsCount);
+#ifdef USE_PORTABLE_C
+	_ctGroupsCount = 2<<FastLog2(_ctGroupsCount);
+#else
 	__asm {
 		mov     eax,2
 		bsr     ecx,D [_ctGroupsCount]
 		shl     eax,cl
 		mov     D [_ctGroupsCount],eax
 	}
+#endif
 
 	// done
 	_ctGroupVtx = 0;
@@ -907,7 +915,6 @@ vtxLoop:
 			jnz     vtxLoop
 		}
 #else
-		const FLOAT3D &vO = pspo->spo_amvMapping[iLayer].mv_vO;
 		const FLOAT3D &vU = pspo->spo_amvMapping[iLayer].mv_vU;
 		const FLOAT3D &vV = pspo->spo_amvMapping[iLayer].mv_vV;
 		for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
