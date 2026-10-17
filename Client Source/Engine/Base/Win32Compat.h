@@ -590,6 +590,48 @@ DWORD GetPrivateProfileString(const char *strSection, const char *strKey, const 
                               char *strReturned, DWORD ctSize, const char *strFileName);
 UINT GetPrivateProfileInt(const char *strSection, const char *strKey, INT iDefault, const char *strFileName);
 
+// Rectangles
+inline BOOL SetRect(RECT *prc, int iLeft, int iTop, int iRight, int iBottom)
+{
+  prc->left = iLeft; prc->top = iTop; prc->right = iRight; prc->bottom = iBottom;
+  return TRUE;
+}
+inline BOOL SetRectEmpty(RECT *prc) { return SetRect(prc, 0, 0, 0, 0); }
+inline BOOL OffsetRect(RECT *prc, int dx, int dy)
+{
+  prc->left += dx; prc->right += dx; prc->top += dy; prc->bottom += dy;
+  return TRUE;
+}
+inline BOOL PtInRect(const RECT *prc, POINT pt)
+{
+  return pt.x >= prc->left && pt.x < prc->right && pt.y >= prc->top && pt.y < prc->bottom;
+}
+
+// Windows, cursor and screen (Engine/Platform/Win32WindowSDL.cpp): the HWND is an SDL_Window;
+// screen coordinates are the desktop's, in points.
+BOOL GetClientRect(HWND hWnd, RECT *prc);
+BOOL GetWindowRect(HWND hWnd, RECT *prc);
+BOOL ClientToScreen(HWND hWnd, POINT *ppt);
+BOOL ScreenToClient(HWND hWnd, POINT *ppt);
+BOOL IsWindow(HWND hWnd);
+BOOL IsIconic(HWND hWnd);
+BOOL ShowWindow(HWND hWnd, int nCmdShow);
+BOOL UpdateWindow(HWND hWnd);
+HWND SetFocus(HWND hWnd);
+HWND GetFocus(void);
+BOOL SetWindowText(HWND hWnd, const char *strText);   // in the client's code page
+BOOL SetWindowTextW(HWND hWnd, const wchar_t *strText);
+BOOL GetCursorPos(POINT *ppt);
+BOOL SetCursorPos(int x, int y);
+BOOL ClipCursor(const RECT *prc);  // NULL frees the cursor
+int  ShowCursor(BOOL bShow);       // display counter, as on Windows
+HWND SetCapture(HWND hWnd);
+BOOL ReleaseCapture(void);
+#define SM_CXSCREEN  0
+#define SM_CYSCREEN  1
+#define SM_CMONITORS 80
+int  GetSystemMetrics(int nIndex);
+
 // GlobalMemoryStatus (Win32Compat.cpp): sizes as a 32-bit Windows process sees them, clamped to
 // 32 bits; page file and virtual memory are not reported (zero)
 typedef struct {

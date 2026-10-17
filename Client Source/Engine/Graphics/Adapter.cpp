@@ -4,6 +4,9 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/Console.h>
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>
+#endif
 
 
 extern BOOL _bDedicatedServer;
@@ -94,6 +97,44 @@ void CGfxLibrary::InitAPIs(void)
   INDEX iResolution;
 
 
+#ifndef PLATFORM_WIN32
+  // the display modes the desktop can take, from SDL; changing them is up to the platform layer
+  // when the main window goes fullscreen (CDS_SetMode below does nothing)
+  {
+    const SDL_DisplayID idDisplay = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode *pdmDesktop = SDL_GetDesktopDisplayMode(idDisplay);
+    if( pdmDesktop!=NULL) {
+      CPrintF( TRANS("Current display: '%s' - %dx%d\n\n"), SDL_GetDisplayName(idDisplay), pdmDesktop->w, pdmDesktop->h);
+    }
+    gl_gaAPI[GAT_OGL].ga_ctAdapters = 1;
+    gl_gaAPI[GAT_OGL].ga_iCurrentAdapter = 0;
+    pda = &gl_gaAPI[GAT_OGL].ga_adaAdapter[0];
+    pda->da_ulFlags = 0;
+    pda->da_strVendor   = TRANS( "unknown");
+    pda->da_strRenderer = TRANS( "Default ICD");
+    pda->da_strVersion  = "1.1+";
+    pda->da_ctDisplayModes = 0;
+    pda->da_iCurrentDisplayMode = -1;
+    int ctModes = 0;
+    SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+    // the resolutions of the list that the display has
+    for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
+    {
+      CResolution &re = _areResolutions[iResolution];
+      for( INDEX iMode=0; iMode<ctModes; iMode++) {
+        if( apdm[iMode]->w==re.re_pixSizeI && apdm[iMode]->h==re.re_pixSizeJ) {
+          CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
+          dm.dm_pixSizeI = re.re_pixSizeI;
+          dm.dm_pixSizeJ = re.re_pixSizeJ;
+          dm.dm_ddDepth  = DISPD_DEFAULT;
+          pda->da_ctDisplayModes++;
+          break;
+        }
+      }
+    }
+    SDL_free(apdm);
+  }
+#else
   // detect current mode and print to console
   memset( &gl_devmode, 0, sizeof(gl_devmode));
   gl_devmode.dmSize = sizeof(gl_devmode);
@@ -160,6 +201,7 @@ void CGfxLibrary::InitAPIs(void)
     adm[2].dm_pixSizeI =  800;  adm[2].dm_pixSizeJ = 600;  adm[2].dm_ddDepth = DISPD_16BIT;
     adm[3].dm_pixSizeI = 1024;  adm[3].dm_pixSizeJ = 768;  adm[3].dm_ddDepth = DISPD_16BIT;
   }
+#endif  // PLATFORM_WIN32
   // try to init Direct3D 8
   BOOL bRes = InitDriver_D3D();
   if( !bRes) return; // didn't made it?
@@ -249,6 +291,11 @@ BOOL CDS_SetMode( PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd)
   // no need for gfx when dedicated server is on
   if( _bDedicatedServer) return FALSE;
 
+#ifndef PLATFORM_WIN32
+  // the platform layer sets the display mode with the fullscreen window (PLT_SetMainWindowMode)
+  CPrintF(TRANS("  CDS: mode %dx%d left to the window\n"), pixSizeI, pixSizeJ);
+  return TRUE;
+#else
   // prepare general mode parameters
   DEVMODE devmode;
   memset(&devmode, 0, sizeof(devmode));
@@ -311,6 +358,7 @@ BOOL CDS_SetMode( PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd)
   // report
   CPrintF(TRANS("  CDS: mode set to %dx%dx%d\n"), pixSizeI, pixSizeJ, devmode.dmBitsPerPel);
   return TRUE;
+#endif  // PLATFORM_WIN32
 }
 
 
@@ -320,7 +368,9 @@ void CDS_ResetMode(void)
   // no need for gfx when dedicated server is on
   if( _bDedicatedServer) return;
 
+#ifdef PLATFORM_WIN32
   LONG lRes = ChangeDisplaySettings( NULL, 0);
   ASSERT(lRes==DISP_CHANGE_SUCCESSFUL);
   CPrintF(TRANS("  CDS: mode reset to original desktop settings\n"));
+#endif
 }

@@ -194,7 +194,9 @@ public:
 	INDEX gl_ctParticleTriangles;  // how many particle polygons were rendered in last frame
 	INDEX gl_ctTotalElements;      // total = (world & lensflares) + (model & shadows) + particle + 2D
 
+#ifdef PLATFORM_WIN32
 	DEVMODE gl_devmode;
+#endif
 
 private:
 

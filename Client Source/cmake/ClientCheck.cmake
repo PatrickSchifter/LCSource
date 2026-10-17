@@ -13,6 +13,7 @@ set(LC_GEN "${CMAKE_CURRENT_BINARY_DIR}/gen")
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(Boost 1.83 CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)  # the platform layer outside Windows (Engine/Platform)
 
 include(cmake/Ecc.cmake)
 include(cmake/Engine_sources.cmake)
@@ -53,7 +54,7 @@ target_compile_definitions(lc_engine_check PRIVATE _MT G_BRAZIL _CLIENT_ NDEBUG)
 target_include_directories(lc_engine_check PRIVATE
   "${LC_GEN}" "${LC_GEN}/Engine" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/Engine" "${LC_CLIENT_SRC}/include")
 target_include_directories(lc_engine_check SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")
-target_link_libraries(lc_engine_check PRIVATE Boost::headers)
+target_link_libraries(lc_engine_check PRIVATE Boost::headers SDL3::Headers)
 target_compile_options(lc_engine_check PRIVATE
   -fms-extensions -Wno-everything
   # what this check is for
@@ -61,13 +62,15 @@ target_compile_options(lc_engine_check PRIVATE
   -Wformat -Wunsequenced
   -ferror-limit=0)
 
-# With LC_CHECK_DIRS=ALL, the other client projects too (entity classes, game, shaders).
+# With LC_CHECK_DIRS=ALL, the other client projects too (entity classes, game, shaders,
+# executable).
 if(LC_CHECK_DIRS STREQUAL "ALL")
   include(cmake/GameMP_sources.cmake)
   include(cmake/Shaders_sources.cmake)
+  include(cmake/Nksp_sources.cmake)
   get_target_property(_defs lc_engine_check COMPILE_DEFINITIONS)
   get_target_property(_opts lc_engine_check COMPILE_OPTIONS)
-  foreach(project IN ITEMS EntitiesMP GameMP Shaders)
+  foreach(project IN ITEMS EntitiesMP GameMP Shaders Nksp)
     string(TOUPPER ${project} _up)
     set(_srcs ${${_up}_SOURCES})
     if(project STREQUAL "EntitiesMP")
@@ -83,6 +86,6 @@ if(LC_CHECK_DIRS STREQUAL "ALL")
       "${LC_GEN}" "${LC_GEN}/EntitiesMP" "${LC_GEN}/EntitiesMP/StdH" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/${project}"
       "${LC_CLIENT_SRC}/EntitiesMP/StdH" "${LC_CLIENT_SRC}/include")
     target_include_directories(${_t} SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")
-    target_link_libraries(${_t} PRIVATE Boost::headers)
+    target_link_libraries(${_t} PRIVATE Boost::headers SDL3::Headers)
   endforeach()
 endif()

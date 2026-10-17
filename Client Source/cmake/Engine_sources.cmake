@@ -463,6 +463,8 @@ set(ENGINE_SOURCES
   "Engine/Network/cmd.cpp"
   "Engine/Object/ActorMgr.cpp"
   "Engine/PetInfo.cpp"
+  "Engine/Platform/PlatformSDL.cpp"
+  "Engine/Platform/Win32WindowSDL.cpp"
   "Engine/Rendering/Render.cpp"
   "Engine/Rendering/RenderBloom.cpp"
   "Engine/Rendering/SelectOnRender.cpp"

@@ -346,6 +346,8 @@ static INDEX sys_bUsingOpenGL = 0;
 extern INDEX sys_bUsingDirect3D = 0;
 
 
+// Keyboard hook and screen saver switch while the game runs (Windows only)
+#ifdef PLATFORM_WIN32
 /*
  * Low level hook flags
  */
@@ -425,6 +427,15 @@ void EnableWindowsKeys(void)
 	SystemParametersInfo(SPI_SETSCREENSAVERRUNNING, FALSE, &iDummy, 0);
 	// if( _hLLKeyHook!=NULL) UnhookWindowsHookEx(_hLLKeyHook);
 }
+#else  // PLATFORM_WIN32
+void DisableWindowsKeys(void)
+{
+}
+
+void EnableWindowsKeys(void)
+{
+}
+#endif  // PLATFORM_WIN32
 
 
 // texture size reporting
@@ -1060,20 +1071,28 @@ void CGfxLibrary::Init(void)
 	// report desktop settings
 	CPrintF(TRANS("Desktop settings...\n"));
 
+#ifdef PLATFORM_WIN32
 	HDC hdc = GetDC(NULL); 
 	SLONG slBPP = GetDeviceCaps(hdc, PLANES) * GetDeviceCaps(hdc, BITSPIXEL); 
 	ReleaseDC(NULL, hdc);  
+#else
+	SLONG slBPP = 32;
+#endif
 	gfx_ctMonitors = GetSystemMetrics(SM_CMONITORS);
 	gfx_bMultiMonDisabled = FALSE;
 
 	CPrintF(TRANS("  Color Depth: %dbit\n"), slBPP);
 	CPrintF(TRANS("  Screen: %dx%d\n"), GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+#ifdef PLATFORM_WIN32
 	CPrintF(TRANS("  Virtual screen: %dx%d\n"), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+#endif
 	CPrintF(TRANS("  Monitors directly reported: %d\n"), gfx_ctMonitors);
 	CPrintF("\n");
  
+#ifdef PLATFORM_WIN32
 	// we will never allow glide splash screen
 	putenv( "FX_GLIDE_NO_SPLASH=1");
+#endif
 
 	// declare some console vars
 	_pShell->DeclareSymbol("user void MonitorsOn(void);",  &MonitorsOn);

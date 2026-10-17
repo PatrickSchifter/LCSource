@@ -1,9 +1,14 @@
 #include "stdh.h"
+#ifdef PLATFORM_WIN32
 #include <tchar.h>
+#endif
 #include <Engine/Graphics/MultiMonitor.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Translation.h>
+
+// Disabling secondary monitors (Windows 9x only)
+#ifdef PLATFORM_WIN32
 
 // Win9x multimonitor enabling/disabling code, 
 // idea and original code courtesy of Christian Studer <cstuder@realtimesoft.com>
@@ -173,3 +178,15 @@ void MonitorsOn(void)
     }
   }
 }
+
+#else  // PLATFORM_WIN32
+
+void MonitorsOff(void)
+{
+}
+
+void MonitorsOn(void)
+{
+}
+
+#endif  // PLATFORM_WIN32

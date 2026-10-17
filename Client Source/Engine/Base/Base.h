@@ -42,6 +42,12 @@
   #define PLATFORM_UNIX
 #endif
 
+// Outside Windows the window, events and input come from SDL3 (Engine/Platform/Platform.h); the
+// Windows build uses them only when configured with LC_PLATFORM_SDL.
+#if defined(PLATFORM_UNIX) && !defined(LC_PLATFORM_SDL)
+  #define LC_PLATFORM_SDL
+#endif
+
 // The x86 inline assembly is MSVC syntax for 32-bit x86 only; everywhere else the engine uses
 // its C paths. Define USE_PORTABLE_C in the Windows build too to test the C paths there.
 #if !defined(_MSC_VER) || !defined(_M_IX86)
