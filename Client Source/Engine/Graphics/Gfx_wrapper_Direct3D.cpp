@@ -454,6 +454,17 @@ static void d3d_DeletePixelProgram(ULONG ulHandle)
 
 
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)
+// Debug aid: append shader creation failures to ThrowLog.txt when it exists
+// (D3D_CHECKERROR is compiled out in release builds).
+static void LogShaderFailure(const char *strWhat, HRESULT hr, const char *strProgram)
+{
+	FILE *fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return;
+	fseek(fLog, 0, SEEK_END);
+	fprintf(fLog, "%s failed (0x%08lX)\n--- source ---\n%s\n--- end ---\n", strWhat, (unsigned long)hr, strProgram);
+	fclose(fLog);
+}
+
 static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStreamFlags)
 {
 	extern void GetShaderDeclaration_D3D(ULONG *ulRetDecl, ULONG ulStreamFlags);
@@ -477,6 +488,7 @@ static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStrea
 	// create programmable vertex shader
 	HRESULT hr = _pGfx->gl_pd3dDevice->CreateVertexShader( ulDeclaration, pulShaderTokens, &ulProgramHandle, dwFlags);
 	pBuffer->Release();
+	if (FAILED(hr)) { LogShaderFailure("CreateVertexShader", hr, strVertexProgram); return 0; }
 	D3D_CHECKERROR(hr);
 	return ulProgramHandle;
 }
@@ -500,6 +512,7 @@ static ULONG d3d_CreatePixelProgram(const char *strPixelProgram)
 	// create programmable pixel shader
 	HRESULT hr = _pGfx->gl_pd3dDevice->CreatePixelShader( (D3DPIXELSHADERDEF*)pulShaderTokens, &ulProgramHandle);
 	pBuffer->Release();
+	if (FAILED(hr)) { LogShaderFailure("CreatePixelShader", hr, strPixelProgram); return 0; }
 	D3D_CHECKERROR(hr);
 	return ulProgramHandle;
 }

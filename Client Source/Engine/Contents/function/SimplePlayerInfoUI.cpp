@@ -381,7 +381,7 @@ void CSimplePlayerInfoUI::SetDungeonList(SLONG slExp)
 			pText->SetText(_S(4960, "던전 타임!"));
 			pText->setFontColor(0xA3A1A3FF);
 		}
-		else
+		else if (i - 2 < (int)(sizeof(nStrIndex) / sizeof(nStrIndex[0])))  // the UI file may list more dungeons
 		{
 			pText->SetText(_S(nStrIndex[i-2], "던전 이름"));
 			pText->setFontColor(DEF_UI_COLOR_WHITE);

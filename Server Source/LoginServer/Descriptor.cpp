@@ -890,7 +890,9 @@ FIRST_CONNECT:
 		{
 			// 처음 접속 사용자 수 전송
 #if defined (BILA_INTERGRATION_SERVER)
-			if ( packet->nation == INTERGRATION_BRAZIL )
+			// Brazil/Mexico connector split only applies when the integration server is on.
+			if ( !gserver.m_intergrationInfo.IsEnable() ) {}
+			else 			if ( packet->nation == INTERGRATION_BRAZIL )
 			{
 				if ( i == 0 || i == 1 )
 				{

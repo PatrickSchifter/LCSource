@@ -140,6 +140,14 @@ void rnSocketIOServiceTcp::deliver( CNetMsg::SP packet)
 		packet->makeHeader();
 	}
 
+	const bool bDebugPackets = getenv("LC_DEBUG_PACKETS") != NULL;
+	std::string strPlain;
+	if (bDebugPackets)
+	{
+		char tmp[4];
+		for (int i = 0; i < packet->m_size && i < 256; ++i) { snprintf(tmp, sizeof(tmp), "%02X", (unsigned char)packet->m_buf[i]); strPlain += tmp; }
+	}
+
 	if (this->crypt_flag_ == true && packet->crypt_flag_ == false)
 	{
 		packet->crypt();
@@ -148,6 +156,15 @@ void rnSocketIOServiceTcp::deliver( CNetMsg::SP packet)
 	if (packet->crc32_flag_ == false)
 	{
 		packet->makeCRC32();
+	}
+
+	if (bDebugPackets)
+	{
+		std::string strWire;
+		char tmp[4];
+		const int nWire = packet->m_size + (int)sizeof(MsgHeader) + (int)sizeof(int);
+		for (int i = 0; i < nWire && i < 300; ++i) { snprintf(tmp, sizeof(tmp), "%02X", (unsigned char)packet->m_buf_all[i]); strWire += tmp; }
+		LOG_INFO("packet sent - ip : %s : type[%d] size[%d] crypt[%d] plain[%s] wire[%s]", ip().c_str(), (int)packet->m_buf[0], (int)packet->m_size, (int)this->crypt_flag_, strPlain.c_str(), strWire.c_str());
 	}
 
 	boost::asio::post( boost_strand_, boost::bind( &rnSocketIOServiceTcp::__deliver, this, packet ));

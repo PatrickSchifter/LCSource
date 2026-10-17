@@ -1204,7 +1204,7 @@ public:
 		#pragma warning( disable:4172 )
 		static CTString nullStr = "";
 		//nullStr = "";
-		return iIndex < m_aStringData.Count() ? m_aStringData[iIndex] : nullStr;
+		return (iIndex >= 0 && iIndex < m_aStringData.Count()) ? m_aStringData[iIndex] : nullStr;  // negative indexes come from data files
 	}
 	CTString	&GetString( INDEX iIndex, INDEX iSrc );
 	CTString	&GetString( INDEX iIndex, const char *szSrc );
