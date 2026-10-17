@@ -27,12 +27,6 @@
 #define TRACKTEX_HW() TRACKMEM(mem, "Textures (hardware)")
 
 
-// (texture compression needs this)
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-#	include <Engine/Graphics/dxtlib.h>
-#	pragma comment(lib, "nvDXTlib.lib")
-#endif	// _MSC_VER
-
 
 // cvars
 extern INDEX tex_iNormalQuality;
@@ -1610,92 +1604,12 @@ void CTextureData::Force( ULONG ulTexFlags)
 
 
 
-// some compression routines statics
-static UBYTE *_pubDXTFrames;
-static SLONG _slDXTFramesOffset;
 
-// just to keep nvDXTlib happy
-void WriteDTXnFile( DWORD count, void *buffer) { count = 0; }
-void ReadDTXnFile(  DWORD count, void *buffer) { count = 0; }
-
-
-// copy each mipmap to our memory
-static HRESULT MIPCallBack( void *data, int iMipLevel, DWORD dwSize)
-{
-	*(DWORD*)&_pubDXTFrames[_slDXTFramesOffset] = dwSize;
-	_slDXTFramesOffset += 4;
-	memcpy( &_pubDXTFrames[_slDXTFramesOffset], data, dwSize); 
-	_slDXTFramesOffset += dwSize;
-	return 0;
-}
-
-
-// compress texture (returns pointer to compressed frames)
+// compress texture (returns pointer to compressed frames); the NVIDIA DXT compressor that did this
+// (editor only) is gone, so textures are never compressed when saved
 UBYTE *CTextureData::Compress( SLONG &slCompressedFrameSize, BOOL bCompressAlpha)
 {
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-	TRACKTEX_HEAP();
-	
-	const PIX pixTexWidth  = GetPixWidth();
-	const PIX pixTexHeight = GetPixHeight();
-	const BOOL bTransparent  = td_ulFlags & TEX_TRANSPARENT;
-	const BOOL bAlphaChannel = td_ulFlags & TEX_ALPHACHANNEL;
-	
-	// dimension must be at least 4 pixels
-	ASSERT( pixTexWidth>=4 && pixTexHeight>=4);
-	if( pixTexWidth<4 || pixTexHeight<4) return FALSE;
-	
-	// determine texture format
-	INDEX iFormat = dDXT1;
-	if( bTransparent) iFormat = dDXT1a;
-	else if( bAlphaChannel) iFormat = bCompressAlpha ? dDXT5 : dDXT3; 
-	
-	// set compressor options
-	CompressionOptions co;
-	memset( &co, 0, sizeof(co));
-	co.bMipMapsInImage = FALSE;            
-	co.MIPFilterType   = dMIPFilterBox;
-	co.MipMapType      = dGenerateMipMaps; 
-	co.TextureType     = dTextureType2D;
-	co.TextureFormat   = iFormat;
-	
-	// for compressed frame(s), assume the same memory ammont as uncompressed (will be shrunk at the end!)
-	_pubDXTFrames = (UBYTE*)AllocMemory(td_ctFrames*td_slFrameSize);
-	_slDXTFramesOffset = 0;
-	
-	// need temp frame for intermediate color conversion
-	UBYTE *pubFrameARGB = (UBYTE*)AllocMemory(td_slFrameSize);
-	
-	// loop thru frames
-	const PIX pixFrameSize = td_slFrameSize / BYTES_PER_TEXEL;
-	for( INDEX iFrame=0; iFrame<td_ctFrames; iFrame++) 
-	{
-		// compress (mipmaps will be created)
-		ULONG *pulSrcFrame = td_pulFrames + pixFrameSize*iFrame;
-		abgr2argb( pulSrcFrame, (ULONG*)pubFrameARGB, pixFrameSize);
-		nvDXTcompress( pubFrameARGB, pixTexWidth, pixTexHeight, pixTexWidth*4, &co, 4, &MIPCallBack);
-	}
-	// calc size of one frame
-	slCompressedFrameSize = _slDXTFramesOffset / td_ctFrames;
-	
-	// free memory if compression didn't make it
-	if( slCompressedFrameSize==0) 
-	{
-		FreeMemory(_pubDXTFrames);
-		_pubDXTFrames = NULL;
-	}
-	else 
-	{
-		// just shrink to exact compressed size
-		ShrinkMemory( (void **)&_pubDXTFrames, _slDXTFramesOffset);  
-	}
-	
-	// release temp frame memory
-	FreeMemory( pubFrameARGB);
-	return _pubDXTFrames;
-#else	// _MSC_VER
 	return NULL;
-#endif	// _MSC_VER
 }
 
 
