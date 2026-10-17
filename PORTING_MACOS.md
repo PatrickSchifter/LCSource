@@ -147,15 +147,23 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [ ] Includes com caixa errada (`Console_Internal.h`, `GFX_wrapper_OpenGL.cpp`...); vamos padronizar e não depender de APFS case-insensitive
 
 ### C2. Tipos e 64-bit
-Plano detalhado e levantamento em `HANDOFF.md` ("Próxima atividade").
-- [ ] Procurar `x = x++` (no-op em C++17; já causou loop infinito no Helper)
-- [ ] `Engine/Base/Types.h`: `SLONG`, `ULONG`, `INDEX` → `int32_t`/`uint32_t` (**crítico**: todos os streams dependem disso)
-- [ ] Cerca de 185 casts de ponteiro para `ULONG`/`SLONG`/`INDEX` → `uintptr_t`/`intptr_t`
-- [ ] `__int64` (107 arquivos) → `int64_t`
-- [ ] Auditar `#pragma pack` em `Common/Packet/` (38) e `Common/header/def_*.h` (11), cruzando com o servidor
-- [ ] MSVC-isms gerais: `__forceinline`, `_stricmp`, `_snprintf`, `__try/__except` (2 arquivos), `__declspec`
+Verificação no Mac: `-DLC_CLIENT_CHECK_ONLY=ON` compila (sem linkar) o cliente com clang arm64 e
+stubs vazios dos headers do Windows (`Compat/checkonly`), só para listar erros e avisos de 64 bits;
+`-DLC_CHECK_DIRS=ALL` inclui todo o Engine, EntitiesMP, GameMP e Shaders (ver `cmake/ClientCheck.cmake`).
+- [x] Procurar `x = x++` (no-op em C++17; já causou loop infinito no Helper): nenhum no cliente
+- [x] `Engine/Base/Types.h`: fora do Windows `SLONG`/`ULONG`/`INDEX`/`RESULT` = `int32_t`/`uint32_t`, `DWORD`/`LONG` de 32 bits, `__int64` = `long long`; `static_assert` dos tamanhos nas duas plataformas. No Windows os tipos não mudam
+- [x] Sobrecargas que colidem quando `INDEX`, `SLONG` e `BOOL` são todos `int` (streams, `CNetworkMessage`, `ClearToDefault`); `Clamp*` com limites não deduzidos (`Clamp(i, 0L, ct-1L)` aparece 248 vezes)
+- [x] Ponteiros truncados: `CListHead::Sort` (ordenava ponteiros em `ULONG`), tags da BSP/CSG (`size_t`; no disco continuam 32 bits, e o tamanho gravado não usa mais `sizeof(BSPNode)`), `AllocMemoryAligned`, `td_ulObject`/`td_pulObjects` das texturas, `pwoCurrentWorld` (`CShell::GetPointer/SetPointer`), `DXTC.cpp`, hash de ponteiro negativo em `Particles.cpp`; casts de identidade/índice explícitos via `uintptr_t`/`intptr_t`
+- [x] Rede: campos `unsigned long` do cabeçalho de pacote (`InputBuffer.cpp`, `FGC_Net_Process.cpp`) e `DWORD` da SEED (`SEED_256_KISA.h`) com 32 bits fora do Windows
+- [x] Auditar `Common/Packet/` e `Common/header/def_*.h`: só `int`/`short`/`char`/`bool`/`float`/`__int64` (mesmos tamanhos e alinhamento em MSVC x86 e clang arm64); os `.lod` são lidos com `sizeof(st*)`, não com o da classe derivada. `stAffinity` tem ponteiros, mas o cliente não a usa
+- [ ] Ainda de 64 bits, mas da camada gráfica (C8): handles de textura do `gfx*` são `ULONG` e guardam ponteiros do D3D (`TextureRender.cpp`, `Gfx_wrapper.cpp`); servem ao OpenGL (nomes de 32 bits), Metal/Vulkan vão precisar de um tipo com largura de ponteiro
+- [ ] ~1.100 avisos `-Wshorten-64-to-32` (quase todos `strlen`/diferença de ponteiros em `INDEX`, inofensivos abaixo de 2 GB); revisar quando o cliente compilar de verdade
+- [ ] MSVC-isms gerais (`stricmp`, `_vsnprintf`, `__try/__except`, `_control87`, `_msize`...) e conformidade C++ restantes: aparecem no check; são da C5
+- Testado no cliente Windows em 2026-10-17 (login, mundo, combate, lojas): sem diferença
+- Conformidade C++ já corrigida no caminho (vale para o Windows também): `template<>` nas especializações de `Vector`/`Matrix`/`AABBox`, `this->` em bases dependentes (`Templates/`), `template class` nas instanciações explícitas, `DeclareSymbol` aceitando ponteiros de função, `Shell.cpp` gravava strings de arrays persistentes convertendo um `char` em ponteiro
 
 ### C3. Assembly x86 (139 blocos em 35 arquivos)
+Plano detalhado e levantamento em `HANDOFF.md` ("Próxima atividade").
 - [ ] Forçar `USE_PORTABLE_C` e desligar `ASMOPT` (os caminhos C já existem em RenderModel_View, LayerMixer, TextureEffects, Shader, Clipping, DrawPort_RenderScene, Functions.h, Color.h)
 - [ ] Reescrever em C os blocos sem fallback: `Graphics/Graphics.cpp`, `Graphics/Color.cpp`, `Graphics/Gfx_Direct3D_Colors.cpp`, `Sound/SoundMixer.cpp` (referência: ports open-source do SE1 1.10, como o SeriousSamClassic)
 - [ ] `Base/Timer.cpp` (`rdtsc`), `Base/Memory.h`, `Math/Matrix12.h`
