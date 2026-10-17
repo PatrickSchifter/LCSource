@@ -364,9 +364,18 @@ typedef struct {
 #define IDYES    6
 #define IDNO     7
 
-// code pages (MultiByteToWideChar...)
+// Code pages (Win32Compat.cpp). CP_ACP, the system code page on Windows, is here the code page of
+// the client's country (G_KOR 949, G_JAPAN 932, G_CHINA 936, G_HONGKONG 950, G_THAI 874,
+// G_RUSSIA 1251, otherwise 1252). Wide strings are wchar_t, so UTF-32 here.
+#include <alloca.h>
 #define CP_ACP  0
 #define CP_UTF8 65001
+UINT GetACP(void);
+BOOL IsDBCSLeadByte(BYTE ubTest);
+int MultiByteToWideChar(UINT uCodePage, DWORD dwFlags, const char *strMultiByte, int cbMultiByte,
+                        wchar_t *strWideChar, int cchWideChar);
+int WideCharToMultiByte(UINT uCodePage, DWORD dwFlags, const wchar_t *strWideChar, int cchWideChar,
+                        char *strMultiByte, int cbMultiByte, const char *strDefaultChar, BOOL *pbUsedDefaultChar);
 
 // CRT names
 #define _MAX_PATH 260

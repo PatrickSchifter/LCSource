@@ -19,8 +19,8 @@ extern void ENGINE_API LogOutputChat( const char* format, ... );
 	if ((input) != NULL) \
 { \
 	output##Size = MultiByteToWideChar(codePage, 0, (input), (inputSize), NULL, 0); \
-	output = (wchar_t*)alloca((##output##Size) * sizeof(wchar_t)); \
-	MultiByteToWideChar(codePage, 0, (input), (inputSize), (output), (##output##Size)); \
+	output = (wchar_t*)alloca((output##Size) * sizeof(wchar_t)); \
+	MultiByteToWideChar(codePage, 0, (input), (inputSize), (output), (output##Size)); \
 }
 
 #define StackWideCharToMultiByte(codePage, input, inputSize, output) \
@@ -29,8 +29,8 @@ extern void ENGINE_API LogOutputChat( const char* format, ... );
 	if ((input) != NULL) \
 { \
 	output##Size = WideCharToMultiByte(codePage, 0, (input), (inputSize), NULL, 0, NULL, NULL); \
-	output = (char*)alloca((##output##Size) * sizeof(char)); \
-	WideCharToMultiByte(codePage, 0, (input), (inputSize), (output), (##output##Size), NULL, NULL); \
+	output = (char*)alloca((output##Size) * sizeof(char)); \
+	WideCharToMultiByte(codePage, 0, (input), (inputSize), (output), (output##Size), NULL, NULL); \
 }
 
 #ifdef	_DEBUG

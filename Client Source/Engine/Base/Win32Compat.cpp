@@ -444,6 +444,139 @@ BOOL FreeLibrary(HMODULE hModule)
 }
 
 /////////////////////////////////////////////////////////////////////
+// code pages
+
+#include <iconv.h>
+
+// wchar_t is UTF-32 in host byte order ("WCHAR_T" would depend on the C locale)
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  #define WIDE_CHARSET "UTF-32LE"
+#else
+  #define WIDE_CHARSET "UTF-32BE"
+#endif
+
+UINT GetACP(void)
+{
+#if defined(G_KOR)
+  return 949;
+#elif defined(G_JAPAN)
+  return 932;
+#elif defined(G_CHINA)
+  return 936;
+#elif defined(G_HONGKONG)
+  return 950;
+#elif defined(G_THAI)
+  return 874;
+#elif defined(G_RUSSIA)
+  return 1251;
+#else
+  return 1252;
+#endif
+}
+
+BOOL IsDBCSLeadByte(BYTE ubTest)
+{
+  switch (GetACP()) {
+  case 932: return (ubTest >= 0x81 && ubTest <= 0x9F) || (ubTest >= 0xE0 && ubTest <= 0xFC);
+  case 936:
+  case 949:
+  case 950: return ubTest >= 0x81 && ubTest <= 0xFE;
+  default:  return FALSE;
+  }
+}
+
+namespace {
+
+std::string CodePageName(UINT uCodePage)
+{
+  if (uCodePage == CP_ACP) uCodePage = GetACP();
+  if (uCodePage == CP_UTF8) return "UTF-8";
+  char strName[16];
+  snprintf(strName, sizeof(strName), "CP%u", uCodePage);
+  return strName;
+}
+
+// Converts with iconv; what cannot be converted becomes chReplacement (one per input unit
+// skipped). Returns false if the conversion itself is not available.
+template<class TIn, class TOut>
+bool Convert(const char *strFrom, const char *strTo, const TIn *pIn, size_t ctIn, std::vector<TOut> &aOut,
+             TOut chReplacement, bool *pbReplaced)
+{
+  iconv_t cd = iconv_open(strTo, strFrom);
+  if (cd == (iconv_t)-1) {
+    return false;
+  }
+  aOut.clear();
+  char *pchIn = (char*)pIn;
+  size_t ctInBytes = ctIn * sizeof(TIn);
+  std::vector<TOut> aChunk(256);
+  while (ctInBytes > 0) {
+    char *pchOut = (char*)aChunk.data();
+    size_t ctOutBytes = aChunk.size() * sizeof(TOut);
+    const size_t iResult = iconv(cd, &pchIn, &ctInBytes, &pchOut, &ctOutBytes);
+    aOut.insert(aOut.end(), aChunk.data(), (TOut*)pchOut);
+    if (iResult == (size_t)-1) {
+      if (errno == E2BIG) {
+        continue;
+      }
+      // invalid or incomplete input: replace one unit and go on
+      const size_t ctSkip = ctInBytes < sizeof(TIn) ? ctInBytes : sizeof(TIn);
+      pchIn += ctSkip;
+      ctInBytes -= ctSkip;
+      aOut.push_back(chReplacement);
+      if (pbReplaced != NULL) *pbReplaced = true;
+      iconv(cd, NULL, NULL, NULL, NULL);
+    }
+  }
+  iconv_close(cd);
+  return true;
+}
+
+}  // namespace
+
+int MultiByteToWideChar(UINT uCodePage, DWORD dwFlags, const char *strMultiByte, int cbMultiByte,
+                        wchar_t *strWideChar, int cchWideChar)
+{
+  (void)dwFlags;
+  // -1: up to and including the terminating zero
+  const size_t ctIn = cbMultiByte < 0 ? strlen(strMultiByte) + 1 : (size_t)cbMultiByte;
+  std::vector<wchar_t> aOut;
+  if (!Convert<char, wchar_t>(CodePageName(uCodePage).c_str(), WIDE_CHARSET, strMultiByte, ctIn, aOut, L'\xFFFD', NULL)) {
+    return 0;
+  }
+  if (cchWideChar == 0) {
+    return (int)aOut.size();
+  }
+  if ((size_t)cchWideChar < aOut.size()) {
+    return 0;  // ERROR_INSUFFICIENT_BUFFER
+  }
+  memcpy(strWideChar, aOut.data(), aOut.size() * sizeof(wchar_t));
+  return (int)aOut.size();
+}
+
+int WideCharToMultiByte(UINT uCodePage, DWORD dwFlags, const wchar_t *strWideChar, int cchWideChar,
+                        char *strMultiByte, int cbMultiByte, const char *strDefaultChar, BOOL *pbUsedDefaultChar)
+{
+  (void)dwFlags;
+  const size_t ctIn = cchWideChar < 0 ? wcslen(strWideChar) + 1 : (size_t)cchWideChar;
+  const char chDefault = strDefaultChar != NULL ? strDefaultChar[0] : '?';
+  bool bReplaced = false;
+  std::vector<char> aOut;
+  if (!Convert<wchar_t, char>(WIDE_CHARSET, CodePageName(uCodePage).c_str(), strWideChar, ctIn, aOut, chDefault, &bReplaced)) {
+    return 0;
+  }
+  if (pbUsedDefaultChar != NULL) *pbUsedDefaultChar = bReplaced;
+  if (cbMultiByte == 0) {
+    return (int)aOut.size();
+  }
+  if ((size_t)cbMultiByte < aOut.size()) {
+    return 0;  // ERROR_INSUFFICIENT_BUFFER
+  }
+  memcpy(strMultiByte, aOut.data(), aOut.size());
+  return (int)aOut.size();
+}
+
+/////////////////////////////////////////////////////////////////////
 // .ini files
 
 namespace {
