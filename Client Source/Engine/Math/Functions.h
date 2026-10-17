@@ -65,20 +65,24 @@ __forceinline void Swap( Type &a, Type &b)
 	Type t=a; a=b;  b=t;
 } 
 
+// The limits take the type of x: calls like Clamp(iIndex, 0L, ct-1L) are written for a 32-bit
+// long INDEX, and must also compile where INDEX is int and long is 64-bit.
+template<class Type> struct ClampLimit { typedef Type type; };
+
 template<class Type>
-__forceinline Type ClampUp( const Type x, const Type uplimit)
+__forceinline Type ClampUp( const Type x, const typename ClampLimit<Type>::type uplimit)
 {
 	return ( x<=uplimit ? x : uplimit );
 }
 
 template<class Type>
-__forceinline Type ClampDn( const Type x, const Type dnlimit)
+__forceinline Type ClampDn( const Type x, const typename ClampLimit<Type>::type dnlimit)
 {
 	return ( x>=dnlimit ? x : dnlimit );
 }
 
 template<class Type>
-__forceinline Type Clamp( const Type x, const Type dnlimit, const Type uplimit)
+__forceinline Type Clamp( const Type x, const typename ClampLimit<Type>::type dnlimit, const typename ClampLimit<Type>::type uplimit)
 {
 	return ( x>=dnlimit ? (x<=uplimit ? x : uplimit): dnlimit );
 }
@@ -90,7 +94,7 @@ __forceinline Type Clamp( const Type x, const Type dnlimit, const Type uplimit)
 
 __forceinline DOUBLE Abs( const DOUBLE f) { return fabs(f); }
 __forceinline FLOAT  Abs( const FLOAT f)  { return (FLOAT)fabs(f); }
-__forceinline SLONG  Abs( const SLONG sl) { return labs(sl); }
+__forceinline SLONG  Abs( const SLONG sl) { return abs(sl); }
 
 
 /*

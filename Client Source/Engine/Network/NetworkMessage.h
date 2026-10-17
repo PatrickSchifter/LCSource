@@ -130,7 +130,9 @@ public:
   inline CNetworkMessage &operator>>(ULONG &ul) { Read(&ul, sizeof(ul)); NTOHL(ul);  return *this; }
   inline CNetworkMessage &operator>>(UWORD &uw) { Read(&uw, sizeof(uw)); NTOHS(uw); return *this; }
   inline CNetworkMessage &operator>>(UBYTE &ub) { Read(&ub, sizeof(ub)); return *this; }
+#ifndef PLATFORM_UNIX  // there SLONG is int
   inline CNetworkMessage &operator>>(SLONG &sl) { Read(&sl, sizeof(sl)); NTOHL(sl); return *this; }
+#endif
   inline CNetworkMessage &operator>>(SWORD &sw) { Read(&sw, sizeof(sw)); NTOHS(sw); return *this; }
   inline CNetworkMessage &operator>>(SBYTE &sb) { Read(&sb, sizeof(sb)); return *this; }
   //inline CNetworkMessage &operator>>(UBYTE &mt) { Read(&mt, sizeof(mt)); return *this; }

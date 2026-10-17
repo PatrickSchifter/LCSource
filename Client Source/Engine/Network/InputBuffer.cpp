@@ -6,9 +6,9 @@ CPacket* CInputBuffer::GetPacket()
 	if (m_ptr < MAX_HEADER_SIZE) 
 		return NULL;
 	unsigned short reliable;
-	unsigned long seq;
+	ULONG seq;  // 32 bits on the wire
 	unsigned short id;
-	unsigned long txSize;
+	ULONG txSize;  // 32 bits on the wire
 	unsigned char* p = m_buf;
 	memcpy(&reliable, p, sizeof(reliable));		p += sizeof(reliable);
 	memcpy(&seq, p, sizeof(seq));				p += sizeof(seq);
@@ -44,9 +44,9 @@ void CInputBuffer::ClearBuffer()
 		return;
 
 	unsigned short reliable;
-	unsigned long seq;
+	ULONG seq;  // 32 bits on the wire
 	unsigned short id;
-	unsigned long txSize;
+	ULONG txSize;  // 32 bits on the wire
 	unsigned char* p;
 
 	for (;;)

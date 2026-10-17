@@ -182,7 +182,9 @@ public:
   inline CTStream &operator>>(SLONG &sl) { Read_t(&sl, sizeof(sl)); return *this; } // throw char *
   inline CTStream &operator>>(SWORD &sw) { Read_t(&sw, sizeof(sw)); return *this; } // throw char *
   inline CTStream &operator>>(SBYTE &sb) { Read_t(&sb, sizeof(sb)); return *this; } // throw char *
+#ifndef PLATFORM_UNIX  // there BOOL and SLONG are both int
   inline CTStream &operator>>(BOOL   &b) { Read_t( &b, sizeof( b)); return *this; } // throw char *
+#endif
   inline CTStream &operator>>(__int64 &i64) { Read_t( &i64, sizeof(i64)); return *this; } // throw char *
   /* Write an object into stream. */
   inline CTStream &operator<<(const float  &f) { Write_t( &f, sizeof( f)); return *this; } // throw char *
@@ -193,7 +195,9 @@ public:
   inline CTStream &operator<<(const SLONG &sl) { Write_t(&sl, sizeof(sl)); return *this; } // throw char *
   inline CTStream &operator<<(const SWORD &sw) { Write_t(&sw, sizeof(sw)); return *this; } // throw char *
   inline CTStream &operator<<(const SBYTE &sb) { Write_t(&sb, sizeof(sb)); return *this; } // throw char *
+#ifndef PLATFORM_UNIX  // there BOOL and SLONG are both int
   inline CTStream &operator<<(const BOOL   &b) { Write_t( &b, sizeof( b)); return *this; } // throw char *
+#endif
   inline CTStream &operator<<(const __int64 &i64) { Write_t( &i64, sizeof(i64)); return *this; } // throw char *
 
   // CTFileName reading/writing

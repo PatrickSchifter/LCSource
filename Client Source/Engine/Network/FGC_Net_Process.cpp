@@ -422,9 +422,9 @@ BOOL FGC_Net_Process::RecvPacket()
 	while (p < MsgBuffer + recvSize && recvSize > 0)
 	{
 		unsigned short int reliable;
-		unsigned long int seq;
+		ULONG seq;  // 32 bits on the wire
 		unsigned short int id;
-		unsigned long int txSize;
+		ULONG txSize;  // 32 bits on the wire
 
 		memcpy(&reliable, p, sizeof(reliable));		p += sizeof(reliable);
 		memcpy(&seq, p, sizeof(seq));				p += sizeof(seq);

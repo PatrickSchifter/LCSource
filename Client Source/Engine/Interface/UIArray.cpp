@@ -151,7 +151,7 @@ void CUIArray::AddArrayItem( CUIArrayItem* pItem )
 		return;
 
 	char buf[64];
-	sprintf(buf, "array_item_%03d", m_vecArrayChild.size() + 1);
+	sprintf(buf, "array_item_%03d", (int)m_vecArrayChild.size() + 1);
 	pItem->setID(buf);
 
 	m_vecArrayChild.push_back( pItem );

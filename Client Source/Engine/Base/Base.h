@@ -38,6 +38,10 @@
 
 #endif  // defined _MSC_VER
 
+#if !defined(_MSC_VER) && !defined(PLATFORM_UNIX)
+  #define PLATFORM_UNIX
+#endif
+
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
   #define ENGINE_API

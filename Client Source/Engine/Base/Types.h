@@ -6,6 +6,8 @@
 
 #include <Engine/Base/Base.h>
 #include <Engine/Graphics/gl_types.h>
+#include <stddef.h>  // size_t, ptrdiff_t
+#include <stdint.h>  // fixed-width types, uintptr_t
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
     #define __forceinline inline
@@ -14,14 +16,18 @@
       #define MAX_PATH 256
     #endif
 
-    typedef long long  __int64;
-    typedef unsigned long  int  DWORD;
-    typedef signed long  int    LONG;
+    // a macro, so that 'signed __int64' and 'unsigned __int64' below still work
+    #define __int64 long long
+    // 32-bit, as in Windows (long is 64-bit on LP64 platforms)
+    typedef uint32_t DWORD;
+    typedef int32_t  LONG;
+    typedef int64_t  LONGLONG;
+    typedef uint64_t ULONG64;
 
     typedef void *HWND;  /* !!! FIXME this sucks. */
     typedef void *HINSTANCE;  /* !!! FIXME this sucks. */
     typedef void *HGLRC;  /* !!! FIXME this sucks. */
-    typedef ULONG COLORREF;  /* !!! FIXME this sucks. */
+    typedef uint32_t COLORREF;  /* !!! FIXME this sucks. */
 
     typedef struct
     {
@@ -39,13 +45,22 @@
 #endif
 
 typedef signed __int64     SQUAD;
+#ifdef PLATFORM_UNIX
+// long is 64-bit on LP64 platforms, but files, streams and network packets need 32 bits
+typedef int32_t            SLONG;
+#else
 typedef signed long  int   SLONG;
+#endif
 typedef signed short int   SWORD;
 typedef signed char	       SBYTE;
 typedef signed int         SINT;
 
 typedef unsigned __int64   UQUAD;
+#ifdef PLATFORM_UNIX
+typedef uint32_t           ULONG;
+#else
 typedef unsigned long  int ULONG;
+#endif
 typedef unsigned short int UWORD;
 typedef unsigned char      UBYTE;
 typedef unsigned int       UINT;
@@ -73,8 +88,13 @@ typedef unsigned int       UINT;
 #define MIN_DOUBLE (-1E308)
 
 typedef int BOOL;		        // this is for TRUE/FALSE
+#ifdef PLATFORM_UNIX
+typedef int32_t RESULT;		// for error codes
+typedef int32_t INDEX;     // for indexed values and quantities
+#else
 typedef long int RESULT;		// for error codes
 typedef long int INDEX;     // for indexed values and quantities
+#endif
 
 #define FALSE 0
 #define TRUE  1
@@ -114,6 +134,12 @@ typedef float  ANGLE;
 typedef float  TIME;
 typedef FLOAT  RANGE;
 typedef ULONG  COLOR;  // color is always in 32 bit true-color format
+
+// file formats, streams and network packets rely on these sizes (those of 32-bit MSVC)
+static_assert(sizeof(SLONG) == 4 && sizeof(ULONG) == 4 && sizeof(INDEX) == 4, "32-bit SLONG/ULONG/INDEX");
+static_assert(sizeof(SQUAD) == 8 && sizeof(UQUAD) == 8, "64-bit SQUAD/UQUAD");
+static_assert(sizeof(SWORD) == 2 && sizeof(UWORD) == 2 && sizeof(BOOL) == 4, "16-bit SWORD/UWORD, 32-bit BOOL");
+static_assert(sizeof(COLOR) == 4 && sizeof(FLOAT) == 4, "32-bit COLOR/FLOAT");
 
 // macros for windows/croteam true color conversion
 #define CLRF_CLR(clr) ( ((clr & 0xff000000) >> 24) | \

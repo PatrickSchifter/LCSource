@@ -21,7 +21,8 @@
 
 #ifndef TYPE_DEFINITION
     #define TYPE_DEFINITION
-    #if defined(__alpha)
+    // the cipher needs a 32-bit DWORD ('unsigned long' is 64-bit on LP64 platforms)
+    #if defined(__alpha) || !defined(_WIN32)
         typedef unsigned int        DWORD;
         typedef unsigned short      WORD;
     #else
