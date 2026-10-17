@@ -542,31 +542,6 @@ public:
 	//			FileName - 읽어들일 화일명 MOB월드번호.lod
 	// Output : int - 화일로부터 읽어들인 NPC 데이터의 갯수를 반환합니다.
 	//-----------------------------------------------------------------------------
-#if		(_MSC_VER <= 1200)
-	
-	static CMobData* getData(int idx) {
-		
-		std::map<int, CMobData*>::iterator it = _mapdata.find(idx);
-		
-		if (it != _mapdata.end())
-			return (*it).second;
-		
-		return m_dummy;
-	}
-	
-	static _map* getmapPtr() { return &_mapdata; } 
-
-	static int getsize()	{ return (int)_mapdata.size(); }
-
-	static CMobData* getDataSeq(int Idx)
-	{
-		if (Idx < 0 || Idx >= _vecdata.size())
-			return m_dummy;
-		
-		return _vecdata[Idx];
-	}
-
-#endif	// (_MSC_VER <= 1200)
 
 	static bool loadEx(const char* FileName);
 	static bool LoadZoneData(const char* ZNFileName);

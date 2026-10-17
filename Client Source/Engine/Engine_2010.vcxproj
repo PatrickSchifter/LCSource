@@ -3717,6 +3717,7 @@
     <ClCompile Include="Base\Translation.cpp" />
     <ClCompile Include="Base\Unzip.cpp" />
     <ClCompile Include="Base\Updateable.cpp" />
+    <ClCompile Include="Base\Win32Compat.cpp" />
     <ClCompile Include="Brushes\Brush.cpp" />
     <ClCompile Include="Brushes\BrushArchive.cpp" />
     <ClCompile Include="Brushes\BrushExport.cpp" />
@@ -4117,6 +4118,7 @@
     <ClInclude Include="Base\TranslationPair.h" />
     <ClInclude Include="Base\Types.h" />
     <ClInclude Include="Base\Unzip.h" />
+    <ClInclude Include="Base\Win32Compat.h" />
     <ClInclude Include="Base\Updateable.h" />
     <ClInclude Include="Base\UpdateableRT.h" />
     <ClInclude Include="Math\AABBox.h" />

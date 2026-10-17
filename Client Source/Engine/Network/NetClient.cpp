@@ -1,7 +1,5 @@
 #include <StdH.h>
 
-#if		(_MSC_VER > 1200)
-
 #include "NetClient.h"
 #include <boost/array.hpp>
 #include <Engine/Network/NetworkMessage.h>
@@ -132,6 +130,4 @@ void CNetClient::recv()
 
 	_pSock->recv();
 }
-
-#endif	// (_MSC_VER > 1200)
 

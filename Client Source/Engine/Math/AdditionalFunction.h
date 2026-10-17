@@ -10,13 +10,12 @@
 #include <Engine/Math/Quaternion.h>
 #include <Engine/Math/Matrix12.h>
 
-#include <float.h>
+#include <math.h>
+// _fpclass took a double: a float denormal became a normal double, so this was true for every
+// finite value (normal, denormal or zero)
 inline bool IsNormalFloat(FLOAT fVal)
 {
-	return (_fpclass(fVal) == 0x0008	/* negative normal */
-		 || _fpclass(fVal) == 0x0020	/* -0 */
-		 || _fpclass(fVal) == 0x0040	/* +0 */
-		 || _fpclass(fVal) == 0x0100);	/* positive normal */
+	return isfinite((double)fVal) != 0;
 }
 
 inline FLOAT3D Lerp(const FLOAT3D &x0, const FLOAT3D &x1, FLOAT fRatio)

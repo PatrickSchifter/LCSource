@@ -105,11 +105,13 @@ static PIX _apixRes[][2] = {
 
 extern void enableFPExceptions()
 {
+#ifdef _MSC_VER
     int i = _controlfp (0,0);
 
     i &= ~ (EM_ZERODIVIDE);
 
     _controlfp (i, MCW_EM);
+#endif
 }
 
 // helper for limiting window size when changing mode out of full screen

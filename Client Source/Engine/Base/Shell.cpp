@@ -283,10 +283,12 @@ extern void ReportGlobalMemoryStatus(CTFileStream *pstrm)
 	 FCPrintF(pstrm,TRANS("  Virtual memory used:  %6.2f/%6.2fMB\n"), (ms.dwTotalVirtual -ms.dwAvailVirtual )/MB, ms.dwTotalVirtual /MB);
 	 FCPrintF(pstrm,TRANS("  Memory load: %3d%%\n"), ms.dwMemoryLoad);
 
+#ifdef _WIN32
 	 DWORD dwMin;
 	 DWORD dwMax;
 	 GetProcessWorkingSetSize(GetCurrentProcess(), &dwMin, &dwMax);
 	 FCPrintF(pstrm,TRANS("  Process working set: %dMB-%dMB\n\n"), dwMin/(1024*1024), dwMax/(1024*1024));
+#endif
 
 	MEMTRACK_DUMP_INSTREAM(pstrm);
 }
@@ -295,6 +297,7 @@ static void MemoryInfo(void)
 {
 	ReportGlobalMemoryStatus(NULL);
 
+#ifdef _WIN32
 	_HEAPINFO hinfo;
 	 int heapstatus;
 	 hinfo._pentry = NULL;
@@ -323,6 +326,7 @@ static void MemoryInfo(void)
 	 }
 	 CPrintF( "Total used: %d bytes (%.2f MB) in %d blocks\n", slTotalUsed, slTotalUsed/1024.0f/1024.0f, ctUsed);
 	 CPrintF( "Total free: %d bytes (%.2f MB) in %d blocks\n", slTotalFree, slTotalFree/1024.0f/1024.0f, ctFree);
+#endif  // _WIN32
 }
 
 static INDEX _ctReports = 1;

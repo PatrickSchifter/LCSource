@@ -8074,11 +8074,7 @@ void CNetworkLibrary::MgrRegistReq( int nCharIndex, CTString strCharName )
 	packet->type = MSG_FRIEND;
 	packet->subType = MSG_FRIEND_REGIST_REQUEST;
 	packet->requesterindex = nCharIndex;
-#if		(_MSC_VER > 1200)
 	sprintf_s(packet->name, MAX_CHAR_NAME_LENGTH, "%s", strCharName.str_String);
-#else
-	sprintf(packet->name, "%s", strCharName.str_String);
-#endif
 	nmMessage.setSize(sizeof(*packet));
 
 	SendToServerNew(nmMessage);
@@ -8824,13 +8820,8 @@ void CNetworkLibrary::SendLoginMessage(CTString& strID, CTString& strPW, ULONG u
 	packet->mode = 0;
 	packet->version = VERSION_FOR_CLIENT;
 
-#if	(_MSC_VER > 1200)
 	strncpy_s(packet->id, MAX_ID_NAME_LENGTH, strID.str_String, strID.Length());
 	strncpy_s(packet->pw, MAX_PWD_LENGTH, strPW.str_String, strPW.Length());
-#else
-	strncpy(packet->id, strID.str_String, strID.Length());
-	strncpy(packet->pw, strPW.str_String, strPW.Length());
-#endif
 
 	// new Version serialization 060710
 	// national code 

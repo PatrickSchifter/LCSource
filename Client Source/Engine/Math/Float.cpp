@@ -2,6 +2,8 @@
 
 #include <Engine/Math/Float.h>
 
+#if defined(_MSC_VER) && defined(_M_IX86)
+
 /* Get current precision setting of FPU. */
 enum FPUPrecisionType GetFPUPrecision(void)
 {
@@ -47,6 +49,26 @@ void SetFPUPrecision(enum FPUPrecisionType fptNew)
   // set the FPU precission
   _control87( fpcw, MCW_PC);
 }
+
+#else
+
+// Only the x87 has a precision control. SSE and ARM compute each operation in the precision of
+// its type, so the setting is just remembered for the callers that save and restore it.
+static enum FPUPrecisionType _fptPrecision = FPT_53BIT;
+
+/* Get current precision setting of FPU. */
+enum FPUPrecisionType GetFPUPrecision(void)
+{
+  return _fptPrecision;
+}
+
+/* Set current precision setting of FPU. */
+void SetFPUPrecision(enum FPUPrecisionType fptNew)
+{
+  _fptPrecision = fptNew;
+}
+
+#endif
 
 /////////////////////////////////////////////////////////////////////
 // CSetFPUPrecision

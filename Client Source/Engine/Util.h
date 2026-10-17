@@ -33,18 +33,14 @@ extern void ENGINE_API LogOutputChat( const char* format, ... );
 	WideCharToMultiByte(codePage, 0, (input), (inputSize), (output), (##output##Size), NULL, NULL); \
 }
 
-#if		defined(_MSC_VER) && (_MSC_VER >= 1600)
-#	ifdef	_DEBUG
-#		define		LOG_DEBUG(x, ...)			LogOutput( x, __VA_ARGS__ )
-#	else	// _DEBUG
-#		if	defined(VER_TEST)
-#			define		LOG_DEBUG(x, ...)				LogOutputChat( x, __VA_ARGS__ )
-#		else	// VER_TEST
-#			define		LOG_DEBUG(x)
-#		endif	// VER_TEST
-#	endif	// _DEBUG
-#else
-#	define		LOG_DEBUG(x)
-#endif
+#ifdef	_DEBUG
+#	define		LOG_DEBUG(x, ...)			LogOutput( x, __VA_ARGS__ )
+#else	// _DEBUG
+#	if	defined(VER_TEST)
+#		define		LOG_DEBUG(x, ...)				LogOutputChat( x, __VA_ARGS__ )
+#	else	// VER_TEST
+#		define		LOG_DEBUG(...)
+#	endif	// VER_TEST
+#endif	// _DEBUG
 
 #endif	// _UTIL_H_

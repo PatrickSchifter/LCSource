@@ -185,7 +185,6 @@ private:
 	DOUBLE					m_dRaidRemainTimeRecvTime;	// 레이드 남은 시간을 받은 시간
 };
 
-#if		(_MSC_VER >= 1600)
 class Compare
 {
 public:
@@ -201,6 +200,5 @@ public:
 		return bResult;
 	}
 };
-#endif	// (_MSC_VER >= 1600)
 
 #endif	//	__QUEST__

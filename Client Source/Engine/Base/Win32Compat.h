@@ -7,8 +7,9 @@
 // Outside Windows only (included by Types.h under PLATFORM_UNIX): the Win32 types, messages and
 // CRT names that the engine and the UI use as plain data. The UI keeps receiving MSG structs
 // (CUIManager::MsgProc); the platform layer builds them from its own events, so every constant
-// here has the value it has in the Windows SDK. Win32 functions are not declared here: each one
-// gets a real implementation where it is ported (HANDOFF.md, "C5 — roteiro").
+// here has the value it has in the Windows SDK. Only self-contained Win32/CRT functions are
+// emulated here (and in Win32Compat.cpp); windows, input and files are ported where they are
+// used (HANDOFF.md, "C5 — roteiro").
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -429,5 +430,76 @@ inline int strcpy_s(char *strDest, size_t ctDest, const char *strSrc)
 }
 template<size_t ctDest>
 inline int strcpy_s(char (&strDest)[ctDest], const char *strSrc) { return strcpy_s(strDest, ctDest, strSrc); }
+
+// copies at most ctCount characters and always terminates; what does not fit is an error, as in
+// the CRT (which would also call its invalid parameter handler)
+inline int strncpy_s(char *strDest, size_t ctDest, const char *strSrc, size_t ctCount)
+{
+  size_t ctSrc = strnlen(strSrc, ctCount);
+  if (ctSrc >= ctDest) {
+    if (ctDest > 0) strDest[0] = 0;
+    return 34;  // ERANGE
+  }
+  memcpy(strDest, strSrc, ctSrc);
+  strDest[ctSrc] = 0;
+  return 0;
+}
+template<size_t ctDest>
+inline int strncpy_s(char (&strDest)[ctDest], const char *strSrc, size_t ctCount) { return strncpy_s(strDest, ctDest, strSrc, ctCount); }
+
+inline int sprintf_s(char *str, size_t ctDest, const char *strFormat, ...)
+{
+  va_list arg;
+  va_start(arg, strFormat);
+  const int iResult = vsnprintf(str, ctDest, strFormat, arg);
+  va_end(arg);
+  return iResult;
+}
+template<size_t ctDest>
+inline int sprintf_s(char (&str)[ctDest], const char *strFormat, ...)
+{
+  va_list arg;
+  va_start(arg, strFormat);
+  const int iResult = vsnprintf(str, ctDest, strFormat, arg);
+  va_end(arg);
+  return iResult;
+}
+
+#define wsprintf    sprintf
+#define lstrcpy     strcpy
+#define _tcslen     strlen
+#define _vsntprintf vsnprintf
+
+// debug CRT (no-ops in a release CRT as well)
+#define _CrtCheckMemory() TRUE
+#define _RPT0(type, msg)                     ((void)0)
+#define _RPT1(type, msg, a1)                 ((void)0)
+#define _RPT2(type, msg, a1, a2)             ((void)0)
+#define _RPT3(type, msg, a1, a2, a3)         ((void)0)
+#define _RPT4(type, msg, a1, a2, a3, a4)     ((void)0)
+#define _ASSERT(expr) ASSERT(expr)
+
+inline void OutputDebugString(const char *str) { fputs(str, stderr); }
+#define OutputDebugStringA OutputDebugString
+
+// size of a heap block (Memory.cpp, MemoryTracking.cpp)
+#ifdef __APPLE__
+  #include <malloc/malloc.h>
+  inline size_t _msize(void *pv) { return malloc_size(pv); }
+#endif
+
+// GlobalMemoryStatus (Win32Compat.cpp): sizes as a 32-bit Windows process sees them, clamped to
+// 32 bits; page file and virtual memory are not reported (zero)
+typedef struct {
+  DWORD dwLength;
+  DWORD dwMemoryLoad;
+  DWORD dwTotalPhys;
+  DWORD dwAvailPhys;
+  DWORD dwTotalPageFile;
+  DWORD dwAvailPageFile;
+  DWORD dwTotalVirtual;
+  DWORD dwAvailVirtual;
+} MEMORYSTATUS, *LPMEMORYSTATUS;
+void GlobalMemoryStatus(LPMEMORYSTATUS pms);
 
 #endif  /* include-once check. */

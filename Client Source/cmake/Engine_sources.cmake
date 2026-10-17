@@ -36,6 +36,7 @@ set(ENGINE_SOURCES
   "Engine/Base/Translation.cpp"
   "Engine/Base/Unzip.cpp"
   "Engine/Base/Updateable.cpp"
+  "Engine/Base/Win32Compat.cpp"
   "Engine/Base/md5.cpp"
   "Engine/Brushes/Brush.cpp"
   "Engine/Brushes/BrushArchive.cpp"

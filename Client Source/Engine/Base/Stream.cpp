@@ -329,6 +329,7 @@ void CTStream::ClearStreamHandling(void)
   _plhOpenedStreams = NULL;
 }
 
+#ifdef PLATFORM_WIN32
 int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoPtrs)
 {
   // If the exception is not a page fault, exit.
@@ -375,6 +376,7 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
   // Continue execution where the page fault occurred
   return EXCEPTION_CONTINUE_EXECUTION;
 }
+#endif  // PLATFORM_WIN32
 
 /*
  * Static function to report fatal exception error.

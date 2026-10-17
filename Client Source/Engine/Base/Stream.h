@@ -15,12 +15,18 @@
 // maximum length of file that can be saved (default: 8Mb)
 ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
 
+#ifdef PLATFORM_WIN32
 #define CTSTREAM_BEGIN CTStream::EnableStreamHandling(); __try
 #define CTSTREAM_END __except( CTStream::ExceptionFilter( GetExceptionCode(),\
                                                           GetExceptionInformation()) )\
   {\
      CTStream::ExceptionFatalError();\
   }; CTStream::DisableStreamHandling();
+#else
+// no structured exceptions: stream buffers outside Windows are filled without page faults
+#define CTSTREAM_BEGIN CTStream::EnableStreamHandling();
+#define CTSTREAM_END CTStream::DisableStreamHandling();
+#endif
 
 /*
  * Chunk ID class

@@ -503,11 +503,15 @@ static void DetectCPU(void)
 
 static void DetectCPUWrapper(void)
 {
+#ifdef _MSC_VER
 	__try {
 		DetectCPU();
 	} __except(EXCEPTION_EXECUTE_HANDLER) {
 		CPrintF( TRANS("Cannot detect CPU: exception raised.\n"));
 	}
+#else
+	DetectCPU();
+#endif
 }
 
 
@@ -1276,6 +1280,8 @@ ENGINE_API void SE_UpdateWindowHandle( HWND hwndMain, HWND hdlgWebInterface)
 }
 
 
+// Pretouching walks the process' committed memory with VirtualQuery; Windows only.
+#ifdef _WIN32
 static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 {
 	// cannot pretouch block that are smaller than 64KB :(
@@ -1316,6 +1322,7 @@ touchLoop:
 	}
 	return TRUE;
 }
+#endif  // _WIN32
 
 // pretouch all memory commited by process
 extern BOOL _bNeedPretouch = FALSE;
@@ -1325,6 +1332,7 @@ ENGINE_API extern void SE_PretouchIfNeeded(void)
 	extern INDEX gam_bPretouch;
 	if( !_bNeedPretouch || !gam_bPretouch) return;
 	_bNeedPretouch = FALSE;
+#ifdef _WIN32
 
 	CallProgressHook_t(0.0f);
 
@@ -1390,6 +1398,7 @@ nextRegion:
 	// some blocks failed?
 	if( ctFails>1) CPrintF( TRANS("(%d blocks were skipped)\n"), ctFails);
 	//_pShell->Execute("StockDump();");
+#endif  // _WIN32
 }
 
 
