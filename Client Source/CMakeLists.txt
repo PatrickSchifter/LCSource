@@ -71,7 +71,7 @@ target_link_options(lc_client_common INTERFACE /DEBUG /OPT:REF /OPT:ICF)
 # Libraries requested by name through #pragma comment(lib, ...) live in the archive directory.
 target_link_directories(lc_client_common INTERFACE "${CMAKE_BINARY_DIR}/lib")
 
-# --- Third-party libraries, built from source (the prebuilt Lib/VC100/*.lib are VS2010-only) ---
+# --- Third-party libraries, built from source (the VS2010 prebuilt .lib files were removed) ---
 
 # Engine/StdH.h asks for these by name with #pragma comment(lib, "zlib.lib"/"libpng.lib").
 set(LC_ZLIB_DIR "${LC_CLIENT_SRC}/3rdparty/zlib-1.2.8")
@@ -99,7 +99,7 @@ add_library(tinyxml STATIC
   3rdparty/tinyxml_2_6_2/tinyxmlerror.cpp 3rdparty/tinyxml_2_6_2/tinyxmlparser.cpp)
 target_link_libraries(tinyxml PRIVATE lc_client_common)
 
-# LCCrypt ships only as a VS2010 .lib on the client side; the same source lives in the server's ShareLib.
+# LCCrypt: the client has no source of its own; the same code lives in the server's ShareLib.
 add_library(lccrypt STATIC "${LC_CLIENT_SRC}/../Server Source/ShareLib/LCCrypt.cpp")
 target_include_directories(lccrypt PUBLIC "${LC_CLIENT_SRC}/../Server Source/ShareLib")
 target_link_libraries(lccrypt PRIVATE lc_client_common)

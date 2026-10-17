@@ -8,7 +8,6 @@
 #define __NKSP_H__
 
 #define APPLICATION_NAME "Nksp"
-#include "CDCheck.h"
 
 //extern HINSTANCE _hInstance;		// yjpark
 extern BOOL _bRunning, _bQuitScreen;

@@ -60,7 +60,6 @@ extern ENGINE_API char *g_szExitError;
 using namespace std;
 
 
-//CTString _fnmForCDCheck = "Bin\\SeriousSam.exe";
 
 // application state variables by NSP
 extern BOOL g_bTcp = TRUE;
