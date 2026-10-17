@@ -3,7 +3,6 @@
 set(NKSP_SOURCES
   "Nksp/CmdLine.cpp"
   "Nksp/GLSettings.cpp"
-  "Nksp/GameGuard.cpp"
   "Nksp/MainWindow.cpp"
   "Nksp/Nksp.cpp"
   "Nksp/SplashScreen.cpp"

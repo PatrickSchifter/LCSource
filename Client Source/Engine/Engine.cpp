@@ -59,10 +59,6 @@
 #include <Engine/Contents/function/ItemCollectionData.h>
 #include <Engine/Info/ServerInfo.h>
 
-#ifndef NO_GAMEGUARD
-//	#include <NPGameLib.h>
-	#include <Engine\GameState.h>
-#endif
 
 #include <Engine/Help/LoadString.h>
 #include <Engine/Help/Util_Help.h>
@@ -75,11 +71,6 @@ pHexaDump4XTrap_V1 g_pHexaDump4XTrap_V1 = NULL;
 
 #endif
 
-#ifndef NO_GAMEGUARD
-#include <Engine/GameGuardInterface.h>
-GAME_GUARD_RECV_AUTH g_pGameGuardRecvAuth = NULL;
-GAME_GUARD_SEND_USERID g_pGameGuardSendUserID = NULL;
-#endif 
 
 ENGINE_API cWeb g_web;
 
@@ -238,11 +229,6 @@ extern ENGINE_API HWND	_hDlgWeb = NULL;
 extern BOOL  _bFullScreen = FALSE;
 extern INDEX _iGfxAPI = -1; // -1=NONE, 0=OGL, 1=D3D
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-//	ENGINE_API CNPGameLib npgl("LastChaosHK");
-#endif
-// ---------------------------------------------------<<
 
 // 태국버전 패치 flag 051109
 INDEX g_iTempFlag;
@@ -418,34 +404,6 @@ NTSTATUS NewZwOpenProcess(
 	return status;
 }
 */
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-ENGINE_API CTString g_szHackMsg;
-// ---------------------------------------------------<<
-// 메시지 처리 CallBack 함수
-// 게임 종료시에는 false를 return해 주고 종료하지 않은 경우는 true를 return합니다.
-/*
-int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
-{	
-	// Debug...
-//	CPrintF("NPGAMEMON : %lu, %lu", dwMsg,dwArg);
-
-	BOOL tAppExit =FALSE;
-	
-	tAppExit = _pNetwork->NPGameMonCallbackErrChk( dwMsg, dwArg);
-	
-	if(tAppExit)
-	{
-		// 게임 종료
-		_pGameState->Running()		= FALSE;
-		_pGameState->QuitScreen()	= FALSE;
-		return FALSE;
-	}
-	return TRUE;
-}
-/**/
-#endif
-// ---------------------------------------------------<<
 
 
 // root of evil :)

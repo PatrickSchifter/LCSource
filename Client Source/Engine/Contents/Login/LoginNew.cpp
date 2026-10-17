@@ -92,12 +92,6 @@ BOOL LoginNew::ConnectToLoginServer()
 	_pNetwork->m_strUserPW = m_strUserPW;
 
 
-#ifndef NO_GAMEGUARD
-	if ( g_pGameGuardSendUserID )
-	{
-		g_pGameGuardSendUserID( m_strUserID.str_String );
-	}
-#endif
 
 	return TRUE;
 }

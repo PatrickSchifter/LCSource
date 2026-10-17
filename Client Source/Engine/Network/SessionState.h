@@ -264,11 +264,6 @@ public:
   ///////////////////////////////////////////////////////////////////////////////////
 	//2013/04/03 jeil 나스 아이템 삭제
   void ReceiveMoneyMessage(CNetworkMessage *istr);
-  // WSS_NPROTECT 070402 ------------------------------->>
- #ifndef NO_GAMEGUARD
-  void ReceiveExnProtect(CNetworkMessage *istr);
- #endif
-  // ---------------------------------------------------<<
   
   void ReceivePetStatusMessage( CNetworkMessage *istr ); 
   void ReceivePetMountMessage( CNetworkMessage *istr );

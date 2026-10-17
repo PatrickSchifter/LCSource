@@ -271,12 +271,6 @@ static void PlayDemo(const CTString &strDemoFilename)
 	*/
 ENGINE_API extern INDEX g_iCountry;
 
-// WSS_NPROTECT 070402 -------------------------->>
-#ifndef NO_GAMEGUARD
-	#include <Nksp/GameGuard.h>
-	extern ENGINE_API CTString g_szHackMsg;
-#endif
-// ----------------------------------------------<<
 
 void GetNM(LPSTR lpCmdLine)
 {
@@ -676,9 +670,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	}
 	else
 	{
-		// WSS_NPROTECT 070405 ------------------>><<	
-		// 홍콩의 경우 nProtect로 중복 검출
-//#ifdef NO_GAMEGUARD
 #ifndef MULTI_CLIENT
 		if(FindWindow(APPLICATION_NAME,NULL))
 		{
@@ -1335,16 +1326,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 #endif	// KALYDO
 
 	BOOL bInit = TRUE;
-	// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-//	CPrintF("[ ---->> GameGuard Init...Start <<---- ] - %lu\n",timeGetTime());
-	//bInit = _pNetwork->Init_nProtect();
-	CREATE_GAMEGUARD_WRAPPER();
-	bInit = GAME_GUARD()->Init();		
-	_pGameState->Running() = bInit;
-//	CPrintF("[ ---->> GameGuard Init...End <<---- ] - %lu\n",timeGetTime());
-#endif
-	// ---------------------------------------------------<<
 	
 	// initialy, application is running and active, console and menu are off
 	//_bRunning    = TRUE;
@@ -1380,16 +1361,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	FLOAT tmLastSndMute = 0;
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
-	// WSS_NPROTECT 070402 ------------------------------->>
-	// 윈도우 핸들 생성 이후 모든 그래픽 UI관련 초기화가 끝난 후 SetHwnd() 호출
-	// 이 함수로 부터 CallBack 함수가 호출 되기 시작함...
-#ifndef NO_GAMEGUARD
-//	CPrintF("[ ---->> GameGuard SetHwnd...Start <<---- ] - %lu\n",timeGetTime());
-	//_pNetwork->SetHwnd_nProtect(_hwndMain);
-	GAME_GUARD()->SetMainHwnd( _hwndMain );
-//	CPrintF("[ ---->> GameGuard SetHwnd...End <<---- ] - %lu\n",timeGetTime());
-#endif
-	// ---------------------------------------------------<<
 
 	//while( _bRunning && _fnmModToLoad=="")
 	while( _pGameState->Running() && _fnmModToLoad=="")
@@ -1443,12 +1414,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 						(enum DisplayDepth)sam_iDisplayDepth, TRUE);
 					ShowWindow( _hwndMain, SW_SHOWNORMAL);
 
-					#ifdef USE_GAMEGUARD
-					//DESTROY_GAMEGUARD_WRAPPER();
-					//CREATE_GAMEGUARD_WRAPPER();
-					//bInit = GAME_GUARD()->Init();		
-						GAME_GUARD()->SetMainHwnd( _hwndMain );
-					#endif
 
 					break;
 				}
@@ -1587,12 +1552,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				cntFrame = 0;
 				tmPrev = tmNow;
 
-				// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-				//_pNetwork->Check_nProtect();
-				GAME_GUARD()->CheckGameGuard();
-#endif
-				// ---------------------------------------------------<<
 			}
 		}
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
@@ -1601,10 +1560,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	//_pInput->DisableInput();
 	_pGame->StopGame();
 
-#ifndef NO_GAMEGUARD
-	GAME_GUARD()->ShowErrMsg();
-	DESTROY_GAMEGUARD_WRAPPER();
-#endif
 	
 	End();
 	

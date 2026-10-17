@@ -119,12 +119,6 @@
 #include <Engine/Contents/function/SimplePlayerInfoUI.h>
 #include <Engine/Contents/function/ItemComposeUI.h>
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-	//#include <NPGameLib.h>
-	#include <Engine/GameGuardInterface.h>
-#endif
-// ---------------------------------------------------<<
 
 #ifdef KALYDO
 #include <Engine/Kalydo/PackageManager.h>
@@ -14182,33 +14176,6 @@ void CSessionState::ReceiveExPlayerStateChange(CNetworkMessage *istr)
 	}
 }
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-void CSessionState::ReceiveExnProtect(CNetworkMessage *istr)
-{
-//	extern ENGINE_API CNPGameLib npgl;
-	GG_AUTH_DATA m_AuthData;
-	(*istr) >>m_AuthData.dwIndex
-		>>m_AuthData.dwValue1
-		>>m_AuthData.dwValue2
-		>>m_AuthData.dwValue3;
-	
-	// Debug...
-//	CPrintF("Recv Index : %x\n", m_AuthData.dwIndex);
-//	CPrintF("Recv Value1 : %x\n", m_AuthData.dwValue1);
-//	CPrintF("Recv Value2 : %x\n", m_AuthData.dwValue2);
-//	CPrintF("Recv Value3 : %x\n", m_AuthData.dwValue3);
-	
-//	CPrintF("[ ---->> GameGuard Auth2...Start <<---- ] - %lu\n",timeGetTime());
-	//npgl.Auth2(&m_AuthData);
-//	CPrintF("[ ---->> GameGuard Auth2...End   <<---- ] - %lu\n",timeGetTime());
-	if ( g_pGameGuardRecvAuth )
-	{
-		g_pGameGuardRecvAuth(m_AuthData);
-	}
-}
-#endif
-// ---------------------------------------------------<<
 // [KH_070413] 스승의날 이벤트 관련 추가
 void CSessionState::ReceiveEventMaster(CNetworkMessage *istr)
 {

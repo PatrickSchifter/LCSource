@@ -1071,9 +1071,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			break;
 		case MSG_EX_NPROTECT:
 			{
-#ifndef NO_GAMEGUARD
-				ReceiveExnProtect(istr);
-#endif
 			}
 			
 			break;

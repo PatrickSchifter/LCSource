@@ -31,9 +31,6 @@ extern INDEX g_iConnectEuroupean;
 #define	DEF_BASIC_SERVER 0
 #define	DEF_EUROUPEAN_SERVER 1
 
-#ifndef NO_GAMEGUARD
-#include "Engine/GameGuardInterface.h"    
-#endif
 
 CUILoginNew::CUILoginNew(void)
 	: m_pLogoFrame(NULL)

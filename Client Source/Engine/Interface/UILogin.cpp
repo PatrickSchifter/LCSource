@@ -10,12 +10,6 @@
 #include <Engine/Sound/SoundLibrary.h>		// 서정원 로긴 관련 사운드 처리
 #include <Engine/Base/md5.h>
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-//	#include <NPGameLib.h>
-	#include "Engine/GameGuardInterface.h"    
-#endif
-// ---------------------------------------------------<<
 #ifdef KALYDO
 #include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
 #endif
@@ -831,19 +825,6 @@ BOOL CUILogin::ConnectToLoginServer()
 	_pNetwork->m_strUserPW = m_strUserPW;
 
 
-	// WSS_NPROTECT 070402 ------------------------------->>
-	// 사용자 로그인시 ID를 GameMon에 통보
-#ifndef NO_GAMEGUARD
-	//extern ENGINE_API CNPGameLib npgl;
-//	CPrintF("[ ---->> GameGuard Send(gameID)...Start <<---- ] - %lu\n",timeGetTime());
-	//npgl.Send(m_strUserID.str_String);
-//	CPrintF("[ ---->> GameGuard Send(gameID)...End <<---- ] - %lu\n",timeGetTime());
-	if ( g_pGameGuardSendUserID )
-	{
-		g_pGameGuardSendUserID( m_strUserID.str_String );
-	}
-#endif
-	// ---------------------------------------------------<<
 
 	return FALSE;
 }
