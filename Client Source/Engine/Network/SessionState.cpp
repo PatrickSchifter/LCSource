@@ -120,9 +120,6 @@
 #include <Engine/Contents/function/ItemComposeUI.h>
 
 
-#ifdef KALYDO
-#include <Engine/Kalydo/PackageManager.h>
-#endif
 
 #include <Engine/Help/ItemHelp.h>
 #include <Engine/Interface/UISecurity.h>
@@ -923,13 +920,6 @@ CSessionState::CSessionState(void)
 	m_iRecentServer = -1;
 	m_iRecentGroup	= -1;
 
-#ifdef	KALYDO
-	int		i;
-	for (i = 0; i < eKST_MAX; ++i)
-	{
-		m_pCmdKalydo[i] = NULL;
-	}
-#endif	// KALYDO	
 	reg_packet();
 	reg_packet_info();
 	reg_packet_comm();
@@ -942,15 +932,6 @@ CSessionState::~CSessionState()
 {
 //0105
 	delete m_pCmd;
-#ifdef	KALYDO
-	int		i;
-	for (i = 0; i < eKST_MAX; ++i)
-	{		
-		if (m_pCmdKalydo[i] != NULL)
-			delete m_pCmdKalydo[i];
-		m_pCmdKalydo[i] = NULL;
-	}
-#endif	// KALYDO	
 }
 
 /*
@@ -14857,101 +14838,6 @@ void CSessionState::RecievePromotionEventMessage(CNetworkMessage* istr)
 	}
 }
 
-#ifdef KALYDO
-void CSessionState::DelayLoadingFromKalydo()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CEntity* penPlEntity;
-	CPlayerEntity* penPlayerEntity;
-	penPlEntity = CEntity::GetPlayerEntity(0); //캐릭터 자기 자신
-	penPlayerEntity = static_cast<CPlayerEntity*>(penPlEntity);
-
-	_pNetwork->m_ubGMLevel = 0;
-	_pNetwork->TogglePause();
-	_pNetwork->ChangeLevel(CZoneInfo::getSingleton()->GetZoneWldFile(g_slZone), FALSE, 0);
-	
-	// [090826: selo] 시스템 메시지 저장 끝내기
-	pUIManager->GetChattingUI()->End_SaveSysMessage(1);
-
-	// Date : 2006-04-26(오전 11:48:00), By eons
-	if( penPlayerEntity->IsPolymophing() )	// 변신 중이라면
-	{
-		penPlayerEntity->ReturnChange( TRUE );
-		const int iStopChangeItem = 521;
-	}
-
-	pUIManager->GetSummonFirst()->ResetSummon();
-	pUIManager->GetSummonSecond()->ResetSummon();
-
-	pUIManager->GetPersonalShop()->ResetShop();
-	pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
-	pUIManager->SetCSFlagOff( CSF_MOONSTONE );
-	pUIManager->SetCSFlagOff( CSF_MOUNT_HUNGRY );
-	pUIManager->GetGuild()->ResetGuild();
-	pUIManager->GetGuild()->ClearMemberList();
-	_pNetwork->LeavePet( static_cast<CPlayerEntity*>(CEntity::GetPlayerEntity(0)) );
-	INFO()->GetMyPetInfo()->Init();	// [091119: selo] 펫 정보 초기화
-	// FIXED : wild pet mount bug [12/12/2010 rumist]
-	// 초기화 실패로 매시가 깨지는 것 방지.
-	static_cast<CPlayerEntity*>(CEntity::GetPlayerEntity(0))->LeavingWildPet( static_cast<CPlayerEntity*>(CEntity::GetPlayerEntity(0)) );
-	MY_APET_INFO()->Init();
-	// royal rumble init [5/11/2011 rumist]
-	pUIManager->GetRadar()->ResetRoyalRumbleStat();
-	pUIManager->GetRoyalRumbleIcon()->ShowRoyalRumbleIcon( FALSE );
-	// ITS#3867 : 채집 중 이동시 애니메이션 리셋. [2/13/2012 rumist]
-	static_cast<CPlayerEntity*>(CEntity::GetPlayerEntity(0))->CancelProduct();
-
-	// [091119: selo] 파티정보 초기화
-	pParty->Init();
-	pParty->InitExpedition();
-
-//		Bug Fix 060530 wooss
-//		_pNetwork->ClearPetList();
-//		INFO()->_PetTargetInfo.Init();
-	INFO()->m_MySlaveInfo[0].Init();
-	INFO()->m_MySlaveInfo[1].Init();
-	
-	pUIManager->GetHelper()->ResetHelper();
-	pUIManager->GetHelper()->ClearHelperList();
-	
-	penPlayerEntity->ClearMultiTargets();
-
-	_pNetwork->DeleteAllMob();
-	_pNetwork->MyCharacterInfo.EntranceType = CURRENT_ENTER_NORMAL; // 초기화
-
-	EPreLevelChange ePreChange;
-	ePreChange.iUserData = _pNetwork->ga_iNextLevelUserData;
-	SendLevelChangeNotification(ePreChange);
-	CEntity::HandleSentEvents();
-	_pNetwork->ChangeLevel_internal();
-	EPostLevelChange ePostChange;
-	ePostChange.iUserData = _pNetwork->ga_iNextLevelUserData;
-	SendLevelChangeNotification(ePostChange);
-	CEntity::HandleSentEvents();
-	_lphCurrent=LCP_NOCHANGE;
-	CNetworkMessage nmStartGame(MSG_START_GAME); 					 
-	_pNetwork->SendToServerNew(nmStartGame,TRUE);	
-	_cmiComm.Server_Update();
-//강동민 수정 시작 싱글던젼 스토리	10.07
-	// TargetNPC는 대부분 미리 생성되야할 엔티티들임.
-	for(std::vector<CEntity*>::iterator iter = _pNetwork->ga_World.m_vectorPreCreateNPC.begin(); iter != _pNetwork->ga_World.m_vectorPreCreateNPC.end(); ++iter)
-	{
-		(*iter)->Reinitialize();
-	}
-	_pNetwork->ga_World.m_vectorPreCreateNPC.clear();
-	_cmiComm.Server_Update();
-
-	/*
-	if(_pNetwork && _pNetwork->m_bSingleMode && _pNetwork->ga_World.wo_iNumOfNPC)
-	{
-		CEntity* penPlayer = CEntity::GetPlayerEntity(0);
-		_pNetwork->ga_World.m_vectorTargetNPC.push_back(penPlayer);
-	}
-	*/
-}
-
-
-#endif
 void CSessionState::ReceiveMoneyMessage(CNetworkMessage *istr)
 {
 	OBFUSCATE();

@@ -3,9 +3,6 @@
 #include <Engine/Interface/UITextureManager.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/GameStageManager/StageMgr.h>
-#ifdef KALYDO
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-#endif
 
 // Define
 #define	ROUND					0.005f

@@ -10,14 +10,7 @@
 #include "CmdLine.h"
 #include "Engine/GameState.h"
 #include <Engine/Network/Web.h>
-//#include "Social/TLastChaosApplication.h"
 
-#ifdef KALYDO
-#include <Nksp/Social/TLastChaosApplication.h>
-#include <Engine/Kalydo/PackageManager.h>
-
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-#endif
 
 extern PIX _pixDesktopWidth;
 extern PIX _pixDesktopHeight;
@@ -196,9 +189,6 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 		{
 			//	김영환 : 윈도우 창 크기 변경이 발생한 경우 변수 설정.
 			_bWinSize = true;
-#ifdef KALYDO
-			sam_bFullScreenActive = 0;
-#endif
 			break;
 		}
 	case WM_GETMINMAXINFO:
@@ -207,14 +197,6 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 			(reinterpret_cast<MINMAXINFO*>(lParam))->ptMaxTrackSize.y = 1500;
 		}
 		break;
-#ifdef KALYDO
-	case WM_KRFREQUEST:
-		{
-			//(dynamic_cast<TLastChaosApplication*>(application))->requestZoneKRF( KPackManager::GetInstance()->GetZoneNo() );
-			(dynamic_cast<TLastChaosApplication*>(application))->requestZoneKRF( static_cast<unsigned int>(wParam) );
-		}
-		break;
-#endif
 	}
 
 	// if we get to here, we pass the message to default procedure
@@ -308,10 +290,6 @@ void MainWindow_Init(void)
 	GetObject(_hbmSplash, sizeof(BITMAP), (LPSTR) &_bmSplash); 
 	// here was loading and setting of no-windows-mouse-cursor
 
-#ifdef KALYDO
-	KalydoUserData();
-	g_KalydoWindowHandle = application->getKalydoWindow();
-#endif
 }
 
 

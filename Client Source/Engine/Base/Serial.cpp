@@ -6,9 +6,6 @@
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/CRCTable.h>
 
-#ifdef KALYDO
-deqSLS g_deqLoadData;
-#endif
 
 /*
  * Default constructor.

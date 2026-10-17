@@ -5,9 +5,6 @@
 #endif
 
 #include <Engine/Base/Types.h>
-#ifdef KALYDO
-#include <Engine/Base/TLVar.h>
-#endif
 
 /*
  * Main string class

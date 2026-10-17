@@ -166,10 +166,6 @@ ENGINE_API void SE_UpdateWindowHandle( HWND hwndWindowed, HWND hdlgWebInterface 
 ENGINE_API void SE_PretouchIfNeeded(void);
 ENGINE_API const int	SE_GetEngineDllRefCnt();
 
-#ifdef KALYDO
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-ENGINE_API void SE_UpdateStreamingData(void);
-#endif
 
 // Singleton Classes
 class CWebAddress;

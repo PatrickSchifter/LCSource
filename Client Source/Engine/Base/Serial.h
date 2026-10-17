@@ -7,23 +7,6 @@
 #include <Engine/Base/Changeable.h>
 #include <Engine/Base/FileName.h>
 
-#ifdef KALYDO
-#include <deque>
-
-typedef struct __streaming_load_support__
-{
-	__streaming_load_support__() : pTarget(NULL)	{															}
-	~__streaming_load_support__()					{	pTarget = NULL; pTargetFilePath.Clear();				}
-
-	CSerial*		pTarget;
-	CTString		pTargetFilePath;
-} SLS;
-
-typedef std::deque<SLS*> deqSLS;
-
-extern deqSLS g_deqLoadData;
-
-#endif
 
  /*
  * Abstract base class for objects that can be saved and loaded.
@@ -44,21 +27,12 @@ public:
   virtual CTString GetDescription(void);
 //안태훈 수정 시작	//(Bug FIx)(0.1)
   /* Load from file. */
-#ifdef KALYDO
-  virtual void Load_t( const CTFileName &fnFileName); // throw char *
-  virtual void Load_Delay_t( const CTFileName &fnFileName)	{}					// only used streaming data load.
-#else
   void Load_t( const CTFileName &fnFileName); // throw char *
-#endif
   /* Save to file. */
   void Save_t( const CTFileName &fnFileName); // throw char *
 //안태훈 수정 끝	//(Bug FIx)(0.1)
   /* Reload from file. */
-#ifdef KALYDO
-  virtual void Reload(void);
-#else
   void Reload(void);
-#endif
   /* Mark that object is used once more. */
   void MarkUsed(void);
   /* Mark that object is used once less. */

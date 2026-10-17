@@ -68,9 +68,6 @@ extern ENGINE_API INDEX sam_bFullScreenActive;
 int	g_nCurSelResolution;
 extern INDEX	g_iCountry;
 
-#ifdef KALYDO
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-#endif
 
 // ----------------------------------------------------------------------------
 // Name : CUIOption()
@@ -392,9 +389,6 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cmbResolution.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cmbResolution.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	// if this client is kalydo version, blocked resolution feature. [11/30/2011 rumist]
-#ifdef KALYDO
-	m_cmbResolution.SetEnable( FALSE );
-#endif
 
 	// 선택 가능 대상 설정
 	//m_cmbTargetDest.Create( this, OPTION_CONTROL_SX, OPTION_TARGETDEST_SY + 17, 170, 15, 156, 1, 13, 13,
@@ -1484,30 +1478,6 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	}
 }
 
-#ifdef KALYDO
-const BOOL CUIOption::ToggleFullscreenMode(const BOOL _bEnableFullScreenMode /* = FALSE  */)
-{
-	// already apply this option.
-	if( _bEnableFullScreenMode == m_bFullscreen )
-	{
-		return FALSE;
-	}	
-
-	if (!m_bFullscreen)
-	{
-		m_cbtnFullscreen.SetCheck(TRUE);
-		m_bFullscreen = TRUE;
-	}
-	else
-	{
-		// We need to remember the fullscreen state
-		m_cbtnFullscreen.SetCheck(FALSE);
-		m_bFullscreen = FALSE;
-	}
-
-	return TRUE;
-}
-#endif
 
 // ----------------------------------------------------------------------------
 // Name : ApplyOption()
@@ -1560,11 +1530,6 @@ void CUIOption::ApplyOption()
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
 	}
-#ifdef KALYDO
-	// 만약 스크린이 변경되었으면 아래 루틴은 우회한다.
-	if( ToggleFullscreenMode() )
-		return;
-#endif
 	int	iRes = m_cmbResolution.GetCurSel();
 	if( iRes >= 0 )
 	{

@@ -18,11 +18,6 @@
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Stock_CShader.h>
 
-#ifdef KALYDO
-#include <Engine/Base/Console.h>
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-CTString CMesh::strDefaultMeshPath = "data\\Defaults\\Axis.bm";
-#endif
 
 static INDEX AreVerticesDiferent(INDEX iCurrentIndex, INDEX iLastIndex);
 static void FillVertexWeightInfos(MeshLOD &mlod);
@@ -880,11 +875,6 @@ void CMesh::SplitSurfaces(MeshLOD &mlod)
 		for(INDEX its=0;its<ctts;its++) 
 		{
 			MeshTriangle &ts = msrf.msrf_auwTriangles[its];
-#if 0 && _DEBUG
-			ASSERT(ts.mt_uwVertexIndex[0] != 0xCDCD);
-			ASSERT(ts.mt_uwVertexIndex[1] != 0xCDCD);
-			ASSERT(ts.mt_uwVertexIndex[2] != 0xCDCD);
-#endif
 			const UWORD uwVx1 = ts.mt_uwVertexIndex[0] + msrf.msrf_iFirstVertex;
 			const UWORD uwVx2 = ts.mt_uwVertexIndex[1] + msrf.msrf_iFirstVertex;
 			const UWORD uwVx3 = ts.mt_uwVertexIndex[2] + msrf.msrf_iFirstVertex;
@@ -1315,15 +1305,6 @@ void CMesh::SplitSurfaces(MeshLOD &mlod)
 				  INDEX ctmt = pmss->mssrf_auwTriangles.Count();
 				  msrfNew.msrf_auwTriangles.New(ctmt);
 				  memcpy(&msrfNew.msrf_auwTriangles[0],&pmss->mssrf_auwTriangles[0],sizeof(MeshTriangle)*ctmt);
-#if 0 && _DEBUG
-				  INDEX ctst = pmss->mssrf_auwTriangles.Count();
-				  for(INDEX ist=0;ist<ctst;ist++) 
-				  {
-					  ASSERT(msrfNew.msrf_auwTriangles[ist].mt_uwVertexIndex[0] != 0xCDCD);
-					  ASSERT(msrfNew.msrf_auwTriangles[ist].mt_uwVertexIndex[1] != 0xCDCD);
-					  ASSERT(msrfNew.msrf_auwTriangles[ist].mt_uwVertexIndex[2] != 0xCDCD);
-				  }
-#endif
 			  }
 		  }
 	}
@@ -1430,11 +1411,6 @@ void CMesh::OptimizeLod(MeshLOD &mlod)
 		for(int its=0;its<ctts;its++) 
 		{
 			const MeshTriangle &mt = msrf.msrf_auwTriangles[its];
-#if 0 && _DEBUG
-			ASSERT(mt.mt_uwVertexIndex[0]!=0xCDCD);
-			ASSERT(mt.mt_uwVertexIndex[1]!=0xCDCD);
-			ASSERT(mt.mt_uwVertexIndex[2]!=0xCDCD);
-#endif
 			_aSortArray[mt.mt_uwVertexIndex[0]].sa_iSurfaceIndex = imsrf;
 			_aSortArray[mt.mt_uwVertexIndex[1]].sa_iSurfaceIndex = imsrf;
 			_aSortArray[mt.mt_uwVertexIndex[2]].sa_iSurfaceIndex = imsrf;
@@ -3646,95 +3622,6 @@ void CMesh::Clear(void)
 	msh_aMeshLODs.Clear();
 }
 
-#ifdef KALYDO
-static void KCPMeshDownloaded(const char* fileName, TKResult result, void* id)
-{
-	switch (result)
-	{
-	case KR_OK:
-		{
-			SLS* pSLS = new SLS();
-			pSLS->pTarget = reinterpret_cast<CSerial*>(id);
-			pSLS->pTargetFilePath = fileName;
-			g_deqLoadData.push_back( pSLS );
-		}
-		break;
-	case KR_DOWNLOAD_FAILED:
-	case KR_FILE_CORRUPT:
-		krfRequestKCPFile(fileName, &KCPMeshDownloaded, id);
-	//default:
-		// unknown error!
-	}
-}
-
-void CMesh::Load_t(const CTFileName &fnFileName)
-{
-  ASSERT(!IsUsed());
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  TKResult tkResult = krfRequestKCPFile( fnFileName, NULL, NULL );
-  if( KR_OK == tkResult )
-  {
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-  }
-  else
-  {
-	CPrintF("Request file to kcp : %s\n", fnFileName );
-	//?????????????
-	CTFileStream istrFile;
-	istrFile.Open_t( strDefaultMeshPath );
-	Read_t(&istrFile);
-	ser_FileName = fnFileName;
-	if( KR_FILE_NOT_AVAILABLE == tkResult )
-	{
-		MarkUsed();
-	}
-
-	tkResult = krfRequestKCPFile(fnFileName, &KCPMeshDownloaded, this);
-	if( KR_FILE_NOT_FOUND == tkResult )
-	{
-		CPrintF("[Load_t] Mesh File Not Found in kalydo...\n" );
-	}
-	else if( KR_IO_PENDING == tkResult )
-	{
-		CPrintF("[Load_t] Mesh File already request...\n" );
-	}
-	else
-	{
-		;
-	}
-  }  
-}
-
-
-
-void CMesh::Load_Delay_t(const CTFileName &fnFileName)
-{
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  //if( kfileExists( fnFileName ) )
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-	MarkUnused();
-}
-#endif
 
 // Count used memory
 SLONG CMesh::GetUsedMemory(void)

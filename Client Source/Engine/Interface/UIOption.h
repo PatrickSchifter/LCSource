@@ -251,10 +251,6 @@ public:
 	void ChangeWindowMode ();
 
 	void UpdateTerMul();
-#ifdef KALYDO
-	const BOOL	ToggleFullscreenMode(const BOOL _bEnableFullScreenMode = FALSE );
-	BOOL	m_bFullscreen;
-#endif
 };
 
 #endif // UISELCHAR_H_

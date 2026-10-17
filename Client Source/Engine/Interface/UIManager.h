@@ -1542,7 +1542,6 @@ private:
 
 #define		UIMGR()		CUIManager::getSingleton()
 
-// KALYDO
 ENGINE_API extern  struct PlayerControls pctlCurrent;
 
 

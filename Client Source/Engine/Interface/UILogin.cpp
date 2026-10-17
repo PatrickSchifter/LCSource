@@ -10,9 +10,6 @@
 #include <Engine/Sound/SoundLibrary.h>		// 서정원 로긴 관련 사운드 처리
 #include <Engine/Base/md5.h>
 
-#ifdef KALYDO
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-#endif
 
 // External variables
 extern HWND	_hwndMain;

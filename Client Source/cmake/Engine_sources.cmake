@@ -392,7 +392,6 @@ set(ENGINE_SOURCES
   "Engine/Interface/UIWildPetInfo.cpp"
   "Engine/Interface/UIWindowDeclare.cpp"
   "Engine/JobInfo.cpp"
-  "Engine/Kalydo/PackageManager.cpp"
   "Engine/Light/LayerMaker.cpp"
   "Engine/Light/LayerMixer.cpp"
   "Engine/Light/LightSource.cpp"

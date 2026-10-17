@@ -38,9 +38,6 @@
  * Bitmap data for a class of texture objects
  */
 class ENGINE_API CTextureData : public CAnimData {
-#ifdef KALYDO
-  static CTString strDefaultTexturePath;
-#endif
 public:
 // implementation:
   ULONG td_ulFlags;             // see defines
@@ -120,13 +117,7 @@ public:
   void Unbind(void);
   // free memory allocated for texture
   void Clear(void);
-#ifdef	KALYDO
-  void Load_t(const CTFileName &fnFileName);
-  void Load_Delay_t(const CTFileName &fnFileName);
   void Reload();
-#else	// KALYDO
-  void Reload();
-#endif	// KALYDO
 
   // read texture from file
   void Read_t( CTStream *inFile);

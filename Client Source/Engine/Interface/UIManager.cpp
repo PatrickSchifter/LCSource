@@ -1,6 +1,5 @@
 #include "stdh.h"
 //#define USING_SQLITE
-// KALYDO
 #include <Engine/Entities/EntityClass.h>
 #include <Engine/Interface/UIInternalClasses.h>
 #include "UIManager.h"
@@ -95,7 +94,6 @@ CUIBuff					*_pUIBuff = NULL;
 INDEX					_iNameType = 1;
 FLOAT					_fTmpTerLODMul = 1.0f;
 
-// KALYDO
 struct PlayerControls pctlCurrent;
 
 extern HWND		_hwndMain;

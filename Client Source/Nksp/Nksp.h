@@ -46,16 +46,5 @@ bool	Set_Window_Size();
 void GetWindowSizeFromTxt();
 void SaveWindowSizeToTxt();
 
-#ifdef KALYDO
-#include <deque>
-void KalydoUserData();
-void KalydoSetUserAccount( std::string& sID, std::string& sPWD );
-bool KalydoInit( HWND Parent );
-void KalydoStart();
-bool KalydoUpdate();
-void KalydoEnd();
-HWND getGameWindow();
-extern std::deque<MSG> deqMsg;
-#endif
 
 #endif

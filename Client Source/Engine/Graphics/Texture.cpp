@@ -18,9 +18,6 @@
 
 #include <Engine/Base/Statistics_internal.h>
 
-#ifdef KALYDO
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-#endif
 
 #include <3rdparty/lpng163/png.h>
 
@@ -53,9 +50,6 @@ extern FLOAT gfx_tmProbeDecay;
 // singleton object for texture settings
 struct TextureSettings TS = {0};
 
-#ifdef KALYDO
-CTString CTextureData::strDefaultTexturePath = "data\\defaults\\default.tex";
-#endif
 
 #define TEXFMT_NONE 0
 
@@ -2145,141 +2139,6 @@ void CTextureData::Clear(void)
 }
 
 
-#ifdef KALYDO
-static void KCPTextureDownloaded(const char* fileName, TKResult result, void* id)
-{
-	switch (result)
-	{
-	case KR_OK:
-		{
-			SLS* pSLS = new SLS();
-			pSLS->pTarget = reinterpret_cast<CSerial*>(id);
-			pSLS->pTargetFilePath = fileName;
-			g_deqLoadData.push_back( pSLS );
-		}
-		break;
-	case KR_DOWNLOAD_FAILED:
-	case KR_FILE_CORRUPT:
-		krfRequestKCPFile(fileName, &KCPTextureDownloaded, id);
-	//default:
-		// unknown error!
-	}
-}
-
-void CTextureData::Load_t(const CTFileName &fnFileName)
-{
-  ASSERT(!IsUsed());
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-  TKResult tkResult = KR_OK;
-  tkResult = krfRequestKCPFile( fnFileName, NULL, NULL );
-  // if file exist in local disk.
-  if( KR_OK == tkResult )
-  {
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-  }
-  else
-  {
-	CPrintF("Request file to kcp : %s\n", fnFileName );
-	//?????????????
-	CTFileStream istrFile;
-	istrFile.Open_t( strDefaultTexturePath );
-	Read_t(&istrFile);
-	ser_FileName = fnFileName;
-	if( tkResult == KR_FILE_NOT_AVAILABLE )
-	{
-		MarkUsed();
-	}
-	tkResult = krfRequestKCPFile(fnFileName, &KCPTextureDownloaded, this);
-	if( KR_FILE_NOT_FOUND == tkResult )
-	{
-		CPrintF("[Load_t] Texture File Not Found in kalydo...\n" );
-	}
-	else if( KR_IO_PENDING == tkResult )
-	{
-		CPrintF("[Load_t] Texture File already request...\n" );
-	}
-	else
-	{
-		;
-	}
-  }  
-}
-
-
-
-void CTextureData::Load_Delay_t(const CTFileName &fnFileName)
-{
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  //if( kfileExists( fnFileName ) )
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-	MarkUnused();
-}
-
-
-void CTextureData::Reload(void)
-{
-	/* if not found, */
-	TRACKMEM(Mem, strrchr((const char*)ser_FileName, '.'));
-
-	// mark that you have changed
-	MarkChanged();
-
-	CTFileName fnmOldName = ser_FileName;
-	Clear();
-
-	TKResult tkResult = krfRequestKCPFile( fnmOldName, NULL, NULL );
-	if( KR_OK == tkResult )
-	{
-		// try to
-		try {
-		  // open a stream
-		  CTFileStream istrFile;
-		  istrFile.Open_t(fnmOldName);
-		  // read object from stream
-		  Read_t(&istrFile);
-
-		// if there is some error while reloading
-		} catch (char *strError) {
-		  // quit the application with error explanation
-		  FatalError(TRANS("Cannot reload file '%s':\n%s"), (CTString&)fnmOldName, strError);
-		}
-
-		// if still here (no exceptions raised)
-		// remember filename
-		ser_FileName = fnmOldName;
-	}
-	else
-	{
-		// it is already request in load_t()
-		CPrintF("Request file to kcp : %s\n", fnmOldName );
-		//?????????????
-		CTFileStream istrFile;
-		istrFile.Open_t( strDefaultTexturePath );
-		Read_t(&istrFile);
-		ser_FileName = fnmOldName;
-	}
-}
-
-#else	// KALYDO
 
 void CTextureData::Reload()
 {
@@ -2289,7 +2148,6 @@ void CTextureData::Reload()
 	CSerial::Reload();
 }
 
-#endif	// KALYDO
 
 
 

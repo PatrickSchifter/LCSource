@@ -25,11 +25,7 @@ extern FLOAT con_tmLastLines   = 5.0f;
 
 // used filenames
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-#ifdef KALYDO
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-#else
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //CTFileName fnmStartupScript     = CTString("Data\\Etc\\Game_startup.ini");
 //CTFileName fnmConsoleHistory    = CTString("Data\\Etc\\ConsoleHistory.txt");

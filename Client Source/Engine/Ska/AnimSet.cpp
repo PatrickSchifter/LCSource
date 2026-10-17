@@ -13,10 +13,6 @@
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/templates/DynamicContainer.cpp>
 
-#ifdef KALYDO
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-CTString CAnimSet::strDefaultAnimSetPath = "data\\Defaults\\test.ba";
-#endif
 
 #define ANIMSET_VERSION  14 // TODO: on version change remove be_mDefaultPos from read and write and precache stuff from bone envelope
 #define ANIMSET_ID       "ANIM"
@@ -625,94 +621,6 @@ void CAnimSet::Clear(void)
   as_Anims.Clear();
 }
 
-#ifdef KALYDO
-static void KCPAnimSetDownloaded(const char* fileName, TKResult result, void* id)
-{
-	switch (result)
-	{
-	case KR_OK:
-		{
-			SLS* pSLS = new SLS();
-			pSLS->pTarget = reinterpret_cast<CSerial*>(id);
-			pSLS->pTargetFilePath = fileName;
-			g_deqLoadData.push_back( pSLS );
-		}
-		break;
-	case KR_DOWNLOAD_FAILED:
-	case KR_FILE_CORRUPT:
-		krfRequestKCPFile(fileName, &KCPAnimSetDownloaded, id);
-	//default:
-		// unknown error!
-	}
-}
-
-void CAnimSet::Load_t(const CTFileName &fnFileName)
-{
-  ASSERT(!IsUsed());
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-  TKResult tkResult = KR_OK;
-  tkResult = krfRequestKCPFile( fnFileName, NULL, NULL );
-  // if file exist in local disk.
-  if( KR_OK == tkResult )
-  {
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-  }
-  else
-  {
-	CPrintF("Request file to kcp : %s\n", fnFileName );
-	//?????????????
-	CTFileStream istrFile;
-	istrFile.Open_t( strDefaultAnimSetPath );
-	Read_t(&istrFile);
-	ser_FileName = fnFileName;
-	if( tkResult == KR_FILE_NOT_AVAILABLE )
-	{
-		MarkUsed();
-	}
-	tkResult = krfRequestKCPFile(fnFileName, &KCPAnimSetDownloaded, this);
-	if( KR_FILE_NOT_FOUND == tkResult )
-	{
-		CPrintF("[Load_t] Anim Set File Not Found in kalydo...\n" );
-	}
-	else if( KR_IO_PENDING == tkResult )
-	{
-		CPrintF("[Load_t] Anim Set File already request...\n" );
-	}
-	else
-	{
-		;
-	}
-  }  
-}
-
-void CAnimSet::Load_Delay_t(const CTFileName &fnFileName)
-{
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  //if( kfileExists( fnFileName ) )
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-	MarkUnused();
-}
-
-#endif
 
 // Count used memory
 SLONG CAnimSet::GetUsedMemory(void)

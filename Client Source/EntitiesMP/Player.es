@@ -679,7 +679,6 @@ void DamagedTargetsInRange(CEntity* pEntity, CSelectedEntities& dcEntities, enum
 #define PLACT_SELECT_WEAPON_MASK  (0x1FL<<PLACT_SELECT_WEAPON_SHIFT)
 
 #define PICKEDREPORT_TIME   (2.0f)  // how long (picked-up) message stays on screen
-// KALYDO
 /*
 struct PlayerControls 
 {
@@ -720,7 +719,6 @@ struct PlayerControls
 };
 */
 
-// KALYDO
 //static struct PlayerControls pctlCurrent;
 
 

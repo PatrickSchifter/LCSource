@@ -57,11 +57,6 @@ HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
 
-#ifdef KALYDO
-#include <Engine/Kalydo/PackageManager.h>
-#include <Nksp/social/TLastChaosApplication.h>
-
-#endif
 
 //2013/04/15 jeil 런처에 해상도 변경 추가
 #include <fstream>
@@ -817,12 +812,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	//	김영환 : 클라이언트용 엔진DLL 사용
 	_bClientApp = TRUE;
 	// if kalydo options.
-#ifdef KALYDO
-	RECT rcKalydoClient;
-	GetClientRect( application->getKalydoWindow(), &rcKalydoClient );
-	sam_iScreenSizeI = rcKalydoClient.right - rcKalydoClient.left;
-	sam_iScreenSizeJ = rcKalydoClient.bottom - rcKalydoClient.top;
-#endif
 	InitializeGame();
 	_pNetwork->md_strGameID = sam_strGameName;
 
@@ -837,9 +826,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 
 	CPrintF(TRANS("Nksp version: %s\n"), sam_strVersion);
 
-#ifdef KALYDO
-	sam_bFullScreenActive = FALSE;
-#endif
 	// apply application mode
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
@@ -1186,7 +1172,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 {
 	(void)hPrevInstance;
 
-#if		!defined(KALYDO) && !defined(G_CHINA) && !defined(VER_TEST)
+#if		!defined(G_CHINA) && !defined(VER_TEST)
 	CTString strparam = CTString(lpCmdLine);
 	IPCEventInfo EventInfo;
 	memset(EventInfo.ulParameter2, 0, sizeof(EventInfo.ulParameter2));
@@ -1258,13 +1244,12 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 
 	GetNM(EventInfo.ulParameter2);
 
-#endif	// !defined(KALYDO) && !defined(G_CHINA) && !defined(VER_TEST)
+#endif	// !defined(G_CHINA) && !defined(VER_TEST)
 	
 	ShowCursor(FALSE);
 	
 	if( !Init( hInstance, nCmdShow, lpCmdLine )) return FALSE;
 
-#ifndef		KALYDO
 	{
 		// 현재 실행된 프로그램의 경로를 저장할 변수이다.
 		char temp_path[MAX_PATH] = {0,};
@@ -1306,7 +1291,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 		GlobalUnlock(h_memory); 
 		GlobalFree(h_memory);
 	}
-#endif	// KALYDO
 
 	BOOL bInit = TRUE;
 	
@@ -1504,10 +1488,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 #endif	// VER_TEST
 		
 		UpdatePauseState();
-#ifdef KALYDO
-		// update resource queue.
-		SE_UpdateStreamingData();
-#endif		
 		// do the main game loop and render screen
 		DoGame();
 		
@@ -1838,9 +1818,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		sam_iGfxAPI = eGfxAPI;
 
 		SE_Get_UIManagerPtr()->DestroyRenderTarget();
-//#ifdef KALYDO
 		SE_Get_UIManagerPtr()->InitRenderTarget();
-//#endif
 				
 		// report success
 		return TRUE;
@@ -1993,84 +1971,3 @@ void SaveWindowSizeToTxt()
 	}
 }
 
-#ifdef KALYDO
-
-////////////////////////////////////////////////////////////////////
-// kalydo functions.
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-CTFileName fnmDefaultPersistentSymbols = CTString("Data\\etc\\ps.dat");
-
-void KalydoUserData()
-{
-	// test existing ps.dat file.
-	FILE* fp = fopen( fnmPersistentSymbols, "rb" );
-	// if not exist ps.dat, copy from krf packages.
-	if( NULL == fp )
-	{
-		// not supporting Windows File I/O APIs.
-		//BOOL bSuccess = CopyFile( fnmDefaultPersistentSymbols, fnmPersistentSymbols, TRUE );
-		FILE* fr = fopen( fnmDefaultPersistentSymbols, "rb" );
-		FILE* fw = fopen( fnmPersistentSymbols, "wb" );
-
-		if( fr == NULL || fw == NULL )
-			return;
-
-		while ( !feof( fr ) )
-		{
-			char data;
-			fread( &data, sizeof(char), 1, fr );
-			fwrite( &data, sizeof(char), 1, fw );
-		}
-
-		fclose( fr );
-		fclose( fw );
-	}
-	else
-	{
-		fclose( fp );
-	}	
-}
-
-void KalydoSetUserAccount(std::string& sID, std::string& sPWD )
-{
-	extern BOOL g_bAutoLogin;
-	if (sID == "" && sPWD == "")
-	{
-		g_bAutoLogin = FALSE;
-	}
-	else
-	{
-		extern CTString g_nmID;
-		extern CTString g_nmPW;
-		g_nmID.PrintF( "%s", sID.c_str() );
-		g_nmPW.PrintF( "%s", sPWD.c_str() );
-		g_bAutoLogin = TRUE;
-
-		_pNetwork->m_strUserID = g_nmID;
-		_pNetwork->m_strUserPW = g_nmPW;
-	}
-}
-
-bool KalydoInit( HWND Parent )
-{
-	return true;
-}
-
-void KalydoStart()
-{
-}
-
-bool KalydoUpdate()
-{
-	return false;
-}
-
-void KalydoEnd()
-{
-}
-
-HWND getGameWindow()
-{
-	return _hwndMain;
-}
-#endif

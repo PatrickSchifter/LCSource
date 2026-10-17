@@ -2283,7 +2283,7 @@ void CNetworkLibrary::MainLoop(void)
 {
   TRACKMEM(Mem,"Network");
 
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST)
+#if !defined(_DEBUG) && !defined(G_KOR) && !defined(VER_TEST)
   BOOL bIsDebuggerPresent = FALSE;
 #ifdef USE_PORTABLE_C
   #ifdef PLATFORM_WIN32

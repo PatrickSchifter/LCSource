@@ -73,11 +73,7 @@ MiniDumper	g_MiniDumper(TRUE);
 #endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-#ifdef KALYDO
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-#else
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 // this version string can be referenced from outside the engine
@@ -415,35 +411,6 @@ void	IncRef()	{ ++g_nEngineDllRefCnt;	}
 void	DecRef()	{ g_nEngineDllRefCnt > 0 ? --g_nEngineDllRefCnt : g_nEngineDllRefCnt=0; }
 ENGINE_API const int	SE_GetEngineDllRefCnt() { return g_nEngineDllRefCnt;	}
 
-#ifdef KALYDO
-ENGINE_API HWND	g_KalydoWindowHandle = NULL;
-ENGINE_API void SE_UpdateStreamingData()
-{
-	if( g_deqLoadData.empty() )
-		return;
-	
-	DWORD start = GetTickCount();
-	while(!g_deqLoadData.empty())
-	{
-		SLS* pSLS = reinterpret_cast<SLS*>(g_deqLoadData.front());
-		// if still alive, step in.
-		if( pSLS->pTarget->IsUsed() )
-		{
-			pSLS->pTarget->Clear();
-			pSLS->pTarget->Load_Delay_t( pSLS->pTargetFilePath );
-			//pSLS->pTarget->Reload();
-		}
-
-		delete pSLS;
-
-		g_deqLoadData.pop_front();
-
-		if (GetTickCount() - start > 10)
-			// take 10ms max to prevent frame drops
-			break;
-	}
-}
-#endif
 
 //- end.
 BOOL APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -701,7 +668,7 @@ inline bool GetOneLine(CTString& str, CTString& line)
 // [2013/01/16] sykim70
 ENGINE_API bool SE_CheckEngine()
 {
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(LC_NO_BINARY_CHECK)	// binary.lod lists the official binaries
+#if !defined(_DEBUG) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(LC_NO_BINARY_CHECK)	// binary.lod lists the official binaries
 	AnalyzeApplicationPath();
 
 	// check binary.lod
@@ -803,9 +770,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShaderStock      = new CStock_CShader;
 	_pModelInstanceStock = new CStock_CModelInstance;
 
-#ifdef KALYDO
-	g_deqLoadData.clear();
-#endif
 
 	_pTimer = new CTimer;
 	_pGfx   = new CGfxLibrary;
