@@ -4,7 +4,6 @@
 #include "UIBase.h"
 #include <Engine/Interface/UIManager.h>
 
-#pragma warning(disable: 4172)
 
 CUIBase::CUIBase()
     : m_pParent(NULL)
@@ -244,7 +243,9 @@ CTString& CUIBase::getText(INDEX idx)
         return ret;
     }
 
-    return CTString("");
+    static CTString s_empty;  // was: return CTString(""), a reference to a temporary
+    s_empty.Clear();
+    return s_empty;
 }
 
 void CUIBase::InitPos(int x, int y, int w, int h)

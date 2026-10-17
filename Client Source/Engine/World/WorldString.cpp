@@ -281,7 +281,7 @@ void CWorld::LoadStringSkill()
 	int		nMax = cont_.Count();	
 	const char* strtmp;
 
-	for (i = 0; i <= nMax; ++i)
+	for (i = 0; i < nMax; ++i)	// was <= nMax: read one element past the end
 	{
 		nIdx = cont_[i].GetIndex();
 
@@ -479,7 +479,7 @@ void CWorld::LoadStringLacarette()
 	int		nMax = cont_.Count();
 	const char* strtmp = NULL;
 
-	for (i = 0; i <= nMax; ++i)
+	for (i = 0; i < nMax; ++i)	// was <= nMax: read one element past the end
 	{
 		nIdx = cont_[i].GetCourseIndex();
 

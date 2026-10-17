@@ -468,8 +468,53 @@ static LONG WINAPI _UnhandledExceptionFilter(PEXCEPTION_POINTERS pExceptionInfo)
 	}
 }
 
+// Debug aid: when ThrowLog.txt exists, log the call stack (function, file:line from the
+// PDBs) of every C++ exception thrown from the standard library (MSVCP140), since the
+// crash report cannot walk the stack through it.
+static bool _bLcThrowSymbolsReady = false;
+static LONG CALLBACK LcLogStdExceptionStack(PEXCEPTION_POINTERS pInfo)
+{
+	if (pInfo->ExceptionRecord->ExceptionCode != 0xE06D7363) return EXCEPTION_CONTINUE_SEARCH;
+	void* apFrames[48];
+	const USHORT ctFrames = RtlCaptureStackBackTrace(0, 48, apFrames, NULL);
+	HMODULE hStd = GetModuleHandleA("MSVCP140.dll");
+	bool bFromStd = false;
+	for (USHORT i = 0; i < ctFrames && !bFromStd; i++) {
+		HMODULE hMod = NULL;
+		GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)apFrames[i], &hMod);
+		bFromStd = (hMod != NULL && hMod == hStd);
+	}
+	if (!bFromStd) return EXCEPTION_CONTINUE_SEARCH;
+	FILE* fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return EXCEPTION_CONTINUE_SEARCH;
+	fseek(fLog, 0, SEEK_END);
+	HANDLE hProcess = GetCurrentProcess();
+	if (!_bLcThrowSymbolsReady) { SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME); _bLcThrowSymbolsReady = SymInitialize(hProcess, NULL, TRUE) != FALSE; }
+	fprintf(fLog, "C++ exception from the standard library, stack:\n");
+	for (USHORT i = 0; i < ctFrames; i++) {
+		char achSym[sizeof(SYMBOL_INFO) + 256];
+		SYMBOL_INFO* pSym = (SYMBOL_INFO*)achSym;
+		memset(achSym, 0, sizeof(achSym));
+		pSym->SizeOfStruct = sizeof(SYMBOL_INFO);
+		pSym->MaxNameLen = 255;
+		DWORD64 dwDisp = 0; DWORD dwLineDisp = 0;
+		IMAGEHLP_LINE64 line; memset(&line, 0, sizeof(line)); line.SizeOfStruct = sizeof(line);
+		const DWORD64 addr = (DWORD64)(UINT_PTR)apFrames[i];
+		const BOOL bSym = _bLcThrowSymbolsReady && SymFromAddr(hProcess, addr, &dwDisp, pSym);
+		const BOOL bLine = _bLcThrowSymbolsReady && SymGetLineFromAddr64(hProcess, addr, &dwLineDisp, &line);
+		fprintf(fLog, "  %08X %s", (unsigned)(UINT_PTR)apFrames[i], bSym ? pSym->Name : "?");
+		if (bLine) fprintf(fLog, "  (%s:%u)", line.FileName, (unsigned)line.LineNumber);
+		fprintf(fLog, "\n");
+	}
+	fclose(fLog);
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 extern void InitExceptionHandler(const char* FileName)
 {
+	// See LcLogStdExceptionStack above.
+	AddVectoredExceptionHandler(1, LcLogStdExceptionStack);
+
 	// Set current exception filter function
 	_efPreviousFilter = SetUnhandledExceptionFilter(_UnhandledExceptionFilter);
 	

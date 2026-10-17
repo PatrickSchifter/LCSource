@@ -468,6 +468,7 @@ static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStrea
 	GetShaderDeclaration_D3D(ulDeclaration,ulStreamFlags);
 	LPD3DXBUFFER pBuffer = NULL;
 	ULONG *pulShaderTokens = CompileVertexProgram_D3D(strVertexProgram, &pBuffer);
+	if (pulShaderTokens == NULL) return 0;  // assembly failed: no program
 	ASSERT(pBuffer->GetBufferPointer() == pulShaderTokens);
 
 	// create new vertex shader
@@ -492,6 +493,7 @@ static ULONG d3d_CreatePixelProgram(const char *strPixelProgram)
 	ULONG ulProgramHandle;
 	LPD3DXBUFFER pBuffer = NULL;
 	ULONG *pulShaderTokens = CompilePixelProgram_D3D(strPixelProgram, &pBuffer);
+	if (pulShaderTokens == NULL) return 0;  // assembly failed: no program
 	ASSERT(pBuffer->GetBufferPointer() == pulShaderTokens);
 
 #define D3DPIXELSHADERDEF ULONG

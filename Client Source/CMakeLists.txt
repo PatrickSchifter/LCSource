@@ -49,12 +49,14 @@ endif()
 # SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
 # build) and quits silently on a mismatch, so it must be off for binaries built here.
 target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
-target_compile_options(lc_client_common INTERFACE /W1 /MP /EHsc /permissive /Zc:strictStrings- /Zc:threadSafeInit- /bigobj
+target_compile_options(lc_client_common INTERFACE /W1 /we4172 /Zi /Oy- /MP /EHsc /permissive /Zc:strictStrings- /Zc:threadSafeInit- /bigobj
   "/FI${CMAKE_CURRENT_SOURCE_DIR}/Compat/d3d8_mingw.h")  # what the MinGW-w64 d3d8 headers expect
 target_include_directories(lc_client_common INTERFACE
   "${LC_GEN}" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8")
 target_include_directories(lc_client_common SYSTEM INTERFACE "${LC_D3D8_INCLUDE_DIR}")
 target_link_libraries(lc_client_common INTERFACE Boost::headers)
+# Debug info and frame pointers so crash stacks (ErrorLog.txt, debuggers) are usable.
+target_link_options(lc_client_common INTERFACE /DEBUG /OPT:REF /OPT:ICF)
 # Libraries requested by name through #pragma comment(lib, ...) live in the archive directory.
 target_link_directories(lc_client_common INTERFACE "${CMAKE_BINARY_DIR}/lib")
 

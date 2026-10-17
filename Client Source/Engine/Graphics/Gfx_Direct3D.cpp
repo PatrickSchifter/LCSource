@@ -323,8 +323,11 @@ extern ULONG *CompileVertexProgram_D3D(const char *strVertexProgram, ID3DXBuffer
 #else 
 	HRESULT hr = D3DXAssembleShader(strVertexProgram,strlen(strVertexProgram),ulFlags,NULL,ppOut,NULL);
 #endif
-	ASSERT(hr==D3D_OK);
-	D3D_CHECKERROR(hr);
+	// D3DX9 rejects some D3D8-era shader sources; report "no program" instead of crashing.
+	if (FAILED(hr) || *ppOut == NULL) {
+		*ppOut = NULL;
+		return NULL;
+	}
 	return (ULONG*)(*ppOut)->GetBufferPointer();
 }
 
