@@ -231,4 +231,4 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 | 2026-10-17 | Mapas reais da zona inicial, EXP/`%s`, NPCs sem modelo; modelos visíveis com skinning em software | 65e4d45, 4080b38 |
 | 2026-10-17 | Lojas: páginas de ícone `ItemBtn20..30` | 585fef1 |
 | 2026-10-17 | Mapas reais de 42 zonas exportados dos `.wld` (`ZoneMapExport`) | 46c09dc |
-| 2026-10-17 | Shaders por hardware no cliente Windows (temporários inicializados no shim) | |
+| 2026-10-17 | Shaders por hardware no cliente Windows (temporários inicializados no shim); confirmado em jogo | 01450ec |
