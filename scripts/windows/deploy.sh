@@ -5,6 +5,7 @@
 "$(dirname "$0")/wps.sh" <<'EOF'
 Stop-Process -Name Nksp -Force -ErrorAction SilentlyContinue; Start-Sleep 2
 Copy-Item C:\LCSource-build\Bin\*.dll, C:\LCSource-build\Bin\*.pdb, C:\LCSource-build\Bin\Nksp.exe C:\LC-BR2014\Bin -Force
+if (Test-Path C:\LCSource-build\Bin\Cursors) { Copy-Item C:\LCSource-build\Bin\Cursors C:\LC-BR2014\Bin -Recurse -Force }
 Set-Content C:\LC-BR2014\ThrowLog.txt "" -Encoding ASCII
 schtasks /Run /TN "LC Nosso Cliente" | Out-Null
 Start-Sleep 30

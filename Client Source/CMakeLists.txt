@@ -195,6 +195,10 @@ add_dependencies(ZoneMapExport lc_entities)
 add_custom_command(TARGET Nksp POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LC_D3DX9_DIR}/release/bin/x86/D3DX9_43.dll" "${LC_BIN}")
 if(LC_PLATFORM_SDL)
+  # SDL3 and the game's mouse cursors (the SDL build reads them as files, not resources)
+  file(GLOB LC_CURSOR_FILES "${LC_CLIENT_SRC}/Nksp/res/cur_*.cur")
   add_custom_command(TARGET Nksp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${LC_BIN}")
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${LC_BIN}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${LC_BIN}/Cursors"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LC_CURSOR_FILES} "${LC_BIN}/Cursors")
 endif()

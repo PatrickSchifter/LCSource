@@ -850,6 +850,20 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ZOOMIN, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_ZOOMIN_CURSOR) ) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIGNAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_SIGNAL_CURSOR) ) );
 	
+#else
+	// the same cursors, read from Bin\Cursors\ (copied there from Nksp\res\ by the build)
+	{
+		static const struct { UIMCType umct; const char *strFile; } aCursors[] = {
+			{ UMCT_NORMAL, "cur_00" }, { UMCT_ATT_NORMAL, "cur_01" }, { UMCT_ATT_SKILL, "cur_02" },
+			{ UMCT_ATT_MAGIC, "cur_03" }, { UMCT_ATT_BOW, "cur_04" }, { UMCT_PICK, "cur_05" },
+			{ UMCT_TALK, "cur_06" }, { UMCT_ZOOMIN, "cur_07" }, { UMCT_SIZE, "cur_08" },
+			{ UMCT_PRODUCE, "cur_09" }, { UMCT_SIGNAL, "cur_10" },
+		};
+		for (INDEX iCursor = 0; iCursor < ARRAYCOUNT(aCursors); iCursor++) {
+			CTString strFile = _fnmApplicationPath + "Bin\\Cursors\\" + aCursors[iCursor].strFile + ".cur";
+			pUIManager->GetMouseCursor()->SetCursorHandle( aCursors[iCursor].umct, PLT_LoadCursorFile(strFile) );
+		}
+	}
 #endif
 
 	SE_Get_WebAddressPtr()->initialize();
