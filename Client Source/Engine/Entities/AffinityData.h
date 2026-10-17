@@ -136,7 +136,7 @@ public:
 		const char* GetName()				{ return name.c_str(); }
 	};
 private:
-	struct CompareDonationItemData : public std::binary_function < _DonationItemInfo, int, bool >
+	struct CompareDonationItemData
 	{
 		bool operator() ( const _DonationItemInfo& data, const int index ) const
 		{

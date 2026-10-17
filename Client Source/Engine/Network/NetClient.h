@@ -7,7 +7,7 @@
 class CNetSocket
 {
 public:
-	CNetSocket(boost::asio::io_service& io);
+	CNetSocket(boost::asio::io_context& io);
 	~CNetSocket();
 
 	bool	isValid();
@@ -31,10 +31,10 @@ public:
 	void send(CNetworkMessage& nmMessage);
 	void recv();
 
-	boost::asio::io_service& get_service()		{ return _io_service; }
+	boost::asio::io_context& get_service()		{ return _io_service; }
 
 private:
-	boost::asio::io_service	_io_service;
+	boost::asio::io_context	_io_service;
 	CNetSocket* _pSock;
 };
 

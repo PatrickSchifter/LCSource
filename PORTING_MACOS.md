@@ -118,10 +118,22 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 
 ## Trilha C — Cliente
 
+### C0. Cliente Windows a partir do nosso fonte (validação do servidor)
+O cliente do LC Brasil Clássico é modificado (SEED com S-boxes/chave próprias, versão 215436, login com HWID/MAC),
+então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para testar contra o servidor.
+- [x] Windows: VS 2022 Build Tools (x86), CMake, Ninja, WinFlexBison, Boost 1.86 x86 (`C:\LCSource-deps`)
+- [x] Dependências fora do repo: D3DX9 (NuGet `Microsoft.DXSDK.D3DX`), headers D3D8 do MinGW-w64 (o Windows SDK não traz mais `d3d8.h`)
+- [x] Camada `Compat/d3dx8` (matemática D3DX8 própria; assembler de shader via D3DX9; textura sobre D3D8)
+- [x] `Client Source/CMakeLists.txt` (listas de fontes geradas da config BRZLIVE por `scripts/vcxproj-to-cmake.py`)
+- [x] XTrap/GameGuard desligados (`LC_NO_XTRAP`, `NO_GAMEGUARD`)
+- [~] Engine compilando com MSVC 2022 (corrigindo erros)
+- [ ] Shaders, EntitiesMP, GameMP, Nksp compilando e linkando
+- [ ] Rodar com os assets do cliente BR e logar no servidor do Mac
+
 ### C1. Build e geração de código
-- [ ] Compilar o `Ecc` nativo (flex/bison do Homebrew) e gerar os 108 `.es` → `.cpp/.h/_tables.h` via CMake
+- [x] Compilar o `Ecc` nativo e gerar os 108 `.es` → `.cpp/.h/_tables.h` via CMake (macOS e Windows; corrigidos CRLF, vazamento quadrático e pilha do bison)
 - [ ] Regenerar no build os parsers do Engine (`Base/Parser.y`, `Scanner.l`, `Ska/smcPars.y`, `smcScan.l`)
-- [ ] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`)
+- [~] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`) — existe para Windows/MSVC x86
 - [ ] Trocar `LoadLibrary`/`GetProcAddress` de EntitiesMP/Shaders por link estático com registro de classes (ou `dlopen`)
 - [ ] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`
 - [ ] Includes com caixa errada (`Console_Internal.h`, `GFX_wrapper_OpenGL.cpp`...); vamos padronizar e não depender de APFS case-insensitive
@@ -147,7 +159,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [ ] `Engine/Base/Protection.cpp`, `Engine/Secure/FileSecure` (manter o que for necessário para ler os assets)
 - [ ] IFeel, Visual Leak Detector, `MiniDump.cpp`/dbghelp
 - [ ] Intel IJL (JPEG) → stb_image; dxtlib → decodificador DXT próprio ou GPU nativa
-- [ ] LCCrypt: compilar a partir de `Server Source/ShareLib/LCCrypt.cpp`
+- [x] LCCrypt: compilar a partir de `Server Source/ShareLib/LCCrypt.cpp`
 - [ ] Remover `Engine/XBox/*`
 
 ### C5. Camada de plataforma

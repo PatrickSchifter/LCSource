@@ -1,3 +1,7 @@
+// Include the engine (and Windows) headers before the token #defines below: newer Windows
+// SDK headers use "identifier" as a parameter name.
+#include "StdH.h"
+
 
 /*  A Bison parser, made from .\base/parser.y
  by  GNU Bison version 1.25

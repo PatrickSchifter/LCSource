@@ -186,7 +186,7 @@ private:
 };
 
 #if		(_MSC_VER >= 1600)
-class Compare : std::unary_function<Quest::stRestoreInfo, bool>
+class Compare
 {
 public:
 	bool operator()(const Quest::stRestoreInfo& lhs, const Quest::stRestoreInfo& rhs) const

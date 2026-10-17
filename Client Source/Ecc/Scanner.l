@@ -3,6 +3,9 @@
 #include "Ecc/StdH.h"
 #include "Ecc/Main.h"
 #include "Ecc/Parser.h"
+#ifdef _WIN32
+#include <io.h>  // isatty() for the flex-generated scanner
+#endif
 
 #define YY_NEVER_INTERACTIVE 1
 

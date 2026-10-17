@@ -15,4 +15,7 @@
 #define NEW_WORLD_MAP	// [2012/10/11 : Sora] 월드맵 개편
 #define SPAMER_BLOCK	//added by sam 11/02/24 미국 스패머 차단
 #define UPDATE1107_GUILDSYSTEM	// 길드 시스템 개편
+#ifndef LC_NO_XTRAP	// XTrap client SDK is not available
 #define XTRAP_SECURE_CKBANG_2010_07_20	// XTrap 보안 솔루션 적용
+
+#endif

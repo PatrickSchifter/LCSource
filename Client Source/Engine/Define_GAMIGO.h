@@ -23,6 +23,9 @@
 #define RESTART_GAME
 #define SORCERER_SUMMON_VILLAGE_VISIBLE_NA_20081008
 #define UPDATE1107_GUILDSYSTEM	// 길드 시스템 개편
+#ifndef LC_NO_XTRAP	// XTrap client SDK is not available
 #define XTRAP_SECURE_CKBANG_2010_07_20	// 2010-07-20 방창규 - XTrap 보안 솔루션 적용
+
+#endif
 #if defined VER_TEST
 #endif	// VER_TEST
