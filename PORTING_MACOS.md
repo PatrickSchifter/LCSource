@@ -173,16 +173,17 @@ Detalhes em `HANDOFF.md` ("Assembly x86 (C3) — como ficou").
 - [ ] Checagem automática no CI
 
 ### C4. Remover ou isolar dependências só de Windows
-Roteiro detalhado (arquivos, linhas, ordem) em `HANDOFF.md` ("C4 — roteiro").
-- [ ] Remover `Engine/XBox/*` (e o include em `Engine/StdH.h`)
-- [ ] nProtect GameGuard (`Nksp/GameGuard.*`, `Engine/GameGuardInterface.h`, blocos `NO_GAMEGUARD`)
-- [ ] XTrap (`Nksp/XTrap`, `Engine/XTrap`, `xTrapWrapper`, `XTrapInterface`)
-- [ ] Kalydo (`KALYDO`, `Engine/Kalydo`, `Kalydo/`, `Nksp/Social`, KRFReadLib; manter os ramos `#else`)
-- [ ] `Engine/Base/Protection.cpp` (`COPY_PROTECTION`=0); manter `Engine/Secure/FileSecure` (checksum portátil usado pelos dados)
-- [ ] IFeel (stubs), Visual Leak Detector, `MiniDump.cpp`/`StackDump.cpp`/dbghelp só no Windows
-- [ ] Intel IJL (screenshot JPEG) → stb_image_write; apagar dxtlib (manter `DXTC.cpp`)
+Como ficou: `HANDOFF.md` ("C4 — como ficou"). Commits `a325b3a`..`5ff5a2c`.
+- [x] Remover `Engine/XBox/*` (e o include em `Engine/StdH.h`)
+- [x] nProtect GameGuard (`Nksp/GameGuard.*`, `Engine/GameGuardInterface.h`, blocos `NO_GAMEGUARD`)
+- [x] XTrap (`Nksp/XTrap`, `Engine/XTrap`, `xTrapWrapper`, `XTrapInterface`)
+- [x] Kalydo (`KALYDO`, `Engine/Kalydo`, `Kalydo/`, `Nksp/Social`, KRFReadLib; manter os ramos `#else`)
+- [x] `Engine/Base/Protection.cpp` (`COPY_PROTECTION`=0); manter `Engine/Secure/FileSecure` (checksum portátil usado pelos dados)
+- [x] IFeel (stubs), Visual Leak Detector, `MiniDump.cpp` (era código morto, apagado)/`StackDump.cpp`/dbghelp só no Windows
+- [x] Intel IJL (screenshot JPEG) → stb_image_write; apagar dxtlib (manter `DXTC.cpp`)
 - [x] LCCrypt: compilar a partir de `Server Source/ShareLib/LCCrypt.cpp`
-- [ ] Limpar `.lib` pré-compilados não usados, `CDCheck.h`, `FGC_Net.*`
+- [x] Limpar `.lib` pré-compilados não usados (todo o `Lib/`), `CDCheck.h`, `FGC_Net.*`
+- [x] Testado no cliente Windows em 2026-10-17: build sem erros, login, Juno, screenshot JPEG
 
 ### C5. Camada de plataforma
 - [ ] Janela e loop principal (substituir `Nksp/MainWindow.cpp`, WinMain e HWND, que aparece em 44 arquivos)
@@ -251,3 +252,4 @@ Roteiro detalhado (arquivos, linhas, ordem) em `HANDOFF.md` ("C4 — roteiro").
 | 2026-10-17 | Lojas: páginas de ícone `ItemBtn20..30` | 585fef1 |
 | 2026-10-17 | Mapas reais de 42 zonas exportados dos `.wld` (`ZoneMapExport`) | 46c09dc |
 | 2026-10-17 | Shaders por hardware no cliente Windows (temporários inicializados no shim); confirmado em jogo | 01450ec |
+| 2026-10-17 | C4: GameGuard, XTrap, Kalydo, proteção contra cópia, MiniDump, VLD, IJL, dxtlib e `.lib` pré-compilados removidos; IFeel em stubs, StackDump só no Windows | a325b3a..5ff5a2c |

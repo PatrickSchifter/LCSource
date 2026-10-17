@@ -9,8 +9,9 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Um cliente **Windows** compilado deste repositório (D3D8, 32 bits, MSVC) loga nesse servidor pela
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
-- Cliente Mac: só a preparação. Tipos e 64 bits (C2) e assembly x86 (C3) feitos; o código do cliente
-  compila no Mac apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
+- Cliente Mac: só a preparação. Tipos e 64 bits (C2), assembly x86 (C3) e dependências só de
+  Windows (C4) feitos; o código do cliente compila no Mac apenas no modo de verificação
+  (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -20,62 +21,39 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` que o motor já tem,
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
 
-1. **C4 — remover/isolar dependências só de Windows**: roteiro pronto na seção abaixo.
-2. C5 (camada de plataforma: janela, input, timers, threads, arquivos, registry), depois o restante
-   da C1 e o primeiro link no Mac.
+1. **C5** (camada de plataforma em SDL2: janela, input, timers, threads, arquivos, registry), depois
+   o restante da C1 e o primeiro link no Mac. Para a C5, levantar antes um roteiro como o da C4
+   (arquivos, linhas, ordem) e registrá-lo aqui.
 
-## C4 — roteiro (levantado em 2026-10-17)
+## C4 — como ficou (2026-10-17)
 
-Caminhos relativos a `Client Source/`. Arquivos em ISO-8859-1/CRLF: buscar com `LC_ALL=C grep -a` e
-editar preservando a codificação. A lista de fontes do CMake está em `cmake/*_sources.cmake`.
-`CMakeLists.txt:49` (e `cmake/ClientCheck.cmake:52`) definem `LC_NO_XTRAP NO_GAMEGUARD`; `KALYDO`,
-`USE_GAMEGUARD` e `COPY_PROTECTION` não estão ligados em lugar nenhum. Ou seja: quase tudo da C4 já é
-código morto; o trabalho é **apagar mantendo o ramo `#else` que hoje compila**, para o Windows dar
-o mesmo binário. Um commit por item; depois de cada um, check do Mac (`-DLC_CHECK_DIRS=ALL`, sem
-erro novo) e build do Windows (`scripts/windows/build.sh`, 0 erros); no fim, deploy e um login.
+Commits `a325b3a`..`5ff5a2c`, um por item. Quase tudo era código morto (`KALYDO`, `USE_GAMEGUARD`,
+`COPY_PROTECTION` e o XTrap nunca estavam ligados); a regra foi **apagar mantendo o ramo que já
+compilava**, para o Windows continuar igual. Ferramenta útil: `unifdef` (vem no macOS), por exemplo
+`unifdef -m -UKALYDO arquivo` (não simplifica condições compostas, como `!defined(KALYDO) && ...`;
+essas foram editadas à mão). Em `Define_RUS.h` ele acusa "EOF in comment" e não grava nada.
 
-1. **Engine/XBox** (fácil, começar por aqui): o único uso é `Engine/StdH.h:37`
-   `#include <Engine/Xbox/XKeyboard.h>` (header vazio, e a caixa `Xbox`≠`XBox` quebra em FS
-   case-sensitive). Tirar o include e apagar o diretório; nenhum `.cpp` dele está no CMake.
-2. **GameGuard**: `Nksp/GameGuard.cpp/.h`, `Engine/GameGuardInterface.h`, a lógica de
-   `NO_GAMEGUARD`/`USE_GAMEGUARD` em `Engine/LocalDefine.h:149-150` e os blocos `#ifndef NO_GAMEGUARD`
-   em `Engine.cpp`, `Contents/Login/UILoginNew.cpp`, `LoginNew.cpp`, `Interface/UILogin.cpp`,
-   `Network/CNetwork.h/.cpp` (~9792-9855), `SessionState.h/.cpp`, `SessionStateExten.cpp:1074`
-   (`MSG_EX_NPROTECT`: manter o case lendo e descartando o pacote, se o servidor ainda manda),
-   `Nksp/Nksp.cpp`. Remover o `.cpp` de `cmake/Nksp_sources.cmake` e o `NO_GAMEGUARD` do CMake.
-3. **XTrap**: `Nksp/xTrapWrapper.*`, `Nksp/XTrap/` (com `.lib`), `Engine/XTrap/` (duplicata morta),
-   `Engine/XTrapInterface/`, os blocos `XTRAP_SECURE_CKBANG_2010_07_20` em `Define_BRA/USA/RUS/GAMIGO.h`
-   e nos usos (`Engine.cpp`, `SessionStateExten.cpp` `MSG_EX_XTRAP`, `SessionStateInfo.cpp`,
-   `Nksp.cpp`). Tirar `LC_NO_XTRAP` do CMake no fim.
-4. **Kalydo**: apagar cada `#ifdef KALYDO` mantendo o `#else` (loaders de asset em `Texture.cpp`,
-   `Ska/Mesh/AnimSet/Skeleton.cpp`, `SoundData.cpp`, `Base/Serial.*`, `CTString.h` e os headers
-   correspondentes; `Engine.cpp/.h`, `UIOption.*`, `UILogin.cpp`, `SessionState.*`, `GameMP/Game.cpp`,
-   `Map.cpp`, `Nksp.cpp/.h`, `MainWindow.cpp`). Nos `!defined(KALYDO)` (`LocalDefine.h:156`,
-   `Engine.cpp:753`, `CNetwork.cpp:2293`, `Nksp.cpp:1215`) manter o corpo e tirar só a condição.
-   Apagar `Engine/Kalydo/` (tirar `PackageManager.cpp` de `Engine_sources.cmake`: ele inclui
-   `KRFReadLib.h` incondicionalmente), `Kalydo/`, `Nksp/Social/`, `Nksp/Nksp_Kalydo*`, `*.kcproj`,
-   `*.kpprofile`.
-5. **Protection.cpp** (`#if COPY_PROTECTION`, =0): apagar e manter os `#else` em `Base/Stream.cpp`
-   (~282-327, só seta `sys_iCPUMisc=1`) e `Nksp/Nksp.cpp` (~737-781). **Não** mexer em
-   `Engine/Secure/FileSecure.*` (checksum portátil exigido por `Entities/Skill.cpp:135`), nem em
-   `SEED_256_KISA`/LCCrypt.
-6. **IFeel** (force feedback, `LoadLibrary` em runtime): trocar `Base/IFeel.cpp` por stubs no-op
-   (as ~45 chamadas em `Player.es`/`PlayerWeapons.es` ficam), ou apagar as chamadas fora dos `.es`.
-7. **MiniDump/dbghelp**: `Engine/MiniDump.*` (global `g_MiniDumper` em `Engine.cpp:46,88`) só no
-   Windows (`#ifdef _WIN32`); `Base/StackDump.cpp` idem, com stubs fora do Windows (depois: handler
-   de sinal + `backtrace()` na C5). `dbghelp` continua linkado só no Windows.
-8. **VLD**: ninguém inclui `vld.h`; apagar `include/vld*.h`, `Visual Leak Detector/`, `Lib/VC100/vld*`.
-9. **IJL (JPEG)**: só `CImageInfo::SaveJPG_t` (`Graphics/ImageInfo.cpp:402-456`), chamado pelo
-   screenshot (`GameMP/Game.cpp:2880`). Trocar por `stb_image_write` (vendorizar o header) ou salvar
-   TGA; tirar `IJL15L.LIB` do CMake e `include/ijl.h`.
-10. **dxtlib**: `Graphics/dxtlib.h` e o bloco `_MSC_VER < 1600` em `Texture.cpp:34-37,1640-1720`
-    (compressão, só editor; hoje devolve NULL). Apagar. **Manter `Graphics/DXTC.cpp`** (descompressor
-    DXT em C, usado ao carregar texturas).
-11. Limpeza: `.lib` pré-compilados não linkados (`Lib/*.lib`, `Lib/VC100/*` exceto o que ainda for
-    usado), `Nksp/CDCheck.h`, `Nksp/FGC_Net.*` (fora do CMake). Conferir antes com `git grep`.
-
-Fica para outras fases: D3D8/D3DX (C8), DirectSound/winmm (C7), Winsock/wininet/F_Socket/SharedMemory
-(C6), imm32/registry/janela (C5), ODBC (`odbc32` linkado no Engine/Nksp: ver se algo usa, C5).
+- Removidos: `Engine/XBox`, GameGuard, XTrap (e `LC_NO_XTRAP`/`NO_GAMEGUARD` do CMake), Kalydo
+  (`Engine/Kalydo`, `Kalydo/`, `Nksp/Social`, `.kcproj`...), `Protection.cpp` (Blowfish/TSE.key),
+  `MiniDump.*` (estava atrás de `USE_MINIDUMP`, nunca definido), Visual Leak Detector, dxtlib, Intel IJL,
+  todo o `Lib/` pré-compilado, `CDCheck.h`, a cadeia `FGC_Net*`/`mail.cpp` (fora do build) e
+  `Engine/Def_make`. `MSG_EX_NPROTECT` e `MSG_EX_XTRAP` ficam no enum (numeração do protocolo).
+- `IFeel.cpp`: stubs; `IFeel_InitDevice` ainda declara os símbolos do shell (`inp_fIFeelGain` é
+  persistente) e devolve FALSE, como antes sem o `ImmWrapper.dll`.
+- `Base/StackDump.cpp` (o `ErrorLog.txt`): compilado só com `_WIN32`; fora dele, stubs da API até a C5
+  trazer um handler de sinal com `backtrace()`.
+- Screenshot JPEG: `stb_image_write.h` vendorizado em `3rdparty/stb/` (commit fixado no README de lá).
+  O arquivo continua terminando com o trailer de 4 bytes (`~tamanho do JPEG`).
+- `scripts/vcxproj-to-cmake.py` ignora arquivos que não existem mais: apagar um `.cpp` e regenerar
+  as listas basta (o gerador continua sendo a fonte de `cmake/*_sources.cmake`).
+- Check do Mac: 0 `fatal error`, nenhum erro novo, 3.453 → 3.306 erros únicos (os que sumiram eram
+  Win32). Windows: 0 erros; login, entrada em Juno e screenshot JPEG (orientação, cores, trailer) conferidos.
+- Fica para outras fases: D3D8/D3DX (C8), DirectSound/winmm (C7), Winsock/wininet/F_Socket/SharedMemory
+  (C6), imm32/registry/janela (C5), ODBC (`odbc32` linkado no Engine/Nksp: ver se algo usa, C5).
+- Achado para a C1/C5: vários `#if (_MSC_VER >= 1600)` (`Quest.cpp/.h`, `SingletonBase.h`, `Engine.cpp`,
+  `EntityClass.cpp`, `Shader.cpp`) e `_MSC_VER <= 1200` (`ItemData.h`, `MobData.h`) escolhem no clang
+  o ramo do VC6/VS2008, não o que o Windows compila hoje. Trocar por `#if !defined(_MSC_VER) || ...`
+  conforme o caso.
 
 ## Assembly x86 (C3) — como ficou
 
@@ -100,8 +78,8 @@ Fica para outras fases: D3D8/D3DX (C8), DirectSound/winmm (C7), Winsock/wininet/
   conversão de cor D3D), UI (cores), som ambiente e de combate (SoundMixer). Depois voltar para OFF.
   Testado em 2026-10-17 (login, Juno, combate, som): sem diferença visível em relação ao asm. O
   build do Windows (`C:\LCSource-build`) voltou para OFF.
-- Achado à parte: `Stream.cpp` usa `ScanF("%I64x")`, formato só do MSVC (`vsscanf` do Mac não
-  entende); `Shader.cpp` ~1461 liga referência não-const a temporário (erro no clang, C1).
+- Achado à parte: `Shader.cpp` ~1461 liga referência não-const a temporário (erro no clang, C1).
+  (O `ScanF("%I64x")` de `Stream.cpp` saiu junto com a proteção contra cópia, na C4.)
 
 ## Verificação do cliente no Mac (`LC_CLIENT_CHECK_ONLY`)
 
@@ -165,6 +143,7 @@ Fluxo (do Mac, na raiz do repo):
 
 ```
 scripts/windows/build.sh [alvos]      # sync + ninja; padrão: Engine Shaders EntitiesMP GameMP Nksp
+LC_NO_SYNC=1 scripts/windows/build.sh # compila o que já está lá (para editar a próxima mudança enquanto isso)
 scripts/windows/deploy.sh             # copia para C:\LC-BR2014\Bin e abre o jogo
 scripts/windows/crash.sh              # último crash do ErrorLog.txt -> função e arquivo:linha
 scripts/windows/crash.sh stacks       # pilhas ao vivo (cliente travado, ou parado num MessageBox)
@@ -187,6 +166,11 @@ scripts/windows/wps.sh <<'EOF' ... EOF  # PowerShell arbitrário no Windows
 - **Sincronização:** `sync.sh` envia o que mudou desde o último commit sincronizado
   (`.git/lc-windows-last-sync`). Se houver suspeita de divergência, `scripts/windows/sync.sh --verify`
   compara tudo por hash. (Já aconteceu: o Windows ficou com a tabela SEED antiga e o login quebrou.)
+  Arquivos apagados aqui também são apagados lá (com os diretórios que ficarem vazios).
+- **Horário dos arquivos:** o `sync.sh` extrai com `tar -m` (horário da extração). Antes ele mantinha
+  o horário do Mac, e um fonte editado aqui durante um build no Windows podia ficar mais antigo que o
+  `.obj` gerado lá: o ninja não recompilava. Se suspeitar disso, escreva um commit antigo em
+  `.git/lc-windows-last-sync` e sincronize de novo (os arquivos chegam com horário novo).
 - **Dependências de header:** o `cl.exe` está em português e imprime o prefixo do `/showIncludes`
   no codepage do console. O `build.cmd` fixa `chcp 65001` para configure e build usarem o mesmo;
   sem isso o ninja não registra dependências e mudanças em `.h` não recompilam nada.
