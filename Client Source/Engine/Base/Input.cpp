@@ -310,7 +310,9 @@ CTCriticalSection csInput;
 
 // set a key according to a keydown/keyup message
 //static void SetKeyFromMsg(MSG *pMsg, BOOL bDown)
-static void SetKeyFromMsg(const MSGTYPE* pMsg, BOOL bDown)
+// (from a hook's message structure, or from a MSG with the SDL platform layer)
+template<class TMsg>
+static void SetKeyFromMsg(const TMsg* pMsg, BOOL bDown)
 {
 	INDEX iKID = -1;
 	// if capturing scan codes
@@ -407,7 +409,8 @@ static void CheckMouseMsg(MSLLHOOKSTRUCT *pm, WPARAM wp)
 	}
 }
 
-static void CheckKeyMsg(const MSGTYPE *pMsg)
+template<class TMsg>
+static void CheckKeyMsg(const TMsg *pMsg)
 {
 	if (pMsg->message==WM_KEYUP || pMsg->message==WM_SYSKEYUP) {
 		SetKeyFromMsg(pMsg, FALSE);
