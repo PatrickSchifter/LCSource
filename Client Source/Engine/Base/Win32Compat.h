@@ -348,6 +348,7 @@ typedef struct {
 #define MB_OK              0x00000000L
 #define MB_OKCANCEL        0x00000001L
 #define MB_YESNO           0x00000004L
+#define MB_YESNOCANCEL     0x00000003L
 #define MB_ICONHAND        0x00000010L
 #define MB_ICONERROR       MB_ICONHAND
 #define MB_ICONSTOP        MB_ICONHAND
@@ -364,6 +365,9 @@ typedef struct {
 #define IDCANCEL 2
 #define IDYES    6
 #define IDNO     7
+// MessageBox (Engine/Platform/Win32WindowSDL.cpp): an SDL message box; text in the client's code page
+int MessageBox(HWND hWnd, const char *strText, const char *strCaption, UINT uType);
+#define MessageBoxA MessageBox
 
 // Code pages (Win32Compat.cpp). CP_ACP, the system code page on Windows, is here the code page of
 // the client's country (G_KOR 949, G_JAPAN 932, G_CHINA 936, G_HONGKONG 950, G_THAI 874,
@@ -696,6 +700,9 @@ BOOL ReleaseCapture(void);
 // state of Caps Lock, Num Lock and Scroll Lock)
 SHORT GetAsyncKeyState(int iVirtKey);
 SHORT GetKeyState(int iVirtKey);
+// ShellExecute: only "open" of a URL or file, with the system's default application
+HINSTANCE ShellExecute(HWND hWnd, const char *strOperation, const char *strFile, const char *strParameters,
+                       const char *strDirectory, int nShowCmd);
 #define SM_CXSCREEN  0
 #define SM_CYSCREEN  1
 #define SM_CMONITORS 80

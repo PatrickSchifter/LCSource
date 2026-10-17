@@ -172,6 +172,10 @@ const char *ErrorDescription(const struct ErrorTable *pet, SLONG ulErrCode)
 */
 extern const CTString GetWindowsError(DWORD dwWindowsErrorCode)
 {
+#ifndef PLATFORM_WIN32
+	// GetLastError() is errno outside Windows (Win32Compat.h)
+	return CTString(strerror((int)dwWindowsErrorCode));
+#else
 	// buffer to recieve error description
 	LPVOID lpMsgBuf;
 	// call function that will prepare text abount given windows error code
@@ -183,6 +187,7 @@ extern const CTString GetWindowsError(DWORD dwWindowsErrorCode)
 	// Free the buffer.
 	LocalFree( lpMsgBuf );
 	return strResultMessage;
+#endif
 }
 
 // must be in separate function to disable stupid optimizer

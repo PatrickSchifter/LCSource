@@ -208,6 +208,75 @@ SHORT GetKeyState(int iVirtKey)
   return sState;
 }
 
+// text in the client's code page as UTF-8 for SDL
+static std::string ToUTF8(const char *str)
+{
+  if (str == NULL) return "";
+  StackMultiByteToWideChar(CP_ACP, str, -1, wcs);
+  if (wcs == NULL) return "";
+  StackWideCharToMultiByte(CP_UTF8, wcs, -1, strUTF8);
+  return strUTF8 != NULL ? strUTF8 : "";
+}
+
+int MessageBox(HWND hWnd, const char *strText, const char *strCaption, UINT uType)
+{
+  const std::string strTextUTF8 = ToUTF8(strText);
+  const std::string strCaptionUTF8 = ToUTF8(strCaption);
+  SDL_MessageBoxButtonData abtn[3];
+  int ctButtons = 0;
+  switch (uType & 0x0F) {
+  case MB_YESNO:
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, IDYES, "Yes" };
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDNO, "No" };
+    break;
+  case MB_YESNOCANCEL:
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, IDYES, "Yes" };
+    abtn[ctButtons++] = { 0, IDNO, "No" };
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDCANCEL, "Cancel" };
+    break;
+  case MB_OKCANCEL:
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, IDOK, "OK" };
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDCANCEL, "Cancel" };
+    break;
+  default:
+    abtn[ctButtons++] = { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT|SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDOK, "OK" };
+    break;
+  }
+  SDL_MessageBoxFlags flags = SDL_MESSAGEBOX_INFORMATION;
+  switch (uType & 0xF0) {
+  case MB_ICONHAND:        flags = SDL_MESSAGEBOX_ERROR; break;
+  case MB_ICONEXCLAMATION: flags = SDL_MESSAGEBOX_WARNING; break;
+  default: break;
+  }
+  SDL_MessageBoxData mbd;
+  memset(&mbd, 0, sizeof(mbd));
+  mbd.flags = flags;
+  mbd.window = (hWnd != NULL) ? SDLWindow(hWnd) : NULL;
+  mbd.title = strCaptionUTF8.c_str();
+  mbd.message = strTextUTF8.c_str();
+  mbd.numbuttons = ctButtons;
+  mbd.buttons = abtn;
+  int iButton = abtn[0].buttonID;
+  if (!SDL_ShowMessageBox(&mbd, &iButton)) {
+    // no message box (e.g. before video is up): at least the text
+    fprintf(stderr, "%s: %s\n", strCaptionUTF8.c_str(), strTextUTF8.c_str());
+    return abtn[0].buttonID;
+  }
+  return iButton;
+}
+
+HINSTANCE ShellExecute(HWND hWnd, const char *strOperation, const char *strFile, const char *strParameters,
+                       const char *strDirectory, int nShowCmd)
+{
+  (void)hWnd; (void)strParameters; (void)strDirectory; (void)nShowCmd;
+  if (strFile == NULL || (strOperation != NULL && strcasecmp(strOperation, "open") != 0)) {
+    return (HINSTANCE)(intptr_t)2;  // as ERROR_FILE_NOT_FOUND (<= 32 is a failure)
+  }
+  const BOOL bURL = strstr(strFile, "://") != NULL;
+  const std::string strTarget = bURL ? std::string(strFile) : std::string("file://") + LC_HostPath(strFile);
+  return (HINSTANCE)(intptr_t)(SDL_OpenURL(strTarget.c_str()) ? 33 : 2);
+}
+
 int GetSystemMetrics(int nIndex)
 {
   switch (nIndex) {

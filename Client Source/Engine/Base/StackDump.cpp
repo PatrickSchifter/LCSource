@@ -662,22 +662,91 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 
 #else // !_WIN32
 
-// No crash report outside Windows yet (C5: signal handler and backtrace()).
+// Outside Windows: fatal signals append the call stack (backtrace()) to the same report file
+// (ErrorLog.txt), then the signal is raised again so the system's crash report is made too.
+#include <execinfo.h>
+#include <signal.h>
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+extern void FCPrintF(CTFileStream *pstrm,const char *strFormat, ...);
+
+static char _strReportHostPath[1024] = "";  // resolved at init; the handler cannot allocate
+static const int _aiFatalSignals[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
+
+static void WriteString(int fd, const char *str)
+{
+	ssize_t ctWritten = write(fd, str, strlen(str));
+	(void)ctWritten;
+}
+
+static void FatalSignalHandler(int iSignal)
+{
+	int fd = open(_strReportHostPath, O_WRONLY|O_CREAT|O_APPEND, 0644);
+	if (fd < 0) fd = STDERR_FILENO;
+	char strNumber[16];
+	int iPos = (int)sizeof(strNumber) - 1;
+	strNumber[iPos] = 0;
+	int iValue = iSignal;
+	do { strNumber[--iPos] = (char)('0' + iValue % 10); iValue /= 10; } while (iValue > 0 && iPos > 0);
+	WriteString(fd, "\n*** Fatal signal ");
+	WriteString(fd, strNumber + iPos);
+	WriteString(fd, " (");
+	WriteString(fd, strsignal(iSignal));
+	WriteString(fd, ")\nCall stack:\n");
+	void *apvFrames[128];
+	const int ctFrames = backtrace(apvFrames, 128);
+	backtrace_symbols_fd(apvFrames, ctFrames, fd);
+	if (fd != STDERR_FILENO) {
+		close(fd);
+		backtrace_symbols_fd(apvFrames, ctFrames, STDERR_FILENO);
+	}
+	// let the default action (and the system's crash reporter) happen
+	signal(iSignal, SIG_DFL);
+	raise(iSignal);
+}
+
 extern void InitExceptionHandler(const char* FileName)
 {
+	strncpy(_strReportHostPath, LC_HostPath(FileName).c_str(), sizeof(_strReportHostPath) - 1);
+	for (size_t i = 0; i < sizeof(_aiFatalSignals) / sizeof(_aiFatalSignals[0]); i++) {
+		signal(_aiFatalSignals[i], FatalSignalHandler);
+	}
 }
 
 extern void CloseExceptionHandler(void)
 {
+	for (size_t i = 0; i < sizeof(_aiFatalSignals) / sizeof(_aiFatalSignals[0]); i++) {
+		signal(_aiFatalSignals[i], SIG_DFL);
+	}
 }
 
 extern BOOL GetLogicalAddress(void *pAddr, char *szModule, ULONG ulLen, ULONG &ulSection, ULONG &ulOffset)
 {
-	return FALSE;
+	// the module that contains the address, and the offset in it
+	Dl_info dli;
+	if (dladdr(pAddr, &dli) == 0 || dli.dli_fname == NULL) {
+		return FALSE;
+	}
+	strncpy(szModule, dli.dli_fname, ulLen);
+	if (ulLen > 0) szModule[ulLen - 1] = 0;
+	ulSection = 0;
+	ulOffset = (ULONG)((UBYTE*)pAddr - (UBYTE*)dli.dli_fbase);
+	return TRUE;
 }
 
 extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 {
+	void *apvFrames[128];
+	const int ctFrames = backtrace(apvFrames, 128);
+	char **astrSymbols = backtrace_symbols(apvFrames, ctFrames);
+	FCPrintF(pstrm, "Call stack:\n");
+	for (int iFrame = 0; iFrame < ctFrames; iFrame++) {
+		FCPrintF(pstrm, "  %s\n", astrSymbols != NULL ? astrSymbols[iFrame] : "?");
+	}
+	FCPrintF(pstrm, "\n");
+	free(astrSymbols);
 }
 
 #endif // _WIN32

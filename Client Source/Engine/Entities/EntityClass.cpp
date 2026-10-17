@@ -296,7 +296,7 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 	if (hiDLL==NULL) {
 #ifndef PLATFORM_WIN32
 		ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, dlerror());
-#endif
+#else
 		// get the error code
 		DWORD dwMessageId = GetLastError();
 		// format the windows error message
@@ -330,6 +330,7 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 
 		// report error
 		ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, strWinError);
+#endif
 	}	
 	return hiDLL;
 }
