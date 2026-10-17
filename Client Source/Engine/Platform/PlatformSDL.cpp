@@ -12,6 +12,7 @@
 #define SDL_MAIN_HANDLED  // the client has its own main()
 #include <SDL3/SDL_main.h>
 #include <deque>
+#include <vector>
 #include <math.h>
 
 static SDL_Window *_pwndMain = NULL;
@@ -456,6 +457,9 @@ static void TranslateEvent(const SDL_Event &ev)
   }
 }
 
+// Input.cpp: keys and mouse buttons for the game controls (what its Windows message hooks see)
+extern void INP_HandleMessage(const MSG &msg);
+
 BOOL PLT_PeekMessage(MSG *pmsg)
 {
   // translate pending events until there is a message to give
@@ -468,7 +472,136 @@ BOOL PLT_PeekMessage(MSG *pmsg)
   }
   *pmsg = _dqMessages.front();
   _dqMessages.pop_front();
+  INP_HandleMessage(*pmsg);
   return TRUE;
+}
+
+BOOL PLT_IsVirtualKeyDown(UINT uVirtKey)
+{
+  // mouse buttons
+  const SDL_MouseButtonFlags ulButtons = SDL_GetMouseState(NULL, NULL);
+  switch (uVirtKey) {
+  case VK_LBUTTON:  return (ulButtons & SDL_BUTTON_LMASK) != 0;
+  case VK_RBUTTON:  return (ulButtons & SDL_BUTTON_RMASK) != 0;
+  case VK_MBUTTON:  return (ulButtons & SDL_BUTTON_MMASK) != 0;
+  case VK_XBUTTON1: return (ulButtons & SDL_BUTTON_X1MASK) != 0;
+  case VK_XBUTTON2: return (ulButtons & SDL_BUTTON_X2MASK) != 0;
+  default: break;
+  }
+  int ctKeys = 0;
+  const bool *abState = SDL_GetKeyboardState(&ctKeys);
+  // modifiers, generic and left/right
+  switch (uVirtKey) {
+  case VK_SHIFT:    return abState[SDL_SCANCODE_LSHIFT] || abState[SDL_SCANCODE_RSHIFT];
+  case VK_CONTROL:  return abState[SDL_SCANCODE_LCTRL] || abState[SDL_SCANCODE_RCTRL];
+  case VK_MENU:     return abState[SDL_SCANCODE_LALT] || abState[SDL_SCANCODE_RALT];
+  case VK_LSHIFT:   return abState[SDL_SCANCODE_LSHIFT];
+  case VK_RSHIFT:   return abState[SDL_SCANCODE_RSHIFT];
+  case VK_LCONTROL: return abState[SDL_SCANCODE_LCTRL];
+  case VK_RCONTROL: return abState[SDL_SCANCODE_RCTRL];
+  case VK_LMENU:    return abState[SDL_SCANCODE_LALT];
+  case VK_RMENU:    return abState[SDL_SCANCODE_RALT];
+  default: break;
+  }
+  // any other key: the pressed keys that translate to this virtual key
+  SDL_KeyboardEvent ke;
+  memset(&ke, 0, sizeof(ke));
+  ke.mod = SDL_GetModState();
+  for (int iScan = 0; iScan < ctKeys; iScan++) {
+    if (!abState[iScan]) continue;
+    ke.scancode = (SDL_Scancode)iScan;
+    ke.key = SDL_GetKeyFromScancode(ke.scancode, SDL_KMOD_NONE, false);
+    if (VirtualKey(ke) == uVirtKey) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////
+// cursors
+
+static UWORD ReadUWORD(const UBYTE *pub) { return (UWORD)(pub[0] | (pub[1] << 8)); }
+static ULONG ReadULONG(const UBYTE *pub) { return (ULONG)(pub[0] | (pub[1] << 8) | (pub[2] << 16) | ((ULONG)pub[3] << 24)); }
+
+// The first image of a .cur file (BMP, 1/4/8/24/32 bits, with its AND mask) as a color cursor.
+static SDL_Cursor *CursorFromCur(const UBYTE *pub, size_t ctSize)
+{
+  // header: reserved, type 2 (cursor), count; first entry: width, height, colors, reserved,
+  // hot spot x and y, image size and offset
+  if (ctSize < 22 || ReadUWORD(pub + 2) != 2 || ReadUWORD(pub + 4) < 1) return NULL;
+  const int iHotX = ReadUWORD(pub + 10);
+  const int iHotY = ReadUWORD(pub + 12);
+  const ULONG ulOffset = ReadULONG(pub + 18);
+  if (ulOffset + 40 > ctSize) return NULL;
+  const UBYTE *pubBMP = pub + ulOffset;
+  if (ReadULONG(pubBMP) < 40) return NULL;  // PNG cursors are not used by the game
+  const int iWidth = (int)ReadULONG(pubBMP + 4);
+  const int iHeight = (int)ReadULONG(pubBMP + 8) / 2;  // color image and mask
+  const int iBits = ReadUWORD(pubBMP + 14);
+  ULONG ctColors = ReadULONG(pubBMP + 32);
+  if (iBits <= 8 && ctColors == 0) ctColors = 1U << iBits;
+  if (iBits > 8) ctColors = 0;
+  const UBYTE *pubPalette = pubBMP + ReadULONG(pubBMP);
+  const UBYTE *pubXOR = pubPalette + ctColors * 4;
+  const int ctXORStride = ((iWidth * iBits + 31) / 32) * 4;
+  const UBYTE *pubAND = pubXOR + ctXORStride * iHeight;
+  const int ctANDStride = ((iWidth + 31) / 32) * 4;
+  if (iWidth <= 0 || iHeight <= 0 || pubAND + ctANDStride * iHeight > pub + ctSize) return NULL;
+
+  SDL_Surface *psf = SDL_CreateSurface(iWidth, iHeight, SDL_PIXELFORMAT_ARGB8888);
+  if (psf == NULL) return NULL;
+  for (int y = 0; y < iHeight; y++) {
+    // rows are stored bottom-up
+    const UBYTE *pubRow = pubXOR + (iHeight - 1 - y) * ctXORStride;
+    const UBYTE *pubMask = pubAND + (iHeight - 1 - y) * ctANDStride;
+    ULONG *pulOut = (ULONG*)((UBYTE*)psf->pixels + y * psf->pitch);
+    for (int x = 0; x < iWidth; x++) {
+      ULONG ulB, ulG, ulR, ulA = 255;
+      if (iBits <= 8) {
+        const int iBit = x * iBits;
+        const int iIndex = (pubRow[iBit / 8] >> (8 - iBits - (iBit % 8))) & ((1 << iBits) - 1);
+        const UBYTE *pubColor = pubPalette + iIndex * 4;
+        ulB = pubColor[0]; ulG = pubColor[1]; ulR = pubColor[2];
+      } else {
+        const UBYTE *pubColor = pubRow + x * (iBits / 8);
+        ulB = pubColor[0]; ulG = pubColor[1]; ulR = pubColor[2];
+        if (iBits == 32) ulA = pubColor[3];
+      }
+      // the AND mask makes a pixel transparent (32-bit images carry alpha instead)
+      if (iBits != 32 && ((pubMask[x / 8] >> (7 - x % 8)) & 1)) ulA = 0;
+      pulOut[x] = (ulA << 24) | (ulR << 16) | (ulG << 8) | ulB;
+    }
+  }
+  SDL_Cursor *pcur = SDL_CreateColorCursor(psf, iHotX, iHotY);
+  SDL_DestroySurface(psf);
+  return pcur;
+}
+
+HCURSOR PLT_LoadCursorFile(const char *strFileName)
+{
+  FILE *pFile = fopen(strFileName, "rb");
+  if (pFile == NULL) {
+    CPrintF("Cannot open cursor '%s'\n", strFileName);
+    return NULL;
+  }
+  std::vector<UBYTE> aub;
+  UBYTE aubChunk[4096];
+  size_t ctRead;
+  while ((ctRead = fread(aubChunk, 1, sizeof(aubChunk), pFile)) > 0) {
+    aub.insert(aub.end(), aubChunk, aubChunk + ctRead);
+  }
+  fclose(pFile);
+  SDL_Cursor *pcur = aub.empty() ? NULL : CursorFromCur(aub.data(), aub.size());
+  if (pcur == NULL) {
+    CPrintF("Cannot read cursor '%s'\n", strFileName);
+  }
+  return (HCURSOR)pcur;
+}
+
+void PLT_SetCursor(HCURSOR hCursor)
+{
+  SDL_SetCursor(hCursor != NULL ? (SDL_Cursor*)hCursor : SDL_GetDefaultCursor());
 }
 
 #endif  // LC_PLATFORM_SDL

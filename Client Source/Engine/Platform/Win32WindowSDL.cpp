@@ -191,6 +191,23 @@ BOOL ReleaseCapture(void)
   return SDL_CaptureMouse(false);
 }
 
+SHORT GetAsyncKeyState(int iVirtKey)
+{
+  return PLT_IsVirtualKeyDown((UINT)iVirtKey) ? (SHORT)0x8000 : 0;
+}
+
+SHORT GetKeyState(int iVirtKey)
+{
+  SHORT sState = GetAsyncKeyState(iVirtKey);
+  const SDL_Keymod mod = SDL_GetModState();
+  if ((iVirtKey == VK_CAPITAL && (mod & SDL_KMOD_CAPS))
+   || (iVirtKey == VK_NUMLOCK && (mod & SDL_KMOD_NUM))
+   || (iVirtKey == VK_SCROLL && (mod & SDL_KMOD_SCROLL))) {
+    sState |= 1;
+  }
+  return sState;
+}
+
 int GetSystemMetrics(int nIndex)
 {
   switch (nIndex) {

@@ -28,6 +28,7 @@ typedef unsigned char  BYTE;
 typedef unsigned short WORD;
 typedef unsigned char  UCHAR;
 typedef unsigned short USHORT;
+typedef short          SHORT;
 typedef char           CHAR;
 typedef int            INT;
 typedef int8_t         INT8;
@@ -627,6 +628,10 @@ BOOL ClipCursor(const RECT *prc);  // NULL frees the cursor
 int  ShowCursor(BOOL bShow);       // display counter, as on Windows
 HWND SetCapture(HWND hWnd);
 BOOL ReleaseCapture(void);
+// key state from the platform layer: bit 15 set while down (GetKeyState: bit 0 is the toggle
+// state of Caps Lock, Num Lock and Scroll Lock)
+SHORT GetAsyncKeyState(int iVirtKey);
+SHORT GetKeyState(int iVirtKey);
 #define SM_CXSCREEN  0
 #define SM_CYSCREEN  1
 #define SM_CMONITORS 80

@@ -30,6 +30,14 @@ ENGINE_API void PLT_GetDesktopSize(PIX &pixWidth, PIX &pixHeight);
 // the next message translated from the window's events, as PeekMessage(PM_REMOVE) would give it
 ENGINE_API BOOL PLT_PeekMessage(MSG *pmsg);
 
+// whether a key or mouse button is down now, by Windows virtual key (GetAsyncKeyState)
+ENGINE_API BOOL PLT_IsVirtualKeyDown(UINT uVirtKey);
+
+// mouse cursors from Windows .cur files (the game's own cursors), as HCURSOR; NULL is the
+// system arrow
+ENGINE_API HCURSOR PLT_LoadCursorFile(const char *strFileName);
+ENGINE_API void PLT_SetCursor(HCURSOR hCursor);
+
 #endif  // LC_PLATFORM_SDL
 
 #endif  /* include-once check. */
