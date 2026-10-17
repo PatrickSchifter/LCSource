@@ -94,6 +94,10 @@ add_library(f_socket STATIC
   F_Socket/F_Critical.cpp F_Socket/F_Thread.cpp F_Socket/F_WSThread.cpp)
 target_link_libraries(f_socket PRIVATE lc_client_common)
 
+add_library(SharedMemory STATIC  # requested as "SharedMemory.lib" by Nksp
+  SharedMemory/Access_control.cpp SharedMemory/Ext_ipc_event.cpp SharedMemory/SharedMemory_queue.cpp)
+target_link_libraries(SharedMemory PRIVATE lc_client_common)
+
 add_library(d3dx8_compat STATIC Compat/d3dx8/d3dx8_tex.cpp Compat/d3dx8/d3dx8_shader.cpp)
 set_target_properties(d3dx8_compat PROPERTIES OUTPUT_NAME d3dx8)  # #pragma comment(lib, "d3dx8.lib")
 target_include_directories(d3dx8_compat PRIVATE "${LC_D3DX9_DIR}/include")
@@ -193,7 +197,7 @@ target_compile_definitions(GameMP PRIVATE GAME_EXPORTS _WINDLL _USRDLL)
 target_link_libraries(GameMP PRIVATE Engine EntitiesMP user32)
 
 add_executable(Nksp WIN32 ${NKSP_SOURCES} Nksp/Nksp.rc)
-target_link_libraries(Nksp PRIVATE lc_client_common Engine EntitiesMP f_socket winmm ws2_32 version odbc32 odbccp32)
+target_link_libraries(Nksp PRIVATE lc_client_common Engine EntitiesMP f_socket SharedMemory winmm ws2_32 version odbc32 odbccp32)
 target_include_directories(Nksp PRIVATE "${LC_CLIENT_SRC}/Nksp")
 target_link_options(Nksp PRIVATE /NODEFAULTLIB:game.lib /NODEFAULTLIB:gamemp.lib)
 add_dependencies(Nksp lc_entities Shaders GameMP)
