@@ -30,6 +30,23 @@ else
     while read -r f; do [[ -f $f ]] && printf '%s\0' "$f"; done > "$TMP/list" || true
 fi
 
+if [[ $1 != --verify ]]; then
+  # Files deleted here since the last sync are deleted there too.
+  { git diff --name-only --diff-filter=D "$BASE"; git ls-files --deleted; } | sort -u |
+    while read -r f; do [[ -e $f ]] || printf '%s\n' "$f"; done > "$TMP/deleted.txt"
+  if [[ -s $TMP/deleted.txt ]]; then
+    scp -q -o BatchMode=yes "$TMP/deleted.txt" windows:C:/LCSource/mac-deleted.txt
+    "$(dirname "$0")/wps.sh" <<'EOF'
+Get-Content C:\LCSource\mac-deleted.txt -Encoding UTF8 | % {
+  $p = Join-Path C:\LCSource $_
+  if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Force }
+}
+Remove-Item C:\LCSource\mac-deleted.txt
+EOF
+    echo "deleted $(wc -l < "$TMP/deleted.txt" | tr -d ' ') files"
+  fi
+fi
+
 COPYFILE_DISABLE=1 tar --null -cf "$TMP/sync.tar" -T "$TMP/list"
 scp -q -o BatchMode=yes "$TMP/sync.tar" windows:C:/LCSource/sync.tar
 ssh -o BatchMode=yes windows "tar -xf C:/LCSource/sync.tar -C C:/LCSource; Remove-Item C:/LCSource/sync.tar"

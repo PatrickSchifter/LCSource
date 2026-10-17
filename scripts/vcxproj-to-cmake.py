@@ -60,6 +60,9 @@ def main():
             if not inc or flag(item, "ExcludedFromBuild", config, "true"):
                 continue
             path = rel(project_dir, inc)
+            # Files removed by the port (Windows-only or dead code) stay listed in the old projects.
+            if not (ROOT / path).exists():
+                continue
             sources.append(path)
             if flag(item, "PrecompiledHeader", config, "create"):
                 pch_create.append(path)

@@ -34,8 +34,6 @@ extern "C"
     #include <Engine/lua/lauxlib.h>
 };
 
-#include <Engine/Xbox/XKeyboard.h>
-
   #include <winsock2.h>
   #include <windows.h>
   #include <mmsystem.h> // for timers
