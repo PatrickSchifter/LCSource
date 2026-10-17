@@ -14,7 +14,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
 // console variables for volume
@@ -57,6 +61,9 @@ extern void ResetMixer( const SWORD *pswBuffer, const SLONG slBufferSize)
   slMixerBufferSampleRate = _pSound->sl_wfeFormat.nSamplesPerSec;
 
   // wipe destination mixer buffer
+#ifdef USE_PORTABLE_C
+  memset( pswMixerBuffer, 0, slMixerBufferSize*4);
+#else
   __asm {
     cld
     xor     eax,eax
@@ -64,6 +71,7 @@ extern void ResetMixer( const SWORD *pswBuffer, const SLONG slBufferSize)
     mov     ecx,D [slMixerBufferSize]
     rep     stosd
   }
+#endif
 }
 
 
@@ -73,6 +81,9 @@ extern void CopyMixerBuffer( const SLONG slSrcOffset, const void *pDstBuffer, co
   ASSERT( pDstBuffer!=NULL);
   ASSERT( slBytes%4==0);
   if( slBytes<4) return;
+#ifdef USE_PORTABLE_C
+  memcpy( (void*)pDstBuffer, ((UBYTE*)pswMixerBuffer)+slSrcOffset, slBytes);
+#else
   __asm {
     cld
     mov     esi,D [slSrcOffset]
@@ -82,7 +93,109 @@ extern void CopyMixerBuffer( const SLONG slSrcOffset, const void *pDstBuffer, co
     shr     ecx,2   // bytes to samples per channel
     rep     movsd
   }
+#endif
 }
+
+
+#ifdef USE_PORTABLE_C
+
+// The MMX mixer below in C, with the same fixed-point arithmetic and saturation.
+
+static inline SLONG SatW( SLONG sl)  { return Clamp( sl, -32768L, 32767L); }  // signed saturation to 16 bits
+static inline SLONG WrapW( SLONG sl) { return (SWORD)(UWORD)sl; }             // 16-bit wraparound
+
+// one channel of one destination sample
+static inline SLONG MixChannel( SLONG slSample, SLONG slNext, ULONG ulFrac, SLONG &slLast,
+                                SLONG slFilter, SLONG slVolume, SLONG slDst)
+{
+  // linear interpolation with a 15-bit factor (pmaddwd)
+  const SLONG slFactor = ulFrac>>1;
+  SLONG sl = SatW( (slSample*(0x7FFF-slFactor) + slNext*slFactor) >>15);
+  // filter (psubsw, pmulhw, psllw, paddsw)
+  sl = SatW( sl-slLast);
+  sl = WrapW( ((sl*slFilter)>>16) <<1);
+  sl = SatW( sl+slLast);
+  slLast = sl;
+  // volume (pmulhw, psllw)
+  sl = WrapW( ((sl*SatW(slVolume>>16))>>16) <<1);
+  // mix into destination (paddsw)
+  return SatW( slDst+sl);
+}
+
+// mixes one 16-bit signed sound (mono or stereo) to destination buffer
+static void MixSamples( BOOL bStereo)
+{
+  // convert from floats to fixints 32:16 (right step is 32:32, but uses only 16 fraction bits)
+  fixLeftOfs  = llrint( fLeftOfs  *65536.0);
+  fixRightOfs = llrint( fRightOfs *65536.0);
+  mmLeftStep  = llrint( fLeftStep *65536.0);
+  mmRightStep = llrint( fRightStep*4294967296.0) & ~(__int64)0xFFFF;
+  ULONG ulLeftFrac  = (ULONG)fixLeftOfs  & 0xFFFF;
+  ULONG ulRightFrac = (ULONG)fixRightOfs & 0xFFFF;
+  SLONG slLeftOfs   = (SLONG)(fixLeftOfs >>16);
+  SLONG slRightOfs  = (SLONG)(fixRightOfs>>16);
+  const ULONG ulLeftStepFrac  = (ULONG)mmLeftStep & 0xFFFF;
+  const SLONG slLeftStep      = (SLONG)(mmLeftStep>>16);
+  const ULONG ulRightStepFrac = (ULONG)(mmRightStep>>16) & 0xFFFF;
+  const SLONG slRightStep     = (SLONG)(mmRightStep>>32);
+
+  // last played samples, filters and volumes (volumes change by the gain on each sample)
+  SLONG slLastLeft  = (SWORD)slLastLeftSample;
+  SLONG slLastRight = (SWORD)slLastRightSample;
+  const ULONG ulFilters = ((ULONG)slRightFilter<<16) | (ULONG)slLeftFilter;
+  const SLONG slFilterL = (SWORD)(ulFilters & 0xFFFF);
+  const SLONG slFilterR = (SWORD)(ulFilters>>16);
+  ULONG ulLeftVolume  = slLeftVolume;
+  ULONG ulRightVolume = slRightVolume;
+  const ULONG ulLeftGain  = (ULONG)mmVolumeGain;
+  const ULONG ulRightGain = (ULONG)(mmVolumeGain>>32);
+
+  SWORD *pswDst = pswMixerBuffer;
+  for( SLONG slCt=slMixerBufferSize; slCt>0; slCt--)
+  {
+    // check if source offsets came to the end of source sound buffer
+    if( slLeftOfs >=slSoundBufferSize) { slLeftOfs  -= slSoundBufferSize;  bEndOfSound = bNotLoop; }
+    if( slRightOfs>=slSoundBufferSize) { slRightOfs -= slSoundBufferSize;  bEndOfSound = bNotLoop; }
+    if( bEndOfSound) break;
+
+    // get sound samples
+    SLONG slL, slNextL, slR, slNextR;
+    if( bStereo) {
+      slL = pswSrcBuffer[slLeftOfs *2+0];  slNextL = pswSrcBuffer[slLeftOfs *2+2];
+      slR = pswSrcBuffer[slRightOfs*2+1];  slNextR = pswSrcBuffer[slRightOfs*2+3];
+    } else {
+      slL = pswSrcBuffer[slLeftOfs ];  slNextL = pswSrcBuffer[slLeftOfs +1];
+      slR = pswSrcBuffer[slRightOfs];  slNextR = pswSrcBuffer[slRightOfs+1];
+    }
+
+    // mix it into destination buffer
+    pswDst[0] = (SWORD)MixChannel( slL, slNextL, ulLeftFrac,  slLastLeft,  slFilterL, (SLONG)ulLeftVolume,  pswDst[0]);
+    pswDst[1] = (SWORD)MixChannel( slR, slNextR, ulRightFrac, slLastRight, slFilterR, (SLONG)ulRightVolume, pswDst[1]);
+    ulLeftVolume  += ulLeftGain;
+    ulRightVolume += ulRightGain;
+
+    // advance to next samples in source sound
+    ulRightFrac += ulRightStepFrac;
+    slRightOfs  += slRightStep + (SLONG)(ulRightFrac>>16);
+    ulRightFrac &= 0xFFFF;
+    ulLeftFrac  += ulLeftStepFrac;
+    slLeftOfs   += slLeftStep + (SLONG)(ulLeftFrac>>16);
+    ulLeftFrac  &= 0xFFFF;
+    pswDst += 2;
+  }
+
+  // store modified local vars (the asm rewrites only the low 48 bits of the offsets)
+  const __int64 mmHigh16 = ~(__int64)0xFFFFFFFFFFFF;
+  fixLeftOfs  = (fixLeftOfs  & mmHigh16) | ((__int64)(ULONG)slLeftOfs <<16) | ulLeftFrac;
+  fixRightOfs = (fixRightOfs & mmHigh16) | ((__int64)(ULONG)slRightOfs<<16) | ulRightFrac;
+  slLastLeftSample  = (UWORD)slLastLeft;
+  slLastRightSample = (UWORD)slLastRight;
+}
+
+inline void MixMono(void)   { MixSamples(FALSE); }
+inline void MixStereo(void) { MixSamples(TRUE);  }
+
+#else
 
 
 // mixes one mono 16-bit signed sound to destination buffer
@@ -349,6 +462,8 @@ loopEnd:
     emms
   }
 }
+
+#endif // USE_PORTABLE_C
 
 
 // mixes one sound to destination buffer
