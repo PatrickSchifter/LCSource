@@ -741,7 +741,7 @@ inline bool GetOneLine(CTString& str, CTString& line)
 // [2013/01/16] sykim70
 ENGINE_API bool SE_CheckEngine()
 {
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA)
+#if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(LC_NO_BINARY_CHECK)	// binary.lod lists the official binaries
 	AnalyzeApplicationPath();
 
 	// check binary.lod
@@ -811,7 +811,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 #if		defined(VER_TEST)
 	_pConsole = new CConsole;
 #else
-	_pConsole = NULL;
+	// LC_CONSOLE_LOG=1 writes the console log (<exe>.log next to Bin) in release builds too.
+	_pConsole = getenv("LC_CONSOLE_LOG") ? new CConsole : NULL;
 #endif
 
 	if (_strLogFile=="") {

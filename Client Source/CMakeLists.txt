@@ -46,6 +46,9 @@ target_compile_definitions(lc_client_common INTERFACE
 if(LC_NO_IP_FILTER)
   target_compile_definitions(lc_client_common INTERFACE LC_NO_IP_FILTER)
 endif()
+# SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
+# build) and quits silently on a mismatch, so it must be off for binaries built here.
+target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
 target_compile_options(lc_client_common INTERFACE /W1 /MP /EHsc /permissive /Zc:strictStrings- /Zc:threadSafeInit- /bigobj
   "/FI${CMAKE_CURRENT_SOURCE_DIR}/Compat/d3d8_mingw.h")  # what the MinGW-w64 d3d8 headers expect
 target_include_directories(lc_client_common INTERFACE
@@ -178,7 +181,7 @@ configure_file("${LC_CLIENT_SRC}/Lib/VC100/IJL15L.LIB" "${CMAKE_ARCHIVE_OUTPUT_D
 target_link_directories(Engine PRIVATE "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 target_link_libraries(Engine PRIVATE zlib libpng tinyxml lccrypt d3dx8_compat Boost::thread Boost::system
   dsound winmm ws2_32 wininet imm32 version advapi32 odbc32 odbccp32 dbghelp)
-target_link_options(Engine PRIVATE /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)
+target_link_options(Engine PRIVATE /MAP /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)
 
 lc_client_target(Shaders SHARED ${SHADERS_SOURCES})
 target_compile_definitions(Shaders PRIVATE SHADERS_EXPORTS _USRDLL)

@@ -250,7 +250,9 @@ static void GenerateExceptionReport(HANDLE hFile, PEXCEPTION_POINTERS pException
 		sizeof(szFaultingModule), section, offset);
 	ASSERT(bSuccess);
 //	_tprintf(hFile, "[%08X][v.%d-%d][%d]\r\n", pExceptionRecord->ExceptionAddress, g_uiEngineVersion, g_iLocalVersion, g_slZone );
-	_tprintf(hFile, "[Ver %s]\r\n", CUIManager::getSingleton()->GetLogin()->getVersion());
+	// The UI may not exist yet when the engine crashes during startup.
+	if (CUIManager::getSingleton() != NULL && CUIManager::getSingleton()->GetLogin() != NULL)
+		_tprintf(hFile, "[Ver %s]\r\n", CUIManager::getSingleton()->GetLogin()->getVersion());
 #else 
 #define GETVARNAME(x) #x
 	_tprintf(hFile, "Referent variable: %s 0x%08X\r\n",GETVARNAME(__RefFuncAtAbsAddr),&__RefFuncAtAbsAddr);
