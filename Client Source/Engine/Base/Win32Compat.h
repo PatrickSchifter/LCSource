@@ -488,6 +488,27 @@ inline void OutputDebugString(const char *str) { fputs(str, stderr); }
   inline size_t _msize(void *pv) { return malloc_size(pv); }
 #endif
 
+// time (Win32Compat.cpp): milliseconds since the first call, wrapping at 32 bits as on Windows
+DWORD timeGetTime(void);
+#define GetTickCount timeGetTime
+void Sleep(DWORD dwMilliseconds);
+BOOL QueryPerformanceCounter(LARGE_INTEGER *pliCount);      // nanoseconds
+BOOL QueryPerformanceFrequency(LARGE_INTEGER *pliFrequency);
+char *_strtime(char *strTime);  // "hh:mm:ss", local time
+char *_strdate(char *strDate);  // "mm/dd/yy", local time
+
+// multimedia timers (Win32Compat.cpp): callbacks run on timer threads, one at a time as with the
+// single winmm timer thread
+typedef UINT MMRESULT;
+typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+#define TIME_ONESHOT           0x0000
+#define TIME_PERIODIC          0x0001
+#define TIME_CALLBACK_FUNCTION 0x0000
+#define TIMERR_NOERROR         0
+#define MMSYSERR_INVALPARAM    11
+MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
+MMRESULT timeKillEvent(UINT uTimerID);
+
 // GlobalMemoryStatus (Win32Compat.cpp): sizes as a 32-bit Windows process sees them, clamped to
 // 32 bits; page file and virtual memory are not reported (zero)
 typedef struct {

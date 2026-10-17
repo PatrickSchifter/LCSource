@@ -127,7 +127,7 @@ void CTimer_TimerFunc_internal(void)
 
   } CTSTREAM_END;
 }
-void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, ULONG dwUser, ULONG dw1, ULONG dw2)
+void CALLBACK CTimer_TimerFunc(UINT uID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 {
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
@@ -145,6 +145,10 @@ static INDEX _aiTries[MAX_MEASURE_TRIES];
 // Get processor speed in Hertz
 static __int64 GetCPUSpeedHz(void)
 {
+#ifdef USE_PORTABLE_C
+  // ReadTSC counts nanoseconds
+  return 1000000000;
+#else
   // get the frequency of the 'high' precision timer
   __int64 llTimerFrequency;
   BOOL bPerformanceCounterPresent = QueryPerformanceFrequency((LARGE_INTEGER*)&llTimerFrequency);
@@ -226,7 +230,7 @@ static __int64 GetCPUSpeedHz(void)
     // use measured value
     return (__int64)slSpeedRead*1000000;
   }
-//#endif
+#endif  // USE_PORTABLE_C
 }
 
 
@@ -264,6 +268,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   
   uPeriod = TARGET_RESOLUTION;
 
+#ifdef _WIN32
   TIMECAPS tc;
 
   if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) != TIMERR_NOERROR)
@@ -273,6 +278,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
 
   uPeriod = min(max(tc.wPeriodMin, TARGET_RESOLUTION), tc.wPeriodMax);
   timeBeginPeriod(uPeriod);
+#endif
 
   //0216
   tm_tvStartTime = GetHighPrecisionTimer();
@@ -310,7 +316,9 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
 CTimer::~CTimer(void)
 {
   ASSERT(_pTimer == this);
+#ifdef _WIN32
 	timeEndPeriod(uPeriod);
+#endif
   // destroy timer
   if (tm_bInterrupt) {
     ASSERT(tm_TimerID!=NULL);

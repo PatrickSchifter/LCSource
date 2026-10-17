@@ -210,6 +210,8 @@ void MaybeDiscardLastLines(void)
 	}
 }
 
+// Scanning other processes for bots (AutoIt windows) is Windows-only, like the old GameGuard.
+#ifdef _WIN32
 // [100122: selo] 윈도우 핸들을 찾아 프로세스 찾기 루틴
 ULONG ProcIDFromWnd(HWND hwnd) // 윈도우 핸들로 프로세스 아이디 얻기  
 {  
@@ -289,6 +291,7 @@ BOOL InputState(void)
 
 	return Return;
 }
+#endif  // _WIN32
 
 /*
 class CEnableUserBreak {
@@ -984,7 +987,9 @@ void CGame::GameHandleTimer(void)
 	{
 		if (_pTimer->GetHighPrecisionTimer().GetMilliseconds() - dwWhat >= 60000)
 		{
+#ifdef _WIN32
 			SetEvent(gmUpdateHandle);
+#endif
 			dwWhat = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 		}
 	}
@@ -992,6 +997,7 @@ void CGame::GameHandleTimer(void)
 
 UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 {
+#ifdef _WIN32
 	while (1)
 	{
 		if (WAIT_OBJECT_0 == WaitForSingleObject(_pGame->GetUpdateHandle(), INFINITE))
@@ -1025,6 +1031,7 @@ UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 		}
 	}
 
+#endif  // _WIN32
 	return 0;
 }
 
@@ -1199,9 +1206,11 @@ void CGame::InitInternal( void)
 		FatalError(TRANS("Cannot load common controls: %s\n"), strError);
 	}
 	// 프로세스 검사용 이벤트 핸들 및 스레드
+#ifdef _WIN32
 	gmUpdateHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 	gmUpdateInputState = new cThreadWrapper(UpdateThreadFunction);
 	gmUpdateInputState->Start(NULL);
+#endif
 
 	// init LCD textures/fonts
 	LCDInit();
@@ -1235,9 +1244,11 @@ void CGame::EndInternal(void)
 	StopGame();
 
 	// 프로세스 검사용 이벤트 핸들 및 스레드
+#ifdef _WIN32
 	delete gmUpdateInputState;
 	gmUpdateInputState = NULL;
 	CloseHandle(gmUpdateHandle);
+#endif
 
 	// remove game timer handler
 	_pTimer->RemHandler( &m_gthGameTimerHandler);

@@ -251,6 +251,8 @@ static DWORD _PlayTimeCount = 0;
 	BOOL bCalcNotChecked = TRUE;
 #endif
 
+// Scanning other processes for bots is Windows-only (and FindProcess is not called).
+#ifdef _WIN32
 // [100122: selo] 윈도우 핸들을 찾아 프로세스 찾기 루틴
 ULONG ProcIDFromWnd(HWND hwnd) // 윈도우 핸들로 프로세스 아이디 얻기  
 {  
@@ -321,6 +323,7 @@ BOOL FindProcess(void)
 
 	return Return;
 }
+#endif  // _WIN32
 
 int LeaseWeaponErrChk(ULONG errType) 		
 {

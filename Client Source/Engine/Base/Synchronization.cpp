@@ -21,6 +21,11 @@ NOTES:
   functions, so testing against any other number than 0 doesn't work.
 */
 
+//_declspec(thread) INDEX _iLastLockedMutex = 0;
+TLVar<INDEX> _iLastLockedMutex = 0;
+
+#ifdef PLATFORM_WIN32
+
 // The opaque OPTEX data structure
 typedef struct {
    LONG   lLockCount; // note: must center all tests around 0 for win95 compatibility!
@@ -28,9 +33,6 @@ typedef struct {
    LONG   lRecurseCount;
    HANDLE hEvent;
 } OPTEX, *POPTEX;
-
-//_declspec(thread) INDEX _iLastLockedMutex = 0;
-TLVar<INDEX> _iLastLockedMutex = 0;
 
 BOOL OPTEX_Initialize (POPTEX poptex) {
   
@@ -209,6 +211,52 @@ INDEX CTCriticalSection::Unlock(void)
 {
   return OPTEX_Leave((OPTEX*)cs_pvObject);
 }
+
+#else  // PLATFORM_WIN32
+
+// The same counting as the OPTEX (Lock/TryToLock return how many times this thread holds the
+// mutex, 0 when TryToLock fails; Unlock returns how many remain), over a recursive mutex.
+#include <mutex>
+
+struct CriticalSectionObject {
+  std::recursive_mutex mx;
+  INDEX ctRecurse = 0;  // changed only by the thread that holds the mutex
+};
+
+CTCriticalSection::CTCriticalSection(void)
+{
+  // index must be set before using the mutex
+  cs_iIndex = -1;
+  cs_pvObject = new CriticalSectionObject;
+}
+CTCriticalSection::~CTCriticalSection(void)
+{
+  delete (CriticalSectionObject*)cs_pvObject;
+}
+INDEX CTCriticalSection::Lock(void)
+{
+  CriticalSectionObject &cso = *(CriticalSectionObject*)cs_pvObject;
+  cso.mx.lock();
+  return ++cso.ctRecurse;
+}
+INDEX CTCriticalSection::TryToLock(void)
+{
+  CriticalSectionObject &cso = *(CriticalSectionObject*)cs_pvObject;
+  if (!cso.mx.try_lock()) {
+    return 0;
+  }
+  return ++cso.ctRecurse;
+}
+INDEX CTCriticalSection::Unlock(void)
+{
+  CriticalSectionObject &cso = *(CriticalSectionObject*)cs_pvObject;
+  ASSERT(cso.ctRecurse>0);
+  const INDEX ctResult = --cso.ctRecurse;
+  cso.mx.unlock();
+  return ctResult;
+}
+
+#endif  // PLATFORM_WIN32
 
 CTSingleLock::CTSingleLock(CTCriticalSection *pcs, BOOL bLock) : sl_cs(*pcs)
 {
