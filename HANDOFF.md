@@ -15,8 +15,9 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 
 ## Próximos passos sugeridos (em ordem)
 
-1. Começar o cliente Mac: decisões D2 (Metal ou OpenGL) e D3 (SDL ou Cocoa) ainda estão em aberto
-   com o usuário; o primeiro passo técnico é 64-bit no Engine (`PORTING_MACOS.md`, C2).
+1. Começar o cliente Mac. Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL`
+   que o motor já tem, com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
+   O primeiro passo técnico é 64-bit no Engine (`PORTING_MACOS.md`, C2).
 
 ## Mac: servidor
 

@@ -38,8 +38,11 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 ## Decisões em aberto
 
 - [x] **D1. Ordem:** servidor primeiro (decidido em 2026-10-16)
-- [ ] **D2. Renderizador do cliente:** Metal nativo · OpenGL 4.1 core (deprecado no macOS, mas mais simples) · Vulkan via MoltenVK
-- [ ] **D3. Camada de plataforma do cliente:** SDL2/SDL3 (janela, input, IME, áudio, threads) ou Cocoa nativo
+- [x] **D2. Renderizador do cliente** (decidido em 2026-10-17), em três etapas:
+  1. **OpenGL** primeiro: reaproveita o backend `GAT_OGL` que o motor já tem (pipeline fixo, perfil legado 2.1 do macOS) com skinning na CPU; bloom e efeitos só-D3D ficam desligados no início
+  2. **Metal** depois, como backend novo sobre a interface `gfx*`, com os shaders reescritos em MSL
+  3. **Vulkan** por último, para deixar o motor o mais atualizado possível
+- [x] **D3. Camada de plataforma do cliente:** SDL2 (janela, contexto OpenGL/Metal, input, entrada de texto/IME, áudio), decidido em 2026-10-17
 - [~] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar. Padrão provisório: `USA` (`-DLC_REGION`); confirmar quando os assets do cliente Windows chegarem
 - [~] **D5. Origem dos assets e do banco:** banco = [openlastchaos/lastchaos-database](https://github.com/openlastchaos/lastchaos-database) (dump oficial de fev/2016, clonado fora do repo); assets virão da instalação Windows do usuário (pendente)
 - [ ] **D6. Ferramentas (WorldEditor, Modeler, SKA Studio...):** usam MFC; proposta é ficar fora do escopo
@@ -189,7 +192,9 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [ ] MP3: trocar `amp11lib.dll` por minimp3/dr_mp3
 
 ### C8. Renderização (caminho crítico)
-- [ ] Escolher a API (ver D2) e criar um novo backend `GAT_*` ao lado do D3D8 e do OpenGL legado
+- [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (contexto via SDL2, perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
+- [ ] Etapa Metal (D2.2): novo backend `GAT_*` ao lado do D3D8 e do OpenGL
+- [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
 - [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo
