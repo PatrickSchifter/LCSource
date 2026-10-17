@@ -591,6 +591,70 @@ DWORD GetPrivateProfileString(const char *strSection, const char *strKey, const 
                               char *strReturned, DWORD ctSize, const char *strFileName);
 UINT GetPrivateProfileInt(const char *strSection, const char *strKey, INT iDefault, const char *strFileName);
 
+// Input method (imm32). Outside Windows the system's input method is used through SDL: it draws
+// the composition and the candidates near the edit box (PLT_SetTextInputArea) and the committed
+// text arrives as WM_CHAR. No WM_IME_* message is ever sent, so the edit boxes' IME code does
+// not run; these stand-ins answer as when there is no input method context.
+typedef void *HIMC;
+typedef void *HKL;
+typedef struct {
+  DWORD dwSize;
+  DWORD dwStyle;
+  DWORD dwCount;
+  DWORD dwSelection;
+  DWORD dwPageStart;
+  DWORD dwPageSize;
+  DWORD dwOffset[1];
+} CANDIDATELIST, *LPCANDIDATELIST;
+#define GCS_COMPSTR             0x0008
+#define GCS_RESULTSTR           0x0800
+#define NI_CHANGECANDIDATELIST  0x0013
+#define NI_COMPOSITIONSTR       0x0015
+#define CPS_COMPLETE            0x0001
+#define CPS_CANCEL              0x0004
+#define IMN_CLOSESTATUSWINDOW    0x0001
+#define IMN_OPENSTATUSWINDOW     0x0002
+#define IMN_CHANGECANDIDATE      0x0003
+#define IMN_CLOSECANDIDATE       0x0004
+#define IMN_OPENCANDIDATE        0x0005
+#define IMN_SETCONVERSIONMODE    0x0006
+#define IMN_SETSENTENCEMODE      0x0007
+#define IMN_SETOPENSTATUS        0x0008
+#define IMN_SETCANDIDATEPOS      0x0009
+#define IMN_SETCOMPOSITIONFONT   0x000A
+#define IMN_SETCOMPOSITIONWINDOW 0x000B
+#define IMN_SETSTATUSWINDOWPOS   0x000C
+#define IMN_GUIDELINE            0x000D
+#define IMN_PRIVATE              0x000E
+#define IME_CMODE_ALPHANUMERIC   0x0000
+#define IME_CMODE_NATIVE         0x0001
+#define IME_CMODE_LANGUAGE       0x0003
+#define LANG_NEUTRAL  0x00
+#define LANG_CHINESE  0x04
+#define LANG_JAPANESE 0x11
+#define LANG_KOREAN   0x12
+#define SUBLANG_DEFAULT              0x01
+#define SUBLANG_CHINESE_TRADITIONAL  0x01
+#define SUBLANG_CHINESE_SIMPLIFIED   0x02
+#define MAKELANGID(p, s)  ((((WORD)(s)) << 10) | (WORD)(p))
+#define PRIMARYLANGID(lgid) ((WORD)(lgid) & 0x3FF)
+#define SUBLANGID(lgid)     ((WORD)(lgid) >> 10)
+inline HIMC ImmGetContext(HWND) { return NULL; }
+inline BOOL ImmReleaseContext(HWND, HIMC) { return TRUE; }
+inline HWND ImmGetDefaultIMEWnd(HWND) { return NULL; }
+inline LONG ImmGetCompositionString(HIMC, DWORD, void *, DWORD) { return 0; }
+inline DWORD ImmGetCandidateList(HIMC, DWORD, LPCANDIDATELIST, DWORD) { return 0; }
+inline BOOL ImmNotifyIME(HIMC, DWORD, DWORD, DWORD) { return FALSE; }
+inline BOOL ImmGetConversionStatus(HIMC, DWORD *pdwConversion, DWORD *pdwSentence)
+{
+  if (pdwConversion != NULL) *pdwConversion = 0;
+  if (pdwSentence != NULL) *pdwSentence = 0;
+  return FALSE;
+}
+inline BOOL ImmSetConversionStatus(HIMC, DWORD, DWORD) { return FALSE; }
+// messages are not sent to windows outside Windows (only the IME code sent any)
+inline LRESULT SendMessage(HWND, UINT, WPARAM, LPARAM) { return 0; }
+
 // Rectangles
 inline BOOL SetRect(RECT *prc, int iLeft, int iTop, int iRight, int iBottom)
 {

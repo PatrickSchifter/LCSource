@@ -38,6 +38,13 @@ ENGINE_API BOOL PLT_IsVirtualKeyDown(UINT uVirtKey);
 ENGINE_API HCURSOR PLT_LoadCursorFile(const char *strFileName);
 ENGINE_API void PLT_SetCursor(HCURSOR hCursor);
 
+// where the system's input method shows its composition and candidates (client coordinates)
+ENGINE_API void PLT_SetTextInputArea(PIX pixX, PIX pixY, PIX pixWidth, PIX pixHeight);
+
+// clipboard text, in the client's code page
+ENGINE_API BOOL PLT_GetClipboardText(char *strBuffer, INDEX ctBufferSize);
+ENGINE_API BOOL PLT_SetClipboardText(const char *strText);
+
 #endif  // LC_PLATFORM_SDL
 
 #endif  /* include-once check. */

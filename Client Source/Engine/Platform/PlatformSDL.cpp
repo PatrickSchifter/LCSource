@@ -149,6 +149,13 @@ static void PostMsg(UINT message, WPARAM wParam, LPARAM lParam)
   _dqMessages.push_back(msg);
 }
 
+// the modifiers that count as Control (Command too on macOS)
+#ifdef __APPLE__
+  #define CONTROL_MODS (SDL_KMOD_CTRL|SDL_KMOD_GUI)
+#else
+  #define CONTROL_MODS SDL_KMOD_CTRL
+#endif
+
 // MK_* flags for mouse messages
 static WPARAM MouseKeyFlags(void)
 {
@@ -161,7 +168,7 @@ static WPARAM MouseKeyFlags(void)
   if (ulButtons & SDL_BUTTON_X1MASK) wFlags |= MK_XBUTTON1;
   if (ulButtons & SDL_BUTTON_X2MASK) wFlags |= MK_XBUTTON2;
   if (mod & SDL_KMOD_SHIFT) wFlags |= MK_SHIFT;
-  if (mod & SDL_KMOD_CTRL) wFlags |= MK_CONTROL;
+  if (mod & CONTROL_MODS) wFlags |= MK_CONTROL;
   return wFlags;
 }
 
@@ -242,8 +249,14 @@ static UINT VirtualKey(const SDL_KeyboardEvent &ke)
   case SDL_SCANCODE_RSHIFT:       return VK_SHIFT;
   case SDL_SCANCODE_LALT:
   case SDL_SCANCODE_RALT:         return VK_MENU;
+#ifdef __APPLE__
+  // Command does what Control does on Windows (copy, paste, the game's Ctrl shortcuts)
+  case SDL_SCANCODE_LGUI:
+  case SDL_SCANCODE_RGUI:         return VK_CONTROL;
+#else
   case SDL_SCANCODE_LGUI:         return VK_LWIN;
   case SDL_SCANCODE_RGUI:         return VK_RWIN;
+#endif
   case SDL_SCANCODE_LANG1:        return VK_HANGUL;
   case SDL_SCANCODE_LANG2:        return VK_HANJA;
   default:                        return 0;
@@ -335,7 +348,7 @@ static void TranslateKey(const SDL_KeyboardEvent &ke)
     return;
   }
   const BOOL bAlt = (ke.mod & SDL_KMOD_ALT) != 0;
-  const BOOL bCtrl = (ke.mod & SDL_KMOD_CTRL) != 0;
+  const BOOL bCtrl = (ke.mod & CONTROL_MODS) != 0;
   // lParam: repeat count, scan code and extended key (bits 16-24), context (Alt), previous
   // state, transition
   LPARAM lParam = 1 | ((LPARAM)PCScanCode(ke.scancode) << 16);
@@ -493,11 +506,17 @@ BOOL PLT_IsVirtualKeyDown(UINT uVirtKey)
   // modifiers, generic and left/right
   switch (uVirtKey) {
   case VK_SHIFT:    return abState[SDL_SCANCODE_LSHIFT] || abState[SDL_SCANCODE_RSHIFT];
+#ifdef __APPLE__
+  case VK_CONTROL:  return abState[SDL_SCANCODE_LCTRL] || abState[SDL_SCANCODE_RCTRL]
+                        || abState[SDL_SCANCODE_LGUI] || abState[SDL_SCANCODE_RGUI];
+  case VK_LCONTROL: return abState[SDL_SCANCODE_LCTRL] || abState[SDL_SCANCODE_LGUI];
+#else
   case VK_CONTROL:  return abState[SDL_SCANCODE_LCTRL] || abState[SDL_SCANCODE_RCTRL];
+  case VK_LCONTROL: return abState[SDL_SCANCODE_LCTRL];
+#endif
   case VK_MENU:     return abState[SDL_SCANCODE_LALT] || abState[SDL_SCANCODE_RALT];
   case VK_LSHIFT:   return abState[SDL_SCANCODE_LSHIFT];
   case VK_RSHIFT:   return abState[SDL_SCANCODE_RSHIFT];
-  case VK_LCONTROL: return abState[SDL_SCANCODE_LCTRL];
   case VK_RCONTROL: return abState[SDL_SCANCODE_RCTRL];
   case VK_LMENU:    return abState[SDL_SCANCODE_LALT];
   case VK_RMENU:    return abState[SDL_SCANCODE_RALT];
@@ -602,6 +621,45 @@ HCURSOR PLT_LoadCursorFile(const char *strFileName)
 void PLT_SetCursor(HCURSOR hCursor)
 {
   SDL_SetCursor(hCursor != NULL ? (SDL_Cursor*)hCursor : SDL_GetDefaultCursor());
+}
+
+void PLT_SetTextInputArea(PIX pixX, PIX pixY, PIX pixWidth, PIX pixHeight)
+{
+  if (_pwndMain == NULL) return;
+  SDL_Rect rect;
+  rect.x = pixX;
+  rect.y = pixY;
+  rect.w = pixWidth;
+  rect.h = pixHeight;
+  SDL_SetTextInputArea(_pwndMain, &rect, 0);
+}
+
+BOOL PLT_GetClipboardText(char *strBuffer, INDEX ctBufferSize)
+{
+  if (ctBufferSize <= 0) return FALSE;
+  strBuffer[0] = 0;
+  char *strUTF8 = SDL_GetClipboardText();
+  if (strUTF8 == NULL || strUTF8[0] == 0) {
+    SDL_free(strUTF8);
+    return FALSE;
+  }
+  StackMultiByteToWideChar(CP_UTF8, strUTF8, -1, wcsText);
+  SDL_free(strUTF8);
+  if (wcsText == NULL) return FALSE;
+  StackWideCharToMultiByte(CP_ACP, wcsText, -1, strText);
+  if (strText == NULL) return FALSE;
+  strncpy(strBuffer, strText, ctBufferSize - 1);
+  strBuffer[ctBufferSize - 1] = 0;
+  return TRUE;
+}
+
+BOOL PLT_SetClipboardText(const char *strText)
+{
+  StackMultiByteToWideChar(CP_ACP, strText, -1, wcsText);
+  if (wcsText == NULL) return FALSE;
+  StackWideCharToMultiByte(CP_UTF8, wcsText, -1, strUTF8);
+  if (strUTF8 == NULL) return FALSE;
+  return SDL_SetClipboardText(strUTF8);
 }
 
 #endif  // LC_PLATFORM_SDL
