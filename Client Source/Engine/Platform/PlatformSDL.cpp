@@ -249,19 +249,81 @@ static UINT VirtualKey(const SDL_KeyboardEvent &ke)
   }
 }
 
-// keys whose messages have the extended-key bit (24) set on Windows
-static BOOL IsExtendedKey(SDL_Scancode sc)
+// The PC (set 1) scan code of a key, as Windows puts it in bits 16-24 of a key message's lParam,
+// with 0x100 for the extended (E0) keys. The game reads it for its shortcuts
+// (CUIPlayerInfo::ProcessShortCut) and for inp_iKeyboardReadingMethod 2 (Input.cpp).
+static UINT PCScanCode(SDL_Scancode sc)
 {
+  // letters, in SDL (USB) order A..Z
+  static const UBYTE aubLetters[26] = {
+    0x1E, 0x30, 0x2E, 0x20, 0x12, 0x21, 0x22, 0x23, 0x17, 0x24, 0x25, 0x26, 0x32,  // A..M
+    0x31, 0x18, 0x19, 0x10, 0x13, 0x1F, 0x14, 0x16, 0x2F, 0x11, 0x2D, 0x15, 0x2C,  // N..Z
+  };
+  if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_Z) return aubLetters[sc - SDL_SCANCODE_A];
+  if (sc >= SDL_SCANCODE_1 && sc <= SDL_SCANCODE_0) return 0x02 + (sc - SDL_SCANCODE_1);  // 1..9, 0
+  if (sc >= SDL_SCANCODE_F1 && sc <= SDL_SCANCODE_F10) return 0x3B + (sc - SDL_SCANCODE_F1);
   switch (sc) {
-  case SDL_SCANCODE_RCTRL: case SDL_SCANCODE_RALT:
-  case SDL_SCANCODE_INSERT: case SDL_SCANCODE_DELETE: case SDL_SCANCODE_HOME: case SDL_SCANCODE_END:
-  case SDL_SCANCODE_PAGEUP: case SDL_SCANCODE_PAGEDOWN:
-  case SDL_SCANCODE_LEFT: case SDL_SCANCODE_RIGHT: case SDL_SCANCODE_UP: case SDL_SCANCODE_DOWN:
-  case SDL_SCANCODE_KP_DIVIDE: case SDL_SCANCODE_KP_ENTER: case SDL_SCANCODE_NUMLOCKCLEAR:
-  case SDL_SCANCODE_LGUI: case SDL_SCANCODE_RGUI: case SDL_SCANCODE_APPLICATION:
-    return TRUE;
-  default:
-    return FALSE;
+  case SDL_SCANCODE_RETURN:       return 0x1C;
+  case SDL_SCANCODE_ESCAPE:       return 0x01;
+  case SDL_SCANCODE_BACKSPACE:    return 0x0E;
+  case SDL_SCANCODE_TAB:          return 0x0F;
+  case SDL_SCANCODE_SPACE:        return 0x39;
+  case SDL_SCANCODE_MINUS:        return 0x0C;
+  case SDL_SCANCODE_EQUALS:       return 0x0D;
+  case SDL_SCANCODE_LEFTBRACKET:  return 0x1A;
+  case SDL_SCANCODE_RIGHTBRACKET: return 0x1B;
+  case SDL_SCANCODE_BACKSLASH:
+  case SDL_SCANCODE_NONUSHASH:    return 0x2B;
+  case SDL_SCANCODE_SEMICOLON:    return 0x27;
+  case SDL_SCANCODE_APOSTROPHE:   return 0x28;
+  case SDL_SCANCODE_GRAVE:        return 0x29;
+  case SDL_SCANCODE_COMMA:        return 0x33;
+  case SDL_SCANCODE_PERIOD:       return 0x34;
+  case SDL_SCANCODE_SLASH:        return 0x35;
+  case SDL_SCANCODE_NONUSBACKSLASH: return 0x56;
+  case SDL_SCANCODE_CAPSLOCK:     return 0x3A;
+  case SDL_SCANCODE_F11:          return 0x57;
+  case SDL_SCANCODE_F12:          return 0x58;
+  case SDL_SCANCODE_PRINTSCREEN:  return 0x137;
+  case SDL_SCANCODE_SCROLLLOCK:   return 0x46;
+  case SDL_SCANCODE_PAUSE:        return 0x45;
+  case SDL_SCANCODE_INSERT:       return 0x152;
+  case SDL_SCANCODE_HOME:         return 0x147;
+  case SDL_SCANCODE_PAGEUP:       return 0x149;
+  case SDL_SCANCODE_DELETE:       return 0x153;
+  case SDL_SCANCODE_END:          return 0x14F;
+  case SDL_SCANCODE_PAGEDOWN:     return 0x151;
+  case SDL_SCANCODE_RIGHT:        return 0x14D;
+  case SDL_SCANCODE_LEFT:         return 0x14B;
+  case SDL_SCANCODE_DOWN:         return 0x150;
+  case SDL_SCANCODE_UP:           return 0x148;
+  case SDL_SCANCODE_NUMLOCKCLEAR: return 0x145;
+  case SDL_SCANCODE_KP_DIVIDE:    return 0x135;
+  case SDL_SCANCODE_KP_MULTIPLY:  return 0x37;
+  case SDL_SCANCODE_KP_MINUS:     return 0x4A;
+  case SDL_SCANCODE_KP_PLUS:      return 0x4E;
+  case SDL_SCANCODE_KP_ENTER:     return 0x11C;
+  case SDL_SCANCODE_KP_1:         return 0x4F;
+  case SDL_SCANCODE_KP_2:         return 0x50;
+  case SDL_SCANCODE_KP_3:         return 0x51;
+  case SDL_SCANCODE_KP_4:         return 0x4B;
+  case SDL_SCANCODE_KP_5:         return 0x4C;
+  case SDL_SCANCODE_KP_6:         return 0x4D;
+  case SDL_SCANCODE_KP_7:         return 0x47;
+  case SDL_SCANCODE_KP_8:         return 0x48;
+  case SDL_SCANCODE_KP_9:         return 0x49;
+  case SDL_SCANCODE_KP_0:         return 0x52;
+  case SDL_SCANCODE_KP_PERIOD:    return 0x53;
+  case SDL_SCANCODE_APPLICATION:  return 0x15D;
+  case SDL_SCANCODE_LCTRL:        return 0x1D;
+  case SDL_SCANCODE_LSHIFT:       return 0x2A;
+  case SDL_SCANCODE_LALT:         return 0x38;
+  case SDL_SCANCODE_LGUI:         return 0x15B;
+  case SDL_SCANCODE_RCTRL:        return 0x11D;
+  case SDL_SCANCODE_RSHIFT:       return 0x36;
+  case SDL_SCANCODE_RALT:         return 0x138;
+  case SDL_SCANCODE_RGUI:         return 0x15C;
+  default:                        return 0;
   }
 }
 
@@ -273,10 +335,9 @@ static void TranslateKey(const SDL_KeyboardEvent &ke)
   }
   const BOOL bAlt = (ke.mod & SDL_KMOD_ALT) != 0;
   const BOOL bCtrl = (ke.mod & SDL_KMOD_CTRL) != 0;
-  // lParam: repeat count, extended key, context (Alt), previous state, transition
-  // (the hardware scan code, bits 16-23, is left out)
-  LPARAM lParam = 1;
-  if (IsExtendedKey(ke.scancode)) lParam |= 1L << 24;
+  // lParam: repeat count, scan code and extended key (bits 16-24), context (Alt), previous
+  // state, transition
+  LPARAM lParam = 1 | ((LPARAM)PCScanCode(ke.scancode) << 16);
   if (bAlt) lParam |= 1L << 29;
 
   if (ke.down) {
