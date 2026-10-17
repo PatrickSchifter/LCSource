@@ -15,15 +15,8 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 
 ## Próximos passos sugeridos (em ordem)
 
-1. **Mapas reais das 40 zonas restantes** (ver tabela em `PORTING_MACOS.md`, S5): o servidor usa
-   mapas planos de altura 0 (o jogador fica embaixo do terreno; tudo é "andável"). Só as zonas 0, 26
-   e 38 têm mapa real, vindo de `.sat/.sht` que o cliente BR traz (`scripts/convert-client-maps.py`).
-   Falta portar o exportador do World Editor (`Engine/World/WorldIO.cpp`, `Engine/Terrain/TRGenerate.cpp`)
-   e gerar a partir dos `.wld` em `C:\LC-BR2014\Data\World\...`. Formato que o GameServer lê
-   (`Server Source/GameServer/MapAttr.cpp`): `.sat` = `uint16` little-endian com flags `MATT_*`
-   (`ShareLib/Config.h`), `.sht` = `uint16` **big-endian** = altura × 100, linha a linha (`z*W + x`).
-2. Skinning por hardware (abaixo, "Problemas conhecidos").
-3. Começar o cliente Mac: decisões D2 (Metal ou OpenGL) e D3 (SDL ou Cocoa) ainda estão em aberto
+1. Skinning por hardware (abaixo, "Problemas conhecidos").
+2. Começar o cliente Mac: decisões D2 (Metal ou OpenGL) e D3 (SDL ou Cocoa) ainda estão em aberto
    com o usuário; o primeiro passo técnico é 64-bit no Engine (`PORTING_MACOS.md`, C2).
 
 ## Mac: servidor
@@ -34,8 +27,13 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Banco: MariaDB (Homebrew), bancos `newproject_data`, `newproject_db`, `newproject_db_auth`.
   `mysql`/`mariadb` sem senha funcionam no shell. Conta de jogo: `teste`.
   Correções de schema ficam em `server-config/db-fixes.sql` (idempotente) — acrescente lá.
-- Mapas do GameServer em `run/GameServer/data/` (não versionado): placeholders de
-  `scripts/make-placeholder-maps.py`, sobrescritos pelos reais de `scripts/convert-client-maps.py`.
+- Mapas do GameServer em `run/GameServer/data/` (não versionado): gerados dos `.wld` do cliente por
+  `scripts/export-zone-maps.py [zona ...]`, que roda `ZoneMapExport.exe` (nosso Engine + os exportadores
+  do World Editor) no Windows e traz os arquivos. Zona 16 (Egeha_PK) não tem `.wld` no cliente e fica
+  com o placeholder plano de `scripts/make-placeholder-maps.py`. Formato (`GameServer/MapAttr.cpp`):
+  `.sat` = `uint16` LE com flags `MATT_*`; `.sht` = `uint16` **BE** = altura × 100, linha a linha.
+  Atenção: a zona 0 é desenhada pelo cliente a partir de `juno.wld`; os `StartZone_*.sat/.sht` que
+  vêm no cliente são da Juno antiga (`startzone.wld`) e não batem com o que o jogador vê.
 - Crash do servidor: relatório do macOS em `~/Library/Logs/DiagnosticReports/GameServer-*.ips`
   (JSON; a thread com `triggered` tem a pilha com arquivo e linha).
 - `LC_DEBUG_PACKETS` (compile-time) loga pacotes enviados/recebidos com o texto plano.

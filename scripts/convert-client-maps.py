@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Install real zone maps (.sat/.sht) taken from a game client for the GameServer.
 
+Superseded by scripts/export-zone-maps.py, which generates every zone from the worlds; kept for
+setups without the Windows host. Note that the client's StartZone_* maps are from the old Juno
+(startzone.wld), not juno.wld, which the client actually loads for zone 0.
+
 Some clients ship the server's attribute and height maps under Data/World. Heights
 (.sht) use the format the GameServer reads (16-bit big-endian, height * 100). The
 attribute maps (.sat) there are the old one-byte format (0 walkable, 10 peace zone,

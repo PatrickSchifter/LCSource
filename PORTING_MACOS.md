@@ -109,7 +109,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [x] **Os 6 servidores sobem e se conectam entre si**; LoginServer enxerga o GameServer (porta 4010)
 - [x] Helper: `x = x++` virava loop infinito em C++17 (`ServerRun.cpp`)
 - [x] Connector: billing opcional (`[Billing Server] IP=` vazio)
-- [~] Mapas reais `.sat`/`.sht`: `scripts/convert-client-maps.py` instala os que vêm no cliente BR 2014 (zonas 0 StartZone, 26, 38; `.sat` de 8 bits convertido para flags `MATT_*`). As demais zonas seguem com o placeholder plano de altura 0 (o jogador fica **embaixo do terreno**): falta portar o exportador do World Editor (`Engine/World/WorldIO.cpp`, `Terrain/TRGenerate.cpp`) e gerar a partir dos `.wld`
+- [x] Mapas reais `.sat`/`.sht` das zonas: `ZoneMapExport` (`Client Source/ZoneMapExport`, exportadores do World Editor sobre o nosso Engine) + `scripts/export-zone-maps.py`; 42 de 43 zonas (a 16, Egeha_PK, não tem `.wld` no cliente). Validado contra os mapas que o cliente BR traz: alturas idênticas e 99,9% de concordância em andabilidade (Juno, Dratan 1F/2F, RoyalRumble)
 - [ ] Tabelas que o código usa e o dump não tem: `t_autobuffs`, `t_raid_zone_data`, `t_reports`, `t_key_log` (+ `t_promo_*` só GER)
 - [ ] Dados que faltam no GameServer: `ComposeItem`, `EquipExchangeExtend`, NPCs 893/1254 ativos mas "Not found", 6 "Can't Create Item"
 - [x] Conta de teste `teste` criada; personagem entra no mundo
@@ -230,3 +230,4 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 | 2026-10-17 | Login, seleção de personagem e entrada no jogo; correções de crash no cliente e no GameServer | 2bbb096 |
 | 2026-10-17 | Mapas reais da zona inicial, EXP/`%s`, NPCs sem modelo; modelos visíveis com skinning em software | 65e4d45, 4080b38 |
 | 2026-10-17 | Lojas: páginas de ícone `ItemBtn20..30` | 585fef1 |
+| 2026-10-17 | Mapas reais de 42 zonas exportados dos `.wld` (`ZoneMapExport`) | |

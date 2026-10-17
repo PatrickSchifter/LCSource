@@ -3,6 +3,7 @@
 #   scripts/windows/wps.sh <<'EOF'
 #   Get-Process Nksp
 #   EOF
+set -o pipefail  # report ssh failures (e.g. a script too long for the command line)
 prelude=$'$ProgressPreference = "SilentlyContinue"\n[Console]::OutputEncoding = [Text.Encoding]::UTF8\n'
 script="$prelude$(cat)"
 enc=$(printf '%s' "$script" | iconv -f UTF-8 -t UTF-16LE | base64 | tr -d '\n')

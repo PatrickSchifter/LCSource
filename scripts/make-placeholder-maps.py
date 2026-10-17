@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Generate placeholder zone maps (.sat/.sht) for the GameServer.
 
-The real attribute/height maps are exported from the client's .wld worlds by the
-World Editor. Until that exporter is ported, this writes flat maps where every cell
-is walkable (MATT_WALKABLE) at height 0, so the GameServer can boot and load zones.
+The real attribute/height maps come from the client's .wld worlds (scripts/export-zone-maps.py).
+For zones without one, this writes flat maps where every cell is walkable (MATT_WALKABLE) at
+height 0, so the GameServer can boot and load zones.
 
     scripts/make-placeholder-maps.py [zone_index ...]   (default: zones in server-config/GameServer.ini)
 

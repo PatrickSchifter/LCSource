@@ -207,6 +207,11 @@ target_include_directories(Nksp PRIVATE "${LC_CLIENT_SRC}/Nksp")
 target_link_options(Nksp PRIVATE /NODEFAULTLIB:game.lib /NODEFAULTLIB:gamemp.lib)
 add_dependencies(Nksp lc_entities Shaders GameMP)
 
+# Command-line exporter of the GameServer's zone maps (.sat/.sht) from client worlds.
+add_executable(ZoneMapExport ZoneMapExport/ZoneMapExport.cpp)
+target_link_libraries(ZoneMapExport PRIVATE lc_client_common Engine)
+add_dependencies(ZoneMapExport lc_entities)
+
 # D3DX9 runtime next to the executable.
 add_custom_command(TARGET Nksp POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LC_D3DX9_DIR}/release/bin/x86/D3DX9_43.dll" "${LC_BIN}")
