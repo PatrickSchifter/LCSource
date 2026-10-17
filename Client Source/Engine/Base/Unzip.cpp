@@ -128,8 +128,10 @@ public:
   CZipArchive *zs_pzaArchive; // archive that this sector belongs to
   SLONG zs_slOffset;      // offset of the sector in the archive (<0 if buffer is not used)
   UBYTE *zs_pubBuffer;    // the sector contents
+#ifdef PLATFORM_WIN32
   OVERLAPPED zs_ol;       // for async reading
   HANDLE zs_hEvent;
+#endif
   BOOL zs_bBusy;          // set when reading starts, reset when finished and got the results
   CListNode zs_lnInLRU;   // for linking in a LRU list
 
@@ -256,7 +258,9 @@ void CZipSector::CreateBuffer(SLONG slSectorSize)
   zs_pzaArchive = NULL;
   zs_slOffset = -slSectorSize*100;
   zs_bBusy = FALSE;
+#ifdef PLATFORM_WIN32
   zs_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+#endif
 }
 
 void CZipBuffer::InitBuffers(void)
@@ -282,6 +286,7 @@ void CZipBuffer::ClearBuffers(void)
 // open the archive for later reading
 void CZipArchive::Open_t(void)
 {
+#ifdef PLATFORM_WIN32
   // determine flags
   DWORD dwFlags = FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING;
   if( _bNTKernel) dwFlags |= FILE_FLAG_OVERLAPPED; // async read only supported on NT kernels
@@ -295,6 +300,16 @@ void CZipArchive::Open_t(void)
 
   // query its size
   za_slSize = GetFileSize((HANDLE)za_fFile, NULL);
+#else
+  // a plain descriptor; sectors are read synchronously (see RequestReadSector_t)
+  za_fFile = _open(za_fnm, _O_RDONLY);
+  if (za_fFile==-1) {
+    ThrowF_t(TRANS("%s: Cannot open file (%s)"), (CTString&)za_fnm, strerror(errno));
+  }
+  struct stat st;
+  fstat(za_fFile, &st);
+  za_slSize = (SLONG)st.st_size;
+#endif
 }
 
 // internal reading functions used for buffering
@@ -371,14 +386,28 @@ INDEX CZipBuffer::RequestReadSector_t(CZipArchive *pza, SLONG slOffset, BOOL bRe
   }
 
 
+#ifdef PLATFORM_WIN32
   // setup overlapped structure fields. 
   memset(&zs.zs_ol, 0, sizeof(zs.zs_ol));
   zs.zs_ol.Offset     = slOffset; 
   zs.zs_ol.OffsetHigh = 0; 
   zs.zs_ol.hEvent = zs.zs_hEvent;
+#endif
   zs.zs_pzaArchive = pza;
   zs.zs_slOffset = slOffset;
   zs.zs_bBusy = TRUE;
+
+#ifndef PLATFORM_WIN32
+  // the 9X kernel path below, with pread: the sector is ready when this returns
+  const ssize_t ctRead = pread(pza->za_fFile, zs.zs_pubBuffer, zb_slSectorSize, slOffset);
+  if (ctRead<0) {
+    NotifyReadingError(pza->za_fnm);
+  } else {
+    extern INDEX _ctTotalFromDisk;
+    _ctTotalFromDisk += (INDEX)ctRead;
+  }
+  zs.zs_bBusy = FALSE;
+#else
 
   DWORD dwResult = 0;
   BOOL  bResult  = FALSE;
@@ -406,6 +435,7 @@ INDEX CZipBuffer::RequestReadSector_t(CZipArchive *pza, SLONG slOffset, BOOL bRe
       NotifyReadingError(pza->za_fnm);
     }
   }
+#endif  // PLATFORM_WIN32
 
   MarkSectorTouched(iSector);
   return iSector;
@@ -423,10 +453,14 @@ BOOL CZipBuffer::IsSectorUsed(INDEX iSector)
     return FALSE;
   }
 
+#ifdef PLATFORM_WIN32
   // Check on the results of the asynchronous read. 
   DWORD dwResult;
   BOOL bResult = GetOverlappedResult((HANDLE)zs.zs_pzaArchive->za_fFile, &zs.zs_ol, &dwResult, FALSE); 
   return !bResult;
+#else
+  return FALSE;  // reads are synchronous, so never busy here
+#endif
 }
 
 
@@ -444,6 +478,7 @@ void CZipBuffer::WaitSectorRead_t(INDEX iSector)
     return;
   }
 
+#ifdef PLATFORM_WIN32
   BOOL bResult;
   DWORD dwResult;
   DWORD dwError;
@@ -502,6 +537,7 @@ void CZipBuffer::WaitSectorRead_t(INDEX iSector)
 
   extern INDEX _ctTotalFromDisk;
   _ctTotalFromDisk += dwResult;
+#endif  // PLATFORM_WIN32
 }
 
 

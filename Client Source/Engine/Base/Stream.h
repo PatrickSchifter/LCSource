@@ -285,6 +285,10 @@ public:
   void FileCommitPage( INDEX iPageToCommit);
   /* Decommites given page and writes it into file (if file is opened for writting) */
   void FileDecommitPage( INDEX iPageToDecommit);
+#ifndef PLATFORM_WIN32
+  /* Reads the whole file into the buffer (no page faults outside Windows) */
+  void FileLoadBuffer_t(void);
+#endif
   /* Get CRC32 of stream */
   ULONG GetStreamCRC32_t(void);
 

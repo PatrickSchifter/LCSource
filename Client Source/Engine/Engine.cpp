@@ -566,6 +566,7 @@ static void AnalyzeApplicationPath(void)
 	strDirPath[sizeof(strDirPath)-1] = 0;
 }
 
+#ifdef PLATFORM_WIN32
 // [2013/01/16] sykim70
 inline UINT GetFileLastWriteTime(HANDLE hFile)
 {
@@ -599,6 +600,30 @@ inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
 	CloseHandle(hFile);
 	return true;
 }
+#else
+// the same values as above: the UTC modification time taken apart (FileTimeToSystemTime) and
+// put back together by mktime as if it were local time
+inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
+{
+	struct stat st;
+	if (stat(LC_HostPath(filename).c_str(), &st) != 0)
+		return false;
+	len = (UINT)st.st_size;
+	struct tm tmUTC;
+	gmtime_r(&st.st_mtime, &tmUTC);
+	tm stTm = {
+		tmUTC.tm_sec,
+		tmUTC.tm_min,
+		tmUTC.tm_hour,
+		tmUTC.tm_mday,
+		tmUTC.tm_mon,
+		tmUTC.tm_year,
+		0, 0, 0
+	};
+	time = (UINT)mktime(&stTm);
+	return true;
+}
+#endif  // PLATFORM_WIN32
 
 // [2013/01/16] sykim70
 inline CTString OpenPersistentSymbolFile2(const CTFileName &fnmPS)

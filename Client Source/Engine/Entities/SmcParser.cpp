@@ -1,6 +1,8 @@
 #include "stdh.h"
 #include <fstream>
+#ifdef PLATFORM_WIN32
 #include <tchar.h>
+#endif
 #include <Engine/Base/FileName.h>
 #include <Engine/Entities/SmcParser.h>
 #include <Engine/Templates/StaticArray.cpp>
@@ -625,8 +627,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 			
 			CTString path = strFullPath + strMeshPath;
 			
-			WIN32_FIND_DATA wfd;
-			if (FindFirstFile(path, &wfd) == INVALID_HANDLE_VALUE)
+			if (GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
 			{
 				CTString log;
 				log.PrintF("[%d] Missing Mesh\t : %s", index, strMeshPath);
@@ -642,7 +643,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 				const char* strTexturePath = pInfo.GetTexInfoTFNM(k);
 				CTString path2 = strFullPath + strTexturePath;
 				
-				if (FindFirstFile(path2, &wfd) == INVALID_HANDLE_VALUE)
+				if (GetFileAttributes(path2) == INVALID_FILE_ATTRIBUTES)
 				{
 					CTString log;
 					log.PrintF("[%d] Missing Texture\t : %s", index, strTexturePath);

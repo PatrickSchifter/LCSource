@@ -19,6 +19,8 @@
 #include <strings.h>
 #include <ctype.h>
 #include <math.h>
+#include <errno.h>
+#include <time.h>
 #include <wchar.h>
 
 // basic types (DWORD, LONG, HWND, HINSTANCE, POINT and RECT are in Types.h)
@@ -480,6 +482,10 @@ inline int sprintf_s(char (&str)[ctDest], const char *strFormat, ...)
 #define _ASSERT(expr) ASSERT(expr)
 
 inline void OutputDebugString(const char *str) { fputs(str, stderr); }
+
+// errno stands in for the thread's last Win32 error (only its message is used, through
+// GetWindowsError; code that tests specific Win32 error codes is ported where it is)
+inline DWORD GetLastError(void) { return (DWORD)errno; }
 #define OutputDebugStringA OutputDebugString
 
 // size of a heap block (Memory.cpp, MemoryTracking.cpp)
@@ -508,6 +514,56 @@ typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUs
 #define MMSYSERR_INVALPARAM    11
 MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
 MMRESULT timeKillEvent(UINT uTimerID);
+
+// Files (Win32Compat.cpp). The engine keeps Windows paths everywhere ('\' separators; outside
+// Windows an absolute path starts with a single '\', like "\Users\me\LastChaos\"); they become
+// host paths only here, at the system boundary: '\' turns into '/', and each component that does
+// not exist as written is looked up ignoring case (the assets come from a case-insensitive
+// file system).
+#include <string>
+#include <cstdio>
+#include <fstream>  // calls std::fopen: must be seen before the macro below
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+std::string LC_HostPath(const char *strPath);
+FILE *LC_fopen(const char *strFileName, const char *strMode);
+#define fopen(name, mode) LC_fopen(name, mode)
+
+int _open(const char *strFileName, int iFlags);
+#define _close    close
+#define _O_RDONLY O_RDONLY
+#define _O_BINARY 0
+#define _S_IWRITE S_IWUSR
+
+struct _finddata_t {
+  unsigned attrib;
+  time_t   time_create;
+  time_t   time_access;
+  time_t   time_write;
+  size_t   size;
+  char     name[260];
+};
+#define _A_NORMAL 0x00
+#define _A_RDONLY 0x01
+#define _A_SUBDIR 0x10
+#define _A_ARCH   0x20
+intptr_t _findfirst(const char *strPattern, struct _finddata_t *pfd);
+int _findnext(intptr_t hFind, struct _finddata_t *pfd);
+int _findclose(intptr_t hFind);
+
+#define INVALID_FILE_ATTRIBUTES  ((DWORD)-1)
+#define FILE_ATTRIBUTE_READONLY  0x00000001
+#define FILE_ATTRIBUTE_DIRECTORY 0x00000010
+#define FILE_ATTRIBUTE_ARCHIVE   0x00000020
+#define FILE_ATTRIBUTE_NORMAL    0x00000080
+DWORD GetFileAttributes(const char *strFileName);
+BOOL CreateDirectory(const char *strPathName, void *pSecurityAttributes);
+int _mkdir(const char *strPathName);
+BOOL DeleteFile(const char *strFileName);
+BOOL MoveFile(const char *strExisting, const char *strNew);
+// only for the executable itself (hModule==NULL), as a Windows-style path
+DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize);
 
 // GlobalMemoryStatus (Win32Compat.cpp): sizes as a 32-bit Windows process sees them, clamped to
 // 32 bits; page file and virtual memory are not reported (zero)
