@@ -163,11 +163,14 @@ stubs vazios dos headers do Windows (`Compat/checkonly`), só para listar erros 
 - Conformidade C++ já corrigida no caminho (vale para o Windows também): `template<>` nas especializações de `Vector`/`Matrix`/`AABBox`, `this->` em bases dependentes (`Templates/`), `template class` nas instanciações explícitas, `DeclareSymbol` aceitando ponteiros de função, `Shell.cpp` gravava strings de arrays persistentes convertendo um `char` em ponteiro
 
 ### C3. Assembly x86 (139 blocos em 35 arquivos)
-Plano detalhado e levantamento em `HANDOFF.md` ("Próxima atividade").
-- [ ] Forçar `USE_PORTABLE_C` e desligar `ASMOPT` (os caminhos C já existem em RenderModel_View, LayerMixer, TextureEffects, Shader, Clipping, DrawPort_RenderScene, Functions.h, Color.h)
-- [ ] Reescrever em C os blocos sem fallback: `Graphics/Graphics.cpp`, `Graphics/Color.cpp`, `Graphics/Gfx_Direct3D_Colors.cpp`, `Sound/SoundMixer.cpp` (referência: ports open-source do SE1 1.10, como o SeriousSamClassic)
-- [ ] `Base/Timer.cpp` (`rdtsc`), `Base/Memory.h`, `Math/Matrix12.h`
-- [ ] Zero `__asm` no build macOS (checagem automática no CI)
+Detalhes em `HANDOFF.md` ("Assembly x86 (C3) — como ficou").
+- [x] `USE_PORTABLE_C` em `Base/Base.h` fora de MSVC x86; `ASMOPT` locais amarrados a ele; opção `LC_USE_PORTABLE_C` no CMake do Windows
+- [x] Ramos C antigos (RenderModel_View, LayerMixer, TextureEffects, Shader, DrawPort_RenderScene, Gfx_Direct3D, Clipping, Matrix12, Functions.h, Color.h) corrigidos para dar o mesmo resultado do asm
+- [x] C novo para os blocos sem fallback: `Graphics.cpp`, `Color.cpp`, `Gfx_Direct3D_Colors.cpp`, `SoundMixer.cpp`, `LayerMixer.cpp`, `Fog.cpp`, `RendMisc.cpp`, `Memory.h`, `Vertex.h`
+- [x] `Timer.cpp`/`Profiling.cpp` (`rdtsc` → `steady_clock`), CPUID, `ScanF` (`naked`), breakpoints, `OBFUSCATE`, anti-debug
+- [x] Zero erros de asm no check do Mac (`-DLC_CHECK_DIRS=ALL`)
+- [ ] Testar em jogo no Windows com `LC_USE_PORTABLE_C=ON`
+- [ ] Checagem automática no CI
 
 ### C4. Remover ou isolar dependências só de Windows
 - [ ] nProtect GameGuard (`Nksp/GameGuard.*`, `NPGameLib.h`)

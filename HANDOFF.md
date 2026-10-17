@@ -9,8 +9,8 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Um cliente **Windows** compilado deste repositório (D3D8, 32 bits, MSVC) loga nesse servidor pela
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
-- Cliente Mac: só a preparação. Tipos e 64 bits (C2) feitos; o código do cliente compila no Mac
-  apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
+- Cliente Mac: só a preparação. Tipos e 64 bits (C2) e assembly x86 (C3) feitos; o código do cliente
+  compila no Mac apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -20,51 +20,33 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` que o motor já tem,
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
 
-1. **C3 — assembly x86** (plano abaixo).
+1. **C3 — testar em jogo os caminhos C** no Windows (`LC_USE_PORTABLE_C`, ver abaixo).
 2. C4/C5 (dependências só de Windows e camada de plataforma), depois o restante da C1 e o primeiro
    link no Mac.
 
-## Próxima atividade: assembly x86 (C3) — plano
+## Assembly x86 (C3) — como ficou
 
-Objetivo: nenhum `__asm`/`asm()` no build do Mac, com caminhos em C que dão o mesmo resultado.
-**O cliente Windows continua sendo a referência**: cada troca é testada lá em jogo. Onde o C for
-equivalente, ele pode virar o único caminho também no Windows; onde houver dúvida (desempenho ou
-arredondamento), manter o asm só em `_MSC_VER`/`_M_IX86` e o C no resto. Encontrar o que falta
-com o check do Mac (`-DLC_CHECK_DIRS=ALL`): `unsupported architecture 'arm64' for MS-style inline
-assembly`, `invalid input/output constraint`, `'naked' attribute is not supported`.
-
-Levantamento (2026-10-17, linhas com asm por arquivo):
-
-| Arquivo | Linhas | Como está guardado |
-|---|---|---|
-| `Engine/Math/Functions.h` | 21 | `USE_PORTABLE_C` / `_MSC_VER` (há C; o ramo GNU `asm()` x86 quebra no clang arm64) |
-| `Engine/Graphics/Color.h` | 5 | igual ao Functions.h |
-| `Engine/Models/RenderModel_View.cpp` | 12 | `#define ASMOPT 1` local, tem ramo C |
-| `Engine/Light/LayerMixer.cpp` | 11 | `ASMOPT`, tem ramo C |
-| `Engine/Graphics/TextureEffects.cpp` | 5 | `ASMOPT`, tem ramo C |
-| `Engine/Math/Clipping.inl`, `Matrix12.h`, `Graphics/Shader.cpp`, `DrawPort_RenderScene.cpp`, `Gfx_Direct3D.cpp` | 1–6 | `ASMOPT` |
-| `Engine/Sound/SoundMixer.cpp` | 4 | `ASMOPT`, mas **sem** ramo C completo (mixer) |
-| `Engine/Graphics/Graphics.cpp`, `Graphics/Color.cpp`, `Graphics/Gfx_Direct3D_Colors.cpp` | 7, 7, 12 | sem fallback: reescrever em C |
-| `Engine/Graphics/Vertex.h`, `Base/Memory.h`, `LocalDefine.h` | 8, 5, 8 | inline curtos |
-| `Engine/Base/Timer.cpp` (`rdtsc`), `Profiling.cpp`, `CTString.cpp` (função `naked`), `Engine.cpp` (CPUID), `Terrain/TRGenerate.cpp` | 1–4 | trocar por `std::chrono`/C; CPUID só no Windows |
-| `Base/StackDump.cpp`, `Base/Assert.h`, `ErrorReporting.cpp`, `MemoryTracking.cpp`, `Network/*`, `RendMisc.cpp`, `Fog.cpp`, `RMRender.cpp`, `GameMP/Game.cpp` | 1–2 | conferir um a um (muitos são `int 3`/breakpoint ou debug) |
-
-Passos sugeridos:
-1. Um único interruptor em `Engine/Base/Base.h`: definir `USE_PORTABLE_C` fora de MSVC x86
-   (`#if !defined(_MSC_VER) || !defined(_M_IX86)`) e trocar os `#define ASMOPT 1` locais por
-   `#if defined(USE_PORTABLE_C) ... ASMOPT 0 ... #else ASMOPT 1`. Assim o Windows segue igual e o
-   Mac usa C. Recompilar o check e confirmar que os erros de asm desses arquivos somem.
-2. `Functions.h`/`Color.h`: o ramo `#else` (GNU `asm()` x86) deve virar o ramo C fora de MSVC.
-3. Reescrever os blocos sem fallback (`Graphics.cpp`, `Color.cpp`, `Gfx_Direct3D_Colors.cpp`,
-   `SoundMixer.cpp`). Referência: os ports open-source do Serious Engine 1 (SeriousSamClassic /
-   SE1 1.10 de Croteam no GitHub) têm C equivalente para quase tudo isso — o motor é o mesmo.
-   Conversão de cor e mixer de som são fáceis de testar em jogo (cores da UI, som ambiente/combate).
-4. `Timer.cpp`: `rdtsc` → `std::chrono::steady_clock` fora do Windows (o `TEST_GETTIME` em
-   `Timer.inl` mostra que o jogo já mede em milissegundos).
-5. Testar no Windows com `USE_PORTABLE_C` forçado **também lá** (um `-DUSE_PORTABLE_C` temporário
-   no `build.cmd`/CMake) para validar os caminhos C em jogo: login, mundo, modelos animados, terreno,
-   efeitos, som. Depois voltar ao asm no Windows se não houver motivo para trocar.
-6. Commits pequenos, um tema por commit; atualizar a C3 em `PORTING_MACOS.md`.
+- `Engine/Base/Base.h` define `USE_PORTABLE_C` em todo compilador que não seja MSVC x86. Com ele,
+  cada bloco `__asm` tem um caminho C (`#ifdef USE_PORTABLE_C`, ou `ASMOPT 0` nos arquivos que já
+  usavam `#if ASMOPT == 1`). No Windows o asm continua sendo o padrão e é a **referência**.
+- O C reproduz o asm, não a intenção: mesma aritmética de ponto fixo, saturação/wraparound do MMX,
+  `fistp` arredondando para o mais próximo (e `0x80000000` fora da faixa, em `FloatToInt`), ordem de
+  leitura/escrita em filtros in-place, e as esquisitices do original (comentadas no código: alpha
+  2× no sombreamento de modelos, alpha 255→254 na cor difusa, eixos trocados na distorção da água,
+  sinal de `DDL2oDV` somado em `DDL2oDUoDV` no LayerMixer...). Os ramos C antigos da Croteam
+  (ASMOPT) estavam quebrados ou com outra fórmula e foram corrigidos.
+- Precisão: o cliente D3D roda a FPU x87 em 24 bits (device criado sem `D3DCREATE_FPU_PRESERVE`),
+  então o C usa produtos em `float` onde o asm faz contas no x87. `SetFPUPrecision`/`_control87`
+  (`Math/Float.cpp`) não existe no ARM: fica para a C5.
+- Sem C (código morto): dithering de `DitherBitmap` (um `goto` desliga), swizzle D3D (Xbox,
+  `bSwizzle` sempre FALSE). `StackDump.cpp` sem stack walk e `DetectCPU` sem CPUID fora do x86;
+  `OBFUSCATE()` e os anti-debug viram nada; `ReadTSC` usa `steady_clock` em ns.
+- **Teste no Windows com os caminhos C:** `-DLC_USE_PORTABLE_C=ON` no configure (opção do CMake do
+  cliente). O que exercitar: mundo (lightmaps: LayerMixer, FilterBitmap), modelos animados com
+  luz/névoa (RenderModel_View, Shader), água/fogo animados (TextureEffects), texturas (mipmaps,
+  conversão de cor D3D), UI (cores), som ambiente e de combate (SoundMixer). Depois voltar para OFF.
+- Achado à parte: `Stream.cpp` usa `ScanF("%I64x")`, formato só do MSVC (`vsscanf` do Mac não
+  entende); `Shader.cpp` ~1461 liga referência não-const a temporário (erro no clang, C1).
 
 ## Verificação do cliente no Mac (`LC_CLIENT_CHECK_ONLY`)
 
