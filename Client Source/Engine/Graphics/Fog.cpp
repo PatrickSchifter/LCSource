@@ -50,6 +50,16 @@ static const __int64 mmWhiteMask = 0x00FFFFFF00FFFFFF;
 // prepares fog and haze parameters and eventualy converts texture
 ULONG PrepareTexture( const UBYTE *pubTexture, const PIX pixTexSize)
 {
+#ifdef USE_PORTABLE_C
+	// expand each alpha byte into a white RGBA pixel, written right after the source bytes
+	UBYTE *pubDst = (UBYTE*)pubTexture + pixTexSize;
+	for( PIX pix=0; pix<pixTexSize; pix++) {
+		pubDst[pix*4+0] = 0xFF;
+		pubDst[pix*4+1] = 0xFF;
+		pubDst[pix*4+2] = 0xFF;
+		pubDst[pix*4+3] = pubTexture[pix];
+	}
+#else
 	__asm {
 		mov     ecx,D [pixTexSize]
 		mov     esi,D [pubTexture]
@@ -94,6 +104,7 @@ pixLoop1:
 		jnz     pixLoop1
 done:
 	}
+#endif
 
 	// determine internal format
 	extern INDEX gap_bAllowGrayTextures;

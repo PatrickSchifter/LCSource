@@ -354,6 +354,15 @@ COLOR MulColors( COLOR col1, COLOR col2)
     mov     D [colRet],ebx
   }
 */
+#ifdef USE_PORTABLE_C
+	// each byte: (c1*c2)>>8
+	colRet = 0;
+	for( INDEX iShift=0; iShift<32; iShift+=8) {
+		const ULONG ul1 = (col1>>iShift) & 0xFF;
+		const ULONG ul2 = (col2>>iShift) & 0xFF;
+		colRet |= ((ul1*ul2)>>8) << iShift;
+	}
+#else
 	__asm
 	{
 		movd		mm0, col1
@@ -367,6 +376,7 @@ COLOR MulColors( COLOR col1, COLOR col2)
 		movd		colRet, mm0
 		emms
 	}
+#endif
 //안태훈 수정 끝	//(Open beta)(2004-12-15)
 	return colRet;
 }
@@ -444,6 +454,15 @@ COLOR AddColors( COLOR col1, COLOR col2)
     mov     D [colRet],ebx
   }
  */
+#ifdef USE_PORTABLE_C
+	// each byte: min(c1+c2, 255)
+	colRet = 0;
+	for( INDEX iShift=0; iShift<32; iShift+=8) {
+		const ULONG ul1 = (col1>>iShift) & 0xFF;
+		const ULONG ul2 = (col2>>iShift) & 0xFF;
+		colRet |= ClampUp( ul1+ul2, 255UL) << iShift;
+	}
+#else
 	__asm
 	{
 		movd		mm0, col1
@@ -456,6 +475,7 @@ COLOR AddColors( COLOR col1, COLOR col2)
 		movd		colRet, mm0
 		emms
 	}
+#endif
 //안태훈 수정 끝	//(Open beta)(2004-12-15)
 	return colRet;
 }
@@ -465,6 +485,9 @@ COLOR AddColors( COLOR col1, COLOR col2)
 // multiple conversion from OpenGL color to DirectX color
 extern void abgr2argb( ULONG *pulSrc, ULONG *pulDst, INDEX ct)
 {
+#ifdef USE_PORTABLE_C
+  for( INDEX i=0; i<ct; i++) pulDst[i] = abgr2argb(pulSrc[i]);
+#else
   __asm {
     mov   esi,dword ptr [pulSrc]
     mov   edi,dword ptr [pulDst]
@@ -517,6 +540,7 @@ colSkip2:
     mov   dword ptr [edi],eax
 colSkip1:
   }
+#endif
 }
 
 
@@ -529,6 +553,13 @@ extern void ColorAPI( COLOR *pcolSrc, ULONG *pulDst, INDEX ct)
     return;
   }
 
+#ifdef USE_PORTABLE_C
+  if( _iGfxAPI==1) {
+    for( INDEX i=0; i<ct; i++) pulDst[i] = rgba2argb(pcolSrc[i]);
+  } else {
+    for( INDEX i=0; i<ct; i++) pulDst[i] = ByteSwap(pcolSrc[i]);
+  }
+#else
   __asm {
     push  ebx
     mov   esi,dword ptr [pcolSrc]
@@ -623,4 +654,5 @@ skipD3D2:
 
 convDone:
   }
+#endif
 }
