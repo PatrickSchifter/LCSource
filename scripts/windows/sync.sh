@@ -40,6 +40,9 @@ if [[ $1 != --verify ]]; then
 Get-Content C:\LCSource\mac-deleted.txt -Encoding UTF8 | % {
   $p = Join-Path C:\LCSource $_
   if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Force }
+  # and the directories left empty
+  $d = Split-Path $p
+  while ((Test-Path -LiteralPath $d) -and -not (Get-ChildItem -LiteralPath $d -Force)) { Remove-Item -LiteralPath $d; $d = Split-Path $d }
 }
 Remove-Item C:\LCSource\mac-deleted.txt
 EOF
@@ -49,6 +52,7 @@ fi
 
 COPYFILE_DISABLE=1 tar --null -cf "$TMP/sync.tar" -T "$TMP/list"
 scp -q -o BatchMode=yes "$TMP/sync.tar" windows:C:/LCSource/sync.tar
-ssh -o BatchMode=yes windows "tar -xf C:/LCSource/sync.tar -C C:/LCSource; Remove-Item C:/LCSource/sync.tar"
+# -m: stamp files with the extraction time, so ninja never sees a source older than its object
+ssh -o BatchMode=yes windows "tar -m -xf C:/LCSource/sync.tar -C C:/LCSource; Remove-Item C:/LCSource/sync.tar"
 git rev-parse HEAD > "$STATE"
 echo "synced $(tar -tf "$TMP/sync.tar" | wc -l | tr -d ' ') files"
