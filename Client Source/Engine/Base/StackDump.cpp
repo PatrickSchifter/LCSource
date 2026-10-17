@@ -1,5 +1,7 @@
 #include "stdh.h"
 
+#ifdef _WIN32
+
 #include <DbgHelp.h>
 #include <tchar.h>
 #include <Engine/Build.h>
@@ -658,9 +660,24 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 	FCPrintF(pstrm,"\n");
 }
 
+#else // !_WIN32
 
+// No crash report outside Windows yet (C5: signal handler and backtrace()).
+extern void InitExceptionHandler(const char* FileName)
+{
+}
 
+extern void CloseExceptionHandler(void)
+{
+}
 
+extern BOOL GetLogicalAddress(void *pAddr, char *szModule, ULONG ulLen, ULONG &ulSection, ULONG &ulOffset)
+{
+	return FALSE;
+}
 
+extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
+{
+}
 
-
+#endif // _WIN32

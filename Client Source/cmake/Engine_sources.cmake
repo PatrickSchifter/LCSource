@@ -412,7 +412,6 @@ set(ENGINE_SOURCES
   "Engine/Math/Projection_Simple.cpp"
   "Engine/Math/Projection_Simple_DOUBLE.cpp"
   "Engine/Math/TextureMapping.cpp"
-  "Engine/MiniDump.cpp"
   "Engine/Models/EditModel.cpp"
   "Engine/Models/MipMaker.cpp"
   "Engine/Models/Model.cpp"

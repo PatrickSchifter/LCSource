@@ -42,7 +42,6 @@
 #include <Engine/Contents/Base/UIMsgBoxMgr.h>
 
 #include <Engine/GameState.h>
-#include <Engine/MiniDump.h>
 #include <Engine/Network/Web.h>
 #include <Engine/JobInfo.h>
 #include <Engine/Entities/SkillTree.h>
@@ -66,10 +65,6 @@
 
 ENGINE_API cWeb g_web;
 
-//#define USE_MINIDUMP
-#ifdef USE_MINIDUMP
-MiniDumper	g_MiniDumper(TRUE);
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
