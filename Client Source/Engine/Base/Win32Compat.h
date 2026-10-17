@@ -565,6 +565,11 @@ BOOL MoveFile(const char *strExisting, const char *strNew);
 // only for the executable itself (hModule==NULL), as a Windows-style path
 DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize);
 
+// reading .ini files (sections and keys ignore case, values are trimmed and unquoted)
+DWORD GetPrivateProfileString(const char *strSection, const char *strKey, const char *strDefault,
+                              char *strReturned, DWORD ctSize, const char *strFileName);
+UINT GetPrivateProfileInt(const char *strSection, const char *strKey, INT iDefault, const char *strFileName);
+
 // GlobalMemoryStatus (Win32Compat.cpp): sizes as a 32-bit Windows process sees them, clamped to
 // 32 bits; page file and virtual memory are not reported (zero)
 typedef struct {

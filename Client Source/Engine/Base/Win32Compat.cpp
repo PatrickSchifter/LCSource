@@ -408,6 +408,103 @@ DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize)
 }
 
 /////////////////////////////////////////////////////////////////////
+// .ini files
+
+namespace {
+
+std::string Trim(const std::string &str)
+{
+  size_t iBegin = 0;
+  size_t iEnd = str.size();
+  while (iBegin < iEnd && isspace((unsigned char)str[iBegin])) iBegin++;
+  while (iEnd > iBegin && isspace((unsigned char)str[iEnd - 1])) iEnd--;
+  return str.substr(iBegin, iEnd - iBegin);
+}
+
+// the value of a key, or false if the file, the section or the key is missing
+bool ReadIniValue(const char *strSection, const char *strKey, const char *strFileName, std::string &strValue)
+{
+  FILE *pFile = LC_fopen(strFileName, "rb");
+  if (pFile == NULL) {
+    return false;
+  }
+  bool bInSection = false;
+  bool bFound = false;
+  bool bFirstLine = true;
+  char achLine[4096];
+  while (!bFound && fgets(achLine, sizeof(achLine), pFile) != NULL) {
+    std::string strLine(achLine);
+    if (bFirstLine && strLine.compare(0, 3, "\xEF\xBB\xBF") == 0) {
+      strLine.erase(0, 3);  // UTF-8 BOM
+    }
+    bFirstLine = false;
+    strLine = Trim(strLine);
+    if (strLine.empty() || strLine[0] == ';') {
+      continue;
+    }
+    if (strLine[0] == '[') {
+      const size_t iClose = strLine.find(']');
+      const std::string strName = Trim(strLine.substr(1, iClose == std::string::npos ? std::string::npos : iClose - 1));
+      bInSection = strcasecmp(strName.c_str(), strSection) == 0;
+      continue;
+    }
+    if (!bInSection) {
+      continue;
+    }
+    const size_t iEquals = strLine.find('=');
+    if (iEquals == std::string::npos) {
+      continue;
+    }
+    if (strcasecmp(Trim(strLine.substr(0, iEquals)).c_str(), strKey) == 0) {
+      strValue = Trim(strLine.substr(iEquals + 1));
+      // matching quotes around the value are dropped
+      if (strValue.size() >= 2 && (strValue[0] == '"' || strValue[0] == '\'') && strValue.back() == strValue[0]) {
+        strValue = strValue.substr(1, strValue.size() - 2);
+      }
+      bFound = true;
+    }
+  }
+  fclose(pFile);
+  return bFound;
+}
+
+}  // namespace
+
+DWORD GetPrivateProfileString(const char *strSection, const char *strKey, const char *strDefault,
+                              char *strReturned, DWORD ctSize, const char *strFileName)
+{
+  // (listing sections or keys, with a NULL section or key, is not used by the engine)
+  ASSERT(strSection != NULL && strKey != NULL);
+  if (ctSize == 0) {
+    return 0;
+  }
+  std::string strValue;
+  if (!ReadIniValue(strSection, strKey, strFileName, strValue)) {
+    // the default loses its trailing blanks
+    strValue = strDefault != NULL ? strDefault : "";
+    while (!strValue.empty() && isspace((unsigned char)strValue.back())) strValue.pop_back();
+  }
+  const DWORD ctCopy = (DWORD)strValue.size() < ctSize - 1 ? (DWORD)strValue.size() : ctSize - 1;
+  memcpy(strReturned, strValue.c_str(), ctCopy);
+  strReturned[ctCopy] = 0;
+  return ctCopy;
+}
+
+UINT GetPrivateProfileInt(const char *strSection, const char *strKey, INT iDefault, const char *strFileName)
+{
+  std::string strValue;
+  if (!ReadIniValue(strSection, strKey, strFileName, strValue) || strValue.empty()) {
+    return (UINT)iDefault;
+  }
+  // decimal, or hexadecimal with 0x; parsing stops at the first character that does not fit
+  const char *pch = strValue.c_str();
+  if (pch[0] == '0' && (pch[1] == 'x' || pch[1] == 'X')) {
+    return (UINT)strtoul(pch + 2, NULL, 16);
+  }
+  return (UINT)strtol(pch, NULL, 10);
+}
+
+/////////////////////////////////////////////////////////////////////
 // memory
 
 static DWORD ClampToDWORD(uint64_t ullValue)
