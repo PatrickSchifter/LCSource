@@ -599,7 +599,7 @@ CTString CCommunicationInterface::GetSocketError(INDEX iError)
 BOOL CCommunicationInterface::CheckIPFilter()
 {
 	// 회사 내부가 아니라면 IP 필터링...
-#if defined VER_TEST
+#if defined VER_TEST || defined LC_NO_IP_FILTER	// LC_NO_IP_FILTER: allow any server address (local development)
 	return FALSE;
 #endif
 	return TRUE;

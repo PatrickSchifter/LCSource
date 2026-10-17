@@ -12,6 +12,7 @@ if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 set(LC_CLIENT_COUNTRY "BRAZIL" CACHE STRING "Client country define (G_<COUNTRY>): BRAZIL, USA, GERMAN, KOR, RUSSIA, THAI, ...")
+option(LC_NO_IP_FILTER "Let the client connect to any login server address (otherwise only the publisher's ranges)" ON)
 set(LC_D3DX9_DIR "" CACHE PATH "Microsoft.DXSDK.D3DX NuGet package 'build/native' directory")
 # The Windows SDK no longer ships the Direct3D 8 headers; the MinGW-w64 (Wine) d3d8.h,
 # d3d8caps.h and d3d8types.h work. D3D8.DLL itself is loaded at runtime by the engine.
@@ -42,12 +43,17 @@ target_compile_definitions(lc_client_common INTERFACE
   LC_NO_XTRAP NO_GAMEGUARD
   _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS _WINSOCK_DEPRECATED_NO_WARNINGS
   _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _HAS_STD_BYTE=0)
+if(LC_NO_IP_FILTER)
+  target_compile_definitions(lc_client_common INTERFACE LC_NO_IP_FILTER)
+endif()
 target_compile_options(lc_client_common INTERFACE /W1 /MP /EHsc /permissive /Zc:strictStrings- /Zc:threadSafeInit- /bigobj
   "/FI${CMAKE_CURRENT_SOURCE_DIR}/Compat/d3d8_mingw.h")  # what the MinGW-w64 d3d8 headers expect
 target_include_directories(lc_client_common INTERFACE
   "${LC_GEN}" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8")
 target_include_directories(lc_client_common SYSTEM INTERFACE "${LC_D3D8_INCLUDE_DIR}")
 target_link_libraries(lc_client_common INTERFACE Boost::headers)
+# Libraries requested by name through #pragma comment(lib, ...) live in the archive directory.
+target_link_directories(lc_client_common INTERFACE "${CMAKE_BINARY_DIR}/lib")
 
 # --- Third-party libraries, built from source (the prebuilt Lib/VC100/*.lib are VS2010-only) ---
 
@@ -176,7 +182,10 @@ target_link_libraries(Shaders PRIVATE Engine)
 
 lc_client_target(EntitiesMP SHARED ${ENTITIESMP_SOURCES} ${ENTITIESMP_GENERATED})
 target_compile_definitions(EntitiesMP PRIVATE _WINDLL _USRDLL)
-target_include_directories(EntitiesMP PRIVATE "${LC_GEN}/EntitiesMP" "${LC_CLIENT_SRC}/EntitiesMP/StdH")
+# StdH/StdH.h includes "..\\Global.h", which Ecc generates from Global.es into ${LC_GEN}/EntitiesMP:
+# searching from ${LC_GEN}/EntitiesMP/StdH resolves it there.
+file(MAKE_DIRECTORY "${LC_GEN}/EntitiesMP/StdH")
+target_include_directories(EntitiesMP PRIVATE "${LC_GEN}/EntitiesMP" "${LC_CLIENT_SRC}/EntitiesMP/StdH" "${LC_GEN}/EntitiesMP/StdH")
 target_link_libraries(EntitiesMP PRIVATE Engine user32 ws2_32 winmm)
 
 lc_client_target(GameMP SHARED ${GAMEMP_SOURCES})
