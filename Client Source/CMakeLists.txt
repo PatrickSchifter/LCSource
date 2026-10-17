@@ -52,6 +52,12 @@ target_compile_definitions(lc_client_common INTERFACE
 if(LC_NO_IP_FILTER)
   target_compile_definitions(lc_client_common INTERFACE LC_NO_IP_FILTER)
 endif()
+# The C paths that replace the x86 inline assembly (always used outside MSVC x86, see
+# Engine/Base/Base.h); turn this on to test them in the Windows client.
+option(LC_USE_PORTABLE_C "Use the C paths instead of the x86 inline assembly" OFF)
+if(LC_USE_PORTABLE_C)
+  target_compile_definitions(lc_client_common INTERFACE USE_PORTABLE_C)
+endif()
 # SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
 # build) and quits silently on a mismatch, so it must be off for binaries built here.
 target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)

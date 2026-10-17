@@ -42,6 +42,14 @@
   #define PLATFORM_UNIX
 #endif
 
+// The x86 inline assembly is MSVC syntax for 32-bit x86 only; everywhere else the engine uses
+// its C paths. Define USE_PORTABLE_C in the Windows build too to test the C paths there.
+#if !defined(_MSC_VER) || !defined(_M_IX86)
+  #ifndef USE_PORTABLE_C
+    #define USE_PORTABLE_C
+  #endif
+#endif
+
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
   #define ENGINE_API

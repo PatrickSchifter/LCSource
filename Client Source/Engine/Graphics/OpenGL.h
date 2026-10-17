@@ -88,22 +88,12 @@ inline void glCOLOR( COLOR col)
             ((col >> 8) & 0x0000FF00) |
             ((col >> 24)            ) );
 
-#elif (defined _MSC_VER)
+#else
   __asm {
     mov     eax,dword ptr [col]
     bswap   eax
     mov     dword ptr [col],eax
   }
-
-#elif (defined __GNUC__)
-  __asm__ __volatile__ (
-    "bswapl   %%eax    \n\t"
-        : "=a" (col)
-        : "a" (col)
-  );
-
-#else
-  #error please define for your platform.
 #endif
 
   pglColor4ubv((GLubyte*)&col);

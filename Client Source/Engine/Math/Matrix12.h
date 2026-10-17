@@ -110,7 +110,11 @@ inline void MatrixMultiply(Matrix16 &c, const Matrix16 &m, const Matrix16 &n)
 }
 //강동민 수정 끝
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 inline void MatrixMultiply(Matrix12 &c,const Matrix12 &m, const Matrix12 &n)
 {
 #if ASMOPT == 1
