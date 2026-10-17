@@ -147,6 +147,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [ ] Includes com caixa errada (`Console_Internal.h`, `GFX_wrapper_OpenGL.cpp`...); vamos padronizar e não depender de APFS case-insensitive
 
 ### C2. Tipos e 64-bit
+Plano detalhado e levantamento em `HANDOFF.md` ("Próxima atividade").
 - [ ] Procurar `x = x++` (no-op em C++17; já causou loop infinito no Helper)
 - [ ] `Engine/Base/Types.h`: `SLONG`, `ULONG`, `INDEX` → `int32_t`/`uint32_t` (**crítico**: todos os streams dependem disso)
 - [ ] Cerca de 185 casts de ponteiro para `ULONG`/`SLONG`/`INDEX` → `uintptr_t`/`intptr_t`

@@ -19,6 +19,47 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
    que o motor já tem, com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
    O primeiro passo técnico é 64-bit no Engine (`PORTING_MACOS.md`, C2).
 
+## Próxima atividade: Engine em 64 bits (C2) — plano
+
+Objetivo: o código do cliente (Engine, EntitiesMP, GameMP, Shaders) com tipos de largura fixa e
+sem truncar ponteiros, **sem quebrar o cliente Windows de 32 bits**, que continua sendo a
+referência para testar cada passo em jogo. Ainda não é para compilar o cliente inteiro no Mac:
+isso vem depois (C3–C5); aqui só se prepara o terreno.
+
+Levantamento (2026-10-17, `Client Source/Engine/Base/Types.h`):
+- `SLONG`/`ULONG` são `signed/unsigned long`, `INDEX` é `long`; `PIX`, `TEX`, `MEX` e `COLOR` derivam
+  deles. No macOS arm64 (LP64) `long` tem 64 bits; todos os streams (`CTStream::operator>>`,
+  `Read_t`), os `.lod`/`.bin` lidos por struct e os pacotes de rede dependem de 32 bits.
+- No Windows, `windows.h` também define `ULONG`/`LONG` como `unsigned long`/`long` (e o próprio
+  `Types.h` faz `typedef ULONG COLORREF`): trocar para `uint32_t` no Windows gera conflito de typedef.
+- ~35 casts de ponteiro para `ULONG/SLONG/INDEX` em padrões óbvios (`(ULONG)p...`, `(ULONG)&...`) e
+  certamente mais em formas indiretas; `__int64` em 107 arquivos; 116 `sizeof(long|ULONG|SLONG)` no Engine.
+- `Common/Packet` e `Common/header` (structs de rede com `#pragma pack`) não usam `long` diretamente,
+  mas usam os tipos do motor; cruzar com o servidor (`Server Source/ShareLib`), que já roda em LP64.
+
+Passos sugeridos:
+1. `Types.h`: em `_WIN32` manter as definições atuais; fora dele, `SLONG`=`int32_t`, `ULONG`=`uint32_t`,
+   `INDEX`=`int32_t`, `__int64`=`int64_t` (macro ou typedef). Acrescentar `static_assert` de
+   `sizeof` (SLONG/ULONG/INDEX = 4, SQUAD = 8, COLOR = 4) que valem nas duas plataformas.
+2. Procurar `x = x++` (vira no-op em C++17; já causou loop infinito no Helper do servidor).
+3. Ponteiro → inteiro: trocar por `uintptr_t`/`intptr_t` (ou `size_t` para tamanhos). Achar os
+   casos compilando os arquivos do Engine com clang no Mac (próximo item) e com `-Wpointer-to-int-cast`
+   / `-Wshorten-64-to-32`; no Windows nada muda de tamanho, então o cliente segue igual.
+4. Compilação só de verificação no Mac: um alvo CMake (por exemplo `LC_CLIENT_CHECK_ONLY`) que compila
+   (sem linkar) os `.cpp` portáveis do Engine (Base, Math, Templates, Brushes, World, Terrain, Ska,
+   Models) com clang arm64, para listar erros de 64 bits sem depender de D3D/Win32. Hoje
+   `Client Source/CMakeLists.txt` aborta fora de Windows x86; precisa de um caminho separado.
+   Os headers do Windows usados nesses arquivos vão aparecer aqui — anotar, não resolver (é C5).
+5. Structs lidas direto de arquivo ou rede (`Read_t(&struct, sizeof(struct))`, `fread` de `.lod`):
+   `static_assert(sizeof(...))` com o tamanho de 32 bits MSVC; a regra de `HANDOFF` sobre
+   registros de `.lod` (tamanho do registro = `(tamanho − 4) / quantidade`) ajuda a achar os valores.
+6. A cada passo: `scripts/windows/build.sh` e entrar no jogo pelo Windows (login, mundo, lojas,
+   combate) para confirmar que nada mudou. Commits pequenos, um tema por commit.
+
+Riscos: `INDEX` aparece em formatos `printf` (`%d`/`%ld`) e em sobrecargas de `operator<<`/`>>` de
+streams; trocar `long` por `int` pode criar ambiguidades ou duplicar sobrecargas que antes eram
+distintas (`long` vs `int`) — fora do Windows apenas, já que no Windows os tipos não mudam.
+
 ## Mac: servidor
 
 - Build: `cmake --build build -j8` (configurado com `LC_REGION=BRZ`).
