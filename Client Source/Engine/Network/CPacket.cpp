@@ -95,7 +95,11 @@ void CPacket::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-      _asm int 3;
+#ifdef _MSC_VER
+      __debugbreak();
+#else
+      __builtin_debugtrap();
+#endif
     }
   }
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)

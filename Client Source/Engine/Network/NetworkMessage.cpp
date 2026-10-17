@@ -626,7 +626,11 @@ void CNetworkStreamBlock::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-      _asm int 3;
+#ifdef _MSC_VER
+      __debugbreak();
+#else
+      __builtin_debugtrap();
+#endif
     }
   }
   FreeMemory(p);

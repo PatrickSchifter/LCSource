@@ -16,6 +16,15 @@
 
 #define TEST_GETTIME
 
+#ifdef USE_PORTABLE_C
+#include <chrono>
+// no rdtsc: a nanosecond clock stands in for the CPU clock counter (so the CPU measures as 1 GHz)
+static inline __int64 ReadTSC(void)
+{
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+#else
 // Read the Pentium TimeStampCounter
 static inline __int64 ReadTSC(void)
 {
@@ -27,6 +36,7 @@ static inline __int64 ReadTSC(void)
   }
   return mmRet;
 }
+#endif
 
 
 // link with Win-MultiMedia

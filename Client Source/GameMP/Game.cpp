@@ -1001,6 +1001,9 @@ UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 		if (WAIT_OBJECT_0 == WaitForSingleObject(_pGame->GetUpdateHandle(), INFINITE))
 		{
 			BOOL bState = FALSE;
+#ifdef USE_PORTABLE_C
+			bState = InputState();
+#else
 			// IDA 등 디버깅 툴에서의 난독처리. 단 올리디버그 2.0 이상 버전에서는 난독처리 되지 않음. [3/2/2011 rumist]
 			__asm
 			{
@@ -1017,6 +1020,7 @@ UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 				mov		bState, eax
 				pop		eax
 			}
+#endif
 			// if detected hack user, request disconnect.
 			if (bState)
 			{

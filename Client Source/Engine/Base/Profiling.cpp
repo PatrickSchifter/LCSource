@@ -7,6 +7,15 @@ template class CStaticArray<CProfileCounter>;
 template class CStaticArray<CProfileTimer>;
 
 
+#ifdef USE_PORTABLE_C
+#include <chrono>
+// same clock as ReadTSC() in Timer.cpp
+static inline __int64 ReadTSC_profile(void)
+{
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+#else
 static inline __int64 ReadTSC_profile(void)
 {
 	__int64 mmRet;
@@ -18,6 +27,7 @@ static inline __int64 ReadTSC_profile(void)
 	}
 	return mmRet;
 }
+#endif
 
 
 /////////////////////////////////////////////////////////////////////

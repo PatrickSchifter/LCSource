@@ -532,6 +532,12 @@ static void DetectCPU(void)
 	ULONG ulTFMS;
 	ULONG ulFeatures;
 
+#ifdef USE_PORTABLE_C
+	// no cpuid: the C paths need none of the x86 features checked below
+	strcpy(strVendor, "unknown");
+	ulTFMS = 0;
+	ulFeatures = 0;
+#else
 	// test MMX presence and update flag
 	__asm {
 		mov     eax,0 // request for basic id
@@ -544,6 +550,7 @@ static void DetectCPU(void)
 		mov     dword ptr [ulTFMS],eax   // remember type, family, model and stepping
 		mov     dword ptr [ulFeatures],edx
 	}
+#endif
 
 	const INDEX iType     = (ulTFMS>>12)&0x3;
 	const INDEX iFamily   = (ulTFMS>> 8)&0xF;
@@ -577,7 +584,9 @@ static void DetectCPU(void)
 	sys_bCPUHasCMOV = bCMOV!=0;
 	sys_iCPUMHz = (INDEX)fMHz;
 
+#ifndef USE_PORTABLE_C
 	if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
+#endif
 }
 
 static void DetectCPUWrapper(void)
@@ -1367,6 +1376,14 @@ static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 	__try {
 		// 4 times should be just enough
 		for( INDEX i=0; i<4; i++) {
+#ifdef USE_PORTABLE_C
+			// volatile keeps the compiler from dropping the reads
+			const volatile ULONG *pul = (const volatile ULONG*)pubMemoryBlock;
+			for( INDEX iLong=0; iLong<ctBlockSize/4; iLong++) {
+				ULONG ul = pul[iLong] + pul[iLong+16*0x1000/4];
+				(void)ul;
+			}
+#else
 			// must do it in asm - don't know what VC will try to optimize
 			__asm {
 				// The 16-page skip is to keep Win 95 from thinking we're trying to page ourselves in
@@ -1382,6 +1399,7 @@ touchLoop:
 				dec   ecx
 				jnz   touchLoop
 			}
+#endif
 		}
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER) { 

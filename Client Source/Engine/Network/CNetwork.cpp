@@ -2292,6 +2292,11 @@ void CNetworkLibrary::MainLoop(void)
 
 #if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST)
   BOOL bIsDebuggerPresent = FALSE;
+#ifdef USE_PORTABLE_C
+  #ifdef PLATFORM_WIN32
+  bIsDebuggerPresent = IsDebuggerPresent();
+  #endif
+#else
   __asm {
 	  // TIB(Thread Information Block)의 위치 얻기
 	  mov		eax, fs:[0x18]
@@ -2302,6 +2307,7 @@ void CNetworkLibrary::MainLoop(void)
 	  // 결과 리턴
 	  mov		bIsDebuggerPresent, eax
   }
+#endif
   if (bIsDebuggerPresent) {
 	  static int counter = 0;
 	  counter++;

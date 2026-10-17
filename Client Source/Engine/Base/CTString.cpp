@@ -820,8 +820,18 @@ extern void FreeVPrintF(void)
 //	}
 }
 
-static void *psscanf = &sscanf;
 // Scan formatted from a string
+#ifdef USE_PORTABLE_C
+INDEX CTString::ScanF(const char *strFormat, ...)
+{
+	va_list arg;
+	va_start(arg, strFormat);
+	const INDEX iRet = vsscanf(str_String, strFormat, arg);
+	va_end(arg);
+	return iRet;
+}
+#else
+static void *psscanf = &sscanf;
 __declspec(naked) INDEX CTString::ScanF(const char *strFormat, ...)
 {
 	__asm {
@@ -833,6 +843,7 @@ __declspec(naked) INDEX CTString::ScanF(const char *strFormat, ...)
 		jmp     dword ptr [psscanf]
 	}
 }
+#endif
 
 
 	// split string in two strings at specified position (char AT splitting position goes to str2)

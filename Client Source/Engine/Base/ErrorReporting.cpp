@@ -188,7 +188,11 @@ extern const CTString GetWindowsError(DWORD dwWindowsErrorCode)
 // must be in separate function to disable stupid optimizer
 extern void Breakpoint(void)
 {
-	__asm int 0x03;
+#ifdef _MSC_VER
+	__debugbreak();
+#else
+	__builtin_debugtrap();
+#endif
 }
 
 // Set callback function that will be called on fatal error

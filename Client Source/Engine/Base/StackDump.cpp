@@ -594,8 +594,12 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 	
 	ULONG aulStack[STACKTRACKDEPTH];
 	
-	ULONG	ulFrame;
 	int		isd;
+#ifdef USE_PORTABLE_C
+	// the frame walk below reads 32-bit x86 frames only
+	aulStack[0] = 0;
+#else
+	ULONG	ulFrame;
 	// Get current frame (ebp)
 	__asm mov dword ptr ulFrame, ebp;
 	// walk all frames
@@ -620,6 +624,7 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 		}
 		ulFrame = ulPrevFrame; // go to next frame
 	}
+#endif
 	
 	for( isd = 0; isd < STACKTRACKDEPTH; isd++) {
 		ULONG ulAddress = aulStack[isd];
