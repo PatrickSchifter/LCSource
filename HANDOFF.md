@@ -19,11 +19,86 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 ## Próximos passos sugeridos (em ordem)
 
 Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` que o motor já tem,
-com skinning na CPU), depois Metal, por último Vulkan; plataforma em SDL2.
+com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
+2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C5** (camada de plataforma em SDL2: janela, input, timers, threads, arquivos, registry), depois
-   o restante da C1 e o primeiro link no Mac. Para a C5, levantar antes um roteiro como o da C4
-   (arquivos, linhas, ordem) e registrá-lo aqui.
+1. **C5** (camada de plataforma), seguindo o roteiro abaixo; depois o restante da C1 e o primeiro
+   link no Mac.
+
+## C5 — roteiro (levantado em 2026-10-17)
+
+Linha de base do check (`build-client-check-all`, `-DLC_CHECK_DIRS=ALL`): 12.065 erros únicos
+contados por `arquivo:linha: mensagem` (`grep error: | sed 's/^.*Client Source\///' | sort -u`).
+Os mais comuns: `UINT16` (783), `MSG` (575), `GetProcAddress` (463), `HRESULT`, `MK_*`, `WM_*`, `BYTE`.
+
+**Estratégia.**
+- Windows continua igual: o código Win32 de hoje vira o ramo `_WIN32`; fora dele, POSIX + SDL3.
+  Onde o C++ padrão faz o mesmo (`Sleep`, `stricmp`...), um único caminho para os dois.
+- **A UI continua falando `MSG`.** `CUIManager::MsgProc(MSG*)` recebe as mensagens do loop do
+  `Nksp.cpp`; 346 arquivos usam `MSG` e 131 testam `WM_*`/`VK_*`/`MK_*`. Fora do Windows,
+  `Engine/Base/Win32Compat.h` define esses tipos e constantes **com os valores do Windows**, e a
+  camada SDL3 traduz cada evento num `MSG`. Reescrever a UI fica fora de escopo.
+- **Testar a camada SDL3 no Windows:** opção `LC_PLATFORM_SDL` no CMake do cliente Windows, que
+  troca WinMain/WndProc/hooks pelo loop SDL3 e passa ao D3D8 o HWND da janela SDL
+  (`SDL_PROP_WINDOW_WIN32_HWND_POINTER`). Assim janela, input e IME do Mac são exercitados no jogo
+  real antes de o cliente do Mac linkar. Com a opção desligada o Windows fica como hoje.
+
+**Ordem** (um commit por item; os itens 1–7 mexem em código comum e são testados no Windows):
+
+1. **Tipos e constantes** — `Engine/Base/Win32Compat.h`, incluído por `Base/Types.h` em
+   `PLATFORM_UNIX`: `BYTE`, `WORD`, `UINT8/16`, `HANDLE`, `HRESULT`, `WPARAM`/`LPARAM`, `MSG`,
+   `SYSTEMTIME`; `WM_*`, `VK_*`, `MK_*`, `MB_*`, `CP_*`; `LOWORD`, `ZeroMemory`; nomes do CRT
+   (`stricmp`/`strcmpi`/`strnicmp`, `_strupr`, `_atoi64`, `_snprintf`, `_itoa`). Nos `StdH.h`
+   (Engine, EntitiesMP, GameMP, Shaders, Nksp), `windows.h`/`winsock2.h`/`mmsystem.h`/`conio.h`/
+   `crtdbg.h`/`malloc.h` só em `_WIN32`.
+2. **MSVC-ismos** — `#if _MSC_VER >= 1600` / `<= 1200` (`Quest.cpp/.h`, `SingletonBase.h`,
+   `Engine.cpp`, `EntityClass.cpp`, `Shader.cpp`, `ItemData.h`, `MobData.h`); `__try/__except`
+   (`Engine.cpp`, `RendASER.cpp`); `_control87` (`Math/Float.cpp`, `Nksp.cpp`: no ARM não há
+   precisão de 24 bits, vira no-op documentado); `_msize` (`Memory.cpp`, `MemoryTracking.cpp`:
+   `malloc_size`); `OutputDebugString` (9 arquivos) → stderr.
+3. **Tempo e threads** — `Base/Timer.cpp` (`QueryPerformanceCounter`, `timeSetEvent` → thread com
+   `std::chrono`); `timeGetTime`/`GetTickCount` (21 arquivos, quase todos UI) e `Sleep` (17) com
+   implementação compat; `Base/Synchronization.cpp` (`CRITICAL_SECTION`) → `std::recursive_mutex`;
+   `Network/ThreadWrapper.cpp`, `ProgressHook.cpp`, `Unzip.cpp`, `include/F_Critical.h`,
+   `GameMP/Game.cpp`; `GetLocalTime`/`SYSTEMTIME` (7 arquivos) → `localtime_r`.
+4. **Arquivos** — ponto único: `ExpandFilePath` (`Base/Stream.cpp`). Fora do Windows, `\` → `/` e
+   resolução sem diferenciar maiúsculas (cache por diretório; os assets têm caixa misturada e não
+   vamos depender do APFS). `_findfirst` (`Stream.cpp`, `Directory.cpp`, `Entities/SmcParser.cpp`),
+   `CreateDirectory`, `_open`. Os 55 arquivos que chamam `fopen` direto com caminhos montados à mão
+   passam por um `FOpenExpanded`/equivalente. Diretório do jogo (`_fnmApplicationPath`, hoje via
+   `GetModuleFileName`) e escrita (logs, screenshots, preferências) em
+   `~/Library/Application Support/LastChaos`.
+5. **Configuração** — `GetPrivateProfileString`/`WritePrivateProfileString` (6 arquivos, 37
+   chamadas) com um leitor INI próprio, mesma semântica; `Base/Registry.cpp` e
+   `Graphics/MultiMonitor.cpp` → INI no diretório do usuário.
+6. **Bibliotecas dinâmicas** — `LoadLibrary`/`GetProcAddress` de EntitiesMP, GameMP e Shaders
+   (`Entities/EntityClass.cpp`, `Nksp.cpp`, `Graphics/Shader.cpp`) → `dlopen`/`dlsym` com `.dylib`
+   (o link estático da C1 pode vir depois). Os de sistema (`user32`, `ole32`, `dbghelp`, `dsound`,
+   `vorbisfile`, `amp11lib`, `cwebpage`, `opengl32`) ficam com C6/C7/C8 ou viram no-op.
+7. **Texto** — `MultiByteToWideChar`/`WideCharToMultiByte`/`IsDBCSLeadByte`/`GetACP`
+   (`Util.h`, `Help/Util_Help.cpp`, `UIListBox`, `UIFactory`, `UITextBox(Ex)`) com `iconv` e o
+   codepage do país (BR = cp1252, KOR = cp949...).
+8. **Janela e loop (SDL3)** — `Nksp.cpp` (`WinMain`, `SubMain`, loop de `PeekMessage` em ~1279),
+   `MainWindow.cpp`, `SplashScreen.cpp`: init SDL3, janela (`_hwndMain` passa a guardar a janela),
+   eventos → `MSG` (mouse, teclas com `VK_*` a partir dos scancodes, `WM_CHAR`, foco/ativação,
+   quit, resize), `IsIconic`/`ShowWindow`. Modos de vídeo e monitores (`MultiMonitor.cpp`,
+   `ChangeDisplaySettings`/`EnumDisplaySettings` em `GfxLibrary.cpp`, `Adapter.cpp`,
+   `GetSystemMetrics`) → displays do SDL. `CreateWindowCanvas` (`ViewPort.cpp`) recebe a janela SDL;
+   o contexto OpenGL em si é da C8.
+9. **Input** — `Base/Input.cpp`: `GetAsyncKeyState` → estado do teclado/mouse do SDL; hooks
+   (`SetWindowsHookEx`) → eventos vindos do loop; `ClipCursor`/`SetCursorPos`/`GetCursorPos` →
+   mouse grab, warp e modo relativo; joystick (`joyGetPosEx`) → SDL joystick/gamepad.
+10. **IME e entrada de texto** — `Interface/UIIME.cpp` e `UIEditBox.cpp` (`Imm*`, composição,
+    candidatos) → `SDL_StartTextInput`, `SDL_EVENT_TEXT_EDITING`/`TEXT_INPUT`,
+    `SDL_SetTextInputArea`, encaixados no fluxo de composição que a UI já tem.
+11. **Resto** — `MessageBox` (`ErrorReporting.cpp`, `TradeItem.cpp`) →
+    `SDL_ShowSimpleMessageBox`; `ShellExecute` (6 arquivos) → `SDL_OpenURL`; área de transferência
+    (`UIEditBox.cpp`) → SDL; `StackDump.cpp` fora do Windows: handler de sinal com `backtrace()`;
+    tirar `odbc32`/`odbccp32` do link (nenhuma chamada `SQL*` no cliente).
+
+Fora da C5: Winsock/wininet/`Web.cpp`/`F_Socket` (C6), DirectSound/waveOut (C7), D3D8/D3DX e o
+contexto/funções OpenGL (C8), `exploration3d`/`Object3D_IO.cpp` (importador de modelos das
+ferramentas).
 
 ## C4 — como ficou (2026-10-17)
 

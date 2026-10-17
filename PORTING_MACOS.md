@@ -42,7 +42,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
   1. **OpenGL** primeiro: reaproveita o backend `GAT_OGL` que o motor já tem (pipeline fixo, perfil legado 2.1 do macOS) com skinning na CPU; bloom e efeitos só-D3D ficam desligados no início
   2. **Metal** depois, como backend novo sobre a interface `gfx*`, com os shaders reescritos em MSL
   3. **Vulkan** por último, para deixar o motor o mais atualizado possível
-- [x] **D3. Camada de plataforma do cliente:** SDL2 (janela, contexto OpenGL/Metal, input, entrada de texto/IME, áudio), decidido em 2026-10-17
+- [x] **D3. Camada de plataforma do cliente:** SDL3 (janela, contexto OpenGL/Metal, input, entrada de texto/IME, áudio), decidido em 2026-10-17 (era SDL2; trocado no mesmo dia, o `sdl2` do Homebrew já roda sobre o SDL3)
 - [~] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar. Padrão provisório: `USA` (`-DLC_REGION`); confirmar quando os assets do cliente Windows chegarem
 - [~] **D5. Origem dos assets e do banco:** banco = [openlastchaos/lastchaos-database](https://github.com/openlastchaos/lastchaos-database) (dump oficial de fev/2016, clonado fora do repo); assets virão da instalação Windows do usuário (pendente)
 - [ ] **D6. Ferramentas (WorldEditor, Modeler, SKA Studio...):** usam MFC; proposta é ficar fora do escopo
@@ -186,6 +186,7 @@ Como ficou: `HANDOFF.md` ("C4 — como ficou"). Commits `a325b3a`..`5ff5a2c`.
 - [x] Testado no cliente Windows em 2026-10-17: build sem erros, login, Juno, screenshot JPEG
 
 ### C5. Camada de plataforma
+Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [ ] Janela e loop principal (substituir `Nksp/MainWindow.cpp`, WinMain e HWND, que aparece em 44 arquivos)
 - [ ] Input: teclado e mouse (`Engine/Base/Input.cpp`: `GetAsyncKeyState`, hooks, `ClipCursor`), joystick
 - [ ] Entrada de texto e IME (`UIEditBox.cpp`, 36 chamadas `Imm*`)
@@ -207,7 +208,7 @@ Como ficou: `HANDOFF.md` ("C4 — como ficou"). Commits `a325b3a`..`5ff5a2c`.
 - [ ] MP3: trocar `amp11lib.dll` por minimp3/dr_mp3
 
 ### C8. Renderização (caminho crítico)
-- [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (contexto via SDL2, perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
+- [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (contexto via SDL3, perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
 - [ ] Etapa Metal (D2.2): novo backend `GAT_*` ao lado do D3D8 e do OpenGL
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
