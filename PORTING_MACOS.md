@@ -107,11 +107,12 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [x] **Os 6 servidores sobem e se conectam entre si**; LoginServer enxerga o GameServer (porta 4010)
 - [x] Helper: `x = x++` virava loop infinito em C++17 (`ServerRun.cpp`)
 - [x] Connector: billing opcional (`[Billing Server] IP=` vazio)
-- [ ] Mapas reais `.sat`/`.sht` (hoje são provisórios, planos e 100% andáveis, de `scripts/make-placeholder-maps.py`): portar o exportador do World Editor (`Engine/World/WorldIO.cpp`, `Terrain/TRGenerate.cpp`) e gerar a partir dos `.wld` do cliente
+- [~] Mapas reais `.sat`/`.sht`: `scripts/convert-client-maps.py` instala os que vêm no cliente BR 2014 (zonas 0 StartZone, 26, 38; `.sat` de 8 bits convertido para flags `MATT_*`). As demais zonas seguem com o placeholder plano de altura 0 (o jogador fica **embaixo do terreno**): falta portar o exportador do World Editor (`Engine/World/WorldIO.cpp`, `Terrain/TRGenerate.cpp`) e gerar a partir dos `.wld`
 - [ ] Tabelas que o código usa e o dump não tem: `t_autobuffs`, `t_raid_zone_data`, `t_reports`, `t_key_log` (+ `t_promo_*` só GER)
 - [ ] Dados que faltam no GameServer: `ComposeItem`, `EquipExchangeExtend`, NPCs 893/1254 ativos mas "Not found", 6 "Can't Create Item"
-- [ ] Criar conta de teste em `bg_user` (definir formato de senha: texto puro / MD5 / bcrypt em `CheckPassword.cpp`)
-- [ ] Servidor aceita login de um cliente Windows original via rede local (servidores hoje escutam só em 127.0.0.1)
+- [x] Conta de teste `teste` criada; personagem entra no mundo
+- [x] `t_characters.a_guildoutdate` faltava no dump (abortava o GameServer): `server-config/db-fixes.sql`
+- [x] Servidor aceita login de cliente Windows (o nosso) pela rede local
 - [ ] Higiene: dois OpenSSL carregados (3 e 4, via curl/mysqlclient); `svn_info.h` regenerado a cada configure força rebuild do ShareLib
 
 ---
@@ -126,9 +127,11 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [x] Camada `Compat/d3dx8` (matemática D3DX8 própria; assembler de shader via D3DX9; textura sobre D3D8)
 - [x] `Client Source/CMakeLists.txt` (listas de fontes geradas da config BRZLIVE por `scripts/vcxproj-to-cmake.py`)
 - [x] XTrap/GameGuard desligados (`LC_NO_XTRAP`, `NO_GAMEGUARD`)
-- [~] Engine compilando com MSVC 2022 (corrigindo erros)
-- [ ] Shaders, EntitiesMP, GameMP, Nksp compilando e linkando
-- [ ] Rodar com os assets do cliente BR e logar no servidor do Mac
+- [x] Engine, Shaders, EntitiesMP, GameMP, Nksp compilando e linkando
+- [x] Rodar com os assets do cliente BR 2014 e logar no servidor do Mac; seleção de personagem, entrar no mundo, combate, lojas (2026-10-17)
+- [ ] **Skinning por hardware**: modelos animados ficam invisíveis com os vertex programs montados pelo shim D3DX9; hoje roda com `LC_NO_HW_SHADERS=1` (skinning em software). Diagnóstico: `LC_DEBUG_SKA=1`
+- [ ] Dados do cliente misturados (2014 + `.novo` 2017): conferir tamanhos de registro; strings BR usam `%s` para números (tolerado em `CTString::VPrintF`); ícones `ItemBtn26/27` não existem (caem no 0)
+- Build no Windows: `build.cmd` fixa `chcp 65001` (o `cl` em português imprime o prefixo do `/showIncludes` no codepage do console; com codepages diferentes entre configure e build o ninja não registrava dependências de header)
 
 ### C1. Build e geração de código
 - [x] Compilar o `Ecc` nativo e gerar os 108 `.es` → `.cpp/.h/_tables.h` via CMake (macOS e Windows; corrigidos CRLF, vazamento quadrático e pilha do bison)
@@ -221,3 +224,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 | 2026-10-16 | Os 6 servidores compilam e linkam em arm64; correções LP64 no SEED/SHA-256 | 222197b |
 | 2026-10-16 | Configs locais, `log.xml` log4cxx 1.x, `run-server.sh` | 76092bb |
 | 2026-10-16 | MariaDB + dump importado; os 6 servidores rodando e conectados | cf9da11 |
+| 2026-10-16 | Cliente Windows do nosso fonte (CMake/MSVC, shim D3DX8) chega à tela de login; SEED igual nos dois lados | dd8f979 |
+| 2026-10-17 | Login, seleção de personagem e entrada no jogo; correções de crash no cliente e no GameServer | 2bbb096 |
+| 2026-10-17 | Mapas reais da zona inicial, EXP/`%s`, NPCs sem modelo; modelos visíveis com skinning em software | 65e4d45, 4080b38 |
+| 2026-10-17 | Lojas: páginas de ícone `ItemBtn20..30` | 585fef1 |
