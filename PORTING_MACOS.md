@@ -1,5 +1,7 @@
 # Porte do Last Chaos para macOS
 
+> Estado do ambiente, ferramentas e como continuar: **`HANDOFF.md`**.
+
 Plano de trabalho e checklist do porte. Marque `[x]` quando um item estiver pronto e
 anote o commit/PR ao lado quando fizer sentido.
 
