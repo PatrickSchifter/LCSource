@@ -294,6 +294,9 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 
 	// if the DLL can not be loaded
 	if (hiDLL==NULL) {
+#ifndef PLATFORM_WIN32
+		ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, dlerror());
+#endif
 		// get the error code
 		DWORD dwMessageId = GetLastError();
 		// format the windows error message
@@ -342,8 +345,8 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 	CTString strClassName;
 	strClassName.ReadFromText_t(*istr, "Class: ");
 
-	// create name of dll
-#ifndef NDEBUG
+	// create name of dll (debug builds name their DLLs differently only with MSVC)
+#if !defined(NDEBUG) && defined(_MSC_VER)
 		//fnmDLL = fnmDLL.FileDir()+"Debug\\"+fnmDLL.FileName()+_strModExt+"D"+fnmDLL.FileExt();
 #	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
 #		ifdef	WORLD_EDITOR

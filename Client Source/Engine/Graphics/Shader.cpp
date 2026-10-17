@@ -2725,8 +2725,8 @@ void CShader::Read_t(CTStream *istrFile)
 	strShaderVPCode.ReadFromText_t(*istrFile, "VPCode: ");
 	strShaderPPCode.ReadFromText_t(*istrFile, "PPCode: ");
 
-	// create name of dll
-#ifndef NDEBUG
+	// create name of dll (debug builds name their DLLs differently only with MSVC)
+#if !defined(NDEBUG) && defined(_MSC_VER)
 		//fnmDLL = fnmDLL.FileDir()+"Debug\\"+fnmDLL.FileName()+/*_strModExt+*/"D"+fnmDLL.FileExt();
 #	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
 #		ifdef	WORLD_EDITOR

@@ -595,7 +595,7 @@ HMODULE g_hGame = NULL;
 void InitializeGame(void)
 {
 	try {
-#ifndef NDEBUG 
+#if !defined(NDEBUG) && defined(_MSC_VER)
 //#	define GAMEDLL ("Bin\\Debug\\Game"+_strModExt+"D.dll")
 #	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
 #		define GAMEDLL ("Bin\\Debug2010\\Game"+_strModExt+"D.dll")

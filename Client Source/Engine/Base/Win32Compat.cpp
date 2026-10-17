@@ -408,6 +408,42 @@ DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize)
 }
 
 /////////////////////////////////////////////////////////////////////
+// dynamic libraries
+
+#include <dlfcn.h>
+
+HMODULE LoadLibrary(const char *strFileName)
+{
+  std::string strName(strFileName);
+  const bool bHasPath = strName.find_first_of("\\/") != std::string::npos;
+  if (!bHasPath) {
+    if (strcasecmp(strName.c_str(), "opengl32.dll") == 0) {
+      return dlopen("/System/Library/Frameworks/OpenGL.framework/OpenGL", RTLD_NOW|RTLD_LOCAL);
+    }
+    // other system DLLs (user32, ole32, dsound...) do not exist here
+    return NULL;
+  }
+  const size_t ctName = strName.size();
+  if (ctName > 4 && strcasecmp(strName.c_str() + ctName - 4, ".dll") == 0) {
+    strName.replace(ctName - 4, 4, ".dylib");
+  }
+  return dlopen(LC_HostPath(strName.c_str()).c_str(), RTLD_NOW|RTLD_LOCAL);
+}
+
+void *GetProcAddress(HMODULE hModule, const char *strProcName)
+{
+  if (hModule == NULL) {
+    return NULL;
+  }
+  return dlsym(hModule, strProcName);
+}
+
+BOOL FreeLibrary(HMODULE hModule)
+{
+  return hModule != NULL && dlclose(hModule) == 0;
+}
+
+/////////////////////////////////////////////////////////////////////
 // .ini files
 
 namespace {

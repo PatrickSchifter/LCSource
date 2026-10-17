@@ -483,7 +483,7 @@ ENGINE_API void shaDisableInverted(void);
 #if (defined _MSC_VER)
  #define DECLSPEC_DLLEXPORT _declspec (dllexport)
 #else
- #define DECLSPEC_DLLEXPORT
+ #define DECLSPEC_DLLEXPORT __attribute__((visibility("default")))
 #endif
 
 #define SHADER_MAIN(name) \

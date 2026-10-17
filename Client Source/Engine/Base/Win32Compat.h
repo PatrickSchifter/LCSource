@@ -565,6 +565,17 @@ BOOL MoveFile(const char *strExisting, const char *strNew);
 // only for the executable itself (hModule==NULL), as a Windows-style path
 DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize);
 
+// dynamic libraries (Win32Compat.cpp) over dlopen. A library given with a path (the engine's
+// own: entity classes, game, shaders) is loaded with .dylib in place of .dll; system DLLs given
+// by name alone are not there, except opengl32.dll (the OpenGL framework).
+#include <dlfcn.h>  // dlerror() explains a failed LoadLibrary
+HMODULE LoadLibrary(const char *strFileName);
+void *GetProcAddress(HMODULE hModule, const char *strProcName);
+BOOL FreeLibrary(HMODULE hModule);
+#define SetErrorMode(uMode)          0U
+#define SEM_FAILCRITICALERRORS       0x0001
+#define SEM_NOOPENFILEERRORBOX       0x8000
+
 // reading .ini files (sections and keys ignore case, values are trimmed and unquoted)
 DWORD GetPrivateProfileString(const char *strSection, const char *strKey, const char *strDefault,
                               char *strReturned, DWORD ctSize, const char *strFileName);
