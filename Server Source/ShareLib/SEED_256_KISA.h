@@ -8,6 +8,7 @@
 
 #ifndef _SEED_256_KISA_H
 #define _SEED_256_KISA_H
+// Little-endian detection also covers arm64 and x86_64 (they used to fall into SEED_BIG_ENDIAN).
 
 /********************** Include files ************************/
 
@@ -30,7 +31,8 @@ typedef unsigned char           BYTE;
 // If endianness is not defined correctly, you must modify here.
 // SEED uses the Little endian as a defalut order
 
-#if __alpha__   ||      __alpha ||      __i386__        ||      i386    ||      _M_I86  ||      _M_IX86 ||      \
+#if (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) || defined(_M_X64) || defined(_M_ARM64) || \
+	__alpha__   ||      __alpha ||      __i386__        ||      i386    ||      _M_I86  ||      _M_IX86 ||      \
         __OS2__         ||      sun386  ||      __TURBOC__      ||      vax             ||      vms             ||      VMS             ||      __VMS
 #define SEED_LITTLE_ENDIAN
 #else

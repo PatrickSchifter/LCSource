@@ -77,7 +77,9 @@ HRESULT WINAPI D3DXAssembleShader(LPCVOID pSrcData, UINT SrcDataLen, DWORD Flags
                                   LPD3DXBUFFER* ppCompiledShader, LPD3DXBUFFER* ppCompilationErrors) {
   if (ppConstants) *ppConstants = NULL;
   // D3DXASM_DEBUG (D3DX8) and D3DXSHADER_DEBUG (D3DX9) are both bit 0.
-  const DWORD flags9 = (Flags & 1) ? D3DXSHADER_DEBUG : 0;
+  // D3D8 accepted shaders that D3DX9 rejects (e.g. reading partly uninitialized registers),
+  // so skip D3DX9's extra validation.
+  const DWORD flags9 = ((Flags & 1) ? D3DXSHADER_DEBUG : 0) | D3DXSHADER_SKIPVALIDATION;
 
   std::string src((const char*)pSrcData, SrcDataLen);
   const bool vertex = IsVertexShader(src);

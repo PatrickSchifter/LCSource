@@ -217,7 +217,14 @@ void CUIBase::setTexString(const char* strTex)
 
         ASSERT(FileExists(strPath.c_str()));
 
-        m_pTexData = CreateTexture(strPath.c_str());
+        // A missing or unreadable UI texture (e.g. an event logo absent from this data
+        // set) leaves the control without an image instead of aborting startup.
+        try {
+            m_pTexData = CreateTexture(strPath.c_str());
+        } catch (char* strError) {
+            CPrintF("UI texture \"%s\" not loaded: %s\n", strPath.c_str(), strError);
+            m_pTexData = NULL;
+        }
     }
 }
 
