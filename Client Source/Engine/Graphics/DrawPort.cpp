@@ -397,7 +397,7 @@ ULONG CDrawPort::GetID(void)
 {
 	ULONG ulCRC;
 	CRC_Start(   ulCRC);
-	CRC_AddLONG( ulCRC, (ULONG)dp_Raster);
+	CRC_AddLONG( ulCRC, (ULONG)(uintptr_t)dp_Raster);
 	CRC_AddLONG( ulCRC, (ULONG)dp_MinI);
 	CRC_AddLONG( ulCRC, (ULONG)dp_MinJ);
 	CRC_AddLONG( ulCRC, (ULONG)dp_MaxI);

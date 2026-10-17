@@ -394,7 +394,7 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
 	if( eAPI==GAT_OGL) { // OpenGL
-		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (ULONG*)ulTexObject;  // OpenGL tracks bind number
+		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (ULONG*)(uintptr_t)ulTexObject;  // OpenGL tracks bind number
 		extern void MimicTexParams_OGL( CTexParams &tpLocal);
 		pglBindTexture( GL_TEXTURE_2D, ulTexObject);
 		MimicTexParams_OGL(tpLocal);

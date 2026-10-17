@@ -603,7 +603,7 @@ void CModelObject::RenderModel( CRenderModel &rm)
 		extern INDEX gap_bUseOcclusionCulling;
 		const BOOL bMirrored = (rm.rm_ulFlags & RMF_MIRROR); // mirrored models cannot have occlusion culling!
 		const BOOL bDoOcclusionCheck = (gap_bUseOcclusionCulling&1) && _pGfx->HasOcclusionCulling() && !mo_bSkipOcclusionTest;
-		const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)this);
+		const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)(uintptr_t)this);
 
 		BOOL bOccluded = FALSE;
 		if( !bMirrored) { // don't test models in mirror

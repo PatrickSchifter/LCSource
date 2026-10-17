@@ -518,7 +518,7 @@ static CTString PadStringLeft(const CTString &str, INDEX iLen)
 static void DumpEnemies(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) return;
 	// for each entity in the world
@@ -536,7 +536,7 @@ static void DumpEnemies(void)
 static void DumpSpawners(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) return;
 	// for each entity in the world
@@ -8842,7 +8842,7 @@ functions:
 	//-----------------------------------------------------------------------------
 	void RenderGameView( CDrawPort *pdp, void *pvUserData)
 	{
-		BOOL bShowExtras = (ULONG(pvUserData)&GRV_SHOWEXTRAS);
+		BOOL bShowExtras = (ULONG(uintptr_t(pvUserData))&GRV_SHOWEXTRAS);
 		
 		// if not yet initialized
 		if( !(m_ulFlags&PLF_INITIALIZED) || (m_ulFlags&PLF_DONTRENDER)) 
@@ -13679,7 +13679,7 @@ functions:
 	//0609 kwon 함수 추가.
 	void RenderCursor(CDrawPort *pdp, void *pvUserData)
 	{
-		BOOL bShowExtras = (ULONG(pvUserData)&GRV_SHOWEXTRAS);	
+		BOOL bShowExtras = (ULONG(uintptr_t(pvUserData))&GRV_SHOWEXTRAS);	
 	
 		CAnyProjection3D apr;
 		CEntity *penViewer;

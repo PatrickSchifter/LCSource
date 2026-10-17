@@ -261,7 +261,7 @@ extern void CacheShadows(void)
 {
 	// mute all soundsf
 	_pSound->Mute();
-	CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	if( pwo!=NULL) {
 		pwo->wo_baBrushes.CacheAllShadowmaps();
 		CPrintF( TRANS("All shadows recached"));
@@ -694,7 +694,7 @@ extern void StockInfoToStream(CTFileStream *pstrm)
 	CWorld *pwo = NULL;
 	// if pwoCurrentWorld exists
 	if(_pShell->GetSymbol("pwoCurrentWorld",TRUE)!=NULL) {
-		pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+		pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	}
 	if( pwo!=NULL)
 	{
@@ -1268,7 +1268,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
 		throw;
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	CallProgressHook_t(0.0f);
 	if (_pNetwork->bMoveCharacterSelectUI == FALSE)
@@ -1437,7 +1437,7 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   }
   
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set time and pause for server from the saved game
   ga_ubNumLevelChanges++;
@@ -1533,7 +1533,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // eventually cache all shadowmaps in world (memory eater!)
   if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
@@ -1621,7 +1621,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   _bNeedPretouch = TRUE;
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // demo synchronization starts at the beginning initially
   ga_tvDemoTimerLastTime = _pTimer->GetHighPrecisionTimer();
@@ -1910,7 +1910,7 @@ void CNetworkLibrary::StopGame(void)
 		ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
+	_pShell->SetPointer("pwoCurrentWorld", NULL);
 	
 	ClearEntityClassContainer();
 	
@@ -2090,7 +2090,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
 	// remember the world filename
 	ga_fnmWorld = ga_fnmNextLevel;
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	// set overdue timers in just loaded world to be due in current time
 	ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
@@ -2201,7 +2201,7 @@ void CNetworkLibrary::ChangeLevel_client_internal_t(void)
   // remember the world filename
   ga_fnmWorld = ga_fnmNextLevel;
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set overdue timers in just loaded world to be due in current time
   ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);

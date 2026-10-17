@@ -94,7 +94,7 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag, D3DFORMAT fmt)
 	}
 	else
 	{
-		rt_tdTexture.td_ulObject = NULL;
+		rt_tdTexture.td_pulObjects = NULL;
 		return FALSE;
 	}
 	return FALSE;

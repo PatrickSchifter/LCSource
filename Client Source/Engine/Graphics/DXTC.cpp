@@ -281,12 +281,12 @@ extern void DecompressDXT1( UBYTE *pubCompressed, ULONG *pulExpanded, PIX pixWid
   int yblocks = pixHeight /4;
   for( int j=0; j<yblocks; j++) {
     // 8 bytes per block
-    DXTColBlock *pBlock = (DXTColBlock*)((DWORD)pubCompressed + j*xblocks *8);
+    DXTColBlock *pBlock = (DXTColBlock*)((UBYTE*)pubCompressed + j*xblocks *8);
     for( int i=0; i<xblocks; i++) {
       Color8888 col_0, col_1, col_2, col_3;
       GetColorBlockColors( pBlock, &col_0, &col_1, &col_2, &col_3);
       // now decode the color block into the bitmap bits
-      DWORD *pImPos = (DWORD*)((DWORD)pulExpanded + i*16 + (j*4) * pixWidth*4);
+      DWORD *pImPos = (DWORD*)((UBYTE*)pulExpanded + i*16 + (j*4) * pixWidth*4);
       DecodeColorBlock( pImPos, pBlock, pixWidth,
                         (DWORD*)&col_0, (DWORD*)&col_1, (DWORD*)&col_2, (DWORD*)&col_3);
       // next block
@@ -305,7 +305,7 @@ extern void DecompressDXT3( UBYTE *pubCompressed, ULONG *pulExpanded, PIX pixWid
   for( int j=0; j<yblocks; j++) {
     // 8 bytes per block
     // 1 block for alpha, 1 block for color
-    DXTColBlock *pBlock = (DXTColBlock*)((DWORD)pubCompressed + j*xblocks *16);
+    DXTColBlock *pBlock = (DXTColBlock*)((UBYTE*)pubCompressed + j*xblocks *16);
     for( int i=0; i<xblocks; i++) {
       // Get alpha block
       DXTAlphaBlockExplicit *pAlphaBlock = (DXTAlphaBlockExplicit*)pBlock;
@@ -314,7 +314,7 @@ extern void DecompressDXT3( UBYTE *pubCompressed, ULONG *pulExpanded, PIX pixWid
       Color8888 col_0, col_1, col_2, col_3;
       GetColorBlockColors( pBlock, &col_0, &col_1, &col_2, &col_3);
       // Decode the color block into the bitmap bits
-      DWORD *pImPos = (DWORD*)((DWORD)pulExpanded + i*16 + (j*4) * pixWidth*4);
+      DWORD *pImPos = (DWORD*)((UBYTE*)pulExpanded + i*16 + (j*4) * pixWidth*4);
       DecodeColorBlock( pImPos, pBlock, pixWidth,
                         (DWORD*)&col_0, (DWORD*)&col_1, (DWORD*)&col_2, (DWORD*)&col_3);
       // Overwrite the previous alpha bits with the alpha block
@@ -335,7 +335,7 @@ extern void DecompressDXT5( UBYTE *pubCompressed, ULONG *pulExpanded, PIX pixWid
   for( int j=0; j<yblocks; j++) {
     // 8 bytes per block
     // 1 block for alpha, 1 block for color
-    DXTColBlock *pBlock = (DXTColBlock*)((DWORD)pubCompressed + j*xblocks *16);
+    DXTColBlock *pBlock = (DXTColBlock*)((UBYTE*)pubCompressed + j*xblocks *16);
     for( int i=0; i<xblocks; i++) {
       // Get alpha block
       DXTAlphaBlock3BitLinear *pAlphaBlock = (DXTAlphaBlock3BitLinear*)pBlock;
@@ -344,7 +344,7 @@ extern void DecompressDXT5( UBYTE *pubCompressed, ULONG *pulExpanded, PIX pixWid
       Color8888 col_0, col_1, col_2, col_3;
       GetColorBlockColors( pBlock, &col_0, &col_1, &col_2, &col_3);
       // Decode the color block into the bitmap bits
-      DWORD *pImPos = (DWORD*)((DWORD)pulExpanded + i*16 + (j*4) * pixWidth*4);
+      DWORD *pImPos = (DWORD*)((UBYTE*)pulExpanded + i*16 + (j*4) * pixWidth*4);
       DecodeColorBlock( pImPos, pBlock, pixWidth,
                         (DWORD*)&col_0, (DWORD*)&col_1, (DWORD*)&col_2, (DWORD*)&col_3);
       // Overwrite the previous alpha bits with the alpha block

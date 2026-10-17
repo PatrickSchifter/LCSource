@@ -4709,7 +4709,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 	extern INDEX gap_bUseOcclusionCulling;
 	const BOOL bMirrored = (RM_GetRenderFlags() & SRMF_MIRROR); // mirrored models cannot have occlusion culling!
 	const BOOL bDoOcclusionCheck = (gap_bUseOcclusionCulling&1) && _pGfx->HasOcclusionCulling() && !mi.mi_bSkipOcclusionTest;
-	const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)&mi);
+	const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)(uintptr_t)&mi);
 	
 	BOOL bOccluded = FALSE;
 	if( !bMirrored) 

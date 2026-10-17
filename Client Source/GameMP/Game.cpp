@@ -2651,7 +2651,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 					_bPlayerViewRendered = TRUE;
 					// render it
 					// 결국은 RenderView()를 호출함.
-					apenViewers[i]->RenderGameView(pdp, (void*)ulFlags);
+					apenViewers[i]->RenderGameView(pdp, (void*)(uintptr_t)ulFlags);
 				} 
 				else 
 				{
@@ -2919,7 +2919,7 @@ void CGame::GameRedrawCursor(CDrawPort *pdpDrawPort, ULONG ulFlags)
 			if (!g_web.IsWebHandle())
 			{
 				// render it
-				apenViewers->RenderCursor(pdp, (void*)ulFlags);
+				apenViewers->RenderCursor(pdp, (void*)(uintptr_t)ulFlags);
 			}
 		}
 	}	

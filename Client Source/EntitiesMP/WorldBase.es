@@ -45,7 +45,7 @@ EntityStats *FindStats(const CTString &strName)
 static void MakeWorldStatistics(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("No current world.\n");
@@ -111,7 +111,7 @@ static void MakeWorldStatistics(void)
 static void ReoptimizeAllBrushes(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("No current world.\n");
@@ -138,7 +138,7 @@ static void DoLevelSafetyChecks()
 	CPrintF("\n****  BEGIN Level safety checking  ****\n\n");
 	
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -216,7 +216,7 @@ static void DoLevelSafetyChecks()
 static void ConversionCheckForMH2(const CTString &fnmSourceModel, INDEX iType)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -275,7 +275,7 @@ static void ConversionCheckForMH2(const CTString &fnmSourceModel, INDEX iType)
 static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -431,7 +431,7 @@ static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 static void ConvertAllMH2ToMH3( void )
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");

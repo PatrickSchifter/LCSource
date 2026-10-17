@@ -34,6 +34,9 @@ public:
 
 	// Declare a symbol in the shell.
 	void DeclareSymbol(const CTString &strDeclaration, void *pvValue);
+	// Functions too (MSVC converts function pointers to void * implicitly; standard C++ does not).
+	template<class Ret, class... Args>
+	void DeclareSymbol(const CTString &strDeclaration, Ret (*pfn)(Args...)) { DeclareSymbol(strDeclaration, (void *)pfn); }
 	// Execute command(s).
 	void Execute(const CTString &strCommands);
 	// Save shell commands to restore persistent symbols to a script file
@@ -45,6 +48,10 @@ public:
 	void SetFLOAT(const CTString &strName, FLOAT fValue);
 	INDEX GetINDEX(const CTString &strName);
 	void SetINDEX(const CTString &strName, INDEX iValue);
+	// Pointers kept in INDEX symbols backed by a pointer variable (pwoCurrentWorld): INDEX is
+	// narrower than a pointer on 64-bit platforms.
+	void *GetPointer(const CTString &strName);
+	void SetPointer(const CTString &strName, void *pvValue);
 	CTString GetString(const CTString &strName);
 	void SetString(const CTString &strName, const CTString &strValue);
 

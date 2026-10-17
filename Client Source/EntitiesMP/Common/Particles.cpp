@@ -4879,7 +4879,7 @@ void Particles_AfterBurner(CEntity *pen, FLOAT tmSpawn, FLOAT fStretch, INDEX iG
 		FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
 		FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
 		INDEX iIndex=fRatio*255;
-		INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+		INDEX iRnd=INDEX(ULONG(uintptr_t(pvPos1))%CT_MAX_PARTICLES_TABLE);
 
 		// smoke
 		FLOAT3D vPosS = *pvPos1;
@@ -6108,7 +6108,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
 		FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
 		FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
 		INDEX iIndex=fRatio*255;
-		INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+		INDEX iRnd=INDEX(ULONG(uintptr_t(pvPos1))%CT_MAX_PARTICLES_TABLE);
 
 		// smoke
 		FLOAT3D vPosS = *pvPos1;

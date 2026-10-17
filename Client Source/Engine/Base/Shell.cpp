@@ -56,7 +56,7 @@ void SavePersistentSymbolFile(const CTFileName &fnmPS, CTString strContents)
 }
 //안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
 
-template CDynamicArray<CShellSymbol>;
+template class CDynamicArray<CShellSymbol>;
 
 // shell type used for undeclared symbols
 extern INDEX _shell_istUndeclared = -1;
@@ -845,6 +845,34 @@ void CShell::SetINDEX(const CTString &strName, INDEX iValue)
 	*(INDEX*)pss->ss_pvValue = iValue;
 }
 
+void *CShell::GetPointer(const CTString &strName)
+{
+	CShellSymbol *pss = GetSymbol(strName, TRUE);
+
+	// if it doesn't exist or is not of given type
+	if (pss==NULL || _shell_ast[pss->ss_istType].st_sttType!=STT_INDEX) {
+		// error
+		ASSERT(FALSE);
+		return NULL;
+	}
+	// get it
+	return *(void**)pss->ss_pvValue;
+}
+
+void CShell::SetPointer(const CTString &strName, void *pvValue)
+{
+	CShellSymbol *pss = GetSymbol(strName, TRUE);
+
+	// if it doesn't exist or is not of given type
+	if (pss==NULL || _shell_ast[pss->ss_istType].st_sttType!=STT_INDEX) {
+		// error
+		ASSERT(FALSE);
+		return;
+	}
+	// set it
+	*(void**)pss->ss_pvValue = pvValue;
+}
+
 CTString CShell::GetString(const CTString &strName)
 {
 	// get the symbol
@@ -1027,7 +1055,7 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
 				} else if (stBase.st_sttType==STT_STRING) {
 					// dump all members
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
+						fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
 					}
 				// otherwise
 				} else {
@@ -1100,7 +1128,7 @@ void CShell::StoreEncodePersistentSymbols(const CTFileName &fnScript)
 				} else if (stBase.st_sttType==STT_STRING) {
 					// dump all members
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						strTemp.PrintF("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)(ScriptEsc(*(CTString*)ss.ss_pvValue)[i]) );
+						strTemp.PrintF("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
 						strContents += strTemp;
 					}
 				// otherwise

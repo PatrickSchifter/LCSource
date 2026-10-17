@@ -16,8 +16,8 @@ public:
 
   /* Create bsp-subtree from array of polygons oriented inwards. */
   BSPNode<Type, iDimensions> *CreateSubTree(CDynamicArray<BSPPolygon<Type, iDimensions> > &arbpoPolygons);
-  /* Move one subtree to array. */
-  void MoveSubTreeToArray(BSPNode<Type, iDimensions> *pbnSubtree);
+  /* Move one subtree to array, returns the subtree's root in the array. */
+  BSPNode<Type, iDimensions> *MoveSubTreeToArray(BSPNode<Type, iDimensions> *pbnSubtree);
   /* Count nodes in subtree. */
   INDEX CountNodes(BSPNode<Type, iDimensions> *pbnSubtree);
   
