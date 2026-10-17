@@ -131,7 +131,10 @@ void ThrowF_t(char *strFormat, ...)  // throws char *
 	va_list arg;
 	va_start(arg, strFormat); // variable arguments start after this argument
 	_vsnprintf(strBuffer, slBufferSize, strFormat, arg);
-	throw strBuffer;
+	  // Debug aid: if ThrowLog.txt exists in the working directory, append every
+  // thrown engine error to it (most of them are never shown otherwise).
+  { FILE *fLog = fopen("ThrowLog.txt", "r+"); if (fLog != NULL) { fseek(fLog, 0, SEEK_END); fprintf(fLog, "%s\n", strBuffer); fclose(fLog); } }
+  throw strBuffer;
 }
 
 /*
