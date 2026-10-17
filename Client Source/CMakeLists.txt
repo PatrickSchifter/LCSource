@@ -157,7 +157,7 @@ lc_client_target(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_GENERATED} Engine/Engi
 target_compile_definitions(Engine PRIVATE ENGINE_EXPORTS _USRDLL)
 target_include_directories(Engine PRIVATE "${LC_GEN}/Engine")
 target_link_libraries(Engine PRIVATE zlib libpng tinyxml lccrypt d3dx8_compat Boost::thread Boost::system
-  dsound winmm ws2_32 wininet imm32 version advapi32 odbc32 odbccp32 dbghelp)
+  dsound winmm ws2_32 wininet imm32 version advapi32 dbghelp)
 target_link_options(Engine PRIVATE /MAP /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)
 
 lc_client_target(Shaders SHARED ${SHADERS_SOURCES})
@@ -177,7 +177,7 @@ target_compile_definitions(GameMP PRIVATE GAME_EXPORTS _WINDLL _USRDLL)
 target_link_libraries(GameMP PRIVATE Engine EntitiesMP user32)
 
 add_executable(Nksp WIN32 ${NKSP_SOURCES} Nksp/Nksp.rc)
-target_link_libraries(Nksp PRIVATE lc_client_common Engine EntitiesMP f_socket SharedMemory winmm ws2_32 version odbc32 odbccp32)
+target_link_libraries(Nksp PRIVATE lc_client_common Engine EntitiesMP f_socket SharedMemory winmm ws2_32 version)
 target_include_directories(Nksp PRIVATE "${LC_CLIENT_SRC}/Nksp")
 target_link_options(Nksp PRIVATE /NODEFAULTLIB:game.lib /NODEFAULTLIB:gamemp.lib)
 add_dependencies(Nksp lc_entities Shaders GameMP)
