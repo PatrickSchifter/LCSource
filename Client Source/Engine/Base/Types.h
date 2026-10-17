@@ -96,6 +96,11 @@ typedef long int RESULT;		// for error codes
 typedef long int INDEX;     // for indexed values and quantities
 #endif
 
+// Win32 types, messages and CRT names outside Windows
+#ifdef PLATFORM_UNIX
+  #include <Engine/Base/Win32Compat.h>
+#endif
+
 #define FALSE 0
 #define TRUE  1
 

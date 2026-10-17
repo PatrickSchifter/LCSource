@@ -14,7 +14,9 @@
 #pragma warning(disable : 4200)
 
 #include <stdlib.h>
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
