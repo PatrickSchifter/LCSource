@@ -8,6 +8,12 @@
 // CreateVertexShader, while D3DX9 requires dcl_* statements for every v# register. So for
 // vertex shaders we declare each used input before assembling and strip the resulting DCL
 // instructions from the token stream, which leaves D3D8-compatible tokens.
+//
+// The D3D8 runtime of current Windows (built on Direct3D 9) also rejects vertex shaders that
+// read a component of a temporary register before writing it, which the engine's shaders do
+// (e.g. "mul r1, r1, r7.wwww" after "m3x3 r1, ..." leaves r1.w unwritten) and the Windows XP
+// runtime accepted. So every temporary register used is first set to c0; the values read
+// from such components were undefined and never reached the output.
 #include <d3dx9shader.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,22 +35,35 @@ static bool IsVertexShader(const std::string& src) {
   return i != std::string::npos && src.compare(i, 3, "vs.") == 0;
 }
 
-// Inserts "dcl_texcoordN vN" after the version line for every input register v0..v15 used.
-static std::string DeclareInputs(const std::string& src) {
-  bool used[16] = {};
+// Marks register numbers 0..15 of the given kind ('v' or 'r') used in the source.
+static void FindRegisters(const std::string& src, char kind, bool used[16]) {
   for (size_t i = 0; i + 1 < src.size(); i++) {
-    if (src[i] == 'v' && isdigit((unsigned char)src[i + 1]) && (i == 0 || !isalnum((unsigned char)src[i - 1]))) {
+    if (src[i] == kind && isdigit((unsigned char)src[i + 1]) && (i == 0 || !isalnum((unsigned char)src[i - 1]))) {
       int n = atoi(src.c_str() + i + 1);
       if (n >= 0 && n < 16) used[n] = true;
     }
   }
+}
+
+// After the version line, inserts "dcl_texcoordN vN" for every input register used and
+// "mov rN, c0" for every temporary register used (see the top of the file).
+static std::string PrepareVertexShader(const std::string& src) {
+  bool inputs[16] = {}, temps[16] = {};
+  FindRegisters(src, 'v', inputs);
+  FindRegisters(src, 'r', temps);
   size_t eol = src.find('\n');
   std::string out = src.substr(0, eol == std::string::npos ? src.size() : eol + 1);
   if (eol == std::string::npos) out += "\n";
   char line[32];
   for (int n = 0; n < 16; n++) {
-    if (used[n]) {
+    if (inputs[n]) {
       snprintf(line, sizeof(line), "dcl_texcoord%d v%d\n", n, n);
+      out += line;
+    }
+  }
+  for (int n = 0; n < 16; n++) {
+    if (temps[n]) {
+      snprintf(line, sizeof(line), "mov r%d, c0\n", n);
       out += line;
     }
   }
@@ -83,7 +102,7 @@ HRESULT WINAPI D3DXAssembleShader(LPCVOID pSrcData, UINT SrcDataLen, DWORD Flags
 
   std::string src((const char*)pSrcData, SrcDataLen);
   const bool vertex = IsVertexShader(src);
-  if (vertex) src = DeclareInputs(src);
+  if (vertex) src = PrepareVertexShader(src);
 
   LPD3DXBUFFER pErrors = NULL;
   HRESULT hr = ::D3DXAssembleShader(src.c_str(), (UINT)src.size(), NULL, NULL, flags9, ppCompiledShader, &pErrors);

@@ -131,7 +131,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [x] XTrap/GameGuard desligados (`LC_NO_XTRAP`, `NO_GAMEGUARD`)
 - [x] Engine, Shaders, EntitiesMP, GameMP, Nksp compilando e linkando
 - [x] Rodar com os assets do cliente BR 2014 e logar no servidor do Mac; seleção de personagem, entrar no mundo, combate, lojas (2026-10-17)
-- [ ] **Skinning por hardware**: modelos animados ficam invisíveis com os vertex programs montados pelo shim D3DX9; hoje roda com `LC_NO_HW_SHADERS=1` (skinning em software). Diagnóstico: `LC_DEBUG_SKA=1`
+- [x] **Shaders por hardware**: o D3D8 do Windows atual recusava os vertex shaders que leem registradores temporários não escritos (o de skinning com 4 pesos, entre outros), e os modelos animados sumiam; o shim inicializa os temporários. `ShaderCheck` testa shaders no D3D8 real
 - [ ] Dados do cliente misturados (2014 + `.novo` 2017): conferir tamanhos de registro; strings BR usam `%s` para números (tolerado em `CTString::VPrintF`); ícones `ItemBtn26/27` não existem (caem no 0)
 - Build no Windows: `build.cmd` fixa `chcp 65001` (o `cl` em português imprime o prefixo do `/showIncludes` no codepage do console; com codepages diferentes entre configure e build o ninja não registrava dependências de header)
 
@@ -231,3 +231,4 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 | 2026-10-17 | Mapas reais da zona inicial, EXP/`%s`, NPCs sem modelo; modelos visíveis com skinning em software | 65e4d45, 4080b38 |
 | 2026-10-17 | Lojas: páginas de ícone `ItemBtn20..30` | 585fef1 |
 | 2026-10-17 | Mapas reais de 42 zonas exportados dos `.wld` (`ZoneMapExport`) | 46c09dc |
+| 2026-10-17 | Shaders por hardware no cliente Windows (temporários inicializados no shim) | |

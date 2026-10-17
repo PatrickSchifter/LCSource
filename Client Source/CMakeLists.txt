@@ -207,6 +207,10 @@ target_include_directories(Nksp PRIVATE "${LC_CLIENT_SRC}/Nksp")
 target_link_options(Nksp PRIVATE /NODEFAULTLIB:game.lib /NODEFAULTLIB:gamemp.lib)
 add_dependencies(Nksp lc_entities Shaders GameMP)
 
+# Development check: which vertex shaders the D3D8 runtime accepts from the D3DX8 shim.
+add_executable(ShaderCheck Compat/d3dx8/ShaderCheck.cpp)
+target_link_libraries(ShaderCheck PRIVATE lc_client_common d3dx8_compat user32)
+
 # Command-line exporter of the GameServer's zone maps (.sat/.sht) from client worlds.
 add_executable(ZoneMapExport ZoneMapExport/ZoneMapExport.cpp)
 target_link_libraries(ZoneMapExport PRIVATE lc_client_common Engine)

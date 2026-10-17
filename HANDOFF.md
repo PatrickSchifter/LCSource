@@ -15,8 +15,7 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 
 ## Próximos passos sugeridos (em ordem)
 
-1. Skinning por hardware (abaixo, "Problemas conhecidos").
-2. Começar o cliente Mac: decisões D2 (Metal ou OpenGL) e D3 (SDL ou Cocoa) ainda estão em aberto
+1. Começar o cliente Mac: decisões D2 (Metal ou OpenGL) e D3 (SDL ou Cocoa) ainda estão em aberto
    com o usuário; o primeiro passo técnico é 64-bit no Engine (`PORTING_MACOS.md`, C2).
 
 ## Mac: servidor
@@ -49,7 +48,7 @@ tela pelo app "Windows App"; o jogo roda na sessão dele, aberto por tarefa agen
 | `C:\LCSource-build` | build CMake/Ninja (Release, x86, `LC_CLIENT_COUNTRY=BRAZIL`); saídas em `Bin\` |
 | `C:\LCSource-deps` | Boost 1.86 x86, D3DX9 (NuGet), headers D3D8 do MinGW, `build.cmd` (cópia em `scripts/windows/build.cmd`), `stackdump.exe`, `addr2line.exe` |
 | `C:\LC-BR2014` | instalação do jogo (assets BR 2014 + alguns `.lod` de 2017, ver abaixo); `Bin\` recebe nossos binários |
-| `C:\LC-BR2014\jogar.bat` | inicia o jogo; **precisa** de `set LC_NO_HW_SHADERS=1` |
+| `C:\LC-BR2014\jogar.bat` | inicia o jogo (cópia em `scripts/windows/jogar.bat`); com `C:\LC-BR2014\hw-shaders.txt` presente usa shaders por hardware e liga `LC_DEBUG_SKA`, sem ele força `LC_NO_HW_SHADERS=1` |
 | Tarefa agendada `LC Nosso Cliente` | roda `jogar.bat` na sessão interativa (é assim que se abre o jogo remotamente) |
 | Área de trabalho: `LC Nosso Cliente.bat` | atalho do usuário (OneDrive\Ambiente de Trabalho), igual ao `jogar.bat` |
 
@@ -88,11 +87,15 @@ scripts/windows/wps.sh <<'EOF' ... EOF  # PowerShell arbitrário no Windows
 
 ## Problemas conhecidos (e o porquê)
 
-- **Skinning por hardware:** modelos animados (jogadores, monstros, a maioria dos NPCs) ficam
-  invisíveis quando usam vertex programs `vs.1.1` montados pelo shim `Compat/d3dx8/d3dx8_shader.cpp`
-  (D3DX9 + remoção dos `dcl_`). Com `LC_NO_HW_SHADERS=1` (lido em `RM_/TR_AreHardwareShadersAvailable`)
-  o skinning é feito na CPU e tudo aparece. Atenção: os cvars `ska_/ter_bUseHardwareShaders` são
-  sobrescritos depois da inicialização, por isso a chave fica nessas funções.
+- **Shaders por hardware (resolvido):** o `d3d8.dll` dos Windows atuais (implementado sobre o
+  D3D9) recusa vertex shaders que leem componentes de registradores temporários antes de escrevê-los
+  (`CreateVertexShader` → `D3DERR_INVALIDCALL`); o runtime do XP aceitava, e os shaders do jogo fazem
+  isso (ex.: `mul r1, r1, r7.wwww` com `r1.w` nunca escrito). Sem shader, o modelo não era desenhado.
+  O shim (`Compat/d3dx8/d3dx8_shader.cpp`) inicializa cada `rN` usado. `ShaderCheck.exe <arquivo.vsh>`
+  testa no D3D8 real se um shader é aceito; precisa rodar na sessão interativa (tarefa agendada),
+  pois pelo SSH não há desktop e `CreateDevice` falha. `LC_NO_HW_SHADERS=1` ainda força o caminho
+  por CPU, lido em `RM_/TR_AreHardwareShadersAvailable` (os cvars `ska_/ter_bUseHardwareShaders` são
+  sobrescritos depois da inicialização).
 - **Dados do cliente misturados:** a instalação é BR 2014, mas vários `.lod` foram trocados por
   versões BR 2017 (os originais e as cópias estão em `C:\LC-BR2014\Data\*.novo`) para os tamanhos de
   registro baterem com os structs deste código. Regra: tamanho do registro no arquivo
