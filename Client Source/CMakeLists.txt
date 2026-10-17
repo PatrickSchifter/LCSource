@@ -147,9 +147,6 @@ endfunction()
 lc_client_target(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_GENERATED} Engine/Engine.def)
 target_compile_definitions(Engine PRIVATE ENGINE_EXPORTS _USRDLL)
 target_include_directories(Engine PRIVATE "${LC_GEN}/Engine")
-# Intel JPEG Library 1.5 is a prebuilt C library (no C++ ABI), requested as "ijl15L.lib".
-configure_file("${LC_CLIENT_SRC}/Lib/VC100/IJL15L.LIB" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/ijl15L.lib" COPYONLY)
-target_link_directories(Engine PRIVATE "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 target_link_libraries(Engine PRIVATE zlib libpng tinyxml lccrypt d3dx8_compat Boost::thread Boost::system
   dsound winmm ws2_32 wininet imm32 version advapi32 odbc32 odbccp32 dbghelp)
 target_link_options(Engine PRIVATE /MAP /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)
