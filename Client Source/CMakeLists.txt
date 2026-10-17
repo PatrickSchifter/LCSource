@@ -57,6 +57,15 @@ option(LC_USE_PORTABLE_C "Use the C paths instead of the x86 inline assembly" OF
 if(LC_USE_PORTABLE_C)
   target_compile_definitions(lc_client_common INTERFACE USE_PORTABLE_C)
 endif()
+# The SDL3 platform layer (window, events) that the macOS client uses; turn this on to test it in
+# the Windows client (Direct3D 8 still draws, on the window SDL creates). Needs SDL3_DIR (the
+# 'cmake' directory of the SDL3 VC development package).
+option(LC_PLATFORM_SDL "Use the SDL3 platform layer instead of WinMain/WndProc" OFF)
+if(LC_PLATFORM_SDL)
+  find_package(SDL3 CONFIG REQUIRED)
+  target_compile_definitions(lc_client_common INTERFACE LC_PLATFORM_SDL)
+  target_link_libraries(lc_client_common INTERFACE SDL3::SDL3)
+endif()
 # SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
 # build) and quits silently on a mismatch, so it must be off for binaries built here.
 target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
@@ -185,3 +194,7 @@ add_dependencies(ZoneMapExport lc_entities)
 # D3DX9 runtime next to the executable.
 add_custom_command(TARGET Nksp POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LC_D3DX9_DIR}/release/bin/x86/D3DX9_43.dll" "${LC_BIN}")
+if(LC_PLATFORM_SDL)
+  add_custom_command(TARGET Nksp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${LC_BIN}")
+endif()

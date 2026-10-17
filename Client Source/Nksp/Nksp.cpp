@@ -8,11 +8,15 @@
 
 #include "StdH.h"
 
+#ifdef PLATFORM_WIN32
 #include <io.h>
+#endif
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef PLATFORM_WIN32
 #include <process.h>
 #include <shlwapi.h>	// for PathFileExists()
+#endif
 
 #include <Engine/CurrentVersion.h>
 #include <Engine/Templates/Stock_CEntityClass.h>
@@ -27,7 +31,9 @@
 #include <Engine/Contents/Login/UILoginNew.h>
 #include <Engine/GameStageManager/StageMgr.h>
 
+#ifdef PLATFORM_WIN32
 #include <crtdbg.h>
+#endif
 
 
 #include <Engine/Network/Web.h>
@@ -46,9 +52,14 @@
 //#include "LCDDrawing.h"
 #include "CmdLine.h"
 //#include "Credits.h"
+#ifdef PLATFORM_WIN32
 #include <TlHelp32.h>
+#endif
 #include <float.h>
+#include <Engine/Platform/Platform.h>
+#ifdef PLATFORM_WIN32
 #include <Ext_ipc_event.h> // IPC
+#endif
 HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
@@ -347,6 +358,9 @@ void GetNM(LPSTR lpCmdLine)
 *************************************************************************************************/
 BOOL IsRunning(void)
 {
+#ifndef PLATFORM_WIN32
+	return FALSE;  // a second client is allowed outside Windows
+#else
 	PROCESSENTRY32 peNext;
 
 	// 접근 프로세스 핸들을 생성한다.
@@ -409,6 +423,7 @@ BOOL IsRunning(void)
 	}
 
 	return FALSE;
+#endif  // PLATFORM_WIN32
 }
 
 
@@ -442,6 +457,7 @@ static HANDLE _hLock = NULL;
 static CTFileName _fnmLock;
 static void DirectoryLockOn(void)
 {
+#ifdef PLATFORM_WIN32
 	// create lock filename
 	_fnmLock = _fnmApplicationPath+"nksp.loc";
 	// try to open lock file
@@ -458,18 +474,22 @@ static void DirectoryLockOn(void)
 		// report warning
 		CPrintF(TRANS("WARNING: Last Chaos didn't shut down properly last time!\n"));
 	}
+#endif
 }
 static void DirectoryLockOff(void)
 {
+#ifdef PLATFORM_WIN32
 	// if lock is open
 	if (_hLock!=NULL) {
 		// close it
 		CloseHandle(_hLock);
 	}
+#endif
 }
 
 //강동민 수정 시작 시스템 마우스 작업	09.09
 // NOTE : 애니메이션 커서를 리소스로부터 읽어옴.
+#ifdef ANIMATION_CURSOR
 static HCURSOR LoadAnimationCursor(HINSTANCE hInstance, UINT nID)
 {
 	HRSRC hRes		= FindResource(hInstance, MAKEINTRESOURCE(nID), "CURSORS");
@@ -478,6 +498,7 @@ static HCURSOR LoadAnimationCursor(HINSTANCE hInstance, UINT nID)
 	LPBYTE pBytes	= (LPBYTE)LockResource(hGlob);
 	return (HCURSOR)CreateIconFromResource(pBytes, dwSize, FALSE, 0x00030000);	
 }
+#endif
 //강동민 수정 끝 시스템 마우스 작업		09.09
 
 void End(void);
@@ -638,9 +659,17 @@ ENGINE_API void CheckEngineVersion();
 BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 {
 	_hInstanceMain = hInstance;
+#ifdef LC_PLATFORM_SDL
+	if (!PLT_Init()) {
+		return FALSE;
+	}
+	// remember desktop dimensions
+	PLT_GetDesktopSize(_pixDesktopWidth, _pixDesktopHeight);
+#else
 	// remember desktop dimensions
 	_pixDesktopWidth  = ::GetSystemMetrics(SM_CXSCREEN);
 	_pixDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+#endif
 
 #if	!defined(VER_TEST) && !defined(G_CHINA)
 	if(strCmdLine.IsEqualCaseSensitive(CTString("fkzktlfgod!")))
@@ -654,7 +683,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	}
 	else
 	{
-#ifndef MULTI_CLIENT
+#if !defined(MULTI_CLIENT) && defined(PLATFORM_WIN32)
 		if(FindWindow(APPLICATION_NAME,NULL))
 		{
 			return FALSE;
@@ -692,11 +721,15 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	switch(g_iCountry)
 	{
 		case BRAZIL:
+#ifndef LC_PLATFORM_SDL
 			SetClassLong( _hwndMain, GCL_HICON, (LONG)LoadIcon( _hInstanceMain, (LPCTSTR)IDI_GUNSOFT ) );
+#endif
 			g_bNasTrans = TRUE;
 			break;
 		case HONGKONG:
+#ifndef LC_PLATFORM_SDL
 			SetClassLong( _hwndMain, GCL_HICON, (LONG)LoadIcon( _hInstanceMain, (LPCTSTR)IDI_FUNMILY ) );
+#endif
 			break;
 	}
 
@@ -803,7 +836,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIZE, LoadAnimationCursor( _hInstanceMain, IDC_SIZE_CURSOR) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ZOOMIN, LoadAnimationCursor( _hInstanceMain, IDC_ZOOMIN_CURSOR) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIGNAL, LoadAnimationCursor( _hInstanceMain, IDC_SIGNAL_CURSOR) );
-#else
+#elif !defined(LC_PLATFORM_SDL)
 	// FIXME : Engine의 Resource에 *.cur 화일을 넣어줬을때, 해당 커서를 얻어오지 못해서 이런식으로 처리함.	
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_NORMAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_NORMAL_CURSOR) ) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ATT_NORMAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_ATTACK_CURSOR) ) );
@@ -871,6 +904,9 @@ void End(void)
 	GAME_Destroy();
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-14)
 	if(g_hGame) FreeLibrary(g_hGame);
+#ifdef LC_PLATFORM_SDL
+	PLT_End();
+#endif
 //안태훈 수정 끝	//(DevPartner Bug Fix)(2005-01-14)
 }
 
@@ -1064,7 +1100,11 @@ void QuitScreenLoop(void)
 		_pSound->UpdateSounds();
 		// while there are any messages in the message queue
 		MSG msg;
+#ifdef LC_PLATFORM_SDL
+		while(PLT_PeekMessage(&msg)) 
+#else
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) 
+#endif
 		{
 			// if it is not a keyboard or mouse message
 			if(msg.message==WM_LBUTTONDOWN||
@@ -1116,7 +1156,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 {
 	(void)hPrevInstance;
 
-#if		!defined(G_CHINA) && !defined(VER_TEST)
+#if		!defined(G_CHINA) && !defined(VER_TEST) && defined(PLATFORM_WIN32)
 	CTString strparam = CTString(lpCmdLine);
 	IPCEventInfo EventInfo;
 	memset(EventInfo.ulParameter2, 0, sizeof(EventInfo.ulParameter2));
@@ -1188,12 +1228,14 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 
 	GetNM(EventInfo.ulParameter2);
 
-#endif	// !defined(G_CHINA) && !defined(VER_TEST)
+#endif	// !defined(G_CHINA) && !defined(VER_TEST) && defined(PLATFORM_WIN32)
 	
 	ShowCursor(FALSE);
 	
 	if( !Init( hInstance, nCmdShow, lpCmdLine )) return FALSE;
 
+#ifdef PLATFORM_WIN32
+	// the version shown on the login screen comes from the executable's resources
 	{
 		// 현재 실행된 프로그램의 경로를 저장할 변수이다.
 		char temp_path[MAX_PATH] = {0,};
@@ -1235,6 +1277,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 		GlobalUnlock(h_memory); 
 		GlobalFree(h_memory);
 	}
+#endif
 
 	BOOL bInit = TRUE;
 	
@@ -1261,7 +1304,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	ShowCursor(TRUE);
 	
 	// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 	SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 	// 이기환 수정 끝 
 
 
@@ -1278,6 +1323,14 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	{
 		// while there are any messages in the message queue
 		MSG msg;
+#ifdef LC_PLATFORM_SDL
+		while( PLT_PeekMessage( &msg)) 
+		{
+			// what the window procedure did with it (MainWindow.cpp)
+			if( msg.message==WM_CLOSE) {
+				QuitGame();
+			}
+#else
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE)) 
 		{
 			// if it is not a mouse message
@@ -1295,6 +1348,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 					}
 				}
 			}
+#endif  // LC_PLATFORM_SDL
 			
 			// system commands (also send by the application itself)
 			if( msg.message==WM_SYSCOMMAND)
@@ -1343,7 +1397,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				|| (msg.message==WM_ACTIVATEAPP && !msg.wParam)) 
 			{
 				// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 				SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 				// 이기환 수정 끝 
 			}
 			// if application is activated or minimized
@@ -1354,7 +1410,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				if (msg.message == WM_SETFOCUS)
 					msg = msg;
 				// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 				SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 				// 이기환 수정 끝 
 			}
 			// UI message
@@ -1475,6 +1533,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 
 void CheckModReload(void)
 {
+#ifdef PLATFORM_WIN32
 	if (_fnmModToLoad!="") {
 #ifndef NDEBUG
 		//CTString strDebug = "Debug\\";
@@ -1502,8 +1561,11 @@ void CheckModReload(void)
 		}
 		_execv(strCommand, argv);
 	}
+#endif
 }
 
+// The launcher (IPC on start, replacing its own executable) is Windows-only.
+#ifdef PLATFORM_WIN32
 // 2012-07-19 sykim70
 void ReleaseIPC()
 {
@@ -1578,7 +1640,9 @@ BOOL UpdateNewLauncher()
 	MoveFile(strNewLauncher.str_String, strLauncher.str_String);
 	return TRUE;
 }
+#endif  // PLATFORM_WIN32
 
+#ifdef PLATFORM_WIN32
 int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			LPSTR lpCmdLine, int nCmdShow)
 {
@@ -1640,6 +1704,34 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	return iResult;
 }
+#else  // PLATFORM_WIN32
+
+// Outside Windows: the arguments become the command line WinMain would get.
+int main(int argc, char *argv[])
+{
+	CTString strCmdLine;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		if (iArg > 1) strCmdLine += " ";
+		strCmdLine += argv[iArg];
+	}
+
+	CMessageDispatcher::InitSEEDEncrypt();
+
+	int iResult;
+	CTSTREAM_BEGIN {
+		iResult = SubMain(NULL, NULL, (char*)(const char*)strCmdLine, 0);
+	} CTSTREAM_END;
+	CTStream::ClearStreamHandling();
+
+	if(g_szExitError != NULL)
+	{
+		::MessageBox(NULL, g_szExitError, "Error", MB_OK);
+		delete[] g_szExitError;
+	}
+	return iResult;
+}
+
+#endif  // PLATFORM_WIN32
 
 
 // try to start a new display mode
