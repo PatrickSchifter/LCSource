@@ -172,26 +172,41 @@ public:
 	void	Create();
 	void	Destroy();
 
+	// Texture of a button; IDs out of range or not loaded (data from other client
+	// versions) fall back to the first loaded texture of that type.
+	CTextureData *Lookup( int nBtnType, int nTexID ) const
+	{
+		if (nBtnType < 0 || nBtnType >= (int)m_aptdButton.size()) return NULL;
+		const vecTexData &vec = m_aptdButton[nBtnType];
+		if (nTexID >= 0 && nTexID < (int)vec.size() && vec[nTexID] != NULL) return vec[nTexID];
+		for (size_t i = 0; i < vec.size(); i++) if (vec[i] != NULL) return vec[i];
+		return NULL;
+	}
+
 	// Get width & height of texture
 	int		GetTexWidth( UIBtnExType betType, int nTexID ) const
 	{
-		return m_aptdButton[betType][nTexID]->GetPixWidth();
+		CTextureData *ptd = Lookup(betType, nTexID);
+		return ptd != NULL ? ptd->GetPixWidth() : 1;
 	}
 	int		GetTexHeight( UIBtnExType betType, int nTexID ) const
 	{
-		return m_aptdButton[betType][nTexID]->GetPixHeight();
+		CTextureData *ptd = Lookup(betType, nTexID);
+		return ptd != NULL ? ptd->GetPixHeight() : 1;
 	}
 	
 	// get texture name
 	CTextureData *GetTex(UIBtnExType betType, int nTexID)
 	{
-		return m_aptdButton[betType][nTexID];
+		return Lookup(betType, nTexID);
 	}
 
 	// Set texture
 	void	InitTexture( int nBtnType, int nTextureID, const ULONG ulPBT = 203 )
 	{
-		CUIManager::getSingleton()->GetDrawPort()->InitTextureData( m_aptdButton[nBtnType][nTextureID], FALSE, ulPBT, FALSE );
+		CTextureData *ptd = Lookup(nBtnType, nTextureID);
+		if (ptd == NULL) return;
+		CUIManager::getSingleton()->GetDrawPort()->InitTextureData( ptd, FALSE, ulPBT, FALSE );
 	}
 };
 

@@ -4550,6 +4550,7 @@ void CDrawPort::AddBtnTexture( const int nTexID, const FLOAT fI0, const FLOAT fJ
 								const COLOR col ) const
 {
 	TRACKMEM(Mem, "Gfx");
+	if (nTexID < 0 || nTexID >= MAX_BTN) return;  // icon texture from data the client does not have
 	const GFXColor glCol(col);
 	const INDEX iStart = _avtxBtn[nTexID].Count();
 	GFXVertex   *pvtx = _avtxBtn[nTexID].Push(4);

@@ -347,7 +347,8 @@ void CUIButtonTextureManager::Create()
 		{
 			strFileName.PrintF( "ItemBtn%d.tex", iTex );
 			strFullPath = strDirectory + strFileName;
-			tmp = _pTextureStock->Obtain_t( strFullPath );
+			// not every client has every icon page; missing ones fall back (see Lookup)
+			try { tmp = _pTextureStock->Obtain_t( strFullPath ); } catch (char *) { tmp = NULL; }
 			vec_.push_back(tmp);
 		}
 	}
