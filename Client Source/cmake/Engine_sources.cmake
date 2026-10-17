@@ -19,7 +19,6 @@ set(ENGINE_SOURCES
   "Engine/Base/MemoryTracking.cpp"
   "Engine/Base/Parser.cpp"
   "Engine/Base/Profiling.cpp"
-  "Engine/Base/Protection.cpp"
   "Engine/Base/Registry.cpp"
   "Engine/Base/Relations.cpp"
   "Engine/Base/ReplaceFile.cpp"

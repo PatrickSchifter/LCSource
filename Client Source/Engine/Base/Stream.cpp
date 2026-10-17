@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <io.h>
 #include <direct.h>
-#include <Engine/Base/Protection.h>
 
 #include <Engine/Base/Stream.h>
 
@@ -279,53 +278,7 @@ void InitStreams(void)
 
   LoadFileList(_afnmNoCRC, CTFILENAME("Data\\NoCRC.lst"));
 
-#if COPY_PROTECTION
-  CTFileName fnmKey = CTString("T")+"S"+"E"+"."+"k"+"e"+"y";
-  INDEX iSerial = _pShell->GetINDEX(CTString("sys")+"_iHDD"+"Misc");
-
-  // init encryption table two times
-  BLOWFISH_CTX ctx1;
-  BLOWFISH_CTX ctx2;
-  extern CTString _strEngineBuild;
-  CTString strEnKey = _strEngineBuild;
-  strEnKey.TrimLeft(16);
-  char aubKey1[16];
-  char aubKey2[16];
-  for(INDEX i=0; i<16; i++) {
-    aubKey1[i] = strEnKey[i];
-    aubKey2[i] = strEnKey[16-1-i];
-  }
-  Blowfish_Init (&ctx1, (unsigned char*)aubKey1, 16);
-  Blowfish_Init (&ctx2, (unsigned char*)aubKey2, 16);
-
-  BOOL bKeyOK = TRUE;
-
-  // if no key
-  if (!FileExists(fnmKey)) {
-    bKeyOK = FALSE;
-  // if key is here
-  } else {
-    // load it
-    CTString strKey;
-    LoadStringVar(fnmKey, strKey);
-    __int64 llCodeRead = 0;
-    strKey.ScanF("%I64x", &llCodeRead);
-    __int64 llCode1 = llCodeRead;
-    __int64 llCode2 = llCodeRead;
-
-    // decrypt the code
-    Blowfish_Decrypt(&ctx1, (ULONG*)&llCode1+1, ((ULONG*)&llCode1));
-    Blowfish_Decrypt(&ctx2, (ULONG*)&llCode2+1, ((ULONG*)&llCode2));
-    // if not valid
-    if (llCode1!=iSerial && llCode2!=iSerial) {
-      bKeyOK = FALSE;
-    }
-  }
-
-  _pShell->SetINDEX(CTString("sys")+"_iCPU"+"Misc", bKeyOK);
-#else
   _pShell->SetINDEX(CTString("sys")+"_iCPU"+"Misc", 1);
-#endif
 }
 
 void EndStreams(void)

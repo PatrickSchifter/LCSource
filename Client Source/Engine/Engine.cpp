@@ -3,7 +3,6 @@
 #include <Engine/Build.h>
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Input.h>
-#include <Engine/Base/Protection.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Console_internal.h>
 #include <Engine/Base/Statistics_Internal.h>

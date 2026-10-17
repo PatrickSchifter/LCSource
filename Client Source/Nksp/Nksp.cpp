@@ -46,10 +46,6 @@
 //#include "LCDDrawing.h"
 #include "CmdLine.h"
 //#include "Credits.h"
-#include <Engine/Base/Protection.h>
-#if COPY_PROTECTION
-	#include <Engine/Base/Protection.cpp>
-#endif
 #include <TlHelp32.h>
 #include <float.h>
 #include <Ext_ipc_event.h> // IPC
@@ -703,59 +699,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 			break;
 	}
 
-#if COPY_PROTECTION
-
-	// get full path to the exe
-	char strExePath[MAX_PATH] = "";
-	GetModuleFileName( NULL, strExePath, sizeof(strExePath)-1);
-	char strDrive[] = "C:\\";
-	strDrive[0] = strExePath[0];
-	DWORD dwSerial;
-	GetVolumeInformation(strDrive, NULL, 0, &dwSerial, NULL, NULL, NULL, 0);
-
-	CTFileName fnmKey = CTString("TSE.key");
-	INDEX iSerial = dwSerial;
-
-	// init encryption table two times
-	BLOWFISH_CTX ctx1;
-	BLOWFISH_CTX ctx2;
-	CTString strEnKey = _strEngineBuild;
-	strEnKey.TrimLeft(16);
-	char aubKey1[16];
-	char aubKey2[16];
-	for(INDEX i=0; i<16; i++) {
-		aubKey1[i] = strEnKey[i];
-		aubKey2[i] = strEnKey[16-1-i];
-	}
-	Blowfish_Init (&ctx1, (unsigned char*)aubKey1, 16);
-	Blowfish_Init (&ctx2, (unsigned char*)aubKey2, 16);
-
-	// if no key
-	if (!FileExists(fnmKey)) {
-		// just bail out
-		FatalError(TRANS("No registration key!\nPlease request registration key for code:\n\n%08X"), iSerial);
-		return FALSE;
-	// if key is here
-	} else {
-		// load it
-		CTString strKey;
-		LoadStringVar(fnmKey, strKey);
-		__int64 llCodeRead = 0;
-		strKey.ScanF("%I64x", &llCodeRead);
-		__int64 llCode1 = llCodeRead;
-		__int64 llCode2 = llCodeRead;
-
-		// decrypt the code
-		Blowfish_Decrypt(&ctx1, (ULONG*)&llCode1+1, ((ULONG*)&llCode1));
-		Blowfish_Decrypt(&ctx2, (ULONG*)&llCode2+1, ((ULONG*)&llCode2));
-		// if not valid
-		if (llCode1!=iSerial && llCode2!=iSerial) {
-			// bail out
-			FatalError(TRANS("Registration key is invalid!"));
-			return FALSE;
-		}
-	}
-#endif
 
 	SE_LoadDefaultFonts();
 	// now print the output of command line parsing
