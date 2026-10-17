@@ -699,8 +699,86 @@ INDEX CTString::PrintF(const char *strFormat, ...)
 static TLVar<INDEX> _ctBufferSize = 0;
 //static TLVar<char*> _pchBuffer = NULL;
 
+#if defined(_M_IX86)
+// Localized strings from other client versions sometimes use %s where this code passes a
+// number (e.g. Brazil's "%s de Exp"). Feeding an integer to %s crashes, so before printing,
+// any %s argument that is not a readable pointer is replaced by its decimal text.
+// x86 only: there va_list is a plain pointer to 4-byte argument slots.
+static BOOL IsReadablePointer(ULONG ul)
+{
+	if (ul < 0x10000) return FALSE;
+	MEMORY_BASIC_INFORMATION mbi;
+	if (VirtualQuery((void*)ul, &mbi, sizeof(mbi)) == 0) return FALSE;
+	if (mbi.State != MEM_COMMIT) return FALSE;
+	return (mbi.Protect & (PAGE_NOACCESS|PAGE_GUARD)) == 0;
+}
+
+#define FIXARGS_MAXSLOTS 64
+#define FIXARGS_MAXNUMBERS 16
+struct FixedArgs {
+	ULONG aulSlots[FIXARGS_MAXSLOTS];
+	char achNumbers[FIXARGS_MAXNUMBERS][16];
+};
+
+// Returns the arguments to print with: arg itself, or fa's copy with numbers put in for bad %s.
+static va_list FixStringArgs(const char *strFormat, va_list arg, FixedArgs &fa)
+{
+	const ULONG *pulArgs = (const ULONG *)arg;
+	INDEX ctSlots = 0, ctNumbers = 0;
+	BOOL bChanged = FALSE;
+	for (const char *pch = strFormat; *pch != 0; pch++) {
+		if (*pch != '%') continue;
+		pch++;
+		if (*pch == '%') continue;
+		while (*pch && strchr("-+ #0", *pch)) pch++;
+		if (*pch == '*') { ctSlots++; pch++; } else { while (isdigit((UBYTE)*pch)) pch++; }
+		if (*pch == '.') {
+			pch++;
+			if (*pch == '*') { ctSlots++; pch++; } else { while (isdigit((UBYTE)*pch)) pch++; }
+		}
+		INDEX ctSize = 1;
+		if (strncmp(pch, "I64", 3) == 0) { ctSize = 2; pch += 3; }
+		else if (strncmp(pch, "I32", 3) == 0) { pch += 3; }
+		else if (strncmp(pch, "ll", 2) == 0) { ctSize = 2; pch += 2; }
+		else if (strncmp(pch, "hh", 2) == 0) { pch += 2; }
+		else if (*pch == 'j') { ctSize = 2; pch++; }
+		else if (*pch && strchr("lhLwzItI", *pch)) { pch++; }
+		if (*pch == 0) break;
+		if (ctSlots + 2 > FIXARGS_MAXSLOTS) return arg;
+		switch (*pch) {
+		case 's': case 'S': {
+			const ULONG ul = pulArgs[ctSlots];
+			fa.aulSlots[ctSlots] = ul;
+			if (ul != 0 && !IsReadablePointer(ul)) {
+				if (ctNumbers >= FIXARGS_MAXNUMBERS) return arg;
+				_snprintf(fa.achNumbers[ctNumbers], 16, "%ld", (long)ul);
+				fa.aulSlots[ctSlots] = (ULONG)fa.achNumbers[ctNumbers];
+				if (*pch == 'S') return arg;  // wide string: leave it alone
+				ctNumbers++;
+				bChanged = TRUE;
+			}
+			ctSlots++;
+			break; }
+		case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A':
+			ctSize = 2;  // doubles
+			// fall through
+		case 'd': case 'i': case 'u': case 'o': case 'x': case 'X': case 'c': case 'C': case 'p': case 'n':
+			for (INDEX i = 0; i < ctSize; i++) { fa.aulSlots[ctSlots] = pulArgs[ctSlots]; ctSlots++; }
+			break;
+		default:
+			return arg;  // unknown conversion: print as is
+		}
+	}
+	return bChanged ? (va_list)fa.aulSlots : arg;
+}
+#endif
+
 INDEX CTString::VPrintF(const char *strFormat, va_list arg)
 {
+#if defined(_M_IX86)
+	FixedArgs fa;
+	arg = FixStringArgs(strFormat, arg, fa);
+#endif
 	INDEX ctBufferSize = 0;
 	char *pchBuffer = NULL;
 	// if buffer was not allocated yet

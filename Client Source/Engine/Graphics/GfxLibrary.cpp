@@ -1195,6 +1195,11 @@ void CGfxLibrary::Init(void)
 	_pShell->DeclareSymbol("persistent user INDEX ter_bUseTopMap;", &ter_bUseTopMap);
 	_pShell->DeclareSymbol("persistent user INDEX ter_bUpdateTopMapOnEdit;", &ter_bUpdateTopMapOnEdit);
 	_pShell->DeclareSymbol("           user INDEX ter_iAttributeRange; ", &ter_iAttributeRange);
+	// Dev switch: LC_NO_HW_SHADERS=1 renders models and terrain without vertex programs.
+	if (getenv("LC_NO_HW_SHADERS") != NULL) {
+		ska_bUseHardwareShaders = FALSE;
+		ter_bUseHardwareShaders = FALSE;
+	}
 	
 
 	_pShell->DeclareSymbol("persistent user FLOAT gfx_tmProbeDecay;", &gfx_tmProbeDecay);

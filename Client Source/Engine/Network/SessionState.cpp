@@ -8773,12 +8773,29 @@ void CSessionState::ReceiveEXPMessage( CNetworkMessage *istr )
 	_pNetwork->MyCharacterInfo.sp += Sp;
 
 	CTString strSysMessage;
+	// Some localized strings (e.g. Brazil) take the numbers as %s instead of %I64d/%d.
+	CTString strExp, strSp;
+	strExp.PrintF("%I64d", Exp);
+	strSp.PrintF("%d", Sp);
+	CTString strFormat;
 	if( Exp > 0 && Sp > 0 )
-		strSysMessage.PrintF( _S( 337, "%I64d의 경험치와 %d의 SP를 얻었습니다." ), Exp, Sp );
+	{
+		strFormat = _S( 337, "%I64d  %d SP ." );
+		if (strstr(strFormat, "%s") != NULL) strSysMessage.PrintF( strFormat, (const char*)strExp, (const char*)strSp );
+		else strSysMessage.PrintF( strFormat, Exp, Sp );
+	}
 	else if( Exp > 0 )
-		strSysMessage.PrintF( _S( 427, "%I64d의 경험치를 얻었습니다." ), Exp );
+	{
+		strFormat = _S( 427, "%I64d  ." );
+		if (strstr(strFormat, "%s") != NULL) strSysMessage.PrintF( strFormat, (const char*)strExp );
+		else strSysMessage.PrintF( strFormat, Exp );
+	}
 	else
-		strSysMessage.PrintF( _S( 428, "%d의 SP를 얻었습니다." ), Sp );
+	{
+		strFormat = _S( 428, "%d SP ." );
+		if (strstr(strFormat, "%s") != NULL) strSysMessage.PrintF( strFormat, (const char*)strSp );
+		else strSysMessage.PrintF( strFormat, Sp );
+	}
 
 	CUIManager* pUIManager = CUIManager::getSingleton();
 

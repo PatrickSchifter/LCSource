@@ -576,6 +576,12 @@ void CSessionState::updateNpcAppear( CNetworkMessage *istr )
 		OutputDebugString("Cannot find Mob Data!!!\n");
 		return;
 	}
+	// NPCs newer than the client data have no model; loading '' would be a fatal error.
+	if (CTString(MD->GetMobSmcFileName()) == "")
+	{
+		CPrintF("NPC %d has no model in the client data, not shown\n", pPack->charDbIndex);
+		return;
+	}
 
 	UBYTE ubAttrdef = GET_AT_VAR(pPack->attrdef);
 	UBYTE ubAttratt = GET_AT_VAR(pPack->attratt);
