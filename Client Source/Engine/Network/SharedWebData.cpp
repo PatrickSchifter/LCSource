@@ -8,19 +8,29 @@ CSharedWebData::CSharedWebData()
 , m_bExit(false)
 , m_szErrorMsgBuffer(NULL)
 {
+#ifdef PLATFORM_WIN32
 	m_hSendWriteEvent		= CreateEvent(NULL, TRUE, TRUE, NULL);
 	m_hSendReadEvent		= CreateEvent(NULL, FALSE, FALSE, NULL);
 	m_hReceiveWriteEvent	= CreateEvent(NULL, TRUE, TRUE, NULL);
 	m_hReceiveReadEvent		= CreateEvent(NULL, FALSE, FALSE, NULL);
+#else
+	// the events only serve the page reader thread, which exists only on Windows (Web.cpp)
+	m_hSendWriteEvent		= NULL;
+	m_hSendReadEvent		= NULL;
+	m_hReceiveWriteEvent	= NULL;
+	m_hReceiveReadEvent		= NULL;
+#endif
 }
 
 
 CSharedWebData::~CSharedWebData()
 {
+#ifdef PLATFORM_WIN32
 	CloseHandle(m_hSendWriteEvent);
 	CloseHandle(m_hSendReadEvent);
 	CloseHandle(m_hReceiveWriteEvent);
 	CloseHandle(m_hReceiveReadEvent);
+#endif
 
 	FreeSendMsgBuffer();
 	FreeReceiveMsgBuffer();
@@ -31,6 +41,7 @@ CSharedWebData::~CSharedWebData()
 ///초기상태로 복구. 보통 오류가 났을 경우 초기상태로 되돌리기 위한 수단임.
 void CSharedWebData::ResetAll()
 {
+#ifdef PLATFORM_WIN32
 	ResetEvent(m_hSendReadEvent);
 	ResetEvent(m_hSendWriteEvent);
 	FreeSendMsgBuffer();
@@ -40,6 +51,10 @@ void CSharedWebData::ResetAll()
 	ResetEvent(m_hReceiveWriteEvent);
 	FreeReceiveMsgBuffer();
 	SetEvent(m_hReceiveWriteEvent);
+#else
+	FreeSendMsgBuffer();
+	FreeReceiveMsgBuffer();
+#endif
 
 	FreeErrorMsgBuffer();
 }

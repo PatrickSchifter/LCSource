@@ -6,6 +6,7 @@
 #include <windows.h>
 #endif
 
+// defined only on Windows (ThreadWrapper.cpp)
 class ENGINE_API cThreadWrapper
 {
 public:
