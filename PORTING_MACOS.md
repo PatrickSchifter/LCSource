@@ -88,7 +88,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 ### S3. 64-bit (LP64)
 - [x] `ShareLib/SEED_256_KISA.h`: `typedef unsigned long DWORD` → `uint32_t` (confirmado: em 64-bit gerava ciphertext errado)
 - [x] `ShareLib/il_values.h`: `ILUInt32` (SHA-256) → `uint32_t`; SHA-256 validado com vetor de teste oficial
-- [ ] `ShareLib/rntype.h`: `tLONG` e similares → tipos de largura fixa
+- [x] `ShareLib/rntype.h`: `tLONG`/`tULONG` → `int32_t`/`uint32_t` (como no build 32-bit original), demais tipos em `<stdint.h>` com `static_assert`. Nenhum desses tipos aparece em pacote ou arquivo (`tLONG`, `tULONG`, `tTIME`, `tSIZE` e `RET_VAL` não têm nenhum uso)
 - [ ] Auditar as 84 structs com `#pragma pack` (pacotes de rede): nenhum `long`, `time_t` ou ponteiro dentro
 - [ ] Auditar a leitura de arquivos `.bin` binários feita via struct
 - [ ] Testes de `static_assert(sizeof(...))` para os pacotes principais
