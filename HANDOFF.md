@@ -325,6 +325,33 @@ scripts/windows/wps.sh <<'EOF' ... EOF  # PowerShell arbitrário no Windows
 - Se precisar reconfigurar: apague `C:\LCSource-build\CMakeCache.txt` e rode
   `cmd /c "C:\LCSource-deps\build.cmd configure"`.
 
+## Recursos externos no Windows (ainda não testados)
+
+Em 2026-10-17 o usuário baixou o pacote do **tx00100xt** (Alexander Pavlov) com os fontes 2015/2018
+do openlastchaos modernizados: `%USERPROFILE%\Downloads\LCSources-20250201\VSProjects` (20 GB) na
+máquina `windows`. Por decisão do usuário, **nada disso foi testado ainda**; use como referência e
+pergunte antes de adotar algo.
+
+- **Assets completos de clientes em inglês**, já desempacotados: `LC2015\Client\Data` (5 GB) e
+  `LC2018\Client\Data` (4,7 GB), com `Local` e `Bin` (`Nksp.exe`, "Client 1776"). Candidatos a
+  substituir os dados BR 2014 + `.novo` 2017 (D5 e o item de dados misturados da C0). Não se sabe
+  se os `.lod` batem com o nosso fonte: o deles vem do branch `june-2015` do openlastchaos, que tem
+  telas de jogo que o nosso não tem (PartyAuto, Affinity, CustomTitle, WildPet, BingoBox...).
+- **Bancos por versão**: `DB\2015\ep4_*.sql` e `DB\2018\2018_nov_*.sql` (+ `fix_tables.txt`, caixa
+  de nomes de tabela). Com os fontes `LC2018\Client|Server` cobre quase toda a Fase V para 2018.
+- **Referência para C2/C3/C8**: cliente 64 bits sem asm; texturas já em 64 bits (`td_ulObject` e
+  `td_pulObjects` como `ULONG64` em `Graphics/Texture.h`), útil para o item dos handles do `gfx*`.
+- **D3D8 → D3D9 + DXVK 2.5.3 compilada no Engine** (`Engine/Graphics/d3d9`, `dxvk`, `dxso`, `spirv`,
+  `wsi` com backend `sdl3`); escolha da API em `Data\etc\GfxAPI.txt` (0 OpenGL, 1 D3D9, 2 Vulkan).
+  Possível caminho alternativo no Mac (D3D9 → DXVK → MoltenVK), sem verificar se a DXVK 2.x
+  roda sobre o MoltenVK.
+- O OpenGL deles **não** avançou: os mesmos `"Not implemented yet"` em `Gfx_wrapper_OpenGL.cpp`.
+- Variante mais nova de cada linha: `LC2015\Client\Sources.VS2022.DX9.NoAsm.x64.Z.15.BL.VK.5` e
+  `LC2018\Client\Sources.VS2022.DX9.NoAsm.x64.Z.15.BL.VK.5`; as pastas `Z.0`…`Z.14` são etapas
+  intermediárias. Servidor Linux 64 bits em `LinuxServer\*.tar.xz` (o nosso já roda no Mac).
+- Para ler do Mac: empacote com `tar` via `scripts/windows/wps.sh` e traga com `scp windows:...`,
+  extraindo num diretório temporário fora do repositório.
+
 ## Problemas conhecidos (e o porquê)
 
 - **Shaders por hardware (resolvido):** o `d3d8.dll` dos Windows atuais (implementado sobre o

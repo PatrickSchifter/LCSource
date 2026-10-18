@@ -44,7 +44,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
   3. **Vulkan** por último, para deixar o motor o mais atualizado possível
 - [x] **D3. Camada de plataforma do cliente:** SDL3 (janela, contexto OpenGL/Metal, input, entrada de texto/IME, áudio), decidido em 2026-10-17 (era SDL2; trocado no mesmo dia, o `sdl2` do Homebrew já roda sobre o SDL3)
 - [~] **D4. Região/configuração alvo:** qual build (`USA`, `GER`, `KOR`...) e versão de protocolo usar. Padrão provisório: `USA` (`-DLC_REGION`); confirmar quando os assets do cliente Windows chegarem
-- [~] **D5. Origem dos assets e do banco:** banco = [openlastchaos/lastchaos-database](https://github.com/openlastchaos/lastchaos-database) (dump oficial de fev/2016, clonado fora do repo); assets virão da instalação Windows do usuário (pendente)
+- [~] **D5. Origem dos assets e do banco:** banco = [openlastchaos/lastchaos-database](https://github.com/openlastchaos/lastchaos-database) (dump oficial de fev/2016, clonado fora do repo); assets virão da instalação Windows do usuário (pendente); candidatos em inglês 2015/2018 no Windows, ver `HANDOFF.md` ("Recursos externos no Windows")
 - [ ] **D6. Ferramentas (WorldEditor, Modeler, SKA Studio...):** usam MFC; proposta é ficar fora do escopo
 
 ---
@@ -226,6 +226,21 @@ Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [ ] Login no servidor e seleção de personagem
 - [ ] Entrar no mundo, andar, combate, UI, chat
 - [ ] Desempenho aceitável (perfilar os caminhos C que substituíram o asm)
+
+---
+
+## Fase V — Outras versões (depois do porte)
+
+Objetivo: portar também versões antigas e poder escolher, de forma fácil, qual versão jogar.
+Fontes publicados (cada versão é um branch):
+- Cliente: [openlastchaos/lastchaos-source-client](https://github.com/openlastchaos/lastchaos-source-client): `2009` ([commit](https://github.com/openlastchaos/lastchaos-source-client/commit/708ca1364d8cba964ffcf1dedc38bd7068667dd4)), `june-2015`, `november-2018`; o commit `e8d45f8` tem o Serious Engine original
+- Servidor: [openlastchaos/lastchaos-source-server](https://github.com/openlastchaos/lastchaos-source-server), mesmos branches
+
+- [ ] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo)
+- [ ] Portar a versão 2009 (cliente e servidor) reaplicando as mudanças do Engine
+- [ ] Assets e banco de cada versão
+- [ ] Seletor de versão (launcher: build do cliente, assets e servidor correspondentes)
+- Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las
 
 ---
 
