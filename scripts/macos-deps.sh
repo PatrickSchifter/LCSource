@@ -13,8 +13,8 @@ brew install cmake ninja pkg-config
 # Server libraries
 brew install boost mysql-client log4cxx apr apr-util expat jsoncpp botan openssl@3
 
-# Client libraries (platform layer)
-brew install sdl3
+# Client libraries (platform layer, Ogg Vorbis)
+brew install sdl3 libvorbis
 
 cat <<MSG
 

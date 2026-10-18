@@ -19,6 +19,7 @@ static void FailFunction_t(const char *strName) {
 
 // amp11lib vars
 extern BOOL _bAMP11Enabled = FALSE;
+#ifdef PLATFORM_WIN32
 static HINSTANCE _hAmp11lib = NULL;
 
 // amp11lib types
@@ -68,6 +69,64 @@ public:
   WAVEFORMATEX mpeg_wfeFormat; // format of sound
 };
 
+#else  // PLATFORM_WIN32
+
+// Outside Windows there is no amp11lib: MP3 is decoded by dr_mp3 (3rdparty/dr_libs), compiled in
+// here. It reads the file through the same window as the Ogg decoder below (offset and size of
+// the stored file inside a .gro archive).
+#define DR_MP3_IMPLEMENTATION
+#define DR_MP3_NO_STDIO
+#include <3rdparty/dr_libs/dr_mp3.h>
+
+class CDecodeData_MPEG {
+public:
+  FILE *mpeg_fFile;      // the stdio file that mp3 is in
+  SLONG mpeg_slOffset;   // offset where the mp3 starts in the file (!=0 for mp3s in zip)
+  SLONG mpeg_slSize;     // size of mp3 in the file (!=filesize for mp3s in zip)
+  drmp3 *mpeg_pmp3;      // the decoder (NULL if not open)
+  UBYTE mpeg_aubCarry[4];  // rest of a sample frame that the last Decode() could not return
+  INDEX mpeg_ctCarry;      // bytes in mpeg_aubCarry
+  WAVEFORMATEX mpeg_wfeFormat; // format of sound
+};
+
+// mp3 file reading callbacks
+static size_t mpeg_read_func( void *pUserData, void *pBufferOut, size_t bytesToRead)
+{
+  CDecodeData_MPEG *pmpeg = (CDecodeData_MPEG *)pUserData;
+  // read at most up to the end of the mp3
+  const SLONG slCurrentPos = (SLONG)ftell(pmpeg->mpeg_fFile)-pmpeg->mpeg_slOffset;
+  const SLONG slSizeLeft = ClampDn(pmpeg->mpeg_slSize-slCurrentPos, (SLONG)0);
+  const size_t ctToRead = Min( bytesToRead, (size_t)slSizeLeft);
+  if (ctToRead==0) {
+    return 0;
+  }
+  return fread(pBufferOut, 1, ctToRead, pmpeg->mpeg_fFile);
+}
+
+static drmp3_bool32 mpeg_seek_func( void *pUserData, int offset, drmp3_seek_origin origin)
+{
+  CDecodeData_MPEG *pmpeg = (CDecodeData_MPEG *)pUserData;
+  SLONG slPos = offset;
+  if (origin==DRMP3_SEEK_CUR) {
+    slPos += (SLONG)ftell(pmpeg->mpeg_fFile)-pmpeg->mpeg_slOffset;
+  } else if (origin==DRMP3_SEEK_END) {
+    slPos += pmpeg->mpeg_slSize;
+  }
+  if (slPos<0 || slPos>pmpeg->mpeg_slSize) {
+    return DRMP3_FALSE;
+  }
+  return fseek(pmpeg->mpeg_fFile, pmpeg->mpeg_slOffset+slPos, SEEK_SET)==0;
+}
+
+static drmp3_bool32 mpeg_tell_func( void *pUserData, drmp3_int64 *pCursor)
+{
+  CDecodeData_MPEG *pmpeg = (CDecodeData_MPEG *)pUserData;
+  *pCursor = ftell(pmpeg->mpeg_fFile)-pmpeg->mpeg_slOffset;
+  return DRMP3_TRUE;
+}
+
+#endif // PLATFORM_WIN32
+
 
 // ------------------------------------ Ogg Vorbis
 
@@ -75,6 +134,7 @@ public:
 
 // vorbis vars
 extern BOOL _bOVEnabled = FALSE;
+#ifdef PLATFORM_WIN32
 static HINSTANCE _hOV = NULL;
 
 #define OV_FALSE      -1  
@@ -141,6 +201,19 @@ static void OV_ClearFunctionPointers(void) {
   #include "ov_functions.h"
   #undef DLLFUNCTION
 }
+
+#else  // PLATFORM_WIN32
+
+// Outside Windows libvorbisfile is linked in (Homebrew's libvorbis): its own header and types,
+// and the functions called directly under the names the Windows code gets from vorbisfile.dll.
+#define OV_EXCLUDE_STATIC_CALLBACKS
+#include <vorbis/vorbisfile.h>
+#define pov_clear          ov_clear
+#define pov_open_callbacks ov_open_callbacks
+#define pov_read           ov_read
+#define pov_info           ov_info
+
+#endif // PLATFORM_WIN32
 
 class CDecodeData_OGG {
 public:
@@ -218,6 +291,13 @@ static ov_callbacks ovcCallbacks = {
 // initialize/end the decoding support engine(s)
 void CSoundDecoder::InitPlugins(void)
 {
+#ifndef PLATFORM_WIN32
+  // both decoders are part of the executable
+  _bOVEnabled = TRUE;
+  CPrintF(TRANS("  libvorbisfile linked, ogg playing enabled\n"));
+  _bAMP11Enabled = TRUE;
+  CPrintF(TRANS("  dr_mp3 compiled in, mpx playing enabled\n"));
+#else
   try {
     // load vorbis
     if (_hOV==NULL) {
@@ -266,10 +346,15 @@ void CSoundDecoder::InitPlugins(void)
   } catch (char *strError) {
     CPrintF(TRANS("MPX playing disabled: %s\n"), strError);
   }
+#endif // PLATFORM_WIN32
 }
 
 void CSoundDecoder::EndPlugins(void)
 {
+#ifndef PLATFORM_WIN32
+  _bAMP11Enabled = FALSE;
+  _bOVEnabled = FALSE;
+#else
   // cleanup amp11lib when not needed anymore
   if (_bAMP11Enabled) {
     palEndLibrary();
@@ -286,6 +371,7 @@ void CSoundDecoder::EndPlugins(void)
     _hOV = NULL;
     _bOVEnabled = FALSE;
   }
+#endif // PLATFORM_WIN32
 }
 
 // decoder that streams from file
@@ -412,6 +498,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm, UBYTE *pubHeader/*=NULL*/, S
       return;
     }
 
+#ifdef PLATFORM_WIN32
     sdc_pmpeg = new CDecodeData_MPEG;
     sdc_pmpeg->mpeg_hMainFile = 0;
     sdc_pmpeg->mpeg_hFile = 0;
@@ -504,6 +591,100 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm, UBYTE *pubHeader/*=NULL*/, S
       UNZIPClose(iZipHandle);
     }
     sdc_pmpeg->mpeg_fSecondsLen = palDecGetLen(sdc_pmpeg->mpeg_hDecoder);
+
+#else  // PLATFORM_WIN32
+    sdc_pmpeg = new CDecodeData_MPEG;
+    sdc_pmpeg->mpeg_fFile = NULL;
+    sdc_pmpeg->mpeg_pmp3 = NULL;
+    sdc_pmpeg->mpeg_slOffset = 0;
+    sdc_pmpeg->mpeg_slSize = 0;
+    sdc_pmpeg->mpeg_ctCarry = 0;
+    INDEX iZipHandle = 0;
+
+    try {
+      // if in zip
+      if (iFileType==EFP_BASEZIP || iFileType==EFP_MODZIP) {
+        // open it
+        iZipHandle = UNZIPOpen_t(fnmExpanded);
+
+        CTFileName fnmZip;
+        SLONG slOffset;
+        SLONG slSizeCompressed;
+        SLONG slSizeUncompressed;
+        BOOL bCompressed;
+        UNZIPGetFileInfo(iZipHandle, fnmZip, slOffset, slSizeCompressed, slSizeUncompressed, bCompressed);
+
+        // if compressed
+        if (bCompressed) {
+          ThrowF_t(TRANS("encoded audio in archives must not be compressed!\n"));
+        }
+        // open mp3 file
+        sdc_pmpeg->mpeg_fFile = fopen(fnmZip, "rb");
+        // if error
+        if (sdc_pmpeg->mpeg_fFile==0) {
+          ThrowF_t(TRANS("cannot open archive '%s'"), (const char*)fnmZip);
+        }
+        // remember offset and size
+        sdc_pmpeg->mpeg_slOffset = slOffset;
+        sdc_pmpeg->mpeg_slSize = slSizeUncompressed;
+        fseek(sdc_pmpeg->mpeg_fFile, slOffset, SEEK_SET);
+
+      // if not in zip
+      } else if (iFileType==EFP_FILE) {
+        // open mpx file
+        sdc_pmpeg->mpeg_fFile = fopen(fnmExpanded, "rb");
+        // if error
+        if (sdc_pmpeg->mpeg_fFile==0) {
+          ThrowF_t(TRANS("cannot open mpx file"));
+        }
+        // remember offset and size
+        sdc_pmpeg->mpeg_slOffset = 0;
+
+        fseek(sdc_pmpeg->mpeg_fFile, 0, SEEK_END);
+        sdc_pmpeg->mpeg_slSize = (SLONG)ftell(sdc_pmpeg->mpeg_fFile);
+        fseek(sdc_pmpeg->mpeg_fFile, 0, SEEK_SET);
+      // if not found
+      } else {
+        ThrowF_t(TRANS("file not found"));
+      }
+
+      // initialize decoder (it reads the first frame for the format)
+      sdc_pmpeg->mpeg_pmp3 = new drmp3;
+      if (!drmp3_init(sdc_pmpeg->mpeg_pmp3, mpeg_read_func, mpeg_seek_func, mpeg_tell_func, NULL, sdc_pmpeg, NULL)) {
+        delete sdc_pmpeg->mpeg_pmp3;
+        sdc_pmpeg->mpeg_pmp3 = NULL;
+        ThrowF_t(TRANS("not a valid mpeg audio file."));
+      }
+
+      // remember it's format
+      WAVEFORMATEX form;
+      form.wFormatTag=WAVE_FORMAT_PCM;
+      form.nChannels=sdc_pmpeg->mpeg_pmp3->channels;
+      form.nSamplesPerSec=sdc_pmpeg->mpeg_pmp3->sampleRate;
+      form.wBitsPerSample=16;
+      form.nBlockAlign=form.nChannels*form.wBitsPerSample/8;
+      form.nAvgBytesPerSec=form.nSamplesPerSec*form.nBlockAlign;
+      form.cbSize=0;
+
+      // check for stereo
+      if (form.nChannels!=2) {
+        ThrowF_t(TRANS("not stereo"));
+      }
+
+      sdc_pmpeg->mpeg_wfeFormat = form;
+    } catch (char*strError) {
+      CPrintF(TRANS("Cannot open mpx '%s' for streaming: %s\n"), (const char*)fnm, (const char*)strError);
+      if (iZipHandle!=0) {
+        UNZIPClose(iZipHandle);
+      }
+      Clear();
+      return;
+    }
+
+    if (iZipHandle!=0) {
+      UNZIPClose(iZipHandle);
+    }
+#endif // PLATFORM_WIN32
   }
 }
 
@@ -515,6 +696,7 @@ CSoundDecoder::~CSoundDecoder(void)
 void CSoundDecoder::Clear(void)
 {
   if (sdc_pmpeg!=NULL) {
+#ifdef PLATFORM_WIN32
     if (sdc_pmpeg->mpeg_hDecoder!=0)  palClose(sdc_pmpeg->mpeg_hDecoder);
     if (sdc_pmpeg->mpeg_hFile!=0)     palClose(sdc_pmpeg->mpeg_hFile);
     if (sdc_pmpeg->mpeg_hMainFile!=0) palClose(sdc_pmpeg->mpeg_hMainFile);
@@ -522,6 +704,17 @@ void CSoundDecoder::Clear(void)
     sdc_pmpeg->mpeg_hMainFile = 0;
     sdc_pmpeg->mpeg_hFile = 0;
     sdc_pmpeg->mpeg_hDecoder = 0;
+#else
+    if (sdc_pmpeg->mpeg_pmp3!=NULL) {
+      drmp3_uninit(sdc_pmpeg->mpeg_pmp3);
+      delete sdc_pmpeg->mpeg_pmp3;
+      sdc_pmpeg->mpeg_pmp3 = NULL;
+    }
+    if (sdc_pmpeg->mpeg_fFile!=NULL) {
+      fclose(sdc_pmpeg->mpeg_fFile);
+      sdc_pmpeg->mpeg_fFile = NULL;
+    }
+#endif
     delete sdc_pmpeg;
     sdc_pmpeg = NULL;
 
@@ -545,7 +738,12 @@ void CSoundDecoder::Clear(void)
 void CSoundDecoder::Reset(void)
 {
   if (sdc_pmpeg!=NULL) {
+#ifdef PLATFORM_WIN32
     palDecSeekAbs(sdc_pmpeg->mpeg_hDecoder, 0.0f);
+#else
+    drmp3_seek_to_pcm_frame(sdc_pmpeg->mpeg_pmp3, 0);
+    sdc_pmpeg->mpeg_ctCarry = 0;
+#endif
   } else if (sdc_pogg!=NULL) {
 /*  !!!! seeking is evil with vorbisfile 1.0RC2
     pov_time_seek(sdc_pogg->ogg_vfVorbisFile, 0.0f);
@@ -559,7 +757,11 @@ void CSoundDecoder::Reset(void)
 
 BOOL CSoundDecoder::IsOpen(void) 
 {
+#ifdef PLATFORM_WIN32
   if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_hDecoder!=0) {
+#else
+  if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_pmp3!=NULL) {
+#endif
     return TRUE;
   } else if (sdc_pogg!=NULL && sdc_pogg->ogg_vfVorbisFile!=0) {
     return TRUE;
@@ -610,9 +812,47 @@ INDEX CSoundDecoder::Decode(void *pvDestBuffer, INDEX ctBytesToDecode)
     return ctDecoded;
 
   // if mpeg
+#ifdef PLATFORM_WIN32
   } else if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_hDecoder!=0) {
     // decode mpeg
     return palRead(sdc_pmpeg->mpeg_hDecoder, pvDestBuffer, ctBytesToDecode);
+#else
+  } else if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_pmp3!=NULL) {
+    // decode mpeg; dr_mp3 gives whole sample frames, amp11lib gave any number of bytes
+    CDecodeData_MPEG &mpeg = *sdc_pmpeg;
+    const INDEX ctFrameBytes = 2*2;  // 16-bit stereo
+    UBYTE *pub = (UBYTE *)pvDestBuffer;
+    INDEX ctDecoded = 0;
+    // what is left of the last frame
+    const INDEX ctFromCarry = Min(mpeg.mpeg_ctCarry, ctBytesToDecode);
+    if (ctFromCarry>0) {
+      memcpy(pub, mpeg.mpeg_aubCarry, ctFromCarry);
+      mpeg.mpeg_ctCarry -= ctFromCarry;
+      memmove(mpeg.mpeg_aubCarry, mpeg.mpeg_aubCarry+ctFromCarry, mpeg.mpeg_ctCarry);
+      ctDecoded += ctFromCarry;
+    }
+    // whole frames
+    const INDEX ctFrames = (ctBytesToDecode-ctDecoded)/ctFrameBytes;
+    if (ctFrames>0) {
+      const drmp3_uint64 ctRead = drmp3_read_pcm_frames_s16(mpeg.mpeg_pmp3, ctFrames, (drmp3_int16 *)(pub+ctDecoded));
+      ctDecoded += (INDEX)ctRead*ctFrameBytes;
+      if ((INDEX)ctRead<ctFrames) {
+        return ctDecoded;  // end of file
+      }
+    }
+    // a part of one more frame, the rest kept for the next call
+    const INDEX ctPart = ctBytesToDecode-ctDecoded;
+    if (ctPart>0) {
+      UBYTE aubFrame[ctFrameBytes];
+      if (drmp3_read_pcm_frames_s16(mpeg.mpeg_pmp3, 1, (drmp3_int16 *)aubFrame)==1) {
+        memcpy(pub+ctDecoded, aubFrame, ctPart);
+        mpeg.mpeg_ctCarry = ctFrameBytes-ctPart;
+        memcpy(mpeg.mpeg_aubCarry, aubFrame+ctPart, mpeg.mpeg_ctCarry);
+        ctDecoded += ctPart;
+      }
+    }
+    return ctDecoded;
+#endif
 
   // if no decoder
   } else {

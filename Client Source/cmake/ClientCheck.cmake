@@ -14,6 +14,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Boost 1.83 CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)  # the platform layer outside Windows (Engine/Platform)
+# Ogg Vorbis outside Windows: libvorbisfile linked in (Homebrew libvorbis; Engine/Sound/SoundDecoder.cpp)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(VORBISFILE REQUIRED IMPORTED_TARGET vorbisfile)
 
 include(cmake/Ecc.cmake)
 include(cmake/EngineParsers.cmake)
@@ -57,7 +60,7 @@ target_include_directories(lc_engine_check PRIVATE
   "${LC_GEN}" "${LC_GEN}/Engine" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/Engine" "${LC_CLIENT_SRC}/include"
   "${LC_CLIENT_SRC}/Compat/d3dx8")  # only its d3dx8math.h is used without SE1_D3D
 target_include_directories(lc_engine_check SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")
-target_link_libraries(lc_engine_check PRIVATE Boost::headers SDL3::Headers)
+target_link_libraries(lc_engine_check PRIVATE Boost::headers SDL3::Headers PkgConfig::VORBISFILE)
 target_compile_options(lc_engine_check PRIVATE
   -fms-extensions -Wno-everything
   # what this check is for
