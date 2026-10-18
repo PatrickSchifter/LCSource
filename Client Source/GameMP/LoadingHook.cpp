@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <locale.h>
 #include <Engine/Loading.h>

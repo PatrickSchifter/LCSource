@@ -11,14 +11,14 @@
 #include "EntitiesMP/Counter.h"
 #include "EntitiesMP/ModelHolder.h"
 #include "EntitiesMP/MusicHolder.h"
-#include "EntitiesMP\GravityMarker.h"
-#include "EntitiesMP\GravityRouter.h"
+#include "EntitiesMP/GravityMarker.h"
+#include "EntitiesMP/GravityRouter.h"
 %}
 
-uses "EntitiesMP\FogMarker";
-uses "EntitiesMP\HazeMarker";
-uses "EntitiesMP\MirrorMarker";
-uses "EntitiesMP\GradientMarker";
+uses "EntitiesMP/FogMarker";
+uses "EntitiesMP/HazeMarker";
+uses "EntitiesMP/MirrorMarker";
+uses "EntitiesMP/GradientMarker";
 
 %{
 

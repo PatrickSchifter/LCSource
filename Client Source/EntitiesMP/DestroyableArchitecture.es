@@ -5,7 +5,7 @@
 #include "EntitiesMP/MovingBrush.h"
 %}
 uses "EntitiesMP/Debris";
-uses "EntitiesMP\GradientMarker";
+uses "EntitiesMP/GradientMarker";
 
 event EArchitectureDeath {
 };

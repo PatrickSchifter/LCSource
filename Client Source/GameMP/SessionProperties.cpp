@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Game.h"
 
 extern FLOAT gam_afEnemyMovementSpeed[5];

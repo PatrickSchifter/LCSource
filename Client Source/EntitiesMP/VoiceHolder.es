@@ -1,7 +1,7 @@
 231
 %{
 #include "StdH.h"
-#include "EntitiesMP\Player.h"
+#include "EntitiesMP/Player.h"
 extern INDEX ent_bReportBrokenChains;
 
 // NOTE: GENDER_MALE has to be the same as the one in Player.es!!!!!!!!!!!!

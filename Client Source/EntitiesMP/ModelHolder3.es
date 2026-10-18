@@ -3,8 +3,8 @@
 #include "StdH.h"
 #include "EntitiesMP/WorldSettingsController.h"
 //안태훈 수정 시작	//(Effect Add & Modify for Close Beta)(0.1)
-#include <engine/Effect/CEffectGroup.h>
-#include <engine/Effect/CEffectGroupManager.h>
+#include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Effect/CEffectGroupManager.h>
 #include <Engine/Effect/CSkaTag.h>
 //안태훈 수정 끝	//(Effect Add & Modify for Close Beta)(0.1)
 %}

@@ -2,7 +2,7 @@
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 1005
 %{
-#include "stdH.h"
+#include "StdH.h"
 #include <Engine/Math/Quaternion.h>
 #include <Engine/Effect/CTag.h>
 #include <Engine/Effect/CRefCountPtr.h>

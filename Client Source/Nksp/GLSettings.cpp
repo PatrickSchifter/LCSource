@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // list of settings data
 static CListHead _lhSettings;

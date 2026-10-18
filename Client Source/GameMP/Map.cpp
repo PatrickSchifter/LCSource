@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <Engine/Interface/UITextureManager.h>
 #include <Engine/GlobalDefinition.h>

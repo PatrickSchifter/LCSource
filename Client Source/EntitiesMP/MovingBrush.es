@@ -9,7 +9,7 @@
 
 uses "EntitiesMP/MovingBrushMarker";
 uses "EntitiesMP/SoundHolder";
-uses "EntitiesMP\MirrorMarker";
+uses "EntitiesMP/MirrorMarker";
 uses "EntitiesMP/Debris";
 
 event EHit {

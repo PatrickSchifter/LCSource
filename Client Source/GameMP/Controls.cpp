@@ -3,7 +3,7 @@
  *  Copyright (c) 1997-1999, CroTeam. All rights reserved.
  */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 extern CGame *_pGame;
 

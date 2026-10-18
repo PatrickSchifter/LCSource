@@ -1,7 +1,7 @@
 //안태훈 수정 시작	//(Add Sun Moon Entity and etc)(0.2)
 1001
 %{
-#include "stdH.h"
+#include "StdH.h"
 #include <Engine/Base/Timer.h>
 #include <Engine/Terrain/Terrain.h>
 #include <math.h>

@@ -5,7 +5,7 @@
 #include "EntitiesMP/NavigationMarker.h"
 #include "EntitiesMP/TacticsHolder.h"
 
-#include "EntitiesMP/Enemybase.h"
+#include "EntitiesMP/EnemyBase.h"
 #include "EntitiesMP/MovingBrush.h"
 #include "EntitiesMP/DestroyableArchitecture.h"
 

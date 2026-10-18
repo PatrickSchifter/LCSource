@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 //#include <stdio.h>
 #include <assert.h>
 #include <string.h>

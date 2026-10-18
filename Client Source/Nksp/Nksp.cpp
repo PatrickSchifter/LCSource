@@ -47,13 +47,13 @@
 
 //#include "SplashScreen.h"
 #include "MainWindow.h"
-#include "GlSettings.h"
+#include "GLSettings.h"
 //#include "LevelInfo.h"
 //#include "LCDDrawing.h"
 #include "CmdLine.h"
 //#include "Credits.h"
 #ifdef PLATFORM_WIN32
-#include <TlHelp32.h>
+#include <tlhelp32.h>
 #endif
 #include <float.h>
 #include <Engine/Platform/Platform.h>

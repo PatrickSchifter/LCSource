@@ -1,7 +1,7 @@
 // Game.cpp : Defines the initialization routines for the DLL.
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Game.h"
 #ifdef PLATFORM_WIN32
 #include <direct.h> // for _mkdir()

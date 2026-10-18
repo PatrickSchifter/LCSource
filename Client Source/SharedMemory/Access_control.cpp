@@ -1,6 +1,6 @@
 //#include "stdH.h"
 #include "Access_control.h"
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 
 //////////////////////////////////////////////////////////////////////////
