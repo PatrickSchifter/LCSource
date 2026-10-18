@@ -402,6 +402,11 @@ pergunte antes de adotar algo.
   já tratadas no código: strings BR usam `%s` onde o código passa números (`CTString::VPrintF` tolera),
   ícones `ItemBtn26/27` não existem (caem na página 0), NPCs que o servidor envia sem modelo no
   cliente são ignorados, lista de dungeons da UI maior que a do código.
+  Também (2026-10-18): `UIMap_option.xml` (pacote 2025) espera uma `Map.tex` 512×512, e a BR 2014 é
+  256×256 (ícones de loja/outros NPCs vazios no mapa): trocada pela do LC2015 do pacote tx00100xt
+  (a antiga ficou em `Data\Interface\Map.tex.anterior`). `ZoneFlag.lod` BR 2014 está no formato
+  antigo (um par de flags de 64 bits por índice de NPC, sem o índice); `CMobData::LoadZoneData`
+  lê os dois formatos (sem isso os teleportadores não abriam a lista de destinos).
 - **Servidor:** tabelas que o código usa e o dump não tem (`t_autobuffs`, `t_raid_zone_data`...),
   dados `ComposeItem`/`EquipExchangeExtend`, NPCs "Not found" — aparecem como ERROR na subida e
   ainda não atrapalharam o jogo.
