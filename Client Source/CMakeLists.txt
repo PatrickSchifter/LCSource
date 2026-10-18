@@ -63,8 +63,11 @@ set(CMAKE_CXX_STANDARD 17)
 # Without the .vcxproj's _USE_32BIT_TIME_T: time_t is 64-bit, as on macOS; times the game keeps
 # in 32 bits go through LocalTime32() (Engine/Base/Types.h).
 add_library(lc_client_common INTERFACE)
+# SE1_D3D compiles in the Direct3D 8 backend (as in Croteam's Serious Engine 1 sources); without
+# it (macOS) only OpenGL is left: GAT_D3D, the D3D members and the D3D-only sources (wrapped in
+# #ifdef SE1_D3D) are compiled out.
 target_compile_definitions(lc_client_common INTERFACE
-  ${LC_CLIENT_DEFINES} WIN32 NDEBUG _WINDOWS _MBCS
+  ${LC_CLIENT_DEFINES} SE1_D3D WIN32 NDEBUG _WINDOWS _MBCS
   _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS _WINSOCK_DEPRECATED_NO_WARNINGS
   _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _HAS_STD_BYTE=0)
 if(LC_NO_IP_FILTER)
