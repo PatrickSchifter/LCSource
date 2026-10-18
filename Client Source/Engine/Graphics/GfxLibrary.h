@@ -4,7 +4,9 @@
 	#pragma once
 #endif
 
+#ifdef SE1_D3D
 #include <d3d8.h>
+#endif // SE1_D3D
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Lists.h>
@@ -61,7 +63,9 @@ struct CTVERTEX {
 	ULONG ulColor;   // color
 	FLOAT fU,fV;     // texture coordinates
 };
+#ifdef SE1_D3D
 #define D3DFVF_CTVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+#endif // SE1_D3D
 
 // Max shader declaration size
 #define MAXSTREAMS (8L)
@@ -72,7 +76,9 @@ enum GfxAPIType
 {
 	GAT_NONE = -1,     // no gfx API (gfx functions are disabled)
 	GAT_OGL  =  0,     // OpenGL
+#ifdef SE1_D3D
 	GAT_D3D  =  1,     // Direct3D
+#endif // SE1_D3D
 	GAT_CURRENT = 9,   // current API
 };
 
@@ -138,6 +144,7 @@ public:
 	ULONG gl_ulFlags;
 	BOOL  gl_bCompressedTexture;
 
+#ifdef SE1_D3D
 	// DirectX info
 	LPDIRECT3D8       gl_pD3D;       // used to create the D3DDevice
 	LPDIRECT3DDEVICE8 gl_pd3dDevice; // rendering device
@@ -153,6 +160,7 @@ public:
 	LPDIRECT3DVERTEXBUFFER8 gl_pd3dCol[GFX_MAXLAYERS];
 	LPDIRECT3DVERTEXBUFFER8 gl_pd3dTex[GFX_MAXLAYERS];
 	LPDIRECT3DINDEXBUFFER8  gl_pd3dIdx;
+#endif // SE1_D3D
 	INDEX gl_ctVertices, gl_ctIndices;  // size of buffers
 	INDEX gl_ctColBuffers, gl_ctTexBuffers; // number of color and texture buffers (for multi-pass rendering)
 	INDEX gl_ctMaxStreams;              // maximum number of streams
@@ -165,9 +173,11 @@ public:
 	CTString go_strWinExtensions;
 	CTString go_strSupportedExtensions; // supported extensions
 
+#ifdef SE1_D3D
 	// D3DCAPSINFO
 	D3DCAPS8		gl_pd3dCaps;	// Date : 2006-05-16(¿ÀÈÄ 4:48:07), By eons
 
+#endif // SE1_D3D
 	// common stuff
 	PIX   gl_pixMaxTextureDimension;  // maximum allowed texture dimension by driver
 	INDEX gl_iSwapInterval;           // current swap interval (0=immediate, n=VSyncs to wait)
@@ -220,6 +230,7 @@ private:
 	void UploadPattern_OGL( ULONG ulPatternEven); 
 	void SwapBuffers_OGL( CViewPort *pvpToSwap);
 
+#ifdef SE1_D3D
 	// Direct3D specific
 	BOOL InitDriver_D3D(void);
 	void EndDriver_D3D(void);
@@ -228,6 +239,7 @@ private:
 	BOOL SetCurrentViewport_D3D( CViewPort *pvp);
 	void UploadPattern_D3D( ULONG ulPatternEven);
 	void SwapBuffers_D3D( CViewPort *pvpToSwap);
+#endif // SE1_D3D
 
 public:
 
@@ -282,14 +294,18 @@ public:
 	inline BOOL HasAPI( enum GfxAPIType eAPI) {
 		if( eAPI==GAT_CURRENT) return TRUE;
 		if( eAPI==GAT_OGL) return (gl_gaAPI[0].ga_ctAdapters>0);
+#ifdef SE1_D3D
 		if( eAPI==GAT_D3D) return (gl_gaAPI[1].ga_ctAdapters>0);
+#endif // SE1_D3D
 		return FALSE;
 	};
 
 	// is occlusion culling supported
 	inline BOOL HasOcclusionCulling(void) {
 		if( gl_eCurrentAPI==GAT_OGL) return( gl_ulFlags & GLF_EXT_OCCLUSIONQUERY);
+#ifdef SE1_D3D
 		if( gl_eCurrentAPI==GAT_D3D) return( gl_ulFlags & GLF_D3D_VISIBILITYTEST);
+#endif // SE1_D3D
 		ASSERT(gl_eCurrentAPI==GAT_NONE);
 		return FALSE;
 	};

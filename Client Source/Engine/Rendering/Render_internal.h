@@ -22,7 +22,11 @@
 
 //강동민 수정 시작
 // NOTE : RenderOneSkaModelToTexture()를 위해서 필요한 부분.  나중에 제거할것.
+#ifdef SE1_D3D
 #include <d3dx8.h>
+#else
+#include <d3dx8math.h>  // just the math (Compat/d3dx8)
+#endif // SE1_D3D
 #define SHADOWTEXTURESIZE (256)
 //강동민 수정 끝
 
@@ -301,6 +305,7 @@ struct FilterKernelElement
 	float coef;		// coefficient determining strength of Flare
 };
 
+#ifdef SE1_D3D
 struct FourTextureStage_TexCoordOffsets
 {
 	D3DXVECTOR4	t[4];
@@ -311,6 +316,7 @@ typedef struct tagQuadVertex
 	D3DXVECTOR3 Position;
 	D3DXVECTOR2 Tex;
 } QuadVertex;
+#endif // SE1_D3D
 
 #ifndef SAFE_ARRAY_DELETE
 	#define SAFE_ARRAY_DELETE(d) if (d) {delete[]d; d = NULL;}
@@ -665,9 +671,11 @@ public:
 
 	// sehan
 	BOOL re_bRenderBloom;
+#ifdef SE1_D3D
 	HRESULT RenderBloom();
 	HRESULT InitBloom();
 	HRESULT CreateBackVertexBuffer();
+#endif // SE1_D3D
 
 	GaussianProp	* m_pGaussianProp;
 	float		m_fPerTexelWidth;
@@ -676,7 +684,9 @@ public:
 
 	// Three sets of texture coord offsets
 	// See CreateUVOffsets() for a description
+#ifdef SE1_D3D
 	FourTextureStage_TexCoordOffsets	m_Offsets[3];
+#endif // SE1_D3D
 
 	std::vector< FilterKernelElement >	m_vGaussian1D[3];
 
@@ -694,13 +704,16 @@ public:
 	//LPDIRECT3DVERTEXBUFFER8  m_pVertexBuffer;
 	//LPDIRECT3DVERTEXBUFFER8  m_pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT]; // 1280 X 1024 까지만 지원되는걸로 가정한다.
 
+#ifdef SE1_D3D
 	D3DXMATRIX		m_matFullCoverage_WVP;
 	LPD3DXBUFFER            m_pD3DXBufShader;
+#endif // SE1_D3D
 //강동민 수정 시작 버그 사냥 작업	09.09
 //	DWORD                   m_dwAddFourPixelShader;
 //	DWORD                   m_dwTexCoord4OffsetVertexShader;
 //강동민 수정 끝 버그 사냥 작업		09.09
 
+#ifdef SE1_D3D
 	HRESULT		DoCreateFlareTexture_Separable();
 	HRESULT	SetFlareLook();
 	HRESULT CreateTextureRenderTargets( int width, int height );
@@ -710,14 +723,17 @@ public:
 	HRESULT	CreatePShAddFour( );
 	HRESULT CreateVShTexCoord4Offset( LPDIRECT3DDEVICE8 pd3dDevice, 
                                     DWORD* pdwVertexDecl );
+#endif // SE1_D3D
 	// SRS Settings
 	DWORD m_dwZenable, m_dwZwriteenable, m_dwCullmode, m_dwAlphablendenable;
 	DWORD m_dwSrcblend, m_dwDestblend, m_dwFogEnable;
 	DWORD m_dwColorop, m_dwColorarg1;
 	DWORD m_dwColorarg2, m_dwAlphaop, m_dwColorop1;
 	DWORD m_dwAddressU[4], m_dwAddressV[4], m_dwMagfilter[4], m_dwMinfilter[4], m_dwMipfilter[4];
+#ifdef SE1_D3D
 	void	Get_SRS_Bloom();
 	void	Restore_SRS_Bloom();
+#endif // SE1_D3D
 	// sehan end
 };
 

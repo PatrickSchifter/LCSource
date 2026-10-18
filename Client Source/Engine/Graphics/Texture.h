@@ -199,22 +199,30 @@ public:
 	~CRenderTexture();
 
 	// sehan D3DFORMAT fmt = D3DFMT_A8R8G8B8 추가 // sehan end
+#ifdef SE1_D3D
 	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT, D3DFORMAT fmt = D3DFMT_A8R8G8B8);
+#else
+	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // no render targets yet without D3D (C8)
+#endif // SE1_D3D
 	void Begin();	// SetRenderTarget current
 	// Must be call this func in begin-end block
 	void Clear(COLOR colClear=0xFFFFFFFF, FLOAT fZVal=ZBUF_BACK);
 	void End();		// SetRenderTarget old
 
 	//기본 정보들
+#ifdef SE1_D3D
 	IDirect3DSurface8 *rt_pSurface;	// IDirect3DSurface8* in IDirect3DTexture8
+#endif // SE1_D3D
 	CTextureData rt_tdTexture;
 
+#ifdef SE1_D3D
 protected:
 	//begin, end block에서 사용되는 변수들, 외부로 들어나서 좋을거 없다.
 	IDirect3DSurface8 *m_pOldRenderTarget;
 	IDirect3DSurface8 *m_pOldDepthStencil;
 	IDirect3DSurface8 *m_pDepthStencil;
 	BOOL m_bOldZEnable;
+#endif // SE1_D3D
 };
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)
 

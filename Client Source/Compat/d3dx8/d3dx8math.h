@@ -3,9 +3,30 @@
 // D3DX8 is no longer distributed, and D3DX9's headers cannot be included next to
 // d3d8.h (d3d9types.h redefines the same types). The client only uses a small part
 // of D3DX math, so it is reimplemented here with the same names and layouts.
+//
+// Without SE1_D3D (macOS) it does not need d3d8.h: the math is plain CPU code that the
+// engine also uses outside the renderer (terrain height, shadow matrices).
 #pragma once
 
+#ifdef SE1_D3D
 #include <d3d8.h>
+#else
+// same layouts as in d3d8types.h; FLOAT and UINT come from the engine's types
+struct D3DVECTOR {
+  FLOAT x, y, z;
+};
+struct D3DMATRIX {
+  union {
+    struct {
+      FLOAT _11, _12, _13, _14;
+      FLOAT _21, _22, _23, _24;
+      FLOAT _31, _32, _33, _34;
+      FLOAT _41, _42, _43, _44;
+    };
+    FLOAT m[4][4];
+  };
+};
+#endif // SE1_D3D
 #include <math.h>
 
 #define D3DX_PI ((FLOAT)3.141592654f)

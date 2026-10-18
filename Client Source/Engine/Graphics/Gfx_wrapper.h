@@ -276,6 +276,7 @@ public:
 //안태훈 수정 시작	//(Remake Effect)(0.1)
 enum GFX_TEXTURE_ARG
 {
+#ifdef SE1_D3D
 	GFX_TA_DIFFUSE	= D3DTA_DIFFUSE,
 	GFX_TA_CURRENT	= D3DTA_CURRENT,
 	GFX_TA_TEXTURE	= D3DTA_TEXTURE,
@@ -284,6 +285,15 @@ enum GFX_TEXTURE_ARG
 	GFX_TA_TEMP		= D3DTA_TEMP,
 	//GFX_TA_COMPLEMENT = D3DTA_COMPLEMENT,
 	//GFX_TA_ALPHAREPLICATE = D3DTA_ALPHAREPLICATE,
+#else
+	// same values as D3DTA_*
+	GFX_TA_DIFFUSE	= 0,
+	GFX_TA_CURRENT	= 1,
+	GFX_TA_TEXTURE	= 2,
+	GFX_TA_TFACTOR	= 3,
+	GFX_TA_SPECULAR	= 4,
+	GFX_TA_TEMP		= 5,
+#endif // SE1_D3D
 };
 
 //d3d의 SetTextureStageState를 wrapping한 것임. 태훈
@@ -378,7 +388,9 @@ public:
 	void *vb_paReadArray[GFX_MAX_VBA]; // pointers to read array(s) that exist in this buffer (non-exist = NULL)
 	union {
 		void *vb_paWriteArray[GFX_MAX_VBA]; // pointers to write array(s)...
+#ifdef SE1_D3D
 		LPDIRECT3DVERTEXBUFFER8 vb_pavbWrite[GFX_MAX_VBA];
+#endif // SE1_D3D
 	};
 	INDEX vb_ctLockedVertices[GFX_MAX_VBA];
 	SLONG vb_slSize;            // total size of this vertex buffer (in bytes)
@@ -470,7 +482,9 @@ extern void gfxFlushBtnElements( INDEX ctElements, INDEX iBuffer );			// yjpark
 // check GFX errors only in debug builds
 #ifndef NDEBUG
 	extern void OGL_CheckError(void);
+#ifdef SE1_D3D
 	extern void D3D_CheckError(HRESULT hr);
+#endif // SE1_D3D
 	#define OGL_CHECKERROR     OGL_CheckError();
 	#define D3D_CHECKERROR(hr) D3D_CheckError(hr);
 #else
@@ -512,6 +526,7 @@ extern void (*gfxEnableTruform)( void);
 extern void (*gfxDisableTruform)(void);
 
 
+#ifdef SE1_D3D
 // set D3D vertex shader only if different than last time
 extern void d3dSetVertexShader(DWORD dwHandle);
 
@@ -531,5 +546,6 @@ extern void d3dSetVertexShader(DWORD dwHandle);
 		object = NONE; \
 	} \
 }
+#endif // SE1_D3D
 
 

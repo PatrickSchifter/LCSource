@@ -66,8 +66,13 @@ struct ShaderDesc
 
 	ShaderDesc()
 	{
+#ifdef SE1_D3D
 		VertexShaderVersion = D3DVS_VERSION(1,1);
 		PixelShaderVersion	= D3DVS_VERSION(1,4);
+#else
+		VertexShaderVersion = 0;  // no shader programs without D3D yet (C8)
+		PixelShaderVersion	= 0;
+#endif // SE1_D3D
 	}
 };
 
