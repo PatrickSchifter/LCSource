@@ -197,7 +197,7 @@ void CUIInvenCashBag::SetCashBagExpireTime(int uiType)
 		int nTime = _pUIBuff->GetMyTimerItemBuffExpireTime(uiType);
 
 		tm* pTime = NULL;
-		pTime = localtime((time_t*)&nTime);
+		pTime = LocalTime32(nTime);
 		m_strTime.PrintF( _S(6068, "%d년%d월%d일%d시"), pTime->tm_year + 1900, pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour );
 		m_bLock = false;
 	}

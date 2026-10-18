@@ -849,7 +849,7 @@ void CUIWareHouse::Render()
 	{
 		tm* pTime = NULL;
 
-		pTime = localtime((time_t*)&m_useTime);
+		pTime = LocalTime32(m_useTime);
 
 		tv_str.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),pTime->tm_year + 1900
 			,pTime->tm_mon + 1,pTime->tm_mday,pTime->tm_hour, pTime->tm_min);

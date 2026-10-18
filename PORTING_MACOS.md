@@ -143,7 +143,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [x] Regenerar no build os parsers do Engine (`Base/Parser.y`, `Scanner.l`, `Ska/smcPars.y`, `smcScan.l`): `cmake/EngineParsers.cmake`; os gerados antigos (bison 1.25) saíram do repositório. O `win_bison` não pode rodar dois ao mesmo tempo (as saídas se misturam): flex e bison passam por um job pool do ninja de tamanho 1
 - [~] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`) — existe para Windows/MSVC x86
 - [ ] Trocar `LoadLibrary`/`GetProcAddress` de EntitiesMP/Shaders por link estático com registro de classes (ou `dlopen`)
-- [ ] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`
+- [x] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`: região numa opção só, `LC_CLIENT_COUNTRY` (Windows, check e o futuro build do Mac); `time_t` de 64 bits também no Windows, com os campos de 32 bits (pacotes, `.lod`, propriedades de entidade) passando por `LocalTime32()`. Detalhes em `HANDOFF.md` ("Verificação do cliente no Mac"). **Falta testar no Windows**
 - [x] Includes com a caixa do disco e `/` (549 em 453 arquivos, inclusive os `uses` dos `.es`); headers do Windows em minúsculas. Conferido com o check num volume APFS case-sensitive (`d2b016d`, `4563955`)
 
 ### C2. Tipos e 64-bit

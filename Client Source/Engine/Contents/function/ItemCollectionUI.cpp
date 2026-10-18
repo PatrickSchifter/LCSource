@@ -683,7 +683,7 @@ void CItemCollectionUI::UpdateTheme()
 		{
 			int nCompleteTime = pData->GetCompleteTime();
 			tm* pTime;
-			pTime = localtime((time_t*)&nCompleteTime);
+			pTime = LocalTime32(nCompleteTime);
 
 			strTmp.PrintF("%d.%02d.%02d", pTime->tm_year + 1900, pTime->tm_mon + 1, pTime->tm_mday);
 			pText->SetText(strTmp);

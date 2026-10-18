@@ -392,7 +392,7 @@ void CUITeleport::Render()
 	if (m_useTime > 0)
 	{
 		tm* pTime = NULL;
-		pTime = localtime((time_t*)&m_useTime);
+		pTime = LocalTime32(m_useTime);
 		CTString strExpireTime;
 	
 		strExpireTime.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),pTime->tm_year + 1900

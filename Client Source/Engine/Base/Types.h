@@ -105,6 +105,14 @@ typedef long int INDEX;     // for indexed values and quantities
   #define HOSTPATH(strPath) (strPath)
 #endif
 
+// Unix times that the game keeps in 32 bits (packet fields, .lod records, entity properties)
+// taken apart as local time, like localtime(). time_t is 64-bit (always outside Windows, and on
+// Windows since the build dropped _USE_32BIT_TIME_T), so a 32-bit field must never be passed
+// to localtime() or time() through a time_t pointer. The 32 bits are read as signed, as the old
+// 32-bit time_t did. Returns localtime()'s static buffer (or NULL). Defined in Base/Timer.cpp.
+struct tm;
+ENGINE_API struct tm *LocalTime32(SLONG slTime);
+
 #define FALSE 0
 #define TRUE  1
 

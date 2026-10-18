@@ -1933,7 +1933,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 
 						if (m_ulUsed > 0)
 						{
-							gt_tv_t = localtime((time_t*)&m_ulUsed);
+							gt_tv_t = LocalTime32(m_ulUsed);
 							strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 								,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 								
@@ -1961,7 +1961,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 						}
 						if(m_ulUsed > 0)
 						{
-							gt_tv_t = localtime((time_t*)&m_ulUsed);
+							gt_tv_t = LocalTime32(m_ulUsed);
 							strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 								,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 				
@@ -2019,7 +2019,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 					{
 						if(m_ulUsed > 0)
 						{
-							gt_tv_t = localtime((time_t*)&m_ulUsed);
+							gt_tv_t = LocalTime32(m_ulUsed);
 							strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 								,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 
@@ -2063,14 +2063,14 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 				{
 		#if defined(G_JAPAN)
 					{
-						gt_tv_t = localtime((time_t*)&m_ulUsed);
+						gt_tv_t = LocalTime32(m_ulUsed);
 						strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 							,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 						
 					}
 		#else
 					{
-						gt_tv_t = localtime((time_t*)&m_ulUsed);
+						gt_tv_t = LocalTime32(m_ulUsed);
 						strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 							,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 						//IN_VALIDTM(gt_tv_t)
@@ -2797,7 +2797,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 					{
 						if(m_ulUsed > 0)
 						{
-							gt_tv_t = localtime((time_t*)&m_ulUsed);
+							gt_tv_t = LocalTime32(m_ulUsed);
 							strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 								,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 							AddInfoString( strTemp, 0xDEC05BFF );
@@ -2837,7 +2837,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 							strTime1 = _S(2525,"만료 : %d년%d월%d일%d시");
 							strTime2 = CTString("");
 							
-							gt_tv_t = localtime((time_t*)&m_ulUsed);				
+							gt_tv_t = LocalTime32(m_ulUsed);				
 							strTemp.PrintF(strTime1,gt_tv_t->tm_year + 1900, gt_tv_t->tm_mon + 1, gt_tv_t->tm_mday, gt_tv_t->tm_hour);
 							
 							AddInfoString( strTemp, 0xFFAA44FF );
@@ -2962,14 +2962,14 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 							{
 				#if defined(G_JAPAN)
 								{
-									gt_tv_t = localtime((time_t*)&m_ulUsed);
+									gt_tv_t = LocalTime32(m_ulUsed);
 									strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 										,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 									AddInfoString( strTemp, 0xDEC05BFF );
 								}
 				#else
 								{
-									gt_tv_t = localtime((time_t*)&m_ulUsed);
+									gt_tv_t = LocalTime32(m_ulUsed);
 									strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 										,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 									AddInfoString( strTemp, 0xDEC05BFF );
@@ -2992,14 +2992,14 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 				{
 #if defined(JAPAN)
 					{
-						gt_tv_t = localtime((time_t*)&m_ulUsed);
+						gt_tv_t = LocalTime32(m_ulUsed);
 						strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 							,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 						AddInfoString( strTemp, 0xDEC05BFF );
 					}
 #else
 					{
-						gt_tv_t = localtime((time_t*)&m_ulUsed);
+						gt_tv_t = LocalTime32(m_ulUsed);
 						strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 							,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 						AddInfoString( strTemp, 0xDEC05BFF );
@@ -3357,14 +3357,14 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 						{
 				#if defined(G_JAPAN)
 							{
-								gt_tv_t = localtime((time_t*)&m_ulUsed);
+								gt_tv_t = LocalTime32(m_ulUsed);
 								strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 									,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 								AddInfoString( strTemp, 0xFFAA44FF );
 							}
 				#else
 							{
-								gt_tv_t = localtime((time_t*)&m_ulUsed);
+								gt_tv_t = LocalTime32(m_ulUsed);
 								strTemp.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),gt_tv_t->tm_year + 1900
 									,gt_tv_t->tm_mon + 1,gt_tv_t->tm_mday,gt_tv_t->tm_hour, gt_tv_t->tm_min);
 								AddInfoString( strTemp, 0xDEC05BFF );

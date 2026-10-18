@@ -3572,7 +3572,7 @@ CTString CUICharacterInfo::GetHistoryText( eSTRING_TYPE eType, int nIdx )
 	if (eType == eSTRING_TYPE_TIME)
 	{
 		tm*	pTime = NULL;
-		pTime = localtime((time_t*)&pData->time);
+		pTime = LocalTime32(pData->time);
 		
 		strString.PrintF(_S(6068,"%d년 %d월 %d일 %d시"), pTime->tm_year + 1900, pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour);
 	}

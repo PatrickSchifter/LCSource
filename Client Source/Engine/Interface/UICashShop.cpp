@@ -1315,7 +1315,7 @@ void CUICashShop::RenderRecvGift()
 
 		// Send Date
 		CTString nTemp;
-		struct tm *tmDate =localtime((time_t*)&m_anDate[m_anRecvOrder[i]]);
+		struct tm *tmDate =LocalTime32(m_anDate[m_anRecvOrder[i]]);
 		nTemp.PrintF(_S( 3091, "%d³â %d¿ù %dÀÏ" ), tmDate->tm_year+1900, tmDate->tm_mon+1, tmDate->tm_mday);
 		pDrawPort->PutTextEx(nTemp, tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE);
 

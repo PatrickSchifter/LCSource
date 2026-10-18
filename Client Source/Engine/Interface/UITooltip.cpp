@@ -711,7 +711,7 @@ void CUITooltip::SetExpireInfo()
     COLOR	col = 0xFFAA44FF;
 
     tm* pTime;
-    pTime = localtime((time_t*)&m_pItem->Item_Used);
+    pTime = LocalTime32(m_pItem->Item_Used);
     strTmp.PrintF(_S(6070, "만료 : %d년%d월%d일%d시%d분"), pTime->tm_year + 1900
                   , pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour, pTime->tm_min);
 

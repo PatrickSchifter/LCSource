@@ -8079,13 +8079,13 @@ void CUIManager::Update( float fDeltaTime, float fElapsedTime )
 		{
 			cnt = 0;
 
-			int	gap = abs(_pNetwork->slServerTime - time(NULL));
-			int cur = time(NULL);
+			int	gap = abs(_pNetwork->slServerTime - (SLONG)time(NULL));
+			int cur = (int)time(NULL);
 			// 오차가 5분 이상이고, 동기화 시간이 1분 이상인지 검사
 			if (gap > 300 && 
 				abs(cur - last_send) > 60)
 			{
-				last_send = time(NULL);
+				last_send = (int)time(NULL);
 				_pNetwork->SendReqServerTime();
 			}
 		}

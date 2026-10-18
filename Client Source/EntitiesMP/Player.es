@@ -7751,7 +7751,7 @@ functions:
 	CTString GetStatsRealWorldStarted(void)
 	{
 		struct tm *newtime;
-		newtime = localtime((const time_t *)&m_iStartTime);
+		newtime = LocalTime32(m_iStartTime);
 		
 		setlocale(LC_ALL, "");
 		CTString strTimeline;
@@ -23421,7 +23421,7 @@ procedures:
 	{
 		_pNetwork->MyCharacterInfo.statusEffect.SetType(CStatusEffect::T_PLAYER);
 		// remember start time
-		time((time_t *)&m_iStartTime);
+		m_iStartTime = (INDEX)time(NULL);
 		
 		SetFlagOn(ENF_CLIENTHANDLING);
 		

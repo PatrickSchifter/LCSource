@@ -442,7 +442,7 @@ void CUIRadar::Render()
 												m_nPosY + RADAR_COORD_TEXT_SY, 0x72D02EFF );
 
 	time_t tmt;
-	tmt = (ULONG)time(NULL) - _pNetwork->slServerTimeGap;
+	tmt = (SLONG)time(NULL) - _pNetwork->slServerTimeGap;
 
 	struct tm* pTime = localtime(&tmt);
 
@@ -1005,7 +1005,7 @@ void CUIRadar::ShowToolTip( BOOL bShow, int nToolTipID )
 					int	nTime	= _pUIBuff->GetMyTimerItemBuffExpireTime(TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM);
 					char expire[25] = {0,};
 
-					pTimeEnd = localtime((time_t*)&nTime);
+					pTimeEnd = LocalTime32(nTime);
 					if (pTimeEnd)
 					{
 						strftime(expire, sizeof(expire), "%Y/%m/%d %I:%M:%S", pTimeEnd);
@@ -1068,7 +1068,7 @@ void CUIRadar::ShowToolTip( BOOL bShow, int nToolTipID )
 					int	nTime	= pChar->getExpireTime();
 					char expire[25] = {0,};
 
-					pTimeEnd = localtime((time_t*)&nTime);
+					pTimeEnd = LocalTime32(nTime);
 
 					if (pTimeEnd)
 					{

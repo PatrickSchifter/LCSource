@@ -107,7 +107,7 @@ void CPremiumCharUI::updateExpireTime()
 	char expire[25] = {0,};
 	CTString strTooltip;
 
-	pTimeEnd = localtime((time_t*)&nExpireTime);
+	pTimeEnd = LocalTime32(nExpireTime);
 
 	if (pTimeEnd)
 	{

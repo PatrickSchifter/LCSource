@@ -355,7 +355,7 @@ bool CUIExpressSystem::_SetItemListString(int nIndex, bool bItem)
 	char registe[25] = {0,};
 	char expire[25] = {0,};
 
-	pTimeStart = localtime((time_t*)&pInfo->registe_date);
+	pTimeStart = LocalTime32(pInfo->registe_date);
 
 	if (pTimeStart)
 	{
@@ -365,7 +365,7 @@ bool CUIExpressSystem::_SetItemListString(int nIndex, bool bItem)
 		pItemList->SetString( LCE_STRING_DATE_START, strTemp );
 	}
 
-	pTimeEnd = localtime((time_t*)&pInfo->expire_date);
+	pTimeEnd = LocalTime32(pInfo->expire_date);
 
 	if (pTimeEnd)
 	{

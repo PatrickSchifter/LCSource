@@ -49,6 +49,13 @@ TIME _CurrentTickTimer = 0.0f;
 
 // pointer to global timer object
 CTimer *_pTimer = NULL;
+
+// a Unix time kept in 32 bits as local time (see Base/Types.h)
+struct tm *LocalTime32(SLONG slTime)
+{
+  time_t t = (time_t)slTime;
+  return localtime(&t);
+}
 //! 
 //안태훈 수정 시작	//(Adjust Time Tick)(0.1)
 const TIME	CTimer::TickQuantum = TIME(1/20.0);		// 원래 20 ticks per second

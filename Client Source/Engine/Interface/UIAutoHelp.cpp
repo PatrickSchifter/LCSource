@@ -456,8 +456,8 @@ void CUIAutoHelp::Render ()
 			int tv_rnd;
 			__int64 tv_time = llCurTime - m_tmCheckTime;
 			INDEX tv_tmp ;
-			time((time_t*)&tv_tmp);
-			tm* tv_tm = localtime((time_t*)&tv_tmp);
+			tv_tmp = (INDEX)time(NULL);
+			tm* tv_tm = LocalTime32(tv_tmp);
 			if(tv_tm->tm_hour == 3 && tv_tm->tm_min == 55 && tv_tm->tm_sec == 0) {
 				tv_rnd = ( rand()% (AU_NO_TOXICOSIS_VACATION_E - AU_NO_TOXICOSIS_VACATION_S + 1) ) + AU_NO_TOXICOSIS_VACATION_S;
 				SetInfo ( tv_rnd );

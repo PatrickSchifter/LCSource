@@ -43,8 +43,10 @@ No Mac, a camada SDL (janela, eventos → `MSG`, cursores `.cur`) foi exercitada
 teste com o SDL3 do Homebrew.
 
 Depois da C5: restante da C1 (CMake do cliente no Mac, link) e as fases C6/C7/C8. Da C1, os
-parsers do Engine já são gerados no build (testado no Windows até a tela de login);
-os includes já usam a caixa do disco (2026-10-18; falta compilar no Windows para confirmar); faltam macros de região/`_USE_32BIT_TIME_T` e o CMake de verdade no Mac. O que ficou
+parsers do Engine já são gerados no build (testado no Windows até a tela de login), os includes
+usam a caixa do disco, e a região (`LC_CLIENT_COUNTRY`) e o `time_t` de 64 bits estão resolvidos
+(2026-10-18; falta compilar e testar no Windows, lista do `time_t` em "Verificação do cliente no
+Mac"); falta o CMake de verdade no Mac. O que ficou
 para elas: joystick pelo SDL (hoje sem joystick fora do Windows), Retina/HiDPI e o contexto
 OpenGL (C8), `Web.cpp`/IPC/`ThreadWrapper` (C6). O link no Mac precisa de `-liconv` e SDL3, e
 os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.
@@ -248,6 +250,18 @@ cmake --build build-client-check -- -k 0 2>&1 | tee check.log
   servidor (BRZ, USA...) é outra lista e continua separado. Mortos/sem header: `Define_MEX.h` (nenhum
   `G_MEXICO`; o código testa `G_MAXICO`), `G_EUROPE`, `G_JAPAN`, `G_CHINA`, `G_HONGKONG`, `G_MAL`,
   `G_NETHERLANDS`, `G_RUSSA` (nenhum build os define).
+- **`time_t`:** o `_USE_32BIT_TIME_T` saiu do CMake do Windows; `time_t` tem 64 bits nas duas
+  plataformas. Nenhum struct gravado em disco/rede tem `time_t` (pacotes e `.lod` usam `int`; os
+  `time_t` que existem — `SNotice`, mensagens agendadas do chat, `DamageLogInfo` — ficam só na
+  memória), então nenhum tamanho mudou. O que dependia de 32 bits era passar um campo `int`/`LONG`/
+  `ULONG` para `localtime((time_t*)&x)` ou `time((time_t*)&x)` (lia/escrevia 8 bytes): agora
+  `LocalTime32(SLONG)` (`Base/Types.h`, definida em `Base/Timer.cpp`; lê os 32 bits com sinal, como
+  antes) e `x = (INDEX)time(NULL)` (`Player.es`, `UIAutoHelp.cpp`). Cálculos com `time(NULL)` em
+  32 bits ganharam cast `(SLONG)` (`UIManager`, `UIRadar`) para dar o mesmo resultado de antes.
+  Testes no Windows pendentes: tooltips de expiração (itens com prazo, botões da barra/inventário,
+  bolsa de cash, pet stash, armazém, teletransporte, nome do personagem premium), data de presentes
+  da loja de cash, notícias, express system, histórico do sindicato, coleção de itens, relógio do
+  radar, ressincronização de horário com o servidor (`UIManager`), mensagens agendadas de aviso.
 - Compila sem linkar, com clang arm64, `-fms-extensions` e só os avisos de 64 bits ligados
   (`-Wshorten-64-to-32`, `-Wpointer-to-int-cast`, `-Wint-to-pointer-cast`, `-Wformat`...).
   Sem `LC_CHECK_DIRS` compila as partes "portáveis" do Engine (Base, Math, Templates, Brushes,
