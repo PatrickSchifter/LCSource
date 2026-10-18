@@ -52,7 +52,7 @@ message(STATUS "Client check: ${_n} Engine sources")
 add_custom_target(lc_engine_check_entities DEPENDS ${ENGINE_GENERATED} ${ENTITIESMP_GENERATED})
 add_library(lc_engine_check OBJECT ${LC_CHECK_SOURCES})
 add_dependencies(lc_engine_check lc_engine_check_entities)
-target_compile_definitions(lc_engine_check PRIVATE _MT G_BRAZIL _CLIENT_ NDEBUG)
+target_compile_definitions(lc_engine_check PRIVATE _MT ${LC_CLIENT_DEFINES} NDEBUG)  # LC_CLIENT_COUNTRY: ../CMakeLists.txt
 target_include_directories(lc_engine_check PRIVATE
   "${LC_GEN}" "${LC_GEN}/Engine" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/Engine" "${LC_CLIENT_SRC}/include")
 target_include_directories(lc_engine_check SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")

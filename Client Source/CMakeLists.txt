@@ -7,6 +7,24 @@
 #         -DLC_D3DX9_DIR=<Microsoft.DXSDK.D3DX package>/build/native -DLC_D3D8_INCLUDE_DIR=<dir with d3d8.h>
 #   (from an "x86 Native Tools" developer prompt)
 
+# Region (country) the client is compiled for, shared by every client build (Windows, the macOS
+# check and the future macOS build). G_<COUNTRY> picks the publisher's feature set in
+# Engine/LocalDefine.h (Engine/Define_<...>.h) and a few G_<COUNTRY> branches in the code (font
+# and text handling for RUSSIA/THAI, the codepage outside Windows in Base/Win32Compat.cpp).
+# The language data used at run time (Local\<nation>\, fonts) follows the persistent shell
+# symbol g_iCountry instead (BRAZIL = 8, see Engine/GlobalDefinition.h), set by the installation.
+# The server's LC_REGION is a different list (BRZ, USA, GER...) and is set separately.
+set(LC_CLIENT_COUNTRY "BRAZIL" CACHE STRING "Client country define (G_<COUNTRY>): BRAZIL, USA, GERMAN, KOR, RUSSIA, THAI")
+set(_lc_client_countries BRAZIL USA GERMAN KOR RUSSIA THAI)  # the ones Engine/LocalDefine.h knows
+set_property(CACHE LC_CLIENT_COUNTRY PROPERTY STRINGS ${_lc_client_countries})
+if(NOT LC_CLIENT_COUNTRY IN_LIST _lc_client_countries)
+  string(REPLACE ";" ", " _list "${_lc_client_countries}")
+  message(FATAL_ERROR "Unknown LC_CLIENT_COUNTRY '${LC_CLIENT_COUNTRY}' (one of: ${_list})")
+endif()
+message(STATUS "Last Chaos client country: G_${LC_CLIENT_COUNTRY}")
+# Defines every client build shares.
+set(LC_CLIENT_DEFINES G_${LC_CLIENT_COUNTRY} _CLIENT_)
+
 option(LC_CLIENT_CHECK_ONLY "Only compile (no link) the portable Engine sources, to find 64-bit and portability errors" OFF)
 if(LC_CLIENT_CHECK_ONLY)
   include(cmake/ClientCheck.cmake)
@@ -17,7 +35,6 @@ if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
   message(FATAL_ERROR "The client currently builds only as 32-bit Windows (MSVC x86); see PORTING_MACOS.md")
 endif()
 
-set(LC_CLIENT_COUNTRY "BRAZIL" CACHE STRING "Client country define (G_<COUNTRY>): BRAZIL, USA, GERMAN, KOR, RUSSIA, THAI, ...")
 option(LC_NO_IP_FILTER "Let the client connect to any login server address (otherwise only the publisher's ranges)" ON)
 set(LC_D3DX9_DIR "" CACHE PATH "Microsoft.DXSDK.D3DX NuGet package 'build/native' directory")
 # The Windows SDK no longer ships the Direct3D 8 headers; the MinGW-w64 (Wine) d3d8.h,
@@ -45,7 +62,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Settings shared by every client target (from the BRZLIVE configuration of the .vcxproj files).
 add_library(lc_client_common INTERFACE)
 target_compile_definitions(lc_client_common INTERFACE
-  G_${LC_CLIENT_COUNTRY} _CLIENT_ _USE_32BIT_TIME_T WIN32 NDEBUG _WINDOWS _MBCS
+  ${LC_CLIENT_DEFINES} _USE_32BIT_TIME_T WIN32 NDEBUG _WINDOWS _MBCS
   _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS _WINSOCK_DEPRECATED_NO_WARNINGS
   _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS _HAS_STD_BYTE=0)
 if(LC_NO_IP_FILTER)

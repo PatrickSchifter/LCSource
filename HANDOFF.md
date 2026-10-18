@@ -237,6 +237,17 @@ cmake -S . -B build-client-check -G Ninja -DLC_BUILD_SERVER=OFF -DLC_BUILD_CLIEN
 cmake --build build-client-check -- -k 0 2>&1 | tee check.log
 ```
 
+- **Região:** uma só opção, `LC_CLIENT_COUNTRY` (padrão `BRAZIL`), definida em
+  `Client Source/CMakeLists.txt` antes do desvio para o check; Windows, check e o futuro build do
+  Mac usam a mesma lista `LC_CLIENT_DEFINES` (`G_<PAÍS>` + `_CLIENT_`). Valores aceitos: os que o
+  `Engine/LocalDefine.h` conhece (`BRAZIL`, `USA`, `GERMAN`, `KOR`, `RUSSIA`, `THAI` → `Define_BRA.h`,
+  `Define_USA.h`, `Define_GAMIGO.h`, `Define_KOR.h`, `Define_RUS.h`, `Define_THAI.h`); outro valor
+  para o configure. O `G_*` liga as features da publisher e alguns ramos (texto RUSSIA/THAI, codepage
+  fora do Windows). Os dados de idioma em tempo de execução (`Local\<país>\`, fontes) seguem o
+  símbolo persistente `g_iCountry` (BRAZIL = 8, `GlobalDefinition.h`), não o `G_*`. O `LC_REGION` do
+  servidor (BRZ, USA...) é outra lista e continua separado. Mortos/sem header: `Define_MEX.h` (nenhum
+  `G_MEXICO`; o código testa `G_MAXICO`), `G_EUROPE`, `G_JAPAN`, `G_CHINA`, `G_HONGKONG`, `G_MAL`,
+  `G_NETHERLANDS`, `G_RUSSA` (nenhum build os define).
 - Compila sem linkar, com clang arm64, `-fms-extensions` e só os avisos de 64 bits ligados
   (`-Wshorten-64-to-32`, `-Wpointer-to-int-cast`, `-Wint-to-pointer-cast`, `-Wformat`...).
   Sem `LC_CHECK_DIRS` compila as partes "portáveis" do Engine (Base, Math, Templates, Brushes,
