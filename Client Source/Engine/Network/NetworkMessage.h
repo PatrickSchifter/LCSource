@@ -250,6 +250,9 @@ public:
  */
 class CNetworkStream {
 public:
+#ifdef R_OK
+  #undef R_OK  // the access() mode from <unistd.h> (Win32Compat.h); the engine never calls access()
+#endif
   enum Result {
     R_OK = 1,
     R_BLOCKMISSING,           // block is missing in the stream

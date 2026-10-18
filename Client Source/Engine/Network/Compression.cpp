@@ -411,9 +411,18 @@ int ZEXPORT compress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
+#ifdef PLATFORM_WIN32
   int iResult = compress(
     (UBYTE *)pvDst, (ULONG *)&slDstSize,
     (const UBYTE *)pvSrc, (ULONG)slSrcSize);
+#else
+  // zlib's uLongf is 64-bit here: it cannot point at the 32-bit size
+  uLongf ulDstSize = slDstSize;
+  int iResult = compress(
+    (UBYTE *)pvDst, &ulDstSize,
+    (const UBYTE *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG)ulDstSize;
+#endif
   if (iResult==Z_OK) {
     return TRUE;
   } else {
@@ -435,9 +444,18 @@ int ZEXPORT uncompress (dest, destLen, source, sourceLen)
     */
 
   CTSingleLock slZip(&zip_csLock, TRUE);
+#ifdef PLATFORM_WIN32
   int iResult = uncompress(
     (UBYTE *)pvDst, (ULONG *)&slDstSize,
     (const UBYTE *)pvSrc, (ULONG)slSrcSize);
+#else
+  // zlib's uLongf is 64-bit here: it cannot point at the 32-bit size
+  uLongf ulDstSize = slDstSize;
+  int iResult = uncompress(
+    (UBYTE *)pvDst, &ulDstSize,
+    (const UBYTE *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (SLONG)ulDstSize;
+#endif
 
   if (iResult==Z_OK) {
     return TRUE;
