@@ -199,18 +199,22 @@ Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [x] Testes em jogo dos itens 9–11 no modo SDL e do cliente Win32 com `LC_PLATFORM_SDL=OFF` (2026-10-18)
 
 ### C6. Rede
-- [ ] Winsock → sockets POSIX (23 arquivos, `Engine/Network/*`)
-- [ ] `F_Socket` e `SharedMemory` portáveis
-- [ ] wininet (`Network/Web.cpp`) → libcurl/NSURLSession, ou desativar
-- [ ] Conexão e login no servidor portado (Trilha S)
+Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `eacb64c`..`ef6097c`.
+- [x] Winsock → sockets BSD fora do Windows (`Engine/Network/SocketCompat.h`: nomes do Winsock sobre POSIX, `WSAE*` = `errno`, `SIGPIPE` ignorado); `connect` não bloqueante com `EINPROGRESS`/`SO_ERROR`; `socklen_t`; zlib com `uLongf` de 64 bits. Só no check do Mac; tempo de execução quando o Mac linkar
+- [x] `F_Socket` (código morto, só um include) e `SharedMemory` (IPC do launcher, só Windows desde a C5)
+- [x] wininet (`Network/Web.cpp`), `SharedWebData` e `ThreadWrapper` só no Windows: páginas web do publisher (quadro de mensagens, notícias, ajuda, loja de cash) que o nosso servidor não tem; fora do Windows o leitor nunca devolve página e `OpenWebPage()` devolve FALSE
+- [ ] Testes de regressão no Windows (lista em `HANDOFF.md`)
+- [ ] Conexão e login no servidor portado a partir do cliente do Mac (depende do link, C1/C8)
 
 ### C7. Áudio
-- [ ] Substituir DirectSound/EAX/waveOut (`Sound/SoundLibrary.cpp`) por um backend SDL/CoreAudio/OpenAL
-- [ ] Ogg: linkar libvorbis direto (hoje carrega `vorbisfile.dll`)
-- [ ] MP3: trocar `amp11lib.dll` por minimp3/dr_mp3
+Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47`.
+- [x] Saída de som pelo SDL3 fora do Windows (`LC_SOUND_SDL`): o mixer por software do motor empurra o buffer para um `SDL_AudioStream` com a mesma latência (`snd_tmMixAhead`); DS3D por hardware, EAX e waveOut só no Windows. No Windows, opção `LC_SOUND_SDL` (exige `LC_PLATFORM_SDL=ON`) para testar. Testado no Mac com programa de teste (taxa de consumo, sem falta de dados); em jogo ainda não
+- [x] Ogg: libvorbisfile linkado direto fora do Windows (o `OggVorbis_File` declarado à mão só batia com a lib 1.0 de 32 bits); no Windows continua o `vorbisfile.dll`
+- [x] MP3: dr_mp3 (`3rdparty/dr_libs`) no lugar do `amp11lib.dll` fora do Windows; não se sabe ainda se os assets usam MP3
+- [ ] Testes em jogo no Windows: build padrão (regressão) e `LC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (lista em `HANDOFF.md`)
 
 ### C8. Renderização (caminho crítico)
-- [x] Direct3D atrás da macro `SE1_D3D` (como no Serious Engine 1 aberto da Croteam): definida só no CMake do Windows (`lc_client_common`), onde o código compilado é o mesmo de antes (conferido resolvendo `SE1_D3D` como definida e comparando byte a byte com o original). Sem ela ficam fora `GAT_D3D`, os membros D3D de `CGfxLibrary`/`CViewPort`/`CRenderTexture`, os `case`/ramos D3D e os fontes só-D3D, que ficam inteiros dentro de `#ifdef SE1_D3D` (`Gfx_Direct3D*.cpp`, `RenderBloom.cpp`; `Gfx_wrapper_Direct3D.cpp` só é incluído sob a macro), sem mexer nas listas geradas do CMake. Sem D3D ainda não há: bloom, render targets (`CRenderTexture::Init` falha), sombras projetadas em textura, programas de shader (as funções `sha*` de registradores ficam vazias), clip plane da água e a mistura da sombra do terreno sem shader. A matemática D3DX (`Compat/d3dx8/d3dx8math.h`, nossa) não depende mais de `d3d8.h` sem a macro e é usada no Mac (altura do terreno, matrizes de sombra). Check do Mac: 6.978 → 5.680 erros únicos, sem erro de D3D (só DirectSound, C7)
+- [x] Direct3D atrás da macro `SE1_D3D` (como no Serious Engine 1 aberto da Croteam): definida só no CMake do Windows (`lc_client_common`), onde o código compilado é o mesmo de antes (conferido resolvendo `SE1_D3D` como definida e comparando byte a byte com o original). Sem ela ficam fora `GAT_D3D`, os membros D3D de `CGfxLibrary`/`CViewPort`/`CRenderTexture`, os `case`/ramos D3D e os fontes só-D3D, que ficam inteiros dentro de `#ifdef SE1_D3D` (`Gfx_Direct3D*.cpp`, `RenderBloom.cpp`; `Gfx_wrapper_Direct3D.cpp` só é incluído sob a macro), sem mexer nas listas geradas do CMake. Sem D3D ainda não há: bloom, render targets (`CRenderTexture::Init` falha), sombras projetadas em textura, programas de shader (as funções `sha*` de registradores ficam vazias), clip plane da água e a mistura da sombra do terreno sem shader. A matemática D3DX (`Compat/d3dx8/d3dx8math.h`, nossa) não depende mais de `d3d8.h` sem a macro e é usada no Mac (altura do terreno, matrizes de sombra). Check do Mac: 6.978 → 5.680 erros únicos, sem erro de D3D (só DirectSound, C7). Depois da C6 e da C7 (2026-10-18): 128 erros únicos, quase todos do OpenGL (`Gfx_OpenGL.cpp`, `GfxLibrary.cpp`, `ViewPort.cpp`), mais `exploration3d`/`Object3D_IO` (ferramentas) e dois `Min` em `RenderModels.cpp`
 - [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (contexto via SDL3, perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
 - [ ] Etapa Metal (D2.2): novo backend `GAT_*` ao lado do D3D8 e do OpenGL
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
@@ -274,3 +278,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-17 | C4: GameGuard, XTrap, Kalydo, proteção contra cópia, MiniDump, VLD, IJL, dxtlib e `.lib` pré-compilados removidos; IFeel em stubs, StackDump só no Windows | a325b3a..5ff5a2c |
 | 2026-10-17 | C5: Win32Compat (tipos, tempo, arquivos, INI, DLLs, codepages), camada SDL3 (janela, eventos, input, IME, cursores, mensagens); modo SDL testado no Windows | 6842344..c755cd9 |
 | 2026-10-18 | C1: includes com a caixa do disco, `LC_CLIENT_COUNTRY`, `time_t` de 64 bits; servidor: `long` com 4 bytes no `CNetMsg`, sysctl, `rntype.h`; teleportadores (`ZoneFlag.lod`) e ícones do mapa | d2b016d..1be72b3 |
+| 2026-10-18 | C7: som pelo SDL3, Ogg com libvorbisfile, MP3 com dr_mp3; C6: sockets BSD, web/ThreadWrapper só no Windows; check do Mac 864 → 128 erros únicos | 3b366e5..ef6097c |

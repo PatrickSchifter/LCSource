@@ -1,7 +1,7 @@
 # Passagem de contexto — porte do Last Chaos para macOS
 
 Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`; aqui está o
-**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-17.
+**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-18.
 
 ## Onde estamos
 
@@ -22,8 +22,9 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C1**: CMake do cliente no Mac e primeiro link; depois C6/C7/C8. A C5 está concluída
-   ("C5 — andamento" abaixo).
+1. **C1**: CMake do cliente no Mac e primeiro link; depois a C8 (OpenGL). C5, C6 e C7 estão
+   feitas no nível do check ("C6 e C7 — como ficou" abaixo); C6 e C7 ainda sem teste em jogo no
+   Windows. Check do Mac em 2026-10-18: 128 erros únicos, quase todos do OpenGL (C8).
 
 ## C5 — andamento (2026-10-17)
 
@@ -179,6 +180,69 @@ Os mais comuns: `UINT16` (783), `MSG` (575), `GetProcAddress` (463), `HRESULT`, 
 Fora da C5: Winsock/wininet/`Web.cpp`/`F_Socket` (C6), DirectSound/waveOut (C7), D3D8/D3DX e o
 contexto/funções OpenGL (C8), `exploration3d`/`Object3D_IO.cpp` (importador de modelos das
 ferramentas).
+
+## C6 e C7 — como ficou (2026-10-18)
+
+Feitas em paralelo por dois agentes, cada um num worktree, e juntadas no `macos-port`
+(C7 `3b366e5`..`fd81b47`, C6 `eacb64c`..`ef6097c`). Check do Mac (`ALL`): 864 → 128 erros únicos,
+0 `fatal error`; sobram OpenGL (`Gfx_OpenGL.cpp` 71, `GfxLibrary.cpp` 24, `ViewPort.cpp` 21),
+`exploration3d`/`Object3D_IO` (ferramentas) e dois `Min` em `RenderModels.cpp` ~1612.
+Windows sem as opções novas: o código resolvido (`unifdef`) é o mesmo de antes, salvo grafias.
+**Nada disso rodou em jogo ainda.**
+
+**C7 (som).**
+- Macro `LC_SOUND_SDL` (`Engine/Base/Base.h`, ligada em todo compilador não-MSVC). No Windows é a
+  opção CMake `LC_SOUND_SDL` (padrão OFF, exige `LC_PLATFORM_SDL=ON`): dá para testar janela SDL com
+  DirectSound ou com som SDL.
+- Modelo de empurrar: `UpdateSounds()` chama `MixSounds()` até 20×/s; `PrepareSoundBuffer_sdl()`
+  calcula quanto falta para a fila do stream ter `snd_tmMixAhead` segundos, o mixer mistura isso em
+  `sl_pswMixerBuffer` e `CopyMixerBuffer_sdl()` entrega com `SDL_PutAudioStreamData`. Stream S16
+  estéreo, 11/22/44 kHz conforme `snd_iFormat`; `Mute()`/`Flush()` = `SDL_ClearAudioStream`. Se o
+  jogo travar mais que o mix-ahead sai silêncio (o DirectSound repetiria o buffer).
+- Só o mixer por software (= `snd_iInterface=1`, o padrão no Windows). `snd_iDevice` = índice na
+  lista do SDL (-1 = padrão). Áudio iniciado com `SDL_InitSubSystem` em `CSoundLibrary::Init`.
+- Ogg: libvorbisfile linkado direto (pkg-config) fora do Windows; MP3: dr_mp3 compilado dentro de
+  `SoundDecoder.cpp` (guarda o pedaço de quadro que sobra, porque o amp11lib devolvia qualquer
+  número de bytes). Não se sabe se os assets têm MP3: conferir `*.mp3` nos `.gro`/`amp11lib.dll` no `Bin`.
+- **O link no Mac precisa de `vorbisfile` (pkg-config) e SDL3.** `libvorbis` está no `scripts/macos-deps.sh`.
+
+**C6 (rede).**
+- `Engine/Network/SocketCompat.h`: fora do Windows, os nomes do Winsock sobre sockets BSD
+  (`SOCKET`, `closesocket`, `WSAGetLastError` = `errno`, `WSAE*` = valores de `errno`,
+  `ioctlsocket(FIONBIO)` via `fcntl`); `WSAStartup` ignora `SIGPIPE` (senão um `send()` numa conexão
+  fechada mata o processo). No Windows só acrescenta `typedef int socklen_t`.
+- `TcpIpConnection.cpp`: `connect` não bloqueante aceita `EINPROGRESS` e a falha vem por
+  `getsockopt(SO_ERROR)` (no Windows aparece no except set); `select` com descritor + 1.
+- `Compression.cpp`: `uLongf` do zlib tem 64 bits no Mac (o cast antigo gravava 8 bytes num `SLONG`).
+- `NetworkMessage.h` tira a macro `R_OK` do `<unistd.h>` (colidia com `CNetworkStream::R_OK`).
+- Bug antigo mantido só no Windows: `SO_KEEPALIVE` com nível `IPPROTO_TCP` em
+  `TcpIpConnection::InitConnection` (no Windows não liga nada; no macOS o número é `TCP_NOOPT`).
+- Só no Windows: `Web.cpp` (wininet + `cwebpage.dll`: quadro de mensagens web, notícias, ajuda e
+  loja de cash nos sites do publisher), `SharedWebData.cpp`, `ThreadWrapper.cpp`. Fora do Windows
+  `Request()` descarta o pedido, `Read()` nunca devolve página e `OpenWebPage()` devolve FALSE.
+  Se um dia precisar: libcurl e uma web view.
+- `F_Socket` é código morto (pode ser apagado como na C4: lib `f_socket` e `include/F_*.h`).
+- Para o link: `#pragma comment(lib, ...)` (`ws2_32`, `imm32`, `winmm`) não estão atrás de `#ifdef`.
+
+**Armadilhas de edição.** Muitos fontes estão em CP949 com CRLF: `grep -I` os pula como binários
+(use `grep -a`), e o Write/Edit apaga espaços no fim das linhas. Edite com substituições exatas em
+latin-1 (`perl -pi` ou Python) e confira o `git diff`.
+
+### C6 e C7 — testes no Windows (pendentes)
+
+Build padrão (regressão):
+1. Login, lista de servidores, escolher canal e entrar no mundo; voltar para a seleção de servidor e
+   entrar de novo; trocar de canal.
+2. LoginServer desligado: falha com mensagem, sem travar (3 tentativas de 3 s). Servidor derrubado
+   durante o jogo: mensagem de desconexão.
+3. Janelas web (notícias, ajuda, loja de cash, quadro de mensagens) como antes; sair do jogo normalmente.
+4. Som ambiente, combate, música e volumes iguais a antes.
+
+Com `-DLC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (depois voltar para OFF):
+5. Música Ogg: começa, faz loop, troca ao mudar de zona.
+6. Sons 3D e de UI; volumes de som e música; latência.
+7. Tela de loading/troca de mundo, minimizar e Alt+Tab: sem estalo nem repetição.
+8. `snd_iFormat`/`snd_tmMixAhead` pelo console; `Console.log` mostra "SDL audio initialization".
 
 ## C4 — como ficou (2026-10-17)
 
