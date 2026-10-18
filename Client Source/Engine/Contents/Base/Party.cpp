@@ -818,7 +818,7 @@ bool Party::SearchExpeditionMember(SLONG slIndex, int &nGroup, int &nPos)
 
 ///////////////////////////////////Party ฐüทร/////////////////////////////////
 
-void Party::AddPartyMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void Party::AddPartyMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -1034,7 +1034,7 @@ void Party::PartyReject( BOOL bLeader )
 	pUIManager->SetCSFlagOff( CSF_PARTY_REQ );
 }
 
-void Party::PartyAddMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void Party::PartyAddMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -1967,7 +1967,7 @@ void Party::SendChangeExpedition()
 	_pNetwork->ExpeditionCreateReq();
 }
 
-void Party::SendExpeditionInvite( CTString &strDestName )
+void Party::SendExpeditionInvite( const CTString &strDestName )
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 	ObjInfo* pInfo = ObjInfo::getSingleton();
@@ -1993,7 +1993,7 @@ void Party::SendExpeditionInvite( CTString &strDestName )
 	SendExpeditionInviteReq(slIndex, strDestName);
 }
 
-void Party::SendExpeditionInviteReq(int slIndex, CTString &strDestName)
+void Party::SendExpeditionInviteReq(int slIndex, const CTString &strDestName)
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 	ObjInfo* pInfo = ObjInfo::getSingleton();

@@ -25,7 +25,7 @@
 extern FLOAT con_fHeightFactor = 0.5f;
 extern FLOAT con_tmLastLines   = 5.0f;
 //extern INDEX con_bTalk = 0;		// yjpark
-//CTimerValue _tvMenuQuickSave(0I64);
+//CTimerValue _tvMenuQuickSave(((__int64)0));
 
 // used filenames
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
@@ -2730,7 +2730,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			{
 				net_bLocalPrediction=TRUE;
 				/*
-				if (_tvMenuQuickSave.tv_llValue!=0I64 && 
+				if (_tvMenuQuickSave.tv_llValue!=((__int64)0) && 
 					(_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) 
 				{
 					strIndicator = TRANS("Use F6 for QuickSave during game!");
@@ -2739,13 +2739,13 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				{
 					CTString strMotd = _pNetwork->ga_sesSessionState.ses_strMOTD;
 					static CTString strLastMotd = "";
-					static CTimerValue tvLastMotd(0I64);
+					static CTimerValue tvLastMotd(((__int64)0));
 					if (strLastMotd!=strMotd) 
 					{
 						tvLastMotd = _pTimer->GetHighPrecisionTimer();
 						strLastMotd = strMotd;
 					}
-					if (tvLastMotd.tv_llValue!=0I64 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
+					if (tvLastMotd.tv_llValue!=((__int64)0) && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
 					{
 						strIndicator = strMotd;
 					}
@@ -3202,7 +3202,7 @@ static FLOAT _tmNow_SE;
 static ULONG _ulA_SE;
 static BOOL  _bPopup;
 
-void TiledTextureSE( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTextureSE( const PIXaabbox2D &_boxScreen, FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
 	PIX pixW = _boxScreen.Size()(1);
 	PIX pixH = _boxScreen.Size()(2);

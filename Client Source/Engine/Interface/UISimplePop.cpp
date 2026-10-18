@@ -471,7 +471,10 @@ void CUISimplePop::Execution(INDEX exeNum)
 	case SPSO_FRIEND:
 		{
 			if (m_bTarget == true)
-				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, CTString(pInfo->GetTargetName(eTARGET)) );
+			{
+				CTString strTarget = pInfo->GetTargetName(eTARGET);
+				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, strTarget );
+			}
 			else
 				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, m_strNoTargetName );
 		}

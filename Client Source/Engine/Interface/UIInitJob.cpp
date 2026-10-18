@@ -351,7 +351,7 @@ void CUIInitJob::CloseInitJob()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIInitJob::AddString( CTString &strDesc )
+void CUIInitJob::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_INITJOB_STRING )
 		return;

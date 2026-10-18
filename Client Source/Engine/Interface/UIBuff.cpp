@@ -1699,7 +1699,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 // Name : AddBuffInfoString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
+void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo )
 {
 	if( m_nCurInfoLines >= MAX_BUFFINFO_LINE )
 		return;

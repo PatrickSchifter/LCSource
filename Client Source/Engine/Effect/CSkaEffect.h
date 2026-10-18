@@ -56,7 +56,8 @@ public:
 	CEffectControl *GetEffectControl()	{ return m_pEffectControl;	}
 	void EraseEffectControl();
 
-	FLOAT3D GetInstancePosition(FLOATmatrix3D &matRotTag = FLOATmatrix3D());
+	FLOAT3D GetInstancePosition(FLOATmatrix3D &matRotTag);
+	FLOAT3D GetInstancePosition() { FLOATmatrix3D matRotTag; return GetInstancePosition(matRotTag); }
 	FLOATquat3D GetInstanceRotation();
 
 	//acess function

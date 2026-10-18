@@ -1286,9 +1286,9 @@ public:
 	void	CloseMessageBox( int nCommandCode );
 	BOOL	DoesMessageBoxExist( int nCommandCode );
 
-	void	CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode,
+	void	CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode,
 								int nPosX = -1, int nPosY = -1 );
-	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o" );
+	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o" );
 	void	CloseMessageBoxL( int nCommandCode );
 	BOOL	DoesMessageBoxLExist( int nCommandCode );
 	CUIMessageBox *GetMessageBox( int nCommandCode );
@@ -1425,7 +1425,7 @@ public:
 
 	// WSS_MINIGAME_070422 -------------------------------------->>
 	// For multilined string
-	void AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
+	void AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
 
 	// ----------------------------------------------------------<<
 

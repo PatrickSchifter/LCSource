@@ -1080,7 +1080,7 @@ extern CNetworkStreamBlock *CreateNetworkStreamBlock(void)
 extern void DeleteNetworkStreamBlock(CNetworkStreamBlock *pnsbBlock)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> or(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> orRestore(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
   _rcStreamBlockContainer.DeleteObject(pnsbBlock);
 }
 

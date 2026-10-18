@@ -299,7 +299,7 @@ void cWeb::UpdatePos()
 	UpdateWindow(_hDlgWeb);
 }
 
-void cWeb::SetWebUrl( std::string& url )
+void cWeb::SetWebUrl( const std::string& url )
 {
 	if (m_hWebWnd == NULL)
 		return;

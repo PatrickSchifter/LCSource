@@ -131,7 +131,7 @@ public:
 
 	inline void SetTimeReply(BOOL bReceived) { m_bReceivedTime = bReceived; } // WSS_DRATAN_SIEGEWARFARE 2007/10/16
 	inline BOOL GetTimeReply() { return m_bReceivedTime; }
-	inline void SetWaitTime(int tWaitTime) { m_iWaitTime_const = m_iWaitTime = tWaitTime , m_tmStartTime = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); /*timeGetTime();*/}
+	inline void SetWaitTime(int tWaitTime) { m_iWaitTime_const = m_iWaitTime = tWaitTime , m_tmStartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); /*timeGetTime();*/}
 	inline int	GetWaitTime() { return m_iWaitTime;}
 	inline void SetWarState(BOOL bOnWar) { m_bOnWar = bOnWar; }
 	inline BOOL GetWarState() { return m_bOnWar; }

@@ -153,7 +153,7 @@ void CUITextBox::_UpdateBoxSize()
 	}	
 }
 
-void CUITextBox::SetText( CTString& str, COLOR color, BOOL bUpdateHeight )
+void CUITextBox::SetText( const CTString &str, COLOR color, BOOL bUpdateHeight )
 {
 	_ResetString();
 	m_color = color;

@@ -406,7 +406,7 @@ extern void RM_GetModelVertices( CModelInstance &mi, CStaticStackArray<FLOAT3D> 
 								FLOATmatrix3D &mRotation, FLOAT3D &vPosition, FLOAT fNormalOffset, FLOAT fDistance)
 {
 	extern INDEX ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CObjectRestore<BOOL> or2(_bUseHardwareShaders,FALSE);
 	CObjectRestore<INDEX> or3(ska_iMaxWeightsPerVertex,1);
 	
@@ -512,10 +512,10 @@ public:
 public:
 	binfo() : bw(0), bi(0) {}
 
-	bool operator < (binfo &other)	{ return bw < other.bw;		}
-	bool operator <= (binfo &other)	{ return bw <= other.bw;	}
-	bool operator > (binfo &other)	{ return bw > other.bw;		}
-	bool operator >= (binfo &other)	{ return bw >= other.bw;	}
+	bool operator < (const binfo &other) const	{ return bw < other.bw;		}
+	bool operator <= (const binfo &other) const	{ return bw <= other.bw;	}
+	bool operator > (const binfo &other) const	{ return bw > other.bw;		}
+	bool operator >= (const binfo &other) const	{ return bw >= other.bw;	}
 };
 FLOAT RM_TestRayCastHit( CModelInstance &mi, FLOATmatrix3D &mRotation, FLOAT3D &vPosition,const FLOAT3D &vOrigin,
 						const FLOAT3D &vTarget,FLOAT fOldDistance,INDEX *piBoneID, void *pSkatag)
@@ -523,7 +523,7 @@ FLOAT RM_TestRayCastHit( CModelInstance &mi, FLOATmatrix3D &mRotation, FLOAT3D &
 {
 	FLOAT fDistance = 1E6f;
 	extern INDEX ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CObjectRestore<BOOL> or2(_bUseHardwareShaders,FALSE);
 	CObjectRestore<INDEX> or3(ska_iMaxWeightsPerVertex,1);
 	
@@ -748,7 +748,7 @@ BOOL RM_TestRayCastHitForTerrainShadow( CModelInstance &mi, FLOATmatrix3D &mRota
 {
 	FLOAT					fDistance = 1E6f;
 	extern INDEX			ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL>	or( _bTransAllToAbsolute, TRUE );
+	CObjectRestore<BOOL>	orRestore( _bTransAllToAbsolute, TRUE );
 	CObjectRestore<BOOL>	or2( _bUseHardwareShaders, FALSE );
 	CObjectRestore<INDEX>	or3( ska_iMaxWeightsPerVertex, 1 );
 	
@@ -4299,7 +4299,7 @@ extern void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonLOD)
 	else if( _bTransAllToAbsolute) 
 	{
 		// do not use vertex program
-		CObjectRestore<BOOL> or(_bUseHardwareShaders,FALSE); // ????
+		CObjectRestore<BOOL> orRestore(_bUseHardwareShaders,FALSE); // ????
 		
 		// prepare final vertices and normals
 		_pavWeightedVertices = _aFinalVertices.Push(_ctMeshVertices);
@@ -4482,7 +4482,7 @@ BOOL RM_GetRenBoneAbs(CModelInstance &mi,INDEX iBoneID,RenBone &rb)
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CalculateRenderingData(mi, FALSE);
 	INDEX ctrb = _aRenBones.Count();
 	// for each render bone after dummy one
@@ -4508,7 +4508,7 @@ BOOL RM_GetBoneRelPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoin
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	// use higher lod for bone finding
 	RM_SetCurrentDistance(0);
 	CalculateRenderingData(mi, FALSE);
@@ -4535,7 +4535,7 @@ BOOL RM_GetBoneRelPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoin
 
 extern BOOL RM_GetBoneAbsPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoint, FLOAT3D &vEndPoint)
 {
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	BOOL bRet = RM_GetBoneRelPosition(mi,iBoneID, vStartPoint, vEndPoint);
 	return bRet;
 }
@@ -4544,7 +4544,7 @@ extern BOOL RM_GetBoneTransformations(CModelInstance &mi,INDEX iBoneID, Matrix12
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	// use higher lod for bone finding
 	RM_SetCurrentDistance(0);
 	CalculateRenderingData(mi, FALSE);
@@ -4688,7 +4688,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 	// mask rendering?  
 	if( _iRenderingType==2) 
 	{
-		CObjectRestore<BOOL> or(_bUseHardwareShaders,FALSE);
+		CObjectRestore<BOOL> orRestore(_bUseHardwareShaders,FALSE);
 		// calculate all rendering data for this model instance
 		CalculateRenderingData(mi, FALSE);
 		// render each RenModel to mask

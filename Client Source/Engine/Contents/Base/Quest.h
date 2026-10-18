@@ -49,7 +49,7 @@ public:
 			return iQuestIndex == rhs.iQuestIndex;
 		}		
 		// 정렬위한 연산자 오버로딩
-		inline const bool operator< (const stQuestInfo& rhs)
+		inline bool operator< (const stQuestInfo& rhs) const
 		{
 			return iQuestIndex < rhs.iQuestIndex;
 		}

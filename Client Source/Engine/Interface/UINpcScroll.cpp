@@ -383,7 +383,7 @@ void CUINpcScroll::SetWarpContent()
 	m_lbNpcWarpDescription.AddString(0, (CTString)(_S(4740,"해당 NPC의 앞으로 이동합니다.")));
 }
 
-void CUINpcScroll::MultiLineString(CTString & strExplantion)
+void CUINpcScroll::MultiLineString(const CTString &strExplantion)
 {
 	//If length of string is less than max char
 	int nLength = strExplantion.Length();

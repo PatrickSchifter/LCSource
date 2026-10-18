@@ -2418,15 +2418,15 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 		{
 			if(m_bTransformMinimize == FALSE)//작아진다. 
 			{
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 				if(m_iPolymophStep == 0)
 				{  	
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					m_iPolymophStep++;
 				}
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;
@@ -2462,11 +2462,11 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 			}
 			else//이제 커져야한다.
 			{
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 				
 				if(m_iPolymophStep == 10)
 				{
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					m_iPolymophStep--;
 
 					if(m_nChangeMonsterId == GM_CHANGE)
@@ -2485,7 +2485,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 				}
 		
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;

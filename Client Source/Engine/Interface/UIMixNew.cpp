@@ -305,7 +305,7 @@ void CUIMixNew::CloseMixNew()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMixNew::AddString( CTString &strDesc )
+void CUIMixNew::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_MIXNEW_STRING )
 		return;

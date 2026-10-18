@@ -516,7 +516,7 @@ void CChattingUI::CmdGMExeCmdLine( const char* filename )
 
 	FILE* fp;
 
-	std::string strPath = _fnmApplicationPath + filename;
+	std::string strPath = (const char*)(_fnmApplicationPath + filename);
 
 	fp = fopen(strPath.c_str(), "rt");
 

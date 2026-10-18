@@ -855,6 +855,6 @@ extern CPacket *CreatePacket(void)
 extern void DeletePacket(CPacket *ppaPacket)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> or(_rcPacketContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> orRestore(_rcPacketContainer.rc_bNowDeleting,TRUE);
   _rcPacketContainer.DeleteObject(ppaPacket);
 }

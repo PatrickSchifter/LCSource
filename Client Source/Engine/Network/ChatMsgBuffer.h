@@ -24,14 +24,14 @@ protected:
 	BOOL		m_bShowNPCTalk;
 
 protected:
-	void	AddString( CTString &strMessage );
+	void	AddString( const CTString &strMessage );
 
 public:
 	ChatMsgBuffer();
 	~ChatMsgBuffer();
 
 	void	Reset() { m_ubMsgCount = 0; }
-	void	SetChatMsg( CTString &strMessage, COLOR colMessage = 0xC5C5C5FF, BOOL bShowNPCTalk = FALSE );
+	void	SetChatMsg( const CTString &strMessage, COLOR colMessage = 0xC5C5C5FF, BOOL bShowNPCTalk = FALSE );
 
 	void		CheckShowNPCTalk();
 

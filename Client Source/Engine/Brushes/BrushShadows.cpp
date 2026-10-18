@@ -475,8 +475,8 @@ void CBrushShadowMap::FindLightRectangle(CLightSource &ls, class CLightRectangle
 		// pixMaxU = PIX(sm_mexWidth >>iMipLevel);
 		// pixMaxV = PIX(sm_mexHeight>>iMipLevel);
 		// rectangle is around entire polygon
-		pixMaxU = Min( sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel);
-		pixMaxV = Min( sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel);
+		pixMaxU = Min( sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel);
+		pixMaxV = Min( sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel);
 	}
 	// if the light is point
 	else
@@ -514,15 +514,15 @@ void CBrushShadowMap::FindLightRectangle(CLightSource &ls, class CLightRectangle
 		pixMaxU = ((vmexHotPoint(1)+sm_mexOffsetX+mexFallOff)>>iMipLevel)+1;
 		pixMaxV = ((vmexHotPoint(2)+sm_mexOffsetY+mexFallOff)>>iMipLevel)+1;
 		// clamp the rectangle to the size of shadow map
-		// pixMinU = Min( Max(pixMinU, 0L), sm_mexWidth >>iMipLevel);
-		// pixMinV = Min( Max(pixMinV, 0L), sm_mexHeight>>iMipLevel);
-		// pixMaxU = Min( Max(pixMaxU, 0L), sm_mexWidth >>iMipLevel);
-		// pixMaxV = Min( Max(pixMaxV, 0L), sm_mexHeight>>iMipLevel);
+		// pixMinU = Min( Max(pixMinU, (PIX)0), sm_mexWidth >>iMipLevel);
+		// pixMinV = Min( Max(pixMinV, (PIX)0), sm_mexHeight>>iMipLevel);
+		// pixMaxU = Min( Max(pixMaxU, (PIX)0), sm_mexWidth >>iMipLevel);
+		// pixMaxV = Min( Max(pixMaxV, (PIX)0), sm_mexHeight>>iMipLevel);
 		// clamp the rectangle to the size of polygon
-		pixMinU = Min( Max(pixMinU, 0L), Min(sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel));
-		pixMinV = Min( Max(pixMinV, 0L), Min(sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel));
-		pixMaxU = Min( Max(pixMaxU, 0L), Min(sm_pixPolygonSizeU+16L, sm_mexWidth >>iMipLevel));
-		pixMaxV = Min( Max(pixMaxV, 0L), Min(sm_pixPolygonSizeV+16L, sm_mexHeight>>iMipLevel));
+		pixMinU = Min( Max(pixMinU, (PIX)0), Min(sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel));
+		pixMinV = Min( Max(pixMinV, (PIX)0), Min(sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel));
+		pixMaxU = Min( Max(pixMaxU, (PIX)0), Min(sm_pixPolygonSizeU+16, sm_mexWidth >>iMipLevel));
+		pixMaxV = Min( Max(pixMaxV, (PIX)0), Min(sm_pixPolygonSizeV+16, sm_mexHeight>>iMipLevel));
 	}
 	// all done
 	lr.lr_pixMinU = pixMinU;

@@ -1551,7 +1551,7 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 // Name : AddGuildDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIGuild::AddGuildDescString( CTString &strDesc, COLOR colDesc )
+void CUIGuild::AddGuildDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();

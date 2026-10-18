@@ -1130,7 +1130,7 @@ void CSoundLibrary::UpdateSounds(void)
 	if( !(sl_ulFlags&SLF_USINGWAVEOUT)) DSPlayMainBuffers();
 
 	// mixin the sounds via SW mixer (20 times per second should be enough)
-	static CTimerValue tvLast = 0I64;
+	static CTimerValue tvLast = ((__int64)0);
 	const TIME tmElapsed = (tvNow-tvLast).GetSeconds();
 	if( tmElapsed>0.05f) {
 	//if( tmElapsed>0.2f) {		// tested by seo

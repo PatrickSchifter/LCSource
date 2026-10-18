@@ -1151,9 +1151,10 @@ CUISpinButton* UIFactory::createSpinButton( TiXmlElement* pElement )
 	if( pElement->Attribute("data_back_w", &nDataBackWidth) )
 		pUI->setDataBackWidth(nDataBackWidth);
 	
-	if( pElement->Attribute("btn_w", &nBtnW) >= 0 &&
-		pElement->Attribute("btn_h", &nBtnH) >= 0 &&
-		pElement->Attribute("btn_gap", &nBtnGap) >= 0 )
+	// the three were compared with ">= 0" (a pointer, always true): read all three, then set
+	pElement->Attribute("btn_w", &nBtnW);
+	pElement->Attribute("btn_h", &nBtnH);
+	pElement->Attribute("btn_gap", &nBtnGap);
 	{
 		pUI->setSpinButton( nBtnW, nBtnH, nBtnGap );
 	}
@@ -1484,7 +1485,7 @@ CUITextBoxEx* UIFactory::createTextBoxEx( TiXmlElement* pElement )
 	{
 		if( tmp = (char*)pElement->Attribute("text_base_col") )
 		{
-			std::string strTemp = CUIBase::getText( (INDEX)nString );
+			std::string strTemp = (const char*)CUIBase::getText( (INDEX)nString );
 			pUI->AddText( strTemp, (COLOR)strtoul(tmp, NULL, 16) );
 		}
 	}

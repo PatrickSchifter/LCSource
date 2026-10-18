@@ -706,7 +706,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProcess::AddString ( CTString& strText, COLOR colText )
+void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 

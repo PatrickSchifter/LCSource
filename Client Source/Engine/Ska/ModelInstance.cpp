@@ -401,7 +401,7 @@ ANGLE3D CModelInstance::GetRideOffsetRot()
 }
 
 // Stretch model instance
-void CModelInstance::StretchModel(FLOAT3D &vStretch)
+void CModelInstance::StretchModel(const FLOAT3D &vStretch)
 {
 	mi_vStretch = vStretch;
 }

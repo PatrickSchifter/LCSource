@@ -304,7 +304,7 @@ public:
 	ANGLE3D GetRideOffsetRot();
 
 	// Stretch model instance
-	void StretchModel(FLOAT3D &vStretch);
+	void StretchModel(const FLOAT3D &vStretch);
 	// Stretch model instance without attachments
 	void StretchSingleModel(FLOAT3D &vStretch);
 	// Add new cloned anim state

@@ -231,7 +231,7 @@ void CUIRefine::CloseRefine()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIRefine::AddString( CTString &strDesc )
+void CUIRefine::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_REFINE_STRING )
 		return;

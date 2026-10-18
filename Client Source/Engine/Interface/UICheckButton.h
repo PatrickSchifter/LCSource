@@ -45,7 +45,7 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
-					CTString &strText, BOOL bCheckRegionLeft = TRUE, int nTextSX = 0, int nCheckRegion = 0 );
+					const CTString &strText, BOOL bCheckRegionLeft = TRUE, int nTextSX = 0, int nCheckRegion = 0 );
 
 	// Render
 	void	Render();
@@ -67,7 +67,7 @@ public:
 	BOOL	IsChecked() const { return m_bChecked; }
 
 	// Text
-	void	SetText( CTString &strText );
+	void	SetText( const CTString &strText );
 	// Color
 	void	SetTextColor( BOOL bEnableState, COLOR colText )
 	{
@@ -83,7 +83,7 @@ public:
 	{
 		m_rtUV[bsState].SetUV( fTx0, fTy0, fTx1, fTy1, fTexWidth, fTexHeight );
 	}
-	void	SetUV( UICheckBtnState bsState, UIRectUV &rt)
+	void	SetUV( UICheckBtnState bsState, const UIRectUV &rt)
 	{
 		m_rtUV[bsState].CopyUV(rt);
 	}

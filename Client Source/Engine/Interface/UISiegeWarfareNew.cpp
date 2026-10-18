@@ -322,7 +322,7 @@ void CUISiegeWarfareNew::RenderWaitTime()
 		
 		pDrawPort->PutTextExCX(tStr,nX+93,nY+49);
 
-		m_iWaitTime = m_iWaitTime_const - (((unsigned int(_pTimer->GetLerpedCurrentTick()*1000))/*timeGetTime()*/ - m_tmStartTime))/1000;
+		m_iWaitTime = m_iWaitTime_const - ((((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000))/*timeGetTime()*/ - m_tmStartTime))/1000;
 	}
 	else 
 	{	
@@ -917,7 +917,7 @@ void CUISiegeWarfareNew::StartConsensus(ULONG charIdx)
 	// 플레이어의 경우...
 	if( _pNetwork->MyCharacterInfo.index == charIdx )
 	{
-		m_tmStartTime = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();		
+		m_tmStartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();		
 		m_iConsensusBarSize = 0;
 		OpenConsensus();		
 		StartConsensusAni(charIdx);
@@ -994,7 +994,7 @@ void CUISiegeWarfareNew::StopConsensus(ULONG charIdx)
 //------------------------------------------------------------------------------
 int CUISiegeWarfareNew::CheckConsensus()
 {	
-	DWORD tmNow = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	DWORD tmNow = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	int tSec = (tmNow - m_tmStartTime)/1000;
 	if( (tSec-CONSENSUS_TIMEUP) <= 0 ) m_iConsensusBarSize = tSec*260/CONSENSUS_TIMEUP ;
 	return tSec-CONSENSUS_TIMEUP;

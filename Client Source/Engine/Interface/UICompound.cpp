@@ -219,7 +219,7 @@ void CUICompound::CloseCompound()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUICompound::AddString( CTString &strDesc )
+void CUICompound::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_COMPOUND_STRING )
 		return;

@@ -787,7 +787,7 @@ void CUITeleport::SendTeleportMove()
 // Name : SetTeleportInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment )
+void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment )
 {
 	if (ubSlot > TELEPORT_PRIMIUM_MAX_MEMO)
 		return;

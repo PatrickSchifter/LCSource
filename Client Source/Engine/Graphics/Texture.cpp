@@ -249,7 +249,7 @@ CTextureData::CTextureData()
 	td_ulFlags = NONE;
 	td_mexWidth  = 0;
 	td_mexHeight = 0;
-	td_tvLastDrawn = 0I64;
+	td_tvLastDrawn = ((__int64)0);
 	td_iFirstMipLevel  = 0;
 	td_ctFineMipLevels = 0;
 	
@@ -1103,7 +1103,7 @@ void CTextureData::Read_t( CTStream *inFile)
 		else
 		{
 			ThrowF_t( TRANS("Unrecognizable chunk ID (\"%s\") found while reading texture \"%s\"."),
-				(char*)idChunk, (CTString&)inFile->GetDescription() );
+				(char*)idChunk, (const char*)inFile->GetDescription() );
 		}
 	}
 	// until we didn't reach end of file
@@ -1978,7 +1978,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 void CTextureData::Unbind(void)
 {
 	// reset mark
-	td_tvLastDrawn = 0I64;
+	td_tvLastDrawn = ((__int64)0);
 	// only if bound
 	if( td_pulObjects==NULL) 
 	{
@@ -2042,7 +2042,7 @@ void CTextureData::Clear(void)
 	td_ctFrames = 0;
 	td_mexWidth  = 0;
 	td_mexHeight = 0;
-	td_tvLastDrawn = 0I64;
+	td_tvLastDrawn = ((__int64)0);
 	td_iFirstMipLevel  = 0;
 	td_ctFineMipLevels = 0;
 	td_pixBufferWidth  = 0;

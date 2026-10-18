@@ -260,7 +260,7 @@ void CBackImageManager::InIRead()
 	// ini파일은 로컬에 전달되는 파일이 아니므로 개발버전에서만 읽고,
 	// 로컬에서는 디폴트 값으로 세팅되어짐.
 
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_INI_PATH;
 
 	int i;

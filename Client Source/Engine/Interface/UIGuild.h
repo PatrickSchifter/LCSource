@@ -397,7 +397,7 @@ protected:
 
 	// Description
 	void	GetGuildDesc( BOOL bShow = TRUE );
-	void	AddGuildDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddGuildDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 
 	// 길드 자체에 대한 처리
 	void	CreateGuild();			// 길드 생성

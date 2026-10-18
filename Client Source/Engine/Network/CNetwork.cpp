@@ -7573,7 +7573,7 @@ void CNetworkLibrary::SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle
 	MyCharacterInfo.camera_angle = camera_angle;
 }
 
-void CNetworkLibrary::ClientSystemMessage( CTString &strSysMessage, int nSysType )
+void CNetworkLibrary::ClientSystemMessage( const CTString &strSysMessage, int nSysType )
 {
 	CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strSysMessage, nSysType );
 }
@@ -8868,7 +8868,7 @@ void CNetworkLibrary::SendLoginMessage(CTString& strID, CTString& strPW, ULONG u
 	nmMessage.setSize(sizeof(*packet));
 
 	SendToServerNew(nmMessage, TRUE);
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 
 	// EDIT : BS : 070413 : 신규 패킷 암호화
@@ -8918,7 +8918,7 @@ void CNetworkLibrary::SendDeleteCharacter(ULONG ulIndex,BYTE del)
 	nmChaDel << del;
 
 	SendToServerNew(nmChaDel,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8936,7 +8936,7 @@ void CNetworkLibrary::SendDeleteCharacter(ULONG ulIndex, CTString& strSecuNum, B
 	
 		
 	SendToServerNew(nmChaDel,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8951,7 +8951,7 @@ void CNetworkLibrary::SendGameStart(ULONG ulIndex)
 	nmChaStart << (unsigned char)MSG_MENU_START;
 	nmChaStart << ulIndex;
 	SendToServerNew(nmChaStart,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8979,7 +8979,7 @@ void CNetworkLibrary::SendCreateCharacter( CTString& strName, UBYTE ubJob, UBYTE
 	nmChaNew << (UBYTE)ubHair;
 	nmChaNew << (UBYTE)ubFace;
     _pNetwork->SendToServerNew(nmChaNew,TRUE);	
-	_pNetwork->m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	_pNetwork->m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	_pNetwork->m_bSendMessage		= TRUE;
 } 
 

@@ -507,7 +507,7 @@ void MixSound( CSoundObject &so, BOOL bAttenuate)
       so.so_fRightOffset += fOfsDelta;
       const FLOAT fMinOfs = Min( so.so_fLeftOffset, so.so_fRightOffset);
       ASSERT( fMinOfs>=0);
-      // if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (CTString&)sd.GetName());
+      // if( fMinOfs<0) CPrintF( "BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, (const char*)sd.GetName());
       // if looping
       if( so.so_ulFlags & SOF_LOOP) {
         // adjust offset ptrs inside sound

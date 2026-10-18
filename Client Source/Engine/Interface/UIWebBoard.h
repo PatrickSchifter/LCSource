@@ -283,8 +283,8 @@ protected:
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 	void	SetPageButtons( int nTotalWrite, int nCurPage );
 
-	void	AddListSubjectString( CTString &strSubject );
-	void	AddReadingString( CTString &strContent );
+	void	AddListSubjectString( const CTString &strSubject );
+	void	AddReadingString( const CTString &strContent );
 
 	void ChangeBlockWriteInfo(BOOL bBlock, AuthorityLevel authorityLevel);
 public:

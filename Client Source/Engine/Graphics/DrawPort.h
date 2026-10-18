@@ -62,7 +62,7 @@ public:
 	// copy constructor
 	CDrawPort(const CDrawPort *pdpOriginal);
 	// assignment operation
-	CDrawPort &operator=(CDrawPort &dpOriginal);
+	CDrawPort &operator=(const CDrawPort &dpOriginal);
 	// destructor
 	~CDrawPort(void);
 

@@ -204,9 +204,11 @@ CSampleSpline
 -기본 interpolate는 함수로 구현되어 있지 않고 값의 연산을 이용하여 구현된다.
 -필요한 연산은 값들 사이의 더하기, 빼기, float으로 곱하기이다.
 */
-template<class ValueType, class InterpolateFunc = CLerp<ValueType> >
+template<class TValueType, class InterpolateFunc = CLerp<TValueType> >
 class CSampleSpline
 {
+public:
+	typedef	TValueType ValueType;
 private:
 	//벡터에 저장되는 자료구조
 	class CSample
@@ -232,7 +234,6 @@ private:
 	typedef std::vector<CSample>			sample_vector;
 	typedef typename std::vector<CSample>::iterator	sample_iterator;
 public:
-	typedef	ValueType ValueType;
 	inline CSampleSpline() : m_iCount( 0 ), m_bPrepared( false ) {}
 	inline ~CSampleSpline() {}
 

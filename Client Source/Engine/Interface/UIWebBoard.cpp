@@ -926,7 +926,7 @@ void CUIWebBoard::SetPageButtons( int nTotalWrite, int nCurPage )
 // Name : AddListSubjectString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIWebBoard::AddListSubjectString( CTString &strSubject )
+void CUIWebBoard::AddListSubjectString( const CTString &strSubject )
 {
 	CTString	strTemp = strSubject;
 
@@ -959,7 +959,7 @@ void CUIWebBoard::AddListSubjectString( CTString &strSubject )
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIWebBoard::AddReadingString( CTString &strContent )
+void CUIWebBoard::AddReadingString( const CTString &strContent )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();

@@ -174,7 +174,7 @@ void CUISecurity::GetSecurityDesc( BOOL bShow )
 // Name : AddSecurityDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
+void CUISecurity::AddSecurityDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();

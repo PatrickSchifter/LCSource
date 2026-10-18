@@ -1786,7 +1786,10 @@ void CUIMessenger::DeleteMember()
 
 	bool bDel =m_mgBlock.DeleteMember(strName);
 	if( bDel )
-		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, CTString());
+	{
+		CTString strEmpty;
+		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, strEmpty);
+	}
 
 	if( m_bFriendTab)
 		m_miSelectMember =m_vecGroup[nGroup]->GetSelectMember();
@@ -1856,7 +1859,10 @@ void CUIMessenger::DeleteMember( int nCharIndex )
 			
 	bool bDel =m_mgBlock.DeleteMember(nCharIndex);
 	if( bDel )
-		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, CTString());
+	{
+		CTString strEmpty;
+		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, strEmpty);
+	}
 
 	ResizeScrollBar();
 }

@@ -12,7 +12,7 @@ public:
 	~CUITextBoxEx();
 
 	CUIBase* Clone();
-	void AddText(std::string& str, DWORD dwCol = DEF_UI_COLOR_WHITE);
+	void AddText(std::string str, DWORD dwCol = DEF_UI_COLOR_WHITE);
 	void AddBtn(std::string& str, Command* pCmd, 
 		DWORD dwColIdle = DEF_UI_COLOR_WHITE, DWORD dwColOver = DEF_UI_COLOR_BLUE,
 		DWORD dwColClick = DEF_UI_COLOR_BLUE, DWORD dwColDisable = DEF_UI_COLOR_WHITE);
@@ -50,7 +50,7 @@ private:
 	void splitOneLine(std::string& strAdd, vecValcont& val, std::string& strTagID);
 
 	void calcSplit(std::string& str, int& nCurCnt, int& nSplitCnt);
-	bool checkWidth(std::string& strPrev, std::string& strAdd, int nTextArea, int& nSplitPos);
+	bool checkWidth(const std::string &strPrev, std::string& strAdd, int nTextArea, int& nSplitPos);
 	bool checkSpace(std::string& strAdd, int nTextArea, int& nSplitCnt);
 	std::string parseSyntax(std::string& src, std::string& tagID);
 	void getTagID(std::string& strSyntax, std::string& strID, int &start, int &end);

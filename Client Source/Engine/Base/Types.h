@@ -464,6 +464,12 @@ inline void Clear(float i) {};
 inline void Clear(double i) {};
 inline void Clear(void *pv) {};
 
+// Clears a container's element with the Clear() overload for its type, including the ones
+// declared after the container templates (found by argument-dependent lookup when the template
+// is instantiated; a qualified ::Clear() would see only the overloads above).
+template<class cType>
+inline void ClearElement(cType &t) { Clear(t); };
+
 #define SYMBOLLOCATOR(symbol)
 
 #endif  /* include-once check. */

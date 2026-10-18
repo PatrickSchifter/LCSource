@@ -49,7 +49,7 @@ BOOL CTagManager::Unregister(const char *name)
 	return Unregister(std::string(name));
 }
 
-BOOL CTagManager::Unregister(std::string &name)
+BOOL CTagManager::Unregister(const std::string &name)
 //안태훈 수정 끝	//(For Performance)(0.2)
 {
 	my_map::iterator iter = m_mapRegistered.find(name);
@@ -65,7 +65,7 @@ BOOL CTagManager::IsRegister(const char *name)
 	return IsRegister(std::string(name));
 }
 
-BOOL CTagManager::IsRegister(std::string &name)
+BOOL CTagManager::IsRegister(const std::string &name)
 //안태훈 수정 끝	//(For Performance)(0.2)
 {
 	my_map::iterator iter = m_mapRegistered.find(name);
@@ -79,7 +79,7 @@ CTag *CTagManager::Find(const char *name, BOOL bFindHierarchy)
 	return Find(std::string(name), bFindHierarchy);
 }
 
-CTag *CTagManager::Find(std::string &name, BOOL bFindHierarchy)
+CTag *CTagManager::Find(const std::string &name, BOOL bFindHierarchy)
 {
 	if (!m_mapRegistered.empty())
 	{

@@ -422,7 +422,7 @@ void CUIMinigame::SetNpcTalk(int iTalkIdx)
 void CUIMinigame::RenderNpcSlot(INDEX npcState)
 {
 	static int tRoll=0;
-	static DWORD tTimeOld= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	static DWORD tTimeOld= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	DWORD tTimeNew;
 
 	switch(npcState)
@@ -434,7 +434,7 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 		{
 			m_btnNpcChoice[tRoll].Render();
 
-			tTimeNew = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+			tTimeNew = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 
 			if( tTimeOld + 300 < tTimeNew)
 			{
@@ -450,7 +450,7 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 			FLOAT	fTexHeight = m_ptdAddTexture->GetPixHeight();
 			
 			//if(tTimePass==0) tTimePass=timeGetTime();
-			tTimeNew = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+			tTimeNew = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 		
 			if( tTimeOld +50< tTimeNew)
 			{
@@ -755,7 +755,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 0);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000));
+					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 					
 				}
 				else if( m_btnStone.MouseMessage( pMsg ) == WMSG_COMMAND )				
@@ -767,7 +767,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 1);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000));
+					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 				}
 				else if( m_btnPaper.MouseMessage( pMsg ) == WMSG_COMMAND )
 				{
@@ -778,7 +778,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 2);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000));
+					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 				}
 				else if( m_listNpcTalk.MouseMessage( pMsg ) != WMSG_FAIL ) 
 				{

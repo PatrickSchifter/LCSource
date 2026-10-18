@@ -338,7 +338,7 @@ IMPL_GM_CMD(shoplist)
 
 	FILE* fp;
 
-	std::string strPath = _fnmApplicationPath;
+	std::string strPath = (const char*)_fnmApplicationPath;
 	strPath += "shoplist_";	
 	strPath += args;
 	strPath += ".txt";

@@ -18,7 +18,7 @@ struct stEvent
 	int				evtIdx;	// 타잎이 같다면 index에 의해 sort
 	bool			bEvtStarted;	// 이벤트 시작일인지 아닌지 체크.
 	reservedGMCommandElement* pData;
-	bool operator < ( stEvent e )
+	bool operator < ( const stEvent &e ) const
 	{
 		if( e.eType == this->eType )
 			return this->evtIdx < e.evtIdx;

@@ -136,8 +136,8 @@ const CEntityID &CEntityID::operator=(CEntity *pen) {
 	eid_ulEntityID = pen->en_ulID;
 	return *this;
 }
-const CEntityID &CEntityID::operator=(CEntityID &eidOther) {
-	(eidOther.GetEntity())->AddReference();    // must first add, then remove!
+const CEntityID &CEntityID::operator=(const CEntityID &eidOther) {
+	(const_cast<CEntityID &>(eidOther).GetEntity())->AddReference();    // must first add, then remove!
 	GetEntity()->RemReference();
 	eid_ulEntityID = eidOther.eid_ulEntityID;
 	return *this;
@@ -3270,7 +3270,7 @@ void CEntity::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX 
 		*(INDEX*)pubData = iModelInstanceID; pubData += sizeof(iModelInstanceID);
 		*(FLOAT*)pubData = fSpeedMul; pubData += sizeof(fSpeedMul);  
 		extern CEntityMessage _emEntityMessage;
-		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,(SLONG)slDataSize);
+		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,slDataSize);
 		_pNetwork->ga_srvServer.SendMessage(_emEntityMessage);
 	}
 }  
@@ -3463,7 +3463,7 @@ BOOL CEntity::IsAnimationPlaying(INDEX iAnimID, INDEX iModelInstanceID /*=master
 
 
 /* Stretch model instance */
-void CEntity::StretchModel(FLOAT3D &vStretch, INDEX iModelInstanceID)
+void CEntity::StretchModel(const FLOAT3D &vStretch, INDEX iModelInstanceID)
 {
 	ASSERT (en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
 	ASSERT (en_pmiModelInstance != NULL);

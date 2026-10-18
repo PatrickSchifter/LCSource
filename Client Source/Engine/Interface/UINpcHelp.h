@@ -85,7 +85,7 @@ public:
 	void	SetViewList();
 	void	SetViewContent( int iIndex );
 	void	RefreshNpcList();
-	void	MultiLineString(CTString &strExplan);	
+	void	MultiLineString(const CTString &strExplan);	
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );	

@@ -83,7 +83,7 @@ public:
 	void GetPos(int& x, int& y)	{ x = m_nPosX; y = m_nPosY;	}
 	void GetSize(int& width, int& height)	{ width = m_nWidth; height = m_nHeight;	}
 
-	void SetWebUrl(std::string& url);
+	void SetWebUrl(const std::string& url);
 
 private:
 	WEB_STATUS		m_eStatus;

@@ -5,6 +5,8 @@
   #pragma once
 #endif
 
+#include <Engine/Base/Lists.h>
+
 /* simple list iterator: 4 bytes structure, all functions are inline */
 template<class Cbase, int iOffset>
 class CListIter {

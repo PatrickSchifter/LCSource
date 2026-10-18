@@ -166,8 +166,8 @@ void CLayerMixer::CalculateData( CBrushShadowMap *pbsm, INDEX iMipmap)
   lm_iMipShift   = lm_iMipLevel - lm_iFirstLevel;
   lm_pixCanvasSizeU  = pbsm->sm_mexWidth >>lm_iMipLevel;
   lm_pixCanvasSizeV  = pbsm->sm_mexHeight>>lm_iMipLevel;
-  lm_pixPolygonSizeU = Min( lm_pixCanvasSizeU, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeU >>lm_iMipShift)+1L);
-  lm_pixPolygonSizeV = Min( lm_pixCanvasSizeV, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeV >>lm_iMipShift)+1L);
+  lm_pixPolygonSizeU = Min( lm_pixCanvasSizeU, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeU >>lm_iMipShift)+1);
+  lm_pixPolygonSizeV = Min( lm_pixCanvasSizeV, (PIX)(lm_pbsmShadowMap->sm_pixPolygonSizeV >>lm_iMipShift)+1);
 
   // determine where this mip-map is relative to the allocated shadow map memory
   PIX pixOffset = pbsm->sm_slMemoryUsed/BYTES_PER_TEXEL

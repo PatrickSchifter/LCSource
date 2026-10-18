@@ -129,7 +129,7 @@ public:
 	
 	// etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
+	void	AddString ( const CTString &strText, COLOR colText = 0xffffffff );
 
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxLCommand( int nCommandCode, int nResult );

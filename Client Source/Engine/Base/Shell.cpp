@@ -1034,7 +1034,7 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
 				continue;
 			}
 
-			char *strUser = (ss.ss_ulFlags & SSF_USER)?"user ":"";
+			const char *strUser = (ss.ss_ulFlags & SSF_USER)?"user ":"";
 
 			// get its type
 			ShellType &st = _shell_ast[ss.ss_istType];

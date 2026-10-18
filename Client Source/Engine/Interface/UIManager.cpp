@@ -255,7 +255,7 @@ CUIManager::CUIManager()
 	m_bOutDebugString = false;
 #endif
 	
-	std::string strLocal = DefHelp::getNationPostfix(g_iCountry, true);
+	std::string strLocal = (const char*)DefHelp::getNationPostfix(g_iCountry, true);
 	// 패스 추가
 	m_vecAdditionalPath.push_back("Data\\Interface\\");
 	m_vecAdditionalPath.push_back("Data\\Interface\\Loading\\");
@@ -718,7 +718,7 @@ CUIMessageBoxL* CUIManager::GetMessageBoxL( int nCommandCode )
 // Name : CreateMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIManager::CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	// Create message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -735,7 +735,7 @@ void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nComma
 // Name : CloseMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
+void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
 {
 	// Find message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -6851,7 +6851,7 @@ void CUIManager::SetRareOption( UpdateClient::itemInfo* pInfo, CItems& rItem )
 
 // WSS_MINIGAME_070422 ---------------------------------------------------------------------------->>
 // For multilined string
-void CUIManager::AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
+void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
 {	
 	// Get length of string
 	INDEX	nLength = tStr.Length();
@@ -8141,7 +8141,7 @@ std::string CUIManager::GetFullPath( std::string strFileName )
 
 void CUIManager::ItemNameColorInI()
 {
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_INI_PATH;
 
 	char szBuff[16];

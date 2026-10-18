@@ -959,7 +959,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIPetItemMix::AddString ( CTString& strText, COLOR colText )
+void CUIPetItemMix::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 

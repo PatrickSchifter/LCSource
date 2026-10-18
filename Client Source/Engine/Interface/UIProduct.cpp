@@ -812,7 +812,7 @@ void CUIProduct::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProduct::AddString ( CTString& strText, COLOR colText )
+void CUIProduct::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 

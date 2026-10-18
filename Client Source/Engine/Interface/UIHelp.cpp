@@ -1132,7 +1132,7 @@ void CUIHelp3::CloseHelp()
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxChar )
+void CUIHelp3::AddHelpString( const CTString &strContent, COLOR colContent, int iMaxChar )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();

@@ -129,7 +129,7 @@ public:
 
 	// Network message functions ( receive )
 	// wooss 050816 add useTime 
-	void	SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment );
+	void	SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment );
 	void	SetUseTime(int t);
 	int		GetUseTime() { return m_useTime; }
 

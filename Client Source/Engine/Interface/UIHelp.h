@@ -190,7 +190,7 @@ public:
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
 
-	void	AddHelpString( CTString &strContent, COLOR colContent = 0xFFE7ADFF, int iMaxChar = HELP3_READ_MAX_CHAR );
+	void	AddHelpString( const CTString &strContent, COLOR colContent = 0xFFE7ADFF, int iMaxChar = HELP3_READ_MAX_CHAR );
 	void	ClearHelpString();
 
 	// Render

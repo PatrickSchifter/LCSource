@@ -519,7 +519,7 @@ void CUIMap::ReadMapData()
 // Name : ShowToolTip()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMap::ShowToolTip( BOOL bShow, CTString &strName, int nX, int nY )
+void CUIMap::ShowToolTip( BOOL bShow, const CTString &strName, int nX, int nY )
 {
 	if( !bShow )
 	{

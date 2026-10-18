@@ -62,7 +62,7 @@ public:
 	int		IsSatisfiedSkill(int nSkillIndex, int nLevel, BOOL bSpecial, BOOL bReinforcementSkill = FALSE );
 
 	void	AddSkillInfoString(int nSkillInfoList, CTString strSkillInfo, COLOR strColor = 0xF2F2F2FF);
-	void	AddSkillDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddSkillDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 
 	void	ResetSkillInfoString();
 

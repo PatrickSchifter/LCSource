@@ -77,7 +77,7 @@ void CHelpWebUI::OpenUI()
 		g_web.SetPos(nAbsX, nAbsY);
 		g_web.SendWebPageOpenMsg(TRUE);
 
-		std::string strPath = "file:///" + _fnmApplicationPath.FileDir();
+		std::string strPath = (const char*)("file:///" + _fnmApplicationPath.FileDir());
 		strPath += "Data/Interface/Help/index.htm";
 		g_web.SetWebUrl(strPath);
 	}

@@ -2103,8 +2103,8 @@ void CUIInventory::ToggleVisible()
 		}
 
 		// 아무것도 선택하지 않았다면 셀렉트 이미지 안보이게 처리.
-		if (m_nSelSlotItemID < 0)
-			UpdateSelectItem();
+		// was "if (m_nSelSlotItemID < 0) UpdateSelectItem();": the array compared with 0, never true
+
 	}
 
 	BOOL	bVisible = !IsVisible();

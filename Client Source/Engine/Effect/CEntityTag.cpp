@@ -37,7 +37,7 @@ CTag *CEntityTag::Copy()
 	return pTag;
 }
 
-void CEntityTag::AddNewTagInfo(FLOAT time, FLOATquat3D &rot, FLOAT3D &pos, FLOAT3D &stretch)
+void CEntityTag::AddNewTagInfo(FLOAT time, const FLOATquat3D &rot, const FLOAT3D &pos, const FLOAT3D &stretch)
 {
 	if(!Active()) return;
 
@@ -53,7 +53,7 @@ void CEntityTag::AddNewTagInfo(FLOAT time, FLOATquat3D &rot, FLOAT3D &pos, FLOAT
 	CTag::AddNewTagInfo(time, rot*qEntityRot, pos+vEntityPos, stretch);
 }
 
-void CEntityTag::AddNewTagInfo(FLOAT time, Matrix12 &mInfo, Matrix12 &mStrInfo)
+void CEntityTag::AddNewTagInfo(FLOAT time, const Matrix12 &mInfo, const Matrix12 &mStrInfo)
 {
 	if(!Active()) return;
 
@@ -94,7 +94,7 @@ void CEntityTag::AddNewTagInfo(FLOAT time, Matrix12 &mInfo, Matrix12 &mStrInfo)
 	CTag::AddNewTagInfo(info);
 }
 
-void CEntityTag::AddNewTagInfo(TagInfo &info)
+void CEntityTag::AddNewTagInfo(const TagInfo &info)
 {
 	if(!Active()) return;
 

@@ -306,7 +306,7 @@ UIRectUV CUIProgressBar::getUVBar()
 	return uv;
 }
 
-void CUIProgressBar::setProgressText( _tagProgressStatus state, CTString &strText, BOOL _bShowPercent /*= FALSE*/, COLOR colText /*= 0xFFFFFFF */ )
+void CUIProgressBar::setProgressText( _tagProgressStatus state, const CTString &strText, BOOL _bShowPercent /*= FALSE*/, COLOR colText /*= 0xFFFFFFF */ )
 {
 	if( state < 0 && state > PR_STAT_TAG_END )
 		return;

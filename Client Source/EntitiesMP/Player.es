@@ -10393,15 +10393,15 @@ functions:
 			{
 				static int cnt=0;//누적 카운트
 
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 				if(cnt==0)
 				{
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					cnt++;
 				}
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;
@@ -10440,11 +10440,11 @@ functions:
 
 				static int cnt=10;//누적 카운트
 
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 				
 				if(cnt==10)
 				{
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					cnt--;
 
 					if(m_nChangeMonsterId == GM_CHANGE)
@@ -10465,7 +10465,7 @@ functions:
 				}
 		
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;
@@ -16407,7 +16407,7 @@ functions:
 		// 내 소환수나 애완동물일 경우, 이동은 계속함...
 		if( penTarget != NULL && ( penTarget->GetFirstExFlags() & ( ENF_EX1_CURRENT_PET | ENF_EX1_CURRENT_SLAVE | ENF_EX1_CURRENT_WILDPET) ) )
 		{
-			if((m_bForward||m_bKeyMove) && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+			if((m_bForward||m_bKeyMove) && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 			{
 				SendMyNextMovePosition(vDelta);
 			}
@@ -16438,7 +16438,7 @@ functions:
 			// NOTE : 바닥을 찍었을때나... 머 그럴때?
 			if((m_bForward||m_bKeyMove))
 			{
-				if ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+				if (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 				{
 					SendMyNextMovePosition(vDelta);
 				}
@@ -16794,7 +16794,7 @@ functions:
 						//1230 여기서 move메시지를 보내야 한다.
 						FLOAT3D vDelta = m_vDesiredPosition - GetPlacement().pl_PositionVector;
 					
-						if((m_bForward||m_bKeyMove) && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+						if((m_bForward||m_bKeyMove) && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 						{
 							SendMyNextMovePosition(vDelta);
 						} 
@@ -17176,7 +17176,7 @@ functions:
 							
 							FLOAT3D vDelta = m_vDesiredPosition - GetPlacement().pl_PositionVector;
 							
-							if((m_bForward) && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+							if((m_bForward) && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 							{
 								SendMyNextMovePosition(vDelta);
 							} 
@@ -17269,7 +17269,7 @@ functions:
 					
 							FLOAT3D vDelta = m_vDesiredPosition - GetPlacement().pl_PositionVector;	  
 											
-							if((m_bForward||m_bKeyMove) && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+							if((m_bForward||m_bKeyMove) && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 							{
 								SendMyNextMovePosition(vDelta);
 							} 
@@ -17354,7 +17354,7 @@ functions:
 						//1230 여기서 move메시지를 보내야 한다.
 						FLOAT3D vDelta = m_vDesiredPosition - GetPlacement().pl_PositionVector;
 					
-						if((m_bForward||m_bKeyMove) && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
+						if((m_bForward||m_bKeyMove) && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 1000)
 						{
 							SendMyNextMovePosition(vDelta);
 						} 
@@ -18243,7 +18243,7 @@ functions:
 				_pNetwork->SendMoveMessage(this, plPlacement,plr_fSpeed);						
 				m_vMyPositionTmp = GetPlacement().pl_PositionVector;
 				m_bSendStopMessage = FALSE;
-				tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000); //timeGetTime();
+				tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000); //timeGetTime();
 				return;
 			}
 
@@ -18308,7 +18308,7 @@ functions:
 				plPlacement.pl_PositionVector(2) += fMaxY-(plPlacement.pl_PositionVector(2)+0.1f);
 			}
 			
-			tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000); //timeGetTime();
+			tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000); //timeGetTime();
 				
 			plPlacement.pl_OrientationAngle(1) = GetPlacement().pl_OrientationAngle(1);
 
@@ -22142,7 +22142,7 @@ virtual BOOL InputKey(INDEX Code)
 	{
 		// tmStartTime : 1초마다 무브 메시지를 보냄.
 		// 이동 + 로테이션 중이라면 0.2초마다 한번씩 무브 메시지를 보내도록 추가.
-		if ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 200)
+		if (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - tmStartTime > 200)
 		{
 			tmStartTime = 0;
 		}

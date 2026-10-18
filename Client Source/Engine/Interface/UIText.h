@@ -12,7 +12,7 @@ public:
 	virtual CUIBase* Clone();
 	void	OnRender( CDrawPort* pDraw );
 
-	void	SetText( CTString& str, CTString strEllipsis = "");
+	void	SetText( const CTString &str, CTString strEllipsis = "");
 	void	setFontColor( COLOR col )	{ m_color = col; }
 	void	setFontShadow( COLOR colShadow, BOOL bOn ) {
 		m_colShadow = colShadow;	m_bShadow = bOn; }

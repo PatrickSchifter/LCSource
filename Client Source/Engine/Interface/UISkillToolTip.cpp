@@ -448,7 +448,7 @@ void CUISkillToolTip::RenderSkillInfoDesc()
 	pDrawPort->FlushRenderingQueue();
 }
 
-void CUISkillToolTip::AddSkillDescString( CTString &strDesc, COLOR colDesc /*= 0xF2F2F2FF */ )
+void CUISkillToolTip::AddSkillDescString( const CTString &strDesc, COLOR colDesc /*= 0xF2F2F2FF */ )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();

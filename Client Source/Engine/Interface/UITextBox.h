@@ -29,7 +29,7 @@ public:
 	void	OnUpdateBoxInfo(); // TextBox 업데이트
 	
 	void	SetScroll( CUIScrollBar* pScroll );
-	void	SetText( CTString& str, COLOR color = 0xFFFFFFFF, BOOL bUpdateHeight = FALSE);
+	void	SetText( const CTString &str, COLOR color = 0xFFFFFFFF, BOOL bUpdateHeight = FALSE);
 	void	SetSplitMode( eSPLIT_TYPE eType = SPLIT_NONE ) { m_eSplitType = eType; }
 	void	SetStartXY( int nSX, int nSY ) 
 	{ 

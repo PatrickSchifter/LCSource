@@ -391,7 +391,7 @@ extern void TR_CopyTerrain(CTerrain *ptrTerrainDst, const CTerrain *ptrTerrainSr
 		CTerrainLayer &tlDst = ptrDst->tr_atlLayers[iTerrainLayer];
 		// Enable full layer copy
 		ASSERT(!_bFullLayerCopy);
-		CObjectRestore<BOOL> or(_bFullLayerCopy, TRUE);
+		CObjectRestore<BOOL> orRestore(_bFullLayerCopy, TRUE);
 		// Copy layer
 		TRL_CopyLayer(ptrTerrainDst, iTerrainLayer, *ptlLayer);
 	}

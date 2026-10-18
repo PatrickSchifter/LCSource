@@ -828,7 +828,7 @@ void CUIProcessNPC::SelectItem(int _nIndex)
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIProcessNPC::AddString(CTString& strText, COLOR colText)
+void CUIProcessNPC::AddString(const CTString &strText, COLOR colText)
 {
     int nLength =  strText.Length();
 

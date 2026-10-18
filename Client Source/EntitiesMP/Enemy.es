@@ -1000,15 +1000,15 @@ functions:
 		{
 			static int cnt=0;//누적 카운트
 
-			static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+			static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 			if(cnt==0)
 			{  	
-				tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+				tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 				cnt++;
 			}
 
-			int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+			int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 			if(time < 1)
 			{
 				return;
@@ -1044,18 +1044,18 @@ functions:
 
 			static int cnt=10;//누적 카운트
 
-			static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+			static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 			
 			if(cnt==10)
 			{
-				tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+				tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 				cnt--;
 				StartEffectGroup("Polymorph", &GetModelInstance()->m_tmSkaTagManager, _pTimer->GetLerpedCurrentTick());
 				PlaySound(m_soMessage, SOUND_POLYMOPH, SOF_3D | SOF_VOLUMETRIC);	
 			}
 	
 
-			int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+			int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 			if(time < 1)
 			{
 				return;

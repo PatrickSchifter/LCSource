@@ -936,7 +936,7 @@ void CUITalk::ReloadTalkList()
 // Explain:  
 // Date : 2005-05-25,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUITalk::AddErrorTalk( CTString &strDesc, COLOR colDesc )
+void CUITalk::AddErrorTalk( const CTString &strDesc, COLOR colDesc )
 {
 	AddTalkListString( "", strDesc, false, colDesc );
 }

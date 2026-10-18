@@ -1210,7 +1210,7 @@ public:
 	void SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle);
 
 	// 0 = SYSMSG_NORMAL
-	void ClientSystemMessage( CTString &strSysMessage, int nSysType = 0 );
+	void ClientSystemMessage( const CTString &strSysMessage, int nSysType = 0 );
 	void SendRebirthMessage();
 	void DeleteAllMob();
 	

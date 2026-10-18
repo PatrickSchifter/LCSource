@@ -1320,7 +1320,7 @@ WMSG_RESULT CChattingUI::OnLButtonUp( UINT16 x, UINT16 y )
 
 void CChattingUI::SystemMessageColorInI()
 {
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_INI_PATH;
 
 	char szBuff[16];
@@ -1342,7 +1342,7 @@ void CChattingUI::SystemMessageColorInI()
 void CChattingUI::ChatColorInI()
 {
 	int		i;
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_INI_PATH;
 
 	char szBuff[16];

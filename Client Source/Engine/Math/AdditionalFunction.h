@@ -89,7 +89,7 @@ inline void RotateVector(FLOAT3D &vInOutVector, const FLOATquat3D &qRot)
 	RotateVector(vInOutVector, matrix);
 }
 
-inline ANGLE3D GetEulerAngleFromDir(FLOAT3D &vDir)
+inline ANGLE3D GetEulerAngleFromDir(const FLOAT3D &vDir)
 {
 	ANGLE3D aRetAngle;
 

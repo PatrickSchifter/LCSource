@@ -622,7 +622,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 		
 		for (int j = 0; j < nMeshInfo; ++j)
 		{
-			CMeshInfo& pInfo = smcList[index].GetMeshInfo(j);
+			CMeshInfo pInfo = smcList[index].GetMeshInfo(j);
 			const char* strMeshPath = pInfo.GetMeshTFNM();
 			
 			CTString path = strFullPath + strMeshPath;

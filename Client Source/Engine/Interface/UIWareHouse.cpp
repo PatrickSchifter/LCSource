@@ -2517,7 +2517,7 @@ void CUIWareHouse::ErrMessage( int nErr )
 	CUIManager::getSingleton()->CreateMessageBox( MsgInfo );
 }
 
-void CUIWareHouse::SendListReq(CTString& strPW)
+void CUIWareHouse::SendListReq(const CTString &strPW)
 {
 	CNetworkMessage nmMessage;
 	RequestClient::doStashList* packet = reinterpret_cast<RequestClient::doStashList*>(nmMessage.nm_pubMessage);

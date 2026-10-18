@@ -437,7 +437,7 @@ public:
 	/* Check if given animation is currently playing */
 	BOOL IsAnimationPlaying(INDEX iAnimID, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Stretch model instance */
-	void StretchModel(FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
+	void StretchModel(const FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Stretch model instance without attachments */
 	void StretchSingleModel(FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Offset all animations in anim queue */

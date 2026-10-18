@@ -107,7 +107,7 @@ public:
 	void	SetViewContent( int iIndex);
 	void    SetWarpContent();
 	void	RefreshNpcList();
-	void	MultiLineString(CTString & strExplantion);	
+	void	MultiLineString(const CTString &strExplantion);	
 	COLOR	GetNameColor(int nIndex);
 	void	ReceiveNPCData(CNetworkMessage* istr);
 	void	ReceiveMobLocation(CNetworkMessage* istr);

@@ -3147,7 +3147,7 @@ void CSessionState::SessionStateLoop(void)
 		else
 		{
 			extern BOOL _bLoginProcess;
-			if( _pNetwork->m_bSendMessage && (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - _pNetwork->m_uiSendedTime > 15000 )
+			if( _pNetwork->m_bSendMessage && ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - _pNetwork->m_uiSendedTime > 15000 )
 			{
 				if( _bLoginProcess )
 				{
@@ -12626,7 +12626,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 			CTString	strGuildMName;
 			CTString	strMessage[3];
 
-			(*istr) >> (INDEX)idxGuild;
+			(*istr) >> idxGuild;
 			(*istr) >> strGuildMName;
 
 			pUIManager->CloseMessageBox(MSGCMD_GUILD_ERROR);
@@ -12650,7 +12650,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 			CTString	strMessage;
 			CTString	strSubMessage;
 
-			(*istr) >> (INDEX)idxGuild;
+			(*istr) >> idxGuild;
 			
 			pUIManager->CloseMessageBox(MSGCMD_GUILD_ERROR);
 
@@ -12669,7 +12669,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 			LONG		lStatus;
 
 			(*istr) >> idxGuild;
-			(*istr) >> (LONG)lStatus;
+			(*istr) >> lStatus;
 
 			_pNetwork->MyCharacterInfo.iGuildMasterKickStatus	= (int)lStatus;
 		}
@@ -13899,8 +13899,8 @@ void CSessionState::MoveOtherServer(ULONG zone, CTString ip, ULONG port)
 #endif // #ifndef CRYPT_NET_MSG_MANUAL
 #endif // #ifdef CRYPT_NET_MSG
 
-	unsigned int StartTime = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
-//	StartTime = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
+	unsigned int StartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
+//	StartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
 
 	CUIManager* pUIManager = CUIManager::getSingleton();
 
@@ -13938,7 +13938,7 @@ void CSessionState::MoveOtherServer(ULONG zone, CTString ip, ULONG port)
 		// FIXME : GO_ZONE의 경우 네트워크 관련된 부분을 내부 함수에서 처리하기 때문에,
 		// FIXME : 접속 종료 처리를 이 안에서 하는듯...
 		// FIXME : 수정해야 함.
-		if((unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - StartTime > 10000)
+		if(((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - StartTime > 10000)
 		{
 			// FIXME : 중복되는 코드가 많음.
 			pUIManager->CloseMessageBox(MSGCMD_DISCONNECT);
@@ -13958,7 +13958,7 @@ void CSessionState::MoveOtherServer(ULONG zone, CTString ip, ULONG port)
 	nmChaStart << _pNetwork->MyCharacterInfo.index;
 	_pNetwork->SendToServerNew(nmChaStart,TRUE);	
 	
-	StartTime = (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
+	StartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime(); 
 
 	for(;;)
 	{	
@@ -14051,7 +14051,7 @@ void CSessionState::MoveOtherServer(ULONG zone, CTString ip, ULONG port)
 		// FIXME : GO_ZONE의 경우 네트워크 관련된 부분을 내부 함수에서 처리하기 때문에,
 		// FIXME : 접속 종료 처리를 이 안에서 하는듯...
 		// FIXME : 수정해야 함.
-		if((unsigned int(_pTimer->GetLerpedCurrentTick()*1000)) - StartTime > 10000)
+		if(((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)) - StartTime > 10000)
 		{
 			// FIXME : 중복되는 코드가 많음.
 			pUIManager->CloseMessageBox(MSGCMD_DISCONNECT);
@@ -14679,7 +14679,7 @@ void CSessionState::ReceiveFactoryMessage(CNetworkMessage *istr )
 			UBYTE UItype;
 			SLONG nfactoryIndex,temSealtype,ncount;
 
-			(*istr) >> (UBYTE)UItype;		// 0: NPC에서 요청 1: 만들기에서 요청
+			(*istr) >> UItype;		// 0: NPC에서 요청 1: 만들기에서 요청
 			(*istr) >> temSealtype;
 			(*istr) >> ncount;
 

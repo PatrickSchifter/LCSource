@@ -524,7 +524,7 @@ static void RenderModel_Preview(RenModel &rm)
 extern void RM_PreviewSKA(CModelInstance &mi, CDrawPort *pdp, SkaPreviewFlags spf, INDEX iSelectionID/*=-1*/)
 {
 	_pdp = pdp;
-	CObjectRestore<BOOL> or(_bUseHardwareShaders,FALSE);
+	CObjectRestore<BOOL> orRestore(_bUseHardwareShaders,FALSE);
 
 	_psf = spf;
 	_iSelectionID = iSelectionID;

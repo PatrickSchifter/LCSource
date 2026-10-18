@@ -31,8 +31,10 @@ public:
   inline FixInt<iInt, iFrac>(UWORD uw) : slHolder((SLONG)(uw<<iFrac)) {};
   inline FixInt<iInt, iFrac>(SBYTE sb) : slHolder((SLONG)(sb<<iFrac)) {};
   inline FixInt<iInt, iFrac>(UBYTE ub) : slHolder((SLONG)(ub<<iFrac)) {};
+#ifndef PLATFORM_UNIX  // there SLONG and ULONG are int and unsigned int
   inline FixInt<iInt, iFrac>(signed int si)   : slHolder((SLONG)(si<<iFrac)) {};
   inline FixInt<iInt, iFrac>(unsigned int ui) : slHolder((SLONG)(ui<<iFrac)) {};
+#endif
   /* Constructor from float. */
   inline FixInt<iInt, iFrac>(float f)  : slHolder((SLONG)(f*(1L<<iFrac))) {};
   inline FixInt<iInt, iFrac>(double f) : slHolder((SLONG)(f*(1L<<iFrac))) {};
@@ -54,12 +56,12 @@ public:
   inline FixInt<iInt, iFrac> &operator-=(FixInt<iInt, iFrac> x) { slHolder -= x.slHolder; return *this;};
   inline FixInt<iInt, iFrac> operator-(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>(slHolder-x.slHolder, 1); };
   /* Multiplication. */
-  inline FixInt<iInt, iFrac> operator*(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG)((__int64(slHolder)*x.slHolder) >>iFrac), 1); };
+  inline FixInt<iInt, iFrac> operator*(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG)((((__int64)slHolder)*x.slHolder) >>iFrac), 1); };
   inline FixInt<iInt, iFrac> operator*(SLONG sl) const { return FixInt<iInt, iFrac>(slHolder*sl, 1); };
   friend inline FixInt<iInt, iFrac> operator*(SLONG sl, FixInt<iInt, iFrac> x){ return FixInt<iInt, iFrac>(x.slHolder*sl, 1); };
   inline FixInt<iInt, iFrac> &operator*=(FixInt<iInt, iFrac> x) { return *this = *this*x; };
   /* Division. */
-  inline FixInt<iInt, iFrac> operator/(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG) ( (__int64(slHolder)<<iFrac) / x.slHolder ) , 1); };
+  inline FixInt<iInt, iFrac> operator/(FixInt<iInt, iFrac> x) const { return FixInt<iInt, iFrac>( (SLONG) ( (((__int64)slHolder)<<iFrac) / x.slHolder ) , 1); };
   inline FixInt<iInt, iFrac> &operator/=(FixInt<iInt, iFrac> x) { return *this = *this/x; };
 
   /* Relational operators. */

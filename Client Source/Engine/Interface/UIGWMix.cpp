@@ -223,7 +223,7 @@ void CUIGWMix::CloseGWMix()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIGWMix::AddString( CTString &strDesc )
+void CUIGWMix::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_GW_MIX_STRING )
 		return;

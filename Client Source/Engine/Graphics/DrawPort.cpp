@@ -183,7 +183,7 @@ CDrawPort::~CDrawPort(void)
 	}
 }
 // assignment operation
-CDrawPort &CDrawPort::operator=(CDrawPort &dpOriginal)
+CDrawPort &CDrawPort::operator=(const CDrawPort &dpOriginal)
 {
 	if (_pdpCurrent==this) {
 		Unlock_internal();
