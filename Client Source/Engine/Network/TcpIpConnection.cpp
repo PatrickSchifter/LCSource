@@ -82,7 +82,12 @@ BOOL CTcpIpConnection::InitConnection(SOCKET s)
 //	unsigned long bpr = 0;
 
 	setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&bl, sizeof(BOOL));
+#ifdef PLATFORM_WIN32
 	setsockopt(Socket, IPPROTO_TCP, SO_KEEPALIVE, (const char*)&bl, sizeof(BOOL));
+#endif
+	// (SO_KEEPALIVE belongs to SOL_SOCKET: at the TCP level Winsock takes this value as a
+	// read-only option and keepalive stays off. On macOS the same number is TCP_NOOPT, which
+	// would switch off the TCP options, so the call is left out there.)
 	return TRUE;
 }
 
@@ -138,7 +143,12 @@ BOOL CTcpIpConnection::ConnectToServer(char* serverName, int _port)
 			{
 				int err = WSAGetLastError();
 			
+#ifdef PLATFORM_WIN32
 				if (err != WSAEWOULDBLOCK) 
+#else
+				// a non-blocking connect() under way: EINPROGRESS here (WSAEWOULDBLOCK in Winsock)
+				if (err != WSAEINPROGRESS && err != WSAEWOULDBLOCK)
+#endif
 				{
 					closesocket(ServerSock);
 					ServerSock = INVALID_SOCKET;
@@ -154,7 +164,16 @@ BOOL CTcpIpConnection::ConnectToServer(char* serverName, int _port)
 					struct timeval tv;
 					tv.tv_sec = 3;
 					tv.tv_usec = 0;
+#ifdef PLATFORM_WIN32
 					if (select(0, NULL, &wfds, &efds, &tv) <= 0 || FD_ISSET(ServerSock, &efds))
+#else
+					// a failed connect() leaves the socket writable with SO_ERROR set (Winsock
+					// reports it in the except set)
+					int iSocketError = 0;
+					socklen_t slErrorSize = sizeof(iSocketError);
+					if (select(ServerSock+1, NULL, &wfds, &efds, &tv) <= 0 || FD_ISSET(ServerSock, &efds)
+					 || getsockopt(ServerSock, SOL_SOCKET, SO_ERROR, &iSocketError, &slErrorSize) != 0 || iSocketError != 0)
+#endif
 					{
 						closesocket(ServerSock);
 						ServerSock = INVALID_SOCKET;
@@ -192,7 +211,11 @@ BOOL CTcpIpConnection::IsConnected(SOCKET sock)
 	FD_ZERO(&fsExcept);
 	FD_SET(sock, &fsExcept);
 	
+#ifdef PLATFORM_WIN32
 	if (select(1, NULL, NULL, &fsExcept, &tvTimeOut) <= 0)
+#else
+	if (select(sock+1, NULL, NULL, &fsExcept, &tvTimeOut) <= 0)
+#endif
 	{
 		// TIME_OUT
 		return TRUE;

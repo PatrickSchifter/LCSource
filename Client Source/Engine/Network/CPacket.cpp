@@ -8,6 +8,7 @@
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Network/CPacket.h>
+#include <Engine/Network/SocketCompat.h>
 #include <Engine/Base/ObjectRestore.h>
 
 #include <Engine/Base/ListIterator.inl>

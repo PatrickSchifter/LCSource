@@ -20,6 +20,7 @@
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/WebAddress.h>
 #include <Engine/Network/NetworkProfile.h>
+#include <Engine/Network/SocketCompat.h>
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/Stock_CAnimData.h>
 #include <Engine/Templates/Stock_CTextureData.h>

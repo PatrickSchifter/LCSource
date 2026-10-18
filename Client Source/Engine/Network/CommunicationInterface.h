@@ -11,6 +11,7 @@
 
 #include <Engine/Network/CPacket.h>
 #include <Engine/Network/InputBuffer.h> 
+#include <Engine/Network/SocketCompat.h>
 
 struct LoginServer;
 
