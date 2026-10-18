@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/ErrorTable.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/Shell.h>
@@ -13,7 +13,7 @@
 #include <Engine/Ska/Render.h>
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Network/LevelChange.h>
-#include <Engine/Network/tcpipconnection.h>
+#include <Engine/Network/TcpIpConnection.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Sound/SoundObject.h>
 #include <Engine/Sound/SoundLibrary.h>

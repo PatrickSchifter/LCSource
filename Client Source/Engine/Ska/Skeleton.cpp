@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Ska/Skeleton.h>
 #include <Engine/Ska/Render.h>
 #include <Engine/Ska/StringTable.h>

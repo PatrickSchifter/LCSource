@@ -11,7 +11,7 @@
 #include <Engine/Math/Matrix12.h>
 #include <Engine/Templates/StaticArray.h>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/templates/DynamicContainer.cpp>
+#include <Engine/Templates/DynamicContainer.cpp>
 
 
 #define ANIMSET_VERSION  14 // TODO: on version change remove be_mDefaultPos from read and write and precache stuff from bone envelope

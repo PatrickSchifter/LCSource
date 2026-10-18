@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Translation.h>
@@ -10,7 +10,7 @@
 #include <Engine/Network/CPacket.h>
 #include <Engine/Base/ObjectRestore.h>
 
-#include <Engine/Base/Listiterator.inl>
+#include <Engine/Base/ListIterator.inl>
 #include <Engine/Templates/ReusableContainer.cpp>
 
 // should the packet transfers in/out of the buffer be reported to the console

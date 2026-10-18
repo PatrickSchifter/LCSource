@@ -2,9 +2,9 @@
 // CEntityTag.cpp
 //
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CEntityTag.h"
-#include <engine/Base/Memory.h>
+#include <Engine/Base/Memory.h>
 #include <Engine/Base/Memory.h>
 
 CEntityTag::CEntityTag()

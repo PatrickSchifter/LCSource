@@ -9,14 +9,14 @@
 #include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UINickName.h>
 #include <Engine/Interface/UIShop.h>
-#include <Engine/Interface/UICashShopEx.h>
+#include <Engine/Interface/UICashShopEX.h>
 
 #include <Engine/Help/Util_Help.h>
 #include <Engine/Help/ItemHelp.h>
 
 #include <Engine/Contents/Base/InvenData.h>
 #include <Engine/Contents/Base/Syndicate.h>
-#include <Engine/contents/Base/UICharacterInfoNew.h>
+#include <Engine/Contents/Base/UICharacterInfoNew.h>
 #include <Engine/Contents/function/ItemCollectionData.h>
 #include <Engine/Contents/function/PremiumChar.h>
 

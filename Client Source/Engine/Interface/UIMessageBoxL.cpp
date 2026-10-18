@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIMessageBoxL.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>

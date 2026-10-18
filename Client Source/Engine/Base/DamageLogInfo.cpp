@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/DamageLogInfo.h>
 
 bool CDamageLogInfo::writeInfo(LogDamage& In)

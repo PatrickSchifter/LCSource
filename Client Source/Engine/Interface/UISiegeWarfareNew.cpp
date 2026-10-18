@@ -2,7 +2,7 @@
 // 드라탄 신공성 시스템 
 // 기존 공성에서 추가된 부분만 구현한다.
 // --------------------------------------------------------------------------//
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>

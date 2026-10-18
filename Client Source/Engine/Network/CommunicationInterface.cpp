@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/CTString.h>
@@ -16,7 +16,7 @@
 #include <Engine/Network/Server.h>
 
 //0105
-#include <Engine//Network/tcpipconnection.h>
+#include <Engine/Network/TcpIpConnection.h>
 //#include <Engine//Network/Inputbuffer.h> 
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIMessageBox.h>

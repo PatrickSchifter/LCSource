@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include "StatusEffect.h"
 #include <Engine/Base/Timer.h>

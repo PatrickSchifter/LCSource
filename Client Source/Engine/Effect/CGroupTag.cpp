@@ -1,6 +1,6 @@
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CGroupTag.h"
 #include <algorithm>
 #include <Engine/Base/Memory.h>

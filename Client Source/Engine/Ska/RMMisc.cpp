@@ -5,7 +5,7 @@
 #include <Engine/Ska/ModelInstance.h>
 #include <Engine/Ska/Render.h>
 #include <Engine/Graphics/Shader.h>
-#include <Engine/Graphics/Drawport.h>
+#include <Engine/Graphics/DrawPort.h>
 #include <Engine/Base/ObjectRestore.h>
 
 static GFXColor _aColors[] = { C_BLACK,

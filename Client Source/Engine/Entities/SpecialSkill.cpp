@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <string>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/SpecialSkill.h>

@@ -1,7 +1,7 @@
 
 // DIRECT3D "LOW-LEVEL" INTERFACE (COMMON)
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -22,7 +22,7 @@
 //안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 
 #undef new
-#include <D3dx8core.h>
+#include <d3dx8core.h>
 
 
 // asm shortcuts

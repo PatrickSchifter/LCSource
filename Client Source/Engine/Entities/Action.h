@@ -5,7 +5,7 @@
 #endif
 
 #include <Engine/Help/LoadLod.h>
-#include <common/header/def_action.h>
+#include <Common/header/def_action.h>
 
 class  CAction : public stAction, public LodLoader<CAction>
 {

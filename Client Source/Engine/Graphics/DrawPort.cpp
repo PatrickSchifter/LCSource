@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIWindow.h>
 #include <Engine/Base/Memory.h>
@@ -23,7 +23,7 @@
 
 //강동민 수정 시작 로그인 처리 작업	07.10
 // FIXME : Clip Near Plane 테스트를 위한...
-#include <D3dx8.h>
+#include <d3dx8.h>
 //강동민 수정 끝 로그인 처리 작업		07.10
 
 extern INDEX gfx_bDecoratedText;

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 
 #include <map>
@@ -6,7 +6,7 @@
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/Ska/Render.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Interface/UISignboard.h>
+#include <Engine/Interface/UISignBoard.h>
 #include <Engine/Interface/UIAutoHelp.h>
 #include <Engine/Interface/UISiegeWarfare.h>
 #include <Engine/Interface/UISiegeWarfareNew.h>

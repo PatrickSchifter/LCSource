@@ -2,7 +2,7 @@
 	UIProgressBar.cpp : implementation of the CUIProgressBar class.
 *********************************************************************/
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIProgressBar.h>
 

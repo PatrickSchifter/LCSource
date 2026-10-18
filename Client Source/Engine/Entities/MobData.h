@@ -8,7 +8,7 @@
 #include <Engine/Entities/Entity.h>
 #include <Engine/Network/ChatMsgBuffer.h>
 #include <Engine/Help/LoadLod.h>
-#include <common/header/def_npc.h>
+#include <Common/header/def_npc.h>
 
 #define		NPC_SHOPPER				(1 << 0)	// 상점주인여부?
 #define		NPC_FIRSTATTACK			(1 << 1)	// 선공여부?

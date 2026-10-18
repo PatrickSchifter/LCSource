@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -6,7 +6,7 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ViewPort.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 
 // track texture memory allocated in main heap
@@ -1358,9 +1358,9 @@ extern void gfxSetBlendType( const enum PredefinedBlendType pbt)
 
 
 
-#include "GFX_wrapper_OpenGL.cpp"
+#include "Gfx_wrapper_OpenGL.cpp"
 
-#include "GFX_wrapper_Direct3D.cpp"
+#include "Gfx_wrapper_Direct3D.cpp"
 
 
 

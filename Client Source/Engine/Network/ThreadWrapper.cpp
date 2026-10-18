@@ -1,5 +1,5 @@
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-#include "stdH.h"
+#include "StdH.h"
 
 #include "ThreadWrapper.h"
 #include <assert.h>

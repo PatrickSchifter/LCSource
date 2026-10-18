@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // Note: this CRC calculation algorithm, although originating from MSDN examples,
 // is in fact identical to the Adler32 used in ZIP's CRC calculation.

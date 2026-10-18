@@ -167,7 +167,7 @@ target_link_libraries(Shaders PRIVATE Engine)
 
 lc_client_target(EntitiesMP SHARED ${ENTITIESMP_SOURCES} ${ENTITIESMP_GENERATED})
 target_compile_definitions(EntitiesMP PRIVATE _WINDLL _USRDLL)
-# StdH/StdH.h includes "..\\Global.h", which Ecc generates from Global.es into ${LC_GEN}/EntitiesMP:
+# StdH/StdH.h includes "../Global.h", which Ecc generates from Global.es into ${LC_GEN}/EntitiesMP:
 # searching from ${LC_GEN}/EntitiesMP/StdH resolves it there.
 file(MAKE_DIRECTORY "${LC_GEN}/EntitiesMP/StdH")
 target_include_directories(EntitiesMP PRIVATE "${LC_GEN}/EntitiesMP" "${LC_CLIENT_SRC}/EntitiesMP/StdH" "${LC_GEN}/EntitiesMP/StdH")

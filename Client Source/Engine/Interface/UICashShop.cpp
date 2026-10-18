@@ -1,5 +1,5 @@
 
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더파일 정리. [12/1/2009 rumist]
 // temporary header [11/20/2009 rumist]

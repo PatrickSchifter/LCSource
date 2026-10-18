@@ -1,7 +1,7 @@
 // UIAffinity.cpp: implementation of the CUIAffinity class.
 //
 //////////////////////////////////////////////////////////////////////
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIShop.h>
 #include <vector>

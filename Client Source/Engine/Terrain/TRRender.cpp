@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/Matrix12.h>
 #include <Engine/Math/OBBox.h>
@@ -19,7 +19,7 @@
 //강동민 수정 시작
 #include <Engine/Rendering/Render_internal.h>
 #include <Engine/Ska/ModelInstance.h>
-#include <Engine/SKA/Render.h>
+#include <Engine/Ska/Render.h>
 //강동민 수정 끝
 
 #include <Engine/Base/Console.h>

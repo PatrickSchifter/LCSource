@@ -9,7 +9,7 @@ $Header: //depot/3darg/Tools/NormalMapper/NmFileIO.cpp#15 $
 //안태훈이 추가한 파일, 윗부분의 Copyright관련 주석 제거 말것.
 
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
-#include <stdH.h>
+#include <StdH.h>
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
 #include <stdarg.h>
 #include <stdlib.h>

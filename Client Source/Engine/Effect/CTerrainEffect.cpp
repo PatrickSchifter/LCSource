@@ -1,5 +1,5 @@
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
-#include "stdH.h"
+#include "StdH.h"
 
 #include <Engine/Math/Functions.h>
 #include <Engine/Base/Types.h>
@@ -10,7 +10,7 @@
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Graphics/DrawPort.h>
-#include <Engine/MAth/Matrix12.h>
+#include <Engine/Math/Matrix12.h>
 #include <Engine/Terrain/Terrain.hpp>
 #include <Engine/Entities/Entity.h>
 #include <Engine/Math/AdditionalFunction.h>

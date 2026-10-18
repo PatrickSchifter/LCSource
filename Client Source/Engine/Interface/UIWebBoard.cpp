@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/3/2009 rumist]
 //안태훈 수정 시작	//(5th Closed beta)(0.2)

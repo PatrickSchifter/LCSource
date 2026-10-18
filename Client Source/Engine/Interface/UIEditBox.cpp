@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #ifdef PLATFORM_WIN32
 #include <dimm.h>
 #include <imm.h>	// Date : 2005-03-05,   By Lee Ki-hwan

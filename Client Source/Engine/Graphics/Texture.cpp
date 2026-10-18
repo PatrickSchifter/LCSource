@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/Texture.h>
 
@@ -13,10 +13,10 @@
 
 #include <Engine/Templates/DynamicArray.h>
 #include <Engine/Templates/DynamicArray.cpp>
-#include <Engine/Templates/Stock_CtextureData.h>
+#include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/StaticArray.cpp>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 
 #include <3rdparty/lpng163/png.h>

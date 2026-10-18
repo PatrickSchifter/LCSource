@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -36,7 +36,7 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/Fog_internal.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/MemoryTracking.h>
 
 #include <Engine/Templates/LinearAllocator.cpp>

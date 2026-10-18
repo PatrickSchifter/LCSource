@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include "initguid.h"
 
 #include <Engine/Sound/SoundLibrary.h>
@@ -31,7 +31,7 @@ template class CStaticArray<CSoundListener>;
 
 	// on PC, we need GUIDs and multi-media library
 	#pragma comment(lib, "winmm.lib")
-	#include <Engine/Sound/EAX.h>
+	#include <Engine/Sound/eax.h>
 
 	// environment types for EAX
 	static INDEX aiEnvTypes[] = {

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 //#define USING_SQLITE
 #include <Engine/Entities/EntityClass.h>
 #include <Engine/Interface/UIInternalClasses.h>

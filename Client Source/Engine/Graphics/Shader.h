@@ -12,7 +12,7 @@
 
 //강동민 수정 시작 Water 구현		04.13
 #include <Engine/Effect/CNiceWater.h>
-#include <Engine/SKA/ModelInstance.h>
+#include <Engine/Ska/ModelInstance.h>
 //강동민 수정 끝 Water 구현			04.13
 
 #include <Engine/Entities/SmcParser.h>

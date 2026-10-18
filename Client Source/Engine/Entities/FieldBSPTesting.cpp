@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/EntityCollision.h>

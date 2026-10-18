@@ -1,6 +1,6 @@
 
 #include "StdH.h"
-#include <Engine/interface/UIInternalClasses.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include "UIFocus.h"
 
 CUIFocus::CUIFocus()

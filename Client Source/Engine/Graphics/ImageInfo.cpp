@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/Color.h>

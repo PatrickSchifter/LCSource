@@ -1,14 +1,14 @@
 /*
-#include "stdafx.h"
+#include "StdAfx.h"
 #include <assert.h>
-#include "tcpipconnection.h"
+#include "TcpIpConnection.h"
 #include "TxtQueue.h"
 //#include "TcpIp.h"
 #include <mmsystem.h>
 #include <stdio.h>
 */
-#include "stdh.h"
-#include <Engine/Network/tcpipconnection.h>
+#include "StdH.h"
+#include <Engine/Network/TcpIpConnection.h>
 #include <Engine/Network/TxtQueue.h>
 #include <Engine/Network/CNetwork.h>
 

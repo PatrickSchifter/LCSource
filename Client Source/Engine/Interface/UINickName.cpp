@@ -1,5 +1,5 @@
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include "UINickName.h"
 #include <Engine/Interface/UIRadar.h>

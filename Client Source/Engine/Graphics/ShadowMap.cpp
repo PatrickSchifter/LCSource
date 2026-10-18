@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ShadowMap.h>
 
@@ -13,7 +13,7 @@
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Base/ListIterator.inl>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 #define SHADOWMAXBYTES (256*256*4*4/3)
 

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Entities/EntityProperties.h>
 #include <Engine/Entities/Precaching.h>

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/World/World.h>

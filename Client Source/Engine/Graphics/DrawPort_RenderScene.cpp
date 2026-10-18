@@ -1,8 +1,8 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/DrawPort.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Graphics/RenderScene.h>

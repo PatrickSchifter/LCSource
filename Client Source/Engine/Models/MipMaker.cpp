@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Models/MipMaker.h>
 #include <Engine/Math/Vector.h>

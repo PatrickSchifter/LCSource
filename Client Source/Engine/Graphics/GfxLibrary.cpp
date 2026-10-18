@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/GfxLibrary.h>
 
@@ -7,7 +7,7 @@
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Shell.h>
 #include <Engine/Base/MemoryTracking.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Math/Functions.h>
 #include <Engine/Math/AABBox.h>

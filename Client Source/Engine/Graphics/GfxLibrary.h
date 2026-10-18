@@ -52,7 +52,7 @@ extern CStaticStackArray<UWORD>			_auwBtn[MAX_BTN];
 // yjpark     -->|
 
 
-#include <Engine/Graphics/GFX_wrapper.h>
+#include <Engine/Graphics/Gfx_wrapper.h>
 
 
 // D3D vertex for simple draw functions

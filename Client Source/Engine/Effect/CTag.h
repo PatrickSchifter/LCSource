@@ -11,8 +11,8 @@
 
 #include <Engine/Math/Vector.h>
 #include <Engine/Math/Quaternion.h>
-#include <Engine/base/Types.h>
-#include <Engine/base/CTString.h>
+#include <Engine/Base/Types.h>
+#include <Engine/Base/CTString.h>
 #include <deque>
 #include <string>
 

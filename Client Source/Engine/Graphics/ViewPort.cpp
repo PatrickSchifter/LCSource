@@ -1,9 +1,9 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ViewPort.h>
 
 #include <Engine/Graphics/GfxLibrary.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Interface/UIIME.h>
 extern INDEX ogl_bExclusive;
 //	김영환 전역 설정 값 가져오기

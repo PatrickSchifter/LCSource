@@ -1,7 +1,7 @@
 // UIFortune.cpp: implementation of the CUIFortune class.
 //
 //////////////////////////////////////////////////////////////////////
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIShop.h>
 #include <vector>

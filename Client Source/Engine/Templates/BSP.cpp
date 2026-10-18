@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Templates/BSP.h>
 #include <Engine/Templates/BSP_internal.h>

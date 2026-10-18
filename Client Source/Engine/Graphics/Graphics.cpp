@@ -1,6 +1,6 @@
-#include "stdh.h"
+#include "StdH.h"
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/RenderPoly.h>
 #include <Engine/Graphics/Color.h>

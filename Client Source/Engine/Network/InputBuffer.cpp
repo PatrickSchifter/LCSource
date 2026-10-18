@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include "InputBuffer.h"
 
 CPacket* CInputBuffer::GetPacket()

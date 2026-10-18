@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>

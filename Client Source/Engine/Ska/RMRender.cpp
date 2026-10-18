@@ -15,8 +15,8 @@
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Templates/DynamicContainer.cpp>
-#include <Engine/Graphics/Drawport.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Graphics/DrawPort.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/ObjectRestore.h>
 

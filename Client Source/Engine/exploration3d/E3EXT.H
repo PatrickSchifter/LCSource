@@ -49,8 +49,8 @@ info@xdsoft.com
 #define DllExport
 #endif
 
-#include "e3types.h"
-#include "e3base.h"
+#include "E3TYPES.H"
+#include "E3BASE.H"
 
 typedef DWORD(WINAPI*E3DLLFUNC)(DWORD,DWORD,DWORD);
 

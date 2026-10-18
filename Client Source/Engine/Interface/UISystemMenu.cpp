@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/3/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -16,7 +16,7 @@
 #include <Engine/Contents/Base/PetStash.h>
 #include <Engine/Contents/Base/UISkillNew.h>
 #include <Engine/Contents/Login/UIServerSelect.h>
-#include <engine/Contents/Login/UILoginNew.h>
+#include <Engine/Contents/Login/UILoginNew.h>
 #include <Engine/Interface/UISystemMenu.h>
 #include <Engine/Interface/UIPersonalShop.h>
 #include <Engine/Contents/Base/UIAuctionNew.h>

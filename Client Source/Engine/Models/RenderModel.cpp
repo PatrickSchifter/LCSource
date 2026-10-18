@@ -1,7 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Float.h>
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>

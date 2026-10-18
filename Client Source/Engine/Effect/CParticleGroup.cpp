@@ -1,6 +1,6 @@
 //안태훈 수정 시작	//(Remake Effect)(0.1)
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CParticleGroup.h"
 #include <Engine/Graphics/Color.h>
 #include <Engine/Base/FileName.h>

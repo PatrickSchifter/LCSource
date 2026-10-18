@@ -1,7 +1,7 @@
 #ifndef _ITEM_COLLECTION_DATA_H_
 #define _ITEM_COLLECTION_DATA_H_
 
-#include <common/header/def_item_collection.h>
+#include <Common/header/def_item_collection.h>
 #include <Engine/Help/LoadLod.h>
 #include <vector>
 

@@ -8,7 +8,7 @@
 	#pragma once
 #endif
 
-#include <Engine/Entities/Itemdata.h>
+#include <Engine/Entities/ItemData.h>
 #include <Engine/Interface/UIProcess.h> // 창의 크기값은 UIProcess의 define값을 사용
 
 enum DRAGON_WEAPON_TYPE

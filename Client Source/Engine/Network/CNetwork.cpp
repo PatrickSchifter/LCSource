@@ -5,7 +5,7 @@
 #include <Engine/Base/CRCTable.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/Shell.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Timer.h>
@@ -34,7 +34,7 @@
 #include <Engine/Network/NetworkProfile.h>
 #include <Engine/Network/LevelChange.h>
 #include <Engine/Network/EntityHashing.h>
-#include <Engine/Network/tcpipconnection.h>
+#include <Engine/Network/TcpIpConnection.h>
 #include <Engine/Network/MessageDefine.h>
 
 #include <Engine/Templates/Stock_CFontData.h>
@@ -54,9 +54,9 @@
 #include <Engine/Templates/StaticStackArray.cpp>
 
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/interface/UIManager.h>
-#include <Engine/interface/UISpinButton.h>
-#include <Engine/interface/UIMessageBox.h>
+#include <Engine/Interface/UIManager.h>
+#include <Engine/Interface/UISpinButton.h>
+#include <Engine/Interface/UIMessageBox.h>
 #include <Engine/Interface/UIProcess.h>			// 이기환 추가 ( 12. 6 )
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/Interface/UIGuild.h>
@@ -110,7 +110,7 @@
 #include <Common/Packet/ptype_old_extend.h>
 #include <Common/Packet/ptype_attendance.h>
 #include <Common/Packet/ptype_old_login.h>
-#include <common/Packet/ptype_premium_char.h>
+#include <Common/Packet/ptype_premium_char.h>
 
 #define MAX_MOVE_LIST		(20)
 #define	DEF_SKILL_SEND_DELAY	200

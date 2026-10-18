@@ -10,7 +10,7 @@
 #define DEMO_CLIENT SERVER_CLIENTS
 
 #include <Engine/Network/CPacket.h>
-#include <Engine/Network/Inputbuffer.h> 
+#include <Engine/Network/InputBuffer.h> 
 
 struct LoginServer;
 

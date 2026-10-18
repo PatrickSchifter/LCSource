@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Terrain/Terrain.hpp>
 

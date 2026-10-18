@@ -5,7 +5,7 @@
 #include <Engine/Base/Types.h>
 #include <Engine/Graphics/Color.h>
 #include <Engine/Ska/Render.h>
-#include <Engine/ska/ModelInstance.h>
+#include <Engine/Ska/ModelInstance.h>
 #include <Engine/Templates/Stock_CModelInstance.h>
 #include <Engine/Graphics/DrawPort.h>
 #include <algorithm>

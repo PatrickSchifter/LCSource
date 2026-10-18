@@ -1,9 +1,9 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/GameState.h>
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UiSelChar.h>
+#include <Engine/Interface/UISelChar.h>
 #include <Engine/Ska/Render.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Entities/InternalClasses.h>

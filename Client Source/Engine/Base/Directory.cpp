@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Unzip.h>

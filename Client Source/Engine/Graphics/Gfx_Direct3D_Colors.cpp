@@ -1,5 +1,5 @@
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <d3dx8tex.h>
 #pragma comment(lib, "d3dx8.lib")

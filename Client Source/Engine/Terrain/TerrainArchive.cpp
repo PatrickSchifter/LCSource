@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainArchive.h>

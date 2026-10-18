@@ -3,7 +3,7 @@
  *  Copyright (c) 1997, CroTeam. All rights reserved.
  */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Math/Projection.h>
 

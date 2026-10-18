@@ -1,8 +1,8 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UiLogin.h>
+#include <Engine/Interface/UILogin.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/GameState.h>

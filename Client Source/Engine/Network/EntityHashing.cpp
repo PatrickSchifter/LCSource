@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Entities/EntityClass.h>
@@ -9,14 +9,14 @@
 #define TYPE CEntityHashItem
 #define CHashTableSlot_TYPE CEntityHashTableSlot
 #define CHashTable_TYPE     CEntityHashTable
-#include <Engine\Templates\HashTableTemplate.cpp>
+#include <Engine/Templates/HashTableTemplate.cpp>
 #undef VALUE_TYPE
 #undef TYPE
 #undef CHashTableSlot_TYPE
 #undef CHashTable_TYPE
 
-#include <Engine\Network\EMsgBuffer.h>
-#include <Engine\Base\Timer.h>
+#include <Engine/Network/EMsgBuffer.h>
+#include <Engine/Base/Timer.h>
 
 extern FLOAT ser_fPositionTreshold;
 extern FLOAT ser_fOrientationTreshold;

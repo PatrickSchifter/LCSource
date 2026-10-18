@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Ska/ModelInstance.h>
 #include <Engine/Ska/SkaAssert.h>
@@ -10,7 +10,7 @@
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ReplaceFile.h>
 #include <Engine/Math/Quaternion.h>
 

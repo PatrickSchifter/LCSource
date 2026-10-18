@@ -1,11 +1,11 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
 #include <Engine/Light/LightSource.h>
 #include <Engine/Light/Gradient.h>
 #include <Engine/Base/ListIterator.inl>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/Color.h>
 #include <Engine/Math/FixInt.h>
 #include <Engine/Entities/Entity.h>

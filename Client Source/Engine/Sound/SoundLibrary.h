@@ -5,7 +5,7 @@
 #endif
 
 
-#include <DSound.h>
+#include <dsound.h>
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Math/Vector.h>

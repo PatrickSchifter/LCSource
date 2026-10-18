@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Console.h>
@@ -12,7 +12,7 @@
 #include <Engine/Network/ClientInterface.h>
 #include <Engine/Network/CPacket.h>
 
-#include <Engine/Base/Listiterator.inl>
+#include <Engine/Base/ListIterator.inl>
 
 #include <Engine/Network/CommunicationInterface.h>
 

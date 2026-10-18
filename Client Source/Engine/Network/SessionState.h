@@ -12,7 +12,7 @@
 #include <Engine/Network/SlaveTarget.h>
 #include <Engine/Network/ItemTarget.h>
 #include <Engine/Network/SessionSocket.h>
-#include <Engine/Network/Cmd.h>
+#include <Engine/Network/cmd.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/LocalDefine.h>
 #include <Engine/Base/Command.h>

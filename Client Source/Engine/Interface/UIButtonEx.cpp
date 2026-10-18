@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더파일 정리. [12/1/2009 rumist]
 // [6/17/2009 rumist] include definition stat. 

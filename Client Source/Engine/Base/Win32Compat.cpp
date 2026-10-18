@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // Win32 functions emulated outside Windows (declared in Win32Compat.h). Compiled empty on Windows.
 #ifndef _WIN32

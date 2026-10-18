@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // The user32 window, cursor and screen functions the engine and the UI call, over SDL3, outside
 // Windows (declared in Win32Compat.h). An HWND is an SDL_Window (Platform.h). Compiled empty on

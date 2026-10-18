@@ -2,13 +2,13 @@
 // CSkaTag.cpp
 //
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CSkaTag.h"
 #include <Engine/Ska/ModelInstance.h>
 #include <Engine/Ska/Mesh.h>
 #include <Engine/Math/Matrix12.h>
 #include <Engine/Math/Functions.h>
-#include <engine/Base/Memory.h>
+#include <Engine/Base/Memory.h>
 
 #define BONE_BLEND_ZERO		0
 #define BONE_BLEND_ONE		1

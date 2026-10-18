@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Sound/SoundDecoder.h>
 #include <Engine/Base/Stream.h>

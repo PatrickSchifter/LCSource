@@ -1,6 +1,6 @@
 //안태훈 수정 시작	//(Remake Effect)(0.1)
 
-#include "stdH.h"
+#include "StdH.h"
 
 #include "CParticlesEmitter.h"
 #include <Engine/Base/Memory.h>

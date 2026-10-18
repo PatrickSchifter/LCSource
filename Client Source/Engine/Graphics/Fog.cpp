@@ -1,8 +1,8 @@
 #include "StdH.h"
 
 #include <Engine/Base/Memory.h>
-#include <Engine/Base/Filename.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/FileName.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Matrix.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Graphics/Color.h>

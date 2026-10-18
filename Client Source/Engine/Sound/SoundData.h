@@ -4,7 +4,7 @@
   #pragma once
 #endif
 
-#include <DSound.h>
+#include <dsound.h>
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Serial.h>
 

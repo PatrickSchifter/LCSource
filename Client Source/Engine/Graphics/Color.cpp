@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/Color.h>
 #include <Engine/Math/Functions.h>

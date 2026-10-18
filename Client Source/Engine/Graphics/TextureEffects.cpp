@@ -1,13 +1,13 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/TextureEffects.h>
 
 #include <Engine/Math/Functions.h>
 #include <Engine/Base/Timer.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Templates/DynamicArray.cpp>
-#include <Engine/Templates/Stock_CtextureData.h>
+#include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/StaticArray.cpp>
 
 // asm shortcuts

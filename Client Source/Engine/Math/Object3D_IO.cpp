@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Math/Object3D.h>
 
@@ -16,8 +16,8 @@
 #undef W
 #undef NONE
 
-#include <Engine/exploration3d/e3ext.h>
-#include <Engine/exploration3d/explor3d.h>
+#include <Engine/exploration3d/E3EXT.H>
+#include <Engine/exploration3d/EXPLOR3D.H>
 
 void FillConversionArrays_t(const FLOATmatrix3D &mTransform);
 void ClearConversionArrays( void);

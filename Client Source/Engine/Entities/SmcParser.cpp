@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <fstream>
 #ifdef PLATFORM_WIN32
 #include <tchar.h>

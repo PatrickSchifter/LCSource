@@ -1,7 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIMessageBox.h>
-#include <Engine/Petinfo.h>
+#include <Engine/PetInfo.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIPetInfo.h>
 #include <Engine/Interface/UITextureManager.h>

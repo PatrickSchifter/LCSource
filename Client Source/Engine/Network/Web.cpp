@@ -1,7 +1,7 @@
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 #include "StdH.h"
 #include "Web.h"
-#include <WinInet.h>
+#include <wininet.h>
 #include <assert.h>
 #include "ThreadWrapper.h"
 #include <Engine/Interface/UIManager.h>

@@ -1,13 +1,13 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #ifdef _WIN32
 
-#include <DbgHelp.h>
+#include <dbghelp.h>
 #include <tchar.h>
 #include <Engine/Build.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/StackDump.h>
-#include <Engine/Base/Console_Internal.h>
+#include <Engine/Base/Console_internal.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Network/Web.h>

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Math/Matrix12.h>
@@ -6,7 +6,7 @@
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/Fog_internal.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -19,7 +19,7 @@
 #undef new
 #include "initguid.h"
 #include <d3d8.h>
-#include <D3dx8core.h>
+#include <d3dx8core.h>
 #pragma comment(lib, "d3dx8.lib")
 
 // asm shortcuts

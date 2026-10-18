@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Models/Normals.h>
 #include <Engine/Math/Vector.h>

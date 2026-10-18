@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/ErrorTable.h>
