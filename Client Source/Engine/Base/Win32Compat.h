@@ -586,6 +586,8 @@ DWORD GetModuleFileName(HMODULE hModule, char *strFileName, DWORD ctSize);
 HMODULE LoadLibrary(const char *strFileName);
 void *GetProcAddress(HMODULE hModule, const char *strProcName);
 BOOL FreeLibrary(HMODULE hModule);
+// NULL: the executable; otherwise the module if it is already loaded (same names as LoadLibrary)
+HMODULE GetModuleHandle(const char *strModuleName);
 #define SetErrorMode(uMode)          0U
 #define SEM_FAILCRITICALERRORS       0x0001
 #define SEM_NOOPENFILEERRORBOX       0x8000

@@ -1,4 +1,8 @@
 #include "StdH.h"
+#ifndef PLATFORM_WIN32
+#include <sys/statvfs.h>
+#include <sys/utsname.h>
+#endif
 
 #include <Engine/Build.h>
 #include <Engine/Base/Profiling.h>
@@ -396,6 +400,7 @@ NTSTATUS NewZwOpenProcess(
 // 실행된다. 또한 마찬가지로 강제 종료시 정상 처리가 되지 않으면 클라이언트를
 // 다시 실행할 수 없다.
 //- detect multi client.
+#ifdef PLATFORM_WIN32
 #pragma data_seg( ".SHAREDATA" )
 int g_nEngineDllRefCnt = 0;
 #pragma data_seg()
@@ -435,6 +440,11 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	}
 	return TRUE;
 }
+#else
+// one engine per process: the count shared by every process that loads the DLL (Windows) does
+// not exist here, so another client is not detected this way
+ENGINE_API const int	SE_GetEngineDllRefCnt() { return 1; }
+#endif  // PLATFORM_WIN32
 
 
 static void DetectCPU(void)
@@ -726,8 +736,8 @@ ENGINE_API bool SE_CheckEngine()
 		if (srcLen != targetLen)
 			return false;
 
-		minTime = min(minTime, targetTime);
-		maxTime = max(maxTime, targetTime);
+		minTime = Min(minTime, targetTime);
+		maxTime = Max(maxTime, targetTime);
 	}
 	if (maxTime-minTime > 60*3)	// 3 min
 		return false;
@@ -821,6 +831,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// report os info
 	CPrintF(TRANS("Examining underlying OS...\n"));
+#ifdef PLATFORM_WIN32
 	OSVERSIONINFO osv;
 	memset(&osv, 0, sizeof(osv));
 	osv.dwOSVersionInfoSize = sizeof(osv);
@@ -847,6 +858,24 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	} else {
 		CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()) );
 	}
+#else
+	struct utsname uts;
+	if (uname(&uts) == 0) {
+		sys_strOS = uts.sysname;  // "Darwin"; the version is the kernel's
+		int iMajor = 0, iMinor = 0, iBuild = 0;
+		sscanf(uts.release, "%d.%d.%d", &iMajor, &iMinor, &iBuild);
+		sys_iOSMajor = iMajor;
+		sys_iOSMinor = iMinor;
+		sys_iOSBuild = iBuild;
+		sys_strOSMisc = uts.version;
+
+		CPrintF(TRANS("  Type: %s\n"), (const char*)sys_strOS);
+		CPrintF(TRANS("  Version: %d.%d, build %d\n"), iMajor, iMinor, iBuild);
+		CPrintF(TRANS("  Misc: %s\n"), uts.version);
+	} else {
+		CPrintF(TRANS("Error getting OS info: %s\n"), strerror(errno) );
+	}
+#endif  // PLATFORM_WIN32
 	CPrintF("\n");
 
 	// report CPU
@@ -870,6 +899,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 
 	// get info on the first disk in system
+#ifdef PLATFORM_WIN32
 	DWORD dwSerial;
 	DWORD dwFreeClusters;
 	DWORD dwClusters;
@@ -884,6 +914,15 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	sys_iHDDSize = (__int64)(dwSectors)*dwBytes*dwClusters/MB;
 	sys_iHDDFree = (__int64)(dwSectors)*dwBytes*dwFreeClusters/MB;
 	sys_iHDDMisc = dwSerial;
+#else
+	// the disk the game is on; there is no volume serial number
+	struct statvfs svfs;
+	if (statvfs(LC_HostPath(_fnmApplicationPath.str_String).c_str(), &svfs) == 0) {
+		sys_iHDDSize = (__int64)svfs.f_frsize*svfs.f_blocks/MB;
+		sys_iHDDFree = (__int64)svfs.f_frsize*svfs.f_bavail/MB;
+	}
+	sys_iHDDMisc = 0;
+#endif  // PLATFORM_WIN32
  
 	// add console variables
 	extern INDEX con_bNoWarnings;

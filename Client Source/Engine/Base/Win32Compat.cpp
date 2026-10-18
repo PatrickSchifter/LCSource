@@ -443,6 +443,27 @@ BOOL FreeLibrary(HMODULE hModule)
   return hModule != NULL && dlclose(hModule) == 0;
 }
 
+HMODULE GetModuleHandle(const char *strModuleName)
+{
+  if (strModuleName == NULL) {
+    return dlopen(NULL, RTLD_NOW);
+  }
+  std::string strName(strModuleName);
+  if (strName.find_first_of("\\/") == std::string::npos) {
+    return NULL;  // a system DLL (see LoadLibrary)
+  }
+  const size_t ctName = strName.size();
+  if (ctName > 4 && strcasecmp(strName.c_str() + ctName - 4, ".dll") == 0) {
+    strName.replace(ctName - 4, 4, ".dylib");
+  }
+  // like GetModuleHandle, do not keep a reference of our own
+  HMODULE hModule = dlopen(LC_HostPath(strName.c_str()).c_str(), RTLD_NOW|RTLD_NOLOAD);
+  if (hModule != NULL) {
+    dlclose(hModule);
+  }
+  return hModule;
+}
+
 /////////////////////////////////////////////////////////////////////
 // code pages
 

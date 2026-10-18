@@ -68,6 +68,7 @@ void UpdatePauseState(void)
 //-----------------------------------------------------------------------------
 void CGame::QuickTest(const CTFileName &fnMapName, CDrawPort *pdp, CViewPort *pvp)
 {
+#ifdef PLATFORM_WIN32  // only the World Editor (a Windows tool) calls it
 	UINT uiMessengerMsg = RegisterWindowMessage("Croteam Messenger: Incoming Message");
 
 	// quick start game with the world
@@ -238,6 +239,7 @@ void CGame::QuickTest(const CTFileName &fnMapName, CDrawPort *pdp, CViewPort *pv
 	_pInput->m_bTcpIp = FALSE;
 	_pInput->DisableInput();
 	StopGame();
+#endif  // PLATFORM_WIN32
 }
 
 //-----------------------------------------------------------------------------
