@@ -33,7 +33,6 @@
 #include <Engine/Interface/UISummon.h>
 #include <Engine/Interface/UITeleport.h>
 #include <Engine/Interface/UIShop.h>
-#include <include/F_CSocket_Event.h>
 #include <Engine/Interface/UICharServerMove.h>
 #include <Engine/Interface/UIQuickSlot.h>
 #include <Engine/Interface/UIChildQuickSlot.h>
@@ -1033,7 +1032,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
 	// if this computer is server
 	if (_pNetwork->IsServer()) {
 		// initialize local client
-		_cmiComm.Client_Init_t(0UL);
+		_cmiComm.Client_Init_t((ULONG)0);
 		// connect as main session state
 		try {
 			Start_AtServer_t();
