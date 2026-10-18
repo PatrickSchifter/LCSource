@@ -5,6 +5,7 @@
 #ifndef __NET_MSG_H__
 #define __NET_MSG_H__
 
+#include <stdint.h>
 #include <boost/shared_ptr.hpp>
 #include "Conf.h"
 #include "MemoryPoolBase.h"
@@ -160,16 +161,23 @@ public:
 		NTOHLL(ll);
 		return *this;
 	}
+	// `long` was 32 bits in the original (ILP32) build and the protocol carries it as 4 bytes;
+	// on LP64 it is 64 bits, so (de)serialize through a 32-bit value. time_t is `long` on
+	// macOS and also lands here, matching the 32-bit time_t of the original build.
 	CNetMsg& operator >> (unsigned long& ul)
 	{
-		Read(&ul, sizeof(ul));
-		NTOHL(ul);
+		uint32_t v;
+		Read(&v, sizeof(v));
+		NTOHL(v);
+		ul = v;
 		return *this;
 	}
 	CNetMsg& operator >> (long& l)
 	{
-		Read(&l, sizeof(l));
-		NTOHL(l);
+		uint32_t v;
+		Read(&v, sizeof(v));
+		NTOHL(v);
+		l = (int32_t)v;
 		return *this;
 	}
 	CNetMsg& operator >> (unsigned int& ul)
@@ -232,14 +240,16 @@ public:
 	}
 	CNetMsg& operator << (unsigned long ul)
 	{
-		HTONL(ul);
-		Write(&ul, sizeof(ul));
+		uint32_t v = (uint32_t)ul;
+		HTONL(v);
+		Write(&v, sizeof(v));
 		return *this;
 	}
 	CNetMsg& operator << (long l)
 	{
-		HTONL(l);
-		Write(&l, sizeof(l));
+		uint32_t v = (uint32_t)(int32_t)l;
+		HTONL(v);
+		Write(&v, sizeof(v));
 		return *this;
 	}
 	CNetMsg& operator << (unsigned int ul)

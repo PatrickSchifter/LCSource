@@ -89,6 +89,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [x] `ShareLib/SEED_256_KISA.h`: `typedef unsigned long DWORD` → `uint32_t` (confirmado: em 64-bit gerava ciphertext errado)
 - [x] `ShareLib/il_values.h`: `ILUInt32` (SHA-256) → `uint32_t`; SHA-256 validado com vetor de teste oficial
 - [x] `ShareLib/rntype.h`: `tLONG`/`tULONG` → `int32_t`/`uint32_t` (como no build 32-bit original), demais tipos em `<stdint.h>` com `static_assert`. Nenhum desses tipos aparece em pacote ou arquivo (`tLONG`, `tULONG`, `tTIME`, `tSIZE` e `RET_VAL` não têm nenhum uso)
+- [x] `ShareLib/NetMsg.h`: `CNetMsg <<`/`>>` com `long`/`unsigned long` gravava e lia **8 bytes** em 64-bit (no original eram 4); agora sempre 4 bytes (testado: `long`, `unsigned long` e `time_t` ocupam 4 bytes cada, big-endian, e voltam iguais). Afetava 26 pontos (achados apagando os operadores e compilando), quase todos `time_t` (`start`, `sendDate`, `remainTime`...) e alguns `long` lidos do cliente (`doFuncEtc.cpp` 2567/2586, `doFuncTrigerEvent.cpp` 21). No Linux 64-bit `int64_t` é `long` e cairia aqui truncado; no macOS é `long long`, sem problema
 - [ ] Auditar as 84 structs com `#pragma pack` (pacotes de rede): nenhum `long`, `time_t` ou ponteiro dentro
 - [ ] Auditar a leitura de arquivos `.bin` binários feita via struct
 - [ ] Testes de `static_assert(sizeof(...))` para os pacotes principais
