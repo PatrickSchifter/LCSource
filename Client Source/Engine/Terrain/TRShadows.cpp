@@ -49,7 +49,7 @@ static BOOL		_bTerrainShadow = FALSE;
  CStaticStackArray<FLOAT3D> _avxVertices;
 #endif
 
-static inline FLOAT3D TransVector(FLOAT3D &v,const Matrix12 &m) {
+static inline FLOAT3D TransVector(FLOAT3D v,const Matrix12 &m) {
 	TransformVector(v.vector,m); \
 	return v;
 }

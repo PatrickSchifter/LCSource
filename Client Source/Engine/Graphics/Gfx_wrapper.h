@@ -498,7 +498,7 @@ extern void gfxFlushBtnElements( INDEX ctElements, INDEX iBuffer );			// yjpark
 // (ZW = z-writes, AT = alpha-test)
 // WARNING: BPT_BLEND is implicitly set as default in some of drawport functions as 203 ULONG!
 
-enum PredefinedBlendType
+enum PredefinedBlendType : int  // declared ahead in DrawPort.h
 {
 	PBT_OPAQUE      = 201,    // ZW
 	PBT_TRANSPARENT = 202,    // ZW, AT

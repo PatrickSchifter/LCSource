@@ -1087,7 +1087,7 @@ void CTextureData::Read_t( CTStream *inFile)
 			FOREACHINDYNAMICARRAY( td_ptegEffect->teg_atesEffectSources, CTextureEffectSource, itEffectSource)
 			{
 				// read type of effect source
-				*inFile >> (ULONG) itEffectSource->tes_ulEffectSourceType;
+				*inFile >> itEffectSource->tes_ulEffectSourceType;
 				// read structure holding effect source properties
 				inFile->Read_t( &itEffectSource->tes_tespEffectSourceProperties, sizeof(struct TextureEffectSourceProperties));
 				// remember pointer to global effect

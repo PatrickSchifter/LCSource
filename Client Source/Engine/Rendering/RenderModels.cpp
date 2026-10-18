@@ -1608,7 +1608,7 @@ void CRenderer::RenderLensFlares(void)
 			const FLOAT fThisR  = (fR + (fI-fR)*olf.olf_fLightDesaturation) * fIntensityFactor;
 			const FLOAT fThisG  = (fG + (fI-fG)*olf.olf_fLightDesaturation) * fIntensityFactor;
 			const FLOAT fThisB  = (fB + (fI-fB)*olf.olf_fLightDesaturation) * fIntensityFactor;
-			const SLONG slThisR = Min( FloatToInt(fThisR), 255L);
+			const SLONG slThisR = Min( FloatToInt(fThisR), (SLONG)255);
 			const SLONG slThisG = Min( FloatToInt(fThisG), 255L);
 			const SLONG slThisB = Min( FloatToInt(fThisB), 255L);
 			const COLOR colBlending = RGBToColor( slThisR,slThisG,slThisB);

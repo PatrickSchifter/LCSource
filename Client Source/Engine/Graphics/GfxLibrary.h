@@ -20,8 +20,8 @@
 
 #define GFX_MAXOCCQUERIES (512L) // maximum allowed occlusion queries
 
-#define GFX_MAXTEXUNITS (8L) // maximum number of supported texture units for multitexturing
-#define GFX_MINSTREAMS  (4L) // minimum number of D3D streams in order to support HW T&L (position, normal, texture & color)
+#define GFX_MAXTEXUNITS ((INDEX)8) // maximum number of supported texture units for multitexturing
+#define GFX_MINSTREAMS  ((INDEX)4) // minimum number of D3D streams in order to support HW T&L (position, normal, texture & color)
 #define GFX_MAXLAYERS   (6L) // suggested maximum number of multi-passes per one polygon
 #define GFX_MAXLIGHTS   (8L) // maximum number of HW lights allowed
 #define GFX_USETEXUNITS (4L) // maximum usable texture units by engine

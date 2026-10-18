@@ -304,6 +304,7 @@ FLOAT ENGINE_API Particle_GetMipFactor(void);
 INDEX ENGINE_API Particle_GetDrawPortID(void);
 ENGINE_API CEntity *Particle_GetViewer(void);
 ENGINE_API CProjection3D *Particle_GetProjection(void);
+enum PredefinedBlendType : int;  // Gfx_wrapper.h
 void ENGINE_API Particle_PrepareTexture( CTextureObject *pto, const enum PredefinedBlendType pbt);
 void ENGINE_API Particle_SetTexturePart( const MEX mexWidth, const MEX mexHeight, const INDEX iCol, const INDEX iRow);
 void ENGINE_API Particle_SetTextureSection( const PIX pixLeft, const PIX pixTop, const PIX pixRight, const PIX pixBottom);
