@@ -104,7 +104,7 @@ banco** (nenhum `.sql`) e **arquivos de config** do servidor (`newStobm.bin`, `l
 - [-] Billing, Authentication, CharDBServer (legados ou só Windows; reavaliar se forem necessários)
 
 ### S5. Execução local
-- [ ] `ShareLib/PrintExcuteInfo.cpp`: compila, mas lê `/proc` em tempo de execução; trocar por `sysctl`
+- [x] `ShareLib/PrintExcuteInfo.cpp`: no macOS lê CPU e memória por `sysctl`/`host_statistics64` (testado: Apple M4, 10 CPUs, memória e swap); Linux continua lendo `/proc` (`#ifdef __linux__`)
 - [ ] Confirmar que XTrap (`dlopen`) e `detours.h` ficam desativados em tempo de execução
 - [x] Banco: MariaDB local (Homebrew, só 127.0.0.1) com `newproject_data`, `newproject_db`, `newproject_db_auth` importados do dump
 - [x] Configs em `server-config/` (`newStobm.bin` é INI puro), `log.xml` para log4cxx 1.x, `event.ini`
