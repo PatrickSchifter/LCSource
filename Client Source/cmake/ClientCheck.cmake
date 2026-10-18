@@ -16,6 +16,7 @@ find_package(Boost 1.83 CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)  # the platform layer outside Windows (Engine/Platform)
 
 include(cmake/Ecc.cmake)
+include(cmake/EngineParsers.cmake)
 include(cmake/Engine_sources.cmake)
 
 file(MAKE_DIRECTORY "${LC_GEN}/Engine/Classes")
@@ -44,6 +45,7 @@ foreach(src IN LISTS ENGINE_SOURCES)
     endif()
   endforeach()
 endforeach()
+list(APPEND LC_CHECK_SOURCES ${ENGINE_PARSER_SOURCES})
 list(LENGTH LC_CHECK_SOURCES _n)
 message(STATUS "Client check: ${_n} Engine sources")
 

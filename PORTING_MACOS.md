@@ -140,7 +140,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 
 ### C1. Build e geração de código
 - [x] Compilar o `Ecc` nativo e gerar os 108 `.es` → `.cpp/.h/_tables.h` via CMake (macOS e Windows; corrigidos CRLF, vazamento quadrático e pilha do bison)
-- [ ] Regenerar no build os parsers do Engine (`Base/Parser.y`, `Scanner.l`, `Ska/smcPars.y`, `smcScan.l`)
+- [x] Regenerar no build os parsers do Engine (`Base/Parser.y`, `Scanner.l`, `Ska/smcPars.y`, `smcScan.l`): `cmake/EngineParsers.cmake`; os gerados antigos (bison 1.25) saíram do repositório. O `win_bison` não pode rodar dois ao mesmo tempo (as saídas se misturam): flex e bison passam por um job pool do ninja de tamanho 1
 - [~] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`) — existe para Windows/MSVC x86
 - [ ] Trocar `LoadLibrary`/`GetProcAddress` de EntitiesMP/Shaders por link estático com registro de classes (ou `dlopen`)
 - [ ] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`

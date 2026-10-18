@@ -130,6 +130,7 @@ target_link_libraries(d3dx8_compat PRIVATE lc_client_common
   PUBLIC "${LC_D3DX9_DIR}/release/lib/x86/d3dx9.lib")
 
 include(cmake/Ecc.cmake)
+include(cmake/EngineParsers.cmake)
 
 include(cmake/Engine_sources.cmake)
 include(cmake/EntitiesMP_sources.cmake)
@@ -153,7 +154,7 @@ function(lc_client_target name type)
   add_dependencies(${name} lc_entities)
 endfunction()
 
-lc_client_target(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_GENERATED} Engine/Engine.def)
+lc_client_target(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_GENERATED} ${ENGINE_PARSER_SOURCES} Engine/Engine.def)
 target_compile_definitions(Engine PRIVATE ENGINE_EXPORTS _USRDLL)
 target_include_directories(Engine PRIVATE "${LC_GEN}/Engine")
 target_link_libraries(Engine PRIVATE zlib libpng tinyxml lccrypt d3dx8_compat Boost::thread Boost::system

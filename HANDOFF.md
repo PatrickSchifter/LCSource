@@ -42,7 +42,9 @@ está instalada em `C:\LC-BR2014\Bin`.
 No Mac, a camada SDL (janela, eventos → `MSG`, cursores `.cur`) foi exercitada num programa de
 teste com o SDL3 do Homebrew.
 
-Depois da C5: restante da C1 (CMake do cliente no Mac, link) e as fases C6/C7/C8. O que ficou
+Depois da C5: restante da C1 (CMake do cliente no Mac, link) e as fases C6/C7/C8. Da C1, os
+parsers do Engine já são gerados no build (testado no Windows até a tela de login);
+faltam includes com caixa errada, macros de região/`_USE_32BIT_TIME_T` e o CMake de verdade no Mac. O que ficou
 para elas: joystick pelo SDL (hoje sem joystick fora do Windows), Retina/HiDPI e o contexto
 OpenGL (C8), `Web.cpp`/IPC/`ThreadWrapper` (C6). O link no Mac precisa de `-liconv` e SDL3, e
 os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.

@@ -1,9 +1,9 @@
 %{
-#include "StdH.h"
+#include <Engine/StdH.h>
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Shell.h>
-#include "ParsingSymbols.h"
+#include <Engine/Base/ParsingSymbols.h>
 
 #include <Engine/Templates/DynamicStackArray.cpp>
 #include <Engine/Templates/AllocationArray.cpp>
@@ -13,7 +13,7 @@
 %{
 #define YYERROR_VERBOSE 1
 // if error occurs in parsing
-void yyerror(char *str)
+void yyerror(const char *str)
 {
 	// just report the string
 	_pShell->ErrorF("%s", str);

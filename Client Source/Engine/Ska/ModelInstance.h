@@ -35,8 +35,8 @@ struct ColisionBox
 	};
 	inline FLOAT3D &Min() {return cb_vMin;}
 	inline FLOAT3D &Max() {return cb_vMax;}
-	inline void SetMin(FLOAT3D &vMin) {cb_vMin = vMin;}
-	inline void SetMax(FLOAT3D &vMax) {cb_vMax = vMax;}
+	inline void SetMin(const FLOAT3D &vMin) {cb_vMin = vMin;}
+	inline void SetMax(const FLOAT3D &vMax) {cb_vMax = vMax;}
 	inline void SetName(CTString strName) {
 		cb_strName = strName;
 		if(cb_strName!="") {

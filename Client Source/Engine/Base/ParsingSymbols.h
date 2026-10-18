@@ -3,7 +3,7 @@
 
 // needed for parser and scanner
 #define alloca _alloca
-extern void yyerror(char *s);
+extern void yyerror(const char *s);
 extern int yyparse(void);
 
 typedef struct yy_buffer_state *YY_BUFFER_STATE;

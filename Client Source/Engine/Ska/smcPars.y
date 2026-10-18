@@ -5,7 +5,7 @@
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Templates/DynamicContainer.cpp>
-#include "ParsingSmbs.h"
+#include <Engine/Ska/ParsingSmbs.h>
 
 extern BOOL _bRememberSourceFN;
 BOOL bOffsetAllreadySet = FALSE;
@@ -14,7 +14,7 @@ BOOL bOffsetAllreadySet = FALSE;
 %{
 #define YYERROR_VERBOSE 1                  
 // if error occurs in parsing
-void yyerror(char *str)
+void yyerror(const char *str)
 {
   // just report the string
   ThrowF_t("File '%s'\n %s (line %d)",SMCGetBufferName(), str, SMCGetBufferLineNumber());

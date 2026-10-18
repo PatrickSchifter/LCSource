@@ -2,10 +2,41 @@
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
-BISON_TARGET(EccParser Ecc/Parser.y "${LC_GEN}/Ecc/Parser.cpp" DEFINES_FILE "${LC_GEN}/Ecc/Parser.h")
-FLEX_TARGET(EccScanner Ecc/Scanner.l "${LC_GEN}/Ecc/Scanner.cpp")
-ADD_FLEX_BISON_DEPENDENCY(EccScanner EccParser)
-add_executable(ecc Ecc/Main.cpp ${BISON_EccParser_OUTPUTS} ${FLEX_EccScanner_OUTPUTS})
+
+# win_bison (WinFlexBison) is not safe to run twice at once: two grammars generated in parallel
+# came out with their outputs mixed up. Every flex and bison run goes through one ninja job pool.
+set_property(GLOBAL APPEND PROPERTY JOB_POOLS lc_flex_bison=1)
+
+# lc_bison(<grammar.y> <output.cpp> <output.h> [bison options...])
+function(lc_bison grammar output header)
+  get_filename_component(dir "${output}" DIRECTORY)
+  add_custom_command(
+    OUTPUT "${output}" "${header}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${dir}"
+    COMMAND "${BISON_EXECUTABLE}" ${ARGN} "--defines=${header}" -o "${output}" "${LC_CLIENT_SRC}/${grammar}"
+    DEPENDS "${LC_CLIENT_SRC}/${grammar}"
+    COMMENT "bison ${grammar}"
+    JOB_POOL lc_flex_bison
+    VERBATIM)
+endfunction()
+
+# lc_flex(<scanner.l> <output.cpp> <parser header it includes>)
+function(lc_flex scanner output header)
+  get_filename_component(dir "${output}" DIRECTORY)
+  add_custom_command(
+    OUTPUT "${output}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${dir}"
+    COMMAND "${FLEX_EXECUTABLE}" "-o${output}" "${LC_CLIENT_SRC}/${scanner}"
+    DEPENDS "${LC_CLIENT_SRC}/${scanner}"
+    COMMENT "flex ${scanner}"
+    JOB_POOL lc_flex_bison
+    VERBATIM)
+  set_property(SOURCE "${output}" APPEND PROPERTY OBJECT_DEPENDS "${header}")
+endfunction()
+
+lc_bison(Ecc/Parser.y "${LC_GEN}/Ecc/Parser.cpp" "${LC_GEN}/Ecc/Parser.h")
+lc_flex(Ecc/Scanner.l "${LC_GEN}/Ecc/Scanner.cpp" "${LC_GEN}/Ecc/Parser.h")
+add_executable(ecc Ecc/Main.cpp "${LC_GEN}/Ecc/Parser.cpp" "${LC_GEN}/Ecc/Scanner.cpp")
 target_include_directories(ecc PRIVATE "${LC_GEN}" "${LC_CLIENT_SRC}")
 target_compile_definitions(ecc PRIVATE _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H)
 if(NOT WIN32)
