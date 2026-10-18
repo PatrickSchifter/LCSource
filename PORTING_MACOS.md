@@ -144,7 +144,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [~] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`) — existe para Windows/MSVC x86
 - [ ] Trocar `LoadLibrary`/`GetProcAddress` de EntitiesMP/Shaders por link estático com registro de classes (ou `dlopen`)
 - [ ] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`
-- [ ] Includes com caixa errada (`Console_Internal.h`, `GFX_wrapper_OpenGL.cpp`...); vamos padronizar e não depender de APFS case-insensitive
+- [x] Includes com a caixa do disco e `/` (549 em 453 arquivos, inclusive os `uses` dos `.es`); headers do Windows em minúsculas. Conferido com o check num volume APFS case-sensitive (`d2b016d`, `4563955`)
 
 ### C2. Tipos e 64-bit
 Verificação no Mac: `-DLC_CLIENT_CHECK_ONLY=ON` compila (sem linkar) o cliente com clang arm64 e
