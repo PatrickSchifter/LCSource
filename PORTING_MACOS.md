@@ -144,7 +144,7 @@ então decidimos (2026-10-16) compilar o nosso próprio cliente Windows para tes
 - [x] Regenerar no build os parsers do Engine (`Base/Parser.y`, `Scanner.l`, `Ska/smcPars.y`, `smcScan.l`): `cmake/EngineParsers.cmake`; os gerados antigos (bison 1.25) saíram do repositório. O `win_bison` não pode rodar dois ao mesmo tempo (as saídas se misturam): flex e bison passam por um job pool do ninja de tamanho 1
 - [~] CMake para Engine, EntitiesMP, GameMP, Shaders e o executável (antigo `Nksp`) — existe para Windows/MSVC x86
 - [ ] Trocar `LoadLibrary`/`GetProcAddress` de EntitiesMP/Shaders por link estático com registro de classes (ou `dlopen`)
-- [x] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`: região numa opção só, `LC_CLIENT_COUNTRY` (Windows, check e o futuro build do Mac); `time_t` de 64 bits também no Windows, com os campos de 32 bits (pacotes, `.lod`, propriedades de entidade) passando por `LocalTime32()`. Detalhes em `HANDOFF.md` ("Verificação do cliente no Mac"). **Falta testar no Windows**
+- [x] Mapear as macros de região (`G_USA`, `G_KOR`...) e remover `_USE_32BIT_TIME_T`: região numa opção só, `LC_CLIENT_COUNTRY` (Windows, check e o futuro build do Mac); `time_t` de 64 bits também no Windows, com os campos de 32 bits (pacotes, `.lod`, propriedades de entidade) passando por `LocalTime32()`. Detalhes em `HANDOFF.md` ("Verificação do cliente no Mac"). Testado em jogo no Windows em 2026-10-18
 - [x] Includes com a caixa do disco e `/` (549 em 453 arquivos, inclusive os `uses` dos `.es`); headers do Windows em minúsculas. Conferido com o check num volume APFS case-sensitive (`d2b016d`, `4563955`)
 
 ### C2. Tipos e 64-bit
@@ -196,7 +196,7 @@ Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [x] Sistema de arquivos: caminhos com `\` dentro do motor, convertidos e resolvidos sem caixa na fronteira; streams sem falta de página; `.gro` com `pread`
 - [x] Registry: não existe fora do Windows (só ferramentas o usavam); `.ini` com leitor próprio
 - [ ] Diretórios do usuário (`~/Library/Application Support/LastChaos`): por ora grava no diretório do jogo, como no Windows (Fase F)
-- [ ] Testes em jogo dos itens 9–11 no modo SDL (lista em `HANDOFF.md`, "C5 — testes pendentes")
+- [x] Testes em jogo dos itens 9–11 no modo SDL (2026-10-18); falta conferir o Win32 com `LC_PLATFORM_SDL=OFF`
 
 ### C6. Rede
 - [ ] Winsock → sockets POSIX (23 arquivos, `Engine/Network/*`)
@@ -272,3 +272,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-17 | Shaders por hardware no cliente Windows (temporários inicializados no shim); confirmado em jogo | 01450ec |
 | 2026-10-17 | C4: GameGuard, XTrap, Kalydo, proteção contra cópia, MiniDump, VLD, IJL, dxtlib e `.lib` pré-compilados removidos; IFeel em stubs, StackDump só no Windows | a325b3a..5ff5a2c |
 | 2026-10-17 | C5: Win32Compat (tipos, tempo, arquivos, INI, DLLs, codepages), camada SDL3 (janela, eventos, input, IME, cursores, mensagens); modo SDL testado no Windows | 6842344..c755cd9 |
+| 2026-10-18 | C1: includes com a caixa do disco, `LC_CLIENT_COUNTRY`, `time_t` de 64 bits; servidor: `long` com 4 bytes no `CNetMsg`, sysctl, `rntype.h`; teleportadores (`ZoneFlag.lod`) e ícones do mapa | d2b016d..1be72b3 |

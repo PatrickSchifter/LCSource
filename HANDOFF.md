@@ -35,8 +35,8 @@ sobra é D3D/D3DX (C8), som (C7), rede/web/IPC do launcher (C6), conformidade C+
 `exploration3d` (ferramentas).
 Testado em jogo no Windows: itens 1–7 com o cliente Win32 (Juno, combate, loja, chat, print) e,
 no **modo SDL** (`LC_PLATFORM_SDL=ON`), janela, minimizar/maximizar, digitação e atalhos (8c).
-Os itens 9–11 compilam e chegam ao login no modo SDL, mas **ainda não foram testados em jogo**
-(lista de testes no fim da sessão de 2026-10-17; ver "C5 — testes pendentes" abaixo).
+Os itens 9–11 foram testados em jogo no modo SDL em 2026-10-18 (lista em "C5 — testes
+pendentes" abaixo); falta só o item 8 dela (voltar para `LC_PLATFORM_SDL=OFF` e conferir o Win32).
 **O build do Windows (`C:\LCSource-build`) está com `LC_PLATFORM_SDL=ON`**, e é essa versão que
 está instalada em `C:\LC-BR2014\Bin`.
 No Mac, a camada SDL (janela, eventos → `MSG`, cursores `.cur`) foi exercitada num programa de
@@ -45,8 +45,8 @@ teste com o SDL3 do Homebrew.
 Depois da C5: restante da C1 (CMake do cliente no Mac, link) e as fases C6/C7/C8. Da C1, os
 parsers do Engine já são gerados no build (testado no Windows até a tela de login), os includes
 usam a caixa do disco, e a região (`LC_CLIENT_COUNTRY`) e o `time_t` de 64 bits estão resolvidos
-(2026-10-18; falta compilar e testar no Windows, lista do `time_t` em "Verificação do cliente no
-Mac"); falta o CMake de verdade no Mac. O que ficou
+(2026-10-18, testados em jogo no Windows: datas e prazos, radar, teleporte); falta o CMake de
+verdade no Mac. O que ficou
 para elas: joystick pelo SDL (hoje sem joystick fora do Windows), Retina/HiDPI e o contexto
 OpenGL (C8), `Web.cpp`/IPC/`ThreadWrapper` (C6). O link no Mac precisa de `-liconv` e SDL3, e
 os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.
