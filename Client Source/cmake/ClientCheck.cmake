@@ -54,7 +54,8 @@ add_library(lc_engine_check OBJECT ${LC_CHECK_SOURCES})
 add_dependencies(lc_engine_check lc_engine_check_entities)
 target_compile_definitions(lc_engine_check PRIVATE _MT ${LC_CLIENT_DEFINES} NDEBUG)  # LC_CLIENT_COUNTRY: ../CMakeLists.txt
 target_include_directories(lc_engine_check PRIVATE
-  "${LC_GEN}" "${LC_GEN}/Engine" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/Engine" "${LC_CLIENT_SRC}/include")
+  "${LC_GEN}" "${LC_GEN}/Engine" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/Engine" "${LC_CLIENT_SRC}/include"
+  "${LC_CLIENT_SRC}/Compat/d3dx8")  # only its d3dx8math.h is used without SE1_D3D
 target_include_directories(lc_engine_check SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")
 target_link_libraries(lc_engine_check PRIVATE Boost::headers SDL3::Headers)
 target_compile_options(lc_engine_check PRIVATE
@@ -86,7 +87,7 @@ if(LC_CHECK_DIRS STREQUAL "ALL")
     target_compile_options(${_t} PRIVATE ${_opts})
     target_include_directories(${_t} PRIVATE
       "${LC_GEN}" "${LC_GEN}/EntitiesMP" "${LC_GEN}/EntitiesMP/StdH" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/${project}"
-      "${LC_CLIENT_SRC}/EntitiesMP/StdH" "${LC_CLIENT_SRC}/include")
+      "${LC_CLIENT_SRC}/EntitiesMP/StdH" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8")
     target_include_directories(${_t} SYSTEM PRIVATE "${LC_CLIENT_SRC}/Compat/checkonly")
     target_link_libraries(${_t} PRIVATE Boost::headers SDL3::Headers)
   endforeach()

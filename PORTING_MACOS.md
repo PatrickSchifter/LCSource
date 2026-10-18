@@ -210,6 +210,7 @@ Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [ ] MP3: trocar `amp11lib.dll` por minimp3/dr_mp3
 
 ### C8. Renderização (caminho crítico)
+- [x] Direct3D atrás da macro `SE1_D3D` (como no Serious Engine 1 aberto da Croteam): definida só no CMake do Windows (`lc_client_common`), onde o código compilado é o mesmo de antes (conferido resolvendo `SE1_D3D` como definida e comparando byte a byte com o original). Sem ela ficam fora `GAT_D3D`, os membros D3D de `CGfxLibrary`/`CViewPort`/`CRenderTexture`, os `case`/ramos D3D e os fontes só-D3D, que ficam inteiros dentro de `#ifdef SE1_D3D` (`Gfx_Direct3D*.cpp`, `RenderBloom.cpp`; `Gfx_wrapper_Direct3D.cpp` só é incluído sob a macro), sem mexer nas listas geradas do CMake. Sem D3D ainda não há: bloom, render targets (`CRenderTexture::Init` falha), sombras projetadas em textura, programas de shader (as funções `sha*` de registradores ficam vazias), clip plane da água e a mistura da sombra do terreno sem shader. A matemática D3DX (`Compat/d3dx8/d3dx8math.h`, nossa) não depende mais de `d3d8.h` sem a macro e é usada no Mac (altura do terreno, matrizes de sombra). Check do Mac: 6.978 → 5.680 erros únicos, sem erro de D3D (só DirectSound, C7)
 - [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (contexto via SDL3, perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
 - [ ] Etapa Metal (D2.2): novo backend `GAT_*` ao lado do D3D8 e do OpenGL
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`

@@ -270,10 +270,17 @@ cmake --build build-client-check -- -k 0 2>&1 | tee check.log
   (`-Wshorten-64-to-32`, `-Wpointer-to-int-cast`, `-Wint-to-pointer-cast`, `-Wformat`...).
   Sem `LC_CHECK_DIRS` compila as partes "portáveis" do Engine (Base, Math, Templates, Brushes,
   World, Terrain, Ska, Models); com `ALL`, todo o Engine, EntitiesMP, GameMP e Shaders.
-- `Compat/checkonly/` tem headers **vazios** com nomes do Windows (`windows.h`, `d3d8.h`, `io.h`...):
+- `Compat/checkonly/` tem headers **vazios** com nomes do Windows (`windows.h`, `dsound.h`, `io.h`...):
   só existem para cada arquivo passar dos includes e o clang analisar o resto. Os erros de API Win32,
   D3D e asm que sobram são esperados (C3–C5). Um header que falte aparece como `fatal error` e
   esconde o arquivo inteiro: acrescente um stub.
+- **`SE1_D3D`:** o Direct3D 8 só compila com essa macro (definida no CMake do Windows). O check e o
+  futuro build do Mac não a definem, então os headers do D3D não são mais usados (os stubs `d3d8.h`,
+  `d3dx8*.h` saíram de `Compat/checkonly`); só `Compat/d3dx8/d3dx8math.h` entra no include path,
+  como matemática pura. Código novo que use D3D vai dentro de `#ifdef SE1_D3D`; fonte só-D3D fica
+  inteiro dentro da macro (logo depois do `#include "StdH.h"`), as listas do CMake não mudam.
+  Para conferir que o Windows não mudou: resolver só os `#ifdef SE1_D3D` como definidos (ex.:
+  `unifdef -DSE1_D3D`, cuidado que ele também simplifica `#if ... && 0`) e comparar com o original.
 - **Caixa dos nomes:** o APFS padrão não diferencia maiúsculas, então um include com caixa errada
   passa despercebido aqui. Para conferir, rode o check numa imagem case-sensitive:
   `hdiutil create -size 8g -type SPARSE -fs "Case-sensitive APFS" -volname LCcs x.sparseimage`,
