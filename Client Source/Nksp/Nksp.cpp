@@ -804,8 +804,13 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	CPrintF(TRANS("Nksp version: %s\n"), sam_strVersion);
 
 	// apply application mode
+#ifdef SE1_D3D
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
+#else
+	StartNewMode( GAT_OGL, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
+#endif // SE1_D3D
 
 	GameDataManager* pGameDataManager = SE_Get_GameDataManagerPtr();
 	pGameDataManager->Create();
@@ -951,8 +956,10 @@ void PrintDisplayModeInfo(void)
 	if( dm.IsTripleHead()) strRes += TRANS(" TripleMonitor");
 	if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
 			 if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
+#ifdef SE1_D3D
 	else 
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D) strRes += " (Direct3D)";
+#endif // SE1_D3D
 
 	CTString strDescr;
 	strDescr.PrintF("\n%s (%s)\n", _strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
@@ -1777,7 +1784,9 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	// try to set new display mode
 	BOOL bSuccess;
 	//	김영환 : 함수 파라미터 변경.
+#ifdef SE1_D3D
 	if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ,bCenter);
+#endif // SE1_D3D
 	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
 	if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 	//	김영환 : 무시 OpenMainWindowNormal() 처리됨.
@@ -1835,6 +1844,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			// report failure
 			return FALSE;
 		}
+#ifdef SE1_D3D
 
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
@@ -1860,6 +1870,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
+#endif // SE1_D3D
 
 		sam_iScreenSizeI = pixSizeI;
 		sam_iScreenSizeJ = pixSizeJ;
@@ -1890,9 +1901,11 @@ const INDEX aDefaultModes[][3] =
 	{ DISPD_DEFAULT, GAT_OGL, 0},
 	{ DISPD_16BIT,   GAT_OGL, 0},
 	{ DISPD_16BIT,   GAT_OGL, 1}, // 3dfx Voodoo2
+#ifdef SE1_D3D
 	{ DISPD_DEFAULT, GAT_D3D, 0},
 	{ DISPD_16BIT,   GAT_D3D, 0},
 	{ DISPD_16BIT,   GAT_D3D, 1},
+#endif // SE1_D3D
 };
 const INDEX ctDefaultModes = ARRAYCOUNT(aDefaultModes);
 

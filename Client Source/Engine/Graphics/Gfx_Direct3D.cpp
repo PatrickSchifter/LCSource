@@ -2,6 +2,7 @@
 // DIRECT3D "LOW-LEVEL" INTERFACE (COMMON)
 
 #include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -1891,3 +1892,4 @@ elemEnd:
 
 
 
+#endif // SE1_D3D

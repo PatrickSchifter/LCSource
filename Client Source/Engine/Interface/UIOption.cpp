@@ -974,6 +974,7 @@ void CUIOption::CreateResolutionList()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -983,6 +984,9 @@ void CUIOption::CreateResolutionList()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;  // the OpenGL desktop mode
+#endif // SE1_D3D
 	}
 
 	for( INDEX idm = 0; idm < ctDisplayMode; idm++ )
@@ -1411,16 +1415,22 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	if( bFullScreenMode) 
 	{
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->SetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth);
 		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
 	} 
 	else 
 	{
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
 		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#ifdef SE1_D3D
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
+#endif // SE1_D3D
 	}
 
 	// if new mode was set
@@ -1466,6 +1476,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			return FALSE;
 		}
 
+#ifdef SE1_D3D
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
 		{
@@ -1490,6 +1501,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
+#endif // SE1_D3D
 
 		sam_iScreenSizeI = pixSizeI;
 		sam_iScreenSizeJ = pixSizeJ;
@@ -1561,6 +1573,7 @@ void CUIOption::ApplyOption()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -1570,6 +1583,9 @@ void CUIOption::ApplyOption()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;  // the OpenGL desktop mode
+#endif // SE1_D3D
 	}
 	int	iRes = m_cmbResolution.GetCurSel();
 	if( iRes >= 0 )

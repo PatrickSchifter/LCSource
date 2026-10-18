@@ -3,7 +3,9 @@
 
 #include "StdH.h"
 #include <Shaders/Common.h>
+#ifdef SE1_D3D
 #include <d3d8.h>
+#endif // SE1_D3D
 #include <Engine/Math/AdditionalFunction.h>
 
 #define DEFAULT_USE_SPECULAR		(1UL<<(BASE_FLAG_OFFSET+0)) // Use Specular Map for Default Shader

@@ -1936,6 +1936,7 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 //안태훈 수정 시작	//(Terrain Render for No Shader)(0.1)
 					else
 					{
+#ifdef SE1_D3D
 						// save old
 						_pGfx->gl_pd3dDevice->GetRenderState(D3DRS_TEXTUREFACTOR, &dw_tfactor);
 						_pGfx->gl_pd3dDevice->GetTextureStageState(0, D3DTSS_COLORARG1, &dw_tss_ta_value0_arg1);
@@ -1965,6 +1966,7 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						DWORD dwBlendFactor = (ubBlendFactor << 24) | (ubBlendFactor << 16) | (ubBlendFactor << 8) | ubBlendFactor;
 						dwBlendFactor |= 0xFF000000;
 						_pGfx->gl_pd3dDevice->SetRenderState(D3DRS_TEXTUREFACTOR, dwBlendFactor);
+#endif // SE1_D3D (no fixed-function shadow blend without D3D yet, C8)
 
 						shaSetTexCoordArray( ptcTexCoords, 0 );
 						shaSetTextureMatrix( tt.tt_mShadowMap, 0 );
@@ -1973,6 +1975,7 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						//shaSetTexture( (CTextureData*)NULL, 1 );
 					}
 					shaEnd();
+#ifdef SE1_D3D
 					// restore old
 					if( !_bUseHardwareShaders )
 					{
@@ -1989,6 +1992,7 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						_pGfx->gl_pd3dDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, dw_tss_aop_value1);
 						_pGfx->gl_pd3dDevice->SetTextureStageState(2, D3DTSS_COLOROP, dw_tss_top_value2);
 					}
+#endif // SE1_D3D
 					TR_SETINFO( ti_ctVisibleTriangles += ctind / 3 );
 				}
 			}														// yjpark     -->|

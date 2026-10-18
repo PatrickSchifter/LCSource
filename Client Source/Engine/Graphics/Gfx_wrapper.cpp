@@ -195,6 +195,7 @@ extern void OGL_CheckError(void)
 
 
 
+#ifdef SE1_D3D
 extern void D3D_CheckError(HRESULT hr)
 {
 #ifndef NDEBUG
@@ -203,6 +204,7 @@ extern void D3D_CheckError(HRESULT hr)
 	else ASSERT( eAPI==GAT_NONE);
 #endif
 }
+#endif // SE1_D3D
 
 
 
@@ -212,20 +214,24 @@ extern void D3D_CheckError(HRESULT hr)
 //d3d의 SetTextureStageState를 wrapping한 것임. 태훈
 extern void gfxSetTextureSelectArg(INDEX iStage, GFX_TEXTURE_ARG argColor, GFX_TEXTURE_ARG argAlpha)
 {
+#ifdef SE1_D3D
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
 	ASSERT( eAPI==GAT_D3D );
+#endif // SE1_D3D
 	
 	//extern INDEX GFX_iActiveTexUnit;
 	//extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS];
 	GFX_iTexModulation[GFX_iActiveTexUnit] = 0;
 
+#ifdef SE1_D3D
 	HRESULT hr;
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_COLORARG1, argColor);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_ALPHAARG1, argAlpha);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 	GFX_abTexture[GFX_iActiveTexUnit] = D3DTOP_SELECTARG1;
+#endif // SE1_D3D (no OpenGL version yet)
 }
 //안태훈 수정 끝	//(Remake Effect)(0.1)
 
@@ -236,7 +242,11 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 { 
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	// only if supported and needed
 	if( _fCurrentLODBias==fLODBias && _pGfx->gl_fMaxTextureLODBias==0) return;
 	_fCurrentLODBias = fLODBias;
@@ -261,6 +271,7 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 			OGL_CHECKERROR;
 		}
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{ // just set it
@@ -270,6 +281,7 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 			D3D_CHECKERROR(hr);
 		}
 	}
+#endif // SE1_D3D
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
@@ -299,6 +311,7 @@ extern void gfxSetTextureFiltering( INDEX &iFilterType, INDEX &iAnisotropyDegree
 	_tpGlobal[0].tp_iAnisotropy = iAnisotropyDegree;
 
 	// for OpenGL, that's about it
+#ifdef SE1_D3D
 	if( _pGfx->gl_eCurrentAPI!=GAT_D3D) return;
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -323,6 +336,7 @@ extern void gfxSetTextureFiltering( INDEX &iFilterType, INDEX &iAnisotropyDegree
 	}
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
+#endif // SE1_D3D
 }
 
 
@@ -344,7 +358,11 @@ extern void gfxSetTextureUnit( INDEX iUnit)
 {
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	ASSERT( iUnit>=0 && iUnit<GFX_MAXTEXUNITS); 
 
 	// check consistency
@@ -387,7 +405,11 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 
 	// determine API, enable texturing and keep current texture
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	gfxEnableTexture();
 
 	_sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
@@ -399,6 +421,7 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 		pglBindTexture( GL_TEXTURE_2D, ulTexObject);
 		MimicTexParams_OGL(tpLocal);
 	} 
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = &ulTexObject;    // Direct3D track pointer to texture pointer
 		extern void MimicTexParams_D3D( CTexParams &tpLocal);
@@ -406,6 +429,7 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 		D3D_CHECKERROR(hr);
 		MimicTexParams_D3D(tpLocal);
 	}
+#endif // SE1_D3D
 	// done
 	_sfStats.StopTimer(CStatForm::STI_BINDTEXTURE);
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -418,13 +442,18 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
 	if( eAPI==GAT_OGL) { // OpenGL
 		extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, GLenum eInternalFormat, BOOL bUseSubImage);
 		UploadTexture_OGL( pulTexture, pixWidth, pixHeight, (GLenum)ulFormat, bNoDiscard);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		LPDIRECT3DTEXTURE8 *ppd3dCurrentTexture  = (LPDIRECT3DTEXTURE8*)GFX_apulCurrentTexture[GFX_iActiveTexUnit];
 		const LPDIRECT3DTEXTURE8 pd3dLastTexture = *ppd3dCurrentTexture;
@@ -436,6 +465,7 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 			D3D_CHECKERROR(hr);
 		}
 	} 
+#endif // SE1_D3D
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
@@ -448,7 +478,11 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 	BOOL bUploaded = FALSE;
 
@@ -456,6 +490,7 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 		extern BOOL UploadCompressedTexture_OGL( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, GLenum eInternalFormat);
 		bUploaded = UploadCompressedTexture_OGL( pubMipmaps, pixWidth, pixHeight, slSize, (GLenum)ulFormat);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		LPDIRECT3DTEXTURE8 *ppd3dCurrentTexture  = (LPDIRECT3DTEXTURE8*)GFX_apulCurrentTexture[GFX_iActiveTexUnit];
 		const LPDIRECT3DTEXTURE8 pd3dLastTexture = *ppd3dCurrentTexture;
@@ -467,6 +502,7 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 			D3D_CHECKERROR(hr);
 		}
 	}
+#endif // SE1_D3D
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 	return bUploaded;
@@ -482,7 +518,11 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	SLONG slMipSize;
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -511,6 +551,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 			slMipSize = pixWidth*pixHeight * gfxGetTexturePixRatio(ulTexObject);
 		}
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -520,6 +561,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 		D3D_CHECKERROR(hr);
 		slMipSize = d3dSurfDesc.Size;
 	}
+#endif // SE1_D3D
 
 	// eventually count in all the mipmaps (takes extra 33% of texture size)
 	const SLONG slUploadSize = bHasMipmaps ? slMipSize*4/3 : slMipSize;
@@ -535,15 +577,21 @@ extern INDEX gfxGetTexturePixRatio( ULONG ulTextureObject)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	if( eAPI==GAT_OGL) {
 		extern INDEX GetTexturePixRatio_OGL( GLuint uiBindNo);
 		return GetTexturePixRatio_OGL( (GLuint)ulTextureObject);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		extern INDEX GetTexturePixRatio_D3D( LPDIRECT3DTEXTURE8 pd3dTexture);
 		return GetTexturePixRatio_D3D( (LPDIRECT3DTEXTURE8)ulTextureObject);
 	}
+#endif // SE1_D3D
 	else return 0;
 }
 
@@ -553,15 +601,21 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	if( eAPI==GAT_OGL) {
 		extern INDEX GetFormatPixRatio_OGL( GLenum eFormat);
 		return GetFormatPixRatio_OGL( (GLenum)ulTextureFormat);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		extern INDEX GetFormatPixRatio_D3D( D3DFORMAT d3dFormat);
 		return GetFormatPixRatio_D3D( (D3DFORMAT)ulTextureFormat);
 	}
+#endif // SE1_D3D
 	else return 0;
 }
 
@@ -642,7 +696,11 @@ extern void InitVertexBuffers(void)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// vertex buffers should be deleted by now
 	const INDEX ctBuffers = _avbVertexBuffers.Count();
@@ -668,7 +726,11 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	ASSERT(eType==GFX_READWRITE || eType==GFX_WRITEONLY || eType==GFX_DYNAMIC);
 
 	// check number of tex coord arrays and reconstruct mask
@@ -710,6 +772,7 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 		}
 	}
 
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -763,6 +826,7 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 		}//TRACKVB_HW();
 
 	}
+#endif // SE1_D3D
 
 	// phew, made it
 	vb.vb_slSize      = slTotalSize;
@@ -780,7 +844,11 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	ASSERT( iBindNo>0 && iBindNo<_avbVertexBuffers.Count());
 	VertexBuffer &vb = _avbVertexBuffers[iBindNo];
@@ -797,6 +865,7 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 		}
 	}
 
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -822,6 +891,7 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 		}
 
 	}
+#endif // SE1_D3D
 
 	// mark that this vertex buffer has been deleted
 	vb.vb_ulArrayMask = NONE;
@@ -996,7 +1066,11 @@ extern void gfxSetTruform( INDEX iLevel, BOOL bLinearNormals)
 
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
@@ -1007,12 +1081,14 @@ extern void gfxSetTruform( INDEX iLevel, BOOL bLinearNormals)
 		pglPNTrianglesiATI( GL_PN_TRIANGLES_NORMAL_MODE_ATI, eTriMode);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// if disabled, Direct3D will set tessellation level at "enable" call
 	else if( eAPI==GAT_D3D && GFX_bTruform) { 
 		FLOAT fSegments = iLevel+1;
 		HRESULT hr = _pGfx->gl_pd3dDevice->SetRenderState( D3DRS_PATCHSEGMENTS, *((DWORD*)&fSegments));
 		D3D_CHECKERROR(hr);
 	}
+#endif // SE1_D3D
 
 	// keep current truform params
 	truform_iLevel  = iLevel;
@@ -1071,11 +1147,19 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 		 || (eAPI==GAT_D3D)) return FALSE;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return FALSE;
+#endif // SE1_D3D
 
 	// get last if available
 	if( _ctUsedOcclusionQueries < GFX_MAXOCCQUERIES) {
@@ -1095,9 +1179,11 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 		pglBeginOcclusionQueryNV(iBindID);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 
@@ -1113,11 +1199,19 @@ void gfxEndOcclusionTest(void)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 		|| (eAPI==GAT_D3D)) return;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return;
+#endif // SE1_D3D
 
 	ASSERT( _iCurrentOccQuery>=0 && _iCurrentOccQuery<GFX_MAXOCCQUERIES);
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -1127,9 +1221,11 @@ void gfxEndOcclusionTest(void)
 		pglEndOcclusionQueryNV();
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 	_iCurrentOccQuery = -1;
@@ -1141,11 +1237,19 @@ BOOL gfxPullOcclusionQuery( ULONG ulQueryID, SLONG &slPixCount, BOOL bDontWait/*
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 			|| (eAPI==GAT_D3D)) return TRUE;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return TRUE;
+#endif // SE1_D3D
 
 	// skip if no queries are pending
 	ASSERT( _ctUsedOcclusionQueries>=0 && _ctUsedOcclusionQueries<=GFX_MAXOCCQUERIES);
@@ -1175,9 +1279,11 @@ BOOL gfxPullOcclusionQuery( ULONG ulQueryID, SLONG &slPixCount, BOOL bDontWait/*
 		pglGetOcclusionQueryivNV( iBindID, GL_PIXEL_COUNT_NV, (GLint*)&slPixCount);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 
@@ -1360,7 +1466,9 @@ extern void gfxSetBlendType( const enum PredefinedBlendType pbt)
 
 #include "Gfx_wrapper_OpenGL.cpp"
 
+#ifdef SE1_D3D
 #include "Gfx_wrapper_Direct3D.cpp"
+#endif // SE1_D3D
 
 
 
@@ -1471,6 +1579,7 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 		gfxSetPixelProgramConst = &ogl_SetPixelProgramConst;
 
 	}
+#ifdef SE1_D3D
 	// Direct3D?
 	else if( iAPI==(INDEX)GAT_D3D)
 	{
@@ -1542,6 +1651,7 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 		gfxSetPixelProgramConst = &d3d_SetPixelProgramConst;
 
 	}
+#endif // SE1_D3D
 	// NONE!
 	else
 	{

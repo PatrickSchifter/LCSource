@@ -1,4 +1,5 @@
 #include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 #include <Engine/Rendering/Render.h>
 #include <Engine/Rendering/Render_internal.h>
 
@@ -1022,3 +1023,4 @@ HRESULT CRenderer::CreateVShTexCoord4Offset( LPDIRECT3DDEVICE8 pd3dDevice,
 }
 
 // sehan end
+#endif // SE1_D3D

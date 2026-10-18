@@ -15,7 +15,9 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Templates/Stock_CTextureData.h>
 
+#ifdef SE1_D3D
 #include <d3d8.h>
+#endif // SE1_D3D
 #include <algorithm>
 #include <Engine/Base/Memory.h>
 

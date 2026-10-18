@@ -30,7 +30,11 @@
 
 //강동민 수정 시작
 // NOTE : 나중에 제거해야 할듯(CreateShadowMatrix() 때문에 필요함.)
+#ifdef SE1_D3D
 #include <d3dx8.h>
+#else
+#include <d3dx8math.h>  // just the math (Compat/d3dx8)
+#endif // SE1_D3D
 #define SHADOWTEXTURESIZE (256)
 //강동민 수정 끝
 

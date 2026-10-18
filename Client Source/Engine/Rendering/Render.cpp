@@ -51,9 +51,11 @@
 
 // sehan
 //BOOL g_bUseBloom = FALSE;
+#ifdef SE1_D3D
 extern CRenderTexture       *_prtFilterTarget   [];
 extern LPDIRECT3DVERTEXBUFFER8  _pFilterVertexBuffer;
 extern LPDIRECT3DVERTEXBUFFER8  _pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT];
+#endif // SE1_D3D
 // sehan end
 
 extern BOOL _bSomeDarkExists;
@@ -911,6 +913,7 @@ void CRenderer::DrawToScreen(void)
 //안태훈 수정 시작	//(Option)(0.1)
 	if( re_iIndex == IDX_MAIN_RENDERER && re_prProjection->IsPerspective())
 	{		
+#ifdef SE1_D3D
 		if (re_bRenderBloom && g_iUseBloom > 0) 
 		{
 			HRESULT hr = InitBloom();
@@ -919,6 +922,7 @@ void CRenderer::DrawToScreen(void)
 				g_iUseBloom = 0;
 			}
 		}
+#endif // SE1_D3D
 	}
 //안태훈 수정 끝	//(Option)(0.1)
 	// sehan end
@@ -1141,11 +1145,13 @@ void CRenderer::DrawToScreen(void)
 		extern BOOL _bUseBloomInWorldEditor;
 		if(re_iIndex == IDX_MAIN_RENDERER && re_prProjection->IsPerspective())
 		{		
+#ifdef SE1_D3D
 			if (re_bRenderBloom && g_iUseBloom > 0
 				&& _bUseBloomInWorldEditor) 
 			{
 				RenderBloom();
 			}
+#endif // SE1_D3D
 		}
 	//안태훈 수정 끝	//(Option)(0.1)
 		// sehan end
@@ -1288,6 +1294,7 @@ void CRenderer::FillMirrorDepth(CMirror &mi)
 //강동민 수정 시작 접속 시퀀스 작업	06.01
 void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 {
+#ifdef SE1_D3D  // shadow textures need D3D render targets (no OpenGL version yet, C8)
 	if(re_avvxViewVertices.Count() <= 0)		return;
 
 	extern INDEX g_iShadowDetail;
@@ -1588,6 +1595,7 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 	gfxDisableBlend();
 	//gfxCullFace(GFX_FRONT);
 	//gfxPolygonMode(GFX_FILL);
+#endif // SE1_D3D
 }
 
 //-----------------------------------------------------------------------------
@@ -1597,6 +1605,7 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 //-----------------------------------------------------------------------------
 void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlacement3D &plEye)
 {
+#ifdef SE1_D3D  // shadow textures need D3D render targets (no OpenGL version yet, C8)
 	extern INDEX g_iShadowDetail;
 	// profile rendering
 	const BOOL bModelSetupTimer = _sfStats.CheckTimer(CStatForm::STI_MODELSETUP);
@@ -1897,6 +1906,7 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 	}
 	_sfStats.StopTimer(CStatForm::STI_SHADOWRENDERING);
 //-----------------------------------------------------------------------------
+#endif // SE1_D3D
 }
 
 // do the rendering
@@ -2402,7 +2412,11 @@ void CRenderer::Render(void)
 	// and D3D can't guarantee that it won't be discarded upon swapbuffers (especially if multisampling is on!) :(
 //강동민 수정 시작 Water 구현		04.16
 	//if( !re_bRenderingShadows && ((_pGfx->gl_eCurrentAPI==GAT_D3D && !d3d_bAlternateDepthReads) || re_iIndex>0))	// 원본
+#ifdef SE1_D3D
 	if( re_iIndex != IDX_WATER_RENDERER && !re_bRenderingShadows && ((_pGfx->gl_eCurrentAPI==GAT_D3D && !d3d_bAlternateDepthReads) || re_iIndex>0)) 
+#else
+	if( re_iIndex != IDX_WATER_RENDERER && !re_bRenderingShadows && re_iIndex>0)
+#endif // SE1_D3D
 //강동민 수정 끝 Water 구현			04.16
 	{
 		extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel=0);
@@ -2471,7 +2485,9 @@ void CRenderer::RenderReflection(/*Matrix16 &matWaterProj*/)
 		re_prProjection->Prepare();
 		papr = &re_prProjection;
 		re_pdpDrawPort->SetProjection(*papr);
+#ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, (D3DXMATRIX*)&_matWaterProj);
+#endif // SE1_D3D
 	}
 //강동민 수정 끝 Water 구현			04.21
 	//-----------------------------------------------------------------------------
@@ -2634,20 +2650,24 @@ CRenderer::CRenderer(void)
 	// sehan
 	re_bRenderBloom = FALSE;
 
+#ifdef SE1_D3D
 	for (i = 0; i < 2; ++i )
 	{
 		_prtFilterTarget[i] = NULL;
 	}
+#endif // SE1_D3D
 
 	m_pGaussianProp		= NULL;
 	m_fTemp = -0.1f;
 	m_bElimSmallContributors	= false;
+#ifdef SE1_D3D
 	//_pVertexBuffer			= NULL;
 	for (int height = 0; height < MAX_BACKVERTEX_HEIGHT; height++) {
 		for (int width = 0; width < MAX_BACKVERTEX_WIDTH; width++) {
 			_pBackVertexBuffer[width][height] = NULL;
 		}
 	}
+#endif // SE1_D3D
 //강동민 수정 시작 버그 사냥 작업	09.09
     //m_dwTexCoord4OffsetVertexShader = 0L;
     //m_dwAddFourPixelShader = 0L;

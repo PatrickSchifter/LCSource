@@ -61,6 +61,7 @@ extern void DetermineSupportedTextureFormats( GfxAPIType eAPI)
 		TS.ts_tfL8     = GL_LUMINANCE8;
 		TS.ts_tfA8     = GL_ALPHA8;
 	}
+#ifdef SE1_D3D
 	if( eAPI==GAT_D3D) 
 	{
 		extern D3DFORMAT FindClosestFormat_D3D(D3DFORMAT d3df);
@@ -73,6 +74,7 @@ extern void DetermineSupportedTextureFormats( GfxAPIType eAPI)
 		TS.ts_tfL8     = FindClosestFormat_D3D(D3DFMT_L8);
 		TS.ts_tfA8     = FindClosestFormat_D3D(D3DFMT_A8);
 	}
+#endif // SE1_D3D
 }
 
 
@@ -81,7 +83,11 @@ extern void UpdateTextureSettings(void)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	
 	// set texture formats and compression
 	TS.ts_tfRGB8 = TS.ts_tfRGBA8 = NONE;
@@ -111,8 +117,10 @@ extern void UpdateTextureSettings(void)
 		if( iTC==4 && !bOldTC) iTC = 0; // khm ... 
 		iTCType = iTC;   // set it
 	}
+#ifdef SE1_D3D
 	// Direct3D (just force DXTC - it's the only one)
 	if( eAPI==GAT_D3D && bAnyTC) iTCType = 5;
+#endif // SE1_D3D
 	
 	// set members
 	switch( iTCType) 
@@ -139,12 +147,14 @@ extern void UpdateTextureSettings(void)
 		TS.ts_tfRGBcA  = GL_COMPRESSED_RGB4_ALPHA4_S3TC;
 		TS.ts_tfRGBcAc = GL_COMPRESSED_RGB4_COMPRESSED_ALPHA4_S3TC;
 		break;
+#ifdef SE1_D3D
 	case 5:  // DXTC
 		extern D3DFORMAT FindClosestFormat_D3D(D3DFORMAT d3df);
 		TS.ts_tfRGBc   = D3DFMT_DXT1;
 		TS.ts_tfRGBcA  = FindClosestFormat_D3D(D3DFMT_DXT3);
 		TS.ts_tfRGBcAc = FindClosestFormat_D3D(D3DFMT_DXT5);
 		break;
+#endif // SE1_D3D
 	default: // none
 		TS.ts_tfRGBc   = NONE;
 		TS.ts_tfRGBcA  = NONE;
@@ -577,7 +587,11 @@ static ULONG DetermineInternalFormat( CTextureData *pTD)
 		// compress opaque/transparent
 		// (strange one: D3DFMT_A1R5G5B5 instead of TS.ts_tfRGB5A1 is because OpenGL
 		//  erroneously treats transparent textures as fully opaque!)
+#ifdef SE1_D3D
 		if( ulFormat==TS.ts_tfRGB8 || ulFormat==TS.ts_tfRGB5 || ulFormat==D3DFMT_A1R5G5B5  
+#else
+		if( ulFormat==TS.ts_tfRGB8 || ulFormat==TS.ts_tfRGB5
+#endif // SE1_D3D
 			|| (ulFormat==TS.ts_tfL8 && tex_bCompressGrayscale)) 
 		{
 			// do NV fix if needed (compress opaque textures as transparent)
@@ -820,7 +834,11 @@ void CTextureData::Read_t( CTStream *inFile)
 	
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	
 	// determine driver context presence (must have at least 1 texture unit!)
 	const BOOL bHasContext = (_pGfx->gl_ctRealTextureUnits>0);
@@ -1290,8 +1308,10 @@ void CTextureData::Read_t( CTStream *inFile)
 	{ // only non-static-constant textures can be dithered
 		extern INDEX AdjustDitheringType_OGL( GLenum eFormat, INDEX iDitheringType);
 		if( eAPI==GAT_OGL) iDitherType = AdjustDitheringType_OGL( (GLenum)td_ulInternalFormat, tex_iDithering);
+#ifdef SE1_D3D
 		extern INDEX AdjustDitheringType_D3D( D3DFORMAT eFormat, INDEX iDitheringType);
 		if( eAPI==GAT_D3D) iDitherType = AdjustDitheringType_D3D( (D3DFORMAT)td_ulInternalFormat, tex_iDithering);
+#endif // SE1_D3D
 	}
 	// eventually dither texture
 	if( iDitherType!=0) 
@@ -1691,7 +1711,11 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 	
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	
 	// skip non-existing texture
 	// ASSERT( iFrameNo<td_ctFrames);

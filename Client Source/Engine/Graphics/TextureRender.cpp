@@ -19,13 +19,16 @@
 
 //안태훈 수정 시작	//(Add CRenderTexture class for Render to Texture)(0.1)
 #include <Engine/Base/MemoryTracking.h>
+#ifdef SE1_D3D
 #include <d3d8.h>
+#endif // SE1_D3D
 
 // track texture memory allocated in main heap
 #define TRACKTEX_HEAP() TRACKMEM(mem, "Textures (heap)")
 // track texture memory allocated in hardware
 #define TRACKTEX_HW() TRACKMEM(mem, "Textures (hardware)")
 
+#ifdef SE1_D3D
 CRenderTexture::CRenderTexture()
 {
 	rt_pSurface = NULL;
@@ -129,4 +132,13 @@ void CRenderTexture::End()		// SetRenderTarget old
 		m_pOldDepthStencil = NULL;
 	}
 }
+#else
+// no render targets yet without Direct3D (C8): Init() fails, callers skip the effect
+CRenderTexture::CRenderTexture() {}
+CRenderTexture::~CRenderTexture() {}
+BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag) { return FALSE; }
+void CRenderTexture::Begin() {}
+void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal) {}
+void CRenderTexture::End() {}
+#endif // SE1_D3D
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)

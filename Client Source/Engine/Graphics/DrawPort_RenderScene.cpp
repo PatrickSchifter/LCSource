@@ -1813,8 +1813,16 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
 {
 	// check API
 	_eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_D3D || _eAPI==GAT_NONE);
+#else
+	ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_NONE);
+#endif // SE1_D3D
+#ifdef SE1_D3D
 	if( _eAPI!=GAT_OGL && _eAPI!=GAT_D3D) return;
+#else
+	if( _eAPI!=GAT_OGL) return;
+#endif // SE1_D3D
 
 	// some cvars cannot be altered in multiplayer mode!
 	if( _bMultiPlayer) {

@@ -1,5 +1,6 @@
 
 #include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 
 #include <d3dx8tex.h>
 #pragma comment(lib, "d3dx8.lib")
@@ -1097,3 +1098,4 @@ extern COLOR UnpackColor_D3D( UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slCo
   return RGBToColor(ubR,ubG,ubB);
 }
 
+#endif // SE1_D3D

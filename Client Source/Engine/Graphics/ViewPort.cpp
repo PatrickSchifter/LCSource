@@ -9,6 +9,7 @@ extern INDEX ogl_bExclusive;
 //	김영환 전역 설정 값 가져오기
 extern BOOL _bClientApp;
 
+#ifdef SE1_D3D
 // helper for D3D surface
 static HRESULT CreateSwapChain_D3D( CViewPort *pvp, PIX pixSizeI, PIX pixSizeJ)
 {
@@ -62,6 +63,7 @@ static void SetAsRenderTarget_D3D( CViewPort *pvp)
 		D3DRELEASE( pColorSurface, TRUE);
 	}
 }
+#endif // SE1_D3D
 
 
 // helper for OGL
@@ -89,8 +91,10 @@ vp_Raster( pixWidth, pixHeight, 0)
 {
 	vp_hWnd = NULL;
 	vp_hWndParent = hWnd;
+#ifdef SE1_D3D
 	vp_pSwapChain = NULL;
 	vp_pSurfDepth = NULL;
+#endif // SE1_D3D
 	vp_ctDisplayChanges = 0;
 	OpenCanvas();
 	vp_Raster.ra_pvpViewPort = this;
@@ -155,6 +159,7 @@ void CViewPort::OpenCanvas(void)
 		ASSERT( (dm.dm_pixSizeI==0 && dm.dm_pixSizeJ==0) || (dm.dm_pixSizeI!=0 && dm.dm_pixSizeJ!=0));
 		const BOOL bFullScreen = (dm.dm_pixSizeI==pixWinSizeI && dm.dm_pixSizeJ==pixWinSizeJ);
 
+#ifdef SE1_D3D
 		// prepare new swap chain for D3D
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && !bFullScreen)
 		{
@@ -165,14 +170,17 @@ void CViewPort::OpenCanvas(void)
 			}
 			// ----------------------------------------------------------->>
 		}
+#endif // SE1_D3D
 
 		// resize raster
 		Resize();
 		ShowWindow( vp_hWnd, SW_SHOW);
 
+#ifdef SE1_D3D
 		// set as rendering target
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL) 
 			SetAsRenderTarget_D3D(this);
+#endif // SE1_D3D
 	}
 	else
 	{
@@ -228,6 +236,7 @@ void CViewPort::OpenCanvas(void)
 		  NULL);
 		ASSERT( vp_hWnd!=NULL);
 		
+#ifdef SE1_D3D
 		// prepare new swap chain for D3D
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && !bFullScreen)
 		{
@@ -245,13 +254,16 @@ void CViewPort::OpenCanvas(void)
 			}
 			// ----------------------------------------------------------->>
 		}
+#endif // SE1_D3D
 
 		// resize raster
 		Resize();
 		ShowWindow( vp_hWnd, SW_SHOW);
 
+#ifdef SE1_D3D
 		// set as rendering target
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL) SetAsRenderTarget_D3D(this);
+#endif // SE1_D3D
 	}
 }
 
@@ -259,6 +271,7 @@ void CViewPort::OpenCanvas(void)
 // close overlaid window
 void CViewPort::CloseCanvas(void)
 {
+#ifdef SE1_D3D
 	// release D3D swap chain if allocated
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D) 
 	{
@@ -273,6 +286,7 @@ void CViewPort::CloseCanvas(void)
 		vp_pSwapChain = NULL;
 		vp_pSurfDepth = NULL;
 	}
+#endif // SE1_D3D
 	// destroy window
 	//	김영환 : 클라이언트용이 아닌 경우만.(툴에서 사용하는 경우)
 	if(_bClientApp == FALSE)
@@ -298,8 +312,10 @@ void CViewPort::Resize(void)
 	extern BOOL _bFirst;
 	if(!_bFirst)				_bFirst = TRUE;
 
+#ifdef SE1_D3D
 	extern INDEX d3d_bDeviceChanged;
 	if(!d3d_bDeviceChanged)		d3d_bDeviceChanged = TRUE;
+#endif // SE1_D3D
 	//강동민 수정 끝 시스템 마우스 작업		09.09
 	
 	// get the size of the window
@@ -322,6 +338,7 @@ void CViewPort::Resize(void)
 	// resize the raster
 	vp_Raster.Resize( pixNewWidth, pixNewHeight);
 
+#ifdef SE1_D3D
 	// "resize" D3D surface (if any)
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL)// && vp_pSurfDepth!=NULL) 
 	{
@@ -343,6 +360,7 @@ void CViewPort::Resize(void)
 		// ----------------------------------------------------------->>
 		SetAsRenderTarget_D3D(this);
 	}
+#endif // SE1_D3D
 }
 
 

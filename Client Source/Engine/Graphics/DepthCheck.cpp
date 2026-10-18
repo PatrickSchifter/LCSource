@@ -13,7 +13,9 @@
 
 extern INDEX gap_iOptimizeDepthReads;
 extern INDEX gap_bUseOcclusionCulling;
+#ifdef SE1_D3D
 extern COLOR UnpackColor_D3D( UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slColorSize);
+#endif // SE1_D3D
 
 static INDEX _iCheckIteration = 0;
 static CTimerValue _tvLast[8];  // 8 is max mirror recursion
@@ -30,16 +32,22 @@ struct DepthInfo {
   BOOL  di_bVisible;          // whether the point was visible
 };
 CStaticStackArray<DepthInfo> _adiDelayed;  // active delayed points
+#ifdef SE1_D3D
 // don't ask, these are for D3D
 CStaticStackArray<CTVERTEX> _avtxDelayed;  
 CStaticStackArray<COLOR>    _acolDelayed;  
+#endif // SE1_D3D
 
 // read depth buffer and update visibility flag of depth points
 static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirrorLevel,
                                          DepthInfo *pdi, const INDEX ctCount)
 {
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
   ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
   ASSERT( pdp!=NULL && ctCount>0);
   const CRaster *pra = pdp->dp_Raster;
 
@@ -112,6 +120,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     return;
   }
 
+#ifdef SE1_D3D
   // Direct3D
   if( eAPI==GAT_D3D)
   {
@@ -226,6 +235,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     _sfStats.StopTimer(CStatForm::STI_GFXAPI);
     return;
   }
+#endif // SE1_D3D
 }
 
 

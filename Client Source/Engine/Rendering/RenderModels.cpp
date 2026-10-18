@@ -969,8 +969,10 @@ void CRenderer::RenderOneSkaModelToTexture(CEntity &en, const CPlacement3D &plMo
 		0.1f, 300.0f);					// FrameBBox의 Height
 
 	// NOTE : 직접적으로 투영행렬을 설정하는 부분.  Serious 엔진에서 제공하는 함수를 이용하는 방향으로 변환할것.
+#ifdef SE1_D3D
 	HRESULT hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_PROJECTION, (const _D3DMATRIX*)&_matShadowProj);
 	D3D_CHECKERROR(hr);
+#endif // SE1_D3D
 	
 	//-----------------------------------------------------------------------------
 	// 모델을 렌더링할 때 사용할 VIEW 행렬로 지정합니다.

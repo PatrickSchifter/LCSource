@@ -15,12 +15,14 @@
 #include <Engine/Math/Geometry.h>
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
 
+#ifdef SE1_D3D
 #pragma message(">> Remove include to d3d")
 #undef new
 #include "initguid.h"
 #include <d3d8.h>
 #include <d3dx8core.h>
 #pragma comment(lib, "d3dx8.lib")
+#endif // SE1_D3D
 
 // asm shortcuts
 #define O offset
@@ -150,7 +152,9 @@ static CStaticStackArray<struct GFXTexCoord> _atcHaze;  // haze tex coords
 static CStaticStackArray<UBYTE> _aubshdHaze;
 static CStaticStackArray<UBYTE> _aubshdFog;
 //강동민 수정 시작 2차 작업			05.14
+#ifdef SE1_D3D
 static D3DXPLANE	_plOld;
+#endif // SE1_D3D
 //강동민 수정 끝 2차 작업			05.14
 
 static INDEX tempFileNameCount = 0;	// 쉐이더 코드 추출을 위한 변수
@@ -190,6 +194,7 @@ extern void shaEnd(void)
 		{
 //강동민 수정 시작 테스트 클라이언트 작업	06.16
 			// if custom clip plane supported
+#ifdef SE1_D3D
 			if((_pGfx->gl_ulFlags&GLF_D3D_CLIPPLANE) && gfx_bRenderReflection)
 			{
 //강동민 수정 끝 테스트 클라이언트 작업		06.16
@@ -215,6 +220,7 @@ extern void shaEnd(void)
 			hr = _pGfx->gl_pd3dDevice->SetClipPlane( 0, &plNew[0]);					D3D_CHECKERROR(hr);
 //강동민 수정 시작 테스트 클라이언트 작업	06.16
 			}
+#endif // SE1_D3D
 //강동민 수정 끝 테스트 클라이언트 작업		06.16
 		}
 	}
@@ -242,6 +248,7 @@ extern void shaEnd(void)
 			// NOTE : 이 루틴을 타기전에 이미 SetClipPlane()이 설정되어 있음.
 			// if custom clip plane supported.
 //강동민 수정 시작 테스트 클라이언트 작업	06.16
+#ifdef SE1_D3D
 			if((_pGfx->gl_ulFlags&GLF_D3D_CLIPPLANE) && gfx_bRenderReflection)
 			{
 //강동민 수정 끝 테스트 클라이언트 작업		06.16
@@ -250,6 +257,7 @@ extern void shaEnd(void)
 			//gfxDisableClipPlane();
 //강동민 수정 시작 테스트 클라이언트 작업	06.16
 			}
+#endif // SE1_D3D
 //강동민 수정 끝 테스트 클라이언트 작업		06.16
 		}
 	}
@@ -308,6 +316,7 @@ static void SetConstantRegisters(void)
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 extern void shaSetDefaultConstantRegisters(void)
 {
+#ifdef SE1_D3D
 	if( !( (_pGfx->gl_ulFlags & GLF_VERTEXPROGRAM)
 		&& (_pGfx->gl_ulFlags & GLF_PIXELPROGRAM)
 		&& (_pGfx->gl_ctTextureUnits >= 4) ) ) return;
@@ -349,6 +358,7 @@ extern void shaSetDefaultConstantRegisters(void)
 		const Matrix12 *pbm = _pamBoneMatrices[ibm];
 		shaSetVertexProgramConst(21+ibm*3, pbm, 3);
 	}
+#endif // SE1_D3D
 }
 
 //강동민 수정 시작		03.19
@@ -365,6 +375,7 @@ extern void shaSetPixelProgramConst_WaterColor()
 //Transform Matrix를 상수레지스터 c0~c3에 세팅한다.
 extern void shaSetVertexProgramConst_TransformMatrix()
 {
+#ifdef SE1_D3D
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;
 	D3DXMATRIX matProj;
@@ -373,6 +384,7 @@ extern void shaSetVertexProgramConst_TransformMatrix()
 	D3DXMatrixMultiply( &mat, &matView, &matProj);
 	D3DXMatrixTranspose( &mat, &mat);
 	shaSetVertexProgramConst( 0, (Matrix16*)&mat, 4);
+#endif // SE1_D3D
 }
 
 //Light의 방향과 bone을 위한 값을 상수레지스터 c4.xyz, c4.w에 세팅한다.
@@ -417,6 +429,7 @@ extern void shaSetVertexProgramConst_Multiply()
 // 텍스쳐 투영행렬... c20~c23
 extern void shaSetVertexProgramConst_ProjectionMatrix()
 {
+#ifdef SE1_D3D
 //	if(_pWaterInformation)
 //	{		
 		D3DXMATRIX mat;
@@ -458,6 +471,7 @@ extern void shaSetVertexProgramConst_ProjectionMatrix()
 		// c21~24
 		shaSetVertexProgramConst( 21, (Matrix16*)&mat, 4);
 	//}
+#endif // SE1_D3D
 }
 //강동민 수정 끝		03.17
 
@@ -514,6 +528,7 @@ extern void shaSetVertexProgramConst_PI()
 //강동민 수정 시작 Water 구현		04.20
 extern void shaSetEMBM()
 {
+#ifdef SE1_D3D
 	//if(_pWaterInformation)
 	//{
 		D3DXMATRIX matBumpMat;
@@ -540,6 +555,7 @@ extern void shaSetEMBM()
 		hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_BUMPENVMAT10,   F2DW(matBumpMat._21));	D3D_CHECKERROR(hr);
 		hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_BUMPENVMAT11,   F2DW(matBumpMat._22));	D3D_CHECKERROR(hr);
 	//}
+#endif // SE1_D3D
 }
 //강동민 수정 끝 Water 구현			04.20
 
@@ -621,6 +637,7 @@ extern void shaSetVertexProgramConst_BoneMatrix()
 
 extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCalcLight/* = FALSE*/)
 {
+#ifdef SE1_D3D
 	D3DXMATRIX mat;
 	D3DXMATRIX matView, matNewView, matInvViewRot, matViewRot;
 	D3DXMATRIX matProj;
@@ -711,6 +728,7 @@ extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCal
 
 	//최종적으로 SetTransform한다.
 	_pGfx->gl_pd3dDevice->SetTransform(D3DTS_VIEW, &matNewView);
+#endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
 
@@ -736,20 +754,28 @@ extern void shaSetVertexProgramConst(INDEX iRegister, const Matrix16 *pmData, IN
 // Set const vertex program register
 extern void shaGetVertexProgramConst(INDEX iRegister, ShaderRegister &pData)
 {
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, &pData, 1);
+#endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix12 &pmData)
 {
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 3);
+#endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix16 &pmData)
 {
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 4);
+#endif // SE1_D3D
 }
 // Set const pixel program register
 extern void shaGetPixelProgramConst(INDEX iRegister, ShaderRegister &pData)
 {
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetPixelShaderConstant(iRegister, &pData, 1);
+#endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
 
@@ -829,8 +855,10 @@ static CTString AssembleVertexProgram(const char *strAdditionalCode, ULONG ulStr
 
 static CTString AssemblePixelProgram(CTString strAdditionalCode, DWORD PixelShaderVersion, INDEX iFogTexUnit=-1)
 {
+#ifdef SE1_D3D
 	if (PixelShaderVersion == D3DPS_VERSION(1,1))
 		return strPixelProgramPrefix11 + strAdditionalCode;
+#endif // SE1_D3D
 	//else if (PixelShaderVersion == D3DPS_VERSION(1,4))
 
 	return strPixelProgramPrefix14 + strAdditionalCode;
@@ -1144,17 +1172,21 @@ extern void shaDoFogAndHazePass(void)
 		gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
 		gfxSetTexCoordArray( &_atcHaze[0], FALSE);
 		gfxSetColorArray(&_acolHaze[0]);
+#ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, &op);
 		_pGfx->gl_pd3dDevice->GetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLORARG1, &arg1);
 		_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 		_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLORARG1, D3DTA_CURRENT);
+#endif // SE1_D3D
 		// render haze pass
 		gfxDrawElements( _ctIndices, _puwIndices);
+#ifdef SE1_D3D
 		if(!(_ulRenFlags&SHA_RMF_FOG))
 		{
 			_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, op);
 			_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLORARG1, arg1);
 		}
+#endif // SE1_D3D
 	}
 
 	// if model is in fog
@@ -1167,6 +1199,7 @@ extern void shaDoFogAndHazePass(void)
 		gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
 		gfxSetTexCoordArray(&_atcFog[0], FALSE);
 		gfxSetColorArray(&_acolFog[0]);
+#ifdef SE1_D3D
 		if(!(_ulRenFlags&SHA_RMF_HAZE))
 		{
 			_pGfx->gl_pd3dDevice->GetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, &op);
@@ -1174,10 +1207,13 @@ extern void shaDoFogAndHazePass(void)
 			_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 			_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLORARG1, D3DTA_CURRENT);
 		}
+#endif // SE1_D3D
 		// render fog pass
 		gfxDrawElements( _ctIndices, _puwIndices);
+#ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLOROP, op);
 		_pGfx->gl_pd3dDevice->SetTextureStageState(GFX_iActiveTexUnit, D3DTSS_COLORARG1, arg1);
+#endif // SE1_D3D
 	}
 }
 

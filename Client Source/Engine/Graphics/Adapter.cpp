@@ -10,7 +10,9 @@
 
 
 extern BOOL _bDedicatedServer;
+#ifdef SE1_D3D
 extern const D3DDEVTYPE d3dDevType;
+#endif // SE1_D3D
 
 
 // list of all modes avaliable through CDS
@@ -202,6 +204,7 @@ void CGfxLibrary::InitAPIs(void)
     adm[3].dm_pixSizeI = 1024;  adm[3].dm_pixSizeJ = 768;  adm[3].dm_ddDepth = DISPD_16BIT;
   }
 #endif  // PLATFORM_WIN32
+#ifdef SE1_D3D
   // try to init Direct3D 8
   BOOL bRes = InitDriver_D3D();
   if( !bRes) return; // didn't made it?
@@ -275,6 +278,7 @@ void CGfxLibrary::InitAPIs(void)
   D3DRELEASE( gl_pD3D, TRUE);
   if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
   gl_hiDriver = NONE;
+#endif // SE1_D3D
 }
 
 

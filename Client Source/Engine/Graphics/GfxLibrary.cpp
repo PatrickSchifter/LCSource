@@ -557,11 +557,19 @@ static void GAPInfo(void)
 {
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	CPrintF( "\n");
 
 	// in case of driver hasn't been initialized yet
+#ifdef SE1_D3D
 	if( (_pGfx->go_hglRC==NULL && _pGfx->gl_pd3dDevice==NULL) || eAPI==GAT_NONE) {
+#else
+	if( _pGfx->go_hglRC==NULL || eAPI==GAT_NONE) {
+#endif // SE1_D3D
 		// be brief, be quick
 		CPrintF( TRANS("Display driver hasn't been initialized.\n\n"));
 		return;
@@ -698,6 +706,7 @@ static void GAPInfo(void)
 
 	}
 
+#ifdef SE1_D3D
 	// Direct3D only stuff
 	if( eAPI==GAT_D3D)
 	{
@@ -761,6 +770,7 @@ static void GAPInfo(void)
 			} else CPrintF( "not adjustable\n");
 		}
 	}
+#endif // SE1_D3D
 }
 
 
@@ -788,9 +798,13 @@ extern void UpdateGfxSysCVars(void)
 	if( _pGfx->gl_ulFlags & GLF_32BITTEXTURES) sys_bHas32bitTextures = 1;
 	if( _pGfx->gl_ulFlags & GLF_VSYNC) sys_bHasSwapInterval = 1;
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_COMPILEDVERTEXARRAY)) sys_bHasCVAs = 0;
+#ifdef SE1_D3D
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D && !(_pGfx->gl_ulFlags&GLF_D3D_HASHWTNL)) sys_bHasHardwareTnL = 0;
+#endif // SE1_D3D
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) sys_bUsingOpenGL = 1;
+#ifdef SE1_D3D
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D) sys_bUsingDirect3D = 1;
+#endif // SE1_D3D
 }
 
 	 
@@ -994,20 +1008,24 @@ CGfxLibrary::CGfxLibrary(void)
 	go_hglRC = NONE;
 	gl_ctDriverChanges = 0;
 
+#ifdef SE1_D3D
 	// DX8 not loaded either
 	gl_pD3D = NONE;
 	gl_pd3dDevice = NULL;
 	gl_d3dColorFormat = (D3DFORMAT)NONE;
 	gl_d3dDepthFormat = (D3DFORMAT)NONE;
+#endif // SE1_D3D
 	gl_pvpActive = NULL;
 	gl_ctMaxStreams = 0;
 	gl_dwVertexShader = 0;
 	gl_dwPixelShader  = 0;
+#ifdef SE1_D3D
 	gl_pd3dIdx = NULL;
 	gl_pd3dVtx = NULL;
 	gl_pd3dNor = NULL;
 	gl_pd3dWgh = NULL;
 	for( INDEX i=0; i<GFX_MAXLAYERS; i++) gl_pd3dCol[i] = gl_pd3dTex[i] = NULL;
+#endif // SE1_D3D
 	gl_ctVertices = 0;
 	gl_ctIndices  = 0;
 
@@ -1432,6 +1450,7 @@ BOOL CGfxLibrary::StartDisplayMode( enum GfxAPIType eAPI, INDEX iAdapter, PIX pi
 	}
 
 	// DirectX driver ?
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D)
 	{
 		// startup D3D
@@ -1443,6 +1462,7 @@ BOOL CGfxLibrary::StartDisplayMode( enum GfxAPIType eAPI, INDEX iAdapter, PIX pi
 		gl_eCurrentAPI = GAT_D3D;
 	 _iGfxAPI = 1;  // just for some color.h routines
 	}
+#endif // SE1_D3D
 
 	// no driver
 	else
@@ -1539,6 +1559,7 @@ void CGfxLibrary::StopDisplayMode(void)
 		MonitorsOn();       // re-enable multimonitor support if disabled
 		CDS_ResetMode();
 	}
+#ifdef SE1_D3D
 	else if( gl_eCurrentAPI==GAT_D3D)
 	{ // Direct3D
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
@@ -1547,6 +1568,7 @@ void CGfxLibrary::StopDisplayMode(void)
 		EndDriver_D3D();
 		MonitorsOn();
 	}
+#endif // SE1_D3D
 	else
 	{ // none
 		ASSERT( gl_eCurrentAPI==GAT_NONE);
@@ -1581,7 +1603,9 @@ void CGfxLibrary::StopDisplayMode(void)
 BOOL CGfxLibrary::SetCurrentViewport(CViewPort *pvp)
 {
 	if( gl_eCurrentAPI==GAT_OGL)  return SetCurrentViewport_OGL(pvp);
+#ifdef SE1_D3D
 	if( gl_eCurrentAPI==GAT_D3D)  return SetCurrentViewport_D3D(pvp);
+#endif // SE1_D3D
 	if( gl_eCurrentAPI==GAT_NONE) return TRUE;
 	ASSERTALWAYS( "SetCurrenViewport: Wrong API!");
 	return FALSE;
@@ -1592,7 +1616,11 @@ BOOL CGfxLibrary::SetCurrentViewport(CViewPort *pvp)
 BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 {
 	// check API
+#ifdef SE1_D3D
 	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_D3D || gl_eCurrentAPI==GAT_NONE);
+#else
+	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// don't set if same as last
 	const ULONG ulThisDrawPortID = pdpToLock->GetID();
@@ -1614,6 +1642,7 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 		pglScissor(  pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D ...
 	else if( gl_eCurrentAPI==GAT_D3D)
 	{ 
@@ -1637,6 +1666,7 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 		GFX_fMinDepthRange = 0.0f;
 		GFX_fMaxDepthRange = 1.0f;
 	}
+#endif // SE1_D3D
 
 	// mark and set default projection
 	GFX_ulLastDrawPortID = ulThisDrawPortID;
@@ -1650,7 +1680,11 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 void CGfxLibrary::UnlockDrawPort( CDrawPort *pdpToUnlock)
 {
 	// check API
+#ifdef SE1_D3D
 	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_D3D || gl_eCurrentAPI==GAT_NONE);
+#else
+	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_NONE);
+#endif // SE1_D3D
 	// eventually signalize that scene rendering has ended
 }
 
@@ -1825,7 +1859,11 @@ static int WINAPI GetOSVersionType()
 void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALSE*/)
 {
 	// check API
+#ifdef SE1_D3D
 	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_D3D || gl_eCurrentAPI==GAT_NONE);
+#else
+	ASSERT( gl_eCurrentAPI==GAT_OGL || gl_eCurrentAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// safety check
 	ASSERT( gl_pvpActive!=NULL);
@@ -1944,6 +1982,7 @@ void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALS
 		if( !(gl_ulFlags&GLF_EXT_COMPILEDVERTEXARRAY)) ogl_bUseCompiledVertexArrays = 0;
 	}
 
+#ifdef SE1_D3D
 	// Direct3D
 	else if( gl_eCurrentAPI==GAT_D3D)
 	{
@@ -2089,6 +2128,7 @@ void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALS
 		} 
 
 	}
+#endif // SE1_D3D
 
 	// update tessellation level
 	gl_iTessellationLevel = gap_iTruformLevel;
@@ -2171,12 +2211,14 @@ BOOL CGfxLibrary::LockRaster( CRaster *praToLock)
 	ASSERT( praToLock->ra_pvpViewPort!=NULL);
 	BOOL bRes = SetCurrentViewport( praToLock->ra_pvpViewPort);
 	if( bRes) {
+#ifdef SE1_D3D
 		// must signal to picky Direct3D
 		if( gl_eCurrentAPI==GAT_D3D && !GFX_bRenderingScene) {  
 			HRESULT hr = gl_pd3dDevice->BeginScene(); 
 			D3D_CHECKERROR(hr);
 			bRes = (hr==D3D_OK);
 		} // mark it
+#endif // SE1_D3D
 		GFX_bRenderingScene = TRUE;
 	} // done
 	return bRes;
@@ -2198,11 +2240,17 @@ BOOL CGfxLibrary::HasCompression(void)
 {
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D);
+#else
+	ASSERT( eAPI==GAT_OGL);
+#endif // SE1_D3D
 	// OpenGL: ARB & non-legacy-ST3C is required
 	if( eAPI==GAT_OGL && (gl_ulFlags&GLF_EXTC_ARB) && (gl_ulFlags&GLF_EXTC_S3TC)) return TRUE;
 	// Direct3D: just plain compression support is needed
+#ifdef SE1_D3D
 	if( eAPI==GAT_D3D && (gl_ulFlags&GLF_TEXTURECOMPRESSION)) return TRUE;
+#endif // SE1_D3D
 	// no API - no compression
 	return FALSE;
 }
@@ -2275,9 +2323,11 @@ static void AdjustGammaRamp( CViewPort *pvp)
 		CTempDC tdc(pvp->vp_hWnd);
 		SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
 	}
+#ifdef SE1_D3D
 	else if( _pGfx->gl_eCurrentAPI==GAT_D3D) {
 		// Direct3D
 		_pGfx->gl_pd3dDevice->SetGammaRamp( D3DSGR_NO_CALIBRATION, (D3DGAMMARAMP*)&_auwGammaTable[0]);
 	}
+#endif // SE1_D3D
 
 }
