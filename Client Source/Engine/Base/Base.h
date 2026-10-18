@@ -48,6 +48,12 @@
   #define LC_PLATFORM_SDL
 #endif
 
+// Sound output through SDL3 instead of DirectSound/WaveOut (Engine/Sound/SoundLibrary.cpp); the
+// Windows build uses it only when configured with LC_SOUND_SDL (which needs LC_PLATFORM_SDL).
+#if defined(PLATFORM_UNIX) && !defined(LC_SOUND_SDL)
+  #define LC_SOUND_SDL
+#endif
+
 // The x86 inline assembly is MSVC syntax for 32-bit x86 only; everywhere else the engine uses
 // its C paths. Define USE_PORTABLE_C in the Windows build too to test the C paths there.
 #if !defined(_MSC_VER) || !defined(_M_IX86)

@@ -20,7 +20,9 @@
 CSoundData::CSoundData()
 {
   sd_pswSamples = NULL;
+#ifndef LC_SOUND_SDL
   sd_pdsBuffer  = NULL;
+#endif
   sd_pubDecoderHeader = NULL;
   sd_slHeaderSize = 0;
   sd_ctSamples = 0;      
@@ -40,8 +42,10 @@ CSoundData::~CSoundData()
 // Free Buffer (and all linked Objects)
 void CSoundData::ClearBuffer(void)
 {
+#ifndef LC_SOUND_SDL
   // cannot have both at same time
   ASSERT( sd_pswSamples==NULL || sd_pdsBuffer==NULL);
+#endif
 
   // if this is decoded sound
   if(sd_pubDecoderHeader!=NULL) {
@@ -56,11 +60,13 @@ void CSoundData::ClearBuffer(void)
     sd_pswSamples = NULL;
   }
 
+#ifndef LC_SOUND_SDL
   // if direct sound buffer exist
   if( sd_pdsBuffer!=NULL) {
     sd_pdsBuffer->Release();
     sd_pdsBuffer = NULL;
   }
+#endif
 }
 
 
@@ -88,7 +94,11 @@ DOUBLE CSoundData::GetSecondsLength(void)
 // Read sound in memory
 void CSoundData::Read_t( CTStream *inFile)  // throw char *
 {
+#ifndef LC_SOUND_SDL
   ASSERT( sd_pswSamples==NULL && sd_pdsBuffer==NULL);
+#else
+  ASSERT( sd_pswSamples==NULL);
+#endif
   sd_ulFlags = NONE;
   sd_tmLength   = 0;
   sd_ctSamples  = 0;      
@@ -187,11 +197,17 @@ BOOL CSoundData::IsAutoFreed(void)
 SLONG CSoundData::GetUsedMemory(void)
 {
   SLONG slUsed = sizeof(*this);
+#ifndef LC_SOUND_SDL
   if( sd_pswSamples!=NULL || sd_pdsBuffer!=NULL) {
+#else
+  if( sd_pswSamples!=NULL) {
+#endif
     ASSERT( sd_wfeFormat.nChannels==1 || sd_wfeFormat.nChannels==2);
     SLONG slSize = sd_ctSamples * sd_wfeFormat.nChannels *sd_wfeFormat.wBitsPerSample/8;
     slUsed += slSize; 
+#ifndef LC_SOUND_SDL
     if( sd_pdsBuffer!=NULL) slUsed += sizeof(sd_pdsBuffer);
+#endif
   } 
   return slUsed;
 }
@@ -409,6 +425,7 @@ void CSoundData::LoadWAV_t( CTStream *inFile, SLONG slMaxSampleRate)
   const INDEX ctStereoSamples = sd_ctSamples * wfe.nChannels;
   sd_slBufferSize = ulDataLength;
 
+#ifndef LC_SOUND_SDL
   if( _pSound->sl_ulFlags&SLF_USINGDS3D)
   {
     // create direct sound buffer
@@ -452,6 +469,7 @@ void CSoundData::LoadWAV_t( CTStream *inFile, SLONG slMaxSampleRate)
 
   // convert to memory
   else
+#endif
   {
     if( !bADPCM) {
       ASSERT( sd_pswSamples==NULL);

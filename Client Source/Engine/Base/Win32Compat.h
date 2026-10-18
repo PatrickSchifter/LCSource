@@ -529,6 +529,19 @@ typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUs
 MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
 MMRESULT timeKillEvent(UINT uTimerID);
 
+// wave format (mmreg.h): how the sound library describes its output and the loaded sounds
+// (Engine/Sound); only PCM is used
+#define WAVE_FORMAT_PCM 1
+typedef struct tWAVEFORMATEX {
+  WORD  wFormatTag;
+  WORD  nChannels;
+  DWORD nSamplesPerSec;
+  DWORD nAvgBytesPerSec;
+  WORD  nBlockAlign;
+  WORD  wBitsPerSample;
+  WORD  cbSize;
+} WAVEFORMATEX;
+
 // Files (Win32Compat.cpp). The engine keeps Windows paths everywhere ('\' separators; outside
 // Windows an absolute path starts with a single '\', like "\Users\me\LastChaos\"); they become
 // host paths only here, at the system boundary: '\' turns into '/', and each component that does

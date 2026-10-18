@@ -4,7 +4,9 @@
   #pragma once
 #endif
 
+#ifndef LC_SOUND_SDL
 #include <dsound.h>
+#endif
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Serial.h>
 
@@ -16,7 +18,9 @@ public:
     WAVEFORMATEX sd_wfeFormat;   // wave format info
     WORD sd_wSamplesPerBlock;    
   };
+#ifndef LC_SOUND_SDL
   LPDIRECTSOUNDBUFFER sd_pdsBuffer;  // pointer to direct sound buffer (not used in WaveOut mode!)
+#endif
   SWORD *sd_pswSamples;              // pointer to wave data (not used in DirectSound mode!)
   DOUBLE sd_tmLength;         // sound length in seconds
   SLONG  sd_slBufferSize;     // buffer size in bytes
