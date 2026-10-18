@@ -88,6 +88,16 @@ if(LC_PLATFORM_SDL)
   target_compile_definitions(lc_client_common INTERFACE LC_PLATFORM_SDL)
   target_link_libraries(lc_client_common INTERFACE SDL3::SDL3)
 endif()
+# The SDL3 sound output that the macOS client uses (Engine/Sound/SoundLibrary.cpp), in place of
+# DirectSound/WaveOut; turn this on to test it in the Windows client. Needs LC_PLATFORM_SDL. Ogg
+# and MP3 still come from vorbisfile.dll and amp11lib.dll.
+option(LC_SOUND_SDL "Play sound through SDL3 instead of DirectSound/WaveOut" OFF)
+if(LC_SOUND_SDL)
+  if(NOT LC_PLATFORM_SDL)
+    message(FATAL_ERROR "LC_SOUND_SDL needs LC_PLATFORM_SDL")
+  endif()
+  target_compile_definitions(lc_client_common INTERFACE LC_SOUND_SDL)
+endif()
 # SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
 # build) and quits silently on a mismatch, so it must be off for binaries built here.
 target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
