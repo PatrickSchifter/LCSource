@@ -10,7 +10,7 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
 - Cliente Mac: só a preparação. Tipos e 64 bits (C2), assembly x86 (C3) e dependências só de
-  Windows (C4) feitos; camada de plataforma (C5) em andamento. O código do cliente compila no Mac
+  Windows (C4) e camada de plataforma (C5) feitos; C1 (build de verdade no Mac) em andamento. O código do cliente compila no Mac
   apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
@@ -22,8 +22,8 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C5** (camada de plataforma), seguindo o roteiro abaixo; depois o restante da C1 e o primeiro
-   link no Mac. Andamento em "C5 — andamento" logo abaixo.
+1. **C1**: CMake do cliente no Mac e primeiro link; depois C6/C7/C8. A C5 está concluída
+   ("C5 — andamento" abaixo).
 
 ## C5 — andamento (2026-10-17)
 
@@ -35,9 +35,9 @@ sobra é D3D/D3DX (C8), som (C7), rede/web/IPC do launcher (C6), conformidade C+
 `exploration3d` (ferramentas).
 Testado em jogo no Windows: itens 1–7 com o cliente Win32 (Juno, combate, loja, chat, print) e,
 no **modo SDL** (`LC_PLATFORM_SDL=ON`), janela, minimizar/maximizar, digitação e atalhos (8c).
-Os itens 9–11 foram testados em jogo no modo SDL em 2026-10-18 (lista em "C5 — testes
-pendentes" abaixo); falta só o item 8 dela (voltar para `LC_PLATFORM_SDL=OFF` e conferir o Win32).
-**O build do Windows (`C:\LCSource-build`) está com `LC_PLATFORM_SDL=ON`**, e é essa versão que
+Os itens 9–11 foram testados em jogo no modo SDL em 2026-10-18 (lista em "C5 — testes" abaixo) e,
+no mesmo dia, o cliente Win32 de novo com `LC_PLATFORM_SDL=OFF`. **C5 concluída.**
+O build do Windows (`C:\LCSource-build`) voltou para `LC_PLATFORM_SDL=OFF`, e é essa versão que
 está instalada em `C:\LC-BR2014\Bin`.
 No Mac, a camada SDL (janela, eventos → `MSG`, cursores `.cur`) foi exercitada num programa de
 teste com o SDL3 do Homebrew.
@@ -51,7 +51,7 @@ para elas: joystick pelo SDL (hoje sem joystick fora do Windows), Retina/HiDPI e
 OpenGL (C8), `Web.cpp`/IPC/`ThreadWrapper` (C6). O link no Mac precisa de `-liconv` e SDL3, e
 os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.
 
-### C5 — testes pendentes (modo SDL no Windows)
+### C5 — testes (modo SDL no Windows; todos feitos em 2026-10-18)
 
 1. Cursores do jogo: normal, ataque (sobre monstro), conversa (sobre NPC), pegar item.
 2. Câmera e movimento: girar com o botão direito segurado, zoom com a roda, clique para andar.
@@ -61,6 +61,10 @@ os cursores (`Nksp/res/cur_*.cur`) em `Bin/Cursors/`.
 6. Janela: perder e ganhar foco (Alt+Tab), minimizar e voltar; tela cheia nas opções de vídeo.
 7. Fechar pelo X da janela e pelo menu do jogo.
 8. Depois, voltar o build para `LC_PLATFORM_SDL=OFF` e conferir o cliente Win32 de novo.
+
+Copiar e colar nas caixas de texto só existe em builds `VER_TEST` (`m_bCopyAndPaste`,
+`UIEditBox.cpp`), como no cliente original: no nosso build de release o Ctrl+V não cola e o
+`WM_CHAR` 0x16 entra no chat (a fonte o desenha como "A"). Não é regressão; ficou como está.
 
 Decisões e lições:
 - `Engine/Base/Win32Compat.h` (+ `.cpp`), só fora do Windows: tipos, mensagens e funções

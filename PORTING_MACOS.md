@@ -196,7 +196,7 @@ Roteiro (ordem, arquivos, estratégia): `HANDOFF.md` ("C5 — roteiro").
 - [x] Sistema de arquivos: caminhos com `\` dentro do motor, convertidos e resolvidos sem caixa na fronteira; streams sem falta de página; `.gro` com `pread`
 - [x] Registry: não existe fora do Windows (só ferramentas o usavam); `.ini` com leitor próprio
 - [ ] Diretórios do usuário (`~/Library/Application Support/LastChaos`): por ora grava no diretório do jogo, como no Windows (Fase F)
-- [x] Testes em jogo dos itens 9–11 no modo SDL (2026-10-18); falta conferir o Win32 com `LC_PLATFORM_SDL=OFF`
+- [x] Testes em jogo dos itens 9–11 no modo SDL e do cliente Win32 com `LC_PLATFORM_SDL=OFF` (2026-10-18)
 
 ### C6. Rede
 - [ ] Winsock → sockets POSIX (23 arquivos, `Engine/Network/*`)
