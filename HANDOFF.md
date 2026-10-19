@@ -24,11 +24,24 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **Conversões float→inteiro sem sinal**: no ARM saturam em 0 onde o x86 dá a volta (achado no
-   giro da câmera, `e53b9eb`). Um build com `-fsanitize=float-cast-overflow` acharia as outras.
-2. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets;
+1. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets;
    com o `CRenderTexture` em FBO os shaders deles já rodam),
    Retina (hoje 1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
+
+## Conversões float→inteiro sem sinal (2026-10-19, concluído)
+
+- Float fora da faixa → tipo sem sinal é indefinido. O MSVC no x86 passa por int com sinal e
+  trunca (negativo dá a volta, 256 vira 0). O clang no arm64 varia: no `-O0` satura em 0; no
+  `-O3` um `UBYTE(256.0f)` ou `UBYTE(-3.7f)` deixa o valor inteiro no registrador, que quem
+  recebe trata como byte (`col | UBYTE(x)` suja os outros canais). Regra: se o valor pode sair
+  da faixa, `(UBYTE)(SLONG)(...)`, que dá no Mac o mesmo resultado do x86.
+- Corrigidos: giro da câmera (`e53b9eb`), chuva/neve/estrelas (`d32de5a`), mapas de altura do
+  servidor e fase do som (`ab577af`), cor das pedras e fade do afterburner (`1774afb`).
+- Varredura completa: as conversões float→sem sinal de todo o cliente (motor, entidades geradas
+  dos `.es`, GameMP, Nksp; ~300 pontos) saíram do AST do clang e foram revisadas uma a uma. O resto
+  é não negativo ou já tem clamp/guarda (cores 0..1×255, tempos, sqrt, `sin*k+offset`).
+  Builds de apoio: `build-client-mac-ubsan` (`-fsanitize=float-cast-overflow`) e
+  `build-client-mac-asan`.
 
 ## C8 — shaders na GPU e VBOs (2026-10-19, `369a9d8`)
 

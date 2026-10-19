@@ -287,3 +287,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-18 | C1/C8: contexto OpenGL pelo SDL3, CMake do Mac, primeiro link do cliente no Mac (inicia até as fontes, sem dados); `CTString` em varargs, `inline`, Ecc `-line` | 2f57203..1bcb824 |
 | 2026-10-19 | C8/C9: cliente Mac joga (login, Juno, combate, itens); terreno, multitextura, clamp, trackpad, 64 bits da rede, desempenho (vsync, névoa, loop inativo) | dd78396..7c678d3 |
 | 2026-10-19 | C8: shaders na GPU no OpenGL (assembly D3D8 → programas ARB), terreno e efeitos; VBOs para as malhas estáticas | 369a9d8 |
+| 2026-10-19 | C2/C9: conversões float→inteiro sem sinal revisadas no cliente inteiro (AST do clang + UBSan); dano ao jogador em 64 bits; taxas do GameServer de volta às de junho/2015 | e53b9eb, d32de5a..1774afb |
