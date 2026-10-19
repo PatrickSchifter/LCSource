@@ -95,7 +95,7 @@ public:
 
   inline LONGLONG ntohll3(LONGLONG n)
   {
-#ifdef BIG_ENDIAN
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__  // (macOS always defines BIG_ENDIAN, as 4321)
 	  return n;
 #else
 	  char* p = (char*)&n;
@@ -110,7 +110,7 @@ public:
 
   inline LONGLONG htonll3(LONGLONG n)
   {
-#ifdef BIG_ENDIAN
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__  // (macOS always defines BIG_ENDIAN, as 4321)
 	  return n;
 #else
 	  char* p = (char*)&n;
