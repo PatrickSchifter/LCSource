@@ -1,8 +1,9 @@
 #include "StdH.h"
 
-// The library side of the APIs drawn through a GpuDevice (GFX_IsGpuAPI(): Metal, GAT_MTL):
-// starting and ending them, the context on the game's window and the end of a frame. The devices
-// are the APIs' (MetalDevice.mm); the gfx* functions are Gfx_wrapper_Gpu.cpp.
+// The library side of the APIs drawn through a GpuDevice (GFX_IsGpuAPI(): Metal, GAT_MTL, and
+// Vulkan, GAT_VK): starting and ending them, the context on the game's window and the end of a
+// frame. The devices are the APIs' (MetalDevice.mm, VulkanDevice.mm); the gfx* functions are
+// Gfx_wrapper_Gpu.cpp.
 
 #ifdef SE1_GPUDEVICE
 
@@ -12,6 +13,9 @@
 #ifdef SE1_METAL
 #include <Engine/Graphics/MetalDevice.h>
 #endif // SE1_METAL
+#ifdef SE1_VULKAN
+#include <Engine/Graphics/VulkanDevice.h>
+#endif // SE1_VULKAN
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Console.h>
@@ -67,6 +71,15 @@ BOOL CGfxLibrary::InitDriver_GPU( enum GfxAPIType eAPI)
 		_pgpu = mtlDevice();
 	}
 #endif // SE1_METAL
+#ifdef SE1_VULKAN
+	if( eAPI==GAT_VK) {
+		if( !vlkIsAvailable()) {
+			CPrintF( TRANS("Error starting Vulkan: no Vulkan device (MoltenVK)\n"));
+			return FALSE;
+		}
+		_pgpu = vlkDevice();
+	}
+#endif // SE1_VULKAN
 	return _pgpu!=NULL;
 }
 

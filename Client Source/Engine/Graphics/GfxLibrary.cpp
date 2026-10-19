@@ -598,6 +598,7 @@ static void GAPInfo(void)
 	CPrintF( "- Graphics API: ");
 	if( eAPI==GAT_OGL) CPrintF( "OpenGL\n");
 	else if( eAPI==GAT_MTL) CPrintF( "Metal\n");
+	else if( eAPI==GAT_VK)  CPrintF( "Vulkan\n");
 	else CPrintF( "Direct3D\n");
 	// and number of adapters
 	CPrintF( "- Adapters found: %d\n", _pGfx->gl_gaAPI[eAPI].ga_ctAdapters);
@@ -1485,7 +1486,7 @@ BOOL CGfxLibrary::StartDisplayMode( enum GfxAPIType eAPI, INDEX iAdapter, PIX pi
 #endif // SE1_D3D
 
 #ifdef SE1_GPUDEVICE
-	// Metal driver ? (the window's mode is up to the platform layer, as with OpenGL outside Windows)
+	// Metal or Vulkan driver ? (the window's mode is up to the platform layer, as with OpenGL outside Windows)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		bSuccess = InitDriver_GPU(eAPI);
@@ -1603,7 +1604,7 @@ void CGfxLibrary::StopDisplayMode(void)
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
 	else if( GFX_IsGpuAPI(gl_eCurrentAPI))
-	{ // Metal
+	{ // Metal, Vulkan
 		EndDriver_GPU();
 	}
 #endif // SE1_GPUDEVICE
@@ -1711,7 +1712,7 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 	}
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	// Metal ... (from the top left, as Direct3D)
+	// Metal, Vulkan ... (from the top left, as Direct3D)
 	else if( GFX_IsGpuAPI(gl_eCurrentAPI))
 	{
 		extern void GPU_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
@@ -2208,7 +2209,7 @@ void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALS
 #endif // SE1_D3D
 
 #ifdef SE1_GPUDEVICE
-	// Metal
+	// Metal, Vulkan
 	else if( GFX_IsGpuAPI(gl_eCurrentAPI))
 	{
 		SwapBuffers_GPU(pvp);
@@ -2336,7 +2337,7 @@ BOOL CGfxLibrary::HasCompression(void)
 #ifdef SE1_D3D
 	if( eAPI==GAT_D3D && (gl_ulFlags&GLF_TEXTURECOMPRESSION)) return TRUE;
 #endif // SE1_D3D
-	// Metal: DXT, if the device reads it
+	// Metal, Vulkan: DXT, if the device reads it
 	if( GFX_IsGpuAPI(eAPI) && (gl_ulFlags&GLF_TEXTURECOMPRESSION)) return TRUE;
 	// no API - no compression
 	return FALSE;
@@ -2417,7 +2418,7 @@ static void AdjustGammaRamp( CViewPort *pvp)
 	}
 #ifdef SE1_GPUDEVICE
 	else if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
-		// Metal (macOS): the display's, as with OpenGL
+		// Metal, Vulkan (macOS): the display's, as with OpenGL
 		PLT_SetGammaRamp( &_auwGammaTable[0]);
 	}
 #endif // SE1_GPUDEVICE

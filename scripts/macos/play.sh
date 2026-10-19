@@ -13,6 +13,11 @@ pkill -9 -f "$GAME/Bin/Nksp" 2>/dev/null || true
 mkdir -p "$GAME/Bin"
 rsync -a --exclude ecc "$BUILD/Bin/" "$GAME/Bin/"
 cd "$GAME"
-# renders with Metal; LC_GFX_API=opengl renders with OpenGL instead
+# renders with Metal; LC_GFX_API=opengl renders with OpenGL instead, LC_GFX_API=vulkan with Vulkan
+# (MoltenVK); LC_VK_VALIDATION=1 turns on Vulkan's validation layer (errors in stdout.log)
+if [[ ${LC_VK_VALIDATION:-0} != 0 ]]; then
+  VVL=$(brew --prefix vulkan-validationlayers 2>/dev/null)
+  export VK_LAYER_PATH=$VVL/share/vulkan/explicit_layer.d DYLD_FALLBACK_LIBRARY_PATH=$VVL/lib VK_LAYER_VALIDATE_SYNC=true
+fi
 # shaders run on the GPU; LC_NO_HW_SHADERS=1 goes back to skinning on the CPU
 exec "$GAME/Bin/Nksp" 'fkzktlfgod!' "$@" > "$GAME/stdout.log" 2>&1

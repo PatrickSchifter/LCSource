@@ -29,7 +29,7 @@
 //강동민 수정 끝 로그인 처리 작업		07.10
 
 #ifdef SE1_GPUDEVICE
-// Metal (Gfx_wrapper_Gpu.cpp): rectangles from the top left of the render target
+// Metal, Vulkan (Gfx_wrapper_Gpu.cpp): rectangles from the top left of the render target
 #include <Engine/Graphics/GpuDevice.h>
 extern void GPU_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
 extern void GPU_Clear( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, BOOL bColor, COLOR col, BOOL bDepth, FLOAT fDepth);
@@ -1109,7 +1109,7 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col
 		if( !bFullDP) ResetScissor(this);
 	}
 #ifdef SE1_GPUDEVICE
-	// Metal
+	// Metal, Vulkan
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		GPU_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, TRUE, col, FALSE, 0);
@@ -1232,7 +1232,7 @@ void CDrawPort::Fill( COLOR col) const
 		OGL_CHECKERROR;
 	}
 #ifdef SE1_GPUDEVICE
-	// Metal (inside the drawport's scissor, as OpenGL)
+	// Metal, Vulkan (inside the drawport's scissor, as OpenGL)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		GPU_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, TRUE, col, FALSE, 0);
@@ -1284,7 +1284,7 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
 		ResetScissor(this);
 	}
 #ifdef SE1_GPUDEVICE
-	// Metal
+	// Metal, Vulkan
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		GPU_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, FALSE, 0, TRUE, zval);
@@ -1334,7 +1334,7 @@ void CDrawPort::FillZBuffer( FLOAT zval) const
 		OGL_CHECKERROR
 	}
 #ifdef SE1_GPUDEVICE
-	// Metal (inside the drawport's scissor, as OpenGL)
+	// Metal, Vulkan (inside the drawport's scissor, as OpenGL)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		GPU_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, FALSE, 0, TRUE, zval);
@@ -1408,7 +1408,7 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 	}
 
 #ifdef SE1_GPUDEVICE
-	// Metal (rows from the top; it waits for the GPU)
+	// Metal, Vulkan (rows from the top; it waits for the GPU)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		extern BOOL GPU_ReadFrameRGB( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, UBYTE *pubRGB);

@@ -136,8 +136,21 @@ else()
   target_link_libraries(lc_client_common INTERFACE SDL3::SDL3)
   target_compile_definitions(lc_client_common INTERFACE _MT)  # MSVC's multithreaded CRT flag (Base/Timer.h)
   # The Metal backend (GAT_MTL, Graphics/MetalDevice.mm), the default; LC_GFX_API=opengl picks
-  # OpenGL. SE1_GPUDEVICE: the gfx* functions on a GpuDevice (Graphics/Gfx_Gpu.cpp), Metal's.
+  # OpenGL. SE1_GPUDEVICE: the gfx* functions on a GpuDevice (Graphics/Gfx_Gpu.cpp), Metal's and
+  # Vulkan's. The Vulkan backend (GAT_VK, Graphics/VulkanDevice.mm, LC_GFX_API=vulkan) when the
+  # Vulkan loader (with MoltenVK) and glslang are there (Homebrew: molten-vk vulkan-loader
+  # vulkan-headers glslang); they are linked weakly, so the game starts without them.
   target_compile_definitions(lc_client_common INTERFACE SE1_METAL SE1_GPUDEVICE)
+  find_package(Vulkan QUIET)
+  find_package(glslang CONFIG QUIET)
+  if(Vulkan_FOUND AND TARGET glslang::glslang AND TARGET glslang::glslang-default-resource-limits)
+    set(LC_VULKAN ON)
+    target_compile_definitions(lc_client_common INTERFACE SE1_VULKAN)
+    message(STATUS "Vulkan backend: ${Vulkan_LIBRARY}")
+  else()
+    set(LC_VULKAN OFF)
+    message(STATUS "Vulkan backend: off (no Vulkan loader or glslang)")
+  endif()
   # -fms-extensions for the MSVC-isms the code still has (as in the check build). The rest keep
   # the semantics the code was written for under MSVC: signed overflow wraps, no type-based
   # aliasing, and 'this==NULL'-style checks are not optimized away. Warnings are off here: the
@@ -260,9 +273,20 @@ else()
   # trackpad gestures and the Metal device (Objective-C++), and the backends on a GpuDevice: not
   # in the generated source lists (Gfx_wrapper_Gpu.cpp is included by Gfx_wrapper.cpp)
   target_sources(Engine PRIVATE Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm Engine/Graphics/Gfx_Gpu.cpp
-    Engine/Graphics/ShaderARBToMSL.cpp)
+    Engine/Graphics/ShaderARBTranslate.cpp)
   set_source_files_properties(Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm
     PROPERTIES COMPILE_OPTIONS "-xobjective-c++;-fobjc-arc")
+  if(LC_VULKAN)
+    target_sources(Engine PRIVATE Engine/Graphics/VulkanDevice.mm)
+    set_source_files_properties(Engine/Graphics/VulkanDevice.mm PROPERTIES COMPILE_OPTIONS "-xobjective-c++;-fobjc-arc")
+    target_include_directories(Engine PRIVATE ${Vulkan_INCLUDE_DIRS}
+      $<TARGET_PROPERTY:glslang::glslang,INTERFACE_INCLUDE_DIRECTORIES>)
+    get_filename_component(LC_VULKAN_LIBDIR "${Vulkan_LIBRARY}" DIRECTORY)
+    get_target_property(LC_GLSLANG_LIB glslang::glslang IMPORTED_LOCATION_RELEASE)
+    get_target_property(LC_GLSLANG_LIMITS_LIB glslang::glslang-default-resource-limits IMPORTED_LOCATION_RELEASE)
+    target_link_options(Engine PRIVATE "LINKER:-weak_library,${Vulkan_LIBRARY}"
+      "LINKER:-weak_library,${LC_GLSLANG_LIB}" "LINKER:-weak_library,${LC_GLSLANG_LIMITS_LIB}")
+  endif()
 endif()
 
 lc_client_target(Shaders SHARED ${SHADERS_SOURCES})

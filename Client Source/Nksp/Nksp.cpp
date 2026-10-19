@@ -808,10 +808,16 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #else
-	// Metal where there is one (macOS); OpenGL with LC_GFX_API=opengl, or without Metal
+	// Metal where there is one (macOS); OpenGL with LC_GFX_API=opengl, or without Metal; Vulkan
+	// (MoltenVK) with LC_GFX_API=vulkan
 	const char *strGfxAPI = getenv("LC_GFX_API");
 	const BOOL bOpenGL = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "opengl")==0 || stricmp(strGfxAPI, "gl")==0));
-	const GfxAPIType eGfxAPI = (!bOpenGL && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
+	const BOOL bVulkan = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "vulkan")==0 || stricmp(strGfxAPI, "vk")==0));
+	GfxAPIType eGfxAPI = (!bOpenGL && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
+	if( bVulkan) {
+		if( _pGfx->HasAPI(GAT_VK)) eGfxAPI = GAT_VK;
+		else CPrintF( TRANS("Vulkan is not available (no MoltenVK?), using %s\n"), eGfxAPI==GAT_MTL ? "Metal" : "OpenGL");
+	}
 	StartNewMode( eGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #endif // SE1_D3D
@@ -961,6 +967,7 @@ void PrintDisplayModeInfo(void)
 	if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
 			 if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
 	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) strRes += " (Metal)";
+	else if( _pGfx->gl_eCurrentAPI==GAT_VK)  strRes += " (Vulkan)";
 #ifdef SE1_D3D
 	else 
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D) strRes += " (Direct3D)";
@@ -1937,9 +1944,9 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 	// try to set the mode
 	BOOL bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
 
-	// if Metal failed, OpenGL in the same mode
-	if( !bSuccess && eGfxAPI==GAT_MTL && _pGfx->HasAPI(GAT_OGL)) {
-		CPrintF( TRANS("Metal could not be started, trying OpenGL...\n"));
+	// if Metal or Vulkan failed, OpenGL in the same mode
+	if( !bSuccess && GFX_IsGpuAPI(eGfxAPI) && _pGfx->HasAPI(GAT_OGL)) {
+		CPrintF( TRANS("%s could not be started, trying OpenGL...\n"), eGfxAPI==GAT_VK ? "Vulkan" : "Metal");
 		eGfxAPI  = GAT_OGL;
 		bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
 	}

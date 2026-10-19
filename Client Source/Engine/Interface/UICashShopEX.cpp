@@ -3262,7 +3262,7 @@ void CUICashShopEX::Render()
 
 		pDrawPort->InitTextureData(&m_ModelRenderTarget->rt_tdTexture);
 #ifndef SE1_D3D
-		// an OpenGL render target starts at the bottom (Metal's at the top, as Direct3D's)
+		// an OpenGL render target starts at the bottom (Metal's and Vulkan's at the top, as Direct3D's)
 		if( _pGfx->gl_eCurrentAPI==GAT_OGL)
 			pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
 				0.0f,1.0f,fU,0.0f,0xFFFFFFFF);

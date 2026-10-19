@@ -1,5 +1,7 @@
-// No engine headers: the ARB text in, MSL out (also built by the offline test of the translation).
+// No engine headers: the ARB text in, MSL or GLSL out (also built by the offline tests of the
+// translation).
 #include "ShaderARBToMSL.h"
+#include "ShaderARBToGLSL.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -8,16 +10,17 @@
 #include <set>
 #include <vector>
 
-// Statement by statement: ARB registers keep their names as float4 variables (r0.., s0.., t0..,
-// k0..), program parameters are the constants struct K, inputs are read once at the start
+// Statement by statement: ARB registers keep their names as float4 (vec4) variables (r0.., s0..,
+// t0.., k0..), program parameters are the constants block K, inputs are read once at the start
 // (vertex streams) or come from the stage input, and an instruction is an assignment to the
 // written components of its destination. Scalar instructions replicate their result, as ARB does.
+// The two languages differ in their words only (the Dialect below).
 
 namespace {
 
 typedef std::string Str;
 
-static const char *_strHelpers =
+static const char *_strHelpersMSL =
 	"static inline float4 ARB_LIT(float4 a) {\n"
 	"  const float x = max(a.x, 0.0f), y = max(a.y, 0.0f), w = clamp(a.w, -128.0f, 128.0f);\n"
 	"  return float4(1.0f, x, x > 0.0f ? (y > 0.0f ? pow(y, w) : (w == 0.0f ? 1.0f : 0.0f)) : 0.0f, 1.0f);\n"
@@ -30,6 +33,30 @@ static const char *_strHelpers =
 	"  const float a = abs(x), l = log2(a), f = floor(l);\n"
 	"  return float4(f, a * exp2(-f), l, 1.0f);\n"
 	"}\n";
+
+static const char *_strHelpersGLSL =
+	"vec4 ARB_LIT(vec4 a) {\n"
+	"  const float x = max(a.x, 0.0f), y = max(a.y, 0.0f), w = clamp(a.w, -128.0f, 128.0f);\n"
+	"  return vec4(1.0f, x, x > 0.0f ? (y > 0.0f ? pow(y, w) : (w == 0.0f ? 1.0f : 0.0f)) : 0.0f, 1.0f);\n"
+	"}\n"
+	"vec4 ARB_EXP(float x) {\n"
+	"  const float f = floor(x);\n"
+	"  return vec4(exp2(f), x - f, exp2(x), 1.0f);\n"
+	"}\n"
+	"vec4 ARB_LOG(float x) {\n"
+	"  const float a = abs(x), l = log2(a), f = floor(l);\n"
+	"  return vec4(f, a * exp2(-f), l, 1.0f);\n"
+	"}\n";
+
+// the words of a language
+struct Dialect {
+	bool d_bGLSL;
+	const char *d_strVec4;       // the type of the registers
+	const char *d_strOutPos;     // the position the vertex stage writes (the rest is "o.")
+	const char *d_strIn;         // the fragment stage input ("<in>col0")
+};
+static const Dialect _dMSL  = { false, "float4", "o.pos", "in." };
+static const Dialect _dGLSL = { true,  "vec4", "gl_Position", "vin." };
 
 static Str Trim(const Str &str)
 {
@@ -66,10 +93,11 @@ static std::vector<Str> SplitOperands(const Str &str)
 
 class Translator {
 public:
-	Translator() : tr_bVertex(false), tr_bAddress(false), tr_ulInputs(0) {}
-	bool Translate(const Str &strARB, Str &strMSL, Str &strError);
+	Translator(const Dialect &d) : tr_d(d), tr_bVertex(false), tr_bAddress(false), tr_ulInputs(0) {}
+	bool Translate(const Str &strARB, Str &strOut, Str &strError);
 
 private:
+	const Dialect &tr_d;
 	bool tr_bVertex;
 	bool tr_bAddress;
 	unsigned int tr_ulInputs;   // vertex inputs read (bits of the IN_* below)
@@ -81,37 +109,39 @@ private:
 	enum { IN_POS=1, IN_NOR=2, IN_COL=4, IN_TEX0=8, IN_WGH=128, IN_IDX=256, IN_TAN=512 };
 
 	bool Fail(const Str &str) { if( tr_strError.empty()) tr_strError = str; return false; }
-	bool Base(const Str &strBase, bool bDest, Str &strMSL);
-	bool Source(const Str &strOperand, Str &strMSL);
+	bool Base(const Str &strBase, bool bDest, Str &strOut);
+	bool Source(const Str &strOperand, Str &strOut);
 	bool Dest(const Str &strOperand, Str &strBase, Str &strMask);
 	bool Instruction(const Str &strOp, const std::vector<Str> &astrOperands);
 	bool Declaration(const Str &strStatement);
+	void FinishMSL(Str &strOut);
+	void FinishGLSL(Str &strOut);
 };
 
 
-// a register of the ARB program as an MSL float4 lvalue or value
-bool Translator::Base(const Str &strBase, bool bDest, Str &strMSL)
+// a register of the ARB program as a float4 lvalue or value
+bool Translator::Base(const Str &strBase, bool bDest, Str &strOut)
 {
 	char str[64];
 	int i;
 	// temporaries and constants of the program keep their names
 	if( !strBase.empty() && strchr("rstk", strBase[0]) && strBase.size()>1 && isdigit((unsigned char)strBase[1])) {
-		strMSL = strBase;
+		strOut = strBase;
 		return true;
 	}
-	if( strBase.compare(0, 4, "cdef")==0) { strMSL = strBase;  return true; }
+	if( strBase.compare(0, 4, "cdef")==0) { strOut = strBase;  return true; }
 
 	if( bDest) {
 		if( tr_bVertex) {
-			if( strBase=="result.position")        strMSL = "o.pos";
-			else if( strBase=="result.color")      strMSL = "o.col0";
-			else if( strBase=="result.color.secondary") strMSL = "o.col1";
-			else if( strBase=="result.fogcoord" || strBase=="result.pointsize") strMSL = "o_unused";
+			if( strBase=="result.position")        strOut = tr_d.d_strOutPos;
+			else if( strBase=="result.color")      strOut = "o.col0";
+			else if( strBase=="result.color.secondary") strOut = "o.col1";
+			else if( strBase=="result.fogcoord" || strBase=="result.pointsize") strOut = "o_unused";
 			else if( sscanf(strBase.c_str(), "result.texcoord[%d]", &i)==1 && i>=0 && i<4) {
-				sprintf(str, "o.tex%d", i);  strMSL = str;
+				snprintf(str, sizeof(str), "o.tex%d", i);  strOut = str;
 			} else return Fail("cannot write " + strBase);
 		} else {
-			if( strBase=="result.color") strMSL = "o_col";
+			if( strBase=="result.color") strOut = "o_col";
 			else return Fail("cannot write " + strBase);
 		}
 		return true;
@@ -122,37 +152,37 @@ bool Translator::Base(const Str &strBase, bool bDest, Str &strMSL)
 		const Str strInner = strBase.substr(2, strBase.size()-3);
 		if( strInner.compare(0, 4, "a0.x")==0) {
 			const int iOffset = atoi(strInner.c_str()+4);  // "+21" or "-3"
-			sprintf(str, "K.c[clamp(a0 + %d, 0, %d)]", iOffset, GPU_VERTEX_CONSTANTS-1);
+			snprintf(str, sizeof(str), "K.c[clamp(a0 + %d, 0, %d)]", iOffset, GPU_VERTEX_CONSTANTS-1);
 		} else {
-			sprintf(str, "K.c[%d]", atoi(strInner.c_str()));
+			snprintf(str, sizeof(str), "K.c[%d]", atoi(strInner.c_str()));
 		}
-		strMSL = str;
+		strOut = str;
 		return true;
 	}
 	if( sscanf(strBase.c_str(), "program.env[%d]", &i)==1) {
 		if( i<0 || i>=(tr_bVertex ? GPU_VERTEX_CONSTANTS : GPU_PIXEL_CONSTANTS)) return Fail("no such parameter " + strBase);
-		sprintf(str, "K.c[%d]", i);  strMSL = str;
+		snprintf(str, sizeof(str), "K.c[%d]", i);  strOut = str;
 		return true;
 	}
 
 	if( tr_bVertex) {
-		if( strBase=="vertex.position")     { strMSL = "v_pos";  tr_ulInputs |= IN_POS; }
-		else if( strBase=="vertex.normal")  { strMSL = "v_nor";  tr_ulInputs |= IN_NOR; }
-		else if( strBase=="vertex.color")   { strMSL = "v_col";  tr_ulInputs |= IN_COL; }
+		if( strBase=="vertex.position")     { strOut = "v_pos";  tr_ulInputs |= IN_POS; }
+		else if( strBase=="vertex.normal")  { strOut = "v_nor";  tr_ulInputs |= IN_NOR; }
+		else if( strBase=="vertex.color")   { strOut = "v_col";  tr_ulInputs |= IN_COL; }
 		else if( sscanf(strBase.c_str(), "vertex.texcoord[%d]", &i)==1 && i>=0 && i<4) {
-			sprintf(str, "v_tex%d", i);  strMSL = str;  tr_ulInputs |= IN_TEX0<<i;
+			snprintf(str, sizeof(str), "v_tex%d", i);  strOut = str;  tr_ulInputs |= IN_TEX0<<i;
 		} else if( sscanf(strBase.c_str(), "vertex.attrib[%d]", &i)==1) {
 			// ShaderAsmToARB.h: 1 tangent, 6 weights, 7 bone indices
-			if( i==1)      { strMSL = "v_tan";  tr_ulInputs |= IN_TAN; }
-			else if( i==6) { strMSL = "v_wgh";  tr_ulInputs |= IN_WGH; }
-			else if( i==7) { strMSL = "v_idx";  tr_ulInputs |= IN_IDX; }
+			if( i==1)      { strOut = "v_tan";  tr_ulInputs |= IN_TAN; }
+			else if( i==6) { strOut = "v_wgh";  tr_ulInputs |= IN_WGH; }
+			else if( i==7) { strOut = "v_idx";  tr_ulInputs |= IN_IDX; }
 			else return Fail("no such attribute " + strBase);
 		} else return Fail("cannot read " + strBase);
 	} else {
-		if( strBase=="fragment.color.primary" || strBase=="fragment.color") strMSL = "in.col0";
-		else if( strBase=="fragment.color.secondary") strMSL = "in.col1";
+		if( strBase=="fragment.color.primary" || strBase=="fragment.color") strOut = Str(tr_d.d_strIn) + "col0";
+		else if( strBase=="fragment.color.secondary") strOut = Str(tr_d.d_strIn) + "col1";
 		else if( sscanf(strBase.c_str(), "fragment.texcoord[%d]", &i)==1 && i>=0 && i<4) {
-			sprintf(str, "in.tex%d", i);  strMSL = str;
+			snprintf(str, sizeof(str), "%stex%d", tr_d.d_strIn, i);  strOut = str;
 		} else return Fail("cannot read " + strBase);
 	}
 	return true;
@@ -160,7 +190,7 @@ bool Translator::Base(const Str &strBase, bool bDest, Str &strMSL)
 
 
 // a source operand: [-]register[.swizzle], as a float4 expression
-bool Translator::Source(const Str &strOperand, Str &strMSL)
+bool Translator::Source(const Str &strOperand, Str &strOut)
 {
 	Str str = strOperand;
 	bool bNeg = false;
@@ -177,7 +207,7 @@ bool Translator::Source(const Str &strOperand, Str &strMSL)
 		while( strSwz.size()<4) strSwz += strSwz[strSwz.size()-1];
 		strBase += "." + strSwz;
 	}
-	strMSL = bNeg ? "(-" + strBase + ")" : strBase;
+	strOut = bNeg ? "(-" + strBase + ")" : strBase;
 	return true;
 }
 
@@ -216,26 +246,33 @@ bool Translator::Instruction(const Str &strOpFull, const std::vector<Str> &astrO
 		if( astrOp.size()!=1) return Fail("bad KIL");
 		Str strSrc;
 		if( !Source(astrOp[0], strSrc)) return false;
-		tr_astrBody.push_back("if (any(" + strSrc + " < 0.0f)) discard_fragment();");
+		if( tr_d.d_bGLSL) tr_astrBody.push_back("if (any(lessThan(" + strSrc + ", vec4(0.0f)))) discard;");
+		else tr_astrBody.push_back("if (any(" + strSrc + " < 0.0f)) discard_fragment();");
 		return true;
 	}
 
-	struct OpInfo { const char *strARB; int ctSources; const char *strFormat; };
+	struct OpInfo { const char *strARB; int ctSources; const char *strMSL; const char *strGLSL; };
 	static const OpInfo aoi[] = {
-		{"MOV",1,"%0"}, {"ADD",2,"(%0 + %1)"}, {"SUB",2,"(%0 - %1)"}, {"MUL",2,"(%0 * %1)"},
-		{"MAD",3,"(%0 * %1 + %2)"}, {"DP3",2,"float4(dot((%0).xyz, (%1).xyz))"},
-		{"DP4",2,"float4(dot(%0, %1))"}, {"DPH",2,"float4(dot((%0).xyz, (%1).xyz) + (%1).w)"},
-		{"MIN",2,"min(%0, %1)"}, {"MAX",2,"max(%0, %1)"},
-		{"SLT",2,"select(float4(0.0f), float4(1.0f), %0 < %1)"},
-		{"SGE",2,"select(float4(0.0f), float4(1.0f), %0 >= %1)"},
-		{"FRC",1,"fract(%0)"}, {"FLR",1,"floor(%0)"}, {"ABS",1,"abs(%0)"},
-		{"LIT",1,"ARB_LIT(%0)"}, {"DST",2,"float4(1.0f, (%0).y*(%1).y, (%0).z, (%1).w)"},
-		{"RCP",1,"float4(1.0f/(%0).x)"}, {"RSQ",1,"float4(rsqrt(abs((%0).x)))"},
-		{"EX2",1,"float4(exp2((%0).x))"}, {"LG2",1,"float4(log2(abs((%0).x)))"},
-		{"POW",2,"float4(pow((%0).x, (%1).x))"},
-		{"EXP",1,"ARB_EXP((%0).x)"}, {"LOG",1,"ARB_LOG((%0).x)"},
-		{"LRP",3,"mix(%2, %1, %0)"}, {"CMP",3,"select(%2, %1, %0 < 0.0f)"},
-		{"TEX",3,""},
+		{"MOV",1,"%0","%0"}, {"ADD",2,"(%0 + %1)","(%0 + %1)"}, {"SUB",2,"(%0 - %1)","(%0 - %1)"},
+		{"MUL",2,"(%0 * %1)","(%0 * %1)"}, {"MAD",3,"(%0 * %1 + %2)","(%0 * %1 + %2)"},
+		{"DP3",2,"float4(dot((%0).xyz, (%1).xyz))","vec4(dot((%0).xyz, (%1).xyz))"},
+		{"DP4",2,"float4(dot(%0, %1))","vec4(dot(%0, %1))"},
+		{"DPH",2,"float4(dot((%0).xyz, (%1).xyz) + (%1).w)","vec4(dot((%0).xyz, (%1).xyz) + (%1).w)"},
+		{"MIN",2,"min(%0, %1)","min(%0, %1)"}, {"MAX",2,"max(%0, %1)","max(%0, %1)"},
+		{"SLT",2,"select(float4(0.0f), float4(1.0f), %0 < %1)","mix(vec4(0.0f), vec4(1.0f), lessThan(%0, %1))"},
+		{"SGE",2,"select(float4(0.0f), float4(1.0f), %0 >= %1)","mix(vec4(0.0f), vec4(1.0f), greaterThanEqual(%0, %1))"},
+		{"FRC",1,"fract(%0)","fract(%0)"}, {"FLR",1,"floor(%0)","floor(%0)"}, {"ABS",1,"abs(%0)","abs(%0)"},
+		{"LIT",1,"ARB_LIT(%0)","ARB_LIT(%0)"},
+		{"DST",2,"float4(1.0f, (%0).y*(%1).y, (%0).z, (%1).w)","vec4(1.0f, (%0).y*(%1).y, (%0).z, (%1).w)"},
+		{"RCP",1,"float4(1.0f/(%0).x)","vec4(1.0f/(%0).x)"},
+		{"RSQ",1,"float4(rsqrt(abs((%0).x)))","vec4(inversesqrt(abs((%0).x)))"},
+		{"EX2",1,"float4(exp2((%0).x))","vec4(exp2((%0).x))"},
+		{"LG2",1,"float4(log2(abs((%0).x)))","vec4(log2(abs((%0).x)))"},
+		{"POW",2,"float4(pow((%0).x, (%1).x))","vec4(pow((%0).x, (%1).x))"},
+		{"EXP",1,"ARB_EXP((%0).x)","ARB_EXP((%0).x)"}, {"LOG",1,"ARB_LOG((%0).x)","ARB_LOG((%0).x)"},
+		{"LRP",3,"mix(%2, %1, %0)","mix(%2, %1, %0)"},
+		{"CMP",3,"select(%2, %1, %0 < 0.0f)","mix(%2, %1, lessThan(%0, vec4(0.0f)))"},
+		{"TEX",3,"",""},
 	};
 	for( size_t iOp=0; iOp<sizeof(aoi)/sizeof(aoi[0]); iOp++) {
 		const OpInfo &oi = aoi[iOp];
@@ -253,20 +290,25 @@ bool Translator::Instruction(const Str &strOpFull, const std::vector<Str> &astrO
 			Str strCoord;
 			if( !Source(astrOp[1], strCoord)) return false;
 			char str[64];
-			sprintf(str, "tex%d.sample(smp%d, ", iUnit, iUnit);
-			strExpr = Str(str) + "(" + strCoord + ").xy, bias(K.fLODBias))";
+			if( tr_d.d_bGLSL) {
+				snprintf(str, sizeof(str), "texture(tex%d, ", iUnit);
+				strExpr = Str(str) + "(" + strCoord + ").xy, K.fLODBias)";
+			} else {
+				snprintf(str, sizeof(str), "tex%d.sample(smp%d, ", iUnit, iUnit);
+				strExpr = Str(str) + "(" + strCoord + ").xy, bias(K.fLODBias))";
+			}
 			tr_setTextures.insert(iUnit);
 		} else {
 			std::vector<Str> astrSrc(oi.ctSources);
 			for( int iSrc=0; iSrc<oi.ctSources; iSrc++) {
 				if( !Source(astrOp[iSrc+1], astrSrc[iSrc])) return false;
 			}
-			for( const char *pch=oi.strFormat; *pch!=0; pch++) {
+			for( const char *pch=(tr_d.d_bGLSL ? oi.strGLSL : oi.strMSL); *pch!=0; pch++) {
 				if( pch[0]=='%' && isdigit((unsigned char)pch[1])) { strExpr += astrSrc[pch[1]-'0'];  pch++; }
 				else strExpr += *pch;
 			}
 		}
-		if( bSat) strExpr = "saturate(" + strExpr + ")";
+		if( bSat) strExpr = tr_d.d_bGLSL ? "clamp(" + strExpr + ", 0.0f, 1.0f)" : "saturate(" + strExpr + ")";
 		if( strMask.empty()) tr_astrBody.push_back(strDest + " = " + strExpr + ";");
 		else tr_astrBody.push_back(strDest + "." + strMask + " = (" + strExpr + ")." + strMask + ";");
 		return true;
@@ -277,6 +319,7 @@ bool Translator::Instruction(const Str &strOpFull, const std::vector<Str> &astrO
 
 bool Translator::Declaration(const Str &strStatement)
 {
+	const Str strVec4 = tr_d.d_strVec4;
 	if( strStatement.compare(0, 6, "PARAM ")==0) {
 		const size_t iEq = strStatement.find('=');
 		if( iEq==Str::npos) return Fail("bad PARAM");
@@ -287,7 +330,7 @@ bool Translator::Declaration(const Str &strStatement)
 		if( strValue.size()<2 || strValue[0]!='{' || strValue[strValue.size()-1]!='}') return Fail("bad PARAM " + strName);
 		std::vector<Str> astr = SplitOperands(strValue.substr(1, strValue.size()-2));
 		if( astr.size()!=4) return Fail("PARAM " + strName + " without four values");
-		Str strDecl = "const float4 " + strName + " = float4(";
+		Str strDecl = "const " + strVec4 + " " + strName + " = " + strVec4 + "(";
 		for( size_t i=0; i<4; i++) {
 			Str strNum = astr[i];
 			// a float literal: "1" -> "1.0f" (as written by ShaderAsmToARB, or by a def)
@@ -300,8 +343,8 @@ bool Translator::Declaration(const Str &strStatement)
 	}
 	if( strStatement.compare(0, 5, "TEMP ")==0) {
 		std::vector<Str> astr = SplitOperands(strStatement.substr(5));
-		Str strDecl = "float4 ";
-		for( size_t i=0; i<astr.size(); i++) strDecl += (i ? ", " : "") + astr[i] + " = float4(0.0f)";
+		Str strDecl = strVec4 + " ";
+		for( size_t i=0; i<astr.size(); i++) strDecl += (i ? ", " : "") + astr[i] + " = " + strVec4 + "(0.0f)";
 		tr_astrDecl.push_back(strDecl + ";");
 		return true;
 	}
@@ -313,7 +356,7 @@ bool Translator::Declaration(const Str &strStatement)
 }
 
 
-bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
+bool Translator::Translate(const Str &strARB, Str &strOut, Str &strError)
 {
 	// statements end with ';' (the header line and END have none)
 	size_t iStart = 0;
@@ -345,20 +388,28 @@ bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
 	}
 	if( bHeader) { strError = "empty program"; return false; }
 
+	if( tr_d.d_bGLSL) FinishGLSL(strOut);
+	else FinishMSL(strOut);
+	return true;
+}
+
+
+void Translator::FinishMSL(Str &strMSL)
+{
 	strMSL = MSL_PROGRAM_INTERFACE;
 	char str[256];
 	if( tr_bVertex) {
-		sprintf(str,
+		snprintf(str, sizeof(str),
 			"struct VPConst { float4 c[%d]; float4 colConstant; uint ulStreams; uint ulTexCoords; uint2 ulPad; };\n",
 			GPU_VERTEX_CONSTANTS);
 		strMSL += str;
 	} else {
-		sprintf(str,
+		snprintf(str, sizeof(str),
 			"struct PPConst { float4 c[%d]; float fAlphaRef; uint bAlphaTest; float fLODBias; uint ulPad; };\n",
 			GPU_PIXEL_CONSTANTS);
 		strMSL += str;
 	}
-	strMSL += _strHelpers;
+	strMSL += _strHelpersMSL;
 
 	if( tr_bVertex) {
 		// streams as the fixed function emulation reads them (GpuStream + 1)
@@ -381,7 +432,7 @@ bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
 		if( tr_ulInputs&IN_COL) strMSL += "  const float4 v_col = (K.ulStreams & 2) ? float4(pcol[vid])/255.0f : K.colConstant;\n";
 		for( int iUnit=0; iUnit<4; iUnit++) {
 			if( !(tr_ulInputs&(IN_TEX0<<iUnit))) continue;
-			sprintf(str,
+			snprintf(str, sizeof(str),
 				"  const float4 v_tex%d = !(K.ulStreams & %d) ? float4(0.0f, 0.0f, 0.0f, 1.0f)\n"
 				"    : ((K.ulTexCoords >> %d) & 2) ? float4(ptex%d[vid*4], ptex%d[vid*4+1], ptex%d[vid*4+2], ptex%d[vid*4+3])\n"
 				"    : float4(ptex%d[vid*2], ptex%d[vid*2+1], 0.0f, 1.0f);\n",
@@ -412,7 +463,67 @@ bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
 		strMSL += "  if (K.bAlphaTest != 0 && o_col.a < K.fAlphaRef) discard_fragment();\n";
 		strMSL += "  return o_col;\n}\n";
 	}
-	return true;
+}
+
+
+void Translator::FinishGLSL(Str &strGLSL)
+{
+	char str[512];
+	if( tr_bVertex) {
+		strGLSL = GLSL_VERTEX_INTERFACE;
+		snprintf(str, sizeof(str),
+			"layout(set = 0, binding = 0, std140) uniform VPConst { vec4 c[%d]; vec4 colConstant; uint ulStreams; uint ulTexCoords; uvec2 ulPad; } K;\n",
+			GPU_VERTEX_CONSTANTS);
+	} else {
+		strGLSL = GLSL_FRAGMENT_INTERFACE;
+		snprintf(str, sizeof(str),
+			"layout(set = 0, binding = 1, std140) uniform PPConst { vec4 c[%d]; float fAlphaRef; uint bAlphaTest; float fLODBias; uint ulPad; } K;\n",
+			GPU_PIXEL_CONSTANTS);
+	}
+	strGLSL += str;
+	strGLSL += _strHelpersGLSL;
+
+	if( tr_bVertex) {
+		strGLSL +=
+			"void main()\n"
+			"{\n"
+			"  const uint vid = uint(gl_VertexIndex);\n"
+			"  gl_Position = vec4(0.0f);  o.col0 = vec4(0.0f);  o.col1 = vec4(0.0f);\n"
+			"  o.tex0 = o.tex1 = o.tex2 = o.tex3 = vec4(0.0f, 0.0f, 0.0f, 1.0f);\n"
+			"  gl_PointSize = 1.0f;  gl_ClipDistance[0] = 1.0f;\n"
+			"  vec4 o_unused;\n";
+		// inputs: what OpenGL gives a vertex program for an array, or without one
+		if( tr_ulInputs&IN_POS) strGLSL += "  const vec4 v_pos = vec4(GpuPos(vid), 1.0f);\n";
+		if( tr_ulInputs&IN_NOR) strGLSL += "  const vec4 v_nor = (K.ulStreams & 4u) != 0u ? vec4(GpuNor(vid), 1.0f) : vec4(0.0f, 0.0f, 1.0f, 1.0f);\n";
+		if( tr_ulInputs&IN_COL) strGLSL += "  const vec4 v_col = (K.ulStreams & 2u) != 0u ? GpuCol(vid) : K.colConstant;\n";
+		for( int iUnit=0; iUnit<4; iUnit++) {
+			if( !(tr_ulInputs&(IN_TEX0<<iUnit))) continue;
+			snprintf(str, sizeof(str),
+				"  const vec4 v_tex%d = (K.ulStreams & %du) == 0u ? vec4(0.0f, 0.0f, 0.0f, 1.0f)\n"
+				"    : GpuTex%d(vid, ((K.ulTexCoords >> %du) & 2u) != 0u);\n",
+				iUnit, 1<<(3+iUnit), iUnit, iUnit*4);
+			strGLSL += str;
+		}
+		// GFXWeight: four bone indices, then four weights (bytes, normalized as OpenGL reads them)
+		if( tr_ulInputs&IN_IDX) strGLSL += "  const vec4 v_idx = (K.ulStreams & 128u) != 0u ? GpuIdx(vid) : vec4(0.0f, 0.0f, 0.0f, 1.0f);\n";
+		if( tr_ulInputs&IN_WGH) strGLSL += "  const vec4 v_wgh = (K.ulStreams & 128u) != 0u ? GpuWgh(vid) : vec4(0.0f, 0.0f, 0.0f, 1.0f);\n";
+		if( tr_ulInputs&IN_TAN) strGLSL += "  const vec4 v_tan = (K.ulStreams & 256u) != 0u ? GpuTan(vid) : vec4(0.0f, 0.0f, 0.0f, 1.0f);\n";
+	} else {
+		strGLSL +=
+			"void main()\n"
+			"{\n"
+			"  vec4 o_col = vec4(0.0f);\n";
+	}
+	if( tr_bAddress) strGLSL += "  int a0 = 0;\n";
+	for( size_t i=0; i<tr_astrDecl.size(); i++) strGLSL += "  " + tr_astrDecl[i] + "\n";
+	for( size_t i=0; i<tr_astrBody.size(); i++) strGLSL += "  " + tr_astrBody[i] + "\n";
+	if( tr_bVertex) {
+		strGLSL += "}\n";
+	} else {
+		// OpenGL's alpha test comes after the program
+		strGLSL += "  if (K.bAlphaTest != 0u && o_col.a < K.fAlphaRef) discard;\n";
+		strGLSL += "  gpu_FragColor = o_col;\n}\n";
+	}
 }
 
 } // namespace
@@ -420,6 +531,12 @@ bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
 
 bool TranslateARBToMSL(const std::string &strARB, std::string &strMSL, std::string &strError)
 {
-	Translator tr;
+	Translator tr(_dMSL);
 	return tr.Translate(strARB, strMSL, strError);
+}
+
+bool TranslateARBToGLSL(const std::string &strARB, std::string &strGLSL, std::string &strError)
+{
+	Translator tr(_dGLSL);
+	return tr.Translate(strARB, strGLSL, strError);
 }

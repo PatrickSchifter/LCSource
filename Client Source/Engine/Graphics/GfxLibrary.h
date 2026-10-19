@@ -80,12 +80,13 @@ enum GfxAPIType
 	GAT_D3D  =  1,     // Direct3D
 #endif // SE1_D3D
 	GAT_MTL  =  2,     // Metal (macOS, SE1_METAL)
+	GAT_VK   =  3,     // Vulkan (on MoltenVK on macOS, SE1_VULKAN)
 	GAT_CURRENT = 9,   // current API
 };
 
 // the APIs drawn through a GpuDevice (GpuDevice.h; Gfx_Gpu.cpp and Gfx_wrapper_Gpu.cpp, under
 // SE1_GPUDEVICE): those without fixed function
-inline bool GFX_IsGpuAPI( enum GfxAPIType eAPI) { return eAPI==GAT_MTL; }
+inline bool GFX_IsGpuAPI( enum GfxAPIType eAPI) { return eAPI==GAT_MTL || eAPI==GAT_VK; }
 
 
 // vertex type (for lock/unlock function)
@@ -137,7 +138,7 @@ enum VtxType
 class ENGINE_API CGfxLibrary
 {
 public:
-	CGfxAPI gl_gaAPI[3];  // by GfxAPIType
+	CGfxAPI gl_gaAPI[4];  // by GfxAPIType
 	CViewPort *gl_pvpActive;   // active viewport
 	HINSTANCE  gl_hiDriver;    // DLL handle
 
@@ -314,6 +315,7 @@ public:
 		if( eAPI==GAT_D3D) return (gl_gaAPI[1].ga_ctAdapters>0);
 #endif // SE1_D3D
 		if( eAPI==GAT_MTL) return (gl_gaAPI[2].ga_ctAdapters>0);
+		if( eAPI==GAT_VK)  return (gl_gaAPI[3].ga_ctAdapters>0);
 		return FALSE;
 	};
 

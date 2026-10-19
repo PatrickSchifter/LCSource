@@ -661,9 +661,9 @@ void CRenderer::Restore_SRS_Bloom()
 	d3dSetVertexShader(D3DFVF_CTVERTEX);
 //안태훈 수정 끝	//(Bug Fix)(0.1)
 }
-#else // OpenGL and Metal
+#else // OpenGL, Metal and Vulkan
 
-// The same programs as Direct3D's, through ShaderAsmToARB (and ShaderARBToMSL for Metal). The
+// The same programs as Direct3D's, through ShaderAsmToARB (and ShaderARBTranslate for Metal and Vulkan). The
 // quad's texture coordinates come in as v5 here (ShaderAsmToARB.h); Direct3D's declaration of the
 // quad puts them in v7.
 static ULONG _ulAddFourPixelProgram          = NONE;
@@ -788,7 +788,7 @@ static void SetFilterSampleAsIs(void)
 
 // the quad from -1,-1 to 1,1 that m_matFullCoverage_WVP puts over the whole render target, with
 // the texture on units 0..3 and the programs. Its texture coordinates go up with y in OpenGL,
-// whose render targets start at the bottom; Metal's start at the top as Direct3D's.
+// whose render targets start at the bottom; Metal's and Vulkan's start at the top as Direct3D's.
 static void DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, BOOL bBlend, GfxBlend eSrc, GfxBlend eDst)
 {
 #ifdef SE1_GPUDEVICE
@@ -822,7 +822,7 @@ HRESULT CRenderer::RenderBloom()
 	Get_SRS_Bloom();
 
 	// what every pass has (OpenGL: no depth, culling, fog or alpha test, and the two programs;
-	// Metal sets it with each quad)
+	// the GpuDevice sets it with each quad)
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) {
 		pglDisable( GL_DEPTH_TEST);
 		pglDepthMask( GL_FALSE);
@@ -873,7 +873,7 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
 #ifdef SE1_GPUDEVICE
 	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
-		// from the top, as Metal counts rows
+		// from the top, as Metal and Vulkan count rows
 		GPU_CopyFrameToTexture( _ulBackbufferCopy, pixLeft, re_pdpDrawPort->dp_MinJ * pixScale, pixWidth, pixHeight);
 	} else
 #endif // SE1_GPUDEVICE
@@ -909,7 +909,7 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	float woff, hoff;
 	float centw, centh;
 
-	// Direct3D samples a pixel at the corner of its texel, OpenGL and Metal at the center: half a
+	// Direct3D samples a pixel at the corner of its texel, OpenGL, Metal and Vulkan at the center: half a
 	// texel back to read what the Direct3D offsets (no centering there) read
 	centw = -m_fPerTexelWidth  * 0.5f;
 	centh = -m_fPerTexelHeight * 0.5f;
@@ -994,7 +994,7 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 void CRenderer::Get_SRS_Bloom()
 {
 #ifdef SE1_GPUDEVICE
-	// Metal: the quads go to the device without the engine's state; its streams and textures are kept
+	// Metal, Vulkan: the quads go to the device without the engine's state; its streams and textures are kept
 	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
 		GPU_BeginFilter();
 		return;

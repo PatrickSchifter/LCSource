@@ -318,7 +318,7 @@ static void SetConstantRegisters(void)
 
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 #ifndef SE1_D3D
-// the current view and projection matrices of OpenGL or Metal (FALSE without either)
+// the current view and projection matrices of OpenGL, Metal or Vulkan (FALSE without either)
 static BOOL GetViewAndProjection( FLOAT *pfView, FLOAT *pfProjection)
 {
 	extern void GetViewMatrix_GPU( FLOAT *pfMatrix);
@@ -411,7 +411,7 @@ extern void shaSetVertexProgramConst_TransformMatrix()
 #else
 	// OpenGL keeps the view matrix in the layout Direct3D does (gfxSetViewMatrix gives both the
 	// same floats), and its projection the same way: the same product, into OpenGL's clip space
-	// (Metal keeps Direct3D's matrices: into Direct3D's clip space, which is Metal's)
+	// (Metal and Vulkan keep Direct3D's matrices: into Direct3D's clip space, which is Metal's and Vulkan's)
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;
 	D3DXMATRIX matProj;
@@ -508,7 +508,7 @@ extern void shaSetVertexProgramConst_ProjectionMatrix()
 	//}
 #else
 	// as in Direct3D, with OpenGL's view and the projection of the reflection (_matWaterProj); but
-	// the first row of an OpenGL render target is at the bottom, so v goes up: 0.5+0.5y (a Metal
+	// the first row of an OpenGL render target is at the bottom, so v goes up: 0.5+0.5y (a Metal or Vulkan
 	// one starts at the top, as Direct3D's)
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;

@@ -8005,7 +8005,7 @@ void CUIManager::HUD_DrawItemModel()
 
 	GetDrawPort()->InitTextureData(&m_RenderTarget->rt_tdTexture, FALSE, PBT_ADD);
 #ifndef SE1_D3D
-	// an OpenGL render target starts at the bottom (Metal's at the top, as Direct3D's)
+	// an OpenGL render target starts at the bottom (Metal's and Vulkan's at the top, as Direct3D's)
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL)
 		GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,1.0f,1.0f,0.0f,0xFFFFFFFF);
 	else

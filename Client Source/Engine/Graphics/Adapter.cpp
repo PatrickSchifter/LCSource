@@ -11,6 +11,9 @@
 #ifdef SE1_METAL
 #include <Engine/Graphics/MetalDevice.h>
 #endif // SE1_METAL
+#ifdef SE1_VULKAN
+#include <Engine/Graphics/VulkanDevice.h>
+#endif // SE1_VULKAN
 
 
 extern BOOL _bDedicatedServer;
@@ -174,6 +177,16 @@ void CGfxLibrary::InitAPIs(void)
       daMetal.da_strVersion  = "Metal";
     }
 #endif // SE1_METAL
+#ifdef SE1_VULKAN
+    // and Vulkan (MoltenVK)
+    if( vlkIsAvailable()) {
+      gl_gaAPI[GAT_VK] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daVulkan = gl_gaAPI[GAT_VK].ga_adaAdapter[0];
+      daVulkan.da_strVendor   = "Apple";
+      daVulkan.da_strRenderer = "Vulkan";
+      daVulkan.da_strVersion  = "Vulkan";
+    }
+#endif // SE1_VULKAN
   }
 #else
   // detect current mode and print to console

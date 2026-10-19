@@ -135,7 +135,7 @@ void CRenderTexture::End()		// SetRenderTarget old
 #else
 // OpenGL: a framebuffer object with the texture as its color and a 16-bit depth renderbuffer,
 // as the Direct3D version has; Init() fails without GL_EXT_framebuffer_object and callers skip the effect.
-// Metal: the texture with a depth buffer of its own (GPU_MakeRenderTarget); it starts at the top
+// Metal, Vulkan: the texture with a depth buffer of its own (GPU_MakeRenderTarget); it starts at the top
 // as Direct3D's, so callers use Direct3D's texture coordinates with it.
 #ifdef SE1_GPUDEVICE
 // Gfx_wrapper_Gpu.cpp

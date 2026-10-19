@@ -4,11 +4,11 @@
   #pragma once
 #endif
 
-// The device under the engine's backends without fixed function (Metal, GAT_MTL; Vulkan): the
-// gfx* functions for them are in Gfx_wrapper_Gpu.cpp and the library parts in Gfx_Gpu.cpp, the
-// same for every such API; what differs is the device, a table of functions (GpuDevice below)
-// that each API fills (MetalDevice.mm). The devices do not see the engine's headers (Objective-C
-// has its own BOOL), so this interface uses plain C++ types only.
+// The device under the engine's backends without fixed function (Metal, GAT_MTL; Vulkan,
+// GAT_VK): the gfx* functions for them are in Gfx_wrapper_Gpu.cpp and the library parts in
+// Gfx_Gpu.cpp, the same for every such API; what differs is the device, a table of functions
+// (GpuDevice below) that each API fills (MetalDevice.mm, VulkanDevice.mm). The devices do not see
+// the engine's headers (Objective-C has its own BOOL), so this interface uses plain C++ types only.
 //
 // A device keeps the render state the engine sets and puts it into its command stream when
 // something is drawn. A frame starts with the first thing drawn after Present(); everything
@@ -131,7 +131,7 @@ struct GpuFFFragmentConst {
 // THE DEVICE
 
 struct GpuDevice {
-  const char *strAPI;   // "Metal"
+  const char *strAPI;   // "Metal", "Vulkan"
 
   // start on the window (pixels drawn per window point: 1, or the display's density on Retina)
   bool (*Init)(SDL_Window *pwnd, int iScale);

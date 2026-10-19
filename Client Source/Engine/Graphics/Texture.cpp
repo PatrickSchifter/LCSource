@@ -138,7 +138,7 @@ extern void UpdateTextureSettings(void)
 	if( eAPI==GAT_D3D && bAnyTC) iTCType = 5;
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	// Metal (DXT too)
+	// Metal, Vulkan (DXT too)
 	if( GFX_IsGpuAPI(eAPI) && bAnyTC) iTCType = 6;
 #endif // SE1_GPUDEVICE
 	
@@ -176,7 +176,7 @@ extern void UpdateTextureSettings(void)
 		break;
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	case 6:  // DXT on Metal
+	case 6:  // DXT on Metal, Vulkan
 		TS.ts_tfRGBc   = GPUTF_DXT1;
 		TS.ts_tfRGBcA  = GPUTF_DXT3;
 		TS.ts_tfRGBcAc = GPUTF_DXT5;

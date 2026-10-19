@@ -1,4 +1,4 @@
-// The gfx* functions for the APIs without fixed function (Metal, GAT_MTL), on top of a GpuDevice
+// The gfx* functions for the APIs without fixed function (Metal, Vulkan), on top of a GpuDevice
 // (GpuDevice.h): the same for all of them, the device is the API's. Included by Gfx_wrapper.cpp
 // like the OpenGL and Direct3D ones.
 //

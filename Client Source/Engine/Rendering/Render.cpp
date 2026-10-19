@@ -1327,7 +1327,7 @@ static void SetShadowViewport(void)
 // The texture stage of the projected shadows: Direct3D takes the texture coordinates from the
 // camera space position (D3DTSS_TCI_CAMERASPACEPOSITION) through matShadowUV, projected
 // (D3DTTFF_COUNT4|D3DTTFF_PROJECTED). OpenGL: eye-linear texgen, the texture matrix and its divide
-// by q. Metal: the same as Direct3D in the fixed function emulation (its render targets start at
+// by q. Metal, Vulkan: the same as Direct3D in the fixed function emulation (its render targets start at
 // the top as Direct3D's).
 static void SetShadowTexGen(const Matrix16 &matShadowUV)
 {

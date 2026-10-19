@@ -8,9 +8,10 @@
 #include "GpuDevice.h"
 
 // The ARB programs that ShaderAsmToARB.cpp makes from Direct3D's shader assembly, translated into
-// Metal Shading Language for the Metal device (MetalDevice.mm). The ARB text is the one
-// that runs on OpenGL, so Direct3D's semantics (modifiers, matrix macros, co-issue, registers read
-// before written) are already written out in it; this is one MSL statement per ARB instruction.
+// Metal Shading Language for the Metal device (MetalDevice.mm), as into GLSL for Vulkan
+// (ShaderARBTranslate.cpp has both). The ARB text is the one that runs on OpenGL, so Direct3D's
+// semantics (modifiers, matrix macros, co-issue, registers read before written) are already
+// written out in it; this is one MSL statement per ARB instruction.
 //
 // The interface (the same as the fixed function emulation's, MSL_PROGRAM_INTERFACE below):
 //  - a vertex program is the function "vp": constants GpuVPConst at buffer 0, the vertex streams

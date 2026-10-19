@@ -75,7 +75,7 @@ extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
 extern ULONG GFX_ulCurrentColorMask = (CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 
 #ifdef SE1_GPUDEVICE
-// Metal (a GpuDevice): the texture functions (Gfx_wrapper_Gpu.cpp, included below)
+// Metal, Vulkan (a GpuDevice): the texture functions (Gfx_wrapper_Gpu.cpp, included below)
 static void SetTexture_GPU( TEXOBJ &ulTexObject, CTexParams &tpLocal);
 static void UploadTexture_GPU( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat);
 static BOOL UploadCompressedTexture_GPU( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, ULONG ulFormat);
@@ -444,7 +444,7 @@ extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal)
 	}
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
 		SetTexture_GPU( ulTexObject, tpLocal);
 	}
 #endif // SE1_GPUDEVICE
@@ -485,7 +485,7 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 	} 
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
 		UploadTexture_GPU( pulTexture, pixWidth, pixHeight, ulFormat);
 	}
 #endif // SE1_GPUDEVICE
@@ -527,7 +527,7 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 	}
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
 		bUploaded = UploadCompressedTexture_GPU( pubMipmaps, pixWidth, pixHeight, slSize, ulFormat);
 	}
 #endif // SE1_GPUDEVICE
@@ -591,7 +591,7 @@ extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 	}
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	// Metal (all mipmaps)
+	// Metal, Vulkan (all mipmaps)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		_sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -832,7 +832,7 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 	}
 
 #ifdef SE1_GPUDEVICE
-	// Metal (as OpenGL: arrays in memory, those of a static buffer also on the GPU)
+	// Metal, Vulkan (as OpenGL: arrays in memory, those of a static buffer also on the GPU)
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
@@ -948,7 +948,7 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 	}
 
 #ifdef SE1_GPUDEVICE
-	// Metal
+	// Metal, Vulkan
 	else if( GFX_IsGpuAPI(eAPI))
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
@@ -1118,7 +1118,7 @@ extern void gfxFlushQuads(void)
 	extern INDEX xbx_bAllowQuadArrays;
 	if( (_pGfx->gl_eCurrentAPI==GAT_OGL && ogl_bAllowQuadArrays) 
 		|| GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
-		// OpenGL supports quads (and the Metal wrapper draws them)
+		// OpenGL supports quads (and the GpuDevice wrapper draws them)
 		FlushArrays( NULL, _avtxCommon.Count());  
 	} else {
 		// make sure that enough quad elements has been initialized
@@ -1266,7 +1266,7 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 #else
 		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return FALSE;
 #endif // SE1_D3D
-		if( GFX_IsGpuAPI(eAPI)) return FALSE;  // (no occlusion queries with Metal yet)
+		if( GFX_IsGpuAPI(eAPI)) return FALSE;  // (no occlusion queries with Metal or Vulkan yet)
 
 	// get last if available
 	if( _ctUsedOcclusionQueries < GFX_MAXOCCQUERIES) {
@@ -1766,7 +1766,7 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 	}
 #endif // SE1_D3D
 #ifdef SE1_GPUDEVICE
-	// Metal (a GpuDevice)?
+	// Metal, Vulkan (a GpuDevice)?
 	else if( GFX_IsGpuAPI((GfxAPIType)iAPI))
 	{
 		gfxEnableDepthWrite     = &gpu_EnableDepthWrite;
