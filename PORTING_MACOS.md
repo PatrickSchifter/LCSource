@@ -203,7 +203,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `eacb64c`..`ef6097c
 - [x] Winsock → sockets BSD fora do Windows (`Engine/Network/SocketCompat.h`: nomes do Winsock sobre POSIX, `WSAE*` = `errno`, `SIGPIPE` ignorado); `connect` não bloqueante com `EINPROGRESS`/`SO_ERROR`; `socklen_t`; zlib com `uLongf` de 64 bits. Só no check do Mac; tempo de execução quando o Mac linkar
 - [x] `F_Socket` (código morto, só um include) e `SharedMemory` (IPC do launcher, só Windows desde a C5)
 - [x] wininet (`Network/Web.cpp`), `SharedWebData` e `ThreadWrapper` só no Windows: páginas web do publisher (quadro de mensagens, notícias, ajuda, loja de cash) que o nosso servidor não tem; fora do Windows o leitor nunca devolve página e `OpenWebPage()` devolve FALSE
-- [ ] Testes de regressão no Windows (lista em `HANDOFF.md`)
+- [x] Testes de regressão no Windows (2026-10-18: login, troca de servidor, LoginServer fora do ar e GameServer derrubado com mensagem e sem travar; janelas web não testadas, por decisão do usuário)
 - [ ] Conexão e login no servidor portado a partir do cliente do Mac (depende do link, C1/C8)
 
 ### C7. Áudio
@@ -211,7 +211,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [x] Saída de som pelo SDL3 fora do Windows (`LC_SOUND_SDL`): o mixer por software do motor empurra o buffer para um `SDL_AudioStream` com a mesma latência (`snd_tmMixAhead`); DS3D por hardware, EAX e waveOut só no Windows. No Windows, opção `LC_SOUND_SDL` (exige `LC_PLATFORM_SDL=ON`) para testar. Testado no Mac com programa de teste (taxa de consumo, sem falta de dados); em jogo ainda não
 - [x] Ogg: libvorbisfile linkado direto fora do Windows (o `OggVorbis_File` declarado à mão só batia com a lib 1.0 de 32 bits); no Windows continua o `vorbisfile.dll`
 - [x] MP3: dr_mp3 (`3rdparty/dr_libs`) no lugar do `amp11lib.dll` fora do Windows; não se sabe ainda se os assets usam MP3
-- [ ] Testes em jogo no Windows: build padrão (regressão) e `LC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (lista em `HANDOFF.md`)
+- [~] Testes em jogo no Windows: build padrão sem diferença (2026-10-18); falta `LC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (lista em `HANDOFF.md`)
 
 ### C8. Renderização (caminho crítico)
 - [x] Direct3D atrás da macro `SE1_D3D` (como no Serious Engine 1 aberto da Croteam): definida só no CMake do Windows (`lc_client_common`), onde o código compilado é o mesmo de antes (conferido resolvendo `SE1_D3D` como definida e comparando byte a byte com o original). Sem ela ficam fora `GAT_D3D`, os membros D3D de `CGfxLibrary`/`CViewPort`/`CRenderTexture`, os `case`/ramos D3D e os fontes só-D3D, que ficam inteiros dentro de `#ifdef SE1_D3D` (`Gfx_Direct3D*.cpp`, `RenderBloom.cpp`; `Gfx_wrapper_Direct3D.cpp` só é incluído sob a macro), sem mexer nas listas geradas do CMake. Sem D3D ainda não há: bloom, render targets (`CRenderTexture::Init` falha), sombras projetadas em textura, programas de shader (as funções `sha*` de registradores ficam vazias), clip plane da água e a mistura da sombra do terreno sem shader. A matemática D3DX (`Compat/d3dx8/d3dx8math.h`, nossa) não depende mais de `d3d8.h` sem a macro e é usada no Mac (altura do terreno, matrizes de sombra). Check do Mac: 6.978 → 5.680 erros únicos, sem erro de D3D (só DirectSound, C7). Depois da C6 e da C7 (2026-10-18): 128 erros únicos, quase todos do OpenGL (`Gfx_OpenGL.cpp`, `GfxLibrary.cpp`, `ViewPort.cpp`), mais `exploration3d`/`Object3D_IO` (ferramentas) e dois `Min` em `RenderModels.cpp`

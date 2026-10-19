@@ -228,9 +228,11 @@ Windows sem as opções novas: o código resolvido (`unifdef`) é o mesmo de ant
 (use `grep -a`), e o Write/Edit apaga espaços no fim das linhas. Edite com substituições exatas em
 latin-1 (`perl -pi` ou Python) e confira o `git diff`.
 
-### C6 e C7 — testes no Windows (pendentes)
+### C6 e C7 — testes no Windows
 
-Build padrão (regressão):
+Build padrão (regressão): **itens 1, 2 e 4 feitos em 2026-10-18**, sem diferença (login, troca de
+servidor, LoginServer desligado e GameServer derrubado com mensagem e sem travar, som). O item 3
+ficou de fora por decisão do usuário (as páginas web dependem dos sites do publisher).
 1. Login, lista de servidores, escolher canal e entrar no mundo; voltar para a seleção de servidor e
    entrar de novo; trocar de canal.
 2. LoginServer desligado: falha com mensagem, sem travar (3 tentativas de 3 s). Servidor derrubado
@@ -238,7 +240,7 @@ Build padrão (regressão):
 3. Janelas web (notícias, ajuda, loja de cash, quadro de mensagens) como antes; sair do jogo normalmente.
 4. Som ambiente, combate, música e volumes iguais a antes.
 
-Com `-DLC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (depois voltar para OFF):
+Com `-DLC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (depois voltar para OFF), pendente:
 5. Música Ogg: começa, faz loop, troca ao mudar de zona.
 6. Sons 3D e de UI; volumes de som e música; latência.
 7. Tela de loading/troca de mundo, minimizar e Alt+Tab: sem estalo nem repetição.
