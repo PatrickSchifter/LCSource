@@ -391,7 +391,7 @@ static CTString MakeEmptyString(INDEX ctLen, char ch=' ')
 }
 
 // take a two line string and align into one line of minimum given length
-static _ctAlignWidth = 20;
+static INDEX _ctAlignWidth = 20;
 static CTString AlignString(const CTString &strOrg)
 {
 	// split into two lines
@@ -720,24 +720,24 @@ static FLOAT ctl_fButtonRotationSpeedB = 150.0f;
 // modifier for axis strafing
 static FLOAT ctl_fAxisStrafingModifier = 1.0f;
 
-static plr_bSetRespawn = FALSE;
+static INDEX plr_bSetRespawn = FALSE;
 
 //0530 kwon 추가
 static unsigned int tmStartTime = 0;
 
 //0625 kwon
 static ANGLE aWantedHeadingRelativeTmp = 0;
-static g_bIsRotating = FALSE;
+static INDEX g_bIsRotating = FALSE;
 static FLOAT3D g_vMove = FLOAT3D(0,0,0);
 static FLOAT3D g_vMoveDirection = FLOAT3D(0,0,0);
-static g_bIsRotateEnd = FALSE;
-static g_bFirstRotate = FALSE;
+static INDEX g_bIsRotateEnd = FALSE;
+static INDEX g_bFirstRotate = FALSE;
 static FLOAT3D g_bTargetDirection = FLOAT3D(0,0,0);
 
 //0722
-static g_bPreSkill  = FALSE; 
-static g_bDoSkill   = FALSE;
-static g_bPostSkill = FALSE;
+static INDEX g_bPreSkill = FALSE; 
+static INDEX g_bDoSkill = FALSE;
+static INDEX g_bPostSkill = FALSE;
 static FLOAT g_deltaX = 0;
 static FLOAT g_deltaZ = 0;
 
@@ -3513,7 +3513,7 @@ functions:
 			return FALSE;
 		}
 
-		for(INDEX ipl2 = 0; ipl2 < _pNetwork->ga_srvServer.srv_actCha.Count(); ++ipl2) 
+		INDEX ipl2; for( ipl2 = 0; ipl2 < _pNetwork->ga_srvServer.srv_actCha.Count(); ++ipl2) 
 		{
 			if( _pNetwork->ga_srvServer.srv_actCha[ipl2].cha_iClientIndex == penEnt->en_ulID )
 			{
@@ -4275,55 +4275,55 @@ functions:
 		case HITTYPE_WEAK:
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 685, "약한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );		
+				strSysMessage.PrintF( _S( 685, "약한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
 		case HITTYPE_NORMAL:
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 414, "일반공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 414, "일반공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );
 			break;
 		case HITTYPE_STRONG:// 강하게
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 686, "강한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage  );		
+				strSysMessage.PrintF( _S( 686, "강한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage  );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
 		case HITTYPE_HARD:// 매우 강하게
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );		
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );		
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 687, "매우 강한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage  );		
+				strSysMessage.PrintF( _S( 687, "매우 강한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage  );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
 		case HITTYPE_CRITICAL:// 크리티컬
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 411, "크리티컬 히트! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 411, "크리티컬 히트! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );
 			m_bCriticalDamageMe = TRUE;
@@ -4331,11 +4331,11 @@ functions:
 		case HITTYPE_DEADLY:// 죽도록 강하게
 			if( skillIndex != -1 )
 			{
-				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+				strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 688, "데들리 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 688, "데들리 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			m_bCriticalDamageMe = TRUE;
@@ -4361,7 +4361,7 @@ functions:
 		switch(targetFlag)
 		{
 		case HITTYPE_MISS:
-			strSysMessage.PrintF( _S2( 409, strMobName, "%s<가> 당신의 공격을 피했습니다." ), strMobName );
+			strSysMessage.PrintF( _S2( 409, (const char*)strMobName, "%s<가> 당신의 공격을 피했습니다." ), (const char*)strMobName );
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4369,7 +4369,7 @@ functions:
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );
 			break;
 		case HITTYPE_WEAK:
-			strSysMessage.PrintF( _S( 689, "약한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);			
+			strSysMessage.PrintF( _S( 689, "약한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);			
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4379,11 +4379,11 @@ functions:
 		case HITTYPE_NORMAL:
 			if( skillIndex == -1 )
 			{
-				strSysMessage.PrintF( _S( 410, "일반공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage );
+				strSysMessage.PrintF( _S( 410, "일반공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage );
 			}
 			else
 			{				
-				strSysMessage.PrintF( _S( 787, "스킬 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);			
+				strSysMessage.PrintF( _S( 787, "스킬 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);			
 			}
 			if( slCurrentWeight > slMaxWeight )
 			{
@@ -4392,7 +4392,7 @@ functions:
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_STRONG:// 강하게			
-			strSysMessage.PrintF(_S( 690, "강한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);
+			strSysMessage.PrintF(_S( 690, "강한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4400,7 +4400,7 @@ functions:
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_HARD:// 매우 강하게
-			strSysMessage.PrintF( _S( 691, "매우 강한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);	
+			strSysMessage.PrintF( _S( 691, "매우 강한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);	
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4408,7 +4408,7 @@ functions:
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_CRITICAL:// 크리티컬
-			strSysMessage.PrintF( _S( 407, "크리티컬 히트! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage );
+			strSysMessage.PrintF( _S( 407, "크리티컬 히트! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage );
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4417,7 +4417,7 @@ functions:
 			m_bCriticalDamage = TRUE;			
 			break;
 		case HITTYPE_DEADLY:// 죽도록 강하게			
-			strSysMessage.PrintF( _S( 692, "데들리 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);		
+			strSysMessage.PrintF( _S( 692, "데들리 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);		
 			if( slCurrentWeight > slMaxWeight )
 			{
 				strSysMessage = strPenalty + strSysMessage;
@@ -4631,7 +4631,7 @@ functions:
 				
 				CTString strMessage;
 				const char* szItemName = _pNetwork->GetItemName(item_index);
-				strMessage.PrintF( _S2( 707, CTString(szItemName), "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), strName, szItemName, slCount);
+				strMessage.PrintF( _S2( 707, CTString(szItemName), "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), (const char*)strName, szItemName, slCount);
 				_pNetwork->ClientSystemMessage(strMessage);					
 			}
 			break;
@@ -6330,7 +6330,7 @@ functions:
 	CTString GetStatsRealWorldStarted(void)
 	{
 		struct tm *newtime;
-		newtime = localtime(&m_iStartTime);
+		newtime = LocalTime32(m_iStartTime);
 		
 		setlocale(LC_ALL, "");
 		CTString strTimeline;
@@ -8880,7 +8880,7 @@ functions:
 
 	void MinMaximize()
 	{
-		static bMinimize = TRUE;
+		static INDEX bMinimize = TRUE;
 
 		if(m_bChanging)
 		{
@@ -11981,9 +11981,9 @@ functions:
 		static FLOAT	start_Damage_time;
 		//m_fBodyAnimTime = en_pmiModelInstance->GetAnimLength(idBodyAnim);
 		
-		static cnt = 0;
+		static INDEX cnt = 0;
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
-		static effectCnt = 0;
+		static INDEX effectCnt = 0;
 		//CTag *pEnTag = this->m_tmTagManager.Find("ET POS");
 		//if(pEnTag != NULL && pEnTag->GetType() == TT_ENTITY)
 		//{
@@ -16195,7 +16195,7 @@ BOOL CheckAction()
 
 void SkillAnimation(void)
 {
-	static bEffect = TRUE;
+	static INDEX bEffect = TRUE;
 	//static ULONG IndexStick = 1;
 	static CEntity* penEntity;		
 	
@@ -18522,7 +18522,7 @@ virtual void SetLegit(UBYTE ubType, SLONG chaindex)
 						ct.SetLegitimate(TRUE);
 						((CCharacter*)penTargetEntity)->m_nLegit = 1;		
 						((CCharacter*)penTargetEntity)->m_nPkMode = 3;	//해골 아이콘 들어간후에 적용.
-						strSysMessage.PrintF(_S( 833, "%s 에 대하여 정당방위가 성립되었습니다." ),ct.cha_strName);	
+						strSysMessage.PrintF(_S( 833, "%s 에 대하여 정당방위가 성립되었습니다." ),(const char*)ct.cha_strName);	
 					}
 					else if(ubType == MSG_RIGHT_ATTACK_DELAY)
 					{
@@ -18530,7 +18530,7 @@ virtual void SetLegit(UBYTE ubType, SLONG chaindex)
 						penTargetEntity->SetSecondExtraFlagOn( ENF_EX2_LEGIT );
 
 						((CCharacter*)penTargetEntity)->m_nLegit = 2;
-						strSysMessage.PrintF(_S( 834, "%s 에 대한 정당방위가 5초후 해제됩니다." ),ct.cha_strName);	
+						strSysMessage.PrintF(_S( 834, "%s 에 대한 정당방위가 5초후 해제됩니다." ),(const char*)ct.cha_strName);	
 					}
 					else if(ubType == MSG_RIGHT_ATTACK_DEL)
 					{
@@ -18540,7 +18540,7 @@ virtual void SetLegit(UBYTE ubType, SLONG chaindex)
 						ct.SetLegitimate(FALSE);
 						((CCharacter*)penTargetEntity)->m_nLegit = 0;
 						((CCharacter*)penTargetEntity)->m_nPkMode = 2;//정당방위 풀리고 PVP모드로 돌아감.
-						strSysMessage.PrintF(_S( 835, "%s 에 대한 정당방위가 해제되었습니다." ),ct.cha_strName);	
+						strSysMessage.PrintF(_S( 835, "%s 에 대한 정당방위가 해제되었습니다." ),(const char*)ct.cha_strName);	
 					}
 
 					_pNetwork->ClientSystemMessage( strSysMessage);
@@ -19725,7 +19725,7 @@ procedures:
 	{
 		_pNetwork->MyCharacterInfo.statusEffect.SetType(CStatusEffect::T_PLAYER);
 		// remember start time
-		time(&m_iStartTime);
+		m_iStartTime = (INDEX)time(NULL);
 		
 		SetFlagOn(ENF_CLIENTHANDLING);
 		

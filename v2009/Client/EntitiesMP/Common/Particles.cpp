@@ -876,7 +876,7 @@ void Particles_LavaTrail(CEntity *pen)
 	const FLOAT3D *pvPos2 = &plp->GetPosition(0);
 	INDEX iParticle = 0;
 	INDEX iParticlesLiving = plp->lp_ctUsed*LAVA_TRAIL_INTERPOSITIONS;
-	for(INDEX iPos = 1; iPos<plp->lp_ctUsed; iPos++)
+	INDEX iPos = 1; for( ; iPos<plp->lp_ctUsed; iPos++)
 	{
 		pvPos1 = pvPos2;
 		pvPos2 = &plp->GetPosition(iPos);
@@ -919,7 +919,7 @@ void Particles_LavaBombTrail(CEntity *pen, FLOAT fSizeMultiplier)
 	const FLOAT3D *pvPos2 = &plp->GetPosition(0);
 	INDEX iParticle = 0;
 	INDEX iParticlesLiving = plp->lp_ctUsed*LAVA_BOMB_TRAIL_INTERPOSITIONS;
-	for(INDEX iPos = 1; iPos<plp->lp_ctUsed; iPos++)
+	INDEX iPos = 1; for( ; iPos<plp->lp_ctUsed; iPos++)
 	{
 		INDEX iRnd = ((ULONG)fSeconds+iPos)%CT_MAX_PARTICLES_TABLE;
 		pvPos1 = pvPos2;
@@ -966,7 +966,7 @@ void Particles_BeastProjectileDebrisTrail(CEntity *pen, FLOAT fSizeMultiplier)
 	const FLOAT3D *pvPos2 = &plp->GetPosition(0);
 	INDEX iParticle = 0;
 	INDEX iParticlesLiving = plp->lp_ctUsed*BEAST_PROJECTILE_DEBRIS_TRAIL_INTERPOSITIONS;
-	for(INDEX iPos = 1; iPos<plp->lp_ctUsed; iPos++)
+	INDEX iPos = 1; for( ; iPos<plp->lp_ctUsed; iPos++)
 	{
 		pvPos1 = pvPos2;
 		pvPos2 = &plp->GetPosition(iPos);
@@ -1133,7 +1133,7 @@ void Particles_RocketTrail(CEntity *pen, FLOAT fStretch)
 	const FLOAT3D *pvPos2 = &plp->GetPosition(1);
 	INDEX iParticle = 0;
 	INDEX iParticlesLiving = plp->lp_ctUsed*ROCKET_TRAIL_INTERPOSITIONS;
-	for( INDEX iPos=2; iPos<plp->lp_ctUsed; iPos++)
+	INDEX iPos=2; for( ; iPos<plp->lp_ctUsed; iPos++)
 	{
 		pvPos1 = pvPos2;
 		pvPos2 = &plp->GetPosition(iPos);

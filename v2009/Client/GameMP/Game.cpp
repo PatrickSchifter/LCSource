@@ -3,11 +3,15 @@
 
 #include "StdAfx.h"
 #include "Game.h"
+#ifdef PLATFORM_WIN32
 #include <direct.h> // for _mkdir()
+#endif
 #include <sys/timeb.h>
 #include <time.h>
 #include <locale.h>
+#ifdef PLATFORM_WIN32
 #include <io.h>
+#endif
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
@@ -295,7 +299,6 @@ static INDEX IsScriptSoundPlaying(INDEX iChannel)
 	}
 	return _apsoScriptChannels[iChannel]->IsPlaying();
 }
-#endif  // _WIN32
 
 // Dump recorded profiling stats to file.
 static void DumpProfileToFile(void)
@@ -2542,7 +2545,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 					_bPlayerViewRendered = TRUE;
 					// render it
 					// 결국은 RenderView()를 호출함.
-					apenViewers[i]->RenderGameView(pdp, (void*)ulFlags);
+					apenViewers[i]->RenderGameView(pdp, (void*)(uintptr_t)ulFlags);
 
 					// Render UIs
 					//_pUIMgr->Render( pdp );		// yjpark
@@ -2771,7 +2774,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			// save screen shot as TGA
 			else
 				iiImageInfo.SaveTGA_t( fnmScreenShot);
-			if( dem_iAnimFrame<0) CPrintF( TRANS("screen shot: %s\n"), (CTString&)fnmScreenShot);
+			if( dem_iAnimFrame<0) CPrintF( TRANS("screen shot: %s\n"), (const char*)((CTString&)fnmScreenShot));
 		}
 		// if failed
 		catch (char *strError) 

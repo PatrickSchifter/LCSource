@@ -29,8 +29,8 @@ template<class T> class CValue
 {
 public:
 	CValue() : m_value( 0 )			{}
-	CValue(T& val) : m_value( val )	{}
-	CValue(CValue<T>& val) : m_value( val.m_value )	{}
+	CValue(const T& val) : m_value( val )	{}	// (const: MSVC bound temporaries to T&)
+	CValue(const CValue<T>& val) : m_value( val.m_value )	{}
 
 	inline operator T&(void)		{ return m_value; }
 	inline operator T&(void) const	{ return m_value; }

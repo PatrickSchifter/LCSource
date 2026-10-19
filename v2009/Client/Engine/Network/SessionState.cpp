@@ -3906,7 +3906,7 @@ BOOL CSessionState::ReceiveMessage()
 				/*
 				else 
 				{		
-				static bFirst=TRUE;
+				static INDEX bFirst =TRUE;
 				if(bFirst){				
 				penPlayerEntity->Read_net_brief(&nmMessage,ses_emEntityMessage.em_tmMessageTime);			
 				bFirst=FALSE;

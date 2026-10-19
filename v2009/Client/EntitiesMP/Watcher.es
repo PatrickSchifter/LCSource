@@ -49,7 +49,7 @@ functions:
 	{
 		INDEX ctMaxPlayers		= GetOwner()->en_pwoWorld->m_vectorTargetNPC.size();
 		INDEX ctActivePlayers	= 0;
-		for(INDEX i=0; i < ctMaxPlayers; i++)
+		INDEX i; for( i=0; i < ctMaxPlayers; i++)
 		{
 			CEntity* pEntity = GetOwner()->en_pwoWorld->m_vectorTargetNPC[i];
 			if(pEntity != NULL)			

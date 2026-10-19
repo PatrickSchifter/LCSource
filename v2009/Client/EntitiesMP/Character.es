@@ -1737,7 +1737,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 
 	void MinMaximize()
 	{
-		static bMinimize = TRUE;
+		static INDEX bMinimize = TRUE;
 
 	//	if(m_bChanging)
 		{
@@ -1745,15 +1745,15 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 			{
 				static int cnt=0;//누적 카운트
 
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 				if(cnt==0)
 				{  	
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					cnt++;
 				}
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;
@@ -1789,11 +1789,11 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 
 				static int cnt=10;//누적 카운트
 
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 				
 				if(cnt==10)
 				{
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					cnt--;
 
 					if(m_nChangeMonsterId == GM_CHANGE)
@@ -1931,7 +1931,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 					m_afHardCodeValue[14] = pl.pl_PositionVector(1);
 					m_afHardCodeValue[15] = pl.pl_PositionVector(2);
 					m_afHardCodeValue[16] = pl.pl_PositionVector(3);
-					for(INDEX i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
+					INDEX i; for( i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
 					{
 						if(en_ulID == _pNetwork->ga_srvServer.srv_actCha[i].cha_iClientIndex) {break;}
 					}
@@ -1967,7 +1967,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 					m_afHardCodeValue[0] = sqrtf(size(1) * size(1) + size(3) * size(3)) * 0.5f;//적의크기반지름
 					//캐릭터 투명화 끄기
 					SetFlagOff(ENF_HIDDEN);
-					for(INDEX i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
+					INDEX i; for( i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
 					{
 						if(en_ulID == _pNetwork->ga_srvServer.srv_actCha[i].cha_iClientIndex) {break;}
 					}

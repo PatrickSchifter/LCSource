@@ -85,7 +85,8 @@ target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
 # talks to the publisher's servers.
 target_compile_definitions(lc_client_common INTERFACE NO_GAMEGUARD)
 target_include_directories(lc_client_common INTERFACE
-  "${LC_GEN}" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8")
+  "${LC_GEN}" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8"
+  "${LC_CLIENT_SRC}/LCCrypt")  # Engine/Network/CNetwork.h includes <LCCrypt.h>
 target_link_libraries(lc_client_common INTERFACE Boost::headers)
 
 if(WIN32)

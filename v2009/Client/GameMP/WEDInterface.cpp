@@ -237,6 +237,7 @@ void CGame::QuickTest(const CTFileName &fnMapName, CDrawPort *pdp, CViewPort *pv
 	_pInput->DisableInput();
 	StopGame();
 	DisableLoadingHook();
+#endif  // PLATFORM_WIN32
 }
 
 //-----------------------------------------------------------------------------

@@ -410,7 +410,7 @@ public:
 
 	/* Send chat message from some players to some other players. */
 	void SendChat(ULONG ulFrom, ULONG ulTo, const CTString &strMessage);
-	void SendChatMessage(int index, CTString &strRecvName, CTString &strMessage);//0616 kwon
+	void SendChatMessage(int index, const CTString &strRecvName, const CTString &strMessage);//0616 kwon
 //0105
 	void SendMessagetoServer(char *msg);
 	//BOOL IsTcpServer;					// by seo-40225 부모클래스 CMessageDispatcher로 변수 위치 옮김.

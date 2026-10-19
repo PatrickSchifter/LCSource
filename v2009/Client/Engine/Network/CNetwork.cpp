@@ -6445,7 +6445,7 @@ void CNetworkLibrary::FieldShopSellItem(int iNumOfItem, __int64 iTotalPrice)
 
 
 //0616 kwon
-void CNetworkLibrary::SendChatMessage(int index, CTString &strRecvName, CTString &strMessage)
+void CNetworkLibrary::SendChatMessage(int index, const CTString &strRecvName, const CTString &strMessage)
 {
 	CNetworkMessage nm(MSG_CHAT);
 	nm << (unsigned char)index;
