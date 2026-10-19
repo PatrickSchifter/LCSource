@@ -1546,7 +1546,7 @@ ENGINE_API extern  struct PlayerControls pctlCurrent;
 
 
 
-inline ENGINE_API CTString _SFunc( int x );
+ENGINE_API CTString _SFunc( int x );
 
 //#define KEY_SHOW_STRING_INDEX
 // 미번역 찾아내기 [10/13/2011 rumist]

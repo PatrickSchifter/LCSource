@@ -137,7 +137,7 @@ public:
 	inline	void			SetAutoComplete( BOOL _auto = TRUE )		{ m_bAutoProgressComplete = _auto;	}
 	inline	void			StartProgress()								{ m_enStatus = PR_STAT_DOING;	}
 	inline	void			IdleProgress()								{ m_enStatus = PR_STAT_IDLE;	}
-	inline	void			CompleteProgress();
+	void			CompleteProgress();
 
 	inline	void			SetProgressRange( SQUAD sqRower = 0, SQUAD sqUpper = 100 )	
 							{ ASSERT( sqRower < sqUpper ); m_sqLower = sqRower; m_sqUpper = sqUpper;	_setTextureGap();	}

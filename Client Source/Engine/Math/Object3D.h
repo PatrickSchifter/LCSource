@@ -156,7 +156,7 @@ public:
   /* Clear the object. */
   inline void Clear(void) {};
   /* Get start and end vertices. */
-  inline void GetVertices(CObjectVertex *&povxStart, CObjectVertex *&povxEnd);
+  void GetVertices(CObjectVertex *&povxStart, CObjectVertex *&povxEnd);  // ObjectSector.cpp
 };
 
 // a polygon in 3d object

@@ -151,7 +151,7 @@ static void *_pAdjustShaderData = NULL;
 
 inline static INDEX FindRenBoneIndex(const RenModel &rm,INDEX iBoneID);
 inline extern void LockMeshReadBuffers(const MeshLOD &mlod);
-inline extern void UnlockMeshReadBuffers(const MeshLOD &mlod);
+extern void UnlockMeshReadBuffers(const MeshLOD &mlod);
 inline static void SetSurfaceMatrices(const RenMesh &rmsh, const MeshSurface &msrf, const MeshLOD &mlod);
 extern void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod);
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
@@ -339,7 +339,7 @@ __forceinline static void RotateVector_add( FLOAT3 &vDst, FLOAT3 &vSrc, const Ma
 
 
 // calculate fade factor of animation list in animqueue
-__forceinline extern FLOAT CalculateFadeFactor(const AnimList &alList)
+extern FLOAT CalculateFadeFactor(const AnimList &alList)
 {
 	if(alList.al_fFadeTime==0) 
 	{
@@ -351,7 +351,7 @@ __forceinline extern FLOAT CalculateFadeFactor(const AnimList &alList)
 }
 
 // set view matrix
-__forceinline extern void SetViewMatrix( Matrix12 &mView12)
+extern void SetViewMatrix( Matrix12 &mView12)
 {
 	FLOAT mView16[16];
 	mView16[ 0] = mView12[ 0];  mView16[ 1] = mView12[ 4];  mView16[ 2] = mView12[ 8];  mView16[ 3] = 0;
@@ -3736,7 +3736,7 @@ inline extern void LockMeshReadBuffers(const MeshLOD &mlod)
 	_bMeshBuffersLocked = TRUE;
 }
 
-inline extern void UnlockMeshReadBuffers(const MeshLOD &mlod)
+extern void UnlockMeshReadBuffers(const MeshLOD &mlod)
 {
 	if(_bUseHardwareShaders) 
 	{

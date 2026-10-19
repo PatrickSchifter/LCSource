@@ -44,6 +44,9 @@ extern void TerrainMapCrop(Type *ptDst, SLONG slDstWidth, SLONG slDstHeight,
 		slOld += slOldStepX;
 	}
 }
+// used by Terrain.cpp and TRLayerImp.cpp
+template void TerrainMapCrop<UBYTE>(UBYTE *ptDst, SLONG slDstWidth, SLONG slDstHeight,
+	const UBYTE *ptSrc, SLONG slSrcWidth, SLONG slSrcHeight, UBYTE ubFill);
 
 // Copy terrain map from one mem location to another with optional map resizing
 template <class Type>

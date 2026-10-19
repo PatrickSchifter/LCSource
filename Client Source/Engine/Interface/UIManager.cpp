@@ -6002,7 +6002,7 @@ void CUIManager::LostTarget()
 
 //#define KEY_SHOW_STRING_INDEX_DEVtest
 
-inline ENGINE_API CTString _SFunc( int x )
+ENGINE_API CTString _SFunc( int x )
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 
