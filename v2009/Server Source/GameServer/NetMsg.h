@@ -121,8 +121,11 @@ public:
 	CNetMsg& operator >> (double& d)			{ Read(&d, sizeof(d)); return *this; }
 	CNetMsg& operator >> (ULONGLONG& ull)		{ Read(&ull, sizeof(ull)); NTOHLL(ull); return *this; }
 	CNetMsg& operator >> (LONGLONG& ll)			{ Read(&ll, sizeof(ll)); NTOHLL(ll); return *this; }
-	CNetMsg& operator >> (unsigned long& ul)	{ Read(&ul, sizeof(ul)); NTOHL(ul); return *this; }
-	CNetMsg& operator >> (long& l)				{ Read(&l, sizeof(l)); NTOHL(l); return *this; }
+	// `long` was 32 bits in the original (ILP32) build and the protocol carries it as 4 bytes;
+	// on LP64 it is 64 bits, so (de)serialize through a 32-bit value. time_t is `long` on
+	// LP64 and also lands here, matching the 32-bit time_t of the original build.
+	CNetMsg& operator >> (unsigned long& ul)	{ unsigned int v; Read(&v, sizeof(v)); NTOHL(v); ul = v; return *this; }
+	CNetMsg& operator >> (long& l)				{ unsigned int v; Read(&v, sizeof(v)); NTOHL(v); l = (int)v; return *this; }
 	CNetMsg& operator >> (unsigned int& ul)		{ Read(&ul, sizeof(ul)); NTOHL(ul); return *this; }
 	CNetMsg& operator >> (int& l)				{ Read(&l, sizeof(l)); NTOHL(l); return *this; }
 	CNetMsg& operator >> (unsigned short& us)	{ Read(&us, sizeof(us)); NTOHS(us); return *this; }
@@ -135,8 +138,8 @@ public:
 	CNetMsg& operator << (double d)				{ Write(&d, sizeof(d)); return *this; }
 	CNetMsg& operator << (ULONGLONG ull)		{ HTONLL(ull); Write(&ull, sizeof(ull)); return *this; }
 	CNetMsg& operator << (LONGLONG ll)			{ HTONLL(ll); Write(&ll, sizeof(ll)); return *this; }
-	CNetMsg& operator << (unsigned long ul)		{ HTONL(ul); Write(&ul, sizeof(ul)); return *this; }
-	CNetMsg& operator << (long l)				{ HTONL(l); Write(&l, sizeof(l)); return *this; }
+	CNetMsg& operator << (unsigned long ul)		{ unsigned int v = (unsigned int)ul; HTONL(v); Write(&v, sizeof(v)); return *this; }
+	CNetMsg& operator << (long l)				{ unsigned int v = (unsigned int)(int)l; HTONL(v); Write(&v, sizeof(v)); return *this; }
 	CNetMsg& operator << (unsigned int ul)		{ HTONL(ul); Write(&ul, sizeof(ul)); return *this; }
 	CNetMsg& operator << (int l)				{ HTONL(l); Write(&l, sizeof(l)); return *this; }
 	CNetMsg& operator << (unsigned short us)	{ HTONS(us); Write(&us, sizeof(us)); return *this; }

@@ -2447,7 +2447,7 @@ void CServer::CloseSocket(CDescriptor* d, bool bForce)
 		if (d->m_pChar && d->m_pChar->m_bLoadChar && d->m_pChar->m_admin < 2)
 		{
 			int curTime;
-			time((time_t*)&curTime);
+			curTime = (int)time(NULL);	// was time((time_t*)&int): wrote 8 bytes into a 4-byte int on LP64
 
 			if (d->m_logoutDelay == -1)
 			{

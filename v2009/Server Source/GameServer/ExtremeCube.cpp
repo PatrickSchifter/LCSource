@@ -1364,7 +1364,7 @@ CExtremeCube::CExtremeCube()
 {
 	m_nextGuildCubeTime = 0;
 	m_bGuildCubeStart = false;
-	memset(m_cube, sizeof(CCubeSpace*) * MAX_CUBESPACE, 0);
+	memset(m_cube, 0, sizeof(CCubeSpace*) * MAX_CUBESPACE);	// arguments were transposed (size 0)
 
 	m_mobidx = NULL;
 	m_mobCount = 0;

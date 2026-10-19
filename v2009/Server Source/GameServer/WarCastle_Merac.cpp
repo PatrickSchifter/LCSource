@@ -64,7 +64,7 @@ void CMeracCastle::SetNextWarTime(int nextWarTime)
 #ifdef TLD_WAR_TEST
 	m_nextWarTime = 1293721200;
 	int timetest;
-	time((time_t*)&timetest);
+	timetest = (int)time(NULL);	// was time((time_t*)&int): wrote 8 bytes into a 4-byte int on LP64
 	if (timetest >= m_nextWarTime)
 	{
 		GAMELOG << init("WARCASTLE TLD WAR TEST ERROR")

@@ -330,9 +330,12 @@ int ZEXPORT compress (dest, destLen, source, sourceLen)
     */
 
 //  CTSingleLock slZip(&zip_csLock, TRUE);
+  // zlib's uLongf is 64 bits on LP64; never alias it onto the int& (it read and wrote 8 bytes).
+  uLongf dstLen = (uLongf)slDstSize;
   int iResult = compress(
-    (unsigned char *)pvDst, (unsigned long *)&slDstSize,
-    (const unsigned char *)pvSrc, (unsigned long)slSrcSize);
+    (unsigned char *)pvDst, &dstLen,
+    (const unsigned char *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (int)dstLen;
   if (iResult==Z_OK) {
     return TRUE;
   } else {
@@ -354,9 +357,11 @@ int ZEXPORT uncompress (dest, destLen, source, sourceLen)
     */
 
 //  CTSingleLock slZip(&zip_csLock, TRUE);
+  uLongf dstLen = (uLongf)slDstSize;
   int iResult = uncompress(
-    (unsigned char *)pvDst, (unsigned long *)&slDstSize,
-    (const unsigned char *)pvSrc, (unsigned long)slSrcSize);
+    (unsigned char *)pvDst, &dstLen,
+    (const unsigned char *)pvSrc, (uLong)slSrcSize);
+  slDstSize = (int)dstLen;
 
   if (iResult==Z_OK) {
     return TRUE;

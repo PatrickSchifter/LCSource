@@ -78,7 +78,9 @@
 
 #ifdef OLD_NETMSG
 // Reliable(2) + Sequence(4) + ID(2) + TxSize(4)
-#define MAX_HEADER_SIZE ((long)(sizeof(unsigned short) + sizeof(unsigned long) + sizeof(unsigned short) + sizeof(unsigned long)))
+// Packet header on the wire: reliable(2) + seq(4) + id(2) + size(4) = 12 bytes. It was written with
+// `unsigned long`, which is 8 bytes on LP64 and would make the header 20.
+#define MAX_HEADER_SIZE ((long)(sizeof(unsigned short) + sizeof(unsigned int) + sizeof(unsigned short) + sizeof(unsigned int)))
 #else
 #define MAX_HEADER_SIZE			((int)(sizeof(int)))
 #endif

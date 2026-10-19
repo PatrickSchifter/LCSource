@@ -102,7 +102,9 @@
 #define MAX_MESSAGE_DATA		(MAX_MESSAGE_SIZE - MAX_MESSAGE_TYPE)
 
 // Reliable(2) + Sequence(4) + ID(2) + TxSize(4)
-#define MAX_HEADER_SIZE ((long)(sizeof(unsigned short) + sizeof(unsigned long) + sizeof(unsigned short) + sizeof(unsigned long)))
+// Packet header on the wire: reliable(2) + seq(4) + id(2) + size(4) = 12 bytes. It was written with
+// `unsigned long`, which is 8 bytes on LP64 and would make the header 20.
+#define MAX_HEADER_SIZE ((long)(sizeof(unsigned short) + sizeof(unsigned int) + sizeof(unsigned short) + sizeof(unsigned int)))
 #define MAX_INPUTBUFFER_SIZE		((MAX_HEADER_SIZE + MAX_MESSAGE_SIZE) * 30)
 #define MAX_OUTPUTBUFFER_SIZE		((MAX_MESSAGE_SIZE + MAX_HEADER_SIZE) * 300)
 #define MAX_OUTPUTBUFFER_OUTUNIT	4096
