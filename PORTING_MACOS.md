@@ -206,7 +206,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `eacb64c`..`ef6097c
 - [x] `F_Socket` (código morto, só um include) e `SharedMemory` (IPC do launcher, só Windows desde a C5)
 - [x] wininet (`Network/Web.cpp`), `SharedWebData` e `ThreadWrapper` só no Windows: páginas web do publisher (quadro de mensagens, notícias, ajuda, loja de cash) que o nosso servidor não tem; fora do Windows o leitor nunca devolve página e `OpenWebPage()` devolve FALSE
 - [x] Testes de regressão no Windows (2026-10-18: login, troca de servidor, LoginServer fora do ar e GameServer derrubado com mensagem e sem travar; janelas web não testadas, por decisão do usuário)
-- [ ] Conexão e login no servidor portado a partir do cliente do Mac (depende do link, C1/C8)
+- [x] Conexão e login no servidor portado a partir do cliente do Mac (2026-10-19)
 
 ### C7. Áudio
 Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47`.
@@ -218,7 +218,8 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 ### C8. Renderização (caminho crítico)
 - [x] Direct3D atrás da macro `SE1_D3D` (como no Serious Engine 1 aberto da Croteam): definida só no CMake do Windows (`lc_client_common`), onde o código compilado é o mesmo de antes (conferido resolvendo `SE1_D3D` como definida e comparando byte a byte com o original). Sem ela ficam fora `GAT_D3D`, os membros D3D de `CGfxLibrary`/`CViewPort`/`CRenderTexture`, os `case`/ramos D3D e os fontes só-D3D, que ficam inteiros dentro de `#ifdef SE1_D3D` (`Gfx_Direct3D*.cpp`, `RenderBloom.cpp`; `Gfx_wrapper_Direct3D.cpp` só é incluído sob a macro), sem mexer nas listas geradas do CMake. Sem D3D ainda não há: bloom, render targets (`CRenderTexture::Init` falha), sombras projetadas em textura, programas de shader (as funções `sha*` de registradores ficam vazias), clip plane da água e a mistura da sombra do terreno sem shader. A matemática D3DX (`Compat/d3dx8/d3dx8math.h`, nossa) não depende mais de `d3d8.h` sem a macro e é usada no Mac (altura do terreno, matrizes de sombra). Check do Mac: 6.978 → 5.680 erros únicos, sem erro de D3D (só DirectSound, C7). Depois da C6 e da C7 (2026-10-18): 128 erros únicos, quase todos do OpenGL (`Gfx_OpenGL.cpp`, `GfxLibrary.cpp`, `ViewPort.cpp`), mais `exploration3d`/`Object3D_IO` (ferramentas) e dois `Min` em `RenderModels.cpp`
 - [ ] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
-  - [x] Contexto via SDL3 (janela com `SDL_WINDOW_OPENGL`, funções por `SDL_GL_GetProcAddress`, swap/vsync pelo SDL, sem gama); check do Mac com 0 erros (2026-10-18). Ainda não rodou: faltam os dados do jogo no Mac
+  - [x] Contexto via SDL3 (janela com `SDL_WINDOW_OPENGL`, funções por `SDL_GL_GetProcAddress`, swap/vsync pelo SDL, sem gama); check do Mac com 0 erros (2026-10-18)
+  - [x] Roda no Mac (2026-10-19): login, Juno, combate, itens, terreno (mapas de sombra e luz dinâmica em fixed function), multitextura, clamp to edge, Retina na tela cheia, vsync; ~20% de um núcleo em jogo. Detalhes em `HANDOFF.md` ("C8 — cliente Mac rodando")
 - [ ] Etapa Metal (D2.2): novo backend `GAT_*` ao lado do D3D8 e do OpenGL
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
@@ -230,10 +231,10 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Suporte a Retina/HiDPI e tela cheia
 
 ### C9. Integração e jogo
-- [ ] Engine inicializa, monta os `.gro` e carrega um mundo
-- [ ] Tela de login renderiza
-- [ ] Login no servidor e seleção de personagem
-- [ ] Entrar no mundo, andar, combate, UI, chat
+- [x] Engine inicializa, monta os `.gro` e carrega um mundo (2026-10-19)
+- [x] Tela de login renderiza
+- [x] Login no servidor e seleção de personagem
+- [x] Entrar no mundo, andar, combate, UI, chat; trackpad (dois dedos giram, pinça dá zoom)
 - [ ] Desempenho aceitável (perfilar os caminhos C que substituíram o asm)
 
 ---
@@ -283,3 +284,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-18 | C1: includes com a caixa do disco, `LC_CLIENT_COUNTRY`, `time_t` de 64 bits; servidor: `long` com 4 bytes no `CNetMsg`, sysctl, `rntype.h`; teleportadores (`ZoneFlag.lod`) e ícones do mapa | d2b016d..1be72b3 |
 | 2026-10-18 | C7: som pelo SDL3, Ogg com libvorbisfile, MP3 com dr_mp3; C6: sockets BSD, web/ThreadWrapper só no Windows; check do Mac 864 → 128 erros únicos | 3b366e5..ef6097c |
 | 2026-10-18 | C1/C8: contexto OpenGL pelo SDL3, CMake do Mac, primeiro link do cliente no Mac (inicia até as fontes, sem dados); `CTString` em varargs, `inline`, Ecc `-line` | 2f57203..1bcb824 |
+| 2026-10-19 | C8/C9: cliente Mac joga (login, Juno, combate, itens); terreno, multitextura, clamp, trackpad, 64 bits da rede, desempenho (vsync, névoa, loop inativo) | dd78396..7c678d3 |

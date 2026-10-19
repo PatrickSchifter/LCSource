@@ -9,10 +9,10 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Um cliente **Windows** compilado deste repositório (D3D8, 32 bits, MSVC) loga nesse servidor pela
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
-- Cliente Mac: **compila e linka** (2026-10-18, `build-client-mac`, ver "C1 — build no Mac"
-  abaixo): `Engine`, `EntitiesMP`, `GameMP`, `Shaders` (`.dylib`) e `Nksp`. Ao rodar, inicia SDL e
-  motor e para em `SE_LoadDefaultFonts()` com `FatalError`, porque os dados do jogo não estão no
-  Mac. O contexto OpenGL vem do SDL3; o backend OpenGL ainda não foi exercitado (C8).
+- Cliente **Mac** (2026-10-19, `build-client-mac`, OpenGL 2.1 via SDL3): loga no servidor do Mac,
+  entra em Juno, anda, luta, pega itens; trackpad (dois dedos giram a câmera, pinça dá zoom).
+  Instalação em `~/Projects/LC-BR2014` (cópia de `C:\LC-BR2014`), aberta por `scripts/macos/play.sh`.
+  Ver "C8 — cliente Mac rodando" abaixo.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -23,11 +23,13 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **Dados do jogo no Mac**: o cliente precisa de uma instalação (`Data`, `Local`, `.gro`...) com
-   `Bin/` dentro. A do Windows é `C:\LC-BR2014` (BR 2014 + `.lod` de 2017, ver "Problemas
-   conhecidos"); copiar exige decidir com o usuário o quê e para onde (vários GB).
-2. **C8 (OpenGL)**: com os dados, rodar até a tela de login e resolver o que o backend `GAT_OGL`
-   não faz (shaders programáveis "Not implemented yet", Retina, sem gama).
+1. **C8, shaders programáveis no OpenGL**: o skinning dos modelos SKA e o terreno com shader são
+   "Not implemented yet" no backend; hoje o Mac roda com `LC_NO_HW_SHADERS=1` (skinning na CPU).
+   Em jogo o cliente usa ~20% de um núcleo a 60 FPS; os modelos animados são a maior parte.
+2. **Conversões float→inteiro sem sinal**: no ARM saturam em 0 onde o x86 dá a volta (achado no
+   giro da câmera, `e53b9eb`). Um build com `-fsanitize=float-cast-overflow` acharia as outras.
+3. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets),
+   Retina (hoje 1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
 
 ## C1 — build no Mac (2026-10-18)
 
@@ -70,6 +72,36 @@ cmake --build build-client-mac          # saídas em build-client-mac/Bin
   login e mundo (as mensagens de chat/sistema com nomes, `_S()`), tooltips de itens, console
   (`CPrintF` com nomes de arquivos), carga de mundos com terreno (`TerrainMapCrop`), modelos SKA
   com animações (`RMRender.cpp`), barra de progresso.
+
+## C8 — cliente Mac rodando (2026-10-18/19)
+
+`scripts/macos/play.sh` (com `LC_CONSOLE_LOG=1` grava `Nksp.log` na instalação; `LC_DEBUG_INPUT=1`
+mostra os eventos do trackpad no `stdout.log`; um `ThrowLog.txt` vazio na instalação registra toda
+exceção do motor). O login é digitado pelo usuário (o auto-login está desligado para o Brasil).
+Ver a janela do jogo sem capturar a tela do usuário: o ID da janela pelo `CGWindowListCopyWindowInfo`
+e `screencapture -l <id>`. Crash: `~/Library/Logs/DiagnosticReports/Nksp-*.ips` (JSON, com arquivo
+e linha). Pilha de um processo vivo: `sample <pid> N -file x.txt`. Pixels do GL: lldb com
+breakpoint em `CGfxLibrary::SwapBuffers` e `pglReadPixels`.
+
+O que o Mac exigiu (todos commitados, `dd78396..7c678d3`):
+- Arquivos: o tinyxml abria os XML da UI com o `fopen` dele (sem `\`→`/`); CRC das classes de
+  entidade pelo `.dylib` (o mundo pede `Bin\EntitiesMP.dll`), calculado uma vez por biblioteca
+  (calcular a cada entidade deixava a carga de Juno acima do timeout de 70 s do servidor).
+- Diferenças de plataforma: `strupr` em literal (somente leitura no Mac) em `CTag::SetName`;
+  `#ifdef BIG_ENDIAN` sempre verdadeiro no macOS (`<machine/endian.h>`), que deixava os valores de
+  64 bits da rede sem troca de bytes; `%I64d` traduzido para `%lld` e o "%s com número" tolerado
+  também no arm64 (`CTString::VPrintF`, slots de 8 bytes); `vsnprintf` cortava textos > 255;
+  `(UWORD)(float negativo)` = 0 no ARM (`SetRotation`/`GetRotationDiff` do `Player.es`).
+- OpenGL: modos Retina na tela cheia (o SDL escolhia 1920x1200 em 1x); `GL_ARB_texture_env_combine`
+  aceito para a multitextura (sem ela o terreno caía); clamp to edge pela versão 1.2+ (sem ele a luz
+  dinâmica dos golpes escurecia um quadrado de terreno); a mistura dos mapas de sombra do terreno em
+  `GL_COMBINE`/`GL_INTERPOLATE` (sem ela o terreno saía escuro).
+- Janela e entrada: o SDL não minimiza mais ao perder o foco (minimizado o jogo não desenha);
+  trackpad por monitores do AppKit (`Platform/PlatformMac.mm`): dois dedos fora da UI giram, sobre a
+  UI rolam; a decisão é tomada no início do gesto; a pinça manda passos inteiros de roda.
+- Desempenho: vsync sempre ligado (o jogo não tem limite: 170 FPS numa tela de 60 Hz); névoa enviada
+  à GPU só quando muda (o reenvio a cada quadro esperava a GPU); escondido ou minimizado o loop roda
+  a `sam_iMaxFPSInactive` (o `LimitFrameRate()` nunca era chamado). Resultado: ~20% de um núcleo em jogo.
 
 ## C5 — andamento (2026-10-17)
 
