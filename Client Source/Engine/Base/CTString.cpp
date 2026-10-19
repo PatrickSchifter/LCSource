@@ -800,8 +800,33 @@ static va_list FixStringArgs(const char *strFormat, va_list arg, FixedArgs &fa)
 }
 #endif  // FIXSTRINGARGS
 
+#ifndef _MSC_VER
+// MSVC's size prefixes in formats (%I64d, in the code and in localized strings) for the C
+// library's printf: I64 becomes ll, I32 goes away. strOut is used only when something changed.
+static const char *TranslateMSVCFormat(const char *strFormat, std::string &strOut)
+{
+	if (strstr(strFormat, "I64") == NULL && strstr(strFormat, "I32") == NULL) {
+		return strFormat;
+	}
+	strOut.clear();
+	for (const char *pch = strFormat; *pch != 0; ) {
+		if (*pch != '%') { strOut += *pch++; continue; }
+		strOut += *pch++;
+		if (*pch == '%') { strOut += *pch++; continue; }
+		while (*pch != 0 && strchr("-+ #0123456789.*'", *pch)) strOut += *pch++;
+		if (strncmp(pch, "I64", 3) == 0) { strOut += "ll"; pch += 3; }
+		else if (strncmp(pch, "I32", 3) == 0) { pch += 3; }
+	}
+	return strOut.c_str();
+}
+#endif
+
 INDEX CTString::VPrintF(const char *strFormat, va_list arg)
 {
+#ifndef _MSC_VER
+	std::string strTranslated;
+	strFormat = TranslateMSVCFormat(strFormat, strTranslated);
+#endif
 #ifdef FIXSTRINGARGS
 	FixedArgs fa;
 	arg = FixStringArgs(strFormat, arg, fa);
