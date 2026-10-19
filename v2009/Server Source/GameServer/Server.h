@@ -503,6 +503,7 @@ public:
 	CConfigFile	m_config;			// 서버 설정
 
 	int			m_national;			// 국가 
+	int			m_clientNation;		// nation byte required in MSG_LOGIN ([Server] Nation, default m_national)
 	int			m_serverno;			// 서버 번호
 	int			m_subno;			// 서브 번호
 	CLCString	m_serverAddr;

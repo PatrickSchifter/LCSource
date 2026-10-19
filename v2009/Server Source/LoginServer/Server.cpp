@@ -151,9 +151,10 @@ bool CServer::LoadSettingFile()
 
 	// Optional [Server] Nation: the nation byte clients must send in MSG_LOGIN
 	// (defaults to the build's LC_<REGION>; e.g. 10 for clients built as Brazil).
+	m_clientNation = m_national;
 	const char* strNation = m_config.Find("Server", "Nation");
 	if (strNation && *strNation)
-		m_national = atoi(strNation);
+		m_clientNation = atoi(strNation);
 
 	if (strcmp(m_config.Find("Server", "AllowExternalIP"), "TRUE") == 0)
 		m_bOnlyLocal = false;

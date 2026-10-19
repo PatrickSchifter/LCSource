@@ -593,7 +593,7 @@ bool CDescriptor::GetLogin(CNetMsg& msg)
 		}
 #endif
 #endif
-		if( nation != gserver.m_national )
+		if( nation != gserver.m_clientNation )
 		{
 			GAMELOG << init("INVALID_NATION", id)
 					<< nation

@@ -465,6 +465,13 @@ bool CServer::LoadSettingFile()
 	
 	m_serverno = atoi(m_config.Find("Server", "Number"));
 	m_subno = atoi(m_config.Find("Server", "SubNumber"));
+
+	// Optional [Server] Nation: the nation byte clients must send (MSG_LOGIN and the hack-check
+	// pulse). m_national (the build's LC_<REGION>) still selects region data (shops, OX quiz).
+	m_clientNation = m_national;
+	const char* strNation = m_config.Find("Server", "Nation");
+	if (strNation && *strNation)
+		m_clientNation = atoi(strNation);
 	
 #ifdef  NON_PK_SYSTEM 
 

@@ -202,7 +202,7 @@ void do_Pulse(CPC* ch, CNetMsg& msg)
 	
 #endif // DISCONNECT_HACK_CHARACTER 
 
-	if( nation != gserver.m_national )
+	if( nation != gserver.m_clientNation )
 	{
 		ch->m_desc->m_bclosed = true;
 		return;

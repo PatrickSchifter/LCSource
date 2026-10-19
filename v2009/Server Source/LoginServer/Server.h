@@ -46,6 +46,7 @@ public:
 	unsigned int m_nInternalIPFilter;	// 내부 접속용 IP 필터
 	unsigned int m_nInternalSubnetMask;	// 내부 접속용 서브넷 마스크
 	int			m_national;			// 국가 
+	int			m_clientNation;		// nation byte required in MSG_LOGIN ([Server] Nation, default m_national)
 
 	int			m_maxplayers;		// 허용 가능 최대 플레이어 수
 	bool		m_bshutdown;		// 서버 종료
