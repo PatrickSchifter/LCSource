@@ -1749,6 +1749,11 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	{
 		_pGame->LoginGame(LOGIN_WORLD);
 	}
+	// development: LC_AUTO_LOGIN="id password" logs in with that account once the login window
+	// is up (there is no way to type into the window from a script)
+	const char *strAutoLogin = getenv("LC_AUTO_LOGIN");
+	BOOL bAutoLoginPending = strAutoLogin!=NULL && strchr(strAutoLogin, ' ')!=NULL;
+	INDEX ctAutoLoginFrames = 0;
 #else	
 	if(_pGameState->Running())
 	{
@@ -2057,6 +2062,15 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 		
 		// do the main game loop and render screen
 		DoGame();
+		if( bAutoLoginPending && ++ctAutoLoginFrames==30) {
+			bAutoLoginPending = FALSE;
+			CTString strID = strAutoLogin;
+			const INDEX iSpace = strID.FindSubstr(" ");
+			CTString strPW = strAutoLogin + iSpace + 1;
+			strID.TrimRight(iSpace);
+			CPrintF("LC_AUTO_LOGIN: logging in as '%s'\n", (const char*)strID);
+			_pUIMgr->GetLogin()->AutoLogin(strID, strPW);
+		}
 		// minimized or hidden, nothing is drawn and the loop would spin: run it at
 		// sam_iMaxFPSInactive (LimitFrameRate() was never called in this client)
 		if( IsIconic(_hwndMain)) LimitFrameRate();

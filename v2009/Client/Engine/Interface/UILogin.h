@@ -88,6 +88,14 @@ public:
 	}
 	void SecurityCardSet(UBYTE* SecurityNum);
 
+	// development (LC_AUTO_LOGIN, Nksp.cpp): fill the window and press OK
+	void	AutoLogin( const char *strID, const char *strPW )
+	{
+		m_ebID.SetString( (char*)strID );
+		m_ebPW.SetString( (char*)strPW );
+		PressOKBtn();
+	}
+
 protected:
 	// Press OK button
 	void	PressOKBtn();
