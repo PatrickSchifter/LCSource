@@ -27,9 +27,41 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Próxima etapa: **Metal** (D2.2), backend novo sobre a interface `gfx*`, com os programas D3D
-   (`vs.1.1`/`ps.1.x`) reescritos em MSL. Pré-requisito feito: handles de textura com largura de
-   ponteiro (`TEXOBJ`, ver "C8 — handles de textura").
+2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". Próximo: M2 (Juno sem programas).
+
+## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
+
+- Escolha: `LC_GFX_API=metal` (só na partida, `Nksp.cpp`); sem ela, OpenGL. `GAT_MTL` = 2 existe em
+  todas as plataformas (o backend só com `SE1_METAL`, definido no CMake do Mac), então os
+  testes de API nas chamadas comuns não precisam de `#ifdef`. `stdout.log` mostra
+  `Metal: <GPU>, drawable WxH` quando o Metal abre.
+- Camadas: `MetalDevice.h/.mm` é o dispositivo, em Objective-C++ sem headers do motor (o `BOOL`
+  do ObjC colide com o do motor); `Gfx_wrapper_Metal.cpp` (incluído pelo `Gfx_wrapper.cpp`) tem
+  as `gfx*`; `Gfx_Metal.cpp` inicia/encerra, contexto na janela e fim de quadro. A camada da
+  janela é uma `NSView` com `CAMetalLayer` sobre o conteúdo da janela SDL (não pega o mouse);
+  a densidade Retina vem de `PLT_GetDrawableScale()` a cada quadro.
+- Sem função fixa no Metal: um programa MSL (`_strFixedFunction`) faz o que o OpenGL fazia
+  (unidades de textura com MODULATE/2X/REPLACE/INTERPOLATE, matriz de textura, cor por vértice
+  ou constante, alpha test 0.5, clip plane em espaço de vista, tamanho de ponto). Os vértices são
+  lidos por índice (sem vertex descriptor), um buffer por array, como o motor os tem. O resto do
+  estado (blend, profundidade, cull...) vai ao dispositivo a cada draw a partir das `GFX_*`.
+- Matrizes no formato do D3D (profundidade 0..1), sem o meio pixel; viewport e scissor do topo à
+  esquerda, como o D3D, vezes `GFX_DrawableScale()`.
+- Sincronização: o que vem da memória (arrays, índices, constantes) é copiado para um ring buffer
+  do quadro (3 quadros no máximo com a GPU). Textura ou buffer alterado depois de desenhado ganha
+  armazenamento novo (os command buffers seguram o antigo), então o que foi desenhado antes da
+  mudança fica como no OpenGL.
+- Texturas: as sem compressão em RGBA8, com os formatos L8/A8/LA8/RGB convertidos como o OpenGL os
+  lê; DXT1/3/5 como BC1/2/3 (os assets têm texturas que só sobem comprimidas: sem isso o
+  `Read_t` lança "Cannot upload compressed texture").
+- `DrawPort`: preencher e z-buffer por `mtlClear` (triângulo no retângulo), pontos/linhas/borda e
+  o retângulo de 4 cores pelo `MTL_DrawPrimitives`.
+- Ainda não (o motor pula ou faz sem): programas (`GLF_VERTEXPROGRAM` desligado, então skinning
+  na CPU e terreno sem shader), render targets (`CRenderTexture::Init` falha: sem bloom, preview
+  da loja; as sombras projetadas saem cedo em `Render.cpp`), consultas de oclusão, leitura de
+  profundidade dos flares (`DepthCheck.cpp`), `GrabScreen` (captura de tela) e a cópia da tela do
+  bloom. O `RenderPatches_View` (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
+- Visto: tela de login igual à do OpenGL (2026-10-19). Não visto: o jogo depois do login.
 
 ## C8 — handles de textura (2026-10-19, `40f850b`)
 
