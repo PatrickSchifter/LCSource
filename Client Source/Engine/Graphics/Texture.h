@@ -229,6 +229,7 @@ protected:
 	INDEX m_iOldFramebuffer;    // what Begin() replaced, for End()
 	INDEX m_aiOldViewport[4];
 	INDEX m_aiOldScissor[4];
+	INDEX m_iOldTargetHeight;   // GFX_pixRenderTargetHeight
 #endif // SE1_D3D
 };
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)

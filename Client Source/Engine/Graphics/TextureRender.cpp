@@ -140,6 +140,7 @@ CRenderTexture::CRenderTexture()
 	m_ulFramebuffer = 0;
 	m_ulDepthBuffer = 0;
 	m_iOldFramebuffer = 0;
+	m_iOldTargetHeight = 0;
 }
 
 CRenderTexture::~CRenderTexture()
@@ -220,6 +221,11 @@ void CRenderTexture::Begin()	// SetRenderTarget current
 	pglViewport( 0, 0, pixWidth, pixHeight);
 	pglScissor(  0, 0, pixWidth, pixHeight);
 	OGL_CHECKERROR;
+	// drawports locked from here on count their rows in the target; its first row is at the
+	// bottom, so what they draw is upside down for v going down from the top (callers flip v)
+	extern PIX GFX_pixRenderTargetHeight;
+	m_iOldTargetHeight = GFX_pixRenderTargetHeight;
+	GFX_pixRenderTargetHeight = pixHeight;
 }
 
 void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal)
@@ -251,6 +257,8 @@ void CRenderTexture::End()		// SetRenderTarget old
 	pglViewport( m_aiOldViewport[0], m_aiOldViewport[1], m_aiOldViewport[2], m_aiOldViewport[3]);
 	pglScissor(  m_aiOldScissor[0],  m_aiOldScissor[1],  m_aiOldScissor[2],  m_aiOldScissor[3]);
 	OGL_CHECKERROR;
+	extern PIX GFX_pixRenderTargetHeight;
+	GFX_pixRenderTargetHeight = m_iOldTargetHeight;
 }
 #endif // SE1_D3D
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)

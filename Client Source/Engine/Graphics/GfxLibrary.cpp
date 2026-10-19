@@ -111,6 +111,9 @@ extern INDEX _ctUsedOcclusionQueries = 0;
 static BOOL GFX_bRenderingScene = FALSE;
 // ID of the last drawport that has been locked
 static ULONG GFX_ulLastDrawPortID = 0;  
+// OpenGL: height of the bound render target (CRenderTexture), 0 for the window; drawports count rows
+// from its bottom, so a drawport locked inside the target lands where Direct3D puts it
+extern PIX GFX_pixRenderTargetHeight = 0;
 
 // last size of vertex buffers
 extern INDEX _iLastVertexBufferSize = 0;
@@ -1637,10 +1640,11 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 	if( gl_eCurrentAPI==GAT_OGL)
 	{ 
 		// pass drawport dimensions to OpenGL
+		const PIX pixRasterH = GFX_pixRenderTargetHeight>0 ? GFX_pixRenderTargetHeight : pdpToLock->dp_Raster->ra_Height;
 		const PIX pixMinSI = pdpToLock->dp_ScissorMinI;
 		const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI;
-		const PIX pixMinSJ = pdpToLock->dp_Raster->ra_Height - pdpToLock->dp_ScissorMaxJ;
-		const PIX pixMaxSJ = pdpToLock->dp_Raster->ra_Height - pdpToLock->dp_ScissorMinJ;
+		const PIX pixMinSJ = pixRasterH - pdpToLock->dp_ScissorMaxJ;
+		const PIX pixMaxSJ = pixRasterH - pdpToLock->dp_ScissorMinJ;
 		pglViewport( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 		pglScissor(  pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 		OGL_CHECKERROR;

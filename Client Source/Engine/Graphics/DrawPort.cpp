@@ -123,13 +123,20 @@ static BOOL ClipToDrawPort( const CDrawPort *pdp, PIX &pixI, PIX &pixJ, PIX &pix
 
 
 
+// OpenGL: height of the bound render target, 0 for the window (GfxLibrary.cpp)
+extern PIX GFX_pixRenderTargetHeight;
+static inline PIX RasterHeight_OGL( const CDrawPort *pdp)
+{
+	return GFX_pixRenderTargetHeight>0 ? GFX_pixRenderTargetHeight : pdp->dp_Raster->ra_Height;
+}
+
 // set scissor (clipping) to window inside drawport
 static void SetScissor( const CDrawPort *pdp, PIX pixI, PIX pixJ, PIX pixW, PIX pixH)
 {
 	ASSERT( pixI>=0 && pixI<pdp->GetWidth());
 	ASSERT( pixJ>=0 && pixJ<pdp->GetHeight());
 	ASSERT( pixW>0  && pixH>0);
-	const PIX pixInvMinJ = pdp->dp_Raster->ra_Height - (pdp->dp_MinJ+pixJ+pixH);
+	const PIX pixInvMinJ = RasterHeight_OGL(pdp) - (pdp->dp_MinJ+pixJ+pixH);
 	pglScissor( pdp->dp_MinI+pixI, pixInvMinJ, pixW, pixH);
 	ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
 	OGL_CHECKERROR;
@@ -142,8 +149,8 @@ static void ResetScissor( const CDrawPort *pdp)
 	// create scissor rect with lower left origin
 	const PIX pixMinSI = pdp->dp_ScissorMinI;
 	const PIX pixMaxSI = pdp->dp_ScissorMaxI;
-	const PIX pixMinSJ = pdp->dp_Raster->ra_Height - pdp->dp_ScissorMaxJ;
-	const PIX pixMaxSJ = pdp->dp_Raster->ra_Height - pdp->dp_ScissorMinJ;
+	const PIX pixMinSJ = RasterHeight_OGL(pdp) - pdp->dp_ScissorMaxJ;
+	const PIX pixMaxSJ = RasterHeight_OGL(pdp) - pdp->dp_ScissorMinJ;
 	pglScissor( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 	ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
 	OGL_CHECKERROR;
