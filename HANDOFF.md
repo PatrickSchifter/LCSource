@@ -240,7 +240,9 @@ ficou de fora por decisão do usuário (as páginas web dependem dos sites do pu
 3. Janelas web (notícias, ajuda, loja de cash, quadro de mensagens) como antes; sair do jogo normalmente.
 4. Som ambiente, combate, música e volumes iguais a antes.
 
-Com `-DLC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (depois voltar para OFF), pendente:
+Com `-DLC_PLATFORM_SDL=ON -DLC_SOUND_SDL=ON` (depois voltar para OFF): **feito em 2026-10-18**, sons
+normais (com a macro o DirectSound nem é compilado, então o som ouvido é o do SDL3). Esse build
+não grava `Console.log` em `C:\LC-BR2014`; o item 8 não foi conferido pelo log.
 5. Música Ogg: começa, faz loop, troca ao mudar de zona.
 6. Sons 3D e de UI; volumes de som e música; latência.
 7. Tela de loading/troca de mundo, minimizar e Alt+Tab: sem estalo nem repetição.
