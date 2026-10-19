@@ -258,7 +258,8 @@ else()
     "-framework Metal" "-framework QuartzCore")
   # trackpad gestures and the Metal device (Objective-C++), and the Metal backend: not in the
   # generated source lists (Gfx_wrapper_Metal.cpp is included by Gfx_wrapper.cpp)
-  target_sources(Engine PRIVATE Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm Engine/Graphics/Gfx_Metal.cpp)
+  target_sources(Engine PRIVATE Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm Engine/Graphics/Gfx_Metal.cpp
+    Engine/Graphics/ShaderARBToMSL.cpp)
   set_source_files_properties(Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm
     PROPERTIES COMPILE_OPTIONS "-xobjective-c++;-fobjc-arc")
 endif()

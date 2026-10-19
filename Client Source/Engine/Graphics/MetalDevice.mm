@@ -483,6 +483,18 @@ void mtlClearStream(MtlStream eStream)
   _astr[eStream] = Stream();
 }
 
+uint32_t mtlGetStreamMask(void)
+{
+  uint32_t ulMask = 0;
+  for (int iStream = 0; iStream < MTLS_COUNT; iStream++) {
+    const Stream &str = _astr[iStream];
+    if (str.pbuf != NULL || (str.pvData != NULL && str.slSize > 0)) {
+      ulMask |= 1u << iStream;
+    }
+  }
+  return ulMask;
+}
+
 void mtlSetVertexConstants(const void *pvData, size_t slSize)
 {
   _aubVertexConst.assign((const uint8_t *)pvData, (const uint8_t *)pvData + slSize);

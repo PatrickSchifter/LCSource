@@ -13,15 +13,18 @@
 // pixels (window points), times GFX_DrawableScale() on the device.
 
 #include <Engine/Graphics/MetalDevice.h>
+#include <Engine/Graphics/ShaderAsmToARB.h>
+#include <Engine/Graphics/ShaderARBToMSL.h>
+#include <set>
+#include <string>
+#include <vector>
 
 extern PIX GFX_DrawableScale(void);   // GfxLibrary.cpp
 extern ULONG _aulTempRow[4096];       // Graphics.cpp
 
-// the fixed function emulation (constants: MtlFFVertexConst and MtlFFFragmentConst below)
-static const char *_strFixedFunction = R"MSL(
-#include <metal_stdlib>
-using namespace metal;
-
+// the fixed function emulation (constants: MtlFFVertexConst and MtlFFFragmentConst below), with
+// the stage interface of the programs (ShaderARBToMSL.h), so either can go with the other
+static const char *_strFixedFunction = MSL_PROGRAM_INTERFACE R"MSL(
 struct FFVertexConst {
   float4x4 mProjection;
   float4x4 mView;
@@ -32,26 +35,6 @@ struct FFVertexConst {
   uint ulTexCoords;      // 4 bits per texture unit: 1=array, 2=s,t,r,q, 4=texture matrix
   float fPointSize;
   uint ulPad;
-};
-
-struct FFOut {
-  float4 pos [[position]];
-  float4 col;
-  float4 tex0;
-  float4 tex1;
-  float4 tex2;
-  float4 tex3;
-  float fPointSize [[point_size]];
-  float afClip [[clip_distance]] [1];
-};
-
-struct FFIn {
-  float4 pos [[position]];
-  float4 col;
-  float4 tex0;
-  float4 tex1;
-  float4 tex2;
-  float4 tex3;
 };
 
 static float4 TexCoord(const device float *pfTex, uint vid, uint ulMode, float4x4 mTexture)
@@ -65,15 +48,16 @@ static float4 TexCoord(const device float *pfTex, uint vid, uint ulMode, float4x
   return v;
 }
 
-vertex FFOut ff_vs(uint vid [[vertex_id]], constant FFVertexConst &c [[buffer(0)]],
+vertex MtlVSOut ff_vs(uint vid [[vertex_id]], constant FFVertexConst &c [[buffer(0)]],
   const device packed_float3 *pvtx [[buffer(1)]], const device uchar4 *pcol [[buffer(2)]],
   const device float *ptex0 [[buffer(4)]], const device float *ptex1 [[buffer(5)]],
   const device float *ptex2 [[buffer(6)]], const device float *ptex3 [[buffer(7)]])
 {
-  FFOut o;
+  MtlVSOut o;
   const float4 vView = c.mView * float4(float3(pvtx[vid]), 1);
   o.pos = c.mProjection * vView;
-  o.col = (c.ulFlags & 1) ? float4(pcol[vid]) / 255.0 : c.colConstant;
+  o.col0 = (c.ulFlags & 1) ? float4(pcol[vid]) / 255.0 : c.colConstant;
+  o.col1 = float4(0);
   o.tex0 = TexCoord(ptex0, vid, (c.ulTexCoords >>  0) & 15, c.amTexture[0]);
   o.tex1 = TexCoord(ptex1, vid, (c.ulTexCoords >>  4) & 15, c.amTexture[1]);
   o.tex2 = TexCoord(ptex2, vid, (c.ulTexCoords >>  8) & 15, c.amTexture[2]);
@@ -102,13 +86,13 @@ static float4 Stage(float4 col, float4 tex, uint ulMode, float fFactor)
   return col*tex;
 }
 
-fragment float4 ff_fs(FFIn in [[stage_in]], constant FFFragmentConst &c [[buffer(0)]],
+fragment float4 ff_fs(MtlPSIn in [[stage_in]], constant FFFragmentConst &c [[buffer(0)]],
   texture2d<float> t0 [[texture(0)]], sampler s0 [[sampler(0)]],
   texture2d<float> t1 [[texture(1)]], sampler s1 [[sampler(1)]],
   texture2d<float> t2 [[texture(2)]], sampler s2 [[sampler(2)]],
   texture2d<float> t3 [[texture(3)]], sampler s3 [[sampler(3)]])
 {
-  float4 col = in.col;
+  float4 col = in.col0;
   if (c.aulTexMode.x) col = Stage(col, t0.sample(s0, in.tex0.xy/in.tex0.w, bias(c.fLODBias)), c.aulTexMode.x, c.fFactor);
   if (c.aulTexMode.y) col = Stage(col, t1.sample(s1, in.tex1.xy/in.tex1.w, bias(c.fLODBias)), c.aulTexMode.y, c.fFactor);
   if (c.aulTexMode.z) col = Stage(col, t2.sample(s2, in.tex2.xy/in.tex2.w, bias(c.fLODBias)), c.aulTexMode.z, c.fFactor);
@@ -161,6 +145,18 @@ static PIX _mtl_aiScissor[4]  = {0, 0, 1, 1};
 
 static const FLOAT _afIdentity[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
 
+// vertex and pixel programs (Direct3D's assembly translated thru ARB into MSL): a handle is an
+// index+1 into _mtl_apprPrograms; the constants of both kinds are kept here and go with each draw
+static std::vector<MtlProgram*> _mtl_apprPrograms;
+static FLOAT _mtl_afVertexConst[MSL_VERTEX_CONSTANTS][4];
+static FLOAT _mtl_afPixelConst[MSL_PIXEL_CONSTANTS][4];
+
+static MtlProgram *mtl_Program( ULONG ulHandle)
+{
+	if( ulHandle==NONE || ulHandle>_mtl_apprPrograms.size()) return NULL;
+	return _mtl_apprPrograms[ulHandle-1];
+}
+
 // called on a new context
 extern BOOL InitFixedFunction_MTL(void)
 {
@@ -183,6 +179,8 @@ extern BOOL InitFixedFunction_MTL(void)
 	_mtl_bWireframe = FALSE;
 	_mtl_bDepthBias = FALSE;
 	_mtl_bShadowMapBlend = FALSE;
+	memset( _mtl_afVertexConst, 0, sizeof(_mtl_afVertexConst));
+	memset( _mtl_afPixelConst, 0, sizeof(_mtl_afPixelConst));
 	return _pprFFVertex!=NULL && _pprFFFragment!=NULL;
 }
 
@@ -191,6 +189,11 @@ extern void EndFixedFunction_MTL(void)
 	if( _pprFFVertex!=NULL)   mtlDeleteProgram(_pprFFVertex);
 	if( _pprFFFragment!=NULL) mtlDeleteProgram(_pprFFFragment);
 	_pprFFVertex = _pprFFFragment = NULL;
+	// (the engine has deleted its programs by now: ClearVertexAndPixelPrograms())
+	for( size_t i=0; i<_mtl_apprPrograms.size(); i++) {
+		if( _mtl_apprPrograms[i]!=NULL) mtlDeleteProgram(_mtl_apprPrograms[i]);
+	}
+	_mtl_apprPrograms.clear();
 }
 
 
@@ -234,29 +237,62 @@ static void mtl_SyncState(void)
 	mtlSetCull( eCull, GFX_bFrontFace!=FALSE);
 	mtlSetWireframe( _mtl_bWireframe!=FALSE);
 	mtlSetDepthBias( _mtl_bDepthBias!=FALSE);
-	mtlSetProgram( _pprFFVertex, _pprFFFragment);
 
-	MtlFFVertexConst vc;
-	memcpy( vc.afProjection, _mtl_afProjection, sizeof(vc.afProjection));
-	memcpy( vc.afView, _mtl_afView, sizeof(vc.afView));
-	ULONG ulTexCoords = 0;
-	for( INDEX iUnit=0; iUnit<GFX_USETEXUNITS; iUnit++) {
-		memcpy( vc.aafTexture[iUnit], _mtl_aafTexture[iUnit], sizeof(vc.aafTexture[iUnit]));
-		ULONG ulMode = _mtl_aubTexCoords[iUnit];
-		if( _mtl_ulTexMatrices&(1UL<<iUnit)) ulMode |= 4;
-		ulTexCoords |= ulMode<<(iUnit*4);
+	// programs, where the engine has them on (else the fixed function emulation)
+	MtlProgram *pprVertex = NULL, *pprPixel = NULL;
+	if( _pGfx->gl_ulFlags&GLF_VERTEXPROGRAM) {
+		if( GFX_bUseVertexProgram) pprVertex = mtl_Program(_pGfx->gl_dwVertexShader);
+		if( GFX_bUsePixelProgram)  pprPixel  = mtl_Program(_pGfx->gl_dwPixelShader);
 	}
-	memcpy( vc.afClipPlane, _mtl_afClipPlane, sizeof(vc.afClipPlane));
-	UBYTE ubR, ubG, ubB, ubA;
-	ColorToRGBA( _mtl_colConstant, ubR, ubG, ubB, ubA);
-	vc.afColor[0] = ubR/255.0f;  vc.afColor[1] = ubG/255.0f;
-	vc.afColor[2] = ubB/255.0f;  vc.afColor[3] = ubA/255.0f;
-	vc.ulFlags = (GFX_bColorArray ? 1 : 0) | (GFX_bClipPlane ? 2 : 0);
-	vc.ulTexCoords = ulTexCoords;
-	vc.fPointSize  = _mtl_fPointSize*pixScale;
-	vc.ulPad = 0;
-	mtlSetVertexConstants( &vc, sizeof(vc));
+	mtlSetProgram( pprVertex!=NULL ? pprVertex : _pprFFVertex, pprPixel!=NULL ? pprPixel : _pprFFFragment);
 
+	if( pprVertex!=NULL) {
+		MtlVPConst vc;
+		memcpy( vc.afConst, _mtl_afVertexConst, sizeof(vc.afConst));
+		UBYTE ubR, ubG, ubB, ubA;
+		ColorToRGBA( _mtl_colConstant, ubR, ubG, ubB, ubA);
+		vc.afColor[0] = ubR/255.0f;  vc.afColor[1] = ubG/255.0f;
+		vc.afColor[2] = ubB/255.0f;  vc.afColor[3] = ubA/255.0f;
+		// (a color array that is off, as with OpenGL, is the constant color)
+		vc.ulStreams = mtlGetStreamMask();
+		if( !GFX_bColorArray) vc.ulStreams &= ~(1UL<<MTLS_COLOR);
+		vc.ulTexCoords = 0;
+		for( INDEX iUnit=0; iUnit<GFX_USETEXUNITS; iUnit++) vc.ulTexCoords |= (ULONG)_mtl_aubTexCoords[iUnit]<<(iUnit*4);
+		vc.aulPad[0] = vc.aulPad[1] = 0;
+		mtlSetVertexConstants( &vc, sizeof(vc));
+	} else {
+		MtlFFVertexConst vc;
+		memcpy( vc.afProjection, _mtl_afProjection, sizeof(vc.afProjection));
+		memcpy( vc.afView, _mtl_afView, sizeof(vc.afView));
+		ULONG ulTexCoords = 0;
+		for( INDEX iUnit=0; iUnit<GFX_USETEXUNITS; iUnit++) {
+			memcpy( vc.aafTexture[iUnit], _mtl_aafTexture[iUnit], sizeof(vc.aafTexture[iUnit]));
+			ULONG ulMode = _mtl_aubTexCoords[iUnit];
+			if( _mtl_ulTexMatrices&(1UL<<iUnit)) ulMode |= 4;
+			ulTexCoords |= ulMode<<(iUnit*4);
+		}
+		memcpy( vc.afClipPlane, _mtl_afClipPlane, sizeof(vc.afClipPlane));
+		UBYTE ubR, ubG, ubB, ubA;
+		ColorToRGBA( _mtl_colConstant, ubR, ubG, ubB, ubA);
+		vc.afColor[0] = ubR/255.0f;  vc.afColor[1] = ubG/255.0f;
+		vc.afColor[2] = ubB/255.0f;  vc.afColor[3] = ubA/255.0f;
+		vc.ulFlags = (GFX_bColorArray ? 1 : 0) | (GFX_bClipPlane ? 2 : 0);
+		vc.ulTexCoords = ulTexCoords;
+		vc.fPointSize  = _mtl_fPointSize*pixScale;
+		vc.ulPad = 0;
+		mtlSetVertexConstants( &vc, sizeof(vc));
+	}
+
+	if( pprPixel!=NULL) {
+		MtlPPConst pc;
+		memcpy( pc.afConst, _mtl_afPixelConst, sizeof(pc.afConst));
+		pc.fAlphaRef  = 0.5f;
+		pc.bAlphaTest = GFX_bAlphaTest ? 1 : 0;
+		pc.fLODBias   = _fCurrentLODBias;
+		pc.ulPad = 0;
+		mtlSetFragmentConstants( &pc, sizeof(pc));
+		return;
+	}
 	MtlFFFragmentConst fc;
 	for( INDEX iUnit=0; iUnit<4; iUnit++) {
 		fc.aulTexMode[iUnit] = 0;
@@ -795,11 +831,105 @@ static void mtl_Finish( BOOL bReadBack)
 static void mtl_LockArrays(void) { NOTHING; }
 
 
-// VERTEX AND PIXEL PROGRAMS (not yet: the engine draws without them)
+// VERTEX AND PIXEL PROGRAMS
+// Direct3D's assembly into ARB (ShaderAsmToARB.cpp, as for OpenGL), and that into MSL
+// (ShaderARBToMSL.cpp). They are on while set and gfxEnableVertexProgram()/gfxEnablePixelProgram()
+// are in effect (mtl_SyncState). LC_DUMP_PROGRAMS=<directory> writes each program's assembly there
+// (<hash>.vs or .ps), for the offline test of the translation.
 
-static void  mtl_SetVertexProgram( const ULONG ulHandle)  { _pGfx->gl_dwVertexShader = ulHandle; }
-static void  mtl_SetPixelProgram(  const ULONG ulHandle)  { _pGfx->gl_dwPixelShader  = ulHandle; }
-static void  mtl_DeleteProgram( ULONG ulHandle)           { NOTHING; }
-static ULONG mtl_CreateVertexProgram( const char *strVertexProgram, ULONG ulStreamMasks) { return NONE; }
-static ULONG mtl_CreatePixelProgram(  const char *strPixelProgram) { return NONE; }
-static void  mtl_SetProgramConst( INDEX iRegister, const void *pData, INDEX ctRegisters) { NOTHING; }
+static void mtl_SetVertexProgram( const ULONG ulHandle) { _pGfx->gl_dwVertexShader = ulHandle; }
+static void mtl_SetPixelProgram(  const ULONG ulHandle) { _pGfx->gl_dwPixelShader  = ulHandle; }
+
+static void mtl_DeleteProgram( ULONG ulHandle)
+{
+	MtlProgram *ppr = mtl_Program(ulHandle);
+	if( ppr==NULL) return;
+	if( _pGfx->gl_dwVertexShader==ulHandle) _pGfx->gl_dwVertexShader = NONE;
+	if( _pGfx->gl_dwPixelShader ==ulHandle) _pGfx->gl_dwPixelShader  = NONE;
+	mtlDeleteProgram(ppr);
+	_mtl_apprPrograms[ulHandle-1] = NULL;
+}
+
+// print a program that failed, line by line (the console has a line limit)
+static void mtl_PrintProgram( const char *strProgram)
+{
+	const char *pch = strProgram;
+	while( *pch!=0) {
+		const char *pchEnd = strchr( pch, '\n');
+		const INDEX ctChars = (pchEnd!=NULL) ? (INDEX)(pchEnd-pch) : (INDEX)strlen(pch);
+		CPrintF( "  %.*s\n", (int)ctChars, pch);
+		pch += ctChars;
+		if( *pch=='\n') pch++;
+	}
+}
+
+// translate and compile a program (NONE if it cannot be done)
+static ULONG mtl_CreateProgram( BOOL bVertex, const char *strD3D)
+{
+	ASSERT( strD3D!=NULL && strlen(strD3D)>0);
+	if( !(_pGfx->gl_ulFlags & (bVertex ? GLF_VERTEXPROGRAM : GLF_PIXELPROGRAM))) return NONE;
+	// the engine asks again for a program it did not get: report it once
+	static std::set<std::string> _setFailed;
+	if( _setFailed.count(strD3D)) return NONE;
+
+	const char *strDump = getenv("LC_DUMP_PROGRAMS");
+	if( strDump!=NULL) {
+		char strFile[1024];
+		snprintf( strFile, sizeof(strFile), "%s/%016llx.%s", strDump,
+			(unsigned long long)std::hash<std::string>()(strD3D), bVertex ? "vs" : "ps");
+		FILE *pf = fopen( strFile, "w");
+		if( pf!=NULL) { fputs( strD3D, pf);  fclose(pf); }
+	}
+
+	std::string strARB, strMSL, strError;
+	const bool bTranslated = (bVertex ? TranslateVertexProgramToARB( strD3D, strARB, strError)
+	                                  : TranslatePixelProgramToARB(  strD3D, strARB, strError))
+	                      && TranslateARBToMSL( strARB, strMSL, strError);
+	if( !bTranslated) {
+		CPrintF( "Cannot translate %s program: %s\n", bVertex ? "vertex" : "pixel", strError.c_str());
+		mtl_PrintProgram( strD3D);
+		_setFailed.insert(strD3D);
+		return NONE;
+	}
+	char strCompileError[4096];
+	MtlProgram *ppr = mtlCreateProgram( strMSL.c_str(), bVertex ? "vp" : "pp", strCompileError, sizeof(strCompileError));
+	if( ppr==NULL) {
+		CPrintF( "Cannot compile %s program: %s\n", bVertex ? "vertex" : "pixel", strCompileError);
+		mtl_PrintProgram( strMSL.c_str());
+		_setFailed.insert(strD3D);
+		return NONE;
+	}
+	_mtl_apprPrograms.push_back(ppr);
+	return (ULONG)_mtl_apprPrograms.size();
+}
+
+static ULONG mtl_CreateVertexProgram( const char *strVertexProgram, ULONG ulStreamMasks)
+{
+	// the inputs are fixed (ShaderARBToMSL.h), so the streams need no declaration
+	(void)ulStreamMasks;
+	return mtl_CreateProgram( TRUE, strVertexProgram);
+}
+
+static ULONG mtl_CreatePixelProgram( const char *strPixelProgram)
+{
+	return mtl_CreateProgram( FALSE, strPixelProgram);
+}
+
+static void mtl_SetVertexProgramConst( INDEX iRegister, const void *pData, INDEX ctRegisters)
+{
+	ASSERT( iRegister>=0 && ctRegisters>0 && iRegister+ctRegisters<=MSL_VERTEX_CONSTANTS && pData!=NULL);
+	memcpy( _mtl_afVertexConst[iRegister], pData, ctRegisters*4*sizeof(FLOAT));
+}
+
+// (c0..c7, and the texture stage values above them: ShaderAsmToARB.h)
+static void mtl_SetPixelProgramConst( INDEX iRegister, const void *pData, INDEX ctRegisters)
+{
+	ASSERT( iRegister>=0 && ctRegisters>0 && iRegister+ctRegisters<=MSL_PIXEL_CONSTANTS && pData!=NULL);
+	memcpy( _mtl_afPixelConst[iRegister], pData, ctRegisters*4*sizeof(FLOAT));
+}
+
+// value of constant registers (for shaGet*ProgramConst)
+extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters)
+{
+	memcpy( pData, bVertex ? _mtl_afVertexConst[iRegister] : _mtl_afPixelConst[iRegister], ctRegisters*4*sizeof(FLOAT));
+}

@@ -1833,8 +1833,8 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 		gfxDeletePixelProgram   = &mtl_DeleteProgram;
 		gfxCreateVertexProgram  = &mtl_CreateVertexProgram;
 		gfxCreatePixelProgram   = &mtl_CreatePixelProgram;
-		gfxSetVertexProgramConst= &mtl_SetProgramConst;
-		gfxSetPixelProgramConst = &mtl_SetProgramConst;
+		gfxSetVertexProgramConst= &mtl_SetVertexProgramConst;
+		gfxSetPixelProgramConst = &mtl_SetPixelProgramConst;
 	}
 #endif // SE1_METAL
 	// NONE!

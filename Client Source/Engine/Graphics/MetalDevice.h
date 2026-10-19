@@ -103,6 +103,8 @@ void mtlSetTextureNone(int iUnit);
 void mtlSetStreamData(MtlStream eStream, const void *pvData, size_t slSize);
 void mtlSetStreamBuffer(MtlStream eStream, MtlBuffer *pbuf, size_t slOffset);
 void mtlClearStream(MtlStream eStream);
+// streams that have data (bit per MtlStream)
+uint32_t mtlGetStreamMask(void);
 // constants for the shaders of the next draws (copied now)
 void mtlSetVertexConstants(const void *pvData, size_t slSize);
 void mtlSetFragmentConstants(const void *pvData, size_t slSize);

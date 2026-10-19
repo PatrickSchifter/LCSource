@@ -317,6 +317,24 @@ static void SetConstantRegisters(void)
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
 
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
+#ifndef SE1_D3D
+// the current view and projection matrices of OpenGL or Metal (FALSE without either)
+static BOOL GetViewAndProjection( FLOAT *pfView, FLOAT *pfProjection)
+{
+	extern void GetViewMatrix_MTL( FLOAT *pfMatrix);
+	extern void GetProjectionMatrix_MTL( FLOAT *pfMatrix);
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		GetViewMatrix_MTL( pfView);
+		GetProjectionMatrix_MTL( pfProjection);
+		return TRUE;
+	}
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return FALSE;
+	pglGetFloatv( GL_MODELVIEW_MATRIX,  pfView);
+	pglGetFloatv( GL_PROJECTION_MATRIX, pfProjection);
+	return TRUE;
+}
+#endif // SE1_D3D
+
 extern void shaSetDefaultConstantRegisters(void)
 {
 	if( !( (_pGfx->gl_ulFlags & GLF_VERTEXPROGRAM)
@@ -331,9 +349,7 @@ extern void shaSetDefaultConstantRegisters(void)
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION,&matProj);
 #else
 	// as in shaSetVertexProgramConst_TransformMatrix()
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
-	pglGetFloatv( GL_MODELVIEW_MATRIX,  (FLOAT*)&matView);
-	pglGetFloatv( GL_PROJECTION_MATRIX, (FLOAT*)&matProj);
+	if( !GetViewAndProjection( (FLOAT*)&matView, (FLOAT*)&matProj)) return;
 #endif // SE1_D3D
 	D3DXMatrixMultiply( &mat, &matView, &matProj);
 	D3DXMatrixTranspose( &mat, &mat);
@@ -395,12 +411,11 @@ extern void shaSetVertexProgramConst_TransformMatrix()
 #else
 	// OpenGL keeps the view matrix in the layout Direct3D does (gfxSetViewMatrix gives both the
 	// same floats), and its projection the same way: the same product, into OpenGL's clip space
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	// (Metal keeps Direct3D's matrices: into Direct3D's clip space, which is Metal's)
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;
 	D3DXMATRIX matProj;
-	pglGetFloatv( GL_MODELVIEW_MATRIX,  (FLOAT*)&matView);
-	pglGetFloatv( GL_PROJECTION_MATRIX, (FLOAT*)&matProj);
+	if( !GetViewAndProjection( (FLOAT*)&matView, (FLOAT*)&matProj)) return;
 	D3DXMatrixMultiply( &mat, &matView, &matProj);
 	D3DXMatrixTranspose( &mat, &mat);
 	shaSetVertexProgramConst( 0, (Matrix16*)&mat, 4);
@@ -493,16 +508,16 @@ extern void shaSetVertexProgramConst_ProjectionMatrix()
 	//}
 #else
 	// as in Direct3D, with OpenGL's view and the projection of the reflection (_matWaterProj); but
-	// the first row of an OpenGL render target is at the bottom, so v goes up: 0.5+0.5y
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	// the first row of an OpenGL render target is at the bottom, so v goes up: 0.5+0.5y (a Metal
+	// one starts at the top, as Direct3D's)
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;
 	D3DXMATRIX matProj;
-	pglGetFloatv( GL_MODELVIEW_MATRIX, (FLOAT*)&matView);
+	if( !GetViewAndProjection( (FLOAT*)&matView, (FLOAT*)&matProj)) return;
 	Matrix16 matScaleOffset;
 	memset(&matScaleOffset, 0, sizeof(float)*16);
 	matScaleOffset[0]  = 0.5f;
-	matScaleOffset[5]  = 0.5f;
+	matScaleOffset[5]  = (_pGfx->gl_eCurrentAPI==GAT_MTL) ? -0.5f : 0.5f;
 	matScaleOffset[10] = 1.0f;
 	matScaleOffset[12] = 0.5f;
 	matScaleOffset[13] = 0.5f;
@@ -597,10 +612,12 @@ extern void shaSetEMBM()
 	//}
 #else
 	// texture stage 1's bump environment matrix, where the translated texbem reads it
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL || !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
+	if( !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
 	const GLfloat afBumpMat[4] = {
 		_WaterInformation.m_fBumpMat11, _WaterInformation.m_fBumpMat12,
 		_WaterInformation.m_fBumpMat21, _WaterInformation.m_fBumpMat22 };
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) gfxSetPixelProgramConst( ARB_PIXEL_BUMPENVMAT+1, afBumpMat, 1);
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
 	pglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, ARB_PIXEL_BUMPENVMAT+1, afBumpMat);
 	OGL_CHECKERROR;
 #endif // SE1_D3D
@@ -611,8 +628,10 @@ extern void shaSetEMBM()
 extern void shaSetProjectedTexture(INDEX iTexUnit, BOOL bProjected)
 {
 #ifndef SE1_D3D
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL || !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
+	if( !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
 	const GLfloat afProjected[4] = { bProjected ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f };
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) gfxSetPixelProgramConst( ARB_PIXEL_PROJECTED+iTexUnit, afProjected, 1);
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
 	pglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, ARB_PIXEL_PROJECTED+iTexUnit, afProjected);
 	OGL_CHECKERROR;
 #endif // SE1_D3D
@@ -832,7 +851,9 @@ extern void shaGetVertexProgramConst(INDEX iRegister, ShaderRegister &pData)
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, &pData, 1);
 #else
 	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, &pData, 1);
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProgramConst_MTL( TRUE, iRegister, &pData, 1);
 #endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix12 &pmData)
@@ -841,7 +862,9 @@ extern void shaGetVertexProgramConst(INDEX iRegister, Matrix12 &pmData)
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 3);
 #else
 	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, pmData, 3);
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProgramConst_MTL( TRUE, iRegister, pmData, 3);
 #endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix16 &pmData)
@@ -850,7 +873,9 @@ extern void shaGetVertexProgramConst(INDEX iRegister, Matrix16 &pmData)
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 4);
 #else
 	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, pmData, 4);
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProgramConst_MTL( TRUE, iRegister, pmData, 4);
 #endif // SE1_D3D
 }
 // Set const pixel program register
@@ -860,7 +885,9 @@ extern void shaGetPixelProgramConst(INDEX iRegister, ShaderRegister &pData)
 	_pGfx->gl_pd3dDevice->GetPixelShaderConstant(iRegister, &pData, 1);
 #else
 	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( FALSE, iRegister, &pData, 1);
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProgramConst_MTL( FALSE, iRegister, &pData, 1);
 #endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)

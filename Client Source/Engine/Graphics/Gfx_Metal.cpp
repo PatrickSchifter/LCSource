@@ -64,6 +64,9 @@ BOOL CGfxLibrary::InitDriver_MTL(void)
 
 void CGfxLibrary::EndDriver_MTL(void)
 {
+	// programs belong to the device
+	extern void ClearVertexAndPixelPrograms(void);
+	ClearVertexAndPixelPrograms();
 	// occlusion query IDs (not used with Metal, but kept as with OpenGL)
 	if( _puiOcclusionQueryIDs!=NULL) {
 		FreeMemory(_puiOcclusionQueryIDs);
@@ -126,9 +129,10 @@ void CGfxLibrary::InitContext_MTL(void)
 	const INDEX iScale = PLT_GetDrawableScale();
 	CPrintF( "  Window: %dx%d points, %dx%d pixels\n\n", iW, iH, iW*iScale, iH*iScale);
 
-	// what the device has (none of the OpenGL extensions; no programs yet)
-	gl_ulFlags |= GLF_HASACCELERATION|GLF_32BITTEXTURES|GLF_VSYNC;
-	gl_ulFlags &= ~(GLF_STENCILBUFFER|GLF_TEXTURECOMPRESSION|GLF_VERTEXPROGRAM|GLF_PIXELPROGRAM);
+	// what the device has (none of the OpenGL extensions); vertex and pixel programs are Direct3D's
+	// assembly translated into MSL (Gfx_wrapper_Metal.cpp)
+	gl_ulFlags |= GLF_HASACCELERATION|GLF_32BITTEXTURES|GLF_VSYNC|GLF_VERTEXPROGRAM|GLF_PIXELPROGRAM;
+	gl_ulFlags &= ~(GLF_STENCILBUFFER|GLF_TEXTURECOMPRESSION);
 	gl_ctDepthBits = 32;
 	if( mtlHasDXT()) gl_ulFlags |= GLF_TEXTURECOMPRESSION;  // the textures that come compressed
 	gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
