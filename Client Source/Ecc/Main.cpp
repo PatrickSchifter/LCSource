@@ -146,10 +146,12 @@ void ReplaceFileRL(const char *strOld, const char *strNew)
     bQuotes = 0;
     bComment = 0;
 
-    // read one line from file
+    // read one line from file (up to its LF: on Windows the text-mode output has CR LF on
+    // every line, elsewhere only LF, and cutting at the CR dropped whole 1024-byte blocks that
+    // happened to start with #line)
     int iRead = fread(strNewBuff,1,READSIZE,pfNew);
-    char *chLineEnd = strchr(strNewBuff,13);
-    if(chLineEnd) *(chLineEnd+2) = 0;
+    char *chLineEnd = strchr(strNewBuff,10);
+    if(chLineEnd) *(chLineEnd+1) = 0;
     // get line length
     int ctch = strlen(strNewBuff);
     int iSeek = -iRead+ctch;
@@ -168,7 +170,7 @@ void ReplaceFileRL(const char *strOld, const char *strNew)
       
       if((*pchNew == '{') || (*pchNew == '}') || *pchNew == ';')
       {
-        if((!bComment) && (!bQuotes) && (*(pchNew+1) != 13))
+        if((!bComment) && (!bQuotes) && (*(pchNew+1) != 13) && (*(pchNew+1) != 10))
         {
           strOldBuff[iOldch++] = strNewBuff[ich];
           strOldBuff[iOldch++] = 13;
