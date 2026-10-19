@@ -7,9 +7,13 @@ void CNM_InitKeyValue(CNM_KEY_TYPE* pKey)
 	*pKey = CNM_INIT_KEY;
 }
 
+// The published 2009 client never changes keys: its CNM_NextKey calls are commented out
+// ("edit by kevin", Engine/Network/MessageDispatcher.cpp) and CNM_MakeKeyFromSeed is empty, so
+// both directions always use CNM_INIT_KEY. Rolling the server key with rand() (the original body)
+// makes every message after the first undecryptable on either side, so this is a no-op too.
 void CNM_NextKey(CNM_KEY_TYPE* pKey)
 {
-	*pKey = LCCNM_MAKELONG((unsigned char)rand(), (unsigned char)rand(), (unsigned char)rand(), (unsigned char)rand());
+	(void)pKey;
 }
 
 void CNM_CopyKey(CNM_KEY_TYPE* pDestKey, const CNM_KEY_TYPE* pSrcKey)
