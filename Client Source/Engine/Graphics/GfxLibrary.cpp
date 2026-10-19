@@ -24,6 +24,9 @@
 #include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/Font.h>
 #include <Engine/Graphics/MultiMonitor.h>
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>  // the OpenGL context of an SDL window (Gfx_OpenGL.cpp)
+#endif
 
 #include <Engine/Templates/DynamicStackArray.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
@@ -1512,10 +1515,12 @@ void CGfxLibrary::StopDisplayMode(void)
 	ReleaseRefractionTexture();
 	extern void ReleaseReflectionTexture();
 	ReleaseReflectionTexture();
+#ifdef SE1_D3D
 	// sehan
 	extern void ReleaseBloomTexture();
 	ReleaseBloomTexture();
 	// sehan end
+#endif // SE1_D3D (Rendering/RenderBloom.cpp)
 
 	{FOREACHINLIST(CTerrain, tr_lnLoadedTerrains, _pGfx->gl_lhLoadedTerrains, ittr) {
 		// reload terrain textures
@@ -1727,6 +1732,7 @@ void CGfxLibrary::DestroyWindowCanvas(CViewPort *pvpOld) {
 #define WorkCanvasCLASS "WorkCanvas Window"
 static BOOL _bClassRegistered = FALSE;
 
+#ifdef PLATFORM_WIN32
 /* Create a work canvas. */
 void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdpNew)
 {
@@ -1782,6 +1788,19 @@ void CGfxLibrary::DestroyWorkCanvas(CDrawPort *pdpOld)
 		return; 
 	::DestroyWindow(hwnd);
 }
+#else
+// only the Windows tools (Modeler) draw off screen in work canvases
+void CGfxLibrary::CreateWorkCanvas(PIX pixWidth, PIX pixHeight, CDrawPort **ppdpNew)
+{
+	ASSERTALWAYS( "CreateWorkCanvas: Windows only");
+	*ppdpNew = NULL;
+}
+
+void CGfxLibrary::DestroyWorkCanvas(CDrawPort *pdpOld)
+{
+	ASSERT( pdpOld==NULL);
+}
+#endif // PLATFORM_WIN32
 
 
 
@@ -1812,6 +1831,7 @@ static FLOAT _fMinAvailPhys = UpperLimit(1.0f);
 //      4 : Windows NT
 //      5 : Windows 2000
 //      6 : Windows XP
+#ifdef PLATFORM_WIN32
 static int WINAPI GetOSVersionType() 
 {
     UINT nOSVersion;
@@ -1850,6 +1870,7 @@ static int WINAPI GetOSVersionType()
     
     return nOSVersion; 
 }
+#endif // PLATFORM_WIN32
 //안태훈 수정 끝	//(For Win98)(0.1)
  
 /*
@@ -1972,8 +1993,12 @@ void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALS
 		}
 
 		// swap buffers
+#ifdef PLATFORM_WIN32
 		CTempDC tdc(pvp->vp_hWnd);
 		pwglSwapBuffers(tdc.hdc);
+#else
+		SDL_GL_SwapWindow( (SDL_Window*)pvp->vp_hWnd);
+#endif // PLATFORM_WIN32
 
 		// force finishing of all rendering operations (if required)
 		if( ogl_iFinish==3) gfxFinish(ogl_bHardFinish);
@@ -2320,8 +2345,10 @@ static void AdjustGammaRamp( CViewPort *pvp)
 	if( _pGfx->gl_eCurrentAPI==GAT_OGL) {
 		// OpenGL
 		ASSERT( pvp!=NULL);
+#ifdef PLATFORM_WIN32
 		CTempDC tdc(pvp->vp_hWnd);
 		SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
+#endif // PLATFORM_WIN32 (SDL3 has no gamma ramps; GLF_ADJUSTABLEGAMMA is never set)
 	}
 #ifdef SE1_D3D
 	else if( _pGfx->gl_eCurrentAPI==GAT_D3D) {

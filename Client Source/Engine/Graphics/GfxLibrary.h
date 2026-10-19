@@ -224,6 +224,8 @@ private:
 #ifdef PLATFORM_WIN32
 	BOOL CreateContext_OGL( HDC hdc);
 	BOOL SetupPixelFormat_OGL( HDC hdc, BOOL bReport=FALSE);
+#else
+	BOOL CreateContext_OGL( HWND hWnd);  // SDL window
 #endif
 	void InitContext_OGL(void);
 	BOOL SetCurrentViewport_OGL( CViewPort *pvp);

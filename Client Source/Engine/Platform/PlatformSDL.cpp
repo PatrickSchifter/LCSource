@@ -50,8 +50,14 @@ HWND PLT_CreateMainWindow(const char *strTitle)
 {
   ASSERT(_pwndMain == NULL);
   // the client area size is set by PLT_SetMainWindowMode(); one window point is one pixel
-  // (no high pixel density yet)
-  _pwndMain = SDL_CreateWindow(strTitle, 640, 480, SDL_WINDOW_HIDDEN);
+  // (no high pixel density yet); outside Windows OpenGL draws on it (Graphics/Gfx_OpenGL.cpp),
+  // on Windows Direct3D 8 takes its HWND
+#ifdef PLATFORM_WIN32
+  const SDL_WindowFlags ulFlags = SDL_WINDOW_HIDDEN;
+#else
+  const SDL_WindowFlags ulFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
+#endif
+  _pwndMain = SDL_CreateWindow(strTitle, 640, 480, ulFlags);
   if (_pwndMain == NULL) {
     FatalError(TRANS("Cannot open main window!\n%s"), SDL_GetError());
   }

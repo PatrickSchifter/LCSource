@@ -14,6 +14,13 @@
 
 #include <Engine/Base/ListIterator.inl>
 
+// Outside Windows the OpenGL context comes from SDL3 (the main window is an SDL window created
+// with SDL_WINDOW_OPENGL, Platform/PlatformSDL.cpp), in place of WGL: the HWND of a viewport is
+// its SDL_Window and go_hglRC holds the SDL_GLContext.
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>
+#endif
+
 
 // fog/haze textures
 extern ULONG _fog_ulTexture;
@@ -114,6 +121,7 @@ static void FailFunction_t(const char *strName) {
 }
 
 
+#ifdef PLATFORM_WIN32
 static void OGL_SetFunctionPointers_t(HINSTANCE hiOGL)
 {
   const char *strName;
@@ -125,6 +133,38 @@ static void OGL_SetFunctionPointers_t(HINSTANCE hiOGL)
   #include "gl_functions.h"
   #undef DLLFUNCTION
 }
+#else
+// from the OpenGL library SDL loaded (SDL_GL_LoadLibrary)
+static void OGL_SetFunctionPointers_t(void)
+{
+  const char *strName;
+  #define DLLFUNCTION(dll, output, name, inputs, params, required) \
+    strName = #name;  \
+    p##name = (output (__stdcall*) inputs) SDL_GL_GetProcAddress(strName); \
+    if( required && p##name == NULL) FailFunction_t(strName);
+  #include "gl_functions.h"
+  #undef DLLFUNCTION
+}
+
+// what wglGetProcAddress gives on Windows: the extension functions
+static SDL_FunctionPointer pwglGetProcAddress(const char *strName)
+{
+  return SDL_GL_GetProcAddress(strName);
+}
+
+// swap interval of the current context (WGL_EXT_swap_control on Windows)
+static GLboolean SwapInterval_SDL(GLint iInterval)
+{
+  return SDL_GL_SetSwapInterval(iInterval) ? GL_TRUE : GL_FALSE;
+}
+
+static GLint GetSwapInterval_SDL(void)
+{
+  int iInterval = 0;
+  SDL_GL_GetSwapInterval(&iInterval);
+  return iInterval;
+}
+#endif // PLATFORM_WIN32
 
 
 static void OGL_ClearFunctionPointers(void)
@@ -137,6 +177,7 @@ static void OGL_ClearFunctionPointers(void)
 
 
 
+#ifdef PLATFORM_WIN32
 // HELPER: find closest pixels format
 static INDEX FindPixelFormat_OGL( HDC hdc, PIXELFORMATDESCRIPTOR &pfd, INDEX iDepthBits)
 {
@@ -264,6 +305,7 @@ BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
   CPrintF( "\n");
   return TRUE;
 }
+#endif // PLATFORM_WIN32
 
 
 // test if an extension exists
@@ -300,6 +342,7 @@ void CGfxLibrary::TestExtension_OGL( ULONG ulFlag, const char *strName)
 }
 
 
+#ifdef PLATFORM_WIN32
 // creates OpenGL drawing context
 BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
 {
@@ -317,6 +360,68 @@ BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
   }
   return TRUE;
 }
+#else
+// creates the OpenGL context of an SDL window: double buffered RGBA with the depth/stencil
+// combinations FindPixelFormat_OGL() tries on Windows, in the same order (legacy context:
+// OpenGL 2.1 on macOS, the fixed function pipeline the engine uses)
+BOOL CGfxLibrary::CreateContext_OGL(HWND hWnd)
+{
+  extern INDEX gap_iDepthBits;
+       if( gap_iDepthBits<12) gap_iDepthBits = 0;
+  else if( gap_iDepthBits<21) gap_iDepthBits = 16;
+  else if( gap_iDepthBits<28) gap_iDepthBits = 24;
+  else                        gap_iDepthBits = 32;
+  const DisplayDepth dd = gl_dmCurrentDisplayMode.dm_ddDepth;
+  const INDEX iColorBits = (dd!=DISPD_16BIT) ? 32 : 16;
+  const INDEX iDepthBits = (gap_iDepthBits!=0) ? gap_iDepthBits : iColorBits;
+  static const INDEX ai16BitsTable[] = { 16,0, 32,0, 24,0, 24,8 };
+  static const INDEX ai24BitsTable[] = { 24,0, 24,8, 32,0, 16,0 };
+  static const INDEX ai32BitsTable[] = { 32,0, 24,0, 24,8, 16,0 };
+                        const INDEX *piDepthTable = &ai32BitsTable[0];
+       if( iDepthBits<21) piDepthTable = &ai16BitsTable[0];
+  else if( iDepthBits<28) piDepthTable = &ai24BitsTable[0];
+
+  SDL_Window *pwnd = (SDL_Window*)hWnd;
+  SDL_GLContext glctx = NULL;
+  for( INDEX i=0; i<4 && glctx==NULL; i++) {
+    SDL_GL_ResetAttributes();
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute( SDL_GL_RED_SIZE,   iColorBits==16 ? 5 : 8);
+    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, iColorBits==16 ? 6 : 8);
+    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE,  iColorBits==16 ? 5 : 8);
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE,   piDepthTable[i*2+0]);
+    SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, piDepthTable[i*2+1]);
+    glctx = SDL_GL_CreateContext(pwnd);
+  }
+  if( glctx==NULL) {
+    CPrintF( TRANS("Cannot create OpenGL context: %s\n"), SDL_GetError());
+    return FALSE;
+  }
+  go_hglRC = (HGLRC)glctx;
+  // SDL_GL_CreateContext() makes it current; failing that, as on Windows
+  if( !SDL_GL_MakeCurrent( pwnd, glctx)) return FALSE;
+  // only accelerated contexts are created
+  gl_ulFlags |= GLF_HASACCELERATION;
+
+  // report what we got
+  int iRed=0, iGreen=0, iBlue=0, iAlpha=0, iDepth=0, iStencil=0;
+  SDL_GL_GetAttribute( SDL_GL_RED_SIZE,     &iRed);
+  SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE,   &iGreen);
+  SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE,    &iBlue);
+  SDL_GL_GetAttribute( SDL_GL_ALPHA_SIZE,   &iAlpha);
+  SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE,   &iDepth);
+  SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &iStencil);
+  CPrintF( TRANS("\nPixel Format Description:\n"));
+  CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), iRed+iGreen+iBlue+iAlpha, iRed, iGreen, iBlue, iAlpha);
+  CPrintF( TRANS("  Depth bits: %d (%d for stencil)\n"), iDepth, iStencil);
+  CPrintF( "\n");
+  gl_ctDepthBits = iDepth;
+  if( iStencil>0) gl_ulFlags |= GLF_STENCILBUFFER;
+  else gl_ulFlags &= ~GLF_STENCILBUFFER;
+  return TRUE;
+}
+#endif // PLATFORM_WIN32
 
 
 
@@ -407,23 +512,30 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // check for WGL extensions, too
   go_strWinExtensions = "";
+#ifdef PLATFORM_WIN32
   pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))pwglGetProcAddress("wglGetExtensionsStringARB");
   if( pwglGetExtensionsStringARB != NULL) {
     AddExtension_OGL( NONE, "WGL_ARB_extensions_string"); // register
     CTempDC tdc(gl_pvpActive->vp_hWnd);
     go_strWinExtensions = (char*)pwglGetExtensionsStringARB(tdc.hdc);
   }
+#endif // PLATFORM_WIN32
 
   // if full screen and gamma adjustment is supported
   // (3Dfx OpenGL doesn't support gamma adjustment - the way we would like it:)
   gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
   if( !_b3DfxDriver && (gl_ulFlags&GLF_FULLSCREEN)) {
+#ifdef PLATFORM_WIN32
     // store system gamma table
     const HDC hdc = GetDC(NULL);
     const BOOL bHasGamma = GetDeviceGammaRamp( hdc, &_auwSystemGammaTable[0]);
     if( bHasGamma) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
     else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
     ReleaseDC( NULL, hdc);
+#else
+    // SDL3 has no gamma ramps
+    CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
+#endif // PLATFORM_WIN32
   }
 
   // multitexture is supported only thru GL_EXT_texture_env_combine extension
@@ -439,7 +551,7 @@ void CGfxLibrary::InitContext_OGL(void)
       pglActiveTextureARB       = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glActiveTextureARB");
       pglClientActiveTextureARB = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glClientActiveTextureARB");
       ASSERT( pglActiveTextureARB!=NULL && pglClientActiveTextureARB!=NULL);
-      gl_ctTextureUnits = Min( GFX_USETEXUNITS, gl_ctRealTextureUnits);
+      gl_ctTextureUnits = Min( (INDEX)GFX_USETEXUNITS, gl_ctRealTextureUnits);
     } else {
       CPrintF( TRANS("  GL_TEXTURE_ENV_COMBINE extension missing - multi-texturing cannot be used.\n"));
     }
@@ -509,12 +621,18 @@ void CGfxLibrary::InitContext_OGL(void)
   // check support for swap interval
   pwglSwapIntervalEXT    = NULL;
   pwglGetSwapIntervalEXT = NULL;
+#ifdef PLATFORM_WIN32
   if( HasExtension( go_strExtensions, "WGL_EXT_swap_control")) {
     AddExtension_OGL( GLF_VSYNC, "WGL_EXT_swap_control");
     pwglSwapIntervalEXT    = (GLboolean (__stdcall*)(GLint))pwglGetProcAddress( "wglSwapIntervalEXT");
     pwglGetSwapIntervalEXT = (GLint     (__stdcall*)(void) )pwglGetProcAddress( "wglGetSwapIntervalEXT");
     ASSERT( pwglSwapIntervalEXT!=NULL && pwglGetSwapIntervalEXT!=NULL);
   }
+#else
+  AddExtension_OGL( GLF_VSYNC, "SDL_GL_SetSwapInterval");
+  pwglSwapIntervalEXT    = SwapInterval_SDL;
+  pwglGetSwapIntervalEXT = GetSwapInterval_SDL;
+#endif // PLATFORM_WIN32
 
   // determine support for ATI Truform technology
   extern INDEX truform_iLevel;
@@ -642,6 +760,7 @@ void CGfxLibrary::InitContext_OGL(void)
 
 
 // initialize OpenGL driver
+#ifdef PLATFORM_WIN32
 BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
 {
   ASSERT( gl_hiDriver==NONE);
@@ -702,6 +821,28 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
   _b3DfxDriver = b3Dfx;
   return TRUE;
 } 
+#else
+// outside Windows: the system's OpenGL through SDL (there is no 3Dfx driver)
+BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
+{
+  ASSERT( gl_hiDriver==NONE);
+  if( b3Dfx) return FALSE;
+  if( !SDL_GL_LoadLibrary(NULL)) {
+    CPrintF( TRANS("Error starting OpenGL: %s\n"), SDL_GetError());
+    return FALSE;
+  }
+  try {
+    OGL_SetFunctionPointers_t();
+  } catch( char *strError) {
+    OGL_ClearFunctionPointers();
+    SDL_GL_UnloadLibrary();
+    CPrintF( TRANS("Error starting OpenGL: %s\n"), strError);
+    return FALSE;
+  }
+  _b3DfxDriver = FALSE;
+  return TRUE;
+}
+#endif // PLATFORM_WIN32
 
 
 // shutdown OpenGL driver
@@ -716,6 +857,7 @@ void CGfxLibrary::EndDriver_OGL(void)
    _puiOcclusionQueryIDs = NULL;
   }
 
+#ifdef PLATFORM_WIN32
   // restore system gamma table
   if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) {
     const HDC hdc = GetDC(NULL);
@@ -734,6 +876,14 @@ void CGfxLibrary::EndDriver_OGL(void)
     WIN_CHECKERROR( bRes, "DeleteContext");
     go_hglRC = NULL;
   }
+#else
+  if( go_hglRC!=NULL) {
+    SDL_GL_MakeCurrent( SDL_GL_GetCurrentWindow(), NULL);
+    SDL_GL_DestroyContext( (SDL_GLContext)go_hglRC);
+    go_hglRC = NULL;
+  }
+  SDL_GL_UnloadLibrary();
+#endif // PLATFORM_WIN32
 
   // done
   OGL_ClearFunctionPointers();
@@ -752,8 +902,12 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
     pvp->CloseCanvas();
     pvp->OpenCanvas();
     // init now
+#ifdef PLATFORM_WIN32
     CTempDC tdc(pvp->vp_hWnd);
     if( !CreateContext_OGL(tdc.hdc)) return FALSE;
+#else
+    if( !CreateContext_OGL(pvp->vp_hWnd)) return FALSE;
+#endif // PLATFORM_WIN32
     gl_pvpActive = pvp; // remember as current viewport (must do that BEFORE InitContext)
     InitContext_OGL();
     pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
@@ -766,9 +920,11 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
     // reopen window
     pvp->CloseCanvas();
     pvp->OpenCanvas();
+#ifdef PLATFORM_WIN32
     // set it
     CTempDC tdc(pvp->vp_hWnd);
     if( !SetupPixelFormat_OGL(tdc.hdc)) return FALSE;
+#endif // PLATFORM_WIN32 (an SDL window keeps its pixel format)
     pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
   }
 
@@ -781,10 +937,14 @@ BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
   }
 
   // try to set context to this window
+#ifdef PLATFORM_WIN32
   pwglMakeCurrent( NULL, NULL);
   CTempDC tdc(pvp->vp_hWnd);
   // fail, if cannot set context to this window
   if( !pwglMakeCurrent( tdc.hdc, go_hglRC)) return FALSE;
+#else
+  if( !SDL_GL_MakeCurrent( (SDL_Window*)pvp->vp_hWnd, (SDL_GLContext)go_hglRC)) return FALSE;
+#endif // PLATFORM_WIN32
 
   // remember as current window
   gl_pvpActive = pvp;

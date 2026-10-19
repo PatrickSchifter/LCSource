@@ -68,6 +68,7 @@ static void SetAsRenderTarget_D3D( CViewPort *pvp)
 
 // helper for OGL
 
+#ifdef PLATFORM_WIN32
 CTempDC::CTempDC(HWND hWnd)
 {
 	ASSERT(hWnd!=NULL);
@@ -80,6 +81,7 @@ CTempDC::~CTempDC(void)
 {
 	ReleaseDC(hwnd, hdc);
 }
+#endif // PLATFORM_WIN32
 
 
 /*
@@ -113,6 +115,7 @@ CViewPort::~CViewPort(void)
 
 
 
+#ifdef PLATFORM_WIN32
 #define CViewPortCLASS "ViewPort Window"
 static BOOL _bClassRegistered = FALSE;
 
@@ -138,6 +141,7 @@ LRESULT CALLBACK CViewPortCLASS_WindowProc(
 	return _bIMEProc?0:DefWindowProc(hWnd, Msg, wParam, lParam);
 	// 이기환 수정 끝 (11. 15)
 }
+#endif // PLATFORM_WIN32
 
 
 
@@ -182,6 +186,7 @@ void CViewPort::OpenCanvas(void)
 			SetAsRenderTarget_D3D(this);
 #endif // SE1_D3D
 	}
+#ifdef PLATFORM_WIN32
 	else
 	{
 		// do nothing if not feasable
@@ -265,6 +270,7 @@ void CViewPort::OpenCanvas(void)
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL) SetAsRenderTarget_D3D(this);
 #endif // SE1_D3D
 	}
+#endif // PLATFORM_WIN32 (outside Windows only the game, which draws on its main window)
 }
 
 
@@ -289,6 +295,7 @@ void CViewPort::CloseCanvas(void)
 #endif // SE1_D3D
 	// destroy window
 	//	김영환 : 클라이언트용이 아닌 경우만.(툴에서 사용하는 경우)
+#ifdef PLATFORM_WIN32
 	if(_bClientApp == FALSE)
 	{
 		if( vp_hWnd!=NULL && IsWindow(vp_hWnd)) 
@@ -297,6 +304,7 @@ void CViewPort::CloseCanvas(void)
 			ASSERT(bRes);
 		}
 	}
+#endif // PLATFORM_WIN32
 	// mark
 	vp_hWnd = NULL;
 }
@@ -309,10 +317,10 @@ void CViewPort::Resize(void)
 	RECT rectWindow;
 
 	//강동민 수정 시작 시스템 마우스 작업	09.09
+#ifdef SE1_D3D  // both live in Rendering/RenderBloom.cpp
 	extern BOOL _bFirst;
 	if(!_bFirst)				_bFirst = TRUE;
 
-#ifdef SE1_D3D
 	extern INDEX d3d_bDeviceChanged;
 	if(!d3d_bDeviceChanged)		d3d_bDeviceChanged = TRUE;
 #endif // SE1_D3D
@@ -329,11 +337,13 @@ void CViewPort::Resize(void)
 
 	// resize child window
 	//	김영환 : 크기조절 안함.
+#ifdef PLATFORM_WIN32
 	if(_bClientApp == FALSE)
 	{
 		ASSERT( vp_hWnd!=NULL);
 		SetWindowPos( vp_hWnd, NULL, 0,0, pixNewWidth, pixNewHeight, SWP_NOZORDER|SWP_NOMOVE);
 	}
+#endif // PLATFORM_WIN32
 
 	// resize the raster
 	vp_Raster.Resize( pixNewWidth, pixNewHeight);
