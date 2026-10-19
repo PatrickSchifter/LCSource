@@ -16,7 +16,6 @@
 #include <Engine/Graphics/ViewPort.h>
 #include <Engine/Graphics/Font.h>
 #include <Engine/Interface/UITextureManager.h>		// yjpark
-#include <Engine/Interface/UICommon.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/StaticStackArray.cpp>
@@ -2041,17 +2040,9 @@ void CDrawPort::PutTextEx( const CTString &strText, PIX pixX0, PIX pixY0, const 
 	case FONT_FRANCE:
 	case FONT_POLAND:
 	case FONT_TURKEY:
-	case FONT_MEXICO:
-	case FONT_ITALY:
-	case FONT_USA_FRANCE:
-	case FONT_USA_SPAIN:
-	case FONT_NETHERLANDS:
 		PutTextExBrz( strText, pixX0, pixY0, colBlend, fZ, bShadow, colShadow );
 		break;
 		
-	case FONT_RUSSIAN:
-		PutTextExRus( strText, pixX0, pixY0, colBlend, fZ, bShadow, colShadow );
-		break;
 	}
 }
 
@@ -2085,17 +2076,9 @@ void CDrawPort::PutTextCharEx( const char *pText, int nLength, PIX pixX0, PIX pi
 	case FONT_FRANCE:
 	case FONT_POLAND:
 	case FONT_TURKEY:
-	case FONT_MEXICO:
-	case FONT_ITALY:
-	case FONT_USA_FRANCE:
-	case FONT_USA_SPAIN:
-	case FONT_NETHERLANDS:
 		PutTextCharExBrz( pText, nLength, pixX0, pixY0, colBlend, fZ, bShadow, colShadow );
 		break;
 		
-	case FONT_RUSSIAN:
-		PutTextCharExRus( pText, nLength, pixX0, pixY0, colBlend, fZ, bShadow, colShadow );
-		break;
 	}
 }
 
@@ -4802,7 +4785,7 @@ void CDrawPort::AddBtnTexture( const int nTexID, const FLOAT fI0, const FLOAT fJ
 
 void CDrawPort::FlushBtnRenderingQueue( int nBtnType, const ULONG ulPBT )
 {
-	if(nBtnType == UBET_GUILD_MARK || nBtnType >= UBET_TYPE_MAX)
+	if(nBtnType >= UBET_TYPE_TOTAL)	// (2009 has no guild mark buttons)
 		return;
 
 	// Check API

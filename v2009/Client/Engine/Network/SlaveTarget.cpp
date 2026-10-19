@@ -106,7 +106,7 @@ CSlaveTarget &CSlaveTarget::operator=(const CSlaveTarget &other)
 
 void CSlaveTarget::RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
-	for( int iBuff = 0; iBuff < slave_BuffCount; iBuff++ )
+	int iBuff = 0; for( ; iBuff < slave_BuffCount; iBuff++ )
 	{
 		if( slave_Buff[iBuff].m_slItemIndex == slItemIndex &&
 			slave_Buff[iBuff].m_slSkillIndex == slSkillIndex )

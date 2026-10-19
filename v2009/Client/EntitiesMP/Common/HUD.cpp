@@ -759,7 +759,7 @@ static void HUD_DrawEntityStack()
       _pDP->SetTextScaling( 1.0f);
     
       INDEX ctStates = DBG_prenStackOutputEntity->en_stslStateStack.Count();
-      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", DBG_prenStackOutputEntity->GetName(),
+      strTemp.PrintF("-- stack of '%s'(%s)@%gs\n", (const char*)DBG_prenStackOutputEntity->GetName(),
         DBG_prenStackOutputEntity->en_pecClass->ec_pdecDLLClass->dec_strName,
         _pTimer->CurrentTick());
       _pDP->PutText( strTemp, 1, pixTextBottom-pixFontHeight*(ctStates+1), _colHUD|_ulAlphaHUD);

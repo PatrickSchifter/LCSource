@@ -692,7 +692,7 @@ public:
 	SkillAnimationID	_SkillAnimID[300];//우선 스킬 300개만 하자.
 */
 	void SendLoginMessage(CTString& strID, CTString& strPW, ULONG ulVersion);
-	void SendSecurityMessage(CTString& strSecurity);							//070901_ttos: 보안카드 UI
+	void SendSecurityMessage(const CTString& strSecurity);							//070901_ttos: 보안카드 UI
 	void SendDeleteCharacter(ULONG ulIndex, BYTE del = FALSE);
 	void SendDeleteCharacter(ULONG ulIndex, CTString& strSecuNum, BYTE del);
 	void SendGameStart(ULONG ulIndex);
@@ -1086,7 +1086,7 @@ public:
 	void SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle);
 
 	// 0 = SYSMSG_NORMAL
-	void ClientSystemMessage( CTString &strSysMessage, int nSysType = 0 );
+	void ClientSystemMessage( const CTString &strSysMessage, int nSysType = 0 );
 	void SendRebirthMessage();
 	void DeleteAllMob();
 	

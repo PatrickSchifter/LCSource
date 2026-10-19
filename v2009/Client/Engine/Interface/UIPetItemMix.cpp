@@ -847,7 +847,7 @@ void CUIPetItemMix::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -889,7 +889,7 @@ void CUIPetItemMix::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1063,7 +1063,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 	BOOL bNeedItemB			= FALSE;	
 	BOOL bNeedItemCount		= FALSE;
 	BOOL bNeedItems[6];
-	for( int i=0; i<6; i++ )
+	int i=0; for( ; i<6; i++ )
 		bNeedItems[i] = FALSE;
 		
 	m_lbPreconditionDesc.ResetAllStrings();
@@ -1081,7 +1081,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 	//필요 아이템 종류와 갯수 얻기 
 	if( m_nPetType == DRAGON_WEAPON )
 	{
-		for( int i=0; i<3; i++ )
+		int i=0; for( ; i<3; i++ )
 		{
 			nIndexTemp = ProcessItemData.GetNeedItemIndex( i );
 
@@ -1099,7 +1099,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 				{
 					InvenItem = _pNetwork->MySlotItem[nTab][nRow][nCol].ItemData;
 					
-					for( int nCnt = 0; nCnt < 3; nCnt++ )
+					int nCnt = 0; for( ; nCnt < 3; nCnt++ )
 					{
 						if ( InvenItem.GetItemIndex() == m_NeedItems[nCnt].ItemData.GetItemIndex() )
 						{
@@ -1123,7 +1123,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 	{
 		int nJob = _pNetwork->MyCharacterInfo.job;
 
-		for( int i=0; i<3; i++ )
+		int i=0; for( ; i<3; i++ )
 		{
 			m_NeedItems[i].ItemData = _pNetwork->GetItemData( m_NStuffKnight[_nIndex].nNeedA[i] );
 			m_NeedItems[i].llCount	= 1; 
@@ -1142,7 +1142,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 				{
 					InvenItem = _pNetwork->MySlotItem[nTab][nRow][nCol].ItemData;
 					
-					for( int nCnt = 0; nCnt < 3; nCnt++ )
+					int nCnt = 0; for( ; nCnt < 3; nCnt++ )
 					{
 						if ( InvenItem.GetItemIndex() == m_NeedItems[nCnt].ItemData.GetItemIndex() )
 						{
@@ -1191,10 +1191,10 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 		strTitle = strTitle + "(" + strJobNames[_nIndex/2] + ")";
 		AddString ( strTitle, COLOR_SUB_TITLE ); 
 
-		for( int i=0; i<3; i++ )
+		int i=0; for( ; i<3; i++ )
 		{
 			const char* szItemName = m_NeedItems[i].ItemData.GetName();
-			strTitle.PrintF ( _S( 576, "%s : %d개" ), strSpace + szItemName, m_NeedItems[i].llCount );
+			strTitle.PrintF ( _S( 576, "%s : %d개" ), (const char*)(strSpace + szItemName), m_NeedItems[i].llCount );
 
 			AddString ( strTitle, bNeedItems[i]? COLOR_TEXT : COLOR_NONE );
 		}
@@ -1206,10 +1206,10 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 	{
 		AddString ( _S( 2463, "필요 재료A" ), COLOR_SUB_TITLE );
 
-		for( int i=0; i<3; i++ )
+		int i=0; for( ; i<3; i++ )
 		{
 			const char* szItemName = m_NeedItems[i].ItemData.GetName();
-			strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName, m_NeedItems[i].llCount );
+			strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName), m_NeedItems[i].llCount );
 
 			AddString ( strTitle, bNeedItems[i]? COLOR_TEXT : COLOR_NONE );
 		}
@@ -1219,7 +1219,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 		for( i=0; i<3; i++ )
 		{
 			const char* szItemName = m_NeedItems[i+3].ItemData.GetName();
-			strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName, m_NeedItems[i+3].llCount );
+			strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName), m_NeedItems[i+3].llCount );
 
 			AddString ( strTitle, bNeedItems[i+3]? COLOR_TEXT : COLOR_NONE );
 		}
@@ -1238,7 +1238,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIPetItemMix::AddString ( CTString& strText, COLOR colText )
+void CUIPetItemMix::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 
@@ -1260,7 +1260,7 @@ void CUIPetItemMix::AddString ( CTString& strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

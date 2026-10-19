@@ -36,7 +36,7 @@
 %{
 
 #define ANYEXCEPTION  ...
-template CStaticStackArray<CBrushPolygon*>;
+template class CStaticStackArray<CBrushPolygon*>;
 
 #define MAXCOLLISIONRETRIES 4*4
 extern FLOAT phy_fCollisionCacheAhead;

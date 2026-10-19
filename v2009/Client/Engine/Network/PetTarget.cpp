@@ -186,7 +186,7 @@ CWildPetInfo::CWildPetInfo()
 	m_nNetIndex = -1;
 	pet_iClientIndex = -1;
 	pet_pEntity = NULL;
-	for(int i = 0; i < STATE_END; i++)
+	int i = 0; for( ; i < STATE_END; i++)
 	{m_nWildPetState[i] = -1;}
 
 	for(i = 0; i < WILDPET_WEAR_TOTAL; i++)
@@ -300,7 +300,7 @@ void CWildPetInfo::Init()
 	pet_iClientIndex = -1;
 	pet_pEntity = NULL;
 	
-	for(int i = 0; i < STATE_END; i++)
+	int i = 0; for( ; i < STATE_END; i++)
 	{m_nWildPetState[i] = -1;}
 
 	for(i = 0; i < WILDPET_WEAR_TOTAL; i++)

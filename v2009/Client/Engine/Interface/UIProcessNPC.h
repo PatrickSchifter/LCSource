@@ -5,7 +5,7 @@
 // ----------------------------------------------------------------------------
 
 #ifndef	UIProcessNPC_H_
-#define	UIProcessNPC_H
+#define	UIProcessNPC_H_
 #ifdef	PRAGMA_ONCE 
 #pragma once
 #endif
@@ -158,7 +158,7 @@ public:
 	void	RenderItemInfo ();
 	// etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
+	void	AddString ( const CTString &strText, COLOR colText = 0xffffffff );
 
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxLCommand( int nCommandCode, int nResult );

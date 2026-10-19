@@ -25,7 +25,7 @@ BOOL MemBanChar(CTString& strInput)
 			findIndex=strInput.FindSubstr(tv_str);
 			if(findIndex!=-1) 
 			{
-				strTempMemo.PrintF(("[ %s ]"),tv_str);	// 창을 띄우지 않고 금지 문자를 삭제하여 
+				strTempMemo.PrintF(("[ %s ]"),(const char*)tv_str);	// 창을 띄우지 않고 금지 문자를 삭제하여 
 				return TRUE;								// 처리할 때 이 두 라인을 지운다
 				strInput.DeleteChar(findIndex);
 			}
@@ -294,9 +294,9 @@ void CUITeleport::OpenMemorizeMsgBox()
 		return;
 
 	CTString	strZone, strCoord;
-	strZone.PrintF( "%-8s: %s", _S( 291, "존" ),
-								ZoneInfo().GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
-	strCoord.PrintF( "%-8s: %d,%d", _S( 292, "좌표" ),
+	strZone.PrintF( "%-8s: %s", (const char*)(_S( 291, "존" )),
+								(const char*)(ZoneInfo().GetZoneName( _pNetwork->MyCharacterInfo.zoneNo )) );
+	strCoord.PrintF( "%-8s: %d,%d", (const char*)(_S( 292, "좌표" )),
 										(int)_pNetwork->MyCharacterInfo.x, (int)_pNetwork->MyCharacterInfo.z );
 
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -657,7 +657,7 @@ void CUITeleport::ClearTeleportList()
 {
 	m_sbSelection = -1;
 
-	for( int i = 0; i < TELEPORT_PRIMIUM_MAX_MEMO; i++ )
+	int i = 0; for( ; i < TELEPORT_PRIMIUM_MAX_MEMO; i++ )
 	{
 		m_nZoneNum[i] = -1;
 	}
@@ -785,7 +785,7 @@ void CUITeleport::SendTeleportMove()
 // Name : SetTeleportInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment )
+void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment )
 {
 	m_nZoneNum[ubSlot] = slZone;
 	m_strZone[ubSlot] = ZoneInfo().GetZoneName( slZone );
@@ -848,9 +848,9 @@ void CUITeleportPrimium::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidt
 	// [KH_070315] page Buttons
 	CTString strPage;
 
-	for(INDEX i = 0; i < TELEPORT_PAGE_MAX; i++)
+	INDEX i = 0; for( ; i < TELEPORT_PAGE_MAX; i++)
 	{
-		strPage.PrintF("%d%s", i + 1, _S(3076, "페이지"));
+		strPage.PrintF("%d%s", i + 1, (const char*)_S(3076, "페이지"));
 		m_btnPage[i].Create(this, strPage, 159 + 66 * i, 27, 63, 21);
 		m_btnPage[i].SetUV(UBS_IDLE, 0, 164, 63, 185, fTexWidth, fTexHeight);
 		m_btnPage[i].SetUV(UBS_CLICK, 66, 164, 129, 185, fTexWidth, fTexHeight);
@@ -960,7 +960,7 @@ void CUITeleportPrimium::Render()
 											0xFFFFFFFF);
 	}
 
-	for(INDEX i = 0; i < TELEPORT_PAGE_MAX; i++)
+	INDEX i = 0; for( ; i < TELEPORT_PAGE_MAX; i++)
 		m_btnPage[i].Render();
 
 	// Close button

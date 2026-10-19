@@ -318,7 +318,7 @@ void CUIQuiz::ResetQuiz()
 //-----------------------------------------------------------------------------
 void CUIQuiz::ClearItems()
 {
-	for(int i = 0; i < QUIZ_QUIZ_SLOT_TOTAL; i++)
+	int i = 0; for( ; i < QUIZ_QUIZ_SLOT_TOTAL; i++)
 		m_abtnQuizItems[i].InitBtn();			
 
 	for(i = 0; i < QUIZ_USER_SLOT_ROW_TOTAL; i++)
@@ -363,7 +363,7 @@ void CUIQuiz::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -405,7 +405,7 @@ void CUIQuiz::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -519,7 +519,7 @@ BOOL CUIQuiz::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 		CTString	strCount;
 		strCount.PrintF( "%I64d", llCount );
 		_pUIMgr->InsertCommaToString( strCount );		
-		strTemp.PrintF( "%s(%s)", szItemName, strCount );
+		strTemp.PrintF( "%s(%s)", szItemName, (const char*)strCount );
 	}
 	else
 	{
@@ -532,7 +532,7 @@ BOOL CUIQuiz::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 				CTString	strCount;
 				strCount.PrintF( "%I64d", llCount );
 				_pUIMgr->InsertCommaToString( strCount );
-				strTemp.PrintF( "%s(%s)", szItemName, strCount );
+				strTemp.PrintF( "%s(%s)", szItemName, (const char*)strCount );
 			}
 			else
 			{
@@ -1425,7 +1425,7 @@ WMSG_RESULT CUIQuiz::MouseMessage( MSG *pMsg )
 					m_nSelQuizItemID = -1;
 					m_nSelUserItemID = -1;
 
-					for( int iItem = 0; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
+					int iItem = 0; for( ; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
 					{
 						if( m_abtnQuizItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
@@ -1530,7 +1530,7 @@ WMSG_RESULT CUIQuiz::MouseMessage( MSG *pMsg )
 				// Trade items
 				else if( IsInsideRect( nX, nY, m_rcBottom ) )
 				{
-					for( int iItem = 0; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
+					int iItem = 0; for( ; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
 					{
 						if( m_abtnQuizItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
@@ -1610,7 +1610,7 @@ WMSG_RESULT CUIQuiz::MouseMessage( MSG *pMsg )
 					int	nTradeItemID = m_nSelQuizItemID;
 					m_nSelQuizItemID = -1;
 
-					for( int iItem = 0; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
+					int iItem = 0; for( ; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
 					{
 						if( m_abtnQuizItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
@@ -1751,7 +1751,7 @@ void CUIQuiz::DelQuizItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int
 void CUIQuiz::SendBingo()
 {
 	LONG lItemCount = 0;
-	for( int iItem = 0; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
+	int iItem = 0; for( ; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
 	{
 		if( m_abtnQuizItems[iItem].IsEmpty() )
 			continue;
@@ -1798,7 +1798,7 @@ void CUIQuiz::UserToQuiz( SQUAD llCount )
 	}
 
 	// Find same item in trade slot
-	for( int iItem = 0; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
+	int iItem = 0; for( ; iItem < QUIZ_QUIZ_SLOT_TOTAL; iItem++ )
 	{
 		if( m_abtnQuizItems[iItem].GetItemIndex() == nTempIndex )
 			break;

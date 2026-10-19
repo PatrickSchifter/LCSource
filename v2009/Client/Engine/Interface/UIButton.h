@@ -48,7 +48,7 @@ public:
 	~CUIButton();
 
 	// Create
-	void	Create( CUIWindow *pParentWnd, CTString &strText, int nX, int nY, int nWidth, int nHeight );
+	void	Create( CUIWindow *pParentWnd, const CTString &strText, int nX, int nY, int nWidth, int nHeight );
 
 	// Render
 	// [090709: selo] Render() 함수에 텍스쳐 색상을 지정할 수 있게 함
@@ -56,7 +56,7 @@ public:
 	void	RenderHighlight( const COLOR colHighlight );
 
 	// Text
-	int		SetText( CTString &strText, BOOL bVerticality = FALSE );
+	int		SetText( const CTString &strText, BOOL bVerticality = FALSE );
 	inline CTString	GetText() {return m_strText;}	// WSS_NEW_GUILD_SYSTEM 070721 
 
 	// Color

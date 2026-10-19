@@ -176,7 +176,7 @@ int CMobData::LoadNPCDataFromFile(CStaticArray<CMobData> &apMobData, const char*
 		}
 
 		std::vector<float> tempvec;
-		for(int a=0; a<NpcData.fireDelayCount; ++a)
+		int a=0; for( ; a<NpcData.fireDelayCount; ++a)
 		{
 			tempvec.push_back(NpcData.client_fireobjDelay[a]);
 		}

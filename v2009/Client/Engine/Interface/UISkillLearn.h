@@ -184,7 +184,7 @@ protected:
 	void	InitSkillLearn( BOOL  bSpecial );
 	void	RenderSkillBtns();
 	void	GetSkillDesc( int nIndex, int nLevel = 0, BOOL bSpecial = FALSE );
-	void	AddSkillDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddSkillDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 	void	CloseSkillLearn();
 
 	// Network message functions ( send )

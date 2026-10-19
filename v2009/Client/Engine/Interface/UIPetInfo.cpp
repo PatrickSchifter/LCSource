@@ -188,7 +188,7 @@ void CUIPetInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_lbPetDesc.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 
 	// Active skill buttons
-	for( int iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
+	int iRow = 0; for( ; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
 	{
 		m_btnCommands[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETINFO,
 											UBET_SKILL, 0, iRow );
@@ -389,7 +389,7 @@ void CUIPetInfo::GetPetDesc( )
 			m_lbPetDesc.AddString( 1, (*iter).strNameCard, 0xffe3a8ff );				
 		}
 
-		strTemp.PrintF( "%s", PetInfo().GetName(_pNetwork->_PetTargetInfo.iType, _pNetwork->_PetTargetInfo.iAge) );
+		strTemp.PrintF( "%s", (const char*)PetInfo().GetName(_pNetwork->_PetTargetInfo.iType, _pNetwork->_PetTargetInfo.iAge) );
 		m_lbPetDesc.AddString( 0, strTemp );	
 
 		strTemp.PrintF( _S(2176,"%d 레벨"), (*iter).lLevel );	
@@ -672,7 +672,7 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 
 					iter = iterBegin;
 					int nIconPos = m_sbCommandIcon.GetScrollPos();
-					for( int nCount = 0; nCount < nIconPos; iter++, nCount++ );
+					int nCount = 0; for( ; nCount < nIconPos; iter++, nCount++ );
 						
 					bool bShowToolTip = false;
 					// Render 
@@ -726,7 +726,7 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 
 					iter = iterBegin;
 					int nIconPos = m_sbCommandIcon.GetScrollPos();
-					for( int nCount = 0; nCount < nIconPos; iter++, nCount++ );
+					int nCount = 0; for( ; nCount < nIconPos; iter++, nCount++ );
 						
 					bool bShowToolTip = false;
 					// Render 
@@ -1506,7 +1506,7 @@ BOOL CUIPetInfo::GetPetExchangeInfo( int nPetIndex, SPetExchangeInfoString& strP
 	}
 
 	if( TempPet.strNameCard.Length() >0 )
-		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), _S(3526, "명찰"), TempPet.strNameCard);
+		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), (const char*)_S(3526, "명찰"), (const char*)TempPet.strNameCard);
 	strPetExchangeInfo.strLevel.PrintF( _S(2254 , "레벨 : %d"), TempPet.lLevel );
 	strPetExchangeInfo.strHP.PrintF( _S(2255,"생명력 : %d/%d"), TempPet.lHP, TempPet.lMaxHP );
 	strPetExchangeInfo.strlExp.PrintF( _S(2256,"경험치 : %I64d/%I64d"), TempPet.llExp, TempPet.llNeedExp );

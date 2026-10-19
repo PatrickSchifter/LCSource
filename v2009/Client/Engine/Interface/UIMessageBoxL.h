@@ -95,8 +95,8 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	void	CreateMessageBox( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY );
-	void	AddDescString( CTString &strMessage, const COLOR colDesc );
+	void	CreateMessageBox( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY );
+	void	AddDescString( const CTString &strMessage, const COLOR colDesc );
 	void	AddSelString( CTString &strMessage, const COLOR colSel, int iValue = -1 );
 	void	InitMessageBox();
 	void	SetUIIndex( int nUIIndex ) { m_nUIIndex = nUIIndex; }

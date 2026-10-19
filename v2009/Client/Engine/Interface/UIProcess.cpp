@@ -722,7 +722,7 @@ void CUIProcess::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -764,7 +764,7 @@ void CUIProcess::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1029,7 +1029,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 	
 	bNeedItem &= bNeedItemCount;
 	const char* szItemName = _pNetwork->GetItemName( m_NeedItems[0].ItemData.GetItemIndex() );
-	strTitle.PrintF ( _S( 576, "%s : %d°³ " ), strSpace + szItemName, m_NeedItems[0].llCount );
+	strTitle.PrintF ( _S( 576, "%s : %d°³ " ), (const char*)(strSpace + szItemName), m_NeedItems[0].llCount );
 
 	AddString ( strTitle, bNeedItem? COLOR_TEXT : COLOR_NONE );
 	m_bSatisfied &= bNeedItem;
@@ -1042,7 +1042,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProcess::AddString ( CTString& strText, COLOR colText )
+void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 
@@ -1064,7 +1064,7 @@ void CUIProcess::AddString ( CTString& strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

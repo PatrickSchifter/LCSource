@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Base/ProgressHook.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,7 +38,6 @@
 #include <Engine/Templates/Stock_CEntityClass.h>
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/Stock_CAnimData.h>
-#include <Loading.h>
 
 // default size of page used for stream IO operations (4Kb)
 ULONG _ulPageSize = 0;

@@ -1048,7 +1048,7 @@ void CUICreateChar::AddCharInfoString( CTString &strCharInfo, COLOR colCharInfo 
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strCharInfo[iPos] == '\n' || strCharInfo[iPos] == '\r' )
 					break;	
@@ -1082,7 +1082,7 @@ void CUICreateChar::AddCharInfoString( CTString &strCharInfo, COLOR colCharInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxCharInfoChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strCharInfo,0,iPos))
 					break;
@@ -1142,7 +1142,7 @@ void CUICreateChar::AddCharInfoString( CTString &strCharInfo, COLOR colCharInfo 
 		if( nLength < _iMaxCharInfoChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strCharInfo[iPos] == '\n' || strCharInfo[iPos] == '\r' )
 					break;	
@@ -1176,7 +1176,7 @@ void CUICreateChar::AddCharInfoString( CTString &strCharInfo, COLOR colCharInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxCharInfoChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strCharInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

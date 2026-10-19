@@ -398,7 +398,7 @@ void CUITalk::Render()
 	// 타이틀 바 ( 상대방의 대화명 추가  ~ ) : 다중 대화시에는 0번 대화상대만
 	CTString strTitle;
 	//strTitle.PrintF( "%s - %s", m_miTarget.m_strName, m_strTitle );	===>
-	strTitle.PrintF( "%s", m_strTitle );		//타이틀만...
+	strTitle.PrintF( "%s", (const char*)m_strTitle );		//타이틀만...
 	
 	_pUIMgr->GetDrawPort()->PutTextEx( strTitle, nX + TALK_TITLE_SX, nY + TALK_TITLE_SY );
 
@@ -929,7 +929,7 @@ void CUITalk::ReloadTalkList()
 // Explain:  
 // Date : 2005-05-25,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUITalk::AddErrorTalk( CTString &strDesc, COLOR colDesc )
+void CUITalk::AddErrorTalk( const CTString &strDesc, COLOR colDesc )
 {
 	AddTalkListString( "", strDesc, false, colDesc );
 }
@@ -959,7 +959,7 @@ void CUITalk::AddTalkListString( CTString &strDesc, COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -992,7 +992,7 @@ void CUITalk::AddTalkListString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -1053,7 +1053,7 @@ void CUITalk::AddTalkListString( CTString &strDesc, COLOR colDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -1086,7 +1086,7 @@ void CUITalk::AddTalkListString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1203,7 +1203,7 @@ void CUITalk::AddTalkTarget( CTString strName)
 		if( strName != _pUIMgr->GetMessenger()->GetMyInfo().m_strName)
 		{
 			CTString strMessage;
-			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), strName );
+			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), (const char*)strName );
 			AddErrorTalk( strMessage ); 
 		}
 	}
@@ -1231,7 +1231,7 @@ void CUITalk::DeleteTalkTarget(CTString strName)
 		return;
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (*iter) );
+	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (const char*)(*iter) );
 	AddErrorTalk( strMessage ); 
 
 	m_vecTarget.erase(iter);

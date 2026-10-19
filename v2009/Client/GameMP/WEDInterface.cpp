@@ -67,6 +67,7 @@ void UpdatePauseState(void)
 //-----------------------------------------------------------------------------
 void CGame::QuickTest(const CTFileName &fnMapName, CDrawPort *pdp, CViewPort *pvp)
 {
+#ifdef PLATFORM_WIN32  // only the World Editor (a Windows tool) calls it
 	UINT uiMessengerMsg = RegisterWindowMessage("Croteam Messenger: Incoming Message");
 	EnableLoadingHook(pdp);
 

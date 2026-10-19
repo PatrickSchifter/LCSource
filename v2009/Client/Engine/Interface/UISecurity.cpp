@@ -181,7 +181,7 @@ void CUISecurity::GetSecurityDesc( BOOL bShow )
 // Name : AddSecurityDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
+void CUISecurity::AddSecurityDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();
@@ -199,7 +199,7 @@ void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -232,7 +232,7 @@ void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_SECURITY_DESC_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -292,7 +292,7 @@ void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
 		if( nLength <= MAX_SECURITY_DESC_CHAR )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -325,7 +325,7 @@ void CUISecurity::AddSecurityDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_SECURITY_DESC_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

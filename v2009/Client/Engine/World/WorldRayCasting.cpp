@@ -113,17 +113,16 @@ void CCastRay::ClearSectorList(void)
 	//loop unrolling, 효과는 미지수.
 	INDEX cnt = _aas.Count();
 	INDEX cnt16 = cnt & 0xFFFFFFF0;
-	INDEX ias;
-#define INNER_LOOP {_aas[ias++].as_pbsc->bsc_ulFlags&=~BSCF_RAYTESTED;}
+#define INNER_LOOP {_aas[ias++].as_pbsc->bsc_ulFlags&=~BSCF_RAYTESTED;} 0
 	// mark it as inactive
-	for( ias=0; ias<cnt16;)
+	INDEX ias=0; for( ; ias<cnt16;)
 	{
 		INNER_LOOP; INNER_LOOP; INNER_LOOP; INNER_LOOP;
 		INNER_LOOP; INNER_LOOP; INNER_LOOP; INNER_LOOP;
 		INNER_LOOP; INNER_LOOP; INNER_LOOP; INNER_LOOP;
 		INNER_LOOP; INNER_LOOP; INNER_LOOP; INNER_LOOP;
 	}
-	for( ias = cnt16; ias < cnt; )
+	for(ias=cnt16; ias<cnt;)
 	{
 		INNER_LOOP;
 	}
@@ -304,9 +303,9 @@ void CCastRay::TestSkaModel(CEntity *penModel)
 				return;
 			}
 		}
-	case 1: // 소환수 및 펫 (토템, 몬스터 용병 추가)
+	case 1: // 소환수 및 펫 
 		{
-			if (penModel->IsSlave() || penModel->IsPet() || penModel->IsWildPet() || penModel->GetFirstExFlags()&ENF_EX1_TOTEM || penModel->GetFirstExFlags()&ENF_EX1_MONSTER_MERCENARY)
+			if (penModel->IsSlave() || penModel->IsSlave() || penModel->IsWildPet())
 			{
 				return;
 			}
@@ -460,23 +459,19 @@ void CCastRay::TestBrushSector(CBrushSector *pbscSector)
 		if (cr_penOrigin==NULL) {
 			// if the polygon is portal
 			if (ulFlags&BPOF_PORTAL) {
-				extern BOOL _bShowPortalPolygon;
-
 				// if it is translucent or selected
 				if (ulFlags&(BPOF_TRANSLUCENT|BPOF_TRANSPARENT|BPOF_SELECTED)) {
 					// if translucent portals should be passed through
 					if (!cr_bHitTranslucentPortals) {
 						// skip this polygon
-						if( !_bShowPortalPolygon )
-							continue;
+						continue;
 					}
 				// if it is not translucent
 				} else {
 					 // if portals should be passed through
 					if (!cr_bHitPortals) {
 						// skip this polygon
-						if( !_bShowPortalPolygon )
-							continue;
+						continue;
 					}
 				}
 			}

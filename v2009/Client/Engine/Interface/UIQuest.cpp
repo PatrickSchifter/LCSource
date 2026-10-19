@@ -1125,7 +1125,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 				_pUIMgr->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );				
 				strMessage = _S(3567, "색종이를 가지고 오시면 재미있는 종이 접기를 가르쳐 드리겠습니다." );
 				_pUIMgr->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
-				strMessage.PrintF(" %s", _S(3565, "※ 이벤트 기간 : 2007년 7월 10일(화) ~ 8월 24일(화)") );
+				strMessage.PrintF(" %s", (const char*)(_S(3565, "※ 이벤트 기간 : 2007년 7월 10일(화) ~ 8월 24일(화)")) );
 				_pUIMgr->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
 				strMessage = _S(3568, "※ 색종이는 종이 접기 후 소비되며, 이벤트기간 종류 후 한달 간 사용가능합니다." );
 				_pUIMgr->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
@@ -1701,9 +1701,9 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 				}
 
 				CTString strMessageA, strMessageB, strMessageC;
-				strMessageA.PrintF( _S( 2808, "현재 골든볼 이벤트는 %s VS %s 의 축구 경기 입니다." ), m_strTeamA, m_strTeamB );
-				strMessageB.PrintF( _S( 2809, "%s VS %s 골든 볼 응모" ), m_strTeamA, m_strTeamB );
-				strMessageC.PrintF( _S( 2810, "%s VS %s 골든 볼 보상" ), m_strTeamA, m_strTeamB );
+				strMessageA.PrintF( _S( 2808, "현재 골든볼 이벤트는 %s VS %s 의 축구 경기 입니다." ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+				strMessageB.PrintF( _S( 2809, "%s VS %s 골든 볼 응모" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+				strMessageC.PrintF( _S( 2810, "%s VS %s 골든 볼 보상" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
 
 				_pUIMgr->CreateMessageBoxL( _S( 169, "이벤트" ), UI_QUEST, MSGCMD_WORLDCUP_GOLDENBALL );
 				_pUIMgr->AddMessageBoxLString( MSGCMD_WORLDCUP_GOLDENBALL, TRUE, strMessageA );
@@ -1714,7 +1714,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 				if( m_bGoldenBallRequital ) // 골든볼 보상중이라면
 				{// 경기결과를 표시
 					strMessageA.PrintF( _S( 2791, "%s VS %s 축구경기의 결과는 %d : %d 입니다." ),
-						_pUIMgr->GetQuest()->GetStrTeamA(), _pUIMgr->GetQuest()->GetStrTeamB(),
+						(const char*)(_pUIMgr->GetQuest()->GetStrTeamA()), (const char*)(_pUIMgr->GetQuest()->GetStrTeamB()),
 						_pUIMgr->GetQuest()->GetScoreTeamA(), _pUIMgr->GetQuest()->GetScoreTeamB() );
 
 					_pUIMgr->AddMessageBoxLString( MSGCMD_WORLDCUP_GOLDENBALL, TRUE, strMessageA, 0x6BD2FFFF );
@@ -2406,8 +2406,8 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 					}
 					
 					CTString strMessageA, strMessageB;
-					strMessageA.PrintF( _S( 2832, "%s VS %s 경기\n\n승리국가와 점수를 예상하여 입력해 주세요\n\n" ), m_strTeamA, m_strTeamB );
-					strMessageB.PrintF( _S( 2833, "%-5s점수     %-5s점수" ), m_strTeamA, m_strTeamB );
+					strMessageA.PrintF( _S( 2832, "%s VS %s 경기\n\n승리국가와 점수를 예상하여 입력해 주세요\n\n" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+					strMessageB.PrintF( _S( 2833, "%-5s점수     %-5s점수" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
 
 					strMessageA += strMessageB;
 
@@ -3074,7 +3074,7 @@ void CUIQuest::AddQuestInfoString( CTString &strQuestInfo, COLOR colQuestInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strQuestInfo,0,iPos))
 					break;
@@ -3116,7 +3116,7 @@ void CUIQuest::AddQuestInfoString( CTString &strQuestInfo, COLOR colQuestInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strQuestInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -3276,7 +3276,7 @@ void CUIQuest::AddQuestDescString( CTString &strDesc, const COLOR colDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -3309,7 +3309,7 @@ void CUIQuest::AddQuestDescString( CTString &strDesc, const COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -3395,7 +3395,7 @@ void CUIQuest::GetQuestDesc( BOOL bFullDesc, int nQuestIndex, SBYTE sbFlag )
 			{
 				AddQuestDescString( pQuestDD->GetIntroDesc(), pQuestDD->GetColorIntroDesc() );
 				
-				for( INDEX i = 0; i < pQuestDD->GetCountTitleDesc(); ++i )
+				INDEX i = 0; for( ; i < pQuestDD->GetCountTitleDesc(); ++i )
 					AddQuestDescString( pQuestDD->GetTitleDesc( i ), pQuestDD->GetColorTitleDesc( i ) );
 				
 				//for( i = 0; i < pQuestDD->GetCountStatusDesc(); ++i )
@@ -3442,7 +3442,7 @@ void CUIQuest::GetQuestDesc( BOOL bFullDesc, int nQuestIndex, SBYTE sbFlag )
 				//for( i = 0; i < pQuestDD->GetCountPrizeDesc(); ++i )
 				//	AddQuestDescString(  pQuestDD->GetPrizeDesc( i ), pQuestDD->GetColorPrizeDesc( i ) );
 
-				for( i = 0; i < pQuestDD->GetCountNeedDesc(); ++i )
+				for( INDEX i = 0; i < pQuestDD->GetCountNeedDesc(); ++i )
 					AddQuestDescString(  pQuestDD->GetNeedDesc( i ), pQuestDD->GetColorNeedDesc( i ) );
 			}
 		}

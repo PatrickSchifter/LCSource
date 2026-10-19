@@ -752,7 +752,7 @@ void CUIProduct::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -794,7 +794,7 @@ void CUIProduct::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1096,7 +1096,7 @@ void CUIProduct::SelectItem ( int _nIndex )
 	CItemData InvenItem;
 
 	// 필요 아이템 종류와 갯수 얻기 
-	for ( int nIndex = 0; nIndex < MAX_MAKE_ITEM_MATERIAL; nIndex++ )
+	int nIndex = 0; for( ; nIndex < MAX_MAKE_ITEM_MATERIAL; nIndex++ )
 	{	
 		nIndexTemp = ProductItemData.GetNeedItemIndex( nIndex );
 
@@ -1150,7 +1150,7 @@ void CUIProduct::SelectItem ( int _nIndex )
 	AddString ( _S( 562, "필요 스킬" ), COLOR_SUB_TITLE );		
 	AddString ( CTString ( NeedSSkill.GetName() ), bNeedSSkill? COLOR_TEXT : COLOR_NONE );
 
-	strTitle.PrintF ( _S( 573, "%s : %d " ), _S( 574, "레벨" ), nSSkillLevel ); 
+	strTitle.PrintF ( _S( 573, "%s : %d " ), (const char*)_S( 574, "레벨" ), nSSkillLevel ); 
 	AddString ( strTitle, bNeedSSkillLevel? COLOR_TEXT : COLOR_NONE );
 
 /*
@@ -1194,7 +1194,7 @@ void CUIProduct::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProduct::AddString ( CTString& strText, COLOR colText )
+void CUIProduct::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 
@@ -1216,7 +1216,7 @@ void CUIProduct::AddString ( CTString& strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

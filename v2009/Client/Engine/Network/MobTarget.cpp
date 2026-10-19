@@ -138,7 +138,7 @@ void CMobTarget::SetClientMobId(INDEX index)
 
 void CMobTarget::RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
-	for( int iBuff = 0; iBuff < mob_BuffCount; iBuff++ )
+	int iBuff = 0; for( ; iBuff < mob_BuffCount; iBuff++ )
 	{
 		if( mob_Buff[iBuff].m_slItemIndex == slItemIndex &&
 			mob_Buff[iBuff].m_slSkillIndex == slSkillIndex )

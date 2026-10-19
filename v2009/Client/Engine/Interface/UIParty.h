@@ -100,7 +100,7 @@ protected:
 
 protected:
 	// Internal functions
-	void	AddPartyMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2, 
+	void	AddPartyMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2, 
 							int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 							FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone );
 	void	RemoveMember( SLONG slIndex );
@@ -168,7 +168,7 @@ public:
 	// Network message functions ( receive )
 	void	PartyInvite( SBYTE sbType, SLONG slSrcIndex, CTString &strSrcName );
 	void	PartyReject( BOOL bLeader );
-	void	PartyAddMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+	void	PartyAddMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 							int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 							FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone );
 	void	PartyQuit( SLONG slIndex );

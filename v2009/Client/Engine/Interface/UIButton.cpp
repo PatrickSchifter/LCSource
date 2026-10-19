@@ -37,7 +37,7 @@ CUIButton::~CUIButton()
 // Name : Create()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIButton::Create( CUIWindow *pParentWnd, CTString &strText, int nX, int nY, int nWidth, int nHeight )
+void CUIButton::Create( CUIWindow *pParentWnd, const CTString &strText, int nX, int nY, int nWidth, int nHeight )
 {
 	m_pParentWnd = pParentWnd;
 	SetPos( nX, nY );
@@ -60,7 +60,7 @@ void CUIButton::Create( CUIWindow *pParentWnd, CTString &strText, int nX, int nY
 // Name : SetText()
 // Desc :
 // ----------------------------------------------------------------------------
-int CUIButton::SetText( CTString &strText, BOOL bVerticality )
+int CUIButton::SetText( const CTString &strText, BOOL bVerticality )
 {
 	m_strText = strText;
 	m_bVerticality = bVerticality;

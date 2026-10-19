@@ -177,10 +177,10 @@ public:
 	CUIMsgBox_Info();
 	~CUIMsgBox_Info();
 
-	void	SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth = -1 , FLOAT fNPCPosX = -1.0f, FLOAT fNPCPosZ = -1.0f);
+	void	SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth = -1 , FLOAT fNPCPosX = -1.0f, FLOAT fNPCPosZ = -1.0f);
 	// AddString()과 AddStringEx()는 혼용해서 사용하지 말것!!
-	void	AddString( CTString &strMessage, COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
-	void	AddStringEx( CTString &strMessage, int nRow, int nCol,
+	void	AddString( const CTString &strMessage, COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
+	void	AddStringEx( const CTString &strMessage, int nRow, int nCol,
 							COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
 	void	SetInputBox( int nRow, int nCol, int nMaxChar, int nInputWidth = -1 );
 	void	SetSEInputBox( int nRow, int nCol, int nMaxChar, int nInputWidth = -1, int nGapX = -1 );
@@ -377,7 +377,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////////
 	// [070807: Su-won] EVENT_ADULT_OPEN
-	void	SetString( int iIndex, CTString &strMessage, COLOR colMessage =0xF2F2F2FF)
+	void	SetString( int iIndex, const CTString &strMessage, COLOR colMessage =0xF2F2F2FF)
 	{
 		m_strMessage[iIndex] =strMessage;
 		m_colMessage[iIndex] =colMessage;

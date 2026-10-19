@@ -219,7 +219,7 @@ void CUIHelp::AddListSubjectString( CTString &strSubject )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = HELP_LIST_SUBJECT_MAX_CHAR - 4;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strTemp[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -260,7 +260,7 @@ void CUIHelp::AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR 
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -293,7 +293,7 @@ void CUIHelp::AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strContent,0,iPos))
 					break;
@@ -353,7 +353,7 @@ void CUIHelp::AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR 
 		if( nLength <= iMaxChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -386,7 +386,7 @@ void CUIHelp::AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strContent[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1002,7 +1002,7 @@ void CUIHelp3::CloseHelp()
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxChar )
+void CUIHelp3::AddHelpString( const CTString &strContent, COLOR colContent, int iMaxChar )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();
@@ -1020,7 +1020,7 @@ void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxCh
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -1053,7 +1053,7 @@ void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxCh
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strContent,0,iPos))
 					break;
@@ -1113,7 +1113,7 @@ void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxCh
 		if( nLength <= iMaxChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -1146,7 +1146,7 @@ void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxCh
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strContent[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

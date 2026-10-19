@@ -250,7 +250,7 @@ void CUIGuildStash::OpenTake( LONGLONG nBalance )
 	strNas.PrintF( "%I64d", m_llBalance );
 	_pUIMgr->InsertCommaToString( strNas );
 		
-	strSysMessage.PrintF( _S( 1914, "ภÜพื : %s Nas" ) , strNas); 
+	strSysMessage.PrintF( _S( 1914, "ภÜพื : %s Nas" ) , (const char*)strNas); 
 	MsgBoxInfo.AddString( strSysMessage, _pUIMgr->GetNasColor( strNas ), TEXT_CENTER );
 	
 	strSysMessage.PrintF( " " );
@@ -506,7 +506,7 @@ void CUIGuildStash::Render()
 		strDate.PrintF( "%02d / %02d", iter->m_nMonth, iter->m_nDay );
 		strMoney.PrintF( "%I64d", iter->m_llMoney );
 		_pUIMgr->InsertCommaToString( strMoney );
-		strTempMoney.PrintF( "%25s Nas", strMoney );
+		strTempMoney.PrintF( "%25s Nas", (const char*)strMoney );
 		
 		_pUIMgr->GetDrawPort()->PutTextEx( strDate, nX + TAKE_LIST_TITLE_OFFSETX,	
 		nY, 0xFFFFFFFF );

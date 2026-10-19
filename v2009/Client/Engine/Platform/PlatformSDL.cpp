@@ -21,7 +21,7 @@ static float _fWheelRemainder = 0.0f;  // fraction of a wheel notch not reported
 static INDEX _iDrawableScale = 1;      // drawable pixels per window point (PLT_GetDrawableScale)
 #ifdef __APPLE__
 #include <Engine/Interface/UIManager.h>
-ENGINE_API CUIManager *SE_Get_UIManagerPtr();  // Engine.cpp
+// (_pUIMgr, the 2009 UI manager)
 extern void PLT_MacInstallGestureMonitors(void);  // PlatformMac.mm
 extern float PLT_MacSetHighDensity(SDL_Window *pwnd, bool bHighDensity);  // PlatformMac.mm
 extern bool PLT_MacCanSetGammaRamp(SDL_Window *pwnd);
@@ -648,7 +648,7 @@ static void TranslateMouseWheel(const SDL_MouseWheelEvent &mwe)
 bool PLT_MacTrackpadScroll(float fDX, float fDY, bool bGestureStart, bool bMomentum)
 {
   if (bGestureStart) {
-    CUIManager *pUIManager = SE_Get_UIManagerPtr();
+    CUIManager *pUIManager = _pUIMgr;
     _bGestureOverUI = pUIManager == NULL || pUIManager->IsMouseInsideUIs();
   }
   static const bool bDebug = getenv("LC_DEBUG_INPUT") != NULL;

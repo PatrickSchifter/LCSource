@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Base/ProgressHook.h>
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Base/ReplaceFile.h>
@@ -15,7 +16,6 @@
 #include <Engine/Templates/BSP_internal.h>
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Loading.h>
 template class CDynamicArray<CBrush3D>;
 
 extern BOOL _bPortalSectorLinksPreLoaded = FALSE;

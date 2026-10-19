@@ -795,7 +795,7 @@ void CUIHelpOld::SetPageButtons( int nTotalWrite, int nCurPage )
 		m_btnNext.SetEnable( TRUE );
 
 	int	nLength, nTotalLength = 0;
-	for( int iPage = m_nCurrentFirstPage; iPage <= m_nCurrentLastPage; iPage++ )
+	int iPage = m_nCurrentFirstPage; for( ; iPage <= m_nCurrentLastPage; iPage++ )
 	{
 		if( iPage > 99999 )		nLength = 6;
 		else if( iPage > 9999 )	nLength = 5;
@@ -850,7 +850,7 @@ void CUIHelpOld::AddListSubjectString( CTString &strSubject )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = HELPOLD_LIST_SUBJECT_MAX_CHAR - 4;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strTemp[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -873,7 +873,7 @@ void CUIHelpOld::AddListSubjectString( CTString &strSubject )
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIHelpOld::AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR colContent, int iMaxChar )
+void CUIHelpOld::AddReadingString( CUIListBox& lbList, const CTString &strContent, COLOR colContent, int iMaxChar )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();
@@ -891,7 +891,7 @@ void CUIHelpOld::AddReadingString( CUIListBox& lbList, CTString &strContent, COL
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -924,7 +924,7 @@ void CUIHelpOld::AddReadingString( CUIListBox& lbList, CTString &strContent, COL
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strContent,0,iPos))
 					break;
@@ -984,7 +984,7 @@ void CUIHelpOld::AddReadingString( CUIListBox& lbList, CTString &strContent, COL
 		if( nLength <= iMaxChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -1017,7 +1017,7 @@ void CUIHelpOld::AddReadingString( CUIListBox& lbList, CTString &strContent, COL
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strContent[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1222,7 +1222,7 @@ void CUIHelpOld::RenderPage()
 	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdImageTexture );
 	int nX = m_nPosX;
 	int nY = m_nPosY;
-	for( std::vector<sPageItem>::iterator it = TempPage.vectorPageItem.begin(); it != itend; ++it )
+	std::vector<sPageItem>::iterator it = TempPage.vectorPageItem.begin(); for( ; it != itend; ++it )
 	{
 		if( (*it).eType == HELP_IMAGE )
 		{

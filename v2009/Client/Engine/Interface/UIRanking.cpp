@@ -200,7 +200,7 @@ void CUIRanking::OpenRankingList( )
 	int i = 0; 
 	for( ; i < TOTAL_JOB ; ++i )
 	{
-		strJobName.PrintF( "%s", JobInfo().GetName(i, 0) );
+		strJobName.PrintF( "%s", (const char*)(JobInfo().GetName(i, 0)) );
 		m_lbChoiceList.AddString( 0, strJobName );
 	}	
 	strJobName.PrintF( _S( 1220, "취소한다." ) );		
@@ -389,7 +389,7 @@ void CUIRanking::RefreshPrizeList( BOOL bInit )
 		m_lbPrizeList.AddString( 1, (*it).strName, 0xFFFFFFFF );	// 아이디
 		
 		CTString strItemName = _pNetwork->GetItemName( (*it).iItemIndex );
-		strTemp.PrintF( _S( 61, "%s %d개" ), strItemName, (*it).iNumOfItem );
+		strTemp.PrintF( _S( 61, "%s %d개" ), (const char*)strItemName, (*it).iNumOfItem );
 		m_lbPrizeList.AddString( 2, strTemp, 0xFFFFFFFF );
 		
 		if( (*it).bReward == FALSE && 

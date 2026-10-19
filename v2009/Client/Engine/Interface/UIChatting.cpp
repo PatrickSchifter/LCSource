@@ -154,7 +154,7 @@ void CUIChatting::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	// Tab
 	int	nPosX = 0;
 	m_rcTab[CHATTAB_ALL].SetRect( nPosX, -42, nPosX + CHAT_TAB_SEL_WIDTH, -23 );
-	for( int i = CHATTAB_PARTY; i < CHATTAB_TOTAL; i++ )
+	int i = CHATTAB_PARTY; for( ; i < CHATTAB_TOTAL; i++ )
 	{
 		nPosX = m_rcTab[i - 1].Right + CHAT_TAB_OFFSET;
 		m_rcTab[i].SetRect( nPosX, -42, nPosX + CHAT_TAB_WIDTH, -23 );
@@ -412,7 +412,7 @@ void CUIChatting::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixM
 
 	// Resize chatting region
 	int	nLineOffset = m_nCurChatShowLine - MIN_SHOW_CHATLINE;
-	for( int i = 0; i < CHATTAB_TOTAL; i++ )
+	int i = 0; for( ; i < CHATTAB_TOTAL; i++ )
 	{
 		m_nFirstChatRow[i] += nLineOffset;
 
@@ -476,7 +476,7 @@ void CUIChatting::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pix
 	if( m_nCurChatShowLine > m_nMaxChatShowLine )
 	{
 		int	nLineOffset = m_nCurChatShowLine - m_nMaxChatShowLine;
-		for( int i = 0; i < CHATTAB_TOTAL; i++ )
+		int i = 0; for( ; i < CHATTAB_TOTAL; i++ )
 		{
 			m_nFirstChatRow[i] += nLineOffset;
 
@@ -526,7 +526,7 @@ void CUIChatting::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pix
 // ----------------------------------------------------------------------------
 void CUIChatting::ResetChatting()
 {
-	for( int i = 0; i < CHATTAB_TOTAL; i++ )
+	int i = 0; for( ; i < CHATTAB_TOTAL; i++ )
 	{
 		m_nCurChatCount[i] = 0;
 		m_nCurChatInsert[i] = 0;
@@ -563,7 +563,7 @@ void CUIChatting::ChangeChattingBoxHeight( int ndLines )
 	m_sbChatScrollBar.SetItemsPerPage( m_nCurChatShowLine );
 	m_sbChatScrollBar.ChangeSize( ndHeight );	
 
-	for( int i = 0; i < CHATTAB_TOTAL; i++ )
+	int i = 0; for( ; i < CHATTAB_TOTAL; i++ )
 	{
 		m_nFirstChatRow[i] -= ndLines;
 		if( m_nFirstChatRow[i] < 0 )
@@ -630,7 +630,7 @@ void CUIChatting::RenderChatStringList()
 	// Render chatting strings
 	int	nX = m_nPosX + m_rcChatting.Left + CHAT_STRING_OFFSETX;
 	int	nY = m_nPosY + m_rcChatting.Top + CHAT_STRING_OFFSTY;
-	for( int iChat = nFirstChat; iChat < nFirstChatLast; iChat++ )
+	int iChat = nFirstChat; for( ; iChat < nFirstChatLast; iChat++ )
 	{
 #ifdef IME_CHAR_COLOR_CHANGE_NA_20080910
 		RenderChatNameMsgString(nX, nY, iChat);
@@ -717,7 +717,7 @@ void CUIChatting::RenderSysStringList()
 	// Render chatting strings
 	int	nX = m_nPosX + m_rcSystem.Left + CHAT_STRING_OFFSETX;
 	int	nY = m_nPosY + m_rcSystem.Top + CHAT_STRING_OFFSTY;
-	for( int iChat = nFirstChat; iChat < nFirstChatLast; iChat++ )
+	int iChat = nFirstChat; for( ; iChat < nFirstChatLast; iChat++ )
 	{
 		_pUIMgr->GetDrawPort()->PutTextEx( m_strSysString[iChat], nX, nY,
 											m_colSysString[iChat], TRUE, 0x181818FF );
@@ -910,7 +910,7 @@ void CUIChatting::Render()
 											m_rtWhisperLR.U0, m_rtWhisperLR.V0, m_rtWhisperLR.U1, m_rtWhisperLR.V1,
 											0xFFFFFFFF );
 
-		for( int i = 0; i < CHATOPT_TOTAL; i++ )
+		int i = 0; for( ; i < CHATOPT_TOTAL; i++ )
 		{
 			// Render all elements
 			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
@@ -949,7 +949,7 @@ void CUIChatting::Render()
 			fRatio = 1.0f;
 
 		int	nGoalWidth, nResize;
-		for( int i = 0; i < CHATTAB_TOTAL; i++ )
+		int i = 0; for( ; i < CHATTAB_TOTAL; i++ )
 		{
 			if( i == m_nCurSelTab )
 				nGoalWidth = CHAT_TAB_SEL_WIDTH;
@@ -1084,7 +1084,7 @@ void CUIChatting::Render()
 		// Text in whisper history
 		nX = m_nPosX + m_rcWhisper.Left + 8;
 		nY = m_nPosY + m_rcWhisper.Bottom - m_nChatLineHeight - 4;
-		for( int i = 0; i < m_nWhisperCount; i++ )
+		int i = 0; for( ; i < m_nWhisperCount; i++ )
 		{
 			_pUIMgr->GetDrawPort()->PutTextEx( m_strWhisper[i], nX, nY, 0xC5C5C5FF );
 			nY -= m_nChatLineHeight;
@@ -1149,7 +1149,7 @@ void CUIChatting::AddChatString( CTString &strChatString, COLOR colChatString, i
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = CHATMSG_CHAR_MAX;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strChatString,0,iPos))
 					break;
@@ -1239,7 +1239,7 @@ void CUIChatting::AddChatString( CTString &strChatString, COLOR colChatString, i
 // Name : AddSysString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIChatting::AddSysString( CTString &strSysString, COLOR colSysString )
+void CUIChatting::AddSysString( const CTString &strSysString, COLOR colSysString )
 {
 	// Get length of string
 	INDEX	nLength = strSysString.Length();
@@ -1273,7 +1273,7 @@ void CUIChatting::AddSysString( CTString &strSysString, COLOR colSysString )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = m_nMaxCharCount;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strSysString,0,iPos) )
 					break;
@@ -1354,7 +1354,7 @@ void CUIChatting::AddWhisperTarget( CTString &strWhisper )
 {
 	m_nCurWhisper = 0;
 
-	for( int i = 0; i < m_nWhisperCount; i++ )
+	int i = 0; for( ; i < m_nWhisperCount; i++ )
 	{
 		if( strWhisper.IsEqualCaseSensitive( m_strWhisper[i] ) )
 			break;
@@ -2034,7 +2034,7 @@ void CUIChatting::ProcessParty( char *pcPartyString )
 	// Extract sub command name from string
 	int	nLength = strlen( pcPartyString );
 	CTString	strCommand, strOther;
-	for( int iChar = 0; iChar < nLength; iChar++ )
+	int iChar = 0; for( ; iChar < nLength; iChar++ )
 	{
 		if( pcPartyString[iChar] == ' ' )
 			break;
@@ -2142,7 +2142,7 @@ void CUIChatting::SendChatMessage( char *pcChatString, BOOL bLord )
 		nStart = 1;
 
 	int	nLength = strlen( pcChatString );
-	for( int iChar = nStart; iChar < nLength; iChar++ )
+	int iChar = nStart; for( ; iChar < nLength; iChar++ )
 	{
 		if( pcChatString[iChar] != ' ' )
 			break;
@@ -2279,7 +2279,7 @@ void CUIChatting::SendChatCommand( char *pcChatString, int nLength )
 	// Extract command name from string
 	CTString	strCommand, strOther;
 
-	for( int iChar = 0; iChar < nLength; iChar++ )
+	int iChar = 0; for( ; iChar < nLength; iChar++ )
 	{
 		if( pcChatString[iChar] == ' ' )
 			break;
@@ -2599,7 +2599,7 @@ void CUIChatting::AddChatMessage( UBYTE ubChatType, SLONG slSendIndex, CTString 
 // Name : AddSysMessage()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIChatting::AddSysMessage( CTString &strSysMessage, int nSysType ,COLOR colMsg )
+void CUIChatting::AddSysMessage( const CTString &strSysMessage, int nSysType ,COLOR colMsg )
 {
 #ifndef SHOW_DAMAGE_TEXT 
 		// Date : 2005-11-17(¿ÀÈÄ 3:37:59), By Lee Ki-hwan
@@ -2728,7 +2728,6 @@ BOOL CUIChatting::CeilWritingCut_CompareStr(const CTString& strChat)
 	std::list<sCeilWriting>::iterator	iter = m_sCeilWriting.begin(), iterEnd = m_sCeilWriting.end();
 	for (; iter != iterEnd; ++iter)
 	{
-		if (iter == NULL)			continue;
 		if (strcmp(strChat, iter->strCeilWriting) == 0)
 		{
 			iter->iCnt++;
@@ -2755,11 +2754,13 @@ void CUIChatting::EraseListCeilWriting()
 {
 	__int64		llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 	std::list<sCeilWriting>::iterator	iter = m_sCeilWriting.begin(), iterEnd = m_sCeilWriting.end();
-	for (; iter != iterEnd; ++iter)
+	// (erase() returns the next element: advancing it again skipped one, and past the end)
+	while (iter != m_sCeilWriting.end())
 	{
-		if (iter == NULL)			continue;
-		if ( llCurTime - iter->llStartTime > 60000 )//1ºÐ
+		if ( llCurTime - iter->llStartTime > 60000 )
 			iter = m_sCeilWriting.erase(iter);
+		else
+			++iter;
 	}
 }
 #endif//ADD_CHAT_CEILWRITING_CUT_NA_20081029

@@ -528,17 +528,17 @@ void CUIShop::EventOpenShop( int iMobIndex, BOOL bHasQuest,FLOAT fX, FLOAT fZ )
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, TRUE, tv_str,-1, 0xA3A1A3FF );
 		tv_str = _S(3402, "제가 요즘 너무 바빠서 좋아하는 노란 개나리꽃을 구해다 주시면 제가 장비를 드릴께요 한번 받은 장비는 또 다시 주어지지 않습니다.");
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, TRUE, tv_str,-1, 0xA3A1A3FF );
-		tv_str.PrintF("%s %s",_S(43,"타이탄"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(43,"타이탄")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_TITAN );
-		tv_str.PrintF("%s %s",_S(44,"기사"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(44,"기사")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_KNIGHT  );
-		tv_str.PrintF("%s %s",_S(45,"힐러"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(45,"힐러")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_HEALER  );
-		tv_str.PrintF("%s %s",_S(46,"메이지"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(46,"메이지")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_MAGE  );
-		tv_str.PrintF("%s %s",_S(47,"로그"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(47,"로그")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_ROGUE  );
-		tv_str.PrintF("%s %s",_S(48,"소서러"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)(_S(48,"소서러")),(const char*)(_S(2736,"장비 아이템")));
 		_pUIMgr->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_SOCERER  );
 		
 		//대여상점과 가정의 달 이벤트로...
@@ -841,7 +841,7 @@ void CUIShop::ResetShop()
 //-----------------------------------------------------------------------------
 void CUIShop::ClearItems()
 {
-	for(int i = 0; i < SHOP_TRADE_SLOT_TOTAL; i++)
+	int i = 0; for( ; i < SHOP_TRADE_SLOT_TOTAL; i++)
 		m_abtnTradeItems[i].InitBtn();			
 
 	for(i = 0; i < SHOP_SHOP_SLOT_ROW_TOTAL; i++)
@@ -886,7 +886,7 @@ void CUIShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -928,7 +928,7 @@ void CUIShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1026,7 +1026,7 @@ BOOL CUIShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 		
 		strCount.PrintF( "%I64d", llCount );
 		_pUIMgr->InsertCommaToString( strCount );		
-		strTemp.PrintF( "%s(%s)", szItemName, strCount );
+		strTemp.PrintF( "%s(%s)", szItemName, (const char*)strCount );
 		colNas = _pUIMgr->GetNasColor( llCount );
 	}
 	else
@@ -1050,7 +1050,7 @@ BOOL CUIShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 				CTString	strCount;
 				strCount.PrintF( "%I64d", llCount );
 				_pUIMgr->InsertCommaToString( strCount );
-				strTemp.PrintF( "%s(%s)", szItemName, strCount );
+				strTemp.PrintF( "%s(%s)", szItemName, (const char*)strCount );
 				colNas = _pUIMgr->GetNasColor( llCount );
 			}
 			else
@@ -1074,7 +1074,7 @@ BOOL CUIShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 			CTString	strMoney;
 			strMoney.PrintF( "%I64d", iPrice );
 			_pUIMgr->InsertCommaToString( strMoney );
-			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), (const char*)strMoney );
 			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
 		}
 		//AddItemInfoString( CTString( " " ) );
@@ -1419,7 +1419,7 @@ BOOL CUIShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, in
 			CTString	strMoney;
 			strMoney.PrintF( "%I64d", iPrice );
 			_pUIMgr->InsertCommaToString( strMoney );
-			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), (const char*)strMoney );
 			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
 		}
 
@@ -1909,7 +1909,7 @@ void CUIShop::Render()
 		if(m_bIsEvent) // ttos : 가정의 달 이벤트
 		{
 		//	tv_str = CTString("개나리 개수 ");
-			tv_str.PrintF("%s %s", _pNetwork->GetItemName(2344), _S(2396,"수량"));
+			tv_str.PrintF("%s %s", _pNetwork->GetItemName(2344), (const char*)(_S(2396,"수량")));
 			_pUIMgr->GetDrawPort()->PutTextEx( tv_str, m_nPosX + 10, tv_posY ,tv_clr);
 		}else
 		{
@@ -2844,7 +2844,7 @@ void CUIShop::BuyItems()
 			CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
 			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{
-				for( int iItem = 0; iItem < SHOP_TRADE_SLOT_TOTAL; iItem++ )
+				int iItem = 0; for( ; iItem < SHOP_TRADE_SLOT_TOTAL; iItem++ )
 				{
 					if( nIndex == m_abtnTradeItems[iItem].GetItemIndex() )
 						ctTradeItems--;
@@ -3184,7 +3184,7 @@ void CUIShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -3217,7 +3217,7 @@ void CUIShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -3338,7 +3338,7 @@ void CUIShop::ShopToTrade( SQUAD llCount )
 	}
 
 	// Find same item in trade slot
-	for( int iItem = 0; iItem < SHOP_TRADE_SLOT_TOTAL; iItem++ )
+	int iItem = 0; for( ; iItem < SHOP_TRADE_SLOT_TOTAL; iItem++ )
 	{
 		if( m_abtnTradeItems[iItem].GetItemIndex() == nTempIndex )
 			break;

@@ -243,7 +243,7 @@ void CUIMixNew::CloseMixNew()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMixNew::AddString( CTString &strDesc )
+void CUIMixNew::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_MIXNEW_STRING )
 		return;
@@ -264,7 +264,7 @@ void CUIMixNew::AddString( CTString &strDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -294,7 +294,7 @@ void CUIMixNew::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -352,7 +352,7 @@ void CUIMixNew::AddString( CTString &strDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -382,7 +382,7 @@ void CUIMixNew::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -919,7 +919,7 @@ void CUIMixNew::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = MAX_ITEMINFO_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strItemInfo[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -1155,7 +1155,7 @@ void CUIMixNew::SetMixItem ( int nSlotIndex )
 		ResetMixItem();	// 버튼이 들려 있으면 삭제 하고
 		
 		// 아이템이 현재 사용중인지 확인 한다.
-		for ( int i = 0; i < MIXNEW_ITEM_SLOT_COUNT; i++ )
+		int i = 0; for( ; i < MIXNEW_ITEM_SLOT_COUNT; i++ )
 		{
 			if ( !m_btnItemSlot[i].IsEmpty () )
 			{

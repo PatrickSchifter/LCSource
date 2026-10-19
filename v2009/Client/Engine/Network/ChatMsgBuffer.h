@@ -23,7 +23,7 @@ protected:
 	__int64		m_llMsgTime;
 
 protected:
-	void	AddString( CTString &strMessage );
+	void	AddString( const CTString &strMessage );
 
 public:
 	ChatMsgBuffer();

@@ -1215,7 +1215,7 @@ void CRenderer::DrawToScreen(void)
 	// User interface
 	if( re_iIndex == IDX_MAIN_RENDERER && re_pdpDrawPort )
 	{
-		CUIManager::getSingleton()->Render( re_pdpDrawPort, re_prProjection );
+		_pUIMgr->Render( re_pdpDrawPort, re_prProjection );
 		g_iShowName = iShowNameOld;
 		g_iShowNameItem = iShowNameItemOld;
 	}

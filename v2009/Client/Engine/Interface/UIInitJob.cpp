@@ -274,7 +274,7 @@ void CUIInitJob::CloseInitJob()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIInitJob::AddString( CTString &strDesc )
+void CUIInitJob::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_INITJOB_STRING )
 		return;
@@ -295,7 +295,7 @@ void CUIInitJob::AddString( CTString &strDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -325,7 +325,7 @@ void CUIInitJob::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -383,7 +383,7 @@ void CUIInitJob::AddString( CTString &strDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -413,7 +413,7 @@ void CUIInitJob::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -565,7 +565,7 @@ void CUIInitJob::Render()
 		nY	= m_nPosY + 78;
 		nX2 = nX + 33;
 		nY2 = nY + 13;
-		for( int i = 0; i < 4; ++i )
+		int i = 0; for( ; i < 4; ++i )
 		{
 			_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 4, nY2,
 				m_rtInputBoxL.U0, m_rtInputBoxL.V0, m_rtInputBoxL.U1, m_rtInputBoxL.V1,
@@ -685,7 +685,7 @@ void CUIInitJob::Render()
 	else if( m_eInitJobState == INITJOB_GIVEUP )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1113, "[%s] 직업 포기" ), JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) ); 
+		strMessage.PrintF( _S( 1113, "[%s] 직업 포기" ), (const char*)(JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 )) ); 
 
 		int nX1 = m_nPosX + 30;		
 		nY		= m_nPosY + 29;
@@ -856,7 +856,7 @@ WMSG_RESULT CUIInitJob::MouseMessage( MSG *pMsg )
 						CTString	strMessage;
 						CUIMsgBox_Info	MsgBoxInfo;
 						MsgBoxInfo.SetMsgBoxInfo( _S( 1182, "직업 포기" ), UMBS_OKCANCEL, UI_INITJOB, MSGCMD_INITJOB_GIVEUP );	
-						strMessage.PrintF( CTString( _S( 1183, "[%s] 직업을 포기 하시겠습니까?" ) ), JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) );			
+						strMessage.PrintF( CTString( _S( 1183, "[%s] 직업을 포기 하시겠습니까?" ) ), (const char*)(JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 )) );			
 						MsgBoxInfo.AddString( strMessage );
 						_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					}

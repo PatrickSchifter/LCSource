@@ -24,33 +24,13 @@ static int qsort_CompareDelayedModels( const void *ppdm0, const void *ppdm1)
 	ASSERT( DMF_HASALPHA==1); // we need this flag to be 1 for optimization
 
 	// do some arithmetic mumbo-jumbos to avoid compares
-/*	const SLONG slAlphaSgn  =   bHasAlpha0 - bHasAlpha1;
+// 2009: the original order (the 2015 client sorts its "always in the background" models first)
+	const SLONG slAlphaSgn  =   bHasAlpha0 - bHasAlpha1;
 	const SLONG slAlphaDiff = -(bHasAlpha0 ^ bHasAlpha1);   // all 0s if same, all 1s if different
 	const FLOAT fDistDiff = dm0.dm_fDistance - dm1.dm_fDistance;
 	const SLONG slDistSgn = (SLONG&)fDistDiff;
 	// done
-	return slAlphaSgn | (~slAlphaDiff & slDistSgn); */
-
-	// 먼저 거리를 가지고 크기를 재고, 거리가 같다면 알파테스트로 앞뒤를 가려야 한다고 생각된다.
-	const FLOAT fDistDiff = dm0.dm_fDistance - dm1.dm_fDistance;
-
-	if (fDistDiff > 0)
-	{
-		if (dm0.dm_penModel->GetAlBackground() && !dm1.dm_penModel->GetAlBackground())
-			return -1;
-
-		return 1;
-	}
-	else if (fDistDiff < 0)
-	{
-		if (!dm0.dm_penModel->GetAlBackground() && dm1.dm_penModel->GetAlBackground())
-			return 1;
-
-		return -1;
-	}
-
-	const SLONG slAlphaSgn = bHasAlpha0 - bHasAlpha1;
-	return slAlphaSgn;
+	return slAlphaSgn | (~slAlphaDiff & slDistSgn); 
 
 	/* if both models are opaque or translucent
 	if( !bHasAlpha0 == !bHasAlpha1) 

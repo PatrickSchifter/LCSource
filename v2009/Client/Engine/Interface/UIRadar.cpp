@@ -901,9 +901,9 @@ void CUIRadar::ShowToolTip( BOOL bShow, int nToolTipID )
 
 		case STT_MAP:		// Map
 			if( g_iEnterChat )
-				m_strToolTip.PrintF( "%s %s", _S( 190, "지도" ), CTString( "(Alt+W)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S( 190, "지도" )), (const char*)(CTString( "(Alt+W)" )) );
 			else
-				m_strToolTip.PrintF( "%s %s", _S( 190, "지도" ), CTString( "(W,Alt+W)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S( 190, "지도" )), (const char*)(CTString( "(W,Alt+W)" )) );
 			m_btnMap.GetAbsPos( nInfoX, nInfoY );
 			nWidth = m_btnMap.GetWidth();
 			nHeight = m_btnMap.GetHeight();

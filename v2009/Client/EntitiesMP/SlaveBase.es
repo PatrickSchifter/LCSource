@@ -197,7 +197,7 @@ functions:
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("%s killed %s"), GetClass()->ec_pdecDLLClass->dec_strName, strPlayerName);
+		str.PrintF(TRANS("%s killed %s"), GetClass()->ec_pdecDLLClass->dec_strName, (const char*)strPlayerName);
 		return str;
 	}
 
@@ -568,7 +568,7 @@ functions:
 	{
 		((CTString&)m_strDescription).PrintF("-><none>");
 		if (m_penMarker!=NULL) {
-			((CTString&)m_strDescription).PrintF("->%s", m_penMarker->GetName());
+			((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penMarker->GetName());
 		}
 		return m_strDescription;
 	}

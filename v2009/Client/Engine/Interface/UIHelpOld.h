@@ -238,7 +238,7 @@ protected:
 	void	SetPageButtons( int nTotalWrite, int nCurPage );
 
 	void	AddListSubjectString( CTString &strSubject );
-	void	AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR colContent, int iMaxChar = HELPOLD_READ_MAX_CHAR );
+	void	AddReadingString( CUIListBox& lbList, const CTString &strContent, COLOR colContent, int iMaxChar = HELPOLD_READ_MAX_CHAR );
 
 public:
 	CUIHelpOld();

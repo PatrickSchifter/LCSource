@@ -269,7 +269,7 @@ protected:
 	void	MakeCenterForZoom( BOOL bWorldMap );
 	void	ZoomMap( BOOL bWorldMap );
 
-	void	ShowToolTip( BOOL bShow, CTString &strName, int nX = 0, int nY = 0 );
+	void	ShowToolTip( BOOL bShow, const CTString &strName, int nX = 0, int nY = 0 );
 
 public:
 

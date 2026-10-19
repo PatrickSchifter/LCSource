@@ -23,7 +23,7 @@ ChatMsgBuffer::~ChatMsgBuffer()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void ChatMsgBuffer::AddString( CTString &strMessage )
+void ChatMsgBuffer::AddString( const CTString &strMessage )
 {
 	if( m_ubMsgCount >= CHATMSG_LINE_MAX )
 	{

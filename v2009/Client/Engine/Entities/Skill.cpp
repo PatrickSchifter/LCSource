@@ -23,7 +23,7 @@ CSkill::~CSkill(void)
 		m_vectorSkillLevels.clear();
 }
 
-CSkill::Init(void) 
+void CSkill::Init(void) 
 {
 	bCanCancel = FALSE;	
 }
@@ -149,7 +149,7 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			SD.reuseTime = 30; 
 		}
 
-		for(INDEX iWeapon=0; iWeapon<WEAPON_COUNT; ++iWeapon)
+		INDEX iWeapon=0; for( ; iWeapon<WEAPON_COUNT; ++iWeapon)
 		{
 			// 시전
 			LOADSTR(SD.client[iWeapon].readyAni);
@@ -178,7 +178,7 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			LOADFLOAT(SD.client[iWeapon].fireobjDelay[3]);
 			//시간 순으로 소팅
 			std::vector<float> tempvec;
-			for(int a=0; a<SD.client[iWeapon].fireobjDelayCount; ++a)
+			int a=0; for( ; a<SD.client[iWeapon].fireobjDelayCount; ++a)
 			{
 				tempvec.push_back(SD.client[iWeapon].fireobjDelay[a]);
 			}
@@ -212,7 +212,7 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			LOADINT(SL.needItemCount2);
 			LOADINT(SL.learnLevel);
 			LOADINT(SL.learnSP);
-			for( int k = 0; k < 3; k++ )
+			int k = 0; for( ; k < 3; k++ )
 			{
 				LOADINT(SL.learnSkillIndex[k]);
 				LOADCHAR(SL.learnSkillLevel[k]);

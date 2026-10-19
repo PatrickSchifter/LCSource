@@ -295,6 +295,7 @@ static INDEX IsScriptSoundPlaying(INDEX iChannel)
 	}
 	return _apsoScriptChannels[iChannel]->IsPlaying();
 }
+#endif  // _WIN32
 
 // Dump recorded profiling stats to file.
 static void DumpProfileToFile(void)
@@ -1945,7 +1946,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 	// display resolution info (if needed)
 	if( hud_bShowResolution) {
 		CTString strRes;
-		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
 		pdpDrawPort->SetFont( _pfdDisplayFont);
 		pdpDrawPort->SetTextScaling( fTextScale);
 		pdpDrawPort->SetTextAspect( 1.0f);
@@ -2608,7 +2609,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			{
 				net_bLocalPrediction=TRUE;
 				/*
-				if (_tvMenuQuickSave.tv_llValue!=0I64 && 
+				if (_tvMenuQuickSave.tv_llValue!=((__int64)0) && 
 					(_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) 
 				{
 					strIndicator = TRANS("Use F6 for QuickSave during game!");
@@ -2617,13 +2618,13 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				{
 					CTString strMotd = _pNetwork->ga_sesSessionState.ses_strMOTD;
 					static CTString strLastMotd = "";
-					static CTimerValue tvLastMotd(0I64);
+					static CTimerValue tvLastMotd(((__int64)0));
 					if (strLastMotd!=strMotd) 
 					{
 						tvLastMotd = _pTimer->GetHighPrecisionTimer();
 						strLastMotd = strMotd;
 					}
-					if (tvLastMotd.tv_llValue!=0I64 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
+					if (tvLastMotd.tv_llValue!=((__int64)0) && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
 					{
 						strIndicator = strMotd;
 					}
@@ -2805,7 +2806,7 @@ void CGame::GameRedrawCursor(CDrawPort *pdpDrawPort, ULONG ulFlags)
 			bHadViewers = TRUE;			
 			_bPlayerViewRendered = TRUE;
 			// render it
-			apenViewers->RenderCursor(pdp, (void*)ulFlags);
+				apenViewers->RenderCursor(pdp, (void*)(uintptr_t)ulFlags);
 		}
 	}	
 //안태훈 수정 끝	//(Bug Fix)(0.1)
@@ -2910,7 +2911,7 @@ CTString CGame::GetDefaultGameDescription(BOOL bWithInfo)
 	strTimeline = achTimeLine;
 	setlocale(LC_ALL, "C");
 
-	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), strTimeline);
+	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), (const char*)strTimeline);
 
 	if (bWithInfo) {
 		CPlayer *penPlayer = (CPlayer *)&*CEntity::GetPlayerEntity(0);
@@ -3155,7 +3156,7 @@ static FLOAT _tmNow_SE;
 static ULONG _ulA_SE;
 static BOOL  _bPopup;
 
-void TiledTextureSE( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTextureSE( const PIXaabbox2D &_boxScreen, FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
 	PIX pixW = _boxScreen.Size()(1);
 	PIX pixH = _boxScreen.Size()(2);

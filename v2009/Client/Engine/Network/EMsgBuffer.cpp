@@ -330,7 +330,7 @@ void CEntityMessage::WriteAddPlayer(ULONG &ulEntityID,INDEX &iPlayerIndex,CPlaye
 
   // report to console
   if (net_bReportServerTraffic) {
-    CPrintF("Server: ADDPLAYER:     EntityID: 0x%X, Name: %s\n",em_ulEntityID,RemoveSpecialCodes(pcCharacter.GetNameForPrinting()));
+    CPrintF("Server: ADDPLAYER:     EntityID: 0x%X, Name: %s\n",em_ulEntityID,(const char*)RemoveSpecialCodes(pcCharacter.GetNameForPrinting()));
   }
 }
 
@@ -559,9 +559,9 @@ void CEntityMessage::WritePause(BOOL &bPaused,CTString &strPauser)
   // report to console
   //if (net_bReportServerTraffic) {
     if (bPaused) {
-	    CPrintF("Server: Pause game by %s\n",strPauser);
+	    CPrintF("Server: Pause game by %s\n",(const char*)strPauser);
     } else {
-      CPrintF("Server: Unpause game by %s\n",strPauser);
+      CPrintF("Server: Unpause game by %s\n",(const char*)strPauser);
     }
   //}
 
@@ -648,7 +648,7 @@ void CEntityMessage::WriteCharacterChange(ULONG &ulEntityID,CPlayerCharacter &pc
 
   // report to console
   if (net_bReportServerTraffic) {
-    CPrintF("Server: CHARACTERCHANGE:     EntityID: 0x%X, Name: %s\n",em_ulEntityID,RemoveSpecialCodes(pcCharacter.GetNameForPrinting()));
+    CPrintF("Server: CHARACTERCHANGE:     EntityID: 0x%X, Name: %s\n",em_ulEntityID,(const char*)RemoveSpecialCodes(pcCharacter.GetNameForPrinting()));
   }
 
 };

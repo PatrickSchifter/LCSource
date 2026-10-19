@@ -633,7 +633,7 @@ functions:
 		try {
 			m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
 		} catch (char *strError) {
-			WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
+			WarningMessage(TRANS("Cannot load '%s': %s"), (const char*)(CTString&)m_fnmLightAnimation, strError);
 			m_fnmLightAnimation = "";
 		}
 		if (m_aoLightAnimation.GetData()!=NULL) {
@@ -641,10 +641,10 @@ functions:
 		}
 
 		if (m_penDestruction==NULL) {
-			m_strDescription.PrintF("%s,%s undestroyable", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName());
+			m_strDescription.PrintF("%s,%s undestroyable", (const char*)m_fnModel.FileName(), (const char*)m_fnTexture.FileName());
 		} else {
-			m_strDescription.PrintF("%s,%s -> %s", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName(),
-				m_penDestruction->GetName());
+			m_strDescription.PrintF("%s,%s -> %s", (const char*)m_fnModel.FileName(), (const char*)m_fnTexture.FileName(),
+				(const char*)m_penDestruction->GetName());
 		}
 
 		return;
@@ -824,7 +824,7 @@ procedures:
 		
 		// check your destruction pointer
 		if( m_penDestruction!=NULL && !IsOfClass( m_penDestruction, &CModelDestruction_DLLClass)) {
-			WarningMessage("Destruction '%s' is wrong class!", m_penDestruction->GetName());
+			WarningMessage("Destruction '%s' is wrong class!", (const char*)m_penDestruction->GetName());
 			m_penDestruction=NULL;
 		}
 

@@ -19,7 +19,7 @@ CUIMonsterCombo::CUIMonsterCombo()
 	m_nComboPoint = 0;
 	m_nStageCount = 0;
 
-	for(int i=0; i<CASE_SLOT_COUNT; i++)
+	int i=0; for( ; i<CASE_SLOT_COUNT; i++)
 	{		
 		m_nCase[i] = 0;
 		m_abtnSetCase[i].InitBtn();
@@ -156,7 +156,7 @@ void CUIMonsterCombo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	
 
 	// 미션 케이스 5칸
-	for(int i = 0; i < MISSION_SLOT_MAX; i++)
+	int i = 0; for( ; i < MISSION_SLOT_MAX; i++)
 	{
 		m_abtnSetCase[i].Create( this, 0, 0, 50, 50, UI_MONSTER_COMBO, UBET_COMBO );
 	}
@@ -238,7 +238,7 @@ void CUIMonsterCombo::Render()
 	
 
 	// 미션 케이스 5칸
-	for(int i = 0; i < MISSION_SLOT_MAX; i++)
+	int i = 0; for( ; i < MISSION_SLOT_MAX; i++)
 	{
 // 		_pUIMgr->GetDrawPort()->AddTexture( nX+10, nY+32+(54*i), nX+270, nY+84+(54*i),
 // 												m_rtMissionSlot.U0, m_rtMissionSlot.V0, m_rtMissionSlot.U1, m_rtMissionSlot.V1,
@@ -708,7 +708,7 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 					}
 				}else if(IsInsideRect(nX, nY, m_rcCombo))
 				{
-					for(int i=0; i<MAX_COMBO_COUNT;i++)
+					int i=0; for( ; i<MAX_COMBO_COUNT;i++)
 					{
 						if(m_abtnSetCombo[i].MouseMessage(pMsg) != WMSG_FAIL)
 						{								
@@ -773,7 +773,7 @@ void CUIMonsterCombo::AddCombo(int nIndex,int nslot)
 {
 	if(m_nComboCount > MAX_COMBO_COUNT) return;
 
-	for (int i=0; i<MAX_COMBO_COUNT; i++)
+	int i=0; for( ; i<MAX_COMBO_COUNT; i++)
 	{
 		if(m_nCombo[i] == 0)
 		{
@@ -808,7 +808,7 @@ void CUIMonsterCombo::CloseMonsterCombo()
 	m_nComboPoint = 0;
 	m_nStageCount = 0;
 
-	for(int i=0; i<CASE_SLOT_COUNT; i++)
+	int i=0; for( ; i<CASE_SLOT_COUNT; i++)
 	{		
 		m_nCase[i] = 0;
 		m_abtnSetCase[i].InitBtn();		

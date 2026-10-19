@@ -81,6 +81,9 @@ endif()
 # SE_CheckEngine() compares the binaries against data/etc/binary.lod (the publisher's
 # build) and quits silently on a mismatch, so it must be off for binaries built here.
 target_compile_definitions(lc_client_common INTERFACE LC_NO_BINARY_CHECK)
+# The 2009 sources build nProtect GameGuard unless NO_GAMEGUARD is defined; it is Windows-only and
+# talks to the publisher's servers.
+target_compile_definitions(lc_client_common INTERFACE NO_GAMEGUARD)
 target_include_directories(lc_client_common INTERFACE
   "${LC_GEN}" "${LC_CLIENT_SRC}" "${LC_CLIENT_SRC}/include" "${LC_CLIENT_SRC}/Compat/d3dx8")
 target_link_libraries(lc_client_common INTERFACE Boost::headers)

@@ -11,7 +11,7 @@
 
 
 #include <Engine/Interface/UIWindow.h>
-#include <Engine/Effect/CEffectGroup.h >
+#include <Engine/Effect/CEffectGroup.h>
 
 
 // ----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ protected:
 	void	AdjustMyBuffRegion( BOOL bGoodBuff );
 	void	AdjustPartyBuffRegion();
 	void	AdjustTargetBuffRegion();
-	void	AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo = 0xF2F2F2FF );
+	void	AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo = 0xF2F2F2FF );
 	void	GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int &nInfoWidth, int &nInfoHeight );
 	void	ShowBuffInfo( BOOL bShowInfo, int nWhichBuff = -1, int nSelBuff = -1 );
 	void	RenderToolTip( int nWhichBuff, __int64 llCurTime );
@@ -205,7 +205,7 @@ public:
 		m_ubMyGoodCount = 0;
 		m_ubMyBadCount = 0;
 		m_rcMyGoodBuff.SetRect( -1, -1, -1, -1 );
-		for(int i =0 ;i< MAX_BUFF_ROW;i++){
+		int i =0; for( ;i< MAX_BUFF_ROW;i++){
 			m_rcMyGoodBuffRow[i].SetRect(-1,-1,-1,-1);
 		}
 		for(i=0; i<MAX_BUFF_ROW ;i++){

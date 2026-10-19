@@ -98,7 +98,7 @@ public :
 	
 	void AddTalkListString( CTString strName, CTString strMessage, bool bFocus = true, COLOR colDesc = 0xF2F2F2FF );
 	void AddTalkListString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
-	void AddErrorTalk( CTString &strDesc, COLOR colDesc = 0xE28769FF );
+	void AddErrorTalk( const CTString &strDesc, COLOR colDesc = 0xE28769FF );
 	void AddTalkTarget( CTString strName);
 	void DeleteTalkTarget(CTString strName);
 	bool IsExistTarget( CTString strName );

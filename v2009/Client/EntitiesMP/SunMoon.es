@@ -584,7 +584,7 @@ procedures:
 		}
 		catch (char *strError)
 		{
-			WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmColAniFile, strError);
+			WarningMessage(TRANS("Cannot load '%s': %s"), (const char*)(CTString&)m_fnmColAniFile, strError);
 			m_fnmColAniFile = "";
 		}
 		if(m_aoSkyColAni.GetData() != NULL)

@@ -136,7 +136,7 @@ void CUIMix::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHei
 	SetHeight( nNewHeight );
 
 	// Slot item button
-	for ( int i  = 0; i < MIX_ITEM_SLOT_COUNT; i++ )
+	int i  = 0; for( ; i < MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		m_btnItemSlot[i].Create( this, m_rcItemSlot[i].Left + 1, m_rcItemSlot[i].Top + 1, BTN_SIZE, BTN_SIZE, UI_MIX, UBET_ITEM );
 	}
@@ -205,7 +205,7 @@ void CUIMix::OpenMix ( int nItemIndex, int nRow, int nCol )
 void CUIMix::CloseMix()
 {
 	// Reset slot item
-	for ( int i = 0; i < MIX_ITEM_SLOT_COUNT; i++ )
+	int i = 0; for( ; i < MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		m_btnItemSlot[i].InitBtn();
 	}
@@ -227,7 +227,7 @@ void CUIMix::CloseMix()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMix::AddString( CTString &strDesc )
+void CUIMix::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_MIX_STRING )
 		return;
@@ -248,7 +248,7 @@ void CUIMix::AddString( CTString &strDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -278,7 +278,7 @@ void CUIMix::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -336,7 +336,7 @@ void CUIMix::AddString( CTString &strDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -366,7 +366,7 @@ void CUIMix::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -460,7 +460,7 @@ void CUIMix::Render()
 										m_rtBottom.U0, m_rtBottom.V0, m_rtBottom.U1, m_rtBottom.V1,
 										0xFFFFFFFF );
 
-	for ( int i = 0; i < MIX_ITEM_SLOT_COUNT; i++ )
+	int i = 0; for( ; i < MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		// Slot item region
 		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcItemSlot[i].Left, m_nPosY + m_rcItemSlot[i].Top,
@@ -821,7 +821,7 @@ void CUIMix::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = MAX_ITEMINFO_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strItemInfo[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;

@@ -217,7 +217,7 @@ void CUIRefine::CloseRefine()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIRefine::AddString( CTString &strDesc )
+void CUIRefine::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_REFINE_STRING )
 		return;
@@ -238,7 +238,7 @@ void CUIRefine::AddString( CTString &strDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -268,7 +268,7 @@ void CUIRefine::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -326,7 +326,7 @@ void CUIRefine::AddString( CTString &strDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -356,7 +356,7 @@ void CUIRefine::AddString( CTString &strDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

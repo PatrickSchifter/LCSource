@@ -358,7 +358,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 
 
 	// Set Item Array
-	for(int i=0; i<LEFT_SLOT_SIZE_BUY ; i++){
+	int i=0; for( ; i<LEFT_SLOT_SIZE_BUY ; i++){
 		m_aBtnSetItem[i].Create(this, _S(2378,"자세히"), 222, 83 + i*(SLOT_SIZE+SLOT_GAP)  , BTN_WIDTH_1 , 21);
 		m_aBtnSetItem[i].SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
 		m_aBtnSetItem[i].SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
@@ -1301,7 +1301,7 @@ void CUICashShop::RenderRecvGift()
 			
 			// Send Date
 			CTString nTemp;
-			struct tm *tmDate =localtime((time_t*)&m_anDate[m_anRecvOrder[i]]);
+		struct tm *tmDate =LocalTime32(m_anDate[m_anRecvOrder[i]]);
 			nTemp.PrintF(_S( 3091, "%d년 %d월 %d일" ), tmDate->tm_year+1900, tmDate->tm_mon+1, tmDate->tm_mday);
 			_pUIMgr->GetDrawPort()->PutTextEx(nTemp, tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE);
 			
@@ -1342,7 +1342,7 @@ void CUICashShop::RenderItemInfo(CUIButtonEx& btnInfo)
 	int tv_cnt = CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_vItemDataArray[0].m_itemCnt;
 	if( tv_cnt > 1) tv_name.PrintF("%s(%d)",btnInfo.GetCashName(),tv_cnt);
 	else*/
-	tv_name.PrintF("%s",btnInfo.GetCashName());
+	tv_name.PrintF("%s",(const char*)btnInfo.GetCashName());
 	AddItemInfoString(tv_name,0xFF63B1FF,MAX_CASH_ITEMINFO_LINE,MAX_CASH_ITEMINFO_CHAR);
 	AddItemInfoString(btnInfo.GetCashDesc(),0xFFF284FF,MAX_CASH_ITEMINFO_LINE,MAX_CASH_ITEMINFO_CHAR);
 
@@ -1433,12 +1433,12 @@ void CUICashShop::RednerShopItemInfo( CUIButtonEx& btnInfo )
 
 	CTString strName,strPrice,strCnt;
 	strName =  btnInfo.GetCashName();
-	strPrice.PrintF( "%s : %d", _S( 2397, "가격" ), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_cash );
+	strPrice.PrintF( "%s : %d", (const char*)(_S( 2397, "가격" )), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_cash );
 	if( SET_ITEM != btnInfo.GetCashType() ){
 		
 		if(!IsSetItem(btnInfo.GetCashIndex()))
 		{
-			strCnt.PrintF( "%s : %d", _S( 2396, "수량" ), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_vItemDataArray[0].m_itemCnt );
+			strCnt.PrintF( "%s : %d", (const char*)(_S( 2396, "수량" )), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_vItemDataArray[0].m_itemCnt );
 			_pUIMgr->GetDrawPort()->PutTextEx( strCnt, nInfoX + 70, nInfoY + 20, 0x6BD2FFFF );
 		}
 	}
@@ -4533,7 +4533,7 @@ BOOL CUICashShop::SetCashIndexToBtn(int nCashIndex,int nUniIndex,CUIButtonEx& bt
 // Name : AddItemInfoString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars)
+void CUICashShop::AddItemInfoString( const CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars)
 {
 	if( m_nCurInfoLines >= maxLine )
 		return ;
@@ -4562,7 +4562,7 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = maxChars;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -4604,7 +4604,7 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = maxChars;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

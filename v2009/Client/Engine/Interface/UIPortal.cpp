@@ -763,7 +763,7 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 	MsgBoxInfo.AddString( _S(3924, "어느 정도나 쾌적하게 만드시겠습니까?") );
 	MsgBoxInfo.m_nMaxRow +=2;
 
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), 10*50000, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), (const char*)(_S(1058, "필요나스")), 10*50000, (const char*)(_S(1762, "나스")), (const char*)(_s("   ")) );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 
 	
@@ -836,7 +836,7 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 	MsgBoxInfo.AddString( _S(3929, "어느 정도나 온순하게 만드시겠습니까?") );
 	MsgBoxInfo.m_nMaxRow +=2;
 
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), 10*100000, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), (const char*)(_S(1058, "필요나스")), 10*100000, (const char*)(_S(1762, "나스")), (const char*)(_s("   ")) );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 	
 	MsgBoxInfo.m_nColorBoxCount =4;

@@ -86,7 +86,7 @@ CUIBuff::CUIBuff()
 	m_nCurInfoLines = 0;
 	m_nRemainTimeLine = 0;
 	m_rcMyGoodBuff.SetRect( -1, -1, -1, -1 );
-	for(int i =0 ;i< MAX_BUFF_ROW;i++){
+	int i =0; for( ;i< MAX_BUFF_ROW;i++){
 		m_rcMyGoodBuffRow[i].SetRect(-1,-1,-1,-1);
 	}
 	m_rcMyBadBuff.SetRect( -1, -1, -1, -1 );
@@ -287,7 +287,7 @@ void CUIBuff::RenderMyBuff()
 		int	nOutY = m_nMyGoodBuffSY;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( int i = 0; i < m_ubMyGoodCount; i++ )
+		int i = 0; for( ; i < m_ubMyGoodCount; i++ )
 		{
 			if( (i%BUFF_BAD_COUNT) == 0 && i > 0)
 			{
@@ -410,7 +410,7 @@ void CUIBuff::RenderMyBuff()
 		int	nOutY = m_nMyBadBuffSY;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
+		int i = BUFF_GOOD_COUNT; for( ; i < nBadBuffEnd; i++ )
 		{
 			if( m_aMyBuff[i].GetItemIndex() == -1 )
 			{
@@ -580,7 +580,7 @@ void CUIBuff::RenderPartyBuff()
 		int	nOutY = m_rcPartyBuff.Top;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( int i = 0; i < m_ubPartyGoodCount; i++ )
+		int i = 0; for( ; i < m_ubPartyGoodCount; i++ )
 		{
 			if( (i%MAX_BUFF_COL) == 0 && i > 0)
 			{
@@ -724,7 +724,7 @@ void CUIBuff::RenderPartyBuff()
 			nBuffX = nOutX + 1;
 			nBuffY = nOutY + 1;
 		}
-		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
+		int i = BUFF_GOOD_COUNT; for( ; i < nBadBuffEnd; i++ )
 		{
 			if( m_aPartyBuff[i].GetItemIndex() == -1 )
 			{
@@ -869,7 +869,7 @@ void CUIBuff::RenderTargetBuff()
 		int	nOutY = m_rcTargetBuff.Top;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( int i = 0; i < m_ubTargetGoodCount; i++ )
+		int i = 0; for( ; i < m_ubTargetGoodCount; i++ )
 		{
 			if( (i%MAX_BUFF_COL) == 0 && i > 0)
 			{
@@ -1013,7 +1013,7 @@ void CUIBuff::RenderTargetBuff()
 			nBuffX = nOutX + 1;
 			nBuffY = nOutY + 1;
 		}
-		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
+		int i = BUFF_GOOD_COUNT; for( ; i < nBadBuffEnd; i++ )
 		{
 			if( m_aTargetBuff[i].GetItemIndex() == -1 )
 			{
@@ -1140,7 +1140,7 @@ void CUIBuff::AdjustMyBuffRegion( BOOL bGoodBuff )
 	if( bGoodBuff )
 	{
 		// Multi line
-		for( int i=0 ; i < MAX_BUFF_ROW ;i++)
+		int i=0; for( ; i < MAX_BUFF_ROW ;i++)
 		{
 			if( m_ubMyGoodCount < MAX_BUFF_COL*(i+1))
 			{
@@ -1267,7 +1267,7 @@ void CUIBuff::AdjustTargetBuffRegion()
 // ----------------------------------------------------------------------------
 void CUIBuff::CopyMyBuffToTargetBuff()
 {
-	for( int i = 0; i < m_ubMyGoodCount; i++ )
+	int i = 0; for( ; i < m_ubMyGoodCount; i++ )
 		AddTargetBuff( m_aMyBuffInfo[i] );
 
 	for( i = BUFF_GOOD_COUNT; i < BUFF_GOOD_COUNT + m_ubMyBadCount; i++ )
@@ -1368,7 +1368,7 @@ void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( int iBuff = 0; iBuff < m_ubMyGoodCount; iBuff++ )
+		int iBuff = 0; for( ; iBuff < m_ubMyGoodCount; iBuff++ )
 		{
 			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1394,7 +1394,7 @@ void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubMyBadCount;
-		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		int iBuff = BUFF_GOOD_COUNT; for( ; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1454,7 +1454,7 @@ void CUIBuff::RemovePartyBuff( SLONG slPartyIndex, SLONG slItemIndex, SLONG slSk
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( int iBuff = 0; iBuff < m_ubPartyGoodCount; iBuff++ )
+		int iBuff = 0; for( ; iBuff < m_ubPartyGoodCount; iBuff++ )
 		{
 			if( m_aPartyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aPartyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1476,7 +1476,7 @@ void CUIBuff::RemovePartyBuff( SLONG slPartyIndex, SLONG slItemIndex, SLONG slSk
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubPartyBadCount;
-		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		int iBuff = BUFF_GOOD_COUNT; for( ; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aPartyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aPartyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1531,7 +1531,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( int iBuff = 0; iBuff < m_ubTargetGoodCount; iBuff++ )
+		int iBuff = 0; for( ; iBuff < m_ubTargetGoodCount; iBuff++ )
 		{
 			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1553,7 +1553,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubTargetBadCount;
-		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		int iBuff = BUFF_GOOD_COUNT; for( ; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1601,7 +1601,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 // Name : AddBuffInfoString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
+void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo )
 {
 	if( m_nCurInfoLines >= MAX_BUFFINFO_LINE )
 		return;
@@ -1631,7 +1631,7 @@ void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_BUFFINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strBuffInfo,0,iPos))
 					break;
@@ -1674,7 +1674,7 @@ void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_BUFFINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strBuffInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

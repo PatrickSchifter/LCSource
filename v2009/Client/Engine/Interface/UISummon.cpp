@@ -400,9 +400,9 @@ void CUISummon::ShowToolTip( BOOL bShow, int nToolTipID )
 		{
 		case CSlaveInfo::COMMAND_ATTACK:
 			if( bFirstSlot )
-				m_strToolTip.PrintF( "%s %s", _S(2354, "¼±°ø" ), CTString( "(Ctrl + 1)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2354, "¼±°ø" )), (const char*)(CTString( "(Ctrl + 1)" )) );
 			else
-				m_strToolTip.PrintF( "%s %s", _S(2354, "¼±°ø" ), CTString( "(Ctrl + Q)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2354, "¼±°ø" )), (const char*)(CTString( "(Ctrl + Q)" )) );
 			m_btnCommand[nToolTipID].GetAbsPos( nInfoX, nInfoY );
 			nWidth = m_btnCommand[nToolTipID].GetWidth();
 			nHeight = m_btnCommand[nToolTipID].GetHeight();
@@ -410,9 +410,9 @@ void CUISummon::ShowToolTip( BOOL bShow, int nToolTipID )
 			
 		case CSlaveInfo::COMMAND_PINCER:
 			if( bFirstSlot )
-				m_strToolTip.PrintF( "%s %s", _S(2355, "Çù°ø" ), CTString( "(Ctrl + 2)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2355, "Çù°ø" )), (const char*)(CTString( "(Ctrl + 2)" )) );
 			else
-				m_strToolTip.PrintF( "%s %s", _S(2355, "Çù°ø" ), CTString( "(Ctrl + W)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2355, "Çù°ø" )), (const char*)(CTString( "(Ctrl + W)" )) );
 			m_btnCommand[nToolTipID].GetAbsPos( nInfoX, nInfoY );
 			nWidth = m_btnCommand[nToolTipID].GetWidth();
 			nHeight = m_btnCommand[nToolTipID].GetHeight();
@@ -420,9 +420,9 @@ void CUISummon::ShowToolTip( BOOL bShow, int nToolTipID )
 			
 		case CSlaveInfo::COMMAND_HOLD:
 			if( bFirstSlot )
-				m_strToolTip.PrintF( "%s %s", _S(2356, "È¦µå" ), CTString( "(Ctrl + 3)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2356, "È¦µå" )), (const char*)(CTString( "(Ctrl + 3)" )) );
 			else
-				m_strToolTip.PrintF( "%s %s", _S(2356, "È¦µå" ), CTString( "(Ctrl + E)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2356, "È¦µå" )), (const char*)(CTString( "(Ctrl + E)" )) );
 			m_btnCommand[nToolTipID].GetAbsPos( nInfoX, nInfoY );
 			nWidth = m_btnCommand[nToolTipID].GetWidth();
 			nHeight = m_btnCommand[nToolTipID].GetHeight();			
@@ -430,9 +430,9 @@ void CUISummon::ShowToolTip( BOOL bShow, int nToolTipID )
 			
 		case CSlaveInfo::COMMAND_PROTECTION:
 			if( bFirstSlot )
-				m_strToolTip.PrintF( "%s %s", _S(2357, "¼öÈ£" ), CTString( "(Ctrl + 4)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2357, "¼öÈ£" )), (const char*)(CTString( "(Ctrl + 4)" )) );
 			else
-				m_strToolTip.PrintF( "%s %s", _S(2357, "¼öÈ£" ), CTString( "(Ctrl + R)" ) );
+				m_strToolTip.PrintF( "%s %s", (const char*)(_S(2357, "¼öÈ£" )), (const char*)(CTString( "(Ctrl + R)" )) );
 			m_btnCommand[nToolTipID].GetAbsPos( nInfoX, nInfoY );
 			nWidth = m_btnCommand[nToolTipID].GetWidth();
 			nHeight = m_btnCommand[nToolTipID].GetHeight();			
@@ -444,9 +444,9 @@ void CUISummon::ShowToolTip( BOOL bShow, int nToolTipID )
 				CSkill	&rSkill = _pNetwork->GetSkillData( nSkillIndex );
 				
 				if( bFirstSlot )
-					m_strToolTip.PrintF( "%s %s", rSkill.GetName(), CTString( "(Ctrl + 5)" ) );
+					m_strToolTip.PrintF( "%s %s", rSkill.GetName(), (const char*)(CTString( "(Ctrl + 5)" )) );
 				else
-					m_strToolTip.PrintF( "%s %s", rSkill.GetName(), CTString( "(Ctrl + T)" ) );
+					m_strToolTip.PrintF( "%s %s", rSkill.GetName(), (const char*)(CTString( "(Ctrl + T)" )) );
 				m_btnSkill.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnSkill.GetWidth();
 				nHeight = m_btnSkill.GetHeight();

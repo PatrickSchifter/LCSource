@@ -361,7 +361,7 @@ void CUICharacterInfo::CreateNewCharacterInfo(CUIWindow *pParentWnd, int nX, int
 
 		// Skill buttons
 	// Active skill
-	for( int iRow = 0; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL ; iRow++ )
+	int iRow = 0; for( ; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL ; iRow++ )
 	{
 		m_btnActiveSkill[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CHARACTERINFO,
 										UBET_SKILL, 0, iRow );
@@ -502,19 +502,19 @@ void CUICharacterInfo::ShowCharInfoDesc(int nTabID)
 	
 	if(nTabID == PAGE_CHARINFO_NEW_SKILL)
 	{
-		strTemp.PrintF("%s", _S(91, "스킬") );
+		strTemp.PrintF("%s", (const char*)(_S(91, "스킬")) );
 	}
 	else if(nTabID == PAGE_CHARINFO_NEW_ACTION_SOCIAL)
 	{
-		strTemp.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );	
+		strTemp.PrintF( "%s,%s",(const char*)(_S(94, "액션")) ,(const char*)(_S(96, "소셜")) );	
 	}
 	else if(nTabID == PAGE_CHARINFO_NEW_GUILD_PARTY)
 	{
-		strTemp.PrintF("%s,%s",_S(97, "파티") ,_S(98, "길드") );
+		strTemp.PrintF("%s,%s",(const char*)(_S(97, "파티")) ,(const char*)(_S(98, "길드")) );
 	}
 	else
 	{
-		strTemp.PrintF("%s", _S(69, "캐릭터 정보") );
+		strTemp.PrintF("%s", (const char*)(_S(69, "캐릭터 정보")) );
 	}
 
 	m_strCharInfoDesc = strTemp;
@@ -601,7 +601,7 @@ void  CUICharacterInfo::ShowSkillDesc(int nRow /* = -1 */)
 				
 				if (NeedItem[0] > 0 || NeedItem[1] > 0)
 				{
-					strTemp.PrintF("%s:%s%s", pNeedWords, strNeedItem[0], strNeedItem[1]);
+					strTemp.PrintF("%s:%s%s", pNeedWords, (const char*)strNeedItem[0], (const char*)strNeedItem[1]);
 					m_rsSkillDesc.AddString(strTemp, strColor);
 				}
 
@@ -1094,7 +1094,7 @@ void CUICharacterInfo::RenderNewCharacterInfoSkill()
 	
 	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
 
-	for(int i = 0; i<nCount; i++)
+	int i = 0; for( ; i<nCount; i++)
 	{
 		if(i == m_nSkillActionUpperTab[m_ucipCurrentPage-1]) // 지금 표시되는탭
 		{
@@ -1681,22 +1681,22 @@ void CUICharacterInfo::SetCurrentPageNewCharacterInfo(int nTabNum)
 
 	if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_SKILL)
 	{
-		m_strTitleName.PrintF("%s", _S(91, "스킬") );
+		m_strTitleName.PrintF("%s", (const char*)(_S(91, "스킬")) );
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[0]);	
 	}
 	else if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_ACTION_SOCIAL)
 	{
-		m_strTitleName.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );
+		m_strTitleName.PrintF( "%s,%s",(const char*)(_S(94, "액션")) ,(const char*)(_S(96, "소셜")) );
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[1]);	
 	}
 	else if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_GUILD_PARTY)
 	{
-		m_strTitleName.PrintF("%s,%s",_S(97, "파티") ,_S(98, "길드") );
+		m_strTitleName.PrintF("%s,%s",(const char*)(_S(97, "파티")) ,(const char*)(_S(98, "길드")) );
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[2]);	
 	}
 	else
 	{
-		m_strTitleName.PrintF("%s", _S(69, "캐릭터 정보") );
+		m_strTitleName.PrintF("%s", (const char*)(_S(69, "캐릭터 정보")) );
 	}
 
 
@@ -2517,7 +2517,7 @@ void CUICharacterInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth
 
 	// Skill buttons
 	// Active skill
-	for( int iRow = 0; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL ; iRow++ )
+	int iRow = 0; for( ; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL ; iRow++ )
 	{
 		m_btnActiveSkill[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CHARACTERINFO,
 										UBET_SKILL, 0, iRow );
@@ -2613,7 +2613,7 @@ void CUICharacterInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth
 void CUICharacterInfo::RegisterActions()
 {
 	// Clear action buttons
-	for( int iAct = 0; iAct < ACTION_NORAML_SLOT_ROW_TOTAL; iAct++ )
+	int iAct = 0; for( ; iAct < ACTION_NORAML_SLOT_ROW_TOTAL; iAct++ )
 		m_btnNormalAction[iAct].InitBtn();
 	for( iAct = 0; iAct < ACTION_SOCIAL_SLOT_ROW_TOTAL; iAct++ )
 		m_btnSocialAction[iAct].InitBtn();
@@ -2866,7 +2866,7 @@ void CUICharacterInfo::AddSkillInfoString( CTString &strSkillInfo, COLOR colSkil
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxSkillStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strSkillInfo,0,iPos))
 					break;
@@ -2908,7 +2908,7 @@ void CUICharacterInfo::AddSkillInfoString( CTString &strSkillInfo, COLOR colSkil
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxSkillStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strSkillInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -3228,7 +3228,7 @@ void CUICharacterInfo::AddActionInfoString( CTString &strActionInfo, COLOR colAc
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxActionStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strActionInfo,0,iPos))
 					break;
@@ -3270,7 +3270,7 @@ void CUICharacterInfo::AddActionInfoString( CTString &strActionInfo, COLOR colAc
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxActionStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strActionInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -4655,45 +4655,45 @@ void CUICharacterInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case UCIP_STATUS:
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s%s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 101, "스테이터스" )), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s%s", _S( 101, "스테이터스" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 101, "스테이터스" )), "(Alt+T)" );
 			}
 			break;
 
 		case UCIP_SKILL:
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s%s", _S( 102, "스킬" ), "(S,Alt+S)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 102, "스킬" )), "(S,Alt+S)" );
 				else
-					m_strToolTip.PrintF( "%s%s", _S( 102, "스킬" ), "(Alt+S)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 102, "스킬" )), "(Alt+S)" );
 			}
 			break;
 
 		case UCIP_ACTION:
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s%s", _S( 103, "액션" ), "(A,Alt+A)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 103, "액션" )), "(A,Alt+A)" );
 				else
-					m_strToolTip.PrintF( "%s%s", _S( 103, "액션" ), "(Alt+A)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 103, "액션" )), "(Alt+A)" );
 			}
 			break;
 
 		case UCIP_SOCIAL:
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s%s", _S( 104, "소셜" ), "(C,Alt+C)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 104, "소셜" )), "(C,Alt+C)" );
 				else
-					m_strToolTip.PrintF( "%s%s", _S( 104, "소셜" ), "(Alt+C)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 104, "소셜" )), "(Alt+C)" );
 			}
 			break;
 
 		case UCIP_GROUP:
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s%s", _S( 105, "그룹" ), "(G,Alt+G)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 105, "그룹" )), "(G,Alt+G)" );
 				else
-					m_strToolTip.PrintF( "%s%s", _S( 105, "그룹" ), "(Alt+G)" );
+					m_strToolTip.PrintF( "%s%s", (const char*)(_S( 105, "그룹" )), "(Alt+G)" );
 			}
 			break;
 
@@ -4806,7 +4806,7 @@ void CUICharacterInfo::ToggleVisibleSkill()
 	else
 	{
 		m_ucipCurrentPage = PAGE_CHARINFO_NEW_SKILL;
-		m_strTitleName.PrintF("%s", _S(91, "스킬") );
+		m_strTitleName.PrintF("%s", (const char*)(_S(91, "스킬")) );
 		m_nSkillActionUpperTab[0] = 0;
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[0]);	
 		_pUIMgr->RearrangeOrder( UI_CHARACTERINFO, TRUE );
@@ -4843,7 +4843,7 @@ void CUICharacterInfo::ToggleVisibleAction()
 	else
 	{
 		m_ucipCurrentPage = PAGE_CHARINFO_NEW_ACTION_SOCIAL;
-		m_strTitleName.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );
+		m_strTitleName.PrintF( "%s,%s",(const char*)(_S(94, "액션")) ,(const char*)(_S(96, "소셜")) );
 		m_nSkillActionUpperTab[1] = 0;
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[1]);
 		_pUIMgr->RearrangeOrder( UI_CHARACTERINFO, TRUE );
@@ -4879,7 +4879,7 @@ void CUICharacterInfo::ToggleVisibleSocial()
 	else
 	{
 		m_ucipCurrentPage = PAGE_CHARINFO_NEW_ACTION_SOCIAL;
-		m_strTitleName.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );
+		m_strTitleName.PrintF( "%s,%s",(const char*)(_S(94, "액션")) ,(const char*)(_S(96, "소셜")) );
 		m_nSkillActionUpperTab[1] = 1;
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[1]);	
 		_pUIMgr->RearrangeOrder( UI_CHARACTERINFO, TRUE );
@@ -4915,7 +4915,7 @@ void CUICharacterInfo::ToggleVisibleGroup()
 	else
 	{
 		m_ucipCurrentPage = PAGE_CHARINFO_NEW_GUILD_PARTY;
-		m_strTitleName.PrintF("%s,%s",_S(97, "파티") ,_S(98, "길드") );
+		m_strTitleName.PrintF("%s,%s",(const char*)(_S(97, "파티")) ,(const char*)(_S(98, "길드")) );
 		m_nSkillActionUpperTab[2] = 0;
 		SetCurrentSkillInfo(m_ucipCurrentPage, m_nSkillActionUpperTab[2]);
 		_pUIMgr->RearrangeOrder( UI_CHARACTERINFO, TRUE );
@@ -4967,7 +4967,7 @@ SBYTE CUICharacterInfo::GetSkillLevel( int nIndex, BOOL bSpecial )
 		if( nIndex ==436 )
 			return 1;
 
-		for( int nSkill = 0; nSkill < SKILL_ACTIVE_SLOT_ROW_TOTAL; nSkill++ )
+		int nSkill = 0; for( ; nSkill < SKILL_ACTIVE_SLOT_ROW_TOTAL; nSkill++ )
 		{
 			if( m_btnActiveSkill[nSkill].GetSkillIndex() == nIndex )
 				return m_btnActiveSkill[nSkill].GetSkillLevel();
@@ -7113,7 +7113,7 @@ void CUICharacterInfo::UseSkill( int nIndex )
 // ----------------------------------------------------------------------------
 void CUICharacterInfo::ClearSkills()
 {
-	for( int iRow = 0; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL; iRow++ )
 		m_btnActiveSkill[iRow].InitBtn();
 
 	for( iRow = 0; iRow < SKILL_PASSIVE_SLOT_ROW_TOTAL; iRow++ )
@@ -7130,7 +7130,7 @@ void CUICharacterInfo::ClearSkills()
 // ----------------------------------------------------------------------------
 void CUICharacterInfo::ClearSSkills()
 {
-	for( int iRow = 0; iRow < SKILL_SPECIAL_SLOT_ROW_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SKILL_SPECIAL_SLOT_ROW_TOTAL; iRow++ )
 		m_btnSpecialSkill[iRow].InitBtn();
 }
 
@@ -7142,7 +7142,7 @@ void CUICharacterInfo::UpdateSkillLevel( int nIndex, SBYTE sbLevel, BOOL bSpecia
 {
 	if( !bSpecial )
 	{
-		for( int iRow = 0; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL; iRow++ )
+		int iRow = 0; for( ; iRow < SKILL_ACTIVE_SLOT_ROW_TOTAL; iRow++ )
 		{
 			if( m_btnActiveSkill[iRow].GetSkillIndex() == nIndex )
 			{

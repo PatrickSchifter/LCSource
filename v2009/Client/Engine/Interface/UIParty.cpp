@@ -180,7 +180,7 @@ void CUIParty::TargetMember( int nIndex )
 // Name : AddPartyMember()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIParty::AddPartyMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void CUIParty::AddPartyMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 								int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 								FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -216,7 +216,7 @@ void CUIParty::AddPartyMember( SBYTE sbLeader, SLONG slIndex, CTString &strName,
 // ----------------------------------------------------------------------------
 void CUIParty::RemoveMember( SLONG slIndex )
 {
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		if( m_aslIndices[iMem] == slIndex )
 			break;
@@ -226,11 +226,11 @@ void CUIParty::RemoveMember( SLONG slIndex )
 		return;
 
 	CTString	strSysMessage;
-	strSysMessage.PrintF( _S2( 421, m_astrNames[iMem], "%s<가> 파티에서 탈퇴하셨습니다." ), m_astrNames[iMem] );
+	strSysMessage.PrintF( _S2( 421, m_astrNames[iMem], "%s<가> 파티에서 탈퇴하셨습니다." ), (const char*)m_astrNames[iMem] );
 	_pUIMgr->GetChatting()->AddSysMessage(strSysMessage );
 
 	m_nMemberCount--;
-	for( int iPos = iMem; iPos < m_nMemberCount; iPos++ )
+	int iPos = iMem; for( ; iPos < m_nMemberCount; iPos++ )
 	{
 		m_aslIndices[iPos] = m_aslIndices[iPos + 1];
 		m_astrNames[iPos] = m_astrNames[iPos + 1];
@@ -354,7 +354,7 @@ void CUIParty::UpdateMemberStatus( SLONG slIndex, int iHP, int iMaxHP,
 									int iMP, int iMaxMP )
 {
 	// Find party member
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		if( m_aslIndices[iMem] == slIndex )
 			break;
@@ -419,7 +419,7 @@ void CUIParty::Render()
 										m_rtTop.U0, m_rtTop.V0, m_rtTop.U1, m_rtTop.V1,
 										0xFFFFFFFF );
 
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		// Middle
 		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + m_nWidth, nY + PARTY_STRETCH_HEIGHT,
@@ -453,7 +453,7 @@ void CUIParty::Render()
 										0xFFFFFFFF );
 	********************************/
 	
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		nY = m_nPosY +PARTY_STRETCH_HEIGHT *iMem;
 
@@ -636,7 +636,7 @@ WMSG_RESULT CUIParty::MouseMessage( MSG *pMsg )
 			// Buff toggle
 			else
 			{
-				for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+				int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 					m_aubBuff[iMem] = 0;
 
 				int	nBuffX = m_nPosX;
@@ -896,7 +896,7 @@ void CUIParty::SendPartyInvite( SBYTE sbType, CTString &strDestName )
 	CTString	strMessage;
 	if( m_bIsPartyRequested )
 	{
-		strMessage.PrintF( _S( 361, "이미 %s에게 파티를 신청중입니다." ), m_strDestName );
+		strMessage.PrintF( _S( 361, "이미 %s에게 파티를 신청중입니다." ), (const char*)m_strDestName );
 		_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		return;
 	}
@@ -938,11 +938,11 @@ void CUIParty::SendPartyInvite( SBYTE sbType, CTString &strDestName )
 	}
 
 	// If target is already my party member
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		if( slIndex == m_aslIndices[iMem] )
 		{
-			strMessage.PrintF( _S2( 420, m_strDestName, "이미 %s<과> 파티중입니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 420, m_strDestName, "이미 %s<과> 파티중입니다." ), (const char*)m_strDestName );
 			_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_ERROR );
 
 			return;
@@ -1044,7 +1044,7 @@ void CUIParty::PartyInvite( SBYTE sbType, SLONG slSrcIndex, CTString &strSrcName
 	{
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_CANCEL, UI_PARTY, MSGCMD_PARTY_INVITE );
-		strMessage.PrintF( _S( 216, "%s에게 파티를 신청중입니다. 취소하시겠습니까?" ), m_strDestName );
+		strMessage.PrintF( _S( 216, "%s에게 파티를 신청중입니다. 취소하시겠습니까?" ), (const char*)m_strDestName );
 		MsgBoxInfo.AddString( strMessage );
 		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
@@ -1057,13 +1057,13 @@ void CUIParty::PartyInvite( SBYTE sbType, SLONG slSrcIndex, CTString &strSrcName
 			switch( m_nType )
 			{
 			case PT_PEACEEVER:
-				strMessage.PrintF( _S2( 217, strSrcName, "%s<가> 파티(균등 분배) 신청을 했습니다. 수락하시겠습니까?" ), strSrcName );
+				strMessage.PrintF( _S2( 217, strSrcName, "%s<가> 파티(균등 분배) 신청을 했습니다. 수락하시겠습니까?" ), (const char*)strSrcName );
 				break;
 			case PT_SURVIVAL:
-				strMessage.PrintF( _S2( 218, strSrcName, "%s<가> 파티(입수 우선) 신청을 했습니다. 수락하시겠습니까?" ), strSrcName );
+				strMessage.PrintF( _S2( 218, strSrcName, "%s<가> 파티(입수 우선) 신청을 했습니다. 수락하시겠습니까?" ), (const char*)strSrcName );
 				break;
 			case PT_ATTACK:
-				strMessage.PrintF( _S2( 1652, strSrcName, "%s<가> 파티(전투형) 신청을 했습니다. 수락하시겠습니까?" ), strSrcName );
+				strMessage.PrintF( _S2( 1652, strSrcName, "%s<가> 파티(전투형) 신청을 했습니다. 수락하시겠습니까?" ), (const char*)strSrcName );
 				break;
 			}
 			
@@ -1117,7 +1117,7 @@ void CUIParty::PartyReject( BOOL bLeader )
 // Name : PartyAddMember()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIParty::PartyAddMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void CUIParty::PartyAddMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 								int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 								FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -1217,7 +1217,7 @@ void CUIParty::PartyMemberInfo( SLONG slIndex, int iLevel, int iHP, int iMaxHP,
 								int iMP, int iMaxMP, FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
 	// Find party member
-	for( int iMem = 0; iMem < m_nMemberCount; iMem++ )
+	int iMem = 0; for( ; iMem < m_nMemberCount; iMem++ )
 	{
 		if( m_aslIndices[iMem] == slIndex )
 			break;
@@ -1320,7 +1320,7 @@ void CUIParty::MandateBossReq( CTString strManadateChaName )
 	CTString strNewBossName;
 	CTString strMessage;
 
-	strMessage.PrintF( _S(2170, "정말로 %s님께 파티장을 위임하시겠습니까?" ), strManadateChaName );
+	strMessage.PrintF( _S(2170, "정말로 %s님께 파티장을 위임하시겠습니까?" ), (const char*)strManadateChaName );
 		
 	MsgBoxInfo.AddString( strMessage );
 	_pUIMgr->CreateMessageBox( MsgBoxInfo );
@@ -1367,11 +1367,11 @@ void CUIParty::MandateBoss( CTString strBossName, SLONG nManadateChaIndex, CTStr
 
 	if( sbMandate )
 	{
-		strMessage.PrintF( _S(2171, "%s님이 파티장을 위임하여 %s님이 새로운 파티장으로 임명되었습니다." ), strBossName, strManadateChaName );
+		strMessage.PrintF( _S(2171, "%s님이 파티장을 위임하여 %s님이 새로운 파티장으로 임명되었습니다." ), (const char*)strBossName, (const char*)strManadateChaName );
 	}
 	else
 	{
-		strMessage.PrintF( _S(2172, "%s님이 새로운 파티장으로 임명되었습니다." ), strManadateChaName );
+		strMessage.PrintF( _S(2172, "%s님이 새로운 파티장으로 임명되었습니다." ), (const char*)strManadateChaName );
 	}
 	
 	MsgBoxInfo.AddString( strMessage );

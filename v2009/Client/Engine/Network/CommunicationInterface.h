@@ -10,7 +10,8 @@
 #define DEMO_CLIENT SERVER_CLIENTS
 
 #include <Engine/Network/CPacket.h>
-#include <Engine/Network/InputBuffer.h> 
+#include <Engine/Network/InputBuffer.h>
+#include <Engine/Network/SocketCompat.h>
 
 // Communication class
 class ENGINE_API CCommunicationInterface 

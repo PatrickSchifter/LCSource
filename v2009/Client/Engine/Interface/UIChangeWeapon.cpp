@@ -37,7 +37,7 @@ static int	_iMaxMsgStringChar = 0;
 
 // NOTE : 서버측에 하드코딩 되어 있는 무기 교체 가능 아이템 인덱스.
 // 레벨, 한손검, 석궁, 스태프, 대검, 도끼, 숏스테프, 활, 단검, -1, -1, -1, 이도류, 완드, 사이드, 폴암 : 할일 : 소서러
-const static matchTable[12][16] = {
+const static int matchTable[12][16] = {
 	{1,48,530,600,12,558,356,50,528,-1,-1,-1,459,599,-1,-1},
 	{5,53,666,628,51,601,357,56,529,-1,-1,-1,610,619,-1,-1},
 	{9,55,637,629,52,602,358,57,532,-1,-1,-1,611,620,-1,-1},
@@ -1305,7 +1305,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1338,7 +1338,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -1398,7 +1398,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -1431,7 +1431,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

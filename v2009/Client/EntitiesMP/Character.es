@@ -370,7 +370,7 @@ functions:
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("A Orcman sent %s into the halls of Valhalla"), strPlayerName);
+		str.PrintF(TRANS("A Orcman sent %s into the halls of Valhalla"), (const char*)strPlayerName);
 		return str;
 	}
 
@@ -1048,11 +1048,11 @@ functions:
 		CTFileName strBmName;
 		CTFileName fnFileName;
 		cnt = GetCurrentPlayerModelInstance()->mi_aMeshInst.Count(); 
-		CPrintF("%s \n",m_strName);				
+		CPrintF("%s \n",(const char*)m_strName);				
 		for(int i=0;i<cnt;++i)
 		{
 			strBmName = GetCurrentPlayerModelInstance()->mi_aMeshInst[i].mi_pMesh->GetName();
-			CPrintF("%s \n",strBmName);
+			CPrintF("%s \n",(const char*)strBmName);
 		}
 	}
 
@@ -1812,7 +1812,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 				}
 		
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;

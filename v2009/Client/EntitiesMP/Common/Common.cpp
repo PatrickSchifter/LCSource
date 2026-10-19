@@ -66,7 +66,7 @@ void CCompMessageID::NewMessage(const CTFileName &fnm)
 	} else if (strName.Matches("*messages\\statistics*")) {
 		cmi_cmtType = CMT_STATISTICS;
 	} else {
-		CPrintF("Unknown message type: %s\n", (const CTString&) fnm);
+		CPrintF("Unknown message type: %s\n", (const char*)((const CTString&) fnm));
 		cmi_cmtType = CMT_INFORMATION;
 	}
 	// mark as unread
@@ -561,7 +561,7 @@ void StartSkaAnimStr(CModelInstance *m_miModel, CTString strAnimName, DWORD dwFl
 	if (iAnimID==-1) {    
 		ASSERT(FALSE);
 		CPrintF("Animation '%s' does not exist in model instance '%s'!\n",
-						strAnimName, m_miModel->GetName());
+						(const char*)strAnimName, (const char*)m_miModel->GetName());
 		return;
 	}
 	m_miModel->NewClearState(fFadeTime);
@@ -1035,7 +1035,7 @@ BOOL SetPlayerAppearance_internal(CModelInstance *pmiModel, const CTFileName &fn
 	} catch (char *strError) {
 		// report error
 		CPrintF(TRANS("Cannot load player model '%s':\n%s\n"), 
-			fnmSMC, strError);
+			(const char*)fnmSMC, strError);
 		return FALSE;
 	}
 }
@@ -2031,12 +2031,12 @@ void ska_CreateAnimIDFromString(INDEX *piID, CModelInstance *pmi, CTString strAn
 		}
 	} else {
 		CPrintF("WARNING: Animation set for model '%s' does not contain a required animation #%d('%s').\n\r\
-Animation behaveour will be undefined.\n", pmi->GetName(), iAnimID, strAnimName);
+Animation behaveour will be undefined.\n", (const char*)pmi->GetName(), iAnimID, (const char*)strAnimName);
 		//untested!! - return any ID, just so that we don't crash
 		iAnimID = pmi->FindFirstAnimationID();
 		if (iAnimID == -1) {
 			CPrintF("WARNING: No animations in ModelInstance '%s' ('%s').\n\r",
-			pmi->GetName(), strAnimName);    
+			(const char*)pmi->GetName(), (const char*)strAnimName);    
 		}    
 	}
 	*piID = iAnimID;
@@ -2056,7 +2056,7 @@ void ska_CreateBoneIDFromString(INDEX *piID, CModelInstance *pmi, CTString strBo
 	if (pmi->mi_psklSkeleton->FindBoneInLOD(iBoneID, 0)==-1)
 	{
 		WarningMessage("WARNING: Bone #%d('%s') not found in model '%s' skeleton.\n\r\
-Skeleton behaveour will be undefined.\n", iBoneID, strBoneName, pmi->GetName());
+Skeleton behaveour will be undefined.\n", iBoneID, (const char*)strBoneName, (const char*)pmi->GetName());
 		iBoneID = -1;
 	}
 	*piID = iBoneID;
@@ -2075,7 +2075,7 @@ void ska_CreateCollisionIDFromString(INDEX *piID, CModelInstance *pmi, CTString 
 	if (pmi->GetColisionBoxIndex(iBoxID)==-1)
 	{
 		WarningMessage("WARNING: Collision Box #%d('%s') not found in model '%s.\n\r\
-Behaveour will be undefined.\n", iBoxID, strCollisionName, pmi->GetName());
+Behaveour will be undefined.\n", iBoxID, (const char*)strCollisionName, (const char*)pmi->GetName());
 		iBoxID = -1;
 	}
 	*piID = iBoxID;
@@ -2096,7 +2096,7 @@ void ska_CreateChildIDFromString(INDEX *piID, CModelInstance *pmi, CTString strC
 	if (pmi->GetChild(iChildID, bRecursive)==NULL && (_pNetwork->IsServer()||_bWorldEditorApp))
 	{
 		WarningMessage("WARNING: Child #%d('%s') not found in model '%s'.\n\r\
-Behaveour will be undefined.\n", iChildID, strChildName, pmi->GetName());
+Behaveour will be undefined.\n", iChildID, (const char*)strChildName, (const char*)pmi->GetName());
 		ASSERT(FALSE);
 		iChildID = -1;
 	}
@@ -2177,7 +2177,7 @@ INDEX AddSkaChild(CEntity *penThis, CModelInstance *pmiParent, INDEX iSkaModelCo
 		pmiChild->Copy(*pmiComponent);
 	} catch (char *strError) {
 		const CTFileName &fnSMCFileName = penThis->FileNameForComponent(ECT_SKAMODEL,iSkaModelComponentID);
-		FatalError(TRANS("Cannot load SMC model '%s': %s"), fnSMCFileName, strError);
+		FatalError(TRANS("Cannot load SMC model '%s': %s"), (const char*)fnSMCFileName, strError);
 	}
 
 	// if we want a different name then the one in .SMC
@@ -2390,12 +2390,12 @@ void MarkEnemyDead(class CEnemyBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_IDSpawner);
+						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2417,12 +2417,12 @@ void MarkEnemyDead(class CCharacterBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_IDSpawner);
+						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2444,12 +2444,12 @@ void MarkEnemyDead(class CPetBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_IDSpawner);
+						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2471,12 +2471,12 @@ void MarkEnemyDead(class CSlaveBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_IDSpawner);
+						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2498,12 +2498,12 @@ void MarkEnemyDead(class CWildPetBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_IDSpawner);
+						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2523,7 +2523,7 @@ void MarkSpawnerSpawned(class CEnemySpawner *penSpawner)
 			if(pekd->ekd_ctToSpawn<=0)
 			{
 				CPrintF("!!! Warning !!! Spawner named \"%s\" with ID %d spawned more enemies than supposed !!!\n",
-					pekd->ekd_strName, pekd->ekd_ID);
+					(const char*)pekd->ekd_strName, pekd->ekd_ID);
 			}
 			pekd->ekd_ctToSpawn--;
 			return;
@@ -2544,7 +2544,7 @@ void DumpKillData(void)
 			if(pekd->ekd_ctToSpawn!=0)
 			{
 				CPrintF("Spawner named \"%s\" with ID %d: yet to spawn %d enemies of class \"%s\", named: \"%s\"\n",
-					pekd->ekd_strName, pekd->ekd_ID, pekd->ekd_ctToSpawn, pekd->ekd_strSpawnClass, pekd->ekd_strSpawnName);
+					(const char*)pekd->ekd_strName, pekd->ekd_ID, pekd->ekd_ctToSpawn, (const char*)pekd->ekd_strSpawnClass, (const char*)pekd->ekd_strSpawnName);
 			}
 		}
 		else if( !pekd->ekd_bKilled)
@@ -2552,12 +2552,12 @@ void DumpKillData(void)
 			if(pekd->ekd_IDSpawner!=-1)
 			{
 				CPrintF("Enemy spawned by spawner named: \"%s\" with ID %d , not counted as dead\n",
-					pekd->ekd_strNameSpawner, pekd->ekd_IDSpawner);
+					(const char*)pekd->ekd_strNameSpawner, pekd->ekd_IDSpawner);
 			}
 			else
 			{
 				CPrintF("Enemy named \"%s\" of class \"%s\" with ID %d not counted as dead\n",
-					pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
+					(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
 			}
 		}
 	}

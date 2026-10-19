@@ -2639,6 +2639,7 @@ void CWorld::WriteInfo_t(CTStream *strm) // throw char *
 
 // yjpark |<--
 #ifndef	FINALVERSION
+// (the engine's attribute maps are UWORD per pixel, as in the ported 2015 engine)
 void CWorld::WriteAttributeMap( CTFileName &fnm, BOOL bField, INDEX iSelFloor, PIX pixWidth, PIX pixHeight, std::vector<int>& vectorProrityList )
 {
 	if( vectorProrityList.empty() )
@@ -2647,17 +2648,23 @@ void CWorld::WriteAttributeMap( CTFileName &fnm, BOOL bField, INDEX iSelFloor, P
 	try
 	{
 		// Allocate memory
-		PIX		pixAttributeMapSize = pixWidth * pixHeight;
-		UBYTE	*pubAttrBuffer = (UBYTE*)AllocMemory( pixAttributeMapSize );
-		memset( pubAttrBuffer, 255, pixAttributeMapSize );
-		UBYTE	*pubTemp = pubAttrBuffer;
+		PIX		pixAttMapSizeHalf = pixWidth * pixHeight;
+		PIX		pixAttributeMapSize = pixAttMapSizeHalf * sizeof(UWORD);		
+		UWORD*	pubAttrBuffer = (UWORD*)AllocMemory(pixAttributeMapSize);
+
+		for (int i = 0; i < pixAttMapSizeHalf; ++i)
+		{
+			pubAttrBuffer[i] = MATT_UNWALKABLE;
+		}
+
+		UWORD*	pubTemp = pubAttrBuffer;
 		
 		if( bField && iSelFloor == 1 )
 		{
 			CTFileStream	strmFile;
 			strmFile.Open_t( fnm );
 			
-			for( PIX pix = 0; pix < pixAttributeMapSize; pix++ )
+			for( PIX pix = 0; pix < pixAttMapSizeHalf; pix++ )
 			{
 				strmFile >> *pubTemp;
 				pubTemp++;

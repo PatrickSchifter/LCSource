@@ -76,7 +76,7 @@ protected:
 	
 	void	RenderSkillBtns();
 	void	GetSkillDesc( int nIndex, int nLevel = 0 );
-	void	AddSkillDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddSkillDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 	void	ClosePetTraining();
 
 	// Network message functions ( send )

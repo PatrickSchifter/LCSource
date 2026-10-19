@@ -294,7 +294,7 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 	//if(szJobName == NULL) return;//필요없음.
 
 	//이펙트 이름 조합 후 이펙트 시작.
-	sprintf(pStrName, szEffectNameFormat, szJobName, strType, szLevel);
+	sprintf(pStrName, szEffectNameFormat, szJobName, (const char*)strType, szLevel);
 	Refresh(pTM, sbOption);
 }
 

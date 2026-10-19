@@ -492,7 +492,7 @@ void CUIAuction::Render()
 			m_btnAuctionItem[nCnt].Render();
 
 			nStrPosY = m_nPosY + (nCnt * 36) + 123;
-			strTemp.PrintF("%s", GetItemFullName(m_btnAuctionItem[nCnt]) );
+			strTemp.PrintF("%s", (const char*)(GetItemFullName(m_btnAuctionItem[nCnt])) );
 			_pUIMgr->GetDrawPort()->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMSTRING_CENTERX, nStrPosY, 0xFFFFFFFF);
 			strTemp.PrintF("%d", m_btnAuctionItem[nCnt].GetItemCount());
 			_pUIMgr->GetDrawPort()->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMCOUNT_CENTERX, nStrPosY, 0xFFFFFFFF);
@@ -966,12 +966,12 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								MsgBoxInfo.SetMsgBoxInfo( _S( 4293,"아이템 구입 정보"), UMBS_OKCANCEL | UMBS_BUTTONEX, UI_AUCTION, MSGCMD_AUCTION_BUYITEM );
 								MsgBoxInfo.SetBtnType(m_btnAuctionItem[m_nCurrentSelectedItem].GetBtnType(), -1, 1);
 								CTString strTemp, strTemp2;
-								strTemp.PrintF("%s",GetItemFullName(m_btnAuctionItem[m_nCurrentSelectedItem]));
+								strTemp.PrintF("%s",(const char*)(GetItemFullName(m_btnAuctionItem[m_nCurrentSelectedItem])));
 								MsgBoxInfo.AddStringEx(strTemp, 0, 10);
 								strTemp.PrintF(_S(4294, "아이템 개수 : %I64d"), m_btnAuctionItem[m_nCurrentSelectedItem].GetItemCount());
 								MsgBoxInfo.AddStringEx(strTemp, 3, 0);
 								strTemp2.PrintF("%I64d", m_AuctionItemData[m_nCurrentSelectedItem].llNasTotal);
-								strTemp.PrintF(_S(4295,"총 금액 : %s"), strTemp2);
+								strTemp.PrintF(_S(4295,"총 금액 : %s"), (const char*)strTemp2);
 								MsgBoxInfo.AddStringEx(strTemp, 5, 0);
 								
 								_pUIMgr->CreateMessageBox(MsgBoxInfo);
@@ -1578,7 +1578,7 @@ CTString CUIAuction::GetItemFullName(CUIButtonEx &btnItem)
 		}
 		else
 		{
-			strTemp.PrintF("%s+%d", strTemp, btnItem.GetItemPlus());
+			strTemp.PrintF("%s+%d", (const char*)strTemp, btnItem.GetItemPlus());
 		}
 	}
 

@@ -133,7 +133,7 @@ void CUIGamble::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_btnReady.CopyUV( UBS_IDLE, UBS_DISABLE );
 
 
-	for( int i = 0 ; i < GAMBLE_TOTAL_NUMBER; ++i )
+	int i = 0; for( ; i < GAMBLE_TOTAL_NUMBER; ++i )
 	{
 		m_rtSmallNumber[i].SetUV( i * GAMBLE_NUMBER_WIDTH, 358, 
 								i * GAMBLE_NUMBER_WIDTH + GAMBLE_NUMBER_WIDTH, 368, fTexWidth, fTexHeight );
@@ -332,7 +332,7 @@ BOOL CUIGamble::CheckCashItem(int itemIdx)
 
 					// Add context
 					CTString tv_str;
-					tv_str.PrintF("%s(%d)",tv_item.cashName,tv_item.cashCnt);
+					tv_str.PrintF("%s(%d)",(const char*)tv_item.cashName,tv_item.cashCnt);
 					_pUIMgr->GetMessageBox(MSGCMD_GAMBLE_READYSEL)->addSelectContext(tv_str); 
 				}
 			}

@@ -468,14 +468,15 @@ BOOL CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient, BOOL
 					cm_strAddress += ", ";
 				}
 				cm_strAddress	+= inet_ntoa(*(const in_addr *)phe->h_addr_list[i]);
-				cm_chSB1		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b1;
-				cm_chSB2		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b2;
-				cm_chSB3		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b3;
-				cm_chSB4		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b4;
+				// the address bytes in network order (in_addr::S_un.S_un_b is Winsock only)
+				cm_chSB1		= ((const UBYTE *)phe->h_addr_list[i])[0];
+				cm_chSB2		= ((const UBYTE *)phe->h_addr_list[i])[1];
+				cm_chSB3		= ((const UBYTE *)phe->h_addr_list[i])[2];
+				cm_chSB4		= ((const UBYTE *)phe->h_addr_list[i])[3];
 			}
 		}
 		
-		CPrintF(TRANS("  local addresses: %s (%s)\n"), cm_strName, cm_strAddress);
+		CPrintF(TRANS("  local addresses: %s (%s)\n"), (const char*)cm_strName, (const char*)cm_strAddress);
 		CPrintF(TRANS("  port: %d\n"), net_iPort);
 		
 		// try to open master UDP socket
@@ -579,7 +580,7 @@ void CCommunicationInterface::Bind_t(ULONG ulLocalHost, ULONG ulLocalPort)
 	sin.sin_addr.s_addr = htonl(ulLocalHost);
 	
 	// bind socket to server address/port
-	if (bind(cci_hSocket, (sockaddr*)&sin, sizeof(sin)) == SOCKET_ERROR) {
+	if (::bind(cci_hSocket, (sockaddr*)&sin, sizeof(sin)) == SOCKET_ERROR) {
 		ThrowF_t(TRANS("Cannot bind socket. %s"), (const char*)GetSocketError(WSAGetLastError()));
 	}
 	
@@ -980,10 +981,10 @@ void CCommunicationInterface::OpenSocket_t(ULONG ulLocalHost, ULONG ulLocalPort)
 					for( i = 0; Hostent->h_addr_list[i] != NULL; ++i )
 					{
 						// (chSB1.chSB2.chSB3.chSB4)
-						const unsigned char chSB1 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b1;
-						const unsigned char chSB2 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b2;
-						const unsigned char chSB3 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b3;
-						const unsigned char chSB4 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b4;
+						const unsigned char chSB1 = ((const UBYTE *)Hostent->h_addr_list[i])[0];
+						const unsigned char chSB2 = ((const UBYTE *)Hostent->h_addr_list[i])[1];
+						const unsigned char chSB3 = ((const UBYTE *)Hostent->h_addr_list[i])[2];
+						const unsigned char chSB4 = ((const UBYTE *)Hostent->h_addr_list[i])[3];
 						
 						std::vector<sIPFilter>::iterator iter;
 
@@ -1072,13 +1073,13 @@ void CCommunicationInterface::GetLocalAddress_t(ULONG &ulHost, ULONG &ulPort)
 	
 	// get socket local port and address
 	sockaddr_in sin;
-	int iSize = sizeof(sin);
+	socklen_t iSize = sizeof(sin);
 	if (getsockname(cci_hSocket, (sockaddr*)&sin, &iSize) == SOCKET_ERROR) 
 	{
 		ThrowF_t(TRANS("Cannot get local address on socket. %s"), 
 			(const char*)GetSocketError(WSAGetLastError()));
 	}
-	ulHost = ntohl(sin.sin_addr.S_un.S_addr);
+	ulHost = ntohl(sin.sin_addr.s_addr);
 	ulPort = ntohs(sin.sin_port);
 }
 
@@ -1094,12 +1095,12 @@ void CCommunicationInterface::GetRemoteAddress_t(ULONG &ulHost, ULONG &ulPort)
 	
 	// get socket local port
 	sockaddr_in sin;
-	int iSize = sizeof(sin);
+	socklen_t iSize = sizeof(sin);
 	if (getpeername(cci_hSocket, (sockaddr*)&sin, &iSize) == SOCKET_ERROR) {
 		ThrowF_t(TRANS("Cannot get remote address on socket. %s"), 
 			(const char*)GetSocketError(WSAGetLastError()));
 	}
-	ulHost = ntohl(sin.sin_addr.S_un.S_addr);
+	ulHost = ntohl(sin.sin_addr.s_addr);
 	ulPort = ntohs(sin.sin_port);
 }
 
@@ -1160,7 +1161,7 @@ void CCommunicationInterface::Broadcast_Update_t()
 				bFoundEmpty = TRUE;
 				//0105 여기서 클라이언트 주소와 포트를 저장한다.
 				if(m_bTcpIp&& _pNetwork->IsTcpServer){//서버
-					int sockaddr_size = sizeof( SOCKADDR_IN );		
+					socklen_t sockaddr_size = sizeof( SOCKADDR_IN );		
 					SOCKADDR_IN clientsockaddr;	
 					//0131	//0202				
 					
@@ -1977,7 +1978,7 @@ BOOL CCommunicationInterface::Client_Update(void)
 				// warn about possible attack
 				extern INDEX net_bReportMiscErrors;
 				if (net_bReportMiscErrors) {
-					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
+					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), (const char*)AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
 				}
 			}
 		}
@@ -2007,7 +2008,7 @@ void CCommunicationInterface::UpdateMasterBuffers()
 	UBYTE aub[MAX_PACKET_SIZE];
 	CAddress adrIncomingAddress;
 	SOCKADDR_IN sa;
-	int size = sizeof(sa);
+	socklen_t size = sizeof(sa);
 	SLONG slSizeReceived;
 	SLONG slSizeSent;
 	BOOL bSomethingDone;
@@ -2031,7 +2032,7 @@ void CCommunicationInterface::UpdateMasterBuffers()
 	//0105  
 	if(m_bTcpIp && _pNetwork->IsTcpServer)
 	{
-		int sockaddr_size = sizeof( SOCKADDR_IN );		
+		socklen_t sockaddr_size = sizeof( SOCKADDR_IN );		
 		SOCKADDR_IN clientsockaddr;	
 		SOCKET socket =  accept( cci_hSocket, (LPSOCKADDR)&clientsockaddr, &sockaddr_size);
 		if(socket==INVALID_SOCKET)

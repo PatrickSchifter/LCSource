@@ -5,7 +5,9 @@
 
 #pragma warning(disable:4786)
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <vector>
 #include <list>
 #include <assert.h>

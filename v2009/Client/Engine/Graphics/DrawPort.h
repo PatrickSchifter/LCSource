@@ -14,7 +14,7 @@
 #define DPTF_PRINTSPECIALCODES  (1L<<10)
 #define DPTF_IGNORESPECIALCODES (1L<<11)
 
-struct UIRectUV;
+typedef struct _UIRectUV UIRectUV;	// (2009: defined in Interface/UIWindow.h)
 
 class ENGINE_API CDrawPort {
 // implementation:

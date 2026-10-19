@@ -194,10 +194,10 @@ void CUIBilling::OpenInfo()
 	//strDesc.PrintF( ST_USED_BILL, m_biUsedBilling.m_strViewName );
 	//AddInfoDescString( strDesc );
 	// 2.종료시간
-	strDesc.PrintF( ST_END_TIME_LIMIT, ST_UNLIMITED ); // 제한 없음
+	strDesc.PrintF( ST_END_TIME_LIMIT, (const char*)ST_UNLIMITED ); // 제한 없음
 	AddInfoDescString( strDesc );
 	// 3.남은시간
-	strDesc.PrintF( ST_LEFT_TIME, ST_UNLIMITED ); // 제한 없음
+	strDesc.PrintF( ST_LEFT_TIME, (const char*)ST_UNLIMITED ); // 제한 없음
 	AddInfoDescString( strDesc );
 	// 4.잔액
 	//strDesc.PrintF( ST_MONEY_LEFT_OVER, m_nMoneyLeftOver );
@@ -291,7 +291,7 @@ void CUIBilling::OpenBeforeUse()
 	AddInfoDescString( ST_NOW_YOU );
 
 	// 1.사용중인 기기 명칭
-	strDesc.PrintF( ST_USED_BILL, m_biUsedBilling.m_strViewName );
+	strDesc.PrintF( ST_USED_BILL, (const char*)m_biUsedBilling.m_strViewName );
 	AddInfoDescString( strDesc );
 
 	// 2.잔액 
@@ -356,13 +356,13 @@ void CUIBilling::OpenTime()
 	// 0.타이틀
 	AddInfoDescString( ST_NOW_YOU );
 	// 1.사용중인 결재 방식 
-	strDesc.PrintF( ST_USED_BILL, m_biUsedBilling.m_strViewName );
+	strDesc.PrintF( ST_USED_BILL, (const char*)m_biUsedBilling.m_strViewName );
 	AddInfoDescString( strDesc );
 	// 2.종료시간
-	strDesc.PrintF( ST_END_TIME_LIMIT, m_dateEndTimeLimit.GetDataString() );
+	strDesc.PrintF( ST_END_TIME_LIMIT, (const char*)m_dateEndTimeLimit.GetDataString() );
 	AddInfoDescString( strDesc );
 	// 3.남은시간
-	strDesc.PrintF( ST_LEFT_TIME, GetTimeString( m_nLeftTime ) );
+	strDesc.PrintF( ST_LEFT_TIME, (const char*)(GetTimeString( m_nLeftTime )) );
 	AddInfoDescString( strDesc );
 	// 4.잔액
 	strDesc.PrintF( ST_MONEY_LEFT_OVER, m_nMoneyLeftOver );
@@ -418,10 +418,10 @@ void CUIBilling::OpenTimeNow()
 	// 0.타이틀
 	AddInfoDescString( ST_NOW_YOU );
 	// 1.사용중인 기기 명칭
-	strDesc.PrintF( ST_USED_BILL, m_biUsedBilling.m_strViewName );
+	strDesc.PrintF( ST_USED_BILL, (const char*)m_biUsedBilling.m_strViewName );
 	AddInfoDescString( strDesc );
 	// 2.남은시간 
-	strDesc.PrintF( ST_LEFT_TIME, GetTimeString( m_nLeftTime ) );
+	strDesc.PrintF( ST_LEFT_TIME, (const char*)(GetTimeString( m_nLeftTime )) );
 	AddInfoDescString( strDesc );
 	// 3.잔액 
 	strDesc.PrintF( ST_MONEY_LEFT_OVER, m_nMoneyLeftOver );
@@ -468,11 +468,11 @@ void CUIBilling::OpenAutoChargeInfo()
 	AddInfoDescString( ST_NOW_YOU );
 
 	// 1.남은시간 
-	strDesc.PrintF( ST_LEFT_TIME_DESC, GetTimeString( m_nLeftTime ) );
+	strDesc.PrintF( ST_LEFT_TIME_DESC, (const char*)(GetTimeString( m_nLeftTime )) );
 	AddInfoDescString( strDesc );
 	
 	// 2.사용중인 기기 명칭
-	strDesc.PrintF( ST_USED_BILL_DESC, m_biUsedBilling.m_strViewName );
+	strDesc.PrintF( ST_USED_BILL_DESC, (const char*)m_biUsedBilling.m_strViewName );
 	AddInfoDescString( strDesc );
 	
 	// 3.잔액 
@@ -1157,7 +1157,7 @@ void CUIBilling::OpenCharge()
 // Explain:  
 // Date : 2005-03-17(오후 5:03:57) Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
+void CUIBilling::AddInfoDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();
@@ -1168,7 +1168,7 @@ void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1201,7 +1201,7 @@ void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -1277,7 +1277,7 @@ void CUIBilling::AddBillListString( CTString &strDesc, COLOR colDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1310,7 +1310,7 @@ void CUIBilling::AddBillListString( CTString &strDesc, COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -1452,7 +1452,7 @@ void CUIBilling::OpenConfirm()
 		return;
 
 	CTString strMessage;
-	strMessage.PrintF( ST_CONFIRM, m_vecBillList[m_nBillingIndex].m_strViewName );
+	strMessage.PrintF( ST_CONFIRM, (const char*)m_vecBillList[m_nBillingIndex].m_strViewName );
 	
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetUserBtnName( ST_BILLING, ST_CANCEL );

@@ -337,7 +337,7 @@ void CZoneInfo::SetZoneName( int nZone, CTString &strZoneName )
 	m_pZoneInfo[nZone].strZoneName = strZoneName;
 }
 
-void CZoneInfo::SetExtraName( int nZone, int nExtra, CTString &strExtraName )
+void CZoneInfo::SetExtraName( int nZone, int nExtra, const CTString &strExtraName )
 {
 	ASSERT( nZone >= 0 && nZone < m_nZoneCount );
 	ASSERT( nExtra >= 0 && nExtra < m_pZoneInfo[nZone].iExtraCount );
@@ -346,10 +346,10 @@ void CZoneInfo::SetExtraName( int nZone, int nExtra, CTString &strExtraName )
 }
 //안태훈 수정 끝	//(Zone Change System)(0.1)
 
-template CDynamicContainer<CEntity>;
-template CBrushPolygonSelection;
-template CBrushSectorSelection;
-template CEntitySelection;
+template class CDynamicContainer<CEntity>;
+template class CSelection<CBrushPolygon, BPOF_SELECTED>;  // CBrushPolygonSelection
+template class CSelection<CBrushSector, BSCF_SELECTED>;  // CBrushSectorSelection
+template class CSelection<CEntity, ENF_SELECTED>;  // CEntitySelection
 
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;
@@ -656,7 +656,7 @@ CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pec
 		
 		if (net_bReportServerTraffic) 
 		{
-			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,pecClass->GetName());
+			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,(const char*)pecClass->GetName());
 		}
 		
 		extern CEntityMessage _emEntityMessage;
@@ -849,7 +849,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 		penThinker->en_lnInTimers.Remove();
 	}
 	// for each entity in the thinker list
-	FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) 
+	FOREACHINLIST_IN(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) 
 	{
 		// if the entity in list has greater or same think time than the one to add
 		if (iten->en_timeTimer>=penThinker->en_timeTimer) 

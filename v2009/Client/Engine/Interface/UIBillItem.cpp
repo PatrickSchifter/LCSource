@@ -779,7 +779,7 @@ void CUIBillItem::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = MAX_ITEMINFO_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strItemInfo[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -908,7 +908,7 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 		CTString	strCount;
 		strCount.PrintF( "%I64d", m_btnItems[nItemIndex].GetItemCount() );
 		_pUIMgr->InsertCommaToString( strCount );
-		strTemp.PrintF( "%s(%s)", szItemName, strCount );
+		strTemp.PrintF( "%s(%s)", szItemName, (const char*)strCount );
 		colNas = _pUIMgr->GetNasColor( m_btnItems[nItemIndex].GetItemCount() );
 	}
 	else
@@ -1346,7 +1346,7 @@ void CUIBillItem::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIBillItem::AddString ( CTString& strText, COLOR colText )
+void CUIBillItem::AddString ( const CTString& strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 
@@ -1368,7 +1368,7 @@ void CUIBillItem::AddString ( CTString& strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbBillItemDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbBillItemDesc.AddString ( 0, strTemp2, colText );
 

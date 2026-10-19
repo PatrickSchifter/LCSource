@@ -99,7 +99,7 @@ void CUINotice::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_rcIcons.SetRect( 0, 0, 34, nMaxNotice * 35 );
 
 	int	nTempX = 0, nTempY = 0;	
-	for(int i = 0; i < nMaxNotice; ++i, nTempY += 35)
+	int i = 0; for( ; i < nMaxNotice; ++i, nTempY += 35)
 	{
 		m_abtnItems[i].Create( this, nTempX, nTempY, BTN_SIZE, BTN_SIZE, UI_NOTICE, UBET_QUEST );
 	}	
@@ -269,7 +269,7 @@ void CUINotice::RenderBtns()
 	// 퀘스트 버튼 렌더링.
 	// Quest Buttons
 	int	nX = 0, nY = 0;
-	for(int i = 0; i < nMaxNotice; ++i, nY += 35)
+	int i = 0; for( ; i < nMaxNotice; ++i, nY += 35)
 	{
 		//m_abtnItems[i].SetPos( nX, nY );
 		if( m_abtnItems[i].IsEmpty() || m_abtnItems[i].GetBtnType() != UBET_QUEST )
@@ -969,7 +969,7 @@ void CUINotice::PressOK( int iSlotIndex )
 					
 					CTString strMessage;
 					strMessage.PrintF( _S( 2785, " %s VS %s 축구경기의 결과를 맞춰 보시기 바랍니다." ),
-						_pUIMgr->GetQuest()->GetStrTeamA(), _pUIMgr->GetQuest()->GetStrTeamB() );
+						(const char*)(_pUIMgr->GetQuest()->GetStrTeamA()), (const char*)(_pUIMgr->GetQuest()->GetStrTeamB()) );
 
 					strMsg += strMessage;
 					strMsg += _S( 2786, "이벤트 종료 후 경기 결과에 따라 아이템과 나스를 지급합니다." );
@@ -996,7 +996,7 @@ void CUINotice::PressOK( int iSlotIndex )
 
 					CTString strMessage;
 					strMessage.PrintF( _S( 2791, "%s VS %s 축구경기의 결과는 %d : %d 입니다." ),
-						_pUIMgr->GetQuest()->GetStrTeamA(), _pUIMgr->GetQuest()->GetStrTeamB(),
+						(const char*)(_pUIMgr->GetQuest()->GetStrTeamA()), (const char*)(_pUIMgr->GetQuest()->GetStrTeamB()),
 						_pUIMgr->GetQuest()->GetScoreTeamA(), _pUIMgr->GetQuest()->GetScoreTeamB() );
 					_pUIMgr->AddMessageBoxLString( MSGLCMD_EVENT_NOTICE, TRUE, strMessage );
 					
@@ -1752,7 +1752,7 @@ void CUINotice::AddBtnNotice(int iNoticeIndex, eNoticeType iNoticeType)
 	int k = nMaxNotice;
 	
 	// Find empty slot
-	for( int iItem = 0; iItem < nMaxNotice; ++iItem )
+	int iItem = 0; for( ; iItem < nMaxNotice; ++iItem )
 	{
 		if( m_abtnItems[iItem].IsEmpty() )
 			break;

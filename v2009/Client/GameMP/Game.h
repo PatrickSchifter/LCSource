@@ -239,7 +239,7 @@ public:
 //강동민 수정 끝 다중 공격 작업		08.22
 
 	// game start/end functions
-	virtual PreNewGame();	//0524 kwon
+	virtual BOOL PreNewGame();	//0524 kwon
 	virtual BOOL NewGame( const CTString &strSessionName, const CTFileName &fnWorld,
 							class CSessionProperties &sp );
 //	virtual BOOL JoinGame( CNetworkSession &session );

@@ -230,7 +230,7 @@ public :
 	// etc Command
 	void	OpenBilling();	// 결체창으로
 	void	OpenCharge();	// 충전웹 싸이트로 이동
-	void	AddInfoDescString( CTString &strDesc, COLOR colDesc = 0xc2bac5FF );
+	void	AddInfoDescString( const CTString &strDesc, COLOR colDesc = 0xc2bac5FF );
 	void	AddBillListString( CTString &strDesc, COLOR colDesc = 0xc2bac5FF );
 	
 	WMSG_RESULT	OKProcess( int nBillingIndex = -1 );

@@ -64,7 +64,7 @@ CUIOption::CUIOption()
 	m_nCurOptionTab = 0;
 	m_bPixelShader = FALSE;
 
-	for( int i = 0; i < 11; i++ )
+	int i = 0; for( ; i < 11; i++ )
 	{
 		m_afBrightness[i] = 0.9f * ( ( i - 5 ) * 0.05f );
 		m_afContrast[i] = 1.0f + 0.9f * ( ( i - 5 ) * 0.05f );
@@ -769,7 +769,7 @@ void CUIOption::InitOption()
 
 	m_nBrightness = -1;
 	m_nContrast = -1;
-	for( int i = 0; i < 11; i++ )
+	int i = 0; for( ; i < 11; i++ )
 	{
 		if( m_afBrightness[i] == gfx_fBrightness )
 		{
@@ -912,6 +912,7 @@ void CUIOption::CreateResolutionList()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -921,6 +922,9 @@ void CUIOption::CreateResolutionList()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;	// (the desktop depth: OpenGL, Metal and Vulkan draw in 32 bits)
+#endif // SE1_D3D
 	}
 
 	for( INDEX idm = 0; idm < ctDisplayMode; idm++ )
@@ -1004,6 +1008,7 @@ void CUIOption::OpenOption()
 	_pUIMgr->RearrangeOrder( UI_OPTION, TRUE );
 }
 
+#ifndef LC_PLATFORM_SDL
 // ----------------------------------------------------------------------------
 // Name : CloseMainWindow()
 // Desc : close the main application window
@@ -1117,6 +1122,37 @@ static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
 	ResetMainWindowNormal();
 }
 
+#else  // LC_PLATFORM_SDL
+
+// The SDL3 platform layer keeps the main window between display modes (as Nksp/MainWindow.cpp
+// does); the title is set afterwards (CUIManager::SetTitleName).
+static void CloseMainWindow(void)
+{
+}
+
+static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
+{
+	PLT_SetMainWindowMode( pixSizeI, pixSizeJ, TRUE, -1, -1 );
+	SE_UpdateWindowHandle( _hwndMain );
+}
+
+static void ResetMainWindowNormal(void)
+{
+	// a position given on the command line is used once
+	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, IsFullScreen( sam_bFullScreenActive ), cmd_iWindowLeft, cmd_iWindowTop );
+	cmd_iWindowLeft = -1;
+	cmd_iWindowTop = -1;
+}
+
+static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
+{
+	_pixLastSizeI = pixSizeI;
+	_pixLastSizeJ = pixSizeJ;
+	ResetMainWindowNormal();
+	SE_UpdateWindowHandle( _hwndMain );
+}
+#endif  // LC_PLATFORM_SDL
+
 // ----------------------------------------------------------------------------
 // Name : TryToSetDisplayMode()
 // Desc : try to start a new display mode
@@ -1145,14 +1181,20 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	// try to set new display mode
 	BOOL bSuccess;
 	if( bFullScreenMode) {
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->SetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth);
-		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
 	} else {
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#ifdef SE1_D3D
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
+#endif // SE1_D3D
 	}
 
 	// if new mode was set
@@ -1214,6 +1256,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			return FALSE;
 		}
 
+#ifdef SE1_D3D
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
 		{
@@ -1238,6 +1281,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
+#endif // SE1_D3D
 
 		// remember new settings
 		sam_bFullScreenActive = (bFullScreenMode==FULLSCREEN_MODE)?FULLSCREEN_MODE:OLD_WINDOW_MODE;
@@ -1310,6 +1354,7 @@ void CUIOption::ApplyOption()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -1319,6 +1364,9 @@ void CUIOption::ApplyOption()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;	// (the desktop depth: OpenGL, Metal and Vulkan draw in 32 bits)
+#endif // SE1_D3D
 	}
 
 	int	iRes = m_cmbResolution.GetCurSel();

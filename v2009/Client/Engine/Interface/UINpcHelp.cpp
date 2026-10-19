@@ -199,7 +199,7 @@ void CUINpcHelp::SetViewContent( int iIndex )
 	_pUIMgr->m_nHelpNpc_Index = NH.m_NpcList.npc_index;
 
 } 
-void CUINpcHelp::MultiLineString(CTString &strExplan)
+void CUINpcHelp::MultiLineString(const CTString &strExplan)
 {
 	// If length of string is less than max char
 	int nLength = strExplan.Length();
@@ -208,7 +208,7 @@ void CUINpcHelp::MultiLineString(CTString &strExplan)
 	if( nLength <= READ_MAX_CHAR )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strExplan[iPos] == '\n' || strExplan[iPos] == '\r' )
 				break;	
@@ -254,7 +254,7 @@ void CUINpcHelp::MultiLineString(CTString &strExplan)
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = READ_MAX_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strExplan[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;

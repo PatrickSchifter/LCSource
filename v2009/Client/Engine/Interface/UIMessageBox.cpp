@@ -216,7 +216,7 @@ void CUIMsgBox_Info::Reset()
 // Name : SetMsgBoxInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
+void CUIMsgBox_Info::SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
 {
 	m_strTitle = strTitle;
 	m_dwStyle = dwStyle;
@@ -241,7 +241,7 @@ void CUIMsgBox_Info::SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhic
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddString( const CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
@@ -262,7 +262,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;
@@ -315,7 +315,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strMessage,0,iPos))
 					break;
@@ -381,7 +381,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;
@@ -437,7 +437,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strMessage[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -520,7 +520,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 // Name : AddStringEx()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddStringEx( CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddStringEx( const CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
@@ -2290,7 +2290,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 						int nData =m_sbtnSpin.GetDataToNumber();
 
 						CTString str;
-						str.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nData*50000, _S(1762, "나스"), _s("   ") );
+						str.PrintF( _s("%s: %d %s%s"), (const char*)(_S(1058, "필요나스")), nData*50000, (const char*)(_S(1762, "나스")), (const char*)(_s("   ")) );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 
@@ -2299,7 +2299,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 						int nData =m_sbtnSpin.GetDataToNumber();
 
 						CTString str;
-						str.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nData*100000, _S(1762, "나스"), _s("   ") );
+						str.PrintF( _s("%s: %d %s%s"), (const char*)(_S(1058, "필요나스")), nData*100000, (const char*)(_S(1762, "나스")), (const char*)(_s("   ")) );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 					return WMSG_SUCCESS;

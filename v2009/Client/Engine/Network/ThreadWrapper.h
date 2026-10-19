@@ -2,7 +2,9 @@
 #ifndef __THREADWRAPPER_H__
 #define __THREADWRAPPER_H__
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 class cThreadWrapper
 {

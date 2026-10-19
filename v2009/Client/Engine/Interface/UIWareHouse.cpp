@@ -420,7 +420,7 @@ void CUIWareHouse::ResetWareHouse()
 //-----------------------------------------------------------------------------
 void CUIWareHouse::RefreshWareHouse()
 {
-	for(int i = 0; i < WAREHOUSE_WAREHOUSE_SLOT_ROW_TOTAL; i++)
+	int i = 0; for( ; i < WAREHOUSE_WAREHOUSE_SLOT_ROW_TOTAL; i++)
 	{
 		for(int j = 0; j < WAREHOUSE_WAREHOUSE_SLOT_COL; j++)
 		{
@@ -478,7 +478,7 @@ void CUIWareHouse::ClearItems()
 	{ 
 		m_vectorStorageItems.clear();
 	}
-	for(int i = 0; i < WAREHOUSE_TRADE_SLOT_TOTAL; i++)
+	int i = 0; for( ; i < WAREHOUSE_TRADE_SLOT_TOTAL; i++)
 		m_abtnTradeItems[i].InitBtn();			
 
 	for(i = 0; i < WAREHOUSE_WAREHOUSE_SLOT_ROW_TOTAL; i++)
@@ -523,7 +523,7 @@ void CUIWareHouse::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -565,7 +565,7 @@ void CUIWareHouse::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -680,14 +680,14 @@ BOOL CUIWareHouse::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeigh
 	{
 		CTString strPrefix = rItemRareOption.GetPrefix();
 		if( strPrefix.Length() >0)
-			szItemName.PrintF("%s %s", strPrefix, strItemName);
+			szItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 	}
 
 	COLOR colNas = 0xF2F2F2FF;
 
 	// Get item name	
 	if( ulItemPlus > 0 && !(_pUIMgr->IsPet(rItemData) || _pUIMgr->IsWildPet(rItemData)))
-		strTemp.PrintF( "%s +%d", szItemName, ulItemPlus );
+		strTemp.PrintF( "%s +%d", (const char*)szItemName, ulItemPlus );
 	else
 	{
 		if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
@@ -695,7 +695,7 @@ BOOL CUIWareHouse::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeigh
 			CTString	strCount;
 			strCount.PrintF( "%I64d", llCount );
 			_pUIMgr->InsertCommaToString( strCount );
-			strTemp.PrintF( "%s(%s)", szItemName, strCount );
+			strTemp.PrintF( "%s(%s)", (const char*)szItemName, (const char*)strCount );
 			colNas = _pUIMgr->GetNasColor( llCount );
 		}
 #ifdef Pet_IMPROVEMENT_1ST
@@ -2418,7 +2418,7 @@ void CUIWareHouse::KeepItems()
 	if( m_nTotalPrice < 0 )
 		return;
 	// Can't stash items
-	for( int i = 0; i < WAREHOUSE_TRADE_SLOT_TOTAL; i++ )
+	int i = 0; for( ; i < WAREHOUSE_TRADE_SLOT_TOTAL; i++ )
 	{
 		// Add system message
 		CTString tv_str;
@@ -2456,7 +2456,7 @@ void CUIWareHouse::KeepItems()
 			CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
 			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{
-				for( int iItem = 0; iItem < WAREHOUSE_TRADE_SLOT_TOTAL; iItem++ )
+				int iItem = 0; for( ; iItem < WAREHOUSE_TRADE_SLOT_TOTAL; iItem++ )
 				{
 					if( nIndex == m_abtnTradeItems[iItem].GetItemIndex() )
 						ctTradeItems--;
@@ -2618,7 +2618,7 @@ void CUIWareHouse::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		{
 			char	*pcInput	= strInput.str_String;
 			int		nLength		= strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -2644,7 +2644,7 @@ void CUIWareHouse::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		{
 			char	*pcInput	= strInput.str_String;
 			int		nLength		= strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -2706,7 +2706,7 @@ void CUIWareHouse::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		{
 			char	*pcInput	= strInput.str_String;
 			int		nLength		= strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -2730,7 +2730,7 @@ void CUIWareHouse::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 void CUIWareHouse::WareHouseToTrade( SQUAD llCount, ULONG ulPlus, ULONG ulFlag, LONG lUsed, LONG lRareIndex )
 {	
 	// Find same item in trade slot
-	for( int iItem = 0; iItem < WAREHOUSE_TRADE_SLOT_TOTAL; iItem++ )
+	int iItem = 0; for( ; iItem < WAREHOUSE_TRADE_SLOT_TOTAL; iItem++ )
 	{
 		if( m_abtnTradeItems[iItem].GetItemUniIndex() == nTempUniIndex )
 			break;
@@ -2946,7 +2946,7 @@ SQUAD CUIWareHouse::CalculateStoragePrice()
 void CUIWareHouse::SendWareHouseKeepReq()
 {
 	LONG lKeepCount = 0;
-	for(int i = 0; i < WAREHOUSE_TRADE_SLOT_TOTAL; ++i)
+	int i = 0; for( ; i < WAREHOUSE_TRADE_SLOT_TOTAL; ++i)
 	{
 		if(m_abtnTradeItems[i].IsEmpty())
 			continue;
@@ -2990,7 +2990,7 @@ void CUIWareHouse::SendWareHouseKeepReq()
 void CUIWareHouse::SendWareHouseTakeReq()
 {
 	LONG lTakeCount = 0;
-	for(int i = 0; i < WAREHOUSE_TRADE_SLOT_TOTAL; ++i)
+	int i = 0; for( ; i < WAREHOUSE_TRADE_SLOT_TOTAL; ++i)
 	{
 		if(m_abtnTradeItems[i].IsEmpty())
 			continue;

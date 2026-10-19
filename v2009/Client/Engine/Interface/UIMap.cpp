@@ -437,7 +437,7 @@ void CUIMap::ReadMapData()
 		SBYTE	sbDetailCount;
 		fsMapData >> sbDetailCount;
 
-		for( int j = 0; j < sbDetailCount; j++ )
+		int j = 0; for( ; j < sbDetailCount; j++ )
 		{
 			DetailMapData	tempDetail;
 			int				nSelLeft, nSelTop, nSelRight, nSelBottom;
@@ -508,18 +508,18 @@ void CUIMap::ReadMapData()
 
 		if( ZoneInfo().GetZoneType( tempMapData.World.nZoneIndex ) == ZONE_DUNGEON )
 		{
-			strZoneName.PrintF( "%s %dF", ZoneInfo().GetZoneName( tempMapData.World.nZoneIndex ),
+			strZoneName.PrintF( "%s %dF", (const char*)(ZoneInfo().GetZoneName( tempMapData.World.nZoneIndex )),
 											( tempMapData.World.sbLayer + 2 ) / 2);
 		}
 		else
 		{
 			if( tempMapData.World.sbLayer > 0 )
 			{
-				strZoneName.PrintF( _S( 3083, "%s 공성지역" ), _pUISWDoc->GetCastleName( tempMapData.World.nZoneIndex ) );
+				strZoneName.PrintF( _S( 3083, "%s 공성지역" ), (const char*)(_pUISWDoc->GetCastleName( tempMapData.World.nZoneIndex )) );
 			}
 			else
 			{
-				strZoneName.PrintF( "%s", ZoneInfo().GetZoneName( tempMapData.World.nZoneIndex ) );
+				strZoneName.PrintF( "%s", (const char*)(ZoneInfo().GetZoneName( tempMapData.World.nZoneIndex )) );
 			}
 		}
 			
@@ -537,7 +537,7 @@ void CUIMap::ReadMapData()
 // Name : ShowToolTip()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMap::ShowToolTip( BOOL bShow, CTString &strName, int nX, int nY )
+void CUIMap::ShowToolTip( BOOL bShow, const CTString &strName, int nX, int nY )
 {
 	if( !bShow )
 	{
@@ -571,7 +571,7 @@ void CUIMap::ShowToolTip( BOOL bShow, CTString &strName, int nX, int nY )
 			nY += m_rcViewportDetail.Top - rcTempDetail.Top + m_nPosY + MAP_SY;
 		}
 
-		m_strToolTip.PrintF( "%s", strName );
+		m_strToolTip.PrintF( "%s", (const char*)strName );
 
 		int nInfoWidth;
 		if(g_iCountry == THAILAND) {
@@ -2409,7 +2409,7 @@ WMSG_RESULT CUIMap::MouseMessage( MSG *pMsg )
 					int		nTipX, nTipZ;
 					FLOAT	fTipX, fTipZ;
 					BOOL	bShowToolTip = FALSE;
-					for( int i = 0; i < m_vecMapData[m_nCurMapData].vecNpc.size(); i++ )
+					int i = 0; for( ; i < m_vecMapData[m_nCurMapData].vecNpc.size(); i++ )
 					{
 						
 						if( ZoneInfo().GetZoneType( m_vecMapData[m_nCurMapData].World.nZoneIndex ) == ZONE_DUNGEON )
@@ -2451,7 +2451,7 @@ WMSG_RESULT CUIMap::MouseMessage( MSG *pMsg )
 					}
 					if( !bShowToolTip )
 					{
-						for( int i = 0; i < m_vecMapData[m_nCurMapData].vecSubZone.size(); i++ )
+						int i = 0; for( ; i < m_vecMapData[m_nCurMapData].vecSubZone.size(); i++ )
 						{
 							SBYTE	sbType = m_vecMapData[m_nCurMapData].vecSubZone[i].sbType;
 							fTipX = m_vecMapData[m_nCurMapData].vecSubZone[i].fX;
@@ -2477,8 +2477,8 @@ WMSG_RESULT CUIMap::MouseMessage( MSG *pMsg )
 								if( sbType == CHARGE_PRIVATE || sbType == MINE_PRIVATE || sbType == GATHER_PRIVATE )
 								{
 									strTemp.PrintF( _S( 549, "%s(사유지)" ),			
-													ZoneInfo().GetExtraName( m_vecMapData[m_nCurMapData].World.nZoneIndex,
-																				m_vecMapData[m_nCurMapData].vecSubZone[i].nSubZoneIndex ) );
+													(const char*)(ZoneInfo().GetExtraName( m_vecMapData[m_nCurMapData].World.nZoneIndex,
+																				m_vecMapData[m_nCurMapData].vecSubZone[i].nSubZoneIndex )) );
 								}
 								else
 								{

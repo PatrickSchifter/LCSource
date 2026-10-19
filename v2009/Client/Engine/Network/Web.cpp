@@ -2,7 +2,9 @@
 #include "StdH.h"
 
 #include "Web.h"
-#include <WinInet.h>
+#ifdef PLATFORM_WIN32
+#include <wininet.h>
+#endif
 #include <assert.h>
 
 #include "ThreadWrapper.h"
@@ -34,6 +36,9 @@ void WebAddressInit()
 3 : 개발자 수준의 오류
 **/
 //DWORD WINAPI WebThreadFunction(void *parameter)
+// Pages read over HTTP by a thread (wininet), for the web board: Windows only. Elsewhere the
+// requests are dropped (Read() never has a page, as when the site does not answer on Windows).
+#ifdef PLATFORM_WIN32
 UINT WINAPI WebThreadFunction(void *parameter)
 {
 	ASSERT(parameter != NULL);
@@ -135,6 +140,8 @@ UINT WINAPI WebThreadFunction(void *parameter)
 	return exitCode;
 }
 
+#endif  // PLATFORM_WIN32
+
 std::string ConvertStringToWebParameter(const char *szParam)
 {
 	if(szParam == NULL) return "";
@@ -153,6 +160,7 @@ std::string ConvertStringToWebParameter(const char *szParam)
 	}
 	return strRet;
 }
+
 
 //-------------- cWebAddress --------------//
 cWebAddress cWebAddress::m_instance;
@@ -176,30 +184,43 @@ cWeb::cWeb()
 : m_eStatus( WS_PREBEGIN )
 {
 	m_sharedData.ResetAll();
+#ifdef PLATFORM_WIN32
 	m_pThread = new cThreadWrapper(WebThreadFunction);
+#else
+	m_pThread = NULL;
+#endif
 }
 
 cWeb::~cWeb()
 {
+#ifdef PLATFORM_WIN32
 	if(m_pThread) delete m_pThread;
+#endif
 }
 
 BOOL cWeb::Begin()
 {
 	if(!IsPreBegin()) return FALSE;
+#ifdef PLATFORM_WIN32
 	if(m_pThread->Start(&m_sharedData))
 	{
 		m_eStatus = WS_READYREQUEST;
 		return TRUE;
 	}
 	return FALSE;
+#else
+	m_eStatus = WS_READYREQUEST;
+	return TRUE;
+#endif
 }
 
 BOOL cWeb::End()
 {
 	if(!IsBegin()) return TRUE;
 	m_sharedData.SetExit(TRUE);
+#ifdef PLATFORM_WIN32
 	SetEvent(m_sharedData.GetSendReadEventHandle());
+#endif
 	Sleep(0);
 	m_sharedData.ResetAll();
 	m_eStatus = WS_PREBEGIN;
@@ -232,6 +253,7 @@ BOOL cWeb::Refresh()
 
 void cWeb::Request(const char *szURL)	//web page 요청
 {
+#ifdef PLATFORM_WIN32
 	ResetEvent(m_sharedData.GetSendWriteEventHandle());
 	int lenURL = strlen(szURL);
 	m_sharedData.AllocSendMsgBuffer(lenURL+1);
@@ -239,10 +261,14 @@ void cWeb::Request(const char *szURL)	//web page 요청
 	memcpy(sendBuf, szURL, lenURL+1);
 	sendBuf[lenURL] = '\0';
 	SetEvent(m_sharedData.GetSendReadEventHandle());
+#endif
 }
 
 BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web page 읽기
 {
+#ifndef PLATFORM_WIN32
+	return FALSE;
+#else
 	DWORD waitRet = WaitForSingleObject(m_sharedData.GetReceiveReadEventHandle(), 0);
 	if(WAIT_OBJECT_0 == waitRet)
 	{
@@ -260,6 +286,7 @@ BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web 
 		return TRUE;
 	}
 	return FALSE;
+#endif
 }
 
 //-------------- cSharedWebData --------------//
@@ -272,18 +299,22 @@ cSharedWebData::cSharedWebData()
 , m_szReceiveMsgBuffer( NULL )
 , m_szErrorMsgBuffer( NULL )
 {
+#ifdef PLATFORM_WIN32
 	m_hSendWriteEvent = CreateEvent(NULL, TRUE, TRUE, "Web Thread Send Buffer Write");
 	m_hSendReadEvent = CreateEvent(NULL, FALSE, FALSE, "Web Thread Send Buffer Read");
 	m_hReceiveWriteEvent = CreateEvent(NULL, TRUE, TRUE, "Web Thread Receive Buffer Write");
 	m_hReceiveReadEvent = CreateEvent(NULL, FALSE, FALSE, "Web Thread Receive Buffer Read");
+#endif
 }
 
 cSharedWebData::~cSharedWebData()
 {
+#ifdef PLATFORM_WIN32
 	CloseHandle(m_hSendWriteEvent);
 	CloseHandle(m_hSendReadEvent);
 	CloseHandle(m_hReceiveWriteEvent);
 	CloseHandle(m_hReceiveReadEvent);
+#endif
 
 	FreeSendMsgBuffer();
 	FreeReceiveMsgBuffer();
@@ -292,6 +323,7 @@ cSharedWebData::~cSharedWebData()
 ///초기상태로 복구. 보통 오류가 났을 경우 초기상태로 되돌리기 위한 수단임.
 void cSharedWebData::ResetAll()
 {
+#ifdef PLATFORM_WIN32
 	ResetEvent(m_hSendReadEvent);
 	ResetEvent(m_hSendWriteEvent);
 	FreeSendMsgBuffer();
@@ -301,6 +333,10 @@ void cSharedWebData::ResetAll()
 	ResetEvent(m_hReceiveWriteEvent);
 	FreeReceiveMsgBuffer();
 	SetEvent(m_hReceiveWriteEvent);
+#else
+	FreeSendMsgBuffer();
+	FreeReceiveMsgBuffer();
+#endif
 }
 
 void cSharedWebData::AllocSendMsgBuffer(int size)

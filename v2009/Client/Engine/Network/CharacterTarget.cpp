@@ -236,7 +236,7 @@ void CCharacterTarget::SetClientChaId(INDEX index)
 
 void CCharacterTarget::RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
-	for( int iBuff = 0; iBuff < cha_BuffCount; iBuff++ )
+	int iBuff = 0; for( ; iBuff < cha_BuffCount; iBuff++ )
 	{
 		if( cha_Buff[iBuff].m_slItemIndex == slItemIndex &&
 			cha_Buff[iBuff].m_slSkillIndex == slSkillIndex )

@@ -480,7 +480,7 @@ void CUICollectBox::DropInsectItem( CTString Name, int nPosition )
 	CTString strMessage;
 	CUIMsgBox_Info MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 2936, "곤충 채집 상자" ), UMBS_OKCANCEL, UI_COLLECTBOX, MSGCMD_INSECTITEM_DROP );
-	strMessage.PrintF( _S( 2937, "%s<를> 버리면 파괴 됩니다. 계속 하시겠습니까?" ), Name );
+	strMessage.PrintF( _S( 2937, "%s<를> 버리면 파괴 됩니다. 계속 하시겠습니까?" ), (const char*)Name );
 	MsgBoxInfo.AddString( strMessage );
 	
 	_pUIMgr->CreateMessageBox( MsgBoxInfo );	

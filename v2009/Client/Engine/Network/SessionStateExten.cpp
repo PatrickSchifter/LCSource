@@ -897,7 +897,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 									{
 										CTString arg1;
 										(*istr) >> arg1;
-										strMessage.PrintF(_S(strIdx,""),arg1);
+										strMessage.PrintF(_S(strIdx,""),(const char*)arg1);
 									}
 									break;
 							}
@@ -1015,9 +1015,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			break;
 		case MSG_EX_NPROTECT:
 			{
-#ifndef NO_GAMEGUARD
-				ReceiveExnProtect(istr);
-#endif
 			}
 			
 			break;
@@ -1042,7 +1039,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 				case MSG_CASTLE_CRISTAL_RESPOND_END:	// 교감 완료								
 					(*istr) >> charIdx;
 					(*istr) >> tStrtmp;
-					tStr.PrintF(_S(3898,"[%s]님이 크리스탈 교감에 성공하였습니다."), tStrtmp);
+					tStr.PrintF(_S(3898,"[%s]님이 크리스탈 교감에 성공하였습니다."), (const char*)tStrtmp);
 					_pUIMgr->GetChatting()->AddSysMessage( tStr, SYSMSG_ERROR );
 					_pUIMgr->GetSiegeWarfareNew()->CompleteConsensus(charIdx);
 					break;
@@ -1090,7 +1087,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 							tStr = _S( 3755,"성문");
 							break;
 						}						
-						tStr2.PrintF("%d %s",(int)tLevel, _S( 3756,"단계가 정상적으로 강화되었습니다." ));
+						tStr2.PrintF("%d %s",(int)tLevel, (const char*)_S( 3756,"단계가 정상적으로 강화되었습니다." ));
 						tStr += tStr2;
 						_pUIMgr->GetChatting()->AddSysMessage( tStr, SYSMSG_ERROR );
 					}
@@ -1149,7 +1146,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 						ULONG tNpcIdx,tGuildIdx;
 						SLONG tNpcUniIndex;
 						(*istr) >> tNpcIdx >> tGuildIdx >> tGuildName >> tNpcUniIndex;
-						tStr.PrintF(_S( 3759,"[%s]길드가 [%d]번 부활진지를 점령했습니다." ),tGuildName,tNpcIdx-389); // TEMP
+						tStr.PrintF(_S( 3759,"[%s]길드가 [%d]번 부활진지를 점령했습니다." ),(const char*)tGuildName,tNpcIdx-389); // TEMP
 						_pNetwork->MyCharacterInfo.mQuarter[tNpcIdx] = tGuildIdx;
 						_pNetwork->MyCharacterInfo.mQuarterName[tNpcIdx] = tGuildName;
 						_pUIMgr->GetChatting()->AddSysMessage( tStr, SYSMSG_ERROR );
@@ -1493,7 +1490,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 
 			CEntity* penEntity = NULL;
 
-			for(int i=0; i<_pNetwork->ga_srvServer.srv_actPet.Count(); ++i)
+			int i=0; for( ; i<_pNetwork->ga_srvServer.srv_actPet.Count(); ++i)
 			{
 				if( _pNetwork->ga_srvServer.srv_actPet[i].pet_Index == slPetIndex)
 				{
@@ -1523,7 +1520,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 					INDEX nComboCount;
 					(*istr) >> nComboCount;
 					INDEX tempIndex;
-					for(int i = 0; i < nComboCount; i++)
+					int i = 0; for( ; i < nComboCount; i++)
 					{
 						(*istr) >> tempIndex;
 						_pUIMgr->GetCombo()->SetComboList(i,tempIndex);
@@ -1790,7 +1787,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			(*istr)	>> pet_dex >> pet_dex_plus;
 			(*istr)	>> pet_int >> pet_int_plus;
 			(*istr)	>> pet_point;
-			for(int i = 0; i < STATE_END; i++)
+			int i = 0; for( ; i < STATE_END; i++)
 			{
 				(*istr) >> pet_state[i];
 			}
@@ -1828,7 +1825,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 					pt.m_nDexPlus = pet_dex_plus;
 					pt.m_nInt = pet_int;
 					pt.m_nIntPlus = pet_int_plus;
-					for(int i = 0; i < STATE_END; i++)
+					int i = 0; for( ; i < STATE_END; i++)
 					{
 						pt.m_nWildPetState[i] = pet_state[i];
 					}			
@@ -1906,7 +1903,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			(*istr) >> OwenerIndex;
 			(*istr) >> petID;
 
-			for (int i = 0; i < WILDPET_WEAR_TOTAL; i++)
+			int i = 0; for( ; i < WILDPET_WEAR_TOTAL; i++)
 			{
 				(*istr) >> wearIndex[i];
 				(*istr) >> wearPlus[i];
@@ -2069,7 +2066,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			_pNetwork->_WildPetInfo.m_nPetWearIndex[wear_pos] = -1;
 			_pUIMgr->GetWildPetInfo()->PetWearItemReSet();
 
-			strmassage.PrintF(_S(4213, "%s 의 %s 아이템이 기간 만료로 사라집니다." ),strPetname,_pNetwork->GetItemName(nItem_Index));
+			strmassage.PrintF(_S(4213, "%s 의 %s 아이템이 기간 만료로 사라집니다." ),(const char*)strPetname,_pNetwork->GetItemName(nItem_Index));
 
 			_pUIMgr->GetChatting()->AddSysMessage( strmassage, SYSMSG_NORMAL );
 
@@ -2652,14 +2649,14 @@ void CSessionState::ReceivePartyRecall( CNetworkMessage *istr )
 			   {
 			   		_pUIMgr->CloseMessageBox(MSGCMD_NULL);
 					MsgBoxInfo.SetMsgBoxInfo( _S(191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-					tv_str.PrintF(_S(2518, "%s파티원님이 소환을 거절하였습니다."), strTgt_char);
+					tv_str.PrintF(_S(2518, "%s파티원님이 소환을 거절하였습니다."), (const char*)strTgt_char);
 					MsgBoxInfo.AddString(tv_str);
 					_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			   }
 			   else {
 				   _pUIMgr->CloseMessageBox(MSGCMD_NULL);
 					MsgBoxInfo.SetMsgBoxInfo( _S(191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-					tv_str.PrintF(_S(2519, "%s파티원님의 소환을 거절하였습니다."), strReq_char);
+					tv_str.PrintF(_S(2519, "%s파티원님의 소환을 거절하였습니다."), (const char*)strReq_char);
 					MsgBoxInfo.AddString( tv_str );
 					_pUIMgr->CreateMessageBox( MsgBoxInfo );				   
 			   }

@@ -482,7 +482,7 @@ functions:
 
 		if (m_penMarker != NULL)
 		{
-			((CTString&)m_strDescription).PrintF("->%s", m_penMarker->GetName());
+			((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penMarker->GetName());
 		}
 
 		return m_strDescription;

@@ -209,7 +209,7 @@ void CUISkillLearn::CreateNewSkillLearn(CUIWindow *pParentWnd, int nX, int nY, i
 
 
 	// Active skill
-	for( int iRow = 0; iRow < SKILLLEARN_NEW_SLOT_TOTAL ; iRow++ )
+	int iRow = 0; for( ; iRow < SKILLLEARN_NEW_SLOT_TOTAL ; iRow++ )
 	{
 		m_btnActiveSkills[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_SKILLLEARN,
 										UBET_SKILL, 0, iRow );
@@ -1006,7 +1006,7 @@ void CUISkillLearn::ShowSkillLearnInfo(int nRow /* = -1 */)
 
 			strColor = 0xF2F2F2FF;
 
-			for( int i = 0; i < 3; i++ )
+			int i = 0; for( ; i < 3; i++ )
 			{
 				nLearnSkillIndex[i] = rSkill.GetLearnSkillIndex( nLevel, i );
 				sbLearnSkillLevel[i] = rSkill.GetLearnSkillLevel( nLevel, i );
@@ -1513,7 +1513,7 @@ int CUISkillLearn::IsSatisfiedSkill(int nSkillIndex, int nLevel, BOOL bSpecial )
 		BOOL	bLearnSkill = FALSE;
 		BOOL	bLearnItem = FALSE;
 		
-		for( int i = 0; i < 3; i++ )
+		int i = 0; for( ; i < 3; i++ )
 		{
 			nLearnSkillIndex[i] = rSkill.GetLearnSkillIndex( nLevel, i );
 			sbLearnSkillLevel[i] = rSkill.GetLearnSkillLevel( nLevel, i );
@@ -1661,7 +1661,7 @@ void CUISkillLearn::UpdateSkillLearn()
 {
 	m_strDesc.Clear();
 
-	for( int iRow = 0; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
 	{
 
 		m_nActiveSkillSatisfied[iRow] = 0;
@@ -1834,7 +1834,7 @@ void CUISkillLearn::InitSkillLearn( BOOL bSpecial )
 #endif
 	
 	// Reset buttons
-	for( int iRow = 0; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
 	{
 		m_btnActiveSkills[iRow].InitBtn();
 		m_btnPassiveSkills[iRow].InitBtn();
@@ -1864,7 +1864,7 @@ void CUISkillLearn::InitSkillLearn( BOOL bSpecial )
 		vectorPosMemorizeSkill.resize(SKILLLEARN_NEW_SLOT_TOTAL);
 		vectorImposMemorizeSkill.resize(SKILLLEARN_NEW_SLOT_TOTAL);
 		
-		for( int iSkill = 1; iSkill <= _pNetwork->wo_iNumOfSkill; iSkill++ )
+		int iSkill = 1; for( ; iSkill <= _pNetwork->wo_iNumOfSkill; iSkill++ )
 		{
 			CSkill	&rSkill = _pNetwork->GetSkillData( iSkill );
 			
@@ -2029,7 +2029,7 @@ void CUISkillLearn::InitSkillLearn( BOOL bSpecial )
 		vectorImposSpecialSkill.resize(SKILLLEARN_NEW_SLOT_TOTAL);
 		
 		// Special Skill
-		for( int iSkill = 1; iSkill <= _pNetwork->wo_iNumOfSSkill; iSkill++ )
+		int iSkill = 1; for( ; iSkill <= _pNetwork->wo_iNumOfSSkill; iSkill++ )
 		{
 			CSpecialSkill	&rSkill = _pNetwork->GetSSkillData( iSkill );
 			
@@ -2338,10 +2338,10 @@ void CUISkillLearn::OpenSkillLearn( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLO
 		// 전직 가능 레벨이고 전직한 상태가 아닐때...
 		if( _pNetwork->MyCharacterInfo.level >= EXTENSION_LEVEL && _pNetwork->MyCharacterInfo.job2 == 0 )
 		{
-			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), JobInfo().GetExtensionName( iJob, 0 ) );	
+			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), (const char*)(JobInfo().GetExtensionName( iJob, 0 )) );	
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_SKILLLEARN_REQ, FALSE, strMessage, SKILL_JOB_1 );
 
-			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), JobInfo().GetExtensionName( iJob, 1 ) );	
+			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), (const char*)(JobInfo().GetExtensionName( iJob, 1 )) );	
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_SKILLLEARN_REQ, FALSE, strMessage, SKILL_JOB_2 );
 		}
 
@@ -2533,7 +2533,7 @@ void CUISkillLearn::Render()
 // Name : AddSkillDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUISkillLearn::AddSkillDescString( CTString &strDesc, COLOR colDesc )
+void CUISkillLearn::AddSkillDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();
@@ -2551,7 +2551,7 @@ void CUISkillLearn::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -2584,7 +2584,7 @@ void CUISkillLearn::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -2644,7 +2644,7 @@ void CUISkillLearn::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -2677,7 +2677,7 @@ void CUISkillLearn::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -2781,7 +2781,7 @@ void CUISkillLearn::GetSkillDesc( int nIndex, int nLevel, BOOL bSpecial )
 		BOOL	bLearnSkill = FALSE;
 		BOOL	bLearnItem = FALSE;
 		
-		for( int i = 0; i < 3; i++ )
+		int i = 0; for( ; i < 3; i++ )
 		{
 			nLearnSkillIndex[i] = rSkill.GetLearnSkillIndex( nLevel, i );
 			sbLearnSkillLevel[i] = rSkill.GetLearnSkillLevel( nLevel, i );
@@ -4066,7 +4066,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 			}
 
 			CTString strMessage;
-			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, 0 ) );		
+			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), (const char*)(JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, 0 )) );		
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, strMessage, 0 );
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, _S( 1268, "취소하기") );			
 
@@ -4220,7 +4220,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 			
 			
 			CTString strMessage;
-			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, 1 ) );		
+			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), (const char*)(JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, 1 )) );		
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, strMessage, 0 );
 			_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, _S( 1268, "취소하기" ) );			
 
@@ -4254,7 +4254,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 				CTString	strMessage;
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( _S( 1317, "전직" ), UMBS_OKCANCEL, UI_SKILLLEARN, MSGCMD_CHANGEJOB );		
-				strMessage.PrintF( _S( 1318, "%s로 전직 하시겠습니까?" ), JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, m_iSelChangeJob - 1 ) );	
+				strMessage.PrintF( _S( 1318, "%s로 전직 하시겠습니까?" ), (const char*)(JobInfo().GetExtensionName( _pNetwork->MyCharacterInfo.job, m_iSelChangeJob - 1 )) );	
 				MsgBoxInfo.AddString( strMessage );
 				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			}

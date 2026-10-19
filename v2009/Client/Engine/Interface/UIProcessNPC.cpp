@@ -839,7 +839,7 @@ void CUIProcessNPC::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -882,7 +882,7 @@ void CUIProcessNPC::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1149,7 +1149,7 @@ void CUIProcessNPC::SelectItem ( int _nIndex )
 	
 	bNeedItem = bNeedItem && bNeedItemCount;
 	const char* szItemName = _pNetwork->GetItemName( m_NeedItems[0].ItemData.GetItemIndex() );
-	strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName
+	strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName)
 		, m_nProcessItemCount * m_NeedItems[0].llCount );
 	
 	AddString ( strTitle, bNeedItem ? COLOR_TEXT : COLOR_NONE );
@@ -1164,7 +1164,7 @@ void CUIProcessNPC::SelectItem ( int _nIndex )
 		, {10, 21, 40, 63, 94}
 	};
 	__int64 needMoney = s_iMoney[m_iResourceType][m_iResourceSubType] * m_nProcessItemCount * m_NeedItems[0].llCount;
-	strMoney.PrintF("%I64d %s", needMoney, _S( 1762, "나스" ) );
+	strMoney.PrintF("%I64d %s", needMoney, (const char*)(_S( 1762, "나스" )) );
 	AddString( strMoney, needMoney <= myMoney ? COLOR_TEXT : COLOR_NONE );
 	
 	m_bSatisfied = m_bSatisfied && needMoney <= myMoney;
@@ -1176,7 +1176,7 @@ void CUIProcessNPC::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProcessNPC::AddString ( CTString& strText, COLOR colText )
+void CUIProcessNPC::AddString ( const CTString& strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 	
@@ -1198,7 +1198,7 @@ void CUIProcessNPC::AddString ( CTString& strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 		
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 		

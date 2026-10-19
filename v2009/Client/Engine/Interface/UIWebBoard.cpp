@@ -173,19 +173,19 @@ BOOL CCommandView::ExecuteImmediate(CUIWebBoard &rUIWebBoard)
 		sprintf(szURL, "%s?indexNo=%d&noticeNo=%s&pageNo=%d"
 				, WebAddress("help_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)(rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite ))		// No
 				, rUIWebBoard.m_nCurrentPage);	//HardCoding
 	else if(rUIWebBoard.m_nCurSection == UWS_NOTICE)
 		sprintf(szURL, "%s?indexNo=%d&noticeNo=%s&pageNo=%d"
 				, WebAddress("notice_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)(rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite ))		// No
 				, rUIWebBoard.m_nCurrentPage);	//HardCoding
 	else if(rUIWebBoard.m_nCurSection == UWS_FREEBOARD)
 		sprintf(szURL, "%s?indexNo=%d&bbsNo=%s&pageNo=%d&charIndex=%d&UserId=%s"
 				, WebAddress("freebbs_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage
 				, _pNetwork->MyCharacterInfo.index
 				, ConvertStringToWebParameter(_pNetwork->m_strUserID.str_String).c_str()
@@ -194,7 +194,7 @@ BOOL CCommandView::ExecuteImmediate(CUIWebBoard &rUIWebBoard)
 		sprintf(szURL, "%s?indexNo=%d&bbsNo=%s&pageNo=%d&charIndex=%d&UserId=%s&guildno=%d&server=%d&master=%d"
 				, WebAddress("guildbbs_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage
 				, _pNetwork->MyCharacterInfo.index
 				, ConvertStringToWebParameter(_pNetwork->m_strUserID.str_String).c_str()
@@ -740,7 +740,7 @@ void CUIWebBoard::SetPageButtons( int nTotalWrite, int nCurPage )
 		m_btnNext.SetEnable( TRUE );
 
 	int	nLength, nTotalLength = 0;
-	for( int iPage = m_nCurrentFirstPage; iPage <= m_nCurrentLastPage; iPage++ )
+	int iPage = m_nCurrentFirstPage; for( ; iPage <= m_nCurrentLastPage; iPage++ )
 	{
 		if( iPage > 99999 )		nLength = 6;
 		else if( iPage > 9999 )	nLength = 5;
@@ -785,7 +785,7 @@ void CUIWebBoard::SetPageButtons( int nTotalWrite, int nCurPage )
 // Name : AddListSubjectString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIWebBoard::AddListSubjectString( CTString &strSubject )
+void CUIWebBoard::AddListSubjectString( const CTString &strSubject )
 {
 	CTString	strTemp = strSubject;
 
@@ -795,7 +795,7 @@ void CUIWebBoard::AddListSubjectString( CTString &strSubject )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = WBOARD_LIST_SUBJECT_MAX_CHAR - 4;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strTemp[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -818,7 +818,7 @@ void CUIWebBoard::AddListSubjectString( CTString &strSubject )
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIWebBoard::AddReadingString( CTString &strContent )
+void CUIWebBoard::AddReadingString( const CTString &strContent )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();
@@ -836,7 +836,7 @@ void CUIWebBoard::AddReadingString( CTString &strContent )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -869,7 +869,7 @@ void CUIWebBoard::AddReadingString( CTString &strContent )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = WBOARD_READ_MAX_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strContent,0,iPos))
 					break;
@@ -929,7 +929,7 @@ void CUIWebBoard::AddReadingString( CTString &strContent )
 		if( nLength <= WBOARD_READ_MAX_CHAR )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strContent[iPos] == '\n' || strContent[iPos] == '\r' )
 					break;	
@@ -962,7 +962,7 @@ void CUIWebBoard::AddReadingString( CTString &strContent )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = WBOARD_READ_MAX_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strContent[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -2697,7 +2697,7 @@ WMSG_RESULT CUIWebBoard::MouseMessage( MSG *pMsg )
 								// 답글 페이지로
 								m_nCurBoardType = UWT_REPLY;
 								CTString strTemp;
-								strTemp.PrintF("Re: %s", m_strReadSubject);
+								strTemp.PrintF("Re: %s", (const char*)m_strReadSubject);
 								m_ebWriteSubject.ResetString();
 								m_ebWriteSubject.InsertChars(0, strTemp.str_String);
 								//멀티에디터에 내용 삽입. 내용이 아래와 같이 수정됨.

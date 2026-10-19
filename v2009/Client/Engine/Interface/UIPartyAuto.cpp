@@ -2478,7 +2478,7 @@ void CUIPartyAuto::PartyMatchJoin( SBYTE sbType, SLONG slBoss, CTString strBossN
 
 	if( slBoss == slMyIndex )
 	{
-		strMessage.PrintF( _S( 2716, "%s님(%s)이 파티 가입 신청을 하셨습니다. 허락하시겠습니까?" ), strCharName, strJob );
+		strMessage.PrintF( _S( 2716, "%s님(%s)이 파티 가입 신청을 하셨습니다. 허락하시겠습니까?" ), (const char*)strCharName, (const char*)strJob );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_YESNO, UI_PARTYAUTO, MSGCMD_PARTYAUTO_JOIN_ALLOW );
@@ -2487,7 +2487,7 @@ void CUIPartyAuto::PartyMatchJoin( SBYTE sbType, SLONG slBoss, CTString strBossN
 	}
 	else
 	{
-		strMessage.PrintF( _S( 2717, "파티장 %s에게 파티참가를 요청 중입니다" ), strBossName );
+		strMessage.PrintF( _S( 2717, "파티장 %s에게 파티참가를 요청 중입니다" ), (const char*)strBossName );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_CANCEL, UI_PARTYAUTO, MSGCMD_PARTYAUTO_JOIN_ALLOW );

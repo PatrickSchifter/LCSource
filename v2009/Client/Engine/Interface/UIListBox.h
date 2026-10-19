@@ -82,12 +82,12 @@ public:
 
 	// Set string
 	void	SetColumnPosX( int nCol, int nPosX, TEXT_ALIGN eAlign = TEXT_LEFT );
-	void	AddString( int nCol, CTString &strText, COLOR colText = 0xF2F2F2FF, BOOL bSelectable = TRUE );
+	void	AddString( int nCol, const CTString &strText, COLOR colText = 0xF2F2F2FF, BOOL bSelectable = TRUE );
 	void	InsertString( int nIndex, int nCol, CTString &strText, COLOR colText = 0xF2F2F2FF, BOOL bSelectable = TRUE );
 	void	RemoveString( int nIndex, int nCol );
 	void	MoveString( int nFromIndex, int nToIndex, int nCol );
 	void	ResetAllStrings();
-	void	SetString( int nCol, int nIndex, CTString &strText );
+	void	SetString( int nCol, int nIndex, const CTString &strText );
 	void	SetColor( int nCol, int nIndex, COLOR colText );
 	void	SetSelectable( int nIndex, BOOL bSelectable );
 	void	SetAllNotSelectable();

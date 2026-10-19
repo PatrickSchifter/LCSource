@@ -322,7 +322,7 @@ void CUIQuickSlot::ShowSlotInfo( BOOL bShowInfo, int nSlotIndex )
 						CTString	strCount;
 						strCount.PrintF( "%I64d", rItems.Item_Sum );
 						_pUIMgr->InsertCommaToString( strCount );
-						m_strSlotInfo.PrintF( "%s (%s)", szItemName, strCount );
+						m_strSlotInfo.PrintF( "%s (%s)", szItemName, (const char*)strCount );
 					}
 					else
 						m_strSlotInfo = szItemName;
@@ -425,7 +425,7 @@ void CUIQuickSlot::ShowExSlotInfo( BOOL bShowInfo, int nSlotIndex )
 						m_btnPrevSlot.GetAbsPos( nInfoPosX, nInfoPosY );
 						int PrevPage = m_nCurrentPage>0 ? m_nCurrentPage : 3 ;
 						CTString str;
-						str.PrintF("%d %s(Alt+%d)", PrevPage, _S(3076, "페이지"), PrevPage);
+				str.PrintF("%d %s(Alt+%d)", PrevPage, (const char*)_S(3076, "페이지"), PrevPage);
 						m_strSlotInfo =str;
 
 					}
@@ -436,7 +436,7 @@ void CUIQuickSlot::ShowExSlotInfo( BOOL bShowInfo, int nSlotIndex )
 						m_btnNextSlot.GetAbsPos( nInfoPosX, nInfoPosY );
 						int NextPage = (m_nCurrentPage+2)<=3 ? m_nCurrentPage+2 : 1;
 						CTString str;
-						str.PrintF("%d %s(Alt+%d)", NextPage, _S(3076, "페이지"), NextPage);
+				str.PrintF("%d %s(Alt+%d)", NextPage, (const char*)_S(3076, "페이지"), NextPage);
 						m_strSlotInfo =str;
 
 					}
@@ -496,7 +496,7 @@ void CUIQuickSlot::RenderBtns()
 	{
 		int	nX = m_nPosX + QSLOT_BTN_OUTLINE_SX;
 		int	nY = m_nPosY + QSLOT_BTN_OUTLINE_SY;
-		for( int iBtn = 0; iBtn < QSLOT_BTN_COUNT; iBtn++, nX += 35 )
+		int iBtn = 0; for( ; iBtn < QSLOT_BTN_COUNT; iBtn++, nX += 35 )
 		{
 			if( m_abtnItems[m_nCurrentPage][iBtn].IsEmpty() )
 				continue;
@@ -514,7 +514,7 @@ void CUIQuickSlot::RenderBtns()
 	{
 		int	nX = m_nPosX + QSLOT_BTN_OUTLINE_SY;
 		int	nY = m_nPosY + QSLOT_BTN_OUTLINE_SX;
-		for( int iBtn = 0; iBtn < QSLOT_BTN_COUNT; iBtn++, nY += 35 )
+		int iBtn = 0; for( ; iBtn < QSLOT_BTN_COUNT; iBtn++, nY += 35 )
 		{
 			if( m_abtnItems[m_nCurrentPage][iBtn].IsEmpty() )
 				continue;
@@ -536,7 +536,7 @@ void CUIQuickSlot::RenderBtns()
 	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Skill buttons
-	for( int iBtn = 0; iBtn < QSLOT_BTN_COUNT; iBtn++ )
+	int iBtn = 0; for( ; iBtn < QSLOT_BTN_COUNT; iBtn++ )
 	{
 		if( m_abtnItems[m_nCurrentPage][iBtn].IsEmpty() ||
 			m_abtnItems[m_nCurrentPage][iBtn].GetBtnType() != UBET_SKILL )

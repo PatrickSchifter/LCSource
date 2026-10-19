@@ -122,7 +122,7 @@ void CUIMessageBoxL::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX 
 // Name : CreateMessageBox()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::CreateMessageBox( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIMessageBoxL::CreateMessageBox( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	// Message box setting
 	if( nPosX != -1 && nPosX != -1 )
@@ -166,7 +166,7 @@ void CUIMessageBoxL::InitMessageBox()
 // Name : AddDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
+void CUIMessageBoxL::AddDescString( const CTString &strMessage, const COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
@@ -184,7 +184,7 @@ void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;	
@@ -220,7 +220,7 @@ void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxDescStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strMessage,0,iPos))
 					break;
@@ -280,7 +280,7 @@ void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
 		if( nLength <= _iMaxDescStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;	
@@ -316,7 +316,7 @@ void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxDescStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strMessage[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -427,7 +427,7 @@ void CUIMessageBoxL::AddSelString( CTString &strMessage, COLOR colSel, int iValu
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxDescStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strMessage,0,iPos))
 					break;
@@ -484,7 +484,7 @@ void CUIMessageBoxL::AddSelString( CTString &strMessage, COLOR colSel, int iValu
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxSelStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strMessage[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

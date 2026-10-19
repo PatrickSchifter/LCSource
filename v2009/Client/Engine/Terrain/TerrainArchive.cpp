@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Base/ProgressHook.h>
 
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainArchive.h>
@@ -11,7 +12,6 @@
 
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
-#include <Engine/Loading.h>
 template class CDynamicArray<CBrush3D>;
 
 /*

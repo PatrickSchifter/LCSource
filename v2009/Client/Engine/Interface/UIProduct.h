@@ -148,7 +148,7 @@ public:
 
 // etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
+	void	AddString ( const CTString& strText, COLOR colText = 0xffffffff );
 
 // Tool Tip
 	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );

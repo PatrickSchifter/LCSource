@@ -442,7 +442,7 @@ void CUIPersonalShop::PrepareBuyShop()
 	// Set position of trade items
 	int nX = PERSONAL_SELL_TOP_SLOT_SX;
 	int nY = PERSONAL_SELL_TOP_SLOT_SY;
-	for( int nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
+	int nItem = 0; for( ; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
 	{
 		if( nItem == PERSONAL_TRADE_SLOT_COL )
 		{
@@ -496,7 +496,7 @@ void CUIPersonalShop::PrepareSellShop()
 	// Set position of trade items
 	int nX = PERSONAL_SELL_TOP_SLOT_SX;
 	int nY = PERSONAL_SELL_TOP_SLOT_SY;
-	for( int nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
+	int nItem = 0; for( ; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
 	{
 		if( nItem == PERSONAL_TRADE_SLOT_COL )
 		{
@@ -695,7 +695,7 @@ void CUIPersonalShop::ResetShop(BOOL bOpen)
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::ClearItems()
 {
-	for(int i = 0; i < PERSONAL_TRADE_SLOT_TOTAL; ++i)
+	int i = 0; for( ; i < PERSONAL_TRADE_SLOT_TOTAL; ++i)
 		m_abtnTradeItems[i].InitBtn();			
 
 	for(i = 0; i < PERSONAL_SHOP_SLOT_ROW_TOTAL; ++i)
@@ -759,7 +759,7 @@ void CUIPersonalShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInf
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -802,7 +802,7 @@ void CUIPersonalShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInf
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; ++iPos )
+			int iPos = 0; for( ; iPos < nSplitPos; ++iPos )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -937,7 +937,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 	{
 		CTString strPrefix = rItemRareOption.GetPrefix();
 		if( strPrefix.Length() >0)
-			szItemName.PrintF("%s %s", strPrefix, strItemName);
+			szItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 	}
 
 	/*
@@ -963,7 +963,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 			}
 			else
 			{
-				strTemp.PrintF( "%s +%d", szItemName, ulItemPlus );
+				strTemp.PrintF( "%s +%d", (const char*)szItemName, ulItemPlus );
 			}			
 		}
 		else
@@ -974,7 +974,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 				
 				strCount.PrintF( "%I64d", llCount );
 				_pUIMgr->InsertCommaToString( strCount );
-				strTemp.PrintF( "%s(%s)", szItemName, strCount );
+				strTemp.PrintF( "%s(%s)", (const char*)szItemName, (const char*)strCount );
 
 				colNas = _pUIMgr->GetNasColor( llCount );
 			}
@@ -1033,7 +1033,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 			
 			strMoney.PrintF( "%I64d", iPrice );
 			_pUIMgr->InsertCommaToString( strMoney );
-			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), (const char*)strMoney );
 			
 			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
 		}
@@ -1327,7 +1327,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 
 					if(_pUIMgr->GetWildPetInfo()->GetWildPetInfo(ulItemPlus,pWildPetInfo))
 					{
-						strTemp.PrintF(_S(4215, "이름: %s"),pWildPetInfo.pet_name);
+						strTemp.PrintF(_S(4215, "이름: %s"),(const char*)pWildPetInfo.pet_name);
 						AddItemInfoString(strTemp,  0xF2F2F2FF );
 						strTemp.PrintF(_S(4216, "펫 레벨: %d"),pWildPetInfo.pet_level);
 						AddItemInfoString(strTemp, 0xDEC05BFF);
@@ -1561,7 +1561,7 @@ BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHe
 
 			strMoney.PrintF( "%I64d", iPrice );
 			_pUIMgr->InsertCommaToString( strMoney );
-			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), (const char*)strMoney );
 
 			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
 		}
@@ -3287,7 +3287,7 @@ void CUIPersonalShop::BuyItems()
 			CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
 			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{
-				for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+				int iItem = 0; for( ; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 				{
 					if( nIndex == m_abtnTradeItems[iItem].GetItemIndex() )
 						ctTradeItems--;
@@ -3326,7 +3326,7 @@ void CUIPersonalShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; ++iChar )
+			int iChar = 0; for( ; iChar < nLength; ++iChar )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -3365,7 +3365,7 @@ void CUIPersonalShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; ++iChar )
+			int iChar = 0; for( ; iChar < nLength; ++iChar )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -3383,7 +3383,7 @@ void CUIPersonalShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; ++iChar )
+			int iChar = 0; for( ; iChar < nLength; ++iChar )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -3437,7 +3437,7 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, ULONG ulPlus, U
 	if(iSlot == SLOT_PACKAGE)
 	{
 		// Find same item in trade slot
-		for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
+		int iItem = 0; for( ; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 		{
 			if( m_abtnPackageItems[iItem].GetItemUniIndex() == nTempUniIndex )
 				break;
@@ -3528,7 +3528,7 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, ULONG ulPlus, U
 		*/
 
 		// Find same item in trade slot
-		for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+		int iItem = 0; for( ; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 		{
 			if( m_abtnTradeItems[iItem].GetItemUniIndex() == nTempUniIndex )
 				break;
@@ -3925,9 +3925,9 @@ void CUIPersonalShop::PackageToShop( BOOL bAdd )
 
 	if(bAdd)
 	{		
-		for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
+		int iRow = 0; for( ; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 		{
-			for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+			int iCol = 0; for( ; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 			{			
 				if( m_abtnShopItems[iRow][iCol].IsEmpty() )
 				{	
@@ -3951,9 +3951,9 @@ void CUIPersonalShop::PackageToShop( BOOL bAdd )
 	}
 	else
 	{
-		for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
+		int iRow = 0; for( ; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 		{
-			for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+			int iCol = 0; for( ; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 			{			
 				if( m_abtnShopItems[iRow][iCol].IsEmpty() )
 					continue;
@@ -3991,9 +3991,9 @@ __int64 CUIPersonalShop::CalculateTotalPrice(int& iCount)
 	__int64	iTotalPrice	= 0;
 	iCount				= 0;
 	
-	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
+	int iRow = 0; for( ; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		int iCol = 0; for( ; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 		{			
 			if( m_abtnShopItems[iRow][iCol].IsEmpty() )
 				continue;
@@ -4162,7 +4162,7 @@ void CUIPersonalShop::SendPersonalShopStart()
 	int iPackageItemCount	= 0;
 
 	// Trade Slot(5x2)
-	for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+	int iItem = 0; for( ; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 	{
 		if( m_abtnTradeItems[iItem].IsEmpty() )
 			continue;
@@ -4170,7 +4170,7 @@ void CUIPersonalShop::SendPersonalShopStart()
 	}
 
 	// Package Slot(5x1)
-	for(int iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
+	int iCol = 0; for( ; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
 		if( m_abtnPackageItems[iCol].IsEmpty() )
 			continue;
@@ -4197,7 +4197,7 @@ void CUIPersonalShop::SendPersonalShopStart()
 		}
 		char	*pcInput	= strPrice.str_String;
 		int		nLength		= strPrice.Length();
-		for( int iChar = 0; iChar < nLength; ++iChar )
+		int iChar = 0; for( ; iChar < nLength; ++iChar )
 		{
 			if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 				break;
@@ -4319,7 +4319,7 @@ void CUIPersonalShop::SendPersonalShopBuy()
 
 	int iNormalItemCount	= 0;
 
-	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
+	int iRow = 0; for( ; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
 		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 		{			
@@ -4364,7 +4364,7 @@ void CUIPersonalShop::SendCashPersonShopBuy()
 
 	int iNormalItemCount	= 0;
 
-	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
+	int iRow = 0; for( ; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
 		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 		{			
@@ -4422,7 +4422,7 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 		m_cbtnPremium.SetCheck(TRUE);
 	}
 	
-	for(int i = 0; i < sbNormalCount; ++i)
+	int i = 0; for( ; i < sbNormalCount; ++i)
 	{
 		LONG	lIndex;
 		LONG	lUniIndex;

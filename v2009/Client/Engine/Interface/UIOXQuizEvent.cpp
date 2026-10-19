@@ -125,7 +125,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 
 		if( nThaiLen <= nChatMax )
 		{
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strQuizString[iPos] == '\n' || strQuizString[iPos] == '\r' )
 					break;
@@ -161,7 +161,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = m_nMaxCharCount;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strQuizString,0,iPos))
 					break;
@@ -223,7 +223,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 	{
 		if( nLength <= m_nMaxCharCount )
 		{
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if( strQuizString[iPos] == '\n' || strQuizString[iPos] == '\r' )
 					break;
@@ -259,7 +259,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 			int		nSplitPos = m_nMaxCharCount;
 			BOOL	b2ByteChar = FALSE;
 
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strQuizString[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;

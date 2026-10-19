@@ -29,7 +29,7 @@ void CRectStringData::CalculateRect()
 	m_rcStrRect.Bottom = m_rcStrRect.Top + _pUIFontTexMgr->GetLineHeight() + _pUIFontTexMgr->GetLineSpacing();
 }
 
-void CRectStringData::SetString(CTString& strInput, COLOR color /* = 0xFFFFFFFF */)
+void CRectStringData::SetString(const CTString &strInput, COLOR color /* = 0xFFFFFFFF */)
 {
 	m_strData = strInput;
 	m_Color = color;
@@ -37,14 +37,14 @@ void CRectStringData::SetString(CTString& strInput, COLOR color /* = 0xFFFFFFFF 
 }
 
 
-int CUIRectString::CheckSplitPos(CTString& strInput, int nWidth)
+int CUIRectString::CheckSplitPos(const CTString &strInput, int nWidth)
 {
 	int nTotalWidth = 0;
 	int n2ByteCharWidth = _pUIFontTexMgr->GetFontWidth2Byte();
 	int nCharWidth = _pUIFontTexMgr->GetFontWidth();
 	int nFontSpace = _pUIFontTexMgr->GetFontSpacing();
 
-	for(int i=0; i<strInput.Length(); i++)
+	int i=0; for( ; i<strInput.Length(); i++)
 	{
 		if( strInput[i] & 0x80 )
 		{
@@ -168,14 +168,14 @@ int CUIRectString::GetMaxStrHeight()
 }
 
 
-void CUIRectString::AddString(CTString& strInput, COLOR color /* = 0xFFFFFFFF */)
+void CUIRectString::AddString(const CTString &strInput, COLOR color /* = 0xFFFFFFFF */)
 {
 	m_vecStringList.push_back(strInput);
 	m_vecColor.push_back(color);
 	AddCRectStringData(strInput, color);
 }
 
-void CUIRectString::AddCRectStringData(CTString& strInput, COLOR color)
+void CUIRectString::AddCRectStringData(const CTString &strInput, COLOR color)
 {
 	CRectStringData strCheck;
 	CTString strSplited1 = strInput;

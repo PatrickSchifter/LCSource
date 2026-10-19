@@ -48,7 +48,7 @@ public:
 	}
 
 	CTString& GetString(){ return m_strData; }
-	void SetString(CTString& strInput, COLOR color = 0xFFFFFFFF);
+	void SetString(const CTString &strInput, COLOR color = 0xFFFFFFFF);
 	void SetPos(int nPosX, int nPosY)
 	{
 		int nWidth = m_rcStrRect.GetWidth();
@@ -80,8 +80,8 @@ private:
 	std::vector<COLOR>				m_vecColor;         //¿øº» Ä®¶ó
 	int						m_nAlign;
 
-	int CheckSplitPos(CTString& strInput, int nWidth);
-	void AddCRectStringData(CTString& strInput, COLOR color);
+	int CheckSplitPos(const CTString &strInput, int nWidth);
+	void AddCRectStringData(const CTString &strInput, COLOR color);
 
 public:
 	CUIRectString() : m_nAlign(ALIGN_LEFT)
@@ -111,7 +111,7 @@ public:
 	int GetMaxStrWidth();
 	int GetMaxStrHeight();
 
-	void AddString(CTString& strInput, COLOR color = 0xFFFFFFFF);
+	void AddString(const CTString &strInput, COLOR color = 0xFFFFFFFF);
 
 	void ClearString();
 

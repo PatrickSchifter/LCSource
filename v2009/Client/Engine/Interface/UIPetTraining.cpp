@@ -189,7 +189,7 @@ void CUIPetTraining::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 	m_lbSkillDesc.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 
 	// Active skill buttons
-	for( int iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
+	int iRow = 0; for( ; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
 	{
 		m_btnCommands[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETTRAINING,
 											UBET_SKILL, 0, iRow );
@@ -235,7 +235,7 @@ void CUIPetTraining::InitPetTraining()
 	m_lbSkillDesc.ResetAllStrings();
 	
 	// Reset buttons
-	for( int iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SLEARN_SLOT_ROW_TOTAL; iRow++ )
 	{
 		m_btnCommands[iRow].InitBtn();
 		m_btnSkills[iRow].InitBtn();
@@ -266,7 +266,7 @@ void CUIPetTraining::InitPetTraining()
 		iCrrJob = WILDPET_JOB;
 	}
 	
-	for( int iSkill = 1; iSkill <= _pNetwork->wo_iNumOfSkill; iSkill++ )
+	int iSkill = 1; for( ; iSkill <= _pNetwork->wo_iNumOfSkill; iSkill++ )
 	{
 		CSkill	&rSkill = _pNetwork->GetSkillData( iSkill );
 				
@@ -591,7 +591,7 @@ void CUIPetTraining::Render()
 // Name : AddSkillDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIPetTraining::AddSkillDescString( CTString &strDesc, COLOR colDesc )
+void CUIPetTraining::AddSkillDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();
@@ -602,7 +602,7 @@ void CUIPetTraining::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -635,7 +635,7 @@ void CUIPetTraining::AddSkillDescString( CTString &strDesc, COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -736,7 +736,7 @@ void CUIPetTraining::GetSkillDesc( int nIndex, int nLevel )
 	BOOL	bLearnSkill = FALSE;
 	BOOL	bLearnItem = FALSE;
 	
-	for( int i = 0; i < 3; i++ )
+	int i = 0; for( ; i < 3; i++ )
 	{
 		nLearnSkillIndex[i] = rSkill.GetLearnSkillIndex( nLevel, i );
 		sbLearnSkillLevel[i] = rSkill.GetLearnSkillLevel( nLevel, i );
@@ -1340,7 +1340,7 @@ WMSG_RESULT CUIPetTraining::MouseMessage( MSG *pMsg )
 					{
 						int	iRowS = m_sbCommandIcon.GetScrollPos();
 						int	iRowE = iRowS + SLEARN_SLOT_ROW;
-						for( int iRow = iRowS; iRow < iRowE; iRow++ )
+						int iRow = iRowS; for( ; iRow < iRowE; iRow++ )
 						{
 							if( m_btnCommands[iRow].MouseMessage( pMsg ) != WMSG_FAIL )
 								return WMSG_SUCCESS;
@@ -1358,7 +1358,7 @@ WMSG_RESULT CUIPetTraining::MouseMessage( MSG *pMsg )
 					{
 						int	iRowS = m_sbSkillIcon.GetScrollPos();
 						int	iRowE = iRowS + SLEARN_SLOT_ROW;
-						for( int iRow = iRowS; iRow < iRowE; iRow++ )
+						int iRow = iRowS; for( ; iRow < iRowE; iRow++ )
 						{
 							if( m_btnSkills[iRow].MouseMessage( pMsg ) != WMSG_FAIL )
 								return WMSG_SUCCESS;
@@ -1748,7 +1748,7 @@ void CUIPetTraining::LearnSkill( SLONG slIndex, SBYTE sbLevel, BOOL bAutoLearn )
 	BOOL	bUpdate = FALSE;
 	
 	// Not Special Skill
-	for( int iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL; iRow++ )
+	int iRow = 0; for( ; iRow < SLEARN_SLOT_ROW_TOTAL; iRow++ )
 	{
 		if( m_btnCommands[iRow].GetSkillIndex() == slIndex )
 		{

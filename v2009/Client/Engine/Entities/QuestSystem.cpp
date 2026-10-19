@@ -34,7 +34,7 @@ CQuestDynamicData::CQuestDynamicData(const CQuestStaticData &data)
 , m_ctOptionPrizeDesc( 0 )
 , m_ctNeedDesc( 0 )
 {
-	for(INDEX i=0; i<QUEST_MAX_CONDITION; ++i)
+	INDEX i=0; for( ; i<QUEST_MAX_CONDITION; ++i)
 	{
 		//m_iConditionValue[i] = conditionValue[i];
 		m_iCurrentConditionValueStatus[i] = 0;
@@ -340,7 +340,7 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 	
 	// Need item
 	BOOL	bNeedItem = FALSE;
-	for( INDEX iNeed = 0; iNeed < MAX_MAX_NEED_ITEM; iNeed++ )
+	INDEX iNeed = 0; for( ; iNeed < MAX_MAX_NEED_ITEM; iNeed++ )
 	{
 		if( GetNeedItemIndex( iNeed ) != -1 )
 			bNeedItem = TRUE;
@@ -618,7 +618,7 @@ void CQuestDynamicData::MakeQuestNeedDesc()
 	const int iNeedJob = GetNeedJob();
 	if(iNeedJob != -1)
 	{
-		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), JobInfo().GetName(iNeedJob, 0));
+		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), (const char*)(JobInfo().GetName(iNeedJob, 0)));
 		m_colNeedDesc[m_ctNeedDesc++] = 0xFFB54DFF;
 	}
 	
@@ -737,6 +737,9 @@ CQuestDynamicData *CQuestSystem::Create(INDEX idxQuest)
 {
 	if(m_pCurrentRequest) DeleteCurrentRequest();
 	m_pCurrentRequest = new CQuestDynamicData(GetStaticData(idxQuest));
+	// a quest the client data does not have gets the dummy static data; it keeps its own index, or
+	// GetDynamicDataByQuestIndex() would not find it (the quest book used the NULL and crashed)
+	m_pCurrentRequest->m_iQuestIndex = idxQuest;
 	return m_pCurrentRequest;
 }
 
@@ -791,7 +794,7 @@ void CQuestSystem::Load(const CTFileName &fnm, void (*progress)(FLOAT) )
 			read >> index;
 			
 			//없는 index는 건너뛴다.
-			for(INDEX j=i; j<index; ++j) m_aQuestStaticData[j].m_iIndex = -1;
+			INDEX j=i; for( ; j<index; ++j) m_aQuestStaticData[j].m_iIndex = -1;
 			i = index;
 			
 			m_aQuestStaticData[i].m_iIndex = index;

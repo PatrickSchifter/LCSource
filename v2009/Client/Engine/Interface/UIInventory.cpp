@@ -354,7 +354,7 @@ void CUIInventory::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -396,7 +396,7 @@ void CUIInventory::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -466,7 +466,7 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 	{
 		CTString strPrefix = rItemRareOption.GetPrefix();
 		if( strPrefix.Length() >0)
-			szItemName.PrintF("%s %s", strPrefix, strItemName);
+			szItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 	}
 
 	COLOR colNas = 0xF2F2F2FF;
@@ -478,7 +478,7 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 		
 		strCount.PrintF( "%I64d", rItems.Item_Sum );
 		_pUIMgr->InsertCommaToString( strCount );
-		strTemp.PrintF( "%s(%s)", szItemName, strCount );
+		strTemp.PrintF( "%s(%s)", (const char*)szItemName, (const char*)strCount );
 
 		colNas = _pUIMgr->GetNasColor( rItems.Item_Sum );		
 
@@ -499,7 +499,7 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 					FLAG_ITEM_PLATINUM_GET(rItems.Item_Flag,plat_plus);
 					diff = rItems.Item_Plus - plat_plus;
 
-					strTemp.PrintF( "%s",szItemName);
+					strTemp.PrintF( "%s",(const char*)szItemName);
 					CTString strMsg;
 					if(diff > 0)
 					{
@@ -516,7 +516,7 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 								
 				}
 				else {
-					strTemp.PrintF( "%s",szItemName);
+					strTemp.PrintF( "%s",(const char*)szItemName);
 					AddItemInfoString( strTemp );
 				}
 				
@@ -585,11 +585,11 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 				CTString tv_str=_S(3046,"대여");
 				tv_str+= CTString(" ")+szItemName;
 				if(rItems.Item_Plus > 0){
-					strTemp.PrintF( "%s +%d", tv_str, rItems.Item_Plus );
+					strTemp.PrintF( "%s +%d", (const char*)tv_str, rItems.Item_Plus );
 					AddItemInfoString( strTemp, colNas );
 				}
 				else {
-					strTemp.PrintF( "%s",tv_str);
+					strTemp.PrintF( "%s",(const char*)tv_str);
 					AddItemInfoString( strTemp );
 				}
 				if(rItems.Item_Used > 0)
@@ -628,11 +628,11 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 			}
 			else {
 				if(rItems.Item_Plus > 0){
-					strTemp.PrintF( "%s +%d", szItemName, rItems.Item_Plus );
+					strTemp.PrintF( "%s +%d", (const char*)szItemName, rItems.Item_Plus );
 					AddItemInfoString( strTemp, colNas );
 				}
 				else {
-					strTemp.PrintF( "%s",szItemName);
+					strTemp.PrintF( "%s",(const char*)szItemName);
 					AddItemInfoString( strTemp );
 				}
 			}
@@ -663,23 +663,23 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 		{
 			if( rItems.IsFlag( FLAG_ITEM_BOOSTER_ADDED ) )
 			{
-				strTemp.PrintF(_S( 1929, "부스트 %s" ), szItemName);	
+				strTemp.PrintF(_S( 1929, "부스트 %s" ), (const char*)szItemName);	
 			}
 			else if( rItems.IsFlag( FLAG_ITEM_SILVERBOOSTER_ADDED ) )
 			{
-				strTemp.PrintF(_S( 2429, "실버 부스트 %s" ), szItemName);	
+				strTemp.PrintF(_S( 2429, "실버 부스트 %s" ), (const char*)szItemName);	
 			}
 			else if( rItems.IsFlag( FLAG_ITEM_GOLDBOOSTER_ADDED ) )
 			{
-				strTemp.PrintF(_S( 2430,"골드 부스트 %s" ), szItemName);	
+				strTemp.PrintF(_S( 2430,"골드 부스트 %s" ), (const char*)szItemName);	
 			}
 			else if( rItems.IsFlag( FLAG_ITEM_PLATINUMBOOSTER_ADDED ) )
 			{
-				strTemp.PrintF(_S( 2639, "플래티늄 부스트 %s" ), szItemName);	
+				strTemp.PrintF(_S( 2639, "플래티늄 부스트 %s" ), (const char*)szItemName);	
 			}
 			else
 			{
-				strTemp.PrintF("%s", szItemName);
+				strTemp.PrintF("%s", (const char*)szItemName);
 			}
 			
 			AddItemInfoString( strTemp, colNas );
@@ -1028,7 +1028,7 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 
 					if(_pUIMgr->GetWildPetInfo()->GetWildPetInfo(rItems.Item_Plus,pWildPetInfo))
 					{
-						strTemp.PrintF(_S(4215, "이름: %s"),pWildPetInfo.pet_name);
+						strTemp.PrintF(_S(4215, "이름: %s"),(const char*)pWildPetInfo.pet_name);
 						AddItemInfoString(strTemp,  0xF2F2F2FF );
 						strTemp.PrintF(_S(4216, "펫 레벨: %d"),pWildPetInfo.pet_level);
 						AddItemInfoString(strTemp, 0xDEC05BFF);
@@ -1191,8 +1191,8 @@ void CUIInventory::GetItemInfo( int nTab, int nRow, int nCol, int &nInfoWidth, i
 							int nScoreA = static_cast<int>( ( ulTemp & 0xFFFF0000 ) >> 16 );
 							int nScoreB = static_cast<int>( ulTemp & 0x0000FFFF );
 							
-							strTemp.PrintF( "%s (%d) VS (%d) %s", _pUIMgr->GetQuest()->GetStrTeamA(), nScoreA,
-								nScoreB, _pUIMgr->GetQuest()->GetStrTeamB() );
+							strTemp.PrintF( "%s (%d) VS (%d) %s", (const char*)(_pUIMgr->GetQuest()->GetStrTeamA()), nScoreA,
+								nScoreB, (const char*)(_pUIMgr->GetQuest()->GetStrTeamB()) );
 
 							AddItemInfoString( strTemp, 0xFFAA44FF );
 						}
@@ -1417,7 +1417,7 @@ void CUIInventory::ShowItemInfo( BOOL bShowInfo, BOOL bRenew, int nWear, int nRo
 void CUIInventory::RenderItems()
 {
 	// Wearing items
-	for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+	int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 	{
 		if( m_abtnWearing[iWear].IsEmpty() )
 			continue;
@@ -2020,7 +2020,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 			else if( IsInsideRect( nX, nY, m_rcWearing ) )
 			{
 				int	nWhichWear = -1;
-				for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+				int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 				{
 					if( m_abtnWearing[iWear].MouseMessage( pMsg ) != WMSG_FAIL )
 						nWhichWear = iWear;
@@ -2102,7 +2102,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 					m_nSelWearItemID = -1;
 					m_nSelSlotItemID[m_InvenCurrentTab] = -1;
 
-					for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+					int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 					{
 						if( m_abtnWearing[iWear].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
@@ -2246,7 +2246,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 				// Wearing item
 				else if( IsInsideRect( nX, nY, m_rcWearing ) )
 				{
-					for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+					int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 					{
 						if( m_abtnWearing[iWear].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
@@ -2310,7 +2310,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 								if( rItemData.GetType() == CItemData::ITEM_ETC &&
 									rItemData.GetSubType() == CItemData::ITEM_ETC_REFINE )
 								{
-									for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+									int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 									{
 										if( !m_abtnWearing[iWear].IsEmpty() &&
 											m_abtnWearing[iWear].IsInside( nX, nY ) )
@@ -2332,7 +2332,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 									rItemData.GetSubType() == CItemData::ITEM_ETC_OPTION )
 										|| nIndex==2361 )	//피와 땀의 결정
 								{
-									for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+									int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 									{
 										if( !m_abtnWearing[iWear].IsEmpty() &&
 											m_abtnWearing[iWear].IsInside( nX, nY ) )
@@ -2364,7 +2364,7 @@ WMSG_RESULT CUIInventory::MouseMessage( MSG *pMsg )
 									if( rItemData.GetWearingPosition() >= 0 )
 									{
 										// Check wearing
-										for( int iWear = 0; iWear < WEAR_TOTAL; iWear++ )
+										int iWear = 0; for( ; iWear < WEAR_TOTAL; iWear++ )
 										{
 											if( m_abtnWearing[iWear].GetItemUniIndex() == nUniIndex )
 												break;
@@ -2869,7 +2869,7 @@ void CUIInventory::UpgradeItem( SBYTE sbWearPos, SLONG slIndex, SLONG nUniIndex,
 			else
 				strItemname.PrintF("[%s]", szItemName);
 
-			strMessage.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), strItemname);
+			strMessage.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), (const char*)strItemname);
 			MsgBoxInfo.AddString( strMessage );
 		}
 	}

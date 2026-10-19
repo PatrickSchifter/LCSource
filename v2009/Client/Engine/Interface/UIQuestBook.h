@@ -47,12 +47,12 @@ protected:
 		}
 
 		// [090708: selo] 비교 연산자 오버로딩
-		inline const bool operator== (const sQuestInfo& rhs)
+		inline bool operator== (const sQuestInfo& rhs) const
 		{
 			return iQuestIndex == rhs.iQuestIndex;
 		}		
 		// [090709: selo] 정렬위한 연산자 오버로딩
-		inline const bool operator< (const sQuestInfo& rhs)
+		inline bool operator< (const sQuestInfo& rhs) const
 		{
 			return iQuestIndex < rhs.iQuestIndex;
 		}
@@ -169,7 +169,7 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );	
-	void	AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable = FALSE );
+	void	AddDescString( const CTString &strMessage, const COLOR colDesc, BOOL bSelectable = FALSE );
 	void	InitQuestBook();
 	void	CloseQuestBook();
 	void	OpenQuestBook( int iQuestIndex = -1, CItems* pQuestItem = NULL );	

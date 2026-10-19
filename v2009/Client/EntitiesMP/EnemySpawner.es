@@ -88,11 +88,11 @@ functions:
     ((CTString&)m_strDescription).PrintF("-><none>");
 		if (m_penTarget!=NULL) 
 		{
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+			((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penTarget->GetName());
 			if (m_penSeriousTarget!=NULL) 
 			{
         ((CTString&)m_strDescription).PrintF("->%s, %s", 
-          m_penTarget->GetName(), m_penSeriousTarget->GetName());
+				(const char*)m_penTarget->GetName(), (const char*)m_penSeriousTarget->GetName());
       }
     }
     ((CTString&)m_strDescription) = EnemySpawnerType_enum.NameForValue(INDEX(m_estType))

@@ -249,7 +249,7 @@ protected:
 	// Internal finctions
 	void	ChangeChattingBoxHeight( int ndHeight );
 	void	AddChatString( CTString &strChatString, COLOR colChatString, int nCurTab, BOOL bNotice );
-	void	AddSysString( CTString &strSysString, COLOR colSysString );
+	void	AddSysString( const CTString &strSysString, COLOR colSysString );
 	void	RenderChatStringList();
 	void	RenderSysStringList();
 #ifdef IME_CHAR_COLOR_CHANGE_NA_20080910
@@ -321,7 +321,7 @@ public:
 
 	// Network message functions ( receive )
 	void ENGINE_API	AddChatMessage( UBYTE ubChatType, SLONG slSendIndex, CTString &strSendName, CTString &strChatMessage );
-	void ENGINE_API	AddSysMessage( CTString &strSysMessage, int nSysType = SYSMSG_NORMAL ,COLOR colMsg = 0xFFFFFFFF); // wooss 070307 kw : WSS_WHITEDAY_2007
+	void ENGINE_API	AddSysMessage( const CTString &strSysMessage, int nSysType = SYSMSG_NORMAL ,COLOR colMsg = 0xFFFFFFFF); // wooss 070307 kw : WSS_WHITEDAY_2007
 };
 
 

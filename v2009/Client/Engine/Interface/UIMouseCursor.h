@@ -29,6 +29,8 @@ enum UIMCType
 };
 
 
+#include <Engine/Platform/Platform.h>
+
 // ----------------------------------------------------------------------------
 // Name : CUIMouseCursor
 // Desc :
@@ -40,7 +42,7 @@ protected:
 	HCURSOR			m_hCursors[UMCT_TOTAL];			// Handles of mouse cursor
 
 public:
-	CUIMouseCursor() { m_umctType = UMCT_NORMAL; }
+	CUIMouseCursor() { m_umctType = UMCT_NORMAL; memset(m_hCursors, 0, sizeof(m_hCursors)); }
 	~CUIMouseCursor() {}
 
 	// Type
@@ -49,7 +51,11 @@ public:
 		if( umctType != UMCT_CURRENT )
 			m_umctType = umctType;
 
+#ifdef LC_PLATFORM_SDL
+		PLT_SetCursor(m_hCursors[m_umctType]);
+#else
 		SetCursor(m_hCursors[m_umctType]);
+#endif
 	}
 	UIMCType	GetCursorType() const { return m_umctType; }
 

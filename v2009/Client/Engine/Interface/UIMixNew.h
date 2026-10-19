@@ -100,7 +100,7 @@ protected:
 	BOOL					m_bIsMix;
 
 	// Internal functions
-	void	AddString( CTString &strDesc );
+	void	AddString( const CTString &strDesc );
 
 	// Network message functions ( send )
 	void	SendMixNewReq();

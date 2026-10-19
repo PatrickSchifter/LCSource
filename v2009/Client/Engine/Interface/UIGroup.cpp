@@ -127,7 +127,7 @@ void CUIGroup::AddMember( int nCharIndex, int nGroupIndex, CTString strName, eJo
 void CUIGroup::AddMember( CMemberInfo MemberInfo )
 {
 	std::vector<CMemberInfo>::iterator iter;
-	iter =find_if(m_vecMember.begin(), m_vecMember.end(), bind2nd(ptr_fun(FindObj), MemberInfo.m_strName) );
+	iter =find_if(m_vecMember.begin(), m_vecMember.end(), [&](const CMemberInfo& mi) { return FindObj(mi, MemberInfo.m_strName); } );
 
 	if( iter == m_vecMember.end() )
 	{
@@ -488,7 +488,7 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 	if( m_bShowGroupName)
 	{
 		CTString strGroupName;
-		strGroupName.PrintF( "%s (%d)", m_strGroupName, m_vecMember.size() );
+		strGroupName.PrintF( "%s (%d)", (const char*)m_strGroupName, m_vecMember.size() );
 		//strGroupName.PrintF( "%s (%d)", m_strGroupName, (nShowRange/m_nLineHeight) -1 );
 		
 		if( m_nSelectLine ==-1 && IsFocused())

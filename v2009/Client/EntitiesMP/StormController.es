@@ -67,7 +67,7 @@ functions:
   {
     if (pen!=NULL && !IsOfClass(pen, &CLightning_DLLClass))
     {
-      WarningMessage("Target '%s' is not of class Lightning!", pen->GetName());
+      WarningMessage("Target '%s' is not of class Lightning!", (const char*)pen->GetName());
       pen=NULL;
     }
   }

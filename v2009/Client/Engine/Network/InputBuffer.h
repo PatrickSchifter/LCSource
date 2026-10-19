@@ -59,9 +59,9 @@ public:
 		if (m_ptr < MAX_HEADER_SIZE) 
 			return NULL;
 		unsigned short reliable;
-		unsigned long seq;
+		ULONG seq;			// 32 bits on the wire (unsigned long is 64 bits on LP64)
 		unsigned short id;
-		unsigned long txSize;
+		ULONG txSize;
 		unsigned char* p = m_buf;
 		memcpy(&reliable, p, sizeof(reliable));		p += sizeof(reliable);
 		memcpy(&seq, p, sizeof(seq));				p += sizeof(seq);

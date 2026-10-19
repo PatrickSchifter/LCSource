@@ -1,7 +1,6 @@
 #include "StdH.h"
 
 #include <Engine/World/World.h>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/World/WorldCollision.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Base/ListIterator.inl>
@@ -23,8 +22,6 @@
 #include <Engine/LocalDefine.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Network/Server.h>
-#include <Engine/Interface/UISiegeWarfareNew.h>
-#include <Engine/Object/ActorMgr.h>
 
 // these are used for making projections for converting from X space to Y space this way:
 //  MatrixMulT(mY, mX, mXToY);
@@ -894,8 +891,6 @@ void CClipMove::CacheNearPolygons(void)
 
 void CClipMove::ClipToNonZoningSector(CBrushSector *pbsc)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// for each polygon in the sector
 	FOREACHINSTATICARRAY(pbsc->bsc_abpoPolygons, CBrushPolygon, itbpo) {
 		// if its bbox has no contact with bbox of movement path, or it is passable
@@ -907,7 +902,7 @@ void CClipMove::ClipToNonZoningSector(CBrushSector *pbsc)
 		//WSS_DRATAN_SIEGEWARFARE 071009 -------------------------------------->>
 		//드라탄 공성시 수성측의 경우 결계 충돌을 하지 않게 한다.
 		BOOL tJoin = FALSE;
-		if (pUIManager->GetSiegeWarfareNew()->GetWarState())
+		if (_pUIMgr->GetSiegeWarfareNew()->GetWarState())
 		{			
 			if( cm_penB->en_ulID == 14230 ||
 				cm_penB->en_ulID == 14229 ||
@@ -925,19 +920,16 @@ void CClipMove::ClipToNonZoningSector(CBrushSector *pbsc)
 				// 다른 캐릭터
 				else 
 				{
-					ObjectBase* pObject = ACTORMGR()->GetObjectByEntity(cm_penA);
-
-					if (pObject != NULL)
+					for(INDEX i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
 					{
-						if (pObject->m_eType == eOBJ_CHARACTER)
+						CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[i];
+						if( ct.cha_pEntity == cm_penA )
 						{
-							CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-							if( pTarget->cha_sbJoinFlagDratan == WCJF_OWNER || 
-								pTarget->cha_sbJoinFlagDratan == WCJF_DEFENSE_GUILD )
+							if( ct.cha_sbJoinFlagDratan == WCJF_OWNER || 
+								ct.cha_sbJoinFlagDratan == WCJF_DEFENSE_GUILD )
 							{
-								tJoin = TRUE;
-							}
+								tJoin = TRUE;							
+							}							
 						}
 					}
 				}
@@ -980,7 +972,7 @@ void CClipMove::ClipToTerrain(CEntity *pen)
 	TR_ExtractPolygonsInBox( &tr, cm_boxMovementPath, mObjToAbs, &pavVertices, ctVertices, &puwIndices, ctIndices);
 	
 	// for each triangle
-	for( INDEX iTri=0;iTri<ctIndices;iTri+=3) {
+	INDEX iTri=0; for( ;iTri<ctIndices;iTri+=3) {
 		const INDEX iind1 = puwIndices[iTri+0];
 		const INDEX iind2 = puwIndices[iTri+1];
 		const INDEX iind3 = puwIndices[iTri+2];
@@ -991,27 +983,27 @@ void CClipMove::ClipToTerrain(CEntity *pen)
 	}
 
 	// [070705: Su-won] ATTRIBUTEMAP_BLOCK
+#ifdef ATTRIBUTEMAP_BLOCK
 	CTRect rcExtract;
 	rcExtract.rc_slLeft = cm_boxMovementPath.minvect(1) -1.0f;
 	rcExtract.rc_slRight = cm_boxMovementPath.maxvect(1) +1.0f;
 	rcExtract.rc_slTop = cm_boxMovementPath.minvect(3) -1.0f;
 	rcExtract.rc_slBottom = cm_boxMovementPath.maxvect(3) +1.0f;
 
-	if(g_slZone != 21)
+
+	TR_ExtractAttrBlockPolygonsInRect( tr.tr_ptrTerrain, rcExtract, &pavVertices, ctVertices, &puwIndices, ctIndices, 10.0f);
+	for( iTri=0;iTri<ctIndices;iTri+=3) 
 	{
-		TR_ExtractAttrBlockPolygonsInRect( tr.tr_ptrTerrain, rcExtract, &pavVertices, ctVertices, &puwIndices, ctIndices, 10.0f);
-		for( INDEX iTri = 0; iTri < ctIndices; iTri += 3)
-		{
-			const INDEX iind1 = puwIndices[iTri+0];
-			const INDEX iind2 = puwIndices[iTri+1];
-			const INDEX iind3 = puwIndices[iTri+2];
-			const FLOAT3D &v0 = pavVertices[iind1];
-			const FLOAT3D &v1 = pavVertices[iind2];
-			const FLOAT3D &v2 = pavVertices[iind3];
-			ClipMoveToTerrainPolygon(v0,v1,v2);
-		}
+		const INDEX iind1 = puwIndices[iTri+0];
+		const INDEX iind2 = puwIndices[iTri+1];
+		const INDEX iind3 = puwIndices[iTri+2];
+		const FLOAT3D &v0 = pavVertices[iind1];
+		const FLOAT3D &v1 = pavVertices[iind2];
+		const FLOAT3D &v2 = pavVertices[iind3];
+		ClipMoveToTerrainPolygon(v0,v1,v2);
 	}
-	
+#endif
+
 }
 
 
@@ -1161,8 +1153,7 @@ void CClipMove::ClipMoveToModels(void)
 
 	// WSS_CHARACTER_COLLISION 070628 ------------->>
 	// 자신의 캐릭터만 충돌 체크
-	// $ : 드라탄 공성 처리 당시 수정된 사항으로 보임. 싱글 던전에서는 플레이어 외의 모델이 충돌처리를 해야 되서. 싱글던전은 예외로 한다.
-	if(!cm_penMoving->IsPlayer() && !_pNetwork->m_bSingleMode)
+	if(!cm_penMoving->IsPlayer())
 	{
 		return;	
 	}
@@ -1175,8 +1166,6 @@ void CClipMove::ClipMoveToModels(void)
 	static CStaticStackArray<CEntity*> apenNearEntities;
 	cm_pwoWorld->FindEntitiesNearBox(cm_boxMovementPath, apenNearEntities);
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// for each of the found entities
 	{for(INDEX ienFound=0; ienFound<apenNearEntities.Count(); ienFound++) {
 		CEntity &enToCollide = *apenNearEntities[ienFound];
@@ -1186,11 +1175,22 @@ void CClipMove::ClipMoveToModels(void)
 			continue;
 		}
 
-		// 공성전에 관계 없이 모든 캐릭터, Player 는 충돌 검사 제외
-		if( enToCollide.IsCharacter() || enToCollide.IsPlayer() )
-		{
-			continue; 
+// WSS_CHARACTER_COLLISION 070628
+#define CASTLE_WAR
+#ifdef CASTLE_WAR
+		if(!_pNetwork->ga_bGuildWar &&
+			// WSS_DRATAN_SEIGEWARFARE 2007/09/11 
+			// 드라탄 공성 관련 충돌 추가 
+		   !(_pUIMgr->GetSiegeWarfareNew()->GetWarState()&&_pNetwork->MyCharacterInfo.sbAttributePos == ATTC_WAR) )
+		{			
+			// NOTE : 공성전에서 충돌 처리를 하게 하도록 하기 위한 부분.
+			// NOTE : Network나 World에 공성전 플래그를 넣어주도록 하자.
+			if( enToCollide.IsCharacter() || enToCollide.IsPlayer() )
+			{
+				continue; 
+			}
 		}
+#endif
 
 		if( enToCollide.GetFirstExFlags() & ( ENF_EX1_CURRENT_SLAVE | ENF_EX1_CURRENT_PET ) )
 		{

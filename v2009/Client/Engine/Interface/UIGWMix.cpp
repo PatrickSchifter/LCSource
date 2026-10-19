@@ -146,7 +146,7 @@ void CUIGWMix::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 	SetHeight( nNewHeight );
 
 	// Slot item button
-	for ( int i  = 0; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
+	int i  = 0; for( ; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		m_btnItemSlot[i].Create( this, m_rcItemSlot[i].Left + 1, m_rcItemSlot[i].Top + 1, BTN_SIZE, BTN_SIZE, UI_GW_MIX, UBET_ITEM );
 	}
@@ -211,7 +211,7 @@ void CUIGWMix::OpenGWMix()
 void CUIGWMix::CloseGWMix()
 {
 	// Reset slot item
-	for ( int i = 0; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
+	int i = 0; for( ; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		m_btnItemSlot[i].InitBtn();
 	}
@@ -229,7 +229,7 @@ void CUIGWMix::CloseGWMix()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIGWMix::AddString( CTString &strDesc )
+void CUIGWMix::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_GW_MIX_STRING )
 		return;
@@ -243,7 +243,7 @@ void CUIGWMix::AddString( CTString &strDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+		int iPos = 0; for( ; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -273,7 +273,7 @@ void CUIGWMix::AddString( CTString &strDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -366,7 +366,7 @@ void CUIGWMix::Render()
 										m_rtBottom.U0, m_rtBottom.V0, m_rtBottom.U1, m_rtBottom.V1,
 										0xFFFFFFFF );
 
-	for ( int i = 0; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
+	int i = 0; for( ; i < GW_MIX_ITEM_SLOT_COUNT; i++ )
 	{
 		// Slot item region
 		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcItemSlot[i].Left, m_nPosY + m_rcItemSlot[i].Top,
@@ -727,7 +727,7 @@ void CUIGWMix::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = MAX_ITEMINFO_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nSplitPos; iPos++ )
+		int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 		{
 			if( strItemInfo[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;

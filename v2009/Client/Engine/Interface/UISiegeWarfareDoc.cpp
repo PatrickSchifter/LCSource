@@ -129,7 +129,7 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 			
 		CTString strMessage,  strMessage2;
 		
-		strMessage.PrintF( _S( 2012, "[%s]지역 [%s]공성이 시작됩니다." ), ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ) );	
+		strMessage.PrintF( _S( 2012, "[%s]지역 [%s]공성이 시작됩니다." ), (const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )) );	
 		strMessage2.PrintF(_S( 2013,  "[%s]지역 내에 있는 공성 참여 유저들은 공성 시작 지점으로 이동합니다." ) );	
 		
 		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
@@ -150,7 +150,7 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, FALSE );	
 		CTString strMessage;
-		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), ZoneInfo().GetZoneName( nZoneIndex ));			
+		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), (const char*)(ZoneInfo().GetZoneName( nZoneIndex )));			
 		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 
 		m_nZoneIndex = nZoneIndex;
@@ -273,7 +273,7 @@ void CUISiegeWarfareDoc::RemainFiledTime( int nZoneIndex, int nRemainSec )
 	SetLeftTime( nRemainSec );
 	
 	CTString strMessage;
-	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), ZoneInfo().GetZoneName( nZoneIndex ), (m_lLeftTime) / 60);	
+	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), (const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (m_lLeftTime) / 60);	
 	
 	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 
@@ -291,7 +291,7 @@ void CUISiegeWarfareDoc::TimeConfirm( int nZoneIndex, int nMonth, int nDay, int 
 	
 	CTString strMessage;
 	strMessage.PrintF( _S( 2017, "[%s]지역 [%s]공성이 %d월 %d일 %d시로 예정되었습니다." ),	
-		ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMonth, nDay, nHour );	
+		(const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )), nMonth, nDay, nHour );	
 	
 	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 }
@@ -307,7 +307,7 @@ void CUISiegeWarfareDoc::RemainStartTime( int nZoneIndex, int nMin )
 	
 	CTString strMessage;
 	
-	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMin );	
+	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), (const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )), nMin );	
 	
 	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 	
@@ -415,7 +415,7 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		// Start My Guild, Enemy Guild Effect Start
 		INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
 		
-		for( INDEX i = 0; i < cnt; ++i )
+		INDEX i = 0; for( ; i < cnt; ++i )
 		{
 			_pNetwork->ga_srvServer.srv_actCha[i].cha_sbJoinFlagMerac = WCJF_NONE;
 		}
@@ -434,7 +434,7 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		// Start My Guild, Enemy Guild Effect Start
 		INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
 		
-		for( INDEX i = 0; i < cnt; ++i )
+		INDEX i = 0; for( ; i < cnt; ++i )
 		{
 			_pNetwork->ga_srvServer.srv_actCha[i].cha_sbJoinFlagMerac = WCJF_NONE;
 		}
@@ -502,23 +502,23 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		if( strOwnerGuildName.Length() <= 0 )
 		{
 			strMessage1.PrintF( _S( 2019, "[%s]지역 [%s]공성에 실패 하였습니다." ), 
-			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ) );	
+			(const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )) );	
 		}
 		else
 		{
 			strMessage1.PrintF( _S(2020 , "[%s]지역 [%s]공성이 종료되었습니다. [%s]길드가 수성에 성공하였습니다." ),
-			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName );		
+			(const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )), (const char*)strOwnerGuildName );		
 		}
 		
 	}
 	else
 	{
 		strMessage1.PrintF( _S(2021 , "[%s]지역 [%s]공성이 종료되었습니다. 새로운 성주로 [%s]길드의 [%s]길드장이 선출 되었습니다." ), 
-			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName, strOwnerName );	
+			(const char*)(ZoneInfo().GetZoneName( nZoneIndex )), (const char*)(GetCastleName( nZoneIndex )), (const char*)strOwnerGuildName, (const char*)strOwnerName );	
 	}
 	
 	strMessage2.PrintF(_S( 2022, "다음 공성전 신청은 %d월 %d일 %s요일 오후 %d시부터 신청이 가능합니다." ), 
-		nNextMonth, nNextDay, _pUIMgr->GetWeekToString( nNextWeek ), nNextHour );	
+		nNextMonth, nNextDay, (const char*)(_pUIMgr->GetWeekToString( nNextWeek )), nNextHour );	
 	
 	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );
 	

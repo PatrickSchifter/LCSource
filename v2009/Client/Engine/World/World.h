@@ -108,7 +108,7 @@ public:
 	CTString GetExtraName(int nZone, int nExtra);
 
 	void	SetZoneName( int nZone, CTString &strZoneName );
-	void	SetExtraName( int nZone, int nExtra, CTString &strExtraName );
+	void	SetExtraName( int nZone, int nExtra, const CTString &strExtraName );
 
 protected:
 	static CZoneInfo m_instance;

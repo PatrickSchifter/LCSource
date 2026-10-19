@@ -1623,7 +1623,7 @@ void PlayAttackSound(CSoundObject &so, int what_sound, SLONG slPlayType){
           }
           // keep player name, mana and health for eventual printout or coloring
 //          m_fEnemyHealth = ((CPlayer*)pen)->GetHealth() / ((CPlayer*)pen)->m_fMaxHealth;
-          m_strLastTarget.PrintF( "%s", ((CPlayer*)pen)->GetPlayerName());
+          m_strLastTarget.PrintF( "%s", (const char*)((CPlayer*)pen)->GetPlayerName());
 		  /*
           if( GetSP()->sp_gmGameMode==CSessionProperties::GM_SCOREMATCH) {
             // add mana to player name

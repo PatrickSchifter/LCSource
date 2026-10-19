@@ -1,6 +1,9 @@
 #include "StdH.h"
+#ifdef PLATFORM_WIN32
 #include <dimm.h>
 #include <imm.h>	// Date : 2005-03-05,   By Lee Ki-hwan
+#endif
+#include <Engine/Platform/Platform.h>
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
@@ -221,7 +224,7 @@ void CUIEditBox::Render()
 	// Render text
 	if( m_bIsPWEditBox )
 	{
-		for( int iChar = 0; iChar < nLength; iChar++ )
+		int iChar = 0; for( ; iChar < nLength; iChar++ )
 			m_pPWBuffer[iChar] = '*';
 		m_pPWBuffer[iChar] = NULL;
 		_pUIMgr->GetDrawPort()->PutTextCharEx( m_pPWBuffer, nLength, nX, nY );
@@ -1855,7 +1858,7 @@ WMSG_RESULT CUIEditBox::GetCand()
 
 		int nPageTopIndex = 0;
         
-		s_CandList.dwPageSize = min( lpCandList->dwPageSize, MAX_CANDLIST );
+		s_CandList.dwPageSize = ( lpCandList->dwPageSize < MAX_CANDLIST ? lpCandList->dwPageSize : MAX_CANDLIST );
         
 		{
             nPageTopIndex = lpCandList->dwPageStart;

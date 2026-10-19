@@ -256,7 +256,7 @@ void CUIMultiList::InsertIcon( int nIndex, int nCol, UIRectUV &rtIcon, ALPHA alp
 	ASSERT( nIndex < m_vecIcon[nCol].vecIcon.size() );
 
 	std::vector<UIRectUV>::iterator	itICon = m_vecIcon[nCol].vecIcon.begin();
-	for( int i = 0; i < nIndex; i++, itICon++ );
+	int i = 0; for( ; i < nIndex; i++, itICon++ );
 		m_vecIcon[nCol].vecIcon.insert( itICon, rtIcon );
 
 	std::vector<ALPHA>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
@@ -289,7 +289,7 @@ void CUIMultiList::RemoveIcon( int nIndex, int nCol )
 	ASSERT( nIndex < m_vecIcon[nCol].vecIcon.size() );
 
 	std::vector<UIRectUV>::iterator	itIcon = m_vecIcon[nCol].vecIcon.begin();
-	for( int i = 0; i < nIndex; i++, itIcon++ );
+	int i = 0; for( ; i < nIndex; i++, itIcon++ );
 		m_vecIcon[nCol].vecIcon.erase( itIcon );
 
 	std::vector<COLOR>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
@@ -336,7 +336,7 @@ void CUIMultiList::MoveIcon( int nFromIndex, int nToIndex, int nCol )
 
 	// erase
 	std::vector<UIRectUV>::iterator	itIcon = m_vecIcon[nCol].vecIcon.begin();
-	for( int i = 0; i < nFromIndex; i++, itIcon++ );
+	int i = 0; for( ; i < nFromIndex; i++, itIcon++ );
 		m_vecIcon[nCol].vecIcon.erase( itIcon );
 
 	std::vector<COLOR>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();

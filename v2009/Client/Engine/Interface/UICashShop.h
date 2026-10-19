@@ -423,7 +423,7 @@ public:
 	//Su-won   <--
 	
 	// For multi lines
-	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars );
+	void	AddItemInfoString( const CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars );
 	void	InitShowInfo();
 
 	// Messages

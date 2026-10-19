@@ -807,7 +807,7 @@ void CUIManager::Create()
 	m_apUIs[UI_TATOO]->Create( NULL, 0, 0, TATOO_WIDTH, TATOO_HEIGHT);
 
 	// Messenger talk box
-	for( int iUI = UI_MESSENGER_TALK_START; iUI < UI_MESSENGER_TALK_END; iUI++ )
+	int iUI = UI_MESSENGER_TALK_START; for( ; iUI < UI_MESSENGER_TALK_END; iUI++ )
 	{
 		m_apUIs[iUI] = new CUITalk;
 		((CUITalk*)m_apUIs[iUI])->Create( NULL, iUI );
@@ -1064,7 +1064,7 @@ CUIMessageBox* CUIManager::GetMessageBox( int nCommandCode )
 // Name : CreateMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIManager::CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	// Create message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -1081,7 +1081,7 @@ void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nComma
 // Name : CloseMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
+void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
 {
 	// Find message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -1095,7 +1095,7 @@ void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &s
 			{
 				CTString strTemp;
 #ifndef NEW_QUESTBOOK
-				strTemp.PrintF("%d. %s", ((CUIMessageBoxL *)m_apUIs[iUI])->GetCurNum()++, strMessage);				
+				strTemp.PrintF("%d. %s", ((CUIMessageBoxL *)m_apUIs[iUI])->GetCurNum()++, (const char*)strMessage);				
 #else
 				strTemp.PrintF("%s %s", strPrefix, strMessage);
 #endif				
@@ -1475,7 +1475,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	if( g_iShowName > 0 )
 	{
 		INDEX	ctMob = _pNetwork->ga_srvServer.srv_amtMob.Count();
-		for( INDEX iObj = 0; iObj < ctMob; iObj++ ) 
+		INDEX iObj = 0; for( ; iObj < ctMob; iObj++ ) 
 		{
 			// Get target mob
 			CMobTarget	&mt = _pNetwork->ga_srvServer.srv_amtMob[iObj];
@@ -2072,7 +2072,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 			nTextSX = m_rcName.Left + 7;
 			nTextSY = m_rcName.Top + 1;
 			CTString temString;
-			temString.PrintF("%s",pt.m_strName);
+			temString.PrintF("%s",(const char*)pt.m_strName);
 			
 			if( pt.m_strName.Length()>0)
 				m_pUIDrawPort->PutTextCharEx(/* pt.m_strName*/temString, 0, nTextSX, nTextSY,
@@ -2143,7 +2143,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 			{
 				strTemp.PrintF( "%I64d", it.item_llCount );
 				InsertCommaToString( strTemp );
-				strName.PrintF( "%s(%s)", it.item_Name, strTemp );
+				strName.PrintF( "%s(%s)", it.item_Name, (const char*)strTemp );
 				colNas = _pUIMgr->GetNasColor(  it.item_llCount );
 			}
 			else
@@ -2950,7 +2950,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		{
 			strTemp.PrintF( "%I64d", _pNetwork->_TargetInfoReal.llCount );
 			InsertCommaToString( strTemp );
-			strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, strTemp );
+			strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, (const char*)strTemp );
 			colNas = GetNasColor( _pNetwork->_TargetInfoReal.llCount );
 
 		}
@@ -3366,7 +3366,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	if( g_iShowName > 0 )
 	{
 		INDEX	ctMob = _pNetwork->ga_srvServer.srv_amtMob.Count();
-		for( INDEX iObj = 0; iObj < ctMob; iObj++ ) 
+		INDEX iObj = 0; for( ; iObj < ctMob; iObj++ ) 
 		{
 			// Get target mob
 			CMobTarget	&mt = _pNetwork->ga_srvServer.srv_amtMob[iObj];
@@ -3408,7 +3408,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
 			// Get box region
-			strName.PrintF( "%s C%d S%d L%d", mt.mob_Name, mt.mob_iClientIndex, mt.mob_Index, mt.mob_yLayer );
+			strName.PrintF( "%s C%d S%d L%d", (const char*)mt.mob_Name, mt.mob_iClientIndex, mt.mob_Index, mt.mob_yLayer );
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcName.Right = m_rcName.Left + nBoxWidth;
@@ -3500,9 +3500,9 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 
 			// Get box region
 			if( pt.pet_strNameCard.Length() >0 )
-				strName.PrintF( "%s C%d S%d L%d", pt.pet_strNameCard, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
+				strName.PrintF( "%s C%d S%d L%d", (const char*)pt.pet_strNameCard, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
 			else
-				strName.PrintF( "%s C%d S%d L%d", pt.pet_Name, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
+				strName.PrintF( "%s C%d S%d L%d", (const char*)pt.pet_Name, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcName.Right = m_rcName.Left + nBoxWidth;
@@ -3576,7 +3576,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
 			// Get box region
-			strName.PrintF( "%s", pt.m_strName);
+			strName.PrintF( "%s", (const char*)pt.m_strName);
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcName.Right = m_rcName.Left + nBoxWidth;
@@ -3651,7 +3651,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
 			// Get box region
-			strName.PrintF( "%s C%d S%d L%d", st.slave_Name, st.slave_iClientIndex, st.slave_Index, st.slave_yLayer );
+			strName.PrintF( "%s C%d S%d L%d", (const char*)st.slave_Name, st.slave_iClientIndex, st.slave_Index, st.slave_yLayer );
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcName.Right = m_rcName.Left + nBoxWidth;
@@ -3738,7 +3738,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 				strTemp.PrintF( "%I64d", it.item_llCount );
 				InsertCommaToString( strTemp );
 				colNas = GetNasColor( it.item_llCount );
-				strName.PrintF( "%s(%s) C%d S%d", it.item_Name, strTemp, it.item_iClientIndex, it.item_Index );
+				strName.PrintF( "%s(%s) C%d S%d", it.item_Name, (const char*)strTemp, it.item_iClientIndex, it.item_Index );
 			}
 			else
 			{
@@ -3822,7 +3822,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 					* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
 		// Get box region
-		strName.PrintF( "%s C%d S%d", ct.cha_strName, ct.cha_iClientIndex, ct.cha_Index );
+		strName.PrintF( "%s C%d S%d", (const char*)ct.cha_strName, ct.cha_iClientIndex, ct.cha_Index );
 		if( ct.cha_state == 0 )
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 		else
@@ -4256,7 +4256,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		strTemp.PrintF( "%I64d", _pNetwork->_TargetInfoReal.llCount );
 		InsertCommaToString( strTemp );
 		colNas = GetNasColor( _pNetwork->_TargetInfoReal.llCount );
-		strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, strTemp );
+		strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, (const char*)strTemp );
 	}
 	else
 		strName.PrintF( "%s", _pNetwork->_TargetInfoReal.TargetName );
@@ -4431,7 +4431,7 @@ void CUIManager::RearrangeOrder( int nCurrentUI, BOOL bFrontOrder )
 #endif
 
 		// Find index of last UI
-		for( INDEX iLastUI = 0; iLastUI < UI_TYPE_END; iLastUI++ )
+		INDEX iLastUI = 0; for( ; iLastUI < UI_TYPE_END; iLastUI++ )
 		{
 			if( !m_apUIs[m_aUIOrder[iLastUI]]->IsEnabled() )
 				break;
@@ -4503,7 +4503,7 @@ void CUIManager::SetUIGameState( UIGameState ugsGameState )
 	if( ugsGameState == UGS_GAMELOADING )
 		Reset();
 
-	for( int iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+	int iUI = UI_TYPE_START; for( ; iUI < UI_TYPE_END; iUI++ )
 	{
 		m_aUIOrder[iUI] = iUI;
 		m_apUIs[iUI]->SetEnable( FALSE );
@@ -4592,7 +4592,7 @@ void CUIManager::SetUIGameState( UIGameState ugsGameState )
 		GetSelChar()->Reset();
 		//GetCreateChar()->Reset();
 
-		for( int iUI = UI_ALWAYS_SHOW_START; iUI < UI_ALWAYS_SHOW_END; iUI++ )
+		int iUI = UI_ALWAYS_SHOW_START; for( ; iUI < UI_ALWAYS_SHOW_END; iUI++ )
 		{
 			m_apUIs[iUI]->SetEnable( TRUE );
 			m_apUIs[iUI]->SetVisible( TRUE );
@@ -4775,7 +4775,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 										_pInput->inp_ptMousePos.y - nOffset );
 			}
 
-			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			INDEX iUI = UI_TYPE_START; for( ; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
 				if( !m_apUIs[iCurUI]->IsEnabled() )
@@ -4794,7 +4794,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				return;
 			}
 
-			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			INDEX iUI = UI_TYPE_START; for( ; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
 				if( !m_apUIs[iCurUI]->IsEnabled() )
@@ -5152,7 +5152,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				GetQuickSlot()->UseQuickSlot( 9 );
 
 				// Kill focus of edit box
-				for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+				INDEX iUI = UI_TYPE_START; for( ; iUI < UI_TYPE_END; iUI++ )
 					m_apUIs[iUI]->KillFocusEditBox();
 
 				return;
@@ -5163,7 +5163,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				if( m_ugsGameState == UGS_GAMEON && GetPlayerInfo()->ProcessShortCut( pMsg ) )
 				{
 					// Kill focus of edit box
-					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+					INDEX iUI = UI_TYPE_START; for( ; iUI < UI_TYPE_END; iUI++ )
 						m_apUIs[iUI]->KillFocusEditBox();
 				}
 
@@ -5195,7 +5195,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 // ----------------------------------------------------------------------------
 BOOL CUIManager::IsInsideUpperUIs( INDEX iCurUIIndex, int nX, int nY )
 {
-	for( INDEX iCurUIOrder = UI_TYPE_START; iCurUIOrder < UI_TYPE_END; iCurUIOrder++ )
+	INDEX iCurUIOrder = UI_TYPE_START; for( ; iCurUIOrder < UI_TYPE_END; iCurUIOrder++ )
 	{
 		if( iCurUIIndex == m_aUIOrder[iCurUIOrder] )
 			break;
@@ -5706,7 +5706,7 @@ void CUIManager::Reset()
 	GetMessenger()->Reset();
 
 	// Find message box and close it
-	for( int iUI = UI_MESSAGEBOX_START; iUI < UI_MESSAGEBOX_END; iUI++ )
+	int iUI = UI_MESSAGEBOX_START; for( ; iUI < UI_MESSAGEBOX_END; iUI++ )
 	{
 		if( m_apUIs[iUI]->IsEnabled())
 		{
@@ -6252,7 +6252,7 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -6735,7 +6735,7 @@ void CUIManager::SetTitleName( INDEX bFullScreen, int iScreenSizeI, int iScreenS
 	// Date : 2005-09-22(오후 7:17:24), By Lee Ki-hwan
 	// 원도우 타이틀 바 조정 
 	CTString strTitleName;
-	strTitleName.PrintF( "%s (%s %dx%d)", _S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
+	strTitleName.PrintF( "%s (%s %dx%d)", (const char*)(_S( 147, "Title Name")), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
 	
 	SetWindowText( _hwndMain, strTitleName.str_String );
 }
@@ -7277,7 +7277,7 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 
 // WSS_MINIGAME_070422 ---------------------------------------------------------------------------->>
 // For multilined string
-void CUIManager::AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
+void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
 {	
 	// Get length of string
 	INDEX	nLength = tStr.Length();
@@ -7301,7 +7301,7 @@ void CUIManager::AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMax
 			// Check splitting position for 2 byte characters
 			int		nSplitPos;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(tStr,0,iPos))
 					break;

@@ -2,7 +2,9 @@
 #ifndef __WEB_H__
 #define __WEB_H__
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <string>
 #include <vector>
 #include <map>

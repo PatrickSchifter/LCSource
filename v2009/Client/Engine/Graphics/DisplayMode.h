@@ -15,6 +15,12 @@ enum DisplayDepth
 	DISPD_16BIT   =  1,
 	DISPD_32BIT   =  2,
 	DISPD_24BIT   =  3, // for z-buffer
+  // the names the 2009 game code uses
+  DD_NONE    = DISPD_NONE,
+  DD_DEFAULT = DISPD_DEFAULT,
+  DD_16BIT   = DISPD_16BIT,
+  DD_32BIT   = DISPD_32BIT,
+  DD_24BIT   = DISPD_24BIT,
 };
 
 /*

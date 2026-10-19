@@ -242,7 +242,7 @@ extern void CacheShadows(void)
 {
 	// mute all sounds
 	_pSound->Mute();
-	CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	if( pwo!=NULL) {
 		pwo->wo_baBrushes.CacheAllShadowmaps();
 		CPrintF( TRANS("All shadows recached"));
@@ -337,7 +337,7 @@ void DumpAllPlayers(INDEX iVerbose)
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
 			if (!iVerbose) {
-				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
+				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,(const char*)plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
 			} else {
 				plt.plt_penPlayerEntity->DumpToConsole();
 				CPrintF("\n");
@@ -366,7 +366,7 @@ void DumpClassReferences(void)
 		EntityClassEntry* peceEntry = FindClassInContainer(iClass);
 		CPrintF(TRANS("%d  \t%d  \t"),iClass,aulClasses[iClass]);
 		if (peceEntry != NULL) {
-			CPrintF(TRANS("%s\n"),peceEntry->ece_fnmEntityClass);
+			CPrintF(TRANS("%s\n"),(const char*)peceEntry->ece_fnmEntityClass);
 		} else {
 			CPrintF(TRANS("N/A\n"));
 		}
@@ -392,7 +392,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("All entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenAllEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -412,7 +412,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("Existing entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -446,7 +446,7 @@ static void DumpEntity(INDEX ulEntityID)
 		return;
 	} else {
 		CPrintF(TRANS("Entity ID: %X\n"),ulEntityID);
-		CPrintF(TRANS("   Entity class: %s\n"),penEntity->en_pecClass->GetName());
+		CPrintF(TRANS("   Entity class: %s\n"),(const char*)penEntity->en_pecClass->GetName());
 		CPrintF(TRANS("   Flags:  0x%X    Physics flags: 0x%X\n"),penEntity->en_ulFlags,penEntity->en_ulPhysicsFlags);
 		if (penEntity->IsSentOverNet()) {
 			CPrintF(TRANS("   IsSentOverNet = TRUE\n"));
@@ -491,7 +491,7 @@ static void NetworkInfo(void)
 			CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 			if (plt.plt_bActive) {
 				CPrintF("    %2d(%2d):'%s'@client%2d: (%dact)\n", 
-					iplt, plt.plt_Index, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
+					iplt, plt.plt_Index, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
 					plt.plt_iClient, plt.plt_abReceived.GetCount());
 			}
 		}
@@ -499,7 +499,7 @@ static void NetworkInfo(void)
 		for(INDEX iSession=0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); ++iSession) {
 			CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
 			if (sso.sso_bActive) {
-				CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession)),
+				CPrintF("  %2d:'%s'\n", iSession, (const char*)_cmiComm.Server_GetClientName(iSession)),
 					CPrintF("    buffer: %dblk=%dk\n", 
 					sso.sso_nsBuffer.GetUsedBlocks(),
 					sso.sso_nsBuffer.GetUsedMemory()/1024);
@@ -554,7 +554,7 @@ static void ListPlayers(void)
 	for(INDEX iplt=0; iplt<_pNetwork->ga_srvServer.srv_apltPlayers.Count(); iplt++) {
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
-			CPrintF("     %-2d   %s\n", plt.plt_iClient, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
+			CPrintF("     %-2d   %s\n", plt.plt_iClient, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
 		}
 	}
 	CPrintF("  ----------------------\n");
@@ -575,7 +575,7 @@ static void KickClient(INDEX iClient, const CTString &strReason)
 		CPrintF(TRANS("Can't kick local client!\n"));
 		return;
 	}
-	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason);
+	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, (const char*)strReason);
 	_pNetwork->ga_srvServer.SendDisconnectMessage(iClient, "Admin: "+strReason);
 }
 
@@ -675,7 +675,7 @@ extern void StockInfoToStream(CTFileStream *pstrm)
 	CWorld *pwo = NULL;
 	// if pwoCurrentWorld exists
 	if(_pShell->GetSymbol("pwoCurrentWorld",TRUE)!=NULL) {
-		pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+		pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	}
 	if( pwo!=NULL)
 	{
@@ -811,7 +811,7 @@ static void StockDump(void)
 		strm.Create_t(fnm);
 		// Dump stock to file
 		StockDumpToStream(&strm);
-		CPrintF("Dumped to '%s'\n", CTString(fnm));
+		CPrintF("Dumped to '%s'\n", (const char*)CTString(fnm));
 	} catch (char *strError) {
 		CPrintF("Error: %s\n", strError);
 	}
@@ -1213,7 +1213,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
 		throw;
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	//  SetProgressDescription(TRANS("starting server"));
 	SetProgressDescription(TRANS("starting Last Chaos..."));
@@ -1375,7 +1375,7 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   }
   
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set time and pause for server from the saved game
   ga_ubNumLevelChanges++;
@@ -1434,7 +1434,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   StartProgress();
 
   // report session addres
-  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress);
+  CPrintF( TRANS("Joining session at: '%s'\n"), (const char*)nsSesssion.ns_strAddress);
 
   ga_bLocalPause = FALSE;
 
@@ -1470,7 +1470,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // eventually cache all shadowmaps in world (memory eater!)
   if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
@@ -1557,7 +1557,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   _bNeedPretouch = TRUE;
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // demo synchronization starts at the beginning initially
   ga_tvDemoTimerLastTime = _pTimer->GetHighPrecisionTimer();
@@ -1827,7 +1827,7 @@ void CNetworkLibrary::StopGame(void)
 		ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
+	_pShell->SetPointer("pwoCurrentWorld", NULL);
 	
 	ClearEntityClassContainer();
 	
@@ -2003,7 +2003,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
 	// remember the world filename
 	ga_fnmWorld = ga_fnmNextLevel;
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	// set overdue timers in just loaded world to be due in current time
 	ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
@@ -2114,7 +2114,7 @@ void CNetworkLibrary::ChangeLevel_client_internal_t(void)
   // remember the world filename
   ga_fnmWorld = ga_fnmNextLevel;
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set overdue timers in just loaded world to be due in current time
   ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
@@ -3067,7 +3067,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
   if (iCurrent<iSaved) {
     // it cannot be reinitialized
     ThrowF_t(TRANS("File '%s' was saved by a newer version of engine, it cannot be loaded"),
-      strm.GetDescription());
+      (const char*)strm.GetDescription());
     return;
   }
 
@@ -3086,7 +3086,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
     // if it may not be reinitialized
     if (!bAllowReinit) {
       ThrowF_t(TRANS("File '%s' was saved by an older version of engine, it cannot be loaded"),
-        strm.GetDescription());
+        (const char*)strm.GetDescription());
     }
     return;
   }
@@ -6012,7 +6012,7 @@ void CNetworkLibrary::GoZone(int zone, int extra,int npcIdx )
 		else
 		{
 			CTString strSysMessage;
-			strSysMessage.PrintF( _S2( 295, JobInfo().GetName(iJob), "%s<는> 이동할수 없는 곳입니다." ), JobInfo().GetName(iJob) );
+			strSysMessage.PrintF( _S2( 295, JobInfo().GetName(iJob), "%s<는> 이동할수 없는 곳입니다." ), (const char*)(JobInfo().GetName(iJob)) );
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );
 		}
 	/*
@@ -6136,7 +6136,7 @@ int CNetworkLibrary::RefreshLeaseItem(int iJobIndex)
 
 	std::vector<int> vecbtnItems;
 
-	for(int t = 0, selNum=0 ; t < wo_iNumOfItem; ++t)
+	int t = 0, selNum=0; for( ; t < wo_iNumOfItem; ++t)
 	{	
 		if(	wo_aItemData[t].GetJob() == 0x01 << iJobIndex &&
 			wo_aItemData[t].GetType() == CItemData::ITEM_WEAPON )
@@ -6204,7 +6204,7 @@ int CNetworkLibrary::RefreshShopItem(int iShopIndex)
 	//if(_pUIMgr->GetShop()->IsVisible())	return;
 	CShopData &SD = _pNetwork->GetShopData(iShopIndex);
 	if(SD.GetIndex() == -1) return - 1;
-	for(int t = 0; t < SD.m_iNumOfItem; ++t)
+	int t = 0; for( ; t < SD.m_iNumOfItem; ++t)
 	{						
 		int iItemIndex = SD.m_vectorSellItems[t];
 		CItemData &ID = _pNetwork->GetItemData(iItemIndex);
@@ -6248,7 +6248,7 @@ int CNetworkLibrary::RefreshEventItem(int iJobIndex, int itype)
 		SD = (CShopData)_pNetwork->GetShopData(33);			// 무기상인
 	}	
 
-	for(int t = 0, selNum=0 ; t < SD.m_iNumOfItem; ++t)
+	int t = 0, selNum=0; for( ; t < SD.m_iNumOfItem; ++t)
 	{	
 		int iItemIndex = SD.m_vectorSellItems[t];
 		CItemData &ID = _pNetwork->GetItemData(iItemIndex);
@@ -7495,7 +7495,7 @@ void CNetworkLibrary::SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle
 	MyCharacterInfo.camera_angle = camera_angle;
 }
 
-void CNetworkLibrary::ClientSystemMessage( CTString &strSysMessage, int nSysType )
+void CNetworkLibrary::ClientSystemMessage( const CTString &strSysMessage, int nSysType )
 {
 	_pUIMgr->GetChatting()->AddSysMessage( strSysMessage, nSysType );
 }
@@ -7578,7 +7578,7 @@ void CNetworkLibrary::SendWarpItemMessage(UBYTE nmWarpType, CTString sCharName,B
 
 void CNetworkLibrary::DeleteAllMob()
 {
-	for( INDEX ipl = 0; ipl < ga_srvServer.srv_amtMob.Count(); ++ipl )
+	INDEX ipl = 0; for( ; ipl < ga_srvServer.srv_amtMob.Count(); ++ipl )
 	{
 		CMobTarget	&mt = ga_srvServer.srv_amtMob[ipl];
 		mt.Init();
@@ -8889,7 +8889,7 @@ void CNetworkLibrary::SendLoginMessage(CTString& strID, CTString& strPW, ULONG u
 #endif // #ifdef CRYPT_NET_MSG
 }
 
-void CNetworkLibrary::SendSecurityMessage(CTString& strSecurity)
+void CNetworkLibrary::SendSecurityMessage(const CTString& strSecurity)
 {
 
 	// 로그인 서버에 접속 후, 보안 카드 체크 시도합니다.

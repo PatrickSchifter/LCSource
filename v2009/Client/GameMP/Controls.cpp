@@ -272,7 +272,7 @@ void CControls::Save_t( CTFileName fnFile)
     CButtonAction *pba = (CButtonAction*)itba;
     if(itba->ba_strCommandLineWhenPressed.Length()>0 && itba->ba_strCommandLineWhenPressed!=itba->ba_strCommandLineWhenHeld) {
       // export pressed command
-      strLine.PrintF(" Pressed:  %s", itba->ba_strCommandLineWhenPressed);
+      strLine.PrintF(" Pressed:  %s", (const char*)itba->ba_strCommandLineWhenPressed);
       for( INDEX iLetter = 0; strLine[ iLetter] != 0; iLetter++)
       {
         // delete EOL-s
@@ -286,7 +286,7 @@ void CControls::Save_t( CTFileName fnFile)
 
     // export released command
     if(itba->ba_strCommandLineWhenReleased.Length()>0) {
-      strLine.PrintF(" Released: %s", itba->ba_strCommandLineWhenReleased);
+      strLine.PrintF(" Released: %s", (const char*)itba->ba_strCommandLineWhenReleased);
       for( INDEX iLetter = 0; strLine[ iLetter] != 0; iLetter++)
       {
         // delete EOL-s
@@ -300,7 +300,7 @@ void CControls::Save_t( CTFileName fnFile)
 
     if(itba->ba_strCommandLineWhenHeld.Length()>0) {
       // export held command
-      strLine.PrintF(" Held: %s", itba->ba_strCommandLineWhenHeld);
+      strLine.PrintF(" Held: %s", (const char*)itba->ba_strCommandLineWhenHeld);
       for( INDEX iLetter = 0; strLine[ iLetter] != 0; iLetter++)
       {
         // delete EOL-s

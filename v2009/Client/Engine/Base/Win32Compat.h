@@ -658,6 +658,8 @@ typedef struct {
 #define MAKELANGID(p, s)  ((((WORD)(s)) << 10) | (WORD)(p))
 #define PRIMARYLANGID(lgid) ((WORD)(lgid) & 0x3FF)
 #define SUBLANGID(lgid)     ((WORD)(lgid) >> 10)
+// the input locale: US English (no input method outside Windows; the 2009 IME code asks for it)
+inline HKL GetKeyboardLayout(DWORD) { return (HKL)(uintptr_t)0x04090409; }
 inline HIMC ImmGetContext(HWND) { return NULL; }
 inline BOOL ImmReleaseContext(HWND, HIMC) { return TRUE; }
 inline HWND ImmGetDefaultIMEWnd(HWND) { return NULL; }

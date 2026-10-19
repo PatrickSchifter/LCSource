@@ -31,7 +31,7 @@ CUICheckButton::~CUICheckButton()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUICheckButton::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
-								CTString &strText, BOOL bCheckRegionLeft, int nTextSX, int nCheckRegion )
+								const CTString &strText, BOOL bCheckRegionLeft, int nTextSX, int nCheckRegion )
 {
 	m_pParentWnd = pParentWnd;
 	SetPos( nX, nY );
@@ -60,7 +60,7 @@ void CUICheckButton::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 // Name : SetText()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUICheckButton::SetText( CTString &strText )
+void CUICheckButton::SetText( const CTString &strText )
 {
 	int	nLength = strText.Length();
 	m_bValidText = nLength > 0;

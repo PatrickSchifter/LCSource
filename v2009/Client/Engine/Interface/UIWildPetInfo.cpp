@@ -67,7 +67,7 @@ void CUIWildPetInfo::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_btnAIEdit.CopyUV(UBS_IDLE, UBS_DISABLE);
 	
 
-	for(int nAISlot = 0; nAISlot < WILDPET_AI_MAXSLOT; nAISlot++)
+	int nAISlot = 0; for( ; nAISlot < WILDPET_AI_MAXSLOT; nAISlot++)
 	{
 		m_abtAITarget[nAISlot].Create(this,297,141+(nAISlot*39),32,32,UI_WILDPET_INFO,UBET_ITEM);
 		m_rtAITarget[nAISlot].SetRect(297,141+(nAISlot*39),297+32,141+(nAISlot*39)+32);
@@ -806,7 +806,7 @@ WMSG_RESULT CUIWildPetInfo::MouseMessage(MSG *pMsg)
 				{				
 				}
 
-				for (int nSlot = 0; nSlot < m_nAISlotCount; nSlot++)
+				int nSlot = 0; for( ; nSlot < m_nAISlotCount; nSlot++)
 				{
 					if (m_abtAITarget[nSlot].MouseMessage(pMsg) != WMSG_FAIL)
 					{
@@ -1220,7 +1220,7 @@ void CUIWildPetInfo::AIPopupRender()
 	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
-	for(int nAISot = 0; nAISot < m_nAISlotCount; nAISot++)
+	int nAISot = 0; for( ; nAISot < m_nAISlotCount; nAISot++)
 	{	
 		if (!m_abtAITarget[nAISot].IsEmpty())
 		{
@@ -1321,7 +1321,7 @@ void CUIWildPetInfo::SendAIList()
 	}
 
 	int temSlotcount = 0;
-	for (INDEX nSlot = 0; nSlot < m_nAISlotCount; nSlot++)
+	INDEX nSlot = 0; for( ; nSlot < m_nAISlotCount; nSlot++)
 	{
 		if (!m_abtAITarget[nSlot].IsEmpty() && !m_abtAIAction[nSlot].IsEmpty())
 		{

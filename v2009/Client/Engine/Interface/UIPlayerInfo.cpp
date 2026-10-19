@@ -331,9 +331,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 0:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(Alt+B)" );
 
 				m_btnBoard.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnBoard.GetWidth();
@@ -343,9 +343,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 1:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(Alt+F)" );
 
 				m_btnMessanger.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnMessanger.GetWidth();
@@ -355,9 +355,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 2:		// System menu
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 299, "시스템" )), "(Z,Alt+Z)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 299, "시스템" )), "(Alt+Z)" );
 
 				m_btnSysMenu.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnSysMenu.GetWidth();
@@ -367,9 +367,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 3:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(E,Alt+E)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 166, "인벤토리" )), "(E,Alt+E)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+E)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 166, "인벤토리" )), "(Alt+E)" );
 
 				m_btnInven.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnInven.GetWidth();
@@ -379,9 +379,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 4:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(Alt+T)" );
 
 				m_btnCharInfo.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnCharInfo.GetWidth();
@@ -536,10 +536,10 @@ void CUIPlayerInfo::RenderSelectedQuest()
 			pQuestDD = &qdd;	
 		}
 		
-		strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), pQuestDD->GetTitleDesc( 0 ));
+		strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (const char*)pQuestDD->GetTitleDesc( 0 ));
 		_pUIMgr->GetDrawPort()->PutTextExRX(strTemp, nPosX, nPosY, pQuestDD->GetColorTitleDesc( 0 ));
 		nPosY += 12;			
-		strTemp.PrintF("%s %s", pQuestDD->GetStatusDesc(0), pQuestDD->GetStatusDesc(1));
+		strTemp.PrintF("%s %s", (const char*)pQuestDD->GetStatusDesc(0), (const char*)pQuestDD->GetStatusDesc(1));
 		_pUIMgr->GetDrawPort()->PutTextExRX(strTemp, nPosX, nPosY, pQuestDD->GetColorStatusDesc(0));
 		nPosY += 12;		
 
@@ -1029,25 +1029,25 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 		case 0:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 101, "스테이터스" )), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 101, "스테이터스" )), "(Alt+T)" );
 			}
 			break;
 		case 1:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(E,Alt+E)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 166, "인벤토리" )), "(E,Alt+E)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+E)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 166, "인벤토리" )), "(Alt+E)" );
 			}
 			break;
 		case 2:		// Quest Book
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(Q,Alt+Q)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S(1700, "퀘스트북" )), "(Q,Alt+Q)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(Alt+Q)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S(1700, "퀘스트북" )), "(Alt+Q)" );
 			}
 			break;
 		case 3:		// Pet Info
@@ -1055,51 +1055,51 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 				if(_pNetwork->_WildPetInfo.bIsActive)
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(D,Alt+P)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)(_S(2173, "펫 정보창" )), "(D,Alt+P)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(Alt+P)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)(_S(2173, "펫 정보창" )), "(Alt+P)" );
 
 				}else
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(D,Alt+D)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)(_S(2173, "펫 정보창" )), "(D,Alt+D)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(Alt+D)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)(_S(2173, "펫 정보창" )), "(Alt+D)" );
 				}
 			}
 			break;
 		case 4:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 458, "메신저" )), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 458, "메신저" )), "(Alt+F)" );
 			}
 			break;
 		case 5:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 385, "게시판" )), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 385, "게시판" )), "(Alt+B)" );
 			}
 			break;
 		case 6:		// System menu
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 299, "시스템" )), "(Z,Alt+Z)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)(_S( 299, "시스템" )), "(Alt+Z)" );
 			}
 			break;
 		case 7:		// Help
 			{
-				m_strToolTip.PrintF( "%s", _S(284, "도움말"));
+				m_strToolTip.PrintF( "%s", (const char*)(_S(284, "도움말")));
 			}
 			break;
 		case 8:		// Cash Shop
 			{
-				m_strToolTip.PrintF( "%s", _S(2572, "아이리스 상점"));
+				m_strToolTip.PrintF( "%s", (const char*)(_S(2572, "아이리스 상점")));
 			}
 			break;
 

@@ -86,7 +86,7 @@ void CUIButtonEx::InitBtn()
 	m_llPrice = 0;
 	m_llTime = 0;
 
-	for( int i = 0; i < MAX_ITEM_OPTION; i++ )
+	int i = 0; for( ; i < MAX_ITEM_OPTION; i++ )
 	{
 		m_sbOptionType[i] = -1;
 		m_sbOptionLevel[i] = 0;
@@ -943,7 +943,7 @@ void CUIButtonEx::AddInfoString( CTString &strInfo, COLOR colInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strInfo,0,iPos))
 					break;
@@ -985,7 +985,7 @@ void CUIButtonEx::AddInfoString( CTString &strInfo, COLOR colInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1055,7 +1055,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 			{
 				CTString strPrefix = rItemRareOption.GetPrefix();
 				if( strPrefix.Length() >0)
-					szItemName.PrintF("%s %s", strPrefix, strItemName);
+					szItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 			}
 
 			COLOR colNas = 0xF2F2F2FF;
@@ -1067,7 +1067,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 				
 				strCount.PrintF( "%I64d", m_llCount );
 				_pUIMgr->InsertCommaToString( strCount );
-				strTemp.PrintF( "%s(%s)", szItemName, strCount );
+				strTemp.PrintF( "%s(%s)", (const char*)szItemName, (const char*)strCount );
 
 				colNas = _pUIMgr->GetNasColor( m_llCount );		
 
@@ -1088,7 +1088,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 							FLAG_ITEM_PLATINUM_GET(m_ulFlag,plat_plus);
 							diff = m_ulPlus - plat_plus;
 
-							strTemp.PrintF( "%s",szItemName);
+							strTemp.PrintF( "%s",(const char*)szItemName);
 							CTString strMsg;
 							if(diff > 0)
 							{
@@ -1105,7 +1105,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 										
 						}
 						else {
-							strTemp.PrintF( "%s",szItemName);
+							strTemp.PrintF( "%s",(const char*)szItemName);
 						//	AddInfoString( strTemp );
 						}
 
@@ -1165,11 +1165,11 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 						CTString tv_str=_S(3046,"대여");
 						tv_str+= CTString(" ")+szItemName;
 						if(m_ulPlus > 0){
-							strTemp.PrintF( "%s +%d", tv_str, m_ulPlus );
+							strTemp.PrintF( "%s +%d", (const char*)tv_str, m_ulPlus );
 							AddInfoString( strTemp, colNas );
 						}
 						else {
-							strTemp.PrintF( "%s",tv_str);
+							strTemp.PrintF( "%s",(const char*)tv_str);
 							AddInfoString( strTemp );
 						}
 						if(m_ulUsed > 0)
@@ -1202,11 +1202,11 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 					}
 					else {
 						if(m_ulPlus > 0){
-							strTemp.PrintF( "%s +%d", szItemName, m_ulPlus );
+							strTemp.PrintF( "%s +%d", (const char*)szItemName, m_ulPlus );
 						//	AddInfoString( strTemp, colNas );
 						}
 						else {
-							strTemp.PrintF( "%s",szItemName);
+							strTemp.PrintF( "%s",(const char*)szItemName);
 						//	AddInfoString( strTemp );
 						}
 						AddInfoString( strTemp, iRareGrade >= 0 ? RareItem_Name_Color[iRareGrade] : colNas);
@@ -1236,23 +1236,23 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 				{
 					if( m_ulFlag&( FLAG_ITEM_BOOSTER_ADDED ) )
 					{
-						strTemp.PrintF(_S( 1929, "부스트 %s" ), szItemName);	
+						strTemp.PrintF(_S( 1929, "부스트 %s" ), (const char*)szItemName);	
 					}
 					else if( m_ulFlag&( FLAG_ITEM_SILVERBOOSTER_ADDED ) )
 					{
-						strTemp.PrintF(_S( 2429, "실버 부스트 %s" ), szItemName);	
+						strTemp.PrintF(_S( 2429, "실버 부스트 %s" ), (const char*)szItemName);	
 					}
 					else if( m_ulFlag&( FLAG_ITEM_GOLDBOOSTER_ADDED ) )
 					{
-						strTemp.PrintF(_S( 2430,"골드 부스트 %s" ), szItemName);	
+						strTemp.PrintF(_S( 2430,"골드 부스트 %s" ), (const char*)szItemName);	
 					}
 					else if( m_ulFlag&( FLAG_ITEM_PLATINUMBOOSTER_ADDED ) )
 					{
-						strTemp.PrintF(_S( 2639, "플래티늄 부스트 %s" ), szItemName);	
+						strTemp.PrintF(_S( 2639, "플래티늄 부스트 %s" ), (const char*)szItemName);	
 					}
 					else
 					{
-						strTemp.PrintF("%s", szItemName);
+						strTemp.PrintF("%s", (const char*)szItemName);
 					}
 					
 					AddInfoString( strTemp, colNas );
@@ -1541,7 +1541,7 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 
 						if(_pUIMgr->GetWildPetInfo()->GetWildPetInfo(m_ulPlus,pWildPetInfo))
 						{
-							strTemp.PrintF(_S(4215, "이름: %s"),pWildPetInfo.pet_name);
+							strTemp.PrintF(_S(4215, "이름: %s"),(const char*)pWildPetInfo.pet_name);
 							AddInfoString(strTemp,  0xF2F2F2FF );
 							strTemp.PrintF(_S(4216, "펫 레벨: %d"),pWildPetInfo.pet_level);
 							AddInfoString(strTemp, 0xDEC05BFF);
@@ -1690,8 +1690,8 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 								int nScoreA = static_cast<int>( ( ulTemp & 0xFFFF0000 ) >> 16 );
 								int nScoreB = static_cast<int>( ulTemp & 0x0000FFFF );
 								
-								strTemp.PrintF( "%s (%d) VS (%d) %s", _pUIMgr->GetQuest()->GetStrTeamA(), nScoreA,
-									nScoreB, _pUIMgr->GetQuest()->GetStrTeamB() );
+								strTemp.PrintF( "%s (%d) VS (%d) %s", (const char*)(_pUIMgr->GetQuest()->GetStrTeamA()), nScoreA,
+									nScoreB, (const char*)(_pUIMgr->GetQuest()->GetStrTeamB()) );
 
 								AddInfoString( strTemp, 0xFFAA44FF );
 							}
@@ -1923,13 +1923,13 @@ void CUIButtonEx::GetButtonInfo(/*CTString *strInfo, COLOR *colInfo,*/ int &nInf
 		switch(m_eCharType)
 		{
 			case CHAR_NAME_BUYER:
-				strTemp.PrintF(_S(4380, "구매자 : %s"), m_strCharName);
+				strTemp.PrintF(_S(4380, "구매자 : %s"), (const char*)m_strCharName);
 				break;
 			case CHAR_NAME_SELLER:
-				strTemp.PrintF(_S(4381, "판매자 : %s"), m_strCharName);
+				strTemp.PrintF(_S(4381, "판매자 : %s"), (const char*)m_strCharName);
 				break;
 			case CHAR_NAME_OWNER:
-				strTemp.PrintF(_S(4382, "소유자 : %s"), m_strCharName);
+				strTemp.PrintF(_S(4382, "소유자 : %s"), (const char*)m_strCharName);
 				break;
 		}	
 		AddInfoString( strTemp, 0xE53535FF );

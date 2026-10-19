@@ -755,7 +755,7 @@ void CUILogin::SecurityCardSet(UBYTE* SecurityNum)
 		m_bSecurity =TRUE;
 
 		m_strSecurityCode.PrintF( "%s: [%c,%d][%c,%d][%c,%d][%c,%d]", 
-											_S(3668, "보안 코드"), 
+											(const char*)(_S(3668, "보안 코드")), 
 											'A'+SecurityNum[0]/8, SecurityNum[0]%8+1, 
 											'A'+SecurityNum[1]/8, SecurityNum[1]%8+1, 
 											'A'+SecurityNum[2]/8, SecurityNum[2]%8+1, 

@@ -378,7 +378,7 @@ void CUIQuestBook::OpenQuestBook( int iQuestIndex, CItems* pQuestItem )
 			else
 			{
 				//다음 것을 찾아보고 없으면 처음 것으로.
-				for(int i=0; i<m_vectorProceedQuestList.size(); ++i)
+				int i=0; for( ; i<m_vectorProceedQuestList.size(); ++i)
 				{
 					if(m_vectorProceedQuestList[i].iQuestIndex == m_iNextQuestIndex)
 					{
@@ -865,7 +865,7 @@ void CUIQuestBook::RefreshQuestList()
 // Name : AddDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable )
+void CUIQuestBook::AddDescString( const CTString &strMessage, const COLOR colDesc, BOOL bSelectable )
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
@@ -887,7 +887,7 @@ void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOO
 		if( nThaiLen <= nChatMax )
 		{ 
 			// Check line character
-			for( int iPos = 0; iPos < nLength; ++iPos )
+			int iPos = 0; for( ; iPos < nLength; ++iPos )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;	
@@ -927,7 +927,7 @@ void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOO
 				nSplitPos = _iMaxDescStringCharNew;
 #endif
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strMessage,0,iPos))
 					break;
@@ -995,7 +995,7 @@ void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOO
 		if( nLength <= iTempMaxDescStringChar )
 		{
 			// Check line character
-			for( int iPos = 0; iPos < nLength; ++iPos )
+			int iPos = 0; for( ; iPos < nLength; ++iPos )
 			{
 				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
 					break;	
@@ -1035,7 +1035,7 @@ void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOO
 				nSplitPos = _iMaxDescStringCharNew;
 #endif
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; ++iPos )
+			int iPos = 0; for( ; iPos < nSplitPos; ++iPos )
 			{
 				if( strMessage[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -2318,7 +2318,7 @@ void CUIQuestBook::SortQuestListByCondition()
 		
 		if( pQuestDD )
 		{
-			strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle);
+			strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (const char*)(*it).strQuestTitle);
 		}
 		else
 		{
@@ -2348,11 +2348,11 @@ void CUIQuestBook::SortQuestListByCondition()
 		
 		if( pQuestDD )
 		{
-			strTitle.PrintF("[%d] %s (%s)", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle, _S( 429, "완료" ));
+			strTitle.PrintF("[%d] %s (%s)", pQuestDD->GetNeedMinLevel(), (const char*)(*it).strQuestTitle, (const char*)(_S( 429, "완료" )));
 		}
 		else
 		{
-			strTitle.PrintF("%s (%s)", (*it).strQuestTitle, _S( 429, "완료" ));
+			strTitle.PrintF("%s (%s)", (const char*)(*it).strQuestTitle, (const char*)(_S( 429, "완료" )));
 		}
 		
 		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
@@ -2377,7 +2377,7 @@ void CUIQuestBook::SortQuestListByCondition()
 		pQuestDD = CQuestSystem::Instance().GetDynamicDataByQuestIndex((*it).iQuestIndex);
 		CTString strTitle("");		
 		
-		strTitle.PrintF("%s", (*it).strQuestTitle);
+		strTitle.PrintF("%s", (const char*)(*it).strQuestTitle);
 		
 		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
 		
@@ -2435,7 +2435,7 @@ void CUIQuestBook::SortQuestListByType()
 			
 			if( pQuestDD )
 			{
-				strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle);
+				strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (const char*)(*it).strQuestTitle);
 
 				if( IsCompleteQuest((*it).iQuestIndex) )
 					strTitle += _S(4422, " (완료)");
@@ -2472,7 +2472,7 @@ void CUIQuestBook::SortQuestListByType()
 		pQuestDD = CQuestSystem::Instance().GetDynamicDataByQuestIndex((*it).iQuestIndex);
 		CTString strTitle("");		
 		
-		strTitle.PrintF("%s", (*it).strQuestTitle);
+		strTitle.PrintF("%s", (const char*)(*it).strQuestTitle);
 		
 		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
 		

@@ -735,7 +735,7 @@ void CUISelectServer::SetRecentServer( int iRecentGroup, int iRecentServer )
 	// Sort server list - 추후 정렬 방식이 추가될 지도 모름..
 	std::sort(m_vectorGroupInfo.begin(), m_vectorGroupInfo.end());
 
-	for( int iGroup = 0; iGroup < m_vectorGroupInfo.size(); iGroup++ )
+	int iGroup = 0; for( ; iGroup < m_vectorGroupInfo.size(); iGroup++ )
 		std::sort( m_vectorGroupInfo[iGroup].vectorServerInfo.begin(), m_vectorGroupInfo[iGroup].vectorServerInfo.end());		
 
 	m_nRecentServerGroup	= iRecentGroup;
@@ -914,7 +914,7 @@ void CUISelectServer::SetServerList()
 				strServer = CTString("");
 			}
 
-			strServerName.PrintF("%s-%d %s ", GetServerGroupName(iGroupNo), iServerNo, strServer);
+			strServerName.PrintF("%s-%d %s ", (const char*)(GetServerGroupName(iGroupNo)), iServerNo, (const char*)strServer);
 		}
 		else if ( g_iCountry == BRAZIL )
 		{
@@ -937,7 +937,7 @@ void CUISelectServer::SetServerList()
 			default:
 				strServer = CTString("");
 			}			
-			strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
+			strServerName.PrintF("%s-%d%s", (const char*)(GetServerGroupName(iGroupNo)), iServerNo, (const char*)strServer);
 		}
 		else if ( g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 		{//공성채널 4번 
@@ -962,11 +962,11 @@ void CUISelectServer::SetServerList()
 				strServer = CTString("");
 			}			
 			
-			strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
+			strServerName.PrintF("%s-%d%s", (const char*)(GetServerGroupName(iGroupNo)), iServerNo, (const char*)strServer);
 		}
 		else
 		{
-			strServerName.PrintF( "%s-%d ", GetServerGroupName( iGroupNo ), iServerNo );
+			strServerName.PrintF( "%s-%d ", (const char*)(GetServerGroupName( iGroupNo )), iServerNo );
 		}
 		
 		if( sGroup.iServerNo == m_nRecentServerGroup && iServerNo == m_nRecentServer )

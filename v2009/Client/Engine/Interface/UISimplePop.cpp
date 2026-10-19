@@ -152,9 +152,9 @@ void CUISimplePop::SetExeList(CTString strUserName, BOOL bParty, BOOL bGuild)
 	if(bGuild)
 	{
 		CTString tempString;
-		tempString.PrintF("%s %s", _S(1097, "길드전투"), _S(124, "신청"));
+		tempString.PrintF("%s %s", (const char*)(_S(1097, "길드전투")), (const char*)(_S(124, "신청")));
 		AddMenuList(tempString);						m_iExeNum[iListNum++] = iExeNum++;
-		tempString.PrintF("%s %s", _S(1097, "길드전투"), _S(3361, "중단"));
+		tempString.PrintF("%s %s", (const char*)(_S(1097, "길드전투")), (const char*)(_S(3361, "중단")));
 		AddMenuList(tempString);						m_iExeNum[iListNum++] = iExeNum++;
 		
 	}	

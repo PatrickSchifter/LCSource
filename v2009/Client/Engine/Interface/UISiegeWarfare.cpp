@@ -277,7 +277,7 @@ void CUISiegeWarfare::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	int nOffsetX = 256;
 	int nOffsetY = 157;
 
-	for( int i = 0 ; i < 10; i++ )
+	int i = 0; for( ; i < 10; i++ )
 	{
 		m_rtNumber[i].SetUV( nOffsetX + i * NUMBER_WIDTH, nOffsetY, 
 							nOffsetX + i * NUMBER_WIDTH + NUMBER_WIDTH, nOffsetY + NUMBER_HEIGHT, 
@@ -756,7 +756,7 @@ void CUISiegeWarfare::OpenSWInfo()
 	}
 	else
 	{
-		strMessage.PrintF(_S( 2146,  "%s 길드" ), _pUISWDoc->m_gdDefGuild.m_strGuildName ); 
+		strMessage.PrintF(_S( 2146,  "%s 길드" ), (const char*)_pUISWDoc->m_gdDefGuild.m_strGuildName ); 
 	}
 	
 	MsgBoxInfo.AddString( strMessage, SW_COLOR_TEXT, TEXT_CENTER ); // XXXXXXXXX길드이름

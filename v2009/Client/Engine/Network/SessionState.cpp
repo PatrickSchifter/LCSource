@@ -495,7 +495,7 @@ void ConfirmMsgProc(UBYTE subType,UBYTE errorType = NULL,CTString charName = CTS
 	{
 	
 		case MSG_WARP_TO_REQ:
-			strMsg.PrintF(_S( 2124, "%s님께서 당신에게 순간이동을 하려고 합니다. 승인 하시겠습니까?" ),charName); 
+			strMsg.PrintF(_S( 2124, "%s님께서 당신에게 순간이동을 하려고 합니다. 승인 하시겠습니까?" ),(const char*)charName); 
 			msgInfo.SetMsgBoxInfo(strTitle,UMBS_YESNO,UI_NONE,MSGCMD_WARP_TO_REQ_CALL);
 			msgInfo.AddString(strMsg);
 			_pUIMgr->CreateMessageBox(msgInfo);
@@ -505,7 +505,7 @@ void ConfirmMsgProc(UBYTE subType,UBYTE errorType = NULL,CTString charName = CTS
 			break;
 		
 		case MSG_WARP_TAKE_REQ:
-			strMsg.PrintF(_S( 2125, "%s님께서 당신의 소환을 요청하셨습니다. 승인 하시겠습니까?" ),charName); 
+			strMsg.PrintF(_S( 2125, "%s님께서 당신의 소환을 요청하셨습니다. 승인 하시겠습니까?" ),(const char*)charName); 
 			msgInfo.SetMsgBoxInfo(strTitle,UMBS_YESNO,UI_NONE,MSGCMD_WARP_TAKE_REQ_CALL);
 			msgInfo.AddString(strMsg);
 			_pUIMgr->CreateMessageBox(msgInfo);
@@ -520,7 +520,7 @@ void ConfirmMsgProc(UBYTE subType,UBYTE errorType = NULL,CTString charName = CTS
 			switch(errorType)
 			{
 				case MSG_WARP_ERROR_NOTALLOW:
-					strMsg.PrintF(_S( 2126, "%s님께서 이동 요청을 거절하였습니다. 순간 이동이 취소됩니다." ),charName); 
+					strMsg.PrintF(_S( 2126, "%s님께서 이동 요청을 거절하였습니다. 순간 이동이 취소됩니다." ),(const char*)charName); 
 					msgInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
 					msgInfo.AddString(strMsg);
 					_pUIMgr->CreateMessageBox(msgInfo);
@@ -559,6 +559,17 @@ void ConfirmMsgProc(UBYTE subType,UBYTE errorType = NULL,CTString charName = CTS
 ENGINE_API void SetDropItemModel(CEntity *penEntity, CItemData& ItemData, CItemTarget &it)
 {
 	penEntity->InitAsSkaModel();
+
+	// items newer than the client data come as an empty CItemData, with no model file: loading ''
+	// is a fatal error, so they show as a treasure bag (as NPCs with no model are left out)
+	if (CTString(ItemData.GetItemSmcFileName()) == "" && CTString(ItemData.GetName()) == "")
+	{
+		CPrintF("Item %d is not in the client data, shown as a treasure bag\n", it.item_Index);
+		penEntity->SetSkaModel(MODEL_TREASURE);
+		penEntity->Initialize();
+		penEntity->FallDownToFloor();
+		return;
+	}
 	char *szEffectName = NULL;
 	INDEX animID = -1;
 
@@ -1035,7 +1046,7 @@ void CSessionState::Start_t(INDEX ctLocalPlayers)
 	// if this computer is server
 	if (_pNetwork->IsServer()) {
 		// initialize local client
-		_cmiComm.Client_Init_t(0UL);
+		_cmiComm.Client_Init_t((ULONG)0);
 		// connect as main session state
 		try {
 			Start_AtServer_t();
@@ -1478,7 +1489,7 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
 		} */else {
 			 //! 이상한 메시지가 날라온것임.
 			// it is invalid message
-			ThrowF_t(TRANS("Invalid stream while waiting for %s"), strName);
+			ThrowF_t(TRANS("Invalid stream while waiting for %s"), (const char*)strName);
 		}
 
 		// if client is disconnected
@@ -1492,7 +1503,7 @@ void CSessionState::WaitStream_t(CTMemoryStream &strmMessage, const CTString &st
 //	_pNetwork->SendToServerReliable(nmConfirmDisconnect);
 
 	
-	ThrowF_t(TRANS("Timeout while waiting for %s"), strName);
+	ThrowF_t(TRANS("Timeout while waiting for %s"), (const char*)strName);
 }
 
 // check if disconnected
@@ -2470,8 +2481,8 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
 		ThrowF_t(
 			TRANS("Cannot play demo because file '%s'\n"
 			"is older than file '%s'!\n"),
-			CTString(pstr->GetDescription()),
-			CTString(_pNetwork->ga_fnmWorld));
+			(const char*)CTString(pstr->GetDescription()),
+			(const char*)CTString(_pNetwork->ga_fnmWorld));
 	}
 
 	// prepare the world for loading
@@ -2712,7 +2723,7 @@ void CSessionState::RestoreOldLevel(const CTString &strFileName)
 		ReadWorldAndState_t(&prlOld->rl_strmSessionState);
 		_pTimer->SetCurrentTick(ses_tmLastProcessedTick);
 	} catch (char *strError) {
-		FatalError(TRANS("Cannot restore old level '%s':\n%s"), prlOld->rl_strFileName, strError);
+		FatalError(TRANS("Cannot restore old level '%s':\n%s"), (const char*)prlOld->rl_strFileName, strError);
 	}
 	// delete it
 	delete prlOld;
@@ -3496,7 +3507,7 @@ BOOL CSessionState::ReceiveMessage()
 			// report to console
 			if (net_bReportClientTraffic) 
 			{
-				CPrintF("Class name: %s\n",peceEntry->ece_fnmEntityClass);          
+				CPrintF("Class name: %s\n",(const char*)peceEntry->ece_fnmEntityClass);          
 				CPrintF("%lu: CREATE:           EntityID: 0x%X     EntityClass: %ld",ses_ulMsgId,ulEntityID,uwClassID);
 				CPrintF("     Position: %f, %f, %f     ",plPlacement.pl_PositionVector(1),plPlacement.pl_PositionVector(2),plPlacement.pl_PositionVector(3));
 				CPrintF("Angle: %f, %f, %f\n",plPlacement.pl_OrientationAngle(1),plPlacement.pl_OrientationAngle(2),plPlacement.pl_OrientationAngle(3));
@@ -3624,7 +3635,7 @@ BOOL CSessionState::ReceiveMessage()
 				extern INDEX net_bReportMiscErrors;
 				if (net_bReportMiscErrors) 
 				{
-					CPrintF(TRANS("Warning: Unable to obtain entity class from stock, class name: %s\n"),peceEntry->ece_fnmEntityClass);
+					CPrintF(TRANS("Warning: Unable to obtain entity class from stock, class name: %s\n"),(const char*)peceEntry->ece_fnmEntityClass);
 					CPrintF("%s\n",strError);
 				}
 				break;
@@ -3646,7 +3657,7 @@ BOOL CSessionState::ReceiveMessage()
 			{
 				extern INDEX net_bReportMiscErrors;
 				if (net_bReportMiscErrors) {
-					CPrintF(TRANS("Warning: Unable to find requested entity event, class name: %s, event: %d\n"),peceEntry->ece_fnmEntityClass,uwEventID);
+					CPrintF(TRANS("Warning: Unable to find requested entity event, class name: %s, event: %d\n"),(const char*)peceEntry->ece_fnmEntityClass,uwEventID);
 				}
 				_pEntityClassStock->Release(pecClass);
 				break;
@@ -3748,7 +3759,7 @@ BOOL CSessionState::ReceiveMessage()
 					} catch (char * strError){
 						extern INDEX net_bReportMiscErrors;
 						if (net_bReportMiscErrors) {
-							CPrintF(TRANS("Warning: Unable to obtain entity class from stock, class name: %s\n"),peceEntry->ece_fnmEntityClass);
+							CPrintF(TRANS("Warning: Unable to obtain entity class from stock, class name: %s\n"),(const char*)peceEntry->ece_fnmEntityClass);
 							CPrintF("%s\n",strError);
 						}
 						break;
@@ -3771,7 +3782,7 @@ BOOL CSessionState::ReceiveMessage()
 					{
 						extern INDEX net_bReportMiscErrors;
 						if (net_bReportMiscErrors) {
-							CPrintF(TRANS("Warning: Unable to find requested entity event, class name: %s, event: %d\n"),peceEntry->ece_fnmEntityClass,uwEventID);
+							CPrintF(TRANS("Warning: Unable to find requested entity event, class name: %s, event: %d\n"),(const char*)peceEntry->ece_fnmEntityClass,uwEventID);
 						}
 						_pEntityClassStock->Release(pecClass);
 						break;
@@ -4115,9 +4126,9 @@ BOOL CSessionState::ReceiveMessage()
 				// report who paused
 				if (ses_bPause!=bPauseBefore) {
 					if (ses_bPause) {
-						CPrintF(TRANS("Paused by '%s'\n"), strPauser);
+						CPrintF(TRANS("Paused by '%s'\n"), (const char*)strPauser);
 					} else {
-						CPrintF(TRANS("Unpaused by '%s'\n"), strPauser);
+						CPrintF(TRANS("Unpaused by '%s'\n"), (const char*)strPauser);
 					}
 				}
 				
@@ -4148,7 +4159,7 @@ BOOL CSessionState::ReceiveMessage()
 				}
 				
 				// inform entity of disconnnection
-				CPrintF(TRANS("%s left\n"), _pNetwork->ga_srvServer.srv_apltPlayers[iPlayer].plt_penPlayerEntity->GetPlayerName());
+				CPrintF(TRANS("%s left\n"), (const char*)_pNetwork->ga_srvServer.srv_apltPlayers[iPlayer].plt_penPlayerEntity->GetPlayerName());
 				_pNetwork->ga_srvServer.srv_apltPlayers[iPlayer].plt_penPlayerEntity->Disconnect();
 				// deactivate the player
 				_pNetwork->ga_srvServer.srv_apltPlayers[iPlayer].Deactivate();
@@ -4514,7 +4525,7 @@ void CSessionState::SwapItem( int tab, int row, int col, int tab2, int row2, int
 	ItemsTmp.Item_Wearing = Items.Item_Wearing;
 	ItemsTmp.Item_Sum = Items.Item_Sum;
 	ItemsTmp.Item_RareIndex =Items.Item_RareIndex;
-	for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; sbOption++ )
+	SBYTE sbOption = 0; for( ; sbOption < MAX_ITEM_OPTION; sbOption++ )
 	{
 		ItemsTmp.SetOptionData( sbOption, Items.GetOptionType( sbOption ),
 								Items.GetOptionLevel( sbOption ) );
@@ -4593,7 +4604,7 @@ void CSessionState::ReceiveChatMessage(CNetworkMessage *istr)
 	{
 		SBYTE sbJob = atoi(str);
 		CTString	strMessage;
-		strMessage.PrintF(_S(2358,"%s클래스 랭커 %s님이 입장하였습니다."), JobInfo().GetName(sbJob, 0), strSendName );
+		strMessage.PrintF(_S(2358,"%s클래스 랭커 %s님이 입장하였습니다."), (const char*)(JobInfo().GetName(sbJob, 0)), (const char*)strSendName );
 
 		_UIAutoHelp->SetGMNotice(strMessage, 0x38FFD7FF);
 		return;
@@ -5061,7 +5072,7 @@ void CSessionState::ReceiveMobAppearMessage(CNetworkMessage *istr)
 	
 	if(Ownerindex > 0) 
 	{
-		strMobName.PrintF("%s %s",Ownername,szMobName);
+		strMobName.PrintF("%s %s",(const char*)Ownername,szMobName);
 		MD.SetShopmsg( Ownershopname );
 		MD.SetOwnerIndex(Ownerindex);
 	}else strMobName = szMobName;
@@ -5682,7 +5693,7 @@ void CSessionState::ReceiveSummonAppearMessage(CNetworkMessage *istr)
 	if( lOwnerIndex == _pNetwork->MyCharacterInfo.index )
 	{
 		penEntity->SetFirstExtraFlagOn(ENF_EX1_CURRENT_SLAVE);
-		for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
+		int i = UI_SUMMON_START; for( ; i <= UI_SUMMON_END; ++i )
 		{
 			CUISummon* pUISummon = (CUISummon*)_pUIMgr->GetUI(i);
 			if( !pUISummon->GetSummonEntity() )
@@ -5714,7 +5725,7 @@ void CSessionState::ReceiveSummonAppearMessage(CNetworkMessage *istr)
 	
 	ASSERT( st.slave_BuffCount == 0 );
 	st.slave_BuffCount = 0;
-	for( int i = 0; i < assist_count; i++ )
+	int i = 0; for( ; i < assist_count; i++ )
 	{
 		(*istr) >> sBuff.m_slItemIndex >> sBuff.m_slSkillIndex >> sBuff.m_sbLevel >> sBuff.m_slRemain;
 		st.AddBuff( sBuff );
@@ -5813,7 +5824,7 @@ void CSessionState::ReceiveWildPetAppearMessage(CNetworkMessage *istr)
 	(*istr) >> nPetType;	
 	(*istr) >> x >> z >> h;
 	(*istr) >> r >> yLayer;
-	for (int i = 0; i < 4; i++)
+	int i = 0; for( ; i < 4; i++)
 	{
 		(*istr) >> nItemIndex[i];
 		(*istr) >> nItemPlus[i];
@@ -7084,7 +7095,7 @@ void CSessionState::ReceiveGoZoneMessage(CNetworkMessage *istr)
 	MoveOtherServer(zone, ip, port);
 	// --- EDIT : BS
 
-	CPrintF(TRANS("MSG_GO_ZONE zone:%d extra:%d ip:%s port:%d \n"),zone,extra,ip,port);	
+	CPrintF(TRANS("MSG_GO_ZONE zone:%d extra:%d ip:%s port:%d \n"),zone,extra,(const char*)ip,port);	
 
 }
 
@@ -7266,7 +7277,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 						strCount.PrintF( "%I64d", count );
 						_pUIMgr->InsertCommaToString( strCount );
 
-						strSysMessage.PrintF( _S( 301, "%s 나스를 버렸습니다." ), strCount );	// 번역 수정
+						strSysMessage.PrintF( _S( 301, "%s 나스를 버렸습니다." ), (const char*)strCount );	// 번역 수정
 						_pNetwork->ClientSystemMessage( strSysMessage );
 					}
 					else
@@ -7360,7 +7371,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 					strCount.PrintF( "%I64d", delta );
 					_pUIMgr->InsertCommaToString( strCount );
 
-					strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), strCount ); // 번역 수정
+					strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), (const char*)strCount ); // 번역 수정
 					_pNetwork->ClientSystemMessage( strSysMessage );
 				}
 				else
@@ -7533,7 +7544,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 				CTString strCount;
 				strCount.PrintF( "%I64d", count );
 				_pUIMgr->InsertCommaToString( strCount );
-				strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), strCount ); // 번역 수정
+				strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), (const char*)strCount ); // 번역 수정
 			}
 			else
 			{
@@ -8196,7 +8207,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 				strTitle	=	_S(191,"확인");
 				LONG tv_idx;
 				(*istr) >> tv_idx;
-				strMessage1.PrintF( _S( 2738, "[%s]플래티늄 아이템의 사용기간이 만료되어 효과가 사라집니다."),_pUIMgr->GetInventory()->GetItemName(tv_idx));
+				strMessage1.PrintF( _S( 2738, "[%s]플래티늄 아이템의 사용기간이 만료되어 효과가 사라집니다."),(const char*)(_pUIMgr->GetInventory()->GetItemName(tv_idx)));
 				MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
 				MsgBoxInfo.AddString(strMessage1);
 				_pUIMgr->CreateMessageBox(MsgBoxInfo);
@@ -8695,7 +8706,7 @@ void CSessionState::ReceivePartyMessage( CNetworkMessage *istr )
 					break;
 			}
 
-			strMessage.PrintF(_S(4197, "파티 종류가 %s로 변경되었습니다."), strPartyType);
+			strMessage.PrintF(_S(4197, "파티 종류가 %s로 변경되었습니다."), (const char*)strPartyType);
 
 			CUIMsgBox_Info MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo(   _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL);
@@ -9591,11 +9602,11 @@ void CSessionState::ReceiveSystemMessage( CNetworkMessage *istr )
 				
 				if( nNewItmeIndex == nCurItemIndex )
 				{
-					strSysMessage.PrintF( _S2(2069,strNewItmeName,"%s<는> 중복하여 사용할 수 없습니다."), strNewItmeName ); 
+					strSysMessage.PrintF( _S2(2069,strNewItmeName,"%s<는> 중복하여 사용할 수 없습니다."), (const char*)strNewItmeName ); 
 				}
 				else
 				{
-					strSysMessage.PrintF( _S3(2070,strNewItmeName,strCurItmeName,"%s<는> %s<과> 중복하여 사용할 수 없습니다."), strNewItmeName, strCurItmeName ); 
+					strSysMessage.PrintF( _S3(2070,strNewItmeName,strCurItmeName,"%s<는> %s<과> 중복하여 사용할 수 없습니다."), (const char*)strNewItmeName, (const char*)strCurItmeName ); 
 				}
 				_pUIMgr->GetChatting()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
 			}
@@ -9665,7 +9676,7 @@ void CSessionState::ReceiveSystemMessage( CNetworkMessage *istr )
 			(*istr) >> tv_idx;
 		
 			strSysMessage.PrintF( _S( 3041, "[%s]아이템 합성 사용이 만료 되었습니다." ),
-				_pUIMgr->GetInventory()->GetItemName(tv_idx)); // wooss 051212 번역 ")
+				(const char*)(_pUIMgr->GetInventory()->GetItemName(tv_idx))); // wooss 051212 번역 ")
 			_pUIMgr->GetChatting()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
 			_pUIMgr->GetMixNew()->CloseMixNew();
 		}
@@ -9706,7 +9717,7 @@ void CSessionState::ReceiveSystemMessage( CNetworkMessage *istr )
 			(*istr) >> tv_idx;
 			
 			CTString strNoticeMsg;
-			strNoticeMsg.PrintF("[ %s %s ]", _pNetwork->GetMobName(tv_idx), _S(3158, "몬스터가 출현하였습니다.") );
+			strNoticeMsg.PrintF("[ %s %s ]", _pNetwork->GetMobName(tv_idx), (const char*)(_S(3158, "몬스터가 출현하였습니다.")) );
 			
 			_UIAutoHelp->SetGMNotice( strNoticeMsg, 0xFF5014FF);
 			
@@ -10451,7 +10462,7 @@ void CSessionState::ReceiveAssistMessage( CNetworkMessage *istr )
 
 					if( sBuff.m_slSkillIndex >= 423 && sBuff.m_slSkillIndex <= 428 )
 					{				
-						for(int i=423,j=0;i<=428;i++)
+						int i=423,j=0; for( ;i<=428;i++)
 						{
 							if( (_pUIBuff->IsBuffBySkill(i))!=NULL ){
 								j++;
@@ -10519,7 +10530,7 @@ void CSessionState::ReceiveAssistMessage( CNetworkMessage *istr )
 
 							if( sBuff.m_slSkillIndex >= 423 && sBuff.m_slSkillIndex <= 428 )
 							{				
-								for(int i=423,j=0;i<=428;i++)
+								int i=423,j=0; for( ;i<=428;i++)
 								{
 									if( (ct.IsBuffBySkill(i)) != NULL){
 										j++;
@@ -10632,7 +10643,7 @@ void CSessionState::ReceiveAssistMessage( CNetworkMessage *istr )
 					// 423 424 425 426 427 428
 					if( slSkillIndex >= 423 && slSkillIndex <= 428 )
 					{
-						for(int i=423,j=0;i<=428;i++)
+						int i=423,j=0; for( ;i<=428;i++)
 						{
 							if(_pUIBuff->IsBuffBySkill(i)) j++;
 						}
@@ -10689,7 +10700,7 @@ void CSessionState::ReceiveAssistMessage( CNetworkMessage *istr )
 							// kw : WSS_WHITEDAY_2007
 							if( slSkillIndex >= 423 && slSkillIndex <= 428 )
 							{
-								for(int i=423,j=0;i<=428;i++)
+								int i=423,j=0; for( ;i<=428;i++)
 								{
 									if(ct.IsBuffBySkill(i)) j++;
 								}
@@ -10782,7 +10793,7 @@ void CSessionState::ReceiveAssistMessage( CNetworkMessage *istr )
 				if( sBuff.m_slSkillIndex >= 423 && sBuff.m_slSkillIndex <= 428 )
 				{				
 						
-					for(int i=423,j=0;i<=428;i++)
+					int i=423,j=0; for( ;i<=428;i++)
 					{
 						if(_pUIBuff->IsBuffBySkill(i)) j++;
 					}
@@ -11943,7 +11954,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 			CTString strNewItem = _pNetwork->GetItemName(lNewIndex);
 			
 			CTString strMessage;
-			strMessage.PrintF( _S( 1344, "[%s] 무기가 [%s] 무기로 교체되었습니다." ), strOldItem, strNewItem );		
+			strMessage.PrintF( _S( 1344, "[%s] 무기가 [%s] 무기로 교체되었습니다." ), (const char*)strOldItem, (const char*)strNewItem );		
 			_pUIMgr->GetChatting()->AddSysMessage( strMessage );			
 		}
 		break;
@@ -12142,7 +12153,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					LONG		lItemCount[TREASUREBOX_ITEM_COUNT];
 
 					ASSERT( iTreasureBoxLevel != -1 && "Invalid Treasure Box Level!" );
-					for( int i = 0; i < TREASUREBOX_ITEM_COUNT ; ++i )
+					int i = 0; for( ; i < TREASUREBOX_ITEM_COUNT ; ++i )
 					{
 						SBYTE sbTreasureItem;						
 						(*istr) >> sbTreasureItem;
@@ -12187,7 +12198,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 
 					for( i = 0; i < TREASUREBOX_ITEM_COUNT; ++i )
 					{
-						strMessage.PrintF( _S( 61, "%s %d개" ), strItemName[i], lItemCount[i] );
+						strMessage.PrintF( _S( 61, "%s %d개" ), (const char*)strItemName[i], lItemCount[i] );
 						_pUIMgr->AddMessageBoxLString( MSGLCMD_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );			
 					}					
 					
@@ -13203,7 +13214,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					tStr = CTString("");
 				}
 
-				tMsg.PrintF( _S( 3266, "부활절 달걀 보상품 %s%s를 획득하였습니다."), tStr, _pNetwork->GetItemName( exItemType ) );
+				tMsg.PrintF( _S( 3266, "부활절 달걀 보상품 %s%s를 획득하였습니다."), (const char*)tStr, _pNetwork->GetItemName( exItemType ) );
 						
 				MsgBoxInfo.AddString( tMsg );
 				
@@ -13291,7 +13302,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 						{
 							CTString strMessage,tGuild,tItem;
 							(*istr)>>tGuild>>tItem;
-							strMessage.PrintF(_S(3478,"[%s]길드의 길드 마스터가 [%s]아이템에 당첨 되었습니다."),tGuild,tItem);
+							strMessage.PrintF(_S(3478,"[%s]길드의 길드 마스터가 [%s]아이템에 당첨 되었습니다."),(const char*)tGuild,(const char*)tItem);
 							_UIAutoHelp->SetGMNotice ( strMessage );
 						}
 						break;
@@ -13401,7 +13412,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 							for(int i=0;i<serverCnt;i++)
 							{
 								(*istr)>>itemCnt;
-								strMessage.PrintF( _S(576, "%s : %d개" ),_pUIMgr->GetSelServer()->GetServerGroupName(i+1),itemCnt);
+								strMessage.PrintF( _S(576, "%s : %d개" ),(const char*)(_pUIMgr->GetSelServer()->GetServerGroupName(i+1)),itemCnt);
 								msgInfo.AddString(strMessage);
 
 								itemAll+=itemCnt;
@@ -13551,7 +13562,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					(*istr) >> CharName;
 					(*istr) >> nItemIndex;
 
-					strMessage.PrintF(_S(3503, "%s님이 %s 아이템에 당첨되었습니다."), CharName, _pNetwork->GetItemData(nItemIndex).GetName());
+					strMessage.PrintF(_S(3503, "%s님이 %s 아이템에 당첨되었습니다."), (const char*)CharName, _pNetwork->GetItemData(nItemIndex).GetName());
 					_UIAutoHelp->SetGMNotice ( strMessage );
 				}
 				break;
@@ -13592,13 +13603,13 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 						strColor = _S(3579, "골드");
 
 					if( nResult == 1 )
-						strMessage.PrintF( _S(3580, "색종이로 %s 꽃을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3580, "색종이로 %s 꽃을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==2) 
-						strMessage.PrintF( _S(3581, "색종이로 %s 개구리를 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3581, "색종이로 %s 개구리를 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==0) 
-						strMessage.PrintF( _S(3582, "색종이로 %s 종이학을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3582, "색종이로 %s 종이학을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==1) 
-						strMessage.PrintF( _S(3583, "색종이로 %s 드래곤을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3583, "색종이로 %s 드래곤을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					MsgBoxInfo.AddString(strMessage);
 					
 					if( nReward == 19 )
@@ -13712,7 +13723,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 						break;
 					}
 
-					strMessage.PrintF( _S(3637, "[성인서버 오픈 이벤트] 이벤트 진행요원으로부터 %s 마법주문을 받았습니다."), strBuff);
+					strMessage.PrintF( _S(3637, "[성인서버 오픈 이벤트] 이벤트 진행요원으로부터 %s 마법주문을 받았습니다."), (const char*)strBuff);
 
 					MsgBoxInfo.SetMsgBoxInfo(_S(191, "확인"), UMBS_OK, UI_NONE, MSGCMD_NULL);
 					MsgBoxInfo.AddString( strMessage );
@@ -14051,7 +14062,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 			(*istr) >> subResult;
 			CUIMsgBox_Info MsgBoxInfo;
 			CTString strMessage;
-			MsgBoxInfo.SetMsgBoxInfo(_S(191, 확인), UMBS_OK, UI_NONE, MSGCMD_NULL);
+			MsgBoxInfo.SetMsgBoxInfo(_S(191, "확인"), UMBS_OK, UI_NONE, MSGCMD_NULL);
 
 			switch (subType)
 			{
@@ -14281,7 +14292,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 			(*istr) >> strCharName;
 
 			CTString strMsg;
-			strMsg.PrintF(_S(3965, "%s님으로부터 새해복 많이 받으세요 새해인사가 도착하였습니다."), strCharName);
+			strMsg.PrintF(_S(3965, "%s님으로부터 새해복 많이 받으세요 새해인사가 도착하였습니다."), (const char*)strCharName);
 			_pNetwork->ClientSystemMessage( strMsg, SYSMSG_ERROR );
 
 			CUIMsgBox_Info MsgBoxInfo;
@@ -14327,7 +14338,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					(*istr) >> iItemIndex;
 
 					CTString strNotice;
-					strNotice.PrintF( _S(4115, "%s님이 벚꽃선물 상자를 열어 %s을 획득하였습니다."), strName, _pNetwork->GetItemName(iItemIndex));
+					strNotice.PrintF( _S(4115, "%s님이 벚꽃선물 상자를 열어 %s을 획득하였습니다."), (const char*)strName, _pNetwork->GetItemName(iItemIndex));
 
 					_UIAutoHelp->SetGMNotice( strNotice );
 
@@ -14525,7 +14536,7 @@ void CSessionState::ReceivePersonalShopMessage(CNetworkMessage *istr)
 							if (_pUIMgr->GetPersonalShop()->EndBuyShop(lChaIndex))
 							{
 								CTString strSysMessage;
-								strSysMessage.PrintF(_S(3075, "%s 님이 개인상점을 닫았습니다."), ct.cha_strName);
+								strSysMessage.PrintF(_S(3075, "%s 님이 개인상점을 닫았습니다."), (const char*)ct.cha_strName);
 								_pNetwork->ClientSystemMessage(strSysMessage);
 							}
 						}
@@ -14568,7 +14579,7 @@ void CSessionState::ReceivePersonalShopMessage(CNetworkMessage *istr)
 				_pNetwork->MyCharacterInfo.ShopMsg.SetChatMsg( strShopName );
 
 				CTString strSysMessage;
-				strSysMessage.PrintF( _S( 1037, "[%s] 상점을 열었습니다." ), strShopName);
+				strSysMessage.PrintF( _S( 1037, "[%s] 상점을 열었습니다." ), (const char*)strShopName);
 				_pNetwork->ClientSystemMessage( strSysMessage );
 				_pUIMgr->SetCSFlagOn( CSF_PERSONALSHOP );
 			}
@@ -14715,7 +14726,7 @@ void CSessionState::ReceiveCashPersonShopMessage(CNetworkMessage *istr)
 							if (_pUIMgr->GetPersonalShop()->EndBuyShop(lChaIndex))
 							{
 								CTString strSysMessage;
-								strSysMessage.PrintF(_S(3075, "%s 님이 개인상점을 닫았습니다."), ct.cha_strName);
+								strSysMessage.PrintF(_S(3075, "%s 님이 개인상점을 닫았습니다."), (const char*)ct.cha_strName);
 								_pNetwork->ClientSystemMessage(strSysMessage);
 							}
 						}
@@ -14758,7 +14769,7 @@ void CSessionState::ReceiveCashPersonShopMessage(CNetworkMessage *istr)
 				_pNetwork->MyCharacterInfo.ShopMsg.SetChatMsg( strShopName );
 
 				CTString strSysMessage;
-				strSysMessage.PrintF( _S( 1037, "[%s] 상점을 열었습니다." ), strShopName);
+				strSysMessage.PrintF( _S( 1037, "[%s] 상점을 열었습니다." ), (const char*)strShopName);
 				_pNetwork->ClientSystemMessage( strSysMessage );
 				_pUIMgr->SetCSFlagOn( CSF_PERSONALSHOP );
 			}
@@ -15420,9 +15431,9 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 				{
 					CTString strMessage;
 					if( sbOnline == TRUE )
-						strMessage.PrintF( _S( 996, "[%s] 길드원이 접속하셨습니다." ), strName);		
+						strMessage.PrintF( _S( 996, "[%s] 길드원이 접속하셨습니다." ), (const char*)strName);		
 					else
-						strMessage.PrintF( _S( 997, "[%s] 길드원이 접속종료 하셨습니다." ), strName);		
+						strMessage.PrintF( _S( 997, "[%s] 길드원이 접속종료 하셨습니다." ), (const char*)strName);		
 					_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				}
 				
@@ -15533,7 +15544,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 				_pNetwork->MyCharacterInfo.lGuildPosition	= GUILD_MEMBER_NOMEMBER;
 				
 				CTString strMessage;
-				strMessage.PrintF( _S( 998, "[%s] 길드가 해체되었습니다." ), strGuildName );			
+				strMessage.PrintF( _S( 998, "[%s] 길드가 해체되었습니다." ), (const char*)strGuildName );			
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				
 				_pUIMgr->CloseMessageBox(MSGCMD_GUILD_ERROR);
@@ -15881,7 +15892,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 			if(_pNetwork->MyCharacterInfo.lGuildLevel  >= LIMIT_GUILD_LEVEL)
 			{	
 				CTString strMessage;
-				strMessage.PrintF( _S( 1003, "[%s] 길드원이 가입하였습니다." ), strCharName );			
+				strMessage.PrintF( _S( 1003, "[%s] 길드원이 가입하였습니다." ), (const char*)strCharName );			
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				break;
 			}
@@ -15902,7 +15913,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 				}
 				
 				CTString strMessage;
-				strMessage.PrintF( _S( 1003, "[%s] 길드원이 가입하였습니다." ), strCharName );			
+				strMessage.PrintF( _S( 1003, "[%s] 길드원이 가입하였습니다." ), (const char*)strCharName );			
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 			}
 		}
@@ -15964,7 +15975,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 				}
 #endif
 				CTString strMessage;
-				strMessage.PrintF( _S( 1004, "[%s] 길드원이 탈퇴하였습니다." ), strCharName );			
+				strMessage.PrintF( _S( 1004, "[%s] 길드원이 탈퇴하였습니다." ), (const char*)strCharName );			
 
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 			}
@@ -16042,7 +16053,7 @@ void CSessionState::ReceiveGuildMessage(CNetworkMessage *istr)
 				}
 #endif
 				CTString strMessage;
-				strMessage.PrintF( _S( 1006, "[%s] 길드원을 퇴출하였습니다." ), strCharName );			
+				strMessage.PrintF( _S( 1006, "[%s] 길드원을 퇴출하였습니다." ), (const char*)strCharName );			
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 			}
 		}
@@ -16688,7 +16699,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					_pUIMgr->GetHelper()->SetRegistredTeacher( TRUE );
 
 					CTString strMessage;
-					strMessage.PrintF( _S( 1347, "[%s]님이 후견인 목록에 추가되었습니다." ), _pNetwork->MyCharacterInfo.name );		
+					strMessage.PrintF( _S( 1347, "[%s]님이 후견인 목록에 추가되었습니다." ), (const char*)_pNetwork->MyCharacterInfo.name );		
 					_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				}
 				break;
@@ -16697,7 +16708,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					_pUIMgr->GetHelper()->SetRegistredTeacher( FALSE );
 
 					CTString strMessage;
-					strMessage.PrintF( _S( 1348, "[%s]님이 후견인 목록에서 삭제되었습니다." ), _pNetwork->MyCharacterInfo.name );		
+					strMessage.PrintF( _S( 1348, "[%s]님이 후견인 목록에서 삭제되었습니다." ), (const char*)_pNetwork->MyCharacterInfo.name );		
 					_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				}
 				break;
@@ -16774,7 +16785,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					else		// 다른 사람이 거절했을때...
 					{
 						CTString strMessage;
-						strMessage.PrintF( _S( 1349, "[%s]님이 거절하였습니다." ), strCharName );		
+						strMessage.PrintF( _S( 1349, "[%s]님이 거절하였습니다." ), (const char*)strCharName );		
 						_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 					}
 					
@@ -16801,12 +16812,12 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					if( lStudentIndex == _pNetwork->MyCharacterInfo.index )
 					{
 						// 내가 학생인데, 선생이 생긴경우...
-						strMessage.PrintF( _S( 1350, "[%s]님이 [%s]님의 후견인이 되었습니다." ), strTeacherName, strStudentName );		
+						strMessage.PrintF( _S( 1350, "[%s]님이 [%s]님의 후견인이 되었습니다." ), (const char*)strTeacherName, (const char*)strStudentName );		
 						_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 					}
 					else
 					{						
-						strMessage.PrintF( _S( 1351, "[%s]님이 [%s]님의 견습생이 되었습니다." ), strStudentName, strTeacherName );		
+						strMessage.PrintF( _S( 1351, "[%s]님이 [%s]님의 견습생이 되었습니다." ), (const char*)strStudentName, (const char*)strTeacherName );		
 						_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 					}
 				}
@@ -16831,7 +16842,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					}
 
 					CTString strMessage;
-					strMessage.PrintF( _S( 1352, "[%s]님이 [%s]님의 견습생을 포기하였습니다." ), strStudentName, strTeacherName );		
+					strMessage.PrintF( _S( 1352, "[%s]님이 [%s]님의 견습생을 포기하였습니다." ), (const char*)strStudentName, (const char*)strTeacherName );		
 					_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 
 					_pUIMgr->GetHelper()->DelFromHelperList( lStudentIndex );
@@ -16867,7 +16878,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 					
 					CUIMsgBox_Info	MsgBoxInfo;
 					MsgBoxInfo.SetMsgBoxInfo( _S( 1353, "견습생 양성 실패" ), UMBS_OK, UI_HELPER, MSGCMD_HELPER_NOTIFY );	
-					strMessage.PrintF( _S( 1354, "10일동안 [%s]님의 레벨이 %d이 되지못해 후견인 관계가 강제 종료되었습니다." ), strStudentName, _pUIMgr->GetHelper()->GetLimitLevel() );	
+					strMessage.PrintF( _S( 1354, "10일동안 [%s]님의 레벨이 %d이 되지못해 후견인 관계가 강제 종료되었습니다." ), (const char*)strStudentName, _pUIMgr->GetHelper()->GetLimitLevel() );	
 					MsgBoxInfo.AddString( strMessage );
 					_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					
@@ -16923,7 +16934,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 							if(IS_EVENT_ON(TEVENT_TEACHER_2007))
 								MsgBoxInfo.AddString(_S(3346, "축하합니다. 견습생 양성을 성공적으로 이루어 내 노란 카네이션을 획득 하였습니다."));
 							else
-								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다.  명성치가 +%d 이 됩니다." ), strStudentName, _pUIMgr->GetHelper()->GetLimitLevel(), iPlusFame );	
+								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다.  명성치가 +%d 이 됩니다." ), (const char*)strStudentName, _pUIMgr->GetHelper()->GetLimitLevel(), iPlusFame );	
 #endif							
 						}
 						else
@@ -16932,7 +16943,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 							if(IS_EVENT_ON(TEVENT_TEACHER_2007))
 								MsgBoxInfo.AddString(_S(3346, "축하합니다. 견습생 양성을 성공적으로 이루어 내 노란 카네이션을 획득 하였습니다."));
 							else
-								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다.  명성치가 +%d 이 됩니다." ), strStudentName, _pUIMgr->GetHelper()->GetLimitLevel(), iPlusFame );	
+								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다.  명성치가 +%d 이 됩니다." ), (const char*)strStudentName, _pUIMgr->GetHelper()->GetLimitLevel(), iPlusFame );	
 						}
 						
 						_pUIMgr->GetHelper()->DelFromHelperList( lStudentIndex );
@@ -16956,7 +16967,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 						if(IS_EVENT_ON(TEVENT_TEACHER_2007))
 							MsgBoxInfo.AddString(_S(3347, "축하합니다. 레벨 20을 달성하여 스승의날 이벤트 노란 견장과 이벤트검을 획득 하였습니다."));
 						else
-							strMessage.PrintF( _S(2252,"축하합니다.  후견인 시스템을 성공적으로 완수하셨습니다.  보상으로 이벤트검이 지급됩니다."), _pUIMgr->GetHelper()->GetLimitLevel(), strTeacherName );	
+							strMessage.PrintF( _S(2252,"축하합니다.  후견인 시스템을 성공적으로 완수하셨습니다.  보상으로 이벤트검이 지급됩니다."), _pUIMgr->GetHelper()->GetLimitLevel(), (const char*)strTeacherName );	
 #endif
 						_pUIMgr->GetHelper()->DelFromHelperList( lTeacherIndex );
 						_pUIMgr->GetHelper()->RefreshTeacherList();
@@ -17178,7 +17189,7 @@ void CSessionState::ReceiveChangeJobMessage(CNetworkMessage *istr)
 				_pNetwork->MyCharacterInfo.job2				= sbJob2;
 
 				CTString strMessage;
-				strMessage.PrintF( _S( 1369, "[%s]로 전직 되었습니다." ), JobInfo().GetName( sbJob, sbJob2 ) );				
+				strMessage.PrintF( _S( 1369, "[%s]로 전직 되었습니다." ), (const char*)(JobInfo().GetName( sbJob, sbJob2 )) );				
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 
 				// 스페셜 리스트 일때만...
@@ -17220,7 +17231,7 @@ void CSessionState::ReceiveChangeJobMessage(CNetworkMessage *istr)
 			if( lCharIndex == _pNetwork->MyCharacterInfo.index )
 			{
 				CTString strMessage;
-				strMessage.PrintF( _S( 1370, "[%s] 직업이 포기 되었습니다." ),  JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) );				
+				strMessage.PrintF( _S( 1370, "[%s] 직업이 포기 되었습니다." ),  (const char*)(JobInfo().GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 )) );				
 				_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_NORMAL );
 				
 				// 스페셜 리스트 일때만...
@@ -17782,7 +17793,7 @@ void CSessionState::ReceiveMessengerMessage( CNetworkMessage *istr )
 			if ( _pNetwork->MyCharacterInfo.index == lCharIndex )
 			{
 				CTString strMessage;
-				strMessage.PrintF( _S( 1622, "%s님께 친구등록을 요청하고 있습니다. 취소하시겠습니까?" ), strReqCharName );
+				strMessage.PrintF( _S( 1622, "%s님께 친구등록을 요청하고 있습니다. 취소하시겠습니까?" ), (const char*)strReqCharName );
 				_pUIMgr->GetMessenger()->Message( MSGCMD_MESSENGER_ADD_WAIT, _S(2996, "친구등록 요청"), strMessage, UMBS_CANCEL );
 			}
 			else
@@ -18708,7 +18719,7 @@ void CSessionState::ReceiveTradeAgentMessage(CNetworkMessage *istr )
 			MsgBoxInfo.SetMsgBoxInfo( _S(4303, "등록 완료"), UMBS_OK, UI_NONE, MSGCMD_AUCTION_INFO );
 			MsgBoxInfo.AddString(_S(4304, "거래 대행 서비스를 이용해 주셔서 감사합니다."));
 			
-			strTemp.PrintF(_S(4305, "%s %ld개를 %I64d나스로 등록하셨습니다."),strItemName, nCount, nTotalNas);
+			strTemp.PrintF(_S(4305, "%s %ld개를 %I64d나스로 등록하셨습니다."),(const char*)strItemName, nCount, nTotalNas);
 			MsgBoxInfo.AddString(strTemp);
 
 			strTemp.PrintF(_S(4306, "보증금으로 %I64d나스를 지불하셨습니다."), nDepositMoney);
@@ -18858,7 +18869,7 @@ void CSessionState::ReceiveTradeAgentMessage(CNetworkMessage *istr )
 
 			strTemp2.PrintF("%I64d",nTotalNas);
 			_pUIMgr->InsertCommaToString( strTemp2 );
-			strTemp.PrintF(_S(4361, "%s나스로 %s 아이템 %I64d개를 구매하셨습니다. 정산 페이지를 확인하십시오."), strTemp2, strItemName, nItemCount);
+			strTemp.PrintF(_S(4361, "%s나스로 %s 아이템 %I64d개를 구매하셨습니다. 정산 페이지를 확인하십시오."), (const char*)strTemp2, (const char*)strItemName, nItemCount);
 			_pNetwork->ClientSystemMessage(strTemp, SYSMSG_NOTIFY);
 			
 			int nPage = _pUIMgr->GetAuction()->GetCurrentPage();
@@ -19013,11 +19024,11 @@ void CSessionState::ReceiveTradeAgentMessage(CNetworkMessage *istr )
 
 			if(ucState == MSG_TRADEAGENT_STATE_SELL_COMPLETE)
 			{
-				strTemp.PrintF(_S(4362, "거래 대행중인 %s 아이템 %d개에 대한 판매가 이루어졌습니다."), stItemname, nItemCount);
+				strTemp.PrintF(_S(4362, "거래 대행중인 %s 아이템 %d개에 대한 판매가 이루어졌습니다."), (const char*)stItemname, nItemCount);
 			}
 			else if(ucState == MSG_TRADEAGENT_STATE_SELL_RETURNED)
 			{
-				strTemp.PrintF(_S(4363, "%s 아이템 %d개가 반송되었습니다. 정산 페이지를 확인하십시오."), stItemname, nItemCount);
+				strTemp.PrintF(_S(4363, "%s 아이템 %d개가 반송되었습니다. 정산 페이지를 확인하십시오."), (const char*)stItemname, nItemCount);
 			}
 			_pNetwork->ClientSystemMessage(strTemp, SYSMSG_NOTIFY);
 		}

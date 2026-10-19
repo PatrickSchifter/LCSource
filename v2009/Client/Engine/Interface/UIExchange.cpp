@@ -344,7 +344,7 @@ void CUIExchange::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nLength; iPos++ )
+			int iPos = 0; for( ; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -386,7 +386,7 @@ void CUIExchange::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_ITEMINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			int iPos = 0; for( ; iPos < nSplitPos; iPos++ )
 			{
 				if( strItemInfo[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -518,7 +518,7 @@ void CUIExchange::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight
 	{
 		CTString strPrefix = rItemRareOption.GetPrefix();
 		if( strPrefix.Length() >0 )
-			szItemName.PrintF("%s %s", strPrefix, strItemName);
+			szItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 	}
 	
 	COLOR colNas = 0xF2F2F2FF;
@@ -530,7 +530,7 @@ void CUIExchange::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight
 
 		strCount.PrintF( "%I64d", llCount );
 		_pUIMgr->InsertCommaToString( strCount );		
-		strTemp.PrintF( "%s(%s)", szItemName, strCount );
+		strTemp.PrintF( "%s(%s)", (const char*)szItemName, (const char*)strCount );
 		
 		colNas = _pUIMgr->GetNasColor( llCount );
 	}
@@ -539,7 +539,7 @@ void CUIExchange::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight
 		if( ( rItemData.GetType() == CItemData::ITEM_WEAPON ||
 			rItemData.GetType() == CItemData::ITEM_SHIELD ) &&
 			ulPlus > 0 )
-			strTemp.PrintF( "%s +%d", szItemName, ulPlus );
+			strTemp.PrintF( "%s +%d", (const char*)szItemName, ulPlus );
 #ifdef Pet_IMPROVEMENT_1ST
 		// [070604: Su-won] 1차 펫 기능 개선
 		// 펫의 진화단계 표시
@@ -617,7 +617,7 @@ void CUIExchange::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight
 
 					if(_pUIMgr->GetWildPetInfo()->GetWildPetInfo(ulPlus,pWildPetInfo))
 					{
-						strTemp.PrintF(_S(4215, "이름: %s"),pWildPetInfo.pet_name);
+						strTemp.PrintF(_S(4215, "이름: %s"),(const char*)pWildPetInfo.pet_name);
 						AddItemInfoString(strTemp,  0xF2F2F2FF );
 						strTemp.PrintF(_S(4216, "펫 레벨: %d"),pWildPetInfo.pet_level);
 						AddItemInfoString(strTemp, 0xDEC05BFF);
@@ -2117,7 +2117,7 @@ void CUIExchange::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput 
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			for( int iChar = 0; iChar < nLength; iChar++ )
+			int iChar = 0; for( ; iChar < nLength; iChar++ )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -2170,9 +2170,9 @@ void CUIExchange::SendExchangeReq_Req( CTString &strDestName )
 	{
 		CTString	strSysMessage;
 		if( m_bAmISrc )
-			strSysMessage.PrintF( _S2( 422, m_strDestName, "이미 %s<과> 교환중입니다." ), m_strDestName );
+			strSysMessage.PrintF( _S2( 422, m_strDestName, "이미 %s<과> 교환중입니다." ), (const char*)m_strDestName );
 		else
-			strSysMessage.PrintF( _S2( 422, m_strSrcName, "이미 %s<과> 교환중입니다." ), m_strSrcName );
+			strSysMessage.PrintF( _S2( 422, m_strSrcName, "이미 %s<과> 교환중입니다." ), (const char*)m_strSrcName );
 
 		_pUIMgr->GetChatting()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
 
@@ -2229,7 +2229,7 @@ void CUIExchange::SendExchangeReq_Req( CTString &strDestName )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 149, "교환" ), UMBS_CANCEL,
 								UI_EXCHANGE, MSGCMD_EXCH_REQ_SRC );
-	strMessage.PrintF( _S( 152, "%s에게 교환을 신청중입니다. 취소하시겠습니까?" ), m_strDestName );
+	strMessage.PrintF( _S( 152, "%s에게 교환을 신청중입니다. 취소하시겠습니까?" ), (const char*)m_strDestName );
 	MsgBoxInfo.AddString( strMessage );
 	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
@@ -2337,7 +2337,7 @@ void CUIExchange::ExchangeReq_Req( int nSrcIndex, CTString &strSrcName,
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 149, "교환" ), UMBS_YESNO,
 								UI_EXCHANGE, MSGCMD_EXCH_REQ_DEST );
-	strMessage.PrintF( _S2( 153, m_strSrcName, "%s<가> 교환을 신청했습니다. 수락하시겠습니까?" ), m_strSrcName );
+	strMessage.PrintF( _S2( 153, m_strSrcName, "%s<가> 교환을 신청했습니다. 수락하시겠습니까?" ), (const char*)m_strSrcName );
 	MsgBoxInfo.AddString( strMessage );
 	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
@@ -2355,10 +2355,10 @@ void CUIExchange::ExchangeReq_Rep()
 	if( m_bAmISrc )
 	{
 		_pUIMgr->CloseMessageBox( MSGCMD_EXCH_REQ_SRC );
-		strMessage.PrintF( _S2( 154, m_strDestName, "%s<과> 교환을 시작합니다." ), m_strDestName );
+		strMessage.PrintF( _S2( 154, m_strDestName, "%s<과> 교환을 시작합니다." ), (const char*)m_strDestName );
 	}
 	else
-		strMessage.PrintF( _S2( 154, m_strSrcName, "%s<과> 교환을 시작합니다." ), m_strSrcName );
+		strMessage.PrintF( _S2( 154, m_strSrcName, "%s<과> 교환을 시작합니다." ), (const char*)m_strSrcName );
 
 	// Add system message
 	_pUIMgr->GetChatting()->AddSysMessage( strMessage );
@@ -2377,11 +2377,11 @@ void CUIExchange::ExchangeReq_Rej( BOOL bSrcReject )
 	if( m_bAmISrc )
 	{
 		if( bSrcReject )
-			strMessage.PrintF( _S2( 155, m_strDestName, "%s<과>의 교환을 취소하셨습니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 155, m_strDestName, "%s<과>의 교환을 취소하셨습니다." ), (const char*)m_strDestName );
 		else
 		{
 			_pUIMgr->CloseMessageBox( MSGCMD_EXCH_REQ_SRC );
-			strMessage.PrintF( _S2( 156, m_strDestName, "%s<가> 교환을 취소했습니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 156, m_strDestName, "%s<가> 교환을 취소했습니다." ), (const char*)m_strDestName );
 		}
 	}
 	else
@@ -2389,10 +2389,10 @@ void CUIExchange::ExchangeReq_Rej( BOOL bSrcReject )
 		if( bSrcReject )
 		{
 			_pUIMgr->CloseMessageBox( MSGCMD_EXCH_REQ_DEST );
-			strMessage.PrintF( _S2( 156, m_strSrcName, "%s<가> 교환을 취소했습니다." ), m_strSrcName );
+			strMessage.PrintF( _S2( 156, m_strSrcName, "%s<가> 교환을 취소했습니다." ), (const char*)m_strSrcName );
 		}
 		else
-			strMessage.PrintF( _S2( 155, m_strSrcName, "%s<과>의 교환을 취소하셨습니다." ), m_strSrcName );
+			strMessage.PrintF( _S2( 155, m_strSrcName, "%s<과>의 교환을 취소하셨습니다." ), (const char*)m_strSrcName );
 	}
 
 	// Add system message
@@ -2451,12 +2451,12 @@ void CUIExchange::ExchangeReq_Full( BOOL bSrcFull )
 		if( bSrcFull )
 			strMessage = _S( 265, "인벤토리 공간이 부족합니다." );
 		else
-			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), m_strDestName );
+			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), (const char*)m_strDestName );
 	}
 	else
 	{
 		if( bSrcFull )
-			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), m_strSrcName );
+			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), (const char*)m_strSrcName );
 		else
 			strMessage = _S( 265, "인벤토리 공간이 부족합니다." );
 	}
@@ -2523,7 +2523,7 @@ void CUIExchange::ExchangeReq_Pet_Err(BOOL petErr)
 	}
 	else{
 		CTString	strMessage;
-		strMessage.PrintF(_S(2555, "%s님은 펫을 더 이상 소유할 수 없는 상태 입니다." ) ,m_strDestName);
+		strMessage.PrintF(_S(2555, "%s님은 펫을 더 이상 소유할 수 없는 상태 입니다." ) ,(const char*)m_strDestName);
 		_pUIMgr->GetChatting()->AddSysMessage(strMessage,SYSMSG_ERROR); 
 	}
 		
@@ -2540,7 +2540,7 @@ void CUIExchange::ExchangeItem_Add( BOOL bSrcAdd, int nUniIndex, SQUAD llCount,
 	// My items
 	if( ( m_bAmISrc && bSrcAdd ) || ( !m_bAmISrc && !bSrcAdd ) )
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnMyItems[iItem].IsEmpty() )
 				break;
@@ -2607,7 +2607,7 @@ void CUIExchange::ExchangeItem_Add( BOOL bSrcAdd, int nUniIndex, SQUAD llCount,
 	// Opposite items
 	else
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnOppItems[iItem].IsEmpty() )
 				break;
@@ -2647,7 +2647,7 @@ void CUIExchange::ExchangeItem_SetOptionData( BOOL bSrcAdd, int nUniIndex, SBYTE
 	// My items
 	if( ( m_bAmISrc && bSrcAdd ) || ( !m_bAmISrc && !bSrcAdd ) )
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnMyItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
@@ -2662,7 +2662,7 @@ void CUIExchange::ExchangeItem_SetOptionData( BOOL bSrcAdd, int nUniIndex, SBYTE
 	// Opposite items
 	else
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnOppItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
@@ -2685,7 +2685,7 @@ void CUIExchange::ExchangeItem_Del( BOOL bSrcDel, int nUniIndex )
 	// My items			// 아이템 삭제 막음
 	/*if( ( m_bAmISrc && bSrcDel ) || ( !m_bAmISrc && !bSrcDel ) )
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnMyItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
@@ -2749,7 +2749,7 @@ void CUIExchange::ExchangeItem_Del( BOOL bSrcDel, int nUniIndex )
 	// Opposite items
 	else
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnOppItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
@@ -2777,7 +2777,7 @@ void CUIExchange::ExchangeItem_Update( BOOL bSrcUpdate, int nUniIndex, SQUAD llC
 	// My items
 	if( ( m_bAmISrc && bSrcUpdate ) || ( !m_bAmISrc && !bSrcUpdate ) )
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnMyItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
@@ -2829,7 +2829,7 @@ void CUIExchange::ExchangeItem_Update( BOOL bSrcUpdate, int nUniIndex, SQUAD llC
 	// Opposite items
 	else
 	{
-		for( int iItem = 0; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
+		int iItem = 0; for( ; iItem < EXCH_EXCH_SLOT_TOTAL; iItem++ )
 		{
 			if( m_abtnOppItems[iItem].GetItemUniIndex() == nUniIndex )
 				break;
