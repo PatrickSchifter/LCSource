@@ -705,8 +705,10 @@ extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCal
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_VIEW,&matView);
 #else
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
-	pglGetFloatv( GL_MODELVIEW_MATRIX, (FLOAT*)&matView);
+	extern void GetViewMatrix_MTL( FLOAT *pfMatrix);
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetViewMatrix_MTL( (FLOAT*)&matView);
+	else if( _pGfx->gl_eCurrentAPI==GAT_OGL) pglGetFloatv( GL_MODELVIEW_MATRIX, (FLOAT*)&matView);
+	else return;
 #endif // SE1_D3D
 	//현재의 modelView행렬의 4번째줄을 기억한다.
 	D3DXVECTOR3 viewRow4(matView._41, matView._42, matView._43);
