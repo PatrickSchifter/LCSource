@@ -28,8 +28,6 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
    conhecidos"); copiar exige decidir com o usuário o quê e para onde (vários GB).
 2. **C8 (OpenGL)**: com os dados, rodar até a tela de login e resolver o que o backend `GAT_OGL`
    não faz (shaders programáveis "Not implemented yet", Retina, sem gama).
-3. Testes em jogo no Windows das mudanças comuns da C1 de 2026-10-18 (casts de varargs, inline,
-   Ecc): ver "C1 — build no Mac".
 
 ## C1 — build no Mac (2026-10-18)
 
@@ -68,7 +66,7 @@ cmake --build build-client-mac          # saídas em build-client-mac/Bin
   O diretório do jogo é o pai de `Bin/`. Um `MessageBox` (modal do SDL) não sai com SIGTERM:
   `kill -9`. Pilha de um processo parado: `sample <pid> 1 -file x.txt`; crash: `lldb`.
 - O build do Windows compilou sem erros com tudo isso (`1bcb824`) e está instalado em
-  `C:\LC-BR2014\Bin`. Testes em jogo no Windows pendentes:
+  `C:\LC-BR2014\Bin`. Testado em jogo pelo usuário em 2026-10-18, sem problemas:
   login e mundo (as mensagens de chat/sistema com nomes, `_S()`), tooltips de itens, console
   (`CPrintF` com nomes de arquivos), carga de mundos com terreno (`TerrainMapCrop`), modelos SKA
   com animações (`RMRender.cpp`), barra de progresso.
