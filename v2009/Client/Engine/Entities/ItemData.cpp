@@ -65,7 +65,12 @@ int CItemData::LoadItemDataFromFile(CStaticArray<CItemData> &apItemData, const c
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fp); }
+// (bounded: a string longer than the field, as in data made for later clients, is cut instead
+// of overwriting what follows it)
+#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
+								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
+								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
+								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
 	//////////////////////////////////////////////////////////////////////////	
 	
 	for(int i = 0; i < iLastItemIndex; ++i)
@@ -73,6 +78,7 @@ int CItemData::LoadItemDataFromFile(CStaticArray<CItemData> &apItemData, const c
 		int iIndex = -1;
 		LOADINT(iIndex);		
 		if(iReadBytes <= 0)		break;										// EOF
+		if(iIndex < 0 || iIndex >= apItemData.Count())	break;	// the -9999 footer of the BR data, or an index past the table
 		ASSERT(iIndex != -1	&& "Invalid Item Index");
 
 		CItemData& ID		= apItemData[iIndex];
@@ -178,7 +184,12 @@ int CItemName::LoadItemNameFromFile(CStaticArray<CItemName> &apItemName, const c
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fp); }
+// (bounded: a string longer than the field, as in data made for later clients, is cut instead
+// of overwriting what follows it)
+#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
+								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
+								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
+								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
 	//////////////////////////////////////////////////////////////////////////	
 	
 	for(int i = 0; i < iLastItemIndex; ++i)
@@ -371,7 +382,12 @@ int CItemRareOption::LoadItemRareOptionFromFile(std::vector<CItemRareOption> &ap
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fp); }
+// (bounded: a string longer than the field, as in data made for later clients, is cut instead
+// of overwriting what follows it)
+#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
+								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
+								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
+								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
 	//////////////////////////////////////////////////////////////////////////	
 	
 	//0번은 기본 객체 삽입. 실제로 사용되지는 않음. 
