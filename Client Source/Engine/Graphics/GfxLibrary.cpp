@@ -1515,12 +1515,10 @@ void CGfxLibrary::StopDisplayMode(void)
 	ReleaseRefractionTexture();
 	extern void ReleaseReflectionTexture();
 	ReleaseReflectionTexture();
-#ifdef SE1_D3D
 	// sehan
 	extern void ReleaseBloomTexture();
 	ReleaseBloomTexture();
 	// sehan end
-#endif // SE1_D3D (Rendering/RenderBloom.cpp)
 
 	{FOREACHINLIST(CTerrain, tr_lnLoadedTerrains, _pGfx->gl_lhLoadedTerrains, ittr) {
 		// reload terrain textures

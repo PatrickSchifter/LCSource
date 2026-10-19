@@ -913,7 +913,6 @@ void CRenderer::DrawToScreen(void)
 //안태훈 수정 시작	//(Option)(0.1)
 	if( re_iIndex == IDX_MAIN_RENDERER && re_prProjection->IsPerspective())
 	{		
-#ifdef SE1_D3D
 		if (re_bRenderBloom && g_iUseBloom > 0) 
 		{
 			HRESULT hr = InitBloom();
@@ -922,7 +921,6 @@ void CRenderer::DrawToScreen(void)
 				g_iUseBloom = 0;
 			}
 		}
-#endif // SE1_D3D
 	}
 //안태훈 수정 끝	//(Option)(0.1)
 	// sehan end
@@ -1145,13 +1143,11 @@ void CRenderer::DrawToScreen(void)
 		extern BOOL _bUseBloomInWorldEditor;
 		if(re_iIndex == IDX_MAIN_RENDERER && re_prProjection->IsPerspective())
 		{		
-#ifdef SE1_D3D
 			if (re_bRenderBloom && g_iUseBloom > 0
 				&& _bUseBloomInWorldEditor) 
 			{
 				RenderBloom();
 			}
-#endif // SE1_D3D
 		}
 	//안태훈 수정 끝	//(Option)(0.1)
 		// sehan end

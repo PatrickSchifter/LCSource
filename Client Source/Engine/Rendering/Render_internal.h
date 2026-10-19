@@ -305,12 +305,12 @@ struct FilterKernelElement
 	float coef;		// coefficient determining strength of Flare
 };
 
-#ifdef SE1_D3D
 struct FourTextureStage_TexCoordOffsets
 {
 	D3DXVECTOR4	t[4];
 };
 
+#ifdef SE1_D3D
 typedef struct tagQuadVertex
 {
 	D3DXVECTOR3 Position;
@@ -671,9 +671,9 @@ public:
 
 	// sehan
 	BOOL re_bRenderBloom;
-#ifdef SE1_D3D
 	HRESULT RenderBloom();
 	HRESULT InitBloom();
+#ifdef SE1_D3D
 	HRESULT CreateBackVertexBuffer();
 #endif // SE1_D3D
 
@@ -684,9 +684,7 @@ public:
 
 	// Three sets of texture coord offsets
 	// See CreateUVOffsets() for a description
-#ifdef SE1_D3D
 	FourTextureStage_TexCoordOffsets	m_Offsets[3];
-#endif // SE1_D3D
 
 	std::vector< FilterKernelElement >	m_vGaussian1D[3];
 
@@ -704,8 +702,8 @@ public:
 	//LPDIRECT3DVERTEXBUFFER8  m_pVertexBuffer;
 	//LPDIRECT3DVERTEXBUFFER8  m_pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT]; // 1280 X 1024 까지만 지원되는걸로 가정한다.
 
-#ifdef SE1_D3D
 	D3DXMATRIX		m_matFullCoverage_WVP;
+#ifdef SE1_D3D
 	LPD3DXBUFFER            m_pD3DXBufShader;
 #endif // SE1_D3D
 //강동민 수정 시작 버그 사냥 작업	09.09
@@ -713,13 +711,13 @@ public:
 //	DWORD                   m_dwTexCoord4OffsetVertexShader;
 //강동민 수정 끝 버그 사냥 작업		09.09
 
-#ifdef SE1_D3D
 	HRESULT		DoCreateFlareTexture_Separable();
 	HRESULT	SetFlareLook();
 	HRESULT CreateTextureRenderTargets( int width, int height );
 	void    CreateUVOffsets(int width, int height);
 	void	CreateGaussianBlur(int filterNum);
 	void	CalcFullCoverageMatrix();
+#ifdef SE1_D3D
 	HRESULT	CreatePShAddFour( );
 	HRESULT CreateVShTexCoord4Offset( LPDIRECT3DDEVICE8 pd3dDevice, 
                                     DWORD* pdwVertexDecl );
@@ -730,10 +728,8 @@ public:
 	DWORD m_dwColorop, m_dwColorarg1;
 	DWORD m_dwColorarg2, m_dwAlphaop, m_dwColorop1;
 	DWORD m_dwAddressU[4], m_dwAddressV[4], m_dwMagfilter[4], m_dwMinfilter[4], m_dwMipfilter[4];
-#ifdef SE1_D3D
 	void	Get_SRS_Bloom();
 	void	Restore_SRS_Bloom();
-#endif // SE1_D3D
 	// sehan end
 };
 

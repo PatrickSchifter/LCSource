@@ -317,13 +317,11 @@ void CViewPort::Resize(void)
 	RECT rectWindow;
 
 	//강동민 수정 시작 시스템 마우스 작업	09.09
-#ifdef SE1_D3D  // both live in Rendering/RenderBloom.cpp
 	extern BOOL _bFirst;
 	if(!_bFirst)				_bFirst = TRUE;
 
 	extern INDEX d3d_bDeviceChanged;
 	if(!d3d_bDeviceChanged)		d3d_bDeviceChanged = TRUE;
-#endif // SE1_D3D
 	//강동민 수정 끝 시스템 마우스 작업		09.09
 	
 	// get the size of the window

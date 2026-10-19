@@ -1,31 +1,38 @@
 #include "StdH.h"
-#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 #include <Engine/Rendering/Render.h>
 #include <Engine/Rendering/Render_internal.h>
 
 #include <Engine/Graphics/DrawPort.h>
+#include <Engine/Graphics/Raster.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/GlobalDefinition.h>
 // sehan
 #include <assert.h>
 
+#ifdef SE1_D3D
 #define FILTER_BLOOM_TEX			D3DTEXF_POINT
 #define FILTER_BLOOM_TEX_TO_SCREEN	D3DTEXF_LINEAR
+#endif // SE1_D3D
 
 // FIXME : NULL로 초기화하지 않고 사용하고 있음.
 CRenderTexture				*_prtFilterTarget[2];
+#ifdef SE1_D3D
 LPDIRECT3DVERTEXBUFFER8		_pFilterVertexBuffer = NULL;
 LPDIRECT3DVERTEXBUFFER8		_pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT]; // 1280 X 1024 까지만 지원되는걸로 가정한다.
+#endif // SE1_D3D
 
 extern INDEX d3d_bDeviceChanged	= TRUE;
 extern BOOL _bFirst				= TRUE;
 
 extern INDEX	g_iUseBloom;
 //강동민 수정 시작 버그 사냥 작업	09.09
+#ifdef SE1_D3D
 static DWORD	_dwAddFourPixelShader			= NULL;
 static DWORD	_dwTexCoord4OffsetVertexShader	= NULL;
+#endif // SE1_D3D
 //강동민 수정 끝 버그 사냥 작업		09.09
 
+#ifdef SE1_D3D
 extern void ReleaseBloomTexture()
 {
 	for( int i = 0; i < 2; i++ )
@@ -654,6 +661,328 @@ void CRenderer::Restore_SRS_Bloom()
 	d3dSetVertexShader(D3DFVF_CTVERTEX);
 //안태훈 수정 끝	//(Bug Fix)(0.1)
 }
+#else // OpenGL
+
+// The same programs as Direct3D's, through ShaderAsmToARB. The quad's texture coordinates come in
+// as v5 here (ShaderAsmToARB.h); Direct3D's declaration of the quad puts them in v7.
+static ULONG _ulAddFourPixelProgram          = NONE;
+static ULONG _ulTexCoord4OffsetVertexProgram = NONE;
+// the drawport copied for the first pass (Direct3D copies it into _prtFilterTarget[1] in tiles)
+static ULONG _ulBackbufferCopy = NONE;
+static PIX   _pixBackbufferCopyWidth  = 0;
+static PIX   _pixBackbufferCopyHeight = 0;
+
+static const char *_strTexCoord4OffsetVertexProgram =
+	"vs.1.1\n"
+	"dp4 oPos.x , c0 , v0 \n"
+	"dp4 oPos.y , c1 , v0 \n"
+	"dp4 oPos.z , c2 , v0 \n"
+	"dp4 oPos.w , c3 , v0 \n"
+	"add oT0 , v5 , c10 \n"
+	"add oT1 , v5 , c11 \n"
+	"add oT2 , v5 , c12 \n"
+	"add oT3 , v5 , c13 ";
+
+static const char *_strAddFourPixelProgram =
+	"ps.1.4\n"
+	"texld r0, t0 \n"
+	"texld r1, t1 \n"
+	"texld r2, t2 \n"
+	"texld r3, t3 \n"
+	"mul r0.xyz , r0 , c0 \n"
+	"mad r0.xyz , c1 , r1 , r0 \n"
+	"mad r0 , c2 , r2 , r0 \n"
+	"mad r0 , c3 , r3 , r0 ";
+
+extern void ReleaseBloomTexture()
+{
+	for( int i = 0; i < 2; i++ )
+	{
+		if (_prtFilterTarget[i])
+		{
+			delete _prtFilterTarget[i];
+			_prtFilterTarget[i] = NULL;
+		}
+	}
+	if( _ulBackbufferCopy!=NONE) gfxDeleteTexture( _ulBackbufferCopy);
+	_pixBackbufferCopyWidth  = 0;
+	_pixBackbufferCopyHeight = 0;
+	if( _ulTexCoord4OffsetVertexProgram!=NONE)
+	{
+		gfxDeleteVertexProgram( _ulTexCoord4OffsetVertexProgram);
+		_ulTexCoord4OffsetVertexProgram = NONE;
+	}
+	if( _ulAddFourPixelProgram!=NONE)
+	{
+		gfxDeletePixelProgram( _ulAddFourPixelProgram);
+		_ulAddFourPixelProgram = NONE;
+	}
+	_bFirst	= TRUE;
+}
+
+HRESULT CRenderer::InitBloom()
+{
+	if (_bFirst)
+	{
+		// the blur is in the programs
+		if( !(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM) || !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return E_FAIL;
+
+		CalcFullCoverageMatrix();
+
+		HRESULT hr = SetFlareLook();
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		if( _ulTexCoord4OffsetVertexProgram==NONE) _ulTexCoord4OffsetVertexProgram = gfxCreateVertexProgram( _strTexCoord4OffsetVertexProgram, 0);
+		if( _ulAddFourPixelProgram==NONE) _ulAddFourPixelProgram = gfxCreatePixelProgram( _strAddFourPixelProgram);
+		if( _ulTexCoord4OffsetVertexProgram==NONE || _ulAddFourPixelProgram==NONE) return E_FAIL;
+		_bFirst = FALSE;
+	}
+	// nothing depends on the drawport's size until the copy (Direct3D's d3d_bDeviceChanged)
+	return S_OK;
+}
+
+// a texture on units 0..3, as Direct3D sets it on four stages; the parameters go into the texture,
+// which only the bloom binds
+static void SetFilterTexture_OGL( ULONG ulTexture, GLenum eFilter)
+{
+	for( INDEX i=3; i>=0; i--) {
+		pglActiveTextureARB( GLenum(GL_TEXTURE0_ARB+i));
+		pglBindTexture( GL_TEXTURE_2D, ulTexture);
+	}
+	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, eFilter);
+	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, eFilter);
+	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	OGL_CHECKERROR;
+}
+
+// what each of the four samples is multiplied by (c0..c3 of the pixel program) and where it is
+// taken from (c10..c13 of the vertex program, added to the quad's texture coordinates)
+static void SetFilterSamples_OGL( const float afMult[4][4], const D3DXVECTOR4 *pvOffsets)
+{
+	gfxSetPixelProgramConst( 0, afMult, 4);			//PCN_MULTFACTOR_0
+	gfxSetVertexProgramConst( 10, pvOffsets, 4);	//CV_T0_OFFSET
+}
+
+// one texture sample as it is: the passes Direct3D draws with no pixel shader and the texture
+// modulated by the texture factor (white)
+static void SetFilterSampleAsIs_OGL(void)
+{
+	static const float afMult[4][4] = { {1,1,1,1}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0} };
+	static const D3DXVECTOR4 avOffsets[4] = { D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0) };
+	SetFilterSamples_OGL( afMult, avOffsets);
+}
+
+// the quad from -1,-1 to 1,1 that m_matFullCoverage_WVP puts over the whole render target; its
+// texture coordinates go up with y, since an OpenGL render target starts at the bottom
+static void DrawFullCoverageQuad_OGL(void)
+{
+	pglBegin( GL_QUADS);
+	pglTexCoord2f( 0.0f, 0.0f);  pglVertex3f( -1.0f, -1.0f, 0.0f);
+	pglTexCoord2f( 1.0f, 0.0f);  pglVertex3f(  1.0f, -1.0f, 0.0f);
+	pglTexCoord2f( 1.0f, 1.0f);  pglVertex3f(  1.0f,  1.0f, 0.0f);
+	pglTexCoord2f( 0.0f, 1.0f);  pglVertex3f( -1.0f,  1.0f, 0.0f);
+	pglEnd();
+	OGL_CHECKERROR;
+}
+
+HRESULT CRenderer::RenderBloom()
+{
+	// main bloom render
+	Get_SRS_Bloom();
+
+	// what every pass has: no depth, culling, fog or alpha test, and the two programs
+	pglDisable( GL_DEPTH_TEST);
+	pglDepthMask( GL_FALSE);
+	pglDisable( GL_CULL_FACE);
+	pglDisable( GL_FOG);
+	pglDisable( GL_ALPHA_TEST);
+	pglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _ulTexCoord4OffsetVertexProgram);
+	pglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, _ulAddFourPixelProgram);
+	pglEnable( GL_VERTEX_PROGRAM_ARB);
+	pglEnable( GL_FRAGMENT_PROGRAM_ARB);
+	gfxSetVertexProgramConst( 0, &m_matFullCoverage_WVP(0, 0), 4);	//CV_WORLDVIEWPROJ_0
+	OGL_CHECKERROR;
+
+	DoCreateFlareTexture_Separable();
+
+	int iFilterNum = (g_iUseBloom > 3) ? 1 : 0;
+	m_nGaussianSize[iFilterNum]	= g_iUseBloom*2;
+	CreateGaussianBlur(iFilterNum);
+
+	/////////////////////////////////////////////////////
+	// Render Flare texture added on top of the object
+	SetFilterTexture_OGL( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, GL_LINEAR);	// FILTER_BLOOM_TEX_TO_SCREEN
+	pglEnable( GL_BLEND);
+	pglBlendFunc( GL_SRC_COLOR, GL_ONE);
+	SetFilterSampleAsIs_OGL();
+	DrawFullCoverageQuad_OGL();
+
+	Restore_SRS_Bloom();
+
+	return S_OK;
+}
+
+HRESULT CRenderer::DoCreateFlareTexture_Separable()
+{
+	// Create the Gaussian Flare in two step.  The first blurs
+	//  in the u axis only.  The 2nd blurs in the v axis only.
+
+	int i, n;
+
+	// The drawport shrunk into _prtFilterTarget[0]. Direct3D copies it in tiles of m_nTexRes
+	// into _prtFilterTarget[1] and draws each to its part of the target; here it is one copy
+	// (OpenGL counts rows from the bottom) and one quad, sampled linearly as there.
+	const PIX pixWidth  = re_pdpDrawPort->GetWidth();
+	const PIX pixHeight = re_pdpDrawPort->GetHeight();
+	const PIX pixLeft   = re_pdpDrawPort->dp_MinI;
+	const PIX pixBottom = re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ;
+	pglActiveTextureARB( GL_TEXTURE0_ARB);
+	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
+	pglBindTexture( GL_TEXTURE_2D, _ulBackbufferCopy);
+	if( pixWidth!=_pixBackbufferCopyWidth || pixHeight!=_pixBackbufferCopyHeight)
+	{
+		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, pixWidth, pixHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		_pixBackbufferCopyWidth  = pixWidth;
+		_pixBackbufferCopyHeight = pixHeight;
+	}
+	pglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, pixLeft, pixBottom, pixWidth, pixHeight);
+	OGL_CHECKERROR;
+
+	_prtFilterTarget[0]->Begin();
+	_prtFilterTarget[0]->Clear( 0xFF000000);	// D3DCOLOR_XRGB( 0x0, 0x00, 0x00 )
+	SetFilterTexture_OGL( _ulBackbufferCopy, GL_LINEAR);	// FILTER_BLOOM_TEX_TO_SCREEN
+	pglDisable( GL_BLEND);
+	SetFilterSampleAsIs_OGL();
+	DrawFullCoverageQuad_OGL();
+	_prtFilterTarget[0]->End();
+
+	///////////////////////////////////////////////////////////////
+	// change render targets & blur out the glow source pixels rendered previously
+	// Blur them in u (horizontal) axis only
+
+	_prtFilterTarget[1]->Begin();
+	_prtFilterTarget[1]->Clear( 0xFF000000);
+	SetFilterTexture_OGL( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, GL_NEAREST);	// FILTER_BLOOM_TEX
+
+	float pix_mult[4][4];
+	float woff, hoff;
+	float centw, centh;
+
+	// Direct3D samples a pixel at the corner of its texel and OpenGL at the center: half a texel
+	// back to read what the Direct3D offsets (no centering there) read
+	centw = -m_fPerTexelWidth  * 0.5f;
+	centh = -m_fPerTexelHeight * 0.5f;
+
+	//  1st pass is opaque; additive blending when alphablend is enabled
+	pglDisable( GL_BLEND);
+	pglBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+
+	int iFilterNum;
+	iFilterNum = (g_iUseBloom > 3) ? 1 : 0;
+
+	for( i=0; i < m_vGaussian1D[iFilterNum].size(); i += 4 )
+	{
+		if( i == 4 )
+		{
+			// switch to additive blending if > 1 pass - ie if
+			//  gaussian has more than 4 elements.
+			pglEnable( GL_BLEND);
+		}
+
+		for( n=0; n < 4; n++ )
+		{
+			FilterKernelElement * pE;
+			pE = & ( m_vGaussian1D[iFilterNum].at(i+n) );
+
+			pix_mult[n][0] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][1] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][2] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][3] = pE->coef * m_fColorAtten[iFilterNum];
+
+			woff = m_fPerTexelWidth  * pE->du;
+			hoff = m_fPerTexelHeight * pE->dv;
+
+			m_Offsets[ 2 ].t[n] = D3DXVECTOR4( centw + woff, centh + hoff, 0.0f, 0.0f );
+		}
+
+		SetFilterSamples_OGL( pix_mult, m_Offsets[ 2 ].t);
+
+		// Draw the fan to cover the entire render target
+		DrawFullCoverageQuad_OGL();
+	}
+	_prtFilterTarget[1]->End();
+
+	///////////////////////////////////////////////////////////////
+	// Now flip from rendertarget 1 to rendertarget 0 and blur
+	//  in the other axis.
+
+	// Switch render targets
+	_prtFilterTarget[0]->Begin();
+	_prtFilterTarget[0]->Clear( 0xFF000000);
+	SetFilterTexture_OGL( _prtFilterTarget[1]->rt_tdTexture.td_ulObject, GL_NEAREST);	// FILTER_BLOOM_TEX
+
+	//  1st pass is opaque
+	pglDisable( GL_BLEND);
+
+	for( i=0; i < m_vGaussian1D[iFilterNum].size(); i += 4 )
+	{
+		if( i == 4 )
+		{
+			// switch to additive blending if > 1 pass - ie if
+			//  gaussian has more than 4 elements.
+			pglEnable( GL_BLEND);
+		}
+
+		for( n=0; n < 4; n++ )
+		{
+			FilterKernelElement * pE;
+			pE = & ( m_vGaussian1D[iFilterNum].at(i+n) );
+
+			pix_mult[n][0] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][1] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][2] = pE->coef * m_fColorAtten[iFilterNum];
+			pix_mult[n][3] = pE->coef * m_fColorAtten[iFilterNum];
+
+			// Switch nature of u and v to blur along other axis. (dv should be 0.0f)
+			woff = m_fPerTexelWidth  * pE->dv;
+			hoff = m_fPerTexelHeight * pE->du;
+
+			m_Offsets[ 2 ].t[n] = D3DXVECTOR4( centw + woff, centh + hoff, 0.0f, 0.0f );
+		}
+
+		SetFilterSamples_OGL( pix_mult, m_Offsets[ 2 ].t);
+
+		// Draw the fan to cover the entire render target
+		DrawFullCoverageQuad_OGL();
+	}
+	_prtFilterTarget[0]->End();
+
+	return S_OK;
+}
+
+void CRenderer::Get_SRS_Bloom()
+{
+	// The passes change the GL state directly and put it back as it was, so the engine's cache of
+	// it stays right: enables (programs too), blending and color mask, depth mask, the textures of
+	// each unit and the active one, and the current texture coordinates of the quad.
+	pglPushAttrib( GL_ENABLE_BIT|GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
+	OGL_CHECKERROR;
+}
+
+void CRenderer::Restore_SRS_Bloom()
+{
+	pglPopAttrib();
+	// the bound programs are not attributes
+	pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _pGfx->gl_dwVertexShader);
+	pglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, _pGfx->gl_dwPixelShader);
+	OGL_CHECKERROR;
+}
+#endif // SE1_D3D
 
 HRESULT CRenderer::CreateTextureRenderTargets( int width, int height )
 {
@@ -672,6 +1001,7 @@ HRESULT CRenderer::CreateTextureRenderTargets( int width, int height )
 
     for( i = 0; i < 2; i++ )
     {
+#ifdef SE1_D3D
 		IDirect3DSurface8       *pBackbufferColor;
 		D3DSURFACE_DESC backDesc;
 		_pGfx->gl_pd3dDevice->GetRenderTarget( &pBackbufferColor );
@@ -685,6 +1015,13 @@ HRESULT CRenderer::CreateTextureRenderTargets( int width, int height )
             return E_FAIL;
 		}
 		pBackbufferColor->Release();
+#else
+		_prtFilterTarget[i] = new CRenderTexture();
+		if (!_prtFilterTarget[i]->Init(width, height, TEX_32BIT))
+		{
+            return E_FAIL;
+		}
+#endif // SE1_D3D
     }
 
     return S_OK;
@@ -901,6 +1238,7 @@ void CRenderer::CalcFullCoverageMatrix()
     D3DXMatrixTranspose( & m_matFullCoverage_WVP, &matWorldViewProj);
 }
 
+#ifdef SE1_D3D
 HRESULT CRenderer::CreatePShAddFour( )
 {
     //TCHAR        strPath[MAX_PATH];
