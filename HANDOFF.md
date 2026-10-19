@@ -27,7 +27,8 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M3 concluída; próximo: M4 (render targets).
+2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M4 implementada (`98defbc`), **falta conferir em
+   jogo** (lista em "C8 — Metal M4"); depois M5 (Metal como padrão no Mac).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
@@ -68,10 +69,8 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   CPU. `LC_DUMP_PROGRAMS=<dir>` grava o assembly de cada programa criado (`<hash>.vs/.ps`); um
   testador offline (ObjC++: `ShaderAsmToARB.cpp` + `ShaderARBToMSL.cpp` + compilar e ligar no
   `MTLDevice`; não há compilador `metal` offline só com as Command Line Tools) refaz todos sem login.
-- Ainda não (o motor pula ou faz sem): render targets (`CRenderTexture::Init` falha: sem bloom, preview
-  da loja; as sombras projetadas saem cedo em `Render.cpp`), consultas de oclusão, leitura de
-  profundidade dos flares (`DepthCheck.cpp`), `GrabScreen` (captura de tela) e a cópia da tela do
-  bloom (com programas o `InitBloom` falha no render target e põe `g_iUseBloom` = 0). O `RenderPatches_View` (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
+- Ainda não: consultas de oclusão (o motor usa a leitura de profundidade). O `RenderPatches_View`
+  (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
 - Visto: tela de login igual à do OpenGL (2026-10-19).
 - M2 (2026-10-19, `e3aec26`): Juno no Metal sem programas — campo, cidade (brushes), pontes, árvores com
   alpha test, lobos, pet, efeitos de golpe com partículas e números de dano — igual ao OpenGL no
@@ -82,6 +81,45 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 - Comparar: `LC_GFX_API=metal scripts/macos/play.sh`, login sem mexer, captura da janela; depois
   sem a variável. A câmera guarda o zoom entre sessões, então o enquadramento pode diferir.
 - `grep` nos fontes: use `-a` (os bytes coreanos fazem o grep tratá-los como binário e calar).
+
+## C8 — Metal M4: render targets e leituras da tela (2026-10-19, `98defbc`)
+
+- `CRenderTexture` (`TextureRender.cpp`) no Metal: textura BGRA8 (o formato do drawable, então os
+  pipelines servem para os dois) com profundidade própria (`mtlTextureRenderTarget`).
+  `mtlSetRenderTarget` fecha o encoder e o próximo desenho abre um passe no alvo (carrega o que
+  ele tinha; quem chama limpa). `Begin()` guarda viewport/scissor do wrapper e põe no alvo inteiro,
+  como o `SetRenderTarget` do D3D, e liga `GFX_pixRenderTargetHeight` (escala 1 no alvo); `Clear()`
+  limpa com o alfa do D3DCOLOR (a sombra limpa com alfa 0, os previews com 0x00000000).
+- O alvo do Metal começa **em cima**, como o do D3D: loja de cash, modelo de item do HUD e reflexo
+  da água usam as coordenadas do D3D (`UIManager.cpp`/`UICashShopEX.cpp` só invertem no OpenGL; o
+  `-0.5` do reflexo no `Shader.cpp` já era da M3).
+- Sombras projetadas (`Render.cpp`): as chamadas GL diretas viraram `GetShadowProjection`/
+  `SetShadowProjection`/`SetShadowViewport`/`SetShadowTexGen`, que escolhem a API. No Metal o
+  texgen é o do D3D: modo 8 nas coordenadas da função fixa = posição em espaço de vista, pela
+  matriz de textura e dividida por q (`MTL_SetTexGenViewPosition`).
+- `gfxSetTextureWrapping` no Metal passou a valer também para a textura já posta na unidade
+  (antes só na próxima `gfxSetTexture`): a sombra põe CLAMP depois do `SetAsCurrent`.
+- Bloom (`RenderBloom.cpp`): o código do OpenGL ficou comum, com `DrawFilterQuad` (GL ou
+  `MTL_DrawFilterQuad`, que manda o quad direto ao dispositivo com estado próprio) e a cópia da
+  tela por API (`mtlCopyFrameToTexture`, blit na GPU, linhas de cima). `Get/Restore_SRS_Bloom` no
+  Metal = `mtlPushState`/`mtlPopState` (streams, texturas, constantes, estado do dispositivo).
+- Flares (`DepthCheck.cpp`) e `GrabScreen` (`DrawPort.cpp`): `mtlReadFrameDepths`/`mtlReadFrameRGB`
+  copiam do drawable/profundidade para um buffer compartilhado e **esperam a GPU** (o command
+  buffer é enviado sem apresentar; o drawable continua no quadro). A profundidade fica de um quadro
+  para o outro, então uma leitura antes de desenhar vê o quadro anterior, como no OpenGL. Com
+  `gap_iOptimizeDepthReads` = 1 (padrão) é uma espera por quadro quando há flares; se pesar, ler
+  assíncrono (resultado do quadro anterior) ou usar visibility queries.
+- Testado offline (programa ObjC++ com `MetalDevice.mm` e `MTL_DEBUG_LAYER=1`): clear e desenho no
+  alvo, orientação, cópia da tela, leitura de cor e profundidade (dentro e fora), profundidade
+  mantida entre quadros — tudo certo, sem avisos da validação. Login no jogo com a validação ligada
+  sem erros. **Não visto em jogo** (precisa do login do usuário).
+- Conferir em jogo (`LC_GFX_API=metal scripts/macos/play.sh`, comparando com o OpenGL): sombra do
+  personagem no terreno e no chão das cidades; loja de cash (preview do personagem) e modelo de
+  item no centro da tela; reflexo na água (`g_iReflectionDetail`); bloom (`g_iUseBloom` é
+  persistente e pode ter ficado 0 nos testes da M3, quando o `InitBloom` falhava: religar o filtro
+  nas opções); flares do sol/luzes (somem atrás de objetos); captura de tela (tecla de print, sai
+  na resolução cheia); uso de CPU com flares na tela. `MTL_DEBUG_LAYER=1` mostra erros de API no
+  `stdout.log`.
 
 ## C8 — handles de textura (2026-10-19, `40f850b`)
 

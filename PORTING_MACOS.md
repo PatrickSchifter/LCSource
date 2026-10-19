@@ -224,7 +224,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
   - [x] M1: dispositivo, quadros, estado, texturas (RGBA8 e DXT), função fixa emulada em MSL; tela de login (2026-10-19)
   - [x] M2: Juno sem programas (terreno, brushes, modelos, partículas, névoa), conferido contra o OpenGL (2026-10-19)
   - [x] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, pelo ARB do tradutor do OpenGL (2026-10-19)
-  - [ ] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela
+  - [ ] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela — implementada (2026-10-19, `98defbc`), falta conferir em jogo
   - [ ] M5: Metal como padrão no Mac
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
@@ -300,3 +300,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C8: backend Metal, primeira etapa (tela de login com `LC_GFX_API=metal`) | 2c36d7c |
 | 2026-10-19 | C8: Metal M2, Juno sem programas conferida contra o OpenGL (billboards no Metal) | e3aec26 |
 | 2026-10-19 | C8: Metal M3, programas D3D em MSL (pelo ARB do OpenGL) | 165fd29 |
+| 2026-10-19 | C8: Metal M4, render targets, bloom, sombras projetadas, previews, reflexo da água, flares e captura (falta conferir em jogo) | 98defbc |
