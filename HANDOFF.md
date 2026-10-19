@@ -9,9 +9,10 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Um cliente **Windows** compilado deste repositório (D3D8, 32 bits, MSVC) loga nesse servidor pela
   rede local, cria e seleciona personagem, entra em Juno (zona 0), anda, luta e usa lojas.
   Ele existe para validar o servidor e conhecer o motor, e é a referência para testar cada passo do porte.
-- Cliente Mac: só a preparação. Tipos e 64 bits (C2), assembly x86 (C3) e dependências só de
-  Windows (C4) e camada de plataforma (C5) feitos; C1 (build de verdade no Mac) em andamento. O código do cliente compila no Mac
-  apenas no modo de verificação (`LC_CLIENT_CHECK_ONLY`, ver abaixo), sem linkar.
+- Cliente Mac: **compila e linka** (2026-10-18, `build-client-mac`, ver "C1 — build no Mac"
+  abaixo): `Engine`, `EntitiesMP`, `GameMP`, `Shaders` (`.dylib`) e `Nksp`. Ao rodar, inicia SDL e
+  motor e para em `SE_LoadDefaultFonts()` com `FatalError`, porque os dados do jogo não estão no
+  Mac. O contexto OpenGL vem do SDL3; o backend OpenGL ainda não foi exercitado (C8).
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -22,9 +23,55 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C1**: CMake do cliente no Mac e primeiro link; depois a C8 (OpenGL). C5, C6 e C7 estão
-   feitas no nível do check ("C6 e C7 — como ficou" abaixo); C6 e C7 ainda sem teste em jogo no
-   Windows. Check do Mac em 2026-10-18: 128 erros únicos, quase todos do OpenGL (C8).
+1. **Dados do jogo no Mac**: o cliente precisa de uma instalação (`Data`, `Local`, `.gro`...) com
+   `Bin/` dentro. A do Windows é `C:\LC-BR2014` (BR 2014 + `.lod` de 2017, ver "Problemas
+   conhecidos"); copiar exige decidir com o usuário o quê e para onde (vários GB).
+2. **C8 (OpenGL)**: com os dados, rodar até a tela de login e resolver o que o backend `GAT_OGL`
+   não faz (shaders programáveis "Not implemented yet", Retina, sem gama).
+3. Testes em jogo no Windows das mudanças comuns da C1 de 2026-10-18 (casts de varargs, inline,
+   Ecc): ver "C1 — build no Mac".
+
+## C1 — build no Mac (2026-10-18)
+
+```
+cmake -S . -B build-client-mac -G Ninja -DCMAKE_BUILD_TYPE=Release -DLC_BUILD_SERVER=OFF -DLC_BUILD_CLIENT=ON
+cmake --build build-client-mac          # saídas em build-client-mac/Bin
+```
+
+- O mesmo `Client Source/CMakeLists.txt` do Windows: terceiros, Ecc, entidades geradas e listas de
+  fontes são comuns; D3D8/D3DX, opções do MSVC, `f_socket`, `SharedMemory`, `ShaderCheck` e
+  `ZoneMapExport` ficam no ramo `WIN32`, sem mudança. No Mac: SDL3, `vorbisfile` (pkg-config),
+  iconv e o framework OpenGL. As bibliotecas saem sem o prefixo `lib` (`Bin/EntitiesMP.dylib`,
+  que o motor abre por nome) e se acham por `@loader_path`/`@executable_path`.
+- Opções do clang que mantêm a semântica do MSVC: `-fms-extensions -fwrapv -fno-strict-aliasing
+  -fno-delete-null-pointer-checks`. Avisos desligados (o check é onde se revisam), **menos
+  `-Werror=non-pod-varargs`**, também no check.
+- **`CTString` em `...`**: o MSVC passa os bits do objeto (o `char*`); o clang compila a chamada
+  como *trap* ("call will abort at runtime") — o primeiro rodar parou em `ParseCommandLine`.
+  1.053 argumentos viraram `(const char*)x` (`2f57203`), o que dá no Windows o mesmo valor de
+  antes. Código novo: sempre `(const char*)str` em `PrintF`/`CPrintF`/`ThrowF_t`/`FatalError`.
+- **Ecc `-line`** (classes do Engine) cortava os blocos no primeiro CR; sem CR (fora do Windows)
+  descartava blocos inteiros que começavam com `#line` — sumiu um `for` do `MovableEntity.cpp`, e
+  o que sumia dependia do tamanho do caminho do build. Agora corta no LF (`6e4ab40`).
+- Funções `inline` definidas num só `.cpp` (`_SFunc`, `GetVertices`, `RMRender.cpp`...) e globais
+  definidos no `Engine.h` (o `dllimport` os tornava declarações no Windows): no Mac são símbolos
+  indefinidos (só no Release) ou duplicados. Corrigidos; o padrão pode reaparecer em código novo.
+- zlib 1.2.8 e libpng 1.6.3 confundem `TARGET_OS_MAC` com o Mac clássico: flags no CMake
+  (`Z_HAVE_UNISTD_H`, `fdopen=fdopen`, `-include math.h`, `PNG_ARM_NEON_OPT=0`), sem mexer neles.
+- Contexto OpenGL (`6a551d8`): janela principal com `SDL_WINDOW_OPENGL`; `InitDriver_OGL` carrega
+  as funções por `SDL_GL_GetProcAddress`; `CreateContext_OGL(HWND)` tenta as mesmas combinações de
+  profundidade/stencil do Windows; swap e vsync pelo SDL; sem gama (o SDL3 não tem). Perfil legado
+  (OpenGL 2.1 no macOS). Janelas-filhas e *work canvas* das ferramentas: só Windows.
+- Rodar: `scripts/macos/play.sh` copia `build-client-mac/Bin` para `~/Projects/LC-BR2014/Bin` (cópia
+  da instalação do Windows sem `Bin`, `ServerMaps` e capturas; `LC_GAME_DIR` troca o lugar) e inicia
+  com o argumento do `jogar.bat` e `LC_NO_HW_SHADERS=1`; saída em `stdout.log` na instalação.
+  O diretório do jogo é o pai de `Bin/`. Um `MessageBox` (modal do SDL) não sai com SIGTERM:
+  `kill -9`. Pilha de um processo parado: `sample <pid> 1 -file x.txt`; crash: `lldb`.
+- O build do Windows compilou sem erros com tudo isso (`1bcb824`) e está instalado em
+  `C:\LC-BR2014\Bin`. Testes em jogo no Windows pendentes:
+  login e mundo (as mensagens de chat/sistema com nomes, `_S()`), tooltips de itens, console
+  (`CPrintF` com nomes de arquivos), carga de mundos com terreno (`TerrainMapCrop`), modelos SKA
+  com animações (`RMRender.cpp`), barra de progresso.
 
 ## C5 — andamento (2026-10-17)
 
@@ -310,6 +357,9 @@ essas foram editadas à mão). Em `Define_RUS.h` ele acusa "EOF in comment" e n�
 cmake -S . -B build-client-check -G Ninja -DLC_BUILD_SERVER=OFF -DLC_BUILD_CLIENT=ON -DLC_CLIENT_CHECK_ONLY=ON [-DLC_CHECK_DIRS=ALL]
 cmake --build build-client-check -- -k 0 2>&1 | tee check.log
 ```
+
+Desde 2026-10-18 o check (`ALL`) dá **0 erros** e o cliente de verdade compila no Mac ("C1 —
+build no Mac"); o check continua sendo o lugar dos avisos de 64 bits.
 
 - **Região:** uma só opção, `LC_CLIENT_COUNTRY` (padrão `BRAZIL`), definida em
   `Client Source/CMakeLists.txt` antes do desvio para o check; Windows, check e o futuro build do
