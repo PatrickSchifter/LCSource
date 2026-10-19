@@ -4,10 +4,6 @@
 #include <Engine/Interface/UIGroup.h>
 #include <Engine/Interface/UITextureManager.h>
 #include <algorithm>
-#include <Engine/Interface/UIGroup.h>
-
-using namespace std;
-
 // Definition
 #define GROUP_NAME_OFFSET_X 18	
 
@@ -17,6 +13,7 @@ using namespace std;
 
 #define ICON_WIDTH	18
 #define ICON_HEIGHT 15
+
 
 UIRectUV m_rcIcon[TOTAL_JOB][TOTAL_CONDITION];
 
@@ -77,7 +74,9 @@ void CUIGroup::Clear()
 //------------------------------------------------------------------------------
 void CUIGroup::Create(  CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	m_nLineHeight =nHeight;
 
@@ -128,7 +127,7 @@ void CUIGroup::AddMember( int nCharIndex, int nGroupIndex, CTString strName, eJo
 void CUIGroup::AddMember( CMemberInfo MemberInfo )
 {
 	std::vector<CMemberInfo>::iterator iter;
-	iter =find_if(m_vecMember.begin(), m_vecMember.end(), [&](const CMemberInfo& mi) { return FindObj(mi, MemberInfo.m_strName); } );
+	iter =find_if(m_vecMember.begin(), m_vecMember.end(), bind2nd(ptr_fun(FindObj), MemberInfo.m_strName) );
 
 	if( iter == m_vecMember.end() )
 	{
@@ -158,8 +157,7 @@ bool CUIGroup::DeleteMember( CTString strName )
 	{
 		if( iter->m_strName == strName )
 		{
-			iter = m_vecMember.erase( iter );
-			iterEnd = m_vecMember.end();
+			m_vecMember.erase( iter );
 			break;
 		}
 	}
@@ -189,8 +187,7 @@ bool CUIGroup::DeleteMember( int nCharIndex)
 	{
 		if( iter->m_nCharIndex == nCharIndex )
 		{
-			iter = m_vecMember.erase( iter );
-			iterEnd = m_vecMember.end();
+			m_vecMember.erase( iter );
 			break;
 		}
 		i++;
@@ -427,8 +424,6 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 			
 	if( IsExtension() )
 	{
-		CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 		for(int i=nStartLine;; ++i)
 		{
 			if( nLineY*m_nLineHeight >=nShowHeight || i>m_vecMember.size()-1)
@@ -437,11 +432,11 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 			//친구 그룹일 때
 			if( m_nIndex >=0)
 			{
-				pDrawPort->PutTextEx( m_vecMember[i].m_strName, nX +GROUP_MEMBER_NAME_OFFSET_X,
+				_pUIMgr->GetDrawPort()->PutTextEx( m_vecMember[i].m_strName, nX +GROUP_MEMBER_NAME_OFFSET_X,
 													nY +m_nLineHeight*(i+1),
 													0xf2f2f2ff);
 									
-				pDrawPort->AddTexture( nX + GROUP_MEMBER_ICON_OFFSET_X, nY +m_nLineHeight*(i+1),
+				_pUIMgr->GetDrawPort()->AddTexture( nX + GROUP_MEMBER_ICON_OFFSET_X, nY +m_nLineHeight*(i+1),
 												nX + GROUP_MEMBER_ICON_OFFSET_X+ ICON_WIDTH, nY +m_nLineHeight*(i+1) +ICON_HEIGHT,
 												m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].U0, m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].V0,
 												m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].U1, m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].V1,
@@ -458,13 +453,13 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 			//차단 그룹일 때
 			else
 			{
-				pDrawPort->PutTextEx( m_vecMember[i].m_strName, nX +GROUP_MEMBER_NAME_OFFSET_X,
+				_pUIMgr->GetDrawPort()->PutTextEx( m_vecMember[i].m_strName, nX +GROUP_MEMBER_NAME_OFFSET_X,
 														nY +m_nLineHeight*(i+1),
 														0xf2f2f2ff);
 
 				if( m_vecMember[i].m_nGroupIndex >=0 )
 				{
-					pDrawPort->AddTexture( nX + GROUP_MEMBER_ICON_OFFSET_X, nY +m_nLineHeight*(i+1),
+					_pUIMgr->GetDrawPort()->AddTexture( nX + GROUP_MEMBER_ICON_OFFSET_X, nY +m_nLineHeight*(i+1),
 														nX + GROUP_MEMBER_ICON_OFFSET_X+ ICON_WIDTH, nY +m_nLineHeight*(i+1) +ICON_HEIGHT,
 														m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].U0, m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].V0,
 														m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].U1, m_rcIcon[m_vecMember[i].m_eJob][m_vecMember[i].m_eCondition].V1,
@@ -477,7 +472,7 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 			//SelectBar render
 			if( i==m_nSelectLine && IsFocused())
 			{
-				pDrawPort->AddTexture( nX + GROUP_MEMBER_NAME_OFFSET_X, nY + m_nLineHeight*(i+1),
+				_pUIMgr->GetDrawPort()->AddTexture( nX + GROUP_MEMBER_NAME_OFFSET_X, nY + m_nLineHeight*(i+1),
 													//nX + GROUP_MEMBER_NAME_OFFSET_X +m_vecMember[i].m_strName.Length()*8, 
 													nX + GROUP_MEMBER_NAME_OFFSET_X +m_vecMember[i].m_strName.Length()*( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() +1),
 													nY + m_nLineHeight*(i+2),
@@ -492,15 +487,13 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 	// 그룹 이름 출력 ( 인원 수도 표시 ) 
 	if( m_bShowGroupName)
 	{
-		CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 		CTString strGroupName;
-
-		strGroupName.PrintF( "%s (%d)", (const char*)m_strGroupName, m_vecMember.size() );
+		strGroupName.PrintF( "%s (%d)", m_strGroupName, m_vecMember.size() );
 		//strGroupName.PrintF( "%s (%d)", m_strGroupName, (nShowRange/m_nLineHeight) -1 );
 		
 		if( m_nSelectLine ==-1 && IsFocused())
 		{
-			pDrawPort->AddTexture( nX + GROUP_NAME_OFFSET_X, nY,
+			_pUIMgr->GetDrawPort()->AddTexture( nX + GROUP_NAME_OFFSET_X, nY,
 												//nX + GROUP_MEMBER_NAME_OFFSET_X +m_vecMember[i].m_strName.Length()*8, 
 												nX + GROUP_NAME_OFFSET_X +strGroupName.Length()*( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() +1),
 												nY + m_nLineHeight,
@@ -508,7 +501,7 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 												m_rtSelectBar.U1, m_rtSelectBar.V1,
 												0xFFFFFFFF );
 		}
-		pDrawPort->PutTextEx( strGroupName, nX + GROUP_NAME_OFFSET_X, nY, 
+		_pUIMgr->GetDrawPort()->PutTextEx( strGroupName, nX + GROUP_NAME_OFFSET_X, nY, 
 			COLOR_GROUP);
 	}
 
@@ -709,11 +702,10 @@ bool CompareCondition(CMemberInfo info)
 
 bool FindObj( CMemberInfo mi, CTString strName)
 {
-	if( strcmp(mi.m_strName , strName) == 0)
-		return true;
-	else
-		return false;
-
+		if( mi.m_strName ==strName)
+			return true;
+		else
+			return false;
 }
 
 void CUIGroup::SetIndex(int nIndex)

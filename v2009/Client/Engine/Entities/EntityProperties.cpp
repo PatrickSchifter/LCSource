@@ -21,7 +21,7 @@
 #define FILTER_ALL            "All files (*.*)\0*.*\0"
 #define FILTER_END            "\0"
 
-#define PROPERTY(offset, flag) ENTITYPROPERTY(this, offset, flag)
+#define PROPERTY(offset, type) ENTITYPROPERTY(this, offset, type)
 
 extern BOOL _bWorldEditorApp;
 
@@ -127,7 +127,6 @@ void CEntity::ReadProperties_t(CTStream &istrm,BOOL bNetwork) // throw char *
       case CEntityProperty::EPT_INDEX:
       case CEntityProperty::EPT_ENUM:
       case CEntityProperty::EPT_FLAGS:
-	  case CEntityProperty::EPT_ZONEFLAGS:
       case CEntityProperty::EPT_ANIMATION:
       case CEntityProperty::EPT_ILLUMINATIONTYPE:
       case CEntityProperty::EPT_COLOR:
@@ -137,11 +136,6 @@ void CEntity::ReadProperties_t(CTStream &istrm,BOOL bNetwork) // throw char *
         istrm>>iDummy;
 
       } break;
-	  case CEntityProperty::EPT_ZONEFLAGS_EX:
-	  {
-		SQUAD n64Dummy;
-		istrm>>n64Dummy;
-	  }
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
       case CEntityProperty::EPT_RANGE: {
@@ -272,16 +266,12 @@ void CEntity::ReadProperties_t(CTStream &istrm,BOOL bNetwork) // throw char *
       case CEntityProperty::EPT_INDEX:
       case CEntityProperty::EPT_ENUM:
       case CEntityProperty::EPT_FLAGS:
-	  case CEntityProperty::EPT_ZONEFLAGS:
       case CEntityProperty::EPT_ANIMATION:
       case CEntityProperty::EPT_ILLUMINATIONTYPE:
       case CEntityProperty::EPT_COLOR:
       case CEntityProperty::EPT_ANGLE:
         // read INDEX
         istrm>>PROPERTY(pepProperty->ep_slOffset, INDEX);
-        break;
-	  case CEntityProperty::EPT_ZONEFLAGS_EX:
-	    istrm>>PROPERTY(pepProperty->ep_slOffset, SQUAD);
         break;
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
@@ -470,17 +460,12 @@ void CEntity::WriteProperties_t(CTStream &ostrm,BOOL bNetwork) // throw char *
       case CEntityProperty::EPT_INDEX:
       case CEntityProperty::EPT_ENUM:
       case CEntityProperty::EPT_FLAGS:
-	  case CEntityProperty::EPT_ZONEFLAGS:
       case CEntityProperty::EPT_ANIMATION:
       case CEntityProperty::EPT_ILLUMINATIONTYPE:
       case CEntityProperty::EPT_COLOR:
       case CEntityProperty::EPT_ANGLE:
         // write INDEX
         ostrm<<PROPERTY(epProperty.ep_slOffset, INDEX);
-        break;
-	  case CEntityProperty::EPT_ZONEFLAGS_EX:
-	    // write INDEX
-        ostrm<<PROPERTY(epProperty.ep_slOffset, SQUAD);
         break;
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
@@ -654,13 +639,13 @@ void CEntityComponent::Obtain_t(void)  // throw char *
     // if something else
     default:
       // error
-      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (const char*)(CTString&)ec_fnmComponent, ec_slID);
+      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (CTString&)ec_fnmComponent, ec_slID);
   }
 
   // if not already loaded and should not be precaching now
   if( ctUsed<=1 && !_precache_bNowPrecaching) {
     // report warning
-    CPrintF(TRANS("Not precached: (0x%08X)'%s'\n"), this->ec_slID, (const char*)ec_fnmComponent);
+    CPrintF(TRANS("Not precached: (0x%08X)'%s'\n"), this->ec_slID, ec_fnmComponent);
   }
   //CPrintF(TRANS("Precaching NOW: (0x%08X)'%s'\n"), this->ec_slID, ec_fnmComponent);
 
@@ -733,7 +718,7 @@ void CEntityComponent::Release(void)
     // if something else
     default:
       // error
-      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (const char*)(CTString&)ec_fnmComponent, ec_slID);
+      ThrowF_t(TRANS("Component '%s'(%d) is of unknown type!"), (CTString&)ec_fnmComponent, ec_slID);
   }
 
   // released
@@ -744,10 +729,3 @@ void CEntityComponent::Release(void)
 ENTITY_CLASSDEFINITION_BASE(CEntity, 32000);
 ENTITY_CLASSDEFINITION_BASE(CLiveEntity, 32001);
 ENTITY_CLASSDEFINITION_BASE(CRationalEntity, 32002);
-
-void CDLLEntityClass::ReleaseCache( EntityComponentType eType, SLONG slID )
-{
-	CEntityComponent* peCompo = ComponentForTypeAndID(eType, slID);
-	ASSERT(peCompo!=NULL);
-	peCompo->Release();
-}

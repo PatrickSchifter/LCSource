@@ -4,15 +4,21 @@
 	#pragma once
 #endif
 
+#include <Engine/Base/FileName.h>
+#include <Engine/Base/Timer.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/World/World.h>
+#include <Engine/Network/MessageDispatcher.h>
 #include <Engine/Templates/StaticArray.h>
 #include <Engine/GlobalDefinition.h>
+//#include <Engine/Interface/UIProcess.h>			// 이기환 추가 ( 12. 6 )
+#include <Engine/Entities/StatusEffect.h>
+#include <Engine/Entities/ItemEffect.h>
+#include <Engine/Network/PetTarget.h>
+#include <Engine/Network/SlaveTarget.h>
 #include <Engine/Network/ChatMsgBuffer.h>
 #include <Engine/Network/MultiTarget.h>
-#include <Engine/Network/MessageDispatcher.h>
-#include <Engine/Network/MessageDefine.h>
-
+#include <Engine/Entities/CharacterAnimation.h>
 // EDIT : BS : 070413 : 신규 패킷 암호화
 // EDIT : BS : 패킷 암호화
 #ifdef CRYPT_NET_MSG
@@ -21,10 +27,8 @@
 #include <Engine/Network/CryptNetMsg.h>
 #endif
 
-// 110802 : 패킷 2차 암호화
-#ifdef	CRYPT_NET_MSG_LEVEL2
-#include <Engine/Network/CryptNetMsg.h>
-#endif
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Entities/NpcHelp.h>
 
 // 공성 참여 상태(status, appear )
 #define WCJF_NONE   0  // 비참여
@@ -34,21 +38,12 @@
 #define WCJF_ATTACK_GUILD 4  // 공성 길드
 #define WCJF_ATTACK_CHAR 5  // 공성측 용병
 
-
-#include <Engine/Entities/StatusEffect.h>
-#include <Engine/Entities/ItemEffect.h>
-#include <Engine/Entities/CharacterAnimation.h>
 //0603 kwon 
 #include <Engine/Entities/Items.h>
 #include <Engine/Entities/TargetInfo.h>
-#include <Engine/Entities/SmcParser.h> // eons 071005 : SmcParser 클래스
 
-// [6/17/2009 rumist] include definition stat.
-#include <Engine/LocalDefine.h> 
-#include <Engine/Entities/AffinityData.h>
-#include <Engine/Entities/Lacarette.h>
-#include <Engine/Interface/UIGuildMark.h>
-#include <Common/Packet/ptype_inventory.h>
+#include <Engine/Entities/SmcParser.h> // eons 071005 : SmcParser 클래스
+#include <Engine/LocalDefine.h>//RESTART_GAME
 
 #define NET_MAXGAMECOMPUTERS SERVER_CLIENTS		// max overall computers in game
 #define NET_MAXGAMEPLAYERS			1			// max overall players in game
@@ -69,13 +64,6 @@
 #define CHAT_FLAG_NO_TRADE  (1 << 3)  // 매매 채팅 금지
 #define CHAT_FLAG_NO_WHISPER (1 << 4)  // 귓속말 금지
 #define CHAT_FLAG_NO_SHOUT  (1 << 5)  // 외치기 금지
-
-#define PK_SYS_CHAO_1	(1 << 0)	//완전 나쁜놈
-#define PK_SYS_CHAO_2	(1 << 1)	//좀 덜 나쁜놈
-#define PK_SYS_CHAO_3	(1 << 2)	//별로 안나쁜놈
-#define PK_SYS_CHAO_4	(1 << 3)	//별로 안착한놈
-#define PK_SYS_CHAO_5	(1 << 4)	//좀 덜 착한놈
-#define PK_SYS_CHAO_6	(1 << 5)	//완전 착한놈
  
 extern ENGINE_API INDEX net_bLocalPrediction;
 
@@ -98,20 +86,6 @@ struct NetGraphEntry {
 	FLOAT nge_fLatency;						// latency in seconds
 	void Clear(void);
 };
-
-struct JewelInfo
-{
-	int Jewel_idx;
-	int Jewel_composGrade;
-};
-
-typedef		std::vector<JewelInfo>		_vecJewelInfo;
-//added by sam 11/02/01 [SAM] 한벌 
-typedef std::vector<INDEX> VEC_ONESUIT_OPTION_TYPE;
-typedef VEC_ONESUIT_OPTION_TYPE::iterator VEC_ONESUIT_OPTION_TYPE_IT;
-
-typedef std::vector<INDEX> VEC_ONESUIT_OPTION_LEVEL;
-typedef VEC_ONESUIT_OPTION_LEVEL::iterator VEC_ONESUIT_OPTION_LEVEL_IT;
 
 #define NONCE_SIZE 8
 
@@ -149,8 +123,8 @@ public:
 /*
  * Game, used for general game initialization/manipulation
  */
-class ENGINE_API CNetworkLibrary : public CMessageDispatcher 
-{	
+class ENGINE_API CNetworkLibrary : public CMessageDispatcher {
+	
 public:
 	// EDIT : BS : BEGIN
 	DWORD m_tickSendMoveList;
@@ -239,7 +213,7 @@ public:
 	void InitCRCGather(void);
 	// finish gathering of file CRCs to CRC table (call for server only!)
 	void FinishCRCGather(void);
-	
+
 public:
 	CWorld ga_World;										// local copy of world
 	FLOAT ga_fDemoTimer;									// timer for demo playback (in seconds)
@@ -250,28 +224,43 @@ public:
 	CStaticArray<ULONG> ga_aulBandwidthGraph;				// array of bandwidth entries
 
 	//0603 kwon 
-	CItems MySlotItem[INVEN_SLOT_TAB][ITEM_COUNT_IN_INVENTORY_NORMAL];
-	CItems MyWearItem[WEAR_TOTAL];
-	CItems MyWearCostItem[WEAR_COSTUME_TOTAL];
-		
+	CItems MySlotItem[INVEN_SLOT_TAB][INVEN_SLOT_ROW_TOTAL][INVEN_SLOT_COL];
+	CItems	*pMyCurrentWearing[WEAR_TOTAL];
+	
+	//0724
+	// NOTE : 도대체 Infom과 InfomReal 두개를 왜 따로 둔거지???
+	// NOTE : 왜 두개가 필요한지 이해할수 없음.
+	CTargetInfom		_TargetInfo;
+	CTargetInfomReal	_TargetInfoReal;
+	CPetTargetInfom		_PetTargetInfo;
+	CSlaveTargetInfom	_SlaveTargetInfo[2];
+	CWildPetInfo		_WildPetInfo;				//내가 착용하고 있는 공격형 펫
 	//int		MyCurrentSkill[50];
 	//int		MySkillNum;
+	int						wo_iNumOfAction;		// yjpark
 	int						wo_iNumOfSkill;			// yjpark
-	int						wo_iNumOfJewelGradeData;
+	int						wo_iNumOfMobName;
+	int						wo_iNumOfSSkill;
+	int						wo_iNumOfOption;
+	CStaticArray<CItemData> wo_aItemData; 
+	CStaticArray<CItemName>		wo_aItemName; 
+	std::vector<CItemRareOption>	wo_vecItemRareOption;	//레어 옵션을 저장할 백터
+	CStaticArray<COptionData> wo_aOptionData;
+	CStaticArray<CNpcHelp>	wo_aNpcList;
+	CSmcParserList			wo_aItemSmcInfo;	// 아이템 Smc 정보
+	CStaticArray<CMissionCase>	wo_aMissionCase;
+	CStaticArray<CWildPetData>	wo_aWildPetData;	//ttos_080725: 신규 펫 데이터
 
-	CStaticArray<JewelComosInfo>	wo_aJewelData;		// 보석 소모 나스 값 데이터 저장
-	CStaticArray<CMakeItemData>		wo_aMakeItemData;	// 제작 아이템 데이터
-	CSmcParserList					wo_aItemSmcInfo;	// 아이템 Smc 정보
-	CStaticArray<CAffinityData>		wo_aAffinityData;
-	CStaticArray<CLacarette>		wo_aLacaretteData;	// 라카렛
-	
-	std::map<int, _vecJewelInfo> wo_mapJewelGradeInfo;
-	std::map<int, _vecJewelInfo> wo_mapChaosJewelGradeInfo;
-	
-	int						wo_iNumOfAffinity;
+	int						wo_iNumOfItem;
+	int						wo_iNumOfItemName;
+	int						wo_iNumOfRareOption;		//레어 옵션 개수
+
 	int						wo_dwEnemyCount;		// 에너미의 갯수.
 	int						wo_dwKilledEnemyCount;
-	int						wo_iNomOfMakeItemData;	// 제작 아이템 데이터
+	int						wo_iNumofNpcList;
+	int						wo_iNomofMissionCase;
+	int						wo_iNomOfWildPetData;	//ttos_080725: 신규 펫 데이터
+
 	struct CHECKPOINT{								// 해당 체크 포인트 진행 여부
 		int m_iQuestIndex;
 		int m_iMaxCheckFlag;				
@@ -282,20 +271,12 @@ public:
 	//0917
 	CTString	m_strUserID;
 	CTString	m_strUserPW;
-	CTString	m_strUserCID; // 접속한 웹사이트 식별자	
 	int			m_iServerGroup;
 	int			m_iServerCh;
-	int			m_iServerType;
-	int			m_iNetworkResponse[MSG_END];			// 네트워크 응답 플래그
-	int			m_iNetworkResponseEx[MSG_EX_END];
-	
 
 	BOOL	m_bIsPvp;
 	void	SetPvpMode() { m_bIsPvp = !m_bIsPvp; };
 	LONG	m_lLoadingZone;
-
-	BOOL	IsRvrZone()	{ return m_bIsRvr;	}	// 현재 RVR존(42)에 있냐.
-	void	SetRvrZone(BOOL bRvr)	{ m_bIsRvr = bRvr;	}
 
 	// interface
 	/* Default constructor. */
@@ -423,9 +404,13 @@ public:
 	/* Get session properties for current game. */
 	void *GetSessionProperties(void);
 
+	int  RefreshShopItem(int iShopIndex);
+	int	 RefreshLeaseItem(int iJobIndex);
+	int  RefreshEventItem(int iJobIndex, int itype); // 2007 가정의 달 이벤트 (어린이날 이벤트)
+
 	/* Send chat message from some players to some other players. */
 	void SendChat(ULONG ulFrom, ULONG ulTo, const CTString &strMessage);
-	void SendChatMessage(int index, CTString &strRecvName, CTString &strMessage, SLONG nExpChatType = -1);//0616 kwon
+	void SendChatMessage(int index, CTString &strRecvName, CTString &strMessage);//0616 kwon
 //0105
 	void SendMessagetoServer(char *msg);
 	//BOOL IsTcpServer;					// by seo-40225 부모클래스 CMessageDispatcher로 변수 위치 옮김.
@@ -434,10 +419,18 @@ public:
 	void SetReadyStart(BOOL bstart){ m_bReadyStart = bstart;}
 	BOOL m_bSingleMode;
 
+	// wooss 070305 ------------------------------------------------->>
+	// kw : WSS_WHITEDAY_2007
 	CEntity* GetEntityByTypeIndex(SBYTE sbType, SLONG slIndex);
-	
+
+	// --------------------------------------------------------------<<
+
+	// wooss 070305 ------------------------------------------------->>
+	// kw : WSS_EVENT_LOD
 	int ReturnCCC(int iSCC);
-	
+	// --------------------------------------------------------------<<
+
+
 	//-----------------------------------------
 	// Pet 관련 구조체.
 	struct sPetInfo
@@ -460,7 +453,7 @@ public:
 			fZ				= 0.0f;
 			fH				= 0.0f;
 			fR				= 0.0f;			
-			sbMapAttribute	= 0;
+			sbMapAttribute	= -1;
 			lRemainRebirth	= 0;
 			strNameCard		= CTString("");
 		};
@@ -481,7 +474,7 @@ public:
 		FLOAT		fZ;
 		FLOAT		fH;
 		FLOAT		fR;		
-		UWORD		sbMapAttribute;
+		SBYTE		sbMapAttribute;
 		LONG		lRemainRebirth;
 		CTString	strNameCard;
 	};
@@ -570,35 +563,36 @@ public:
 	std::vector<sAttackInfo>	m_vectorAttackPetList;	// 소환수를 공격하는 리스트.
 	std::vector<sRegenInfo>		m_vectorRegenList;
 	std::vector<int>			m_vectorLegitList; // 정당방위 유저 목록
-	std::list<int>				m_listAffinityRewardNPCList;	// [100322: selo] 친화도 보상 NPC 리스트
+	__int64						m_llMoveStartTime;
+	__int64						m_llAttackStartTime;
+
 	// FIXME : 네트워크에 넣는건 좀...-_-;;;
 	//0527 kwon struct 추가.
 	struct MyChaInfo 
 	{
-		CTString name;
 		SLONG	 index;
+		CTString name;
 		UBYTE	 job;
 		SBYTE	 job2;					// 전직시...
 		ULONG	 zoneNo;
 		ULONG	 areaNo;
 		ULONG	 LocalNo;				// 지역 정보 ( show signboard )
-		FLOAT	 x;
+		FLOAT	 x, z;
 		FLOAT	 h;
-		FLOAT	 z;
 		FLOAT	 r; //방향
 		SBYTE	 yLayer;
 		SLONG    userIndex;
 		SBYTE	 hairStyle, faceStyle;
 
-		SLONG level, hp, mp, str, dex, intel, con, opt_str, opt_dex, maxMP, maxHP, opt_intel, opt_con;
-		SLONG weight, maxweight;
+		SLONG level, hp, maxHP, mp, maxMP, str, dex, intel, con, opt_str, opt_dex, opt_intel, opt_con;
+		SLONG sp, weight, maxweight;
 		FLOAT walkspeed, runspeed,attackrange;
 		SBYTE attackspeed;
-		SQUAD sp, money, curExp, needExp;
+		SQUAD money, curExp, needExp;
 		SLONG StatPoint;//1013
 		SBYTE sbJoinFlagMerac;			// 공성 참여시 값.
 		SBYTE sbJoinFlagDratan;			// WSS_DRATAN_SIEGEWARFARE 070720
-		UWORD sbAttributePos;			// 속성맵 값.
+		UBYTE sbAttributePos;			// 속성맵 값.
 		SBYTE sbMountPet;
 
 		FLOAT camera_angle;
@@ -607,6 +601,8 @@ public:
 		SLONG pkpenalty, pkcount;
 		SBYTE pk_mode;
 		SLONG fame;						// 명성.
+		// HP, MP 패널티 카운트
+		SBYTE hpcount, mpcount;
 		BOOL  bOtherZone;
 		BOOL  bConsensus;							// WSS_DRATAN_SEIGEWARFARE 2007/08/01 교감중
 		std::map<int,int> mQuarter;					// WSS_DRATAN_SEIGEWARFARE 2007/08/09 부활진지
@@ -617,7 +613,6 @@ public:
 		LONG			lGuildLevel;		// 임시 길드의 레벨
 		LONG			lGuildPosition;		// 임시 길드에서의 캐릭터의 레벨
 		CTString		strGuildName;		// 길드명.
-		int				iGuildMasterKickStatus;		// 길드 추방 상태		0 : 상태 이상 없음, 1 : 추방 신청 당한 상태		[trylord 11/12/28]
 		UBYTE			ubGuildNameColor;	//[071123: Su-won] DRATAN_SIEGE_DUNGEON
 		SBYTE			sbGuildRank;
 		BOOL			bExtension;			// 두번째 타입의 무기를 든 경우...
@@ -625,9 +620,8 @@ public:
 		INDEX			iPetType;			// 애완동물 종류...(?)
 		INDEX			iPetAge;			// 애완동물 나이...(?)
 		BOOL			bPetRide;			// 애완동물을 타고 있나?
-		BOOL			bWildPetRide;		// 공격형 펫 마운트
 		
-		int 			nEvocationIndex;		// 강신 타입.
+		SBYTE			sbEvocationType;		// 강신 타입.
 
 		LONG			lTeacherIndex;		// 내 스승의 인덱스
 		CTString		strTeacherName;		// 내 스승의 이름.
@@ -648,35 +642,12 @@ public:
 		SLONG lWarpZone;
 		SLONG lWarpPos;
 
-// 속성 시스템 [1/17/2013 Ranma]
-		UBYTE attrdef, attratt;
-		UBYTE attrdefLv, attrattLv;
 		// 강신체의 정보가 유지되도록...
 		MyChaInfo()
 		{
-			nEvocationIndex = 0;
+			sbEvocationType = -1;
 			LocalNo = 0;
 			sbJoinFlagDratan = WCJF_NONE;			// WSS_DRATAN_SIEGEWARFARE 070720
-
-			slLabel = -1;
-			slSubJob = 0;							// [2010/08/25 : Sora] ADD_SUBJOB
-			runspeed = 1.0f;
-
-			iGuildMasterKickStatus = 0;
-// 속성 시스템 [1/17/2013 Ranma]
-			attrdef = 0;
-			attratt = 0;
-
-			zoneNo = 0;
-			areaNo = 0;
-			
-			x = 0.0f;
-			h = 0.0f;
-			z = 0.0f;
-			yLayer = 0;
-
-			bExtension = FALSE;
-			useTotem = false;
 		};
 		
 		// WSS_VISIBLE 070511
@@ -685,10 +656,7 @@ public:
 		COLOR m_ModelColor;
 
 		// 080623 라카 기자단 혜택
-		SBYTE			sbPresscorps;
-		SBYTE			sbSoulCount;
-
-		SLONG			slLabel;	  // [sora] 대상 표식
+		SBYTE			sbPresscorps;	
 
 		// 080901 UI개편
 		SLONG			baseHP, baseMP, addedAttack, addedMagic, addedDefense, addedResist;
@@ -697,122 +665,11 @@ public:
 		FLOAT			baseRunSpeed;
 		SBYTE           baseAttackSpeed;
 		CTString		guildPosName;
-		ULONG			ChatFlag, ulPlayerState;
+		ULONG			ChatFlag;
 		CurEnterType	EntranceType; // 게임중 현재 존 입장 상태 or 게임 모드 상태(특별한 상태로 인해 예외적인 적용을 위한 부분)(예:익스트림 큐브)
-		
-		INDEX			iNickType;	  // 호칭 타입 ( 0 : 호칭 없음)
-		INDEX			iGP;		  // 길드 포인트
-		
-		INDEX			ep, maxEP;			  // [7/15/2010 kiny8216] Monseter Energy Point
-
-		INDEX			iStudentGiveUpCnt;
-
-		BOOL			bOneSuit;		  // 한벌 의상을 입고 있는지 판단.
-		INDEX			iOneSuitDBIndex;
-		INDEX			iOneSuitUniIndex;
-		CTString GetPlayerName(void) { return name; }
-
-		SLONG			slSubJob;		// [2010/08/25 : Sora] ADD_SUBJOB
-		
-		ULONG			pkSysRewardFlag;
-		BOOL			bpkSysRewardLate;
-		INDEX			iSyndicateType;	// 결사대 타입 : 0 무소속, 1 카이룩스, 2 딜라문, 3 플로로
-		INDEX			iSyndicateGrade;
-		LONGLONG		lSyndicateAccPoint;
-		INDEX			iHitEffectType;
-		bool			useTotem;
-
-		// 강신/변신 상태 플래그
-		typedef enum	_eMORPHSTATUS
-		{
-			eMORPH_END		= 0,				// 변화 종료
-			eMORPH_EVOCATION_BEGIN,				// 강신 변화 준비 (네트워크 요청)
-			eMORPH_EVOCATION_CONVERTING,		// 강신 중
-			eMORPH_EVOCATION,					// 강신 완료 상태
-			eMORPH_TRANSFORMATION_BEGIN,		// 변신 변화 준비 (네트워크 요청)
-			eMORPH_TRANSFORMATION_CONVERTING,	// 변신 중
-			eMORPH_TRANSFORMATION,				// 변신 완료 상태
-		}eMORPHSTATUS;
-		eMORPHSTATUS	eMorphStatus;
-#ifndef	ISEVOCATION
-#define	ISEVOCATION(t)		(t >= CNetworkLibrary::MyChaInfo::eMORPH_EVOCATION_BEGIN && t <= CNetworkLibrary::MyChaInfo::eMORPH_EVOCATION ? 1 : 0)
-#endif
-#ifndef	ISTRANSFORMATION
-#define	ISTRANSFORMATION(t)	(t >= CNetworkLibrary::MyChaInfo::eMORPH_TRANSFORMATION_BEGIN && t <= CNetworkLibrary::MyChaInfo::eMORPH_TRANSFORMATION ? 1 : 0)
-#endif
-
 	};
 	
 	MyChaInfo			MyCharacterInfo;
-
-
-	struct _AffinityInfo
-	{
-		struct _AffinityPoint
-		{
-			SLONG	current;
-			SLONG	max;
-			_AffinityPoint()
-			{
-				current = 0;
-				max = 0;
-			};
-		};
-		typedef std::map<int, _AffinityPoint> mapAffinity;
-		typedef	std::map<int, _AffinityPoint>::iterator mapAffIter;
-		SLONG			point;
-		SLONG			count;
-		std::map< int, _AffinityPoint>		mapAffinityList;
-
-		_AffinityInfo()
-		{
-			point = 0;
-			count = 0;
-			//vecAffinityList.clear();
-			mapAffinityList.clear();
-		};
-		~_AffinityInfo()
-		{
-			mapAffinityList.clear();
-		}
-	};
-
-	_AffinityInfo		AffinityInfo;
-	
-	struct _MonsterMercenaryInfo // [2010/10/20 : Sora] 몬스터 용병 카드
-	{
-		INDEX	index;
-		SLONG	grade;
-		SLONG	attack;
-		SLONG	defence;
-		SLONG	magicAttack;
-		SLONG	magicDefence;
-		SLONG	hp;
-		SLONG	mp;
-		SLONG	maxHp;
-		SLONG	maxMp;
-
-		_MonsterMercenaryInfo()
-		{
-			Init();
-		}
-
-		void Init()
-		{
-			index = 0;
-			grade	= 0;
-			attack	= 0;
-			defence	= 0;
-			magicAttack	= 0;
-			magicDefence = 0;
-			hp = 0;
-			mp = 0;
-			maxHp = 0;
-			maxMp = 0;
-		}
-	};
-
-	_MonsterMercenaryInfo MonsterMercenaryInfo;
 
 	// EDIT : BS : 070413 : 신규 패킷 암호화		
 	// EDIT : BS : 패킷 암호화
@@ -824,24 +681,6 @@ public:
 #else
 	ULONG cnmKey;
 #endif // #ifdef CRYPT_NET_MSG
-
-//helper서버 패킷 암호화 키 저장
-#ifdef CRYPT_NET_MSG
-	CNM_KEY_TYPE subHelperKey;
-#ifndef CRYPT_NET_MSG_MANUAL
-	CNM_KEY_TYPE subHelperKeyServer;
-#endif // #ifndef CRYPT_NET_MSG_MANUAL
-#else
-	ULONG subHelperKey;
-#endif // #ifdef CRYPT_NET_MSG
-
-	// 서버 타임 저장용 변수
-	SLONG slServerTimeGap;
-	SLONG slServerTime;
-
-	// 캐릭터 선택창으로 이동
-	BOOL bMoveCharacterSelectUI;
-
 /*
 	//0729 kwon 스킬 애니메이션 아이디.
 	struct SkillAnimationID
@@ -858,24 +697,27 @@ public:
 	void SendDeleteCharacter(ULONG ulIndex, CTString& strSecuNum, BYTE del);
 	void SendGameStart(ULONG ulIndex);
 	void SendStopChange();
+	void SendStopEvocation();
 	void SendCreateCharacter( CTString& strName, UBYTE ubJob, UBYTE ubHair, UBYTE ubFace );
 
-	void SendItemUse( SWORD nTab, SWORD nInvenIdx, LONG lIndex, LONG lEtc );
+	void SendItemUse( SBYTE sbTab, SBYTE sbRow, SBYTE sbCol, LONG lIndex, LONG lEtc );
 	// 타겟이 필요한 아이템 사용
-	void SendtargetItemUse( SWORD nTab, SWORD nInvenIdx, LONG lIndex, SBYTE sbType, LONG lMobIndex );	
+	void SendtargetItemUse( SBYTE sbTab, SBYTE sbRow, SBYTE sbCol, LONG lIndex, SBYTE sbType, LONG lMobIndex );	
 	// 결합 주문서 사용
-	void SendMixItemUse( SWORD nTab, SWORD nInvenIdx, LONG lMixItemidx, LONG lCashItemIdx, LONG lgameItemIdx);
+	void SendMixItemUse( SBYTE sbTab, SBYTE sbRow, SBYTE sbCol, LONG lMixItemidx, LONG lCashItemIdx, LONG lgameItemIdx);
 	// 분리 주문서 사용
-	void SendUnMixItemUse( SWORD nTab, SWORD nIdx, LONG lMixItemidx, LONG lCashItemIdx);
+	void SendUnMixItemUse( SBYTE sbTab, SBYTE sbRow, SBYTE sbCol, LONG lMixItemidx, LONG lCashItemIdx);
 	
 	// Inventory
-	void UseSlotItem( int tabId, int inven_idx, SBYTE sbWearType = -1 );
-	void DropItem(int tabId, int inven_idx, SQUAD cnt =1);
-	void SwapItem(int tabId, int inven_idx, int tabId2, int inven_idx2);
-	void DivideItem(SWORD nTabS, SWORD nIdxS, SWORD nTabT, SWORD nIdxT, int count);
+	void SetMyCurrentWearing(int tabId, int rowId, int colId);
+	void DeleteMyCurrentWearing(int weartype);
+	void UseSlotItem( int tabId, int rowId, int colId, SBYTE sbWearType = -1 );
+	void DropItem(int tabId, int rowId, int colId, SQUAD cnt =1);
+	void SwapItem(int tabId, int rowId, int colId, int rowId2, int colId2);
 	void ArrangeItem(int tab);
 	BOOL IsExtensionState( int iJob, CItemData& ID );
-	
+	BOOL HasItem( int iIndex );
+
 	bool IsLord();
 
 	// yjpark |<--
@@ -886,14 +728,14 @@ public:
 	void SendTeleportMove( UBYTE sendMSG, UBYTE ubSlot );
 	void SendWarpTeleport( int iTeleportIndex );
 	// Learn skill
-	void SendSkillLearn( SLONG slIndex, int NpcVirIdx);
-	void SendSSkillLearn( SLONG slIndex, int NpcVirIdx);
+	void SendSkillLearn( SLONG slIndex );
+	void SendSSkillLearn( SLONG slIndex );
 	// Stat point
 	void SendUseStatPoint( UBYTE ubStatType );
 
 	// HP, MP 회복
 	void SendRecoverHPMP( SBYTE sbHPCount, SBYTE sbMPCount );
-	void SendRecoverItemSeal( SWORD nTab, SWORD nIdx, SLONG slIndex);
+	void SendRecoverItemSeal( SBYTE sbTab, SBYTE sbRow, SBYTE sbCol, SLONG slIndex);
 
 	// 이벤트 보상.
 	void SendEventPrize();
@@ -910,39 +752,39 @@ public:
 // [KH_070413] 스승의날 이벤트 관련 추가
 	void SendEventMaster();
 
-	void SendReqServerTime();
-
 	// Upgrade
-	void UpgradeItem( SLONG nWearPos, SLONG VirIndex, SLONG slPlus, SWORD nTab2, SWORD inven_idx2, SLONG slLevel, INDEX iProtect =-1, SWORD nTab3 =-1, SWORD inven_idx3 =-1);
+	void UpgradeItem( SBYTE sbRow1, SBYTE sbCol1, SLONG slPlus, SBYTE sbRow2, SBYTE sbCol2, SLONG slLevel, INDEX iProtect =-1, SBYTE sbRow3=-1, SBYTE sbCol3=-1);
 	
 	// Item Level Down
-	void ItemLevelDown(SWORD inven_idx1, SWORD inven_idx2);
+	void ItemLevelDown(SBYTE sbRow1, SBYTE sbCol1, SBYTE sbRow2, SBYTE sbCol2);
 
 	// 블러드 아이템 & 정화석.
-	void OptionAddItem(UWORD slWearPos, int WearVirIdx, SWORD nTab, SWORD inven_idx, int JemVirIdx);
-	void OptionDelItem(UWORD slWearPos, int WearVirIdx, SWORD nTab, SWORD inven_idx, int JemVirIdx);
+	void OptionAddItem( SBYTE sbRow1, SBYTE sbCol1, SBYTE slWearPos, SBYTE sbRow2, SBYTE sbCol2 );
+	void OptionDelItem( SBYTE sbRow1, SBYTE sbCol1, SBYTE slWearPos, SBYTE sbRow2, SBYTE sbCol2 );
 	
 	// Refine
-	void RefineReq( SWORD nTab, SWORD inven_idx );
+	void RefineReq( SBYTE sbRow, SBYTE sbCol );
 
 	// Process
-	void ProcessReq( SWORD nTab, SWORD inven_idx, SLONG slResultIndex, SLONG slResultCount, CNeedItems* NeedItems );
+	void ProcessReq( SBYTE sbRow, SBYTE sbCol, SLONG slResultIndex, SLONG slResultCount, CNeedItems* NeedItems );
 
 	// 이기환 추가 ( 12. 6 ) : 제조 메세지 
-	void ProductReq( SWORD nTab, SWORD inven_idx, SLONG slResultIndex, SLONG slResultCount, CNeedItems* NeedItems );
+	void ProductReq( SBYTE sbRow, SBYTE sbCol, SLONG slResultIndex, SLONG slResultCount, CNeedItems* NeedItems );
 
 	// 이기환 추가 ( 12. 8 ) : 조합 메세지 
-	void MixReq( SWORD nTab, SWORD inven_idx, SWORD* arrTab, SWORD* arrIdx );
+	void MixReq( SBYTE sbTextRow, SBYTE sbTextCol, SBYTE* sbRow, SBYTE* sbCol );
 	
 	// Date : 2005-01-12,   By Lee Ki-hwan
-	void CompoundReq( SWORD nTab, SWORD nInvenIdx, SWORD* arrTab, SWORD* arrIdx );
+	void CompoundReq( SBYTE sbTextRow, SBYTE sbTextCol, SBYTE* sbRow, SBYTE* sbCol );
 	/****   WareHouse **********************************************************/
 	void	SendWareHouseChangePassword( const CTString& strOld, const CTString& strNew );
 	void	SendWareHouseIsSetPassword();
 	void	SendWareHouseSeal();
 	void	SendWareHouseListReq( const CTString& strPW );
 	void	SendWareHouseDeletePassWord( const CTString& strID );
-	void	SendWareHouseSetupPassWord( const CTString& strPW, const CTString& strOldPW );
+	void	SendWareHouseCheckPassWord( const CTString& strPW );
+	void	SendWareHouseSetupPassWord( const CTString& strPW );
+	void	SendWareHouseSetupPassWord( const CTString& strPW ,const CTString& strUNLOCK);
 
 	/****   Guild   ***********************************************************/
 	void GuildJoin( SLONG slGuildIndex, SLONG slSrcIndex, SLONG slDestIndex );				// 가입 신청
@@ -967,7 +809,7 @@ public:
 	void GBStopReqReject();	
 	void GBStopReqAccept();
 	/****   Teach   ***********************************************************/
-	void TeachTeacherRegister(SBYTE sbStartPlayTime = -1, SBYTE sbEndPlayTime = -1);			// 선생 목록에 추가
+	void TeachTeacherRegister();			// 선생 목록에 추가
 	void TeachTeacherCancelRegister();		// 선생 목록에서 빼줘
 	void TeachRefreshTeacherList();			// 후견인 목록 갱신
 	void TeachTeacherRequest( SLONG slCharIndex, CTString& strName );				// 선생이 되어달라고 요청함.
@@ -976,11 +818,11 @@ public:
 	void TeachTeacherGiveUp( SLONG slTeacherIndex, CTString& strTeacherName, SLONG slStudentIndex, CTString& strStudentName );	// 선생 필요없어~!!!
 
 	/****   ChangeJob ***********************************************************/
-	void ChangeJobReq( SBYTE sbJob, int nNpcVirIdx );		// 전직 요청
-	void ChangeJobGiveUp(int nNpcVirIdx);					// 직업 포기
+	void ChangeJobReq( SBYTE sbJob );		// 전직 요청
+	void ChangeJobGiveUp();					// 직업 포기
 
 	/****   ChangeWeapon ********************************************************/
-	void ChangeWeaponReq( SWORD nTab, SWORD inven_idx, LONG lItemVirIndex, LONG lTradeIndex, LONG lChangeType, LONG lTokenVirIndex = -1, LONG lTokenCount = -1 );
+	void ChangeWeaponReq( SBYTE sbRow, SBYTE sbCol, LONG lItemIndex, LONG lChangeType );
 	void ChangeWeaponEventReq( LONG lItemIndex, LONG lChangeType );
 
 	// 스탯 초기화
@@ -989,16 +831,13 @@ public:
 	// 무기 교환 이벤트
 	void SendChangeWeaponEvent();
 
-	/************************************************************************/
-	bool SendItemWearingMSG(SBYTE sbType, SBYTE sbWearPos, SWORD nTab, SWORD inven_idx, char take, int nVirIndex = -1);
-	/************************************************************************/
-
 	/****   MoonStone   ********************************************************/
 	void SendMoonStoneStartReq();
 	void SendMoonStoneTryReq();
 	void SendMoonStoneResultReq();
 
 	/****   MoonStone   ********************************************************/
+	void SendCashMoonStoneReq(CUIButtonEx slotBtn);
 	void SendCashMoonStoneReward();
 	/****   Pet System   ********************************************************/
 	void SendPetChangeRide();
@@ -1007,7 +846,7 @@ public:
 	void SendPetDestruction();	// eons	펫 소멸
 	void SendPetItemMix( SLONG slPetItemIndex, SLONG slmethod );		// eons 펫 조합
 	void SendPetRebirth( SLONG slPetIndex );		// eons 펫 봉인 해제 요청 메세지
-	void SendWildPetRebirth( int nTab, int nIdx, int nNpcIdx );
+	void SendWildPetRebirth( int nRow, int nCol);
 	void SendPetitemInfo(SLONG slOwnerIndex,int nitemIndex);		//인벤의 펫 아이템 정보받
 
 	/****   Exchange   ********************************************************/
@@ -1020,11 +859,9 @@ public:
 	void ExchangeItem_Del( int nUniIndex, SQUAD llCount );
 	// Quick slot
 	void AddQuickSlot( int nPage, int nSlotNum, int nSlotType, int nData0, int nData1 );
-	void SwapQuickSlot( int nPage1, int nSlot1, int nPage2, int nSlot2 );
+	void SwapQuickSlot( int nPage, int nSlotNum1, int nSlotNum2 );
 	// Party
-	// TO-KR-T20090903-005 관련 파티 신청 수정. [11/27/2009 rumist]
-	//void PartyInvite( SBYTE sbType, SLONG slIndex );
-	void PartyInvite( SBYTE sbType, SLONG slIndex, CTString strName ="" );
+	void PartyInvite( SBYTE sbType, SLONG slIndex );
 	void PartyAllow();
 	void PartyReject();
 	void PartyQuit();
@@ -1036,10 +873,7 @@ public:
 	// 라카 기자단 혜댁 이벤트
 	void SendPresscorpsMessage(ULONG ulItemIndex, CTString Sendstr);
 	
-	void SendInput(void); // SendUsingSpeedHack --> SendInput 작명 변경 // 스피드핵 사용자 통보 
-
-	// [2010/08/25 : Sora] ADD_SUBJOB
-	BOOL IsMySubJob( SLONG slSubJob ) { return MyCharacterInfo.slSubJob & slSubJob; }
+	void SendUsingSpeedHack(void); // 스피드핵 사용자 통보 
 	
 	// PLAYTIME 10분간격으로 전달
 	void SendUpdatePlayTime(ULONG nTime);
@@ -1052,57 +886,51 @@ public:
 	void WriteCurrentPos(int slot, const char *szComment);
 //안태훈 수정 끝	//(Teleport System)(0.1)
 //안태훈 수정 시작	//(GM Command)(0.1)
-
-	void ResetSkillDelayTime(); // 스킬 쿨타임 초기화
-	void ResetItemDelayTime(); // 아이템 쿨타임 초기화
-	
 	//-------------------Item Data---------------------------
-	inline CItemData*	GetItemData(int iIndex)
+	inline CItemData&	GetItemData(int iIndex)
 	{
-		return CItemData::getData(iIndex);
+		if( iIndex > wo_iNumOfItem || iIndex < 0 )
+		{
+//			ASSERTALWAYS("Invalid Item Index!!!");
+			return wo_aItemData[0];
+		}		
+		return wo_aItemData[iIndex];
 	}
 
 	inline const char* GetItemName(int iIndex)
 	{
-		return CItemData::getData(iIndex)->GetName();
+		if( iIndex > wo_iNumOfItem || iIndex < 0 )
+		{
+			ASSERTALWAYS("Invalid Item Index!!!");
+			return wo_aItemName[0].GetName();
+		}		
+		return wo_aItemName[iIndex].GetName();
+		/*
+		if( iIndex > wo_iNumOfItem || iIndex < 0 )
+		{
+			ASSERTALWAYS("Invalid Item Index!!!");
+			return wo_aItemData[0].GetName();
+		}		
+		return wo_aItemData[iIndex].GetName();
+		*/
 	}
 
 	inline const char* GetItemDesc(int iIndex)
 	{
-		return CItemData::getData(iIndex)->GetDesc();
-	}
-	//------------------Jewel Data---------------------------
-
-	int  GetJewelComposNas( int nGrade, bool bChaos)
-	{
-		if (bChaos)
-			return wo_aJewelData[nGrade - 1].ca_comp_nas;
-		else
-			return wo_aJewelData[nGrade - 1].nor_comp_nas;
-	}
-
-	BOOL GetJewelGradeInfo( int GradeKey, _vecJewelInfo& Info )
-	{
-		std::map<int, _vecJewelInfo>::iterator	iterJewelGradeInfo = wo_mapJewelGradeInfo.find(GradeKey);
-		std::map<int, _vecJewelInfo>::iterator	iterJewelGradeInfoEnd = wo_mapJewelGradeInfo.end();
-		
-		if (iterJewelGradeInfo == iterJewelGradeInfoEnd)
-			return FALSE;
-		
-		Info = iterJewelGradeInfo->second;		
-		return TRUE;
-	}
-	
-	BOOL GetChaosJewelGradeInfo( int GradeKey, _vecJewelInfo& Info )
-	{
-		std::map<int, _vecJewelInfo>::iterator	iterChaosJewelGradeInfo = wo_mapChaosJewelGradeInfo.find(GradeKey);
-		std::map<int, _vecJewelInfo>::iterator	iterChaosJewelGradeInfoEnd = wo_mapChaosJewelGradeInfo.end();
-		
-		if (iterChaosJewelGradeInfo == iterChaosJewelGradeInfoEnd)
-			return FALSE;
-		
-		Info = iterChaosJewelGradeInfo->second;		
-		return TRUE;
+		if( iIndex > wo_iNumOfItem || iIndex < 0 )
+		{
+			ASSERTALWAYS("Invalid Item Index!!!");
+			return wo_aItemName[0].GetDesc();
+		}		
+		return wo_aItemName[iIndex].GetDesc();
+		/*
+		if( iIndex > wo_iNumOfItem || iIndex < 0 )
+		{
+			ASSERTALWAYS("Invalid Item Index!!!");
+			return wo_aItemData[0].GetDesc();
+		}		
+		return wo_aItemData[iIndex].GetDesc();
+		*/
 	}
 
 	//------------------Skill Data---------------------------
@@ -1110,17 +938,27 @@ public:
 	{
 		if( iIndex > wo_iNumOfSkill || iIndex < 0 )
 		{
-			//ASSERTALWAYS("Invalid Skill Index!!!");
+			ASSERTALWAYS("Invalid Skill Index!!!");
 			return ga_World.wo_aSkillData[0];
 		}
 		return ga_World.wo_aSkillData[iIndex];
+	}
+
+	inline CSpecialSkill &GetSSkillData(const int iIndex)
+	{
+		if(iIndex > wo_iNumOfSSkill || iIndex < 0)
+		{
+			ASSERTALWAYS("Invalid Special Skill Index!!!");
+			return ga_World.wo_aSSkillData[0];
+		}
+		return ga_World.wo_aSSkillData[iIndex];
 	}
 
 	inline CShopData&	GetShopData(const int iIndex)
 	{
 		if(iIndex > ga_World.wo_iNumOfShop || iIndex < 0)
 		{
-			//ASSERTALWAYS("Invalid Shop Index!!!");
+			ASSERTALWAYS("Invalid Shop Index!!!");
 			return ga_World.wo_aShopData[0];
 		}
 		return ga_World.wo_aShopData[iIndex];
@@ -1128,34 +966,67 @@ public:
 
 	//-------------------Cash Shop Data-----------------------
 	// wooss 050903
-	inline CCashShopData& GetCashShopData(void)
-	{
-		return ga_World.wo_aCashGoodsData;
-	}
-
 	inline CCashShopData& GetCashShopData(const int iIndex)
 	{
 		if( iIndex < 0 ) 
 		{
-			//ASSERTALWAYS("Invalid Shop Index!!!");
+			ASSERTALWAYS("Invalid Shop Index!!!");
 			return ga_World.wo_aCashShopData[0];
 		}
 		return ga_World.wo_aCashShopData[iIndex];
 	}
 
-	inline CMakeItemData& GetMakeItemData(int iIndex)
+	//-------------------Mob Data-----------------------------
+	inline CMobData&	GetMobData(int iIndex)
 	{
-		for(int i =0; i < wo_iNomOfMakeItemData; i++)
+		if(iIndex-1 > ga_World.wo_iNumOfNPC || iIndex < 0)
 		{
-			if (wo_aMakeItemData[i].GetFactoryIndex() == iIndex)
-			{
-				return wo_aMakeItemData[i];
-			}
+	//		ASSERTALWAYS("Invalid Mob Index!!!");
+			return ga_World.wo_aMobData[0];
 		}
-		return wo_aMakeItemData[0]; 
+		return ga_World.wo_aMobData[iIndex];
 	}
 
-	CTString GetWearingEffect(eEquipment Type, INDEX subType);	// 장비 아이템의 이펙트 이름을 가져온다.
+	inline const char*	GetMobName(int iIndex)
+	{
+		if(iIndex-1 > wo_iNumOfMobName || iIndex < 0)
+		{
+			ASSERTALWAYS("Invalid Mob Name Index!!!");
+			return ga_World.wo_aMobName[0].GetName();
+		}
+		return ga_World.wo_aMobName[iIndex].GetName();
+	}
+
+	inline COptionData&	GetOptionData(const int iOptionType)
+	{
+		if(iOptionType > wo_iNumOfOption || iOptionType < 0)
+		{
+			ASSERTALWAYS("Invalid Option Index!!!");
+			return wo_aOptionData[0];
+		}
+		return wo_aOptionData[iOptionType];
+	}
+	//----------------Action Data-----------------------------
+	inline CAction& GetActionData(int iIndex)
+	{
+		if(iIndex > wo_iNumOfAction || iIndex < 0)
+		{
+			ASSERTALWAYS("Invalid Action Index!!!");
+			return ga_World.wo_aActionData[0];
+		}
+		return ga_World.wo_aActionData[iIndex];
+	}
+
+	//-------------------Rare Option---------------------------
+	inline CItemRareOption&	GetRareOptionData(int iIndex)
+	{
+		if( iIndex > wo_iNumOfRareOption || iIndex < 0 )
+		{
+			//ASSERTALWAYS("Invalid RareOption Index!!!");
+			return wo_vecItemRareOption[0];
+		}		
+		return wo_vecItemRareOption[iIndex];
+	}
 
 	void SendLeaseItem(int iItemIdx);
 	void SendEventItem(int iItemIdx, int iItemcont);
@@ -1182,9 +1053,14 @@ public:
 //안태훈 수정 끝	//(GM Command)(0.1)
 	
 	//0701 kwon	
+	SLONG SearchItemIndex(ULONG Index);
 	SLONG SearchClientChaIndex(ULONG Index);
+	SLONG SearchClientMobIndex(ULONG Index);
+	SLONG SearchClientPetIndex(ULONG Index);
+	SLONG SearchClientSlaveIndex(ULONG Index);
 
 	BOOL SearchEntityByNetworkID( long lIndex, SBYTE sbType, CEntity* &pEntity );
+	BOOL SearchEntityByNetworkID( long lIndex, SBYTE sbType, CEntity* &pEntity, INDEX& cnt);
 	void SendPickMessage( CEntity *pEntity, ULONG ItemIndex, BOOL bLayerCheck = TRUE );
 	void SendStopMessage(CEntity *pEntity, CPlacement3D MyPlacement);
 	void SendMoveMessage(CEntity *pEntity, CPlacement3D plPlacement, SLONG speed);
@@ -1210,7 +1086,7 @@ public:
 	void SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle);
 
 	// 0 = SYSMSG_NORMAL
-	void ClientSystemMessage( const CTString &strSysMessage, int nSysType = 0 );
+	void ClientSystemMessage( CTString &strSysMessage, int nSysType = 0 );
 	void SendRebirthMessage();
 	void DeleteAllMob();
 	
@@ -1220,7 +1096,7 @@ public:
 	//wooss 050808
 	//send warp message
 	void SendWarpItemMessage(UBYTE warpType,CTString charName=CTString(""),BOOL allow=FALSE);
-	void SendProlongMessage(int tabId, int inven_idx);
+	void SendProlongMessage(int tabId, int rowId, int colId);
 	//wooss 050817
 	//send chang name message
 	void SendChangMyName(CTString strMsg);
@@ -1234,17 +1110,17 @@ public:
 	// send find friend 060201
 	void SendFindFriend(int tv_event, void * tv_input = NULL);
 	void SendCashItemMessage(int nType);
-	void SendCashItemMessage(int nType, INDEX searchType, INDEX ReqPage = 1);
 
 	void SendActionMessage(SBYTE action_type, SBYTE action_id, SBYTE state, CEntityPointer epTarget = NULL );
+	void PickItemAround();
 	void DelMobTarget(ULONG ClientIndex);
 	void ResetMobStatus(ULONG ClientIndex);
 	void DelChaTarget(ULONG ClientIndex);
 	void ResetChaStatus(ULONG ClientIndex);
-	void DelWildPetTarget(ULONG ulSIndex);
 
 	void SendQuestMessage(UBYTE msgQuestType, INDEX data);
 	void SendQuestPrizeMessage(UBYTE msgType, INDEX iQuestIndex, INDEX iNpcIndex, INDEX iOptionItemIndex, INDEX iOptionItemPlus);
+	void SendSkillCancelMessage();
 
 	// Ranking
 	void Ranking_RequestList( SBYTE sbJob );
@@ -1272,13 +1148,6 @@ public:
 	BOOL SearchLegitList(int Index, BOOL bDel = FALSE);
 	void DelLegitList(int Index);
 
-	// [100322: selo] 친화도 보상 NPC 리스트 관리
-	void AddAffinityRewardNPC(int iIndex);
-	void RemoveAffinityRewardNPC(int iIndex);
-	void ClearAffinityRewardNPC();
-	const int GetAffinityRewardNPCListCount();
-	const std::list<int>& GetAffinityRewardNPCList();
-
 	// 멀티 타겟을 위해서 범위내의 적들을 모두 찾아냅니다.
 	void FindTargetsInRange(
 								 CEntity* pPlayer, 
@@ -1295,14 +1164,22 @@ public:
 	void CheckAttackTarget( INDEX iSkillIndex, CEntity* pTargetEntity, FLOAT fDist = 0.0f, BOOL bElementalAttack = FALSE ); 
 	// 스킬 공격을 할수 있는지 판단합니다.
 	BOOL CheckSkillAttack( INDEX iSkillIndex, CEntity* pEntity );
+	
+	// Date : 2005-05-06(오후 11:32:39), By Lee Ki-hwan
+	void BillInfoSectionListReq();
+	void BillInfoUserInfoReq();			
+	void BillInfoPayReserveReq();
+	void BillInfoPayOtherReq( CTString strGuid );
+	void BillItemListReq();		// 유료화 지급 아이템 리스트 요청
+	void BillItemReceiveReq();	// 유료화 지급 아이템 요청( To Inventory )
 
 	// Date : 2005-05-19(오후 8:25:50), By Lee Ki-hwan
 	void MgrRegistReq( int nCharIndex, CTString strCharName );
 	void MgrRegistAllow( int nCharIndex, CTString strReqCharName );
 	void MgrSetCondition( int nCharIndex, int nCondition );
 //	void MgrChatting();
+	void MgrRegistCancel();
 	void MgrRegistCancel(int nCharIndex, CTString strReqName);
-	void MgrFriendDeleteBlock(int nCharIndex);
 	void MgrDeleteMember( int nCharIndex, int nTargetIndex, CTString strName );
 	void SendFriendCatting( int nCharIndex, CTString strName, CTString strTargetName, CTString strMessage );
 	//메신저 추가 기능
@@ -1320,24 +1197,22 @@ public:
 	
 	// Date : 2005-07-06(오후 2:36:01), By Lee Ki-hwan
 	//  공성 관련 메세지 
-	void SetTimeReq( int nDay, int nHour, int nZone ); // 공성시간 설정 요청	// [2010/11/01 : Sora] 공성 개편
+	void SetTimeReq( int nDay, int nHour ); // 공성시간 설정 요청
 	void GetTimeReq();						// 공성 시간 확인 요청
 	void AttackReq();						// 공성 신청 
 	void DefenseGuildReq();					// 수성 신청 
 	void AttackCharReq();					// 공성 용병신청
 	void AttackGuildReq();					// 수성 용병 신청 
-	void WarItemMixReq( SWORD* arrTab, SWORD* arrIdx ); // 공성 아이템 조합 신청 
+	void WarItemMixReq( SBYTE* sbRow, SBYTE* sbCol ); // 공성 아이템 조합 신청 
 
 	// 애완동물 관련...
 	void CallPet( LONG lIndex );													// 펫을 호출함.
 	void CheckPetType( SBYTE sbPetTypeGrade, INDEX &iPetType, INDEX &iPetAge );		// 펫 타입과 나이를 얻음.
 	void RidePet( CEntity *pCharacter, CEntity *pPet, INDEX iPetType );		// 애완동물을 타도록 처리.
 	void LeavePet( CEntity *pCharacter );									// 애완동물에서 내리도록 처리.
-	// wildpet riding functions [12/21/2010 rumist]
-	void RideWildPet( CEntity *pCharacter, CEntity* pWildPet, CTString strFileName );
-	void LeaveWildPet( CEntity *pCharacter );
 	void UpdatePetTargetInfo( INDEX iPetIndex );						// 애완동물의 정보를 갱신함.
 	void ClearPetList();
+	void ChangePetMount();												// 애완동물을 성체로 변경요청...
 	void SendMovingGuildWarArea();
 
 	// Date : 2005-09-06(오전 11:22:30), By Lee Ki-hwan
@@ -1439,10 +1314,19 @@ public:
 	void SendRequestParentsday(int reqIdx);
 	void SendParentsdayAddPoint(int charIdx);
 	// ----------------------------------------------------------------<<		
-
+	
+#ifndef NO_GAMEGUARD
+	// WSS_NPROTECT 070402 -------------------------------------------->>
+    void SendnProtectAuth2(DWORD dwArg);
+	BOOL Init_nProtect();
+	void SetHwnd_nProtect(HWND _hwndMain);
+	void Check_nProtect();
+	BOOL NPGameMonCallbackErrChk( DWORD dwMsg, DWORD dwArg);
+	// ----------------------------------------------------------------<<		
+#endif
 	// WSS_MINIGAME 070420 -------------------------------------------->>
-	void SendMinigameDefaultMessage(UBYTE eventType, UBYTE subType);
-	void SendMinigameSelect(UBYTE eventType, UBYTE subType, UBYTE cSelect);
+	void SendMinigameDefaultMessage(UBYTE subType);
+	void SendMinigameSelect(UBYTE cSelect);
 	void SendMinigameSelectGift(ULONG cSelect);
 	// ----------------------------------------------------------------<<
 
@@ -1454,43 +1338,26 @@ public:
 	// 피닉스 이벤트
 
 	void SendPhoenixCharacterCondition();		//피닉스 캐릭터 생성 가능여부
-	void SendCreatePhoenixCharacter();	//피닉스 캐릭터 생성	
+	void SendCreatePhoenixCharacter();	//피닉스 캐릭터 생성
+	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
-	// [sora] 원정대 시스템
-	
-	void ExpeditionCreateReq();																			// 원정대 생성
-	void ExpeditionInviteReq( SLONG slIndex );
-	void ExpeditionAllowReq();
-	void ExpeditionRejectReq();
-	void ExpeditionQuitReq();
-	void ExpeditionKickReq( SLONG slIndex );
-	void ExpeditionEndReq();
-	void ExpeditionChangeDivisionTypeReq(UBYTE msgType, SBYTE sbExpedType, SBYTE sbDiviType);
-	void ExpeditionChangeLeaderReq( SLONG slIndex );
-	void ExpeditionChangeSubLeaderReq( BOOL bIsSubLeader, SLONG slIndex );
-	void ExpeditionChangeGroupReq( SLONG slGroupSrc, SLONG slIndex, SLONG slGroupDesc, SLONG slPos );
-	void ExpeditionAddCharReq( CTString &strCharName );
-	void ExpeditionViewDetailReq( SLONG slGroup, SLONG slIndex );
-	void ExpeditionSetLabelReq(SLONG slCharType, SLONG slMode, SLONG slLabelType, SLONG slIndex);
-	
-	void ExpeditionCollectQuestItemReq(SLONG slIndex);													// 원정대 퀘스트 아이템 수집
+	// 경매 시스템
 
-	// [sora] 파티 레이드
-	void PartyEndReq();							// 파티 해체
-	void InitInZoneReq();						// 인던 초기화
-
-	// [sora] 인존 이동
-	void RaidInzoneJoinReq(SLONG slZoneNo, SLONG exParam = -1);
-	void RaidInzoneQuitReq(SLONG slZoneNo = -1, SLONG slExtraNo = -1);
-	
-	// [sora] 인스턴트 존 귀속정보요청
-	void SendRaidInfoReq();
+	void SendTradeAgentSearchReq(int nPageNo, int nitemType,int nitemSubType,int nJobClass,CTString stSearchWord, int nAlignType = -1);
+	void SendTradeAgentBuyReq(int nListidx, LONGLONG nTotalMoney);
+	void SendTradeAgentRegListReq(int nPageNo, int nAlignType = -1);
+	void SendTradeAgentCalcListReq(int nPageNo, int nAlignType = -1);
+	void SendTradeAgentRegCancelReq(int nListidx);
+	void SendTradeAgentCalculateReq();
+	void SendTradeAgentRegReq(char iTab, char iRow, char iCol,int iIndex, int nCount, LONGLONG nTotalMoney, LONGLONG nDepositMoney);
+	void SendTradeAgentCheckCalcReq();
 	//////////////////////////////////////////////////////////////////////////
+
 
 	// [070613: Su-won]
 	// 무기,방어구 교환카드 사용 요청
-	void UseChangeWeaponItem( SWORD nTab, SWORD inven_idx, LONG lItemIndex, LONG lChangeType, LONG lTradeItemIndex );
+	void UseChangeWeaponItem( SBYTE sbRow, SBYTE sbCol, LONG lItemIndex, LONG lChangeType );
 	// 펫 명찰 아이템 사용 요청
 	void SendPetNameChageReq( int nPetIndex, CTString strPetName );
 
@@ -1503,7 +1370,7 @@ public:
 
 	// Eons 070905
 	void SendBJMono2007Req(UBYTE subType, ULONG ulNum=0); // SK BJ Mono Event
-	void SendLC1000DayHatUpgradeReq(SWORD nIdx, LONG lItemIndex); // 1000일 이벤트 기념모자 업그레이드
+	void SendLC1000DayHatUpgradeReq(SBYTE sbRow, SBYTE sbCol, LONG lItemIndex); // 1000일 이벤트 기념모자 업그레이드
 	void SendLC1000DayTakeHatReq();
 	void SendTakeFireCracker();
 
@@ -1530,190 +1397,23 @@ public:
 
 	// Eons 071204
 	void SendXMAS2007DecoReq(UBYTE subType);
-
+#ifdef RESTART_GAME
 	void SendRestartGame();
-	void SendReceiveRestartGame();
-	
+#endif
 	void SendUseGoDungeon(INDEX iItemIndex, INDEX iZone, INDEX iExtra);
 
-	void SendItemDelete(SWORD iTab, SWORD inven_idx, INDEX UniIndex, SQUAD count);
+	void SendItemDelete(SBYTE iTab, SBYTE iRow, SBYTE iCol, INDEX UniIndex, SQUAD count);
 	//공격 펫 장비 아이템 사용시
-	void SendUseWildPetItem(int posId, int tabId, int inven_idx, int item_index);
+	void SendUseWildPetItem(int posId, int tabId, int rowId, int colId, int item_index);
 	
-	void SendSupportSkill(UBYTE ubMsg); // 초보 및 중저레벨 지원사 스킬 메시지 요청(고레벨 지원사추가시 같이 사용)
+	void SendHanaposEvent();
 
-	void SendHanaposEvent(int nNpcVirIdx);
-	
-	void SendEventRequital(int nRequital);
-
-	// 레이드 시스템 오브젝트 할성화 메세지(클릭 및 진입)
-	void SendRaidObjectEvent(ULONG iObjectID);
-
-	void SendMakeItemList(ULONG sealtype, UBYTE UItype);		//배운 제작 리스트 요청
-
-	inline _AffinityInfo*		GetAffinityPointer() { return (&AffinityInfo);	}
-	void SendAffinityConnectReq( SLONG npcIdx );
-	void SendAffinityShopReq( SLONG npcIdx );
-	void SendAffinityGiftInfoReq( SLONG npcIdx );
-	void SendAffinityGiftReq( SLONG npcIdx );
-	void SendAffinityInfoTabReq( SLONG npcIdx ); // 친화도 개편2 친화도 정보 요청 [2/13/2013 Ranma]
-	inline CAffinityData*		GetAffinityData()	{ return &wo_aAffinityData[0]; }
-	void ClearAffinityData();
-	
-	// connie [2009/9/15] - NPC 찾기
-	void SendNPCPortalGoReq(SLONG slIndex);
-	void SendNPCPortalLocationReq(SLONG slIndex);
-
-	// [091028 sora] 의상 아이템과 연결된 아이템을 찾기 요청
-	void SendCheckComposition(SWORD nTab, SWORD nInvenIdx, SLONG slUniIndex);
-
-	void SendNickNameMessage( SLONG nType, SLONG iNickIndex ); // 호칭 변경 (선택, 취소, 삭제)
-	
-	// [100208: selo] 포기 퀘스트 복구
-	void SendRestoreAbandonQuest(SQUAD llMoney);
-
-	// [100208: selo] 퀘스트 아이템 다시 받기 요청
-	void SendTakeAgainQuestItem();
-
-	// [100324 : sora] 라카렛
-	void SendLacaretteTokenReq();
-	void SendLacaretteRetteReq( SLONG courseNum, SLONG couseIndex, SLONG tokenIndex );
-	void SendLacaretteUseCountReq();
-	void SendLacaretteResultReq( INDEX itemIndex );
-	void SendLacaretteCloseReq();
-	void SendLacaretteTokenReadyReq();
-	
-	// [2010/08/25 : Sora] ADD_SUBJOB 보조 직업 등록
-	void SendSubJobRegister( SLONG subJobCode );
-
-	// [100513: selo] ($E_WC2010) 2010 남아공 월드컵
-	void SendWorldCup2010_Event(MSG_EVENT_WORLDCUP2010_TYPE e_Type, INDEX iParam = 0);
-	
-	// [2010/06/30 : Sora] 성주 길드 버프부여
-	void SendOwnerGuildBuffReq();
-
-	//  [7/2/2010 kiny8216] ATTENDANCE_SYSTEM : 출석 시스템
-	void SendAttendanceReq( INDEX subType );
-
-	// [7/15/2010 kiny8216] MONSTER_ENERGY_IGNITION_SYSTEM
-	void SendEnergySkillMessage();
-
-	// [8/31/2010 kiny8216] 후견인 시스템 개편
-	void TeachGiftReq();
-	
-	// [9/29/2010 kiny8216] 성주 코스튬
-	void LordCostumeReq();
-	// 성주 길드 코스튬 [1/21/2011 ldy1978220]
-	void LordGuildCostumeReq();
-	void LordGuildTitleReq();
-
-	// [10/6/2010 kiny8216] 쿠폰 프로모션 이벤트
-	void SendPromotionEventReq(CTString strNum);
-	// [2010/11/01 : Sora] 공성 개편
-	void SendGuildWarTimeMenu();
-	void SendGuildWarTimeReq();
-	
-	// [2011/01/18 : Sora] 출석 이벤트
-	void SendAttendanceRewardReq();
-
-	// [2011/02/09 : Sora] 퀘스트 아이템 다시 받기
-	void SendRestoreQuestItem( SLONG questIndex );
-
-	void SendFaceOffMessage( UBYTE ubType, UBYTE ubFaceType = -1, UBYTE ubHairType = -1 );
-	//////////////////////////////////////////////////////////////////////////
-	// void SendEventMsg()는 이벤트 메세지 함수가 계속 늘어나는것을 회피하기 위하여 통합 처리를 하도록 합시다.
-	// CNetwork class에서 이벤트 전송 파라미터를 받아서 한번에 SendEventMsg()로 전송하도록 합시다.
-	// 전송 파라미터는 각 변수 타입 별로, ULONG, UBYTE, CTString 3가지 타입만으로 전송 처리가 용의하므로(type casting),
-	// 전송 파라미터 변수는 static_Array<ULONG>, static_array<UBYTE>, static_array<CTString>으로 합시다.
-	// 이벤트 메세지 패킷 프로토콜을 서버와 논의하여 맞추도록 합시다.
-	// 이해 안되면 바보~
-	void SendEventMsg(UBYTE ubEventType);
-	
-	void SendRaidScene(INDEX ObjType, INDEX Id, INDEX iData = -1);
-
-	void SendNetworkMessage(CNetworkMessage& NetworkMsg) { SendToServerNew(NetworkMsg); }	
-		//added by sam 10/11/11
-	void SendRankingLsit ( INDEX iIndex, INDEX iPageIndex );
-	void SendWildPetMountReq( const BOOL bMount );
-	void SendComebackMessage();
-	void SendBirthdayMessage( INDEX index );
-	// royal rumble [4/19/2011 rumist]
-	void SendRoyalRumbleJoinReq();			// 참가
-	void SendRoyalRumbleRejectReq();		// 참가 취소.
-	void SendRoyalRumbleRewardReq();		// 보상 요청
-	void SendRoyalRumblePointReq();			// 포인트 조회.
-	void SendRoyalRumbleNextTimeReq();		// 다음 경기 일정 조회.
-	void SendRoyalRumbleStartReq();			// 최종 참가 요청.
-
-	void SendMasterStoneUseReq(SWORD nMStoneTab, SWORD ubMStoneIdx, SLONG slMStone, 
-		SWORD nTargetTab, SWORD ubItemTgtIdx, SLONG slItemTgt);
 	// Temp Message str, int
 	// add wooss 060306 for message argument
 	CTString	m_tmp_str;
 	LONG		m_tmp_idx;
 
-	void SendGuildMarkWndOpenReq();	// [sora] GUILD_MARK
-	void SendGuildMarkEditEndReq( SBYTE gm_row, SBYTE gm_col, SBYTE bg_row, SBYTE bg_col, SWORD nTab, SWORD nInvenIdx ); // [sora] GUILD_MARK
-
-	// 랭킹 시스템 개편 [trylord : 110825]
-	void SendRankingListEx(UCHAR ucType, UCHAR ucSubType);
-	void SendRankingSearchListEx(UCHAR ucType, UCHAR ucSubType, CTString pcstrSearch);
-
-	void pkPenaltyReformRewardReq(LONG titlenum);
-
-	void SendEventKrathongReq();
-	void SendUserNotice(CTString strMessage);
-	// [2011/11/14 : Sora] 태국 국왕 탄생일 이벤트
-	void SendKBRewardReq( UCHAR commandNum );
-	// 길드 시스템 개편 [trylord 111227]
-	void SendGuildMasterKickReq(INDEX idxGuild);				// 길마 추방 신청 [trylord 111228]
-	void SendGuildMasterKickCancelReq(INDEX idxGuild);		// 길마 추방 이의제기 [trylord 111228]
-	void SendGuildRemoteJoinReq(CTString strTargetName, LONG lType);
-	void SendGuildRemoteJoinOKReq(CTString strTargetName, LONG lType);
-	void SendGuildRemoteJoinNOReq();
-	void SendGuildRecallReq();
-
-	void SendPetAccumulateUse(SBYTE scType, LONG lIndex);
-
-	// 타겟대상을 서버에 알려준다. (현재는 pc만)
-	void SendClickObject(int charIndex);
-
-	// 프리미엄 캐릭터 관련
-	void SendPremiumCharItemUse(SWORD tab, SWORD invenIdx, int VirtualIdx);
-	void SendPremiumCharJumpReq(CTString strCharName);
-
-	//	FD_TEST 김영환 : 기능함수 추가
-	void	Set_MyChar_MorphStatus_EVOCATION_CONVERTING();
-	void	Set_MyChar_MorphStatus_EVOCATION();
-	void	Set_MyChar_MorphStatus_MORPH_END();
-	void	Set_MyChar_MorphStatus_TRANSFORMATION();
-	void	Set_MyChar_MorphStatus_EVOCATION_BEGIN();
-	bool	Is_MyChar_MorphStatus_MORPH_END();
-	int		Get_MyChar_MorphStatus();
-	bool	IsAttackMe( int targetID ); // TO.DO HP
-	bool	Get_MyChar_Attack(int targetID,LONG	targetHP);
-	void	Set_MyChar_Effect(int item_E, int statusEffect);
-	SBYTE	Get_MyChar_faceStyle();
-	SBYTE	Get_MyChar_hairStyle();
-	UBYTE	Get_MyChar_Job();
-
-	void	SendReformItemReq( UCHAR reformerGrade, 
-		SWORD reformerTab, SWORD reformerIdx, 
-		SWORD magnifierTab, SWORD magnifierIdx, ULONG magnifierCount, 
-		SWORD reformItemTab, SWORD reformItemIdx, int nNPCVIdx );
-
-	UINT	getSeq()	{ return ++m_seq; }		// 서버에 패킷을 전송할 때 증가시킴.
-	void	resetSeq()	{ m_seq = 0; }			// 서버 연결시에 초기화 시킴.
-
-	void	RestartGame();
-private:
-	bool	CheckSendSkill(INDEX nIndex);
-
-	UINT	m_seq;
-	BOOL	m_bIsRvr;
-	INDEX	m_nLastSkillIndex;
-	__int64	m_nSkillSendTime;
-};
+};					
 
 // pointer to global instance of the only network object in the application
 ENGINE_API extern CNetworkLibrary *_pNetwork;

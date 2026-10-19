@@ -1,18 +1,12 @@
 #include "StdH.h"
 #include <fstream>
-#ifdef PLATFORM_WIN32
 #include <tchar.h>
-#endif
-#include <Engine/Base/FileName.h>
 #include <Engine/Entities/SmcParser.h>
-#include <Engine/Templates/StaticArray.cpp>
 
 using namespace std;
 
 #define MAX_LINE_LENGTH 1024
 //#define WRITING_LOGINFO // 파싱 로그 정보 
-
-extern CTFileName _fnmApplicationPath;
 
 const char* g_pszOffSet = "OFFSET";
 const char* g_pszName = "NAME";
@@ -21,162 +15,11 @@ const char* g_pszTextures = "TEXTURES";
 const char* g_pszAllFramesBBox = "ALLFRAMESBBOX";
 const char* g_pszColision = "COLISION";
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-ByteQueueData::ByteQueueData()
-{
-
-}
-
-ByteQueueData::~ByteQueueData()
-{
-
-}
-//////////////////////////////////////////////////////////////////////
-// Data Read / Write Function
-//////////////////////////////////////////////////////////////////////
-void ByteQueueData::WriteString(std::string sData)
-{
-	int i;
-	size_t size = sData.length();
-	WriteWord(sData.length());
-
-	for (i=0; i<sData.length(); ++i)
-		push(sData[i]);
-}
-
-void ByteQueueData::WriteDouble(double dData)
-{
-	BYTE *pByte = (BYTE*)&dData;
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-}
-
-void ByteQueueData::WriteFloat(float floatData)
-{
-	BYTE *pByte = (BYTE*)&floatData;
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-}
-
-void ByteQueueData::WriteDword(DWORD dwData)
-{
-	BYTE *pByte = (BYTE*)&dwData;
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-	push(*pByte++);
-}
-
-void ByteQueueData::WriteWord(WORD wData)
-{
-	BYTE *pByte = (BYTE*)&wData;
-	push(*pByte++);
-	push(*pByte++);
-}
-
-void ByteQueueData::WriteByte(BYTE byteData)
-{
-	push(byteData);
-}
-
-void ByteQueueData::WriteDocString(std::string sData)
-{
-	for (int i=0; i<sData.length(); ++i)
-		push(sData[i]);
-}
-
-std::string ByteQueueData::ReadString()
-{
-	int i;
-	char *pszData;
-	WORD wSize = ReadWord();
-	pszData = new char[(int)wSize+1];
-
-	for (i=0; i<(int)wSize; ++i)
-	{
-		pszData[i] = front();	pop();
-	}
-
-	pszData[(int)wSize] = NULL;
-	std::string sData(pszData);
-	delete [] pszData;
-	return sData;
-}
-
-double ByteQueueData::ReadDouble()
-{
-	double dData;
-	PBYTE p = (PBYTE)&dData;
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	return dData;
-}
-
-float ByteQueueData::ReadFloat()
-{
-	float floatData;
-	PBYTE p = (PBYTE)&floatData;
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	return floatData;
-}
-
-DWORD ByteQueueData::ReadDword()
-{
-	DWORD dwData;
-	PBYTE p = (PBYTE)&dwData;
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	return dwData;
-}
-
-WORD ByteQueueData::ReadWord()
-{
-	WORD wData;
-	PBYTE p = (PBYTE)&wData;
-	*p++ = front(); pop();
-	*p++ = front(); pop();
-	return wData;
-}
-
-BYTE ByteQueueData::ReadByte()
-{
-	BYTE byteData = front(); pop();
-	return byteData;
-}
-
-void ByteQueueData::ClearQueue()
-{
-	while (!empty()) {	pop();	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 bool CSmcParser::LoadSmcParse(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(HOSTPATH(sFilename.c_str()));
+	File.open(sFilename.c_str());
 	if(!File.good())
 		return HandleError("ERROR: file %s can't be opened for parsing.\n",(const char*)sFilename.c_str());
 
@@ -384,10 +227,131 @@ bool CSmcParser::HandleError(const char* lpszFormat, ...)
 	return false;	
 }
 
+void CSmcParserList::AddString(std::string sData)
+{
+	for (int i=0; i<sData.length(); i++)
+		m_queBuffer.push(sData[i]);
+}
+
+void CSmcParserList::WriteString(std::string sData)
+{
+	size_t size = sData.length();
+	WriteWord(sData.length());
+	for(int i = 0; i < sData.length(); i++)
+		m_queBuffer.push(sData[i]);	
+}
+
+void CSmcParserList::WriteDword(DWORD dwData)
+{
+	BYTE* pByte = (BYTE*)&dwData;
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);	
+}
+
+void CSmcParserList::WriteWord(WORD wData)
+{
+	BYTE* pByte = (BYTE*)&wData;
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+}
+
+void CSmcParserList::WriteByte(BYTE byteData)
+{
+	m_queBuffer.push(byteData);
+}
+
+void CSmcParserList::WriteDouble(double dData)
+{
+	BYTE* pByte = (BYTE*)&dData;
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+	m_queBuffer.push(*pByte++);
+}
+
+std::string CSmcParserList::ReadString()
+{
+	char* pszData;
+	WORD wSize = ReadWord();
+	pszData = new char[(int)wSize + 1];
+	for(int i = 0; i < (int)wSize; i++)
+	{
+		pszData[i] = m_queBuffer.front();
+		m_queBuffer.pop();
+	}
+	pszData[(int)wSize] = NULL;
+	string sData(pszData);
+	delete[] pszData;
+	return sData;
+}
+
+DWORD CSmcParserList::ReadDword()
+{
+	DWORD dwData;
+	PBYTE p = (PBYTE)&dwData;
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	return dwData;
+}
+
+WORD CSmcParserList::ReadWord()
+{
+	WORD wData;
+	PBYTE p = (PBYTE)&wData;
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	return wData;
+}
+
+BYTE CSmcParserList::ReadByte()
+{
+	BYTE byteData = m_queBuffer.front();
+	m_queBuffer.pop();
+	return byteData;
+}
+
+double CSmcParserList::ReadDouble()
+{
+	double dData;
+	PBYTE p = (PBYTE)&dData;
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	*p++ = m_queBuffer.front();
+	m_queBuffer.pop();
+	return dData;
+}
+
 bool CSmcParserList::SmcInfoWriteBin(std::ostream& Output)
 {
 	// clear the queue
-	m_queBuffer.ClearQueue();
+	while(!m_queBuffer.empty())
+		m_queBuffer.pop();
 
 	// 여기서 저장할 데이터를 Queue에 담는다.
 	WriteSmcInfo();
@@ -406,7 +370,7 @@ bool CSmcParserList::SmcInfoWriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::binary | ios::trunc);
+	File.open(sFilename.c_str(), ios::out | ios::binary | ios::trunc);
 
 	if(!File.good())
 		return false; // 에러
@@ -419,7 +383,7 @@ bool CSmcParserList::SmcParsingLogWritetxt(std::string sFilename)
 	ofstream fout;
 	std::vector<std::string>::iterator strItor;
 
-	fout.open(HOSTPATH(sFilename.c_str()), ios_base::out | ios_base::trunc);//|ios_base::app);
+	fout.open(sFilename.c_str(), ios_base::out | ios_base::trunc);//|ios_base::app);
 
 	if (!fout.good())
 		return false;
@@ -444,7 +408,8 @@ bool CSmcParserList::SmcInfoReadBin(std::istream& Input)
 		return false; //ERROR: file can't be opened for parsing.
 
 	// clear the queue
-	m_queBuffer.ClearQueue();
+	while(!m_queBuffer.empty())
+		m_queBuffer.pop();
 
 	int iData = Input.get();
 	while(Input.good())
@@ -463,7 +428,7 @@ bool CSmcParserList::SmcInfoReadBin(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(HOSTPATH(sFilename.c_str()), ios::binary);
+	File.open(sFilename.c_str(), ios::binary);
 
 	if( !File.good() )
 		return false; // 에러
@@ -475,7 +440,7 @@ void CSmcParserList::WriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::trunc);
+	File.open(sFilename.c_str(), ios::out | ios::trunc);
 
 	if(!File.good())
 		return; // 에러
@@ -493,7 +458,7 @@ void CSmcParserList::WriteSmcInfo()
 {
 	vec_SmcParserItor SmcItor;
 
-	m_queBuffer.WriteDword((DWORD)(*this).size()); // Smc정보 갯수
+	WriteDword((DWORD)(*this).size()); // Smc정보 갯수
 	int iCount = 0;
 
 	for (SmcItor=(*this).begin(); SmcItor!=(*this).end(); SmcItor++)
@@ -502,33 +467,33 @@ void CSmcParserList::WriteSmcInfo()
 		CSmcParser SmcParser = (*SmcItor);
 		if (SmcParser.GetSmcFileName() == NULL)
 		{
-			m_queBuffer.WriteDword(0);
+			WriteDword(0);
 			continue;
 		}
 		else
 		{
-			m_queBuffer.WriteDword(iCount);
+			WriteDword(iCount);
 		}
 
-		m_queBuffer.WriteString(SmcParser.GetSmcFileName()); // Smc 파일 이름
+		WriteString(SmcParser.GetSmcFileName()); // Smc 파일 이름
 		// 메쉬 정보 루프
 		int i,j;
 		int iSize = SmcParser.GetMeshInfoListSize();
-		m_queBuffer.WriteDword((DWORD)iSize); // 메쉬 갯수
+		WriteDword((DWORD)iSize); // 메쉬 갯수
 
 		for (i=0; i<iSize; i++)
 		{
 			CMeshInfo Mesh = SmcParser.GetMeshInfo(i);
-			m_queBuffer.WriteDword((DWORD)Mesh.GetMeshNumber()); // 메쉬 번호
-			m_queBuffer.WriteString(Mesh.GetMeshTFNM()); // 메쉬 파일 경로(bm파일)
+			WriteDword((DWORD)Mesh.GetMeshNumber()); // 메쉬 번호
+			WriteString(Mesh.GetMeshTFNM()); // 메쉬 파일 경로(bm파일)
 			
 			int iTexSize = Mesh.GetTexInfoSize();
-			m_queBuffer.WriteDword((DWORD)iTexSize); // 테스처 갯수
+			WriteDword((DWORD)iTexSize); // 테스처 갯수
 
 			for (j=0; j<iTexSize; j++)
 			{
-				m_queBuffer.WriteString(Mesh.GetTexInfoName(j)); // 텍스처 이름
-				m_queBuffer.WriteString(Mesh.GetTexInfoTFNM(j)); // 텍스처 파일 경로
+				WriteString(Mesh.GetTexInfoName(j)); // 텍스처 이름
+				WriteString(Mesh.GetTexInfoTFNM(j)); // 텍스처 파일 경로
 			}
 		}
 	}
@@ -547,34 +512,34 @@ void CSmcParserList::ReadSmcInfo()
 	int i,j,k;
 	int iCount;
 
-	iSmcSize = (int)m_queBuffer.ReadDword(); // Smc정보 갯수
+	iSmcSize = (int)ReadDword(); // Smc정보 갯수
 
 	for (i=0; i<iSmcSize; i++)
 	{
 		CSmcParser SmcParser;
-		iCount = (int)m_queBuffer.ReadDword();
+		iCount = (int)ReadDword();
 
 		if (iCount!=0)
 		{
-			strTemp = m_queBuffer.ReadString(); // Smc파일 이름
+			strTemp = ReadString(); // Smc파일 이름
 			SmcParser.SetSmcFileName(strTemp.c_str());
 
-			int iMeshSize = (int)m_queBuffer.ReadDword(); // 메쉬 총 갯수
+			int iMeshSize = (int)ReadDword(); // 메쉬 총 갯수
 			
 			for (j=0; j<iMeshSize; j++)
 			{
 				CMeshInfo Mesh;
-				int iMeshNum = (int)m_queBuffer.ReadDword(); //메쉬 번호
-				strTemp = m_queBuffer.ReadString(); // 메쉬 파일 경로(bm파일)
+				int iMeshNum = (int)ReadDword(); //메쉬 번호
+				strTemp = ReadString(); // 메쉬 파일 경로(bm파일)
 				Mesh.SetMeshNumber(iMeshNum);
 				Mesh.CreateMeshTFNM(strTemp.c_str());
 				
-				int iTexSize = (int)m_queBuffer.ReadDword(); // 텍스처 갯수
+				int iTexSize = (int)ReadDword(); // 텍스처 갯수
 				
 				for (k=0; k<iTexSize; k++)
 				{
-					strTemp = m_queBuffer.ReadString(); // 텍스처 이름
-					strTemp2 = m_queBuffer.ReadString(); // 텍스처 파일 경로
+					strTemp = ReadString(); // 텍스처 이름
+					strTemp2 = ReadString(); // 텍스처 파일 경로
 
 					Mesh.AddTextureInfo(strTemp.c_str(), strTemp2.c_str());
 				}
@@ -587,87 +552,4 @@ void CSmcParserList::ReadSmcInfo()
 
 		(*this).push_back(SmcParser); // Smc 정보 추가
 	}
-}
-
-
-bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, const char* saveFilePath)
-{
-	int nIndexCount = 0;
-	int nTotalCount = 0;
-	int nMissingCount = 0;
-	
-	CSmcParserList& smcList = *this;
-	const CStaticArray<CItemData>& itemList = arrItemList;
-	std::list<CTString> missingList;
-	
-	CTString strFullPath = _fnmApplicationPath.FileDir();
-
-	for (int i = 0; i < itemList.Count(); ++i)
-	{
-		/// 장비만
-		if (itemList[i].GetType() != CItemData::ITEM_WEAPON &&
-			itemList[i].GetType() != CItemData::ITEM_SHIELD)
-			continue;
-		
-		int index = itemList[i].GetItemIndex();
-		
-		/// ItemData[i] == NULL
-		if (index == -1)
-			continue;
-		
-		++nIndexCount;
-		
-		int nMeshInfo = smcList[index].GetMeshInfoListSize();
-		nTotalCount += nMeshInfo;
-		
-		for (int j = 0; j < nMeshInfo; ++j)
-		{
-			CMeshInfo pInfo = smcList[index].GetMeshInfo(j);
-			const char* strMeshPath = pInfo.GetMeshTFNM();
-			
-			CTString path = strFullPath + strMeshPath;
-			
-			if (GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
-			{
-				CTString log;
-				log.PrintF("[%d] Missing Mesh\t : %s", index, strMeshPath);
-				missingList.push_back(log);
-				++nMissingCount;
-			}
-			
-			int nTexture = pInfo.GetTexInfoSize();
-			nTotalCount += nTexture;
-			
-			for (int k = 0; k < nTexture; ++k)
-			{
-				const char* strTexturePath = pInfo.GetTexInfoTFNM(k);
-				CTString path2 = strFullPath + strTexturePath;
-				
-				if (GetFileAttributes(path2) == INVALID_FILE_ATTRIBUTES)
-				{
-					CTString log;
-					log.PrintF("[%d] Missing Texture\t : %s", index, strTexturePath);
-					missingList.push_back(log);
-					++nMissingCount;
-				}
-			}
-		}
-	}
-
- 	std::ofstream file(HOSTPATH(saveFilePath), std::ios::trunc);
-	file << "<< Item Resource : START Check ! >>" << endl << endl;
-	file << "Total : " << nTotalCount << endl;
-	file << "Missing : " << nMissingCount << endl << endl;
-	
-	std::list<CTString>::iterator iter = missingList.begin();
-	while (iter != missingList.end())
-	{
-		file << iter->str_String << std::endl;
-		++iter;
-	}
-	
-	file << endl << "<< END >>" << endl;
-	file.close();
-
-	return true;
 }

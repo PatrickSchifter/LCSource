@@ -2,120 +2,62 @@
 #include <Engine/Interface/UIMultList.h>
 #include <Engine/Interface/UITextureManager.h>
 
+
+
 //------------------------------------------------------------------------------
 // CUIMultiList::CUIMultiList
-// Explain:
-// Date : 2005-05-17
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  
+// Date : 2005-05-17,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
 CUIMultiList::CUIMultiList()
-	: m_ptdCommonBtnTexture(NULL)
-	, m_nLineGap(0)
-	, m_nIconOffset(0)
 {
+		
 }
+
 
 //------------------------------------------------------------------------------
 // CUIMultiList::~CUIMultiList
-// Explain:
-// Date : 2005-05-17
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  
+// Date : 2005-05-17,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
 CUIMultiList::~CUIMultiList()
 {
-	ResetAllData();
 
-	Destroy();
-
-	STOCK_RELEASE(m_ptdCommonBtnTexture);
 }
 
 //------------------------------------------------------------------------------
 // CUIMultiList::Create
-// Explain:  MultiList생성시 추가 작업 필요로
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  MultiList생성시 추가 작업 필요로 
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMultiList::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
-						  int nLineHeight, int nSpaceX, int nSpaceY, int nColumn, BOOL bSelectList,
-						  int nLineGap, int nIconOffset)
+void CUIMultiList::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
+							int nLineHeight, int nSpaceX, int nSpaceY, int nColumn, BOOL bSelectList )
 {
-	CUIListBox::Create(pParentWnd, nX, nY, nWidth, nHeight, nLineHeight, nSpaceX, nSpaceY, nColumn, bSelectList);
-
-	m_nLineGap = nLineGap;
-	m_nIconOffset = nIconOffset;
+	CUIListBox::Create( pParentWnd, nX, nY, nWidth, nHeight, nLineHeight, nSpaceX, nSpaceY, nColumn, bSelectList );
 
 	// Todo :~ 추가된 데이터 타입에 따른 추가 작업...
-	m_vecIcon.reserve(nColumn);
-	m_vecConType.reserve(nColumn);
+	m_vecIcon.reserve( nColumn );
+	m_vecConType.reserve( nColumn );
+	m_vecAlpha.reserve( nColumn );
 
-	for (int iCol = 0; iCol < nColumn; iCol++)
+	for( int iCol = 0; iCol < nColumn; iCol++ )
 	{
-		sVecIcon sVecTempIcon;
-		m_vecIcon.push_back(sVecTempIcon);
-		m_vecConType.push_back(TYPE_TEXT);
+		sVecIcon		sVecTempIcon;
+		sVecAlpha		sVecTempAlpha;
+				
+		m_vecIcon.push_back( sVecTempIcon );			
+		m_vecConType.push_back( TYPE_TEXT );
+		m_vecAlpha.push_back( sVecTempAlpha );
 	}
-
-	//CreateScroll(bRight, nOffsetX, nOffsetY, nWidth, nHeight, nBtnWidth, nBtnHeight, nBarWidthGap, nBarHeightGap, nBarVertEdgeSize);
-	CreateScroll(TRUE, 0, 0, 10, nHeight, 10, 10, 0, 0, 10);
-
-	m_ptdCommonBtnTexture = CreateTexture(CTString("Data\\Interface\\CommonBtn.tex"));
-
-	// Get Button Texture Size.
-	FLOAT fTexWidth = m_ptdCommonBtnTexture->GetPixWidth();
-	FLOAT fTexHeight = m_ptdCommonBtnTexture->GetPixHeight();
-
-	// Up button
-	SetScrollUpUV(UBS_IDLE, 156, 33, 166, 43, fTexWidth, fTexHeight);
-	SetScrollUpUV(UBS_CLICK, 168, 33, 178, 43, fTexWidth, fTexHeight);
-	CopyScrollUpUV(UBS_IDLE, UBS_ON);
-	CopyScrollUpUV(UBS_IDLE, UBS_DISABLE);
-	// Down button
-	SetScrollDownUV(UBS_IDLE, 156, 45, 166, 55, fTexWidth, fTexHeight);
-	SetScrollDownUV(UBS_CLICK, 168, 45, 178, 55, fTexWidth, fTexHeight);
-	CopyScrollDownUV(UBS_IDLE, UBS_ON);
-	CopyScrollDownUV(UBS_IDLE, UBS_DISABLE);
-	// Bar button
-	SetScrollBarTopUV(185, 32, 195, 42, fTexWidth, fTexHeight);
-	SetScrollBarMiddleUV(185, 41, 195, 51, fTexWidth, fTexHeight);
-	SetScrollBarBottomUV(185, 61, 195, 71, fTexWidth, fTexHeight);
 }
 
-//------------------------------------------------------------------------------
-// CUIMultiList::Create
-// Explain:  MultiList생성시 추가 작업 필요로
-// Date : 2013/02/06
-// Author: sykim70
-//------------------------------------------------------------------------------
-WMSG_RESULT	CUIMultiList::MouseMessage(MSG *pMsg)
-{
-	if (pMsg->message == WM_MOUSEMOVE)
-	{
-		int nColumn = 0;
-		int	nRowS = m_sbScrollBar.GetScrollPos();
-		int	nRowE = nRowS + m_nLinePerPage;
-		if (nRowE > m_vecIcon[nColumn].vecIcon.size())
-			nRowE = m_vecIcon[nColumn].vecIcon.size();
 
-		for (int nList = nRowS; nList < nRowE; nList++)
-		{
-			CUIImageBox* pImageBox = m_vecIcon[nColumn].vecIcon[nList];
-			//pImageBox->SetPos(nIconX, nIconY);
-			pImageBox->MouseMessage(pMsg);
-		}
-	}
-	return CUIListBox::MouseMessage(pMsg);
-}
 //------------------------------------------------------------------------------
 // CUIMultiList::SetColumnType
 // Explain:  
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMultiList::SetColumnType(int nColumn, CONTENT_TYPE eContentType)
+void CUIMultiList::SetColumnType( int nColumn, CONTENT_TYPE eContentType )
 {
 	m_vecConType[nColumn] = eContentType;
 }
@@ -123,228 +65,347 @@ void CUIMultiList::SetColumnType(int nColumn, CONTENT_TYPE eContentType)
 //------------------------------------------------------------------------------
 // CUIMultiList::Render
 // Explain:  기본 루틴 그대로 가져옴.. 일부 수정
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
 void CUIMultiList::Render()
 {
-	if (IsVisible() == FALSE)
-		return;
+	if( !IsVisible() ) return;
 
 	// Get position
 	int	nX, nY;
-	GetAbsPos(nX, nY);
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	pDrawPort->InitTextureData(m_ptdCommonBtnTexture);
+	GetAbsPos( nX, nY );
 
 	// Add render regions
 	// Selection bar
-	if (m_bShowSelectBar && m_nSelectList >= 0)
+	if( m_bShowSelectBar && m_nSelectList >= 0 )
 	{
 		int	nSelLine = m_nSelectList - m_sbScrollBar.GetScrollPos();
-		if (nSelLine >= 0)
+		
+		if( nSelLine >= 0 )
 		{
 			//!m_bScrollBar ||	
-			if (nSelLine < m_nLinePerPage) // Date : 2005-05-23(오후 5:26:26), By Lee Ki-hwan
+			if( nSelLine < m_nLinePerPage ) // Date : 2005-05-23(오후 5:26:26), By Lee Ki-hwan
 			{
+				
 				int	nBarY = nY + m_nTextSY + nSelLine * m_nLineHeight;
-				pDrawPort->AddTexture(nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
-									nX + m_rcSelectOver.Right, nBarY + m_rcSelectOver.Bottom,
-									m_rtSelectOver.U0, m_rtSelectOver.V0,
-									m_rtSelectOver.U1, m_rtSelectOver.V1,
-									0xFFFFFFFF);
+				_pUIMgr->GetDrawPort()->AddTexture( nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
+													nX + m_rcSelectOver.Right, nBarY + m_rcSelectOver.Bottom,
+													m_rtSelectOver.U0, m_rtSelectOver.V0,
+													m_rtSelectOver.U1, m_rtSelectOver.V1,
+													0xFFFFFFFF );
 			}
 		}
 	}
 
 	// Scroll bar
-	if (m_bScrollBar)
+	if( m_bScrollBar )
 		m_sbScrollBar.Render();
-
-	pDrawPort->FlushRenderingQueue();
 
 	// Text부분만 아니라 Icon부분도 렌더링
 	// Text in list box
-	for (int nCol = 0; nCol < m_vecString.size(); nCol++)
+	for( int nCol = 0; nCol < m_vecString.size(); nCol++ )
 	{
-		switch (m_vecConType[nCol])
+		if( m_vecConType[nCol] == TYPE_TEXT )
 		{
-		case TYPE_TEXT:
-			RenderString(nCol, nX, nY);
-			break;
-		case TYPE_ICON:
-			RenderIcon(nCol, nX, nY);
-			break;
+			RenderString( nCol, nX, nY );
 		}
+		else if( m_vecConType[nCol] == TYPE_ICON )
+		{
+			RenderIcon( nCol, nX, nY );
+		}
+	
 	}
 }
+
 
 //------------------------------------------------------------------------------
 // CUIMultiList::RenderIcon
-// Explain:
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMultiList::RenderIcon(int nColumn, int nX, int nY)
+void CUIMultiList::RenderIcon( int nColumn, int nX, int nY )
 {
 	int	nRowS = m_sbScrollBar.GetScrollPos();
 	int	nRowE = nRowS + m_nLinePerPage;
-	if (nRowE > m_vecIcon[nColumn].vecIcon.size())
+	if( nRowE > m_vecIcon[nColumn].vecIcon.size() )
 		nRowE = m_vecIcon[nColumn].vecIcon.size();
-	
-	int nIconX = m_nIconOffset + m_vecColumnSX[nColumn];
-	int nIconY = m_nIconOffset;
-	
-	for (int nList = nRowS; nList < nRowE; nList++)
-	{
-		CUIImageBox* pImageBox = m_vecIcon[nColumn].vecIcon[nList];
-		pImageBox->SetPos(nIconX, nIconY);
-		pImageBox->Render();
-		nIconY += m_nLineHeight;
-	}
-}
 
-void CUIMultiList::RenderIconPopup()
-{
-	for (int nCol = 0; nCol < m_vecString.size(); nCol++)
+	// m_nTextSX, SY는 위와 좌의 여백임 ... ( TEXT에서만 국한 된는 것이 아님 ~ )
+	int		nIconX = nX + m_nTextSX + m_vecColumnSX[nColumn];
+	int		nIconY = nY + m_nTextSY;
+	
+	/* 셀렉션은 사용하지 않음 
+	int		nSelList = -1, nOverList = -1;
+	if( m_bSelectList )
 	{
-		switch (m_vecConType[nCol])
+		nSelList = m_nSelectList;
+		nOverList = nRowS + m_nOverList;
+	}
+	*/
+
+	for( int nList = nRowS; nList < nRowE; nList++ )
+	{
+		switch( m_vecAlign[nColumn] )
 		{
-		case TYPE_ICON:
-			{
-				int	nRowS = m_sbScrollBar.GetScrollPos();
-				int	nRowE = nRowS + m_nLinePerPage;
-				if (nRowE > m_vecIcon[nCol].vecIcon.size())
-					nRowE = m_vecIcon[nCol].vecIcon.size();
-							
-				for (int nList = nRowS; nList < nRowE; nList++)
-				{
-					CUIImageBox* pImageBox = m_vecIcon[nCol].vecIcon[nList];
-					pImageBox->PopupRender();
-				}
-			}
+		case TEXT_LEFT:
+		
+		case TEXT_CENTER:
+		
+		case TEXT_RIGHT:
+			_pUIMgr->GetDrawPort()->AddTexture( nIconX, nIconY, nIconX + ICON_WIDTH, nIconY + ICON_HEIGHT,
+											m_vecIcon[nColumn].vecIcon[nList].U0, m_vecIcon[nColumn].vecIcon[nList].V0,
+											m_vecIcon[nColumn].vecIcon[nList].U1, m_vecIcon[nColumn].vecIcon[nList].V1,
+											m_vecAlpha[nColumn].vecAhpla[nList] );
+	
 			break;
 		}
+
+		nIconY += m_nLineHeight;
 	}
-	
+
 }
+
 
 //------------------------------------------------------------------------------
 // CUIMultiList::RenderString
-// Explain:
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMultiList::RenderString(int nColumn, int nX, int nY)
+void CUIMultiList::RenderString( int nColumn, int nX, int nY )
 {
 	int	nRowS = m_sbScrollBar.GetScrollPos();
 	int	nRowE = nRowS + m_nLinePerPage;
-	if (nRowE > m_vecString[nColumn].vecString.size())
+	if( nRowE > m_vecString[nColumn].vecString.size() )
 		nRowE = m_vecString[nColumn].vecString.size();
 
-	COLOR colText;
-	int nTextX = nX + m_nTextSX + m_vecColumnSX[nColumn];
-	int nTextY = nY + m_nTextSY + (m_nLineHeight - m_nLineGap - _pUIFontTexMgr->GetFontHeight()) / 2;
-	int nSelList = -1, nOverList = -1;
-	if (m_bSelectList)
+	COLOR	colText;
+	int		nTextX = nX + m_nTextSX + m_vecColumnSX[nColumn];
+	int		nTextY = nY + m_nTextSY;
+	int		nSelList = -1, nOverList = -1;
+	if( m_bSelectList )
 	{
 		nSelList = m_nSelectList;
 		nOverList = nRowS + m_nOverList;
 	}
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	for (int nList = nRowS; nList < nRowE; nList++)
+	for( int nList = nRowS; nList < nRowE; nList++ )
 	{
-		if (nList == nSelList)
+		if( nList == nSelList )
 			colText = m_colSelectList;
-		else if (nList == nOverList)
+		else if( nList == nOverList )
 			colText = m_colOverList;
 		else
 			colText = m_vecColor[nColumn].vecColor[nList];
 
-		switch (m_vecAlign[nColumn])
+		switch( m_vecAlign[nColumn] )
 		{
 		case TEXT_LEFT:
-			pDrawPort->PutTextEx(m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText);
+			_pUIMgr->GetDrawPort()->PutTextEx( m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText );
 			break;
 		case TEXT_CENTER:
-			pDrawPort->PutTextExCX(m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText);
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText );
 			break;
 		case TEXT_RIGHT:
-			pDrawPort->PutTextExRX(m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText);
+			_pUIMgr->GetDrawPort()->PutTextExRX( m_vecString[nColumn].vecString[nList], nTextX, nTextY, colText );
 			break;
 		}
 
 		nTextY += m_nLineHeight;
 	}
+
 }
+
 
 //------------------------------------------------------------------------------
 // CUIMultiList::AddIcon
 // Explain:  
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMultiList::AddIcon(int nCol, CUIImageBox::eImageType type, int index, BOOL bShowPopup, CTString popupInfo, BOOL bSelectable, COLOR Color)
+void CUIMultiList::AddIcon( int nCol, UIRectUV &rtIcon, ALPHA alpIcon, BOOL bSelectable )
 {
-	ASSERT(m_vecConType[nCol] == TYPE_ICON);
-	ASSERT(nCol < m_nColumnCount);
-
-	int nSize = m_nLineHeight - m_nLineGap - 2*m_nIconOffset;
-
-	CUIImageBox* pImageBox;
-	pImageBox = new CUIImageBox;
-	pImageBox->Create(this, 0, 0, nSize, nSize);
-	pImageBox->SetImageByType(type, index);
-	pImageBox->SetRenderRegion(0, 0, nSize, nSize);
-	pImageBox->SetPopupInfo(popupInfo, bShowPopup, Color);
-	m_vecIcon[nCol].vecIcon.push_back(pImageBox);
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	
+	m_vecIcon[nCol].vecIcon.push_back( rtIcon );
+	m_vecAlpha[nCol].vecAhpla.push_back( alpIcon );
 
 	// Date : 2005-06-14(오후 3:44:55), By Lee Ki-hwan
-	if (nCol == 0)
+	if( nCol == 0 )
 	{
-		if (bSelectable && m_bAtLeastOneSelect && m_nSelectList == -1)
+		if( bSelectable && m_bAtLeastOneSelect && m_nSelectList == -1 )
 			m_nSelectList = m_vecSelectable.size();
-		m_vecSelectable.push_back(bSelectable);
+		
+		m_vecSelectable.push_back( bSelectable );
 	}
 
 	// Scroll resizing
-	if (m_sbScrollBar.GetCurItemCount() < m_vecIcon[nCol].vecIcon.size())
-		m_sbScrollBar.SetCurItemCount(m_vecIcon[nCol].vecIcon.size());
+	if( m_sbScrollBar.GetCurItemCount() < m_vecIcon[nCol].vecIcon.size() )
+		m_sbScrollBar.SetCurItemCount( m_vecIcon[nCol].vecIcon.size() );
 }
+
+
+//------------------------------------------------------------------------------
+// CUIMultiList::InsertIcon
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIMultiList::InsertIcon( int nIndex, int nCol, UIRectUV &rtIcon, ALPHA alpIcon, BOOL bSelectable )
+{
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	ASSERT( nIndex < m_vecIcon[nCol].vecIcon.size() );
+
+	std::vector<UIRectUV>::iterator	itICon = m_vecIcon[nCol].vecIcon.begin();
+	for( int i = 0; i < nIndex; i++, itICon++ );
+		m_vecIcon[nCol].vecIcon.insert( itICon, rtIcon );
+
+	std::vector<ALPHA>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
+	for( i = 0; i < nIndex; i++, itAlp++ );
+		m_vecColor[nCol].vecColor.insert( itAlp, alpIcon );
+	if(nCol == 0)
+	{
+		// Date : 2005-06-14(오후 3:44:52), By Lee Ki-hwan
+		std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
+		itBool += nIndex;
+		m_vecSelectable.insert( itBool, bSelectable );
+	}
+
+	// Scroll resizing
+	if( m_sbScrollBar.GetCurItemCount() < m_vecIcon[nCol].vecIcon.size() )
+		m_sbScrollBar.SetCurItemCount( m_vecIcon[nCol].vecIcon.size() );
+
+}
+
+
+//------------------------------------------------------------------------------
+// CUIMultiList::RemoveIcon
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIMultiList::RemoveIcon( int nIndex, int nCol )
+{
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	ASSERT( nIndex < m_vecIcon[nCol].vecIcon.size() );
+
+	std::vector<UIRectUV>::iterator	itIcon = m_vecIcon[nCol].vecIcon.begin();
+	for( int i = 0; i < nIndex; i++, itIcon++ );
+		m_vecIcon[nCol].vecIcon.erase( itIcon );
+
+	std::vector<COLOR>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
+	for( i = 0; i < nIndex; i++, itAlp++ );
+		m_vecAlpha[nCol].vecAhpla.erase( itAlp );
+	
+	if( nCol == 0 ) 
+	{
+		std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
+		itBool += nIndex;
+		m_vecSelectable.erase( itBool );
+	}
+
+	// Scroll resizing
+	int	nMaxCount = 0;
+	for( i = 0; i < nCol; i++ )
+	{
+		if( nMaxCount < m_vecIcon[nCol].vecIcon.size() )
+			nMaxCount = m_vecIcon[nCol].vecIcon.size();
+	}
+	m_sbScrollBar.SetCurItemCount( nMaxCount );
+
+}
+
+
+//------------------------------------------------------------------------------
+// CUIMultiList::MoveIcon
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIMultiList::MoveIcon( int nFromIndex, int nToIndex, int nCol )
+{
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	ASSERT( nFromIndex < m_vecIcon[nCol].vecIcon.size() );
+	ASSERT( nToIndex < m_vecIcon[nCol].vecIcon.size() );
+
+	if( nFromIndex == nToIndex )
+		return;
+
+	UIRectUV	strTemp = m_vecIcon[nCol].vecIcon[nFromIndex];
+	ALPHA		alpTemp = m_vecAlpha[nCol].vecAhpla[nFromIndex];
+	BOOL		bTemp = m_vecSelectable[nFromIndex];
+
+	// erase
+	std::vector<UIRectUV>::iterator	itIcon = m_vecIcon[nCol].vecIcon.begin();
+	for( int i = 0; i < nFromIndex; i++, itIcon++ );
+		m_vecIcon[nCol].vecIcon.erase( itIcon );
+
+	std::vector<COLOR>::iterator	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
+	for( i = 0; i < nFromIndex; i++, itAlp++ );
+		m_vecAlpha[nCol].vecAhpla.erase( itAlp );
+
+	std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
+	itBool += nFromIndex;
+	//for( i = 0; i < nFromIndex; i++, itBool++ );
+	m_vecSelectable.erase( itBool );
+
+
+	// insert
+	itIcon = m_vecIcon[nCol].vecIcon.begin();
+	for( i = 0; i < nToIndex; i++, itIcon++ );
+		m_vecIcon[nCol].vecIcon.insert( itIcon, strTemp );
+
+	itAlp = m_vecAlpha[nCol].vecAhpla.begin();
+	for( i = 0; i < nToIndex; i++, itAlp++ );
+		m_vecAlpha[nCol].vecAhpla.insert( itAlp, alpTemp );
+	
+	// Scroll resizing
+
+}
+
+
+//------------------------------------------------------------------------------
+// CUIMultiList::SetIcon
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIMultiList::SetIcon( int nCol, int nIndex, UIRectUV &rtIcon )
+{
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	ASSERT( nIndex < m_vecIcon[nCol].vecIcon.size() );
+
+	m_vecIcon[nCol].vecIcon[nIndex] = rtIcon;
+}
+
+
+//------------------------------------------------------------------------------
+// CUIMultiList::SetAlpha
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIMultiList::SetAlpha( int nCol, int nIndex, ALPHA alpIcon )
+{
+	ASSERT( m_vecConType[nCol] == TYPE_ICON );
+	ASSERT( nCol < m_nColumnCount );
+	ASSERT( nIndex < m_vecAlpha[nCol].vecAhpla.size() );
+
+	m_vecAlpha[nCol].vecAhpla[nIndex] = alpIcon;
+}
+
 
 //------------------------------------------------------------------------------
 // CUIMultiList::ResetAllData
-// Explain:
-// Date : 2005-05-18
-// Author: Lee Ki-hwan
-// Modified: [2013/02/06] sykim70
+// Explain:  
+// Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
 void CUIMultiList::ResetAllData()
 {
 	CUIListBox::ResetAllStrings();
-
-	for (int nCol = 0; nCol < m_vecIcon.size(); nCol++)
+	
+	for( int nCol = 0; nCol < m_vecIcon.size(); nCol++ )
 	{
-		for (int nRow = 0; nRow < m_vecIcon[nCol].vecIcon.size(); nRow++)
-			delete m_vecIcon[nCol].vecIcon[nRow];
 		m_vecIcon[nCol].vecIcon.clear();
+		m_vecAlpha[nCol].vecAhpla.clear();
 	}
-}
 
-//------------------------------------------------------------------------------
-// CUIMultiList::ResetAllData
-// Explain:
-// Date : 2013/02/07
-// Author: sykim70
-//------------------------------------------------------------------------------
-int CUIMultiList::GetTopItem()
-{
-	return m_sbScrollBar.GetScrollPos();
 }

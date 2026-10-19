@@ -1,12 +1,7 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
 #include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIRemission.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Contents/Base/UIQuestBookNew.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
 enum eSelection
 {
@@ -17,7 +12,7 @@ enum eSelection
 
 // Date : 2005-03-07,   By Lee Ki-hwan
 static int	_iMaxMsgStringChar = 0;
-
+extern INDEX g_iCountry;
 // ----------------------------------------------------------------------------
 // Name : CUIRemission()
 // Desc : Constructor
@@ -33,6 +28,7 @@ CUIRemission::CUIRemission()
 // ----------------------------------------------------------------------------
 CUIRemission::~CUIRemission()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -41,7 +37,9 @@ CUIRemission::~CUIRemission()
 // ----------------------------------------------------------------------------
 void CUIRemission::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	_iMaxMsgStringChar = REMISSION_DESC_CHAR_WIDTH / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -170,26 +168,25 @@ BOOL CUIRemission::InitRemission(  )
 		m_vectorbtnRemissions.push_back ( TempUIButtonEx );
 	}
 
-	int	i;
-	for( i = 0; i < ITEM_COUNT_IN_INVENTORY_NORMAL; i++ )
+	int	iRow, iCol;
+	for( iRow = 0; iRow < INVEN_SLOT_ROW_TOTAL; iRow++ )
 	{
-		const SBYTE sbWearPos	= _pNetwork->MySlotItem[0][i].Item_Wearing;
-		CItemData*	pItemData = _pNetwork->MySlotItem[0][i].ItemData;
-		
-		if (pItemData != NULL &&
-			((pItemData->GetType() == CItemData::ITEM_WEAPON) ||		//착용 중이 아닌 아이템도 봉인 해제될 수 있게
-			(pItemData->GetType() == CItemData::ITEM_SHIELD)) )
-		{	
-			if( _pNetwork->MySlotItem[0][i].Item_Flag & FLAG_ITEM_SEALED )
+		for( iCol = 0; iCol < INVEN_SLOT_COL; iCol++ )
+		{
+			const SBYTE sbWearPos	= _pNetwork->MySlotItem[0][iRow][iCol].Item_Wearing;
+			//if( sbWearPos >= 0 && sbWearPos <= WEAR_BOOTS )		//착용 중이 아닌 아이템도 봉인 해제될 수 있게
 			{	
-				const SWORD nTab		= _pNetwork->MySlotItem[0][i].Item_Tab;
-				const SWORD nIdx		= _pNetwork->MySlotItem[0][i].InvenIndex;		
-				const LONG lIndex		= _pNetwork->MySlotItem[0][i].Item_Index;
-				const LONG lUniIndex	= _pNetwork->MySlotItem[0][i].Item_UniIndex;					
-					
+				if( _pNetwork->MySlotItem[0][iRow][iCol].Item_Flag & FLAG_ITEM_SEALED )
+				{	
+					const SBYTE sbTab		= _pNetwork->MySlotItem[0][iRow][iCol].Item_Tab;
+					const SBYTE sbRow		= _pNetwork->MySlotItem[0][iRow][iCol].Item_Row;
+					const SBYTE sbCol		= _pNetwork->MySlotItem[0][iRow][iCol].Item_Col;			
+					const LONG lIndex		= _pNetwork->MySlotItem[0][iRow][iCol].Item_Index;
+					const LONG lUniIndex	= _pNetwork->MySlotItem[0][iRow][iCol].Item_UniIndex;					
 				TempUIButtonEx.Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_REMISSION, UBET_REMISSION ); 
-				TempUIButtonEx.SetRemissionInfo( REMISSION_ITEM, nTab, nIdx, lIndex, lUniIndex, sbWearPos );
+				TempUIButtonEx.SetRemissionInfo( REMISSION_ITEM, sbTab, sbRow, sbCol, lIndex, lUniIndex, sbWearPos );
 				m_vectorbtnRemissions.push_back ( TempUIButtonEx );
+				}
 			}
 		}
 	}
@@ -198,7 +195,7 @@ BOOL CUIRemission::InitRemission(  )
 	m_sbRemissionIcon.SetScrollPos( 0 );
 	m_sbRemissionIcon.SetCurItemCount( m_vectorbtnRemissions.size()  );
 
-	CUIManager::getSingleton()->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
 
 	if(m_vectorbtnRemissions.empty())
 		return FALSE;
@@ -211,16 +208,14 @@ BOOL CUIRemission::InitRemission(  )
 // ----------------------------------------------------------------------------
 void CUIRemission::OpenRemission( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// If this is already exist
-	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_REMISSION_REQ ) || IsVisible() )
+	if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_REMISSION_REQ ) || IsVisible() )
 		return;
 
 	// If inventory is already locked
-	if( pUIManager->GetInventory()->IsLocked() )
+	if( _pUIMgr->GetInventory()->IsLocked() )
 	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
+		_pUIMgr->GetInventory()->ShowLockErrorMessage();
 		return;
 	}
 
@@ -228,42 +223,46 @@ void CUIRemission::OpenRemission( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
 
-	CMobData* MD = CMobData::getData(iMobIndex);
+	CMobData& MD = _pNetwork->GetMobData(iMobIndex);
 	
-	//if(MD->IsRemission())		// FIXME : 면죄부 NPC 인지 확인.
+	//if(MD.IsRemission())		// FIXME : 면죄부 NPC 인지 확인.
 	{
 		// Create remission message box
-		pUIManager->CreateMessageBoxL( _S( 601, "면죄부" ), UI_REMISSION, MSGLCMD_REMISSION_REQ );		
+		_pUIMgr->CreateMessageBoxL( _S( 601, "면죄부" ), UI_REMISSION, MSGLCMD_REMISSION_REQ );		
 
-		CTString	strNpcName = CMobData::getData(iMobIndex)->GetName();
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, strNpcName, -1, 0xE18600FF );
+		CTString	strNpcName = _pNetwork->GetMobName(iMobIndex);
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, strNpcName, -1, 0xE18600FF );
 
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 602, "그대의 어깨를 누르고 있는 짐이 무거워 보이는구려." ), -1, 0xA3A1A3FF );		
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 603, "그대가 아무리 큰 죄를 지었다고 하더라도, 아들을 사랑하는 신의 마음은 그보다 더 깊고 넓으시다오! 지금이라도 신께 용서를 구하시오." ), -1, 0xA3A1A3FF );		
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 604, "자 어리석은 그대를 위하여, 내 조금이나마 고통을 덜어내 드리겠소." ), -1, 0xA3A1A3FF );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 602, "그대의 어깨를 누르고 있는 짐이 무거워 보이는구려." ), -1, 0xA3A1A3FF );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 603, "그대가 아무리 큰 죄를 지었다고 하더라도, 아들을 사랑하는 신의 마음은 그보다 더 깊고 넓으시다오! 지금이라도 신께 용서를 구하시오." ), -1, 0xA3A1A3FF );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, TRUE, _S( 604, "자 어리석은 그대를 위하여, 내 조금이나마 고통을 덜어내 드리겠소." ), -1, 0xA3A1A3FF );		
 		
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 605, "수락한다." ), REMISSION_OK  );		
-		pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 606, "돌아간다." ) );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 605, "수락한다." ), REMISSION_OK  );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 606, "돌아간다." ) );		
 
 		if(bHasQuest)
 		{
+#ifdef	NEW_QUESTBOOK
 			// 2009. 05. 27 김정래
 			// 이야기한다 변경 처리
 			CUIQuestBook::AddQuestListToMessageBoxL(MSGLCMD_REMISSION_REQ);				
+#else
+			_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 1053, "이야기한다." ), REMISSION_TALK  );		
+#endif
 		}
 
 		// FIXME : 퀘스트가 없을 경우에 문제가 됨.
 		// FIXME : 고로, 이벤트 NPC는 되도록 퀘스트를 갖고 있는 형태로???
-		if(MD->IsEvent())
+		if(MD.IsEvent())
 		{
-			pUIManager->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 100, "이벤트" ), REMISSION_EVENT  );		
+			_pUIMgr->AddMessageBoxLString( MSGLCMD_REMISSION_REQ, FALSE, _S( 100, "이벤트" ), REMISSION_EVENT  );		
 		}
 	}
 	
 	m_nSelRemissionID	= -1;
 	
 	// Character state flags
-	pUIManager->SetCSFlagOn( CSF_REMISSION );
+	_pUIMgr->SetCSFlagOn( CSF_REMISSION );
 }
 
 // ----------------------------------------------------------------------------
@@ -272,18 +271,16 @@ void CUIRemission::OpenRemission( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT
 // ----------------------------------------------------------------------------
 void CUIRemission::CloseRemission()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box of remission
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_BUY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_BUY );
 
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
 	
-	pUIManager->RearrangeOrder( UI_REMISSION, FALSE );
+	_pUIMgr->RearrangeOrder( UI_REMISSION, FALSE );
 	
 	// Character state flags
-	pUIManager->SetCSFlagOff( CSF_REMISSION );
+	_pUIMgr->SetCSFlagOff( CSF_REMISSION );
 }
 
 // ----------------------------------------------------------------------------
@@ -298,14 +295,12 @@ void CUIRemission::Render()
 	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		CloseRemission();
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set remission texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 		m_rtBackground.U0, m_rtBackground.V0, m_rtBackground.U1, m_rtBackground.V1,
 		0xFFFFFFFF );	
 	
@@ -324,36 +319,34 @@ void CUIRemission::Render()
 	m_lbRemissionDesc.Render();
 	
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
 	// Remission buttons
 	RenderRemissionBtns();
 	
 	// Text in remission
-	pDrawPort->PutTextEx( _S( 601, "면죄부" ), m_nPosX + REMISSION_TITLE_TEXT_OFFSETX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 601, "면죄부" ), m_nPosX + REMISSION_TITLE_TEXT_OFFSETX,	
 		m_nPosY + REMISSION_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 	
-	pDrawPort->PutTextExCX( _S( 601, "면죄부" ), m_nPosX + REMISSION_TAB_CX, m_nPosY + REMISSION_TAB_SY,		
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 601, "면죄부" ), m_nPosX + REMISSION_TAB_CX, m_nPosY + REMISSION_TAB_SY,		
 		0x6B6B6BFF );
 	
-	pDrawPort->PutTextEx( _S( 609, "현재 나스" ), m_nPosX + REMISSION_CURSP_SX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 609, "현재 나스" ), m_nPosX + REMISSION_CURSP_SX,	
 		m_nPosY + REMISSION_CURSP_SY );
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	// Set money
 	CTString strPlayerMoney;
 	if( _pNetwork->MyCharacterInfo.money > 0 )
 	{
 		strPlayerMoney.PrintF( "%I64d", _pNetwork->MyCharacterInfo.money );
-		pUIManager->InsertCommaToString( strPlayerMoney );
+		_pUIMgr->InsertCommaToString( strPlayerMoney );
 	}
 
-	pDrawPort->PutTextExRX( strPlayerMoney,
-		m_nPosX + REMISSION_CURSP_RX, m_nPosY + REMISSION_CURSP_SY, pUIManager->GetNasColor( strPlayerMoney ) );
+	_pUIMgr->GetDrawPort()->PutTextExRX( strPlayerMoney,
+		m_nPosX + REMISSION_CURSP_RX, m_nPosY + REMISSION_CURSP_SY, _pUIMgr->GetNasColor( strPlayerMoney ) );
 	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -367,208 +360,208 @@ void CUIRemission::AddRemissionDescString( CTString &strDesc, const COLOR colDes
 	if( nLength == 0 )
 		return;
 	
-	int		iPos;
 	// wooss 051002
-#if defined G_THAI
-	// Get length of string
-	INDEX	nThaiLen = FindThaiLen(strDesc);
-	INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-	if( nLength == 0 )
-		return;
-	// If length of string is less than max char
-	if( nThaiLen <= nChatMax )
-	{
-		// Check line character
-		for( iPos = 0; iPos < nLength; iPos++ )
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strDesc);
+		INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbRemissionDesc.AddString( 0, strDesc, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddRemissionDescString( strTemp, colDesc );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nLength; iPos++ )
-		{
-			if(nChatMax < FindThaiLen(strDesc,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( nSplitPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 			
-			AddRemissionDescString( strTemp, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddRemissionDescString( strTemp, colDesc );
-		}
-
-	}
-#else	
-	// If length of string is less than max char
-	if( nLength <= _iMaxMsgStringChar )
-	{
-		// Check line character		
-		for( iPos = 0; iPos < nLength; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbRemissionDesc.AddString( 0, strDesc, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddRemissionDescString( strTemp, colDesc );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
-		
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( nSplitPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
+			// Not exist
+			if( iPos == nLength )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
+				m_lbRemissionDesc.AddString( 0, strDesc, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
 				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strDesc,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 			
-			AddRemissionDescString( strTemp, colDesc );
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( nSplitPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+				
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+					
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+				
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
+
 		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxMsgStringChar )
+		{
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+			
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbRemissionDesc.AddString( 0, strDesc, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+				
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
+		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
 			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
+			if( b2ByteChar )
+				nSplitPos--;
+			
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+			
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( nSplitPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+				
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+					
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddRemissionDescString( strTemp, colDesc );
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbRemissionDesc.AddString( 0, strTemp2, colDesc );
+				
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+				
+				AddRemissionDescString( strTemp, colDesc );
+			}
 		}
 	}
-#endif
 }
 
 // ----------------------------------------------------------------------------
 // Name : GetRemissionDesc()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIRemission::GetRemissionDesc( int iRemissionType, int nIndex, SWORD nIdx )
+void CUIRemission::GetRemissionDesc( int iRemissionType, int nIndex, SBYTE sbRow, SBYTE sbCol )
 {
 	m_lbRemissionDesc.ResetAllStrings();
 	
@@ -598,7 +591,9 @@ void CUIRemission::GetRemissionDesc( int iRemissionType, int nIndex, SWORD nIdx 
 		}
 		break;
 	case REMISSION_ITEM:
-		{		
+		{
+			CItemData &rRemission = _pNetwork->GetItemData( nIndex );
+			
 			strTemp.PrintF( _S( 614, "봉인된 장비명\n\n" ) );							
 			AddRemissionDescString( strTemp, 0xFFC672FF );
 
@@ -607,7 +602,7 @@ void CUIRemission::GetRemissionDesc( int iRemissionType, int nIndex, SWORD nIdx 
 		}
 		break;
 	}
-	strTemp.PrintF( _S( 615, "면죄부 가격 : %I64d 나스" ), CalculatePrice(iRemissionType, nIdx) );	
+	strTemp.PrintF( _S( 615, "면죄부 가격 : %I64d 나스" ), CalculatePrice(iRemissionType, sbRow, sbCol) );	
 	AddRemissionDescString( strTemp, 0xFFC672FF );
 }
 
@@ -637,25 +632,23 @@ void CUIRemission::RenderRemissionBtns()
 		
 		m_vectorbtnRemissions[iRow].Render();
 	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	
 	// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_REMISSION );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_REMISSION );
 	
 	if( m_nSelRemissionID >= 0 )
 	{
 		// Set remission learn texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 		
 		m_vectorbtnRemissions[m_nSelRemissionID].GetAbsPos( nX, nY );
-		pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
 												m_rtSelOutline.U0, m_rtSelOutline.V0,
 												m_rtSelOutline.U1, m_rtSelOutline.V1,
 												0xFFFFFFFF );
 		
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	}
 	
 	nY = REMISSION_NAME_SY;
@@ -679,19 +672,21 @@ void CUIRemission::RenderRemissionBtns()
 		{
 		case REMISSION_HP:
 			m_strShortDesc.PrintF( _S( 616, "육체의 면죄부" ) );		
-			pDrawPort->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
 			break;
 		case REMISSION_MP:
 			m_strShortDesc.PrintF( _S( 617, "영혼의 면죄부" ) );		
-			pDrawPort->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
 			break;
 		case REMISSION_ITEM:
-			{				
+			{
+				CItemData &rRemission = _pNetwork->GetItemData( m_vectorbtnRemissions[iRow].GetItemIndex() );
+				
 				m_strShortDesc.PrintF( _S( 618, "장비의 면죄부" ) );		
-				pDrawPort->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY,	0xFFC672FF);
 
 				m_strShortDesc.PrintF( "%s", _pNetwork->GetItemName( m_vectorbtnRemissions[iRow].GetItemIndex() ));
-				pDrawPort->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY + 17, 0xBDA99FFF);
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc, m_nPosX + REMISSION_NAME_CX, m_nPosY + nY + 17, 0xBDA99FFF);
 			}
 			break;
 		}
@@ -723,7 +718,7 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			// Move remission
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -769,8 +764,6 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
 				nOldX = nX;		nOldY = nY;
 				
 				// Close button
@@ -828,13 +821,14 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 								{
 									GetRemissionDesc( m_vectorbtnRemissions[iRow].GetRemissionType(), 
 										m_vectorbtnRemissions[iRow].GetItemIndex(), 
-										m_vectorbtnRemissions[iRow].GetInvenIndex());
+										m_vectorbtnRemissions[iRow].GetItemRow(), 
+										m_vectorbtnRemissions[iRow].GetItemCol());
 										//m_vectorbtnRemissions[iRow].GetItemWearType());
 								}
 								
 								bLButtonDownInBtn = TRUE;
 								
-								pUIManager->RearrangeOrder( UI_REMISSION, TRUE );
+								_pUIMgr->RearrangeOrder( UI_REMISSION, TRUE );
 								return WMSG_SUCCESS;
 							}
 						}						
@@ -842,7 +836,7 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 					}
 				}
 				
-				pUIManager->RearrangeOrder( UI_REMISSION, TRUE );
+				_pUIMgr->RearrangeOrder( UI_REMISSION, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -850,11 +844,10 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 		
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
 			bLButtonDownInBtn = FALSE;
-
+			
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -920,7 +913,7 @@ WMSG_RESULT CUIRemission::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					
 					return WMSG_SUCCESS;
 				}
@@ -1008,26 +1001,24 @@ void CUIRemission::MsgBoxLCommand( int nCommandCode, int nResult )
 	case MSGLCMD_REMISSION_REQ:
 		if( nResult == REMISSION_OK )
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			if(InitRemission())
 			{
-				pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_REMISSION );
-				pUIManager->RearrangeOrder( UI_REMISSION, TRUE );
+				_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_REMISSION );
+				_pUIMgr->RearrangeOrder( UI_REMISSION, TRUE );
 			}
 			else
 			{
 				// Close message box of remission
-				pUIManager->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
-				pUIManager->CloseMessageBox( MSGCMD_REMISSION_BUY );
+				_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
+				_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_BUY );
 				
 				// Create message box of remission
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( _S( 601, "면죄부" ), UMBS_OK,			
 					UI_REMISSION, MSGCMD_REMISSION_NOTIFY );
 				MsgBoxInfo.AddString( _S( 619, "면죄받을 만한 내용이 없습니다." ) );	
-				pUIManager->CreateMessageBox( MsgBoxInfo );
-				pUIManager->SetCSFlagOff( CSF_REMISSION );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->SetCSFlagOff( CSF_REMISSION );
 			}
 		}
 		else if( nResult == REMISSION_TALK )
@@ -1042,7 +1033,7 @@ void CUIRemission::MsgBoxLCommand( int nCommandCode, int nResult )
 			// 퀘스트 창 띄우기.
 			//CUIQuestBook::TalkWithNPC();
 		}
-		
+
 		// [090527: selo] 확장팩 퀘스트 수정
 		else if( ciQuestClassifier < nResult )	
 		{
@@ -1053,7 +1044,7 @@ void CUIRemission::MsgBoxLCommand( int nCommandCode, int nResult )
 		else
 		{
 			// Character state flags
-			CUIManager::getSingleton()->SetCSFlagOff( CSF_REMISSION );
+			_pUIMgr->SetCSFlagOff( CSF_REMISSION );
 		}
 		break;		
 	}
@@ -1069,11 +1060,9 @@ void CUIRemission::MsgBoxLCommand( int nCommandCode, int nResult )
 // ----------------------------------------------------------------------------
 void CUIRemission::SendRemission()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box of remission learn
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_BUY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_BUY );
 	
 	if( m_nSelRemissionID < 0 )
 		return;
@@ -1092,11 +1081,12 @@ void CUIRemission::SendRemission()
 		break;
 	case REMISSION_ITEM:
 		{
-			const SWORD nTab = m_vectorbtnRemissions[m_nSelRemissionID].GetItemTab();
-			const SWORD nIdx = m_vectorbtnRemissions[m_nSelRemissionID].GetInvenIndex();
-
+			const SBYTE sbTab = m_vectorbtnRemissions[m_nSelRemissionID].GetItemTab();
+			const SBYTE sbRow = m_vectorbtnRemissions[m_nSelRemissionID].GetItemRow();
+			const SBYTE sbCol = m_vectorbtnRemissions[m_nSelRemissionID].GetItemCol();
+			//const LONG lItemIndex = m_vectorbtnRemissions[m_nSelRemissionID].GetItemIndex();
 			const LONG lUniItemIndex = m_vectorbtnRemissions[m_nSelRemissionID].GetItemUniIndex();			
-			_pNetwork->SendRecoverItemSeal(nTab, nIdx, lUniItemIndex);
+			_pNetwork->SendRecoverItemSeal(sbTab, sbRow, sbCol, lUniItemIndex);
 		}
 		break;
 	}	
@@ -1112,10 +1102,8 @@ void CUIRemission::SendRemission()
 // ----------------------------------------------------------------------------
 void CUIRemission::PressOK()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box of remission
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_BUY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_BUY );
 	
 	// Create message box of remission
 	CTString	strMessage;
@@ -1123,7 +1111,7 @@ void CUIRemission::PressOK()
 	MsgBoxInfo.SetMsgBoxInfo( _S( 601, "면죄부" ), UMBS_OKCANCEL, UI_REMISSION, MSGCMD_REMISSION_BUY);		
 	strMessage.PrintF( _S( 620, "정말 이 면죄부를 구입하시겠습니까?" ) );	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 // ----------------------------------------------------------------------------
@@ -1150,28 +1138,26 @@ void CUIRemission::RemissionError( UBYTE ubError )
 		break;
 	}
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box of remission
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
-	pUIManager->CloseMessageBox( MSGCMD_REMISSION_BUY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_NOTIFY );
+	_pUIMgr->CloseMessageBox( MSGCMD_REMISSION_BUY );
 	
 	// Create message box of remission
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 601, "면죄부" ), UMBS_OK,			
 								UI_REMISSION, MSGCMD_REMISSION_NOTIFY );
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
-	pUIManager->SetCSFlagOff( CSF_REMISSION );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->SetCSFlagOff( CSF_REMISSION );
 
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REMISSION );
 }
 
 // ----------------------------------------------------------------------------
 // Name : CalculatePrice()
 // Desc :
 // ----------------------------------------------------------------------------
-SQUAD CUIRemission::CalculatePrice(int iRemissionType, SWORD nIdx)
+SQUAD CUIRemission::CalculatePrice(int iRemissionType, SBYTE sbRow, SBYTE sbCol)
 {	
 	SQUAD iPrice = 0;
 	switch(iRemissionType)
@@ -1184,7 +1170,7 @@ SQUAD CUIRemission::CalculatePrice(int iRemissionType, SWORD nIdx)
 		break;
 	case REMISSION_ITEM:	// 아이템 면죄의 경우
 		{
-			int iWearPos = _pNetwork->MySlotItem[0][nIdx].Item_Wearing;
+			int iWearPos = _pNetwork->MySlotItem[0][sbRow][sbCol].Item_Wearing;
 			float fWeight = 1.0f;
 			if(iWearPos == WEAR_JACKET ||
 				iWearPos == WEAR_PANTS)
@@ -1199,18 +1185,18 @@ SQUAD CUIRemission::CalculatePrice(int iRemissionType, SWORD nIdx)
 
 			if( iWearPos != -1 )
 			{
-				const int iLevel = _pNetwork->MySlotItem[0][nIdx].ItemData->GetLevel();
+				const int iLevel = _pNetwork->MySlotItem[0][sbRow][sbCol].ItemData.GetLevel();
 				iPrice = 100 * iLevel * iLevel * fWeight;
 			}
 
 			/*
-			if(_pNetwork->pMyWearItem[iWearPos])
+			if(_pNetwork->pMyCurrentWearing[iWearPos])
 			{
-				const int iLevel = _pNetwork->pMyWearItem[iWearPos]->ItemData.GetLevel();
+				const int iLevel = _pNetwork->pMyCurrentWearing[iWearPos]->ItemData.GetLevel();
 			iPrice = 100 * iLevel * iLevel * fWeight;
 			}
 			*/
-			//const int iLevel = _pNetwork->MyCurrentWearing[iWearPos].ItemData->GetLevel();
+			//const int iLevel = _pNetwork->MyCurrentWearing[iWearPos].ItemData.GetLevel();
 		}
 		break;
 	}

@@ -85,10 +85,6 @@ protected:
 
 	int						m_nCurNum;
 
-	__int64					m_nStartTime;							// [sora] 시작 시간
-	__int64					m_nTime;								// [sora] 대기 시간
-	int						m_nTimeOutBtnMessage;					// [sora] 실행 메시지
-
 protected:
 	// Internal functions
 	void	ReturnCommand( int nResult );
@@ -99,8 +95,8 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	void	CreateMessageBox( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY );
-	void	AddDescString( const CTString &strMessage, const COLOR colDesc );
+	void	CreateMessageBox( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY );
+	void	AddDescString( CTString &strMessage, const COLOR colDesc );
 	void	AddSelString( CTString &strMessage, const COLOR colSel, int iValue = -1 );
 	void	InitMessageBox();
 	void	SetUIIndex( int nUIIndex ) { m_nUIIndex = nUIIndex; }
@@ -118,16 +114,6 @@ public:
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
-	// Key Messages.
-	WMSG_RESULT KeyMessage(MSG *pMsg );
-
-	void	SetMsgBoxLTimer(__int64 nTime, int nMessage)	// [sora] 동작 시간 설정
-	{
-		m_nStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-		m_nTime = nTime;
-		m_nTimeOutBtnMessage = nMessage;
-	}
 };
 
 

@@ -15,8 +15,8 @@
 #endif
 
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <vector>
+#include <Engine/Interface/UIWindow.h>
+#include <vector>
 //////////////////////////////////////////////////////////////////////////
 // 신형 텍스트 출력 제작중!!
 
@@ -48,7 +48,7 @@ public:
 	}
 
 	CTString& GetString(){ return m_strData; }
-	void SetString(const CTString &strInput, COLOR color = 0xFFFFFFFF);
+	void SetString(CTString& strInput, COLOR color = 0xFFFFFFFF);
 	void SetPos(int nPosX, int nPosY)
 	{
 		int nWidth = m_rcStrRect.GetWidth();
@@ -80,8 +80,8 @@ private:
 	std::vector<COLOR>				m_vecColor;         //원본 칼라
 	int						m_nAlign;
 
-	int CheckSplitPos(const CTString &strInput, int nWidth);
-	void AddCRectStringData(const CTString &strInput, COLOR color);
+	int CheckSplitPos(CTString& strInput, int nWidth);
+	void AddCRectStringData(CTString& strInput, COLOR color);
 
 public:
 	CUIRectString() : m_nAlign(ALIGN_LEFT)
@@ -111,13 +111,11 @@ public:
 	int GetMaxStrWidth();
 	int GetMaxStrHeight();
 
-	void AddString(const CTString &strInput, COLOR color = 0xFFFFFFFF);
+	void AddString(CTString& strInput, COLOR color = 0xFFFFFFFF);
 
 	void ClearString();
 
 	void Render();
-	
-	BOOL IsEmpty() { return m_vecStringList.size() > 0 ? FALSE : TRUE; }
 
 };
 

@@ -9,6 +9,11 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+
+
 // Define max char and line of strings
 #define	MAX_REFINE_STRING				4
 
@@ -38,7 +43,7 @@ protected:
 	CUIButton			m_btnClose;								// Close button
 	CUIButton			m_btnOK;								// OK button
 	CUIButton			m_btnCancel;							// Cancel button
-	CUIIcon*			m_pIconSlotItem;							// Slot item button
+	CUIButtonEx			m_btnSlotItem;							// Slot item button
 	BOOL				m_bWaitRefineResult;					// If UI wait result from server or not
 
 	// Strings
@@ -66,7 +71,7 @@ protected:
 
 protected:
 	// Internal functions
-	void	AddString( const CTString &strDesc );
+	void	AddString( CTString &strDesc );
 
 	// Command functions
 	void	SetRefineItem();

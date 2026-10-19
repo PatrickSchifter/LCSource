@@ -1,19 +1,10 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
 #include <Engine/Interface/UIOption.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Engine.h>
-#include <Engine/Network/Web.h>
-#include <Engine/Graphics/Adapter.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#ifdef LC_PLATFORM_SDL
-#include <Engine/Platform/Platform.h>
-#endif
+#include <Engine/Graphics/ViewPort.h>
+#include <Engine/LocalDefine.h>
 
-//2013/04/15 jeil 런처에 해상도 변경 추가
-#include <fstream>
 
 //안태훈 수정 시작	//(Open beta)(2004-12-30)
 extern FLOAT g_fSndVol;
@@ -33,20 +24,15 @@ extern INDEX		g_iEnterChat;
 extern INDEX		g_iAutoAttack;
 extern INDEX		g_iShowName;
 extern INDEX		g_iShowNameItem;
-
-// wooss 070401 ------------------->><<
-// kw : WSS_HELP_SYSTEM_1
-extern INDEX		g_iShowHelp1Icon;
-
+#ifdef HELP_SYSTEM_1
+	// wooss 070401 ------------------->><<
+	// kw : WSS_HELP_SYSTEM_1
+	extern INDEX		g_iShowHelp1Icon;
+#endif
 extern INDEX		g_iRejectExchange;
 extern INDEX		g_iRejectParty;
-
-extern INDEX		g_iQuestBookOpen;
-
 extern BOOL			_bWindowChanging;
 extern HWND			_hwndMain;
-extern HWND			_hDlgWeb;
-extern cWeb			g_web;
 extern CDrawPort	*_pdpMain;
 extern CDrawPort	*_pdpNormalMain;
 extern CDrawPort	*_pdpWideScreenMain;
@@ -62,15 +48,12 @@ extern INDEX		sam_bWideScreen;
 extern INDEX		cmd_iWindowLeft;
 extern INDEX		cmd_iWindowTop;
 extern INDEX		g_bSlaveNoTarget;			// UI_REFORM :Su-won
-// MBCS -> WBCS전환 [12/21/2011 rumist]
-static WCHAR		wchWindowTitle[256];
-//static char			achWindowTitle[256];
+
+static char			achWindowTitle[256];
 static PIX			_pixLastSizeI, _pixLastSizeJ;
-extern ENGINE_API INDEX sam_bFullScreenActive;
 
 int	g_nCurSelResolution;
 extern INDEX	g_iCountry;
-
 
 // ----------------------------------------------------------------------------
 // Name : CUIOption()
@@ -78,11 +61,10 @@ extern INDEX	g_iCountry;
 // ----------------------------------------------------------------------------
 CUIOption::CUIOption()
 {
-	int		i;
 	m_nCurOptionTab = 0;
 	m_bPixelShader = FALSE;
 
-	for( i = 0; i < 11; i++ )
+	for( int i = 0; i < 11; i++ )
 	{
 		m_afBrightness[i] = 0.9f * ( ( i - 5 ) * 0.05f );
 		m_afContrast[i] = 1.0f + 0.9f * ( ( i - 5 ) * 0.05f );
@@ -93,7 +75,7 @@ CUIOption::CUIOption()
 	}
 	for( i = 0; i < 5; i++ )
 	{
-		m_afViewTerrain[i] = 0.7f + i * 0.075;//1.0f + 0.5f * ( ( i - 4 ) / 5.0f );
+		m_afViewTerrain[i] = 1.0f + 0.5f * ( ( i - 4 ) / 5.0f );
 	}
 
 	m_pixDesktopWidth = 0;
@@ -101,8 +83,6 @@ CUIOption::CUIOption()
 
 	m_bShowToolTip = FALSE;
 	m_strToolTip = CTString( "" );
-	m_ptdButtonTexture = NULL;
-		
 }
 
 // ----------------------------------------------------------------------------
@@ -111,16 +91,13 @@ CUIOption::CUIOption()
 // ----------------------------------------------------------------------------
 CUIOption::~CUIOption()
 {
-	Destroy();
-
 	if( _pvpViewPortMain != NULL )
 	{
 		_pGfx->DestroyWindowCanvas( _pvpViewPortMain );
 		_pvpViewPortMain = NULL;
 		_pdpNormalMain = NULL;
 	}
-
-	STOCK_RELEASE(m_ptdButtonTexture);
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -130,10 +107,6 @@ CUIOption::~CUIOption()
 void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
 	INDEX tv_chat,tv_fame,tv_auto,tv_summon;
-	tv_chat = 0;
-	tv_fame = 0;
-	tv_auto = 0;
-	tv_summon = 0;
 	extern BOOL g_bIsMalEng;
 
 	switch(g_iCountry)
@@ -155,7 +128,6 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 		tv_chat=tv_fame=tv_auto=tv_summon=3;
 		break;
 	case MALAYSIA:
-		extern BOOL g_bIsMalEng;
 		if(g_bIsMalEng)
 		{
 			tv_chat=tv_summon=0;
@@ -194,19 +166,13 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
 	case FRANCE:
 	case POLAND:
-	case RUSSIA:
 	case TURKEY:
-	case MEXICO:
-	case ITALY:
-	case NETHERLANDS:
 		tv_chat=tv_fame=tv_auto=tv_summon=3;
 		break;
-	default:
-		tv_chat=tv_fame=tv_auto=tv_summon=0;
-		break;
 	}
-
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	//m_rcTitle.SetRect( 0, 0, 230, 22 );
@@ -214,7 +180,7 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_rcTitle.SetRect( 0, 0, 255, 35 );
 	m_rcOptionTab.SetRect( 6, 40, 27, 316 );
 	m_rcInnerBackground.SetRect(32, 61, 245, 363);
-		
+	
 
 	// Create option texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\NewOption.tex" ) );
@@ -250,10 +216,9 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	//m_cmbItemPlusEffect.SetDownBtnUV( 168, 401, 181, 414, fTexWidth, fTexHeight );
 	//m_cmbItemPlusEffect.SetUpBtnUV( 183, 401, 196, 414, fTexWidth, fTexHeight );
 	//m_cmbItemPlusEffect.SetDropListUV( 0, 462, 170, 477, fTexWidth, fTexHeight );
-	m_cmbItemPlusEffect.Create( this, 40, 268, 198, 16, 176, 4, 17, 10,
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+	m_cmbItemPlusEffect.Create( this, 40, 242, 198, 16, 176, 4, 17, 10,
 								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
-// 	m_cmbItemPlusEffect.Create( this, 40, 270, 198, 16, 176, 4, 17, 10,
-// 								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
 	m_cmbItemPlusEffect.SetBackUV( 8, 596, 206, 612, fTexWidth, fTexHeight );
 	m_cmbItemPlusEffect.SetDownBtnUV( 283, 5, 300, 15, fTexWidth, fTexHeight );
 	m_cmbItemPlusEffect.SetUpBtnUV( 302, 5, 319, 15, fTexWidth, fTexHeight );
@@ -275,14 +240,15 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cmbItemPlusEffect.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	// Strings
 	m_cmbItemPlusEffect.AddString( _S( 1031, "내 효과 비공개" ) );		
-	m_cmbItemPlusEffect.AddString( _S( 1032, "내 효과 공개" ) );	
+	m_cmbItemPlusEffect.AddString( _S( 1032, "내 효과 공개" ) );			
+#endif
 
 	// Show name slide bar
 	//m_slbShowName.Create( this, OPTION_CONTROL_SX, OPTION_SHOWNAME_SY + 16, 170, 5, 10, 10, 0, 6, 0, 5 );
 	//m_slbShowName.SetBackgroundUV( 0, 498, 170, 503, fTexWidth, fTexHeight );
 	m_slbShowName.Create( this, 43, 93, 191, 5, 12, 12, 0, 6, 0, 5 );
 	m_slbShowName.SetBarUV( 288, 31, 300, 43, fTexWidth, fTexHeight );
-		
+	
 	// Show item name slide bar
 	//m_slbShowNameItem.Create( this, OPTION_CONTROL_SX, OPTION_SHOWNAME_ITEM_SY + 16, 170, 5, 10, 10, 0, 6, 0, 5 );
 	//m_slbShowNameItem.SetBackgroundUV( 0, 498, 170, 503, fTexWidth, fTexHeight );
@@ -346,7 +312,7 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	//m_slbFiltering.Create( this, OPTION_CONTROL_SX, OPTION_FILTERING_SY + 16, 170, 5, 10, 10, 0, 3, 0, 2 );
 	//m_slbFiltering.SetBackgroundUV( 0, 498, 170, 503, fTexWidth, fTexHeight );
 	//m_slbFiltering.SetBarUV( 198, 386, 208, 396, fTexWidth, fTexHeight );
-	m_slbFiltering.Create( this, 43, 263, 191, 5, 12, 12, 0, 7, 0, 6 );; // 신주노맵의 밝기때문에 블롬효과 단계늘림
+	m_slbFiltering.Create( this, 43, 263, 191, 5, 12, 12, 0, 3, 0, 2 );
 	m_slbFiltering.SetBarUV( 288, 31, 300, 43, fTexWidth, fTexHeight );
 
 	// BGM slide bar
@@ -370,6 +336,37 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	//m_cmbResolution.SetDownBtnUV( 168, 401, 181, 414, fTexWidth, fTexHeight );
 	//m_cmbResolution.SetUpBtnUV( 183, 401, 196, 414, fTexWidth, fTexHeight );
 	//m_cmbResolution.SetDropListUV( 0, 462, 170, 477, fTexWidth, fTexHeight );
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+	m_cmbItemPlusEffect.Create( this, 40, 242, 198, 16, 176, 4, 17, 10,
+								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+#else
+	m_cmbItemPlusEffect.Create( this, 40, 268, 198, 16, 176, 4, 17, 10,
+								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+// 	m_cmbItemPlusEffect.Create( this, 40, 270, 198, 16, 176, 4, 17, 10,
+// 								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+	m_cmbItemPlusEffect.SetBackUV( 8, 596, 206, 612, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetDownBtnUV( 283, 5, 300, 15, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetUpBtnUV( 302, 5, 319, 15, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetDropListUV( 270, 60, 468, 96, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.CreateScroll( TRUE, 9, 7, 0, 0, 10 );
+	// Up button
+	m_cmbItemPlusEffect.SetScrollUpUV( UBS_IDLE, 209, 416, 218, 423, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetScrollUpUV( UBS_CLICK, 220, 416, 229, 423, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+	m_cmbItemPlusEffect.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+	// Bar button
+	m_cmbItemPlusEffect.SetScrollBarTopUV( 231, 416, 240, 426, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetScrollBarMiddleUV( 231, 427, 240, 429, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetScrollBarBottomUV( 231, 430, 240, 440, fTexWidth, fTexHeight );
+	// Down button
+	m_cmbItemPlusEffect.SetScrollDownUV( UBS_IDLE, 209, 425, 218, 432, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.SetScrollDownUV( UBS_CLICK, 220, 425, 229, 432, fTexWidth, fTexHeight );
+	m_cmbItemPlusEffect.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+	m_cmbItemPlusEffect.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+	// Strings
+	m_cmbItemPlusEffect.AddString( _S( 1031, "내 효과 비공개" ) );		
+	m_cmbItemPlusEffect.AddString( _S( 1032, "내 효과 공개" ) );	
+#endif
 
 	m_cmbResolution.Create( this, 40, 80, 198, 16, 176, 4, 17, 10,
 							10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
@@ -391,13 +388,18 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cmbResolution.SetScrollDownUV( UBS_CLICK, 220, 425, 229, 432, fTexWidth, fTexHeight );
 	m_cmbResolution.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cmbResolution.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
-	// if this client is kalydo version, blocked resolution feature. [11/30/2011 rumist]
+
 
 	// 선택 가능 대상 설정
 	//m_cmbTargetDest.Create( this, OPTION_CONTROL_SX, OPTION_TARGETDEST_SY + 17, 170, 15, 156, 1, 13, 13,
 	//							10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+	m_cmbTargetDest.Create( this, 40, 287, 198, 16, 176, 4, 17, 10,
+								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+#else
 	m_cmbTargetDest.Create( this, 40, 308, 198, 16, 176, 4, 17, 10,
 								10, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+#endif
 	m_cmbTargetDest.SetBackUV( 8, 596, 206, 612, fTexWidth, fTexHeight );
 	m_cmbTargetDest.SetDownBtnUV( 283, 5, 300, 15, fTexWidth, fTexHeight );
 	m_cmbTargetDest.SetUpBtnUV( 302, 5, 319, 15, fTexWidth, fTexHeight );
@@ -517,46 +519,31 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_btnCancel.SetNewType(TRUE);
 
 	// Enter chat check button
-#if defined (G_THAI)
-	nStrWidth = FindThaiLen( _S( 198, "엔터 채팅" ) ) + tv_chat;	
-#else
 	nStrWidth = ( _S( 198, "엔터 채팅" ).Length() + tv_chat ) *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 	//m_cbtnEnterChat.Create( this, OPTION_TEXT_SX + nStrWidth , OPTION_ENTERCHAT_SY, 11, 11,
 	//						_S( 198, "엔터 채팅" ), TRUE, nStrWidth, nStrWidth );
 	//m_cbtnEnterChat.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnEnterChat.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
-#if !defined (G_JAPAN)
 	m_cbtnEnterChat.Create( this, 121, 144, 13, 13,
 							_S( 198, "엔터 채팅" ), TRUE, nStrWidth, nStrWidth );
-#else
-	m_cbtnEnterChat.Create( this, 121, 144, 13, 13,
-							_S( 198, "엔터 채팅" ), TRUE, nStrWidth - 15, nStrWidth );
-#endif
 	m_cbtnEnterChat.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnEnterChat.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnEnterChat.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
 	m_cbtnEnterChat.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE );
 	m_cbtnEnterChat.SetTextColor( TRUE, 0xF2F2F2FF );
 	m_cbtnEnterChat.SetTextColor( FALSE, 0xF2F2F2FF );
-	m_cbtnEnterChat.SetCheck( TRUE );
-	// 엔터채팅 강제 [12/27/2012 Ranma]
-	g_iEnterChat = 1;
+	m_cbtnEnterChat.SetCheck( FALSE );
 
 	// Auto attack check button
-#if defined (G_THAI)
-	nStrWidth = FindThaiLen( _S( 738, "연속 공격" ) ) + tv_auto;	
-#else
 	nStrWidth = ( strlen( _S( 738, "연속 공격" ) ) + tv_auto ) *				
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 	//m_cbtnAutoAttack.Create( this, OPTION_TEXT_SX + nStrWidth, OPTION_AUTOATTACK_SY, 11, 11,
 	//							 _S( 738, "연속 공격" ), TRUE, nStrWidth, nStrWidth );		
 	//m_cbtnAutoAttack.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnAutoAttack.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
 	m_cbtnAutoAttack.Create( this, 121, 172, 13, 13,
-									_S( 738, "연속 공격" ), TRUE, nStrWidth, nStrWidth );		
+								 _S( 738, "연속 공격" ), TRUE, nStrWidth, nStrWidth );		
 	m_cbtnAutoAttack.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnAutoAttack.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnAutoAttack.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
@@ -566,35 +553,41 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnAutoAttack.SetCheck( FALSE );
 
 	// Auto attack check button
-	//nStrWidth = ( strlen( _S( 1682, "명성 공개" ) ) +tv_fame ) * 
-	//			( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+	nStrWidth = ( strlen( _S( 1682, "명성 공개" ) ) +tv_fame ) * 
+				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	//m_cbtnFameOpen.Create( this, OPTION_TEXT_SX + nStrWidth, OPTION_FAMEOPEN_SY, 11, 11,
 	//					 _S( 1682, "명성 공개" ), TRUE, nStrWidth, nStrWidth );
 	//m_cbtnFameOpen.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnFameOpen.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
-	//m_cbtnFameOpen.Create( this, 121, 200, 13, 13,
-	//					 _S( 1682, "명성 공개" ), TRUE, nStrWidth, nStrWidth );
-	//m_cbtnFameOpen.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
-	//m_cbtnFameOpen.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
-	//m_cbtnFameOpen.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
-	//m_cbtnFameOpen.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE );
-	//m_cbtnFameOpen.SetTextColor( TRUE, 0xF2F2F2FF );
-	//m_cbtnFameOpen.SetTextColor( FALSE, 0xF2F2F2FF );
-	//m_cbtnFameOpen.SetCheck( TRUE );
-	//m_cbtnFameOpen.SetEnable( FALSE );
-
+	m_cbtnFameOpen.Create( this, 121, 200, 13, 13,
+						 _S( 1682, "명성 공개" ), TRUE, nStrWidth, nStrWidth );
+	m_cbtnFameOpen.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
+	m_cbtnFameOpen.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
+	m_cbtnFameOpen.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
+	m_cbtnFameOpen.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE );
+	m_cbtnFameOpen.SetTextColor( TRUE, 0xF2F2F2FF );
+	m_cbtnFameOpen.SetTextColor( FALSE, 0xF2F2F2FF );
+	m_cbtnFameOpen.SetCheck( TRUE );
+	m_cbtnFameOpen.SetEnable( FALSE );
 
 	// wooss 050809
 	// move , summon permission
-	// ITS #6255 : 러시아 요청으로 인한 옵션 스트링 줄 맞춤 정리. [12/22/2011 rumist]
-#if defined (G_THAI)
-	nStrWidth = FindThaiLen( _S( 2118, "소환 허가" ) ) + tv_summon;	
-#else
+	
 	nStrWidth = ( strlen( _S( 2118, "소환 허가" ) ) + tv_summon) * 
 				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );	
-#endif
-	m_cbtnMovePermit.Create( this, 225, 144, 13, 13,
-							_S( 2118, "소환 허가" ), TRUE, nStrWidth, nStrWidth );
+
+	if( g_iCountry == THAILAND )
+	{
+		m_cbtnMovePermit.Create( this, OPTION_TEXT_SX + nStrWidth , OPTION_SUMMON_SY, 11, 11,
+							 _S( 2118, "소환 허가" ), TRUE, nStrWidth, nStrWidth );
+	}
+	else
+	{
+		//m_cbtnMovePermit.Create( this, OPTION_TEXT2_SX + nStrWidth + 6 , OPTION_ENTERCHAT_SY, 11, 11,
+		//					 _S( 2118, "소환 허가" ), TRUE, nStrWidth, nStrWidth );
+		m_cbtnMovePermit.Create( this, 225, 144, 13, 13,
+							 _S( 2118, "소환 허가" ), TRUE, nStrWidth, nStrWidth );
+	}
 
 	//m_cbtnMovePermit.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnMovePermit.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
@@ -609,16 +602,27 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 
 	// wooss 070401 ------------------------------------------------------------------->>
 	// kw : WSS_HELP_SYSTEM_1
-
-#if defined (G_THAI)
-	// TODO : 적용될 때 따로 위치 손 봐야 할듯...
-	nStrWidth = FindThaiLen( _S(284, "도움말" ) ) + tv_summon;
-#else
-	nStrWidth = ( strlen( _S(284, "도움말" ) ) + tv_summon ) * 
+	nStrWidth = ( strlen( _S(284, "도움말" ) ) + 6 ) * 
 				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );	
-#endif
-	m_cbtnHelp1Icon.Create( this, 225, 172, 13, 13,
-								_S(284, "도움말" ), TRUE, nStrWidth, nStrWidth );
+
+	if( g_iCountry == THAILAND )
+	{
+		// TODO : 적용될 때 따로 위치 손 봐야 할듯...
+		m_cbtnHelp1Icon.Create( this, OPTION_TEXT_SX + nStrWidth , OPTION_SUMMON_SY, 11, 11,
+							 _S(284, "도움말" ), TRUE, nStrWidth, nStrWidth );
+	}
+	else if ( g_iCountry == USA )
+	{
+		m_cbtnHelp1Icon.Create( this, 225 , 172, 13, 13,
+							 _S(284, "도움말" ), TRUE, nStrWidth, nStrWidth );
+	}
+	else
+	{
+		//m_cbtnHelp1Icon.Create( this, OPTION_TEXT2_SX + nStrWidth + 6 , OPTION_ENTERCHAT_SY + 25, 11, 11,
+		//					 _S(284, "도움말" ), TRUE, nStrWidth, nStrWidth );
+		m_cbtnHelp1Icon.Create( this, 225, 172, 13, 13,
+							 _S(284, "도움말" ), TRUE, nStrWidth, nStrWidth );
+	}
 
 	//m_cbtnHelp1Icon.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnHelp1Icon.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
@@ -630,18 +634,13 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnHelp1Icon.SetTextColor( FALSE, 0xF2F2F2FF );
 	m_cbtnHelp1Icon.SetCheck( TRUE );
 
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
 	// [7/9/2009 rumist] rejection request message.
-#if defined (G_RUSSIA)
-	nStrWidth = ( strlen( _S( 4456, "거래 거부" ) ) + tv_summon ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#elif (G_THAI)
-	nStrWidth = FindThaiLen( _S( 4456, "거래 거부" ) ) + tv_summon;	
-#else
-	nStrWidth = ( strlen( _S( 4456, "거래 거부" ) ) + tv_summon ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
+	nStrWidth = ( strlen( _S( 4456, "거래 거부" ) ) ) * 
+				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() + 1 );
+
 	m_cbtnRejectExchange.Create( this, 225, 200, 13, 13,
-							_S( 4456, "거래 거부" ), TRUE, nStrWidth, nStrWidth );
+						 _S( 4456, "거래 거부" ), TRUE, nStrWidth, nStrWidth );
 	m_cbtnRejectExchange.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnRejectExchange.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnRejectExchange.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
@@ -650,19 +649,15 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnRejectExchange.SetTextColor( FALSE, 0xF2F2F2FF );
 	m_cbtnRejectExchange.SetCheck( TRUE );
 	m_cbtnRejectExchange.SetEnable( TRUE );	
-
-	// [7/9/2009 rumist] rejection request message.
-#if defined (G_RUSSIA)
-	nStrWidth = ( strlen( _S( 4457, "파티 거부" ) ) + tv_summon - 1 ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#elif (G_THAI)
-	nStrWidth = FindThaiLen( _S( 4457, "파티 거부" ) ) + tv_summon;	
-#else
-	nStrWidth = ( strlen( _S( 4457, "파티 거부" ) ) + tv_summon ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 #endif
+
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
+	// [7/9/2009 rumist] rejection request message.
+	nStrWidth = ( strlen( _S( 4457, "파티/원정대 거부" ) ) ) * 
+				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() + 1 );
+	
 	m_cbtnRejectParty.Create( this, 225, 226, 13, 13,
-							_S( 4457, "파티/원정대 거부" ), TRUE, nStrWidth, nStrWidth );
+						 _S( 4457, "파티/원정대 거부" ), TRUE, nStrWidth, nStrWidth );
 	m_cbtnRejectParty.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnRejectParty.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnRejectParty.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
@@ -671,25 +666,7 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnRejectParty.SetTextColor( FALSE, 0xF2F2F2FF );
 	m_cbtnRejectParty.SetCheck( TRUE );
 	m_cbtnRejectParty.SetEnable( TRUE );
-
-#ifdef	G_KOR
-		nStrWidth = ( strlen( _S(5589, "퀘스트북 팝업") ) + 1 ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#elif (G_THAI)
-	nStrWidth = FindThaiLen( _S( 5589, "퀘스트북 팝업" ) ) + tv_summon;	
-#else
-		nStrWidth = ( strlen( _S(5589, "퀘스트북 팝업") ) + 3 ) * 
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 #endif
-	m_cbtnQuestBookOpen.Create(this, 121, 200, 13, 13, _S(5589, "퀘스트북 팝업"), TRUE, nStrWidth, nStrWidth);
-	m_cbtnQuestBookOpen.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
-	m_cbtnQuestBookOpen.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
-	m_cbtnQuestBookOpen.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
-	m_cbtnQuestBookOpen.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE );
-	m_cbtnQuestBookOpen.SetTextColor( TRUE, 0xF2F2F2FF );
-	m_cbtnQuestBookOpen.SetTextColor( FALSE, 0xF2F2F2FF );
-	m_cbtnQuestBookOpen.SetCheck( TRUE );
-	m_cbtnQuestBookOpen.SetEnable( TRUE );
 
 	// Fullscreen check button
 	// 대만 버젼에서는 제외
@@ -699,21 +676,10 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	//							 _S( 739, "전체 화면" ), TRUE, nStrWidth, nStrWidth );		
 	//m_cbtnFullscreen.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnFullscreen.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
-#ifdef G_THAI
-	nStrWidth = FindThaiLen( _S( 739, "전체 화면" ) ) + tv_summon;
-#else
 	nStrWidth = ( strlen( _S( 739, "전체 화면" ) ) + 1 ) *				
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif // (G_THAI)
-
-	// [091119: selo] 전체 화면 글씨 왼쪽으로 나오는거에서 오른쪽으로 나오게 하기
-#if ( defined(G_USA) || defined(G_JAPAN) )
 	m_cbtnFullscreen.Create( this, 98, 105, 13, 13,
-								_S( 739, "전체 화면" ), FALSE, 15);
-#else
-	m_cbtnFullscreen.Create( this, 98, 105, 13, 13,
-									_S( 739, "전체 화면" ), TRUE, nStrWidth, nStrWidth );
-#endif
+								 _S( 739, "전체 화면" ), TRUE, nStrWidth, nStrWidth );		
 	m_cbtnFullscreen.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnFullscreen.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnFullscreen.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
@@ -721,7 +687,7 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnFullscreen.SetTextColor( TRUE, 0xF2F2F2FF );
 	m_cbtnFullscreen.SetTextColor( FALSE, 0xAAAAAAFF );
 	m_cbtnFullscreen.SetCheck( TRUE );
-		
+
 	// Background check button
 	//nStrWidth = ( _S( 207, "배경효과" ).Length() + 3 ) *
 	//				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
@@ -729,24 +695,10 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	//							_S( 207, "배경효과" ), TRUE, nStrWidth, nStrWidth );
 	//m_cbtnBackground.SetUV( UCBS_NONE, 224, 401, 235, 412, fTexWidth, fTexHeight );
 	//m_cbtnBackground.SetUV( UCBS_CHECK, 198, 401, 209, 412, fTexWidth, fTexHeight );
-#ifdef G_THAI
-	nStrWidth = FindThaiLen( _S( 207, "배경효과" ) ) + tv_summon;
-#else
 	nStrWidth = ( _S( 207, "배경효과" ).Length() + 1 ) *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif // (G_THAI)
-
-	if (g_iCountry == MEXICO)
-	{
-		m_cbtnBackground.Create( this, 99, 282, 13, 13,
-								_S( 207, "배경효과" ), FALSE, 15, 0 );
-	}
-	else
-	{
-		m_cbtnBackground.Create( this, 99, 282, 13, 13,
+	m_cbtnBackground.Create( this, 99, 282, 13, 13,
 								_S( 207, "배경효과" ), TRUE, nStrWidth, nStrWidth );
-	}
-
 	m_cbtnBackground.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
 	m_cbtnBackground.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
 	m_cbtnBackground.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
@@ -754,7 +706,7 @@ void CUIOption::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	m_cbtnBackground.SetTextColor( TRUE, 0xF2F2F2FF );
 	m_cbtnBackground.SetTextColor( FALSE, 0xF2F2F2FF );
 	m_cbtnBackground.SetCheck( TRUE );
-		
+	
 	// --------------------------------------------------------------------------------<<
 }
 
@@ -786,7 +738,7 @@ void CUIOption::InitOption()
 {
 	m_cbtnFullscreen.SetEnable( TRUE );
 	m_cbtnFullscreen.SetCheck( IsFullScreen( sam_bFullScreenActive) );
-		
+	
 	// Date : 2005-01-15,   By Lee Ki-hwan
 	// 03-14, 잠금 기능 해제
 	// 04-08, 중국 원도우 모드 지원
@@ -795,15 +747,10 @@ void CUIOption::InitOption()
 		//m_cbtnFullscreen.SetEnable( FALSE );
 	//	m_cmbItemPlusEffect.SetEnable ( FALSE );	// Date : 2005-03-03,   By Lee Ki-hwan
 	}
-
-// [2011/04/07 : Sora] DX9.0 이상 버전에서는 지원하지 않으므로 비활성화
-#if defined(G_RUSSIA) || defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2)
-	m_slbBrightness.SetEnable( FALSE );
-	m_slbContrast.SetEnable( FALSE );
-#else
+		
 	m_slbBrightness.SetEnable( IsFullScreen( sam_bFullScreenActive ) );
 	m_slbContrast.SetEnable( IsFullScreen( sam_bFullScreenActive ) );
-#endif
+
 	// Pixel shader
 	m_bPixelShader = TRUE;
 	if( !( ( _pGfx->gl_ulFlags & GLF_VERTEXPROGRAM ) && ( _pGfx->gl_ulFlags & GLF_PIXELPROGRAM ) &&
@@ -822,8 +769,7 @@ void CUIOption::InitOption()
 
 	m_nBrightness = -1;
 	m_nContrast = -1;
-	int		i;
-	for( i = 0; i < 11; i++ )
+	for( int i = 0; i < 11; i++ )
 	{
 		if( m_afBrightness[i] == gfx_fBrightness )
 		{
@@ -866,19 +812,12 @@ void CUIOption::InitOption()
 	m_cbtnBackground.SetCheck( g_bRenderDecoration != 0 );
 
 	m_nViewTerrain = -1;
-
-	float fScale = CZoneInfo::getSingleton()->GetTerMul(g_slZone);
-	float fTmpView = 0.f;
-
 	for( i = 0; i < 5; i++ )
 	{
-		fTmpView = m_afViewTerrain[i] * fScale;
-
-		if( fTmpView == ter_fLODMul )
+		if( m_afViewTerrain[i] == ter_fLODMul )
 		{
 			m_slbViewTerrain.SetCurPos( i );
 			m_nViewTerrain = i;
-			break;
 		}
 	}
 	if( m_nViewTerrain == -1 )
@@ -903,7 +842,6 @@ void CUIOption::InitOption()
 	m_nFXVolume = m_slbFXSound.GetCurPos();
 //안태훈 수정 끝	//(Open beta)(2004-12-30)
 
-	// default option change to enter chat. [9/22/2009 rumist]
 	m_cbtnEnterChat.SetCheck( g_iEnterChat != 0 );
 	m_bEnterChat = g_iEnterChat != 0;
 
@@ -926,16 +864,18 @@ void CUIOption::InitOption()
 
 	//wooss 050809
 	//default true
-		
+	
 	m_cbtnMovePermit.SetCheck(!(tv_byte& (0x01 << 1)));
-	m_cbtnMovePermit.SetEnable(STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY);
-
+	m_cbtnMovePermit.SetEnable(_pUIMgr->GetUIGameState() == UGS_GAMEON);
+#ifdef HELP_SYSTEM_1
 	// wooss 070401 ------------------------------------->>
 	// kw : WSS_HELP_SYSTEM_1
 	m_cbtnHelp1Icon.SetCheck( g_iShowHelp1Icon != 0 );
 	m_iShowHelp1Icon = g_iShowHelp1Icon != 0;
 	// --------------------------------------------------<<
+#endif
 
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
 	// [7/9/2009 rumist] rejection.
 	m_cbtnRejectExchange.SetCheck( g_iRejectExchange != 0 );
 	m_bRejectExchange = g_iRejectExchange != 0;
@@ -943,10 +883,8 @@ void CUIOption::InitOption()
 	// [7/9/2009 rumist] rejection.
 	m_cbtnRejectParty.SetCheck( g_iRejectParty != 0 );
 	m_bRejectParty = g_iRejectParty != 0;
+#endif
 
-	// 1106 UI 개편 - 퀘스트북 열기 [09/05/11 trylord]
-	m_cbtnQuestBookOpen.SetCheck(g_iQuestBookOpen != 0 );
-	m_bQuestBookOpen	= g_iQuestBookOpen != 0;
 
 	// UI_REFORM :Su-won
 	m_cmbTargetDest.SetCurSel(g_bSlaveNoTarget);
@@ -968,13 +906,12 @@ void CUIOption::CreateResolutionList()
 	INDEX			ctDisplayCount = 0;
 
 	PIX	pixDepth = 0;
-	if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_16BIT )
+	if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_16BIT )
 		pixDepth = 16;
-	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_32BIT )
+	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_32BIT )
 		pixDepth = 32;
-	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
+	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_DEFAULT )
 	{
-#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -984,9 +921,6 @@ void CUIOption::CreateResolutionList()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
-#else
-		pixDepth = 32;  // the OpenGL desktop mode
-#endif // SE1_D3D
 	}
 
 	for( INDEX idm = 0; idm < ctDisplayMode; idm++ )
@@ -1054,16 +988,11 @@ void CUIOption::CreateResolutionList()
 // ----------------------------------------------------------------------------
 void CUIOption::OpenOption()
 {
-	if( IsVisible() == TRUE )
+	if( IsVisible() )
 		return;
 
-	ResetPosition( _pdpMain->dp_MinI, _pdpMain->dp_MinJ,
-					_pdpMain->dp_MaxI, _pdpMain->dp_MaxJ );
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-//	m_cbtnFameOpen.SetEnable( pUIManager->GetUIGameState() == UGS_GAMEON );
-	m_cmbItemPlusEffect.SetEnable( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY );
+	m_cbtnFameOpen.SetEnable( _pUIMgr->GetUIGameState() == UGS_GAMEON );
+	m_cmbItemPlusEffect.SetEnable( _pUIMgr->GetUIGameState() == UGS_GAMEON );
 
 	// Set default option
 	InitOption();
@@ -1072,51 +1001,23 @@ void CUIOption::OpenOption()
 	g_nCurSelResolution = m_cmbResolution.GetCurSel();
 
 	// Set visible
-	pUIManager->RearrangeOrder( UI_OPTION, TRUE );
+	_pUIMgr->RearrangeOrder( UI_OPTION, TRUE );
 }
 
-// toggle option UI [7/19/2010 rumist]
-// ----------------------------------------------------------------------------
-// Name : ToggleOption()
-// Desc :
-// ----------------------------------------------------------------------------
-void	CUIOption::ToggleOption()
-{
-	if( IsVisible() )
-		CancelOption();
-	else
-		OpenOption();
-}
-
-#ifndef LC_PLATFORM_SDL
 // ----------------------------------------------------------------------------
 // Name : CloseMainWindow()
 // Desc : close the main application window
 // ----------------------------------------------------------------------------
 static void CloseMainWindow(void)
 {
-	if (g_web.GetWebHandle() != NULL)
-	{
-		HWND hTmpDlg = g_web.GetWebHandle();
-		g_web.CloseWebPage(hTmpDlg);
-		DestroyWindow(hTmpDlg);
-	}
-
-	CUIManager::getSingleton()->DestroyRenderTarget();
-		
 	// if window exists
-	//	김영환 클라이언트의 경우 메인 핸들 삭제 안함.
-	if(_bClientApp == FALSE)
+	if( _hwndMain != NULL )
 	{
-		if( _hwndMain != NULL )
-		{
-			// destroy it
-			DestroyWindow( _hwndMain );
-			_hwndMain = NULL;
-		}
+		// destroy it
+		DestroyWindow( _hwndMain );
+		_hwndMain = NULL;
 	}
 }
-
 
 // ----------------------------------------------------------------------------
 // Name : CloseMainWindow()
@@ -1124,45 +1025,26 @@ static void CloseMainWindow(void)
 // ----------------------------------------------------------------------------
 static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
 {
-	//	김영환 : 클라이언트 아닌 겨우에만. 생성.
-	if(_bClientApp == FALSE)
-	{
-		ASSERT( _hwndMain == NULL );
-		// create a window, invisible initially
-		_hwndMain = CreateWindowEx(	WS_EX_TOPMOST | WS_EX_APPWINDOW,
-									"Nksp",
-									"",   // title
-									WS_POPUP,
-									0, 0,
-									pixSizeI, pixSizeJ,  // window size
-									NULL,
-									NULL,
-									_hInstanceMain,
-									NULL );
-		// didn't make it?
-		if( _hwndMain == NULL ) FatalError( TRANS( "Cannot open main window!" ) );
-	}
-	else
-	{
-		//	김영환 : 윈도우 메인 핸들 최상의 팝업 윈도우 설정.
-		SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_TOPMOST | WS_EX_APPWINDOW);
-		SetWindowLong(_hwndMain,GWL_STYLE,WS_POPUP);
-	}
-
-	_hDlgWeb = CreateDialog(_hInstanceMain, MAKEINTRESOURCE(g_web.GetWebDlgID()), _hwndMain, g_web.GetWebDlgCallBack());
-
-	if( _hDlgWeb==NULL) FatalError(TRANS("Cannot open Web Dialog!"));
-
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
+	ASSERT( _hwndMain == NULL );
+	// create a window, invisible initially
+	_hwndMain = CreateWindowEx( WS_EX_TOPMOST | WS_EX_APPWINDOW,
+								"Nksp",
+								"",   // title
+								WS_POPUP,
+								0, 0,
+								100, 100,  // window size
+								NULL,
+								NULL,
+								_hInstanceMain,
+								NULL );
+	// didn't make it?
+	if( _hwndMain == NULL ) FatalError( TRANS( "Cannot open main window!" ) );
+	SE_UpdateWindowHandle( _hwndMain );
 
 	// set window title and show it
-	// ITS # 6311 : 러시아 스트링 변경 요청. [12/15/2011 rumist]
-#if defined (G_RUSSIA)
-	swprintf( wchWindowTitle, L"Загрузка" );
-#else
-	swprintf( wchWindowTitle, L"Loading..." );
-#endif
-	SetWindowTextW( _hwndMain, wchWindowTitle );
+	sprintf( achWindowTitle, TRANS( "Loading..." ) );
+	SetWindowText( _hwndMain, achWindowTitle );
+	ShowWindow( _hwndMain, SW_SHOWNORMAL );
 }
 
 // ----------------------------------------------------------------------------
@@ -1171,76 +1053,37 @@ static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
 // ----------------------------------------------------------------------------
 static void ResetMainWindowNormal(void)
 {
-// screen change bug in fullscreen. [9/27/2011 rumist]
-	if (sam_bFullScreenActive)
-	{
-		HDC hDC = GetDC( GetDesktopWindow() );
-		int iDesktopBitsPixel = GetDeviceCaps( hDC, BITSPIXEL );
-		int iDesktopWidth = GetDeviceCaps( hDC, HORZRES );
-		int iDesktopHeight = GetDeviceCaps( hDC, VERTRES );
-		ReleaseDC( GetDesktopWindow(), hDC );
-
-		DEVMODE dm;
-		memset( &dm, 0, sizeof( dm ) );
-		dm.dmSize = sizeof( dm );
-		dm.dmPelsWidth  = _pixLastSizeI;
-		dm.dmPelsHeight = _pixLastSizeJ;
-		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
-		ChangeDisplaySettings( &dm, CDS_FULLSCREEN );
-	}
-
+	ShowWindow( _hwndMain, SW_HIDE );
+	// add edges and title bar to window size so client area would have size that we requested
+	RECT	rWindow, rClient;
+	GetClientRect( _hwndMain, &rClient );
+	GetWindowRect( _hwndMain, &rWindow );
+	const PIX	pixWidth  = _pixLastSizeI + (rWindow.right-rWindow.left) - (rClient.right-rClient.left);
+	const PIX	pixHeight = _pixLastSizeJ + (rWindow.bottom-rWindow.top) - (rClient.bottom-rClient.top);
 	int	pixPosX,pixPosY;
-	PIX	pixWidth, pixHeight;
-
-	if( sam_bFullScreenActive )
-	{
-		pixPosX = 0;
-		pixPosY = 0;
-		pixWidth = _pixLastSizeI;
-		pixHeight = _pixLastSizeJ;
+	if( cmd_iWindowLeft > 0 )
+	{    
+		pixPosX = cmd_iWindowLeft > (::GetSystemMetrics(SM_CXSCREEN)) ? (::GetSystemMetrics(SM_CXSCREEN)) : cmd_iWindowLeft;
+		cmd_iWindowLeft = -1;
 	}
-	else 
+	else
 	{
-		// add edges and title bar to window size so client area would have size that we requested
-		RECT	rWindow, rClient;
-		GetClientRect( _hwndMain, &rClient );
-		GetWindowRect( _hwndMain, &rWindow );
-		pixWidth  = _pixLastSizeI + (rWindow.right-rWindow.left) - (rClient.right-rClient.left);
-		pixHeight = _pixLastSizeJ + (rWindow.bottom-rWindow.top) - (rClient.bottom-rClient.top);
-			
-		if( cmd_iWindowLeft > 0 )
-		{    
-			pixPosX = cmd_iWindowLeft > (::GetSystemMetrics(SM_CXSCREEN)) ? (::GetSystemMetrics(SM_CXSCREEN)) : cmd_iWindowLeft;
-			cmd_iWindowLeft = -1;
-		}
-		else
-		{
-			pixPosX = (::GetSystemMetrics(SM_CXSCREEN) - pixWidth ) / 2;
-		}
-		if( cmd_iWindowTop > 0 )
-		{
-			pixPosY = cmd_iWindowTop > (::GetSystemMetrics(SM_CYSCREEN)) ? (::GetSystemMetrics(SM_CYSCREEN)) : cmd_iWindowTop;
-			cmd_iWindowTop = -1;
-		}
-		else
-		{
-			pixPosY = (::GetSystemMetrics(SM_CYSCREEN) - pixHeight ) / 2;
-		}
+		pixPosX = (::GetSystemMetrics(SM_CXSCREEN) - pixWidth ) / 2;
+	}
+	if( cmd_iWindowTop > 0 )
+	{
+		pixPosY = cmd_iWindowTop > (::GetSystemMetrics(SM_CYSCREEN)) ? (::GetSystemMetrics(SM_CYSCREEN)) : cmd_iWindowTop;
+		cmd_iWindowTop = -1;
+	}
+	else
+	{
+		pixPosY = (::GetSystemMetrics(SM_CYSCREEN) - pixHeight ) / 2;
 	}
 
 	// set new window size and show it
-	// ITS # 6311 : 러시아 스트링 변경 요청. [12/15/2011 rumist]
-#if defined (G_RUSSIA)
-	swprintf( wchWindowTitle, L"Загрузка" );
-#else
-	swprintf( wchWindowTitle, L"Loading..." );
-#endif
-
-	SetWindowTextW( _hwndMain, wchWindowTitle );
-	if (sam_bFullScreenActive)
-		SetWindowPos( _hwndMain, HWND_TOP, pixPosX,pixPosY, pixWidth,pixHeight, SWP_NOZORDER);
-	else
-		SetWindowPos(_hwndMain, HWND_NOTOPMOST, pixPosX,pixPosY, pixWidth,pixHeight, SWP_SHOWWINDOW | SWP_FRAMECHANGED);
+	sprintf( achWindowTitle, TRANS( "Loading..." ) );
+	SetWindowPos( _hwndMain, NULL, pixPosX,pixPosY, pixWidth,pixHeight, SWP_NOZORDER );
+	ShowWindow( _hwndMain, SW_SHOW );
 }
 
 // ----------------------------------------------------------------------------
@@ -1249,117 +1092,30 @@ static void ResetMainWindowNormal(void)
 // ----------------------------------------------------------------------------
 static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
 {
-	_pixLastSizeI = pixSizeI;
-	_pixLastSizeJ = pixSizeJ;
+	ASSERT( _hwndMain == NULL );
 
-	//	김영환 : 클라이어트의 경우에는 윈도우 생성 안함.
-	if(_bClientApp == FALSE)
-	{
-		ASSERT( _hwndMain == NULL );
-	
-		if (sam_bFullScreenActive)
-		{
-			// create a window, invisible initially
-			_hwndMain = CreateWindowEx(
-				WS_EX_TOPMOST | WS_EX_APPWINDOW,
-				"Nksp",
-				"",   // title
-				WS_POPUP,//WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
-				10,10,
-				100,100,  // window size
-				NULL,
-				NULL,
-				_hInstanceMain,
-				NULL);
-		}
-		else
-		{
-			// create a window, invisible initially
-			_hwndMain = CreateWindowEx(
-				WS_EX_APPWINDOW,
-				"Nksp",
-				"",   // title
-				WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
-				10,10,
-				100,100,  // window size
-				NULL,
-				NULL,
-				_hInstanceMain,
-				NULL);
-		}
-
-		// didn't make it?
-		if( _hwndMain == NULL ) FatalError( TRANS( "Cannot open main window!" ) );
-	}
-	else
-	{
-		ShowWindow(_hwndMain, SW_HIDE);
-		//	김영환 : 메인 윈도우 스타일만 변경.
-		if (sam_bFullScreenActive)
-		{
-			//	풀모드
-			SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_TOPMOST | WS_EX_APPWINDOW);
-			SetWindowLong(_hwndMain,GWL_STYLE,WS_POPUP);
-		}
-		else
-		{
-			//	창모드
-			SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_APPWINDOW);
-			SetWindowLong(_hwndMain,GWL_STYLE, (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
-		}
-	}
-
-	_hDlgWeb = CreateDialog(_hInstanceMain, MAKEINTRESOURCE(g_web.GetWebDlgID()), _hwndMain, g_web.GetWebDlgCallBack());
-
-	if( _hDlgWeb==NULL) FatalError(TRANS("Cannot open Web Dialog!"));
-
-
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
+	// create a window, invisible initially
+	_hwndMain = CreateWindowEx( WS_EX_APPWINDOW,
+								"Nksp",
+								"",   // title
+								WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+								10, 10,
+								pixSizeI, pixSizeJ,  // window size
+								NULL,
+								NULL,
+								_hInstanceMain,
+								NULL );
+	// didn't make it?
+	if( _hwndMain == NULL ) FatalError( TRANS( "Cannot open main window!" ) );
+	SE_UpdateWindowHandle( _hwndMain );
 
 	// set window title
-	// ITS # 6311 : 러시아 스트링 변경 요청. [12/15/2011 rumist]
-#if defined (G_RUSSIA)
-	swprintf( wchWindowTitle, L"Загрузка" );
-#else
-	swprintf( wchWindowTitle, L"Loading..." );
-#endif
-	SetWindowTextW( _hwndMain, wchWindowTitle );
-	//ResetMainWindowNormal();
-	CUIManager::getSingleton()->DestroyRenderTarget();
-}
-
-#else  // LC_PLATFORM_SDL
-
-// The SDL3 platform layer keeps the main window between display modes, as Nksp/MainWindow.cpp
-// does; the title is set afterwards (CUIManager::SetTitleName) and the web dialog is Windows only.
-static void CloseMainWindow(void)
-{
-	CUIManager::getSingleton()->DestroyRenderTarget();
-}
-
-static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
-{
-	PLT_SetMainWindowMode( pixSizeI, pixSizeJ, TRUE, -1, -1 );
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb );
-}
-
-static void ResetMainWindowNormal(void)
-{
-	// a position given on the command line is used once
-	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, sam_bFullScreenActive, cmd_iWindowLeft, cmd_iWindowTop );
-	cmd_iWindowLeft = -1;
-	cmd_iWindowTop = -1;
-}
-
-static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
-{
+	sprintf( achWindowTitle, TRANS( "Loading..." ) );
+	SetWindowText( _hwndMain, achWindowTitle );
 	_pixLastSizeI = pixSizeI;
 	_pixLastSizeJ = pixSizeJ;
 	ResetMainWindowNormal();
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb );
-	CUIManager::getSingleton()->DestroyRenderTarget();
 }
-#endif  // LC_PLATFORM_SDL
 
 // ----------------------------------------------------------------------------
 // Name : TryToSetDisplayMode()
@@ -1373,11 +1129,9 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	// mark to start ignoring window size/position messages until settled down
 	_bWindowChanging = TRUE;
-	// remember new settings
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	// destroy canvas if existing
+	_pUIMgr->GetGame()->DisableLoadingHook();
 	if( _pvpViewPortMain != NULL )
 	{
 		_pGfx->DestroyWindowCanvas( _pvpViewPortMain );
@@ -1387,50 +1141,18 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	// close the application window
 	CloseMainWindow();
-	extern void FinalizeShaders(void);
-	FinalizeShaders();	// Effect shader handle 삭제
-
-#ifndef LC_PLATFORM_SDL  // with SDL, PLT_SetMainWindowMode() picks the fullscreen mode
-	if (bFullScreenMode && !sam_bFullScreenActive)
-	{
-		DEVMODE dm;
-		memset( &dm, 0, sizeof( dm ) );
-		dm.dmSize = sizeof( dm );
-		dm.dmPelsWidth  = pixSizeI;
-		dm.dmPelsHeight = pixSizeJ;
-		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
-		ChangeDisplaySettings( &dm, CDS_FULLSCREEN );
-	}
-	else if (!bFullScreenMode && sam_bFullScreenActive)
-	{
-		//ChangeDisplaySettings(&_pGfx->gl_devmode, CDS_RESET);
-		ChangeDisplaySettings(NULL, 0);
-	}
-#endif
-
-	sam_bFullScreenActive = (bFullScreenMode==FULLSCREEN_MODE)?FULLSCREEN_MODE:OLD_WINDOW_MODE;
 
 	// try to set new display mode
 	BOOL bSuccess;
-
-	if( bFullScreenMode) 
-	{
-#ifdef SE1_D3D
+	if( bFullScreenMode) {
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
-#endif // SE1_D3D
 		bSuccess = _pGfx->SetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth);
-		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
-	} 
-	else 
-	{
-#ifdef SE1_D3D
+		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+	} else {
 		if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ);
-#endif // SE1_D3D
 		bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
-#ifdef SE1_D3D
+		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
-#endif // SE1_D3D
 	}
 
 	// if new mode was set
@@ -1442,30 +1164,46 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 		// erase context of both buffers (for the sake of wide-screen)
 		_pdpMain = _pdpNormalMain;
-   		if( _pdpMain!=NULL && _pdpMain->Lock()) {
-   			_pdpMain->Fill(C_BLACK|CT_OPAQUE);
-   			_pdpMain->Unlock();
-   			_pvpViewPortMain->SwapBuffers();
-   			_pdpMain->Lock();
-   			_pdpMain->Fill(C_BLACK|CT_OPAQUE);
-   			_pdpMain->Unlock();
-   			_pvpViewPortMain->SwapBuffers();
-  		}
+		if( _pdpMain!=NULL && _pdpMain->Lock()) {
+			_pdpMain->Fill(C_BLACK|CT_OPAQUE);
+			_pdpMain->Unlock();
+			_pvpViewPortMain->SwapBuffers();
+			_pdpMain->Lock();
+			_pdpMain->Fill(C_BLACK|CT_OPAQUE);
+			_pdpMain->Unlock();
+			_pvpViewPortMain->SwapBuffers();
+		}
 
-		// Win7 듀얼 모니터 환경에서 
-		// 전체화면 변경 시 서브 모니터에서 전체 화면이 풀린다.
-#ifndef LC_PLATFORM_SDL
-		SetFocus(_hwndMain);
-#endif
+		// lets try some wide screen screaming :)
+		const PIX pixYBegAdj = _pdpMain->GetHeight() * 21/24;
+		const PIX pixYEndAdj = _pdpMain->GetHeight() * 3/24;
+		const PIX pixXEnd    = _pdpMain->GetWidth();
+		//if(_pdpWideScreenMain) delete _pdpWideScreenMain;
+		//_pdpWideScreenMain = new CDrawPort( _pdpMain, PIXaabbox2D( PIX2D(0,pixYBegAdj), PIX2D(pixXEnd, pixYEndAdj)));
+		//_pdpWideScreenMain->dp_fWideAdjustment = 9.0f / 12.0f;
+		//if( sam_bWideScreen ) _pdpMain = _pdpWideScreenMain;
+
+		// initial screen fill and swap, just to get context running
+		BOOL bSuccess = FALSE;
+		if( _pdpMain!=NULL && _pdpMain->Lock()) 
+		{
+			//pdp->Fill( LCDGetColor( C_dGREEN|CT_OPAQUE, "bcg fill"));
+			_pdpMain->Fill( C_BLACK|CT_OPAQUE);
+			_pdpMain->Unlock();
+			_pvpViewPortMain->SwapBuffers();
+			bSuccess = TRUE;
+		}
+		_pUIMgr->GetGame()->EnableLoadingHook(_pdpMain);
 
 		// if the mode is not working, or is not accelerated
-		if( !_pGfx->IsCurrentModeAccelerated() )
+		if( !bSuccess || !_pGfx->IsCurrentModeAccelerated())
 		{ // report error
 #ifdef _DEBUG
 			CPrintF( TRANS("This mode does not support hardware acceleration.\n"));
 #endif
 			// destroy canvas if existing
 			if( _pvpViewPortMain!=NULL) {
+				_pUIMgr->GetGame()->DisableLoadingHook();
  				_pGfx->DestroyWindowCanvas( _pvpViewPortMain);
 				_pvpViewPortMain = NULL;
 				_pdpNormalMain = NULL;
@@ -1476,48 +1214,47 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			return FALSE;
 		}
 
-#ifdef SE1_D3D
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
 		{
 			HRESULT	hrDXT1 = _pGfx->gl_pD3D->CheckDeviceFormat( iAdapter,
 																D3DDEVTYPE_HAL,
 																_pGfx->gl_d3dColorFormat,
-																0,
+									                            0,
 																D3DRTYPE_TEXTURE,
 																D3DFMT_DXT1 );
 			HRESULT	hrDXT3 = _pGfx->gl_pD3D->CheckDeviceFormat( iAdapter,
 																D3DDEVTYPE_HAL,
 																_pGfx->gl_d3dColorFormat,
-																0,
+									                            0,
 																D3DRTYPE_TEXTURE,
 																D3DFMT_DXT3 );
 			HRESULT	hrDXT5 = _pGfx->gl_pD3D->CheckDeviceFormat( iAdapter,
 																D3DDEVTYPE_HAL,
 																_pGfx->gl_d3dColorFormat,
-																0,
+									                            0,
 																D3DRTYPE_TEXTURE,
 																D3DFMT_DXT5 );
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
-#endif // SE1_D3D
 
+		// remember new settings
+		sam_bFullScreenActive = (bFullScreenMode==FULLSCREEN_MODE)?FULLSCREEN_MODE:OLD_WINDOW_MODE;
+		
 		sam_iScreenSizeI = pixSizeI;
 		sam_iScreenSizeJ = pixSizeJ;
 		sam_iDisplayDepth = eColorDepth;
 		sam_iDisplayAdapter = iAdapter;
 		sam_iGfxAPI = eGfxAPI;
 
+		// Adjust position of UIs
+		_pUIMgr->AdjustUIPos( _pdpMain );
+
 		// Date : 2005-09-22(오후 8:26:30), By Lee Ki-hwan
 		// 타이틀 바 재 설졍 
-		pUIManager->SetTitleName( sam_bFullScreenActive, sam_iScreenSizeI, sam_iScreenSizeJ );
-
-		pUIManager->DestroyRenderTarget();
-		pUIManager->InitRenderTarget();
-
-		extern void InitializeShaders(void);
-		InitializeShaders(); // Effect shader handle 설정			
+		_pUIMgr->SetTitleName( sam_bFullScreenActive, sam_iScreenSizeI, sam_iScreenSizeJ );
+		
 		// report success
 		return TRUE;
 	}
@@ -1531,7 +1268,6 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	}
 }
 
-
 // ----------------------------------------------------------------------------
 // Name : ApplyOption()
 // Desc :
@@ -1543,13 +1279,14 @@ void CUIOption::ApplyOption()
 	m_bAutoAttack = m_cbtnAutoAttack.IsChecked();
 	m_nShowName = m_slbShowName.GetCurPos();
 	m_nShowNameItem = m_slbShowNameItem.GetCurPos();
-
+#ifdef HELP_SYSTEM_1
 	m_iShowHelp1Icon = (INDEX)m_cbtnHelp1Icon.IsChecked();    // wooss 070401 WSS_HELP_SYSTEM_1
+#endif
 
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
 	m_bRejectExchange = m_cbtnRejectExchange.IsChecked();		// [7/9/2009 rumist] rejection 
 	m_bRejectParty = m_cbtnRejectParty.IsChecked();	
-
-	m_bQuestBookOpen	= m_cbtnQuestBookOpen.IsChecked();
+#endif
 
 	m_nBrightness = m_slbBrightness.GetCurPos();
 	m_nContrast = m_slbContrast.GetCurPos();
@@ -1567,13 +1304,12 @@ void CUIOption::ApplyOption()
 
 	// If resolution is changed or window state is toggled
 	PIX	pixDepth = 0;
-	if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_16BIT )
+	if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_16BIT )
 		pixDepth = 16;
-	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_32BIT )
+	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_32BIT )
 		pixDepth = 32;
-	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
+	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DD_DEFAULT )
 	{
-#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -1583,10 +1319,8 @@ void CUIOption::ApplyOption()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
-#else
-		pixDepth = 32;  // the OpenGL desktop mode
-#endif // SE1_D3D
 	}
+
 	int	iRes = m_cmbResolution.GetCurSel();
 	if( iRes >= 0 )
 	{
@@ -1596,33 +1330,25 @@ void CUIOption::ApplyOption()
 			( IsFullScreen( sam_bFullScreenActive ) && m_vecPixDepth[iRes] != pixDepth ) ||
 			m_cbtnFullscreen.IsChecked() != IsFullScreen( sam_bFullScreenActive ) )
 		{
-			DisplayDepth	eDD = DISPD_DEFAULT;
+			DisplayDepth	eDD = DD_DEFAULT;
 			if( m_cbtnFullscreen.IsChecked() )
 			{
 				if( m_vecPixDepth[iRes] == 0 )
-					eDD = DISPD_DEFAULT;
+					eDD = DD_DEFAULT;
 				else if( m_vecPixDepth[iRes] == 16 )
-					eDD = DISPD_16BIT;
+					eDD = DD_16BIT;
 				else if( m_vecPixDepth[iRes] == 32 )
-					eDD = DISPD_32BIT;
+					eDD = DD_32BIT;
 			}
 
 			TryToSetDisplayMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter,
 									m_vecPixWidth[iRes], m_vecPixHeight[iRes], eDD, m_cbtnFullscreen.IsChecked() );
-			CreateResolutionList();
 
-			// 해상도가 변경되었다면, UIManager 크기를 갱신해야 한다.
-			// (the main drawport's size: at a Retina display's density it counts fewer pixels than
-			// the mode has, Engine/Platform/PlatformSDL.cpp)
-			if( _pdpMain!=NULL) SE_Get_UIManagerPtr()->InitPos(0, 0, _pdpMain->GetWidth(), _pdpMain->GetHeight());
-			else SE_Get_UIManagerPtr()->InitPos(0, 0, m_vecPixWidth[iRes], m_vecPixHeight[iRes]);
-			// Adjust position of UIs
-			SE_Get_UIManagerPtr()->AdjustUIPos( _pdpMain );
+			CreateResolutionList();
 		}
 	}
-
 	// fame opn option
-//	BOOL bFameOpen = m_cbtnFameOpen.IsChecked();
+	BOOL bFameOpen = m_cbtnFameOpen.IsChecked();
 	//TEMP:명성공개
 /*
 	if(_pNetwork->MyCharacterInfo.bFameOpen != bFameOpen)
@@ -1654,18 +1380,12 @@ void CUIOption::ApplyOption()
 	if(!bMove) tv_byte |= (0x01 << 1); 	
 	
 	_pNetwork->ItemPlusEffectReq( tv_byte );
-		
+	
 	// UI_REFORM :Su-won
 	g_bSlaveNoTarget =m_cmbTargetDest.GetCurSel();
 
 	// Set invisible
-	CUIManager::getSingleton()->RearrangeOrder( UI_OPTION, FALSE );
-}
-
-void CUIOption::ResetDisplay(void)
-{
-	TryToSetDisplayMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter,
-							sam_iScreenSizeI, sam_iScreenSizeJ, (enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
+	_pUIMgr->RearrangeOrder( UI_OPTION, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -1674,27 +1394,22 @@ void CUIOption::ResetDisplay(void)
 // ----------------------------------------------------------------------------
 void CUIOption::CancelOption()
 {
-	g_iEnterChat = m_bEnterChat;
+	g_iEnterChat = m_bEnterChat ? 1 : 0;
 	g_iAutoAttack = m_bAutoAttack ? 1 : 0;
 	g_iShowName = m_nShowName;
 	g_iShowNameItem = m_nShowNameItem;
-
+#ifdef HELP_SYSTEM_1
 	g_iShowHelp1Icon = m_iShowHelp1Icon ? 1 : 0;			// wooss 070401 WSS_HELP_SYSTEM_1
-
+#endif
 	g_iRejectExchange = m_bRejectExchange ? 1 : 0;					// [7/9/2009 rumist] rejection 
 	g_iRejectParty	= m_bRejectParty ? 1 : 0;
-
-	g_iQuestBookOpen	= m_bQuestBookOpen ? 1 : 0;
 
 	gfx_fBrightness = m_afBrightness[m_nBrightness];
 	gfx_fContrast = m_afContrast[m_nContrast];
 
 	gap_fTextureLODBias = m_afTextureQuality[m_nTextureQuality];
 	g_iShadowDetail = m_nShadowQuality;
-
-	float fScale = CZoneInfo::getSingleton()->GetTerMul(g_slZone);
-
-	ter_fLODMul = ska_fLODMul = mdl_fLODMul = (m_afViewTerrain[m_nViewTerrain] * fScale);
+	ter_fLODMul = ska_fLODMul = mdl_fLODMul = m_afViewTerrain[m_nViewTerrain];
 	g_iReflectionDetail = m_nReflectionQuality;
 	g_iUseBloom = m_nFiltering;
 	g_bRenderDecoration = m_bBackground ? 1 : 0;
@@ -1705,7 +1420,7 @@ void CUIOption::CancelOption()
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 	// Set invisible
-	CUIManager::getSingleton()->RearrangeOrder( UI_OPTION, FALSE );
+	_pUIMgr->RearrangeOrder( UI_OPTION, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -1714,8 +1429,7 @@ void CUIOption::CancelOption()
 // ----------------------------------------------------------------------------
 void CUIOption::InitInterface()
 {
-	CUIManager::getSingleton()->ResetUIPos( _pdpMain );
-	CUIManager::getSingleton()->ResetUISavePos( _pdpMain );
+	_pUIMgr->ResetUIPos( _pdpMain );
 }
 
 // ----------------------------------------------------------------------------
@@ -1724,27 +1438,25 @@ void CUIOption::InitInterface()
 // ----------------------------------------------------------------------------
 void CUIOption::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set option texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX;
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackground.U0, m_rtBackground.V0,
 										m_rtBackground.U1, m_rtBackground.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX +m_rcInnerBackground.Left, m_nPosY +m_rcInnerBackground.Top, 
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX +m_rcInnerBackground.Left, m_nPosY +m_rcInnerBackground.Top, 
 										m_nPosX +m_rcInnerBackground.Right, m_nPosY +m_rcInnerBackground.Bottom,
 										m_rtInnerBackground[m_nCurOptionTab].U0, m_rtInnerBackground[m_nCurOptionTab].V0,
 										m_rtInnerBackground[m_nCurOptionTab].U1, m_rtInnerBackground[m_nCurOptionTab].V1,
 										0xFFFFFFFF );
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
-		
-	pDrawPort->InitTextureData( m_ptdButtonTexture );
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
 
 	// Option tab
 	for( int iTab = 0; iTab < OPTIONTAB_TOTAL; iTab++ )
@@ -1753,20 +1465,20 @@ void CUIOption::Render()
 		if( iTab == m_nCurOptionTab )
 		{
 			/***
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
 												m_nPosX + m_rcOptionTab.Right, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT,
 												m_rtSelOptionTab[iTab].U0, m_rtSelOptionTab[iTab].V0,
 												m_rtSelOptionTab[iTab].U1, m_rtSelOptionTab[iTab].V1,
 												0xFFFFFFFF );
 			***/
 
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
 												m_nPosX + m_rcOptionTab.Right, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT,
 												m_rtSelOptionTabBackground.U0, m_rtSelOptionTabBackground.V0,
 												m_rtSelOptionTabBackground.U1, m_rtSelOptionTabBackground.V1,
 												0xFFFFFFFF );
-				
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left +6, m_nPosY + nTabPosY +18,
+			
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left +6, m_nPosY + nTabPosY +18,
 												m_nPosX + m_rcOptionTab.Right -2, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT -19,
 												m_rtSelOptionTab[iTab].U0, m_rtSelOptionTab[iTab].V0,
 												m_rtSelOptionTab[iTab].U1, m_rtSelOptionTab[iTab].V1,
@@ -1775,27 +1487,27 @@ void CUIOption::Render()
 		else
 		{
 			/***
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
 												m_nPosX + m_rcOptionTab.Right, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT,
 												m_rtOptionTab[iTab].U0, m_rtOptionTab[iTab].V0,
 												m_rtOptionTab[iTab].U1, m_rtOptionTab[iTab].V1,
 												0xFFFFFFFF );
 			***/
 
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left, m_nPosY + nTabPosY,
 												m_nPosX + m_rcOptionTab.Right, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT,
 												m_rtOptionTabBackground.U0, m_rtOptionTabBackground.V0,
 												m_rtOptionTabBackground.U1, m_rtOptionTabBackground.V1,
 												0xFFFFFFFF );			
 
-			pDrawPort->AddTexture( m_nPosX + m_rcOptionTab.Left +6, m_nPosY + nTabPosY +18,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcOptionTab.Left +6, m_nPosY + nTabPosY +18,
 												m_nPosX + m_rcOptionTab.Right -2, m_nPosY + nTabPosY + OPTION_TAB_HEIGHT -19,
 												m_rtOptionTab[iTab].U0, m_rtOptionTab[iTab].V0,
 												m_rtOptionTab[iTab].U1, m_rtOptionTab[iTab].V1,
 												0xFFFFFFFF );
 		}
 	}
-		
+	
 	// Close button
 	m_btnClose.Render();
 
@@ -1822,21 +1534,24 @@ void CUIOption::Render()
 		m_cbtnAutoAttack.Render();
 
 		//fame open
-//		m_cbtnFameOpen.Render();
+		m_cbtnFameOpen.Render();
 
 		//wooss 050809
 		//MovePermit render
 		m_cbtnMovePermit.Render();
-
+#ifdef	HELP_SYSTEM_1
 		// wooss 070401 ----------->><<
 		// WSS_HELP_SYSYTEM_1
 		m_cbtnHelp1Icon.Render();
-
+#endif
 		// [7/9/2009 rumist] rejection. 
-		m_cbtnRejectExchange.Render();
-		m_cbtnRejectParty.Render();
 
-		m_cbtnQuestBookOpen.Render();
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
+		if( m_cbtnRejectExchange.IsEnabled() )
+			m_cbtnRejectExchange.Render();
+		if( m_cbtnRejectParty.IsEnabled() )
+			m_cbtnRejectParty.Render();
+#endif
 
 	//	if ( g_iCountry == KOREA  ) 03-14, 잠금 기능 해제
 		//m_cmbItemPlusEffect.Render();			// Item plus effect
@@ -1896,59 +1611,74 @@ void CUIOption::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Text in option
-	//pDrawPort->PutTextEx( _S( 196, "옵션" ), m_nPosX + OPTION_TITLE_TEXT_OFFSETX,
+	//_pUIMgr->GetDrawPort()->PutTextEx( _S( 196, "옵션" ), m_nPosX + OPTION_TITLE_TEXT_OFFSETX,
 	//									m_nPosY + OPTION_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
-	pDrawPort->PutTextExCX( _S( 196, "옵션" ),
+
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 196, "옵션" ),
 												m_nPosX + OPTION_TITLE_TEXT_CX,
 												m_nPosY + OPTION_TITLE_TEXT_CY, 0xFFFFFFFF );
+#endif
 
 	// Game option
 	if( m_nCurOptionTab == OPTIONTAB_GAME )
 	{
-		pDrawPort->PutTextExCX( _S( 197, "게임" ),
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 197, "게임" ),
+												m_nPosX + OPTION_TITLE2_TEXT_CX,
+												m_nPosY + OPTION_TITLE2_TEXT_SY, 0xE1B300FF );
+#else
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 197, "게임" ),
 												m_nPosX + OPTION_SUB_TITLE_TEXT_CX,
 												m_nPosY + OPTION_SUB_TITLE_TEXT_CY, 0xE1B300FF );
+#endif
 
 		nX = m_nPosX + OPTION_TEXT_SX;
-		pDrawPort->PutTextEx( _S( 199, "캐릭터 이름 표시" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 199, "캐릭터 이름 표시" ),
 											//nX, m_nPosY + OPTION_SHOWNAME_SY, 0xF2F2F2FF );
 											nX, m_slbShowName.GetAbsPosY() -20, 0xF2F2F2FF );		
-		pDrawPort->PutTextEx( _S( 740, "아이템 이름 표시" ),			
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 740, "아이템 이름 표시" ),			
 											//nX, m_nPosY + OPTION_SHOWNAME_ITEM_SY, 0xF2F2F2FF );
 											nX, m_slbShowNameItem.GetAbsPosY() -20, 0xF2F2F2FF );
 	//	if ( g_iCountry == KOREA  ) 03-14, 잠금 기능 해제
-		pDrawPort->PutTextEx( _S( 1033, "아이템 업그레이드 효과" ),			
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1033, "아이템 업그레이드 효과" ),			
 											//nX, m_nPosY + OPTION_ITEMEFFECT_SY, 0xF2F2F2FF );
 											nX, m_cmbItemPlusEffect.GetAbsPosY() -20, 0xF2F2F2FF );
 
 		// UI_REFORM :Su-won
-		pDrawPort->PutTextEx( _S(4165, "선택가능 대상 설정" ),			
+		_pUIMgr->GetDrawPort()->PutTextEx( _S(4165, "선택가능 대상 설정" ),			
 											//nX, m_nPosY + OPTION_TARGETDEST_SY, 0xF2F2F2FF );
 											nX, m_cmbTargetDest.GetAbsPosY() -20, 0xF2F2F2FF );
 
-		pDrawPort->PutTextEx( _S( 200, "인터페이스" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 200, "인터페이스" ),
 											//nX, m_nPosY + OPTION_INITINTERFACE_SY, 0xF2F2F2FF );
 											nX, m_btnInitInterface.GetAbsPosY(), 0xF2F2F2FF );
 	}
 	// Video option
 	else if( m_nCurOptionTab == OPTIONTAB_DISPLAY )
 	{
-		pDrawPort->PutTextExCX( _S( 201, "디스플레이" ),
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 201, "디스플레이" ),
+												m_nPosX + OPTION_TITLE2_TEXT_CX,
+												m_nPosY + OPTION_TITLE2_TEXT_SY, 0xE1B300FF );
+#else
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 201, "디스플레이" ),
 												m_nPosX + OPTION_SUB_TITLE_TEXT_CX,
 												m_nPosY + OPTION_SUB_TITLE_TEXT_CY, 0xE1B300FF );
+#endif
 
 		nX = m_nPosX + OPTION_TEXT_SX;
-		pDrawPort->PutTextEx( _S( 202, "해상도" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 202, "해상도" ),
 											//nX, m_nPosY + OPTION_RESOLUTION_SY, 0xF2F2F2FF );
 											nX, m_cmbResolution.GetAbsPosY() -20, 0xF2F2F2FF );
-		pDrawPort->PutTextEx( _S( 203, "밝기" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 203, "밝기" ),
 											//nX, m_nPosY + OPTION_BRIGHTNESS_SY,
 											nX, m_slbBrightness.GetAbsPosY() -20,
 											IsFullScreen( sam_bFullScreenActive ) ? 0xF2F2F2FF : 0xAAAAAAFF );
-		pDrawPort->PutTextEx( _S( 204, "대비" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 204, "대비" ),
 											//nX, m_nPosY + OPTION_CONTRAST_SY,
 											nX, m_slbContrast.GetAbsPosY() -20 ,
 											IsFullScreen( sam_bFullScreenActive ) ? 0xF2F2F2FF : 0xAAAAAAFF );
@@ -1956,28 +1686,34 @@ void CUIOption::Render()
 	// Graphic option
 	else if( m_nCurOptionTab == OPTIONTAB_GRAPHIC )
 	{
-		pDrawPort->PutTextExCX( _S( 741, "그래픽" ),			
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 741, "그래픽" ),			
+												m_nPosX + OPTION_TITLE2_TEXT_CX,
+												m_nPosY + OPTION_TITLE2_TEXT_SY, 0xE1B300FF );
+#else
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 741, "그래픽" ),			
 												m_nPosX + OPTION_SUB_TITLE_TEXT_CX,
 												m_nPosY + OPTION_SUB_TITLE_TEXT_CY, 0xE1B300FF );
+#endif
 
 		nX = m_nPosX + OPTION_TEXT_SX;
-		pDrawPort->PutTextEx( _S( 205, "텍스쳐 퀄리티" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 205, "텍스쳐 퀄리티" ),
 											//nX, m_nPosY + OPTION_TEXTURE_SY, 0xF2F2F2FF );
 											nX, m_slbTexture.GetAbsPosY() -20, 0xF2F2F2FF );
-		pDrawPort->PutTextEx( _S( 206, "그림자 퀄리티" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 206, "그림자 퀄리티" ),
 											//nX, m_nPosY + OPTION_SHADOW_SY, 0xF2F2F2FF );
 											nX, m_slbShadow.GetAbsPosY() -20, 0xF2F2F2FF );
-		pDrawPort->PutTextEx( _S( 209, "캐릭터 퀄리티" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 209, "캐릭터 퀄리티" ),
 											//nX, m_nPosY + OPTION_CHARACTER_SY, 0xAAAAAAFF );
 											nX, m_slbCharQuality.GetAbsPosY() -20, 0xAAAAAAFF );
-		pDrawPort->PutTextEx( _S( 208, "시야-지형" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 208, "시야-지형" ),
 											//nX, m_nPosY + OPTION_VIEWTERAIN_SY, 0xF2F2F2FF );
 											nX, m_slbViewTerrain.GetAbsPosY() -20, 0xF2F2F2FF );
-		pDrawPort->PutTextEx( _S( 210, "반사 효과" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 210, "반사 효과" ),
 											//nX, m_nPosY + OPTION_REFLECTION_SY,
 											nX, m_slbReflection.GetAbsPosY() -20,
 											m_bPixelShader ? 0xF2F2F2FF : 0xAAAAAAFF );
-		pDrawPort->PutTextEx( _S( 211, "필터링 효과" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 211, "필터링 효과" ),
 											//nX, m_nPosY + OPTION_FILTERING_SY,
 											nX, m_slbFiltering.GetAbsPosY() -20,
 											m_bPixelShader ? 0xF2F2F2FF : 0xAAAAAAFF );
@@ -1985,25 +1721,31 @@ void CUIOption::Render()
 	// Audio option
 	else
 	{
-		pDrawPort->PutTextExCX( _S( 212, "오디오" ),
+#ifndef OPTION_REJECT_PARTY_AND_EXCHANGE
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 212, "오디오" ),
+												m_nPosX + OPTION_TITLE2_TEXT_CX,
+												m_nPosY + OPTION_TITLE2_TEXT_SY, 0xE1B300FF );
+#else
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 212, "오디오" ),
 												m_nPosX + OPTION_SUB_TITLE_TEXT_CX,
 												m_nPosY + OPTION_SUB_TITLE_TEXT_CY, 0xE1B300FF );
+#endif
 
 		nX = m_nPosX + OPTION_TEXT_SX;
-		pDrawPort->PutTextEx( _S( 213, "배경음 볼륨" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 213, "배경음 볼륨" ),
 											//nX, m_nPosY + OPTION_BGM_SY, 0xF2F2F2FF );
 											nX, m_slbBGM.GetAbsPosY() -20, 0xF2F2F2FF );									
-		pDrawPort->PutTextEx( _S( 214, "효과음 볼륨" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 214, "효과음 볼륨" ),
 											//nX, m_nPosY + OPTION_FXSOUND_SY, 0xF2F2F2FF );
 											nX, m_slbFXSound.GetAbsPosY() -20, 0xF2F2F2FF );		
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 
 	// Set option texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// UI_REFORM :Su-won
 	if( m_nCurOptionTab == OPTIONTAB_GAME )
@@ -2018,12 +1760,12 @@ void CUIOption::Render()
 		m_cmbTargetDest.Render();
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 
 		// Set option texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 		m_cmbItemPlusEffect.Render();			// Item plus effect		
 	}
 	else
@@ -2068,44 +1810,44 @@ void CUIOption::Render()
 		// FX sound slide bar
 		m_slbFXSound.Render();
 	}
-		
+	
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
-	pDrawPort->InitTextureData( m_ptdButtonTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
 	// Tool tip
 	if( m_bShowToolTip )
 	{
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-		pDrawPort->AddTexture( m_rcToolTip.Left, m_rcToolTip.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Left, m_rcToolTip.Top,
 											m_rcToolTip.Left + 7, m_rcToolTip.Bottom,
 											m_rtToolTipL.U0, m_rtToolTipL.V0, m_rtToolTipL.U1, m_rtToolTipL.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_rcToolTip.Left + 7, m_rcToolTip.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Left + 7, m_rcToolTip.Top,
 											m_rcToolTip.Right - 7, m_rcToolTip.Bottom,
 											m_rtToolTipM.U0, m_rtToolTipM.V0, m_rtToolTipM.U1, m_rtToolTipM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_rcToolTip.Right - 7, m_rcToolTip.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Right - 7, m_rcToolTip.Top,
 											m_rcToolTip.Right, m_rcToolTip.Bottom,
 											m_rtToolTipR.U0, m_rtToolTipR.V0, m_rtToolTipR.U1, m_rtToolTipR.V1,
 											0xFFFFFFFF );
 
 		// Text in tool tip
-		pDrawPort->PutTextEx( m_strToolTip, m_rcToolTip.Left + 8, m_rcToolTip.Top + 3 );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strToolTip, m_rcToolTip.Left + 8, m_rcToolTip.Top + 3 );
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -2154,22 +1896,19 @@ void CUIOption::ShowToolTip( BOOL bShow, int nToolTipID )
 		}
 
 		int nInfoWidth;
-#if defined (G_THAI)
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
-#else
+		if(g_iCountry == THAILAND) {
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
+		} else
 		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strToolTip.Length() *
 						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 		int	nInfoHeight = 22;
 
 		nInfoX = m_nPosX + m_rcOptionTab.Right + 2;
 		nInfoY = m_nPosY + m_rcOptionTab.Top +
 					( OPTION_TAB_HEIGHT - _pUIFontTexMgr->GetLineHeight() ) / 2;
 
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		if( nInfoX + nInfoWidth > pUIManager->GetMaxI() )
-			nInfoX = pUIManager->GetMaxI() - nInfoWidth;
+		if( nInfoX + nInfoWidth > _pUIMgr->GetMaxI() )
+			nInfoX = _pUIMgr->GetMaxI() - nInfoWidth;
 
 		m_rcToolTip.Left = nInfoX;
 		m_rcToolTip.Top = nInfoY + ( OPTION_TAB_HEIGHT + OPTION_TAB_GAP ) * nToolTipID;
@@ -2193,14 +1932,14 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 	static int	nOldX, nOldY;
 	int	nX = LOWORD( pMsg->lParam );
 	int	nY = HIWORD( pMsg->lParam );
-		
+	
 	// Mouse message
 	switch( pMsg->message )
 	{
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move option
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -2213,6 +1952,15 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 
 				return WMSG_SUCCESS;
 			}
+			// Close button
+			else if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
+				return WMSG_SUCCESS;
+			// OK button
+			else if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
+				return WMSG_SUCCESS;
+			// Cancel button
+			else if( m_btnCancel.MouseMessage( pMsg ) != WMSG_FAIL )
+				return WMSG_SUCCESS;
 			// Tab region
 			else if( IsInsideRect( nX, nY, m_rcOptionTab ) )
 			{
@@ -2305,9 +2053,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 				else if( ( wmsgResult = m_slbViewTerrain.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
-					{
-						UpdateTerMul();
-					}
+						ter_fLODMul = ska_fLODMul = mdl_fLODMul = m_afViewTerrain[m_slbViewTerrain.GetCurPos()];
 
 					return WMSG_SUCCESS;
 				}
@@ -2348,16 +2094,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				}
 			}
-			// Close button
-			if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-			// OK button
-			if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-			// Cancel button
-			if( m_btnCancel.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-			
+
 			// Hide tool tip
 			ShowToolTip( FALSE );
 		}
@@ -2365,15 +2102,6 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONDOWN:
 		{
-			if( m_nCurOptionTab == OPTIONTAB_DISPLAY )
-			{
-				// Resolution combo box
-				if( m_cmbResolution.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-					return WMSG_SUCCESS;
-				}
-			}
-
 			if( IsInside( nX, nY ) )
 			{
 				nOldX = nX;		nOldY = nY;
@@ -2423,18 +2151,19 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 						g_iAutoAttack = m_cbtnAutoAttack.IsChecked() ? 1 : 0;
 					}
 					// Fame open check button
-					//else if( m_cbtnFameOpen.MouseMessage( pMsg ) != WMSG_FAIL )
-					//{
-					//}
+					else if( m_cbtnFameOpen.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#ifdef HELP_SYSTEM_1
 					// wooss 070401 WSS_HELP_SYSTEM_1
 					else if( m_cbtnHelp1Icon.MouseMessage( pMsg ) != WMSG_FAIL )
 					{
 						g_iShowHelp1Icon = m_cbtnHelp1Icon.IsChecked() ? 1 : 0;
 					}
-					else if( m_cbtnQuestBookOpen.MouseMessage( pMsg ) != WMSG_FAIL )
-					{
-						g_iQuestBookOpen	= m_cbtnQuestBookOpen.IsChecked() ? 1 : 0;
-					}
+#endif
+
+#ifdef OPTION_REJECT_PARTY_AND_EXCHANGE
+					// [7/9/2009 rumist] rejection 
 					else if( m_cbtnRejectExchange.MouseMessage( pMsg ) != WMSG_FAIL )
 					{
 						g_iRejectExchange = m_cbtnRejectExchange.IsChecked() ? 1 : 0;
@@ -2443,6 +2172,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 					{
 						g_iRejectParty = m_cbtnRejectParty.IsChecked() ? 1 : 0;
 					}
+#endif
 					// wooss 050809
 					// MovePermit open check button 
 					else if( m_cbtnMovePermit.MouseMessage( pMsg ) != WMSG_FAIL )
@@ -2473,8 +2203,12 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 				// Display option
 				else if( m_nCurOptionTab == OPTIONTAB_DISPLAY )
 				{
+					// Resolution combo box
+					if( m_cmbResolution.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
 					// Fullscreen check button
-					if( ( wmsgResult = m_cbtnFullscreen.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					else if( ( wmsgResult = m_cbtnFullscreen.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
 						CreateResolutionList();
 					}
@@ -2521,9 +2255,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 					else if( ( wmsgResult = m_slbViewTerrain.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
 						if( wmsgResult == WMSG_COMMAND )
-						{
-							UpdateTerMul();
-						}
+							ter_fLODMul = ska_fLODMul = mdl_fLODMul = m_afViewTerrain[m_slbViewTerrain.GetCurPos()];
 					}
 					// Reflection slide bar
 					else if( ( wmsgResult = m_slbReflection.MouseMessage( pMsg ) ) != WMSG_FAIL )
@@ -2555,7 +2287,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 					}
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_OPTION, TRUE );
+				_pUIMgr->RearrangeOrder( UI_OPTION, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -2563,10 +2295,8 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -2675,7 +2405,7 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -2744,20 +2474,4 @@ WMSG_RESULT CUIOption::MouseMessage( MSG *pMsg )
 	}
 
 	return WMSG_FAIL;
-}
-
-void CUIOption::ChangeWindowMode ()
-{	
-	if ( IsFullScreen( sam_bFullScreenActive) )
-	{
-		m_cbtnFullscreen.SetCheck(FALSE);	
-		TryToSetDisplayMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter,
-									sam_iScreenSizeI,sam_iScreenSizeJ, DISPD_DEFAULT, m_cbtnFullscreen.IsChecked() );	
-	}	
-}
-
-void CUIOption::UpdateTerMul()
-{
-	float fScale = CZoneInfo::getSingleton()->GetTerMul(g_slZone);
-	ter_fLODMul = ska_fLODMul = mdl_fLODMul = (m_afViewTerrain[m_slbViewTerrain.GetCurPos()] * fScale);
 }

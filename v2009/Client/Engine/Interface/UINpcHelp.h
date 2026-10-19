@@ -4,15 +4,15 @@
 	#pragma once
 #endif
 
-// #include <vector>
-// #include <Engine/Interface/UIDrawFigure.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIListBoxEx.h>
-// #include <Engine/Interface/UISlideBar.h>
-// #include <Engine/Interface/UIScrollBar.h>
-// #include <Engine/LocalDefine.h>
-// #include <Engine/Entities/NpcHelp.h>
+#include <vector>
+#include <Engine/Interface/UIDrawFigure.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIListBoxEx.h>
+#include <Engine/Interface/UISlideBar.h>
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/LocalDefine.h>
+#include <Engine/Entities/NpcHelp.h>
 
 #define UI_NPCHELP_WIDTH	236
 #define UI_NPCHELP_HEIGHT	354
@@ -61,7 +61,7 @@ protected:
 	CUIListBox			m_lbNpcList;
 	CUIListBox			m_lbNpcExplan;
 	CUIListBox			m_lbNpcDesc;
-	std::vector<int>	m_vectorNpclist;
+	std::vector<CNpcHelp>	m_vectorNpclist;
 
 	int					m_nCurRow;
 	int					m_nCurZone;
@@ -85,7 +85,7 @@ public:
 	void	SetViewList();
 	void	SetViewContent( int iIndex );
 	void	RefreshNpcList();
-	void	MultiLineString(const CTString &strExplan);	
+	void	MultiLineString(CTString &strExplan);	
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );	

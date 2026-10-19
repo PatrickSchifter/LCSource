@@ -1,25 +1,16 @@
+
 #include "StdH.h"
-
-// 헤더 정리. [12/3/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UITatoo.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Info/MyInfo.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
-const int ct_iColorShapeIndex[9][5] = { {26, 27, 28, 29, 30}, {31, 32, 33, 34, 35},
-										{13, 22, 23, 24, 25}, {36, 37, 38, 39, 40},
-										{41, 42, 43, 44, 45}, {46, 47, 48, 49, 50},	
-										{51, 52, 53, 54, 55}, {11, 14, 15, 16, 17},
-										{12, 18, 19, 20, 21} };
-
+// Define text position
 
 //------------------------------------------------------------------------------
 // CUITatoo::CUITatoo()
 // Explain:  
 //------------------------------------------------------------------------------
 CUITatoo::CUITatoo() : m_iSelectedColorIndex(-1), m_iSelectedShapeIndex(-1)
-{
-	m_ptdCommonBtnTexture = NULL;
+{	
 }
 
 
@@ -30,11 +21,7 @@ CUITatoo::CUITatoo() : m_iSelectedColorIndex(-1), m_iSelectedShapeIndex(-1)
 CUITatoo::~CUITatoo()
 {
 	Clear ();
-
 	Destroy();
-
-	STOCK_RELEASE(m_ptdCommonBtnTexture);
-	STOCK_RELEASE(m_ptdNewInventoryTexture);
 }
 
 //------------------------------------------------------------------------------
@@ -53,7 +40,9 @@ void CUITatoo::Clear()
 //------------------------------------------------------------------------------
 void CUITatoo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	m_rcTitle.SetRect( 0, 0, TATOO_WIDTH, 22 );	
 
@@ -85,10 +74,9 @@ void CUITatoo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 		AddShapeButton(2, 0, 255, 967);		// 해골
 	}
 
-	m_ptdNewInventoryTexture = CreateTexture(CTString("Data\\Interface\\NewInventory.tex"));
-	m_ptdCommonBtnTexture = CreateTexture( "Data\\Interface\\CommonBtn.tex" );
-	fTexWidth = m_ptdCommonBtnTexture->GetPixWidth();
-	fTexHeight = m_ptdCommonBtnTexture->GetPixHeight();
+	CTextureData* pTexture = CreateTexture( "Data\\Interface\\CommonBtn.tex" );
+	fTexWidth = pTexture->GetPixWidth();
+	fTexHeight = pTexture->GetPixHeight();
 
 	// OK button
 	m_btnOK.Create( this, _S( 191, "확인" ), TATOO_WIDTH - 180, TATOO_HEIGHT - 30, 78, 22 );
@@ -121,7 +109,7 @@ void CUITatoo::Close()
 {
 	if( IsVisible() )
 	{
-		CUIManager::getSingleton()->RearrangeOrder( UI_TATOO, FALSE );
+		_pUIMgr->RearrangeOrder( UI_TATOO, FALSE );
 		Clear();
 	}
 }
@@ -141,47 +129,46 @@ void CUITatoo::SetFocus( BOOL bVisible )
 //------------------------------------------------------------------------------
 void CUITatoo::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + TATOO_WIDTH, m_nPosY + TATOO_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + TATOO_WIDTH, m_nPosY + TATOO_HEIGHT,
 										m_rtMain.U0, m_rtMain.V0, m_rtMain.U1, m_rtMain.V1,
 										0xFFFFFFFF );
 	// Render color and shape buttons
 	RenderColorButtons();
 	RenderShapeButtons();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
 	// render selected outline
-	pDrawPort->InitTextureData(m_ptdNewInventoryTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData( CreateTexture( CTString("Data\\Interface\\NewInventory.tex") ) );
 
 	RenderSelectedColorOutline();
 	RenderSelectedShapeOutline();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// render general buttons
-	pDrawPort->InitTextureData( m_ptdCommonBtnTexture );	
+	CTextureData* pTexture = CreateTexture( "Data\\Interface\\CommonBtn.tex" );
+	_pUIMgr->GetDrawPort()->InitTextureData( pTexture );	
 	
 	m_btnOK.Render();
 	m_btnClose.Render();
 	m_btnCancel.Render();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// 타이틀 뿌린다
-	pDrawPort->PutTextExCX( _S(4430, "문양 변경"), m_nPosX + 128, m_nPosY + 15, 0xDED9A0FF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(4430, "문양 변경"), m_nPosX + 128, m_nPosY + 15, 0xDED9A0FF );
 	// 색상 선택 (69, 47)
-	pDrawPort->PutTextExCX( _S(4431, "색상 선택"), m_nPosX + 69, m_nPosY + 47, 0xDED9A0FF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(4431, "색상 선택"), m_nPosX + 69, m_nPosY + 47, 0xDED9A0FF );
 	// 문양 선택 (187, 47)
-	pDrawPort->PutTextExCX( _S(4432, "문양 선택"), m_nPosX + 187, m_nPosY + 47, 0xDED9A0FF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(4432, "문양 선택"), m_nPosX + 187, m_nPosY + 47, 0xDED9A0FF );
 
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 //==============================================================================
@@ -242,12 +229,12 @@ void CUITatoo::RenderSelectedColorOutline()
 
 	m_btnColor[0][m_iSelectedColorIndex].btnButton.GetPos(iX, iY);
 
-	FLOAT	fTexWidth = m_ptdNewInventoryTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdNewInventoryTexture->GetPixHeight();
+	CTextureData* pTexture = CreateTexture( CTString("Data\\Interface\\NewInventory.tex") );
+	FLOAT	fTexWidth = pTexture->GetPixWidth();
+	FLOAT	fTexHeight = pTexture->GetPixHeight();
 	UIRectUV rtSelect(3,441,36,474,fTexWidth,fTexHeight);
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	pDrawPort->AddTexture( m_nPosX + iX, m_nPosY + iY, m_nPosX + iX+32, m_nPosY + iY+32, rtSelect.U0, rtSelect.V0, rtSelect.U1, rtSelect.V1, 0xFFFFFFFF);
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + iX, m_nPosY + iY, m_nPosX + iX+32, m_nPosY + iY+32, rtSelect.U0, rtSelect.V0, rtSelect.U1, rtSelect.V1, 0xFFFFFFFF);
 }
 
 //
@@ -263,12 +250,12 @@ void CUITatoo::RenderSelectedShapeOutline()
 
 	m_btnShape[0][m_iSelectedShapeIndex].btnButton.GetPos(iX, iY);
 
-	FLOAT	fTexWidth = m_ptdNewInventoryTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdNewInventoryTexture->GetPixHeight();
+	CTextureData* pTexture = CreateTexture( CTString("Data\\Interface\\NewInventory.tex") );
+	FLOAT	fTexWidth = pTexture->GetPixWidth();
+	FLOAT	fTexHeight = pTexture->GetPixHeight();
 	UIRectUV rtSelect(3,441,36,474,fTexWidth,fTexHeight);
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	pDrawPort->AddTexture( m_nPosX + iX, m_nPosY + iY, m_nPosX + iX+32, m_nPosY + iY+32, rtSelect.U0, rtSelect.V0, rtSelect.U1, rtSelect.V1, 0xFFFFFFFF);
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + iX, m_nPosY + iY, m_nPosX + iX+32, m_nPosY + iY+32, rtSelect.U0, rtSelect.V0, rtSelect.U1, rtSelect.V1, 0xFFFFFFFF);
 }
 
 //------------------------------------------------------------------------------
@@ -279,7 +266,7 @@ void CUITatoo::OpenTatoo()
 {
 	if( IsVisible() )
 		return;
-	CUIManager::getSingleton()->RearrangeOrder( UI_TATOO, TRUE );
+	_pUIMgr->RearrangeOrder( UI_TATOO, TRUE );
 
 	m_iSelectedColorIndex = 0;
 	CheckShowShape();
@@ -364,22 +351,21 @@ void CUITatoo::CheckShowShape()
 {
 	int iSel = m_iSelectedColorIndex;
 	BOOL bEnable = TRUE;
+	if( false == (iSel == 2 || iSel == 7 || iSel == 8) )
+	{
+		bEnable = FALSE;		
+	}
 
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	CPetTargetInfom* pPetInfo = pInfo->GetMyPetInfo();
+	int iType = _pNetwork->_PetTargetInfo.iType % 2;
+	int iAge = _pNetwork->_PetTargetInfo.iAge;
 
-	int iType = pPetInfo->iType % 2;
-	int iAge = pPetInfo->iAge;
-
-	// [090831: selo] 타는 것 아니면 문양 선택 못하게 변경
-
-	if( iAge < 2 )		// 타는거 아닐 때
+	if( 0 == iType && (iAge < 2) )		// 말이고 타는거 아닐 때
 	{
 		bEnable = FALSE;
-	}	
-	else if( iAge >= 2 ) // 타는거 일 때
+	}
+	else if( 1 == iType && (iAge < 2) )	// 용이고 타는거 아닐 때
 	{
-		bEnable = TRUE;
+		bEnable = FALSE;
 	}
 
 	bool bBreak = false;
@@ -397,6 +383,14 @@ void CUITatoo::CheckShowShape()
 		if( bBreak )
 			break;
 	}
+	
+	if( 0 == iType && (iAge < 2) )		// 말이고 타는거 아닐 때
+	{
+		if( iSel == 2 || iSel == 7 || iSel == 8 )
+		{
+			m_btnShape[0][0].btnButton.SetEnable(TRUE);
+		}
+	}
 }
 
 //
@@ -404,11 +398,11 @@ void CUITatoo::CheckShowShape()
 //
 void CUITatoo::SendItemUse()
 {
-	int tv_tab, tv_idx;
-	CUIManager::getSingleton()->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_idx);
-	CItems& Items = _pNetwork->MySlotItem[tv_tab][tv_idx];
+	int tv_tab, tv_row, tv_col;
+	_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+	CItems& Items = _pNetwork->MySlotItem[tv_tab][tv_row][tv_col];
 	int iItemIndex = Items.Item_UniIndex;
-	_pNetwork->SendItemUse(tv_tab, tv_idx, iItemIndex, GetColorAndShapeIndex());
+	_pNetwork->SendItemUse(tv_tab, tv_row, tv_col, iItemIndex, GetColorAndShapeIndex());
 }
 
 //
@@ -419,7 +413,56 @@ int	CUITatoo::GetColorAndShapeIndex()
 	if( 0 > m_iSelectedShapeIndex )
 		return m_iSelectedColorIndex + 1;
 
-	return ct_iColorShapeIndex[m_iSelectedColorIndex][m_iSelectedShapeIndex];	
+	if( 7 == m_iSelectedColorIndex )	// 검은색
+	{
+		switch( m_iSelectedShapeIndex )
+		{
+		case 0:		// 하트
+			return 11;
+		case 1:		// 다이아
+			return 14;
+		case 2:		// 클로버
+			return 15;
+		case 3:		// 스페이드
+			return 16;
+		case 4:		// 해골
+			return 17;
+		}
+	}
+	if( 8 == m_iSelectedColorIndex )	// 흰색
+	{
+		switch( m_iSelectedShapeIndex )
+		{
+		case 0:		// 하트
+			return 12;
+		case 1:		// 다이아
+			return 18;
+		case 2:		// 클로버
+			return 19;
+		case 3:		// 스페이드
+			return 20;
+		case 4:		// 해골
+			return 21;
+		}
+	}
+	if( 2 == m_iSelectedColorIndex )	// 노란색
+	{
+		switch( m_iSelectedShapeIndex )
+		{
+		case 0:		// 하트
+			return 13;
+		case 1:		// 다이아
+			return 22;
+		case 2:		// 클로버
+			return 23;
+		case 3:		// 스페이드
+			return 24;
+		case 4:		// 해골
+			return 25;
+		}
+	}
+
+	return m_iSelectedColorIndex + 1;
 }
 
 //
@@ -466,10 +509,10 @@ void CUITatoo::MakeMessageBox()
 		strShape = _S(4443, "하트");		
 		break;
 	case 1:
-		strShape = _S(4445, "클로버");				
+		strShape = _S(4445, "클로버");		
 		break;
 	case 2:		
-		strShape = _S(4444, "다이아몬드");		
+		strShape = _S(4444, "다이아몬드");
 		break;
 	case 3:
 		strShape = _S(4446, "스페이드");		
@@ -482,10 +525,10 @@ void CUITatoo::MakeMessageBox()
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	CTString		strMessage;
-	strMessage.PrintF(_S(4433, "%s색상 %s문양을 선택하셨습니다. 이대로 진행하시겠습니까?"), (const char*)strColor, (const char*)strShape);
+	strMessage.PrintF(_S(4433, "%s색상 %s문양을 선택하셨습니다. 이대로 진행하시겠습니까?"), strColor, strShape);
 	MsgBoxInfo.SetMsgBoxInfo(_S(4430, "문양 변경"), UMBS_YESNO, UI_NONE, MSGCMD_PET_TATOOCHANGE_USE);
 	MsgBoxInfo.AddString(strMessage);
-	CUIManager::getSingleton()->CreateMessageBox(MsgBoxInfo);
+	_pUIMgr->CreateMessageBox(MsgBoxInfo);
 }
 
 //------------------------------------------------------------------------------
@@ -504,9 +547,7 @@ WMSG_RESULT	CUITatoo::MouseMessage( MSG *pMsg )
 	int	nX = LOWORD( pMsg->lParam );
 	int	nY = HIWORD( pMsg->lParam );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_PET_TATOOCHANGE_USE) )
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_PET_TATOOCHANGE_USE) )
 		return WMSG_SUCCESS;
 	
 	// Mouse message
@@ -515,7 +556,7 @@ WMSG_RESULT	CUITatoo::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				pUIManager->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// If message box isn't focused
 			if( !IsFocused() )
@@ -538,15 +579,6 @@ WMSG_RESULT	CUITatoo::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-
-			for( int i = 0; i < TATOO_TOTAL_ROW; ++i )
-			{
-				for( int j = 0; j < TATOO_TOTAL_COL; ++j )
-				{
-					m_btnColor[i][j].btnButton.MouseMessage( pMsg );
-					m_btnShape[i][j].btnButton.MouseMessage( pMsg );
-				}					
-			}
 		}
 		break;
 
@@ -601,7 +633,7 @@ WMSG_RESULT	CUITatoo::MouseMessage( MSG *pMsg )
 					}					
 				}
 
-				pUIManager->RearrangeOrder( UI_TATOO, TRUE );
+				_pUIMgr->RearrangeOrder( UI_TATOO, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -610,7 +642,7 @@ WMSG_RESULT	CUITatoo::MouseMessage( MSG *pMsg )
 		case WM_LBUTTONUP:
 		{
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;

@@ -2,20 +2,12 @@
 #include <Engine/Interface/UIMultiEditBox.h>
 #include <Engine/Interface/UITextureManager.h>
 #include <Engine/Network/Web.h>
-#include <Engine/Help/Util_Help.h>
 
 // External variables
 extern HWND	_hwndMain;
-//extern INDEX g_iCountry;
 
 #define WEB_NEXT_LINE	"\r\n"		// Use Web ( New Line Charactor )
-#define MAX_MULTILINE	20
 
-
-int	CUIMultiEditBox::s_nRefCount = 0;
-#if defined(G_RUSSIA)
-	extern CFontData *_pfdDefaultFont;
-#endif
 //------------------------------------------------------------------------------
 // CUIMultiEditBox::CUIMultiEditBox
 // Explain: Constructor 
@@ -25,8 +17,8 @@ CUIMultiEditBox::CUIMultiEditBox()
 {
 	// m_ebEditBox;				// Do Nothing 
 	// m_sbScrollBar;			// Do Nothing 
-	m_strTexts.clear();
-	m_bNotEditBox		= FALSE;
+	m_strTexts.clear();			
+	
 	m_nCurrentLine		= 0;		
 	m_nFontWidth		= 0;		
 	m_nFontHeight		= 0;		
@@ -34,7 +26,6 @@ CUIMultiEditBox::CUIMultiEditBox()
 	m_nLineHeight		= 0;
 	m_nBlankSpaceTop	= 0;
 	m_nBlankSpaceLeft	= 0;
-	m_nMaxLine			= MAX_MULTILINE;
 }
 
 
@@ -68,20 +59,15 @@ void CUIMultiEditBox::Destroy()
 void CUIMultiEditBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight, int nLineHeight )
 {
 	// Basic Data Set
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	m_nFontHeight	= _pUIFontTexMgr->GetFontHeight() + _pUIFontTexMgr->GetLineSpacing();
 	m_nFontWidth	= _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing();
-	// [091104 sora]
-	//if(g_iCountry == RUSSIA)
-	#if defined G_RUSSIA
-		m_nMaxChar		= 255;	
-	//else
-	#else
-		m_nMaxChar		= ( nWidth / m_nFontWidth ) - 2;
-	#endif
-	m_nLineHeight	= ( nHeight / m_nFontHeight );
-	m_nMaxLine = nLineHeight;
+	m_nMaxChar		= ( nWidth / m_nFontWidth ) - 2;
+	m_nLineHeight	= ( nHeight / m_nFontHeight ) -1;// - 2;
 	
 	// Texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
@@ -92,9 +78,9 @@ void CUIMultiEditBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_sbScrollBar.Create( this, nWidth - 6, 0, 9, nHeight - 3 );
 	m_sbScrollBar.CreateButtons( TRUE, 9, 7, 0, 0, 10 );
 	m_sbScrollBar.SetScrollPos( 0 );
-	m_sbScrollBar.SetScrollRange( m_nLineHeight );
+	m_sbScrollBar.SetScrollRange( nLineHeight );
 	m_sbScrollBar.SetCurItemCount( 0 );
-	m_sbScrollBar.SetItemsPerPage( m_nLineHeight );
+	m_sbScrollBar.SetItemsPerPage( nLineHeight );
 	m_sbScrollBar.SetWheelRect ( -nWidth, -1, nWidth, nHeight );
 	// UP Button
 	m_sbScrollBar.SetUpUV( UBS_IDLE, 230, 16, 239, 23, fTexWidth, fTexHeight );
@@ -121,10 +107,11 @@ void CUIMultiEditBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_nBlankSpaceLeft	= m_nFontWidth / 2;														// 옆에 여백을
 
 	//!! Change AddString ( "" , 0 );
-	/*for( int i =0; i < nLineHeight; i++ )
+	for( int i =0; i < nLineHeight; i++ )
 	{
 		m_strTexts.push_back( CTString ( "" ) );
-	}*/
+	}
+
 }
 
 
@@ -144,33 +131,38 @@ void CUIMultiEditBox::Render()
 	// Blank Space 
 	nX += m_nBlankSpaceLeft;
 	nY += m_nBlankSpaceTop;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	
+	// 라인수가 
+	// 한번에 표현 할 수 있는 최대 라인수를 넘었을 때 
+	// 최대 라인수로 제한
+	if( m_strTexts.size() > m_nLineHeight )
+	{
+		nEndLine = m_nLineHeight+1;
+	}
 
 	// 문자열 출력
-	int	nShowLineLimit	= ( nEndLine < m_nLineHeight ) ? nEndLine : nScrollBarPos + m_nLineHeight;
-	for( int i = nScrollBarPos; i < nShowLineLimit; i++ )
+	for( int i = nScrollBarPos; i < nScrollBarPos + nEndLine; i++ )
 	{
-		pDrawPort->PutTextEx( m_strTexts[i], nX, nY, 0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strTexts[i], nX, nY, 0xFFFFFFFF );
 		nY += m_nFontHeight;
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Render EditBox
 	// EditBox가 화면 안에 표현 될 때 ( m_nCurrentLine의 위치로 판단 )
-	if( nScrollBarPos <= m_nCurrentLine && nScrollBarPos + m_nLineHeight > m_nCurrentLine )
+	if( nScrollBarPos <= m_nCurrentLine )
 	{
-//		int nMaxLine = nScrollBarPos + nEndLine;
-//		if( nMaxLine >= m_nCurrentLine )
+		int nMaxLine = nScrollBarPos + nEndLine;
+		if( nMaxLine >= m_nCurrentLine )
 		{
 			m_ebEditBox.Render ();
 		}
 	}
 	
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Render ScrollBar
 	m_sbScrollBar.Render();
@@ -182,7 +174,7 @@ void CUIMultiEditBox::Render()
 		m_ebEditBox.RenderReadingWindow();
 	}
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 }
 
@@ -206,9 +198,7 @@ void CUIMultiEditBox::SetFocus( BOOL bVisible )
 //------------------------------------------------------------------------------
 BOOL CUIMultiEditBox::IsFocused()
 {
-	BOOL bFocus = CUIWindow::IsFocused();
-	AutoRef( bFocus );
-	return bFocus;
+	return m_ebEditBox.IsFocused();
 }
 
 
@@ -231,23 +221,19 @@ WMSG_RESULT	CUIMultiEditBox::KeyMessage( MSG *pMsg )
 	
 	case VK_RETURN: // 글자의 처음이나 중간에서 입력할 때와 글자의 마지막에서 입력할 때 
 		{
-			if ( ( (m_nCurrentLine + 1 ) < m_nMaxLine ) 
-				&&  ( GetLineCount() < m_nMaxLine ) )		// 라인수의 허용치
+			if( m_strTexts[m_nCurrentLine].Length() <= m_ebEditBox.GetCursorIndex() )
 			{
-				if( m_strTexts[m_nCurrentLine].Length() <= m_ebEditBox.GetCursorIndex() )
-				{
-					m_nCurrentLine++;
-					AddString( "", m_nCurrentLine );
-					SetStringToEditBox();
-					ResizeScrollBar();
-					SetScrollBarPos();
-				}
-				else // 글자 중간 이나 처음 
-				{
-					// 라인을 2개로 분리 한다.
-					SplitLine( m_ebEditBox.GetCursorIndex() );
-					MoveCursorFirst();				
-				}
+				m_nCurrentLine++;
+				AddString( "", m_nCurrentLine );
+				SetStringToEditBox();
+				ResizeScrollBar();
+				SetScrollBarPos();
+			}
+			else // 글자 중간 이나 처음 
+			{
+				// 라인을 2개로 분리 한다.
+				SplitLine( m_ebEditBox.GetCursorIndex() );
+				MoveCursorFirst();				
 			}
 		}
 		return WMSG_SUCCESS;
@@ -463,45 +449,22 @@ WMSG_RESULT	CUIMultiEditBox::KeyMessage( MSG *pMsg )
 WMSG_RESULT CUIMultiEditBox::CharMessage( MSG *pMsg )	
 { 
 
-	// [091104 sora]
-	//if(g_iCountry == RUSSIA)
-	#if defined G_RUSSIA
+	if ( m_ebEditBox.GetCursorIndex() >= m_nMaxChar )
 	{
-		if ( UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, m_ebEditBox.GetString()) >= (m_nWidth-20) )
-		{
-			m_nCurrentLine++;
-			m_strTexts.insert ( m_strTexts.begin() + m_nCurrentLine, "" );
-			
-			m_ebEditBox.ResetString ();
-			SetScrollBarPos ();
-		}
-		else 
-		{
-			PasteNextLine( m_nCurrentLine );	
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-		}
-	}
-	#else
-	//else
-	{
-		if ( m_ebEditBox.GetCursorIndex() >= m_nMaxChar && (m_nCurrentLine+1) < m_nMaxLine)
-		{
-			m_nCurrentLine++;
-			m_strTexts.insert ( m_strTexts.begin() + m_nCurrentLine, "" );
+		m_nCurrentLine++;
+		m_strTexts.insert ( m_strTexts.begin() + m_nCurrentLine, "" );
 		
-			m_ebEditBox.ResetString ();
-			SetScrollBarPos ();
-		}
-		else
-		{
-			PasteNextLine( m_nCurrentLine );	
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-		}
+		m_ebEditBox.ResetString ();
+		SetScrollBarPos ();
 	}
-	#endif
+	else 
+	{
+		PasteNextLine( m_nCurrentLine );	
+		m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
+	}
 
 	WMSG_RESULT wmsgResult = m_ebEditBox.CharMessage ( pMsg );
-	m_strTexts[m_nCurrentLine] = m_ebEditBox.GetString();
+	m_strTexts[m_nCurrentLine] = m_ebEditBox.GetString ();
 	
 	ResizeScrollBar();
 
@@ -509,14 +472,14 @@ WMSG_RESULT CUIMultiEditBox::CharMessage( MSG *pMsg )
 		
 }
 
+
 // ----------------------------------------------------------------------------
 // Name : IMEMessage()
 // Desc :
 // ----------------------------------------------------------------------------
 WMSG_RESULT	CUIMultiEditBox::IMEMessage( MSG *pMsg )	
 { 
-	// IME Message에서는 줄바꿈 처리를 하지 않아도 될거 같다. Char Message에서 처리
-	if ( m_ebEditBox.GetCursorIndex() >= m_nMaxChar -1 && (m_nCurrentLine+1) < m_nMaxLine) // 마지막 위치 
+	if ( m_ebEditBox.GetCursorIndex() >= m_nMaxChar -1 ) // 마지막 위치 
 	{
 		m_nCurrentLine++;
 		m_strTexts.insert ( m_strTexts.begin() + m_nCurrentLine, "" );
@@ -528,15 +491,11 @@ WMSG_RESULT	CUIMultiEditBox::IMEMessage( MSG *pMsg )
 	{
 		PasteNextLineKor ( m_nCurrentLine );
 		m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
+
 	}
 
 	WMSG_RESULT wmsgResult = m_ebEditBox.IMEMessage ( pMsg );
 	m_strTexts[m_nCurrentLine] = m_ebEditBox.GetString ();
-
-	if (wmsgResult != WMSG_FAIL && GetAllStringLength() >= 254)
-	{
-		m_ebEditBox.StopComposition();
-	}
 
 	//m_ebEditBox.SetPos ( m_ebEditBox.GetPosX(), ( m_nCurrentLine - m_sbScrollBar.GetScrollPos() )* m_nFontHeight );
 	SetScrollBarPos ();
@@ -568,7 +527,7 @@ WMSG_RESULT	CUIMultiEditBox::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			if( m_sbScrollBar.MouseMessage( pMsg ) != WMSG_FAIL )
 			{
@@ -585,28 +544,21 @@ WMSG_RESULT	CUIMultiEditBox::MouseMessage( MSG *pMsg )
 		{	
 			if( IsInside( nX, nY ) )
 			{
-				if( m_sbScrollBar.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-					m_ebEditBox.SetPos ( m_ebEditBox.GetPosX(), ( m_nCurrentLine - m_sbScrollBar.GetScrollPos() )* m_nFontHeight );
-				}
-
-				m_ebEditBox.MouseMessage ( pMsg );
-				
 				if( m_strTexts.size() > 0 )
 				{
 					ConvertToWindow ( nX, nY );
 					m_ebEditBox.SetFocus ( TRUE );
 					SetFocus( TRUE );
-
+			
 					m_nCurrentLine = nY / m_nFontHeight   + m_sbScrollBar.GetScrollPos();					
 					 
-					if ( m_nCurrentLine > m_strTexts.size() - 1 )
+					if ( m_nCurrentLine >= m_strTexts.size() - 1 )
 					{	
 						m_nCurrentLine  = m_strTexts.size() - 1;
 					}
 					
 					//Add: Su-won
-					if( m_nCurrentLine > m_sbScrollBar.GetScrollPos() +m_sbScrollBar.GetItemsPerPage() )
+					if( m_nCurrentLine >=m_sbScrollBar.GetScrollPos() +m_sbScrollBar.GetItemsPerPage() )
 					{
 						m_ebEditBox.SetFocus ( FALSE);
 						SetFocus( FALSE );
@@ -627,7 +579,14 @@ WMSG_RESULT	CUIMultiEditBox::MouseMessage( MSG *pMsg )
 					
 				}
 
-				return WMSG_SUCCESS;
+
+				if( m_sbScrollBar.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					m_ebEditBox.SetPos ( m_ebEditBox.GetPosX(), ( m_nCurrentLine - m_sbScrollBar.GetScrollPos() )* m_nFontHeight );
+					return WMSG_SUCCESS;
+				}
+				else if (m_ebEditBox.MouseMessage ( pMsg ) != WMSG_FAIL ) 
+					return WMSG_SUCCESS;
 			}
 			m_ebEditBox.SetFocus ( FALSE );
 			SetFocus( FALSE );
@@ -646,11 +605,6 @@ WMSG_RESULT	CUIMultiEditBox::MouseMessage( MSG *pMsg )
 			{
 				if( m_sbScrollBar.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
-//					if( m_nCurrentLine - m_sbScrollBar.GetScrollPos() > ( m_nLineHeight - 1 ) )
-//					{
-//						m_nCurrentLine	= m_sbScrollBar.GetScrollPos() + m_nLineHeight - 1;
-//						SetStringToEditBox();
-//					}
 					m_ebEditBox.SetPos ( m_ebEditBox.GetPosX(), ( m_nCurrentLine - m_sbScrollBar.GetScrollPos() )* m_nFontHeight );
 					return WMSG_SUCCESS;
 				}
@@ -698,14 +652,7 @@ void CUIMultiEditBox::SplitLine( int nIndex )
 
 	if( nIndex == -1 ) // MaxCharactor에서 자른다.
 	{
-		// [091104 sora]
-		//if(g_iCountry == RUSSIA)
-		#if defined G_RUSSIA
-		nSplitPos = UTIL_HELP()->CheckNoFixedLength(_pfdDefaultFont, strTemp.str_String, m_nWidth-20);
-		//else
-		#else
-			nSplitPos = m_nMaxChar;
-		#endif
+		nSplitPos = m_nMaxChar;
 	}
 	else
 	{
@@ -727,7 +674,7 @@ void CUIMultiEditBox::SplitLine( int nIndex )
 	strTemp.Split( nSplitPos, strTemp, strTemp2 );
 	
 	//SetString ( strTemp.str_String, m_nCurrentLine );			--->
-	m_strTexts[m_nCurrentLine]	= strTemp.str_String;
+	m_strTexts[m_nCurrentLine] =strTemp.str_String;
 	//m_nCurrentLine++;
 	if( nIndex ==-1)
 		AddString ( strTemp2.str_String, m_nCurrentLine+1);
@@ -758,40 +705,18 @@ void  CUIMultiEditBox::Cutting ()
 		// 아랫라인은 삭제
 		m_strTexts.erase ( m_strTexts.begin() + m_nCurrentLine + 1 );
 	}
-	// [091104 sora]
-	//if(g_iCountry == RUSSIA)
-	#if defined G_RUSSIA
+	
+	if ( m_strTexts[m_nCurrentLine].Length() > m_nMaxChar )
 	{
-		if ( UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, m_strTexts[m_nCurrentLine].str_String) >= (m_nWidth-20) )
-		{
-			SplitLine ();	
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-			m_ebEditBox.SetCursorIndex ( temp );
-		}
-		else
-		{
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-			m_ebEditBox.SetCursorIndex ( temp );
-		}
-
+		SplitLine ();	
+		m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
+		m_ebEditBox.SetCursorIndex ( temp );
 	}
-	//else
-	#else
+	else
 	{
-		if ( m_strTexts[m_nCurrentLine].Length() > m_nMaxChar )
-		{
-			SplitLine ();	
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-			m_ebEditBox.SetCursorIndex ( temp );
-		}
-		else
-		{
-			m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
-			m_ebEditBox.SetCursorIndex ( temp );
-		}
-
+		m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
+		m_ebEditBox.SetCursorIndex ( temp );
 	}
-	#endif
 	
 	SetScrollBarPos ();
 //	m_ebEditBox.SetPos ( m_ebEditBox.GetPosX(), ( m_nCurrentLine - m_sbScrollBar.GetScrollPos() )* m_nFontHeight );
@@ -808,15 +733,15 @@ void CUIMultiEditBox::PasteNextLine ( int nCurrentLine, BOOL bHangle )
 	CTString strString = m_strTexts[nCurrentLine].str_String;
 	int		nLength		= strString.Length(); //현재 문자의 길이
 
-	int		nMaxChar = m_nMaxChar; // MAX는 무조건 짝수 열이여야 한다.
+	int		nMaxChar = m_nMaxChar;
 
 	if ( nCurrentLine != m_nCurrentLine ) // 처음 라인이 아니라면 
 	{
-		if( nLength <= ++nMaxChar ) return;
+		if( nLength < ++nMaxChar ) return;
 	}
 	else 
 	{
-		if( nLength <= nMaxChar ) return;
+		if( nLength < nMaxChar ) return;
 	}
 	
 	// Need multi-line
@@ -884,11 +809,11 @@ void CUIMultiEditBox::PasteNextLineKor ( int nCurrentLine )
 
 	if ( nCurrentLine != m_nCurrentLine ) // 처음 라인이 아니라면 
 	{
-		if( nLength <= ++nMaxChar -1 ) return;
+		if( nLength < ++nMaxChar -1 ) return;
 	}
 	else 
 	{
-		if( nLength <= nMaxChar - 2 ) return;
+		if( nLength < nMaxChar - 2 ) return;
 	}
 	
 	// Check splitting position for 2 byte characters
@@ -944,30 +869,17 @@ void CUIMultiEditBox::PasteNextLineKor ( int nCurrentLine )
 // Name : !!GetString()
 // Desc :
 // ----------------------------------------------------------------------------
-
-CTString CUIMultiEditBox::GetString( unsigned int nIndex )
-{
-	CTString	strLine;
-
-	if( nIndex < m_strTexts.size() )
-		strLine	= m_strTexts[ nIndex ];
-
-	if( nIndex < m_strTexts.size() - 1 )	// 마지막 줄이 아니라면 WEB_NEXT_LINE 삽입
-		AddEOLTokenString( strLine, WEB_NEXT_LINE );
-
-	return strLine;
-}
-
 CTString CUIMultiEditBox::GetString ()
 {
 	CTString String;
 
 	for ( int i = 0; i < m_strTexts.size(); i++ )
 	{
-		String	+= GetString( i );
+		String += m_strTexts[i] + WEB_NEXT_LINE;
 	}
 
 	return String;
+
 }
 
 
@@ -998,7 +910,7 @@ void CUIMultiEditBox::ResizeScrollBar()
 	
 	if( nLineCount > m_nLineHeight )
 	{
-		int nOverCount = nLineCount - m_nLineHeight; 
+		int nOverCount = nLineCount - m_nLineHeight - 1; 
 		
 		if( m_sbScrollBar.GetScrollPos() > nOverCount )
 		{
@@ -1029,7 +941,7 @@ void CUIMultiEditBox::SetScrollBarPos()
 	}
 	else if ( m_nCurrentLine >= m_nLineHeight + m_sbScrollBar.GetScrollPos() ) // 스크롤 바의 위치를 벗어 날 때. (아래로 이동 )
 	{
-		int nDist = ( m_nCurrentLine + 1 ) - m_nLineHeight;
+		int nDist = m_nCurrentLine - m_nLineHeight;
 		m_sbScrollBar.SetScrollPos ( nDist );
 	}
 	else 
@@ -1042,78 +954,6 @@ void CUIMultiEditBox::SetScrollBarPos()
 
 
 // ----------------------------------------------------------------------------
-// Name : AddEOLTokenString()
-// Desc : 스트링 마지막 위치에 토큰을 검사하고 없다면 토큰을 이어붙힌다.
-// ----------------------------------------------------------------------------
-
-BOOL CUIMultiEditBox::AddEOLTokenString( CTString& strString, char* pstrToken )
-{
-	if( pstrToken == NULL ) return FALSE;
-
-	int		lenToken	= strlen( pstrToken );
-	char*	pString		= strString.str_String + ( strString.Length() - lenToken );
-
-	if( strncmp( pString, pstrToken, lenToken ) != 0 )
-	{
-		strString	+= pstrToken;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CUIMultiEditBox::AddEOLTokenString( char* pstrToken )
-{
-	if( m_strTexts.size() <= 0 ) return FALSE;
-	if( pstrToken == NULL ) return FALSE;
-
-	BOOL	bAdded	= FALSE;
-
-	for( int i = 0; i < m_strTexts.size() - 1; i++ )	// 마지막 줄은 제외
-	{
-		bAdded	|= AddEOLTokenString( m_strTexts[i], pstrToken );
-	}
-
-	return bAdded;
-}
-
-// ----------------------------------------------------------------------------
-// Name : RemoveEOLCRLFString()
-// Desc : 스트링 마지막 위치에 토큰을 검사하고 토큰이 있다면 제거한다.
-// ----------------------------------------------------------------------------
-
-BOOL CUIMultiEditBox::RemoveEOLTokenString( CTString& strString, char* pstrToken )
-{
-	if( pstrToken == NULL ) return FALSE;
-
-	int		lenToken	= strlen( pstrToken );
-	int		lenString	= strString.Length() - lenToken;
-	char*	pString		= strString.str_String + lenString;
-
-	if( strncmp( pString, pstrToken, lenToken ) == 0 )
-	{
-		strString.DeleteChar( lenString );
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CUIMultiEditBox::RemoveEOLTokenString( char *pstrToken )
-{
-	if( m_strTexts.size() <= 0 ) return FALSE;
-
-	BOOL	bAdded	= FALSE;
-
-	for( int i = 0; i < m_strTexts.size(); i++ )
-	{
-		bAdded	|= RemoveEOLTokenString( m_strTexts[i], pstrToken );
-	}
-
-	return bAdded;
-}
-
-// ----------------------------------------------------------------------------
 // Name : !!ResetString()
 // Desc :
 // ----------------------------------------------------------------------------
@@ -1121,67 +961,60 @@ void CUIMultiEditBox::SetString ( char* strString, char* strHead )
 {
 	if ( strString == NULL ) return;
 
-	int			lenWebNextLine	= strlen( WEB_NEXT_LINE );
-	char*		pString			= strString;
-	CTString	tmpString;
+	int		len		= strlen ( strString ) - 1;
+	int		nFirst	= 0;
+	char	string[256];
 
-	ResetString();
-	m_strTexts.clear();		// ResetString()에서 ""를 추가해놓고 있다. 다시 리셋
-
-	if( strHead != NULL )
-		tmpString		+= strHead;
-
-	for( ; pString != NULL; pString++ )
+	ResetString ();
+	
+	for ( int i = 0; i < len; i++ )
 	{
-		BOOL	bCopy	= FALSE;
-		BOOL	bEOS	= FALSE;
-
-		if( strncmp( pString, WEB_NEXT_LINE, lenWebNextLine ) == 0 )
+		if ( strncmp ( WEB_NEXT_LINE, strString + i, 2 ) == 0 )
 		{
-			bCopy		= TRUE;
-			AddEOLTokenString( tmpString, WEB_NEXT_LINE );
-			pString++;
-		}
-		else if( *pString == '\0' )
-		{
-			bCopy		= TRUE;
-			bEOS		= TRUE;
-		}
-
-		if( bCopy == TRUE )
-		{
-			int nMaxChar = m_nMaxChar;
-			if ( tmpString.Length() > nMaxChar && tmpString.str_String[nMaxChar] & 0x80 )
-				nMaxChar--;
-
-			while( tmpString.Length() > nMaxChar )
-			{
-				CTString	splitString;
-				CTString	srcString;
-
-				tmpString.Split( nMaxChar, srcString, splitString );
-				
-				m_strTexts.push_back( srcString );
-				tmpString	= splitString;
-			}
+			memset ( string, 0, sizeof ( char )  * 256 ) ;
 			
-			m_strTexts.push_back( tmpString );
+			if ( strHead )	strcpy ( string, strHead );
 
-			tmpString.Clear();
-			if( strHead != NULL )
-				tmpString	+= strHead;
+			strncat ( string, strString + nFirst, i - nFirst ); 
+			
+			if ( strlen ( string ) > m_nMaxChar ) 
+			{
+				CTString tempString = string;
+				CTString temp;
+				int nMaxChar = m_nMaxChar;
+				
+				if ( tempString.str_String[nMaxChar] & 0x80 )
+					nMaxChar--;
+									
+			
+				tempString.Split ( nMaxChar, tempString, temp );
+				m_strTexts.push_back ( tempString );
+				
+				if ( strHead )
+				{
+					CTString strLeft;
+					strLeft += strHead;
+					strLeft += temp;
+				
+					m_strTexts.push_back ( strLeft );
+				}
 
-			if( bEOS == TRUE )
-				break;
+			}
+			else
+			{
+				if (nFirst > 0)
+					m_strTexts.push_back ( string );
+				else
+					m_strTexts[nFirst] = string;
+			}
 
-			continue;
+			nFirst = i+2;
+			i+=2;
 		}
-
-		tmpString.InsertChar( tmpString.Length(), *pString );
 	}
 	
-	ResizeScrollBar();
-	SetScrollBarPos();
+	ResizeScrollBar ();
+	SetScrollBarPos ();
 }
 
 
@@ -1193,73 +1026,68 @@ void CUIMultiEditBox::SetString ( char* strString, char* Writer, char* strHead )
 {
 	if ( strString == NULL ) return;
 
-	int			lenWebNextLine	= strlen( WEB_NEXT_LINE );
-	char*		pString			= strString;
-	CTString	tmpString;
+	int		len		= strlen ( strString ) - 1;
+	int		nFirst	= 0;
+	char	string[256];
 
-	ResetString();
-	AddEOLTokenString( m_strTexts[ 0 ], WEB_NEXT_LINE );
+	ResetString ();
+	m_strTexts.clear ();
+
+	m_strTexts.push_back ( CTString ( "" ) );
 
 	CTString strWriter = "----";
 	strWriter += Writer;
 	strWriter +=_S( 1939,  "님이 쓰신 글입니다 -----" );	
 		
 	m_strTexts.push_back ( strWriter );
-
-	if( strHead != NULL )
-		tmpString		+= strHead;
-
-	for( ; pString != NULL; pString++ )
+	
+	for ( int i = 0; i < len; i++ )
 	{
-		BOOL	bCopy	= FALSE;
-		BOOL	bEOS	= FALSE;
-
-		if( strncmp( pString, WEB_NEXT_LINE, lenWebNextLine ) == 0 )
+		if ( strncmp ( WEB_NEXT_LINE, strString + i, 2 ) == 0 )
 		{
-			bCopy		= TRUE;
-			AddEOLTokenString( tmpString, WEB_NEXT_LINE );
-			pString++;
-		}
-		else if( *pString == '\0' )
-		{
-			bCopy		= TRUE;
-			bEOS		= TRUE;
-		}
-
-		if( bCopy == TRUE )
-		{
-			int nMaxChar = m_nMaxChar;
-			if ( tmpString.Length() > nMaxChar && tmpString.str_String[nMaxChar] & 0x80 )
-				nMaxChar--;
-
-			while( tmpString.Length() > nMaxChar )
-			{
-				CTString	splitString;
-				CTString	srcString;
-
-				tmpString.Split( nMaxChar, srcString, splitString );
-				
-				m_strTexts.push_back( srcString );
-				tmpString	= splitString;
-			}
+			memset ( string, 0, sizeof ( char )  * 256 ) ;
 			
-			m_strTexts.push_back( tmpString );
+			if ( strHead )	strcpy ( string, strHead );
 
-			tmpString.Clear();
-			if( strHead != NULL )
-				tmpString	+= strHead;
+			strncat ( string, strString + nFirst, i - nFirst ); 
 
-			if( bEOS == TRUE )
-				break;
+			if ( strlen ( string ) > m_nMaxChar ) 
+			{
+				CTString tempString = string;
+				CTString temp;
+				int nMaxChar = m_nMaxChar;
+				
+				if ( tempString.str_String[nMaxChar] & 0x80 )
+					nMaxChar--;
+									
+				tempString.Split ( nMaxChar, tempString, temp );
+				m_strTexts.push_back ( tempString );
+				
+				if ( strHead )
+				{
+					CTString strLeft;
+					strLeft += strHead;
+					strLeft += temp;
+				
+					m_strTexts.push_back ( strLeft );
+				}
 
-			continue;
+			}
+			else
+				m_strTexts.push_back ( string );
+
+			nFirst = i+2;
+			i+=2;
 		}
-
-		tmpString.InsertChar( tmpString.Length(), *pString );
 	}
 	
-	ResizeScrollBar();
-	SetScrollBarPos();
+	if ( m_strTexts[m_nCurrentLine].Length() > 0 ) 
+		m_ebEditBox.SetString ( m_strTexts[m_nCurrentLine].str_String );
+	else
+		m_ebEditBox.ResetString();
+
+	ResizeScrollBar ();
+	SetScrollBarPos ();
 
 }
 
@@ -1273,7 +1101,7 @@ void CUIMultiEditBox::MoveCursorUp()
 {
 	int nCursorIndex = m_ebEditBox.GetCursorIndex();
 
-	if( m_nCurrentLine <= 0)
+	if( 0 >= m_nCurrentLine )
 	{
 		m_nCurrentLine = 0;
 		return;
@@ -1400,10 +1228,7 @@ void CUIMultiEditBox::AddString( char* strString, int nPos )
 	//m_strTexts.insert ( m_strTexts.begin() + nPos, CTString ( m_ebEditBox.GetString () ) );
 	//m_strTexts[m_nCurrentLine] = strString;
 	m_strTexts.insert ( m_strTexts.begin() + nPos, CTString ( strString) );
-	if (!m_bNotEditBox)
-	{
-		m_ebEditBox.SetString( strString );
-	}
+	m_ebEditBox.SetString( strString );
 		
 	SetScrollBarPos();
 }
@@ -1431,14 +1256,7 @@ int CUIMultiEditBox::GetAllStringLength()
 {
 	int nLength=0;
 	for(int i=0; i<m_strTexts.size(); ++i)
-	{
-		nLength += m_strTexts[i].Length();
-	}
-
-	/*if (m_strTexts.size() > 1)
-	{
-		nLength += (strlen(WEB_NEXT_LINE) * (m_strTexts.size()-1));
-	}*/
+		nLength += m_strTexts[i].Length() +strlen(WEB_NEXT_LINE);
 	
 	return nLength;
 }

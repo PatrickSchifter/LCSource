@@ -4,47 +4,61 @@
 #include <Engine/Entities/WildPetData.h>
 #include <Engine/Network/CNetwork.h>
 
-bool CWildPetData::loadEx(const char* FileName)
+CWildPetData::CWildPetData(void)
+{
+	memset(&m_WildPetData, 0, sizeof(TWildPetData));	
+}
+CWildPetData::~CWildPetData(void)
+{
+
+}
+
+int CWildPetData::LoadWildPetDataFromFile(CStaticArray<CWildPetData> &apWildPetData, const char* FileName)
 {	
-	FILE*	fp = NULL;
-
-	fp = fopen(FileName, "rb");
-
-	if (fp == NULL)
-		return false;
-
-	fread(&_nSize, sizeof(int), 1, fp);
-
-	if (_nSize <= 0)
+	FILE* fPetdata = NULL;
+	if ((fPetdata = fopen(FileName, "rb")) == NULL) 
 	{
-		fclose(fp);
-		return false;
+		MessageBox(NULL, "Petdata File is not Exist.", "error!", MB_OK);
+		return -1;
 	}
+	int		nPetData_total=0;
+	int		iReadBytes	= 0;
+		
+	// 이벤트 개수 체크
+	fread(&nPetData_total,sizeof(int),1,fPetdata);
+	apWildPetData.New(nPetData_total);
+	ASSERT(apWildPetData.Count() > 0 && "Invalid PetData Data");		
+	ASSERT(nPetData_total > 0 && "Invalid PetData Data");
+	//////////////////////////////////////////////////////////////////////////	
+	// MACRO DEFINITION
+	//////////////////////////////////////////////////////////////////////////	
+#define LOADINT(d)			iReadBytes = fread(&d, sizeof(int), 1, fPetdata);
+#define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fPetdata);
+#define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fPetdata);
+#define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fPetdata);
+#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fPetdata); }
+	//////////////////////////////////////////////////////////////////////////	
 
-	stApet* pdata = new stApet[_nSize];
-	fread(pdata, sizeof(stApet) * _nSize, 1, fp);
-	fclose(fp);
-
-	for (int i = 0; i < _nSize; i++)
+	for(int i = 0; i < nPetData_total; ++i)
 	{
-		CWildPetData* ptmp = new CWildPetData;
-		memcpy(ptmp, &pdata[i], sizeof(stApet));
-
-		if (_mapdata.insert(std::make_pair(ptmp->getindex(), ptmp)).second == false)
+		CWildPetData& PD	= apWildPetData[i];
+		TWildPetData& WildPetData	= PD.m_WildPetData;
+		LOADINT(WildPetData.nIndex);
+		LOADSTR(WildPetData.strName);
+		LOADINT(WildPetData.nType);
+		LOADSTR(WildPetData.strFileName);
+		
+		for (int j = 0; j < WILD_PET_ANIM_TOTAL; j++)
 		{
-			delete ptmp;
-			ptmp = NULL;
+			LOADSTR(*WildPetData.PetAni[j]);
 		}
 	}
+	fclose(fPetdata);
+		
+	#undef LOADINT
+	#undef LOADCHAR
+	#undef LOADFLOAT
+	#undef LOADSTR				
 
-	m_dummy = new CWildPetData; // 더미데이타 생성
-	memset(m_dummy, 0, sizeof(stApet));
-
-	if (pdata != NULL)
-	{
-		delete[] pdata;
-		pdata = NULL;
-	}
-
-	return true;
+	return nPetData_total;
 }

@@ -7,7 +7,6 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Lists.h>
 
-
 /*
  * Network provider description.
  */
@@ -37,8 +36,6 @@ public:
 
   /* Enumerate all providers at startup (later enumeration just copies this list). */
   void EnumNetworkProviders_startup(CListHead &lh);
-  static void InitSEEDEncrypt();
-
 public:
   /* Default constructor. */
   CMessageDispatcher(void);
@@ -75,17 +72,10 @@ public:
   
   void SendToServerNew(const CNetworkMessage &nmMessage, BOOL bLogin = FALSE);
   BOOL ReceiveFromServerNew(CNetworkMessage &nmMessage);
-  
+
+
   // TCP server º¯¼ö		// by seo-40225
   BOOL IsTcpServer;			// by seo-40225
-
-  void SetDelivery(bool bDelivery)		{ _bDelivery = bDelivery; }
-  bool GetDelivery()					{ return _bDelivery; }
-
-  void Encrypt(CNetworkMessage& nmMessage);
-
-private:
-	bool	_bDelivery;
 };
 
 

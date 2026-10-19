@@ -66,7 +66,7 @@ void CCompMessageID::NewMessage(const CTFileName &fnm)
 	} else if (strName.Matches("*messages\\statistics*")) {
 		cmi_cmtType = CMT_STATISTICS;
 	} else {
-		CPrintF("Unknown message type: %s\n", (const char*)((const CTString&) fnm));
+		CPrintF("Unknown message type: %s\n", (const CTString&) fnm);
 		cmi_cmtType = CMT_INFORMATION;
 	}
 	// mark as unread
@@ -128,7 +128,7 @@ void SetBoolFromBoolEType(BOOL &bSet, BoolEType bet) {
 };
 
 // send event to target
-void SendToTarget(CEntity *penSendEvent, EventEType eetEventType, CEntity *penCaused, CEntityEvent* peeEvent) {
+void SendToTarget(CEntity *penSendEvent, EventEType eetEventType, CEntity *penCaused) {
 	// if target is valid
 	if (penSendEvent != NULL) {
 		switch (eetEventType) {
@@ -186,14 +186,6 @@ void SendToTarget(CEntity *penSendEvent, EventEType eetEventType, CEntity *penCa
 				break;
 			case EET_ADDHOSTILE:
 				penSendEvent->SendEvent(EAddHostile());
-				break;
-			case EET_DOORCONTROLL:
-				{
-					if (peeEvent)
-					{
-						penSendEvent->SendEvent((*peeEvent));
-					}
-				}
 				break;
 		}
 	}
@@ -401,7 +393,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
 					GetNormalComponent( vDistance/fDistance, vHitNormal, ese.vDirection);
 					FLOAT fLength = ese.vDirection.Length();
 					fLength   = Clamp( fLength*3, 1.0f, 3.0f);
-					fDistance = Clamp<FLOAT>( (FLOAT)log10(fDistance), 0.5f, 2.0f);
+					fDistance = Clamp( log10(fDistance), 0.5, 2.0);
 					ese.vStretch = FLOAT3D( fDistance, fLength*fDistance, 1.0f);
 					try {
 
@@ -569,7 +561,7 @@ void StartSkaAnimStr(CModelInstance *m_miModel, CTString strAnimName, DWORD dwFl
 	if (iAnimID==-1) {    
 		ASSERT(FALSE);
 		CPrintF("Animation '%s' does not exist in model instance '%s'!\n",
-						(const char*)strAnimName, (const char*)m_miModel->GetName());
+						strAnimName, m_miModel->GetName());
 		return;
 	}
 	m_miModel->NewClearState(fFadeTime);
@@ -598,32 +590,32 @@ CLensFlareType _lftProjectileYellowBubbleGlow;
 //CLensFlareType _lftCatmanFireGlow;
 CLensFlareType _lftWhiteGlowFar;
 
-#define FLARE_CREATE(flag,noof,tex,pos,rot,i,j,flags,amp,des,falloff)\
-	flag.lft_aolfFlares.New(noof);\
-	flag.lft_aolfFlares[0].olf_toTexture.SetData_t(CTFILENAME("Data\\Textures\\Effects\\Flares\\" tex));\
-	flag.lft_aolfFlares[0].olf_fReflectionPosition = pos;\
-	flag.lft_aolfFlares[0].olf_aRotationFactor = AngleDeg(rot);\
-	flag.lft_aolfFlares[0].olf_fSizeIOverScreenSizeI = i;\
-	flag.lft_aolfFlares[0].olf_fSizeJOverScreenSizeI = j;\
-	flag.lft_aolfFlares[0].olf_ulFlags = flags;\
-	flag.lft_aolfFlares[0].olf_fLightAmplification = amp;\
-	flag.lft_aolfFlares[0].olf_fLightDesaturation = des;\
-	flag.lft_aolfFlares[0].oft_fFallOffFactor = falloff;
-#define FLARE_GLARE(flag,compression,intensity,des,falloff)\
-	flag.lft_fGlareCompression = compression;\
-	flag.lft_fGlareIntensity = intensity;\
-	flag.lft_fGlareDesaturation = des;\
-	flag.lft_fGlareFallOffFactor = falloff;
-#define REFLECTION(flag,i,fnm,pos,size) \
-	flag.lft_aolfFlares[i].olf_toTexture.SetData_t(CTFILENAME("Data\\Textures\\Effects\\Flares\\" fnm));\
-	flag.lft_aolfFlares[i].olf_fReflectionPosition = pos;\
-	flag.lft_aolfFlares[i].olf_aRotationFactor = AngleDeg(0.0f);\
-	flag.lft_aolfFlares[i].olf_fSizeIOverScreenSizeI = size;\
-	flag.lft_aolfFlares[i].olf_fSizeJOverScreenSizeI = size;\
-	flag.lft_aolfFlares[i].olf_ulFlags = OLF_FADEINTENSITY|OLF_FADEOFCENTER;\
-	flag.lft_aolfFlares[i].olf_fLightAmplification = 7.0f;\
-	flag.lft_aolfFlares[i].olf_fLightDesaturation = 0.5f;\
-	flag.lft_aolfFlares[i].oft_fFallOffFactor = 5.0f;
+#define FLARE_CREATE(type,noof,tex,pos,rot,i,j,flags,amp,des,falloff)\
+	type.lft_aolfFlares.New(noof);\
+	type.lft_aolfFlares[0].olf_toTexture.SetData_t(CTFILENAME("Data\\Textures\\Effects\\Flares\\" tex));\
+	type.lft_aolfFlares[0].olf_fReflectionPosition = pos;\
+	type.lft_aolfFlares[0].olf_aRotationFactor = AngleDeg(rot);\
+	type.lft_aolfFlares[0].olf_fSizeIOverScreenSizeI = i;\
+	type.lft_aolfFlares[0].olf_fSizeJOverScreenSizeI = j;\
+	type.lft_aolfFlares[0].olf_ulFlags = flags;\
+	type.lft_aolfFlares[0].olf_fLightAmplification = amp;\
+	type.lft_aolfFlares[0].olf_fLightDesaturation = des;\
+	type.lft_aolfFlares[0].oft_fFallOffFactor = falloff;
+#define FLARE_GLARE(type,compression,intensity,des,falloff)\
+	type.lft_fGlareCompression = compression;\
+	type.lft_fGlareIntensity = intensity;\
+	type.lft_fGlareDesaturation = des;\
+	type.lft_fGlareFallOffFactor = falloff;
+#define REFLECTION(type,i,fnm,pos,size) \
+	type.lft_aolfFlares[i].olf_toTexture.SetData_t(CTFILENAME("Data\\Textures\\Effects\\Flares\\" fnm));\
+	type.lft_aolfFlares[i].olf_fReflectionPosition = pos;\
+	type.lft_aolfFlares[i].olf_aRotationFactor = AngleDeg(0.0f);\
+	type.lft_aolfFlares[i].olf_fSizeIOverScreenSizeI = size;\
+	type.lft_aolfFlares[i].olf_fSizeJOverScreenSizeI = size;\
+	type.lft_aolfFlares[i].olf_ulFlags = OLF_FADEINTENSITY|OLF_FADEOFCENTER;\
+	type.lft_aolfFlares[i].olf_fLightAmplification = 7.0f;\
+	type.lft_aolfFlares[i].olf_fLightDesaturation = 0.5f;\
+	type.lft_aolfFlares[i].oft_fFallOffFactor = 5.0f;
 
 // init lens flare effects
 void InitLensFlares(void) {
@@ -1043,7 +1035,7 @@ BOOL SetPlayerAppearance_internal(CModelInstance *pmiModel, const CTFileName &fn
 	} catch (char *strError) {
 		// report error
 		CPrintF(TRANS("Cannot load player model '%s':\n%s\n"), 
-			(const char*)fnmSMC, strError);
+			fnmSMC, strError);
 		return FALSE;
 	}
 }
@@ -1111,17 +1103,16 @@ BOOL SetPlayerAppearance(CModelInstance *pmiModel, CPlayerCharacter *ppc, CTStri
 BOOL SetPlayerAppearanceSka(CModelInstance *pmiModel, CPlayerCharacter *ppc, CTString &strName, BOOL bPreview, ULONG type)
 {
 	// first kill any existing model
-	if (pmiModel == NULL)
-		return FALSE;
-	
-	pmiModel->Clear();
+	if (pmiModel!=NULL) {
+		pmiModel->Clear();
+	}
 	pmiModel->mi_bRenderShadow = TRUE;
-	
+
 	CTString fnmDefault;
 	
 	if( ppc != NULL )
 	{
-		fnmDefault = CJobInfo::getSingleton()->GetFileName( ppc->pc_iPlayerType );
+		fnmDefault = JobInfo().GetFileName( ppc->pc_iPlayerType );
 	}
 	
 	// if no character, or player models are disabled
@@ -1131,12 +1122,12 @@ BOOL SetPlayerAppearanceSka(CModelInstance *pmiModel, CPlayerCharacter *ppc, CTS
 		
 		if( type >= TITAN && type <= TOTAL_JOB )
 		{
-			fnmDefault = CJobInfo::getSingleton()->GetFileName( type );
+			fnmDefault = JobInfo().GetFileName( type );
 		}
 		else
 		{
-			CMobData* MD = CMobData::getData( type );
-			fnmDefault = MD->GetMobSmcFileName();
+			CMobData& MD = _pNetwork->GetMobData( type );
+			fnmDefault = MD.GetMobSmcFileName();
 		}
 		
 		BOOL bSucceeded = SetPlayerAppearance_internal(pmiModel, fnmDefault, strName, bPreview);
@@ -2040,12 +2031,12 @@ void ska_CreateAnimIDFromString(INDEX *piID, CModelInstance *pmi, CTString strAn
 		}
 	} else {
 		CPrintF("WARNING: Animation set for model '%s' does not contain a required animation #%d('%s').\n\r\
-Animation behaveour will be undefined.\n", (const char*)pmi->GetName(), iAnimID, (const char*)strAnimName);
+Animation behaveour will be undefined.\n", pmi->GetName(), iAnimID, strAnimName);
 		//untested!! - return any ID, just so that we don't crash
 		iAnimID = pmi->FindFirstAnimationID();
 		if (iAnimID == -1) {
 			CPrintF("WARNING: No animations in ModelInstance '%s' ('%s').\n\r",
-			(const char*)pmi->GetName(), (const char*)strAnimName);    
+			pmi->GetName(), strAnimName);    
 		}    
 	}
 	*piID = iAnimID;
@@ -2065,7 +2056,7 @@ void ska_CreateBoneIDFromString(INDEX *piID, CModelInstance *pmi, CTString strBo
 	if (pmi->mi_psklSkeleton->FindBoneInLOD(iBoneID, 0)==-1)
 	{
 		WarningMessage("WARNING: Bone #%d('%s') not found in model '%s' skeleton.\n\r\
-Skeleton behaveour will be undefined.\n", iBoneID, (const char*)strBoneName, (const char*)pmi->GetName());
+Skeleton behaveour will be undefined.\n", iBoneID, strBoneName, pmi->GetName());
 		iBoneID = -1;
 	}
 	*piID = iBoneID;
@@ -2084,7 +2075,7 @@ void ska_CreateCollisionIDFromString(INDEX *piID, CModelInstance *pmi, CTString 
 	if (pmi->GetColisionBoxIndex(iBoxID)==-1)
 	{
 		WarningMessage("WARNING: Collision Box #%d('%s') not found in model '%s.\n\r\
-Behaveour will be undefined.\n", iBoxID, (const char*)strCollisionName, (const char*)pmi->GetName());
+Behaveour will be undefined.\n", iBoxID, strCollisionName, pmi->GetName());
 		iBoxID = -1;
 	}
 	*piID = iBoxID;
@@ -2105,7 +2096,7 @@ void ska_CreateChildIDFromString(INDEX *piID, CModelInstance *pmi, CTString strC
 	if (pmi->GetChild(iChildID, bRecursive)==NULL && (_pNetwork->IsServer()||_bWorldEditorApp))
 	{
 		WarningMessage("WARNING: Child #%d('%s') not found in model '%s'.\n\r\
-Behaveour will be undefined.\n", iChildID, (const char*)strChildName, (const char*)pmi->GetName());
+Behaveour will be undefined.\n", iChildID, strChildName, pmi->GetName());
 		ASSERT(FALSE);
 		iChildID = -1;
 	}
@@ -2186,7 +2177,7 @@ INDEX AddSkaChild(CEntity *penThis, CModelInstance *pmiParent, INDEX iSkaModelCo
 		pmiChild->Copy(*pmiComponent);
 	} catch (char *strError) {
 		const CTFileName &fnSMCFileName = penThis->FileNameForComponent(ECT_SKAMODEL,iSkaModelComponentID);
-		FatalError(TRANS("Cannot load SMC model '%s': %s"), (const char*)fnSMCFileName, strError);
+		FatalError(TRANS("Cannot load SMC model '%s': %s"), fnSMCFileName, strError);
 	}
 
 	// if we want a different name then the one in .SMC
@@ -2399,12 +2390,12 @@ void MarkEnemyDead(class CEnemyBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
+						pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2426,12 +2417,12 @@ void MarkEnemyDead(class CCharacterBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
+						pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2453,12 +2444,12 @@ void MarkEnemyDead(class CPetBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
+						pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2480,12 +2471,12 @@ void MarkEnemyDead(class CSlaveBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
+						pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2507,12 +2498,12 @@ void MarkEnemyDead(class CWildPetBase *penEnemy)
 				if(pekd->ekd_IDSpawner!=-1)
 				{
 					CPrintF("!!! Warning !!! Enemy of class \"%s\" spawned by spawner with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, pekd->ekd_IDSpawner);
+						pekd->ekd_strName, pekd->ekd_IDSpawner);
 				}
 				else
 				{
 					CPrintF("!!! Warning !!! Enemy named \"%s\" of class \"%s\" with ID %d counted twice !!!\n",
-						(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+						pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 				}
 			}
 			pekd->ekd_bKilled=TRUE;
@@ -2532,7 +2523,7 @@ void MarkSpawnerSpawned(class CEnemySpawner *penSpawner)
 			if(pekd->ekd_ctToSpawn<=0)
 			{
 				CPrintF("!!! Warning !!! Spawner named \"%s\" with ID %d spawned more enemies than supposed !!!\n",
-					(const char*)pekd->ekd_strName, pekd->ekd_ID);
+					pekd->ekd_strName, pekd->ekd_ID);
 			}
 			pekd->ekd_ctToSpawn--;
 			return;
@@ -2553,7 +2544,7 @@ void DumpKillData(void)
 			if(pekd->ekd_ctToSpawn!=0)
 			{
 				CPrintF("Spawner named \"%s\" with ID %d: yet to spawn %d enemies of class \"%s\", named: \"%s\"\n",
-					(const char*)pekd->ekd_strName, pekd->ekd_ID, pekd->ekd_ctToSpawn, (const char*)pekd->ekd_strSpawnClass, (const char*)pekd->ekd_strSpawnName);
+					pekd->ekd_strName, pekd->ekd_ID, pekd->ekd_ctToSpawn, pekd->ekd_strSpawnClass, pekd->ekd_strSpawnName);
 			}
 		}
 		else if( !pekd->ekd_bKilled)
@@ -2561,12 +2552,12 @@ void DumpKillData(void)
 			if(pekd->ekd_IDSpawner!=-1)
 			{
 				CPrintF("Enemy spawned by spawner named: \"%s\" with ID %d , not counted as dead\n",
-					(const char*)pekd->ekd_strNameSpawner, pekd->ekd_IDSpawner);
+					pekd->ekd_strNameSpawner, pekd->ekd_IDSpawner);
 			}
 			else
 			{
 				CPrintF("Enemy named \"%s\" of class \"%s\" with ID %d not counted as dead\n",
-					(const char*)pekd->ekd_strName, (const char*)pekd->ekd_strClass, pekd->ekd_ID);
+					pekd->ekd_strName, pekd->ekd_strClass, pekd->ekd_ID);
 			}
 		}
 	}

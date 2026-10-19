@@ -1,55 +1,6 @@
 #ifndef __CRYPT_NET_MSG_H__
 #define __CRYPT_NET_MSG_H__
 
-// ************************************************************************************
-#ifdef	CRYPT_NET_MSG_LEVEL2
-
-
-#define CRYPT_INIT_CHAR				128
-
-static unsigned char	g_ubKey[]	= { 0x77, 0x6C, 0x71, 0x64, 0x70, 0x72, 0x6B, 0x72, 0x68, 0x74, 0x6C, 0x76, 0x65, 0x6B };
-
-/*
-#if defined (LC_KOR) || defined (LC_CHN)
-#define CRYPT_XOR_STRING			"dkwk"
-#else
-#define CRYPT_XOR_STRING			"nako"
-#endif*/
-
-#define CRYPT_XOR_STRING_LENGTH		4
-
-inline unsigned char* CryptMem(unsigned char* buf, int size, unsigned char arrKeyToken[], int nKeyToken)
-{
-	char ch = (char)CRYPT_INIT_CHAR;
-//	const char* strxor = CRYPT_XOR_STRING;
-	const unsigned char* strxor = arrKeyToken;
-	int i;
-	for (i = 0; i < size; i++)
-	{
-		buf[i] += ch;
-		ch = buf[i];
-		buf[i] ^= strxor[i % nKeyToken];
-	}
-	return buf;
-}
-
-inline unsigned char* DecryptMem(unsigned char* buf, int size, unsigned char arrKeyToken[], int nKeyToken)
-{
-	char ch = (char)CRYPT_INIT_CHAR;
-	const unsigned char* strxor = arrKeyToken;
-	int i;
-	for (i = 0; i < size; i++)
-	{
-		buf[i] ^= strxor[i % nKeyToken];
-		buf[i] -= ch;
-		ch = buf[i] + ch;
-	}
-	return buf;
-}
-
-#else	// CRYPT_NET_MSG_LEVEL2
-// ************************************************************************************
-
 // 4바이트 변수에서 각 바이트 값을 unsigned char로 얻음, 하위 바이트 0 ~ 최상위 바이트 3
 #define CNM_BYTE_0(n)		((unsigned char)((n      ) & 0x000000ff))
 #define CNM_BYTE_1(n)		((unsigned char)((n >>  8) & 0x000000ff))
@@ -288,7 +239,5 @@ inline int CNM_Decrypt(const unsigned char* pSrc, int nLenSrc, unsigned int nKey
 
 	return nLenDest;
 }
-
-#endif	// CRYPT_NET_MSG_LEVEL2
 
 #endif // __CRYPT_NET_MSG_H__

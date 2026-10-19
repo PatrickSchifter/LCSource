@@ -24,7 +24,6 @@ public:
   INDEX pc_iPlayerIndex;
 //0217
   INDEX pc_iPlayerType;
-  INDEX pc_iNoticeRevision;
 
   /* Default constructor. */
   CPlayerCharacter(void);

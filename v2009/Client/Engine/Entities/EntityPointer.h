@@ -38,7 +38,7 @@ public:
   CEntityID(const CEntityID &eidOther);
   CEntityID(CEntity *pen);
   const CEntityID &operator=(CEntity *pen);
-  const CEntityID &operator=(const CEntityID &eidOther);
+  const CEntityID &operator=(CEntityID &eidOther);
   const CEntityID &operator=(ULONG ulEntityID);
   CEntity* operator->(void);
   operator CEntity*(void) const;

@@ -6,24 +6,6 @@
 #include <string>
 #include <queue>
 #include <Engine/Entities/SmcInfo.h>
-#include <Engine/Entities/ItemData.h>
-
-struct DeleteEntity
-{
-	template<typename T>
-	void operator()(const T* ptr) const
-	{
-		delete ptr;
-	}
-};
-/*template<typename T>
-struct DeleteEntity 
-{
-	void operator()(const T* ptr) const
-	{
-		delete ptr;
-	}
-};*/
 
 class CSmcParser : public CSmcInfo
 {
@@ -103,33 +85,6 @@ typedef std::vector<CSmcParser>::iterator	vec_SmcParserItor;
 typedef std::vector<CSmcParser>		vec_SmcParser;
 typedef std::queue<unsigned char>	ByteQueue;
 
-class ENGINE_API ByteQueueData : public ByteQueue
-{
-public:
-	ByteQueueData();
-	virtual ~ByteQueueData();
-
-	// Write Basics types
-	void WriteString(std::string sData);
-	void WriteDword(DWORD dwData);
-	void WriteWord(WORD wData);
-	void WriteByte(BYTE byteData);
-	void WriteFloat(float floatData);
-	void WriteDouble(double dData);
-	
-	// Read Basic types
-	std::string ReadString(void);
-	DWORD ReadDword(void);
-	WORD ReadWord(void);
-	BYTE ReadByte(void);
-	float ReadFloat(void);
-	double ReadDouble(void);
-
-	void WriteDocString(std::string sData);
-
-	void ClearQueue(void);
-};
-
 class CSmcParserList : public std::vector<CSmcParser>
 {
 public:
@@ -140,8 +95,6 @@ public:
 
 	bool SmcParsingLogWritetxt(std::string sFilename); // 파싱 로그 정보 기록
 
-	bool CheckItemExist(const CStaticArray<CItemData>& arrItemList, const char* saveFileName);
-
 	void ClearLogList() { m_strLogList.clear(); }
 	std::vector<std::string>* GetstrLogList() { return &m_strLogList; }
 	void AddString(std::string sData);
@@ -149,10 +102,25 @@ public:
 	bool IsEmptyqueBuffer(void) { return m_queBuffer.empty(); }
 
 protected:
+	// Write Basic types
+	void WriteString(std::string sData);
+	void WriteDword(DWORD dwData);
+	void WriteWord(WORD wData);
+	void WriteByte(BYTE byteData);
+	void WriteDouble(double dData);	
+
+	// Read Basic types
+	std::string ReadString();
+	DWORD ReadDword();
+	WORD ReadWord();
+	BYTE ReadByte();
+	double ReadDouble();
+
 	void WriteSmcInfo();
 	void ReadSmcInfo();
-	
-	ByteQueueData	m_queBuffer;
+
+	ByteQueue	m_queBuffer;
+	ByteQueue	m_queLogBuffer;	// 로그 정보 저장용
 	std::vector<std::string> m_strLogList; // 로그 정보 기록
 };
 

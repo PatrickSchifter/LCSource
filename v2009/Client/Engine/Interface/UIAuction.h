@@ -9,6 +9,13 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIComboBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIRectString.h>
+#include <vector>
+
 #define AUCTION_WIDTH	644
 #define AUCTION_HEIGHT	510
 #define AUCTION_SLOT_MAX 10
@@ -67,6 +74,8 @@ protected:
 	int m_nSearchedItemSubType;							//검색 조건 변경후 페이지 이동시 이전에 검색했던 조건을
 	int m_nSearchedClass;								//저장하기 위한 값들
 	int m_nCurretnSorting;								//////////////////////////////////////////////////////////////////////////
+
+	int m_nNpcIndex;									//npc인덱스
 	int m_nSelectedItemCancel;							// 등록 취소할 아이템 버튼 인덱스
 
 	FLOAT m_fNpcX, m_fNpcZ;								//npc위치(거리 체크용)
@@ -76,6 +85,7 @@ protected:
 	BOOL m_bReverse;									//정렬시 오름 내림 차순여부
 	BOOL m_bRegister;									// 등록 요청 중인가?
 	BOOL m_bSettle;										// 정산할 아이템이 있다.
+	BOOL m_bSettleRequest;								// 정산 요청 중인가?
 
 	SQUAD m_nRegisterItemCount;							//등록할 아이템 개수
 	SQUAD m_nRegisterItemPrice;							//등록할 아이템 가격
@@ -99,7 +109,6 @@ protected:
 	//도움말 배경 2
 	//선택이미지 3
 	CUIRectSurface		m_AuctionSurface;				
-	CTextureData		*m_ptdButtonTexture;
 	
 	//버튼들
 	CUIButton			m_btnClose;								//닫기
@@ -150,14 +159,11 @@ public :
 	// Command functions
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput ,CTString &strConfirm);
-	void	MsgBoxLCommand(int nCommandCode, int nResult );
-	BOOL	CloseWindowByEsc()	{ CloseAuction(); return TRUE; }
 
 	BOOL	IsEditBoxFocused() { return m_ebSearch.IsFocused(); }
 
 	// 기타 함수
 	void	OpenAuction(int nNpcIndex, FLOAT fNpcPosX, FLOAT fNpcPosZ);
-	void	UseAuction();
 	void	CloseAuction();
 
 	void	CloseAuctionMessageBox();
@@ -171,7 +177,8 @@ public :
 	void	SetMaxPage(int nMaxPageNum){ m_nMaxPage = nMaxPageNum; }
 	void	SetDepositMoney(SQUAD nDepositMoney){ m_nDepositMoney = nDepositMoney; }
 	void	SetRegistering(BOOL bEnable) { m_bRegister = bEnable; }
-	void	SetSettling(BOOL bEnable) { m_bSettle = bEnable; m_btnExecuteSettlement.SetEnable(bEnable);}
+	void	SetSettling(BOOL bEnable) { m_bSettle = bEnable; }
+	void	SetSettleRequest(BOOL bEnable) { m_bSettleRequest = bEnable; }
 
 	void	GetRegisterItemData(CTString &strItemName, SQUAD& nItemCount, SQUAD& nItemPrice); // 아이템 등록 정보
 	int		GetCurrentPage(){ return m_nCurrentPage; } // 현재 페이지
@@ -180,11 +187,13 @@ public :
 	int		GetCurrentAuctionItemCount(); // 현재 페이지의 상품 개수
 	BOOL	GetRegistering() { return m_bRegister; }
 	BOOL	GetSettling() { return m_bSettle; }
+	BOOL	GetSettleRequest(void) { return m_bSettleRequest; }
 
 	BOOL	IsSearchConditionChanged(); // 검색 조건 변경 유무
 	void	SortItem(int nSortType, BOOL bReverse = FALSE); // 정렬 (서버 요청)
 	void	SearchItem(int nPageNum, int nAlignType);
 	void	EnableSortBtn(); // 정렬 활성화
+	void	EnableSearchBtn();	// [090611: selo] 검색 버튼 활성화
 	void	BuyItem(); // 아이템 구입
 
 	void	CancelRegister(); // 등록 취소
@@ -193,19 +202,5 @@ public :
 	
 	void	GoPage(int nPageNum); // 페이지 이동
 	CTString GetItemFullName(CUIButtonEx &btnItem);
-
-	BOOL	IsFarNPC();
-
-public :
-	
-protected:
-	void initialize();
-	void OnUpdate( float fElapsedTime );
-#ifdef UI_TEST
-// 	CUIComboBox*			m_cmbItemType;							//아이템 타입(무기,방어구...)
-// 	CUIComboBox*			m_cmbItemSubType;						//아이템 서브타입(아이템 타입에 따라 다름)
-// 	CUIComboBox*			m_cmbClass;								//사용가능 클래스
-#endif //UI_TEST
-
 };
 #endif // UIAUCTION_H_

@@ -23,6 +23,7 @@
 #include <conio.h>
 #endif
 #include <string.h>
+#include <string>
 #include <stddef.h>
 #include <time.h>
 #include <math.h>
@@ -33,12 +34,6 @@
 #include <crtdbg.h>
 #endif
 
-extern "C"
-{
-    #include <Engine/lua/lua.h>
-    #include <Engine/lua/lualib.h>
-    #include <Engine/lua/lauxlib.h>
-};
 
 #ifdef _WIN32
   #include <winsock2.h>

@@ -1,23 +1,16 @@
 #include "StdH.h"
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIMessageBox.h>
 #include <Engine/PetInfo.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIPetInfo.h>
 #include <Engine/Interface/UITextureManager.h>
-#include <Engine/Contents/Base/ChattingUI.h>
-#include <Engine/Interface/UIGamble.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Info/ServerInfo.h>
-#include <Engine/Info/MyInfo.h>
-#include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
+#include <Engine/LocalDefine.h>
 
 #define MESSAGEBOX_CHAR_WIDTH	( MSGBOX_WIDTH - 14 - MSGBOX_MESSAGE_OFFSETX )
 static int	_iMaxMsgStringChar = 0;
 
-//extern INDEX g_iCountry;
+extern INDEX g_iCountry;
+
 // ----------------------------------------------------------------------------
 // Name : ISBoxInit() wooss 050805
 // Desc : MsgCommand roop에서 다시 메시지 박스를 만들 경우 
@@ -29,12 +22,12 @@ BOOL	IsBoxInit(int cmdCode)
 	if(MSGCMD_USE_RECOVER_ITEM_HEXP==cmdCode) return FALSE; 
 	if(MSGCMD_USE_RECOVER_ITEM_AEXP==cmdCode) return FALSE; 
 	if(MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY==cmdCode) return FALSE; 
-	if(MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY==cmdCode) return FALSE;
+	if(MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY==cmdCode) return FALSE; 
 	if(MSGCMD_USE_REBIRTH_ITEM==cmdCode) return FALSE;
 	if(MSGCMD_USE_CHANGE_MY_NAME_ITEM==cmdCode) return FALSE;
 	if(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM==cmdCode) return FALSE;
 	if(MSGCMD_PET_MOUNT_CANCEL_CARD==cmdCode) return FALSE;
-	//if(MSGLCMD_EVENT_XMAS_2006_CHANGE==cmdCode) return FALSE; // [2009/6/8 Theodoric] MSGLCMD_EVENT_XMAS_2006_CHANGE
+	//if(MSGLCMD_EVENT_XMAS_2006_CHANGE==cmdCode) return FALSE;
 	if(MSGCMD_USE_PACKING_PAPER==cmdCode) return FALSE;
 	if(MSGCMD_USE_SMALL_CORD==cmdCode) return FALSE;
 	if(MSGCMD_GUILDMASTER_1==cmdCode) return FALSE;
@@ -68,7 +61,11 @@ void CUIColorBox::Create(int iCount, CTextureData *ptdBaseTexture)
 	// Color Box
 	for(int i=0; i<9; ++i)
 	{
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 		m_dbColorBox[i].SetBoxUV(ptdBaseTexture,2,WRect( 208+(i%3*10)+3, 98+(i/3*10)+3, 208+(i%3*10)+7, 98+(i/3*10)+7));
+#else
+		m_dbColorBox[i].SetBoxUV(ptdBaseTexture,2,WRect( 328+(i%3*10)+3, 177+(i/3*10)+3, 328+(i%3*10)+7, 177+(i/3*10)+7));
+#endif
 	}
 
 	m_ColorBoxInfo =new COLOR_BOX_INFO[iCount];
@@ -138,18 +135,16 @@ void CUIColorBox::MsgBoxCommand(int index, int nCommandCode)
 	{
 	case MSGCMD_MOONSTONE_MIX:
 		{
-			int nTab, inven_idx, nUniIndex;
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
-			pUIManager->GetMessageBox(MSGCMD_MOONSTONE_MIX)->GetBtnUseItemInfo( nTab, inven_idx, nUniIndex );
+			int nTab, nRow, nCol, nUniIndex;
+			_pUIMgr->GetMessageBox(MSGCMD_MOONSTONE_MIX)->GetBtnUseItemInfo( nTab, nRow, nCol, nUniIndex );
 			
-			int iMoonStoneBox =_pNetwork->MySlotItem[nTab][inven_idx].Item_Index;
+			int iMoonStoneBox =_pNetwork->MySlotItem[nTab][nRow][nCol].Item_Index;
 
-			int iMoonStone =pUIManager->GetMessageBox(MSGCMD_MOONSTONE_MIX)->GetBtnEx(0)->getIndex();
+			int iMoonStone =_pUIMgr->GetMessageBox(MSGCMD_MOONSTONE_MIX)->GetBtnEx(0).GetItemIndex();
 			
 			_pNetwork->SendMoonStoneMix( iMoonStone, iMoonStoneBox );
 
-			pUIManager->CloseMessageBox(MSGCMD_MOONSTONE_MIX);
+			_pUIMgr->CloseMessageBox(MSGCMD_MOONSTONE_MIX);
 		}
 		break;
 	}
@@ -215,16 +210,13 @@ void CUIMsgBox_Info::Reset()
 	m_nSpinButtonPosY =-1;
 	m_nSpinButtonWidth =-1;
 	m_strSpinButtonTitle =CTString("");
-
-	m_nTime = 0;
-	m_bTimeOutBtnMessage = FALSE;
 }
 
 // ----------------------------------------------------------------------------
 // Name : SetMsgBoxInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
+void CUIMsgBox_Info::SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
 {
 	m_strTitle = strTitle;
 	m_dwStyle = dwStyle;
@@ -249,327 +241,302 @@ void CUIMsgBox_Info::SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddString( const CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
 
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = _iMaxMsgStringChar;
 	if( nLength == 0 )
 		return;
-#if defined(G_THAI)
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else	// G_THAI
-	nLength = strMessage.Length();
-	limitstrpos = _iMaxMsgStringChar;
-#endif	// G_THAI
 
-	int		iPos;
-
-	if( nLength <= limitstrpos )
-	{
-		// Check line character
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strMessage);
+		INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_strMessage[m_nCurStringCount] = strMessage;
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			
-			/*				if( eAlign == TEXT_CENTER )
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-			int nLength = strMessage.Length()/2;
-			m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-		}*/
-			
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_strMessage[m_nCurStringCount] = strMessage;
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+
+/*				if( eAlign == TEXT_CENTER )
+				{
+					int nLength = strMessage.Length()/2;
+					m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+				}*/
+
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp;
+				strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+/*				if( eAlign == TEXT_CENTER )
+				{
+					int nLength = strTemp.Length()/2;
+					
+					m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+				}*/
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp, colMessage, eAlign );
+			}
 		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			/*				if( eAlign == TEXT_CENTER )
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-			int nLength = strTemp.Length()/2;
-			
-			  m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-		}*/
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddString( strTemp, colMessage, eAlign );
-		}
-	}
-		// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-		BOOL	b2ByteChar = FALSE;
-#if defined (G_THAI)
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-#else
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
-#endif
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp;
-#ifdef LINE_CHANGE_BY_WORD
-			if( strMessage[nSplitPos] != ' ' )
+				if(nChatMax < FindThaiLen(strMessage,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
 			{
-				for(int i = iPos; i>=0; --i)
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp;
+				strMessage.Split( nSplitPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+
+				// Trim space
+				if( strTemp[0] == ' ' )
 				{
-					if( strMessage[i] == ' ' )
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
 					{
-						iPos = i;
-						break;
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddString( strTemp, colMessage, eAlign );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp;
+				strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp, colMessage, eAlign );
+			}
+
+		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxMsgStringChar )
+		{
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_strMessage[m_nCurStringCount] = strMessage;
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+
+/*				if( eAlign == TEXT_CENTER )
+				{
+					int nLength = strMessage.Length()/2;
+					
+					
+					m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+				}*/
+				
+
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp;
+				strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+/*				if( eAlign == TEXT_CENTER )
+				{
+					int nLength = strTemp.Length()/2;
+					
+					m_nPosX[m_nCurStringCount] = ( MESSAGEBOX_CHAR_WIDTH + MSGBOX_MESSAGE_OFFSETX ) / 2 - nLength * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+				}*/
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp, colMessage, eAlign );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp;
+#ifdef LINE_CHANGE_BY_WORD
+				if( strMessage[nSplitPos] != ' ' )
+				{
+					for(int i=iPos; i>=0; --i)
+					{
+						if( strMessage[i] == ' ' )
+						{
+							nSplitPos =i;
+							break;
+						}
 					}
 				}
-			}
 #endif
+				strMessage.Split( nSplitPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
 
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
-			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
+				// Trim space
+				if( strTemp[0] == ' ' )
 				{
-					if( strTemp[iPos] != ' ' )
-						break;
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
 				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+
+				AddString( strTemp, colMessage, eAlign );
 			}
-			
-			AddString( strTemp, colMessage, eAlign );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddString( strTemp, colMessage, eAlign );
+			{
+				// Split string
+				CTString	strTemp;
+				strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
+				m_colMessage[m_nCurStringCount] = colMessage;
+				m_taAlign[m_nCurStringCount] = eAlign;
+				m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
+				m_nMaxRow++;
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp, colMessage, eAlign );
+			}
 		}
-		
 	}
-	
 }
 
 // ----------------------------------------------------------------------------
 // Name : AddStringEx()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddStringEx( const CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddStringEx( CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
 
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = _iMaxMsgStringChar;
 	if( nLength == 0 )
 		return;
-#if defined(G_THAI)
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else
-	nLength = strMessage.Length();
-	limitstrpos = _iMaxMsgStringChar;
-#endif
 
-	int		iPos;
-	if( nLength <= limitstrpos )
-	{
-		// Check line character
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_strMessage[m_nCurStringCount] = strMessage;
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosX[m_nCurStringCount] = MSGBOX_MESSAGE_OFFSETX + nCol * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosX[m_nCurStringCount] = MSGBOX_MESSAGE_OFFSETX + nCol * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddStringEx( strTemp, nRow+1 , nCol, colMessage, eAlign );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-#if defined(G_THAI)
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-#else
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
-#endif
-		
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp;
-#ifdef LINE_CHANGE_BY_WORD
-			if( strMessage[nSplitPos] != ' ' )
-			{
-				for(int i = iPos; i>=0; --i)
-				{
-					if( strMessage[i] == ' ' )
-					{
-						iPos = i;
-						break;
-					}
-				}
-			}
-#endif
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosX[m_nCurStringCount] = MSGBOX_MESSAGE_OFFSETX + nCol * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
-			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
-			}
-			
-			AddStringEx( strTemp, nRow+1 , nCol, colMessage, eAlign );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_strMessage[m_nCurStringCount], strTemp );
-			m_colMessage[m_nCurStringCount] = colMessage;
-			m_taAlign[m_nCurStringCount] = eAlign;
-			m_nPosX[m_nCurStringCount] = MSGBOX_MESSAGE_OFFSETX + nCol * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-			m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddStringEx( strTemp, nRow+1 , nCol, colMessage, eAlign );
-		}
-	}
+	m_strMessage[m_nCurStringCount] = strMessage;
+	m_colMessage[m_nCurStringCount] = colMessage;
+	m_taAlign[m_nCurStringCount] = eAlign;
+	m_nPosX[m_nCurStringCount] = MSGBOX_MESSAGE_OFFSETX +
+									nCol * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+	m_nPosY[m_nCurStringCount++] = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight();
+	
 
 	if( nRow > m_nMaxRow )
 		m_nMaxRow = nRow;
@@ -649,240 +616,10 @@ void CUIMsgBox_Info::SetSpinButton(int nRow, int nCol, int nWidth, CTString strT
 	m_nSpinButtonPosY = MSGBOX_MESSAGE_OFFSETY + nRow * _pUIFontTexMgr->GetLineHeight() -
 					( 13 - _pUIFontTexMgr->GetFontHeight() ) / 2;		// 13은 입력 상자 이미지의 높이
 
-	if (nWidth < 0)
-		nWidth = m_nWidth - m_nSpinButtonPosX;
-
 	m_nSpinButtonWidth =nWidth;
 	m_strSpinButtonTitle =strTitle;
 }
 
-// 추가. [11/19/2009 rumist]
-void		CUIMultiLineText::AddString(const CTString &strMessage, COLOR colMessage /* = 0xF2F2F2FF */, TEXT_ALIGN eAlign /* = TEXT_LEFT  */)
-{
-	if( m_nCurStringCount >= MAX_MSGSTRING )
-		return;
-
-	// Get length of string
-	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = m_nMaxMsgStringChar;
-	if( nLength == 0 )
-		return;
-#if defined(G_THAI)
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (m_nMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else
-	nLength = strMessage.Length();
-	limitstrpos = m_nMaxMsgStringChar;
-#endif
-
-	int iPos;
-	// If length of string is less than max char
-	if( nLength <= limitstrpos )
-	{
-		// Check line character		
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_msgList[m_nCurStringCount].strMessage = strMessage;
-			m_msgList[m_nCurStringCount].colMessage = colMessage;
-			m_msgList[m_nCurStringCount].taAlign = eAlign;
-			m_msgList[m_nCurStringCount++].nStrPosY = m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_msgList[m_nCurStringCount].strMessage, strTemp );
-			m_msgList[m_nCurStringCount].colMessage = colMessage;
-			m_msgList[m_nCurStringCount].taAlign = eAlign;
-			m_msgList[m_nCurStringCount++].nStrPosY = m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddString( strTemp, colMessage, eAlign );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-#if defined(G_THAI)
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-#else
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
-#endif
-		
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp;
-#ifdef LINE_CHANGE_BY_WORD
-			if( strMessage[nSplitPos] != ' ' )
-			{
-				for(int i = iPos; i>=0; --i)
-				{
-					if( strMessage[i] == ' ' )
-					{
-						iPos = i;
-						break;
-					}
-				}
-			}
-#endif
-			strMessage.Split( iPos, m_msgList[m_nCurStringCount].strMessage, strTemp );
-			m_msgList[m_nCurStringCount].colMessage = colMessage;
-			m_msgList[m_nCurStringCount].taAlign = eAlign;
-			m_msgList[m_nCurStringCount++].nStrPosY = m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
-			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
-			}
-			
-			AddString( strTemp, colMessage, eAlign );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strMessage.Split( iPos, m_msgList[m_nCurStringCount].strMessage, strTemp );
-			m_msgList[m_nCurStringCount].colMessage = colMessage;
-			m_msgList[m_nCurStringCount].taAlign = eAlign;
-			m_msgList[m_nCurStringCount++].nStrPosY = m_nMaxRow * _pUIFontTexMgr->GetLineHeight();
-			m_nMaxRow++;
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddString( strTemp, colMessage, eAlign );
-		}
-	}
-
-}
-
-void		CUIMultiLineText::SetRenderRect(int x, int y, int width, int height )
-{
-	m_nRenderPosX = x;
-	m_nRenderPosY = y;
-	m_nRenderWidth = width;
-	m_nMaxMsgStringChar = ( m_nRenderWidth - 14 ) / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-}
-
-void		CUIMultiLineText::SetRenderRect(UIRect &rc )
-{
-	m_nRenderPosX = rc.Left;
-	m_nRenderPosY = rc.Top;
-	m_nRenderWidth = rc.GetWidth();
-	m_nMaxMsgStringChar = ( m_nRenderWidth - 14 ) / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-}
-
-const int	CUIMultiLineText::GetRenderHeight()	const		
-{ 
-	return (/*_pUIFontTexMgr->GetFontHeight()+*/_pUIFontTexMgr->GetLineHeight()) * m_nCurStringCount;	
-}
-
-void		CUIMultiLineText::Render()
-{
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	// Message strings : Second Type
-	int iMsg = 0;
-	for( iMsg = 0; iMsg < m_nCurStringCount; iMsg++ )
-	{
-		switch( m_msgList[iMsg].taAlign )
-		{
-		case TEXT_LEFT:
-			{
-				pDrawPort->PutTextEx( m_msgList[iMsg].strMessage , m_nRenderPosX +m_msgList[iMsg].nStrPosX,
-					m_nRenderPosY + m_msgList[iMsg].nStrPosY + 5, m_msgList[iMsg].colMessage );
-			}
-			break;
-		case TEXT_CENTER:
-			{
-				pDrawPort->PutTextExCX( m_msgList[iMsg].strMessage, m_nRenderPosX + ((m_nRenderWidth)/2),
-					m_nRenderPosY + m_msgList[iMsg].nStrPosY + 5, m_msgList[iMsg].colMessage );
-			}
-			break;
-		case TEXT_RIGHT:
-			{
-				pDrawPort->PutTextExRX( m_msgList[iMsg].strMessage, m_nRenderPosX + m_nRenderWidth - m_msgList[iMsg].nStrPosX,
-					m_nRenderPosY + m_msgList[iMsg].nStrPosY + 5, m_msgList[iMsg].colMessage );
-			}
-			break;
-		}		
-	}
-
-	pDrawPort->EndTextEx();
-	pDrawPort->FlushRenderingQueue();
-}
-
-void CUIMultiLineText::Clear()
-{
-	for ( int i = 0; i< m_nCurStringCount; ++i )
-	{
-		m_msgList[i].strMessage.Clear();
-		m_msgList[i].colMessage = 0xF2F2F2FF;
-		m_msgList[i].nStrPosX = MSGBOX_MESSAGE_OFFSETX;
-		m_msgList[i].nStrPosY = -1;
-		m_msgList[i].taAlign = TEXT_LEFT;
-	}
-	m_nCurStringCount = 0;
-	m_nMaxRow =0;
-	m_nRenderPosX = 0;
-	m_nRenderPosY = 0;
-	m_nRenderWidth = 0;
-	m_nMaxMsgStringChar = 0;
-
-}
 // ----------------------------------------------------------------------------
 // Name : CUIMessageBox()
 // Desc : Constructor
@@ -896,11 +633,11 @@ CUIMessageBox::CUIMessageBox()
 	m_nCurStringCount = 0;
 	m_bTitleBarClick = FALSE;
 
+	m_btnSlot =NULL;
 	m_rcBtnSlot =NULL;
 	m_rcBtnInsertSlot =NULL;
 	m_nUniIndex = 0;
 	m_nBtnCount =0;
-	m_ptdNewCharacterInfoTex = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -909,23 +646,7 @@ CUIMessageBox::CUIMessageBox()
 // ----------------------------------------------------------------------------
 CUIMessageBox::~CUIMessageBox()
 {
-	release();
 	Destroy();
-
-	STOCK_RELEASE(m_ptdNewCharacterInfoTex);
-}
-
-void CUIMessageBox::release()
-{
-	SAFE_ARRAY_DELETE(m_rcBtnSlot);
-	SAFE_ARRAY_DELETE(m_rcBtnInsertSlot);
-
-	for (int i = 0; i < m_vecIcon.size(); ++i)
-	{
-		SAFE_DELETE(m_vecIcon[i]);
-	}
-
-	m_vecIcon.clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -934,7 +655,9 @@ void CUIMessageBox::release()
 // ----------------------------------------------------------------------------
 void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = 187 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -944,16 +667,19 @@ void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_rcSEInputBox.SetRect( 46, 0, 157, 13 );
 	m_rcConfirmBox.SetRect( 46, 0, 157, 13 );
 
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\CommonBtn.tex" ) );
 	//m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
-
-	m_ptdNewCharacterInfoTex = CreateTexture(CTString("Data\\Interface\\NewCharacterInfo.tex"));
-
+#else
+	// Create message box texture
+	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
+#endif
 	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
 	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight(); 
 
 	// UV Coordinate of each part
 	// Background
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	m_rtBackTopL.SetUV( 0, 136, 22, 136+27, fTexWidth, fTexHeight );
 	m_rtBackTopM.SetUV( 23, 136, 23+10, 136+27, fTexWidth, fTexHeight );
 	m_rtBackTopR.SetUV( 117, 136, 117+26, 136+27, fTexWidth, fTexHeight );
@@ -965,24 +691,59 @@ void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_rtBackBottomL.SetUV( 0, 208, 22, 208+20, fTexWidth, fTexHeight );
 	m_rtBackBottomM.SetUV( 23, 208, 23+10, 208+20, fTexWidth, fTexHeight );
 	m_rtBackBottomR.SetUV( 117, 208, 117+26, 208+20, fTexWidth, fTexHeight );
+#else
+	m_rtBackTopL.SetUV( 0, 0, 20, 26, fTexWidth, fTexHeight );
+	m_rtBackTopM.SetUV( 21, 0, 25, 26, fTexWidth, fTexHeight );
+	m_rtBackTopR.SetUV( 196, 0, 216, 26, fTexWidth, fTexHeight );
+	
+	m_rtBackMiddle1L.SetUV( 0, 31, 20, 33, fTexWidth, fTexHeight );
+	m_rtBackMiddle1M.SetUV( 21, 31, 25, 33, fTexWidth, fTexHeight );
+	m_rtBackMiddle1R.SetUV( 196, 31, 216, 33, fTexWidth, fTexHeight );
 
-	FLOAT	fTextureWid = m_ptdBaseTexture->GetPixWidth();
-	FLOAT	fTextureHeight = m_ptdBaseTexture->GetPixHeight();
+	m_rtBackMiddle2L.SetUV( 0, 35, 20, 37, fTexWidth, fTexHeight );
+	m_rtBackMiddle2M.SetUV( 21, 35, 25, 37, fTexWidth, fTexHeight );
+	m_rtBackMiddle2R.SetUV( 196, 35, 216, 37, fTexWidth, fTexHeight );
+
+	m_rtBackBottomL.SetUV( 0, 38, 20, 45, fTexWidth, fTexHeight );
+	m_rtBackBottomM.SetUV( 21, 38, 25, 45, fTexWidth, fTexHeight );
+	m_rtBackBottomR.SetUV( 196, 38, 216, 45, fTexWidth, fTexHeight );
+#endif//TEXTURE_MSGBOX_CHANGE_NA_20080902
+
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+	FLOAT	fTextureWid = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixWidth();
+	FLOAT	fTextureHeight = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixHeight();
 
 	// Input box
-	m_rtInputBoxL.SetUV( 156, 58, 160, 71, fTextureWid, fTextureHeight );
-	m_rtInputBoxM.SetUV( 162, 58, 164, 71, fTextureWid, fTextureHeight );
-	m_rtInputBoxR.SetUV( 166, 58, 170, 71, fTextureWid, fTextureHeight );
+	m_rtInputBoxL.SetUV( 131, 46, 135, 59, fTextureWid, fTextureHeight );
+	m_rtInputBoxM.SetUV( 137, 46, 139, 59, fTextureWid, fTextureHeight );
+	m_rtInputBoxR.SetUV( 141, 46, 145, 59, fTextureWid, fTextureHeight );
 
 	// SE Input box
-	m_rtSEInputBoxL.SetUV( 156, 58, 160, 71, fTextureWid, fTextureHeight );
-	m_rtSEInputBoxM.SetUV( 162, 58, 164, 71, fTextureWid, fTextureHeight );
-	m_rtSEInputBoxR.SetUV( 166, 58, 170, 71, fTextureWid, fTextureHeight );
+	m_rtSEInputBoxL.SetUV( 131, 46, 135, 59, fTextureWid, fTextureHeight );
+	m_rtSEInputBoxM.SetUV( 137, 46, 139, 59, fTextureWid, fTextureHeight );
+	m_rtSEInputBoxR.SetUV( 141, 46, 145, 59, fTextureWid, fTextureHeight );
 
 	// Btn Slot
-	m_rtBtnSlot.SetUV( 14, 410, 48, 444, m_ptdNewCharacterInfoTex->GetPixWidth(), m_ptdNewCharacterInfoTex->GetPixHeight() );
+	m_rtBtnSlot.SetUV( 14, 410, 48, 444, 
+					   CreateTexture( CTString( "Data\\Interface\\NewCharacterInfo.tex" ) )->GetPixWidth(), 
+					   CreateTexture( CTString( "Data\\Interface\\NewCharacterInfo.tex" ) )->GetPixHeight() );
+#else
+	// Input box
+	m_rtInputBoxL.SetUV( 131, 46, 135, 59, fTexWidth, fTexHeight );
+	m_rtInputBoxM.SetUV( 137, 46, 139, 59, fTexWidth, fTexHeight );
+	m_rtInputBoxR.SetUV( 141, 46, 145, 59, fTexWidth, fTexHeight );
+
+	// SE Input box
+	m_rtSEInputBoxL.SetUV( 131, 46, 135, 59, fTexWidth, fTexHeight );
+	m_rtSEInputBoxM.SetUV( 137, 46, 139, 59, fTexWidth, fTexHeight );
+	m_rtSEInputBoxR.SetUV( 141, 46, 145, 59, fTexWidth, fTexHeight );
+
+	// Btn Slot
+	m_rtBtnSlot.SetUV( 0, 68, 34, 102, fTexWidth, fTexHeight );
+#endif
 
 	// Ok button
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	m_btnOk.Create( this, CTString( "" ), 0, 0, 63, 21 );
 	m_btnOk.SetUV( UBS_IDLE, 112, 0, 112+71, 23, fTexWidth, fTexHeight );
 	m_btnOk.SetUV( UBS_CLICK, 185, 0, 185+71, 23, fTexWidth, fTexHeight );
@@ -1002,7 +763,31 @@ void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_btnClose.SetUV( UBS_CLICK, 228, 32, 228+18, 32+18, fTexWidth, fTexHeight );
 	m_btnClose.CopyUV( UBS_IDLE, UBS_ON );
 	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );
+#else
+	m_btnOk.Create( this, CTString( "" ), 0, 0, 63, 21 );
+	m_btnOk.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnOk.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnOk.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnOk.CopyUV( UBS_IDLE, UBS_DISABLE );
 
+	// Cancel button
+	m_btnCancel.Create( this, CTString( "" ), 0, 0, 63, 21 );
+	m_btnCancel.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnCancel.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnCancel.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnCancel.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	//WSS_GUILD_MASTER 070411 ----------------------->>
+	// Close button 
+	m_btnClose.Create( this, CTString( "" ), 0, 0, 15, 15 );
+	m_btnClose.SetUV( UBS_IDLE, 218, 0, 233, 14, fTexWidth, fTexHeight );
+	m_btnClose.SetUV( UBS_CLICK, 234, 0, 249, 14, fTexWidth, fTexHeight );
+	m_btnClose.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );
+	// ----------------------------------------------<<
+#endif//TEXTURE_MSGBOX_CHANGE_NA_20080902
+
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	// Input box
 	m_ebInput.Create( this, 54, 0, 105, 13, 17, TRUE );
 	m_ebInput.SetReadingWindowUV( 146, 46, 163, 62, fTextureWid, fTextureHeight );
@@ -1017,6 +802,34 @@ void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_ebConfirm.Create( this, 54, 0, 105, 13, 17, TRUE );
 	m_ebConfirm.SetReadingWindowUV( 146, 46, 163, 62, fTextureWid, fTextureHeight );
 	m_ebConfirm.SetCandidateUV( 146, 46, 163, 62, fTextureWid, fTextureHeight );
+
+	// Combo Box
+// 	m_cbList.Create( this, 100, 118, 127, 15, 115, 1, 13, 13,
+// 						5, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );
+// 	m_cbList.SetBackUV( 5, 160, 5+100, 160+30, fTextureWid, fTextureHeight );
+// 	m_cbList.SetDownBtnUV( 157, 48, 157+9, 48+7, fTextureWid, fTextureHeight );//13 / 12
+// 	m_cbList.SetUpBtnUV( 170, 48, 170+9, 48+7, fTextureWid, fTextureHeight );//156, 45+12 ,156+12, 45	
+// 	m_cbList.SetDropListUV( 100, 40, 100+4, 40+4, fTextureWid, fTextureHeight );
+// 	// scroll bar
+// 	m_cbList.CreateScroll(TRUE,10,9,0,0,10);
+// 	// Up button
+// 	m_cbList.SetScrollUpUV( UBS_IDLE, 157, 35, 157+9, 35+7, fTextureWid, fTextureHeight );
+// 	m_cbList.SetScrollUpUV( UBS_CLICK, 170, 35, 170+9, 35+7, fTextureWid, fTextureHeight );
+// 	m_cbList.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+// 	m_cbList.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+// 	// Bar button
+// 	m_cbList.SetScrollBarTopUV( 185, 32, 185+10, 32+9, fTextureWid, fTextureHeight );//밝은
+// 	m_cbList.SetScrollBarMiddleUV( 185, 32+9, 185+10, 62, fTextureWid, fTextureHeight );
+// 	m_cbList.SetScrollBarBottomUV( 185, 62, 185+10, 62+9, fTextureWid, fTextureHeight );
+// 	m_cbList.SetScrollBarTopUV( 198, 30, 198+10, 30+9, fTextureWid, fTextureHeight );//어두운
+// 	m_cbList.SetScrollBarMiddleUV( 198, 30+9, 198+10, 69, fTextureWid, fTextureHeight );
+// 	m_cbList.SetScrollBarBottomUV( 198, 69, 198+10, 69+9, fTextureWid, fTextureHeight );
+// 	// Down button
+// 	m_cbList.SetScrollDownUV( UBS_IDLE, 157, 48, 157+9, 48+7, fTextureWid, fTextureHeight );
+// 	m_cbList.SetScrollDownUV( UBS_CLICK, 170, 48, 170+9, 48+7, fTextureWid, fTextureHeight );
+// 	m_cbList.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+// 	m_cbList.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+// 	m_cbList.SetCurSel( 0 );
 
 	// Combo Box
 	m_cbList.Create( this, 100, 118, 127, 15, 115, 1, 13, 13,
@@ -1064,6 +877,69 @@ void CUIMessageBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_sbtnSpin.CreateButtons( 11, 8 );
 	m_sbtnSpin.SetWheelRect( -10, -10, 20, 20 );
 	m_sbtnSpin.SetEnable(FALSE);
+#else
+	// Input box
+	m_ebInput.Create( this, 54, 0, 105, 13, 17, TRUE );
+	m_ebInput.SetReadingWindowUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+	m_ebInput.SetCandidateUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+
+	// SE Input box
+	m_ebSEInput.Create( this, 54, 0, 105, 13, 17, TRUE );
+	m_ebSEInput.SetReadingWindowUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+	m_ebSEInput.SetCandidateUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+
+	// Confirm box
+	m_ebConfirm.Create( this, 54, 0, 105, 13, 17, TRUE );
+	m_ebConfirm.SetReadingWindowUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+	m_ebConfirm.SetCandidateUV( 146, 46, 163, 62, fTexWidth, fTexHeight );
+
+	// Combo Box
+	m_cbList.Create( this, 100, 118, 127, 15, 115, 1, 13, 13,
+						5, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );
+	m_cbList.SetBackUV( 153, 216, 252, 245, fTexWidth, fTexHeight );
+	m_cbList.SetDownBtnUV( 232, 150, 244, 161, fTexWidth, fTexHeight );
+	m_cbList.SetUpBtnUV( 232, 161 , 244, 150, fTexWidth, fTexHeight );	
+	m_cbList.SetDropListUV( 149,92, 152, 95, fTexWidth, fTexHeight );
+	// scroll bar
+	m_cbList.CreateScroll(TRUE,9,7,0,0,10);
+	// Up button
+	m_cbList.SetScrollUpUV( UBS_IDLE, 231, 18, 240, 25, fTexWidth, fTexHeight );
+	m_cbList.SetScrollUpUV( UBS_CLICK, 241, 18, 250, 25, fTexWidth, fTexHeight );
+	m_cbList.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+	m_cbList.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+	// Bar button
+	m_cbList.SetScrollBarTopUV( 220, 17, 230, 21, fTexWidth, fTexHeight );
+	m_cbList.SetScrollBarMiddleUV( 220, 21, 230, 35, fTexWidth, fTexHeight );
+	m_cbList.SetScrollBarBottomUV( 220, 35, 230, 39, fTexWidth, fTexHeight );
+	// Down button
+	m_cbList.SetScrollDownUV( UBS_IDLE, 231, 27, 240, 31, fTexWidth, fTexHeight );
+	m_cbList.SetScrollDownUV( UBS_CLICK,  241, 27, 250, 31, fTexWidth, fTexHeight );
+	m_cbList.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+	m_cbList.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+	m_cbList.SetCurSel( 0 );
+
+	//m_btnSlot.Create( this, 0, 0, BTN_SIZE, BTN_SIZE );
+
+	//Spin Button
+	int black = 74; // black 를 0으로 놓으면 회색 바탕의 Edit 박스 생성
+	m_sbtnSpin.Create( this, 0, 0, 60, 15, CTString(""), 37 );
+	m_sbtnSpin.SetDataBackUV3( 131+black, 46, 135+black, 59, 136+black, 46, 140+black, 59, 
+							141 + black, 46, 145 + black, 59, fTexWidth, fTexHeight );
+	
+	m_sbtnSpin.SetUpUV( UBS_IDLE, 230, 16, 239, 23, fTexWidth, fTexHeight );
+	m_sbtnSpin.SetUpUV( UBS_CLICK, 240, 16, 249, 23, fTexWidth, fTexHeight );
+	m_sbtnSpin.CopyUpUV( UBS_IDLE, UBS_ON );
+	m_sbtnSpin.CopyUpUV( UBS_IDLE, UBS_DISABLE );
+	
+	m_sbtnSpin.SetDownUV( UBS_IDLE, 230, 24, 239, 31, fTexWidth, fTexHeight );
+	m_sbtnSpin.SetDownUV( UBS_CLICK, 240, 24, 249, 31, fTexWidth, fTexHeight );
+	m_sbtnSpin.CopyDownUV( UBS_IDLE, UBS_ON );
+	m_sbtnSpin.CopyDownUV( UBS_IDLE, UBS_DISABLE );
+
+	m_sbtnSpin.CreateButtons( 9, 7 );
+	m_sbtnSpin.SetWheelRect( -10, -10, 20, 20 );
+	m_sbtnSpin.SetEnable(FALSE);
+#endif//TEXTURE_MSGBOX_CHANGE_NA_20080902
 }
 
 // ----------------------------------------------------------------------------
@@ -1092,23 +968,7 @@ void CUIMessageBox::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX p
 // ----------------------------------------------------------------------------
 void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, int nPosY )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if (rMsgBoxInfo.m_dwStyle & UMBS_BUTTONEX)
-	{
-		CUIInventory* pInven = pUIManager->GetInventory();
-
-		if (pInven->IsLocked() == TRUE)
-		{
-			pInven->ShowLockErrorMessage();
-			return;
-		}
-	}
-
 	SetWidth( rMsgBoxInfo.m_nWidth );
-	
-	// [2011/02/15 : Sora] 메시지 박스 크기 변경시 타이틀 바 클릭 영역도 함께 변경
-	m_rcTitle.SetRect( 0, 0, m_nWidth, 22 );
 
 	int	nHeight = 0;
 	int	nX, nY;
@@ -1119,8 +979,8 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 	}
 	else
 	{
-		nX = ( pUIManager->GetMaxI() - pUIManager->GetMinI() - GetWidth() ) / 2;
-		nY = ( pUIManager->GetMaxJ() - pUIManager->GetMinJ() - GetHeight() ) / 5;
+		nX = ( _pUIMgr->GetMaxI() - _pUIMgr->GetMinI() - GetWidth() ) / 2;
+		nY = ( _pUIMgr->GetMaxJ() - _pUIMgr->GetMinJ() - GetHeight() ) / 5;
 		SetPos( nX, nY );
 	}
 	m_dwStyle = rMsgBoxInfo.m_dwStyle;
@@ -1131,15 +991,6 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 
 	m_fNPCPosX = rMsgBoxInfo.m_fNPCPosX;
 	m_fNPCPosZ = rMsgBoxInfo.m_fNPCPosZ;
-
-	m_nStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	m_nTime = rMsgBoxInfo.m_nTime;
-	m_bTimeOutBtnMessage = rMsgBoxInfo.m_bTimeOutBtnMessage;
-
-	if(m_dwStyle & UMBS_USE_TIMER) // [sora] 지정시간후 메시지 실행
-	{
-		nHeight += 14;	// 타이머의 경우 남은 시간 표시를 위해 1라인 만큼 길이를 늘려준다
-	}
 
 	for( int i = 0; i < m_nCurStringCount; i++ )
 	{
@@ -1159,7 +1010,6 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 		int fTexHeight	= rMsgBoxInfo.m_listBoxPlacement.height;
 		int fColumnCnt	= rMsgBoxInfo.m_listBoxPlacement.columnCnt;
 		int ilineCab	= rMsgBoxInfo.m_listBoxPlacement.lineCab;	
-
 		m_lbListBox.Create( this, 
 			rMsgBoxInfo.m_listBoxPlacement.pos_x,
 			rMsgBoxInfo.m_listBoxPlacement.pos_y,
@@ -1168,8 +1018,9 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 		m_lbListBox.CreateScroll( TRUE, 0, 0, 9, fTexHeight, 9, 7, 0, 0, 10 );
 		m_lbListBox.SetOverColor( 0x66B5FFFF );	
 
- 		FLOAT	fTexListWidth = m_ptdBaseTexture->GetPixWidth();
- 		FLOAT	fTexListHeight = m_ptdBaseTexture->GetPixHeight();
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+ 		FLOAT	fTexListWidth = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixWidth();
+ 		FLOAT	fTexListHeight = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixHeight();
 		// Scroll bar of list box
 		// Up button
 		m_lbListBox.SetScrollUpUV( UBS_IDLE, 231, 18, 240, 25, fTexListWidth, fTexListHeight );
@@ -1185,6 +1036,26 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 		m_lbListBox.SetScrollDownUV( UBS_CLICK,  241, 27, 250, 31, fTexListWidth, fTexListHeight );
 		m_lbListBox.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 		m_lbListBox.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );	
+#else
+		// Scroll bar of list box
+		fTexWidth = m_ptdBaseTexture->GetPixWidth();
+		fTexHeight = m_ptdBaseTexture->GetPixHeight();
+		// Up button
+		m_lbListBox.SetScrollUpUV( UBS_IDLE, 231, 18, 240, 25, fTexWidth, fTexHeight );
+		m_lbListBox.SetScrollUpUV( UBS_CLICK, 241, 18, 250, 25, fTexWidth, fTexHeight );
+		m_lbListBox.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+		m_lbListBox.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+		// Bar button
+		m_lbListBox.SetScrollBarTopUV( 220, 17, 230, 21, fTexWidth, fTexHeight );
+		m_lbListBox.SetScrollBarMiddleUV( 220, 21, 230, 35, fTexWidth, fTexHeight );
+		m_lbListBox.SetScrollBarBottomUV( 220, 35, 230, 39, fTexWidth, fTexHeight );
+		// Down button
+		m_lbListBox.SetScrollDownUV( UBS_IDLE, 231, 27, 240, 31, fTexWidth, fTexHeight );
+		m_lbListBox.SetScrollDownUV( UBS_CLICK,  241, 27, 250, 31, fTexWidth, fTexHeight );
+		m_lbListBox.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+		m_lbListBox.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );		
+// #endif
+#endif
 	}
 
 	// ----------------------------------------------<<
@@ -1242,22 +1113,27 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 			int	nOffsetY = 5 - ( 13 - _pUIFontTexMgr->GetFontHeight() ) / 2;
 			nX = MSGBOX_INPUT_DEFAULT_POSX;
 			nY = MSGBOX_MESSAGE_OFFSETY + nMaxRow * _pUIFontTexMgr->GetLineHeight() + nOffsetY;
-
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 			const int iadd = 3;
 			m_ebInput.SetPos( nX + 4, nY+iadd );
 			m_rcInputBox.SetRect( nX, nY+iadd, nX + rMsgBoxInfo.m_nInputWidth, nY + 13+iadd );
-			nInputBoxHeight += iadd;
-
+#else
+			m_ebInput.SetPos( nX + 4, nY );
+			m_rcInputBox.SetRect( nX, nY, nX + rMsgBoxInfo.m_nInputWidth, nY + 13 );
+#endif
 			if( m_dwStyle & UMBS_CONFIRMPASSWORD )
 			{
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 				m_ebInput.SetPos( nX + 14, nY - 13+iadd);
 				m_ebConfirm.SetPos( nX + 14, nY +5+iadd);
 				m_rcConfirmBox.SetRect( nX+10, nY + 5+iadd, nX + rMsgBoxInfo.m_nInputWidth +10, nY + 18+iadd );
-				// 입력창의 위치가 변했으므로 그 값만큼의 메시지 창의 크기도 변해야 한다. added by sam 10/11/18
-				nInputBoxHeight += 5+iadd;
+#else
+				m_ebInput.SetPos( nX + 14, nY - 13);
+				m_ebConfirm.SetPos( nX + 14, nY +5);
+				m_rcConfirmBox.SetRect( nX+10, nY + 5, nX + rMsgBoxInfo.m_nInputWidth +10, nY + 18 );
+#endif
 			}
-			// 입력창의 위치가 변했으므로 그 값만큼의 메시지 창의 크기도 변해야 한다. added by sam 10/11/18
-			nInputBoxHeight += m_ebInput.GetHeight() + nOffsetY + _pUIFontTexMgr->GetLineSpacing();
+			nInputBoxHeight = m_ebInput.GetHeight() + nOffsetY + _pUIFontTexMgr->GetLineSpacing();
 		}
 		else
 		{
@@ -1271,9 +1147,6 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 				m_ebConfirm.SetPos( rMsgBoxInfo.m_nInputPosX + 14, rMsgBoxInfo.m_nInputPosY +5);
 				m_rcConfirmBox.SetRect( rMsgBoxInfo.m_nInputPosX +10, rMsgBoxInfo.m_nInputPosY +5,
 									rMsgBoxInfo.m_nInputPosX +rMsgBoxInfo.m_nInputWidth +10 , rMsgBoxInfo.m_nInputPosY + 18 );
-
-				// 입력창의 위치가 변했으므로 그 값만큼의 메시지 창의 크기도 변해야 한다. added by sam 10/11/18
-				nInputBoxHeight += 5;
 			}
 
 			if( m_dwStyle & UMBS_SECOND_INPUTBOX )		// Date : 2006-06-01(오후 4:39:49), By eons
@@ -1285,12 +1158,8 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 
 			nY = MSGBOX_MESSAGE_OFFSETY + nMaxRow * _pUIFontTexMgr->GetLineHeight() - nOffsetY;
 			if( rMsgBoxInfo.m_nInputPosY + m_ebInput.GetHeight() > nY )
-			{
-				//입력상자의 크기가 메시지 창의 크기를 넘으면 메시지 창의 크기를 늘리자. modified by sam 10/11/18
-				nHeight += rMsgBoxInfo.m_nInputPosY + m_ebInput.GetHeight() - nY;
-				//nInputBoxHeight += nY - ( rMsgBoxInfo.m_nInputPosY + m_ebInput.GetHeight() ) +
-				//					 _pUIFontTexMgr->GetLineSpacing();
-			}
+				nInputBoxHeight = nY - ( rMsgBoxInfo.m_nInputPosY + m_ebInput.GetHeight() ) +
+									 _pUIFontTexMgr->GetLineSpacing();
 		}
 	}
 	// List Box
@@ -1312,7 +1181,11 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 	if( m_dwStyle & UMBS_COMBOBOX )
 	{
 		m_cbList.SetEnable( TRUE );
-		m_cbList.SetPos( m_nWidth / 2 - m_cbList.GetWidth()/2 , nHeight + ( m_cbList.GetMaxLine()) * _pUIFontTexMgr->GetLineHeight() + 10);	
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+		m_cbList.SetPos( m_nWidth / 2 - m_cbList.GetWidth()/2 , nHeight + ( m_cbList.GetMaxLine()) * _pUIFontTexMgr->GetLineHeight() + 10);
+#else
+		m_cbList.SetPos( m_nWidth / 2 - m_cbList.GetWidth()/2 , nHeight + ( m_cbList.GetMaxLine()) * _pUIFontTexMgr->GetLineHeight());
+#endif		
 		m_nTextRegionHeight += (nMaxRow+m_cbList.GetMaxLine()) * _pUIFontTexMgr->GetLineHeight() ;
 		nHeight += (nMaxRow+ m_cbList.GetMaxLine()) * _pUIFontTexMgr->GetLineHeight() ;
 	}
@@ -1356,34 +1229,29 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 	// Btn slot
 	if( m_dwStyle & UMBS_BUTTONEX )
 	{
-		int		i;
 		m_nBtnType = rMsgBoxInfo.m_nBtnType;
 		m_nItemType = rMsgBoxInfo.m_nItemType;
 		m_nItemSubType = rMsgBoxInfo.m_nItemSubType;
 		m_nBtnCount =rMsgBoxInfo.m_nBtnCount;
 
-		for (i = 0; i < m_nBtnCount; ++i)
-			m_vecIcon.push_back(new CUIIcon);
-
+		m_btnSlot =new CUIButtonEx[m_nBtnCount];
 		m_rcBtnSlot = new UIRect[m_nBtnCount];
 		m_rcBtnInsertSlot = new UIRect[m_nBtnCount];
 
-		for (i = 0; i < m_nBtnCount; ++i)
+		for(int i=0; i<m_nBtnCount; ++i)
 		{
-			m_vecIcon[i]->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, m_nWhichUI, m_nBtnType);
-			m_vecIcon[i]->SetPos( (m_nWidth/(m_nBtnCount+1))*(i+1) - ( BTN_SIZE / 2 ), nHeight + 6 );
+			m_btnSlot[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE );
+			m_btnSlot[i].InitBtn();
+
+			m_btnSlot[i].SetPos( (m_nWidth/(m_nBtnCount+1))*(i+1) - ( BTN_SIZE / 2 ), nHeight + 6 );
 
 			//m_rcBtnSlot[i].SetRect( ( m_nWidth / 2 ) - 17, nHeight+5, ( m_nWidth / 2 ) + 17, nHeight + 39 );
-			m_rcBtnSlot[i].SetRect(m_vecIcon[i]->GetPosX() - 1, m_vecIcon[i]->GetPosY() - 1,
-							m_vecIcon[i]->GetPosX() - 1 + BTN_SIZE + 2, m_vecIcon[i]->GetPosY() - 1 + BTN_SIZE + 2);
+			m_rcBtnSlot[i].SetRect( m_btnSlot[i].GetPosX()-1, m_btnSlot[i].GetPosY()-1, 
+									m_btnSlot[i].GetPosX()-1+ BTN_SIZE+2, m_btnSlot[i].GetPosY()-1+ BTN_SIZE+2);
 			m_rcBtnInsertSlot[i].SetRect( m_rcBtnSlot[i].Left-10, m_rcBtnSlot[i].Top-10, m_rcBtnSlot[i].Right+10, m_rcBtnSlot[i].Bottom+10);
 		}
 
 		nHeight += 49;
-
-		CUIManager* pUIMgr = CUIManager::getSingleton();
-		pUIMgr->GetInventory()->Lock( TRUE, TRUE, LOCK_MESSAGEBTN );
-		pUIMgr->GetMsgBoxNumOnly()->CloseBox();
 	}
 
 	int m_nBtn1Width = 0;
@@ -1404,7 +1272,6 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 			case MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY:
 			case MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY:
 			case MSGCMD_USE_REBIRTH_ITEM:
-			case MSGCMD_USE_REBIRTH_ITEM_SCROLL2:
 			
 				addSelectContext( _S( 2144, "가까운 시작지점에서 부활" ) ); 
 				addSelectContext( _S( 2145, "사망장소에서 부활" ) ); 
@@ -1414,15 +1281,11 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 				addSelectContext(_S( 2112,  "확장슬롯 1" )); 
 				addSelectContext( _S( 2113, "확장슬롯 2" )); 
 				break;
-			case MSGCMD_USE_PET_ACCUMULATE:
-				addSelectContext(_S(5643,"캐릭터에 적용"));
-				addSelectContext(_S(5640, "펫에 적용"));
-				addSelectContext(_S(139,"취소"));
-				break;
+			
 			default:
 				break;
 		}
-		nHeight += (m_pBtnlist.size()+1)*25;
+	
 	}
 	else if( m_dwStyle & UMBS_ONEBTN_MASK )
 	{
@@ -1520,7 +1383,7 @@ void CUIMessageBox::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, in
 	if( rMsgBoxInfo.m_nColorBoxCount >0 )
 		m_cboxColorBox.Create(rMsgBoxInfo.m_nColorBoxCount, m_ptdBaseTexture);
 
-	CUIManager::getSingleton()->RearrangeOrder( m_nUIIndex, TRUE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -1533,10 +1396,6 @@ void CUIMessageBox::InitMessageBox()
 	m_nWhichUI = -1;
 	m_nCommandCode = -1;
 	m_nCurStringCount = 0;
-
-	m_nTime = 0;
-	m_bTimeOutBtnMessage = FALSE;
-	m_nStartTime = 0;
 
 	m_btnOk.SetEnable( FALSE );
 	m_btnCancel.SetEnable( FALSE );
@@ -1560,20 +1419,30 @@ void CUIMessageBox::InitMessageBox()
 	m_ebConfirm.SetEnable( FALSE );
 	m_ebConfirm.SetInValidEditBox(FALSE);
 
-	// [2011/11/02 : Sora] 커서 이동 불가플래그
-	m_ebInput.SetCursorMove( TRUE );
-	m_ebSEInput.SetCursorMove( TRUE );
-	m_ebConfirm.SetCursorMove( TRUE );
+	//m_btnSlot.InitBtn();
+	if( m_btnSlot != NULL)
+	{
+		delete[] m_btnSlot;
+		m_btnSlot =NULL;
+	}
 
-	release();
+	if( m_rcBtnSlot != NULL)
+	{
+		delete[] m_btnSlot;
+		m_rcBtnSlot =NULL;
+	}
+
+	if( m_rcBtnInsertSlot != NULL)
+	{
+		delete[] m_btnSlot;
+		m_rcBtnInsertSlot =NULL;
+	}
 
 	m_sbtnSpin.ResetAllDatas();
 
 	m_cboxColorBox.Reset();
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_MESSAGEBTN );
-	pUIManager->RearrangeOrder( m_nUIIndex, FALSE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -1590,14 +1459,18 @@ void CUIMessageBox::addSelectContext(CTString str)
 		FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
 		FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
 		
-// 	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
-// 	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
-		int temp = (m_nCurStringCount+1) * 12;
+// 	FLOAT	fTexWidth = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixWidth();
+// 	FLOAT	fTexHeight = CreateTexture(CTString("Data\\Interface\\MessageBox.tex"))->GetPixHeight();
 		
-		new_btn.Create( this, tv_str, 8+10, temp+33+10+(m_pBtnlist.size())*30,180,25 );
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+		new_btn.Create( this, tv_str, 8+10, 33+10+(m_pBtnlist.size())*30,180,25 );
 		new_btn.SetUV( UBS_IDLE, 129, 0, 128+39, 21, fTexWidth, fTexHeight );
 		new_btn.SetUV( UBS_CLICK, 203, 0, 202+39, 21, fTexWidth, fTexHeight );
-
+#else
+		new_btn.Create( this, tv_str, 8, 33+(m_pBtnlist.size())*30,200,25 );
+		new_btn.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+		new_btn.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+#endif
 		new_btn.CopyUV( UBS_IDLE, UBS_ON );
 		new_btn.CopyUV( UBS_IDLE, UBS_DISABLE );
 
@@ -1613,8 +1486,6 @@ void CUIMessageBox::addSelectContext(CTString str)
 // ----------------------------------------------------------------------------
 void CUIMessageBox::Render()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
 
 	if(m_fNPCPosX >= 0.0f && m_fNPCPosZ >= 0.0f)
 	{
@@ -1622,26 +1493,12 @@ void CUIMessageBox::Render()
 		FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - m_fNPCPosZ;
 		if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		{
-			pUIManager->CloseMessageBox(m_nCommandCode);
-		}
-	}
-
-	if( m_dwStyle & UMBS_USE_TIMER ) // [sora] 지정시간후 실행
-	{
-		if(m_nTime > 0)
-		{
-			__int64 tmpTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-			// 설정한 시간이 지나가면 명령 실행
-			if(tmpTime - m_nStartTime > (m_nTime * 1000))
-			{
-				ReturnCommand(m_bTimeOutBtnMessage);
-			}
+			_pUIMgr->CloseMessageBox(m_nCommandCode);
 		}
 	}
 
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2, nY2;
@@ -1650,53 +1507,76 @@ void CUIMessageBox::Render()
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + 26;
 
+#ifndef TEXTURE_MSGBOX_CHANGE_NA_20080902//if not
+	//WSS_GUILD_MASTER 070411 ----------------------->>
+	if(m_dwStyle & UMBS_LISTBOX)
+	{
+		m_lbListBox.Render();
+	}	
+	// ----------------------------------------------<<
+#endif
+
 	if(m_dwStyle & UMBS_SELECTBOX)
 	{
-		int temp = (m_nCurStringCount+1) * 12;
-		int tv_height = nY + temp + (m_pBtnlist.size()+1)*25;
-		
-		// Title Bar
-		pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 20, nY,
-											m_rtBackTopL.U0, m_rtBackTopL.V0,
-											m_rtBackTopL.U1, m_rtBackTopL.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_nPosX + 20, m_nPosY, nX - 20, nY,
-											m_rtBackTopM.U0, m_rtBackTopM.V0,
-											m_rtBackTopM.U1, m_rtBackTopM.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture( nX - 20, m_nPosY, nX, nY,
-											m_rtBackTopR.U0, m_rtBackTopR.V0,
-											m_rtBackTopR.U1, m_rtBackTopR.V1,
-											0xFFFFFFFF );
+	int tv_height = nY + (m_pBtnlist.size()+1)*25;
+	
+	// Title Bar
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 20, nY,
+										m_rtBackTopL.U0, m_rtBackTopL.V0,
+										m_rtBackTopL.U1, m_rtBackTopL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 20, m_nPosY, nX - 20, nY,
+										m_rtBackTopM.U0, m_rtBackTopM.V0,
+										m_rtBackTopM.U1, m_rtBackTopM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 20, m_nPosY, nX, nY,
+										m_rtBackTopR.U0, m_rtBackTopR.V0,
+										m_rtBackTopR.U1, m_rtBackTopR.V1,
+										0xFFFFFFFF );
 
-		// Middle 1
-		pDrawPort->AddTexture( m_nPosX, nY, m_nPosX+20, tv_height,
-											m_rtBackMiddle1L.U0, m_rtBackMiddle1L.V0,
-											m_rtBackMiddle1L.U1, m_rtBackMiddle1L.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_nPosX+20, nY, nX-20, tv_height,
-											m_rtBackMiddle1M.U0, m_rtBackMiddle1M.V0,
-											m_rtBackMiddle1M.U1, m_rtBackMiddle1M.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture( nX-20, nY, nX, tv_height,
-											m_rtBackMiddle1R.U0, m_rtBackMiddle1R.V0,
-											m_rtBackMiddle1R.U1, m_rtBackMiddle1R.V1,
-											0xFFFFFFFF );
+	// Middle 1
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX+20, tv_height,
+										m_rtBackMiddle1L.U0, m_rtBackMiddle1L.V0,
+										m_rtBackMiddle1L.U1, m_rtBackMiddle1L.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, nY, nX-20, tv_height,
+										m_rtBackMiddle1M.U0, m_rtBackMiddle1M.V0,
+										m_rtBackMiddle1M.U1, m_rtBackMiddle1M.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX-20, nY, nX, tv_height,
+										m_rtBackMiddle1R.U0, m_rtBackMiddle1R.V0,
+										m_rtBackMiddle1R.U1, m_rtBackMiddle1R.V1,
+										0xFFFFFFFF );
 
-		// Bottom
-		pDrawPort->AddTexture( m_nPosX, tv_height, m_nPosX+20, tv_height + 20,
-											m_rtBackBottomL.U0, m_rtBackBottomL.V0,
-											m_rtBackBottomL.U1, m_rtBackBottomL.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_nPosX+20, tv_height, nX-20, tv_height + 20,
-											m_rtBackBottomM.U0, m_rtBackBottomM.V0,
-											m_rtBackBottomM.U1, m_rtBackBottomM.V1,
-											0xFFFFFFFF );
-		pDrawPort->AddTexture(  nX-20, tv_height, nX, tv_height + 20,
-											m_rtBackBottomR.U0, m_rtBackBottomR.V0,
-											m_rtBackBottomR.U1, m_rtBackBottomR.V1,
-											0xFFFFFFFF );
-
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+	// Bottom
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, tv_height, m_nPosX+20, tv_height + 20,
+										m_rtBackBottomL.U0, m_rtBackBottomL.V0,
+										m_rtBackBottomL.U1, m_rtBackBottomL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, tv_height, nX-20, tv_height + 20,
+										m_rtBackBottomM.U0, m_rtBackBottomM.V0,
+										m_rtBackBottomM.U1, m_rtBackBottomM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture(  nX-20, tv_height, nX, tv_height + 20,
+										m_rtBackBottomR.U0, m_rtBackBottomR.V0,
+										m_rtBackBottomR.U1, m_rtBackBottomR.V1,
+										0xFFFFFFFF );
+#else
+	// Bottom
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, tv_height, m_nPosX+20, tv_height + 7,
+										m_rtBackBottomL.U0, m_rtBackBottomL.V0,
+										m_rtBackBottomL.U1, m_rtBackBottomL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, tv_height, nX-20, tv_height + 7,
+										m_rtBackBottomM.U0, m_rtBackBottomM.V0,
+										m_rtBackBottomM.U1, m_rtBackBottomM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture(  nX-20, tv_height, nX, tv_height + 7,
+										m_rtBackBottomR.U0, m_rtBackBottomR.V0,
+										m_rtBackBottomR.U1, m_rtBackBottomR.V1,
+										0xFFFFFFFF );
+#endif
 		std::list<CUIButton>::iterator iList,iListEnd;
 		iList=m_pBtnlist.begin();
 		iListEnd=m_pBtnlist.end();
@@ -1710,43 +1590,75 @@ void CUIMessageBox::Render()
 	else
 	{
 	// Title Bar
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 20, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 20, nY,
 										m_rtBackTopL.U0, m_rtBackTopL.V0,
 										m_rtBackTopL.U1, m_rtBackTopL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 20, m_nPosY, nX - 20, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 20, m_nPosY, nX - 20, nY,
 										m_rtBackTopM.U0, m_rtBackTopM.V0,
 										m_rtBackTopM.U1, m_rtBackTopM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 20, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 20, m_nPosY, nX, nY,
 										m_rtBackTopR.U0, m_rtBackTopR.V0,
 										m_rtBackTopR.U1, m_rtBackTopR.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX+20, (m_nPosY + m_nHeight - 20),
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX+20, (m_nPosY + m_nHeight - 20),
 										m_rtBackMiddle1L.U0, m_rtBackMiddle1L.V0,
 										m_rtBackMiddle1L.U1, m_rtBackMiddle1L.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+20, nY, nX-20, (m_nPosY + m_nHeight - 20),
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, nY, nX-20, (m_nPosY + m_nHeight - 20),
 										m_rtBackMiddle1M.U0, m_rtBackMiddle1M.V0,
 										m_rtBackMiddle1M.U1, m_rtBackMiddle1M.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX-20, nY, nX, (m_nPosY + m_nHeight - 20),
+	_pUIMgr->GetDrawPort()->AddTexture( nX-20, nY, nX, (m_nPosY + m_nHeight - 20),
 										m_rtBackMiddle1R.U0, m_rtBackMiddle1R.V0,
 										m_rtBackMiddle1R.U1, m_rtBackMiddle1R.V1,
 										0xFFFFFFFF );
 	// Bottom
 	nY = m_nPosY + m_nHeight - 20;
+#else
+	// Middle 1
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX+20, nY + m_nTextRegionHeight,
+										m_rtBackMiddle1L.U0, m_rtBackMiddle1L.V0,
+										m_rtBackMiddle1L.U1, m_rtBackMiddle1L.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, nY, nX-20, nY + m_nTextRegionHeight,
+										m_rtBackMiddle1M.U0, m_rtBackMiddle1M.V0,
+										m_rtBackMiddle1M.U1, m_rtBackMiddle1M.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX-20, nY, nX, nY + m_nTextRegionHeight,
+										m_rtBackMiddle1R.U0, m_rtBackMiddle1R.V0,
+										m_rtBackMiddle1R.U1, m_rtBackMiddle1R.V1,
+										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX+20, m_nPosY + m_nHeight,
+	// Middle 2
+	nY += m_nTextRegionHeight;
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX+20, m_nPosY + m_nHeight - 7,
+										m_rtBackMiddle2L.U0, m_rtBackMiddle2L.V0,
+										m_rtBackMiddle2L.U1, m_rtBackMiddle2L.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, nY, nX-20, m_nPosY + m_nHeight - 7,
+										m_rtBackMiddle2M.U0, m_rtBackMiddle2M.V0,
+										m_rtBackMiddle2M.U1, m_rtBackMiddle2M.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX-20, nY, nX, m_nPosY + m_nHeight - 7,
+										m_rtBackMiddle2R.U0, m_rtBackMiddle2R.V0,
+										m_rtBackMiddle2R.U1, m_rtBackMiddle2R.V1,
+										0xFFFFFFFF );
+	// Bottom
+	nY = m_nPosY + m_nHeight - 7;
+#endif//TEXTURE_MSGBOX_CHANGE_NA_20080902
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX+20, m_nPosY + m_nHeight,
 										m_rtBackBottomL.U0, m_rtBackBottomL.V0,
 										m_rtBackBottomL.U1, m_rtBackBottomL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+20, nY, nX-20, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+20, nY, nX-20, m_nPosY + m_nHeight,
 										m_rtBackBottomM.U0, m_rtBackBottomM.V0,
 										m_rtBackBottomM.U1, m_rtBackBottomM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX-20, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( nX-20, nY, nX, m_nPosY + m_nHeight,
 										m_rtBackBottomR.U0, m_rtBackBottomR.V0,
 										m_rtBackBottomR.U1, m_rtBackBottomR.V1,
 										0xFFFFFFFF );
@@ -1754,9 +1666,9 @@ void CUIMessageBox::Render()
 
 	// Input box
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
 
 	if( m_dwStyle & UMBS_INPUT_MASK )
 	{
@@ -1770,48 +1682,52 @@ void CUIMessageBox::Render()
 			nY = m_nPosY + m_rcInputBox.Top -13;
 			nY2 = m_nPosY + m_rcInputBox.Bottom -13;
 
-			pDrawPort->AddTexture( nX+10, nY, nX + 14, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+10, nY, nX + 14, nY2,
 											m_rtInputBoxL.U0, m_rtInputBoxL.V0,
 											m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 											0xFFFFFFFF );
-			pDrawPort->AddTexture( nX + 14, nY, nX2 + 6, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX + 14, nY, nX2 + 6, nY2,
 												m_rtInputBoxM.U0, m_rtInputBoxM.V0,
 												m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX2 + 6, nY, nX2+10, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX2 + 6, nY, nX2+10, nY2,
 												m_rtInputBoxR.U0, m_rtInputBoxR.V0,
 												m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 												0xFFFFFFFF );
 	
 			nY = m_nPosY + m_rcConfirmBox.Top;
 			nY2 = m_nPosY + m_rcConfirmBox.Bottom;
-			pDrawPort->AddTexture( nX+10, nY, nX + 14, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+10, nY, nX + 14, nY2,
 												m_rtInputBoxL.U0, m_rtInputBoxL.V0,
 												m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX + 14, nY, nX2 +6, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX + 14, nY, nX2 +6, nY2,
 												m_rtInputBoxM.U0, m_rtInputBoxM.V0,
 												m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX2 + 6, nY, nX2+10, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX2 + 6, nY, nX2+10, nY2,
 												m_rtInputBoxR.U0, m_rtInputBoxR.V0,
 												m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 												0xFFFFFFFF );
-
-			pDrawPort->PutTextEx( _S(2278, "입력" ), m_nPosX + 25, m_nPosY + 64+2 );		
-			pDrawPort->PutTextEx( _S(191, "확인" ), m_nPosX + 25, m_nPosY + 83+2 );
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2278, "입력" ), m_nPosX + 25, m_nPosY + 64+2 );		
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(191, "확인" ), m_nPosX + 25, m_nPosY + 83+2 );
+#else
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2278, "입력" ), m_nPosX + 25, m_nPosY + 64 );		
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(191, "확인" ), m_nPosX + 25, m_nPosY + 83 );
+#endif
 		}
 		else 
 		{		
-			pDrawPort->AddTexture( nX, nY, nX + 4, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 4, nY2,
 												m_rtInputBoxL.U0, m_rtInputBoxL.V0,
 												m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX + 4, nY, nX2 - 4, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX + 4, nY, nX2 - 4, nY2,
 												m_rtInputBoxM.U0, m_rtInputBoxM.V0,
 												m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX2 - 4, nY, nX2, nY2,
+			_pUIMgr->GetDrawPort()->AddTexture( nX2 - 4, nY, nX2, nY2,
 												m_rtInputBoxR.U0, m_rtInputBoxR.V0,
 												m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 												0xFFFFFFFF );
@@ -1823,15 +1739,15 @@ void CUIMessageBox::Render()
 
 			if(m_dwStyle & UMBS_SECOND_INPUTBOX )
 			{
-				pDrawPort->AddTexture( nX, nY, nX + 4, nY2,
+				_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 4, nY2,
 													m_rtSEInputBoxL.U0, m_rtSEInputBoxL.V0,
 													m_rtSEInputBoxL.U1, m_rtSEInputBoxL.V1,
 													0xFFFFFFFF );
-				pDrawPort->AddTexture( nX + 4, nY, nX2 - 4, nY2,
+				_pUIMgr->GetDrawPort()->AddTexture( nX + 4, nY, nX2 - 4, nY2,
 													m_rtSEInputBoxM.U0, m_rtSEInputBoxM.V0,
 													m_rtSEInputBoxM.U1, m_rtSEInputBoxM.V1,
 													0xFFFFFFFF );
-				pDrawPort->AddTexture( nX2 - 4, nY, nX2, nY2,
+				_pUIMgr->GetDrawPort()->AddTexture( nX2 - 4, nY, nX2, nY2,
 													m_rtSEInputBoxR.U0, m_rtSEInputBoxR.V0,
 													m_rtSEInputBoxR.U1, m_rtSEInputBoxR.V1,
 													0xFFFFFFFF );				
@@ -1839,9 +1755,15 @@ void CUIMessageBox::Render()
 		}
 	}
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+#ifndef TEXTURE_MSGBOX_CHANGE_NA_20080902//if not
+	// combo box 
+	if( m_dwStyle & UMBS_COMBOBOX )
+		m_cbList.Render();
+#endif
 	
 	//Spint Button
 	if( m_dwStyle & UMBS_SPINBUTTON )
@@ -1869,32 +1791,29 @@ void CUIMessageBox::Render()
 	// WSS_GUILD_MASTER 070411 ---------------------->>
 	// Render Close button
 
-	if( m_nWhichUI > 0 )	// m_nWhichUI값이 -1일 경우 마우스 메시지를 받지 않으므로 그리지 않는다
-	{
-		if( m_nWhichUI != UI_AUCTION )
-			m_btnClose.Render();
-	}
+	if( m_nWhichUI != UI_AUCTION )
+		m_btnClose.Render();
 	// ------------------------------------------------<<
 	}
 
 	if( m_dwStyle & UMBS_BUTTONEX )
 	{
 
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-		pDrawPort->InitTextureData(m_ptdNewCharacterInfoTex);
+		_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture( CTString( "Data\\Interface\\NewCharacterInfo.tex" )));
 
 		for(int i=0; i<m_nBtnCount; ++i)
 		{
-			pDrawPort->AddTexture( m_nPosX + m_rcBtnSlot[i].Left, m_nPosY + m_rcBtnSlot[i].Top,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcBtnSlot[i].Left, m_nPosY + m_rcBtnSlot[i].Top,
 												m_nPosX + m_rcBtnSlot[i].Right, m_nPosY + m_rcBtnSlot[i].Bottom,
 												m_rtBtnSlot.U0, m_rtBtnSlot.V0, m_rtBtnSlot.U1, m_rtBtnSlot.V1,
 												0xFFFFFFFF );
 		}
 		
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 		
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	}
 
 	//ColorBox
@@ -1903,93 +1822,88 @@ void CUIMessageBox::Render()
 	m_cboxColorBox.Render(iAbsPosX, iAbsPosY, m_nCommandCode);
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	if( m_dwStyle & UMBS_BUTTONEX )
 	{
 		for(int i=0; i<m_nBtnCount; ++i)
 		{
-			if (m_vecIcon[i]->IsEmpty() == false)
+			if( !m_btnSlot[i].IsEmpty())
 			{
-				m_vecIcon[i]->Render(pDrawPort);
+				m_btnSlot[i].Render();
+				_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( m_nBtnType );
 			}
 		}
 	}
 
 	// Title
-	pDrawPort->PutTextEx(m_strTitle, m_nPosX+MSGBOX_TITLE_TEXT_OFFSETX,
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+	_pUIMgr->GetDrawPort()->PutTextEx(m_strTitle, m_nPosX+MSGBOX_TITLE_TEXT_OFFSETX,
 										m_nPosY+MSGBOX_TITLE_TEXT_OFFSETY+5, 0x42FFD8FF, 0, TRUE);
-
+#else
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + MSGBOX_TITLE_TEXT_OFFSETX,
+										m_nPosY + MSGBOX_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
+#endif
 	// Message strings
-	int iMsg;
-	for( iMsg = 0; iMsg < m_nCurStringCount; iMsg++ )
+	for( int iMsg = 0; iMsg < m_nCurStringCount; iMsg++ )
 	{
 		switch(m_taAlign[iMsg])
 		{
 		case TEXT_LEFT:
 			{
-				pDrawPort->PutTextEx( m_strMessage[iMsg], m_nPosX + m_nStrPosX[iMsg],
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+				_pUIMgr->GetDrawPort()->PutTextEx( m_strMessage[iMsg], m_nPosX + m_nStrPosX[iMsg],
 					m_nPosY + m_nStrPosY[iMsg] + 5, m_colMessage[iMsg] );
+#else
+				_pUIMgr->GetDrawPort()->PutTextEx( m_strMessage[iMsg], m_nPosX + m_nStrPosX[iMsg],
+					m_nPosY + m_nStrPosY[iMsg], m_colMessage[iMsg] );
+#endif
 			}
 			break;
 		case TEXT_CENTER:
 			{
-				pDrawPort->PutTextExCX( m_strMessage[iMsg], m_nPosX + ((m_nWidth)/2),
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_strMessage[iMsg], m_nPosX + ((m_nWidth)/2),
 					m_nPosY + m_nStrPosY[iMsg] + 5, m_colMessage[iMsg] );
+#else
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_strMessage[iMsg], m_nPosX + ((m_nWidth)/2),
+					m_nPosY + m_nStrPosY[iMsg], m_colMessage[iMsg] );
+#endif
 			}
 			break;
 		case TEXT_RIGHT:
 			{
-				pDrawPort->PutTextExRX( m_strMessage[iMsg], m_nPosX + m_nWidth -m_nStrPosX[iMsg],
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+				_pUIMgr->GetDrawPort()->PutTextExRX( m_strMessage[iMsg], m_nPosX + m_nWidth -m_nStrPosX[iMsg],
 					m_nPosY + m_nStrPosY[iMsg] + 5, m_colMessage[iMsg] );
+#else
+				_pUIMgr->GetDrawPort()->PutTextExRX( m_strMessage[iMsg], m_nPosX + m_nWidth -m_nStrPosX[iMsg],
+					m_nPosY + m_nStrPosY[iMsg], m_colMessage[iMsg] );
+#endif
 			}
 			break;
 		}		
 	}
 
-	if( m_dwStyle & UMBS_USE_TIMER ) // [sora] 남은시간 표시
-	{
-		if(m_nTime > 0)
-		{
-			__int64 tmpTime = m_nTime - ((_pTimer->GetHighPrecisionTimer().GetMilliseconds() - m_nStartTime) / 1000);
-			int nStrLastNum = iMsg-1;	// 마지막 라인
-			CTString strRemainTime;
-			if(tmpTime / 60)
-			{
-				int RemainMin = tmpTime/60;
-				int RemainSec = tmpTime%60;
-				strRemainTime.PrintF(_S(4511, "남은시간 : %d분 %d초"), RemainMin, RemainSec);
-			}
-			else
-			{
-				strRemainTime.PrintF(_S(4512, "남은시간 : %d초"), tmpTime);
-			}
-			pDrawPort->PutTextEx(strRemainTime, m_nPosX + m_nStrPosX[nStrLastNum],
-					m_nPosY + m_nStrPosY[nStrLastNum] + 19, m_colMessage[nStrLastNum]);
-		}
-		else
-		{
-			// Run Command
-			ReturnCommonCommand();
-		}
-	}
-
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 	// Reading window
 	if( m_dwStyle & UMBS_INPUT_MASK )
 	{
 		if( m_ebInput.DoesShowReadingWindow() )
 		{
 			// Set texture
-			pDrawPort->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
-
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+			_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
+#else
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+#endif
 			// Reading window
 			m_ebInput.RenderReadingWindow();
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 		}
 		
 		if( m_dwStyle & UMBS_SECOND_INPUTBOX )
@@ -1997,31 +1911,37 @@ void CUIMessageBox::Render()
 			if( m_ebSEInput.DoesShowReadingWindow() )
 			{
 				// Set texture
-				pDrawPort->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
-
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
+			_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
+#else
+				_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+#endif
 				// Reading window
 				m_ebSEInput.RenderReadingWindow();
 				// Render all elements
-				pDrawPort->FlushRenderingQueue();
+				_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 				// Flush all render text queue
-				pDrawPort->EndTextEx();
+				_pUIMgr->GetDrawPort()->EndTextEx();
 			}
 		}
 	}
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	// combo box 
 	if( (m_dwStyle & UMBS_COMBOBOX) )
 	{
-		pDrawPort->FlushRenderingQueue();
-		pDrawPort->InitTextureData(m_ptdBaseTexture);
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
 		m_cbList.Render();		
-		pDrawPort->FlushRenderingQueue();
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
+#endif	
+#ifdef TEXTURE_MSGBOX_CHANGE_NA_20080902
 	//WSS_GUILD_MASTER 070411 ----------------------->>
 	if(m_dwStyle & UMBS_LISTBOX /*|| m_dwStyle & UMBS_SELECTBOX*/)
 	{
-		pDrawPort->FlushRenderingQueue();
-		pDrawPort->InitTextureData(m_ptdBaseTexture);
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\MessageBox.tex")));
 		m_lbListBox.Render();
 
 // 		std::list<CUIButton>::iterator iList,iListEnd;
@@ -2033,37 +1953,22 @@ void CUIMessageBox::Render()
 // 			iList++;
 // 		}
 
-		pDrawPort->FlushRenderingQueue();
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}	
 	// ----------------------------------------------<<
+#endif
 }
 
 // ----------------------------------------------------------------------------
 // Name : ReturnCommand()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBox::ReturnCommonCommand()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	// Return message box command ( cancel )
-	if( m_nWhichUI < 0 )
-		pUIManager->MsgCommonCommand( m_nCommandCode );
-	else
-		pUIManager->GetUI( m_nWhichUI )->MsgCommonCommand( m_nCommandCode );
-
-	//wooss 050805
-	if(IsBoxInit(m_nCommandCode)) InitMessageBox();
-}
-
 void CUIMessageBox::ReturnCommand( BOOL bOK )
 {
 	CTString	strInput = CTString( "" );
 	CTString	strSEInput = CTString( "" );
 	CTString	strConfirm = CTString( "" );
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	if( bOK )
 	{
@@ -2081,27 +1986,27 @@ void CUIMessageBox::ReturnCommand( BOOL bOK )
 		if( m_nWhichUI < 0 )
 		{
 			if( m_dwStyle & UMBS_SECOND_INPUTBOX )
-				pUIManager->MsgBoxCommand( m_nCommandCode, bOK, strInput, strSEInput );
+				_pUIMgr->MsgBoxCommand( m_nCommandCode, bOK, strInput, strSEInput );
 			else
-				pUIManager->MsgBoxCommand( m_nCommandCode, bOK, strInput );
+				_pUIMgr->MsgBoxCommand( m_nCommandCode, bOK, strInput );
 		}
 		else
 		{
 			if(m_dwStyle & UMBS_CONFIRMPASSWORD) 
-				pUIManager->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput , strConfirm);
+				_pUIMgr->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput , strConfirm);
 			else if(m_dwStyle & UMBS_SECOND_INPUTBOX) 
-				pUIManager->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput , strSEInput);
+				_pUIMgr->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput , strSEInput);
 			else 
-				pUIManager->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput );
+				_pUIMgr->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput );
 		}
 	}
 	else
 	{
 		// Return message box command ( cancel )
 		if( m_nWhichUI < 0 )
-			pUIManager->MsgBoxCommand( m_nCommandCode, bOK, strInput );
+			_pUIMgr->MsgBoxCommand( m_nCommandCode, bOK, strInput );
 		else
-			pUIManager->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput );
+			_pUIMgr->GetUI( m_nWhichUI )->MsgBoxCommand( m_nCommandCode, bOK, strInput );
 	}
 
 	//wooss 050805
@@ -2125,14 +2030,6 @@ WMSG_RESULT CUIMessageBox::KeyMessage( MSG *pMsg )
 		else if( m_btnOk.IsEnabled() )
 			ReturnCommand( TRUE );
 
-		return WMSG_SUCCESS;
-	}
-	// escape button enable. [2/16/2011 rumist]
-	else if( pMsg->wParam == VK_ESCAPE )
-	{
-		// always cancel.
-		ReturnCommand( FALSE );
-		
 		return WMSG_SUCCESS;
 	}
 	else if( m_ebInput.KeyMessage( pMsg ) != WMSG_FAIL )
@@ -2185,13 +2082,8 @@ WMSG_RESULT CUIMessageBox::IMEMessage( MSG *pMsg )
 			return wmsgResult;
 		}
 	}
-	
-	if (m_dwStyle & UMBS_INPUT_MASK)
-	{
-		return m_ebInput.IMEMessage(pMsg);
-	}
 
-	return WMSG_FAIL;
+	return m_ebInput.IMEMessage( pMsg );
 	// 이기환 수정 끝 
 }
 
@@ -2214,7 +2106,11 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
+
+			// If message box isn't focused
+			if( !IsFocused() )
+				return WMSG_FAIL;
 
 			// Move message box
 			if( m_bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -2243,14 +2139,6 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_sbtnSpin.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-			else
-			{
-				m_iBtnlist=m_pBtnlist.begin();
-				for(;m_iBtnlist!=m_pBtnlist.end();m_iBtnlist++)
-				{
-					m_iBtnlist->MouseMessage(pMsg);
-				}
-			}
 			
 		}
 		break;
@@ -2267,21 +2155,12 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 					if(m_cbList.MouseMessage( pMsg ) != WMSG_FAIL )
 						return WMSG_SUCCESS;
 				}
-
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
 				// Input box
 				if( ( m_dwStyle & UMBS_INPUT_MASK ) && m_ebInput.MouseMessage( pMsg ) != WMSG_FAIL && 
 					( ~m_dwStyle & UMBS_SECOND_INPUTBOX ) )
 				{
-					pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+					_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 					return WMSG_SUCCESS;
-				}
-
-				// Close button
-				if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-					// Nothing
 				}
 				
 				// Title bar
@@ -2305,6 +2184,13 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 				{
 					return WMSG_SUCCESS;
 				}
+				// Close button
+				else if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// -----------------------------------------------<<
+				
 				//Spin Button
 				else if( m_sbtnSpin.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -2316,19 +2202,19 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 					if(m_ebInput.MouseMessage( pMsg ) != WMSG_FAIL) {
 						m_ebConfirm.SetFocus( FALSE );
 						m_ebSEInput.SetFocus( FALSE );
-						pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+						_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 						return WMSG_SUCCESS;
 					} 
 					else if( m_ebSEInput.MouseMessage( pMsg ) != WMSG_FAIL && ( m_dwStyle & UMBS_SECOND_INPUTBOX ) ) {
 						m_ebInput.SetFocus( FALSE );
 						m_ebConfirm.SetFocus( FALSE );
-						pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+						_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 						return WMSG_SUCCESS;
 					}
 					else if(m_ebConfirm.MouseMessage( pMsg ) != WMSG_FAIL) {
 						m_ebInput.SetFocus( FALSE );
 						m_ebSEInput.SetFocus( FALSE );
-						pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+						_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 						return WMSG_SUCCESS;
 					}
 				}
@@ -2345,7 +2231,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 					}
 				}
 
-				pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+				_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -2353,10 +2239,8 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				m_bTitleBarClick = FALSE;
@@ -2395,30 +2279,27 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 				// Close button
 				else if( ( wmsgResult = m_btnClose.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
-					// [2011/08/31 : Sora] 메시지 박스의 X버튼을 누르면 취소메시지를 보내는것으로 변경
 					if( m_nWhichUI > 0 )
-						ReturnCommand( FALSE );
+							_pUIMgr->CloseMessageBox(m_nCommandCode);					
 					return WMSG_SUCCESS;
 				}
 				if( ( wmsgResult = m_sbtnSpin.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( m_nCommandCode == MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL )
 					{
-						int nData = m_sbtnSpin.GetDataToNumber();
+						int nData =m_sbtnSpin.GetDataToNumber();
 
 						CTString str;
-						LONGLONG llnas = nData * SERVER_INFO()->GetDG_EnvNas();
-						str.PrintF( _s("%s: %I64d %s%s"), (const char*)_S(1058, "필요나스"), llnas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
+						str.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nData*50000, _S(1762, "나스"), _s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 
 					if( m_nCommandCode == MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL )
 					{
-						int nData = m_sbtnSpin.GetDataToNumber();
-						LONGLONG llnas = nData * SERVER_INFO()->GetDG_MonsterNas();
+						int nData =m_sbtnSpin.GetDataToNumber();
 
 						CTString str;
-						str.PrintF( _s("%s: %I64d %s%s"), (const char*)_S(1058, "필요나스"), llnas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
+						str.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nData*100000, _S(1762, "나스"), _s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 					return WMSG_SUCCESS;
@@ -2433,7 +2314,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 						if((wmsgResult = (m_iBtnlist->MouseMessage(pMsg))) != WMSG_FAIL)
 						{
 							if(wmsgResult == WMSG_COMMAND) 
-								pUIManager->MsgBoxBtnCommand( m_nCommandCode, btnNum, strInput );
+								_pUIMgr->MsgBoxBtnCommand( m_nCommandCode, btnNum, strInput );
 
 							return WMSG_SUCCESS;	
 						}
@@ -2447,22 +2328,21 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 				{
 					// If holding button is item and comes from inventory
 /*					if( m_dwStyle & UMBS_BUTTONEX &&
-						pUIManager->GetHoldBtn().GetBtnType() == m_nBtnType &&
-						pUIManager->GetHoldBtn().GetWhichUI() == UI_INVENTORY )*/
+						_pUIMgr->GetHoldBtn().GetBtnType() == m_nBtnType &&
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_INVENTORY )*/
 // wooss Fix - call me later ^^;					
 					if( m_dwStyle & UMBS_BUTTONEX &&
-						pUIManager->GetDragIcon()->GetWhichUI() == UI_INVENTORY )
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_INVENTORY )
 					{
 						for(int i=0; i<m_nBtnCount; ++i)
 						{
-							// ($E_WC2010) [100517: selo] 활성화된 스롯 버튼이 아니면 무시 하는 기능 추가
-							if( IsInsideRect( nX, nY, m_rcBtnInsertSlot[i] ) /*&& m_pIconSlot[i].IsEnabled()*/ )
+							if( IsInsideRect( nX, nY, m_rcBtnInsertSlot[i] ) )
 								SetBtnSlot(i);
 						}
 					}
 
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					return WMSG_SUCCESS;
 				}
 			}
@@ -2479,7 +2359,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 					{
 						if( IsInsideRect( nX, nY, m_rcBtnSlot[i] ) )
 						{
-							m_vecIcon[i]->clearIconData();
+							m_btnSlot[i].InitBtn();
 							m_btnOk.SetEnable( FALSE );
 
 							////////////////////////////////////////////////////
@@ -2524,71 +2404,63 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 // ----------------------------------------------------------------------------
 void CUIMessageBox::SetBtnSlot(int nBtn)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	CUIIcon* pDrag = pUIManager->GetDragIcon();
-
-	if (pDrag == NULL)
-		return;
-
-	CItems* pItems = pDrag->getItems();
-
-	if (pItems == NULL)
-		return;
-
-	CItemData*	pItemData = pItems->ItemData;
+	int nTab = _pUIMgr->GetHoldBtn().GetItemTab();
+	int nRow = _pUIMgr->GetHoldBtn().GetItemRow();
+	int nCol = _pUIMgr->GetHoldBtn().GetItemCol();
+	
+	CItems		&TempItem = _pNetwork->MySlotItem[nTab][nRow][nCol];
+	CItemData	&rItemData = TempItem.ItemData;
 
 	// 버튼 초기화
-	m_vecIcon[nBtn]->clearIconData();
-	m_btnOk.SetEnable(FALSE);
+	m_btnSlot[nBtn].InitBtn();
 	
 	// 공통 체크 사항
-	if (pItems->Item_Wearing != -1)
+	if( TempItem.Item_Wearing != -1 )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 2898, "장착 하지 않은 아이템을 올려 주세요" ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 2898, "장착 하지 않은 아이템을 올려 주세요" ), SYSMSG_ERROR );		
 		return;	
 	}
 		
 	if( m_nCommandCode == MSGLCMD_EVENT_XMAS_2006_CHANGE ) // 2006 X-Mas event [12/12/2006 Theodoric]
 	{
-		m_nUniIndex = pItems->Item_UniIndex;
+		m_nUniIndex = TempItem.Item_UniIndex;
 
-		int nItemType = pItemData->GetType();
-		int nItemIndex = pItemData->GetItemIndex();
+		int nItemType = rItemData.GetType();
+		int nItemIndex = rItemData.GetItemIndex();
 
 		if( nItemIndex != 1975 ) // 케이크 1975
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(3181, "교환 가능한 아이템이 아닙니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3181, "교환 가능한 아이템이 아닙니다." ), SYSMSG_ERROR );
 			return;
 		}
 
-		if( pUIManager->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT) == NULL)
+		if( _pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT) == NULL)
 		{
 			CUIMsgBox_Info	MsgBoxInfo;
 			CTString strSysMessage;
-			strSysMessage.PrintF( _S(150,"몇 개의 %s<를> 옮기시겠습니까?"), pItemData->GetName() );
+			strSysMessage.PrintF( _S(150,"몇 개의 %s<를> 옮기시겠습니까?"), rItemData.GetName() );
 			MsgBoxInfo.AddString( strSysMessage );
 			MsgBoxInfo.SetMsgBoxInfo( _S(127, "교환" ), UMBS_OK|UMBS_INPUTBOX , UI_NONE, MSGLCMD_EVENT_XMAS_2006_COUNT);
-			pUIManager->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 		}
 	}	
 	else if(m_nCommandCode == MSGCMD_PET_MOUNT_CANCEL_CARD)
 	{	// 펫 훈련 취소 카드의 메시지 박스일 경우
-		m_nUniIndex = pItems->Item_UniIndex;
+		m_nUniIndex = TempItem.Item_UniIndex;
 
-		int nItemType = pItemData->GetType();
+		int nItemType = rItemData.GetType();
 
-		if( nItemType != m_nItemType || pItemData->GetSubType() != m_nItemSubType )
+		if( nItemType != m_nItemType || rItemData.GetSubType() != m_nItemSubType )
 		{// 현재 악세사리( 펫 아이템 )에 관한 버튼 슬롯만 검사
 			if( m_nItemSubType == CItemData::ACCESSORY_PET )	// 펫 아이템
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 2445, "펫 아이템만 가능합니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 2445, "펫 아이템만 가능합니다." ), SYSMSG_ERROR );
 				return;
 			}
 		}
 
 		CNetworkLibrary::sPetInfo	TempPet;
-		TempPet.lIndex				= pItems->Item_Plus; // 펫 식별인덱스
+		TempPet.lIndex				= _pNetwork->MySlotItem[nTab][nRow][nCol].Item_Plus; // 펫 식별인덱스
 		
 		std::vector<CNetworkLibrary::sPetInfo>::iterator iter = 
 			std::find_if(_pNetwork->m_vectorPetList.begin(), _pNetwork->m_vectorPetList.end(), CNetworkLibrary::FindPet(TempPet) );
@@ -2602,23 +2474,41 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 
 			const BOOL bPetRide = PetInfo().IsRide(iPetType, iPetAge);
 			
-			if( !bPetRide || !pUIManager->GetPetInfo()->IsClearSkills( (*iter).lIndex ) )
+			if( !bPetRide || !_pUIMgr->GetPetInfo()->IsClearSkills( (*iter).lIndex ) )
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 2899, "스킬이 초기화 된 탈 것(마운트) 상태의 애완 동물을 올려주세요." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 2899, "스킬이 초기화 된 탈 것(마운트) 상태의 애완 동물을 올려주세요." ), SYSMSG_ERROR );
 				return;
 			}
 		}
 		m_btnOk.SetEnable( TRUE );
 	}
+	else if(m_nCommandCode == MSGCMD_GAMBLE_READY)
+	{
+		// 이전 사용된 선택창을 없앤다
+		_pUIMgr->CloseMessageBox(MSGCMD_GAMBLE_READYSEL);
+
+		// 캐쉬 문스톤용 아이템이 아니면...
+		// 결합 주문서 하드 코딩 ( 플러스 수치가 0이 아니면 감정전 결합 주문서로... )
+		int tv_idx = rItemData.GetItemIndex();
+		if(tv_idx == 1421 && TempItem.Item_Plus > 0) tv_idx = 1420;
+
+		if(!rItemData.IsFlag(ITEM_FLAG_CASHMOON)
+			|| !_pUIMgr->GetGamble()->CheckCashItem(tv_idx))
+		{
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2907, "이용 가능한 아이템이 아닙니다." ), SYSMSG_ERROR );
+			return;
+		}
+		_pUIMgr->GetGamble()->SetSlotBtn(_pUIMgr->GetHoldBtn());
+	}
 	else if( m_nCommandCode == MSGCMD_RARE_IDENTIFY)
 	{
-		m_nUniIndex = pItems->Item_UniIndex;
+		m_nUniIndex = TempItem.Item_UniIndex;
 
 		//레어 아이템이 아니거나 감정된 레어 아이템이면...
-		if( !(pItemData->GetFlag() & ITEM_FLAG_RARE) ||
-			( (pItemData->GetFlag() & ITEM_FLAG_RARE) && pItems->Item_RareIndex>0 ) )
+		if( !(rItemData.GetFlag() & ITEM_FLAG_RARE) ||
+			( (rItemData.GetFlag() & ITEM_FLAG_RARE) && TempItem.Item_RareIndex>0 ) )
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(3162, "옵션 감정을 할 수 없는 아이템입니다." ), SYSMSG_ERROR );		
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3162, "옵션 감정을 할 수 없는 아이템입니다." ), SYSMSG_ERROR );		
 			return;
 		}
 		else
@@ -2626,63 +2516,52 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 	}
 	else if(m_nCommandCode == MSGCMD_USE_PACKING_PAPER || m_nCommandCode == MSGCMD_USE_SMALL_CORD)
 	{
-		int nItemType = pItemData->GetType();
-		int nItemIndex = pItemData->GetItemIndex();
+		int nItemType = rItemData.GetType();
+		int nItemIndex = rItemData.GetItemIndex();
 		
-		if (m_nCommandCode == MSGCMD_USE_PACKING_PAPER)			
+		if ( nItemIndex < 2043 && nItemIndex > 2045 && m_nCommandCode == MSGCMD_USE_PACKING_PAPER ) // 초코렛 아이템 , 복주머니 아이템
 		{
-			if (nItemIndex < 2043 || nItemIndex > 2045) // 초코렛 아이템 , 복주머니 아이템)
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3201, "초코렛 아이템을 올려주세요" ), SYSMSG_ERROR );
-				return;
-			}
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3201, "초코렛 아이템을 올려주세요" ), SYSMSG_ERROR );
+			return;
 		}
-		else if (m_nCommandCode == MSGCMD_USE_SMALL_CORD)
+		else if (nItemIndex < 2629 && nItemIndex > 2631 && m_nCommandCode == MSGCMD_USE_SMALL_CORD)
 		{
-			if (nItemIndex < 2629 || nItemIndex > 2631)
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3995, "복주머니 아이템을 올려주세요" ), SYSMSG_ERROR );
-				return;
-			}
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3995, "복주머니 아이템을 올려주세요" ), SYSMSG_ERROR );
+			return;
 		}
 
-		m_nUniIndex = pItems->Item_UniIndex;
+		m_nUniIndex = TempItem.Item_UniIndex;
 		m_btnOk.SetEnable( TRUE );
 	}
 	else if(m_nCommandCode == MSGCMD_OK_EXCHANGE_CHOCOBOX || m_nCommandCode == MSGCMD_OK_EXCHANGE_LUCKYBOX)
 	{
-		int nItemType = pItemData->GetType();
-		int nItemIndex = pItemData->GetItemIndex();
+		int nItemType = rItemData.GetType();
+		int nItemIndex = rItemData.GetItemIndex();
 		
-		if (m_nCommandCode == MSGCMD_OK_EXCHANGE_CHOCOBOX)
+		if ( nItemIndex != 2047 && m_nCommandCode == MSGCMD_OK_EXCHANGE_CHOCOBOX ) // 초코렛 아이템
 		{
-			if (nItemIndex != 2047)		// 초코렛 아이템)
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3202, "초코수집상자 아이템을 올려주세요" ), SYSMSG_ERROR );
-				return;
-			}
-		}
-		else if (m_nCommandCode == MSGCMD_OK_EXCHANGE_LUCKYBOX )
-		{
-			if (nItemIndex != 2633)	// 새해소망상자 아이템
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(4009, "새해소망상자 아이템을 올려주세요" ), SYSMSG_ERROR );
-				return;
-			}
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3202, "초코수집상자 아이템을 올려주세요" ), SYSMSG_ERROR );
+			return;
 		}
 
-		m_nUniIndex = pItems->Item_UniIndex;
+		if ( nItemIndex != 2633 && m_nCommandCode == MSGCMD_OK_EXCHANGE_LUCKYBOX ) // 새해소망상자 아이템
+		{
+			_pUIMgr->GetChatting()->AddSysMessage( _S(4009, "새해소망상자 아이템을 올려주세요" ), SYSMSG_ERROR );
+			return;
+		}
+
+		m_nUniIndex = TempItem.Item_UniIndex;
 		m_btnOk.SetEnable( TRUE );
 	}
 	// [070705: Su-won] EVENT_SUMMER_2007
 	else if( m_nCommandCode == MSGCMD_SUMMER2007_PAPERFOLDING
 			||m_nCommandCode == MSGCMD_SUMMER2007_PAPERBLENDING )
 	{
-		int nItemIndex = pItemData->GetItemIndex();
+		int nItemIndex = rItemData.GetItemIndex();
 
 		if( !(nItemIndex >=2367 && nItemIndex<=2370) )
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
 			return;
 		}
 	}
@@ -2690,31 +2569,31 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 	// [070807: Su-won] EVENT_ADULT_OPEN
 	else if( m_nCommandCode == MSGCMD_ADULTEVENT_ALCHEMIST)
 	{
-		if( !(pItemData->GetType() == CItemData::ITEM_WEAPON || pItemData->GetType() == CItemData::ITEM_SHIELD) )
+		if( !(rItemData.GetType() == CItemData::ITEM_WEAPON || rItemData.GetType() == CItemData::ITEM_SHIELD) )
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
 			return;
 		}
 
-		int iLevel = pItemData->GetLevel();
+		int iLevel = rItemData.GetLevel();
 
 		if( iLevel<1 ||																		//아이템 레벨이 0일 때,
-			pItemData->IsFlag(ITEM_FLAG_CASH) ||												//캐쉬 아이템일 때,
-			( 1228 <= pItemData->GetItemIndex() && pItemData->GetItemIndex() <=1278) ||		//일본 의상 아이템일 때는
-			( 1978 <= pItemData->GetItemIndex() && pItemData->GetItemIndex() <=2031) )		//조합 시도할 수 없음.
+			rItemData.IsFlag(ITEM_FLAG_CASH) ||												//캐쉬 아이템일 때,
+			( 1228 <= rItemData.GetItemIndex() && rItemData.GetItemIndex() <=1278) ||		//일본 의상 아이템일 때는
+			( 1978 <= rItemData.GetItemIndex() && rItemData.GetItemIndex() <=2031) )		//조합 시도할 수 없음.
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(1899, "조합가능한 아이템이 아닙니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(1899, "조합가능한 아이템이 아닙니다." ), SYSMSG_ERROR );
 			return;
 		}
 
 		// 아이템 레벨이 33이상이면 조합 시도할 수 없음.
 		if( iLevel >33)
 		{
-			pUIManager->CloseMessageBox( MSGCMD_NULL );
+			_pUIMgr->CloseMessageBox( MSGCMD_NULL );
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo(   _S( 169, "이벤트" ), UMBS_OK, UI_NONE, MSGCMD_NULL);
 			MsgBoxInfo.AddString( _S(3645, "조합할 수 없는 아이템입니다. 33레벨 이하의 방어구 및 무기를 올려주세요.") );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 			m_btnOk.SetEnable( FALSE );
 			this->SetString(3, CTString(" ") );
@@ -2765,8 +2644,8 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 
 		// 가지고 있는 재료 개수
 		INDEX iHaveCount[2];	
-		iHaveCount[0] =pUIManager->GetInventory()->GetItemCount(iReqMaterial[0]);
-		iHaveCount[1] =pUIManager->GetInventory()->GetItemCount(iReqMaterial[1]);
+		iHaveCount[0] =_pUIMgr->GetInventory()->GetItemCount(iReqMaterial[0]);
+		iHaveCount[1] =_pUIMgr->GetInventory()->GetItemCount(iReqMaterial[1]);
 
 		CTString strTemp;
 		strTemp.PrintF( _S(3646, "%s (%d/%d)개"), _pNetwork->GetItemName(iReqMaterial[0]), iHaveCount[0], iReqCount[0]);
@@ -2777,7 +2656,7 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 		//재료가 부족하면 슬롯에 아이템을 올려놓고 확인 버튼 비활성화 상태에서 리턴
 		if( iHaveCount[0]<iReqCount[0] || iHaveCount[1]<iReqCount[1] )
 		{
-			m_vecIcon[nBtn]->copyItem(pUIManager->GetDragIcon());
+			m_btnSlot[nBtn].Copy( _pUIMgr->GetHoldBtn() );
 			return;
 		}
 	}
@@ -2785,11 +2664,11 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	else if (m_nCommandCode == MSGCMD_TG2007_1000DAYS_CAP_UPGRADE) // 1000일 기념모자 업그레이드
 	{
-		int nItemIndex = pItemData->GetItemIndex();
+		int nItemIndex = rItemData.GetItemIndex();
 
-		if (nItemIndex < 2423 || nItemIndex > 2434) // 기념모자 아이템이 아니라면
+		if (nItemIndex < 2423 && nItemIndex > 2434) // 기념모자 아이템이 아니라면
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(3831, "라스트카오스 1000일 기념모자만 해당됩니다 확인하고 다시 시도하여 주십시오"), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(3831, "라스트카오스 1000일 기념모자만 해당됩니다 확인하고 다시 시도하여 주십시오"), SYSMSG_ERROR );
 			return;
 		}
 	}
@@ -2797,234 +2676,50 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 	// [070820: Su-won] REFINE_PROTECT
 	else if( m_nCommandCode == MSGCMD_INVEN_UPGRADE_PROTECT_REQ)
 	{
-		int nItemIndex = pItemData->GetItemIndex();
-		// 플래티늄 최상급제련보호석(#6218) 추가. [9/14/2010 rumist]
-		if(		nItemIndex != 2394 && nItemIndex != 2395 
-			&&	nItemIndex != 5091 && nItemIndex != 5092
-			&&	nItemIndex != 6218 && nItemIndex != 11023)
+		if( rItemData.GetItemIndex() != 2394 && rItemData.GetItemIndex() != 2395)
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
 			return;
 		}
 
-		SLONG slItemPlus =pUIManager->GetInventory()->GetUpgradeItemPlus();
+		SLONG slItemPlus =_pUIMgr->GetInventory()->GetUpgradeItemPlus();
 
 		//하급제련보호석
-		if( nItemIndex == 2394 )
+		if( rItemData.GetItemIndex() == 2394 )
 		{
 			if( !(3<=slItemPlus && slItemPlus<=9) )
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3663, "+3부터 +9까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S(3663, "+3부터 +9까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
 				return;
 			}
 		}
 
 		//상급제련보호석
-		if( nItemIndex == 2395 )
+		if( rItemData.GetItemIndex() == 2395 )
 		{
-			// 14->15 
-			if( !(10<=slItemPlus && slItemPlus<=19) )
+			if( !(10<=slItemPlus && slItemPlus<=14) )
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3664, "+10부터 +19까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
-				return;
-			}
-		}
-		if( nItemIndex == 11023)
-		{
-			if( !(15<=slItemPlus && slItemPlus<=19) )
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(6467, "+15부터 +19까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
-				return;
-			}
-		}
-		if( nItemIndex == 6218)
-		{
-			if( !(20<=slItemPlus && slItemPlus<=25) )
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(5612, "+20부터 +25까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S(3664, "+10부터 +14까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
 				return;
 			}
 		}
 
-		CTString strSysMessage;
-		//플래티늄 상급제련보호석 (LV1)
-		if ( nItemIndex == 5091 )
-		{
-			if ( !( 1 <= _pNetwork->MyCharacterInfo.level && _pNetwork->MyCharacterInfo.level <= 60) )
-			{
-				strSysMessage.PrintF(_S(4824, "%d부터 %d레벨의 캐릭터만 사용할 수 있습니다."), 1, 60);
-				pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
-				return;
-			}
-			// 14-> 15
-			else if ( !( 10<=slItemPlus && slItemPlus<=15 ) )
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3664, "+10부터 +15까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
-				return;
-			}
-		}
-
-		//플래티늄 상급제련보호석 (LV61)
-		if ( nItemIndex == 5092 )
-		{
-			if ( !( 61 <= _pNetwork->MyCharacterInfo.level && _pNetwork->MyCharacterInfo.level <= 90) )
-			{
-				strSysMessage.PrintF(_S(4824, "%d부터 %d레벨의 캐릭터만 사용할 수 있습니다."), 61, 90);
-				pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
-				return;
-			}
-			// 14->15
-			else if ( !( 10<=slItemPlus && slItemPlus<=15 ) )
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(3664, "+10부터 +15까지의 장비에만 사용할 수 있습니다." ), SYSMSG_ERROR );
-				return;
-			}
-		}
-
-		m_vecIcon[nBtn]->copyItem(pDrag);
+		m_btnSlot[nBtn].Copy( _pUIMgr->GetHoldBtn() );
 	}
 	// [071122: Su-won] NEW_MOONSTONE
 	else if( m_nCommandCode == MSGCMD_MOONSTONE_MIX)
 	{
-		if( !((2545<=pItemData->GetItemIndex() && pItemData->GetItemIndex() <=2548) || pItemData->GetItemIndex()==723) )
+		if( !((2545<=rItemData.GetItemIndex() && rItemData.GetItemIndex() <=2548) || rItemData.GetItemIndex()==723) )
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
 			return;
 		}
 	}
 	else if( m_nCommandCode == MSGCMD_EVENT_CHAOSBALL)
 	{
-		if( pItemData->GetItemIndex() != 2843 )
+		if( rItemData.GetItemIndex() != 2843 )
 		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
-			return;
-		}
-	}else if (m_nCommandCode == MSGCMD_PET_EVOLUTION || m_nCommandCode == MSGCMD_USE_PET_ACCUMULATE2)
-	{
-		m_nUniIndex = pItems->Item_UniIndex;
-
-		int nItemType = pItemData->GetType();
-
-		if( nItemType != m_nItemType || pItemData->GetSubType() != m_nItemSubType )
-		{// 현재 악세사리( 펫 아이템 )에 관한 버튼 슬롯만 검사
-			if( m_nItemSubType == CItemData::ACCESSORY_WILDPET )	// 펫 아이템
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 2445, "펫 아이템만 가능합니다." ), SYSMSG_ERROR );
-				return;
-			}
-		}
-
-		if (m_nCommandCode == MSGCMD_USE_PET_ACCUMULATE2)
-		{
-			sPetItem_Info pWildPetInfo;
-			__int64 temExp, UseExp = 0;
-			pUIManager->GetWildPetInfo()->GetWildPetInfo(pItems->GetItemPlus(), pWildPetInfo);
-
-			int level = pWildPetInfo.pet_level;
-
-			if( level <= 100 ) 
-			{
-				temExp = (__int64)(600 * pow(1.09, level));
-			}
-			else
-			{
-				temExp = (__int64)(65000 * pow(1.04, level));
-			}
-
-			UseExp = (temExp * (50-(level*1818)/10000))/100;
-
-			sPetItem_Info temPetitem;
-			pUIManager->GetWildPetInfo()->GetWildPetInfo(MY_APET_INFO()->m_nIdxServer, temPetitem);
-
-			if (temPetitem.pet_accexp < UseExp)
-			{
-				UseExp = temPetitem.pet_accexp;
-			}
-			
-			CTString strTemp;
-			strTemp.PrintF( _S(5671,"적용 가능한 경험치: %I64d"), UseExp);
-			this->SetString(m_nCurStringCount, strTemp, 0xfd9d28FF);
-			m_taAlign[m_nCurStringCount] = TEXT_CENTER;
-			m_nStrPosX[m_nCurStringCount] = m_nWidth / 2;
-			m_nStrPosY[m_nCurStringCount] = m_rcBtnSlot[m_nBtnCount-1].Bottom;
-			m_nCurStringCount++;		
-
-		}
-		
-
-		m_nBtnTab = pItems->Item_Tab;
-		m_nInvenIdx = pItems->InvenIndex;
-	}
-	// ($E_WC2010) [100517: selo] 2010 남아공 월드컵 이벤트2 우승 국가 예상하기
-	else if (m_nCommandCode == MSGCMD_EVENT_WORLDCUP_EVENT2_REQ)
-	{
-		BOOL bNationFlag = pUIManager->GetQuest()->IsNationFlag(pItemData->GetItemIndex());
-		if( bNationFlag != TRUE )
-		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S(4931, "국기 아이템만 가능합니다."), SYSMSG_ERROR );
-		}
-	}
-	// socket system. [5/18/2010 rumist]
-	else if( m_nCommandCode == MSGCMD_SOCKETSYSTEM_CHANCECARD )
-	{
-		m_nUniIndex = pItems->Item_UniIndex;
-
-		if (pItems->GetSocketCount() < 1 || pItemData->IsFlag(ITEM_FLAG_SOCKET) == false)
-		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S( 4998, "소켓이 생성되지 않은 아이템입니다." ), SYSMSG_ERROR );
-			return;
-		}
-		else if (pDrag->IsWearTab() == true)
-		{
-			pUIManager->GetChattingUI()->AddSysMessage( _S( 5009, "착용한 아이템에는 사용할 수 없습니다." ), SYSMSG_ERROR );
-			return;
-		}
-	}
-	else if( m_nCommandCode == MSGLCMD_SOCKET_SYSTEM_EMPTY_BOX )
-	{
-		if( pItemData->GetItemIndex() != 6178 )
-		{
-			return;
-		}
-		
-	}
-	else if( m_nCommandCode ==  MSGCMD_GUILD_MARK_CONFIRM )
-	{
-		if( pItemData->GetType() != m_nItemType || pItemData->GetSubType() != m_nItemSubType )
-			return;
-	}
-	else if( m_nCommandCode == MSGCMD_PET_STASH_INSTASH )
-	{
-		if ( (pItemData->GetSubType() != CItemData::ACCESSORY_PET && pItemData->GetSubType() != CItemData::ACCESSORY_WILDPET))
-		{
-			CUIMsgBox_Info	MsgBoxInfo;
-			MsgBoxInfo.SetMsgBoxInfo( CTString(""), UMBS_OK,
-				UI_PET_STASH, MSGCMD_PET_STASH_ERROR );
-			MsgBoxInfo.AddString( _S(4981,"착용중인 아이템이거나, 올바른 아이템이 아닙니다. 확인 후 다시 시도해 주시기 바랍니다.") );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
-			return;
-		}
-
-		if ( pItems->IsFlag(FLAG_ITEM_SEALED) )
-		{
-			CUIMsgBox_Info	MsgBoxInfo;
-			MsgBoxInfo.SetMsgBoxInfo( CTString(""), UMBS_OK,
-				UI_PET_STASH, MSGCMD_PET_STASH_ERROR_SEALED );
-			MsgBoxInfo.AddString( _S(5952,"봉인 된 펫은 보관 하실 수 없습니다.") );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
-			return;
-		}		
-	}
-	else if (m_nCommandCode == MSGCMD_SYNDICATE_PUTON_JEWEL_REQ)
-	{
-		if (pItemData->GetSubType() != CItemData::ITEM_ETC_SYNDICATEJEWEL)
-			return;
-	}
-	else if (m_nCommandCode == MSGCMD_SYNDICATE_SECESSION_REQ)
-	{
-		if (pItemData->GetItemIndex() != 10285)
-		{
-			m_btnOk.SetEnable(TRUE);
+			_pUIMgr->GetChatting()->AddSysMessage( _S(2657, "다른 종류의 아이템입니다." ), SYSMSG_ERROR );
 			return;
 		}
 	}
@@ -3032,14 +2727,13 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 	// 그외의 경우 일반적으로 해당 파일에서 자체 처리 
 
 	// 예외 사항이 아니라면...
-	m_vecIcon[nBtn]->cloneItem(pDrag);
-	m_vecIcon[nBtn]->setCount(1);			// 임시 처리
+	m_btnSlot[nBtn].Copy( _pUIMgr->GetHoldBtn() );
 
 	// 빈 버튼이 없으면 OK버튼 활성화
 	m_btnOk.SetEnable( TRUE );
 	for(int i=0; i<m_nBtnCount; ++i)
 	{
-		if (m_vecIcon[i]->IsEmpty() == true)
+		if( m_btnSlot[i].IsEmpty() )
 		{
 			m_btnOk.SetEnable( FALSE );
 			break;
@@ -3051,10 +2745,11 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 // Name : GetBtnUseItemInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBox::GetBtnUseItemInfo( int &nTab, int &inven_idx, int &nUniIndex )
+void CUIMessageBox::GetBtnUseItemInfo( int &nTab, int &nRow, int &nCol, int &nUniIndex )
 {
 	nTab = m_nBtnTab;
-	inven_idx = m_nInvenIdx;
+	nRow = m_nBtnRow;
+	nCol = m_nBtnCol;
 	nUniIndex = m_nUniIndex;
 }
 
@@ -3062,10 +2757,11 @@ void CUIMessageBox::GetBtnUseItemInfo( int &nTab, int &inven_idx, int &nUniIndex
 // Name : SetInvenUseItemInfo()
 // Desc :
 //============================================================================================================
-void CUIMessageBox::SetInvenUseItemInfo( int nTab, int inven_idx )
+void CUIMessageBox::SetInvenUseItemInfo( int nTab, int nRow, int nCol )
 {
 	m_nBtnTab = nTab;
-	m_nInvenIdx = inven_idx;
+	m_nBtnRow = nRow;
+	m_nBtnCol = nCol;
 }
 
 void CUIMessageBox::SetColorBox(INDEX i, int nType, WRect rcDrawBox) 

@@ -10,12 +10,12 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <map>
-// #include <Engine/Effect/CEffectGroupManager.h>
-// #include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIListBox.h>
+#include <map>
+#include <Engine/Effect/CEffectGroupManager.h>
+#include <Engine/Effect/CEffectGroup.h>
 
 // Define text position
 #define	GUILDWARPORTAL_TITLE_TEXT_OFFSETX		25

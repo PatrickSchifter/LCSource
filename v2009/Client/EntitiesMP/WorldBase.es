@@ -15,10 +15,10 @@
 #include "EntitiesMP/GravityRouter.h"
 %}
 
-uses "EntitiesMP/FogMarker";
-uses "EntitiesMP/HazeMarker";
-uses "EntitiesMP/MirrorMarker";
-uses "EntitiesMP/GradientMarker";
+uses "EntitiesMP\FogMarker";
+uses "EntitiesMP\HazeMarker";
+uses "EntitiesMP\MirrorMarker";
+uses "EntitiesMP\GradientMarker";
 
 %{
 
@@ -45,7 +45,7 @@ EntityStats *FindStats(const CTString &strName)
 static void MakeWorldStatistics(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("No current world.\n");
@@ -97,10 +97,10 @@ static void MakeWorldStatistics(void)
 			EntityStats &es = *ites;
 			CTString strLine;
 			strLine.PrintF("%-40s: %8d %8d %10g", 
-				(const char*)es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue);
+				es.es_strName, es.es_ctCount, es.es_ctAmmount, es.es_fValue);
 			strm.PutLine_t(strLine);
 		}}
-		CPrintF("Dumped to '%s'\n", (const char*)CTString(fnm));
+		CPrintF("Dumped to '%s'\n", CTString(fnm));
 	} catch (char *strError) {
 		CPrintF("Error: %s\n", strError);
 	}
@@ -111,7 +111,7 @@ static void MakeWorldStatistics(void)
 static void ReoptimizeAllBrushes(void)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("No current world.\n");
@@ -138,7 +138,7 @@ static void DoLevelSafetyChecks()
 	CPrintF("\n****  BEGIN Level safety checking  ****\n\n");
 	
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -152,14 +152,14 @@ static void DoLevelSafetyChecks()
 			CModelHolder2 *mh = (CModelHolder2*)&*iten;
 			FLOAT3D vPos = mh->GetPlacement().pl_PositionVector;
 			if (mh->m_penDestruction == NULL) {
-				CPrintF("  ModelHolder2 '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", (const char*)mh->m_strName, vPos(1), vPos(2), vPos(3));
+				CPrintF("  ModelHolder2 '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", mh->m_strName, vPos(1), vPos(2), vPos(3));
 			}
 		}
 		if( IsOfClass( iten, &CModelHolder3_DLLClass)) {
 			CModelHolder3 *mh = (CModelHolder3*)&*iten;
 			FLOAT3D vPos = mh->GetPlacement().pl_PositionVector;
 			if (mh->m_penDestruction == NULL) {
-				CPrintF("  ModelHolder3 '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", (const char*)mh->m_strName, vPos(1), vPos(2), vPos(3));
+				CPrintF("  ModelHolder3 '%s' at (%2.2f, %2.2f, %2.2f) has no destruction\n", mh->m_strName, vPos(1), vPos(2), vPos(3));
 			}
 		}
 	}}
@@ -171,7 +171,7 @@ static void DoLevelSafetyChecks()
 			CSoundHolder *sh = (CSoundHolder *)&*iten;
 			FLOAT3D vPos = sh->GetPlacement().pl_PositionVector;
 			if (sh->m_fnSound == CTFILENAME("Data\\Sounds\\Default.wav")) {
-				CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", (const char*)sh->m_strName, vPos(1), vPos(2), vPos(3));
+				CPrintF("  sound holder '%s' at (%2.2f, %2.2f, %2.2f) has default sound!\n", sh->m_strName, vPos(1), vPos(2), vPos(3));
 			}
 		}
 	}}
@@ -216,13 +216,13 @@ static void DoLevelSafetyChecks()
 static void ConversionCheckForMH2(const CTString &fnmSourceModel, INDEX iType)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
 		return;
 	}
-	CPrintF("Searching for all models '%s'!\n", (const char*)fnmSourceModel);
+	CPrintF("Searching for all models '%s'!\n", fnmSourceModel);
 	// for all entities in this world
 	{FOREACHINDYNAMICCONTAINER(pwo->wo_cenEntities, CEntity, itenMH2) {
 		if( IsOfClass( itenMH2, &CModelHolder2_DLLClass)) {
@@ -255,10 +255,10 @@ static void ConversionCheckForMH2(const CTString &fnmSourceModel, INDEX iType)
 									// if entity is AnimationChanger
 									if( IsOfClass( itenOther, &CAnimationChanger_DLLClass)) {
 										CPrintF("<ID:%d> WARNING! Animation Changer '%s' (ID:%d) points to inspected model\n",
-											iEntityID, (const char*)itenOther->GetName(), itenOther->en_ulID);
+											iEntityID, itenOther->GetName(), itenOther->en_ulID);
 									} else if (iType>0) {
 										CPrintF("<ID:%d> Entity '%s' (ID:%d) points to inspected model\n", 
-											iEntityID, (const char*)itenOther->GetName(), itenOther->en_ulID);
+											iEntityID, itenOther->GetName(), itenOther->en_ulID);
 									}
 								}
 							}
@@ -275,7 +275,7 @@ static void ConversionCheckForMH2(const CTString &fnmSourceModel, INDEX iType)
 static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -288,7 +288,7 @@ static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 	
 	_pShell->Execute("WED_DeselectAll();");
 	
-	CPrintF("\nSearching for all '%s' models!\n----------\n", (const char*)fnmSourceModel);
+	CPrintF("\nSearching for all '%s' models!\n----------\n", fnmSourceModel);
 	// for all entities in this world
 	{FOREACHINDYNAMICCONTAINER(pwo->wo_cenEntities, CEntity, itenMH2) {
 		if( IsOfClass( itenMH2, &CModelHolder2_DLLClass)) {
@@ -299,7 +299,7 @@ static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 				if (FileExists(fnmTargetModel)) {
 					FLOAT3D vPos = penMH2->GetPlacement().pl_PositionVector;
 					CPrintF("<ID:%d> at <%2.2f, %2.2f, %2.2f> to '%s'\n",
-						iEntityID, vPos(1), vPos(2), vPos(3), (const char*)fnmTargetModel);
+						iEntityID, vPos(1), vPos(2), vPos(3), fnmTargetModel);
 					CEntity *penNewClass;
 					// create new ModelHolder3
 					try {
@@ -308,7 +308,7 @@ static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 						DeleteModelInstance(pmi);
 						penNewClass = pwo->CreateEntity_t(pl, CTFILENAME("Classes\\ModelHolder3.ecl"));
 					} catch(char *strError) {
-						WarningMessage("<%s>:\n%s", (const char*)(CTString &)fnmTargetModel, strError);            
+						WarningMessage("<%s>:\n%s", (CTString &)fnmTargetModel, strError);            
 						CPrintF("<ID:%d> FAILED!\n----------\n", iEntityID); 
 						CPrintF("ABORTING further attempts!....\n"); 
 						break;
@@ -431,7 +431,7 @@ static void ConvertSingleMH2ToMH3(const CTString &fnmSourceModel)
 static void ConvertAllMH2ToMH3( void )
 {
 	// get the world pointer
-	CWorld *pwo = (CWorld *)_pShell->GetPointer("pwoCurrentWorld");
+	CWorld *pwo = (CWorld *)_pShell->GetINDEX("pwoCurrentWorld");
 	// if there is no current world
 	if (pwo==NULL) {
 		CPrintF("Error - no current world.\n");
@@ -455,7 +455,7 @@ static void ConvertAllMH2ToMH3( void )
 			if (FileExists(fnmTargetModel)) {
 				FLOAT3D vPos = penMH2->GetPlacement().pl_PositionVector;
 				CPrintF("<ID:%d> at <%2.2f, %2.2f, %2.2f>...\n", iEntityID, vPos(1), vPos(2), vPos(3));
-				CPrintF("<ID:%d> ...possible substitution '%s'\n", iEntityID, (const char*)fnmTargetModel);
+				CPrintF("<ID:%d> ...possible substitution '%s'\n", iEntityID, fnmTargetModel);
 				CEntity *penNewClass;
 				// create new ModelHolder3
 				try {
@@ -464,7 +464,7 @@ static void ConvertAllMH2ToMH3( void )
 					DeleteModelInstance(pmi);
 					penNewClass = pwo->CreateEntity_t(pl, CTFILENAME("Classes\\ModelHolder3.ecl"));
 				} catch(char *strError) {
-					WarningMessage("<%s>:\n%s", (const char*)(CTString &)fnmTargetModel, strError);            
+					WarningMessage("<%s>:\n%s", (CTString &)fnmTargetModel, strError);            
 					CPrintF("<ID:%d> FAILED!\n----------\n", iEntityID); 
 					continue;
 				}
@@ -1118,7 +1118,7 @@ void CWorldBase_OnWorldRender(CWorld *pwo)
 	// get current tick
 	TIME tmNow = _pTimer->GetLerpedCurrentTick();
 	// wrap time to prevent texture coordinates to get unprecise
-	tmNow = fmod(tmNow, 600.0f); // (wrap every 10 minutes)
+	tmNow = fmod(tmNow, 600.0); // (wrap every 10 minutes)
 
 // transformations
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
@@ -1355,15 +1355,13 @@ name      "WorldBase";
 thumbnail "Thumbnails\\WorldBase.tbn";
 features  "HasName", "HasDescription", 
 	"ImplementsOnWorldRender", "ImplementsOnWorldInit",
-	"ImplementsOnInitClass", "ImplementsOnEndClass", "HasRaidObject", "RaidEvent";
+	"ImplementsOnInitClass", "ImplementsOnEndClass";
+
 
 properties:
 
-/*** Export Data***/
+
 	1 CTString m_strName "Name" 'N' ="World Base",
-	200 BOOL	m_bRaidObject	"This entity is RaidObject" = FALSE,		// 레이드 오브젝트 설정
-	201 INDEX m_RaidEventType		"Raid Event Type" = 0,			// 레이드 이벤트 타입
-/******************/
 	3 CTString m_strDescription = "",
 	2 BOOL m_bZoning     "Zoning"     'Z' =FALSE,
 	4 BOOL m_bBackground "Background" 'B' =FALSE,
@@ -1431,7 +1429,7 @@ properties:
 	99 FLOAT m_fOpacity "Opacity" = 1.0f,
 //강동민 수정 시작 테스트 클라이언트 작업	06.30
 	116 BOOL	m_bRenderReflection	"Render reflection?"	= FALSE,
-//강동민 수정 끝 테스트 클라이언트 작업		06.30	
+//강동민 수정 끝 테스트 클라이언트 작업		06.30
 
 components:
 

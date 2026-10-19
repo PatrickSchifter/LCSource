@@ -72,7 +72,7 @@ functions:
         return penLight->m_aoLightAnimation.GetData();
       }
     } else {
-      WarningMessage( "Target '%s' is not of light class!", (const char*)m_penLight->GetName());
+      WarningMessage( "Target '%s' is not of light class!", m_penLight->GetName());
     }
     return NULL;
   };
@@ -95,109 +95,6 @@ functions:
   }
 
 procedures:
-  Main(EVoid)
-  {
-    // set appearance
-    InitAsEditorModel();
-    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
-    SetCollisionFlags(ECF_IMMATERIAL);
-    SetFlagOn(ENF_CLIENTHANDLING);
-
-    // set appearance
-    SetModel(MODEL_TELEPORT);
-    SetModelMainTexture(TEXTURE_TELEPORT);
-
-    // see if it is lightning on background
-    if (m_bBackground)
-    {
-      SetFlags(GetFlags()|ENF_BACKGROUND);
-    }
-    else
-    {
-      SetFlags(GetFlags()&~ENF_BACKGROUND);
-    }
-
-    // obtain bcg viewer entity
-    CBackgroundViewer *penBcgViewer = (CBackgroundViewer *) GetWorld()->GetBackgroundViewer();
-    if( penBcgViewer == NULL)
-    {
-      // don't do anything
-      return;
-    }
-
-    // obtain world settings controller 
-    m_penwsc = penBcgViewer->m_penWorldSettingsController;
-    if( m_penwsc == NULL)
-    {
-      // don't do anything
-      return;
-    }
-    
-    // must be world settings controller entity
-    if( !IsOfClass( m_penwsc, &CWorldSettingsController_DLLClass)) 
-    {
-      // don't do anything
-      return;
-    }
-
-    // lightning target must be marker
-    if( (m_penTarget == NULL) || (!IsOfClass(m_penTarget, "Marker")) )
-    {
-      if( m_penTarget != NULL)
-      {
-        WarningMessage("Target '%s' is not of Marker class!", (const char*)m_penTarget->GetName());
-      }
-      // don't do anything
-      return;
-    }
-
-    // stretch model
-    FLOAT3D vDirection =   
-      (m_penTarget->GetPlacement().pl_PositionVector-
-      GetPlacement().pl_PositionVector);
-    
-    FLOAT3D vStretch = vDirection;
-    vStretch(1) = 1.0f;
-    vStretch(2) = 1.0f;
-    vStretch(3) = -vDirection.Length();
-
-    // set entity orientation
-    CPlacement3D pl = GetPlacement();
-    DirectionVectorToAngles(vDirection.Normalize(), pl.pl_OrientationAngle);
-    SetPlacement(pl);
-    
-    GetModelObject()->StretchModel(vStretch);
-    ModelChangeNotify();
-
-    // correct power factor to fall under 0-1 boundaries
-    m_fLightningPower = Clamp( m_fLightningPower, 0.0f, 1.0f);
-
-    // spawn in world editor
-    autowait(0.1f);
-
-    while (TRUE)
-    {
-      wait()
-      {
-        on (EBegin) : { resume; }
-        on (ETrigger eTrigger) : {
-          if (_pNetwork->IsServer()) {
-            SendEvent(ETriggerLightning(),TRUE);
-          }
-          resume;
-        }
-        on (ETriggerLightning) : {
-          call LightningStike();
-          resume;
-        }
-        otherwise() :
-        {
-          resume;
-        };
-      };
-    }
-  }
-
   LightningStike()
   {
     // choose random sound
@@ -265,5 +162,108 @@ procedures:
     }
 
     return EBegin();
+  }
+
+  Main(EVoid)
+  {
+    // set appearance
+    InitAsEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+    SetFlagOn(ENF_CLIENTHANDLING);
+
+    // set appearance
+    SetModel(MODEL_TELEPORT);
+    SetModelMainTexture(TEXTURE_TELEPORT);
+
+    // see if it is lightning on background
+    if (m_bBackground)
+    {
+      SetFlags(GetFlags()|ENF_BACKGROUND);
+    }
+    else
+    {
+      SetFlags(GetFlags()&~ENF_BACKGROUND);
+    }
+
+    // obtain bcg viewer entity
+    CBackgroundViewer *penBcgViewer = (CBackgroundViewer *) GetWorld()->GetBackgroundViewer();
+    if( penBcgViewer == NULL)
+    {
+      // don't do anything
+      return;
+    }
+
+    // obtain world settings controller 
+    m_penwsc = penBcgViewer->m_penWorldSettingsController;
+    if( m_penwsc == NULL)
+    {
+      // don't do anything
+      return;
+    }
+    
+    // must be world settings controller entity
+    if( !IsOfClass( m_penwsc, &CWorldSettingsController_DLLClass)) 
+    {
+      // don't do anything
+      return;
+    }
+
+    // lightning target must be marker
+    if( (m_penTarget == NULL) || (!IsOfClass(m_penTarget, "Marker")) )
+    {
+      if( m_penTarget != NULL)
+      {
+        WarningMessage("Target '%s' is not of Marker class!", m_penTarget->GetName());
+      }
+      // don't do anything
+      return;
+    }
+
+    // stretch model
+    FLOAT3D vDirection =   
+      (m_penTarget->GetPlacement().pl_PositionVector-
+      GetPlacement().pl_PositionVector);
+    
+    FLOAT3D vStretch = vDirection;
+    vStretch(1) = 1.0f;
+    vStretch(2) = 1.0f;
+    vStretch(3) = -vDirection.Length();
+
+    // set entity orientation
+    CPlacement3D pl = GetPlacement();
+    DirectionVectorToAngles(vDirection.Normalize(), pl.pl_OrientationAngle);
+    SetPlacement(pl);
+    
+    GetModelObject()->StretchModel(vStretch);
+    ModelChangeNotify();
+
+    // correct power factor to fall under 0-1 boundaries
+    m_fLightningPower = Clamp( m_fLightningPower, 0.0f, 1.0f);
+
+    // spawn in world editor
+    autowait(0.1f);
+
+    while (TRUE)
+    {
+      wait()
+      {
+        on (EBegin) : { resume; }
+        on (ETrigger eTrigger) : {
+          if (_pNetwork->IsServer()) {
+            SendEvent(ETriggerLightning(),TRUE);
+          }
+          resume;
+        }
+        on (ETriggerLightning) : {
+          call LightningStike();
+          resume;
+        }
+        otherwise() :
+        {
+          resume;
+        };
+      };
+    }
   }
 };

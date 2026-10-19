@@ -9,17 +9,17 @@
 #endif
 
 #include <Engine/Network/MobTarget.h>
-// #include <Engine/Effect/CEffectGroup.h>
-// #include <Engine/Effect/CEffectGroupManager.h>
-// #include <Engine/Entities/EntityClass.h>
-// #include <Engine/Entities/EntityProperties.h>
-// #include <Engine/Ska/StringTable.h>
-// #include <Engine/Ska/ModelInstance.h>
-// #include <Engine/Base/FileName.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <vector>
+#include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Effect/CEffectGroupManager.h>
+#include <Engine/Entities/EntityClass.h>
+#include <Engine/Entities/EntityProperties.h>
+#include <Engine/Ska/StringTable.h>
+#include <Engine/Ska/ModelInstance.h>
+#include <Engine/Base/FileName.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <vector>
 
 #define FLOWERTREE_WIDTH	164
 #define FLOWERTREE_HEIGHT	213
@@ -113,9 +113,7 @@ protected: // variable
 	FlowerTreeMeshInfo	m_FlowerMeshInfo[OP_FLOWERSTEP8]; // 각 단계별 메쉬 정보
 	FlowerTreeMeshInfo	m_XMASTREEMeshInfo[3]; // X-MAS2007 트리 3단계
 
-	FlowerTreeMeshInfo	m_GamigoCakeMeshInfo[3]; // [ldy1978220 2011/5/31] 가미고 10주년 케익 3단계
-
-	CMobTarget*	m_pMobFlowerTree; // 꽃나무는 NPC . NPC 정보
+	CMobTarget	m_MobFlowerTree; // 꽃나무는 NPC . NPC 정보
 	CEffectGroup	*m_pEG[5]; // 꽃나무 이펙트 3종
 	
 protected: // Function
@@ -145,13 +143,8 @@ public:
 	ENGINE_API void FlowerTreeUpdate(ULONG ulPoint);
 	void AddFlowerTreeMesh(CModelInstance *pMI, int nFlowerStep);
 
-	ENGINE_API void SetMobFlowerTree(CMobTarget* mt)	{ m_pMobFlowerTree = mt; }
+	ENGINE_API void SetMobFlowerTree(CMobTarget mt) { m_MobFlowerTree = mt; }
 	void ClearEffect();
-
-public : 
-
-protected :
-	void initialize();
 };
 
 #endif

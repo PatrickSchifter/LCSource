@@ -39,7 +39,7 @@ void CSelectedEntities::Clear()
 		for( ENTITIES_ITERATOR it = vectorSelectedEntities.begin();
 			it != vectorSelectedEntities.end(); )
 		{
-			it = vectorSelectedEntities.erase( it );			
+			vectorSelectedEntities.erase( it );			
 		}
 		//vectorSelectedEntities.clear();			
 	}

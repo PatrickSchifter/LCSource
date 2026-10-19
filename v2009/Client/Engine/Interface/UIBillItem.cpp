@@ -1,8 +1,8 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIBillItem.h>
+#include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/Entities/InternalClasses.h>
+#include <Engine/Entities/Items.h>
 #include <Engine/Interface/UISkillLearn.h>
 #include <Engine/Interface/UIInventory.h>
 
@@ -60,6 +60,7 @@ CUIBillItem::CUIBillItem()
 // ----------------------------------------------------------------------------
 CUIBillItem::~CUIBillItem()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -218,7 +219,7 @@ void CUIBillItem::OpenBillItem()
 
 	//Clear();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILL_ITEM, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILL_ITEM, TRUE );
 	
 	CTString strMessage;
 	strMessage.PrintF( _S( 1835, "구입한 아이템 갯수 : %d" ), m_btnItems.size() );
@@ -227,7 +228,7 @@ void CUIBillItem::OpenBillItem()
 	AddString( CTString( " " ), COLOR_TEXT );		
 	AddString( _S( 1836, "아이템 받기를 선택하면"  ), COLOR_TEXT );	
 	AddString( _S( 1837, "선택한 아이템이 인벤토리에 지급됩니다."  ), COLOR_TEXT ); 
-
+	
 	m_sbBillItem.SetScrollPos( 0 );
 	m_sbBillItem.SetCurItemCount( m_btnItems.size() );
 
@@ -246,7 +247,7 @@ void CUIBillItem::OpenBillItem()
 void CUIBillItem::CloseBillItem()
 {
 	// Close refine
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILL_ITEM, FALSE );
+	_pUIMgr->RearrangeOrder( UI_BILL_ITEM, FALSE );
 	Clear();
 }
 
@@ -265,7 +266,7 @@ void CUIBillItem::AddBillItemData( CBillItemData BillItemData )
 
 	// item button
 	btnBillItem.Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_BILL_ITEM ); 
-	btnBillItem.SetItemInfo( -1, -1, BillItemData.m_nItemIndex, BillItemData.m_nIndex, -1 );
+	btnBillItem.SetItemInfo( 0, 0, 0, BillItemData.m_nItemIndex, BillItemData.m_nIndex, -1 );
 	btnBillItem.SetItemFlag( BillItemData.m_nItemFlag );
 	btnBillItem.SetItemPlus( BillItemData.m_nItemPlus );
 	btnBillItem.SetItemCount( BillItemData.m_nItemNumber );
@@ -292,10 +293,10 @@ void CUIBillItem::AddBillItemData( CBillItemData BillItemData )
 	sbtnItemNum.CreateButtons( 9, 7 );
 	sbtnItemNum.SetWheelRect( -19, -75, 271, 165 );
 	
-	char tv_str[16] = {0,};
+	char tv_str[16];
 	for(int i=BillItemData.m_nItemNumber;i>0 ;i--) 
 	{
-		itoa(i, tv_str, 10);
+		itoa(i,tv_str,10);
 		sbtnItemNum.AddData(tv_str);
 	}
 	m_sbtnItemNum.push_back(sbtnItemNum);
@@ -308,27 +309,25 @@ void CUIBillItem::AddBillItemData( CBillItemData BillItemData )
 // ----------------------------------------------------------------------------
 void CUIBillItem::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+// Set skill learn texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
-
-	// Add render regions -----------------------------------------------------------------------------------------------
+// Add render regions -----------------------------------------------------------------------------------------------
 	// Background up
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + BILL_ITEM_TOP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + BILL_ITEM_TOP_HEIGHT,
 										m_rtBackgroundTop.U0, m_rtBackgroundTop.V0, m_rtBackgroundTop.U1, m_rtBackgroundTop.V1,
 										0xFFFFFFFF );
 
 	// Background down 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY+BILL_ITEM_TOP_HEIGHT, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY+BILL_ITEM_TOP_HEIGHT, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackgroundBtm.U0, m_rtBackgroundBtm.V0, m_rtBackgroundBtm.U1, m_rtBackgroundBtm.V1,
 										0xFFFFFFFF );
 
 	// Render Title Text
-	pDrawPort->PutTextEx( _S( 571, "제작" ), m_nPosX + BILL_ITEM_TITLE_TEXT_OFFSETX,				
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 571, "제작" ), m_nPosX + BILL_ITEM_TITLE_TEXT_OFFSETX,				
 										m_nPosY + BILL_ITEM_TITLE_TEXT_OFFSETY, COLOR_TEXT );
 
-	pDrawPort->PutTextExCX( _S( 1838, "구입한 아이템 목록" ), m_nPosX + 106, m_nPosY + 35, COLOR_TEXT );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 1838, "구입한 아이템 목록" ), m_nPosX + 106, m_nPosY + 35, COLOR_TEXT );
 
 	// BillItem Item Scroll bar
 	m_sbBillItem.Render();
@@ -345,7 +344,7 @@ void CUIBillItem::Render()
 	// Cancel button
 	m_btnCancel.Render();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
 	// Render BillItem Item
 	CTString m_strShortDesc;
@@ -376,16 +375,16 @@ void CUIBillItem::Render()
 			
 			int nOffset = i - m_sbBillItem.GetScrollPos();
 
-			if ( nOffset >= 0 && nOffset < BILL_ITEM_SLOT_ROW )
+			if ( nOffset >= 0 && nOffset < PRODUCT_SLOT_ROW )
 			{
 				BoxX = m_nPosX + nX - 1 ; 
 				BoxY = m_nPosY + nY - 1 ;
 
 
-				pDrawPort->AddTexture( BoxX, BoxY,	BoxX + 34, BoxY + 34,
+				_pUIMgr->GetDrawPort()->AddTexture( BoxX, BoxY,	BoxX + 34, BoxY + 34,
 												m_rtSelOutline.U0, m_rtSelOutline.V0, m_rtSelOutline.U1, m_rtSelOutline.V1,
 												0xffffffff );
-				pDrawPort->FlushRenderingQueue();
+				_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 									
 			}
 			
@@ -401,7 +400,7 @@ void CUIBillItem::Render()
 			m_btnItems[i].Render();
 			
 			// render Item desc 
-			CItemData* pItemData = _pNetwork->GetItemData ( m_btnItems[i].GetIndex() );
+			CItemData& ItemData = _pNetwork->GetItemData ( m_btnItems[i].GetIndex() );
 			const char* szItemName = _pNetwork->GetItemName( m_btnItems[i].GetIndex() );
 
 			if ( m_btnItems[i].GetItemCount() > 0 )
@@ -409,11 +408,11 @@ void CUIBillItem::Render()
 				OffSetY -= 7;
 			}
 
-			pDrawPort->PutTextExCX( szItemName, m_nPosX + 122, m_nPosY + nY + OffSetY, textColor );
+			_pUIMgr->GetDrawPort()->PutTextExCX( szItemName, m_nPosX + 122, m_nPosY + nY + OffSetY, textColor );
 					
 
-			if( pItemData->GetType() == CItemData::ITEM_ETC
-			&& pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
+			if( ItemData.GetType() == CItemData::ITEM_ETC
+			&& ItemData.GetSubType() == CItemData::ITEM_ETC_MONEY )
 			{
 				strMakePotionCount.PrintF( _S( 836, "%d 나스" ), m_btnItems[i].GetItemCount() );	
 			}
@@ -431,7 +430,7 @@ void CUIBillItem::Render()
 			int nLength = strMakePotionCount.Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 			
 			if ( m_btnItems[i].GetItemCount() > 0 )
-				pDrawPort->PutTextEx( strMakePotionCount, m_nPosX + 183 - nLength, m_nPosY + nY + OffSetY + 16, textColor );
+				_pUIMgr->GetDrawPort()->PutTextEx( strMakePotionCount, m_nPosX + 183 - nLength, m_nPosY + nY + OffSetY + 16, textColor );
 
 							
 			nY += SLEARN_SLOT_OFFSETY;
@@ -439,24 +438,28 @@ void CUIBillItem::Render()
 	}
 	
 	// the number of selected items 
-	char tv_str[10] = {0,};
-	itoa(m_nSelectItemSum, tv_str, 10);
+	char tv_str[10];
+	itoa(m_nSelectItemSum,tv_str,10);
 	selCnt=tv_str;
 	selCnt+="/";
-	itoa(MAX_BILL_ITEM_NUM, tv_str, 10);
+	itoa(MAX_BILL_ITEM_NUM,tv_str,10);
 	selCnt+=tv_str;
 	
 	if( m_nSelectItemSum >= MAX_BILL_ITEM_NUM) textColor = 0xFF0000FF;
 		else textColor = 0xFFFFFFFF;
 	textAlign = (_pUIFontTexMgr->GetFontWidth()+1)*cipher(m_nSelectItemSum);
-	pDrawPort->PutTextEx( selCnt, m_nPosX - textAlign + 173 , m_nPosY  + 34, textColor );
+	_pUIMgr->GetDrawPort()->PutTextEx( selCnt, m_nPosX - textAlign + 173 , m_nPosY  + 34, textColor );
 	
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
+	
+	
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
+	
 
 	RenderItemInfo();
+
 }
 
 
@@ -468,65 +471,64 @@ void CUIBillItem::RenderItemInfo ()
 {
 	// ----------------------------------------------------------------------------
 	// Item information ( name and property etc... )
-	if( m_bShowItemInfo == FALSE )
-		return;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
-
-	// Item information region
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
-		m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
-		m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
-		m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
-		m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
-		m_rcItemInfo.Right, m_rcItemInfo.Top + 7,
-		m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
-		m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
-		m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
-		m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
-		m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
-		m_rcItemInfo.Right, m_rcItemInfo.Bottom - 7,
-		m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
-		m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom,
-		m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
-		m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom,
-		m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
-		0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
-		m_rcItemInfo.Right, m_rcItemInfo.Bottom,
-		m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
-		0xFFFFFFFF );
-
-	// Render all elements
-	pDrawPort->FlushRenderingQueue();
-
-	// Render item information
-	int	nInfoX = m_rcItemInfo.Left + 12;
-	int	nInfoY = m_rcItemInfo.Top + 8;
-	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
+	if( m_bShowItemInfo )
 	{
-		pDrawPort->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
-		nInfoY += _pUIFontTexMgr->GetLineHeight();
-	}
 
-	// Flush all render text queue
-	pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+		// Item information region
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right, m_rcItemInfo.Top + 7,
+											m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom,
+											m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom,
+											m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom,
+											m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
+											0xFFFFFFFF );
+
+		// Render all elements
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+		// Render item information
+		int	nInfoX = m_rcItemInfo.Left + 12;
+		int	nInfoY = m_rcItemInfo.Top + 8;
+		for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
+		{
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+			nInfoY += _pUIFontTexMgr->GetLineHeight();
+		}
+
+		// Flush all render text queue
+		_pUIMgr->GetDrawPort()->EndTextEx();
+	}
 }
 
 
@@ -554,7 +556,7 @@ WMSG_RESULT CUIBillItem::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 				int	iRowS = m_sbBillItem.GetScrollPos();
 				int	iRowE = iRowS + BILL_ITEM_SLOT_ROW;
@@ -647,7 +649,7 @@ WMSG_RESULT CUIBillItem::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;	
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_BILL_ITEM, TRUE );
+				_pUIMgr->RearrangeOrder( UI_BILL_ITEM, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -656,7 +658,7 @@ WMSG_RESULT CUIBillItem::MouseMessage( MSG *pMsg )
 	case WM_LBUTTONUP:
 		{
 			// If holding button doesn't exist
-			if( CUIManager::getSingleton()->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -760,24 +762,6 @@ void CUIBillItem::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 	if( m_nCurInfoLines >= MAX_ITEMINFO_LINE )
 		return ;
 
-#if defined(G_RUSSIA)
-	{
-		INDEX iStrSub = strItemInfo.FindSubstr("\n");
-		if(iStrSub != -1)
-		{
-			CTString	strTemp, strTemp2;
-			strTemp = strItemInfo;
-			strTemp.str_String[iStrSub] = ' ';
-
-
-			strTemp.Split( iStrSub+1, strTemp, strTemp2 );
-
-			AddItemInfoString( strTemp, colItemInfo );
-			AddItemInfoString( strTemp2, colItemInfo );
-			return;
-		}
-	}
-#endif
 	// Get length of string
 	INDEX	nLength = strItemInfo.Length();
 	if( nLength <= 0 )
@@ -815,7 +799,6 @@ void CUIBillItem::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
 		if( strTemp[0] == ' ' )
 		{
 			int	nTempLength = strTemp.Length();
-			int iPos;
 			for( iPos = 1; iPos < nTempLength; iPos++ )
 			{
 				if( strTemp[iPos] != ' ' )
@@ -850,7 +833,7 @@ void CUIBillItem::ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew )
 
 	BOOL	bUpdateInfo = FALSE;
 	int		nInfoWidth, nInfoHeight;
-	int		nInfoPosX = 0, nInfoPosY = 0;
+	int		nInfoPosX, nInfoPosY;
 
 	
 	if( nItemIndex >= 0 )
@@ -878,14 +861,12 @@ void CUIBillItem::ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew )
 	{
 		nInfoPosX += BTN_SIZE / 2 - nInfoWidth / 2;
 
-		CUIManager* pUIManager = CUIManager::getSingleton();
+		if( nInfoPosX < _pUIMgr->GetMinI() )
+			nInfoPosX = _pUIMgr->GetMinI();
+		else if( nInfoPosX + nInfoWidth > _pUIMgr->GetMaxI() )
+			nInfoPosX = _pUIMgr->GetMaxI() - nInfoWidth;
 
-		if( nInfoPosX < pUIManager->GetMinI() )
-			nInfoPosX = pUIManager->GetMinI();
-		else if( nInfoPosX + nInfoWidth > pUIManager->GetMaxI() )
-			nInfoPosX = pUIManager->GetMaxI() - nInfoWidth;
-
-		if( nInfoPosY - nInfoHeight < pUIManager->GetMinJ() )
+		if( nInfoPosY - nInfoHeight < _pUIMgr->GetMinJ() )
 		{
 			nInfoPosY += BTN_SIZE;
 			m_rcItemInfo.SetRect( nInfoPosX, nInfoPosY, nInfoPosX + nInfoWidth, nInfoPosY + nInfoHeight );
@@ -916,26 +897,24 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 		return FALSE;
 	CUIButtonEx		ex;
 	
-	CItemData*	pItemData = _pNetwork->GetItemData( nIndex );
+	CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
 	const char* szItemName = _pNetwork->GetItemName( nIndex );
 
 	COLOR colNas = 0xF2F2F2FF;
 
 	// Get item name
-	if( pItemData->GetFlag() & ITEM_FLAG_COUNT )
+	if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
 		CTString	strCount;
-
 		strCount.PrintF( "%I64d", m_btnItems[nItemIndex].GetItemCount() );
-		pUIManager->InsertCommaToString( strCount );
+		_pUIMgr->InsertCommaToString( strCount );
 		strTemp.PrintF( "%s(%s)", szItemName, strCount );
-		colNas = pUIManager->GetNasColor( m_btnItems[nItemIndex].GetItemCount() );
+		colNas = _pUIMgr->GetNasColor( m_btnItems[nItemIndex].GetItemCount() );
 	}
 	else
 	{
-		if( ( pItemData->GetType() == CItemData::ITEM_WEAPON ||
-			pItemData->GetType() == CItemData::ITEM_SHIELD ) &&
+		if( ( rItemData.GetType() == CItemData::ITEM_WEAPON ||
+			rItemData.GetType() == CItemData::ITEM_SHIELD ) &&
 			m_btnItems[nItemIndex].GetItemPlus() > 0 )
 		{
 			strTemp.PrintF( "%s +%d", szItemName, m_btnItems[nItemIndex].GetItemPlus() );
@@ -958,7 +937,7 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 // Get item information in detail
 	if( m_bDetailItemInfo )
 	{
-		switch( pItemData->GetType() )
+		switch( rItemData.GetType() )
 		{
 		case CItemData::ITEM_WEAPON:		// Weapon item
 			{
@@ -974,7 +953,7 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				}
 
 				// Level
-				int	nItemLevel = pItemData->GetLevel();
+				int	nItemLevel = rItemData.GetLevel();
 				if( nItemLevel > 0 )
 				{
 					strTemp.PrintF( _S( 160, "레벨: %d" ), nItemLevel );
@@ -983,34 +962,34 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				}
 
 				// Class
-				CUIManager::GetClassOfItem( pItemData, strTemp );
+				CUIManager::GetClassOfItem( rItemData, strTemp );
 				AddItemInfoString( strTemp, 0x9E9684FF );
 
 				int	nPlusValue;
 				if( m_btnItems[nItemIndex].GetItemPlus() > 0 )
 				{
 					// Physical attack
-					if( pItemData->GetPhysicalAttack() > 0 )
+					if( rItemData.GetPhysicalAttack() > 0 )
 					{
-						nPlusValue = (int)( pItemData->GetPhysicalAttack() *
-											pow( ITEM_PLUS_COFACTOR, (float)m_btnItems[nItemIndex].GetItemPlus() ) ) - pItemData->GetPhysicalAttack();
+						nPlusValue = (int)( rItemData.GetPhysicalAttack() *
+											(int)pow( (int)ITEM_PLUS_COFACTOR, m_btnItems[nItemIndex].GetItemPlus() ) ) - rItemData.GetPhysicalAttack();
 						if( nPlusValue > 0 )
-							strTemp.PrintF( _S( 355, "공격력 : %d + %d" ), pItemData->GetPhysicalAttack(), nPlusValue );
+							strTemp.PrintF( _S( 355, "공격력 : %d + %d" ), rItemData.GetPhysicalAttack(), nPlusValue );
 						else
-							strTemp.PrintF( _S( 161, "공격력 : %d" ), pItemData->GetPhysicalAttack() );
+							strTemp.PrintF( _S( 161, "공격력 : %d" ), rItemData.GetPhysicalAttack() );
 															
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 
 					// Magic attack
-					if( pItemData->GetMagicAttack() > 0 )
+					if( rItemData.GetMagicAttack() > 0 )
 					{
-						nPlusValue = (int)( pItemData->GetMagicAttack() *
-											pow( ITEM_PLUS_COFACTOR, (float)m_btnItems[nItemIndex].GetItemPlus() ) ) - pItemData->GetMagicAttack();
+						nPlusValue = (int)( rItemData.GetMagicAttack() *
+											(int)pow( (int)ITEM_PLUS_COFACTOR, m_btnItems[nItemIndex].GetItemPlus() ) ) - rItemData.GetMagicAttack();
 						if( nPlusValue > 0 )
-							strTemp.PrintF( _S( 356, "마법 공격력 : %d + %d" ), pItemData->GetMagicAttack(), nPlusValue );
+							strTemp.PrintF( _S( 356, "마법 공격력 : %d + %d" ), rItemData.GetMagicAttack(), nPlusValue );
 						else
-							strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), pItemData->GetMagicAttack() );
+							strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), rItemData.GetMagicAttack() );
 															
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
@@ -1018,16 +997,16 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				else
 				{
 					// Physical attack
-					if( pItemData->GetPhysicalAttack() > 0 )
+					if( rItemData.GetPhysicalAttack() > 0 )
 					{
-						strTemp.PrintF( _S( 161, "공격력 : %d" ), pItemData->GetPhysicalAttack() );
+						strTemp.PrintF( _S( 161, "공격력 : %d" ), rItemData.GetPhysicalAttack() );
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 
 					// Magic attack
-					if( pItemData->GetMagicAttack() > 0 )
+					if( rItemData.GetMagicAttack() > 0 )
 					{
-						strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), pItemData->GetMagicAttack() );
+						strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), rItemData.GetMagicAttack() );
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 				}
@@ -1069,7 +1048,7 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				}
 				
 				// Level
-				int	nItemLevel = pItemData->GetLevel();
+				int	nItemLevel = rItemData.GetLevel();
 				if( nItemLevel > 0 )
 				{
 					strTemp.PrintF( _S( 160, "레벨: %d" ), nItemLevel );
@@ -1078,34 +1057,34 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				}
 
 				// Class
-				CUIManager::GetClassOfItem( pItemData, strTemp );
+				CUIManager::GetClassOfItem( rItemData, strTemp );
 				AddItemInfoString( strTemp, 0x9E9684FF );
 
 				int	nPlusValue;
 				if( m_btnItems[nItemIndex].GetItemPlus() > 0 )
 				{
 					// Physical defense
-					if( pItemData->GetPhysicalDefence() > 0 )
+					if( rItemData.GetPhysicalDefence() > 0 )
 					{
-						nPlusValue = (int)( pItemData->GetPhysicalDefence() *
-											pow( ITEM_PLUS_COFACTOR, (float)m_btnItems[nItemIndex].GetItemPlus() ) ) - pItemData->GetPhysicalDefence();
+						nPlusValue = (int)( rItemData.GetPhysicalDefence() *
+											(int)pow( (int)ITEM_PLUS_COFACTOR, m_btnItems[nItemIndex].GetItemPlus() ) ) - rItemData.GetPhysicalDefence();
 						if( nPlusValue > 0 )
-							strTemp.PrintF( _S( 357, "방어력 : %d + %d" ), pItemData->GetPhysicalDefence(), nPlusValue );
+							strTemp.PrintF( _S( 357, "방어력 : %d + %d" ), rItemData.GetPhysicalDefence(), nPlusValue );
 						else
-							strTemp.PrintF( _S( 163, "방어력 : %d" ), pItemData->GetPhysicalDefence() );
+							strTemp.PrintF( _S( 163, "방어력 : %d" ), rItemData.GetPhysicalDefence() );
 															
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 
 					// Magic defense
-					if( pItemData->GetMagicDefence() > 0 )
+					if( rItemData.GetMagicDefence() > 0 )
 					{
-						nPlusValue = (int)( pItemData->GetMagicDefence() *
-											pow( ITEM_PLUS_COFACTOR, (float)m_btnItems[nItemIndex].GetItemPlus() ) ) - pItemData->GetMagicDefence();
+						nPlusValue = (int)( rItemData.GetMagicDefence() *
+											(int)pow( (int)ITEM_PLUS_COFACTOR, m_btnItems[nItemIndex].GetItemPlus() ) ) - rItemData.GetMagicDefence();
 						if( nPlusValue > 0 )
-							strTemp.PrintF( _S( 358, "마법 방어력 : %d + %d" ), pItemData->GetMagicDefence(), nPlusValue );
+							strTemp.PrintF( _S( 358, "마법 방어력 : %d + %d" ), rItemData.GetMagicDefence(), nPlusValue );
 						else
-							strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), pItemData->GetMagicDefence() );
+							strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), rItemData.GetMagicDefence() );
 															
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
@@ -1113,16 +1092,16 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 				else
 				{
 					// Physical defense
-					if( pItemData->GetPhysicalDefence() > 0 )
+					if( rItemData.GetPhysicalDefence() > 0 )
 					{
-						strTemp.PrintF( _S( 163, "방어력 : %d" ), pItemData->GetPhysicalDefence() );
+						strTemp.PrintF( _S( 163, "방어력 : %d" ), rItemData.GetPhysicalDefence() );
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 
 					// Magic defense
-					if( pItemData->GetMagicDefence() > 0 )
+					if( rItemData.GetMagicDefence() > 0 )
 					{
-						strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), pItemData->GetMagicDefence() );
+						strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), rItemData.GetMagicDefence() );
 						AddItemInfoString( strTemp, 0xDEC05BFF );
 					}
 				}
@@ -1164,9 +1143,9 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 		case CItemData::ITEM_ONCEUSE:
 			{
 				// 퀘스트 정보 표시.
-				if ( pItemData->GetSubType() == CItemData::ITEM_SUB_QUEST_SCROLL )
+				if ( rItemData.GetSubType() == CItemData::ITEM_SUB_QUEST_SCROLL )
 				{	
-					const int iQuestIndex = pItemData->GetNum0();
+					const int iQuestIndex = rItemData.GetNum0();
 
 					if( iQuestIndex != -1 )
 					{
@@ -1190,7 +1169,7 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 
 				// Date : 2005-01-14,   By Lee Ki-hwan
 				
-				if ( pItemData->GetSubType() == CItemData::POTION_UP )
+				if ( rItemData.GetSubType() == CItemData::POTION_UP )
 				{
 					if( m_btnItems[nItemIndex].GetItemFlag() > 0 )
 					{
@@ -1199,33 +1178,33 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 						AddItemInfoString( strTemp, 0xD28060FF );
 
 						// 향상 타입
-						int nSkillType = pItemData->GetSkillType();
+						int nSkillType = rItemData.GetSkillType();
 						CSkill	&rSkill = _pNetwork->GetSkillData( nSkillType );
 						int Power = rSkill.GetPower( m_btnItems[nItemIndex].GetItemFlag() - 1);
 
 
-						if(  pItemData->GetNum1() == CItemData::POTION_UP_PHYSICAL ) // 물리
+						if(  rItemData.GetNum1() == CItemData::POTION_UP_PHYSICAL ) // 물리
 						{
-							if(  pItemData->GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
+							if(  rItemData.GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
 							{
 								strTemp.PrintF ( _S( 790, "물리 공격력 +%d 상승" ), Power );
 								AddItemInfoString( strTemp, 0xDEC05BFF );
 							}
-							else if( pItemData->GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
+							else if( rItemData.GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
 							{
 								strTemp.PrintF ( _S( 791, "물리 방어력 +%d 상승" ),  Power );
 								AddItemInfoString( strTemp, 0xDEC05BFF );
 							}
 
 						}
-						else if( pItemData->GetNum1() == CItemData::POTION_UP_MAGIC ) // 마법
+						else if( rItemData.GetNum1() == CItemData::POTION_UP_MAGIC ) // 마법
 						{
-							if(  pItemData->GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
+							if(  rItemData.GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
 							{
 								strTemp.PrintF ( _S( 792, "마법 공격력 +%d 상승" ),  Power );
 								AddItemInfoString( strTemp, 0xDEC05BFF );
 							}
-							else if( pItemData->GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
+							else if( rItemData.GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
 							{
 								strTemp.PrintF ( _S( 793, "마법 방어력 +%d 상승" ),  Power );
 								AddItemInfoString( strTemp, 0xDEC05BFF );
@@ -1243,16 +1222,16 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 
 		case CItemData::ITEM_ETC:			// Etc item
 			{
-				switch( pItemData->GetSubType() )
+				switch( rItemData.GetSubType() )
 				{
 				case CItemData::ITEM_ETC_REFINE:
 					{
 						// FIXME : 레벨 표시가 안된다구 해서...
 						// 블러드라고 표시가 되어있다면, 표시를 없애준다.
-						/*if(m_btnItems[nItemIndex].GetItemFlag() & FLAG_ITEM_OPTION_ENABLE)
+						if(m_btnItems[nItemIndex].GetItemFlag() & FLAG_ITEM_OPTION_ENABLE)
 						{
 							m_btnItems[nItemIndex].SetItemFlag( m_btnItems[nItemIndex].GetItemFlag() ^ FLAG_ITEM_OPTION_ENABLE );
-						}*/
+						}
 
 						// Level
 						if( m_btnItems[nItemIndex].GetItemFlag() > 0 )
@@ -1273,7 +1252,11 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 			break;
 		}
 
-		const int iFame = pItemData->GetFame();
+		// Weight
+		strTemp.PrintF( _S( 165, "무게 : %d" ), rItemData.GetWeight() );
+		AddItemInfoString( strTemp, 0xDEC05BFF );
+
+		const int iFame = rItemData.GetFame();
 		if( iFame > 0 )
 		{
 			strTemp.PrintF( _S( 1096, "명성 %d 필요" ), iFame );		
@@ -1281,28 +1264,23 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 		}
 
 		// Options
-		switch( pItemData->GetType() )
+		switch( rItemData.GetType() )
 		{
 		case CItemData::ITEM_WEAPON:
 		case CItemData::ITEM_SHIELD:
 		case CItemData::ITEM_ACCESSORY:
 			{
-				SBYTE	sbOptionType;
-				LONG	lOptionLevel;
-				for( SBYTE sbOption = 0; sbOption < MAX_OPTION_INC_ORIGIN; sbOption++ )
+				SBYTE	sbOptionType, sbOptionLevel;
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; sbOption++ )
 				{
 					sbOptionType = m_btnItems[nItemIndex].GetItemOptionType( sbOption );
-					lOptionLevel = m_btnItems[nItemIndex].GetItemOptionLevel( sbOption );
+					sbOptionLevel = m_btnItems[nItemIndex].GetItemOptionLevel( sbOption );
 
-					if( sbOptionType == -1 || lOptionLevel == 0 )
+					if( sbOptionType == -1 || sbOptionLevel == 0 )
 						break;
 
-					COptionData*	podItem = COptionData::getData( sbOptionType );
-
-					if (podItem == NULL)
-						continue;
-
-					strTemp.PrintF( "%s : %d", podItem->GetName(), podItem->GetValue( lOptionLevel - 1 ) );
+					COptionData	&odItem = _pNetwork->GetOptionData( sbOptionType );
+					strTemp.PrintF( "%s : %d", odItem.GetName(), odItem.GetValue( sbOptionLevel - 1 ) );
 					AddItemInfoString( strTemp, 0x94B7C6FF );
 				}
 				if( m_btnItems[nItemIndex].GetItemFlag() & FLAG_ITEM_OPTION_ENABLE )
@@ -1331,14 +1309,11 @@ BOOL CUIBillItem::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight
 	}
 	else 
 	{
-#if defined(G_THAI)
-
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strItemInfo[0]);				
-
-#else
+		if(g_iCountry == THAILAND) {
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strItemInfo[0]);				
+		} else
 		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strItemInfo[0].Length() *
 						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 		nInfoHeight = 30;
 	}
 
@@ -1429,10 +1404,8 @@ void CUIBillItem::SendBillItemReq()
 // ----------------------------------------------------------------------------
 void CUIBillItem::BillItemRep( SBYTE sbResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box
-	pUIManager->CloseMessageBox( MSGCMD_BILL_ITEM_REP );
+	_pUIMgr->CloseMessageBox( MSGCMD_BILL_ITEM_REP );
 
 	// Show result
 	CTString	strMessage;
@@ -1453,7 +1426,7 @@ void CUIBillItem::BillItemRep( SBYTE sbResult )
 		break;
 	case MSG_BILLINFO_ERROR_NOT_GIVE:	// 처리 불능 ( 아이템 지급후 빌링/커넥트 서버에서 처리를 하지 못하여 지급된 아이템 삭제)
 		strMessage = _S( 1844, "지급된 아이템을 정상적으로 처리하지 못하였습니다. 다시 시도하여 주십시오." ); 
-		pUIManager->GetChatting()->AddSysMessage( _S( 1845, "아이템 지급이 실패 하였습니다." ), SYSMSG_ERROR ); 
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1845, "아이템 지급이 실패 하였습니다." ), SYSMSG_ERROR ); 
 		break;
 	}
 
@@ -1462,7 +1435,7 @@ void CUIBillItem::BillItemRep( SBYTE sbResult )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1839, "아이템 지급" ), UMBS_OK, UI_NONE, MSGCMD_BILL_ITEM_REP );		
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	
 	m_bWaitResult = FALSE;	
 }

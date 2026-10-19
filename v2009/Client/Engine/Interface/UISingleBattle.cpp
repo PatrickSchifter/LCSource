@@ -1,10 +1,7 @@
 
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISingleBattle.h>
-
+#include <Engine/Interface/UIInternalClasses.h>
 
 // Define text position
 #define	GB_TITLE_TEXT_OFFSETX		25		// 타이틀 바 스트링 
@@ -62,6 +59,7 @@ CUISingleBattle::CUISingleBattle()
 CUISingleBattle::~CUISingleBattle()
 {
 	Clear ();
+	Destroy();
 }
 
 //------------------------------------------------------------------------------
@@ -81,7 +79,9 @@ void CUISingleBattle::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	Clear();
 	m_strTitle = _S( 1097, "길드전투" ); 
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	// Create skill learn texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\GuildBattle.tex" ) );	
@@ -119,11 +119,11 @@ void CUISingleBattle::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 //------------------------------------------------------------------------------
 void CUISingleBattle::Close()
 {
-	if( IsVisible() == FALSE )
-		return;
-
-	CUIManager::getSingleton()->RearrangeOrder( UI_SINGLE_BATTLE, FALSE );
-	Clear();
+	if( IsVisible() )
+	{
+		_pUIMgr->RearrangeOrder( UI_SINGLE_BATTLE, FALSE );
+		Clear();
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -150,19 +150,30 @@ void CUISingleBattle::Render()
 //------------------------------------------------------------------------------
 void CUISingleBattle::RenderGBStatus()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 	int nX;
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// 남은 시간 표시 ( ImageFont );
 
-	int nOffsetX = pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH;
+	int nOffsetX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH;
 
 	m_rcBox.Left = m_rcBlueBox.Left = m_rcRedBox.Left = nOffsetX;
 	m_rcBox.Right = m_rcBlueBox.Right = m_rcRedBox.Right = nOffsetX + BOX_WIDTH;
 
-	pDrawPort->AddTexture( m_rcRedBox.Left, m_rcRedBox.Top, m_rcRedBox.Right, m_rcRedBox.Bottom,
+	/*
+	// Ren, Blue Box 표시
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBox.Left, m_rcBox.Top, m_rcBox.Right, m_rcBox.Bottom,
+									m_rtBox.U0, m_rtBox.V0,
+									m_rtBox.U1, m_rtBox.V1,
+									0xFFFFFFFF );
+
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBlueBox.Left, m_rcBlueBox.Top, m_rcBlueBox.Right, m_rcBlueBox.Bottom,
+									m_rtBlueBox.U0, m_rtBlueBox.V0,
+									m_rtBlueBox.U1, m_rtBlueBox.V1,
+									0xFFFFFFFF );
+									*/
+	
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcRedBox.Left, m_rcRedBox.Top, m_rcRedBox.Right, m_rcRedBox.Bottom,
 									m_rtRedBox.U0, m_rtRedBox.V0,
 									m_rtRedBox.U1, m_rtRedBox.V1,
 									0xFFFFFFFF );
@@ -171,17 +182,17 @@ void CUISingleBattle::RenderGBStatus()
 	RenderKillPoint();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	//CTString strMessage;	
 	//strMessage.PrintF ( _S( 1099, "전투지역 : %s" ), ZoneInfo().GetZoneName( m_nBattleZone ) ); 	
 	
 	nX = m_rcRedBox.Left + ( m_rcRedBox.Right - m_rcRedBox.Left ) / 2;
 	
-	pDrawPort->PutTextExCX( _S( 1740, "죽인 적의 수" ), nX, SINGLE_NAME_Y, 0xA6C0FFE5 );		
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 1740, "죽인 적의 수" ), nX, SINGLE_NAME_Y, 0xA6C0FFE5 );		
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 
@@ -202,9 +213,8 @@ void CUISingleBattle::DrawNumber ( int x, int y, int nNumber, bool bLarge )
 		nWidth		= LARGE_NUMBER_WIDTH;	
 		nHeight		= LARGE_NUMBER_HEIGHT;
 	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	pDrawPort->AddTexture( x, y, x + nWidth, y + nHeight,
+	
+	_pUIMgr->GetDrawPort()->AddTexture( x, y, x + nWidth, y + nHeight,
 							rtNumber.U0, rtNumber.V0, rtNumber.U1, rtNumber.V1,
 							0xFFFFFFFF );
 
@@ -216,9 +226,7 @@ void CUISingleBattle::DrawNumber ( int x, int y, int nNumber, bool bLarge )
 //------------------------------------------------------------------------------
 void CUISingleBattle::RenderKillPoint()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	int nOffsetX			= pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;	
+	int nOffsetX			= _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;	
 	int nKillPoint			= _pNetwork->wo_dwKilledEnemyCount;
 	int nTargetKillPoint	= _pNetwork->wo_dwKilledEnemyCount;
 	int nHalfWidth			= LARGE_NUMBER_WIDTH / 2 ;
@@ -227,7 +235,7 @@ void CUISingleBattle::RenderKillPoint()
 	int nRenderNumber = 0;
 
 	// Red Kill Point
-	nOffsetX = pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
+	nOffsetX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
 
 	for( i = 1;  ; i *= 10 )
 	{
@@ -269,10 +277,9 @@ void CUISingleBattle::RenderKillPoint()
 //------------------------------------------------------------------------------
 void CUISingleBattle::OpenSingleBattle()
 {
-	if( IsVisible() == TRUE )
+	if( IsVisible() )
 		return;
-
-	CUIManager::getSingleton()->RearrangeOrder( UI_SINGLE_BATTLE, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SINGLE_BATTLE, TRUE );
 }
 
 
@@ -282,7 +289,7 @@ void CUISingleBattle::OpenSingleBattle()
 //------------------------------------------------------------------------------
 void CUISingleBattle::DrawColon( int x, int y )
 {
-	CUIManager::getSingleton()->GetDrawPort()->AddTexture( x, y, x + COLON_WIDTH, y + SMALL_NUMBER_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( x, y, x + COLON_WIDTH, y + SMALL_NUMBER_HEIGHT,
 							m_rtColon.U0, m_rtColon.V0, m_rtColon.U1, m_rtColon.V1,
 							0xFFFFFFFF );	
 }

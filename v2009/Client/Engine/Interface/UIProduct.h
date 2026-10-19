@@ -10,8 +10,9 @@
 	#pragma once
 #endif
 
-#include <Engine/Interface/UIListBoxEx.h>
-#include <Engine/Entities/ItemData.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
 #include <Engine/Interface/UIProcess.h>
 
 // Define max char and line of strings
@@ -53,7 +54,7 @@ protected:
 	CUIButton				m_btnCancel;						// 취소 버튼 
 	
 	// Skill buttons
-	std::vector<CUIIcon*>	m_vecIcons;							// 가공 아이템
+	std::vector<CUIButtonEx> m_btnProductItems;					// 가공 아이템
 
 	// Etc ...
 	CUIScrollBar			m_sbProductItem;					// 가공 아이템 창 스크롤 바
@@ -63,8 +64,8 @@ protected:
 //	Product Item Info
 
 	int						m_nProductText;						// 가공 문서 아이템 인덱스
-	SWORD					m_nTab;
-	SWORD					m_nInvenIdx;
+	SBYTE					m_nRow;
+	SBYTE					m_nCol;
 
 	int						m_nSelectProductItem;				// 현재 선택된 가공물
 	CTString				m_StrProductType;					// 가공 타입
@@ -91,6 +92,26 @@ protected:
 
 // Network ...
 	BOOL					m_bWaitProductResult;				// Wait Message
+	
+// Tool Tip	
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+
+	BOOL					m_bShowItemInfo;
+
+	UIRect					m_rcItemInfo;
+	int						m_nCurInfoLines;
+
+	CTString				m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR					m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
+	BOOL					m_bDetailItemInfo;	
 
 public:
 	CUIProduct();
@@ -111,7 +132,7 @@ public:
 	void	Clear ();
 	void	InitProduct();
 
-	ENGINE_API	void	OpenProduct( int nItemIndex, SWORD nTab, SWORD inven_idx );
+	ENGINE_API	void	OpenProduct( int nItemIndex, int nRow, int nCol );
 	void				CloseProduct();
 	
 
@@ -127,154 +148,16 @@ public:
 
 // etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( const CTString &strText, COLOR colText = 0xffffffff );
+	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
+
+// Tool Tip
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight );
+	void	ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew = FALSE );
+
+	void	RenderItemInfo ();
 };
 
-
-// ----------------------------------------------------------------------------
-// Name : CUIProduct2
-// Desc : 아이템 제작 확장
-// ----------------------------------------------------------------------------
-class CUIProduct2: public CUIWindow
-{
-protected:
-
-	struct sResultItem 
-	{
-		
-		int nitemIndex;
-		int nSubType;
-		UQUAD lExp;
-		CMakeItemData* pItemData;
-
-		sResultItem()
-		{
-			nitemIndex = -1;
-			nSubType	= -1;
-			lExp		= -1;
-			pItemData = NULL;
-		}
-		~sResultItem()
-		{
-			nitemIndex = -1;
-			nSubType	= -1;
-			lExp		= -1;
-			pItemData = NULL;
-		}
-		bool operator<(const sResultItem &other) const
-		{
-			if( nSubType < other.nSubType )
-			{
-				return true;
-			}
-			else if( nSubType == other.nSubType && lExp < other.lExp )
-			{
-				return true;
-			}
-
-			return false;
-		}
-				
-	};
-	CTextureData	*m_ptdaddTexture;
-	CUIButton		m_btnClose;
-	CUIButton		m_btnMake;
-	CUIIcon*		m_pIconsMake;
-	CUIIcon*		m_pIconsStuff[5];
-	CUIDrawBox		m_bxBackground;
-	CUIListBoxEx	m_lbMakeList;
-
-	CMakeItemData*	pSelItemData;
-	CTString*		m_pSubTypeString;
-	CTString*		m_pstrSealType;
-	INDEX			m_nSealType;
-	int				m_nSelFactoryIndex;
-
-	BOOL			m_bItemMaking;
-
-	std::vector<INDEX> m_vctMakeLearn;		// 자신이 배운 제작 리스트 저장 공간
-
-public:
-	CUIProduct2();
-	~CUIProduct2();
-
-	// Create
-	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-
-	// Adjust position
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-
-	void	ListReset();
-	// Render
-	void	Render();
-
-	void	AddMakeItemList(INDEX nListIndex);
-	BOOL	IsLearn(INDEX nIndex);
-	void	SetSealType(INDEX sealtype) { m_nSealType = sealtype; }
-	UBYTE	GetSealType() { return m_nSealType; }
-	void	OpenProduct2(INDEX sealtype);
-	void	CloseProduct2();
-	void	SetList(CUIListBoxEx* lbList, INDEX sealtype);
-	void	SetStuffItem();
-
-	void	SendMakeItem(UBYTE ubType, ULONG lindex);
-
-	void	SetItemMaking(BOOL bMaking);
-	void	ProgressBarRender();
-	CTString	GetSealTypeName(int nSealtype)	{ return m_pstrSealType[nSealtype-656];}
-	
-
-	// Messages
-	WMSG_RESULT	MouseMessage( MSG *pMsg );
-};
-
-class CUIProductNPC: public CUIWindow
-{
-protected:
-
-	CTextureData	*m_ptdaddTexture;
-	CUIButton	m_btnClose;
-	CUIButton	m_btnLearn;
-	CUIButton	m_btnCancel;
-	CUIDrawBox		m_bxBackground;
-
-	CUIListBoxEx	m_lbLearnList;
-	CMakeItemData*	pSelItemData;
-
-	INDEX			m_nSealType;
-	FLOAT			m_fNpcX, m_fNpcZ;
-	int				m_nNpcVirIdx;
-	int				m_nSealNum;		// 증표획득 확인 창에 사용할 값 저장
-
-public:
-	CUIProductNPC();
-	~CUIProductNPC();
-
-	// Create
-	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-
-	// Adjust position
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-
-	// Render
-	void	Render();
-
-	void	Reset();
-
-	void	OpenProductList(INDEX sealtype);
-	void	OpenProductNPC(int iMobIndex, int iMobVirIdx, FLOAT npcx, FLOAT npcz);
-
-	void	CloseProductNPC();
-
-	// Messages
-	WMSG_RESULT	MouseMessage( MSG *pMsg );
-	void MsgBoxLCommand( int nCommandCode, int nResult );
-	void MsgBoxCommand(int nCommandCode, BOOL bOK, CTString &strInput );
-	void SendFactoryLearn(int nIndex);
-
-};
 
 #endif	// UIProduct_H_
 

@@ -2,11 +2,11 @@
 #ifndef _UISIEGE_WARFARE_DOC_H
 #define _UISIEGE_WARFARE_DOC_H
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Network/CharacterTarget.h>
-// #include <Engine/Interface/UISiegeWarfare.h>
-// #include <Engine/Interface/UISiegeWarfareNew.h> // WSS_NEW_GUILD_SYSTEM 070725
-// #include <map>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Network/CharacterTarget.h>
+#include <Engine/Interface/UISiegeWarfare.h>
+#include <Engine/Interface/UISiegeWarfareNew.h> // WSS_NEW_GUILD_SYSTEM 070725
+#include <map>
 
 #define SWS_NONE					0
 #define SWS_SW_REQ					1

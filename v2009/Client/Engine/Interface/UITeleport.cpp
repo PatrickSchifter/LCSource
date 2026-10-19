@@ -1,16 +1,68 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/3/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UITeleport.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Help/Util_Help.h>
+#include <Engine/Entities/Entity.h>
+#include <Engine/Entities/EntityProperties.h>
+#include <Engine/Classes/PlayerEntity.h>
 
 static CTString	strTempMemo;
+// wooss 050830
+// 잘못된 문자를 배제하고 스트링을 만든다
+// -> 수정 : 잘못된 문자 발견시 TRUE를 리턴한다
+BOOL MemBanChar(CTString& strInput)
+{
+	CTString sBanChar="%'";
+	CTString tv_str;
+	
+	for(int i=0;i<sBanChar.Length();i++)
+	{
+		tv_str.DeleteChar(0);
+		tv_str.InsertChar(0,sBanChar[i]);
+		for(int j=0;j<strInput.Length();j++)
+		{
+			INDEX findIndex=-1;
+			findIndex=strInput.FindSubstr(tv_str);
+			if(findIndex!=-1) 
+			{
+				strTempMemo.PrintF(("[ %s ]"),tv_str);	// 창을 띄우지 않고 금지 문자를 삭제하여 
+				return TRUE;								// 처리할 때 이 두 라인을 지운다
+				strInput.DeleteChar(findIndex);
+			}
+		}
+	}
 
-#define DEF_EXPIRETIME_SX (34)
-#define DEF_EXPIRETIME_SY (136)
-
+	return FALSE;
+}
+/*
+//wooss 050810
+//inner function
+//숫자를 문자로 변환...
+CTString ItoC(int nNum)
+{
+	std::list<char>				numList;					
+	std::list<char>::iterator	i_beginList,i_endList;
+	
+	char		cNum;	
+	CTString	sNum;
+	for(int	i=0;nNum>=10;i++)
+	{
+		cNum='0'+nNum%10;
+		numList.push_back(cNum);
+		nNum/=10;
+	}
+	cNum='0'+nNum;
+	numList.push_back(cNum);
+	
+	i_beginList=numList.begin();
+	i_endList=numList.end();
+	for(;i_beginList!=i_endList;i_beginList++,i--)
+	{
+		sNum.InsertChar(i,(*i_beginList));
+	}
+	return sNum;
+}
+*/
 // ----------------------------------------------------------------------------
 // Name : cipher
 // Desc : Inner Function
@@ -53,6 +105,7 @@ CUITeleport::CUITeleport()
 // ----------------------------------------------------------------------------
 CUITeleport::~CUITeleport()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -61,7 +114,9 @@ CUITeleport::~CUITeleport()
 // ----------------------------------------------------------------------------
 void CUITeleport::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 //	m_rcTitle.SetRect( 0, 0, 427, 22 );
@@ -69,11 +124,9 @@ void CUITeleport::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 
 	// wooss 050810
 	m_rcTitle.SetRect( 0, 0, 472, 22 );
-#if defined G_RUSSIA
 	m_rcContents.SetRect( 12, 48, 452, 123 );
-#else
-	m_rcContents.SetRect( 12, 48, 418, 123 );
-#endif
+
+
 	// Create teleport texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Teleport.tex" ) );
 	FLOAT	fTexWidth	= m_ptdBaseTexture->GetPixWidth();
@@ -88,7 +141,7 @@ void CUITeleport::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_rtBackground.SetUV( 0, 0, 472, 160, fTexWidth, fTexHeight );
 	m_rtSelBar.SetUV( 0, 215, 350, 231, fTexWidth, fTexHeight );
 	//scroll bar
-	m_sbScrollBar.Create( this, 453, 47, 9, 82 );
+	m_sbScrollBar.Create( this, 453, 47, 8, 81 );
 	m_sbScrollBar.CreateButtons( TRUE, 9, 7, 0, 0, 10 );
 	m_sbScrollBar.SetScrollPos( 0 );
 	m_sbScrollBar.SetScrollRange( TELEPORT_MAX_MEMO );
@@ -170,12 +223,9 @@ void CUITeleport::OpenTeleport()
 {
 	if( IsVisible() )
 		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsIdle() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
 		return;
 	}
 	
@@ -195,19 +245,8 @@ void CUITeleport::OpenTeleport()
 		m_btnMemorize.SetEnable( TRUE );
 	}
 
-	//modified by sam  러시아에서 스크롤바의 움직이이 이상하다 하여 여기수정 렌더에서 수정해서 스크롤이 이상하게 동작 
-	if(m_useTime > 0) // 070205_ttos 메모리 사용시 5칸 사용 확장시 15칸 사용가능
-	{
-		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_MEMO );
-		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_MEMO );
-	}else 
-	{
-		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_ROW );
-		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_ROW );
-	}
-
 // [KH_070315] 프리미엄일 때 분기
-	pUIManager->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, TRUE );
+	_pUIMgr->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -216,9 +255,7 @@ void CUITeleport::OpenTeleport()
 // ----------------------------------------------------------------------------
 void CUITeleport::NotUseMemEx()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_NULL ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_NULL ) )
 		return;
 	CTString	strTitle,strMsg;
 	strTitle = _S(191,"확인");
@@ -226,7 +263,7 @@ void CUITeleport::NotUseMemEx()
  	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,UI_NONE, MSGCMD_NULL );
 	MsgBoxInfo.AddString( strMsg );
-	pUIManager->CreateMessageBox(MsgBoxInfo);
+	_pUIMgr->CreateMessageBox(MsgBoxInfo);
 }
 
 
@@ -237,13 +274,11 @@ void CUITeleport::NotUseMemEx()
 // ----------------------------------------------------------------------------
 void CUITeleport::CloseTeleport()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox( MSGCMD_TELEPORT_MEMO );
+	_pUIMgr->CloseMessageBox( MSGCMD_TELEPORT_MEMO );
 
 	m_sbSelection = -1;
 // [KH_070315] 프리미엄일 때 분기
-	pUIManager->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, FALSE );
+	_pUIMgr->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -252,18 +287,16 @@ void CUITeleport::CloseTeleport()
 // ----------------------------------------------------------------------------
 void CUITeleport::OpenMemorizeMsgBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
 		return;
 
 	if( m_sbSelection == -1 )
 		return;
 
 	CTString	strZone, strCoord;
-	strZone.PrintF( "%-8s: %s", (const char*)_S( 291, "존" ),
-								(const char*)CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
-	strCoord.PrintF( "%-8s: %d,%d", (const char*)_S( 292, "좌표" ),
+	strZone.PrintF( "%-8s: %s", _S( 291, "존" ),
+								ZoneInfo().GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
+	strCoord.PrintF( "%-8s: %d,%d", _S( 292, "좌표" ),
 										(int)_pNetwork->MyCharacterInfo.x, (int)_pNetwork->MyCharacterInfo.z );
 
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -273,54 +306,42 @@ void CUITeleport::OpenMemorizeMsgBox()
 	MsgBoxInfo.AddStringEx( strZone, 0, 0 );
 	MsgBoxInfo.AddStringEx( strCoord, 1, 0 );
 	MsgBoxInfo.AddStringEx( _S( 293, "메모" ), 2, 0 );
-
-#if defined G_RUSSIA
-	MsgBoxInfo.SetInputBox( 3, 10, 25 ); // 2->3 으로 문장이 겹침 modified by sam 11/02/22
-#else
 	MsgBoxInfo.SetInputBox( 2, 10, 32 );
-#endif
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
-void CUITeleport::SetUseTime(int t)
-{
-	m_useTime = t;
-
-	//modified by sam  러시아에서 스크롤바의 움직이이 이상하다 하여 여기수정 렌더에서 수정해서 스크롤이 이상하게 동작 
-	if (m_useTime > 0)
-	{
-		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_MEMO ); // added by sam 11/02/22
-		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_MEMO );
-	}
-	else
-	{	
-		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_ROW ); // added by sam 11/02/22
-		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_ROW );
-	}
-}
 // ----------------------------------------------------------------------------
 // Name : Render()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUITeleport::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set teleport texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackground.U0, m_rtBackground.V0, m_rtBackground.U1, m_rtBackground.V1,
 										0xFFFFFFFF );
 	
+	if(m_useTime > 0) // 070205_ttos 메모리 사용시 5칸 사용 확장시 15칸 사용가능
+	{
+		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_MEMO );
+		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_MEMO );
+	}else 
+	{
+		m_sbScrollBar.SetScrollRange( TELEPORT_MAX_ROW );
+		m_sbScrollBar.SetCurItemCount( TELEPORT_MAX_ROW );
+	}
+
 	// Selection bar
 	int	nY;
 	if( m_sbSelection >= 0 )
 	{
 		nY = m_nPosY + m_rcContents.Top + m_sbSelection * TELEPORT_CONTENT_OFFSETY;
-		pDrawPort->AddTexture( m_nPosX + m_rcContents.Left, nY,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcContents.Left, nY,
 											m_nPosX + m_rcContents.Right, nY + TELEPORT_CONTENT_OFFSETY,
 											m_rtSelBar.U0, m_rtSelBar.V0, m_rtSelBar.U1, m_rtSelBar.V1,
 											0xFFFFFFFF );
@@ -343,22 +364,22 @@ void CUITeleport::Render()
 	m_sbScrollBar.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Text in teleport
-	pDrawPort->PutTextEx( _S( 375, "메모리 스크롤" ), m_nPosX + TELEPORT_TITLE_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 375, "메모리 스크롤" ), m_nPosX + TELEPORT_TITLE_OFFSETX,
 										m_nPosY + TELEPORT_TITLE_OFFSETY, 0xFFFFFFFF );
 
-	pDrawPort->PutTextExCX( _S( 291, "존" ), m_nPosX + TELEPORT_ZONE_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 291, "존" ), m_nPosX + TELEPORT_ZONE_CX,
 											m_nPosY + TELEPORT_CONTENT_NAME_SY );
 
-	pDrawPort->PutTextExCX( _S( 292, "좌표" ), m_nPosX + TELEPORT_COORD_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 292, "좌표" ), m_nPosX + TELEPORT_COORD_CX,
 											m_nPosY + TELEPORT_CONTENT_NAME_SY );
-	pDrawPort->PutTextExCX( _S( 293, "메모" ), m_nPosX + TELEPORT_MEMO_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 293, "메모" ), m_nPosX + TELEPORT_MEMO_CX,
 											m_nPosY + TELEPORT_CONTENT_NAME_SY );
 
 	//wooss 050810
-	pDrawPort->PutTextExCX( _S( 2119, "기간" ), m_nPosX + TELEPORT_REMAIN_CX,		
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2119, "기간" ), m_nPosX + TELEPORT_REMAIN_CX,		
 											m_nPosY + TELEPORT_CONTENT_NAME_SY );
 
 	nY = m_nPosY + TELEPORT_CONTENT_SY;
@@ -369,40 +390,28 @@ void CUITeleport::Render()
 	
 	for( ; i < TELEPORT_MAX_ROW+j; i++ )
 	{
+		
 		char sNum[10] = {'\0',};
 		itoa(i+1,sNum,10);
+		char sTime[10] = { '\0', }; 
+		itoa(m_useTime,sTime,10);
 		int tv_c = Tcipher(i+1);
-		pDrawPort->PutTextCharEx( sNum, tv_c, m_nPosX + TELEPORT_NUM_SX - (tv_c-1)*3, nY );
+		_pUIMgr->GetDrawPort()->PutTextCharEx( sNum, tv_c, m_nPosX + TELEPORT_NUM_SX - (tv_c-1)*3, nY );
 
 		if( m_nZoneNum[i] != -1 )
 		{
-			pDrawPort->PutTextExCX( m_strZone[i], m_nPosX + TELEPORT_ZONE_CX, nY );
-			pDrawPort->PutTextExCX( m_strCoord[i], m_nPosX + TELEPORT_COORD_CX, nY );
-			pDrawPort->PutTextEx( m_strMemo[i], m_nPosX + TELEPORT_MEMO_SX, nY );
-			if(i<TELEPORT_MAX_ROW)	pDrawPort->PutTextEx( _S(2120,"영구"), m_nPosX + TELEPORT_TIME_SX, nY );	
-			else 
-			{
-				pDrawPort->PutTextEx( _S(6031,"확장") , m_nPosX + TELEPORT_TIME_SX, nY );	//wooss 050816
-			}
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strZone[i], m_nPosX + TELEPORT_ZONE_CX, nY );
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strCoord[i], m_nPosX + TELEPORT_COORD_CX, nY );
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strMemo[i], m_nPosX + TELEPORT_MEMO_SX, nY );
+			if(i<TELEPORT_MAX_ROW)	_pUIMgr->GetDrawPort()->PutTextEx( _S(2120,"영구"), m_nPosX + TELEPORT_TIME_SX, nY );	
+				else _pUIMgr->GetDrawPort()->PutTextEx( CTString(sTime)+_S(2123,"일") , m_nPosX + TELEPORT_TIME_SX, nY );	//wooss 050816
 		}
 
 		nY += TELEPORT_CONTENT_OFFSETY;
 	}
 
-	if (m_useTime > 0)
-	{
-		tm* pTime = NULL;
-		pTime = LocalTime32(m_useTime);
-		CTString strExpireTime;
-	
-		strExpireTime.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),pTime->tm_year + 1900
-			,pTime->tm_mon + 1,pTime->tm_mday,pTime->tm_hour, pTime->tm_min);
-
-		pDrawPort->PutTextEx( strExpireTime , m_nPosX + DEF_EXPIRETIME_SX, m_nPosY + DEF_EXPIRETIME_SY );
-	}
-
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -430,7 +439,7 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move teleport
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -473,7 +482,6 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
 				nOldX = nX;		nOldY = nY;
 
 				// Close button
@@ -518,7 +526,7 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 				// Selection content
 				else if( IsInsideRect( nX, nY, m_rcContents ) )
 				{
-					if( !pUIManager->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
+					if( !_pUIMgr->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
 					{
 						UBYTE	ubOldSel = m_sbSelection;
 						m_sbSelection = ( nY - m_nPosY - m_rcContents.Top ) / TELEPORT_CONTENT_OFFSETY;
@@ -547,7 +555,7 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 				}
 
 // [KH_070315] 프리미엄일 때 분기
-				pUIManager->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, TRUE );
+				_pUIMgr->RearrangeOrder( m_bPrimium ? UI_TELEPORT_PRIMIUM : UI_TELEPORT, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -555,10 +563,8 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -580,16 +586,8 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-// 						if (_pNetwork->IsRvrZone())
-// 						{
-// 							pUIManager->GetChattingUI()->AddSysMessage( _S( 47, "메모리 스크롤을 사용할 수 없는 지역입니다." ), SYSMSG_ERROR );
-// 							return WMSG_FAIL;
-// 						}
-
-						if(m_useTime<=0 && chkMemPos>=TELEPORT_MAX_ROW) 
-							NotUseMemEx();
-						else 
-							SendTeleportMove();
+						if(m_useTime<=0 && chkMemPos>=TELEPORT_MAX_ROW) NotUseMemEx();
+							else SendTeleportMove();
 					}
 
 					return WMSG_SUCCESS;
@@ -599,10 +597,8 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						if(m_useTime<=0 && chkMemPos>=TELEPORT_MAX_ROW)
-							NotUseMemEx();
-						else
-							OpenMemorizeMsgBox();
+						if(m_useTime<=0 && chkMemPos>=TELEPORT_MAX_ROW) NotUseMemEx();
+							else OpenMemorizeMsgBox();
 					}
 
 					return WMSG_SUCCESS;
@@ -629,7 +625,7 @@ WMSG_RESULT CUITeleport::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -679,6 +675,21 @@ void CUITeleport::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput 
 	switch( nCommandCode )
 	{
 	case MSGCMD_TELEPORT_MEMO:
+		//wooss 050830
+		//금지문자가 있음을 알려준다
+		if(MemBanChar( strInput))
+		{
+			CUIMsgBox_Info	MsgBoxInfo;
+			CTString strSysMessage;
+			_pUIMgr->CloseMessageBox( MSGCMD_NULL );
+			MsgBoxInfo.SetMsgBoxInfo( _S( 375, "메모리 스크롤" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
+			strSysMessage=_S( 1858, "잘못된 문자가 포함되어 있습니다");
+			MsgBoxInfo.AddString(strSysMessage);
+			MsgBoxInfo.AddString(strTempMemo);
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
+
+		}
+		else
 		{
 			strTempMemo = strInput;
 			SendTeleportWrite();
@@ -694,22 +705,18 @@ void CUITeleport::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput 
 void CUITeleport::ShowTeleportError()
 {
 	CTString	strSysMessage;
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsCSFlagOn( CSF_SKILL ) )
+	if( _pUIMgr->IsCSFlagOn( CSF_SKILL ) )
 		strSysMessage = _S( 376, "스킬을 사용하고 있습니다." );
-	else if( pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+	else if( _pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 		strSysMessage = _S( 377, "다른 장소로 이동을 준비하고 있습니다." );
-	else if( pUIManager->IsCSFlagOn( CSF_PARTY_REQ ) )
+	else if( _pUIMgr->IsCSFlagOn( CSF_PARTY_REQ ) )
 		strSysMessage = _S( 378, "파티 신청이 진행중입니다." );
-	else if( pUIManager->IsCSFlagOn( CSF_EXCHANGE ) )
+	else if( _pUIMgr->IsCSFlagOn( CSF_EXCHANGE ) )
 		strSysMessage = _S( 379, "교환이 진행중입니다." );
-	else if( pUIManager->IsCSFlagOn( CSF_EXPEDITION_REQ ) ) // [sora] 원정대 신청중
-		strSysMessage = _S( 4656, "원정대 신청이 진행중입니다.." );
 	else
 		strSysMessage = _S( 384, "이동할 수 없습니다." );
 
-	pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
+	_pUIMgr->GetChatting()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
 }
 
 
@@ -726,19 +733,12 @@ void CUITeleport::SendTeleportWrite()
 	int tv_scrollbarPos=m_sbScrollBar.GetScrollPos();				// wooss 050816 
 	if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsIdle() )
 	{
-		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
 		return;
 	}
 // [KH_070316] 변경 프리미엄 관련
-
-	if (UTIL_HELP()->IsSpecialChar(strTempMemo.str_String) == true)
-	{
-		UIMGR()->GetChattingUI()->AddSysMessage ( _S( 437, "문장에 금지된 단어가 포함되어 있습니다." ) );
-		return;
-	}
-
 	if(m_bPrimium)
-		_pNetwork->SendTeleportWrite( XXXMSG_MEMPOSPLUS, m_sbSelection + m_sbPage * TELEPORT_MAX_ROW, strTempMemo );	//wooss 050816
+		_pNetwork->SendTeleportWrite( MSG_MEMPOSPLUS, m_sbSelection + m_sbPage * TELEPORT_MAX_ROW, strTempMemo );	//wooss 050816
 	else
 		_pNetwork->SendTeleportWrite( MSG_MEMPOS, m_sbSelection + m_sbScrollBar.GetScrollPos(), strTempMemo );	//wooss 050816
 	strTempMemo.Clear();
@@ -750,9 +750,7 @@ void CUITeleport::SendTeleportWrite()
 // ----------------------------------------------------------------------------
 void CUITeleport::SendTeleportMove()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_TELEPORT_MEMO ) )
 		return;
 
 	if( m_sbSelection == -1 )
@@ -761,18 +759,18 @@ void CUITeleport::SendTeleportMove()
 	if( _pNetwork->MyCharacterInfo.zoneNo != m_nZoneNum[m_sbSelection+m_sbScrollBar.GetScrollPos()] )
 		return;
 
-	if( pUIManager->IsCSFlagOn( CSF_CANNOT_TELEPORT_MASK ) )
+	if( _pUIMgr->IsCSFlagOn( CSF_CANNOT_TELEPORT_MASK ) )
 		ShowTeleportError();
 	else if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsIdle() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 789, "다른 행동 중에는 메모리스크롤을 사용할 수 없습니다." ), SYSMSG_ERROR );
 		return;
 	}
 	else
 	{
 // [KH_070316] 변경 프리미엄 관련
 		if(m_bPrimium)
-			_pNetwork->SendTeleportMove( XXXMSG_MEMPOSPLUS, m_sbSelection + m_sbSelection * TELEPORT_MAX_ROW);
+			_pNetwork->SendTeleportMove( MSG_MEMPOSPLUS, m_sbSelection + m_sbSelection * TELEPORT_MAX_ROW);
 		else
 			_pNetwork->SendTeleportMove( MSG_MEMPOS, m_sbSelection +m_sbScrollBar.GetScrollPos());
 	}
@@ -787,13 +785,10 @@ void CUITeleport::SendTeleportMove()
 // Name : SetTeleportInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment )
+void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment )
 {
-	if (ubSlot > TELEPORT_PRIMIUM_MAX_MEMO)
-		return;
-
 	m_nZoneNum[ubSlot] = slZone;
-	m_strZone[ubSlot] = CZoneInfo::getSingleton()->GetZoneName( slZone );
+	m_strZone[ubSlot] = ZoneInfo().GetZoneName( slZone );
 	m_strCoord[ubSlot].PrintF( "%4d,%-4d", (int)fX, (int)fZ );
 	m_strMemo[ubSlot] = strComment;
 	
@@ -821,23 +816,18 @@ void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT f
 CUITeleportPrimium::CUITeleportPrimium()
 {
 	m_bPrimium = TRUE;
-	m_ptdPopupTexture = NULL;
 }
 CUITeleportPrimium::~CUITeleportPrimium()
 {
-	// BUG FIX : 특정 텍스쳐의 중복 로드로 인한 전체 해지 불가. 이유는 _pTextureStock내에서 [4/26/2010 rumist]
-	//			 Ref Count를 이상하게 하고 있기 때문. [4/26/2010 rumist]
-	if( m_ptdPopupTexture )
-	{
-		_pTextureStock->Release( m_ptdPopupTexture );
-		m_ptdPopupTexture = NULL;
-	}
+	Destroy();
 }
 
 // [KH_070315] Create를 상속받아 OverRiding
 void CUITeleportPrimium::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight)
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos(nX, nY);
+	SetSize(nWidth, nHeight);
 
 	m_rcTitle.SetRect(0, 0, 472, 22);
 	m_rcContents.SetRect(12, 68, 418, 143);
@@ -860,7 +850,7 @@ void CUITeleportPrimium::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidt
 
 	for(INDEX i = 0; i < TELEPORT_PAGE_MAX; i++)
 	{
-		strPage.PrintF("%d%s", i + 1, (const char*)_S(3076, "페이지"));
+		strPage.PrintF("%d%s", i + 1, _S(3076, "페이지"));
 		m_btnPage[i].Create(this, strPage, 159 + 66 * i, 27, 63, 21);
 		m_btnPage[i].SetUV(UBS_IDLE, 0, 164, 63, 185, fTexWidth, fTexHeight);
 		m_btnPage[i].SetUV(UBS_CLICK, 66, 164, 129, 185, fTexWidth, fTexHeight);
@@ -920,44 +910,40 @@ void CUITeleportPrimium::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidt
 // [KH_070315] Render를 상속받아 OverRiding
 void CUITeleportPrimium::Render()
 {
-	INDEX i, j;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 // [KH_070315] 테두리
 	// Set teleport texture
-	pDrawPort->InitTextureData(m_ptdPopupTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(m_ptdPopupTexture);
 
-	pDrawPort->AddTexture(m_nPosX, m_nPosY, m_nPosX + 13, m_nPosY + 13,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY, m_nPosX + 13, m_nPosY + 13,
 								m_rtShopPremLU.U0, m_rtShopPremLU.V0, m_rtShopPremLU.U1, m_rtShopPremLU.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + 13, m_nPosY, m_nPosX + m_nWidth - 13, m_nPosY + 13,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + 13, m_nPosY, m_nPosX + m_nWidth - 13, m_nPosY + 13,
 								m_rtShopPremUp.U0, m_rtShopPremUp.V0, m_rtShopPremUp.U1, m_rtShopPremUp.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + m_nWidth - 13, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 13,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + m_nWidth - 13, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 13,
 								m_rtShopPremRU.U0, m_rtShopPremRU.V0, m_rtShopPremRU.U1, m_rtShopPremRU.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX, m_nPosY + 13, m_nPosX + 13, m_nPosY + 26,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY + 13, m_nPosX + 13, m_nPosY + 26,
 								m_rtShopPremLL.U0, m_rtShopPremLL.V0, m_rtShopPremLL.U1, m_rtShopPremLL.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + 13, m_nPosY + 13, m_nPosX + m_nWidth - 13, m_nPosY + 26,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + 13, m_nPosY + 13, m_nPosX + m_nWidth - 13, m_nPosY + 26,
 								m_rtShopPremLo.U0, m_rtShopPremLo.V0, m_rtShopPremLo.U1, m_rtShopPremLo.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + m_nWidth - 13, m_nPosY + 13, m_nPosX + m_nWidth, m_nPosY + 26,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + m_nWidth - 13, m_nPosY + 13, m_nPosX + m_nWidth, m_nPosY + 26,
 								m_rtShopPremRL.U0, m_rtShopPremRL.V0, m_rtShopPremRL.U1, m_rtShopPremRL.V1, 0xFFFFFFFF);
 	// Render elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
 	// Set teleport texture
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(m_ptdBaseTexture);
 
-	pDrawPort->AddTexture(m_nPosX, m_nPosY + 26, m_nPosX + 375, m_nPosY + 50,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY + 26, m_nPosX + 375, m_nPosY + 50,
 										m_rtBackgroundPage.U0, m_rtBackgroundPage.V0, m_rtBackgroundPage.U1, m_rtBackgroundPage.V1,
 										0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + 375, m_nPosY + 26, m_nPosX + m_nWidth, m_nPosY + 50,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + 375, m_nPosY + 26, m_nPosX + m_nWidth, m_nPosY + 50,
 										m_rtBackgroundPageR.U0, m_rtBackgroundPageR.V0, m_rtBackgroundPageR.U1, m_rtBackgroundPageR.V1,
 										0xFFFFFFFF);
 
-	pDrawPort->AddTexture(m_nPosX, m_nPosY + 50, m_nPosX + 419, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY + 50, m_nPosX + 419, m_nPosY + m_nHeight,
 										m_rtBackgroundBottom.U0, m_rtBackgroundBottom.V0, m_rtBackgroundBottom.U1, m_rtBackgroundBottom.V1,
 										0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + 419, m_nPosY + 50, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + 419, m_nPosY + 50, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackgroundBottomR.U0, m_rtBackgroundBottomR.V0, m_rtBackgroundBottomR.U1, m_rtBackgroundBottomR.V1,
 										0xFFFFFFFF);
 
@@ -968,13 +954,13 @@ void CUITeleportPrimium::Render()
 	if(m_sbSelection >= 0)
 	{
 		nY = m_nPosY + m_rcContents.Top + m_sbSelection * TELEPORT_PRIMIUM_CONTENT_OFFSETY;
-		pDrawPort->AddTexture(m_nPosX + m_rcContents.Left, nY,
+		_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + m_rcContents.Left, nY,
 											m_nPosX + m_rcContents.Right, nY + TELEPORT_PRIMIUM_CONTENT_OFFSETY,
 											m_rtSelBar.U0, m_rtSelBar.V0, m_rtSelBar.U1, m_rtSelBar.V1,
 											0xFFFFFFFF);
 	}
 
-	for( i = 0; i < TELEPORT_PAGE_MAX; i++)
+	for(INDEX i = 0; i < TELEPORT_PAGE_MAX; i++)
 		m_btnPage[i].Render();
 
 	// Close button
@@ -994,38 +980,39 @@ void CUITeleportPrimium::Render()
 //	m_sbScrollBar.Render();
 
 	// Render elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 // [KH_070316] 테두리 2
 	// Set teleport texture
-	pDrawPort->InitTextureData(m_ptdPopupTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(m_ptdPopupTexture);
 
-	pDrawPort->AddTexture(m_nPosX, m_nPosY + 26, m_nPosX + 5, m_nPosY + m_nHeight - 5,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY + 26, m_nPosX + 5, m_nPosY + m_nHeight - 5,
 								m_rtShopPremBL.U0, m_rtShopPremBL.V0, m_rtShopPremBL.U1, m_rtShopPremBL.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + m_nWidth - 5, m_nPosY + 26, m_nPosX + m_nWidth, m_nPosY + m_nHeight - 5,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + m_nWidth - 5, m_nPosY + 26, m_nPosX + m_nWidth, m_nPosY + m_nHeight - 5,
 								m_rtShopPremBR.U0, m_rtShopPremBR.V0, m_rtShopPremBR.U1, m_rtShopPremBR.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX, m_nPosY + m_nHeight - 5, m_nPosX + 5, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY + m_nHeight - 5, m_nPosX + 5, m_nPosY + m_nHeight,
 								m_rtShopPremBLL.U0, m_rtShopPremBLL.V0, m_rtShopPremBLL.U1, m_rtShopPremBLL.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + 5, m_nPosY + m_nHeight - 5, m_nPosX + m_nWidth - 5, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + 5, m_nPosY + m_nHeight - 5, m_nPosX + m_nWidth - 5, m_nPosY + m_nHeight,
 								m_rtShopPremBLo.U0, m_rtShopPremBLo.V0, m_rtShopPremBLo.U1, m_rtShopPremBLo.V1, 0xFFFFFFFF);
-	pDrawPort->AddTexture(m_nPosX + m_nWidth - 5, m_nPosY + m_nHeight - 5, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX + m_nWidth - 5, m_nPosY + m_nHeight - 5, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 								m_rtShopPremBRL.U0, m_rtShopPremBRL.V0, m_rtShopPremBRL.U1, m_rtShopPremBRL.V1, 0xFFFFFFFF);
 
 	// Render elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Text in teleport
-	pDrawPort->PutTextEx(CTString("프리미엄 메모리 북"), m_nPosX + TELEPORT_PRIMIUM_TITLE_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx(CTString("프리미엄 메모리 북"), m_nPosX + TELEPORT_PRIMIUM_TITLE_OFFSETX,
 										m_nPosY + TELEPORT_PRIMIUM_TITLE_OFFSETY, 0xFFFFFFFF);
-	pDrawPort->PutTextExCX(_S(291, "존"), m_nPosX + TELEPORT_PRIMIUM_ZONE_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX(_S(291, "존"), m_nPosX + TELEPORT_PRIMIUM_ZONE_CX,
 											m_nPosY + TELEPORT_PRIMIUM_CONTENT_NAME_SY);
-	pDrawPort->PutTextExCX(_S(292, "좌표"), m_nPosX + TELEPORT_PRIMIUM_COORD_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX(_S(292, "좌표"), m_nPosX + TELEPORT_PRIMIUM_COORD_CX,
 											m_nPosY + TELEPORT_PRIMIUM_CONTENT_NAME_SY);
-	pDrawPort->PutTextExCX(_S(293, "메모"), m_nPosX + TELEPORT_PRIMIUM_MEMO_CX,
+	_pUIMgr->GetDrawPort()->PutTextExCX(_S(293, "메모"), m_nPosX + TELEPORT_PRIMIUM_MEMO_CX,
 											m_nPosY + TELEPORT_PRIMIUM_CONTENT_NAME_SY);
 
-	nY = m_nPosY + TELEPORT_PRIMIUM_CONTENT_SY;	
+	nY = m_nPosY + TELEPORT_PRIMIUM_CONTENT_SY;
 	
+	INDEX j;
 //	i = j = m_sbScrollBar.GetScrollPos();
 	i = j = m_sbPage * TELEPORT_MAX_ROW;
 	
@@ -1037,20 +1024,20 @@ void CUITeleportPrimium::Render()
 		char sTime[10] = { '\0', }; 
 		itoa(m_useTime,sTime,10);
 		int tv_c = Tcipher(i+1);
-		pDrawPort->PutTextCharEx(sNum, tv_c, m_nPosX + TELEPORT_PRIMIUM_NUM_SX - (tv_c-1)*3, nY);
+		_pUIMgr->GetDrawPort()->PutTextCharEx(sNum, tv_c, m_nPosX + TELEPORT_PRIMIUM_NUM_SX - (tv_c-1)*3, nY);
 
 		if(m_nZoneNum[i] != -1)
 		{
-			pDrawPort->PutTextExCX(m_strZone[i], m_nPosX + TELEPORT_PRIMIUM_ZONE_CX, nY);
-			pDrawPort->PutTextExCX(m_strCoord[i], m_nPosX + TELEPORT_PRIMIUM_COORD_CX, nY);
-			pDrawPort->PutTextEx(m_strMemo[i], m_nPosX + TELEPORT_PRIMIUM_MEMO_SX, nY);
+			_pUIMgr->GetDrawPort()->PutTextExCX(m_strZone[i], m_nPosX + TELEPORT_PRIMIUM_ZONE_CX, nY);
+			_pUIMgr->GetDrawPort()->PutTextExCX(m_strCoord[i], m_nPosX + TELEPORT_PRIMIUM_COORD_CX, nY);
+			_pUIMgr->GetDrawPort()->PutTextEx(m_strMemo[i], m_nPosX + TELEPORT_PRIMIUM_MEMO_SX, nY);
 		}
 
 		nY += TELEPORT_PRIMIUM_CONTENT_OFFSETY;
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // [KH_070316] 마우스 메시지
@@ -1073,7 +1060,7 @@ WMSG_RESULT CUITeleportPrimium::MouseMessage( MSG *pMsg )
 	{
 	case WM_MOUSEMOVE:
 		if( IsInside( nX, nY ) )
-			CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+			_pUIMgr->SetMouseCursorInsideUIs();
 
 		for(i = 0; i < TELEPORT_PAGE_MAX; i++)
 			if(m_btnPage[i].MouseMessage( pMsg ) != WMSG_FAIL)
@@ -1083,14 +1070,13 @@ WMSG_RESULT CUITeleportPrimium::MouseMessage( MSG *pMsg )
 	case WM_LBUTTONDOWN:
 		if( IsInside( nX, nY ) )
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
 			nOldX = nX;		nOldY = nY;
 
 			// Close button
 			for(i = 0; i < TELEPORT_PAGE_MAX; i++)
 				if( m_btnPage[i].MouseMessage( pMsg ) != WMSG_FAIL )
 				{
-					pUIManager->RearrangeOrder( UI_TELEPORT_PRIMIUM, TRUE );
+					_pUIMgr->RearrangeOrder( UI_TELEPORT_PRIMIUM, TRUE );
 					return WMSG_SUCCESS;
 				}
 		}
@@ -1098,7 +1084,7 @@ WMSG_RESULT CUITeleportPrimium::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		// If holding button doesn't exist
-		if (UIMGR()->GetDragIcon() == NULL)
+		if( _pUIMgr->GetHoldBtn().IsEmpty() )
 		{
 			// Title bar
 			bTitleBarClick = FALSE;

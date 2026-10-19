@@ -11,13 +11,12 @@
 
 
 #include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIComboBox.h>
 #include <Engine/Interface/UIListBox.h>
 #include <Engine/Interface/UIDrawFigure.h>
 #include <Engine/Interface/UISpinButton.h>
-#include <Engine/Interface/UIWindowDeclare.h>
-#include <Engine/Interface/UIIcon.h>
 #include <list>										// to add dynamic button list  
 
 
@@ -57,11 +56,8 @@
 // [071122: Su-won]
 #define UMBS_SPINBUTTON					0x00020000
 
-// [sora] 시간 지정
-#define UMBS_USE_TIMER					0x00040000	// 지정된 시간후 자동으로 지정된 명령 실행
-
 // Define max line of strings
-#define	MAX_MSGSTRING					20
+#define	MAX_MSGSTRING					10
 
 
 // Define text position
@@ -174,19 +170,17 @@ public:
 	int				m_nSpinButtonPosY;
 	int				m_nSpinButtonWidth;
 	CTString		m_strSpinButtonTitle;
-	
-	__int64			m_nTime;					// [sora] 대기 시간
-	BOOL			m_bTimeOutBtnMessage;		// [sora] 실행 메시지
+
 	
 	FLOAT			m_fNPCPosX, m_fNPCPosZ;
 public:
 	CUIMsgBox_Info();
 	~CUIMsgBox_Info();
 
-	void	SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth = -1 , FLOAT fNPCPosX = -1.0f, FLOAT fNPCPosZ = -1.0f);
+	void	SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth = -1 , FLOAT fNPCPosX = -1.0f, FLOAT fNPCPosZ = -1.0f);
 	// AddString()과 AddStringEx()는 혼용해서 사용하지 말것!!
-	void	AddString( const CTString &strMessage, COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
-	void	AddStringEx( const CTString &strMessage, int nRow, int nCol,
+	void	AddString( CTString &strMessage, COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
+	void	AddStringEx( CTString &strMessage, int nRow, int nCol,
 							COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
 	void	SetInputBox( int nRow, int nCol, int nMaxChar, int nInputWidth = -1 );
 	void	SetSEInputBox( int nRow, int nCol, int nMaxChar, int nInputWidth = -1, int nGapX = -1 );
@@ -212,54 +206,8 @@ public:
 	// ----------------------------------------------<<
 
 	void	SetSpinButton(int nRow, int nCol, int nWidth, CTString strTitle);
-
-	void	SetMsgBoxTimer(__int64 nTime, BOOL bTimeOutBtnMessage)	// [sora] 동작 시간 설정
-	{
-		m_nTime = nTime;
-		m_bTimeOutBtnMessage = bTimeOutBtnMessage;
-	}
 };
 
-// 추가 구조체. [11/19/2009 rumist]
-// 이것도 맘에 안듬. [11/19/2009 rumist]
-typedef struct _TEXT_OUT_INFO
-{
-	CTString		strMessage;	// Message strings of message box
-	COLOR			colMessage;	// Colors of message string
-	int				nStrPosX;			// Position x of string
-	int				nStrPosY;			// Position y of string
-	TEXT_ALIGN		taAlign;		// Aligns of message box
-
-	_TEXT_OUT_INFO() : nStrPosX(MSGBOX_MESSAGE_OFFSETX), nStrPosY(-1), taAlign( TEXT_LEFT ) { strMessage = CTString(""); }
-	~_TEXT_OUT_INFO()	{}
-} TEXT_OUT_INFO, *PTEXT_OUT_INFO;
-
-class  ENGINE_API CUIMultiLineText
-{
-private:
-	TEXT_OUT_INFO			m_msgList[MAX_MSGSTRING];
-	int						m_nCurStringCount;				// Current count of message strings
-	int						m_nMaxRow;						// Maximum row for calculating height of message box
-	int						m_nRenderPosX;
-	int						m_nRenderPosY;
-	int						m_nRenderWidth;
-	int						m_nMaxMsgStringChar;
-public:
-	CUIMultiLineText() : m_nCurStringCount(0), m_nMaxRow(0), m_nRenderPosX(0), m_nRenderPosY(0), m_nRenderWidth(0), m_nMaxMsgStringChar(0) {}
-	~CUIMultiLineText()	{}
-	void				AddString( const CTString &strMessage, COLOR colMessage = 0xF2F2F2FF, TEXT_ALIGN eAlign = TEXT_LEFT );
-	void				SetRenderRect( UIRect &rc );
-	void				SetRenderRect( int x, int y, int width, int height );
-	inline void			SetRenderPos( int x, int y )	{ m_nRenderPosX = x; m_nRenderPosY = y; }
-	inline const int	GetRenderWidth()	const		{ return m_nRenderWidth;	}
-		   const int	GetRenderHeight()	const;//		{ return m_msgList[m_nCurStringCount-1].nStrPosY + _pUIFontTexMgr->GetLineHeight();	}
-	inline const int	GetLastLineCnt()	const		{ return m_nCurStringCount; }
-	inline const int	GetLastLinePosX()	const		{ return m_nRenderPosX + m_msgList[m_nCurStringCount-1].nStrPosX; }
-	inline const int	GetLastLinePosY()	const		{ return m_nRenderPosY + m_msgList[m_nCurStringCount-1].nStrPosY + 5; }
-	inline const COLOR	GetLastLineColor()	const		{ return m_msgList[m_nCurStringCount-1].colMessage;	}
-	void				Render();
-	void				Clear();
-};
 
 // ----------------------------------------------------------------------------
 // Name : CUIMessageBox
@@ -268,8 +216,6 @@ public:
 class CUIMessageBox : public CUIWindow
 {
 protected:
-	typedef	std::vector< CUIIcon* >		vecIcon;
-
 	int				m_nUIIndex;						// Index of message box
 	DWORD			m_dwStyle;						// Message box style
 	int				m_nWhichUI;						// Which UI does create this message box
@@ -281,8 +227,7 @@ protected:
 	CUIEditBox		m_ebSEInput;					// SE Input box
 	CUIEditBox		m_ebConfirm;					// confirm edit box 
 
-	//CUIIcon*		m_pIconSlot;					// ButtonEx slot
-	vecIcon			m_vecIcon;
+	CUIButtonEx*	m_btnSlot;						// ButtonEx slot
 	CUIComboBox		m_cbList;						// combo box list
 
 	//WSS_GUILD_MASTER 070411 ----------------------->>
@@ -351,38 +296,26 @@ protected:
 	int				m_nItemType;
 	int				m_nItemSubType;
 	int				m_nBtnTab;
-	int				m_nInvenIdx;
+	int				m_nBtnRow;
+	int				m_nBtnCol;
 	int				m_nUniIndex;
 	int				m_nBtnCount;
 
 	FLOAT			m_fNPCPosX, m_fNPCPosZ;
 
-	__int64			m_nStartTime;					// [sora] 시작 시간
-	__int64			m_nTime;						// [sora] 대기 시간
-	BOOL			m_bTimeOutBtnMessage;			// [sora] 실행 메시지
-
-	CTextureData*	m_ptdNewCharacterInfoTex;
-
-	// Internal functions
 protected:
+	// Internal functions
+	void	ReturnCommand( BOOL bOK = TRUE );
 	void	SetBtnSlot( int nBtn );
 public:
 	CUIMessageBox();
 	~CUIMessageBox();
 
-	void	release();
-
-	// Internal functions
-	void	ReturnCommand( BOOL bOK = TRUE );
-	void	ReturnCommonCommand(); // 커먼 메시지 박스의 커맨드 호출
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
 	void	CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, int nPosY );
 	void	InitMessageBox();
 	void	SetUIIndex( int nUIIndex ) { m_nUIIndex = nUIIndex; }
-
-	// [2011/06/28 : Sora]
-	const int GetUIIndex() { return m_nUIIndex; }
 
 	// wooss 050803
 	// new button insert
@@ -394,7 +327,7 @@ public:
 	CUIEditBox	&GetSEInputBox() { return m_ebSEInput; }
 	CUIEditBox	&GetConfirmBox() { return m_ebConfirm; }
 	CUIComboBox	&GetComboBox() { return m_cbList; }
-	CUIIcon*	GetBtnEx(int nBtn=0) {	return m_vecIcon[nBtn]; }
+	CUIButtonEx &GetBtnEx(int nBtn=0) {	return m_btnSlot[nBtn]; }
 	UIRect		&GetBtnSlotRect(int nSlot=0) {	return m_rcBtnSlot[nSlot]; }
 	UIRect		&GetBtnInsertSlot(int nSlot=0) { return m_rcBtnInsertSlot[nSlot]; } 
 
@@ -404,12 +337,6 @@ public:
 	CUIColorBox		&GetColorBox() { return m_cboxColorBox; }
 
 	CUISpinButton	&GetSpinButton() { return m_sbtnSpin; }
-	
-	// ($E_WC2010) [100517: selo] 버튼 설정하기
-	void SetBtnEx(int nBtn, CUIIcon* pIcon)
-	{
-		m_vecIcon[nBtn]->copyItem(pIcon);
-	}
 
 	// Set focus
 	void	SetFocus( BOOL bVisible )
@@ -445,12 +372,12 @@ public:
 	WMSG_RESULT	IMEMessage( MSG *pMsg );
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
 
-	void	GetBtnUseItemInfo( int	&nTab, int &inven_idx, int &nUniIndex );
-	void	SetInvenUseItemInfo( int nTab, int inven_idx );
+	void	GetBtnUseItemInfo( int	&nTab, int &nRow, int &nCol, int &nUniIndex );
+	void	SetInvenUseItemInfo( int nTab, int nRow, int nCol );
 
 	///////////////////////////////////////////////////////////////////////////////////
 	// [070807: Su-won] EVENT_ADULT_OPEN
-	void	SetString( int iIndex, const CTString &strMessage, COLOR colMessage =0xF2F2F2FF)
+	void	SetString( int iIndex, CTString &strMessage, COLOR colMessage =0xF2F2F2FF)
 	{
 		m_strMessage[iIndex] =strMessage;
 		m_colMessage[iIndex] =colMessage;

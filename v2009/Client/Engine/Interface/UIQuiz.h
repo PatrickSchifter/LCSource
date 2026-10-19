@@ -9,6 +9,14 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIInventory.h>
+#include <vector>
+
+
 // Define item slot
 #define QUIZ_QUIZ_WIDTH					216
 #define QUIZ_QUIZ_HEIGHT				151
@@ -18,7 +26,6 @@
 #define QUIZ_USER_SLOT_COL				5
 #define QUIZ_USER_SLOT_ROW				4
 #define QUIZ_USER_SLOT_ROW_TOTAL		20
-#define QUIZ_USER_SLOT_MAX				(QUIZ_USER_SLOT_ROW_TOTAL * QUIZ_USER_SLOT_COL)
 #define QUIZ_QUIZ_SLOT_COL				5
 #define	QUIZ_QUIZ_SLOT_TOTAL			10
 
@@ -87,8 +94,8 @@ protected:
 
 public:
 	// Items	
-	CUIButtonEx			m_abtnQuizItems[QUIZ_QUIZ_SLOT_TOTAL];				// Trade Slot items
-	CUIButtonEx			m_abtnUserItems[QUIZ_USER_SLOT_MAX];				// Quiz Slot items
+	CUIButtonEx			m_abtnQuizItems[QUIZ_QUIZ_SLOT_TOTAL];									// Trade Slot items
+	CUIButtonEx			m_abtnUserItems[QUIZ_USER_SLOT_ROW_TOTAL][QUIZ_USER_SLOT_COL];			// Quiz Slot items
 
 public:
 	CUIQuiz();
@@ -117,16 +124,16 @@ protected:
 	// Internal functions
 	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
 	BOOL	GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight,
-							int nTradeItem = -1, int inven_idx = -1 );
-	void	ShowItemInfo( BOOL bShowInfo, BOOL bRenew = FALSE, int nTradeItem = -1, int inven_idx = -1 );
+							int nTradeItem = -1, int nRow = -1, int nCol = -1 );
+	void	ShowItemInfo( BOOL bShowInfo, BOOL bRenew = FALSE, int nTradeItem = -1, int nRow = -1, int nCol = -1 );
 	void	RenderItems();
 	void	QuizToUser( SQUAD llCount );
 	void	UserToQuiz( SQUAD llCount );	
 	void	PrepareUserItems();	
 
 	// Command functions
-	void	AddQuizItem( int nIdx, int nUniIndex, SQUAD llCount );
-	void	DelQuizItem( int nIdx, int nUniIndex, SQUAD llCount, int nTradeItemID );	
+	void	AddQuizItem( int nRow, int nCol, int nUniIndex, SQUAD llCount );
+	void	DelQuizItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nTradeItemID );	
 	void	SendBingo();
 };
 

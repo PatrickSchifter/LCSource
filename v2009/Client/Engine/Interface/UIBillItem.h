@@ -10,6 +10,13 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIInventory.h>
+#include <Engine/Interface/UISpinButton.h>	// wooss 050830
+
+
 #define	BILL_ITEM_WIDTH					216
 #define	BILL_ITEM_HEIGHT				380
 

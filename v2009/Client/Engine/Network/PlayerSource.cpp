@@ -51,7 +51,7 @@ void CPlayerSource::Start_t(CPlayerCharacter &pcCharacter) // throw char *
   }
 
   // request player connection
-  CNetworkMessage nmRegisterPlayer((UBYTE)MSG_REQ_CONNECTPLAYER);
+  CNetworkMessage nmRegisterPlayer(MSG_REQ_CONNECTPLAYER);
   nmRegisterPlayer<<pls_pcCharacter;    // player's character data
   _pNetwork->SendToServerReliable(nmRegisterPlayer);
 
@@ -160,7 +160,7 @@ void CPlayerSource::ChangeCharacter(CPlayerCharacter &pcNew)
   }
 
   // just request the change
-  CNetworkMessage nmChangeChar((UBYTE)MSG_REQ_CHARACTERCHANGE);
+  CNetworkMessage nmChangeChar(MSG_REQ_CHARACTERCHANGE);
   nmChangeChar<<pls_Index<<pcNew;
   _pNetwork->SendToServerReliable(nmChangeChar);
 

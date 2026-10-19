@@ -4,6 +4,7 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/ErrorTable.h>
+#include <Engine/Base/ProgressHook.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -21,9 +22,6 @@
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIMessageBox.h>
 #include <vector>
-#include <Engine/GameState.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#include <Engine/Loading.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -36,7 +34,7 @@
 // end of ..
 
 #define USER_NUM_FULL		1000
-#define USER_NUM_BUSY		300
+#define USER_NUM_BUSY		300 // 홍콩은 300, 나머지는 400
 
 extern INDEX net_iPort;
 extern CTString net_strLocalHost;
@@ -45,10 +43,6 @@ extern INDEX net_bReportICMPErrors;
 extern FLOAT net_fDropPackets;
 extern FLOAT net_tmConnectionTimeout;
 extern INDEX net_bReportPackets;
-
-#ifdef EUROUPEAN_SERVER_LOGIN
-extern INDEX g_iConnectEuroupean;
-#endif
 
 extern SOCKET g_hSocket;
 extern INDEX	g_iCountry;
@@ -100,17 +94,42 @@ static struct ErrorCode ErrorCodes[] = {
 	ERRORCODE(WSANO_RECOVERY    , "WSANO_RECOVERY"),
 	ERRORCODE(WSANO_DATA        , "WSANO_DATA"),
 };
+static struct ErrorTable SocketErrors = ERRORTABLE(ErrorCodes);
 
-struct LoginServer
+struct sIPFilter
 {
-	char	szName[100];
-	char	szAddress[100];
-	char	szPort[100];
-	char	szFullUsers[50];
-	char	szBusyUsers[50];
+	unsigned char	chSB1;
+	unsigned char	chSB2;
+	unsigned char	chSB3;
+	unsigned char	chSB4;
+	INDEX			iCountry;	// 국가
+
+	sIPFilter()
+	{
+		chSB1		= -1;
+		chSB2		= -1;
+		chSB3		= -1;
+		chSB4		= -1;
+		iCountry	= -1;
+	}
+	
+	void	SetIP( unsigned char SB1, unsigned char SB2, unsigned char SB3, unsigned char SB4, INDEX Country )
+	{
+		chSB1		= SB1;
+		chSB2		= SB2;
+		chSB3		= SB3;
+		chSB4		= SB4;
+		iCountry	= Country;
+	}
+	
+	bool operator<(const sIPFilter &other) const
+	{
+		if( iCountry < other.iCountry )
+			return true;
+		return false;
+	}
 };
 
-static struct ErrorTable SocketErrors = ERRORTABLE(ErrorCodes);
 
 //structures used to emulate bandwidth and latency parameters - shared by all client interfaces
 CPacketBufferStats _pbsSend;
@@ -228,6 +247,8 @@ CCommunicationInterface::CCommunicationInterface(void)
   }
 	*/
   client_cnt = 0;
+
+
 };
 
 
@@ -240,6 +261,7 @@ void CCommunicationInterface::Init(void)
 	cci_bInitialized = TRUE;
 	
 // 강동민 수정 시작
+	cci_szNick[0]			= 0;
 	cci_szAddr[0]			= 0;
 	cci_iPort				= -1;
 	cci_iSelectedServerNum	= -1;
@@ -254,8 +276,7 @@ void CCommunicationInterface::Init(void)
 	cci_pbMasterOutput.Clear();
 	
 	cci_bInitUpdateMasterBuffer = TRUE; //0616 updatemasterbuufers()의 초기화할수 있게 한다..
-
-	SetIPFilter();
+	
 };
 
 // close
@@ -350,8 +371,6 @@ void CCommunicationInterface::Reconnect(CTString strIP, ULONG ulPort)
 	Disconnect();
 
 	CreateSocket_t();
-	InitWinsock();
-
 	_tcpip.ConnectToServer(strIP.str_String, ulPort);
 	cci_bWinSockOpen	= TRUE;
 	cci_bSocketOpen		= TRUE;
@@ -441,22 +460,22 @@ BOOL CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient, BOOL
 		{
 			// get the addresses
 			cm_strAddress = "";
-			for(INDEX i=0; phe->h_addr_list[i]!=NULL; i++) 
+			INDEX i;
+			for(i=0; phe->h_addr_list[i]!=NULL; i++) 
 			{
 				if (i>0)
 				{
 					cm_strAddress += ", ";
 				}
 				cm_strAddress	+= inet_ntoa(*(const in_addr *)phe->h_addr_list[i]);
-				// the address bytes in network order (in_addr::S_un.S_un_b is Winsock only)
-				cm_chSB1		= ((const UBYTE *)phe->h_addr_list[i])[0];
-				cm_chSB2		= ((const UBYTE *)phe->h_addr_list[i])[1];
-				cm_chSB3		= ((const UBYTE *)phe->h_addr_list[i])[2];
-				cm_chSB4		= ((const UBYTE *)phe->h_addr_list[i])[3];
+				cm_chSB1		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b1;
+				cm_chSB2		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b2;
+				cm_chSB3		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b3;
+				cm_chSB4		= ((const in_addr *)phe->h_addr_list[i])->S_un.S_un_b.s_b4;
 			}
 		}
 		
-		CPrintF(TRANS("  local addresses: %s (%s)\n"), (const char*)cm_strName, (const char*)cm_strAddress);
+		CPrintF(TRANS("  local addresses: %s (%s)\n"), cm_strName, cm_strAddress);
 		CPrintF(TRANS("  port: %d\n"), net_iPort);
 		
 		// try to open master UDP socket
@@ -597,241 +616,18 @@ CTString CCommunicationInterface::GetSocketError(INDEX iError)
 	return strError;
 };
 
-BOOL CCommunicationInterface::CheckIPFilter()
-{
-	// 회사 내부가 아니라면 IP 필터링...
-#if defined VER_TEST || defined LC_NO_IP_FILTER	// LC_NO_IP_FILTER: allow any server address (local development)
-	return FALSE;
-#endif
-	return TRUE;
-}
-
-BOOL CCommunicationInterface::IsValidIP()
-{
-	//-----------------------------------------------------------------
-	BOOL bSatisfied = FALSE;
-
-	hostent *Hostent = gethostbyname(cci_szAddr);
-	if (Hostent != NULL)
-	{
-		// sl.dta에 있던 IP를 얻어옴.
-		for( INDEX i = 0; Hostent->h_addr_list[i] != NULL; ++i )
-		{
-			// (chSB1.chSB2.chSB3.chSB4)
-			// the address bytes in network order (in_addr::S_un.S_un_b is Winsock only)
-			const unsigned char chSB1 = ((const UBYTE *)Hostent->h_addr_list[i])[0];
-			const unsigned char chSB2 = ((const UBYTE *)Hostent->h_addr_list[i])[1];
-			const unsigned char chSB3 = ((const UBYTE *)Hostent->h_addr_list[i])[2];
-			const unsigned char chSB4 = ((const UBYTE *)Hostent->h_addr_list[i])[3];
-
-			for( std::vector<sIPFilter>::iterator iter = m_vecIPFilter.begin(); iter != m_vecIPFilter.end(); ++iter )
-			{
-				// 해당하는 나라의 허용 IP 목록들...
-				if( g_iCountry == (*iter).iCountry )
-				{
-					// (chSB1.chSB2.chSB3.chSB4)
-					const unsigned char chFilterSB1 = (*iter).chSB1;
-					const unsigned char chFilterSB2 = (*iter).chSB2;
-					const unsigned char chFilterSB3 = (*iter).chSB3;
-					const unsigned char chFilterSB4 = (*iter).chSB4;
-
-					// sl.dta에 있던 아이피와 하드 코딩되어있는 IP가 동일하다면, 조건을 만족함.
-					if( chSB1 == chFilterSB1 && chSB2 == chFilterSB2 )
-					{
-						if( chFilterSB3 == (UCHAR)-1 || chFilterSB3 == chSB3 )
-						{
-							if( chFilterSB4 == (UCHAR)-1 || chFilterSB4 == chSB4)
-							{
-								// 조건 만족
-								bSatisfied = TRUE;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return bSatisfied;
-}
-
-void CCommunicationInterface::SetIPFilter()
-{
-	// IP Filter 목록.
-	sIPFilter	TempIP;
-
-	//-------------------IP Filtering List------------------------------
-	// NOTE : 기본적으로 앞에 두 클래스에 해당하는 주소는 체크합니다.
-	// -1	: 해당 클래스의 모든 번호(?) 허용.
-	
-	// 중국 아이피를 임시로 열어줌
-	for (int i=129; i<=190; ++i)
-	{
-		TempIP.SetIP( 123, 127, 98, i, KOREA );	// KOREA(119.205.XXX.XXX)
-		m_vecIPFilter.push_back( TempIP );
-	}
-
-	// 개발 QA
-	{
-		TempIP.SetIP( 10, 1, 90, -1, g_iCountry );
-		m_vecIPFilter.push_back( TempIP );
-	}
-
-	// Thai
-	{
-		TempIP.SetIP( 61, 90, -1, -1, THAILAND);		// THAILAND : MAIN
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 103, 251, -1, -1, THAILAND);		// THAILAND : TEST
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 202, 183, -1, -1, THAILAND);		// THAILAND : LIVE
-		m_vecIPFilter.push_back( TempIP );
-	}
-	
-	// Gamigo
-	{
-		TempIP.SetIP( 178, 19, 73, 77, GERMANY);	// GER_Live : 195.245.86.71
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 92, GERMANY);	// GET_Test : 195.245.86.82
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 91, GERMANY);	// GET_Test : 195.245.86.82
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 80, ITALY);		// 이탈리아 라이브
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 87, ITALY);		// 이탈리아 테섭
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 195, 245, 86, 130, ITALY);	// 이탈리아 테섭(구버전)
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 195, 245, 86, 157, ITALY);	// 이탈리아 테섭(EP2)
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 85, SPAIN) ;		// Spain : test
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 95, SPAIN) ;		// Spain : test
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 78, SPAIN);		// Spain : Main
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 86, FRANCE) ;	// France : test
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 93, FRANCE) ;	// France : test
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 79, FRANCE);		// France : Main
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 89 , POLAND) ;	// Poland : test
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 82, POLAND);		// Poland : Main
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 178, 19, 73, 94, POLAND);		// Poland : EP2
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 46, 253, 149, 249, ENGLAND);
-		m_vecIPFilter.push_back( TempIP );
-		
-		// 유로피안 서버 추가 서버통합으로 인한 로그인 서버 변경 IP 필터링 추가 [11/19/2012 Ranma]
-		// 독일
-		TempIP.SetIP( 46, 253, 149, 77, GERMANY);	// GER_Live : 46.253.149.77
-		m_vecIPFilter.push_back( TempIP );
-		// 이탈리아
-		TempIP.SetIP( 46, 253, 149, 80, ITALY);		// 이탈리아 라이브  : 46.253.149.80
-		m_vecIPFilter.push_back( TempIP );
-		// 스페인
-		TempIP.SetIP( 46, 253, 149, 78, SPAIN);		// 스페인 라이브  : 46.253.149.78
-		m_vecIPFilter.push_back( TempIP );
-		// 프랑스
-		TempIP.SetIP( 46, 253, 149, 79, FRANCE);	// 프랑스 라이브  : 46.253.149.79
-		m_vecIPFilter.push_back( TempIP );
-		// 폴란드
-		TempIP.SetIP( 46, 253, 149, 82, POLAND);	// 폴란드 라이브  : 46.253.149.82
-		m_vecIPFilter.push_back( TempIP );
-		// 영국
-		TempIP.SetIP( 46, 253, 149, 66, ENGLAND);	// 영국 라이브
-		m_vecIPFilter.push_back( TempIP );
-
-		if (FindHosNameIP("test2.it.lc.gamigo.com", TempIP, ITALY) == true)
-			m_vecIPFilter.push_back( TempIP );
-
-		// 가미고 로컬의 경우에 유러피안 서버를 추가
-		if ( IsGamigo( g_iCountry ) )
-		{
-			TempIP.SetIP( 46, 253, 149, 200, g_iCountry);	// [2012/08/20 : Sora] 유러피안 서버 테섭 1
-			m_vecIPFilter.push_back( TempIP );
-
-			TempIP.SetIP( 46, 253, 149, 201, g_iCountry);	// [2012/08/20 : Sora] 유러피안 서버 테섭 2
-			m_vecIPFilter.push_back( TempIP );
-
-			TempIP.SetIP( 46, 253, 149, 112, g_iCountry);	// [11/19/2012 Ranma] 유러피안 라이브
-			m_vecIPFilter.push_back( TempIP );
-
-			if (FindHosNameIP("login.ea.lc.gamigo.com", TempIP, g_iCountry) == true)
-				m_vecIPFilter.push_back( TempIP );
-		}
-	}
-
-	{
-		TempIP.SetIP( 46, 253, 149, 252, USA);
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 209, 239, 121, 42, USA);
-		m_vecIPFilter.push_back( TempIP );
-	}
-
-	// Brz, Mex
-	{
-		TempIP.SetIP( 173, 224, 123, 83, BRAZIL );	// BRZ_가미고 라이브.
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 46, 253, 149, 250, BRAZIL );	// BRZ_가미고 테스트.
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 173, 224, 123, 76, MEXICO );	// MEX_가미고 라이브.
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 46, 253, 149, 251, MEXICO );	// MEX_가미고 테스트.
-		m_vecIPFilter.push_back( TempIP );
-	}
-
-	// Russia
-	{
-		TempIP.SetIP( 88, 212, -1, -1, RUSSIA);	// RUS_Live : 88.212.221.201
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 188, 93, -1, -1, RUSSIA);	// RUS_Live : 88.212.221.201
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 86, 62, -1, -1, RUSSIA);		// RUS_Test : 86.62.121.33
-		m_vecIPFilter.push_back( TempIP );
-
-		TempIP.SetIP( 46, 253, -1, -1, RUSSIA);		// RUS_Test : 46.253.149.247
-		m_vecIPFilter.push_back( TempIP );
-
-		if (FindHosNameIP("login.ru.lc.gamigo.com", TempIP, RUSSIA) == true)
-			m_vecIPFilter.push_back( TempIP );
-	}
-
-	std::sort( m_vecIPFilter.begin(), m_vecIPFilter.end() );
-}
-
 // open an UDP socket at given port
 void CCommunicationInterface::OpenSocket_t(ULONG ulLocalHost, ULONG ulLocalPort)
 {
 	// create the socket as UDP
+	// 소켓을 생성함.
 	CreateSocket_t();
+	
+	// bind it to that address/port
+	//0105 2line 지우기
+	//  Bind_t(ulLocalHost, ulLocalPort);
+	// go non-blocking
+	//  SetNonBlocking_t();
 	
 	// 서버로 동작시에...
 	if(m_bTcpIp && _pNetwork->IsTcpServer)
@@ -869,62 +665,384 @@ void CCommunicationInterface::OpenSocket_t(ULONG ulLocalHost, ULONG ulLocalPort)
 	}
 	else if(m_bTcpIp)
 	{
-		LoginServer loginsvr[MAX_LOGINSERVER];
-		memset(&loginsvr, 0, sizeof(LoginServer) * MAX_LOGINSERVER);
-
-		int	ServerNum = ReadInfo(loginsvr);
-
-#ifdef	VER_TEST
+		CTFileName fnmServer = CTString("sl.dta");
+		CTFileName fnmServer2 = CTString("sl2.dta");				// 중국쪽 두번째 유저디비군.
+		CTFileName fnmSLD = CTString("sl_d.dta");
+		//CTFileName fnmServer = CTString("server.txt");//0907
+		CTFileStream strmFile;
+		
+		/*
+		if (!FileExists(fnmServer)) 
+		{	
+			_tcpip.InitSocket();
+			_tcpip.ConnectToServer("211.181.248.153", 4001); //서버가 띄워져있는 컴퓨터 아이피
+			cci_hSocket = _tcpip.Socket;
+			return;		 
+		} 
+		else 
 		{
-			CUIManager::getSingleton()->setIPString(loginsvr[0].szAddress);
-		}
-#endif	// VER_TEST
+		*/
+		// Date : 2005-11-03(오후 2:39:02), By Lee Ki-hwan
+		// 로그인 시도시마다 sl.dta를 새로 읽어 오도록 수
+		//	if(cci_iSelectedServerNum == -1)
+			{
+				FILE *fp = NULL;
+				FILE *fp_sld = NULL;
+				
+				char buf[256];
+				
+				// 서버 이름  , 주소
+				int ServerNum;
+				int i;
+				unsigned char key;
+				int iKey, iKeyTemp;	
+				
+				CTString fnTemp;
+				CTString fnSLD;		
+				CTString strFullPath = _fnmApplicationPath.FileDir();
+				
+				// 읽어들일 sl?.dta 결정하기.
+				fnSLD = strFullPath + fnmSLD;
+				if (fp_sld = fopen(fnSLD, "rt")) {				// mdo용 sl_d.dta가 있으면
+					int nRegion = -1;
+					fscanf(fp_sld, "%d", &nRegion);
+					
+					if( nRegion == 1 ) // 2번째 지역
+					{
+						fnTemp = strFullPath + fnmServer2;		// sl2.dta :  region 1
+						m_b2stLocal = TRUE;
+					}
+					else
+					{
+						fnTemp = strFullPath + fnmServer;		// default : region 0
+						m_b2stLocal = FALSE;					
+					}
+					fclose(fp_sld);					
+				} else {				// other country, i.e, nako, insrea ...
+					fnTemp = strFullPath + fnmServer;
+				}
+				
+				fp = fopen(fnTemp, "rb");
+				if(fp == NULL) return;
+				
+				for (i = 0; i < 6; i++) 
+				{
+					fread(&key, 1, 1, fp);
+				}
+				fread(&iKey, sizeof(int), 1, fp);
+				fread(&key, 1, 1, fp);
+				
+				fread(&ServerNum, sizeof(int), 1, fp);
+				
+				iKeyTemp	= ServerNum;
+				ServerNum	-= iKey;
+				iKey		= iKeyTemp;
+				
+				struct LoginServer
+				{
+					char	szName[100];
+					char	szAddress[100];
+					char	szPort[100];
+					char	szFullUsers[50];
+					char	szBusyUsers[50];
+				};
+				
+				LoginServer loginsvr[MAX_LOGINSERVER];
+				memset(&loginsvr, 0, sizeof(LoginServer) * MAX_LOGINSERVER);
+				
+				for (i = 0; i < ServerNum; i++) 
+				{
+					// 첫번째 읽은줄을 buf에 넣는다.
+					int count;
+					int idx;
+					unsigned char data;
+					fread(&count, sizeof(int), 1, fp);
+					
+					iKeyTemp	= count;
+					count		-= iKey;
+					iKey		= iKeyTemp;
+					
+					for (idx = 0; idx < count; idx++) 
+					{
+						fread(&data, 1, 1, fp);
+						buf[idx] = data - key;
+						key = data;
+					}
+					buf[count] = '\0';
+					
+					sscanf(buf, "%s %s %s %s %s", 
+						loginsvr[i].szName, loginsvr[i].szAddress, loginsvr[i].szPort, loginsvr[i].szFullUsers, loginsvr[i].szBusyUsers);
+				}
+				
+				fclose(fp);
+				
+				cci_iSelectedServerNum	= rand() % ServerNum;
+				cci_iPort				= atoi(loginsvr[cci_iSelectedServerNum].szPort);
+				cci_iBusyUsers			= atoi(loginsvr[cci_iSelectedServerNum].szBusyUsers);
+				cci_iFullUsers			= atoi(loginsvr[cci_iSelectedServerNum].szFullUsers);
 
-		if (ServerNum <= 0)
-			return;
+				if(cci_iBusyUsers <= 0)
+				{
+					if (g_iCountry == HONGKONG)
+					{
+						cci_iBusyUsers = USER_NUM_BUSY;
+					}
+					else
+					{
+						cci_iBusyUsers = USER_NUM_BUSY+100;
+					}
+				}
+				if(cci_iFullUsers <= 0)
+				{
+					cci_iFullUsers = USER_NUM_FULL;
+				}
+				strcpy(cci_szAddr, loginsvr[cci_iSelectedServerNum].szAddress);
+			}
+			
+			//-------------------------------------------------------------------------------
+			//					### 클라이언트 접속 부분 제한 ###
+			//
+			// NOTE : 해당하는 IP만 접속을 허용하고 싶다면, vecClientFilter에 추가하고,
+			// NOTE : CLIENT_FILTER를 체크할것.
+			// NOTE : 중국과 대만꺼는 define 체크
+			// NOTE : 한국꺼는 define 해제.
+			//-------------------------------------------------------------------------------
+			// FIXME : IP_FILTER와 CLIENT_FILTER가 중복되는 부분이 많고, 따로 함수로 빼야 할것 같음.
+//#define CLIENT_FILTER
+#ifdef CLIENT_FILTER
+			// 클라이언트의 허용 IP.
+			BOOL bCanConnect = FALSE;
 
-		cci_iSelectedServerNum	= rand() % ServerNum;
-		cci_iPort				= atoi(loginsvr[cci_iSelectedServerNum].szPort);
-		cci_iBusyUsers			= atoi(loginsvr[cci_iSelectedServerNum].szBusyUsers);
-		cci_iFullUsers			= atoi(loginsvr[cci_iSelectedServerNum].szFullUsers);
+			std::vector<sIPFilter>	vecClientFilter;
 
-		if(cci_iBusyUsers <= 0)
-		{
-#if defined (G_HONGKONG)
-			cci_iBusyUsers = USER_NUM_BUSY;
-#else
-			cci_iBusyUsers = USER_NUM_BUSY+100;
-#endif
-		}
-		if(cci_iFullUsers <= 0)
-		{
-			cci_iFullUsers = USER_NUM_FULL;
-		}
-		strcpy(cci_szAddr, loginsvr[cci_iSelectedServerNum].szAddress);
+			sIPFilter TempClientFilter;
+			//-------------------IP Filtering List------------------------------
+			// NOTE : 기본적으로 앞에 두 클래스에 해당하는 주소는 체크합니다.
+			// -1	: 해당 클래스의 모든 번호(?) 허용.
+			TempClientFilter.SetIP( 203, 95, -1, -1, CHINA );		// CHINA(203.95.XXX.XXX)
+			vecClientFilter.push_back( TempClientFilter );
+
+			TempClientFileter.SetIP( 222, 161, 120, -1), CHINA );	// CHINA(222.161.120.XXX)	// inserted by seo
+			vecClientFilter.push_back( TempClientFilter );
+
+			TempClientFilter.SetIP( 220, 130, 170, -1, TAIWAN );	// TAIWAN(220.130.170.XXX)
+			vecClientFilter.push_back( TempClientFilter );
+
+			TempClientFilter.SetIP( 222, 122, 55, 219, TAIWAN );	// TAIWAN(222.122.55.219)
+			vecClientFilter.push_back( TempClientFilter );
+			
+			TempClientFilter.SetIP( 220, 130, 170, -1, TAIWAN2 );	// TAIWAN(220.130.170.XXX) wooss050929
+			vecClientFilter.push_back( TempClientFilter );
+
+			TempClientFilter.SetIP( 222, 122, 55, 219, TAIWAN2 );	// TAIWAN(222.122.55.219)
+			vecClientFilter.push_back( TempClientFilter );
 
 
-		//-------------------------------------------------------------------------------
-		//					### 서버 접속 부분 제한 ###
-		//
-		// NOTE : sl.dta의 앞에 두 자리와 vecIPFilter에 들어가있는 IP를 비교하여,
-		// NOTE : 같다면 접속을 허용한다.
-		// NOTE : 허용해야 할 IP가 더 추가된다면 vecIPFilter에 추가하고, 
-		// NOTE : IP_FILTER를 체크할것.
-		// NOTE : 주의!!! 회사 내부에서는 '서버 접속 부분 체크'를 하지 않음. !!!
-		//-------------------------------------------------------------------------------
-		// FIXME : IP_FILTER와 CLIENT_FILTER가 중복되는 부분이 많고, 따로 함수로 빼야 할것 같음.
-
-		if (CheckIPFilter() == TRUE)
-		{
-			if (IsValidIP() == FALSE)
+			//-----------------------------------------------------------------
+			std::sort( vecClientFilter.begin(), vecClientFilter.end() );
+			std::vecotr<sIPFilter>::iterator itr;
+			
+			for( iter = vecClientFilter.begin(); iter != vecClientFilter.end(); ++iter )
+			{
+				// 해당하는 나라의 허용 IP 목록들...
+				if( g_iCountry == (*iter).iCountry )
+				{
+					// (chSB1.chSB2.chSB3.chSB4)
+					const unsigned char chFilterSB1 = (*iter).chSB1;
+					const unsigned char chFilterSB2 = (*iter).chSB2;
+					const unsigned char chFilterSB3 = (*iter).chSB3;
+					const unsigned char chFilterSB4 = (*iter).chSB4;
+					
+					// 허용하는 클라이언트 IP일 경우에...
+					if( cm_chSB1 == chFilterSB1 && cm_chSB2 == chFilterSB2 )
+					{
+						// 세번째 자리 비교
+						if( chFilterSB3 != -1 )
+						{
+							if( cm_chSB3 == chFilterSB3 )
+							{
+								// 조건 만족
+								bCanConnect = TRUE;
+								break;
+							}
+						}
+						
+						// 네번째 자리 비교
+						if( chFilterSB4 != -1 )
+						{
+							if( cm_chSB4 == chFilterSB4 )
+							{
+								// 조건 만족
+								bCanConnect = TRUE;
+								break;
+							}
+						}
+						
+						// 조건 만족
+						bCanConnect = TRUE;
+						break;
+					}
+				}
+			}					
+			
+			// 조건을 만족 안할때!!!
+			if( !bCanConnect )
 			{
 				cci_iSelectedServerNum = -1;
 				return;
 			}
-		}
-		// 서버에 접속을 시도.
-		_tcpip.ConnectToServer(cci_szAddr, cci_iPort); //서버가 띄워져있는 컴퓨터 아이피	
+#endif
+			//-------------------------------------------------------------------------------
+			//					### 서버 접속 부분 제한 ###
+			//
+			// NOTE : sl.dta의 앞에 두 자리와 vecIPFilter에 들어가있는 IP를 비교하여,
+			// NOTE : 같다면 접속을 허용한다.
+			// NOTE : 허용해야 할 IP가 더 추가된다면 vecIPFilter에 추가하고, 
+			// NOTE : IP_FILTER를 체크할것.
+			// NOTE : 주의!!! 회사 내부에서는 '서버 접속 부분 체크'를 하지 않음. !!!
+			//-------------------------------------------------------------------------------
+			// FIXME : IP_FILTER와 CLIENT_FILTER가 중복되는 부분이 많고, 따로 함수로 빼야 할것 같음.
+#define IP_FILTER
+#ifdef IP_FILTER
 
+			// 회사 내부가 아니라면 IP 필터링...
+//			if( !((cm_chSB1 == 211) && (cm_chSB2 == 181) && (cm_chSB3 == 248)) && g_iCountry != MALAYSIA) // (211.181.248.XXX)
+//			060719 회사 이전...아이피 변경
+/*			if( !((cm_chSB1 == 61) && (cm_chSB2 == 104) && (cm_chSB3 == 44)) && 
+				g_iCountry != BRAZIL && g_iCountry != HONGKONG && g_iCountry != GERMANY && g_iCountry != SPAIN && g_iCountry != FRANCE && g_iCountry != POLAND) // (211.181.248.XXX)	FRANCE_SPAIN_CLOSEBETA_NA_20081124*/
+			if (!((cm_chSB1 == 61) && (cm_chSB2 == 104) && (cm_chSB3 == 44)) && g_iCountry == KOREA) //회사 내부 아이피만 필터 적용하지 않는다.
+			{
+				std::vector<sIPFilter>	vecIPFilter;
+
+				// IP Filter 목록.
+				sIPFilter	TempIP;
+
+				//-------------------IP Filtering List------------------------------
+				// NOTE : 기본적으로 앞에 두 클래스에 해당하는 주소는 체크합니다.
+				// -1	: 해당 클래스의 모든 번호(?) 허용.
+				TempIP.SetIP( 222, 122, -1, -1, KOREA );	// KOREA(222.122.XXX.XXX)
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 63, -1, -1, TAIWAN );		// TAIWAN(61.63.XXX.XXX)
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 30, -1, -1, TAIWAN );	// TAIWAN(61.30.XXX.XXX) -> 61.30 wooss 060320
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 63, -1, -1, TAIWAN2 );		// TAIWAN2(61.63.XXX.XXX) wooss050929
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 30, -1, -1, TAIWAN2 );	// TAIWAN2(61.30.XXX.XXX) -> 61.30 wooss 060320
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 151, -1, -1, CHINA );		// CHINA(61.151.XXX.XXX)
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 222, 161, -1, -1, CHINA );		// CHINA(222.161.XXX.XXX)	// inserted by seo
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61., 90, -1, -1, THAILAND);		// THAILAND : MAIN
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 203, 144, -1, -1, THAILAND);		// THAILAND : TEST
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 210, 174, -1, -1, JAPAN) ;		// JAPAN : MAIN
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 61, 78, -1, -1, JAPAN);		// JAPAN : TEST
+				vecIPFilter.push_back( TempIP );
+
+				TempIP.SetIP( 202, 75, 57, -1, MALAYSIA) ;		// MALAYSIA : 202.75.57.41
+				vecIPFilter.push_back( TempIP );				// TEST		: 202.75.57.46
+
+				//TempIP.SetIP( 64, 15, -1, -1, USA );		// USA : 64.15.152.89
+															// TEST : 64.15.147.198
+				TempIP.SetIP( 72, 55, -1, -1, USA);			// USA : 72.55.177.168
+				TempIP.SetIP( 174, 142, -1, -1, USA);		// USA : 174.142.177.132(테섭)
+				vecIPFilter.push_back( TempIP );			// TEST : 72.55.177.160
+
+				//-----------------------------------------------------------------
+				
+				std::sort( vecIPFilter.begin(), vecIPFilter.end() );				
+				
+				// 소켓을 초기화함.
+				//_tcpip.InitSocket();
+				
+				BOOL bSatisfied = FALSE;
+				
+				hostent *Hostent = gethostbyname(cci_szAddr);
+				if (Hostent != NULL)
+				{
+					// sl.dta에 있던 IP를 얻어옴.
+					INDEX i;
+
+					for( i = 0; Hostent->h_addr_list[i] != NULL; ++i )
+					{
+						// (chSB1.chSB2.chSB3.chSB4)
+						const unsigned char chSB1 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b1;
+						const unsigned char chSB2 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b2;
+						const unsigned char chSB3 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b3;
+						const unsigned char chSB4 = ((const in_addr *)Hostent->h_addr_list[i])->S_un.S_un_b.s_b4;
+						
+						std::vector<sIPFilter>::iterator iter;
+
+						for( iter = vecIPFilter.begin(); iter != vecIPFilter.end(); ++iter )
+						{
+							// 해당하는 나라의 허용 IP 목록들...
+							if( g_iCountry == (*iter).iCountry )
+							{
+								// (chSB1.chSB2.chSB3.chSB4)
+								const unsigned char chFilterSB1 = (*iter).chSB1;
+								const unsigned char chFilterSB2 = (*iter).chSB2;
+								const unsigned char chFilterSB3 = (*iter).chSB3;
+								const unsigned char chFilterSB4 = (*iter).chSB4;
+				
+								// sl.dta에 있던 아이피와 하드 코딩되어있는 IP가 동일하다면, 조건을 만족함.
+								if( chSB1 == chFilterSB1 && chSB2 == chFilterSB2 )
+								{
+									if( chFilterSB3 != -1 )
+									{
+										if( chFilterSB3 == chSB3 )
+										{
+											// 조건 만족
+											bSatisfied = TRUE;
+											break;
+										}
+									}
+
+									if( chFilterSB4 != -1 )
+									{
+										if( chFilterSB4 == chSB4 )
+										{
+											// 조건 만족
+											bSatisfied = TRUE;
+											break;
+										}
+									}
+
+									// 조건 만족
+									bSatisfied = TRUE;
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+				// 조건을 만족 안할때!!!
+				if( !bSatisfied )
+				{
+					cci_iSelectedServerNum = -1;
+					return;
+				}
+			}
+#endif
+			
+			// 서버에 접속을 시도.
+			_tcpip.ConnectToServer(cci_szAddr, cci_iPort); //서버가 띄워져있는 컴퓨터 아이피		  	  
+		//}		
+		
 		cci_hSocket = _tcpip.Socket;
 		g_hSocket	= cci_hSocket;
 	}
@@ -954,13 +1072,13 @@ void CCommunicationInterface::GetLocalAddress_t(ULONG &ulHost, ULONG &ulPort)
 	
 	// get socket local port and address
 	sockaddr_in sin;
-	socklen_t iSize = sizeof(sin);
+	int iSize = sizeof(sin);
 	if (getsockname(cci_hSocket, (sockaddr*)&sin, &iSize) == SOCKET_ERROR) 
 	{
 		ThrowF_t(TRANS("Cannot get local address on socket. %s"), 
 			(const char*)GetSocketError(WSAGetLastError()));
 	}
-	ulHost = ntohl(sin.sin_addr.s_addr);
+	ulHost = ntohl(sin.sin_addr.S_un.S_addr);
 	ulPort = ntohs(sin.sin_port);
 }
 
@@ -976,12 +1094,12 @@ void CCommunicationInterface::GetRemoteAddress_t(ULONG &ulHost, ULONG &ulPort)
 	
 	// get socket local port
 	sockaddr_in sin;
-	socklen_t iSize = sizeof(sin);
+	int iSize = sizeof(sin);
 	if (getpeername(cci_hSocket, (sockaddr*)&sin, &iSize) == SOCKET_ERROR) {
 		ThrowF_t(TRANS("Cannot get remote address on socket. %s"), 
 			(const char*)GetSocketError(WSAGetLastError()));
 	}
-	ulHost = ntohl(sin.sin_addr.s_addr);
+	ulHost = ntohl(sin.sin_addr.S_un.S_addr);
 	ulPort = ntohs(sin.sin_port);
 }
 
@@ -1042,7 +1160,7 @@ void CCommunicationInterface::Broadcast_Update_t()
 				bFoundEmpty = TRUE;
 				//0105 여기서 클라이언트 주소와 포트를 저장한다.
 				if(m_bTcpIp&& _pNetwork->IsTcpServer){//서버
-					socklen_t sockaddr_size = sizeof( SOCKADDR_IN );		
+					int sockaddr_size = sizeof( SOCKADDR_IN );		
 					SOCKADDR_IN clientsockaddr;	
 					//0131	//0202				
 					
@@ -1108,10 +1226,10 @@ void CCommunicationInterface::Server_Init_t(void)
   ASSERT(cci_bInitialized);
   ASSERT(!cci_bServerInitialized);
 	
-
+  INDEX iClient;
 
   // for each client
-  for(INDEX iClient=0; iClient<SERVER_CLIENTS; iClient++) {
+  for(iClient=0; iClient<SERVER_CLIENTS; iClient++) {
     // clear its status
     cm_aciClients[iClient].Clear();
 		cm_aciClients[iClient].ci_pbOutputBuffer.pb_ppbsStats = &_pbsSend;
@@ -1142,14 +1260,17 @@ void CCommunicationInterface::Server_Close(void)
 {
   CTSingleLock slComm(&cm_csComm, TRUE);
 
+  INDEX iClient;
   // close all clients
-  for (INDEX iClient=0; iClient<SERVER_CLIENTS; iClient++) {
+  for (iClient=0; iClient<SERVER_CLIENTS; iClient++) {
     cm_aciClients[iClient].Clear();
   }
 
   // mark that the server is uninitialized
   cci_bServerInitialized = FALSE;
 };
+
+
 
 /*
 *  Server clear client and prepare for new connection
@@ -1206,7 +1327,9 @@ ULONG CCommunicationInterface::Server_GetMaxPendingData()
 
   ULONG ulMaxData = 0;
   ULONG ulData;
-  for (INDEX iClient=0;iClient<SERVER_CLIENTS;iClient++) {
+  INDEX iClient;
+
+  for (iClient=0;iClient<SERVER_CLIENTS;iClient++) {
     ulData = cm_aciClients[iClient].GetPendingDataSize();
     if (ulData > ulMaxData) {
       ulMaxData = ulData;
@@ -1219,9 +1342,9 @@ ULONG CCommunicationInterface::Server_GetMaxPendingData()
 ULONG CCommunicationInterface::Server_GetTotalPendingData()
 {
   CTSingleLock slComm(&cm_csComm, TRUE);
-
+  INDEX iClient;
   ULONG ulData = 0;
-  for (INDEX iClient=0;iClient<SERVER_CLIENTS;iClient++) {
+  for (iClient=0;iClient<SERVER_CLIENTS;iClient++) {
     ulData += cm_aciClients[iClient].GetPendingDataSize();
   }
   return ulData;
@@ -1416,6 +1539,7 @@ BOOL CCommunicationInterface::Server_Update()
 	return TRUE;
 };
 
+
 /*
 *  ---->>>>  CLIENT  <<<<----
 */
@@ -1482,8 +1606,9 @@ void CCommunicationInterface::Client_Close(void)
 
   ASSERT(cci_bInitialized);
 
+  TIME tmWait;
 	// dispatch remaining packets (keep trying for half a second - 10 attempts)
-  for(TIME tmWait=0; tmWait<500;
+  for(tmWait=0; tmWait<500;
     Sleep(NET_WAITMESSAGE_DELAY), tmWait+=NET_WAITMESSAGE_DELAY) {
     // if all packets are successfully sent, exit loop
 		if  ((cm_ciLocalClient.ci_pbOutputBuffer.pb_ulNumOfPackets == 0) 
@@ -1543,6 +1668,7 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress)
 
   // start waiting for server's response
   if (ctRetries>1) {
+    SetProgressDescription(TRANS("waiting for server"));
     CallProgressHook_t(0.0f);
   }
 
@@ -1563,8 +1689,9 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress)
 	cm_ciLocalClient.ci_adrAddress.adr_ulAddress = ulServerAddress;
 	cm_ciLocalClient.ci_adrAddress.adr_uwPort = net_iPort;
 	
+	INDEX iRetry;
   // for each retry
-	for(INDEX iRetry=0; iRetry<ctRetries; iRetry++) 
+	for(iRetry=0; iRetry<ctRetries; iRetry++) 
 	{
 	    //! 버퍼를 업데이트 하여 아웃버퍼안에 있는 접속요청패킷을 보내고, 접속승인 패킷을 기다린다.
 		// send/receive and juggle the buffers
@@ -1608,6 +1735,7 @@ void CCommunicationInterface::Client_OpenNet_t(ULONG ulServerAddress)
 	cci_bBound = FALSE;
 	ThrowF_t(TRANS("Client: Timeout receiving UDP port"));
 };
+
 
 /*
 *  Clear local client
@@ -1665,6 +1793,7 @@ void CCommunicationInterface::Client_PeekSize_Reliable(SLONG &slExpectedSize,SLO
   slExpectedSize = cm_ciLocalClient.GetExpectedReliableSize();
   slReceivedSize = cm_ciLocalClient.GetCurrentReliableSize();
 }
+
 
 /*
 *  Client Send/Receive Unreliable
@@ -1848,7 +1977,7 @@ BOOL CCommunicationInterface::Client_Update(void)
 				// warn about possible attack
 				extern INDEX net_bReportMiscErrors;
 				if (net_bReportMiscErrors) {
-					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), (const char*)AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
+					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
 				}
 			}
 		}
@@ -1878,7 +2007,7 @@ void CCommunicationInterface::UpdateMasterBuffers()
 	UBYTE aub[MAX_PACKET_SIZE];
 	CAddress adrIncomingAddress;
 	SOCKADDR_IN sa;
-	socklen_t size = sizeof(sa);
+	int size = sizeof(sa);
 	SLONG slSizeReceived;
 	SLONG slSizeSent;
 	BOOL bSomethingDone;
@@ -1902,7 +2031,7 @@ void CCommunicationInterface::UpdateMasterBuffers()
 	//0105  
 	if(m_bTcpIp && _pNetwork->IsTcpServer)
 	{
-		socklen_t sockaddr_size = sizeof( SOCKADDR_IN );		
+		int sockaddr_size = sizeof( SOCKADDR_IN );		
 		SOCKADDR_IN clientsockaddr;	
 		SOCKET socket =  accept( cci_hSocket, (LPSOCKADDR)&clientsockaddr, &sockaddr_size);
 		if(socket==INVALID_SOCKET)
@@ -1975,12 +2104,18 @@ void CCommunicationInterface::UpdateMasterBuffers()
 						cci_bBound = FALSE; //0311 kwon
 						//0611 kwon 추가.
 						//_pNetwork->ga_sesSessionState.ses_strDisconnected = TRANS("Try to Reconnect...");
-
-						CUIManager* pUIManager = CUIManager::getSingleton();
-
-						if( !_bLoginProcess || STAGEMGR()->GetCurStage() == eSTAGE_SELCHAR )
+						if( !_bLoginProcess || _pUIMgr->GetUIGameState() == UGS_SELCHAR )
 						{
-							ShowDisconnMsg();
+							// FIXME : 중복되는 코드가 많음.
+							_pUIMgr->CloseMessageBox(MSGCMD_DISCONNECT);
+							CUIMsgBox_Info	MsgBoxInfo;
+							MsgBoxInfo.SetMsgBoxInfo( _S( 299, "시스템" ), UMBS_OK, UI_NONE, MSGCMD_DISCONNECT );
+							MsgBoxInfo.AddString( _S( 300, "서버와의 연결이 끊어졌습니다." ) );
+							_pUIMgr->CreateMessageBox( MsgBoxInfo );
+							cci_bInitUpdateMasterBuffer = FALSE;
+							cci_bBound = FALSE;
+							_pNetwork->m_bSendMessage = FALSE;
+							_cmiComm.Disconnect();
 						}
 						return;
 					}
@@ -2060,19 +2195,8 @@ void CCommunicationInterface::UpdateMasterBuffers()
 		}
 		else if( m_bTcpIp )
 		{
-			// [2013/01/09] sykim70
-			unsigned int res = htonl(m_crc.CalcCRC32(ppaNewPacket->pa_pubPacketData+MAX_HEADER_SIZE, ppaNewPacket->pa_slSize-MAX_HEADER_SIZE));
-			memcpy(ppaNewPacket->pa_pubPacketData+ppaNewPacket->pa_slSize, &res, sizeof(unsigned int));
 			//클라이언트		
-			slSizeSent = send(cci_hSocket, (char*) ppaNewPacket->pa_pubPacketData, (int) (ppaNewPacket->pa_slSize+sizeof(unsigned int)), 0);
-			if( slSizeSent < 0 )
-			{
-// 				DWORD errcod = WSAGetLastError();
-// 				CTString temp;
-// 				temp.PrintF( "%d", errcod );
-// 				MessageBox( NULL, temp, "", MB_OK );
-			}
-
+			slSizeSent = send(cci_hSocket, (char*) ppaNewPacket->pa_pubPacketData, (int) ppaNewPacket->pa_slSize, 0);
 		}
 		else
 		{	
@@ -2096,23 +2220,34 @@ void CCommunicationInterface::UpdateMasterBuffers()
 			{
 				// FIXME : 중복되는 코드가 많음.
 				//extern BOOL _bLoginProcess;
-
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
-				if( !_bLoginProcess || STAGEMGR()->GetCurStage() == eSTAGE_SELCHAR )
-				{					
-					ShowDisconnMsg();
+				if( !_bLoginProcess || _pUIMgr->GetUIGameState() == UGS_SELCHAR )
+				{
+					_pUIMgr->CloseMessageBox(MSGCMD_DISCONNECT);
+					CUIMsgBox_Info	MsgBoxInfo;
+					MsgBoxInfo.SetMsgBoxInfo( _S( 299, "시스템" ), UMBS_OK, UI_NONE, MSGCMD_DISCONNECT );
+					MsgBoxInfo.AddString( _S( 300, "서버와의 연결이 끊어졌습니다." ) );
+					_pUIMgr->CreateMessageBox( MsgBoxInfo );
+					cci_bInitUpdateMasterBuffer = FALSE;
+					_pNetwork->m_bSendMessage = FALSE;
+					_cmiComm.Disconnect();
 				}
-
+//				CPrintF(TRANS("Socket error during UDP send. %s\n"), 
+//					(const char*)GetSocketError(iResult));
 				cci_bBound = FALSE; //0311 kwon
 			}
 			else //0824
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				
-				if( !_bLoginProcess || STAGEMGR()->GetCurStage() == eSTAGE_SELCHAR )
+				if( !_bLoginProcess || _pUIMgr->GetUIGameState() == UGS_SELCHAR )
 				{									
-					ShowDisconnMsg();
+					// FIXME : 중복되는 코드가 많음.
+					_pUIMgr->CloseMessageBox(MSGCMD_DISCONNECT);
+					CUIMsgBox_Info	MsgBoxInfo;
+					MsgBoxInfo.SetMsgBoxInfo( _S( 299, "시스템" ), UMBS_OK, UI_NONE, MSGCMD_DISCONNECT );
+					MsgBoxInfo.AddString( _S( 300, "서버와의 연결이 끊어졌습니다." ) );
+					_pUIMgr->CreateMessageBox( MsgBoxInfo );
+					cci_bInitUpdateMasterBuffer = FALSE;
+					_pNetwork->m_bSendMessage = FALSE;
+					_cmiComm.Disconnect();
 				}
 				cci_bBound = FALSE;
 			}
@@ -2150,169 +2285,10 @@ void CCommunicationInterface::UpdateMasterBuffers()
 //------------------------------------------------------------------------------
 BOOL CCommunicationInterface::Is2rdLocal()
 {
+	extern INDEX	g_iCountry;
+
 	if ( g_iCountry != CHINA )  // 중국 Local이 아니면 무조건 FALSE ( 현재 중국버전에만 적용됨 )
 		return FALSE;
 
 	return m_b2stLocal;
-}
-
-int CCommunicationInterface::ReadInfo( LoginServer* stLogin )
-{
-#ifdef	VER_TEST
-	// 개발 버젼용 아이피 txt 가져오기
-	{
-		std::string	strPath = _fnmApplicationPath.FileDir();
-		strPath += "sl.txt";
-
-		FILE* fp = fopen(strPath.c_str(), "rt");
-		if (fp != NULL)
-		{
-			fscanf(fp, "%s %s %s %s %s", 
-				stLogin[0].szName, stLogin[0].szAddress, stLogin[0].szPort, stLogin[0].szFullUsers, stLogin[0].szBusyUsers);
-
-			fclose(fp);
-
-			return 1;
-		}
-	}
-#endif	// VER_TEST
-
-	CTFileName fnmServer = CTString("sl.dta");
-
-#ifdef EUROUPEAN_SERVER_LOGIN
-	if (g_iConnectEuroupean)
-	{
-		fnmServer = CTString("sl_Euro.dta");
-	}
-#endif	
-		
-	CTFileName fnmServer2 = CTString("sl2.dta");				// 중국쪽 두번째 유저디비군.
-	CTFileName fnmSLD = CTString("sl_d.dta");
-	//CTFileName fnmServer = CTString("server.txt");//0907
-	CTFileStream strmFile;
-		
-	int ServerNum;
-	
-	{
-		FILE *fp = NULL;
-		FILE *fp_sld = NULL;
-				
-		char buf[256];
-				
-		// 서버 이름  , 주소
-		int i;
-		unsigned char key;
-		int iKey, iKeyTemp;	
-				
-		CTString fnTemp;
-		CTString fnSLD;		
-		CTString strFullPath = _fnmApplicationPath.FileDir();
-				
-		// 읽어들일 sl?.dta 결정하기.
-		fnSLD = strFullPath + fnmSLD;
-		if (fp_sld = fopen(fnSLD, "rt")) {				// mdo용 sl_d.dta가 있으면
-			int nRegion = -1;
-			fscanf(fp_sld, "%d", &nRegion);
-					
-			if( nRegion == 1 ) // 2번째 지역
-			{
-				fnTemp = strFullPath + fnmServer2;		// sl2.dta :  region 1
-				m_b2stLocal = TRUE;
-			}
-			else
-			{
-				fnTemp = strFullPath + fnmServer;		// default : region 0
-				m_b2stLocal = FALSE;					
-			}
-			fclose(fp_sld);					
-		} else {				// other country, i.e, nako, insrea ...
-			fnTemp = strFullPath + fnmServer;
-		}
-				
-		fp = fopen(fnTemp, "rb");
-		if(fp == NULL) return 0;
-				
-		for (i = 0; i < 6; i++) 
-		{
-			fread(&key, 1, 1, fp);
-		}
-		fread(&iKey, sizeof(int), 1, fp);
-		fread(&key, 1, 1, fp);
-				
-		fread(&ServerNum, sizeof(int), 1, fp);
-				
-		iKeyTemp	= ServerNum;
-		ServerNum	-= iKey;
-		iKey		= iKeyTemp;				
-				
-		for (i = 0; i < ServerNum; i++) 
-		{
-			// 첫번째 읽은줄을 buf에 넣는다.
-			int count;
-			unsigned char data;
-			fread(&count, sizeof(int), 1, fp);
-					
-			iKeyTemp	= count;
-			count		-= iKey;
-			iKey		= iKeyTemp;
-					
-			for (int idx = 0; idx < count; idx++) 
-			{
-				fread(&data, 1, 1, fp);
-				buf[idx] = data - key;
-				key = data;
-			}
-			buf[count] = '\0';
-					
-			sscanf(buf, "%s %s %s %s %s", 
-				stLogin[i].szName, stLogin[i].szAddress, stLogin[i].szPort, stLogin[i].szFullUsers, stLogin[i].szBusyUsers);
-		}
-				
-		fclose(fp);
-	}
-
-	return ServerNum;
-}
-
-void CCommunicationInterface::ShowDisconnMsg()
-{
-	if ( _pGameState->IsRestartGame() == TRUE || _pGameState->GetGameMode() == CGameState::GM_RESTART )
-		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	// FIXME : 중복되는 코드가 많음.
-	pUIManager->CloseMessageBox(MSGCMD_DISCONNECT);
-	CUIMsgBox_Info	MsgBoxInfo;
-	MsgBoxInfo.SetMsgBoxInfo( _S( 299, "시스템" ), UMBS_OK, UI_NONE, MSGCMD_DISCONNECT );
-	MsgBoxInfo.AddString( _S( 300, "서버와의 연결이 끊어졌습니다." ) );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
-	cci_bInitUpdateMasterBuffer = FALSE;
-	_pNetwork->m_bSendMessage = FALSE;
-	_cmiComm.Disconnect();
-}
-
-void CCommunicationInterface::attachCRC( CPacket* packet )
-{
-	unsigned int res = htonl(m_crc.CalcCRC32(packet->pa_pubPacketData + MAX_HEADER_SIZE, packet->pa_slSize - MAX_HEADER_SIZE));
-	memcpy(packet->pa_pubPacketData + packet->pa_slSize, &res, sizeof(unsigned int));
-}
-
-bool CCommunicationInterface::FindHosNameIP( const char* szHostName, sIPFilter &ip, INDEX iCountry )
-{
-	sockaddr_in sai;
-	memset(&sai, 0, sizeof(sockaddr_in));
-	sai.sin_addr.s_addr = inet_addr(szHostName);
-	if(INADDR_NONE == sai.sin_addr.s_addr)
-	{
-		hostent *Hostent = gethostbyname(szHostName);
-
-		if (Hostent == NULL)
-			return false;
-
-		sai.sin_addr.s_addr = ((struct in_addr FAR *)(Hostent->h_addr))->s_addr;
-		// the address bytes in network order (in_addr::S_un.S_un_b is Winsock only)
-		ip.SetIP(((const UBYTE *)&sai.sin_addr)[0], ((const UBYTE *)&sai.sin_addr)[1], ((const UBYTE *)&sai.sin_addr)[2], ((const UBYTE *)&sai.sin_addr)[3], iCountry);
-	}
-
-	return true;
 }

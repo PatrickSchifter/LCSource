@@ -2,11 +2,7 @@
 #include <Engine/Interface/UIListBox.h>
 #include <Engine/Interface/UITextureManager.h>
 
-#include <Engine/Help/Util_Help.h>
 
-#if defined(G_RUSSIA)
-	extern CFontData *_pfdDefaultFont;
-#endif
 
 // ----------------------------------------------------------------------------
 // Name : CUIListBox()
@@ -20,7 +16,6 @@ CUIListBox::CUIListBox()
 	m_bScrollBar = FALSE;
 	m_colSelectList = 0xB8B8B8FF;
 	m_colOverList = 0xB8B8B8FF;
-	m_nLineHeight = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -29,6 +24,7 @@ CUIListBox::CUIListBox()
 // ----------------------------------------------------------------------------
 CUIListBox::~CUIListBox()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -40,7 +36,9 @@ void CUIListBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 {
 	ASSERT( nColumn > 0 );
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	m_nLineHeight = nLineHeight;
 	m_bSelectList = bSelectList;
@@ -58,24 +56,18 @@ void CUIListBox::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_nColumnCount = nColumn;
 	m_vecString.reserve( nColumn );
 	m_vecColor.reserve( nColumn );
-	m_vecBold.reserve( nColumn );
 	m_vecColumnSX.reserve( nColumn );
-	m_vecColumnWidth.reserve( nColumn );
 	m_vecAlign.reserve( nColumn );
 
 	for( int iCol = 0; iCol < nColumn; iCol++ )
 	{
 		sVecString	sVecTempString;
 		sVecColor	sVecTempColor;
-		sVecBold	sVecTempBold;
 
 		m_vecString.push_back( sVecTempString );
 		m_vecColor.push_back( sVecTempColor );
-		m_vecBold.push_back( sVecTempBold );
 		m_vecColumnSX.push_back( 0 );
-		m_vecColumnWidth.push_back( -1 );
 		m_vecAlign.push_back( TEXT_LEFT );
-		m_vecDataptr.push_back(0);
 	}
 }
 
@@ -159,73 +151,17 @@ void CUIListBox::ChangeLineCount( int nLine )
 
 }
 
-void StringSplit(std::vector<CTString>& vecOutput, CTString strInput, ULONG ulColumnWidth)
-{
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
-	ULONG ulWidth = 0;
-#if defined(G_RUSSIA)
-	ulWidth = UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, strInput.str_String);
-#else	//	defined(G_RUSSIA)
-	ulWidth = pDrawPort->GetTextWidth2(strInput);
-#endif	//	defined(G_RUSSIA)
-	
-	if (ulWidth <= ulColumnWidth)
-	{
-		strInput.TrimSpacesLeft();
-		strInput.TrimSpacesRight();
-		vecOutput.push_back(strInput);
-		return;
-	}
-	
-	char szTemp[4];
-	int len = strInput.Length(), pos = 0;
-	ulWidth = 0;
-	for (int i = 0, j = 0; i < len; j = 0)
-	{
-		if (IsDBCSLeadByte(strInput[i]))
-			szTemp[j++] = strInput[i++];
-		szTemp[j++] = strInput[i++];
-		szTemp[j] = 0;
-		ULONG ulTempWidth = 0;
-#if defined(G_RUSSIA)
-		ulTempWidth = UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, szTemp);
-#else	//	defined(G_RUSSIA)
-		ulTempWidth = pDrawPort->GetTextWidth2(szTemp);
-#endif	//	defined(G_RUSSIA)
-		if (ulWidth + ulTempWidth > ulColumnWidth &&
-			!(j == 1 && (szTemp[0] == '.' || szTemp[0] == ',' || szTemp[0] == ' ')))
-			break;
-
-		pos = i;
-		ulWidth += ulTempWidth;
-		if( strInput[pos] == '\n' || strInput[pos] == '\r' )
-		{
-			pos++;
-			break;
-		}	
-	}
-	CTString strLeft, strRight;
-	strInput.Split(pos, strLeft, strRight);
-	strLeft.TrimSpacesLeft();
-	strLeft.TrimSpacesRight();
-	vecOutput.push_back(strLeft);
-
-	if (strRight.Length() > 0)
-		StringSplit(vecOutput, strRight, ulColumnWidth);
-}
 // ----------------------------------------------------------------------------
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIListBox::AddString( int nCol, const CTString &strText, COLOR colText, BOOL bSelectable, void* ptr, BOOL bBold )
+void CUIListBox::AddString( int nCol, CTString &strText, COLOR colText, BOOL bSelectable )
 {
 	ASSERT( nCol < m_nColumnCount );
 
-	m_vecString[nCol].vecString.push_back( UTIL_HELP()->GetCalcStringEllipsis(strText, m_vecColumnWidth[nCol], "..") );
+	m_vecString[nCol].vecString.push_back( strText );
 	m_vecColor[nCol].vecColor.push_back( colText );
-	m_vecBold[nCol].vecBold.push_back( bBold );
-	m_vecDataptr.push_back(ptr);
 	if(nCol == 0)
 	{
 		if(bSelectable && m_bAtLeastOneSelect && m_nSelectList == -1)
@@ -241,25 +177,24 @@ void CUIListBox::AddString( int nCol, const CTString &strText, COLOR colText, BO
 // Name : InsertString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIListBox::InsertString( int nIndex, int nCol, CTString &strText, COLOR colText, BOOL bSelectable, BOOL bBold )
+void CUIListBox::InsertString( int nIndex, int nCol, CTString &strText, COLOR colText, BOOL bSelectable )
 {
 	ASSERT( nCol < m_nColumnCount );
 	ASSERT( nIndex < m_vecString[nCol].vecString.size() );
 
 	std::vector<CTString>::iterator	itText = m_vecString[nCol].vecString.begin();
 	itText += nIndex;
+	//for( int i = 0; i < nIndex; i++, itText++ );
 	m_vecString[nCol].vecString.insert( itText, strText );
 
 	std::vector<COLOR>::iterator	itCol = m_vecColor[nCol].vecColor.begin();
 	itCol += nIndex;
+	//for( i = 0; i < nIndex; i++, itCol++ );
 	m_vecColor[nCol].vecColor.insert( itCol, colText );
-
-	std::vector<BOOL>::iterator itBold = m_vecBold[nCol].vecBold.begin();
-	itBold += nIndex;
-	m_vecBold[nCol].vecBold.insert( itBold, bBold );
 
 	std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
 	itBool += nIndex;
+	//for( i = 0; i < nIndex; i++, itBool++ );
 	m_vecSelectable.insert( itBool, bSelectable );
 
 	if( m_sbScrollBar.GetCurItemCount() < m_vecString[nCol].vecString.size() )
@@ -275,27 +210,28 @@ void CUIListBox::RemoveString( int nIndex, int nCol )
 	ASSERT( nCol < m_nColumnCount );
 	ASSERT( nIndex < m_vecString[nCol].vecString.size() );
 
+	int i;
+
 	std::vector<CTString>::iterator	itText = m_vecString[nCol].vecString.begin();
 	itText += nIndex;
+	//for( i = 0; i < nIndex; i++, itText++ );
 	m_vecString[nCol].vecString.erase( itText );
 
 	std::vector<COLOR>::iterator	itCol = m_vecColor[nCol].vecColor.begin();
 	itCol += nIndex;
+	//for( i = 0; i < nIndex; i++, itCol++ );
 	m_vecColor[nCol].vecColor.erase( itCol );
-
-	std::vector<BOOL>::iterator itBold = m_vecBold[nCol].vecBold.begin();
-	itBold += nIndex;
-	m_vecBold[nCol].vecBold.erase( itBold );
 
 	if(nCol == 0)
 	{
 		std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
 		itBool += nIndex;
+		//for( i = 0; i < nIndex; i++, itBool++ );
 		m_vecSelectable.erase( itBool );
 	}
 
 	int	nMaxCount = 0;
-	for( int i = 0; i < nCol; i++ )
+	for( i = 0; i < nCol; i++ )
 	{
 		if( nMaxCount < m_vecString[nCol].vecString.size() )
 			nMaxCount = m_vecString[nCol].vecString.size();
@@ -318,40 +254,37 @@ void CUIListBox::MoveString( int nFromIndex, int nToIndex, int nCol )
 
 	CTString	strTemp = m_vecString[nCol].vecString[nFromIndex];
 	COLOR		colTemp = m_vecColor[nCol].vecColor[nFromIndex];
-	BOOL		boldTemp = m_vecBold[nCol].vecBold[nFromIndex];
 	BOOL		bTemp = m_vecSelectable[nFromIndex];
 
 	std::vector<CTString>::iterator	itText = m_vecString[nCol].vecString.begin();
 	itText += nFromIndex;
+	//for( int i = 0; i < nFromIndex; i++, itText++ );
 	m_vecString[nCol].vecString.erase( itText );
 
 	std::vector<COLOR>::iterator	itCol = m_vecColor[nCol].vecColor.begin();
 	itCol += nFromIndex;
+	//for( i = 0; i < nFromIndex; i++, itCol++ );
 	m_vecColor[nCol].vecColor.erase( itCol );
-
-	std::vector<BOOL>::iterator itBold = m_vecBold[nCol].vecBold.begin();
-	itBold += nFromIndex;
-	m_vecBold[nCol].vecBold.erase( itBold );
 	
 	std::vector<BOOL>::iterator	itBool = m_vecSelectable.begin();
 	itBool += nFromIndex;
+	//for( i = 0; i < nFromIndex; i++, itBool++ );
 	m_vecSelectable.erase( itBool );
 
 
 	itText = m_vecString[nCol].vecString.begin();
 	itText += nToIndex;
+	//for( i = 0; i < nToIndex; i++, itText++ );
 	m_vecString[nCol].vecString.insert( itText, strTemp );
 
 	itCol = m_vecColor[nCol].vecColor.begin();
 	itCol += nToIndex;
+	//for( i = 0; i < nToIndex; i++, itCol++ );
 	m_vecColor[nCol].vecColor.insert( itCol, colTemp );
-
-	itBold = m_vecBold[nCol].vecBold.begin();
-	itBold += nToIndex;
-	m_vecBold[nCol].vecBold.insert( itBold, boldTemp );
 
 	itBool = m_vecSelectable.begin();
 	itBool += nToIndex;
+	//for( i = 0; i < nToIndex; i++, itBool++ );
 	m_vecSelectable.insert( itBool, bTemp );
 }
 
@@ -368,8 +301,6 @@ void CUIListBox::ResetAllStrings()
 	{
 		m_vecString[iCol].vecString.clear();
 		m_vecColor[iCol].vecColor.clear();
-		m_vecBold[iCol].vecBold.clear();
-		m_vecDataptr.clear();
 	}
 	m_vecSelectable.clear();
 
@@ -381,7 +312,7 @@ void CUIListBox::ResetAllStrings()
 // Name : SetString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIListBox::SetString( int nCol, int nIndex, const CTString &strText )
+void CUIListBox::SetString( int nCol, int nIndex, CTString &strText )
 {
 	ASSERT( nCol < m_nColumnCount );
 	ASSERT( nIndex < m_vecString[nCol].vecString.size() );
@@ -402,19 +333,7 @@ void CUIListBox::SetColor( int nCol, int nIndex, COLOR colText )
 }
 
 // ----------------------------------------------------------------------------
-// Name : SetBold()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUIListBox::SetBold( int nCol, int nIndex, BOOL bBold )
-{
-	ASSERT( nCol < m_nColumnCount );
-	ASSERT( nIndex < m_vecBold[nCol].vecBold.size() );
-	
-	m_vecBold[nCol].vecBold[nIndex] = bBold;
-}
-
-// ----------------------------------------------------------------------------
-// Name : SetSelectable()
+// Name : SetColor()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUIListBox::SetSelectable( int nIndex, BOOL bSelectable )
@@ -425,7 +344,7 @@ void CUIListBox::SetSelectable( int nIndex, BOOL bSelectable )
 }
 
 // ----------------------------------------------------------------------------
-// Name : SetAllNotSelectable()
+// Name : SetColor()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUIListBox::SetAllNotSelectable()
@@ -450,18 +369,6 @@ void CUIListBox::SetColumnPosX( int nCol, int nPosX, TEXT_ALIGN eAlign )
 
 
 // ----------------------------------------------------------------------------
-// Name : SetColumnWidth()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUIListBox::SetColumnWidth( int nCol, ULONG ulWidth )
-{
-	ASSERT( nCol < m_nColumnCount );
-	
-	m_vecColumnWidth[nCol] = ulWidth;
-}
-
-
-// ----------------------------------------------------------------------------
 // Name : Render()
 // Desc :
 // ----------------------------------------------------------------------------
@@ -471,8 +378,6 @@ void CUIListBox::Render()
 	int	nX, nY;
 	GetAbsPos( nX, nY );
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	
 	// Add render regions
 	// Selection bar
 	if( m_bShowSelectBar && m_nSelectList >= 0 )
@@ -485,7 +390,7 @@ void CUIListBox::Render()
 			{
 			
 				int	nBarY = nY + m_nTextSY + nSelLine * m_nLineHeight;
-				pDrawPort->AddTexture( nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
+				_pUIMgr->GetDrawPort()->AddTexture( nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
 													nX + m_rcSelectOver.Right, nBarY + m_rcSelectOver.Bottom,
 													m_rtSelectOver.U0, m_rtSelectOver.V0,
 													m_rtSelectOver.U1, m_rtSelectOver.V1,
@@ -533,19 +438,13 @@ void CUIListBox::Render()
 			switch( m_vecAlign[nCol] )
 			{
 			case TEXT_LEFT:
-				pDrawPort->PutTextEx( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
-				if (m_vecBold[nCol].vecBold[nList])
-					pDrawPort->PutTextEx( m_vecString[nCol].vecString[nList], nTextX+1, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextEx( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			case TEXT_CENTER:
-				pDrawPort->PutTextExCX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
-				if (m_vecBold[nCol].vecBold[nList])
-					pDrawPort->PutTextExCX( m_vecString[nCol].vecString[nList], nTextX+1, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			case TEXT_RIGHT:
-				pDrawPort->PutTextExRX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
-				if (m_vecBold[nCol].vecBold[nList])
-					pDrawPort->PutTextExRX( m_vecString[nCol].vecString[nList], nTextX+1, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextExRX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			}
 
@@ -580,11 +479,7 @@ WMSG_RESULT CUIListBox::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					int	nAbsY = GetAbsPosY();
-
-					if (m_nLineHeight > 0)
-						m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
-					else
-						m_nOverList = 0;
+					m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
 
 					return WMSG_SUCCESS;
 				}
@@ -605,11 +500,7 @@ WMSG_RESULT CUIListBox::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					int	nAbsY = GetAbsPosY();
-
-					if (m_nLineHeight > 0)
-						m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
-					else
-						m_nOverList = 0;
+					m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
 
 					int	nRealSel = m_nOverList + m_sbScrollBar.GetScrollPos();
 					if( nRealSel >= 0 && nRealSel < m_sbScrollBar.GetCurItemCount()
@@ -652,11 +543,7 @@ WMSG_RESULT CUIListBox::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					int	nAbsY = GetAbsPosY();
-
-					if (m_nLineHeight > 0)
-						m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
-					else
-						m_nOverList = 0;
+					m_nOverList = ( nY - nAbsY - m_nTextSY + m_nSelectOffsetY ) / m_nLineHeight;
 
 					int	nRealSel = m_nOverList + m_sbScrollBar.GetScrollPos();
 					if( nRealSel >= 0 && nRealSel < m_sbScrollBar.GetCurItemCount()

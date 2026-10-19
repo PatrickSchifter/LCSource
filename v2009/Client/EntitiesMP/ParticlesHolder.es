@@ -200,40 +200,7 @@ functions:
 
 
 procedures:
-  Main()
-  {
-    InitAsEditorModel();
-    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
-    SetCollisionFlags(ECF_IMMATERIAL);
-    SetFlagOn(ENF_CLIENTHANDLING);
 
-    // set appearance
-    StretchModel();
-    SetModel(MODEL_TELEPORT);
-    ModelChangeNotify();
-    SetModelMainTexture(TEXTURE_TELEPORT);
-
-    if (m_bBackground) {
-      SetFlags(GetFlags()|ENF_BACKGROUND);
-    } else {
-      SetFlags(GetFlags()&~ENF_BACKGROUND);
-    }
-
-    en_fGravityA = 30.0f;
-    GetPitchDirection(-90.0f, en_vGravityDir);
-
-    m_fActivateTime = 0.0f;
-    m_fDeactivateTime = -10000.0f;
-
-    if (m_bActive) {
-      jump Active();
-    } else {
-      jump Inactive();
-    }
-
-
-    return;
-  }
 
   // particles are active
   Active()
@@ -295,4 +262,39 @@ procedures:
       }
     }
   };
+
+  Main()
+  {
+    InitAsEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+    SetFlagOn(ENF_CLIENTHANDLING);
+
+    // set appearance
+    StretchModel();
+    SetModel(MODEL_TELEPORT);
+    ModelChangeNotify();
+    SetModelMainTexture(TEXTURE_TELEPORT);
+
+    if (m_bBackground) {
+      SetFlags(GetFlags()|ENF_BACKGROUND);
+    } else {
+      SetFlags(GetFlags()&~ENF_BACKGROUND);
+    }
+
+    en_fGravityA = 30.0f;
+    GetPitchDirection(-90.0f, en_vGravityDir);
+
+    m_fActivateTime = 0.0f;
+    m_fDeactivateTime = -10000.0f;
+
+    if (m_bActive) {
+      jump Active();
+    } else {
+      jump Inactive();
+    }
+
+
+    return;
+  }
 };

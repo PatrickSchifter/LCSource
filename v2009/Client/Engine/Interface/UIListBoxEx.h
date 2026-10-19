@@ -64,7 +64,7 @@ public:
 		m_iPopBtnWidth = width;
 		m_iPopBtnHeight = height;
 	}
-	void	SetImageBox(int row, CUIImageBox::eImageType type, int index, BOOL bShowPopup = FALSE, CTString popupInfo = CTString(""), int nSyndiType = 0);
+	void	SetImageBox(int row, CUIImageBox::eImageType type, int index);
 
 	// 2009. 06. 02 김정래	
 	// CheckButton 을 가지는 Child 항목을 위해 
@@ -131,7 +131,7 @@ protected:
 	// 2009. 06. 02 김정래
 	// 체크된 항목의 개수에 제한을 두려 할 때 사용하기 위해
 	// 제일 마지막에 체크한 인덱스를 저장한다.
-	int								m_iLastCheckedIndex;		
+	int								m_iLastCheckedIndex;
 };
 
 #endif //__UILISTBOX_H__

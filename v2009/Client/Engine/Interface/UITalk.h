@@ -5,8 +5,8 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIEditBox.h>
-// #include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIListBox.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Interface/UIGroup.h>
 #include <Engine/Interface/UITrackPopup.h>
@@ -23,8 +23,8 @@ public:
 	
 	// Control
 	CUIButton				m_btnClose;
-	CUIButton					m_btnMember;
-	CUIButton					m_btnColor;
+	CUIButton				m_btnMember;		//채팅중인 멤버의 리스트를 나타내내게 하는 버튼
+	CUIButton				m_btnColor;			//채팅 글자색의 리시트를 나타내게 하는 버튼
 	CUIEditBox				m_ebInput;
 	CUIListBox				m_lbTalkList;
 	
@@ -98,7 +98,7 @@ public :
 	
 	void AddTalkListString( CTString strName, CTString strMessage, bool bFocus = true, COLOR colDesc = 0xF2F2F2FF );
 	void AddTalkListString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
-	void AddErrorTalk( const CTString &strDesc, COLOR colDesc = 0xE28769FF );
+	void AddErrorTalk( CTString &strDesc, COLOR colDesc = 0xE28769FF );
 	void AddTalkTarget( CTString strName);
 	void DeleteTalkTarget(CTString strName);
 	bool IsExistTarget( CTString strName );
@@ -107,7 +107,6 @@ public :
 	void SetTargetCondition( int nCharIndex, eCondition eState );
 	void SetIndex(int nMakeCharIndex, int nChatIndex) { m_nMakeCharIndex =nMakeCharIndex; m_nChatIndex =nChatIndex;};
 	// Network
-	void SendChatMessageFiltering( CTString stMessage );
 	void SendChatMessage( CTString stMessage );
 	
 	// Messages

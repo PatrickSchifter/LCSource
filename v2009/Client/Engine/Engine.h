@@ -1,6 +1,3 @@
-#ifndef		__ENGINE_H__
-#define		__ENGINE_H__
-
 // set this to 1 to enable checks whether somethig is deleted while iterating some array/container
 #define CHECKARRAYLOCKING 0
 
@@ -10,16 +7,15 @@
   #endif
 #endif
 
+//안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 #pragma warning(disable : 4786)
-#pragma warning(disable : 4200)
+//안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 
 #include <stdlib.h>
-#ifdef _WIN32
 #include <malloc.h>
-#endif
 #include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <stddef.h>
 #include <time.h>
 #include <math.h>
@@ -52,18 +48,19 @@
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Console_internal.h>
-// #include <Engine/Base/Shell_internal.h>
+#include <Engine/Base/Shell_internal.h>
 #include <Engine/Base/Shell.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/Translation.h>
+#include <Engine/Base/ProgressHook.h>
 #include <Engine/Base/Registry.h>
 #include <Engine/Base/IFeel.h>
 
 #include <Engine/Entities/EntityClass.h>
-// #include <Engine/Entities/EntityCollision.h>
-// #include <Engine/Entities/EntityProperties.h>
-// #include <Engine/Entities/Entity.h>
+#include <Engine/Entities/EntityCollision.h>
+#include <Engine/Entities/EntityProperties.h>
+#include <Engine/Entities/Entity.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Entities/LastPositions.h>
 #include <Engine/Entities/EntityCollision.h>
@@ -94,6 +91,8 @@
 //#include <Engine/Network/NetworkMessage.h>
 #include <Engine/Network/PlayerSource.h>
 #include <Engine/Network/PlayerTarget.h>
+#include <Engine/Network/SessionState.h>
+#include <Engine/Network/NetworkProfile.h>
 #include <Engine/Network/Compression.h>
 
 #include <Engine/Brushes/Brush.h>
@@ -156,36 +155,13 @@
 #include <Engine/Templates/Selection.cpp>
 
 
-
-typedef struct lua_State lua_State;
 // some global stuff
-ENGINE_API bool SE_CheckEngine();	// [2013/01/16] sykim70
 //ENGINE_API void SE_InitEngine( CTString strGameID, BOOL bTcp = FALSE);  // by seo
 ENGINE_API void SE_InitEngine( CTString strGameID);
 ENGINE_API void SE_EndEngine(void);
 ENGINE_API void SE_LoadDefaultFonts(void);
-ENGINE_API void SE_UpdateWindowHandle( HWND hwndWindowed, HWND hdlgWebInterface = NULL);
+ENGINE_API void SE_UpdateWindowHandle( HWND hwndWindowed);
 ENGINE_API void SE_PretouchIfNeeded(void);
-ENGINE_API const int	SE_GetEngineDllRefCnt();
-
-
-// Singleton Classes
-class CWebAddress;
-class CUIManager;
-class GameDataManager;
-class StageMgr;
-class UtilHelp;
-
-ENGINE_API CWebAddress* SE_Get_WebAddressPtr();
-ENGINE_API CUIManager*	SE_Get_UIManagerPtr();
-ENGINE_API GameDataManager* SE_Get_GameDataManagerPtr();
-ENGINE_API StageMgr*	SE_Get_StageMgrPtr();
-ENGINE_API void			SE_Destroy_WebAddressPtr();
-ENGINE_API void			SE_Destroy_UIManagerPtr();
-ENGINE_API void			SE_Destroy_GameDataManagerPtr();
-ENGINE_API void			SE_Destroy_StageMgrPtr();
-ENGINE_API void			EndLodData();
-ENGINE_API UtilHelp*	SE_Get_UtilHelpPtr();
 
 extern ENGINE_API CTString _strEngineBuild;  // not valid before InitEngine()!
 extern ENGINE_API ULONG _ulEngineBuildMajor;
@@ -193,8 +169,6 @@ extern ENGINE_API ULONG _ulEngineBuildMinor;
 
 extern ENGINE_API BOOL _bDedicatedServer;
 extern ENGINE_API BOOL _bWorldEditorApp;			// is this world edtior app
-//	김영환 : 클라이언트 전용 엔진 설정 변수
-extern ENGINE_API BOOL _bClientApp;			// TRUE 설정되면 게임 클라이언트 이다.
 extern ENGINE_API BOOL _bUseBloomInWorldEditor;		// 에디터에 Bloom 효과 On/Off를 위해 추가	:Su-won
 extern ENGINE_API BOOL _bTranslucentModel;			// 에디터에 모델을 반투명으로 나타내기 위해 추가	:Su-won
 extern ENGINE_API BOOL _bInvisibleOff;				// 에디터에 Invisible된 폴리곤을 나타내기 위해 추가	:Su-won
@@ -244,22 +218,19 @@ ENGINE_API extern COLOR g_colWeather;
 //안태훈 수정 끝	//(Add Sun Moon Entity and etc)(0.2)
 
 // 일본 자동 로그인 060209 wooss 
-// (these are defined in Engine.cpp; without the extern every library that includes this header
-// defined them again outside Windows, where ENGINE_API is not dllimport)
-ENGINE_API extern BOOL g_bAutoLogin;
-ENGINE_API extern BOOL g_bAutoRestart;
-ENGINE_API extern CTString g_nmID ;
-ENGINE_API extern CTString g_nmPW ;
-ENGINE_API extern CTString g_nmCID ;
-ENGINE_API extern CTString g_nmVER ;
+ENGINE_API BOOL g_bAutoLogin;
+ENGINE_API CTString g_nmID ;
+ENGINE_API CTString g_nmPW ;
+ENGINE_API CTString g_nmCID ;
+ENGINE_API CTString g_nmVER ;
 
+//일본 헬멧 관련 추가 070313_ttos
+ENGINE_API BOOL g_bHead_change;
 // wooss 070228 ---------------------------->>
 // kw : WSS_EVENT_LOD
 // 이벤트 플래그 변수
-ENGINE_API extern std::map<int,int> g_mapEvent;
+ENGINE_API std::map<int,int> g_mapEvent;
 // -----------------------------------------<<
 	
 //070308_ttos : 브라질 나스 표기 번환
-ENGINE_API extern BOOL g_bNasTrans;	
-
-#endif		// __ENGINE_H__
+ENGINE_API BOOL g_bNasTrans;	

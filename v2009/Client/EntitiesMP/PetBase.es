@@ -13,7 +13,6 @@
 #include <Engine/Effect/CWorldTag.h>
 #include <Engine/Effect/CEffectGroupManager.h>
 #include <Engine/Base/Timer.h>
-#include <Engine/Object/ActorMgr.h>
 //안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 
 //extern void JumpFromBouncer(CEntity *penToBounce, CEntity *penBouncer);
@@ -204,36 +203,11 @@ functions:
 	{
 	}
 
-	void ~CPetBase(void)
-	{
-		ReleaseChche(ECT_MODEL, MODEL_FLESH);
-		ReleaseChche(ECT_MODEL, MODEL_FLESH_APPLE);
-		ReleaseChche(ECT_MODEL, MODEL_FLESH_BANANA);
-		ReleaseChche(ECT_MODEL, MODEL_FLESH_BURGER);
-		ReleaseChche(ECT_MODEL, MODEL_MACHINE);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_MACHINE);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_RED);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_GREEN);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_APPLE); 
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_BANANA);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_BURGER);
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_LOLLY); 
-		ReleaseChche(ECT_TEXTURE, TEXTURE_FLESH_ORANGE); 
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_BASIC_EFFECT);
-		ReleaseChche(ECT_CLASS, CLASS_DEBRIS);
-		ReleaseChche(ECT_CLASS, CLASS_WATCHER);
-	}
-
 	// describe how this enemy killed player
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("%s killed %s"), GetClass()->ec_pdecDLLClass->dec_strName, (const char*)strPlayerName);
+		str.PrintF(TRANS("%s killed %s"), GetClass()->ec_pdecDLLClass->dec_strName, strPlayerName);
 		return str;
 	}
 
@@ -414,7 +388,7 @@ functions:
 	{
 		((CTString&)m_strDescription).PrintF("-><none>");
 		if (m_penMarker!=NULL) {
-			((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penMarker->GetName());
+			((CTString&)m_strDescription).PrintF("->%s", m_penMarker->GetName());
 		}
 		return m_strDescription;
 	}
@@ -991,11 +965,11 @@ functions:
 				// 아이템이 타겟으로 지정된 경우.
 				if( m_bUseAI && !m_bPlayAction && m_penEnemy->GetFlags() & ENF_ITEM && m_penEnemy->GetModelInstance() )
 				{
-					_pNetwork->SendPickMessage( this, (ULONG)m_penEnemy->GetNetworkID(), TRUE );
+					SLONG ItemIndex = _pNetwork->SearchItemIndex(m_penEnemy->en_ulID);
+					_pNetwork->SendPickMessage( this, (ULONG)ItemIndex, TRUE );
 					m_dcEnemies.Del( m_penEnemy );
+					FindNewItemTarget();
 				}
-
-				FindNewItemTarget();
 			}
 			// if going to some other location (some pathfinding AI scheme)
 			else 
@@ -1013,10 +987,23 @@ functions:
 		{
 			return;
 		}
-
 		m_dcEnemies.Clear();
 
-		ACTORMGR()->SearchNearItem(&m_dcEnemies, GetPlacement().pl_PositionVector, 10.f);
+		for(INDEX ipl=0; ipl<_pNetwork->ga_srvServer.srv_aitItem.Count(); ipl++) 
+		{
+			CItemTarget &it = _pNetwork->ga_srvServer.srv_aitItem[ipl];
+			if (it.item_pEntity && ( it.item_yLayer == _pNetwork->MyCharacterInfo.yLayer ) )
+			{
+				int myLayer		= _pNetwork->MyCharacterInfo.yLayer;
+				FLOAT3D vDelta	= GetPlacement().pl_PositionVector - it.item_place;
+				vDelta(2) = 0.0f; //0131 높이값 무시.				
+
+				if( vDelta.Length() <= 10.0f )
+				{
+					m_dcEnemies.Add( it.item_pEntity );
+				}
+			}
+		}
 	}
 
 	void FindNewItemTarget()
@@ -1024,17 +1011,10 @@ functions:
 		if( m_dcEnemies.Count() > 0 )
 		{
 			m_penEnemy = (*m_dcEnemies.vectorSelectedEntities.begin());
-			
-			if (m_penEnemy->GetRenderType() == RT_NONE)
-			{
-				m_penEnemy = CEntity::GetPlayerEntity(0);
-				m_dcEnemies.Clear();
-			}
 		}
 		else
 		{
-			m_penEnemy = CEntity::GetPlayerEntity(0);
-			m_dcEnemies.Clear();
+			m_penEnemy = CEntity::GetPlayerEntity(0);			
 		}
 	};
 
@@ -1312,7 +1292,7 @@ functions:
 	void SeeNotify() 
 	{
 		// if no enemy
-		if (m_penEnemy==NULL || m_penEnemy->IsPlayer()) 
+		if (m_penEnemy==NULL) 
 		{
 			// do nothing
 			return;
@@ -1653,11 +1633,6 @@ functions:
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 procedures:
-	// dummy main - never called
-	Main(EVoid) 
-	{
-		return;
-	};
 
 //**********************************************************
 //                 ATTACK PROCEDURES
@@ -2766,6 +2741,12 @@ procedures:
 		}
 	};
 
+	// dummy main - never called
+	Main(EVoid) 
+	{
+		return;
+	};
+	
 	//--------------------------------------------------------------------------------
 	//0628 kwon
 	AttackTarget() // 이 프로시저를 call하기전에 SetTargetEntity()가 선행되어야 한다.

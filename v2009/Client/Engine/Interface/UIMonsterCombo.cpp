@@ -1,19 +1,12 @@
 
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UIHelp.h>
 #include <Engine/Interface/UIMonsterCombo.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Common/Packet/ptype_old_do_monstercombo.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/Party.h>
+#include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/LocalDefine.h>
 
 #define MISSION_SLOT_MAX 5
 
 static int	_nMsgBoxLineHeight = 0;
-//extern INDEX	g_iCountry;
 
 CUIMonsterCombo::CUIMonsterCombo()
 {
@@ -26,17 +19,17 @@ CUIMonsterCombo::CUIMonsterCombo()
 	m_nComboPoint = 0;
 	m_nStageCount = 0;
 
-	int		i;
-	for( i = 0; i < CASE_SLOT_COUNT; i++ )
+	for(int i=0; i<CASE_SLOT_COUNT; i++)
 	{		
-		m_nCase[i] = 0;		
+		m_nCase[i] = 0;
+		m_abtnSetCase[i].InitBtn();
+		
 	}
-
-	for( i = 0; i < MAX_COMBO_COUNT; i++)
+	for (i=0;i<MAX_COMBO_COUNT; i++)
 	{
 		m_nCombo[i] = 0;
+		m_abtnSetCombo[i].InitBtn();
 	}
-
 	m_bCaseView = FALSE;
 	m_bComboComplete = FALSE;
 	m_bStageClear = FALSE;
@@ -44,30 +37,19 @@ CUIMonsterCombo::CUIMonsterCombo()
 	m_nSysType = SYS_STAGE;
 	m_tmStartTime = NULL;
 	m_bActionChack = FALSE;
-	m_ptdAddTexture = NULL;
-	m_nCountType = COMBO_TYPE;
-	m_plbComboHelp = NULL;
-
-	m_nNpcVirIdx = -1;
+	
 }
 
 CUIMonsterCombo::~CUIMonsterCombo()
 {
-	STOCK_RELEASE(m_ptdAddTexture);
-
-	int		i;
-
-	for (i = 0; i < MISSION_SLOT_MAX; i++)
-		SAFE_DELETE(m_pIconsSetCase[i]);
-
-	for (i = 0; i < MAX_COMBO_COUNT; i++)
-		SAFE_DELETE(m_pIconsSetCombo[i]);
+	Destroy();
 }
 
 void CUIMonsterCombo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	_nMsgBoxLineHeight = _pUIFontTexMgr->GetFontHeight() + 4;
 
 	// Create web board texture
@@ -170,33 +152,29 @@ void CUIMonsterCombo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_rtSysView[SYS_STAGE].SetUV(8,4,257,119,fAddTexWidth,fAddTexHeight);
 	m_rtSysView[SYS_MISSION].SetUV(261,4,570,119,fAddTexWidth,fAddTexHeight);
 	m_rtSysView[SYS_CLEAR].SetUV(574,4,824,119,fAddTexWidth,fAddTexHeight);
-	m_rtSysView[SYS_FAIL].SetUV(827,4,1020,119,fAddTexWidth,fAddTexHeight);	
+	m_rtSysView[SYS_FAIL].SetUV(827,4,1020,119,fAddTexWidth,fAddTexHeight);
+	
 
-	int		i;
 	// 미션 케이스 5칸
-	for( i = 0; i < MISSION_SLOT_MAX; i++)
+	for(int i = 0; i < MISSION_SLOT_MAX; i++)
 	{
-		m_pIconsSetCase[i] = new CUIIcon;
-		m_pIconsSetCase[i]->Create(this, 0, 0, 50, 50, UI_MONSTER_COMBO, UBET_COMBO);
+		m_abtnSetCase[i].Create( this, 0, 0, 50, 50, UI_MONSTER_COMBO, UBET_COMBO );
 	}
-	for( i = 0; i < MAX_COMBO_COUNT; i++)
+	for( i = 0; i<MAX_COMBO_COUNT; i++)
 	{
-		m_pIconsSetCombo[i] = new CUIIcon;
-		m_pIconsSetCombo[i]->Create(this, 0, 0, 50, 50, UI_MONSTER_COMBO, UBET_COMBO);
+		m_abtnSetCombo[i].Create( this, 0, 0, 50, 50, UI_MONSTER_COMBO, UBET_COMBO );
 	}
 
 //	m_lbComboHelp.Create( this, 0, 0, 260, 260, _nMsgBoxLineHeight, 8, 8, 2, FALSE);
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->GetHelp3()->ClearHelpString();
-	pUIManager->GetHelp3()->AddHelpString(_S(4023,"파티로 몬스터콤보를 만들 때는 파티장만 몬스터콤보를 만들수 있습니다."),0xFFE7ADFF,42);
-	pUIManager->GetHelp3()->AddHelpString(_S(4024,"몬스터콤보 플레이도 중 파티가 해체되면 몬스터콤보을 진행하지 못하고 드라탄으로 이동하게 됩니다."),0xFFE7ADFF,42);
-	pUIManager->GetHelp3()->AddHelpString(_S(4025,"몬스터콤보에서 출현하는 몬스터에게서 경험치 숙련도만 획득할수 있으며 아이템은 드랍되지 않습니다."),0xFFE7ADFF,42);
-	pUIManager->GetHelp3()->AddHelpString(_S(4026,"몬스터콤보에서는 파티 리콜, 순간이동 마법서, 소환 마법서, 메모리 스크롤을 사용할 수 없습니다."),0xFFE7ADFF,42);
-	pUIManager->GetHelp3()->AddHelpString(_S(4027,"몬스터콤보 점수에 따라 몬스터콤보 선물상자로 부터 획득할 수 있는 주화의 종류가 다름니다."),0xFFE7ADFF,42);
-	pUIManager->GetHelp3()->AddHelpString(_S(4028,"몬스터콤보 마스터에게 구입한 몬스터콤보상자는 몬스터콤보 주화가 있어야만 열수 있습니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->ClearHelpString();
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4023,"파티로 몬스터콤보를 만들 때는 파티장만 몬스터콤보를 만들수 있습니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4024,"몬스터콤보 플레이도 중 파티가 해체되면 몬스터콤보을 진행하지 못하고 드라탄으로 이동하게 됩니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4025,"몬스터콤보에서 출현하는 몬스터에게서 경험치 숙련도만 획득할수 있으며 아이템은 드랍되지 않습니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4026,"몬스터콤보에서는 파티 리콜, 순간이동 마법서, 소환 마법서, 메모리 스크롤을 사용할 수 없습니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4027,"몬스터콤보 점수에 따라 몬스터콤보 선물상자로 부터 획득할 수 있는 주화의 종류가 다름니다."),0xFFE7ADFF,42);
+	_pUIMgr->GetHelp3()->AddHelpString(_S(4028,"몬스터콤보 마스터에게 구입한 몬스터콤보상자는 몬스터콤보 주화가 있어야만 열수 있습니다."),0xFFE7ADFF,42);
 	
-	m_plbComboHelp = pUIManager->GetHelp3()->GetHelpString();
+	m_lbComboHelp = _pUIMgr->GetHelp3()->GetHelpString();
 	
 	
 }
@@ -235,10 +213,8 @@ void CUIMonsterCombo::Render()
 		CloseMonsterCombo();
 	}
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set shop texture
-	 pDrawPort->InitTextureData( m_ptdBaseTexture );
+	 _pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
 	int	nX, nY;
@@ -262,17 +238,16 @@ void CUIMonsterCombo::Render()
 	
 
 	// 미션 케이스 5칸
-	int		i;
-	for( i = 0; i < MISSION_SLOT_MAX; i++)
+	for(int i = 0; i < MISSION_SLOT_MAX; i++)
 	{
-// 		pDrawPort->AddTexture( nX+10, nY+32+(54*i), nX+270, nY+84+(54*i),
+// 		_pUIMgr->GetDrawPort()->AddTexture( nX+10, nY+32+(54*i), nX+270, nY+84+(54*i),
 // 												m_rtMissionSlot.U0, m_rtMissionSlot.V0, m_rtMissionSlot.U1, m_rtMissionSlot.V1,
 // 														0xFFFFFFFF );
 		m_bxMissionSlot.SetBoxPos(WRect(10, 32+(52*i), 270, 84+(52*i)));
 		m_bxMissionSlot.Render(nX,nY);
 		if(m_bCaseView)
 		{
-// 			pDrawPort->AddTexture( nX+315, nY+32+(54*i), nX+575, nY+84+(54*i),
+// 			_pUIMgr->GetDrawPort()->AddTexture( nX+315, nY+32+(54*i), nX+575, nY+84+(54*i),
 // 													m_rtMissionSlot.U0, m_rtMissionSlot.V0, m_rtMissionSlot.U1, m_rtMissionSlot.V1,
 // 													0xFFFFFFFF );
 			m_bxMissionSlot.SetBoxPos(WRect(315, 32+(52*i), 575, 84+(52*i))) ;
@@ -282,10 +257,8 @@ void CUIMonsterCombo::Render()
 		{	
 			m_bxContentsBox.SetBoxPos(WRect(315, 32, 575, 292));
 			m_bxContentsBox.Render(nX,nY);
-			// [2010/10/13 : Sora] 좌표값 수정 m_lbComboHelp의 parent가 GetHelp3여서 parent의 좌표를 빼주고 이동시켜야 함
-			m_plbComboHelp->SetPos( 315+nX, -(CUIManager::getSingleton()->GetHelp3()->GetAbsPosY()) + ( nY + 36 ) );
-			m_plbComboHelp->SetScrollBar(FALSE);
-			m_plbComboHelp->Render();
+			m_lbComboHelp.SetPos(315+nX, nY-160);
+			m_lbComboHelp.Render();
 		}
 		
 	}
@@ -321,10 +294,10 @@ void CUIMonsterCombo::Render()
 	m_btnMakeView.Render();
 	m_btnAdmission.Render();
 	
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
 	// 미션 케이스 5칸
-	for( i = 0; i < MISSION_SLOT_MAX; i++)
+	for(i = 0; i < MISSION_SLOT_MAX; i++)
 	{
 		if(m_bCaseView)
 		{
@@ -334,129 +307,83 @@ void CUIMonsterCombo::Render()
 	}
 	
 		// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_COMBO );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_COMBO );
 
 	CTString strTemp;		
 	
 	strTemp.PrintF( _S(4047, "몬스터 콤보") );
-	pDrawPort->PutTextExCX(strTemp, nX+300, nY+5);
+	_pUIMgr->GetDrawPort()->PutTextExCX(strTemp, nX+300, nY+5);
 	strTemp.PrintF( _S(4138, "몬스터 콤보 점수: %d Point 미션 개수: %d 개"), m_nComboPoint,m_nComboCount);
-	pDrawPort->PutTextEx(strTemp, nX+15, nY+310);
+	_pUIMgr->GetDrawPort()->PutTextEx(strTemp, nX+15, nY+310);
 	strTemp.PrintF( _S(4139, "보유 금액: %I64d Nas"), _pNetwork->MyCharacterInfo.money);
-	pDrawPort->PutTextEx(strTemp, nX+320, nY+310);
+	_pUIMgr->GetDrawPort()->PutTextEx(strTemp, nX+320, nY+310);
 	strTemp.PrintF( _S(4140, "입장료: %I64d Nas"), m_nAdmissionPay);
-	pDrawPort->PutTextEx(strTemp, nX+320, nY+345);
+	_pUIMgr->GetDrawPort()->PutTextEx(strTemp, nX+320, nY+345);
 
+	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 }
 
 void CUIMonsterCombo::MissionCaseRender(int iX, int iY)
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	for(int i = 0; i < MISSION_SLOT_MAX; i++)
 	{
-		CMissionCase* MC = CMissionCase::getDataSeq(m_nCurMissionNum + i);
-
-		if (MC->getindex() < 0)
-			continue;
-
+		CMissionCase MC = _pNetwork->wo_aMissionCase[m_nCurMissionNum+i];
 		CTString strTemp;
 		
-#if defined G_RUSSIA
-		{
-			strTemp.PrintF("%s",MC->GetName()); 								
-			pDrawPort->PutTextEx(strTemp, iX+370, iY+37+(52*i));
+			strTemp.PrintF("%s",MC.m_MissionData.strMission_name); 								
+			_pUIMgr->GetDrawPort()->PutTextEx(strTemp, iX+370, iY+40+(52*i));
 			
-			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), MC->nas, MC->point);
-			
-			INDEX nindex = strTemp.FindSubstr("., ");
-			if(nindex != -1)
-			{
-				strTemp.str_String[nindex+2] = '\n';
-			}
-
-			pDrawPort->PutTextEx(strTemp, iX+370, iY+51+(52*i));
-		}
-#else	// G_RUSSIA
-		{
-			strTemp.PrintF("%s",MC->GetName()); 								
-			pDrawPort->PutTextEx(strTemp, iX+370, iY+40+(52*i));
-#	if defined(G_KOR) || defined(G_THAI) || defined(G_GERMAN) || defined(G_USA)
-			strTemp.PrintF( _S(4141, "%d Nas %d Point"), MC->nas, MC->point);
-#	else
-			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), MC->nas, MC->point);
-#	endif 
-			pDrawPort->PutTextEx(strTemp, iX+370, iY+60+(52*i));
-		}
-#endif	// G_RUSSIA
+			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC.m_MissionData.bSkill ? "Yes":"No", MC.m_MissionData.price, MC.m_MissionData.iPoint);
+			_pUIMgr->GetDrawPort()->PutTextEx(strTemp, iX+370, iY+60+(52*i));
 	
-		if (m_pIconsSetCase[i]->IsEmpty() == false)
-			m_pIconsSetCase[i]->Render(pDrawPort);
+		m_abtnSetCase[i].SetComboInfo(MC.m_MissionData.iIconTexID,MC.m_MissionData.iIconTexRow,MC.m_MissionData.iIconTexCol);
+		m_abtnSetCase[i].SetPos(317, 34+(52*i));
+		m_abtnSetCase[i].Render();
 
-		m_nCase[i] = MC->index;		
+		m_nCase[i] = MC.m_MissionData.nMission_index;		
 	}
 	
 }
 
 void CUIMonsterCombo::RenderComboList(int nCurScrollNum,int nX, int nY)
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	CMissionCase::_map::iterator	iter = CMissionCase::_mapdata.begin();
-	CMissionCase::_map::iterator	eiter = CMissionCase::_mapdata.end();
-
-	for (;iter != eiter; ++iter)
+	for(int i=0; i < _pNetwork->wo_iNomofMissionCase; i++)
 	{
-		CMissionCase* MC = (*iter).second;
-
-		if (MC == NULL)
-			continue;
-
-		if(m_nCombo[nCurScrollNum] == MC->index)
+		CMissionCase MC = _pNetwork->wo_aMissionCase[i];
+		if(m_nCombo[nCurScrollNum] == MC.m_MissionData.nMission_index)
 		{
 			CTString strTemp;
 
-#if defined G_RUSSIA
-			{
-				strTemp.PrintF("%s",MC->GetName()); 								
-				pDrawPort->PutTextEx(strTemp, nX+5, nY+5);
-				
-				strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), MC->nas, MC->point);
-				
-				INDEX nindex = strTemp.FindSubstr("., ");
-				if(nindex != -1)
-				{
-					strTemp.str_String[nindex+2] = '\n';
-				}
-
-				pDrawPort->PutTextEx(strTemp, nX+5, nY+19);
-			}
-#else	// G_RUSSIA
-			{
-				strTemp.PrintF("%s",MC->GetName()); 								
-				pDrawPort->PutTextEx(strTemp, nX+5, nY+8);
-		
-#	if defined(G_KOR) || defined(G_THAI) || defined(G_GERMAN) || defined(G_USA)
-				strTemp.PrintF( _S(4141, "%d Nas %d Point"), MC->nas, MC->point);
-#	else
-				strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), MC->nas, MC->point);
-#	endif 
-				pDrawPort->PutTextEx(strTemp, nX+5, nY+28);
-			}
-#endif	// G_RUSSIA
-
-			m_pIconsSetCombo[nCurScrollNum]->SetPos(12, 34+(52*(nCurScrollNum-m_nCurComboNum)));
-			m_pIconsSetCombo[nCurScrollNum]->Render(pDrawPort);
+			strTemp.PrintF("%s",MC.m_MissionData.strMission_name); 								
+			_pUIMgr->GetDrawPort()->PutTextEx(strTemp, nX+5, nY+8);
+			
+			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC.m_MissionData.bSkill ? "Yes":"No", MC.m_MissionData.price, MC.m_MissionData.iPoint);
+			_pUIMgr->GetDrawPort()->PutTextEx(strTemp, nX+5, nY+28);
+			
+			m_abtnSetCombo[nCurScrollNum].SetComboInfo(MC.m_MissionData.iIconTexID,MC.m_MissionData.iIconTexRow,MC.m_MissionData.iIconTexCol);
+			m_abtnSetCombo[nCurScrollNum].SetPos(12, 34+(52*(nCurScrollNum-m_nCurComboNum)));
+			m_abtnSetCombo[nCurScrollNum].Render();
 		
 			return;
 		}
 	}
 	
 }
-
+/*
+void CUIMonsterCombo::RenderMissionList(int nCurScrollNum,int nX, int nY)
+{
+	CMissionCase MC = _pNetwork->wo_aMissionCase[nCurScrollNum];
+	CTString strTemp;
+	strTemp.PrintF("%s \n패널티: %s %d Nas %d Point",MC.m_MissionData.strMission_name, 
+						MC.m_MissionData.bSkill ? "Yes":"No", MC.m_MissionData.price,MC.m_MissionData.iPoint);
+	_pUIMgr->GetDrawPort()->PutText(strTemp, nX, nY);
+	
+}
+*/
 WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 {
 
@@ -481,7 +408,7 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -499,139 +426,129 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 			else if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
 
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// Hold item button
-			if (pUIManager->GetDragIcon() == NULL && (bLButtonDownInCombo || bLButtonDownInCase) && 
-				(pMsg->wParam& MK_LBUTTON) && (ndX != 0 || ndY != 0))
+			if( _pUIMgr->GetHoldBtn().IsEmpty() && (bLButtonDownInCombo || bLButtonDownInCase) && ( pMsg->wParam & MK_LBUTTON ) && 
+				( ndX != 0 || ndY != 0 ) )
 			{
 				if(bLButtonDownInCombo)
 				{
-					pUIManager->SetHoldBtn(m_pIconsSetCombo[nCurSlotIdex]);
-				}
-				else if(bLButtonDownInCase)
+					_pUIMgr->SetHoldBtn(m_abtnSetCombo[nCurSlotIdex]);
+					int	nOffset = COMBO_BTN_SIZE / 2;
+					_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+				//	m_abtnSetCombo[nCurSlotIdex].SetBtnState(UBES_IDLE);
+					
+
+				}else if(bLButtonDownInCase)
 				{
-					pUIManager->SetHoldBtn(m_pIconsSetCase[nCurSlotIdex]);
+					_pUIMgr->SetHoldBtn(m_abtnSetCase[nCurSlotIdex]);
+					int	nOffset = COMBO_BTN_SIZE / 2;
+					_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+				//	m_abtnSetCase[nCurSlotIdex].SetBtnState(UBES_IDLE);
+
 				}
 				return WMSG_SUCCESS;
 			}
 
-			m_btnDel.MouseMessage(pMsg);
-			m_btnMakeView.MouseMessage(pMsg);
-			m_btnAdmission.MouseMessage(pMsg);
-
 			// MissionCase Scroll bar
 			if( ( wmsgResult = m_sbMissionCaseList.MouseMessage( pMsg ) ) != WMSG_FAIL )
 			{
-				pUIManager->ResetHoldBtn();
+				_pUIMgr->ResetHoldBtn();
 				if( wmsgResult == WMSG_COMMAND)
-				{
-					m_nCurMissionNum = m_sbMissionCaseList.GetScrollPos();
-					UpdateSetCase();
-				}
+					m_nCurMissionNum = m_sbMissionCaseList.GetScrollPos();				
 
 				return WMSG_SUCCESS;
 			}
 			// Combo Scroll bar
 			if( ( wmsgResult = m_sbComboList.MouseMessage( pMsg ) ) != WMSG_FAIL )
 			{
-				pUIManager->ResetHoldBtn();
+				_pUIMgr->ResetHoldBtn();
 				if( wmsgResult == WMSG_COMMAND)
 					m_nCurComboNum = m_sbComboList.GetScrollPos();				 
+
+				return WMSG_SUCCESS;
+			}	
+
+		}
+		break;
+
+	case WM_LBUTTONDOWN:
+		{
+			if( IsInside( nX, nY ) )
+			{
+				SetFocus ( TRUE );
+				nOldX = nX;		nOldY = nY;
+
+				// Close button
+				if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// Title bar
+				else if( IsInsideRect( nX, nY, (UIRect&)m_bxTitle.m_rcBoxRT ) )
+				{
+					bTitleBarClick = TRUE;
+				}
+				// Combo Scroll bar
+				else if( ( wmsgResult = m_sbComboList.MouseMessage( pMsg ) ) != WMSG_FAIL )
+				{
+					if( wmsgResult == WMSG_COMMAND)
+					{
+						_pUIMgr->ResetHoldBtn();
+						m_nCurComboNum = m_sbComboList.GetScrollPos(); 
+					}
+				}
+				// MissionCase Scroll bar
+				else if( ( wmsgResult = m_sbMissionCaseList.MouseMessage( pMsg ) ) != WMSG_FAIL )
+				{
+					if( wmsgResult == WMSG_COMMAND)
+					{
+						_pUIMgr->ResetHoldBtn();
+						m_nCurMissionNum = m_sbMissionCaseList.GetScrollPos();
+					}
+
+				}
+				else if(IsInsideRect(nX, nY, m_rcCombo))
+				{
+					for(int i=0; i < MAX_COMBO_COUNT; i++)
+					{
+						if (m_abtnSetCombo[i].MouseMessage(pMsg) != WMSG_FAIL)
+						{
+							nCurSlotIdex = i;
+							m_nCurItem = m_nCombo[i];
+							bLButtonDownInCombo = TRUE;
+							m_btnDel.SetVisible(TRUE);
+							m_btnDel.SetEnable(TRUE);
+
+							return WMSG_SUCCESS;
+						}
+					}
+				}
+				else if (IsInsideRect(nX,nY, m_rcCase))
+				{
+					for (int i=0; i<CASE_SLOT_COUNT; i++)
+					{
+						if(m_abtnSetCase[i].MouseMessage(pMsg) != WMSG_FAIL)
+						{
+							nCurSlotIdex = i;
+							m_nCurItem = m_nCase[i];
+							bLButtonDownInCase = TRUE;
+							m_btnDel.SetVisible(FALSE);
+							m_btnDel.SetEnable(FALSE);
+
+							return WMSG_SUCCESS;
+						}
+					}
+				}
 
 				return WMSG_SUCCESS;
 			}
 		}
 		break;
 
-	case WM_LBUTTONDOWN:
-		{
-			if( IsInside(nX, nY) == FALSE )
-				break;
-
-			SetFocus ( TRUE );
-			nOldX = nX;		nOldY = nY;
-
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
-			m_btnDel.MouseMessage(pMsg);
-			m_btnMakeView.MouseMessage(pMsg);
-			m_btnAdmission.MouseMessage(pMsg);
-
-			// Close button
-			if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-			{
-				// Nothing
-			}
-			// Title bar
-			else if( IsInsideRect( nX, nY, (UIRect&)m_bxTitle.m_rcBoxRT ) )
-			{
-				bTitleBarClick = TRUE;
-			}
-			// Combo Scroll bar
-			else if( ( wmsgResult = m_sbComboList.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if( wmsgResult == WMSG_COMMAND)
-				{
-					pUIManager->ResetHoldBtn();
-					m_nCurComboNum = m_sbComboList.GetScrollPos(); 
-				}
-			}
-			// MissionCase Scroll bar
-			else if( ( wmsgResult = m_sbMissionCaseList.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if( wmsgResult == WMSG_COMMAND)
-				{
-					pUIManager->ResetHoldBtn();
-					m_nCurMissionNum = m_sbMissionCaseList.GetScrollPos();
-					UpdateSetCase();
-				}
-				
-			}
-			else if(IsInsideRect(nX, nY, m_rcCombo))
-			{
-				for(int i=0; i < MAX_COMBO_COUNT; i++)
-				{
-					if (m_pIconsSetCombo[i]->MouseMessage(pMsg) != WMSG_FAIL)
-					{
-						nCurSlotIdex = i;
-						m_nCurItem = m_nCombo[i];
-						bLButtonDownInCombo = TRUE;
-						m_btnDel.SetVisible(TRUE);
-						m_btnDel.SetEnable(TRUE);
-						
-						return WMSG_SUCCESS;
-					}
-				}
-			}
-			else if (IsInsideRect(nX,nY, m_rcCase))
-			{
-				for (int i=0; i<CASE_SLOT_COUNT; i++)
-				{
-					if(m_pIconsSetCase[i]->MouseMessage(pMsg) != WMSG_FAIL)
-					{
-						nCurSlotIdex = i;
-						m_nCurItem = m_nCase[i];
-						bLButtonDownInCase = TRUE;
-						m_btnDel.SetVisible(FALSE);
-						m_btnDel.SetEnable(FALSE);
-						
-						return WMSG_SUCCESS;
-					}
-				}
-			}
-
-			pUIManager->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
-			return WMSG_SUCCESS;
-		}
-		break;
-
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -667,28 +584,21 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				}else if((wmsgResult = m_btnDel.MouseMessage(pMsg)) != WMSG_FAIL)
 				{
-					CMissionCase::_map::iterator	iter = CMissionCase::_mapdata.begin();
-					CMissionCase::_map::iterator	eiter = CMissionCase::_mapdata.end();
-
-					for (;iter != eiter; ++iter)
+					for(int ix=0; ix < _pNetwork->wo_iNomofMissionCase; ix++)
 					{
-						CMissionCase* MC = (*iter).second;
-
-						if (MC == NULL)
-							continue;
-
-						if(MC->GetIndex() == m_nCombo[nCurSlotIdex])
+						CMissionCase MC = _pNetwork->wo_aMissionCase[ix];
+						if(_pNetwork->wo_aMissionCase[ix].m_MissionData.nMission_index == m_nCombo[nCurSlotIdex])
 						{
 							if(m_nCombo[nCurSlotIdex] == NULL) return WMSG_SUCCESS;
 							
 							m_nCombo[nCurSlotIdex] = NULL;
 							m_nComboCount--;
-							m_nComboPoint -= MC->point;
-							m_nAdmissionPay -= MC->nas;
+							m_nComboPoint -= _pNetwork->wo_aMissionCase[ix].m_MissionData.iPoint;
+							m_nAdmissionPay -= _pNetwork->wo_aMissionCase[ix].m_MissionData.price;
 						}
 					}
 					ComboListRefresh();
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					m_nCurItem = NULL;
 				//	m_nCombo[nCurSlotIdex] = NULL;
 				//	m_abtnSetCombo[nCurSlotIdex].InitBtn();
@@ -710,8 +620,9 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 				{
 					for(int i=0; i<MAX_COMBO_COUNT;i++)
 					{
-						if(m_pIconsSetCombo[i]->MouseMessage(pMsg) != WMSG_FAIL)
+						if(m_abtnSetCombo[i].MouseMessage(pMsg) != WMSG_FAIL)
 						{
+							m_abtnSetCombo[i].SetBtnState(UBES_IDLE);
 							return WMSG_SUCCESS;
 						}
 					}
@@ -721,7 +632,7 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 				{
 					for(int i=0; i<CASE_SLOT_COUNT;i++)
 					{
-						if(m_pIconsSetCase[i]->MouseMessage(pMsg) != WMSG_FAIL)
+						if(m_abtnSetCase[i].MouseMessage(pMsg) != WMSG_FAIL)
 						{
 							return WMSG_SUCCESS;
 						}
@@ -739,7 +650,7 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 						AddCombo(m_nCurItem,nCurSlotIdex);						
 					}
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					m_nCurItem = NULL;
 					bLButtonDownInCase = FALSE;
 					bLButtonDownInCombo = FALSE; 
@@ -749,26 +660,19 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 				}
 				else if (bLButtonDownInCombo)
 				{
-					CMissionCase::_map::iterator	iter = CMissionCase::_mapdata.begin();
-					CMissionCase::_map::iterator	eiter = CMissionCase::_mapdata.end();
-
-					for (;iter != eiter; ++iter)
+					for(int ix=0; ix < _pNetwork->wo_iNomofMissionCase; ix++)
 					{
-						CMissionCase* MC = (*iter).second;
-
-						if (MC == NULL)
-							continue;
-
-						if(MC->index == m_nCombo[nCurSlotIdex])
+						CMissionCase MC = _pNetwork->wo_aMissionCase[ix];
+						if(_pNetwork->wo_aMissionCase[ix].m_MissionData.nMission_index == m_nCombo[nCurSlotIdex])
 						{
 							m_nCombo[nCurSlotIdex] = NULL;
 							m_nComboCount--;
-							m_nComboPoint -= MC->point;
-							m_nAdmissionPay -= MC->nas;
+							m_nComboPoint -= _pNetwork->wo_aMissionCase[ix].m_MissionData.iPoint;
+							m_nAdmissionPay -= _pNetwork->wo_aMissionCase[ix].m_MissionData.price;
 						}
 					}
 					ComboListRefresh();
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					m_nCurItem = NULL;
 				//	m_nCombo[nCurSlotIdex] = NULL;
 				//	m_abtnSetCombo[nCurSlotIdex].InitBtn();
@@ -778,7 +682,7 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				}
 				else{
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 					bLButtonDownInCase = FALSE;
 					bLButtonDownInCombo = FALSE;
 
@@ -790,61 +694,55 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONDBLCLK:
 		{
-			if( IsInside(nX,nY) == FALSE )
-				break;
-
-			if(IsInsideRect(nX, nY, m_rcCase))
+			if(IsInside(nX,nY))
 			{
-				for(int i=0; i<CASE_SLOT_COUNT;i++)
+				if(IsInsideRect(nX, nY, m_rcCase))
 				{
-					if(m_pIconsSetCase[i]->MouseMessage(pMsg) != WMSG_FAIL)
+					for(int i=0; i<CASE_SLOT_COUNT;i++)
 					{
-						//	m_abtnSetCombo[m_nComboCount].Copy(m_abtnSetCase[i]);
-						AddCombo(m_nCase[i],i);
-					}
-				}
-			}else if(IsInsideRect(nX, nY, m_rcCombo))
-			{
-				for(int i=0; i<MAX_COMBO_COUNT;i++)
-				{
-					if(m_pIconsSetCombo[i]->MouseMessage(pMsg) != WMSG_FAIL)
-					{
-						CMissionCase::_map::iterator	iter = CMissionCase::_mapdata.begin();
-						CMissionCase::_map::iterator	eiter = CMissionCase::_mapdata.end();
-
-						for (;iter != eiter; ++iter)
+						if(m_abtnSetCase[i].MouseMessage(pMsg) != WMSG_FAIL)
 						{
-							CMissionCase* MC = (*iter).second;
-
-							if (MC == NULL)
-								continue;
-
-							if(MC->index == m_nCombo[nCurSlotIdex])
-							{
-								m_nCombo[nCurSlotIdex] = NULL;
-								m_nComboCount--;
-								m_nComboPoint -= MC->point;
-								m_nAdmissionPay -= MC->nas;
-								
-							}
+						//	m_abtnSetCombo[m_nComboCount].Copy(m_abtnSetCase[i]);
+							AddCombo(m_nCase[i],i);
 						}
-						ComboListRefresh();
+					}
+				}else if(IsInsideRect(nX, nY, m_rcCombo))
+				{
+					for(int i=0; i<MAX_COMBO_COUNT;i++)
+					{
+						if(m_abtnSetCombo[i].MouseMessage(pMsg) != WMSG_FAIL)
+						{								
+							for(int ix=0; ix < _pNetwork->wo_iNomofMissionCase; ix++)
+							{
+								CMissionCase MC = _pNetwork->wo_aMissionCase[ix];
+								if(_pNetwork->wo_aMissionCase[ix].m_MissionData.nMission_index == m_nCombo[nCurSlotIdex])
+								{
+									m_nCombo[nCurSlotIdex] = NULL;
+									m_nComboCount--;
+									m_nComboPoint -= _pNetwork->wo_aMissionCase[ix].m_MissionData.iPoint;
+									m_nAdmissionPay -= _pNetwork->wo_aMissionCase[ix].m_MissionData.price;
+									
+								}
+							}
+							ComboListRefresh();
 						//	m_nCombo[nCurSlotIdex] = NULL;
 						//	m_abtnSetCombo[nCurSlotIdex].InitBtn();
-						m_btnDel.SetVisible(FALSE);
-						m_btnDel.SetEnable(FALSE);
+							m_btnDel.SetVisible(FALSE);
+							m_btnDel.SetEnable(FALSE);
+						}
 					}
-				}
-				
-			}
 
-			// Reset holding button
-			CUIManager::getSingleton()->ResetHoldBtn();
-			m_nCurItem = NULL;
-			bLButtonDownInCase = FALSE;
-			bLButtonDownInCombo = FALSE; 
+				}
+				// Reset holding button
+				_pUIMgr->ResetHoldBtn();
+				m_nCurItem = NULL;
+				bLButtonDownInCase = FALSE;
+				bLButtonDownInCombo = FALSE; 
+				
+				return WMSG_SUCCESS;
+			}
 			
-			return WMSG_SUCCESS;
+
 		}
 		break;
 
@@ -860,7 +758,6 @@ WMSG_RESULT	CUIMonsterCombo::MouseMessage( MSG *pMsg )
 				}else if(m_sbMissionCaseList.MouseMessage(pMsg) != WMSG_FAIL)
 				{
 					m_nCurMissionNum = m_sbMissionCaseList.GetScrollPos();
-					UpdateSetCase();
 					return WMSG_SUCCESS;
 				}
 				
@@ -880,23 +777,16 @@ void CUIMonsterCombo::AddCombo(int nIndex,int nslot)
 	{
 		if(m_nCombo[i] == 0)
 		{
-			m_pIconsSetCombo[i]->copyItem(m_pIconsSetCase[nslot]);
+			m_abtnSetCombo[i].Copy(m_abtnSetCase[nslot]);
 			m_nCombo[i] = nIndex;
-
-			CMissionCase::_map::iterator	iter = CMissionCase::_mapdata.begin();
-			CMissionCase::_map::iterator	eiter = CMissionCase::_mapdata.end();
-
-			for (;iter != eiter; ++iter)
+			
+			for(int ix=0; ix < _pNetwork->wo_iNomofMissionCase; ix++)
 			{
-				CMissionCase* MC = (*iter).second;
-
-				if (MC == NULL)
-					continue;
-
-				if(MC->index == nIndex)
+				CMissionCase MC = _pNetwork->wo_aMissionCase[ix];
+				if(_pNetwork->wo_aMissionCase[ix].m_MissionData.nMission_index == nIndex)
 				{
-					m_nComboPoint += MC->point;
-					m_nAdmissionPay += MC->nas;
+					m_nComboPoint += _pNetwork->wo_aMissionCase[ix].m_MissionData.iPoint;
+					m_nAdmissionPay += _pNetwork->wo_aMissionCase[ix].m_MissionData.price;
 				}
 			}
 			m_nComboCount++;
@@ -917,50 +807,38 @@ void CUIMonsterCombo::CloseMonsterCombo()
 	m_nAdmissionPay = 0;
 	m_nComboPoint = 0;
 	m_nStageCount = 0;
-	
-	int		i;
-	for( i = 0; i < CASE_SLOT_COUNT; i++ )
+
+	for(int i=0; i<CASE_SLOT_COUNT; i++)
 	{		
 		m_nCase[i] = 0;
-		m_pIconsSetCase[i]->clearIconData();
+		m_abtnSetCase[i].InitBtn();		
 	}
-	for( i = 0; i < MAX_COMBO_COUNT; i++ )
+	for (i=0;i<MAX_COMBO_COUNT; i++)
 	{
 		m_nCombo[i] = 0;
-		m_pIconsSetCombo[i]->clearIconData();
+		m_abtnSetCombo[i].InitBtn();
 	}
 	m_bCaseView = FALSE;
 	m_bComboComplete = FALSE;
 	m_bActionChack = FALSE;
 
-	m_nNpcVirIdx = -1;
-
-	CUIManager::getSingleton()->RearrangeOrder( UI_MONSTER_COMBO, FALSE );
+	_pUIMgr->RearrangeOrder( UI_MONSTER_COMBO, FALSE );
 }
 
 // 콤보 오픈시 체크를 하여 콤보를 만들기 위한건지 
-void CUIMonsterCombo::OpenMonsterCombo(BOOL bChack,FLOAT fX, FLOAT fZ, int nNpcVirIdx)
+void CUIMonsterCombo::OpenMonsterCombo(BOOL bChack,FLOAT fX, FLOAT fZ)
 {
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
-
-	m_nNpcVirIdx = nNpcVirIdx;
-
-	// [2010/10/06 : Sora] 몬스터 콤보 오픈시 스크롤 바 초기화
-	m_sbComboList.SetScrollPos(0);
-	m_sbMissionCaseList.SetScrollPos(0);
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if(bChack)
 	{
 		if(m_bActionChack)
 		{
-			pUIManager->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
+			_pUIMgr->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
 			return;
 		}
 
-		if(GAMEDATAMGR()->GetPartyInfo()->GetMemberCount() && (!GAMEDATAMGR()->GetPartyInfo()->AmILeader()))
+		if(_pUIMgr->GetParty()->GetMemberCount() && (!_pUIMgr->GetParty()->AmILeader()))
 		{
 //			CTString strTitle;
 //			CTString strMessage1;
@@ -969,116 +847,105 @@ void CUIMonsterCombo::OpenMonsterCombo(BOOL bChack,FLOAT fX, FLOAT fZ, int nNpcV
 //			strMessage1 = _s("몬스터 콤보 입장료가 부족하여 입장할 수 없습니다.");
 			MsgBoxInfo.SetMsgBoxInfo(_S(191, "확인"),UMBS_OK,UI_NONE,MSGCMD_NULL);
 			MsgBoxInfo.AddString(_S(4029,"파티장만 몬스터 콤보를 만들 수 있습니다."));
-			pUIManager->CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return;
 		}else
 		{
 			m_bCaseView = TRUE;
-			m_sbMissionCaseList.SetCurItemCount( CMissionCase::getsize() );
-			pUIManager->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
+			
+			m_sbMissionCaseList.SetCurItemCount( _pNetwork->wo_iNomofMissionCase );
+			_pUIMgr->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
 		}
 
 	}else
 	{
-		pUIManager->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
+		_pUIMgr->RearrangeOrder( UI_MONSTER_COMBO, TRUE);
 	//	SendComboMessage( MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ);
 	}
 
-	UpdateSetCase();
 }
 
-void CUIMonsterCombo::SendComboMessage(LONG comboMessage, BOOL bYesNo, int nNpcVirIdx)
+void CUIMonsterCombo::SendComboMessage(LONG comboMessage,BOOL bYesNo)
 {
-	CNetworkMessage nmComboMessage;
-
-	if (comboMessage == MSG_EX_MONSTERCOMBO_GOTO_STAGE)
-	{
-		m_bStageClear = FALSE;
-	}
+	CNetworkMessage nmComboMessage(MSG_EXTEND);
+	nmComboMessage <<(LONG)MSG_EX_MONSTERCOMBO;
 
 	switch( comboMessage ) 
 	{
 	case MSG_EX_MONSTERCOMBO_EDIT_COMPLETE:
 		{
-			RequestClient::MCEditComplete* pPack = reinterpret_cast<RequestClient::MCEditComplete*>(nmComboMessage.nm_pubMessage);
-
-			pPack->type = MSG_EXTEND;
-			pPack->subType = MSG_EX_MONSTERCOMBO;
-			pPack->thirdType = MSG_EX_MONSTERCOMBO_EDIT_COMPLETE;
-			pPack->count = m_nComboCount;
-			pPack->npcIndex = m_nNpcVirIdx;
-				
-			int i;
-			for(i=0; i<m_nComboCount; i++)
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_EDIT_COMPLETE;
+			nmComboMessage << m_nComboCount;
+			for(int i=0; i<m_nComboCount; i++)
 			{
-				pPack->list[i] = m_nCombo[i];
-			}
-			int Size = sizeof(int) * i;
-			nmComboMessage.setSize( sizeof(RequestClient::MCEditComplete) + Size );
+				nmComboMessage << m_nCombo[i];
+			}			
+
 		}
 		break;
-
+	case MSG_EX_MONSTERCOMBO_EDIT_CANCEL:
+		{
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_EDIT_CANCEL;
+		}
+		break;
+	case MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ:
+		{
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ;
+		}
+		break;
 	case MSG_EX_MONSTERCOMBO_GOTO_COMBO:
 		{
-			RequestClient::MCGotoCombo* pPack = reinterpret_cast<RequestClient::MCGotoCombo*>(nmComboMessage.nm_pubMessage);
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_GOTO_COMBO;
+			nmComboMessage << (SLONG)22;	// 22번존 콤보 던전
+			nmComboMessage << (SLONG)0;		// Extra 넘버 
+			nmComboMessage << (SLONG)_pNetwork->_TargetInfo.dbIdx;
 
-			UIMGR()->SetCSFlagOn(CSF_TELEPORT);
-
-			pPack->type = MSG_EXTEND;
-			pPack->subType = MSG_EX_MONSTERCOMBO;
-			pPack->thirdType = MSG_EX_MONSTERCOMBO_GOTO_COMBO;
-			pPack->zoneIndex = 22;// 22번존 콤보 던전
-			pPack->extra = 0;
-			pPack->npcIndex = m_nNpcVirIdx;
-
-			nmComboMessage.setSize( sizeof(RequestClient::MCGotoCombo) );
 			CloseMonsterCombo();
 		}
 		break;
 	case  MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM:
 		{
-			RequestClient::MCConfirm* pPack = reinterpret_cast<RequestClient::MCConfirm*>(nmComboMessage.nm_pubMessage);
-
-			pPack->type = MSG_EXTEND;
-			pPack->subType = MSG_EX_MONSTERCOMBO;
-			pPack->thirdType = MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM;
-			pPack->yesno = bYesNo;
-			pPack->bossIndex = m_nBossIdx;
-			
-			nmComboMessage.setSize( sizeof(RequestClient::MCConfirm) );
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM;
+			nmComboMessage << (UBYTE)bYesNo;
+			nmComboMessage << m_nBossIdx;
 		}
 		break;
+	case MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO:
+		{
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO;
+		}
+		break;
+//	case MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO_CONFIRM:
+// 		{
+// 			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO_CONFIRM;
+// 			nmComboMessage << (UBYTE)bYesNo;
+// 			nmComboMessage << m_nBossIdx;
+// 		}
+// 		break;
 	case MSG_EX_MONSTERCOMBO_GIVEUP:
 		{
-			UIMGR()->SetCSFlagOn(CSF_TELEPORT);
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_GIVEUP;
+			nmComboMessage << (SLONG)4;		// 4번존 드라탄
+			nmComboMessage << (SLONG)0;		// Extra 넘버 
+			nmComboMessage << (SLONG)_pNetwork->_TargetInfo.dbIdx;
 
-			RequestClient::MCGiveup* pPack = reinterpret_cast<RequestClient::MCGiveup*>(nmComboMessage.nm_pubMessage);
-
-			pPack->type = MSG_EXTEND;
-			pPack->subType = MSG_EX_MONSTERCOMBO;
-			pPack->thirdType = MSG_EX_MONSTERCOMBO_GIVEUP;
-			pPack->zoneIndex = 4;// 4번존 드라탄
-			pPack->extra = 0;
-			pPack->npcIndex = nNpcVirIdx;
-
-			nmComboMessage.setSize( sizeof(RequestClient::MCGiveup) );
 			CloseMonsterCombo();
 		}
 		break;
-
-	case MSG_EX_MONSTERCOMBO_EDIT_CANCEL:
-	case MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ:
-	case MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO:
-	case MSG_EX_MONSTERCOMBO_START:
-	case MSG_EX_MONSTERCOMBO_GOTO_WAITROOM:
+	case  MSG_EX_MONSTERCOMBO_START:
+		{
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_START;			
+		}
+		break;
 	case MSG_EX_MONSTERCOMBO_GOTO_STAGE:
 		{
-			pTypeThirdBase* pPack = reinterpret_cast<pTypeThirdBase*>(nmComboMessage.nm_pubMessage);
-			pPack->type = MSG_EXTEND;
-			pPack->subType = MSG_EX_MONSTERCOMBO;
-			pPack->thirdType = comboMessage;
-
-			nmComboMessage.setSize( sizeof(pTypeThirdBase));
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_GOTO_STAGE;
+			m_bStageClear = FALSE;
+		}
+		break;
+	case MSG_EX_MONSTERCOMBO_GOTO_WAITROOM:
+		{
+			nmComboMessage << (UBYTE)MSG_EX_MONSTERCOMBO_GOTO_WAITROOM;
 		}
 		break;
 
@@ -1090,70 +957,68 @@ void CUIMonsterCombo::SendComboMessage(LONG comboMessage, BOOL bYesNo, int nNpcV
 
 void CUIMonsterCombo::RecComboErrorMessage(UBYTE comboMessage)
 {
-	// [2010/10/06 : Sora] 몬스터 콤보 에러 메시지 중복 표시 수정
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_COMBO_ERROR) )
-	{
-		pUIManager->CloseMessageBox(MSGCMD_COMBO_ERROR);
-	}
-
-	CTString strTitle = _S(191, "확인");
+	CTString strTitle;
 	CTString strMessage1;
 	CUIMsgBox_Info	MsgBoxInfo;
 
 	switch( comboMessage ) 
 	{
-		case MSG_EX_MONSTERCOMBO_ERROR_EDIT_COMPLETE_OK: // 편집완료
-			{
-				strMessage1 = _S(4030,"몬스터 콤보 편집을 완료 하였습니다.");
-				m_bComboComplete = TRUE;
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_EDIT_COMPLETE_FAIL: // 편집완료 실패
-			{
-				strMessage1 = _S(4031,"몬스터 콤보 편집에 실패 하였습니다.");
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_MONEY:   // 나스부족
-			{
-				strMessage1 = _S(4032,"몬스터 콤보 입장료가 부족하여 입장할 수 없습니다.");
-				pUIManager->SetCSFlagOff(CSF_TELEPORT);
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_FULL:   // 콤보존 공간이 없을 경우
-			{
-				strMessage1 = _S(4033,"몬스터 콤보존이 포화상태이므로 입장할 수 없습니다.");
-				pUIManager->SetCSFlagOff(CSF_TELEPORT);
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_NOT_EDIT:  // 편집완료가 안됨
-			{
-				strMessage1 = _S(4034,"몬스터 콤보 편집완료가 되지 않았습니다.");
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_NOT_COMPLETE_STAGE: // 스테이지 완료되지 않았음
-			{
-				strMessage1 = _S(4035,"스테이지가 아직 완료되지 않아 입장할 수 없습니다.");
-			}
-			break;	
-		case MSG_EX_MONSTERCOMBO_ERROR_DEAD_CHAR: // 죽은 캐릭터가 있어서 스테이지 진행할 수 없음
-			{
-				strMessage1 = _S(4795,"죽은 캐릭터가 있어서 스테이지를 진행할 수 없습니다.");
-				m_bStageClear = 1; // MSG_EX_MONSTERCOMBO_GOTO_STAGE에서 FALSE로 변경한스테이지 클리어 상태 복구
-			}
-			break;
-		case MSG_EX_MONSTERCOMBO_ERROR_ALREADY_START: // 스테이지가 이미 시작되어 소환할 수 없음
-			{
-				strMessage1 = _S(4796,"스테이지가 이미 시작되어 소환할 수 없습니다.");
-			}
-			break;
-	}
+	case  MSG_EX_MONSTERCOMBO_ERROR_EDIT_COMPLETE_OK: // 편집완료
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4030,"몬스터 콤보 편집을 완료 하였습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
+			m_bComboComplete = TRUE;
+		}break;
+	case MSG_EX_MONSTERCOMBO_ERROR_EDIT_COMPLETE_FAIL: // 편집완료 실패
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4031,"몬스터 콤보 편집에 실패 하였습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
-	MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_COMBO_ERROR);
-	MsgBoxInfo.AddString(strMessage1);
-	pUIManager->CreateMessageBox(MsgBoxInfo);
+		}break;
+	case MSG_EX_MONSTERCOMBO_ERROR_MONEY:   // 나스부족
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4032,"몬스터 콤보 입장료가 부족하여 입장할 수 없습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
+
+		}break;
+	case MSG_EX_MONSTERCOMBO_ERROR_FULL:   // 콤보존 공간이 없을 경우
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4033,"몬스터 콤보존이 포화상태이므로 입장할 수 없습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
+
+		}break;
+	case MSG_EX_MONSTERCOMBO_ERROR_NOT_EDIT:  // 편집완료가 안됨
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4034,"몬스터 콤보 편집완료가 되지 않았습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
+
+		}break;
+	case MSG_EX_MONSTERCOMBO_ERROR_NOT_COMPLETE_STAGE: // 스테이지 완료되지 않았음
+		{
+			strTitle = _S(191, "확인");
+			strMessage1 = _S(4035,"스테이지가 아직 완료되지 않아 입장할 수 없습니다.");
+			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
+			MsgBoxInfo.AddString(strMessage1);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
+
+		}break;
+		
+	}
 }
 //------------
 // input:	nStagenum 다음 스테이지 넘버
@@ -1181,13 +1046,16 @@ void CUIMonsterCombo::SetComboList(int num, INDEX nIndex)
 {
 	m_nCombo[num]=nIndex;
 
-	CMissionCase* MC = CMissionCase::getData(nIndex);
-
-	if (MC == NULL)
-		return;
-
-	m_nComboPoint += MC->point;
-	m_nAdmissionPay += MC->nas;
+	for(int i=0; i < _pNetwork->wo_iNomofMissionCase; i++)
+	{
+		CMissionCase MC = _pNetwork->wo_aMissionCase[i];
+		if(_pNetwork->wo_aMissionCase[i].m_MissionData.nMission_index == nIndex)
+		{
+			m_nComboPoint += _pNetwork->wo_aMissionCase[i].m_MissionData.iPoint;
+			m_nAdmissionPay += _pNetwork->wo_aMissionCase[i].m_MissionData.price;
+			return;
+		}
+	}
 }
 
 void CUIMonsterCombo::StageCount(int stagenum)
@@ -1197,84 +1065,47 @@ void CUIMonsterCombo::StageCount(int stagenum)
 	int ntempNum = stagenum - 1;
 	int ntempgab = 0;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	INDEX nDrowWidth = pDrawPort->GetWidth();
-	INDEX nDrowHeight = pDrawPort->GetHeight();
+	INDEX nDrowWidth = _pUIMgr->GetDrawPort()->GetWidth();
+	INDEX nDrowHeight = _pUIMgr->GetDrawPort()->GetHeight();
 	FLOAT	fAddTexWidth	= m_ptdAddTexture->GetPixWidth();
 	FLOAT	fAddTexHeight	= m_ptdAddTexture->GetPixHeight();	
 
-	if (m_nCountType == COMBO_TYPE)
+	if(ntempNum >= 10)
+	{ 
+	//	ntempNum = (stagenum / 10)-1;
+		m_rtStagenum[0].SetUV(920,134,1020,256,fAddTexWidth,fAddTexHeight);
+		ntempNum = (stagenum-1) % 10;
+		m_rtStagenum[1].SetUV(0+(102*ntempNum),134,104+(102*ntempNum),256,fAddTexWidth,fAddTexHeight);
+		ntempgab = 24;
+	}else
 	{
-		if(ntempNum >= 10)
-		{ 
-			m_rtStagenum[0].SetUV(920,134,1020,256,fAddTexWidth,fAddTexHeight);
-			ntempNum = (stagenum-1) % 10;
-			m_rtStagenum[1].SetUV(0+(102*ntempNum),134,104+(102*ntempNum),256,fAddTexWidth,fAddTexHeight);
-			ntempgab = 24;
-		}else
-		{
-			m_rtStagenum[0].SetUV(0+(102*ntempNum),134,104+(102*ntempNum),256,fAddTexWidth,fAddTexHeight);
-			m_rtStagenum[1].SetUV(0,0,0,0,fAddTexWidth,fAddTexHeight);
-		}
-		
-		pDrawPort->AddTexture( (nDrowWidth/2)-48-ntempgab, (nDrowHeight/2-10)-50, (nDrowWidth/2)+48-ntempgab, (nDrowHeight/2-10)+50,
-			m_rtStagenum[0].U0, m_rtStagenum[0].V0, m_rtStagenum[0].U1, m_rtStagenum[0].V1,
-			0xFFFFFFFF );
-		pDrawPort->AddTexture( (nDrowWidth/2)-48+ntempgab, (nDrowHeight/2-10)-50, (nDrowWidth/2)+48+ntempgab, (nDrowHeight/2-10)+50,
-			m_rtStagenum[1].U0, m_rtStagenum[1].V0, m_rtStagenum[1].U1, m_rtStagenum[1].V1,
- 														0xFFFFFFFF );
-	}else//CUBE_TYPE
-	{
-		ntempNum = stagenum;
-		UIRectUV temCountBack;
-		temCountBack.SetUV(50, 260, 414, 355 ,fAddTexWidth,fAddTexHeight);	
-		pDrawPort->AddTexture( (nDrowWidth/2)-182, (nDrowHeight/3)-10, (nDrowWidth/2)+182, (nDrowHeight/3)+37,
-			temCountBack.U0, temCountBack.V0, temCountBack.U1, temCountBack.V1,	0xFFFFFFFF );
-			
-		if(ntempNum >= 10)
-		{ 
-			ntempNum = stagenum / 10;
-			m_rtStagenum[0].SetUV(6+(53*ntempNum),353,58+(53*ntempNum),432,fAddTexWidth,fAddTexHeight);
-			ntempNum = (stagenum) % 10;
-			m_rtStagenum[1].SetUV(6+(53*ntempNum),353,58+(53*ntempNum),432,fAddTexWidth,fAddTexHeight);
-			ntempgab = 20;
-		}else
-		{
-			m_rtStagenum[0].SetUV(6+(53*ntempNum),353,58+(53*ntempNum),432,fAddTexWidth,fAddTexHeight);
-			m_rtStagenum[1].SetUV(0,0,0,0,fAddTexWidth,fAddTexHeight);
-		}
-		
-		pDrawPort->AddTexture( (nDrowWidth/2)-27-ntempgab, (nDrowHeight/3)-47, (nDrowWidth/2)+27-ntempgab, (nDrowHeight/3)+47,
-			m_rtStagenum[0].U0, m_rtStagenum[0].V0, m_rtStagenum[0].U1, m_rtStagenum[0].V1,
-			0xFFFFFFFF );
-		pDrawPort->AddTexture( (nDrowWidth/2)-27+ntempgab, (nDrowHeight/3)-47, (nDrowWidth/2)+27+ntempgab, (nDrowHeight/3)+47,
-			m_rtStagenum[1].U0, m_rtStagenum[1].V0, m_rtStagenum[1].U1, m_rtStagenum[1].V1,
- 														0xFFFFFFFF );
-
+		m_rtStagenum[0].SetUV(0+(102*ntempNum),134,104+(102*ntempNum),256,fAddTexWidth,fAddTexHeight);
+		m_rtStagenum[1].SetUV(0,0,0,0,fAddTexWidth,fAddTexHeight);
 	}
-	
+
+	_pUIMgr->GetDrawPort()->AddTexture( (nDrowWidth/2)-48-ntempgab, (nDrowHeight/2-10)-50, (nDrowWidth/2)+48-ntempgab, (nDrowHeight/2-10)+50,
+ 												m_rtStagenum[0].U0, m_rtStagenum[0].V0, m_rtStagenum[0].U1, m_rtStagenum[0].V1,
+ 														0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( (nDrowWidth/2)-48+ntempgab, (nDrowHeight/2-10)-50, (nDrowWidth/2)+48+ntempgab, (nDrowHeight/2-10)+50,
+ 												m_rtStagenum[1].U0, m_rtStagenum[1].V0, m_rtStagenum[1].U1, m_rtStagenum[1].V1,
+ 														0xFFFFFFFF );
 	
 }
 
-void CUIMonsterCombo::SetSysImage(int systype, BOOL bView, int countType) 
+void CUIMonsterCombo::SetSysImage(int systype, BOOL bView) 
 {
 		m_nSysType = systype;
 		m_bShowSysImage = bView;
-		m_nCountType = countType;
 		m_tmStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 }
 
+#define DROW_SENTER_X (_pUIMgr->GetDrawPort()->GetWidth()/2)
+#define DROW_SENTER_Y (_pUIMgr->GetDrawPort()->GetHeight()/2)-100
 void CUIMonsterCombo::SysStateRender()
 {
-	if( m_bShowSysImage == FALSE )
-		return;
+	if(!m_bShowSysImage) return;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	int nDrawCenterX = pDrawPort->GetWidth() / 2;
-	int nDrawCenterY = (pDrawPort->GetHeight() / 2) - 100;
-
-	 pDrawPort->InitTextureData( m_ptdAddTexture );
+	 _pUIMgr->GetDrawPort()->InitTextureData( m_ptdAddTexture );
 	
 	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
@@ -1284,46 +1115,41 @@ void CUIMonsterCombo::SysStateRender()
 		{
 		case SYS_STAGE:
 			{
-				if (m_nCountType == COMBO_TYPE)
-				{
-					pDrawPort->AddTexture(nDrawCenterX-88,nDrawCenterY-41,nDrawCenterX+88,nDrawCenterY+41,
-						m_rtSysView[SYS_STAGE].U0,m_rtSysView[SYS_STAGE].V0,m_rtSysView[SYS_STAGE].U1,m_rtSysView[SYS_STAGE].V1,
+				_pUIMgr->GetDrawPort()->AddTexture(DROW_SENTER_X-88,DROW_SENTER_Y-41,DROW_SENTER_X+88,DROW_SENTER_Y+41,
+													m_rtSysView[SYS_STAGE].U0,m_rtSysView[SYS_STAGE].V0,m_rtSysView[SYS_STAGE].U1,m_rtSysView[SYS_STAGE].V1,
 													0xFFFFFFFF);
-				}
-				
 				StageCount(m_nStageCount);
 
 			}break;
 		case SYS_MISSION:
 			{
-				pDrawPort->AddTexture(nDrawCenterX-128,nDrawCenterY-62,nDrawCenterX+128,nDrawCenterY+62,
+				_pUIMgr->GetDrawPort()->AddTexture(DROW_SENTER_X-128,DROW_SENTER_Y-62,DROW_SENTER_X+128,DROW_SENTER_Y+62,
 													m_rtSysView[SYS_MISSION].U0,m_rtSysView[SYS_MISSION].V0,m_rtSysView[SYS_MISSION].U1,m_rtSysView[SYS_MISSION].V1,
 													0xFFFFFFFF);
-				pDrawPort->AddTexture(nDrawCenterX-128,nDrawCenterY-62+100,nDrawCenterX+128,nDrawCenterY+62+100,
+				_pUIMgr->GetDrawPort()->AddTexture(DROW_SENTER_X-128,DROW_SENTER_Y-62+100,DROW_SENTER_X+128,DROW_SENTER_Y+62+100,
 													m_rtSysView[SYS_CLEAR].U0,m_rtSysView[SYS_CLEAR].V0,m_rtSysView[SYS_CLEAR].U1,m_rtSysView[SYS_CLEAR].V1,
 													0xFFFFFFFF);
 			}break;
 		case SYS_CLEAR:
 			{
-				pDrawPort->AddTexture(nDrawCenterX-128,nDrawCenterY-62,nDrawCenterX+128,nDrawCenterY+62,
+				_pUIMgr->GetDrawPort()->AddTexture(DROW_SENTER_X-128,DROW_SENTER_Y-62,DROW_SENTER_X+128,DROW_SENTER_Y+62,
 													m_rtSysView[SYS_CLEAR].U0,m_rtSysView[SYS_CLEAR].V0,m_rtSysView[SYS_CLEAR].U1,m_rtSysView[SYS_CLEAR].V1,
 													0xFFFFFFFF);
 
 			}break;
 		case SYS_FAIL:
 			{
-				pDrawPort->AddTexture(nDrawCenterX-97,nDrawCenterY-62,nDrawCenterX+97,nDrawCenterY+62,
+				_pUIMgr->GetDrawPort()->AddTexture(DROW_SENTER_X-97,DROW_SENTER_Y-62,DROW_SENTER_X+97,DROW_SENTER_Y+62,
 													m_rtSysView[SYS_FAIL].U0,m_rtSysView[SYS_FAIL].V0,m_rtSysView[SYS_FAIL].U1,m_rtSysView[SYS_FAIL].V1,
 													0xFFFFFFFF);
 
 			}break;
 		}
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	}else
 	{
 		m_bShowSysImage = FALSE;
 		m_nSysType = SYS_STAGE;
-		m_nCountType = COMBO_TYPE;
 	}
 	
 }
@@ -1335,22 +1161,11 @@ void CUIMonsterCombo::ComboListRefresh()
 		if(m_nCombo[i] == NULL && m_nCombo[i+1] != NULL && (i+1 < 20))
 		{
 			m_nCombo[i] = m_nCombo[i+1];
-			m_pIconsSetCombo[i]->copyItem(m_pIconsSetCombo[i+1]);
+			m_abtnSetCombo[i].Copy(m_abtnSetCombo[i+1]);
 
 			m_nCombo[i+1] = NULL;
-			m_pIconsSetCombo[i+1]->clearIconData();
+			m_abtnSetCombo[i+1].InitBtn();
 		}
 	}
 
-}
-
-void CUIMonsterCombo::UpdateSetCase()
-{
-	for (int i = 0; i < MISSION_SLOT_MAX; ++i)
-	{
-		CMissionCase* MC = CMissionCase::getDataSeq(m_nCurMissionNum + i);
-	
-		m_pIconsSetCase[i]->setData(UBET_COMBO, m_nCurMissionNum + i);
-		m_pIconsSetCase[i]->SetPos(317, 34+(52*i));
-	}
 }

@@ -1,7 +1,5 @@
 #include "StdH.h"
 
-#include <vector>
-
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/Skill.h>
 #include <Engine/Ska/StringTable.h>
@@ -11,18 +9,10 @@
 #include <Engine/Interface/UISummon.h>
 #include <Engine/Interface/UIQuickSlot.h>
 #include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Secure/FileSecure.h>	// [2012/07/18 : Sora]  파일 보안코드 추가
-#include <Engine/Contents/Base/UICharacterInfoNew.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Interface/UIGuild.h>
-#include <Engine/Info/MyInfo.h>
-#include <Engine/Contents/Base/UISkillNew.h>
-
 
 CSkill::CSkill(void) 
 {	
-	memset(&Skill_Data.index, 0, sizeof(_SkillData) - (sizeof(std::string) * 3));
-
+	memset(&Skill_Data, 0, sizeof(_SkillData));
 	bCanCancel	= FALSE;
 	bNeedTarget	= FALSE;
 }
@@ -33,84 +23,27 @@ CSkill::~CSkill(void)
 		m_vectorSkillLevels.clear();
 }
 
-void CSkill::Init(void)
+CSkill::Init(void) 
 {
-	bCanCancel = FALSE;
+	bCanCancel = FALSE;	
 }
 
 // yjpark |<--
-void CSkill::SetStartTime( int nRemainTime /*= 0*/)
+void CSkill::SetStartTime()
 {
-	Skill_Data.Skill_StartTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-	
-	if (nRemainTime > 0)
-		Skill_Data.Skill_StartTime -= ( (double)nRemainTime );
-
-	SetStartSkillDelay( Skill_Data.index );
-}
-
-void CSkill::SetStartSkillDelay( int nSkillIndex )
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	MY_INFO()->SetSkillDelay(nSkillIndex, true);
-	pUIManager->GetQuickSlot()->StartSkillDelay( nSkillIndex );
-	pUIManager->GetSkillNew()->SetSkillCoolTime(nSkillIndex);
-	pUIManager->GetCharacterInfo()->StartSkillDelay(nSkillIndex);	
-	pUIManager->GetPetInfo()->StartSkillDelay( nSkillIndex );
-	pUIManager->GetGuild()->StartGuildSkillDelay( nSkillIndex );
-	MY_INFO()->SetPetSkillDelay(0, nSkillIndex, true);
+	Skill_Data.Skill_StartTime =_pTimer->GetHighPrecisionTimer().GetSeconds();
+	_pUIMgr->GetCharacterInfo()->StartSkillDelay( Skill_Data.index );
+	_pUIMgr->GetQuickSlot()->StartSkillDelay( Skill_Data.index );
+	_pUIMgr->GetPetInfo()->StartSkillDelay( Skill_Data.index );
+	_pUIMgr->GetWildPetInfo()->StartSkillDelay(Skill_Data.index);
 
 	for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 	{
-		CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
-		pUISummon->StartSkillDelay( nSkillIndex );
+		CUISummon* pUISummon = (CUISummon*)_pUIMgr->GetUI(i);
+		pUISummon->StartSkillDelay( Skill_Data.index );
 	}	
 }
-
-void  CSkill::ResetStartTime()
-{
-	Skill_Data.Skill_StartTime = 0.0f;
-}
 // yjpark     -->|
-//[sora] 미번역 스트링 index 표시
-void CSkill::SetNoTranslate()
-{
-	char buff[MAX_PATH];
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, Skill_Data.transFlag ) )
-	{
-		memset(buff, 0, MAX_PATH);
-		sprintf( buff, "[%d] : skill name", Skill_Data.index );
-		Skill_Data.name = buff;
-	}
-	if( pUIManager->IsNotTranslated( TRANS_DESC, Skill_Data.transFlag ) )
-	{
-		memset(buff, 0, MAX_PATH);
-		sprintf( buff, "[%d] : skill desc", Skill_Data.index );
-		Skill_Data.client_description = buff;
-	}
-	if( pUIManager->IsNotTranslated( TRANS_DESC2, Skill_Data.transFlag ) )
-	{
-		memset(buff, 0, MAX_PATH);
-		sprintf( buff, "[%d] : skill tooltip", Skill_Data.index );
-		Skill_Data.client_tooltip = buff;
-	}
-}
-
-void CSkill::ClearNoTranslate()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, Skill_Data.transFlag ) )
-		Skill_Data.name = "";
-	if( pUIManager->IsNotTranslated( TRANS_DESC, Skill_Data.transFlag ) )
-		Skill_Data.client_description = "";
-	if( pUIManager->IsNotTranslated( TRANS_DESC2, Skill_Data.transFlag ) )
-		Skill_Data.client_tooltip = "";
-}
 
 //안태훈 수정 시작	//(Open beta)(2004-11-29)
 #include <vector>
@@ -131,16 +64,6 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 		return -1;
 	}
 
-	// [2012/07/18 : Sora]  파일 보안코드 추가
- 	CFileSecure fs;
- 	if( !fs.DecodeFile( fp ) )
- 	{
- 		return -1;
- 	}
-
-	fflush(fp);
-
-	int	i, j, k, iWeapon;
 	int iLastSkillIndex	= 0; //스킬 갯수.
 	int iLength		= -1;
 	int iReadBytes	= 0;
@@ -160,15 +83,10 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 #define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fp); }
 	//////////////////////////////////////////////////////////////////////////	
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	
-	for( i = 0; i < iLastSkillIndex; i++) //스킬 갯수만큼.
+	for(int i = 0; i < iLastSkillIndex; i++) //스킬 갯수만큼.
 	{
 		int iIndex = 1; //스킬번호.	
 		LOADINT(iIndex);
-		
-		if( fs.IsEndCode( iIndex ) )	// [2012/07/18 : Sora]  파일 end
-			break;
 
 		if(iReadBytes <= 0)		break;										// EOF
 		ASSERT(iIndex != -1	&& "Invalid Skill Index");
@@ -181,10 +99,12 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 		LOADINT(SD.job);
 		LOADINT(SD.job2);
 		LOADINT(SD.petindex);
+		LOADSTR(SD.name);
 		LOADCHAR(SD.type);
 		LOADINT(SD.flag);
 		LOADINT(SD.sorcerer); 
 		LOADCHAR(SD.maxLevel);
+
 		// 거리
 		LOADFLOAT(SD.appRange);
 		LOADFLOAT(SD.fireRange);
@@ -197,13 +117,12 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			SD.targetType == STT_TARGET_RANGE || 
 			SD.targetType == STT_PARTY_ONE ||
 			SD.targetType == STT_TARGET_D120 ||
-			SD.targetType == STT_TARGET_RECT ||
-			SD.targetType == STT_GUILD_ONE)
+			SD.targetType == STT_TARGET_RECT )
 		{
 			SkillData.bNeedTarget = TRUE;
 		}
 
-//		LOADCHAR(SD.targetNum);
+		LOADCHAR(SD.targetNum);
 
 		// 사용조건
 		LOADINT(SD.useState);
@@ -215,7 +134,6 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 		LOADCHAR(SD.useMagicLevel2);
 		LOADINT(SD.useMagicIndex3);
 		LOADCHAR(SD.useMagicLevel3);
-		LOADINT(SD.useSoulCount);
 
 		// 적용조건
 		LOADINT(SD.appState);
@@ -226,7 +144,12 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 		LOADINT(SD.fireTime);
 		LOADINT(SD.reuseTime);
 
-		for( iWeapon = 0; iWeapon < WEAPON_COUNT; ++iWeapon )
+		if( SD.reuseTime == 0 )
+		{// 기본 3초
+			SD.reuseTime = 30; 
+		}
+
+		for(INDEX iWeapon=0; iWeapon<WEAPON_COUNT; ++iWeapon)
 		{
 			// 시전
 			LOADSTR(SD.client[iWeapon].readyAni);
@@ -253,24 +176,34 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			LOADFLOAT(SD.client[iWeapon].fireobjDelay[1]);
 			LOADFLOAT(SD.client[iWeapon].fireobjDelay[2]);
 			LOADFLOAT(SD.client[iWeapon].fireobjDelay[3]);
-			// vector 할당 없이 정렬 가능. [2/17/2011 rumist]
-			std::sort( (SD.client[iWeapon]).fireobjDelay, (SD.client[iWeapon]).fireobjDelay + SD.client[iWeapon].fireobjDelayCount );
+			//시간 순으로 소팅
+			std::vector<float> tempvec;
+			for(int a=0; a<SD.client[iWeapon].fireobjDelayCount; ++a)
+			{
+				tempvec.push_back(SD.client[iWeapon].fireobjDelay[a]);
+			}
+			std::sort(tempvec.begin(), tempvec.end());
+			for(a=0; a<SD.client[iWeapon].fireobjDelayCount; ++a)
+			{
+				SD.client[iWeapon].fireobjDelay[a] = tempvec[a];
+			}
 			LOADFLOAT(SD.client[iWeapon].fireobjDestDelay);
 		}
-		// After Effect
-		ZeroMemory(SD.After_AttachEffect, 256);
-		LOADSTR(SD.After_AttachEffect);
+
+		// 설명
+		LOADSTR(SD.client_description);
+		LOADSTR(SD.client_tooltip);
+
 		// 아이콘
 		LOADINT(SD.client_icon_texid);
 		LOADINT(SD.client_icon_row);
 		LOADINT(SD.client_icon_col);
 
-		for( j = 0; j < SD.maxLevel;++j)
+		for(int j = 0; j < SD.maxLevel;++j)
 		{		
 			_SkillLevel SL;
 			LOADINT(SL.needHP);
 			LOADINT(SL.needMP);
-			LOADINT(SL.needGP);
 			LOADINT(SL.durtime);
 			LOADINT(SL.dummyPower);
 			LOADINT(SL.needItemIndex1);
@@ -279,12 +212,12 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			LOADINT(SL.needItemCount2);
 			LOADINT(SL.learnLevel);
 			LOADINT(SL.learnSP);
-			for(  k = 0; k < 3; k++ )
+			for( int k = 0; k < 3; k++ )
 			{
 				LOADINT(SL.learnSkillIndex[k]);
 				LOADCHAR(SL.learnSkillLevel[k]);
 			}
-			for(  k = 0; k < 3; k++ )
+			for( k = 0; k < 3; k++ )
 			{
 				LOADINT(SL.learnItemIndex[k]);
 				LOADINT(SL.learnItemCount[k]);
@@ -308,15 +241,9 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			LOADINT(SL.magicIndex3);
 			LOADCHAR(SL.magicLevel3);			
 // WSS_NEW_GUILD_SYSTEM 070716 --------------------->>	
+#ifdef NEW_GUILD_SYSTEM 
 			LOADINT(SL.learnGP);				
-// -------------------------------------------------<<
-
-// 속성 시스템 스킬 속성 정보 LOD에 추가[1/21/2013 Ranma]>>	
-			LOADCHAR(SL.attratt);
-			LOADCHAR(SL.attrattLv);
-			LOADCHAR(SL.attrdef);
-			LOADCHAR(SL.attrdefLv);
-			LOADINT(SL.targetmax);
+#endif
 // -------------------------------------------------<<
 			SkillData.m_vectorSkillLevels.push_back(SL);
 		}
@@ -325,20 +252,12 @@ int CSkill::LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char*
 			( (SkillData.GetJob() == HEALER) || 
 			(SkillData.GetJob() == MAGE) || 
 			(SkillData.GetJob() == ROGUE) || 
-			(SkillData.GetJob() == SORCERER) ||
-			(SkillData.GetJob() == NIGHTSHADOW) ||
-#ifdef CHAR_EX_ROGUE
-			(SkillData.GetJob() == EX_ROGUE) || // [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-			(SkillData.GetJob() == EX_MAGE) || //2013/01/08 jeil EX 메이지 추가 
-#endif
-			(SkillData.GetFlag() & SF_GUILD )))
+			(SkillData.GetJob() == SORCERER) ))
 		{
 			SkillData.bCanCancel = TRUE;
 		}
 		
-		for( iWeapon = 0; iWeapon < WEAPON_COUNT; ++iWeapon )
+		for(iWeapon=0; iWeapon<WEAPON_COUNT; ++iWeapon)
 		{
 			SkillData.idPlayer_Anim_Skill[iWeapon][0] = ska_GetIDFromStringTable(SD.client[iWeapon].readyAni);
 			SkillData.idPlayer_Anim_Skill[iWeapon][1] = ska_GetIDFromStringTable(SD.client[iWeapon].stillAni);

@@ -11,6 +11,7 @@
 
 
 #include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButtonEx.h>
 
 // Define skill slot
 #define	SLEARN_SLOT_SX					18
@@ -49,8 +50,8 @@ protected:
 	CUIListBox				m_lbSkillDesc;							// List box of skill description
 
 	// Skill buttons
-	CUIIcon*				m_pIconsCommand[SLEARN_SLOT_ROW_TOTAL];	// Buttons of active skill
-	CUIIcon*				m_pIconsSkill[SLEARN_SLOT_ROW_TOTAL];	// Buttons of passive skill
+	CUIButtonEx				m_btnCommands[SLEARN_SLOT_ROW_TOTAL];	// Buttons of active skill
+	CUIButtonEx				m_btnSkills[SLEARN_SLOT_ROW_TOTAL];	// Buttons of passive skill
 
 	// Skill information
 	int						m_nSelCommandID;					// Selected active skill ID
@@ -59,7 +60,6 @@ protected:
 
 	// Position of target npc
 	FLOAT					m_fNpcX, m_fNpcZ;
-	int						m_nNpcIndex;
 
 	// Region of each part
 	UIRect					m_rcTitle;								// Region of title bar
@@ -76,7 +76,7 @@ protected:
 	
 	void	RenderSkillBtns();
 	void	GetSkillDesc( int nIndex, int nLevel = 0 );
-	void	AddSkillDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddSkillDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 	void	ClosePetTraining();
 
 	// Network message functions ( send )
@@ -114,9 +114,6 @@ protected:
 			sbNeedSkillLevel	= sbNeedLevel;
 		}
 	};
-
-	std::vector<sCollectSkill>		m_vecCommand;
-	std::vector<sCollectSkill>		m_vecSkill;
 	
 public:
 	CUIPetTraining();
@@ -144,10 +141,9 @@ public:
 	void	MsgBoxLCommand( int nCommandCode, int nResult );
 
 	// Network message functions ( receive )
-	void	LearnSkill( int nPetIdx, SLONG slIndex, SBYTE sbLevel, BOOL bAutoLearn = FALSE, bool bShowMsg = true );
+	void	LearnSkill( SLONG slIndex, SBYTE sbLevel, BOOL bAutoLearn = FALSE );
 	void	LearnSkillError( UBYTE ubError );	
 	void	PetChangeItemError( SBYTE sbResult );  // eons
-	void	EvolutionError(UBYTE errorcode);
 
 	// Get Target npc position
 	int		GetNpcPosX() { return m_fNpcX; }

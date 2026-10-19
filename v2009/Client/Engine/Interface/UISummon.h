@@ -10,8 +10,8 @@
 #endif
 
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
 
 
 // Define position
@@ -22,8 +22,6 @@
 #define	SUMMON_WIDTH				178
 #define	SUMMON_HEIGHT				44
 #define	SUMMON_BAR_WIDTH			107
-
-#define SUMMON_START_X_GAP			105 // ui플레이어 인포의 초상화 부분 부터 시작 해야 되므로 초상화의 넓이를 수동으로 가지고 있는다.
 
 class CEntity;
 
@@ -58,7 +56,7 @@ protected:
 	UIRectUV			m_rtSummon[5];
 	CUIButton			m_btnCommand[4];
 	
-	CUIIcon*			m_pIconSkill;
+	CUIButtonEx			m_btnSkill;
 	
 	int					m_nSummonType;
 	INDEX				m_nOldCommand;

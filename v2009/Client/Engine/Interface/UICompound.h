@@ -9,7 +9,9 @@
 	#pragma once
 #endif
 
-// 힘의 상자 (497) 일회용 - 상자 - 종류(1)
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIInventory.h>
 
 // Define max char and line of strings
 #define	MAX_COMPOUND_STRING				4
@@ -45,7 +47,7 @@ protected:
 	CUIButton			m_btnClose;							// Close button
 	CUIButton			m_btnOK;							// OK button
 	CUIButton			m_btnCancel;						// Cancel button
-	CUIIcon*			m_pIconSlot[3];					// Slot item button
+	CUIButtonEx			m_btnItemSlot[3];					// Slot item button
 	BOOL				m_bWaitResult;					// If UI wait result from server or not
 
 	// Strings
@@ -69,12 +71,32 @@ protected:
 	int					m_nCurItemCount;
 
 	int					m_nTextItemIndex;					// 조합문서의 정보
-	int					m_nTab;
-	int					m_nInvenIdx;
+	int					m_nTextRow;
+	int					m_nTextCol;
+
+	// Tool Tip	
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+
+	BOOL					m_bShowItemInfo;
+
+	UIRect					m_rcItemInfo;
+	int						m_nCurInfoLines;
+
+	CTString				m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR					m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
+	BOOL					m_bDetailItemInfo;
 
 protected:
 	// Internal functions
-	void	AddString( const CTString &strDesc );
+	void	AddString( CTString &strDesc );
 
 	// Network message functions ( send )
 	void	SendCompoundReq();
@@ -90,7 +112,7 @@ public:
 	void	Render();
 
 	// Open & close refine
-	ENGINE_API	void	OpenCompound( int nItemIndex, SWORD nTab, SWORD inven_idx );
+	ENGINE_API	void	OpenCompound( int nItemIndex, int nRow, int nCol );
 	void	CloseCompound();
 
 	// Adjust position
@@ -107,6 +129,22 @@ public:
 	void	SetCompoundItem ( int nSlotIndex = -1 );
 	void	ResetCompoundItem ();
 	int		NearPosition ( int nX, int nY );
+
+	// RenderItemInfo ...
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight );
+	void	ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew = FALSE );
+	void	RenderItemInfo ();
+
+	CUIButtonEx* GetItemSlot ( int nIndex )
+	{
+		if ( nIndex < 0 && nIndex >= COMPOUND_ITEM_SLOT_COUNT )
+		{
+			return NULL;
+		}
+
+		return &m_btnItemSlot[nIndex];		
+	}
 };
 
 

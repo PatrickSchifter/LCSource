@@ -1,9 +1,7 @@
 #include "StdH.h"
 
-#include <Engine/Base/Types.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/MemoryTracking.h>
-#include <Engine/Base/Stream.h>
 #include <Engine/Math/Float.h>
 #include <Engine/World/World.h>
 #include <Engine/World/WorldEditingProfile.h>
@@ -23,11 +21,11 @@
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Light/LightSource.h>
+#include <Engine/Base/ProgressHook.h>
 #include <Engine/Base/CRCTable.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/Selection.cpp>
 #include <Engine/Terrain/Terrain.h>
-#include <Engine/Templates/BSP.h>
 
 #include <Engine/World/WorldEntityHashing.h>
 #undef TYPE
@@ -38,8 +36,6 @@
 #include <Engine/Network/EntityHashing.h>
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/Server.h>
-#include <Engine/Entities/ZoneData.h>
-#include <Engine/Loading.h>
 
 #define MAXMOBDATA 300
 #define MAXSHOPDATA	300
@@ -47,25 +43,235 @@
 #define MAXSSKILLDATA 100
 #define MAXACTIONDATA	50		// yjpark
 
+//안태훈 수정 시작	//(Zone Change System)(0.1)
+//강동민 수정 시작 클로즈 1차 작업	08.16
 extern SLONG g_slZone = -1;
 // NOTE : 로그인 월드에서 게임 시작시 -1값으로 들어가 있어서,
 // NOTE : 월드 이동이 제대로 되지 않아서 0으로 수정함.
 //extern SLONG g_slZone = 0;
+//강동민 수정 끝 클로즈 1차 작업		08.16
 
+CZoneInfo CZoneInfo::m_instance;
+
+// 이기환 추가 (12.9) : 처음에 월드로 들어갈 때 조정
 extern BOOL g_bFirstIntoWorld = TRUE;
 
 //존 추가시 수정
 CZoneInfo::CZoneInfo()
 {
+#	define MAX_ZONE_COUNT 32			// wooss 051212
+#	define MAX_ZONE0_EXTRA_COUNT 6
+#	define MAX_ZONE1_EXTRA_COUNT 1
+#	define MAX_ZONE2_EXTRA_COUNT 1
+#	define MAX_ZONE3_EXTRA_COUNT 2
+#	define MAX_ZONE4_EXTRA_COUNT 30
+#	define MAX_ZONE5_EXTRA_COUNT 1
+#	define MAX_ZONE6_EXTRA_COUNT 1
+#	define MAX_ZONE7_EXTRA_COUNT 20
+#	define MAX_ZONE8_EXTRA_COUNT 1
+#	define MAX_ZONE9_EXTRA_COUNT 1
+#	define MAX_ZONE10_EXTRA_COUNT 1
+#	define MAX_ZONE11_EXTRA_COUNT 1
+#	define MAX_ZONE12_EXTRA_COUNT 1
+#	define MAX_ZONE13_EXTRA_COUNT 21		// wooss 051212
+#	define MAX_ZONE14_EXTRA_COUNT 1
+#	define MAX_ZONE15_EXTRA_COUNT 5
+#	define MAX_ZONE16_EXTRA_COUNT 1
+#	define MAX_ZONE17_EXTRA_COUNT 2
+#	define MAX_ZONE18_EXTRA_COUNT 2
+#	define MAX_ZONE19_EXTRA_COUNT 2
+#	define MAX_ZONE20_EXTRA_COUNT 2
+#	define MAX_ZONE21_EXTRA_COUNT 2
+#	define MAX_ZONE22_EXTRA_COUNT 6
+#	define MAX_ZONE23_EXTRA_COUNT 6		// 스트레이아나
+#	define MAX_ZONE24_EXTRA_COUNT 2
+#	define MAX_ZONE25_EXTRA_COUNT 30	// 길드 큐브 
+#	define MAX_ZONE26_EXTRA_COUNT 2
+#	define MAX_ZONE27_EXTRA_COUNT 2
+#	define MAX_ZONE28_EXTRA_COUNT 2
+#	define MAX_ZONE29_EXTRA_COUNT 2
+#	define MAX_ZONE30_EXTRA_COUNT 2
+#	define MAX_ZONE31_EXTRA_COUNT 2
+										// insert zone13(thai)
+
 	//zone 관련
 	//존이름
 	m_nZoneCount					= MAX_ZONE_COUNT;
 	m_pZoneInfo						= new sZoneInfo[MAX_ZONE_COUNT];
+	//m_pZoneInfo[0].strZoneName		= CTString("쥬노");
+	//m_pZoneInfo[1].strZoneName		= CTString("벨피스트 신전");
+	//m_pZoneInfo[2].strZoneName		= CTString("스트레이아");
+	//m_pZoneInfo[3].strZoneName		= CTString("프로키온 신전");
+	//m_pZoneInfo[4].strZoneName		= CTString("드라탄");
+	//m_pZoneInfo[5].strZoneName		= CTString("싱글던젼2");
+	m_pZoneInfo[0].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[1].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[2].eZoneType		= ZONE_SDUNGEON;
+	m_pZoneInfo[3].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[4].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[5].eZoneType		= ZONE_SDUNGEON;
+	m_pZoneInfo[6].eZoneType		= ZONE_SDUNGEON;
+	m_pZoneInfo[7].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[8].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[9].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[10].eZoneType		= ZONE_SDUNGEON;
+	m_pZoneInfo[11].eZoneType		= ZONE_SDUNGEON;
+	m_pZoneInfo[12].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[13].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[14].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[15].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[16].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[17].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[18].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[19].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[20].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[21].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[22].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[23].eZoneType		= ZONE_FIELD;
+	m_pZoneInfo[24].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[25].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[26].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[27].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[28].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[29].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[30].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[31].eZoneType		= ZONE_DUNGEON;
+	m_pZoneInfo[0].strZoneWldFile	= CTString("data\\world\\StartZone\\StartZone.wld");
+	m_pZoneInfo[1].strZoneWldFile	= CTString("data\\world\\dungeon1\\dunseon1.wld");
+	m_pZoneInfo[2].strZoneWldFile	= CTString("data\\world\\S_Dungeon1\\S_Dungeon1_06.wld");	
+	m_pZoneInfo[3].strZoneWldFile	= CTString("data\\world\\dungeon2\\dungeon2.wld");
+	m_pZoneInfo[4].strZoneWldFile	= CTString("data\\world\\Dratan\\Dratan.wld");
+	m_pZoneInfo[5].strZoneWldFile	= CTString("data\\world\\S_Dungeon2\\S_Dungeon2.wld");
+	m_pZoneInfo[6].strZoneWldFile	= CTString("data\\world\\S_Dungeon1\\S_dungeon1.wld");
+	m_pZoneInfo[7].strZoneWldFile	= CTString("data\\world\\Merac\\Merac.wld");
+	m_pZoneInfo[8].strZoneWldFile	= CTString("data\\world\\Guild\\Guild.wld");
+	m_pZoneInfo[9].strZoneWldFile	= CTString("data\\world\\Dungeon3\\Dungeon3.wld");
+	m_pZoneInfo[10].strZoneWldFile	= CTString("data\\world\\S_Dungeon3\\S_dungeon3.wld");
+	m_pZoneInfo[11].strZoneWldFile	= CTString("data\\world\\S_Dungeon4\\S_dungeon4.wld");
+	m_pZoneInfo[12].strZoneWldFile	= CTString("data\\world\\P_Dungeon1\\P_dungeon1.wld");
+	m_pZoneInfo[13].strZoneWldFile	= CTString("data\\world\\Dungeon3\\Dungeon3.wld");
+	m_pZoneInfo[14].strZoneWldFile	= CTString("data\\world\\ox_Event\\ox_Event.wld");
+	m_pZoneInfo[15].strZoneWldFile	= CTString("data\\world\\Egeha\\Egeha.wld");
+	m_pZoneInfo[16].strZoneWldFile	= CTString("data\\world\\Egeha_PK\\Egeha_PK.wld");
+	m_pZoneInfo[17].strZoneWldFile	= CTString("data\\world\\Egeha_dungeon_1F_7F\\Egeha_dungeon_1F_7F.wld");
+	m_pZoneInfo[18].strZoneWldFile	= CTString("data\\world\\Egeha_dungeon_8F\\Egeha_dungeon_8F.wld");
+	m_pZoneInfo[19].strZoneWldFile	= CTString("data\\world\\Egeha_dungeon_9F\\Egeha_dungeon_9F.wld");
+	m_pZoneInfo[20].strZoneWldFile	= CTString("data\\world\\Egeha_dungeon_10F_Top\\Egeha_dungeon_10F_Top.wld");
+	m_pZoneInfo[21].strZoneWldFile	= CTString("data\\world\\Dratan_siegeWarfare_dungeon\\Dratan_siegeWarfare_dungeon.wld");
+	m_pZoneInfo[22].strZoneWldFile	= CTString("data\\world\\M_Combo\\M_Combo.wld");
+	m_pZoneInfo[23].strZoneWldFile	= CTString("data\\world\\Streiana\\Streiana.wld");
+	m_pZoneInfo[24].strZoneWldFile	= CTString("data\\world\\PK_tournament\\PK_tournament.wld");
+	m_pZoneInfo[25].strZoneWldFile	= CTString("data\\world\\GuildCube\\GuildCube.wld");
+	m_pZoneInfo[26].strZoneWldFile	= CTString("data\\world\\STAEIANA(cave)3\\STREANA(cave)3.wld");
+	m_pZoneInfo[27].strZoneWldFile	= CTString("data\\world\\STAEIANA(cave)2\\STREANA(cave)2.wld");
+	m_pZoneInfo[28].strZoneWldFile	= CTString("data\\world\\STAEIANA(cave)\\STREANA(cave).wld");
+	m_pZoneInfo[29].strZoneWldFile	= CTString("Data\\World\\DirtyMine\\DirtyMine.wld");
+	m_pZoneInfo[30].strZoneWldFile	= CTString("Data\\World\\LosePlace\\LosePlace.wld");
+	m_pZoneInfo[31].strZoneWldFile	= CTString("Data\\World\\EgehaCave_01\\EgehaCave_01.wld");
+	m_pZoneInfo[0].iExtraCount		= MAX_ZONE0_EXTRA_COUNT;
+	m_pZoneInfo[1].iExtraCount		= MAX_ZONE1_EXTRA_COUNT;
+	m_pZoneInfo[2].iExtraCount		= MAX_ZONE2_EXTRA_COUNT;
+	m_pZoneInfo[3].iExtraCount		= MAX_ZONE3_EXTRA_COUNT;
+	m_pZoneInfo[4].iExtraCount		= MAX_ZONE4_EXTRA_COUNT;
+	m_pZoneInfo[5].iExtraCount		= MAX_ZONE5_EXTRA_COUNT;
+	m_pZoneInfo[6].iExtraCount		= MAX_ZONE6_EXTRA_COUNT;
+	m_pZoneInfo[7].iExtraCount		= MAX_ZONE7_EXTRA_COUNT;
+	m_pZoneInfo[8].iExtraCount		= MAX_ZONE8_EXTRA_COUNT;
+	m_pZoneInfo[9].iExtraCount		= MAX_ZONE9_EXTRA_COUNT;
+	m_pZoneInfo[10].iExtraCount		= MAX_ZONE10_EXTRA_COUNT;
+	m_pZoneInfo[11].iExtraCount		= MAX_ZONE11_EXTRA_COUNT;
+	m_pZoneInfo[12].iExtraCount		= MAX_ZONE12_EXTRA_COUNT;
+	m_pZoneInfo[13].iExtraCount		= MAX_ZONE13_EXTRA_COUNT;
+	m_pZoneInfo[14].iExtraCount		= MAX_ZONE14_EXTRA_COUNT;
+	m_pZoneInfo[15].iExtraCount		= MAX_ZONE15_EXTRA_COUNT;
+	m_pZoneInfo[16].iExtraCount		= MAX_ZONE16_EXTRA_COUNT;
+	m_pZoneInfo[17].iExtraCount		= MAX_ZONE17_EXTRA_COUNT;
+	m_pZoneInfo[18].iExtraCount		= MAX_ZONE18_EXTRA_COUNT;
+	m_pZoneInfo[19].iExtraCount		= MAX_ZONE19_EXTRA_COUNT;
+	m_pZoneInfo[20].iExtraCount		= MAX_ZONE20_EXTRA_COUNT;
+	m_pZoneInfo[21].iExtraCount		= MAX_ZONE21_EXTRA_COUNT;
+	m_pZoneInfo[22].iExtraCount		= MAX_ZONE22_EXTRA_COUNT;
+	m_pZoneInfo[23].iExtraCount		= MAX_ZONE23_EXTRA_COUNT;
+	m_pZoneInfo[24].iExtraCount		= MAX_ZONE24_EXTRA_COUNT;
+	m_pZoneInfo[25].iExtraCount		= MAX_ZONE25_EXTRA_COUNT;
+	m_pZoneInfo[26].iExtraCount		= MAX_ZONE26_EXTRA_COUNT;
+	m_pZoneInfo[27].iExtraCount		= MAX_ZONE27_EXTRA_COUNT;
+	m_pZoneInfo[28].iExtraCount		= MAX_ZONE28_EXTRA_COUNT;
+	m_pZoneInfo[29].iExtraCount		= MAX_ZONE29_EXTRA_COUNT;
+	m_pZoneInfo[30].iExtraCount		= MAX_ZONE30_EXTRA_COUNT;
+	m_pZoneInfo[31].iExtraCount		= MAX_ZONE31_EXTRA_COUNT;
+	m_pZoneInfo[0].pStrExtraName	= new CTString[m_pZoneInfo[0].iExtraCount];
+	m_pZoneInfo[1].pStrExtraName	= new CTString[m_pZoneInfo[1].iExtraCount];
+	m_pZoneInfo[2].pStrExtraName	= new CTString[m_pZoneInfo[2].iExtraCount];
+	m_pZoneInfo[3].pStrExtraName	= new CTString[m_pZoneInfo[3].iExtraCount];
+	m_pZoneInfo[4].pStrExtraName	= new CTString[m_pZoneInfo[4].iExtraCount];
+	m_pZoneInfo[5].pStrExtraName	= new CTString[m_pZoneInfo[5].iExtraCount];
+	m_pZoneInfo[6].pStrExtraName	= new CTString[m_pZoneInfo[6].iExtraCount];
+	m_pZoneInfo[7].pStrExtraName	= new CTString[m_pZoneInfo[7].iExtraCount];
+	m_pZoneInfo[8].pStrExtraName	= new CTString[m_pZoneInfo[8].iExtraCount];
+	m_pZoneInfo[9].pStrExtraName	= new CTString[m_pZoneInfo[9].iExtraCount];
+	m_pZoneInfo[10].pStrExtraName	= new CTString[m_pZoneInfo[10].iExtraCount];
+	m_pZoneInfo[11].pStrExtraName	= new CTString[m_pZoneInfo[11].iExtraCount];
+	m_pZoneInfo[12].pStrExtraName	= new CTString[m_pZoneInfo[12].iExtraCount];
+	m_pZoneInfo[13].pStrExtraName	= new CTString[m_pZoneInfo[13].iExtraCount];
+	m_pZoneInfo[14].pStrExtraName	= new CTString[m_pZoneInfo[14].iExtraCount];
+	m_pZoneInfo[15].pStrExtraName	= new CTString[m_pZoneInfo[15].iExtraCount];
+	m_pZoneInfo[16].pStrExtraName	= new CTString[m_pZoneInfo[16].iExtraCount];
+	m_pZoneInfo[17].pStrExtraName	= new CTString[m_pZoneInfo[17].iExtraCount];
+	m_pZoneInfo[18].pStrExtraName	= new CTString[m_pZoneInfo[18].iExtraCount];
+	m_pZoneInfo[19].pStrExtraName	= new CTString[m_pZoneInfo[19].iExtraCount];
+	m_pZoneInfo[20].pStrExtraName	= new CTString[m_pZoneInfo[20].iExtraCount];
+	m_pZoneInfo[21].pStrExtraName	= new CTString[m_pZoneInfo[21].iExtraCount];
+	m_pZoneInfo[22].pStrExtraName	= new CTString[m_pZoneInfo[22].iExtraCount];
+	m_pZoneInfo[23].pStrExtraName	= new CTString[m_pZoneInfo[23].iExtraCount];
+	m_pZoneInfo[24].pStrExtraName	= new CTString[m_pZoneInfo[24].iExtraCount];
+	m_pZoneInfo[25].pStrExtraName	= new CTString[m_pZoneInfo[25].iExtraCount];
+	m_pZoneInfo[26].pStrExtraName	= new CTString[m_pZoneInfo[26].iExtraCount];
+	m_pZoneInfo[27].pStrExtraName	= new CTString[m_pZoneInfo[27].iExtraCount];
+	m_pZoneInfo[28].pStrExtraName	= new CTString[m_pZoneInfo[28].iExtraCount];
+	m_pZoneInfo[29].pStrExtraName	= new CTString[m_pZoneInfo[29].iExtraCount];
+	m_pZoneInfo[30].pStrExtraName	= new CTString[m_pZoneInfo[30].iExtraCount];
+	m_pZoneInfo[31].pStrExtraName	= new CTString[m_pZoneInfo[31].iExtraCount];
+	//m_pZoneInfo[0].pStrExtraName[0]	= CTString("마을");
+	//m_pZoneInfo[1].pStrExtraName[0]	= CTString("입구");
+	//m_pZoneInfo[2].pStrExtraName[0]	= CTString("입구");
+	//m_pZoneInfo[3].pStrExtraName[0]	= CTString("입구");
+	//m_pZoneInfo[4].pStrExtraName[0]	= CTString("마을");
+	//m_pZoneInfo[5].pStrExtraName[0]	= CTString("입구");
 
-	m_pZoneInfo[33].bRaidDungeon = TRUE;	// 몬트 샤인 예배당
-	m_pZoneInfo[35].bRaidDungeon = TRUE;	// 몬트 샤인 암흑의 제단
-	m_pZoneInfo[36].bRaidDungeon = TRUE;	// 아칸 사원
-	m_pZoneInfo[41].bRaidDungeon = TRUE;	// 람슬로 지하던전
+#	undef MAX_ZONE_COUNT
+#	undef MAX_ZONE0_EXTRA_COUNT
+#	undef MAX_ZONE1_EXTRA_COUNT
+#	undef MAX_ZONE2_EXTRA_COUNT
+#	undef MAX_ZONE3_EXTRA_COUNT
+#	undef MAX_ZONE4_EXTRA_COUNT
+#	undef MAX_ZONE5_EXTRA_COUNT
+#	undef MAX_ZONE6_EXTRA_COUNT																	// 테스트용
+#	undef MAX_ZONE7_EXTRA_COUNT
+#	undef MAX_ZONE8_EXTRA_COUNT
+#	undef MAX_ZONE9_EXTRA_COUNT
+#	undef MAX_ZONE10_EXTRA_COUNT
+#	undef MAX_ZONE11_EXTRA_COUNT
+#	undef MAX_ZONE12_EXTRA_COUNT
+#	undef MAX_ZONE13_EXTRA_COUNT
+#	undef MAX_ZONE14_EXTRA_COUNT
+#	undef MAX_ZONE15_EXTRA_COUNT
+#	undef MAX_ZONE16_EXTRA_COUNT
+#	undef MAX_ZONE17_EXTRA_COUNT
+#	undef MAX_ZONE18_EXTRA_COUNT
+#	undef MAX_ZONE19_EXTRA_COUNT
+#	undef MAX_ZONE20_EXTRA_COUNT
+#	undef MAX_ZONE21_EXTRA_COUNT
+#	undef MAX_ZONE22_EXTRA_COUNT
+#	undef MAX_ZONE23_EXTRA_COUNT
+#	undef MAX_ZONE24_EXTRA_COUNT
+#	undef MAX_ZONE25_EXTRA_COUNT
+#	undef MAX_ZONE26_EXTRA_COUNT
+#	undef MAX_ZONE27_EXTRA_COUNT
+#	undef MAX_ZONE28_EXTRA_COUNT
+#	undef MAX_ZONE29_EXTRA_COUNT
+#	undef MAX_ZONE30_EXTRA_COUNT
+#	undef MAX_ZONE31_EXTRA_COUNT
 }
 
 CZoneInfo::~CZoneInfo()
@@ -107,9 +313,7 @@ DWORD CZoneInfo::GetAccessJob(int nZone) const
 
 CTString CZoneInfo::GetZoneName(int nZone)
 {
-	if (nZone < 0 || nZone >= MAX_ZONE_COUNT)
-		return CTString("");
-
+	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
 	return m_pZoneInfo[nZone].strZoneName;
 }
 
@@ -122,19 +326,8 @@ CTString CZoneInfo::GetZoneWldFile(int nZone)
 CTString CZoneInfo::GetExtraName(int nZone, int nExtra)
 {
 	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
-
-	if (nExtra < 0 || nExtra >= m_pZoneInfo[nZone].vecExtraName.size())
-		return CTString("");
-
-	return m_pZoneInfo[nZone].vecExtraName[nExtra];
-}
-
-float CZoneInfo::GetTerMul( int nZone )
-{
-	if (nZone < 0 || nZone >= MAX_ZONE_COUNT)
-		return 1.f;	// 기본 배율 1배.
-
-	return m_pZoneInfo[nZone].fTer_Lodmul;
+	ASSERT(nExtra >= 0 && nExtra < m_pZoneInfo[nZone].iExtraCount);
+	return m_pZoneInfo[nZone].pStrExtraName[nExtra];
 }
 
 void CZoneInfo::SetZoneName( int nZone, CTString &strZoneName )
@@ -144,158 +337,19 @@ void CZoneInfo::SetZoneName( int nZone, CTString &strZoneName )
 	m_pZoneInfo[nZone].strZoneName = strZoneName;
 }
 
-void CZoneInfo::SetExtraName( int nZone, int nExtra, const char* szName )
+void CZoneInfo::SetExtraName( int nZone, int nExtra, CTString &strExtraName )
 {
 	ASSERT( nZone >= 0 && nZone < m_nZoneCount );
-	
-	if (nExtra >= 0 && nExtra < m_pZoneInfo[nZone].vecExtraName.size())
-		m_pZoneInfo[nZone].vecExtraName[nExtra] = CTString(szName);
-	else
-		m_pZoneInfo[nZone].vecExtraName.push_back(CTString(szName));
+	ASSERT( nExtra >= 0 && nExtra < m_pZoneInfo[nZone].iExtraCount );
+
+	m_pZoneInfo[nZone].pStrExtraName[nExtra] = strExtraName;
 }
-
-void CZoneInfo::SetZoneData( int nZone, int nType, int nExtraCnt, const char* szName, const char* szWldFile, float fLodMul )
-{
-	ASSERT( nZone >= 0 && nZone < m_nZoneCount );
-
-	m_pZoneInfo[nZone].eZoneType   = (eZone)nType;
-	m_pZoneInfo[nZone].iExtraCount	= nExtraCnt;
-	m_pZoneInfo[nZone].strZoneName = szName;
-	m_pZoneInfo[nZone].strZoneWldFile = szWldFile;
-	m_pZoneInfo[nZone].fTer_Lodmul	= fLodMul;
-}
-
-BOOL CZoneInfo::GetRaidDungeon(int nZone)
-{
-	ASSERT( nZone >= 0 && nZone < m_nZoneCount );
-	return m_pZoneInfo[nZone].bRaidDungeon;
-}
-
-CZoneInfo::ObjInZone* CZoneInfo::GetInZoneData(int iIndex)
-{
-	if (iIndex > 0)
-	{
-		for (int i=0; i<m_ObjInZones.Count(); ++i)
-		{
-			if (m_ObjInZones[i].iObjectID == iIndex)
-			{
-				return &m_ObjInZones[i];
-			}
-		}
-	}
-
-	return NULL;
-}
-
-CZoneInfo::ObjInZone* CZoneInfo::GetInZoneData(CTString strName)
-{
-	if (strName.Length() > 0)
-	{
-		for (int i=0; i<m_ObjInZones.Count(); ++i)
-		{
-			if (m_ObjInZones[i].strName == strName)
-			{
-				return &m_ObjInZones[i];
-			}
-		}		
-	}
-
-	return NULL;
-}
-
-BOOL CZoneInfo::LoadObjInZoneData(void)
-{
-	if (g_slZone < 0 || !m_pZoneInfo[g_slZone].bRaidDungeon)
-		return FALSE;
-
-	const CTString strDataName = _fnmApplicationPath.FileDir() + "Data\\raidobjectlist.lod";
-
-	FILE *fp;
-
-	if ((fp = fopen(strDataName, "rb")) == NULL)
-	{
-		MessageBox(NULL, "File is not Exist.(Obj)", "Load Error!", MB_OK);
-		return FALSE;
-	}
-
-	int iNumOfNPC	= 0;
-	int iLength		= -1;
-	int iReadBytes	= 0;
-	int iLastIndex	= 0;
-
-	iReadBytes = fread(&iLastIndex, sizeof(int), 1, fp);		// SHOP의 마지막 인덱스.
-	m_ObjInZones.Clear();
-
-	ASSERT(iLastIndex > 0 && "Invalid Objects Data");
-
-	//////////////////////////////////////////////////////////////////////////	
-	// MACRO DEFINITION
-	//////////////////////////////////////////////////////////////////////////	
-#define LOADINT(d)			iReadBytes = fread(&d, sizeof(int), 1, fp);
-#define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
-#define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
-#define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fp); }
-	//////////////////////////////////////////////////////////////////////////	
-	
-	for (int i=0; i<iLastIndex; ++i)
-	{
-		INDEX iDbIndex;
-		INDEX iAssignZone;
-		INDEX iObjectType;
-		INDEX iObjectIndex;
-		char strObjectName[255];
-		ZeroMemory(strObjectName, 255);
-
-		LOADINT(iDbIndex);
-		LOADINT(iAssignZone);
-		LOADINT(iObjectType);
-		LOADINT(iObjectIndex);
-		LOADSTR(strObjectName);
-
-		if (g_slZone == iAssignZone) // 현재 존의 오브젝트만 읽어 들인다.
-		{
-			m_ObjInZones.Add(ObjInZone((eObjects)iObjectType, iObjectIndex, CTString(strObjectName)));
-		}
-	}
-
-	fclose(fp);
-
-#undef LOADINT
-#undef LOADCHAR
-#undef LOADFLOAT
-#undef LOADSTR
-
-	return TRUE;
-}
-
-void CZoneInfo::AddLoadingInfo( float fStep, CTString strTex1, CTString strTex2)
-{
-	stLoadingInfo stInfo;
-
-	stInfo.fStep = fStep;
-	stInfo.strTex1 = strTex1;
-	stInfo.strTex2 = strTex2;
-
-	m_vecLoadingInfo.push_back(stInfo);
-}
-
-void CZoneInfo::GetLoadingInfo( int nZoneIndex, float& fStep, CTString& strTex1, CTString& strTex2)
-{
-	if (nZoneIndex < 0 || nZoneIndex >= m_vecLoadingInfo.size())
-		return;
-
-	fStep = m_vecLoadingInfo[nZoneIndex].fStep;
-	strTex1 = m_vecLoadingInfo[nZoneIndex].strTex1;
-	strTex2 = m_vecLoadingInfo[nZoneIndex].strTex2;
-}
-
 //안태훈 수정 끝	//(Zone Change System)(0.1)
 
-template class CDynamicContainer<CEntity>;
-template class CSelection<CBrushPolygon, BPOF_SELECTED>;  // CBrushPolygonSelection
-template class CSelection<CBrushSector, BSCF_SELECTED>;  // CBrushSectorSelection
-template class CSelection<CEntity, ENF_SELECTED>;  // CEntitySelection
+template CDynamicContainer<CEntity>;
+template CBrushPolygonSelection;
+template CBrushSectorSelection;
+template CEntitySelection;
 
 extern BOOL _bPortalSectorLinksPreLoaded;
 extern BOOL _bEntitySectorLinksPreLoaded;
@@ -334,14 +388,12 @@ CTextureBlending::CTextureBlending(void)
 * Constructor.
 */
 CWorld::CWorld(void)
-: wo_colBackground(C_BLACK)       // clear background color
+: wo_colBackground(C_lGRAY)       // clear background color
 , wo_pecWorldBaseClass(NULL)      // worldbase class must be obtained before using the world
 , wo_bPortalLinksUpToDate(FALSE)  // portal-sector links must be updated
 , wo_baBrushes(*new CBrushArchive)
 , wo_taTerrains(*new CTerrainArchive)
 , wo_ulSpawnFlags(0)
-, m_bLoad(FALSE)
-, m_bTradeItemLoad(false)
 {
 	wo_baBrushes.ba_pwoWorld = this;
 	wo_taTerrains.ta_pwoWorld = this;
@@ -379,16 +431,34 @@ CWorld::CWorld(void)
 	wo_fThumbnailTargetDistance = 10.0f;
 	wo_whWorldEntityContainer.Clear();
 	wo_whWorldEntityContainer.SetAllocationParameters(200,20,5);
-	
-	wo_cenEnemyHolders.Clear();
-	wo_aSkillData.Clear();
-	wo_aShopData.Clear();
 
+	wo_iNumOfNPC = -1;
+	wo_cenEnemyHolders.Clear();
+
+	wo_aMobData.Clear();
+//	wo_aMobData.New(MAXMOBDATA);
+
+	wo_aMobName.Clear();
+//	wo_aMobName.New(MAXMOBDATA);	
+
+	wo_aSkillData.Clear();
+//	wo_aSkillData.New(MAXSKILLDATA);
+
+	wo_aSSkillData.Clear();
+//	wo_aSSkillData.New(MAXSKILLDATA);
+	wo_aActionData.Clear();						// yjpark
+//	wo_aActionData.New( MAXACTIONDATA );		// yjpark
+	wo_aShopData.Clear();
+//	wo_aShopData.New(MAXSHOPDATA);
 	wo_iNumOfShop	= -1;
 	
+	//wooss 050902
 	wo_aCashShopData.Clear();
+//	wo_aCashShopData.New(MAXCASHSHOPCLASS);
 	
+//안태훈 수정 시작	//(5th Closed beta)(0.2)
 	m_pMousePointerEG = NULL;
+//안태훈 수정 끝	//(5th Closed beta)(0.2)
 }
 
 /*
@@ -404,7 +474,14 @@ CWorld::~CWorld()
 	delete &wo_baBrushes;
 	delete &wo_taTerrains;
 
+	wo_iNumOfNPC = -1;
+	wo_aMobData.Clear();
+	wo_aMobName.Clear();
+
 	wo_aSkillData.Clear();
+
+	wo_aSSkillData.Clear();
+	wo_aActionData.Clear();		// yjpark
 	wo_cenEnemyHolders.Clear();
 	wo_aShopData.Clear();
 	wo_iNumOfShop	= -1;
@@ -579,7 +656,7 @@ CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pec
 		
 		if (net_bReportServerTraffic) 
 		{
-			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,(const char*)pecClass->GetName());
+			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,pecClass->GetName());
 		}
 		
 		extern CEntityMessage _emEntityMessage;
@@ -772,7 +849,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 		penThinker->en_lnInTimers.Remove();
 	}
 	// for each entity in the thinker list
-	FOREACHINLIST_IN(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) 
+	FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) 
 	{
 		// if the entity in list has greater or same think time than the one to add
 		if (iten->en_timeTimer>=penThinker->en_timeTimer) 
@@ -1213,7 +1290,7 @@ void CWorld::PrecacheEntities_t(void)
 	FOREACHINDYNAMICCONTAINER(wo_cenEntities, CEntity, iten) 
 	{
 		// precache
-		CallProgressHook_t((FLOAT)iEntity/ctEntities);
+		CallProgressHook_t(FLOAT(iEntity)/ctEntities);
 		iten->Precache();
 		iEntity++;
 	}
@@ -1463,117 +1540,4 @@ void CWorld::ClearMarkedForUseFlag(void)
 			}
 		}
 	}
-}
-
-void CWorld::AddEntitiesInSector(CBrushSector *pbscSectorInside)
-{
-	if (pbscSectorInside == NULL || pbscSectorInside->bsc_bspBSPTree.bt_pbnRoot == NULL)
-	{
-		return;
-	}
-
-	CEntity* penPlEntity;
-	penPlEntity = CEntity::GetPlayerEntity( 0 );
-
-	{FOREACHDSTOFSRC(pbscSectorInside->bsc_rsEntities, CEntity, en_rdSectors, pen)
-		if (pen->en_RenderType == CEntity::RT_SKAMODEL && pen->IsEnemy() && pen->GetFlags() & ENF_ALIVE && !(pen->GetFlags() & ENF_INVISIBLE)
-			&& !(pen->GetFlags() & ENF_HIDDEN))
-		{
-			FLOAT3D vDelta = pen->GetPlacement().pl_PositionVector - penPlEntity->GetPlacement().pl_PositionVector;
-
-			if (vDelta.Length() <= 30.0f)
-			{
-				// 리스트에 담는다.
-				CEntityPointer penPointer = pen;
-				m_vectorTabTargetEntities.push_back(penPointer);
-			}
-		}
-	ENDFOR}
-}
-
-void CWorld::AddEntityZoningSector(CBrushSector *pbsc)
-{
-	CBrushMip *pbmBrushMip = pbsc->bsc_pbmBrushMip;
-	CBrush3D *pbrBrush = pbmBrushMip->bm_pbrBrush;
-	ASSERT(pbrBrush != NULL);
-	CEntity *penBrush = pbrBrush->br_penEntity;
-	ASSERT(penBrush != NULL);
-
-	if (penBrush->en_RenderType == CEntity::RT_FIELDBRUSH)
-	{
-		return;
-	}
-
-	CBrushMip *pbmRelevant = pbrBrush->GetFirstMip();
-
-	if (pbmRelevant == pbmBrushMip)
-	{
-		AddEntitiesInSector(pbsc);
-	}
-}
-
-void CWorld::SearchSectorAroundEntity(CEntity* pen, const FLOAT3D &vEyesPos, CAnyProjection3D &prProjection)
-{
-	DOUBLE3D vdViewSphere = FLOATtoDOUBLE(pen->GetPlacement().pl_PositionVector);//FLOATtoDOUBLE(vEyesPos);
-	DOUBLE dViewSphereR = 30.0f;//prProjection->NearClipDistanceR()*1.5f + 1.0f;
-	//FLOATaabbox3D boxView(vEyesPos, FLOAT(dViewSphereR));
-	FLOATaabbox3D boxView(pen->GetPlacement().pl_PositionVector, FLOAT(dViewSphereR));
-
-	CListHead lhToAdd;
-	
-	{FOREACHSRCOFDST(pen->en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
-		if (!pbsc->bsc_lnInActiveSectors.IsLinked())
-		{
-			lhToAdd.AddTail(pbsc->bsc_lnInActiveSectors);
-		}
-	ENDFOR}
-
-	while (!lhToAdd.IsEmpty())
-	{
-		CBrushSector *pbsc = LIST_HEAD(lhToAdd, CBrushSector, bsc_lnInActiveSectors);
-		pbsc->bsc_lnInActiveSectors.Remove();
-
-		// 여기서 Sector안에 Entity를 list에 담는다.
-		//
-		AddEntityZoningSector(pbsc); // 여기가 중요
-
-		if (!pbsc->bsc_lnInActiveSectors.IsLinked())
-		{
-			continue;
-		}
-
-		FOREACHINSTATICARRAY(pbsc->bsc_abpoPolygons, CBrushPolygon, itbpo) {
-			CBrushPolygon *pbpo = itbpo;
-			if (!(pbpo->bpo_ulFlags & BPOF_PORTAL) || !pbpo->bpo_boxBoundingBox.HasContactWith(boxView))
-			{
-				continue;
-			}
-
-			{FOREACHDSTOFSRC(pbpo->bpo_rsOtherSideSectors, CBrushSector, bsc_rdOtherSidePortals, pbscRelated)
-				if (!pbscRelated->bsc_lnInActiveSectors.IsLinked())
-				{
-					if (pbscRelated->bsc_boxBoundingBox.HasContactWith(boxView) && 
-						pbscRelated->bsc_bspBSPTree.TestSphere(vdViewSphere, dViewSphereR) >= 0)
-					{
-						lhToAdd.AddTail(pbscRelated->bsc_lnInActiveSectors);
-					}
-				}
-			ENDFOR}
-		}
-	}
-}
-
-bool TargetSelectedEnemy_Comp(const CEntityPointer& l, const CEntityPointer& r)
-{
-	CEntity* tmpPlayer = CEntity::GetPlayerEntity(0); // 자기 중심
-
-	FLOAT3D vDelta1 = l.ep_pen->GetPlacement().pl_PositionVector - tmpPlayer->GetPlacement().pl_PositionVector;
-	FLOAT3D vDelta2 = r.ep_pen->GetPlacement().pl_PositionVector - tmpPlayer->GetPlacement().pl_PositionVector;
-
-	return vDelta1.Length() < vDelta2.Length();
-}
-
-void CWorld::TargetSelectedEnemy_Sort(void)
-{
-	std::sort(m_vectorTabTargetEntities.begin(), m_vectorTabTargetEntities.end(), TargetSelectedEnemy_Comp);
 }

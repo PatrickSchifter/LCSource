@@ -10,14 +10,14 @@
 #endif
 
 
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIComboBox.h>
-// #include <Engine/Interface/UIMultiEditBox.h>
-// //안태훈 수정 시작	//(5th Closed beta)(0.2)
-// #include <string>
-// #include <vector>
-// //안태훈 수정 끝	//(5th Closed beta)(0.2)
+#include <Engine/Interface/UIMultiEditBox.h>
+//안태훈 수정 시작	//(5th Closed beta)(0.2)
+#include <string>
+#include <vector>
+//안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 
 // Section of web board
@@ -55,10 +55,9 @@ enum UIWebBoardModifyType
 class CUIWebBoardDelayCommand
 {
 public:
-	virtual BOOL	ClearOldCommand();
-	virtual BOOL	ExecuteImmediate(class CUIWebBoard &rUIWebBoard) = 0;
-	virtual BOOL	ExecuteDelay(class CUIWebBoard &rUIWebBoard, BOOL &bRender) = 0;
-	void			ConvertStringToWebParameter(const char *szParam, std::string& strOutput);
+	virtual BOOL ClearOldCommand();
+	virtual BOOL ExecuteImmediate(class CUIWebBoard &rUIWebBoard) = 0;
+	virtual BOOL ExecuteDelay(class CUIWebBoard &rUIWebBoard, BOOL &bRender) = 0;
 };
 
 class CCommandOpen : public CUIWebBoardDelayCommand
@@ -262,13 +261,6 @@ protected:
 	CUIMultiEditBox		m_mebContent;						// 쓰기 내용
 
 protected:
-	enum AuthorityLevel
-	{
-		AL_NONE = 0,
-		AL_AUTHORISME = 1,
-		AL_BBSMANAGER = 2,
-	};
-
 	// Internal functions
 	void	RenderListCommon();
 	void	RenderReadCommon();
@@ -283,10 +275,9 @@ protected:
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 	void	SetPageButtons( int nTotalWrite, int nCurPage );
 
-	void	AddListSubjectString( const CTString &strSubject );
-	void	AddReadingString( const CTString &strContent );
+	void	AddListSubjectString( CTString &strSubject );
+	void	AddReadingString( CTString &strContent );
 
-	void ChangeBlockWriteInfo(BOOL bBlock, AuthorityLevel authorityLevel);
 public:
 	CUIWebBoard();
 	~CUIWebBoard();
@@ -346,8 +337,15 @@ public:
 
 	//내 길드가 삭제되거나, 길드를 탈퇴하거나, 길드에서 강퇴당하거나 호출됨
 	void NotifyGuildChange();
-	// esc closing support [5/30/2011 rumist]
-	BOOL	CloseWindowByEsc()				{ ToggleVisible();	return TRUE;			}
+
+protected:
+	enum AuthorityLevel
+	{
+		AL_NONE = 0,
+		AL_AUTHORISME = 1,
+		AL_BBSMANAGER = 2,
+	};
+	void ChangeBlockWriteInfo(BOOL bBlock, AuthorityLevel authorityLevel);
 };
 
 

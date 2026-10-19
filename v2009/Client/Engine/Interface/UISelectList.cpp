@@ -1,9 +1,7 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
 #include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISelectList.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/EntityProperties.h>
 
 
@@ -50,8 +48,6 @@ CUISelectList::CUISelectList()
 CUISelectList::~CUISelectList()
 {
 	Destroy();
-
-	SAFE_ARRAY_DELETE(m_pstrState);
 }
 
 // ----------------------------------------------------------------------------
@@ -60,7 +56,10 @@ CUISelectList::~CUISelectList()
 // ----------------------------------------------------------------------------
 void CUISelectList::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight)
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, SELECTLIST_WIDTH, 22 );
@@ -228,7 +227,7 @@ void CUISelectList::CreateSelectList(int nStyle ,int nLine,CTString strTitle)
 	int tv_left = m_vSelList.size()%m_nMaxLine;
 	m_nPageAll = tv_left > 0 ? tv_size+1 : tv_size;
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_SELECTLIST, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SELECTLIST, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -246,7 +245,7 @@ void CUISelectList::ResetSelectList()
 	m_btnRegist.SetEnable(FALSE);
 	m_btnReward.SetEnable(FALSE);
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_SELECTLIST, FALSE );
+	_pUIMgr->RearrangeOrder( UI_SELECTLIST, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -255,10 +254,9 @@ void CUISelectList::ResetSelectList()
 // ----------------------------------------------------------------------------
 void CUISelectList::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY;
@@ -267,27 +265,27 @@ void CUISelectList::Render()
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + 26;
 	
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 										m_rtBackTop.U0, m_rtBackTop.V0,
 										m_rtBackTop.U1, m_rtBackTop.V1,
 										0xFFFFFFFF );
 
 	// Middle 1
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
 										m_rtBackMiddle1.U0, m_rtBackMiddle1.V0,
 										m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 										0xFFFFFFFF );
 
 	// Middle 2
 	nY += m_nTextRegionHeight;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 										m_rtBackMiddle2.U0, m_rtBackMiddle2.V0,
 										m_rtBackMiddle2.U1, m_rtBackMiddle2.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 										m_rtBackBottom.U0, m_rtBackBottom.V0,
 										m_rtBackBottom.U1, m_rtBackBottom.V1,
 										0xFFFFFFFF );
@@ -317,10 +315,10 @@ void CUISelectList::Render()
 
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Title
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + SELECTLIST_TITLE_TEXT_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + SELECTLIST_TITLE_TEXT_OFFSETX,
 										m_nPosY + SELECTLIST_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	// List strings
@@ -339,16 +337,16 @@ void CUISelectList::Render()
 	
 		if( m_nSelLine == i ) m_selColor = 0x49A1FFFF;
 		else m_selColor = 0xF2F2F2FF;
-		pDrawPort->PutTextEx( tIdx, nX +15,	nY ,m_selColor);
+		_pUIMgr->GetDrawPort()->PutTextEx( tIdx, nX +15,	nY ,m_selColor);
 		if(m_vSelList[i].m_nIndex == _pNetwork->MyCharacterInfo.index)  sName+=CTString("(Me)");
-		pDrawPort->PutTextEx( sName, nX + 35,  nY ,m_selColor);
-		pDrawPort->PutTextEx( m_pstrState[m_vSelList[i].m_nState], nX + 160, nY,m_selColor);
+		_pUIMgr->GetDrawPort()->PutTextEx( sName, nX + 35,  nY ,m_selColor);
+		_pUIMgr->GetDrawPort()->PutTextEx( m_pstrState[m_vSelList[i].m_nState], nX + 160, nY,m_selColor);
 		nY += TEXT_GAP;
 
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 }
 
@@ -381,7 +379,7 @@ WMSG_RESULT	CUISelectList::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -427,7 +425,7 @@ WMSG_RESULT	CUISelectList::MouseMessage( MSG *pMsg )
 				else if( m_btnNext.MouseMessage( pMsg ) != WMSG_FAIL ){}
 					
 							
-				CUIManager::getSingleton()->RearrangeOrder( UI_SELECTLIST, TRUE );
+				_pUIMgr->RearrangeOrder( UI_SELECTLIST, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -501,7 +499,7 @@ WMSG_RESULT	CUISelectList::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					CUIManager::getSingleton()->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}

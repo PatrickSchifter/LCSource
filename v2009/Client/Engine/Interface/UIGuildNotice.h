@@ -12,10 +12,10 @@
 #define	GUILD_NOTICE_WIDTH		212
 #define GUILD_NOTICE_HEIGHT		257
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIDrawFigure.h>
-// #include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIDrawFigure.h>
+#include <Engine/Interface/UIListBox.h>
 
 // ----------------------------------------------------------------------------
 // Name : CUIGuildNotice

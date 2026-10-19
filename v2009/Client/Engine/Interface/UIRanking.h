@@ -9,11 +9,11 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <vector>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <vector>
 
 // Define text position
 #define	RANKING_TITLE_TEXT_OFFSETX		25
@@ -21,7 +21,7 @@
 
 // Define size of Ranking
 #define	RANKING_WIDTH					311
-#define	RANKING_HEIGHT					280//260
+#define	RANKING_HEIGHT					260
 
 // ----------------------------------------------------------------------------
 // Name : CUIRanking
@@ -143,67 +143,6 @@ public:
 
 	// Set focus
 	void	SetFocus( BOOL bVisible );	
-	// esc closing support [5/30/2011 rumist]
-	BOOL	CloseWindowByEsc()				{ ResetRanking();			return TRUE;		}
-};
-
-class CUICubeRank : public CUIWindow
-{
-protected:
-
-	struct sCubeRank
-	{
-		sCubeRank()
-		{
-			Init();
-		}
-		
-		~sCubeRank()
-		{
-
-		}
-		
-		void Init()
-		{
-			nRank = 0;
-			strGuildName = "";
-			strChaName = "";
-			lPoint = 0;
-		}
-		BYTE nRank;
-		CTString strGuildName;
-		CTString strChaName;
-		LONG lPoint;
-	};
-
-	LONG m_lMypoint;	
-	sCubeRank m_stCubeRank[2][5];
-	CUIDrawBox	m_bxBackground[4];
-	CUIButton		m_btnOK;
-
-	BOOL		m_bGuild;
-	// Region of each part
-	UIRect					m_rcTitle;						// Region of title bar	
-
-
-
-public:
-	CUICubeRank();
-	~CUICubeRank();
-	// Create
-	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	
-	// Render
-	void	Render();
-	
-	// Adjust position
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	WMSG_RESULT MouseMessage( MSG *pMsg );
-
-	void	CubeRankInit();
-	void	CubeRankClose();
-	void	CreateCubeState(CNetworkMessage *istr, BOOL bGuild);
 };
 
 #endif	// UIRANKING_H_

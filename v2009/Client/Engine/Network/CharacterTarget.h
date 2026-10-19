@@ -3,23 +3,23 @@
 
 
 //#include <Engine/Network/NetworkMessage.h>
-#include <Engine/Object/ObjectBase.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Interface/UIBuff.h>
 #include <Engine/Entities/StatusEffect.h>
 #include <Engine/Entities/ItemEffect.h>
 #include <Engine/Network/ChatMsgBuffer.h>
-#include <Engine/Interface/UIGuildMark.h>
 
-#define WEAR_COSTUME	8
-
-class CUIGuildMarkIcon;
 
 // FIXME : 많은 정리 필요...ㅡ.ㅡ
-class ENGINE_API CCharacterTarget : public ObjectBase
+class ENGINE_API CCharacterTarget
 {
 public:
+	INDEX			cha_Index;
+	INDEX			cha_iType;   	
 	INDEX			cha_iJob2;
+	INDEX			cha_iClientIndex;
+	CEntity			*cha_pEntity;
+	CTString		cha_strName;
 	SLONG			cha_pkstate;
 	UWORD			cha_state;//0:평화모드 1:PK모드 2: 해제딜레이.//1210
 	SBYTE			cha_sbShopType;	
@@ -39,13 +39,13 @@ public:
 	BOOL			cha_bLegit; //정당방위
 	CStatusEffect	cha_statusEffect;
 	SLONG			cha_nChangeMobId;
-	SLONG			cha_nTransformIndex;		// 변신체 ID?
+	SLONG			cha_nTransformID;		// 변신체 ID?
 	CItemEffect		cha_itemEffect;
 	SBYTE			cha_sbItemEffectOption;
 	SLONG			cha_nFame;
 	SBYTE			cha_sbJoinFlagMerac;
 	SBYTE			cha_sbJoinFlagDratan;	// WSS_DRATAN_SIEGEWARFARE 070720	
-	UWORD			cha_sbAttributePos;
+	UBYTE			cha_sbAttributePos;
 	INDEX			cha_iPetType;			// 애완동물 종류
 	INDEX			cha_iPetAge;			// 애완동물 나이?
 	BOOL			cha_bPetRide;			// 애완동물을 타고 있는가?
@@ -54,17 +54,6 @@ public:
 	//CEntity			*cha_pSecondSummon;
 
 	SBYTE			cha_sbPresscorps;
-	SLONG			cha_Label;				// [sora] 타겟 라벨
-	
-	INDEX			cha_NickType;			// 호칭
-	INDEX			cha_CosWear[WEAR_COSTUME_TOTAL];	// 코스튬2 Item Index ( -1 : 없음)
-	INDEX			cha_itemPlus[WEAR_COSTUME_TOTAL];	// 일반 장비 Plus 수치
-	INDEX			cha_itemAccessory[WEAR_ACCESSORY_MAX]; // 악세서리 장착
-	INDEX			cha_iSyndicateType;		// 결사대(RVR) 시스템 : 0 무소속, 1 카이룩스, 2 딜라문, 3 플로로
-	INDEX			cha_iSyndicateGrade;	// 결사대 직위.
-	INDEX			cha_iHitType;			// 
-	
-	CUIGuildMarkIcon* pGuildmark;
 public:
 	
 	/* Default constructor. */
@@ -77,7 +66,6 @@ public:
 	
 	void	Init(void);
 	void	SetData( INDEX index, INDEX type, CTString &name, CEntity *pEntity, SBYTE sbyLayer,UWORD state,  SLONG pkstate);
-	void	SetSyndicate(INDEX iType, INDEX iGrade);
 	void	SetShopType( SBYTE sbType);
 	void	SetClientChaId( INDEX index );
 	void	SetyLayer( SBYTE sbyLayer ) { cha_yLayer = sbyLayer; }
@@ -93,7 +81,7 @@ public:
 	BOOL	IsLegitimate(){ return cha_bLegit;}
 	void    SetLegitimate(BOOL legit){ cha_bLegit = legit;}
 
-	void	ChangeStatus(CTagManager* pTM, SQUAD status, CStatusEffect::eRelation rel)
+	void	ChangeStatus(CTagManager* pTM, SLONG status, CStatusEffect::eRelation rel)
 	{
 		if(cha_statusEffect.IsStatusChanged(status))
 			cha_statusEffect.ChangeStatus(pTM, status, rel);
@@ -103,11 +91,6 @@ public:
 		cha_statusEffect.Reset();
 	}
 	void	SetItemEffectOption( SBYTE sbOption ) { cha_sbItemEffectOption = sbOption; }
-
-	int		GetSyndiType() { return cha_iSyndicateType; }
-	int		GetSyndiGrade() { return cha_iSyndicateGrade; }
-
-	int		GetShowAnotherRelicEffect();
 
 	// wooss 070310 --------------------------------------------------------------->><<
 	// kw : WSS_WHITEDAY_2007

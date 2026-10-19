@@ -10,7 +10,6 @@
 #include <GameMP/PlayerSettings.h>
 #include <GameMP/SessionProperties.h>
 #include <Engine/Entities/PlayerCharacter.h>
-#include <Engine/Network/ThreadWrapper.h>
 
 #define GAME_SHELL_VER "V012"
 
@@ -123,8 +122,6 @@ public:
 class CGame
 {
 public:
-	CGame();
-	~CGame();
 	enum ConsoleState	gm_csConsoleState;
 	enum ConsoleState	gm_csComputerState;
 
@@ -185,14 +182,14 @@ public:
 	//INDEX	gm_aiStartLocalPlayers[4];
 	//INDEX	gm_aiMenuLocalPlayers[1];
 	INDEX	gm_aiStartLocalPlayers[1];
+//강동민 수정 끝 로그인 변경 작업		08.10
 
 	// players that are currently playing on local machine (up to 4)
 	// 로컬에서 현재 실행되는 플레이어...
 //강동민 수정 시작 로그인 변경 작업	08.10
 	// NOTE : Save_t와 Load_t에서 읽어들이는 부분이 있어서 제거하지 못했음.
 	CLocalPlayer	gm_lpLocalPlayers[1];
-
-	ULONG			m_oldTime;
+//강동민 수정 끝 로그인 변경 작업		08.10
 
 	// Operations
 	void InitInternal(void);
@@ -206,8 +203,6 @@ public:
 	void SaveThumbnail( const CTFileName &fnm );
 	//CTFileName GetQuickSaveName( BOOL bSave );
 	void GameHandleTimer(void);
-
-	HANDLE GetUpdateHandle() { return gmUpdateHandle; }
 	virtual void LoadPlayersAndControls(void);
 	virtual void SavePlayersAndControls(void);
 	virtual void Load_t(void);
@@ -233,6 +228,10 @@ public:
 	virtual void ConsoleRender( CDrawPort *pdpDrawport );
 	virtual void ConsolePrintLastLines( CDrawPort *pdpDrawport );
 
+	// loading hook functions
+	virtual void EnableLoadingHook( CDrawPort *pdpDrawport );
+	virtual void DisableLoadingHook(void);
+
 	// get default description for a game (for save games/demos)
 	virtual CTString GetDefaultGameDescription( BOOL bWithInfo );
 //강동민 수정 시작 다중 공격 작업	08.22
@@ -240,7 +239,7 @@ public:
 //강동민 수정 끝 다중 공격 작업		08.22
 
 	// game start/end functions
-	virtual BOOL PreNewGame();	//0524 kwon
+	virtual PreNewGame();	//0524 kwon
 	virtual BOOL NewGame( const CTString &strSessionName, const CTFileName &fnWorld,
 							class CSessionProperties &sp );
 //	virtual BOOL JoinGame( CNetworkSession &session );
@@ -258,7 +257,7 @@ public:
 	virtual CTString DemoReportAnalyzedProfile(void);
 
 	// functions called from world editor
-	virtual void Initialize( const CTFileName &fnGameSettings, BOOL bDummy );
+	virtual void Initialize( const CTFileName &fnGameSettings );
 	virtual void End(void);
 	virtual void QuickTest( const CTFileName &fnMapName, CDrawPort *pdpDrawport, CViewPort *pvpViewport );
 //강동민 수정 시작 클로즈 준비 작업	08.10
@@ -289,14 +288,6 @@ public:
 	virtual void MenuPostRenderMenu( const char *strMenuName );
 
 	virtual void GameRedrawCursor(CDrawPort *pdpDrawPort, ULONG ulFlags);
-
-	virtual void SetHud_Stats(INDEX stats);
-
-private:
-	cThreadWrapper*	gmUpdateInputState; // 프로세스 검사를 위한 스레드 랩퍼 클래스
-	HANDLE			gmUpdateHandle;		// 프로세스 검사 이벤트 핸들
-
-	static UINT WINAPI UpdateThreadFunction(void *parameter);
 };
 
 #endif

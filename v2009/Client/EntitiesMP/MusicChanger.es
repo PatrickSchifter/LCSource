@@ -55,7 +55,7 @@ procedures:
 
     m_strDescription.PrintF("%s: %s (%g)", 
       MusicType_enum.NameForValue((INDEX)m_mtType),
-      (const char*)m_fnMusic.FileName(),
+      (CTString&)m_fnMusic.FileName(),
       m_fVolume);
 
     // wait for game to start

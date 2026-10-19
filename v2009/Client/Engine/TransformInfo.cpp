@@ -57,7 +57,7 @@ m_pTransformInfo( NULL )
 	m_pTransformInfo[TYPE_2].afImpactTimeTable[ATTACK2] = 0.79f;
 	m_pTransformInfo[TYPE_2].afImpactTimeTable[ATTACK3] = 0.68f;
 	m_pTransformInfo[TYPE_2].afImpactTimeTable[ATTACK4] = 0.66f;
-	SetInfo(TYPE_2, 309);
+
 	//-------------------------------------------------------
 	m_pTransformInfo[TYPE_1].strName					= "∫ØΩ≈√º2";
 	m_pTransformInfo[TYPE_1].strFileName				= SUMMON_TYPE2;
@@ -95,7 +95,6 @@ m_pTransformInfo( NULL )
 	m_pTransformInfo[TYPE_1].afImpactTimeTable[ATTACK2] = 0.96f;
 	m_pTransformInfo[TYPE_1].afImpactTimeTable[ATTACK3] = 0.92f;
 	m_pTransformInfo[TYPE_1].afImpactTimeTable[ATTACK4] = 0.96f;
-	SetInfo(TYPE_1, 313);
 }
 
 // ----------------------------------------------------------------------------
@@ -151,24 +150,4 @@ float CTransformInfo::GetImpactTime( int iTransform, int iAttackType )	const
 CTString CTransformInfo::GetAnimationName( int iTransform, int iAnimType )
 {
 	return m_pTransformInfo[iTransform].aStrAnimationName[iAnimType];
-}
-
-void CTransformInfo::SetInfo( int iTransform, int nIndex )
-{
-	m_pTransformInfo[iTransform].nSkillIndex = nIndex;
-}
-
-int CTransformInfo::GetSkillIndex( int iTransform )
-{
-	return m_pTransformInfo[iTransform].nSkillIndex;
-}
-
-int CTransformInfo::GetType(int nSkillIndex)
-{
-	for (int i = 0; i < TOTAL_TRANSFORM; ++i)
-	{
-		if (m_pTransformInfo[i].nSkillIndex == nSkillIndex)
-			return i;
-	}
-	return -1;
 }

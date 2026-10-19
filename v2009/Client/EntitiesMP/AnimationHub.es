@@ -57,35 +57,12 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget0!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s...", (const char*)m_penTarget0->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s...", m_penTarget0->GetName());
     }
     return m_strDescription;
   }
 
 procedures:
-  Main()
-  {
-    InitAsEditorModel();
-    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
-    SetCollisionFlags(ECF_IMMATERIAL);
-
-    // set appearance
-    SetModel(MODEL_HUB);
-    SetModelMainTexture(TEXTURE_HUB);
-
-    // check target types
-    for (INDEX i=0; i<10; i++) {
-      CEntityPointer &penTarget = (&m_penTarget0)[i];
-      if (penTarget!=NULL && 
-        !IsOfClass( penTarget, &CModelHolder2_DLLClass) &&
-        !IsOfClass( penTarget, &CLight_DLLClass)) {
-        WarningMessage("All targets must be ModelHolder2 or Light!");
-        penTarget=NULL;
-      }
-    }
-    jump WaitChange();
-  }
-
   RelayEvents()
   {
     // for each target
@@ -142,6 +119,29 @@ procedures:
         }
       }
     }
+  }
+
+  Main()
+  {
+    InitAsEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+
+    // set appearance
+    SetModel(MODEL_HUB);
+    SetModelMainTexture(TEXTURE_HUB);
+
+    // check target types
+    for (INDEX i=0; i<10; i++) {
+      CEntityPointer &penTarget = (&m_penTarget0)[i];
+      if (penTarget!=NULL && 
+        !IsOfClass( penTarget, &CModelHolder2_DLLClass) &&
+        !IsOfClass( penTarget, &CLight_DLLClass)) {
+        WarningMessage("All targets must be ModelHolder2 or Light!");
+        penTarget=NULL;
+      }
+    }
+    jump WaitChange();
   }
 };
 

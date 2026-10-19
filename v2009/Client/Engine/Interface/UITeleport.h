@@ -9,9 +9,9 @@
 	#pragma once
 #endif
 
-// 
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIScrollBar.h>
+
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIScrollBar.h>
 
 #define	TELEPORT_MAX_MEMO			15
 // [KH_070315] 프리미엄은 20개
@@ -129,8 +129,8 @@ public:
 
 	// Network message functions ( receive )
 	// wooss 050816 add useTime 
-	void	SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment );
-	void	SetUseTime(int t);
+	void	SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment );
+	void	SetUseTime(int t) {m_useTime = t ; }
 	int		GetUseTime() { return m_useTime; }
 
 	// Command functions

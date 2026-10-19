@@ -2,12 +2,13 @@
 #include <Engine/Interface/UIMessageBoxL.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
+#include <Engine/LocalDefine.h>
 
 
 static int	_iMaxDescStringChar = 0;
 static int	_iMaxSelStringChar = 0;
 static int	_nMsgBoxLineHeight = 0;
-//extern INDEX g_iCountry;
+extern INDEX g_iCountry;
 // ----------------------------------------------------------------------------
 // Name : CUIMessageBoxL()
 // Desc : Constructor
@@ -19,11 +20,6 @@ CUIMessageBoxL::CUIMessageBoxL()
 	m_nSelStringCount = 0;
 	m_nOverSelection = -1;
 	m_bTitleBarClick = FALSE;
-
-	// [sora] 메시지 박스실행 시간 제한
-	m_nStartTime = 0;
-	m_nTime = 0;
-	m_nTimeOutBtnMessage = -1;
 }
 
 // ----------------------------------------------------------------------------
@@ -32,6 +28,7 @@ CUIMessageBoxL::CUIMessageBoxL()
 // ----------------------------------------------------------------------------
 CUIMessageBoxL::~CUIMessageBoxL()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -40,7 +37,9 @@ CUIMessageBoxL::~CUIMessageBoxL()
 // ----------------------------------------------------------------------------
 void CUIMessageBoxL::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxDescStringChar = 266 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	_iMaxSelStringChar = 275 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
@@ -123,10 +122,8 @@ void CUIMessageBoxL::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX 
 // Name : CreateMessageBox()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::CreateMessageBox( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIMessageBoxL::CreateMessageBox( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Message box setting
 	if( nPosX != -1 && nPosX != -1 )
 	{
@@ -134,8 +131,8 @@ void CUIMessageBoxL::CreateMessageBox( const CTString &strTitle, int nWhichUI, i
 	}
 	else
 	{
-		int	nX = ( pUIManager->GetMaxI() - pUIManager->GetMinI() - GetWidth() ) / 2;
-		int	nY = ( pUIManager->GetMaxJ() - pUIManager->GetMinJ() - GetHeight() ) / 2;
+		int	nX = ( _pUIMgr->GetMaxI() - _pUIMgr->GetMinI() - GetWidth() ) / 2;
+		int	nY = ( _pUIMgr->GetMaxJ() - _pUIMgr->GetMinJ() - GetHeight() ) / 2;
 		SetPos( nX, nY );
 	}
 	m_nWhichUI = nWhichUI;
@@ -143,17 +140,7 @@ void CUIMessageBoxL::CreateMessageBox( const CTString &strTitle, int nWhichUI, i
 	m_strTitle = strTitle;
 	m_nCurNum = 1;
 
-#if defined G_KOR
-	// [2011/04/11 : Sora] 메시지 박스실행 제한 시간 20초로 변경
-	SetMsgBoxLTimer( 20, -1 );
-#else
-	// [sora] 메시지 박스실행 시간 제한
-	m_nStartTime = 0;
-	m_nTime = 0;
-	m_nTimeOutBtnMessage = -1;
-#endif
-
-	pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -167,156 +154,240 @@ void CUIMessageBoxL::InitMessageBox()
 	m_nSelStringCount = 0;
 	m_nOverSelection = -1;
 
-	// [sora] 메시지 박스실행 시간 제한
-	m_nStartTime = 0;
-	m_nTime = 0;
-	m_nTimeOutBtnMessage = -1;
-
 	m_lbDescription.ResetAllStrings();
 	m_vecStrSelMessage.clear();
 	m_vecColSelMessage.clear();
 	m_vecSelIndex.clear();
 
-	CUIManager::getSingleton()->RearrangeOrder( m_nUIIndex, FALSE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, FALSE );
 }
 
 // ----------------------------------------------------------------------------
 // Name : AddDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::AddDescString( const CTString &strMessage, const COLOR colDesc )
+void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = _iMaxDescStringChar;
 	if( nLength == 0 )
 		return;
-#if defined(G_THAI)
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (_iMaxDescStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else
-	nLength = strMessage.Length();
-	limitstrpos = _iMaxDescStringChar;
-#endif
-	
-	int		iPos;
-	if( nLength <= limitstrpos )
-	{
-		// Check line character
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
+
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strMessage);
+		INDEX	nChatMax= (_iMaxDescStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;	
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;	
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbDescription.AddString( 0, strMessage, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				
+				// Date : 2005-03-16,   By Lee Ki-hwan : 버그 수정
+				// m_lbDescription.AddString( 0, strMessage, colDesc ); 
+				m_lbDescription.AddString( 0, strTemp2, colDesc ); 
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc );
+			}
 		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbDescription.AddString( 0, strMessage, colDesc );
-		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strMessage.Split( iPos, strTemp2, strTemp );
-			
-			// Date : 2005-03-16,   By Lee Ki-hwan : 버그 수정
-			// m_lbDescription.AddString( 0, strMessage, colDesc ); 
-			m_lbDescription.AddString( 0, strTemp2, colDesc ); 
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddDescString( strTemp, colDesc );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-		BOOL	b2ByteChar = FALSE;
-#if defined(G_THAI)
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-#else
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
-#endif
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
-		}
-		
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-#ifdef LINE_CHANGE_BY_WORD
-			if( strMessage[nSplitPos] != ' ' )
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxDescStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-				for(int i = iPos; i>=0; --i)
+				if(nChatMax < FindThaiLen(strMessage,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.AddString( 0, strTemp2, colDesc );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
 				{
-					if( strMessage[i] == ' ' )
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
 					{
-						iPos = i;
-						break;
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddDescString( strTemp, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.AddString( 0, strTemp2, colDesc );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc );
+			}
+
+		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxDescStringChar )
+		{
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;	
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbDescription.AddString( 0, strMessage, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				
+				// Date : 2005-03-16,   By Lee Ki-hwan : 버그 수정
+				// m_lbDescription.AddString( 0, strMessage, colDesc ); 
+				m_lbDescription.AddString( 0, strTemp2, colDesc ); 
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxDescStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+
+#ifdef LINE_CHANGE_BY_WORD
+				if( strMessage[nSplitPos] != ' ' )
+				{
+					for(int i=iPos; i>=0; --i)
+					{
+						if( strMessage[i] == ' ' )
+						{
+							iPos =i;
+							break;
+						}
 					}
 				}
-			}
 #endif
-			strMessage.Split( iPos, strTemp2, strTemp );
-			m_lbDescription.AddString( 0, strTemp2, colDesc );
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
-			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
+
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.AddString( 0, strTemp2, colDesc );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
 				{
-					if( strTemp[iPos] != ' ' )
-						break;
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
 				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+
+				AddDescString( strTemp, colDesc );
 			}
-			
-			AddDescString( strTemp, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strMessage.Split( iPos, strTemp2, strTemp );
-			m_lbDescription.AddString( 0, strTemp2, colDesc );
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddDescString( strTemp, colDesc );
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.AddString( 0, strTemp2, colDesc );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc );
+			}
 		}
-		
 	}
 }
 
@@ -328,72 +399,133 @@ void CUIMessageBoxL::AddSelString( CTString &strMessage, COLOR colSel, int iValu
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = _iMaxSelStringChar;
 	if( nLength == 0 )
 		return;
-#if defined(G_THAI)
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (_iMaxSelStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else
-	nLength = strMessage.Length();
-	limitstrpos = _iMaxSelStringChar;
-#endif
-	if( nLength <= limitstrpos )
-	{
-		m_vecStrSelMessage.push_back( strMessage );
-		m_vecColSelMessage.push_back( colSel );
-		
-		sSelTable TempSel;
-		TempSel.iIndex	= m_nSelStringCount;
-		TempSel.iValue	= iValue;
-		m_vecSelIndex.push_back( TempSel );
-		m_nSelStringCount++;
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-		BOOL	b2ByteChar = FALSE;
-		int iPos = 0;
-#if defined(G_THAI)
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
+
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strMessage);
+		INDEX	nChatMax= (_iMaxDescStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
+			m_vecStrSelMessage.push_back( strMessage );
+			m_vecColSelMessage.push_back( colSel );
+
+			sSelTable TempSel;
+			TempSel.iIndex	= m_nSelStringCount;
+			TempSel.iValue	= iValue;
+			m_vecSelIndex.push_back( TempSel );
+			m_nSelStringCount++;
 		}
-		nSplitPos = iPos;
-#endif
-		// Split string
-		CTString	strTemp, strTemp2;
-		strMessage.Split( nSplitPos, strTemp2, strTemp );
-		m_vecStrSelMessage.push_back( strTemp2 );
-		m_vecColSelMessage.push_back( colSel );
-		
-		sSelTable TempSel;
-		TempSel.iIndex	= m_nSelStringCount;
-		TempSel.iValue	= iValue;
-		m_vecSelIndex.push_back( TempSel );
-		
-		// Trim space
-		if( strTemp[0] == ' ' )
+		// Need multi-line
+		else
 		{
-			int	nTempLength = strTemp.Length();
-			for( iPos = 1; iPos < nTempLength; iPos++ )
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxDescStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-				if( strTemp[iPos] != ' ' )
+				if(nChatMax < FindThaiLen(strMessage,0,iPos))
 					break;
 			}
-			
-			strTemp.TrimLeft( strTemp.Length() - iPos );
+			nSplitPos = iPos;
+
+			// Split string
+			CTString	strTemp, strTemp2;
+			strMessage.Split( iPos, strTemp2, strTemp );
+			m_vecStrSelMessage.push_back( strTemp2 );
+			m_vecColSelMessage.push_back( colSel );
+
+			sSelTable TempSel;
+			TempSel.iIndex	= m_nSelStringCount;
+			TempSel.iValue	= iValue;
+			m_vecSelIndex.push_back( TempSel );
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; iPos++ )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			// Add space
+			strTemp = CTString( "   " ) + strTemp;
+
+			AddSelString( strTemp, colSel, iValue );
+
 		}
 		
-		// Add space
-		strTemp = CTString( "   " ) + strTemp;
-		
-		AddSelString( strTemp, colSel, iValue );
-		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxSelStringChar )
+		{
+			m_vecStrSelMessage.push_back( strMessage );
+			m_vecColSelMessage.push_back( colSel );
+
+			sSelTable TempSel;
+			TempSel.iIndex	= m_nSelStringCount;
+			TempSel.iValue	= iValue;
+			m_vecSelIndex.push_back( TempSel );
+			m_nSelStringCount++;
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxSelStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strMessage[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Split string
+			CTString	strTemp, strTemp2;
+			strMessage.Split( iPos, strTemp2, strTemp );
+			m_vecStrSelMessage.push_back( strTemp2 );
+			m_vecColSelMessage.push_back( colSel );
+
+			sSelTable TempSel;
+			TempSel.iIndex	= m_nSelStringCount;
+			TempSel.iValue	= iValue;
+			m_vecSelIndex.push_back( TempSel );
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; iPos++ )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			// Add space
+			strTemp = CTString( "   " ) + strTemp;
+
+			AddSelString( strTemp, colSel, iValue );
+		}
 	}
+
 	m_nSelHeight = 14 + m_vecStrSelMessage.size() * _nMsgBoxLineHeight;
 	m_rcSelection.Bottom = m_rcSelection.Top + m_vecStrSelMessage.size() * _nMsgBoxLineHeight;
 	m_nHeight = MSGBOXL_TOP_HEIGHT + MSGBOXL_DESC_HEIGHT + MSGBOXL_GAP_HEIGHT +
@@ -406,23 +538,8 @@ void CUIMessageBoxL::AddSelString( CTString &strMessage, COLOR colSel, int iValu
 // ----------------------------------------------------------------------------
 void CUIMessageBoxL::Render()
 {
-
-	// [sora] 메시지 박스실행 시간 제한
-	if(m_nTime > 0)
-	{
-		__int64 tmpTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-		// 설정한 시간이 지나가면 명령 실행
-		if(tmpTime - m_nStartTime > (m_nTime * 1000))
-		{
-			ReturnCommand(m_nTimeOutBtnMessage);
-		}
-	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2;
@@ -430,63 +547,63 @@ void CUIMessageBoxL::Render()
 	// Background
 	// Top
 	nY = m_nPosY + MSGBOXL_TOP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
 										m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
 										m_rtTopM.U0, m_rtTopM.V0, m_rtTopM.U1, m_rtTopM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
 										m_rtTopR.U0, m_rtTopR.V0, m_rtTopR.U1, m_rtTopR.V1,
 										0xFFFFFFFF );
 
 	// Desc middle
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_DESC_HEIGHT,
 										m_rtMiddleScrollL.U0, m_rtMiddleScrollL.V0,
 										m_rtMiddleScrollL.U1, m_rtMiddleScrollL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_DESC_HEIGHT,
 										m_rtMiddleScrollM.U0, m_rtMiddleScrollM.V0,
 										m_rtMiddleScrollM.U1, m_rtMiddleScrollM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_DESC_HEIGHT,
 										m_rtMiddleScrollR.U0, m_rtMiddleScrollR.V0,
 										m_rtMiddleScrollR.U1, m_rtMiddleScrollR.V1,
 										0xFFFFFFFF );
 
 	// Gap middle
 	nY += MSGBOXL_DESC_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_GAP_HEIGHT,
 										m_rtMiddleGapL.U0, m_rtMiddleGapL.V0, m_rtMiddleGapL.U1, m_rtMiddleGapL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_GAP_HEIGHT,
 										m_rtMiddleGapM.U0, m_rtMiddleGapM.V0, m_rtMiddleGapM.U1, m_rtMiddleGapM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_GAP_HEIGHT,
 										m_rtMiddleGapR.U0, m_rtMiddleGapR.V0, m_rtMiddleGapR.U1, m_rtMiddleGapR.V1,
 										0xFFFFFFFF );
 
 	// Selection middle
 	nY += MSGBOXL_GAP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + m_nSelHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + m_nSelHeight,
 										m_rtMiddleL.U0, m_rtMiddleL.V0, m_rtMiddleL.U1, m_rtMiddleL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + m_nSelHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + m_nSelHeight,
 										m_rtMiddleM.U0, m_rtMiddleM.V0, m_rtMiddleM.U1, m_rtMiddleM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + m_nSelHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + m_nSelHeight,
 										m_rtMiddleR.U0, m_rtMiddleR.V0, m_rtMiddleR.U1, m_rtMiddleR.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY += m_nSelHeight;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + MSGBOXL_BOTTOM_HEIGHT,
 										m_rtBottomL.U0, m_rtBottomL.V0, m_rtBottomL.U1, m_rtBottomL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + MSGBOXL_BOTTOM_HEIGHT,
 										m_rtBottomM.U0, m_rtBottomM.V0, m_rtBottomM.U1, m_rtBottomM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + MSGBOXL_BOTTOM_HEIGHT,
 										m_rtBottomR.U0, m_rtBottomR.V0, m_rtBottomR.U1, m_rtBottomR.V1,
 										0xFFFFFFFF );
 
@@ -497,10 +614,10 @@ void CUIMessageBoxL::Render()
 	m_lbDescription.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Title
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + MSGBOXL_TITLE_TEXT_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + MSGBOXL_TITLE_TEXT_OFFSETX,
 										m_nPosY + MSGBOXL_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	nX = m_nPosX + MSGBOXL_SEL_TEXT_SX;
@@ -508,14 +625,14 @@ void CUIMessageBoxL::Render()
 	for( int iMsg = 0; iMsg < m_vecStrSelMessage.size(); iMsg++ )
 	{
 		if( m_nOverSelection != -1 && m_vecSelIndex[iMsg].iIndex == m_vecSelIndex[m_nOverSelection].iIndex )
-			pDrawPort->PutTextEx( m_vecStrSelMessage[iMsg], nX, nY, 0xFF6107FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( m_vecStrSelMessage[iMsg], nX, nY, 0xFF6107FF );
 		else
-			pDrawPort->PutTextEx( m_vecStrSelMessage[iMsg], nX, nY, m_vecColSelMessage[iMsg] );
+			_pUIMgr->GetDrawPort()->PutTextEx( m_vecStrSelMessage[iMsg], nX, nY, m_vecColSelMessage[iMsg] );
 		nY += _nMsgBoxLineHeight;
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -524,12 +641,10 @@ void CUIMessageBoxL::Render()
 // ----------------------------------------------------------------------------
 void CUIMessageBoxL::ReturnCommand( int nResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( m_nWhichUI < 0 )
-		pUIManager->MsgBoxLCommand( m_nCommandCode, nResult );
+		_pUIMgr->MsgBoxLCommand( m_nCommandCode, nResult );
 	else
-		pUIManager->GetUI( m_nWhichUI )->MsgBoxLCommand( m_nCommandCode, nResult );
+		_pUIMgr->GetUI( m_nWhichUI )->MsgBoxLCommand( m_nCommandCode, nResult );
 
 	InitMessageBox();
 }
@@ -553,7 +668,7 @@ WMSG_RESULT CUIMessageBoxL::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// If message box isn't focused
 			if( !IsFocused() )
@@ -624,7 +739,7 @@ WMSG_RESULT CUIMessageBoxL::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( m_nUIIndex, TRUE );
+				_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -632,10 +747,8 @@ WMSG_RESULT CUIMessageBoxL::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				m_bTitleBarClick = FALSE;
@@ -662,7 +775,7 @@ WMSG_RESULT CUIMessageBoxL::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -693,21 +806,6 @@ WMSG_RESULT CUIMessageBoxL::MouseMessage( MSG *pMsg )
 			}
 		}
 		break;
-	}
-
-	return WMSG_FAIL;
-}
-
-WMSG_RESULT		CUIMessageBoxL::KeyMessage(MSG *pMsg )
-{
-	// If message box is not focused
-	if( !IsFocused() )
-		return WMSG_FAIL;
-
-	if( pMsg->wParam == VK_ESCAPE )
-	{
-		ReturnCommand( -1 );
-		return WMSG_SUCCESS;
 	}
 
 	return WMSG_FAIL;

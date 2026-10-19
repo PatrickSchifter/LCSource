@@ -9,12 +9,12 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <Engine/Interface/UIComboBox.h>
-// #include <Engine/Interface/UIMultiEditBox.h>
-// #include <string>
-// #include <vector>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIComboBox.h>
+#include <Engine/Interface/UIMultiEditBox.h>
+#include <string>
+#include <vector>
 
 // Count
 #define	HELP_LIST_SUBJECT_MAX_CHAR		25
@@ -33,14 +33,13 @@
 #define	HELP3_WIDTH						250
 #define	HELP3_HEIGHT					370
 
-#define HELP_TUTORIAL_MSG_CNT			7
-
 // ----------------------------------------------------------------------------
 // Name : CUIHelp
 // Desc : 
 // ----------------------------------------------------------------------------
 class CUIHelp : public CUIWindow
 {
+
 protected:	
 	CTextureData		*m_ptdImageTexture;			// Texture of help default Image
 	CTextureData		*m_ptdImageTemp;			// Texture of help other Image
@@ -49,9 +48,6 @@ protected:
 	int					m_bVisible;							// Right View 
 	int					m_bVisibleImg;						// Right View Image
 	int					m_bSlideImgX;						// for sliding image
-
-	// tutorial string array [8/3/2010 rumist]
-	int					m_arrTutorialMessage[HELP_TUTORIAL_MSG_CNT];
 	
 	// Controls
 	CUIButton			m_btnClose;							// Close button
@@ -94,7 +90,6 @@ protected:
 	UIRectUV			m_rtEditBoxLM;						// UV of lower middle region of edit box
 	UIRectUV			m_rtEditBoxLR;						// UV of lower right region of edit box
 
-	BOOL				m_bBeginnerMode;					// Tutorial renewal.
 protected:
 	void	AddListSubjectString( CTString &strSubject );
 	void	AddReadingString( CUIListBox& lbList, CTString &strContent, COLOR colContent, int iMaxChar = HELP_READ_MAX_CHAR );
@@ -126,8 +121,6 @@ public:
 	void	OpenHelp();
 	void	CloseHelp();
 
-	void	OpenTutorial();
-
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
@@ -135,24 +128,12 @@ public:
 	// Messages
 	WMSG_RESULT	KeyMessage( MSG *pMsg );
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
-	
-	// [090909 sora] 튜토리얼 메시지 출력
-	void	CreateTutorialMessageBoxL(int nCommandCode);
-	void	MsgBoxLCommand( int nCommandCode, int nResult);
-
-	void	ReqBeginnerTitle();
-	void	RepBeginnerTitle( CNetworkMessage* istr );
-	void	ReqActiveTitle( INDEX index );
-
-	const BOOL	IsBeginner()	const				{ return m_bBeginnerMode;								}
-	BOOL		SetBeginner( BOOL	bBeginner )		{ m_bBeginnerMode = bBeginner; return m_bBeginnerMode;	}
-	// esc closing support [5/30/2011 rumist]
-	BOOL		CloseWindowByEsc()					{ ToggleVisible();	return TRUE;						}
 };
 
 class CUIHelp3 : public CUIWindow
 {
 	CTextureData		*m_ptdImageTexture;			// Texture of help default Image
+	CTextureData		*m_ptdImageTemp;			// Texture of help other Image
 
 	// Controls
 	CUIButton			m_btnTClose;					// Top Close button
@@ -190,7 +171,7 @@ public:
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
 
-	void	AddHelpString( const CTString &strContent, COLOR colContent = 0xFFE7ADFF, int iMaxChar = HELP3_READ_MAX_CHAR );
+	void	AddHelpString( CTString &strContent, COLOR colContent = 0xFFE7ADFF, int iMaxChar = HELP3_READ_MAX_CHAR );
 	void	ClearHelpString();
 
 	// Render
@@ -204,7 +185,7 @@ public:
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	
-	CUIListBox* GetHelpString() {return &m_lbContent;}
+	CUIListBox GetHelpString() {return m_lbContent;}
 
 	// Messages
 	WMSG_RESULT	KeyMessage( MSG *pMsg );

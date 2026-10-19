@@ -183,7 +183,13 @@ CNetworkMessage &operator>>(CNetworkMessage &nm, CSessionSocketParams &ssp)
 /*
  * Constructor.
  */
-CServer::CServer(void) 
+CServer::CServer(void) : 
+srv_iMaxMobNum(500), 
+srv_iMaxChaNum(500), 
+srv_iMaxPetNum(500), 
+srv_iMaxSlaveNum(500), 
+srv_iMaxItemNum(500),
+srv_iMaxWildPetNum(500)
 {
   TRACKMEM(Mem,"Network");
 
@@ -196,6 +202,21 @@ CServer::CServer(void)
   srv_assoSessions.New(NET_MAXGAMECOMPUTERS);
   srv_apltPlayers.New(NET_MAXGAMEPLAYERS);
 
+//0325
+//안태훈 수정 시작	//(5th Closed beta)(0.2)
+  srv_amtMob.New(srv_iMaxMobNum);
+  srv_amtMob.SetAllocationStep(100);
+  srv_actCha.New(srv_iMaxChaNum);
+  srv_actCha.SetAllocationStep(100);
+  srv_actPet.New(srv_iMaxPetNum);
+  srv_actPet.SetAllocationStep(100);
+  srv_actSlave.New(srv_iMaxSlaveNum);
+  srv_actSlave.SetAllocationStep(100);
+  srv_aitItem.New(srv_iMaxItemNum);
+  srv_aitItem.SetAllocationStep(100);
+  srv_actWildPet.New(srv_iMaxWildPetNum);
+  srv_actWildPet.SetAllocationStep(100);
+//안태훈 수정 끝	//(5th Closed beta)(0.2)
   // initialize player indices
   INDEX iPlayer = 0;
   FOREACHINSTATICARRAY(srv_apltPlayers, CPlayerTarget, itplt) {
@@ -274,6 +295,8 @@ void CServer::Stop(void)
     srv_apltPlayers.Clear();
     srv_apltPlayers.New(NET_MAXGAMEPLAYERS);
 
+	ReAllocEntities();
+
   }
 
   // initialize player indices
@@ -288,6 +311,22 @@ void CServer::Stop(void)
 
   srv_bActive = FALSE;
 };
+
+void CServer::ReAllocEntities()
+{
+	srv_amtMob.Clear();
+    srv_amtMob.New(srv_iMaxMobNum);
+	srv_actCha.Clear();
+    srv_actCha.New(srv_iMaxChaNum);
+	srv_actPet.Clear();
+    srv_actPet.New(srv_iMaxPetNum);
+	srv_actSlave.Clear();
+    srv_actSlave.New(srv_iMaxSlaveNum);
+	srv_aitItem.Clear();
+    srv_aitItem.New(srv_iMaxItemNum);
+	srv_actWildPet.Clear();
+	srv_actWildPet.New(srv_iMaxWildPetNum);
+}
 
 /*
  * Initialize server and start message handlers.
@@ -311,6 +350,7 @@ void CServer::Start_t(void)
   srv_apltPlayers.Clear();
   srv_apltPlayers.New(NET_MAXGAMEPLAYERS);
 
+  ReAllocEntities();	  
   // initialize player indices
   INDEX iPlayer = 0;
   {FOREACHINSTATICARRAY(srv_apltPlayers, CPlayerTarget, itplt) {
@@ -398,10 +438,10 @@ void CServer::SendGameStreamBlocks(INDEX iClient)
 //  CPrintF("last=%d -- ", iLastSent);
 
   // initialize the message that is to be sent
-  CNetworkMessage nmGameStreamBlocks((UBYTE)MSG_GAMESTREAMBLOCKS);
+  CNetworkMessage nmGameStreamBlocks(MSG_GAMESTREAMBLOCKS);
   // get one message for last compressed message of valid size
-  CNetworkMessage nmPackedBlocks((UBYTE)MSG_GAMESTREAMBLOCKS);
-  CNetworkMessage nmPackedBlocksNew((UBYTE)MSG_GAMESTREAMBLOCKS);
+  CNetworkMessage nmPackedBlocks(MSG_GAMESTREAMBLOCKS);
+  CNetworkMessage nmPackedBlocksNew(MSG_GAMESTREAMBLOCKS);
 
   // repeat for max 100 sequences
   INDEX iBlocksOk = 0;
@@ -527,19 +567,18 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   extern INDEX net_bReportMiscErrors;
   if (net_bReportMiscErrors) {
     CPrintF(TRANS("Server: Resending sequences %d-%d(%d) to '%s'..."), 
-      iSequence0, iSequence0+ctSequences-1, ctSequences, (const char*)_cmiComm.Server_GetClientName(iClient));
+      iSequence0, iSequence0+ctSequences-1, ctSequences, _cmiComm.Server_GetClientName(iClient));
   }
 
   // get corresponding session socket
   CSessionSocket &sso = srv_assoSessions[iClient];
 
   // create a package message
-  CNetworkMessage nmGameStreamBlocks((UBYTE)MSG_GAMESTREAMBLOCKS);
-  CNetworkMessage nmPackedBlocks((UBYTE)MSG_GAMESTREAMBLOCKS);
+  CNetworkMessage nmGameStreamBlocks(MSG_GAMESTREAMBLOCKS);
+  CNetworkMessage nmPackedBlocks(MSG_GAMESTREAMBLOCKS);
 
   // for each sequence
-  INDEX iSequence;
-  for(iSequence = iSequence0; iSequence < iSequence0 + ctSequences; iSequence++) {
+  for(INDEX iSequence = iSequence0; iSequence<iSequence0+ctSequences; iSequence++) {
     // get the stream block with that sequence
     CNetworkStreamBlock *pnsbBlock;
     CNetworkStream::Result res = sso.sso_nsBuffer.GetBlockBySequence(iSequence, pnsbBlock);
@@ -550,7 +589,7 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
       return;
     }
 
-    CNetworkMessage nmPackedBlocksNew((UBYTE)MSG_GAMESTREAMBLOCKS);
+    CNetworkMessage nmPackedBlocksNew(MSG_GAMESTREAMBLOCKS);
     // pack it in the batch
     pnsbBlock->WriteToMessage(nmGameStreamBlocks);
     nmGameStreamBlocks.PackDefault(nmPackedBlocksNew);
@@ -781,7 +820,7 @@ void CServer::ConnectLocalSessionState(INDEX iClient, CNetworkMessage &nm)
   // activate it
   sso.Activate();
   // prepare his initialization message
-  CNetworkMessage nmInitMainServer((UBYTE)MSG_REP_CONNECTLOCALSESSIONSTATE);
+  CNetworkMessage nmInitMainServer(MSG_REP_CONNECTLOCALSESSIONSTATE);
   nmInitMainServer<<srv_tmLastProcessedTick;
   nmInitMainServer<<srv_iLastProcessedSequence;
   sso.sso_ctLocalPlayers = -1;
@@ -841,7 +880,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   if (_strModName!=strGivenMod) {
     // disconnect the client
     // NOTE: DO NOT TRANSLATE THIS STRING!
-    CTString strMod(0, "MOD:%s\\%s", (const char*)_strModName, (const char*)_strModURL);
+    CTString strMod(0, "MOD:%s\\%s", _strModName, _strModURL);
     SendDisconnectMessage(iClient, strMod, /*bStream=*/TRUE);
     return;
   }
@@ -1174,7 +1213,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
   // if the client is disconnected
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char*)_cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1199,7 +1238,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
 	// if the client has confirmed disconnect in this loop
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char*)_cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1292,9 +1331,9 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
 	
 	/*
 	// 애완동물이 활성화 되어있는 상태.
-	if( INFO()->_PetTargetInfo.bIsActive && INFO()->_PetTargetInfo.pen_pEntity )
+	if( _pNetwork->_PetTargetInfo.bIsActive && _pNetwork->_PetTargetInfo.pen_pEntity )
 	{
-		CEntity *pEntity = INFO()->_PetTargetInfo.pen_pEntity;
+		CEntity *pEntity = _pNetwork->_PetTargetInfo.pen_pEntity;
 		if( pEntity->IsFirstExtraFlagOn  (ENF_EX1_CURRENT_PET ))
 		{
 			static unsigned int tmStartTime = timeGetTime();
@@ -1472,7 +1511,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
 			ser_bWaitFirstPlayer = 0; // player is here don't wait any more
 			
 			// send client initialization message
-			CNetworkMessage nmPlayerRegistered((UBYTE)MSG_REP_CONNECTPLAYER);
+			CNetworkMessage nmPlayerRegistered(MSG_REP_CONNECTPLAYER);
 			nmPlayerRegistered<<_pNetwork->ga_ubNumLevelChanges;
 			nmPlayerRegistered<<iNewPlayer;   // player index
 			_pNetwork->SendToClientReliable(iClient, nmPlayerRegistered);
@@ -2500,7 +2539,7 @@ void CServer::DropLaggingClients()
 
         // report to console
         if (net_bReportServerTraffic) {
-          CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),(const char*)AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
+          CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
         }
         // clear communication data
         _cmiComm.Server_ClearClient(iSession);
@@ -2519,15 +2558,12 @@ void CServer::DropLaggingClients()
   for (iSession=1;iSession<SERVER_CLIENTS;iSession++) {
     if (srv_assoSessions[iSession].IsActive() && 
         (srv_assoSessions[iSession].sso_tmLastTickAcknowledge < tmNextTime) && 
-#pragma message(">> >> >> ??? fabs(srv_assoSessions[iSession].sso_tmLastTickAcknowledge < tmNextTime)")
-		/* ocarina */
-		//(fabs(srv_assoSessions[iSession].sso_tmLastTickAcknowledge < tmNextTime) > _pTimer->TickQuantum)) {
-        (fabs(srv_assoSessions[iSession].sso_tmLastTickAcknowledge) > _pTimer->TickQuantum)) {
+        (fabs(srv_assoSessions[iSession].sso_tmLastTickAcknowledge < tmNextTime) > _pTimer->TickQuantum)) {
       // perform local disconnect
       HandleClientDisconected(iSession);
       // report to console
       if (net_bReportServerTraffic) {
-        CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),(const char*)AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
+        CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
       }
       // clear communication data
       _cmiComm.Server_ClearClient(iSession);

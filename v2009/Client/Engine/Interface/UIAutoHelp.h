@@ -9,14 +9,10 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIWindow.h>
+
 #define AUTOHELO_SHOW_TIME			8000			// (m sec) 지역이름이 표시 되는 시간 
-
-#if defined(G_BRAZIL)
-	#define INTERVAL_TIME				30000			// 자동 도움말이 무시 되는 시간
-#else
-	#define INTERVAL_TIME				15000			// 자동 도움말이 무시 되는 시간
-#endif
-
+#define INTERVAL_TIME				15000			// 자동 도움말이 무시 되는 시간
 #define RND_HELP_TIME				20000
 
 #define RND_HELP_LEVEL_LOW			1	
@@ -24,15 +20,9 @@
 #define RND_HELP_LEVEL_MAX			100				// 070820_ttos: 브라질 요청 레벨 제한 없음
 
 // Define notice delay time
-#ifdef	IMPROV1107_NOTICESYSTEM
-#define	CHATMSG_NOTICE_DELAY		3000			// milliseconds
-#define	CHATMSG_NOTICE_FADEOUT		2000
-#else
 #define	CHATMSG_NOTICE_DELAY		8000			// milliseconds
 #define	CHATMSG_NOTICE_FADEOUT		7000
-#endif
 #define	CHATMSG_NOTICE_FADETIME		( CHATMSG_NOTICE_DELAY - CHATMSG_NOTICE_FADEOUT )
-#define CLASSIFICATION_TIME			60*60*1000			//등급표시 시간 1시간마다 
 
 
 // ----------------------------------------------------------------------------
@@ -75,16 +65,6 @@ struct _SAutoHelpInfo
 	bool CheckInfo ();
 };
 
-typedef struct _SGMNotice
-{
-	CTString	strGMNotice;
-	COLOR		colGMTextColor;
-	__int64		i64GMNoticeTime;
-	__int64		i64GMFadeTime;
-	BOOL		bCompleteVisible;
-	UIRect		rcBackground;
-
-}SGMNotice;
 
 // ----------------------------------------------------------------------------
 // Name : AUTO_HELP_INDEX
@@ -131,15 +111,12 @@ class ENGINE_API CUIAutoHelp
 {
 protected:
 	CTextureData	*m_ptdBaseTexture;					// Texture of window
-	CTextureData	*m_ptdClassification;				// 게임 등급 표시
 
 	BOOL			m_bStop;							// 정지 상태인감?
 	float			m_fShowTime;						// 보여 지고 있는 시간
 	__int64			m_tmStartTime;						// 보이기 시작 한 시간
 	
 	__int64			m_tmEndTime;						// 보이고 난 후 저장 된 시간 
-	__int64			m_tmClassification;					// 등급표시 저장시간
-	__int64			m_tmCurTime;						// 등급표시 관련 현재 시간
 
 	// Additional autohelp for thai - wooss 060328 ------------------------------->>
 	__int64			m_tmCheckTime;						// time check for thai
@@ -157,28 +134,16 @@ protected:
 	UIRect			m_rcGMNotice;						// Region of notice
 	TIME			m_tmGMNoticeTime;					// 보이기 시작 한 시간
 
-#if	defined(IMPROV1107_NOTICESYSTEM)
-	std::vector<SGMNotice>	m_vGMNotice;
-	BOOL					m_bmovGMNotice;
-	__int64					m_i64movGMNotice;
-#endif
-	CTString		m_strGMNotice;
-	COLOR			m_colGMTextColor;
-	BOOL			m_bShowGMNotice;
-	BOOL			m_bShowClassification;				//등급표시
-	UIRect			m_rcClassification;
-	UIRectUV		m_rtClassification;					//등급표시
-	
-	int				m_nKillMobIndex;
-	BOOL			m_RndHelp;
-
-#if		!defined(_UI_LIB_RENEWAL_)
 	UIRectUV		m_rtNoticeL;						// UV of notice left region
 	UIRectUV		m_rtNoticeC;						// UV of notice center region
 	UIRectUV		m_rtNoticeR;						// UV of notice right region
-#else	// _UI_LIB_RENEWAL_
-	CUIImage*		m_pImgNotice[3];					// left, center, right
-#endif	// _UI_LIB_RENEWAL_
+	
+	CTString		m_strGMNotice;
+	BOOL			m_bShowGMNotice;
+	COLOR			m_colGMTextColor;
+	
+	int				m_nKillMobIndex;
+	BOOL			m_RndHelp;
 
 public:
 
@@ -193,7 +158,6 @@ public:
 	// Render
 	void Render();
 	void RenderGMNotice ();
-	void ClassificationShowRender();
 
 	void ShowAutoHelp ( int nIndex );
 	void SetInfo ( DWORD dwAutoHelpInfo );
@@ -201,7 +165,6 @@ public:
 	void SetGMNotice ( CTString strGMNotice, COLOR colText = 0xFFBA13FF );
 	COLOR GetGMNoticeColor(){ return m_colGMTextColor;	}
 	BOOL IsShowGMNotice()	{ return m_bShowGMNotice;	}
-	void ClearGMNNotice();
 
 	void SetKillMonIndex ( int nIndex )
 	{
@@ -213,14 +176,6 @@ public:
 		return m_nKillMobIndex;
 	}
 
-	void GetLvGuidString(int lv);
-	void LearnTheSkill(int lv);
-	void SetStatpoint(int old, int cur);
-	int  GetUpStatpoint()	{ return m_nUpStat;	}
-	void initialize();
-
-private:
-	int m_nUpStat;
 };
 
 ENGINE_API extern CUIAutoHelp*	_UIAutoHelp;

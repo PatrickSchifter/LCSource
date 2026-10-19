@@ -1,26 +1,31 @@
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 #include "StdH.h"
+
 #include "Web.h"
-#ifdef PLATFORM_WIN32
-#include <wininet.h>
-#endif
+#include <WinInet.h>
 #include <assert.h>
+
 #include "ThreadWrapper.h"
 #include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIMouseCursor.h>
 
-extern HWND	_hDlgWeb;
+void WebAddressInit()
+{
+	// Date : 2005-01-19,   By Lee Ki-hwan : string 으로 변경
+	WebAddressRegister("help_list",		_S( 117, "http://222.122.55.241/game/help/game_help_list.asp" ) );
+	WebAddressRegister("help_view",		_S( 118, "http://222.122.55.241/game/help/game_help_view.asp" ) );
 
-// Two services, both only on Windows:
-// - pages read over HTTP by a thread (wininet), for the web board (CUIWebBoard: help, notices,
-//   free and guild boards on the publisher's site, lastchaos.barunsongames.com by default);
-// - an embedded Internet Explorer (cwebpage.dll) in a Win32 dialog, for news, help and the cash
-//   shop pages.
-// Both talk to the publisher's web sites, which our server does not provide. Elsewhere the
-// requests are dropped (Read() never has a page, as when the site does not answer on Windows)
-// and no browser is embedded; reading pages would need libcurl, and a browser a web view.
+	WebAddressRegister("notice_list",	_S( 119, "http://222.122.55.241/game/notice/game_notice_list.asp" ) );
+	WebAddressRegister("notice_view",	_S( 120, "http://222.122.55.241/game/notice/game_notice_view.asp" ) );
 
-#ifdef PLATFORM_WIN32
+	WebAddressRegister("freebbs_list",	_S( 121, "http://222.122.55.241/game/bbs/game_bbs_list.asp" ) );
+	WebAddressRegister("freebbs_view",	_S( 122, "http://222.122.55.241/game/bbs/game_bbs_view.asp" ) );
+	WebAddressRegister("freebbs_modify",_S( 123, "http://222.122.55.241/game/bbs/game_bbs_modify.asp" ) );
+
+	WebAddressRegister("guildbbs_list",	_S( 1008, "http://lastchaos.2pan4pan.com/game/guildbbs/game_bbs_list.asp" ) ); // wooss 웹주소 수정 
+	WebAddressRegister("guildbbs_view",	_S( 1009, "http://lastchaos.2pan4pan.com/game/guildbbs/game_bbs_view.asp" ) );
+	WebAddressRegister("guildbbs_modify", _S( 1010, "http://lastchaos.2pan4pan.com/game/guildbbs/game_bbs_modify.asp" ) );
+}
+
 /**
 리턴값
 0 : 이상 없음
@@ -28,11 +33,12 @@ extern HWND	_hDlgWeb;
 2 : 유저에게 알려야할 오류
 3 : 개발자 수준의 오류
 **/
+//DWORD WINAPI WebThreadFunction(void *parameter)
 UINT WINAPI WebThreadFunction(void *parameter)
 {
 	ASSERT(parameter != NULL);
 	if(parameter == NULL) return 3;
-	CSharedWebData &shared = *(CSharedWebData*)parameter;
+	cSharedWebData &shared = *(cSharedWebData*)parameter;
 
 	///internet 연결을 초기화한다.
 	HINTERNET hInternet = InternetOpen( "Web Board Browser", 
@@ -128,81 +134,104 @@ UINT WINAPI WebThreadFunction(void *parameter)
 
 	return exitCode;
 }
-#endif  // PLATFORM_WIN32
 
+std::string ConvertStringToWebParameter(const char *szParam)
+{
+	if(szParam == NULL) return "";
+	int strLen = strlen(szParam);
+	if(strLen == 0) return "";
+
+	std::string strRet;
+	for(int i=0; i<strLen; ++i)
+	{
+		if(szParam[i] == '\n') strRet += "%0a";
+		else if(szParam[i] == '\r') strRet += "%0d";
+		else if(szParam[i] == '+') strRet += "%2b";
+		else if(szParam[i] == '&') strRet += "error_andchar";
+		else if(szParam[i] == ' ') strRet += "%20";
+		else strRet += szParam[i];
+	}
+	return strRet;
+}
+
+//-------------- cWebAddress --------------//
+cWebAddress cWebAddress::m_instance;
+
+cWebAddress::cWebAddress()		{}
+cWebAddress::~cWebAddress()		{}
+
+BOOL cWebAddress::RegisterAddress(const char *alias, const char *address)
+{
+	web_map::value_type temp(alias, address);
+	return m_mapAddressAlias.insert(temp).second;
+}
+
+const char *cWebAddress::Address(const char *alias)
+{
+	return m_mapAddressAlias[std::string(alias)].c_str();
+}
+
+//-------------- cWeb --------------//
 cWeb::cWeb()
 : m_eStatus( WS_PREBEGIN )
 {
 	m_sharedData.ResetAll();
-#ifdef PLATFORM_WIN32
 	m_pThread = new cThreadWrapper(WebThreadFunction);
-	m_hWebPage = ::LoadLibrary("cwebpage.dll");
-#else
-	m_pThread = NULL;
-	m_hWebPage = NULL;
-#endif
-
-	m_hWebWnd = NULL;
-
-	// It's linking web embed functions
-#ifdef PLATFORM_WIN32
-	EmbedBrowserObject = (long (WINAPI *)(HWND hwnd))GetProcAddress(m_hWebPage, "EmbedBrowserObject");
-	UnEmbedBrowserObject = (void (WINAPI *)(HWND hwnd))GetProcAddress(m_hWebPage, "UnEmbedBrowserObject");
-	DisplayHTMLPage = (long (WINAPI *)(HWND hwnd, const char *webPageName))GetProcAddress(m_hWebPage, "DisplayHTMLPage");
-#else
-	EmbedBrowserObject = NULL;
-	UnEmbedBrowserObject = NULL;
-	DisplayHTMLPage = NULL;
-#endif
-	WebDialogProc = NULL;
-	m_fnWebCallBack = NULL;
 }
 
 cWeb::~cWeb()
 {
-#ifdef PLATFORM_WIN32
 	if(m_pThread) delete m_pThread;
-#endif
-
-	if (m_hWebPage)
-	{
-		::FreeLibrary(m_hWebPage);
-	}
 }
 
 BOOL cWeb::Begin()
 {
 	if(!IsPreBegin()) return FALSE;
-#ifdef PLATFORM_WIN32
 	if(m_pThread->Start(&m_sharedData))
 	{
 		m_eStatus = WS_READYREQUEST;
 		return TRUE;
 	}
 	return FALSE;
-#else
-	// no reader thread: requests are accepted and dropped (see the top of this file)
-	m_eStatus = WS_READYREQUEST;
-	return TRUE;
-#endif
 }
 
 BOOL cWeb::End()
 {
 	if(!IsBegin()) return TRUE;
-	m_sharedData.SetExit(true);
-#ifdef PLATFORM_WIN32
+	m_sharedData.SetExit(TRUE);
 	SetEvent(m_sharedData.GetSendReadEventHandle());
-#endif
 	Sleep(0);
 	m_sharedData.ResetAll();
 	m_eStatus = WS_PREBEGIN;
 	return TRUE;
 }
 
+/*
+BOOL cWeb::Refresh()
+{
+	if(m_pThread->GetExitCode() == STILL_ACTIVE)
+	{
+		return TRUE;
+	}
+	else if(m_pThread->GetExitCode() == 3)
+	{
+		return TRUE;
+	}
+	else if(m_pThread->GetExitCode() == 0xFFFFFFFF)
+	{
+		return TRUE;
+	}
+	else
+	{
+		End();
+		Begin();
+		return TRUE;
+	}
+}
+*/
+
 void cWeb::Request(const char *szURL)	//web page 요청
 {
-#ifdef PLATFORM_WIN32
 	ResetEvent(m_sharedData.GetSendWriteEventHandle());
 	int lenURL = strlen(szURL);
 	m_sharedData.AllocSendMsgBuffer(lenURL+1);
@@ -210,15 +239,11 @@ void cWeb::Request(const char *szURL)	//web page 요청
 	memcpy(sendBuf, szURL, lenURL+1);
 	sendBuf[lenURL] = '\0';
 	SetEvent(m_sharedData.GetSendReadEventHandle());
-#endif
 }
 
 BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web page 읽기
 {
-#ifndef PLATFORM_WIN32
-	return FALSE;  // no page ever arrives (see the top of this file)
-#else
-	DWORD waitRet = WaitForSingleObject(m_sharedData.GetReceiveReadEventHandle(), 1000/*INFINITE*/);
+	DWORD waitRet = WaitForSingleObject(m_sharedData.GetReceiveReadEventHandle(), 0);
 	if(WAIT_OBJECT_0 == waitRet)
 	{
 		if(m_sharedData.GetReceiveMsgBuffer() != NULL)
@@ -235,120 +260,83 @@ BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web 
 		return TRUE;
 	}
 	return FALSE;
-#endif
 }
 
-BOOL cWeb::OpenWebPage(HWND hDlg)
+//-------------- cSharedWebData --------------//
+cSharedWebData::cSharedWebData()
+: m_hSendWriteEvent( NULL )
+, m_hSendReadEvent( NULL )
+, m_szSendMsgBuffer( NULL )
+, m_hReceiveWriteEvent( NULL )
+, m_hReceiveReadEvent( NULL )
+, m_szReceiveMsgBuffer( NULL )
+, m_szErrorMsgBuffer( NULL )
 {
-#ifndef PLATFORM_WIN32
-	return FALSE;  // no embedded browser
-#endif
-	m_hWebWnd = hDlg;
-	EmbedBrowserObject(hDlg);
-	CUIManager::getSingleton()->GetMouseCursor()->SetCursorNULL();
-	
-	return TRUE;
+	m_hSendWriteEvent = CreateEvent(NULL, TRUE, TRUE, "Web Thread Send Buffer Write");
+	m_hSendReadEvent = CreateEvent(NULL, FALSE, FALSE, "Web Thread Send Buffer Read");
+	m_hReceiveWriteEvent = CreateEvent(NULL, TRUE, TRUE, "Web Thread Receive Buffer Write");
+	m_hReceiveReadEvent = CreateEvent(NULL, FALSE, FALSE, "Web Thread Receive Buffer Read");
 }
 
-void cWeb::SetWebMoveWindow(void)
+cSharedWebData::~cSharedWebData()
 {
-	if (_hDlgWeb != NULL)
-	{
-		SetWebPosition(500, 400);
-#ifdef PLATFORM_WIN32
-		BOOL bSuccess = MoveWindow(_hDlgWeb, m_nPosX, m_nPosY, m_nWidth, m_nHeight, FALSE);
-#endif
-	}
+	CloseHandle(m_hSendWriteEvent);
+	CloseHandle(m_hSendReadEvent);
+	CloseHandle(m_hReceiveWriteEvent);
+	CloseHandle(m_hReceiveReadEvent);
+
+	FreeSendMsgBuffer();
+	FreeReceiveMsgBuffer();
 }
 
-BOOL cWeb::SendWebPageOpenMsg(BOOL bShow)
+///초기상태로 복구. 보통 오류가 났을 경우 초기상태로 되돌리기 위한 수단임.
+void cSharedWebData::ResetAll()
 {
-	if (_hDlgWeb!=NULL)
-	{
-		if (bShow)	{
-			ShowWindow(_hDlgWeb, SW_SHOWNORMAL);
-		} else {
-			ShowWindow(_hDlgWeb, SW_HIDE);
-		}
+	ResetEvent(m_hSendReadEvent);
+	ResetEvent(m_hSendWriteEvent);
+	FreeSendMsgBuffer();
+	SetEvent(m_hSendWriteEvent);
 
-		UpdateWindow(_hDlgWeb);
-		return TRUE;
-	}
-
-	return FALSE;
+	ResetEvent(m_hReceiveReadEvent);
+	ResetEvent(m_hReceiveWriteEvent);
+	FreeReceiveMsgBuffer();
+	SetEvent(m_hReceiveWriteEvent);
 }
 
-BOOL cWeb::CloseWebPage(HWND hDlg)
+void cSharedWebData::AllocSendMsgBuffer(int size)
 {
-	if (m_hWebWnd)
-	{
-		UnEmbedBrowserObject(m_hWebWnd);
-		m_hWebWnd = NULL;
-		
-		CUIManager::getSingleton()->GetMouseCursor()->SetCursorType();
-
-		return TRUE;
-	}
-	return FALSE;
+	FreeSendMsgBuffer();
+	m_szSendMsgBuffer = new char[size];
 }
 
-void cWeb::SetWebPosition(INDEX nWidth, INDEX nHeight)
+void cSharedWebData::FreeSendMsgBuffer()
 {
-	extern ENGINE_API HWND	_hwndMain;
-	extern INDEX	sam_bFullScreenActive;
-	RECT	rtMain;
-	GetWindowRect(_hwndMain, &rtMain);
-
-	if (IsFullScreen(sam_bFullScreenActive))
-	{
-		m_nPosX = (m_pixMaxI+m_pixMinI - nWidth) / 2; m_nPosY = ( m_pixMaxJ + m_pixMinJ - nHeight ) / 2;
-	}
-	else
-	{
-		m_nPosX = (rtMain.right+rtMain.left - nWidth) / 2; m_nPosY = ( rtMain.bottom+rtMain.top - nHeight ) / 2;
-	}
-	//m_nPosX = (m_pixMaxI+m_pixMinI - nWidth) / 2; m_nPosY = ( m_pixMaxJ + m_pixMinJ - nHeight ) / 2;
-
-	m_nWidth = nWidth; m_nHeight = nHeight;
+	delete[] m_szSendMsgBuffer;
+	m_szSendMsgBuffer = NULL;
 }
 
-void cWeb::SetPos( int x, int y )
+void cSharedWebData::AllocReceiveMsgBuffer(int size)
 {
-	m_nPosX = x;
-	m_nPosY = y;
-
-	UpdatePos();
+	FreeReceiveMsgBuffer();
+	m_szReceiveMsgBuffer = new char[size];
 }
 
-void cWeb::SetSize( int width, int height )
+void cSharedWebData::FreeReceiveMsgBuffer()
 {
-	m_nWidth = width;
-	m_nHeight = height;
+	delete[] m_szReceiveMsgBuffer;
+	m_szReceiveMsgBuffer = NULL;
 }
 
-void cWeb::UpdatePos()
+void cSharedWebData::AllocErrorMsgBuffer(int size)
 {
-	if (_hDlgWeb == NULL)
-		return;
-
-#ifdef PLATFORM_WIN32
-	extern ENGINE_API HWND	_hwndMain;
-	RECT	rcMain;
-	int nOffY = GetSystemMetrics(SM_CYCAPTION);
-	nOffY += GetSystemMetrics(SM_CYDLGFRAME);
-	int nOffX = GetSystemMetrics(SM_CXDLGFRAME);
-
-	GetWindowRect(_hwndMain, &rcMain);
-
-	MoveWindow(_hDlgWeb, rcMain.left + nOffX + m_nPosX, rcMain.top + nOffY + m_nPosY, m_nWidth, m_nHeight, FALSE);
-	UpdateWindow(_hDlgWeb);
-#endif
+	FreeErrorMsgBuffer();
+	m_szErrorMsgBuffer = new char[size];
 }
 
-void cWeb::SetWebUrl( const std::string& url )
+void cSharedWebData::FreeErrorMsgBuffer()
 {
-	if (m_hWebWnd == NULL)
-		return;
-
-	DisplayHTMLPage(m_hWebWnd, CTString(url.c_str()));
+	delete[] m_szErrorMsgBuffer;
+	m_szErrorMsgBuffer = NULL;
 }
+
+//안태훈 수정 끝	//(5th Closed beta)(0.2)

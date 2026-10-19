@@ -9,8 +9,14 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIInventory.h>
+
 // Define max char and line of strings
-#define	MAX_MIXNEW_STRING				13
+//#define	MAX_MIXNEW_STRING				13
+#define	MAX_MIXNEW_STRING				20
 
 
 // Define text position
@@ -41,7 +47,7 @@ protected:
 	CUIButton			m_btnClose;							// Close button
 	CUIButton			m_btnOK;							// OK button
 	CUIButton			m_btnCancel;						// Cancel button
-	CUIIcon*			m_pIconsSlot[MIXNEW_ITEM_SLOT_COUNT];					// Slot item button
+	CUIButtonEx			m_btnItemSlot[MIXNEW_ITEM_SLOT_COUNT];					// Slot item button
 	BOOL				m_bWaitMixResult;					// If UI wait result from server or not
 
 	// Strings
@@ -69,18 +75,35 @@ protected:
 	int					m_nTextRow;
 	int					m_nTextCol;
 
+	// Tool Tip	
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+
+	BOOL					m_bShowItemInfo;
+
+	UIRect					m_rcItemInfo;
+	int						m_nCurInfoLines;
+
+	CTString				m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR					m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
+	BOOL					m_bDetailItemInfo;
+
 	CTString 				m_strItemSlot[MIXNEW_ITEM_SLOT_COUNT];
 
 	BOOL					m_bIsMix;
-	BOOL					m_bIsMixMasterStone;
 
 	// Internal functions
-	void	AddString( const CTString &strDesc );
+	void	AddString( CTString &strDesc );
 
 	// Network message functions ( send )
 	void	SendMixNewReq();
-	void	SendMixNewMasterStroneReq();
-	bool	GetThaiItemJob(CItemData* pSource, CItemData* pDest);
 
 public:
 	CUIMixNew();
@@ -91,11 +114,9 @@ public:
 
 	// Render
 	void	Render();
-	void	RenderMasterStone();
 
 	// Open & close refine
 	void	OpenMixNew(BOOL bMix);
-	void	OpenMixNewMasterStone();		// 마스터 스톤용 UI
 	void	CloseMixNew();
 
 	// Adjust position
@@ -107,19 +128,29 @@ public:
 
 	// Network message functions
 	void	MixNewRep( SBYTE sbResult );
-	void	MixNewMasterStoneRep( int err_type, int success_type );
 
 	// Command functions
 	void	SetMixItem ( int nSlotIndex = -1 );
 	void	ResetMixItem ();
-	void	ResetMixItemAll();
 	int		NearPosition ( int nX, int nY );
 	void	SetMixEnable(BOOL bMix) { m_bIsMix = bMix; }
 	BOOL	GetMixEnable() { return m_bIsMix; }
 
-private:
-	bool CheckMasterStone(CItems* pTargetItem, int nMasterStoneIndex);
-	void UpdateExplication(int nPlus = -1);
+	// RenderItemInfo ...
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight );
+	void	ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew = FALSE );
+	void	RenderItemInfo ();
+
+	CUIButtonEx* GetItemSlot ( int nIndex )
+	{
+		if ( nIndex < 0 && nIndex >= MIXNEW_ITEM_SLOT_COUNT )
+		{
+			return NULL;
+		}
+
+		return &m_btnItemSlot[nIndex];		
+	}
 };
 
 

@@ -9,9 +9,13 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIButton.h>
+
+
 // Define length of description
-// 3월 버그 수정 [2/28/2013 Ranma]
-#define	MAX_CHARINFO_CHAR_WIDTH			220	// Date : 2005-03-24,   By Lee Ki-hwan
+#define	MAX_CHARINFO_CHAR_WIDTH			222	// Date : 2005-03-24,   By Lee Ki-hwan
 #define	MAX_CHARINFO_LINE				13
 
 
@@ -60,6 +64,9 @@ public:
 	// Reset
 	void	Reset();
 
+	// 브라질 모든 케릭터 옷 입히기
+	void	CharWearing();
+	
 	// Set focus
 	void	SetFocus( BOOL bVisible )
 	{
@@ -86,8 +93,6 @@ public:
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 
 	void	Lock(BOOL bLock);
-	void	CharWearing(void);
-	ENGINE_API void	SetCharaterAngle(FLOAT f_inL, FLOAT f_inR);
 	
 	BOOL	CheckCharacterHK(const char* chHK); // 홍콩 특수문자 체크
 
@@ -101,8 +106,6 @@ protected:
 	void	GetCharInfo();
 
 private:
-	// texture container.
-	CTextureData*		m_ptdMsgTexture;
 	// Controls
 	CUIEditBox			m_ebCharName;							// Input Box for Character Name
 	CUIButton			m_btnZoomIn;							// Button for Zoom-In
@@ -125,22 +128,15 @@ private:
 	int					m_nCurInfoLines;						// Count of current Char information lines
 	CTString			m_strCharInfo[MAX_CHARINFO_LINE];		// Char information string
 	COLOR				m_colCharInfo[MAX_CHARINFO_LINE];		// Color of item information string
-
-	CTString			m_astrDescription[18];	//2013/01/11 jeil EX메이지 추가 수정 원본값 16 -> 수정값 18
+	CTString			m_astrDescription[12];
 
 	// Region of each part
 	UIRect				m_rcCharInfo;							// Region of character information
 	UIRect				m_rcCharControl;						// Region of character control
-	// night shadow cards. [11/6/2009 rumist]
-	UIRect				m_rcMessageInfo;
 
 	// UV of each part
 	UIRectUV			m_rtCharInfoTop;						// UV of Char information region
 	UIRectUV			m_rtCharInfoBottom;						// UV of Char information region
-	// UV of message part. [11/6/2009 rumist]
-	CUIDrawBox			m_bxNoticeMsg;
-	BOOL				m_bIsShowMessageInfo;
-	CUIMultiLineText	m_msgNCText;
 
 	//
 	CTString			m_strCharName;							// Character Name

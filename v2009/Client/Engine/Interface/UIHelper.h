@@ -9,11 +9,11 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <vector>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <vector>
 
 // Define text position
 #define	HELPER_TITLE_TEXT_OFFSETX		25
@@ -22,14 +22,6 @@
 // Define size of Helper
 #define	HELPER_WIDTH					250
 #define	HELPER_HEIGHT					335
-
-// [8/31/2010 kiny8216] 후견인 시스템 개편
-#define NEW_HELPER_WIDTH				434
-#define NEW_TAB_CLASS					50
-#define NEW_TAB_NAME					114
-#define NEW_TAB_TIME					114
-#define NEW_TAB_COUNT					80
-#define NEW_TAB_INFO					46
 
 //toop-tip
 #define HELPER_MAX_INFO_LINE 20
@@ -103,23 +95,11 @@ protected:
 
 	struct sTeacherInfo
 	{
-		bool operator<(const sTeacherInfo &other) const
-		{
-			if( index < other.index )
-				return true;
-			return false;
-		}
-		bool operator>(const sTeacherInfo &other) const
-		{			
-			return other.operator < (*this);
-		}
 		LONG index;
 		SLONG nFame;
 		SLONG nCntTeachingStudent;
 		SLONG nCntCompleteStudent;
 		SLONG nCntFailStudent;
-		SBYTE sbStartPlayTime;
-		SBYTE sbEndPlayTime;
 	};
 	struct sStudentInfo
 	{
@@ -183,30 +163,6 @@ protected:
 	UIRectUV				m_rtInfoMarkUV;
 	UIRect					m_rcInfoMark[HELPER_MAX_STUDENTS];
 
-	// [8/31/2010 kiny8216] 후견인 시스템 개편
-	BOOL					m_bShowClass;
-	SLONG					m_nMyCurTeachCnt;						// 나의 현재 양성 수
-	SLONG					m_nMyCompleteTeachCnt;					// 나의 완료 양성 수
-	SLONG					m_nMyFailTeachCnt;						// 나의 실패 양성 수
-	CTString				m_strClassName;							// Popup Class Name
-
-	CUIButton				m_btnGift;								// Button : 보상 받기
-	CUIButton				m_btnFireMyStudent;						// Button : 후견인 포기
-
-	UIRect					m_rtNewBack[9];							// New BackGround Rect
-	UIRect					m_rcClass[HELPER_MAX_STUDENTS];			// Job Image Rect
-	UIRect					m_rtStudentBack[6];						// Sub BackGround Rect : Student
-	UIRect					m_rtTeacherBack[6];						// Sub BackGround Rect : Teacher
-	UIRect					m_rtStudentInfo[6];						// Info BackGround Rect : Student
-	UIRect					m_rtTeacherInfo[6];						// Info BackGround Rect : Teacher
-	UIRect					m_rtTabLine;							// ListBox Line Rect
-	UIRectUV				m_rtClass[TOTAL_JOB];					// Class Image Rect UV
-	UIRectUV				m_rcTabLineUV;							// ListBox Line Rect UV
-	CTextureData			*m_ptdSubTexture;						// New_Interface.tex
-	CTextureData			*m_ptdBtnTexture;						// CommonBtn.tex
-	CUIRectSurface			m_NewBack;								// New BackGround
-	CUIRectSurface			m_NewSubBack;							// Sub BackGround
-	CUIRectSurface			m_NewInfoBack;							// Info BackGround
 protected:
 	eHelperState			m_eHelperMenuState;
 	BOOL					m_bRegistredTeacher;
@@ -234,8 +190,8 @@ public:
 	void	ResetHelper();	
 
 	// 선생 & 학생 목록 관리	
-	void	AddToHelperList( LONG lIndex, const CTString& strName, int iLevel, int iJob, int iJob2);		// 멤버 목록에 추가
-	void	AddToTeacherInfoList(LONG lIndex, SLONG fame, SLONG cntTeaching, SLONG cntComplete, SLONG cntFail, SBYTE StartPlayTime = -1, SBYTE EndPlayTime = -1 );
+	void	AddToHelperList( LONG lIndex, const CTString& strName, int iLevel, int iJob, int iJob2 );		// 멤버 목록에 추가
+	void	AddToTeacherInfoList(LONG lIndex, SLONG fame, SLONG cntTeaching, SLONG cntComplete, SLONG cntFail);
 	void	AddToStudentInfoList(LONG lIndex, const char *szFirstDate, const char *szFinalDate);
 	void	DelFromHelperList( LONG lIndex );
 	void	ClearHelperList();	
@@ -262,23 +218,10 @@ public:
 
 	// Command functions
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
-	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput, CTString &strSEInput );
 	void	MsgBoxLCommand( int nCommandCode, int nResult );
 
 	// Set focus
 	void	SetFocus( BOOL bVisible );
-
-	// [8/31/2010 kiny8216] 후견인 시스템 개편
-	void	RenderNew();			// 후견인 개편 Render 함수
-	void	RenderStudent();		// 견습생 UI Render
-	void	RenderTeacher();		// 후견인 UI Render
-	void	PrepareOpen();			// UI 세팅
-	void	ShowClass(int line);	// 클래스 이름 팝업
-	void	RenderPopUpClass();
-	void	FireMyStudent();
-	void	SetMyTeachInfo( SLONG CurTeachCnt, SLONG CompleteTeachCnt, SLONG FailTeachCnt );
-
-	void	Clear();
 };
 
 #endif	// UIHELPER_H_

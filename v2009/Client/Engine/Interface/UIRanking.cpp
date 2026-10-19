@@ -1,9 +1,7 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIRanking.h>
+#include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/Interface/UIFiltering.h>
 #include <algorithm>
 
 #define RANKING_LIST_BOX_WIDTH			(280)
@@ -34,6 +32,8 @@ CUIRanking::~CUIRanking()
 	{
 		m_vectorPrizeList.clear();
 	}
+
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -42,7 +42,9 @@ CUIRanking::~CUIRanking()
 // ----------------------------------------------------------------------------
 void CUIRanking::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 311, 22 );	
@@ -196,15 +198,15 @@ void CUIRanking::OpenRankingList( )
 	
 	CTString strJobName;
 	int i = 0; 
-	for( ; i < (TOTAL_JOB) ; ++i )
+	for( ; i < TOTAL_JOB ; ++i )
 	{
-		strJobName.PrintF( "%s", (const char*)CJobInfo::getSingleton()->GetName(i, 0) );
+		strJobName.PrintF( "%s", JobInfo().GetName(i, 0) );
 		m_lbChoiceList.AddString( 0, strJobName );
 	}	
 	strJobName.PrintF( _S( 1220, "취소한다." ) );		
 	m_lbChoiceList.AddString( 0, strJobName );
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_RANKING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_RANKING, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -238,7 +240,7 @@ void CUIRanking::OpenRankingPrize( )
 	strChoice.PrintF( _S( 1220, "취소한다." ) );		
 	m_lbChoiceList.AddString( 0, strChoice );	
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_RANKING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_RANKING, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -257,7 +259,7 @@ void CUIRanking::ResetRanking()
 	ClearRankingList();
 	ClearPrizeList();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_RANKING, FALSE );
+	_pUIMgr->RearrangeOrder( UI_RANKING, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -387,7 +389,7 @@ void CUIRanking::RefreshPrizeList( BOOL bInit )
 		m_lbPrizeList.AddString( 1, (*it).strName, 0xFFFFFFFF );	// 아이디
 		
 		CTString strItemName = _pNetwork->GetItemName( (*it).iItemIndex );
-		strTemp.PrintF( _S( 61, "%s %d개" ), (const char*)strItemName, (*it).iNumOfItem );
+		strTemp.PrintF( _S( 61, "%s %d개" ), strItemName, (*it).iNumOfItem );
 		m_lbPrizeList.AddString( 2, strTemp, 0xFFFFFFFF );
 		
 		if( (*it).bReward == FALSE && 
@@ -408,10 +410,8 @@ void CUIRanking::RefreshPrizeList( BOOL bInit )
 // ----------------------------------------------------------------------------
 void CUIRanking::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY;
@@ -420,28 +420,28 @@ void CUIRanking::Render()
 	// Top
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + 26;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 										m_rtBackTop.U0, m_rtBackTop.V0,
 										m_rtBackTop.U1, m_rtBackTop.V1,
 										0xFFFFFFFF );
 	
 	{
 		// Manager
-		pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 20,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 20,
 											m_rtBackManagerTop.U0, m_rtBackManagerTop.V0,
 											m_rtBackManagerTop.U1, m_rtBackManagerTop.V1,
 											0xFFFFFFFF );
 
 		nY += 20;
 		
-		pDrawPort->AddTexture( m_nPosX, nY, nX, nY + RANKING_LIST_BOX_HEIGHT + 2,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + RANKING_LIST_BOX_HEIGHT + 2,
 			m_rtBackManagerMiddle.U0, m_rtBackManagerMiddle.V0,
 			m_rtBackManagerMiddle.U1, m_rtBackManagerMiddle.V1,
 			0xFFFFFFFF );
 		
 		nY += RANKING_LIST_BOX_HEIGHT + 2;		
 
-		pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 4,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 4,
 											m_rtBackManagerBottom.U0, m_rtBackManagerBottom.V0,
 											m_rtBackManagerBottom.U1, m_rtBackManagerBottom.V1,
 											0xFFFFFFFF );
@@ -450,14 +450,14 @@ void CUIRanking::Render()
 	}
 
 	// Middle 2
-	pDrawPort->AddTexture( m_nPosX, m_nPosY + 26, nX, m_nPosY + m_nHeight - 7 ,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 										m_rtBackMiddle2.U0, m_rtBackMiddle2.V0,
 										m_rtBackMiddle2.U1, m_rtBackMiddle2.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 										m_rtBackBottom.U0, m_rtBackBottom.V0,
 										m_rtBackBottom.U1, m_rtBackBottom.V1,
 										0xFFFFFFFF );
@@ -467,7 +467,7 @@ void CUIRanking::Render()
 	nY = m_nPosY + 26;
 	int nX2 = nX + 1;
 	int nY2 = nY + 16;
-	pDrawPort->AddTexture( nX, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 												m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 												0xFFFFFFFF );	
 
@@ -476,19 +476,19 @@ void CUIRanking::Render()
 	{
 		nX = m_nPosX + 132;	
 		nX2 = nX + 1;
-		pDrawPort->AddTexture( nX, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 												m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 												0xFFFFFFFF );
 
 		nX = m_nPosX + 174;
 		nX2 = nX + 1;
-		pDrawPort->AddTexture( nX, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 												m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 												0xFFFFFFFF );
 		
 		nX = m_nPosX + 225;
 		nX2 = nX + 1;
-		pDrawPort->AddTexture( nX, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 												m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 												0xFFFFFFFF );
 	}
@@ -496,7 +496,7 @@ void CUIRanking::Render()
 	{
 		nX = m_nPosX + 145;	
 		nX2 = nX + 1;
-		pDrawPort->AddTexture( nX, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 												m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 												0xFFFFFFFF );
 	}
@@ -515,28 +515,28 @@ void CUIRanking::Render()
 	m_lbChoiceList.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
-	pDrawPort->PutTextEx( _S( 1714, "순위" ), m_nPosX + 20,		
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 1714, "순위" ), m_nPosX + 20,		
 										m_nPosY + 29, 0xFFFFFFFF );
 
-	pDrawPort->PutTextEx( _S( 1715, "아이디" ), m_nPosX + 80,	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 1715, "아이디" ), m_nPosX + 80,	
 										m_nPosY + 29, 0xFFFFFFFF );
 
 	if( m_eRankingState == RANKING_LIST )
 	{
-		pDrawPort->PutTextEx( _S( 1716, "조건" ), m_nPosX + 142,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1716, "조건" ), m_nPosX + 142,		
 			m_nPosY + 29, 0xFFFFFFFF );
 		
-		pDrawPort->PutTextEx( _S( 1717, "점수" ), m_nPosX + 190,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1717, "점수" ), m_nPosX + 190,		
 			m_nPosY + 29, 0xFFFFFFFF );
 		
-		pDrawPort->PutTextEx( _S( 1718, "시간" ), m_nPosX + 238,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1718, "시간" ), m_nPosX + 238,		
 			m_nPosY + 29, 0xFFFFFFFF );
 	}
 	else
 	{
-		pDrawPort->PutTextEx( _S( 1719, "보상물품" ), m_nPosX + 190,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1719, "보상물품" ), m_nPosX + 190,		
 			m_nPosY + 29, 0xFFFFFFFF );
 	}
 
@@ -547,11 +547,11 @@ void CUIRanking::Render()
 		strTitle = _S( 1721, "보상 받기" );		
 
 	// Text in guild
-	pDrawPort->PutTextEx( strTitle, m_nPosX + RANKING_TITLE_TEXT_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( strTitle, m_nPosX + RANKING_TITLE_TEXT_OFFSETX,
 										m_nPosY + RANKING_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 	
 }
 
@@ -580,7 +580,7 @@ WMSG_RESULT	CUIRanking::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -674,7 +674,7 @@ WMSG_RESULT	CUIRanking::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_RANKING, TRUE );
+				_pUIMgr->RearrangeOrder( UI_RANKING, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -724,291 +724,4 @@ WMSG_RESULT	CUIRanking::MouseMessage( MSG *pMsg )
 		break;
 	}
 	return WMSG_FAIL;
-}
-
-//[ttos_2010_8_9]: 큐브 랭크 UI
-//------------------------------------------------------------//
-// CUICubeRank
-//------------------------------------------------------------//
-CUICubeRank::CUICubeRank()
-{
-	m_lMypoint = 0;
-	m_bGuild = FALSE;
-}
-CUICubeRank::~CUICubeRank()
-{
-
-}
-// ----------------------------------------------------------------------------
-// Name : CubeRankInit()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::CubeRankInit()
-{
-	m_lMypoint = 0;
-	m_bGuild = FALSE;
-
-	for (int i = 0; i < 2; i++ )
-	{
-		for (int j = 0; j < 5; j++)
-		{
-			m_stCubeRank[i][j].Init();
-		}
-	}
-}
-// ----------------------------------------------------------------------------
-// Name : Create()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
-{
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
-	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\new_Interface.tex" ) );
-	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
-
-	m_bxBackground[0].SetBoxUV(m_ptdBaseTexture, 120, 36, WRect(0,98,272,253));
-	m_bxBackground[0].SetBoxPos(WRect(0,0,nWidth,nHeight));
-
-	m_bxBackground[1].SetBoxUV(m_ptdBaseTexture, 20, WRect(0,304,221,346));
-	m_bxBackground[1].SetBoxPos(WRect(20, 100, 380, 195));
-
-	m_bxBackground[2].SetBoxUV(m_ptdBaseTexture, 20, WRect(0,304,221,346));
-	m_bxBackground[2].SetBoxPos(WRect(20, 220, 380, 315));
-
-	m_bxBackground[3].SetBoxUV(m_ptdBaseTexture, 3, WRect(339,464,368,466));
-	m_bxBackground[3].SetBoxPos(WRect(20, 70, 380, 73));
-
-
-	m_btnOK.Create(this, CTString(_S(191, "확인")), 150, 320, 100, 20);
-	m_btnOK.SetUV(UBS_IDLE,282,244,351,265, fTexWidth, fTexHeight );
-	m_btnOK.SetUV(UBS_CLICK, 364,244,433,265, fTexWidth, fTexHeight);
-	m_btnOK.CopyUV(UBS_IDLE, UBS_ON);
-	m_btnOK.CopyUV(UBS_IDLE, UBS_DISABLE);
-
-	m_rcTitle.SetRect(0, 0, nWidth, 30);
-
-
-}
-
-// ----------------------------------------------------------------------------
-// Name : ResetPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 );
-}
-
-// ----------------------------------------------------------------------------
-// Name : AdjustPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	if( m_nPosX < pixMinI || m_nPosX + GetWidth() > pixMaxI ||
-		m_nPosY < pixMinJ || m_nPosY + GetHeight() > pixMaxJ )
-		ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-}
-// ----------------------------------------------------------------------------
-// Name : Render()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::Render()
-{
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
-
-	int		i;
-	for( i = 0; i < 4; i++ )
-	{
-		m_bxBackground[i].Render(m_nPosX,m_nPosY);
-	}
-	m_btnOK.Render();
-
-	CTString strMsg,strMsgEx;
-	CTString strGuildName, strChaName; // 길드 이름, 길드 마스터 및 캐릭터 이름
-
-	if (m_bGuild)
-	{
-		strMsg = _S(4388, "길드 큐브 포인트 현황");
-		strMsgEx = _S(4389, "자신이 소속된 길드 큐브 포인트 : %d");
-		strGuildName = _S(3451,"길드명");
-		strChaName = _S(4344, "길드 마스터");
-	}
-	else
-	{
-		strMsg = _S(4390, "개인 큐브 포인트 현황");
-		strMsgEx = _S(4391, "자신의 개인 큐브 포인트 : %d");
-		strGuildName = _S(4392, "소속 길드");
-		strChaName = _S(4393, "캐릭터 이름");
-	}
-
-	pDrawPort->PutTextExCX(strMsg, m_nPosX+200, m_nPosY+18);
-	strMsg.PrintF(strMsgEx, m_lMypoint);
-	pDrawPort->PutTextEx(strMsg, m_nPosX + 20, m_nPosY + 50);
-	
-	CTString strtem;
-
-	for( i = 0; i < 2; i++)
-	{		
-		if (i == 0)
-		{
-			strtem = _S(5097, "현재 큐브 포인트 순위 현황");
-		}
-		else
-		{
-			strtem = _S(5098, "지난주 큐브 포인트 순위 현황");
-		}
-		pDrawPort->PutTextEx(strtem, m_nPosX + 25, m_nPosY + 80+(i*120));
-		pDrawPort->PutTextEx(_S(1714, "순위"), m_nPosX + 25, m_nPosY + 105+(i*120));
-		pDrawPort->PutTextExCX(strGuildName, m_nPosX + 100, m_nPosY + 105+(i*120));
-		pDrawPort->PutTextExCX(strChaName, m_nPosX + 210, m_nPosY + 105+(i*120));
-		pDrawPort->PutTextExCX( _S(4345, "큐브포인트"), m_nPosX + 330, m_nPosY + 105+(i*120));
-
-		for (int nList = 0; nList < (m_bGuild?5:3); nList++)
-		{
-			strtem.PrintF("%d",m_stCubeRank[i][nList].nRank);
-			pDrawPort->PutTextEx(strtem, m_nPosX + 30, m_nPosY + 120+(nList*14)+(i*120));
-			pDrawPort->PutTextExCX(m_stCubeRank[i][nList].strGuildName, m_nPosX + 100, m_nPosY + 120+(nList*14)+(i*120));
-			pDrawPort->PutTextExCX(m_stCubeRank[i][nList].strChaName, m_nPosX + 210, m_nPosY + 120+(nList*14)+(i*120));
-			strtem.PrintF("%d",m_stCubeRank[i][nList].lPoint);
-			pDrawPort->PutTextExCX(strtem , m_nPosX + 330, m_nPosY + 120+(nList*14)+(i*120));
-		}
-	}
-
-	pDrawPort->FlushRenderingQueue();
-	
-	pDrawPort->EndTextEx();
-
-}
-// ----------------------------------------------------------------------------
-// Name : CubeRankClose()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUICubeRank::CubeRankClose()
-{
-	CubeRankInit();
-	CUIManager::getSingleton()->RearrangeOrder( UI_CUBERANK, FALSE );
-}
-// ----------------------------------------------------------------------------
-// Name : MouseMessage()
-// Desc :
-// ----------------------------------------------------------------------------
-WMSG_RESULT CUICubeRank::MouseMessage( MSG *pMsg )
-{
-	WMSG_RESULT	wmsgResult;
-	
-	// Title bar
-	static BOOL	bTitleBarClick = FALSE;
-	
-	// Item clicked
-	static BOOL	bLButtonDownInItem = FALSE;
-	
-	// Mouse point
-	static int	nOldX, nOldY;
-	int	nX = LOWORD( pMsg->lParam );
-	int	nY = HIWORD( pMsg->lParam );
-
-	// Mouse message
-	switch( pMsg->message )
-	{
-	case WM_MOUSEMOVE:
-		{
-			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
-			
-			int	ndX = nX - nOldX;
-			int	ndY = nY - nOldY;
-
-			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
-			{
-				nOldX = nX;	nOldY = nY;
-				
-				Move( ndX, ndY );
-				
-				return WMSG_SUCCESS;
-			}
-
-			else if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-		}break;
-	case WM_LBUTTONDOWN:
-		{
-			if( IsInside( nX, nY ) )
-			{
-				nOldX = nX;		nOldY = nY;
-
-				
-				if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-					// Nothing
-				}// Title bar
-				else if( IsInsideRect( nX, nY, m_rcTitle ) )
-				{
-					bTitleBarClick = TRUE;
-				}
-				return WMSG_SUCCESS;
-			}
-
-		}break;
-	case WM_LBUTTONUP:
-		{
-			bTitleBarClick = FALSE;
-			
-			// Close button
-			if( (wmsgResult = m_btnOK.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if(wmsgResult == WMSG_COMMAND)
-				{
-					CubeRankClose();
-					return WMSG_SUCCESS;
-				}				
-			}
-
-		}break;
-	}
-		
-
-	return WMSG_FAIL;
-}
-
-void CUICubeRank::CreateCubeState(CNetworkMessage *istr, BOOL bGuild)
-{
-	LONG lMyPoint = 0, lInfoCubePoint = 0; // 자신이 소속된 길드 및 개인 포인트 , 각 리스트의 큐브 포인트
-	BYTE InfoCount = 0, InfoRank = 0; // 리스트 갯수, 랭크 정보
-	CTString strGuildName, strChaName; // 길드 이름, 길드 마스터 및 캐릭터 이름
-	int		i;
-
-	(*istr) >> lMyPoint;
-	(*istr) >> InfoCount;
-
-	m_lMypoint = lMyPoint;
-	m_bGuild = bGuild;
-	// 이번주 랭킹
-	for( i = 0; i<InfoCount; ++i )
-	{
-		(*istr) >> InfoRank >> strGuildName >> strChaName >> lInfoCubePoint;
-
-		m_stCubeRank[0][i].nRank = InfoRank;
-		m_stCubeRank[0][i].strGuildName = strGuildName;
-		m_stCubeRank[0][i].strChaName = strChaName;
-		m_stCubeRank[0][i].lPoint = lInfoCubePoint;
-	}
-
-	(*istr) >> InfoCount;
-	// 지난주 랭킹
-	for( i = 0; i < InfoCount; ++i )
-	{		
-		(*istr) >> InfoRank >> strGuildName >> strChaName >> lInfoCubePoint;
-		
-		m_stCubeRank[1][i].nRank = InfoRank;
-		m_stCubeRank[1][i].strGuildName = strGuildName;
-		m_stCubeRank[1][i].strChaName = strChaName;
-		m_stCubeRank[1][i].lPoint = lInfoCubePoint;
-	}
-
-	CUIManager::getSingleton()->RearrangeOrder( UI_CUBERANK, TRUE );
 }

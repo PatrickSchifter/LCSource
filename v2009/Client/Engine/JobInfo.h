@@ -11,7 +11,6 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/GlobalDefinition.h>
-#include <Engine/DesignClasses/Singleton/SingletonBase.h>
 
 enum eAnimation
 {
@@ -94,33 +93,8 @@ enum eAnimation
 	ANIM_RIDE_DRAGON_SKILL_3,
 	ANIM_RIDE_DRAGON_SKILL_4,
 	ANIM_RIDE_DRAGON_SIT,
-	ANIM_RIDE_DRAGON_STANDUP,
-	
-	// 서큐버스 추가
-	ANIM_RIDE_DEMONBAT_WALK_1,
-	ANIM_RIDE_DEMONBAT_IDLE_1,
-	ANIM_RIDE_DEMONBAT_IDLE_2,
-	ANIM_RIDE_DEMONBAT_RUN_1,
-	ANIM_RIDE_DEMONBAT_PICK,
-	ANIM_RIDE_DEMONBAT_DAMAGE,
-	ANIM_RIDE_DEMONBAT_DIE,
-	ANIM_RIDE_DEMONBAT_LEVELUP,
-	ANIM_RIDE_DEMONBAT_SIT_CONTINUE,
-	ANIM_RIDE_DEMONBAT_SKILL_1,
-	ANIM_RIDE_DEMONBAT_SKILL_2,
-	ANIM_RIDE_DEMONBAT_SKILL_3,
-	ANIM_RIDE_DEMONBAT_SKILL_4,
-	ANIM_RIDE_DEMONBAT_SIT,
-	ANIM_RIDE_DEMONBAT_STANDUP,
-	
-	// 나이트 쉐도우 날기 동작을 위해
-	ANIM_FLYING_READY,
-	ANIM_FLYING_MOVE,
-	ANIM_END = ANIM_FLYING_MOVE,
-	// 캐릭터 선택, 생성 창에서만 사용
-	ANIM_LOGIN_GAMESTART,
-	ANIM_LOGIN_IDLE01,
-	ANIM_LOGIN_IDLE02,
+	ANIM_RIDE_DRAGON_STANDUP,	
+	ANIM_END = ANIM_RIDE_DRAGON_STANDUP,
 	ANIM_TOTAL,
 };
 
@@ -139,7 +113,11 @@ enum eAttackType
 
 enum eCharacterWearing 
 {
+#ifdef HEAD_CHANGE
 	HEAD		= 0,
+#else
+	HEAD		= -1,
+#endif
 	BODYDOWN	= HEAD+1,
 	BODYUP		= HEAD+2,
 	FOOT		= HEAD+3,
@@ -148,7 +126,7 @@ enum eCharacterWearing
 	WEARTOTAL	= HEAD+6,
 };	
 	
-class ENGINE_API CJobInfo : public CSingletonBase< CJobInfo >
+class ENGINE_API CJobInfo
 {
 private:
 	typedef struct _tagJobInfo
@@ -179,6 +157,8 @@ public:
 	CJobInfo();
 	~CJobInfo();
 
+	static CJobInfo &Instance()			{ return m_instance;	}
+
 	// Set Properties
 	void		SetName( int iJob, const CTString& strName );
 	void		SetExtensionName( int iJob, int iType, const CTString& strName );
@@ -203,7 +183,10 @@ public:
 	//CTString	GetDamageAnim( int iJob );
 
 protected:
+	static CJobInfo m_instance;
 	sJobInfo		*m_pJobInfo;
 };
+
+inline CJobInfo &JobInfo()				{ return CJobInfo::Instance();	}
 
 #endif // JOBINFO_H_

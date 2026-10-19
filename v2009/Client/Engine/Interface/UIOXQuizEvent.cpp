@@ -1,9 +1,10 @@
 #include "StdH.h"
-// 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/Network/CNetwork.h>
+#include <Engine/Network/Server.h>
 #include <Engine/Interface/UIOXQuizEvent.h>
-#include <Engine/Interface/UIRadar.h>
 
+extern INDEX	g_iCountry;
 extern INDEX	g_iEnterChat;
 extern CDrawPort* _pdpMain;
 
@@ -36,6 +37,7 @@ CUIOXQuizEvent::CUIOXQuizEvent()
 // --------------------------------------------------------------------------
 CUIOXQuizEvent::~CUIOXQuizEvent()
 {
+	Destroy();
 }
 
 // --------------------------------------------------------------------------
@@ -44,7 +46,9 @@ CUIOXQuizEvent::~CUIOXQuizEvent()
 // --------------------------------------------------------------------------
 void CUIOXQuizEvent::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	m_nChatLineHeight = _pUIFontTexMgr->GetFontHeight() + QUIZ_STRING_LINESPACING;
 
@@ -88,7 +92,7 @@ void CUIOXQuizEvent::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 // --------------------------------------------------------------------------
 void CUIOXQuizEvent::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
 {
-	SetPos( ( pixMaxI - GetWidth() ), ( pixMinJ + CUIManager::getSingleton()->GetRadar()->GetHeight() ) );
+	SetPos( ( pixMaxI - GetWidth() ), ( pixMinJ + _pUIMgr->GetRadar()->GetHeight() ) );
 }
 
 // --------------------------------------------------------------------------
@@ -110,20 +114,18 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 
 	if( nLength == 0 ) return;
 
-	int iPos;
-	// wooss 051002
-#if defined (G_THAI)
-	{
+		// wooss 051002
+	if(g_iCountry == THAILAND){
+	
 		// Get length of string
 		INDEX	nThaiLen = FindThaiLen(strQuizString);
-		// [2012/02/03 : Sora] 태국 퀴즈내용이 창을 벗어나는 문제 수정
-		INDEX	nChatMax= ( (MAX_BUFFINFO_CHAR-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing()) ) - 27;
+		INDEX	nChatMax= (MAX_BUFFINFO_CHAR-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
 		if( nThaiLen == 0 )
 			return;
 
 		if( nThaiLen <= nChatMax )
 		{
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if( strQuizString[iPos] == '\n' || strQuizString[iPos] == '\r' )
 					break;
@@ -159,7 +161,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = m_nMaxCharCount;
 			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strQuizString,0,iPos))
 					break;
@@ -173,8 +175,25 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 					break;
 			}
 
-			
-			{				
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2 ;
+				strQuizString.Split( iPos, strTemp2, strTemp );
+
+				int nInsertIndex = m_nCurQuizInsert;
+
+				if( nInsertIndex >= QUIZBOX_DESC_MAX_LINE )
+					nInsertIndex = m_nCurQuizInsert = 0;
+				
+				m_strQuizString[nInsertIndex] = strTemp2;
+				m_colQuizString[nInsertIndex] = colQuizColor;
+				m_nCurQuizInsert++;
+
+				AddQuizDescString( strTemp, colQuizColor );
+			}
+			else
+			{
 				// Split string
 				CTString	strTemp, strTemp2 ;
 				strQuizString.Split( iPos, strTemp2, strTemp );
@@ -188,14 +207,11 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 				m_colQuizString[nInsertIndex] = colQuizColor;
 				m_nCurQuizInsert++;
 
-				if (iPos != nSplitPos)
-				{
-					// Trim line character
-					if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-						strTemp.TrimLeft( strTemp.Length() - 2 );
-					else
-						strTemp.TrimLeft( strTemp.Length() - 1 );
-				}
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
 
 				AddQuizDescString( strTemp, colQuizColor );
 			}	
@@ -203,11 +219,11 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 		}
 		
 	}
-#else
+	else
 	{
 		if( nLength <= m_nMaxCharCount )
-		{			
-			for( iPos = 0; iPos < nLength; iPos++ )
+		{
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if( strQuizString[iPos] == '\n' || strQuizString[iPos] == '\r' )
 					break;
@@ -243,7 +259,7 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 			int		nSplitPos = m_nMaxCharCount;
 			BOOL	b2ByteChar = FALSE;
 
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
 			{
 				if( strQuizString[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -260,7 +276,26 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 					break;
 			}
 
-			
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2 ;
+//				if( m_nCurQuizCount < QUIZBOX_DESC_MAX_LINE )
+//					m_nCurQuizCount++;
+				strQuizString.Split( iPos, strTemp2, strTemp );
+
+				int nInsertIndex = m_nCurQuizInsert;
+
+				if( nInsertIndex >= QUIZBOX_DESC_MAX_LINE )
+					nInsertIndex = m_nCurQuizInsert = 0;
+				
+				m_strQuizString[nInsertIndex] = strTemp2;
+				m_colQuizString[nInsertIndex] = colQuizColor;
+				m_nCurQuizInsert++;
+
+				AddQuizDescString( strTemp, colQuizColor );
+			}
+			else
 			{
 				// Split string
 				CTString	strTemp, strTemp2 ;
@@ -275,21 +310,17 @@ void CUIOXQuizEvent::AddQuizDescString( CTString &strQuizString, COLOR colQuizCo
 				m_colQuizString[nInsertIndex] = colQuizColor;
 				m_nCurQuizInsert++;
 
-				if (iPos != nSplitPos)
-				{
-					// Trim line character
-					if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-						strTemp.TrimLeft( strTemp.Length() - 2 );
-					else
-						strTemp.TrimLeft( strTemp.Length() - 1 );
-				}
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
 
 				AddQuizDescString( strTemp, colQuizColor );
 			}	
 
 		}
 	}
-#endif
 }
 
 // --------------------------------------------------------------------------
@@ -310,14 +341,13 @@ void CUIOXQuizEvent::ResetQuizData( void )
 		m_strQuizString[i].Clear();
 	}
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( g_iEnterChat && pUIManager->GetChattingUI()->GetInputBox()->IsFocused()){
-		pUIManager->RearrangeOrder(UI_QUIZEVENT,FALSE);
-		pUIManager->GetChattingUI()->GetInputBox()->SetFocus( TRUE );
+	
+	if( g_iEnterChat && _pUIMgr->GetChatting()->GetInputBox().IsFocused()){
+		_pUIMgr->RearrangeOrder(UI_QUIZEVENT,FALSE);
+		_pUIMgr->GetChatting()->GetInputBox().SetFocus( TRUE );
 	}
 	else {
-		pUIManager->RearrangeOrder(UI_QUIZEVENT,FALSE);
+		_pUIMgr->RearrangeOrder(UI_QUIZEVENT,FALSE);
 	}
 
 	PIX pixMinI = _pdpMain->dp_MinI;
@@ -325,7 +355,7 @@ void CUIOXQuizEvent::ResetQuizData( void )
 	PIX pixMaxI = _pdpMain->dp_MaxI;
 	PIX pixMaxJ = _pdpMain->dp_MaxJ;
 
-	pUIManager->GetOXQuizEvent()->ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
+	_pUIMgr->GetOXQuizEvent()->ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
 }
 
 
@@ -338,15 +368,13 @@ void CUIOXQuizEvent::RenderQuizStringList( void )
 	int nX = m_nPosX + 20;
 	int nY = m_nPosY + 7;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// title str
-	pDrawPort->PutTextEx( _S(2614, "O.X 퀴즈" ), nX, nY, 0xCCCCCCFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2614, "O.X 퀴즈" ), nX, nY, 0xCCCCCCFF );
 	nY += ( 26 + 3 );
 
 	for( int i = 0; i<m_nCurQuizInsert; i++ )
 	{
-		pDrawPort->PutTextEx( m_strQuizString[i], nX, nY, m_colQuizString[i] );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strQuizString[i], nX, nY, m_colQuizString[i] );
 		nY += m_nChatLineHeight;
 	}
 
@@ -361,9 +389,9 @@ void CUIOXQuizEvent::RenderQuizStringList( void )
 	strTime.PrintF( _S(2615, "남은 시간: %d초" ), nTime );
 
 	if( nTime > 5 ) // 여유로운 시간
-		pDrawPort->PutTextExRX( strTime, nX+120, m_nPosY+167, 0x00EDBDFF );
+		_pUIMgr->GetDrawPort()->PutTextExRX( strTime, nX+120, m_nPosY+167, 0x00EDBDFF );
 	else if( nTime >= 0 ) // 5초 이후 붉은 색으로
-		pDrawPort->PutTextExRX( strTime, nX+120, m_nPosY+167, 0xFF1924FF );
+		_pUIMgr->GetDrawPort()->PutTextExRX( strTime, nX+120, m_nPosY+167, 0xFF1924FF );
 
 	if( dQuizTemp <= 0 )
 	{
@@ -378,10 +406,8 @@ void CUIOXQuizEvent::RenderQuizStringList( void )
 // --------------------------------------------------------------------------
 void CUIOXQuizEvent::Render( void )
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	//Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int nY, nX2;
@@ -390,61 +416,61 @@ void CUIOXQuizEvent::Render( void )
 	// Background
 	// Top
 	nY = m_nPosY + QUIZBOX_TOP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
 										m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
 										m_rtTopM.U0, m_rtTopM.V0, m_rtTopM.U1, m_rtTopM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
 										m_rtTopR.U0, m_rtTopR.V0, m_rtTopR.U1, m_rtTopR.V1,
 										0xFFFFFFFF );
 
 	// Desc middle
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_DESC_HEIGHT,
 										m_rtMiddleScrollL.U0, m_rtMiddleScrollL.V0,
 										m_rtMiddleScrollL.U1, m_rtMiddleScrollL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_DESC_HEIGHT,
 										m_rtMiddleScrollM.U0, m_rtMiddleScrollM.V0,
 										m_rtMiddleScrollM.U1, m_rtMiddleScrollM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_DESC_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_DESC_HEIGHT,
 										m_rtMiddleScrollR.U0, m_rtMiddleScrollR.V0,
 										m_rtMiddleScrollR.U1, m_rtMiddleScrollR.V1,
 										0xFFFFFFFF );
 
 	// Gap middle
 	nY += MSGBOXL_DESC_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_GAP_HEIGHT,
 										m_rtMiddleGapL.U0, m_rtMiddleGapL.V0, m_rtMiddleGapL.U1, m_rtMiddleGapL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_GAP_HEIGHT,
 										m_rtMiddleGapM.U0, m_rtMiddleGapM.V0, m_rtMiddleGapM.U1, m_rtMiddleGapM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_GAP_HEIGHT,
 										m_rtMiddleGapR.U0, m_rtMiddleGapR.V0, m_rtMiddleGapR.U1, m_rtMiddleGapR.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY += QUIZBOX_GAP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + QUIZBOX_BOTTOM_HEIGHT,
 										m_rtBottomL.U0, m_rtBottomL.V0, m_rtBottomL.U1, m_rtBottomL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + QUIZBOX_BOTTOM_HEIGHT,
 										m_rtBottomM.U0, m_rtBottomM.V0, m_rtBottomM.U1, m_rtBottomM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + QUIZBOX_BOTTOM_HEIGHT,
 										m_rtBottomR.U0, m_rtBottomR.V0, m_rtBottomR.U1, m_rtBottomR.V1,
 										0xFFFFFFFF );
 
 	RenderQuizStringList();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // --------------------------------------------------------------------------
@@ -453,6 +479,72 @@ void CUIOXQuizEvent::Render( void )
 // --------------------------------------------------------------------------
 WMSG_RESULT CUIOXQuizEvent::MouseMessage( MSG *pMsg )
 {
+//	WMSG_RESULT wmsgResult;
+
+	// Mouse point
+	static int nOldX, nOldY;
+	int nX = LOWORD( pMsg->lParam );
+	int nY = HIWORD( pMsg->lParam );
+
+	//Mouse message
+	switch( pMsg->message )
+	{
+	case WM_MOUSEMOVE:
+/*		{
+			if( IsInside( nX, nY ) )
+				_pUIMgr->SetMouseCursorInsideUIs();
+
+			int ndX = nX - nOldX;
+			int ndY = nY - nOldY;
+
+			if( m_bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
+			{
+				nOldX = nX; nOldY = nY;
+
+				Move( ndX, ndY );
+
+				return WMSG_SUCCESS;
+			}
+		}*/
+		break;
+	case WM_LBUTTONDOWN:
+		/*{	
+			if( IsInside( nX, nY ) )
+			{
+				nOldX = nX;		nOldY = nY;
+				
+				if( IsInsideRect( nX, nY, m_rcTitle ) )
+				{
+					m_bTitleBarClick = TRUE;
+				}
+
+				return WMSG_SUCCESS;
+			}
+		}	*/
+		break;
+	case WM_LBUTTONUP:
+/*		{
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
+			{
+				// Title bar
+				m_bTitleBarClick = FALSE;
+
+				if( !IsFocused() ) return WMSG_FAIL;
+			}
+			else
+			{
+				if( IsInside( nX, nY ) )
+				{
+					_pUIMgr->ResetHoldBtn();
+
+					return WMSG_SUCCESS;
+				}
+			}
+		}*/
+		break;
+	}
+
+
 	return WMSG_FAIL;
 }
 
@@ -475,8 +567,6 @@ void CUIOXQuizEvent::ReceiveQuiz( int nQuizNo, int limitsec, CTString QuizStr )
 
 	AddQuizDescString( QuizStr, 0xFFFFFFFF );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->GetOXQuizEvent()->SetVisible( TRUE );
-	pUIManager->GetOXQuizEvent()->SetEnable( TRUE );
+	_pUIMgr->GetOXQuizEvent()->SetVisible( TRUE );
+	_pUIMgr->GetOXQuizEvent()->SetEnable( TRUE );
 }

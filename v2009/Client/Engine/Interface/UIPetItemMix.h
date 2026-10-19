@@ -8,7 +8,11 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
 #include <Engine/Entities/ItemData.h>
+#include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UIProcess.h> // 창의 크기값은 UIProcess의 define값을 사용
 
 enum DRAGON_WEAPON_TYPE
@@ -105,7 +109,7 @@ protected:
 	CUIButton				m_btnCancel;						// 취소 버튼 
 	
 	// Skill buttons
-	std::vector< CUIIcon* > m_vecIcons;							// 조합 아이템
+	std::vector<CUIButtonEx> m_btnProcessItems;					// 조합 아이템
 
 
 	// Etc ...
@@ -147,13 +151,27 @@ protected:
 // Network ...
 	BOOL					m_bWaitProcessResult;				// Wait Message
 	
+// ToolTip
+
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+
+	BOOL					m_bShowItemInfo;
+
+	UIRect					m_rcItemInfo;
+	int						m_nCurInfoLines;
 	int						m_nPetType;
 
 	CTString				m_strItemInfo[T_DRAGON_MAX];		// Item information string
 	COLOR					m_colItemInfo[T_DRAGON_MAX];		// Color of item information string
 	BOOL					m_bDetailItemInfo;
-
-	void	ClearProcessItems();
 
 public:
 	CUIPetItemMix();
@@ -186,9 +204,14 @@ public:
 // Send ...
 	void	SendPetItemMixReq( int nbtn, int nType );
 
+// RenderItemInfo ...
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight );
+	void	ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew = FALSE );
+	void	RenderItemInfo ();
 // etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( const CTString &strText, COLOR colText = 0xffffffff );
+	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
 	void	InitNeedItem( void );
 };
 

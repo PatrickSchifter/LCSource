@@ -3,13 +3,10 @@
 // 기존 공성에서 추가된 부분만 구현한다.
 // --------------------------------------------------------------------------//
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISiegeWarfareNew.h>
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Object/ActorMgr.h>
 
 #define TOWER_COMBOBOX_SIZE (18)
 #define CONSENSUSBAR_SIZE	(261)
@@ -102,12 +99,12 @@ void CUISiegeWarfareNew::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, 
 //------------------------------------------------------------------------------
 void CUISiegeWarfareNew::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	// CUISiegeWarfare::Create 에서 생성되서 들어온다.
-	// 중복 생성 (메모리 누수)
-// 	_pUISWDoc = new CUISiegeWarfareDoc();
-// 	_pUISWDoc->SetUIState( SWS_NONE );	
+	_pUISWDoc = new CUISiegeWarfareDoc();
+	_pUISWDoc->SetUIState( SWS_NONE );	
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );		
+	SetSize( nWidth, nHeight );
 	
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
 
@@ -142,10 +139,9 @@ void CUISiegeWarfareNew::Create( CUIWindow *pParentWnd, int nX, int nY, int nWid
 
 	m_cbtnTowerOn[7][DRATAN_TOWER_MAX];		// 가동 여부 버튼
 
-	int		i, j;
-	for( i = 0; i < DRATAN_TOWER_KIND_MAX; i++ )
+	for(int i=0;i<DRATAN_TOWER_KIND_MAX;i++)
 	{
-		for( j = 0; j < DRATAN_TOWER_MAX; j++ )
+		for( int j=0;j<DRATAN_TOWER_MAX;j++)
 		{
 			m_cbtnTowerOn[i][j].Create( this, 442 + TOWER_COMBOBOX_SIZE * j, 132 +TOWER_COMBOBOX_SIZE * i
 										, TOWER_COMBOBOX_SIZE, TOWER_COMBOBOX_SIZE,	CTString("") );	
@@ -166,7 +162,7 @@ void CUISiegeWarfareNew::Create( CUIWindow *pParentWnd, int nX, int nY, int nWid
 	CTString tStr;
 	// 강화 스핀 버튼	
 //	m_sbtnUpgrade.Create( this, 80, 159, 100, 14, _S( 3690,"강화 단계"), 37 );
-	m_sbtnUpgrade.Create( this, 80, 159, 150, 15, _S( 3690,"강화 단계"), 37 );
+	m_sbtnUpgrade.Create( this, 80, 159, 110, 15, _S( 3690,"강화 단계"), 37 );
 	m_sbtnUpgrade.SetDataBackUV3( 131+black, 46, 135+black, 59, 136+black, 46, 140+black, 59, 
 							141 + black, 46, 145 + black, 59, fTexWidth, fTexHeight );
 	
@@ -183,8 +179,9 @@ void CUISiegeWarfareNew::Create( CUIWindow *pParentWnd, int nX, int nY, int nWid
 	m_sbtnUpgrade.SetWheelRect( -19, -75, 271, 165 );
 
 	m_sbtnUpgrade.ResetAllDatas();
-	for( i = 0; i <= TOWER_UPGRADE_MAX; i++)
+	for(i=0;i<=TOWER_UPGRADE_MAX;i++)
 	{
+
 		tStr.PrintF("%d",i);
 		m_sbtnUpgrade.AddData(tStr);
 	}
@@ -224,7 +221,7 @@ void CUISiegeWarfareNew::OpenCheckTower()
 	
 	ResetPosition(_pdpMain->dp_MinI,_pdpMain->dp_MinJ,_pdpMain->dp_MaxI,_pdpMain->dp_MaxJ);
 	_pUISWDoc->SetUIState(SWS_APPLY_TOWER);
-	CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
 }
 // 타워 강화하기 열기
 void CUISiegeWarfareNew::OpenUpgradeTower()
@@ -240,7 +237,7 @@ void CUISiegeWarfareNew::OpenUpgradeTower()
 
 	ResetPosition(_pdpMain->dp_MinI,_pdpMain->dp_MinJ,_pdpMain->dp_MaxI,_pdpMain->dp_MaxJ);
 	_pUISWDoc->SetUIState(SWS_UPGRADE_TOWER);
-	CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
 }
 // 타워 수리 하기
 void CUISiegeWarfareNew::OpenRepairTower()
@@ -256,7 +253,7 @@ void CUISiegeWarfareNew::OpenRepairTower()
 
 	ResetPosition(_pdpMain->dp_MinI,_pdpMain->dp_MinJ,_pdpMain->dp_MaxI,_pdpMain->dp_MaxJ);
 	_pUISWDoc->SetUIState(SWS_REPAIR_TOWER);
-	CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
 }
 // 크리스탈 교감 열기
 void CUISiegeWarfareNew::OpenConsensus()
@@ -270,23 +267,9 @@ void CUISiegeWarfareNew::OpenConsensus()
 
 	ResetPosition(_pdpMain->dp_MinI,_pdpMain->dp_MinJ,_pdpMain->dp_MaxI,_pdpMain->dp_MaxJ);
 	_pUISWDoc->SetUIState(SWS_CONSENSUS_CRYSTAL);
-	CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, TRUE );
 
 }
-
-void CUISiegeWarfareNew::OpenWaitTime()
-{
-	extern ENGINE_API CDrawPort	*_pdpMain;
-
-	SetSize(185,121);
-	m_rcTitle.SetRect(0,0,185,22);	
-
-	ResetPosition(_pdpMain->dp_MinI,_pdpMain->dp_MinJ,_pdpMain->dp_MaxI,_pdpMain->dp_MaxJ);
-	m_bReceivedTime = FALSE;
-	_pUISWDoc->SetUIState(SWS_WAIT_REBIRTH);
-	CUIManager::getSingleton()->RearrangeOrder(UI_SIEGE_WARFARE_NEW,TRUE);			
-}
-
 //----------------------------------------------------------------<<
 
 // 부활 대기 시간
@@ -296,10 +279,7 @@ void CUISiegeWarfareNew::RenderWaitTime()
 	CTString tStr;
 	GetAbsPos( nX, nY );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	m_bxBackGroundBox.SetBoxPos(WRect(nX,nY,nX+185,nY+22));
@@ -312,7 +292,7 @@ void CUISiegeWarfareNew::RenderWaitTime()
 
 	// Render Vertical Lines
 	// Render Text		
-	pDrawPort->PutTextEx(_S( 3691,"공성 중 부활 대기시간"),nX+19,nY+6);
+	_pUIMgr->GetDrawPort()->PutTextEx(_S( 3691,"공성 중 부활 대기시간"),nX+19,nY+6);
 	if( m_iWaitTime > 0 )
 	{
 		if ( m_iWaitTime >= 60 )
@@ -320,16 +300,16 @@ void CUISiegeWarfareNew::RenderWaitTime()
 		else 
 			tStr.PrintF(_S(2514,"%d초"),(m_iWaitTime));
 		
-		pDrawPort->PutTextExCX(tStr,nX+93,nY+49);
+		_pUIMgr->GetDrawPort()->PutTextExCX(tStr,nX+93,nY+49);
 
-		m_iWaitTime = m_iWaitTime_const - ((((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000))/*timeGetTime()*/ - m_tmStartTime))/1000;
+		m_iWaitTime = m_iWaitTime_const - ((timeGetTime() - m_tmStartTime))/1000;
 	}
 	else 
 	{	
-		pDrawPort->PutTextExCX(_S( 3692,"부활 대기중...."),nX+93,nY+86);
+		_pUIMgr->GetDrawPort()->PutTextExCX(_S( 3692,"부활 대기중...."),nX+93,nY+86);
 		if(m_tmStartTime && m_bReceivedTime)
 		{
-			if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGEWARFARE_REBIRTH) ) return;
+			if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGEWARFARE_REBIRTH) ) return;
 
 			// 스타트 타임 리셋
 			m_tmStartTime = 0;
@@ -353,18 +333,18 @@ void CUISiegeWarfareNew::RenderWaitTime()
 			{				
 				msgInfo.SetMsgBoxInfo(tStr,UMBS_SELECTBOX,UI_NONE,MSGCMD_SIEGEWARFARE_REBIRTH );
 				msgInfo.m_nHeight =200;
-				pUIManager->CreateMessageBox(msgInfo);
-				pUIManager->GetMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH)->addSelectContext(_S( 3694,"부활 진지로 이동"));
-				pUIManager->GetMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH)->addSelectContext(_S( 3695,"가까운 마을로 이동"));
+				_pUIMgr->CreateMessageBox(msgInfo);
+				_pUIMgr->GetMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH)->addSelectContext(_S( 3694,"부활 진지로 이동"));
+				_pUIMgr->GetMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH)->addSelectContext(_S( 3695,"가까운 마을로 이동"));
 			}			
 			else
 			{
 				msgInfo.SetMsgBoxInfo(tStr,UMBS_OK,UI_SIEGE_WARFARE_NEW ,MSGCMD_SIEGEWARFARE_REBIRTH );				
 				msgInfo.AddString(_S( 403, "죽었습니다. 시작지점으로 이동하시겠습니까?" ));
-				pUIManager->CreateMessageBox(msgInfo);				
+				_pUIMgr->CreateMessageBox(msgInfo);				
 			}
 
-			pUIManager->RearrangeOrder(UI_SIEGE_WARFARE_NEW,FALSE);
+			_pUIMgr->RearrangeOrder(UI_SIEGE_WARFARE_NEW,FALSE);
 		}
 	}
 
@@ -381,10 +361,7 @@ void CUISiegeWarfareNew::RenderConsensus()
 		StopConsensus(_pNetwork->MyCharacterInfo.index);
 		SendConsensus(MSG_CASTLE_CRISTAL_RESPOND_END);
 	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	m_bxBackGroundBox.SetBoxPos(WRect(nX,nY,nX+316,nY+22));
@@ -397,12 +374,12 @@ void CUISiegeWarfareNew::RenderConsensus()
 
 	// Render Vertical Lines
 	// Render Text
-	pDrawPort->PutTextEx(_S( 3696, "교감 진행 시간"),nX+19,nY+6);
+	_pUIMgr->GetDrawPort()->PutTextEx(_S( 3696, "교감 진행 시간"),nX+19,nY+6);
 	for(int i=0;i<4;i++)
 	{
-		pDrawPort->AddTexture(nX+24+i*88,nY+69,nX+25+i*88,nY+72,m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
+		_pUIMgr->GetDrawPort()->AddTexture(nX+24+i*88,nY+69,nX+25+i*88,nY+72,m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
 		tStr.PrintF(_S(2513,"%d분"),i);
-		pDrawPort->PutTextEx(tStr,nX+23+i*83,nY+80);
+		_pUIMgr->GetDrawPort()->PutTextEx(tStr,nX+23+i*83,nY+80);
 	}
 	m_rcPuple.SetRect(26,47,26+m_iConsensusBarSize,66);
 	m_bxPurple.SetBoxPos(m_rcPuple);
@@ -415,10 +392,8 @@ void CUISiegeWarfareNew::RenderUpgradeTower()
 {
 	int	nX, nY;
 	GetAbsPos( nX, nY );
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	m_bxBackGroundBox.SetBoxPos(WRect(nX,nY,nX+421,nY+22));
@@ -453,53 +428,53 @@ void CUISiegeWarfareNew::RenderUpgradeTower()
 					tStr1=_S( 3699,"가드형 타워 강화");
 					tStr2=_S( 3700,"효과"); // WSS_DRATAN_SIEGEWARFARE 071002 스트링 번호 수정
 				}
-				pDrawPort->PutTextEx( tStr1, nX+23, nY+6 );
-				pDrawPort->PutTextEx( _S( 3701, "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr1, nX+23, nY+6 );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S( 3701, "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
 				tStr.PrintF(_S( 3702, "%d단계" ),1);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,30);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,30);
 				tStr = tStr + CTString(" ") + tStr1;
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),2);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,50);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,50);
 				tStr = tStr + CTString(" ") + tStr1;
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,50);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,50);
 				tStr = tStr +CTString("/") + tStr1; 				
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),3);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,100);
 				tStr = tStr + CTString(" ") + tStr1;
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,100);
 				tStr = tStr +CTString("/") + tStr1; 
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);				
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);				
 			}
 			break;
 		case SWUT_GATE:
 			{
 				tStr1=_S( 3704,"성문 강화");
 				
-				pDrawPort->PutTextEx( tStr1, nX+23, nY+6 );
-				pDrawPort->PutTextEx( _S( 3701,  "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr1, nX+23, nY+6 );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S( 3701,  "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
 				tStr.PrintF(_S( 3702, "%d단계" ),1);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,50);				
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,50);				
 				tStr = tStr+CTString(" ")+ tStr1;
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),2);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,100);
 				tStr = tStr+CTString(" ")+ tStr1;
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),3);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,200);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,200);
 				tStr = tStr+CTString(" ")+ tStr1;
-				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
+				_pUIMgr->GetDrawPort()->PutTextEx( tStr, nX2, nY2+=nCab);
 			}
 			
 			break;
 	}	
 	
 	
-	pDrawPort->PutTextExRX( _S(1181, "필요 나스" ), nX+301, nY+164 );
+	_pUIMgr->GetDrawPort()->PutTextExRX( _S(1181, "필요 나스" ), nX+301, nY+164 );
 	tStr.PrintF(_S(836,"%I64d 나스"),GetTowerUpgradePay(m_iUpgradeType,m_iUpgradeLevel));	// TODO :: 타워 가격 설정
-	pDrawPort->PutTextExRX( tStr, nX+392, nY+164 );
+	_pUIMgr->GetDrawPort()->PutTextExRX( tStr, nX+392, nY+164 );
 
 }
 
@@ -511,10 +486,8 @@ void CUISiegeWarfareNew::RenderCheckTower()
 
 	// Move -> OpenCheckTower
 	// Set window Size
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+		
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	m_bxBackGroundBox.SetBoxPos(WRect(nX,nY,nX+550,nY+22));
@@ -529,32 +502,32 @@ void CUISiegeWarfareNew::RenderCheckTower()
 	iGab = 18;
 	for(i=0;i<9;i++)
 	{
-		pDrawPort->AddTexture(nX+80,nY+113+iGab*i,nX+532,nY+114+iGab*i,
+		_pUIMgr->GetDrawPort()->AddTexture(nX+80,nY+113+iGab*i,nX+532,nY+114+iGab*i,
 		m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
 	}
 
-	pDrawPort->AddTexture(nX+16,nY+113,nX+80,nY+114,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+113,nX+80,nY+114,
 	m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+16,nY+131,nX+80,nY+132,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+131,nX+80,nY+132,
 	m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+16,nY+185,nX+80,nY+186,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+185,nX+80,nY+186,
 	m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+16,nY+239,nX+80,nY+240,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+239,nX+80,nY+240,
 	m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+16,nY+257,nX+80,nY+258,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+257,nX+80,nY+258,
 	m_uvLineH.U0,m_uvLineH.V0,m_uvLineH.U1,m_uvLineH.V1,0xFFFFFFFF);
 
 	// Vertical Lines
-	pDrawPort->AddTexture(nX+16,nY+113,nX+17,nY+257,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+16,nY+113,nX+17,nY+257,
 	m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+80,nY+113,nX+81,nY+257,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+80,nY+113,nX+81,nY+257,
 	m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
-	pDrawPort->AddTexture(nX+198,nY+113,nX+199,nY+257,
+	_pUIMgr->GetDrawPort()->AddTexture(nX+198,nY+113,nX+199,nY+257,
 	m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
 
 	for(i=0;i<6;i++)
 	{
-		pDrawPort->AddTexture(nX+441+iGab*i,nY+113,nX+442+iGab*i,nY+257,
+		_pUIMgr->GetDrawPort()->AddTexture(nX+441+iGab*i,nY+113,nX+442+iGab*i,nY+257,
 		m_uvLineV.U0,m_uvLineV.V0,m_uvLineV.U1,m_uvLineV.V1,0xFFFFFFFF);
 	}	
 
@@ -569,44 +542,44 @@ void CUISiegeWarfareNew::RenderCheckTower()
 	nY2 = nY + 30;
 	nCab = _pUIFontTexMgr->GetFontHeight()+5;
 	
-	pDrawPort->PutTextEx( _S( 3675, "타워 가동하기" ), nX+23, nY+6 );	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3675, "타워 가동하기" ), nX+23, nY+6 );	
 
-	pDrawPort->PutTextEx( _S( 3706, "수호타워 중 사용하고자 하는 타워를 선택해 주시기 바랍니다." ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));	
-	pDrawPort->PutTextEx( _S( 3707, "같은 종류의 타워는 5개까지 가능하며, 한번 가동한 타워는 가동을 취소할 수 없습니다." ), nX2, nY2+=nCab,COLOR(0xD3BFFFFF));
-	pDrawPort->PutTextEx( _S( 3708, "단, 비용은 타워의 종류나 위치에 상관없이 설치한 타워의 개수에 따라 책정됩니다." ), nX2, nY2+=nCab,COLOR(0xD3BFFFFF));
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3706, "수호타워 중 사용하고자 하는 타워를 선택해 주시기 바랍니다." ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3707, "같은 종류의 타워는 5개까지 가능하며, 한번 가동한 타워는 가동을 취소할 수 없습니다." ), nX2, nY2+=nCab,COLOR(0xD3BFFFFF));
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3708, "단, 비용은 타워의 종류나 위치에 상관없이 설치한 타워의 개수에 따라 책정됩니다." ), nX2, nY2+=nCab,COLOR(0xD3BFFFFF));
 
-	pDrawPort->PutTextExCX( _S( 3709, "타입" ), nX+48, nY+117 );	
-	pDrawPort->PutTextExCX( _S( 3710, "공격형" ), nX+48, nY+153 );
-	pDrawPort->PutTextExCX( _S( 3711, "가드형" ), nX+48, nY+206 );
-	pDrawPort->PutTextExCX( _S( 3712, "워프용" ), nX+48, nY+242 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3709, "타입" ), nX+48, nY+117 );	
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3710, "공격형" ), nX+48, nY+153 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3711, "가드형" ), nX+48, nY+206 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3712, "워프용" ), nX+48, nY+242 );
 
-	pDrawPort->PutTextExCX( _S( 3713, "형태" ), nX+138, nY+117 );
-	pDrawPort->PutTextExCX( _S( 3714, "근거리" ), nX+138, nY+135 );
-	pDrawPort->PutTextExCX( _S( 3715, "원거리" ), nX+138, nY+152 );
-	pDrawPort->PutTextExCX( _S( 3716, "마법" ), nX+138, nY+171 );
-	pDrawPort->PutTextExCX( _S( 3717, "속도하락" ), nX+138, nY+188 );
-	pDrawPort->PutTextExCX( _S( 3718, "능력치하락" ), nX+138, nY+206 );
-	pDrawPort->PutTextExCX( _S( 3719, "독 중독" ), nX+138, nY+225 );
-	pDrawPort->PutTextExCX( _S( 3720, "워프연결" ), nX+138, nY+242 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3713, "형태" ), nX+138, nY+117 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3714, "근거리" ), nX+138, nY+135 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3715, "원거리" ), nX+138, nY+152 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3716, "마법" ), nX+138, nY+171 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3717, "속도하락" ), nX+138, nY+188 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3718, "능력치하락" ), nX+138, nY+206 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3719, "독 중독" ), nX+138, nY+225 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3720, "워프연결" ), nX+138, nY+242 );
 
-	pDrawPort->PutTextExCX( _S( 3721, "역할" ), nX+321, nY+117 );
-	pDrawPort->PutTextEx( _S( 3722, "주변의 적을 공격한다." ), nX+206, nY+135 );
-	pDrawPort->PutTextEx( _S( 3723, "일정 거리 밖의 적을 공격한다." ), nX+206, nY+152 );
-	pDrawPort->PutTextEx( _S( 3724, "주변의 적에게 마법 공격을 한다." ), nX+206, nY+171 );
-	pDrawPort->PutTextEx( _S( 3725, "주변 적의 공격 속도와 이동속도 하락" ), nX+206, nY+188 );
-	pDrawPort->PutTextEx( _S( 3726, "주변 적의 능력치 하락" ), nX+206, nY+206 );
-	pDrawPort->PutTextEx( _S( 3727, "주변의 적에게 강력한 독 중독" ), nX+206, nY+225 );
-	pDrawPort->PutTextEx( _S( 3728, "워프 연결, 부활 대기시간 감소" ), nX+206, nY+242 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3721, "역할" ), nX+321, nY+117 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3722, "주변의 적을 공격한다." ), nX+206, nY+135 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3723, "일정 거리 밖의 적을 공격한다." ), nX+206, nY+152 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3724, "주변의 적에게 마법 공격을 한다." ), nX+206, nY+171 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3725, "주변 적의 공격 속도와 이동속도 하락" ), nX+206, nY+188 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3726, "주변 적의 능력치 하락" ), nX+206, nY+206 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3727, "주변의 적에게 강력한 독 중독" ), nX+206, nY+225 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3728, "워프 연결, 부활 대기시간 감소" ), nX+206, nY+242 );
 
 
-	pDrawPort->PutTextExRX( _S( 3729, "총 필요나스:" ), nX+425, nY+267 );
-	tStr.PrintF(_S( 3730,"%I64d 나스"),GetTowerPay());	// TODO :: 타워 가격 설정
-	pDrawPort->PutTextExRX( tStr, nX+527, nY+267 );	
+	_pUIMgr->GetDrawPort()->PutTextExRX( _S( 3729, "총 필요나스:" ), nX+425, nY+267 );
+	tStr.PrintF(_S( 3730,"%I64d 나스"),(GetTowerPay()));	// TODO :: 타워 가격 설정
+	_pUIMgr->GetDrawPort()->PutTextExRX( tStr, nX+527, nY+267 );	
 	
 	for(i=0;i<5;i++)
 	{
 		tStr.PrintF("%d",i+1);
-		pDrawPort->PutTextExCX( tStr, nX+450+iGab*i, nY+117 );
+		_pUIMgr->GetDrawPort()->PutTextExCX( tStr, nX+450+iGab*i, nY+117 );
 	}
 
 	for( i=0;i<DRATAN_TOWER_KIND_MAX;i++)
@@ -624,10 +597,8 @@ void CUISiegeWarfareNew::RenderRepairTower()
 {
 	int	nX, nY;
 	GetAbsPos( nX, nY );
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	m_bxBackGroundBox.SetBoxPos(WRect(nX,nY,nX+421,nY+22));
@@ -646,11 +617,11 @@ void CUISiegeWarfareNew::RenderRepairTower()
 	nY2 = nY + 25;
 	nCab = _pUIFontTexMgr->GetFontHeight()+5;	
 				
-	tStr.PrintF(_S(3899,"수리비용:%I64d"),GetRepairMoney());
-	pDrawPort->PutTextEx( _S( 3731,"타워 수리하기"), nX+23, nY+6 );
-	pDrawPort->PutTextEx( _S( 3732,"파괴되지 않고 부서진 타워는 바로 수리가 가능합니다."), nX2, nY2+=nCab);
-	pDrawPort->PutTextEx( _S( 3733,"수리비용은 부서진 정도에 따라 책정되며 다음과 같습니다."), nX2, nY2+=nCab);
-	pDrawPort->PutTextExCX( tStr, nX+GetWidth()/2, nY2+=nCab+10,COLOR(0xD3BFFFFF));
+	tStr.PrintF("수리비용:%I64d",GetRepairMoney());
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3731,"타워 수리하기"), nX+23, nY+6 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3732,"파괴되지 않고 부서진 타워는 바로 수리가 가능합니다."), nX2, nY2+=nCab);
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3733,"수리비용은 부서진 정도에 따라 책정되며 다음과 같습니다."), nX2, nY2+=nCab);
+	_pUIMgr->GetDrawPort()->PutTextExCX( tStr, nX+GetWidth()/2, nY2+=nCab+10,COLOR(0xD3BFFFFF));
 
 }
 //------------------------------------------------------------------------------
@@ -680,10 +651,8 @@ void CUISiegeWarfareNew::Render()
 			break;
 	}	
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
  
 //------------------------------------------------------------------------------
@@ -710,7 +679,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -722,12 +691,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 				Move( ndX, ndY );			
 				return WMSG_SUCCESS;
 			}
-
-			m_btnOK.MouseMessage( pMsg );		// 확인
-			m_btnCancel.MouseMessage( pMsg );	// 취소
-			m_btnApply.MouseMessage( pMsg );	// 가동하기
-			m_btnReturn.MouseMessage( pMsg );	// 돌아가기
-			m_sbtnUpgrade.MouseMessage(pMsg);
+		
 		}
 		break;
 	case WM_LBUTTONDOWN:
@@ -789,7 +753,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 							break;
 						
 					}					
-					CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+					_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 					return WMSG_SUCCESS;
 				}
 			
@@ -811,7 +775,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 							// TODO : 해당 체크된 개수를 계산 상태를 전달한다.
 							SetTowerSetFromCB();
 							SendApplyTowerSet();	
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}								
 					}
 					else if( ( wmsgResult = m_btnReturn.MouseMessage( pMsg ) ) != WMSG_FAIL )
@@ -819,7 +783,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 						if( wmsgResult == WMSG_COMMAND )
 						{	
 							//Clear();
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}				
 					}
 					break;
@@ -829,7 +793,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 						if( wmsgResult == WMSG_COMMAND )
 						{
 							SendTowerReinforce(m_iUpgradeType,m_iUpgradeLevel);						
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}
 						return wmsgResult;
 					}
@@ -838,18 +802,15 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 						if( wmsgResult == WMSG_COMMAND )
 						{	
 						//	Clear();
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}			
 						return wmsgResult;
 					}	
 					else if( m_sbtnUpgrade.MouseMessage(pMsg) != WMSG_FAIL )
 					{
 						m_iUpgradeLevel = m_sbtnUpgrade.GetSelectPos();
-						if( m_iUpgradeLevelOld >= m_iUpgradeLevel)
-						{
-								m_sbtnUpgrade.SetSelectPos(m_iUpgradeLevelOld);
-								m_iUpgradeLevel = m_iUpgradeLevelOld;
-						}
+						if( m_iUpgradeLevelOld >= m_iUpgradeLevel) 
+								m_sbtnUpgrade.SetSelectPos(m_iUpgradeLevelOld);	
 						return WMSG_SUCCESS;
 					}
 					break;
@@ -859,7 +820,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 						if( wmsgResult == WMSG_COMMAND )
 						{
 							SendTowerRepair(m_iRepairTowerIndex );
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}
 						return wmsgResult;
 					}
@@ -868,7 +829,7 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 						if( wmsgResult == WMSG_COMMAND )
 						{	
 						//	Clear();
-							CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+							_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 						}			
 						return wmsgResult;
 					}
@@ -887,19 +848,8 @@ WMSG_RESULT CUISiegeWarfareNew::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				if( _pUISWDoc->GetUIState() == SWS_UPGRADE_TOWER )
-				{
-					if( m_sbtnUpgrade.MouseMessage( pMsg ) != WMSG_FAIL )
-					{
-						m_iUpgradeLevel = m_sbtnUpgrade.GetSelectPos();
-						if( m_iUpgradeLevelOld >= m_iUpgradeLevel)
-						{
-							m_sbtnUpgrade.SetSelectPos(m_iUpgradeLevelOld);	
-							m_iUpgradeLevel = m_iUpgradeLevelOld;
-						}
-						return WMSG_SUCCESS;	
-					}
-				}	
+				if( m_sbtnUpgrade.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;		
 			}
 		}
 		break;
@@ -917,7 +867,7 @@ void CUISiegeWarfareNew::StartConsensus(ULONG charIdx)
 	// 플레이어의 경우...
 	if( _pNetwork->MyCharacterInfo.index == charIdx )
 	{
-		m_tmStartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();		
+		m_tmStartTime = timeGetTime();		
 		m_iConsensusBarSize = 0;
 		OpenConsensus();		
 		StartConsensusAni(charIdx);
@@ -946,13 +896,13 @@ void CUISiegeWarfareNew::CompleteConsensus(ULONG charIdx)
 		if( _pUISWDoc->GetUIState() == SWS_CONSENSUS_CRYSTAL )
 		{
 			_pUISWDoc->SetUIState( SWS_NONE );
-			CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+			_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 		}
 		_pNetwork->MyCharacterInfo.bConsensus =FALSE;
 		
 		// WSS_DRATAN_SIEGEWARFARE 2007/10/18
 		// 상태 초기화
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->PlayerInit(true);
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->DeathInit();
 
 	}
 
@@ -976,7 +926,7 @@ void CUISiegeWarfareNew::StopConsensus(ULONG charIdx)
 		if( _pUISWDoc->GetUIState() == SWS_CONSENSUS_CRYSTAL )
 		{
 			_pUISWDoc->SetUIState( SWS_NONE );
-			CUIManager::getSingleton()->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
+			_pUIMgr->RearrangeOrder( UI_SIEGE_WARFARE_NEW, FALSE );
 		}
 		_pNetwork->MyCharacterInfo.bConsensus =FALSE;
 		_pUISWDoc->StopConsensusEffect(charIdx); // WSS_DRATAN_SIEGEWARFARE 2007/10/14		
@@ -986,6 +936,8 @@ void CUISiegeWarfareNew::StopConsensus(ULONG charIdx)
 	{
 		_pUISWDoc->StopConsensusEffect(charIdx); // WSS_DRATAN_SIEGEWARFARE 2007/10/14
 	}
+
+
 }
 
 //------------------------------------------------------------------------------
@@ -994,7 +946,7 @@ void CUISiegeWarfareNew::StopConsensus(ULONG charIdx)
 //------------------------------------------------------------------------------
 int CUISiegeWarfareNew::CheckConsensus()
 {	
-	DWORD tmNow = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	DWORD tmNow = timeGetTime();
 	int tSec = (tmNow - m_tmStartTime)/1000;
 	if( (tSec-CONSENSUS_TIMEUP) <= 0 ) m_iConsensusBarSize = tSec*260/CONSENSUS_TIMEUP ;
 	return tSec-CONSENSUS_TIMEUP;
@@ -1015,13 +967,16 @@ void CUISiegeWarfareNew::StartConsensusAni(int charIdx)
 	// 다른 캐릭터의 경우
 	else 
 	{
-		ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, charIdx);
-
-		if (pObject != NULL)
+		for(INDEX i=0; i<_pNetwork->ga_srvServer.srv_actCha.Count(); ++i)
 		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->SetConsensus(charIdx);
-			_pUISWDoc->StartConsensusEffect(charIdx, pObject->GetEntity());
-		}		
+			CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[i];
+			if(ct.cha_Index == charIdx)
+			{					
+				((CPlayerEntity*)CEntity::GetPlayerEntity(0))->SetConsensus(charIdx);
+				_pUISWDoc->StartConsensusEffect(charIdx,ct.cha_pEntity); // WSS_DRATAN_SIEGEWARFARE 2007/10/14
+			}
+		}
+		
 	}
 }
 
@@ -1273,9 +1228,7 @@ void CUISiegeWarfareNew::SetRepairMoney(int tIdx ,SQUAD tMoney)
 // Rebirth Quarters
 void CUISiegeWarfareNew::CreateWaitQuarterBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_SIEGE_WARFARE_BUY_QUARTER )) return;			
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_SIEGE_WARFARE_BUY_QUARTER )) return;			
 	
 	CUIMsgBox_Info	MsgBoxInfo;	
 	CTString		strMessage;
@@ -1284,20 +1237,16 @@ void CUISiegeWarfareNew::CreateWaitQuarterBox()
 	MsgBoxInfo.SetMsgBoxInfo(  _S( 3734, "공성 중 부활 대기 시간" ), NULL , UI_SIEGE_WARFARE_NEW, MSGCMD_SIEGE_WARFARE_BUY_QUARTER );	
 	strMessage = _S( 3735, "부활 대기 중..." );
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );	
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );	
 	
 }
 
 void CUISiegeWarfareNew::CreateBuyQuarterBox(int iNpcIdx)
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+{	
 	m_iNpcIdx = 0;
 
-	if( iNpcIdx < 390 || iNpcIdx > 399 )
-		return;
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_SIEGE_WARFARE_WAIT_QUARTER )) return;
+	if( iNpcIdx < 390 && iNpcIdx > 399 ) return;
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_SIEGE_WARFARE_WAIT_QUARTER )) return;
 
 	m_iNpcIdx = iNpcIdx;
 		
@@ -1313,11 +1262,11 @@ void CUISiegeWarfareNew::CreateBuyQuarterBox(int iNpcIdx)
 	strMessage.PrintF( _S( 3737, "부활 진지 %d"), iNpcIdx - 389 );
 	MsgBoxInfo.AddString( strMessage );
 	strMessage.PrintF("%d",tNas);
-	strMessage.PrintF(_S( 255, "가격 : %s"), (const char*)strMessage);
+	strMessage.PrintF(_S( 255, "가격 : %s"), strMessage);
 	MsgBoxInfo.AddString( strMessage );
 	strMessage=_S( 3738, "선택한 부활진지를 구입하시겠습니까?");
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 }
 

@@ -31,8 +31,6 @@ private:
 		CTString		aStrAnimationName[ANIM_TOTAL];				// 애니메이션 이름.
 		int				iAttackSpeed;								// 기본 공속		
 		float			afImpactTimeTable[MAX_ATTACK];				// 이펙트와 사운드 및 데미지가 적용되는 타이밍.
-		int				nSkillIndex;								// 스킬 인덱스.
-		int				nType;
 		
 	}sTransformInfo;
 
@@ -58,11 +56,7 @@ public:
 	CTString	GetFileName( int iTransform );
 	
 	float		GetImpactTime( int iTransform, int iAttackType )	const;
-	CTString	GetAnimationName( int iTransform, int iAnimType );
-
-	void		SetInfo( int iTransform, int nIndex );
-	int			GetSkillIndex( int iTransform );
-	int			GetType( int nSkillIndex );
+	CTString	GetAnimationName( int iTransform, int iAnimType );	
 
 protected:
 	static CTransformInfo m_instance;

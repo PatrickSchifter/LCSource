@@ -9,7 +9,7 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIWindow.h>
 
 #define JUNO_COUNT					5			
 #define DRATAN_COUNT				11			
@@ -18,6 +18,7 @@
 #define SHOW_TIME					5000
 #define SIGNBOARD_SY				120
 
+#define SIGNBOARD_DEFAULT_DIR		"Data\\Interface\\SignBoard"
 
 class ENGINE_API CUISignBoard
 {

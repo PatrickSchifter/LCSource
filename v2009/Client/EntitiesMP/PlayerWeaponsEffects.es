@@ -50,27 +50,6 @@ components:
 
 functions:
 procedures:
-  Main(EWeaponEffectInit eInit) {
-    // remember the initial parameters
-    ASSERT(eInit.penOwner!=NULL);
-    m_penOwner = eInit.penOwner;
-    m_EwetEffect = eInit.EwetEffect;
-    SetFlags(GetFlags()|ENF_SEETHROUGH);
-
-    if (m_EwetEffect==WET_SHOTGUNSHELL) {
-      autocall ShotgunShell() EEnd;
-    } else if (m_EwetEffect==WET_MACHINEGUNSHELL) {
-      autocall MachinegunShell() EEnd;
-    } else {
-      ASSERTALWAYS("Uknown weapon effect type");
-    }
-
-    // cease to exist
-    Destroy();
-
-    return;
-  };
-
   ShotgunShell(EVoid) {
     // init as model
     InitAsModel();
@@ -102,6 +81,27 @@ procedures:
     // wait a while
     autowait(0.5f);
     return EEnd();
+  };
+
+  Main(EWeaponEffectInit eInit) {
+    // remember the initial parameters
+    ASSERT(eInit.penOwner!=NULL);
+    m_penOwner = eInit.penOwner;
+    m_EwetEffect = eInit.EwetEffect;
+    SetFlags(GetFlags()|ENF_SEETHROUGH);
+
+    if (m_EwetEffect==WET_SHOTGUNSHELL) {
+      autocall ShotgunShell() EEnd;
+    } else if (m_EwetEffect==WET_MACHINEGUNSHELL) {
+      autocall MachinegunShell() EEnd;
+    } else {
+      ASSERTALWAYS("Uknown weapon effect type");
+    }
+
+    // cease to exist
+    Destroy();
+
+    return;
   };
 };
 

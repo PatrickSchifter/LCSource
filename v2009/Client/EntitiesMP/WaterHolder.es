@@ -102,7 +102,7 @@ functions:
 		if (!bLoadOK)
 		{
 			SetSkaModel(CTFILENAME("Data\\Models\\Editor\\Ska\\Axis.smc"));
-			WarningMessage(TRANS("Cannot load ska model '%s'"), (const char*)(CTString&)m_fnModel);
+			WarningMessage(TRANS("Cannot load ska model '%s'"), (CTString&)m_fnModel);
 		}
 
 		GetModelInstance()->SetModelColor(m_colWater);

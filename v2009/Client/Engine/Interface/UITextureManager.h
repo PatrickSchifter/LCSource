@@ -9,14 +9,15 @@
 	#pragma once
 #endif
 
-#include <Engine/Interface/UIWindow.h>
 #include <Engine/Interface/UIManager.h>
+#include <Engine/Interface/UIButtonEx.h>
+
 
 // Count of texture
 enum TextureCount
 {
 	TEXCT_ITEM				= MAX_BTN,
-	TEXCT_SKILL				= 3,
+	TEXCT_SKILL				= 2,
 	TEXCT_ACTION			= 1,
 	TEXCT_QUEST				= 1,
 	TEXCT_EVENT				= 1,
@@ -34,14 +35,7 @@ enum TextureCount
 	TEXCT_FONT_SPAIN        = 1,//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 	TEXCT_FONT_FRANCE		= 1,
 	TEXCT_FONT_POLAND		= 1,
-	TEXCT_FONT_RUSSIAN		= 1,
 	TEXCT_FONT_TURKEY		= 1,
-	TEXCT_FONT_MEXICO		= 1,
-	TEXCT_FONT_ITALY		= 1,
-	TEXCT_FONT_USA_FRANCE   = 1,
-	TEXCT_FONT_USA_SPAIN	= 1,
-	TEXCT_FONT_NETHERLANDS	= 1,
-
 }; 
 // 최대 폰트 첵스쳐 수가 변경될 경우 
 // 폰트 갯수 수정시 GfxLibrary에 있는 FONT_MAX 도 함께 수정해 주여야 함
@@ -62,13 +56,7 @@ enum FontLanguage
 	FONT_SPAIN,//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 	FONT_FRANCE,
 	FONT_POLAND,
-	FONT_RUSSIAN,
 	FONT_TURKEY,
-	FONT_MEXICO,
-	FONT_ITALY,
-	FONT_USA_FRANCE,
-	FONT_USA_SPAIN,
-	FONT_NETHERLANDS,
 };
 
 
@@ -146,7 +134,7 @@ public:
 	// Set texture
 	void	InitTexture( int nTextureID, BOOL bDepthTest )
 	{
-		CUIManager::getSingleton()->GetDrawPort()->InitTextureData( m_aptdFont[nTextureID], FALSE, 202, bDepthTest );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_aptdFont[nTextureID], FALSE, 202, bDepthTest );
 	}
 };
 
@@ -158,11 +146,7 @@ public:
 class CUIButtonTextureManager
 {
 protected:
-	//CTextureData	**m_aptdButton[UBET_TYPE_TOTAL];	// Textures of button
-	typedef		std::vector<CTextureData*>		vecTexData;
-	typedef		std::vector<vecTexData>			vecButtonTex;
-
-	vecButtonTex	m_aptdButton;
+	CTextureData	**m_aptdButton[UBET_TYPE_TOTAL];	// Textures of button
 
 public:
 	CUIButtonTextureManager();
@@ -172,41 +156,26 @@ public:
 	void	Create();
 	void	Destroy();
 
-	// Texture of a button; IDs out of range or not loaded (data from other client
-	// versions) fall back to the first loaded texture of that type.
-	CTextureData *Lookup( int nBtnType, int nTexID ) const
-	{
-		if (nBtnType < 0 || nBtnType >= (int)m_aptdButton.size()) return NULL;
-		const vecTexData &vec = m_aptdButton[nBtnType];
-		if (nTexID >= 0 && nTexID < (int)vec.size() && vec[nTexID] != NULL) return vec[nTexID];
-		for (size_t i = 0; i < vec.size(); i++) if (vec[i] != NULL) return vec[i];
-		return NULL;
-	}
-
 	// Get width & height of texture
 	int		GetTexWidth( UIBtnExType betType, int nTexID ) const
 	{
-		CTextureData *ptd = Lookup(betType, nTexID);
-		return ptd != NULL ? ptd->GetPixWidth() : 1;
+		return m_aptdButton[betType][nTexID]->GetPixWidth();
 	}
 	int		GetTexHeight( UIBtnExType betType, int nTexID ) const
 	{
-		CTextureData *ptd = Lookup(betType, nTexID);
-		return ptd != NULL ? ptd->GetPixHeight() : 1;
+		return m_aptdButton[betType][nTexID]->GetPixHeight();
 	}
 	
 	// get texture name
 	CTextureData *GetTex(UIBtnExType betType, int nTexID)
 	{
-		return Lookup(betType, nTexID);
+		return m_aptdButton[betType][nTexID];
 	}
 
 	// Set texture
 	void	InitTexture( int nBtnType, int nTextureID, const ULONG ulPBT = 203 )
 	{
-		CTextureData *ptd = Lookup(nBtnType, nTextureID);
-		if (ptd == NULL) return;
-		CUIManager::getSingleton()->GetDrawPort()->InitTextureData( ptd, FALSE, ulPBT, FALSE );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_aptdButton[nBtnType][nTextureID], FALSE, ulPBT, FALSE );
 	}
 };
 

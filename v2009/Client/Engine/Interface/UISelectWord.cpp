@@ -1,11 +1,8 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
 #include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISelectWord.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/EntityProperties.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
 
 #define BUTTON_HEIGHT		71
 #define BUTTON_WIDTH		146
@@ -33,6 +30,8 @@ CUISelectWord::~CUISelectWord()
 		_pTextureStock->Release( m_ptdNakoTitle );
 		m_ptdNakoTitle = NULL;
 	}
+
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -40,8 +39,11 @@ CUISelectWord::~CUISelectWord()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUISelectWord::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
-{	
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+{
+	
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 236, 22 );
@@ -158,7 +160,7 @@ void CUISelectWord::OpenSelectWord()
 		return;
 	}
 	
-	CUIManager::getSingleton()->RearrangeOrder( UI_SELECTWORD, TRUE );
+	_pUIMgr->RearrangeOrder( UI_SELECTWORD, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -167,7 +169,10 @@ void CUISelectWord::OpenSelectWord()
 // ----------------------------------------------------------------------------
 void CUISelectWord::ResetSelectWord()
 {
-	CUIManager::getSingleton()->RearrangeOrder( UI_SELECTWORD, FALSE );
+	/*if(!m_vectorWordList.empty())
+		m_vectorWordList.clear();
+		*/
+	_pUIMgr->RearrangeOrder( UI_SELECTWORD, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -176,29 +181,27 @@ void CUISelectWord::ResetSelectWord()
 // ----------------------------------------------------------------------------
 void CUISelectWord::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
 	// Background
 	int nX = m_nPosX;
 	int nY = m_nPosY;
-	pDrawPort->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
 		m_rtBackTop.U0, m_rtBackTop.V0, 
 		m_rtBackTop.U1, m_rtBackTop.V1,
 		0xFFFFFFFF );
 	
 	nY += TITLEBAR_HEIGHT;	
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
 		m_rtBackMiddle1.U0, m_rtBackMiddle1.V0, 
 		m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 		0xFFFFFFFF );
 	
 	nY = m_nPosY + m_nHeight - 7;
 
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
 		m_rtBackBottom.U0, m_rtBackBottom.V0, 
 		m_rtBackBottom.U1, m_rtBackBottom.V1,
 		0xFFFFFFFF );	
@@ -206,9 +209,9 @@ void CUISelectWord::Render()
 	m_btnClose.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 	
-	pDrawPort->InitTextureData( m_ptdNakoTitle );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdNakoTitle );
 	
 	UIButton_vector::iterator itend = m_vectorWordList.end();
 	UIButton_vector::iterator it = m_vectorWordList.begin();
@@ -219,15 +222,15 @@ void CUISelectWord::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 	
 	CTString strTitle = _S(2223, "게임 타이틀 선택" );
 	
-	pDrawPort->PutTextEx( strTitle, m_nPosX + SELECTREWORD_TITLE_TEXT_OFFSETX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( strTitle, m_nPosX + SELECTREWORD_TITLE_TEXT_OFFSETX,	
 		m_nPosY + SELECTREWORD_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -255,7 +258,7 @@ WMSG_RESULT	CUISelectWord::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -275,6 +278,8 @@ WMSG_RESULT	CUISelectWord::MouseMessage( MSG *pMsg )
 			{
 				return WMSG_SUCCESS;
 			}
+			
+
 		}
 		break;
 	case WM_LBUTTONDOWN:
@@ -310,7 +315,7 @@ WMSG_RESULT	CUISelectWord::MouseMessage( MSG *pMsg )
 					}
 				}
 				
-				CUIManager::getSingleton()->RearrangeOrder( UI_SELECTWORD, TRUE );
+				_pUIMgr->RearrangeOrder( UI_SELECTWORD, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -325,7 +330,7 @@ WMSG_RESULT	CUISelectWord::MouseMessage( MSG *pMsg )
 				if(wmsgResult == WMSG_COMMAND)
 				{
 					ResetSelectWord();
-					CUIManager::getSingleton()->GetQuest()->MsgBoxLCommand( MSGLCMD_EVENT, QUEST_RENUAL_EVENT );
+					_pUIMgr->GetQuest()->MsgBoxLCommand( MSGLCMD_EVENT, QUEST_RENUAL_EVENT );
 
 				}
 				return WMSG_SUCCESS;
@@ -396,7 +401,7 @@ void CUISelectWord::ResultProcess( LONG lError )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S(2209, "낱말 맞추기 이벤트" ), UMBS_OK, UI_SELECTWORD, MSGCMD_SELECT_WORD_NOTIFY );
 	MsgBoxInfo.AddString( strMessage );
-	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	
 	ResetSelectWord();
 }	

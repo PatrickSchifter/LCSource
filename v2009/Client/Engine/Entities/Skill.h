@@ -53,29 +53,8 @@
 #define EST_ASSIST_SAFEGUARD	26			// 보호망(전투불가능)
 #define EST_ASSIST_MANTLE		27			// 망토
 #define EST_ASSIST_GUARD		28			// 경비병 소환
-#define EST_ASSIST_CHARGEATC	29			// 장탄(attack)
-#define EST_ASSIST_CHARGEMGC	30			// 장탄(magic)
-#define EST_ASSIST_DISEASE		31			// 질병
-#define EST_ASSIST_CURSE		32			// 저주
-#define EST_ASSIST_CONFUSED		33			// 몬스터만 혼돈에 걸리게 함
-#define EST_ASSIST_TAMING		34			// 몬스터를 일정시간 아군으로 만듬
-#define EST_ASSIST_FREEZE		35			// 결계(서로 공격 못함, 걸린 것은 이동 못함)
-#define EST_ASSIST_INVERSE_DAMAGE	36		// 피격 당하면 데미지 만큼 HP 회복
-#define EST_ASSIST_HP_DOT		37			// 지속 데미지 입음
-#define EST_ASSIST_REBIRTH		38			// 부활
-#define EST_ASSIST_DARKNESS_MODE	39		// 다크니스 모드
-#define EST_ASSIST_AURA_DARKNESS	40		// 오오라 - 다크니스
-#define EST_ASSIST_AURA_WEAKNESS	41		// 오오라 - 위크니스
-#define EST_ASSIST_AURA_ILLUSION	42		// 오오라 - 일루젼
-#define EST_ASSIST_MERCENARY		43		// 몬스터 용병
-#define EST_ASSIST_SOUL_TOTEM_BUFF	44		// 버프형 토템
-#define EST_ASSIST_SOUL_TOTEM_ATTK	45		// 공격형 토템
-#define EST_ASSIST_TRAP				46		// 트랩
-#define EST_ASSIST_PARASITE			47		// 기생충 감염 상태
-#define EST_ASSIST_SUICIDE			48		// 자살 상태
-#define EST_ASSIST_INVINCIBILITY	49		// 무적 모드
-#define EST_ASSIST_GPS				50		// GPS
-#define EST_ASSIST_COUNT			51
+#define EST_ASSIST_CRACKER		29			// 침입자 이펙트 관련(상태 이상과는 무관:서버와 상관없이 강제 적용)
+#define EST_ASSIST_COUNT		30	
 
 // 효과 서브타입 - 공격
 #define EST_ATTACK_NORMAL		0			// 일반 공격
@@ -126,26 +105,11 @@
 #define SCT_PEACEZONE			(1 << 3)	// 평화지역
 #define SCT_SHIELD				(1 << 4)	// 실드장비
 #define SCT_STAND				(1 << 5)	// 서기
-#define SCT_DARKNESS			(1 << 6)	// 사도모드
-#define SCT_NOCOOLTIME			(1 << 7)	// [2012/11/20 : Sora] 쿨타임 감소 영항 받지 않음
 
 // 플래그
 #define	SF_SINGLEMODE			(1 << 0)	// 싱글모드
 #define	SF_FORHELP				(1 << 1)	// 도움을 주는 스킬
 #define	SF_NOTHELP				(1 << 2)	// 해꼬지 스킬
-#define SF_ABSTIME				(1 << 3) // 060227 : bs : 절대시간 사용
-#define SF_NOTDUPLICATE			(1 << 4) // 060227 : bs : 중복 사용 불가 : 중복되는 스킬이 있으면 레벨에 관계없이 사용이 안됨
-#define SF_NOCANCEL				(1 << 5) // 다른 스킬/사망에 의해 취소 안됨
-#define SF_COMBO				(1 << 6) // 시간상관없이 적용됨(접속종료, 공간이동, 죽었을 때 사라짐)
-#define SF_LOGOUT				(1 << 7) // 접속종료 시 사라짐
-#define SF_NS_DARKNESS			(1 << 8)    // 나이트 쉐도우 사도 모드에서만 사용하는 스킬인지 확인
-#define SF_GUILD				(1 << 9)	// 스킬이 길드스킬인지 체크 하는 flag
-#define SF_INFINITE				(1 << 10)	// 무한스킬 - 스킬 시간이 만료되면 다시 스킬이 적용됨
-#define SF_ZONE					(1 << 11)	// 존이동시 버프 삭제
-#define SF_SUMMON_NPC			(1 << 12)	// 캐릭터가 소환한 토템, 트랩이 사용하는 스킬
-#define SF_ITEM_SPECIAL_SKILL	(1 << 14)	// 아이템에 옵션으로 붙어 있는 스킬.
-#define SF_NOT_SINGLE			(1 << 16)	// 싱글 던전 사용 불가 스킬.
-#define SF_TOGGLE				(1 << 17)	// 토글형 스킬.
 
 #define AST_SLOTH				(1 << MST_ASSIST_SLOTH)			// 슬로스(공속하락)
 
@@ -175,14 +139,12 @@ class  CSkill
 public:
 	struct _SkillData
 	{
-		std::string	name;						// 이름
-		std::string	client_description;
-		std::string client_tooltip;
-
+		// 일반
 		int		index;							// 스킬 번호
 		int		job;							// 직업 플래그
 		int		job2;							// 전직 직업
-		int		petindex;						// 공격 펫 인덱스		
+		int		petindex;						// 공격 펫 인덱스
+		char	name[51];						// 이름
 		char	type;							// 종류
 		int		flag;							// 플래그
 		int		sorcerer;						// 소서러 전용 플래그
@@ -196,6 +158,7 @@ public:
 
 		// 타겟
 		char	targetType;						// 타겟팅 종류
+		char	targetNum;						// 타겟수
 
 		// 사용조건
 		int		useState;						// 사용조건1
@@ -207,7 +170,6 @@ public:
 		char	useMagicLevel2;					// 사용조건2 - 버프레벨2
 		int		useMagicIndex3;					// 사용조건2 - 버프번호3
 		char	useMagicLevel3;					// 사용조건2 - 버프레벨3
-		int		useSoulCount;					// 사용조건 (영혼의 갯수 조건)
 
 		// 적용조건
 		int		appState;						// 적용조건1 - 캐릭터 상태
@@ -217,8 +179,6 @@ public:
 		int		waitTime;						// 시전시간
 		int		fireTime;						// 발사시간
 		int		reuseTime;						// 재사용시간
-
-		bool	bToggle;						// 토글스킬 활성화 여부.
 		
 		struct sClientSkillData
 		{
@@ -248,7 +208,9 @@ public:
 		};
 		sClientSkillData client[WEAPON_COUNT];
 
-		char	After_AttachEffect[256];		
+		// 설명
+		char	client_description[256];
+		char	client_tooltip[256];
 
 		// 아이콘
 		int		client_icon_texid;
@@ -256,20 +218,14 @@ public:
 		int		client_icon_col;
 
 		DOUBLE	Skill_StartTime;
-
-		int		transFlag;	//[sora] 미번역 스트링 index 표시		
 	};
-
-	_SkillData				Skill_Data;
 
 	struct _SkillLevel
 	{
 		// 시전 필요 조건
 		int needHP;						// 소모HP
 		int needMP;						// 소모 MP
-		int needGP;						// 소모 GP
-
-		int	durtime;					// 지속시간
+		int	  durtime;						// 지속시간
 		int dummyPower;					// 출력용 위력
 		int needItemIndex1;					// 소모아이템 번호1
 		int needItemCount1;					// 소모아이템 개수1
@@ -304,15 +260,8 @@ public:
 		char magicLevel2;		// 스킬효과 레벨
 		int magicIndex3;		// 스킬효과 번호
 		char magicLevel3;		// 스킬효과 레벨
-
-		// 속성 시스템 스킬 LOD에 속성정보 추가 [1/21/2013 Ranma]
-		char attratt;
-		char attrattLv;
-		char attrdef;
-		char attrdefLv;
-		int  targetmax;
 	};
-	
+	_SkillData							Skill_Data;
 	std::vector<_SkillLevel>			m_vectorSkillLevels;
 	BOOL								bCanCancel;
 	BOOL								bNeedTarget;
@@ -329,8 +278,6 @@ public:
 		ST_PET_SKILL_PASSIVE	= 5,			// 팻 스킬 
 		ST_PET_SKILL_ACTIVE		= 6,			// 팻
 		ST_GUILD_SKILL_PASSIVE	= 7,			// 길드 스킬 패시브 // WSS_NEW_GUILD_SYSTEM 070716
-		ST_SEAL					= 8,
-		ST_SUMMON_TOTEM_SKILL	= 9,			// 토템 소환 스킬
 	};
 
 	enum	SKILLPROPERTY
@@ -355,10 +302,7 @@ public:
 		STT_PARTY_ALL			= 5,			// 파티 전체
 		STT_TARGET_D120			= 6,			// 타겟 120도
 		STT_TARGET_RECT			= 7,			// 타겟 직사각
-		STT_GUILD_ALL			= 9,			// 길드전체에게 주는 스킬
-		STT_GUILD_ONE			= 10,			// 길드한명에게 주는 스킬
-		STT_GUILD_SELF_RANGE	= 11,			// 시전자 주위 길드원에게 주는 스킬
-		STT_GUILD_MEMBER_SELF	= 12,			// 길드원 전체 사용 가능 스킬
+		
 		/*
 		STT_SELF				= 0,			// 셀프
 		STT_SELFRANGE_ENEMY		= 1,			// 셀프 범위(적)
@@ -438,7 +382,7 @@ public:
 	{	return Skill_Data.petindex;	}
 
 	inline const char* GetName()		const
-	{	return Skill_Data.name.c_str();	}
+	{	return Skill_Data.name;	}
 
 	inline int GetType()			const
 	{	return Skill_Data.type;	}
@@ -467,12 +411,8 @@ public:
 	{	return Skill_Data.useWeaponType1;	}
 
 	// 최대 타겟 수
-	inline int GetTargetNum(int CurLv)	const
-	{	
-		if (CurLv - 1 < 0 || CurLv - 1 >= m_vectorSkillLevels.size())
-			return 0;
-		return m_vectorSkillLevels[CurLv-1].targetmax;
-	}
+	inline char GetTargetNum()	const
+	{	return Skill_Data.targetNum;	}
 	// 현재레벨
 	inline int GetCurLevel()	const
 	{	return Skill_Data.curLevel;	}
@@ -480,7 +420,7 @@ public:
 	inline int GetMaxLevel()	const
 	{	return Skill_Data.maxLevel;	}
 
-	inline float GetAppRange()		const
+	inline int GetAppRange()		const
 	{	return Skill_Data.appRange;	}
 
 	inline float GetFireRange()		const
@@ -548,16 +488,11 @@ public:
 		return Skill_Data.client[iWeapon].fireEffect3;
 	}
 
-	inline const char* GetAfter_AttachEffect() const
-	{
-		return Skill_Data.After_AttachEffect;
-	}
-
 	inline const char* GetDescription()		const
-	{	return Skill_Data.client_description.c_str();	}
+	{	return Skill_Data.client_description;	}
 
 	inline const char* GetToolTip()		const
-	{	return Skill_Data.client_tooltip.c_str();	}
+	{	return Skill_Data.client_tooltip;	}
 
 	inline int GetNeedMP(int iLevel)	const
 	{	return m_vectorSkillLevels[iLevel].needMP;	}
@@ -619,72 +554,12 @@ public:
 	inline int	GetIconTexRow() const	{ return Skill_Data.client_icon_row; }
 	inline int	GetIconTexCol() const	{ return Skill_Data.client_icon_col; }
 
-	ENGINE_API void	SetStartTime( int nRemainTime = 0 );			// yjpark
-	ENGINE_API void ResetStartTime();
-	
-	void SetStartSkillDelay(int nSkillIndex);
-
+	ENGINE_API void	SetStartTime();			// yjpark
 	// WSS_NEW_GUILD_SYSTEM 070716 ------------------->>
 	inline void SetCurLevel(int iLevel)	
 	{ Skill_Data.curLevel = iLevel;	}
 	// -----------------------------------------------<<
 
-	inline int GetNeedGP(int iLevel)	const
-	{	return m_vectorSkillLevels[iLevel].needGP;	}
-	inline int GetNeedItemCount1(int iLevel) const
-	{
-		return m_vectorSkillLevels[iLevel].needItemCount1;
-	}
-	inline int GetNeedItemCount2(int iLevel) const
-	{
-		return m_vectorSkillLevels[iLevel].needItemCount2;
-	}
-
-
-	// 속성 시스템 스킬 속성 정보 얻기 [1/21/2013 Ranma]
-	inline char GetAttrAtt(int iLevel)	const
-	{
-		if (iLevel < 0)
-			return 0;
-
-		return m_vectorSkillLevels[iLevel].attratt;	
-	}
-
-	inline char GetAttrAttLv(int iLevel)	const
-	{
-		if (iLevel < 0)
-			return 0;
-
-		return m_vectorSkillLevels[iLevel].attrattLv;
-	}
-
-	inline char GetAttrDef(int iLevel)	const
-	{
-		if (iLevel < 0)
-			return 0;
-
-		return m_vectorSkillLevels[iLevel].attrdef;	
-	}
-
-	inline char GetAttrDefLv(int iLevel)	const
-	{
-		if (iLevel < 0)
-			return 0;
-
-		return m_vectorSkillLevels[iLevel].attrdefLv;	
-	}
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate();
-	void ClearNoTranslate();
-
-	void SetName(const char* str)			{ Skill_Data.name = str; }
-	void SetDescription(const char* str)	{ Skill_Data.client_description = str; }
-	void SetTooltip(const char* str)		{ Skill_Data.client_tooltip = str; }
-
-	int& GetTransFlag()						{ return Skill_Data.transFlag; }
-	void SetToggle(bool bToggle)			{ Skill_Data.bToggle = bToggle;	}
-	bool GetToggle()						{ return Skill_Data.bToggle;	}
 
 	static int LoadSkillDataFromFile(CStaticArray<CSkill> &apSkillData, const char* FileName);
 };

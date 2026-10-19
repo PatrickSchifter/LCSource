@@ -9,11 +9,14 @@
 	#pragma once
 #endif
 
-#include <Engine/Interface/UIEditBox.h>
 
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UICheckButton.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <vector>
 class CItems;
 class CItemData;
-class CUIEditBox;
 
 // SHOP CONF
 #define PS_MAX_SHOPNAME		100				// 상점 이름 최대 길이 100 바이트
@@ -36,7 +39,6 @@ class CUIEditBox;
 #define PERSONAL_SHOP_SLOT_COL				5
 #define PERSONAL_SHOP_SLOT_ROW				4
 #define PERSONAL_SHOP_SLOT_ROW_TOTAL		20
-#define	PERSONAL_SHOP_SLOT_MAX				(ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1 + ITEM_COUNT_IN_INVENTORY_CASH_2)
 #define PERSONAL_TRADE_SLOT_COL				5
 #define	PERSONAL_TRADE_SLOT_TOTAL			10
 #define PERSONAL_PACKAGE_SLOT_COL			5
@@ -62,10 +64,6 @@ class CUIEditBox;
 // ----------------------------------------------------------------------------
 class CUIPersonalShop : public CUIWindow
 {
-private:
-	typedef		std::vector< CItems* >		vec_Items;
-	typedef		vec_Items::iterator			vec_Items_iter;
-
 protected:
 	enum eSlotType
 	{
@@ -83,7 +81,6 @@ protected:
 	//int					m_nBackSplitHeight;
 	int					m_nCurRow;
 
-	int					m_nSelITab;
 	int					m_nSelShopItemID;
 	int					m_nSelTradeItemID;
 	int					m_nSelPackageItemID;
@@ -128,8 +125,26 @@ protected:
 	UIRectUV			m_rtBlankBar;
 	UIRectUV			m_rtPriceBar;
 
+	// Item Info
+	UIRectUV			m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV			m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV			m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV			m_rtInfoML;								// UV of middle left region of information
+	UIRectUV			m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV			m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV			m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV			m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV			m_rtInfoLR;								// UV of lower right region of information
 	UIRectUV			m_rtUnmovableOutline;					// UV of outline of unmovable items
 	UIRectUV			m_rtSelectOutline;						// UV of outline of selected items
+
+	BOOL				m_bShowItemInfo;						// If item tool tip is shown or not
+	BOOL				m_bDetailItemInfo;						// If item informaion is shown in detail or not
+	int					m_nCurInfoLines;						// Count of current item information lines
+	CTString			m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR				m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
+	UIRect				m_rcItemInfo;							// Item information region	
+
 	// Buttons
 	CUIButton			m_btnClose;								// Close button of Shop
 	CUIButton			m_btnShopBuy;							// Buy button of Shop
@@ -147,21 +162,19 @@ protected:
 	CUIEditBox			m_ebShopName;							// Input Box for Shop Name
 	CTString			m_strShopName;
 
-	vec_Items			m_vectorSellItemList;					// 판매 물품에 등록.(네트워크에서 받아와서...)
-	vec_Items			m_vectorSellPackageList;				// 판매 패키지 물품에 등록.(네트워크에서 받아와서...)
+	std::vector<CItems>	m_vectorSellItemList;					// 판매 물품에 등록.(네트워크에서 받아와서...)
+	std::vector<CItems>	m_vectorSellPackageList;				// 판매 패키지 물품에 등록.(네트워크에서 받아와서...)
 	
 	BOOL				m_bCashPersonShop;						// 판매대행 상인
 	BOOL				m_bCashPersonShop_open;					// 판매 대행 상인 거래중
 
-private:	
+private:
 	// Items	
-	CUIIcon*			m_pIconsTradeItem[PERSONAL_TRADE_SLOT_TOTAL];			// Player Slot items
-	CUIIcon*			m_pIconsShopItem[PERSONAL_SHOP_SLOT_MAX];				// Shop Slot items
-	CUIIcon*			m_pIconsPackageItem[PERSONAL_PACKAGE_SLOT_COL];			// Package Slot items
+	CUIButtonEx			m_abtnTradeItems[PERSONAL_TRADE_SLOT_TOTAL];								// Player Slot items
+	CUIButtonEx			m_abtnShopItems[PERSONAL_SHOP_SLOT_ROW_TOTAL][PERSONAL_SHOP_SLOT_COL];	// Shop Slot items
+	CUIButtonEx			m_abtnPackageItems[PERSONAL_PACKAGE_SLOT_COL];							// Package Slot items
 
-	SQUAD				m_aiTradeItemCount[PERSONAL_TRADE_SLOT_TOTAL];			// Player Slot items
-
-	CItems*				m_pTempItems;
+	SQUAD				m_aiTradeItemCount[PERSONAL_TRADE_SLOT_TOTAL];								// Player Slot items
 
 public:
 	CUIPersonalShop();
@@ -223,20 +236,21 @@ public:
 	void	SetCashPersonShop(BOOL bPersonShop) { m_bCashPersonShop = bPersonShop;}
 	void	SendCashPersonOpenShop(int iChaIndex);
 	void	SendCashPersonShopBuy();
-
-	void	AddItemCallback();
-	void	DelItemCallback();
+		
 protected:
 	// Internal functions
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight,
+							int nTradeItem = -1, int nPackageItem = -1, int nRow = -1, int nCol = -1 );
+	void	ShowItemInfo( BOOL bShowInfo, BOOL bRenew = FALSE, int nTradeItem = -1, int nPackageItem = -1, int nRow = -1, int nCol = -1 );
 	void	RenderShopItems();
 
 	void	TradeToShop( SQUAD llCount, int iSlot );				// Trade -> Shop
-	void	ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot);	// Shop -> Trade
+	void	ShopToTrade( SQUAD llCount, SQUAD llPrice, ULONG ulPlus, ULONG ulFlag, LONG lUsed, int iSlot, LONG lRareIndex);	// Shop -> Trade
 	void	PackageToShop( BOOL bAdd );
 
-	void	FindShopSlot( int& nIdx, int iIndex, ULONG ulFlag);
-	void	FindShopSlot( int& nIdx, int iVirtualIdx );
-	void	FindEmptySlot( int& nIdx );
+	void	FindShopSlot( int& iRow, int& iCol, int iIndex, ULONG ulFlag);
+	void	FindEmptySlot( int& iRow, int& iCol );
 
 	__int64	CalculateTotalPrice(int& iCount);
 	__int64	CalculateItemPrice(int iShopID, const CItemData &ID, int iNumOfItem, BOOL bSell);		
@@ -244,16 +258,13 @@ protected:
 	void	PrepareSellShop();	
 
 	// Command functions
-	void	AddShopItem( int nIdx, int nUniIndex, SQUAD llCount, int nWhichSlot );
+	void	AddShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nWhichSlot );
 	void	AskQuantity();
-	void	DelShopItem( int nTab, int nIdx, int nUniIndex, SQUAD llCount, int nTradeItemID, int nPackageItemID, int nWhichSlot );
+	void	DelShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nTradeItemID, int nPackageItemID, int nWhichSlot );
 	void	BuyItems();	
 	
 	void	ClearPackageSlot();
-
-private:
-	void	clearContainer();
-	bool	IsAvailable4Sale(CItems* pItem);
+	
 };
 
 #endif // UIPERSONALSHOP_H_

@@ -1,6 +1,5 @@
 #include "StdH.h"
 
-#include <Engine/Network/EMsgBuffer.h>
 #include <Engine/Network/cmd.h>
 #include <Engine/Network/SessionState.h>
 

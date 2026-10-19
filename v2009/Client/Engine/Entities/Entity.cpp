@@ -65,9 +65,6 @@
 #include <Engine/Entities/MobData.h>
 #include <Engine/Entities/TargetInfo.h>
 #include <Engine/GlobalDefinition.h>
-#include <Engine/Contents/function/TargetInfoNewUI.h>
-#include <Engine/Info/MyInfo.h>
-#include <Engine/Object/ActorMgr.h>
 //안태훈 수정 시작	//(For Performance)(0.2)
 #include <vector>
 //안태훈 수정 끝	//(For Performance)(0.2)
@@ -136,8 +133,8 @@ const CEntityID &CEntityID::operator=(CEntity *pen) {
 	eid_ulEntityID = pen->en_ulID;
 	return *this;
 }
-const CEntityID &CEntityID::operator=(const CEntityID &eidOther) {
-	(const_cast<CEntityID &>(eidOther).GetEntity())->AddReference();    // must first add, then remove!
+const CEntityID &CEntityID::operator=(CEntityID &eidOther) {
+	(eidOther.GetEntity())->AddReference();    // must first add, then remove!
 	GetEntity()->RemReference();
 	eid_ulEntityID = eidOther.eid_ulEntityID;
 	return *this;
@@ -245,7 +242,6 @@ CEntity::CEntity(void)
 	en_ctReferences = 0;
 	en_ulID = 0;
 	en_RenderType = RT_NONE;
-	en_EntityUseType = EU_NORMAL;
 	en_fSpatialClassificationRadius = -1.0f;
 	en_penParent = NULL;
 	en_plpLastPositions = NULL;
@@ -255,7 +251,7 @@ CEntity::CEntity(void)
 	en_pMobTarget		= NULL;
 	en_pCharacterTarget	= NULL;
 	en_pPetTarget		= NULL;
-	en_pWildPetTarget	= NULL;
+	en_pWildPetInfo		= NULL;
 	
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 	m_plsLight = NULL;
@@ -277,15 +273,12 @@ CEntity::CEntity(void)
 
 void CEntity::DeleteSelf(void)
 {
-	if (en_EntityUseType == EU_NORMAL)
-	{
-		if (!(en_ulFlags&ENF_DELETED)) {
-			ASSERT(FALSE);
-			CPrintF("!!!!!ERROR: Deleting undestroyed entity!\n");
-			Destroy(FALSE);
-		}
-		delete this;
+	if (!(en_ulFlags&ENF_DELETED)) {
+		ASSERT(FALSE);
+		CPrintF("!!!!!ERROR: Deleting undestroyed entity!\n");
+		Destroy(FALSE);
 	}
+	delete this;
 }
 
 /*
@@ -296,11 +289,6 @@ CEntity::~CEntity(void)
 //안태훈 수정 시작	//(Open beta)(2004-12-29)
 	//delete m_ptmTagManager;
 //안태훈 수정 끝	//(Open beta)(2004-12-29)
-	if (en_EntityUseType == EU_DUMMY)
-	{
-		return;
-	}
-
 	ASSERT(en_ctReferences==0);
 	ASSERT(en_ulID!=0);
 	ASSERT(en_RenderType==RT_NONE);
@@ -439,47 +427,43 @@ void CEntity::GetSize(FLOATaabbox3D &box)
 // CEntity::SetTargetInfo
 // Explain:  
 //------------------------------------------------------------------------------
-bool CEntity::SetTargetInfo(float fMaxHealth, float fHealth, BOOL bMe, int level, int Pk,int pkstate, int legit,int dbIdx)
+void CEntity::SetTargetInfo(float fMaxHealth, float fHealth, BOOL bMe, int level, int Pk,int pkstate, int legit,int dbIdx)
 {
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	CTargetInfoUI* pTargetUI = pUIMgr->GetTargetInfoUI();
+	if( _pNetwork->_TargetInfo.pen_pEntity == this )
+		return;
 
-	if (pTargetUI == NULL)
-		return false;
-
-	if( pInfo->GetTargetEntity(eTARGET) == this )
-		return false;
+	//if( !en_pPetTarget )
+	//	return;
 
 	//전사의 축복일 경우 타겟 정보 저장하지 않음...
-	if( GetName() == CMobData::getData(310)->GetName() ||
-		GetName() == CMobData::getData(311)->GetName() ||
-		GetName() == CMobData::getData(312)->GetName() ||
-		GetName() == CMobData::getData(313)->GetName() )
+	if( GetName() == _pNetwork->GetMobName(310) ||
+		GetName() == _pNetwork->GetMobName(311) ||
+		GetName() == _pNetwork->GetMobName(312) ||
+		GetName() == _pNetwork->GetMobName(313) )
 	{
-		pInfo->TargetClear(eTARGET);
-		return false;
+		_pNetwork->_TargetInfo.Init();
+		return;
 	}
-	
-	CTargetInfom TargetInfo;
-	TargetInfo.fMaxHealth	= fMaxHealth;
-	TargetInfo.fHealth		= fHealth;
-	TargetInfo.bIsActive	= TRUE;
-	TargetInfo.iLevel		= level;
-	TargetInfo.pen_pEntity	= this;
+
+	_pNetwork->_TargetInfo.fMaxHealth	= fMaxHealth;
+	_pNetwork->_TargetInfo.fHealth		= fHealth;
+	_pNetwork->_TargetInfo.bIsActive	= TRUE;
+	_pNetwork->_TargetInfo.iLevel		= level;
+	_pNetwork->_TargetInfo.pen_pEntity	= this;
 	// NPC의 경우만 NPC의 flag 구분의 쓰기 위해
-	TargetInfo.dbIdx		= dbIdx;
+	// wooss 060727
+	_pNetwork->_TargetInfo.dbIdx		= dbIdx;
 
 	if(Pk != -1)
 	{
-		TargetInfo.PkMode	= Pk;
-		TargetInfo.PkState	= pkstate;
-		TargetInfo.Legit	= legit;
+		_pNetwork->_TargetInfo.PkMode	= Pk;
+		_pNetwork->_TargetInfo.PkState	= pkstate;
+		_pNetwork->_TargetInfo.Legit	= legit;
 	}
 
 	if(bMe)
 	{
-		strcpy(TargetInfo.TargetName, _pNetwork->MyCharacterInfo.name);
+		strcpy(_pNetwork->_TargetInfo.TargetName,_pNetwork->MyCharacterInfo.name);
 	}
 	else
 	{
@@ -489,77 +473,66 @@ bool CEntity::SetTargetInfo(float fMaxHealth, float fHealth, BOOL bMe, int level
 			if( en_pPetTarget )
 			{
 				if( en_pPetTarget->pet_strNameCard.Length() >0)
-					strcpy( TargetInfo.TargetName, en_pPetTarget->pet_strNameCard);
+					strcpy( _pNetwork->_TargetInfo.TargetName, en_pPetTarget->pet_strNameCard);
 				else
-					strcpy( TargetInfo.TargetName, en_pPetTarget->m_strName.c_str() );
+					strcpy( _pNetwork->_TargetInfo.TargetName, en_pPetTarget->pet_Name );
 			}
 		}
 		else if( IsSlave() )
 		{
 			if( en_pSlaveTarget )
-				strcpy( TargetInfo.TargetName, en_pSlaveTarget->m_strName.c_str() );
+				strcpy( _pNetwork->_TargetInfo.TargetName, en_pSlaveTarget->slave_Name );
 		}
 		else if( IsWildPet())
 		{
-			if (en_pWildPetTarget != NULL)
+			if( en_pWildPetInfo)
 			{
-				strcpy( TargetInfo.TargetName, en_pWildPetTarget->m_strName.c_str() );
+				strcpy( _pNetwork->_TargetInfo.TargetName, en_pWildPetInfo->m_strName );
 			}
 		}
 		else
-			strcpy( TargetInfo.TargetName, GetName() );
+			strcpy( _pNetwork->_TargetInfo.TargetName, GetName() );
 		// Modified by yjpark
 	}
-	BOOL bShowBuff = FALSE;
 
+	// FIXME : 정리 필요.
 	if(IsEnemy())
 	{		
 		if(this->IsFirstExtraFlagOn(ENF_EX1_NPC))
 		{
-			TargetInfo.TargetType = NPC;
+			_pNetwork->_TargetInfo.TargetType = NPC;
+			
 		}
 		else if(this->IsFirstExtraFlagOn(ENF_EX1_PRODUCTION))
 		{
-			TargetInfo.TargetType = PRODUCTION;
+			_pNetwork->_TargetInfo.TargetType = PRODUCTION;
 		}
 		else
 		{
-			TargetInfo.TargetType = MOB;
+			_pNetwork->_TargetInfo.TargetType = MOB;
 		}
+		_pUIMgr->GetTargetInfo()->SetTargetBuff( FALSE );
 	}
 	else if(IsPet())
 	{
-		TargetInfo.TargetType = P1PET;
+		_pNetwork->_TargetInfo.TargetType = PET;
+		_pUIMgr->GetTargetInfo()->SetTargetBuff( FALSE );
 	}
 	else if(IsSlave())
 	{
-		TargetInfo.TargetType = SUMMON;
+		_pNetwork->_TargetInfo.TargetType = SUMMON;
+		_pUIMgr->GetTargetInfo()->SetTargetBuff( FALSE );
 	}
 	else if(IsCharacter() || bMe)
 	{
-		TargetInfo.TargetType = CHARACTER;
-		bShowBuff = bMe;
+		_pNetwork->_TargetInfo.TargetType = CHARACTER;
+		_pUIMgr->GetTargetInfo()->SetTargetBuff( bMe );
 	}
 	else if(IsWildPet())
 	{
-		TargetInfo.TargetType = WILDPET;
+		_pNetwork->_TargetInfo.TargetType = WILDPET;
+		_pUIMgr->GetTargetInfo()->SetTargetBuff( FALSE );
 	}
-	
-	int nNetworkID = -1;
-
-	// 타겟대상이 캐릭터 일때만 보내준다.
-	if (IsCharacter())
-		nNetworkID = GetNetworkID();
-		
-	_pNetwork->SendClickObject(nNetworkID);
-	pInfo->SetTargetInfo(TargetInfo);
-	pTargetUI->SetTargetBuff( bShowBuff );
-	return true;
-}
-
-void CEntity::SetTargetSyndicateInfo( int nType, int nGrade )
-{
-	INFO()->SetTargetSyndicate(nType, nGrade);
 }
 
 //------------------------------------------------------------------------------
@@ -568,13 +541,15 @@ void CEntity::SetTargetSyndicateInfo( int nType, int nGrade )
 //------------------------------------------------------------------------------
 void CEntity::UpdateTargetInfo( float fMaxHealth, float fHealth, int Pk,int pkstate,int Legit)
 {
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	
-	pInfo->SetTargetHealth(fHealth, fMaxHealth);
+	_pNetwork->_TargetInfo.fMaxHealth = fMaxHealth;
+	_pNetwork->_TargetInfo.fHealth = fHealth;
 
 	if(Pk != -1)
 	{
-		pInfo->SetTargetPKMode(Pk, pkstate, Legit);
+		_pNetwork->_TargetInfo.PkMode = Pk;
+		_pNetwork->_TargetInfo.PkState = pkstate;
+
+		_pNetwork->_TargetInfo.Legit = Legit;
 	}
 }
 
@@ -584,7 +559,7 @@ void CEntity::UpdateTargetInfo( float fMaxHealth, float fHealth, int Pk,int pkst
 //------------------------------------------------------------------------------
 void CEntity::DelTargetInfo()
 {
-	INFO()->TargetClear(eTARGET);
+	_pNetwork->_TargetInfo.Init();	
 }
 //0824
 
@@ -594,126 +569,112 @@ void CEntity::DelTargetInfo()
 //------------------------------------------------------------------------------
 // FIXME : 마우스 오버만 되면 호출되는 듯한테,
 // FIXME : 타 캐릭터와 아이템만 정보 출력해주면 되는거 아닌가???
-void CEntity::SetTargetInfoReal( float fMaxHealth, float fHealth, int level,int Pk,int pkstate,SQUAD llCount,int pkLegit,CCharacterTarget* ct, int nType )
+void CEntity::SetTargetInfoReal( float fMaxHealth, float fHealth, int level,int Pk,int pkstate,SQUAD llCount,int pkLegit,CCharacterTarget* ct )
 {
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-
 	// Modified by yjpark
-	if( pInfo->GetTargetEntity(eTARGET_REAL) == this &&
-		( IsPet() || IsSlave() || IsEnemy() || ( GetFlags() & ENF_ITEM ) || Pk == pInfo->GetTargetPKMode(eTARGET_REAL) ) )
+	if( _pNetwork->_TargetInfoReal.pen_pEntity == this &&
+		( IsPet() || IsSlave() || IsEnemy() || ( GetFlags() & ENF_ITEM ) || Pk == _pNetwork->_TargetInfoReal.PkMode ) )
 		return;
+	// Modified by yjpark
 
-	CTargetInfomReal targetInfo;
-	targetInfo.fMaxHealth	= fMaxHealth;
-	targetInfo.fHealth		= fHealth;
-	targetInfo.bIsActive	= TRUE;
-	targetInfo.iLevel		= level;
-	targetInfo.pen_pEntity	= this;
+	//if( !en_pPetTarget )
+	//return;
+
+	_pNetwork->_TargetInfoReal.fMaxHealth	= fMaxHealth;
+	_pNetwork->_TargetInfoReal.fHealth		= fHealth;
+	_pNetwork->_TargetInfoReal.bIsActive	= TRUE;
+	_pNetwork->_TargetInfoReal.iLevel		= level;
+	_pNetwork->_TargetInfoReal.pen_pEntity	= this;
 
 	if(Pk != -1)
 	{
-		targetInfo.PkMode= Pk;
-		targetInfo.PkState = pkstate;
-		targetInfo.Legit = pkLegit;
+		_pNetwork->_TargetInfoReal.PkMode= Pk;
+		_pNetwork->_TargetInfoReal.PkState = pkstate;
+		_pNetwork->_TargetInfoReal.Legit = pkLegit;
 	}
 
 	if(GetFlags() & ENF_ITEM)
 	{
-		strcpy(targetInfo.TargetName,en_strItemName);
-		targetInfo.llCount = llCount;
+		strcpy(_pNetwork->_TargetInfoReal.TargetName,en_strItemName);
+		_pNetwork->_TargetInfoReal.llCount = llCount;
 	}
 	else if(IsPet())
 	{
 		if( en_pPetTarget )
 		{
 			if( en_pPetTarget->pet_strNameCard.Length() >0 )
-				strcpy(targetInfo.TargetName, en_pPetTarget->pet_strNameCard);
+				strcpy(_pNetwork->_TargetInfoReal.TargetName, en_pPetTarget->pet_strNameCard);
 			else
 				// Modified by yjpark
-				strcpy(targetInfo.TargetName, en_pPetTarget->m_strName.c_str());
+				strcpy(_pNetwork->_TargetInfoReal.TargetName, en_pPetTarget->pet_Name);
 				// Modified by yjpark
 		}
 	}
 	else if(IsSlave())
 	{
 		if( en_pSlaveTarget )
-			strcpy(targetInfo.TargetName, en_pSlaveTarget->m_strName.c_str());
+			strcpy(_pNetwork->_TargetInfoReal.TargetName, en_pSlaveTarget->slave_Name);
 	}
 	else if( IsWildPet())
 		{
-			if (en_pWildPetTarget != NULL)
+			if( en_pWildPetInfo)
 			{
-				strcpy( targetInfo.TargetName, en_pWildPetTarget->m_strName.c_str() );
+				strcpy( _pNetwork->_TargetInfoReal.TargetName, en_pWildPetInfo->m_strName );
 			}
 		}
 	else
 	{
-		ObjectBase* pObj = ACTORMGR()->GetObject(eOBJ_MOB, en_lNetworkID);
-
-		if (pObj != NULL)
-		{
-			CMobData* pMD = CMobData::getData(pObj->m_nType);
-
-			if (pMD != NULL && pMD->IsTotemItem())
-				strcpy(targetInfo.TargetName, pObj->m_strName.c_str());
-			else
-				strcpy(targetInfo.TargetName,GetName());
-		}
-		else
-		{
-			strcpy(targetInfo.TargetName,GetName());
-		}
+		strcpy(_pNetwork->_TargetInfoReal.TargetName,GetName());
 
 		if( ct != NULL)
 		{
-			targetInfo.lGuildIndex	= ct->cha_lGuildIndex;
-			targetInfo.strGuildName = ct->cha_strGuildName;
+			_pNetwork->_TargetInfoReal.lGuildIndex	= ct->cha_lGuildIndex;
+			_pNetwork->_TargetInfoReal.strGuildName = ct->cha_strGuildName;
 			// WSS_GUILDMASTER 070517
 			// 캐릭터 클릭시 색깔지정 위해
-			targetInfo.sbGuildRank = ct->cha_sbGuildRank;
-			targetInfo.ubGuildNameColor = ct->cha_ubGuildNameColor;
-			targetInfo.iNickIndex = ct->cha_NickType;
+#ifdef DISPLAY_GUILD_RANK
+			_pNetwork->_TargetInfoReal.sbGuildRank = ct->cha_sbGuildRank;
+#endif
+			_pNetwork->_TargetInfoReal.ubGuildNameColor = ct->cha_ubGuildNameColor;
 		}
+
 	}
 
 	if(IsEnemy())
 	{
 		if(this->IsFirstExtraFlagOn(ENF_EX1_NPC))
 		{
-			targetInfo.TargetType = NPC;
+			_pNetwork->_TargetInfoReal.TargetType = NPC;
 		}
 		else if(this->IsFirstExtraFlagOn(ENF_EX1_PRODUCTION))
 		{
-			targetInfo.TargetType = PRODUCTION;
+			_pNetwork->_TargetInfoReal.TargetType = PRODUCTION;
 		}
 		else
 		{
-			targetInfo.TargetType = MOB;
+			_pNetwork->_TargetInfoReal.TargetType = MOB;
 		}
 	}
 	else if(IsPet())
 	{
-		targetInfo.TargetType = P1PET;
+		_pNetwork->_TargetInfoReal.TargetType = PET;
 	}
 	else if(IsCharacter())
 	{
-		targetInfo.TargetType = CHARACTER;
+		_pNetwork->_TargetInfoReal.TargetType = CHARACTER;
 	}
 	else if(IsSlave())
 	{
-		targetInfo.TargetType = SUMMON;
+		_pNetwork->_TargetInfoReal.TargetType = SUMMON;
 	}
 	else if(IsWildPet())
 	{
-		targetInfo.TargetType = WILDPET;
+		_pNetwork->_TargetInfoReal.TargetType = WILDPET;
 	}
 	else if(GetFlags() & ENF_ITEM)
 	{
-		targetInfo.TargetType	= ITEM;
-		targetInfo.dbIdx		= nType;		
+		_pNetwork->_TargetInfoReal.TargetType = ITEM;
 	}
-
-	pInfo->SetTargetRealInfo(targetInfo);
 }
 
 /* Get name of this entity. */
@@ -782,11 +743,6 @@ SBYTE CEntity::GetNetworkType()	const
 	return en_sbNetworkType;
 }
 
-BOOL	CEntity::IsAvailableRide()
-{
-	return FALSE;
-}
-
 //강동민 수정 끝 다중 공격 작업		08.27
 /* Check if entity is important */
 BOOL CEntity::IsImportant(void) const{
@@ -815,20 +771,6 @@ CLightSource *CEntity::GetLightSource(void)
 }
 */
 //안태훈 수정 끝	//(For Performance)(0.2)
-BOOL CEntity::GetRaidObject(void) const
-{
-	return FALSE;
-}
-
-INDEX CEntity::GetRaidEvent(void) const
-{
-	return INDEX(0);
-}
-
-BOOL CEntity::GetAlBackground(void) const
-{
-	return FALSE;
-}
 
 BOOL CEntity::IsTargetValid(SLONG slPropertyOffset, CEntity *penTarget)
 {
@@ -1083,16 +1025,7 @@ void CEntity::Initialize(const CEntityEvent &eeInput,BOOL bNetwork)
 	Precache();
 	
 //안태훈 수정 시작	//(For Performance)(0.2)
-	if(GetLightSource()) 
-	{
-		//[080109: Su-won] WORLDEDITOR_BUG_FIX
-		//Light entity의 상태가 변할 때마다 m_vectorLights에 같은 entity의 포인터를 계속 넣음. 
-		//그래서 entity가 삭제될 때 그 중에 하나만 삭제되어, vector에서 삭제된 entity 포인터를 가져오면서 문제가 발생.
-		//=>m_vectorLights에 존재하지 않는 entity만 넣음.
-		std::vector<CEntity *>::iterator iter = std::find(en_pwoWorld->m_vectorLights.begin(), en_pwoWorld->m_vectorLights.end(), this);
-		if( iter == this->en_pwoWorld->m_vectorLights.end() )
-			this->en_pwoWorld->m_vectorLights.push_back(this); 
-	}
+	if(GetLightSource()) this->en_pwoWorld->m_vectorLights.push_back(this);
 //안태훈 수정 끝	//(For Performance)(0.2)
 }
 
@@ -1285,7 +1218,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
 				CEntity *ppenObstacleDummy;
 				if (pmme->CheckForCollisionNow(pmme->en_iCollisionBox, &ppenObstacleDummy)) {
 					CPrintF("Entity '%s' was teleported inside a wall at (%g,%g,%g)!\n", 
-						(const char*)GetName(), 
+						GetName(), 
 						en_plPlacement.pl_PositionVector(1),
 						en_plPlacement.pl_PositionVector(2),
 						en_plPlacement.pl_PositionVector(3));
@@ -1429,18 +1362,7 @@ void CEntity::FallDownToFloor( void)
 			bFloorHitted = TRUE;
 		}
 	}
-	if( bFloorHitted)
-	{
-		if (IsPlayer() && (g_slZone == 26 || g_slZone == 27 || g_slZone == 28)) // 동굴 던전에서만
-		{
-			plPlacement.pl_PositionVector(2) += fMaxY-plPlacement.pl_PositionVector(2)+en_FallingValue;//.01f;
-		}
-		else
-		{
-			//plPlacement.pl_PositionVector(2) += fMaxY-plPlacement.pl_PositionVector(2)+0.01f;
-			plPlacement.pl_PositionVector(2) += fMaxY-plPlacement.pl_PositionVector(2)+0.1f;
-		}
-	}
+	if( bFloorHitted) plPlacement.pl_PositionVector(2) += fMaxY-plPlacement.pl_PositionVector(2)+en_FallingValue;//.01f;
 	SetPlacement( plPlacement);
 }
 
@@ -1840,6 +1762,8 @@ static void CheckTerrainForShadingInfo(CTerrain *ptrTerrain)
 /* Find and remember shading info for this entity if invalid. */
 void CEntity::FindShadingInfo(void)
 {
+
+
 	// if this entity can't even have shading info
 	if (en_psiShadingInfo==NULL) {
 		// do nothing
@@ -1879,27 +1803,27 @@ void CEntity::FindShadingInfo(void)
 	}
 
 	// for each sector that this entity is in
-	FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
+	{FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
 		// for each brush or terrain in this sector
-		FOREACHDSTOFSRC(pbsc->bsc_rsEntities, CEntity, en_rdSectors, pen)
+		{FOREACHDSTOFSRC(pbsc->bsc_rsEntities, CEntity, en_rdSectors, pen)
 			if(pen->en_RenderType==CEntity::RT_TERRAIN) {
 				CheckTerrainForShadingInfo(pen->GetTerrain());
 			} else if(pen->en_RenderType!=CEntity::RT_BRUSH && pen->en_RenderType!=CEntity::RT_FIELDBRUSH) {
 				break;
 			}
-		ENDFOR
-	ENDFOR
+		}}
+	ENDFOR}
 
 	// if this is non-movable entity, or no polygon or terrain found so far
 	if (_pbpoNear==NULL && _ptrTerrainNear==NULL) {
 		// for each sector that this entity is in
-		FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
+		{FOREACHSRCOFDST(en_rdSectors, CBrushSector, bsc_rsEntities, pbsc)
 			// for each polygon in the sector
 			{FOREACHINSTATICARRAY(pbsc->bsc_abpoPolygons, CBrushPolygon, itbpo) {
 				CBrushPolygon &bpo = *itbpo;
 				CheckPolygonForShadingInfo(bpo);
 			}}
-		ENDFOR
+		ENDFOR}
 	}
 
 	// if there is some polygon found
@@ -2022,7 +1946,7 @@ void CCollisionInfo::FromModel(CEntity *penModel, INDEX iBox)
 	FLOAT fSphereCentersSpan = vBoxSize(iAxisMain)-fSphereRadius*2;
 	// calculate number of spheres to use
 	INDEX ctSpheres = INDEX(ceil(fSphereCentersSpan/(fSphereRadius*MIN_SPHEREDENSITY)))+1;
-	if (ctSpheres <=0) {
+	if (ctSpheres==0) {
 		ctSpheres=1;
 	}
 	// calculate how far from each other to set sphere centers
@@ -2921,7 +2845,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default model '%s':\n%s"),
-				(const char*)(CTString&)fnmDefault, strErrorDefault);
+				(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 	UpdateSpatialRange();
@@ -2969,106 +2893,14 @@ void CEntity::SetSkaModel_t(const CTString &fnmModel)
 	SetSkaColisionInfo();
 }
 
-void CEntity::DelSkaModel(const CTString &fnmModel)
-{
-	if (en_pmiModelInstance != NULL)
-	{
-		CTString strFullPath = _fnmApplicationPath.FileDir();
-		strFullPath += fnmModel;
-
-		CSmcParser tmpParser;
-		tmpParser.LoadSmcParse(std::string(strFullPath.str_String));
-
-		int iMeshCount = tmpParser.GetMeshInfoListSize();
-		int i;
-
-		for (i=0; i<iMeshCount; ++i)
-		{
-			CMeshInfo Mesh;
-			Mesh = tmpParser.GetMeshInfo(i);
-
-			en_pmiModelInstance->DeleteMesh(Mesh.GetMeshTFNM());
-		}	
-	}
-}
-
-void CEntity::AddSkaModel(const CTString &fnmModel)
-{
-	if (en_pmiModelInstance != NULL)
-	{
-		CTString strFullPath = _fnmApplicationPath.FileDir();
-		strFullPath += fnmModel;		
-
-		CSmcParser tmpParser;
-		tmpParser.LoadSmcParse(std::string(strFullPath.str_String));
-
-		int iMeshCount = tmpParser.GetMeshInfoListSize();
-		int i,j;
-		MeshInstance *mi;
-
-		for (i=0; i<iMeshCount; ++i)
-		{
-			CMeshInfo Mesh;
-			Mesh = tmpParser.GetMeshInfo(i);
-
-			INDEX nID = ska_GetIDFromStringTable(Mesh.GetMeshTFNM());
-
-			if (en_pmiModelInstance->FindMeshInstance(nID) != NULL)
-				continue;
-
-			mi = en_pmiModelInstance->AddArmor(Mesh.GetMeshTFNM());
-			int iSize = Mesh.GetTexInfoSize();
-			
-			for (j=0; j<iSize; ++j)
-			{
-				CTFileName fnFileName = (CTString)Mesh.GetTexInfoTFNM(j);
-				en_pmiModelInstance->AddTexture_t(fnFileName, fnFileName.FileName(), mi);
-			}
-		}
-	}
-}
-
-bool CEntity::HasSkaModel( const CTString &fnmModel )
-{
-	if (en_pmiModelInstance != NULL)
-	{
-		CTString strFullPath = _fnmApplicationPath.FileDir();
-		strFullPath += fnmModel;		
-
-		CSmcParser tmpParser;
-		tmpParser.LoadSmcParse(std::string(strFullPath.str_String));
-
-		int iMeshCount = tmpParser.GetMeshInfoListSize();
-		int i;
-
-		for (i=0; i<iMeshCount; ++i)
-		{
-			CMeshInfo Mesh;
-			Mesh = tmpParser.GetMeshInfo(i);
-
-			INDEX nID = ska_GetIDFromStringTable(Mesh.GetMeshTFNM());
-
-			if (en_pmiModelInstance->FindMeshInstance(nID) != NULL)
-				return true;
-		}
-	}
-
-	return false;
-}
-
 BOOL CEntity::SetSkaModel(const CTString &fnmModel)
 {
-	
-	
 	ASSERT(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
 	// try to
 	try {
 		SetSkaModel_t(fnmModel);
 	// if failed
-	} 
-	catch(char *strError) 
-	{
-#if		_USE_DEFAULT_MODEL_
+	} catch(char *strError) {
 		WarningMessage("%s\n\rLoading default model.\n", (const char*)strError);
 		DECLARE_CTFILENAME(fnmDefault, "Data\\Models\\Editor\\Ska\\Axis.smc");
 		// try to
@@ -3080,10 +2912,6 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
 			FatalError(TRANS("Cannot load default model '%s':\n%s"),
 				(const char*)fnmDefault, (const char*)strErrorDefault);
 		}
-#else	// _USE_DEFAULT_MODEL_
-		FatalError(TRANS("Cannot load default model '%s':\n%s"),
-			(const char*)fnmModel, (const char*)strError);
-#endif	// _USE_DEFAULT_MODEL_
 		// set colision info for default model
 		SetSkaColisionInfo();
 		return FALSE;
@@ -3258,7 +3086,7 @@ void CEntity::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX 
 		pmiChild->AddAnimationChild(iAnimID,ulFlags,fStrength,iGroupID,fSpeedMul);
 	}
 	*/
-	en_pmiModelInstance->AddAnimation(iAnimID,ulFlags,fStrength,iGroupID,fSpeedMul);
+	en_pmiModelInstance->AddAnimation(iAnimID,ulFlags,1,0);
 
 	if (_pNetwork->IsServer() && IsSentOverNet()) {
 		SLONG slDataSize = sizeof(iAnimID) + sizeof(ulFlags) + sizeof(fStrength) + sizeof(iGroupID) + sizeof(iModelInstanceID) + sizeof(fSpeedMul);
@@ -3270,7 +3098,7 @@ void CEntity::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX 
 		*(INDEX*)pubData = iModelInstanceID; pubData += sizeof(iModelInstanceID);
 		*(FLOAT*)pubData = fSpeedMul; pubData += sizeof(fSpeedMul);  
 		extern CEntityMessage _emEntityMessage;
-		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,slDataSize);
+		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,(SLONG)slDataSize);
 		_pNetwork->ga_srvServer.SendMessage(_emEntityMessage);
 	}
 }  
@@ -3463,7 +3291,7 @@ BOOL CEntity::IsAnimationPlaying(INDEX iAnimID, INDEX iModelInstanceID /*=master
 
 
 /* Stretch model instance */
-void CEntity::StretchModel(const FLOAT3D &vStretch, INDEX iModelInstanceID)
+void CEntity::StretchModel(FLOAT3D &vStretch, INDEX iModelInstanceID)
 {
 	ASSERT (en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
 	ASSERT (en_pmiModelInstance != NULL);
@@ -3658,7 +3486,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default texture '%s':\n%s"),
-				(const char*)(CTString&)fnmDefault, strErrorDefault);
+				(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }
@@ -4200,7 +4028,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default sound '%s':\n%s"),
-				(const char*)(CTString&)fnmDefault, strErrorDefault);
+				(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }
@@ -4969,8 +4797,8 @@ void CRationalEntity::Write_t( CTStream *ostr, BOOL bNetwork) // throw char *
 void CRationalEntity::SetTimerAt(TIME timeAbsolute)
 {
 	// must never set think back in time, except for special 'never' time
-/*	ASSERTMSG(timeAbsolute>_pTimer->CurrentTick() ||
-		timeAbsolute==THINKTIME_NEVER, "Do not SetThink() back in time!");*/ // eons 임시 주석 처리
+	ASSERTMSG(timeAbsolute>_pTimer->CurrentTick() ||
+		timeAbsolute==THINKTIME_NEVER, "Do not SetThink() back in time!");
 	// set the timer
 	en_timeTimer = timeAbsolute;
 
@@ -5142,12 +4970,3 @@ void CRationalEntity::OnEnd(void)
 	UnsetTimer();
 }
 
-void CEntity::SetNickNameDamageEffect(INDEX iNickIndex, NickNameEffectType iType)
-{
-	// Nothing
-}
-
-void CEntity::ReleaseChche( EntityComponentType eType, SLONG slID )
-{
-	en_pecClass->ec_pdecDLLClass->ReleaseCache(eType, slID);		
-}

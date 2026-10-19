@@ -1,10 +1,8 @@
 #include "StdH.h"
-
-// header 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
 #include <Engine/Interface/UIAuction.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIPetInfo.h>
+#include <map>
 
 #define	AUCTION_TAB_WIDTH 101
 #define AUCTION_ITEMSTRING_CENTERX 181
@@ -13,41 +11,18 @@
 #define AUCTION_ETCSTRING_CENTERX 568
 
 #define AUCTION_NAS_MAX 999999999999	//입력가능 나스 최대 금액
-#define USE_AUCTION 0
 
-#define ITEM_COUNT 7
-#define AUTION_WEAPON_COUNT 17
-#define ACCESS_COUNT 9
-#define ARMOR_COUNT 8
-
-//2013/01/08 jeil EX메이지 추가 관련 수정 
-#ifdef CHAR_EX_ROGUE	// [2012/08/27 : Sora] EX로그 추가
-
-	#ifdef CHAR_EX_MAGE
-		#define JOB_COUNT 11
-	#else
-		#define JOB_COUNT 10
-	#endif
-
-#else
-
-	#ifdef  CHAR_EX_MAGE
-		#define JOB_COUNT 10
-	#else
-		#define JOB_COUNT 9
-	#endif
-	
-#endif
+#define AUCTION_CANT_SEARCH_AND_REG		// [090616: selo] 판매대행 검색 및 등록 금지
 
 CTString strTabName[AUCTION_TAB_TOTAL];
 
-CTString strItemType[ITEM_COUNT];
+CTString strItemType[7];
 
-CTString strItemSubTypeWeapon[AUTION_WEAPON_COUNT];
-CTString strItemSubTypeArmor[ARMOR_COUNT];
-CTString strItemSubTypeAccessory[ACCESS_COUNT];
+CTString strItemSubTypeWeapon[16];
+CTString strItemSubTypeArmor[7];
+CTString strItemSubTypeAccessory[9];
 
-CTString strItemClass[JOB_COUNT];
+CTString strItemClass[8];
 
 CTString strHelp[AUCTION_TAB_TOTAL];
 
@@ -72,8 +47,8 @@ CUIAuction::CUIAuction()
 
 	m_bReverse = FALSE;
 	m_bRegister = FALSE;
-	// 로그인 후 1번의 정산가능 하도록 FALSE -> TRUE로 수정 [4/21/2011 ldy1978220]
-	m_bSettle = TRUE;
+	m_bSettle = FALSE;
+	m_bSettleRequest = FALSE;
 
 	m_strTitleName = CTString("");
 
@@ -84,6 +59,7 @@ CUIAuction::CUIAuction()
 	m_nSearchedClass = 0;
 	m_strSearched = CTString("");
 
+	m_nNpcIndex = -1;
 	m_AuctionSurface.Clear();
 
 	strTabName[0] = _S( 399, "조회" );
@@ -92,8 +68,8 @@ CUIAuction::CUIAuction()
 
 	//일회용 뒤에 탄환 플래그가 있음
 	strItemType[0] =_S( 506, "전체" ); 
-	strItemType[1] =_S( 4775, "무기" ); 
-	strItemType[2] =_S( 4776, "방어구" ); 
+	strItemType[1] =_S( 2375, "무기" ); 
+	strItemType[2] =_S( 2376, "방어구" ); 
 	strItemType[3] =_S( 4266, "일회용" );
 	strItemType[4] =_S( 4267, "기타" );
 	strItemType[5] =_S( 726, "악세사리" );
@@ -115,7 +91,6 @@ CUIAuction::CUIAuction()
 	strItemSubTypeWeapon[13] = _S( 1047, "힐러완드" );
 	strItemSubTypeWeapon[14] = _S( 2306, "사이드" );
 	strItemSubTypeWeapon[15] = _S( 2307, "폴암" );
-	strItemSubTypeWeapon[16] = _S( 4614, "혼" );
 
 	strItemSubTypeArmor[0] = _S( 506, "전체" );
 	strItemSubTypeArmor[1] = _S( 142, "머리" );
@@ -124,7 +99,6 @@ CUIAuction::CUIAuction()
 	strItemSubTypeArmor[4] = _S( 4275, "장갑" );
 	strItemSubTypeArmor[5] = _S( 4276, "신발" );
 	strItemSubTypeArmor[6] = _S( 4277, "방패" );
-	strItemSubTypeArmor[7] = _S( 4613, "날개" );
 
 	strItemSubTypeAccessory[0] = _S( 506, "전체" );
 	strItemSubTypeAccessory[1] = _S( 4278, "부적" );
@@ -144,33 +118,12 @@ CUIAuction::CUIAuction()
 	strItemClass[4] = _S( 46, "메이지" );
 	strItemClass[5] = _S( 47, "로그" );
 	strItemClass[6] = _S( 48, "소서러" );
-	strItemClass[7] = _S( 4410, "나이트 쉐도우" );
-#ifdef CHAR_EX_ROGUE		//2013/01/08 jeil EX메이지 추가 관련 수정 스트링 나오면 추가 수정 필요 
-	#ifdef CHAR_EX_MAGE
-		strItemClass[8] = _S( 5732, "EX로그" );	// [2012/08/27 : Sora] EX로그 추가
-		strItemClass[9] = _S( 5820, "아크메이지" );
-		strItemClass[10] = _S( 4284, "공격형 애완동물" );
-	#else
-		strItemClass[8] = _S( 5732, "EX로그" );	// [2012/08/27 : Sora] EX로그 추가
-		strItemClass[9] = _S( 4284, "공격형 애완동물" );
-	#endif
-#else
-
-	#ifdef CHAR_EX_MAGE
-		strItemClass[8] = _S( 5820, "아크메이지" );	
-
-
-		strItemClass[9] = _S( 4284, "공격형 애완동물" );
-	#else
-		strItemClass[8] = _S( 4284, "공격형 애완동물" );
-	#endif
-	
-#endif
+	strItemClass[7] = _S( 4284, "공격형 애완동물" );
 
 	strHelp[0] = CTString( "-" );
 	strHelp[1] = _S( 4285,"인벤토리에서 아이템을 등록하여 사용할 수 있습니다.");
 	strHelp[2] = _S( 4286,"정산 서비스를 통해 거래를 완료하실 수 있습니다.");
-	m_ptdButtonTexture = NULL;
+
 }
 
 // ----------------------------------------------------------------------------
@@ -179,11 +132,7 @@ CUIAuction::CUIAuction()
 // ----------------------------------------------------------------------------
 CUIAuction::~CUIAuction()
 {
-	if (m_ptdButtonTexture)
-	{
-		_pTextureStock->Release(m_ptdButtonTexture);
-		m_ptdButtonTexture = NULL;
-	}
+	Destroy();
 }
 
 
@@ -193,16 +142,16 @@ CUIAuction::~CUIAuction()
 // ----------------------------------------------------------------------------
 void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	m_pParent = (CUIBase*)pParentWnd;
+	m_pParentWnd = pParentWnd;
 	SetPos( nX, nY );
 	SetSize( nWidth, nHeight );
 
 	m_nCurrnetTab = AUCTION_TAB_REFER;
 	m_strTitleName = _S( 4287, "거래 대행 서비스" );
 	
-	m_ptdBaseTexture = CreateTexture(CTString("Data\\Interface\\Auction.tex"));
-	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
+	CTextureData* tmpTexture = CreateTexture(CTString("Data\\Interface\\Auction.tex"));
+	FLOAT	fTexWidth = tmpTexture->GetPixWidth();
+	FLOAT	fTexHeight = tmpTexture->GetPixHeight();
 
 	m_rcTitle.SetRect(0,0,AUCTION_WIDTH,36);
 
@@ -254,13 +203,13 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_cmbItemType.SetDownBtnUV( 117, 522, 130, 529, fTexWidth, fTexHeight );
 	m_cmbItemType.SetUpBtnUV( 117, 522, 130, 529, fTexWidth, fTexHeight );
 	m_cmbItemType.SetDropListUV( 0, 537, 105, 555, fTexWidth, fTexHeight );
-	//	m_cmbItemType.CreateScroll( TRUE, 9, 7, 0, 0, 10 );
-	for(int k=0; k < ITEM_COUNT; k++)
+//	m_cmbItemType.CreateScroll( TRUE, 9, 7, 0, 0, 10 );
+	for(int k=0; k<7; k++)
 	{
 		m_cmbItemType.AddString(strItemType[k]);
 	}
 
-	m_cmbItemSubType.Create( this, 122, 65, 141, 16, 123, 6, 13, 7, 17, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
+	m_cmbItemSubType.Create( this, 122, 65, 141, 16, 123, 6, 13, 7, 16, _pUIFontTexMgr->GetFontHeight() + 4, 8, 4 );
 	m_cmbItemSubType.SetBackUV( 0, 518, 105, 534, fTexWidth, fTexHeight );
 	m_cmbItemSubType.SetDownBtnUV( 117, 522, 130, 529, fTexWidth, fTexHeight );
 	m_cmbItemSubType.SetUpBtnUV( 117, 522, 130, 529, fTexWidth, fTexHeight );
@@ -275,7 +224,7 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_cmbClass.SetDropListUV( 0, 537, 105, 555, fTexWidth, fTexHeight );
 //	m_cmbClass.AddString(CTString("-"));
 //	m_cmbClass.CreateScroll( TRUE, 9, 7, 0, 0, 10 );
-	for(int l=0; l < JOB_COUNT; l++)
+	for(int l=0; l<7; l++)
 	{
 		m_cmbClass.AddString(strItemClass[l]);
 	}
@@ -284,6 +233,8 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_ebSearch.SetFocus( FALSE );
 	m_ebSearch.SetReadingWindowUV( 0, 518, 105, 534, fTexWidth, fTexHeight );
 	m_ebSearch.SetCandidateUV( 0, 518, 105, 534, fTexWidth, fTexHeight );
+	// [090611: selo] 판매 대행시 서버 문제로 검색 Editbox를 사용 불가 하게 함
+	m_ebSearch.SetEnable(FALSE);
 
 
 	m_btnSortItem.Create( this, _S( 4288, "아이템" ), 16, 90, 325, 17 );
@@ -329,10 +280,10 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_btnSortPassDay.SetEnable(FALSE);
 
 	
-	m_ptdButtonTexture = CreateTexture( CTString( "Data\\Interface\\CommonBtn.tex" ) );
+	tmpTexture = CreateTexture( CTString( "Data\\Interface\\CommonBtn.tex" ) );
 
-	fTexWidth = m_ptdButtonTexture->GetPixWidth();
-	fTexHeight = m_ptdButtonTexture->GetPixHeight();
+	fTexWidth = tmpTexture->GetPixWidth();
+	fTexHeight = tmpTexture->GetPixHeight();
 
 	m_AuctionSurface.AddRectSurface(UIRect(0, 0, 0, 0), UIRectUV(145, 138, 239, 171, fTexWidth, fTexHeight));	//선택이미지 3
 	
@@ -363,6 +314,9 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_btnSearch.SetUV( UBS_CLICK, 186, 0, 256, 21, fTexWidth, fTexHeight );
 	m_btnSearch.SetUV( UBS_DISABLE, 145, 178, 215, 199, fTexWidth, fTexHeight );
 	m_btnSearch.CopyUV( UBS_IDLE, UBS_ON );
+#ifdef AUCTION_CANT_SEARCH_AND_REG	// [090616: selo] 판매대행 검색 버튼 비활성화
+	m_btnSearch.SetEnable(FALSE);
+#endif
 
 	m_btnBuy.Create( this, _S( 600, "구입" ), 533, 478, 98, 22 );
 	m_btnBuy.SetUV( UBS_IDLE, 113, 0, 183, 21, fTexWidth, fTexHeight );
@@ -381,7 +335,6 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_btnExecuteSettlement.SetUV( UBS_CLICK, 186, 0, 256, 21, fTexWidth, fTexHeight );
 	m_btnExecuteSettlement.SetUV( UBS_DISABLE, 145, 178, 215, 199, fTexWidth, fTexHeight );
 	m_btnExecuteSettlement.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnExecuteSettlement.SetEnable(FALSE);
 
 	int nBtnPosY = 112;
 	for(int j=0; j<AUCTION_SLOT_MAX; ++j)
@@ -396,43 +349,11 @@ void CUIAuction::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 
 // ----------------------------------------------------------------------------
 // Name : OpenAuction(int nNpcIndex, FLOAT fNpcPosX, FLOAT fNpcPosZ) (npc 인덱스, 위치값) 
-// Desc : 거래대행 npc 메시지 출력
+// Desc : 거래대행창 열기
 // ----------------------------------------------------------------------------
 void CUIAuction::OpenAuction(int nNpcIndex, FLOAT fNpcPosX, FLOAT fNpcPosZ)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_AUCTION ) || IsVisible() )	
-		return;
-
-	m_fNpcX = fNpcPosX;
-	m_fNpcZ = fNpcPosZ;
-
-	pUIManager->CreateMessageBoxL(_S(4287, "거래 대행 서비스"), UI_AUCTION, MSGLCMD_AUCTION);
-	CTString strNpcName = _pNetwork->GetMobName(nNpcIndex);
-
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, TRUE, strNpcName, -1, 0xE18600FF);
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, TRUE, _S(4352, "상인의 후예 길드는 대륙에서 가장 안전하고 빠른 거래 대행 서비스를 소정의 수수료를 받고 제공하고 있다."), -1, 0xa3a1a3ff);
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, TRUE, _s(" "));
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, TRUE, _S(4353, "거래를 맡기고 싶은 물건이 있는 것인가?"), -1, 0xa3a1a3ff);
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, TRUE, _s(" "));
 	
-	CUIQuestBook::AddQuestListToMessageBoxL(MSGLCMD_QUEST_REQ);
-	
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, FALSE, _S(4354, "거래 대행 서비스를 이용한다."), USE_AUCTION);
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, FALSE, _S( 1748, "NPC 안내" ), NPC_HELP);
-	pUIManager->AddMessageBoxLString(MSGLCMD_AUCTION, FALSE, _S( 1220, "취소한다." ) );	
-}
-
-// ----------------------------------------------------------------------------
-// Name : UseAuction
-// Desc : 거래대행창 열기
-// ----------------------------------------------------------------------------
-void CUIAuction::UseAuction()
-{
-	if( IsVisible() == TRUE)
-		return;
-
 	InitAll();
 
 	if(nShopSellRate == 0)
@@ -441,7 +362,11 @@ void CUIAuction::UseAuction()
 		nShopSellRate = SD.GetSellRate();
 	}
 
-	CUIManager::getSingleton()->RearrangeOrder(UI_AUCTION, TRUE);
+	m_nNpcIndex = nNpcIndex;
+	m_fNpcX = fNpcPosX;
+	m_fNpcZ = fNpcPosZ;
+
+	_pUIMgr->RearrangeOrder(UI_AUCTION, TRUE);
 }
 
 // ----------------------------------------------------------------------------
@@ -451,10 +376,8 @@ void CUIAuction::UseAuction()
 void CUIAuction::CloseAuction()
 {
 	CloseAuctionMessageBox();
-	m_ebSearch.SetFocus(FALSE);
 
-	CUIManager::getSingleton()->GetInventory()->Lock(FALSE, FALSE, LOCK_AUCTION);
-	CUIManager::getSingleton()->RearrangeOrder(UI_AUCTION, FALSE);
+	_pUIMgr->RearrangeOrder(UI_AUCTION, FALSE);
 }
 
 
@@ -464,19 +387,17 @@ void CUIAuction::CloseAuction()
 // ----------------------------------------------------------------------------
 void CUIAuction::CloseAuctionMessageBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))		//아이템 등록창
-		pUIManager->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
+	if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))		//아이템 등록창
+		_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
 	
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_BUYITEM))			//아이템 구매창
-		pUIManager->CloseMessageBox(MSGCMD_AUCTION_BUYITEM);
+	if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_BUYITEM))			//아이템 구매창
+		_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_BUYITEM);
 	
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))		//아이템 등록취소창
-		pUIManager->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
+	if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))		//아이템 등록취소창
+		_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
 
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_INFO))				//등록완료, 취소등	
-		pUIManager->CloseMessageBox(MSGCMD_AUCTION_INFO);
+	if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_INFO))				//등록완료, 취소등	
+		_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_INFO);
 }
 
 // ----------------------------------------------------------------------------
@@ -487,16 +408,15 @@ void CUIAuction::Render()
 {
 
 	//일정 거리이상 떨어지면 창을 닫는다
-	if( IsFarNPC() == TRUE )
+	FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - m_fNpcX;
+	FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - m_fNpcZ;
+	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		CloseAuction();
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\Auction.tex")));
 	
 	m_AuctionSurface.SetPos(m_nPosX, m_nPosY);
-	m_AuctionSurface.RenderRectSurface(pDrawPort, 0xFFFFFFFF, 0);
+	m_AuctionSurface.RenderRectSurface(_pUIMgr->GetDrawPort(), 0xFFFFFFFF, 0);
 	m_btnFirst.Render();
 	m_btnPrev.Render();
 	m_btnNext.Render();
@@ -519,21 +439,21 @@ void CUIAuction::Render()
 		m_btnSortPassDay.Render();
 	}
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData(m_ptdButtonTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString( "Data\\Interface\\CommonBtn.tex" )));
 
 	for(int i=0; i<AUCTION_TAB_TOTAL; i++)
 	{
 		if(i == m_nCurrnetTab)
 		{
-			pDrawPort->AddTexture( m_nPosX + m_rcTabArea[i].Left , m_nPosY + m_rcTabArea[i].Top, m_nPosX + m_rcTabArea[i].Right, m_nPosY + m_rcTabArea[i].Bottom,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcTabArea[i].Left , m_nPosY + m_rcTabArea[i].Top, m_nPosX + m_rcTabArea[i].Right, m_nPosY + m_rcTabArea[i].Bottom,
 							m_rtSelectedTab.U0, m_rtSelectedTab.V0, m_rtSelectedTab.U1, m_rtSelectedTab.V1,
 							0xFFFFFFFF );
 		}
 		else
 		{
-			pDrawPort->AddTexture( m_nPosX + m_rcTabArea[i].Left , m_nPosY + m_rcTabArea[i].Top, m_nPosX + m_rcTabArea[i].Right, m_nPosY + m_rcTabArea[i].Bottom,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcTabArea[i].Left , m_nPosY + m_rcTabArea[i].Top, m_nPosX + m_rcTabArea[i].Right, m_nPosY + m_rcTabArea[i].Bottom,
 							m_rtUnSelectedTab.U0, m_rtUnSelectedTab.V0, m_rtUnSelectedTab.U1, m_rtUnSelectedTab.V1,
 							0xFFFFFFFF );		
 		}
@@ -544,7 +464,9 @@ void CUIAuction::Render()
 	m_btnClose.Render();
 	if(m_nCurrnetTab ==  AUCTION_TAB_REFER)
 	{
-		m_btnSearch.Render();
+		// [090616: selo] 경매대행 검색버튼 비활성화
+		if( m_btnSearch.IsEnabled() )
+			m_btnSearch.Render();
 		m_btnBuy.Render();
 	}
 	else if(m_nCurrnetTab ==  AUCTION_TAB_REGISTER)
@@ -556,7 +478,7 @@ void CUIAuction::Render()
 		m_btnExecuteSettlement.Render();
 	}
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	int nStrPosY = 0;
 	CTString strTemp = CTString("");
@@ -571,25 +493,27 @@ void CUIAuction::Render()
 
 			nStrPosY = m_nPosY + (nCnt * 36) + 123;
 			strTemp.PrintF("%s", GetItemFullName(m_btnAuctionItem[nCnt]) );
-			pDrawPort->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMSTRING_CENTERX, nStrPosY, 0xFFFFFFFF);
+			_pUIMgr->GetDrawPort()->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMSTRING_CENTERX, nStrPosY, 0xFFFFFFFF);
 			strTemp.PrintF("%d", m_btnAuctionItem[nCnt].GetItemCount());
-			pDrawPort->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMCOUNT_CENTERX, nStrPosY, 0xFFFFFFFF);
+			_pUIMgr->GetDrawPort()->PutTextExCX( strTemp,m_nPosX + AUCTION_ITEMCOUNT_CENTERX, nStrPosY, 0xFFFFFFFF);
 
 			if(m_AuctionItemData[nCnt].llNasTotal > 0)
 			{
-				strTemp = pUIManager->NasNumToWord(m_AuctionItemData[nCnt].llNasTotal);
+				//strTemp.PrintF("%I64d", m_nNasTotal[l]);
+				//_pUIMgr->InsertCommaToString( strTemp );
+				strTemp = _pUIMgr->NasNumToWord(m_AuctionItemData[nCnt].llNasTotal);
 			}
 			else
 			{
 				strTemp = CTString("-");
 			}
 			
-			pDrawPort->PutTextExRX( strTemp,m_nPosX + AUCTION_ITEMTOTALNAS_CENTERX + 50, nStrPosY, pUIManager->GetNasColor(m_AuctionItemData[nCnt].llNasTotal));
+			_pUIMgr->GetDrawPort()->PutTextExRX( strTemp,m_nPosX + AUCTION_ITEMTOTALNAS_CENTERX + 50, nStrPosY ,_pUIMgr->GetNasColor(m_AuctionItemData[nCnt].llNasTotal));
 			
 			if(m_nCurrnetTab ==  AUCTION_TAB_REFER)
 			{
 				strTemp.PrintF("%d", m_AuctionItemData[nCnt].nEtc);
-				pDrawPort->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
+				_pUIMgr->GetDrawPort()->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
 			}
 			else if(m_nCurrnetTab ==  AUCTION_TAB_REGISTER)
 			{
@@ -606,7 +530,7 @@ void CUIAuction::Render()
 					strTemp.PrintF(_S(2513, "%d분"), m_AuctionItemData[nCnt].nEtc);
 				}
 				
-				pDrawPort->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
+				_pUIMgr->GetDrawPort()->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
 			}
 			else if(m_nCurrnetTab ==  AUCTION_TAB_SETTLEMENT)
 			{
@@ -631,12 +555,12 @@ void CUIAuction::Render()
 						strTemp.PrintF(_S(4314, "구입(%d일)"), m_AuctionItemData[nCnt].nEtc);
 						break;
 				}
-				pDrawPort->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
+				_pUIMgr->GetDrawPort()->PutTextExCX( strTemp, m_nPosX + AUCTION_ETCSTRING_CENTERX, nStrPosY ,0xFFFFFFFF);
 			}
 		}
 	}
 
-	pDrawPort->PutTextExCX( m_strTitleName, m_nPosX + (AUCTION_WIDTH / 2), m_nPosY + 15, 0xDED9A0FF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strTitleName, m_nPosX + (AUCTION_WIDTH / 2), m_nPosY + 15, 0xDED9A0FF );
 
 	COLOR colorStr = 0xFFFFFFFF;
 	for(int j=0; j<AUCTION_TAB_TOTAL; ++j)
@@ -649,27 +573,27 @@ void CUIAuction::Render()
 		{
 			colorStr = 0xa3a1a3ff;
 		}
-		pDrawPort->PutTextExCX( strTabName[j], m_nPosX + m_rcTabArea[j].GetCenterX() + 1, m_nPosY + 44, colorStr );
+		_pUIMgr->GetDrawPort()->PutTextExCX( strTabName[j], m_nPosX + m_rcTabArea[j].GetCenterX() + 1, m_nPosY + 44, colorStr );
 	}
 
 	CTString strPage = CTString("");
 	strPage.PrintF("%d/%d", m_nCurrentPage, m_nMaxPage);
-	pDrawPort->PutTextExCX( strPage, m_nPosX + 328, m_nPosY + 482, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( strPage, m_nPosX + 328, m_nPosY + 482, 0xFFFFFFFF );
 	
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
-	pDrawPort->InitTextureData(m_ptdButtonTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString( "Data\\Interface\\CommonBtn.tex" )));
 	
 	if(m_nCurrentSelectedItem != -1)
 	{
 		m_AuctionSurface.m_RectSurfaceArray[3].m_RT = m_rcSelectArea;
-		m_AuctionSurface.RenderRectSurface(pDrawPort, 0xFFFFFFFF, 3);
+		m_AuctionSurface.RenderRectSurface(_pUIMgr->GetDrawPort(), 0xFFFFFFFF, 3);
 	}
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(CreateTexture(CTString("Data\\Interface\\Auction.tex")));
 
 	if(m_nCurrnetTab ==  AUCTION_TAB_REFER)
 	{
@@ -677,24 +601,28 @@ void CUIAuction::Render()
 		m_cmbItemSubType.Render();
 		m_cmbClass.Render();
 
-		m_AuctionSurface.RenderRectSurface(pDrawPort, 0xFFFFFFFF, 1);
-
-		m_ebSearch.Render();
-
-		if(m_ebSearch.DoesShowReadingWindow())
+		// [090611: selo] 검색 Editbox가 비할성화 이면 랜더 안하게 한다.
+		if( TRUE == m_ebSearch.IsEnabled() )
 		{
-			m_ebSearch.RenderReadingWindow();
+			m_AuctionSurface.RenderRectSurface(_pUIMgr->GetDrawPort(), 0xFFFFFFFF, 1);
+		
+			m_ebSearch.Render();
+
+			if(m_ebSearch.DoesShowReadingWindow())
+			{
+				m_ebSearch.RenderReadingWindow();
+			}
 		}
 	}
 	else
 	{
-		m_AuctionSurface.RenderRectSurface(pDrawPort, 0xFFFFFFFF, 2);
+		m_AuctionSurface.RenderRectSurface(_pUIMgr->GetDrawPort(), 0xFFFFFFFF, 2);
 
-		pDrawPort->PutTextExCX( strHelp[m_nCurrnetTab], m_nPosX + 320, m_nPosY + 65, 0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( strHelp[m_nCurrnetTab], m_nPosX + 320, m_nPosY + 65, 0xFFFFFFFF );
 	}
 
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	if(m_AuctionItemData.Count() > 0)
 	{
@@ -745,7 +673,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 		case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 
 			int	ndX = nX - nOldX;
@@ -871,11 +799,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 							if (nTabNum == AUCTION_TAB_REGISTER)
 								_pNetwork->SendTradeAgentRegListReq(1, m_nCurretnSorting);
 							else if (nTabNum == AUCTION_TAB_SETTLEMENT && m_bSettle)
-							{
 								_pNetwork->SendTradeAgentCalcListReq(1, m_nCurretnSorting);
-								// 정산 리스트 요청 후 리스트가 있을 경우에만 TRUE로 바꾼다 [4/21/2011 ldy1978220]
-								m_bSettle = FALSE;
-							}
 							else
 								SetTab(nTabNum);
 						}
@@ -936,7 +860,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					}
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_AUCTION, TRUE );
+				_pUIMgr->RearrangeOrder( UI_AUCTION, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -944,11 +868,10 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 
 		case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
 			bLButtonDownInBtn = FALSE;
 
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				bTitleBarClick = FALSE;
 				if( !IsFocused() )
@@ -971,7 +894,11 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						if(m_nCurrentPage > 1)
+						if(m_nCurrentPage  <= 1)
+						{
+							GoPage(1);
+						}
+						else
 						{
 							GoPage(m_nCurrentPage-1);
 						}
@@ -982,7 +909,11 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						if(m_nCurrentPage < m_nMaxPage)
+						if(m_nCurrentPage  >= m_nMaxPage)
+						{
+							GoPage(m_nMaxPage);
+						}
+						else
 						{
 							GoPage(m_nCurrentPage+1);
 						}
@@ -1020,7 +951,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					{
 						if( wmsgResult == WMSG_COMMAND )
 						{
-							if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_BUYITEM))
+							if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_BUYITEM))
 							{
 								return WMSG_SUCCESS;
 							}
@@ -1043,21 +974,19 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								strTemp.PrintF(_S(4295,"총 금액 : %s"), strTemp2);
 								MsgBoxInfo.AddStringEx(strTemp, 5, 0);
 								
-								pUIManager->CreateMessageBox(MsgBoxInfo);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnEx(0).Copy(m_btnAuctionItem[m_nCurrentSelectedItem]);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnEx(0).SetPos(15, 30);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnSlotRect(0).SetRect(14, 29, 16 + BTN_SIZE, 31 + BTN_SIZE);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnInsertSlot(0).SetRect(0,0,0,0);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnOK().SetEnable(TRUE);
+								_pUIMgr->CreateMessageBox(MsgBoxInfo);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnEx(0).Copy(m_btnAuctionItem[m_nCurrentSelectedItem]);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnEx(0).SetPos(15, 30);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnSlotRect(0).SetRect(14, 29, 16 + BTN_SIZE, 31 + BTN_SIZE);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnInsertSlot(0).SetRect(0,0,0,0);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_BUYITEM)->GetBtnOK().SetEnable(TRUE);
 							}
 						}
 						return WMSG_SUCCESS;
 					}
 					else if( ( wmsgResult = m_btnSortLevel.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							if(m_nCurretnSorting / 2 == ITEM_SORT_LEVEL)
 							{
@@ -1069,14 +998,12 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_LEVEL, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 					else if( ( wmsgResult = m_btnSortTotalNas.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							if(m_nCurretnSorting / 2 == ITEM_SORT_TOTALNAS)
 							{
@@ -1088,14 +1015,12 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_TOTALNAS, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 					else if( ( wmsgResult = m_btnSortItem.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							//m_nCurretnSorting값은 정의된 정렬방식 * 오름,내림차순의2방식으로 정의된 정렬값의 2배로 되어 있음
 							if(m_nCurretnSorting / 2 == ITEM_SORT_INDEX)
@@ -1108,14 +1033,12 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_INDEX, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 					else if( ( wmsgResult = m_btnSortCount.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							if(m_nCurretnSorting / 2 == ITEM_SORT_COUNT)
 							{
@@ -1127,7 +1050,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_COUNT, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 				}
@@ -1137,11 +1060,11 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					{
 						if( wmsgResult == WMSG_COMMAND )
 						{	
-							if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))
-								pUIManager->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
+							if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))
+								_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
 
-							if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))
-								pUIManager->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
+							if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))
+								_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
 
 							if(m_nCurrentSelectedItem != -1)
 							{
@@ -1157,7 +1080,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 									MsgBoxInfo.AddString(_S(4296, "선택한 아이템의 거래를 취소하시겠습니까?"));
 									MsgBoxInfo.AddString(_S(4297, "거래를 취소하면 보증금은 돌려받을 수 없습니다."));
 
-									pUIManager->CreateMessageBox(MsgBoxInfo);
+									_pUIMgr->CreateMessageBox(MsgBoxInfo);
 								}
 							}
 						}
@@ -1165,9 +1088,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					}
 					else if( ( wmsgResult = m_btnSortFinishDay.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							if(m_nCurretnSorting / 2 == ITEM_SORT_FINISHDAY)
 							{
@@ -1179,7 +1100,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_FINISHDAY, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 				}
@@ -1189,16 +1110,17 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					{	
 						if( wmsgResult == WMSG_COMMAND )
 						{
-							if (m_AuctionItemData.Count() > 0 && m_bSettle) // 정산할 아이템이 있으면 정산 요청
+							if (m_AuctionItemData.Count() > 0 && m_bSettle && !m_bSettleRequest) // 정산할 아이템이 있으면 정산 요청
+							{
 								_pNetwork->SendTradeAgentCalculateReq();
+								m_bSettleRequest = TRUE;
+							}
 						}
 						return WMSG_SUCCESS;
 					}
 					else if( ( wmsgResult = m_btnSortPassDay.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						// 정렬이 제대로 구현되어 있지 않기 때문에 사용하지 않는다. 추후, 클라이언트에서 자체적으로 모든 리스트를 정렬하여
-						// 표현하도록 구현하는 것이 좋겠다.(서버에서 최적의 리스트를 받고, 그안에서 정렬 처리)
-						/*if( wmsgResult == WMSG_COMMAND )
+						if( wmsgResult == WMSG_COMMAND )
 						{
 							if(m_nCurretnSorting / 2 == ITEM_SORT_PASSDAY)
 							{
@@ -1210,7 +1132,7 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								m_bReverse = FALSE;
 								SortItem(ITEM_SORT_PASSDAY, m_bReverse);
 							}
-						}*/
+						}
 						return WMSG_SUCCESS;
 					}
 				}
@@ -1223,16 +1145,17 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 					{
 						if(IsInsideRect(nX, nY, m_rcRegisterArea))
 						{
+#ifndef AUCTION_CANT_SEARCH_AND_REG	// [090616: selo] 판매대행 등록 못하게함
 							if(CanRegister())
 							{
-								if(pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))
-									pUIManager->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
+								if(_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_ITEMREGISTER))
+									_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_ITEMREGISTER);
 
 								// 등록 취소 메세지 박스를 닫아 준다.
-								if (pUIManager->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))
-									pUIManager->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
+								if (_pUIMgr->DoesMessageBoxExist(MSGCMD_AUCTION_CANCELREGISTER))
+									_pUIMgr->CloseMessageBox(MSGCMD_AUCTION_CANCELREGISTER);
 
-								m_btnRegisterItem.Copy(pUIManager->GetHoldBtn());
+								m_btnRegisterItem.Copy(_pUIMgr->GetHoldBtn());
 
 								CUIMsgBox_Info MsgBoxInfo;
 								CTString strTemp;
@@ -1250,11 +1173,11 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								MsgBoxInfo.m_nInputPosY += 4;
 								MsgBoxInfo.m_nSEInputPosY += 7;
 
-								pUIManager->CreateMessageBox( MsgBoxInfo );
+								_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 								strTemp.PrintF("%I64d", m_btnRegisterItem.GetItemCount());
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetInputBox().SetString(strTemp.str_String);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetInputBox().SetFocus(FALSE);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetInputBox().SetString(strTemp.str_String);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetInputBox().SetFocus(FALSE);
 								if(m_btnRegisterItem.GetItemPrice() > 0)
 								{
 									strTemp.PrintF("%I64d", m_btnRegisterItem.GetItemCount() * ( ( m_btnRegisterItem.GetItemPrice() * nShopSellRate ) / 100 ));
@@ -1263,15 +1186,15 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 								{
 									strTemp.PrintF("0");
 								}
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetSEInputBox().SetString(strTemp.str_String);
-								pUIManager->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetSEInputBox().SetFocus(FALSE);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetSEInputBox().SetString(strTemp.str_String);
+								_pUIMgr->GetMessageBox(MSGCMD_AUCTION_ITEMREGISTER)->GetSEInputBox().SetFocus(FALSE);
 							}
 							else
 							{
 								CUIMsgBox_Info MsgBoxInfo;
 								MsgBoxInfo.SetMsgBoxInfo( _S(4302, "아이템 등록"), UMBS_OK, UI_NONE, MSGCMD_AUCTION_INFO );
 
-								if(pUIManager->GetHoldBtn().GetBtnType() == UBET_ITEM)
+								if(_pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM)
 								{
 									MsgBoxInfo.AddString(_S(4346, "등록할 수 없는 아이템입니다."));
 								}
@@ -1280,12 +1203,13 @@ WMSG_RESULT	CUIAuction::MouseMessage( MSG *pMsg )
 									MsgBoxInfo.AddString(_S(4347, "아이템만 등록할 수 있습니다."));
 								}	
 								
-								pUIManager->CreateMessageBox(MsgBoxInfo);	
+								_pUIMgr->CreateMessageBox(MsgBoxInfo);	
 							}
+#endif	// AUCTION_CANT_SEARCH_AND_REG
 						}
 					}
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -1462,39 +1386,7 @@ void CUIAuction::MsgBoxCommand(int nCommandCode, BOOL bOK, CTString &strInput ,C
 	MsgBoxInfo.SetMsgBoxInfo( _S(4302, "아이템 등록"), UMBS_OK, UI_NONE, MSGCMD_NULL );
 	MsgBoxInfo.AddString(strTemp);
 	
-	CUIManager::getSingleton()->CreateMessageBox(MsgBoxInfo);	
-}
-
-// ----------------------------------------------------------------------------
-// Name : MsgBoxLCommand(int nCommandCode, int nResult )
-// Desc : 거래대행 npc 메시지처리 
-// ----------------------------------------------------------------------------
-void CUIAuction::MsgBoxLCommand(int nCommandCode, int nResult )
-{
-	switch(nCommandCode)
-	{
-		case MSGLCMD_AUCTION:
-			{
-				if(nResult == USE_AUCTION)
-				{
-					if (pUIManager->GetInventory()->IsLocked() == TRUE ||
-						pUIManager->GetInventory()->IsLockedArrange() == TRUE)
-					{
-						// 이미 Lock 인 창이 있을 경우 열지 못한다.
-						pUIManager->GetInventory()->ShowLockErrorMessage();
-						return;
-					}
-
-					CUIManager::getSingleton()->GetAuction()->UseAuction();
-				}
-				else if(nResult == NPC_HELP)
-				{
-					CUIManager::getSingleton()->RearrangeOrder( UI_NPCHELP, TRUE );
-				}
-			}
-			break;
-	}
-
+	_pUIMgr->CreateMessageBox(MsgBoxInfo);	
 }
 
 // ----------------------------------------------------------------------------
@@ -1522,6 +1414,7 @@ void CUIAuction::InitAll()
 {
 	m_nCurrnetTab = AUCTION_TAB_REFER;
 	m_bRegister = FALSE;
+	m_bSettleRequest = FALSE;
 	InitSlotItem();
 	m_cmbItemType.SetCurSel(0);
 	SetItemSubType(0);
@@ -1545,7 +1438,6 @@ void CUIAuction::InitAll()
 	m_btnPrev.SetEnable(FALSE);
 	m_btnNext.SetEnable(FALSE);
 	m_btnLast.SetEnable(FALSE);
-	
 	m_btnSearch.SetEnable(TRUE);
 }
 
@@ -1590,7 +1482,7 @@ void CUIAuction::SetItemSubType(int nItemType)
 
 		case 1: //무기
 		{
-			for(int i=0; i<AUTION_WEAPON_COUNT; i++)
+			for(int i=0; i<16; i++)
 			{
 				m_cmbItemSubType.AddString(strItemSubTypeWeapon[i]);
 			}
@@ -1599,7 +1491,7 @@ void CUIAuction::SetItemSubType(int nItemType)
 
 		case 2: //방어구
 		{
-			for(int i=0; i<ARMOR_COUNT; i++)
+			for(int i=0; i<7; i++)
 			{
 				m_cmbItemSubType.AddString(strItemSubTypeArmor[i]);
 			}
@@ -1608,7 +1500,7 @@ void CUIAuction::SetItemSubType(int nItemType)
 		
 		case 3: //엑세서리
 		{
-			for(int i=0; i<ACCESS_COUNT; i++)
+			for(int i=0; i<9; i++)
 			{
 				m_cmbItemSubType.AddString(strItemSubTypeAccessory[i]);
 			}
@@ -1699,11 +1591,6 @@ CTString CUIAuction::GetItemFullName(CUIButtonEx &btnItem)
 // ----------------------------------------------------------------------------
 void CUIAuction::SearchItem(int nPageNum, int nAlignType)
 {
-	if (!m_btnSearch.IsEnabled())
-	{
-		return;
-	}
-
 	CTString strSearch;
 	strSearch.PrintF("%s", m_ebSearch.GetString());
 
@@ -1714,9 +1601,10 @@ void CUIAuction::SearchItem(int nPageNum, int nAlignType)
 
 	int nItemtype = (m_nSearchedItemType > 3 ? m_nSearchedItemType : m_nSearchedItemType - 1 ); //아이템 타입 중간에 사용되지 않는 부븐을 비켜가기 위함
 	int nItemSubType = m_nSearchedItemSubType - 1;
-	int nClass =  (m_nSearchedClass > JOB_COUNT-2 ? WILDPET_JOB : m_nSearchedClass-1 );			//아이템 타입 중간에 사용되지 않는 부븐을 비켜가기 위함
+	int nClass =  (m_nSearchedClass > 6 ? m_nSearchedClass : m_nSearchedClass - 1 );			//아이템 타입 중간에 사용되지 않는 부븐을 비켜가기 위함
+	
+	m_btnSearch.SetEnable(FALSE);	// [090611: selo] 검색 요청 후 서버 응답 전까지 search 버튼을 diable 시킨다.
 
-	m_btnSearch.SetEnable(FALSE); // 검색중이면 비활성화
 	_pNetwork->SendTradeAgentSearchReq(nPageNum, nItemtype, nItemSubType, nClass, strSearch, nAlignType);
 }
 
@@ -1839,19 +1727,13 @@ BOOL CUIAuction::CanRegister()
 		return FALSE;
 	}
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if(pUIManager->GetHoldBtn().GetBtnType() == UBET_ITEM &&
-	pUIManager->GetHoldBtn().GetWhichUI() == UI_INVENTORY)
+	if(_pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM &&
+	_pUIMgr->GetHoldBtn().GetWhichUI() == UI_INVENTORY)
 	{
-		SBYTE sbWearType = pUIManager->GetHoldBtn().GetItemWearType();
+		SBYTE sbWearType = _pUIMgr->GetHoldBtn().GetItemWearType();
 		
-		CItemData&	rItemData = _pNetwork->GetItemData( pUIManager->GetHoldBtn().GetItemIndex() );
+		CItemData&	rItemData = _pNetwork->GetItemData( _pUIMgr->GetHoldBtn().GetItemIndex() );
 
-		if (rItemData.GetFlag() & ITEM_FLAG_NOTTRADEAGENT)	// 거래대행등록불가	
-		{
-			return FALSE;
-		}
 		
 		//나스는 등록 불가
 		if((rItemData.GetType() == CItemData::ITEM_ETC && 
@@ -1860,55 +1742,16 @@ BOOL CUIAuction::CanRegister()
 			return FALSE;
 		}
 
-		CItems	&rItems = _pNetwork->MySlotItem[pUIManager->GetHoldBtn().GetItemTab()][pUIManager->GetHoldBtn().GetItemRow()][pUIManager->GetHoldBtn().GetItemCol()];
-#if defined SOCKET_SYSTEM
-		// 소켓 아이템은 무조건 막는다. [6/16/2010 rumist]
-		if( rItems.GetSocketCount() > 0 )
-			return FALSE;
-#endif
-
-#ifdef ADD_SUBJOB
-		if( rItemData.IsFlag( ITEM_FLAG_SELLER ) )
-		{
-			return pUIManager->CheckSellerItem(UI_AUCTION, rItemData.GetFlag());
-		}
-		else
-		{
-			// [2010/10/20 : Sora] 사용중인 몬스터 용병 카드는 등록 불가
-			if( rItemData.GetType() == CItemData::ITEM_ETC && rItemData.GetSubType() == CItemData::ITEM_ETC_MONSTER_MERCENARY_CARD )
-			{
-				if( rItems.Item_Used > 0 )
-					return FALSE;
-			}
-			//착용한 아이템이 아니면서, 대여, 플래티늄 부스터도 아니어야 한다
-			if( (sbWearType < 0) &&
-				(rItems.ItemData.GetFlag() & ITEM_FLAG_EXCHANGE) && 
-				!(rItems.IsFlag(FLAG_ITEM_LENT)) && 
-				!(rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED)) &&
-				!(rItems.IsFlag(FLAG_ITEM_BELONG)) )
-			{
-				return TRUE;
-			}
-		}
-#else
-		// [2010/10/20 : Sora] 사용중인 몬스터 용병 카드는 등록 불가
-		if( (rItemData.GetType() == CItemData::ITEM_ETC) && 
-			(rItemData.GetSubType() == CItemData::ITEM_ETC_MONSTER_MERCENARY_CARD) &&
-			(rItems.Item_Used > 0) )
-		{
-			return FALSE;
-		}
-
+		CItems	&rItems = _pNetwork->MySlotItem[_pUIMgr->GetHoldBtn().GetItemTab()][_pUIMgr->GetHoldBtn().GetItemRow()][_pUIMgr->GetHoldBtn().GetItemCol()];
+		
 		//착용한 아이템이 아니면서, 대여, 플래티늄 부스터도 아니어야 한다
 		if( (sbWearType < 0) &&
 			(rItems.ItemData.GetFlag() & ITEM_FLAG_EXCHANGE) && 
 			!(rItems.IsFlag(FLAG_ITEM_LENT)) && 
-			!(rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED)) &&
-			!(rItems.IsFlag(FLAG_ITEM_BELONG)) )
+			!(rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED)) )
 		{
 			return TRUE;
 		}
-#endif
 	}
 								
 	return FALSE;
@@ -1984,7 +1827,17 @@ void CUIAuction::EnableSortBtn()
 	m_btnNext.SetEnable(TRUE);
 	m_btnLast.SetEnable(TRUE);
 
-	m_btnSearch.SetEnable(TRUE); // 검색 완료 후 활성화됨
+	m_btnSearch.SetEnable(TRUE);
+}
+
+// ----------------------------------------------------------------------------
+//  [6/11/2009 selo]
+// Name : EnableSearchBtn()
+// Desc : 검색 버튼 활성화
+// ----------------------------------------------------------------------------
+void CUIAuction::EnableSearchBtn()
+{
+	m_btnSearch.SetEnable(TRUE);
 }
 
 // ----------------------------------------------------------------------------
@@ -1997,8 +1850,6 @@ void CUIAuction::SetTab(int nIndex)
 
 	if (m_nCurrnetTab != nIndex)
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
-		
 		m_nCurrnetTab = nIndex;
 		m_nCurrentPage = 1;
 		m_nMaxPage = 1;
@@ -2017,10 +1868,12 @@ void CUIAuction::SetTab(int nIndex)
 			m_btnPrev.SetEnable(FALSE);
 			m_btnNext.SetEnable(FALSE);
 			m_btnLast.SetEnable(FALSE);
-			
-			if( pUIManager->GetInventory()->IsVisible() )
+
+			m_btnSearch.SetEnable(TRUE);
+
+			if( _pUIMgr->GetInventory()->IsVisible() )
 			{
-				pUIManager->GetInventory()->ToggleVisible();
+				_pUIMgr->GetInventory()->ToggleVisible();
 			}
 		}
 		else if(m_nCurrnetTab == AUCTION_TAB_REGISTER)
@@ -2034,12 +1887,12 @@ void CUIAuction::SetTab(int nIndex)
 			m_btnPrev.SetEnable(TRUE);
 			m_btnNext.SetEnable(TRUE);
 			m_btnLast.SetEnable(TRUE);
-			if( !pUIManager->GetInventory()->IsVisible() )
+			if( !_pUIMgr->GetInventory()->IsVisible() )
 			{
-				pUIManager->GetInventory()->ToggleVisible();
+				_pUIMgr->GetInventory()->ToggleVisible();
 			}
 
-			pUIManager->RearrangeOrder( UI_INVENTORY, TRUE );
+			_pUIMgr->RearrangeOrder( UI_INVENTORY, TRUE );
 		}
 		else if(m_nCurrnetTab == AUCTION_TAB_SETTLEMENT)
 		{
@@ -2052,91 +1905,10 @@ void CUIAuction::SetTab(int nIndex)
 			m_btnPrev.SetEnable(TRUE);
 			m_btnNext.SetEnable(TRUE);
 			m_btnLast.SetEnable(TRUE);
-			if( pUIManager->GetInventory()->IsVisible() )
+			if( _pUIMgr->GetInventory()->IsVisible() )
 			{
-				pUIManager->GetInventory()->ToggleVisible();
+				_pUIMgr->GetInventory()->ToggleVisible();
 			}
 		}	
 	}
-
-	if (m_nCurrnetTab == AUCTION_TAB_REFER)
-	{
-		m_btnSearch.SetEnable(TRUE); // 검색 완료 후 활성화됨
-	}
-}
-
-BOOL CUIAuction::IsFarNPC()
-{
-	FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - m_fNpcX;
-	FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - m_fNpcZ;
-	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
-		return TRUE;
-
-	return FALSE;
-}
-
-void CUIAuction::initialize()
-{
-// 	if( m_cmbItemType == NULL )
-// 		m_cmbItemType = (CUIComboBox*)findUI( "cbb_item_type" );
-// 
-// 	if( m_cmbItemSubType == NULL )
-// 		m_cmbItemSubType = (CUIComboBox*)findUI( "cbb_sub_type" );
-// 
-// 	if( m_cmbClass == NULL )
-// 		m_cmbClass = (CUIComboBox*)findUI( "cbb_class" );
-
-	m_nCurrnetTab = AUCTION_TAB_REFER;
-	m_strTitleName = _S( 4287, "거래 대행 서비스" );
-
-	m_rcTitle.SetRect(0,0,AUCTION_WIDTH,36);
-
-	m_rcRegisterArea.SetRect(0,0,AUCTION_WIDTH,AUCTION_HEIGHT);
-	m_rcSelectArea.SetRect(0,0,0,0);
-	m_rcItemArea.SetRect(12,86,631,454);
-
-	int left = 8; 
-	for(int i=0; i<AUCTION_TAB_TOTAL; i++)
-	{
-		m_rcTabArea[i].SetRect(left,37,left+AUCTION_TAB_WIDTH,58);
-		left += (AUCTION_TAB_WIDTH + 3);
-	}
-
-	m_ptdButtonTexture = CreateTexture( CTString( "Data\\Interface\\CommonBtn.tex" ) );
-
-	float fTexWidth = 0.f, fTexHeight = 0.f;
-	fTexWidth = m_ptdButtonTexture->GetPixWidth();
-	fTexHeight = m_ptdButtonTexture->GetPixHeight();
-
-	m_AuctionSurface.AddRectSurface(UIRect(0, 0, 0, 0), UIRectUV(145, 138, 239, 171, fTexWidth, fTexHeight));	//선택이미지 3
-
-	// 아이템 상세정보창 4~12
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(0,137,19,156,fTexWidth,fTexHeight));	// 20 * 20
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(20,137,120,156,fTexWidth,fTexHeight));	// 101 * 20
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(121,137,140,156,fTexWidth,fTexHeight));	// 20 * 20
-
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(0,157,19,206,fTexWidth,fTexHeight));	// 20 * 50
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(20,157,120,206,fTexWidth,fTexHeight)); // 101 * 50
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(121,157,140,206,fTexWidth,fTexHeight)); // 20 * 50
-
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(0,207,19,226,fTexWidth,fTexHeight));	// 20 * 20
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(20,207,120,226,fTexWidth,fTexHeight)); // 101 * 20
-	m_AuctionSurface.AddRectSurface(UIRect(0,0,0,0), UIRectUV(121,207,140,226,fTexWidth,fTexHeight));	// 20 * 20
-
-	m_rtSelectedTab.SetUV(0, 106, 101, 128, fTexWidth, fTexHeight );
-	m_rtUnSelectedTab.SetUV(104, 106, 205, 128, fTexWidth, fTexHeight );
-
-	int nBtnPosY = 112;
-	for(int j=0; j<AUCTION_SLOT_MAX; ++j)
-	{
-		m_btnAuctionItem[j].Create( this, 17, nBtnPosY, BTN_SIZE, BTN_SIZE, UI_AUCTION, UBET_ITEM );
-		nBtnPosY += 36;
-	}
-
-	m_btnRegisterItem.Create(this, -1, -1, BTN_SIZE, BTN_SIZE, UI_AUCTION, UBET_ITEM);
-}
-
-void CUIAuction::OnUpdate( float fElapsedTime )
-{
-
 }

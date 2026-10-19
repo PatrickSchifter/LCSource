@@ -9,11 +9,13 @@
 	#pragma once
 #endif
 
-// #include <vector>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIButtonEx.h>
+#include <vector>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButtonEx.h>
 
+#define	QUEST_TAB_WIDTH					96
 
+// Define remission slot
 #define	QUEST_SLOT_SX					18
 #define	QUEST_SLOT_SY					56
 #define	QUEST_SLOT_OFFSETY				37
@@ -21,6 +23,7 @@
 #define	QUESTLIST_SLOT_ROW				4
 #define	QUESTLIST_SLOT_ROW_TOTAL		30
 
+// Define text
 #define	QUEST_NAME_CX					122
 #define	QUEST_NAME_SY					58
 #define	QUEST_NEED_RX					184
@@ -31,28 +34,26 @@
 #define	QUEST_TAB_SY					34
 #define	MAX_QUEST_DESC_CHAR				28
 
+// Define text position
 #define	QUEST_TITLE_TEXT_OFFSETX		25
 #define	QUEST_TITLE_TEXT_OFFSETY		5
 
 #define	QUEST_TOP_HEIGHT				339
 #define	QUEST_BOTTOM_HEIGHT				41
 
+// Define size of remission learn
 #define	QUEST_WIDTH						216
 #define	QUEST_HEIGHT					380
 
+// Define max char and line of action informaion 
 #define	QUESTINFO_CHAR_WIDTH			170
 #define	MAX_QUESTINFO_LINE				10
 
 // 월드컵이벤트
 #define WORLDCUP_MAX_COUNTRY 32
 
-enum e24Event
-{
-	EXCH_FIVE,						// 맞고 머니 교환
-	EXCH_FOUR,						// 포커 머니 교환 
-	OPEN_TREA,						// 보물 상자 열기
-};
-
+// 2009. 05. 27 김정래
+// 퀘스트의 번호 구분자
 const int ciQuestClassifier			=	1000;
 
 enum eSelectionQuest
@@ -93,10 +94,9 @@ enum eSelectionQuest
 	EVENT_RAINYDAY,
 	EVENT_BUDDHISM,					// 불교 촛불 축제 이벤트( 태국 )
 	EVENT_COLLECTBUGS,				// 여름 곤충 채집 이벤트
-	EVENT_MOTHERDAY,					// 태국 어머니날 이벤트
 	EVENT_PROMOPACK,				// 프로모 패키지 이벤트 ( 말레샤 )
 	EVENT_PROMO_KEY_ENTER,			// 프로모 패키지 인증키 입력
-
+	
 	EVENT_XMAS_2006,				// 2006 X-MAS Event [12/11/2006 Theodoric]
 	EVENT_LOVE_LOVE,				// 2007발렌타인's 데이(러브러브 이벤트)
 	EVENT_WHITEDAY_2007,			// 2007 WhiteDay Event
@@ -151,49 +151,10 @@ enum eSelectionQuest
 	EVENT_CHAOSBALL,						//카오스볼 이벤트
 
 	EVENT_PHOENIX_REQ,							//피닉스 이벤트
+
+	USE_AUCTION,
 	
 	EVENT_HANAPOS_SK_EVENT,					//[ttos_2009_3_18]: 하나포스 및 SK브로드밴드 가입자 이벤트
-	
-	MIDLEVEL_SUPPORT_REQ,					// 중저레벨 지원사 스킬 요청
-	
-	EVENT_REQUITAL_1,						//[ttos_2009_4_13]: 서버 오류 보상이벤트
-	EVENT_REQUITAL_2,						//[ttos_2009_4_13]: 출석 체크 보상
-	EVENT_ADD_UP_NEW_AFRON,					// 아프론 , 블리스 서버 통합이벤트기념품 지급(아프론 다운)
-	
-	QUEST_RESTORE_ITEM,						// [100208: selo] 퀘스트 아이템 다시 받기
-	
-	EVENT_WOLRDCUP_2010_EVENT2,				// ($E_WC2010) [100514: selo] 2010 남아공 월드컵 Event2 응모, 현황
-	EVENT_WOLRDCUP_2010_EVENT2_STATUS,		// ($E_WC2010) [100524: selo] 2010 남아공 월드컵 Event2 현황
-	EVENT_WOLRDCUP_2010_EVENT2_GIFT,		// ($E_WC2010) [100517: selo] 2010 남아공 월드컵 Event2 현황, 보상
-	EVENT_WOLRDCUP_2010_EVENT3,				// ($E_WC2010) [100514: selo] 2010 남아공 월드컵 Event3 매일 매일 응원하기
-
-	ATTENDANT_DATE_REQ,						// [7/2/2010 kiny8216] 출석 시스템 (연속 출석일 요청)
-	DUNGEON_DIFFICULTY_NORMAL,				// 아칸사원 Normal
-	DUNGEON_DIFFICULTY_HARD,				// 아칸사원 Hard
-	EVENT_TEMP,								// 단발성 이벤트 용(100907 아칸 사원 이벤트)
-	
-	REGISTER_MERCHANT,						// [2010/08/25 : Sora] ADD_SUBJOB 상인 등록
-
-	EVENT_PROMOTION2,						// [10/6/2010 kiny8216] 쿠폰 프로모션 이벤트
-
-	EVENT_ATTENDANCE_2011,					// [2011/01/18 : Sora] 출석 이벤트
-
-	EVENT_COMEBACK,							// 휴면 계정 보상 이벤트
-
-	EVENT_BIRTHDAY_GIFT,					// 생일 이벤트 : 선물 요청
-	EVENT_BIRTHDAY_INFO,					// 생일 이벤트 : 생일 정보 요청
-
-	EVENT_TREASURE_MAP,						// 보물찾기 이벤트의 [나무]보물 열쇠 교환 요청
-
-	EVENT_LOI_KRATHONG,						// 태국 크라통 이벤트 재료아이템 교환 요청
-
-	EVENT_KB_EXCHAGE_HEART,					// [2011/11/14 : Sora] 태국 국왕 탄생일 이벤트 선물상자 교환
-	EVENT_KB_EXCHAGE_FLAG,					// [2011/11/14 : Sora] 태국 국왕 탄생일 이벤트 이벤트의상 교환
-
-	EVENT_SONGKRAN,							// 송크란 이벤트.
-
-	SYNDICATE_JEWEL_GIVE,
-	SYNDICATE_SECESSION,
 };
 
 enum eEvent
@@ -215,21 +176,18 @@ enum eEvent
 	EVENT_MAY_PARENTS,
 	EVENT_MAY_MASTER,
 
-	EVENT_WORLDCUP_2010_EVENT2_SEL1,		// ($E_WC2010) [100514: selo] 우승 국가 응모	
-	EVENT_WORLDCUP_2010_EVENT2_SEL2,		// ($E_WC2010) [100514: selo] 내 응모 현황
-	EVENT_WORLDCUP_2010_EVENT2_SEL3,		// ($E_WC2010) [100517: selo] 당첨 보상 받기
-
-	EVENT_WORLDCUP_2010_EVENT3_SEL1,		// ($E_WC2010) [100518: selo] 응원카드 받기
-	EVENT_WORLDCUP_2010_EVENT3_SEL2,		// ($E_WC2010) [100518: selo] 매일매일 응원 보상 받기
-	EVENT_WORLDCUP_2010_EVENT3_GIFT1,		// ($E_WC2010) [100518: selo] 결승 기원 상자 받기
-	EVENT_WORLDCUP_2010_EVENT3_GIFT2,		// ($E_WC2010) [100518: selo] 4강 기원 상자 받기
-	EVENT_WORLDCUP_2010_EVENT3_GIFT3,		// ($E_WC2010) [100518: selo] 8강 기원 상자 받기
-	EVENT_WORLDCUP_2010_EVENT3_GIFT4,		// ($E_WC2010) [100518: selo] 16강 기원 상자 받기
 };
 
+// ------------------------------------------------------------<<
+
+// ----------------------------------------------------------------------------
+// Name : CUIQuest
+// Desc :
+// ----------------------------------------------------------------------------
 class CUIQuest : public CUIWindow
 {
 protected:
+	// 서버.
 	struct sQuestList
 	{		
 		INDEX	iQuestIndex;
@@ -290,7 +248,6 @@ protected:
 
 	// FIXME : 
 	int						m_iNpcIndex;
-	int						m_iNpcVirIdx;
 	int						m_iCurQuestIndex;
 	BOOL					m_bLockQuest;
 
@@ -305,11 +262,7 @@ protected:
 	BOOL					m_bGoldenBallRequital;			// 보상 가능
 	BOOL					m_bStartGoldenBall;
 	CTString				m_strCountry[WORLDCUP_MAX_COUNTRY];
-	std::map<INDEX, BYTE>	m_mapNationFlag;				// ($E_WC2010) [100517: selo] 국기 아이템 확인용(map이 검색에서 빠르다)
 	
-	// [2011/02/09 : Sora]	퀘스트아이템 다시 받기
-	int						m_restoreQuestIndex;
-	SLONG					m_restoreQuestItemIndex;
 protected:
 	// Internal functions	
 	void	RenderQuestBtns();
@@ -334,32 +287,44 @@ public:
 	// Render
 	void	Render();
 
+	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
-	ENGINE_API void	OpenQuest( int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
-	
+	// Open remission learn
+	ENGINE_API void	OpenQuest( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
+	ENGINE_API void	OpenQuest( int iMobIndex, FLOAT fX, FLOAT fZ );
+
+	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
 
+	// Command functions
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxLCommand( int nCommandCode, int nResult );
 
+	// Network message functions ( receive )	
 	void	QuestError( UBYTE ubError );
 
+	// Init & Close
 	BOOL	InitQuest( );
 	void	CloseQuest();
 
+	// Add & Clear Quest List
 	void	AddToQuestList(INDEX iQuestIndex, SBYTE sbQuestFlag);
 	void	ClearQuestList();
 
 	void	LockQuest(BOOL bLock);
 	void	SetCurQuest(int iQuestIndex) { m_iCurQuestIndex = iQuestIndex; }
-
+	
+	// Get npc_pos 
+	// 생성된 창을 지워주기 위해 UIManager에서 처리한다 
 	int 	GetNpcPosX(){ return m_fNpcX;}
 	int		GetNpcPosZ(){ return m_fNpcZ;}
 	
 	int		GetNpcIndex(){ return m_iNpcIndex; }
-
+	
+	// event data function
+	//------------- 골든볼 이벤트 용-----------//
 	void	SetStrTeamName( CTString strTeamA, CTString strTeamB, SYSTEMTIME GoldenEndTime, BOOL bFlag )
 	{ 
 		m_strTeamA = strTeamA; m_strTeamB = strTeamB;
@@ -383,13 +348,8 @@ public:
 	int			GetScoreTeamB( void ) { return m_ScoreTeamB; }
 
 	SYSTEMTIME	GetGoldenTime( void ) { return m_GoldenEndTime; }
+	//-----------------------------------------//
 
-	void	CreateMessageBox_WorldCup2010_Event2( INDEX nType );
-	void	InitNationFlag();
-	BOOL	IsNationFlag(INDEX nItemIndex)
-	{
-		return m_mapNationFlag.find(nItemIndex) == m_mapNationFlag.end() ? FALSE : TRUE;
-	}
 };
 
 

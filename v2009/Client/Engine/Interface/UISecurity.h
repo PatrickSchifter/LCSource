@@ -9,9 +9,9 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIListBox.h>
 
 // Define text position
 #define	SECURITY_TITLE_TEXT_OFFSETX		25
@@ -75,9 +75,7 @@ protected:
 
 	// Description
 	void	GetSecurityDesc( BOOL bShow = TRUE );
-	void	AddSecurityDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
-
-	void	MsgBoxInputNewPW();
+	void	AddSecurityDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 
 public:
 	CUISecurity();
@@ -107,13 +105,12 @@ public:
 	WMSG_RESULT	CharMessage( MSG *pMsg );
 
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
+	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput , CTString &strConfirm);		
 
 	void	MsgBoxLCommand( int nCommandCode, int nResult );
 
 	BOOL	IsEditBoxFocused() { return m_ebPersonalNumber.IsFocused(); }
 	void	KillFocusEditBox() { m_ebPersonalNumber.SetFocus( FALSE ); }
-
-	void	ShowMsgBoxDelPW(UINT8 result);
 };
 
 

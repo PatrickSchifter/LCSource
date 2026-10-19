@@ -5,11 +5,6 @@
 #include <vector>
 #include <map>
 #include <Engine/Base/Types.h>
-#include <Engine/LocalDefine.h>
-#include <Engine/Interface/UIDefine.h>
-
-#include <Engine/Help/LoadLod.h>
-#include <Common/header/def_quest.h>
 
 #define QUEST_FLAG_NOT_LEVEL	0		// 수행 불가능 : 레벨
 #define QUEST_FLAG_NOT_JOB		1		// 수행 불가능 : 직업
@@ -24,7 +19,6 @@
 #define		MAX_MAX_NEED_ITEM			5		// 필요아이템 최대 5
 #define		QUEST_MAX_CONDITION			3		// 수행조건 최대 3
 #define		QUEST_MAX_PRIZE				5		// 보상 최대 5
-#define		QUEST_MAX_OPTION_PRIZE		7		// 옵션 보상 최대 7 [090728: selo]
 #define		QUEST_MAX_CONDITION_DATA	4		// 수행조건 하나당 부가 데이타 4
 #define		MAX_PC_QUEST				10		// 캐릭터 멀티 퀘스트 10
 
@@ -32,8 +26,8 @@
 #define		QCATEGORY_NORMAL			0		// 일반
 #define		QCATEGORY_SCENARIO			1		// 시나리오
 #define		QCATEGORY_SUPPLEMENT		2		// 외전
-//#define		QCATEGORY_NIGHTSHADOW		3		// 나이트 쉐도우
-#define		QCATEGORY_END				QCATEGORY_SUPPLEMENT + 1
+#define		QCATEGORY_NIGHTSHADOW		3		// 나이트 쉐도우
+#define		QCATEGORY_END				QCATEGORY_NIGHTSHADOW + 1
 
 // 퀘스트 규모 [090603: selo]
 #define		QSCALE_SINGLE				0		// 일반
@@ -52,7 +46,8 @@
 #define		QTYPE_KIND_PROCESS_EXPERIENCE		8  // 가공 체험 퀘스트
 #define		QTYPE_KIND_MAKE_EXPERIENCE			9  // 제작 체험 퀘스트
 #define		QTYPE_KIND_TUTORIAL					10 // 튜토리얼 퀘스트
-#define		QTYPE_KIND_SEARCH					11 // 탐색 퀘스트
+#define		QTYPE_KIND_PC						11 // PK 퀘스트 
+#define		QTYPE_KIND_SEARCH					12 // 탐색 퀘스트
 
 // 수행별 타입(Type2)
 #define		QTYPE_REPEAT_ONCE			0		// 1회용 퀘스트
@@ -80,7 +75,6 @@
 #define		QPRIZE_SP					3		// 스킬포인트
 #define		QPRIZE_SKILL				4		// 스킬
 #define		QPRIZE_SSKILL				5		// 특수스킬
-#define		QPRIZE_RVR_POINT			7		// 결사대 포인트.
 
 #define		QUEST_MAX_NPC				50		// npc 하나당 최대 퀘스트 보유 수 50
 #define		QUEST_MAX_PC_COMPLETE		100		// pc가 완료한 1회용 퀘스트 최대 수
@@ -89,91 +83,100 @@
 #define	QUEST_TITLE_DESC				4
 #define	QUEST_STATUS_DESC				QUEST_MAX_CONDITION * 2
 #define	QUEST_PRIZE_DESC				QUEST_MAX_PRIZE + 1
-#define QUEST_OPTION_PRIZE_DESC			QUEST_MAX_OPTION_PRIZE + 1	// [090728: selo] 옵션 보상 개수가 변경 되었음 (5개 -> 7개)
 #define	QUEST_NEED_DESC					MAX_MAX_NEED_ITEM + 1
 
-// [100119: selo] 보상의 옵션 처리를 위한 구조체
-struct stOptionPrizeTemp
-{
-	INDEX	m_iOptionPrizeType[QUEST_MAX_OPTION_PRIZE];
-	INDEX	m_iOptionPrizeIndex[QUEST_MAX_OPTION_PRIZE];
-	INDEX	m_iOptionPrizeData[QUEST_MAX_OPTION_PRIZE];
-	INDEX	m_iOptionPrizePlus[QUEST_MAX_OPTION_PRIZE];
-};
-
 // quest 관련 데이터, DB에서 뽑은 Data로 파일에서 읽어들임. 서버 맘대로임.
-class CQuestStaticData : public stQuest, public LodLoader<CQuestStaticData>
+class CQuestStaticData
 {
 protected:
+	CQuestStaticData();
+	~CQuestStaticData();
+
+	friend class CQuestSystem;
+	friend class CQuestDynamicData;
+
+	CQuestStaticData(const CQuestStaticData &other);
+	CQuestStaticData &operator = (const CQuestStaticData &other);
+
+	INDEX	m_iIndex;
+	char	m_szName[50];
 	INDEX	m_iCategory;		// 퀘스트 분류 [090603: selo]
-	int		transFlag;	//[sora] 미번역 스트링 index 표시
+	INDEX	m_iPartyScale;		// 퀘스트 규모 [090603: selo]
+	INDEX	m_iType1;
+	INDEX	m_iType2;
+	INDEX	m_iStartType;
+	INDEX	m_iStartData;
+	//INDEX	m_iGiveNPCIndex;	// 퀘스트 주는 NPC
+	INDEX	m_iPrizeNPCIndex;	// 보상해주는 NPC
 
-	std::string	m_szName;
-	std::string	m_szDesc;
-	std::string	m_szDesc2;
-	std::string	m_szDesc3;
+	INDEX	m_iPreQuestIndex;	//선행 퀘스트 인덱스
+	INDEX	m_iStartNPCZoneIndex;//퀘스트 주는 npc의 zone index
+	INDEX	m_iPrizeNPCZoneIndex;//보상해주는 npc의 zone index
+	
+	INDEX	m_iNeedEXP;
+	INDEX	m_iNeedMinLevel;
+	INDEX	m_iNeedMaxLevel;
+	INDEX	m_iNeedJob;
+	INDEX	m_iMinPenalty;
+	INDEX	m_iMaxPenalty;
+	INDEX	m_iNeedItemIndex[MAX_MAX_NEED_ITEM];
+	INDEX	m_iNeedItemCount[MAX_MAX_NEED_ITEM];
+	
+	INDEX	m_iConditionType[QUEST_MAX_CONDITION];
+	INDEX	m_iConditionIndex[QUEST_MAX_CONDITION];
+	INDEX	m_iConditionNum[QUEST_MAX_CONDITION];
+	INDEX	m_iConditionData[QUEST_MAX_CONDITION][QUEST_MAX_CONDITION_DATA];
+	
+	INDEX	m_iPrizeType[QUEST_MAX_PRIZE];
+	INDEX	m_iPrizeIndex[QUEST_MAX_PRIZE];
+	INDEX	m_iPrizeData[QUEST_MAX_PRIZE];
+	
+	INDEX	m_bOptionPrize;
+	INDEX	m_iOptionPrizeType[QUEST_MAX_PRIZE];
+	INDEX	m_iOptionPrizeIndex[QUEST_MAX_PRIZE];
+	INDEX	m_iOptionPrizeData[QUEST_MAX_PRIZE];
+	INDEX	m_iOptionPrizePlus[QUEST_MAX_PRIZE];
 
-public:
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate();
-	void ClearNoTranslate();
-	INDEX GetIndex()	{ return index; }
-
-	void SetCategory(INDEX iCategory) { m_iCategory = iCategory; }
-	void SetTitle(const char* str)	{ m_szName = str; }
-	void SetDesc1(const char* str)	{ m_szDesc = str; }
-	void SetDesc2(const char* str)	{ m_szDesc2 = str; }
-	void SetDesc3(const char* str)	{ m_szDesc3 = str; }
-
-	INDEX GetCategory() { return m_iCategory; }
-	const char* GetTitle()	{ return m_szName.c_str(); }
-	const char* GetDesc1()	{ return m_szDesc.c_str(); }
-	const char* GetDesc2()	{ return m_szDesc2.c_str(); }
-	const char* GetDesc3()	{ return m_szDesc3.c_str(); }
-
-	static bool loadEx(const char* fileName);
+	char	m_szDesc[2048];
+	char	m_szDesc2[2048];
+	char	m_szDesc3[2048];
 };
 
 // quest 관련 데이터, 서버가 보내주는 Data와 파일에서 읽은 Data를 짬뽕해서 만드는 데이타
 // 보기 좋으라고 만드는 Data로 현재 플레이 중인 캐릭터의 Data임. String 위주임.
 class ENGINE_API CQuestDynamicData
 {
-private:
-	CQuestStaticData* m_pStaticData;
 public:
-	CQuestDynamicData(CQuestStaticData* data);
+	CQuestDynamicData(const CQuestStaticData &data);
 	~CQuestDynamicData();
 
 	// from quest static data
 	INDEX GetQuestIndex()	{ return m_iQuestIndex; }
-	const char *GetName()	{ return m_pStaticData->GetTitle(); }
-	INDEX GetQuestCategory() { return m_pStaticData->GetCategory();	}   const		// 퀘스트 분류 [090603: selo]
-	INDEX GetQuestPartyScale() { return m_pStaticData->partyscale; }	const		// 퀘스트 규모 [090603: selo]
-	INDEX GetQuestType1()	{ return m_pStaticData->type1;		}	const		// Type1
-	INDEX GetQuestType2()	{ return m_pStaticData->type2;		}	const		// Type2
+	const char *GetName()	{ return &m_rStaticData.m_szName[0]; }
+	INDEX GetQuestCategory() { return m_rStaticData.m_iCategory;	}   const		// 퀘스트 분류 [090603: selo]
+	INDEX GetQuestPartyScale() { return m_rStaticData.m_iPartyScale; }	const		// 퀘스트 규모 [090603: selo]
+	INDEX GetQuestType1()	{ return m_rStaticData.m_iType1;		}	const		// Type1
+	INDEX GetQuestType2()	{ return m_rStaticData.m_iType2;		}	const		// Type2
 
-	INDEX GetStartType()	{ return m_pStaticData->startType;	}	const
-	INDEX GetStartData()	{ return m_pStaticData->startData;	}	const
+	INDEX GetStartType()	{ return m_rStaticData.m_iStartType;	}	const
+	INDEX GetStartData()	{ return m_rStaticData.m_iStartData;	}	const
 	//INDEX GetGiveNPCIndex()	{ return m_rStaticData.m_iGiveNPCIndex; }	const
-	INDEX GetPrizeNPCIndex(){ return m_pStaticData->prizeNPC; }	const
-	INDEX GetPreQuestIndex(){ return m_pStaticData->preQuestNo; }	const
-	INDEX GetStartNPCZoneIndex(){ return m_pStaticData->startNpcZoneNo; }	const
-	INDEX GetPrizeNPCZoneIndex(){ return m_pStaticData->prizeNpcZoneNo; }	const
+	INDEX GetPrizeNPCIndex(){ return m_rStaticData.m_iPrizeNPCIndex; }	const
+	INDEX GetPreQuestIndex(){ return m_rStaticData.m_iPreQuestIndex; }	const
+	INDEX GetStartNPCZoneIndex(){ return m_rStaticData.m_iStartNPCZoneIndex; }	const
+	INDEX GetPrizeNPCZoneIndex(){ return m_rStaticData.m_iPrizeNPCZoneIndex; }	const
 
-	INDEX GetNeedMinLevel()	{ return m_pStaticData->needMinLevel;	}	const
-	INDEX GetNeedMaxLevel()	{ return m_pStaticData->needMaxLevel;	}	const
-	INDEX GetNeedJob()		{ return m_pStaticData->needJob;	}	const
-	INDEX GetNeedItemIndex(INDEX i)		{ ASSERT(i < MAX_MAX_NEED_ITEM); return m_pStaticData->needItemIndex[i]; }
-	INDEX GetNeedItemCount(INDEX i)		{ ASSERT(i < MAX_MAX_NEED_ITEM); return m_pStaticData->needItemCount[i]; }
+	INDEX GetNeedMinLevel()	{ return m_rStaticData.m_iNeedMinLevel;	}	const
+	INDEX GetNeedMaxLevel()	{ return m_rStaticData.m_iNeedMaxLevel;	}	const
+	INDEX GetNeedJob()		{ return m_rStaticData.m_iNeedJob;	}	const
+	INDEX GetNeedItemIndex(INDEX i)		{ ASSERT(i < MAX_MAX_NEED_ITEM); return m_rStaticData.m_iNeedItemIndex[i]; }
+	INDEX GetNeedItemCount(INDEX i)		{ ASSERT(i < MAX_MAX_NEED_ITEM); return m_rStaticData.m_iNeedItemCount[i]; }
 
-	INDEX GetConditionType(INDEX i)		{ ASSERT(i < QUEST_MAX_CONDITION); return m_pStaticData->conditionType[i]; }
-	INDEX GetConditionIndex(INDEX i)	{ ASSERT(i < QUEST_MAX_CONDITION); return m_pStaticData->conditionIndex[i]; }
-	INDEX GetConditionNum(INDEX i)		{ ASSERT(i < QUEST_MAX_CONDITION); return m_pStaticData->conditionNum[i]; }
+	INDEX GetConditionType(INDEX i)		{ ASSERT(i < QUEST_MAX_CONDITION); return m_rStaticData.m_iConditionType[i]; }
+	INDEX GetConditionIndex(INDEX i)	{ ASSERT(i < QUEST_MAX_CONDITION); return m_rStaticData.m_iConditionIndex[i]; }
+	INDEX GetConditionNum(INDEX i)		{ ASSERT(i < QUEST_MAX_CONDITION); return m_rStaticData.m_iConditionNum[i]; }
 	INDEX GetConditionData(INDEX i, INDEX j)		
-	{ ASSERT(i < QUEST_MAX_CONDITION); ASSERT(j < QUEST_MAX_CONDITION_DATA); return m_pStaticData->conditionData[i][j]; }
-
-	INDEX		GetSyndicateType()	{ return m_pStaticData->rvr_type;	}
-	INDEX		GetSyndicateGrade()	{ return m_pStaticData->rvr_grade;	}
+	{ ASSERT(i < QUEST_MAX_CONDITION); ASSERT(j < QUEST_MAX_CONDITION_DATA); return m_rStaticData.m_iConditionData[i][j]; }
 	
 	//INDEX GetPrizeType(INDEX i)			{ ASSERT(i < QUEST_MAX_PRIZE); return m_rStaticData.m_iPrizeType[i]; }
 	//INDEX GetPrizeIndex(INDEX i)		{ ASSERT(i < QUEST_MAX_PRIZE); return m_rStaticData.m_iPrizeIndex[i]; }
@@ -185,17 +188,16 @@ public:
 	INDEX IsPrizeExist()				{ return m_bPrize;	}
 	INDEX GetPrizeType(INDEX i)			{ ASSERT(i < QUEST_MAX_PRIZE); return m_iPrizeType[i]; }
 	INDEX GetPrizeIndex(INDEX i)		{ ASSERT(i < QUEST_MAX_PRIZE); return m_iPrizeIndex[i]; }
-	__int64 GetPrizeData(INDEX i)			{ ASSERT(i < QUEST_MAX_PRIZE); return m_iPrizeData[i]; }
-
+	INDEX GetPrizeData(INDEX i)			{ ASSERT(i < QUEST_MAX_PRIZE); return m_iPrizeData[i]; }
 	INDEX IsOptionPrizeExist()			{ return m_bOptionPrize;	}
-	INDEX GetOptionPrizeType(INDEX i)	{ ASSERT(i < QUEST_MAX_OPTION_PRIZE); return m_iOptionPrizeType[i]; }
-	INDEX GetOptionPrizeIndex(INDEX i)	{ ASSERT(i < QUEST_MAX_OPTION_PRIZE); return m_iOptionPrizeIndex[i]; }
-	INDEX GetOptionPrizeData(INDEX i)	{ ASSERT(i < QUEST_MAX_OPTION_PRIZE); return m_iOptionPrizeData[i]; }
-	INDEX GetOptionPrizePlus(INDEX i)	{ ASSERT(i < QUEST_MAX_OPTION_PRIZE); return m_iOptionPrizePlus[i]; }
+	INDEX GetOptionPrizeType(INDEX i)	{ ASSERT(i < QUEST_MAX_PRIZE); return m_iOptionPrizeType[i]; }
+	INDEX GetOptionPrizeIndex(INDEX i)	{ ASSERT(i < QUEST_MAX_PRIZE); return m_iOptionPrizeIndex[i]; }
+	INDEX GetOptionPrizeData(INDEX i)	{ ASSERT(i < QUEST_MAX_PRIZE); return m_iOptionPrizeData[i]; }
+	INDEX GetOptionPrizePlus(INDEX i)	{ ASSERT(i < QUEST_MAX_PRIZE); return m_iOptionPrizePlus[i]; }
 
-	const char *GetDesc()	{ return m_pStaticData->GetDesc1(); }
-	const char *GetDesc2()	{ return m_pStaticData->GetDesc2(); }
-	const char *GetDesc3()	{ return m_pStaticData->GetDesc3(); }		
+	const char *GetDesc()	{ return &m_rStaticData.m_szDesc[0]; }
+	const char *GetDesc2()	{ return &m_rStaticData.m_szDesc2[0]; }
+	const char *GetDesc3()	{ return &m_rStaticData.m_szDesc3[0]; }
 
 	// myself
 	void SetCurrentConditionValueStatus(INDEX current[QUEST_MAX_CONDITION]);
@@ -235,7 +237,7 @@ public:
 	
 protected:
 	CQuestDynamicData(const CQuestDynamicData &other);
-	CQuestDynamicData &operator = (CQuestDynamicData &other);
+	CQuestDynamicData &operator = (const CQuestDynamicData &other);
 
 	void	MakeQuestFirstDesc();
 	void	MakeQuestTitleDesc();
@@ -246,22 +248,20 @@ protected:
 
 	INDEX	FindItemForPrize(INDEX type, INDEX index);
 
+	const CQuestStaticData &m_rStaticData;
 	INDEX		m_iQuestIndex;
 	BOOL		m_bQuestComplete;
 
 	BOOL		m_bPrize;
 	INDEX		m_iPrizeType[QUEST_MAX_PRIZE];
 	INDEX		m_iPrizeIndex[QUEST_MAX_PRIZE];
-	__int64		m_iPrizeData[QUEST_MAX_PRIZE];
+	INDEX		m_iPrizeData[QUEST_MAX_PRIZE];
 	
 	INDEX		m_bOptionPrize;
-	INDEX		m_iOptionPrizeType[QUEST_MAX_OPTION_PRIZE];
-	INDEX		m_iOptionPrizeIndex[QUEST_MAX_OPTION_PRIZE];
-	INDEX		m_iOptionPrizeData[QUEST_MAX_OPTION_PRIZE];
-	INDEX		m_iOptionPrizePlus[QUEST_MAX_OPTION_PRIZE];
-
-	// [090728: selo] 옵션 보상 카운트
-	INDEX		m_iOptionPrizeCount;
+	INDEX		m_iOptionPrizeType[QUEST_MAX_PRIZE];
+	INDEX		m_iOptionPrizeIndex[QUEST_MAX_PRIZE];
+	INDEX		m_iOptionPrizeData[QUEST_MAX_PRIZE];
+	INDEX		m_iOptionPrizePlus[QUEST_MAX_PRIZE];
 
 	INDEX		m_iCurrentConditionValueStatus[QUEST_MAX_CONDITION];
 	CTString	m_strIntroDesc;
@@ -276,8 +276,8 @@ protected:
 	CTString	m_strPrizeDesc[QUEST_PRIZE_DESC];
 	COLOR		m_colPrizeDesc[QUEST_PRIZE_DESC];
 	INDEX		m_ctOptionPrizeDesc;
-	CTString	m_strOptionPrizeDesc[QUEST_OPTION_PRIZE_DESC];
-	COLOR		m_colOptionPrizeDesc[QUEST_OPTION_PRIZE_DESC];
+	CTString	m_strOptionPrizeDesc[QUEST_PRIZE_DESC];
+	COLOR		m_colOptionPrizeDesc[QUEST_PRIZE_DESC];
 	INDEX		m_ctNeedDesc;
 	CTString	m_strNeedDesc[QUEST_NEED_DESC];
 	COLOR		m_colNeedDesc[QUEST_PRIZE_DESC];
@@ -303,7 +303,9 @@ public:
 	};
 public:
 	static CQuestSystem &Instance()	{ return m_instance; }
-	bool Load();
+	void Load( const CTFileName &fnm, void (*progress)(FLOAT) );
+
+	INDEX GetStaticDataLastIndex()		{ return m_iQuestStaticDataLastIndex; }
 
 	CQuestDynamicData *GetDynamicDataByVectorIndex(INDEX idx)
 	{
@@ -326,16 +328,17 @@ public:
 
 	~CQuestSystem();
 	
-	CQuestStaticData* GetStaticData(INDEX idxQuest)
+	const CQuestStaticData &GetStaticData(INDEX idxQuest)
 	{
-		return CQuestStaticData::getData(idxQuest);
+		ASSERT(idxQuest <= m_iQuestStaticDataLastIndex);
+		return m_aQuestStaticData[idxQuest];
 	}
 
 	void SetQuestAllow(INDEX iQuestIndex, eQuestAllowType qat)
 	{
 		if(iQuestIndex==-1) return;
 		if((qat == QAT_ALREADY_DONE || qat == QAT_GIVEUP)
-		&& CQuestStaticData::getData(iQuestIndex)->type2 == QTYPE_REPEAT_UNLIMITED)
+		&& m_aQuestStaticData[iQuestIndex].m_iType2 == QTYPE_REPEAT_UNLIMITED)
 		{
 			m_vectorQuestAllowList[iQuestIndex] = QAT_ALLOW;
 			return;
@@ -349,30 +352,43 @@ public:
 	}
 	const char *GetQuestName(int iQuestIndex)
 	{
-		return CQuestStaticData::getData(iQuestIndex)->GetTitle();
+		if(iQuestIndex > 0 && iQuestIndex <= m_iQuestStaticDataLastIndex && m_aQuestStaticData != NULL)
+		{
+			return m_aQuestStaticData[iQuestIndex].m_szName;
+		}
+		return "";
 	}
 	const int GetQuestMinLevel(int iQuestIndex)
 	{
-		return CQuestStaticData::getData(iQuestIndex)->needMinLevel;
+		if(iQuestIndex > 0 && iQuestIndex <= m_iQuestStaticDataLastIndex && m_aQuestStaticData != NULL)
+		{
+			return m_aQuestStaticData[iQuestIndex].m_iNeedMinLevel;
+		}
+		return -1;
 	}
 	const int GetQuestMaxLevel(int iQuestIndex)
 	{
-		return CQuestStaticData::getData(iQuestIndex)->needMaxLevel;
+		if(iQuestIndex > 0 && iQuestIndex <= m_iQuestStaticDataLastIndex && m_aQuestStaticData != NULL)
+		{
+			return m_aQuestStaticData[iQuestIndex].m_iNeedMaxLevel;
+		}
+		return -1;
 	}
 
 	INDEX SearchContactQuestIndex(INDEX iQuestIndex); // 퀘스트 인덱스와 연계 되는 퀘스트 검색 리턴 값은 연계되는 npc Index
+	void RefreshNPCQuestMark(INDEX iNPCIndex);
 	BOOL CanIDoQuest(INDEX iQuestIndex);
 	CTString MakeInfoForCondition(int iQuestIndex, int iConditionType, int iConditionIndex, int iCurrentCnt, int iConditionCnt);
 	eNpcQuestType TestNPCForQuest(INDEX iNPCIndex);
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate( std::vector<INDEX> transList );
-	void ClearNoTranslate( std::vector<INDEX> transList );
 	
 protected:
 	CQuestSystem();
+	
+		
 
 	static CQuestSystem m_instance;
+	INDEX	m_iQuestStaticDataLastIndex;
+	CQuestStaticData *m_aQuestStaticData;
 	CQuestDynamicData *m_pCurrentRequest;
 	std::vector<CQuestDynamicData*> m_vectorCurrentUserQuest;
 	std::vector<eQuestAllowType>	m_vectorQuestAllowList;

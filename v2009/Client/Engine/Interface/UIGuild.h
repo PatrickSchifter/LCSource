@@ -15,14 +15,10 @@
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIMultiEditBox.h>
 #include <Engine/Interface/UIWebBoard.h>
-#include <Engine/Interface/UIComboBox.h>
+
 #include <vector>
 #include <Engine/Interface/UIDrawFigure.h>	//WSS_NEW_GUILD_SYSTEM 070611
 #include <Engine/LocalDefine.h>				//WSS_NEW_GUILD_SYSTEM 070611
-#include <Engine/Interface/UIListBoxEx.h>
-#include <Engine/Interface/UIGuildArrangeMemberCont.h>
-#include <Common/Packet/ptype_old_do_guild.h>
-
 
 // Define text position
 #define	GUILD_TITLE_TEXT_OFFSETX		25
@@ -35,29 +31,18 @@
 // Define member level
 enum eMemberLevel
 {
-	GUILD_MEMBER_BOSS			= 0,		// 단장
-	GUILD_MEMBER_VICE_BOSS		= 1,		// 부단장
-	GUILD_MEMBER_MEMBER			= 2,		// 단원
-	GUILD_MEMBER_RUSH_CAPTAIN	= 3,		// 돌격대장
-	GUILD_MEMBER_SUPPORT_CAPTAIN= 4,		// 지원대장
-	GUILD_MEMBER_RECON_CAPTAIN	= 5,		// 정찰대장
-	GUILD_MEMBER_RUSH			= 6,		// 돌격대원
-	GUILD_MEMBER_SUPPORT		= 7,		// 지원대원
-	GUILD_MEMBER_RECON			= 8,		// 정찰대원
-	GUILD_MEMBER_TOTAL			= 9,		// TOTAL
+	GUILD_MEMBER_BOSS		= 0,		// 단장
+	GUILD_MEMBER_VICE_BOSS	= 1,		// 부단장
+	GUILD_MEMBER_MEMBER		= 2,		// 단원
 	GUILD_MEMBER_NOMEMBER	= -1,		// 멤버 아님
-};
+}; 
 
 #define	MAX_APPLICANTS			(10)		// 최대 가입 신청자.
-#define GUILD_SKILL_VIEW_MAX	(5)			// 길드 스킬 창에 보이는 최대 스킬 갯수
+
 // WSS_NEW_GUILD_SYSTEM 070716 ------------------------------->>
-#if defined(G_KOR)
-	#define MAX_GUILDINFO_TAB	(6)
-#else
-	#define MAX_GUILDINFO_TAB	(5)			//해외로컬은 길드 게시판 사용 안함 사용시 (6)으로 수정
-	#define LOCAL_NEW_GUILD					//해외 로컬
-#endif
+#define MAX_GUILDINFO_TAB	(5)			//해외로컬은 길드 게시판 사용 안함 사용시 (6)으로 수정
 #define LIMIT_GUILD_LEVEL	(6)
+#define LOCAL_NEW_GUILD					//해외 로컬
 // Define Guild Info Tab
 enum eGUILDNEW
 {
@@ -70,20 +55,8 @@ enum eGUILDNEW
 	NEW_GUILD_NOTICE,					// 길드 공지사항
 	NEW_GUILD_MANAGE,					// 길드 관리		
 };
-
-enum eGUILD_MEMBER_LIST
-{
-	eGML_NAME = 0,
-	eGML_TITLE,
-	eGML_LV,
-	eGML_CLASS,
-	eGML_LOCAL,
-	eGML_CONTRIBUTION,
-	eGML_POINT,
-	eGML_MAX
-};
-class CUIIcon;
 // -----------------------------------------------------------<<
+
 
 // ----------------------------------------------------------------------------
 // Name : CUIGuild
@@ -144,7 +117,6 @@ protected:
 		CTString		strMemberName;		// 멤버명?
 		int				eRanking;			// 순위?
 		BOOL			bOnline;			// 접속중?
-
 	};
 
 	// Function Object
@@ -164,7 +136,7 @@ protected:
 	};
 
 	std::vector<sGuildMember>	m_vectorMemberList;			// 단원 목록
-	
+
 	// Controls
 	CUIButton				m_btnClose;						// Close button
 	CUIButton				m_btnOK;						// OK button
@@ -227,8 +199,6 @@ protected:
 	INDEX					m_iGuildMyPoint;				// 나의 기여 포인트		
 	INDEX					m_iNumOfMaxMember;				// Number of Max Member 
 
-	CTString				m_strRemoteGuildJoinTaget;		// 원격 길드 가입 대상 이름
-
 	// 렌더링 관련 추가 변수
 	// Region of each part
 	UIRect					m_rcTitleNew;					// Region of title bar
@@ -268,7 +238,7 @@ protected:
 
 	// 길드원 정보 -------------------------------->>	
 	
-	CUIListBoxEx			m_lbGuildMemberList;			// Guild Member List
+	CUIListBox				m_lbGuildMemberList;			// Guild Member List
 	INDEX					m_iOnlineMembers;				// 접속한 길드원
 					
 	// --------------------------------------------<<
@@ -276,7 +246,9 @@ protected:
 	// 길드 스킬 ---------------------------------->>
 	UIRect					m_rcGuildSkillList;
 	CUIButton				m_btnGetSkill;					// 습득하기
+	CUIButtonEx*			m_btnGuildSkill;				// 길드 스킬 함수
 	CUIScrollBar			m_sbGuildSkillBar;				// Guild Skill Scroll Bar
+	CStaticArray<CSkill>	m_arGuildSkillList;				// Guild Skill List(from skills.bin)
 	INDEX					m_iGuildSkillPos;				// Guild Skill Position
 	BOOL					m_bIsSelList;					// 길드 스킬 체크 여부
 	CUIListBox				m_lbGuildSkillDesc;
@@ -341,51 +313,53 @@ protected:
 	CUIEditBox				m_ebChangePositionName;			// 직위명 변경
 	CUIEditBox				m_ebChangePayExp;				// 상납 경힘치 포인트 
 	CUIEditBox				m_ebChangePayFame;				// 상납 명성치 포인트
-	CUICheckButton			m_ckGuildStashPermission;		// 길드 창고 사용여부 [6/24/2011 rumist]
 
 	
-	int						m_nSelSkillTab;					// 선택된 길드 스킬 탭 ( 0 : Passive Guild Skill, 1 : Active Guild Skill )
-	CTString				m_strSkillTabPopupInfo;			// 탭 팝업 정보 (액티브, 패시ㅡ)
-	UIRect					m_rcSkillTab[2];				// 길드 스킬 탭
-	UIRect					m_rcSkillBtn[5];				// 길드 스킬 버튼 위치
-	UIRect					m_rcSkillTabPopupInfo;			// 탭 팝업 정보
-	UIRectUV				m_rtSelBoxUV;					// 선택된 길드 스킬 UV
-	UIRectUV				m_rtSelSideTabUV;				// 선택된 세로 탭
-	UIRectUV				m_rtUnSelSideTabUV;				// 선택 안된 세로 탭
-	UIRectUV				m_rtPopupUL;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupUM;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupUR;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupML;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupMM;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupMR;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupLL;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupLM;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPopupLR;					// 길드 스킬 탭 팝업 UV
-	UIRectUV				m_rtPassiveTabIconUV[2];		// Passive Tab Icon UV
-	UIRectUV				m_rtActiveTabIconUV[2];			// Active Tab Icon UV
-	CTextureData			*m_ptdSelBoxTexture;			// 선택된 길드 스킬 Texture
-	CUIButton				m_btnUseSkill;					// 길드 스킬 사용하기 버튼
-	CUIListBox				m_lbUseInfo;					// 스킬 사용 정보 표시 박스
-	CUIListBox				m_lbLearnInfo;					// 스킬 습득 정보 표시 박스
 	// --------------------------------------------<<
-	// [1/3/2011 kiny8216] NEW_CORPS
-	CUIComboBox				m_cmbCorps;							// 군단 선택 콤보 박스
-	INDEX					m_iCorpsMember;						// 일반직위 멤버 수
-	INDEX					m_iCorpsBoss;						// 대장직위 멤버 수
-	CTString				m_strCorps[GUILD_MEMBER_TOTAL];		// 군단 스트링
-	// [1/11/2011 kiny8216] GUILD_SKILL_FIX
-	CUIIcon*				m_pIconsGuildSkillEx[GUILD_SKILL_VIEW_MAX];	// 길드 스킬 버튼
-	std::vector<CSkill>		m_vecGuildPassiveSkill;						// 길드 패시브 스킬
-	std::vector<CSkill>		m_vecGuildActiveSkill;						// 길드 액티브 스킬
+		// inner class
+	class clsGuildMemberNew
+	{	
+		public:
+		clsGuildMemberNew()
+		{
+			lIndex			= -1;
+			eRanking		= GUILD_MEMBER_MEMBER;			
+			bOnline			= FALSE;
+			sPosName		= "";	
+			iLevel			=0;				
+			iJob			=-1;		
+			iJob2			=-1;
+			sLocName		="";
+			iLocation		=-1;	
+			iServDegree		=0;		
+			iCumulPoint		=0;
+			iExpServ		=0;	
+			iFameServ		=0;	
+			sRanking		= "";
+			sJobName		="";	
+		}	
 
-	LONG					m_guildMarkTime;					// [sora] GUILD_MARK
-	CTString				m_strGuildMarkTime;
-	CUIGuildMarkIcon*		m_pIconGuildMark;
+		SLONG			lIndex;
+		CTString		strMemberName;		// 멤버명?
+		int				eRanking;			// 순위?		
+		BOOL			bOnline;			// 접속중?
+// WSS_NEW_GUILD_SYSTEM 070705 ------------------------------------------->>
+// 추가 멤버 변수
+		CTString		sRanking;			// 디폴트 직위명
+		CTString		sPosName;			// 직위명
+		INT				iLevel;				// 레벨
+		CTString		sJobName;			// 클래스 명
+		INT				iJob;				// 클래스
+		INT				iJob2;				// 전직 클래스
+		CTString		sLocName;			// 접속 위치
+		INT				iLocation;			// 접속 위치
+		INT				iServDegree;		// 기여도 
+		INT				iCumulPoint;		// 누적 포인트
+		INT				iExpServ;			// 경험치 상납도
+		INT				iFameServ;			// 명성치 상납도
+// -----------------------------------------------------------------------<<
 
-	// 정렬을 위해 추가.
-	ContGuild				m_ContGuild;
-
-	INDEX			m_iSyndiType;
+	};
 
 	// -------------------------------------------------------<<
 
@@ -397,7 +371,7 @@ protected:
 
 	// Description
 	void	GetGuildDesc( BOOL bShow = TRUE );
-	void	AddGuildDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddGuildDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 
 	// 길드 자체에 대한 처리
 	void	CreateGuild();			// 길드 생성
@@ -433,7 +407,7 @@ public:
 	void	ResetGuild();
 	void	ClearMemberList();
 
-	void	JoinGuild( LONG lGuildIndex, LONG lChaIndex, const CTString& strName, INDEX iSyndiType );		// 길드 가입
+	void	JoinGuild( LONG lGuildIndex, LONG lChaIndex, const CTString& strName );		// 길드 가입
 	void	QuitGuild();		// 길드 탈퇴
 
 	// 멤버 목록 관리
@@ -496,6 +470,7 @@ public:
 	void	RenderNew();
 	void	RenderNewGuildInfo(int nx,int ny);
 	void	RenderNewGuildMemberInfo(int nx,int ny);
+	void	RenderNewGuildSkill(int nx,int ny);	
 	void	RenderNewGuildNoticeInput();
 	void	RenderNewGuildManage(int nx,int ny);
 	void	RenderNewGuildManagePopup();
@@ -522,13 +497,12 @@ public:
 	// Message Send
 	void	SendRequestGuildTab(int iTabNum);
 	void	SendChangeGuildInclination(UBYTE ubIncline);
-	void	SendAdjustGuildMemberInfo( int charIdx, CTString posName ,int expPer, int famePer, int corps = -1, UBYTE ubStashAuth = 0 );
+	void	SendAdjustGuildMemberInfo( int charIdx, CTString posName ,int expPer, int famePer);
 	void	SendUpdateGuildNotice( CTString strTitle, CTString strContents);
 	void	SendRequestGuildNotice();	
 	void	SendLearnGuildSkill(int skillIdx); 
 	// Message Receive
 	void	ReceiveNewGuildMessage(UBYTE ubType,CNetworkMessage* istr);
-	void	UpdateGuildSkillLearnMessage(UpdateClient::doNewGuildSkillLearnToMemberMsg& SkillInfo);
 
 	// Mouse Message
 	WMSG_RESULT	MouseMessageNew( MSG *pMsg );
@@ -544,46 +518,14 @@ public:
 	// Guild Skill Setup
 	void SetGuildSkillList();
 	// Guild Skill Check
-	ENGINE_API int GetGuildSkillLevel(int skillIdx);
+	int GetGuildSkillLevel(int skillIdx);
 	// Set Guild Skill Member Extend
 	void ResetGuildMaxMember(int guildSkillLevel);
 	// Set Guild Position Name
 	CTString ResetPosName(CTString tPosName,int ulPosition);
 
-	void RenderNewGuildSkillExtend(int nX,int nY);			// 확장 길드 스킬창 렌더
-	
-	void ReceiveGuildSkillExtend(CNetworkMessage* istr);	// 확장 길드 스킬 정보 받기 (Server->Client) : (int)skill_type, (int)count, (int)skill_index, (int)skill_level
-	
-	void SetGuildSkillInfo();								// 확장 길드 스킬 창 사용 정보, 습득 정보 설정
-	void SetSkillPopupInfo(int nTab);
-
-	int	GetGuildSkillCount();								// 길드 스킬 총 갯수 얻기
-	CUIIcon* GetSkillButton(int nPos);					// 길드 스킬 버튼 얻기
-	CSkill* GetGuildSkill(int nPos);						// (스킬창에서 클릭 시 포지션으로) 길드 스킬 얻기
-	BOOL CheckUseGuildSkill(int nSkillIndex);				// 길드 스킬 사용 조건 체크
-	BOOL StartGuildSkillDelay( int nSkillIndex );			// 길드 스킬 딜레이 설정
-	INDEX GetSelectedPositon();								// 콤보박스에서 선택된 부대 정보 얻기
-	void SetSkillBtnInfo();									// 길드 스킬 버튼 정보 설정
-	BOOL GetSkillDelay( INDEX index );						// 스킬 딜레이 얻기
-	DOUBLE GetReuseTime( INDEX SkillIndex );				// 재사용시간 얻기
-	DOUBLE GetCoolTime( DOUBLE ReuseTime, DOUBLE StartTime );	// 쿨타임 얻기
-	void SetCorpsInfo( INDEX memberCount, INDEX bossCount );	// 길드의 부대 정보 설정
-	void InitString();										// 부대 관련 스트링 설정
-	void SetCorpsComboBox();								// 부대 설정 콤보 박스 설정
-	void ReceiveCorpsInfo(CNetworkMessage* istr);			// 길드 부대 정보 받기
 	// --------------------------------------------------------------------<<
 
-	void		SetRemoteGuildJoinTaget(CTString &strTargetName)		{ m_strRemoteGuildJoinTaget = strTargetName;	}
-	CTString	GetRemoteGuildJoinTaget()								{ return m_strRemoteGuildJoinTaget;				}
-	void		ArrangeMemList(const int eType);
-	CUICheckButton* m_pCbMemberArrange[eGML_MAX];
-	BOOL		IsOnline(CTString strName);
-	int			GetMemberNetIdx( CTString strName );
-	WMSG_RESULT OpenGuildPop(int nMemberIdx, int nX, int nY);
-
-	void		ResetArrangeState();
-	void		ClearGuildSkill();
-	void		ClearGuildSkillCooltime();
 };
 
 #endif	// UIGUILD_H_

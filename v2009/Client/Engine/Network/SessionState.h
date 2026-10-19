@@ -4,7 +4,11 @@
   #pragma once
 #endif
 
+#include <Engine/Base/Synchronization.h>
 #include <Engine/Templates/StaticStackArray.h>
+#include <Engine/Network/EMsgBuffer.h>
+#include <Engine/Network/Common.h>
+//#include <Engine/Network/NetworkMessage.h>
 #include <Engine/Network/PlayerTarget.h>
 #include <Engine/Network/CharacterTarget.h>
 #include <Engine/Network/MobTarget.h>
@@ -12,45 +16,14 @@
 #include <Engine/Network/SlaveTarget.h>
 #include <Engine/Network/ItemTarget.h>
 #include <Engine/Network/SessionSocket.h>
+#include <Engine/Base/Timer.h>
+//0105
 #include <Engine/Network/cmd.h>
 #include <Engine/GlobalDefinition.h>
-#include <Engine/LocalDefine.h>
-#include <Engine/Base/Command.h>
-#include <Common/Packet/ptype_inventory.h>
-#include <Engine/Network/MessageDefine.h>
 
 /*
  * Session state, manipulates local copy of the world
-*/
-
-#if		!defined(WORLD_EDITOR)
-//using namespace boost::mpl::placeholders;
-#endif	// WORLD_EDITOR
-
-#define		DECLARE_PACKET(x)		void Recv##x(CNetworkMessage *istr)
-#define		IMPLEMENT_PACKET(x)		void Recv##x(CNetworkMessage *istr)
-
-#define		DECLARE_MSG_UPDATE(x)	void update##x(CNetworkMessage* istr)
-#define		IMPLEMENT_MSG_UPDATE(x)	void update##x(CNetworkMessage* istr)
-
-#if		!defined(WORLD_EDITOR)
-#	define		REG_PACKET(msg, n, x)			m_packet[msg].insert( std::make_pair(n, &Recv##x) );
-#	define		REG_PACKET_UPDATE(msg, n, x)	m_packet[msg].insert( std::make_pair(n, &update##x) );
-#	define		REG_PACKET_R(msg, n, real)		{\
-													_recv_func f; \
-													f = boost::bind(&CSessionState::real, this, _1); \
-													m_packet[msg].insert( std::make_pair(n, f) ); \
-												}
-#else 
-#	define		REG_PACKET(msg, n, x)
-#	define		REG_PACKET_UPDATE(msg, n, x)
-#	define		REG_PACKET_R(msg, n, real)
-#endif	// WORLD_EDITOR
-
-// boost map_list_
-
-#define MODEL_TREASURE	("Data\\Item\\Common\\ITEM_treasure02.smc")
-
+ */
 class ENGINE_API CSessionState {
 public:
 //  CStaticArray<CPlayerTarget> ses_apltPlayers; // client targets for all players in game
@@ -108,6 +81,7 @@ public:
 public:
   // network message waiters
   void Start_AtServer_t(void);     // throw char *
+  void Start_AtClient_t(INDEX ctLocalPlayers);     // throw char *
   // Set lerping factor for current frame.
   void SetLerpFactor(CTimerValue tvNow);
   // notify entities of level change
@@ -155,7 +129,7 @@ public:
   INDEX GetPlayersCount(void);
   // attach a player entity to this session 
   void AddPlayer(INDEX iPlayerIndex,CPlayerCharacter &pcCharacter,ULONG &ulEntityID,ULONG &ulWeaponsID,ULONG &ulAnimatorID,INDEX iClient);
-  void DeleteObject(SBYTE type, ULONG index );
+
 
   /* Read session state information from a stream. */
   void Read_t(CTStream *pstr,BOOL bNetwork = FALSE);   // throw char *
@@ -198,6 +172,8 @@ public:
   void StartGame();
   char		m_commIn[2048], m_commInTmp[1024], m_commOut[512], m_oneSentence[512];
   CCmd		*m_pCmd;
+
+  void SwapItem( int tab, int row, int col, int tab2, int row2, int col2 );
   
   //0714 kwon
   void ReceiveUIMessage(CNetworkMessage *istr);
@@ -206,9 +182,7 @@ public:
   void ReceiveSSkillMessage(CNetworkMessage *istr);
   void ReceiveQuickSlotMessage(CNetworkMessage *istr);
   void ReceiveExchangeMessage(CNetworkMessage *istr);
-#ifdef HP_PERCENTAGE
-  void ReceiveDamageRealStatMessage(CNetworkMessage *istr);
-#endif // HP_PERCENTAGE
+  void ReceiveDamageMessage(CNetworkMessage *istr);
   void ReceiveAttackMessage(CNetworkMessage *istr);
   void ReceiveItemMessage(CNetworkMessage *istr);
   void ReceiveGoZoneMessage(CNetworkMessage *istr);
@@ -216,9 +190,19 @@ public:
   void ReceiveInventoryMessage(CNetworkMessage *istr);
   void ReceiveGmMessage(CNetworkMessage *istr);
 // [KH_070316] 변경 프리미엄 메모리 관련
-  void ReceiveMemPosMessage(CNetworkMessage *istr);
+  void ReceiveMemPosMessage(UBYTE recvMSG, CNetworkMessage *istr);
   void ReceiveGoToMessage(CNetworkMessage *istr);
   void ReceiveMoveMessage(CNetworkMessage *istr);
+  void ReceiveStatusMessage(CNetworkMessage *istr);
+  void ReceiveAtMessage(CNetworkMessage *istr);
+  void ReceiveDisappearMessage(CNetworkMessage *istr);
+  void ReceiveAppearMessage(CNetworkMessage *istr);
+  
+  void ReceiveMobAppearMessage(CNetworkMessage *istr);			// Mob Appear
+  void ReceiveCharacterAppearMessage(CNetworkMessage *istr);	// Character Appear
+  void ReceivePetAppearMessage(CNetworkMessage *istr,BOOL isNew);
+  void ReceiveSummonAppearMessage(CNetworkMessage *istr);		// Summon Appear
+  void ReceiveWildPetAppearMessage(CNetworkMessage *istr);		// Wild Pet Appear
   // 로그인 관련 메시지...
   void ReceiveLoginMessage(CNetworkMessage *istr);
   void ReceiveServerListMessage(CNetworkMessage *istr);
@@ -233,6 +217,7 @@ public:
   void ReceiveQuestMessage(CNetworkMessage *istr);
   
   void ReceiveEnvMessage( CNetworkMessage *istr );//1013
+  void ReceiveMobStatusMessage( CNetworkMessage *istr );//1013
   void ReceiveAssistMessage( CNetworkMessage *istr );
   void ReceiveWarpMessage(CNetworkMessage *istr);
   void ReceivePkMessage(CNetworkMessage *istr);
@@ -244,14 +229,10 @@ public:
   void ReceiveGuildMessage(CNetworkMessage *istr);
   void ReceiveTeachMessage(CNetworkMessage *istr);
   void ReceiveChangeJobMessage(CNetworkMessage *istr);  
+  void ReceiveBillingMessage( CNetworkMessage *istr ); // Date : 2005-05-06(오후 9:20:21), By Lee Ki-hwan
   void ReceiveMessengerMessage( CNetworkMessage *istr ); 
   void ReceiveMessengerExMessage( CNetworkMessage *istr ); 
-
-  void ReceiveExpeditionMessage( CNetworkMessage *istr ); // [sora] 원정대 시스템
-  void ReceiveFactoryMessage( CNetworkMessage *istr );		// 아이템 제작
-
-  void ReceiveAffinityMessage( CNetworkMessage *istr );	// [6/5/2009 rumist] affinity message handler. 
-
+  void ReceiveTradeAgentMessage( CNetworkMessage *istr ); //경매 시스템
   //wooss 050818
   void ReceiveExtendMessage(CNetworkMessage *istr);	//확장 메시지
   void ReceiveFailMessage(CNetworkMessage *istr); // 실패 메시지 출력
@@ -262,8 +243,12 @@ public:
 // [KH_070413] 스승의날 이벤트 관련 추가
   void ReceiveEventMaster(CNetworkMessage *istr);
   ///////////////////////////////////////////////////////////////////////////////////
-	//2013/04/03 jeil 나스 아이템 삭제
-  void ReceiveMoneyMessage(CNetworkMessage *istr);
+
+  // WSS_NPROTECT 070402 ------------------------------->>
+ #ifndef NO_GAMEGUARD
+  void ReceiveExnProtect(CNetworkMessage *istr);
+ #endif
+  // ---------------------------------------------------<<
   
   void ReceivePetStatusMessage( CNetworkMessage *istr ); 
   void ReceivePetMountMessage( CNetworkMessage *istr );
@@ -279,6 +264,7 @@ public:
   
   void ReceivePartyRecall( CNetworkMessage *istr );  // wooss 060306
   
+  void ReceiveElementalStatusMessage( CNetworkMessage *istr );
   void ReceiveElementalDeleteMessage( CNetworkMessage *istr );
   void ReceiveEvocationStart( CNetworkMessage *istr );
   void ReceiveEvocationStop( CNetworkMessage *istr );
@@ -299,175 +285,14 @@ public:
   void ReceiveCashPersonShopMessage(CNetworkMessage *istr);
 
   void ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr);
-  // connie [2009/9/8] - NPC 찾기
-  void ReceiveNPCPortalMessage(CNetworkMessage* istr);
-  
-  // message end check. [9/22/2009 rumist]
-  void ReceiveExLoadingEndMessage(CNetworkMessage* istr);
-  
-  void ReceiveNickNameMessage(CNetworkMessage* istr);	// 호칭
-
-  // [100208: selo] 퀘스트 아이템 다시 받기
-  void ReceiveTakeAgainQuestItem(CNetworkMessage* istr);
-
-  void RecieveCostume2Message(CNetworkMessage* istr);
-
-  void RecieveSocketSystemMessage( CNetworkMessage* istr );
-
-  void RecieveLordCostumeMessage( CNetworkMessage* istr );
-  
-  // [2010/08/25 : Sora] ADD_SUBJOB 보조직업 관련 메시지처리
-  void RecieveSubJobMessage(CNetworkMessage* istr);
-  
-  void RecievePromotionEventMessage(CNetworkMessage* istr);
-
-  //added by sam 10/11/11
-  void RecieveRankingView(CNetworkMessage* istr);  
-  void ReceiveExpressMessage(CNetworkMessage* istr);
-  void ReceivePetStashMessage(CNetworkMessage* istr);
-  void ReceiveCalendarMessage(CNetworkMessage* istr);
-void ReceiveRVRMessage(CNetworkMessage* istr);
-
-  void ReceiveTimerItemMessage(CNetworkMessage* istr);
-  
-  void RecieveMonsterMercenaryCardMessage( CNetworkMessage* istr );		// [2010/10/20 : Sora] 몬스터 용병 카드
-
-  void RecieveFaceOffMessage( CNetworkMessage* istr );
-  
-  void RecieveLuckyDrawBoxMessage( CNetworkMessage* istr );
-
-  void RecieveMsgBoxShow ( CNetworkMessage* istr );		//added by sam 11/01/04 메시지 박스를 보여 줄 메시지를 서버에서 보내준다. 
-  void RecieveUsedPartyItemMessage( CNetworkMessage* istr );		// used item for party only. [4/21/2011 rumist]
-  void RecieveRoyalrumbleMessage( CNetworkMessage* istr );			// royal rumble [4/19/2011 rumist]
-  void RecieveMasterStoneMessage( CNetworkMessage* istr );			// 마스터 스톤 사용 결과 받기
-  void RecieveRankingListExMessage( CNetworkMessage* istr );		// 랭킹 시스템 개편 [trylord : 110825]
-  void ReceiveDurabilityMessage(CNetworkMessage* istr); // 내구도
-  void ReceiveAttendanceMessage(CNetworkMessage* istr); // 출석 체크
-
-  void ReceiveToggleMessage(CNetworkMessage* istr);	// 토글 스킬 메시지.
-  void ReceiveItemCollectionMessage(CNetworkMessage* istr);	// 아이템 수집 메시지.
-
-  void ReceivePremiumCharMessage(CNetworkMessage* istr); // 프리미엄 캐릭터 메시지.
-  void ReceiveNewsMessage(CNetworkMessage* istr);	// GM 공지
-
-  void ReceiveItemComposMessage(CNetworkMessage* istr); // 1407 유물 사냥꾼 ( 합성 시스템 )
-
 
 protected:
 	int		m_iRecentGroup;
 	int		m_iRecentServer;
-
-private:
-	void updateMoney(CNetworkMessage* istr);
-	void setItemInfo(int tabId, UpdateClient::itemInfo* pInfo);
-	void setWearItemInfo( UpdateClient::itemInfo* pInfo );
-	void setWearCostItemInfo( UpdateClient::itemInfo* pInfo );
-	void setNewItemEffect(int tabId, int InvenIdx, BOOL bOnOff);
-	void updateInvenList(CNetworkMessage* istr);
-	void updateItemAdd(CNetworkMessage* istr);
-	void updateItemDelete(CNetworkMessage* istr);
-	void updateItemCount(CNetworkMessage* istr);
-	void updateItemCountSwap(CNetworkMessage* istr);
-
-	void updateItemPlus(CNetworkMessage* istr);
-	void updateItemPlus2(CNetworkMessage* istr);
-	void updateItemFlag(CNetworkMessage* istr);
-	void updateItemUsed(CNetworkMessage* istr);
-	void updateItemUsed2(CNetworkMessage* istr);
-	void updateItemWearPos(CNetworkMessage* istr);
-	void updateItemOption(CNetworkMessage* istr);
-	void updateItemSocket(CNetworkMessage* istr);
-	void updateItemOriginVar(CNetworkMessage* istr);
-	void updateItemComposite(CNetworkMessage* istr);
-		
-	void updateItemUse(CNetworkMessage* istr);
-	void updateItemUseError(CNetworkMessage* istr);
-
-	// 일반 장비
-	void updateWearItemUsed(CNetworkMessage* istr);
-	void updateWearItemPlus(CNetworkMessage* istr);
-	void updateWearItemFlag(CNetworkMessage* istr);
-
-	void ReceiveItemWearError(CNetworkMessage* istr);
-
-	void updateItemWear(CNetworkMessage* istr);
-	void updateItemTakeOff(CNetworkMessage* istr);
-	void updateWearItemList(CNetworkMessage* istr);
-	void updateWearItemInfo(CNetworkMessage* istr);
-
-	// 코스튬 장비
-	void updateCostWear(CNetworkMessage* istr);
-	void updateCostTakeOff(CNetworkMessage* istr);
-	void updateWearCostList(CNetworkMessage* istr);
-
-	// 한벌 의상
-	void updateCostSuitWear(CNetworkMessage* istr);
-	void ReceiveCostSuitTakeOff();
-	
-	void updateMoneyReason(CNetworkMessage* istr);
-
-	void updateOldTimerItem(CNetworkMessage* istr);
-	void updateEraseAllItem(CNetworkMessage* istr);
-
-	void updateStashPasswordFlag(CNetworkMessage* istr);
-
-	void updateDurabilityForInventory(CNetworkMessage* istr);
-	void updateDurabilityForWear(CNetworkMessage* istr);
-
-	void ReceiveItemExchange(CNetworkMessage* istr);
-
-	//-------------------------------------------------------------
-	void updateStatus(CNetworkMessage* istr); // 캐릭터 정보
-	void updateAt(CNetworkMessage* istr); // 캐릭터 위치 정보
-
-	void updateElementalStatus(CNetworkMessage* istr); // 소환수 정보
-	void updatePartyMemberInfo(CNetworkMessage* istr); // 파티원 정보
-	void updateExpedMemberInfo(CNetworkMessage* istr); // 원정대원 정보
-	
-	// Appear
-	void updateNpcAppear(CNetworkMessage *istr);			
-	void updatePcAppear(CNetworkMessage *istr);	
-	void updatePetAppear(CNetworkMessage *istr);
-	void updateElementalAppear(CNetworkMessage *istr);
-	void updateAPetAppear(CNetworkMessage *istr);
-	void updateDisappear(CNetworkMessage *istr);
-
-	void updateStatusPC(CNetworkMessage *istr);
-	void updateStatusNPC(CNetworkMessage *istr);
-	void updateStatusPet(CNetworkMessage *istr);
-	void updateStatusElemental(CNetworkMessage *istr);
-	void updateStatusAPet(CNetworkMessage* istr); // APet 정보
-
-	void updateDamage(CNetworkMessage* istr);
-	//-------------------------------------------------------------
-	// Extend
-	bool RecvExtend(CNetworkMessage* istr);
-	void recvExRestart(CNetworkMessage* istr);
-	void recvExMonsterCombo(CNetworkMessage* istr);
-
-#if		!defined(WORLD_EDITOR)
-	typedef boost::function< void(CNetworkMessage*) >	_recv_func;
-	typedef std::map< int, _recv_func>					_map_packet;
-	typedef std::map< int, _recv_func>::iterator		_map_packet_iter;
-#endif	// WORLD_EDITOR
-	
-	void reg_packet();
-	void reg_packet_info();
-	void reg_packet_comm();
-
-#if		!defined(WORLD_EDITOR)
-	_map_packet		m_packet[MSG_MAX];
-#endif	// WORLD_EDITOR
 };
 
 BOOL PCStartEffectGroup(const char *szEffectGroupName, SLONG slPCIndex, CEntity *penPC = NULL, float fDelayTime=0.0f);
 BOOL ENGINE_API WildPetStartEffectGroup(const char *szEffectGroupName, SLONG slPetIndex, CEntity *penPet = NULL );
-
-#ifdef	VER_TEST
-const char* strMSG_MAIN[];
-const char* strMSG_EXTEND[];
-const char* strMSG_UPDATE[];
-#endif	// VER_TEST
 
 #endif  /* include-once check. */
 

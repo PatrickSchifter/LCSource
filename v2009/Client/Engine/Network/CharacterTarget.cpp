@@ -4,13 +4,6 @@
 #include <Engine/Network/CharacterTarget.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Network/CNetwork.h>
-#include <Engine/Entities/InternalClasses.h>
-//#include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIListBox.h>
-#include <Engine/Interface/UIGuildBattle.h>
-#include <Engine/Interface/UISiegeWarfareDoc.h>
-#include <Engine/Info/MyInfo.h>
 
 
 #define		PLAYER_STATE_PKMODE			(1 << 3)	// PK 모드
@@ -18,25 +11,22 @@
 /*
 *  Constructor.
 */
-CCharacterTarget::CCharacterTarget(void)
-	: pGuildmark(NULL)
+CCharacterTarget::CCharacterTarget(void) 
 {
-	m_eType = eOBJ_CHARACTER;
-
-	m_nIdxServer = -1;
-	m_nIdxClient = -1;
-	
-	m_nType = -1;                
-	cha_iJob2 = 0;	
+	cha_Index = -1;
+	cha_iType = -1;                
+	cha_iJob2 = 0;
+	cha_iClientIndex = -1;
 	cha_yLayer = 0;
 	cha_BuffCount = 0;
-	m_pEntity = NULL;
+	cha_pEntity = NULL;
 //	cha_pPet	= NULL;
 
 //	cha_pFirstSummon	= NULL;
 //	cha_pSecondSummon	= NULL;
 	cha_state = 0;
 	cha_pkstate = 0;
+	cha_strName	= CTString("");
 	cha_sbGuildRank = 0; 
 	ChatMsg.Reset();
 	ShopMsg.Reset();
@@ -48,34 +38,16 @@ CCharacterTarget::CCharacterTarget(void)
 	cha_strGuildName	= CTString("");
 	cha_ubGuildNameColor =0;				//[071123: Su-won] DRATAN_SIEGE_DUNGEON
 	cha_nChangeMobId    = -1;
-	cha_nTransformIndex	= 0;
+	cha_nTransformID	= -1;
 	cha_sbItemEffectOption = 0;
 	cha_bExtension		= FALSE;
 	cha_statusEffect.SetType(CStatusEffect::T_CHARACTER);
 	cha_sbJoinFlagMerac		= WCJF_NONE;
 	cha_sbJoinFlagDratan	= WCJF_NONE;		// WSS_DRATAN_SIEGEWARFARE 070720	
-	cha_sbAttributePos = MATT_UNWALKABLE;
+	cha_sbAttributePos = ATTC_UNWALKABLE;
 	cha_iPetType	= -1;
 	cha_iPetAge		= -1;
 	cha_bPetRide	= FALSE;
-	cha_Label = -1; // [sora] 타겟 표식
-	cha_NickType	= 0;		// 호칭 인덱스
-
-	int i;
-	for (i = 0; i < WEAR_COSTUME; ++i)
-	{
-		cha_CosWear[i] = -1;
-		cha_itemPlus[i] = -1;
-	}
-
-	for (i = 0; i < WEAR_ACCESSORY_MAX; ++i)
-	{
-		cha_itemAccessory[i] = -1;
-	}
-
-	cha_iSyndicateType = 0;
-	cha_iSyndicateGrade = 0;
-	cha_iHitType = 0;
 }
 
 /*
@@ -83,57 +55,23 @@ CCharacterTarget::CCharacterTarget(void)
 */
 CCharacterTarget::~CCharacterTarget(void) 
 {
-	_pUISWDoc->StopEffect( m_nIdxServer );
-	_pUISWDoc->StopGuildMasterEffect( m_nIdxServer );
-
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	
-	// 해당 캐릭터의 Index 바탕으로 Guild Effect를 삭제해줌
-	pUIMgr->GetGuildBattle()->StopGuildEffect ( m_nIdxServer );
-	// 해당 캐릭터의 타겟 이펙트를 없앰...
-	pUIMgr->StopTargetEffect( m_nIdxServer );
-	// WSS_DRATAN_SIEGEWARFARE 2007/10/14
-	_pUISWDoc->StopConsensusEffect(m_nIdxServer); // WSS_DRATAN_SIEGEWARFARE 2007/10/14		
-
-	cha_itemEffect.DelAccessoryEffect();	// 서포터 이펙트 등, 악세사리 이펙트 삭제
-	((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ClearTargetInfo(m_pEntity);
-	cha_itemEffect.DeleteNickEffect();	// 호칭 이펙트 삭제
-	cha_itemEffect.DeletePetStashEffect(); // 펫창고 이펙트 삭제
-
-	for (int i = 0; i < cha_BuffCount; ++i)
-	{
-		cha_Buff[i].Destroy_pEG();
-	}
-
-	if (m_pEntity != NULL)
-	{
-		m_pEntity->en_pCharacterTarget = NULL;
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET_REAL))
-			pInfo->TargetClear(eTARGET_REAL);
-
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET))
-			pInfo->TargetClear(eTARGET);
-
-		m_pEntity->Destroy( FALSE );
-		m_pEntity = NULL;
-	}
-
-	SAFE_DELETE(pGuildmark);
 }
 
 CCharacterTarget::CCharacterTarget(const CCharacterTarget &other)
 {
-	m_eType = other.m_eType;
-	m_nIdxServer = other.m_nIdxServer;
-	m_nType = other.m_nType;
+	cha_Index = other.cha_Index;
+	cha_iType = other.cha_iType;
 	cha_iJob2 = other.cha_iJob2;
-	m_nIdxClient = other.m_nIdxClient;
-	m_pEntity = other.m_pEntity;
-	m_strName = other.m_strName;
+	cha_iClientIndex = other.cha_iClientIndex;
+	cha_pEntity = other.cha_pEntity;
+//	cha_pPet	= other.cha_pPet;
+//	cha_pFirstSummon	= other.cha_pFirstSummon;
+//	cha_pSecondSummon	= other.cha_pSecondSummon;
+	cha_strName = other.cha_strName;
 	cha_pkstate = other.cha_pkstate;
 	cha_state = other.cha_state;
 	cha_sbShopType = other.cha_sbShopType;
+	//cha_sbNameLength = other.cha_sbNameLength;
 	cha_yLayer = other.cha_yLayer;
 	cha_BuffCount = other.cha_BuffCount;
 	cha_lGuildIndex = other.cha_lGuildIndex;
@@ -147,7 +85,7 @@ CCharacterTarget::CCharacterTarget(const CCharacterTarget &other)
 	ShopMsg = other.ShopMsg;
 	cha_bLegit = other.cha_bLegit;	
 	cha_nChangeMobId	= other.cha_nChangeMobId;
-	cha_nTransformIndex	= other.cha_nTransformIndex;
+	cha_nTransformID	= other.cha_nTransformID;
 	cha_sbItemEffectOption = other.cha_sbItemEffectOption;
 	cha_sbJoinFlagMerac	= other.cha_sbJoinFlagMerac;
 	cha_sbJoinFlagDratan= other.cha_sbJoinFlagDratan;	// WSS_DRATAN_SIEGEWARFARE 070720	
@@ -163,40 +101,19 @@ CCharacterTarget::CCharacterTarget(const CCharacterTarget &other)
 	memcpy(&cha_itemEffect, &other.cha_itemEffect, sizeof(cha_itemEffect));
 	memset((void*)&other.cha_itemEffect, 0, sizeof(other.cha_itemEffect));
 	cha_statusEffect.SetType(CStatusEffect::T_CHARACTER);
-	cha_Label = other.cha_Label; // [sora] 타겟 표식
-	cha_NickType = other.cha_NickType;
-
-	int i;
-	for (i = 0; i < WEAR_COSTUME_TOTAL; ++i)
-	{
-		cha_CosWear[i] = other.cha_CosWear[i];
-		cha_itemPlus[i] = other.cha_itemPlus[i];
-	}
-
-	for (i = 0; i < WEAR_ACCESSORY_MAX; ++i)
-	{
-		cha_itemAccessory[i] = other.cha_itemAccessory[i];
-	}
-
-	if (other.pGuildmark != NULL)
-		pGuildmark = (CUIGuildMarkIcon*)other.pGuildmark->Clone();
-	
-	SetSyndicate( other.cha_iSyndicateType, other.cha_iSyndicateGrade );
-	cha_iHitType = other.cha_iHitType;
 }
 
 CCharacterTarget &CCharacterTarget::operator=(const CCharacterTarget &other)
 {
-	m_eType = other.m_eType;
-	m_nIdxServer = other.m_nIdxServer;
-	m_nType = other.m_nType;
+	cha_Index = other.cha_Index;
+	cha_iType = other.cha_iType;
 	cha_iJob2 = other.cha_iJob2;
-	m_nIdxClient = other.m_nIdxClient;
-	m_pEntity = other.m_pEntity;
+	cha_iClientIndex = other.cha_iClientIndex;
+	cha_pEntity = other.cha_pEntity;
 //	cha_pPet	= other.cha_pPet;
 	//cha_pFirstSummon	= other.cha_pFirstSummon;
 	//cha_pSecondSummon	= other.cha_pSecondSummon;
-	m_strName = other.m_strName;
+	cha_strName = other.cha_strName;
 	cha_pkstate = other.cha_pkstate;
 	cha_state = other.cha_state;
 	cha_sbShopType = other.cha_sbShopType;
@@ -214,7 +131,7 @@ CCharacterTarget &CCharacterTarget::operator=(const CCharacterTarget &other)
 	ShopMsg = other.ShopMsg;
 	cha_bLegit = other.cha_bLegit;	
 	cha_nChangeMobId = other.cha_nChangeMobId;
-	cha_nTransformIndex	= other.cha_nTransformIndex;
+	cha_nTransformID	= other.cha_nTransformID;
 	cha_sbItemEffectOption = other.cha_sbItemEffectOption;
 	cha_sbJoinFlagMerac = other.cha_sbJoinFlagMerac;
 	cha_sbJoinFlagDratan = other.cha_sbJoinFlagDratan;	// WSS_DRATAN_SIEGEWARFARE 070720	
@@ -230,36 +147,83 @@ CCharacterTarget &CCharacterTarget::operator=(const CCharacterTarget &other)
 	memcpy(&cha_itemEffect, &other.cha_itemEffect, sizeof(cha_itemEffect));
 	memset((void*)&other.cha_itemEffect, 0, sizeof(other.cha_itemEffect));
 	cha_statusEffect.SetType(CStatusEffect::T_CHARACTER);
-	cha_Label = other.cha_Label; // [sora] 타겟 표식
-	cha_NickType = other.cha_NickType;
-
-	int i;
-	for (i = 0; i < WEAR_COSTUME_TOTAL; ++i)
-	{
-		cha_CosWear[i] = other.cha_CosWear[i];
-		cha_itemPlus[i] = other.cha_itemPlus[i];
-	}
-
-	for (i = 0; i < WEAR_ACCESSORY_MAX; ++i)
-	{
-		cha_itemAccessory[i] = other.cha_itemAccessory[i];
-	}
-
-	if (other.pGuildmark != NULL)
-		pGuildmark = (CUIGuildMarkIcon*)other.pGuildmark->Clone();
-
-	SetSyndicate( other.cha_iSyndicateType, other.cha_iSyndicateGrade );
-	cha_iHitType = other.cha_iHitType;
 	return *this;
+}
+
+void CCharacterTarget::Init()
+{
+	CEntity	*penEntity;
+
+	if( _pNetwork->ga_World.EntityExists( cha_iClientIndex, penEntity ) ) 
+	{
+		// 애완동물을 타고 있는 경우라면 애완동물도 없애야 한다.
+		_pNetwork->LeavePet( penEntity );
+
+		penEntity->en_pCharacterTarget = NULL;
+		if( penEntity == _pNetwork->_TargetInfoReal.pen_pEntity )
+			_pNetwork->_TargetInfoReal.Init();
+
+		if( penEntity == _pNetwork->_TargetInfo.pen_pEntity )
+			_pNetwork->_TargetInfo.Init();
+
+		penEntity->Destroy( FALSE );
+	}
+
+	cha_Index = -1;
+	cha_iType = -1;                
+	cha_iJob2 = 0;
+	cha_iClientIndex = -1;
+	cha_yLayer = 0;
+	cha_BuffCount = 0;
+	cha_pEntity = NULL;
+//	cha_pPet	= NULL;
+//	cha_pFirstSummon	= NULL;
+//	cha_pSecondSummon	= NULL;
+	cha_state = 0;
+	cha_pkstate = 0;
+	cha_strName	= CTString("");
+	ChatMsg.Reset();
+	ShopMsg.Reset();
+	cha_bLegit = FALSE;	
+	cha_statusEffect.Reset();
+	cha_itemEffect.Clear();
+	cha_sbItemEffectOption = 0;
+	cha_sbJoinFlagMerac = WCJF_NONE;
+	cha_sbJoinFlagDratan = WCJF_NONE;		// WSS_DRATAN_SIEGEWARFARE 070720	
+	cha_sbAttributePos = ATTC_UNWALKABLE;
+	cha_iPetType	= -1;
+	cha_iPetAge		= -1;
+	cha_bPetRide	= FALSE;
+	
+	cha_lGuildIndex		= -1;
+	cha_lGuildLevel		= -1;
+	cha_lGuildPosition	= -1;
+	cha_strGuildName	= CTString("");
+	cha_ubGuildNameColor =0;	//[071123: Su-won] DRATAN_SIEGE_DUNGEON
+	cha_sbGuildRank		= 0;	// WSS_GUILDMASTER 070517
+	cha_nChangeMobId    = -1;
+	cha_nTransformID	= -1;
+	cha_bExtension		= FALSE;
+	cha_nFame			= 0;
+	cha_statusEffect.SetType(CStatusEffect::T_CHARACTER);
+
+	// wooss 070312 ---------------------------->>
+	// kw : WSS_WHITEDAY_2007 
+	for(int i=0;i<BUFF_MAX_COUNT;i++)
+	{
+		cha_Buff[i].Init();
+	}	
+	// -----------------------------------------<<
 }
 
 void CCharacterTarget::SetData( INDEX index, INDEX type, CTString &name, CEntity *pEntity, SBYTE sbyLayer,  UWORD state, SLONG pkstate)
 {	
-	m_nIdxServer = index;
-	m_nType = type;         
-	m_strName = name;
+	cha_Index = index;
+	cha_iType = type;         
+	cha_strName = name;
+	//cha_sbNameLength = cha_strName.Length();
 	cha_yLayer = sbyLayer;
-	m_pEntity = pEntity;
+	cha_pEntity = pEntity;
 	cha_state	= state; 
 	cha_pkstate = pkstate;
 	cha_statusEffect.SetType(CStatusEffect::T_CHARACTER);
@@ -267,13 +231,12 @@ void CCharacterTarget::SetData( INDEX index, INDEX type, CTString &name, CEntity
 
 void CCharacterTarget::SetClientChaId(INDEX index)
 {	
-	m_nIdxClient = index;
+	cha_iClientIndex = index;
 }
 
 void CCharacterTarget::RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
-	int iBuff;
-	for( iBuff = 0; iBuff < cha_BuffCount; iBuff++ )
+	for( int iBuff = 0; iBuff < cha_BuffCount; iBuff++ )
 	{
 		if( cha_Buff[iBuff].m_slItemIndex == slItemIndex &&
 			cha_Buff[iBuff].m_slSkillIndex == slSkillIndex )
@@ -283,8 +246,6 @@ void CCharacterTarget::RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	ASSERT( iBuff < cha_BuffCount );
 	if( iBuff == cha_BuffCount )
 		return;
-
-	cha_Buff[iBuff].Destroy_pEG();
 
 	for( iBuff++; iBuff < cha_BuffCount; iBuff++ )
 	{
@@ -351,35 +312,4 @@ CEffectGroup* CCharacterTarget::IsBuffBySkill( SLONG skillIndex )
 	}
 	return NULL;	
 }
-
-void CCharacterTarget::SetSyndicate( INDEX iType, INDEX iGrade)
-{
-	cha_iSyndicateType = iType;
-	cha_iSyndicateGrade = iGrade;
-}
-
-int CCharacterTarget::GetShowAnotherRelicEffect()
-{
-	int nShowEffect = -1;
-	int nTemp = -1;
-
-	for (int i = 0; i < WEAR_ACCESSORY_MAX; ++i)
-	{
-		if (cha_itemAccessory[i] <= -1)
-			continue;
-
-		if (cha_itemAccessory[i] == 10953)
-			nTemp = 2;
-		else if (cha_itemAccessory[i] == 10952)
-			nTemp = 1;
-		else if (cha_itemAccessory[i] == 10951)
-			nTemp = 0;
-
-		if (nTemp > nShowEffect)
-			nShowEffect = nTemp;
-	}
-
-	return nShowEffect;
-}
-
 // ----------------------------------------------------------------------------<<

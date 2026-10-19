@@ -12,10 +12,10 @@ enum UPGRADE_TYPE {
 	SWUT_GATE,
 };
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIDrawFigure.h>
-// #include <Engine/Interface/UICheckButton.h>
-// #include <Engine/Interface/UISpinButton.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIDrawFigure.h>
+#include <Engine/Interface/UICheckButton.h>
+#include <Engine/Interface/UISpinButton.h>
 
 class CUISiegeWarfareNew : public CUIWindow
 {
@@ -34,7 +34,7 @@ class CUISiegeWarfareNew : public CUIWindow
 	CUIButton				m_btnApply;													// 가동하기
 	CUIButton				m_btnReturn;												// 돌아가기
 	CUICheckButton			m_cbtnTowerOn[DRATAN_TOWER_KIND_MAX][DRATAN_TOWER_MAX];		// 가동 여부 버튼
-	CHAR					m_cTowerSet[DRATAN_TOWER_KIND_MAX];							// 가동 여부 셑( 타워 종류별 순서대로 )
+	CHAR					m_cTowerSet[DRATAN_TOWER_KIND_MAX];							// 가동 여부 ?V( 타워 종류별 순서대로 )
 	// UV of Lines
 	UIRectUV				m_uvLineV;						// UV of vertical line
 	UIRectUV				m_uvLineH;						// UV of Horizon line
@@ -131,7 +131,7 @@ public:
 
 	inline void SetTimeReply(BOOL bReceived) { m_bReceivedTime = bReceived; } // WSS_DRATAN_SIEGEWARFARE 2007/10/16
 	inline BOOL GetTimeReply() { return m_bReceivedTime; }
-	inline void SetWaitTime(int tWaitTime) { m_iWaitTime_const = m_iWaitTime = tWaitTime , m_tmStartTime = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); /*timeGetTime();*/}
+	inline void SetWaitTime(int tWaitTime) { m_iWaitTime_const = m_iWaitTime = tWaitTime , m_tmStartTime = timeGetTime();}
 	inline int	GetWaitTime() { return m_iWaitTime;}
 	inline void SetWarState(BOOL bOnWar) { m_bOnWar = bOnWar; }
 	inline BOOL GetWarState() { return m_bOnWar; }
@@ -162,9 +162,8 @@ public:
 
 	// Rebirth Quarter
 	void SendBuyQuarter(int iNpcIdx);
-     
-	// [2011/07/13 : Sora] 부활대기창 여는 함수 추가
-	ENGINE_API void	OpenWaitTime();
+      
+
 };
 
 

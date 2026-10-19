@@ -1,15 +1,10 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <map>
 #include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Ska/Render.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
+#include <Engine/PetInfo.h>
 #include <iostream>
-#include <Engine/Object/ActorMgr.h>
-#include <Engine/Info/MyInfo.h>
 
 #define	SLEARN_TAB_WIDTH				96
 #define	SLEARN_COMMAND_TAB_CX			60
@@ -36,11 +31,6 @@ static int	_iMaxMsgStringChar = 0;
 
 static int m_nSelSkillIndex = -1;
 
-// Global Variable.
-// UI renewal [9/16/2009 rumist]
-extern INDEX g_iXPosInPetInfo;
-extern INDEX g_iYPosInPetInfo;
-
 // ----------------------------------------------------------------------------
 // Name : CUIPetInfo()
 // Desc : Constructor
@@ -58,36 +48,6 @@ CUIPetInfo::CUIPetInfo()
 CUIPetInfo::~CUIPetInfo()
 {
 	Destroy();
-
-	SPetSkill_map::iterator	iter = m_mapPetSkill.begin();
-	SPetSkill_map::iterator	eiter = m_mapPetSkill.end();
-
-	for (; iter != eiter; ++iter)
-	{
-		{
-			UIButton_map::iterator citer = iter->second.m_btnmapCommands.begin();
-			UIButton_map::iterator ceiter = iter->second.m_btnmapCommands.end();
-
-			for (; citer != ceiter; ++citer)
-			{
-				SAFE_DELETE(citer->second);
-			}
-
-			iter->second.m_btnmapCommands.clear();
-		}
-
-		{
-			UIButton_map::iterator citer = iter->second.m_btnmapSkills.begin();
-			UIButton_map::iterator ceiter = iter->second.m_btnmapSkills.end();
-
-			for (; citer != ceiter; ++citer)
-			{
-				SAFE_DELETE(citer->second);
-			}
-
-			iter->second.m_btnmapSkills.clear();
-		}
-	}
 }
 
 // ----------------------------------------------------------------------------
@@ -119,7 +79,11 @@ void CUIPetInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	PetInfo().SetName(MISTERY_DRAGON_BOY,_S(2427,"드레이크"));
 	PetInfo().SetName(MISTERY_DRAGON_ADULT,_S(2428,"드래곤"));
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+
+
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = SLEARN_DESC_CHAR_WIDTH / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -222,6 +186,37 @@ void CUIPetInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_lbPetDesc.SetScrollDownUV( UBS_CLICK, 230, 71, 239, 78, fTexWidth, fTexHeight );
 	m_lbPetDesc.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_lbPetDesc.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+
+	// Active skill buttons
+	for( int iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
+	{
+		m_btnCommands[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETINFO,
+											UBET_SKILL, 0, iRow );
+	}
+
+	// Passive skill buttons
+	for( iRow = 0; iRow < SLEARN_SLOT_ROW_TOTAL ; iRow++ )
+	{
+		m_btnSkills[iRow].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETINFO,
+											UBET_SKILL, 0, iRow );
+	}
+
+	// 내 상태 설정 메뉴
+	m_tpToolTip.m_rtBackUL.SetUV( 147 + 71, 471 - 358, 154 + 71, 478 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackUM.SetUV( 157 + 71, 471 - 358, 159 + 71, 478 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackUR.SetUV( 162 + 71, 471 - 358, 169 + 71, 478 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackML.SetUV( 147 + 71, 481 - 358, 154 + 71, 483 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackMM.SetUV( 157 + 71, 481 - 358, 159 + 71, 483 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackMR.SetUV( 162 + 71, 481 - 358, 169 + 71, 483 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackLL.SetUV( 147 + 71, 486 - 358, 154 + 71, 493 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackLM.SetUV( 157 + 71, 486 - 358, 159 + 71, 493 - 358, fTexWidth, fTexHeight );
+	m_tpToolTip.m_rtBackLR.SetUV( 162 + 71, 486 - 358, 169 + 71, 493 - 358, fTexWidth, fTexHeight );
+	
+	m_tpToolTip.Create( NULL, 93, 43, 100, 100, _pUIFontTexMgr->GetLineHeight()+2, 8, 5, 1, FALSE );
+	m_tpToolTip.SetScrollBar( FALSE );
+	m_tpToolTip.Hide();
+
+
 }
 
 // ----------------------------------------------------------------------------
@@ -231,14 +226,6 @@ void CUIPetInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 void CUIPetInfo::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
 {
 	SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 );
-}
-
-void CUIPetInfo::ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-
-	g_iXPosInPetInfo = GetPosX();
-	g_iYPosInPetInfo = GetPosY();
 }
 
 // ----------------------------------------------------------------------------
@@ -260,7 +247,7 @@ void CUIPetInfo::InitPetInfo( )
 {
 	// Reset description
 	m_lbPetDesc.ResetAllStrings();
-	LONG	nPetIndex = MY_PET_INFO()->lIndex;
+	LONG	nPetIndex = _pNetwork->_PetTargetInfo.lIndex;
 
 //	m_mapPetSkill[nPetIndex].m_btnmapSkills.sort();	// 자동으로 정렬 될껄 .... 
 //	m_mapPetSkill[nPetIndex].m_btnmapCommands.sort();
@@ -285,7 +272,7 @@ void CUIPetInfo::OpenPetInfo( )
 		return;	
 
 	GetPetDesc();
-	CUIManager::getSingleton()->RearrangeOrder( UI_PETINFO, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PETINFO, TRUE );
 
 	m_nSelCommandID		= -1;
 	m_nSelSkillID	= -1;
@@ -297,7 +284,10 @@ void CUIPetInfo::OpenPetInfo( )
 // ----------------------------------------------------------------------------
 void CUIPetInfo::ClosePetInfo()
 {
-	CUIManager::getSingleton()->RearrangeOrder( UI_PETINFO, FALSE );
+	// Close message box of skill learn
+//	_pUIMgr->CloseMessageBox( MSGCMD_PETINFO_NOTIFY );
+
+	_pUIMgr->RearrangeOrder( UI_PETINFO, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -306,27 +296,25 @@ void CUIPetInfo::ClosePetInfo()
 // ----------------------------------------------------------------------------
 void CUIPetInfo::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 340,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 340,
 										m_rtBackgroundTop.U0, m_rtBackgroundTop.V0, m_rtBackgroundTop.U1, m_rtBackgroundTop.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY + 340, m_nPosX + m_nWidth, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY + 340, m_nPosX + m_nWidth, m_nPosY + m_nHeight - 7,
 										m_rtBackgroundBottom.U0, m_rtBackgroundBottom.V0, m_rtBackgroundBottom.U1, m_rtBackgroundBottom.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY + m_nHeight - 7, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY + m_nHeight - 7, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackgroundBottom2.U0, m_rtBackgroundBottom2.V0, m_rtBackgroundBottom2.U1, m_rtBackgroundBottom2.V1,
 										0xFFFFFFFF );
 										
 	// Tab
-	pDrawPort->AddTexture( m_nPosX + m_rcTab.Left + SLEARN_TAB_WIDTH, m_nPosY + m_rcTab.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcTab.Left + SLEARN_TAB_WIDTH, m_nPosY + m_rcTab.Top,
 		m_nPosX + m_rcTab.Left + SLEARN_TAB_WIDTH + 1, m_nPosY + m_rcTab.Bottom,
 		m_rtTabLine.U0, m_rtTabLine.V0, m_rtTabLine.U1, m_rtTabLine.V1,
 		0xFFFFFFFF );	
@@ -347,32 +335,34 @@ void CUIPetInfo::Render()
 	m_lbPetDesc.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Skill buttons
 	RenderSkillBtns();
 	
 	// Text in skill learn
-	pDrawPort->PutTextEx( _S(2173, "펫 정보창" ), m_nPosX + SLEARN_TITLE_TEXT_OFFSETX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2173, "펫 정보창" ), m_nPosX + SLEARN_TITLE_TEXT_OFFSETX,	
 										m_nPosY + SLEARN_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 	
-	pDrawPort->PutTextExCX( _S(2174, "커맨드" ), m_nPosX + SLEARN_COMMAND_TAB_CX,	
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(2174, "커맨드" ), m_nPosX + SLEARN_COMMAND_TAB_CX,	
 		m_nPosY + SLEARN_TAB_SY,
 		m_nCurrentTab == PETINFO_TAB_COMMAND ? 0xFFCB00FF : 0x6B6B6BFF );
-	pDrawPort->PutTextExCX( _S(91, "스킬" ), m_nPosX + SLEARN_SKILL_TAB_CX,	
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(91, "스킬" ), m_nPosX + SLEARN_SKILL_TAB_CX,	
 		m_nPosY + SLEARN_TAB_SY,
 		m_nCurrentTab == PETINFO_TAB_SKILL ? 0xFFCB00FF : 0x6B6B6BFF );	
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
-	//pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
+	//_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+	m_tpToolTip.Render();
 	
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 	
 }
 
@@ -384,17 +374,11 @@ void CUIPetInfo::GetPetDesc( )
 {
 	m_lbPetDesc.ResetAllStrings();
 
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	CPetTargetInfom* pPetInfo = pInfo->GetMyPetInfo();
-
-	if (pPetInfo == NULL)
-		return;
-
 	// Make description of skill
 	CTString	strTemp;
 	
 	CNetworkLibrary::sPetInfo	TempPet;
-	TempPet.lIndex				= pPetInfo->lIndex;
+	TempPet.lIndex				= _pNetwork->_PetTargetInfo.lIndex;
 	std::vector<CNetworkLibrary::sPetInfo>::iterator iter = 
 		std::find_if(_pNetwork->m_vectorPetList.begin(), _pNetwork->m_vectorPetList.end(), CNetworkLibrary::FindPet(TempPet) );
 	if( iter != _pNetwork->m_vectorPetList.end() )
@@ -405,7 +389,7 @@ void CUIPetInfo::GetPetDesc( )
 			m_lbPetDesc.AddString( 1, (*iter).strNameCard, 0xffe3a8ff );				
 		}
 
-		strTemp.PrintF( "%s", (const char*)PetInfo().GetName(pPetInfo->iType, pPetInfo->iAge) );
+		strTemp.PrintF( "%s", PetInfo().GetName(_pNetwork->_PetTargetInfo.iType, _pNetwork->_PetTargetInfo.iAge) );
 		m_lbPetDesc.AddString( 0, strTemp );	
 
 		strTemp.PrintF( _S(2176,"%d 레벨"), (*iter).lLevel );	
@@ -455,18 +439,16 @@ void CUIPetInfo::RenderSkillBtns()
 	int	nX = SLEARN_SLOT_SX, nY = SLEARN_SLOT_SY;
 	int	iRowE;
 	int nCount = 0;
-	LONG	nPetIndex = MY_PET_INFO()->lIndex;
+	LONG	nPetIndex = _pNetwork->_PetTargetInfo.lIndex;
 	int nSelectID = -1;
 	UIButton_map::iterator	iter;
 	UIButton_map::iterator	iterSelect;
 	UIButton_map::iterator	iterBegin;
 	UIButton_map::iterator	iterEnd;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	LONG nCommandIconPos = m_sbCommandIcon.GetScrollPos();
 	LONG nSkillIconPos = m_sbSkillIcon.GetScrollPos();
-	int nIconPos = 0;
+	int nIconPos;
 
 // Button Render 
 	// Command tab
@@ -510,8 +492,11 @@ void CUIPetInfo::RenderSkillBtns()
 		if( iter->second->IsEmpty() )		
 			continue;
 		
-		iter->second->Render(pDrawPort);
+		iter->second->Render();
 	}
+
+// Render all button elements
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 	//Render Select OutLine
 	iRowE = nIconPos + SLEARN_SLOT_ROW;
@@ -519,16 +504,16 @@ void CUIPetInfo::RenderSkillBtns()
 	if( nSelectID >= 0 && nIconPos <= nSelectID && nSelectID < iRowE )
 	{
 		// Set skill learn texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		iterSelect->second->GetAbsPos( nX, nY );
 
-		pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
 											m_rtSelOutline.U0, m_rtSelOutline.V0,
 											m_rtSelOutline.U1, m_rtSelOutline.V1,
 											0xFFFFFFFF );
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	}
 	
 // Render Skill Info
@@ -543,14 +528,14 @@ void CUIPetInfo::RenderSkillBtns()
 	{   
 		if( iter->second->IsEmpty() ) continue;
 
-		LONG nSkillIndex = iter->second->getIndex();
+		LONG nSkillIndex = iter->second->GetSkillIndex();
 		CSkill	&rSkill = _pNetwork->GetSkillData( nSkillIndex );
-		SBYTE	sbLevel = MY_INFO()->GetPetSkillLevel(nPetIndex, nSkillIndex);
+		SBYTE	sbLevel = iter->second->GetSkillLevel();
 
 		GetSkillDesc( nSkillIndex, sbLevel );
 
-		pDrawPort->PutTextExCX( m_strShortDesc, m_nPosX + PETINFO_SLOT_INFO_CX, m_nPosY + nY, 0xC5C5C5FF );
-		pDrawPort->PutTextExCX( m_strShortDesc2, m_nPosX + PETINFO_SLOT_INFO_CX, m_nPosY + nY + 15, 0xC5C5C5FF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc, m_nPosX + PETINFO_SLOT_INFO_CX, m_nPosY + nY, 0xC5C5C5FF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( m_strShortDesc2, m_nPosX + PETINFO_SLOT_INFO_CX, m_nPosY + nY + 15, 0xC5C5C5FF );
 	
 	}
 	
@@ -572,11 +557,7 @@ void CUIPetInfo::GetSkillDesc( int nSkillIndex, int nSkillLevel )
 	case CSkill::ST_PET_COMMAND:			// Command
 		{
 			m_strShortDesc.PrintF( "%s ", rSelSkill.GetName() );
-#if defined(G_RUSSIA)
-			m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
-#else
-			m_strShortDesc2.PrintF( "Lv %d", nSkillLevel );			
-#endif
+			m_strShortDesc2.PrintF( "Lv %d", nSkillLevel );
 		}
 		break;
 	case CSkill::ST_PET_SKILL_ACTIVE:		// Skill
@@ -587,51 +568,23 @@ void CUIPetInfo::GetSkillDesc( int nSkillIndex, int nSkillLevel )
 			if( nNeedHP == 0 )
 			{
 				if( nNeedMP == 0 )
-				{
-#if defined(G_RUSSIA)
-					m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
-#else
 					m_strShortDesc2.PrintF( "Lv %d", nSkillLevel );
-#endif
-				}
 				else
-				{
-#if defined(G_RUSSIA)
-					m_strShortDesc2.PrintF( "%s %d %s %d", _S( 4414, "LV" ), nSkillLevel, _S( 4412, "MP" ), nNeedMP);						
-#else
 					m_strShortDesc2.PrintF( "Lv %d MP %d", nSkillLevel, nNeedMP );
-#endif
-				}
 			}
 			else
 			{
 				if( nNeedMP == 0 )
-				{
-#if defined(G_RUSSIA)
-					m_strShortDesc2.PrintF( "%s %d %s %d", _S( 4414, "LV" ), nSkillLevel, _S( 4412, "MP" ) ,nNeedMP);
-#else
 					m_strShortDesc2.PrintF( "Lv %d HP %d", nSkillLevel, nNeedHP );
-#endif
-				}
 				else
-				{
-#if defined(G_RUSSIA)
-					m_strShortDesc2.PrintF( "%s %d %s %d %s %d",_S( 4414, "LV" ), nSkillLevel,_S( 4412, "MP" ), nNeedMP,_S( 4411, "HP" ), nNeedHP );
-#else
 					m_strShortDesc2.PrintF( "Lv %d MP %d HP %d", nSkillLevel, nNeedMP, nNeedHP );
-#endif
-				}
 			}
 		}
 		break;
 	case CSkill::ST_PET_SKILL_PASSIVE:		
 		{
 			m_strShortDesc.PrintF( "%s ", rSelSkill.GetName() );
-#if defined(G_RUSSIA)
-			m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
-#else
 			m_strShortDesc2.PrintF( "Lv %d", nSkillLevel );
-#endif
 		}
 		break;
 	}
@@ -656,18 +609,13 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 	int	nX = LOWORD( pMsg->lParam );
 	int	nY = HIWORD( pMsg->lParam );
 
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	CPetTargetInfom* pPetInfo = pInfo->GetMyPetInfo();
-
 	// Mouse message
 	switch( pMsg->message )
 	{
 	case WM_MOUSEMOVE:
 		{
-			if( IsInside( nX, nY ) == FALSE)
-				return WMSG_FAIL;
-				
-			CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+			if( IsInside( nX, nY ) )
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -698,34 +646,33 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 				// Reset state of selected button
 				if( bLButtonDownInBtn && m_nSelSkillIndex >= 0 && ( pMsg->wParam & MK_LBUTTON ) )
 				{
-					UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.find(m_nSelSkillIndex);
-					UIButton_map::iterator iterBegin = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.begin();
-					UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.end();
+					UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.find(m_nSelSkillIndex);
+					UIButton_map::iterator iterBegin = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.begin();
+					UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.end();
 					
 					if( iter != iterEnd )
-					{
-						CUIManager* pUIManager = CUIManager::getSingleton();
-
-						if (pUIManager->GetDragIcon() == NULL && (ndX != 0 || ndY != 0))
+					{						
+						if( _pUIMgr->GetHoldBtn().IsEmpty() && ( ndX != 0 || ndY != 0 ) )
 						{
-							pUIManager->SetHoldBtn(iter->second);
+							_pUIMgr->SetHoldBtn( *(iter->second) );
+							int	nOffset = BTN_SIZE / 2;
+							_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						}
-
+						iter->second->SetBtnState( UBES_IDLE );
 						bLButtonDownInBtn = FALSE;
 					}
 				}
 				else if( m_sbCommandIcon.MouseMessage( pMsg ) != WMSG_FAIL )
 					return WMSG_SUCCESS;
-				else //if( IsInsideRect( nX, nY, m_rcIcons ) )
+				else if( IsInsideRect( nX, nY, m_rcIcons ) )
 				{
 					UIButton_map::iterator iter;
-					UIButton_map::iterator iterBegin = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.begin();
-					UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.end();
+					UIButton_map::iterator iterBegin = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.begin();
+					UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.end();
 
 					iter = iterBegin;
 					int nIconPos = m_sbCommandIcon.GetScrollPos();
-					int nCount;
-					for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
+					for( int nCount = 0; nCount < nIconPos; iter++, nCount++ );
 						
 					bool bShowToolTip = false;
 					// Render 
@@ -733,12 +680,18 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 					{
 						if( iter->second->MouseMessage( pMsg ) != WMSG_FAIL )
 						{
+							GetSkillInfo( iter->second->GetSkillIndex(), iter );
 							return WMSG_SUCCESS;
 						}
 					}
-
+					m_tpToolTip.Hide();
 					return WMSG_SUCCESS;
+				}	
+				else
+				{
+					m_tpToolTip.Hide();
 				}
+
 			}
 			// Passive skill tab
 			else if( m_nCurrentTab == PETINFO_TAB_SKILL )
@@ -746,47 +699,56 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 				// Reset state of selected button
 				if( bLButtonDownInBtn && m_nSelSkillIndex >= 0 && ( pMsg->wParam & MK_LBUTTON ) )
 				{
-					UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.find(m_nSelSkillIndex);
-					UIButton_map::iterator iterBegin = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.begin();
-					UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.end();
-
-					CUIManager* pUIManager = CUIManager::getSingleton();
-
-					if (pUIManager->GetDragIcon() == NULL && ( ndX != 0 || ndY != 0 ))
+					UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.find(m_nSelSkillIndex);
+					UIButton_map::iterator iterBegin = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.begin();
+					UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.end();
+					
+					if( _pUIMgr->GetHoldBtn().IsEmpty() && ( ndX != 0 || ndY != 0 ) )
 					{
 						if( _pNetwork->GetSkillData( iter->first ).GetType() == CSkill::ST_PET_SKILL_ACTIVE)
 						{													
-							pUIManager->SetHoldBtn(iter->second);
+							_pUIMgr->SetHoldBtn( *(iter->second) );
+							int	nOffset = BTN_SIZE / 2;
+							_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						}
 					}
-
+					iter->second->SetBtnState( UBES_IDLE );
 					bLButtonDownInBtn = FALSE;
 				}
 				// Passive icon scroll bar
 				else if( m_sbSkillIcon.MouseMessage( pMsg ) != WMSG_FAIL )
 					return WMSG_SUCCESS;
-				else //if( IsInsideRect( nX, nY, m_rcIcons ) )
+				else if( IsInsideRect( nX, nY, m_rcIcons ) )
 				{
 					UIButton_map::iterator iter;
-					UIButton_map::iterator iterBegin = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.begin();
-					UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.end();
+					UIButton_map::iterator iterBegin = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.begin();
+					UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.end();
 
 					iter = iterBegin;
-					int nIconPos = m_sbSkillIcon.GetScrollPos();
-					int nCount;
-					for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
+					int nIconPos = m_sbCommandIcon.GetScrollPos();
+					for( int nCount = 0; nCount < nIconPos; iter++, nCount++ );
 						
 					bool bShowToolTip = false;
 					// Render 
 					for( nCount = 0; ( iter != iterEnd ) && ( nCount < SLEARN_SLOT_ROW ); iter++, nCount++ )
-					{
+					{      
 						if( iter->second->MouseMessage( pMsg ) != WMSG_FAIL )
 						{
+							GetSkillInfo( iter->second->GetSkillIndex(), iter );
 							return WMSG_SUCCESS;
 						}
 					}
+					m_tpToolTip.Hide();
 					return WMSG_SUCCESS;
 				}
+				else
+				{
+					m_tpToolTip.Hide();
+				}
+			}		
+			else
+			{
+				m_tpToolTip.Hide();
 			}
 		}
 		break;
@@ -795,8 +757,6 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
 				nOldX = nX;		nOldY = nY;
 
 				// Close button
@@ -829,16 +789,23 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 							
 							if( m_nCurrentTab == PETINFO_TAB_COMMAND )
 							{
-								if( (iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.find( m_nSelSkillIndex ) )
-									== m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.end() )	break;								
+								if( (iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.find( m_nSelSkillIndex ) )
+									== m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.end() )	
+								{
+								//	break;
+								}
 							}
 							else if( m_nCurrentTab == PETINFO_TAB_SKILL )
 							{
-								if( (iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.find( m_nSelSkillIndex ) )
-									== m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.end() )	break;																
+								if( (iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.find( m_nSelSkillIndex ) )
+									== m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.end() )	
+								{
+								//	break;
+								}
 							}
 						
 						}
+						_pUIMgr->RearrangeOrder( UI_PETINFO, TRUE );
 						return WMSG_SUCCESS;
 					}
 					else
@@ -870,8 +837,8 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
         
 						int	nIconPos = m_sbCommandIcon.GetScrollPos();
 
-						UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.begin();
-						UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.end();
+						UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.begin();
+						UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.end();
 										
 						int nCount;
 						for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
@@ -883,7 +850,7 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 							{
 								m_nSelSkillIndex = iter->first;
 								bLButtonDownInBtn = TRUE;
-								pUIManager->RearrangeOrder( UI_PETINFO, TRUE );
+								_pUIMgr->RearrangeOrder( UI_PETINFO, TRUE );
 								return WMSG_SUCCESS;
 							}	
 						}
@@ -904,8 +871,8 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
         
 						int	nIconPos = m_sbSkillIcon.GetScrollPos();
 
-						UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.begin();
-						UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.end();
+						UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.begin();
+						UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.end();
 										
 						int nCount;
 						for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
@@ -918,13 +885,13 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 								m_nSelSkillIndex = iter->first;
 								bLButtonDownInBtn = TRUE;
 
-								pUIManager->RearrangeOrder( UI_PETINFO, TRUE );
+								_pUIMgr->RearrangeOrder( UI_PETINFO, TRUE );
 								return WMSG_SUCCESS;
 							}	
 						}					
 					}
 				}
-				pUIManager->RearrangeOrder( UI_PETINFO, TRUE );
+				_pUIMgr->RearrangeOrder( UI_PETINFO, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -934,10 +901,8 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 		{
 			bLButtonDownInBtn = FALSE;
 
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -976,8 +941,8 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 					{
 						int	nIconPos = m_sbCommandIcon.GetScrollPos();
 
-						UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.begin();
-						UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapCommands.end();
+						UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.begin();
+						UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapCommands.end();
 										
 						int nCount;
 						for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
@@ -989,9 +954,9 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 							{
 								if( wmsgResult == WMSG_COMMAND )
 								{
-									if (MY_INFO()->GetSkillDelay(iter->second->getIndex()) == false)
+									if( !iter->second->GetSkillDelay() )
 									{
-										UseCommand( iter->second->getIndex() );
+										UseCommand( iter->second->GetSkillIndex() );
 									}
 								}
 								return WMSG_SUCCESS;
@@ -1010,8 +975,8 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 					{
 						int	nIconPos = m_sbSkillIcon.GetScrollPos();
 						
-						UIButton_map::iterator iter = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.begin();
-						UIButton_map::iterator iterEnd = m_mapPetSkill[pPetInfo->lIndex].m_btnmapSkills.end();
+						UIButton_map::iterator iter = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.begin();
+						UIButton_map::iterator iterEnd = m_mapPetSkill[_pNetwork->_PetTargetInfo.lIndex].m_btnmapSkills.end();
 										
 						int nCount;
 						for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
@@ -1021,11 +986,11 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 						{      							
 							if( (wmsgResult = iter->second->MouseMessage( pMsg )) != WMSG_FAIL )
 							{
-								if( wmsgResult == WMSG_SUCCESS )
+								if( wmsgResult == WMSG_COMMAND )
 								{
-									if (MY_INFO()->GetPetSkillDelay(pPetInfo->lIndex, iter->second->getIndex()) == false)
+									if( !iter->second->GetSkillDelay() )
 									{
-										UseSkill( iter->second->getIndex() );
+										UseSkill( iter->second->GetSkillIndex() );
 									}
 								}
 								return WMSG_SUCCESS;
@@ -1040,7 +1005,7 @@ WMSG_RESULT CUIPetInfo::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -1120,9 +1085,6 @@ void CUIPetInfo::AddSkill( int nPetIndex, int nSkillIndex, SBYTE sbSkillLevel )
 	int nIndex = 0;
 	SPetSkill_map::iterator	iter;
 
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-	CPetTargetInfom* pPetInfo = pInfo->GetMyPetInfo();
-
 	// 펫 데이터가 존재 하지 않다면 추가해 준다. ( Pet List ... )
 	if( m_mapPetSkill.find( nPetIndex ) == m_mapPetSkill.end() )
 	{
@@ -1133,10 +1095,12 @@ void CUIPetInfo::AddSkill( int nPetIndex, int nSkillIndex, SBYTE sbSkillLevel )
 	}
 
 	// 새로운 스킬을 추가한다
-	CUIIcon* pbtnSkill = new CUIIcon();
+	CUIButtonEx* pbtnSkill = new CUIButtonEx();
 
-	pbtnSkill->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETINFO, UBET_SKILL);
-	pbtnSkill->setData(UBET_SKILL, nSkillIndex);
+	pbtnSkill->Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PETINFO,
+											UBET_SKILL );
+
+	pbtnSkill->SetSkillInfo( nSkillIndex, sbSkillLevel );
 	UIButton_map::value_type tmpVal( nSkillIndex, pbtnSkill ); 
 	
 	int nSkillSize = -1;  
@@ -1157,15 +1121,31 @@ void CUIPetInfo::AddSkill( int nPetIndex, int nSkillIndex, SBYTE sbSkillLevel )
 			nSkillSize = m_mapPetSkill[nPetIndex].m_btnmapSkills.size();
 		}
 		break;
-	default:
-		SAFE_DELETE(pbtnSkill);
-		break;
 	}
 
 	// 현재 펫이 활성화 되어 있고 해당 펫의 정보 일때만 스크롤 바를 조절함		
-	if( pPetInfo->bIsActive && pPetInfo->lIndex == nPetIndex )
+	if( _pNetwork->_PetTargetInfo.bIsActive && _pNetwork->_PetTargetInfo.lIndex == nPetIndex )
 	{
 		m_sbCommandIcon.SetCurItemCount( nSkillSize );
+	}
+}
+
+//------------------------------------------------------------------------------
+// CUIPetInfo::UpdateSkill
+// Explain:  
+// Date : 2005-09-27,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIPetInfo::UpdateSkill( int nPetIndex, int nSkillIndex, SBYTE sbLevel )
+{
+	switch( _pNetwork->GetSkillData( nSkillIndex ).GetType() )
+	{
+		case CSkill::ST_PET_COMMAND:			// Command
+			m_mapPetSkill[nPetIndex].m_btnmapCommands[nSkillIndex]->SetSkillLevel( sbLevel );
+			break;
+		case CSkill::ST_PET_SKILL_ACTIVE:		// Skill
+		case CSkill::ST_PET_SKILL_PASSIVE:	
+			m_mapPetSkill[nPetIndex].m_btnmapSkills[nSkillIndex]->SetSkillLevel( sbLevel );
+			break;
 	}
 }
 
@@ -1181,32 +1161,10 @@ void CUIPetInfo::ClearSkills( int nPetIndex )
 		m_mapPetSkill.clear();
 	}
 	else 
-	{
-		UIButton_map::iterator	iter;
-		UIButton_map::iterator	eiter;
-
-		iter = m_mapPetSkill[nPetIndex].m_btnmapCommands.begin();
-		eiter = m_mapPetSkill[nPetIndex].m_btnmapCommands.end();
-
-		for (;iter != eiter; ++iter)
-		{
-			SAFE_DELETE(iter->second);
-		}
-
+	{	
 		m_mapPetSkill[nPetIndex].m_btnmapCommands.clear();
-
-		iter = m_mapPetSkill[nPetIndex].m_btnmapSkills.begin();
-		eiter = m_mapPetSkill[nPetIndex].m_btnmapSkills.end();
-
-		for (;iter != eiter; ++iter)
-		{
-			SAFE_DELETE(iter->second);
-		}
-
 		m_mapPetSkill[nPetIndex].m_btnmapSkills.clear();
 	}
-
-	MY_INFO()->ClearPetSkill(nPetIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -1232,6 +1190,24 @@ BOOL CUIPetInfo::IsClearSkills( int nPetIndex )
 	}
 
 	return bIsClear;
+}
+
+//------------------------------------------------------------------------------
+// CUIPetInfo::GetSkillLevel
+// Explain:  
+// Date : 2005-09-27,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+int CUIPetInfo::GetSkillLevel( int nPetIndex, int nSkillIndex )
+{
+	switch( _pNetwork->GetSkillData( nSkillIndex ).GetType() )
+	{
+		case CSkill::ST_PET_COMMAND:			// Command
+			return m_mapPetSkill[nPetIndex].m_btnmapCommands[nSkillIndex]->GetSkillLevel();
+		case CSkill::ST_PET_SKILL_ACTIVE:		// Skill
+		case CSkill::ST_PET_SKILL_PASSIVE:		
+			return m_mapPetSkill[nPetIndex].m_btnmapSkills[nSkillIndex]->GetSkillLevel();
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------------
@@ -1275,7 +1251,7 @@ void CUIPetInfo::UseCommand( int nIndex )
 {
 	if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsPetActing() )
 	{
-		_pNetwork->SendPetCommandMessage( nIndex, MY_PET_INFO()->pen_pEntity );
+		_pNetwork->SendPetCommandMessage( nIndex, _pNetwork->_PetTargetInfo.pen_pEntity );
 	}
 }
 
@@ -1301,12 +1277,25 @@ void CUIPetInfo::StartSkillDelay( int nIndex )
 	if( nIndex == -1 ) 
 		return;
 
-	LONG	nPetIndex = MY_PET_INFO()->lIndex;
+	LONG	nPetIndex = _pNetwork->_PetTargetInfo.lIndex;
 
 	if( nPetIndex == -1 )
 		return;
+	UIButton_map::iterator	iter;	
+	UIButton_map::iterator	iterBegin;
+	UIButton_map::iterator	iterEnd;
 
-	MY_INFO()->SetPetSkillDelay(nPetIndex, nIndex, true);
+	iterBegin	= m_mapPetSkill[nPetIndex].m_btnmapSkills.begin();
+	iterEnd		= m_mapPetSkill[nPetIndex].m_btnmapSkills.end();
+	iter		= iterBegin;
+	for( INDEX nCount = 0; ( iter != iterEnd ) && ( nCount < SLEARN_SLOT_ROW ); iter++, nCount++ )
+	{
+		if( iter->second->GetSkillIndex() == nIndex )
+		{
+			iter->second->SetSkillDelay( TRUE );
+			return;
+		}
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -1317,7 +1306,7 @@ BOOL CUIPetInfo::GetSkillDelay( int nIndex )
 {
 	if( nIndex == -1 ) 
 		return FALSE;
-	LONG	nPetIndex = MY_PET_INFO()->lIndex;
+	LONG	nPetIndex = _pNetwork->_PetTargetInfo.lIndex;
 
 	if( nPetIndex == -1 )
 		return FALSE;
@@ -1331,15 +1320,114 @@ BOOL CUIPetInfo::GetSkillDelay( int nIndex )
 	iter		= iterBegin;
 	for( INDEX nCount = 0; ( iter != iterEnd ) && ( nCount < SLEARN_SLOT_ROW ); iter++, nCount++ )
 	{
-		if( iter->second->getIndex() == nIndex )
+		if( iter->second->GetSkillIndex() == nIndex )
 		{
-			if (iter->second->getIndex() > 0)
+			if( iter->second->GetSkillDelay() )
 				return TRUE;
 			else
 				return FALSE;
 		}
 	}
 	return FALSE;
+}
+
+//------------------------------------------------------------------------------
+// CUIPetInfo::GetSkillInfo
+// Explain:  
+// Date : 2005-10-06,Author: Lee Ki-hwan
+//------------------------------------------------------------------------------
+void CUIPetInfo::GetSkillInfo( int nIndex, UIButton_map::iterator iter )
+{
+	CSkill	&rSkill = _pNetwork->GetSkillData( nIndex );
+	int nSkillLevel = iter->second->GetSkillLevel();
+
+	//iter->second->Get
+	m_tpToolTip.ResetAllStrings();
+	
+	// Get skill name
+	CTString strTemp;
+	strTemp.PrintF( "%s Lv %d", rSkill.GetName(), nSkillLevel );
+	m_tpToolTip.AddMenuList( strTemp, 0xffffffff );
+
+	nSkillLevel--;
+	switch( rSkill.GetType() )
+	{
+	case CSkill::ST_PET_COMMAND:
+		m_tpToolTip.AddMenuList( _S(2174, "커맨드" ), 0x00ff00FF );
+		break;
+	case CSkill::ST_PET_SKILL_ACTIVE:
+		{
+			m_tpToolTip.AddMenuList( _S( 63, "액티브 스킬" ), 0x0000ffFF );
+
+			int	nNeedMP = rSkill.GetNeedMP( nSkillLevel );
+			int	nNeedHP = rSkill.GetNeedHP( nSkillLevel );
+			if( nNeedHP == 0 )
+			{
+				if( nNeedMP != 0 )
+				{
+					strTemp.PrintF( _S( 64, "소모 MP : %d" ), nNeedMP );
+					m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+				}
+			}
+			else
+			{
+				if( nNeedMP == 0 )
+				{
+					strTemp.PrintF( _S( 500, "소모 HP : %d" ), nNeedHP );		
+					m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+				}
+				else
+				{
+					strTemp.PrintF( _S( 64, "소모 MP : %d" ), nNeedMP );
+					m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+					strTemp.PrintF( _S( 500, "소모 HP : %d" ), nNeedHP );		
+					m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+				}
+			}
+
+			if( rSkill.GetPower( nSkillLevel ) > 0 )
+			{
+				strTemp.PrintF( _S( 65, "위력 : %d" ), rSkill.GetPower( nSkillLevel ) );
+				m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+			}
+			strTemp.PrintF( _S( 66, "유효 거리 : %.1f" ), rSkill.GetFireRange() );
+			m_tpToolTip.AddMenuList( strTemp, 0x94B7C6FF );
+		}
+		break;
+
+	case CSkill::ST_PET_SKILL_PASSIVE:
+		m_tpToolTip.AddMenuList( _S( 67, "패시브 스킬" ), 0xff0000FF );
+		break;
+	}
+	const char	*pDesc = rSkill.GetToolTip();
+	if( pDesc != NULL )
+	{
+		strTemp.PrintF( "%s", pDesc );
+		m_tpToolTip.AddMenuList( strTemp, 0x9E9684FF );
+	}
+
+	int nInfoPosX, nInfoPosY;
+	iter->second->GetAbsPos( nInfoPosX, nInfoPosY );
+
+	nInfoPosX += BTN_SIZE / 2 - m_tpToolTip.GetWidth() / 2;
+
+	if( nInfoPosX < _pUIMgr->GetMinI() )
+		nInfoPosX = _pUIMgr->GetMinI();
+	else if( nInfoPosX + m_tpToolTip.GetWidth() > _pUIMgr->GetMaxI() )
+		nInfoPosX = _pUIMgr->GetMaxI() - m_tpToolTip.GetWidth();
+
+	if( nInfoPosY - m_tpToolTip.GetHeight() < _pUIMgr->GetMinJ() )
+	{
+		nInfoPosY += BTN_SIZE;
+	}
+	else
+	{
+		nInfoPosY -= m_tpToolTip.GetHeight();		
+	}
+
+	
+	m_tpToolTip.SetPos( nInfoPosX, nInfoPosY );
+	m_tpToolTip.Show();
 }
 
 //------------------------------------------------------------------------------
@@ -1354,12 +1442,12 @@ void CUIPetInfo::AddPetExchangeInfo( SPetExchangInfo sPetExchangeInfo )
 	int nPetIndex = TempData.lPetIndex;
 
 	SPetExchangInfo_map::iterator iter = m_mapPetExchangeInfo.find( nPetIndex );
-	
-	if( iter != m_mapPetExchangeInfo.end() )	//이미 가지고 있는 펫 데이터이면 업데이트...
+	if( iter != m_mapPetExchangeInfo.end() )
 		iter->second =TempData;
-	else										//가지고 있지 않는 펫 데이터이면 추가...
+	else
 	{
 		SPetExchangInfo_map::value_type tmpVal( nPetIndex, TempData );
+
 		m_mapPetExchangeInfo.insert( tmpVal );
 	}
 }
@@ -1414,10 +1502,11 @@ BOOL CUIPetInfo::GetPetExchangeInfo( int nPetIndex, SPetExchangeInfoString& strP
 		{
 			return FALSE;
 		}
+
 	}
 
 	if( TempPet.strNameCard.Length() >0 )
-		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), (const char*)_S(3526, "명찰"), (const char*)TempPet.strNameCard);
+		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), _S(3526, "명찰"), TempPet.strNameCard);
 	strPetExchangeInfo.strLevel.PrintF( _S(2254 , "레벨 : %d"), TempPet.lLevel );
 	strPetExchangeInfo.strHP.PrintF( _S(2255,"생명력 : %d/%d"), TempPet.lHP, TempPet.lMaxHP );
 	strPetExchangeInfo.strlExp.PrintF( _S(2256,"경험치 : %I64d/%I64d"), TempPet.llExp, TempPet.llNeedExp );
@@ -1437,31 +1526,6 @@ BOOL CUIPetInfo::GetPetExchangeInfo( int nPetIndex, SPetExchangeInfoString& strP
 	}
 #endif
 	return TRUE;
-}
-
-LONG CUIPetInfo::GetRemainSealed(int nPetIdx)
-{
-	CNetworkLibrary::sPetInfo	TempPet;
-	TempPet.lIndex				= nPetIdx;
-
-	std::vector<CNetworkLibrary::sPetInfo>::iterator iter;
-	iter =std::find_if(_pNetwork->m_vectorPetList.begin(), _pNetwork->m_vectorPetList.end(), CNetworkLibrary::FindPet(TempPet) );
-
-	if( iter != _pNetwork->m_vectorPetList.end() )
-	{
-		return (*iter).lRemainRebirth;
-	}
-	else
-	{
-		SPetExchangInfo_map::iterator PetInfoiter = m_mapPetExchangeInfo.find( nPetIdx );
-
-		if( PetInfoiter != m_mapPetExchangeInfo.end() )
-		{
-			return PetInfoiter->second.lRemainRebirth;
-		}
-	}
-
-	return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -1491,23 +1555,17 @@ void CUIPetInfo::PetExchangeMount( LONG lResult )
 	case MSG_EX_PET_CHANGE_MOUNT_ERROR_GRADE:	// 이미 마운트 타입일 때
 		strMessage = _S(2187, "이미 탈것으로 변화되었습니다." );
 		break;
-	case MSG_EX_PET_CHANGE_MOUNT_ERROR_JOB: // 마운트 할 수 없는 직업
-		strMessage = _S(4701, "마운트를 할 수 없는 직업입니다."); //==! TODO[selo] 스트링
-		break;		
 	}
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->SetCSFlagOff(CSF_PETRIDING);
 		// Close message box of skill learn
-	pUIManager->CloseMessageBox( MSGCMD_PET_CHANGE_NOTIFY );
+	_pUIMgr->CloseMessageBox( MSGCMD_PET_CHANGE_NOTIFY );
 
 	// Create message box of skill learn
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
 								UI_NONE, MSGCMD_PET_CHANGE_NOTIFY );
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 }
 
@@ -1518,67 +1576,30 @@ void CUIPetInfo::PetExchangeMount( LONG lResult )
 //------------------------------------------------------------------------------
 void CUIPetInfo::ToggleVisible()
 {
-	if( IsVisible() )
-	{
-		g_iXPosInPetInfo = GetPosX();
-		g_iYPosInPetInfo = GetPosY();
-	}
-	else
-	{
-		SetPos( g_iXPosInPetInfo, g_iYPosInPetInfo );
-	}
-
 	BOOL	bVisible = !IsVisible();
-	CUIManager::getSingleton()->RearrangeOrder( UI_PETINFO, bVisible );
+	_pUIMgr->RearrangeOrder( UI_PETINFO, bVisible );
 
-	if (bVisible == FALSE)
-	{
-		SPetSkill_map::iterator	iter = m_mapPetSkill.begin();
-		SPetSkill_map::iterator	eiter = m_mapPetSkill.end();
-
-		for (; iter != eiter; ++iter)
-		{
-			{
-				UIButton_map::iterator citer = iter->second.m_btnmapCommands.begin();
-				UIButton_map::iterator ceiter = iter->second.m_btnmapCommands.end();
-
-				for (; citer != ceiter; ++citer)
-				{
-					citer->second->CloseProc();
-				}				
-			}
-
-			{
-				UIButton_map::iterator citer = iter->second.m_btnmapSkills.begin();
-				UIButton_map::iterator ceiter = iter->second.m_btnmapSkills.end();
-
-				for (; citer != ceiter; ++citer)
-				{
-					citer->second->CloseProc();
-				}
-			}
-		}
-	}
 }
 
 BOOL ENGINE_API PetStartEffectGroup(const char *szEffectGroupName, SLONG slPetIndex, CEntity *penPet )
 {
 	if( penPet == NULL )
 	{
-		ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_PET, slPetIndex);
-
-		if (pObject != NULL)
+		INDEX cnt = _pNetwork->ga_srvServer.srv_actPet.Count();
+		
+		for( INDEX i = 0; i < cnt; ++i )
 		{
-			CEntity* pEntity = pObject->GetEntity();
-
-			if (pEntity != NULL && 
-				pEntity->en_pmiModelInstance != NULL && 
-				pEntity->en_pmiModelInstance->GetName() != "")
+			if(_pNetwork->ga_srvServer.srv_actPet[i].pet_Index == slPetIndex )
 			{
-				StartEffectGroup(szEffectGroupName, 
-					&(pEntity->en_pmiModelInstance->m_tmSkaTagManager),
-					_pTimer->GetLerpedCurrentTick());
-				return TRUE;
+				if(_pNetwork->ga_srvServer.srv_actPet[i].pet_pEntity != NULL
+					&& _pNetwork->ga_srvServer.srv_actPet[i].pet_pEntity->en_pmiModelInstance != NULL
+					&& _pNetwork->ga_srvServer.srv_actPet[i].pet_pEntity->en_pmiModelInstance->GetName() != "")
+				{
+					StartEffectGroup(szEffectGroupName
+									, &(_pNetwork->ga_srvServer.srv_actPet[i].pet_pEntity->en_pmiModelInstance->m_tmSkaTagManager)
+									,_pTimer->GetLerpedCurrentTick());
+					return TRUE;
+				}
 			}
 		}
 	}
@@ -1597,12 +1618,12 @@ BOOL ENGINE_API PetStartEffectGroup(const char *szEffectGroupName, SLONG slPetIn
 
 SBYTE CUIPetInfo::GetPetTypeGrade( int nPetIndex )
 {
+	//내 펫 목록에 펫 정보가 없을 경우 펫 교환 정보에서 검색
 	CNetworkLibrary::sPetInfo	TempPet;
 	TempPet.lIndex				= nPetIndex;
 		
 	std::vector<CNetworkLibrary::sPetInfo>::iterator PetInfoiter = 
 	std::find_if(_pNetwork->m_vectorPetList.begin(), _pNetwork->m_vectorPetList.end(), CNetworkLibrary::FindPet(TempPet) );
-	//내 펫 목록에 펫 정보가 없을 경우 펫 교환 정보에서 검색
 	if( PetInfoiter == _pNetwork->m_vectorPetList.end() )
 	{
 		SPetExchangInfo_map::iterator iter;
@@ -1616,32 +1637,6 @@ SBYTE CUIPetInfo::GetPetTypeGrade( int nPetIndex )
 	}
 	else
 		return PetInfoiter->sbPetTypeGrade;
-}
-
-void CUIPetInfo::OnUpdate( float fDeltaTime, ULONG ElapsedTime )
-{
-	int nPetIdx = MY_PET_INFO()->lIndex;
-
-	if (nPetIdx < 0)
-		return;
-
-	bool	bDelay;
-	int	nIconPos = m_sbSkillIcon.GetScrollPos();
-
-	UIButton_map::iterator iter = m_mapPetSkill[nPetIdx].m_btnmapSkills.begin();
-	UIButton_map::iterator iterEnd = m_mapPetSkill[nPetIdx].m_btnmapSkills.end();
-
-	int nCount;
-	for( nCount = 0; nCount < nIconPos; iter++, nCount++ );
-
-	// Render 
-	for( nCount = 0; ( iter != iterEnd ) && ( nCount < SLEARN_SLOT_ROW ); iter++, nCount++)
-	{
-		bDelay = MY_INFO()->GetPetSkillDelay(nPetIdx, iter->second->getIndex());
-
-		if (bDelay)
-			iter->second->setCooltime(true);
-	}		
 }
 
 

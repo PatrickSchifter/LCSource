@@ -1,18 +1,9 @@
 #include "StdH.h"
 #include <Engine/Interface/UIBuff.h>
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Contents/function/TargetInfoNewUI.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Engine/Contents/function/gps.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/UIMsgBoxMgr.h>
-#include <Engine/Help/Util_Help.h>
 
 
 extern INDEX g_iCountry;
-#if defined(G_RUSSIA)
-	extern CFontData *_pfdDefaultFont;
-#endif
 // ----------------------------------------------------------------------------
 // Name : Set()
 // Desc :
@@ -23,7 +14,7 @@ void CBuffIcon::Set( SLONG slItemIndex, SLONG slSkillIndex, SBYTE sbLevel, SLONG
 	m_slItemIndex = slItemIndex;
 	m_slSkillIndex = slSkillIndex;
 	m_sbLevel = sbLevel;
-	m_llRemain = slRemain;
+	m_llRemain = slRemain * 100;
 
 	FLOAT	fTexWidth, fTexHeight;
 	int		nTexRow, nTexCol;
@@ -42,13 +33,13 @@ void CBuffIcon::Set( SLONG slItemIndex, SLONG slSkillIndex, SBYTE sbLevel, SLONG
 	// Item
 	else
 	{
-		CItemData*	pItemData = _pNetwork->GetItemData( slItemIndex );
+		CItemData	&rItemData = _pNetwork->GetItemData( slItemIndex );
 
-		m_nTextureID = pItemData->GetIconTexID();
+		m_nTextureID = rItemData.GetIconTexID();
 		fTexWidth = _pUIBtnTexMgr->GetTexWidth( UBET_ITEM, m_nTextureID );
 		fTexHeight = _pUIBtnTexMgr->GetTexHeight( UBET_ITEM, m_nTextureID );
-		nTexRow = pItemData->GetIconTexRow();
-		nTexCol = pItemData->GetIconTexCol();
+		nTexRow = rItemData.GetIconTexRow();
+		nTexCol = rItemData.GetIconTexCol();
 	}
 
 	int	nUVSX = BTN_SIZE * nTexCol;
@@ -65,20 +56,11 @@ bool CBuffIcon::IsUpSkill() const
 	case 248: // 숙련도 증폭
 	case 249: // 드롭률 증폭
 	case 250: // 나스 증폭 
-	case 1389:
-	case 1390:
-	case 1391:
 		return true;
 		break;
 	}
 	
 	return false;
-}
-
-void CBuffIcon::SetTime( __int64 llStartTime, SLONG slRemain )
-{
-	m_llStartTime = llStartTime;
-	m_llRemain = (__int64)slRemain;
 }
 
 
@@ -108,7 +90,6 @@ CUIBuff::CUIBuff()
 		m_rcMyGoodBuffRow[i].SetRect(-1,-1,-1,-1);
 	}
 	m_rcMyBadBuff.SetRect( -1, -1, -1, -1 );
-	m_nMSGID = -1;
 }
 
 // ----------------------------------------------------------------------------
@@ -159,50 +140,49 @@ void CUIBuff::Create()
 // ----------------------------------------------------------------------------
 void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	// Set buff texture
-	pDrawPort->InitTextureData( m_ptdBuffTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
-	pDrawPort->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Top,
 										m_rcBuffInfo.Left + 7, m_rcBuffInfo.Top + 7,
 										m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Top,
 										m_rcBuffInfo.Right - 7, m_rcBuffInfo.Top + 7,
 										m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Top,
 										m_rcBuffInfo.Right, m_rcBuffInfo.Top + 7,
 										m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Top + 7,
 										m_rcBuffInfo.Left + 7, m_rcBuffInfo.Bottom - 7,
 										m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Top + 7,
 										m_rcBuffInfo.Right - 7, m_rcBuffInfo.Bottom - 7,
 										m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Top + 7,
 										m_rcBuffInfo.Right, m_rcBuffInfo.Bottom - 7,
 										m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left, m_rcBuffInfo.Bottom - 7,
 										m_rcBuffInfo.Left + 7, m_rcBuffInfo.Bottom,
 										m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Left + 7, m_rcBuffInfo.Bottom - 7,
 										m_rcBuffInfo.Right - 7, m_rcBuffInfo.Bottom,
 										m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBuffInfo.Right - 7, m_rcBuffInfo.Bottom - 7,
 										m_rcBuffInfo.Right, m_rcBuffInfo.Bottom,
 										m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
 										0xFFFFFFFF );
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	if( m_nCurInfoLines > 1 )
 	{
@@ -210,56 +190,26 @@ void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 		__int64	llRemainTime;
 		INDEX	iItemIndex;
 
-		BOOL bUpSkill; // IsUpSkill()에서 아이템 인덱스로 하드코딩 되어 있음.
-
 		switch( nWhichBuff )
 		{
 		case MY_BUFF:
-
-#if defined(G_JAPAN )
-			{
-				llRemainTime = m_aMyBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#else
-			{
-				llRemainTime = m_aMyBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#endif
+			llRemainTime = m_aMyBuff[nSelBuff].GetRemainTime( llCurTime ) *WORLDTIME_MUL / 1000;
 			iItemIndex = m_aMyBuff[nSelBuff].GetItemIndex();
-			bUpSkill = m_aMyBuff[nSelBuff].IsUpSkill();
 			break;
 
 		case PARTY_BUFF:
-#if defined( G_JAPAN )
-			{
-				llRemainTime = m_aPartyBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#else
-			{
-				llRemainTime = m_aPartyBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#endif
+			llRemainTime = m_aPartyBuff[nSelBuff].GetRemainTime( llCurTime ) *WORLDTIME_MUL / 1000;
 			iItemIndex = m_aPartyBuff[nSelBuff].GetItemIndex();
-			bUpSkill = m_aPartyBuff[nSelBuff].IsUpSkill();
 			break;
 
 		case TARGET_BUFF:
-#if defined( G_JAPAN )
-			{
-				llRemainTime = m_aTargetBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#else
-			{
-				llRemainTime = m_aTargetBuff[nSelBuff].GetRemainTime( llCurTime );
-			}
-#endif
+			llRemainTime = m_aTargetBuff[nSelBuff].GetRemainTime( llCurTime ) *WORLDTIME_MUL / 1000;
 			iItemIndex = m_aTargetBuff[nSelBuff].GetItemIndex();
-			bUpSkill = m_aTargetBuff[nSelBuff].IsUpSkill();
 			break;
 		}
 
 		// Date : 2005-09-09(오후 4:12:22), By Lee Ki-hwan
-		if( bUpSkill ) 
+		if( m_aMyBuff[nSelBuff].IsUpSkill() ) 
 		{
 			m_strBuffInfo[m_nRemainTimeLine].PrintF( _S( 1885, "남은 시간 : 무제한" ), llRemainTime ); 
 		}
@@ -273,13 +223,14 @@ void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 			//wooss 050903
 			else {
 				CTString tv_str;
-				int tv_tmp	=	llRemainTime;
+				int tv_tmp	=	llRemainTime%86400;		// 24*3600 
 								
-				int tv_day	=	llRemainTime/DEF_DATE_ONE_DAY;
-				int tv_hour	=	(tv_tmp%DEF_DATE_ONE_DAY) / DEF_DATE_ONE_HOUR;
-				int tv_min	=	(tv_tmp%DEF_DATE_ONE_HOUR) / DEF_DATE_ONE_MIN;
-				int tv_sec	=	(tv_tmp%DEF_DATE_ONE_MIN);
-
+				int tv_day	=	llRemainTime/86400;					
+				int tv_hour	=	tv_tmp/3600;			// 60*60
+				tv_tmp		=	tv_tmp%3600;
+				int tv_min	=	tv_tmp/60;
+				int tv_sec	=	tv_tmp%60;
+				
 				m_strBuffInfo[m_nRemainTimeLine].PrintF( _S(2510, "남은 기간 : " ));
 				
 				if( tv_day >0 ) {
@@ -294,21 +245,11 @@ void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 					tv_str.PrintF(_S(2513, "%d분 " ), tv_min); 
 					m_strBuffInfo[m_nRemainTimeLine]+=tv_str; 
 				}
-#if defined(G_JAPAN)	// 일본은 초 단위 표시
-				{
-					if( tv_sec >0) 
-					{
-						tv_str.PrintF(_S(2514, "%d초 " ), tv_sec); 
-						m_strBuffInfo[m_nRemainTimeLine]+=tv_str; 
-					}
-				}
-#else
-				if( (tv_day <= 0 && tv_hour <= 0 && tv_min <= 0) && tv_sec > 0) 
-				{
+				if( tv_sec >0 && tv_day==0 && tv_hour==0 && tv_min==0) {
 					tv_str.PrintF(_S(2514, "%d초 " ), tv_sec); 
 					m_strBuffInfo[m_nRemainTimeLine]+=tv_str; 
 				}
-#endif
+
 //				if( llRemainTime > 0 ) m_strBuffInfo[m_nRemainTimeLine].PrintF( _S( 1034, "남은 시간 : %I64d초" ), llRemainTime );
 			}
 			
@@ -318,12 +259,12 @@ void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 	int	nInfoY = m_rcBuffInfo.Top + 8;
 	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
 	{
-		pDrawPort->PutTextEx( m_strBuffInfo[iInfo], nInfoX, nInfoY, m_colBuffInfo[iInfo] );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strBuffInfo[iInfo], nInfoX, nInfoY, m_colBuffInfo[iInfo] );
 		nInfoY += _pUIFontTexMgr->GetLineHeight();
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -332,24 +273,21 @@ void CUIBuff::RenderToolTip( int nWhichBuff, __int64 llCurTime )
 // ----------------------------------------------------------------------------
 void CUIBuff::RenderMyBuff()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 	COLOR	colBlend;
-	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-	int		i;
+	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
 	// Good buff
 	if( m_ubMyGoodCount > 0 )
 	{
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nOutX = m_nMyGoodBuffSX;
 		int	nOutY = m_nMyGoodBuffSY;
 		int	nBuffX = nOutX + 1;
-		int	nBuffY = nOutY + 1;		
-
-		for( i = 0; i < m_ubMyGoodCount; i++ )
+		int	nBuffY = nOutY + 1;
+		for( int i = 0; i < m_ubMyGoodCount; i++ )
 		{
 			if( (i%BUFF_BAD_COUNT) == 0 && i > 0)
 			{
@@ -362,7 +300,7 @@ void CUIBuff::RenderMyBuff()
 
 			if( m_aMyBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -376,13 +314,13 @@ void CUIBuff::RenderMyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_BIG, nOutY + BUFFOUT_SIZE_BIG,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_BIG, nBuffY + BUFF_SIZE_BIG,
 														m_aMyBuff[i].GetUV().U0,
 														m_aMyBuff[i].GetUV().V0,
@@ -395,13 +333,13 @@ void CUIBuff::RenderMyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		nOutX = m_nMyGoodBuffSX;
@@ -420,7 +358,7 @@ void CUIBuff::RenderMyBuff()
 
 			if( m_aMyBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -434,13 +372,13 @@ void CUIBuff::RenderMyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_BIG, nOutY + BUFFOUT_SIZE_BIG,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_BIG, nBuffY + BUFF_SIZE_BIG,
 														m_aMyBuff[i].GetUV().U0,
 											 			m_aMyBuff[i].GetUV().V0,
@@ -453,10 +391,10 @@ void CUIBuff::RenderMyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Bad buff
@@ -465,19 +403,18 @@ void CUIBuff::RenderMyBuff()
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubMyBadCount;
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nOutX = m_nMyBadBuffSX - BUFFOUT_SIZE_BIG;
 		int	nOutY = m_nMyBadBuffSY;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		// bad buff는 거꾸로 그린다. FIFO
-		for( i = nBadBuffEnd-1; i >= BUFF_GOOD_COUNT; i-- )
+		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
 		{
 			if( m_aMyBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -491,13 +428,13 @@ void CUIBuff::RenderMyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_BIG, nOutY + BUFFOUT_SIZE_BIG,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_BIG, nBuffY + BUFF_SIZE_BIG,
 														m_aMyBuff[i].GetUV().U0,
 														m_aMyBuff[i].GetUV().V0,
@@ -510,13 +447,13 @@ void CUIBuff::RenderMyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		nOutX = m_nMyBadBuffSX - BUFFOUT_SIZE_BIG;
@@ -527,7 +464,7 @@ void CUIBuff::RenderMyBuff()
 		{
 			if( m_aMyBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aMyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -541,13 +478,13 @@ void CUIBuff::RenderMyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_BIG, nOutY + BUFFOUT_SIZE_BIG,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aMyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_BIG, nBuffY + BUFF_SIZE_BIG,
 														m_aMyBuff[i].GetUV().U0,
 														m_aMyBuff[i].GetUV().V0,
@@ -560,10 +497,10 @@ void CUIBuff::RenderMyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Tool tip
@@ -577,75 +514,73 @@ void CUIBuff::RenderMyBuff()
 // ----------------------------------------------------------------------------
 void CUIBuff::RenderPartyBuff()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 	COLOR	colBlend;
 	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	int		i;
 
 	// Background
 	if( m_ubPartyGoodCount > 0 || m_ubPartyBadCount > 0 )
 	{
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		UIRect	rcTemp = m_rcPartyBuff;
 		rcTemp.Left -= 1;
 		rcTemp.Top -= 1;
 		rcTemp.Right += 4;
 		rcTemp.Bottom += 4;
-		pDrawPort->AddTexture( rcTemp.Left, rcTemp.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left, rcTemp.Top,
 											rcTemp.Left + 7, rcTemp.Top + 7,
 											m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Left + 7, rcTemp.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left + 7, rcTemp.Top,
 											rcTemp.Right - 7, rcTemp.Top + 7,
 											m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Right - 7, rcTemp.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Right - 7, rcTemp.Top,
 											rcTemp.Right, rcTemp.Top + 7,
 											m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Left, rcTemp.Top + 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left, rcTemp.Top + 7,
 											rcTemp.Left + 7, rcTemp.Bottom - 7,
 											m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Left + 7, rcTemp.Top + 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left + 7, rcTemp.Top + 7,
 											rcTemp.Right - 7, rcTemp.Bottom - 7,
 											m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Right - 7, rcTemp.Top + 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Right - 7, rcTemp.Top + 7,
 											rcTemp.Right, rcTemp.Bottom - 7,
 											m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Left, rcTemp.Bottom - 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left, rcTemp.Bottom - 7,
 											rcTemp.Left + 7, rcTemp.Bottom,
 											m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Left + 7, rcTemp.Bottom - 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Left + 7, rcTemp.Bottom - 7,
 											rcTemp.Right - 7, rcTemp.Bottom,
 											m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( rcTemp.Right - 7, rcTemp.Bottom - 7,
+		_pUIMgr->GetDrawPort()->AddTexture( rcTemp.Right - 7, rcTemp.Bottom - 7,
 											rcTemp.Right, rcTemp.Bottom,
 											m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
 											0xFFFFFFFF );
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	}
 
 	// Good buff
 	if( m_ubPartyGoodCount > 0 )
 	{
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nOutX = m_rcPartyBuff.Left;
 		int	nOutY = m_rcPartyBuff.Top;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( i = 0; i < m_ubPartyGoodCount; i++ )
+		for( int i = 0; i < m_ubPartyGoodCount; i++ )
 		{
 			if( (i%MAX_BUFF_COL) == 0 && i > 0)
 			{
@@ -658,7 +593,7 @@ void CUIBuff::RenderPartyBuff()
 
 			if( m_aPartyBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -672,13 +607,13 @@ void CUIBuff::RenderPartyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aPartyBuff[i].GetUV().U0,
 														m_aPartyBuff[i].GetUV().V0,
@@ -691,13 +626,13 @@ void CUIBuff::RenderPartyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		nOutX = m_rcPartyBuff.Left;
@@ -716,7 +651,7 @@ void CUIBuff::RenderPartyBuff()
 
 			if( m_aPartyBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -730,13 +665,13 @@ void CUIBuff::RenderPartyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aPartyBuff[i].GetUV().U0,
 											 			m_aPartyBuff[i].GetUV().V0,
@@ -749,10 +684,10 @@ void CUIBuff::RenderPartyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Bad buff
@@ -761,7 +696,7 @@ void CUIBuff::RenderPartyBuff()
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubPartyBadCount;
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nBuffX, nBuffY, nOutX, nOutY;
@@ -789,11 +724,11 @@ void CUIBuff::RenderPartyBuff()
 			nBuffX = nOutX + 1;
 			nBuffY = nOutY + 1;
 		}
-		for( i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
+		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
 		{
 			if( m_aPartyBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -806,13 +741,13 @@ void CUIBuff::RenderPartyBuff()
 				{
 					colBlend = 0xFFFFFFFF;
 				}
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aPartyBuff[i].GetUV().U0,
 														m_aPartyBuff[i].GetUV().V0,
@@ -825,13 +760,13 @@ void CUIBuff::RenderPartyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		// Three line
@@ -862,7 +797,7 @@ void CUIBuff::RenderPartyBuff()
 		{
 			if( m_aPartyBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aPartyBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -876,13 +811,13 @@ void CUIBuff::RenderPartyBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aPartyBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aPartyBuff[i].GetUV().U0,
 														m_aPartyBuff[i].GetUV().V0,
@@ -895,10 +830,10 @@ void CUIBuff::RenderPartyBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Tool tip
@@ -913,16 +848,13 @@ void CUIBuff::RenderPartyBuff()
 // ----------------------------------------------------------------------------
 void CUIBuff::RenderTargetBuff()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
 	COLOR	colBlend;
-	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
+	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
-	int	i;
 	int	nX, nY;
-	pUIManager->GetTargetInfoUI()->GetAbsPos( nX, nY );
-	nX += ( pUIManager->GetTargetInfoUI()->GetWidth() - m_rcTempTargetBuff.Right ) / 2;
-	nY += pUIManager->GetTargetInfoUI()->GetHeight() + 1;
+	_pUIMgr->GetTargetInfo()->GetAbsPos( nX, nY );
+	nX += ( _pUIMgr->GetTargetInfo()->GetWidth() - m_rcTempTargetBuff.Right ) / 2;
+	nY += _pUIMgr->GetTargetInfo()->GetHeight() + 1;
 	m_rcTargetBuff = m_rcTempTargetBuff;
 	m_rcTargetBuff.Offset( nX, nY );
 
@@ -930,14 +862,14 @@ void CUIBuff::RenderTargetBuff()
 	if( m_ubTargetGoodCount > 0 )
 	{
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nOutX = m_rcTargetBuff.Left;
 		int	nOutY = m_rcTargetBuff.Top;
 		int	nBuffX = nOutX + 1;
 		int	nBuffY = nOutY + 1;
-		for( i = 0; i < m_ubTargetGoodCount; i++ )
+		for( int i = 0; i < m_ubTargetGoodCount; i++ )
 		{
 			if( (i%MAX_BUFF_COL) == 0 && i > 0)
 			{
@@ -949,7 +881,7 @@ void CUIBuff::RenderTargetBuff()
 
 			if( m_aTargetBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -963,13 +895,13 @@ void CUIBuff::RenderTargetBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aTargetBuff[i].GetUV().U0,
 														m_aTargetBuff[i].GetUV().V0,
@@ -982,13 +914,13 @@ void CUIBuff::RenderTargetBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		nOutX = m_rcTargetBuff.Left;
@@ -1008,7 +940,7 @@ void CUIBuff::RenderTargetBuff()
 
 			if( m_aTargetBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -1022,13 +954,13 @@ void CUIBuff::RenderTargetBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigGood.U0, m_rtOutlineBigGood.V0,
 													m_rtOutlineBigGood.U1, m_rtOutlineBigGood.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aTargetBuff[i].GetUV().U0,
 											 			m_aTargetBuff[i].GetUV().V0,
@@ -1041,10 +973,10 @@ void CUIBuff::RenderTargetBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Bad buff
@@ -1053,7 +985,7 @@ void CUIBuff::RenderTargetBuff()
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubTargetBadCount;
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Skill
 		int	nBuffX, nBuffY, nOutX, nOutY;
@@ -1081,11 +1013,11 @@ void CUIBuff::RenderTargetBuff()
 			nBuffX = nOutX + 1;
 			nBuffY = nOutY + 1;
 		}
-		for( i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
+		for( int i = BUFF_GOOD_COUNT; i < nBadBuffEnd; i++ )
 		{
 			if( m_aTargetBuff[i].GetItemIndex() == -1 )
 			{
-				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -1099,13 +1031,13 @@ void CUIBuff::RenderTargetBuff()
 					colBlend = 0xFFFFFFFF;
 				}
 
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aTargetBuff[i].GetUV().U0,
 														m_aTargetBuff[i].GetUV().V0,
@@ -1118,13 +1050,13 @@ void CUIBuff::RenderTargetBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_SKILL );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_SKILL );
 
 		// Set buff texture
-		pDrawPort->InitTextureData( m_ptdBuffTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBuffTexture );
 
 		// Item
 		// Three line
@@ -1155,7 +1087,7 @@ void CUIBuff::RenderTargetBuff()
 		{
 			if( m_aTargetBuff[i].GetItemIndex() != -1 )
 			{
-				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime );
+				__int64	llRemainTime = m_aTargetBuff[i].GetRemainTime( llCurTime ) / 1000;
 				if( llRemainTime < 0 ) llRemainTime = 0;
 				if( llRemainTime < 10 && llRemainTime % 2 )
 				{
@@ -1168,13 +1100,13 @@ void CUIBuff::RenderTargetBuff()
 				{
 					colBlend = 0xFFFFFFFF;
 				}
-				pDrawPort->AddTexture( nOutX, nOutY,
+				_pUIMgr->GetDrawPort()->AddTexture( nOutX, nOutY,
 													nOutX + BUFFOUT_SIZE_SMALL, nOutY + BUFFOUT_SIZE_SMALL,
 													m_rtOutlineBigBad.U0, m_rtOutlineBigBad.V0,
 													m_rtOutlineBigBad.U1, m_rtOutlineBigBad.V1,
 													0xFFFFFFFF );
 
-				pDrawPort->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
+				_pUIMgr->GetDrawPort()->AddBtnTexture( m_aTargetBuff[i].GetTextureID(),
 														nBuffX, nBuffY, nBuffX + BUFF_SIZE_SMALL, nBuffY + BUFF_SIZE_SMALL,
 														m_aTargetBuff[i].GetUV().U0,
 														m_aTargetBuff[i].GetUV().V0,
@@ -1187,10 +1119,10 @@ void CUIBuff::RenderTargetBuff()
 		}
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Tool tip
@@ -1272,17 +1204,14 @@ void CUIBuff::AdjustPartyBuffRegion()
 
 	m_rcTempPartyBuff.SetRect( 0, -( nMaxRow * BUFFOUT_SIZE_SMALL ), nMaxCol * BUFFOUT_SIZE_SMALL, 0 );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( m_nPartyBuffSX + m_rcTempPartyBuff.Right > pUIManager->GetMaxI() )
+	if( m_nPartyBuffSX + m_rcTempPartyBuff.Right > _pUIMgr->GetMaxI() )
 	{
 		m_nPartyBuffSX += 10;
 		int	nTemp = m_rcTempPartyBuff.Left;
 		m_rcTempPartyBuff.Left = m_rcTempPartyBuff.Right;
 		m_rcTempPartyBuff.Right = nTemp;
 	}
-
-	if( m_nPartyBuffSY + m_rcTempPartyBuff.Top < pUIManager->GetMinI() )
+	if( m_nPartyBuffSY + m_rcTempPartyBuff.Top < _pUIMgr->GetMinI() )
 	{
 		m_nPartyBuffSY -= 10;
 		int	nTemp = m_rcTempPartyBuff.Top;
@@ -1290,7 +1219,6 @@ void CUIBuff::AdjustPartyBuffRegion()
 		m_rcTempPartyBuff.Bottom = m_rcTempPartyBuff.Top;
 		m_rcTempPartyBuff.Top = nTemp;
 	}
-
 	m_rcPartyBuff = m_rcTempPartyBuff;
 	m_rcPartyBuff.Offset( m_nPartyBuffSX, m_nPartyBuffSY );
 }
@@ -1325,12 +1253,10 @@ void CUIBuff::AdjustTargetBuffRegion()
 
 	m_rcTempTargetBuff.SetRect( 0, 0, nMaxCol * BUFFOUT_SIZE_SMALL, nMaxRow * BUFFOUT_SIZE_SMALL );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
 	int	nX, nY;
-
-	pUIManager->GetTargetInfoUI()->GetAbsPos( nX, nY );
-	nX += ( pUIManager->GetTargetInfoUI()->GetWidth() - m_rcTempTargetBuff.Right ) / 2;
-	nY += pUIManager->GetTargetInfoUI()->GetHeight() + 1;
+	_pUIMgr->GetTargetInfo()->GetAbsPos( nX, nY );
+	nX += ( _pUIMgr->GetTargetInfo()->GetWidth() - m_rcTempTargetBuff.Right ) / 2;
+	nY += _pUIMgr->GetTargetInfo()->GetHeight() + 1;
 	m_rcTargetBuff = m_rcTempTargetBuff;
 	m_rcTargetBuff.Offset( nX, nY );
 }
@@ -1341,8 +1267,7 @@ void CUIBuff::AdjustTargetBuffRegion()
 // ----------------------------------------------------------------------------
 void CUIBuff::CopyMyBuffToTargetBuff()
 {
-	int		i;
-	for( i = 0; i < m_ubMyGoodCount; i++ )
+	for( int i = 0; i < m_ubMyGoodCount; i++ )
 		AddTargetBuff( m_aMyBuffInfo[i] );
 
 	for( i = BUFF_GOOD_COUNT; i < BUFF_GOOD_COUNT + m_ubMyBadCount; i++ )
@@ -1417,15 +1342,9 @@ void CUIBuff::AddTargetBuff( BuffInfo &rBuffInfo )
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-#if defined(G_JAPAN)		
-		//if(g_iCountry != JAPAN || !(ItemData.GetFlag()&ITEM_FLAG_CASH))// 일본 유료 아이템 표시 삭제
-		if(!(ItemData.GetFlag()&ITEM_FLAG_CASH))// 일본 유료 아이템 표시 삭제
-#endif
-		{
-			m_aTargetBuff[m_ubTargetGoodCount].Set( rBuffInfo.m_slItemIndex, rBuffInfo.m_slSkillIndex, rBuffInfo.m_sbLevel,
+		m_aTargetBuff[m_ubTargetGoodCount].Set( rBuffInfo.m_slItemIndex, rBuffInfo.m_slSkillIndex, rBuffInfo.m_sbLevel,
 													rBuffInfo.m_slRemain, rBuffInfo.m_llStartTime );
-			m_ubTargetGoodCount++;
-		}
+		m_ubTargetGoodCount++;
 	}
 	// Bad
 	else
@@ -1444,15 +1363,12 @@ void CUIBuff::AddTargetBuff( BuffInfo &rBuffInfo )
 // ----------------------------------------------------------------------------
 void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
-	checkBuffRemove(slItemIndex, slSkillIndex);
-
 	CSkill	&rSkillData = _pNetwork->GetSkillData( slSkillIndex );
 
-	int iBuff;
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( iBuff = 0; iBuff < m_ubMyGoodCount; iBuff++ )
+		for( int iBuff = 0; iBuff < m_ubMyGoodCount; iBuff++ )
 		{
 			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1461,8 +1377,6 @@ void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 
 		if( iBuff == m_ubMyGoodCount )
 			return;
-
-		m_aMyBuffInfo[iBuff].Destroy_pEG();
 
 		for( iBuff++; iBuff < m_ubMyGoodCount; iBuff++ )
 		{
@@ -1475,20 +1389,12 @@ void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 		m_aMyBuff[m_ubMyGoodCount].Init();
 
 		AdjustMyBuffRegion( TRUE );
-
-		if (slSkillIndex == 1760)
-		{
-			if (m_nMSGID >= 0)
-				MSGBOXMGR()->Close(m_nMSGID);
-
-			m_nMSGID = MSGBOX_OK(_S(6281, "위치 추적 방해"), _S(6205, "위치 방해 아이템의 사용 시간이 종료 되어 위치가 노출 됩니다."));
-		}
 	}
 	// Bad
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubMyBadCount;
-		for( iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1497,8 +1403,6 @@ void CUIBuff::RemoveMyBuff( SLONG slItemIndex, SLONG slSkillIndex )
 
 		if( iBuff == nBadBuffEnd )
 			return;
-
-		m_aMyBuffInfo[iBuff].Destroy_pEG();
 
 		for( iBuff++; iBuff < nBadBuffEnd; iBuff++ )
 		{
@@ -1547,11 +1451,10 @@ void CUIBuff::RemovePartyBuff( SLONG slPartyIndex, SLONG slItemIndex, SLONG slSk
 
 	CSkill	&rSkillData = _pNetwork->GetSkillData( slSkillIndex );
 
-	int iBuff;
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( iBuff = 0; iBuff < m_ubPartyGoodCount; iBuff++ )
+		for( int iBuff = 0; iBuff < m_ubPartyGoodCount; iBuff++ )
 		{
 			if( m_aPartyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aPartyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1573,7 +1476,7 @@ void CUIBuff::RemovePartyBuff( SLONG slPartyIndex, SLONG slItemIndex, SLONG slSk
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubPartyBadCount;
-		for( iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aPartyBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aPartyBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1625,11 +1528,10 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 {
 	CSkill	&rSkillData = _pNetwork->GetSkillData( slSkillIndex );
 
-	int iBuff;
 	// Good
 	if( rSkillData.GetFlag() & SF_FORHELP )
 	{
-		for( iBuff = 0; iBuff < m_ubTargetGoodCount; iBuff++ )
+		for( int iBuff = 0; iBuff < m_ubTargetGoodCount; iBuff++ )
 		{
 			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1651,7 +1553,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 	else
 	{
 		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubTargetBadCount;
-		for( iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
+		for( int iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
 		{
 			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
 				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
@@ -1699,7 +1601,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 // Name : AddBuffInfoString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo )
+void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
 {
 	if( m_nCurInfoLines >= MAX_BUFFINFO_LINE )
 		return;
@@ -1711,9 +1613,8 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 	
 	
 	// wooss 051002
-#if defined(G_THAI)
+	if(g_iCountry == THAILAND){
 		// Get length of string
-		int		iPos;
 		INDEX	nThaiLen = FindThaiLen(strBuffInfo);
 		INDEX	nChatMax= (MAX_BUFFINFO_CHAR-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
 		if( nLength == 0 )
@@ -1730,7 +1631,7 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_BUFFINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strBuffInfo,0,iPos))
 					break;
@@ -1759,36 +1660,10 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 
 		}
 		
-#else
-
-#if defined(G_RUSSIA)
-	{
-		INDEX iStrSub = strBuffInfo.FindSubstr("\n");
-		if(iStrSub != -1)
-		{
-			CTString	strTemp, strTemp2;
-			strTemp = strBuffInfo;
-			strTemp.str_String[iStrSub] = ' ';
-
-
-			strTemp.Split( iStrSub+1, strTemp, strTemp2 );
-
-			AddBuffInfoString( strTemp, colBuffInfo );
-			AddBuffInfoString( strTemp2, colBuffInfo );
-			return;
-		}
-	}
-#endif//#if defined(RUSSIA)
-
+	} else {
+	
 		// If length of string is less than max char
-#if defined(G_RUSSIA)
-		int nInfoWidth = _pUIFontTexMgr->GetFontSpacing() + MAX_BUFFINFO_CHAR *
-					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-
-		if( UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, strBuffInfo.str_String ) <= nInfoWidth )
-#else
 		if( nLength <= MAX_BUFFINFO_CHAR )
-#endif
 		{
 			m_strBuffInfo[m_nCurInfoLines] = strBuffInfo;
 			m_colBuffInfo[m_nCurInfoLines++] = colBuffInfo;
@@ -1796,18 +1671,6 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 		// Need multi-line
 		else
 		{
-#if defined(G_RUSSIA)
-			int		nSplitPos = UTIL_HELP()->CheckNoFixedLength(_pfdDefaultFont, strBuffInfo.str_String, nInfoWidth);
-
-			for( int iPos=nSplitPos; iPos >=0; --iPos )
-			{
-				if( strBuffInfo[iPos] == ' ' )
-				{
-					nSplitPos = iPos;
-					break;
-				}
-			}
-#else
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = MAX_BUFFINFO_CHAR;
 			BOOL	b2ByteChar = FALSE;
@@ -1821,7 +1684,6 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 
 			if( b2ByteChar )
 				nSplitPos--;
-#endif
 
 			// Split string
 			CTString	strTemp;
@@ -1832,7 +1694,6 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 			if( strTemp[0] == ' ' )
 			{
 				int	nTempLength = strTemp.Length();
-				int iPos;
 				for( iPos = 1; iPos < nTempLength; iPos++ )
 				{
 					if( strTemp[iPos] != ' ' )
@@ -1844,7 +1705,7 @@ void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo 
 
 			AddBuffInfoString( strTemp, colBuffInfo );
 		}
-#endif
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -1862,13 +1723,7 @@ void CUIBuff::GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int
 	if( nItemIndex == -1 )
 	{
 		if( nSkillLevel > 0 )
-		{
-#if defined(G_RUSSIA)
-				strTemp.PrintF( "%s %s %d", rSelSkill.GetName(), _S( 4414, "LV" ),nSkillLevel );
-#else
-				strTemp.PrintF( "%s Lv %d", rSelSkill.GetName(), nSkillLevel );
-#endif
-		}
+			strTemp.PrintF( "%s Lv %d", rSelSkill.GetName(), nSkillLevel );
 		else
 			strTemp.PrintF( "%s", rSelSkill.GetName() );
 	}
@@ -1877,13 +1732,7 @@ void CUIBuff::GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int
 		const char* szItemName = _pNetwork->GetItemName( nItemIndex );
 		//CItemData	&rItemData = _pNetwork->GetItemData( nItemIndex );
 		if( nSkillLevel > 0 )
-		{
-#if defined(G_RUSSIA)
-				strTemp.PrintF( "%s %s %d", szItemName, _S( 4414, "LV" ), nSkillLevel );
-#else
-				strTemp.PrintF( "%s Lv %d", szItemName, nSkillLevel );
-#endif
-		}
+			strTemp.PrintF( "%s Lv %d", szItemName, nSkillLevel );
 		else
 			strTemp.PrintF( "%s", szItemName );
 	}
@@ -1896,21 +1745,18 @@ void CUIBuff::GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int
 	if( pDesc[0] != NULL )
 	{
 		AddBuffInfoString( CTString( " " ) );
-
-		if (nSkillIndex == 1759)
-		{
-			// 위치추적
-			strTemp.PrintF( "%s", GAMEDATAMGR()->GetGPS()->getTarName() );
-			AddBuffInfoString( strTemp, 0x94B7C6FF );
-		}
 		strTemp.PrintF( "%s", pDesc );
 		AddBuffInfoString( strTemp, 0x94B7C6FF );
 	}
 
-
-	nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + MAX_BUFFINFO_CHAR *
+//	if( g_iCountry == THAILAND ) {
+//		nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + ( MAX_BUFFINFO_CHAR + 5 ) *
+//					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+//	}
+//	else {
+		nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + MAX_BUFFINFO_CHAR *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-
+//	}
 	nInfoHeight = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
 }
 
@@ -2046,32 +1892,30 @@ void CUIBuff::ShowBuffInfo( BOOL bShowInfo, int nWhichBuff, int nSelBuff )
 	}
 
 	// Update buff information box
-	if( bUpdateInfo == FALSE )
-		return;
-
-	if( nWhichBuff == MY_BUFF )
-		nInfoPosX -= nInfoWidth / 2;
-	else
-		nInfoPosX -= nInfoWidth / 2;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( nInfoPosX < pUIManager->GetMinI() )
-		nInfoPosX = pUIManager->GetMinI();
-	else if( nInfoPosX + nInfoWidth > pUIManager->GetMaxI() )
-		nInfoPosX = pUIManager->GetMaxI() - nInfoWidth;
-	
-	if( nInfoPosY + nInfoHeight > pUIManager->GetMaxJ() )
+	if( bUpdateInfo )
 	{
 		if( nWhichBuff == MY_BUFF )
-			nInfoPosY -= BUFFOUT_SIZE_BIG;
+			nInfoPosX -= nInfoWidth / 2;
 		else
-			nInfoPosY -= BUFFOUT_SIZE_SMALL;
-		m_rcBuffInfo.SetRect( nInfoPosX, nInfoPosY - nInfoHeight, nInfoPosX + nInfoWidth, nInfoPosY );
-	}
-	else
-	{
-		m_rcBuffInfo.SetRect( nInfoPosX, nInfoPosY, nInfoPosX + nInfoWidth, nInfoPosY + nInfoHeight );
+			nInfoPosX -= nInfoWidth / 2;
+
+		if( nInfoPosX < _pUIMgr->GetMinI() )
+			nInfoPosX = _pUIMgr->GetMinI();
+		else if( nInfoPosX + nInfoWidth > _pUIMgr->GetMaxI() )
+			nInfoPosX = _pUIMgr->GetMaxI() - nInfoWidth;
+
+		if( nInfoPosY + nInfoHeight > _pUIMgr->GetMaxJ() )
+		{
+			if( nWhichBuff == MY_BUFF )
+				nInfoPosY -= BUFFOUT_SIZE_BIG;
+			else
+				nInfoPosY -= BUFFOUT_SIZE_SMALL;
+			m_rcBuffInfo.SetRect( nInfoPosX, nInfoPosY - nInfoHeight, nInfoPosX + nInfoWidth, nInfoPosY );
+		}
+		else
+		{
+			m_rcBuffInfo.SetRect( nInfoPosX, nInfoPosY, nInfoPosX + nInfoWidth, nInfoPosY + nInfoHeight );
+		}
 	}
 }
 
@@ -2087,8 +1931,6 @@ WMSG_RESULT CUIBuff::MouseMessageMyBuff( MSG *pMsg )
 
 	if( pMsg->message == WM_MOUSEMOVE )
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
 		if( nX > m_rcMyGoodBuff.Left && nX < m_rcMyGoodBuff.Right &&
 			nY > m_rcMyGoodBuff.Top && nY < m_rcMyGoodBuff.Bottom )
 		{
@@ -2099,7 +1941,7 @@ WMSG_RESULT CUIBuff::MouseMessageMyBuff( MSG *pMsg )
 				{
 					int	nSelBuff = ( nX - m_rcMyGoodBuffRow[i].Left ) / BUFFOUT_SIZE_BIG;
 					ShowBuffInfo( TRUE, MY_BUFF, nSelBuff + MAX_BUFF_COL*i );
-					pUIManager->RearrangeOrder(UI_PLAYERINFO,TRUE);
+					_pUIMgr->RearrangeOrder(UI_PLAYERINFO,TRUE);
 					return WMSG_SUCCESS;
 				}
 			}
@@ -2110,7 +1952,7 @@ WMSG_RESULT CUIBuff::MouseMessageMyBuff( MSG *pMsg )
 		{
 			int	nSelBuff = BUFF_GOOD_COUNT + ( nX - m_rcMyBadBuff.Left ) / BUFFOUT_SIZE_BIG;
 			ShowBuffInfo( TRUE, MY_BUFF, nSelBuff );
-			pUIManager->RearrangeOrder(UI_PLAYERINFO,TRUE);
+			_pUIMgr->RearrangeOrder(UI_PLAYERINFO,TRUE);
 			return WMSG_SUCCESS;
 		}
 
@@ -2191,7 +2033,7 @@ WMSG_RESULT CUIBuff::MouseMessagePartyBuff( MSG *pMsg )
 		}
 		else
 		{
-			CUIManager::getSingleton()->GetParty()->HidePartyBuff();
+			_pUIMgr->GetParty()->HidePartyBuff();
 			ResetPartyBuff();
 			ShowBuffInfo( FALSE );
 		}
@@ -2338,16 +2180,6 @@ BOOL CUIBuff::IsBuff( SLONG itemIndex )
 	return FALSE;	
 }
 
-BOOL CUIBuff::IsSkillBuff( SLONG skillIndex )
-{
-	for(int i=0; i<BUFF_MAX_COUNT;i++)
-	{
-		if ((m_aMyBuffInfo[i].m_slSkillIndex)==skillIndex)
-			return TRUE;
-	}
-	return FALSE;
-}
-
 // wooss 070310 --------------------------------------------------------------->>
 // kw : WSS_WHITEDAY_2007
 CEffectGroup* CUIBuff::IsBuffBySkill( SLONG skillIndex )
@@ -2368,96 +2200,6 @@ CEffectGroup* CUIBuff::GetEGFromSkillIndex(SLONG skillIndex)
 	for(int i=0; i<BUFF_MAX_COUNT;i++)
 		if ((m_aMyBuffInfo[i].m_slSkillIndex)==skillIndex) return m_aMyBuffInfo[i].m_pEG;
 	return NULL;			
-}
-
-void CUIBuff::ChangeMyBuffRemain( SLONG slItemIndex, SLONG slSkillIndex, __int64 llStart, SLONG slRemain )
-{
-	CSkill	&rSkillData = _pNetwork->GetSkillData( slSkillIndex );
-
-	int iBuff;
-	// Good
-	if( rSkillData.GetFlag() & SF_FORHELP )
-	{
-		for( iBuff = 0; iBuff < m_ubMyGoodCount; iBuff++ )
-		{
-			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
-				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
-				break;
-		}
-
-		if( iBuff == m_ubMyGoodCount )
-			return;
-
-		m_aMyBuff[iBuff].SetTime(llStart, slRemain);
-	}
-	// Bad
-	else
-	{
-		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubMyBadCount;
-		for( iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
-		{
-			if( m_aMyBuff[iBuff].GetItemIndex() == slItemIndex &&
-				m_aMyBuff[iBuff].GetSkillIndex() == slSkillIndex )
-				break;
-		}
-
-		if( iBuff == nBadBuffEnd )
-			return;
-
-		m_aMyBuff[iBuff].SetTime(llStart, slRemain);
-	}
-}
-
-void CUIBuff::ChangeTargetBuffRemain( SLONG slItemIndex, SLONG slSkillIndex, __int64 llStart, SLONG slRemain )
-{
-	CSkill	&rSkillData = _pNetwork->GetSkillData( slSkillIndex );
-
-	int iBuff;
-	// Good
-	if( rSkillData.GetFlag() & SF_FORHELP )
-	{
-		for( iBuff = 0; iBuff < m_ubTargetGoodCount; iBuff++ )
-		{
-			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
-				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
-				break;
-		}
-
-		if( iBuff == m_ubTargetGoodCount )
-			return;
-
-		m_aTargetBuff[iBuff].SetTime(llStart, slRemain);
-	}
-	// Bad
-	else
-	{
-		int	nBadBuffEnd = BUFF_GOOD_COUNT + m_ubTargetBadCount;
-		for( iBuff = BUFF_GOOD_COUNT; iBuff < nBadBuffEnd; iBuff++ )
-		{
-			if( m_aTargetBuff[iBuff].GetItemIndex() == slItemIndex &&
-				m_aTargetBuff[iBuff].GetSkillIndex() == slSkillIndex )
-				break;
-		}
-
-		if( iBuff == nBadBuffEnd )
-			return;
-
-		m_aTargetBuff[iBuff].SetTime(llStart, slRemain);
-	}
-}
-
-void CUIBuff::checkBuffRemove( SLONG slItemIndex, SLONG slSkillIndex )
-{
-	if (slSkillIndex == 1759)
-	{
-		// GPS 찾기 아이템이라면
-		GAMEDATAMGR()->GetGPS()->close();
-	}
-	else if (slSkillIndex == 1822)
-	{
-		// 유물 나침반 이라면.
-		GAMEDATAMGR()->GetGPS()->RelicPosClear();
-	}
 }
 
 // ----------------------------------------------------------------------------<<

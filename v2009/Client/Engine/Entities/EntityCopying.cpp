@@ -213,9 +213,9 @@ void CEntity::CopyOneProperty( CEntityProperty &epPropertySrc, CEntityProperty &
                                CEntity &enOther, ULONG ulFlags)
 {
 // a helper macro
-#define COPYPROPERTY(flag)                                            \
-  (flag &)ENTITYPROPERTY(this, epPropertyDest.ep_slOffset, flag)      \
-    = (flag &)ENTITYPROPERTY(&enOther, epPropertySrc.ep_slOffset, flag)
+#define COPYPROPERTY(type)                                            \
+  (type &)ENTITYPROPERTY(this, epPropertyDest.ep_slOffset, type)      \
+    = (type &)ENTITYPROPERTY(&enOther, epPropertySrc.ep_slOffset, type)
 
   // depending on the property type
   switch (epPropertySrc.ep_eptType) {
@@ -558,7 +558,7 @@ CEntity *CWorld::CopyEntityInWorld(CEntity &enOriginal, const CPlacement3D &plOt
 
     extern INDEX net_bReportServerTraffic;
     if (net_bReportServerTraffic) {
-      CPrintF("Copied entity: ID: 0x%X, Target: 0x%X Class: %s\n",enOriginal.en_ulID,penNew->en_ulID,(const char*)enOriginal.en_pecClass->GetName());
+      CPrintF("Copied entity: ID: 0x%X, Target: 0x%X Class: %s\n",enOriginal.en_ulID,penNew->en_ulID,enOriginal.en_pecClass->GetName());
     }
 
     extern CEntityMessage _emEntityMessage;

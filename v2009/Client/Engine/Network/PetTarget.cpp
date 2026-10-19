@@ -8,11 +8,6 @@
 #include <Engine/Entities/EntityClass.h>
 #include <Engine/Entities/EntityProperties.h>
 #include <Engine/Ska/StringTable.h>
-#include <Engine/Entities/InternalClasses.h>
-#include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Interface/UIQuickSlot.h>
-#include <Engine/Info/MyInfo.h>
 
 CPetTargetInfom::CPetTargetInfom(void)
 {	
@@ -46,18 +41,17 @@ void CPetTargetInfom::Init(void)
  */
 CPetTarget::CPetTarget(void) 
 {
-	m_eType = eOBJ_PET;
-
-	m_nIdxServer			= -1;
-	m_nType			= -1;                
+	pet_Index			= -1;
+	pet_iType			= -1;                
 	pet_iAge			= -1;                
-	m_nIdxClient	= -1;
-	m_yLayer			= 0;
-	m_pEntity			= NULL;
+	pet_iClientIndex	= -1;
+	pet_yLayer			= 0;
+	pet_pEntity			= NULL;
 	pet_pNormalEffect	= NULL;
-	pet_sbAttributePos	= MATT_UNWALKABLE;
+	pet_sbAttributePos	= ATTC_UNWALKABLE;
 	pet_OwnerIndex		= -1;
 	pet_OwnerName		= CTString("");
+	pet_Name			= CTString("");
 	pet_strNameCard		= CTString("");
 }
 
@@ -66,56 +60,23 @@ CPetTarget::CPetTarget(void)
  */
 CPetTarget::~CPetTarget(void) 
 {
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-
 	if(pet_pNormalEffect)
 	{
 		DestroyEffectGroupIfValid(pet_pNormalEffect);
 		pet_pNormalEffect = NULL;
 	}
-
-	pUIMgr->StopTargetEffect(m_nIdxServer);
-
-	if (pet_OwnerIndex == _pNetwork->MyCharacterInfo.index)
-	{
-		pInfo->GetMyPetInfo()->Init();
-	}
-
-	if (m_pEntity != NULL)
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ClearTargetInfo(m_pEntity);
-
-	if (m_pEntity != NULL) 
-	{
-		m_pEntity->en_pPetTarget = NULL;
-		
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET_REAL))
-		{
-			pInfo->TargetClear(eTARGET_REAL);
-		}
-
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET))
-		{
-			pInfo->TargetClear(eTARGET);
-		}
-
-		m_pEntity->Destroy( FALSE );
-	}
-
-	pet_statusEffect.Reset();
 }
 
 CPetTarget::CPetTarget(const CPetTarget &other)
 {
-	m_eType = eOBJ_PET;
-	m_nIdxServer	= other.m_nIdxServer;
-	m_nType	= other.m_nType;
+	pet_Index	= other.pet_Index;
+	pet_iType	= other.pet_iType;
 	pet_iAge	= other.pet_iAge;
-	m_nIdxClient = other.m_nIdxClient;	
-	m_pEntity = other.m_pEntity;
-	m_strName	= other.m_strName;
+	pet_iClientIndex = other.pet_iClientIndex;	
+	pet_pEntity = other.pet_pEntity;
+	pet_Name	= other.pet_Name;
 	pet_OwnerName	= other.pet_OwnerName;
-	m_yLayer = other.m_yLayer;
+	pet_yLayer = other.pet_yLayer;
 	//Hardcoding, status effect에 vtable이 추가되거나 상속이 되는 경우 문제 생김.
 	memcpy(&pet_statusEffect, &other.pet_statusEffect, sizeof(pet_statusEffect));
 	memset((void*)&other.pet_statusEffect, 0, sizeof(other.pet_statusEffect));
@@ -126,15 +87,14 @@ CPetTarget::CPetTarget(const CPetTarget &other)
 
 CPetTarget &CPetTarget::operator=(const CPetTarget &other)
 {
-	m_eType = other.m_eType;
-	m_nIdxServer = other.m_nIdxServer;
-	m_nType = other.m_nType;
+	pet_Index = other.pet_Index;
+	pet_iType = other.pet_iType;
 	pet_iAge	= other.pet_iAge;
-	m_nIdxClient = other.m_nIdxClient;	
-	m_pEntity = other.m_pEntity;
-	m_strName = other.m_strName;
+	pet_iClientIndex = other.pet_iClientIndex;	
+	pet_pEntity = other.pet_pEntity;
+	pet_Name = other.pet_Name;
 	pet_OwnerName = other.pet_OwnerName;
-	m_yLayer = other.m_yLayer;
+	pet_yLayer = other.pet_yLayer;
 	//Hardcoding, status effect에 vtable이 추가되가나 상속이 되는 경우 문제 생김.
 	memcpy(&pet_statusEffect, &other.pet_statusEffect, sizeof(pet_statusEffect));
 	memset((void*)&other.pet_statusEffect, 0, sizeof(other.pet_statusEffect));
@@ -145,33 +105,67 @@ CPetTarget &CPetTarget::operator=(const CPetTarget &other)
 	return *this;
 }
 
+
+void CPetTarget::Init()
+{
+	CEntity	*penEntity;
+	if( _pNetwork->ga_World.EntityExists( pet_iClientIndex, penEntity ) ) 
+	{
+		penEntity->en_pPetTarget = NULL;
+		if( penEntity == _pNetwork->_TargetInfoReal.pen_pEntity )
+		{
+			_pNetwork->_TargetInfoReal.Init();
+		}
+
+		if( penEntity == _pNetwork->_TargetInfo.pen_pEntity )
+		{
+			_pNetwork->_TargetInfo.Init();
+		}
+
+		penEntity->Destroy( FALSE );
+	}
+
+	pet_Index			= -1;
+	pet_iType			= -1;                
+	pet_iAge			= -1;
+	pet_iClientIndex	= -1;
+	pet_yLayer			= 0;
+	pet_pEntity			= NULL;
+	pet_statusEffect.Reset();
+	pet_sbAttributePos	= ATTC_UNWALKABLE;
+	pet_OwnerIndex		= -1;
+	pet_OwnerName		= CTString("");
+	pet_Name			= CTString("");
+	pet_strNameCard		= CTString("");
+	if(pet_pNormalEffect)
+	{
+		DestroyEffectGroupIfValid(pet_pNormalEffect);
+		pet_pNormalEffect = NULL;
+	}
+}
 //강동민 수정 끝 싱글 던젼 작업		07.27
 #include <Engine/Network/Server.h>	// TEST
 void CPetTarget::SetData( INDEX index, CTString& strName, CTString& strOwnerName, INDEX iOwnerIndex, INDEX iPetType, INDEX iPetAge, CEntity *pEntity, SBYTE sbyLayer, CTString strNameCard)
 {
-	m_nIdxServer		= index;
-	m_nType		= iPetType;    
+	pet_Index		= index;
+	pet_iType		= iPetType;    
 	pet_iAge		= iPetAge;
-	m_strName		= strName;	
+	pet_Name		= strName;	
 	pet_OwnerName	= strOwnerName;	
-	m_pEntity		= pEntity;
-	m_yLayer		= sbyLayer;
+	pet_pEntity		= pEntity;
+	pet_yLayer		= sbyLayer;
 	pet_OwnerIndex	= iOwnerIndex;
 	pet_strNameCard = strNameCard;
 }
 
 void CPetTarget::SetClientPetId(INDEX index)
 {	
-	m_nIdxClient = index;	
+	pet_iClientIndex = index;	
 }
 
-CWildPetTarget::CWildPetTarget()
+CWildPetInfo::CWildPetInfo()
 {
-	m_eType = eOBJ_WILDPET;
-
-	int		i;
 	bIsActive = FALSE;
-	bDeath = FALSE;
 	m_nLevel = -1;
 	m_nType	= -1;
 	m_strName = "";
@@ -189,63 +183,34 @@ CWildPetTarget::CWildPetTarget()
 	m_nMaxStm	= -1;
 	m_nSpeed	= -1;
 	m_nAISlot	= -1;
-	m_nIdxServer = -1;
-	m_nIdxClient = -1;
-	m_pEntity = NULL;
-	for( i = 0; i < STATE_END; i++)
+	m_nNetIndex = -1;
+	pet_iClientIndex = -1;
+	pet_pEntity = NULL;
+	for(int i = 0; i < STATE_END; i++)
 	{m_nWildPetState[i] = -1;}
 
-	for( i = 0; i < WILDPET_WEAR_TOTAL; i++)
+	for(i = 0; i < WILDPET_WEAR_TOTAL; i++)
 	{
 		m_nPetWearIndex[i] = -1;
 		m_nPetWearPlus[i] =  -1;
 	}
-	m_sbTransStat = 0;
-	m_bMount = FALSE;
 }
-CWildPetTarget::~CWildPetTarget()
+CWildPetInfo::~CWildPetInfo()
 {
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
 
-	if (m_nOwnerIndex == _pNetwork->MyCharacterInfo.index)
-	{
-		pUIMgr->RearrangeOrder(UI_WILDPETTARGETINFO,FALSE);
-		pInfo->SetMyApet(NULL);
-		pUIMgr->GetWildPetInfo()->AIClear();
-	}
-
-	pUIMgr->StopTargetEffect(m_nIdxServer);
-
-	if (m_pEntity != NULL) 
-	{
-		m_pEntity->en_pWildPetTarget = NULL;
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET_REAL))
-		{
-			pInfo->TargetClear(eTARGET_REAL);
-		}
-
-		if (m_pEntity == pInfo->GetTargetEntity(eTARGET))
-		{
-			pInfo->TargetClear(eTARGET);
-		}
-
-		m_pEntity->Destroy( FALSE );
-	}
 }
 
 
-CWildPetTarget::CWildPetTarget(const CWildPetTarget &other)
+CWildPetInfo::CWildPetInfo(const CWildPetInfo &other)
 {
 	(*this) = other;
 }
 
-CWildPetTarget &CWildPetTarget::operator=(const CWildPetTarget &other)
+CWildPetInfo &CWildPetInfo::operator=(const CWildPetInfo &other)
 {
-	m_eType = other.m_eType;
 	bIsActive = other.bIsActive;
 	m_nIndex = other.m_nIndex; // 펫 툴 인덱스
-	m_nIdxServer = other.m_nIdxServer;
+	m_nNetIndex = other.m_nNetIndex;
 	m_nOwnerIndex = other.m_nOwnerIndex;
 	m_nLevel = other.m_nLevel; // 공격 펫 레벨
 	m_nLevelupPoint = other.m_nLevelupPoint; // 공격 펫 성장포인트
@@ -272,9 +237,9 @@ CWildPetTarget &CWildPetTarget::operator=(const CWildPetTarget &other)
 	m_nMaxStm = other.m_nMaxStm;		// 공격 펫 최대 배고픔
 	m_nSpeed = other.m_nSpeed;		// 공격 펫 이동 속도
 	m_nAISlot = other.m_nAISlot;		// 공격 펫 AI 슬롯개수
-	m_nIdxClient = other.m_nIdxClient; //공격 펫 Client World Index
-	m_pEntity = other.m_pEntity;
-	m_yLayer = other.m_yLayer;
+	pet_iClientIndex = other.pet_iClientIndex; //공격 펫 Client World Index
+	pet_pEntity = other.pet_pEntity;
+	m_sbYlayer = other.m_sbYlayer;
 	m_sbAttributePos = other.m_sbAttributePos;
 	// state
 	INDEX i;
@@ -291,13 +256,62 @@ CWildPetTarget &CWildPetTarget::operator=(const CWildPetTarget &other)
 		m_nPetWearPlus[i] = other.m_nPetWearPlus[i];
 	}
 
-	m_sbTransStat = other.m_sbTransStat;
-	m_bMount = other.m_bMount;
-
 	return (*this);
 }
 
-void CWildPetTarget::SetWildPetToEntity(CEntity *pEntity, INDEX nindex, INDEX *nWearIndex, INDEX *nWearPlus)
+void CWildPetInfo::Init()
+{
+	CEntity	*penEntity;
+	if( _pNetwork->ga_World.EntityExists( pet_iClientIndex, penEntity ) ) 
+	{
+		penEntity->en_pWildPetInfo = NULL;
+		if( penEntity == _pNetwork->_TargetInfoReal.pen_pEntity )
+		{
+			_pNetwork->_TargetInfoReal.Init();
+		}
+
+		if( penEntity == _pNetwork->_TargetInfo.pen_pEntity )
+		{
+			_pNetwork->_TargetInfo.Init();
+		}
+
+		penEntity->Destroy( FALSE );		
+	}
+	bIsActive = FALSE;
+	m_nIndex = -1;
+	m_nLevel = -1;
+	m_nType	= -1;
+	m_strName = "";
+	m_nStr	= -1;
+	m_nCon	= -1;
+	m_nDex	= -1;
+	m_nInt	= -1;
+	m_nHP	= -1;
+	m_nMaxHP	= -1;
+	m_nMP	= -1;
+	m_nMaxMP	= -1;
+	m_nFaith	= -1;
+	m_nStm		= -1;
+	m_nMaxFaith	= -1;
+	m_nMaxStm	= -1;
+	m_nSpeed	= -1;
+	m_nAISlot	= -1;
+	m_nNetIndex = -1;
+	pet_iClientIndex = -1;
+	pet_pEntity = NULL;
+	
+	for(int i = 0; i < STATE_END; i++)
+	{m_nWildPetState[i] = -1;}
+
+	for(i = 0; i < WILDPET_WEAR_TOTAL; i++)
+	{
+		m_nPetWearIndex[i] = -1;
+		m_nPetWearPlus[i] =  -1;
+	}
+
+}
+
+void CWildPetInfo::SetWildPetToEntity(CEntity *pEntity, INDEX nindex, INDEX *nWearIndex, INDEX *nWearPlus)
 {
 	CEntity* tmpOwner = NULL;
 
@@ -306,35 +320,35 @@ void CWildPetTarget::SetWildPetToEntity(CEntity *pEntity, INDEX nindex, INDEX *n
 		m_nPetWearIndex[i] = nWearIndex[i];
 		m_nPetWearPlus[i] =  nWearPlus[i];
 	}
-	CWildPetData* pt = CWildPetData::getData(nindex);
-	m_pEntity = pEntity;
+	CWildPetData pt = _pNetwork->wo_aWildPetData[nindex];
+	pet_pEntity = pEntity;
 	
 	CEntityProperty &eppropertyWalk	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 100));
-	ENTITYPROPERTY(&*pEntity, eppropertyWalk.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strWalk[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyWalk.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_WALK]);
 
 	CEntityProperty &eppropertyIdle1 = *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 101));
-	ENTITYPROPERTY(&*pEntity, eppropertyIdle1.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strIdle1[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyIdle1.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_IDLE1]);
 
 	CEntityProperty &eppropertyIdle2	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 102));
-	ENTITYPROPERTY(&*pEntity, eppropertyIdle2.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strIdle2[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyIdle2.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_IDLE2]);
 
 	CEntityProperty &eppropertyRun	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 103));
-	ENTITYPROPERTY(&*pEntity, eppropertyRun.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strRun[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyRun.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_RUN]);
 
 	CEntityProperty &eppropertyDeath	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 104));
-	ENTITYPROPERTY(&*pEntity, eppropertyDeath.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strDie[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyDeath.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_DIE]);
 
 	CEntityProperty &eppropertyDamage	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 105));
-	ENTITYPROPERTY(&*pEntity, eppropertyDamage.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strDamage[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyDamage.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_DAMAGE]);
 
 	CEntityProperty &eppropertyAttack1	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 106));
-	ENTITYPROPERTY(&*pEntity, eppropertyAttack1.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strAttack1[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyAttack1.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_ATTACK1]);
 
 	CEntityProperty &eppropertyAttack2	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 107));
-	ENTITYPROPERTY(&*pEntity, eppropertyAttack2.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strAttack2[m_sbTransStat]);
+	ENTITYPROPERTY(&*pEntity, eppropertyAttack2.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_ATTACK2]);
 
 	CEntityProperty &eppropertyLevelup	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 109)); // 배고픔
-	ENTITYPROPERTY(&*pEntity, eppropertyLevelup.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt->strLevelup[m_sbTransStat]);	
+	ENTITYPROPERTY(&*pEntity, eppropertyLevelup.ep_slOffset, INDEX)	= ska_GetIDFromStringTable(pt.m_WildPetData.PetAni[WILD_PET_ANIM_HUNGRY]);	
 
 	CEntityProperty &eppropertysbAttributePos	= *(pEntity->PropertyForTypeAndID(CEntityProperty::EPT_INDEX, 115));
 	ENTITYPROPERTY(&*pEntity, eppropertysbAttributePos.ep_slOffset, INDEX)	= m_sbAttributePos;

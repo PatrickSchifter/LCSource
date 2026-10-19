@@ -1,13 +1,7 @@
-#include "StdH.h"
 
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <map>
-#include <Engine/Effect/CEffectGroupManager.h>
+#include "StdH.h"
 #include <Engine/Interface/UIGuildBattle.h>
-#include <Engine/Ska/Render.h>
-#include <Engine/Interface/UIAutoHelp.h>
-#include <Engine/Object/ActorMgr.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
 static int	_iMaxMsgStringChar = 0;
 
@@ -54,25 +48,25 @@ static int	_iMaxMsgStringChar = 0;
 #define LARGE_NUMBER_HEIGHT			27
 
 #define LEFT_TIME_X					922
-#define LEFT_TIME_Y					259
+#define LEFT_TIME_Y					198
 
 #define RIGHT_SPACE					12
 #define BOX_WIDTH					118
 #define BOX_HEIGHT					61
 
-#define BLUE_BOX_Y					302
-#define RED_BOX_Y					369
+#define BLUE_BOX_Y					241
+#define RED_BOX_Y					308
 
-#define GUILD_NAME_Y				308
-#define GUILD_NAME2_Y				371
+#define GUILD_NAME_Y				247
+#define GUILD_NAME2_Y				310
 
 #define BATTLE_ZONE_NAME_Y			LEFT_TIME_Y + SMALL_NUMBER_HEIGHT + 2		
 
-#define BOX_Y						256
+#define BOX_Y						195
 #define BASE_BOX_HEIHGT				42
 
-#define RED_KILL_POINT_Y			393
-#define BLUE_KILL_POINT_Y			329
+#define RED_KILL_POINT_Y			332
+#define BLUE_KILL_POINT_Y			268
 
 #define GB_MIN_MEMBER				10
 #define COLON_WIDTH					9
@@ -81,8 +75,9 @@ static int	_iMaxMsgStringChar = 0;
 #define GB_START_MINUTE				1
 	
 // Macro Func 좀 편해 보고자 만든 것들...
-#define SYSERROR_MSG(X)	CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( CTString (X), SYSMSG_ERROR );
+#define SYSERROR_MSG(X)	_pUIMgr->GetChatting()->AddSysMessage( CTString (X), SYSMSG_ERROR );
 
+extern INDEX g_iCountry;
 extern BOOL g_bNasTrans; //브라질 나스 표시 수정
 //------------------------------------------------------------------------------
 // CUIGuildBattle::CloseAllMsgBox
@@ -91,15 +86,13 @@ extern BOOL g_bNasTrans; //브라질 나스 표시 수정
 //------------------------------------------------------------------------------
 void CUIGuildBattle::CloseAllMsgBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_ERROR);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_REQ);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_ACCEPT);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_REQ);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_ACCEPT);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_REQ_REP);
-	pUIManager->CloseMessageBox(MSGCMD_GUILD_BATTLE_MESSAGE);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_ERROR);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_REQ);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_ACCEPT);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_REQ);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_ACCEPT);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_STOP_REQ_REP);
+	_pUIMgr->CloseMessageBox(MSGCMD_GUILD_BATTLE_MESSAGE);
 }
 
 
@@ -110,21 +103,21 @@ void CUIGuildBattle::CloseAllMsgBox()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::SetNotice ( CTString strNoticeMessage, CTString strNoticeMessage2 )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	int nCX = pDrawPort->dp_MinI + ( pDrawPort->dp_MaxI - pDrawPort->dp_MinI ) / 2;
+	int nWidth;
+	
+	CDrawPort	*pdp	= _pUIMgr->GetDrawPort();
+	int			nCX		= pdp->dp_MinI + ( pdp->dp_MaxI - pdp->dp_MinI ) / 2;
 
 	CloseAllMsgBox();
 
-	pUIManager->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+	_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 	m_bShowNotice = TRUE;
 	
 	m_strNoticeMessage = strNoticeMessage;
 	m_strNoticeMessage2 = strNoticeMessage2;
 
 	// 위쪽에 출력 될 공지
-	int nWidth = ( m_strNoticeMessage.Length() ) * 
+	nWidth = ( m_strNoticeMessage.Length() ) * 
 			 ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() ) - 1;
 		
 	m_rcNotice1.Left = nCX - nWidth / 2;
@@ -153,7 +146,7 @@ void CUIGuildBattle::SetNotice ( CTString strNoticeMessage, CTString strNoticeMe
 CUIGuildBattle::CUIGuildBattle()
 {
 //	Clear();
-	m_ptdStateTexture = NULL;
+	
 }
 
 
@@ -224,7 +217,9 @@ void CUIGuildBattle::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 	Clear();
 	m_strTitle = _S( 1097, "길드전투" ); 
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = GB_DESC_CHAR_WIDTH / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -342,7 +337,7 @@ void CUIGuildBattle::Close()
 {
 
 	CloseAllMsgBox();
-	CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, FALSE );
+	_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, FALSE );
 
 	Clear();
 }
@@ -368,82 +363,85 @@ void CUIGuildBattle::Render()
 		RenderGBStatus();
 	}
 
-	if( m_bShowNotice == FALSE )
-		return;
-
-	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	__int64	llCurDelay = llCurTime - m_tmNoticeTime;
-	if( llCurDelay < CHATMSG_NOTICE_DELAY )
+	if ( m_bShowNotice )
 	{
-		COLOR	colBackground = 0xFFFFFFFF;
-		COLOR	colText = 0x18ff00ff;
-		if( llCurDelay > NOTICE_FADEOUT )
+		__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+		__int64	llCurDelay = llCurTime - m_tmNoticeTime;
+		if( llCurDelay < CHATMSG_NOTICE_DELAY )
 		{
-			FLOAT	fFadeRatio = (FLOAT)( NOTICE_DELAY - llCurDelay ) / (FLOAT)NOTICE_FADETIME;
-			COLOR	colBlend = 0xFF * fFadeRatio;
-			
-			colBackground &= 0xFFFFFF00;
-			colBackground |= colBlend;
-			colText &= 0xFFFFFF00;
-			colText |= colBlend;
-		}
+			COLOR	colBackground = 0xFFFFFFFF;
+			COLOR	colText = 0x18ff00ff;
+			if( llCurDelay > NOTICE_FADEOUT )
+			{
+				FLOAT	fFadeRatio = (FLOAT)( NOTICE_DELAY - llCurDelay ) / (FLOAT)NOTICE_FADETIME;
+				COLOR	colBlend = 0xFF * fFadeRatio;
 
-		CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+				colBackground &= 0xFFFFFF00;
+				colBackground |= colBlend;
+				colText &= 0xFFFFFF00;
+				colText |= colBlend;
+			}
 
-		pDrawPort->InitTextureData( m_ptdStateTexture );
 
-		// Add render regions
-		// Background
-		pDrawPort->AddTexture( m_rcNotice1.Left - 32, m_rcNotice1.Top,
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdStateTexture );
+
+			// Add render regions
+			// Background
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice1.Left - 32, m_rcNotice1.Top,
 												m_rcNotice1.Left, m_rcNotice1.Bottom,
 												m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
 												colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice1.Left, m_rcNotice1.Top,
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice1.Left, m_rcNotice1.Top,
 												m_rcNotice1.Right, m_rcNotice1.Bottom,
 												m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
 												colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice1.Right, m_rcNotice1.Top,
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice1.Right, m_rcNotice1.Top,
 												m_rcNotice1.Right + 32, m_rcNotice1.Bottom,
 												m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
 												colBackground );
 
-		// bottom
-		pDrawPort->AddTexture( m_rcNotice2.Left - 32, m_rcNotice2.Top,
+			// bottom
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice2.Left - 32, m_rcNotice2.Top,
 												m_rcNotice2.Left, m_rcNotice2.Bottom,
 												m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
 												colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice2.Left, m_rcNotice2.Top,
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice2.Left, m_rcNotice2.Top,
 												m_rcNotice2.Right, m_rcNotice2.Bottom,
 												m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
 												colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice2.Right, m_rcNotice2.Top,
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice2.Right, m_rcNotice2.Top,
 												m_rcNotice2.Right + 32, m_rcNotice2.Bottom,
 												m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
 												colBackground );
 
-		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+			
+			// Render all elements
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-		pDrawPort->PutTextEx( m_strNoticeMessage, m_rcNotice1.Left, m_rcNotice1.Top + 4, colText );
-		pDrawPort->PutTextEx( m_strNoticeMessage2, m_rcNotice2.Left, m_rcNotice2.Top + 4, colText );
 
-		// Flush all render text queue
-		pDrawPort->EndTextEx();
-	}
-	else
-	{
-		m_bShowNotice = FALSE;
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strNoticeMessage, m_rcNotice1.Left, m_rcNotice1.Top + 4, colText );
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strNoticeMessage2, m_rcNotice2.Left, m_rcNotice2.Top + 4, colText );
 
-		// 종료 상태에서 공지가 띄워 졌다면 길드전은 종료 된다.
-		if ( m_eGBState == GBS_END ) 
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx();
+		}
+		else
 		{
-			Close();
+			m_bShowNotice = FALSE;
+			
+			// 종료 상태에서 공지가 띄워 졌다면 길드전은 종료 된다.
+			if ( m_eGBState == GBS_END ) 
+			{
+				Close();
+			}
+			
 		}
 	}
+
 }
 
 
@@ -454,10 +452,8 @@ void CUIGuildBattle::Render()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::RenderGBReq()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2, nY2;
@@ -468,13 +464,13 @@ void CUIGuildBattle::RenderGBReq()
 	nY = m_nPosY + GB_TITLE_HEIGHT;
 
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 										m_rtBackTop.U0, m_rtBackTop.V0,
 										m_rtBackTop.U1, m_rtBackTop.V1,
 										0xFFFFFFFF );
 		
 	// Not Manager
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + DESC_LIST_BOX_HEIGHT+ 2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + DESC_LIST_BOX_HEIGHT+ 2,
 											m_rtBackMiddle1.U0, m_rtBackMiddle1.V0,
 											m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 											0xFFFFFFFF );
@@ -482,7 +478,7 @@ void CUIGuildBattle::RenderGBReq()
 	nY += DESC_LIST_BOX_HEIGHT+ 2;
 
 	// Middle 2
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 										m_rtBackMiddle2.U0, m_rtBackMiddle2.V0,
 										m_rtBackMiddle2.U1, m_rtBackMiddle2.V1,
 										0xFFFFFFFF );
@@ -490,7 +486,7 @@ void CUIGuildBattle::RenderGBReq()
 
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 										m_rtBackBottom.U0, m_rtBackBottom.V0,
 										m_rtBackBottom.U1, m_rtBackBottom.V1,
 										0xFFFFFFFF );
@@ -505,15 +501,15 @@ void CUIGuildBattle::RenderGBReq()
 	nY	= m_nPosY + GB_REQ_NAS_EDIT_POS_Y;
 	nY2 = nY + GB_REQ_NAS_EDIT_HEIGHT;
 
-	pDrawPort->AddTexture( nX, nY, nX + EDITBOX_OFFSETX, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + EDITBOX_OFFSETX, nY2,
 		m_rtInputBoxL.U0, m_rtInputBoxL.V0, m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 		0xFFFFFFFF );
 	// Lower middle
-	pDrawPort->AddTexture( nX + EDITBOX_OFFSETX, nY, nX2 - EDITBOX_OFFSETX, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + EDITBOX_OFFSETX, nY, nX2 - EDITBOX_OFFSETX, nY2,
 		m_rtInputBoxM.U0, m_rtInputBoxM.V0, m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 		0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - EDITBOX_OFFSETX, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - EDITBOX_OFFSETX, nY, nX2, nY2,
 		m_rtInputBoxR.U0, m_rtInputBoxR.V0, m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 		0xFFFFFFFF );
 
@@ -525,15 +521,15 @@ void CUIGuildBattle::RenderGBReq()
 	nY	= m_nPosY + GB_REQ_TIME_EDIT_POS_Y;
 	nY2 = nY + GB_REQ_TIME_EDIT_HEIGHT;
 
-	pDrawPort->AddTexture( nX, nY, nX + EDITBOX_OFFSETX, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + EDITBOX_OFFSETX, nY2,
 		m_rtInputBoxL.U0, m_rtInputBoxL.V0, m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 		0xFFFFFFFF );
 	// Lower middle
-	pDrawPort->AddTexture( nX + EDITBOX_OFFSETX, nY, nX2 - EDITBOX_OFFSETX, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + EDITBOX_OFFSETX, nY, nX2 - EDITBOX_OFFSETX, nY2,
 		m_rtInputBoxM.U0, m_rtInputBoxM.V0, m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 		0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - EDITBOX_OFFSETX, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - EDITBOX_OFFSETX, nY, nX2, nY2,
 		m_rtInputBoxR.U0, m_rtInputBoxR.V0, m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 		0xFFFFFFFF );
 
@@ -543,20 +539,20 @@ void CUIGuildBattle::RenderGBReq()
 	m_btnCancel.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + GB_TITLE_TEXT_OFFSETX,		
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + GB_TITLE_TEXT_OFFSETX,		
 										m_nPosY + GB_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
-	pDrawPort->PutTextEx( _S( 1098, "만 나스" ), m_nPosX + GB_REQ_NAS_EDIT_POS_X + GB_REQ_NAS_EDIT_WIDTH + 4,		
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 1098, "만 나스" ), m_nPosX + GB_REQ_NAS_EDIT_POS_X + GB_REQ_NAS_EDIT_WIDTH + 4,		
 										m_nPosY + GB_REQ_NAS_EDIT_POS_Y + 3, 0xFFFFFFFF );
 
-	pDrawPort->PutTextEx( _S ( 1902, "분" ), m_nPosX + GB_REQ_TIME_EDIT_POS_X + GB_REQ_TIME_EDIT_WIDTH + 4,		
+	_pUIMgr->GetDrawPort()->PutTextEx( _S ( 1902, "분" ), m_nPosX + GB_REQ_TIME_EDIT_POS_X + GB_REQ_TIME_EDIT_WIDTH + 4,		
 										m_nPosY + GB_REQ_TIME_EDIT_POS_Y + 3, 0xFFFFFFFF );  
 
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 }
 
@@ -568,30 +564,29 @@ void CUIGuildBattle::RenderGBReq()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::RenderGBStatus()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData( m_ptdStateTexture );
+	int nX;
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdStateTexture );
 
 	// 남은 시간 표시 ( ImageFont );
 	
 
-	int nOffsetX = pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH;
+	int nOffsetX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH;
 
 	m_rcBox.Left = m_rcBlueBox.Left = m_rcRedBox.Left = nOffsetX;
 	m_rcBox.Right = m_rcBlueBox.Right = m_rcRedBox.Right = nOffsetX + BOX_WIDTH;
 
 	// Ren, Blue Box 표시
-	pDrawPort->AddTexture( m_rcBox.Left, m_rcBox.Top, m_rcBox.Right, m_rcBox.Bottom,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBox.Left, m_rcBox.Top, m_rcBox.Right, m_rcBox.Bottom,
 									m_rtBox.U0, m_rtBox.V0,
 									m_rtBox.U1, m_rtBox.V1,
 									0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_rcBlueBox.Left, m_rcBlueBox.Top, m_rcBlueBox.Right, m_rcBlueBox.Bottom,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcBlueBox.Left, m_rcBlueBox.Top, m_rcBlueBox.Right, m_rcBlueBox.Bottom,
 									m_rtBlueBox.U0, m_rtBlueBox.V0,
 									m_rtBlueBox.U1, m_rtBlueBox.V1,
 									0xFFFFFFFF );
 	
-	pDrawPort->AddTexture( m_rcRedBox.Left, m_rcRedBox.Top, m_rcRedBox.Right, m_rcRedBox.Bottom,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcRedBox.Left, m_rcRedBox.Top, m_rcRedBox.Right, m_rcRedBox.Bottom,
 									m_rtRedBox.U0, m_rtRedBox.V0,
 									m_rtRedBox.U1, m_rtRedBox.V1,
 									0xFFFFFFFF );
@@ -603,23 +598,25 @@ void CUIGuildBattle::RenderGBStatus()
 	RenderKillPoint();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	CTString strMessage;
 	
-	strMessage.PrintF ( _S( 1099, "전투지역 : %s" ), (const char*)CZoneInfo::getSingleton()->GetZoneName( m_nBattleZone ) ); 	
+	strMessage.PrintF ( _S( 1099, "전투지역 : %s" ), ZoneInfo().GetZoneName( m_nBattleZone ) ); 	
 	
-	int nX = m_rcRedBox.Left + ( m_rcRedBox.Right - m_rcRedBox.Left ) / 2;
+	nX = m_rcRedBox.Left + ( m_rcRedBox.Right - m_rcRedBox.Left ) / 2;
 
 	// 존 표시 (for TEXT)
-	pDrawPort->PutTextExCX( strMessage, nX, BATTLE_ZONE_NAME_Y, 0xFFFFFFE5, TRUE, 0x181818FF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( strMessage, nX, BATTLE_ZONE_NAME_Y, 0xFFFFFFE5, TRUE, 0x181818FF );
 
 	// 길드명 표시 (for TEXT)
-	pDrawPort->PutTextExCX( m_strGuildName, nX, GUILD_NAME_Y, 0xA6C0FFE5 );
-	pDrawPort->PutTextExCX( m_strTargetGuildName, nX, GUILD_NAME2_Y, 0xFF7E6EE5 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strGuildName, nX, GUILD_NAME_Y, 0xA6C0FFE5 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strTargetGuildName, nX, GUILD_NAME2_Y, 0xFF7E6EE5 );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
+	
+		
 }
 
 
@@ -632,9 +629,11 @@ void CUIGuildBattle::RenderGBStatus()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::DrawNumber ( int x, int y, int nNumber, bool bLarge )
 {
+	
 	UIRectUV rtNumber	= m_rtSmallNumber[nNumber];
 	int nWidth			= SMALL_NUMBER_WIDTH;
 	int nHeight			= SMALL_NUMBER_HEIGHT;
+
 
 	if ( bLarge )
 	{
@@ -642,10 +641,11 @@ void CUIGuildBattle::DrawNumber ( int x, int y, int nNumber, bool bLarge )
 		nWidth		= LARGE_NUMBER_WIDTH;	
 		nHeight		= LARGE_NUMBER_HEIGHT;
 	}
-
-	CUIManager::getSingleton()->GetDrawPort()->AddTexture( x, y, x + nWidth, y + nHeight,
+	
+	_pUIMgr->GetDrawPort()->AddTexture( x, y, x + nWidth, y + nHeight,
 							rtNumber.U0, rtNumber.V0, rtNumber.U1, rtNumber.V1,
 							0xFFFFFFFF );
+
 }
 
 
@@ -669,7 +669,7 @@ void CUIGuildBattle::RenderLeftTime()
 	int iMin = lLeftTime % 60;
 	int iTime = lLeftTime /= 60;
 
-	int nX = CUIManager::getSingleton()->GetDrawPort()->GetWidth() - RIGHT_SPACE - ( SMALL_NUMBER_WIDTH * 6 + COLON_WIDTH * 2 );
+	int nX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - ( SMALL_NUMBER_WIDTH * 6 + COLON_WIDTH * 2 );
 	int nY = LEFT_TIME_Y;
 
 	int t10;
@@ -709,9 +709,7 @@ void CUIGuildBattle::RenderLeftTime()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::RenderKillPoint()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	int nOffsetX = pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
+	int nOffsetX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
 	
 	int nKillPoint = m_nKillPoint;
 	int nTargetKillPoint = m_nTargetKillPoint;
@@ -756,7 +754,7 @@ void CUIGuildBattle::RenderKillPoint()
 	}
 
 	// Red Kill Point
-	nOffsetX = pDrawPort->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
+	nOffsetX = _pUIMgr->GetDrawPort()->GetWidth() - RIGHT_SPACE - BOX_WIDTH/2;
 
 	for( i = 1;  ; i *= 10 )
 	{
@@ -801,7 +799,7 @@ void CUIGuildBattle::RenderKillPoint()
 //------------------------------------------------------------------------------
 void CUIGuildBattle::DrawColon( int x, int y )
 {
-	CUIManager::getSingleton()->GetDrawPort()->AddTexture( x, y, x + COLON_WIDTH, y + SMALL_NUMBER_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( x, y, x + COLON_WIDTH, y + SMALL_NUMBER_HEIGHT,
 							m_rtColon.U0, m_rtColon.V0, m_rtColon.U1, m_rtColon.V1,
 							0xFFFFFFFF );	
 }
@@ -819,201 +817,201 @@ void CUIGuildBattle::AddGBReqdDescString( CTString &strDesc, COLOR colDesc )
 	if( nLength == 0 )
 		return;
 
-#if defined (THAI)
-	// Get length of string
-	INDEX	nThaiLen = FindThaiLen(strDesc);
-	INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-	if( nLength == 0 )
-		return;
-	// If length of string is less than max char
-	if( nThaiLen <= nChatMax )
-	{
-		// Check line character
-		for( int iPos = 0; iPos < nLength; iPos++ )
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strDesc);
+		INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbGBReqdDesc.AddString( 0, strDesc, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddGBReqdDescString( strTemp, colDesc );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		for( int iPos = 0; iPos < nLength; iPos++ )
-		{
-			if(nChatMax < FindThaiLen(strDesc,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( nSplitPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
-
-			// Trim space
-			if( strTemp[0] == ' ' )
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
-
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 
-			AddGBReqdDescString( strTemp, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddGBReqdDescString( strTemp, colDesc );
-		}
-
-	}
-#else		
-	// If length of string is less than max char
-	if( nLength <= _iMaxMsgStringChar )
-	{
-		// Check line character
-		int iPos;
-		for( iPos = 0; iPos < nLength; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbGBReqdDesc.AddString( 0, strDesc, colDesc );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddGBReqdDescString( strTemp, colDesc );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		int		iPos;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-
-		if( b2ByteChar )
-			nSplitPos--;
-
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( nSplitPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
-
-			// Trim space
-			if( strTemp[0] == ' ' )
+			// Not exist
+			if( iPos == nLength )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
+				m_lbGBReqdDesc.AddString( 0, strDesc, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
 
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strDesc,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 
-			AddGBReqdDescString( strTemp, colDesc );
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( nSplitPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
+
 		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxMsgStringChar )
+		{
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbGBReqdDesc.AddString( 0, strDesc, colDesc );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
+		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strDesc.Split( iPos, strTemp2, strTemp );
-			m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
 
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( nSplitPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strDesc.Split( iPos, strTemp2, strTemp );
+				m_lbGBReqdDesc.AddString( 0, strTemp2, colDesc );
 
-			AddGBReqdDescString( strTemp, colDesc );
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddGBReqdDescString( strTemp, colDesc );
+			}
 		}
 	}
-#endif
 }
 
 
@@ -1025,24 +1023,22 @@ void CUIGuildBattle::AddGBReqdDescString( CTString &strDesc, COLOR colDesc )
 //------------------------------------------------------------------------------
 void CUIGuildBattle::OpenGBReq( int nTargetCharIndex, CTString strGuildName )
 {
-	if( IsVisible() == TRUE )
-		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	
+	if( IsVisible() ) return;
+	
 	if( m_eGBState == GBS_IN_REQ_ACCEPT )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 1100, "이미 길드 전투가 성립되었습니다."), SYSMSG_ERROR ); 	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1100, "이미 길드 전투가 성립되었습니다."), SYSMSG_ERROR ); 	
 		return;
 	}
 	else if( m_eGBState == GBS_IN_BATTLE )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 1101, "이미 길드 전투가 시작되었습니다."), SYSMSG_ERROR );  	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1101, "이미 길드 전투가 시작되었습니다."), SYSMSG_ERROR );  	
 		return;
 	}
 	else if( m_eGBState == GBS_IN_REQ )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 1102, "이미 길드 전투 신청 중입니다."), SYSMSG_ERROR ); 	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1102, "이미 길드 전투 신청 중입니다."), SYSMSG_ERROR ); 	
 		return;
 	}
 	
@@ -1056,10 +1052,10 @@ void CUIGuildBattle::OpenGBReq( int nTargetCharIndex, CTString strGuildName )
 		
 	CTString strMessage;
 
-	strMessage.PrintF( _S( 1103, "[%s]길드에게 길드 전투를 신청합니다." ), (const char*)m_strTargetGuildName ); 	
+	strMessage.PrintF( _S( 1103, "[%s]길드에게 길드 전투를 신청합니다." ), m_strTargetGuildName ); 	
 	AddGBReqdDescString ( strMessage );
 
-	strMessage.PrintF( _S( 1386, "전투 신청금과 전투시간을 입력하세요." ), (const char*)m_strTargetGuildName ); 	
+	strMessage.PrintF( _S( 1386, "전투 신청금과 전투시간을 입력하세요." ), m_strTargetGuildName ); 	
 	AddGBReqdDescString ( strMessage );
 	
 	strMessage.PrintF( _S( 1387, "길드전투에서 승리하게 되면 %d%%의 수수료를 제외한 양쪽 길드의 모든 신청금을 갖습니다." ), GB_COMMISSION ); 	
@@ -1085,7 +1081,7 @@ void CUIGuildBattle::OpenGBReq( int nTargetCharIndex, CTString strGuildName )
 	m_ebGuildReqTime.SetFocus( FALSE );
 	m_ebGuildReqTime.SetString( "30" );	// 30분 기본 셋팅
 
-	pUIManager->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+	_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 
 	m_eGBState = GBS_REQ;
 }
@@ -1160,7 +1156,7 @@ WMSG_RESULT	CUIGuildBattle::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -1196,7 +1192,6 @@ WMSG_RESULT	CUIGuildBattle::MouseMessage( MSG *pMsg )
 			{
 				if( IsInside( nX, nY ) )
 				{
-					CUIManager* pUIManager = CUIManager::getSingleton();
 					nOldX = nX;		nOldY = nY;
 				
 					// Title bar
@@ -1219,17 +1214,17 @@ WMSG_RESULT	CUIGuildBattle::MouseMessage( MSG *pMsg )
 					else if( m_ebGuildReqNas.MouseMessage( pMsg ) != WMSG_FAIL )
 					{
 						m_ebGuildReqTime.SetFocus ( FALSE );
-						pUIManager->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+						_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 						return WMSG_SUCCESS;
 					}
 					else if( m_ebGuildReqTime.MouseMessage( pMsg ) != WMSG_FAIL )
 					{
 						m_ebGuildReqNas.SetFocus ( FALSE );
-						pUIManager->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+						_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 						return WMSG_SUCCESS;
 					}
 				
-					pUIManager->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+					_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 					return WMSG_SUCCESS;
 				}
 			}
@@ -1253,13 +1248,13 @@ WMSG_RESULT	CUIGuildBattle::MouseMessage( MSG *pMsg )
 				else if( m_ebGuildReqNas.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
 					m_ebGuildReqTime.SetFocus ( FALSE );
-					CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+					_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 					return WMSG_SUCCESS;
 				}
 				else if( m_ebGuildReqTime.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
 					m_ebGuildReqNas.SetFocus ( FALSE );
-					CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+					_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 					return WMSG_SUCCESS;
 				}
 			}
@@ -1501,10 +1496,9 @@ void CUIGuildBattle::GBReq( int nGuildIndex, CTString strGuildName, int nPrize, 
 	{
 		CTString strTempNas;
 		strTempNas.PrintF("%d0000",nPrize);
-
-		CUIManager::getSingleton()->InsertCommaToString( strTempNas ); 
+		_pUIMgr->InsertCommaToString( strTempNas ); 
 		strMessage.PrintF( _S( 1904, "[%s]길드가 길드 전투를 신청하였습니다. 전투 신청금은 %s 나스 전투 시간은 %d분입니다.\n수락 하시겠습니까?" ), 
-			strGuildName.str_String, (const char*)strTempNas,(nTime/60) ); 	
+			strGuildName.str_String, strTempNas,(nTime/60) ); 	
 	}else
 	{
 		strMessage.PrintF( _S( 1904, "[%s]길드가 길드 전투를 신청하였습니다. 전투 신청금은 %d만나스 전투 시간은 %d분입니다.\n수락 하시겠습니까?" ), strGuildName.str_String, nPrize, (nTime/60) ); 	
@@ -1570,7 +1564,7 @@ void CUIGuildBattle::GBReqAccept( int nGuildIndex1, CTString strGuildName1, int 
 
 	//길드전 공표 메세지 출력	
 	CTString strMessage, strMessage2;
-	strMessage.PrintF( _S( 1111, "[%s]길드와 [%s]길드간의 길드 전투가 성립 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 ); 	
+	strMessage.PrintF( _S( 1111, "[%s]길드와 [%s]길드간의 길드 전투가 성립 되었습니다." ), strGuildName1, strGuildName2 ); 	
 	strMessage2.PrintF( _S( 1112, "%d분 후부터 %d분 동안 두 길드는 적대 상태가 됩니다." ), GB_START_MINUTE, (m_lLeftTime/60) ); 	
 	
 	SetNotice ( strMessage, strMessage2 );
@@ -1609,24 +1603,24 @@ void CUIGuildBattle::GBStart( int nGuildIndex1, CTString strGuildName1, int nGui
 		
 	// 길드전 시작 메세지 출력 // Dealy Time 을 정해 주여야 한다!!!
 	CTString strMessage, strMessage2;
-	strMessage.PrintF( _S( 1116, "[%s]길드와 [%s]길드간의 길드 전투가 시작 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 );
+	strMessage.PrintF( _S( 1116, "[%s]길드와 [%s]길드간의 길드 전투가 시작 되었습니다." ), strGuildName1, strGuildName2 );
 	if (g_bNasTrans)//브라질 나스 표시 수정
 	{
 		CTString strTempNas;
-		strTempNas.PrintF("%d0000",nPrize);
-
-		CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %s 나스 입니다." ), (const char*)strTempNas );
+		strTempNas.PrintF("%d0000",nPrize); 
+		_pUIMgr->InsertCommaToString( strTempNas ); 
+		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %s 나스 입니다." ), strTempNas ); 	
 	}else
 	{
-		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %d만 나스 입니다." ), nPrize );
+		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %d만 나스 입니다." ), nPrize ); 	
 	}
-
+	
+	
 	SetNotice ( strMessage, strMessage2 );
-
+	
 	//!! Start Effect
 	StartEffect();
-
+	
 	m_eGBState = GBS_IN_BATTLE;
 
 	m_tmLeftTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds ();
@@ -1671,7 +1665,7 @@ void CUIGuildBattle::GBStatus( int nGuildIndex1, CTString strGuildName1, int nCo
 		SetEnable( TRUE );
 		SetVisible ( TRUE );
 		StartEffect();
-		CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
+		_pUIMgr->RearrangeOrder( UI_GUILD_BATTLE, TRUE );
 	}
 	else if (m_eGBState == GBS_IN_BATTLE && g_slZone != m_nBattleZone)
 	{ // 존 이동 시 처리
@@ -1695,7 +1689,7 @@ void CUIGuildBattle::GBStopReq( int nTargetCharIndex, CTString strGuildName )
 	m_nTargetCharIndex = nTargetCharIndex;
 	
 	CTString strMessage;
-	strMessage.PrintF( _S( 1118, "[%s]길드에게 길드 전투중단 신청을 하시겠습니까?" ), (const char*)strGuildName ); 	
+	strMessage.PrintF( _S( 1118, "[%s]길드에게 길드 전투중단 신청을 하시겠습니까?" ), strGuildName ); 	
 
 	GBMessage ( MSGCMD_GUILD_BATTLE_STOP_REQ, strMessage, UMBS_YESNO );	
 
@@ -1712,7 +1706,7 @@ void CUIGuildBattle::GBStopReqRev( int nGuildIndex, CTString strGuildName )
 	CloseAllMsgBox();
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 1119, "[%s]길드가 길드 전투중단 신청을 하였습니다. 수락하시겠습니까?" ), (const char*)strGuildName ); 	
+	strMessage.PrintF( _S( 1119, "[%s]길드가 길드 전투중단 신청을 하였습니다. 수락하시겠습니까?" ), strGuildName ); 	
 	
 	GBMessage ( MSGCMD_GUILD_BATTLE_STOP_REQ_REP, strMessage, UMBS_YESNO );
 }
@@ -1767,13 +1761,13 @@ void CUIGuildBattle::GBEnd( int nWinnerGuildIndex, int nGuildIndex1, CTString st
 
 	if ( nWinnerGuildIndex == -1 )
 	{
-		strMessage.PrintF( _S( 1122, "[%s]길드와 [%s]길드간의 길드전투가 무승부가 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 );
+		strMessage.PrintF( _S( 1122, "[%s]길드와 [%s]길드간의 길드전투가 무승부가 되었습니다." ), strGuildName1, strGuildName2 );
 		if(g_bNasTrans)//브라질 나스 표시 수정 
 		{
 			CTString strTempNas;
 			strTempNas.PrintF("%d",nPrize);
-			CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-			strMessage2.PrintF( _S( 1123, "세금 %d%%를 제외한 길드 전투 신청금 %s나스는 각 길드장에게 되돌아 갑니다." ), GB_COMMISSION, (const char*)strTempNas ); 	
+			_pUIMgr->InsertCommaToString( strTempNas );
+			strMessage2.PrintF( _S( 1123, "세금 %d%%를 제외한 길드 전투 신청금 %s나스는 각 길드장에게 되돌아 갑니다." ), GB_COMMISSION, strTempNas ); 	
 		}else{
 			strMessage2.PrintF( _S( 1123, "세금 %d%%를 제외한 길드 전투 신청금 %d나스는 각 길드장에게 되돌아 갑니다." ), GB_COMMISSION, nPrize ); 	
 		}
@@ -1782,15 +1776,15 @@ void CUIGuildBattle::GBEnd( int nWinnerGuildIndex, int nGuildIndex1, CTString st
 	else
 	{
 		strWinnerGuildName = (nGuildIndex1 == nWinnerGuildIndex)?strGuildName1:strGuildName2;
-		strMessage.PrintF( _S( 1124, "[%s]길드와 [%s]길드간의 길드전투에서 [%s]길드가 승리하였습니다." ), (const char*)strGuildName1, (const char*)strGuildName2, (const char*)strWinnerGuildName ); 	
+		strMessage.PrintF( _S( 1124, "[%s]길드와 [%s]길드간의 길드전투에서 [%s]길드가 승리하였습니다." ), strGuildName1, strGuildName2, strWinnerGuildName ); 	
 		if(g_bNasTrans)//브라질 나스 표시 수정 
 		{
 			CTString strTempNas;
 			strTempNas.PrintF("%d",nPrize);
-			CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-			strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %s나스를 지급합니다." ), (const char*)strWinnerGuildName, GB_COMMISSION, (const char*)strTempNas ); 	
+			_pUIMgr->InsertCommaToString( strTempNas );
+			strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %s나스를 지급합니다." ), strWinnerGuildName, GB_COMMISSION, strTempNas ); 	
 		}else{
-			strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %d나스를 지급합니다." ), (const char*)strWinnerGuildName, GB_COMMISSION, nPrize ); 	
+			strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %d나스를 지급합니다." ), strWinnerGuildName, GB_COMMISSION, nPrize ); 	
 		}
 	}
 
@@ -1805,13 +1799,11 @@ void CUIGuildBattle::GBEnd( int nWinnerGuildIndex, int nGuildIndex1, CTString st
 //------------------------------------------------------------------------------
 void CUIGuildBattle::GBErrorMessage( int nCommandCode, CTString strErrorMessage )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox(nCommandCode);
+	_pUIMgr->CloseMessageBox(nCommandCode);
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( m_strTitle, UMBS_OK, UI_GUILD_BATTLE, nCommandCode );
 	MsgBoxInfo.AddString( strErrorMessage );	
-	pUIManager->CreateMessageBox( MsgBoxInfo );		
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );		
 }
 
 
@@ -1822,16 +1814,14 @@ void CUIGuildBattle::GBErrorMessage( int nCommandCode, CTString strErrorMessage 
 //------------------------------------------------------------------------------
 void CUIGuildBattle::GBMessage( int nCommandCode, CTString strMessage, DWORD dwStyle )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( nCommandCode ) )
-		return;
+	if( _pUIMgr->DoesMessageBoxExist( nCommandCode ) )
+	return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( m_strTitle, dwStyle, UI_GUILD_BATTLE, nCommandCode );
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 
@@ -1877,9 +1867,7 @@ void CUIGuildBattle::GBErrorProcess( int nErrorCode )
 	
 	// Date : 2005-04-06(오후 5:08:43), By Lee Ki-hwan
 	// 에러 메세지 후에는 무조건 상황 종료...
-	//Close();
-	CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_BATTLE, FALSE );
-	Clear();
+	Close();
 }
 
 
@@ -1930,7 +1918,23 @@ void CUIGuildBattle::StartEffect()
 	StartGuildEffect ( _pNetwork->MyCharacterInfo.index, CEntity::GetPlayerEntity(0), FALSE );
 
 	// Start My Guild, Enemy Guild Effect Start
-	ACTORMGR()->StartGuildEffect();
+	INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
+	
+	for( INDEX i = 0; i < cnt; ++i )
+	{
+		CCharacterTarget	&ct = _pNetwork->ga_srvServer.srv_actCha[i];
+
+		if( ct.cha_pEntity != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance->GetName() != "")
+		{
+			int bEnmeyGuild = IsEnemyGuild ( ct.cha_lGuildIndex );
+			if ( bEnmeyGuild == 1 ) 
+				StartGuildEffect ( ct.cha_Index, ct.cha_pEntity, TRUE );
+			else if ( bEnmeyGuild == -1 ) 
+				StartGuildEffect ( ct.cha_Index, ct.cha_pEntity, FALSE );
+		}		
+	}
 }
 
 
@@ -1963,17 +1967,19 @@ BOOL ENGINE_API CUIGuildBattle::IsEnemy( unsigned long ulID )
 {
 	if ( !IsInBattle() ) return FALSE;
 
-	ObjectBase* pObject = ACTORMGR()->GetObjectByCIndex(eOBJ_CHARACTER, ulID);
-
-	if (pObject != NULL)
+	for(INDEX ipl=0; ipl<_pNetwork->ga_srvServer.srv_actCha.Count(); ++ipl) 
 	{
-		CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-		// Guild Indexx Check
-		if (pTarget->cha_lGuildIndex == m_nTargetGuildIndex)
-		{
-			return TRUE;
-		}		
+		CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[ipl];
+		
+		if (ct.cha_iClientIndex == ulID) 
+		{		
+			// Guild Indexx Check
+			if( (ct.cha_lGuildIndex == m_nTargetGuildIndex)  )
+			{
+				return TRUE;
+			}
+			else return FALSE;
+		}
 	}
 
 	return FALSE;

@@ -1,12 +1,9 @@
 #include "StdH.h"
-#ifndef PLATFORM_WIN32
-#include <sys/statvfs.h>
-#include <sys/utsname.h>
-#endif
 
 #include <Engine/Build.h>
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Input.h>
+#include <Engine/Base/Protection.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Console_internal.h>
 #include <Engine/Base/Statistics_Internal.h>
@@ -14,13 +11,11 @@
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/CRCTable.h>
 #include <Engine/Base/MemoryTracking.h>
+#include <Engine/Base/ProgressHook.h>
 #include <Engine/Sound/SoundLibrary.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/Font.h>
 #include <Engine/Network/CNetwork.h>
-#include <Engine/Network/WebAddress.h>
-#include <Engine/Network/NetworkProfile.h>
-#include <Engine/Network/SocketCompat.h>
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/Stock_CAnimData.h>
 #include <Engine/Templates/Stock_CTextureData.h>
@@ -41,35 +36,27 @@
 //안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 #include <Engine/Interface/UIManager.h>
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#include <Engine/Contents/Base/UIMsgBoxMgr.h>
-
 #include <Engine/GameState.h>
+#include <Engine/MiniDump.h>
 #include <Engine/Network/Web.h>
 #include <Engine/JobInfo.h>
-#include <Engine/Entities/SkillTree.h>
-#include <Engine/LoginJobInfo.h>
-#include <Engine/Entities/ArmorPreview.h>
+
+// WSS_NPROTECT 070402 ------------------------------->>
 #include <Engine/LocalDefine.h>
-#include <Engine/Object/ActorMgr.h>
-#include <Engine/Loading.h>
-#include <Engine/Entities/TEventString.h>
-#include <Engine/Entities/TradeItem.h>
-#include <Engine/Info/MyInfo.h>
-#include <Engine/Entities/LevelupGuide.h>
-#include <Engine/Contents/function/ItemCollectionData.h>
-#include <Engine/Info/ServerInfo.h>
 
-
-#include <Engine/Help/LoadString.h>
-#include <Engine/Help/Util_Help.h>
-
+#ifndef NO_GAMEGUARD
+	#include <NPGameLib.h>
+	#include <Engine/GameState.h>
+#endif
+// ---------------------------------------------------<<
 
 
 ENGINE_API cWeb g_web;
 
+//#define USE_MINIDUMP
+#ifdef USE_MINIDUMP
+MiniDumper	g_MiniDumper(TRUE);
+#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
@@ -88,20 +75,11 @@ ENGINE_API CTString _strTotalMemory = "";
 // -->
 
 ENGINE_API BOOL _bDedicatedServer = FALSE;
-#if defined WORLD_EDITOR
-ENGINE_API BOOL _bWorldEditorApp  = TRUE;
-#else
 ENGINE_API BOOL _bWorldEditorApp  = FALSE;
-#endif
-
-//	김영환
-ENGINE_API BOOL _bClientApp = FALSE;			// TRUE 설정되면 게임 클라이언트 이다.
 
 ENGINE_API BOOL _bUseBloomInWorldEditor = TRUE;
 ENGINE_API BOOL _bTranslucentModel = FALSE;
 ENGINE_API BOOL _bInvisibleOff =FALSE;
-ENGINE_API BOOL _bShowPortalPolygon =FALSE;
-ENGINE_API BOOL _bAttributemap_DepthTest =FALSE;
 
 ENGINE_API BOOL _bLoginProcess	= TRUE;
 //ENGINE_API BOOL _bUseSocket		  = FALSE;
@@ -112,15 +90,6 @@ ENGINE_API CTString _strLogFile = "";
 //안태훈 수정 시작
 ENGINE_API BOOL g_bBadWeather = FALSE;
 ENGINE_API COLOR g_colWeather = C_WHITE|CT_OPAQUE;
-// declared in Engine.h (auto login, event flags, Brazilian 'Nas' notation)
-ENGINE_API BOOL g_bAutoLogin;
-ENGINE_API BOOL g_bAutoRestart;
-ENGINE_API CTString g_nmID;
-ENGINE_API CTString g_nmPW;
-ENGINE_API CTString g_nmCID;
-ENGINE_API CTString g_nmVER;
-ENGINE_API std::map<int,int> g_mapEvent;
-ENGINE_API BOOL g_bNasTrans;
 ENGINE_API INDEX g_bRenderDecoration = TRUE;
 ENGINE_API INDEX g_iUseBloom = 1;	//0 : none, 1 : normal bloom, 2 : strong bloom
 FLOAT g_fFarClipPlus = 0.0f;
@@ -145,72 +114,21 @@ ENGINE_API BOOL g_bNoPlaySnd = FALSE;
 //안태훈 수정 끝	//(5th Closed beta)(0.1)
 //안태훈 수정 시작	//(Taiwan Closed beta)(0.2)
 ENGINE_API INDEX g_iCountry = 0;	//0 : Korea
-INDEX g_iEnterChat = 1;
+INDEX g_iEnterChat = 0;
 INDEX g_iShowName = 0;
 INDEX g_iShowNameItem = 1;
-// wooss 070401 ----------->><<
-// kw : WSS_HELP_SYSTEM_1
-INDEX g_iShowHelp1Icon = 1;
 
 // [090715: selo] - 아이디 저장 여부 
 INDEX g_iSaveID = 0;
 extern CTString g_strSaveID = "";
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-// 유로피안 서버 접속 여부 [10/18/2012 Ranma]
-INDEX g_iConnectEuroupean = 0;
-#endif
+// wooss 070401 ----------->><<
+// kw : WSS_HELP_SYSTEM_1
+INDEX g_iShowHelp1Icon = 1;
 
 // [7/9/2009 rumist] rejection.
 INDEX g_iRejectExchange = 0;
 INDEX g_iRejectParty = 0; 
-
-// Map Info. [9/15/2009 rumist]
-INDEX g_iZoomInMap = 12;
-INDEX g_iOpacityInMap = 75;
-
-// 1106 UI 개편 [09/05/11 trylord]
-INDEX g_iQuestBookOpen = 1;
-
-// UI 개편. [9/16/2009 rumist]
-INDEX g_iXPosInMap = 100;
-INDEX g_iYPosInMap = 100;
-INDEX g_iXPosInInventory=100;
-INDEX g_iYPosInInventory=100;
-INDEX g_iXPosInInvenSlot1=0;
-INDEX g_iYPosInInvenSlot1=0;
-INDEX g_iXPosInInvenSlot2=0;
-INDEX g_iYPosInInvenSlot2=0;
-INDEX g_iXPosInInvenSlot3=0;
-INDEX g_iYPosInInvenSlot3=0;
-// UI 퀵슬롯 확장 개편 작업 확장 슬롯 위치 [12/18/2012 Ranma]
-INDEX g_iXPosQuickSlotEX1=0;
-INDEX g_iYPosQuickSlotEX1=0;
-INDEX g_iXPosQuickSlotEX2=0;
-INDEX g_iYPosQuickSlotEX2=0;
-INDEX g_bQuickSlotEX1=0;
-INDEX g_bQuickSlotEX2=0;
-INDEX g_bQuickSlot1HorOrVer=1;
-INDEX g_bQuickSlot1Lock=0;
-INDEX g_bQuickSlot2HorOrVer=1;
-INDEX g_bQuickSlot2Lock=0;
-
-INDEX g_iXPosInCharInfo=100;
-INDEX g_iYPosInCharInfo=100;
-INDEX g_iXPosInQuest=100;
-INDEX g_iYPosInQuest=100;
-INDEX g_iXPosInPetInfo=100;
-INDEX g_iYPosInPetInfo=100;
-INDEX g_iXPosInWPetInfo=100;
-INDEX g_iYPosInWPetInfo=100;
-INDEX g_iXPosInMessanger=100;
-INDEX g_iYPosInMessanger=100;
-INDEX g_iXPosInSystemMenu = 600;
-INDEX g_iYPosInSystemMenu = 500;
-INDEX g_iXPosInNPCScroll = 20;
-INDEX g_iYPosInNPCScroll = 100;
-
-
 
 // UI_REFORM :Su-won
 ENGINE_API INDEX g_bSlaveNoTarget =FALSE;
@@ -222,10 +140,14 @@ ENGINE_API INDEX g_iAutoAttack = 1;
 
 // global handle for application window
 extern ENGINE_API HWND  _hwndMain = NULL;
-extern ENGINE_API HWND	_hDlgWeb = NULL;
 extern BOOL  _bFullScreen = FALSE;
 extern INDEX _iGfxAPI = -1; // -1=NONE, 0=OGL, 1=D3D
 
+// WSS_NPROTECT 070402 ------------------------------->>
+#ifndef NO_GAMEGUARD
+	ENGINE_API CNPGameLib npgl("LastChaosHK");
+#endif
+// ---------------------------------------------------<<
 
 // 태국버전 패치 flag 051109
 INDEX g_iTempFlag;
@@ -319,142 +241,59 @@ extern ENGINE_API CDrawPort	*_pdpWideScreenMain = NULL;
 extern ENGINE_API CViewPort	*_pvpViewPortMain = NULL;
 extern ENGINE_API HINSTANCE	_hInstanceMain = NULL;
 extern ENGINE_API INDEX		sam_bFullScreenActive = TRUE;
-extern ENGINE_API INDEX		sam_iScreenSizeI = 1024;
-extern ENGINE_API INDEX		sam_iScreenSizeJ = 768;
+extern ENGINE_API INDEX		sam_iScreenSizeI = 800;
+extern ENGINE_API INDEX		sam_iScreenSizeJ = 600;
 extern ENGINE_API INDEX		sam_iDisplayDepth  = 0;
 extern ENGINE_API INDEX		sam_iDisplayAdapter = 0;
 extern ENGINE_API INDEX		sam_iGfxAPI = 1;	// 0==OpenGL
 extern ENGINE_API INDEX		sam_bWideScreen = FALSE;
 extern ENGINE_API INDEX		cmd_iWindowLeft = -1;
 extern ENGINE_API INDEX		cmd_iWindowTop = -1;	 			// yjpark     -->|
-/*
-typedef struct _SERVICE_TABLE_ENTRY
-{
-	unsigned int *ServiceTableBase; // SSDT(KiServiceTable)의 주소, 각 서비스 별 매핑 함수 포인터들의 목록이 저장된 테이블의 포인터
-	unsigned int *ServiceCounterTableBase; // 무시
-	unsigned int NumberOfServices; // Native API의 총 개수, (Service = Native API)
-	unsigned char *ParamTableBase; // KiArgumentTable의 주소 값, 각 서비스 별 파라미터의 크기를 나타내는 값을 가진 테이블의 포인터
-} SERVICE_DESCRIPTOR_ENTRY, *PSERVICE_DESCRIPTOR_ENTRY;
-// direct import KeServiceDescriptorTable
-__declspec(dllimport)  SERVICE_DESCRIPTOR_ENTRY KeServiceDescriptorTable;
 
-// native api function address get macro
-#define SYSCALL_INDEX(_Function) *(PULONG)((PUCHAR)_Function+1)
-#define ORG_SYSCALL_PTR(_orgFunc) \
-	&(((PLONG)KeServiceDescriptorTable.ServiceTableBase)[SYSCALL_INDEX(_orgFunc)])
+// WSS_NPROTECT 070402 ------------------------------->>
+#ifndef NO_GAMEGUARD
+ENGINE_API CTString g_szHackMsg;
+// ---------------------------------------------------<<
+// 메시지 처리 CallBack 함수
+// 게임 종료시에는 false를 return해 주고 종료하지 않은 경우는 true를 return합니다.
+int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
+{	
+	// Debug...
+//	CPrintF("NPGAMEMON : %lu, %lu", dwMsg,dwArg);
 
-// 커널모드의 메모리 쓰기 권한을 위해 Write Protection 해제
-// -- SSDT[System Service Discription Table] = (KiServiceTable) 변경을 위해 커널 메모리 쓰기가 가능해야 함
-// -- CR0(Control Register 0)의 WP(Write Protection)비트를 0으로 만든다.
-// -- 다른 방법 : MDL (Memory Descriptor List)를 이용
-
-#define CR0_WP_MASK		0x0FFFEFFFF
-
-VOID ClearWriteProtect(VOID)
-{
-	__asm
+	BOOL tAppExit =FALSE;
+	
+	tAppExit = _pNetwork->NPGameMonCallbackErrChk( dwMsg, dwArg);
+	
+	if(tAppExit)
 	{
-		push eax;
-		mov eax, cr0;
-		and eax, CR0_WP_MASK; // WP 클리어
-		mov cr0, eax;
-		pop eax;
+		// 게임 종료
+		_pGameState->Running()		= FALSE;
+		_pGameState->QuitScreen()	= FALSE;
+		return FALSE;
 	}
+	return TRUE;
 }
-
-VOID SetWriteProtect(VOID)
-{
-	__asm
-	{
-		push eax;
-		mov eax, cr0;
-		or eax, not CR0_WP_MASK; // WP 비트 세팅
-		mov cr0, eax;
-		pop eax;
-	}
-}
-
-// zwopenprocess export
-NTKERNELAPI NTSTATUS ZwOpenProcess(
-								   PHANDLE ProcessHandle,
-								   ACCESS_MASK DesiredAccess,
-								   POBJECT_ATTRIBUTES ObjectAttributes,
-								   PCLIENT_ID ClientId );
-typedef NTSTATUS (*pfnZwOpenProcess) (
-									  OUT PHANDLE			ProcessHandle,
-									  IN ACCESS_MASK		AccessMark,
-									  IN POBJECT_ATTRIBUTES	ObjectAttributes,
-									  IN PCLIENT_ID			ClientId
-									  );
-
-pfnZwOpenProcess OldZwOpenProcess = NULL;
-
-NTSTATUS NewZwOpenProcess(
-						  OUT PHANDLE ProcessHandle,
-						  IN ACCESS_MASK DesiredAccess,
-						  IN POBJECT_ATTRIBUTES ObjectAttributes,
-						  IN PCLIENT_ID ClientId OPTIONAL)
-{
-	NTSTATUS status;
-
-	status = OldZwOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
-	return status;
-}
-*/
+#endif
+// ---------------------------------------------------<<
 
 
 // root of evil :)
-// 중복 클라이언트 방지용 shared 메모리 사용. [2/4/2010 rumist]
-// 원래는 크리티컬 섹션을 써도 된다. 어느게 효율이 좋을지는.. 고민.
-// 뮤텍스 계열의 단점은 실행시 호환성이 변경되면 뮤텍스 역시 다른 코드영역에서
-// 실행된다. 또한 마찬가지로 강제 종료시 정상 처리가 되지 않으면 클라이언트를
-// 다시 실행할 수 없다.
-//- detect multi client.
-#ifdef PLATFORM_WIN32
-#pragma data_seg( ".SHAREDATA" )
-int g_nEngineDllRefCnt = 0;
-#pragma data_seg()
-#pragma comment( linker, "/SECTION:.SHAREDATA,RWS" )
-
-void	IncRef()	{ ++g_nEngineDllRefCnt;	}
-void	DecRef()	{ g_nEngineDllRefCnt > 0 ? --g_nEngineDllRefCnt : g_nEngineDllRefCnt=0; }
-ENGINE_API const int	SE_GetEngineDllRefCnt() { return g_nEngineDllRefCnt;	}
-
-
-//- end.
 BOOL APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
 	switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
-			IncRef();
 			break;
 		case DLL_THREAD_ATTACH:
-			break;
 		case DLL_THREAD_DETACH:
-			{
-				std::vector<TLVarBase*>::iterator i = TLVarBase::m_Vars.begin();
-				for (; i != TLVarBase::m_Vars.end(); ++i)
-				{
-					TLVarBase* var = *i;
-					var->cleanUp();
-				}
-			}
-			
-			break;
 		case DLL_PROCESS_DETACH:
-			DecRef();
 			break;
 		default:
 			ASSERT(FALSE);
 	}
 	return TRUE;
 }
-#else
-// one engine per process: the count shared by every process that loads the DLL (Windows) does
-// not exist here, so another client is not detected this way
-ENGINE_API const int	SE_GetEngineDllRefCnt() { return 1; }
-#endif  // PLATFORM_WIN32
 
 
 static void DetectCPU(void)
@@ -464,12 +303,6 @@ static void DetectCPU(void)
 	ULONG ulTFMS;
 	ULONG ulFeatures;
 
-#ifdef USE_PORTABLE_C
-	// no cpuid: the C paths need none of the x86 features checked below
-	strcpy(strVendor, "unknown");
-	ulTFMS = 0;
-	ulFeatures = 0;
-#else
 	// test MMX presence and update flag
 	__asm {
 		mov     eax,0 // request for basic id
@@ -482,7 +315,6 @@ static void DetectCPU(void)
 		mov     dword ptr [ulTFMS],eax   // remember type, family, model and stepping
 		mov     dword ptr [ulFeatures],edx
 	}
-#endif
 
 	const INDEX iType     = (ulTFMS>>12)&0x3;
 	const INDEX iFamily   = (ulTFMS>> 8)&0xF;
@@ -501,9 +333,9 @@ static void DetectCPU(void)
 	CTString strYes = TRANS("Yes");
 	CTString strNo  = TRANS("No");
 
-	CPrintF(TRANS("   MMX: %s\n"), (const char*)(bMMX  ? strYes : strNo));
-	CPrintF(TRANS("   SSE: %s\n"), (const char*)(bSSE  ? strYes : strNo));
-	CPrintF(TRANS("  CMOV: %s\n"), (const char*)(bCMOV ? strYes : strNo));
+	CPrintF(TRANS("   MMX: %s\n"), bMMX  ? strYes : strNo);
+	CPrintF(TRANS("   SSE: %s\n"), bSSE  ? strYes : strNo);
+	CPrintF(TRANS("  CMOV: %s\n"), bCMOV ? strYes : strNo);
 	CPrintF(TRANS(" Clock: %.0f MHz\n"), fMHz);
 
 	sys_strCPUVendor = strVendor;
@@ -516,22 +348,16 @@ static void DetectCPU(void)
 	sys_bCPUHasCMOV = bCMOV!=0;
 	sys_iCPUMHz = (INDEX)fMHz;
 
-#ifndef USE_PORTABLE_C
 	if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
-#endif
 }
 
 static void DetectCPUWrapper(void)
 {
-#ifdef _MSC_VER
 	__try {
 		DetectCPU();
 	} __except(EXCEPTION_EXECUTE_HANDLER) {
 		CPrintF( TRANS("Cannot detect CPU: exception raised.\n"));
 	}
-#else
-	DetectCPU();
-#endif
 }
 
 
@@ -542,7 +368,7 @@ static void PrepareTables(void)
 	// prepare array for fast clamping to 0..255
 	for( i=-256*2; i<256*4; i++) aubClipByte[i+256*2] = (UBYTE)Clamp( i, 0L, 255L);
 	// prepare fast sqrt tables
-	for( i=0; i<SQRTTABLESIZE; i++) _aubSqrt[i]   = (UBYTE)(sqrt((float)i*65536/SQRTTABLESIZE));
+	for( i=0; i<SQRTTABLESIZE; i++) _aubSqrt[i]   = (UBYTE)(sqrt(i*65536/SQRTTABLESIZE));
 	for( i=1; i<SQRTTABLESIZE; i++) _auw1oSqrt[i] = (UWORD)(sqrt((FLOAT)(SQRTTABLESIZE-1)/i)*255.0f);
 	_auw1oSqrt[0] = MAX_UWORD;
 	// prepare fast sin/cos table
@@ -556,8 +382,24 @@ static void PrepareTables(void)
 	for( i=-ANGTABSIZE; i<ANGTABSIZE; i++) aiACosTable[i+ANGTABSIZE] = acos((FLOAT)i/ANGTABSIZE) *ANGTABSIZE*ANGLE_180/PI/360.0f;
 }
 
-char strExePath[MAX_PATH] = "";
-char strDirPath[MAX_PATH] = "";
+
+// reverses string
+void StrRev( char *str) {
+	char ctmp;
+	char *pch0 = str;
+	char *pch1 = str+strlen(str)-1;
+	while( pch1>pch0) {
+		ctmp  = *pch0;
+		*pch0 = *pch1;
+		*pch1 = ctmp;
+		pch0++;
+		pch1--;
+	}
+}
+
+
+static char strExePath[MAX_PATH] = "";
+static char strDirPath[MAX_PATH] = "";
 
 static void AnalyzeApplicationPath(void)
 {
@@ -569,192 +411,29 @@ static void AnalyzeApplicationPath(void)
 	// copy that to the path
 	strncpy(strTmpPath, strExePath, sizeof(strTmpPath)-1);
 	strDirPath[sizeof(strTmpPath)-1] = 0;
-
-	std::string strPath = strTmpPath;
-	int nBackSlash = strPath.rfind('\\');
-#if		_DEBUG || UI_TOOL || WORLD_EDITOR
-	// Debug 제거 - Debug 파일은 한폴더 안쪽에 존재 : 한겹 더 벗긴다.
-	nBackSlash = strPath.rfind('\\', --nBackSlash);	
-#endif	// _DEBUG
-	// Bin 제거
-	nBackSlash = strPath.rfind('\\', --nBackSlash);
-	strPath = strPath.substr(0, nBackSlash+1);
-
-	char* pstrFin = (char*)strPath.c_str();
-
+	// remove name from application path
+	StrRev(strTmpPath);  
+	// find last backslash
+	char *pstr = strchr( strTmpPath, '\\');
+	if( pstr==NULL) {
+		// not found - path is just "\"
+		strcpy( strTmpPath, "\\");
+		pstr = strTmpPath;
+	} 
+	// remove 'debug' from app path if needed
+	if( strnicmp( pstr, "\\gubed", 6)==0) pstr += 6;
+	if( pstr[0] = '\\') pstr++;
+	char *pstrFin = strchr( pstr, '\\');
+	if( pstrFin==NULL) {
+		strcpy( pstr, "\\");
+		pstrFin = pstr;
+	}
+	// copy that to the path
+	StrRev(pstrFin);
 	strncpy( strDirPath, pstrFin, sizeof(strDirPath)-1);
 	strDirPath[sizeof(strDirPath)-1] = 0;
 }
 
-#ifdef PLATFORM_WIN32
-// [2013/01/16] sykim70
-inline UINT GetFileLastWriteTime(HANDLE hFile)
-{
-	FILETIME fileTime;
-	GetFileTime(hFile, NULL, NULL, &fileTime);
-
-	SYSTEMTIME sysTime;
-	FileTimeToSystemTime(&fileTime, &sysTime);
-	
-	tm stTm = {
-		(int)sysTime.wSecond,
-		(int)sysTime.wMinute,
-		(int)sysTime.wHour,
-		(int)sysTime.wDay,
-		(int)sysTime.wMonth - 1,
-		(int)sysTime.wYear - 1900,
-		0, 0, 0
-	};
-	return (UINT)mktime(&stTm);
-}
-
-// [2013/01/16] sykim70
-inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
-{
-	DWORD dwFlags = FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING;
-	HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, dwFlags, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return false;
-	len  = GetFileSize(hFile, NULL);
-	time = GetFileLastWriteTime(hFile);
-	CloseHandle(hFile);
-	return true;
-}
-#else
-// the same values as above: the UTC modification time taken apart (FileTimeToSystemTime) and
-// put back together by mktime as if it were local time
-inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
-{
-	struct stat st;
-	if (stat(LC_HostPath(filename).c_str(), &st) != 0)
-		return false;
-	len = (UINT)st.st_size;
-	struct tm tmUTC;
-	gmtime_r(&st.st_mtime, &tmUTC);
-	tm stTm = {
-		tmUTC.tm_sec,
-		tmUTC.tm_min,
-		tmUTC.tm_hour,
-		tmUTC.tm_mday,
-		tmUTC.tm_mon,
-		tmUTC.tm_year,
-		0, 0, 0
-	};
-	time = (UINT)mktime(&stTm);
-	return true;
-}
-#endif  // PLATFORM_WIN32
-
-// [2013/01/16] sykim70
-inline CTString OpenPersistentSymbolFile2(const CTFileName &fnmPS)
-{
-	FILE* fp = fopen(fnmPS.str_String, "rb");
-	if (fp == INVALID_HANDLE_VALUE)
-		return "";
-	int len = -1;
-	fread(&len, sizeof(len), 1, fp);
-	UBYTE *bufferSrc = new UBYTE[len];
-	char *bufferDecoded = new char[len + 1];
-	memset(bufferDecoded, 0, len+1);
-	fread(bufferSrc, len, 1, fp);
-	
-	extern void DecodePersistentSymbols(unsigned char *buf, int dummyLen, const unsigned char *bufSrc, int len);
-	DecodePersistentSymbols((UBYTE*)bufferDecoded, 0, bufferSrc, len);
-	
-	CTString strContents = bufferDecoded;
-	delete[] bufferSrc;
-	delete[] bufferDecoded;
-	fclose(fp);
-	return strContents;
-}
-
-// [2013/01/16] sykim70
-inline bool GetOneLine(CTString& str, CTString& line)
-{
-	INDEX iLen = str.Length();
-	if (iLen <= 0)
-		return false;
-
-	INDEX iPos = 0;
-	while (iPos < iLen)
-	{
-		if (str[iPos] != '\n' && str[iPos] != '\r')
-		{
-			if (iPos > 0)
-			{
-				str.TrimLeft(iLen - iPos);
-				iLen = str.Length();
-				iPos = 0;
-			}
-			break;
-		}
-		iPos++;
-	}
-	while (iPos < iLen)
-	{
-		if (str[iPos] == '\n' || str[iPos] == '\r')
-			break;
-		iPos++;
-	}
-	if (iPos == iLen)
-	{
-		line = str;
-		str = "";
-		return true;
-	}
-	CTString temp;
-	str.Split(iPos, line, temp);
-	str = temp;
-	return true;
-}
-
-// [2013/01/16] sykim70
-ENGINE_API bool SE_CheckEngine()
-{
-#if !defined(_DEBUG) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(LC_NO_BINARY_CHECK)	// binary.lod lists the official binaries
-	AnalyzeApplicationPath();
-
-	// check binary.lod
-	CTString strFullPath = strDirPath;
-	CTString fnTemp = strFullPath + "data\\etc\\binary.lod";
-	CTString data = OpenPersistentSymbolFile2(fnTemp);
-
-	CTString oneline;
-	if (!GetOneLine(data, oneline))
-		return false;
-	int nCount = atoi(oneline.str_String);
-
-	if (!GetOneLine(data, oneline))	// stamp
-		return false;
-
-	UINT srcLen, targetLen, targetTime;
-	UINT minTime = -1;
-	UINT maxTime = 0;
-	for (int i = 0; i < nCount; i++)
-	{
-		if (!GetOneLine(data, oneline))
-			return false;
-		fnTemp = strFullPath + oneline;
-
-		if (!GetOneLine(data, oneline))
-			return false;
-		srcLen = (UINT)atoi(oneline.str_String);
-
-		if (!GetFileInfo(fnTemp.str_String, targetLen, targetTime))
-			return false;
-
-		if (srcLen != targetLen)
-			return false;
-
-		minTime = Min(minTime, targetTime);
-		maxTime = Max(maxTime, targetTime);
-	}
-	if (maxTime-minTime > 60*3)	// 3 min
-		return false;
-
-#endif
-	return true;
-}
 
 // startup engine 
 //ENGINE_API void SE_InitEngine(CTString strGameID, BOOL bTcp)		// by seo 40225
@@ -778,25 +457,12 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	// create some internal tables
 	PrepareTables();
 
-#if		defined(VER_TEST)
 	_pConsole = new CConsole;
-#else
-	// LC_CONSOLE_LOG=1 writes the console log (<exe>.log next to Bin) in release builds too.
-	_pConsole = getenv("LC_CONSOLE_LOG") ? new CConsole : NULL;
-#endif
-
 	if (_strLogFile=="") {
 		_strLogFile = CTFileName(CTString(strExePath)).FileName();
 	}
 	CTFileName fnmLog = _fnmApplicationPath+_strLogFile+".log";
-	
-	if (_pConsole != NULL)
-	{
-		_pConsole->Initialize(fnmLog, 80, 512);
-		// (the original build never creates the file: LC_CONSOLE_LOG asks for it)
-		_pConsole->CreateLogFile(fnmLog);
-	}
-	
+	_pConsole->Initialize(fnmLog, 80, 512);
 
 	CTFileName fnmExt	= CTFileName("ErrorLog.txt");
 	CTFileName fnmError = _fnmApplicationPath+fnmExt;
@@ -815,13 +481,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShaderStock      = new CStock_CShader;
 	_pModelInstanceStock = new CStock_CModelInstance;
 
-
 	_pTimer = new CTimer;
 	_pGfx   = new CGfxLibrary;
 	_pSound = new CSoundLibrary;	
-	_pInput = new CInput;	
-
-	_pGameState = new CGameState;
+	_pInput = new CInput;
+	_pNetwork = new CNetworkLibrary;
 
 	// init main shell
 	_pShell = new CShell;
@@ -833,17 +497,16 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// print basic engine info
 	CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-	CPrintF("  %s\n\n", (const char*)_strEngineBuild);
+	CPrintF("  %s\n\n", _strEngineBuild);
 
 	// print info on the started application
 	CPrintF(TRANS("Executable: %s\n"), strExePath);
-	CPrintF(TRANS("Assumed engine directory: %s\n"), (const char*)_fnmApplicationPath);
+	CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
 
 	CPrintF("\n");
 
 	// report os info
 	CPrintF(TRANS("Examining underlying OS...\n"));
-#ifdef PLATFORM_WIN32
 	OSVERSIONINFO osv;
 	memset(&osv, 0, sizeof(osv));
 	osv.dwOSVersionInfoSize = sizeof(osv);
@@ -870,24 +533,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	} else {
 		CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()) );
 	}
-#else
-	struct utsname uts;
-	if (uname(&uts) == 0) {
-		sys_strOS = uts.sysname;  // "Darwin"; the version is the kernel's
-		int iMajor = 0, iMinor = 0, iBuild = 0;
-		sscanf(uts.release, "%d.%d.%d", &iMajor, &iMinor, &iBuild);
-		sys_iOSMajor = iMajor;
-		sys_iOSMinor = iMinor;
-		sys_iOSBuild = iBuild;
-		sys_strOSMisc = uts.version;
-
-		CPrintF(TRANS("  Type: %s\n"), (const char*)sys_strOS);
-		CPrintF(TRANS("  Version: %d.%d, build %d\n"), iMajor, iMinor, iBuild);
-		CPrintF(TRANS("  Misc: %s\n"), uts.version);
-	} else {
-		CPrintF(TRANS("Error getting OS info: %s\n"), strerror(errno) );
-	}
-#endif  // PLATFORM_WIN32
 	CPrintF("\n");
 
 	// report CPU
@@ -911,7 +556,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 
 	// get info on the first disk in system
-#ifdef PLATFORM_WIN32
 	DWORD dwSerial;
 	DWORD dwFreeClusters;
 	DWORD dwClusters;
@@ -923,18 +567,9 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	GetVolumeInformation(strDrive, NULL, 0, &dwSerial, NULL, NULL, NULL, 0);
 	GetDiskFreeSpace(strDrive, &dwSectors, &dwBytes, &dwFreeClusters, &dwClusters);
-	sys_iHDDSize = (__int64)(dwSectors)*dwBytes*dwClusters/MB;
-	sys_iHDDFree = (__int64)(dwSectors)*dwBytes*dwFreeClusters/MB;
+	sys_iHDDSize = __int64(dwSectors)*dwBytes*dwClusters/MB;
+	sys_iHDDFree = __int64(dwSectors)*dwBytes*dwFreeClusters/MB;
 	sys_iHDDMisc = dwSerial;
-#else
-	// the disk the game is on; there is no volume serial number
-	struct statvfs svfs;
-	if (statvfs(LC_HostPath(_fnmApplicationPath.str_String).c_str(), &svfs) == 0) {
-		sys_iHDDSize = (__int64)svfs.f_frsize*svfs.f_blocks/MB;
-		sys_iHDDFree = (__int64)svfs.f_frsize*svfs.f_bavail/MB;
-	}
-	sys_iHDDMisc = 0;
-#endif  // PLATFORM_WIN32
  
 	// add console variables
 	extern INDEX con_bNoWarnings;
@@ -1006,70 +641,18 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShell->DeclareSymbol("persistent      INDEX g_iShowNameItem;", &g_iShowNameItem);
 	_pShell->DeclareSymbol("persistent      INDEX g_iAutoAttack;", &g_iAutoAttack);
 //안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
-	// wooss 070401 ---------------------------------------------------------------->><<
-	// kw : WSS_HELP_SYSTEM_1
-	_pShell->DeclareSymbol("persistent      INDEX g_iShowHelp1Icon;", &g_iShowHelp1Icon);
 
 	// [090715: selo]
 	_pShell->DeclareSymbol("persistent      INDEX g_iSaveID;", &g_iSaveID);	
 	_pShell->DeclareSymbol("persistent user CTString g_strSaveID;", &g_strSaveID);
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-	// 유로피안 서버 접속 여부 [10/18/2012 Ranma]
-	_pShell->DeclareSymbol("persistent      INDEX g_iConnectEuroupean;", &g_iConnectEuroupean);
-#endif
+	// wooss 070401 ---------------------------------------------------------------->><<
+	// kw : WSS_HELP_SYSTEM_1
+	_pShell->DeclareSymbol("persistent      INDEX g_iShowHelp1Icon;", &g_iShowHelp1Icon);
 
 	// [7/9/2009 rumist] rejection
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectExchange;", &g_iRejectExchange);
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectParty;", &g_iRejectParty);
-
-	// 1106 UI 개편 - 퀘스트 북 열기 [09/05/11 trylord]
-	_pShell->DeclareSymbol("persistent		INDEX g_iQuestBookOpen;", &g_iQuestBookOpen);
-
-	// Map Info. [9/15/2009 rumist]
-	_pShell->DeclareSymbol("persistent		INDEX g_iZoomInMap;", &g_iZoomInMap);
-	_pShell->DeclareSymbol("persistent		INDEX g_iOpacityInMap;", &g_iOpacityInMap);
-
-	// UI 개편 작업. [9/16/2009 rumist]
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInMap;", &g_iXPosInMap);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInMap;", &g_iYPosInMap);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInventory;", &g_iXPosInInventory);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInInventory;", &g_iYPosInInventory);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInvenSlot1;", &g_iXPosInInvenSlot1);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInInvenSlot1;", &g_iYPosInInvenSlot1);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInvenSlot2;", &g_iXPosInInvenSlot2);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInInvenSlot2;", &g_iYPosInInvenSlot2);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInvenSlot3;", &g_iXPosInInvenSlot3);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInInvenSlot3;", &g_iYPosInInvenSlot3);
-	
-	// UI 퀵슬롯 확장 개편 작업 확장 슬롯 위치 [12/18/2012 Ranma]
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosQuickSlotEX1;", &g_iXPosQuickSlotEX1);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosQuickSlotEX1;", &g_iYPosQuickSlotEX1);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosQuickSlotEX2;", &g_iXPosQuickSlotEX2);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosQuickSlotEX2;", &g_iYPosQuickSlotEX2);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlotEX1;", &g_bQuickSlotEX1);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlotEX2;", &g_bQuickSlotEX2);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlot1HorOrVer;", &g_bQuickSlot1HorOrVer);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlot1Lock;", &g_bQuickSlot1Lock);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlot2HorOrVer;", &g_bQuickSlot2HorOrVer);
-	_pShell->DeclareSymbol("persistent		INDEX g_bQuickSlot2Lock;", &g_bQuickSlot2Lock);
-	
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInCharInfo;", &g_iXPosInCharInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInCharInfo;", &g_iYPosInCharInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInQuest;", &g_iXPosInQuest);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInQuest;", &g_iYPosInQuest);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInPetInfo;", &g_iXPosInPetInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInPetInfo;", &g_iYPosInPetInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInWPetInfo;", &g_iXPosInWPetInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInWPetInfo;", &g_iYPosInWPetInfo);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInMessanger;", &g_iXPosInMessanger);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInMessanger;", &g_iYPosInMessanger);
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInSystemMenu;", &g_iXPosInSystemMenu);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInSystemMenu;", &g_iYPosInSystemMenu);
-
-	// NPC Scroll UI Position [9/21/2009 rumist]
-	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInNPCScroll;", &g_iXPosInNPCScroll);
-	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInNPCScroll;", &g_iYPosInNPCScroll);
 
 	// UI_REFORM :Su-won
 	_pShell->DeclareSymbol("persistent      INDEX g_bSlaveNoTarget;", &g_bSlaveNoTarget);
@@ -1108,13 +691,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	try {
 		// get the checksum of engine
 		#ifndef NDEBUG
-			//#define SELFFILE "Bin\\Debug\\EngineD.dll"
+			#define SELFFILE "Bin\\Debug\\EngineD.dll"
 			#define SELFCRCFILE "Bin\\Debug\\EngineD.crc"
-		#	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
-		#		define SELFFILE "Bin\\Debug2010\\EngineD.dll"
-		#	else
-		#		define SELFFILE "Bin\\Debug\\EngineD.dll"
-		#	endif
 		#else
 			#define SELFFILE "Bin\\Engine.dll"
 			#define SELFCRCFILE "Bin\\Engine.crc"
@@ -1132,8 +710,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 		//FatalError(TRANS("Engine CRC is invalid.\nExpected %08x, but found %08x.\n"), ulCRCExpected, ulCRCActual);
 	}
 #endif
-
-	_pNetwork = new CNetworkLibrary;
 
 	_pInput->Initialize();
 
@@ -1158,9 +734,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	// mark that default fonts aren't loaded (yet)
 	_pfdDisplayFont = NULL;
 	_pfdConsoleFont = NULL;
-	//////////////////////////////////////////////////////////////////////////
-	_pfdGameFont = NULL; 
-	//////////////////////////////////////////////////////////////////////////
 
 	// init IFeel
 	HWND hwnd = NULL;//GetDesktopWindow();
@@ -1183,7 +756,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	}
 }
 
-
 ENGINE_API void CheckEngineVersion()
 {
 	if( !((g_bTestClient && g_uiEngineVersion >= 10000) || (!g_bTestClient && g_uiEngineVersion < 10000)) )
@@ -1196,79 +768,22 @@ ENGINE_API void CheckEngineVersion()
 	}
 }
 
-ENGINE_API void EndLodData()
-{
-	CSpecialSkill::release();
-	CItemData::release();
-	COptionData::release();
-	CFortuneData::release();
-	CItemRareOption::release();
-	CSetItemData::release();
-	CAction::release();
-	CMissionCase::release();
-	CNickNameData::release();
-	CQuestStaticData::release();
-	CMobData::release();
-	CNpcHelp::release();
-	CMobHelp::release();
-	CWildPetData::release();
-	CLevelUpGuide::release();
-	CItemCollectionData::Release();
-}
-
 
 // shutdown entire engine
 ENGINE_API void SE_EndEngine(void)
 {
 	Finalize_EffectSystem();
 	// save persistent symbols
-#ifndef UI_TOOL
 	if (!_bDedicatedServer) {
 		_pShell->StoreEncodePersistentSymbols(fnmPersistentSymbols);
 	}
-#endif // UI_TOOL
 
-	StringLoader::destroy();
-	if(_pGameState)
-		_pGameState->DeleteSelectModel(); // Free Stocks 보다 먼저 삭제하여야 한다.
-
-	CLoginJobInfo::destroy(); // 게임 스테이트의 모델보다 나중에 지워져야 한다.
-	CJobInfo::destroy();
-
-	CUIManager::destroy();
-
-	GameDataManager::getSingleton()->DestroyAll();
-	GameDataManager::destroy();
-
-	StageMgr::getSingleton()->DestroyAll();
-	StageMgr::destroy();
-
-	CSkillTree::Destroy();
-	CArmorPreview::Destroy();
-	CTEventString::Destroy();
-	CTradeItem::Destroy();
-
-	EndLodData();
-
-	CZoneInfo::destroy();
-
-	CLoadingImage::destroy();
-
-	ActorMgr::destroy();
-	MyInfo::destroy();
-	ServerInfo::destroy();
-	ObjInfo::destroy();
-
-	_pfdDisplayFont->Clear();
-	FONT_STOCK_RELEASE(_pfdDisplayFont);
-	_pfdConsoleFont->Clear();
-	FONT_STOCK_RELEASE(_pfdConsoleFont);
-
-#ifdef G_RUSSIA
-	_pfdDefaultFont->Clear();
-	FONT_STOCK_RELEASE(_pfdDefaultFont);
-#endif // G_RUSSIA
-
+	if( _pUIMgr )
+	{
+		_pUIMgr->Destroy();
+		delete _pUIMgr;
+		_pUIMgr = NULL;
+	}
 	// free stocks
 	delete _pEntityClassStock;   _pEntityClassStock   = NULL;
 	delete _pModelInstanceStock; _pModelInstanceStock = NULL;
@@ -1287,10 +802,7 @@ ENGINE_API void SE_EndEngine(void)
 	CRCT_Clear();
 
 	// shutdown
-	if( _pNetwork != NULL) { 
-		delete _pNetwork;  
-		_pNetwork = NULL; 
-	}
+	if( _pNetwork != NULL) { delete _pNetwork;  _pNetwork=NULL; }
 	delete _pInput;    _pInput   = NULL;  
 	delete _pSound;    _pSound   = NULL;  
 	delete _pGfx;      _pGfx     = NULL;    
@@ -1328,11 +840,6 @@ ENGINE_API void SE_LoadDefaultFonts(void)
 	try {
 		_pfdDisplayFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Standard.fnt"));
 		_pfdConsoleFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Console1.fnt"));
-
-		//_pfdGameFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Korean.fnt") );
-#if defined (G_RUSSIA)
-		_pfdDefaultFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Russia.fnt"));
-#endif
 	}
 	catch (char *strError) {
 		FatalError( TRANS("Error loading font: %s."), strError);
@@ -1347,17 +854,14 @@ ENGINE_API void SE_LoadDefaultFonts(void)
 
 
 // updates main windows' handles for windowed mode and fullscreen
-ENGINE_API void SE_UpdateWindowHandle( HWND hwndMain, HWND hdlgWebInterface)
+ENGINE_API void SE_UpdateWindowHandle( HWND hwndMain)
 {
 	ASSERT( hwndMain!=NULL);
 	_hwndMain = hwndMain;
-	_hDlgWeb = hdlgWebInterface;
 	_bFullScreen = _pGfx!=NULL && (_pGfx->gl_ulFlags&GLF_FULLSCREEN);
 }
 
 
-// Pretouching walks the process' committed memory with VirtualQuery; Windows only.
-#ifdef _WIN32
 static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 {
 	// cannot pretouch block that are smaller than 64KB :(
@@ -1367,14 +871,6 @@ static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 	__try {
 		// 4 times should be just enough
 		for( INDEX i=0; i<4; i++) {
-#ifdef USE_PORTABLE_C
-			// volatile keeps the compiler from dropping the reads
-			const volatile ULONG *pul = (const volatile ULONG*)pubMemoryBlock;
-			for( INDEX iLong=0; iLong<ctBlockSize/4; iLong++) {
-				ULONG ul = pul[iLong] + pul[iLong+16*0x1000/4];
-				(void)ul;
-			}
-#else
 			// must do it in asm - don't know what VC will try to optimize
 			__asm {
 				// The 16-page skip is to keep Win 95 from thinking we're trying to page ourselves in
@@ -1390,7 +886,6 @@ touchLoop:
 				dec   ecx
 				jnz   touchLoop
 			}
-#endif
 		}
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER) { 
@@ -1398,7 +893,6 @@ touchLoop:
 	}
 	return TRUE;
 }
-#endif  // _WIN32
 
 // pretouch all memory commited by process
 extern BOOL _bNeedPretouch = FALSE;
@@ -1408,8 +902,9 @@ ENGINE_API extern void SE_PretouchIfNeeded(void)
 	extern INDEX gam_bPretouch;
 	if( !_bNeedPretouch || !gam_bPretouch) return;
 	_bNeedPretouch = FALSE;
-#ifdef _WIN32
 
+	// set progress bar
+	SetProgressDescription( TRANS("pretouching"));
 	CallProgressHook_t(0.0f);
 
 	// need to do this two times - 1st for numerations, and 2nd for real (progress bar and that shit)
@@ -1474,47 +969,10 @@ nextRegion:
 	// some blocks failed?
 	if( ctFails>1) CPrintF( TRANS("(%d blocks were skipped)\n"), ctFails);
 	//_pShell->Execute("StockDump();");
-#endif  // _WIN32
 }
 
 
-ENGINE_API CWebAddress* SE_Get_WebAddressPtr()
-{
-	return CWebAddress::getSingleton();
-}
 
-
-ENGINE_API CUIManager* SE_Get_UIManagerPtr()
-{
-	return CUIManager::getSingleton();
-}
-
-ENGINE_API GameDataManager* SE_Get_GameDataManagerPtr()
-{
-	return GameDataManager::getSingleton();
-}
-
-ENGINE_API void SE_Destroy_WebAddressPtr()
-{
-	CWebAddress::destroy();
-}
-
-
-ENGINE_API void SE_Destroy_UIManagerPtr()
-{
-	CUIManager::destroy();
-}
-
-ENGINE_API void SE_Destroy_GameDataManagerPtr()
-{
-	GameDataManager::getSingleton()->destroy();
-}
-
-
-ENGINE_API UtilHelp* SE_Get_UtilHelpPtr()
-{
-	return UtilHelp::getSingleton();
-}
 
 #if 0
 
@@ -1555,7 +1013,6 @@ ENGINE_API UtilHelp* SE_Get_UtilHelpPtr()
 			case MEM_MAPPED:  strTmp2 = "MEM_MAPPED";  break;
 			case MEM_PRIVATE: strTmp2 = "MEM_PRIVATE"; break;
 			}
-
 			CPrintF("State/Type: %s / %s\n", strTmp1, strTmp2);
 
 #endif

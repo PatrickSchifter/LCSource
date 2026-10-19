@@ -1,7 +1,8 @@
 #ifndef __PETTARGET_H__
 #define __PETTARGET_H__
 
-#include <Engine/Object/ObjectBase.h>
+
+//#include <Engine/Network/NetworkMessage.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Interface/UIBuff.h>
 #include <Engine/Entities/StatusEffect.h>
@@ -34,14 +35,20 @@ public:
 };
 
 // FIXME : ¸¹Àº Á¤¸® ÇÊ¿ä...¤Ñ.¤Ñ
-class ENGINE_API CPetTarget : public ObjectBase
+class ENGINE_API CPetTarget 
 {
 public:
+	INDEX			pet_Index;
+	INDEX			pet_iType;
 	INDEX			pet_iAge;
+	INDEX			pet_iClientIndex;
+	CEntity			*pet_pEntity;	
+	CTString		pet_Name;
 	CTString		pet_OwnerName;
+	SBYTE			pet_yLayer;	
 	CStatusEffect	pet_statusEffect;
 	CEffectGroup	*pet_pNormalEffect;
-	UWORD			pet_sbAttributePos;
+	UBYTE			pet_sbAttributePos;
 	INDEX			pet_OwnerIndex;	
 	CTString		pet_strNameCard;
 	
@@ -54,9 +61,11 @@ public:
 	CPetTarget(const CPetTarget &other);
 	CPetTarget &operator=(const CPetTarget &other);
 	
+	void	Init(void);
 	void	SetData( INDEX index, CTString& strName, CTString& strOwnerName, INDEX iOwnerIndex, INDEX iPetType, INDEX iPetAge, CEntity *pEntity, SBYTE sbyLayer, CTString strNameCard );	
 	void	SetClientPetId( INDEX index );
-	void	ChangeStatus(CTagManager* pTM, SQUAD status)
+	void	SetyLayer( SBYTE sbyLayer ) { pet_yLayer = sbyLayer; }	
+	void	ChangeStatus(CTagManager* pTM, SLONG status)
 	{
 		if(pet_statusEffect.IsStatusChanged(status))
 			pet_statusEffect.ChangeStatus(pTM, status, CStatusEffect::R_ENEMY);
@@ -83,15 +92,17 @@ enum STATETYPE
 	STATE_END,
 };
 
-class ENGINE_API CWildPetTarget : public ObjectBase
+class ENGINE_API CWildPetInfo
 {
 public:
 	BOOL		bIsActive;
-	BOOL		bDeath;
 	INDEX		m_nIndex;		// Æê Åø ÀÎµ¦½º
+	INDEX		m_nNetIndex;
 	INDEX		m_nOwnerIndex;
 	INDEX		m_nLevel;		// °ø°Ý Æê ·¹º§
 	INDEX		m_nLevelupPoint;	// °ø°Ý Æê ¼ºÀåÆ÷ÀÎÆ®
+	INDEX		m_nType;			// °ø°Ý Æê Å¸ÀÔ
+	CTString	m_strName;		// °ø°Ý Æê ÀÌ¸§
 	// Bagic
 	INDEX		m_nStr;			// °ø°Ý Æê Èû
 	INDEX		m_nStrPlus;		//	°ø°Ý Æê Èû Ãß°¡
@@ -113,21 +124,23 @@ public:
 	INDEX		m_nMaxStm;		// °ø°Ý Æê ÃÖ´ë ¹è°íÇÄ
 	INDEX		m_nSpeed;		// °ø°Ý Æê ÀÌµ¿ ¼Óµµ
 	INDEX		m_nAISlot;		// °ø°Ý Æê AI ½½·Ô°³¼ö
+	INDEX		pet_iClientIndex; //°ø°Ý Æê Client World Index
+	CEntity			*pet_pEntity;
+	SBYTE		m_sbYlayer;
 	UBYTE		m_sbAttributePos;
-	SBYTE		m_sbTransStat;
-	BOOL		m_bMount;
 	// state
 	INDEX	m_nWildPetState[STATE_END];	// °ø°Ý Æê »óÅÂ
 	INDEX	m_nWildPetStatePlus[STATE_END]; // »óÅÂ ÇÃ·¯½º
 	INDEX	m_nPetWearIndex[WILDPET_WEAR_TOTAL];
 	INDEX	m_nPetWearPlus[WILDPET_WEAR_TOTAL];
 public:
-	CWildPetTarget();
-	~CWildPetTarget();
+	CWildPetInfo();
+	~CWildPetInfo();
 
-	CWildPetTarget(const CWildPetTarget &other);
-	CWildPetTarget &operator=(const CWildPetTarget &other);	
+	CWildPetInfo(const CWildPetInfo &other);
+	CWildPetInfo &operator=(const CWildPetInfo &other);	
 
+	void Init();
 	void SetWildPetToEntity(CEntity *pEntity, INDEX nindex, INDEX *nWearIndex, INDEX *nWearPlus);
 
 };

@@ -79,6 +79,16 @@ functions:
 
 
 procedures:
+  PlaySoundOnce() {
+    m_soSound.Set3DParameters(FLOAT(m_rFallOffRange), FLOAT(m_rHotSpotRange), m_fVolume, m_fPitch, FALSE);
+    PlaySound(m_soSound, m_fnSound, SOF_3D|SOF_VOLUMETRIC);
+    FLOAT fSoundDuration = m_soSound.so_psdLink->GetSecondsLength();
+    SetFlagOn(ENF_CLIENTHANDLING);
+    autowait(fSoundDuration+0.05f);
+    Destroy(FALSE);
+    return;
+  }
+
   Main(EVoid)
   {
     SetFlagOn(ENF_MARKDESTROY);
@@ -111,7 +121,7 @@ procedures:
     SetModel(MODEL_MARKER);
     SetModelMainTexture(TEXTURE_MARKER);
 
-    m_strDescription.PrintF("%s", (const char*)m_fnSound.FileName());
+    m_strDescription.PrintF("%s", (CTString&)m_fnSound.FileName());
 
     // wait for a while to play sound -> Sound Can Be Spawned 
     if( _pTimer->CurrentTick()<=0.1f) { autowait(0.5f); }
@@ -154,16 +164,6 @@ procedures:
 
     // cease to exist
     Destroy();
-    return;
-  }
-
-  PlaySoundOnce() {
-    m_soSound.Set3DParameters(FLOAT(m_rFallOffRange), FLOAT(m_rHotSpotRange), m_fVolume, m_fPitch, FALSE);
-    PlaySound(m_soSound, m_fnSound, SOF_3D|SOF_VOLUMETRIC);
-    FLOAT fSoundDuration = m_soSound.so_psdLink->GetSecondsLength();
-    SetFlagOn(ENF_CLIENTHANDLING);
-    autowait(fSoundDuration+0.05f);
-    Destroy(FALSE);
     return;
   }
 };

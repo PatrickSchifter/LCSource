@@ -1,19 +1,19 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
-#include <Engine/Interface/UIPersonalShop.h>
-#include <Engine/Entities/InternalClasses.h>
-#include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Help/Util_Help.h>
 #include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIRadar.h>
-#include <Engine/Interface/UISocketSystem.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Interface/UIPersonalShop.h>
+#include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/Interface/UIFiltering.h>
 
-#include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
-#include <Engine/Info/MyInfo.h>
+#include <Engine/Entities/InternalClasses.h>
+#include <Engine/Entities/Entity.h>
+#include <Engine/Entities/EntityProperties.h>
+#include <Engine/Classes/PlayerEntity.h>
+#include <Engine/Network/MessageDefine.h>
+#include <Engine/Entities/Items.h>
+#include <Engine/Entities/ItemData.h>
+#include <Engine/Interface/UIPetInfo.h>
+#include <Engine/PetInfo.h>
+#include <Engine/LocalDefine.h>
 
 #define PACKAGE_ITEM_INDEX		(506)
 
@@ -24,33 +24,7 @@
 #define PERSONAL_SELL_PACKAGE_SLOT_SX		11		// (Package)
 #define PERSONAL_SELL_PACKAGE_SLOT_SY		146		// 167
 
-class CmdPersnalShopAddItem : public Command
-{
-public:
-	CmdPersnalShopAddItem() : m_pWnd(NULL)	{}
-	void setData(CUIPersonalShop* pWnd)	{ m_pWnd = pWnd;	}
-	void execute() 
-	{
-		if (m_pWnd != NULL)
-			m_pWnd->AddItemCallback();
-	}
-private:
-	CUIPersonalShop* m_pWnd;
-};
-
-class CmdPersnalShopDelItem : public Command
-{
-public:
-	CmdPersnalShopDelItem() : m_pWnd(NULL)	{}
-	void setData(CUIPersonalShop* pWnd)	{ m_pWnd = pWnd;	}
-	void execute() 
-	{
-		if (m_pWnd != NULL)
-			m_pWnd->DelItemCallback();
-	}
-private:
-	CUIPersonalShop* m_pWnd;
-};
+extern INDEX g_iCountry;
 
 // ----------------------------------------------------------------------------
 // Name : CUIPersonalShop()
@@ -68,14 +42,17 @@ CUIPersonalShop::CUIPersonalShop()
 	m_nCurRow			= 0;
 	m_nNumOfItem		= 0;
 	m_nTotalPrice		= 0;
+	m_bShowItemInfo		= FALSE;
+	m_bDetailItemInfo	= FALSE;
 	m_bPremium			= FALSE;
+	m_nCurInfoLines		= 0;
 	m_strPlayerMoney	= CTString( "0" );
 	m_strTotalPrice		= CTString( "0" );
 	m_strPackagePrice	= CTString( "0" );
 	m_llPackagePrice	= 0;
 	m_bCashPersonShop	= FALSE;
 	m_bCashPersonShop_open = FALSE;
-	m_nSelITab			= -1;
+	memset(&m_aiTradeItemCount, 0, sizeof(m_aiTradeItemCount));
 }
 
 // ----------------------------------------------------------------------------
@@ -84,18 +61,15 @@ CUIPersonalShop::CUIPersonalShop()
 // ----------------------------------------------------------------------------
 CUIPersonalShop::~CUIPersonalShop()
 {
-	int i;
-
-	clearContainer();	
-
-	for (i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i)
-		SAFE_DELETE(m_pIconsShopItem[i]);
-
-	for (i = 0; i < PERSONAL_TRADE_SLOT_TOTAL; ++i)
-		SAFE_DELETE(m_pIconsTradeItem[i]);
-
-	for (i = 0; i < PERSONAL_PACKAGE_SLOT_COL; ++i)
-		SAFE_DELETE(m_pIconsPackageItem[i]);
+	if(!m_vectorSellItemList.empty())
+	{
+		m_vectorSellItemList.clear();
+	}
+	if(!m_vectorSellPackageList.empty())
+	{
+		m_vectorSellPackageList.clear();
+	}
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -104,7 +78,9 @@ CUIPersonalShop::~CUIPersonalShop()
 // ----------------------------------------------------------------------------
 void CUIPersonalShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	//m_nBackSplitHeight = 50;
 	m_rcMainTitle.SetRect( 0, 0, 216, 22 );
@@ -143,6 +119,17 @@ void CUIPersonalShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 
 	// Outline of selected item
 	m_rtSelectOutline.SetUV( 218, 51, 250, 83, fTexWidth, fTexHeight );
+
+	// Item information region
+	m_rtInfoUL.SetUV( 0, 476, 7, 483, fTexWidth, fTexHeight );
+	m_rtInfoUM.SetUV( 10, 476, 12, 483, fTexWidth, fTexHeight );
+	m_rtInfoUR.SetUV( 15, 476, 22, 483, fTexWidth, fTexHeight );
+	m_rtInfoML.SetUV( 0, 486, 7, 488, fTexWidth, fTexHeight );
+	m_rtInfoMM.SetUV( 10, 486, 12, 488, fTexWidth, fTexHeight );
+	m_rtInfoMR.SetUV( 15, 486, 22, 488, fTexWidth, fTexHeight );
+	m_rtInfoLL.SetUV( 0, 491, 7, 498, fTexWidth, fTexHeight );
+	m_rtInfoLM.SetUV( 10, 491, 12, 498, fTexWidth, fTexHeight );
+	m_rtInfoLR.SetUV( 15, 491, 22, 498, fTexWidth, fTexHeight );
 
 	// Lease Item UV
 	m_rtleaseMark.SetUV(216,148,231,163,fTexWidth, fTexHeight );
@@ -226,8 +213,8 @@ void CUIPersonalShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_sbBottomScrollBar.Create( this, 194, 218, 9, 137 );
 	m_sbBottomScrollBar.CreateButtons( TRUE, 9, 7, 0, 0, 10);
 	m_sbBottomScrollBar.SetScrollPos( 0 );
-	m_sbBottomScrollBar.SetScrollRange( PERSONAL_SHOP_SLOT_MAX / PERSONAL_SHOP_SLOT_COL );
-	m_sbBottomScrollBar.SetCurItemCount( PERSONAL_SHOP_SLOT_MAX / PERSONAL_SHOP_SLOT_COL );
+	m_sbBottomScrollBar.SetScrollRange( PERSONAL_SHOP_SLOT_ROW_TOTAL );
+	m_sbBottomScrollBar.SetCurItemCount( PERSONAL_SHOP_SLOT_ROW_TOTAL );
 	m_sbBottomScrollBar.SetItemsPerPage( PERSONAL_SHOP_SLOT_ROW );
 	// Up button
 	m_sbBottomScrollBar.SetUpUV( UBS_IDLE, 228, 16, 237, 22, fTexWidth, fTexHeight );
@@ -248,24 +235,31 @@ void CUIPersonalShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 
 	// Slot items
 	// Shop Slot(5x4)
-	for (int i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i)
+	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW_TOTAL; ++iRow )
 	{
-		m_pIconsShopItem[i] = new CUIIcon;
-		m_pIconsShopItem[i]->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM);
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			m_abtnShopItems[iRow][iCol].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM, 0, iRow, iCol );
+		}
 	}
 
 	// Trade Slot(5x2)
 	for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
-	{
-		m_pIconsTradeItem[iItem] = new CUIIcon;
-		m_pIconsTradeItem[iItem]->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM);
-	}
+		m_abtnTradeItems[iItem].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM );
 
 	// Package Slot(5x1)
 	for(int iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
-		m_pIconsPackageItem[iCol] = new CUIIcon;
-		m_pIconsPackageItem[iCol]->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM);
+		m_abtnPackageItems[iCol].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PERSONALSHOP, UBET_ITEM );
+	}	
+
+	if(!m_vectorSellItemList.empty())
+	{
+		m_vectorSellItemList.clear();
+	}
+	if(!m_vectorSellPackageList.empty())
+	{
+		m_vectorSellPackageList.clear();
 	}
 }
 
@@ -311,34 +305,31 @@ void CUIPersonalShop::SetFocus( BOOL bVisible )
 // ----------------------------------------------------------------------------
 void CUIPersonalShop::OpenPersonalShop( BOOL bSellShoop )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible() )
+	if( _pUIMgr->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible() )
 	{
 		// FIXME : 코드가 중복되는 곳이 너무 많음.
 		if(!m_bBuyShop && m_bShopStart)
 		{
-			//pUIManager->GetInventory()->Lock( m_bShopStart );
+			//_pUIMgr->GetInventory()->Lock( m_bShopStart );
 
 			//BOOL	bVisible = !IsVisible();
-			//pUIManager->RearrangeOrder( UI_PERSONALSHOP, bVisible );
-			pUIManager->GetChattingUI()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
+			//_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, bVisible );
+			_pUIMgr->GetChatting()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
 			return;
 		}
 		else
 		{
 			ResetShop();
-			pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+			_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 		}
 		return;
 	}
 
 	// If inventory is already locked
-	if( pUIManager->GetInventory()->IsLocked() ||
-		pUIManager->GetInventory()->IsLockedArrange())
+	if( _pUIMgr->GetInventory()->IsLocked() )
 	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
-		pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+		_pUIMgr->GetInventory()->ShowLockErrorMessage();
+		_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 		return;
 	}
 
@@ -356,7 +347,7 @@ void CUIPersonalShop::OpenPersonalShop( BOOL bSellShoop )
 	
 	m_nSelectedChaID	= -1;
 
-	pUIManager->CloseMessageBox( MSGCMD_DROPITEM );
+	_pUIMgr->CloseMessageBox( MSGCMD_DROPITEM );
 
 	PrepareSellShop();
 }
@@ -366,11 +357,9 @@ void CUIPersonalShop::OpenPersonalShop( BOOL bSellShoop )
 // Desc : 개인 상점에서 아이템 사기 & 팔기
 // ----------------------------------------------------------------------------
 void CUIPersonalShop::TradePersonalShop( INDEX iChaIndex, FLOAT fX, FLOAT fZ, BOOL bBuy )
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+{	
 	// FIXME : 중복코드 제거
-	if( pUIManager->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible() )
+	if( _pUIMgr->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible() )
 	{
 		return;
 	}
@@ -382,30 +371,30 @@ void CUIPersonalShop::TradePersonalShop( INDEX iChaIndex, FLOAT fX, FLOAT fZ, BO
 
 	if(((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsMoving())
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 746, "이동중에는 개임상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 746, "이동중에는 개임상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 
 	if(((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsSkilling())
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 747, "스킬 사용중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 747, "스킬 사용중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 
-	if(pUIManager->IsCSFlagOn( CSF_TELEPORT ))
+	if(_pUIMgr->IsCSFlagOn( CSF_TELEPORT ))
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 748, "순간 이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 748, "순간 이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 
 	// If inventory is already locked
-	if( pUIManager->GetInventory()->IsLocked() )
+	if( _pUIMgr->GetInventory()->IsLocked() )
 	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
+		_pUIMgr->GetInventory()->ShowLockErrorMessage();
 		return;
 	}
 
-	pUIManager->SetCSFlagOn( CSF_PERSONALSHOP );
+	_pUIMgr->SetCSFlagOn( CSF_PERSONALSHOP );
 	//m_bBuyShop = TRUE;
 
 	ResetShop(TRUE);
@@ -414,7 +403,7 @@ void CUIPersonalShop::TradePersonalShop( INDEX iChaIndex, FLOAT fX, FLOAT fZ, BO
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
 
-	if(INFO()->GetTargetDBIdx(eTARGET) == 482)
+	if(_pNetwork->_TargetInfo.dbIdx == 482)
 	{
 		m_bCashPersonShop_open = TRUE;
 		SendCashPersonOpenShop( iChaIndex );
@@ -430,10 +419,8 @@ void CUIPersonalShop::TradePersonalShop( INDEX iChaIndex, FLOAT fX, FLOAT fZ, BO
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::PrepareBuyShop()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Lock inventory
-	pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_PERSONAL_SHOP );
+	_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_PERSONAL_SHOP );
 
 	m_bBuyShop			= TRUE;
 	RefreshUserItem();
@@ -442,27 +429,26 @@ void CUIPersonalShop::PrepareBuyShop()
 	if( _pNetwork->MyCharacterInfo.money > 0 )
 	{
 		m_strPlayerMoney.PrintF( "%I64d", _pNetwork->MyCharacterInfo.money );
-		pUIManager->InsertCommaToString( m_strPlayerMoney );
+		_pUIMgr->InsertCommaToString( m_strPlayerMoney );
 	}
 
 	// Set money
 	if( m_llPackagePrice > 0 )
 	{
 		m_strPackagePrice.PrintF( "%I64d", m_llPackagePrice );
-		pUIManager->InsertCommaToString( m_strPackagePrice );
+		_pUIMgr->InsertCommaToString( m_strPackagePrice );
 	}
 
 	// Set position of trade items
 	int nX = PERSONAL_SELL_TOP_SLOT_SX;
 	int nY = PERSONAL_SELL_TOP_SLOT_SY;
-	int	nItem;
-	for( nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
+	for( int nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
 	{
 		if( nItem == PERSONAL_TRADE_SLOT_COL )
 		{
 			nY += 35;	nX = PERSONAL_SELL_BOTTOM_SLOT_SX;
 		}
-		m_pIconsTradeItem[nItem]->SetPos( nX, nY );
+		m_abtnTradeItems[nItem].SetPos( nX, nY );
 		nX += 35;
 	}
 
@@ -475,11 +461,11 @@ void CUIPersonalShop::PrepareBuyShop()
 		{
 			nY += 35;	nX = PERSONAL_SELL_PACKAGE_SLOT_SX;
 		}
-		m_pIconsPackageItem[nItem]->SetPos( nX, nY );
+		m_abtnPackageItems[nItem].SetPos( nX, nY );
 		nX += 35;
 	}
 
-	pUIManager->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 }
 
 //-----------------------------------------------------------------------------
@@ -487,10 +473,8 @@ void CUIPersonalShop::PrepareBuyShop()
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::PrepareSellShop()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Lock inventory
-	pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_PERSONAL_SHOP );
+	_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_PERSONAL_SHOP );
 
 	m_bBuyShop			= FALSE;
 	RefreshPlayerItem();
@@ -499,27 +483,26 @@ void CUIPersonalShop::PrepareSellShop()
 	if( _pNetwork->MyCharacterInfo.money > 0 )
 	{
 		m_strPlayerMoney.PrintF( "%I64d", _pNetwork->MyCharacterInfo.money );
-		pUIManager->InsertCommaToString( m_strPlayerMoney );
+		_pUIMgr->InsertCommaToString( m_strPlayerMoney );
 	}
 
 	// Set money
 	if( m_llPackagePrice > 0 )
 	{
 		m_strPackagePrice.PrintF( "%I64d", m_llPackagePrice );
-		pUIManager->InsertCommaToString( m_strPackagePrice );
+		_pUIMgr->InsertCommaToString( m_strPackagePrice );
 	}
 
 	// Set position of trade items
 	int nX = PERSONAL_SELL_TOP_SLOT_SX;
 	int nY = PERSONAL_SELL_TOP_SLOT_SY;
-	int nItem;
-	for( nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
+	for( int nItem = 0; nItem < PERSONAL_TRADE_SLOT_TOTAL; ++nItem )
 	{
 		if( nItem == PERSONAL_TRADE_SLOT_COL )
 		{
 			nY += 35;	nX = PERSONAL_SELL_BOTTOM_SLOT_SX;
 		}
-		m_pIconsTradeItem[nItem]->SetPos( nX, nY );
+		m_abtnTradeItems[nItem].SetPos( nX, nY );
 		nX += 35;
 	}
 
@@ -532,11 +515,11 @@ void CUIPersonalShop::PrepareSellShop()
 		{
 			nY += 35;	nX = PERSONAL_SELL_PACKAGE_SLOT_SX;
 		}
-		m_pIconsPackageItem[nItem]->SetPos( nX, nY );
+		m_abtnPackageItems[nItem].SetPos( nX, nY );
 		nX += 35;
 	}
 
-	pUIManager->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 }
 
 //-----------------------------------------------------------------------------
@@ -544,39 +527,35 @@ void CUIPersonalShop::PrepareSellShop()
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::RefreshPlayerItem()
 {
-	int		i;
-	int		tab, idx;
-
-	for (i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i)
+	int		iRow, iCol;
+	for( iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW_TOTAL; ++iRow )
 	{
-		if (i >= (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1))
+		for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 		{
-			tab = INVENTORY_TAB_CASH_2;
-			idx = i - (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1);
-		}
-		else if (i >= ITEM_COUNT_IN_INVENTORY_NORMAL)
-		{
-			tab = INVENTORY_TAB_CASH_1;
-			idx = i - ITEM_COUNT_IN_INVENTORY_NORMAL;
-		}
-		else
-		{
-			tab = INVENTORY_TAB_NORMAL;
-			idx = i;
-		}
-		
-		CItems*	pItems = &_pNetwork->MySlotItem[tab][idx];
-
-		if( pItems->Item_Sum > 0 )
-		{
-			CItems* pCopy = new CItems;
-			memcpy(pCopy, pItems, sizeof(CItems));
-			m_pIconsShopItem[i]->setData(pCopy, false);		// count 변경을 하기 때문에 복제한다.			
-
-			if(pItems->ItemData->GetType() == CItemData::ITEM_ACCESSORY &&
-				pItems->ItemData->GetSubType() == CItemData::ACCESSORY_WILDPET)
+			CItems	&rItems = _pNetwork->MySlotItem[0][iRow][iCol];
+			if( rItems.Item_Sum > 0 )
 			{
-				_pNetwork->SendPetitemInfo(_pNetwork->MyCharacterInfo.index, pItems->Item_Plus);
+				m_abtnShopItems[iRow][iCol].SetItemInfo( 0, iRow, iCol, rItems.Item_Index,
+															rItems.Item_UniIndex, rItems.Item_Wearing );
+				m_abtnShopItems[iRow][iCol].SetItemPlus( rItems.Item_Plus );
+				m_abtnShopItems[iRow][iCol].SetItemCount( rItems.Item_Sum );
+				m_abtnShopItems[iRow][iCol].SetItemFlag( rItems.Item_Flag );
+				m_abtnShopItems[iRow][iCol].SetItemUsed( rItems.Item_Used );
+				m_abtnShopItems[iRow][iCol].SetItemUsed2( rItems.Item_Used2 );
+				m_abtnShopItems[iRow][iCol].SetItemRareIndex( rItems.Item_RareIndex );
+
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+				{
+					m_abtnShopItems[iRow][iCol].SetItemOptionData( sbOption,
+																	rItems.GetOptionType( sbOption ),
+																	rItems.GetOptionLevel( sbOption ) );
+				}
+
+				if(rItems.ItemData.GetType() == CItemData::ITEM_ACCESSORY &&
+					rItems.ItemData.GetSubType() == CItemData::ACCESSORY_WILDPET)
+				{
+					_pNetwork->SendPetitemInfo(_pNetwork->MyCharacterInfo.index, rItems.Item_Plus);
+				}
 			}
 		}
 	}
@@ -588,33 +567,62 @@ void CUIPersonalShop::RefreshPlayerItem()
 void CUIPersonalShop::RefreshUserItem()
 {
 	int iPos = 0;
-	vec_Items_iter end = m_vectorSellItemList.end();
-	vec_Items_iter pos;
-	
+	std::vector<CItems>::const_iterator end = m_vectorSellItemList.end();
+	std::vector<CItems>::iterator pos;
 	for(pos = m_vectorSellItemList.begin(); pos != end; ++pos, ++iPos)
 	{		
-		if( (*pos)->Item_Sum > 0 )
+		if( (*pos).Item_Sum > 0 )
 		{
 			const int iRow = iPos / PERSONAL_TRADE_SLOT_COL;
 			const int iCol = iPos % PERSONAL_TRADE_SLOT_COL;
 
-			m_pIconsTradeItem[iPos]->setData((*pos));
+			m_abtnTradeItems[iPos].SetItemInfo( 0, iRow, iCol, (*pos).Item_Index,
+														(*pos).Item_UniIndex, (*pos).Item_Wearing );
+			m_abtnTradeItems[iPos].SetItemPlus( (*pos).Item_Plus );
+			m_abtnTradeItems[iPos].SetItemCount( (*pos).Item_Sum );
+			m_abtnTradeItems[iPos].SetItemPrice( (*pos).Item_Price );
+			m_abtnTradeItems[iPos].SetItemFlag( (*pos).Item_Flag );
+			m_abtnTradeItems[iPos].SetItemUsed( (*pos).Item_Used );
+			m_abtnTradeItems[iPos].SetItemUsed2( (*pos).Item_Used2 );
+			m_abtnTradeItems[iPos].SetItemRareIndex( (*pos).Item_RareIndex);
+
+			m_aiTradeItemCount[iPos] = (*pos).Item_Sum;
+
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{
+				m_abtnTradeItems[iPos].SetItemOptionData( sbOption,
+																(*pos).GetOptionType( sbOption ),
+																(*pos).GetOptionLevel( sbOption ) );
+			}
 		}
 	}
 
 	{
 		int iPos = 0;
-		vec_Items_iter end = m_vectorSellPackageList.end();
-		vec_Items_iter pos;
-
+		std::vector<CItems>::const_iterator end = m_vectorSellPackageList.end();
+		std::vector<CItems>::iterator pos;
 		for(pos = m_vectorSellPackageList.begin(); pos != end; ++pos, ++iPos)
 		{		
-			if( (*pos)->Item_Sum > 0 )
+			if( (*pos).Item_Sum > 0 )
 			{
 				const int iRow = iPos / PERSONAL_PACKAGE_SLOT_COL;
 				const int iCol = iPos % PERSONAL_PACKAGE_SLOT_COL;
 
-				m_pIconsPackageItem[iPos]->setData((*pos));
+				m_abtnPackageItems[iPos].SetItemInfo( 0, iRow, iCol, (*pos).Item_Index,
+					(*pos).Item_UniIndex, (*pos).Item_Wearing );
+				m_abtnPackageItems[iPos].SetItemPlus( (*pos).Item_Plus );
+				m_abtnPackageItems[iPos].SetItemCount( (*pos).Item_Sum );
+				m_abtnPackageItems[iPos].SetItemFlag( (*pos).Item_Flag );
+				m_abtnPackageItems[iPos].SetItemUsed( (*pos).Item_Used );
+				m_abtnPackageItems[iPos].SetItemUsed2( (*pos).Item_Used2 );				
+				m_abtnPackageItems[iPos].SetItemRareIndex( (*pos).Item_RareIndex );
+				
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+				{
+					m_abtnPackageItems[iPos].SetItemOptionData( sbOption,
+															(*pos).GetOptionType( sbOption ),
+															(*pos).GetOptionLevel( sbOption ) );
+				}
 			}
 		}
 	}
@@ -640,9 +648,7 @@ void CUIPersonalShop::ResetShop(BOOL bOpen)
 	m_bPremium			= FALSE;
 	m_bPackageBuy		= FALSE;
 	m_ebPackagePrice.ResetString();
-	m_ebPackagePrice.SetFocus(FALSE);
 	m_ebShopName.ResetString();
-	m_ebShopName.SetFocus(FALSE);
 
 	ChangeShopState( m_bShopStart );
 	m_cbtnPremium.SetCheck( m_bPremium );
@@ -658,21 +664,20 @@ void CUIPersonalShop::ResetShop(BOOL bOpen)
 
 	ClearItems();
 
-	if( bOpen == FALSE )
+	if( !bOpen )
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		pUIManager->RearrangeOrder( UI_PERSONALSHOP, FALSE );
+		_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, FALSE );
 
 		// Unlock inventory
-		pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_PERSONAL_SHOP );
+		_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_PERSONAL_SHOP );
 
 		// Close message box of shop
-		pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-		pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-		pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-		pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-		pUIManager->GetMsgBoxNumOnly()->CloseBox();
+		_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+		_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+		_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+		_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+		_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+		_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
 	}
 
 	m_nCurRow = 0;
@@ -680,7 +685,9 @@ void CUIPersonalShop::ResetShop(BOOL bOpen)
 
 	m_bCashPersonShop = FALSE;
 	m_bCashPersonShop_open = FALSE;
-	
+
+	// Character state flags
+	//_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 }
 
 //-----------------------------------------------------------------------------
@@ -688,27 +695,996 @@ void CUIPersonalShop::ResetShop(BOOL bOpen)
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::ClearItems()
 {
-	int		i;
-	for( i = 0; i < PERSONAL_TRADE_SLOT_TOTAL; ++i)
+	for(int i = 0; i < PERSONAL_TRADE_SLOT_TOTAL; ++i)
+		m_abtnTradeItems[i].InitBtn();			
+
+	for(i = 0; i < PERSONAL_SHOP_SLOT_ROW_TOTAL; ++i)
 	{
-		m_pIconsTradeItem[i]->clearIconData();
-		m_pIconsTradeItem[i]->Hide(FALSE);
+		for(int j = 0; j < PERSONAL_SHOP_SLOT_COL; ++j)
+		{
+			m_abtnShopItems[i][j].InitBtn();
+		}
 	}
 
-	for( i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i)
-	{
-		m_pIconsShopItem[i]->clearIconData();
-		m_pIconsShopItem[i]->Hide(FALSE);
-	}
+	memset(&m_aiTradeItemCount, 0, sizeof(m_aiTradeItemCount));
 
 	// Package Slot(5x1)	
-	for( i = 0; i < PERSONAL_PACKAGE_SLOT_COL; ++i)
+	for(i = 0; i < PERSONAL_PACKAGE_SLOT_COL; ++i)
 	{
-		m_pIconsPackageItem[i]->clearIconData();
-		m_pIconsPackageItem[i]->Hide(FALSE);
+		m_abtnPackageItems[i].InitBtn();
 	}
 
-	clearContainer();
+	// 판매 물품 비우기(구매 중일때...)
+	if(!m_vectorSellItemList.empty())
+	{
+		m_vectorSellItemList.clear();
+	}
+
+	if(!m_vectorSellPackageList.empty())
+	{
+		m_vectorSellPackageList.clear();
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Name : AddItemInfoString()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIPersonalShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
+{
+	if( m_nCurInfoLines >= MAX_ITEMINFO_LINE )
+		return ;
+
+	// Get length of string
+	INDEX	nLength = strItemInfo.Length();
+	if( nLength <= 0 )
+		return;
+
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strItemInfo);
+		INDEX	nChatMax= (MAX_ITEMINFO_CHAR-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
+		{
+			m_strItemInfo[m_nCurInfoLines] = strItemInfo;
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = MAX_ITEMINFO_CHAR;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Split string
+			CTString	strTemp;
+			strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; ++iPos )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			AddItemInfoString( strTemp, colItemInfo );
+
+		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= MAX_ITEMINFO_CHAR )
+		{
+			m_strItemInfo[m_nCurInfoLines] = strItemInfo;
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+		}
+		
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = MAX_ITEMINFO_CHAR;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; ++iPos )
+			{
+				if( strItemInfo[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Split string
+			CTString	strTemp;
+			strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; ++iPos )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			AddItemInfoString( strTemp, colItemInfo );
+		}
+	}
+}
+
+extern tm* g_tv_t; // 기간 표시용 전역 포인터 변수
+
+#define IN_VALIDTM(a) if (a) {delete a; a=NULL;}
+
+// ----------------------------------------------------------------------------
+// Name : GetItemInfo()
+// Desc : nWhichSlot - 0: opposite slot, 1: my slot, 2: inventory slot
+// ----------------------------------------------------------------------------
+BOOL CUIPersonalShop::GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight, int nTradeItem, int nPackageItem, int nRow, int nCol )
+{
+	CTString	strTemp;
+	m_nCurInfoLines = 0;
+
+	int			nIndex = -1;
+	SQUAD		llCount;
+	ULONG		ulItemPlus, ulFlag;
+	LONG		lItemUsed;
+	LONG		lRareIndex;
+	SBYTE		sbOptionType[MAX_ITEM_OPTION], sbOptionLevel[MAX_ITEM_OPTION];
+	__int64		iPrice = 0;
+
+	switch( nWhichSlot )
+	{
+	case 0:
+		{
+			nIndex		= m_abtnTradeItems[nTradeItem].GetItemIndex();
+			llCount		= m_abtnTradeItems[nTradeItem].GetItemCount();
+			ulItemPlus	= m_abtnTradeItems[nTradeItem].GetItemPlus();
+			iPrice		= m_abtnTradeItems[nTradeItem].GetItemPrice();
+			ulFlag		= m_abtnTradeItems[nTradeItem].GetItemFlag();
+			lItemUsed	= m_abtnTradeItems[nTradeItem].GetItemUsed();
+			lRareIndex	= m_abtnTradeItems[nTradeItem].GetItemRareIndex();
+
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{
+				sbOptionType[sbOption] = m_abtnTradeItems[nTradeItem].GetItemOptionType( sbOption );
+				sbOptionLevel[sbOption] = m_abtnTradeItems[nTradeItem].GetItemOptionLevel( sbOption );
+			}
+		}
+		break;
+
+	case 1:
+		{
+			nIndex		= m_abtnShopItems[nRow][nCol].GetItemIndex();
+			llCount		= m_abtnShopItems[nRow][nCol].GetItemCount();
+			ulItemPlus	= m_abtnShopItems[nRow][nCol].GetItemPlus();
+			iPrice		= m_abtnShopItems[nRow][nCol].GetItemPrice();
+			ulFlag		= m_abtnShopItems[nRow][nCol].GetItemFlag();
+			lItemUsed	= m_abtnShopItems[nRow][nCol].GetItemUsed();
+			lRareIndex	= m_abtnShopItems[nRow][nCol].GetItemRareIndex();
+
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{
+				sbOptionType[sbOption]	= m_abtnShopItems[nRow][nCol].GetItemOptionType( sbOption );
+				sbOptionLevel[sbOption] = m_abtnShopItems[nRow][nCol].GetItemOptionLevel( sbOption );
+			}
+		}
+		break;
+	case 2:
+		{
+			nIndex		= m_abtnPackageItems[nPackageItem].GetItemIndex();
+			llCount		= m_abtnPackageItems[nPackageItem].GetItemCount();
+			ulItemPlus	= m_abtnPackageItems[nPackageItem].GetItemPlus();
+			iPrice		= m_abtnPackageItems[nPackageItem].GetItemPrice();
+			ulFlag		= m_abtnPackageItems[nPackageItem].GetItemFlag();
+			lItemUsed	= m_abtnPackageItems[nPackageItem].GetItemUsed();
+			lRareIndex	= m_abtnPackageItems[nPackageItem].GetItemRareIndex();
+
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{
+				sbOptionType[sbOption]	= m_abtnPackageItems[nPackageItem].GetItemOptionType( sbOption );
+				sbOptionLevel[sbOption] = m_abtnPackageItems[nPackageItem].GetItemOptionLevel( sbOption );
+			}
+		}
+	}
+	
+	if( nIndex < 0 )
+		return FALSE;
+
+	CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
+	CItemRareOption rItemRareOption =_pNetwork->GetRareOptionData(0);
+
+	if(  rItemData.GetFlag() & ITEM_FLAG_RARE )
+	{
+		m_bRareItem =TRUE;
+		rItemRareOption =_pNetwork->GetRareOptionData(lRareIndex);
+		m_iRareGrade =rItemRareOption.GetGrade();
+	}
+	else
+	{
+		m_bRareItem =FALSE;
+		m_iRareGrade =-1;
+	}
+
+	const CTString strItemName =_pNetwork->GetItemName( nIndex );
+
+	CTString szItemName =strItemName;
+	if( m_bRareItem )
+	{
+		CTString strPrefix = rItemRareOption.GetPrefix();
+		if( strPrefix.Length() >0)
+			szItemName.PrintF("%s %s", strPrefix, strItemName);
+	}
+
+	/*
+	// Get item name
+	if( !m_bBuyShop && ( rItemData.GetFlag() & ITEM_FLAG_COUNT ) )
+	{
+		CTString	strCount;
+		strCount.PrintF( "%I64d", llCount );
+		_pUIMgr->InsertCommaToString( strCount );		
+		strTemp.PrintF( "%s(%s)", rItemData.GetName(), strCount );
+	}
+	else
+	{
+	*/
+		COLOR colNas = 0xF2F2F2FF;
+
+		if( ulItemPlus > 0 && !(_pUIMgr->IsPet(rItemData) || _pUIMgr->IsWildPet(rItemData)) && !(rItemData.GetFlag() & ITEM_FLAG_COUNT) )
+		{
+			if (rItemData.GetType() == CItemData::ITEM_ONCEUSE &&
+				rItemData.GetSubType() == CItemData::ITEM_SUB_BOX)
+			{
+				strTemp = szItemName;
+			}
+			else
+			{
+				strTemp.PrintF( "%s +%d", szItemName, ulItemPlus );
+			}			
+		}
+		else
+		{
+			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
+			{
+				CTString	strCount;
+				
+				strCount.PrintF( "%I64d", llCount );
+				_pUIMgr->InsertCommaToString( strCount );
+				strTemp.PrintF( "%s(%s)", szItemName, strCount );
+
+				colNas = _pUIMgr->GetNasColor( llCount );
+			}
+#ifdef Pet_IMPROVEMENT_1ST
+			// [070604: Su-won] 1차 펫 기능 개선
+			// 펫의 진화상태 표시
+			else if( _pUIMgr->IsPet(rItemData) )
+			{
+				const INDEX iPetIndex = ulItemPlus;
+				SBYTE sbPetTypeGrade =_pUIMgr->GetPetInfo()->GetPetTypeGrade( iPetIndex );
+
+				if( sbPetTypeGrade >0 )
+				{
+					INDEX iPetType;
+					INDEX iPetAge;
+					_pNetwork->CheckPetType( sbPetTypeGrade, iPetType, iPetAge );
+					strTemp = szItemName +CTString(" - ")+PetInfo().GetName(iPetType, iPetAge);
+				}
+				else
+					strTemp = szItemName;
+			}
+#endif
+			else
+			{
+				strTemp = szItemName;
+			}
+		}
+	//}
+
+	AddItemInfoString( strTemp, colNas );
+
+	//const __int64	iPrice = CalculateItemPrice( m_nSelectedShopID, rItemData, 1, m_bBuyShop );	
+
+	// Get item information in detail
+	if( m_bDetailItemInfo )
+	{
+
+		if(rItemData.IsFlag(ITEM_FLAG_CASH))
+		{
+			if (lItemUsed > 0)
+			{
+				time_t tv_used = lItemUsed - _pUIMgr->GetRadar()->GetStartTime();
+				g_tv_t = _pUIMgr->LClocaltime((time_t*)&tv_used);
+				strTemp.PrintF(  _S( 2525,"만료 : %d년%d월%d일%d시"),g_tv_t->tm_year+1,g_tv_t->tm_mon+1,g_tv_t->tm_yday+1,g_tv_t->tm_hour);
+				
+				AddItemInfoString( strTemp, 0xFFAA44FF );
+				IN_VALIDTM(g_tv_t)
+			}
+		}
+
+		// Price - except money
+		if( nWhichSlot == 0 && (rItemData.GetType() != CItemData::ITEM_ETC ||
+			rItemData.GetSubType() != CItemData::ITEM_ETC_MONEY ))
+		{
+			CTString	strMoney;
+			
+			strMoney.PrintF( "%I64d", iPrice );
+			_pUIMgr->InsertCommaToString( strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+			
+			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
+		}
+		//AddItemInfoString( CTString( " " ) );
+
+		COLOR colString =0xFFFFFFFF;
+
+		switch( rItemData.GetType() )
+		{
+			
+		case CItemData::ITEM_WEAPON:		// Weapon item
+			{
+				
+				//초 고급 제련석 여부		PERSONALSHOP_1658_TEXT_SHOW_NA_20081020		// 업 그레이드 가능 아이템 
+				if( rItemData.IsFlag( ITEM_FLAG_UPGRADE ) && 
+					(g_iCountry == HONGKONG || g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND)) 
+				{
+					BOOL bCanUseSuperGOJE = ( ulFlag & FLAG_ITEM_SUPER_STONE_USED ) ? FALSE : TRUE ;
+					if( bCanUseSuperGOJE )
+					{
+						CTString strCanUseSuperGOJE(_S( 1658, "초 고급 제련석 사용 가능" ));
+						AddItemInfoString(strCanUseSuperGOJE, 0xFFFF40FF);
+					}
+				}
+
+				// Class
+				CUIManager::GetClassOfItem( rItemData, strTemp );
+#ifdef RARE_ITEM
+				AddItemInfoString( strTemp, 0xFFFFFFFF );
+#else
+				AddItemInfoString( strTemp, 0x9E9684FF );
+#endif
+				// Level
+				int	nItemLevel = rItemData.GetLevel();
+				int nWearLevelReduction =0;
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+				{
+					if( sbOptionType[sbOption] == -1 || sbOptionType[sbOption] == 0 )
+						break;
+
+					//착용제한레벨 다운 옵션
+					if( sbOptionType[sbOption]==49)
+					{
+						COptionData	&odItem = _pNetwork->GetOptionData( sbOptionType[sbOption] );
+						nWearLevelReduction = odItem.GetValue( sbOptionLevel[sbOption] - 1 );
+						break;
+					}
+				}
+				if( nWearLevelReduction >0 )
+					strTemp.PrintF( _S( 160, "레벨: %d" ) +" (-%d)", nItemLevel, nWearLevelReduction );
+				else
+					strTemp.PrintF( _S( 160, "레벨: %d" ), nItemLevel );
+#ifdef RARE_ITEM
+					AddItemInfoString( strTemp, 0xFFFFFFFF );
+#else
+
+					AddItemInfoString( strTemp,
+										nItemLevel > _pNetwork->MyCharacterInfo.level ? 0xD28060FF : 0x9E9684FF );
+#endif
+
+				int	nPlusValue;
+				int nBasePhysicalAttack =rItemData.GetPhysicalAttack() +rItemRareOption.GetPhysicalAttack();
+				int nBaseMagicAttack =rItemData.GetMagicAttack() +rItemRareOption.GetMagicAttack();
+				
+#ifndef RARE_ITEM
+				colString =0xDEC05BFF;
+#endif
+				if( ulItemPlus > 0 )
+				{
+					// Physical attack
+					if( rItemData.GetPhysicalAttack() > 0 )
+					{
+						//nPlusValue = (int)( rItemData.GetPhysicalAttack() *
+						//					pow( ITEM_PLUS_COFACTOR, ulItemPlus ) ) - rItemData.GetPhysicalAttack();
+						nPlusValue = CItems::CalculatePlusDamage( rItemData.GetPhysicalAttack(), ulItemPlus );
+						if( nPlusValue > 0 )
+							strTemp.PrintF( _S( 355, "공격력 : %d + %d" ), nBasePhysicalAttack, nPlusValue );
+						else
+							strTemp.PrintF( _S( 161, "공격력 : %d" ), nBasePhysicalAttack );
+															
+						AddItemInfoString( strTemp, colString );
+
+						if( ulItemPlus >= 15 )
+						{
+							strTemp.PrintF(_S( 1891, "물리 공격력 + 75" ));		
+							AddItemInfoString( strTemp, colString );
+						}
+					}
+
+					// Magic attack
+					if( rItemData.GetMagicAttack() > 0 )
+					{
+						//nPlusValue = (int)( rItemData.GetMagicAttack() *
+						//					pow( ITEM_PLUS_COFACTOR, ulItemPlus ) ) - rItemData.GetMagicAttack();
+						nPlusValue = CItems::CalculatePlusDamage( rItemData.GetMagicAttack(), ulItemPlus );
+						if( nPlusValue > 0 )
+							strTemp.PrintF( _S( 356, "마법 공격력 : %d + %d" ), nBaseMagicAttack, nPlusValue );
+						else
+							strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), nBaseMagicAttack );
+															
+						AddItemInfoString( strTemp, colString );
+
+						if( ulItemPlus >= 15 )
+						{
+							strTemp.PrintF(_S( 1892, "마법 공격력 + 50" ));		
+							AddItemInfoString( strTemp, colString );
+						}
+					}
+				}
+				else
+				{
+					// Physical attack
+					if( rItemData.GetPhysicalAttack() > 0 )
+					{
+						strTemp.PrintF( _S( 161, "공격력 : %d" ), nBasePhysicalAttack );
+						AddItemInfoString( strTemp, colString );
+					}
+
+					// Magic attack
+					if( rItemData.GetMagicAttack() > 0 )
+					{
+						strTemp.PrintF( _S( 162, "마법 공격력 : %d" ), nBaseMagicAttack );
+						AddItemInfoString( strTemp, colString );
+					}
+				}
+
+				if( lItemUsed > 0)
+				{
+					strTemp.PrintF(  _S( 510, "내구도 : %ld" ), lItemUsed);		
+					AddItemInfoString( strTemp, 0xDEC05BFF );
+				}
+			}
+			break;
+
+		case CItemData::ITEM_SHIELD:		// Shield item
+			{
+				//초 고급 제련석 여부			PERSONALSHOP_1658_TEXT_SHOW_NA_20081020		// 업 그레이드 가능 아이템 
+				if( rItemData.IsFlag( ITEM_FLAG_UPGRADE ) && 
+					(g_iCountry == HONGKONG || g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND)) 
+				{
+					BOOL bCanUseSuperGOJE = ( ulFlag & FLAG_ITEM_SUPER_STONE_USED ) ? FALSE : TRUE ;
+					if( bCanUseSuperGOJE )
+					{
+						CTString strCanUseSuperGOJE(_S( 1658, "초 고급 제련석 사용 가능" ));
+						AddItemInfoString(strCanUseSuperGOJE, 0xFFFF40FF);
+					}
+				}
+
+				// Class
+				CUIManager::GetClassOfItem( rItemData, strTemp );
+#ifdef RARE_ITEM
+				AddItemInfoString( strTemp, 0xFFFFFFFF );	//흰색으로 표시
+#else
+				AddItemInfoString( strTemp, 0x9E9684FF );
+#endif
+
+				// Level
+				int	nItemLevel = rItemData.GetLevel();
+				int nWearLevelReduction =0;
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+				{
+					if( sbOptionType[sbOption] == -1 || sbOptionType[sbOption] == 0 )
+						break;
+
+					//착용제한레벨 다운 옵션
+					if( sbOptionType[sbOption]==49)
+					{
+						COptionData	&odItem = _pNetwork->GetOptionData( sbOptionType[sbOption] );
+						nWearLevelReduction = odItem.GetValue( sbOptionLevel[sbOption] - 1 );
+						break;
+					}
+				}
+				if( nWearLevelReduction >0 )
+					strTemp.PrintF( _S( 160, "레벨: %d" ) +" (-%d)", nItemLevel, nWearLevelReduction );
+				else
+					strTemp.PrintF( _S( 160, "레벨: %d" ), nItemLevel );
+					
+#ifdef RARE_ITEM
+				AddItemInfoString( strTemp, 0xFFFFFFFF );	//흰색으로 표시
+#else	
+				AddItemInfoString( strTemp,
+									nItemLevel > _pNetwork->MyCharacterInfo.level ? 0xD28060FF : 0x9E9684FF );
+#endif
+
+				int	nPlusValue;
+				int nBasePhysicalDefence =rItemData.GetPhysicalDefence() +rItemRareOption.GetPhysicalDefence();
+				int nBaseMagicDefence =rItemData.GetMagicDefence() +rItemRareOption.GetMagicDefence();
+				
+#ifndef RARE_ITEM
+				colString =0xDEC05BFF;
+#endif
+				if( ulItemPlus > 0 )
+				{
+					// Physical defense
+					if( rItemData.GetPhysicalDefence() > 0 )
+					{
+						//nPlusValue = (int)( rItemData.GetPhysicalDefence() *
+						//					pow( ITEM_PLUS_COFACTOR, ulItemPlus ) ) - rItemData.GetPhysicalDefence();
+						nPlusValue = CItems::CalculatePlusDamage( rItemData.GetPhysicalDefence(), ulItemPlus );
+						if( nPlusValue > 0 )
+							strTemp.PrintF( _S( 357, "방어력 : %d + %d" ), nBasePhysicalDefence, nPlusValue );
+						else
+							strTemp.PrintF( _S( 163, "방어력 : %d" ), nBasePhysicalDefence );
+															
+						AddItemInfoString( strTemp, colString );
+
+						if( ulItemPlus >= 15 )
+						{
+							strTemp.PrintF(_S( 1893, "물리 방어력 + 100" ));		
+							AddItemInfoString( strTemp, colString );
+
+							strTemp.PrintF(_S( 1894, "마법 방어력 + 50" ));		
+							AddItemInfoString( strTemp, colString );
+						}
+					}
+
+					// Magic defense
+					if( rItemData.GetMagicDefence() > 0 )
+					{
+						//nPlusValue = (int)( rItemData.GetMagicDefence() *
+						//					pow( ITEM_PLUS_COFACTOR, ulItemPlus ) ) - rItemData.GetMagicDefence();
+						nPlusValue = CItems::CalculatePlusDamage( rItemData.GetMagicDefence(), ulItemPlus );
+						if( nPlusValue > 0 )
+							strTemp.PrintF( _S( 358, "마법 방어력 : %d + %d" ), nBaseMagicDefence, nPlusValue );
+						else
+							strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), nBaseMagicDefence );
+															
+						AddItemInfoString( strTemp, colString );
+
+						if( ulItemPlus >= 15 )
+						{
+							strTemp.PrintF(_S( 1893, "물리 방어력 + 100" ));		
+							AddItemInfoString( strTemp, colString );
+
+							strTemp.PrintF(_S( 1894, "마법 방어력 + 50" ));		
+							AddItemInfoString( strTemp, colString );
+						}
+					}
+				}
+				else
+				{
+					// Physical defense
+					if( rItemData.GetPhysicalDefence() > 0 )
+					{
+						strTemp.PrintF( _S( 163, "방어력 : %d" ), nBasePhysicalDefence );
+						AddItemInfoString( strTemp, colString );
+					}
+
+					// Magic defense
+					if( rItemData.GetMagicDefence() > 0 )
+					{
+						strTemp.PrintF( _S( 164, "마법 방어력 : %d" ), nBaseMagicDefence );
+						AddItemInfoString( strTemp, colString );
+					}
+				}
+
+				if(lItemUsed > 0)
+				{
+					strTemp.PrintF(  _S( 510, "내구도 : %ld" ), lItemUsed);
+					AddItemInfoString( strTemp, colString );
+				}
+			}
+			break;
+
+		case CItemData::ITEM_ACCESSORY:		// Accessory
+			{
+				if( rItemData.GetSubType() == CItemData::ACCESSORY_PET ) // 펫인 경우 
+				{
+					// 서버로 부터 읽어 드린 펫 교환 정보를 찾아서 출력
+					SPetExchangeInfoString pPetExchangeInfo;
+					// 서버로 부터 읽드린 펫 정보가 있는지 확인 있다면 참조로 데이터 전달.
+					if( _pUIMgr->GetPetInfo()->GetPetExchangeInfo( ulItemPlus, pPetExchangeInfo ) )
+					{
+						if( pPetExchangeInfo.strNameCard.Length() >0)
+							AddItemInfoString( pPetExchangeInfo.strNameCard, 0xF2F2F2FF );
+						AddItemInfoString( pPetExchangeInfo.strLevel, 0xDEC05BFF );		
+						AddItemInfoString( pPetExchangeInfo.strHP, 0xDEC05BFF );		
+						AddItemInfoString( pPetExchangeInfo.strlExp, 0xDEC05BFF );		
+						AddItemInfoString( pPetExchangeInfo.strHungry, 0xDEC05BFF );		
+						AddItemInfoString( pPetExchangeInfo.strSympathy, 0xDEC05BFF );		
+						AddItemInfoString( pPetExchangeInfo.strAbility, 0xDEC05BFF );		
+#ifdef PET_SEAL_TIME
+						AddItemInfoString( pPetExchangeInfo.strRemainTime, 0xDEC05BFF );
+#endif
+					}
+					
+				}
+				else if(rItemData.GetSubType() == CItemData::ACCESSORY_WILDPET)
+				{
+					sPetItem_Info pWildPetInfo;
+
+					if(_pUIMgr->GetWildPetInfo()->GetWildPetInfo(ulItemPlus,pWildPetInfo))
+					{
+						strTemp.PrintF(_S(4215, "이름: %s"),pWildPetInfo.pet_name);
+						AddItemInfoString(strTemp,  0xF2F2F2FF );
+						strTemp.PrintF(_S(4216, "펫 레벨: %d"),pWildPetInfo.pet_level);
+						AddItemInfoString(strTemp, 0xDEC05BFF);
+						strTemp.PrintF(_S(4217, "힘: %d"),pWildPetInfo.pet_str);
+						AddItemInfoString(strTemp, 0xDEC05BFF);
+						strTemp.PrintF(_S(4218, "민첩: %d"),pWildPetInfo.pet_dex);
+						AddItemInfoString(strTemp, 0xDEC05BFF);
+						strTemp.PrintF(_S(4219, "지혜: %d"),pWildPetInfo.pet_int);
+						AddItemInfoString(strTemp, 0xDEC05BFF);
+						strTemp.PrintF(_S(4220, "체력: %d"),pWildPetInfo.pet_con);
+						AddItemInfoString(strTemp, 0xDEC05BFF);
+					}
+				}
+				else 
+				{
+					if( lItemUsed > 0)
+					{
+						strTemp.PrintF(  _S( 510, "내구도 : %ld" ), lItemUsed );		
+						AddItemInfoString( strTemp, 0xDEC05BFF );
+					}
+				}
+
+			}
+			break;
+
+				// 일회용
+		case CItemData::ITEM_ONCEUSE:
+			{
+				// 퀘스트 정보 표시.
+				if ( rItemData.GetSubType() == CItemData::ITEM_SUB_QUEST_SCROLL )
+				{	
+					const int iQuestIndex = rItemData.GetNum0();
+
+					if( iQuestIndex != -1 )
+					{
+						// 퀘스트 이름 출력
+						strTemp.PrintF( "%s", CQuestSystem::Instance().GetQuestName( iQuestIndex ) );
+						AddItemInfoString( strTemp, 0xDEC05BFF );
+						
+						const int iMinLevel = CQuestSystem::Instance().GetQuestMinLevel( iQuestIndex );
+						const int iMaxLevel = CQuestSystem::Instance().GetQuestMaxLevel( iQuestIndex );
+
+						// 레벨 제한 출력.
+						strTemp.PrintF( _S( 1660, "레벨 제한 : %d ~ %d" ), iMinLevel, iMaxLevel );		
+						AddItemInfoString( strTemp, 0xDEC05BFF );
+					}
+				}
+			}
+			break;
+
+		case CItemData::ITEM_POTION:	// Date : 2005-01-07,   By Lee Ki-hwan
+			{
+
+				// Date : 2005-01-14,   By Lee Ki-hwan
+				
+				if ( rItemData.GetSubType() == CItemData::POTION_UP )
+				{
+					if( ulFlag > 0 )
+					{
+						// Level
+						strTemp.PrintF( _S( 160, "레벨: %d" ), ulFlag );
+						AddItemInfoString( strTemp, 0xD28060FF );
+
+						// 향상 타입
+						int nSkillType = rItemData.GetSkillType();
+						CSkill	&rSkill = _pNetwork->GetSkillData( nSkillType );
+						int Power = rSkill.GetPower( ulFlag - 1);
+
+						if(  rItemData.GetNum1() == CItemData::POTION_UP_PHYSICAL ) // 물리
+						{
+							if(  rItemData.GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
+							{
+								strTemp.PrintF ( _S( 790, "물리 공격력 +%d 상승" ), Power );
+								AddItemInfoString( strTemp, 0xDEC05BFF );
+							}
+							else if( rItemData.GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
+							{
+								strTemp.PrintF ( _S( 791, "물리 방어력 +%d 상승" ),  Power );
+								AddItemInfoString( strTemp, 0xDEC05BFF );
+							}
+
+						}
+						else if( rItemData.GetNum1() == CItemData::POTION_UP_MAGIC ) // 마법
+						{
+							if(  rItemData.GetNum2() == CItemData::POTION_UP_ATTACK ) // 공격
+							{
+								strTemp.PrintF ( _S( 792, "마법 공격력 +%d 상승" ),  Power );
+								AddItemInfoString( strTemp, 0xDEC05BFF );
+							}
+							else if( rItemData.GetNum2() == CItemData::POTION_UP_DEFENSE ) // 방어
+							{
+								strTemp.PrintF ( _S( 793, "마법 방어력 +%d 상승" ),  Power );
+								AddItemInfoString( strTemp, 0xDEC05BFF );
+							}
+						
+						}
+					}
+						
+				}
+			}
+
+		case CItemData::ITEM_BULLET:		// Bullet item
+			{
+			}
+			break;
+
+		case CItemData::ITEM_ETC:			// Etc item
+			{
+				switch( rItemData.GetSubType() )
+				{
+				case CItemData::ITEM_ETC_REFINE:
+					{
+						// FIXME : 레벨 표시가 안된다구 해서...
+						// 블러드라고 표시가 되어있다면, 표시를 없애준다.
+						if(ulFlag & FLAG_ITEM_OPTION_ENABLE)
+						{
+							ulFlag ^= FLAG_ITEM_OPTION_ENABLE;
+						}
+
+						// Level
+						if( ulFlag > 0 )
+						{
+							strTemp.PrintF( _S( 160, "레벨: %d" ), ulFlag );
+							AddItemInfoString( strTemp, 0xD28060FF );
+						}
+					}
+					break;
+					// 블러드 아이템 & 정화석.
+				case CItemData::ITEM_ETC_OPTION:
+					{
+
+					}
+					break;
+				}
+			}
+			break;
+		}
+
+		// Weight
+		strTemp.PrintF( _S( 165, "무게 : %d" ), rItemData.GetWeight() );
+		AddItemInfoString( strTemp, 0xDEC05BFF );
+		
+		const int iFame = rItemData.GetFame();
+		if( iFame > 0 )
+		{
+			strTemp.PrintF( _S( 1096, "명성 %d 필요" ), iFame );		
+			AddItemInfoString( strTemp, 0xDEC05BFF );
+		}
+
+		if( m_bRareItem )
+		{
+			//if( lRareIndex <=0)
+			if( m_iRareGrade <0)
+				AddItemInfoString( _S(3165, "<미공개 옵션>"), 0xFF4040FF );
+		}
+
+		// Options
+		switch( rItemData.GetType() )
+		{
+		case CItemData::ITEM_WEAPON:
+		case CItemData::ITEM_SHIELD:
+		case CItemData::ITEM_ACCESSORY:
+			{
+				for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+				{
+					if( sbOptionType[sbOption] == -1 || sbOptionLevel[sbOption] == 0 )
+						break;
+
+					COptionData	&odItem = _pNetwork->GetOptionData( sbOptionType[sbOption] );
+					switch(sbOptionType[sbOption])
+					{
+					case 49:		//착용제한레벨 다운
+						strTemp.PrintF( "%s : -%d", odItem.GetName(), odItem.GetValue( sbOptionLevel[sbOption] - 1 ) );
+						break;
+					case 50:		//소지량 증가
+					case 51:		//마나 흡수
+					case 52:		//생명력 흡수
+					case 55:		//크리티컬확률 증가
+					case 56:		//HP회복력 상승
+					case 57:		//MP회복력 상승
+					case 58:		//스킬쿨타임 감소
+					case 59:		//MP소모량 감소
+					case 60:		//스톤 내성 증가
+					case 61:		//스턴 내성 증가
+					case 62:		//침묵 내성 증가
+					case 63:		//블록률 증가
+					case 64:		//이동속도 향상
+						strTemp.PrintF( "%s : %d%%", odItem.GetName(), odItem.GetValue( sbOptionLevel[sbOption] - 1 ) );
+						break;
+					case 53:		//암흑 공격
+					case 54:		//독 공격
+					default:
+						strTemp.PrintF( "%s : %d", odItem.GetName(), odItem.GetValue( sbOptionLevel[sbOption] - 1 ) );
+					}
+					AddItemInfoString( strTemp, 0x94B7C6FF );
+				}
+
+				if( ulFlag & FLAG_ITEM_OPTION_ENABLE )
+				{
+					AddItemInfoString( _S( 511, "블러드 옵션 가능" ), 0xE53535FF );	
+				}
+				if( ulFlag & FLAG_ITEM_SEALED )
+				{
+					AddItemInfoString(  _S( 512, "봉인된 아이템" ), 0xE53535FF );
+				}
+			}
+			break;
+		}
+
+		// Description
+		const char	*pDesc = _pNetwork->GetItemDesc( nIndex );
+		if( pDesc[0] != NULL )
+		{
+			//AddItemInfoString( CTString( " " ) );
+			strTemp.PrintF( "%s", pDesc );
+			AddItemInfoString( strTemp, 0x9E9684FF );
+		}
+
+		nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + MAX_ITEMINFO_CHAR *
+						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		nInfoHeight = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
+	}
+	else
+	{
+		// Price - except money
+		CItemData	&ItemData = _pNetwork->GetItemData( nIndex );
+		if( nWhichSlot == 0 && (ItemData.GetType() != CItemData::ITEM_ETC ||
+			ItemData.GetSubType() != CItemData::ITEM_ETC_MONEY ))
+		{
+			CTString	strMoney;
+
+			strMoney.PrintF( "%I64d", iPrice );
+			_pUIMgr->InsertCommaToString( strMoney );
+			strTemp.PrintF( _S( 255, "가격 : %I64d" ), strMoney );
+
+			AddItemInfoString( strTemp, _pUIMgr->GetNasColor( iPrice ) );
+		}
+
+		nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + MAX_ITEMINFO_CHAR *
+						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		nInfoHeight = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
+	}
+
+	return TRUE;
+}
+
+// ----------------------------------------------------------------------------
+// Name : ShowItemInfo()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIPersonalShop::ShowItemInfo( BOOL bShowInfo, BOOL bRenew, int nTradeItem, int nPackageItem, int nRow, int nCol )
+{
+	static int	nOldBtnID = -1;
+	int			nBtnID;
+
+	m_bShowItemInfo = FALSE;
+
+	// Hide item information
+	if( !bShowInfo )
+	{
+		nOldBtnID = -1;
+		return;
+	}
+
+	BOOL	bUpdateInfo = FALSE;
+	int		nInfoWidth, nInfoHeight;
+	int		nInfoPosX, nInfoPosY;
+
+	// Trade
+	if( nTradeItem >= 0 )
+	{
+		m_bShowItemInfo = TRUE;
+		nBtnID		= m_abtnTradeItems[nTradeItem].GetBtnID();
+
+		// Update item information
+		if( nOldBtnID != nBtnID || bRenew )
+		{
+			bUpdateInfo = TRUE;
+			nOldBtnID = nBtnID;
+			m_abtnTradeItems[nTradeItem].GetAbsPos( nInfoPosX, nInfoPosY );
+
+			// Get item information
+			m_bDetailItemInfo = m_nSelTradeItemID == nTradeItem;
+			if( !GetItemInfo( 0, nInfoWidth, nInfoHeight, nTradeItem ) )
+				m_bShowItemInfo = FALSE;
+		}
+	}
+	// Package
+	else if( nPackageItem >= 0 )
+	{
+		m_bShowItemInfo = TRUE;
+		nBtnID		= m_abtnPackageItems[nPackageItem].GetBtnID();
+
+		// Update item information
+		if( nOldBtnID != nBtnID || bRenew )
+		{
+			bUpdateInfo = TRUE;
+			nOldBtnID = nBtnID;
+			m_abtnPackageItems[nPackageItem].GetAbsPos( nInfoPosX, nInfoPosY );
+
+			if(m_bBuyShop)
+			{
+				// Get item information
+				m_bDetailItemInfo = TRUE;
+			}
+			else
+			{
+			// Get item information
+			m_bDetailItemInfo = m_nSelPackageItemID == nPackageItem;
+			}			
+			if( !GetItemInfo( 2, nInfoWidth, nInfoHeight, -1, nPackageItem ) )
+				m_bShowItemInfo = FALSE;
+		}
+	}
+	// Shop
+	else if( nRow >= 0 )
+	{
+		m_bShowItemInfo = TRUE;
+		nBtnID = m_abtnShopItems[nRow][nCol].GetBtnID();
+
+		// Update item information
+		if( nOldBtnID != nBtnID || bRenew )
+		{
+			bUpdateInfo = TRUE;
+			nOldBtnID = nBtnID;
+			m_abtnShopItems[nRow][nCol].GetAbsPos( nInfoPosX, nInfoPosY );
+
+			// Get item information
+			m_bDetailItemInfo = m_nSelShopItemID == ( nCol + nRow * PERSONAL_SHOP_SLOT_COL );;
+			if( !GetItemInfo( 1, nInfoWidth, nInfoHeight, -1, -1, nRow, nCol ) )
+				m_bShowItemInfo = FALSE;
+		}
+	}
+
+	// Update item information box
+	if( m_bShowItemInfo && bUpdateInfo )
+	{
+		nInfoPosX += BTN_SIZE / 2 - nInfoWidth / 2;
+
+		if( nInfoPosX < _pUIMgr->GetDrawPort()->dp_MinI )
+			nInfoPosX = _pUIMgr->GetDrawPort()->dp_MinI;
+		else if( nInfoPosX + nInfoWidth > _pUIMgr->GetDrawPort()->dp_MaxI )
+			nInfoPosX = _pUIMgr->GetDrawPort()->dp_MaxI - nInfoWidth;
+
+		if( nInfoPosY - nInfoHeight < _pUIMgr->GetDrawPort()->dp_MinJ )
+		{
+			nInfoPosY += BTN_SIZE;
+			m_rcItemInfo.SetRect( nInfoPosX, nInfoPosY, nInfoPosX + nInfoWidth, nInfoPosY + nInfoHeight );
+		}
+		else
+		{
+			m_rcItemInfo.SetRect( nInfoPosX, nInfoPosY - nInfoHeight, nInfoPosX + nInfoWidth, nInfoPosY );
+		}
+	}
+
+	if( !m_bShowItemInfo )
+		nOldBtnID = -1;
 }
 
 // ----------------------------------------------------------------------------
@@ -721,132 +1697,204 @@ void CUIPersonalShop::RenderShopItems()
 	iShopX = PERSONAL_SELL_BOTTOM_SLOT_SX;
 	iShopY = PERSONAL_SELL_BOTTOM_SLOT_SY;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	int	i;
+	int	iRow, iCol;
 	int	nX = iShopX;
 	int	nY = iShopY;
-	int	iRowS = m_nCurRow * PERSONAL_SHOP_SLOT_COL;
-	int	iRowE = (m_nCurRow + PERSONAL_SHOP_SLOT_ROW) * PERSONAL_SHOP_SLOT_COL;
-	int	iItem;
-	
-	for (i = iRowS; i < iRowE; ++i)
+	int	iRowS = m_nCurRow;
+	int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;
+	for( iRow = iRowS; iRow < iRowE; ++iRow )
 	{
-		if ((i % PERSONAL_SHOP_SLOT_COL) == 0)
+		for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol, nX += 35 )
 		{
-			nX = iShopX;	
-			if (i > iRowS)	nY += 35;
-		}
+			m_abtnShopItems[iRow][iCol].SetPos( nX, nY );
 
-		m_pIconsShopItem[i]->SetPos( nX, nY );
-		nX += 35;
-
-		if (m_pIconsShopItem[i]->IsEmpty() == true)
-			continue;
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+				continue;
 			
-		m_pIconsShopItem[i]->Render(pDrawPort);
+			m_abtnShopItems[iRow][iCol].Render();
+		}
+		nX = iShopX;	nY += 35;
 	}
 
 	// ---Trade slot items---
-	for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+	for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 	{
-		if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+		if( m_abtnTradeItems[iItem].IsEmpty() )
 			continue;
 			
-		m_pIconsTradeItem[iItem]->Render(pDrawPort);
+		m_abtnTradeItems[iItem].Render();
 	}
 
 	// Package Slot(5x1)	
-	for(i = 0; i < PERSONAL_PACKAGE_SLOT_COL; ++i)
+	for(iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
-		if (m_pIconsPackageItem[i]->IsEmpty() == true)
+		if( m_abtnPackageItems[iCol].IsEmpty() )
 			continue;
 		
-		m_pIconsPackageItem[i]->Render(pDrawPort);
+		m_abtnPackageItems[iCol].Render();
 	}
 
-	
-
 	// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Set shop texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Outline of items in shop slot ( unmovable )
 	if( !m_bBuyShop )
 	{
-		for (i = iRowS; i < iRowE; ++i)
+		for( iRow = iRowS; iRow < iRowE; ++iRow )
 		{
-			// If button is empty
-			if (m_pIconsShopItem[i]->IsEmpty() == true)
-				continue;
+			for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+			{
+				// If button is empty
+				if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+					continue;
 
-			CItems*		pItems = m_pIconsShopItem[i]->getItems();
+				int			nIndex = m_abtnShopItems[iRow][iCol].GetItemIndex();
+				CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
+				m_abtnShopItems[iRow][iCol].GetAbsPos( nX, nY );
 
-			if (pItems == NULL)
-				continue;
+				// 대여 아이템 표시
+				CItems		&rItems = _pNetwork->MySlotItem[0][iRow][iCol];
+				if(rItems.IsFlag(FLAG_ITEM_LENT))
+				{
+					_pUIMgr->GetDrawPort()->AddTexture( nX+17, nY+17, nX+32, nY+32,
+														m_rtleaseMark.U0, m_rtleaseMark.V0,
+														m_rtleaseMark.U1, m_rtleaseMark.V1,
+														0xFFFFFFFF );			
+				}
 
-			m_pIconsShopItem[i]->GetAbsPos( nX, nY );
+				// Not wearing, not refine stone, can trade
+				if( m_abtnShopItems[iRow][iCol].GetItemWearType() < 0 &&
+					// Date : 2005-01-15,   By Lee Ki-hwan
+					//( rItemData.GetType() != CItemData::ITEM_ETC || rItemData.GetSubType() != CItemData::ITEM_ETC_REFINE ) &&
+					rItemData.GetFlag() & ITEM_FLAG_EXCHANGE && !rItems.IsFlag(FLAG_ITEM_LENT) && !rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED))
+					continue;
 
-			if (IsAvailable4Sale(pItems) == true)
-				continue;
-			
-			pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
-												m_rtUnmovableOutline.U0, m_rtUnmovableOutline.V0,
-												m_rtUnmovableOutline.U1, m_rtUnmovableOutline.V1,
-												0xFFFFFFFF );
 				
+				_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+													m_rtUnmovableOutline.U0, m_rtUnmovableOutline.V0,
+													m_rtUnmovableOutline.U1, m_rtUnmovableOutline.V1,
+													0xFFFFFFFF );
+				
+			}
 		}
 	}
 
 	// Outline of selected item
 	if( m_nSelTradeItemID >= 0 )
 	{
-		m_pIconsTradeItem[m_nSelTradeItemID]->GetAbsPos( nX, nY );
-		pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+		m_abtnTradeItems[m_nSelTradeItemID].GetAbsPos( nX, nY );
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
 											m_rtSelectOutline.U0, m_rtSelectOutline.V0,
 											m_rtSelectOutline.U1, m_rtSelectOutline.V1,
 											0xFFFFFFFF );
 	}
 	if( m_nSelPackageItemID >= 0 )
 	{
-		m_pIconsPackageItem[m_nSelPackageItemID]->GetAbsPos( nX, nY );
-		pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+		m_abtnPackageItems[m_nSelPackageItemID].GetAbsPos( nX, nY );
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
 											m_rtSelectOutline.U0, m_rtSelectOutline.V0,
 											m_rtSelectOutline.U1, m_rtSelectOutline.V1,
 											0xFFFFFFFF );
 	}
 	if( m_nSelShopItemID >= 0 )
-	{	
-		m_pIconsShopItem[m_nSelShopItemID]->GetAbsPos( nX, nY );
-		pDrawPort->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
+	{
+		int	nSelRow = m_nSelShopItemID / PERSONAL_SHOP_SLOT_COL;
+		if( nSelRow >= iRowS && nSelRow < iRowE )
+		{
+			int	nSelCol = m_nSelShopItemID % PERSONAL_SHOP_SLOT_COL;
+
+			m_abtnShopItems[nSelRow][nSelCol].GetAbsPos( nX, nY );
+			_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + BTN_SIZE, nY + BTN_SIZE,
 												m_rtSelectOutline.U0, m_rtSelectOutline.V0,
 												m_rtSelectOutline.U1, m_rtSelectOutline.V1,
 												0xFFFFFFFF );
+		}
 	}
-	
-	// Render all elements
-	pDrawPort->FlushRenderingQueue();
 
-	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	// ----------------------------------------------------------------------------
+	// Item information ( name and property etc... )
+	if( m_bShowItemInfo )
+	{
+		// Item information region
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right, m_rcItemInfo.Top + 7,
+											m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom,
+											m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom,
+											m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom,
+											m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
+											0xFFFFFFFF );
+
+		// Render all elements
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+		// Render item information
+		int	nInfoX = m_rcItemInfo.Left + 12;
+		int	nInfoY = m_rcItemInfo.Top + 8;
+		for( int iInfo = 0; iInfo < m_nCurInfoLines; ++iInfo )
+		{
+			if(iInfo==0 && m_bRareItem && m_iRareGrade>=0)
+				_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, RareItem_Name_Color[m_iRareGrade] );
+			else
+				_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+			nInfoY += _pUIFontTexMgr->GetLineHeight();
+		}
+
+		// Flush all render text queue
+		_pUIMgr->GetDrawPort()->EndTextEx();
+	}
+	else
+	{
+		// Render all elements
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	}
 
 	// Reading window
 	if( m_ebShopName.DoesShowReadingWindow() )
 	{
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		// Reading window
 		m_ebShopName.RenderReadingWindow();
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 }
 
@@ -873,28 +1921,25 @@ void CUIPersonalShop::Render()
 
 	m_btnPackageOK.SetEnable( m_bBuyShop & m_bPremium & !m_bPackageBuy);
 	m_btnPackageCancel.SetEnable( m_bBuyShop & m_bPremium & m_bPackageBuy);
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
+	
 	// Set shop texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	int	nX, nY;
 
 	// Add render regions
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 24,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + 24,
 										m_rtBackTop.U0, m_rtBackTop.V0,
 										m_rtBackTop.U1, m_rtBackTop.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, m_nPosY + 24,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY + 24,
 										m_nPosX + m_nWidth, m_nPosY + m_nHeight - 33,
 										m_rtBackMiddle.U0, m_rtBackMiddle.V0,
 										m_rtBackMiddle.U1, m_rtBackMiddle.V1,
 										0xFFFFFFFF );
 	if(m_bBuyShop)
 	{
-		pDrawPort->AddTexture( m_nPosX, m_nPosY + m_nHeight - 33,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY + m_nHeight - 33,
 											m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 											m_rtBackBottom.U0, m_rtBackBottom.V0,
 											m_rtBackBottom.U1, m_rtBackBottom.V1,
@@ -902,7 +1947,7 @@ void CUIPersonalShop::Render()
 	}
 	else
 	{
-		pDrawPort->AddTexture( m_nPosX, m_nPosY + m_nHeight - 33,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY + m_nHeight - 33,
 											m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 											m_rtBackSellShop.U0, m_rtBackSellShop.V0,
 											m_rtBackSellShop.U1, m_rtBackSellShop.V1,
@@ -912,49 +1957,49 @@ void CUIPersonalShop::Render()
 	// 판매 상점 & 구매 시...
 	nX = m_nPosX;
 	nY = m_nPosY + 22;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + 18,
 										m_rtTitleInven.U0, m_rtTitleInven.V0,
 										m_rtTitleInven.U1, m_rtTitleInven.V1,
 										0xFFFFFFFF );										
 
 	nY += 18;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + PERSONAL_TRADE_HEIGHT,
 										m_rtBottomInven.U0, m_rtBottomInven.V0,
 										m_rtBottomInven.U1, m_rtBottomInven.V1,
 										0xFFFFFFFF );
 
 	nY += PERSONAL_TRADE_HEIGHT;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + 1,
 										m_rtSeperatorInven.U0, m_rtSeperatorInven.V0,
 										m_rtSeperatorInven.U1, m_rtSeperatorInven.V1,
 										0xFFFFFFFF );
 	
 	nY += 1;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + 64,
 										m_rtMiddleInven.U0, m_rtMiddleInven.V0,
 										m_rtMiddleInven.U1, m_rtMiddleInven.V1,
 										0xFFFFFFFF );
 
 	nY += 64;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + 30,
 										m_rtPackageBar.U0, m_rtPackageBar.V0,
 										m_rtPackageBar.U1, m_rtPackageBar.V1,
 										0xFFFFFFFF );
 
 	nY += 30;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + 1,
 										m_rtSeperatorInven.U0, m_rtSeperatorInven.V0,
 										m_rtSeperatorInven.U1, m_rtSeperatorInven.V1,
 										0xFFFFFFFF );
 
 	nY += 1;
-	pDrawPort->AddTexture( nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 										nX + PERSONAL_SHOP_WIDTH, nY + PERSONAL_SHOP_HEIGHT,
 										m_rtTopInven.U0, m_rtTopInven.V0,
 										m_rtTopInven.U1, m_rtTopInven.V1,
@@ -963,14 +2008,14 @@ void CUIPersonalShop::Render()
 	if(!m_bBuyShop)
 	{
 		nY += PERSONAL_SHOP_HEIGHT;
-		pDrawPort->AddTexture( nX, nY,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 											nX + PERSONAL_SHOP_WIDTH, nY + 18,
 											m_rtTitleInven.U0, m_rtTitleInven.V0,
 											m_rtTitleInven.U1, m_rtTitleInven.V1,
 											0xFFFFFFFF );
 
 		nY += 18;
-		pDrawPort->AddTexture( nX, nY,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 											nX + PERSONAL_SHOP_WIDTH, nY + 32,
 											m_rtNameInven.U0, m_rtNameInven.V0,
 											m_rtNameInven.U1, m_rtNameInven.V1,
@@ -979,14 +2024,14 @@ void CUIPersonalShop::Render()
 	else
 	{
 		nY += PERSONAL_SHOP_HEIGHT;
-		pDrawPort->AddTexture( nX, nY,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 											nX + PERSONAL_SHOP_WIDTH, nY + 19,
 											m_rtPriceBar.U0, m_rtPriceBar.V0,
 											m_rtPriceBar.U1, m_rtPriceBar.V1,
 											0xFFFFFFFF );
 
 		nY += 19;
-		pDrawPort->AddTexture( nX, nY,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY,
 											nX + PERSONAL_SHOP_WIDTH, nY + 31,
 											m_rtBlankBar.U0, m_rtBlankBar.V0,
 											m_rtBlankBar.U1, m_rtBlankBar.V1,
@@ -1028,47 +2073,47 @@ void CUIPersonalShop::Render()
 	}	
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	if( !m_bBuyShop )
 	{
-		pDrawPort->PutTextExCX( _S( 753, "상점 이름" ), m_nPosX + 55, m_nPosY + 368 );		
-		pDrawPort->PutTextExCX( _S( 754, "물품 등록" ), m_nPosX + 55, m_nPosY + 26 );		
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 753, "상점 이름" ), m_nPosX + 55, m_nPosY + 368 );		
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 754, "물품 등록" ), m_nPosX + 55, m_nPosY + 26 );		
 	}
 	else
 	{
-		pDrawPort->PutTextExCX( _S( 755, "판매 물품" ), m_nPosX + 55, m_nPosY + 26 );		
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 755, "판매 물품" ), m_nPosX + 55, m_nPosY + 26 );		
 	}
-	pDrawPort->PutTextExCX( _S( 756, "패키지 판매" ), m_nPosX + 55, m_nPosY + 128 );		
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 756, "패키지 판매" ), m_nPosX + 55, m_nPosY + 128 );		
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Render item information
-	pDrawPort->PutTextEx( _S( 757, "개인상점" ), m_nPosX + INVEN_TITLE_TEXT_OFFSETX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 757, "개인상점" ), m_nPosX + INVEN_TITLE_TEXT_OFFSETX,	
 										m_nPosY + INVEN_TITLE_TEXT_OFFSETY );
 	
 
 	if( m_bBuyShop )
 	{
-		colNas = pUIManager->GetNasColor( m_strTotalPrice );
-		pDrawPort->PutTextExRX( m_strTotalPrice, m_nPosX + PERSONAL_TRADEPRICE_POSX, m_nPosY + PERSONAL_SELL_TRADEPRICE_POSY, colNas );
+		colNas = _pUIMgr->GetNasColor( m_strTotalPrice );
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strTotalPrice, m_nPosX + PERSONAL_TRADEPRICE_POSX, m_nPosY + PERSONAL_SELL_TRADEPRICE_POSY, colNas );
 	}
 
 	if( m_bBuyShop )
 	{
-		colNas = pUIManager->GetNasColor( m_strPlayerMoney );
-		pDrawPort->PutTextExRX( m_strPlayerMoney, m_nPosX + PERSONAL_MYMONEY_POSX, m_nPosY + PERSONAL_MYMONEY_POSY, colNas );
+		colNas = _pUIMgr->GetNasColor( m_strPlayerMoney );
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strPlayerMoney, m_nPosX + PERSONAL_MYMONEY_POSX, m_nPosY + PERSONAL_MYMONEY_POSY, colNas );
 
 		if(m_bPremium)
 		{
-			colNas = pUIManager->GetNasColor( m_strPackagePrice );	
-			pDrawPort->PutTextExRX( m_strPackagePrice, m_nPosX + PERSONAL_MYMONEY_POSX, m_nPosY + 191, colNas );
+			colNas = _pUIMgr->GetNasColor( m_strPackagePrice );	
+			_pUIMgr->GetDrawPort()->PutTextExRX( m_strPackagePrice, m_nPosX + PERSONAL_MYMONEY_POSX, m_nPosY + 191, colNas );
 		}
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Render Items
 	RenderShopItems();
@@ -1079,30 +2124,30 @@ void CUIPersonalShop::Render()
 		if( m_ebPackagePrice.DoesShowReadingWindow() )
 		{
 			// Set texture
-			pDrawPort->InitTextureData( m_ptdBaseTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 			// Reading window
 			m_ebPackagePrice.RenderReadingWindow();
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 		}
 		else if( m_ebShopName.DoesShowReadingWindow() )
 		{
 			// Set texture
-			pDrawPort->InitTextureData( m_ptdBaseTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 			// Reading window
 			m_ebShopName.RenderReadingWindow();
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 		}
 	}
 }
@@ -1131,10 +2176,8 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 	{
 	case WM_MOUSEMOVE:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			if( IsInside( nX, nY ) )
-				pUIManager->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -1150,74 +2193,88 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 			}
 
 			// Hold item button
-			if (pUIManager->GetDragIcon() == NULL && bLButtonDownInItem && 
-				(pMsg->wParam& MK_LBUTTON) && (ndX != 0 || ndY != 0))
+			if( _pUIMgr->GetHoldBtn().IsEmpty() && bLButtonDownInItem && ( pMsg->wParam & MK_LBUTTON ) &&
+				( ndX != 0 || ndY != 0 ) )
 			{
 				// Shop items
 				if( m_nSelShopItemID >= 0 )
 				{
+					int	nSelRow = m_nSelShopItemID / PERSONAL_SHOP_SLOT_COL;
+					int	nSelCol = m_nSelShopItemID % PERSONAL_SHOP_SLOT_COL;
+
 					if( m_bBuyShop )
 					{
 						// Close message box of shop
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-						pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->GetMsgBoxNumOnly()->CloseBox();
-
-						pUIManager->SetHoldBtn(m_pIconsShopItem[m_nSelShopItemID]);
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+						_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+						
+						_pUIMgr->SetHoldBtn( m_abtnShopItems[nSelRow][nSelCol] );
+						int	nOffset = BTN_SIZE / 2;
+						_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+						
+						m_abtnShopItems[nSelRow][nSelCol].SetBtnState( UBES_IDLE );
 					}
 					else
 					{
-						int idx = m_nSelShopItemID;
-
-						if ( m_nSelITab >= INVENTORY_TAB_CASH_1 )
-						{
-							idx -= ITEM_COUNT_IN_INVENTORY_NORMAL;
-						}
-
-						if ( m_nSelITab >= INVENTORY_TAB_CASH_2 )
-						{
-							idx -= ITEM_COUNT_IN_INVENTORY_CASH_1;
-						}
-												
 						// Not wearing, not refine stone, can trade
-						CItems		*pItems = &_pNetwork->MySlotItem[m_nSelITab][idx];
-
-						if (IsAvailable4Sale(pItems) == false)
-							return WMSG_FAIL;
-
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-						pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->GetMsgBoxNumOnly()->CloseBox();
-
-						pUIManager->SetHoldBtn(m_pIconsShopItem[m_nSelShopItemID]);
+						CItems		&rItems = _pNetwork->MySlotItem[0][nSelRow][nSelCol];
+						CItemData	&rItemData = rItems.ItemData;
+						if( rItems.Item_Wearing == -1 &&
+							//( rItemData.GetType() != CItemData::ITEM_ETC || rItemData.GetSubType() != CItemData::ITEM_ETC_REFINE ) &&
+							rItemData.GetFlag() & ITEM_FLAG_EXCHANGE && !rItems.IsFlag(FLAG_ITEM_LENT) && !rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED))
+						{
+							// Close message box of shop
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+							_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+							
+							_pUIMgr->SetHoldBtn( m_abtnShopItems[nSelRow][nSelCol] );
+							int	nOffset = BTN_SIZE / 2;
+							_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+							
+							m_abtnShopItems[nSelRow][nSelCol].SetBtnState( UBES_IDLE );
+						}
 					}
 				}
 				else if( m_nSelPackageItemID >= 0 )
 				{
 					// Close message box of shop
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-					pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-					pUIManager->GetMsgBoxNumOnly()->CloseBox();
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+					_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+					
+					_pUIMgr->SetHoldBtn( m_abtnPackageItems[m_nSelPackageItemID] );
+					int	nOffset = BTN_SIZE / 2;
+					_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 
-					pUIManager->SetHoldBtn(m_pIconsPackageItem[m_nSelPackageItemID]);
+					m_abtnPackageItems[m_nSelPackageItemID].SetBtnState( UBES_IDLE );
 				}
 				// Trade items
 				else if( m_nSelTradeItemID >= 0 )
 				{
 					// Close message box of shop
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-					pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-					pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-					pUIManager->GetMsgBoxNumOnly()->CloseBox();
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+					_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+					_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+					
+					_pUIMgr->SetHoldBtn( m_abtnTradeItems[m_nSelTradeItemID] );
+					int	nOffset = BTN_SIZE / 2;
+					_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 
-					pUIManager->SetHoldBtn(m_pIconsTradeItem[m_nSelTradeItemID]);
+					m_abtnTradeItems[m_nSelTradeItemID].SetBtnState( UBES_IDLE );
 				}
 
 				bLButtonDownInItem	= FALSE;
@@ -1244,7 +2301,6 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_cbtnPremium.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;			
-			
 			// Bottom Scroll bar
 			if( !m_bBuyShop && ( wmsgResult = m_sbBottomScrollBar.MouseMessage( pMsg ) ) != WMSG_FAIL )
 			{
@@ -1253,31 +2309,65 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 
 				return WMSG_SUCCESS;
 			}
-			else
+			// Shop
+			else if( IsInsideRect( nX, nY, m_rcTop ) )
 			{
-				int	i;
+				int	iRow, iCol;
 				int	iRowS = m_nCurRow;							// Start Row
 				int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;			// End Row
-				
-				for (i = (iRowS * PERSONAL_SHOP_SLOT_COL);
-					i < (iRowE * PERSONAL_SHOP_SLOT_COL); ++i)
+				int	nWhichRow = -1, nWhichCol = -1;
+				for( iRow = iRowS; iRow < iRowE; ++iRow )
 				{
-					m_pIconsShopItem[i]->MouseMessage( pMsg );
+					for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+					{
+						if( m_abtnShopItems[iRow][iCol].MouseMessage( pMsg ) != WMSG_FAIL )
+						{
+							nWhichRow = iRow;	
+							nWhichCol = iCol;
+						}
+					}
 				}
 
+				// Show tool tip
+				ShowItemInfo( TRUE, FALSE, -1, -1, nWhichRow, nWhichCol );
+
+				return WMSG_SUCCESS;
+			}
+			// Trade
+			else if( IsInsideRect( nX, nY, m_rcBottom ) )
+			{
 				int	iItem;
+				int	nWhichItem = -1;
 				for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 				{
-					m_pIconsTradeItem[iItem]->MouseMessage( pMsg );
+					if( m_abtnTradeItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
+						nWhichItem = iItem;	
 				}
 
+				// Show tool tip
+				ShowItemInfo( TRUE, FALSE, nWhichItem );
+
+				return WMSG_SUCCESS;
+			}
+			// Package
+			else if( m_bPremium && IsInsideRect( nX, nY, m_rcMiddle ) )
+			{
+				int	iItem;
+				int	nWhichItem = -1;
 				for( iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 				{
-					m_pIconsPackageItem[iItem]->MouseMessage( pMsg );
+					if( m_abtnPackageItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
+						nWhichItem = iItem;	
 				}
 
-				return WMSG_FAIL;
+				// Show tool tip
+				ShowItemInfo( TRUE, FALSE, -1, nWhichItem );
+
+				return WMSG_SUCCESS;
 			}
+
+			// Hide tool tip
+			ShowItemInfo( FALSE );
 		}
 		break;
 
@@ -1338,14 +2428,14 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				{
 				//	m_ebShopName.SetFocus(TRUE);
 					m_ebPackagePrice.SetFocus(FALSE);
-					CUIManager::getSingleton()->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+					_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 					return WMSG_SUCCESS;
 				}
 				else if( m_ebPackagePrice.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
 				//	m_ebPackagePrice.SetFocus(TRUE);
 					m_ebShopName.SetFocus(FALSE);
-					CUIManager::getSingleton()->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+					_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 					return WMSG_SUCCESS;
 				}
 				// Shop items
@@ -1355,56 +2445,49 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 					m_nSelTradeItemID = -1;
 					m_nSelPackageItemID = -1;
 
-					CUIManager* pUIManager = CUIManager::getSingleton();
-
-					int	i;
-					int	iRowS = m_sbBottomScrollBar.GetScrollPos();						
-					int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;
-
-					for (i = (iRowS * PERSONAL_SHOP_SLOT_COL); i < (iRowE * PERSONAL_SHOP_SLOT_COL); ++i)
+					int	iRow, iCol;
+					int	iRowS = m_nCurRow;
+					int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;			// 4줄~
+					for( iRow = iRowS; iRow < iRowE; ++iRow )
 					{
-						if (m_pIconsShopItem[i]->MouseMessage(pMsg) != WMSG_FAIL)
+						for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 						{
-							if (i >= (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1))
+							if( m_abtnShopItems[iRow][iCol].MouseMessage( pMsg ) != WMSG_FAIL )
 							{
-								m_nSelITab = INVENTORY_TAB_CASH_2;
-							}
-							else if (i >= ITEM_COUNT_IN_INVENTORY_NORMAL)
-							{
-								m_nSelITab = INVENTORY_TAB_CASH_1;
-							}
-							else
-							{
-								m_nSelITab = INVENTORY_TAB_NORMAL;
-							}
-							// Update selected item
-							m_nSelShopItemID = i;
-							bLButtonDownInItem	= TRUE;
+								// Update selected item
+								m_nSelShopItemID = iCol + iRow * PERSONAL_SHOP_SLOT_COL;	// 선택된 슬롯의 아이템 ID
 
-							pUIManager->RearrangeOrder( UI_PERSONALSHOP, TRUE );
-							return WMSG_SUCCESS;
+								// Show tool tup
+								ShowItemInfo( TRUE, TRUE, -1, -1, iRow, iCol );
+
+								bLButtonDownInItem	= TRUE;
+
+								_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+								return WMSG_SUCCESS;
+							}
 						}
 					}
 				}
 				// Package Items
 				else if( m_bPremium && !m_bBuyShop && IsInsideRect( nX, nY, m_rcMiddle ) )
 				{
-					CUIManager* pUIManager = CUIManager::getSingleton();
-
 					m_nSelTradeItemID = -1;
 					m_nSelShopItemID = -1;
 					m_nSelPackageItemID = -1;
 
 					for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 					{
-						if( m_pIconsPackageItem[iItem]->MouseMessage( pMsg ) != WMSG_FAIL )
+						if( m_abtnPackageItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							// Update selected item
 							m_nSelPackageItemID = iItem;			// 선택된 슬롯의 아이템 ID
 
+							// Show tool tup
+							ShowItemInfo( TRUE, TRUE, -1, iItem );
+
 							bLButtonDownInItem	= TRUE;
 
-							pUIManager->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+							_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 							return WMSG_SUCCESS;
 						}
 					}
@@ -1412,22 +2495,23 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				// Trade items
 				else if( IsInsideRect( nX, nY, m_rcBottom ) )
 				{
-					CUIManager* pUIManager = CUIManager::getSingleton();
-
 					m_nSelTradeItemID = -1;
 					m_nSelShopItemID = -1;
 					m_nSelPackageItemID = -1;
 
 					for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 					{
-						if( m_pIconsTradeItem[iItem]->MouseMessage( pMsg ) != WMSG_FAIL )
+						if( m_abtnTradeItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							// Update selected item
 							m_nSelTradeItemID = iItem;			// 선택된 슬롯의 아이템 ID
 
+							// Show tool tup
+							ShowItemInfo( TRUE, TRUE, iItem );
+
 							bLButtonDownInItem	= TRUE;
 
-							pUIManager->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+							_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 							return WMSG_SUCCESS;
 						}
 					}
@@ -1439,7 +2523,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						m_nCurRow = m_sbBottomScrollBar.GetScrollPos();
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_PERSONALSHOP, TRUE );
+				_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -1449,10 +2533,8 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 		{
 			bLButtonDownInItem = FALSE;
 
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -1469,14 +2551,14 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						// FIXME : 코드가 중복되는 곳이 너무 많음.
 						if(!m_bBuyShop && m_bShopStart)
 						{
-							//pUIManager->GetInventory()->Lock( m_bShopStart );
-							//pUIManager->RearrangeOrder( UI_PERSONALSHOP, FALSE );
-							pUIManager->GetChattingUI()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
+							//_pUIMgr->GetInventory()->Lock( m_bShopStart );
+							//_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, FALSE );
+							_pUIMgr->GetChatting()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
 						}
 						else
 						{
 							ResetShop();
-							pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+							_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 						}
 					}
 					return WMSG_SUCCESS;
@@ -1492,7 +2574,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						 // Clear Member Value
 						 ResetShop();
 
-						 pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+						 _pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 					}
 
 					return WMSG_SUCCESS;
@@ -1505,14 +2587,14 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						// FIXME : 코드가 중복되는 곳이 너무 많음.
 						if(!m_bBuyShop && m_bShopStart)
 						{
-							//pUIManager->GetInventory()->Lock( m_bShopStart );
-							//pUIManager->RearrangeOrder( UI_PERSONALSHOP, FALSE );
-							pUIManager->GetChattingUI()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
+							//_pUIMgr->GetInventory()->Lock( m_bShopStart );
+							//_pUIMgr->RearrangeOrder( UI_PERSONALSHOP, FALSE );
+							_pUIMgr->GetChatting()->AddSysMessage( _S( 745, "상점 개설중에는 창을 닫을 수 없습니다." ), SYSMSG_ERROR );	
 						}
 						else
 						{
 							ResetShop();
-							pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+							_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 						}
 					}
 					return WMSG_SUCCESS;
@@ -1525,6 +2607,10 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				// Premium Cancel button of shop
 				else if( ( wmsgResult = m_btnPackageCancel.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
+					if( wmsgResult == WMSG_COMMAND )
+					{
+						ClearPackageSlot();
+					}
 					return WMSG_SUCCESS;
 				}
 				// Start button of shop
@@ -1532,33 +2618,20 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-
+						_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
 						//m_bShopStart = TRUE;
 						CTString	strMessage;
 						CUIMsgBox_Info	MsgBoxInfo;
-
-						// 펫 탑승중일 때, 개인상점을 열 수 없다.
-						if(_pNetwork->MyCharacterInfo.bWildPetRide == TRUE)
-						{
-							pUIManager->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
-							MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK, UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
-							MsgBoxInfo.AddString( _S( 5314, "개인 상점을 개설할 수 없는 상태입니다." ) );
-							pUIManager->CreateMessageBox( MsgBoxInfo );
-							return WMSG_SUCCESS;
-						}
-						
 						MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OKCANCEL,		
 							UI_PERSONALSHOP, MSGCMD_SHOP_START );						
-
 						int iRatio = 2;
 						if(m_bPremium)
 						{
-#if defined (G_JAPAN)
-							iRatio = 10;
-#else
-							iRatio = 2;
-#endif
+							if( g_iCountry == JAPAN )
+								iRatio = 10;
+							else
+								iRatio = 2;
+
 							strMessage.PrintF( _S( 758, "프리미엄 서비스의 사용료는 판매된 아이템 가격의 %d 퍼센트입니다.  계속 진행하시겠습니까?" ), iRatio );
 						}
 						else
@@ -1566,7 +2639,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 							strMessage.PrintF( _S( 759, "개인상점을 개설합니다.  계속 진행하시겠습니까?" ) );		
 						}
 						MsgBoxInfo.AddString( strMessage );
-						pUIManager->CreateMessageBox( MsgBoxInfo );
+						_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					}
 					return WMSG_SUCCESS;
 				}
@@ -1588,15 +2661,18 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				// Shop items
 				else if( IsInsideRect( nX, nY, m_rcTop ) )
 				{
-					int	i;
-					int	iRowS = m_nCurRow * PERSONAL_SHOP_SLOT_COL;
-					int	iRowE = (m_nCurRow + PERSONAL_SHOP_SLOT_ROW) * PERSONAL_SHOP_SLOT_COL;
-					for (i = iRowS; i < iRowE; ++i)
+					int	iRow, iCol;
+					int	iRowS = m_nCurRow;
+					int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;
+					for( iRow = iRowS; iRow < iRowE; ++iRow )
 					{
-						if( m_pIconsShopItem[i]->MouseMessage( pMsg ) != WMSG_FAIL )
+						for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 						{
-							// Nothing
-							return WMSG_SUCCESS;
+							if( m_abtnShopItems[iRow][iCol].MouseMessage( pMsg ) != WMSG_FAIL )
+							{
+								// Nothing
+								return WMSG_SUCCESS;
+							}
 						}
 					}
 				}
@@ -1605,7 +2681,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				{
 					for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 					{
-						if( m_pIconsTradeItem[iItem]->MouseMessage( pMsg ) != WMSG_FAIL )
+						if( m_abtnTradeItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							// Nothing
 							return WMSG_SUCCESS;
@@ -1617,7 +2693,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				{
 					for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 					{
-						if( m_pIconsPackageItem[iItem]->MouseMessage( pMsg ) != WMSG_FAIL )
+						if( m_abtnPackageItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							// Nothing
 							return WMSG_SUCCESS;
@@ -1630,42 +2706,24 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 				//////////////////////////////////////////////////////////////////////////
 				if( (m_bBuyShop || !m_bShopStart) && IsInside( nX, nY ) )
 				{
-					CUIIcon* pDrag = pUIManager->GetDragIcon();
-
-					CItems* pItems = pDrag->getItems();
-
-					if (pItems == NULL)
-						return WMSG_FAIL;
-
 					// If holding button is item and is from shop
-					if (pDrag->getBtnType() == UBET_ITEM &&
-						pDrag->GetWhichUI() == UI_PERSONALSHOP)
+					if( _pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM &&
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_PERSONALSHOP )
 					{
 						// Trade items
 						if( m_nSelPackageItemID == -1 && IsInsideRect( nX, nY, m_rcBottom ) )
 						{
 							// If this item is moved from shop slot
-							if (m_nSelTradeItemID < 0 ||								
-								m_pIconsTradeItem[m_nSelTradeItemID]->getItems()->Item_UniIndex != pItems->Item_UniIndex )
+							if( m_nSelTradeItemID < 0 ||
+								m_abtnTradeItems[m_nSelTradeItemID].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 							{
-
-								int nTab = pItems->Item_Tab;
-								int nIdx = pItems->InvenIndex;
-
-								if ( nTab >= INVENTORY_TAB_CASH_1 )
-								{
-									nIdx += ITEM_COUNT_IN_INVENTORY_NORMAL;
-								}
-
-								if ( nTab >= INVENTORY_TAB_CASH_2 )
-								{
-									nIdx += ITEM_COUNT_IN_INVENTORY_CASH_1;
-								}
-
-								AddShopItem(nIdx, pItems->Item_UniIndex, pItems->Item_Sum, SLOT_TRADE);
+								AddShopItem( _pUIMgr->GetHoldBtn().GetItemRow(),
+												_pUIMgr->GetHoldBtn().GetItemCol(),
+												_pUIMgr->GetHoldBtn().GetItemUniIndex(),
+												_pUIMgr->GetHoldBtn().GetItemCount(), SLOT_TRADE );
 
 								// Reset holding button
-								pUIManager->ResetHoldBtn();
+								_pUIMgr->ResetHoldBtn();
 
 								return WMSG_SUCCESS;
 							}
@@ -1674,40 +2732,30 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						else if( m_nSelTradeItemID == -1 && IsInsideRect( nX, nY, m_rcMiddle ) )
 						{
 							// If this item is moved from shop slot
-							if (m_nSelPackageItemID < 0 ||
-								m_pIconsPackageItem[m_nSelPackageItemID]->getItems()->Item_UniIndex != pItems->Item_UniIndex )
+							if( m_nSelPackageItemID < 0 ||
+								m_abtnPackageItems[m_nSelPackageItemID].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 							{
 								if(m_bPremium)
 								{
-									int nTab = pItems->Item_Tab;
-									int nIdx = pItems->InvenIndex;
-
-									if ( nTab >= INVENTORY_TAB_CASH_1 )
-									{
-										nIdx += ITEM_COUNT_IN_INVENTORY_NORMAL;
-									}
-
-									if ( nTab >= INVENTORY_TAB_CASH_2 )
-									{
-										nIdx += ITEM_COUNT_IN_INVENTORY_CASH_1;
-									}
-
-									AddShopItem(nIdx, pItems->Item_UniIndex, pItems->Item_Sum, SLOT_PACKAGE);
+								AddShopItem( _pUIMgr->GetHoldBtn().GetItemRow(),
+												_pUIMgr->GetHoldBtn().GetItemCol(),
+												_pUIMgr->GetHoldBtn().GetItemUniIndex(),
+												_pUIMgr->GetHoldBtn().GetItemCount(), SLOT_PACKAGE );
 								}
 								else
 								{
 									
-									pUIManager->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
+									_pUIMgr->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
 									CUIMsgBox_Info	MsgBoxInfo;
 									MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK,	
 										UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
 									CTString	strMessage = _S( 760, "패키지 판매는 프리미엄 서비스를 사용해야만 가능합니다." );		
 									MsgBoxInfo.AddString( strMessage );
-									pUIManager->CreateMessageBox( MsgBoxInfo );									
+									_pUIMgr->CreateMessageBox( MsgBoxInfo );									
 								}
 
 								// Reset holding button
-								pUIManager->ResetHoldBtn();
+								_pUIMgr->ResetHoldBtn();
 
 								return WMSG_SUCCESS;
 							}
@@ -1715,16 +2763,20 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 						// Shop items
 						else if( IsInsideRect( nX, nY, m_rcTop ) )
 						{
+							int	nSelRow = m_nSelShopItemID / PERSONAL_SHOP_SLOT_COL;
+							int	nSelCol = m_nSelShopItemID % PERSONAL_SHOP_SLOT_COL;
 							// If this item is moved from trade slot
-							if (m_nSelShopItemID < 0 ||
-								m_pIconsShopItem[m_nSelShopItemID]->getItems()->Item_UniIndex != pItems->Item_UniIndex)
+							if( m_nSelShopItemID < 0 ||
+								m_abtnShopItems[nSelRow][nSelCol].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 							{
-								DelShopItem(pItems->Item_Tab, pItems->InvenIndex,
-									pItems->Item_UniIndex, pItems->Item_Sum, 
-									m_nSelTradeItemID, m_nSelPackageItemID, SLOT_SHOP );
+								DelShopItem( _pUIMgr->GetHoldBtn().GetItemRow(),
+												_pUIMgr->GetHoldBtn().GetItemCol(),
+												_pUIMgr->GetHoldBtn().GetItemUniIndex(),
+												_pUIMgr->GetHoldBtn().GetItemCount(),
+												m_nSelTradeItemID, m_nSelPackageItemID, SLOT_SHOP );
 
 								// Reset holding button
-								pUIManager->ResetHoldBtn();
+								_pUIMgr->ResetHoldBtn();
 
 								return WMSG_SUCCESS;
 							}
@@ -1732,7 +2784,7 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 					} // If - If holding button is item
 
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				} // If - IsInside
@@ -1743,172 +2795,142 @@ WMSG_RESULT CUIPersonalShop::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONDBLCLK:
 		{
-			if( IsInside( nX, nY ) == FALSE )
-				break;
-
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
-			// Trade items
-			if( (m_bBuyShop || !m_bShopStart) && IsInsideRect( nX, nY, m_rcBottom ) )
+			if( IsInside( nX, nY ) )
 			{
-				int	nTradeItemID = m_nSelTradeItemID;
-				m_nSelTradeItemID = -1;
-
-				for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+				// Trade items
+				if( (m_bBuyShop || !m_bShopStart) && IsInsideRect( nX, nY, m_rcBottom ) )
 				{
-					if (m_pIconsTradeItem[iItem]->MouseMessage(pMsg) != WMSG_FAIL)
+					int	nTradeItemID = m_nSelTradeItemID;
+					m_nSelTradeItemID = -1;
+
+					for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 					{
-						// Close message box of shop
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-						pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->GetMsgBoxNumOnly()->CloseBox();
-
-						if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
-							return WMSG_FAIL;
-
-						CItems* pItems = m_pIconsTradeItem[iItem]->getItems();
-
-						if (pItems == NULL)
-							return WMSG_FAIL;
-
-						DelShopItem( pItems->Item_Tab, pItems->InvenIndex,
-							pItems->Item_UniIndex, pItems->Item_Sum,
-							nTradeItemID, -1, SLOT_TRADE );
-
-						return WMSG_SUCCESS;
-					}
-				}
-			}
-			// Package items
-			if( (!m_bBuyShop && !m_bShopStart) && m_bPremium && IsInsideRect( nX, nY, m_rcMiddle ) )
-			{
-				int	nPackageItemID = m_nSelPackageItemID;
-				m_nSelPackageItemID = -1;
-
-				for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
-				{
-					if( m_pIconsPackageItem[iItem]->MouseMessage( pMsg ) != WMSG_FAIL )
-					{
-						// Close message box of shop
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-						pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-						pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-						pUIManager->GetMsgBoxNumOnly()->CloseBox();
-
-						if (m_pIconsPackageItem[iItem]->IsEmpty() == true)
-							return WMSG_FAIL;
-
-						CItems* pItems = m_pIconsPackageItem[iItem]->getItems();
-
-						if (pItems == NULL)
-							return WMSG_FAIL;
-
-						DelShopItem( pItems->Item_Tab, pItems->InvenIndex,
-							pItems->Item_UniIndex, pItems->Item_Sum,
-							-1, nPackageItemID, SLOT_PACKAGE );
-
-						return WMSG_SUCCESS;
-					}
-				}
-			}
-			// Shop items
-			else if( (m_bBuyShop || !m_bShopStart) && IsInsideRect( nX, nY, m_rcTop ) )
-			{
-				m_nSelShopItemID = -1;
-
-				int tab, idx;
-				int	i;
-				int	iRowS = m_nCurRow * PERSONAL_SHOP_SLOT_COL;
-				int	iRowE = (m_nCurRow + PERSONAL_SHOP_SLOT_ROW) * PERSONAL_SHOP_SLOT_COL;
-				for (i = iRowS; i < iRowE; ++i)
-				{
-					if( m_pIconsShopItem[i]->MouseMessage( pMsg ) != WMSG_FAIL )
-					{
-						m_nSelShopItemID = i;
-
-						if( m_bBuyShop )
+						if( m_abtnTradeItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							// Close message box of shop
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-							pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-							pUIManager->GetMsgBoxNumOnly()->CloseBox();
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+							_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+							
+							DelShopItem( m_abtnTradeItems[iItem].GetItemRow(),
+								m_abtnTradeItems[iItem].GetItemCol(),
+								m_abtnTradeItems[iItem].GetItemUniIndex(),
+											m_abtnTradeItems[iItem].GetItemCount(),
+											nTradeItemID, -1, SLOT_TRADE );
 
-							if (m_pIconsShopItem[i]->getIndex() == PACKAGE_ITEM_INDEX)
-							{
-								m_pIconsShopItem[i]->clearIconData();
-								m_bPackageBuy	= FALSE;
-								return WMSG_FAIL;
-							}
+							// Show tool tup
+							ShowItemInfo( TRUE, TRUE, iItem );
 
-							CItems* pItems = m_pIconsShopItem[i]->getItems();
-
-							if (pItems == NULL)
-								return WMSG_FAIL;
-
-							AddShopItem( i,	pItems->Item_UniIndex,
-								pItems->Item_Sum, SLOT_TRADE );
-
+							return WMSG_SUCCESS;
 						}
-						else
-						{
-							if (i >= (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1))
-							{
-								tab = INVENTORY_TAB_CASH_2;
-								idx = i - (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1);
-							}
-							else if (i >= ITEM_COUNT_IN_INVENTORY_NORMAL)
-							{
-								tab = INVENTORY_TAB_CASH_1;
-								idx = i - ITEM_COUNT_IN_INVENTORY_NORMAL;
-							}
-							else
-							{
-								tab = INVENTORY_TAB_NORMAL;
-								idx = i;
-							}
-
-							// Not wearing, not refine stone, can trade
-							CItems		*pItems = &_pNetwork->MySlotItem[tab][idx];
-
-							if (IsAvailable4Sale(pItems) == false)
-								continue;
-
-							// Close message box of shop
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_PRICE );
-							pUIManager->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
-							pUIManager->CloseMessageBox( MSGCMD_SHOP_START );
-							pUIManager->GetMsgBoxNumOnly()->CloseBox();
-
-							pItems = m_pIconsShopItem[i]->getItems();
-
-							if (pItems == NULL)
-								return WMSG_FAIL;
-
-							AddShopItem(i, pItems->Item_UniIndex,
-								pItems->Item_Sum, SLOT_TRADE);
-						}
-
-						return WMSG_SUCCESS;
 					}
 				}
-			}
-			// Bottom Scroll bar
-			else if( !m_bBuyShop && ( wmsgResult = m_sbBottomScrollBar.MouseMessage( pMsg ) ) != WMSG_SUCCESS )
-			{
-				if( wmsgResult == WMSG_COMMAND)
-					m_nCurRow = m_sbBottomScrollBar.GetScrollPos();
-			}
+				// Package items
+				if( (!m_bBuyShop && !m_bShopStart) && m_bPremium && IsInsideRect( nX, nY, m_rcMiddle ) )
+				{
+					int	nPackageItemID = m_nSelPackageItemID;
+					m_nSelPackageItemID = -1;
 
-			return WMSG_SUCCESS;
+					for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
+					{
+						if( m_abtnPackageItems[iItem].MouseMessage( pMsg ) != WMSG_FAIL )
+						{
+							// Close message box of shop
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+							_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+							
+							DelShopItem( m_abtnPackageItems[iItem].GetItemRow(),
+								m_abtnPackageItems[iItem].GetItemCol(),
+								m_abtnPackageItems[iItem].GetItemUniIndex(),
+											m_abtnPackageItems[iItem].GetItemCount(),
+											-1, nPackageItemID, SLOT_PACKAGE );
+
+							// Show tool tup
+							ShowItemInfo( TRUE, TRUE, -1, iItem );
+
+							return WMSG_SUCCESS;
+						}
+					}
+				}
+				// Shop items
+				else if( (m_bBuyShop || !m_bShopStart) && IsInsideRect( nX, nY, m_rcTop ) )
+				{
+					m_nSelShopItemID = -1;
+
+					int	iRow, iCol;
+					int	iRowS = m_nCurRow;
+					int	iRowE = iRowS + PERSONAL_SHOP_SLOT_ROW;
+					for( iRow = iRowS; iRow < iRowE; ++iRow )
+					{
+						for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+						{
+							if( m_abtnShopItems[iRow][iCol].MouseMessage( pMsg ) != WMSG_FAIL )
+							{
+								if( m_bBuyShop )
+								{
+									// Close message box of shop
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+									_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+									_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+									
+									AddShopItem( iRow, iCol,
+										m_abtnShopItems[iRow][iCol].GetItemUniIndex(),
+										m_abtnShopItems[iRow][iCol].GetItemCount(), SLOT_TRADE );
+									
+								}
+								else
+								{
+									// Not wearing, not refine stone, can trade
+									CItems		&rItems = _pNetwork->MySlotItem[0][iRow][iCol];
+									CItemData	&rItemData = rItems.ItemData;
+									if( rItems.Item_Wearing == -1 &&
+										//( rItemData.GetType() != CItemData::ITEM_ETC || rItemData.GetSubType() != CItemData::ITEM_ETC_REFINE ) &&
+										rItemData.GetFlag() & ITEM_FLAG_EXCHANGE )
+									{
+										// Close message box of shop
+										_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_ITEM );
+										_pUIMgr->CloseMessageBox( MSGCMD_SHOP_DEL_ITEM );
+										_pUIMgr->CloseMessageBox( MSGCMD_SHOP_ADD_PLUSITEM );
+										_pUIMgr->CloseMessageBox( MSGCMD_SHOP_PRICE );
+										_pUIMgr->CloseMessageBox( MSGCMD_PERSONALSHOP_ERROR );
+										_pUIMgr->CloseMessageBox( MSGCMD_SHOP_START );
+										
+										AddShopItem( iRow, iCol,
+											m_abtnShopItems[iRow][iCol].GetItemUniIndex(),
+														m_abtnShopItems[iRow][iCol].GetItemCount(), SLOT_TRADE);
+									}
+								}
+
+								// Show tool tup
+								ShowItemInfo( TRUE, TRUE, -1, -1, iRow, iCol );
+
+								return WMSG_SUCCESS;
+							}
+						}
+					}
+				}				
+				// Bottom Scroll bar
+				else if( !m_bBuyShop && ( wmsgResult = m_sbBottomScrollBar.MouseMessage( pMsg ) ) != WMSG_SUCCESS )
+				{
+					if( wmsgResult == WMSG_COMMAND)
+						m_nCurRow = m_sbBottomScrollBar.GetScrollPos();
+				}
+
+				return WMSG_SUCCESS;
+			}
 		}
 		break;
 
@@ -1993,70 +3015,79 @@ WMSG_RESULT	CUIPersonalShop::CharMessage( MSG *pMsg )
 // ========================================================================= //
 //                             Command functions                             //
 // ========================================================================= //
-
-static int		nTempIdx;
+static int		nTempIndex;
+static int		nTempUniIndex;
+static int		nTempRow, nTempCol;
+static SQUAD	llTempCount;
 static int		nTempTradeItemID;
 static int		nTempPackageItemID;
+static ULONG	ulItemPlus;
+static ULONG	ulItemFlag;
 static SQUAD	llTempPrice;
+static LONG		lItemUsed;
 static int		nTempSlot;
+static LONG		lTempRareIndex;
+static SBYTE	TempsbOptionType[MAX_ITEM_OPTION];
+static SBYTE	TempsbOptionLevel[MAX_ITEM_OPTION];
 
 // ----------------------------------------------------------------------------
 // Name : AddShopItem()
 // Desc : From shop to trade
 // ----------------------------------------------------------------------------
-void CUIPersonalShop::AddShopItem( int nIdx, int nUniIndex, SQUAD llCount, int nWhichSlot )
+void CUIPersonalShop::AddShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nWhichSlot )
 {
-	int	tab, idx;
-	if (nIdx >= (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1))
-	{
-		tab = INVENTORY_TAB_CASH_2;
-		idx = nIdx - (ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1);
-	}
-	else if (nIdx >= ITEM_COUNT_IN_INVENTORY_NORMAL)
-	{
-		tab = INVENTORY_TAB_CASH_1;
-		idx = nIdx - ITEM_COUNT_IN_INVENTORY_NORMAL;
-	}
-	else
-	{
-		tab = INVENTORY_TAB_NORMAL;
-		idx = nIdx;
-	}
-
-	nTempIdx		= nIdx;
+	nTempRow		= nRow;
+	nTempCol		= nCol;
+	nTempUniIndex	= nUniIndex;
+	llTempCount		= llCount;
+	nTempIndex		= m_abtnShopItems[nTempRow][nTempCol].GetItemIndex();
+	ulItemPlus		= m_abtnShopItems[nTempRow][nTempCol].GetItemPlus();
+	ulItemFlag		= m_abtnShopItems[nTempRow][nTempCol].GetItemFlag();
+	lItemUsed		= m_abtnShopItems[nTempRow][nTempCol].GetItemUsed();
 	nTempSlot		= nWhichSlot;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	CItems* pItems = m_pIconsShopItem[nIdx]->getItems();
-
-	if (pItems == NULL)
-		return;
-
-	CItemData*	pItemData = pItems->ItemData;
-
-	m_pTempItems = pItems;
+	lTempRareIndex	= m_abtnShopItems[nTempRow][nTempCol].GetItemRareIndex();
 	
-	BOOL bMonsterMercenaryItem = pItemData->GetType() == CItemData::ITEM_ETC && pItemData->GetSubType() == CItemData::ITEM_ETC_MONSTER_MERCENARY_CARD; 
+	for( int i = 0; i < MAX_ITEM_OPTION; i++ )
+	{
+		TempsbOptionType[i] = -1;
+		TempsbOptionLevel[i] = 0;
+	}
 
-	if ((pItemData->GetType() == CItemData::ITEM_ETC && 
-		pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY))
+	for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+	{	
+		TempsbOptionType[sbOption] = m_abtnShopItems[nTempRow][nTempCol].GetItemOptionType( sbOption );
+		TempsbOptionLevel[sbOption] = m_abtnShopItems[nTempRow][nTempCol].GetItemOptionLevel( sbOption );
+	}
+
+	if( nTempIndex == -1 )
+	{
+		return;
+	}
+
+	CItemData&	rItemData = _pNetwork->GetItemData( nTempIndex );
+
+	if (g_iCountry == HONGKONG && _pUIMgr->IsPet(rItemData))
+	{
+		return;
+	}
+
+	if((rItemData.GetType() == CItemData::ITEM_ETC && 
+		rItemData.GetSubType() == CItemData::ITEM_ETC_MONEY))
 		return;
 
-	if (m_bBuyShop == FALSE)
-	{
 	// 대여 아이템 판매 불가
-		if (IsAvailable4Sale(pItems) == false)
-		{
-			// [2010/12/09 : Sora] 몬스터용병카드 조건 추가
-			pUIManager->CloseMessageBox(MSGCMD_NULL);
-			CUIMsgBox_Info	MsgBoxInfo;
-			MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인 상점" ), UMBS_OK,UI_NONE, MSGCMD_NULL);
-			CTString strMessage(_S(3052,"판매할 수 없는 아이템 입니다."));
-			MsgBoxInfo.AddString( strMessage );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
-			return;
-		}
+	int	nSelRow = m_nSelShopItemID / PERSONAL_SHOP_SLOT_COL;
+	int	nSelCol = m_nSelShopItemID % PERSONAL_SHOP_SLOT_COL;
+	CItems		&rItems = _pNetwork->MySlotItem[0][nSelRow][nSelCol];
+	if(rItems.IsFlag(FLAG_ITEM_LENT) || rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED))
+	{
+		_pUIMgr->CloseMessageBox(MSGCMD_NULL);
+		CUIMsgBox_Info	MsgBoxInfo;
+		MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인 상점" ), UMBS_OK,UI_NONE, MSGCMD_NULL);
+		CTString strMessage(_S(3052,"판매할 수 없는 아이템 입니다."));
+		MsgBoxInfo.AddString( strMessage );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
+		return;
 	}
 
 	if( !m_bBuyShop && nWhichSlot != SLOT_PACKAGE )
@@ -2066,20 +3097,27 @@ void CUIPersonalShop::AddShopItem( int nIdx, int nUniIndex, SQUAD llCount, int n
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인 상점" ), UMBS_OKCANCEL | UMBS_INPUTBOX,		
 			UI_PERSONALSHOP, MSGCMD_SHOP_PRICE );
-		const char*	szItemName = _pNetwork->GetItemName(pItems->Item_Index);
+		const char	*szItemName = _pNetwork->GetItemName( nTempIndex );
 	
-		if (pItems->GetItemPlus() > 0 && !pUIManager->IsPet(pItemData) && !pUIManager->IsWildPet(pItemData) &&
-			bMonsterMercenaryItem == FALSE)
+		if( ulItemPlus > 0 &&  !_pUIMgr->IsPet(rItemData) && !_pUIMgr->IsWildPet(rItemData) )
 		{
-			// [2010/12/09 : Sora] 몬스터용병카드 조건 추가
-			strMessage.PrintF( _S( 761, "%s +%d의 개당 가격을 입력해 주십시오." ), szItemName, pItems->Item_Plus );		
+			strMessage.PrintF( _S( 761, "%s +%d의 개당 가격을 입력해 주십시오." ), szItemName, ulItemPlus );		
 		}
 		else 
 		{
 			strMessage.PrintF( _S( 762, "%s의 개당 가격을 입력해 주십시오." ), szItemName );		
 		}
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
+
+		/*
+		CUIMessageBox* pMsgBox = _pUIMgr->GetMessageBox( MSGCMD_SHOP_PRICE );
+		CTString strItemCount;
+		SQUAD llPrice = 1;			// Default Price
+		strItemCount.PrintF( "%I64d", llPrice );
+		ASSERT( pMsgBox != NULL && "Invalid Message Box!!!" );
+		pMsgBox->GetInputBox().SetString( strItemCount.str_String );		
+		*/
 	}	
 	else
 	{
@@ -2093,41 +3131,42 @@ void CUIPersonalShop::AddShopItem( int nIdx, int nUniIndex, SQUAD llCount, int n
 // ----------------------------------------------------------------------------
 void CUIPersonalShop::AskQuantity()
 {
-	if (m_pTempItems == NULL)
-		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	CItemData*	pItemData = m_pTempItems->ItemData;
-	const char*	szItemName = _pNetwork->GetItemName(m_pTempItems->Item_Index);
+	CItemData&	rItemData = _pNetwork->GetItemData( nTempIndex );
+	const char	*szItemName = _pNetwork->GetItemName( nTempIndex );
 
 	// Ask quantity
-	if ((m_bBuyShop && (pItemData->GetFlag() & ITEM_FLAG_COUNT)) ||
-		(!m_bBuyShop&&  (pItemData->GetFlag() & ITEM_FLAG_COUNT) && m_pTempItems->Item_Sum > 1))
+	if( ( m_bBuyShop && ( rItemData.GetFlag() & ITEM_FLAG_COUNT ) ) ||
+		( !m_bBuyShop && ( rItemData.GetFlag() & ITEM_FLAG_COUNT ) && llTempCount > 1 ) )
 	{
 		CTString	strMessage;
+		CUIMsgBox_Info	MsgBoxInfo;
+		MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OKCANCEL | UMBS_INPUTBOX,		
+									UI_PERSONALSHOP, MSGCMD_SHOP_ADD_ITEM );
 		strMessage.PrintF( _S2( 150, szItemName, "몇 개의 %s<를> 옮기시겠습니까?" ), szItemName );
+		MsgBoxInfo.AddString( strMessage );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
-		CmdPersnalShopAddItem* pCmd = new CmdPersnalShopAddItem;
-		pCmd->setData(this);
-		UIMGR()->GetMsgBoxNumOnly()->SetInfo(pCmd, _S( 757, "개인상점" ), strMessage, 1, m_pTempItems->Item_Sum);
+		CUIMessageBox* pMsgBox = _pUIMgr->GetMessageBox( MSGCMD_SHOP_ADD_ITEM );
+		CTString strItemCount;
+		strItemCount.PrintF( "%I64d", llTempCount );
+		ASSERT( pMsgBox != NULL && "Invalid Message Box!!!" );
+		pMsgBox->GetInputBox().InsertChars( 0, strItemCount.str_String );
 	}
-	else if( m_pTempItems->Item_Plus > 0 && !(pUIManager->IsPet(pItemData)||pUIManager->IsWildPet(pItemData) || 
-			pItemData->GetType() == CItemData::ITEM_ETC && pItemData->GetSubType() == CItemData::ITEM_ETC_MONSTER_MERCENARY_CARD))
+	else if( ulItemPlus > 0 && !(_pUIMgr->IsPet(rItemData)||_pUIMgr->IsWildPet(rItemData)))
 	{
-		// [2010/12/09 : Sora] 몬스터용병카드 조건 추가
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_YESNO,
 									UI_PERSONALSHOP, MSGCMD_SHOP_ADD_PLUSITEM );
-		strMessage.PrintF(_S2(264, szItemName, "[%s +%d]<를> 옮기시겠습니까?"), szItemName, m_pTempItems->Item_Plus);
+		strMessage.PrintF( _S2( 264, szItemName, "[%s +%d]<를> 옮기시겠습니까?" ), szItemName, ulItemPlus );
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 		
 	}
 	else
 	{
-		ShopToTrade(m_pTempItems->Item_Sum, llTempPrice, nTempSlot);
+		//ShopToTrade( llTempCount, llTempPrice, 0, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex );
+		ShopToTrade( llTempCount, llTempPrice, ulItemPlus, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex );
 	}
 }
 
@@ -2135,84 +3174,80 @@ void CUIPersonalShop::AskQuantity()
 // Name : DelShopItem()
 // Desc : From trade to shop
 // ----------------------------------------------------------------------------
-void CUIPersonalShop::DelShopItem( int nTab, int nIdx, int nUniIndex, SQUAD llCount, int nTradeItemID, int nPackageItemID, int nWhichSlot )
+void CUIPersonalShop::DelShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nTradeItemID, int nPackageItemID, int nWhichSlot )
 {
-	nTempIdx			= nIdx;
-
-	if ( nTab >= INVENTORY_TAB_CASH_1 )
-	{
-		nTempIdx += ITEM_COUNT_IN_INVENTORY_NORMAL;
-	}
-
-	if ( nTab >= INVENTORY_TAB_CASH_2 )
-	{
-		nTempIdx += ITEM_COUNT_IN_INVENTORY_CASH_1;
-	}
-	
+	nTempRow			= nRow;
+	nTempCol			= nCol;
+	nTempUniIndex		= nUniIndex;
+	llTempCount			= llCount;
 	nTempTradeItemID	= nTradeItemID;
 	nTempPackageItemID	= nPackageItemID;
 	nTempSlot			= nWhichSlot;
 
 	if(nTempTradeItemID >= 0)
 	{
-		CItems* pItems = m_pIconsTradeItem[nTempTradeItemID]->getItems();
-
-		if (pItems == NULL)
-			return;
-
-		m_pTempItems = pItems;
-		CItemData*	pItemData = pItems->ItemData;
+		nTempIndex			= m_abtnTradeItems[nTempTradeItemID].GetItemIndex();
+		
+		CItemData	&rItemData = _pNetwork->GetItemData( nTempIndex );
 		
 		// Ask quantity
-		if (pItems->Item_Sum > 1)
+		if( llTempCount > 1 )
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			CTString	strMessage;
-			const char*	szItemName = _pNetwork->GetItemName(pItems->Item_Index);
+			CUIMsgBox_Info	MsgBoxInfo;
+			MsgBoxInfo.SetMsgBoxInfo( _S( 263, "상점" ), UMBS_OKCANCEL | UMBS_INPUTBOX,
+				UI_PERSONALSHOP, MSGCMD_SHOP_DEL_ITEM );
+			const char	*szItemName = _pNetwork->GetItemName( nTempIndex );
 			strMessage.PrintF( _S2( 150, szItemName, "몇 개의 %s<를> 옮기시겠습니까?" ), szItemName );
+			MsgBoxInfo.AddString( strMessage );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
-			CmdPersnalShopDelItem* pCmd = new CmdPersnalShopDelItem;
-			pCmd->setData(this);
-			UIMGR()->GetMsgBoxNumOnly()->SetInfo(pCmd, _S( 263, "상점" ), strMessage, 1, pItems->Item_Sum);
+			if( !m_bBuyShop )
+			{
+				CUIMessageBox* pMsgBox = _pUIMgr->GetMessageBox( MSGCMD_SHOP_DEL_ITEM );
+				CTString strItemCount;
+				strItemCount.PrintF( "%I64d", llCount );
+				ASSERT( pMsgBox != NULL && "Invalid Message Box!!!" );
+				pMsgBox->GetInputBox().InsertChars( 0, strItemCount.str_String );
+			}
 		}
 		else
 		{
-			TradeToShop( pItems->Item_Sum, nWhichSlot );
+			TradeToShop( llTempCount, nWhichSlot );
 		}
 	}
 	else if(nPackageItemID >= 0)
 	{
-		CItems* pItems = m_pIconsPackageItem[nTempPackageItemID]->getItems();
-
-		if (pItems == NULL)
-			return;
-
-		m_pTempItems = pItems;
+		nTempIndex			= m_abtnPackageItems[nTempPackageItemID].GetItemIndex();
 		
-		CItemData*	pItemData = pItems->ItemData;
+		CItemData	&rItemData = _pNetwork->GetItemData( nTempIndex );
 		
 		// Ask quantity
-		if (pItems->Item_Sum > 1)
+		if( llTempCount > 1 )
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			CTString	strMessage;
-			const char*	szItemName = _pNetwork->GetItemName(pItems->Item_Index);
+			CUIMsgBox_Info	MsgBoxInfo;
+			MsgBoxInfo.SetMsgBoxInfo( _S( 263, "상점" ), UMBS_OKCANCEL | UMBS_INPUTBOX,
+				UI_PERSONALSHOP, MSGCMD_SHOP_DEL_ITEM );
+			const char	*szItemName = _pNetwork->GetItemName( nTempIndex );
 			strMessage.PrintF( _S2( 150, szItemName, "몇 개의 %s<를> 옮기시겠습니까?" ), szItemName );
+			MsgBoxInfo.AddString( strMessage );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			
-			CmdPersnalShopDelItem* pCmd = new CmdPersnalShopDelItem;
-			pCmd->setData(this);
-			UIMGR()->GetMsgBoxNumOnly()->SetInfo(pCmd, _S( 263, "상점" ), strMessage, 1, pItems->Item_Sum);
+			CUIMessageBox* pMsgBox = _pUIMgr->GetMessageBox( MSGCMD_SHOP_DEL_ITEM );
+			CTString strItemCount;
+			strItemCount.PrintF( "%I64d", m_abtnPackageItems[nTempPackageItemID].GetItemCount() );
+			ASSERT( pMsgBox != NULL && "Invalid Message Box!!!" );
+			pMsgBox->GetInputBox().InsertChars( 0, strItemCount.str_String );
 		}
 		else
 		{
-			TradeToShop(pItems->Item_Sum, nWhichSlot);
+			TradeToShop( llTempCount, nWhichSlot );
 		}
 	}
 	else
 	{
-//		TradeToShop(pItems->Item_Sum, nWhichSlot);
+		TradeToShop( llTempCount, nWhichSlot );
 	}
 }
 
@@ -2230,10 +3265,47 @@ void CUIPersonalShop::BuyItems()
 	if(_pNetwork->MyCharacterInfo.money < m_nTotalPrice )
 	{
 		// Add system message
-		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( _S( 266, "소지금이 부족합니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 266, "소지금이 부족합니다." ), SYSMSG_ERROR );
 		return;
 	}
 
+	/*
+	// Check inventory space
+	int	ctEmptySlot = 0;
+	int	ctTradeItems = m_nNumOfItem;
+	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW_TOTAL; ++iRow )
+	{
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+			{
+				ctEmptySlot++;
+				continue;
+			}
+
+			int	nIndex = m_abtnShopItems[iRow][iCol].GetItemIndex();
+			CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
+			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
+			{
+				for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+				{
+					if( nIndex == m_abtnTradeItems[iItem].GetItemIndex() )
+						ctTradeItems--;
+				}
+			}
+		}
+	}
+
+	// Not enough space
+	if( ctEmptySlot < ctTradeItems )
+	{
+		// Add system message
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 265, "인벤토리 공간이 부족합니다." ), SYSMSG_ERROR );
+		return;
+	}
+	*/
+
+	//_pNetwork->BuyItem( m_nSelectedShopID, m_nNumOfItem, m_nTotalPrice );
 	SendPersonalShopBuy();
 }
 
@@ -2250,21 +3322,68 @@ void CUIPersonalShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 
 	switch( nCommandCode )
 	{
-	case MSGCMD_SHOP_ADD_PLUSITEM:
+	case MSGCMD_SHOP_ADD_ITEM:
 		{
-			if (m_pTempItems != NULL)
+			char	*pcInput = strInput.str_String;
+			int		nLength = strInput.Length();
+			for( int iChar = 0; iChar < nLength; ++iChar )
 			{
-				ShopToTrade(1, llTempPrice, nTempSlot);
+				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
+					break;
+			}
+
+			if( iChar == nLength )
+			{
+				SQUAD	llCount = _atoi64( pcInput );
+				if( m_bBuyShop )
+				{
+					if( llCount > 0 )
+					{
+						//ShopToTrade( llCount, llTempPrice, 0, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex);
+						ShopToTrade( llCount, llTempPrice, ulItemPlus, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex);
+					}
+				}
+				else
+				{
+					if( llCount > 0 && llCount <= llTempCount )
+					{
+						//ShopToTrade( llCount, llTempPrice, 0, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex );
+						ShopToTrade( llCount, llTempPrice, ulItemPlus, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex);
+					}
+				}
 			}
 		}
 		break;
 
+	case MSGCMD_SHOP_ADD_PLUSITEM:
+		{
+			ShopToTrade( 1, llTempPrice, ulItemPlus, ulItemFlag, lItemUsed, nTempSlot, lTempRareIndex );
+		}
+		break;
+
+	case MSGCMD_SHOP_DEL_ITEM:
+		{
+			char	*pcInput = strInput.str_String;
+			int		nLength = strInput.Length();
+			for( int iChar = 0; iChar < nLength; ++iChar )
+			{
+				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
+					break;
+			}
+
+			if( iChar == nLength )
+			{
+				SQUAD	llCount = _atoi64( pcInput );
+				if( llCount > 0 && llCount <= llTempCount )
+					TradeToShop( llCount, nTempSlot );
+			}
+		}
+		break;
 	case MSGCMD_SHOP_PRICE:		// 가격 입력.
 		{
 			char	*pcInput = strInput.str_String;
 			int		nLength = strInput.Length();
-			int iChar;
-			for( iChar = 0; iChar < nLength; ++iChar )
+			for( int iChar = 0; iChar < nLength; ++iChar )
 			{
 				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 					break;
@@ -2295,67 +3414,64 @@ void CUIPersonalShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 // Purpose: 
 // Input  :
 //-----------------------------------------------------------------------------
-void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
+void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, ULONG ulPlus, ULONG ulFlag, LONG lUsed, int iSlot, LONG lRareIndex )
 {
-	if (m_pTempItems == NULL)
-		return;
+	/*
+	if( m_bBuyShop )
+	{
+		CItemData	&rItemData = _pNetwork->GetItemData( nTempIndex );
+		SQUAD		llPrice = m_nTotalPrice;// +
+							//CalculateItemPrice( m_nSelectedShopID, rItemData, llCount, m_bBuyShop );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
+		// Not enough money
+		if(_pNetwork->MyCharacterInfo.money < llPrice )
+		{
+			// Add system message
+			_pUIMgr->GetChatting()->AddSysMessage( _S( 266, "소지금이 부족합니다." ), SYSMSG_ERROR );
+			return;
+		}
+	}
+	*/
 
 	// My Inventory -> Package Slot
 	if(iSlot == SLOT_PACKAGE)
 	{
 		// Find same item in trade slot
-		int		iItem;
-		for (iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem)
+		for( int iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 		{
-			if (m_pIconsPackageItem[iItem]->getItems() != NULL &&
-				m_pIconsPackageItem[iItem]->getItems()->Item_UniIndex == m_pTempItems->Item_UniIndex)
+			if( m_abtnPackageItems[iItem].GetItemUniIndex() == nTempUniIndex )
 				break;
 		}
 		
 		// If there is same item
-		if (iItem < PERSONAL_PACKAGE_SLOT_COL)
+		if( iItem < PERSONAL_PACKAGE_SLOT_COL )
 		{
 			// Check if item is countable
-			CItems* pItems = m_pIconsPackageItem[iItem]->getItems();
-
-			if (pItems == NULL)
-				return;
-
-			CItemData*	pItemData = pItems->ItemData;
-			
-			if( pItemData->GetFlag() & ITEM_FLAG_COUNT )
+			CItemData&	rItemData = _pNetwork->GetItemData( nTempIndex );
+			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{
-				if (m_bBuyShop == FALSE)
+				if( !m_bBuyShop )
 				{
 					// Update count of trade item
-					SQUAD	llNewCount = pItems->Item_Sum;
+					SQUAD	llNewCount = m_abtnPackageItems[iItem].GetItemCount();
 					llNewCount += llCount;
-					m_pIconsPackageItem[iItem]->setCount(llNewCount);
+					m_abtnPackageItems[iItem].SetItemCount( llNewCount );
 					
 					// Update count of shop item
-					CItems* pTempItem = m_pIconsShopItem[nTempIdx]->getItems();
-
-					if (pTempItem == NULL)
-						return;
-
-					llNewCount = pTempItem->Item_Sum;
+					llNewCount = m_abtnShopItems[nTempRow][nTempCol].GetItemCount();
 					llNewCount -= llCount;
-					m_pIconsShopItem[nTempIdx]->setCount(llNewCount);
-					
-					if (llNewCount <= 0)
+					m_abtnShopItems[nTempRow][nTempCol].SetItemCount( llNewCount );
+					if( llNewCount <= 0 )
 					{
-						m_pIconsShopItem[nTempIdx]->Hide(TRUE);
+						m_abtnShopItems[nTempRow][nTempCol].SetEmpty( TRUE );
 						
 						// Unselect item
-						if (m_nSelShopItemID == nTempIdx)
+						if( m_nSelShopItemID == ( nTempCol + nTempRow * PERSONAL_SHOP_SLOT_COL ) )
 							m_nSelShopItemID = -1;
 					}
-
 					m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 					m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-					pUIManager->InsertCommaToString( m_strTotalPrice );
+					_pUIMgr->InsertCommaToString( m_strTotalPrice );
 					return;
 				}
 			}
@@ -2364,7 +3480,7 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
 		// Find empty slot
 		for( iItem = 0; iItem < PERSONAL_PACKAGE_SLOT_COL; ++iItem )
 		{
-			if (m_pIconsPackageItem[iItem]->IsEmpty() == true)
+			if( m_abtnPackageItems[iItem].IsEmpty() )
 				break;
 		}
 		
@@ -2373,83 +3489,83 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
 		{
 			// Add system message
 			if( m_bBuyShop )
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
 			else
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
 			
 			return;
 		}
 		
-		if (m_bBuyShop == FALSE)
+		if( !m_bBuyShop )
 		{
-			CItems* pCopy = new CItems;
-			memcpy(pCopy, m_pTempItems, sizeof(CItems));
-			pCopy->Item_Sum = llCount;
-			pCopy->Item_Price = llPrice;
-			m_pIconsPackageItem[iItem]->setData(pCopy);
-			m_vectorSellPackageList.push_back(pCopy);
+			m_abtnPackageItems[iItem].SetItemInfo( 0, nTempRow, nTempCol, nTempIndex, nTempUniIndex, -1 );
+			m_abtnPackageItems[iItem].SetItemCount( llCount );
+			m_abtnPackageItems[iItem].SetItemPrice( llPrice );
+			m_abtnPackageItems[iItem].SetItemPlus( ulPlus );
+			m_abtnPackageItems[iItem].SetItemFlag( ulFlag );
+			m_abtnPackageItems[iItem].SetItemUsed( lUsed );
+			m_abtnPackageItems[iItem].SetItemRareIndex( lRareIndex );
+			
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{	
+				m_abtnPackageItems[iItem].SetItemOptionData(sbOption, TempsbOptionType[sbOption], TempsbOptionLevel[sbOption]);
+			}
 		}
 	}
 	// My Inventory -> Trade Slot
-	else if (m_pTempItems->Item_Index != PACKAGE_ITEM_INDEX && iSlot == SLOT_TRADE)
+	else if(nTempIndex != PACKAGE_ITEM_INDEX && iSlot == SLOT_TRADE)
 	{
-		// Find same item in trade slot
-		int iItem;
-		for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+		/*
+		// NOTE : 패키지 아이템에 대한 처리...
+		if( nTempIndex == PACKAGE_ITEM_INDEX)
 		{
-			if (m_pIconsTradeItem[iItem]->getItems() != NULL &&
-				m_pIconsTradeItem[iItem]->getItems()->Item_UniIndex == m_pTempItems->Item_UniIndex)
+			m_nSelShopItemID = -1;
+			m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
+			m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
+			_pUIMgr->InsertCommaToString( m_strTotalPrice );
+			return;
+		}
+		*/
+
+		// Find same item in trade slot
+		for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+		{
+			if( m_abtnTradeItems[iItem].GetItemUniIndex() == nTempUniIndex )
 				break;
 		}
 		
 		// If there is same item
-		if (iItem < PERSONAL_TRADE_SLOT_TOTAL)
+		if( iItem < PERSONAL_TRADE_SLOT_TOTAL )
 		{
+			m_aiTradeItemCount[iItem] += llCount;
 			// Check if item is countable
-			CItemData*	pItemData = m_pTempItems->ItemData;
-			
-			if (pItemData->GetFlag() & ITEM_FLAG_COUNT)
+			CItemData&	rItemData = _pNetwork->GetItemData( nTempIndex );
+			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{				
 				if( !m_bBuyShop )		// 개인상점 구매중 중첩 아이템의 경우 [최대 10개...]란 메시지가 뜨는 버그로 삭제함
 										// 이 부분을 막을 경우에. 개인 상점 구매중에 물품 목록의 갯수가 계속 늘어나게 됨.
 				{
-					CItems* pItems = m_pIconsTradeItem[iItem]->getItems();
-
-					if (pItems == NULL)
-						return;
-
-					// 같은 UniIndex 인데 다른 가격이라면 등록하지 않는다.
-					if (pItems->Item_Price != llPrice)
-						return;
-
 					// Update count of trade item
-					SQUAD	llNewCount = pItems->Item_Sum;
+					SQUAD	llNewCount = m_abtnTradeItems[iItem].GetItemCount();
 					llNewCount += llCount;
-					m_pIconsTradeItem[iItem]->setCount(llNewCount);
+					m_abtnTradeItems[iItem].SetItemCount( llNewCount );				
 					
 					
 					// Update count of shop item
-					CItems* pTempItem = m_pIconsShopItem[nTempIdx]->getItems();
-
-					if (pTempItem == NULL)
-						return;
-
-					llNewCount = pTempItem->Item_Sum;
+					llNewCount = m_abtnShopItems[nTempRow][nTempCol].GetItemCount();
 					llNewCount -= llCount;
-					m_pIconsShopItem[nTempIdx]->setCount(llNewCount);
-					
+					m_abtnShopItems[nTempRow][nTempCol].SetItemCount( llNewCount );
 					if( llNewCount <= 0 )
 					{
-						m_pIconsShopItem[nTempIdx]->Hide(TRUE);
+						m_abtnShopItems[nTempRow][nTempCol].SetEmpty( TRUE );
 						
 						// Unselect item
-						if( m_nSelShopItemID == nTempIdx )
+						if( m_nSelShopItemID == ( nTempCol + nTempRow * PERSONAL_SHOP_SLOT_COL ) )
 							m_nSelShopItemID = -1;
 					}
-
 					m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 					m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-					pUIManager->InsertCommaToString( m_strTotalPrice );
+					_pUIMgr->InsertCommaToString( m_strTotalPrice );
 					return;
 				}
 			}
@@ -2458,7 +3574,7 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
 		// Find empty slot
 		for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 		{
-			if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+			if( m_abtnTradeItems[iItem].IsEmpty() )
 				break;
 		}
 		
@@ -2467,60 +3583,58 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
 		{
 			// Add system message
 			if( m_bBuyShop )
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
 			else
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
 			
 			return;
 		}
 		
 		if( !m_bBuyShop )
 		{
-			CItems* pCopy = new CItems;
-			memcpy(pCopy, m_pTempItems, sizeof(CItems));
-			pCopy->Item_Sum = llCount;
-			pCopy->Item_Price = llPrice;
-			m_pIconsTradeItem[iItem]->setData(pCopy);
-			m_vectorSellItemList.push_back(pCopy);
+			m_abtnTradeItems[iItem].SetItemInfo( 0, nTempRow, nTempCol, nTempIndex, nTempUniIndex, -1 );
+			m_abtnTradeItems[iItem].SetItemCount( llCount );
+			m_abtnTradeItems[iItem].SetItemPrice( llPrice );
+			m_abtnTradeItems[iItem].SetItemPlus( ulPlus );
+			m_abtnTradeItems[iItem].SetItemFlag( ulFlag );
+			m_abtnTradeItems[iItem].SetItemUsed( lUsed );
+			m_abtnTradeItems[iItem].SetItemRareIndex( lRareIndex );
+			for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+			{	
+				m_abtnTradeItems[iItem].SetItemOptionData(sbOption, TempsbOptionType[sbOption], TempsbOptionLevel[sbOption]);				
+			}
 		}
 	}
 	
-	//if (m_bBuyShop == false)
+	//if( !m_bBuyShop )
 	{
 		// Update count of shop item
-		CItems* pTempItem = m_pIconsShopItem[nTempIdx]->getItems();
-
-		if (pTempItem == NULL)
-			return;
-				
-		SQUAD	llNewCount = pTempItem->Item_Sum;
+		SQUAD	llNewCount = m_abtnShopItems[nTempRow][nTempCol].GetItemCount();
 		if(llNewCount < llCount)
 			return;
 		llNewCount -= llCount;
-		m_pIconsShopItem[nTempIdx]->setCount(llNewCount);
-		
+		m_abtnShopItems[nTempRow][nTempCol].SetItemCount( llNewCount );
 		if( llNewCount <= 0 )
 		{
 			// 패키지 아이템의 경우, 패키지 상태를 해제하는 것임?
-			if(m_pTempItems->Item_Index == PACKAGE_ITEM_INDEX)
+			if(nTempIndex == PACKAGE_ITEM_INDEX)
 			{
-				m_bPackageBuy	= FALSE;				
+				m_bPackageBuy	= FALSE;
+				m_abtnShopItems[nTempRow][nTempCol].InitBtn();
 			}
 
-			m_pIconsShopItem[nTempIdx]->Hide(TRUE);
-
-			if (m_bBuyShop == TRUE)
-				m_pIconsShopItem[nTempIdx]->clearIconData();
+			//m_abtnShopItems[nTempRow][nTempCol].InitBtn();
+			m_abtnShopItems[nTempRow][nTempCol].SetEmpty( TRUE );
 
 			// Unselect item
-			if (m_nSelShopItemID == nTempIdx)
+			if( m_nSelShopItemID == ( nTempCol + nTempRow * PERSONAL_SHOP_SLOT_COL ) )
 				m_nSelShopItemID = -1;
 		}
 	}
 
 	m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 	m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-	pUIManager->InsertCommaToString( m_strTotalPrice );
+	_pUIMgr->InsertCommaToString( m_strTotalPrice );
 }
 
 //-----------------------------------------------------------------------------
@@ -2530,22 +3644,48 @@ void CUIPersonalShop::ShopToTrade( SQUAD llCount, SQUAD llPrice, int iSlot )
 void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 {
 	SQUAD	llNewCount;
+	SBYTE	nTab; 
+	SBYTE	nRow; 
+	SBYTE	nCol; 
+	int		nIndex;
+	int		nUniIndex;
+	SBYTE	nWearingType;
+	ULONG	ulPlus;
+	ULONG	ulFlag;
+	LONG	lUsed;
+	LONG	lRareIndex;
 	SQUAD	llPrice = 0;
 
 	// 선택된 아이템이 Trade 창에 있던것.
-	if (nTempTradeItemID >= 0)
+	if( nTempTradeItemID >= 0 )
 	{
-		m_pTempItems = m_pIconsTradeItem[nTempTradeItemID]->getItems();
-
-		if (m_pTempItems == NULL)
-			return;
+		// Update count of trade item
+		llNewCount	= m_abtnTradeItems[nTempTradeItemID].GetItemCount();
+		nTab		= m_abtnTradeItems[nTempTradeItemID].GetItemTab(); 
+		nRow		= m_abtnTradeItems[nTempTradeItemID].GetItemRow(); 
+		nCol		= m_abtnTradeItems[nTempTradeItemID].GetItemCol();
+		nIndex		= m_abtnTradeItems[nTempTradeItemID].GetItemIndex();
+		nUniIndex	= m_abtnTradeItems[nTempTradeItemID].GetItemUniIndex();
+		nWearingType = m_abtnTradeItems[nTempTradeItemID].GetItemWearType();
+		ulPlus		= m_abtnTradeItems[nTempTradeItemID].GetItemPlus();
+		ulFlag		= m_abtnTradeItems[nTempTradeItemID].GetItemFlag();
+		lUsed		= m_abtnTradeItems[nTempTradeItemID].GetItemUsed();
+		llPrice		= m_abtnTradeItems[nTempTradeItemID].GetItemPrice();
+		lRareIndex	= m_abtnTradeItems[nTempTradeItemID].GetItemRareIndex();
 		
-		llNewCount = m_pTempItems->Item_Sum;
+		SQUAD llOld = m_aiTradeItemCount[nTempTradeItemID];
+		m_aiTradeItemCount[nTempTradeItemID] -= llCount;		
+		if( m_bBuyShop && m_aiTradeItemCount[nTempTradeItemID] < 0)
+		{
+			m_aiTradeItemCount[nTempTradeItemID] = llOld;
+			nTempTradeItemID = -1;
+			return;
+		}
 		
 		if( !m_bBuyShop )
 		{
 			llNewCount -= llCount;
-			m_pIconsTradeItem[nTempTradeItemID]->setCount(llNewCount);
+			m_abtnTradeItems[nTempTradeItemID].SetItemCount( llNewCount );
 			
 			if( llNewCount <= 0 )
 			{
@@ -2554,27 +3694,34 @@ void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 				{
 					if( ( iArrItem + 1 ) == PERSONAL_TRADE_SLOT_TOTAL )
 					{
-						m_pIconsTradeItem[iArrItem]->clearIconData();
+						m_abtnTradeItems[iArrItem].InitBtn();
 						break;
 					}
 					
-					if (m_pIconsTradeItem[iArrItem + 1]->IsEmpty() == true)
+					if( m_abtnTradeItems[iArrItem + 1].IsEmpty() )
 					{
-						m_pIconsTradeItem[iArrItem]->clearIconData();
+						m_abtnTradeItems[iArrItem].InitBtn();
 						break;
 					}
+					
+					m_abtnTradeItems[iArrItem].SetItemInfo( 0,
+						m_abtnTradeItems[iArrItem + 1].GetItemRow(),
+						m_abtnTradeItems[iArrItem + 1].GetItemCol(),
+						m_abtnTradeItems[iArrItem + 1].GetItemIndex(),
+						m_abtnTradeItems[iArrItem + 1].GetItemUniIndex(),
+						-1 );
+					m_abtnTradeItems[iArrItem].SetItemCount( m_abtnTradeItems[iArrItem + 1].GetItemCount() );
+					m_abtnTradeItems[iArrItem].SetItemFlag( m_abtnTradeItems[iArrItem + 1].GetItemFlag() );
+					m_abtnTradeItems[iArrItem].SetItemPlus( m_abtnTradeItems[iArrItem + 1].GetItemPlus() );
+					m_abtnTradeItems[iArrItem].SetItemPrice( m_abtnTradeItems[iArrItem + 1].GetItemPrice() );
+					m_abtnTradeItems[iArrItem].SetItemUsed( m_abtnTradeItems[iArrItem + 1].GetItemUsed() );
+					m_abtnTradeItems[iArrItem].SetItemRareIndex( m_abtnTradeItems[iArrItem + 1].GetItemRareIndex() );
 
-					m_pIconsTradeItem[iArrItem]->setData(m_vectorSellItemList[iArrItem + 1]);
-				}
-
-				for (int i = 0; i < m_vectorSellItemList.size(); ++i)
-				{
-					if (m_vectorSellItemList[i] != NULL &&
-						m_vectorSellItemList[i] == m_pTempItems)
+					for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
 					{
-						SAFE_DELETE(m_vectorSellItemList[i]);
-						m_vectorSellItemList.erase(m_vectorSellItemList.begin() + i);
-						break;
+						SBYTE sbOptionType	= m_abtnTradeItems[iArrItem + 1].GetItemOptionType(sbOption);
+						SBYTE sbOptionLevel	= m_abtnTradeItems[iArrItem + 1].GetItemOptionLevel(sbOption);
+						m_abtnTradeItems[iArrItem].SetItemOptionData( sbOption, sbOptionType, sbOptionLevel );
 					}
 				}
 				
@@ -2588,17 +3735,21 @@ void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 	else if( !m_bBuyShop && nTempPackageItemID >= 0 )
 	{
 		// Update count of Package item
-		m_pTempItems = m_pIconsPackageItem[nTempPackageItemID]->getItems();
+		llNewCount	= m_abtnPackageItems[nTempPackageItemID].GetItemCount();
+		nTab		= m_abtnPackageItems[nTempPackageItemID].GetItemTab(); 
+		nRow		= m_abtnPackageItems[nTempPackageItemID].GetItemRow(); 
+		nCol		= m_abtnPackageItems[nTempPackageItemID].GetItemCol();
+		nIndex		= m_abtnPackageItems[nTempPackageItemID].GetItemIndex();
+		nUniIndex	= m_abtnPackageItems[nTempPackageItemID].GetItemUniIndex();
+		nWearingType = m_abtnPackageItems[nTempPackageItemID].GetItemWearType();
+		ulPlus		= m_abtnPackageItems[nTempPackageItemID].GetItemPlus();
+		lUsed		= m_abtnPackageItems[nTempPackageItemID].GetItemUsed();
+		ulFlag		= m_abtnPackageItems[nTempPackageItemID].GetItemFlag();
 
-		if (m_pTempItems == NULL)
-			return;
-
-		llNewCount = m_pTempItems->Item_Sum;
-		
 		//if( !m_bBuyShop )
 		//{
 			llNewCount -= llCount;
-			m_pIconsPackageItem[nTempPackageItemID]->setCount(llNewCount);
+			m_abtnPackageItems[nTempPackageItemID].SetItemCount( llNewCount );
 			
 			if( llNewCount <= 0 )
 			{
@@ -2607,21 +3758,36 @@ void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 				{
 					if( ( iArrItem + 1 ) == PERSONAL_PACKAGE_SLOT_COL )
 					{
-						m_pIconsPackageItem[iArrItem]->clearIconData();
+						m_abtnPackageItems[iArrItem].InitBtn();
 						break;
 					}
 					
-					if (m_pIconsPackageItem[iArrItem + 1]->IsEmpty() == true)
+					if( m_abtnPackageItems[iArrItem + 1].IsEmpty() )
 					{
-						m_pIconsPackageItem[iArrItem]->clearIconData();
+						m_abtnPackageItems[iArrItem].InitBtn();
 						break;
 					}
-									
-					m_pIconsPackageItem[iArrItem]->setData(m_vectorSellPackageList[iArrItem + 1]);
-				}
+					
+					m_abtnPackageItems[iArrItem].SetItemInfo( 0,
+						m_abtnPackageItems[iArrItem + 1].GetItemRow(),
+						m_abtnPackageItems[iArrItem + 1].GetItemCol(),
+						m_abtnPackageItems[iArrItem + 1].GetItemIndex(),
+						m_abtnPackageItems[iArrItem + 1].GetItemUniIndex(),
+						-1 );
+					m_abtnPackageItems[iArrItem].SetItemCount( m_abtnPackageItems[iArrItem + 1].GetItemCount() );
+					m_abtnPackageItems[iArrItem].SetItemFlag( m_abtnPackageItems[iArrItem + 1].GetItemFlag() );
+					m_abtnPackageItems[iArrItem].SetItemPrice( m_abtnPackageItems[iArrItem + 1].GetItemPrice() );
+					m_abtnPackageItems[iArrItem].SetItemPlus( m_abtnPackageItems[iArrItem + 1].GetItemPlus() );
+					m_abtnPackageItems[iArrItem].SetItemUsed( m_abtnPackageItems[iArrItem + 1].GetItemUsed() );
+					m_abtnPackageItems[iArrItem].SetItemRareIndex( m_abtnPackageItems[iArrItem + 1].GetItemRareIndex() );
 
-				SAFE_DELETE(m_vectorSellPackageList[nTempPackageItemID]);
-				m_vectorSellPackageList.erase(m_vectorSellPackageList.begin() + nTempPackageItemID);
+					for( SBYTE sbOption = 0; sbOption < MAX_ITEM_OPTION; ++sbOption )
+					{
+						SBYTE sbOptionType	= m_abtnPackageItems[iArrItem + 1].GetItemOptionType(sbOption);
+						SBYTE sbOptionLevel	= m_abtnPackageItems[iArrItem + 1].GetItemOptionLevel(sbOption);
+						m_abtnPackageItems[iArrItem].SetItemOptionData( sbOption, sbOptionType, sbOptionLevel );
+					}
+				}
 				
 				// Unselect item
 				if( nTempPackageItemID == m_nSelPackageItemID )
@@ -2634,111 +3800,107 @@ void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 	if( !m_bBuyShop )
 	{
 		// Update count of shop item
-		if (m_pIconsShopItem[nTempIdx]->getItems() != NULL)
+		llNewCount = m_abtnShopItems[nTempRow][nTempCol].GetItemCount();
+		llNewCount += llCount;
+		/*
+		if(m_bBuyShop)
 		{
-			llNewCount = m_pIconsShopItem[nTempIdx]->getItems()->Item_Sum;
-			llNewCount += llCount;
-
-			m_pIconsShopItem[nTempIdx]->Hide(FALSE);
-
-			m_pIconsShopItem[nTempIdx]->setCount(llNewCount);
-		}		
+			m_abtnShopItems[nTempRow][nTempCol].SetItemInfo( 0,
+					nRow,
+					nCol,
+					nIndex,
+					nUniIndex,
+					nWearingType );
+			m_abtnShopItems[nTempRow][nTempCol].SetItemPlus( ulPlus );
+			m_abtnShopItems[nTempRow][nTempCol].SetItemFlag( ulFlag );
+		}
+		*/
+		m_abtnShopItems[nTempRow][nTempCol].SetItemCount( llNewCount );
+		if( llNewCount > 0 )
+			m_abtnShopItems[nTempRow][nTempCol].SetEmpty( FALSE );
 	}
 	// 구매 모드일때...
 	else
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
+		int iRow = -1;
+		int iCol = -1;
 
-		int nIdx = -1;
+		FindShopSlot( iRow, iCol, nIndex, ulFlag );
 
-		if (m_pTempItems == NULL)
-			return;
-
-		FindShopSlot(nIdx, m_pTempItems->Item_UniIndex);
-
-		if( nIdx >= 0 && nIdx < PERSONAL_SHOP_SLOT_MAX )
+		if( iRow < PERSONAL_SHOP_SLOT_ROW && iCol < PERSONAL_SHOP_SLOT_COL )
 		{
 			// Check if item is countable
-			CItemData*	pItemData = m_pTempItems->ItemData;
-			if (pItemData != NULL && pItemData->GetFlag() & ITEM_FLAG_COUNT)
+			CItemData&	rItemData = _pNetwork->GetItemData( nIndex );
+			if( rItemData.GetFlag() & ITEM_FLAG_COUNT )
 			{
 				// Update count of trade item
-				CItems* pItems = m_pIconsShopItem[nIdx]->getItems();
-
-				if (pItems == NULL)
-					return;
-
-				SQUAD	llNewCount = pItems->Item_Sum;
+				SQUAD	llNewCount = m_abtnShopItems[iRow][iCol].GetItemCount();
 				llNewCount += llCount;
-
-				// 원본의 합계보다 클 수 없다.
-				if (pItems->Item_Sum < llNewCount)
-					return;
-
-				if (llNewCount <= pItemData->GetStack())
+				m_abtnShopItems[iRow][iCol].SetItemCount( llNewCount );
+				
+				if( !m_bBuyShop )
 				{
-					m_pIconsShopItem[nIdx]->setCount(llNewCount);
-				
-					if( !m_bBuyShop )
+					// Update count of shop item
+					llNewCount = m_abtnShopItems[iRow][iCol].GetItemCount();
+					llNewCount -= llCount;
+					m_abtnShopItems[iRow][iCol].SetItemCount( llNewCount );
+					if( llNewCount <= 0 )
 					{
-						// Update count of shop item
-						llNewCount = pItems->Item_Sum;
-						llNewCount -= llCount;
-						m_pIconsShopItem[nIdx]->setCount(llNewCount);
-
-						if( llNewCount <= 0 )
-						{
-							m_pIconsShopItem[nIdx]->clearIconData();
+						m_abtnShopItems[iRow][iCol].SetEmpty( TRUE );
 						
-							// Unselect item
-							if( m_nSelShopItemID == nIdx )
-								m_nSelShopItemID = -1;
-						}
+						// Unselect item
+						if( m_nSelShopItemID == ( iCol + iRow * PERSONAL_SHOP_SLOT_COL ) )
+							m_nSelShopItemID = -1;
 					}
-				
-					m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
-					m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-					pUIManager->InsertCommaToString( m_strTotalPrice );
-					return;
 				}
+				
+				m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
+				m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
+				_pUIMgr->InsertCommaToString( m_strTotalPrice );
+				return;
 			}
-
-			return;
 		}
 
-		int iEmptyIdx = -1;
+		int iEmptyRow = 0;
+		int iEmptyCol = 0;
 
 		//FindShopSlot( iEmptyRow, iEmptyCol, -1 );
-		FindEmptySlot( iEmptyIdx );
+		FindEmptySlot( iEmptyRow, iEmptyCol );
 
 		// If there is not empty slot
-		if( iEmptyIdx == PERSONAL_SHOP_SLOT_MAX )
+		if( iEmptyRow == PERSONAL_SHOP_SLOT_ROW && iEmptyCol == PERSONAL_SHOP_SLOT_COL )
 		{
 			// Add system message
 			if( m_bBuyShop )
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 267, "최대 10개의 아이템을 구매할 수 있습니다." ), SYSMSG_ERROR );
 			else
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 268, "최대 10개의 아이템을 판매할 수 있습니다." ), SYSMSG_ERROR );
 			
 			return;
 		}
 		
 		// Update count of shop item
-		llNewCount = 0;
-		if (m_pIconsShopItem[iEmptyIdx]->getItems() != NULL)
-			llNewCount += m_pIconsShopItem[iEmptyIdx]->getItems()->Item_Sum;
+		llNewCount = m_abtnShopItems[iEmptyRow][iEmptyCol].GetItemCount();
 		llNewCount += llCount;
 		
-		CItems* pCopy = new CItems;
-		memcpy(pCopy, m_pTempItems, sizeof(CItems));
-		pCopy->InvenIndex = iEmptyIdx;
-		pCopy->Item_Sum = llNewCount;
-		m_pIconsShopItem[iEmptyIdx]->setData(pCopy, false);
-		m_pIconsShopItem[iEmptyIdx]->Hide(FALSE);
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemInfo( 0,
+			nRow,
+			nCol,
+			nIndex,
+			nUniIndex,
+			nWearingType );
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemPlus( ulPlus );
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemFlag( ulFlag );					
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemCount( llNewCount );
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemPrice( llPrice );
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemUsed( lUsed );
+		m_abtnShopItems[iEmptyRow][iEmptyCol].SetItemRareIndex( lRareIndex );
+		if( llNewCount > 0 )
+			m_abtnShopItems[iEmptyRow][iEmptyCol].SetEmpty( FALSE );
 		
 		m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 		m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-		pUIManager->InsertCommaToString( m_strTotalPrice );
+		_pUIMgr->InsertCommaToString( m_strTotalPrice );
 		return;
 	}
 }
@@ -2749,44 +3911,65 @@ void CUIPersonalShop::TradeToShop( SQUAD llCount, int iSlot )
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::PackageToShop( BOOL bAdd )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	/*
+	SQUAD	llNewCount;
+	SBYTE	nTab; 
+	SBYTE	nRow; 
+	SBYTE	nCol; 
+	int		nIndex;
+	int		nUniIndex;
+	SBYTE	nWearingType;
+	ULONG	ulPlus;
+	ULONG	ulFlag;
+	*/
 
 	if(bAdd)
 	{		
-		for( int i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+		for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 		{
-			if (m_pIconsShopItem[i]->IsEmpty() == true)
-			{
-				m_pIconsShopItem[i]->setData(UBET_ITEM, PACKAGE_ITEM_INDEX);
-				m_pIconsShopItem[i]->setCount(1);
-				m_pIconsShopItem[i]->Hide(FALSE);
-
-				m_bPackageBuy	= bAdd;
-				m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
-				m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-				pUIManager->InsertCommaToString( m_strTotalPrice );					
-				return;
+			for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+			{			
+				if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+				{	
+					m_abtnShopItems[iRow][iCol].SetItemInfo( 0,
+						-1,
+						-1,
+						PACKAGE_ITEM_INDEX,
+						-1,
+						-1 );								
+					m_abtnShopItems[iRow][iCol].SetItemCount( 1 );				
+					m_abtnShopItems[iRow][iCol].SetEmpty( FALSE );
+					
+					m_bPackageBuy	= bAdd;
+					m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
+					m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
+					_pUIMgr->InsertCommaToString( m_strTotalPrice );					
+					return;
+				}
 			}
 		}
 	}
 	else
 	{
-		for( int i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+		for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 		{
-			if (m_pIconsShopItem[i]->IsEmpty() == true)
-				continue;
-			else
-			{
-				const int iIndex = m_pIconsShopItem[i]->getIndex();
-				if(iIndex == PACKAGE_ITEM_INDEX)
+			for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+			{			
+				if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+					continue;
+				else
 				{
-					m_pIconsShopItem[i]->clearIconData();
-
-					m_bPackageBuy	= bAdd;
-					m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
-					m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-					pUIManager->InsertCommaToString( m_strTotalPrice );						
-					return;
+					const int iIndex = m_abtnShopItems[iRow][iCol].GetItemIndex();
+					if(iIndex == PACKAGE_ITEM_INDEX)
+					{
+						m_abtnShopItems[iRow][iCol].InitBtn();						
+						
+						m_bPackageBuy	= bAdd;
+						m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
+						m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
+						_pUIMgr->InsertCommaToString( m_strTotalPrice );						
+						return;
+					}
 				}
 			}
 		}
@@ -2794,7 +3977,7 @@ void CUIPersonalShop::PackageToShop( BOOL bAdd )
 
 	m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 	m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-	pUIManager->InsertCommaToString( m_strTotalPrice );
+	_pUIMgr->InsertCommaToString( m_strTotalPrice );
 }
 
 //-----------------------------------------------------------------------------
@@ -2808,18 +3991,24 @@ __int64 CUIPersonalShop::CalculateTotalPrice(int& iCount)
 	__int64	iTotalPrice	= 0;
 	iCount				= 0;
 	
-	for( int i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if( m_pIconsShopItem[i]->IsEmpty() == true)
-			continue;
-
-		CItems* pItems = m_pIconsShopItem[i]->getItems();
-
-		if(pItems->Item_Index == -1 || pItems->Item_UniIndex == -1)
-			continue;
-
-		iTotalPrice					+= pItems->Item_Price * pItems->Item_Sum;
-		iCount++;
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() )
+				continue;
+			
+			const int iIndex		= m_abtnShopItems[iRow][iCol].GetItemIndex();
+			const int iUniIndex		= m_abtnShopItems[iRow][iCol].GetItemUniIndex();
+			const SQUAD llItemCount	= m_abtnShopItems[iRow][iCol].GetItemCount();
+			const SQUAD llItemPrice	= m_abtnShopItems[iRow][iCol].GetItemPrice();
+			
+			if(iIndex == -1 || iUniIndex == -1)
+				continue;
+			
+			iTotalPrice					+= llItemPrice * llItemCount;
+			iCount++;
+		}
 	}
 	if( m_bPackageBuy )
 	{
@@ -2861,46 +4050,30 @@ __int64	CUIPersonalShop::CalculateItemPrice(int iShopID, const CItemData &ID, in
 //-----------------------------------------------------------------------------
 void CUIPersonalShop::SendPersonalShopStart()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// FIXME : 중복코드 제거
 	if(((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsMoving())
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 746, "이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 746, "이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 	
 	if(((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsSkilling())
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 747, "스킬 사용중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 747, "스킬 사용중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 	
-	if(pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+	if(_pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 748, "순간 이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 748, "순간 이동중에는 개인상점거래를 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 	
 	if( ((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsSitting() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 763, "서 있는 상태에서만 개인상점거래를 개설 할 수 있습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 763, "서 있는 상태에서만 개인상점거래를 개설 할 수 있습니다." ), SYSMSG_ERROR );	
 		return;
 	}
-	// 와일드펫 탑승 상태일 경우 상점을 개설할 수 없음.
-	if(_pNetwork->MyCharacterInfo.bWildPetRide == TRUE || pUIManager->IsCSFlagOn(CSF_PETRIDING))
-	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 5314, "개인 상점을 개설할 수 없는 상태입니다." ), SYSMSG_ERROR );	
-		return;
-	}
-	// 로그의 데스모션은 상점을 개설할 수 없음
-	if(_pNetwork->MyCharacterInfo.statusEffect.IsState(EST_ASSIST_FAKEDEATH))
-	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 5314, "개인 상점을 개설할 수 없는 상태입니다." ), SYSMSG_ERROR );	
-		return;
-	}
-
-	// 서버로부터 응답 체크가 필요한 메세지
 
 	// 판매시작					: charindex(n) shoptype(c) shopname(str) [normal_count(c) normal_item(v:normal_count) pack_price(ll) pack_count(c) pack_item(v:pack_count)]:client
 	// normal_item				: row(c) col(c) item_idx(n) item_db_idx(n) count(ll) price(ll)
@@ -2913,14 +4086,14 @@ void CUIPersonalShop::SendPersonalShopStart()
 
 		if(m_strShopName.Length() < 4)
 		{
-			pUIManager->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
+			_pUIMgr->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
 			
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK, UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
 			CTString	strMessage = _S( 764, "상점 이름이 너무 짧습니다.\n(한글 2자이상, 영문 4자이상)" );		
 			
 			MsgBoxInfo.AddString( strMessage );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			
 			m_ebShopName.ResetString();
 			m_ebShopName.SetFocus( TRUE );
@@ -2933,40 +4106,73 @@ void CUIPersonalShop::SendPersonalShopStart()
 		strcpy ( szBuffer,m_strShopName.str_String );
 
 		// Date : 2005-01-15,   By Lee Ki-hwan
-		if( _UIFiltering.Filtering ( szBuffer, nIndexBuffer ) == TRUE ||
-			UTIL_HELP()->IsSpecialChar(szBuffer) == true)
+		if( _UIFiltering.Filtering ( szBuffer, nIndexBuffer ) == TRUE )
 		{
-			pUIManager->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
-
+			_pUIMgr->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
+			
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK, UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
 			
 			CTString	strMessage = _S ( 751, "상점 이름에 잘못된 문자가 포함되어 있습니다." );
 
+			//strMessage += _UIFiltering.GetString ( nIndex );
+			/* // Date : 2005-01-15,   By Lee Ki-hwan : 넣어 줘도 되고 안 넣어 줘도 되고
+			strMessage += "\n";
+			
+			for ( int i = 1; i <= nIndexBuffer[0]; i++ )
+			{	
+				strMessage += "[";	
+				strMessage += _UIFiltering.GetString( nIndexBuffer[i] );
+				strMessage += "] ";
+			}
+			*/
+
+
 			MsgBoxInfo.AddString( strMessage );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					
 			m_ebShopName.SetFocus( TRUE );
 
 			return;
 		}
+		
+		/*
+		// 공백 체크.
+		for(const char *chr = m_strShopName.str_String; *chr != 0; chr++)
+		{
+			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
+				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=')
+			{
+				_pUIMgr->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
+				CUIMsgBox_Info	MsgBoxInfo;
+				MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK,	
+					UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
+				CTString	strMessage = _S( 764, "상점 이름이 올바르지 않습니다." );		
+				MsgBoxInfo.AddString( strMessage );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
+				
+				m_ebShopName.ResetString();
+				return;
+			}
+		}
+		*/
 	}
 
 	int iNormalItemCount	= 0;
 	int iPackageItemCount	= 0;
-	int iItem, iCol;
+
 	// Trade Slot(5x2)
-	for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
+	for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 	{
-		if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+		if( m_abtnTradeItems[iItem].IsEmpty() )
 			continue;
 		iNormalItemCount++;
 	}
 
 	// Package Slot(5x1)
-	for( iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
+	for(int iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
-		if (m_pIconsPackageItem[iCol]->IsEmpty() == true)
+		if( m_abtnPackageItems[iCol].IsEmpty() )
 			continue;
 		iPackageItemCount++;
 	}
@@ -2978,21 +4184,20 @@ void CUIPersonalShop::SendPersonalShopStart()
 
 		if(strPrice == "" || strPrice.Length() <= 0)
 		{
-			pUIManager->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
+			_pUIMgr->CloseMessageBox(MSGCMD_PERSONALSHOP_ERROR);
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 757, "개인상점" ), UMBS_OK,	
 				UI_PERSONALSHOP, MSGCMD_PERSONALSHOP_ERROR );
 			CTString	strMessage = _S( 765, "패키지 가격을 입력해주십시오." );		
 			MsgBoxInfo.AddString( strMessage );
-			pUIManager->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			
 			m_ebPackagePrice.ResetString();
 			return;
 		}
 		char	*pcInput	= strPrice.str_String;
 		int		nLength		= strPrice.Length();
-		int		iChar;
-		for( iChar = 0; iChar < nLength; ++iChar )
+		for( int iChar = 0; iChar < nLength; ++iChar )
 		{
 			if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
 				break;
@@ -3049,15 +4254,14 @@ void CUIPersonalShop::SendPersonalShopStart()
 	//row(c) col(c) item_idx(n) item_db_idx(n) count(ll) price(ll)
 	for( iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 	{
-		if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+		if( m_abtnTradeItems[iItem].IsEmpty() )
 			continue;
-
-		nmPersonalShop << (SWORD)m_vectorSellItemList[iItem]->Item_Tab;
-		nmPersonalShop << (SWORD)m_vectorSellItemList[iItem]->InvenIndex;
-		nmPersonalShop << (LONG)m_vectorSellItemList[iItem]->Item_UniIndex;
-		nmPersonalShop << (LONG)m_vectorSellItemList[iItem]->Item_Index;
-		nmPersonalShop << m_vectorSellItemList[iItem]->Item_Sum;
-		nmPersonalShop << m_vectorSellItemList[iItem]->Item_Price;
+		nmPersonalShop << (SBYTE)m_abtnTradeItems[iItem].GetItemRow();
+		nmPersonalShop << (SBYTE)m_abtnTradeItems[iItem].GetItemCol();
+		nmPersonalShop << (LONG)m_abtnTradeItems[iItem].GetItemUniIndex();
+		nmPersonalShop << (LONG)m_abtnTradeItems[iItem].GetItemIndex();
+		nmPersonalShop << m_abtnTradeItems[iItem].GetItemCount();
+		nmPersonalShop << m_abtnTradeItems[iItem].GetItemPrice();
 	}
 	
 	// Package Item List
@@ -3067,18 +4271,17 @@ void CUIPersonalShop::SendPersonalShopStart()
 	//row(c) col(c) item_idx(n) item_db_idx(n) count(ll)
 	for( iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
-		if (m_pIconsPackageItem[iCol]->IsEmpty() == true)
+		if( m_abtnPackageItems[iCol].IsEmpty() )
 			continue;
 
-		nmPersonalShop << (SWORD)m_vectorSellPackageList[iCol]->Item_Tab;
-		nmPersonalShop << (SWORD)m_vectorSellPackageList[iCol]->InvenIndex;
-		nmPersonalShop << (LONG)m_vectorSellPackageList[iCol]->Item_UniIndex;
-		nmPersonalShop << (LONG)m_vectorSellPackageList[iCol]->Item_Index;
-		nmPersonalShop << m_vectorSellPackageList[iCol]->Item_Sum;
+		nmPersonalShop << (SBYTE)m_abtnPackageItems[iCol].GetItemRow();
+		nmPersonalShop << (SBYTE)m_abtnPackageItems[iCol].GetItemCol();
+		nmPersonalShop << (LONG)m_abtnPackageItems[iCol].GetItemUniIndex();
+		nmPersonalShop << (LONG)m_abtnPackageItems[iCol].GetItemIndex();
+		nmPersonalShop << m_abtnPackageItems[iCol].GetItemCount();
 	}
 
 	_pNetwork->SendToServerNew(nmPersonalShop);	
-	_pNetwork->m_iNetworkResponse[MSG_PERSONALSHOP]		= 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -3090,6 +4293,7 @@ void CUIPersonalShop::SendPersonalShopStop()
 	// FIXME : 중복코드 제거
 	if(((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsActionSitting())
 	{
+		//_pUIMgr->GetChatting()->AddSysMessage( _S( 746, "이동중에는 상점을 닫을 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 
@@ -3115,27 +4319,31 @@ void CUIPersonalShop::SendPersonalShopBuy()
 
 	int iNormalItemCount	= 0;
 
-	int		i;
-	for( i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[i]->IsEmpty() == true ||
-			m_pIconsShopItem[i]->getIndex() == PACKAGE_ITEM_INDEX)
-			continue;
-		iNormalItemCount++;
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() ||
+				m_abtnShopItems[iRow][iCol].GetItemIndex() == -1 || 
+				m_abtnShopItems[iRow][iCol].GetItemUniIndex() == -1)
+				continue;
+			iNormalItemCount++;
+		}
 	}
 	nmPersonalShop << (SBYTE)iNormalItemCount;
 
-	for( i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+	for( iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[i]->IsEmpty() == true ||
-			m_pIconsShopItem[i]->getIndex() == PACKAGE_ITEM_INDEX)
-			continue;
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() ||
+				m_abtnShopItems[iRow][iCol].GetItemIndex() == -1 || 
+				m_abtnShopItems[iRow][iCol].GetItemUniIndex() == -1)
+				continue;
 
-		if (m_pIconsShopItem[i]->getItems() == NULL)
-			continue;
-
-		nmPersonalShop << (LONG)m_pIconsShopItem[i]->getItems()->Item_UniIndex;
-		nmPersonalShop << m_pIconsShopItem[i]->getItems()->Item_Sum;
+			nmPersonalShop << (LONG)m_abtnShopItems[iRow][iCol].GetItemUniIndex();
+			nmPersonalShop << m_abtnShopItems[iRow][iCol].GetItemCount();
+		}
 	}
 
 	_pNetwork->SendToServerNew(nmPersonalShop);
@@ -3155,26 +4363,32 @@ void CUIPersonalShop::SendCashPersonShopBuy()
 	nmPersonalShop << sbBuyPack;
 
 	int iNormalItemCount	= 0;
-	int	i;
 
-	for( i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+	for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[i]->IsEmpty() == true)
-			continue;
-		iNormalItemCount++;
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() ||
+				m_abtnShopItems[iRow][iCol].GetItemIndex() == -1 || 
+				m_abtnShopItems[iRow][iCol].GetItemUniIndex() == -1)
+				continue;
+			iNormalItemCount++;
+		}
 	}
 	nmPersonalShop << (SBYTE)iNormalItemCount;
 
-	for( i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+	for( iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[i]->IsEmpty() == true)
-			continue;
+		for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{			
+			if( m_abtnShopItems[iRow][iCol].IsEmpty() ||
+				m_abtnShopItems[iRow][iCol].GetItemIndex() == -1 || 
+				m_abtnShopItems[iRow][iCol].GetItemUniIndex() == -1)
+				continue;
 
-		if (m_pIconsShopItem[i]->getItems() == NULL)
-			continue;
-
-		nmPersonalShop << (LONG)m_pIconsShopItem[i]->getItems()->Item_UniIndex;
-		nmPersonalShop << m_pIconsShopItem[i]->getItems()->Item_Sum;
+			nmPersonalShop << (LONG)m_abtnShopItems[iRow][iCol].GetItemUniIndex();
+			nmPersonalShop << m_abtnShopItems[iRow][iCol].GetItemCount();
+		}
 	}
 
 	_pNetwork->SendToServerNew(nmPersonalShop);
@@ -3190,8 +4404,7 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 	// normal_item				: item_idx(n) item_db_idx(n) plus(n) flag(n) option_count(c) ([option_type(c) option_level(c)]:option_count) count(ll) price(ll)
 	// pack_item				: item_idx(n) item_db_idx(n) plus(n) flag(n) option_count(c) ([option_type(c) option_level(c)]:option_count) count(ll)
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	//memset(&m_aiTradeItemCount, 0, sizeof(m_aiTradeItemCount));
 	ClearItems();
 
 	SBYTE	sbShopType;
@@ -3213,60 +4426,43 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 	{
 		LONG	lIndex;
 		LONG	lUniIndex;
-		ULONG	ulPlus,ulPlus2;
+		ULONG	ulPlus;
 		ULONG	ulFlag;
 		SLONG	slUsed;
 		SLONG	slUsed2;
 		SBYTE	sbOptionCount;
-		SBYTE	sbOptionType;
-		LONG	lOptionLevel;
+		SBYTE	sbOptionType, sbOptionLevel;
 		SQUAD	llCount;
 		SQUAD	llPrice;
-#ifdef	DURABILITY
-		LONG	nDurabilityNow;
-		LONG	nDurabilityMax;
-#endif	// DURABILITY
+		CItems	TempItem;
 
 		(*istr) >> lUniIndex;
 		(*istr) >> lIndex;		
 		(*istr) >> ulPlus;
 		(*istr) >> ulFlag;
-#ifdef	DURABILITY
-		(*istr) >> nDurabilityNow;
-		(*istr) >> nDurabilityMax;
-#endif
 		(*istr) >> sbOptionCount;
 
-		CItems* TempItem = new CItems(lIndex);
-
-		TempItem->InitOptionData();
+		TempItem.InitOptionData();
 
 		//레어 아이템이면...
-		if( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_RARE )
+		if( _pNetwork->GetItemData(lIndex).GetFlag() & ITEM_FLAG_RARE )
 		{
 			//옵션 개수가 0이면 미감정 레어아이템
 			if( sbOptionCount ==0)
-				TempItem->SetRareIndex(0);
+				TempItem.SetRareIndex(0);
 			//감정된 레어 아이템
 			else
-				pUIManager->SetRareOption(istr, *TempItem);
+				_pUIMgr->SetRareOption(istr, TempItem);
 		}
 		//레어 아이템이 아니면...
 		else
 		{
-			LONG lOriginOptionVar = ORIGIN_VAR_DEFAULT;
-
 			for( SBYTE sbOption = 0; sbOption < sbOptionCount; sbOption++ )
 			{
 				(*istr) >> sbOptionType;
-				(*istr) >> lOptionLevel;
-
-				if ( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_ORIGIN )
-				{
-					(*istr) >> lOriginOptionVar;
-				}
+				(*istr) >> sbOptionLevel;
 			
-				TempItem->SetOptionData(sbOption, sbOptionType, lOptionLevel, lOriginOptionVar);
+				TempItem.SetOptionData( sbOption, sbOptionType, sbOptionLevel );
 			}
 		}
 		(*istr) >> llCount;
@@ -3274,63 +4470,11 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 		(*istr) >> slUsed;
 		(*istr) >> slUsed2;
 
-		if (_pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_ORIGIN)
-		{
-			SBYTE sbBelong, sbSkillcont;
-			LONG lSkillIndex;
-			SBYTE sbSkillLevel;
+		TempItem.SetData(lIndex, lUniIndex, -1, -1, -1, ulPlus, ulFlag, slUsed, slUsed2, -1, llCount);
+		TempItem.SetPrice(llPrice);
 
-			(*istr) >> sbBelong;
-			(*istr) >> sbSkillcont;
-
-			TempItem->SetItemBelong(sbBelong);
-
-			for (SBYTE sbSkillpos = 0; sbSkillpos < sbSkillcont; sbSkillpos++)
-			{
-				(*istr) >> lSkillIndex;
-				(*istr) >> sbSkillLevel;
-
-				TempItem->SetItemSkill(sbSkillpos, lSkillIndex, sbSkillLevel);
-			}
-		}
-
-		(*istr) >> ulPlus2;
-		TempItem->SetItemPlus2(ulPlus2);
-		TempItem->InitSocketInfo();
-
-		if( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_SOCKET )
-		{
-			SBYTE	sbSocketCreateCount = 0;
-			SBYTE	sbSocketCount = 0;
-			LONG	lSocketJewelIndex = 0;
-			
-			LONG	lSocketInfo[JEWEL_MAX_COUNT] = {-1,};
-			int	i;
-			
-			for (i = 0; i < JEWEL_MAX_COUNT; i++)
-			{
-				(*istr) >> lSocketInfo[i];
-				if (lSocketInfo[i] >= 0)
-					sbSocketCreateCount++;
-			}
-			
-			TempItem->SetSocketCount( sbSocketCreateCount );	
-			
-			for (i = 0; i < JEWEL_MAX_COUNT; i++)
-			{
-				if (lSocketInfo[i] >= 0)
-					TempItem->SetSocketOption( i, lSocketInfo[i] );
-			}
-		}
-
-		TempItem->SetData(lIndex, lUniIndex, 0, i, ulPlus, ulFlag, -1, slUsed, slUsed2, -1, llCount);
-		TempItem->SetPrice(llPrice);
-#ifdef	DURABILITY
-		TempItem->SetDurability(nDurabilityNow, nDurabilityMax);
-#endif	// DURABILITY
-
-		if(_pNetwork->GetItemData(lIndex)->GetType() == CItemData::ITEM_ACCESSORY &&
-			_pNetwork->GetItemData(lIndex)->GetSubType() == CItemData::ACCESSORY_WILDPET)
+		if(_pNetwork->GetItemData(lIndex).GetType() == CItemData::ITEM_ACCESSORY &&
+			_pNetwork->GetItemData(lIndex).GetSubType() == CItemData::ACCESSORY_WILDPET)
 		{
 			_pNetwork->SendPetitemInfo(iChaIndex, ulPlus);
 		}
@@ -3342,130 +4486,56 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 	{
 		(*istr) >> m_llPackagePrice;
 		(*istr) >> sbPackageCount;	
-		for(int i = 0; i < sbPackageCount; ++i)
+		for(i = 0; i < sbPackageCount; ++i)
 		{
 			LONG	lIndex;
 			LONG	lUniIndex;
-			ULONG	ulPlus,ulPlus2 = 0;
+			ULONG	ulPlus;
 			ULONG	ulFlag;
 			SLONG	slUsed;
 			SLONG	slUsed2;
 			SBYTE	sbOptionCount;
-			SBYTE	sbOptionType;
-			LONG	lOptionLevel;
+			SBYTE	sbOptionType, sbOptionLevel;
 			SQUAD	llCount;
-#ifdef	DURABILITY
-			LONG	nDurabilityNow;
-			LONG	nDurabilityMax;
-#endif	// DURABILITY
-
+			CItems	TempItem;
+			
 			(*istr) >> lUniIndex;
 			(*istr) >> lIndex;		
 			(*istr) >> ulPlus;
 			(*istr) >> ulFlag;
-#ifdef	DURABILITY
-			(*istr) >> nDurabilityNow;
-			(*istr) >> nDurabilityMax;
-#endif
 			(*istr) >> sbOptionCount;
-
-			CItems*	TempItem = new CItems(lIndex);
-			TempItem->InitOptionData();
-
-			if( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_RARE )
+			
+			TempItem.InitOptionData();
+			
+			if( _pNetwork->GetItemData(lIndex).GetFlag() & ITEM_FLAG_RARE )
 			{
 				//옵션 개수가 0이면 미감정 레어아이템
 				if( sbOptionCount ==0)
-					TempItem->SetRareIndex(0);
+					TempItem.SetRareIndex(0);
 				//감정된 레어 아이템
 				else
-					pUIManager->SetRareOption(istr, *TempItem);
+					_pUIMgr->SetRareOption(istr, TempItem);
 			}
 			else
 			{
-				LONG lOriginOptionVar = ORIGIN_VAR_DEFAULT;
-
 				for( SBYTE sbOption = 0; sbOption < sbOptionCount; sbOption++ )
 				{
 					(*istr) >> sbOptionType;
-					(*istr) >> lOptionLevel;
-
-					if ( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_ORIGIN )
-					{
-						(*istr) >> lOriginOptionVar;
-					}
-
-					TempItem->SetOptionData( sbOption, sbOptionType, lOptionLevel, lOriginOptionVar );
+					(*istr) >> sbOptionLevel;
+				
+					TempItem.SetOptionData( sbOption, sbOptionType, sbOptionLevel );
 				}
 			}
 			(*istr) >> llCount;
 			(*istr) >> slUsed;
 			(*istr) >> slUsed2;
-
-			if (_pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_ORIGIN)
-			{
-				SBYTE sbBelong, sbSkillcont;
-				LONG lSkillIndex;
-				SBYTE sbSkillLevel;
-
-				(*istr) >> sbBelong;
-				(*istr) >> sbSkillcont;
-
-				TempItem->SetItemBelong(sbBelong);
-
-				for (SBYTE sbSkillpos = 0; sbSkillpos < sbSkillcont; sbSkillpos++)
-				{
-					(*istr) >> lSkillIndex;
-					(*istr) >> sbSkillLevel;
-
-					TempItem->SetItemSkill(sbSkillpos, lSkillIndex, sbSkillLevel);
-				}
-			}
-
-			(*istr) >> ulPlus2;
-			TempItem->SetItemPlus2(ulPlus2);
-			TempItem->InitSocketInfo();
-
-			if( _pNetwork->GetItemData(lIndex)->GetFlag() & ITEM_FLAG_SOCKET )
-			{
-				SBYTE	sbSocketCreateCount = 0;
-				SBYTE	sbSocketCount = 0;
-				LONG	lSocketJewelIndex = 0;
-				LONG	lSocketOptionIndex = 0;
-				SBYTE	sbSocketOptionLevel = 0;
-
-				TempItem->InitSocketInfo();
-
-				LONG	lSocketInfo[JEWEL_MAX_COUNT] = {-1,};
-				int	i;
-
-				for (i = 0; i < JEWEL_MAX_COUNT; i++)
-				{
-					(*istr) >> lSocketInfo[i];
-					if (lSocketInfo[i] >= 0)
-						sbSocketCreateCount++;
-				}
-
-				TempItem->SetSocketCount( sbSocketCreateCount );	
-
-				for (i = 0; i < JEWEL_MAX_COUNT; i++)
-				{
-					if (lSocketInfo[i] >= 0)
-						TempItem->SetSocketOption( i, lSocketInfo[i] );
-				}
-			}
-
-			TempItem->SetData(lIndex, lUniIndex, -1, -1, ulPlus, ulFlag, -1, slUsed, slUsed2, -1, llCount);
-#ifdef	DURABILITY
-			TempItem->SetDurability(nDurabilityNow, nDurabilityMax);
-#endif	// DURABILITY
-
-			if(_pNetwork->GetItemData(lIndex)->GetType() == CItemData::ITEM_ACCESSORY &&
-				_pNetwork->GetItemData(lIndex)->GetSubType() == CItemData::ACCESSORY_WILDPET)
+			
+			TempItem.SetData(lIndex, lUniIndex, -1, -1, -1, ulPlus, ulFlag, slUsed, slUsed2, -1, llCount);
+			if(_pNetwork->GetItemData(lIndex).GetType() == CItemData::ITEM_ACCESSORY &&
+				_pNetwork->GetItemData(lIndex).GetSubType() == CItemData::ACCESSORY_WILDPET)
 			{
 				_pNetwork->SendPetitemInfo(iChaIndex, ulPlus);
 			}
-
 			m_vectorSellPackageList.push_back(TempItem);
 		}
 	}
@@ -3476,11 +4546,18 @@ void CUIPersonalShop::ReceivePersonalShopItemList(int iChaIndex, CNetworkMessage
 	m_btnShopBuy.SetEnable(TRUE);
 	m_cbtnPremium.SetVisible( FALSE );
 	m_cbtnPremium.SetEnable( FALSE );
+	//m_btnPackageOK.SetEnable( m_bPremium );
+	//m_btnPackageCancel.SetEnable( m_bPremium );
 	m_ebShopName.SetEnable( FALSE );
 	m_ebPackagePrice.SetEnable( FALSE );
+
+	//m_nSelectedShopID = iShopID;
 	m_nSelectedChaID = iChaIndex;
 
-	pUIManager->CloseMessageBox( MSGCMD_DROPITEM );
+	// Character state flags
+	//_pUIMgr->SetCSFlagOn( CSF_PERSONALSHOP );
+
+	_pUIMgr->CloseMessageBox( MSGCMD_DROPITEM );
 
 	PrepareBuyShop();
 }
@@ -3505,20 +4582,11 @@ void CUIPersonalShop::ReceivePersonalShopItemUpdate(CNetworkMessage *istr)
 	{
 		for(int iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 		{
-			m_pIconsPackageItem[iCol]->clearIconData();
+			m_abtnPackageItems[iCol].InitBtn();
 		}
 
 		m_llPackagePrice	= 0;
 		m_strPackagePrice	= CTString( "0" );
-
-		int nCnt = m_vectorSellPackageList.size();
-
-		for (int i = 0; i < nCnt; ++i)
-		{
-			SAFE_DELETE(m_vectorSellPackageList[i]);
-		}
-
-		m_vectorSellPackageList.clear();
 	}
 
 	RefreshPlayerItem();
@@ -3532,37 +4600,21 @@ void CUIPersonalShop::ReceivePersonalShopItemUpdate(CNetworkMessage *istr)
 
 		for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 		{
-			if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+			if(m_abtnTradeItems[iItem].IsEmpty())
 				continue;
 
-			if (m_pIconsTradeItem[iItem]->getItems() == NULL)
-				continue;
-
-			if (m_pIconsTradeItem[iItem]->getItems()->Item_UniIndex == lItemIndex)
+			if(m_abtnTradeItems[iItem].GetItemUniIndex() == lItemIndex)
 			{
-				SQUAD llNewItemCount	= m_pIconsTradeItem[iItem]->getItems()->Item_Sum;
+				SQUAD llNewItemCount	= m_abtnTradeItems[iItem].GetItemCount();
 				llNewItemCount			-= llItemCount;
 
 				if(llNewItemCount <= 0)
 				{
-					m_pIconsTradeItem[iItem]->clearIconData();
-
-					vec_Items_iter iter = m_vectorSellItemList.begin();
-					vec_Items_iter eiter = m_vectorSellItemList.end();
-
-					for (; iter != eiter; ++iter)
-					{
-						if ((*iter)->Item_UniIndex == lItemIndex)
-						{
-							SAFE_DELETE(*iter);
-							iter = m_vectorSellItemList.erase(iter);
-							break;
-						}
-					}
+					m_abtnTradeItems[iItem].InitBtn();
 				}
 				else
 				{
-					m_pIconsTradeItem[iItem]->setCount(llNewItemCount);
+					m_abtnTradeItems[iItem].SetItemCount(llNewItemCount);
 				}
 				break;
 			}
@@ -3573,36 +4625,35 @@ void CUIPersonalShop::ReceivePersonalShopItemUpdate(CNetworkMessage *istr)
 	// FIXME : 느릴거 같은 코드.  최적화 필요.
 	for( int iItem = 0; iItem < PERSONAL_TRADE_SLOT_TOTAL; ++iItem )
 	{
-		if (m_pIconsTradeItem[iItem]->IsEmpty() == true)
+		if(m_abtnTradeItems[iItem].IsEmpty())
 			continue;
 
-		if (m_pIconsTradeItem[iItem]->getItems() == NULL)
-			continue;
-
-		SQUAD llItemCount	= m_pIconsTradeItem[iItem]->getItems()->Item_Sum;
-		int iItemUniIndex	= m_pIconsTradeItem[iItem]->getItems()->Item_UniIndex;
+		SQUAD llItemCount	= m_abtnTradeItems[iItem].GetItemCount();
+		int iItemUniIndex	= m_abtnTradeItems[iItem].GetItemUniIndex();
 		
 		// 빈 공간에 추가함.
-		for( int i = 0; i < PERSONAL_SHOP_SLOT_MAX; ++i )
+		for( int iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 		{
-			if (m_pIconsShopItem[i]->IsEmpty() == true)
-				continue;
-
-			if (m_pIconsShopItem[i]->getItems() == NULL)
-				continue;
-
-			if( m_pIconsShopItem[i]->getItems()->Item_UniIndex == iItemUniIndex )
+			for( int iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
 			{
-				SQUAD llNewItemCount	= m_pIconsShopItem[i]->getItems()->Item_Sum;
-				llNewItemCount			-= llItemCount;
-				m_pIconsShopItem[i]->setCount(llNewItemCount);
-
-				if(llItemCount <= 0)
+				if( m_abtnShopItems[iRow][iCol].IsEmpty())
+					continue;
+				
+				if( m_abtnShopItems[iRow][iCol].GetItemUniIndex() == iItemUniIndex )
 				{
-					m_pIconsShopItem[i]->Hide(TRUE);
+					SQUAD llNewItemCount	= m_abtnShopItems[iRow][iCol].GetItemCount();					
+					llNewItemCount			-= llItemCount;
+					
+					if(llNewItemCount <= 0)
+					{
+						m_abtnShopItems[iRow][iCol].InitBtn();
+					}
+					else
+					{
+						m_abtnShopItems[iRow][iCol].SetItemCount(llNewItemCount);
+					}
+					break;
 				}
-
-				break;
 			}
 		}
 	}
@@ -3611,7 +4662,7 @@ void CUIPersonalShop::ReceivePersonalShopItemUpdate(CNetworkMessage *istr)
 
 	m_nTotalPrice = CalculateTotalPrice( m_nNumOfItem );
 	m_strTotalPrice.PrintF( "%I64d", m_nTotalPrice );
-	CUIManager::getSingleton()->InsertCommaToString( m_strTotalPrice );
+	_pUIMgr->InsertCommaToString( m_strTotalPrice );
 }
 
 //-----------------------------------------------------------------------------
@@ -3648,45 +4699,19 @@ void CUIPersonalShop::ClearPackageSlot()
 	// Package Slot(5x1)
 	for(int iCol = 0; iCol < PERSONAL_PACKAGE_SLOT_COL; ++iCol)
 	{
-		if (m_pIconsPackageItem[iCol]->IsEmpty() == true)
+		if(m_abtnPackageItems[iCol].IsEmpty())
 			continue;
 
-		if (m_pIconsPackageItem[iCol]->getItems() == NULL)
-			continue;
+		const SQUAD llOldCount	= m_abtnPackageItems[iCol].GetItemCount();
+		const int iOldRow		= m_abtnPackageItems[iCol].GetItemRow();
+		const int iOldCol		= m_abtnPackageItems[iCol].GetItemCol();
+		SQUAD llNew				= m_abtnShopItems[iOldRow][iOldCol].GetItemCount() + llOldCount;
+		m_abtnShopItems[iOldRow][iOldCol].SetItemCount(llNew);
+		if( llNew > 0 )
+			m_abtnShopItems[iOldRow][iOldCol].SetEmpty( FALSE );
 
-		const SQUAD llOldCount	= m_pIconsPackageItem[iCol]->getItems()->Item_Sum;
-
-		int nTab = m_pIconsPackageItem[iCol]->getItems()->Item_Tab;
-		int nIdx = m_pIconsPackageItem[iCol]->getItems()->InvenIndex;
-
-		if ( nTab >= INVENTORY_TAB_CASH_1 )
-		{
-			nIdx += ITEM_COUNT_IN_INVENTORY_NORMAL;
-		}
-
-		if ( nTab >= INVENTORY_TAB_CASH_2 )
-		{
-			nIdx += ITEM_COUNT_IN_INVENTORY_CASH_1;
-		}
-
-		if (nIdx < 0 || nIdx >= PERSONAL_SHOP_SLOT_MAX)
-		{
-			m_pIconsPackageItem[iCol]->clearIconData();
-			continue;
-		}
-
-		SQUAD llNew				= m_pIconsShopItem[nIdx]->getItems()->Item_Sum + llOldCount;
-
-		m_pIconsShopItem[nIdx]->Hide(FALSE);
-		m_pIconsShopItem[nIdx]->setCount(llNew);
-
-		m_pIconsPackageItem[iCol]->clearIconData();
+		m_abtnPackageItems[iCol].InitBtn();
 	}
-
-	for (int i = 0; i < m_vectorSellPackageList.size(); ++i)
-		SAFE_DELETE(m_vectorSellPackageList[i]);
-
-	m_vectorSellPackageList.clear();
 	m_ebPackagePrice.ResetString();
 	m_llPackagePrice = 0;
 }
@@ -3713,14 +4738,18 @@ void CUIPersonalShop::ChangeShopState(BOOL bShopStart)
 // Purpose: 인덱스에 해당하는 상점 슬롯을 찾음.
 // Input  : 
 //-----------------------------------------------------------------------------
-void CUIPersonalShop::FindShopSlot( int& nIdx, int iVirtualIdx )
+void CUIPersonalShop::FindShopSlot( int& iRow, int& iCol, int iIndex, ULONG ulFlag )
 {
 	// 빈 공간에 추가함.
-	for( nIdx = 0; nIdx < PERSONAL_SHOP_SLOT_MAX; ++nIdx )
+	for( iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[nIdx]->IsEmpty() == false && m_pIconsShopItem[nIdx]->getItems() &&
-			m_pIconsShopItem[nIdx]->getItems()->Item_UniIndex == iVirtualIdx)
-			return;
+		for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{
+			if( !m_abtnShopItems[iRow][iCol].IsEmpty() && 
+				m_abtnShopItems[iRow][iCol].GetItemIndex() == iIndex && 
+				m_abtnShopItems[iRow][iCol].GetItemFlag() == ulFlag )
+				return;
+		}
 	}
 }
 
@@ -3728,13 +4757,16 @@ void CUIPersonalShop::FindShopSlot( int& nIdx, int iVirtualIdx )
 // Purpose: 비어있는 상점 슬롯을 찾음.
 // Input  : 
 //-----------------------------------------------------------------------------
-void CUIPersonalShop::FindEmptySlot( int& nIdx )
+void CUIPersonalShop::FindEmptySlot( int& iRow, int& iCol )
 {
 	// 빈 공간에 추가함.
-	for( nIdx = 0; nIdx < PERSONAL_SHOP_SLOT_MAX; ++nIdx )
+	for( iRow = 0; iRow < PERSONAL_SHOP_SLOT_ROW; ++iRow )
 	{
-		if (m_pIconsShopItem[nIdx]->IsEmpty() == true)
-			return;
+		for( iCol = 0; iCol < PERSONAL_SHOP_SLOT_COL; ++iCol )
+		{
+			if( m_abtnShopItems[iRow][iCol].IsEmpty())
+				return;
+		}
 	}
 }
 
@@ -3744,109 +4776,15 @@ void CUIPersonalShop::FindEmptySlot( int& nIdx )
 //-----------------------------------------------------------------------------
 BOOL CUIPersonalShop::EndBuyShop(int nChaID)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if (pUIManager->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible())
+	if (_pUIMgr->IsCSFlagOn( CSF_PERSONALSHOP ) || IsVisible())
 	{ //구매자 상태이고
 		if (m_nSelectedChaID == nChaID)
 		{ // 구매하려는 판매 상점이 닫히면 구매창을 닫자
 			ResetShop();
-			pUIManager->SetCSFlagOff( CSF_PERSONALSHOP );
+			_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
 			return TRUE;
 		}
 	}
 
 	return FALSE;
-}
-
-void CUIPersonalShop::AddItemCallback()
-{
-	SQUAD	llCount = UIMGR()->GetMsgBoxNumOnly()->GetData();
-
-	if( m_bBuyShop )
-	{
-		if( llCount > 0 )
-		{
-			ShopToTrade(llCount, llTempPrice, nTempSlot);
-		}
-	}
-	else
-	{
-		if (llCount > 0 && llCount <= m_pTempItems->Item_Sum)
-		{
-			ShopToTrade(llCount, llTempPrice, nTempSlot);
-		}
-	}
-}
-
-void CUIPersonalShop::DelItemCallback()
-{
-	SQUAD	llCount = UIMGR()->GetMsgBoxNumOnly()->GetData();
-
-	if (llCount > 0 && llCount <= m_pTempItems->Item_Sum)
-		TradeToShop( llCount, nTempSlot );
-}
-
-void CUIPersonalShop::clearContainer()
-{
-	int		i;
-	
-	for (i = 0; i < m_vectorSellItemList.size(); ++i)
-		SAFE_DELETE(m_vectorSellItemList[i]);
-
-	m_vectorSellItemList.clear();
-
-	for (i = 0; i < m_vectorSellPackageList.size(); ++i)
-		SAFE_DELETE(m_vectorSellPackageList[i]);
-
-	m_vectorSellPackageList.clear();
-}
-
-bool CUIPersonalShop::IsAvailable4Sale( CItems* pItem )
-{
-	if (pItem == NULL)
-		return false;
-
-	CItemData* pItemData = pItem->ItemData;
-
-	if (pItemData == NULL)
-		return false;
-
-	bool bSubJob = false;
-
-#ifdef ADD_SUBJOB
-	bSubJob = true;
-#endif
-
-	if (pItem->IsFlag(FLAG_ITEM_BELONG))
-		return false;
-
-	if (pItemData->GetType() == CItemData::ITEM_ACCESSORY &&
-		pItemData->GetSubType() == CItemData::ACCESSORY_RELIC)
-		return false;
-
-	if (bSubJob == true && pItemData->IsFlag( ITEM_FLAG_SELLER ))
-	{
-		if (!UIMGR()->CheckSellerItem(UI_PERSONALSHOP, pItemData->GetFlag()))
-			return false;
-	}
-	else
-	{
-		bool bMonsterMercenaryItem = false; 
-
-		if (pItemData->GetType() == CItemData::ITEM_ETC &&
-			pItemData->GetSubType() == CItemData::ITEM_ETC_MONSTER_MERCENARY_CARD)
-		{
-			bMonsterMercenaryItem = true;
-		}
-
-		if (!pItemData->IsFlag(ITEM_FLAG_EXCHANGE)||
-			pItem->IsFlag(FLAG_ITEM_LENT) ||
-			pItem->IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED) ||
-			pItem->Item_Wearing > 0 || 
-			( bMonsterMercenaryItem && pItem->Item_Used > 0 ))
-			return false;
-	}
-
-	return true;
 }

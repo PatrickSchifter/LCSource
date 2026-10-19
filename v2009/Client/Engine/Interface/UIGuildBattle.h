@@ -6,14 +6,14 @@
 #endif
 
 // Include Files
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <algorithm>
-// #include <map>
-// #include <Engine/Effect/CEffectGroupManager.h>
-// #include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <algorithm>
+#include <map>
+#include <Engine/Effect/CEffectGroupManager.h>
+#include <Engine/Effect/CEffectGroup.h>
 
 // Define size of Guild Battle
 #define	GB_WIDTH						311		// size of Guild Battle 신청창의 너비

@@ -43,7 +43,6 @@ public:
 	FLOAT fs_fVelocity;       // max. velocity that force can give (m/s) (along the direction)
 };
 
-typedef ULONG64		ZONEFLAGS;
 
 #define DECL_DLL ENGINE_API
 #include <Engine/Classes/BaseEvents.h>
@@ -121,22 +120,9 @@ typedef ULONG64		ZONEFLAGS;
 #define ENF_EX1_CURRENT_PET		(1L<<7)		// 내 애완동물인 경우...
 #define ENF_EX1_CURRENT_SLAVE	(1L<<8)		// 내 소환수의 경우...
 #define ENF_EX1_CURRENT_WILDPET	(1L<<9)		// 공혁형 팻인경
-#define ENF_EX1_CLICK_OBJECT	(1L<<10)	// 클릭가능한 오브젝트인 경우(레이드 시스템용)
-#define ENF_EX1_MONSTER_MERCENARY	(1L<<11)	// [2010/10/20 : Sora] 몬스터 용병 카드
-#define ENF_EX1_TOTEM			(1L<<12)	// Totem
-#define ENF_EX1_TRAP			(1L<<13)	// Trap
-#define ENF_EX1_SUICIDE			(1L<<14)	// 자폭 기생충
-#define ENF_EX1_TOTEM_ITEM		(1L<<15)	// Totem
+
 // selections of entities
 typedef CSelection<CEntity, ENF_SELECTED> CEntitySelection;
-
-enum EntityComponentType {  // DO NOT RENUMBER!
-	ECT_TEXTURE   = 1,    // texture data
-	ECT_MODEL     = 2,    // model data
-	ECT_CLASS     = 3,    // entity class
-	ECT_SOUND     = 4,    // sound data
-	ECT_SKAMODEL  = 5,    // ska model
-};
 
 /*
 *  General structure of an entity instance.
@@ -161,19 +147,10 @@ public:
 		RT_SKAMODEL    = 9,     // render as ska model
 		RT_SKAEDITORMODEL = 10, // render as ska model, but only in editor
 		RT_TERRAIN        = 11, // render as terrain
+
+
+
 	};
-
-	enum NickNameEffectType {
- 		NICKNAME_ATTACK_EFFECT = 0,
- 		NICKNAME_DAMAGE_EFFECT = 1,
-		NICKNAME_ATTACH_EFFECT = 2,
-	 };
-
-	enum EntityUseType {
-		EU_NORMAL	= 0,
-		EU_DUMMY	= 1,		// Only using modelinstance
-	};
-
 	/* Entity physics flags. */
 #define EPF_ORIENTEDBYGRAVITY     (1UL<<0) // set if gravity influences its orientation
 #define EPF_TRANSLATEDBYGRAVITY   (1UL<<1) // set if gravity can move it
@@ -227,7 +204,6 @@ public:
 #define ESOUND_MAX_DATA_SIZE 32
 	
 public:
-	enum EntityUseType en_EntityUseType;	// how is this used type
 	enum RenderType en_RenderType;  // how is it rendered
 	ULONG en_ulPhysicsFlags;        // ways of interacting with environment
 	ULONG en_ulCollisionFlags;      // which entities to collide with
@@ -267,7 +243,7 @@ public:
 		class CCharacterTarget	*en_pCharacterTarget;
 		class CPetTarget		*en_pPetTarget;
 		class CSlaveTarget		*en_pSlaveTarget;
-		class CWildPetTarget	*en_pWildPetTarget;
+		class CWildPetInfo		*en_pWildPetInfo;
 	};
 	
 	CTString en_strItemName;
@@ -437,7 +413,7 @@ public:
 	/* Check if given animation is currently playing */
 	BOOL IsAnimationPlaying(INDEX iAnimID, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Stretch model instance */
-	void StretchModel(const FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
+	void StretchModel(FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Stretch model instance without attachments */
 	void StretchSingleModel(FLOAT3D &vStretch, INDEX iModelInstanceID = ESKA_MASTER_MODEL_INSTANCE);
 	/* Offset all animations in anim queue */
@@ -499,8 +475,6 @@ public:
 	void PrecacheSound(SLONG slID);
 	void PrecacheClass(SLONG slID, INDEX iUser = -1);
 	void PrecacheSkaModel(SLONG slID);
-
-	void ReleaseChche(EntityComponentType eType, SLONG slID);
 	
 	/* Create a new entity of given class in this world. */
 	CEntity *CreateEntity(const CPlacement3D &plPlacement, SLONG idModelComponent,ULONG ulEntityID = WLD_AUTO_ENTITY_ID,BOOL bNetwork = TRUE);
@@ -632,7 +606,7 @@ public:
 	inline CCharacterTarget *GetCharacterTarget(void) { return en_pCharacterTarget; }
 	inline CPetTarget *GetPetTarget(void) { return en_pPetTarget; }
 	inline CSlaveTarget *GetSlaveTarget(void) { return en_pSlaveTarget; }
-	inline CWildPetTarget *GetWildPetTargetInfo(void) { return en_pWildPetTarget; }
+	inline CWildPetInfo *GetWildPetTargetInfo(void) { return en_pWildPetInfo; }
 	void SetParent(CEntity *penNewParent);
 	
 	// find first child of given class
@@ -649,8 +623,6 @@ public:
 	virtual BOOL	IsSlave(void) const;
 	virtual BOOL	IsWildPet(void) const;
 	virtual SBYTE	GetNetworkType()	const;
-	// is available pet riding.
-	virtual BOOL	IsAvailableRide(void);
 
 	/* Return max Game Players */
 	static INDEX GetMaxPlayers(void);
@@ -786,29 +758,20 @@ public:
 	/* Fill in entity statistics - for AI purposes only */
 	virtual BOOL FillEntityStatistics(struct EntityStats *pes);
 	
-	/* 레이드 오브젝트 선언*/
-	virtual BOOL GetRaidObject(void) const;
-	virtual INDEX GetRaidEvent(void) const;
-	virtual BOOL GetAlBackground(void) const; // ska 모델 랜더링 정렬용
-	
 	/* Model change notify */
 	void ModelChangeNotify(void);
 	/* Terrain change notify */ 
 	void TerrainChangeNotify(void);
 	
 	// FIXME : 왜 비슷한 코드가 이렇게 많이 있는거지? ㅡ.ㅡ
-	bool SetTargetInfo(float fMaxHealth, float fHealth, BOOL bMe, int level, int Pk = -1,int PkState = 0,int PkLegit=0,int dbIdx=-1);
-	void SetTargetSyndicateInfo(int nType, int nGrade);
+	void SetTargetInfo(float fMaxHealth, float fHealth, BOOL bMe, int level, int Pk = -1,int PkState = 0,int PkLegit=0,int dbIdx=-1);
 	void UpdateTargetInfo( float fMaxHealth, float fHealth ,int Pk = -1, int PkState = 0,int PkLegit=0);
 	void DelTargetInfo();
 	// WSS_GUILDMASTER 070517 ------------------>><<
 	// 수정 -> 길드관련 내용 ct를 이용해 처리 
-	// player.es의 관련 함수 호출 부분( charater 호출 부분 수정함)	nType == DBIndex
-	void SetTargetInfoReal( float fMaxHealth, float fHealth, int level, int Pk = -1, int PkState = 0, SQUAD llCount = 0,int PkLegit=0,CCharacterTarget* ct =NULL, int nType = -1);
-	void AddSkaModel(const CTString &fnmModel);
-	void DelSkaModel(const CTString &fnmModel);
-	bool HasSkaModel(const CTString &fnmModel);
-	virtual void SetNickNameDamageEffect(INDEX iNickIndex, NickNameEffectType iType);
+	// player.es의 관련 함수 호출 부분( charater 호출 부분 수정함)
+	void SetTargetInfoReal( float fMaxHealth, float fHealth, int level, int Pk = -1, int PkState = 0, SQUAD llCount = 0,int PkLegit=0,CCharacterTarget* ct =NULL);
+
 };
 
 // all standard smart pointer functions are here as inlines

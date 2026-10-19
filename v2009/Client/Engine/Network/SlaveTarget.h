@@ -2,7 +2,7 @@
 #define __SLAVETARGET_H__
 
 
-#include <Engine/Object/ObjectBase.h>
+//#include <Engine/Network/NetworkMessage.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Interface/UIBuff.h>
 #include <Engine/Entities/StatusEffect.h>
@@ -27,16 +27,21 @@ public:
 };
 
 // FIXME : 많은 정리 필요...ㅡ.ㅡ
-class ENGINE_API CSlaveTarget : public ObjectBase
+class ENGINE_API CSlaveTarget 
 {
 public:
+	INDEX			slave_Index;
+	INDEX			slave_iType;
+	INDEX			slave_iClientIndex;
+	CEntity			*slave_pEntity;
+	CTString		slave_Name;
 	SBYTE			slave_BuffCount;
 	BuffInfo		slave_Buff[20];
 	CTString		slave_OwnerName;
 	SBYTE			slave_yLayer;	
 	CStatusEffect	slave_statusEffect;
 	CEffectGroup	*slave_pNormalEffect;
-	UWORD			slave_sbAttributePos;
+	UBYTE			slave_sbAttributePos;
 	INDEX			slave_OwnerIndex;	
 	
 public:
@@ -48,15 +53,17 @@ public:
 	CSlaveTarget(const CSlaveTarget &other);
 	CSlaveTarget &operator=(const CSlaveTarget &other);
 	
+	void	Init(void);
 	void	SetData( INDEX index, CTString& strName, CTString& strOwnerName, INDEX iOwnerIndex, INDEX iSlaveType, CEntity *pEntity, SBYTE sbyLayer );	
 	void	SetClientSlaveId( INDEX index );
+	void	SetyLayer( SBYTE sbyLayer ) { slave_yLayer = sbyLayer; }	
 	void	AddBuff( BuffInfo &rBuffInfo )
 	{
 		slave_Buff[slave_BuffCount++] = rBuffInfo;
 	}
 	void	RemoveBuff( SLONG slItemIndex, SLONG slSkillIndex );
 
-	void	ChangeStatus(CTagManager* pTM, SQUAD status)
+	void	ChangeStatus(CTagManager* pTM, SLONG status)
 	{
 		if(slave_statusEffect.IsStatusChanged(status))
 			slave_statusEffect.ChangeStatus(pTM, status, CStatusEffect::R_ENEMY);

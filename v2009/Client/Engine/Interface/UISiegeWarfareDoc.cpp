@@ -1,20 +1,8 @@
 #include "StdH.h"
-
-
-#include <map>
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISiegeWarfareDoc.h>
-#include <Engine/Ska/Render.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Interface/UISignBoard.h>
-#include <Engine/Interface/UIAutoHelp.h>
-#include <Engine/Interface/UISiegeWarfare.h>
-#include <Engine/Interface/UISiegeWarfareNew.h>
-#include <Engine/Interface/UIMap.h>
-#include <Engine/Interface/UISelectResource.h>
-#include <Engine/Interface/UIGuild.h>
-#include <Engine/Object/ActorMgr.h>
-
 
 #define MUSIC_CASTLE_BATTLE		CTFILENAME("Data\\Sounds\\Game\\BGM\\GB_battletheme.ogg")
 #define MUSIC_MERAC_FIELD		CTFILENAME("Data\\Sounds\\Game\\BGM\\GB_meracpease.ogg")
@@ -109,7 +97,7 @@ void CUISiegeWarfareDoc::GetTime( int nGuildIndex, CTString strGuildName, int nM
 	m_nHour				= nHour;
 	m_nMin				= nMin;
 	
-	CUIManager::getSingleton()->GetSiegeWarfare()->OpenSWInfo();
+	_pUIMgr->GetSiegeWarfare()->OpenSWInfo();
 }
 
 
@@ -120,8 +108,6 @@ void CUISiegeWarfareDoc::GetTime( int nGuildIndex, CTString strGuildName, int nM
 //------------------------------------------------------------------------------
 void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )	
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if(nZoneIndex == 7)
 	{
 		// FIXME : 문 닫아주기.	
@@ -143,22 +129,18 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 			
 		CTString strMessage,  strMessage2;
 		
-		strMessage.PrintF(_S(2012, "[%s]지역 [%s]공성이 시작됩니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ));	
-		strMessage2.PrintF(_S(2013,  "[%s]지역 내에 있는 공성 참여 유저들은 공성 시작 지점으로 이동합니다."), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
-
-		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-		pUIManager->GetSiegeWarfare()->SetNotice( strMessage, strMessage2 );
-		pUIManager->GetSiegeWarfare()->OpenSelectBattle();
+		strMessage.PrintF( _S( 2012, "[%s]지역 [%s]공성이 시작됩니다." ), ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ) );	
+		strMessage2.PrintF(_S( 2013,  "[%s]지역 내에 있는 공성 참여 유저들은 공성 시작 지점으로 이동합니다." ) );	
+		
+		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
+		
+		_pUIMgr->GetSiegeWarfare()->OpenSelectBattle();
 		
 		RestartEffect(nZoneIndex);
 		RestartGuildMasterEffect();
 		SetLeftTime( nRemainSec );
 
 		m_tmLeftTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-
-		//SetDealy();	
 	}
 	else if( nZoneIndex == 4)
 	{
@@ -167,13 +149,9 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, FALSE );	
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, FALSE );
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, FALSE );
 		CTString strMessage;
-		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
-		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-		pUIManager->GetSiegeWarfare()->SetNotice( strMessage );
+		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), ZoneInfo().GetZoneName( nZoneIndex ));			
+		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 
 		m_nZoneIndex = nZoneIndex;
 		RestartEffect(nZoneIndex);
@@ -187,8 +165,6 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 //------------------------------------------------------------------------------
 void CUISiegeWarfareDoc::StartCastle( int nZoneIndex, int nRemainSec, int GuildIndex1, CTString GuildName1, int GuildIndex2, CTString GuildName2, int GuildIndex3, CTString GuildName3 )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if(nZoneIndex == 7)
 	{	
 		// 공성이 시작되면 모든 문을 닫아 둔다.
@@ -221,18 +197,16 @@ void CUISiegeWarfareDoc::StartCastle( int nZoneIndex, int nRemainSec, int GuildI
 					strMessage1 += ", ";
 				}
 				strMessage1 += m_gdGuild[i].m_strGuildName;
-				strMessage1 += CTString(" ");
 				strMessage1 += _S(75 , "길드" );	
 			}
 		}
 		
 		strMessage1 += _S( 2014, "가 공성측 길드로 선정 되었습니다." );	
 		strMessage2.PrintF(_S( 2015,  "성주의 권좌가 얼마 남지 않았습니다. 진격하십시오." ) );		
-		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-		pUIManager->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );
 		
-		pUIManager->GetSiegeWarfare()->OpenBattle();
+		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );
+		
+		_pUIMgr->GetSiegeWarfare()->OpenBattle();
 		
 		RestartEffect(nZoneIndex);
 		RestartGuildMasterEffect();
@@ -248,14 +222,11 @@ void CUISiegeWarfareDoc::StartCastle( int nZoneIndex, int nRemainSec, int GuildI
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, FALSE );
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, FALSE );
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, FALSE );
 
 		CTString strMessage =_S( 3684,"공성이 시작되었습니다." );		
-		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-		CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );
-		pUIManager->GetSiegeWarfareNew()->SetWarState(TRUE);
+		_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
+
+		_pUIMgr->GetSiegeWarfareNew()->SetWarState(TRUE);
 
 		m_nZoneIndex = nZoneIndex;
 		RestartEffect(nZoneIndex);
@@ -302,10 +273,11 @@ void CUISiegeWarfareDoc::RemainFiledTime( int nZoneIndex, int nRemainSec )
 	SetLeftTime( nRemainSec );
 	
 	CTString strMessage;
-	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (m_lLeftTime) / 60);	
-	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );	
+	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), ZoneInfo().GetZoneName( nZoneIndex ), (m_lLeftTime) / 60);	
+	
+	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
+
+	
 }
 
 //------------------------------------------------------------------------------
@@ -319,10 +291,9 @@ void CUISiegeWarfareDoc::TimeConfirm( int nZoneIndex, int nMonth, int nDay, int 
 	
 	CTString strMessage;
 	strMessage.PrintF( _S( 2017, "[%s]지역 [%s]공성이 %d월 %d일 %d시로 예정되었습니다." ),	
-		(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), nMonth, nDay, nHour );	
-	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );
+		ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMonth, nDay, nHour );	
+	
+	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
 }
 
 //------------------------------------------------------------------------------
@@ -336,10 +307,10 @@ void CUISiegeWarfareDoc::RemainStartTime( int nZoneIndex, int nMin )
 	
 	CTString strMessage;
 	
-	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), nMin );	
-	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );	
+	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMin );	
+	
+	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage );
+	
 }
 
 //------------------------------------------------------------------------------
@@ -364,21 +335,17 @@ void CUISiegeWarfareDoc::CastleState( int nZoneIndex, int nState, int nGateState
 	
 	m_nGuildPoint	= nMyPoint;
 	m_gdDefGuild.m_nPoint = nDefensPoint;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	
+	
 	if( nState == WCSF_WAR_FIELD )
 	{
-		pUIManager->GetSiegeWarfare()->OpenSelectBattle();
+		_pUIMgr->GetSiegeWarfare()->OpenSelectBattle();
 	}
 	else if( nState == WCSF_WAR_CASTLE )
 	{
-		pUIManager->GetSiegeWarfare()->OpenBattle();
+		_pUIMgr->GetSiegeWarfare()->OpenBattle();
 	}
-	else
-	{
-		return;
-	}
+	else return;
 	
 	SetLeftTime( nRemainSec );
 	RestartEffect(nZoneIndex);
@@ -399,10 +366,15 @@ void CUISiegeWarfareDoc::CastleState( int nZoneIndex, int nState, int nGateState
 	
 	m_nZoneIndex	= nZoneIndex;
 		
-	if( nState == WCSF_WAR_CASTLE )
+	if( nState == WCSF_WAR_FIELD )
+	{
+//		_pUIMgr->GetSiegeWarfare()->OpenSelectBattle();
+	}
+	else if( nState == WCSF_WAR_CASTLE )
 	{
 		// 공성중 세팅
-		CUIManager::getSingleton()->GetSiegeWarfareNew()->SetWarState(TRUE);
+		_pUIMgr->GetSiegeWarfareNew()->SetWarState(TRUE);
+//		_pUIMgr->GetSiegeWarfare()->OpenBattle();
 	}
 	else return;
 	
@@ -418,9 +390,6 @@ void CUISiegeWarfareDoc::CastleState( int nZoneIndex, int nState, int nGateState
 //------------------------------------------------------------------------------
 void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuildIndex, CTString strOwnerGuildName, int nOwnerIndex, CTString strOwnerName, int nNextMonth, int nNextDay, int nNextWeek, int nNextHour )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	INDEX	i;
 	if( nZoneIndex == 7 )
 	{
 		SetUIState( SWS_END );	
@@ -444,7 +413,12 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		_pNetwork->MyCharacterInfo.sbJoinFlagMerac = WCJF_NONE;
 		
 		// Start My Guild, Enemy Guild Effect Start
-		ACTORMGR()->SetJoinFlagMerac(WCJF_NONE);
+		INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
+		
+		for( INDEX i = 0; i < cnt; ++i )
+		{
+			_pNetwork->ga_srvServer.srv_actCha[i].cha_sbJoinFlagMerac = WCJF_NONE;
+		}
 	}
 	else if( nZoneIndex == 4)
 	{		
@@ -458,8 +432,12 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		//_pNetwork->MyCharacterInfo.sbJoinFlagDratan = WCJF_NONE;
 		
 		// Start My Guild, Enemy Guild Effect Start
-		ACTORMGR()->SetJoinFlagMerac(WCJF_NONE);
-
+		INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
+		
+		for( INDEX i = 0; i < cnt; ++i )
+		{
+			_pNetwork->ga_srvServer.srv_actCha[i].cha_sbJoinFlagMerac = WCJF_NONE;
+		}
 		// -------------------------------------------------------------------<<
 
 		// WSS_DRATAN_SIEGEWARFARE 0070725
@@ -467,15 +445,13 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, TRUE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, TRUE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, TRUE );	
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, TRUE );	
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, TRUE );	
 
-		pUIManager->GetSiegeWarfareNew()->SetWarState(FALSE);
+		_pUIMgr->GetSiegeWarfareNew()->SetWarState(FALSE);
 
 		// WSS_DRATAN_SEIGEWARFARE 2007/08/14 -------------------------------->>
 		// 390 ~ 399 공성 부활진지 초기화
 		CTString tStr;
-		for( i = 0; i < 10; i++)
+		for( i=0;i<10;i++)
 		{	
 			INDEX tNpcIdx = 390+i;
 			_pNetwork->MyCharacterInfo.mQuarter[tNpcIdx] = -1;
@@ -483,32 +459,32 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 
 			// Hard Cording ^^;; 어쩔수 없이....
 			// 몹 이름 변경
-			CMobData* MD = CMobData::getData(tNpcIdx);
-			if(MD->GetMobIndex()>0)
+			CMobData& MD = _pNetwork->GetMobData(tNpcIdx);
+			if(MD.GetMobIndex()>0)
 			{
 				tStr.PrintF(_S( 3685,"공성 부활진지%d"),tNpcIdx-389);
-				MD->SetName(tStr);
+				MD.SetMobName(tStr);
 			}		
 		}	
 		// -------------------------------------------------------------------<<
 
-		if( pUIManager->GetSiegeWarfareNew()->IsEnabled()&&
-			pUIManager->GetSiegeWarfareNew()->IsVisible() )
+		if( _pUIMgr->GetSiegeWarfareNew()->IsEnabled()&&
+			_pUIMgr->GetSiegeWarfareNew()->IsVisible() )
 		{
-			pUIManager->RearrangeOrder(UI_SIEGE_WARFARE_NEW,FALSE);
+			_pUIMgr->RearrangeOrder(UI_SIEGE_WARFARE_NEW,FALSE);
 		}
 		
 		// WSS_DRATAN_SIEGEWARFARE 2007/10/17
 		// 교감중 공성 종료 처리
 		if( _pNetwork->MyCharacterInfo.bConsensus )
 		{
-			pUIManager->GetSiegeWarfareNew()->StopConsensus(_pNetwork->MyCharacterInfo.index);
+			_pUIMgr->GetSiegeWarfareNew()->StopConsensus(_pNetwork->MyCharacterInfo.index);
 		}			
 		StopConsensusEffect(0,TRUE);
 		
 		// WSS_DRATAN_SIEGEWARFARE 2007/10/18
 		// 상태 초기화
-		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->PlayerInit(false);
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->DeathInit();
 
 	}
 
@@ -518,43 +494,42 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 	CTString strMessage2;
 	
 	// 공성 끝났면 지도는 초기화 
-	pUIManager->GetMap()->SetCurrentWorldMap( _pNetwork->MyCharacterInfo.zoneNo, 0 );
-	pUIManager->GetMap()->ReSetData();
+	_pUIMgr->GetMap()->SetCurrentWorldMap( _pNetwork->MyCharacterInfo.zoneNo, 0 );
+	_pUIMgr->GetMap()->ReSetData();
 
 	if( nWinDefense )
 	{
 		if( strOwnerGuildName.Length() <= 0 )
 		{
 			strMessage1.PrintF( _S( 2019, "[%s]지역 [%s]공성에 실패 하였습니다." ), 
-			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ) );	
+			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ) );	
 		}
 		else
 		{
 			strMessage1.PrintF( _S(2020 , "[%s]지역 [%s]공성이 종료되었습니다. [%s]길드가 수성에 성공하였습니다." ),
-			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), (const char*)strOwnerGuildName );		
+			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName );		
 		}
 		
 	}
 	else
 	{
 		strMessage1.PrintF( _S(2021 , "[%s]지역 [%s]공성이 종료되었습니다. 새로운 성주로 [%s]길드의 [%s]길드장이 선출 되었습니다." ), 
-			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), (const char*)strOwnerGuildName, (const char*)strOwnerName );	
+			ZoneInfo().GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName, strOwnerName );	
 	}
 	
 	strMessage2.PrintF(_S( 2022, "다음 공성전 신청은 %d월 %d일 %s요일 오후 %d시부터 신청이 가능합니다." ), 
-		nNextMonth, nNextDay, (const char*)pUIManager->GetWeekToString( nNextWeek ), nNextHour );	
-	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
-	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
-	pUIManager->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );
+		nNextMonth, nNextDay, _pUIMgr->GetWeekToString( nNextWeek ), nNextHour );	
+	
+	_pUIMgr->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );
 	
 	// Date : 2005-11-18(오후 4:27:13), By Lee Ki-hwan
 	// 메세지 박스 표시 추가 
-	pUIManager->CloseMessageBox( MSGCMD_NULL );
+	_pUIMgr->CloseMessageBox( MSGCMD_NULL );
 	
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S(2341, "공성 종료" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
 	MsgBoxInfo.AddString( strMessage1 );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 		
 }
 
@@ -567,7 +542,7 @@ void CUISiegeWarfareDoc::SetTimeRep( int nMonth, int nDay, int nHour, int nMin )
 {
 	CTString strMessage;
 	strMessage.PrintF(_S(2147 ,  "공성 시간이 %d월 %d일 %d시로 설정되었습니다." ), nMonth, nDay, nHour );  
-	CUIManager::getSingleton()->GetSiegeWarfare()->Message( MSGCMD_SIEGE_WARFARE_INFO, strMessage, UMBS_OK  );
+	_pUIMgr->GetSiegeWarfare()->Message( MSGCMD_SIEGE_WARFARE_INFO, strMessage, UMBS_OK  );
 	
 }
 
@@ -633,7 +608,7 @@ void CUISiegeWarfareDoc::InvalidCommand( int nReqMsgType )
 			"UnKnow Message"
 	};
 	
-	CUIManager::getSingleton()->GetSiegeWarfare()->ErrorMessage( strReqMsgType[nReqMsg-1] );
+	_pUIMgr->GetSiegeWarfare()->ErrorMessage( strReqMsgType[nReqMsg-1] );
 	
 }
 
@@ -644,125 +619,89 @@ void CUISiegeWarfareDoc::InvalidCommand( int nReqMsgType )
 //------------------------------------------------------------------------------
 void CUISiegeWarfareDoc::SetGateState( int nOldGatesate, int nGateState )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// 0, 1 왼쪽문
-	if (g_slZone == 7) //  메라크
-	{
-		if( (nGateState & ( 1 << 0 )) && (nGateState & ( 1 << 1 )))
-		{		
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 0, TRUE );
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 0, FALSE );
-		}
-		
-		// 2, 3 오른쪽문
-		if( (nGateState & ( 1 << 2 )) && (nGateState & ( 1 << 3 )))
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 1, TRUE );
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 1, FALSE );
-		}
-		
-		// 4, 5 중앙문.
-		if( (nGateState & ( 1 << 4 )) && (nGateState & ( 1 << 5 )))
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 2, TRUE );
-			
-			// 내 성문 열림
-			if (nOldGatesate != nGateState)
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 2040, "공성측이 내성문까지 진격하였습니다. 수성측은 권좌를 보호하십시오." ) ); 
-			}
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 2, FALSE );
-		}
+	if( (nGateState & ( 1 << 0 )) && (nGateState & ( 1 << 1 )))
+	{		
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 0, TRUE );
 	}
-
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 0, FALSE );
+	}
+	
+	// 2, 3 오른쪽문
+	if( (nGateState & ( 1 << 2 )) && (nGateState & ( 1 << 3 )))
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 1, TRUE );
+	}
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 1, FALSE );
+	}
+	
+	// 4, 5 중앙문.
+	if( (nGateState & ( 1 << 4 )) && (nGateState & ( 1 << 5 )))
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 2, TRUE );
+		
+		// 내 성문 열림
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 2040, "공성측이 내성문까지 진격하였습니다. 수성측은 권좌를 보호하십시오." ) ); 
+		
+	}
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 2, FALSE );
+	}
 // WSS_DRATAN_SIEGEWARFARE 070723
-	// 드라탄 외문 오른편
-	if (g_slZone == 4)	// 드라탄
+#ifdef DRATAN_SIEGEWARFARE
+	// 드라탄 외문 1
+	if( (nGateState & ( 1 << 6 )) )
 	{
-		if( (nGateState & ( 1 << 6 )) )
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, TRUE );
+		// 외 성문 열림
+		if(_pUIMgr->GetSelectResource()->GetWndState()) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
 		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, TRUE );
-			// 외 성문 열림
-			if(pUIManager->GetSelectResource()->GetWndState() && nOldGatesate != nGateState) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 3811,"외성문이 파괴되었습니다." ) ); 
-			}
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, FALSE );
-		}
-		// 드라탄 내문 2
-		if( (nGateState & ( 1 << 7 )) )
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, TRUE );
-			
-			// 내 성문 열림
-			if(pUIManager->GetSelectResource()->GetWndState() && nOldGatesate != nGateState) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(  3686,"공성측이 내성문까지 진격하였습니다. 수성측은 크리스탈을 보호하십시오." ) ); 
-			}
-			
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, FALSE );
-		}
-		// 드라탄 내문 3
-		if( (nGateState & ( 1 << 8 )) )
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, TRUE );
-			
-			// 내 성문 열림
-			if(pUIManager->GetSelectResource()->GetWndState() && nOldGatesate != nGateState) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S(  3686,"공성측이 내성문까지 진격하였습니다. 수성측은 크리스탈을 보호하십시오." ) ); 
-			}
-			
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, FALSE );
-		}
-		// 드라탄 외성문 왼편
-		if( (nGateState & ( 1 << 9 )) )
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, TRUE );
-			// 외 성문 열림
-			if(pUIManager->GetSelectResource()->GetWndState() && nOldGatesate != nGateState) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 3811,"외성문이 파괴되었습니다." ) ); 
-			}
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, FALSE );
-		}
-		// 드라탄 외성문 가운데
-		if( (nGateState & ( 1 << 10 )) )
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, TRUE );
-			// 외 성문 열림
-			if(pUIManager->GetSelectResource()->GetWndState() && nOldGatesate != nGateState) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
-			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 3811,"외성문이 파괴되었습니다." ) ); 
-			}
-		}
-		else
-		{
-			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, FALSE );
+			_pUIMgr->GetChatting()->AddSysMessage( _S( 3811,"외성문이 파괴되었습니다." ) ); 
 		}
 	}
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 3, FALSE );
+	}
+	// 드라탄 내문 2
+	if( (nGateState & ( 1 << 7 )) )
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, TRUE );
+		
+		// 내 성문 열림
+		if(_pUIMgr->GetSelectResource()->GetWndState()) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
+		{
+			_pUIMgr->GetChatting()->AddSysMessage( _S(  3686,"공성측이 내성문까지 진격하였습니다. 수성측은 크리스탈을 보호하십시오." ) ); 
+		}
+		
+	}
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 4, FALSE );
+	}
+	// 드라탄 내문 3
+	if( (nGateState & ( 1 << 8 )) )
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, TRUE );
+		
+		// 내 성문 열림
+		if(_pUIMgr->GetSelectResource()->GetWndState()) // WSS_DRATAN_SIEGEWARFARE 071008 공성중이면...
+		{
+			_pUIMgr->GetChatting()->AddSysMessage( _S(  3686,"공성측이 내성문까지 진격하였습니다. 수성측은 크리스탈을 보호하십시오." ) ); 
+		}
+		
+	}
+	else
+	{
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 5, FALSE );
+	}
+#endif
+
 }
 
 //------------------------------------------------------------------------------
@@ -813,9 +752,7 @@ void CUISiegeWarfareDoc::ErrorProc( int nErrorCode, UBYTE ubMsgType )
 			_S( 2057, "공성 가능 시간이 아닙니다." ),
 			_S( 1688, "조건이 맞지 않습니다."),		
 	};
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	
 	// 성공 처리
 	if( nErrorCode == MSG_GUILD_ERROR_OK && ubMsgType != -1 )
 	{
@@ -846,11 +783,11 @@ void CUISiegeWarfareDoc::ErrorProc( int nErrorCode, UBYTE ubMsgType )
 		default : return;
 		}
 		
-		pUIManager->GetSiegeWarfare()->Message( MSGCMD_SIEGE_WARFARE_INFO, strMessage, UMBS_OK );
+		_pUIMgr->GetSiegeWarfare()->Message( MSGCMD_SIEGE_WARFARE_INFO, strMessage, UMBS_OK );
 	}
 	else 
 	{
-		pUIManager->GetSiegeWarfare()->ErrorMessage( strErrorMessage[nErrorCode] );
+		_pUIMgr->GetSiegeWarfare()->ErrorMessage( strErrorMessage[nErrorCode] );
 	}
 }
 //------------------------------------------------------------------------------
@@ -917,7 +854,7 @@ void CUISiegeWarfareDoc::StartEffect( SLONG slCharIndex, CEntity* penEntity, SBY
 	}
 	// WSS_DRATAN_SEIGEWARFARE 2007/08/30 --------------------------->>
 	// 드라탄
-	else if( CUIManager::getSingleton()->GetSiegeWarfareNew()->GetWarState())
+	else if( _pUIMgr->GetSiegeWarfareNew()->GetWarState())
 	{
 		if( m_mapEG.find( slCharIndex ) != m_mapEG.end() ) return; // 이미 존재 하는가?
 		if( sbJoinFlag == WCJF_NONE || sbJoinFlag <= -1 ) return;
@@ -1005,20 +942,35 @@ void CUISiegeWarfareDoc::RestartEffect(int nZoneIndex)
 {
 	StopEffect( -1, TRUE );
 
-	bool bJoinFlag = false;
+	BOOL bJoinFlag = FALSE;
 	SBYTE sbJoinFlag = _pNetwork->MyCharacterInfo.sbJoinFlagMerac;
 
 	if (nZoneIndex == 4)
 	{
-		bJoinFlag = true;
+		bJoinFlag = TRUE;
 		sbJoinFlag = _pNetwork->MyCharacterInfo.sbJoinFlagDratan;
 	}
 
 	// Start Effect My Character
 	StartEffect ( _pNetwork->MyCharacterInfo.index, CEntity::GetPlayerEntity(0), sbJoinFlag, _pNetwork->MyCharacterInfo.lGuildIndex );
-	
+
 	// Start My Guild, Enemy Guild Effect Start
-	ACTORMGR()->RefreshSiegeWarfareEffect(bJoinFlag);
+	INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
+	
+	for( INDEX i = 0; i < cnt; ++i )
+	{
+		CCharacterTarget	&ct = _pNetwork->ga_srvServer.srv_actCha[i];
+		
+		if( ct.cha_pEntity != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance->GetName() != "")
+		{
+			if (bJoinFlag)
+				StartEffect( ct.cha_Index, ct.cha_pEntity, ct.cha_sbJoinFlagDratan, ct.cha_lGuildIndex );
+			else
+				StartEffect( ct.cha_Index, ct.cha_pEntity, ct.cha_sbJoinFlagMerac, ct.cha_lGuildIndex );
+		}
+	}
 }
 
 
@@ -1101,7 +1053,20 @@ void CUISiegeWarfareDoc::RestartGuildMasterEffect()
 							_pNetwork->MyCharacterInfo.lGuildPosition );
 		
 	// Start My Guild, Enemy Guild Effect Start
-	ACTORMGR()->RefreshGuildMasterEffect();
+	INDEX cnt = _pNetwork->ga_srvServer.srv_actCha.Count();
+	
+	for( INDEX i = 0; i < cnt; ++i )
+	{
+		CCharacterTarget	&ct = _pNetwork->ga_srvServer.srv_actCha[i];
+		
+		if( ct.cha_pEntity != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance != NULL
+			&& ct.cha_pEntity->en_pmiModelInstance->GetName() != "" )
+			
+		{
+			StartGuildMasterEffect( ct.cha_Index, ct.cha_pEntity, ct.cha_sbJoinFlagMerac, ct.cha_lGuildPosition, ct.cha_lGuildPosition );
+		}		
+	}
 }
 
 
@@ -1168,20 +1133,18 @@ void CUISiegeWarfareDoc::SetDealy( BOOL bStart )
 {
 	CTString strMessage;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( bStart ) // Start
 	{
 		m_bDelay = true;
 		m_tmNoticeTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();	
 
 		// Set Stop Move
-		pUIManager->SetCSFlagOn( CSF_CASTLE_WAR_READY );
+		_pUIMgr->SetCSFlagOn( CSF_CASTLE_WAR_READY );
 				
 		if( _pNetwork->m_ubGMLevel > 1 )
 		{
 			strMessage.PrintF( "INFO-START-Dealy (%d)", m_tmNoticeTime );
-			pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		}
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->StopPlayer();
 	}
@@ -1190,12 +1153,12 @@ void CUISiegeWarfareDoc::SetDealy( BOOL bStart )
 		m_bDelay = false;
 		
 		// ReSet Stop Move
-		pUIManager->SetCSFlagOff( CSF_CASTLE_WAR_READY );
+		_pUIMgr->SetCSFlagOff( CSF_CASTLE_WAR_READY );
 		
 		if( _pNetwork->m_ubGMLevel > 1 )
 		{
 			strMessage.PrintF( "INFO-STOP-Dealy" );
-			pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
+			_pUIMgr->GetChatting()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		}
 		
 	}

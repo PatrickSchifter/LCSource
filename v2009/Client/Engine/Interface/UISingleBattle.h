@@ -5,10 +5,10 @@
 #endif
 
 // Include Files
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
 
 // Define size of SINGLE Battle
 #define	SB_WIDTH						118

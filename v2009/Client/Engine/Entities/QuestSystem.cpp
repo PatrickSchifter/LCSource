@@ -2,149 +2,57 @@
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Stream.h>
 
-#include "QuestSystem.h"
-#include <Engine/Ska/Render.h>
+#include <Engine/Entities/QuestSystem.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/Server.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/JobInfo.h>
 #include <Engine/World/World.h>
-#include <Engine/Interface/UIInventory.h>
+#include <Engine/LocalDefine.h>
 
-//[sora] 미번역 스트링 index 표시
-void CQuestStaticData::SetNoTranslate()
+// ------------- CQuestStaticData ------------- 
+CQuestStaticData::CQuestStaticData()
+: m_iIndex( -1 )
+, m_iCategory( 0 )
+, m_iPartyScale( 0 )
 {
-	char buff[MAX_PATH];
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, transFlag ) )
-	{
-		sprintf( buff, "[%d] : quest name", index );
-		m_szName = buff;
-	}
-	if( pUIManager->IsNotTranslated( TRANS_DESC, transFlag ) )
-	{
-		sprintf( buff, "[%d] : quest name", index );
-		m_szDesc = buff;
-	}
-	if( pUIManager->IsNotTranslated( TRANS_DESC2, transFlag ) )
-	{
-		sprintf( buff, "[%d] : quest name", index );
-		m_szDesc2 = buff;
-	}
-	if( pUIManager->IsNotTranslated( TRANS_DESC3, transFlag ) )
-	{
-		sprintf( buff, "[%d] : quest name", index );
-		m_szDesc3 = buff;
-	}
 }
 
-void CQuestStaticData::ClearNoTranslate()
+CQuestStaticData::~CQuestStaticData()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, transFlag ) )
-		m_szName = "";
-	if( pUIManager->IsNotTranslated( TRANS_DESC, transFlag ) )
-		m_szDesc = "";
-	if( pUIManager->IsNotTranslated( TRANS_DESC2, transFlag ) )
-		m_szDesc2 = "";
-	if( pUIManager->IsNotTranslated( TRANS_DESC3, transFlag ) )
-		m_szDesc3 = "";
-}
-
-bool CQuestStaticData::loadEx( const char* fileName )
-{
-	FILE*	fp = NULL;
-
-	fp = fopen(fileName, "rb");
-
-	if (fp == NULL)
-		return false;
-
-	fread(&_nSize, sizeof(int), 1, fp);
-
-	if (_nSize <= 0)
-	{
-		fclose(fp);
-		return false;
-	}
-
-	stQuest* pdata = new stQuest[_nSize];
-	fread(pdata, sizeof(stQuest) * _nSize, 1, fp);
-	fclose(fp);
-
-	for (int i = 0; i < _nSize; i++)
-	{
-		CQuestStaticData* ptmp = new CQuestStaticData;
-		memcpy(ptmp, &pdata[i], sizeof(stQuest));
-		if (_mapdata.insert(std::make_pair(ptmp->getindex(), ptmp)).second == false)
-		{
-			delete ptmp;
-			ptmp = NULL;
-		}
-	}
-
-	m_dummy = new CQuestStaticData; // 더미데이타 생성
-	memset(m_dummy, 0, sizeof(stQuest));
-
-	if (pdata != NULL)
-	{
-		delete[] pdata;
-		pdata = NULL;
-	}
-
-	return true;
 }
 
 // ------------- CQuestDynamicData ------------- 
-CQuestDynamicData::CQuestDynamicData(CQuestStaticData* data)
-: m_pStaticData(data)
+CQuestDynamicData::CQuestDynamicData(const CQuestStaticData &data)
+: m_rStaticData( data )
 , m_bQuestComplete( FALSE )
-, m_iQuestIndex( data->index )
+, m_iQuestIndex( data.m_iIndex )
 , m_ctTitleDesc( 0 )
 , m_ctStatusDesc( 0 )
 , m_ctPrizeDesc( 0 )
 , m_ctOptionPrizeDesc( 0 )
 , m_ctNeedDesc( 0 )
 {
-	INDEX	i;
-	for( i = 0; i < QUEST_MAX_CONDITION; ++i )
+	for(INDEX i=0; i<QUEST_MAX_CONDITION; ++i)
 	{
 		//m_iConditionValue[i] = conditionValue[i];
 		m_iCurrentConditionValueStatus[i] = 0;
 	}
 	
 	m_bPrize = FALSE;
-	for( i = 0; i < QUEST_MAX_PRIZE; ++i )
+	for(i=0; i<QUEST_MAX_PRIZE; ++i)
 	{
-		m_bPrize = m_bPrize || (m_pStaticData->prizeType[i] != -1);
-		m_iPrizeType[i] = m_pStaticData->prizeType[i];
-		m_iPrizeIndex[i] = FindItemForPrize(m_iPrizeType[i], m_pStaticData->prizeIndex[i]);
-		m_iPrizeData[i] = m_pStaticData->prizeData[i];
-	}
-
-	// [090728: selo] 옵션 보상은 따로 루프를 돌게함 (갯수가 달라졌음)
-	m_iOptionPrizeCount = QUEST_MAX_OPTPRIZE;
-
-	for( i = 0; i < m_iOptionPrizeCount; ++i )
-	{
-		m_bOptionPrize = m_pStaticData->optionPrize;
-		m_iOptionPrizeType[i] = m_pStaticData->optPrizeType[i];
-		
-		// [090727: selo] 퀘스트툴의 보상에 Only 체크박스를 체크하면
-		// 직종에 상관없이 해당 아이템 그대로 적용한다.
-		if( m_pStaticData->onlyOptPrize )
-		{
-			m_iOptionPrizeIndex[i] = m_pStaticData->optPrizeIndex[i];
-		}
-		else
-		{
-			m_iOptionPrizeIndex[i] = FindItemForPrize(m_iOptionPrizeType[i], m_pStaticData->optPrizeIndex[i]);
-		}		
-		m_iOptionPrizeData[i] = m_pStaticData->optPrizeData[i];
-		m_iOptionPrizePlus[i] = m_pStaticData->optPrizePlus[i];
+		m_bPrize = m_bPrize || (m_rStaticData.m_iPrizeType[i] != -1);
+		m_iPrizeType[i] = m_rStaticData.m_iPrizeType[i];
+		m_iPrizeIndex[i] = FindItemForPrize(m_iPrizeType[i], m_rStaticData.m_iPrizeIndex[i]);
+		m_iPrizeData[i] = m_rStaticData.m_iPrizeData[i];
+				
+		m_bOptionPrize = m_rStaticData.m_bOptionPrize;
+		m_iOptionPrizeType[i] = m_rStaticData.m_iOptionPrizeType[i];
+		m_iOptionPrizeIndex[i] = FindItemForPrize(m_iOptionPrizeType[i], m_rStaticData.m_iOptionPrizeIndex[i]);
+		m_iOptionPrizeData[i] = m_rStaticData.m_iOptionPrizeData[i];
+		m_iOptionPrizePlus[i] = m_rStaticData.m_iOptionPrizePlus[i];
 	}
 	
 	m_strIntroDesc = "";
@@ -154,13 +62,12 @@ CQuestDynamicData::CQuestDynamicData(CQuestStaticData* data)
 		m_strStatusDesc[i] = "";
 	for( i = 0; i < QUEST_PRIZE_DESC; i++ )
 		m_strPrizeDesc[i] = "";
-	for( i = 0; i < QUEST_OPTION_PRIZE_DESC; i++ )
+	for( i = 0; i < QUEST_PRIZE_DESC; i++ )
 		m_strOptionPrizeDesc[i] = "";
 	for( i = 0; i < QUEST_NEED_DESC; i++ )
 		m_strNeedDesc[i] = "";
 	
-	if (m_pStaticData->index > 0)
-		MakeQuestFirstDesc();
+	MakeQuestFirstDesc();
 }
 
 CQuestDynamicData::~CQuestDynamicData()
@@ -169,36 +76,23 @@ CQuestDynamicData::~CQuestDynamicData()
 
 INDEX CQuestDynamicData::FindItemForPrize(INDEX type, INDEX index)
 {
-	// 퀘스트 보상 아이템을 직업별로 보상함
 	if(type != QPRIZE_ITEM) return index;
 
-	CItemData*	pItemData = _pNetwork->GetItemData( index );
-
-	if (pItemData == NULL)
-		return index;
-
-	int max = CItemData::getsize();
-	
-	if (pItemData->GetType() == CItemData::ITEM_SHIELD &&
-		pItemData->GetSubType() != CItemData::ITEM_SHIELD_SHIELD)
+	CItemData	&ItemData = _pNetwork->GetItemData( index );
+	if(ItemData.GetType() == CItemData::ITEM_SHIELD
+	&& ItemData.GetSubType() != CItemData::ITEM_SHIELD_SHIELD)
 	{
-		for (int i = 0; i < max; ++i)
+		for(int i=0; i<_pNetwork->wo_iNumOfItem; ++i)
 		{
-			CItemData*	ptempItem = _pNetwork->GetItemData(i);
-
-			if (ptempItem == NULL)
-				continue;
-
-			if (ptempItem->GetType() == pItemData->GetType() &&
-				ptempItem->GetSubType() == pItemData->GetSubType() &&
-				ptempItem->GetLevel() == pItemData->GetLevel() &&
-				ptempItem->CanUse(_pNetwork->MyCharacterInfo.job))
+			if(_pNetwork->GetItemData(i).GetType() == ItemData.GetType()
+			&& _pNetwork->GetItemData(i).GetSubType() == ItemData.GetSubType()
+			&& _pNetwork->GetItemData(i).GetLevel() == ItemData.GetLevel()
+			&& _pNetwork->GetItemData(i).CanUse(_pNetwork->MyCharacterInfo.job))
 			{
 				return i;
 			}
 		}
 	}
-
 	return index;
 }
 
@@ -249,6 +143,7 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 				ASSERT( GetConditionType( iCond ) == QCONDITION_ITEM
 					||  GetConditionType( iCond ) == QCONDITION_ITEM_NORMAL);
 				
+				//const char	*szItemName = _pNetwork->GetItemData( GetConditionIndex( iCond ) ).GetName();
 				const char	*szItemName = _pNetwork->GetItemName( GetConditionIndex( iCond ) );
 				if( ctCond == 0 )
 				{
@@ -303,7 +198,8 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 			
 			if( ctCond > 0 && GetPrizeNPCIndex() != -1)
 			{
-				const char	*szMobName = CMobData::getData( GetPrizeNPCIndex() )->GetName();
+				//const char	*szMobName = _pNetwork->GetMobData( GetPrizeNPCIndex() ).GetMonsterName();
+				const char	*szMobName = _pNetwork->GetMobName( GetPrizeNPCIndex() );
 				strTemp.PrintF( _S( 462, "를 %s에게 전달하라.\n" ), szMobName);			
 				
 				m_strTitleDesc[m_ctTitleDesc] += strTemp;
@@ -321,7 +217,10 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 				if( GetConditionType( iCond ) == -1 )
 					continue;
 				
-				const char	*szMobName = CMobData::getData( GetConditionIndex( iCond ) )->GetName();
+				ASSERT( GetConditionType( iCond ) == QCONDITION_NPC );				
+				
+				//const char	*szMobName = _pNetwork->GetMobData( GetConditionIndex( iCond ) ).GetMonsterName();
+				const char	*szMobName = _pNetwork->GetMobName( GetConditionIndex( iCond ) );
 				if( ctCond == 0 )
 				{
 					m_strTitleDesc[m_ctTitleDesc].PrintF( _S2( 52, szMobName, "%s<를> %d마리" ),
@@ -346,15 +245,95 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 		break;
 	case QTYPE_KIND_SAVE:		// 구출형 퀘스트 수행.
 		{
+		/*
+		// Desc
+		INDEX	ctCond = 0;
+		for( INDEX iCond = 0; iCond < QUEST_MAX_CONDITION; iCond++ )
+		{
+		const int iConditionType = GetConditionType( iCond );
+		if( iConditionType == -1 )
+		continue;
+		
+		  //ASSERT( GetConditionType( iCond ) == QCONDITION_NPC );
+		  
+			if(iConditionType == QCONDITION_NPC)
+			{
+			const char*	szMobName = _pNetwork->GetMobData( GetConditionIndex( iCond ) ).GetMonsterName();
+			if( ctCond == 0 )
+			{
+			m_strTitleDesc[m_ctTitleDesc].PrintF( _S2( 55, szMobName, "%s<를>" ), szMobName );
+			ctCond++;
+			}
+			else
+			{
+			strTemp.PrintF( _S2( 56, szMobName, ", %s<를>" ), szMobName );
+			m_strTitleDesc[m_ctTitleDesc] += strTemp;
+			ctCond++;
+			}
+			}
+			else if(iConditionType == QCONDITION_ITEM)
+			{
+			const char	*szItemName = _pNetwork->GetItemData( GetConditionIndex( iCond ) ).GetName();
+			if( ctCond == 0 )
+			{
+			m_strTitleDesc[m_ctTitleDesc].PrintF( _S( 460, "%s %d개 ",	
+			szItemName, GetConditionNum( iCond ) );
+			ctCond++;
+			}
+			else
+			{
+			strTemp.PrintF( _S( 461 , ", %s %d개 " ),						
+			szItemName, GetConditionNum( iCond ) );
+			m_strTitleDesc[m_ctTitleDesc] += strTemp;
+			ctCond++;
+			}
+			}
+			}
+			*/
+			
+			// FIXME : 하드 코딩한 부분
+			// FIXME : 필드상에는 구출하려는 NPC가 찍혀있지 않기 때문에, 몹 LOD 화일에 NPC 정보가 없어서,
+			// FIXME : 표시가 되지 않아서, 하드 코딩함.
 			m_strTitleDesc[m_ctTitleDesc] += _S( 463 , "나오 공주를 구출하라.\n" );		
 			m_colTitleDesc[m_ctTitleDesc++] = 0x80CC17FF;
 		}
 		break;
 	case QTYPE_KIND_DEFEAT:		// 싱글던젼 퀘스트 수행.
 		{
+			// FIXME : QTYPE_KIND_REPEAT와 중복되는 부분임.
+			// Desc
 			INDEX	ctCond = 0;
+			/*
+			for( INDEX iCond = 0; iCond < QUEST_MAX_CONDITION; iCond++ )
+			{
+			if( GetConditionType( iCond ) == -1 )
+			continue;
+			
+			  ASSERT( GetConditionType( iCond ) == QNEED_MONSTER );
+			  
+				const char	*szMonName = _pNetwork->GetMobData( GetConditionIndex( iCond ) ).GetMonsterName();
+				if( ctCond == 0 )
+				{
+				m_strTitleDesc[m_ctTitleDesc].PrintF( _S2( 348, szMonName, "%s<를> %d마리" ),
+				szMonName, GetConditionValue( iCond ) );
+				ctCond++;
+				}
+				else
+				{
+				strTemp.PrintF( _S2( 349, szMonName, ", %s<를> %d마리" ),
+				szMonName, GetConditionValue( iCond ) );
+				m_strTitleDesc[m_ctTitleDesc] += strTemp;
+				ctCond++;
+				}
+				}
+			*/
+			
+			//if( ctCond > 0 )
+			//{
+			// FIXME : 하드 코딩.
 			m_strTitleDesc[m_ctTitleDesc] += _S( 350, "발록을 격파하라\n\n" );
 			m_colTitleDesc[m_ctTitleDesc++] = 0x80CC17FF;
+			//}
 		}
 		break;
 	}
@@ -373,7 +352,7 @@ void CQuestDynamicData::MakeQuestTitleDesc()
 		m_colTitleDesc[m_ctTitleDesc++] = 0xF2F2F2FF;
 		
 		INDEX	ctNeed = 0;
-		for( INDEX iNeed = 0; iNeed < MAX_MAX_NEED_ITEM; iNeed++ )
+		for( iNeed = 0; iNeed < MAX_MAX_NEED_ITEM; iNeed++ )
 		{
 			if( GetNeedItemIndex( iNeed ) == -1 )
 				continue;
@@ -436,18 +415,27 @@ void CQuestDynamicData::MakeQuestStatusDesc()
 		}
 		break;
 		
+/*
+	case QTYPE_KIND_DELIVERY:		// 배달형 퀘스트
+		{
+		}
+		break;
+*/
+		
 	case QTYPE_KIND_REPEAT:			// 반복 퀘스트
 		{
 			for( INDEX iCond = 0; iCond < QUEST_MAX_CONDITION; iCond++ )
 			{
 				if( GetConditionType( iCond ) == -1 )
 					continue;
-
+				
+				//ASSERT( GetConditionType( iCond ) == QCONDITION_MONSTER );
+				
 				m_strStatusDesc[m_ctStatusDesc].PrintF( _S( 59, "%s 격파 수" ),
-
-				CMobData::getData(GetConditionIndex( iCond ) )->GetName());
+					//_pNetwork->GetMobData( GetConditionIndex( iCond ) ).GetMonsterName() );
+					_pNetwork->GetMobName( GetConditionIndex( iCond ) ) );
 				m_colStatusDesc[m_ctStatusDesc++] = 0xC0C0C0FF;
-
+				//m_strStatusDesc[m_ctStatusDesc].PrintF( "0" );
 				m_strStatusDesc[m_ctStatusDesc].PrintF( "%d / %d", GetCurrentConditionValueStatus( iCond ),
 					GetConditionNum( iCond ) );
 				m_colStatusDesc[m_ctStatusDesc++] = 0x80CC17FF;
@@ -492,7 +480,13 @@ void CQuestDynamicData::MakeQuestPrizeDesc()
 			break;
 		case QPRIZE_MONEY:
 			{
+				//INDEX		iPrizeIndex = GetPrizeIndex( iPrize );
+				//CItemData	&ItemData = _pNetwork->GetItemData( iPrizeIndex );
+				
+				//if( ItemData.GetType() == CItemData::ITEM_ETC &&			//돈일때 ~개라고 하면 이상하니깐.
+				//	ItemData.GetSubType() == CItemData::ITEM_ETC_MONEY )
 				{
+					//m_strPrizeDesc[m_ctPrizeDesc].PrintF( "%s", _pNetwork->GetItemData( iPrizeIndex ).GetName());
 					m_strPrizeDesc[m_ctPrizeDesc].PrintF( _S( 836, "%d 나스" ), GetPrizeData( iPrize ) );
 				}
 				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
@@ -501,24 +495,13 @@ void CQuestDynamicData::MakeQuestPrizeDesc()
 			
 		case QPRIZE_EXP:
 			{
-				CTString strTemp;
-				strTemp.PrintF( "%s %I64u", (const char*)_S( 89, "경험치"), GetPrizeData( iPrize ) );
-				m_strPrizeDesc[m_ctPrizeDesc] = strTemp;
+				m_strPrizeDesc[m_ctPrizeDesc].PrintF( _S( 62, "경험치 %d" ), GetPrizeData( iPrize ) );
 				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
 			} break;
 			
 		case QPRIZE_SP:
 			{
-#if defined (G_GERMAN)
-				m_strPrizeDesc[m_ctPrizeDesc].PrintF( "%s %d", _S( 90, "숙련도" ), GetPrizeData( iPrize ) );
-#else	// else about japan, german, europe3, europe2, netherlands.
-				// support russia string [9/7/2010 rumist]
-#if defined (G_RUSSIA)
-				m_strPrizeDesc[m_ctPrizeDesc].PrintF( "%s %d", _S( 4415, "SP" ), GetPrizeData( iPrize ) );
-#else	// else about russia
 				m_strPrizeDesc[m_ctPrizeDesc].PrintF( "SP %d", GetPrizeData( iPrize ) );
-#endif	// end russia
-#endif	//end japan, german, europe3, europe2, netherlands.
 				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
 			} break;
 		case QPRIZE_SKILL:
@@ -531,20 +514,10 @@ void CQuestDynamicData::MakeQuestPrizeDesc()
 		case QPRIZE_SSKILL:
 			{
 				INDEX		iPrizeIndex = GetPrizeIndex( iPrize );
-				CSpecialSkill* pData = CSpecialSkill::getData(iPrizeIndex);
-
-				if (pData == NULL)
-					break;
-
-				m_strPrizeDesc[m_ctPrizeDesc].PrintF( "%s", pData->GetName() );
+				m_strPrizeDesc[m_ctPrizeDesc].PrintF( "%s", _pNetwork->GetSSkillData( iPrizeIndex ).GetName() );
 				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
 			}
 			break;
-		case QPRIZE_RVR_POINT:
-			{
-				m_strPrizeDesc[m_ctPrizeDesc].PrintF( _S(6263, "결사대 포인트 %d"), GetPrizeData( iPrize ) );
-				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
-			}
 		default:
 			break;
 		}
@@ -561,10 +534,7 @@ void CQuestDynamicData::MakeQuestOptionPrizeDesc()
 	m_strOptionPrizeDesc[m_ctOptionPrizeDesc] = _S( 1654, "퀘스트 선택 보상 (다음중 1)" );
 	m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xF2F2F2FF;
 	
-	// [090728: selo] 옵션 보상 개수 만큼 돌게 변경
-	m_iOptionPrizeCount = QUEST_MAX_OPTPRIZE;
-
-	for( INDEX iPrize = 0; iPrize < m_iOptionPrizeCount; iPrize++ )
+	for( INDEX iPrize = 0; iPrize < QUEST_MAX_PRIZE; iPrize++ )
 	{
 		switch( GetOptionPrizeType( iPrize ) )
 		{
@@ -592,6 +562,40 @@ void CQuestDynamicData::MakeQuestOptionPrizeDesc()
 				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
 			}
 			break;
+/*		//일단은 아이템만 있다고 함.
+		case QPRIZE_MONEY:
+			{
+				m_strOptionPrizeDesc[m_ctOptionPrizeDesc].PrintF( _S( 836, "%d 나스" ), GetOptionPrizeData( iPrize ) );
+				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
+			}
+			break;
+			
+		case QPRIZE_EXP:
+			{
+				m_strOptionPrizeDesc[m_ctOptionPrizeDesc].PrintF( _S( 62, "경험치 %d" ), GetOptionPrizeData( iPrize ) );
+				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
+			} break;
+			
+		case QPRIZE_SP:
+			{
+				m_strOptionPrizeDesc[m_ctOptionPrizeDesc].PrintF( "SP %d", GetOptionPrizeData( iPrize ) );
+				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
+			} break;
+		case QPRIZE_SKILL:
+			{
+				INDEX		iPrizeIndex = GetOptionPrizeIndex( iPrize );
+				m_strOptionPrizeDesc[m_ctOptionPrizeDesc].PrintF( "%s", _pNetwork->GetSkillData( iPrizeIndex ).GetName() );
+				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
+			}
+			break;
+		case QPRIZE_SSKILL:
+			{
+				INDEX		iPrizeIndex = GetOptionPrizeIndex( iPrize );
+				m_strOptionPrizeDesc[m_ctOptionPrizeDesc].PrintF( "%s", _pNetwork->GetSSkillData( iPrizeIndex ).GetName() );
+				m_colOptionPrizeDesc[m_ctOptionPrizeDesc++] = 0xFFB54DFF;
+			}
+			break;
+*/
 		default:
 			break;
 		}
@@ -600,11 +604,6 @@ void CQuestDynamicData::MakeQuestOptionPrizeDesc()
 
 void CQuestDynamicData::MakeQuestNeedDesc()
 {
-	CJobInfo* pInfo = CJobInfo::getSingleton();
-
-	if (pInfo == NULL)
-		return;
-
 	// Reset strings
 	for( INDEX i = 0; i < m_ctNeedDesc; i++ )
 		m_strNeedDesc[i].Clear();
@@ -612,15 +611,14 @@ void CQuestDynamicData::MakeQuestNeedDesc()
 	
 	m_strNeedDesc[m_ctNeedDesc] = _S( 464, "필요 조건" );
 	m_colNeedDesc[m_ctNeedDesc++] = 0xF2F2F2FF;
-	if (GetNeedMaxLevel() == 999)
-		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 5667, "레벨 : %d ~ MAX" ), GetNeedMinLevel());
-	else
-		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 465, "레벨 : %d ~ %d" ), GetNeedMinLevel(), GetNeedMaxLevel() );
+	
+	m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 465, "레벨 : %d ~ %d" ), GetNeedMinLevel(), GetNeedMaxLevel() );
 	m_colNeedDesc[m_ctNeedDesc++] = 0xFFB54DFF;
+	
 	const int iNeedJob = GetNeedJob();
 	if(iNeedJob != -1)
 	{
-		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), (const char*)pInfo->GetName(iNeedJob, 0));
+		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), JobInfo().GetName(iNeedJob, 0));
 		m_colNeedDesc[m_ctNeedDesc++] = 0xFFB54DFF;
 	}
 	
@@ -653,12 +651,15 @@ void CQuestDynamicData::MakeQuestNeedDesc()
 	m_colNeedDesc[m_ctNeedDesc++] = 0xFFB54DFF;
 }
 
+
 // ------------- CQuestSystem ------------- 
 CQuestSystem CQuestSystem::m_instance;
 
 static int test_cnt = 0;
 CQuestSystem::CQuestSystem()
-: m_pCurrentRequest( NULL )
+: m_iQuestStaticDataLastIndex(0)
+, m_aQuestStaticData( NULL )
+, m_pCurrentRequest( NULL )
 {
 	++test_cnt;
 }
@@ -671,7 +672,7 @@ CQuestSystem::~CQuestSystem()
 	{
 		delete m_vectorCurrentUserQuest[i];
 	}
-	
+	delete[] m_aQuestStaticData;
 }
 
 void CQuestSystem::ClearAllDynamicData()
@@ -736,9 +737,6 @@ CQuestDynamicData *CQuestSystem::Create(INDEX idxQuest)
 {
 	if(m_pCurrentRequest) DeleteCurrentRequest();
 	m_pCurrentRequest = new CQuestDynamicData(GetStaticData(idxQuest));
-	// a quest the client data does not have gets the dummy static data; it keeps its own index, or
-	// GetDynamicDataByQuestIndex() would not find it (the quest book used the NULL and crashed)
-	m_pCurrentRequest->m_iQuestIndex = idxQuest;
 	return m_pCurrentRequest;
 }
 
@@ -771,56 +769,141 @@ BOOL CQuestSystem::Remove(INDEX idxQuest)
 	return FALSE;
 }
 
-bool CQuestSystem::Load()
+void CQuestSystem::Load(const CTFileName &fnm, void (*progress)(FLOAT) )
 {
-	int lastIndex = 0;
-
-	CQuestStaticData::_map::iterator	iter = CQuestStaticData::_mapdata.begin();
-	CQuestStaticData::_map::iterator	eiter = CQuestStaticData::_mapdata.end();
-
-	for (;iter != eiter; ++iter)
+	try
 	{
-		CQuestStaticData* pQuest = (*iter).second;
-
-		if (pQuest == NULL)
-			continue;
-
-		if(QSTART_NPC == pQuest->startType)
+		CTFileStream read;
+		read.Open_t(fnm);
+		
+		INDEX lastIndex = 0;
+		read >> lastIndex;
+		if(m_aQuestStaticData) delete[] m_aQuestStaticData;
+		m_aQuestStaticData = new CQuestStaticData[lastIndex+1];
+		if(m_aQuestStaticData == NULL) throw "Not enough memory for load quest data";
+		m_vectorQuestAllowList.resize(lastIndex + 1);
+		memset(&m_vectorQuestAllowList[0], QAT_ALLOW, sizeof(BOOL)*(lastIndex+1));
+		m_iQuestStaticDataLastIndex = lastIndex;
+		
+		for(INDEX i=0; i<=lastIndex; ++i)
 		{
-			mmap::value_type insertPairValue(pQuest->startData, pQuest->index);
-			m_mmapNPCToQuest.insert(insertPairValue);
+			INDEX index = -1;
+			read >> index;
+			
+			//없는 index는 건너뛴다.
+			for(INDEX j=i; j<index; ++j) m_aQuestStaticData[j].m_iIndex = -1;
+			i = index;
+			
+			m_aQuestStaticData[i].m_iIndex = index;
+			
+			INDEX lenName = 0;
+			read >> lenName;
+			memset(&m_aQuestStaticData[i].m_szName, 0, sizeof(m_aQuestStaticData[i].m_szName));
+			read.Read_t(&m_aQuestStaticData[i].m_szName, lenName);
+			
+			read >> m_aQuestStaticData[i].m_iType1;
+			read >> m_aQuestStaticData[i].m_iType2;			
+			read >> m_aQuestStaticData[i].m_iStartType;
+			read >> m_aQuestStaticData[i].m_iStartData;
+			//read >> m_aQuestStaticData[i].m_iNPCIndex;
+			//			read >> m_aQuestStaticData[i].m_iGiveNPCIndex;
+			read >> m_aQuestStaticData[i].m_iPrizeNPCIndex;
 
-			if (pQuest->preQuestNo > 0)
+			read >> m_aQuestStaticData[i].m_iPreQuestIndex;
+			read >> m_aQuestStaticData[i].m_iStartNPCZoneIndex;
+			read >> m_aQuestStaticData[i].m_iPrizeNPCZoneIndex;
+
+			read >> m_aQuestStaticData[i].m_iNeedEXP;
+			read >> m_aQuestStaticData[i].m_iNeedMinLevel;
+			read >> m_aQuestStaticData[i].m_iNeedMaxLevel;
+			read >> m_aQuestStaticData[i].m_iNeedJob;
+#ifdef PKPENALTY_QUEST
+			read >> m_aQuestStaticData[i].m_iMinPenalty;
+			read >> m_aQuestStaticData[i].m_iMaxPenalty;
+#endif
+
+			if(QSTART_NPC == m_aQuestStaticData[i].m_iStartType)
 			{
-				mmap::value_type insertPairReverseValue(pQuest->preQuestNo, pQuest->index);
-				m_mmapPreQuestToCurQuest.insert(insertPairReverseValue);
+				ASSERT(m_aQuestStaticData[i].m_iStartData != -1);
+				mmap::value_type insertPairValue(m_aQuestStaticData[i].m_iStartData, m_aQuestStaticData[i].m_iIndex);
+				m_mmapNPCToQuest.insert(insertPairValue);
+
+				if (m_aQuestStaticData[i].m_iPreQuestIndex>0)
+				{
+					mmap::value_type insertPairReverseValue(m_aQuestStaticData[i].m_iPreQuestIndex, m_aQuestStaticData[i].m_iIndex);
+					m_mmapPreQuestToCurQuest.insert(insertPairReverseValue);
+				}
+			}			
+
+#			if MAX_MAX_NEED_ITEM < QUEST_MAX_CONDITION
+#			error "Quest System : Max Need Item Count must be larger than Max Condition Count"
+#			endif
+			for(j=0; j<MAX_MAX_NEED_ITEM; ++j)
+			{
+				read >> m_aQuestStaticData[i].m_iNeedItemIndex[j];
+				read >> m_aQuestStaticData[i].m_iNeedItemCount[j];
 			}
+			for(j = 0; j < QUEST_MAX_CONDITION;++j)
+			{
+				read >> m_aQuestStaticData[i].m_iConditionType[j];
+				read >> m_aQuestStaticData[i].m_iConditionIndex[j];
+				read >> m_aQuestStaticData[i].m_iConditionNum[j];
+				
+				for(int t = 0; t < QUEST_MAX_CONDITION_DATA; ++t)
+				{
+					read >> m_aQuestStaticData[i].m_iConditionData[j][t];
+				}
+			}
+			
+			for(j = 0; j  <QUEST_MAX_PRIZE; ++j)
+			{
+				read >> m_aQuestStaticData[i].m_iPrizeType[j];
+				read >> m_aQuestStaticData[i].m_iPrizeIndex[j];
+				read >> m_aQuestStaticData[i].m_iPrizeData[j];
+			}
+
+			read >> m_aQuestStaticData[i].m_bOptionPrize;
+			for(j = 0; j  <QUEST_MAX_PRIZE; ++j)
+			{
+				read >> m_aQuestStaticData[i].m_iOptionPrizeType[j];
+				read >> m_aQuestStaticData[i].m_iOptionPrizeIndex[j];
+				read >> m_aQuestStaticData[i].m_iOptionPrizeData[j];
+				read >> m_aQuestStaticData[i].m_iOptionPrizePlus[j];
+			}
+
+			INDEX lenDesc = 0;
+			read >> lenDesc;
+			memset(&m_aQuestStaticData[i].m_szDesc, 0, sizeof(m_aQuestStaticData[i].m_szDesc));
+			read.Read_t(&m_aQuestStaticData[i].m_szDesc, lenDesc);
+			
+			lenDesc = 0;
+			read >> lenDesc;
+			memset(&m_aQuestStaticData[i].m_szDesc2, 0, sizeof(m_aQuestStaticData[i].m_szDesc2));
+			read.Read_t(&m_aQuestStaticData[i].m_szDesc2, lenDesc);
+			
+			lenDesc = 0;
+			read >> lenDesc;
+			memset(&m_aQuestStaticData[i].m_szDesc3, 0, sizeof(m_aQuestStaticData[i].m_szDesc3));
+			read.Read_t(&m_aQuestStaticData[i].m_szDesc3, lenDesc);
+
+			// [090617: selo] 파티 타입 추가 ( 0 : 일반, 1 : 파티, 2 : 원정대 )
+#ifdef NEW_QUESTBOOK
+			read >> m_aQuestStaticData[i].m_iPartyScale;
+#endif
+			
+			if(progress != NULL) (*progress)(FLOAT(i) / FLOAT(lastIndex));
 		}
-
-		lastIndex = pQuest->getindex();
 	}
-	
-	m_vectorQuestAllowList.resize(lastIndex + 1);
-	memset(&m_vectorQuestAllowList[0], QAT_ALLOW, sizeof(BOOL)*(lastIndex+1));
-
-	return true;
+	catch(char *szErr)
+	{
+		ThrowF_t("Error while loading Quest data, Reported message is \"%s.\" ", szErr);
+	}
 }
 
 CQuestSystem::eNpcQuestType CQuestSystem::TestNPCForQuest(INDEX iNPCIndex)
 {
 	///현재 완료된(보상은 안받은) 모든 quest의 보상 npc index와 비교한다.
 	///보상해 줄 수 있다면 NQT_CAN_PRIZE를 리턴.
-
-	CMobData* MD = CMobData::getData(iNPCIndex);
-
-	if (MD->IsChannelFlag(_pNetwork->m_iServerCh) == false)
-	{
-		return NQT_NONE;
-	}
-
-	if (_pNetwork->IsRvrZone() && MD->GetSyndicateType() != _pNetwork->MyCharacterInfo.iSyndicateType)
-		return NQT_NONE;
-
 	for(INDEX i=0; i<m_vectorCurrentUserQuest.size(); ++i)
 	{
 		if(m_vectorCurrentUserQuest[i]->IsQuestComplete()
@@ -845,22 +928,12 @@ CQuestSystem::eNpcQuestType CQuestSystem::TestNPCForQuest(INDEX iNPCIndex)
 		INDEX iQuestIndex = (*iter).second;
 		///현재 수행 중인 퀘스트인지 확인한다.
 		///m_vectorQuestAllowList에서 이미 수행하거나 포기한 퀘스트인지 검사한다.
-
-		// RVR용 연계퀘스트. 연계퀘스트 타입이 없기 때문에 임시로 하드코딩.
-		// 두 퀘스트중 하나라도 수행가능 상태가 아니라면 NPC에게 Q마크를 뿌려주지 않는다.
-		if (iQuestIndex == 682 || iQuestIndex == 683)
-		{
-			if (m_vectorQuestAllowList[ 682 ] != QAT_ALLOW ||
-				m_vectorQuestAllowList[ 683 ] != QAT_ALLOW)
-				return NQT_NONE;
-		}
-
 		if (m_vectorQuestAllowList[ iQuestIndex ] == QAT_ALLOW)
 		{
-			ASSERT(CQuestStaticData::getData(iQuestIndex)->startType == QSTART_NPC);
+			ASSERT(m_aQuestStaticData[iQuestIndex].m_iStartType == QSTART_NPC);
 			//start quest npc zone 검사
-			if (CQuestStaticData::getData(iQuestIndex)->startNpcZoneNo == -1 || 
-				CQuestStaticData::getData(iQuestIndex)->startNpcZoneNo == g_slZone)
+			if(m_aQuestStaticData[iQuestIndex].m_iStartNPCZoneIndex == -1
+			|| m_aQuestStaticData[iQuestIndex].m_iStartNPCZoneIndex == g_slZone)
 			{
 				if(CanIDoQuest(iQuestIndex))
 				{
@@ -877,58 +950,49 @@ CQuestSystem::eNpcQuestType CQuestSystem::TestNPCForQuest(INDEX iNPCIndex)
 BOOL CQuestSystem::CanIDoQuest(INDEX iQuestIndex)
 {
 	if(iQuestIndex == -1) return FALSE;
-	CQuestStaticData* Quest = CQuestStaticData::getData(iQuestIndex);
+	if(m_aQuestStaticData[iQuestIndex].m_iIndex == -1) return FALSE;
 
-	if (Quest == NULL)
-		return FALSE;
+	CQuestStaticData &Quest = m_aQuestStaticData[iQuestIndex];
 
 	///선행 퀘스트 조건 검사
-	if(Quest->preQuestNo != 0
-	&& m_vectorQuestAllowList[ Quest->preQuestNo ] != QAT_ALREADY_DONE)
+	if(Quest.m_iPreQuestIndex != 0
+	&& m_vectorQuestAllowList[ Quest.m_iPreQuestIndex ] != QAT_ALREADY_DONE)
 	{
 		return FALSE;
 	}
-// 	///경험치 검사
-// 	if(Quest->m_iNeedMinLevel == _pNetwork->MyCharacterInfo.level
-// 	&& Quest->m_iNeedEXP > _pNetwork->MyCharacterInfo.curExp)
-// 	{
-// 		return FALSE;
-// 	}
+	///경험치 검사
+	if(Quest.m_iNeedMinLevel == _pNetwork->MyCharacterInfo.level
+	&& Quest.m_iNeedEXP > _pNetwork->MyCharacterInfo.curExp)
+	{
+		return FALSE;
+	}
 	///레벨 검사
-	if(Quest->needMinLevel > _pNetwork->MyCharacterInfo.level
-	|| Quest->needMaxLevel < _pNetwork->MyCharacterInfo.level)
+	if(Quest.m_iNeedMinLevel > _pNetwork->MyCharacterInfo.level
+	|| Quest.m_iNeedMaxLevel < _pNetwork->MyCharacterInfo.level)
 	{
 		return FALSE;
 	}
 	///직업 검사
-	if(Quest->needJob != -1/*ALL*/ && _pNetwork->MyCharacterInfo.job != Quest->needJob)
+	if(Quest.m_iNeedJob != -1/*ALL*/ && _pNetwork->MyCharacterInfo.job != Quest.m_iNeedJob)
 	{
 		return FALSE;
 	}
-	if ((Quest->needMinPenalty != 0 && Quest->needMaxPenalty != 0)) // min, max penalty가 모두 0이면 검사 하지 않는다.
+#ifdef PKPENALTY_QUEST	
+	if ((Quest.m_iMinPenalty != 0 && Quest.m_iMaxPenalty != 0)) // min, max penalty가 모두 0이면 검사 하지 않는다.
 	{	// pk 페널티 조건 검사
-		if (_pNetwork->MyCharacterInfo.pkpenalty < Quest->needMinPenalty ||
-			_pNetwork->MyCharacterInfo.pkpenalty > Quest->needMaxPenalty)
+		if (_pNetwork->MyCharacterInfo.pkpenalty < Quest.m_iMinPenalty ||
+			_pNetwork->MyCharacterInfo.pkpenalty > Quest.m_iMaxPenalty)
 		{
 			return FALSE;
 		}
 	}
-
-	// 결사대 타입 검사 OR 직위 검사.
-	if (Quest->rvr_type > 0 && Quest->rvr_type > 0)
-	{
-		if (Quest->rvr_type != _pNetwork->MyCharacterInfo.iSyndicateType || 
-			Quest->rvr_grade > _pNetwork->MyCharacterInfo.iSyndicateGrade)
-			return FALSE;
-	}
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
+#endif
 
 	///필요 아이템 검사
 	for(int i=0; i<MAX_MAX_NEED_ITEM; ++i)
 	{
-		if(Quest->needItemIndex[i] != -1
-		&& pUIManager->GetInventory()->GetItemCount(Quest->needItemIndex[i]) < Quest->needItemCount[i])
+		if(Quest.m_iNeedItemIndex[i] != -1
+		&& _pUIMgr->GetInventory()->GetItemCount(Quest.m_iNeedItemIndex[i]) < Quest.m_iNeedItemCount[i])
 		{
 			return FALSE;
 		}
@@ -936,32 +1000,55 @@ BOOL CQuestSystem::CanIDoQuest(INDEX iQuestIndex)
 	return TRUE;
 }
 
+void CQuestSystem::RefreshNPCQuestMark(INDEX iNPCIndex)
+{
+	if(iNPCIndex == -1) return;
+	INDEX iMobCount = _pNetwork->ga_srvServer.srv_amtMob.Count();
+	for(INDEX i=0; i<iMobCount; ++i)
+	{
+		CMobTarget &mt = _pNetwork->ga_srvServer.srv_amtMob[i];
+		if(mt.mob_iType == iNPCIndex)
+		{
+			CEntity *penNPC = mt.mob_pEntity;
+			if(penNPC && penNPC->GetModelInstance())
+			{
+				mt.mob_statusEffect.ChangeNPCQuestMark(
+					&penNPC->GetModelInstance()->m_tmSkaTagManager
+					, TestNPCForQuest(iNPCIndex));
+			}
+			return;
+		}
+	}
+}
+
 CTString CQuestSystem::MakeInfoForCondition(int iQuestIndex, int iConditionType, int iConditionIndex, int iCurrentCnt, int iConditionCnt)
 {
 	CTString strRet;
 	if(iConditionType == QCONDITION_NPC)
 	{
-		CMobData* mob = CMobData::getData(iConditionIndex);
-		strRet.PrintF( _S( 1656, "%s 마리 %d/%d" ), mob->GetName(), iCurrentCnt, iConditionCnt);
+		CMobData &mob = _pNetwork->GetMobData(iConditionIndex);
+		strRet.PrintF( _S( 1656, "%s 마리 %d/%d" ), mob.GetName(), iCurrentCnt, iConditionCnt);
 	}
+#ifdef PKPENALTY_QUEST	
 	else if (iConditionType == QCONDITION_PC)
 	{// PK 퀘스트
 		strRet.PrintF( _S(3976, "PK 승리 %d/%d"), iCurrentCnt, iConditionCnt);
 	}
+#endif	
 	else if(iConditionType == QCONDITION_ITEM || iConditionType == QCONDITION_ITEM_NORMAL)
 	{
-		CItemData* pItem = _pNetwork->GetItemData(iConditionIndex);
-		strRet.PrintF( _S( 1657, "%s 개수 %d/%d" ), pItem->GetName(), iCurrentCnt, iConditionCnt);
+		CItemData &item = _pNetwork->GetItemData(iConditionIndex);
+		strRet.PrintF( _S( 1657, "%s 개수 %d/%d" ), item.GetName(), iCurrentCnt, iConditionCnt);
 	}
 	// [090616: selo] 확장팩 퀘스트 신규 조건
 	else if(iConditionType == QCONDITION_AREA)
 	{
-		strRet.PrintF( CTString("%d/%d"), iCurrentCnt, iConditionCnt);
+		strRet.PrintF( _s("%d/%d"), iCurrentCnt, iConditionCnt);
 	}
 	else if(iConditionType == QCONDITION_ITEMUSE)
 	{
-		CItemData* pItem = _pNetwork->GetItemData(iConditionIndex);
-		strRet.PrintF( _S( 1657, "%s 개수 %d/%d" ), pItem->GetName(), iCurrentCnt, iConditionCnt);
+		CItemData &item = _pNetwork->GetItemData(iConditionIndex);
+		strRet.PrintF( _S( 1657, "%s 개수 %d/%d" ), item.GetName(), iCurrentCnt, iConditionCnt);
 	}
 
 	return strRet;
@@ -978,29 +1065,8 @@ INDEX CQuestSystem::SearchContactQuestIndex(INDEX iQuestIndex)
 	if (ItrQuestToNPC != m_mmapPreQuestToCurQuest.end())
 	{
 		iContactQuest = (*ItrQuestToNPC).second;
-		iContactNpcIndex = CQuestStaticData::getData(iContactQuest)->prizeNPC;
+		iContactNpcIndex = m_aQuestStaticData[iContactQuest].m_iPrizeNPCIndex;
 	}
 
 	return iContactNpcIndex;
-}
-
-//[sora] 미번역 스트링 index 표시
-void CQuestSystem::SetNoTranslate( std::vector<INDEX> transList )
-{
-	std::vector<INDEX>::iterator it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		CQuestStaticData::getData((*it))->SetNoTranslate();
-	}
-}
-
-void CQuestSystem::ClearNoTranslate( std::vector<INDEX> transList )
-{
-	std::vector<INDEX>::iterator it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		CQuestStaticData::getData((*it))->ClearNoTranslate();
-	}
 }

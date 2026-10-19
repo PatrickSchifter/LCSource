@@ -1,12 +1,11 @@
-#include "StdH.h"
 
-// 헤더 정리. [12/2/2009 rumist]
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISignBoard.h>
 #include <Engine/Templates/Stock_CFontData.h>		// Font Use ...
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/World/World.h>
-#include <Engine/Help/DefineHelp.h>
+#include <stdio.h>
 
 CUISignBoard*	_UISignBoard = NULL;
 
@@ -39,8 +38,13 @@ CUISignBoard::CUISignBoard()
 // ----------------------------------------------------------------------------
 CUISignBoard::~CUISignBoard()
 {
+	if( m_ptdBaseTexture )
+	{
+		_pTextureStock->Release( m_ptdBaseTexture );
+		m_ptdBaseTexture = NULL;
+	}
+
 	Clear ();
-	STOCK_RELEASE(m_ptdBaseTexture);
 }
 
 // ----------------------------------------------------------------------------
@@ -82,7 +86,7 @@ void CUISignBoard::ShowSingBoard ( int nIndex, SLONG slZoneIndex )
 {
 	SLONG	slIndex = g_slZone;
 
-	if ( nIndex < -1 || g_slZone<0 ) 
+	if ( nIndex < 0 ) 
 	{
 		return;
 	}
@@ -145,24 +149,42 @@ void CUISignBoard::Render ()
 		}
 	}
 
+	/*
+	if ( m_nTextureIndex == -1 )
+	{
+	// render 텍스트 출력
+		_pUIMgr->GetDrawPort()->SetFont( _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Standard.fnt" ) ) );
+		_pUIMgr->GetDrawPort()->SetTextScaling( 1.0 );
+		_pUIMgr->GetDrawPort()->SetTextAspect( 1.0f );
+		_pUIMgr->GetDrawPort()->SetTextShadow( +2 );
+		
+		int iFontSize =  _pUIMgr->GetDrawPort()->dp_fTextScaling + _pUIMgr->GetDrawPort()->dp_pixTextCharSpacing;
+
+		int pX = _pUIMgr->GetDrawPort()->GetWidth() / 2 - m_strLocalName.Length() * iFontSize / 2;
+		int pY = 150;
+		
+		_pUIMgr->GetDrawPort()->PutTextC ( "No SignBoard Data", pX, pY, 0xffffff00 | m_iAlpha );
+		
+		_pUIMgr->GetDrawPort()->EndTextEx();
+	
+	}
+	*/
 	if( m_ptdBaseTexture == NULL )
 	{
 		return;
 	}
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	int pX = pDrawPort->GetWidth() / 2 - m_fTexWidth / 2;
+	int pX = _pUIMgr->GetDrawPort()->GetWidth() / 2 - m_fTexWidth / 2;
 	int pY = SIGNBOARD_SY;
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-	pDrawPort->AddTexture( pX, pY,	pX + m_fTexWidth , pY + m_fTexHeight, 
+	_pUIMgr->GetDrawPort()->AddTexture( pX, pY,	pX + m_fTexWidth , pY + m_fTexHeight, 
 										m_rtCurrent.U0, m_rtCurrent.V0, 
 										m_rtCurrent.U1, m_rtCurrent.V1,
 										0xffffff00 | m_iAlpha );
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
 }
@@ -177,12 +199,8 @@ void CUISignBoard::Render ()
 //------------------------------------------------------------------------------
 BOOL CUISignBoard::LoadSignBoardTexture( int nZoneIndex, int nLocalIndex )
 {
-	extern INDEX	g_iCountry;
-
 	CTString strSignBoardName;
-	CTString strDir = "Local\\";
-	strDir += DefHelp::getNationPostfix(g_iCountry, true);
-	strDir += "\\SignBoard\\";
+	CTString strDir = SIGNBOARD_DEFAULT_DIR;
 
 	// 이미 테스쳐가 로딩 되어 있으면 해제
 	if( m_ptdBaseTexture != NULL )
@@ -201,25 +219,90 @@ BOOL CUISignBoard::LoadSignBoardTexture( int nZoneIndex, int nLocalIndex )
 			strSignBoardName += "_war";
 	}
 
-	strSignBoardName += ".tex";
+	extern INDEX	g_iCountry;
+	
+	switch( g_iCountry )
+	{
+	case KOREA:
+		strDir += "\\Korea\\";
+		strSignBoardName += ".tex";
+		break;
+	
+	case TAIWAN:
+	case TAIWAN2:
+		strDir += "\\Taiwan\\";
+		strSignBoardName += "_t.tex";
+		break;
+	
+	case CHINA: 
+		strDir += "\\China\\";
+		strSignBoardName += "_c.tex";
+		break;
 
-	//[090914 사인보드 파일이 없으면 시스템 메시지로 출력한다]
-	// 테스쳐 로딩
-	try
-	{
-		m_ptdBaseTexture = _pTextureStock->Obtain_t ( strDir + strSignBoardName );
-	}
-	catch (char* strError)
-	{
-		if ( _pNetwork->m_ubGMLevel > 0 )
-		{	// GM일때만 표시
-			//FatalError(strError);
-			CTString strtmpError = strError;
-			_pNetwork->ClientSystemMessage(strtmpError, SYSMSG_ERROR);
+	case THAILAND:
+		strDir += "\\Thai\\";
+		strSignBoardName += ".tex";
+		break;
+	case JAPAN:
+		strDir += "\\Japan\\";
+		strSignBoardName += ".tex";
+		break;
+	
+	case MALAYSIA:
+		if(g_bIsMalEng){
+			strDir += "\\Malaysia_e\\";
+			strSignBoardName += ".tex";
 		}
+		else {
+			strDir += "\\Malaysia\\";
+			strSignBoardName += ".tex";
+		}
+		break;
+	case USA:
+		strDir += "\\USA\\";
+		strSignBoardName += ".tex";
+		break;
+	case BRAZIL:
+		strDir += "\\BRZ\\";
+		strSignBoardName += ".tex";
+		break;
+	case HONGKONG:
+		if(g_bIsMalEng)
+		{
+			strDir += "\\HK_e\\";
+			strSignBoardName += ".tex";
+		}
+		else
+		{
+			strDir += "\\HK\\";
+			strSignBoardName += ".tex";
+		}
+		break;
+	case GERMANY:
+		strDir += "\\GER\\";
+		strSignBoardName += ".tex";
+		break;
+	case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+		strDir += "\\SPA\\";
+		strSignBoardName += ".tex";
+		break;
+	case FRANCE:
+		strDir += "\\FRA\\";
+		strSignBoardName += ".tex";
+		break;
+	case POLAND:
+		strDir += "\\POL\\";
+		strSignBoardName += ".tex";
+		break;
 
-		return FALSE;
+	case TURKEY:
+		strDir += "\\TURKEY\\";
+		strSignBoardName += ".tex";
+		break;
 	}
+
+	// 테스쳐 로딩
+	m_ptdBaseTexture = _pTextureStock->Obtain_t ( strDir + strSignBoardName );
 
 	if ( m_ptdBaseTexture == NULL )
 	{

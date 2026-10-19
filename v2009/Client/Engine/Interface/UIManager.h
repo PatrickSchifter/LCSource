@@ -5,26 +5,293 @@
 
 #ifndef	UIMANAGER_H_
 #define	UIMANAGER_H_
+#ifdef	PRAGMA_ONCE
+	#pragma once
+#endif
 
-#include <Engine/DesignClasses/Singleton/SingletonBase.h>
+
+#include <Engine/Graphics/DrawPort.h>
 #include <GameMP/Game.h>
-#include <Engine/Interface/UIWindowDeclare.h>
-#include <Engine/Interface/UIEditBox.h>
-#include <Engine/Interface/UIMultiEditBox.h>
-#include <Engine/Interface/UIFocus.h>
-#include <Engine/Interface/UITooltipMgr.h>
+#include <Engine/Interface/UIPlayerInfo.h>
+#include <Engine/Interface/UITargetInfo.h>
+#include <Engine/Interface/UIRadar.h>
+#include <Engine/Interface/UIInventory.h>
+#include <Engine/Interface/UICharacterInfo.h>
+#include <Engine/Interface/UIExchange.h>
+#include <Engine/Interface/UIPortal.h>
+#include <Engine/Interface/UIPersonalShop.h>
+#include <Engine/Interface/UIGuild.h>
+#include <Engine/Interface/UIGuildBattle.h> // Date : 2005-03-17,   By Lee Ki-hwan
+#include <Engine/Interface/UIWareHouse.h>
+#include <Engine/Interface/UISystemMenu.h>
+#include <Engine/Interface/UIParty.h>
+#include <Engine/Interface/UIMap.h>
+#include <Engine/Interface/UIRefine.h>
+#include <Engine/Interface/UIProcess.h>		
+#include <Engine/Interface/UIProduct.h>		// 이기환 ( 12.7)
+#include <Engine/Interface/UIMix.h>			// 이기환 ( 12.7)
+#include <Engine/Interface/UICompound.h>	// Date : 2005-01-12,   By Lee Ki-hwan
+#include <Engine/Interface/UIBilling.h>	// Date : 2005-04-30(오후 3:58:10), By Lee Ki-hwan
+#include <Engine/Interface/UITalk.h> // Date : 2005-05-24(오후 1:30:50), By Lee Ki-hwana
+
+//#include <Engine/Interface/UISkillLearn.h>
+#include <Engine/Interface/UIRemission.h>
+#include <Engine/Interface/UIMessenger.h>
+#include <Engine/Interface/UIWebBoard.h>
+#include <Engine/Interface/UIQuest.h>
+#include <Engine/Interface/UIChatting.h>
+#include <Engine/Interface/UISecurity.h>
+
+#include <Engine/Interface/UILogin.h>
+#include <Engine/Interface/UIOption.h>
+#include <Engine/Interface/UISelectServer.h>
+#include <Engine/Interface/UIChangeWeapon.h>
+#include <Engine/Interface/UIInitJob.h>
+#include <Engine/Interface/UIHelper.h>
+#include <Engine/Interface/UIQuiz.h>
+#include <Engine/Interface/UIHelp.h>		// 도움말 추가
+#include <Engine/Interface/UIHelpOld.h>		// 예전 도움말
+#include <Engine/Interface/UIGamble.h>
+#include <Engine/Interface/UIRanking.h>
+#include <Engine/Interface/UISiegeWarfare.h>
+#include <Engine/Interface/UISiegeWarfareNew.h>	// WSS_DRATAN_SIEGEWAREFARE 070727
+#include <Engine/Interface/UIProcessNPC.h>
+#include <Engine/Interface/UISelectResource.h>
+#include <Engine/Interface/UIBillItem.h>
+#include <Engine/Interface/UIGuildWarPortal.h>
+#include <Engine/Interface/UIGWMix.h>
+#include <Engine/Interface/UIGuildStash.h>
+#include <Engine/Interface/UIMouseCursor.h>
+
+#include <Engine/Interface/UISelectList.h>
+#include <Engine/Interface/UIPetItemMix.h>
+#include <Engine/Interface/UIPetFree.h>
+#include <Engine/Interface/UIOXQuizEvent.h>
+
+// wooss 050819
+// UI CASH SHOP
+#include <Engine/Interface/UICashShop.h>
+#include <Engine/Interface/UIPartyAuto.h>// party auto matching system
+#include <Engine/Interface/UICollectBox.h>
+#include <Engine/Interface/UIMixNew.h>
+#include <Engine/Interface/UIBingoBox.h>
+#include <Engine/Interface/UINpcHelp.h>
+// wooss 070330 ----------------------->><<
+// kw : WSS_HELP_SYSTEM_1
+#include <Engine/Interface/UIHelpIcon.h>
+
+// [KH_070419] 심플 팝업 관련 추가
+#include <Engine/Interface/UISimplePop.h>
+
+// WSS_MINIGAME ----------------------->><<
+#include <Engine/Interface/UIMinigame.h>
+
+#include <Engine/Interface/UIFlowerTree.h>
+
+// WSS_GUILDMASTER ---------------------->><<
 #include <Engine/Interface/UIDrawFigure.h>
+// WSS_NEW_GUILD_SYSTEM 070715 ---------->><<
+#include <Engine/Interface/UIGuildNotice.h>
+// ttos_080116 : 몬스터 콤보
+#include <Engine/Interface/UIMonsterCombo.h>
+// 공격 펫 시스템
+#include <Engine/Interface/UIWildPetInfo.h>
 
-#include <Engine/Base/DamageLogInfo.h>
+//거래대행 시스템
+#include <Engine/Interface/UIAuction.h>
 
-#include <Engine/Interface/UILacarette.h>
+// [090709: selo] 펫 문양 시스템
+#include <Engine/Interface/UITatoo.h>
 
+//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+//******************************************************
+#include <Engine/Interface/UIFiltering.h>
 
 class CWorld;
-class CUIListBox;
+
+class CUITeleport;
+class CUITeleportPrimium;
+class CUIQuestBook;
+class CUISelectWord;
+class CUINotice;
+class CUIPetTraining;
+class CUIPetTargetInfo;
+class CUIWildPetTargetInfo;
+class CUIPetInfo;
+class CUISummon;
+class CUIMessageBox;
+class CUIMsgBox_Info;
+class CUISingleBattle;
+class CUISkillLearn;
+class CUIQuickSlot;
+class CUISelChar;
+class CUICreateChar;
+class CUIShop;
+class CUIChatting;
+class CUINpcHelp;
 
 // Link library
 #pragma comment( lib, "imm32.lib" )
+
+// Game state
+enum UIGameState
+{
+	UGS_NONE			= -1,		// None
+	UGS_LOGIN			= 0,		// ID & PW page
+	UGS_SELSERVER		= 1,		// Server selection page
+	UGS_SELCHAR			= 2,		// Character selection page
+	UGS_CREATECHAR		= 3,		// Character creation page
+	UGS_GAMEON			= 4,		// Game running
+	UGS_GAMELOADING		= 5,		// Game loading
+	UGS_UI_TEST			= 6,		// Game UI TEST quick loanding ui wooss 050822
+};
+
+
+// User interface types
+enum UI_TYPE
+{
+	UI_NONE					= -1,
+	UI_TYPE_START			= 0,
+
+	UI_ALWAYS_SHOW_START	= UI_TYPE_START,				// 항상 보이는 인터페이스 |<--
+	UI_PLAYERINFO			= UI_ALWAYS_SHOW_START,
+	UI_CHATTING,
+	UI_PETTARGETINFO,
+	UI_WILDPETTARGETINFO,
+	UI_QUICKSLOT,
+	UI_SUMMON_START,
+	UI_SUMMON_FIRST	= UI_SUMMON_START,
+	UI_SUMMON_SECOND,
+	UI_SUMMON_END	= UI_SUMMON_SECOND,	
+	UI_RADAR,
+	UI_NOTICE,
+	UI_TARGETINFO,	
+	UI_HELP_ICON,	
+	UI_ALWAYS_SHOW_END,										// 항상 보이는 인터페이스     -->|
+
+	UI_SELECTIVE_SHOW_START	= UI_ALWAYS_SHOW_END,			// 선택적으로 보이는 인터페이스 |<--
+	UI_INVENTORY			= UI_SELECTIVE_SHOW_START,
+	UI_CHARACTERINFO,
+	UI_EXCHANGE,
+	UI_PORTAL,
+	UI_SHOP,
+	UI_PERSONALSHOP,
+	UI_WAREHOUSE,
+	UI_SECURITY,
+	UI_SYSTEMMENU,
+	UI_PARTY,
+	UI_GUILD,
+	UI_HELP,
+	UI_HELP3,
+	UI_SINGLE_BATTLE,
+	UI_GUILD_BATTLE, // Date : 2005-03-17,   By Lee Ki-hwan
+	UI_SIEGE_WARFARE,	// 공성전 // Date : 2005-06-27(오전 10:46:11), By Lee Ki-hwan
+	UI_SIEGE_WARFARE_NEW,	// 신공성전 // WSS_DRATAN_SIEGEWARFARE 070727
+	UI_GUILDWARPORTAL,
+	UI_BILLING,			// 대만 유료화(정액) Date : 2005-04-30(오후 3:55:19), By Lee Ki-hwan
+	UI_BILL_ITEM,		// 대만 유료화 아이템 지급 시스템
+	UI_MAP,
+	UI_OPTION,
+	UI_REFINE,
+	UI_PROCESS,
+	UI_PRODUCT,		// 이기환(12.7)	
+	UI_MIX,
+	UI_MIXNEW,		//  wooss 060523
+	UI_COMPOUND,	// Date : 2005-01-12,   By Lee Ki-hwan
+	UI_REMISSION,
+	UI_QUEST,
+	UI_QUESTBOOK_LIST,
+	UI_QUESTBOOK_CONTENT,
+	UI_QUESTBOOK_COMPLETE,
+	UI_QUESTBOOK_NEW,
+	UI_SKILLLEARN,
+	UI_CHANGEWEAPON,
+	UI_HELPER,
+	UI_INITJOB,
+	UI_TELEPORT,
+	UI_TELEPORT_PRIMIUM,	// [KH_070315] 프리미엄 메모리스크롤 관련 추가
+	UI_MESSENGER,
+	UI_WEBBOARD,
+	UI_QUIZ,
+	UI_PETTRAINING,
+	UI_PETINFO,
+	UI_RANKING,	
+	UI_GAMBLE,
+	UI_PROCESSNPC,
+	UI_SELECTRESOURCE,
+	UI_CASH_SHOP,			//wooss 050820 
+	UI_GW_MIX, // 공성 아이템 조합 
+	UI_GUILDSTASH,	// 길드 나스 보관함 
+	UI_SELECTWORD,
+	UI_SELECTLIST,	// 친구찾기이벤트 060126
+	UI_PETITEMMIX,	// 펫 아이템 조합( 유니크 아이템 제작 )
+	UI_PETFREE,			// 펫 봉인 해제
+	UI_QUIZEVENT,		// O.X QUIZ EVENT
+	UI_PARTYAUTO,
+	UI_COLLECTBOX,		// 곤충 채집 박스 
+	UI_BINGOBOX,		// 러브러브 이벤트 초코렛 채집 박스
+	UI_NPCHELP,			// NPC 안내 시스템
+	UI_SIMPLE_POP,		// [KH_070419] 심플 팝업 관련 추가
+	UI_MINIGAME,		// WSS_MINIGAME 070418
+	UI_FLOWERTREE,		// 꽃놀이 인터페이스	
+
+	UI_GUILD_NOTICE,	// WSS_NEW_GUILD_SYSTEM 070715 
+	UI_MONSTER_COMBO,	// ttos_080116 : 몬스터 콤보
+	UI_WILDPET_INFO,	// 공격 펫 Info
+	UI_AUCTION,			// 거래대행
+	UI_TATOO,			// [090709: selo] 펫 문양 시스템
+	UI_CHAT_FILTER,		//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+	UI_SELECTIVE_SHOW_END,									// 선택적으로 보이는 인터페이스     -->|
+
+	UI_LOGIN_SHOW_START		= UI_SELECTIVE_SHOW_END,		// 로그인 인터페이스 |<--
+	UI_LOGIN				= UI_LOGIN_SHOW_START,
+	UI_CREATE_CHAR,
+	UI_SEL_CHAR,
+	UI_SEL_SERVER,
+	UI_LOGIN_SHOW_END,										// 로그인 인터페이스     -->|
+
+	UI_MESSENGER_TALK_START = UI_LOGIN_SHOW_END,			// 메신저 대화 상자     -->|
+	UI_MESSENGER_TALK1		= UI_MESSENGER_TALK_START,
+	UI_MESSENGER_TALK2,
+	UI_MESSENGER_TALK3,
+	UI_MESSENGER_TALK4,
+	UI_MESSENGER_TALK5,
+	UI_MESSENGER_TALK6,
+	UI_MESSENGER_TALK7,
+	UI_MESSENGER_TALK8,
+	UI_MESSENGER_TALK9,
+	UI_MESSENGER_TALK10,
+	UI_MESSENGER_TALK_END,									// 메신저 대화 상자 |<--
+
+	UI_MESSAGEBOX_START		= UI_MESSENGER_TALK_END,		// 메세지 박스 인터페이스 |<--
+	UI_MESSAGEBOX1			= UI_MESSAGEBOX_START,
+	UI_MESSAGEBOX2,
+	UI_MESSAGEBOX3,
+	UI_MESSAGEBOX4,
+	UI_MESSAGEBOX5,
+	UI_MESSAGEBOX6,
+	UI_MESSAGEBOX7,
+	UI_MESSAGEBOX8,
+	UI_MESSAGEBOX9,
+	UI_MESSAGEBOX10,
+	UI_MESSAGEBOX11,
+	UI_MESSAGEBOX12,
+	UI_MESSAGEBOX13,
+	UI_MESSAGEBOX14,
+	UI_MESSAGEBOX15,
+	UI_MESSAGEBOX_END,										// 메세지 박스 안터페이스     -->|
+
+	UI_MESSAGEBOXL_START	= UI_MESSAGEBOX_END,			// 대화 상자 인터페이스 |<--
+	UI_MESSAGEBOXL1			= UI_MESSAGEBOXL_START,
+	UI_MESSAGEBOXL2,
+	UI_MESSAGEBOXL3,
+	UI_MESSAGEBOXL4,
+	UI_MESSAGEBOXL5,
+	UI_MESSAGEBOXL_END,										// 대화 상자 안터페이스     -->|
+
+	UI_TYPE_END				= UI_MESSAGEBOXL_END,
+};
+
 
 // Message box command code
 enum UI_MSGCMD
@@ -32,6 +299,7 @@ enum UI_MSGCMD
 	MSGCMD_DROPITEM	= 0,					// 아이템 드롭
 	MSGCMD_EXCH_REQ_SRC,					// 교환 요청
 	MSGCMD_EXCH_REQ_DEST,					// 교환 요청
+	MSGCMD_EXCH_ADD_ITEM,					// 교환창에 아이템 추가
 	MSGCMD_EXCH_DEL_ITEM,					// 교환창에서 아이템 삭제
 	MSGCMD_WAREHOUSE_ADD_ITEM,				// 창고에 추가
 	MSGCMD_WAREHOUSE_ADD_PLUSITEM,			// 창고에 추가
@@ -51,9 +319,7 @@ enum UI_MSGCMD
 	MSGCMD_GUILD_ADD_VICE_BOSS,				// 부단장 임명
 	MSGCMD_GUILD_DEL_VICE_BOSS,				// 부단장 퇴출
 	MSGCMD_GUILD_CHANGE_BOSS,				// 단장 이임
-	MSGCMD_GUILD_LORD_NOTICE,				// 성주 공지
-	MSGCMD_GUILD_RECALL_USE_REQ,			// 길드 리콜 사용 여부
-	MSGCMD_GUILD_RECALL,					// 길드 리콜 메시지 박스
+	MSGCMD_GUILD_LORD_NOTICE,				// 성주 공지 
 	 
 	// MSGCMD_GUILD_BATTLE_ // Date : 2005-03-19,   By Lee Ki-hwan
 	MSGCMD_GUILD_BATTLE_ERROR,
@@ -71,6 +337,8 @@ enum UI_MSGCMD
 	MSGCMD_BILLING_ERROR,
 	MSGCMD_BILL_ITEM_REP,
 
+	MSGCMD_SHOP_ADD_ITEM,					// 상점창에 아이템 추가
+	MSGCMD_SHOP_DEL_ITEM,					// 상점창에서 아이쳄 삭제
 	MSGCMD_SHOP_ADD_PLUSITEM,				// 상점창에서 업그레이드 아이템 추가
 	MSGCMD_SHOP_PRICE,						// 상점창에 가격 입력.
 	MSGCMD_SHOP_FAIL_ITEM,					// 상점창에서 판매할 수 없는 아이템의 경우
@@ -90,7 +358,6 @@ enum UI_MSGCMD
 	MSGCMD_INVEN_OPTION_ADD_REP,			// 아이템 옵션 추가 결과
 	MSGCMD_INVEN_OPTION_DEL_REQ,			// 아이템 옵션 제거 요청
 	MSGCMD_INVEN_OPTION_DEL_REP,			// 아이템 옵션 제거 결과
-	MSGCMD_INVEN_DIVIDE,					// 아이템 나누기
 	MSGCMD_REFINE_REP,						// 제련 결과
 	MSGCMD_QUEST_GIVEUP,					// 퀘스트 포기
 //	MSGCMD_QUEST_PRIZE,						// 퀘스트 보상
@@ -156,8 +423,6 @@ enum UI_MSGCMD
 	MSGCMD_MESSENGER_UNBLOCK,					// 친구 해제
 	MSGCMD_MESSENGER_DEL_REQ,				// 친구 삭제 요청
 	MSGCMD_MESSENGER_DEL,					// 친구 삭제
-	MSGCMD_MESSENGER_BLOCK_DEL_REQ,			// 차단 목록에서 삭제 요청
-	MSGCMD_MESSENGER_BLOCK_DEL,
 
 	MSGCMD_MESSENGER_GROUP_ADD,				// 그룹 추가
 	MSGCMD_MESSENGER_GROUP_DEL,				// 그룹 삭제
@@ -174,6 +439,8 @@ enum UI_MSGCMD
 	MSGCMD_CONFIRM_PASSWORD,				// 암호 확인
 	MSGCMD_SECURITY_NOTIFY,
 	MSGCMD_SECURITY_PASSWORD,				// 암호 묻기
+	MSGCMD_PASSWORD_UNLOCK_A,				// 암호 풀기 번호 묻기 (대만)
+	MSGCMD_PASSWORD_UNLOCK_R,				// 암호 입력 	
 
 	MSGCMD_BOOSTER_UPGRADE_REQ,
 	MSGCMD_BOOSTER_UPGRADE_REP,
@@ -202,7 +469,6 @@ enum UI_MSGCMD
 	MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY,
 	MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY,
 	MSGCMD_USE_REBIRTH_ITEM,				// 부활 주문서
-	MSGCMD_USE_REBIRTH_ITEM_SCROLL2,		// rebirth scroll item [11/10/2009 rumist]
 	
 	// wooss 050803 
 	MSGCMD_CHECK_ITEM_HEXP,					// inventory창에서 더블 클릭시  
@@ -381,173 +647,24 @@ enum UI_MSGCMD
 	MSGCMD_CUBE_PARTY_PERSON_ENTRANCE,							//Cube: 파티 개인 입장
 	MSGCMD_CUBE_GUILD_GROUP_ENTRANCE,						//Cube: 길드 입장
 	MSGCMD_CUBE_GUILD_PERSON_ENTRANCE,							//Cube: 길드 개인 입장
-	MSGCMD_CUBE_STATE,											//Cube: 파티 및 길드 큐브 현황
+	MSGCMD_CUBE_STATE,														//Cube: 큐브 현황
 	MSGCMD_CUBE_CHANGE_RATE,											//Cube: 세율 변경
 	// Cube
 	///////////////////////////////////////////////////////////////////////////////////	
 	MSGCMD_INITJOB_SSKILL,							// 스페셜 스킬 초기화 확인창
 	
 	MSGCMD_AUCTION_BUYITEM,
-	MSGCMD_AUCTION_FAVORITE,
-	MSGCMD_AUCTION_FAVORITE_CANCEL,
+	MSGCMD_AUCTION_ITEMREGISTER,
 	MSGCMD_AUCTION_CANCELREGISTER,
 	MSGCMD_AUCTION_INFO,
-	
-	MSGCMD_CONFIRM_OBJECTCLICK,						// 오브젝트 클릭 확인
 
-	MSGCMD_ITEM_BELONG,
-
-	// [sora] 원정대
-	MSGCMD_EXPEDITION_INVITE,						//원정대 초대
-	MSGCMD_EXPEDITION_INVITE_BY_NAME,
-	MSGCMD_EXPEDITION_ALLOW,						//원정대 참여 여부
-	MSGCMD_EXPEDITION_END,
-	MSGCMD_EXPEDITION_QUIT,
-	MSGCMD_EXPEDITION_SET_BOSS,
-	MSGCMD_EXPEDITION_SET_MBOSS,
-	MSGCMD_EXPEDITION_RESET_MBOSS,
-	MSGCMD_EXPEDITION_KICK,
-	MSGCMD_EXPEDITION_GO_STARTPLACE,				// 부활위치로 이동
-	MSGCMD_EXPEDITION_ERROR,
-	MSGCMD_EXPEDITION_COLLECTITEM,
-	//원정대 에러 메시지
-	// [6/3/2009 rumist] define NPC Affinity System Message type.
-	MSGCMD_AFFINITY_CONTRACT,
-	MSGCMD_AFFINITY_TAKEPRESENT,
-
-	MSGCMD_DIVISION_INFO,							// [sora] 파티, 원정대 분배방식 정보표시
-
-//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+	//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
 	MSGCMD_CHAT_BLOCK_REQ,
 	MSGCMD_CHAT_BLOCK,
 	MSGCMD_CHAT_ERROR,
 
-	// [sora 090824 제작 관련]
-	MSGCMD_SEAL_MEMBER,					// 제작 협회 등록
-	MSGCMD_LEARN_SEAL,					// 제작 증표 획득
-	
-	MSGCMD_PET_EVOLUTION,				// 펫 진화
-
-	MSGCMD_RAID_INFO,					// 귀속된 레이드 존 정보
-	MSGCMD_NICKNAME_DELETE,
-
-	MSGCMD_QUEST_RESTORE_ITEM,			// [100208: selo] 퀘스트 아이템 다시 받기
-	MSGCMD_QUEST_RESTORE_ITEM_RESULT,	// [100208: selo] 퀘스트 아이템 다시 받기 결과
-
-	// [100322: selo] 친화도 보상 알람
-	MSGCMD_AFFINITY_REWARD_NOTICE,
-
-	MSGCMD_LACARETTE_GET_TOKEN,			// [100325 : sora]라카렛 토큰 받기
-	MSGCMD_LACARETTE_ERROR,				// [2010/04/16 : Sora] 라카렛 메시지 창
-	MSGCMD_LACARETTE_REMIND,			// [2010/04/21 : Sora] 라카렛 사용확인 메시지
-	
-	MSGCMD_EVENT_WORLDCUP_EVENT2_REREQ,	// ($E_WC2010) [100517: selo] 2010 월드컵 이벤트2 우승 국가 재응모
-	
-	MSGCMD_EVENT_WORLDCUP_EVENT2_REQ,	// ($E_WC2010) [100514: selo] 2010 월드컵 이벤트2 우승 국가 응모
-	MSGCMD_EVENT_WORLDCUP_EVENT2_STATUS,// ($E_WC2010) [100514: selo] 2010 월드컵 이벤트2 응모 현황
-
-	MSGCMD_EVENT_WORLDCUP_EVENT3,		// ($E_WC2010) [100518: selo] 2010 월드컵 이벤트3 응답 메시지 박스
-	
-	MSGCMD_SOCKETSYSTEM_CHANCECARD,		// socket system : one more chance card [5/18/2010 rumist]
-	MSGCMD_QUEST_TUTORIAL_START,		// tutorial renewal. [8/2/2010 rumist]
-	MSGCMD_QUEST_TUTORIAL_CANCEL,
-
-	MSGCMD_HELPER_PLAYTIME,				// [8/31/2010 kiny8216] 후견인 시스템 개편 : 주이용시간
-	MSGCMD_HELPER_FIRE_MYSTUDENT,		// [8/31/2010 kiny8216] 후견인 시스템 개편 : 후견인 포기
-
-	MSGCMD_SOULOFSCALP_CONFIRM,			// 영혼의 징표 교환 확인 창
-	MSGCMD_REGISTER_MERCHANT,			// [2010/08/25 : Sora] ADD_SUBJOB
-	MSGCMD_COMBO_ERROR,					// [2010/10/06 : Sora] 몬스터 콤보 에러 메시지 중복 표시 수정
-
-	MSGCMD_PROMOTION2_REQ,				// [10/6/2010 kiny8216] 쿠폰 프로모션 이벤트 : 쿠폰 이벤트 상품 요청
-	
-	MSGCMD_LOGINSERV_BLOCK_USER,		// [10/27/2010 kiny8216] 브라질 패스워드 3번 틀려서 블록
-	MSGCMD_MONSTER_MERCENARY_CARD_USE,		// [2010/10/20 : Sora] 몬스터 용병 카드
-	MSGCMD_MONSTER_MERCENARY_CARD_HOLDER_USE,
-	MSGCMD_MONSTER_MERCENARY_CARD_ERROR,
-	MSGCMD_FACECHANGE,					// 외형 변경 모드
-	MSGCMD_FACECHANGE_OK,				// 외형 변경 요청
-	
-	MSGCMD_CASH_EX_ERROR,			// 소망상자 이용중 에러
-
-	MSGCMD_PET_STAT_INIT_CARD_USE,		// pet status initialize card [1/19/2011 rumist]
-
-	MSGCMD_ATTENDANCE,				// [2011/01/18 : Sora] 출석 이벤트	
-	MSGCMD_LACABALL_ERROR,				// laca ball error. [1/27/2011 rumist]
-	
-	MSGCMD_COMEBACK_CONFIRM,		// 휴면 계정 보상 이벤트 선물 받기
-	MSGCMD_BIRTHDAY_CONFIRM,		// 생일 선물 받기
-	MSGCMD_CHANGE_START_POINT,		// 독일 요청으로 주노 스타트 포인트 변경 [4/6/2011 ldy1978220]
-	MSGCMD_ROYALRUMBLE_JOIN_REQ,		// royal rumble game 신청 [4/26/2011 rumist]
-	MSGCMD_ROYALRUMBLE_REJECT_REQ,		// royal rumble game 신청 취소 
-	MSGCMD_ROYALRUMBLE_GO_ZONE,			// go to royal rumble zone.
-	MSGCMD_ROYALRUMBLE_WINNER_OUT,		// go to start zone.
-
-	MSGCMD_GUILD_MARK_CONFIRM,			// [sora] GUILD_MARK
-	MSGCMD_GUILD_MARK_REGISTER,			// [sora] GUILD_MARK
-	MSGCMD_KB_EXCHAGE_HEART,			// [2011/11/14 : Sora] 태국 국왕 탄생일 이벤트
-	MSGCMD_KB_EXCHAGE_FLAG,				// [2011/11/14 : Sora] 태국 국왕 탄생일 이벤트
-
-	MSGCMD_USERNOTICE,					// [11/17/11 trylord] 유저 공지 시스템
-
-	MSGCMD_SHUTDOWN_TIME,				// [2011/12/07 : Sora] 셧다운 메시지
-
-	MSGCMD_GUILDMASTER_KICK_REQUEST,		// 길드장 해임 심사 신청 확인 [trylord 111228]
-	MSGCMD_GUILDMASTER_KICK_CANCEL_REQUEST,	// 길드장 해임 이의 신청 확인 [trylord 111228]
-	MSGCMD_GUILDREMOTE_JOIN_TOMASTER,		// 길드원격 - 길마 신청받음
-	MSGCMD_GUILDREMOTE_JOIN_TOUSER,			// 길드원격 - 유저가 신청받음
-
-	MSGCMD_USE_PET_ACCUMULATE,			// 축적펫 메시지 박스
-	MSGCMD_USE_PET_ACCUMULATE2,
-	MSGCMD_SENDMAIL_COUNT_INPUT,		// [2012/01/18] 메일 보내기 아이템 카운트 세팅
-	MSGCMD_SENDMAIL_COUNT_ADD,			// [2012/01/18] 메일 보내기 아이템 카운트 더하기
-	MSGCMD_SENDMAIL_MONEY_INPUT,		// [2012/01/26] 메일 보내기 돈 입력 메시지 박스
-	MSGCMD_JUMPIMGPOTION,				// 독일 요청 점핑 포션 사용시
-	MSGCMD_DELETMAIL_CHECK,				// 메일 삭제 재 확인
-
-	MSGCMD_CHAR_SLOT_EXTEND,			// [2012/07/05 : Sora]  캐릭터 슬롯 확장 아이템
-	//MSGCMD_CHAR_SERVER_MOVE,			// 캐릭터 서버 이전 아이템 [7/25/2012 Ranma]
-
-	MSGCMD_NEWGUILDSTASH_ILLEGAL_USER,	// 부정 사용자. 해킹 사용 가능성 유저. [7/17/2012 rumist]
-
-	MSGCMD_CHARMOVETOANOTHERSERVER_SUCCESS, // ENABLE_CHARACTER_MOVE_TO_OTHER_SERVER_ITEM // 성공시 messagebox 보여주기 (타이머 포함) [7/25/2012 Ranma]
 	// wooss 050806
-	MSGCMD_FORTUNE,						// [2013/02/13] sykim70 Fortune System
-	MSGCMD_MYSTERIOUS_BEAD_SEND_ITEM,	// 신비한 석상 구슬 아이템 사용후 EXPRESS로 아이템 전송시 사용 MSG
-	MSGCMD_WAREHOUSE_TAKE_MONEY,			//2013/04/04 jeil 나스 아이템 제거 
-	MSGCMD_EXCH_ADD_NAS,				//2013/04/09 jeil 나스 아이템 제거 
 	MSGCMD_NULL,						// 단순 확인 메시지박스 처리 
-	MSGCMD_JEWEL_COMPOS_JEWEL_COMPOS_SCROLL,
-	MSGCMD_EXPRESS_RECV,
-	MSGCMD_EXPRESS_RECVALL,
-	MSGCMD_EXPRESS_DELETE,
-	MSGCMD_EXPRESS_DELETEALL,
-	MSGCMD_EXPRESS_REMOTE_ITEMUSE,
-	MSGCMD_EXPRESS_REMOTE_ERROR,
-	MSGCMD_PET_STASH_INSTASH,
-	MSGCMD_PET_STASH_OUTSTASH,
-	MSGCMD_PET_STASH_ERROR,
-	MSGCMD_PET_STASH_ERROR_SEALED,
-	MSGCMD_PET_STASH_USEITEM,
-	MSGCMD_TEST_UIBASE,
-	MSGCMD_ITEM_DUPLICATION_CHECK,
-	MSGCMD_INVENTORY_ARRANGE,
-	MSGCMD_USE_SEALED_SOUL,
-	MSGCMD_SYNDICATE_PUTON_JEWEL_REQ,
-	MSGCMD_SYNDICATE_SECESSION_REQ,
-#ifdef DURABILITY
-	MSGCMD_DURABILITY_MATERIAL_COUNT,
-	MSGCMD_DURABILITY_REPAIR,
-	MSGCMD_DURABILITY_SPECIAL_REPAIR,
-	MSGCMD_DURABILITY_RECOVER,
-#endif	//	DURABILITY
-	MSGCMD_EXP_PET_COOLTIME_REMOVE,
-	MSGCMD_ATTENDANCE_ASSURE_OK_UPD,
-	MSGCMD_ATTENDANCE_ITEM_USE,
-#ifdef PREMIUM_CHAR	
-	MSGCMD_PREMIUM_CHAR_ITEM_USE,
-#endif	//	PREMIUM_CHAR
-	MSGCMD_LOGOUT_RELIC_WARRING,
 	MSGCMD_TOTAL
 };
 
@@ -564,7 +681,7 @@ enum UI_MSGLCMD
 	MSGLCMD_QUEST_TUTORIAL,					// 튜토리얼 퀘스트
 	MSGLCMD_SHOP_REQ,						// SHOP REQUEST		Insert By cpp2angle (04.12.18)
 	MSGLCMD_GUILD_REQ,						// 길드
-	MSGLCMD_GUILD_BATTLE_REQ = 10,				// 길드 전투 // Date : 2005-03-17,   By Lee Ki-hwan
+	MSGLCMD_GUILD_BATTLE_REQ,				// 길드 전투 // Date : 2005-03-17,   By Lee Ki-hwan
 	MSGLCMD_WAREHOUSE_REQ,					// 창고...
 	MSGLCMD_SECURITY_REQ,					// 보안...
 	MSGLCMD_SKILLLEARN_REQ,					// 스킬 습득창
@@ -626,7 +743,7 @@ enum UI_MSGLCMD
 	MSGLCMD_COLLECT_INSECT_EVENT,				// 여름 곤충 채집 이벤트
 	MSGLCMD_COLLECT_BOX_GIFT,				// 곤충 채집상자 보상
 	MSGLCMD_EVENT_PROMOPACK,				// 프로모 패키지 이벤트 (말레샤)
-
+	
 	MSGLCMD_EVENT_XMAS_2006,				// 2006 XMas Event [12/11/2006 Theodoric]
 	MSGLCMD_EVENT_XMAS_2006_COUNT,			// 2006 XMas Event [12/11/2006 Theodoric]
 	MSGLCMD_EVENT_XMAS_2006_CHANGE,			// 2006 XMas Event [12/11/2006 Theodoric]
@@ -671,67 +788,13 @@ enum UI_MSGLCMD
 	//Cube
 	MSGLCMD_CUBE_PARTY_ENTRANCE,		//파티입장 선택창
 	MSGLCMD_CUBE_GUILD_ENTRANCE,		//길드입장 선택창
-
-	MSGLCMD_RAID_CONTINUED_MESSAGE,		// 레이드 시스템 진행 메세지
-	//MakeItem
-	MSGLCMD_PRODUCETNPC_VOUCHER,		// 제작 아이템 증표
-	MSGLCMD_PRODUCETNPC_LEARN,			// 제작 아이템 기술 습
-
-	// [6/3/2009 rumist] define NPC Affinity System Request Message Type.
-	MSGLCMD_AFFINITY_DONATE_REQ,		// request to donation view.
-
-	// connie [2009/9/18] - 
-	MSGLCMD_NPC_SCROLL_MESSAGE,
-
-	// tutorial open. [8/2/2010 rumist]
-	MSGLCMD_QUEST_TUTORIAL_OPEN,
 	
-	MSGLCMD_TUTORIAL_MESSAGE1,
-	MSGLCMD_TUTORIAL_MESSAGE2,
-	MSGLCMD_TUTORIAL_MESSAGE3,
-	MSGLCMD_TUTORIAL_MESSAGE4,
-	MSGLCMD_TUTORIAL_MESSAGE5,
-	MSGLCMD_TUTORIAL_MESSAGE6,
-	// add tutorial message box.
-	MSGLCMD_TUTORIAL_MESSAGE7,
-	
-	MSGLCMD_AUCTION,
-	
-	// [100222: selo] 연속 다이얼로그 트리거 
-	MSGLCMD_CONSECUTIVE_DIALOGUE,
-	MSGLCMD_SOCKET_SYSTEM,
-	MSGLCMD_SOCKET_SYSTEM_EMPTY,
-	MSGLCMD_SOCKET_SYSTEM_EMPTY_BOX,
-	MSGLCMD_SOCKET_SYSTEM_JEWEL_COMPOS,
-	MSGLCMD_LACARETTE_GET_TOKEN,		// 라카렛 토큰 획득
-
-	MSGLCMD_EVENT_WORLDCUP_EVENT1,		// ($E_WC2010) [100511: selo] 2010 월드컵 이벤트1
-	MSGLCMD_EVENT_WORLDCUP_EVENT2,		// ($E_WC2010) [100514: selo] 2010 월드컵 이벤트2
-	MSGLCMD_EVENT_WORLDCUP_EVENT3,		// ($E_WC2010) [100514: selo] 2010 월드컵 이벤트3
-	
-	MSGLCMD_ATTENDANCE_SYSTEM,			// [7/2/2010 kiny8216] 출석 시스템
-	
-	MSGLCMD_REGISTER_MERCHANT,			// // [2010/08/26 : Sora] ADD_SUBJOB 상인 등록
-	MSGLCMD_LORD_COSTUME_REQ,			// [9/15/2010 kiny8216] 성주 코스튬
-
-	MSGLCMD_ROYALRUMBLE_MANAGER,		// royal rumble 관리인. [4/25/2011 rumist]
-	MSGLCMD_NEWGUILDSTASH_REQ,
-	MSGLCMD_REFORM_SYSTEM,				// reform system [8/31/2012 박훈]	
-	MSGLCMD_SYNDICATE_JEWEL_GIVE,
-	MSGLCMD_SYNDICATE_SECESSION_REQ,
 	MSGLCMD_TOTAL
 };
 
-enum CHECK_ITEM_FLAG
-{
-	UI_ITEM_FLAG_DEFAULT,
-	UI_ITEM_FLAG_RARE,
-	UI_ITEM_FLAG_SET,
-};
-
 // wooss 050802 define cash item 
-#define		RECOVER_HEXP_ITEM		844		// 경험치 복구 주문서
-#define		RECOVER_HEXP_ITEM_LUCKY	2035	// 럭키 경험치 복구 주문서	
+#define		RECOVER_HEXP_ITEM		844		// 경험치 복구 주문서	
+#define		RECOVER_HEXP_ITEM_LUCKY	2035	// 럭키 경험치 복구 주문서
 #define		RECOVER_AEXP_ITEM		845		// 숙련도 복구 주문서
 #define		RECOVER_AEXP_ITEM_LUCKY	2036	// 럭키 숙련도 복구 주문서
 #define		REBIRTH_ITEM			846		// 부활 주문서
@@ -746,19 +809,17 @@ enum CHECK_ITEM_FLAG
 #define		INIT_STATUS_ITEM		847		// 스테이터스 초기화 카드
 #define		INIT_COMBAT_SKILL_ITEM	848		// 전투스킬 초기화 카드
 #define		INIT_SPECIAL_SKILL_ITEM	849		// 특수스킬 초기화 카드
-#define		INIT_SKILL_ITEM			850		// 스킬 초기화 아이템.
 #define		INIT_ALL_ITEM			851		// 능력치 초기화 카드
+#define		EX_SLOT_ITEM			839		// 캐릭터 슬록 확장 카드
 #define		EXCHANGE_WEAPON_ITEM	975		// 무기 교환 카드	
 #define		EXCHANGE_ARMOR_ITEM		2355	// 방어구 교환 카드
 #define		CHANGE_MY_NAME_ITEM_UE	1120	// 캐릭터 개명 카드(통합이벤트 기존 개명카드에서 속서을 다르게 처리)
-#define		PARTY_RECALL_ITEM1		1298	// 파티 리콜 아이템	(24시간)
-#define		PARTY_RECALL_ITEM2		1299	// 파티 리콜 아이템	(7일간)
-#define		PARTY_RECALL_ITEM3		1300	// 파티 리콜 아이템	(30일간)
-#define		PARTY_RECALL_ITEM4		1413	// 파티 리콜 아이템	(3시간)
-#define		PARTY_RECALL_ITEM5		1414	// 파티 리콜 아이템	(7시간)
-#define		PARTY_RECALL_ITEM6		1415	// 파티 리콜 아이템	(1시간)
-#define		PARTY_RECALL_IRIS		2945	// 파티 리콜 아이템 (아이리스 대륙에서만 사용[1시간])
-#define		PARTY_RECALL_ASKA		2946	// 파티 리콜 아이템 (아스카디아 대륙에서만 사용[1시간])
+#define		PARTY_RECALL_ITEM1		1298	// 무기 교환 아이템	
+#define		PARTY_RECALL_ITEM2		1299	// 무기 교환 아이템	
+#define		PARTY_RECALL_ITEM3		1300	// 무기 교환 아이템	
+#define		PARTY_RECALL_ITEM4		1413	// 무기 교환 아이템	
+#define		PARTY_RECALL_ITEM5		1414	// 무기 교환 아이템	
+#define		PARTY_RECALL_ITEM6		1415	// 무기 교환 아이템	
 #define		PLATINUM_IRIS_ITEM				1416	// 플래티늄 아이리스 
 #define		PLATINUM_BOOSTER_ITEM			1417	// 플래티늄 부스터 
 #define		PLATINUM_UPGRADESTONE_ITEM1		1418	// 플래티늄 제련석(감정 전)	
@@ -824,17 +885,6 @@ enum CHECK_ITEM_FLAG
 
 #define		REBIRTH_ITEM_NEWBIE			2667		// 부활 주문서(초보자용)
 #define		REBIRTH_ITEM_PHOENIX		3218		// 피닉스의 부활 아이템
-#define		REBIRTH_ITEM_SCROLL2		4933		// rebirth second item. [11/10/2009 rumist]
-#define		REBIRTH_ITEM_EVENT			7056		// [이벤트용]부활 주문서
-
-// 캐쉬 인벤 열쇠 아이템.
-#define		INVEN_CASH_KEY1				(9936)
-#define		INVEN_CASH_KEY2				(9937)
-
-#define		DEF_HOLYWATER_STRONG		(10295) // 힘의성수 (홀리워터) 아이템
-#define		DEF_HOLYWATER_MYSTERY		(10296) // 신비한성수 (홀리워터) 아이템
-#define		DEF_HOLYWATER_DAMAGE		(10978) // 격돌의성수 (홀리워터) 아이템
-#define		DEF_HOLYWATER_SKILLDAMAGE	(10979) // 기적의성수 (홀리워터) 아이템
 
 // Type:일회용 - SubType:기타일회용 아이템
 enum ITEM_ONCEUSE_ETC
@@ -844,19 +894,6 @@ enum ITEM_ONCEUSE_ETC
 	GOLD_DISH =2146,					// 태국 송크란 이벤트 금그릇 
 	SILVER_DISH =2147,					// 태국 송크란 이벤트 은그릇
 	RARE_IDENTITY_ITEM_NEWBIE =2666,	// 초보자용 돋보기.
-	// socket system [5/18/2010 rumist]
-	SOCKET_ITEM_CHANCE_CARD = 5329,		// socket one more chance card.
-	PET_STAT_INIT_CARD		= 6281,		// pet status initialize card. [1/19/2011 rumist]
-	MYSTERIOUS_BEAD			= 9938,		// 신비한 석상 구슬 아이템
-	SEALED_SOUL				= 10022,	// 봉인된 영혼
-	EXP_PET_COOLTIME_REMOVE = 10286,	// 경험치펫 쿨타임 제거제.
-};
-
-// HUD Type
-enum HUD_DATA_TYPE
-{
-	HUD_CHARACTER_TYPE	= 0,
-	HUD_ITEM_TYPE		= 1,
 };
 
 // Character state flags
@@ -875,18 +912,13 @@ enum HUD_DATA_TYPE
 #define CSF_MOONSTONE			0x00000800		// 문스톤 이벤트 중.
 #define CSF_CASTLE_WAR_READY	0x00001000		// 공성 준비중에는 못 움직임...
 #define CSF_MOUNT_HUNGRY		0x00002000		// 마운트 상태에서 배가 고픔.
-#define	CSF_EXPEDITION			0x00004000		// [sora] 원정대 플레이중
-#define	CSF_EXPEDITION_REQ		0x00008000		// [sora] 원정대 참여 요청중
-#define CSF_PETRIDING			0x00010000		// 펫을 타고 있는 중~~(클라에서 서버응답때까지)
-#define CSF_SKILLREADY			0x00020000		// 스킬 레디 처리 중
-#define CSF_ITEMWEARING			0x00040000		// 장비 착용 및 교체 시도 중
 // 공성, 길드 등등 추가 예정
 
 // 이동할 수 없는 상태
 #define CSF_CANNOT_MOVE_MASK		( CSF_SKILL | CSF_TELEPORT | CSF_PERSONALSHOP | CSF_MOONSTONE | CSF_CASTLE_WAR_READY | CSF_MOUNT_HUNGRY )
-// 순간 이동 할 수 없는 상태 ([sora]원정대 추가)
+// 순간 이동 할 수 없는 상태
 #define	CSF_CANNOT_TELEPORT_MASK	( CSF_SKILL | CSF_TELEPORT | CSF_PARTY_REQ |		\
-									  CSF_EXCHANGE | CSF_PERSONALSHOP | CSF_EXPEDITION_REQ )					\
+									  CSF_EXCHANGE | CSF_PERSONALSHOP )					\
 // 앉을 수 없는 상태
 #define CSF_CANNOT_SITDOWN_MASK		( CSF_SKILL | CSF_TELEPORT | CSF_EXCHANGE )
 #define CSF_CANNOT_ATTACK_MASK		( CSF_CASTLE_WAR_READY )
@@ -910,7 +942,7 @@ enum HUD_DATA_TYPE
 
 // Week 관련 메크로
 // Date : 2005-07-07(오후 3:21:20), By Lee Ki-hwan
-enum EWEEK { SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY };
+enum EWEEK { SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, NOTDAY };
 
 // Date : 2005-11-16(오후 7:42:49), By Lee Ki-hwan
 // 타격 Type 
@@ -939,7 +971,6 @@ typedef struct _tagDAMAGE
 	{
 		sbTargetFlag	= 0;
 		ulDamage		= 0;
-		ulIndex			= 0;
 		fX = fY			= 0.0f;
 		dStartTime		= 0.0f;
 		bVisible		= FALSE;
@@ -966,82 +997,29 @@ typedef struct _stHELP1
 	int			m_width;
 	int			m_height;
 
-	int		transFlag;	//[sora] 미번역 스트링 index 표시
-
-	_stHELP1()
-	{
-		m_index = -1;
-		transFlag = 0;
-	}
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate();
-	void ClearNoTranslate();
 } HELP1;
+
 typedef HELP1* pHELP1;
 // ----------------------------------------------------------------<<
+
+
+const int RareItem_Name_Color[5] = { 0x1C54CCFF, 0x20A51CFF, 0xE5E230FF, 0xFFFFFFFF, 0xFFFFFFFF};
+
 // FIXME : 잦은 삽입과 삭제가 있는 부분이므로 list가 저절할듯...
 typedef std::vector<DAMAGE>		DAMAGE_deque;
 
-// added by sam 11/03/02
-// 번역 되지않은 스트링 저장을 위한 벡터 
-// [2011/05/31 : Sora] 클라이언트 만이 아니고 다른곳에도 사용할 수 있게 확장
-enum eTransTab
-{
-	CLIENT_STRING = 0,
-	ITEM_STRING,
-	NPC_STRING,
-	SKILL_STRING,
-	QUEST_STRING,
-	RARE_OPTION_STRING,
-	ACTION_STRING,
-	OPTION_STRING,
-	SPECIAL_SKILL_STRING,
-	HELP1_STRING,
-	MONSTER_COMBO_STRING,
-	AFFINITY_STRING,
-	ITEMCOLLECTION_STRING,
-	TYPE_MAX
-};
-
-//_RTWidth = 366, _RTHeight = 226,
-#define		DEF_DEFAULT_RT_WIDTH	366
-#define		DEF_DEFAULT_RT_HEIGHT	226
-
-class CUIGuildMarkIcon;
-class CUIIcon;
-
-typedef std::vector<INDEX> NO_TRANS_STRING_INDEX;
-typedef NO_TRANS_STRING_INDEX::iterator NO_TRANS_STRING_INDEX_IT;
 // ----------------------------------------------------------------------------
 // Name : CUIManager
 // Desc :
 // ----------------------------------------------------------------------------
-class ENGINE_API CUIManager : public CUIWindowDeclare,
-							  public CSingletonBase<CUIManager>
+class ENGINE_API CUIManager
 {
-	friend CSingletonBase<CUIManager>;
-
-private:
-	CUIManager();
-	virtual ~CUIManager();
-	
-public:
-	enum UVRectPos {
-		UV_UL, UV_UM, UV_UR,
-		UV_ML, UV_MM, UV_MR,
-		UV_LL, UV_LM, UV_LR,
-		UV_Total,
-	};
-
 protected:
+	UIGameState		m_ugsGameState;						// Game state for UIs
 	CDrawPort		*m_pUIDrawPort;						// Pointer of draw port for rendering UIs
-	
-	CUIWindow		*m_apUIsOld;						// Prev Select UI
+	CUIWindow		*m_apUIs[UI_TYPE_END];				// Pointers of UIs
 	int				m_aUIOrder[UI_TYPE_END];			// Order of UIs
-	int				m_nDragX, m_nDragY;
-	CUIIcon*		m_pIconDrag;
-	CUIBase*		m_pBaseDrag;
+	CUIButtonEx		m_btnHoldBtn;						// Holding button
 	CUIMouseCursor	*m_pumcMouseCursor;					// Pointer of mouse cursor
 	BOOL			m_bShowUIs;							// If UIs are shown or not
 	BOOL			m_bRButtonDown;						// Hide mouse cursor if lbutton is down
@@ -1053,11 +1031,9 @@ protected:
 	// Name, chatting & shop popup
 	CTextureData	*m_ptdPopupTexture;					// Texture of popup
 	CTextureData	*m_ptBlackTexture;					// Texture of popup
-	CTextureData	*m_ptdExpeditionTexture;
 
 	UIRect			m_rcName;							// Region of name
 	UIRect			m_rcGuildName;						// Region of name
-	UIRect			m_rcNickName;						// Region of nickname
 	UIRect			m_rcGuild;							// Region of guild
 	UIRect			m_rcChat;							// Region of chatting
 	UIRect			m_rcShop;							// Region of shop
@@ -1066,9 +1042,6 @@ protected:
 	UIRectUV		m_rtNameL;							// UV of name
 	UIRectUV		m_rtNameC;
 	UIRectUV		m_rtNameR;
-	UIRectUV		m_rtPremiumNameL;					// UV of Premium char name effect
-	UIRectUV		m_rtPremiumNameC;
-	UIRectUV		m_rtPremiumNameR;
 	UIRectUV		m_rtNameRPK;
 	UIRectUV		m_rtNameRDefPK1;
 	UIRectUV		m_rtNameRDefPK2;
@@ -1099,60 +1072,28 @@ protected:
 	UIRectUV		m_rtShopPremLL;
 	UIRectUV		m_rtShopPremLo;
 	UIRectUV		m_rtShopPremRL;
-	UIRectUV		m_rtNickNameL;							// UV of name
-	UIRectUV		m_rtNickNameC;
-	UIRectUV		m_rtNickNameR;
-
-	UIRectUV		m_rtTargetLabel[LABEL_INDEX_TOTAL];	//0 도끼, 1 유령, 2 발바닥, 3 조각칼, 4 똥, 5 악마, 6 해골 
 
 	CStaticArray<CTString>	m_aStringData;				// Array of string data
 
 	DWORD			m_dwCSF;							// Character state flags
-	TIME			m_tCSFElapsedTime;					// CSF ElapsedTime
 
 	CGame			*m_pGame;
 	int				m_LocalVersion;
 
-	CTString		m_strSubJobName[TOTAL_SUBJOB];			// [2010/08/26 : Sora] ADD_SUBJOB 보조 직업명
-
-	CRenderTexture* m_RenderTarget;							// [3/18/2011 kiny8216] LuckyDraw Open Rendter Target
-	BOOL			m_bShowAni;								// [3/18/2011 kiny8216] LuckyDraw Render
-	FLOAT			m_fAniStartTime;						// [3/18/2011 kiny8216] LuckyDraw Animation Time
-	CTextureData	*m_ptdAniBG;							// [3/18/2011 kiny8216] LuckyDraw Animation BackGround Texture
-	CUIRectSurface	m_AniBackGround;						// [3/18/2011 kiny8216] LuckyDraw Animation BackGround Render Surface
 public :
 	// wooss 050822 
 	// TEST UI를 위해 추가
 	// TEST 환경이 아닐 경우 이부분을 0로 처리 
 	// testUI_TYPE
+	BOOL			m_testUI_MODE;
+	UI_TYPE			m_testUI_TYPE;		//wooss  UI test variable 
 	int				m_mPosX,m_mPosY;
-	int				m_JapanTempEvent;					// 일본 보물 상자 이벤트 발생 유무 저장
-
 	int				m_nHelpNpc_Index;	// NPC 안내시스템 
-	// connie [2009/9/16] - NPC 찾기
-	FLOAT			m_fHelpMobX, m_fHelpMobZ;
-	BOOL			m_IsHelpMob;
-	UINT			m_NPCScrollZoneNo;				// BUG FIX : TO-KR-T20100223-010 [2/24/2010 rumist]
-	BOOL			m_IsInField;
 	// wooss 070324 --------------------------------------------------->><<
 	// kw : WSS_HELP_SYSTEM_1
 	CStaticArray<HELP1>	m_aHelp1Data;				// Array of string data
 
 	CUIDrawBox		m_bxGuildRankBox;				// WSS_GUILDMASTER 070517	
-
-	CUIEditBox		m_ebRefCntReturn;				// 참조 관련 체크용.(아놔 원래 이렇게 안짜는데.;;ㅜㅜ;) [11/23/2009 rumist]
-	CUIMultiEditBox m_mbRefCntReturn;				// 멀티용.
-
-	CDamageLogInfo	m_DamageLogInfo;				// QA팀 밸런스 테스트 용
-
-	int				 	m_nCurInfoLines;						// Count of current item information lines
-	CTString			m_strItemInfo[MAX_CASH_ITEMINFO_LINE];							// Item information string
-	COLOR				m_colItemInfo[MAX_CASH_ITEMINFO_LINE];							// Color of item information string
-
-	NO_TRANS_STRING_INDEX m_vecNoTrans[TYPE_MAX];
-
-	bool	m_bCursorInGame;
-	std::vector<std::string>	m_vecAdditionalPath;
 
 protected:
 	// Internal functions
@@ -1162,37 +1103,36 @@ protected:
 	// wooss 070324 --------------------------------------------------->>
 	// kw : WSS_HELP_SYSTEM_1
 	void	LoadHelp1Data( const CTFileName &fnString );
-	void	LoadHelp1String();
 	// ----------------------------------------------------------------<<
 
 	// Command functions
-	void	DropItem( int nTab, int inven_idx );
+	void	DropItem( int nTab, int nRow, int nCol );
 
 	// Network message functions ( send )
-	void	SendDropItem( int nTab, int inven_idx, SQUAD llCount = 1 );
+	void	SendDropItem( int nTab, int nRow, int nCol, SQUAD llCount = 1 );
 
-public:
 	// WSS_GUILDMASTER 070517 ---------------------------------------->><<
 	void	DrawGuildRankBox(UIRect,SBYTE,FLOAT);
 
+public:
 	int				m_nShowMessageBox;
+
+	CUIManager();
+	~CUIManager();
 
 	// Create & destroy
 	void	Create();
-
-	void	InitHardCoreCreate();
-	void	DestroyAll();
-
-	void	InitUIString();
+	void	Destroy();
 
 	// Render
 	void	Render( CDrawPort *pdp, CProjection3D* pprProjection );
-	
+
+	// Set game
+	void	SetBackgroundWorld( CWorld *pWorld );
 	void	SetGameHandle( CGame *pGame );
 
 	// Get drawport
 	CDrawPort	*GetDrawPort() const { return m_pUIDrawPort; }
-	void	SetDrawPort( CDrawPort* pDraw ) { m_pUIDrawPort = pDraw; }
 	PIX		GetMinI() const { return m_pixMinI; }
 	PIX		GetMinJ() const { return m_pixMinJ; }
 	PIX		GetMaxI() const { return m_pixMaxI; }
@@ -1201,10 +1141,8 @@ public:
 	// String data
 	CTString	&GetString( INDEX iIndex )
 	{
-		#pragma warning( disable:4172 )
-		static CTString nullStr = "";
-		//nullStr = "";
-		return (iIndex >= 0 && iIndex < m_aStringData.Count()) ? m_aStringData[iIndex] : nullStr;  // negative indexes come from data files
+		ASSERT( iIndex < m_aStringData.Count() );
+		return m_aStringData[iIndex];
 	}
 	CTString	&GetString( INDEX iIndex, INDEX iSrc );
 	CTString	&GetString( INDEX iIndex, const char *szSrc );
@@ -1213,8 +1151,9 @@ public:
 	CTString	&GetString( INDEX iIndex, const CTString &strSrc1, const CTString &strSrc2 );
 
 	// Game state
-	void	SetUIGameState(BOOL bGameOn = FALSE);
-	
+	void	SetUIGameState( UIGameState ugsGameState );
+	UIGameState	GetUIGameState() const { return m_ugsGameState; }
+
 	// Toggle visible UIs
 	void	ToggleVisibleUIs() { m_bShowUIs = !m_bShowUIs; }
 	BOOL	IsVisibleUIs()		{ return m_bShowUIs; }
@@ -1225,27 +1164,13 @@ public:
 
 	// Adjust position of UIs
 	void	ResetUIPos( CDrawPort *pdp );		// Initialize position of UIs
-	void	ResetUISavePos( CDrawPort *pdp );		// Initialize position of UIs
 	void	AdjustUIPos( CDrawPort *pdp );		// Adjust position of UIs when main window changes
 
 	// Set & get character state flags
-	void	SetCSFlagOn( DWORD dwCSF );
-	void	SetCSFlagOff( DWORD dwCSF ) {
-#ifdef	VER_TEST
-	if (dwCSF == CSF_TELEPORT)
-		LOG_DEBUG("@@@@@ FREE CSF_TELEPORT");
-#endif	// VER_TEST
-		
-		m_dwCSF &= ~dwCSF; 
-	}
+	void	SetCSFlagOn( DWORD dwCSF ) { m_dwCSF |= dwCSF; }
+	void	SetCSFlagOff( DWORD dwCSF ) { m_dwCSF &= ~dwCSF; }
 	void	ResetCSFlag() { m_dwCSF = 0; }
 	DWORD	IsCSFlagOn( DWORD dwCSF ) { return m_dwCSF & dwCSF; }
-	BOOL	IsInputLock();
-
-	void	SetCSFlagOnElapsed( DWORD dwCSF, TIME tTime ) { m_dwCSF |= dwCSF; m_tCSFElapsedTime = tTime; }
-	void	SetCSFlagOffElapsed( DWORD dwCSF ) { m_dwCSF &= ~dwCSF; m_tCSFElapsedTime = 0; }
-	void	ResetCSFlagElapsed() { m_dwCSF = 0; m_tCSFElapsedTime = 0; }
-	DWORD	IsCSFlagOnElapsed( DWORD dwCSF, TIME tElapsedTime );
 
 	// Set & get mouse position state
 	void	SetMouseCursorInsideUIs( UIMCType umctType = UMCT_NORMAL )
@@ -1253,7 +1178,6 @@ public:
 		m_umctTypeInUI = umctType;
 		m_bMouseInsideUIs = TRUE;
 	}
-	void	SetMouseInsideUIs(BOOL bOn) { m_bMouseInsideUIs = bOn; }
 	BOOL	IsMouseInsideUIs() const { return m_bMouseInsideUIs; }
 	BOOL	IsInsideUpperUIs( INDEX iCurUIIndex, int nX, int nY );
 
@@ -1265,36 +1189,118 @@ public:
 
 	// Get UIs
 	CUIWindow			*GetUI( int nUIIndex ) const { return m_apUIs[nUIIndex]; }
+	CUIChatting			*GetChatting() { return (CUIChatting *)m_apUIs[UI_CHATTING]; }
+	CUIPlayerInfo		*GetPlayerInfo() { return (CUIPlayerInfo *)m_apUIs[UI_PLAYERINFO]; }
+	CUITargetInfo		*GetTargetInfo() { return (CUITargetInfo *)m_apUIs[UI_TARGETINFO]; }
+	CUIHelpIcon			*GetHelpIcon() { return (CUIHelpIcon *)m_apUIs[UI_HELP_ICON]; }
+	CUIQuickSlot		*GetQuickSlot() { return (CUIQuickSlot *)m_apUIs[UI_QUICKSLOT]; }
+	CUIRadar			*GetRadar() { return (CUIRadar *)m_apUIs[UI_RADAR]; }
+	CUIInventory		*GetInventory() { return (CUIInventory *)m_apUIs[UI_INVENTORY]; }
+	CUICharacterInfo	*GetCharacterInfo() { return (CUICharacterInfo *)m_apUIs[UI_CHARACTERINFO]; }
+	CUIExchange			*GetExchange() { return (CUIExchange *)m_apUIs[UI_EXCHANGE]; }
+	CUIPortal			*GetPortal() { return (CUIPortal *)m_apUIs[UI_PORTAL]; }
+	CUIShop				*GetShop() { return (CUIShop *)m_apUIs[UI_SHOP]; }
+	CUIQuiz				*GetQuiz() { return (CUIQuiz *)m_apUIs[UI_QUIZ]; }
+	CUIPetTraining		*GetPetTraining() { return (CUIPetTraining *)m_apUIs[UI_PETTRAINING]; }
+	CUIPetInfo			*GetPetInfo() { return (CUIPetInfo *)m_apUIs[UI_PETINFO]; }
+	CUIGamble			*GetGamble() { return (CUIGamble *)m_apUIs[UI_GAMBLE]; }
+	CUIPersonalShop		*GetPersonalShop() { return (CUIPersonalShop *)m_apUIs[UI_PERSONALSHOP]; }
+	CUIGuild			*GetGuild() { return (CUIGuild *)m_apUIs[UI_GUILD]; }
+	CUIRanking			*GetRanking() { return (CUIRanking *)m_apUIs[UI_RANKING]; }
+	CUIPetTargetInfo	*GetPetTargetInfo() { return (CUIPetTargetInfo *)m_apUIs[UI_PETTARGETINFO]; }
+	CUIWildPetTargetInfo	*GetWildPetTargetInfo() { return (CUIWildPetTargetInfo *)m_apUIs[UI_WILDPETTARGETINFO]; }
+	CUIGuildBattle		*GetGuildBattle() { return (CUIGuildBattle *)m_apUIs[UI_GUILD_BATTLE]; }
+	CUIBilling			*GetBilling() { return (CUIBilling *)m_apUIs[UI_BILLING]; }
+	CUIBillItem			*GetBillItem() { return (CUIBillItem *)m_apUIs[UI_BILL_ITEM]; }
+	CUIWareHouse		*GetWareHouse() { return (CUIWareHouse *)m_apUIs[UI_WAREHOUSE]; }
+	CUISecurity			*GetSecurity() { return (CUISecurity *)m_apUIs[UI_SECURITY]; }
+	CUISystemMenu		*GetSystemMenu() { return (CUISystemMenu *)m_apUIs[UI_SYSTEMMENU]; }
+	CUIParty			*GetParty() { return (CUIParty *)m_apUIs[UI_PARTY]; }
+	CUIMap				*GetMap() { return (CUIMap *)m_apUIs[UI_MAP]; }
+	CUIOption			*GetOption() { return (CUIOption *)m_apUIs[UI_OPTION]; }
+	CUIRefine			*GetRefine() { return (CUIRefine *)m_apUIs[UI_REFINE]; }
+	CUIProcess			*GetProcess() { return (CUIProcess *)m_apUIs[UI_PROCESS]; }
+	CUIProduct			*GetProduct() { return (CUIProduct *)m_apUIs[UI_PRODUCT]; }
+	CUIProcessNPC		*GetProcessNPC() { return (CUIProcessNPC *)m_apUIs[UI_PROCESSNPC]; }
+	CUISelectResource	*GetSelectResource() { return (CUISelectResource *)m_apUIs[UI_SELECTRESOURCE]; }
+	CUIGuildWarPortal	*GetGuildWarPortal() { return (CUIGuildWarPortal *)m_apUIs[UI_GUILDWARPORTAL]; }
+	CUIMix				*GetMix() { return (CUIMix *)m_apUIs[UI_MIX]; }
+	CUIMixNew			*GetMixNew() { return (CUIMixNew *)m_apUIs[UI_MIXNEW]; }
+	CUICompound			*GetCompound() { return (CUICompound *)m_apUIs[UI_COMPOUND]; }
+	CUIGuildStash		*GetGuildStash() { return (CUIGuildStash *)m_apUIs[UI_GUILDSTASH]; }
 
-	CGame*	GetGame() { return m_pGame; }
-	
+	CUIRemission		*GetRemission() { return (CUIRemission *)m_apUIs[UI_REMISSION]; }
+	CUIQuest			*GetQuest() { return (CUIQuest *)m_apUIs[UI_QUEST]; }
+	CUIQuestBook		*GetQuestBookList() { return (CUIQuestBook *)m_apUIs[UI_QUESTBOOK_LIST]; }
+	CUIQuestBook		*GetQuestBookContent() { return (CUIQuestBook *)m_apUIs[UI_QUESTBOOK_CONTENT]; }
+	CUIQuestBook		*GetQuestBookComplete() { return (CUIQuestBook *)m_apUIs[UI_QUESTBOOK_COMPLETE]; }
+	CUIQuestBook		*GetQuestBookNew() { return (CUIQuestBook *)m_apUIs[UI_QUESTBOOK_NEW]; }
+
+	CUISummon			*GetSummonFirst() { return (CUISummon *)m_apUIs[UI_SUMMON_FIRST]; }
+	CUISummon			*GetSummonSecond() { return (CUISummon *)m_apUIs[UI_SUMMON_SECOND]; }
+
+	CUISkillLearn		*GetSkillLearn() { return (CUISkillLearn *)m_apUIs[UI_SKILLLEARN]; }
+	CUIChangeWeapon		*GetChangeWeapon() { return (CUIChangeWeapon *)m_apUIs[UI_CHANGEWEAPON]; }
+	CUIHelper			*GetHelper() { return (CUIHelper *)m_apUIs[UI_HELPER]; }
+	CUISingleBattle		*GetSingleBattle() { return (CUISingleBattle *)m_apUIs[UI_SINGLE_BATTLE]; }
+	CUIHelp				*GetHelp() { return (CUIHelp *)m_apUIs[UI_HELP]; }
+	CUIHelpOld			*GetHelpOld() { return (CUIHelpOld *)m_apUIs[UI_HELP]; }
+	CUIInitJob			*GetInitJob() { return (CUIInitJob *)m_apUIs[UI_INITJOB]; }
+	CUITeleport			*GetTeleport() { return (CUITeleport *)m_apUIs[UI_TELEPORT]; }
+	CUITeleportPrimium	*GetTeleportPrimium() { return (CUITeleportPrimium *)m_apUIs[UI_TELEPORT_PRIMIUM]; }	// [KH_070315] 프리미엄 메모리스크롤 관련 추가
+	CUIHelp3			*GetHelp3() { return (CUIHelp3 *)m_apUIs[UI_HELP3]; }
+	CUIMessenger		*GetMessenger() { return (CUIMessenger *)m_apUIs[UI_MESSENGER]; }
+	CUITalk				*GetTalk( int iUIIndex ) { return (CUITalk *)m_apUIs[iUIIndex]; }
+	CUIWebBoard			*GetWebBoard() { return (CUIWebBoard *)m_apUIs[UI_WEBBOARD]; }
+	CUINotice			*GetNotice() { return (CUINotice *)m_apUIs[UI_NOTICE]; }
+	CUISiegeWarfare		*GetSiegeWarfare() { return (CUISiegeWarfare *)m_apUIs[UI_SIEGE_WARFARE]; }
+	CUISiegeWarfareNew	*GetSiegeWarfareNew() { return (CUISiegeWarfareNew *)m_apUIs[UI_SIEGE_WARFARE_NEW]; } // WSS_DRATAN_SIEGEWARFARE 070727
+	CUICashShop			*GetCashShop() { return (CUICashShop*)m_apUIs[UI_CASH_SHOP];}				//wooss
+	CUISimplePop		*GetSimplePop() { return (CUISimplePop*)m_apUIs[UI_SIMPLE_POP]; }	// [KH_070419] 심플 팝업 관련 추가
+	CUIGWMix			*GetGWMix() { return (CUIGWMix *)m_apUIs[UI_GW_MIX]; }
+	CUISelectWord		*GetSelectWord() { return (CUISelectWord*)m_apUIs[UI_SELECTWORD]; }
+	CUISelectList		*GetSelectList() { return (CUISelectList*)m_apUIs[UI_SELECTLIST]; } // 친구찾기 이벤트 060126
+	CUIPetItemMix		*GetPetItemMix() { return (CUIPetItemMix*)m_apUIs[UI_PETITEMMIX]; } // 펫아이템 조합( 유니크 )
+	CUIPetFree			*GetPetFree()	{ return (CUIPetFree*)m_apUIs[UI_PETFREE]; } // 펫 봉인 해제
+	CUIOXQuizEvent		*GetOXQuizEvent() { return (CUIOXQuizEvent*)m_apUIs[UI_QUIZEVENT]; } // O.X 퀴즈 이벤트
+	CUIPartyAuto		*GetPartyAuto() { return (CUIPartyAuto*)m_apUIs[UI_PARTYAUTO]; } // party auto matching
+	CUICollectBox		*GetCollectBox() { return (CUICollectBox*)m_apUIs[UI_COLLECTBOX]; } // 곤충 채집상자
+	CUIBingoBox			*GetBingoBox() { return (CUIBingoBox*)m_apUIs[UI_BINGOBOX]; } // 초코렛 수집 상자
+	CUINpcHelp			*GetNpcHelp() {return (CUINpcHelp*)m_apUIs[UI_NPCHELP];} //Npc 안내시스템
+	CUIMinigame			*GetMinigame() {return (CUIMinigame*)m_apUIs[UI_MINIGAME];} //WSS_MINIGAME 070418
+	CUIFlowerTree		*GetFlowerTree() {return (CUIFlowerTree*)m_apUIs[UI_FLOWERTREE];} // 꽃놀이 인터페이스
+	CUIGuildNotice		*GetGuildNotice() {return (CUIGuildNotice*)m_apUIs[UI_GUILD_NOTICE];}// WSS_NEW_GUILD_SYSTEM 070715 
+
+	CUILogin			*GetLogin() { return (CUILogin *)m_apUIs[UI_LOGIN]; }
+	CUISelChar			*GetSelChar() { return (CUISelChar *)m_apUIs[UI_SEL_CHAR]; }
+	CUICreateChar		*GetCreateChar() { return (CUICreateChar *)m_apUIs[UI_CREATE_CHAR]; }
+	CUISelectServer		*GetSelServer() { return (CUISelectServer *)m_apUIs[UI_SEL_SERVER]; }
+	CUIMonsterCombo		*GetCombo() {return(CUIMonsterCombo *)m_apUIs[UI_MONSTER_COMBO]; }
+	CUIWildPetInfo		*GetWildPetInfo() {return (CUIWildPetInfo *)m_apUIs[UI_WILDPET_INFO]; }
+	CUIAuction			*GetAuction() { return (CUIAuction *)m_apUIs[UI_AUCTION]; }
+
+	CUITatoo			*GetTatoo() { return (CUITatoo *)m_apUIs[UI_TATOO]; }	// [090709: selo] 펫 문양 시스템
+
+	//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+	CUIChatFilter		*GetChatFilter()	{ return (CUIChatFilter *)m_apUIs[UI_CHAT_FILTER]; }
+	CGame				*GetGame() { return m_pGame; }
+
 	// Holding button
-	void	SetHoldBtn(CUIIcon* pIcon);
-	void	SetHoldBtn(CUIBase* pBase);
-
-	void	ResetHoldBtn() { 
-		m_pIconDrag = NULL;
-		m_pBaseDrag = NULL;
-		m_nDragX = -100;
-		m_nDragY = -100;
-	}
-	CUIIcon* GetDragIcon()		{ return m_pIconDrag; }
-	CUIBase* GetDragBase()		{ return m_pBaseDrag; }
+	void	SetHoldBtn( CUIButtonEx &btnHolding ) { m_btnHoldBtn.Copy( btnHolding ); }
+	void	ResetHoldBtn() { m_btnHoldBtn.InitBtn(); }
+	CUIButtonEx	&GetHoldBtn() { return m_btnHoldBtn; }
 
 	// MessageBox
-	BOOL	CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX = -1, int nPosY = -1 );
+	void	CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX = -1, int nPosY = -1 );
 	void	CloseMessageBox( int nCommandCode );
 	BOOL	DoesMessageBoxExist( int nCommandCode );
 
-	void	CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode,
+	void	CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode,
 								int nPosX = -1, int nPosY = -1 );
-	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o" );
+	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o"  );
 	void	CloseMessageBoxL( int nCommandCode );
 	BOOL	DoesMessageBoxLExist( int nCommandCode );
 	CUIMessageBox *GetMessageBox( int nCommandCode );
-
-	// [090909 sora]
-	CUIMessageBoxL *GetMessageBoxL( int nCommandCode );
 
 	// WSS_SELECTIVE_UI_FUCNTION 2007/08/15 
 	// SELECTIVE UI
@@ -1305,13 +1311,10 @@ public:
 
 	// Message
 	void	MsgProc( MSG *pMsg, BOOL *pbIMEProc );
-	void	MsgSimpleProc( MSG *pMsg );
-	void	MsgProcWeb(MSG *pMsg);
 
 	// Command functions
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput ,CTString &strConfirm );
-	void	MsgCommonCommand( int nCommandCode );
 	
 	//wooss 050805 add message command for select button
 	void	MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strInput );
@@ -1326,15 +1329,19 @@ public:
 
 	void	CancelSkill( BOOL bLostTarget = TRUE, BOOL bSkillError=FALSE);
 	void	Reset();
+	void	Lock( BOOL bLock );
+
 	void	LostTarget();
 
 	void	SetVersion(int ver){m_LocalVersion = ver;};
 	int		GetVersion(){return m_LocalVersion;};
 	
 	// wooss  060404 
-	BOOL	IsPet(CItemData* pItemData);
-	BOOL	IsWildPet(CItemData* pItemData);
-
+	BOOL	IsPet(CItemData& rItemData);
+	BOOL	IsWildPet(CItemData& rItemData);
+	// wooss 060421
+	struct tm * LClocaltime ( time_t *timp );
+	
 	BOOL checkName(CTString strMsg, int chkType);
 
 	CTString GetWeekToString( int nWeek )
@@ -1343,51 +1350,9 @@ public:
 		CTString strWeek[7] = { "일" , "월" , "화" , "수" , "목" , "금" , "토" };	// 번역
 		return strWeek[nWeek];
 	}
-
-	// GetWeekToString 가 번역된 텍스트를 넘겨 주지 않아서 추가 
-	// added by sam 101220
-	int GetWeekToStringIndex( int nWeek )
-	{
-		if( nWeek < 0 || nWeek > 6 ) return -1;
-		switch ( nWeek )
-		{
-			case 0:
-			{
-				return 1930;
-			}
-			case 1:
-			{
-				return 1931;
-			}
-			case 2:
-			{
-				return 1932;
-			}
-			case 3:
-			{
-				return 1933;
-			}
-			case 4:
-			{
-				return 1934;
-			}
-			case 5:
-			{
-				return 1935;
-			}
-			case 6:
-			{
-				return 1936;
-			}
-			default:
-			{
-				return -1;				
-			}
-		}
-	}
 	
 	void SetTitleName( INDEX bFullScreen, int iScreenSizeI, int iScreenSizeJ );
-	static void GetClassOfItem( CItemData* pItemData, CTString &strClass );
+	static void GetClassOfItem( CItemData & rItemData, CTString &strClass );
 	DAMAGE_deque	m_qDamage;	
 	UIRectUV		m_rtNumber[10];
 	UIRect			m_rcNumber;
@@ -1400,6 +1365,7 @@ public:
 	int				m_nCoolTimeReductionRate;		//스킬쿨타임감소옵션이 붙은 장비를 입고 있을 때 쿨타임 감소비율
 	int				m_nNeedMPReductionRate;				//MP소모량 감소 옵션이 붙은 장비를 입고 있을 때 감소비율
 
+	//[070703: Su-won] TARGET_MARK
 	std::map<SLONG, CEffectGroup *> m_mapEG;
 	
 	void AddDamageData( ULONG ulDamage, SBYTE sbTargetFlag, ULONG ulClientIndex, BOOL bDamaged );
@@ -1413,8 +1379,8 @@ public:
 	void DrawNumber( int nX, int nY, int nNumber, COLOR colColor = 0xFFFFFFFF, FLOAT fRatio = 1.0f );
 	void DrawText( int nX, int nY, SBYTE sbTargetFlag, COLOR colColor = 0xFFFFFFFF, FLOAT fRatio = 1.0f );
 
+	BOOL IsRareItem(CTString strName);
 	void SetRareOption( CNetworkMessage *istr, CItems& rItem );
-	void SetRareOption( UpdateClient::itemInfo* pInfo, CItems& rItem );
 	
 	int  GetCoolTimeReductionRate() { return m_nCoolTimeReductionRate; }
 	int  GetNeedMPReductionRate() { return m_nNeedMPReductionRate; }
@@ -1425,142 +1391,40 @@ public:
 
 	// WSS_MINIGAME_070422 -------------------------------------->>
 	// For multilined string
-	void AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
+	void AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
 
 	// ----------------------------------------------------------<<
 
+	//[070703: Su-won] TARGET_MARK		|----->		
 	BOOL IsEnemy( void* pTarget, TARGET_TYPE eType, BOOL bSearch =FALSE );
 	void StartTargetEffect( SLONG slIndex, CEntity* penEntity, BOOL bEnemy );
 	void StopTargetEffect( SLONG slIndex );
-
-	// [sora] 원정대, RAID 관련
+	//[070703: Su-won] TARGET_MARK		<-----|
+	
+	// 원정대, RAID 관련
 	BOOL IsPlayInZone();	// 인스턴트존 플레이중인지 체크
-	BOOL IsInstantZone(int nZone);
-
-	// Focus Check용 함수. [11/23/2009 rumist]
-	inline BOOL	IsFocusInAllEditbox() const { return CUIEditBox::IsFocusingEditBox(); }
-	//inline const BOOL	IsFocusInAllEditbox() { return m_ebRefCntReturn.IsFocusedInAll() | m_mbRefCntReturn.IsFocusedInAll(); }
-	BOOL IsFocusAllEditBox();	
-	// [2010/08/26 : Sora] ADD_SUBJOB 보조 직업 관련 추가함수
-	CTString GetSubJobName( SLONG slSubJobCode );
-	BOOL CheckSellerItem(  UI_TYPE uiType,  int flag );
-
-	// [2010/09/17 : Sora] Player.es에서 소켓 시스템 호출용
-	void OpenSocketSystem(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
-
-	void InitCurInfoLines(void) { m_nCurInfoLines = 0; }
-	void AddItemInfoString(CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars);
-	void RenderBtnInfo(CTextureData* texData, CUIButton& srcBtn, UIRectUV rtUV[], int nLength=34);
-
-	// added by sam 11/03/02 번역되지 않은 스트링 넘버 보이기
-	void ShowNoTranslationString ();
-	void HideNoTranslationString ();
-	void ToggleNoTranslationString ();
-	// [2011/05/31 : Sora] 클라이언트 만이 아니고 다른곳에도 사용할 수 있게 확장
-	void SetNoTranslationString( int transType, int index );
-	void InitRenderTarget(int nWidth = DEF_DEFAULT_RT_WIDTH, int nHeight = DEF_DEFAULT_RT_HEIGHT);
-	void DestroyRenderTarget();
-	void HUD_SetItemModelData( INDEX iIndex );
-	void HUD_DrawItemModel();
-	void SetShowAni( BOOL bShow )	{	m_bShowAni = bShow;	}
-	BOOL IsShowAni()	{	return m_bShowAni;	}
-	CRenderTexture* GetRenderTarget()	{	return m_RenderTarget;	}
-
-	BOOL CheckDratanWarInside(CCharacterTarget* pTarget);
-	BOOL MyCheckDratanWarInside();
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslateFlag( eNoTransType transType, int* flag )
-	{
-		(*flag) |= transType;
-	}
-
-	BOOL IsNotTranslated( eNoTransType transType, int flag )
-	{
-		return transType & flag;
-	}
-
-	void Update( float fDeltaTime, float fElapsedTime );
 
 protected:
-	void RenderDamage( int nIndex, DAMAGE_deque::iterator iter, DOUBLE dDealyTime, int nX, int nY );
-	void RenderNotice();	
-
-
-public:
-	void Render(CDrawPort* pDraw) 
-	{
-		CUIBase::Render( pDraw );
-
-		CUIBase* pUI = CUIFocus::getSingleton()->getUI();
-		if (pUI)
-			pUI->Render(pDraw);
-
-		CUITooltipMgr::getSingleton()->Render(pDraw);
-	}
-	virtual void OnRender(CDrawPort* pDraw) {};
-
-	bool isCreateVisible(UI_TYPE type)
-	{
-		// 새로운 UI는 Hide 사용
-		if (m_apUIs[type] != NULL && 
-			m_apUIs[type]->IsVisible() == TRUE || m_apUIs[type]->GetHide() == FALSE)
-			return true;
-
-		return false;
-	}
-
-	bool getCursorInGame()	{ return m_bCursorInGame; }
-	std::string GetFullPath(std::string strFileName);
-	int	GetPathCount()	{ return m_vecAdditionalPath.size();	}
-	void ItemNameColorInI();
-	COLOR GetItemNameColor(int nType) {	return m_colItemDropName[nType];	}
-	void DropItemCallback();
-	void SetGuildMark();
-
-#ifdef	VER_TEST
-	void setIPString(const char* strIP) { 
-		extern INDEX sam_bFullScreenActive;
-		extern INDEX sam_iScreenSizeI;
-		extern INDEX sam_iScreenSizeJ;
-
-		m_strIP = strIP; 
-		SetTitleName( sam_bFullScreenActive, sam_iScreenSizeI, sam_iScreenSizeJ );
-	}
-
-	bool GetDebugOutMode()			{ return m_bOutDebugString; }
-	void SetDebugOutMode(bool bOut)	{ m_bOutDebugString = bOut; }
-private:
-	std::string m_strIP;
-
-	bool m_bOutDebugString;	
-#endif	// VER_TEST
-private:
-	COLOR m_colItemDropName[eDROPITEM_NAME_COL_MAX];
-	CUIGuildMarkIcon*	m_pIconGuildMark;
+	void RenderDamage( DAMAGE_deque::iterator iter, DOUBLE dDealyTime, int nX, int nY );
+	void RenderNotice();
 };
 
-#define		UIMGR()		CUIManager::getSingleton()
-
-ENGINE_API extern  struct PlayerControls pctlCurrent;
+ENGINE_API extern CUIManager	*_pUIMgr;
 
 
 
-ENGINE_API CTString _SFunc( int x );
+inline ENGINE_API CTString _SFunc( int x, char* );
 
 //#define KEY_SHOW_STRING_INDEX
-// 미번역 찾아내기 [10/13/2011 rumist]
-#define _S(x,comment) _SFunc(x)
-#define _S2(x,str1,comment) CUIManager::getSingleton()->GetString(x,str1)
-#define _S3(x,str1,str2,comment) CUIManager::getSingleton()->GetString(x,str1,str2)
-#define _s(str) CTString(str)
 
-// 임시로 추가된 Define
-// getSingleton에서 singleton object를 새로 생성하여 받게 되어, comment를 찾을 수 없게 된다.
-// 직접 참조 객체를 전달하는 define 함수를 선언하였다.
-#define _SMgr(m, x, comment) m->GetString(x)
-#define _S2Mgr(m, x, str1, comment) m->GetString(x, str1)
-#define _S3Mgr(m, x, str1, str2, comment) m->GetString(x, str1, str2)
+#ifndef KEY_SHOW_STRING_INDEX
+#define _S(x,comment) _pUIMgr->GetString(x)
+#else
+#define _S(x,comment) _SFunc(x,comment)
+#endif
+#define _S2(x,str1,comment) _pUIMgr->GetString(x,str1)
+#define _S3(x,str1,str2,comment) _pUIMgr->GetString(x,str1,str2)
+#define _s(str) CTString(str)
 
 #endif	// UIMANAGER_H_
 

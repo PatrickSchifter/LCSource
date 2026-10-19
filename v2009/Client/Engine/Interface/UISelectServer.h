@@ -9,16 +9,12 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIListBox.h>
-// #include <vector>
+#include <Engine/Interface/UIListBox.h>
+#include <vector>
 
 
 // Define max count of server name
-#ifdef EUROUPEAN_SERVER_LOGIN
-#define	MAX_SERVER_NAME						50
-#else
 #define	MAX_SERVER_NAME						40
-#endif
 
 
 // Define text position
@@ -45,7 +41,6 @@ protected:
 	// Controls
 	CUIButton			m_btnOK;								// OK button
 	CUIButton			m_btnCancel;							// Cancel button
-	CUIButton			m_btnExit;								// [2012/10/18 : Sora] 재시작시 자동 로그인
 	CUIListBox			m_lbServerGroup;						// Server group list box
 	CUIListBox			m_lbServer;								// Server list box
 
@@ -64,9 +59,6 @@ protected:
  
 	// 추천이벤트 이미지 wooss 060426
 	UIRectUV			m_rtRecommend;							// UV of bottom background
-	UIRectUV			m_rtSpeed;								// UV of bottom background
-
-	CUIListBox*		m_plbServer;
 	
 	// 서버.
 	struct sServerInfo
@@ -110,9 +102,8 @@ protected:
 		}
 
 		ULONG			iServerNo;		// 서버 군 번호
-		UBYTE			ubServerType;	// 서버 군 타입
-		int				nOrder;
-		
+	
+
 		// FULL이거나 점검 중이면 -1씩 더함, 원할이면 +1씩 더함.
 		int				iGroupState;						// 군 상태에 따른 점수.
 		std::vector<sServerInfo>	vectorServerInfo;		// 서버 목록.
@@ -174,10 +165,16 @@ protected:
 	std::vector<sGroupInfo>		m_vectorGroupInfo;
 
 	// 추천 서버 이벤트
+	int m_nRecomendSvr;
 	int FindRecomendSvr();
-	
+
+	// Another Recommend Server Event
+	int m_nRecomendSvrOrder;		// 추천서버 표시 순서
+
 protected:
 	// Internal functions
+	void	Close();
+	void	PressOKBtn();
 
 	// NOTE : 자동 로그인을 위해서 위치 변경.
 	//void	ConnectToServer( CTString strIP, ULONG ulPortNum );		// 서버와 접속 시도
@@ -194,11 +191,9 @@ public:
 
 	// Render
 	void	Render();
-	
+
 	// Reset
 	void	Reset();
-
-	void initialize();
 
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
@@ -212,13 +207,11 @@ public:
 
 	//Zone Info Manage
 	void ENGINE_API	ResetServerList();	
-	void ENGINE_API AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayerNum, CTString &strAddress, LONG lPortNum ,UBYTE ubServerType = 0);
+	void ENGINE_API AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayerNum, CTString &strAddress, LONG lPortNum ,UBYTE bIsRecommend = 0);
 	void ENGINE_API SetRecentServer(int iRecentGroup = -1, int iRecentServer = -1);
 
 	BOOL	IsEmptyGroup() { return m_vectorGroupInfo.empty(); };
 	CTString GetServerGroupName( int iGroupNo );
-	void	PressOKBtn();
-	void	Close();
 
 };
 

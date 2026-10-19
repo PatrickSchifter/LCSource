@@ -9,7 +9,7 @@ CPetInfo CPetInfo::m_instance;
 
 #define PET_HORSE_CHILD		("Data\\NPC\\Pet\\Pet_Horse01.smc")
 #define PET_HORSE_BOY		("Data\\NPC\\Pet\\Pet_Horse02.smc")
-#define PET_HORSE_ADULT		("Data\\NPC\\Pet\\Horse\\Pet_Horse03.smc")
+#define PET_HORSE_ADULT		("Data\\NPC\\Pet\\Pet_Horse03.smc")
 
 #define PET_DRAGON_CHILD	("Data\\NPC\\Pet\\Pet_Dragon01.smc")
 #define PET_DRAGON_BOY		("Data\\NPC\\Pet\\Pet_Dragon02.smc")
@@ -25,7 +25,7 @@ CPetInfo CPetInfo::m_instance;
 #define PET_HORSE_ADULT_BLUE	("Data\\NPC\\Pet\\Pet_Horse_Blue03.smc")
 
 // [070824: Su-won] PET_COLOR_CHANGE
-CTString strColoredTexFile[6][62] =
+CTString strColoredTexFile[6][26] =
 {
 	//작은 말
 	{	"Data\\NPC\\Pet\\pet_horse01.tex",
@@ -42,26 +42,6 @@ CTString strColoredTexFile[6][62] =
 		"Data\\NPC\\Pet\\textures\\pet_horse01_8_heart.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse01_9_heart.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse01_3_heart.tex",
-		"",	
-		"",
-		"",
-		"",
-		"",		
-		"",
-		"",
-		"",
-		"",
-		"",		 
-		"",
-		"",
-		"",
-		"",
-		"", 
-		"",
-		"",
-		"",
-		"",
-		"", 
 		"",
 		"",
 		"",
@@ -73,24 +53,7 @@ CTString strColoredTexFile[6][62] =
 		"",
 		"",
 		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	},
+		"" },
 
 	//보통 말
 	{	"Data\\NPC\\Pet\\pet_horse02.tex",
@@ -107,26 +70,6 @@ CTString strColoredTexFile[6][62] =
 		"Data\\NPC\\Pet\\textures\\pet_horse02_8_heart.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse02_9_heart.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse02_3_heart.tex",
-		"",	
-		"",
-		"",
-		"",
-		"",		
-		"",
-		"",
-		"",
-		"",
-		"",		 
-		"",
-		"",
-		"",
-		"",
-		"", 
-		"",
-		"",
-		"",
-		"",
-		"", 
 		"",
 		"",
 		"",
@@ -138,24 +81,7 @@ CTString strColoredTexFile[6][62] =
 		"",
 		"",
 		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	},
+		"" },
 
 	//타는 말
 	{	"Data\\NPC\\Pet\\pet_horse03.tex",
@@ -169,69 +95,21 @@ CTString strColoredTexFile[6][62] =
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_9.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_10.tex",
-		
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8_heart.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_9_heart.tex",		
+		"Data\\NPC\\Pet\\textures\\pet_horse03_9_heart.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_3_heart.tex",
-
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8_c.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8_d.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8_s.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_8_sk.tex",
-
 		"Data\\NPC\\Pet\\textures\\pet_horse03_9_c.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_9_d.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_9_s.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_9_sk.tex",
-
 		"Data\\NPC\\Pet\\textures\\pet_horse03_3_c.tex",
 		"Data\\NPC\\Pet\\textures\\pet_horse03_3_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_3_s.tex",		
-		"Data\\NPC\\Pet\\textures\\pet_horse03_3_sk.tex",
-		
-		"Data\\NPC\\Pet\\textures\\pet_horse03_1_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_1_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_1_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_1_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_1_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\pet_horse03_2_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_2_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_2_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_2_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_2_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\pet_horse03_4_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_4_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_4_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_4_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_4_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\pet_horse03_5_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_5_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_5_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_5_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_5_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\pet_horse03_6_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_6_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_6_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_6_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_6_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\pet_horse03_7_h.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_7_c.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_7_d.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_7_s.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse03_7_sk.tex",	
-		
-		"Data\\NPC\\Pet\\textures\\pet_horse_v01.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse_v02.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse_v03.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse_v04.tex",
-		"Data\\NPC\\Pet\\textures\\pet_horse_v05.tex",	
-		"Data\\NPC\\Pet\\textures\\pet_horse_v06.tex"
-	},	
+		"Data\\NPC\\Pet\\textures\\pet_horse03_3_s.tex",
+		"Data\\NPC\\Pet\\textures\\pet_horse03_3_sk.tex" },	
 
 	//작은 용
 	{	"Data\\NPC\\Pet\\pupu.tex",
@@ -248,26 +126,6 @@ CTString strColoredTexFile[6][62] =
 		"",
 		"",
 		"",
-		"",	
-		"",
-		"",
-		"",
-		"",		
-		"",
-		"",
-		"",
-		"",
-		"",		 
-		"",
-		"",
-		"",
-		"",
-		"", 
-		"",
-		"",
-		"",
-		"",
-		"", 
 		"",
 		"",
 		"",
@@ -276,27 +134,7 @@ CTString strColoredTexFile[6][62] =
 		"",
 		"",
 		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	},
+		"" },
 
 	//보통 용
 	{	"Data\\NPC\\Pet\\pet_d_02.tex",
@@ -311,27 +149,6 @@ CTString strColoredTexFile[6][62] =
 		"Data\\NPC\\Pet\\textures\\pet_d_09.tex",
 		"Data\\NPC\\Pet\\textures\\pet_d_10.tex",
 		"",
-		"",	
-		"",
-		"",
-		"",
-		"",
-		"",		
-		"",
-		"",
-		"",
-		"",
-		"",		 
-		"",
-		"",
-		"",
-		"",
-		"", 
-		"",
-		"",
-		"",
-		"",
-		"", 
 		"",
 		"",
 		"",
@@ -342,26 +159,7 @@ CTString strColoredTexFile[6][62] =
 		"",
 		"",
 		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	},
+		"" },
 
 	//타는 용
 	{	"Data\\NPC\\Pet\\baroroques.tex",
@@ -375,68 +173,21 @@ CTString strColoredTexFile[6][62] =
 		"Data\\NPC\\Pet\\textures\\baroroques_8.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_9.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_10.tex",
-
 		"Data\\NPC\\Pet\\textures\\baroroques_8_heart.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_9_heart.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_3_heart.tex",
-
 		"Data\\NPC\\Pet\\textures\\baroroques_8_c.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_8_d.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_8_s.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_8_sk.tex",
-
 		"Data\\NPC\\Pet\\textures\\baroroques_9_c.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_9_d.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_9_s.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_9_sk.tex",
-
 		"Data\\NPC\\Pet\\textures\\baroroques_3_c.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_3_d.tex",
 		"Data\\NPC\\Pet\\textures\\baroroques_3_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_3_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_1_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_1_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_1_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_1_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_1_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_2_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_2_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_2_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_2_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_2_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_4_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_4_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_4_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_4_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_4_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_5_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_5_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_5_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_5_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_5_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_6_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_6_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_6_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_6_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_6_sk.tex",
-
-		"Data\\NPC\\Pet\\textures\\baroroques_7_h.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_7_c.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_7_d.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_7_s.tex",
-		"Data\\NPC\\Pet\\textures\\baroroques_7_sk.tex",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	},	
+		"Data\\NPC\\Pet\\textures\\baroroques_3_sk.tex" },	
 };
 
 // ----------------------------------------------------------------------------
@@ -667,9 +418,6 @@ const CTString &CPetInfo::GetAnimationName( int iPet, int iAnimType ) const
 // ----------------------------------------------------------------------------
 BOOL CPetInfo::IsRide( int iPet, int iAge )
 {
-	if (iPet < 0 || iAge < 0)
-		return FALSE;
-
 	const int iPetType = iPet * MAX_PET_AGE + iAge;
 	return m_pPetInfo[iPetType].bRide;
 }

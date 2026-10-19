@@ -2,7 +2,6 @@
 #ifndef _UISIEGE_WARFARE_H
 #define _UISIEGE_WARFARE_H
 
-#include <vector>
 #include <Engine/Interface/UIWindow.h>
 #include <Engine/Interface/UISpinButton.h>
 
@@ -51,7 +50,6 @@ class CUISiegeWarfare : public CUIWindow
 	CTString				m_strNoticeMessage;			// 공자 사항 1 스트링 (위)
 	CTString				m_strNoticeMessage2;		// 공지 사항 2 스트링 (아래)
 
-	CUISpinButton			m_sbtnSWZone;				// [2010/11/01 : Sora] 공성 개편
 public:	
 	CUISiegeWarfare();
 	virtual ~CUISiegeWarfare();
@@ -104,114 +102,9 @@ public:
 
 	void	SetDayOfWeek( int eDayOfWeek );
 
-	void	OpenCostumeReq();
-
-	// [2010/11/01 : Sora] 공성 개편
-	struct stSiegeWarfareTimeInfo
-	{
-		UBYTE zone;
-		UBYTE wday;
-		UBYTE hour;
-
-		stSiegeWarfareTimeInfo()
-		{
-			Init();
-		}
-
-		void Init()
-		{
-			zone = 0;
-			wday = 0;
-			hour = 0;
-		}
-	};
-
-	std::vector<stSiegeWarfareTimeInfo> m_vecSWInfo;
-	
-	void	InitSiegeWarfareTimeInfo() { m_vecSWInfo.clear(); }
-	void	SetSiegeWarfareTimeInfo( stSiegeWarfareTimeInfo swInfo );
-	void	OpenSWInfoRenew();
 };
 
-// [2010/11/01 : Sora] 공성 개편
-class CUISiegeWarfareInfo : public CUIWindow
-{
-protected:
-	UIRect			m_rcTitle;
-	CUIDrawBox		m_bxBackground[4];
-	CUIButton		m_btnOK;
-	
-	CUIRectString	m_rsMyGuildName;
-	CUIRectString	m_rsMyGuildBossName;
-public:
-	struct stSiegeWarfareDefGuildInfo // 수성길드 정보
-	{
-		char zone;
-		char month;
-		char day;
-		char hour;
-		CTString guildName;
 
-		stSiegeWarfareDefGuildInfo()
-		{
-			Init();
-		}
-
-		void Init()
-		{
-			zone = 0;
-			month = 0;
-			day = 0;
-			hour = 0;
-			guildName = "";
-		}
-	};
-
-	struct stMySiegeWarfareInfo	// 내 공성 정보
-	{
-		std::vector<char> vecZone;
-		std::vector<char> vecJoinFlag;
-		CTString guildName;
-		CTString guildBossName;
-
-		stMySiegeWarfareInfo()
-		{
-			Init();
-		}
-
-		void Init()
-		{
-			vecZone.clear();
-			vecJoinFlag.clear();
-			guildName = "";
-			guildBossName = "";
-		}
-	};
-
-	stMySiegeWarfareInfo m_MySiegeWarfareInfo;
-	std::vector<stSiegeWarfareDefGuildInfo> m_vecDefGuildInfo;
-
-	CUISiegeWarfareInfo();
-	~CUISiegeWarfareInfo();
-
-	// Create
-	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	
-	// Render
-	void	Render();
-	
-	// Adjust position
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	WMSG_RESULT MouseMessage( MSG *pMsg );
-
-	void	InitSiegeWarfareInfo();
-	void	SetSiegeWarfareDefGuildInfo( stSiegeWarfareDefGuildInfo defGuildInfo );
-	void	SetMySiegeWarfareGuildInfo( CTString guildName, CTString guildBossName );
-	void	SetMySiegeWarfareJoinInfo(  char zone, char joinFlag );
-	void	ToggleSiegeWarfareInfo( BOOL bShown );
-	CTString	GetJoinStatusString( char joinFlag );
-};
 
 
 #endif // _UISIEGE_WARFARE_H

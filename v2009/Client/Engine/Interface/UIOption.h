@@ -10,7 +10,7 @@
 #endif
 
 
-// #include <vector>
+#include <vector>
 #include <Engine/Interface/UIButton.h>
 #include <Engine/Interface/UICheckButton.h>
 #include <Engine/Interface/UIComboBox.h>
@@ -96,7 +96,7 @@ enum OptionTab
 // Name : CUIOption
 // Desc :
 // ----------------------------------------------------------------------------
-class ENGINE_API CUIOption : public CUIWindow
+class CUIOption : public CUIWindow
 {
 protected:
 	// Controls
@@ -111,7 +111,6 @@ protected:
 	CUICheckButton		m_cbtnHelp1Icon;					// Help1 Icon 
 	CUICheckButton		m_cbtnRejectExchange;				// Rejection of request message that exchange
 	CUICheckButton		m_cbtnRejectParty;					// and party.
-	CUICheckButton		m_cbtnQuestBookOpen;				// 퀘스트 수락시 퀘스트북 여는 여부 [09/05/11 trylord]
 
 	CUISlideBar			m_slbShowName;						// Show name slide bar
 	CUISlideBar			m_slbShowNameItem;					// Show item name slide bar
@@ -148,7 +147,6 @@ protected:
 	BOOL				m_bFameOpen;
 	BOOL				m_bRejectExchange;						// [7/9/2009 rumist] rejection options. 
 	BOOL				m_bRejectParty;
-	BOOL				m_bQuestBookOpen;
 	int					m_nShowName;
 	int					m_nShowNameItem;
 	int					m_nBrightness;
@@ -218,9 +216,6 @@ public:
 
 	// Open option
 	void	OpenOption();
-	// toggle support. [7/19/2010 rumist]
-	// Toggle option
-	void	ToggleOption();
 
 	// Init option
 	void	InitOption();
@@ -238,19 +233,12 @@ public:
 		m_pixDesktopWidth = pixWidth;
 		m_pixDesktopHeight = pixHeigth;
 	}
-	
-	void	ResetDisplay(void);
 
 	// Get texture quality
 	FLOAT	GetTextureQuality( int nStep ) const { return m_afTextureQuality[nStep]; }
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
-
-	//윈도우 모드로 강제 변경 added by sam 11/01/17
-	void ChangeWindowMode ();
-
-	void UpdateTerMul();
 };
 
 #endif // UISELCHAR_H_

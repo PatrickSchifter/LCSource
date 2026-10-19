@@ -39,6 +39,63 @@ char* GetNationName ( DWORD dwNations )
 	}
 	return "Unknow";
 }
+	
+// ----------------------------------------------------------------------------
+// Name : CheckInputLocal()
+// Desc :
+// ----------------------------------------------------------------------------
+bool CheckInputLocal ()
+{
+	_hKL = GetKeyboardLayout ( 0 );
+
+	if ( _dwLocalLanguage != GetPrimaryLang ()  )
+	{
+		_pUIMgr->CloseMessageBox( MSGCMD_LOGIN_ERROR );
+
+		CUIMsgBox_Info	MsgBoxInfo;
+		MsgBoxInfo.SetMsgBoxInfo( CTString( "Language setting" ), UMBS_OK, UI_LOGIN, MSGCMD_LOGIN_ERROR );
+
+		CTString strMessage = CTString( "Setting country is wrong.\n\n" );
+				
+		strMessage += "Current version : ";
+		strMessage += GetNationName ( _dwLocalLanguage );
+		strMessage += "\nCurrent input local : ";
+		strMessage += GetNationName ( GetLanguage () );
+
+		MsgBoxInfo.AddString( strMessage );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo, 350, 300 ); // 임의 설정 
+
+	}
+
+	// 나라별 Cand 출력 형태 지정 ( 가로, 세로 )
+	bool bVerticalCand = false;
+/*
+	switch ( _dwLocalLanguage )
+	{
+	case LANG_CHINESE :
+		switch ( GetSubLang () )
+		{
+		case SUBLANG_CHINESE_SIMPLIFIED :
+			bVerticalCand = true;
+		
+		case SUBLANG_CHINESE_TRADITIONAL :
+			bVerticalCand = true;
+		}
+		break;	
+
+	case LANG_KOREAN :
+		bVerticalCand = false;
+		break;
+		
+	case LANG_JAPANESE :
+		bVerticalCand = true;
+		break;
+	}
+*/
+
+	return bVerticalCand;
+}
+
 
 
 //------------------------------------------------------------------------------

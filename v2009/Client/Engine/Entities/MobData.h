@@ -4,11 +4,9 @@
 #pragma once
 #endif
 
-#include <Engine/LocalDefine.h>
+
 #include <Engine/Entities/Entity.h>
 #include <Engine/Network/ChatMsgBuffer.h>
-#include <Engine/Help/LoadLod.h>
-#include <Common/header/def_npc.h>
 
 #define		NPC_SHOPPER				(1 << 0)	// 상점주인여부?
 #define		NPC_FIRSTATTACK			(1 << 1)	// 선공여부?
@@ -45,15 +43,7 @@
 // FLAG Extension	// 2009년 2월
 #define		NPC_AUCTION				(1 << 0)	// 거래 대행 NPC
 #define		NPC_COLLSION_ENABLE		(1 << 1)	// 캐릭터의 모델에 충돌 flag적용 유무
-#define		NPC_FACTORY				(1 << 2)	// 아이템 제작 관련 NPC
-#define		NPC_TRIGGER_CHOICE		(1 << 3)	// NPC와 대화하면 트리거 발동
-#define		NPC_DONT_ATTACK				(1 << 6)	// Totem NPC
-#define		NPC_AFFINITY			(1 << 7)	// 친화도 NPC
-#define		NPC_SHADOW				(1 << 8)	// 그림자 몬스터 & NPC [2/11/2011 rumist]
-#define		NPC_CRAFTING			(1 << 9)	// 제작
-#define		NPC_TOTEM_ITEM			(1 << 10)	// 아이템으로 소환된 토템 NPC
 
-#define		NPC_NO_SHADOW_CAST		(1 << 31)	// 그림자 캐스팅 제외함.
 #define		NPC_MASK				( NPC_ZONEMOVER | NPC_SHOPPER | NPC_REFINER | NPC_QUEST | NPC_REMISSION | NPC_EVENT | NPC_KEEPER | NPC_GUILD | NPC_RESETSTAT | NPC_CHANGEWEAPON | NPC_WARCASTLE | NPC_GUARD)
 #define		NPC_RESOURCE_MASK		( NPC_MINERAL | NPC_CROPS | NPC_ETERNAL | NPC_ENERGY | NPC_QUEST_COLLECT)
 
@@ -96,29 +86,75 @@ enum eSiegewarfareQuartersSetup
 	QUARTER_ATTACK,
 };
 // ---------------------------------------------------<<
-class ENGINE_API CMobData : public stNpc, public LodLoader<CMobData>
+class ENGINE_API CMobData 
 {	
 private:
-	UBYTE	attrdef;
-	UBYTE	attratt;
-	UBYTE	attrdefLv;
-	UBYTE	attrattLv;		
+	// NPC 툴에서 사용하고 있는 구조체
+	// CMobData의 내부에서만 사용됩니다.
+	struct _npcStat
+	{
+		int		index, level, hp, mp;
+		int		attackSpeed;						// 공격 속도.
+		float	walkspeed;
+		float	runspeed;
+		float	scale;
+		float	AttackDistance;
+		float	size;
+		char	skill;								// Skill Master 필드.
+		char	sskillmaster;
+		int		effect[5];
+		int		type;								// 어떤 형태의 NPC인가? 상인? 등등...
+		int		typeSE;								// NPC플래그를 전부 사용하여 추가된 NPC플래그
+		char	name[50];
+		char	fileSMC[255];
+		char	motion_Idle[50];
+		char	motion_Walk[50];
+		char	motion_Wound[50];
+		char	motion_Attack[50];
+		char	motion_Die[50];
+		char	motion_Run[50];
+		char	motion_Idle2[50];
+		char	motion_Attack2[50];		
 
-	std::string	name;
-	std::string desc;
-	int		transFlag;	//[sora] 미번역 스트링 index 표시
+		char	attackType;
+		char	fireDelayCount;
+		float	client_fireobjDelay[4];
+		char	fireEffect0[256];
+		char	fireEffect1[256];
+		char	fireEffect2[256];
+		char	fireObject;
+		float	fireSpeed;
+
+		// 050221 : bs : 스킬 수정
+		int		skill0_index;
+		char	skill0_level;
+		int		skill1_index;
+		char	skill1_level;
+	};
+
 private:
-	ZONEFLAGS	mob_ulZoneFlag;
-	ZONEFLAGS	mob_ulExtraFlag;
+	union
+	{
+		ULONG		mob_ulZoneFlag;
+		//int			mob_iAttackType;				// 공격하는 방식(예 : 원거리, 근거리)
+	};
+	union
+	{
+		ULONG		mob_ulExtraFlag;
+	};
 
-	char		motion_Attack3[DEF_ANI_LENGTH];
-	char		motion_Attack4[DEF_ANI_LENGTH];
+	char		motion_Attack3[50];
+	char		motion_Attack4[50];
 	BOOL		mob_bBoss;
-		
+	_npcStat	mob_Data;
+	
 	//---------------------------------------------
 	// 판매 대행 NPC
 	INDEX		Owner_Index;
-	short		channel_flag;
+//	CTString	Owner_name;
+//	CTString	Owner_Shop_name;
+	ChatMsgBuffer	ShopMsg;		
+
 public:
 	/* Default constructor. */
 	CMobData(void);
@@ -133,291 +169,255 @@ public:
 	int  IsMyQuarter() const ;	// WSS_DRATAN_SEIGEWARFARE 2007/08/13
 
 	inline BOOL IsResource()	const
-	{	return (flag & NPC_RESOURCE_MASK);		}
+	{	return (mob_Data.type & NPC_RESOURCE_MASK);		}
 
 	inline BOOL	IsShopper()		const
 	{ 
-		return (flag & NPC_SHOPPER);	
+		return (mob_Data.type & NPC_SHOPPER);	
 	}	
 
 	inline BOOL IsMovable()		const
 	{
-		return (flag & NPC_MOVING);
+		return (mob_Data.type & NPC_MOVING);
 	}
 
 	inline BOOL IsZoneMoving()	const
 	{ 
-		return (flag & NPC_ZONEMOVER);
+		return (mob_Data.type & NPC_ZONEMOVER);
 	}
 
 	inline BOOL IsCastleGuard() const
 	{
-		return (flag & NPC_CASTLE_GUARD);
+		return (mob_Data.type & NPC_CASTLE_GUARD);
 	}
 
 	inline BOOL IsLordSymbol() const
 	{
-		return (flag & NPC_LORD_SYMBOL);
+		return (mob_Data.type & NPC_LORD_SYMBOL);
 	}
 
 	inline BOOL IsCastleTower() const
 	{
-		return (flag & NPC_CASTLE_TOWER);
+		return (mob_Data.type & NPC_CASTLE_TOWER);
 	}
 		
 	inline BOOL IsRefiner()		const
 	{ 
-		return (flag & NPC_REFINER); 
+		return (mob_Data.type & NPC_REFINER); 
 	}
 
 	inline BOOL IsPeaceful()	const
 	{
-		return (flag & NPC_PEACEFUL); 
+		return (mob_Data.type & NPC_PEACEFUL); 
 	}	
 
 	inline BOOL IsQuest()		const			// 퀘스트 NPC
 	{
-		return (flag & NPC_QUEST);
+		return (mob_Data.type & NPC_QUEST);
 	}
 	
 	inline BOOL IsSkillMaster() const			// 스킬 마스터
 	{
-		return (skillmaster != -1);
+		return (mob_Data.skill != -1);
 	}
 
 	inline BOOL IsMineral()		const			// 광물
 	{
-		return (flag & NPC_MINERAL);
+		return (mob_Data.type & NPC_MINERAL);
 	}
 	
 	inline BOOL IsCrops()		const			// 작물
 	{
-		return (flag & NPC_CROPS);
+		return (mob_Data.type & NPC_CROPS);
 	}
 
 	inline BOOL IsEnergy()		const			// 에너지
 	{
-		return (flag & NPC_ENERGY);
+		return (mob_Data.type & NPC_ENERGY);
 	}
 
 	inline BOOL IsCollect()		const			// 수집물
 	{
-		return (flag & NPC_QUEST_COLLECT);
+		return (mob_Data.type & NPC_QUEST_COLLECT);
 	}
 
 	inline BOOL IsEternal()		const			// 지속 자원
 	{
-		return (flag & NPC_ETERNAL);
+		return (mob_Data.type & NPC_ETERNAL);
 	}
 
 	inline BOOL IsSSkillMaster()	const		//특수 스킬 마스터.
 	{
-		return (sskillmaster != -1);
+		return (mob_Data.sskillmaster != -1);
 	}
 
 	inline BOOL IsRemission()		const		// 면죄부
 	{
-		return (flag & NPC_REMISSION);
+		return (mob_Data.type & NPC_REMISSION);
 	}
 	
 	inline char GetSkillMaster()	const
 	{
-		return skillmaster;
+		return mob_Data.skill;
 	}
 
 	inline char GetSpecialSkillMaster() const
 	{
-		return sskillmaster;
+		return mob_Data.sskillmaster;
 	}
 
 	inline BOOL IsEvent()			const		// 이벤트
 	{
-		return (flag & NPC_EVENT);
+		return (mob_Data.type & NPC_EVENT);
 	}
 
 	inline BOOL IsGuard() const
 	{
-		return ( flag & NPC_GUARD );
+		return ( mob_Data.type & NPC_GUARD );
 	}
 
 	inline BOOL IsWareHouse() const				// 창고
 	{
-		return ( flag & NPC_KEEPER );
+		return ( mob_Data.type & NPC_KEEPER );
 	}
 
 	inline BOOL IsGuild() const					// 길드
 	{
-		return ( flag & NPC_GUILD );
+		return ( mob_Data.type & NPC_GUILD );
 	}
 
 	inline BOOL IsChangeWeapon() const			// 무기 교환
 	{
-		return ( flag & NPC_CHANGEWEAPON );
+		return ( mob_Data.type & NPC_CHANGEWEAPON );
 	}
 
 	inline BOOL IsCollectQuest() const			// 수집 퀘스트 NPC
 	{
-		return ( flag & NPC_QUEST_COLLECT );
+		return ( mob_Data.type & NPC_QUEST_COLLECT );
 	}
 
 	inline BOOL IsPartyMob() const			// 파티몹 
 	{
-		return ( flag & NPC_PARTY_MOB );
+		return ( mob_Data.type & NPC_PARTY_MOB );
 	}
 
 	inline BOOL IsWarCastle() const
 	{
-		return ( flag & NPC_WARCASTLE );
+		return ( mob_Data.type & NPC_WARCASTLE );
 	}
 
 	inline BOOL IsResetStat() const				// 스탯 초기화
 	{
-		return ( flag & NPC_RESETSTAT );
+		return ( mob_Data.type & NPC_RESETSTAT );
 	}
 
 	inline BOOL IsChaoVill() const				// 카오 마을  // WSS_REMOVE_NAMEPOPUP 2007/08/14
 	{
-		return ( flag & NPC_CHAOCITY );
+		return ( mob_Data.type & NPC_CHAOCITY );
 	}
 
 	inline BOOL IsHunterVill() const				// 헌터 마을 // WSS_REMOVE_NAMEPOPUP 2007/08/14
 	{
-		return ( flag & NPC_HUNTERCITY );
+		return ( mob_Data.type & NPC_HUNTERCITY );
 	}
 
 	inline BOOL IsAuctionChar() const				// 거래 대행NPC
 	{
-		return ( flag1 & NPC_AUCTION );
+		return ( mob_Data.typeSE & NPC_AUCTION );
 	}
 
 	inline BOOL IsCollsionModel()					// 모델에 충돌 적용될 NPC
 	{
-		return ( flag1 & NPC_COLLSION_ENABLE);
-	}
-
-	inline BOOL IsMakeItemNPC()						// 아이템 제작 관련 NPC
-	{
-		return ( flag1 & NPC_FACTORY);
-	}
-
-	inline BOOL	IsAffinityNPC()						// 친화도 NPC
-	{
-		return ( flag1 & NPC_AFFINITY );
-	}
-
-	inline BOOL	IsDontAttack()					// Totem MOB
-	{
-		return ( flag1 & NPC_DONT_ATTACK );
+		return ( mob_Data.typeSE & NPC_COLLSION_ENABLE);
 	}
 	
-	inline BOOL	IsShadowNPC() const					// shadow type npc.
-	{
-		return ( flag1 & NPC_SHADOW );
-	}
-
-	inline BOOL IsCrafting() const
-	{
-		return ( flag1 & NPC_CRAFTING );
-	}
-	
-	inline BOOL IsTotemItem() const
-	{
-		return ( flag1 & NPC_TOTEM_ITEM );
-	}
-
-	inline BOOL IsNPCFlag2nd(ULONG flag) const
-	{
-		return (flag1 & flag);
-	}
-
 	CTString	GetAnimAttackNameByID(int iAttackID);	
-	inline void SetZoneMovingFlag(ZONEFLAGS ulZoneFlag)
+	inline void SetZoneMovingFlag(ULONG ulZoneFlag)
 	{	mob_ulZoneFlag = ulZoneFlag; };
 	
-	inline void SetExtraFlag(ZONEFLAGS ulExtraFlag)
+	inline void SetExtraFlag(ULONG ulExtraFlag)
 	{	mob_ulExtraFlag = ulExtraFlag;	};
 
 	inline int GetMobIndex()			const
-	{	return index;}
+	{	return mob_Data.index;}
 	
 	inline const char* GetMobSmcFileName()
-	{	return fileSMC;}
+	{	return mob_Data.fileSMC;}
 
 	inline void SetMobSmcFileName(CTString MobName)
 	{
-		ZeroMemory(fileSMC, strlen(fileSMC));
-		strcpy(fileSMC, MobName.str_String);
+		ZeroMemory(mob_Data.fileSMC, strlen(mob_Data.fileSMC));
+		strcpy(mob_Data.fileSMC, MobName.str_String);
 	}
 	
 	inline int GetLevel()				const
-	{	return level;}
+	{	return mob_Data.level;}
 	
 	inline float GetWalkSpeed()			const
-	{	return walkSpeed;}
+	{	return mob_Data.walkspeed;}
 
 	inline float GetRunSpeed()			const
-	{	return runSpeed;}
+	{	return mob_Data.runspeed;}
 
 	inline float GetAttackDistance()	const
-	{	return attackArea;	}
+	{	return mob_Data.AttackDistance;	}
 	
 	inline float GetHealth()			const
-	{	return hp;}
+	{	return mob_Data.hp;}
 	
 	inline int	GetMP()					const
-	{	return mp;}
+	{	return mob_Data.mp;}
 
 	inline int	GetAttackSpeed()		const
-	{	return attackSpeed;	}
+	{	return mob_Data.attackSpeed;	}
 
 	inline float GetScale()				const
-	{	return scale;}
+	{	return mob_Data.scale;}
 
 	inline float GetSize()				const
-	{	return size;}
+	{	return mob_Data.size;}
 
 	inline float GetScaledSize()		const
-	{	return fBound * scale;}
+	{	return mob_Data.size * mob_Data.scale;}
 
 	inline int	GetType()				const
-	{	return flag;	}
-	inline ZONEFLAGS GetZoneMovingFlag()const	
+	{	return mob_Data.type;	}
+	inline ULONG GetZoneMovingFlag()	const	
 	{	return mob_ulZoneFlag; }
 
-	inline ZONEFLAGS GetExtraFlag()		const
+	inline ULONG GetExtraFlag()			const
 	{	return mob_ulExtraFlag;	};
 	
 	// NOTE : 월드 에디터에서만 쓰여야 합니다.
-	void SetName(const char* str)	{ name = str; }
 	inline const char*	GetName()
-	{	return name.c_str();}
+	{	return mob_Data.name;}
 	
 	inline const char*	GetAnimWalkName()
-	{	return motion_Walk;}
+	{	return mob_Data.motion_Walk;}
 	
 	inline const char* GetAnimRunName()
-	{	return motion_Run;	}
+	{	return mob_Data.motion_Run;	}
 	
 	inline const char*	GetAnimAttackName()
-	{	return motion_Attack;}
+	{	return mob_Data.motion_Attack;}
 	
 	inline const char*	GetAnimDefaultName()
-	{	return motion_Idle;}
+	{	return mob_Data.motion_Idle;}
 	
 	inline const char*	GetAnimDeathName()
-	{	return motion_Die;}
+	{	return mob_Data.motion_Die;}
 	
 	inline const char*	GetAnimWoundName()
-	{	return motion_Dam;}
+	{	return mob_Data.motion_Wound;}
 	
 	inline const char* GetNormalBoxName()
 	{	return ("Default");}	
 
 	inline const char* GetAnimAttack2Name()
-	{	return motion_Attack2;}
+	{	return mob_Data.motion_Attack2;}
 
 	inline const char*	GetAnimDefault2Name()
-	{	return motion_Idle2;}
+	{	return mob_Data.motion_Idle2;}
 
 	inline const char* GetAnimAttack3Name()
 	{	return motion_Attack3;}
@@ -426,40 +426,45 @@ public:
 	{	return motion_Attack4;}
 
 	inline char GetAttackType() const
-	{	return attackType;	}	
+	{	return mob_Data.attackType;	}	
 
 	inline char GetDelayCount()		const
-	{	return fireDelayCount;	}
+	{	return mob_Data.fireDelayCount;	}
 
 	inline float GetDelay(int i)		const
-	{	return fireDelay[i];	}
+	{	return mob_Data.client_fireobjDelay[i];	}
 
 	inline const char* GetFireEffect0()
-	{	return fireEffect0;	}
+	{	return mob_Data.fireEffect0;	}
 
 	inline const char* GetFireEffect1()
-	{	return fireEffect1;	}
+	{	return mob_Data.fireEffect1;	}
 
 	inline const char* GetFireEffect2()
-	{	return fireEffect2;	}
+	{	return mob_Data.fireEffect2;	}
 
 	inline int GetMissileType()	const
-	{	return (int)fireObject;	}	
+	{	return (int)mob_Data.fireObject;	}	
 
 	inline float GetMissileSpeed()	const
-	{	return fireSpeed;	}
+	{	return mob_Data.fireSpeed;	}
 
 	inline int GetSkill0Index()	const
-	{	return skill0_index;	}
+	{	return mob_Data.skill0_index;	}
 
 	inline char	GetSkill0Level()	const
-	{	return skill0_level;	}
+	{	return mob_Data.skill0_level;	}
 
 	inline int GetSkill1Index()	const
-	{	return skill1_index;	}
+	{	return mob_Data.skill1_index;	}
 
 	inline char	GetSkill1Level()	const
-	{	return skill1_level;	}
+	{	return mob_Data.skill1_level;	}
+	
+	// WSS_DRATAN_SEIGEWARFARE 2007/08/23 -------------->>
+	inline void	SetMobName(CTString tName)
+	{	strcpy( mob_Data.name , tName.str_String); }
+	// -------------------------------------------------<<
 
 	inline void	SetOwnerIndex(INDEX Ownerindex)
 	{
@@ -470,85 +475,56 @@ public:
 	{
 		return Owner_Index;
 	}
-
-	inline UBYTE GetAttratt() const
-	{
-		return attratt;
-	}
 	
-	inline UBYTE GetAttrdef() const
+	inline void SetShopmsg(CTString &strMsg)
 	{
-		return attrdef;
-	}
-
-	inline UBYTE GetAttrattLv() const
-	{
-		return attrattLv;
-	}
-	
-	inline UBYTE GetAttrdefLv() const
-	{
-		return attrdefLv;
-	}
-	
-	inline void	SetAttribute(UBYTE ubAttratt, UBYTE ubAttrdef, UBYTE ubAttrattLv, UBYTE ubAttrdefLv)
-	{
-		attratt = ubAttratt;
-		attrdef = ubAttrdef;
-		attrattLv = ubAttrattLv;
-		attrdefLv = ubAttrdefLv;
-	}
-
-	int	GetSyndicateType()
-	{
-		return rvr_value;
-	}
-
-	int GetSyndicateGrade()
-	{
-		return rvr_grade;
-	}
-
-	float GetBound()
-	{
-		return fBound;
-	}
-
-	void SetChannelFlag(short channelFlag)	{ channel_flag = channelFlag;	}
-	bool IsChannelFlag(int nChannel)	
-	{ 
-		if( channel_flag & ( 1 << (nChannel - 1) )) 
-			return true;
-		return false; 
+		ShopMsg.SetChatMsg(strMsg);
 	}
 
 public:
-	void SetNoTranslate();
-	void ClearNoTranslate();
-
-	int& GetTranslateFlag()		{ return transFlag; }
-	void SetTranslateFlag(int flag);
-
-	inline const char* GetDesc()
-	{
-		return desc.c_str();
-	}
-	
-	void SetDesc(const char* strDesc) { desc = strDesc; }
-
 	//-----------------------------------------------------------------------------
 	// Purpose: NPC 데이터를 읽어들여서 MobData 배열을 생성합니다.
 	// Input  : &apMobData - 데이터가 저장될 배열.
 	//			FileName - 읽어들일 화일명 MOB월드번호.lod
 	// Output : int - 화일로부터 읽어들인 NPC 데이터의 갯수를 반환합니다.
 	//-----------------------------------------------------------------------------
-
-	static bool loadEx(const char* FileName);
-	static bool LoadZoneData(const char* ZNFileName);
-	static void SetSDNpc(); // 싱글던전 NPC 셋팅
-	static bool LoadChannelData(const char* FileName);
-
-	static int SetMobDataToNPC(CEntity* penEntity, CMobData* MD, const char* szMobName);	
+	static int LoadNPCDataFromFile(CStaticArray<CMobData> &apMobData, const char* FileName, const char* ZNFileName = NULL);
+	static int SetMobDataToNPC(CEntity* penEntity, CMobData& MD, const char* szMobName);
 };
 
+class ENGINE_API CMobName
+{
+private:
+	// NPC 툴에서 사용하고 있는 구조체
+	// CMobNameData의 내부에서만 사용됩니다.
+	struct _npcStat
+	{
+		int index;
+		char name[50];
+	};
+
+private:	
+	_npcStat	mob_Name;
+	
+public:
+	/* Default constructor. */
+	CMobName(void);
+	/* Destructor. */
+	~CMobName(void);
+
+	inline int GetMobIndex()			const
+	{	return mob_Name.index;}
+
+	inline const char*	GetName()
+	{	return mob_Name.name;}
+
+public:
+	//-----------------------------------------------------------------------------
+	// Purpose: NPC 데이터를 읽어들여서 CMobNameData 배열을 생성합니다.
+	// Input  : &apMobData - 데이터가 저장될 배열.
+	//			FileName - 읽어들일 화일명 MOB월드번호.lod
+	// Output : int - 화일로부터 읽어들인 NPC 데이터의 갯수를 반환합니다.
+	//-----------------------------------------------------------------------------
+	static int LoadMobNameFromFile(CStaticArray<CMobName> &apMobData, const char* FileName);
+};
 #endif

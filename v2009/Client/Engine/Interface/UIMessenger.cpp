@@ -3,10 +3,6 @@
 
 #include <Engine/Interface/UIMessenger.h>
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UITalk.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/function/PremiumChar.h>
-#include <Engine/Help/Util_Help.h>
 
 // Define position
 #define	MESSENGER_TITLE_SX					25
@@ -61,12 +57,6 @@ static bool	g_bUseChat[MAX_TALK];							//채팅창 사용 확인
 static int	g_nMakeCharIndex[MAX_TALK];						//채팅창 생성 캐릭 인덱스
 static int	g_nChatIndex[MAX_TALK];							//채팅창 인덱스
 
-//extern INDEX g_iCountry;
-
-// UI Renewal [9/16/2009 rumist] NHN service.
-extern INDEX g_iXPosInMessanger;
-extern INDEX g_iYPosInMessanger;
-
 
 //채팅 글자 색
 #define MAX_COLOR							9
@@ -89,11 +79,8 @@ COLOR ChatColor[MAX_COLOR] =
 // Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
 CUIMessenger::CUIMessenger()
-	: m_nTarIndex(0)
-	, m_bPremiumChar(false)
 {
 	Reset();
-	m_ptdMenuTexture = NULL;
 }
 
 
@@ -104,8 +91,8 @@ CUIMessenger::CUIMessenger()
 //------------------------------------------------------------------------------
 CUIMessenger::~CUIMessenger()
 {
-	Reset();
-	STOCK_RELEASE(m_ptdMenuTexture);
+
+
 }
 
 
@@ -119,13 +106,6 @@ void CUIMessenger::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pix
 	SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 );
 }
 
-void CUIMessenger::ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-
-	g_iXPosInMessanger = GetPosX();
-	g_iYPosInMessanger = GetPosY();
-}
 
 //------------------------------------------------------------------------------
 // CUIMessenger::AdjustPosition
@@ -150,7 +130,9 @@ void CUIMessenger::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, in
 	//m_strTitle = _S( 1611, "메신저" ); 
 	m_strTitle = _S( 2981, "라스트 카오스 메신저"); 
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Set Rect
 	m_rcTitle.SetRect( 0, 0, 512, 22 );
@@ -313,22 +295,7 @@ void CUIMessenger::CreateGroup( float fTexWidth, float fTexHeight )
 	m_rcIcon[SORCERER][OFFLINE].SetUV( 93, 227, 111, 242,fTexWidth, fTexHeight );
 	m_rcIcon[SORCERER][ONLINE].SetUV( 74, 227, 92, 242,fTexWidth, fTexHeight );
 	m_rcIcon[SORCERER][LEFT_POSITION].SetUV( 55, 227, 73, 242, fTexWidth, fTexHeight );
-	
-	// TO-KR-T20091127-012 : add night shadow job icon to messenger. [12/1/2009 rumist]
-	m_rcIcon[NIGHTSHADOW][OFFLINE].SetUV( 475, 159, 493, 174, fTexWidth, fTexHeight );
-	m_rcIcon[NIGHTSHADOW][ONLINE].SetUV( 456, 159, 474, 174, fTexWidth, fTexHeight );
-	m_rcIcon[NIGHTSHADOW][LEFT_POSITION].SetUV( 437, 159, 455, 174, fTexWidth, fTexHeight );
 
-#ifdef CHAR_EX_ROGUE	// [2012/08/27 : Sora] EX로그 추가
-	m_rcIcon[EX_ROGUE][OFFLINE].SetUV( 131, 211, 149, 226, fTexWidth, fTexHeight );
-	m_rcIcon[EX_ROGUE][ONLINE].SetUV( 131, 195, 149, 210, fTexWidth, fTexHeight );
-	m_rcIcon[EX_ROGUE][LEFT_POSITION].SetUV( 131, 179, 149, 194,fTexWidth, fTexHeight );
-#endif
-#ifdef CHAR_EX_MAGE		// 2013/01/08 jeil EX메이지 추가 
-	m_rcIcon[EX_MAGE][OFFLINE].SetUV( 93, 211, 111, 226, fTexWidth, fTexHeight );
-	m_rcIcon[EX_MAGE][ONLINE].SetUV( 93, 195, 111, 210, fTexWidth, fTexHeight );
-	m_rcIcon[EX_MAGE][LEFT_POSITION].SetUV( 93, 179, 111, 194, fTexWidth, fTexHeight );
-#endif
 
 	m_mgBlock.Create( this, GROUP_X, GROUP_Y, GROUP_WIDTH, 15 );
 	m_mgBlock.SetGroupName( _S(2985, "차단된 유저" ) ); 
@@ -421,9 +388,9 @@ void CUIMessenger::CreateTrackPopup( float fTexWidth, float fTexHeight )
 	m_tpGroup.SetOverColor( 0xF8E1B5FF );
 	m_tpGroup.SetSelectColor( 0xF8E1B5FF );
 
-	m_tpGroup.AddMenuList( _S(2987, "새그룹 추가") +CTString("     "));
-	m_tpGroup.AddMenuList( _S(2988, "그룹 삭제") +CTString("     "));
-	m_tpGroup.AddMenuList( _S(2989, "그룹 이름 변경" ) +CTString("     "));
+	m_tpGroup.AddMenuList( _S(2987, "새그룹 추가") +_s("     "));
+	m_tpGroup.AddMenuList( _S(2988, "그룹 삭제") +_s("     "));
+	m_tpGroup.AddMenuList( _S(2989, "그룹 이름 변경" ) +_s("     "));
 	
 	//멤버 관련 메뉴 설정
 	m_tpMemberMenu.m_rtBackUL.CopyUV( m_tpSetMyState.m_rtBackUL );
@@ -442,7 +409,7 @@ void CUIMessenger::CreateTrackPopup( float fTexWidth, float fTexHeight )
 	m_tpMemberMenu.SetOverColor( 0xF8E1B5FF );
 	m_tpMemberMenu.SetSelectColor( 0xF8E1B5FF );
 
-	m_tpMemberMenu.AddMenuList( _S(2990, "그룹이동") +CTString("     ") );
+	m_tpMemberMenu.AddMenuList( _S(2990, "그룹이동") +_s("     ") );
 	m_tpMemberMenu.AddMenuList( _S(2991, "대화하기") );
 	m_tpMemberMenu.AddMenuList( _S(338, "삭제" ) );
 	m_tpMemberMenu.AddMenuList( _S(2992, "차단" ) );
@@ -534,13 +501,9 @@ void CUIMessenger::ReSizing( int nResizeRange, int nWidth, int nHeight )
 //------------------------------------------------------------------------------
 void CUIMessenger::Render()
 {
-	if( IsVisible() == false )
-		return;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	if( !IsVisible() ) return;
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX2;
@@ -553,10 +516,10 @@ void CUIMessenger::Render()
 	RenderGroup( m_nPosX, m_nPosY );
 	RenderTab( m_nPosX, m_nPosY );
 	
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	m_btnClose.Render();
 	m_btnGroup.Render();
@@ -565,15 +528,15 @@ void CUIMessenger::Render()
 	m_btnDelete.Render();
 	m_sbMemberList.Render();
 	
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Title
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + MESSENGER_TITLE_SX,
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + MESSENGER_TITLE_SX,
 										m_nPosY + MESSENGER_TITLE_SY );
 
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	m_tpSetMyState.Render();
 	m_tpGroup.Render();
@@ -582,12 +545,12 @@ void CUIMessenger::Render()
 	m_tpGroupList.Render();
 	m_tpBlock.Render();
 	
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 
 	//서브 메뉴 화살표 렌더링
-	pDrawPort->InitTextureData( m_ptdMenuTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdMenuTexture );
 	if( m_tpGroup.IsVisible() )
 	{
 		RenderMenuArrow( m_tpGroup.GetAbsPosX() +105, m_tpGroup.GetAbsPosY(), 7, 7, 1);
@@ -598,7 +561,7 @@ void CUIMessenger::Render()
 	{
 		RenderMenuArrow( m_tpMemberMenu.GetAbsPosX() +70, m_tpMemberMenu.GetAbsPosY(), 7, 7, 0);
 	}
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	
 	//드래그 중인 멤버 렌더링
@@ -617,15 +580,13 @@ void CUIMessenger::RenderRectUV3( int nUnitSize, int nX, int nY, int nWidth, int
 	int nX2 = nX + nWidth;
 	int nY2 = nY + nHeight;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->AddTexture( nX, nY, nX + nUnitSize, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + nUnitSize, nY2,
 										rtRectUV3.rtL.U0, rtRectUV3.rtL.V0, rtRectUV3.rtL.U1, rtRectUV3.rtL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX + nUnitSize, nY, nX2 - nUnitSize, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + nUnitSize, nY, nX2 - nUnitSize, nY2,
 										rtRectUV3.rtM.U0, rtRectUV3.rtM.V0, rtRectUV3.rtM.U1, rtRectUV3.rtM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - nUnitSize, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - nUnitSize, nY, nX2, nY2,
 										rtRectUV3.rtR.U0, rtRectUV3.rtR.V0, rtRectUV3.rtR.U1, rtRectUV3.rtR.V1,
 										0xFFFFFFFF );
 }
@@ -677,21 +638,22 @@ void CUIMessenger::RenderMyInfo( int nX, int nY )
 {
 	nY += MYINFO_Y;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Draw Icon
-	pDrawPort->AddTexture( nX + MYINFO_ICON_X, nY, nX + MYINFO_ICON_X + ICON_WIDTH, nY + ICON_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + MYINFO_ICON_X, nY, nX + MYINFO_ICON_X + ICON_WIDTH, nY + ICON_HEIGHT,
 										m_rcIcon[m_MyInfo.m_eJob][m_MyInfo.m_eCondition].U0, m_rcIcon[m_MyInfo.m_eJob][m_MyInfo.m_eCondition].V0,
 										m_rcIcon[m_MyInfo.m_eJob][m_MyInfo.m_eCondition].U1, m_rcIcon[m_MyInfo.m_eJob][m_MyInfo.m_eCondition].V1,
 										0Xffffffff );
 	// Button
 	m_btmSetState.Render();
 	
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Name 
-	pDrawPort->PutTextEx( m_MyInfo.m_strName, nX + MYINFO_NAME_X,
+	_pUIMgr->GetDrawPort()->PutTextEx( m_MyInfo.m_strName, nX + MYINFO_NAME_X,
 										nY, COLOR_MYNAME );
+	// Flush all render text queue
+	//_pUIMgr->GetDrawPort()->EndTextEx();
+
 }
 
 
@@ -771,19 +733,8 @@ void CUIMessenger::Reset()
 void CUIMessenger::ToggleVisible()
 {
 	if( !IsUseLevel() ) return;
-
-	if( IsVisible() )
-	{
-		g_iXPosInMessanger = GetPosX();
-		g_iYPosInMessanger = GetPosY();
-	}
-	else
-	{
-		SetPos( g_iXPosInMessanger, g_iYPosInMessanger );
-	}
-
 	BOOL	bVisible = !IsVisible();
-	CUIManager::getSingleton()->RearrangeOrder( UI_MESSENGER, bVisible );
+	_pUIMgr->RearrangeOrder( UI_MESSENGER, bVisible );
 
 }
 
@@ -820,7 +771,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 			}
 		
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -969,7 +920,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager::getSingleton()->RearrangeOrder( UI_MESSENGER, TRUE );
+				_pUIMgr->RearrangeOrder( UI_MESSENGER, TRUE );
 
 				nOldX = nX;		nOldY = nY;
 			
@@ -1187,7 +1138,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 				}
 
 				return WMSG_SUCCESS;
-			}
+				}
 			else
 				m_tpMemberMenu.Hide();
 
@@ -1269,11 +1220,11 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 				if( m_tpBlock.GetCurSel() ==0)
 				{
 					CTString strMessage;
-					strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), (const char*)m_miSelectMember.m_strName );
+					strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), m_miSelectMember.m_strName );
 					Message( MSGCMD_MESSENGER_UNBLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );
 				}
 				else  if( m_tpBlock.GetCurSel() ==1)
-					MsgBoxCommand(MSGCMD_MESSENGER_BLOCK_DEL_REQ, true, m_miSelectMember.m_strName);
+					MsgBoxCommand(MSGCMD_MESSENGER_DEL_REQ, true, m_miSelectMember.m_strName);
 
 				m_tpBlock.Hide();
 				return WMSG_SUCCESS;
@@ -1293,7 +1244,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 				}
 				else if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
-					ToggleVisible();
+					_pUIMgr->RearrangeOrder( UI_MESSENGER, FALSE );
 					return WMSG_SUCCESS;
 				}
 				else if( m_btnGroup.MouseMessage( pMsg ) != WMSG_FAIL )
@@ -1427,9 +1378,6 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 				}
 				else
 				{
-					if (UIMGR()->checkName(strInput, 0) == FALSE)
-						return;
-
 					s_strReqCharName =strInput;
 					// 친구 등록 요청
 					RegistMemberReq( strInput );
@@ -1439,32 +1387,24 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		}		
 		break;
 
-	case MSGCMD_MESSENGER_DEL_REQ:
-	case MSGCMD_MESSENGER_BLOCK_DEL_REQ:
+	case MSGCMD_MESSENGER_DEL_REQ :
 		{
 			if( bOK )
 			{
-				if (UIMGR()->checkName(strInput, 0) == FALSE)
-					return;
-
-				if ((miDelMember = FindMember(strInput)).m_nCharIndex != -1 ||
-					(miDelMember = FindBlockMember(strInput)).m_nCharIndex != -1)
+				if( (miDelMember=FindMember(strInput)).m_nCharIndex !=-1 ||
+					(miDelMember=FindBlockMember(strInput)).m_nCharIndex !=-1 )
 				{
 					m_miSelectMember =miDelMember;
 
 					CTString strMessage;
 					if( miDelMember.m_nGroupIndex >=0 )
 					{
-						strMessage.PrintF(_S(3000,"%s님을 삭제하시겠습니까?"), (const char*)miDelMember.m_strName);
-
-						if (nCommandCode == MSGCMD_MESSENGER_DEL_REQ)
-							Message( MSGCMD_MESSENGER_DEL, _S(2999, "캐릭터 삭제"), strMessage, UMBS_YESNO );
-						else
-							Message( MSGCMD_MESSENGER_BLOCK_DEL, _S(2999, "캐릭터 삭제"), strMessage, UMBS_YESNO );
+						strMessage.PrintF(_S(3000,"%s님을 삭제하시겠습니까?"), miDelMember.m_strName);
+						Message( MSGCMD_MESSENGER_DEL, _S(2999, "캐릭터 삭제"), strMessage, UMBS_YESNO );
 					}
 					else
 					{
-						strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), (const char*)miDelMember.m_strName);
+						strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), miDelMember.m_strName);
 						Message( MSGCMD_MESSENGER_UNBLOCK, _S(3013, "차단 해제"), strMessage, UMBS_YESNO );						
 					}
 				}
@@ -1479,7 +1419,6 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 			}
 		}		
 		break;
-
 	case MSGCMD_MESSENGER_DEL :
 		{
 			if( bOK )
@@ -1491,19 +1430,9 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 			}
 		}
 		break;
-	case MSGCMD_MESSENGER_BLOCK_DEL:
-		{
-			if (bOK)
-			{
-				_pNetwork->MgrFriendDeleteBlock(miDelMember.m_nCharIndex);
-				m_miSelectMember =miDelMember;
-				DeleteMember();
-			}
-		}
-		break;
 	case MSGCMD_MESSENGER_ADD_WAIT:
 		{
-			_pNetwork->MgrRegistCancel(m_nTarIndex, s_strReqCharName);
+			_pNetwork->MgrRegistCancel(0, s_strReqCharName);
 		}
 		break;
 	case MSGCMD_MESSENGER_ADD_REP:
@@ -1514,7 +1443,7 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 				return;
 				
 			}
-			_pNetwork->MgrRegistCancel(m_nTarIndex, s_strReqCharName);
+			_pNetwork->MgrRegistCancel( 0, s_strReqCharName);
 
 		}
 		break;
@@ -1534,24 +1463,18 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 					Message( MSGCMD_MESSENGER_ERROR, _S(3008, "차단 에러"), _S(3011, "이미 차단된 캐릭입니다."), UMBS_OK);
 					return;
 				}
-
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
 				for(int i=0; i<10; ++i)
 				{
 					if( g_bUseChat[i] &&
-						pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->IsExistTarget(strInput) )
+						_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->IsExistTarget(strInput) )
 					{
 						Message( MSGCMD_MESSENGER_ERROR, _S(3008, "차단 에러"), _S(3012, "대화중인 상대는 차단할 수 없습니다."), UMBS_OK);
 						return;
 					}
 				}
 	
-				if (UIMGR()->checkName(strInput, 0) == FALSE)
-					return;
-
 				CTString strMessage;
-				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strInput);
+				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), strInput);
 				Message( MSGCMD_MESSENGER_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );		
 			}
 		}
@@ -1589,12 +1512,9 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 			{
 				if( FindGroup(strInput) >=0 )
 					Message( MSGCMD_MESSENGER_ERROR, _S(3020, "그룹추가 에러"), _S(3021, "같은 이름을 가진 그룹이 존재하고 있습니다."), UMBS_OK);
-				else if( UTIL_HELP()->IsSpecialChar(strInput.str_String) == true )
+				else if( strInput.Length() < 1 )
 				{
-					CUIMsgBox_Info MsgBoxInfo;
-					MsgBoxInfo.SetMsgBoxInfo(_S(191,"확인"), UMBS_OK,UI_NONE, MSGCMD_NULL);
-					MsgBoxInfo.AddString(_S( 437, "문장에 금지된 단어가 포함되어 있습니다.")); 
-					UIMGR()->CreateMessageBox( MsgBoxInfo );					
+					//Message( MSGCMD_MESSENGER_ERROR, _S(3020, "그룹추가 에러"), _S("이름을 입력해주세요."), UMBS_OK);					
 				}
 				else
 					_pNetwork->MgrGroupAdd(strInput);
@@ -1607,9 +1527,6 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		{
 			if( bOK )
 			{
-				if (m_vecGroup.size() <= m_nSelectGroup)
-					return;
-
 				if( m_vecGroup[m_nSelectGroup]->m_vecMember.empty() )
 				{
 					_pNetwork->MgrGroupDel(m_vecGroup[m_nSelectGroup]->m_nIndex);
@@ -1625,17 +1542,11 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		{
 			if( bOK )
 			{
-				if (m_vecGroup.size() <= m_nSelectGroup)
-					return;
-
 				if( FindGroup(strInput) >=0 )
 					Message( MSGCMD_MESSENGER_ERROR, _S(3030, "그룹명 변경 에러"), _S(3021, "같은 이름을 가진 그룹이 존재하고 있습니다."), UMBS_OK);
-				else if( UTIL_HELP()->IsSpecialChar(strInput.str_String) == true )
+				else if( strInput.Length() < 1 )
 				{
-					CUIMsgBox_Info MsgBoxInfo;
-					MsgBoxInfo.SetMsgBoxInfo(_S(191,"확인"), UMBS_OK,UI_NONE, MSGCMD_NULL);
-					MsgBoxInfo.AddString(_S( 437, "문장에 금지된 단어가 포함되어 있습니다.")); 
-					UIMGR()->CreateMessageBox( MsgBoxInfo );					
+					//Message( MSGCMD_MESSENGER_ERROR, _S(3030, "그룹명 변경 에러"), _s("이름을 입력해주세요."), UMBS_OK);
 				}
 				else
 					_pNetwork->MgrGroupRename(m_vecGroup[m_nSelectGroup]->m_nIndex, strInput);
@@ -1700,25 +1611,7 @@ void CUIMessenger::RegistMemberReq( CTString strName )
 		return;
 	}
 
-	// Edited : CTString의 == 은 대소문자를 가리지 않아서 일본요청으로 수정
-/*	if(g_iCountry == JAPAN)
-	{
-		if( strcmp(strName,  m_MyInfo.m_strName) == 0 )	
-		{
-			Message( MSGCMD_MESSENGER_ERROR, _S(2997, "친구 추가 에러"), _S( 1938, "자신 자신은 등록할 수 없습니다." ), UMBS_OK );	
-			return;
-		}
-	}
-	else
-	{
-		if( strName == m_MyInfo.m_strName )	
-		{
-			Message( MSGCMD_MESSENGER_ERROR, _S(2997, "친구 추가 에러"), _S( 1938, "자신 자신은 등록할 수 없습니다." ), UMBS_OK );	
-			return;
-		}
-	}*/
-
-	if( strcmp(strName,  m_MyInfo.m_strName) == 0 )	
+	if( strName == m_MyInfo.m_strName )	
 	{
 		Message( MSGCMD_MESSENGER_ERROR, _S(2997, "친구 추가 에러"), _S( 1938, "자신 자신은 등록할 수 없습니다." ), UMBS_OK );	
 		return;
@@ -1742,7 +1635,7 @@ void CUIMessenger::RegistMemberReq( CTString strName )
 //------------------------------------------------------------------------------
 void CUIMessenger::RegistAllow()
 {
-	_pNetwork->MgrRegistAllow( m_nTarIndex, s_strReqCharName );
+	_pNetwork->MgrRegistAllow( m_MyInfo.m_nCharIndex, s_strReqCharName );
 }
 
 
@@ -1753,11 +1646,10 @@ void CUIMessenger::RegistAllow()
 //------------------------------------------------------------------------------
 void CUIMessenger::RegistMemberReq( int nCharIndex, CTString strName )
 {
-	m_nTarIndex = nCharIndex;
 	s_strReqCharName = strName;
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 1623, "%s님이 친구등록 요청을 하셨습니다. 수락 하시겠습니까?" ), (const char*)strName );
+	strMessage.PrintF( _S( 1623, "%s님이 친구등록 요청을 하셨습니다. 수락 하시겠습니까?" ), strName );
 	Message( MSGCMD_MESSENGER_ADD_REP, _S(2996, "친구등록 요청"), strMessage, UMBS_YESNO );
 }
 
@@ -1786,10 +1678,7 @@ void CUIMessenger::DeleteMember()
 
 	bool bDel =m_mgBlock.DeleteMember(strName);
 	if( bDel )
-	{
-		CTString strEmpty;
-		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, strEmpty);
-	}
+		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, CTString());
 
 	if( m_bFriendTab)
 		m_miSelectMember =m_vecGroup[nGroup]->GetSelectMember();
@@ -1799,7 +1688,7 @@ void CUIMessenger::DeleteMember()
 	ResizeScrollBar();
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3001, "%s님을 삭제했습니다."), (const char*)strName);
+	strMessage.PrintF(_S(3001, "%s님을 삭제했습니다."), strName);
 	Message( MSGCMD_MESSENGER_ERROR, _S(2999, "캐릭터 삭제"), strMessage, UMBS_OK );		
 }
 
@@ -1811,46 +1700,6 @@ void CUIMessenger::DeleteMember()
 //------------------------------------------------------------------------------
 void CUIMessenger::DeleteMember( int nCharIndex )
 {
-	// 친구 이름이 바뀌면 대화중이 창은 찾아서 닫는다.
-	{
-		int		max_group = m_vecGroup.size();
-		int		i, j;
-		std::string strFriend;
-
-		for (i = 0; i < max_group; ++i)
-		{
-			for (j = 0; j < m_vecGroup[i]->m_vecMember.size(); ++j)
-			{
-				if (m_vecGroup[i]->m_vecMember[j].m_nCharIndex == nCharIndex)
-				{
-					strFriend = m_vecGroup[i]->m_vecMember[j].m_strName.str_String;
-
-					i = max_group;
-					break;
-				}
-			}
-		}
-
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		if (strFriend.empty() == false)
-		{
-			// 이미 대화중이다.
-			for( i =0; i < MAX_TALK; ++i )
-			{
-				CUITalk* UITalk = pUIManager->GetTalk(i+UI_MESSENGER_TALK_START);			
-
-				if (g_bUseChat[i] && g_nChatIndex[i] < 0 && 
-					UITalk->IsExistTarget(strFriend.c_str()))
-				{
-					UITalk->Close();
-					break;
-				}
-			}
-
-		}
-	}
-
 	for(int i=0; i<m_vecGroup.size(); ++i)
 	{
 		if ( m_vecGroup[i]->DeleteMember( nCharIndex ) )
@@ -1859,10 +1708,7 @@ void CUIMessenger::DeleteMember( int nCharIndex )
 			
 	bool bDel =m_mgBlock.DeleteMember(nCharIndex);
 	if( bDel )
-	{
-		CTString strEmpty;
-		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, strEmpty);
-	}
+		MsgBoxCommand(MSGCMD_MESSENGER_UNBLOCK, true, CTString());
 
 	ResizeScrollBar();
 }
@@ -1881,40 +1727,8 @@ void CUIMessenger::SetMemberCondition( int nCharIndex, eCondition eState )
 	}
 
 	m_mgBlock.SetMemberCondition(nCharIndex, eState);
-
-	if (nCharIndex == _pNetwork->MyCharacterInfo.index && eState == OFFLINE)
-	{
-		for( int i =0; i < MAX_TALK; ++i )
-		{
-			if( g_bUseChat[i] )
-			{
-				g_bUseChat[i] = false;
-				g_nChatIndex[i] = 0;
-
-				CUIManager::getSingleton()->GetTalk(i+UI_MESSENGER_TALK_START)->Close();
-			}
-		} 
-	}
 }
 
-eCondition CUIMessenger::GetMemberCondition( int nCharIndex )
-{
-	eCondition eCon = OFFLINE;
-	CMemberInfo kInfo;
-
-	for(int i=0; i<m_vecGroup.size(); ++i)
-	{
-		kInfo = m_vecGroup[i]->GetMemberInfo(nCharIndex);
-
-		if (kInfo.m_nCharIndex == nCharIndex)
-		{
-			eCon = kInfo.m_eCondition;
-			break;
-		}
-	}
-
-	return eCon;
-}
 
 //------------------------------------------------------------------------------
 // CUIMessenger::AddFriendList
@@ -1946,10 +1760,10 @@ void CUIMessenger::AddFriendList( int nCharIndex, int nGroupIndex, CTString strN
 		}
 	}
 
-	if( CUIManager::getSingleton()->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), (const char*)strName  );
+		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), strName  );
 
 		ErrorMessage( strMessage );		
 	}
@@ -1976,10 +1790,10 @@ void CUIMessenger::AddFriendList( CMemberInfo miMember,  bool bBlock )
 		}
 	}
 
-	if( CUIManager::getSingleton()->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), (const char*)miMember.m_strName  );
+		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), miMember.m_strName  );
 
 		ErrorMessage( strMessage );		
 	}
@@ -2153,7 +1967,7 @@ void CUIMessenger::DeleteMemberRep()
 {
 	CTString strMessage;
 	
-	if( CUIManager::getSingleton()->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) ) // 추가 요청중이라면 
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) ) // 추가 요청중이라면 
 	{
 		strMessage.PrintF( _S( 1635, "친구가 새로 추가되었습니다." ) );
 	}
@@ -2161,6 +1975,12 @@ void CUIMessenger::DeleteMemberRep()
 	{	
 		strMessage.PrintF( _S( 1636, "친구가 삭제 되었습니다." ) );
 	}
+
+	
+	//_pUIMgr->GetChatting()->AddSysMessage( strMessage );			
+
+	//MessageBox();
+
 }
 
 
@@ -2171,17 +1991,15 @@ void CUIMessenger::DeleteMemberRep()
 //------------------------------------------------------------------------------
 void CUIMessenger::Message( int nCommandCode, CTString strTitle, CTString strMessage, DWORD dwStyle )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( nCommandCode ) == TRUE )
-		return;
+	if( _pUIMgr->DoesMessageBoxExist( nCommandCode ) )
+	return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	//MsgBoxInfo.SetMsgBoxInfo( m_strTitle, dwStyle, UI_MESSENGER, nCommandCode );   ==>
 	MsgBoxInfo.SetMsgBoxInfo( strTitle, dwStyle, UI_MESSENGER, nCommandCode ); 
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 
@@ -2196,16 +2014,14 @@ void CUIMessenger::ErrorMessage( CTString strErrorMessage )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( m_strTitle, UMBS_OK, UI_MESSENGER, MSGCMD_MESSENGER_ERROR );
 	MsgBoxInfo.AddString( strErrorMessage );	
-	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );		
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );		
 }
 
 
 void CUIMessenger::CloseAllMessageBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for( int i = MSGCMD_MESSENGER_START; i <= MSGCMD_MESSENGER_END; i++ )
-		pUIManager->CloseMessageBox( i );
+	_pUIMgr->CloseMessageBox( i );
 }
 
 
@@ -2216,10 +2032,7 @@ void CUIMessenger::CloseAllMessageBox()
 //------------------------------------------------------------------------------
 bool CUIMessenger::ReadyOpenTalk( CMemberInfo miMemberInfo, bool bFocus )
 {
-	if ( miMemberInfo.m_nCharIndex == -1 )
-		return false;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	if ( miMemberInfo.m_nCharIndex == -1 ) return false;
 
 	// 현재 대화상대와 대화중인지
 	for( int i =0; i < MAX_TALK; ++i )
@@ -2227,7 +2040,7 @@ bool CUIMessenger::ReadyOpenTalk( CMemberInfo miMemberInfo, bool bFocus )
 		//if( nUseTalbe[i] != -1 )
 		if( g_bUseChat[i] )
 		{
-			CUITalk* UITalk = pUIManager->GetTalk(i+UI_MESSENGER_TALK_START);
+			CUITalk* UITalk =_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START);
 			if( UITalk->IsExistTarget(miMemberInfo.m_strName) )
 			{
 				if( miMemberInfo.m_eCondition == OFFLINE )
@@ -2239,7 +2052,7 @@ bool CUIMessenger::ReadyOpenTalk( CMemberInfo miMemberInfo, bool bFocus )
 				{
 					if ( bFocus )
 					{	// 현재 대화 중인 ~
-						pUIManager->RearrangeOrder( i + UI_MESSENGER_TALK_START, TRUE );
+						_pUIMgr->RearrangeOrder( i + UI_MESSENGER_TALK_START, TRUE );
 					}
 					// 1:1 대화중이면 새로운 창을 만들지 않음...
 					if( UITalk->m_vecTarget.size() ==2)
@@ -2327,11 +2140,9 @@ void CUIMessenger::RevOneVsOneTalk( int nSenderIndex, int nResiverIndex, CTStrin
 	if( Resiver.m_nCharIndex == -1 && GetMyInfo().m_nCharIndex == nResiverIndex )	
 		Resiver = GetMyInfo();
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for( i =0; i < MAX_TALK; ++i )
 	{
-		CUITalk* UITalk = pUIManager->GetTalk(i+UI_MESSENGER_TALK_START);
+		CUITalk* UITalk =_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START);
 		if( g_bUseChat[i] && 
 			g_nChatIndex[i] < 0 /*UITalk->GetClientIndex()*/
 			&& UITalk->IsExistTarget( Resiver.m_strName )
@@ -2350,7 +2161,7 @@ void CUIMessenger::RevOneVsOneTalk( int nSenderIndex, int nResiverIndex, CTStrin
 		if( ReadyOpenTalk( Sender ) )
 		{
 			int nUIIndex = OpenTalk( m_MyInfo.m_nCharIndex , Sender );
-			pUIManager->GetTalk(nUIIndex)->AddTalkListString( strSendName, strChat, false, ChatColor[nColIndex]);
+			_pUIMgr->GetTalk(nUIIndex)->AddTalkListString( strSendName, strChat, false, ChatColor[nColIndex]);
 		}
 	}	
 }
@@ -2364,11 +2175,9 @@ void CUIMessenger::RevOneVsOneTalk( int nSenderIndex, int nResiverIndex, CTStrin
 void CUIMessenger::RevTalk( int nMakeCharIndex, int nChatIndex, CTString strSendName, CTString strChat, int nColIndex )
 {
 	bool bExistTarget =false;
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for( int i =0; i < MAX_TALK; ++i )
 	{
-		CUITalk* UITalk = pUIManager->GetTalk(i+UI_MESSENGER_TALK_START);
+		CUITalk* UITalk =_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START);
 		if( g_bUseChat[i] && g_nChatIndex[i]==nChatIndex)// 현재 대화중인 상대가 말을 걸어 왔네여~
 		{
 			
@@ -2377,6 +2186,31 @@ void CUIMessenger::RevTalk( int nMakeCharIndex, int nChatIndex, CTString strSend
 			break;
 		}
 	}
+
+	//대화중인 상대가 아닌 사람에게서 메시지가 오면 새창을 띄움...
+	/*******
+	if( bExistTarget )
+		return;
+	else
+	{
+		CMemberInfo Member;
+
+		for(int i=0; i<m_vecGroup.size(); ++i)
+		{
+			Member =m_vecGroup[i]->GetMemberInfo(strSendName);
+			if( Member.m_nCharIndex !=-1)
+				break;
+		}
+			
+		//새로 창을 띄워야 합니다.
+		bool bNewChat = ReadyOpenTalk( Member );
+		if( bNewChat )
+		{
+			int nUIIndex =OpenTalk(nMakeCharIndex, nChatIndex, strSendName);
+			_pUIMgr->GetTalk(nUIIndex)->AddTalkListString( strSendName, strChat, false, ChatColor[nColIndex]);
+		}
+	}	
+	*******/
 }
 
 //------------------------------------------------------------------------------
@@ -2386,18 +2220,14 @@ void CUIMessenger::RevTalk( int nMakeCharIndex, int nChatIndex, CTString strSend
 //------------------------------------------------------------------------------
 void CUIMessenger::TalkErrorMessage( CTString strMessage )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	int iUI;
-	for( iUI = UI_MESSENGER_TALK_START; iUI < UI_MESSENGER_TALK_END; iUI++ )
+	for( int iUI = UI_MESSENGER_TALK_START; iUI < UI_MESSENGER_TALK_END; iUI++ )
 	{
-		if( pUIManager->GetTalk(iUI)->IsFocused() )
+		if( _pUIMgr->GetTalk(iUI)->IsFocused() )
 		{
-			pUIManager->GetTalk(iUI)->AddErrorTalk( strMessage );
+			_pUIMgr->GetTalk(iUI)->AddErrorTalk( strMessage );
 			break;
 		}
 	}
-
 	if( iUI == UI_MESSENGER_TALK_END )
 	{
 		ErrorMessage ( strMessage );
@@ -2419,13 +2249,11 @@ void CUIMessenger::RenderTab(int nX, int nY)
 	int nY_Friend =nY + Tab_Y;
 	int nY_Block =nY + Tab_Y;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	if( m_bFriendTab )
 	{
 		//RenderRectUV3( UNIT_SIZE_GUIDLINE, nX, nY_Friend -3, m_nWidth/2, 20, m_rt3BackFTab0 );
 		//RenderRectUV3( UNIT_SIZE_GUIDLINE, nX +m_nWidth/2, nY_Block -3, m_nWidth/2, 20, m_rt3BackBTab1 ); 
-		pDrawPort->AddTexture( nX +m_nWidth/2 , nY_Friend-3, nX +m_nWidth -8, nY_Friend-3 +20,
+		_pUIMgr->GetDrawPort()->AddTexture( nX +m_nWidth/2 , nY_Friend-3, nX +m_nWidth -8, nY_Friend-3 +20,
 										m_rtTab.U0, m_rtTab.V0,	m_rtTab.U1, m_rtTab.V1,
 										0Xffffffff );
 
@@ -2435,7 +2263,7 @@ void CUIMessenger::RenderTab(int nX, int nY)
 	{
 		//RenderRectUV3( UNIT_SIZE_GUIDLINE, nX, nY_Friend -3, m_nWidth/2, 20, m_rt3BackFTab1 );
 		//RenderRectUV3( UNIT_SIZE_GUIDLINE, nX +m_nWidth/2, nY_Block -3, m_nWidth/2, 20, m_rt3BackBTab0 ); 
-		pDrawPort->AddTexture( nX +8, nY_Friend-3, nX +8 +m_nWidth/2 -8, nY_Friend-3 +20,
+		_pUIMgr->GetDrawPort()->AddTexture( nX +8, nY_Friend-3, nX +8 +m_nWidth/2 -8, nY_Friend-3 +20,
 										m_rtTab.U0, m_rtTab.V0,	m_rtTab.U1, m_rtTab.V1,
 										0Xffffffff );
 
@@ -2443,21 +2271,16 @@ void CUIMessenger::RenderTab(int nX, int nY)
 	}
 
 	/*
-	pDrawPort->AddTexture( nX +8, nY + Tab_Y-3 +20, nX +m_nWidth -8, nY + Tab_Y-3 +20 +m_nBoardHeight + 6,
+	_pUIMgr->GetDrawPort()->AddTexture( nX +8, nY + Tab_Y-3 +20, nX +m_nWidth -8, nY + Tab_Y-3 +20 +m_nBoardHeight + 6,
 										m_rtTab.U0, m_rtTab.V0,	m_rtTab.U1, m_rtTab.V1,
 										0Xffffffff );
 	*/
 	
-	// [091110: selo] 텍스트 위치 잡기
-//	extern INDEX g_iCountry;
-	int nBlock_ExtraX = 0;
-//	if( USA_SPAIN == g_iCountry )
-//		nBlock_ExtraX = -20;
-	
-	pDrawPort->PutTextEx( _S(2984, "등록된 친구들"), nX + Tab_MEMBER_X,
+
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2984, "등록된 친구들"), nX + Tab_MEMBER_X,
 										nY_Friend, m_bFriendTab ? 0xE1B300FF :  0xA2A2A2FF);
 
-	pDrawPort->PutTextEx( _S(2985, "차단된 캐릭터"), nX + Tab_BLOCK_X + nBlock_ExtraX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2985, "차단된 캐릭터"), nX + Tab_BLOCK_X,
 										nY_Block, !m_bFriendTab ? 0xE1B300FF :  0xA2A2A2FF );
 
 }
@@ -2474,13 +2297,8 @@ void CUIMessenger::SetGroup(enum eGroup eState, int nSubMenu)
 			m_nSelectGroup =nSubMenu;
 			if( m_nSelectGroup !=0 )
 			{
-				if (m_vecGroup.size() <= nSubMenu)
-				{
-					return;
-				}
-
 				CTString strMessage;
-				strMessage.PrintF( _S(3024, "%s 그룹을 삭제하시겠습니까?" ), (const char*)m_vecGroup[nSubMenu]->m_strGroupName );
+				strMessage.PrintF( _S(3024, "%s 그룹을 삭제하시겠습니까?" ), m_vecGroup[nSubMenu]->m_strGroupName );
 				Message( MSGCMD_MESSENGER_GROUP_DEL, _S(3023, "그룹 삭제"), strMessage, UMBS_OKCANCEL );
 			}
 			else
@@ -2490,18 +2308,9 @@ void CUIMessenger::SetGroup(enum eGroup eState, int nSubMenu)
 	case GROUP_RENAME:
 		m_nSelectGroup =nSubMenu;
 		if( m_nSelectGroup !=0 )
-		{
-			if (m_vecGroup.size() <= nSubMenu)
-			{
-				return;
-			}
-
 			Message( MSGCMD_MESSENGER_GROUP_RENAME, _S(3028, "그룹명 변경"), _S(3029, "변경할 그룹명을 입력하여 주십시오." ), UMBS_OKCANCEL | UMBS_INPUTBOX );
-		}
 		else
-		{
 			Message( MSGCMD_MESSENGER_ERROR, _S(3030, "그룹명 변경 에러"), _S(3031, "기본 그룹은 이름을 변경할 수 없습니다."), UMBS_OK);
-		}
 			
 		break;
 	}
@@ -2509,20 +2318,18 @@ void CUIMessenger::SetGroup(enum eGroup eState, int nSubMenu)
 
 void CUIMessenger::RenderSelectMember(int nX, int nY)
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );	
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );	
-
-	pDrawPort->PutTextEx( m_miSelectMember.m_strName, nX +(GROUP_MEMBER_NAME_OFFSET_X -GROUP_MEMBER_ICON_OFFSET_X), nY, 0xf2f2f2ff);
+	_pUIMgr->GetDrawPort()->PutTextEx( m_miSelectMember.m_strName, nX +(GROUP_MEMBER_NAME_OFFSET_X -GROUP_MEMBER_ICON_OFFSET_X), nY, 0xf2f2f2ff);
 
 
-	pDrawPort->AddTexture( nX, nY,	nX+ ICON_WIDTH, nY +ICON_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY,	nX+ ICON_WIDTH, nY +ICON_HEIGHT,
 										m_rcIcon[m_miSelectMember.m_eJob][m_miSelectMember.m_eCondition].U0, m_rcIcon[m_miSelectMember.m_eJob][m_miSelectMember.m_eCondition].V0,
 										m_rcIcon[m_miSelectMember.m_eJob][m_miSelectMember.m_eCondition].U1, m_rcIcon[m_miSelectMember.m_eJob][m_miSelectMember.m_eCondition].V1,
 										0Xffffffff );
 
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 void CUIMessenger::AddGroup(int nGroupIndex, CTString strName)
@@ -2570,9 +2377,6 @@ void CUIMessenger::AddGroup(int nGroupIndex, CTString strName)
 
 void CUIMessenger::DeleteGroup()
 {
-	if (m_vecGroup.size() <= m_nSelectGroup)
-		return;
-
 	delete m_vecGroup[m_nSelectGroup];
 	m_vecGroup.erase( m_vecGroup.begin() +m_nSelectGroup);
 	
@@ -2602,14 +2406,11 @@ void CUIMessenger::SetMemberMenu(enum eMemberMenu eMenu, int nSubMenu)
 
 		break;
 	case MM_DELETE:
-		MsgBoxCommand( MSGCMD_MESSENGER_DEL_REQ, true, m_miSelectMember.m_strName);
-		break;
+			MsgBoxCommand( MSGCMD_MESSENGER_DEL_REQ, true, m_miSelectMember.m_strName);
+			break;
 	case MM_BLOCK:
-		MsgBoxCommand(MSGCMD_MESSENGER_BLOCK_REQ, true, m_miSelectMember.m_strName );
-		break;
-	case MM_TELEPORT:
-		_pNetwork->SendPremiumCharJumpReq(m_miSelectMember.m_strName);
-		break;
+			MsgBoxCommand(MSGCMD_MESSENGER_BLOCK_REQ, true, m_miSelectMember.m_strName );
+			break;
 	}
 }
 
@@ -2618,13 +2419,6 @@ void CUIMessenger::ChangeGroup(int nGroup)
 	int nPrevGroup =FindGroup(m_miSelectMember.m_nGroupIndex);
 
 	if( nPrevGroup == nGroup )
-		return;
-
-	if (nPrevGroup < 0 || nPrevGroup >= m_vecGroup.size())
-		return;
-
-	// 차단 시 nGroup 이 -1 로 들어온다.
-	if (nGroup >= 0 && m_vecGroup.size() <= nGroup)
 		return;
 
 	m_vecGroup[nPrevGroup]->DeleteMember(m_miSelectMember.m_strName);
@@ -2681,21 +2475,8 @@ CMemberInfo CUIMessenger::FindMember(CTString strName)
 	{
 		for(int j=0; j<m_vecGroup[i]->m_vecMember.size(); ++j)
 		{
-			// Edited : CTString의 == 은 대소문자를 가리지 않아서 일본요청으로 수정
-		/*	if(g_iCountry == JAPAN)
-			{
-				if( strcmp(m_vecGroup[i]->m_vecMember[j].m_strName, strName) == 0 )
-					return m_vecGroup[i]->m_vecMember[j];
-			}
-			else
-			{
-				if( m_vecGroup[i]->m_vecMember[j].m_strName == strName)
-					return m_vecGroup[i]->m_vecMember[j];
-			}*/
-			//[ttos_2010_4_26]: 캐릭명은 대소문자 구분해야한다.
-			if( strcmp(m_vecGroup[i]->m_vecMember[j].m_strName, strName) == 0 )
-					return m_vecGroup[i]->m_vecMember[j];
-
+			if( m_vecGroup[i]->m_vecMember[j].m_strName == strName )
+				return m_vecGroup[i]->m_vecMember[j];
 		}
 	}
 
@@ -2743,15 +2524,13 @@ void CUIMessenger::SetChat(int nMakeCharIndex, int nChatIndex, CTString strName)
 		}
 	}
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( bNewChat )		// 새창으로 생성하기 전에 1:1 대화에서 상대가 초대된 상대가 있는 쪽을 검색한다.
 	{
 		for( i =0; i < MAX_TALK; ++i )
 		{
 			// 드래그된 창과 같은 창을 찾아라
 			if( g_nChatIndex[i] < 0 &&
-				pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->IsExistTarget( strName ) ) 
+				_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->IsExistTarget( strName ) ) 
 			{
 				bNewChat =false;
 				break;
@@ -2771,11 +2550,11 @@ void CUIMessenger::SetChat(int nMakeCharIndex, int nChatIndex, CTString strName)
 		if( g_nChatIndex[i] < 0 ) //처음 다른사람을 초대
 		{
 			g_nChatIndex[i] = nChatIndex;
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex( nMakeCharIndex, nChatIndex);
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex( nMakeCharIndex, nChatIndex);
 			if( m_MyInfo.m_nCharIndex == nMakeCharIndex )	// 초대하는 사람일때
-				_pNetwork->MgrFriendInvite(nMakeCharIndex, nChatIndex, pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->GetTargetIndex() );
+				_pNetwork->MgrFriendInvite(nMakeCharIndex, nChatIndex, _pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->GetTargetIndex() );
 		}
-		pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(strName);
+		_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(strName);
 	}
 
 
@@ -2783,14 +2562,6 @@ void CUIMessenger::SetChat(int nMakeCharIndex, int nChatIndex, CTString strName)
 
 int CUIMessenger::OpenTalk(int nMakeCharIndex, int nChatIndex, CTString strName)
 {
-	if (m_MyInfo.m_eCondition == OFFLINE)
-	{
-		TalkErrorMessage( _S( 1646, "[오프라인] 상태에서는 대화를 할 수 없습니다." ) );
-		return -1;
-	}
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for( int i =0; i < MAX_TALK; ++i )
 	{
 		if( !g_bUseChat[i] )
@@ -2801,9 +2572,9 @@ int CUIMessenger::OpenTalk(int nMakeCharIndex, int nChatIndex, CTString strName)
 
 			++m_nTalkCount;
 
-			//pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(m_MyInfo.m_strName);
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->Open( strName );
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex(nMakeCharIndex, nChatIndex);
+			//_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(m_MyInfo.m_strName);
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->Open( strName );
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex(nMakeCharIndex, nChatIndex);
 	
 			//_pNetwork->MgrFriendInvite( m_MyInfo.m_nCharIndex, -1, miMemberInfo.m_strName);
 			return ( i+UI_MESSENGER_TALK_START );
@@ -2820,14 +2591,6 @@ int CUIMessenger::OpenTalk(int nMakeCharIndex, int nChatIndex, CTString strName)
 //------------------------------------------------------------------------------
 int CUIMessenger::OpenTalk(int nMakerIndex, const CMemberInfo targetInfo )
 {
-	if (m_MyInfo.m_eCondition == OFFLINE)
-	{
-		TalkErrorMessage( _S( 1646, "[오프라인] 상태에서는 대화를 할 수 없습니다." ) );
-		return -1;
-	}
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for( int i =0; i < MAX_TALK; ++i )
 	{
 		if( !g_bUseChat[i] )
@@ -2837,8 +2600,8 @@ int CUIMessenger::OpenTalk(int nMakerIndex, const CMemberInfo targetInfo )
 
 			++m_nTalkCount;
 
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->Open( g_nChatIndex[i] , targetInfo );
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex( nMakerIndex, g_nChatIndex[i] );
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->Open( g_nChatIndex[i] , targetInfo );
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->SetIndex( nMakerIndex, g_nChatIndex[i] );
 			return ( i+UI_MESSENGER_TALK_START );
 		}
 	} 
@@ -2847,14 +2610,12 @@ int CUIMessenger::OpenTalk(int nMakerIndex, const CMemberInfo targetInfo )
 
 void CUIMessenger::AddChatMember(int nMakeCharIndex, int nChatIndex, CTString strName)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for(int i=0; i<MAX_TALK; ++i)
 	{
 		if( g_nChatIndex[i] ==nChatIndex )
 		{
 			//if( m_MyInfo.m_strName != strName)
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(strName);
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->AddTalkTarget(strName);
 			break;
 		}
 	}
@@ -2862,13 +2623,11 @@ void CUIMessenger::AddChatMember(int nMakeCharIndex, int nChatIndex, CTString st
 
 void CUIMessenger::DeleteChatMember(int nMakeCharIndex, int nChatIndex, CTString strName)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	for(int i=0; i<MAX_TALK; ++i)
 	{
 		if( g_bUseChat[i] && g_nChatIndex[i] ==nChatIndex )
 		{
-			pUIManager->GetTalk(i+UI_MESSENGER_TALK_START)->DeleteTalkTarget(strName);
+			_pUIMgr->GetTalk(i+UI_MESSENGER_TALK_START)->DeleteTalkTarget(strName);
 			break;
 		}
 	}
@@ -2903,7 +2662,7 @@ void CUIMessenger::UnBlock(BYTE cError, int nCharIndex, CTString strName)
 	m_mgBlock.DeleteMember(nCharIndex);
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 3015, "%s님이 차단해제되었습니다." ), (const char*)strName );
+	strMessage.PrintF( _S( 3015, "%s님이 차단해제되었습니다." ), strName );
 	Message( MSGCMD_MESSENGER_ERROR, _S(3013, "차단 해제"), strMessage, UMBS_OK );
 }
 
@@ -2940,7 +2699,7 @@ void CUIMessenger::Block(BYTE cError, int nCharIndex, CTString strName)
 		m_mgBlock.AddMember( CMemberInfo(nCharIndex, strName) );
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3006, "%s님이 차단되었습니다."), (const char*)strName);
+	strMessage.PrintF(_S(3006, "%s님이 차단되었습니다."), strName);
 	Message( MSGCMD_MESSENGER_ERROR, _S(3004, "캐릭터 차단"), strMessage, UMBS_OK );
 }
 
@@ -2953,11 +2712,10 @@ void CUIMessenger::SetDefaultGroupName(CTString strName)
 
 void CUIMessenger::RenderMenuArrow(int nX, int nY, int nWidth, int nHeight, int nLine)
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	int nYSpace =((_pUIFontTexMgr->GetLineHeight()+2) -nHeight)/2 +2;
 
-	pDrawPort->AddTexture( nX, nY +nYSpace +(_pUIFontTexMgr->GetLineHeight()+2)*nLine,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY +nYSpace +(_pUIFontTexMgr->GetLineHeight()+2)*nLine,
 										nX+nWidth, nY +nYSpace +(_pUIFontTexMgr->GetLineHeight()+2)*nLine+nHeight,
 										m_rtArrow.U0, m_rtArrow.V0, m_rtArrow.U1, m_rtArrow.V1,
 										0xFFFFFFFF );
@@ -2995,41 +2753,4 @@ void CUIMessenger::SetBlock( int nCharIndex, CTString strName, bool bBlock)
 	else
 		m_mgBlock.DeleteMember( strName );
 		***/
-}
-
-void CUIMessenger::UpdateMemberMenu()
-{
-	m_tpMemberMenu.ResetAllStrings();
-
-	m_tpMemberMenu.AddMenuList( _S(2990, "그룹이동") +CTString("     ") );
-	m_tpMemberMenu.AddMenuList( _S(2991, "대화하기") );
-	m_tpMemberMenu.AddMenuList( _S(338, "삭제" ) );
-	m_tpMemberMenu.AddMenuList( _S(2992, "차단" ) );
-
-#ifdef PREMIUM_CHAR
-	if (m_bPremiumChar == true)
-	{
-		CTString strMenu, strCount;
-		int Count = 0;
-		CPremiumChar* pChar = GAMEDATAMGR()->GetPremiumChar();
-
-		if (pChar != NULL)
-			Count = pChar->getTeleportCount();
-		
-		strMenu.PrintF( _S(6344, "텔레포트" ) );
-		strCount.PrintF( _S(6343, "(%d/%d)"), Count, PREMIUM_CHAR_JUMP_COUNT_MAX );
-		strMenu = strMenu + strCount;
-
-		if (Count >= PREMIUM_CHAR_JUMP_COUNT_MAX)
-			m_tpMemberMenu.AddMenuList( strMenu, 0xF20000FF);
-		else
-			m_tpMemberMenu.AddMenuList( strMenu, 0xD67FFFFF);
-	}
-#endif	//	PREMIUM_CHAR
-}
-
-void CUIMessenger::SetPremiumBenefit( bool bUse )
-{
-	m_bPremiumChar = bUse; 
-	UpdateMemberMenu();
 }

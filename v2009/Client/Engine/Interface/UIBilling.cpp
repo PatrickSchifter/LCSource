@@ -1,10 +1,7 @@
 
 #include "StdH.h"
-
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
 #include <Engine/Interface/UIBilling.h>
-
+#include <Engine/Interface/UIInternalClasses.h>
 
 static int	_iMaxMsgStringChar = 0;
 
@@ -116,6 +113,7 @@ CUIBilling::CUIBilling()
 //------------------------------------------------------------------------------
 CUIBilling::~CUIBilling()
 {
+
 }
 
 
@@ -214,7 +212,7 @@ void CUIBilling::OpenInfo()
 	m_eBillType = BILLING_INFO;
 	ResetPositon();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 }
 
@@ -270,7 +268,7 @@ void CUIBilling::OpenDefault()
 	
 	ResetPositon();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 
 }
@@ -332,7 +330,7 @@ void CUIBilling::OpenBeforeUse()
 	
 	ResetPositon();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 
 }
@@ -398,7 +396,7 @@ void CUIBilling::OpenTime()
 	
 	m_eBillType = BILLING_TIME;
 	ResetPositon();
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 }
 
@@ -442,7 +440,7 @@ void CUIBilling::OpenTimeNow()
 	ResetPositon();
 
 	m_eBillType = BILLING_TIME_NOW;
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 
 }
@@ -496,7 +494,7 @@ void CUIBilling::OpenAutoChargeInfo()
 	m_btnCancel.SetEnable( FALSE );
 
 	ResetPositon();
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 	
 	if( m_nLeftTime > 120 ) // 남은 시간이 60초(1분초다 크면 10초동안 원도우 표시 )-푸하하
@@ -547,7 +545,7 @@ void CUIBilling::OpenBeforeUseNow()
 		
 	m_eBillType = BILLING_BEFORE_USE_NOW;
 	ResetPositon();
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	m_bExVisible = TRUE;
 }
 
@@ -562,7 +560,7 @@ void CUIBilling::OpenBeforeUseNow()
 void CUIBilling::Close()
 {
 	CloseAllMsgBox();
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, FALSE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, FALSE );
 
 	Clear();
 }
@@ -577,7 +575,9 @@ void CUIBilling::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 {
 	Clear();
 	
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = BILLING_DESC_CHAR_WIDTH / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	
@@ -700,11 +700,8 @@ void CUIBilling::Render()
 		RenderMessageBox();		
 		return;
 	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2, nY2;
@@ -715,28 +712,28 @@ void CUIBilling::Render()
 
 	// Top
 	nY = m_nPosY + BILLING_TITLE_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
 										m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
 										m_rtTopM.U0, m_rtTopM.V0, m_rtTopM.U1, m_rtTopM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
 										m_rtTopR.U0, m_rtTopR.V0, m_rtTopR.U1, m_rtTopR.V1,
 										0xFFFFFFFF );
 
 	nY2 = nY + m_lbInfo.GetHeight();
 
 	// Middle 1 ( ListBox 1 )
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
 										m_rtMiddleL.U0, m_rtMiddleL.V0,
 										m_rtMiddleL.U1, m_rtMiddleL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
 										m_rtMiddleM.U0, m_rtMiddleM.V0,
 										m_rtMiddleM.U1, m_rtMiddleM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY2,
 										m_rtMiddleR.U0, m_rtMiddleR.V0,
 										m_rtMiddleR.U1, m_rtMiddleR.V1,
 										0xFFFFFFFF );
@@ -747,13 +744,13 @@ void CUIBilling::Render()
 	if ( m_eBillType == BILLING_DEFAULT || m_eBillType == BILLING_BEFORE_USE || m_eBillType == BILLING_TIME )
 	{
 		nY2 += 4;
-		pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
 											m_rtMiddleGapL.U0, m_rtMiddleGapL.V0, m_rtMiddleGapL.U1, m_rtMiddleGapL.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
 											m_rtMiddleGapM.U0, m_rtMiddleGapM.V0, m_rtMiddleGapM.U1, m_rtMiddleGapM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY2,
 											m_rtMiddleGapR.U0, m_rtMiddleGapR.V0, m_rtMiddleGapR.U1, m_rtMiddleGapR.V1,
 											0xFFFFFFFF );
 
@@ -773,15 +770,15 @@ void CUIBilling::Render()
 			m_rtR = m_rtMiddleR;
 		}
 		// Desc middle
-		pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
 											m_rtL.U0, m_rtL.V0,
 											m_rtL.U1, m_rtL.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
 											m_rtM.U0, m_rtM.V0,
 											m_rtM.U1, m_rtM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY2,
 											m_rtR.U0, m_rtR.V0,
 											m_rtR.U1, m_rtR.V1,
 											0xFFFFFFFF );
@@ -791,26 +788,26 @@ void CUIBilling::Render()
 
 	// Middle 2 
 	nY2 = m_nPosY + m_nHeight - BILLING_BOTTOM_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
 										m_rtMiddleGapL.U0, m_rtMiddleGapL.V0, m_rtMiddleGapL.U1, m_rtMiddleGapL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
 										m_rtMiddleGapM.U0, m_rtMiddleGapM.V0, m_rtMiddleGapM.U1, m_rtMiddleGapM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY2,
 										m_rtMiddleGapR.U0, m_rtMiddleGapR.V0, m_rtMiddleGapR.U1, m_rtMiddleGapR.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY = nY2;
 	nY2 = m_nPosY + m_nHeight;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY2,
 										m_rtBottomL.U0, m_rtBottomL.V0, m_rtBottomL.U1, m_rtBottomL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY2,
 										m_rtBottomM.U0, m_rtBottomM.V0, m_rtBottomM.U1, m_rtBottomM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( nX2 - 40, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY2,
 										m_rtBottomR.U0, m_rtBottomR.V0, m_rtBottomR.U1, m_rtBottomR.V1,
 										0xFFFFFFFF );
 	
@@ -818,7 +815,7 @@ void CUIBilling::Render()
 // Render Content
 	m_btnClose.Render();
 
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + BILLING_TITLE_TEXT_OFFSETX,		
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + BILLING_TITLE_TEXT_OFFSETX,		
 										m_nPosY + BILLING_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	m_lbInfo.Render();
@@ -843,8 +840,8 @@ void CUIBilling::Render()
 	
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// 시간 체크후 자동 종료 
 	if( m_eBillType == BILLING_AUTO_CHARGE_INFO && m_tmStartTime > 0 )
@@ -926,7 +923,7 @@ WMSG_RESULT	CUIBilling::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -1072,12 +1069,10 @@ WMSG_RESULT	CUIBilling::MouseMessage( MSG *pMsg )
 //------------------------------------------------------------------------------
 void CUIBilling::CloseAllMsgBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox( MSGCMD_BILLING_NOT_ALLOW	);
-	pUIManager->CloseMessageBox( MSGCMD_BILLING_CONFIRM );
-	pUIManager->CloseMessageBox( MSGCMD_BILLING_CHARGE_CONFIRM );
-	pUIManager->CloseMessageBox( MSGCMD_BILLING_ERROR );
+	_pUIMgr->CloseMessageBox( MSGCMD_BILLING_NOT_ALLOW	);
+	_pUIMgr->CloseMessageBox( MSGCMD_BILLING_CONFIRM );
+	_pUIMgr->CloseMessageBox( MSGCMD_BILLING_CHARGE_CONFIRM );
+	_pUIMgr->CloseMessageBox( MSGCMD_BILLING_ERROR );
 }
 
 
@@ -1173,8 +1168,7 @@ void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
 	if( nLength <= _iMaxMsgStringChar )
 	{
 		// Check line character
-		int iPos;
-		for( iPos = 0; iPos < nLength; iPos++ )
+		for( int iPos = 0; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1207,8 +1201,7 @@ void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		int iPos;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
+		for( int iPos = 0; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -1219,7 +1212,7 @@ void CUIBilling::AddInfoDescString( CTString &strDesc, COLOR colDesc )
 		if( b2ByteChar )
 			nSplitPos--;
 
-		// Check line character		
+		// Check line character
 		for( iPos = 0; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
@@ -1280,12 +1273,11 @@ void CUIBilling::AddBillListString( CTString &strDesc, COLOR colDesc )
 	if( nLength == 0 )
 		return;
 
-	int iPos;
 	// If length of string is less than max char
 	if( nLength <= _iMaxMsgStringChar )
 	{
-		// Check line character		
-		for( iPos = 0; iPos < nLength; iPos++ )
+		// Check line character
+		for( int iPos = 0; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1318,7 +1310,7 @@ void CUIBilling::AddBillListString( CTString &strDesc, COLOR colDesc )
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = _iMaxMsgStringChar;
 		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
+		for( int iPos = 0; iPos < nSplitPos; iPos++ )
 		{
 			if( strDesc[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -1406,16 +1398,14 @@ void CUIBilling::ErrorProcess( int nErrorCode )
 //------------------------------------------------------------------------------
 void CUIBilling::Message( int nCommandCode, CTString strMessage, DWORD dwStyle )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( nCommandCode ) )
-		return;
+	if( _pUIMgr->DoesMessageBoxExist( nCommandCode ) )
+	return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( m_strTitle, dwStyle, UI_BILLING, nCommandCode );
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 
@@ -1445,7 +1435,7 @@ void CUIBilling::MessageNotAllowUse()
 
 	ResetPositon();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_BILLING, TRUE );
+	_pUIMgr->RearrangeOrder( UI_BILLING, TRUE );
 	
 	m_bExVisible = TRUE;
 
@@ -1458,9 +1448,7 @@ void CUIBilling::MessageNotAllowUse()
 //------------------------------------------------------------------------------
 void CUIBilling::OpenConfirm()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_BILLING_CONFIRM ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_BILLING_CONFIRM ) )
 		return;
 
 	CTString strMessage;
@@ -1472,7 +1460,15 @@ void CUIBilling::OpenConfirm()
 	
 	MsgBoxInfo.AddString( strMessage );
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	// 사용자가 현재 무료 3시간을 사용하고 있다면 관련 설명을 추가한다.
+	/*if( m_biUsedBilling.m_eSection == CHARGE_FREE && m_nLeftTime > 0 )
+	{
+		strMessage.PrintF( ST_WARRING_FREE );
+		MsgBoxInfo.AddString( strMessage );
+	}
+	*/
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
+
 }
 
 
@@ -1495,10 +1491,8 @@ void CUIBilling::SendCharge( int nBillIndex )
 //------------------------------------------------------------------------------
 void CUIBilling::OpenChargeConfirm()
 {	
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_BILLING_CHARGE_CONFIRM ) )
-		return;
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_BILLING_CHARGE_CONFIRM ) )
+	return;
 
 	CTString strMessage;
 	strMessage.PrintF( ST_CHARGE_CONFIRM );
@@ -1508,7 +1502,7 @@ void CUIBilling::OpenChargeConfirm()
 	MsgBoxInfo.SetMsgBoxInfo( ST_TITLE, UMBS_USER_12, UI_BILLING, MSGCMD_BILLING_CHARGE_CONFIRM );
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	m_bExVisible = TRUE;
 }
@@ -1521,13 +1515,11 @@ void CUIBilling::OpenChargeConfirm()
 //------------------------------------------------------------------------------
 void CUIBilling::ErrorMessage( CTString strErrorMessage )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox( MSGCMD_BILLING_ERROR );
+	_pUIMgr->CloseMessageBox( MSGCMD_BILLING_ERROR );
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( m_strTitle, UMBS_OK, UI_BILLING, MSGCMD_BILLING_ERROR );
 	MsgBoxInfo.AddString( strErrorMessage );	
-	pUIManager->CreateMessageBox( MsgBoxInfo );		
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );		
 }
 
 
@@ -1539,11 +1531,10 @@ void CUIBilling::ErrorMessage( CTString strErrorMessage )
 //------------------------------------------------------------------------------
 void CUIBilling::RenderMessageBox()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 	static int m_nTextRegionHeight = 43;
 
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY;
@@ -1551,27 +1542,27 @@ void CUIBilling::RenderMessageBox()
 	// Top
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + 26;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 										m_rtBackTop.U0, m_rtBackTop.V0,
 										m_rtBackTop.U1, m_rtBackTop.V1,
 										0xFFFFFFFF );
 
 	// Middle 1
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
 										m_rtBackMiddle1.U0, m_rtBackMiddle1.V0,
 										m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 										0xFFFFFFFF );
 
 	// Middle 2
 	nY += m_nTextRegionHeight;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 										m_rtBackMiddle2.U0, m_rtBackMiddle2.V0,
 										m_rtBackMiddle2.U1, m_rtBackMiddle2.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 										m_rtBackBottom.U0, m_rtBackBottom.V0,
 										m_rtBackBottom.U1, m_rtBackBottom.V1,
 										0xFFFFFFFF );
@@ -1579,18 +1570,20 @@ void CUIBilling::RenderMessageBox()
 	m_btnOK.Render();
 		
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + BILLING_TITLE_TEXT_OFFSETX,		
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + BILLING_TITLE_TEXT_OFFSETX,		
 										m_nPosY + BILLING_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	// Message strings
-	pDrawPort->PutTextEx( m_strMessage, m_nPosX + 20,
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strMessage, m_nPosX + 20,
 											m_nPosY + 36, 0xc2bac5FF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
+
+
 }
 
 
@@ -1601,10 +1594,8 @@ void CUIBilling::RenderMessageBox()
 //------------------------------------------------------------------------------
 void CUIBilling::ResetPositon()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	SetPos( ( pUIManager->GetMaxI() + pUIManager->GetMinI() - GetWidth() ) / 2, 
-		( pUIManager->GetMaxJ() + pUIManager->GetMinJ() - GetHeight() ) / 2 );
+	SetPos( ( _pUIMgr->GetMaxI() + _pUIMgr->GetMinI() - GetWidth() ) / 2, 
+		( _pUIMgr->GetMaxJ() + _pUIMgr->GetMinJ() - GetHeight() ) / 2 );
 }
 
 

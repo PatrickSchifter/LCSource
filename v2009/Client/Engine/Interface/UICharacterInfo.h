@@ -9,7 +9,13 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButtonEx.h>
 #include <Engine/Interface/UISkillLearn.h>
+//#include <Engine/Entities/QuestSystem.h>
+
+ 
 // Character information page
 enum CharInfoPage
 {
@@ -76,12 +82,12 @@ enum CharInfoPage
 // Skill tab
 enum SkillTab
 {
-	SKILL_ITEM	= 0,
-	SKILL_SPECIAL,
-	SKILL_VOUCHER,			// 증표
+	SKILL_ACTIVE	= 0,
+	SKILL_PASSIVE,
 #ifdef ADJUST_MEMORIZE_SKILL
 	SKILL_MEMORIZE,
 #endif
+	SKILL_SPECIAL,
 	SKILL_TOTAL,
 };
 
@@ -112,9 +118,9 @@ enum ActionType
 
 // Define action slot
 #define	ACTION_SLOT_ROW					8
-#define	ACTION_NORAML_SLOT_ROW_TOTAL	30
+#define	ACTION_NORAML_SLOT_ROW_TOTAL	20
 #define	ACTION_SOCIAL_SLOT_ROW_TOTAL	20
-#define	ACTION_PARTY_SLOT_ROW_TOTAL		10
+#define	ACTION_PARTY_SLOT_ROW_TOTAL		20
 #define	ACTION_GUILD_SLOT_ROW_TOTAL		20
 
 
@@ -261,25 +267,21 @@ protected:
 	// Controls
 	int						m_nCurrentSkillTab;						// Current skill tab
 	CUIScrollBar			m_sbActiveSkillScrollBar;				// Scroll bar of active skill
-	//CUIScrollBar			m_sbPassiveSkillScrollBar;				// Scroll bar of passive skill
+	CUIScrollBar			m_sbPassiveSkillScrollBar;				// Scroll bar of passive skill
 	CUIScrollBar			m_sbMemorizeSkillScrollBar;				// Scroll bar of Memorize skill
 	CUIScrollBar			m_sbSpecialSkillScrollBar;				// Scroll bar of special skill
-	CUIScrollBar			m_sbVoucherSkillScrollBar;				// Scroll bar of Voucher skill
 
 	// Skill buttons
 	CUIButtonEx				m_btnActiveSkill[SKILL_ACTIVE_SLOT_ROW_TOTAL];		// Buttons of active skill
 	CUIButtonEx				m_btnPassiveSkill[SKILL_PASSIVE_SLOT_ROW_TOTAL];	// Buttons of passive skill
 	CUIButtonEx				m_btnMemorizeSkill[SKILL_MEMORIZE_SLOT_ROW_TOTAL];	// Buttons of Memorize skill
 	CUIButtonEx				m_btnSpecialSkill[SKILL_SPECIAL_SLOT_ROW_TOTAL];	// Buttons of special skill
-	CUIButtonEx				m_btnVoucherSkill[SKILL_SPECIAL_SLOT_ROW_TOTAL];	// Buttons of voucher skill
-	CUIButtonEx				m_btnItemSpecialSkill[SKILL_SPECIAL_SLOT_ROW_TOTAL];
 
 	// Skill information
 	int						m_nSelActiveSkillID;					// Selected skill ID of active skill
 	int						m_nSelPassiveSkillID;					// Selected skill ID of passive skill
 	int						m_nSelMemorizeSkillID;					// Selected skill ID of memorize skill
 	int						m_nSelSpecialSkillID;					// Selected skill ID of special skill
-	int						m_nSelVoucherSkillID;					// Selected skill ID of Voucher skill
 	BOOL					m_bShowSkillInfo;						// If skill tool tip is shown or not
 	int						m_nCurSkillInfoLines;					// Count of current skill information lines
 	CTString				m_strSkillInfo[MAX_SKILLINFO_LINE];		// Skill information string
@@ -294,7 +296,6 @@ protected:
 	CUIScrollBar			m_sbSocialActionScrollBar;				// Scroll bar of social action
 	CUIScrollBar			m_sbPartyActionScrollBar;				// Scroll bar of party action
 	CUIScrollBar			m_sbGuildActionScrollBar;				// Scroll bar of guild action
-	CUIScrollBar			m_sbItemSkillSpecialScrollBar;
 
 	// Action buttons
 	CUIButtonEx				m_btnNormalAction[ACTION_NORAML_SLOT_ROW_TOTAL];	// Buttons of normal action
@@ -350,39 +351,11 @@ protected:
 		STATUS_TAB_MAX,					
 	};
 
-	enum eAttributeATTInfo
-	{
-		ATTRIBUTE_NONE_ATT = 0,
-		ATTRIBUTE_FIRE_ATT = 1,
-		ATTRIBUTE_WATER_ATT = 2,
-		ATTRIBUTE_EARTH_ATT = 3,
-		ATTRIBUTE_WIND_ATT = 4,
-		ATTRIBUTE_DARK_ATT = 5,
-		ATTRIBUTE_LIGHT_ATT = 6,
-		ATTRIBUTE_END_ATT,
-	};
-
-	enum eAttributeDEFInfo
-	{
-		ATTRIBUTE_NONE_DEF = 0,
-		ATTRIBUTE_FIRE_DEF = 1,
-		ATTRIBUTE_WATER_DEF = 2,
-		ATTRIBUTE_EARTH_DEF = 3,
-		ATTRIBUTE_WIND_DEF = 4,
-		ATTRIBUTE_DARK_DEF = 5,
-		ATTRIBUTE_LIGHT_DEF = 6,
-		ATTRIBUTE_END_DEF,
-	};
-
 	CTString				m_strTitleName;
 
 	UIRectUV				m_rtBackground;
 	UIRectUV				m_rtSkillInfo;
 	UIRectUV				m_rtAttributeInfo;	// 속성 부분의 표시 화면
-
-	// 속성 시스템 [1/17/2013 Ranma]
-	UIRectUV				m_rtAttributeIconAtt[ATTRIBUTE_END_ATT];
-	UIRectUV				m_rtAttributeIconDef[ATTRIBUTE_END_DEF];
 	UIRectUV				m_rtTabIcon[8];
 	UIRectUV				m_rtSelectedTab;	//좌측 세로탭
 	UIRectUV				m_rtSelectedTabMiddle;				
@@ -441,6 +414,7 @@ protected:
 
 
 	BOOL					m_bCharDescVisible;
+	BOOL					m_bSkillDescVisible;
 
 	int						m_bStatusTabOpen[STATUS_TAB_MAX]; //각 스테터스 내부 탭이 열려있는지 여부
 	int						m_nSkillActionUpperTab[3];
@@ -448,7 +422,6 @@ protected:
 	int						m_nCurrentSkillType;
 	int						m_nBtnTotal;
 	int						m_pSelectedSkillSatisfied[SKILL_ACTIVE_SLOT_ROW_TOTAL];
-	int						m_nSkillDescRow;
 	
 	CTString				m_strHitRate;	//물리 명중도
 	CTString				m_strDodgeRate;	//물리 회피도
@@ -517,7 +490,7 @@ protected:
 	void	SetCurrentPageNewCharacterInfo(int nTabNum);		// 좌측 탭 설정
 	void	SetCurrentSkillInfo(int nSideTab, int nUpperTab);	// 스킬창 탭 설정
 	void	ShowCharInfoDesc(int nTabID = -1);					// 촤측 탭 설명 창
-	COLOR	GetStrColor(int nAdded);						// 능력치 보정 색조사
+	COLOR	    GetStrColor(int nAdded);						// 능력치 보정 색조사
 	void	RenderCharInfoDesc();								// 좌측 탭 설명 렌더
 	void	ShowSkillDesc(int nRow = -1);						// 스킬 설명 창 세팅
 	void	RenderSkillDesc();									
@@ -528,7 +501,6 @@ protected:
 	int 	GetSkillDescHeight();
 
 	void	UpdateSkillInfo(int nType, int nTotal);
-	void	updateStatusPt(int type, int value);
 													//NEW_USER_INTERFACE///
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -550,7 +522,6 @@ public:
 
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
 	// Update status
@@ -603,8 +574,6 @@ public:
 	void	StatPointError( SBYTE sbError );
 	void	AddSkill( int nSkillIndex, SBYTE sbSkillLevel, BOOL bSpecial = FALSE );
 	void	RemoveSkill( int nSkillIndex, BOOL bSpecial = FALSE );
-	void	AddSeal( int nSkillIndex, SQUAD nSealExp );
-	void	UpdateSealExp(int nSealIndex, SQUAD lSealExp );
 
 	// 소서러가 사용하는 모든 소환 스킬을 제거합니다.
 	void	RemoveSummonSkill();
@@ -614,17 +583,6 @@ public:
 
 	// 인덱스에 해당하는 스킬을 갖고 있는지 확인.
 	BOOL CheckSSkillByIndex( int iIndex, int nNeedLevel = -1, BOOL* bNeedLevel = FALSE );
-	UQUAD GetSealExp(int nIndex);
-
-	CUIButtonEx*	GetSkillBtn(int idx);
-	void			UpdateSkillCoolTime()
-	{
-		int i;
-		for( i = 0; i < SKILL_ACTIVE_SLOT_ROW_TOTAL; ++i )
-		{
-			m_btnActiveSkill[i].UpdateCoolTime();
-		}
-	}
 
 	// FIXME : UIQuest와 UICharacterInfo에 들어가야 할 부분이 구분이 제대로 안됨.
 /*
@@ -636,15 +594,10 @@ public:
 	void	CompleteQuest( int nQuestIndex );
 */
 
+	void	OpenWindow( BOOL bHasQuestList );
+
 	inline	int GetMobIndex() const { return m_nTargetIndex; }
 	//inline	void UnlockCharacterInfo()	{ m_bLockCharacterInfo = FALSE; }
-
-public :
-
-protected:
-	void initialize();
-	void OnUpdate( float fElapsedTime );
-	void OnRender( CDrawPort* pDraw );
 };
 
 

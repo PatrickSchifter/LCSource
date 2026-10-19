@@ -1,72 +1,28 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/3/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/GameState.h>
+
+//강동민 수정 시작 클로즈 준비 작업	08.10
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Sound/SoundLibrary.h>
-#include <Engine/Contents/Base/UINoticeNew.h>
+#include <Engine/Interface/UINotice.h>
 #include <Engine/SlaveInfo.h>
+//강동민 수정 끝 클로즈 준비 작업		08.10
+
+#include <Engine/Entities/QuestSystem.h>
 #include <Engine/Interface/UISummon.h>
-#include <Engine/Interface/UITeleport.h>
-#include <Engine/Interface/UIRadar.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/ExpressSystem.h>
-#include <Engine/Contents/Base/Auction.h>
-#include <Engine/Contents/Base/PetStash.h>
-#include <Engine/Contents/Base/UISkillNew.h>
-#include <Engine/Contents/Login/UIServerSelect.h>
-#include <Engine/Contents/Login/UILoginNew.h>
-#include <Engine/Interface/UISystemMenu.h>
-#include <Engine/Interface/UIPersonalShop.h>
-#include <Engine/Contents/Base/UIAuctionNew.h>
-#include <Engine/Interface/UIOption.h>
-#include <Engine/Contents/Base/UICharacterInfoNew.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIQuickSlot.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Engine/Interface/UIMonsterMercenary.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Interface/UISiegeWarfare.h>
-#include <Engine/Interface/UIHelper.h>
-#include <Engine/Contents/function/TargetInfoNewUI.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Interface/UIInitJob.h>
-#include <Engine/Interface/UIAffinityInfo.h>
-#include <Engine/Interface/UIFlowerTree.h>
-#include <Engine/Interface/UIWareHouse.h>
-#include <Engine/Contents/Login/UICharacterSelect.h>
-#include <Engine/Contents/Base/Syndicate.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#include <Engine/Contents/Base/Quest.h>
-#include <Engine/Interface/UIAutoHelp.h>
-#include <Engine/Contents/function/ItemCollectionData.h>
-#include <Engine/Contents/function/SimplePlayerInfoUI.h>
-#include <Engine/Contents/function/HelpWebUI.h>
-extern INDEX g_iXPosInSystemMenu;
-extern INDEX g_iYPosInSystemMenu;
 
-extern CDrawPort* _pdpMain;
-extern BOOL g_bAutoRestart;
-
-// 유물 아이템 인덱스
-#define	DEF_RELIC_ITEM1 10951
-#define	DEF_RELIC_ITEM2 10952
-#define	DEF_RELIC_ITEM3 10953
 
 // ----------------------------------------------------------------------------
 // Name : CUISystemMenu()
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 #ifdef RESTART_GAME
-CUISystemMenu::CUISystemMenu() : m_bCharacterMove(FALSE), m_llStartTime(0)
+CUISystemMenu::CUISystemMenu() : m_bRestartGame(FALSE), m_llStartTime(0)
 #else
 CUISystemMenu::CUISystemMenu()
 #endif
 {
-	m_ptdButtonTexture = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -76,8 +32,6 @@ CUISystemMenu::CUISystemMenu()
 CUISystemMenu::~CUISystemMenu()
 {
 	Destroy();
-
-	STOCK_RELEASE(m_ptdButtonTexture);
 }
 
 // ----------------------------------------------------------------------------
@@ -86,7 +40,9 @@ CUISystemMenu::~CUISystemMenu()
 // ----------------------------------------------------------------------------
 void CUISystemMenu::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 216, 22 );
@@ -151,7 +107,7 @@ void CUISystemMenu::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	//m_btnRestart.Create( this, _S( 285, "리스타트" ), 31, 73, 63, 21 );
 	//m_btnRestart.SetUV( UBS_IDLE, 0, 117, 63, 138, fTexWidth, fTexHeight );
 	//m_btnRestart.SetUV( UBS_CLICK, 66, 117, 129, 138, fTexWidth, fTexHeight );
-	m_btnRestart.Create( this, _S(6104, "캐릭터 선택 화면으로"), 9, 130, 160, 22);
+	m_btnRestart.Create( this, _S(4195, "서버 선택 창으로"), 9, 130, 160, 22);
 	m_btnRestart.SetRTSurface( UBS_IDLE, rcLeft, rtIdleBtn.rtL );
 	m_btnRestart.SetRTSurface( UBS_IDLE, rcMiddel, rtIdleBtn.rtM );
 	m_btnRestart.SetRTSurface( UBS_IDLE, rcRight, rtIdleBtn.rtR );
@@ -166,11 +122,7 @@ void CUISystemMenu::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	//m_btnExit.Create( this, _S( 286, "게임종료" ), 121, 73, 63, 21 );
 	//m_btnExit.SetUV( UBS_IDLE, 0, 117, 63, 138, fTexWidth, fTexHeight );
 	//m_btnExit.SetUV( UBS_CLICK, 66, 117, 129, 138, fTexWidth, fTexHeight );
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	m_btnExit.Create( this, _S( 5778, "로그인 화면으로" ), 9, 158, 160, 22 );
-#else
 	m_btnExit.Create( this, _S( 286, "게임종료" ), 9, 158, 160, 22 );
-#endif
 	m_btnExit.SetRTSurface( UBS_IDLE, rcLeft, rtIdleBtn.rtL );
 	m_btnExit.SetRTSurface( UBS_IDLE, rcMiddel, rtIdleBtn.rtM );
 	m_btnExit.SetRTSurface( UBS_IDLE, rcRight, rtIdleBtn.rtR );
@@ -188,18 +140,8 @@ void CUISystemMenu::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 // ----------------------------------------------------------------------------
 void CUISystemMenu::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	SetPos( pixMaxI - pUIManager->GetRadar()->GetWidth() - GetWidth(),
-			pixMinJ + pUIManager->GetRadar()->GetHeight() + GetHeight() );
-}
-
-void CUISystemMenu::ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-
-	g_iXPosInSystemMenu = GetPosX();
-	g_iYPosInSystemMenu = GetPosY();
+	SetPos( pixMaxI - _pUIMgr->GetRadar()->GetWidth() - GetWidth(),
+			pixMinJ + _pUIMgr->GetRadar()->GetHeight() + GetHeight() );
 }
 
 // ----------------------------------------------------------------------------
@@ -219,23 +161,20 @@ void CUISystemMenu::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX p
 // ----------------------------------------------------------------------------
 void CUISystemMenu::Render()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
 	// Set system menu texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackground.U0, m_rtBackground.V0, m_rtBackground.U1, m_rtBackground.V1,
 										0xFFFFFFFF );
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Set Button texture
-	pDrawPort->InitTextureData( m_ptdButtonTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
 
 	// Close button
 	m_btnClose.Render();
@@ -253,25 +192,25 @@ void CUISystemMenu::Render()
 	m_btnExit.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Text in system menu
-	//pDrawPort->PutTextEx( _S( 287, "시스템 메뉴" ), m_nPosX + SYSMENU_TITLE_TEXT_OFFSETX,
+	//_pUIMgr->GetDrawPort()->PutTextEx( _S( 287, "시스템 메뉴" ), m_nPosX + SYSMENU_TITLE_TEXT_OFFSETX,
 	//									m_nPosY + SYSMENU_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
-	pDrawPort->PutTextExCX( _S( 287, "시스템 메뉴" ), m_nPosX + m_nWidth/2,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 287, "시스템 메뉴" ), m_nPosX + m_nWidth/2,
 										m_nPosY + 18, 0xFFFFFFFF );
 
 
 	CTString strServerInfo;
-	strServerInfo.PrintF("%s - %d", (const char*)pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
+	strServerInfo.PrintF("%s - %d", _pUIMgr->GetSelServer()->GetServerGroupName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
 
-	pDrawPort->PutTextExCX( _S(4167, "접속중인 서버"), m_nPosX + m_nWidth/2,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(4167, "접속중인 서버"), m_nPosX + m_nWidth/2,
 										m_nPosY + 82, 0xFFFFFFFF );
-	pDrawPort->PutTextExCX( strServerInfo, m_nPosX +m_nWidth/2,
+	_pUIMgr->GetDrawPort()->PutTextExCX( strServerInfo, m_nPosX +m_nWidth/2,
 										m_nPosY +99 , 0xFFFFFFFF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -281,10 +220,7 @@ void CUISystemMenu::Render()
 void CUISystemMenu::ToggleVisible()
 {
 	BOOL	bVisible = !IsVisible();
-	ResetPosition( _pdpMain->dp_MinI, _pdpMain->dp_MinJ,
-					_pdpMain->dp_MaxI, _pdpMain->dp_MaxJ );
-
-	CUIManager::getSingleton()->RearrangeOrder( UI_SYSTEMMENU, bVisible );
+	_pUIMgr->RearrangeOrder( UI_SYSTEMMENU, bVisible );
 }
 
 // ----------------------------------------------------------------------------
@@ -309,7 +245,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move system menu
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -377,7 +313,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 					// Nothing
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_SYSTEMMENU, TRUE );
+				_pUIMgr->RearrangeOrder( UI_SYSTEMMENU, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -385,10 +321,8 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -401,7 +335,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 				if( ( wmsgResult = m_btnClose.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
-						pUIManager->RearrangeOrder( UI_SYSTEMMENU, FALSE );
+						_pUIMgr->RearrangeOrder( UI_SYSTEMMENU, FALSE );
 
 					return WMSG_SUCCESS;
 				}
@@ -430,7 +364,6 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						m_bCharacterMove = TRUE;
 						Restart();
 					}
 
@@ -441,12 +374,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						m_bCharacterMove = FALSE;
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-						Restart();
-#else
 						Exit();
-#endif
 					}
 
 					return WMSG_SUCCESS;
@@ -458,7 +386,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -490,7 +418,7 @@ WMSG_RESULT CUISystemMenu::MouseMessage( MSG *pMsg )
 // ----------------------------------------------------------------------------
 void CUISystemMenu::OpenOption()
 {
-	CUIManager::getSingleton()->GetOption()->ToggleOption();
+	_pUIMgr->GetOption()->OpenOption();
 }
 
 // ----------------------------------------------------------------------------
@@ -498,8 +426,12 @@ void CUISystemMenu::OpenOption()
 // Desc : 도움말 열기.
 // ----------------------------------------------------------------------------
 void CUISystemMenu::OpenHelp()
-{
-	UIMGR()->GetHelpWebUI()->OpenUI();
+{	
+#ifdef HELP_SYSTEM_1
+	_pUIMgr->GetHelp()->OpenHelp();		
+#else
+	_pUIMgr->GetHelpOld()->OpenHelp();
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -508,23 +440,17 @@ void CUISystemMenu::OpenHelp()
 // ----------------------------------------------------------------------------
 void CUISystemMenu::Restart()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_SYSMENU_RESTART ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_SYSMENU_RESTART ) )
 		return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 287, "시스템 메뉴" ), UMBS_YESNO,
 								UI_SYSTEMMENU, MSGCMD_SYSMENU_RESTART );
-
-	if( _pUIBuff->IsBuffBySkill( 1060 ) != NULL )	// 출석대기 버프 index가 1060임
-	{
-		MsgBoxInfo.AddString( _S( 5592, "출석체크를 하지 않은 상태입니다." ) );
-	}
-
 	MsgBoxInfo.AddString( _S( 451, "게임을 재시작 하시겠습니까?" ) );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
+
+extern BOOL bCalcNotChecked;
 
 // ----------------------------------------------------------------------------
 // Name : Restart_Internal()
@@ -532,119 +458,121 @@ void CUISystemMenu::Restart()
 // ----------------------------------------------------------------------------
 void CUISystemMenu::Restart_Internal()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	_pUIMgr->SetUIGameState( UGS_GAMELOADING );
 
-	m_btnRestart.SetBtnState(UBS_IDLE);
-	m_btnExit.SetBtnState(UBS_IDLE);
-
-	pUIManager->GetChattingUI()->ResetChatting();
+	// Reset chatting
+	_pUIMgr->GetChatting()->ResetChatting();
 
 	// Character state flags
-	pUIManager->ResetCSFlag();
+	_pUIMgr->ResetCSFlag();
 
-	_pNetwork->RestartGame();
-	
+	_pNetwork->MyCharacterInfo.money = 0;
+	_pNetwork->MyCharacterInfo.bExtension = FALSE;
+	_pNetwork->MyCharacterInfo.sbEvocationType = -1;
+
+	// Reset inventory
+	for( int i = 0; i < WEAR_TOTAL; ++i )
+		_pNetwork->pMyCurrentWearing[i] = NULL;
+
+	for(int tab = 0; tab < INVEN_SLOT_TAB; ++tab )
+	{
+		for(int row = 0; row < INVEN_SLOT_ROW_TOTAL; ++row )
+		{
+			for( int col = 0; col < INVEN_SLOT_COL; ++col )
+			{
+				_pNetwork->MySlotItem[tab][row][col].Init();
+				_pUIMgr->GetInventory()->InitInventory( tab, row, col, -1, -1, -1 );
+			}
+		}
+	}
+
 	// 선물시스템 선물받음 초기화
-	pUIManager->GetQuickSlot()->SetGiftRecv(FALSE);
+	_pUIMgr->GetQuickSlot()->SetGiftRecv(FALSE);
 
+	_pUIMgr->GetPersonalShop()->ResetShop();
+	_pUIMgr->SetCSFlagOff( CSF_PERSONALSHOP );
+	_pUIMgr->SetCSFlagOff( CSF_MOONSTONE );
+	_pUIMgr->SetCSFlagOff( CSF_MOUNT_HUNGRY );
+
+	_pUIMgr->GetSummonFirst()->ResetSummon();
+	_pUIMgr->GetSummonSecond()->ResetSummon();
 	SlaveInfo().InitSkillIndex();
 
 	// Reset buff
 	_pUIBuff->ResetMyBuff();
 
+	// Reset party
+	_pUIMgr->GetParty()->Init();
+
 	// Reset quest
 	CQuestSystem::Instance().ClearAllDynamicData();
 	CQuestSystem::Instance().ClearAllAllowList();
 	//TODO : NewQuestSystem
-	GAMEDATAMGR()->GetQuest()->ClearQuest();
-	GAMEDATAMGR()->GetQuest()->ClearQuestList();
-		
-	// [090803 sora] 리스타트할때 선택했던 퀘스트 리스를 지워준다
-	pUIManager->GetPlayerInfo()->ClearSelectedQuest();
+	_pUIMgr->GetQuestBookNew()->ClearQuestList();
+	_pUIMgr->GetQuestBookList()->ClearQuestList();
+	_pUIMgr->GetQuestBookComplete()->ClearQuestList();
+	_pUIMgr->GetQuestBookContent()->ClearQuestList();
 
 	// Reset Notice
-	pUIManager->GetNotice()->Clear();
-	GAMEDATAMGR()->GetNotice()->clear();
+	_pUIMgr->GetNotice()->Clear();
 
-	pUIManager->GetSiegeWarfare()->CloseSiegeWarfare();
+	// Reset Guild
+	_pUIMgr->GetGuild()->ResetGuild();
+	_pUIMgr->GetGuild()->ClearMemberList();
+	_pUIMgr->GetSiegeWarfare()->CloseSiegeWarfare();
 
-	// 펫 AI 클리어
-	pUIManager->GetWildPetInfo()->AIClear();
-	
-	// Reset Memory Scroll
-	pUIManager->GetTeleport()->ClearTeleportList();
-	pUIManager->GetTeleport()->SetUseTime(0);
-	pUIManager->GetTeleportPrimium()->ClearTeleportList();
+	_pUIMgr->GetHelper()->ResetHelper();
+	_pUIMgr->GetHelper()->ClearHelperList();
+	_pUIMgr->GetWildPetInfo()->AIClear();
 
-	
-	pUIManager->GetAffinityInfo()->AffinityReset();
+	_pNetwork->LeavePet( (CPlayerEntity*)CEntity::GetPlayerEntity(0) );
+	_pNetwork->ClearPetList();	
+	_pNetwork->_PetTargetInfo.Init();
+	_pNetwork->_SlaveTargetInfo[0].Init();
+	_pNetwork->_SlaveTargetInfo[1].Init();
+	_pNetwork->_WildPetInfo.Init();
 
-	// clear all data in lacaball. [1/25/2011 rumist]
-	pUIManager->GetLacaBall()->InitLacaballData();
-
-	pUIManager->GetMonsterMercenary()->ToggleMonsterMercenary(-1);	
-
-	// [11/3/2010 kiny8216] Face Change 모드 초기화
-	pUIManager->GetInitJob()->SetFaceDecoMode( FALSE );	
-
+	((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ClearMultiTargets();
 	((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ReturnSorcerer();
-
-	// 꽃놀이 나무 초기화
-	pUIManager->GetFlowerTree()->ClearList();
-	pUIManager->GetTargetInfoUI()->ShowPKTargetHP(FALSE);
 
 	extern BOOL	_bLoginProcess;
 	_bLoginProcess = TRUE;
 	_pGameState->GetGameMode() = CGameState::GM_NONE;
-	pUIManager->GetGame()->StopGame();
+	_pUIMgr->GetGame()->StopGame();
 
-	pUIManager->GetSimplePlayerInfo()->StopDungeonTime();
+	// 이기환 수정 ( 12. 1 ) : 로딩화면 변경에 따라 존 값 변경 ( -1 : [re]start )
+	g_slZone = -1; 
+	g_bFirstIntoWorld = TRUE;
+	// ... cpp2angel End 
 
-	GameDataManager* pGameData = GameDataManager::getSingleton();
+	_pUIMgr->GetGame()->LoginGame( LOGIN_WORLD );
 
-	pGameData->GetExpressData()->ClearNPCInfo();
-	pGameData->GetExpressData()->SetNoticeFlag(0);
+	_pGameState->SelectedSlot()		= 0;
+	_pGameState->m_pEntModels[0]	= NULL;
+	_pGameState->m_pEntModels[1]	= NULL;
+	_pGameState->m_pEntModels[2]	= NULL;
+	_pGameState->m_pEntModels[2]	= NULL;
+	_pNetwork->m_ubGMLevel			= 0;
+	_pNetwork->m_bSingleMode		= FALSE;
 	
-	if (pUIManager->GetRadar())
-		pUIManager->GetRadar()->OffExpressNotice();
-
-	// 구매대행 초기화
-	pUIManager->GetAuction()->reset();
-	pUIManager->GetAuction()->CloseAuction();
-	pGameData->GetAuction()->reset();
-
-	// New skill tree UI reset
-	pUIManager->GetSkillNew()->InitArrayData();
-
-	// 개인 창고
-	pUIManager->GetWareHouse()->SetUseTime(0);
-
-	pUIManager->GetHelper()->Clear();
-
-	pGameData->GetSyndicate()->ResetSyndiInfo();
-
-	// 캐릭터 선택창 초기화 (간혈적으로 초기화 안되는 문제가 보고됨. 방어코드로 추가)
-	if (_pNetwork->bMoveCharacterSelectUI == FALSE)
+	const int	iCameraEntityID	= 1628;
+	CEntity		*pCameraEntity = NULL;
+	CEntity		*pEntity = NULL;
+	BOOL bExist = _pNetwork->ga_World.EntityExists( iCameraEntityID, pCameraEntity );
+	if(bExist)
 	{
-		_pGameState->ClearCharacterSlot();
-		_pGameState->SetCreatableNightShadow( FALSE );
+		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->StartCamera(pCameraEntity, FALSE);
 	}
 
-	pUIManager->ResetHoldBtn();
+	// 꽃놀이 나무 초기화
+	_pUIMgr->GetFlowerTree()->ClearList();
+	_pUIMgr->GetTargetInfo()->ShowPKTargetHP(FALSE);
+	
+	_pUIMgr->SetUIGameState( UGS_LOGIN );	
+	_pUIMgr->GetLogin()->SetPWFocus();
 
-	for (int i = 0; i < _pNetwork->wo_iNumOfSkill; ++i)
-	{
-		CSkill* pSkill = &_pNetwork->GetSkillData(i);
-
-		if (pSkill == NULL)
-			continue;
-
-		if (pSkill->GetFlag() & SF_TOGGLE)
-			pSkill->SetToggle(false);
-	}
-
-	CItemCollectionData::ClearData();
-	TOOLTIPMGR()->clearTooltip();
+	//구매 대행 정산 리스트 체크 플래그
+	bCalcNotChecked = TRUE;
 }
 
 // ----------------------------------------------------------------------------
@@ -653,24 +581,14 @@ void CUISystemMenu::Restart_Internal()
 // ----------------------------------------------------------------------------
 void CUISystemMenu::Exit()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_SYSMENU_EXIT ) )
+	if( _pUIMgr->DoesMessageBoxExist( MSGCMD_SYSMENU_EXIT ) )
 		return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 287, "시스템 메뉴" ), UMBS_YESNO,
 								UI_SYSTEMMENU, MSGCMD_SYSMENU_EXIT );
-// [2011/09/22 : Sora] 게임 종료시 출석확인 메시지 추가 Gamigo로컬 적용후 전로컬 적용 예정
-	if( _pUIBuff->IsBuffBySkill( 1060 ) != NULL )	// 출석대기 버프 index가 1060임
-	{
-		MsgBoxInfo.AddString( _S( 5592, "출석체크를 하지않은 상태입니다." ) );
-	}
 	MsgBoxInfo.AddString( _S( 288, "게임을 종료하시겠습니까?" ) );
-#if defined G_JAPAN
-	MsgBoxInfo.AddString( _S(3166, "게임 접속 종료 후 서버에는 15초간 대기시간이 있습니다. 안전한 곳에서 접속 종료를 해주세요." ) );
-#endif
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 // ----------------------------------------------------------------------------
@@ -684,17 +602,7 @@ void CUISystemMenu::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInpu
 	case MSGCMD_SYSMENU_EXIT:
 		if( bOK )
 		{
-			if(IsHaveRelic() == true)
-			{
-				LogoutRelicWarring();
-				return;
-			}
-			g_iXPosInSystemMenu = GetPosX();
-			g_iYPosInSystemMenu = GetPosY();
-			
-			_pNetwork->SendClickObject(-1);
 			_pNetwork->LeavePet( (CPlayerEntity*)CEntity::GetPlayerEntity(0) );
-
 			_pGameState->Running() = FALSE;
 			_pGameState->QuitScreen() = FALSE;	
 		}
@@ -703,120 +611,13 @@ void CUISystemMenu::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInpu
 	case MSGCMD_SYSMENU_RESTART:
 		if( bOK )
 		{
-			if(IsHaveRelic() == true)
-			{
-				LogoutRelicWarring();
-				return;
-			}
-
-			g_iXPosInSystemMenu = GetPosX();
-			g_iYPosInSystemMenu = GetPosY();
-
-			_pNetwork->SendClickObject(-1);
-			_pGameState->SetRestartGameValue(TRUE);
+#ifdef RESTART_GAME
+			SetRestartGameValue(TRUE);
 			m_llStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-			m_btnRestart.SetBtnState(UBS_DISABLE);
-			m_btnExit.SetBtnState(UBS_DISABLE);
-		}
-		else
-		{
-			g_bAutoRestart = FALSE;
-		}
-		break;
-
-	case MSGCMD_LOGOUT_RELIC_WARRING:
-		{
-			if (bOK)
-			{
-				if (m_bCharacterMove == TRUE)
-				{
-					g_iXPosInSystemMenu = GetPosX();
-					g_iYPosInSystemMenu = GetPosY();
-
-					_pNetwork->SendClickObject(-1);
-					_pGameState->SetRestartGameValue(TRUE);
-					m_llStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-				}
-				else
-				{
-					g_iXPosInSystemMenu = GetPosX();
-					g_iYPosInSystemMenu = GetPosY();
-
-					_pNetwork->SendClickObject(-1);
-					_pNetwork->LeavePet( (CPlayerEntity*)CEntity::GetPlayerEntity(0) );
-
-					_pGameState->Running() = FALSE;
-					_pGameState->QuitScreen() = FALSE;	
-				}
-			}
-			else
-			{
-				m_btnRestart.SetBtnState(UBS_IDLE);
-				m_btnExit.SetBtnState(UBS_IDLE);
-			}
+#else
+			Restart_Internal();
+#endif
 		}
 		break;
 	}
-}
-
-void CUISystemMenu::ReStartNow()
-{
-	if ( m_bCharacterMove == FALSE)
-	{
-		STAGEMGR()->SetNextStage(eSTAGE_GAMEEND);
-		return;
-	}
-	
-	_pNetwork->SendRestartGame();	
-}
-
-void CUISystemMenu::CancelRestart()
-{
-	_UIAutoHelp->ClearGMNNotice();
-	ResetRestartTime();
-	_pGameState->SetRestartGameValue(FALSE);
-	m_btnRestart.SetBtnState(UBS_IDLE);
-	m_btnExit.SetBtnState(UBS_IDLE);
-}
-
-bool CUISystemMenu::IsHaveRelic()
-{
-	CUIInventory* pInven = UIMGR()->GetInventory();
-
-	// 인벤토리에 가지고 있는지 체크
-	int nTab, nInvenIdx;
-	if (pInven->GetItemSlotInfo(DEF_RELIC_ITEM1, nTab, nInvenIdx) ||
-		pInven->GetItemSlotInfo(DEF_RELIC_ITEM2, nTab, nInvenIdx) ||
-		pInven->GetItemSlotInfo(DEF_RELIC_ITEM3, nTab, nInvenIdx) )
-	{
-		return true;
-	}
-
-	// 장착한 아이템중 유물을 가지고 있는지 체크
-	if (pInven->IsWearingItem(DEF_RELIC_ITEM1) ||
-		pInven->IsWearingItem(DEF_RELIC_ITEM2) ||
-		pInven->IsWearingItem(DEF_RELIC_ITEM3))
-	{
-		return true;
-	}
-	
-	return false;
-}
-
-void CUISystemMenu::LogoutRelicWarring()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_LOGOUT_RELIC_WARRING ) )
-		return;
-
-	CUIMsgBox_Info	MsgBoxInfo;
-	MsgBoxInfo.SetMsgBoxInfo( _S( 287, "시스템 메뉴" ), UMBS_YESNO,
-		UI_SYSTEMMENU, MSGCMD_LOGOUT_RELIC_WARRING );
-	MsgBoxInfo.AddString( _S( 6411, "로그아웃 하거나 캐릭터 변경 시 유물 아이템은 사라집니다. 그래도 나가시겠습니까??" ) );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
-
-	m_btnRestart.SetBtnState(UBS_DISABLE);
-	m_btnExit.SetBtnState(UBS_DISABLE);
 }

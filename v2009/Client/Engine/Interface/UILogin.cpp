@@ -1,19 +1,25 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UILogin.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/GameState.h>
+#include <Engine/Rendering/Render.h>
 #include <Engine/Network/TcpIpConnection.h>
+#include <Engine/Network/CommunicationInterface.h>
 #include <Engine/Sound/SoundLibrary.h>		// 서정원 로긴 관련 사운드 처리
-#include <Engine/Base/md5.h>
+
+// WSS_NPROTECT 070402 ------------------------------->>
+#ifndef NO_GAMEGUARD
+	#include <NPGameLib.h>
+#endif
+// ---------------------------------------------------<<
 
 
 // External variables
 extern HWND	_hwndMain;
 extern INDEX login_bSkipSelect;
+extern INDEX g_iCountry;
 
 #define MAXLENGTH			(15)		// Max Length of ID & PW
 
@@ -35,11 +41,15 @@ CUILogin::CUILogin()
 // ----------------------------------------------------------------------------
 CUILogin::~CUILogin()
 {
+	
+	if( m_ptdClassification )
+	{
+		_pTextureStock->Release( m_ptdClassification );
+		m_ptdClassification = NULL;
+	}
+	
+
 	Destroy();
-
-	STOCK_RELEASE(m_ptdButtonTexture);
-
-	STOCK_RELEASE(m_ptdClassification);
 }
 
 // ----------------------------------------------------------------------------
@@ -48,15 +58,19 @@ CUILogin::~CUILogin()
 // ----------------------------------------------------------------------------
 void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Create inventory texture
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Login_ger.tex" ) );
-#else
-	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Login.tex" ) );
-#endif
+	if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+	{
+		m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Login_ger.tex" ) );
+	}
+	else
+	{
+		m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Login.tex" ) );
+	}
 
 	FLOAT	fTexWidth	= m_ptdBaseTexture->GetPixWidth();
 	FLOAT	fTexHeight	= m_ptdBaseTexture->GetPixHeight();
@@ -65,9 +79,8 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 
 	// UV Coordinate of each part
 	// Background
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	ntmpX = 189;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+	if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 189; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+	
 	m_rtLogin.SetUV( 0, 0, ntmpX, 116, fTexWidth, fTexHeight );
 
 	m_rtSecurityTop.SetUV( 0, 0, ntmpX, 36, fTexWidth, fTexHeight );
@@ -75,9 +88,7 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 	m_rtSecurityBottom.SetUV( 0, 54, ntmpX, 116, fTexWidth, fTexHeight );
 
 	ntmpX = 39;
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	ntmpX = 50;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+	if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 50; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 
 	// OK button (connect)
 	m_btnOK.Create( this, _S( 180, "접속" ), ntmpX, 88, 63, 21 );
@@ -88,9 +99,7 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 
 	ntmpX = 105;
 
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	ntmpX = 116;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+	if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 116; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 
 	// Cancel button (exit)
 	m_btnCancel.Create( this, _S( 181, "나가기" ), ntmpX, 88, 63, 21 );
@@ -102,21 +111,15 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 	// ID edit box
 	ntmpX = 75;
 
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	ntmpX = 84;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+	if ( g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 84; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 
-#if defined (G_JAPAN)
-	m_ebID.Create( this, ntmpX, 37, 91, 15, MAXLENGTH+1 );	// 일본은 ID/PW 16자리
-	m_ebPW.Create( this, ntmpX, 56, 91, 15, MAXLENGTH+1, TRUE );	// 일본은 ID/PW 16자리
-#else
 	m_ebID.Create( this, ntmpX, 37, 91, 15, MAXLENGTH );
-	m_ebPW.Create( this, ntmpX, 56, 91, 15, MAXLENGTH, TRUE );
-#endif
-		
 	m_ebID.SetFocus( TRUE );
 	m_ebID.SetReadingWindowUV( 239, 49, 256, 65, fTexWidth, fTexHeight );
 	m_ebID.SetCandidateUV( 239, 49, 256, 65, fTexWidth, fTexHeight );
+
+	// Password edit box
+	m_ebPW.Create( this, ntmpX, 56, 91, 15, MAXLENGTH, TRUE );
 	m_ebPW.SetFocus( FALSE );
 
 	m_ebSecurity.Create( this, ntmpX, 56, 91, 15, 4, TRUE );
@@ -140,30 +143,7 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 	m_btnCheck.SetTextColor( FALSE, 0xF2F2F2FF );
 	m_btnCheck.SetCheck( g_iSaveID );
 
-	// 유로피안 서버 접속 체크박스 [10/18/2012 Ranma]
-#ifdef EUROUPEAN_SERVER_LOGIN
-	
-	extern INDEX g_iConnectEuroupean;
-
-	nStrWidth = ( _S( 5777, "유로피안 서버로 접속" ).Length() + 3 ) *
-		( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );	
-	m_btnEuroupeanCheck.Create(this, EUROUPEAN_WIDTH_GAP, LOGIN_TITLE_HEIGHT, 13, 13,
-		_S( 5777, "유로피안 서버로 접속" ), FALSE, 15);							// Check button
-	m_btnEuroupeanCheck.SetUV( UCBS_NONE, 139, 75, 152, 88, fTexWidth, fTexHeight );
-	m_btnEuroupeanCheck.SetUV( UCBS_CHECK, 119, 75, 132, 88, fTexWidth, fTexHeight );
-	m_btnEuroupeanCheck.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE );
-	m_btnEuroupeanCheck.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE );
-	m_btnEuroupeanCheck.SetTextColor( TRUE, 0xF2F2F2FF );
-	m_btnEuroupeanCheck.SetTextColor( FALSE, 0xF2F2F2FF );
-	m_btnEuroupeanCheck.SetCheck( g_iConnectEuroupean );
-#endif
-
-#if defined (G_KOR)
-	m_ptdClassification = CreateTexture ( CTString ( "Data\\Interface\\Loading\\Classification_15_kor.tex" ) );
-#else 
 	m_ptdClassification = CreateTexture ( CTString ( "Data\\Interface\\Loading\\Classification_15.tex" ) );
-#endif
-
 	//1228
 	
 	CTString strFullPath = _fnmApplicationPath.FileDir();
@@ -183,24 +163,15 @@ void CUILogin::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nH
 		g_iLocalVersion = 700;
 	}
 
-	CUIManager::getSingleton()->SetVersion(g_iLocalVersion);
-	
+	_pUIMgr->SetVersion(g_iLocalVersion);
+
 	// [090715: selo] 저장된 아이디 읽어오기
+#ifdef LOGIN_SAVEID
 	extern INDEX g_iSaveID;
 
 	if(g_iSaveID)		
 		ReadPreviousId();
-
-#ifdef EUROUPEAN_SERVER_LOGIN	
-	if (g_iConnectEuroupean)
-	{
-		m_btnEuroupeanCheck.SetEnable(TRUE);
-	}
 #endif
-
-#ifdef	DEV_LOGIN
-	ReadTextDevPreviousIdPw();
-#endif	// DEV_LOGIN
 }
 
 //-----------------------------------------------------------------------------
@@ -215,21 +186,15 @@ void CUILogin::Reset()
 	//Lock(FALSE);
 	m_ebID.SetEnable(TRUE);
 	m_ebPW.SetEnable(TRUE);
-
-	ResetBtn();
-}
-
-void CUILogin::ResetBtn()
-{
 	m_btnOK.SetEnable(TRUE);
 
 	// [090715: selo] 아이디 저장 체크박스 활성/비활성화
+#ifdef LOGIN_SAVEID
 	m_btnCheck.SetEnable(TRUE);
-
-#ifdef EUROUPEAN_SERVER_LOGIN
-	m_btnEuroupeanCheck.SetEnable(TRUE);
+#else
+	m_btnCheck.SetEnable(FALSE);
 #endif
-
+	
 	m_bSecurity =FALSE;
 	m_ebSecurity.SetEnable(TRUE);
 }
@@ -240,19 +205,8 @@ void CUILogin::ResetBtn()
 // ----------------------------------------------------------------------------
 void CUILogin::Render()
 {
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	extern BOOL g_bAutoRestart;
-	if(g_bAutoRestart)
-	{
-		CUIManager::getSingleton()->RenderLoading();
-		return;
-	}
-#endif
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set login texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	if( m_bSecurity )
 		SecurityRender();
@@ -260,7 +214,7 @@ void CUILogin::Render()
 	{
 		// Add render regions
 		// Background
-		pDrawPort->AddTexture( m_nPosX, m_nPosY,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY,
 											m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 											m_rtLogin.U0, m_rtLogin.V0, m_rtLogin.U1, m_rtLogin.V1,
 											0xFFFFFFFF );
@@ -276,61 +230,63 @@ void CUILogin::Render()
 		m_ebPW.Render();
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// [090715: selo] - check button
-		pDrawPort->InitTextureData( m_ptdButtonTexture );
-
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
+		
 		if( m_btnCheck.IsEnabled() )
 			m_btnCheck.Render();
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-		if( m_btnEuroupeanCheck.IsEnabled() )
-			m_btnEuroupeanCheck.Render();
-#endif
-
-		pDrawPort->FlushRenderingQueue();
-
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+		
 		// Prepare Rendering Text
-		pDrawPort->PutTextEx( _S( 182, "로그인" ),
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 182, "로그인" ),
 							m_nPosX + LOGIN_TITLE_TEXT_OFFSETX, m_nPosY + LOGIN_TITLE_TEXT_OFFSETY );
 
 		int ntmpX = 9;
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-		ntmpX = 6;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+		if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 6; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 		
-		pDrawPort->PutTextEx( _S( 183, "아이디" ), m_nPosX + ntmpX, m_nPosY + 38 );
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 183, "아이디" ), m_nPosX + ntmpX, m_nPosY + 38 );
 			
-		pDrawPort->PutTextEx( _S( 184, "패스워드" ), m_nPosX + ntmpX, m_nPosY + 57 );
-
-		// Version
-		if (m_strVersion.empty() == false)
-		{
-			pDrawPort->PutTextEx( CTString(m_strVersion.c_str()), 0, 0 );
-		}
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 184, "패스워드" ), m_nPosX + ntmpX, m_nPosY + 57 );
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 
 		// Reading window
 		if( m_ebID.DoesShowReadingWindow() )
 		{
 			// Set login texture
-			pDrawPort->InitTextureData( m_ptdBaseTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 			// Reading window
 			m_ebID.RenderReadingWindow();
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 		}
 	}
 
-	pDrawPort->FlushRenderingQueue();	
+	if(g_iCountry != BRAZIL && g_iCountry != GERMANY && g_iCountry != SPAIN && g_iCountry != FRANCE && g_iCountry != POLAND)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+	{
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdClassification );
+
+		int nWidth = m_ptdClassification->GetPixWidth();
+		int nHeigth = m_ptdClassification->GetPixHeight();
+		
+		int nPosX = _pUIMgr->GetDrawPort()->GetWidth() - ( nWidth + nWidth / 4 ) ;
+		int nPosY = ( nHeigth / 4 );
+
+		_pUIMgr->GetDrawPort()->AddTexture( nPosX, nPosY,
+											nPosX + nWidth, nPosY + nHeigth, 0xFFFFFFFF );
+
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -364,10 +320,18 @@ void CUILogin::PressOKBtn()
 
 	m_ebSecurity.ResetString();
 
+
+	// [090715: selo] 아이디 저장
+#ifdef LOGIN_SAVEID
 	extern INDEX g_iSaveID;
 
 	if(g_iSaveID && bLogin)		
 		WritePreviousId();	
+#endif
+
+	// 접속에 성공했다면 서버 선택화면으로...
+	//if( bUserLogin )
+	//	_pUIMgr->SetUIGameState( UGS_SELSERVER );
 }
 
 //-----------------------------------------------------------------------------
@@ -500,10 +464,6 @@ WMSG_RESULT CUILogin::MouseMessage( MSG *pMsg )
 	WMSG_RESULT	wmsgResult;
 	extern INDEX g_iSaveID;
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-	extern INDEX g_iConnectEuroupean;
-#endif
-
 	// Mouse point
 	int	nX = LOWORD( pMsg->lParam );
 	int	nY = HIWORD( pMsg->lParam );
@@ -517,15 +477,10 @@ WMSG_RESULT CUILogin::MouseMessage( MSG *pMsg )
 		// Cancel button
 		else if( m_btnCancel.MouseMessage( pMsg ) != WMSG_FAIL )
 			return WMSG_SUCCESS;
+
 		// [090715: selo] 
 		else if( m_btnCheck.MouseMessage( pMsg ) != WMSG_FAIL )
 			return WMSG_SUCCESS;
-
-		// 유로피안 서버 접속 [10/18/2012 Ranma]
-#ifdef EUROUPEAN_SERVER_LOGIN
-		else if( m_btnEuroupeanCheck.MouseMessage( pMsg ) != WMSG_FAIL )
-			return WMSG_SUCCESS;
-#endif	
 	}
 	else if( pMsg->message == WM_LBUTTONDOWN )
 	{
@@ -579,17 +534,8 @@ WMSG_RESULT CUILogin::MouseMessage( MSG *pMsg )
 						g_strSaveID = "";
 				}
 			}
-#ifdef EUROUPEAN_SERVER_LOGIN	
-			else if ( ( wmsgResult = m_btnEuroupeanCheck.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if ( wmsgResult == WMSG_SUCCESS )
-				{
-					g_iConnectEuroupean = m_btnEuroupeanCheck.IsChecked() ? 1 : 0;
- 				}
-			}
-#endif
 
-			CUIManager::getSingleton()->RearrangeOrder( UI_LOGIN, TRUE );
+			_pUIMgr->RearrangeOrder( UI_LOGIN, TRUE );
 			return WMSG_SUCCESS;
 		}
 	}
@@ -637,52 +583,61 @@ WMSG_RESULT CUILogin::MouseMessage( MSG *pMsg )
 //-----------------------------------------------------------------------------
 BOOL CUILogin::TryToLogin()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
 	CTString strMessage;
 
 	if( m_strUserID.Length() <= 0 )
 	{
-		pUIManager->CloseMessageBox( MSGCMD_LOGIN_ERROR );
+		_pUIMgr->CloseMessageBox( MSGCMD_LOGIN_ERROR );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 182, "로그인" ), UMBS_OK,
 									UI_LOGIN, MSGCMD_LOGIN_ERROR );
 		strMessage = _S( 185, "아이디를 입력해주십시오." );
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
 
 		return FALSE;
 	}
 	else if( m_strUserPW.Length() <= 0 )
 	{
-		pUIManager->CloseMessageBox( MSGCMD_LOGIN_ERROR );
+		_pUIMgr->CloseMessageBox( MSGCMD_LOGIN_ERROR );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 182, "로그인" ), UMBS_OK,
 									UI_LOGIN, MSGCMD_LOGIN_ERROR );
 		strMessage = _S( 186, "패스워드를 입력해주십시오." );
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
 
 		return FALSE;
 	}
 
-	CGame* _pGame = pUIManager->GetGame();
+	CGame* _pGame		= _pUIMgr->GetGame();
+	//CTFileName fnWorld	= _pGame->gam_strCustomLevel;
+	
+	//extern BOOL _bUseSocket;
+	//_bUseSocket = TRUE;
+	
 	_pGameState->ClearCharacterSlot();
 	
 	// NOTE : 여기서 소켓을 생성하고 있음.
 	if(_pGame->PreNewGame())
 	{
+		//gm_bUseSocket = TRUE;
+		// 로그인 서버에 로그인을 시도합니다.
+// wooss 060209 TEST JAPAN
+//#define AUTO_LOGIN
+//#ifndef AUTO_LOGIN
 		extern BOOL g_bAutoLogin;
-		extern BOOL g_bAutoRestart;
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-		if(!g_bAutoLogin && !g_bAutoRestart)
-#else
 		if(!g_bAutoLogin)
-#endif
 			ConnectToLoginServer();
+//#endif
 	}
+	//_bUseSocket = FALSE;
 
+	//return m_bConnectToLoginServer;
+	
+	// [090715: selo] 성공시 TRUE 리턴 
 	return TRUE;
 }
 
@@ -720,50 +675,6 @@ void CUILogin::ReadPreviousId()
 	m_ebPW.SetFocus(TRUE);
 }
 
-#ifdef DEV_LOGIN
-void CUILogin::ReadTextDevPreviousIdPw() // Login.txt 에 저장된 아이디 패스워드 얻어오기
-{
- 	CTString strFullPath = _fnmApplicationPath.FileDir();
- 	CTString fileName = strFullPath + "Bin\\pass.txt";
- 	
- 	FILE *fp = NULL;
- 	CTString fileTesx = CTString(" ");
- 
- 	if ((fp = fopen(fileName, "rt")) == NULL) 
- 	{
- 		return;
- 	}
-
-	char buf[MAX_PATH] = {0,}; 
- 	fread(buf, MAX_PATH, 1, fp);
-
-	fclose(fp);
-
-	std::string		str[2];
-	int		cur = 0;
-	{
-		char* sep = " \n";
-		char* token = NULL;
-
-		token = strtok( buf, sep );
-
-		while( token )
-		{
-			if( cur < 2 )
-				str[cur++] = token;
-
-			token = strtok( NULL, sep );
-		}
-	}
-
-	m_strUserID = str[0].c_str();
-	m_strUserPW = str[1].c_str();
-
-	m_ebID.SetString( (char*)str[0].c_str() );
-	m_ebPW.SetString( (char*)str[1].c_str() );
-}
-#endif // DEV_LOGIN
-
 // ----------------------------------------------------------------------------
 // Name : WritePreviousId()
 // Desc : 아이디를 저장한다
@@ -784,44 +695,37 @@ BOOL CUILogin::ConnectToLoginServer()
 	if(_pNetwork->m_bSendMessage)
 		return FALSE;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// 문제가 발생했습니다.
-	if( _tcpip.Socket == INVALID_SOCKET || !_tcpip.IsConnected(_tcpip.Socket) )
+/*	if( _tcpip.Socket == INVALID_SOCKET || !_tcpip.IsConnected(_tcpip.Socket) )
 	{
 		CPrintF("로그인 서버와 연결할수 없습니다.\n");
 
-		pUIManager->CloseMessageBox(MSGCMD_CONNECT_ERROR);
+		_pUIMgr->CloseMessageBox(MSGCMD_CONNECT_ERROR);
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 424, "접속 오류" ), UMBS_OK, UI_LOGIN, MSGCMD_CONNECT_ERROR );
 		MsgBoxInfo.AddString( _S( 425, "로그인 서버와 연결할 수 없습니다." ) );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 		_pNetwork->m_bSendMessage = FALSE;
 		return FALSE;
-	}
+	}*/
 	// 소켓의 연결을 끊었다가, 다시 연결함.	
 	//-------------------------------------------------
-	pUIManager->Lock(TRUE);
-	
-	// [091119: selo] 미국에 md5 적용함
-#if defined (G_JAPAN)/* || defined (G_USA) */
-	// 패스워드 MD5로 암호화
-	char tmpPass[1024];
-	char tmpResult[256];
-	md5_buffer(m_strUserPW, m_strUserPW.Length(), tmpPass);
-	md5_sig_to_string(tmpPass, tmpResult, sizeof(tmpResult));
-	CTString CT_tmpPass = tmpResult;
-	CT_tmpPass.ToUpper(); // MD5로 암호화된 패스워드는 대문자로 전송(서버에서 대문자로 된 패스워드로 처리)
-	_pNetwork->SendLoginMessage(m_strUserID, CT_tmpPass, pUIManager->GetVersion());
-#else
-	_pNetwork->SendLoginMessage(m_strUserID, m_strUserPW, pUIManager->GetVersion());		
-#endif
-
+	_pUIMgr->Lock(TRUE);
+	_pNetwork->SendLoginMessage(m_strUserID, m_strUserPW, _pUIMgr->GetVersion());		
 	_pNetwork->m_strUserID = m_strUserID;
 	_pNetwork->m_strUserPW = m_strUserPW;
 
 
+	// WSS_NPROTECT 070402 ------------------------------->>
+	// 사용자 로그인시 ID를 GameMon에 통보
+#ifndef NO_GAMEGUARD
+	extern ENGINE_API CNPGameLib npgl;
+//	CPrintF("[ ---->> GameGuard Send(gameID)...Start <<---- ] - %lu\n",timeGetTime());
+	npgl.Send(m_strUserID.str_String);
+//	CPrintF("[ ---->> GameGuard Send(gameID)...End <<---- ] - %lu\n",timeGetTime());
+#endif
+	// ---------------------------------------------------<<
 
 	return FALSE;
 }
@@ -861,17 +765,15 @@ void CUILogin::SecurityCardSet(UBYTE* SecurityNum)
 
 BOOL CUILogin::ConnectToSecurityCard()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( strlen(m_ebSecurity.GetString()) <= 0 )
 	{
-		pUIManager->CloseMessageBox( MSGCMD_LOGIN_ERROR );
+		_pUIMgr->CloseMessageBox( MSGCMD_LOGIN_ERROR );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 3667, "보안 카드" ), UMBS_OK,
 									UI_LOGIN, MSGCMD_LOGIN_ERROR );
 		MsgBoxInfo.AddString( _S( 186, "패스워드를 입력해주십시오." ) );
-		pUIManager->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo, m_nLoginMsgPosX, m_nLoginMsgPosY );
 
 		return FALSE;
 	}
@@ -879,7 +781,7 @@ BOOL CUILogin::ConnectToSecurityCard()
 	if(_pNetwork->m_bSendMessage)
 		return FALSE;
 
-	pUIManager->Lock(TRUE);
+	_pUIMgr->Lock(TRUE);
 	_pNetwork->SendSecurityMessage( CTString(m_ebSecurity.GetString()) );
 
 	return TRUE;
@@ -887,26 +789,24 @@ BOOL CUILogin::ConnectToSecurityCard()
 
 void CUILogin::SecurityRender()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Add render regions
 	// Background
-	pDrawPort->AddTexture( m_nPosX, m_nPosY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY,
 										m_nPosX + m_nWidth, m_nPosY + 36,
 										m_rtSecurityTop.U0, m_rtSecurityTop.V0, m_rtSecurityTop.U1, m_rtSecurityTop.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY +36,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY +36,
 										m_nPosX + m_nWidth, m_nPosY + 36 +9,
 										m_rtSecurityMid.U0, m_rtSecurityMid.V0, m_rtSecurityMid.U1, m_rtSecurityMid.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY +36 +9,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY +36 +9,
 										m_nPosX + m_nWidth, m_nPosY + 36 +9 +9,
 										m_rtSecurityMid.U0, m_rtSecurityMid.V0, m_rtSecurityMid.U1, m_rtSecurityMid.V1,
 										0xFFFFFFFF );
 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY +36 +9 +9,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY +36 +9 +9,
 										m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtSecurityBottom.U0, m_rtSecurityBottom.V0, m_rtSecurityBottom.U1, m_rtSecurityBottom.V1,
 										0xFFFFFFFF );
@@ -920,42 +820,19 @@ void CUILogin::SecurityRender()
 	m_ebSecurity.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
 	// Prepare Rendering Text
-	pDrawPort->PutTextEx( _S( 3667, "보안 카드" ),
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 3667, "보안 카드" ),
 						m_nPosX + LOGIN_TITLE_TEXT_OFFSETX, m_nPosY + LOGIN_TITLE_TEXT_OFFSETY );
 
 	int ntmpX = 9;
-#if defined (G_GERMAN) || defined (G_EUROPE3) || defined (G_EUROPE2)
-	ntmpX = 6;//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#endif
+	if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) { ntmpX = 6; }//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 	
-	pDrawPort->PutTextEx( m_strSecurityCode, m_nPosX + ntmpX, m_nPosY + 39 );
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strSecurityCode, m_nPosX + ntmpX, m_nPosY + 39 );
 		
-	pDrawPort->PutTextEx( _S( 184, "패스워드" ), m_nPosX + ntmpX, m_nPosY + 58 );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 184, "패스워드" ), m_nPosX + ntmpX, m_nPosY + 58 );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
-
-void CUILogin::initialize()
-{
-	//m_ebID = (CUIEditBox*)findUI("edit_id" );
-}
-
-void CUILogin::setVersion( const char* strVer )
-{
-	m_strVersion = strVer;
-
-	while (true)
-	{
-		int nFind = m_strVersion.find(", ");
-
-		if (nFind == std::string::npos)
-			break;
-
-		m_strVersion.replace(nFind, 2, ".");
-	}	
-}
-

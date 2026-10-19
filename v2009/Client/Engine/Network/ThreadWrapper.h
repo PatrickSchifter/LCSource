@@ -2,12 +2,9 @@
 #ifndef __THREADWRAPPER_H__
 #define __THREADWRAPPER_H__
 
-#ifdef _WIN32
 #include <windows.h>
-#endif
 
-// defined only on Windows (ThreadWrapper.cpp)
-class ENGINE_API cThreadWrapper
+class cThreadWrapper
 {
 public:
 	//cThreadWrapper(LPTHREAD_START_ROUTINE pRunningFunction);

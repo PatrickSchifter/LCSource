@@ -6,10 +6,17 @@
 
 #ifndef	UIWILDPETINFO_H_
 #define	UIWILDPETINFO_H_
+#ifdef	PRAGMA_ONCE
+	#pragma once
+#endif
 
-#include <Engine/Interface/UICheckButton.h>
-
-class CUIIcon;
+#include <Engine/Interface/UIDrawFigure.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UITrackPopup.h>
+#include <Engine/Network/PetTarget.h>
+#include <map>
 
 #define WILDPETINFO_WIDTH			273
 #define WILDPETINFO_HEIGHT			401
@@ -37,23 +44,18 @@ enum WILDPET_POINT
 	WILDPET_DEX	= 2,	// 민첩 포인트
 	WILDPET_INT	= 3,	// 지혜 포인트
 	POINT_END,
+
 };
 
-enum eAI_TYPE
-{
-	AI_NONE = -1,
-	AI_TARGET_ENEMY = 0,
-	AI_TARGET_OWNER,
-	AI_TARGET_PET,
-	AI_TARGET_ITEM,
-};
+typedef std::map<SLONG, CUIButtonEx*> UIButton_map;
+
+typedef std::map<SLONG, sPetItem_Info> WildPetInfo_map;
 
 class CUIWildPetInfo : public CUIWindow
 {
 protected:
-	typedef std::map<SLONG, CUIIcon*> map_Icon;
-	typedef std::map<SLONG, sPetItem_Info> WildPetInfo_map;
 
+	CWildPetInfo *pMyWildPetInfo;
 	CTextureData	*m_ptdButtonTexture;
 	CUIRectSurface	m_rtsBace;
 	CUIRectSurface	m_rtsAIBace;
@@ -62,8 +64,8 @@ protected:
 	UIRectUV		m_rtSkillBace;
 	UIRectUV		m_rtStmImage;
 	UIRectUV		m_rtFaithImage;
-	CUIIcon*		m_pIconWearing[WILDPET_WEAR_TOTAL];
-	CUIIcon*		m_pIconSkill[8];
+	CUIButtonEx		m_abtnWearing[WILDPET_WEAR_TOTAL];
+	CUIButtonEx		m_abtnSkill[8];
 	CUIButton		m_btTabSlot[WILDPET_SLOT_TOTAL];
 	CUIButton		m_btnPoint[POINT_END];
 	CUIButton		m_btnClose;
@@ -74,12 +76,7 @@ protected:
 	UIRectUV		m_rvAIONOFF;
 	CUIButton		m_btnAIMake;		// AI 편집 완료 버튼
 	CUIScrollBar	m_sbSkillList;
-
-	CUIDrawBox		m_rvAccuback;
-	UIRectUV		m_rvAccublank;
-	CUIButton		m_btnAccumulateUse;
-	CWildPetData	*m_Petdata;
-
+	
 	INDEX			m_nTebnum;
 	INDEX			m_nAISlotCount;
 	BOOL			m_bTitle;
@@ -87,13 +84,13 @@ protected:
 	BOOL			m_bAIActive;
 	BOOL			m_bSlideUI;
 
-	map_Icon		m_mapIconSkills;		// Buttons of Skill
+	UIButton_map	m_btnmapSkills;		// Buttons of Skill
 	WildPetInfo_map		m_mapWildPetInfo;
 
 	sWildPet_AI_Slot	m_sAISlot[WILDPET_AI_MAXSLOT];
 	CUICheckButton		m_cbtnAISlotActive[WILDPET_AI_MAXSLOT];
-	CUIIcon*			m_pIconAITarget[WILDPET_AI_MAXSLOT];
-	CUIIcon*			m_pIconAIAction[WILDPET_AI_MAXSLOT];
+	CUIButtonEx			m_abtAITarget[WILDPET_AI_MAXSLOT];
+	CUIButtonEx			m_abtAIAction[WILDPET_AI_MAXSLOT];
 	UIRect				m_rtAITarget[WILDPET_AI_MAXSLOT];
 	UIRect				m_rtAIAction[WILDPET_AI_MAXSLOT];
 
@@ -108,13 +105,13 @@ public:
 	void	Render();
 	void	InfoRender();
 	void	SkillRender();
-	ENGINE_API BOOL	IsLearnSkill( int nSkillIndex );
+	BOOL	IsLearnSkill( int nSkillIndex );
 	void	SkillClear();
 	void	AddSkill( int nSkillIndex, SBYTE sbSkillLevel );
+	void	UpdateSkill(int nSkillIndex, SBYTE sbLevel );
 	void	sendSkillList();
+	ENGINE_API	INDEX	GetSkillLevel( int nSkillIndex );
 	void	UseSkill( int nIndex );
-	// author by rumist : since : 2010-12-20 21:03
-	ENGINE_API	BOOL	IsUsableSkill( LONG nSkillIndex );
 
 	void	PetWearItemReSet();
 	void	ReceiveWearItemData(CNetworkMessage *istr);
@@ -124,7 +121,6 @@ public:
 	void	sendWildPetPointUP(UBYTE ubPoint);
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	ToggleVisible();
 	void	AddWildPetInfo( sPetItem_Info sPetInfo );
@@ -137,8 +133,6 @@ public:
 	inline BOOL GetAIActive() {return m_bAIActive; }
 	inline int GetPetAISlotCount() {return m_nAISlotCount;}
 	sWildPet_AI_Slot* GetPetAI() {return m_sAISlot;}
-	
-	void	RemoveSlot(CUIIcon* pIcon);
 
 	void	AddAIData(int nSlotnum, sWildPet_AI_Slot sAISlotdata);
 	void	ErrorMassage(UBYTE errorcode);
@@ -147,25 +141,10 @@ public:
 	void	PetAIReSet();
 	void	AIPopupClose() {m_bSlideUI = FALSE;}
 	void	AIClear();
+	void	StartSkillDelay(int nSkillindex);
+	ENGINE_API BOOL	GetSkillDelay(int nslot);
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
-
-	// esc closing support [5/30/2011 rumist]
-	BOOL	CloseWindowByEsc()				{ ToggleVisible();	return TRUE;		}
-	void	AccumulateInfoRender();
-	BOOL	IsWildPetCoolTime();
-	int	GetWildPetFlag() {return m_Petdata->nFlag;}
-
-	void	OnUpdate( float fDeltaTime, ULONG ElapsedTime );
-
-private:
-	void	deleteSkill();
-
-	BOOL	CheckAIItem(CItemData* pAIItem, int nSlot);
-	BOOL	CheckAIAction(CUIIcon* pIcon, int nSlot);
-
-	BOOL	CheckAIType(int nAIType, int nActionType);
-	int		GetActionAIType(CUIIcon* pIcon);
 };
 
 #endif

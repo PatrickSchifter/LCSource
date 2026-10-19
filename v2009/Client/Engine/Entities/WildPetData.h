@@ -10,11 +10,7 @@
 
 #include <Engine/Entities/Entity.h>
 #include <vector>
-#include <Engine/Help/LoadLod.h>
-#include <Common/header/def_apet.h>
 
-#define WILDPET_FLAG_ATTACK (1 << 0)	// 공격 가능한 펫 유무
-#define WILDPET_FLAG_EXP	(1 << 1)	// 경험치 축척 펫 유무
 
 enum eWildPetAni
 {
@@ -27,15 +23,30 @@ enum eWildPetAni
 	WILD_PET_ANIM_DIE,
 	WILD_PET_ANIM_WALK,
 	WILD_PET_ANIM_RUN,
-	WILD_PET_ANIM_HUNGRY,
+	WILD_PET_ANIM_HUNGRY, //WILD_PET_ANIM_LEVELUP ==> WILD_PET_ANIM_HUNGRY 레벨업에서 배고픔으로
 	WILD_PET_ANIM_END = WILD_PET_ANIM_HUNGRY,
 	WILD_PET_ANIM_TOTAL,
 };
 
-class ENGINE_API CWildPetData : public stApet, public LodLoader<CWildPetData>
+class ENGINE_API CWildPetData
 {
+private:
+	typedef struct _tagWildPetData 
+	{
+		int	nIndex;
+		char strName[256];
+		INDEX	nType;
+		char strFileName[256];
+		char PetAni[WILD_PET_ANIM_TOTAL][50];
+
+	}TWildPetData;
+
 public:
-	static bool	loadEx(const char* FileName);
+	CWildPetData(void);
+	~CWildPetData(void);
+	TWildPetData m_WildPetData;
+
+	static int	LoadWildPetDataFromFile(CStaticArray<CWildPetData> &apWildPetData, const char* FileName);
 };
 
 #endif

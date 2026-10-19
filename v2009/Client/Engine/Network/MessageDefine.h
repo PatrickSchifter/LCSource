@@ -31,7 +31,7 @@ typedef enum NetworkMessageType {
 
 
 	// 캐릭터 정보
-	MSG_STATUS,					// 캐릭터 정보		: level(n) exp(ll) need_exp(ll) hp(n) addhp(n) maxhp(n) // 변경사항 mp(n) addmp(n) maxmp(n) // 변경사항 str(n) dex(n) int(n) con(n) opstr(n) opdex(n) opint(n) opcon(n) attack(n) addattack(n) // 변경사항 magic(n) addmagic(n) // 변경사항 defense(n) adddefense(n) // 변경사항 resist(n) addresist(n) // 변경사항 skillpoint(n) weight(n) maxweight(n) walkspeed(f) runspeed(f) attackspeed(c) magicspeed(c) pktitle(c) pkpenalty(n) pkcount(n) fame(n) attackrange(f) join_flag_merac(c) skillspeed(n) attrmap(uc) mountPet(c) evocationType(c) evocationRemain(n) presscorps(c)(기자단여부)
+	MSG_STATUS,					// 캐릭터 정보		: level(n) exp(ll) need_exp(ll) hp(n) maxhp(n) mp(n) maxmp(n) str(n) dex(n) int(n) con(n) opstr(n) opdex(n) opint(n) opcon(n) attack(n) magic(n) defense(n) resist(n) skillpoint(n) weight(n) maxweight(n) walkspeed(f) runspeed(f) attackspeed(c) magicspeed(c) pktitle(c) pkpenalty(n) pkcount(n) fame(n) attackrange(f) join_flag_merac(c) skillspeed(n) attrmap(uc) mountPet(c) evocationType(c) evocationRemain(n)
 
 	MSG_APPEAR,					// 나타남			: PC : isNew(uc) type(c) index(n) name(str) job(c) job2(c) hairstyle(c) facestyle(c) x(f) z(f) h(f) r(f) yLayer(n) hp(n) maxHP(n) state(c) pkstate(c) pktitle(c) pluseffect(c) [wear_item_index(n) wear_item_plus(n)]:6 assist_state(n) assist_count(c) [itemidx(n) index(n) level(c) remain(n)]:count shoptype(c) shopname(str) guildindex(n) guildname(str) guildposition(n) mobindex(n) map_attr(uc) join_flag_merac(c) mountPet(c) evocationType(c) issupporter(c)
 								//					: NPC: isNew(uc) type(c) index(n) vnum(n) x(f) z(f) h(f) r(f) yLayer(n) hp(n) maxHP(n) assist_state(n) assist_count(c) [itemidx(n) index(n) level(c) remain(n)]:count map_attr(uc)
@@ -41,7 +41,7 @@ typedef enum NetworkMessageType {
 	MSG_AT,						// 위치 정보		: index(n) name(str) job(c) job2(c) hair(c) face(c) zoneNo(n) areaNo(n) x(f) z(f) h(f) r(f) yLayer(n) userindex(n) guildoutdate(n) pluseffect(c) map_attr(uc)
 
 	// 10
-	MSG_INVENTORY,				// 인벤토리 정보	: resultArrange(c) tab_idx(c) row_idx(c) [item_idx(n) item_type(n) wear_pos(c) plus(n) flag(n) used(n) used_2(n) count(ll) option_count(c) {(option_type(c) option_level(c)} * option_count] * 5 socketcreatecount(c) socketcount(c) [optionindex(n) optionlevel(c)]
+	MSG_INVENTORY,				// 인벤토리 정보	: resultArrange(c) tab_idx(c) row_idx(c) [item_idx(n) item_type(n) wear_pos(c) plus(n) flag(n) used(n) used_2(n) count(ll) option_count(c) {(option_type(c) option_level(c)} * option_count] * 5
 								// 빈칸은 item_idx가 -1이고 이후는 무시, resultArrange 비트 필드(0비트-시작, 1비트-끝)
 								// used_2(n) 은 COMPOSITE_TIME 사용시만
 	MSG_WEARING,				// 착용 정보 변경	: char_index(n) wear_pos(c) item_db_index(n) item_plus(n)
@@ -175,51 +175,17 @@ typedef enum NetworkMessageType {
 
 	//wooss050817
 	// 이후 메시지는 다음 메시지의 서브 타입으로
-	MSG_EXTEND,					// 메시지 확장(55)		: exmsg(n) ...
+	MSG_EXTEND,					// 메시지 확장		: exmsg(n) ...
 								// do_Extend에서 Movefirst와 exmsg를 읽으므로 서브타입 처리 루틴에서는 MoveFirst를 하면 안됨
 
-	MSG_RECOVER_EXP_SP,			// [2012/08/10 : Sora] 부활 주문서 사용시 복구한 경험치, 숙련도 값 전송(56)
-
-	//2013/04/03 jeil 나스 아이템 삭제 
-	MSG_MONEY,					//나스 아이템 삭제 : subtype(uc) ...
-
-#ifdef HP_PERCENTAGE
-	MSG_DAMAGE_REAL = 58,
-	XXXMSG_MEMPOSPLUS = MSG_DAMAGE_REAL,
-#else	//	HP_PERCENTAGE
-	XXXMSG_MEMPOSPLUS,	// 55 프리미엄 메모리 북 : sub_type(uc) ...
-	// 서브 타입은 기존의 메모리북과 같이 사용
-#endif	//	HP_PERCENTAGE 
 // [KH_070316] 추가
+	MSG_MEMPOSPLUS,				// 55 프리미엄 메모리 북 : sub_type(uc) ...
+								// 서브 타입은 기존의 메모리북과 같이 사용
+
 	// (대만)빌링 
 	MSG_BILLINFO = 60,			// 빌링 관련		: SUBTYPE(UC) ...
 
-	MSG_TRADEAGENT,				// 거래 대행
-	
-	MSG_EXPEDITION,				// [sora] 원정대(추가) 
-
-	MSG_FACTORY,    // 제작 시스템
-
-	MSG_RAID, // [sora] 인존 관련
-	MSG_PET_STASH,				// 65
-	MSG_RVR,
-#ifdef DURABILITY
-	MSG_DURABILITY,
-#endif	//	DURABILITY
-	MSG_GPS,
-	MSG_ITEMCOLLECTION,
-#ifdef PREMIUM_CHAR
-	MSG_PREMIUM_CHAR = 95,
-#endif
-	MSG_UPDATE_DATA_FOR_CLIENT = 96,
-
-	MSG_RESERVED_GM_COMMAND = 97,	// Calendar 이벤트 정보 패킷.
-	MSG_TIMER_ITEM = 98,
-
-	MSG_EXPRESS_SYSTEM = 99,	// 창고NPC (Express system)의 패킷을 처리하는 부분
-	//MSG_NPC_PORTAL_SCROLL,		// connie [2009/9/8] - NPC 찾기
-
-	MSG_MAX,
+	MSG_TRADEAGENT,
 
 // 이후 메세지는 클라이언트만 사용 메세지
 /* //0522 kwon  삭제.
@@ -280,8 +246,6 @@ typedef enum NetworkMessageType {
 
   MSG_GAMESTREAMBLOCKS,         // packet with one or more game stream messages
   MSG_REQUESTGAMESTREAMRESEND,  // request for resend of a game stream message
-
-  
 /* //0522 kwon 삭제.
   // chat messages
   MSG_CHAT_IN,    // chat request from client to server
@@ -325,245 +289,7 @@ typedef enum NetworkMessageType {
   MSG_MOB_DIE,//62
   MSG_SERVER_TEST,//63
 */
-	MSG_END,
 } MESSAGETYPE;
-
-// 레이드 관련
-typedef enum __tagMsgRaidType
-{
-	MSG_RAID_ERROR,							// 에러
-
-	MSG_RAID_INZONE_JOIN,					// 인존 들어감 
-	MSG_RAID_INZONE_QUIT,					// 인존 나감
-}MSG_RAID_TYPE;
-
-typedef enum __tagMsgRaidInzoneMisCompleteType
-{
-	MSG_RAID_INZONE_MISCLEAR_INCOMPLETE,	// 인존 미션 클리어 미완료
-	MSG_RAID_INZONE_MISCLEAR_COMPLETE,		// 인존 미션 클리어 완료
-}MSG_RAID_INZONE_MISCOMPLETE_TYPE;
-
-
-//레이드 에러
-typedef enum __tagMsgRaidErrorType
-{
-	MSG_RAID_ERROR_SUCESS=0,       // 성공
-	MSG_RAID_ERROR_INZONE_JOIN_CLEAR_COMPLETE,   // 인존 입장 불가(인존 클리어 완료) - %일 %시 뒤에 입장가능
-	MSG_RAID_ERROR_INZONE_JOIN_ROOMCOUNT_FULL,   // 현재 인스턴스 너무 많아 더이상 생성 불가
-	MSG_RAID_ERROR_INZONE_JOIN_ALREADY,     // 인존 이미 로그인 
-	MSG_RAID_ERROR_INZONE_JOIN_MEMBER_FULL,    // 인존 입장 가능한 최대 인원수 초과
-	MSG_RAID_ERROR_INZONE_JOIN_ALREADY_OTHERTEAM,  // 해당 존에 다른 파티,원정대가 있습니다.
-	MSG_RAID_ERROR_INZONE_JOIN_THISZONE_PARTYZONE,  // 파티 상태에서만 입장 가능 합니다
-	MSG_RAID_ERROR_INZONE_JOIN_THISZONE_EXPEDZONE,  // 원정대 상태에서만 입장 가능 합니다  
-	MSG_RAID_ERROR_INZONE_JOIN_NOTJOIN_PARTYOREXPED, // 파티나 원정대에 가입 되어  있지 않음
-	MSG_RAID_ERROR_INZONE_QUIT_NOTINZONEJOINED,   // 해당 인존에 입장 하지 않았음 
-	MSG_RAID_ERROR_INZONE_NOT_5MIN_GETBOX,    // 더 이상 상자 주울 수 없음(획득 시간 5분) 
-	MSG_RAID_ERROR_INZONE_ALREADY_GETBOX,    // 이전에 받은 상자 오픈 하고 다시 시도
-	MSG_RAID_ERROR_INZONE_JOIN_INVALIDELEVEL,			// 레벨 제한으로 입장할수 없음
-	MSG_RAID_ERROR_INZONE_JOIN_NOTSAMEBOSSROOMNO,		// 귀속된 인존 정보가 원정대장 달라 접속 불가 (추가 에러 메세지)
-	MSG_RAID_ERROR_INZONE_NOT_EXPED_RAID_SUBNUMBER,		// 지정된 원정대 레이드 채널이 아니라서 입장 불가
-	MSG_RAID_ERROR_INZONE_NOT_JOIN_BOSS,				// 원정대장이 아직 레이드에 입장하지 않았다.
-	MSG_RAID_ERROR_INZONE_INVALID_DIFFICULTY,			// 현재 원정대 난이도와 입장하려는 난이도가 틀림.
-	MSG_RAID_ERROR_INZONE_INIT_TIME,       // (17) 레이드 던전 초기화 중입니다.\n 잠시후 다시 시도하여 주십시오.(입장 시도시 메시지 박스)
-	MSG_RAID_ERROR_INZONE_NOT_QUEST,		// 18 레이드 던전 입장조건 부족 : 퀘스트 미수행
-	MSG_RAID_ERROR_INZONE_NOT_FOUND_ZONE_INFO,			// 인스턴스 존 정보를 찾을 수 없음
-
-}MSG_RAID_ERROR_TYPE;
-
-//////////////////////////////////////////////////////////////////////////
-//  [sora] 원정대 관련
-//////////////////////////////////////////////////////////////////////////
-typedef enum _tagMsgExpedType			//원정대 관련 메세지 
-{
-	MSG_EXPED_ERROR,						// 에러
-	
-	MSG_CREATE_REQ,							// 원정대 생성(파티전환) 요청			
-	MSG_CREATE_REP,							// 원정대 생성(파티전환) 응답	
-
-	MSG_INVITE_REQ,							// 초대 요청
-	MSG_INVITE_REP,							// 초대 응답
-
-	MSG_EXPED_ADD,							// 캐릭 추가 
-	MSG_EXPED_MEMBER_INFO,					// 대원 정보
-
-	MSG_ALLOW_REQ,							// 초대 수락
-	MSG_ALLOW_REP,							// 초대 응답
-
-	MSG_REJECT_REQ,							// 초대 거부 요청
-	MSG_REJECT_DEST,						// 거무	
-	MSG_REJECT_SRC,
-
-	MSG_QUIT_REQ,							// 탈퇴 요청
-	MSG_QUIT_REP,							// 탈퇴 응답
-
-	MSG_ENDEXPED_REQ,						// 원정대 해체
-	MSG_ENDEXPED_START,      // 원정대 헤체 시작 알림(20초 후에) (추가)
-	MSG_ENDEXPED_REP,						// 원정대 해체	
-
-	MSG_KICK_REQ,							// 추방 요청
-	MSG_KICK_REP,							// 추방 응답
-
-	MSG_CHANGETYPE_REQ,						// 원정대 타입 변경(경험치, 나스, 일반 아이템, 스페셜 아이템 분배 방법)
-	MSG_CHANGETYPE_REP,		
-
-	MSG_MEMBERINFO_REQ,						// 원정대 멤버(U.I)
-	MSG_MEMBERINFO_REP,		
-
-	MSG_ADMIN_REQ,							// 원정대 관리(U.I)
-	MSG_ADMIN_REP,
-
-	MSG_CHANGEBOSS_REQ,						// 원정 대장 위임(변경)
-	MSG_CHANGEBOSS_REP,						// 원정 대장 위임
-
-	MSG_SETMBOSS_REQ,						// 부대장 임명
-	MSG_SETMBOSS_REP,
-
-	MSG_RESETMBOSS_REQ,						// 부대장 임명 해제
-	MSG_RESETMBOSS_REP,	
-
-	MSG_MOVEGROUP_REQ,						// 그룹 이동 
-	MSG_MOVEGROUP_REP,						
-
-	MSG_ADDMEMBER_REQ,						// 대원 추가
-	MSG_ADDMEMBER_REP,
-
-	MSG_VIEWDETAIL_REQ,						// 살펴보기
-	MSG_VIEWDETAIL_INVEN,					// 인벤정보
-	MSG_VIEWDETAIL_PET,						// 펫정보
-	MSG_VIEWDETAIL_APET,					// 공격펫
-
-	MSG_SET_LABEL_REQ,						// 표식 지정
-	MSG_SET_LABEL_REP,
-
-	MSG_EXPED_TYPEINFO,						// 원정대 타입 정보
-
-	MSG_QUESTITEM_CHECK_REQ,				//추가(클라이언트에서 서버로 퀘스트아이템 검색 요청
-	MSG_GET_QUESTITEM_SUCCESS_REP,			//원정대장이 퀘스트아이템을 검색하여 성공적으로 얻음
-	MSG_GET_QUESTITEM_FAILED_REP,			//원정대장이 퀘스트아이템을 검색하지 못함.
-
-	MSG_EXPED_ADD_SYSMSG,					// [110609 selo] 원정대원 추가 SysMSG
-
-	MSG_EXPEND_OFFLINE,						// 원정대 오프라인 //서버에서만 씀
-} MSG_EXPEDITION_TYPE;
-
-typedef enum __tagMsgExpedSetLabelIndex	// [sora] 표식 
-{
-	MSG_EXPED_SETLABEL_INDEX_1,			// 도끼
-	MSG_EXPED_SETLABEL_INDEX_2,			// 유령 
-	MSG_EXPED_SETLABEL_INDEX_3,			// 발바닥 
-	MSG_EXPED_SETLABEL_INDEX_4,			// 조각칼
-	MSG_EXPED_SETLABEL_INDEX_5,			// 똥 
-	MSG_EXPED_SETLABEL_INDEX_6,			// 악마 
-	MSG_EXPED_SETLABEL_INDEX_7,			// 해골	
-}MSG_EXPEDITION_SETLABEL_INDEX;
-
-typedef enum __tagMsgExpedSetLabelType	// [sora] 대상 타입
-{
-	MSG_EXPED_SETLABEL_TYPE_PC,			
-	MSG_EXPED_SETLABEL_TYPE_NPC,		
-}MSG_EXPEDITION_SETLABEL_TYPE;
-
-typedef enum __tagMsgExpedSetLabelMode	 // [sora] 지정 타입
-{
-	MSG_EXPED_SETLABEL_MODE_SET,			
-	MSG_EXPED_SETLABEL_MODE_RESET,		
-}MSG_EXPEDITION_SETLABEL_MODE;
-
-
-// [sora] 원정대 에러(전환 관련 에러 메세지 추가)
-typedef enum __tagMsgExpedErrorType
-{
-	MSG_EXPED_ERROR_NORMAL,     // 일반
-
-	MSG_EXPED_ERROR_ALREADY_REQUEST,  // 다른 사람에게 이미 요청 중
-
-	MSG_EXPED_ERROR_ALLOW_OK,    // 초대 수락 성공(서버간 에러 메세지)  
-	MSG_EXPED_ERROR_ALLOW_NOT_EXPED,      // 실패(서버간 에러 메세지)  
-
-	MSG_EXPED_ERROR_REJECT_OK,    // 거절 성공(서버간 에러)  
-	MSG_EXPED_ERROR_REJECT_FAIL,   // 거절 실패(서버간 에러)
-
-	MSG_EXPED_ERROR_QUIT_OK,    // 탈퇴 성공(서버간 에러 메세지)  
-	MSG_EXPED_ERROR_QUIT_END,    // 탈퇴 성공, 원정대 해체(서버간 에러 메세지)  
-
-	MSG_EXPED_ERROR_KICK_OK,    // 강퇴 성공(서버간 에러 메세지)  
-	MSG_EXPED_ERROR_KICK_END,    // 강퇴 성공, 원정대 (서버간 에러 메세지)  
-
-	MSG_EXPED_ERROR_INVITE_PVP,    // 요청자나 대상자가 PVP 중
-	MSG_EXPED_ERROR_NOT_PARTY,    // 파티에 소속되지 않음(파티 전환 불가)
-	MSG_EXPED_ERROR_NOT_EXPED,    // 원정대 소속되지 않음
-	MSG_EXPED_ERROR_NOT_PARTYBOSS,   // 파티장이 아니다. (파티전환 불가) 
-	MSG_EXPED_ERROR_NOT_EXPEDBOSS,   // 원정대장이 아니다.
-	MSG_EXPED_ERROR_ALREADY_JOIN_ME,  // 이미 원정대에 소속되어 있음
-	MSG_EXPED_ERROR_ALREADY_JOIN_OTHER,  // 다른 원정대에 소속되어 있음
-	MSG_EXPED_ERROR_NOT_BE_CHAR,   // 없는 캐릭터 
-	MSG_EXPED_ERROR_FULL_EXPED,    // 더 이상 원정대원 추가할 수 없음) 
-	MSG_EXPED_ERROR_INVALID_LEVEL,   // 레벨이 맞지 않음
-	MSG_EXPED_ERROR_CREATE_INVALIDZONE,  // 원정대 전환 가능 지역이 아닙니다.
-	MSG_EXPED_ERROR_SETLABEL_NOTINZONE,  // 인존 내부가 아니어서 표식 설정 불가.
-	MSG_EXPED_ERROR_EXIST_LOGOUT_MEMBER, // 오프라인 멤버가 있음
-}MSG_EXPEDITION_ERROR_TYPE;
-
-// [sora] 원정대 그룹 타입 
-typedef enum _tagMsgExpedGroupType
-{
-	MSG_EXPED_GROUP_1,						// 그룹 1
-	MSG_EXPED_GROUP_2,						// 그룹 2	
-	MSG_EXPED_GROUP_3,						// 그룹 3
-	MSG_EXPED_GROUP_4,						// 그룹 4
-
-	MSG_EXPED_GROUP_COUNT,
-
-} MSG_EXPED_GROUP_TYPE;
-
-// [sora] 원정대 구성원 타입
-typedef enum _tagMsgExpedMemberType
-{
-	MSG_EXPED_MEMBERTYPE_BOSS,				// 원정 대장 
-	MSG_EXPED_MEMBERTYPE_MBOSS,				// 원정 부대장
-	MSG_EXPED_MEMBERTYPE_NORMAL,			// 원정 대원
-	
-	MSG_EXPED_MEMBERTYPE_COUNT,
-}MSG_EXPED_MEMBER_TYPE;
-
-// [sora] 원정대 정상,비정상 탈퇴 타입
-typedef enum _tagMsgExpedQuitMode
-{
-	MSG_EXPED_QUITMODE_NORMAL,				// 정상 나감 
-	MSG_EXPED_QUITMODE_UNUSUAL,				// 비정상 나감
-}MSG_EXPED_QUIT_MODE;
-
-// [sora] 보스 위임(수동,자동) 모드
-typedef enum _tagMsgExpedChangeBossMode
-{
-	MSG_EXPED_CHANGEBOSS_MANUAL,			// 수동 위임
-	MSG_EXPED_CHANGEBOSS_AUTO,				// 자동 위임
-}MSG_EXPED_CHANGEBOSS_MODE;
-
-// [sora] 분배방법
-typedef enum _tagMsgDiviType
-{
-    MSG_DIVITYPE_EXP=0,      // 분배 방법(경험치)
-    MSG_DIVITYPE_ITEM,        // 분배 방법(아이템)
-	MSG_DIVITYPE_SPECIAL,        // 분배 방법(스페셜 아이템)
-}MSG_DIVI_TYPE;
-
-typedef enum _tagMsgExpedDiviStyle // [sora]분배 방식 (파티 원정대 공동 사용)
-{
-  MSG_EXPED_TYPE_RANDOM=0,   // 균등 파티
-  MSG_EXPED_TYPE_FIRSTGET,  // 입수 우선
-  MSG_EXPED_TYPE_BATTLE,   // 전투형
-  MSG_EXPED_TYPE_OPENBOX,   // 상자열기
-}MSG_EXPED_DIVISTYLE;
-
-// [sora] 파티 타입 설정 방식
-typedef enum _tagMsgPartySetAllOneType
-{
-  MSG_PARTY_SETALLONE_ALL=1,   // 파티 타입 설정 ALL(전체 파티 방식)  
-  MSG_PARTY_SETALLONE_ONE,   // 파티 타입 설정 ONE
-}MSG_PARTY_SETALLONE_TYPE;
-
-//////////////////////////////////////////////////////////////////////////
 
 typedef enum __tagMsgTradeAgentAlignType	// 리스트 정렬 타입
 {	
@@ -580,6 +306,30 @@ typedef enum __tagMsgTradeAgentAlignType	// 리스트 정렬 타입
 	MSG_TRADEAGENT_ALIGN_LEVEL_DESC,		// 레벨 (내림 차순)
 }MSG_TRADEAGENT_ALIGN_TYPE;
 
+typedef enum __tagMsgTradeAgentType
+{
+	MSG_TRADEAGENT_ERROR,						// 에러
+
+	MSG_TRADEAGENT_REG_LIST_REQ,				// 상품 등록 리스트 요청 
+	MSG_TRADEAGENT_REG_LIST_REP,				// 상품 등록 리스트 응답	
+	MSG_TRADEAGENT_REG_REQ,						// 상품 등록 요청: tab_idx(c) row_idx(c) col_idx(c) item_idx(n) extra1(n)
+	MSG_TRADEAGENT_REG_REP,						// 상품 등록 응답	
+	MSG_TRADEAGENT_REG_CANCEL_REQ,				// 상품 등록 취소 요청
+	MSG_TRADEAGENT_REG_CANCEL_REP,				// 상품 등록 응답	
+	MSG_TRADEAGENT_SEARCH_REQ,					// 상품 조회 요청 
+	MSG_TRADEAGENT_SEARCH_REP,					// 상품 조회 응답 
+	MSG_TRADEAGENT_BUY_REQ,						// 상품 구매 요청 
+	MSG_TRADEAGENT_BUY_REP,						// 상품 구매 응답 
+	MSG_TRADEAGENT_CALCLIST_REQ,				// 정산 리스트 요청 
+	MSG_TRADEAGENT_CALCLIST_REP,				// 정산 리스트 응답
+	MSG_TRADEAGENT_CALCULATE_REQ,				// 정산 요청 
+	MSG_TRADEAGENT_CALCULATE_REP,				// 정산 응답
+	MSG_TRADEAGENT_CHECKCALC_REQ,				// 정산 필요 체크(로그인)
+	MSG_TRADEAGENT_CHECKCALC_REP,				// 정산 필요 체크 응답	
+	MSG_TRADEAGENT_NEEDCALC_NOTIFY,				// 정산 필요 알림(게임중)	
+
+}MSG_TRADEAGENT_TYPE;
+
 typedef enum __tagMsgTradeAgentErrorType
 {
 	MSG_TRADEAGENT_ERROR_NORMAL,    // 일반적 에러
@@ -592,9 +342,8 @@ typedef enum __tagMsgTradeAgentErrorType
 	MSG_TRADEAGENT_ERROR_ALREADY_SELLITEM,  // 이미 파매된 아이템
 	MSG_TRADEAGENT_ERROR_FULL_INVENTORY,  // 인벤토리가 가득 참(정산 불가)
 	MSG_TRADEAGENT_ERROR_NOT_BE_ITEM,   // 아이템이 없음
-	MSG_TRADEAGENT_ERROR_MAXREGCOUNT_FULL,  // 최대 등록 수 초과
-	MSG_TRADEAGENT_ERROR_CHAR_MAXREGCOUNT_FULL , // 캐릭터당 최대 등록 수 초과
-	MSG_TRADEAGENT_ERROR_CALCULATE_ING_NOCALC,	// 현재 정산 처리중이라 청산 할수 없음(현재 정산 처리중)
+	MSG_TRADEAGENT_ERROR_MAXREGCOUNT_FULL,  // 최대 등록 수 초과(전체 등록수 초과)
+	MSG_TRADEAGENT_ERROR_CHAR_MAXREGCOUNT_FULL, // 캐릭터 최대 등록 수 초과(캐릭터당 등록수 초과)
 }MSG_TRADEAGENT_ERROR_TYPE;
 
 typedef enum __tagMsgTradeAgentErrorPart
@@ -644,7 +393,7 @@ typedef enum __tagMsgExtendType
 	MSG_EX_NAMECHANGE,			// 이름 변경c->s	: item_idx(n) name(str)
 								//			s->c	: errorcode(c) name(str) bguild(c)
 	MSG_EX_CASHITEM,			// 아이템 구매		: subtype(uc) ...
-	MSG_EX_PET_COMMAND,			// 펫 사교동작		: pet_index(n) command_skill_index(n) targettype(c) targetindex(n)
+	MSG_EX_PET_COMMAND,			// 10 펫 사교동작		: pet_index(n) command_skill_index(n) targettype(c) targetindex(n)
 	MSG_EX_PET_MIX_ITEM,		// 펫 이아템 조합	: 
 								// Client->Server	: itemdbindex(n), method(n)
 								// Server->Client	: errcode(n)
@@ -681,8 +430,7 @@ typedef enum __tagMsgExtendType
 	
 	MSG_EX_HAIR_CHANGE,			// 헤어 변경 메시지 : charindex(n) hairstyle(c)
 
-	MSG_EX_PLAYER_STATE_CHANGE, // 플레이어 상태 변경 : charindex(n) state(n)
-
+	MSG_EX_PLAYER_STATE_CHANGE,	// 30 플레이어 상태 변경 : charindex(n) state(n)
 	MSG_EX_PLAYER_REALIP,			// User real IP 전송 : user_ip(s)
 
 	MSG_EX_MEMPOSPLUS,			// 프리미엄 메모리 북 : sub_type(uc) ...									
@@ -690,7 +438,7 @@ typedef enum __tagMsgExtendType
 	MSG_EX_NPROTECT,			// NPROTECT 관련 메시지 : gg_auth_index(n) gg_auth_val1(n) gg_auth_val2(n) gg_auth_val3(n)
 
 	MSG_EX_PET_CHANGE_NAME,		// 펫 이름 변경 : pet_index(n), name(str)
-	MSG_EX_PET_CHANGE_COLOR,		// 펫 색깔  변경 : pet_index(n), color( c );
+	MSG_EX_PET_CHANGE_COLOR,	// 펫 색깔  변경 : pet_index(n), color( c );
 
 	MSG_EX_GO_ZONE,				// 존 이동방식 추가 기능 : subtype(c) ...
 	
@@ -702,7 +450,7 @@ typedef enum __tagMsgExtendType
 
 	MSG_EX_ALTERNATE_MERCHANT,	// 대리 상인 : subtype( uc ) ....
 
-	MSG_EX_PET_TURNTO_NPC,		// (int)(nPetIndex, nToNPC, nOwnerCharIndex )
+	MSG_EX_PET_TURNTO_NPC,		// (int)(nPetIndex, nToNPC, nOwnerCharIndex ) 
 	
 	MSG_EX_MONSTERCOMBO,		// 몬스터 콤보
 	
@@ -719,252 +467,7 @@ typedef enum __tagMsgExtendType
 	MSG_EX_INIT_SSKILL,  // 특수스킬초기화
 
 	MSG_EX_DISCONNECT_HACK_CHARACTER,	// 핵 유저 방출 : 
-	
-	MSG_EX_TRIGGER_EVENT,		// 트리거 이벤트 시스템
-
-	MSG_EX_AFFINITY,			// 평판
-
-	MSG_EX_TUTORIAL,			// 튜토리얼 시스템
-	
-	MSG_EX_LOADING_END,			// 로딩시 서버로부터 받는 메시지의 끝을 전달하는 부분.	
-
-	MSG_EX_RAID_INFO,			// 귀속된 존 정보 표시
-
-	MSG_EX_NPC_PORTAL_SCROLL,		// connie [2009/9/8] - NPC 찾기 
-	
-	MSG_EX_LUCKYDRAW_BOX,
-
-	MSG_EX_TITLE_SYSTEM,			// 호칭
-
-	MSG_EX_TAKE_AGAIN_QUEST_ITEM,	// [100208: selo] 퀘스트 아이템 다시 받기
-	
-	MSG_EX_LACARETTE,				// [100324 : sora] 라카렛 시스템
-
-	MSG_EX_COSTUME2,				// [100421 : kiny8216]코스튬2 시스템
-	
-	MSG_EX_DUNGEONTIME,				// 던전 타임
-
-	MSG_EX_SOCKET,					// socket system. [4/8/2010 rumist]
-	
-	MSG_EX_ATTENDANCE_EXP_SYSTEM,	// 출석 시스템 : 누적출석일수별경험치REQ : (c)subtype 0:확인, 1:누적보상받기/ REP (c) subtype 0:게임접속1:확인2:출석완료3:누적d별보상(n)accCount 누적일, (c)upExp 추가경험치
-
-	MSG_EX_XTRAP,
-	
-	MSG_EX_TUTORIAL_RENEWER_2010,	// 튜토리얼 개선
-	
-	MSG_EX_RAID_SCENE,				// 아칸사원 레이드
-
-	MSG_EX_SUBJOB,					// [2010/08/25 : Sora] ADD_SUBJOB 보조직업(상인캐릭)
-	
-	MSG_EX_CASTLLAN,				// 성주 코스튬 관련
-	
-	MSG_EX_MONSTER_MERCENARY,		// 몬스터 용병 관련 패킷
-	
-	MSG_EX_FACEOFF,						// 헤어 및 얼굴 교체
-	
-	MSG_EX_RANKING_SYSTEM,			// [selo: 101104] 랭킹 시스템	
-
-	MSG_EX_MSGBOX,					// [selo: 110104] 메시지 박스
-
-	MSG_EX_LCBALL,					// lacaball system [1/11/2011 rumist]
-
-	MSG_EX_ROYAL_RUMBLE,			// royal rumble [4/19/2011 rumist]
-
-	MSG_EX_CASH_AUTHENTICATION_CODE, // 가미고요청 결제 패이지 오픈을 위한 AUTHENTICATION_CODE 생성
-
-	MSG_EX_TREASURE_MAP_SYSTEM_KEY_EXCHANGE, // 가미고 요청 : 100개의 나무열쇠키로 황금열쇠키 1개료 교환.
-
-	MSG_EX_RANKING_SYSTEM_EX,		// 랭킹 시스템 개편 : [trylord 110817]
-
-	MSG_EX_PKPENALTY_REFORM,				 // REFORM_PK_PENALTY_201108
-
-	MSG_EX_SHUTDOWN,				// 셧다운 메시지
-
-	MSG_EX_USER_NOTICE,				// 유저 공지
-
-	MSG_EX_CRAFT_SYSTEM,			// 제작2 시스템
-
-	MSG_EX_DECOMPOSE_SYSTEM,		// 분해 시스템
-
-	MSG_EX_PRODUCE_SYSTEM,			// 채집 시스템
-
-	MSG_EX_LOOT_SYSTEM,				// 룻팅 시스템
-
-	MSG_EX_CRAFT_POINT,				// 크래피팅 포인트
-	
-	MSG_EX_PROGRESS_CANCEL,			// 클라이언트 프로그래스 진행 도중 취소.
-
-	MSG_EX_POST_SYSTEM,				// 우편 시스템
-
-	MSG_EX_EVENT_AUTOMATION_SYSTEM,	// 이벤트 자동화
-
-	MSG_EX_JUMPING_SYSTEM,			 // 점핑 시스템
-
-	MSG_EX_REFORMER_SYSTEM,			// REFORM_SYSTEM
-
-	MSG_EX_SERVER_TIME,		//  서버 시간
-
-	MSG_EX_SET_TARGET,				// 타겟 오브젝트를 서버에게 알려준다. ( 현재는 PC만 )
-
-	MSG_EX_NOTICE,				// GM 공지 시스템
-
-	MSG_EX_END,
 } MSG_EXTEND_TYPE;
-
-typedef enum _tagMsgReformSystemType
-{
-	MSG_EX_REFORMER_SYSTEM_REQ,						// 리포머 사용
-	MSG_EX_REFORMER_SYSTEM_NOT_GRADE_REP,			// 적절한 등급의 리포머가 아님
-	MSG_EX_REFORMER_SYSTEM_NOT_GOLD_MAGNIFIER_REP,	// 황금 돋보기가 아님
-	MSG_EX_REFORMER_SYSTEM_NOT_REFORM_ITEM_REP,		// 리폼 가능한 아이템이 아님
-	MSG_EX_REFORMER_SYSTEM_NOT_MID_ITEM_REP,		// 중급 아이템이 아님
-	MSG_EX_REFORMER_SYSTEM_NOT_HIGH_ITEM_REP,		// 고급 아이템이 아님
-	MSG_EX_REFORMER_SYSTEM_EXCEPTION_ERROR_REP,		// 그외 문제 발생
-	MSG_EX_REFORMER_SYSTEM_REFORM_SUCCESS_REP,		// 리폼 성공
-}MSG_EX_REFORMER_SYSTEM_TYPE;
-
-typedef enum _tagMsgExJumpingSystemType
-{
-	MSG_EX_JUMPING_SUCCESS,     // 점핑 성공
-	MSG_EX_JUMPING_ERROR_LEVEL,    // 점핑 에러 : 현재 캐릭터 레벨이 점핑하려는 레벨보다 같거나 높음
-	MSG_EX_JUMPING_ERROR_NOT_EXIST_CHAR, // 점핑 에러 : 계정 내 점핑하려는 레벨보다 같거나 높은 캐릭터가 없음
-}MSG_EX_JUMPING_SYSTEM_TYPE;
-
-typedef enum _tagMsgExPkPenaltyReformType // REFORM_PK_PENALTY_201108
-{
-	MSG_EX_PKPENALTY_REFORM_REWARD_INFO,		// (s->c) 지급할 타이틀 관련 정보를 보낸다. : titleInfo(n)
-	MSG_EX_PKPENALTY_REFORM_REWARD_REQ,			// (c->s) 타이틀 지급 요청. : titleNum(n)	
-	MSG_EX_PKPENALTY_REFORM_REWARD_REP,			// (s->c) 타이틀 지급 답변 : titleNum(n), MSG_EX_PKPENALTY_REFORM_ERROR_TYPE
-
-}MSG_EX_PKPENALTY_REFORM_TYPE;
-
-typedef enum _tagMsgExPkPenaltyReformErrorType // REFORM_PK_PENALTY_201108
-{	
-	MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_SUC,	// 성공.
-	MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_COUNT,	// 타이틀 개수 제한에 걸림 
-	MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_ONCE,	// 이미 지급 받음
-	MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_FAIL,	// 기타 실패
-
-}MSG_EX_PKPENALTY_REFORM_ERROR_TYPE;
-
-
-// [2010/12/10 : Sora] 럭키 드로우 박스 에러메시지 처리
-typedef enum __tagMsgLuckyDrowBoxErrorType
-{
-	MSG_LUCKYDRAWBOX_ERROR_SUCESS=0,
-	MSG_LUCKYDRAWBOX_ERROR_NEED,			// "상자를 열기 위해서는 아이템이 필요합니다 확인 후 다시 시도하여 주십시오."
-	MSG_LUCKYDRAWBOX_ERROR_INVEN,			// "공간이 부족합니다 확인 후 다시 시도하여 주십시오"
-	MSG_LUCKYDRAWBOX_ERROR_USE,				// "이 아이템을 사용할 수 없습니다."
-	MSG_LUCKYDRAWBOX_ERROR_OVER_WEIGHT,		// "무게가 100%가 넘었습니다. 확인 후 다시 시도하여 주십시오."
-}MSG_EX_LUCKYDRAW_BOX_ERROR_TYPE;
-
-typedef enum _tagMsgExMonsterMercenaryType // (unsigned char)
-{	
-	MSG_EX_MERCENARY_SUMMON,			// 소환 성공 메시지 uniqItemIndex(n) toggle(char 1:소한 -1: 소환 해제)
-	MSG_EX_MERCENARY_LIMIT_TIME,		// 남은 시간 정보 time(n)
-	MSG_EX_MERCENARY_ERROR				// (unsigned char)MSG_EX_MONSTER_MERCENARY_ERROR_TYPE
-}MSG_EX_MONSTER_MERCENARY_TYPE;
-
-typedef enum _tagMsgExMonsterMercenaryErrorType // (unsigned char)
-{	
-	MSG_EX_MERCENARY_ERROR_USE_FAIL,		// 사용 실패
-	MSG_EX_MERCENARY_ERROR_SUMMON_ALREADY,	// 이미 다른넘이 소환되어 있어 사용할 수 없음
-	MSG_EX_MERCENARY_ERROR_DONT_SUMMON,		// 소환 불가
-	MSG_EX_MERCENARY_ERROR_MON_AUTO_DEL,	// 몬스터 자동 삭제(거리가 멀어졌거나 시간이 다되어서
-	MSG_EX_MERCENARY_ERROR_AREA,			// 이 지역에서는 용병을 소환 할 수 없습니다. 
-}MSG_EX_MONSTER_MERCENARY_ERROR_TYPE;
-
-typedef enum _tagMsgExRaidInfoType
-{
-	MSG_EX_RAID_SCENE_SEND_OUTPUT,		//(0)
-	MSG_EX_RAID_SCENE_SEND_PADOX_SKILL,	//(1)
-	MSG_EX_RAID_SCENE_SEND_OBJECT_REFRESH,
-	MSG_EX_RAID_SCENE_SEND_OBJECT_ALL_STATE,
-	MSG_EX_RAID_SCENE_SEND_COUNT_DOWN,					// %d초 후 파독스의 거처의 문이 닫힙니다. (4)	
-} MSG_EX_RAID_INFO_TYPE;
-
-typedef enum __tagMsgExSubJob		// [2010/08/25 : Sora] ADD_SUBJOB
-{
-	MSG_EX_SUBJOB_REGIST,			// 보조직업등록(n)subJobCode 1:상인(트레이더)
-	MSG_EX_SUBJOB_ERROR_SUCESS,		// 보조직업등록성공(n) subJobCode 1: 상인(트레이더)
-	MSG_EX_SUBJOB_ERROR_FAIL,		// 보조직업등록실패(n) error 1:레벨부족, 2:명성치부족, 3: 스킬포인트부족4: 나스부족
-
-	MSG_EX_SUBJOB_ERROR_NOT_TRADER,	// 상인이아닙니다
-}MSG_EX_SUBJOB_TYPE;
-
-typedef enum _tagMsgDungeonTimeType
-{
-	// 메세지는 unsigned char 형으로 발송된다.
-	MSG_EX_DUNGEONTIME_NOTICE,		// 존이동 및 로그인 시 던전 타임 중일때 보내는 메시지
-	MSG_EX_DUNGEONTIME_END,			// 던전 타임 끝날때 보내는 메시지
-	MSG_EX_DUNGEONTIME_START,		// 던전 타임 시작 할때 보내는 메시지
-} MSG_EX_DUNGEONTIME_TYPE;
-
-typedef enum _tagMsgLacaretteSystemType
-{
-	MSG_EX_LACARETTE_TOKEN_READY_REQ,	// 토큰 지급 가능 확인 요청
-	MSG_EX_LACARETTE_TOKEN_READY_REP,	// 토큰 지급 가능 확인 답변
-	MSG_EX_LACARETTE_TOKEN_REQ,		// 토큰 지급 요청
-	MSG_EX_LACARETTE_TOKEN_REP,		// 토큰 지급 답변 : MSG_EX_LACARETTE_TOKEN_ERROR_TYPE
-	MSG_EX_LACARETTE_RETTE_REQ,		// 당첨 여부 요청 : courseArrNum(n), courseIndex(n), tokenItemIndex(n)
-	MSG_EX_LACARETTE_RETTE_REP,		// 당첨 여부 답변 : MSG_EX_LACARETTE_RETTE_ERROR_TYPE
-	MSG_EX_LACARETTE_RESULT_REQ,	// 아이템 지급 요청 : itemIndex(int)
-	MSG_EX_LACARETTE_RESULT_REP,	// 아이테 지급 확인 : MSG_EX_LACARETTE_RESULT_ERROR_TYPE
-	MSG_EX_LACARETTE_UI_REQ,		// 이용 횟수 요청
-	MSG_EX_LACARETTE_UI_REP,		// 이용 횟수 답변 : repeatcount(n)
-	MSG_EX_LACARETTE_JACKPOT,		// 젝팟 메시지 (s -> c) : itemindex(n), char_name(str)
-	MSG_EX_LACARETTE_UI_COLSE,		// 창을 닫는다.
-} MSG_EX_LACARETTE_SYSTEM_TYPE;
-
-typedef enum _tagMsgLacaretteTokenErrorType
-{
-	MSG_EX_LACARETTE_TOKEN_ERROR_SUC,
-	MSG_EX_LACARETTE_TOKEN_ERROR_ALREADY,	// 이미 지급 되었음 
-	MSG_EX_LACARETTE_TOKEN_ERROR_INVEN,		// 인벤 꽉 참
-	MSG_EX_LACARETTE_TOKEN_ERROR_TOKEN_OVER, // 100개 이상 소지불가
-	MSG_EX_LACARETTE_TOKEN_ERROR,			// 기타
-} MSG_EX_LACARETTE_TOKEN_ERROR_TYPE;
-
-typedef enum _tagMsgLacaretteRetteErrorType
-{
-	MSG_EX_LACARETTE_RETTE_ERROR_SUC,			// 성공 : giveItemArrNum(n), giveItemIndex(n)
-	MSG_EX_LACARETTE_RETTE_ERROR_TOKEN,			// 토큰부족
-	MSG_EX_LACARETTE_RETTE_ERROR_WEIGHT,		// 무게 초과
-	MSG_EX_LACARETTE_RETTE_ERROR,				// 기타 
-} MSG_EX_LACARETTE_RETTE_ERROR_TYPE;
-
-typedef enum _tagMsgLacaretteResultErrorType
-{
-	MSG_EX_LACARETTE_RESULT_ERROR_SUC,			// 지급 성공 : repeatcount(n), tokenItemIndex(n), tokenDelCount(n)
-	MSG_EX_LACARETTE_RESULT_ERROR_TOKEN,		// 토큰부족
-	MSG_EX_LACARETTE_RESULT_ERROR_INVEN,		// 인벤 꽉 참
-	MSG_EX_LACARETTE_RESULT_ERROR_WEIGHT,		// 무게 초과
-	MSG_EX_LACARETTE_RESULT_ERROR,				// 기타 
-} MSG_EX_LACARETTE_RESULT_ERROR_TYPE;
-
-typedef enum __tagMsgExTrigerEventType
-{
-	MSG_EX_TRIGGER_EVENT_ERROR,			// 에러	
-	MSG_EX_TRIGGER_EVENT_ALREADY_PLAY,		// 이미 실행 됨
-	MSG_EX_TRIGGER_EVENT_NO_CONDITION,		// 조건이 성립이 안됨
-	MSG_EX_TRIGGER_EVENT_TRIGER_EXIST_AREA,  // 트리거가 존재하는 지역에 도착하면 정보를 보내준다.
-	MSG_EX_TRIGGER_EVENT_ITEM_COMPOSITION,		// 아이템 결합
-	MSG_EX_TRIGGER_EVENT_ITEM_DROP,			// 아이템 드랍
-	MSG_EX_TRIGGER_EVENT_OPEN_THE_DOOR,		// 문 열기
-	MSG_EX_TRIGGER_EVENT_START_RAID,			// 레이드 시작
-	MSG_EX_TRIGGER_EVENT_MESSAGE_PRINT,		// 게임 메세지 출력
-	MSG_EX_TRIGGER_EVENT_SUMMON_NPC,			// npc 소환
-	MSG_EX_TRIGGER_EVENT_USE_DEBUF,			// 디버프 걸림
-	MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT,		// object 활성화
-	MSG_EX_TRIGGER_EVENT_REMOVE_NPC,			// npc 자동 제거
-	MSG_EX_TRIGGER_EVENT_TIME_LIMIT,		// 시간제한 (subtype : long(-1)[Secondtime])
-	MSG_EX_TRIGGER_EVENT_RESTORE_OBJECT,		// 오브젝트 초기화
-	
-	// [100222: selo] 트리거 이벤트 추가
-	MSG_EX_TRIGGER_EVENT_ITEM_GET_INVEN,		// 아이템 인벤토리로 들어가기 = 15
-	MSG_EX_TRIGGER_EVENT_CONSECUTIVE_DIALOGUE,	// 연속 대화 = 16
-	MSG_EX_TRIGGER_EVENT_ACTIVE_EFFECT,			// 이펙트 나타내기 = 17
-}MSG_EX_TRIGER_EVENT_TYPE;
 
 typedef enum __tagMsgExInitSSkillErrorType
 {
@@ -979,16 +482,12 @@ typedef enum _tagMsgExExtremeCubeType
 	MSG_EX_EXTREME_CUBE_GUILD,							// 길드큐브 단체입장시
 	MSG_EX_EXTREME_CUBE_GUILD_PERSON,			// 길드큐브 개인입장시
 	MSG_EX_EXTREME_CUBE_STATE_REQ,					// 큐브현황 창 호출시
-	MSG_EX_EXTREME_CUBE_STATE_REP,					// 큐브현황 응답, 소속큐브포인트(n), (현재 순위) count(c), rank(c), guildname(s), guildmaster(s), cubepoint(n) 
-													// (지난주 순위) count(c), rank(c), guildname(s), guildmaster(s), cubepoint(n)  (추가부분)
+	MSG_EX_EXTREME_CUBE_STATE_REP,					// rate(n), cubemaster(s), master_guildname(s), 
+																						// count(c), rank(c), guildname(s), guildmaster(s), cubepoint(n)
 	MSG_EX_EXTREME_CUBE_COMPLETE,					// 완료카운트 count(c)
 	MSG_EX_EXTREME_CUBE_ERROR,							// errortype
 	MSG_EX_EXTREME_CUBE_STATE_PERSONAL_REQ,     
-	//(추가부분)
-	MSG_EX_EXTREME_CUBE_STATE_PERSONAL_REP,   // 큐브 개인포인트 확인시 응답 , 개인큐브점수(n) (현재 순위)count(c) rank(c) guildname(s) charname(s) cubepoint(n) 
-												// (지난주 순위)count(c) rank(c) guildname(s) charname(s) cubepoint(n)
-	MSG_EX_EXTREME_CUBE_REWARD_GUILDPOINT_REP, // 길드원에게 길드포인트 보상을 알림, rank(c) guildpoint(n)
-	MSG_EX_EXTREME_CUBE_REWARD_PERSONAL_REQ,   // 개인큐브보상 요청	
+	MSG_EX_EXTREME_CUBE_STATE_PERSONAL_REP,     // user_personal_point(n), count(c), rank(c), guildname(s), charname(s), cubepoint(n)
 }MSG_EX_EXTREME_CUBE_TYPE;
 
 
@@ -1006,10 +505,6 @@ typedef enum _tagMsgExExtremeCubeErrorType
 	MSG_EX_EXTREME_CUBE_ERROR_END_NOTICE,     // 길드큐브 종료메시지
 	MSG_EX_EXTREME_CUBE_ERROR_START_REMAINTIME, // 길드큐브 시작 1분전 메시지
 	MSG_EX_EXTREME_CUBE_ERROR_END_REMAINTIME,    // 길드큐브 종료 1분전 메시지	
-	//(추가부분)
-	MSG_EX_EXTREME_CUBE_ERROR_INVEN_NOSPACE,		// 인벤 공간부족
-	MSG_EX_EXTREME_CUBE_ERROR_REWARD_PERSONAL_CANNOT,	// 개인보상 조건 안맞음
-	MSG_EX_EXTREME_CUBE_ERROR_REWARD_PERSONAL_ALREADY,	// 개인보상 이미 받았음	
 }MSG_EX_EXTREME_CUBE_ERROR_TYPE;
 
 
@@ -1032,15 +527,6 @@ typedef enum __tagMsgExAttackPetErrorType
 	MSG_SUB_AI_ONOFF_REP,
 	MSG_SUB_AI_UPDATE_REQ,
 	MSG_SUB_AI_UPDATE_REP,
-	MSG_SUB_EVOLUTION,				//진화 요청 row(n),col(n) /응답 errcode(uc)
-	MSG_SUB_MOUNT_REQ,				// 펫타기(c)type 0:내리기, 1:타기
-	MSG_SUB_MOUNT_REP,				// 펫타기응답error code (c)error 0:요청성공 1:요청실패 , (c) 현재서버상마운트상태, (n) 주인Index, (n) 펫인덱스
-	MSG_SUB_SUMMON_ERROR,			// 펫소환에러(c) error 초
-	MSG_SUB_STATINIT,			// 펫 스텟 초기화 (c) error 0:성공, 1:펫없음, 2:사망하거나봉인, 3:초기화할 스텟 없음
-	MSG_SUB_EXPINFO,
-	MSG_SUB_EXPUSE,
-	MSG_SUB_ERROR_NOT_EXIST_NPC,// NPC가 주위에 없음
-	MSG_SUB_INIT_COOLTIME,		// 펫 쿨타임 제거
 
 } MSG_EX_ATTACK_PET_ERRORTYPE;
 
@@ -1066,8 +552,6 @@ typedef enum __tagMsgDVDInfoType
 	MSG_MANAGEMENT,			//던전 관리
 	MSG_DUNGEON_ENTER,		//던전으로 이동
 	MSG_GUILD_NAME_COLOR,	//성주 길드 이름 색
-	MSG_CHANGE_NORMAL_NOTICE, // 던전 일반 모드 공지
-	MSG_CHANGE_NORMAL_NOTICE_TO_OWNER	// 던전 일반 모드 공지(성주에게만)
 } MSG_DVD_INFO_TYPE;
 
 typedef enum __tagMsgDVDInfoSubType
@@ -1084,8 +568,6 @@ typedef enum __tagMsgDVDInfoSubType
 	MSG_MANAGEMENT_MANAGER_ETC,						//기타 에러
 	MSG_DUNGEON_ENTER_FEE,							//던전 입장료 
 	MSG_DUNGEON_GO,									//던전으로 이동
-	MSG_MANAGEMENT_MANAGER_CONFIRM_NORMAL,			// 관리 요청(일반)
-	MSG_NAMAGEMENT_CHANGE_OWNER_MODE,				// 성주 관리 모드로 변경 요청
 } MSG_DVD_INFO_SUBTYPE;
 
 typedef enum __tagMsgDVDInfoErrorType
@@ -1095,7 +577,6 @@ typedef enum __tagMsgDVDInfoErrorType
 	MSG_DVD_ERROR_MONEY,		//던전 입장시 입장료 부족
 	MSG_DVD_ERROR_ZONE,			//공성이나 존에 대한 에러
 	MSG_DVD_ERROR_GUILD,		//길드가 없거나, 찾을 수 없을 때
-	MSG_DVD_ERROR_NORMAL_MODE,	// 일반모드 상태이다.
 }MSG_DVD_INFO_ERROR_TYPE;
 
 typedef enum __tagMsgExCastleWarType
@@ -1140,7 +621,6 @@ typedef enum __tagMsgExCastleErrorType
  MSG_EX_CASTLE_ERROR_DEAD_NPC2,    // 죽은 부활진지
  MSG_EX_CASTLE_ERROR_SAME_DATA,	   // 같은 데이터
  MSG_EX_CASTLE_ERROR_NOT_BUY_NPC,   // 더이상 NPC를 구매 할수 없습니다,
- MSG_EX_CASTLE_ERROR_PERMISSION_DENIED, // 권한이 없습니다.
 } MSG_EX_CASTLE_ERROR_TYPE;
 
 typedef enum __tagMsgExMessengerType
@@ -1177,13 +657,13 @@ typedef enum __tagMsgExMessengerType
 
 typedef enum __tagMsgEMessengerErrorType
 {
-	MSG_EX_MESSENGER_SUCCESS,			// 성공
+	MSG_EX_MESSENGER_BLOCK_SUCCEED,		// 차단 성공
 	MSG_EX_MESSENGER_BLOCK_NOTCHAR,		// 해당 케릭터가 없습니다
 	MSG_EX_MESSENGER_BLOCK_INVALIDNAME,	// 이름이 잘못 입력 되었습니다
 	MSG_EX_MESSENGER_NOMORE_BLOCK,		// 더이상 블럭할수 없습니다
 	MSG_EX_MESSENGER_ALREADY_BLOCK,		// 이미 블럭되었습니다
-
 } MSG_EX_MESSENGER_ERROR_TYPE;
+
 
 typedef enum __tagMsgExStringOutputType
 {
@@ -1272,13 +752,6 @@ typedef enum __tagMsgExPartyRecallType
 	MSG_EX_PARTY_RECALL_CONFIRM,			// 리콜 응답				: request_char_index(n) request_char_name(str) yes_or_no(c)
 											// yes_or_no - yes(1), no(0)
 	MSG_EX_PARTY_RECALL_CANCEL,				// 리콜 거부시				: request_char_index(n) request_char_name(str) target_char_index(n) target_char_name(str)
-	MSG_EX_PARTY_RECALL_ERROR_NOT_FOUND_PARTY_PLAYER,	// 파티에 참가하지 않았을 경우
-	MSG_EX_PARTY_RECALL_ERROR_CANT_USE_INSTANT_DUNGEON,	// 인스턴트 던젼에서 사용할 경우 에러 발송.
-	MSG_EX_PARTY_RECALL_ERROR_CANT_USE_THIS_CONTINENT,	// 해당 파티리콜 아이템을 각 대륙에서 사용하지 않았을 경우.
-	MSG_EX_PARTY_RECALL_ERROR_NOT_PARTY,				// 파티 상태가 아닙니다.
-	MSG_EX_PARTY_RECALL_ERROR_CANT_USE_EXPEND,			// 원정대는 사용할 수 없습니다.
-	MSG_EX_PARTY_RECALL_CONFIRM_FAIL,					// 리콜 수락 시 이동할 수 없는 경우 클라 락을 풀기 위한 메시지
-	MSG_EX_PARTY_RECALL_AREADY,							// 이미 사용중인 상태입니다.
 } MSG_EX_PARTY_RECALL_TYPE;
 
 typedef enum __tagMsgExPetRebirthErrorType
@@ -1345,25 +818,6 @@ typedef enum __tagMsgExCashItemType
 	MSG_EX_CASHITEM_PURCHASE_WITH_COUPON_REQ ,	// 쿠폰으로 구매 하기 : 쿠폰ID(n) Count(n) { ctid(n) }...
 	MSG_EX_CASHITEM_PURCHASE_WITH_COUPON_REP, 	// 쿠폰으로 구매하기 응답 : error code(c) cashBalance(n)
 	// <----------->  쿠폰시스템 끝
-	
-	// MSG_EX_CASHITEM_TYPE_LIST_REQ,		// cash first subtype 및 second subtype list 요청
-	MSG_EX_CASHITEM_TYPE_LIST_REP,		// cash first subtype 및 second subtype list 응답 
-										// : first subtype start(uc), Count(n), firstsubType(n) * Count
-										// second subtype start(uc), Count(n), secondsubType(n) * Count
-	MSG_EX_CASHITEM_LIST_REQ,			// cash shop page(1 page per 8 goods) 요청 // Search type(n), Req_page(n)
-	MSG_EX_CASHITEM_LIST_REP,			// Search type(n), catalog count(uc), [CTID(n), Remain_count(n), Price(n)]*catalog count,
-										// current page(n), total page(n)
-	MSG_EX_CASHITEM_RECOMMAND_REQ,		// category(n)
-	MSG_EX_CASHITEM_RECOMMAND_REP,		// catalog count(uc) [CTID(n),Remain_count(n),Price(n)] * catalog count
-	MSG_EX_CASHITEM_WISHLIST_REQ,		// 소망상자(wish list) 를 요청
-	MSG_EX_CASHITEM_WISHLIST_REP,
-	MSG_EX_CASHITEM_SHOP_OPEN_REQ,		// SHOP Open message
-	MSG_EX_CASHITEM_WISHLIST_SAVE_REQ,	// 소망상자 상품 등록 요청
-	MSG_EX_CASHITEM_WISHLIST_SAVE_REP,
-	MSG_EX_CASHITEM_WISHLIST_DEL_REQ,	// 소망상자 상품 삭제 요청
-	MSG_EX_CASHITEM_WISHLIST_DEL_REP,
-	MSG_EX_CASHITEM_SHOP_LOCK,		// (39) 캐쉬아이템 상점 락
-	MSG_EX_CASHITEM_SHOP_UNLOCK,		// (40) 캐쉬아이템 상점 언락
 } MSG_EX_CASHITEM_TYPE;
 
 typedef enum _tagExCashItemMoonstoneErrorType
@@ -1394,7 +848,6 @@ typedef enum __tagMsgExCashItemErrorType
 	MSG_EX_CASHITEM_ERROR_GIFT_SUCCESS,			// 선물보내기 성공
 	MSG_EX_CASHITEM_ERROR_GIFTRECV_SUCCESS,		// 선물 받은 물품들이 인벤토리로 옮겨졌음
 	MSG_EX_CASHITEM_ERROR_GIFT_NOCTID,			// 보낼 상품이 없습니다
-	MSG_EX_CASHITEM_ERROR_CANT_GIFT,			// 이벤트 상품은 선물이 불가능합니다.
 } MSG_EX_CASHITEM_ERROR_TYPE;
 
 typedef enum __tagMsgExNamechangeErrorType
@@ -1404,7 +857,6 @@ typedef enum __tagMsgExNamechangeErrorType
 	MSG_EX_NAMECHANGE_ERROR_HELPER,			// 헬퍼 서버 오류
 	MSG_EX_NAMECHANGE_ERROR_INVALID,		// 잘못된 입력
 	MSG_EX_NAMECHANGE_ERROR_NOTGUILDBOSS,	// 길드장이 아님
-	MSG_EX_NAMECHANGE_ERROR_PARTY,			// 파티중에는 이름을 변경할 수 없습니다.
 } MSG_EX_NAMECHANGE_ERROR_TYPE;
 
 typedef enum __tagMsgExPetLearnErrorType
@@ -1423,7 +875,6 @@ typedef enum __tagMsgExPetChangeMountErrorType
 	MSG_EX_PET_CHANGE_MOUNT_ERROR_LEVEL,	// 레벨 부족
 	MSG_EX_PET_CHANGE_MOUNT_ERROR_WEAR,		// 착용안함
 	MSG_EX_PET_CHANGE_MOUNT_ERROR_GRADE,	// 이미 마운트 타입일 때
-	MSG_EX_PET_CHANGE_MOUNT_ERROR_JOB,  // 마운트를 할수 없는 직업입니다.
 } MSG_EX_PET_CHANGE_MOUNT_ERROR_TYPE;
 
 extern struct ErrorTable MessageTypes;
@@ -1501,17 +952,9 @@ typedef enum __tagMsgFailType
 	MSG_FAIL_DB_DELETE_DELAY_CHAR,			// 삭제 대기 캐릭터로 게임 시작 요청시
 
 	MSG_FAIL_SCARD_NOT_MATCHING,			// 보안 카드 인증 실패
-
+	
 	MSG_FAIL_LOGINSERV_BLOCK_USER,			// 패스워드3번 틀려서 블럭
 
-	MSG_FAIL_LOGINSERV_BLOCK_ACCOUNT,		// 계정블럭
-	MSG_FAIL_LOGINSERV_USE_SECURE_SYSTEM,	// 전화보안 시스템 사용
-	MSG_FAIL_CANNOT_CREATE_NS,				// 생성조건이 맞지않아 캐릭터를 생성 할 수 없습니다.
-	MSG_FAIL_DOESNOT_LASTCHAOSID,			// 라스트카오스에 ID가 존재하지 않습니다.	
-	MSG_FAIL_CANNOT_CONNECT_UNDER_FIFTEEN,  // 연령 제한 메세지(15세 이하 접속 금지)
-	MSG_FAIL_CANNOT_CONNECT_SOUTH_AMERICA,		// 남미유저 접속 금지.
-	MSG_FAIL_CANNOT_CONNECT_SHUTDOWN_TIME,		// (54)셧다운 시간 접속 금지 "ID님은 셧다운제 적용 대상 연력으로 확인되어 게임 접속이 불가능 합니다.(00:00~06:00) 문의사항은 고객지원센터로 연락 주십시오.
-	MSG_FAIL_DB_CANNOT_DEL_CHAR,			// [2012/07/05 : Sora]  캐릭터 슬롯 확장 (슬롯 확장 만료로 캐릭터 삭제 불가) (55)
 	MSG_TIME_OUT,							// 시간 초과
 } MSG_FAIL_TYPE;
 
@@ -1533,7 +976,6 @@ typedef enum __tagMsgMenuType
 								// ident				: 주민번호
 								// bcanceldelete		: 삭제 취소시 1, 삭제시 0
 	MSG_MENU_START,				// START				: mode(uc) index(n)
-	MSG_RETURN_TO_SELECT_CHANNEL,	// 캐릭터 선택창에서 서버선택창으로 이동 한다는 패킷.
 } MSG_MENU_TYPE;
 
 
@@ -1544,7 +986,6 @@ typedef enum __tagMsgMoveType
 	MSG_MOVE_RUN,				// 뛰기
 	MSG_MOVE_PLACE,				// 좌표
 	MSG_MOVE_STOP,				// 멈춤
-	MSG_MOVE_FLY,				// [2012/08/22 : Sora] 비행
 } MSG_MOVE_TYPE;
 
 
@@ -1569,20 +1010,17 @@ typedef enum __tagMsgDBType
 								// deletedelay : time_t로 사용, 0이 아니면 삭제 대기중 캐릭터, 0이면 일반 캐릭터
 	MSG_DB_CHAR_END,			// 캐릭터 정보 끝			: slot1remain(n) slot2remain(n) seed(n)
 	MSG_DB_OTHER_SERVER,		// 다른 서버 존의 캐릭		: zone(n) ip(str) port(n)
-
-	MSG_DB_NSCREATE,			// NS Creatable [11/6/2009 rumist]
-	MSG_DB_CHAR_SLOT_TIME,		// [2012/07/05 : Sora]  캐릭터 슬롯 확장 아이템 만료 일자
 } MSG_DB_TYPE;
 
 
 // 채팅관련
 typedef enum __tagMsgChatType
-{ // UIChatting.h에 클라이언트에서는 ChattingMsgType에서 enum새로 선언하여 사용
+{
 	MSG_CHAT_SAY,				// 일반 채팅
 	MSG_CHAT_PARTY,				// 파티 대화
 	MSG_CHAT_GUILD,				// 길드 대화
 	MSG_CHAT_TRADE,				// 매매 대화
-	MSG_CHAT_WHISPER,			// 귀엣말
+	MSG_CHAT_WHISPER = 4,			// 귀엣말
 	MSG_CHAT_SHOUT,				// 외치기
 	MSG_CHAT_NOTICE,			// 운영자 알림 메시지 : 서버 군 내의 모든 캐릭에게 전달
 	MSG_CHAT_GM,				// 운영자 채팅
@@ -1597,16 +1035,8 @@ typedef enum __tagMsgChatType
 	MSG_CHAT_GMTOOL =15,			// GM_TOOL 메시지 타입(클라이언트용)
 
 	MSG_CHAT_NOTICE_PRESSCORPS,		// 기자단 공지
-	MSG_CHAT_EXPEDITION,			// 원정대
-	MSG_CHAT_NPCNOTICE,				// NPC 공지
-	MSG_CHAT_CHANNEL_LEVEL,			// 채널 레벨 채팅
-	MSG_CHAT_CHANNEL_TRADE = 20,			// 채널 매매 채팅
-} MSG_CHAT_TYPE;
 
-typedef enum __tagMsgMoneyType
-{
-	MSG_MONEY_COUNT = 0,	//나스 변화 : count(ll) change_count(ll)
-} MSG_MONEY_TYPE;
+} MSG_CHAT_TYPE;
 
 // 아이템 관련
 typedef enum __tagMsgItemType
@@ -1616,11 +1046,10 @@ typedef enum __tagMsgItemType
 	MSG_ITEM_THROW,				// 아이템 버리기	: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) count(ll)
 	MSG_ITEM_ARRANGE,			// 아이템 정렬		: tab_idx(uc)
 	MSG_ITEM_DELETE,			// 아이템 제거		: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) count(ll)
-	MSG_ITEM_WEAR,				// 아이템 착용		: wear_pos(uc) tab_idx1(uc) row_idx1(uc) col_idx1(uc) item_idx1(n) tab_idx2(uc) row_idx2(uc) col_idx2(uc) item_idx2(n)
-	MSG_ITEM_WEAR_TAKE_OFF,		// 아이템 벗기
+	MSG_ITEM_WEAR,				// 아이템 착탈		: wear_pos(uc) tab_idx1(uc) row_idx1(uc) col_idx1(uc) item_idx1(n) tab_idx2(uc) row_idx2(uc) col_idx2(uc) item_idx2(n)
 	MSG_ITEM_SWAP,				// 아이템 위치 변경	: tab_idx(uc) row_idx1(uc) col_idx1(uc) row_idx2(uc) col_idx2(uc)
-	MSG_ITEM_ADD,				// 아이템 습득		: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) item_db_idx(n) wear_pos(uc) plus(n) flag(n) count(ll) option_count(c) [option_type(c) option_level(c)] socketcreatecount(c) socketcount(c) [optionindex(n) optionlevel(c)]
-	MSG_ITEM_UPDATE,			// 아이템 갱신		: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) plus(n) flag(n) count(ll) change_count(ll) option_count(c) [option_type(c) option_level(c)] socketcreatecount(c) socketcount(c) [optionindex(n) optionlevel(c)]
+	MSG_ITEM_ADD,				// 아이템 습득		: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) item_db_idx(n) wear_pos(uc) plus(n) flag(n) count(ll) option_count(c) [option_type(c) option_level(c)]
+	MSG_ITEM_UPDATE,			// 아이템 갱신		: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) plus(n) flag(n) count(ll) change_count(ll) option_count(c) [option_type(c) option_level(c)]
 	MSG_ITEM_DROP,				// 아이템 드롭		: item_idx(n) item_db_idx(n) count(ll) x(f) z(f) h(f) r(f) ylayer(n) char_type(uc) char_index(n)
 	MSG_ITEM_APPEAR,			// 아이템 시야 안	: item_idx(n) item_db_idx(n) count(ll) x(f) z(f) h(f) r(f) ylayer(n)
 	MSG_ITEM_DISAPPEAR,			// 아이템 시야 밖	: item_idx(n)
@@ -1671,30 +1100,7 @@ typedef enum __tagMsgItemType
 	MSG_ITEM_USE_WARPDOC,		// 이동주문서 사용하기 zone(n), npcidx(n) 
 
 	MSG_ITEM_USE_PRESSCORPS,	// 라카기자단 확성기 subtype(c) >> item_idx(n) >> msg(str)
-	MSG_ITEM_CHECK_COMPOSITION,	// 결합아이템 링크 아이템 찾기  REQ <코스튬> : (c)row , (c)col, (n)item_index REP <링크> : (c)row, (c)col, (n) item_index
-	MSG_ITEM_WEAR_COSTUME,		// 코스튬 아이템 입기/벗기(48)	: wear_pos(uc), wear_item_unique_idx(n), wear_item_db_idx(n), takeoff_item_unique_idx(n), takeoff_item_db_idx(n)
-	MSG_ITEM_WEAR_COSTUME_TAKEOFF,
-	MSG_ITEM_WEAR_COSTUME_SUIT, // 한벌의상 입기/벗기 added by sam 11/02/01 [SAM]
-	MSG_ITEM_WEAR_COSTUME_SUIT_TAKEOFF,
-	MSG_ITEM_LETSPARTY_USE,		// 파티 전용 아이템 사용시 메시지처리. [4/21/2011 rumist]
-	MSG_ITEM_MASTERSTONE_USE,	// 마스터 스톤 사용
 
-	MSG_ITEM_USE_CHAR_SLOT_EXT, // [2012/07/05 : Sora]  캐릭터 슬롯 확장 아이템
-	MSG_ITEM_USE_CHAR_MOVE,		// 캐릭터 이동 아이템 사용 여부 [7/19/2012 rumist]
-	MSG_ITEM_COSTUME_SUIT_FORTUNE,	// [2013/02/13] sykim70 Fortune System
-									// 요청: sbTab, sbRow, sbCol : 인벤토리 tab, row, col
-									// 응답: nRet, nItemIndex, nSkillIndex, nSkillLevel
-									//       nRet	0 - 포츈 부여받기 성공
-									//				1 - 아이템이 없음
-									//				2 - 아이템 타입 오류
-									//				3 - 포츈 헤더 정보 에러
-									//				4 - 포츈 데이터 정보 에러
-									//				5 - 이미 포츈 받음
-	MSG_ITEM_AMOUNT,				// 아이템 수량 변경
-	MSG_ITEM_DIVIDE,				// 아이템 나누기
-	MSG_ITEM_SORT_INVENTORY,
-	MSG_ITEM_EXCHANGE,			// 아이템 교환 (61)
-	MSG_ITEM_COMPOSE,			// 아이템 합성
 	MSG_ITEM_END_MSG,			// MSG_ITEM_TYPE 마지막 메시지
 
 } MSG_ITEM_TYPE;
@@ -1713,7 +1119,7 @@ typedef enum _tagItemUseErrorType
 	MSG_ITEM_USE_ERROR_REVIVAL_EXP,			// 부활 주문서 때문에 경험치 복구 주문서 사용 할수 없음
 	MSG_ITEM_USE_ERROR_REVIVAL_SP,			// 부활 주문서 때문에 숙련도 복구 주문서를 사용할수 없음
 	MSG_ITEM_USE_ERROR_SUMMON_NOTALLOWZONE, // 피스존이므로 몬스터 복구 주문서를 사용할수 없음
-	MSG_ITEM_USE_ERROR_EXP_SP,				// 경험치 주문서 떄문에 숙련도 사용 못함
+	MSG_ITEM_USE_ERROR_EXP_SP,				// 경험치 주문서 ??문에 숙련도 사용 못함
 	MSG_ITEM_USE_ERROR_SP_EXP,				// 숙련도 때문에 경험치 사용 못함.
 	MSG_ITEM_USE_ERROR_PLATINUM_SPECIAL,	// 플래티늄 제련석 감정이 완료 
 	MSG_ITEM_USE_ERROR_PLATINUM_SPECIAL_EXPIRE, // 사용기간이 만료 되어서 효과가 사라짐
@@ -1722,26 +1128,6 @@ typedef enum _tagItemUseErrorType
 	MSG_ITEM_USE_ERROR_IDENTIFY_RARE_FAIL,	// 레어 아이템 옵션 확인 실패
 	MSG_ITEM_USE_ERROR_WARN_PARTYRECALL,	// 공성 중 성안 영역에서 파티리콜 사용시 일부 리콜 안됨을 경고
 	MSG_ITEM_USE_ERROR_SUMMON_GUARD,		// 소환수가 있을 경우 소환 아이템 사용시 
-	MSG_ITEM_USE_ERROR_FLYING,    // 비행중에는 사용할 수 없습니다.
-	MSG_ITEM_USE_ERROR_PARTY_OR_EXPED,		// 파티나 원정대 상태에선 사용할 수 없습니다.  13
-	MSG_ITEM_USE_ERROR_RAIDZONE,			// 원정대 레이드 존 에선 사용할 수 없습니다.   14
-	MSG_ITEM_USE_ERROR_LOWLEVEL,			// 레벨이 낮아서 사용할 수 없습니다.
-	MSG_ITEM_USE_ERROR_NS_CARD_USE_OK,		// NS 생성 카드 사용 성공. [11/6/2009 rumist]
-	MSG_ITEM_USE_ERROR_NS_CARD_INSUFF,		// NS 생성카드 사용 조건 맞지 않음 [11/6/2009 rumist]
-	MSG_ITEM_USE_ERROR_DUPLICATE,			// 호칭 아이템 중복때문에 사용 금지 2009-12-16 finwell added
-	// 소켓 뚫기 한번 더 찬스 카드 아이템관련 추가되는 부분
-	MSG_ITEM_USE_ERROR_SOCKET_CARD_USE_OK,		// 소켓 뚫기 한번 더 찬스 카드 사용 성공
-	MSG_ITEM_USE_ERROR_NOT_SELECT,			// [sora] GUILD_MARK
-	MSG_ITEM_USE_ERROR_NOITEM,				// [sora] GUILD_MARK
-	MSG_ITEM_USE_ERROR_CANNOT_USE_ZONE,		// 아이템 사용 불가능 지역. [4/26/2011 rumist]
-	MSG_ITEM_USE_ERROR_CANNOT_USE_COMP,		// (23) 결합주문서를 사용 하실 수 없는 상태입니다.
-	MSG_ITEM_USE_ERROR_DUP_COMP_PREFINE,	// (24) 플래티늄 제련석과 결합주문서는 중복하여 사용 하실 수 없습니다.
-	MSG_ITEM_USE_ERROR_EXT_CHAR_SLOT,		// [2012/07/05 : Sora]  캐릭터 슬롯 확장 아이템 (25)
-	MSG_ITEM_USE_ERROR_DEATH_PENALTY,		// [2012/08/10 : Sora] 부활 주문서 시용시 복구할 패널티가 없을 경우(26)
-	MSG_ITEM_USE_ERROR_GUARDIAN,			// [2012/12/05 : Sora] 후견인 관계가 있을 경우 아이템 사용 불가(27)
-	MSG_ITEM_USE_ERROR_EXPIRE_CASH_INVEN,	// 캐쉬인벤 만료.
-	MSG_ITEM_USE_DO_NOT_MEET_CONDITION,		// 아이템 사용 조건에 만족하지 못하다.
-	MSG_ITEM_USE_PVP_PROTECT_SUCCESS,		// PVP 아이템 사용 성공
 } MSG_ITEM_USE_ERROR_TYPE;
 
 typedef enum _tagItemMixWarItemErrorType
@@ -1822,7 +1208,7 @@ typedef enum _tagItemOptionAddResult
 	MSG_OPTION_ADD_ERROR_ENABLE,		// 옵션을 붙일 수 있는 아이템이 아니다
 	MSG_OPTION_ADD_ERROR_MAX,			// 최대 옵션 수 초과
 	MSG_OPTION_ADD_SUCCESS,				// 옵션 붙이기 성공
-	MSG_OPTION_BLOOD_SWEAT_FRUIT_ADD_SUCCESS //피와 땀의 결정을 사용하여 블러드 옵션 붙이기에 성공
+	MSG_OPTION_BLOOD_SWEAT_FRUIT_ADD_SUCCESS, //피와 땀의 결정을 사용하여 블러드 옵션 붙이기에 성공
 } MSG_ITEM_OPTION_ADD_RESULT;
 
 typedef enum _tagItemOptionDelResult
@@ -1834,29 +1220,34 @@ typedef enum _tagItemOptionDelResult
 	MSG_OPTION_DEL_SUCCESS,				// 옵션 지우기 성공
 } MSG_ITEM_OPTION_DEL_RESULT;
 
-typedef enum _tagItemComposeErrortype
-{
-	MSG_ITEM_COMPOSE_ERROR_OK,			//성공
-	MSG_ITEM_COMPOSE_ERROR_NOT_RESULT,	//조건에 만족하는 아이템이 없음
-	MSG_ITEM_COMPOSE_ERROR_NOT_ENOUGH_MAT,	//재료 부족
-	MSG_ITEM_COMPOSE_ERROR_NOT_ENOUGH_NAS,	//나스 부족
-	MSG_ITEM_COMPOSE_ERROR_FAIL,		//합성 실패
-};
-
 //0803
 typedef enum _tagMsgSysType
 {
 	MSG_SYS_WHISPER_NOTFOUND,		// 귓말 대상 없음		:
 	MSG_SYS_TIMEOUT,				// 타임 아웃 발생		:
 	MSG_SYS_CANNOT_WEAR,			// 착용 오류			:
-	MSG_SYS_FULL_INVENTORY,			// 인벤토리 가득 참		: tab_index(c)
+	MSG_SYS_FULL_INVENTORY,			// 인벤토리 가득 참		: tab_index(uc)
 	MSG_SYS_CUSTOM,					// 커스텀 메시지		: msg(str)
 	MSG_SYS_SHORT_MONEY,			// 돈 사용시 모질람		:
 	MSG_SYS_SHOP_CANCEL,			// 상점 거래 취소		:
 	MSG_SYS_EXCHANGE_NOTFOUND,		// 교환 대상 없음		:
 	MSG_SYS_EXCHANGE_ALREADY,		// 이미 교환 중			:
+// TODO : DELETE PARTY SYS MSG	MSG_SYS_PARTY_NOTFOUND,			// 대상이 없음			:
+//	MSG_SYS_PARTY_ALREADY_ME,		// 내가 이미 파티 중	:
+//	MSG_SYS_PARTY_FULL,				// 파티 가득참			:
+	/*MSG_SYS_SKILL_ALREADY_USE,		// 다른 스킬 사용중
+	MSG_SYS_SKILL_NOTFOUND,			// 그런 스킬 없어요
+	MSG_SYS_SKILL_NOTREADY,			// 스킬 준비 중... 즉, 이전 스킬 시전후 다음 스킬 가능 시간이 안되었을때
+	MSG_SYS_SKILL_INVAL_TARGET,		// 타겟이 잘못되었음
+	MSG_SYS_SKILL_INSUFF,			// 조건이 부족함		: type(c:0 - HP, 1 - MP, 2 - Item)
+	MSG_SYS_SKILL_LONG,				// 멀어서 안됨
+	*/
 	MSG_SYS_NOT_OWNER_ITEM,			// 아이템 우선권이 없음
-	MSG_SYS_OVER_WEIGHT,			// 무게가 오바 됬음
+//	MSG_SYS_PARTY_ALREADY_TARGET,	// 대상이 이미 파티 중	:
+//	MSG_SYS_PARTY_ALREADY_REQUEST,	// 이미 파티 신청 중	:
+//	MSG_SYS_PARTY_DIFF_TYPE,		// 파티 형태가 틀림		:
+//	MSG_SYS_PARTY_NOT_BOSS,			// 파티장이 아니라서 수행 불가
+	MSG_SYS_OVER_WEIGHT,			// 무게가 오바 ?瑛?
 	MSG_SYS_UPGRADE_NOCONDITION,	// 조건이 안맞아 업그레이드 못함 (일반제련석 레벨이 맞지 않음)
 	MSG_SYS_MAKE_REFINE_KIND,		// 무기나 방어구가 아닌 다른걸 제련석으로 전환하려할 때
 	MSG_SYS_MAKE_REFINE_WEARING,	// 입고 있는 아이템으로 제련석 전환 불가능
@@ -1867,6 +1258,7 @@ typedef enum _tagMsgSysType
 	MSG_SYS_CANT_WARP_OTHER,		// 이동 장치 불가능 : 다른장치이용
 	MSG_SYS_MEMPOS_OTHERZONE,		// 다른 존으로는 장소 기억 이동 불가
 	MSG_SYS_SINGLEDUNGEON_FULL,		// 싱글던전 꽉 차다
+//	MSG_SYS_SKILL_INVAL_STATE,		// 상태 불만족			: flag(c: 0 - 죽었을때만 가능, 1 - 무기 장비시만 가능, 2 - 앉아서만 가능, 3 - 피스존 불가능, 4 - 서서만 가능, 5 - 방패 미착용, 6 - 버프 필요
 	MSG_SYS_MAKE_REFINE_SHORT,		// 제련석 만들때 돈 모질람
 	MSG_SYS_PRODUCE_NOTOOL,			// 생산도구가 없음
 	MSG_SYS_PRODUCE_WEAR_TOOL,		// 생산도구를 착용하시오
@@ -1916,54 +1308,11 @@ typedef enum _tagMsgSysType
 	// wooss 070307 -------------------------------------------------------------------->><<
 	// kw : WSS_WHITEDAY_2007
 	MSG_SYS_MATCHSEX,				// 성별이 맞지 않습니다.  [3/8/2007 KwonYongDae]
-
 	MSG_SYS_MEMPOSPLUS_OPEN,		// 프리미엄 메모리북 개봉
 	MSG_SYS_PKMODE_CANDO,			// PK가 가능한 레벨이 되었습니다.
 	MSG_SYS_NO_AUTO_ITEM,			// 사용할수 있는 포션이 없습니다.
 	MSG_SYS_EGEHA_MINLEVEL,			// 에게하 이동할수 있는 최소레벨
 	MSG_SYS_IRISPOINT_ALARM,		// 아이리스 매달을 %d 개 획득하였습니다. (n)Count	
-	MSG_SYS_FACTORY_EXP,			// 숙련도가 xxx상승하였습니다. (ll)sealskill_exp
-	MSG_SYS_CHANGE_RAID_BOX,		// 레이드 상자 교환 성공 : itemdbindex(n) 						(레이드 추가)
-	MSG_SYS_CANNOT_DESTROY,			// 파괴 불가능한 아이템.
-	MSG_SYS_TITLE_EXPIRED,			// 호칭 기간만료 메세지(76)
-	MSG_SYS_IRISPOINT_DROPMEDAL,	// 1시간이 경과되어 아이리스 메달이 드랍됩니다.
-	MSG_SYS_CANNOT_GOZONE_LEVEL,	// 이동할수있는지역의레벨조건과다릅니다.
-	MSG_SYS_COSTUME2_ITEM_EXPIRED,	// 코스튬2 아이템 기간이 만료되었습니다. : item_db_idx(uc)
-	MSG_SYS_TRANSLATE_START,		// 펫변신시작
-	MSG_SYS_CANT_MOUNT_EVOCATION,	// (81)강신중 마운트 불가능
-	MSG_SYS_CANT_MAKE_PET_EVOCATION, // (82)강신중 펫 탈것 만들기 못함.
-	MSG_SYS_FULL_INVENTORY_AND_DROP, // 인벤토리가 가득차서 아이템이 드랍됨
-	MSG_SYS_ENTER_RAID_ZONE_REMAIN,       // (84) %d분 뒤 레이드 던전이 초기화 됩니다. (공지 메시지)
-	MSG_SYS_RAID_RESET_COMPLETE,          // (85) 레이드 던전 초기화가 완료되었습니다. (공지 메시지)
-	MSG_SYS_NO_ENTER_RAID_ZONE,           // (86) 레이드 던전 초기화 중입니다. (공지 메시지) 
-	MSG_SYS_GMCOMMAND_NOTICE,		// GM Command(kick, 채팅금지) 사용 시, 전체 공지 : Command Type(uc), GM Name(str), User Name(str)
-	MSG_SYS_PET_CANT_MOUNT_ETC,		// 마운트가 불가능합니다.(마운트 가능한 공격형 펫이 아닐 때)	// 펫 탑승 불가 처리. [5/18/2011 rumist]
-	MSG_SYS_DUP_PREFINE_COMPOSITE,	//  (89) 플래티늄 제련석과 결합주문서는 중복하여 사용 하실 수 없습니다.
-	MSG_SYS_NPC_PORTAL_EXPIRED = 93, //유료 NPC포탈 스크롤 아이템 시간 만료 [8/22/2012 Ranma]
-	MSG_SYS_NOT_EXIST_NPC,			// NPC가 존재하지 않음
-	MSG_SYS_NOT_ENOUGH_MONEY,		//2013/04/09 jeil 나스 아이템 제거 (5902)현재 가지고 있는 나스 보다 많은 나스를 교환 할 수 없습니다.
-	MSG_SYS_DO_NOT_ATTACK_IMMOTAL,	// 대상은 무적 모드 상태이므로 공격 할 수 없습니다.
-	MSG_SYS_DO_NOT_ATTACK_DO_MOVE,	// 내가 무적 모드 상태이므로 움직인 후에 공격 할 수 있습니다.
-	MSG_SYS_DO_NOT_CHANGE_PK_MODE,	// pk모드로 전환할 수 없습니다.	
-	MSG_SYS_DO_NOT_SYSTEM_NOT_EQ_RVRTYPE,	//다른 결사대원 끼리는 사용 할 수 없는 시스템.
-	MSG_SYS_DO_NOT_PARTY_THISZONE,	// 이 존에서는 파티 시스템을 사용할 수 없습니다.
-	MSG_SYS_DO_NOT_USE_DURING_IMMORTAL,			// 무적버프 상태에서는 사용할 수 없습니다.
-	MSG_SYS_DO_NOT_USE_ITEM_STATE,	//아이템을 사용할 수 있는 상태가 아닙니다.
-	MSG_SYS_DO_NOT_GO_ZONE_GMORDER,	//운영자 명령어로는 이동할 수 없습니다.
-	MSG_SYS_DO_NOT_PLAY_PVP,		// PVP를 할 수 없는 상태입니다.
-	MSG_SYS_DO_NOT_ATTACK_PROTECT_PVP, // PVP보호 상태이므로 공격할 수 없습니다.
-	MSG_SYS_PVP_PROTECT_ITEM_END,	// PVP보호 방패의 사용기간이 만료되어 PVP가 가능한 상태가 되었습니다.
-	MSG_SYS_AREADY_USE,				// 이미 사용중 입니다.
-	MSG_SYS_WAR_BUF_NOT_IN_ZONE,	// 공성 지역을 벗어나서 버프효과가 사라집니다.
-	MSG_SYS_WAR_BUF_END_WAR,		// 공성 시간이 종료 되어 버프효과가 사라집니다.
-	MSG_SYS_ARTIFACT_DONT_IN_DUNGEON, //유물 아이템을 보유한 상태로 던전을 입장 할 수 없습니다.
-	MSG_SYS_ARTIFACT_PVP_GET_ITEM,	// PVP가 불가능한 캐릭터는 유물 아이템을 획득 할 수 없습니다.
-	MSG_SYS_ARTIFACT_ITEM_DELETE_EVENT_OFF,	//이벤트가 종료되어 아이템이 사라짐
-	MSG_SYS_ARTIFACT_ITEM_DO_NOT_USE_PVPPROTECT,	//유물 아이템을 갖고 있는 상태에서는 PVP보호방패를 사용할 수 없습니다.
-	MSG_SYS_ARTIFACT_USE_PVPPROTECT,	//PVP보호 방패를 사용중입니다.
-	MSG_SYS_SUMMON_TOTEM_NPC, 
-	MSG_SYS_NOT_CONDITION_ITEM_ALL_USER,	// 아이템을 획득할 수 있는 유저가 없습니다.
-	MSG_SYS_BELONG_ITEM,					// 귀속되어 있는 아이템 입니다.
 	MSG_SYS_END_MSG,				// MSG_SYS_TYPE의 마지막 메시지
 } MSG_SYS_TYPE;
 
@@ -1991,6 +1340,7 @@ typedef enum _tagMsgExchangeReqType
 	MSG_EXCHANGE_REQ_OK_DEST,		// 확인 - 요청받은 사람
 	MSG_EXCHANGE_REQ_SRC_PET_ANYMORE,		// 펫 갯수 오류 - 요청한 사람
 	MSG_EXCHANGE_REQ_DEST_PET_ANYMORE,		// 펫 갯수 오류 - 요청받은 사람
+
 } MSG_EXCHANGE_REQ_TYPE;
 
 typedef enum _tagMsgExchangeItemAction
@@ -2043,11 +1393,6 @@ typedef enum _tagMsgPartyType
 								// S->C			        : bossname(str) newbossindex(n) newname(str) bmandate(c)
 	MSG_PARTY_EMPTY,			// 파티 없음			: 
 	MSG_PARTY_CHANGETYPE,		// 파티 종류 변경		: party_type(c)
-	MSG_PARTY_ENDPARTY_REQ,		// 파티 해제 요청
-	MSG_PARTY_ENDPARTY_START,  // 파티 해체 시작 알림(20초 후에)
-	MSG_PARTY_INZONE_CLEAR_REQ, // 파티 인스턴트 존 초기화
-	MSG_PARTY_INZONE_CLEAR_REP,  // 파티 인스턴트 존 초기화 응답
-	MSG_PARTY_TYPEINFO,						// 파티타입 정보 
 } MSG_PARTY_TYPE;
 
 typedef enum _tagMsgPartyErrorType
@@ -2059,14 +1404,12 @@ typedef enum _tagMsgPartyErrorType
 	MSG_PARTY_ERROR_ALREADY_REQUEST,	// 이미 파티 신청 중	:
 	MSG_PARTY_ERROR_DIFF_TYPE,			// 파티 형태가 틀림		:
 	MSG_PARTY_ERROR_NOT_BOSS,			// 파티장이 아니라서 수행 불가
-	MSG_PARTY_ERROR_INVALID_LEVEL,      // 레벨이 맞지 않아 파티 불가
+	MSG_PARTY_ERROR_INVALID_LEVEL,		// 레벨이 맞지않아 파티 불가
 	MSG_PARTY_ERROR_NOT_PARTY,			// 파티중이 아닙니다
 	MSG_PARTY_ERROR_NOT_PARTY_MEMBER,	// 파티원이 아닙니다.
 	MSG_PARTY_ERROR_PVP,				// PVP 중에는 파티 불가
 	MSG_PARTY_ERROR_INZONECLEAR_FAIL,	// 인존 클리어 실패
 	MSG_PARTY_ERROR_DO_NOT_CHANGE_BOSS,	// [090728: selo] 몬스터 콤보 중에 파티장 변경 불가
-	MSG_PARTY_ERROR_LEVEL_CHANGE_BOSS,	// 레벨이 맞지 않아 파티장 위임을 할 수 없습니다.
-	
 } MSG_PARTY_ERROR_TYPE;
 
 typedef enum _tagMsgQuickSlotType
@@ -2087,15 +1430,7 @@ typedef enum _tagMsgSkillType
 	MSG_SKILL_ERROR,			// 스킬 관련 오류		: errorcode(c) skillindex(n) extraInfo(n)
 	MSG_SKILL_AUTO_USE,		// 스킬 자동 시전청 C->S: skillindex(n)
 	MSG_SKILL_NEWYEAR_2008,		// 2008년 신년 이벤트 스킬 : charindex1(n), charindex2(n)
-	MSG_SKILL_HANARO_EVENT,  // 하나로 오픈 이벤트( 초보 지원사 스킬)
-	MSG_SKILL_LEARN_SEAL,		// 아이템 제작 스킬 배우기
-	MSG_SKILL_SOUL,				// 현재 영혼의 개수		: soulCount(n)           11번임
-	MSG_SKILL_MIDLEVEL_SUPPORT,		// 중저레벨 지원사 스킬
-	MSG_SKILL_HIGHLEVEL_SUPPORT,		// 고레벨 지원사 스킬
-	MSG_SKILL_USEEP,				// EP를 이용한 스킬 사용
-	MSG_SKILL_ERROR_NOT_EXIST_NPC,	// NPC가 너무 멀
-	MSG_SKILL_RESET_COOLTIME,		// 쿨타임 초기화
-	MSG_SKILL_TOGGLE,				// 토글 On/Off
+	MSG_SKILL_HANARO_EVENT,  // 하나로 오픈 이벤트
 } MSG_SKILL_TYPE;
 
 typedef enum _tagMsgSkillErrorType
@@ -2135,18 +1470,6 @@ typedef enum _tagMsgSkillErrorType
 	MSG_SKILL_ERROR_CANNOT_DEATHMOTION_ANOTHER_PC,	// 15미터 이내에 다른 유저가 있어 데스모션 불가능
 	MSG_SKILL_ERROR_MISS_ROGUE_SKILL,		// 와일드 라쏘 스킬(index 125) 실패
 	MSG_SKILL_ERROR_COMPETITION,			// 대전용 아이템 사용 시간이 안되었음
-	MSG_SKILL_ERROR_INVAL_STATE_DARKNESS,	// 사도모드일때 사용 불가 스킬
-	MSG_SKILL_ERROR_WARP_CAN_NOT_GO_THERE,		// 중간에 가로막히거나 갈 수 없는 곳이다
-	MSG_SKILL_ERROR_SOUL_COUNT_ALREADY_FULL,	// 영혼 소유 개수가 최대이다.    34
-	MSG_SKILL_ERROR_CANNOT_TO_PC,			// PC에게 사용 불가능하다.(PK 때도 불가능)   35
-	MSG_SKILL_ERROR_DONT_HAS_SOUL,			// 이미 영혼을 빼앗겨서 영혼이 없다.	36
-	MSG_SKILL_ERROR_INSUFF_GP,	 			// GP가 부족하여 스킬 사용이 불가능함. (37)
-	MSG_SKILL_ERROR_NOT_GUILD_MASTER,		// 스킬사용자가 길드마스터가 아님 (38)
-	MSG_SKILL_ERROR_INVAL_STATE_PSERSONAL_DUNGEON,  // 싱글 던전에서 사용할 수 없습니다.
-	MSG_SKILL_ERROR_DUPLICATE,					// 아이템 중복사용
-	MSG_SKILL_ERROR_CANNOT_ZONE,				// 현재 존에서는 사용할 수 없습니다.
-	MSG_SKILL_ERROR_NON_MSG,					// 스킬 사용 에러, 출력X
-	//MSG_SKILL_ERROR_CANNOT_USE_AFFINITY_BOOSTER,  //친화도 부스터는 중복 사용이 불가능 합니다.(40)	2012/11/13 jeil 친화도 부스터 아이탬관련 추가 
 // --- 050401 : bs : 스킬 사용 불가 상태
 } MSG_SKILL_ERROR_TYPE;
 
@@ -2155,7 +1478,6 @@ typedef enum _tagMsgAssistType
 	MSG_ASSIST_ADD,				// 상태 변화 추가		: chartype(c) charidx(n) itemidx(n) index(n) level(c) time(n)
 	MSG_ASSIST_DEL,				// 상태 변화 제거		: chartype(c) charidx(n) itemidx(n) index(n)
 	MSG_ASSIST_LIST,			// 리스트 전달(자신에게): state(n) count(c) [itemidx(n) index(n) level(c) time(n)]:count
-	MSG_ASSIST_MODIFY,			//2012/11/12 jeil 추가 1119빌드 스킬확장 버프/디버프 수정 : chartype(c) charidx(n) itemidx(n) index(n) level(c) time(n) count(n)
 } MSG_ASSIST_TYPE;
 
 typedef enum _tagMsgEffectType
@@ -2176,17 +1498,22 @@ typedef enum _tagMsgEffectEtcType
 	MSG_EFFECT_ETC_PRODUCE_CHARGE,		// 원소 성공 이펙트
 	MSG_EFFECT_ETC_ITEM_PROCESS,		// 가공 성공 이펙트
 	MSG_EFFECT_ETC_ITEM_MAKE,			// 제작 성공 이펙트
-	MSG_EFFECT_ETC_MP_STEEL,			// MP 스틸 성공 이펙트
-	MSG_EFFECT_ETC_HP_STEEL,			// HP 스틸 성공 이펙트
+	MSG_EFFECT_ETC_MP_STEAL,			// MP 스틸 성공 이펙트
+	MSG_EFFECT_ETC_HP_STEAL,			// HP 스틸 성공 이펙트
 	MSG_EFFECT_ETC_FIRECRACKER,			// 폭죽 아이템 
 	MGS_EFFECT_ETC_COMPETITION,			// 대전용 아이템 이펙트
-	MSG_EFFECT_ETC_RANDOM_EXP,			// 렌덤 경헝치 증폭 
-	MSG_EFFECT_ETC_RANDOM_SP,			// 렌덤 SP 증폭
-	MSG_EFFECT_ETC_RANDOM_DROP,			// 렌덤 드랍률 증폭
 } MSG_EFFECT_ETC_TYPE;
 
-typedef enum _tagQuestType
+typedef enum _tagMsgDamageType
 {
+	MSG_DAMAGE_NORMAL,
+	MSG_DAMAGE_AVOID,
+	MSG_DAMAGE_CRITICAL,
+	
+} MSG_DAMAGE_TYPE;
+
+typedef enum _tagQuestType
+{												
 	MSG_QUEST_PC_LIST,			// 퀘스트 리스트(PC)	: quest_count(n) [quest_index(n) current_count0-2(n)] quest_count 만큼 반복
 	MSG_QUEST_REQUEST,			// 퀘스트 요청			: npc_index(n)
 	MSG_QUEST_NPC_LIST,			// 퀘스트 리스트(NPC)	: quest_count(n) [quest_index(n) flag(c)]
@@ -2198,8 +1525,9 @@ typedef enum _tagQuestType
 	MSG_QUEST_GIVEUP,			// 퀘스트 포기			: quest_index(n)
 	MSG_QUEST_FAIL,				// 퀘스트 실패			: quest_index(n)
 	MSG_QUEST_ERROR,			// 퀘스트 에러			: error_type(c)
-	MSG_QUEST_DONE_LIST,		// 수행완료 퀘스트 리스트 : quest_count(n) [quest_index(n)]
-	MSG_QUEST_ABANDON_LIST,		// 수행포기 퀘스트 리스트 : quest_count(n) [quest_index(n)]
+
+	MSG_QUEST_DONE_LIST,		// 수행완료한 퀘스트 리스트  : quest_count(n) [quest_index(n)]
+	MSG_QUEST_ABANDON_LIST,		// 수행 포기한 퀘스트 리스트 : quest_count(n) [quest_index(n)]
 	MSG_QUEST_FORCE_GIVEUP,		// 퀘스트 강제 포기(레벨업에 의한..) : quest_index(n)
 	MSG_QUEST_UNCOMPLETE,		// 퀘스트 완료->미완료	: quest_index(n)
 
@@ -2216,9 +1544,7 @@ typedef enum _tagQuestType
 								// itemdbindex > 0  : NPC는 사망하고 itemdbindex를 지급함
 								// itemdbindex == 0 : NPC는 사망하고 아이템 지급 없음
 								// itemdbindex < 0  : NPC는 그대로 있고 아이템 지급 없음
-	
-	MSG_QUEST_RESTORE_ABANDON ,	// 포기 퀘스트 복구
-	MSG_QUEST_ITEM_REQ,			// 완료된 퀘스트 아이템 다시 받기 : nQuestIndex(n)
+
 } MSG_QUEST_TYPE;
 
 typedef enum _tagQuestListFlag
@@ -2233,7 +1559,7 @@ typedef enum _tagQuestListFlag
 	MSG_QUEST_FLAG_NOT_PREQUEST,	// 수행 불가능 : 선행 퀘스트 미완료.
 	MSG_QUEST_FLAG_NOTENOUGH_AREA,	// 수행 불가능 : 퍼스널 던전 여유분 부족
 	MSG_QUEST_FLAG_OVERCOUNT,		// 수행 불가능 : 퍼스널 던전 입장 제한 초과
-	MSG_QUEST_FLAG_NOT_PENALTY	,	// 수행 불가능 : 성향치 부족
+	MSG_QUEST_FLAG_NOT_PENALTY,		// 수행 불가능 : 성향수치 부족
 } MSG_QUEST_LIST_FLAG;
 
 typedef enum _tagMsgQuestErrorType
@@ -2243,19 +1569,13 @@ typedef enum _tagMsgQuestErrorType
 	MSG_QUEST_ERR_START_LEVEL,		// 퀘스트 시작시 에러 : 레벨 조건 안맞음
 	MSG_QUEST_ERR_START_JOB,		// 퀘스트 시작시 에러 : 직업 조건 안맞음
 	MSG_QUEST_ERR_START_ITEM,		// 퀘스트 시작시 에러 : 아이템 조건 안맞음
-	MSG_QUEST_ERR_START_MAX,		// 퀘스트 시작시 에러 : 최대 수행 가능 수 초과
+	MSG_QUEST_ERR_START_MAX,		// 퀘스트 시작시 에러 : 최대 수행 가능 수 초과		
 	MSG_QUEST_ERR_START_FULL,		// 퀘스트 시작시 에러 : 싱글던전의 경우 싱글던전 꽉참
-
 	MSG_QUEST_ERR_DELIVERY_FULL,	// 전달 퀘스트 시 : 인벤토리가 꽉차서 아이템 퀘스트 에러
 	MSG_QUEST_ERR_PRIZE_FULL,		// 보상 받을때 인벤 꽉 차서 보상 실패
 	MSG_QUEST_ERR_PRZIE_ITEM,		// 보상 받을때 아이템 때문에 오류
 	MSG_QUEST_ERR_PET_NOT_HAVE_ONEMORE,		// 펫 하나 이상 소유 못함
-	MSG_QUEST_ERR_START_PENALTY	,	// 퀘스트 시작시 에러 : 페널티 조건 안맞음
-	MSG_QUEST_ERR_NOT_EXIST_ABANDON_QUEST,	// 포기 퀘스트 복구 에러 : 포기한 퀘스트가 없다.
-	MSG_QUEST_ERR_DONT_HAVE_NAS,	// 포기 퀘스트 복구 에러 : 나스가 부족하다.
-	MSG_QUEST_ERR_NOT_EXIST_NPC,	// 주위에 수행가능한 NPC가 없음.
-	MSG_QUEST_ERR_CHECK_DONE_ING,	// 진행 중이거나, 완료가 아님
-
+	MSG_QUEST_ERR_START_PENALTY,  // 퀘스트 시작시 에러 : 페널티 조건 안맞음
 } MSG_QUEST_ERROR_TYPE;
 
 typedef enum _tagMsgQuestPD4ErrorType
@@ -2271,7 +1591,7 @@ typedef enum _tagStatPointType
 {
 	MSG_STATPOINT_REMAIN,			// 남은 성장 포인트 : statpoint_remain(n)
 	MSG_STATPOINT_USE,				// 성장 포인트 사용 : dest_stat(uc:client,server) change_value1(int:server:능력치변화량) change_value2(int:server:능력치변화량) statpoint_remain(uc:server:남은수)
-	MSG_STATPOINT_ERROR,			// 오류				: errorcode(c)
+	MSG_STATPOINT_ERROR,			// 오류				: errorcode(c) 0: 스탯 포인트 부족, 1: 스탯 포인트 사용 불가
 	MSG_STATPOINT_RESET,			// 포인트 초기화	: reset_str(n) reset_dex(n) reset_int(n) reset_con(n)
 } MSG_STATPOINT_TYPE;
 
@@ -2369,7 +1689,8 @@ typedef enum _tagMsgSSkillType
 {
 	MSG_SSKILL_LIST,					// 특수 스킬 리스트			: count(n) [sskill_index(n) sskill_level(c)] * count
 	MSG_SSKILL_LEARN,					// 특수 스킬 배우기			: sskill_index(n) is_new(uc) sskill_level(c)
-	MSG_SSKILL_LEARN_ERROR,				// 배우기 오류 발생			: errorcode(uc)
+	MSG_SSKILL_REMOVE,					// 특수 스킬 삭제			: sskill_index(n)
+	MSG_SSKILL_LEARN_ERROR,				// 배우기 오류 발생		: errorcode(uc)
 } MSG_SSKILL_TYPE;
 
 typedef enum _tagSSkillLearnErrorType
@@ -2392,9 +1713,9 @@ typedef enum _tagPKType
 	MSG_PK_FREE,						// Free PK SYSTEM
 	MSG_PK_CHANGE_KING,					// 카오킹 변경 메세지 : bChao(c) 0-헌터 1-카오, CharIndex(n) 캐릭터 인덱스 
 	MSG_PK_MYZONE_ATT,					// REQ : NONE, REP : ZoneAtt(c) ( 0-Normal, 1-헌터 , 2-카오 )
-	MSG_PK_REMOVE_PENALTY,				// REQ : type(c) 0-전부, 1-1단계 , REP : succecc(c) : 0-실패, 1-성공 
-	MSG_PK_OTHERZONE_ALRAM,				// REQ : NONE , REP : bAram(c) 0-OFF 1-ON, charIndex(n) 캐릭터 인텍스 
-	MSG_PK_TARGET_SHOWHP,				// REQ : On(c) 0-OFF 1-ON REP : NONE
+	MSG_PK_REMOVE_PENALTY,    			// REQ : type(c) 0-전부, 1-1단계 , REP : succecc(c) : 0-실패, 1-성공 
+	MSG_PK_OTHERZONE_ALRAM,    			// REQ : NONE , REP : bAram(c) 0-OFF 1-ON, charIndex(n) 캐릭터 인텍스 
+	MSG_PK_TARGET_SHOWHP,				// REQ : On(c) 0-OFF 1-ON REP : NONE // WSS_PK_TARGET_HP 070726
 } MSG_PK_TYPE;
 
 typedef enum _tagEventType
@@ -2409,6 +1730,7 @@ typedef enum _tagEventType
 	MSG_EVENT_SUPERSTONE,						// 슈퍼고제 이벤트.//0627
 	MSG_EVENT_CHUSEOK_UPGRADE,					// 추석 이벤트 업그레이드	: 
 	MSG_EVENT_CHUSEOK_EXCHANGE,					// 추석 이벤트 교환			: 
+	
 	MSG_EVENT_CHANGE_WITHOUT_OPTION,			// 2판4판 리뉴얼 무기 교체 이벤트 : old_itemindex(n) new_subtype(n)
 	MSG_EVENT_2PAN4PAN_LETTER,					// 2판4판 리뉴얼 낱말 이벤트 : MSG_EVENT_2PAN4PAN_WORD_TYPE(n)
 	
@@ -2429,19 +1751,19 @@ typedef enum _tagEventType
 	MSG_EVENT_XMAS_2005,						// 2005 크리스마스 이벤트 :  MSG_EVENT_XMAS_2005_ERROR_TYPE(n:server)
 	MSG_EVENT_NEWYEAR_2006_CHECK,				// 2006 신년 이벤트 시간 요청 : time_sec(n:server)
 	MSG_EVENT_NEWYEAR_2006_GOODS,				// 2006 신년 이벤트 보상  : MSG_EVENT_NEWYEAR_2006_GOODS_ERROR_TYPE(n:server)
-	
-	MSG_EVENT_SEARCHFRIEND_ADD_CHECK,			// 휴면케릭 등록 체크 :
-	MSG_EVENT_SEARCHFRIEND_ADDSELECT_LIST,		// 등록한 리스트 부분 : listCount , [requestindex , reqnick(char)]*listCount
-	MSG_EVENT_SEARCHFRIEND_ADDSELECT_CHECK,		// 등록한 리스트중 선택하는 부분 :  requestindex , MSG_EVENT_SEARCHFRIEND_ERROR_TYPE 
-	MSG_EVENT_SEARCHFRIEND_TIME_CHECK,		// 사냥시간 체크 : time_sec(n:server)
+
+	MSG_EVENT_SEARCHFRIEND_ADD_CHECK,			// 휴면케릭 등록 체크 : MSG_EVENT_SEARCHFRIEND_ERROR_TYPE(n)
+	MSG_EVENT_SEARCHFRIEND_ADDSELECT_LIST,		// 등록한 리스트 부분 : listCount(n), startindex(n), nTotal(n), [requestindex(n), reqnick(char)]*listCount 
+	MSG_EVENT_SEARCHFRIEND_ADDSELECT_CHECK,		// 등록한 리스트중 선택하는 부분 :  requestindex(n), MSG_EVENT_SEARCHFRIEND_ERROR_TYPE(n)
+	MSG_EVENT_SEARCHFRIEND_TIME_CHECK,			// 사냥시간 체크 : time_sec(n:server)
 	MSG_EVENT_SEARCHFRIEND_ONETIME_CHECK,		// 사냥시간 한시간 단위 체크 : time_sec(n:server)
-	MSG_EVENT_SEARCHFRIEND_LIST_GOODS,		// 등록된 친구 보상가능여부 : request_listmember(n), (MSG_EVENT_SEARCHFRIEND_GOODS_ERROR_TYPE)errcode,[reqnick[n], request_index[n], request_time[n], item_good[n]]*request_listmember
-	MSG_EVENT_SEARCHFRIEND_GOODS_CHECK,		// 아이템 지급 개인 :MSG_EVENT_SEARCHFRIEND_GOODS_ERROR_TYPE(n)
+	MSG_EVENT_SEARCHFRIEND_LIST_GOODS,			// 등록된 친구 보상가능여부 : request_listmember(n), startindex(n), nTotal(n), (MSG_EVENT_SEARCHFRIEND_GOODS_ERROR_TYPE)errcode, [reqnick[n], request_index[n], request_time[n], item_good[n]]
+	MSG_EVENT_SEARCHFRIEND_GOODS_CHECK,			// 아이템 지급 개인 :MSG_EVENT_SEARCHFRIEND_GOODS_ERROR_TYPE(n)
 
 	MSG_EVENT_PACKAGE_ITEM_GIVE,				// 패키지 아이템 지급 요청  : couponNo(str)
-												// gs->client				: errorcode(str)
+												// gs->client				: errorcode(c)
 	MSG_EVENT_OPENBETA_CONN,					// 오픈베타 아이템 지급 요청: 
-												// gs->client		
+												// gs->client				: errorcode(c)
 	MSG_EVENT_SAKURABUD,						// 꽃봉오리 아이템 지급 요청 : cmd(c) : 0-상의하의,1-장갑신발,2-투구 
 
 	MSG_EVENT_OXQUIZ,							// OX 퀴즈 이벤트			: subtype(n) ...
@@ -2514,126 +1836,11 @@ typedef enum _tagEventType
 
 	MSG_EVENT_PHOENIX,							// 피닉스 이벤트
 	MSG_EVENT_PHOENIX_SUCCESS,					// 피닉스 이벤트 전직 확인 메시지
-	
-	MSG_EVENT_REQUITAL,							// 보상 이벤트
-	MSG_EVENT_NEW_AFRON_2009,					// afron 서버버전 통합 이벤트
-	
-	MSG_EVENT_WORLDCUP_2010,					// ($E_WC2010) [100511: selo] 월드 축제 이벤트 (2010 남아공 월드컵)
-	MSG_EVENT_AKAN_TEMPLE,	// (74)
-	MSG_EVENT_PROMOTION2,						// 프로모션 이벤트 :: 유저당 한개의 쿠폰 사용 가능 
-	MSG_EVENT_ATTENDANCE_2011,					// [2011/01/18 : Sora] 출석 이벤트
-	MSG_EVENT_ENCHANT_RATE,						// [2011/01/18 : Sora] 출석 이벤트 인첸트 증가율
-	
-	MSG_EVENT_USER_COMEBACK,					// 휴먼 유저 이벤트	(78)
-	MSG_EVENT_CHAR_BIRTHDAY,					// 캐릭터 1주년 이벤트
-
-	MSG_EVENT_EUR2_PROMOTION,					// #define EVENT_EUR2_PROMOTION
-
-	MSG_EVENT_MUSICAL_ZORRO,					// 조로 뮤지컬 이벤트(81)
-
-	MSG_EVENT_LOI_KRATHONG,						// (82) 태국 크라통 이벤트
-
-	MSG_EVENT_KB_REWARD,						// (83)	태국 국왕 탄생일 이벤트
 
 	MSG_EVENT_END_MSG,							// 모든 이벤트 관련 메시지는 이보다 앞에
 	
 } MSG_EVENT_TYPE;
 
-typedef enum _tagMsgEventEUR2PromotionErrorType
-{
-    MSG_EVENT_EUR2_PROMOTION_SUCCESS,                       // 성공
-    MSG_EVENT_EUR2_PROMOTION_WRONG_KEY,                     // 키값 잘못 입력하였음.
-    MSG_EVENT_EUR2_PROMOTION_ALREADY_USED,                  // 키를 이미 사용하였음.
-    MSG_EVENT_EUR2_PROMOTION_LACK_INVENTORY,                // 인벤 꽉찾음.
-    MSG_EVENT_EUR2_PROMOTION_SYS_ERROR_NOT_USED,            // DB에 업데이트가 안되어 에러가 남. 그래서 사용안한것으로 처리
-    MSG_EVENT_EUR2_PROMOTION_CANT_USE_USER,                 // 유저가 이미 다른 키를 사용하였음.
-    MSG_EVENT_EUR2_PROMOTION_HEAVY_WEIGHT,                  // 인벤 무거움.
-}MSG_EVENT_EUR2_PROMOTION_ERROR_TYPE;
-
-typedef enum _tagMsgEventAttendance2011Type
-{
-	MSG_EVENT_ATTENDANCE_2011_NOTICE,					// 이벤트 정보창 띄우기
-	MSG_EVENT_ATTENDANCE_2011_CALC_RATE,				// 이벤트 시스템+공지 메시지
-	MSG_EVENT_ATTENDANCE_2011_INDIVIDUAL_REWARD_REQ,	// 개인보상 요청 메시지
-	MSG_EVENT_ATTENDANCE_2011_INDIVIDUAL_REWARD_REP,	// 개인보상 응답 메시지
-}MSG_EVENT_ATTENDANCE_2011_TYPE;
-
-
-// ($E_WC2010)
-typedef enum _tagMsgEventWorldcup2010Type
-{
-	MSG_EVENT_WORLDCUP2010_TRADE_REQ,			// 축구공 교환 : 축구공 -> 1.황금축구공 -> 2.월드 축제 상자 교환 : tradeType(n)
-	MSG_EVENT_WORLDCUP2010_TRADE_REP,			// 축구공 교환 답변 MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-
-	MSG_EVENT_WORLDCUP2010_TOTO_REQ,			// 승리국가 TOTO 등록 : countryItem1(n)
-	MSG_EVENT_WORLDCUP2010_TOTO_REP,			// 승리국가 TOTO 등록 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-	MSG_EVENT_WORLDCUP2010_TOTO_STATUS_REQ,		// TOTO 응모 현황  : resultType(n)
-	MSG_EVENT_WORLDCUP2010_TOTO_STATUS_REP,		// TOTO 응모 현황 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_REQ,		// TOTO 상품 요청 
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_REP,		// TOTO 상품 요청 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-
-	MSG_EVENT_WORLDCUP2010_ATTENDANCE_REQ,		// 출석 이벤트 : 
-	MSG_EVENT_WORLDCUP2010_ATTENDANCE_REP,		// 출석 이벤트 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-
-	MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REQ,		// 응원 카드 교환 : supportType(n)
-	MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REP,		// 응원 카드 교환 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE
-
-	MSG_EVENT_WORLDCUP2010_KOREA_REQ,			// 한국 16강 선물 요청
-	MSG_EVENT_WORLDCUP2010_KOREA_REP,			// 한국 16강 선물 요청 답변 : MSG_EVENT_WORLDCUP2010_ERROR_TYPE	
-}MSG_EVENT_WORLDCUP2010_TYPE;
-
-// ($E_WC2010)
-typedef enum _tagMsgEventWorldcup2010ErrorType
-{
-	MSG_EVENT_WORLDCUP2010_TRADE_ERROR_SUC,				// 축구공 교환 성공 : totoType(n)
-	MSG_EVENT_WORLDCUP2010_TRADE_ERROR_BALL,			// 축구공 갯수 부족 : totoType(n)
-	MSG_EVENT_WORLDCUP2010_TRADE_ERROR_FAIL,			// 축구공 교환 실패
-
-	MSG_EVENT_WORLDCUP2010_TOTO_ERROR_SUC,				// 승리국가 TOTO 등록 성공
-	MSG_EVENT_WORLDCUP2010_TOTO_ERROR_FAIL,				// 승리국가 TOTO 등록 실패
-	
-	MSG_EVENT_WORLDCUP2010_TOTO_STATUS_ERROR_SUC,		// 응모 현황 있음 : resultType(n), countryItem1(n)
-	MSG_EVENT_WORLDCUP2010_TOTO_STATUS_ERROR_FAIL,		// 응모 하지 않았음 : resultType(n)
-	
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_ERROR_SUC,			// 상품 요청 성공
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_ERROR_WEIGHT,		// 무게 초과
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_ERROR_INVEN,		// 인벤 공간 부족
-	MSG_EVENT_WORLDCUP2010_TOTO_GIFT_ERROR_FAIL,		// 받을 상품 없음 
-
-	MSG_EVENT_WORLDCUP2010_ATTENDANCE_ERROR_SUC,		// 출석 체크 성공
-	MSG_EVENT_WORLDCUP2010_ATTENDANCE_ERROR_ALREADY,	// 이미 출석 됨	
-	MSG_EVENT_WORLDCUP2010_ATTENDANCE_ERROR_FAIL,		// 출석 체크 실패
-
-	MSG_EVENT_WORLDCUP2010_SUPPORTCARD_ERROR_SUC,		// 응원 카드 교환 성공
-	MSG_EVENT_WORLDCUP2010_SUPPORTCARD_ERROR_CARD,		// 응원 카드 개수 부족
-	MSG_EVENT_WORLDCUP2010_SUPPORTCARD_ERROR_FAIL,		// 응원 카드 교환 실패
-
-	MSG_EVENT_WORLDCUP2010_KOREA_ERROR_SUC,				// 한국 16강 선물 교환 성공
-	MSG_EVENT_WORLDCUP2010_KOREA_ERROR_ALREADY,			// 이미 받았음
-	MSG_EVENT_WORLDCUP2010_KOREA_ERROR_WEIGHT,			// 무게 초과
-	MSG_EVENT_WORLDCUP2010_KOREA_ERROR_INVEN,			// 인벤 공간 부족
-	MSG_EVENT_WORLDCUP2010_KOREA_ERROR_FAIL,			// 한국 16강 선물 교환 실패
-}MSG_EVENT_WORLDCUP2010_ERROR_TYPE;
-
-typedef enum __tagMsgEventNewAfron2009Type
-{
-	MSG_EVENT_GIVE_ITEM_SUCCESS,				// SERVER -> CLIENT 아이템 지급 후 성공 메시지
-	MSG_EVENT_GIVE_ITEM_NO_TARGET,				// SERVER -> CLIENT 아이템 지급 대상자 아님
-	MSG_EVENT_GIVE_ITEM_ALREADY_RECEIVE,		// SERVER -> CLIENT 아이템을 이미 받은 대상자임.
-}MSG_EVENT_NEW_AFRON_2009_TYPE;
-
-typedef enum _tagEventRequitalErroType
-{
-	MSG_EVENT_REQUITALM_OK,						// 보상 성공
-	MSG_EVENT_REQUITAL_FAIL,					// 보상 실패
-	MSG_EVENT_REQUITAL_ERROR_ALREADY_APPLY,		// 이미 응모 함
-	MSG_EVENT_REQUITAL_FAIL_TIME,				// 보상 시간이 지나감
-	MSG_EVENT_REQUITAL_ERROR_FULL_INVEN,		// 인벤토리가 꽉참
-	MSG_EVENT_REQUITAL_ERROR_TOO_HEAVY_INVEN,	// 인벤토리이 너무 무거움
-	MSG_EVENT_REQUITAL_FAIL_TIME_NOPLAY,		// 해당 날짜에 게임을 하지 않아서 실패
-	MSG_EVENT_REQUITAL_FAIL_CREATE_TIME,		// 유저가 게임을 시작한 날짜가 너무 이름
-
-}MSG_EVENT_REQUITAL_ERROR_TYPE;
 
 typedef enum _tagEventPhoenixErrorType
 {
@@ -2689,17 +1896,6 @@ typedef enum _tagEventXMas2007Type
 	MSG_EVENT_XMASTREE_ADD_POINT,		// REQ: NOT , REP (c)error 0:성공, 1:아이템 없음
 	MSG_EVENT_XMASTREE_GET_BLESS,		// REQ: NOT , REP (c)error 0:성공, 1:아이템 없음
 	MSG_EVENT_XMASTREE_DROP_ITEM,		// REQ: NONE, REP (n)remainTime 남은 시간(분)
-
-	MSG_EVENT_XMAS_PUZZLE_CHECKITEM_REQ,	// 아이템이 존재하는지 확인 요청
-	MSG_EVENT_XMAS_PUZZLE_CHECKITEM_REP,	// 아이템이 존재하는지 확인 응답: ucResult(0:성공, 1:실패)
-	MSG_EVENT_XMAS_PUZZLE_START_REQ,		// 게임 시작 요청
-	MSG_EVENT_XMAS_PUZZLE_START_REP,		// 게임 시작 가능 여부 응답     : ucResult(0:성공, 1:실패)
-	MSG_EVENT_XMAS_PUZZLE_SELECT_REQ,		// 가위, 바위, 보 선택 요청     : ucChoice(0:가위, 1:바위, 2:보)
-	MSG_EVENT_XMAS_PUZZLE_SELECT_REP,		// 가위, 바위, 보 결과          : ucResult(0:승리, 1:비김, 2:패배), ucWinCount(승리 횟수), ucUserSelection(유저 선택값(0:가위, 1:바위, 2:보)), ucServerSelection(서버 선택값(0:가위, 1:바위, 2:보))
-	MSG_EVENT_XMAS_PUZZLE_CONTINUE_REQ,		// 게임을 계속 진행 요청
-	MSG_EVENT_XMAS_PUZZLE_CONTINUE_REP,		// 게임 계속 진행 승인
-	MSG_EVENT_XMAS_PUZZLE_END_REQ,			// 게임 그만하고 보상 요청
-	MSG_EVENT_XMAS_PUZZLE_END_REP,			// 보상 지급 및 보상 완료 메시지: ucWinCount(승리 횟수), nGiftItemIndex(보상 아이템 인덱스), llGiftItemCount(보상 아이템 수량)
 } MSG_EVENT_XMAS_2007_TYPE;
 
 typedef enum _tagMsgEventHallowWeen2007
@@ -2769,7 +1965,7 @@ typedef enum _tagMSgConnEventGift2007Type
 
 typedef enum _tagMsgEventOpenAdultServer
 {
-	// 매직카드관련
+	// 매직카드 이벤트 관련 
 	MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_REQ,		// 매직카드보상받기
 	MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_OK,		// 스킬보상성공			exchangeType(b) 
 											// exchangeType			0 : 바람의 러브매직
@@ -2782,7 +1978,7 @@ typedef enum _tagMsgEventOpenAdultServer
 	MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_FAILED,	// 교환 실패 ( 스킬적용 실패했을 때)
 	MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_NOITEM,	// 아이템 없음			
 
-	// 전직관련
+	// 전직 이벤트 관련
 	MSG_EVENT_OPEN_ADULT_SERVER_CHABGEJOB_EXCHANGE,		// 아이템 보상요청
 	MSG_EVENT_OPEN_ADULT_SERVER_CHABGEJOB_EXCHANGE_OK,		// 보상성공	: 등수(n), 절망의부적 보상개수(n)
 	MSG_EVENT_OPEN_ADULT_SERVER_CHABGEJOB_ERROR_ALREADY,	// 상품이미 받았음
@@ -2862,7 +2058,7 @@ typedef enum _tagMsgEventParentsDay2007
 	MSG_EVENT_PARENTSDAY_2007_ADD_POINT,    // 포인트 등록
 				  // c->s : CharIndex(n) echangeItemIndex(n)
 				  // s->c : errorcode(c) point(n) totalpoint(n)
-	MSG_EVENT_PARENTSDAY_2007_EXCHANGE_TICKET,   // 누적 포인트로 인한 교환권 요청
+	 MSG_EVENT_PARENTSDAY_2007_EXCHANGE_TICKET,   // 누적 포인트로 인한 교환권 요청
 				  // s->c : errorcode(c) changeTicketCount(n)
 	MSG_EVENT_PARENTSDAY_2007_EXCHANGE_ITEM,   // 교환권으로 아이템 교환 요청
 	// s->c: errcode(c)
@@ -2884,6 +2080,7 @@ typedef enum _tagParentsDay2007ErrorType
 	MSG_ERROR_PARENTSDAY_2007_ERROR_NOITEM,			// 아이템 없음
 	MSG_PARENTSDAY_2007_SUCCESS,					// 성공
 }MSG_PARENTSDAY_2007_ERROR_TYPE;
+// --------------------------------------------------------------------------------------<<
 
 
 typedef enum _tagMsgEventSongkran2007
@@ -2892,7 +2089,6 @@ typedef enum _tagMsgEventSongkran2007
 	MSG_EVENT_SONGKRAN_2007_EXCHANGE_NOITEM,	// 아이템 없음			
 	MSG_EVENT_SONGKRAN_2007_EXCHANGE_FULLINVEN,	// 인벤 가득 참
 }MSG_EVENT_SONGKRAN_2007_TYPE;
-	
 
 
 typedef enum _tagMsgEventEggsHunt2007Type
@@ -3170,8 +2366,6 @@ typedef enum _tagEventErrorType
 	MSG_EVENT_ERROR_WRONG_PACKET,				// 무기교환 : 패킷 오류
 	MSG_EVENT_ERROR_NO_MATCH,					// 무기교환 : 동레벨 교환 대상 아이템 없음
 	MSG_EVENT_ERROR_CANT_OPTION,				// 무기교환 : 옵션 이동 불능
-	MSG_EVENT_ERROR_WEIGHT_OVER,				// 무게 초과	
-
 	MSG_EVENT_ERROR_CHUSEOK_NO_CROP,			// 추석 이벤트, 작물 없음
 	MSG_EVENT_ERROR_CHUSEOK_NO_SOIL,			// 추석 이벤트, 배양토 없음
 	MSG_EVENT_ERROR_CHUSEOK_ALREADY_UPGRADE,	// 추석 이벤트, 더이상 업그레이드 불가능
@@ -3189,10 +2383,6 @@ typedef enum _tagEventErrorType
 	MSG_EVENT_ERROR_OPENBETA_SUCCESS,			// 오픈베타 아이템 지급 성공 : 일본  : 미국
 	MSG_EVENT_ERROR_SAKURABUD_SUCCESS,			// 꽃봉오리 아이템 지급 성공 : cmd(c)
 	MSG_EVENT_ERROR_SAKURABUD_LEAKITEM,			// 꽃봉오리 아이템 지급 실패 꽃봉오리 부족 : 일본
-	MSG_EVENT_AKAN_TEMPLE_ERROR_NO_ITEM,		// (24) 영혼의 징표 아이템이 없습니다.
-	MSG_EVENT_AKAN_TEMPLE_ERROR_LACK_ITEM,		// (25) 영혼의 징표 아이템의 개수가 부족 합니다.
-	MSG_EVENT_ERROR_LOI_KRATHONG_NO_ITEM,		// (26) 크라통 재료아이템이 부족하여 이벤트 아이템을 받을 수 없음
-	MSG_EVENT_ERROR_KB_NO_ITEM,					// (27)	국왕 탄생일 아이템 부족으로 교환 불가
 } MSG_EVENT_ERROR_TYPE;
 
 typedef enum _tagEventLetterType
@@ -3266,7 +2456,7 @@ typedef enum _tagPersonalShopErrorType
 	MSG_PERSONALSHOP_ERROR_BUY_FULLINVENTORY,	// 인벤토리 가득차서 못 삼
 	MSG_PERSONALSHOP_ERROR_ANYMORE_PET,			// 펫 소유 제한이 넘어서 취소
 	MSG_PERSONALSHOP_ERROR_NOSPACE,				// 판매대금을 입금 받을 공간이 없어서 판매 못하게 되었을때
-	MSG_PERSONALSHOP_ERROR_CANNOT_USE,			// 이용할 수 없는 개인상점 입니다
+
 } MSG_PERSONALSHOP_ERROR_TYPE;
 
 typedef enum __tagMsgExAlternateMerchant
@@ -3320,7 +2510,7 @@ typedef enum _tagRightAttackType
 
 typedef enum _tagStashType
 {
-	MSG_STASH_ERROR_CODE,						// 창고 관련 오류			: errorcode(uc)
+	MSG_STASH_ERROR,							// 창고 관련 오류			: errorcode(uc)
 	MSG_STASH_ISSETPASSWORD,					// 창고 암호 설정 여부 검사	: isset(c:s)
 	MSG_STASH_LIST_REQ,							// 창고 아이템 리스트 요청	: password(str)
 	MSG_STASH_LIST_REP, 						// 창고 아이템 리스트		: listflag(c) item_idx(n) plus(n) flag(n) used(n), used_2(n) option_count(c) ([option_type(c) option_level(c)]:option_count) count(ll) remain(n)
@@ -3342,10 +2532,6 @@ typedef enum _tagStashType
 	MSG_STASH_CHECK_PASSWORD_REP,				// 결과						
 	MSG_STASH_SETTING_NEWPASSWORD_REQ,			// 암호 설정				: pass(str)	
 	MSG_STASH_SETTING_NEWPASSWORD_REP,			// 결과						: bsuccess 
-	MSG_STASH_KEEP_MONEY,						//창고 나스 맡기기 password(str) count(ll)
-	MSG_STASH_TAKE_MONEY,						//창고 나스 찾기 password(str) count(ll)
-	MSG_STASH_SEARCH_MONEY_REQ,					//창고 나스 조회 
-	MSG_STATS_SEARCH_MONEY_REP,					//창고 나스 조회 결과 count(ll)
 												//	bsuccess 0: 성공 1: 실패 2: 암호
 } MSG_STASH_TYPE;
 
@@ -3370,7 +2556,7 @@ typedef enum _tagGuildType
 {
 	MSG_GUILD_ERROR,						// 길드 관련 오류		: errorcode(c)
 	MSG_GUILD_CREATE,						// 길드 생성			: name(str)
-	MSG_GUILD_INFO,							// 내 길드 정보 보내기	: guildindex(n) guildname(str) guildlevel(n) mypos(n) battle_guildindex(n) battle_killcount(n) battle_prize(n) battle_zone(n) battle_time(n)
+	MSG_GUILD_INFO,							// 내 길드 정보 보내기	: guildindex(n) guildname(str) guildlevel(n) mypos(n)
 											// 길드 없으면 guildindex == -1, 이후 항목 생략
 	MSG_GUILD_MEMBERLIST,					// 길원 리스트			: guildindex(n) count(n) [index(n) name(str) position(n) online(c)]:count
 	MSG_GUILD_ONLINE,						// 길드원 온라인 상태	: guildindex(n) charindex(n) charname(str) online(c)
@@ -3378,6 +2564,7 @@ typedef enum _tagGuildType
 	MSG_GUILD_LEVELINFO,					// 길드 레벨 정보		: guildindex(n) guildlevel(n)
 	MSG_GUILD_BREAKUP,						// 해산 요청			: 
 	MSG_GUILD_BREAKUP_NOTIFY,				// 길드 해산을 알림		: guildindex(n) guildname(str)
+
 	MSG_GUILD_REGIST_REQ,					// 가입 신청 요청		: guildindex(n) bossindex(n) requesterindex(n)
 	MSG_GUILD_REGIST_ALLOW,					// 가입 신청 허용		: guildindex(n) requesterindex(n)
 	MSG_GUILD_REGIST_CANCEL,				// 가입 신청 취소		: bCancelTarget(c)
@@ -3385,43 +2572,45 @@ typedef enum _tagGuildType
 	MSG_GUILD_CHANGE_BOSS,					// 단장 이임			: guildindex(n) current(n) newboss(n)
 	MSG_GUILD_APPOINT_OFFICER,				// 부단장 임명			: guildindex(n) charindex(n)
 	MSG_GUILD_FIRE_OFFICER,					// 부단장 해임			: guildindex(n) charindex(n)
-	MSG_GUILD_KICK,							// 퇴출	요청			: guildindex(n) charindex(n)
+	MSG_GUILD_KICK,							// 퇴출					: guildindex(n) charindex(n)
 	MSG_GUILD_MEMBER_ADD,					// 길원 추가 알림		: guildindex(n) charindex(n) charname(str)
 	MSG_GUILD_MEMBER_OUT,					// 길원 탈퇴 알림		: guildindex(n) charindex(n) charname(str)
 	MSG_GUILD_MEMBER_KICK,					// 길원 강퇴 알림		: guildindex(n) bossindex(n) charindex(n) charname(str)
 	MSG_GUILD_INFO_CHANGE,					// 길드 정보 변경		: charindex(n) guildindex(n) guildname(str) pos(n)
 
-	MSG_GUILD_BATTLE_REQ_REQ,				// 길드전 신청 요청		: charindex(n) or guildindex(n) guildname(n) prize(n) time(n)
+	// MSG_GUILD_BATTLE // Date : 2005-03-18,   By Lee Ki-hwan
+	MSG_GUILD_BATTLE_REQ_REQ,				// 길드전 신청 요청		: charindex(n) or guildindex(n) prize(n)
 	MSG_GUILD_BATTLE_REQ_REJECT,			// 길드전 신청 거절		: reject_charindex(n)
-	MSG_GUILD_BATTLE_REQ_ACCEPT,			// 길드전 신청 허락		: guildindex1(n) guildname1(n) guildindex2(n) guildname2(n) prize(n) zone(n) time(n)
-	MSG_GUILD_BATTLE_STOP_REQ,				// 길드전 중단 요청		: charindex(n) or guildindex(n) guildname(n) 
+	MSG_GUILD_BATTLE_REQ_ACCEPT,			// 길드전 신청 허락		: guildindex1(n) guildindex2(n) prize(n) zone(n)
+	MSG_GUILD_BATTLE_STOP_REQ,				// 길드전 중단 요청		: charindex(n) or guildindex(n)
 	MSG_GUILD_BATTLE_STOP_REJECT,			// 길드전 중단 거절		: reject_charindex(n)
 	MSG_GUILD_BATTLE_STOP_ACCEPT,			// 길드전 중단 허락		:
-	MSG_GUILD_BATTLE_START,					// 길드전 시작 알림		: guildindex1(n) guildname1(n) guildindex2(n) guildname2(n) prize(n) zone(n) time(n)
-	MSG_GUILD_BATTLE_STATUS,				// 길드전 현황			: guildindex1(n) guildname1(str) killcount1(n)guildindex2(n) guildname2(str) killcount2(n) battletime(n)
-	MSG_GUILD_BATTLE_END,					// 길드전 종료			: winner_guildindex(n) guildindex1(n) guildname1(n) guildindex2(n) guildname2(n) prize(n)
-
+	MSG_GUILD_BATTLE_START,					// 길드전 시작 알림		: guildindex1(n) guildindex2(n) prize(n) zone(n)
+	MSG_GUILD_BATTLE_STATUS,				// 길드전 현황			: guildindex1(n) count1(n) guildindex2(n) count2(n) time(n)
+	MSG_GUILD_BATTLE_END,	
+	
+	// 공성전
 	MSG_GUILD_WAR_SET_TIME_REQ,				// 공성 시간 설정 요청	: wday(n) hour(n)
 	MSG_GUILD_WAR_GET_TIME,					// 공성 시간 확인		: warerrorcode(n:s) guildindex(n:s) guildname(n:s) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_NOTICE_TIME,				// 공성 시간 확정 알림	: zoneindex(n) month(c) day(c) hour(c) min(c)
 	MSG_GUILD_WAR_NOTICE_TIME_REMAIN,		// 공성 시작 남은 시간 알림	: zoneindex(n) min(c)
-	MSG_GUILD_WAR_START,					// 공성 시작 알림		: zoneindex(n) remainSec(n)
+	MSG_GUILD_WAR_START,					// 공성 시작 알림		: zoneindex(n)
 	MSG_GUILD_WAR_JOIN_ATTACK_GUILD,		// 공성 길드 신청 요청	: warerrorcode(n:s) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_JOIN_DEFENSE_GUILD,		// 수성 길드 신청 요청	: warerrorcode(n:s) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_JOIN_ATTACK_CHAR,			// 공성 용병 신청 요청	: warerrorcode(n:s) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_JOIN_DEFENSE_CHAR,		// 수성 용병 신청 요청	: warerrorcode(n:s) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_POINT,					// 야전 길드 포인트 알림: remain_sec(n) guild1_index(n) guild1_name(str) guild1_point(n) guild2_index(n) guild2_name(str) guild2_point(n) guild3_index(n) guild3_name(str) guild3_point(n) my_guild_point(n) defense_point(n)
-	MSG_GUILD_WAR_NOTICE_START_CASTLE,		// 야전끝 공성 시작 알림: zoneindex(n) remain_sec(n) guildindex1(n) guildname1(str) guildindex2(n) guildname2(str) guildindex3(n) guildname3(str)
+	MSG_GUILD_WAR_NOTICE_START_CASTLE,		// 야전끝 공성 시작 알림: zoneindex(n) guildindex1(n) guildname1(str) guildindex2(n) guildname2(str) guildindex3(n) guildname3(str)
 	MSG_GUILD_WAR_NOTICE_REMAIN_FIELD_TIME,	// 야전 남은 시간 알림	: zoneindex(n) remainSec(n)
 	MSG_GUILD_WAR_CASTLE_STATE,				// 공성 진행 상황 알림	: zoneindex(n) state(n) gatestate(n) remain_sec(n) guild1_index(n) guild1_name(str) guild1_point(n) guild2_index(n) guild2_name(str) guild2_point(n) guild3_index(n) guild3_name(str) guild3_point(n) my_guild_point(n) defense_point(n)
 											// state				: 0 - 일반, 1 - 야전, 2 - 공성
 	MSG_GUILD_WAR_GATE_STATE,				// 성문 정보 변경을 알림: old_gate_state(n) new_gate_state(n)
-	MSG_GUILD_WAR_ATTACK_SYMBOL,			// 권좌 공격 요청		: 
-	MSG_GUILD_WAR_END,						// 공성 끝남			: zoneindex(n) bWinDefense(c) owner_index(n) owner_name(str) char_index(n) char_name(str) nextMonth(n) nextDay(n) nextHour(n) wDay(n)
+	MSG_GUILD_WAR_ATTACK_SYMBOL,			// 권좌 공격				
+	MSG_GUILD_WAR_END,						// 공성 끝남			: zoneindex(n) bWinDefense(c) owner_index(n) owner_name(str) nextMonth(n) nextDay(n) nextHour(n)
 	MSG_GUILD_WAR_SET_TIME_REP,				// 공성 시간 설정 응답	: warerrorcode(n) month(c:s) day(c:s) hour(c:s) min(c:s)
 	MSG_GUILD_WAR_INVALID_COMMAND,			// 공성중 불가능한 길드 명령을 요청 : req_msg_type(uc)
-											// req_msg_type : MSG_GUILD_TYPE
-
+	
+	// Date : 2005-09-06(오전 10:57:51), By Lee Ki-hwan
 	MSG_GUILD_STASH_HISTORY_REQ,			// 입금내역 요청		: 
 	MSG_GUILD_STASH_HISTORY_REP,			// 입금내역 응답		: errcode(n) [month(n) day(n) money(ll)]:7
 	MSG_GUILD_STASH_VIEW_REQ,				// 출금전 잔액 요청		: 
@@ -3432,7 +2621,7 @@ typedef enum _tagGuildType
 	
 	// WSS_NEW_GUILD_SYSTEM 070704 --------------------------------------------------------------------------------->>
 	MSG_NEW_GUILD_INCLINE_ESTABLISH,			// 길드 성향 변경 : errocode(n:s), guildindex(n:s),guildinline(c:s), guildincline(c)
-	MSG_NEW_GUILD_MEMBER_ADJUST,				// 길드원 정보 수정 : (n)charIndex (s)name (n)exp (n)fame ,errocode(c:s), (c)stash(0:불가,1:가능)		
+	MSG_NEW_GUILD_MEMBER_ADJUST,				// 길드원 정보 수정 : (n)charIndex (s)name (n)exp (n)fame ,errocode(c:s)		
 	MSG_NEW_GUILD_INFO,							// 길드의 새로운 정보 : guildname(str) guildlevel(n) bossname(str) membercount(n) maxmembercount(n) avelevel(n) guildpoint(n) contributepoint(n)
 	MSG_NEW_GUILD_MEMBERLIST,					// 새로운 길드의 멤버 리스트 : maxmembercount(n) charname(str) positionname(str) charlevel(n) bplaying(b) zoneindex(n) contributepoint(n) job
 	MSG_NEW_GUILD_SKILL,						// 길드 스킬 skillcount(n) skillindex(n) skillLeanLevel(n) skillMaxLevel(n) - s
@@ -3440,49 +2629,14 @@ typedef enum _tagGuildType
 	MSG_NEW_GUILD_NOTICE_UPDATE,		// 길드 공지 사항 업데이트 : title(str) text(str) , errorcode(c:s)
 	MSG_NEW_GUILD_NOTICE_REQUEST,		// 길드장 공지 요청
 	MSG_NEW_GUILD_NOTICE_TRANSMISSION,	// 길드 공지 받기 : guildname(str) title(str) text(str) -s
-	MSG_NEW_GUILD_MANAGE,				// 길드의 새로운 매니저 :firstlistmember(c) membercount(n), [guildpos(n), membername(str) positionname(str) charlevel(n) contributeExp(n) contributeFame(n) index(n) stash(c) ] guildGrade(n) guildGrade_point(n)
+	MSG_NEW_GUILD_MANAGE,				// 길드의 새로운 매니저 :membercount(n), guildpos(n), membername(str) positionname(str) charlevel(n) contributeExp(n) contributeFame(n)
 	MSG_NEW_GUILD_SKILL_LEARN,			// 길드 스킬 습득 c->s: skillindex(n) // s->c: skill_index(n) is_new(uc) skill_level(c)
 	MSG_NEW_GUILD_POINT_RANKING,		// 길드 랭킹 전송 charindex(n) guildindex(n) ranking(n) 
 	// ---------------------------------------------------------------------------------------------------------------<<
-	//////////////////////////////////////////////////////////////////////////
-	// 이하 4개의 메세지는 서버에서만 사용(담부턴 서버만 사용하는 메세지는 따로 타입을 선언할것
-	MSG_GUILD_BATTLE_COMMAND_REQ,			// 길드전 명령어 준비 : guildindex(n) time(n) 
-	MSG_GUILD_BATTLE_COMMAND_START,			// 길드전 명령어 시작 : guildindex1(n) guildname1(str) guildindex2(n) guildname2(str) zone(n) time(n)
-	MSG_GUILD_BATTLE_COMMAND_STOP,			// 길드전 명령어 종료준비 : guildindex1(n), guildindex2(n)
-	MSG_GUILD_BATTLE_COMMAND_END,			// 길드전 명령어 종료 : winner_guildindex(n) guildindex1(n) guildname1(str) guildindex2(n) guildname2(str)
-	//////////////////////////////////////////////////////////////////////////
-	MSG_GUILD_BATTLE_KILL_MASTER,			// 길드전 공지메세지(길드마스터 대상을 죽였을때)
-	MSG_GUILD_BATTLE_NOW_SCORE,				// 길드전 공지메세지(길드 포인트 안내)
-	MSG_GUILD_BATTLE_BEFORE,				// 길드전 공지메세지(토너먼트 1분전 시작안내 메세지)
-	MSG_GUILD_BATTLE_END_NOTICE_SAME_ZONE,	// 길드전 공지메세지(토너먼트 종료 메세지)
-	MSG_GUILD_BATTLE_START_NOTICE_SAME_ZONE, // 길드전 공지메세지(토너먼트 시작 메세지)
-	MSG_GUILD_GP_INFO,							// 길드스킬사용시길마가GP정보를수시로알아야하는데, GP가바뀔때마다보스에게GP를보냄.
-	MSG_CASTLE_BUFF,
-	MSG_GUILD_WAR_SET_TIME_MENU,  	  		// 공성 시간 설정 메뉴 : count(c), zone(c), wday(c), hour(c)
-	MSG_GUILD_WAR_GET_TIME_UNI_REQ,			// 공성 시간 확인 요청 : zone(c)
-	MSG_GUILD_WAR_GET_TIME_UNI_REP,	  		// 공성 시간 확인 응답 : zone(c), month(c), day(c), hour(c), wday(c), count(c), joinflag(c), guildname(s), guildbossname(s)
-	MSG_NEW_GUILD_MARK_EDIT_WND,            // [sora] GUILD_MARK
-	MSG_NEW_GUILD_MARK_EDIT_FIN,            // [sora] GUILD_MARK
-	MSG_NEW_GUILD_MARK_EXPIRE,              // [sora] GUILD_MARK
-	// guild stash renewal [6/20/2011 rumist]
-	MSG_NEW_GUILD_STASH_LIST,				// (n)totalpage, (n)curpage , itemCount < stashIndex , itemIndex, plus, flag, a_used, a_used2, (short) option[5],  (str) socket >
-	MSG_NEW_GUILD_STASH_KEEP,				// (n)itemCount [ (n)itemIndex, (n)row, (n)col , count ]
-	MSG_NEW_GUILD_STASH_TAKE,				// (n)itemCount [ (n)itemIndex, (c) row, (c) col , (_64) count ]
-	MSG_NEW_GUILD_STASH_LOG,				// (n)logcount [(n)log-index (_64)time, (str)name, (c)action( 0:입금, 1:출금 ), (n)itemindex , (n)plus, (_64)count]
-	MSG_NEW_GUILD_STASH_ERROR,				// error
-	MSG_NEW_GUILD_STASH_LIST_MONEY,		//길드 창고 돈 조회	//아이탬이랑 같음
-	MSG_GUILD_MASTER_KICK_REQ,				// C -> S	(int)guild index	길드마스터 추방 요청
-	MSG_GUILD_MASTER_KICK_REP,				// S -> C	(int)guild index (str)guild master	길드마스터 추방 응답
-	MSG_GUILD_MASTER_KICK_CANCEL_REQ,		// C -> S	(int)guild index	길드마스터 추방 이의제기
-	MSG_GUILD_MASTER_KICK_CANCEL_REP,		// S -> C	(int)guild index 길드마스터 추방 이의제기 응답
-	MSG_GUILD_MASTER_KICK_STATUS,			// S -> C	(int)guild index (int)status	길드마스터 추방 상태값
 
-	MSG_GUILD_REMOTE_JOIN_REQ,				// (str)target name (int)type : 0 - 길마가 신청, 1 - 가입캐릭터가 신청 길드 원격 가입 신청 : 길마나 일반유저 모두 사용 가능하다.
-	MSG_GUILD_REMOTE_JOIN_OK,				// (str)target name (int)type : 0 - 길마가 신청, 1 - 가입캐릭터가 신청 길드 원격 가입 신청 허락
-	MSG_GUILD_REMOTE_JOIN_NO,				// 길드 원격 가입 거절
-	MSG_GUILD_ROOM_RECALL,					// 길드방 리콜
 
 } MSG_GUILD_TYPE;
+
 
 typedef enum _tagGuildStashErrorType
 {
@@ -3520,7 +2674,7 @@ typedef enum _tagGuildErrorType
 	MSG_GUILD_ERROR_SOURCE_BUSY,				// 내가 다른 사람에게 요청한 후 결정 안된 상태에서 다시 제3자에게 요청
 	MSG_GUILD_ERROR_FULLMEMBER,					// 길드 정원이 초과
 	MSG_GUILD_ERROR_REGIST_OK,					// 길드원 가입 완료
-	MSG_GUILD_ERROR_OUTBOSS,					// 길드장이 탈퇴하려면 뷁함
+	MSG_GUILD_ERROR_OUTBOSS,					// 길드장이 탈퇴하려면 ?紵?
 	MSG_GUILD_ERROR_OUT_OK,						// 탈퇴 성공
 	MSG_GUILD_ERROR_NOTFOUNDMEMBER,				// 강퇴, 임명, 이임등에서 대상 길원이 없을때
 	MSG_GUILD_ERROR_CANTKICKBOSS,				// 길장은 당퇴 불능
@@ -3532,13 +2686,12 @@ typedef enum _tagGuildErrorType
 	MSG_GUILD_ERROR_NOTOFFICER,					// 부관이 아니라서 해임 불가
 	MSG_GUILD_ERROR_FIRE_OFFICER_OK,			// 해임 성공S
 	MSG_GUILD_ERROR_REGDELAY,					// 탈퇴후 7일이 지나지 않아 가입 불능
-	MSG_GUILD_ERROR_CANTKICK,					// 강퇴 불가능(부단장이 부단장 강퇴시)
-	MSG_GUILD_ERROR_CANNOT_REGIST_REQ_BATTLE,	// 길드전 중에는 가입신청 불가
+	MSG_GUILD_ERROR_CANTKICK,					// 강퇴 불가능
+	MSG_GUILD_ERROR_CANNOT_REGIST_REQ_BATTLE,	// 길드전 중에는 가입신청 불가   
 	MSG_GUILD_ERROR_CANNOT_BREAK_BATTLE,		// 갈드전 - 길드전 중 길드 해체 불가
-	MSG_GUILD_ERROR_CANNOT_KICK_BATTLE,			// 갈드전 - 길드전 중 퇴출 불가
-	MSG_GUILD_ERROR_CANNOT_OUT_BATTLE,			// 갈드전 - 길드전 중 탈퇴 불가
-
-	MSG_GUILD_ERROR_BATTLE,						// 길드전 에러		: errtype(uc)
+	MSG_GUILD_ERROR_CANNOT_KICK_BATTLE,			// 갈드전 - 길드전 중 퇴출 불가   
+	MSG_GUILD_ERROR_CANNOT_OUT_BATTLE,
+	MSG_GUILD_ERROR_BATTLE,						// 길드 전투 관련 에러 메세지 
 	MSG_GUILD_ERROR_CANNOT_BREAK_WAR,			// 현재는 성주 길드 해체가 불가능
 	// WSS_NEW_GUILD_SYSTEM 070704 --------------------------------------------------------------------------------->>
 	MSG_NEW_GUILD_ERRROR_GUILDPOINT,			// 길드 레벨업시 길드 포인트 부족 
@@ -3561,22 +2714,6 @@ typedef enum _tagGuildErrorType
 	MSG_NEW_GUILD_SKILL_LEARN_ERROR_OK,	
 	MSG_NEW_GUILD_SKILL_LEARN_ERROR_LEVEL,		// 레벨 부족
 	MSG_NEW_GUILD_SKILL_ALEADY_LEARN,			// 이미 배운 스킬
-	MSG_GUILD_GRADE_EX_ERROR_WARCASTLE,			// 공성 중에는 변경할 수 없습니다.
-	MSG_GUILD_GRADE_EX_ERROR_COUNT_OEVER,		// 지정할 수 있는 인원 수를 초과 하였습니다.
-	MSG_GUILD_ERROR_CANNOT_BOSSCHANGE_FAIL,		// 길드(부)장을 이임할 수 없습니다.
-	MSG_NEW_GUILD_ERROR_SYSTEM,             // [sora] GUILD_MARK
-	MSG_NEW_GUILD_ERROR_OK_MARK_WND,        // [sora] GUILD_MARK
-	MSG_NEW_GUILD_ERROR_MASTER_KICK_RESERVE,			// 길마 해임 대기 상태입니다.
-	MSG_NEW_GUILD_ERROR_MASTER_KICK_LAST_CONNECT,		// 길마 최근 접속 종료일이 7일이 넘지 않아 해임할 수 없습니다.
-	MSG_NEW_GUILD_ERROR_MASTER_KICK_LAST_CHANGE,		// 길마 최근 변경 일이 7일이 넘지 않아 해임할 수 없습니다.
-	MSG_NEW_GUILD_ERROR_MASTER_KICK_CANCEL_NOT_RESERVE,	// 해임 대기 상태가 아니라 취소할 수 없습니다.
-	MSG_NEW_GUILD_ERROR_MASTER_KICK_DATA,				// 길드 관련 데이터 오류
-	MSG_NEW_GUILD_ERROR_NOT_EXIST_CHAR,					// 가입할 캐릭터가 잘못되었습니다.
-	MSG_NEW_GUILD_ERROR_EXIST_GUILD,					// 가입할 캐릭터가 길드가 있습니다.
-	MSG_GUILD_ERROR_CANNOT_REGIST_REQ_SERVERTRANS, // 캐릭터 서버이전중 길드 가입 불가 [7/25/2012 Ranma]
-	MSG_GUILD_ERROR_NOT_EXIST_NPC,						// 주위에 NPC가 없음.
-	MSG_GUILD_ERROR_CANNOT_REGISTER_REQ_ZONE,			// 이 지역에서는 길드 가입 불가
-	MSG_GUILD_ERROR_ITEM,								// 아이템 부족
 	// --------------------------------------------------------------------------------------------------------------<<
 } MSG_GUILD_ERROR_TYPE;
 
@@ -3598,16 +2735,10 @@ typedef enum _tagGuildErrorBattleType
 
 typedef enum _tagGuildPositionType
 {
-	MSG_GUILD_POSITION_BOSS,				// 0 길드 마스터
-	MSG_GUILD_POSITION_OFFICER,				// 1 길드 부관
-	MSG_GUILD_POSITION_MEMBER,				// 2 일반 길드원
-	MSG_GUILD_POSITION_RUSH_CAPTAIN,		// 3 돌격조 대장
-	MSG_GUILD_POSITION_SUPPORT_CAPTAIN,		// 4 지원조 대장
-	MSG_GUILD_POSITION_RECON_CAPTAIN,		// 5 정찰조 대장
-	MSG_GUILD_POSITION_RUSH_MEMBER,			// 6 돌격조원
-	MSG_GUILD_POSITION_SUPPORT_MEMBER,		// 7 지원조원
-	MSG_GUILD_POSITION_RECON_MEMBER,		// 8 정찰조원
-	MSG_GUILD_POSITION_UNKNOWN = 99,
+	MSG_GUILD_POSITION_BOSS,					// 길드 마스터
+	MSG_GUILD_POSITION_OFFICER,					// 길드 부관
+	MSG_GUILD_POSITION_MEMBER,					// 길드원
+	MSG_GUILD_POSITION_UNKNOWN = 99,			// 
 } MSG_GUILD_POSITION_TYPE;
 
 typedef enum _tagGuildWarErrorType
@@ -3848,9 +2979,6 @@ typedef enum _tagMsgHelperCommandType
 	MSG_HELPER_GUILD_MARK_TABLE,				// hs->gs : index1(n), index2(n), index3(n)
 	MSG_HELPER_LEVELUP_LOG,						// gs->hs : charstr(str), level(n)
 	MSG_HELPER_PET_COLOR_CHANGE,				// gs->hs : charindex(n) petindex(n) petcolor(c)
-
-	MSG_HELPER_NEW_GUILD_MARK_REGIST,       // [sora] GUILD_MARK
-	MSG_HELPER_NEW_GUILD_MARK_EXPIRE,       // [sora] GUILD_MARK
 												
 } MSG_HELPER_COMMAND_TYPE;
 
@@ -4006,9 +3134,6 @@ typedef enum _tagMsgTeachType
 
 	MSG_TEACH_ERR,						// 에러				: errtype(uc)
 
-	MSG_TEACH_RENEWER_TEACH_GIFT,		// 보상 요청		: subtype(uc)
-	MSG_TEACH_LOGIN,					// 로그인 메시지	: teachType(n) charIndex(n) charName(str)
-
 } MSG_TEACH_TYPE;
 
 typedef enum _tagMsgTeachTeacherListType
@@ -4057,7 +3182,6 @@ typedef enum _tagMsgTeachErrType
 	MSG_TEACH_ERR_TEACHER_FULL,				// 제자가 꽉 차 있음
 	MSG_TEACH_ERR_NOE_REQ,					// 신청한 적 없음
 	MSG_TEACH_ERR_NOMORE_STUDENT,			// 더이상 학생 할 수 없음
-	MSG_TEACH_ERR_FAME,						// 명성치 부족으로 후견인 포기 못함
 } MSG_TEACH_ERR_TYPE;
 
 typedef enum _tagMsgChangeJobType
@@ -4195,7 +3319,7 @@ typedef enum _tagFriendType
 	MSG_FRIEND_REGIST_MEMBER_NOTIFY,
 	MSG_FRIEND_DELETE_MEMBER_NOTIFY,
 	MSG_FRIEND_MEMBERLIST,
-	MSG_FRIEND_DELETE_BLOCK
+
 } MSG_FRIEND_TYPE;
 
 
@@ -4213,7 +3337,7 @@ typedef enum _tagFriendErrorType
 	MSG_FRIEND_ERROR_FRIENDNAME, //이름이 잘못되었다..
 	MSG_FRIEND_ERROR_ALREADY_BLOCK, //이미 블럭 되었다.
 	MSG_FRIEND_ERROR_NOT_BLOCK, //이미 블럭 되지 않은 케릭터 
-	MSG_FRIEND_ERROR_REGIST_REFUSE_PVP		// pvp 에서는 친구등록 거부
+	MSG_FRIEND_ERROR_REGIST_REFUSE_PVP // PVP중인 캐릭터는 친구 등록 불가
 } MSG_FRIEND_ERROR_TYPE;
 
 typedef enum _tagTreasureBoxType
@@ -4336,8 +3460,6 @@ typedef enum __tagMsgExMonserComboErrorType
  MSG_EX_MONSTERCOMBO_ERROR_FULL,   // 콤보존 공간이 없을 경우
  MSG_EX_MONSTERCOMBO_ERROR_NOT_EDIT,  // 편집완료가 안됨
  MSG_EX_MONSTERCOMBO_ERROR_NOT_COMPLETE_STAGE, // 스테이지 완료되지 않았음
- MSG_EX_MONSTERCOMBO_ERROR_DEAD_CHAR,	// 죽은 캐릭터가 있어서 스테이지 진행할 수 없음
- MSG_EX_MONSTERCOMBO_ERROR_ALREADY_START, // 스테이지가 이미 시작되어 소환할 수 없음
 }MSG_EX_MONSTERCOMBO_ERROR_TYPE;
 
 typedef enum _tagMsgEffectFireType
@@ -4346,398 +3468,5 @@ typedef enum _tagMsgEffectFireType
 	MSG_EFFECT_FIRE_ACT,
 } MSG_EFFECT_FIRE_TYPE;
 
-typedef enum __tagMsgFactoryType
-{
-	MSG_FACTORY_ERROR,
-	MSG_FACTORY_LEARN,
-	MSG_FACTORY_ITEM_LIST,
-	MSG_FACTORY_ITEM_MAKE_REQ,
-	MSG_FACTORY_ITEM_MAKE_REP,
-	MSG_FACTORY_ITEM_MAKE,
 
-}MSG_FACTORY_TYPE;
-
-typedef enum __tagMsgFactoryErrorType
-{
-	MSG_FACTORY_ERROR_MAKE_OK,
-	MSG_FACTORY_ERROR_SYSTEM,
-	MSG_FACTORY_ERROR_ALREADY_REG,
-	MSG_FACTORY_ERROR_SKILL,
-	MSG_FACTORY_ERROR_NAS,
-	MSG_FACTORY_ERROR_EXP,
-	MSG_FACTORY_ERROR_ITEM,
-	MSG_FACTORY_ERROR_INVEN,
-
-}MSG_FACTORY_ERROR_TYPE;
-
-typedef enum __tagMsgExAffinityType
-{
-	MSG_EX_AFFINITY_CONNECT_REQ,		// 세력 친구 맺기		: npcidx(n)
-	MSG_EX_AFFINITY_ITEM_CONTRIBUTE_REQ,	// 친화도 아이템 기부	: npcidx(n) clientPoint(n) item_count(n) tab_idx(c) row_idx(c) col_idx(c) count(n) 												
-	MSG_EX_AFFINITY_ITEM_CONTRIBUTE_REP,	// 친화도 아이템 기부 응답	: affinityidx(n) point(n)	
-	MSG_EX_AFFINITY_SHOPUSE_REQ,		// 상점 이용요청		: npcidx(n) 
-	MSG_EX_AFFINITY_SHOPUSE_REP,		// 상점 이용응답		: npcidx(n) 
-	MSG_EX_AFFINITY_GIFTINFO_REQ,		// 다음보상정보 요청	: npcidx(n)
-	MSG_EX_AFFINITY_GIFTINFO_REP,		// 다음보상정보 응답	: point(n) itemidx(n) item_count(n)
-	MSG_EX_AFFINITY_GIFT_REQ,			// 선물받기 요청		: npcidx(n)
-	MSG_EX_AFFINITY_GIFT_REP,			// 선물받기 응답	
-	MSG_EX_AFFINITY_UPDATE_POINT,		// 포인트갱신		: affinityidx(n) poiny(n)
-	MSG_EX_AFFINITY_LISTINFO,			// 친화도 리스트 정보	: affinity_count(n) affinityidx(n) point(n)
-	MSG_EX_AFFINITY_ADDINFO,			// 친화도 추가 정보		: affinityidx(n)
-	MSG_EX_AFFINITY_ERROR,				// 친화도관련 ERROR 메시지 : errortype(uc)
-	MSG_EX_AFFINITY_REWARD_NOTICE,		// 보상 알림 : noticecount(c) npcidx(n)		[100322: selo] 추가함
-	MSG_EX_AFFINITY_INFOTAB_REQ = 14,		// 친화도 개편2 친화도 보상 정보 요청 [2/13/2013 Ranma]
-	MSG_EX_AFFINITY_INFOTAB_REP = 15,		// 친화도 개편2 친화도 보상 정보 응답 [2/13/2013 Ranma]
-}MSG_EX_AFFINITY_TYPE;
-
-typedef enum __tagMsgExAffinityErrorType
-{
- MSG_EX_AFFINITY_ERROR_CONNECT_SUCCESS,   // 친화도 연결 성공
- MSG_EX_AFFINITY_ERROR_CONNECT_NOMONEY,   // 나스부족
- MSG_EX_AFFINITY_ERROR_CONNECT_ALREADY,   // 이미세력 친구맺음
- 
- MSG_EX_AFFINITY_ERROR_ITEM_CONTRIBUTE_MAX,  // 친화도 포인트 최대로 찼음
- MSG_EX_AFFINITY_ERROR_ITEM_CONTRIBUTE_MISSMATCH, // 기부 부적합 아이템
- 
- MSG_EX_AFFINITY_ERROR_USESHOP_POINT,   // 상점이용 포인트 부족
- MSG_EX_AFFINITY_ERROR_GIFTINFO_NOITEM,   // 보상받을 아이템이 없다
- MSG_EX_AFFINITY_ERROR_GIFTINFO_NOPOINT,   // 포인트부족으로 보상 못받음
- MSG_EX_AFFINITY_ERROR_GIFT_NOSPACE,   // 인벤에 아이템 받을 공간이 없다.
- MSG_EX_AFFINITY_ERROR_GIFT_MAXWEIGHT,   // 인벤 무게 초과
-
- MSG_EX_AFFINITY_ERROR_NOT_CONNECTED,   // 친화도가 연결되어있지 않다.
- MSG_EX_AFFINITY_ERROR_CONNECT_PCLEVEL,			// 레벨부족
- MSG_EX_AFFINITY_ERROR_CONNECT_NOITEM,			// 아이템없음
-}MSG_EX_AFFINITY_ERROR_TYPE;
-
-// connie [2009/9/8] - NPC 찾기 
-
-typedef enum __tagNpcPortalScroll
-{
-	MSG_NPC_PORTAL_LIST = 0,			// 리스트를 보내준다. 
-	MSG_NPC_PORTAL_LOCATION,		// 선택한 NPC의 위치를 넘겨준다.
-	MSG_NPC_PORTAL_GO,				// 이동할 NPC m_npcIdx 를 보내준다.
-	MSG_NPC_PORTAL_ERROR,
-} MSG_NPC_PORTAL_SCROLL_TYPE;
-
-typedef enum __tagNpcPortalScrollErrorType
-{
-	MSG_NPC_PORTAL_ERROR_SUCESS = 0,
-	MSG_NPC_PORTAL_ERROR_MOB,				// 현재 필드에 해당 몬스터가 존재하지 않습니다.
-	MSG_NPC_PORTAL_ERROR_LIST,				// 이 아이템은 현재 에어리어에서는 사용할 수 없습니다.
-} MSG_NPC_PORTAL_SCROLL_ERROR_TYPE;
-
-typedef enum __tagMsgExLoadingEnd
-{
-	MSG_EX_LODING_END_NPC_PORTAL_USE,		// NPC 스크롤 사용.
-}MSG_EX_LOADING_END_TYPE;
-
-typedef enum __tagMsgTitleSystemType
-{	
-	MSG_EX_TITLE_SYSTEM_LIST_REQ,				// 호칭 리스트 요청 Client -> Server
-	MSG_EX_TITLE_SYSTEM_LIST_REP_NO_LIST,		// 호칭 리스트 없음 Server -> Client
-	MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST,	// 호칭 리스트 전송 Server -> Client :  : nCount(n), titleindex(n), titleindex(n), ....
-	MSG_EX_TITLE_SYSTEM_ALREADY_HAVE_TITLE,		// 아이템 사용 시 이미 보유중 타이틀임. Server -> Client : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_INSERT_SUCCESS,			// 아이템 사용 시 Title List에 입력 성공함. Server -> Client : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ,		// 타이틀 선택 요청 Client -> Server : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_NOT_HAVE_TITLE,			// 타이틀 선택 요청하였으나 Server에는 목록이 없음. Server -> Client : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_SELECT_SUCCESS,	// 타이틀 선택 성공 Server -> Client : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_REQ,		// 타이틀 취소 요청 Client -> Server : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_SUCCESS,	// 타이틀 취소 성공 Server -> Client : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_DELETE_REQ,		// 타이틀 삭제 요청 Client -> Server : titleindex(n)
-	MSG_EX_TITLE_SYSTEM_TITLE_DELETE_SUCCESS,	// 타이틀 삭제 성공 Server -> Client : titleindex(n)	
-	MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED,			// 타이틀 기간 만료 Server -> Client : titleindex(n)	
-	MSG_EX_TITLE_SYSTEM_TITLE_CHANGE_TIME,		// // [selo: 101105] 종료 시간 강제 변경 Server -> Client : titleindex(n), endtime(n)
-} MSG_EX_TITLE_SYSTEM_TYPE;
-
-// [100208: selo] 퀘스트 아이템 다시 받기
-typedef enum __tagMsgExTakeAgainQuestItemType
-{
-	MSG_EX_TAKE_AGAIN_QUEST_ITEM_SUCCESS,	// 아이템 받기 성공
-
-	MSG_EX_TAKE_AGAIN_QUEST_ITEM_ERROR_ALREADY_EXIST,	// 아이템이 존재 함
-
-	MSG_EX_TAKE_AGAIN_QUEST_ITEM_ERROR_FULL_INVENTORY,	// 인벤토리가 가득 참
-}MSG_EX_TAKE_AGAIN_QUEST_ITEM_TYPE;
-
-// socket system message define. [4/8/2010 rumist]
-typedef enum __tagMsgExSocketType
-{
-// 소켓 생성
-	MSG_EX_SOCKET_MAKE_REQ,	// 소켓 생성 요청 row1(c) col1(c) item_idx1(n) (장비아이템) row2(c) col2(c) item_idx2(n)(가공스크롤) 
-	MSG_EX_SOCKET_MAKE_REP, // 소켓 생성 성공 count(c)(소켓생성 성공개수)
-
-// 보석 결합
-	MSG_EX_SOCKET_COMBINE_JEWEL_REQ, // 보석 결합 요청 row(c) col(c) item_idx(n) (장비아이템) count(c) pos(c) row(c) col(c) item_idx(n) (보석아이템)
-	MSG_EX_SOCKET_COMBINE_JEWEL_REP, // 보석 결합 성공
-
-// 보석 업그레이드
-	MSG_EX_SOCKET_UPGRADE_JEWEL_REQ,	// 보석 업그레이드 row1(c) col1(c) item_idx1(n) (보석아이템1) row2(c) col2(c) item_idx2(n) (보석아이템2) row3(c) col3(c) item_idx3(n) (안정제)
-	MSG_EX_SOCKET_UPGRADE_JEWEL_REP,	// 보석 업그레이드 응답 item_db_idx(n) (업그레이드된 보석)
-
-	MSG_EX_SOCKET_UPGRADE_JEWEL_CHAOS_REQ,   //(6)카오스 보석 업그레이드
-	MSG_EX_SOCKET_UPGRADE_JEWEL_CHAOS_REP,   //(7)카오스 보석 업그레이드 응답
-
-// 소켓 정보 요청
-	MSG_EX_SOCKET_INFO_REQ,		// row(c) col(c) item_idx(n)
-	MSG_EX_SOCKET_INFO_REP,		// count(c) pos(c) (소켓위치) jeweldbidx(n) (보석인덱스)
-
-// 소켓 비우기 요청
-	MSG_EX_SOCKET_CLEAN_JEWEL_REQ,	// row(c) col(c) item_idx(n)
-	MSG_EX_SOCKET_CLEAN_JEWEL_REP,  // 소켓 비우기 성공
-
-// 에러메시지
-	MSG_EX_SOCKET_ERROR,		// 에러메시지 errorcode(c)
-	MSG_EX_SOCKET_CLEAN_ONE_JEWEL_REQ, // B0418 소캣 시스템 개편 보석 하나 제거 [3/28/2013 Ranma]
-}MSG_EX_SOCKET_TYPE;
-
-
-typedef enum __tagMsgExSocketErrorType
-{
-	MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH,	// 올바른 아이템이 아닙니다.
-	MSG_EX_SOCKET_ERROR_FAILED_MAKE,	// 소켓 생성 실패
-	MSG_EX_SOCKET_ERROR_NOMONEY,		// 돈 없음	
-	MSG_EX_SOCKET_ERROR_MAX_SOCKET,		// 보석 결합시 소켓 개수 초과
-	MSG_EX_SOCKET_ERROR_INVEN_NOSPACE,	// 인벤공간 부족
-	MSG_EX_SOCKET_ERROR_NOWEARITEM,		// 무기 방어구만할 수 있는 작업입니다.
-	MSG_EX_SOCKET_ERROR_NOSPACE,		// 소켓이 없는 아이템으로는 작업을 진행할 수 없습니다
-	MSG_EX_SOCKET_ERROR_NOJEWEL,		// 소켓이 비워있는 아이템은 작업을 진행할 수 없습니다
-	MSG_EX_SOCKET_ERROR_FAILED_COMBINE = 9, // 보석 장착 실패
-}MSG_EX_SOCKET_ERROR_TYPE;
-
-typedef enum __tagMsgCostume2SystemType
-{	
-	MSG_EX_COSTUME2_SYSTEM_ERROR,	// 코스튬2 에러 : (uc)ErrorType
-	MSG_EX_COSTUEM2_WEARING,		// 다른 캐릭터의 코스튬2 아이템 입기/벗기 : (n)cha_index, (uc)wear_pos, (n)item_index
-	MSG_EX_COSTUME2_PREINVENINFO,	// 코스튬2 착용 정보 전체 받기(인벤토리 메시지 받기전에 받음) : (uc)wear_pos, (n)uni_index, (n)item_index
-	MSG_EX_COSTUME2_WEARING_SUIT,	// 한벌의상 입기 added by sam 11/02/01[SAM]
-	MSG_EX_COSTUME2_PREINVENINFO_SUIT,// 한벌의상 프리인벤 added by sam 11/02/01[SAM]
-} MSG_EX_COSTUME2_SYSTEM_TYPE;
-
-typedef enum _tagMsgTeachRenewerGiftErrorType
-{
-	MSG_TEACH_GIFT_ERROR,			// 후견인 시스템 : 보상 실패
-	MSG_TEACH_GIFT_SUC,				// 후견인 시스템 : 보상 성공
-	MSG_TEACH_GIFT_NOMORE,			// 후견인 시스템 : 이미 지급 완료
-} MSG_TEACH_RENEWER_GIFT_ERROR_TYPE;
-
-typedef enum _tagMsgEventPromotion2Type
-{
-	MSG_EVENT_PROMOTION2_COUPON_USE_REQ,		// 쿠폰 사용 : str(cuponKey)
-	MSG_EVENT_PROMOTION2_COUPON_USE_REP,		// 쿠폰 사용 답변: MSG_EVENT_PROMOTIN2_REP_ERROR_TYPE
-}MSG_EVENT_PROMOTIN2_TYPE;
-
-typedef enum _tagMsgEventPromotion2RepErrorType
-{
-	MSG_EVENT_PROMOTION2_REP_ERROR_FAIL,		// 실패 ( 지금은 쿠폰 발급 시스템을 사용할 수 없습니다. )
-	MSG_EVENT_PROMOTION2_REP_ERROR_SUC,			// 쿠폰 사용 가능 (바로 상품 지급 )
-	MSG_EVENT_PROMOTION2_REP_ERROR_KEY,			// 등록되지 않은 쿠폰
-	MSG_EVENT_PROMOTION2_REP_ERROR_USED,		// 이미 사용한 쿠폰.
-	MSG_EVENT_PROMOTION2_REP_ERROR_USER,		// 쿠폰을 사용할 수 없는 유저가 사용.
-	MSG_EVENT_PROMOTION2_REP_ERROR_DATE,		// 사용 기간이 지났음.
-}MSG_EVENT_PROMOTION2_REP_ERROR_TYPE;
-
-typedef enum _tagMsgExCastllanType
-{
-	MSG_EX_CASTLLAN_GIVE_ITEM_REQ,		// 성주 아이템 요청. 
-	MSG_EX_CASTLLAN_GIVE_ITEM_REP,		// 성주 아이템 요청 답변
-	MSG_EX_CASTLLAN_ERROR,				// 성주 코스튬 에러
-	MSG_EX_CASTLLAN_GIVE_ITEM_GUILD_COSTUME_REQ,	// 성주 길드 코스튬 아이템 요청(추가)
-	MSG_EX_CASTLLAN_GIVE_ITEM_GUILD_TITLE_REQ,	// 성주 길드 호칭 아이템 요청(추가)
-	
-}MSG_EX_CASTLLAN_TYPE;
-
-typedef enum _tagMsgExCastllanErrorType
-{
-	MSG_EX_CASTLLAN_ERROR_GIVE_ITEM_ERROR,	// 지급할 아이템이 없습니다.
-	MSG_EX_CASTLLAN_ERROR_GIVE_ITEM_SUC,	// 성주 아이템 지급 성공.
-	MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN,		// 성주가 아닙니다.	
-	MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN_GUILD, 	// 성주길드가 아닙니다. (추가)
-}MSG_EX_CASTLLAN_ERROR_TYPE;
-
-typedef enum __tagMsgExRankingType
-{
-	MSG_EX_RANKING_LIST_REQ,				// 리스트 요청 type(n)
-	MSG_EX_RANKING_ERROR_LIST_SUCCESS,		// 리스트 요청 성공 type(n), count(n), rank(n), name(s), job(n), job2(n), date(un), extra(n)
-	MSG_EX_RANKING_ERROR_LIST_FAIL,			// 리스트 요청 실패 
-	MSG_EX_RANKING_ERROR_MSG_RANKED,		// 랭크 되었음 메시지 
-}MSG_EX_RANKING_TYPE;
-
-
-// 랭킹 시스템 개편 : 패킷 분류
-typedef enum _tagRankingSystemEx
-{
-	MSG_EX_RANKING_LIST,					// (c->s) (uc)type(레벨마스터, 직업랭커), (uc)subtype(직업)
-											// (s->c) (uc)type, (uc)subtype, (int)total_count, (int)list_count, (str)name, (int)ranking, (int)ranking_pre, (int)exp, (int)exp_pre, (int)level, (uc)job, (str)date.....
-	MSG_EX_RANKING_SEARCH,					// (c->s) (uc)type(레벨마스터, 직업랭커), (uc)subtype(직업), (string)name(이름)
-											// (s->c) (uc)type, (uc)subtype, (int)list_count, (str)name, (int)ranking, (int)ranking_pre, (int)exp, (int)exp_pre, (int)level, (uc)job, (str)date.....
-	MSG_EX_RANKING_REFRESH,					// (s->c)
-	MSG_EX_RANKING_ERROR,					// (c->s) (uc)type
-}MSG_EX_RANKING_SYSTEM_EX_TYPE;
-
-// 랭킹 시스템 개편 : 랭킹 오류
-typedef enum _tagRankingSystemExError						
-{						
-	MSG_EX_RANKING_SYSTEM_ERROR,				// (s->c) DB 에러
-	MSG_EX_RANKING_SYSTEM_ERROR_NOT_EXIST,		// (s->c) 검색한 유저가 존재하지 않음
-	MSG_EX_RANKING_SYSTEM_ERROR_REFRESH_TIME,	// (s->c) 현재 랭킹 정보 갱신 중
-}MSG_EX_RANKING_SYSTEM_EX_ERROR_TYPE;
-
-typedef enum _tagMsgExFaceOffType
-{
-	MSG_EX_FACEOFF_UIOPEN_REQ,
-	MSG_EX_FACEOFF_REQ,		// hairStyle(u char), faceStyle(u char)
-	MSG_EX_FACEOFF_REP,		// 성공 (1, hairStyle(u char), faceStyle(u char)) 실패(-1)
-}MSG_EX_FACEOFF_TYPE;
-
-typedef enum _tagMsgExFaceOffErrorType
-{
-	MSG_EX_FACEOFF_ERROR_SUC,			// hairStyle(u char), faceStyle(u char)
-	MSG_EX_FACEOFF_ERROR_PLZ_CHOISE,	// 현재와 동일한 외모 선택 시,
-	MSG_EX_FACEOFF_ERROR_FAIL,			// 성형 아이템이 없을 때, 
-}MSG_EX_FACEOFF_ERROR_TYPE;
-
-// [selo: 110104] 메시지 박스
-typedef enum __tagMsgExMsgBoxType
-{
-	MSG_EX_MSGBOX_INVEN_FULL,				// 인벤토리 가득참
-	MSG_EX_MSGBOX_INVEN_WEIGHT_100,			// 인벤토리 무게가 100 프로 넘음
-	MSG_EX_MSGBOX_CHANGE_START_POINT,	// req(c) 확인(1), 취소(0): 신규캐릭터 시작지점 변경요청
-}MSG_EX_MSGBOX_TYPE;
-
-// lacaball meesage type. [1/11/2011 rumist]
-typedef enum __tagMsgExMsgLCBall
-{
-  MSG_EX_LCBALL_INFO,          // 현재 상태를 요청 or 받음
-  MSG_EX_LCBALL_USE,           // 라카볼 사용하기
-  MSG_EX_LCBALL_MSG,           // 라카볼 메인상품에 당첨되었을때 전 서버 공지
-}MSG_EX_LCBALL_TYPE;
-
-// 휴면 계정 보상 이벤트
-typedef enum _tagMsgEventUserComebackErrorType
-{
-	MSG_EVENT_USER_COMEBACK_ERROR_SUC,					// 성공 
-	MSG_EVENT_USER_COMEBACK_ERROR_NO_MORE,				// 벌써 받았음.
-	MSG_EVENT_USER_COMEBACK_ERROR_NOT_USER,				// 해당 유저가 아님.
-	MSG_EVENT_USER_COMEBACK_ERROR_NOT_CHANNEL,			// 보상 받을 수 있는 채널이 아닙니다.
-
-}MSG_EVENT_USER_COMEBACK_ERROR_TYPE;
-
-// 생일 이벤트
-typedef enum _tagMsgEventCharBirthdayType
-{
-	MSG_EVENT_CHAR_BIRTHDAY_GIFT_REQ,					// 선물 요청 
-	MSG_EVENT_CHAR_BIRTHDAY_GIFT_REP,					// 선물 요청 답변 MSG_EVENT_CHAR_BIRTHDAY_ERROR_TYPE(char)
-	MSG_EVENT_CHAR_BIRTHDAY_BDAY_REQ,					// 생일 요청 
-	MSG_EVENT_CHAR_BIRTHDAY_BDAY_REP,					// 생일 요청 답변 year(int), month(char), day(char), giftflag(char)
-}MSG_EVENT_CHAR_BIRTHDAY_TYPE;
-
-typedef enum _tagMsgEventCharBirthdayErrorType
-{
-	MSG_EVENT_CHAR_BIRTHDAY_ERROR_SUC,					// 성공
-	MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL,					// 이미 받았거나. 아직 생일 선물을 받을 수 없습니다.
-}MSG_EVENT_CHAR_BIRTHDAY_ERROR_TYPE;
-
-typedef enum __tagMsgExMsgRoyalRumble
-{
-    MSG_EX_ROYAL_RUMBLE_PLAYER_REQ,            // (0)(c->s) 선수등록 요청 
-    MSG_EX_ROYAL_RUMBLE_PLAYER_REP,            // (1)(s->c) 선수등록 응답 0:성공, 1:돈없음, 2:선수등록이 불가능 합니다. 
-    MSG_EX_ROYAL_RUMBLE_NOTICE,                // (2)(s->c) (uc)command 0:신청시간입니다. 1:5분남았습니다. 2:종료되었습니다.
-    MSG_EX_ROYAL_RUMBLE_REG_MENU,              // (3)(s->c) 선수등록 시간 알림 메뉴 charpreplay에서 보냄
-    MSG_EX_ROYAL_RUMBLE_PLAYER_UNREGIST_REQ,   // (4)(c->s) 선수등록 취소 요청
-    MSG_EX_ROYAL_RUMBLE_PLAYER_UNREGIST_REP,   // (5)(s->c) 선수등록 취소 응답 (uc)command 0:취소성공, 1:취소할 수 있는 시간이 아닙니다., 2:등록자명단에 없습니다
-    MSG_EX_ROYAL_RUMBLE_PLAYER_REG_RESULT,     // (6)(s->c) (uc)command 0:아무것도아닌상태, 1:선택되었음, 2:탈락, 3:경기DRAW
-    MSG_EX_ROYAL_RUMBLE_GO_ZONE,               // (7)(s->c) 경기시작 1분 전 royal rumble 존으로 이동하라는 메시지 발송
-    MSG_EX_ROYAL_RUMBLE_ENTER_NEXT_PLAYER,     // (8)(s->c) (n)second n초후 다음 선수가 투입됩니다.
-    MSG_EX_ROYAL_RUMBLE_HOLD,                  // (9)(s->c) (uc) boolean 0:not hold 1:hold
-    MSG_EX_ROYAL_RUMBLE_WINNER,                // (10)(s->c) (n)leveltype 0:rookie, 1:senior, 2:master, (str)nick
-    MSG_EX_ROYAL_RUMBLE_REWARD_REQ,            // (11)(c->s) 보상요청
-    MSG_EX_ROYAL_RUMBLE_REWARD_REP,            // (12)(s->c) 보상응답 당신은 대상자가 아닙니다.
-    MSG_EX_ROYAL_RUMBLE_POINT_REQ,             // (13)(c->s) 전장포인트 조회 요청
-    MSG_EX_ROYAL_RUMBLE_POINT_REP,             // (14)(s->c) 전장포인트 조회 응답
-	MSG_EX_ROYAL_RUMBLE_TIME_REQ,              // (15)(c->s) 로얄럼블 경기시간확인 요청
-    MSG_EX_ROYAL_RUMBLE_TIME_REP,              // (16)(s->c) 로얄럼블 경기시간확인 응답
-	MSG_EX_ROYAL_RUMBLE_LEFT_COUNT,            // (s->c) 로얄럼블 남은 인원 카운트 메시지
-    MSG_EX_ROYAL_RUMBLE_TIME_NOTICE,           // (s->c) 로얄럼블 남은 시간 
-	MSG_EX_ROYAL_RUMBLE_NOTFOUND_ITEM,         // (s->c) 아이템 없어서 존이동을 못해요~              (신규추가)
-    MSG_EX_ROYAL_RUMBLE_KILL_PLAYER,           // (s->c) 누가 누구를 죽였는지 전투메시지 창에 표시   (신규추가)
-}MSG_EX_ROYAL_RUMBLE_TYPE;
-
-typedef enum _tagMsgGMCommandNoticeType
-{
-	MSG_GM_COMMAND_NOTICE_KICK,			// 킥(강제 종료)
-	MSG_GM_COMMAND_NOTICE_SILENCE,		// 채팅 금지
-}MSG_GM_COMMAND_NOTICE_TYPE;
-
-typedef enum _tagMsgExTreasureMapKeyExchangeError
-{
-	MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_SUC, // 교환 성공
-	MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_FAIL,	// 지금은 교환할 수 없습니다. (아이템을 생성 할 수 없을때
-	MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_ITEM,	// 교환할 열쇠 아이템이 없습니다.
-	MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_COUNT,// 교환할 열쇠 아이템의 갯수가 부족함.
-}MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_TYPE;
-typedef enum _tagMsgPostSystemType
-{
-	MSG_USERSERVER_POST_SYSTEM_MAIL_LIST_REQ,	// 우편 리스트 요청
-	MSG_USERSERVER_POST_SYSTEM_MAIL_LIST_REP,	// 우편 리스트 응답
-	MSG_USERSERVER_POST_SYSTEM_MAIL_SEND_REQ,	// 우편 보내기 요청
-	MSG_USERSERVER_POST_SYSTEM_MAIL_SEND_REP,	// 우편 보내기 응답
-	MSG_USERSERVER_POST_SYSTEM_MAIL_READ_REQ,	// 우편 읽기 요청
-	MSG_USERSERVER_POST_SYSTEM_MAIL_READ_REP,	// 우편 읽기 응답
-	MSG_USERSERVER_POST_SYSTEM_MAIL_DEL_REQ,	// 우편 삭제 요청
-	MSG_USERSERVER_POST_SYSTEM_MAIL_DEL_REP,	// 우편 삭제 응답
-
-	MSG_USERSERVER_POST_SYSTEM_MAIL_ATTACH_ACK,	// 우편 첨부파일 정보
-	MSG_USERSERVER_POST_SYSTEM_MAIL_ATTACH_REQ,	// 우첨 부파일 인벤 넣기
-	MSG_USERSERVER_POST_SYSTEM_MAIL_ATTACH_REP,	// 우편 첨부파일 인벤 넣기 응답
-	MSG_USERSERVER_POST_SYSTEM_MAIL_DISCONNECT, // SubHelper와 연결 끊기
-}MSG_POST_SYSTEM_TYPE;
-typedef enum _tagMsgEXPostSystemType
-{
-	MSG_EX_POST_SYSTEM_SERVER_INFO,	// (str)ip, (int)port
-}MSG_EX_POST_SYSTEM_TYPE;
-typedef enum _tagMsgExShutdownType // SHUTDOWN
-{
-	MSG_EX_SHUTDOWN_REMAIN,							// Shut Down 시간까지 %d분 남았습니다.
-	MSG_EX_SHUTDOWN_COUNTDOWN,						// Shut Down 시작까지 %d초 남았습니다. 해당되시는 유저 분들은 캐릭터를 안전한 지역으로 옮겨주시기 바랍니다.
-	MSG_EX_SHUTDOWN_START,							// Shut Down이 시작 되었습니다.
-	MSG_EX_SHUTDOWN_END,							// Shut Down이 종료 되었습니다.
-	MSG_EX_SHUTDOWN_DISCONNECT,						// Shut Down이 시작되었습니다. 셧다운 종료 시각 이후에 다시 접속해주세요. 확인을 눌러 클라이언트를 종료하시기 바랍니다.(셧다운 적용시간 : 00:00 ~ 06:00)
-
-}MSG_EX_SHUTDOWN_TYPE;
-
-typedef enum _tagMsgExUserNoticeType
-{
-	MSG_EX_USER_NOTICE_REG_REQ,		// 유저 공지 등록 요청 : (str) contents
-	MSG_EX_USER_NOTICE_REG_REP,		// 유저 공지 등록 성공 응답 (성공시에만)
-	MSG_EX_USER_NOTICE_PRINT,		// 유저 공지 출력 알림 : (str) name, (str) contents
-	MSG_EX_USER_NOTICE_ERROR,		// 유저 공지 에러 : (unsigned char) error type
-}MSG_EX_USER_NOTICE_TYPE;
-
-typedef enum _tagMsgExUserNoticeErrorType
-{
-	MSG_EX_USER_NOTICE_ERROR_NOITEM,	// 유저 공지 등록 에러(아이템이 없어서 등록 불가능)
-	MSG_EX_USER_NOTICE_ERROR_LENGTH,	// 유저 공지 등록 에러(내용 없음)
-}MSG_EX_USER_NOTICE_ERROR_TYPE;
-
-typedef enum _tagMsgSubHelperUserNoticeType
-{
-	MSG_SUBHELPER_USER_NOTICE_REG_REQ,		// 유저 공지 등록 요청 : (int) character index, (str) name, (str) contents
-	MSG_SUBHELPER_USER_NOTICE_REG_REP,		// 유저 공지 등록 응답 : (int) character index, (unsigned char) success(0 : 성공, 1 : 실패)
-	MSG_SUBHELPER_USER_NOTICE_PRINT,		// 유저 공지 출력 알림 : (str) name, (str) contents
-}MSG_SUBHELPER_USER_NOTICE_TYPE;
-
-typedef enum _tagUserServerMsgType
-{
-	MSG_USERSERVER_UNKNOWN,
-	MSG_USERSERVER_AUTH,				// 유저 서버 인증 요청
-	MSG_USERSERVER_POST_SYSTEM,			// 우편 시스템
-
-}MSG_USERSERVER_TYPE;
-typedef enum _tagMsgExEventAutomationSystemType
-{
-	MSG_EX_EVENT_AUTOMATION_LIST=0,		// S ▶ C 진행중인 이벤트 리스트 nCount(int) { eventIndex(int) … }
-	MSG_EX_EVENT_AUTOMATION_ADD,		// S ▶ C 진행중인 이벤트 추가 eventIndex(int)
-	MSG_EX_EVENT_AUTOMATION_REMOVE,		// S ▶ C 진행중인 이벤트 삭제 eventIndex(int)
-}MSG_EX_EVENT_AUTOMATION_SYSTEM_TYPE;
-#endif	// SE_INCL_MESSAGEDEFINE_H
+#endif

@@ -9,6 +9,11 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIListBoxEx.h>
+#include <vector>
+
 // Define text position
 #define	QUESTBOOK_TITLE_TEXT_OFFSETX		25 
 #define	QUESTBOOK_TITLE_TEXT_OFFSETY		5
@@ -28,7 +33,7 @@ class CItems;
 // ----------------------------------------------------------------------------
 class CUIQuestBook : public CUIWindow
 {
-public:
+protected:
 	struct sQuestInfo
 	{
 		sQuestInfo()
@@ -123,17 +128,18 @@ public:
 	
 	CItems*					m_pQuestItem;
 	INDEX					m_nTargetIndex;
-	INDEX					m_nTargetVirIndex;
 	SBYTE					m_nTargetUIType;
 	FLOAT					m_fNpcX, m_fNpcZ;
 	int						m_nSelectPrizeFirstIndex;
 	int						m_nSelectPrizeCount;
 	BOOL					m_bProceedListExtended;
 	BOOL					m_bCompleteListExtended;
-	BOOL					m_bCategoryListExtended[QCATEGORY_SUPPLEMENT];	// [090603: selo] 카테고리별 리스트들이 펼쳐져 있는지 확인
+	BOOL					m_bCategoryListExtended[QCATEGORY_NIGHTSHADOW];	// [090603: selo] 카테고리별 리스트들이 펼쳐져 있는지 확인
 	BOOL					m_bRaidMessageListExtended;				// [090708: selo] 레이드 퀘스트 리스트가 펼쳐져 있는지 확인
 	int						m_iNextQuestIndex;
-		
+	static BOOL				m_bLockRequestQuest;
+	static float			m_fLastRequestTime;
+
 	// 2009. 05. 27 김정래
 	// 확장팩 관련 NPC 메뉴로 돌아가기 위한 NPC Index 저장
 	INDEX					m_nPrevNPCIndex;
@@ -146,23 +152,6 @@ public:
 	// 2009. 06. 01 김정래
 	// 퀘스트를 포기하는 동안 메시지 처리를 못 하게 하는 플래그
 	BOOL					m_bLockQuestList;
-	
-	// [090818: selo]
-	// 퀘스트 공지 시작 시간
-	DOUBLE					m_dQuestNoticeStartTime;
-	
-	// [090820: selo]
-	// 퀘스트 공지 두번 안나오게 하기 위해 
-	// 이미 발생된 퀘스트 공지를 저장해 둔다	
-	CStaticArray<int>		m_aAlreadyShowQuestNotice;
-	
-	// [090907: selo]
-	// 레이드 시작, 끝 관련
-	DOUBLE					m_dRaidRemainTime;	// 레이드 남은 시간
-	BOOL					m_bIsRaidNow;		// 레이드 중 인지 판단 플래그
-	DOUBLE					m_dRaidRemainTimeRecvTime;	// 레이드 남은 시간을 받은 시간
-	
-	CTextureData	*m_ptdCommonBtnTexture;
 
 protected:
 	void	AcceptQuest();				// 퀘스트 수락
@@ -172,7 +161,7 @@ protected:
 	void	PrizeQuest();				// 퀘스트 보상
 	// 2009. 05. 26 김정래
 	// 확장팩 관련 NPC 메뉴 리스트로 돌아오기
-	
+	void	ReturnToNPCMenu();			// NPC 메뉴로 간다
 
 public:
 	CUIQuestBook( int nUIIndex );
@@ -180,7 +169,7 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );	
-	bool	AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable = FALSE, BOOL bPrizeDesc = FALSE );	// [090812: selo] 보상 설명 처리 추가
+	void	AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable = FALSE );
 	void	InitQuestBook();
 	void	CloseQuestBook();
 	void	OpenQuestBook( int iQuestIndex = -1, CItems* pQuestItem = NULL );	
@@ -200,7 +189,9 @@ public:
 
 	// 퀘스트 내용을 갱신합니다.
 	void	RefreshQuestContent(INDEX questIndex);
-	
+	void	RefreshQuestNew(INDEX questIndex);
+	void	RefreshQuestPrize(INDEX questIndex);
+
 	INDEX	GetProceedQuestCount()		{ return m_vectorProceedQuestList.size();	}
 	INDEX	GetCompleteQuestCount()		{ return m_vectorCompleteQuestList.size();	}
 	INDEX	GetCurrentQuest()			{ return m_nSelectedQuestIndex;				}
@@ -231,34 +222,27 @@ public:
 
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
-	// add large message box. [8/2/2010 rumist]
-	void	MsgBoxLCommand(int nCommandCode, int nResult );
-	// add open tutorial window [8/2/2010 rumist]
-	void	OpenTutorialWindow();
-		
-	void	OpenWindow( BOOL bHasQuestList );
 
+	//네트웍 메세지 관련
+	static void	UnlockQuest() { m_bLockRequestQuest = FALSE; }
+	void	OpenWindow( BOOL bHasQuestList );
 
 	//notice 정보
 	void	RenderNotice();
 	void	CreateNotice();
 	void	SetNoticeInfo(const char *szString);
 	
-	ENGINE_API void	RequestQuest( int nNpcIndex, int nNpcVirIndex, SBYTE sbUIType, FLOAT fX, FLOAT fZ );
+	ENGINE_API void	RequestQuest( int nNpcIndex, SBYTE sbUIType, FLOAT fX, FLOAT fZ );
 	void	SendQuestReq( int nNpcIndex );
 	void	SendQuestCancel( int nQuestIndex );
 	void	SendQuestStart( int nQuestIndex );
 	void	SendQuestPrize( int nQuestIndex, INDEX iNpcIndex, INDEX iOptionItemIndex, INDEX iOptionItemPlus );
 
-	// [090810: selo] 
-	// 제목이 길어지면 ... 으로 변경하여 준다
-	static CTString MakeTitleString(CTString strTitle, int iSplitPos);
 
 	// [090708: selo] 
 	// 레이드 퀘스트 관련 함수들
@@ -267,6 +251,7 @@ public:
 	void	RemoveRaidMessageAll(void);
 	void	RefreshQuestContentByRaid(const int& iQuestIndex);
 	bool	isRaidMessage(const int& iQuestIndex);
+
 
 	// 2009. 05. 29 김정래
 	// 확장팩 퀘스트 확장 관련 함수들 추가		
@@ -280,7 +265,6 @@ public:
 	void	AddSelectedQuest(const int& iQuestIndex);
 	void	RemoveSelectedQuest(const int& iQuestIndex);
 	bool	IsSelectedQuest(const int& iQuestIndex);
-	void	ClearSelectedQuestList();			// [090803 sora] 선택된 퀘스트 리스트 clear
 	const std::list<int>& GetSelectedQuestList() { return m_listSelectedQuestIndex; }
 
 	// 2009. 06. 03 김정래
@@ -300,17 +284,6 @@ public:
 	// 타임어택 퀘스트의 남은 시간을 설정한다.
 	void	SetQuestRemainTime(int iQuestIndex, int iRemainTime);
 
-	// [090818: selo]
-	// 퀘스트 공지를 띄운 후 흐른 시간을 알려준다.
-	DOUBLE	GetQuestNoticeElapsedTime();
-
-	// [090907: selo]
-	// 레이드 시작과 끝 처리	
-	void	RaidEnd(void);
-	void	SetRaidRemainTime(INDEX iRemainTime);
-	DOUBLE	GetRaidReminTime(void);
-	BOOL	IsRaidNow(void);
-
 	static void TalkWithNPC();
 
 	// 2009. 05. 27 김정래
@@ -322,9 +295,6 @@ public:
 	static void SelectQuestFromMessageBox(const int& iClassifierIndex);
 	// 퀘스트 type 정보 가져오기
 	static SBYTE GetQuestType(const INDEX& iQuestIndex);
-
-	// esc closing support [5/30/2011 rumist]
-	BOOL	CloseWindowByEsc()						{ CloseQuestBook();	return TRUE;		}
 };
 
 #endif	// UIQUESTBOOK_H_

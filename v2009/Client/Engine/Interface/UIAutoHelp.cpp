@@ -1,18 +1,9 @@
+
+
 #include "StdH.h"
-
-// header 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIAutoHelp.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#include <Engine/Entities/LevelupGuide.h>
-#include <Engine/Entities/SkillTree.h>
-#include <Engine/Entities/Skill.h>
-#include <Engine/Help/Util_Help.h>
-
-#ifdef	IMPROV1107_NOTICESYSTEM
-#define	CHATMSG_NOTICE_MOVEPITCHTIME	300
-#define	CHATMSG_NOTICE_VIEWCOUNT		3
-#endif
+#include <Engine/Network/CNetwork.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
 CUIAutoHelp*	_UIAutoHelp = NULL;
 extern INDEX g_iCountry;
@@ -56,8 +47,6 @@ bool _SAutoHelpInfo::CheckInfo()
 CUIAutoHelp::CUIAutoHelp()
 {
 	m_ptdBaseTexture = NULL;
-	m_ptdClassification = NULL;
-	m_nUpStat = 0;
 	Clear ();
 }
 
@@ -67,6 +56,12 @@ CUIAutoHelp::CUIAutoHelp()
 // ----------------------------------------------------------------------------
 CUIAutoHelp::~CUIAutoHelp()
 {
+	if( m_ptdBaseTexture )
+	{
+		_pTextureStock->Release( m_ptdBaseTexture );
+		m_ptdBaseTexture = NULL;
+	}
+
 	Clear ();
 }
 
@@ -76,14 +71,13 @@ CUIAutoHelp::~CUIAutoHelp()
 // ----------------------------------------------------------------------------
 void CUIAutoHelp::Clear()
 {
+
 	m_bStop				= FALSE;		// 정지 상태인감?
 	m_fShowTime			= AUTOHELO_SHOW_TIME;	// 보여 지고 있는 시간
 	m_tmStartTime		= 0;			// 보이기 시작 한 시간
 	m_bVisible			= FALSE;		// 화면에 보여 주고 있는가?
 	m_nActiveIndex		= -1;			// 현제 보여 주고 있는 도움말 Index
 	m_tmEndTime			= 0;
-	m_tmClassification  = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	m_tmCurTime			= 0;
 	m_nKillMobIndex		= -1;
 	m_RndHelp			= FALSE;
 
@@ -93,13 +87,6 @@ void CUIAutoHelp::Clear()
 	}
 		
 	memset ( m_bCondition, FALSE, sizeof ( BOOL ) * AUTOHELP_COUNT );
-#if	defined(IMPROV1107_NOTICESYSTEM)
-	m_vGMNotice.clear();
-	m_bmovGMNotice		= FALSE;
-#endif
-
-	STOCK_RELEASE(m_ptdBaseTexture);
-	STOCK_RELEASE(m_ptdClassification);
 }
 
 // ----------------------------------------------------------------------------
@@ -119,18 +106,11 @@ void CUIAutoHelp::Create()
 	// Create refine texture
 	m_ptdBaseTexture = _pTextureStock->Obtain_t ( CTString( "Data\\Interface\\Notice.tex" ) );
 
-#if defined(G_KOR) 
-		m_ptdClassification = _pTextureStock->Obtain_t (CTString ( "Data\\Interface\\Loading\\Classification_15_kor.tex" ) );
-		m_rcClassification.SetRect(0,0,112,131);
-		m_rtClassification.SetUV(7,53,120,184,m_ptdClassification->GetWidth(),m_ptdClassification->GetHeight());
-#endif
-
-
-		FLOAT	fTexWidth	= m_ptdBaseTexture->GetPixWidth();
-		FLOAT	fTexHeight	= m_ptdBaseTexture->GetPixHeight();
-
-	m_rcNotice.SetRect( 0, 119, 0, 138 );
-	m_rcGMNotice.SetRect( 0, 140, 0, 159 );
+	FLOAT	fTexWidth	= m_ptdBaseTexture->GetPixWidth();
+	FLOAT	fTexHeight	= m_ptdBaseTexture->GetPixHeight();
+	
+	m_rcGMNotice.SetRect( 0, 75, 0, 94 );
+	m_rcNotice.SetRect( 0, 100, 0, 119 );
 	
 	
 	// Notice
@@ -169,8 +149,10 @@ void CUIAutoHelp::Create()
 								15, 15, -1, TRUE );
 	m_AutoHelpInfo[11].SetInfo ( _S( 478, "현재 레벨에서 [방어구상인 로엘]에게 가면 퀘스트를 수행할 수 있습니다." ), 
 								23, 23, -1,TRUE );
-	m_AutoHelpInfo[12].SetInfo ( _s( "" ), 
+	
+	m_AutoHelpInfo[12].SetInfo ( _S( 479, "힘이 상승하면 인벤토리에 소지할 수 있는 물품의 무게가 증가합니다." ), 
 								1, 9, -1 );
+
 	// Random Help ...
 	m_AutoHelpInfo[13].SetInfo ( _S( 480, "사용하지 않는 무기와 방어구를 알케미스트에게 가져가시면 제련석으로 교환할 수 있습니다." ), 
 								RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
@@ -228,18 +210,10 @@ void CUIAutoHelp::Create()
 
 	m_AutoHelpInfo[31].SetInfo ( _S( 498, "지도를 연 상태에서 마을을 클릭하면 마을 상세지도가 나옵니다." ), 
 								RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
-
-
-#if defined(G_JAPAN)
-		m_AutoHelpInfo[32].SetInfo ( _S( 3042, "일본 2서버 특징" ), RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
-		m_AutoHelpInfo[33].SetInfo ( _S( 3043, "일본 3서버 특징" ), RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
-		m_AutoHelpInfo[34].SetInfo ( _S( 3044, "일본 4서버 특징" ), RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
-#endif
-
 	
-// 070820_ttos: 브라질의 경고문구, 레벨 제한 없이 출력 
-
-#if defined(G_BRAZIL)
+	// 070820_ttos: 브라질의 경고문구, 레벨 제한 없이 출력 
+	if( g_iCountry == BRAZIL)
+	{
 		m_AutoHelpInfo[AU_NO_TOXICOSIS_S].SetInfo ( _S( 2547,"장시간의 게임은 몸과 마음을 병들게 합니다." ), 
 								RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_MAX );
 		m_AutoHelpInfo[AU_NO_TOXICOSIS_S+1].SetInfo ( _S( 2548,"장시간의 게임은 몸과 마음을 병들게 합니다." ), 
@@ -259,8 +233,8 @@ void CUIAutoHelp::Create()
 									RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_MAX );
 	
 
-#else
-
+	}else
+	{
 		m_AutoHelpInfo[AU_NO_TOXICOSIS_S].SetInfo ( _S( 2547,"장시간의 게임은 몸과 마음을 병들게 합니다." ), 
 								RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
 		m_AutoHelpInfo[AU_NO_TOXICOSIS_S+1].SetInfo ( _S( 2548,"장시간의 게임은 몸과 마음을 병들게 합니다." ), 
@@ -280,7 +254,7 @@ void CUIAutoHelp::Create()
 									RND_HELP_LEVEL_LOW, RND_HELP_LEVEL_HIGH );
 		
 
-#endif
+	}
 	
 	
 	m_tmEndTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
@@ -361,7 +335,6 @@ void CUIAutoHelp::SetInfo ( DWORD dwAutoHelpInfo )
 
 
 		}
-		break;
 	case AU_GET_SKILL_POINT :
 		{
 			if ( m_bVisible ) return;
@@ -371,7 +344,9 @@ void CUIAutoHelp::SetInfo ( DWORD dwAutoHelpInfo )
 				return ;
 			}
 		}
-		break;	
+
+
+	
 	// 그 밖에 상황 조건이 안 겹치는 것들 ...
 	default :
 		{
@@ -408,18 +383,16 @@ void CUIAutoHelp::ShowAutoHelp ( int nIndex )
 
 	int			nWidth = ( m_AutoHelpInfo[m_nActiveIndex].m_strMessage.Length() + 6 ) *
 							( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() ) - 1;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	int			nCX = pDrawPort->dp_MinI + ( pDrawPort->dp_MaxI - pDrawPort->dp_MinI ) / 2;
+	
+	CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+	int			nCX = pdp->dp_MinI + ( pdp->dp_MaxI - pdp->dp_MinI ) / 2;
 
 	// wooss 051019
 	// for Thai
 	int tv_num = 0;
-
-#if defined(G_THAI)
+	if(g_iCountry == THAILAND){
 		nWidth=FindThaiLen(m_AutoHelpInfo[m_nActiveIndex].m_strMessage);
-#endif
-
+	}
 	m_rcNotice.Left = nCX - nWidth / 2;
 	m_rcNotice.Right = m_rcNotice.Left + nWidth;
 
@@ -435,11 +408,9 @@ void CUIAutoHelp::ShowAutoHelp ( int nIndex )
 // ----------------------------------------------------------------------------
 void CUIAutoHelp::Render ()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
 	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
-	if( STAGEMGR()->GetCurStage() != eSTAGE_GAMEPLAY ) return;
+	if( _pUIMgr->GetUIGameState() != UGS_GAMEON ) return;
 
 
 	if ( !m_bVisible )
@@ -450,14 +421,13 @@ void CUIAutoHelp::Render ()
 
 		TIME NowTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
-		
-#if defined(G_THAI)
-			
+/*		
+		if(g_iCountry == THAILAND ){
 			int tv_rnd;
 			__int64 tv_time = llCurTime - m_tmCheckTime;
 			INDEX tv_tmp ;
-			tv_tmp = (INDEX)time(NULL);
-			tm* tv_tm = LocalTime32(tv_tmp);
+			time(&tv_tmp);
+			tm* tv_tm = localtime(&tv_tmp);
 			if(tv_tm->tm_hour == 3 && tv_tm->tm_min == 55 && tv_tm->tm_sec == 0) {
 				tv_rnd = ( rand()% (AU_NO_TOXICOSIS_VACATION_E - AU_NO_TOXICOSIS_VACATION_S + 1) ) + AU_NO_TOXICOSIS_VACATION_S;
 				SetInfo ( tv_rnd );
@@ -470,15 +440,15 @@ void CUIAutoHelp::Render ()
 					}
 				}
 			}
-		 
-#endif
-#if defined(G_BRAZIL)
+		} 
+		*/
+		if(g_iCountry == BRAZIL)
 		{
 			int tv_rnd;
 			tv_rnd = (rand()%(AU_NO_TOXICOSIS_VACATION_E - AU_NO_TOXICOSIS_S + 1) ) + AU_NO_TOXICOSIS_S;
 			SetInfo ( tv_rnd );
 		}
-#endif
+
 		if ( NowTime - m_tmEndTime > interval )
 		{
 			if ( bFirst == false )
@@ -490,17 +460,9 @@ void CUIAutoHelp::Render ()
 
 
 			m_RndHelp = TRUE;
-			int rnd;
-			
-#if defined(G_JAPAN)
-			{
-				rnd = ( rand()% (AU_RANDOM_HELP_END - AU_RANDOM_HELP_START ) ) + AU_RANDOM_HELP_START;
-			}
-#else
-			{
-				rnd = ( rand()% (AU_RANDOM_HELP_END - AU_RANDOM_HELP_START - 3 ) ) + AU_RANDOM_HELP_START;
-			}
-#endif
+		
+			int rnd = ( rand()% (AU_RANDOM_HELP_END - AU_RANDOM_HELP_START ) ) + AU_RANDOM_HELP_START;
+
 			SetInfo ( rnd ); // 1개 이상 일때 수정해주세요..^^
 			
 			m_tmEndTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
@@ -516,10 +478,9 @@ void CUIAutoHelp::Render ()
 
 	if( llCurDelay < AUTOHELO_SHOW_TIME )
 	{
-		COLOR	colBackground = 0x000000FF;
-		// tutorial renewal : 헬프 시스템 컬러 변경. [8/3/2010 rumist]
-		COLOR	colText = 0xFFFF00FF;
-		
+		COLOR	colBackground = 0xFFFFFFFF;
+		COLOR	colText = 0x5F71E2FF;
+
 		if( llCurDelay > CHATMSG_NOTICE_FADEOUT )
 		{
 			FLOAT	fFadeRatio = (FLOAT)( CHATMSG_NOTICE_DELAY - llCurDelay ) / (FLOAT)CHATMSG_NOTICE_FADETIME;
@@ -533,45 +494,94 @@ void CUIAutoHelp::Render ()
 	
 	
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		// Add render regions
 		// Background
-		pDrawPort->AddTexture( m_rcNotice.Left - 32, m_rcNotice.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice.Left - 32, m_rcNotice.Top,
 											m_rcNotice.Left, m_rcNotice.Bottom,
 											m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
 											colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice.Left, m_rcNotice.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice.Left, m_rcNotice.Top,
 											m_rcNotice.Right, m_rcNotice.Bottom,
 											m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
 											colBackground );
 
-		pDrawPort->AddTexture( m_rcNotice.Right, m_rcNotice.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcNotice.Right, m_rcNotice.Top,
 											m_rcNotice.Right + 32, m_rcNotice.Bottom,
 											m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
 											colBackground );
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// 도움말 앞뒤로 표시하는 장식을 국가 별로 다르게 설정 합시다~
+		extern INDEX	g_iCountry;
+		CTString	strDecoration;
 
-		CTString	strDecoration = "";
-
-#if defined(G_KOR)
+		switch( g_iCountry )
+		{
+		case KOREA:
 			strDecoration = "♣";
-#endif
+			break;
+		
+		case TAIWAN:
+		case TAIWAN2: // wooss 050929
+			strDecoration = "";
+			break;
+		
+		case CHINA: 
+			strDecoration = "";
+			break;
+			
+		case THAILAND:
+			strDecoration ="";
+			break;
+			
+		case JAPAN:
+			strDecoration ="";
+			break;
+		case MALAYSIA:
+			strDecoration ="";
+			break;
+
+		case USA:
+			strDecoration ="";
+			break;
+
+		case BRAZIL:
+			strDecoration ="";
+			break;
+		case HONGKONG:
+			strDecoration ="";
+			break;
+		case GERMANY:
+			strDecoration ="";
+			break;
+		case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+			strDecoration = "";
+			break;
+		case FRANCE:
+			strDecoration = "";
+			break;
+		case POLAND:
+			strDecoration = "";
+			break;
+		case TURKEY:
+			strDecoration = "";
+			break;
+		}
 		
 		CTString strTemp = strDecoration + " ";
 		strTemp += m_AutoHelpInfo[m_nActiveIndex].m_strMessage + " ";
 		strTemp += strDecoration;
 		
 		// Text in notice region
-		pDrawPort->PutTextEx( strTemp, m_rcNotice.Left, m_rcNotice.Top + 4, colText );
+		_pUIMgr->GetDrawPort()->PutTextEx( strTemp, m_rcNotice.Left, m_rcNotice.Top + 4, colText );
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 	else
 	{
@@ -597,54 +607,23 @@ void CUIAutoHelp::SetGMNotice ( CTString strGMNotice, COLOR colText )
 	
 	int			nWidth;
 	
-#if defined(G_THAI)
-	
-	nWidth = FindThaiLen(m_strGMNotice);
+	if(g_iCountry == THAILAND ){
+		nWidth = FindThaiLen(m_strGMNotice);
 
-#else
+	} else {
 
-	nWidth = m_strGMNotice.Length() *
-			( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() ) - 1;	
-#endif
+		nWidth = m_strGMNotice.Length() *
+							( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() ) - 1;
+	}
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	int			nCX = pDrawPort->dp_MinI + ( pDrawPort->dp_MaxI - pDrawPort->dp_MinI ) / 2;
+	CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+	int			nCX = pdp->dp_MinI + ( pdp->dp_MaxI - pdp->dp_MinI ) / 2;
 
 	m_rcGMNotice.Left = nCX - nWidth / 2;
 	m_rcGMNotice.Right = m_rcGMNotice.Left + nWidth;
 
 	m_tmGMNoticeTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds ();
 
-#ifdef	IMPROV1107_NOTICESYSTEM
-	SGMNotice		sNotice;
-
-	sNotice.strGMNotice			= strGMNotice;
-	sNotice.colGMTextColor		= colText;
-	sNotice.i64GMFadeTime = sNotice.i64GMNoticeTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	sNotice.bCompleteVisible	= FALSE;
-	sNotice.rcBackground.Left	= m_rcGMNotice.Left;
-	sNotice.rcBackground.Right	= m_rcGMNotice.Right;
-
-	m_vGMNotice.push_back(sNotice);
-
-	if(m_vGMNotice.size() > 1)
-	{
-		m_bmovGMNotice		= TRUE;
-		m_i64movGMNotice	= _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	}
-#endif
-}
-
-// ----------------------------------------------------------------------------
-// Name : RenderGMNotice()
-// Desc : 운영자 공지 표시 제거
-// ----------------------------------------------------------------------------
-void CUIAutoHelp::ClearGMNNotice()
-{
-#ifdef	IMPROV1107_NOTICESYSTEM
-	m_vGMNotice.clear();
-	m_bmovGMNotice		= FALSE;
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -653,332 +632,55 @@ void CUIAutoHelp::ClearGMNNotice()
 // ----------------------------------------------------------------------------
 void CUIAutoHelp::RenderGMNotice ()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	UtilHelp* pUtil = UtilHelp::getSingleton();
-
-	if( m_bShowGMNotice == FALSE )
-		return;
-
-	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	__int64	llCurDelay = llCurTime - m_tmGMNoticeTime;
-#ifdef	IMPROV1107_NOTICESYSTEM
-
-	if(m_vGMNotice.size() > 0)
+	if( m_bShowGMNotice )
 	{
-		float	fposYPitchNotice	= 0.0f;
-
-		if(m_bmovGMNotice)
+		__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+		__int64	llCurDelay = llCurTime - m_tmGMNoticeTime;
+		if( llCurDelay < CHATMSG_NOTICE_DELAY )
 		{
-			__int64 llCurMoveDelady	= llCurTime - m_i64movGMNotice;
-
-			if(llCurMoveDelady >= CHATMSG_NOTICE_MOVEPITCHTIME)
+			COLOR	colBackground = 0xFFFFFFFF;
+			COLOR	colText = m_colGMTextColor;
+			if( llCurDelay > CHATMSG_NOTICE_FADEOUT )
 			{
-				m_bmovGMNotice	= FALSE;
+				FLOAT	fFadeRatio = (FLOAT)( CHATMSG_NOTICE_DELAY - llCurDelay ) / (FLOAT)CHATMSG_NOTICE_FADETIME;
+				COLOR	colBlend = 0xFF * fFadeRatio;
+
+				colBackground &= 0xFFFFFF00;
+				colBackground |= colBlend;
+				colText &= 0xFFFFFF00;
+				colText |= colBlend;
 			}
 
-			float	fMoveRatio	= 1.0f - ((float)llCurMoveDelady / (float)CHATMSG_NOTICE_MOVEPITCHTIME);
-			if(fMoveRatio < 0.0f)
-				fMoveRatio		= 0.0f;
-			fposYPitchNotice	= (float)(m_rcGMNotice.Bottom - m_rcGMNotice.Top) * fMoveRatio;
+			// Set texture
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+			// Add render regions
+			// Background
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcGMNotice.Left - 32, m_rcGMNotice.Top,
+												m_rcGMNotice.Left, m_rcGMNotice.Bottom,
+												m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
+												colBackground );
+
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcGMNotice.Left, m_rcGMNotice.Top,
+												m_rcGMNotice.Right, m_rcGMNotice.Bottom,
+												m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
+												colBackground );
+
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcGMNotice.Right, m_rcGMNotice.Top,
+												m_rcGMNotice.Right + 32, m_rcGMNotice.Bottom,
+												m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
+												colBackground );
+
+			// Render all elements
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+			// Text in notice region
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strGMNotice, m_rcGMNotice.Left, m_rcGMNotice.Top + 4, colText );
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx();
 		}
-
-		// 공지 그리기
-		int		iNoticeSize	= m_vGMNotice.size();
-		std::vector<SGMNotice>::iterator	itNotice	= m_vGMNotice.end() - 1;
-		for(int i = 0; i < iNoticeSize; i++)
-		{
-			SGMNotice&	sNotice			= (*itNotice);
-			int			iFadeType		= 0;		// -1 : FadeIN(나타남) 0 : 페이드없음 1 : FadeOUT(사라짐)
-			float		fAlphaRatio		= 1.0f;		// 1 = ALPHA 100%, 0 = 0% (FADE)
-			COLOR		colBackground	= 0xFFFFFFFF;
-			COLOR		colText			= sNotice.colGMTextColor;
-			int			iNoticeHeight	= m_rcGMNotice.Bottom - m_rcGMNotice.Top;
-			float		fYNotice		= m_rcGMNotice.Top;
-
-			if(i > CHATMSG_NOTICE_VIEWCOUNT)
-			{
-				if(m_vGMNotice.end() != itNotice)
-					itNotice = m_vGMNotice.erase(itNotice);
-
-				continue;
-			}
-			else if(i == CHATMSG_NOTICE_VIEWCOUNT)
-			{	// 허용 라인을 넘었으므로 강제 FADEOUT시키고 제거
-				sNotice.i64GMNoticeTime		-= CHATMSG_NOTICE_DELAY;
-			}
-
-			if(i > 0)
-			{	// 첫번째 라인 (제일 하단) 이 아닐 경우 fposYPitchNotice 값을 영향받는다. (위로 이동한다)
-				fYNotice	= m_rcGMNotice.Top - (i * iNoticeHeight);
-				fYNotice	+= fposYPitchNotice;
-			}
-			
-			if(llCurTime - sNotice.i64GMNoticeTime > CHATMSG_NOTICE_DELAY)
-			{	// 사라질 시간이 다되었다.
-				if(sNotice.bCompleteVisible)
-				{
-					sNotice.i64GMFadeTime		= llCurTime;		// FadeTime 재설정
-					sNotice.bCompleteVisible	= FALSE;
-				}
-
-				iFadeType		= 1;
-			}
-			else
-			{
-				if(!sNotice.bCompleteVisible)		// 아직 보여주지 않은 상태는 무조건 FadeIN 상태
-				{
-					iFadeType		= -1;
-				}
-			}
-
-			if(iFadeType == -1)
-			{	// FadeIN (나타나는 효과)
-				fAlphaRatio			= (float)(llCurTime - sNotice.i64GMFadeTime) / (float)CHATMSG_NOTICE_FADETIME;
-				if(fAlphaRatio >= 1.0f)
-				{
-					fAlphaRatio					= 1.0f;
-					sNotice.bCompleteVisible	= TRUE;
-				}
-			}
-			else if(iFadeType == 1)
-			{
-				//FadeOUT (사라지는 효과)
-				fAlphaRatio			-= (float)(llCurTime - sNotice.i64GMFadeTime) / (float)CHATMSG_NOTICE_FADETIME;
-				if(fAlphaRatio <= 0.0f)
-				{
-					fAlphaRatio		= 0.0f;
-					itNotice = m_vGMNotice.erase(itNotice);
-
-					if(itNotice == m_vGMNotice.begin())
-						break;
-				}
-			}
-
-			if(fAlphaRatio > 0.0f)
-			{
-				// TEXT (알파가 먹지를 않아 색채를 뺌, 일정 알파값이 떨어지면 텍스트를 알아서 감춤.)
-				if (pUtil != NULL)
-				{
-					colText			= pUtil->GetColorAlpha(fAlphaRatio, colText);
-					colText			= pUtil->GetColorContrast(fAlphaRatio, colText);
-					// BACKGROUND
-					colBackground	= pUtil->GetColorAlpha(fAlphaRatio, colBackground);
-				}
-				// Set texture
-				pUIManager->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
-				// Background
-				pUIManager->GetDrawPort()->AddTexture( sNotice.rcBackground.Left - 32, fYNotice,
-													sNotice.rcBackground.Left, fYNotice + iNoticeHeight,
-													m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
-													colBackground );
-
-				pUIManager->GetDrawPort()->AddTexture( sNotice.rcBackground.Left, fYNotice,
-													sNotice.rcBackground.Right, fYNotice + iNoticeHeight,
-													m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
-													colBackground );
-
-				pUIManager->GetDrawPort()->AddTexture( sNotice.rcBackground.Right, fYNotice,
-													sNotice.rcBackground.Right + 32, fYNotice + iNoticeHeight,
-													m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
-													colBackground );
-
-				// Render all elements
-				pUIManager->GetDrawPort()->FlushRenderingQueue();
-
-				// Text in notice region
-				pUIManager->GetDrawPort()->PutTextEx( sNotice.strGMNotice, sNotice.rcBackground.Left, fYNotice + 4, colText );
-
-				// Flush all render text queue
-				pUIManager->GetDrawPort()->EndTextEx();
-			}
-
-			if(itNotice == m_vGMNotice.begin())
-				break;
-
-			itNotice--;
-		}
+		else
+			m_bShowGMNotice = FALSE;
 	}
-	else if(m_vGMNotice.size() <= 0)
-		m_bShowGMNotice = FALSE;
-
-#else	// #ifdef	IMPROV1107_NOTICESYSTEM
-	if( llCurDelay < CHATMSG_NOTICE_DELAY )
-	{
-		COLOR	colBackground = 0xFFFFFFFF;
-		COLOR	colText = m_colGMTextColor;
-		if( llCurDelay > CHATMSG_NOTICE_FADEOUT )
-		{
-			FLOAT	fFadeRatio = (FLOAT)( CHATMSG_NOTICE_DELAY - llCurDelay ) / (FLOAT)CHATMSG_NOTICE_FADETIME;
-			COLOR	colBlend = 0xFF * fFadeRatio;
-
-			colBackground &= 0xFFFFFF00;
-			colBackground |= colBlend;
-			colText &= 0xFFFFFF00;
-			colText |= colBlend;
-		}
-
-		// Set texture
-		pUIManager->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
-
-		// Add render regions
-		// Background
-		pUIManager->GetDrawPort()->AddTexture( m_rcGMNotice.Left - 32, m_rcGMNotice.Top,
-											m_rcGMNotice.Left, m_rcGMNotice.Bottom,
-											m_rtNoticeL.U0, m_rtNoticeL.V0, m_rtNoticeL.U1, m_rtNoticeL.V1,
-											colBackground );
-
-		pUIManager->GetDrawPort()->AddTexture( m_rcGMNotice.Left, m_rcGMNotice.Top,
-											m_rcGMNotice.Right, m_rcGMNotice.Bottom,
-											m_rtNoticeC.U0, m_rtNoticeC.V0, m_rtNoticeC.U1, m_rtNoticeC.V1,
-											colBackground );
-
-		pUIManager->GetDrawPort()->AddTexture( m_rcGMNotice.Right, m_rcGMNotice.Top,
-											m_rcGMNotice.Right + 32, m_rcGMNotice.Bottom,
-											m_rtNoticeR.U0, m_rtNoticeR.V0, m_rtNoticeR.U1, m_rtNoticeR.V1,
-											colBackground );
-
-		// Render all elements
-		pUIManager->GetDrawPort()->FlushRenderingQueue();
-
-		// Text in notice region
-		pUIManager->GetDrawPort()->PutTextEx( m_strGMNotice, m_rcGMNotice.Left, m_rcGMNotice.Top + 4, colText );
-
-		// Flush all render text queue
-		pUIManager->GetDrawPort()->EndTextEx();
-	}
-	else
-		m_bShowGMNotice = FALSE;
-#endif	// #ifdef	IMPROV1107_NOTICESYSTEM
-
-}
-
-void CUIAutoHelp::ClassificationShowRender()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-	if( STAGEMGR()->GetCurStage() != eSTAGE_GAMEPLAY ) 
-		return;
-
-	if( (llCurTime - m_tmClassification) > CLASSIFICATION_TIME && !m_bShowClassification )
-	{ // 한 시간에 한번 보여주자.(15세 이용가)
-		m_tmCurTime = llCurTime;
-		m_bShowClassification = TRUE;
-	}
-
-	if( m_bShowClassification == FALSE )
-		return;
-
-	// 보여주자
-	if( llCurTime - m_tmCurTime < 3000 )	// 3초 가량만
-	{
-		CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-		pDrawPort->InitTextureData( m_ptdClassification );
-
-		PIX pixdpw = pDrawPort->GetWidth()*0.15;
-		FLOAT fPersent		= 1.0f;
-		fPersent = (FLOAT)pixdpw / m_rcClassification.GetWidth();
-
-		INDEX fWidth = m_rcClassification.GetWidth();//*fPersent;
-		INDEX fHeigth = m_rcClassification.GetHeight();//*fPersent;
-		INDEX fPosX = pDrawPort->GetWidth() - ( fWidth+150 ) ; // 150은 레이더 크기
-		INDEX fPosY = ( fHeigth / 4 );
-
-		pDrawPort->AddTexture( fPosX, fPosY,
-												fPosX + fWidth, fPosY + fHeigth, 
-												m_rtClassification.U0, m_rtClassification.V0, m_rtClassification.U1, m_rtClassification.V1,
-												0xFFFFFFFF );
-
-		pDrawPort->FlushRenderingQueue();
-	}
-	else
-	{ // 3초 이상은 안돼
-		m_tmClassification = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-		m_bShowClassification = FALSE;
-	}
-}
-
-
-void CUIAutoHelp::initialize()
-{
-// 	int			i;
-// 	CUIImage*	pImg = NULL;
-// 
-// 	const char* str_notice[] = {
-// 		"notice_l",
-// 		"notice_c",
-// 		"notice_r",
-// 	};
-// 
-// 	for( i = 0; i < 3; ++i )
-// 	{
-// 		pImg = (CUIImage*)findUI( str_notice[i] );
-// 
-// 		if( pImg )
-// 		{
-// 			addChild( pImg );
-// 		}
-// 	}
-
-}
-
-void CUIAutoHelp::GetLvGuidString( int lv )
-{
-	if (CLevelUpGuide::getData(lv) == NULL)
-		return;
-
-	CTString strTmp = CUIBase::getText(CLevelUpGuide::getData(lv)->strIndex);
-
-	if (strTmp.IsEmpty() == TRUE)
-		return;
-
-	CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strTmp, SYSMSG_USER);
-}
-
-void CUIAutoHelp::LearnTheSkill( int lv )
-{
-	int nCnt = 0;
-	
-	int nJob = _pNetwork->MyCharacterInfo.job;
-	int _2ndJob = _pNetwork->MyCharacterInfo.job2;
-	int _tmp2ndJob = 0;
-	int nIndex = 0;
-
-	nCnt = CSkillTree::m_nSkillCount[nJob][0];
-
-	if (_2ndJob > 0)
-		nCnt += CSkillTree::m_nSkillCount[nJob][_2ndJob];
-
-	for (int i = 0; i < nCnt; ++i)
-	{
-		if (i > CSkillTree::m_nSkillCount[nJob][0])
-			_tmp2ndJob = _2ndJob;
-
-		nIndex = CSkillTree::m_SkillTree[nJob][_tmp2ndJob][i/8].index[i%8];
-
-		CSkill& rSkill = _pNetwork->GetSkillData(nIndex);
-
-		for (int j = 0; j < rSkill.GetMaxLevel(); ++j)
-		{
-			if (rSkill.GetLearnLevel(j) == lv)
-			{
-				CTString strTmp;
-				strTmp.PrintF(_S(6213, "새로운 스킬 [%s]의 %d레벨을 배울 수 있습니다."), rSkill.GetName(), j + 1);
-
-				CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strTmp, SYSMSG_USER);
-				break;
-			}
-		}
-	}
-}
-
-void CUIAutoHelp::SetStatpoint( int old, int cur )
-{
-	m_nUpStat = 0;
-
-	if (old >= cur)
-		return;
-
-	m_nUpStat = cur - old;
 }

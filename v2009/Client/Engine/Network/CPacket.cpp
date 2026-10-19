@@ -8,7 +8,6 @@
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Network/CPacket.h>
-#include <Engine/Network/SocketCompat.h>
 #include <Engine/Base/ObjectRestore.h>
 
 #include <Engine/Base/ListIterator.inl>
@@ -57,7 +56,7 @@ CPacket::CPacket(CPacket &paOriginal)
 	ASSERT(paOriginal.pa_pubPacketData != NULL && paOriginal.pa_slSize > 0);
 
 	pa_slSize = paOriginal.pa_slSize;
-	pa_slTransferSize = paOriginal.pa_slTransferSize;
+  pa_slTransferSize = paOriginal.pa_slTransferSize;
 
 	pa_ulSequence = paOriginal.pa_ulSequence;
 	pa_uwReliable = paOriginal.pa_uwReliable;
@@ -76,7 +75,7 @@ void CPacket::Clear()
 {
 
 	pa_slSize = 0;
-	pa_slTransferSize = 0;
+  pa_slTransferSize = 0;
 	pa_uwReliable = 0;
 	pa_ubRetryNumber = 0;
 
@@ -96,11 +95,7 @@ void CPacket::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-#ifdef _MSC_VER
-      __debugbreak();
-#else
-      __builtin_debugtrap();
-#endif
+      _asm int 3;
     }
   }
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)
@@ -135,7 +130,7 @@ BOOL CPacket::WriteToPacket(void* pv,SLONG slSize,UWORD uwReliable,ULONG ulSeque
 
 	ASSERT(slSize <= net_iUDPBlockSize && slSize > 0);
 	ASSERT(pv != NULL);
-	ASSERT(slTransferSize >= slSize);
+  ASSERT(slTransferSize >= slSize);
 
 	// set packet properties to values received as parameters
 	pa_uwReliable = uwReliable;
@@ -149,7 +144,7 @@ BOOL CPacket::WriteToPacket(void* pv,SLONG slSize,UWORD uwReliable,ULONG ulSeque
 	*(UWORD*)pubData = pa_uwReliable;
 	pubData+=sizeof(pa_uwReliable);
 
-	*(ULONG*)pubData = htonl(pa_ulSequence);
+	*(ULONG*)pubData = pa_ulSequence;
 	pubData+=sizeof(pa_ulSequence);
 
 	*(UWORD*)pubData = pa_adrAddress.adr_uwID;
@@ -856,6 +851,6 @@ extern CPacket *CreatePacket(void)
 extern void DeletePacket(CPacket *ppaPacket)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> orRestore(_rcPacketContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> or(_rcPacketContainer.rc_bNowDeleting,TRUE);
   _rcPacketContainer.DeleteObject(ppaPacket);
 }

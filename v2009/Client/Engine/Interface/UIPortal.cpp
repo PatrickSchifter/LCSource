@@ -1,16 +1,10 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/3/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
 #include <Engine/Interface/UIPortal.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/World/World.h>
 #include <algorithm>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Contents/Base/UIQuestBookNew.h>
 
-// [KH_07044] 3차 도움말 관련 추가
-extern INDEX g_iShowHelp1Icon;
+ENGINE_API extern INDEX g_iCountry;
 
 // ----------------------------------------------------------------------------
 // Name : CUIPortal()
@@ -30,6 +24,7 @@ CUIPortal::CUIPortal()
 // ----------------------------------------------------------------------------
 CUIPortal::~CUIPortal()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -38,13 +33,15 @@ CUIPortal::~CUIPortal()
 // ----------------------------------------------------------------------------
 void CUIPortal::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 301, 22 );
 
 	// Create portal texture
-	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Portal.tex" ) );
+	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Potal.tex" ) );
 	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
 	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
 
@@ -127,11 +124,9 @@ void CUIPortal::OpenPortal( FLOAT fX, FLOAT fZ )
 {
 	if (IsVisible()) return;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	int	nX = ( pDrawPort->dp_MinI + pDrawPort->dp_MaxI ) / 2 - m_nWidth / 2;
-	int	nY = ( pDrawPort->dp_MinJ + pDrawPort->dp_MaxJ ) / 2 - m_nHeight / 2;
+	CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+	int	nX = ( pdp->dp_MinI + pdp->dp_MaxI ) / 2 - m_nWidth / 2;
+	int	nY = ( pdp->dp_MinJ + pdp->dp_MaxJ ) / 2 - m_nHeight / 2;
 
 	SetPos( nX, nY );
 
@@ -141,12 +136,12 @@ void CUIPortal::OpenPortal( FLOAT fX, FLOAT fZ )
 
 	for( int i = 0; i < m_vectorListInfo.size(); i++ )
 	{
-		m_lbZoneList.AddString( 0, CZoneInfo::getSingleton()->GetZoneName( m_vectorListInfo[i].zone ), 0xC0C0C0FF );
-		m_lbZoneList.AddString( 1, CZoneInfo::getSingleton()->GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ),
+		m_lbZoneList.AddString( 0, ZoneInfo().GetZoneName( m_vectorListInfo[i].zone ), 0xC0C0C0FF );
+		m_lbZoneList.AddString( 1, ZoneInfo().GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ),
 								0xC0C0C0FF );
 	}
 
-	pUIManager->RearrangeOrder( UI_PORTAL, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PORTAL, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -161,23 +156,21 @@ void CUIPortal::Render()
 	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		Close();
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
+	CDrawPort *pdp = _pUIMgr->GetDrawPort();
 	// Set portal texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	pdp->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	// Background
 	int	nY = m_nPosY + 47;
 	int	nY2 = m_nPosY + m_nHeight - 30;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, nY,
+	pdp->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, nY,
 						m_rtBackTop.U0, m_rtBackTop.V0, m_rtBackTop.U1, m_rtBackTop.V1,
 						0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + m_nWidth, nY2,
+	pdp->AddTexture( m_nPosX, nY, m_nPosX + m_nWidth, nY2,
 						m_rtBackMiddle.U0, m_rtBackMiddle.V0, m_rtBackMiddle.U1, m_rtBackMiddle.V1,
 						0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, nY2, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	pdp->AddTexture( m_nPosX, nY2, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 						m_rtBackBottom.U0, m_rtBackBottom.V0, m_rtBackBottom.U1, m_rtBackBottom.V1,
 						0xFFFFFFFF );
 
@@ -194,18 +187,18 @@ void CUIPortal::Render()
 	m_lbZoneList.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	pdp->FlushRenderingQueue();
 
 	// text render
-	pDrawPort->PutTextEx( _S( 222, "포탈" ),
+	pdp->PutTextEx( _S( 222, "포탈" ),
 					m_nPosX + PORTAL_TITLE_TEXT_OFFSETX, m_nPosY + PORTAL_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
-	pDrawPort->PutTextEx( _S( 223, "존" ),
+	pdp->PutTextEx( _S( 223, "존" ),
 					m_nPosX + PORTAL_ZONE_TEXT_POSX, m_nPosY + PORTAL_ZONE_TEXT_POSY, 0xFFB500FF );
-	pDrawPort->PutTextEx( _S( 224, "장소" ),
+	pdp->PutTextEx( _S( 224, "장소" ),
 					m_nPosX + PORTAL_PLACE_TEXT_POSX, m_nPosY + PORTAL_PLACE_TEXT_POSY, 0xFFB500FF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -230,7 +223,7 @@ WMSG_RESULT CUIPortal::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
 			{
@@ -278,17 +271,15 @@ WMSG_RESULT CUIPortal::MouseMessage( MSG *pMsg )
 					m_btnOK.SetEnable( TRUE );
 			}
 
-			CUIManager::getSingleton()->RearrangeOrder( UI_PORTAL, TRUE );
+			_pUIMgr->RearrangeOrder( UI_PORTAL, TRUE );
 			return WMSG_SUCCESS;
 		}
 		break;
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				bTitleBarClick = FALSE;
 
@@ -319,8 +310,9 @@ WMSG_RESULT CUIPortal::MouseMessage( MSG *pMsg )
 							{
 								//말레이시아
 								//에게하 던전 이외의 지역에서 에게하로 이동할 때 메세지창 생성		FRANCE_SPAIN_CLOSEBETA_NA_20081124
-#if !defined(G_HONGKONG) && !defined(G_KOR) && !defined(G_THAI)
-								if( m_vectorListInfo[nSel].zone ==15 && _pNetwork->MyCharacterInfo.zoneNo !=17
+								if( (g_iCountry == MALAYSIA || g_iCountry == USA || g_iCountry == GERMANY 
+									|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) 
+									&& m_vectorListInfo[nSel].zone ==15 && _pNetwork->MyCharacterInfo.zoneNo !=17
 									&& _pNetwork->MyCharacterInfo.zoneNo != 31)
 								{
 									CUIMsgBox_Info	MsgBoxInfo;
@@ -328,14 +320,14 @@ WMSG_RESULT CUIPortal::MouseMessage( MSG *pMsg )
 									CTString strMessage	=_S(3223, "에게하 지역으로 이동하기 위해 10,000,000 나스가 소비됩니다. 이동하시겠습니까?" );
 									MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_YESNO,UI_NONE, MSGCMD_GOTO_EGEHA);
 									MsgBoxInfo.AddString(strMessage);
-									pUIManager->CreateMessageBox(MsgBoxInfo);
+									_pUIMgr->CreateMessageBox(MsgBoxInfo);
 									
 									return WMSG_SUCCESS;
-								}	
-#endif
+								}						
+
 								_pNetwork->GoZone( m_vectorListInfo[nSel].zone, m_vectorListInfo[nSel].extra ,m_npcIdx);
 							}
-							
+
 							Close();
 						}
 					}
@@ -352,7 +344,7 @@ WMSG_RESULT CUIPortal::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -419,7 +411,7 @@ void CUIPortal::Close()
 {
 	ResetZoneList();
 	m_bUseItem = FALSE;
-	CUIManager::getSingleton()->RearrangeOrder( UI_PORTAL, FALSE );
+	_pUIMgr->RearrangeOrder( UI_PORTAL, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -434,14 +426,9 @@ int CUIPortal::GetZoneListCount()
 void CUIPortal::GotoCurSelZone()
 {
 	int	nSel = m_lbZoneList.GetCurSel();
-
-	if (nSel < 0)
-		return;
-
 	_pNetwork->GoZone( m_vectorListInfo[nSel].zone, m_vectorListInfo[nSel].extra ,m_npcIdx);
 	Close();
 }
-
 ///////////////////////////////////////////////////////////////////////////
 // [071115: Su-won] DRATAN_SIEGE_DUNGEON
 void CUIPortal::MsgBoxLCommand( int nCommandCode, int nResult )
@@ -452,14 +439,6 @@ void CUIPortal::MsgBoxLCommand( int nCommandCode, int nResult )
 	{
 	case MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ:
 		{
-			// [090527: selo] 확장팩 퀘스트 이야기 한다 처리 수정을 위한 루틴
-			int iQuestIndex = -1;
-			if( ciQuestClassifier < nResult )	
-			{
-				iQuestIndex = nResult;
-				nResult = ciQuestClassifier;
-			}
-
 			switch( nResult )
 			{
 			case DRATAN_SIEGE_DUNGEON_ENTER:
@@ -475,12 +454,6 @@ void CUIPortal::MsgBoxLCommand( int nCommandCode, int nResult )
 			case DRATAN_SIEGE_DUNGEON_CONTROL:
 				{
 					_pNetwork->SendDratanSiegeDungeonMSG(MSG_MANAGEMENT, MSG_MANAGEMENT_MANAGER_CONFIRM);
-				}
-				break;
-			case ciQuestClassifier:
-				{
-					// 선택한 퀘스트에 대해 수락 또는 보상 창을 연다.
-					CUIQuestBook::SelectQuestFromMessageBox( iQuestIndex );
 				}
 				break;
 			}
@@ -518,31 +491,25 @@ void CUIPortal::MsgBoxLCommand( int nCommandCode, int nResult )
 
 void CUIPortal::OpenDratanDungeonMsgBox()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if (pUIManager->DoesMessageBoxLExist(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ))
+	if (_pUIMgr->DoesMessageBoxLExist(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ))
 		return;
 
-	pUIManager->CreateMessageBoxL( _S(3901, "드라탄 카오스 공성 던전 관리인"),UI_PORTAL, MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ);
-	pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3902, "어서오세요. 전 카오스성의 던전 관리인입니다."),-1,0xa3a1a3ff);
-	pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3903, "이곳 던전은 크리스탈의 힘이 충만한 곳으로 그 힘에 이끌려 고대에서부터 미지의 강력한 몬스터들이 끊임없이 생겨나고 있습니다."),-1,0xa3a1a3ff);
-	pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3904, "흥미로운 보물이 있다고도 하지만 어떠한 일이 일어날지 장담할 수 없으므로 자신이 없다면 접근하지 않는 것이 좋습니다."),-1,0xa3a1a3ff);
-	pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3905, "자, 어떻게 하시겠습니까?"),-1,0xa3a1a3ff);
+	_pUIMgr->CreateMessageBoxL( _S(3901, "드라탄 카오스 공성 던전 관리인"),UI_PORTAL, MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ);
+	_pUIMgr->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3902, "어서오세요. 전 카오스성의 던전 관리인입니다."),-1,0xa3a1a3ff);
+	_pUIMgr->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3903, "이곳 던전은 크리스탈의 힘이 충만한 곳으로 그 힘에 이끌려 고대에서부터 미지의 강력한 몬스터들이 끊임없이 생겨나고 있습니다."),-1,0xa3a1a3ff);
+	_pUIMgr->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3904, "흥미로운 보물이 있다고도 하지만 어떠한 일이 일어날지 장담할 수 없으므로 자신이 없다면 접근하지 않는 것이 좋습니다."),-1,0xa3a1a3ff);
+	_pUIMgr->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ,TRUE, _S(3905, "자, 어떻게 하시겠습니까?"),-1,0xa3a1a3ff);
 
-	CUIQuestBook::AddQuestListToMessageBoxL(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ);
-
-	pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3906, "던전 입장하기" ), DRATAN_SIEGE_DUNGEON_ENTER);
-	pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3907, "던전 상태확인" ), DRATAN_SIEGE_DUNGEON_STATE);
-	pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3908, "던전 관리" ), DRATAN_SIEGE_DUNGEON_CONTROL);			
-	pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S( 1220, "취소한다." ) );		
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3906, "던전 입장하기" ), DRATAN_SIEGE_DUNGEON_ENTER);
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3907, "던전 상태확인" ), DRATAN_SIEGE_DUNGEON_STATE);
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S(3908, "던전 관리" ), DRATAN_SIEGE_DUNGEON_CONTROL);			
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, FALSE, _S( 1220, "취소한다." ) );		
 
 	return;
 }
 
 void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	switch( nCommandCode )
 	{
 	case MSGCMD_SIEGE_DUNGEON_ENTER:
@@ -557,23 +524,23 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CHANGE) )
-					pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CHANGE);
+				if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CHANGE) )
+					_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CHANGE);
 
 				CUIMsgBox_Info MsgBoxInfo;
 				CTString strMessage;
-				int nRate =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().GetDataToNumber();
+				int nRate =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().GetDataToNumber();
 				
 				strMessage.PrintF( _S( 191, "확인" ) );
 				MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_PORTAL,MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CHANGE);
 				strMessage.PrintF( _S(3909, "현재 상태에서 %d%%만큼 더 쾌적하게 하시겠습니까?" ), nRate );
 				MsgBoxInfo.AddString(strMessage);
-				pUIManager->CreateMessageBox(MsgBoxInfo);
+				_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			}
 			else
 			{
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
-				pUIManager->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
+				_pUIMgr->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
 			}
 		}
 		break;
@@ -581,23 +548,23 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_MONSTER_CHANGE) )
-					pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CHANGE);
+				if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_MONSTER_CHANGE) )
+					_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CHANGE);
 
 				CUIMsgBox_Info MsgBoxInfo;
 				CTString strMessage;
-				int nRate =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().GetDataToNumber();
+				int nRate =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().GetDataToNumber();
 				
 				strMessage.PrintF( _S( 191, "확인" ) );
 				MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_PORTAL,MSGCMD_SIEGE_DUNGEON_MONSTER_CHANGE);
 				strMessage.PrintF( _S(3910, "현재 상태에서 %d%%만큼 더 온순하게 하시겠습니까?" ), nRate );
 				MsgBoxInfo.AddString(strMessage);
-				pUIManager->CreateMessageBox(MsgBoxInfo);
+				_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			}
 			else
 			{
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
-				pUIManager->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
+				_pUIMgr->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
 			}
 		}
 		break;
@@ -605,23 +572,23 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CHANGE) )
-					pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CHANGE);
+				if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CHANGE) )
+					_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CHANGE);
 
 				CUIMsgBox_Info MsgBoxInfo;
 				CTString strMessage;
-				int nFee =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
+				int nFee =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
 				
 				strMessage.PrintF( _S( 191, "확인" ) );
 				MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_PORTAL,MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CHANGE);
 				strMessage.PrintF( _S(3911, "입장료를 %d%%로 설정하시겠습니까?" ), nFee );
 				MsgBoxInfo.AddString(strMessage);
-				pUIManager->CreateMessageBox(MsgBoxInfo);
+				_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			}
 			else
 			{
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
-				pUIManager->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
+				_pUIMgr->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
 			}
 		}
 		break;
@@ -629,23 +596,23 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CHANGE) )
-					pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CHANGE);
+				if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CHANGE) )
+					_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CHANGE);
 
 				CUIMsgBox_Info MsgBoxInfo;
 				CTString strMessage;
-				int nFee =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
+				int nFee =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
 				
 				strMessage.PrintF( _S( 191, "확인" ) );
 				MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_PORTAL,MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CHANGE);
 				strMessage.PrintF( _S(3912, "수렵세율을 %d%%로 설정하시겠습니까?" ), nFee );
 				MsgBoxInfo.AddString(strMessage);
-				pUIManager->CreateMessageBox(MsgBoxInfo);
+				_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			}
 			else
 			{
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
-				pUIManager->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
+				_pUIMgr->GetPortal()->MsgBoxLCommand(MSGLCMD_DRATAN_SIEGE_DUNGEON_REQ, DRATAN_SIEGE_DUNGEON_CONTROL);
 			}
 		}
 		break;
@@ -654,8 +621,8 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				int nRate =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().GetDataToNumber();
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
+				int nRate =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().GetDataToNumber();
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
 
 				_pNetwork->SendDratanSiegeDungeonMSG(MSG_MANAGEMENT, MSG_MANAGEMENT_MANAGER_ENV_CHANGE, nRate);
 			}
@@ -665,8 +632,8 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				int nRate =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().GetDataToNumber();
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
+				int nRate =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().GetDataToNumber();
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
 
 				_pNetwork->SendDratanSiegeDungeonMSG(MSG_MANAGEMENT, MSG_MANAGEMENT_MANAGER_MONSTER_CHANGE, nRate);
 			}
@@ -676,8 +643,8 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				int nFee =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
+				int nFee =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
 
 				_pNetwork->SendDratanSiegeDungeonMSG(MSG_MANAGEMENT, MSG_MANAGEMENT_MANAGER_TAX_CHANGE, nFee);
 			}
@@ -687,8 +654,8 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			if( bOK )
 			{
-				int nFee =pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
-				pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
+				int nFee =_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().GetDataToNumber();
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
 
 				_pNetwork->SendDratanSiegeDungeonMSG(MSG_MANAGEMENT, MSG_MANAGEMENT_MANAGER_HUNTER_TAX_CHANGE, nFee);
 			}
@@ -699,10 +666,8 @@ void CUIPortal::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 
 void CUIPortal::Create_SiegeDungeon_State_MsgBox(int nEnvRate, int nMonRate)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_STATE) )
-		pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_STATE);
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_STATE) )
+		_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_STATE);
 
 	CTString strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -738,12 +703,12 @@ void CUIPortal::Create_SiegeDungeon_State_MsgBox(int nEnvRate, int nMonRate)
 
 	MsgBoxInfo.m_nColorBoxCount =2;
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetInputBox().SetFocus(FALSE);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetInputBox().SetInValidEditBox(TRUE);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetSEInputBox().SetFocus(FALSE);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetSEInputBox().SetInValidEditBox(TRUE);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetInputBox().SetFocus(FALSE);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetInputBox().SetInValidEditBox(TRUE);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetSEInputBox().SetFocus(FALSE);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->GetSEInputBox().SetInValidEditBox(TRUE);
 
 
 	float fEnvRate =nEnvRate/100.0f;
@@ -778,16 +743,14 @@ void CUIPortal::Create_SiegeDungeon_State_MsgBox(int nEnvRate, int nMonRate)
 	if( nMonRate <=10 )
 		ubMonCol =6;
 
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->SetColorBox(0, ubEnvCol, rcBox_Environment);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->SetColorBox(1, ubMonCol, rcBox_Monster);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->SetColorBox(0, ubEnvCol, rcBox_Environment);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_STATE)->SetColorBox(1, ubMonCol, rcBox_Monster);
 }
 
 void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL) )
-		pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL) )
+		_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL);
 
 	CTString strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -800,17 +763,15 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 	MsgBoxInfo.AddString( _S(3924, "어느 정도나 쾌적하게 만드시겠습니까?") );
 	MsgBoxInfo.m_nMaxRow +=2;
 
-	int nNeedNas = 50000*10;
-		
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nNeedNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), 10*50000, _S(1762, "나스"), _s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 
 	
 	MsgBoxInfo.m_nColorBoxCount =4;
 
-	MsgBoxInfo.SetSpinButton(MsgBoxInfo.m_nMaxRow-2, 1, 230, _S(3925, "쾌적함 상승%") + _s("   "));
+	MsgBoxInfo.SetSpinButton(MsgBoxInfo.m_nMaxRow-2, 1, 200, _S(3925, "쾌적함 상승%") + _s("   "));
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	int iPosX[4], iPosY[4];
 	int iWidth[4], iHeight[4];
@@ -843,10 +804,10 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 	rcBox[2].SetRect( iPosX[2], iPosY[2], iPosX[2]+iWidth[2], iPosY[2]+iHeight[2]);
 	rcBox[3].SetRect( iPosX[3], iPosY[3], iPosX[3]+iWidth[3], iPosY[3]+iHeight[3]);
 
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(0, 0, rcBox[0]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(1, 0, rcBox[1]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(2, 0, rcBox[2]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(3, 0, rcBox[3]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(0, 0, rcBox[0]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(1, 0, rcBox[1]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(2, 0, rcBox[2]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->SetColorBox(3, 0, rcBox[3]);
 	
 	for(int i=1; i<=10; ++i)
 	{
@@ -855,16 +816,14 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 		
 		CTString strData;
 		strData.PrintF("%d", i*10);
-		pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().AddData(strData);
+		_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ENVIRONMENT_CONTROL)->GetSpinButton().AddData(strData);
 	}
 }
 
 void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL) )
-		pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL) )
+		_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL);
 
 	CTString strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -877,16 +836,14 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 	MsgBoxInfo.AddString( _S(3929, "어느 정도나 온순하게 만드시겠습니까?") );
 	MsgBoxInfo.m_nMaxRow +=2;
 
-	int nNeedNas = 100000*10;
-		
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nNeedNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), 10*100000, _S(1762, "나스"), _s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 	
 	MsgBoxInfo.m_nColorBoxCount =4;
 
 	MsgBoxInfo.SetSpinButton(MsgBoxInfo.m_nMaxRow-2, 1, 200, _S(3930, "온순함 상승%") + _s("   "));
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	int iPosX[4], iPosY[4];
 	int iWidth[4], iHeight[4];
@@ -919,10 +876,10 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 	rcBox[2].SetRect( iPosX[2], iPosY[2], iPosX[2]+iWidth[2], iPosY[2]+iHeight[2]);
 	rcBox[3].SetRect( iPosX[3], iPosY[3], iPosX[3]+iWidth[3], iPosY[3]+iHeight[3]);
 
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(0, 0, rcBox[0]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(1, 0, rcBox[1]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(2, 0, rcBox[2]);
-	pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(3, 0, rcBox[3]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(0, 0, rcBox[0]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(1, 0, rcBox[1]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(2, 0, rcBox[2]);
+	_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->SetColorBox(3, 0, rcBox[3]);
 	
 	for(int i=1; i<=10; ++i)
 	{
@@ -931,16 +888,14 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 
 		CTString strData;
 		strData.PrintF("%d", i*10);
-		pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().AddData(strData);
+		_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_MONSTER_CONTROL)->GetSpinButton().AddData(strData);
 	}
 }
 
 void CUIPortal::Create_SiegeDungeon_AdmissionCtr_MsgBox(int nCurFree)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL) )
-		pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL) )
+		_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL);
 
 	CTString strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -956,23 +911,21 @@ void CUIPortal::Create_SiegeDungeon_AdmissionCtr_MsgBox(int nCurFree)
 
 	MsgBoxInfo.SetSpinButton(MsgBoxInfo.m_nMaxRow, 1, 200, _S(3934, "입장료 세율%") + _s("   "));
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	for(int i=0; i<17; ++i)
 	{
 		CTString strData;
 		strData.PrintF("%d", 70+i*5);
-		pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().AddData(strData);
+		_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_ADMISSION_FEE_CONTROL)->GetSpinButton().AddData(strData);
 	}
 
 }
 
 void CUIPortal::Create_SiegeDungeon_HuntingCtr_MsgBox(int nCurFree)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL) )
-		pUIManager->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
+	if( _pUIMgr->DoesMessageBoxExist(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL) )
+		_pUIMgr->CloseMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL);
 
 	CTString strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -988,13 +941,13 @@ void CUIPortal::Create_SiegeDungeon_HuntingCtr_MsgBox(int nCurFree)
 
 	MsgBoxInfo.SetSpinButton(MsgBoxInfo.m_nMaxRow, 1, 200, _S(3939, "수렵세율%") + _s("   "));
 
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	for(int i=0; i<5; ++i)
 	{
 		CTString strData;
 		strData.PrintF("%d", i*5);
-		pUIManager->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().AddData(strData);
+		_pUIMgr->GetMessageBox(MSGCMD_SIEGE_DUNGEON_HUNTING_FEE_CONTROL)->GetSpinButton().AddData(strData);
 	}
 }
 // [071115: Su-won] DRATAN_SIEGE_DUNGEON

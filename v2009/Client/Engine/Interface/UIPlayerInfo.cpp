@@ -1,47 +1,28 @@
 #include "StdH.h"
-
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIPlayerInfo.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Base/KeyNames.h>
+
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Interface/UISummon.h>
-#include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Interface/UILacarette.h>
-#include <Engine/Contents/Base/UISkillNew.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Engine/Interface/UIWebBoard.h>
-#include <Engine/Interface/UIMessenger.h>
-#include <Engine/Interface/UISystemMenu.h>
-#include <Engine/Contents/Base/UICharacterInfoNew.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UICashShopEX.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIReformSystem.h>
-#include <Engine/Contents/Base/UIRankingSystem.h>
 #include <Engine/Interface/UIQuickSlot.h>
-#include <Engine/Interface/UIMap.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/Quest.h>
-#include <Engine/Contents/Base/UIQuestBookNew.h>
-#include <Engine/Contents/Base/Party.h>
-#include <Engine/Info/MyInfo.h>
+#include <Engine/Interface/UIPetInfo.h>
 
-static INT64 g_InputTabTime = 0; // 귀찮다..
+#include <Engine/LocalDefine.h>
 
+extern INDEX g_iCountry;
 // ----------------------------------------------------------------------------
 // Name : CUIPlayerInfo()
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUIPlayerInfo::CUIPlayerInfo()
 {
+	m_fHPRatio = 0.0f;
+	m_fMPRatio = 0.0f;
+	m_fEXPRatio = 0.0f;
+
 	m_bShowToolTip = FALSE;
 	m_strToolTip = CTString( "" );
-	m_ptdCommonBtnTexture = NULL;
-	m_ptdMessageBoxTexture = NULL;
-	m_ptdExpeditionTexture = NULL;
-	m_ptdQuestBookTexture = NULL;
-	m_llShortCutTime = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -51,11 +32,6 @@ CUIPlayerInfo::CUIPlayerInfo()
 CUIPlayerInfo::~CUIPlayerInfo()
 {
 	Destroy();
-	STOCK_RELEASE(m_ptdCommonBtnTexture);
-	STOCK_RELEASE(m_ptdMessageBoxTexture);
-	STOCK_RELEASE(m_ptdExpeditionTexture);
-	STOCK_RELEASE(m_ptdQuestBookTexture);
-	STOCK_RELEASE(m_ptdGuildBattleTexture);
 }
 
 // ----------------------------------------------------------------------------
@@ -64,15 +40,50 @@ CUIPlayerInfo::~CUIPlayerInfo()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
+	// Region of each part +44
+	//m_rcHP.SetRect( 10, 55, 10, 63 );
+	//m_rcMP.SetRect( 10, 69, 10, 77 );
+	//m_rcEXP.SetRect( 10, 83, 10, 91 );
+
+	// UI_REFORM :Su-won
+	m_rcHP.SetRect( 111, 31, 111, 38 );
+	m_rcMP.SetRect( 111, 44, 111, 51 );
+	m_rcEXP.SetRect( 111, 57, 111, 64 );
+
+
+	// Create inventory texture
+	//m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\PlayerInfo.tex" ) );
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\TopUI.tex" ) );
 	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
 	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
 
+	// UV Coordinate of each part
+	// Background
+	//m_rtBackground.SetUV( 0, 0, 140, 98, fTexWidth, fTexHeight );
+	m_rtBackground.SetUV( 0, 0, 275, 90, fTexWidth, fTexHeight );			// UI_REFORM :Su-won
+
+	// Tool tip
+	//m_rtToolTipL.SetUV( 142, 53, 149, 76, fTexWidth, fTexHeight );
+	//m_rtToolTipM.SetUV( 152, 53, 154, 76, fTexWidth, fTexHeight );
+	//m_rtToolTipR.SetUV( 157, 53, 164, 76, fTexWidth, fTexHeight );
+	// UI_REFORM :Su-won
 	m_rtToolTipL.SetUV( 239, 253, 273, 272, fTexWidth, fTexHeight );
 	m_rtToolTipM.SetUV( 274, 253, 318, 272, fTexWidth, fTexHeight );
 	m_rtToolTipR.SetUV( 319, 253, 339, 272, fTexWidth, fTexHeight );
+
+
+	// HP, MP, EXP, SP
+	//m_rtHP.SetUV( 143, 0, 144, 8, fTexWidth, fTexHeight );
+	//m_rtMP.SetUV( 148, 0, 149, 8, fTexWidth, fTexHeight );
+	//m_rtEXP.SetUV( 153, 0, 154, 8, fTexWidth, fTexHeight );
+	// UI_REFORM :Su-won
+	m_rtHP.SetUV( 286, 220, 289, 228, fTexWidth, fTexHeight );
+	m_rtMP.SetUV( 291, 220, 294, 228, fTexWidth, fTexHeight );
+	m_rtEXP.SetUV( 296, 220, 299, 228, fTexWidth, fTexHeight );
 
 	// Web board button
 	m_btnBoard.Create( this, CTString( "" ), 7, 27, 18, 18 );
@@ -115,118 +126,29 @@ void CUIPlayerInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 	m_btnInven.SetEnable(FALSE);
 	m_btnCharInfo.SetEnable(FALSE);
 
+
+	// UI_REFORM :Su-won
+	m_rcFace.SetRect(2, 8, 79, 85);
 	m_rcQuickMenu.SetRect( 0, 0, 322, 27 );
+	
 	m_rtQuickMenu.SetUV( 0, 306, 321, 334, fTexWidth, fTexHeight );
 
-	int nSubSkill = 0;
-	for(int i=0; i<QUICKMENU_BTN_MAX; ++i)
-	{
-		m_btnQuickMenu[i].Create( this, CTString( "" ), 30 +i*24, 0, 22, 22);
+	m_rtFace[TITAN].SetUV( 925, 428, 1003, 506, fTexWidth, fTexHeight );
+	m_rtFace[KNIGHT].SetUV( 837, 344, 915, 422, fTexWidth, fTexHeight );
+	m_rtFace[HEALER].SetUV( 750, 427, 828, 505, fTexWidth, fTexHeight );
+	m_rtFace[MAGE].SetUV( 837, 428, 915, 506, fTexWidth, fTexHeight );
+	m_rtFace[ROGUE].SetUV( 925, 256, 1003, 334, fTexWidth, fTexHeight );
+	m_rtFace[SORCERER].SetUV( 925, 342, 1003, 420, fTexWidth, fTexHeight );
+	m_rtFace[TOTAL_JOB].SetUV( 751, 341, 828, 418, fTexWidth, fTexHeight );
 
-		if (i == QUICKMENU_BTN_SKILL)
-		{
-			m_btnQuickMenu[i].SetUV( UBS_IDLE, 0, 170, 22, 192, fTexWidth, fTexHeight );
-			m_btnQuickMenu[i].SetUV( UBS_CLICK, 0, 196, 22, 218, fTexWidth, fTexHeight );
-			nSubSkill = 1;
-		}
-		else
-		{
-			m_btnQuickMenu[i].SetUV( UBS_IDLE, (i - nSubSkill) * 26, 222, 21 + (i - nSubSkill) * 26 +1, 244, fTexWidth, fTexHeight );
-			m_btnQuickMenu[i].SetUV( UBS_CLICK, (i - nSubSkill) * 26, 248, 21 + (i - nSubSkill) * 26 +1, 270, fTexWidth, fTexHeight );
-		}
+	for(int i=0; i<9; ++i)
+	{
+		m_btnQuickMenu[i].Create( this, CTString( "" ), 46 +i*26, 0, 22, 22);
+		m_btnQuickMenu[i].SetUV( UBS_IDLE, i*26, 222, 21 +i*26 +1, 244, fTexWidth, fTexHeight );
+		m_btnQuickMenu[i].SetUV( UBS_CLICK, i*26, 248, 21 +i*26 +1, 270, fTexWidth, fTexHeight );
 		m_btnQuickMenu[i].CopyUV( UBS_IDLE, UBS_ON );
 		m_btnQuickMenu[i].CopyUV( UBS_IDLE, UBS_DISABLE );
 	}
-
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetPos(m_btnQuickMenu[QUICKMENU_BTN_RANKING].GetPosX() + 24, 0);
-
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].Create( this, CTString( "" )
-		,m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].GetPosX() + 24, 0, 22, 22);
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_IDLE, 598, 225, 620, 247, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_CLICK, 598, 249, 620, 271, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_DISABLE );
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetPos(m_btnQuickMenu[QUICKMENU_BTN_RANKING].GetPosX() + 24, 0);
-
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].Create( this, CTString( "" )
-		,m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].GetPosX() + 24, 0, 22, 22);
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_IDLE, 769, 225, 791, 247, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_CLICK, 769, 249, 791, 271, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	// TopUI 하나로 통일 하면서 러시아 상점, 라카렛 라카볼 텍스쳐 위치 다른거 추가 [12/14/2012 Ranma]
-#if defined (G_RUSSIA)
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetUV( UBS_IDLE, 465, 978, 487, 1000, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetUV( UBS_CLICK, 465, 1002, 487, 1024, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetPos(m_btnQuickMenu[QUICKMENU_BTN_RANKING].GetPosX() + 24, 0);
-
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].Create( this, CTString( "" )
-		,m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].GetPosX() + 24, 0, 22, 22);
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_IDLE, 441, 978, 463, 1000, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_CLICK, 441, 1002, 463, 1024, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].SetPos(m_btnQuickMenu[QUICKMENU_BTN_RANKING].GetPosX() + 24, 0);
-
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].Create( this, CTString( "" )
-		,m_btnQuickMenu[QUICKMENU_BTN_CASH_SHOP].GetPosX() + 24, 0, 22, 22);
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_IDLE, 489, 978, 511, 1000, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].SetUV( UBS_CLICK, 489, 1002, 511, 1024, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_LAKA_BALL].CopyUV( UBS_IDLE, UBS_DISABLE );
-
-#endif // defined (G_RUSSIA)
-
-	//도움말 대신 랭킹 added by sam 10/11/26
-	m_btnQuickMenu[QUICKMENU_BTN_RANKING].SetUV( UBS_IDLE, 623, 225, 645, 247, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_RANKING].SetUV( UBS_CLICK, 623, 249, 645, 271, fTexWidth, fTexHeight );
-	m_btnQuickMenu[QUICKMENU_BTN_RANKING].CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuickMenu[QUICKMENU_BTN_RANKING].CopyUV( UBS_IDLE, UBS_DISABLE );
-	
-	// [090727: selo] 선택되어 있는 퀘스트 표시용 리스트박스	
-	m_lbSelectedQuest.Create(0, 1024 - 270, 270, 260, 240, _pUIFontTexMgr->GetFontHeight() + 4, 12, 8, 1, TRUE);
-	m_lbSelectedQuest.SetColumnPosX( 0, 1 );
-	
-	// [090817: selo] 퀘스트 공지 리스트 박스
-	m_lbQuestNotice.Create(0, 0, 125, 200, 520, _pUIFontTexMgr->GetFontHeight() + 4, 12, 8, 1, TRUE);
-	m_lbQuestNotice.SetColumnPosX(0, 1);
-	m_iQuestNoticeMaxStringCnt = 0;
-	m_iQuestNoticeLineCnt = 0;
-	
-	// [090821: selo] 퀘스트 공지 닫기 버튼	
-	m_ptdCommonBtnTexture = CreateTexture(CTString("Data\\Interface\\CommonBtn.tex"));
-	fTexWidth = m_ptdCommonBtnTexture->GetPixWidth();
-	fTexHeight = m_ptdCommonBtnTexture->GetPixHeight();
-	m_btnQuestNoticeClose.Create( this, CTString( "" ), 0, 0, 16, 16 );	
-	m_btnQuestNoticeClose.SetUV( UBS_IDLE, 211, 33, 227, 49, fTexWidth, fTexHeight );
-	m_btnQuestNoticeClose.SetUV( UBS_CLICK, 229, 33, 245, 49, fTexWidth, fTexHeight );
-	m_btnQuestNoticeClose.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnQuestNoticeClose.CopyUV( UBS_IDLE, UBS_DISABLE );	
-	m_btnQuestNoticeClose.SetEnable(FALSE);
-
-	// [090907: selo] 시간 관련
-	m_ptdGuildBattleTexture = CreateTexture(CTString("Data\\Interface\\GuildBattle.tex"));
-	fTexWidth = m_ptdGuildBattleTexture->GetPixWidth();
-	fTexHeight = m_ptdGuildBattleTexture->GetPixHeight();
-	for( int nCnt = 0 ; nCnt < 10; nCnt++ )
-	{
-		m_rtSmallNumber[nCnt].SetUV( nCnt*16, 0, 
-								nCnt*16+16, 20, fTexWidth, fTexHeight );
-
-		m_rtLargeNumber[nCnt].SetUV( nCnt*21, 20, 
-								nCnt*21+21, 20 + 27, fTexWidth, fTexHeight );					// UV of background		
-	}
-
-	m_rtColon.SetUV ( 164, 0, 164 + 9, 20, fTexWidth, fTexHeight );		
-
-	m_ptdExpeditionTexture = CreateTexture( CTString( "Data\\Interface\\Expedition.tex" ) );
-	fTexWidth = m_ptdExpeditionTexture->GetPixWidth();
-	fTexHeight = m_ptdExpeditionTexture->GetPixHeight();
 }
 
 // ----------------------------------------------------------------------------
@@ -236,8 +158,7 @@ void CUIPlayerInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, i
 void CUIPlayerInfo::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
 {
 	SetPos( pixMinI, pixMinJ );
-//	_pUIBuff->SetMyGoodBuffPos( m_nPosX + m_nWidth + 2, 2 );
-	_pUIBuff->SetMyGoodBuffPos( m_nPosX + m_nWidth + 44, 2 );
+	_pUIBuff->SetMyGoodBuffPos( m_nPosX + m_nWidth + 2, 2 );
 
 	// UI_REFORM :Su-won
 	ResetQuickMenuPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
@@ -252,63 +173,97 @@ void CUIPlayerInfo::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX p
 	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
 }
 
-
-// ----------------------------------------------------------------------------
-// Name : MsgBoxCommand()
-// Desc : [sora]
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
-{
-	switch( nCommandCode )
-	{
-		case MSGCMD_EXPEDITION_END:	// 원정대 해체
-			if( bOK )
-			{
-				GAMEDATAMGR()->GetPartyInfo()->SendExpeditionEnd();
-			}
-
-			break;
-
-		case MSGCMD_EXPEDITION_QUIT: // 원정대 탈퇴
-			if( bOK )
-			{
-				GAMEDATAMGR()->GetPartyInfo()->SendExpeditionQuit();
-			}
-
-			break;
-
-		case MSGCMD_EXPEDITION_COLLECTITEM: // 원정대 아이템 수집
-			if( bOK )
-			{
-				// 원정대 퀘스트아이템 검색요청 메시지 전송
-				_pNetwork->ExpeditionCollectQuestItemReq(_pNetwork->MyCharacterInfo.index);
-			}
-
-			break;
-	}
-}
-
 // ----------------------------------------------------------------------------
 // Name : Render()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::Render()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
+	// Set player information texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
-
-	pDrawPort->AddTexture( m_rcQuickMenu.Left, m_rcQuickMenu.Top, m_rcQuickMenu.Right, m_rcQuickMenu.Bottom,
-										m_rtQuickMenu.U0, m_rtQuickMenu.V0, m_rtQuickMenu.U1, m_rtQuickMenu.V1,
+	// Add render regions
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+										m_rtBackground.U0, m_rtBackground.V0, m_rtBackground.U1, m_rtBackground.V1,
 										0xFFFFFFFF );
 
-	int i;
-	for ( i = 0; i < QUICKMENU_BTN_MAX; ++i )
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcHP.Left, m_rcHP.Top, m_rcHP.Right, m_rcHP.Bottom,
+										m_rtHP.U0, m_rtHP.V0, m_rtHP.U1, m_rtHP.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcMP.Left, m_rcMP.Top, m_rcMP.Right, m_rcMP.Bottom,
+										m_rtMP.U0, m_rtMP.V0, m_rtMP.U1, m_rtMP.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcEXP.Left, m_rcEXP.Top, m_rcEXP.Right, m_rcEXP.Bottom,
+										m_rtEXP.U0, m_rtEXP.V0, m_rtEXP.U1, m_rtEXP.V1,
+										0xFFFFFFFF );
+
+	// UI_REFORM :Su-won
+
+	if( _pNetwork->MyCharacterInfo.hp<=0)
 	{
-		m_btnQuickMenu[i].Render();
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcFace.Left, m_rcFace.Top, m_rcFace.Right, m_rcFace.Bottom,
+										m_rtFace[TOTAL_JOB].U0, m_rtFace[TOTAL_JOB].V0, m_rtFace[TOTAL_JOB].U1, m_rtFace[TOTAL_JOB].V1,
+										0xFFFFFFFF );
 	}
-	pDrawPort->FlushRenderingQueue();
+	else
+	{
+		
+		int iJob =_pNetwork->MyCharacterInfo.job;
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcFace.Left, m_rcFace.Top, m_rcFace.Right, m_rcFace.Bottom,
+											m_rtFace[iJob].U0, m_rtFace[iJob].V0, m_rtFace[iJob].U1, m_rtFace[iJob].V1,
+											0xFFFFFFFF );
+
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcQuickMenu.Left, m_rcQuickMenu.Top, m_rcQuickMenu.Right, m_rcQuickMenu.Bottom,
+											m_rtQuickMenu.U0, m_rtQuickMenu.V0, m_rtQuickMenu.U1, m_rtQuickMenu.V1,
+											0xFFFFFFFF );
+	}
+
+	/**********************
+	// Web board button
+	m_btnBoard.Render();
+
+	// Messanger button
+	m_btnMessanger.Render();
+
+	// System menu button
+	m_btnSysMenu.Render();
+
+	// Inventory button
+	m_btnInven.Render();
+
+	// Character info button
+	m_btnCharInfo.Render();
+	**********************/
+
+	// UI_REFORM :Su-won
+	m_btnQuickMenu[0].Render();	m_btnQuickMenu[1].Render();	m_btnQuickMenu[2].Render();
+	m_btnQuickMenu[3].Render();	m_btnQuickMenu[4].Render();	m_btnQuickMenu[5].Render();
+	m_btnQuickMenu[6].Render();	m_btnQuickMenu[7].Render();	m_btnQuickMenu[8].Render();
+
+
+	// Render all elements
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+	// Text in player information
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strLevel, m_nPosX + PLAYERINFO_LEVEL_CX,
+										m_nPosY + PLAYERINFO_LEVEL_SY, 0xFFD3A7FF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _pNetwork->MyCharacterInfo.name,
+										m_nPosX + PLAYERINFO_NAME_SX, m_nPosY + PLAYERINFO_NAME_SY );
+	_pUIMgr->GetDrawPort()->PutTextEx( CTString( "HP" ), m_nPosX + PLAYERINFO_HP_SX,
+										m_nPosY + PLAYERINFO_HP_SY, 0xF2F2F2B2 );
+	_pUIMgr->GetDrawPort()->PutTextEx( CTString( "MP" ), m_nPosX + PLAYERINFO_HP_SX,
+										m_nPosY + PLAYERINFO_MP_SY, 0xF2F2F2B2 );
+	_pUIMgr->GetDrawPort()->PutTextEx( CTString( "EXP" ), m_nPosX + PLAYERINFO_HP_SX,
+										m_nPosY + PLAYERINFO_EXP_SY, 0xF2F2F2B2 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strHP, m_nPosX + PLAYERINFO_HP_CX,
+										m_nPosY + PLAYERINFO_HP_SY, 0xF2F2F2B2 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strMP, m_nPosX + PLAYERINFO_HP_CX,
+										m_nPosY + PLAYERINFO_MP_SY, 0xF2F2F2B2 );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_strEXP, m_nPosX + PLAYERINFO_HP_CX,
+										m_nPosY + PLAYERINFO_EXP_SY, 0xF2F2F2B2 );
+
+	// Flush all render text queue
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Render my buff
 	_pUIBuff->RenderMyBuff();
@@ -317,31 +272,35 @@ void CUIPlayerInfo::Render()
 	if( m_bShowToolTip )
 	{
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-		pDrawPort->AddTexture( m_rcToolTip.Left + 7, m_rcToolTip.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Left, m_rcToolTip.Top,
+											m_rcToolTip.Left + 7, m_rcToolTip.Bottom,
+											m_rtToolTipL.U0, m_rtToolTipL.V0, m_rtToolTipL.U1, m_rtToolTipL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Left + 7, m_rcToolTip.Top,
 											m_rcToolTip.Right - 7, m_rcToolTip.Bottom,
 											m_rtToolTipM.U0, m_rtToolTipM.V0, m_rtToolTipM.U1, m_rtToolTipM.V1,
 											0xFFFFFFFF );
-		pDrawPort->AddTexture( m_rcToolTip.Right - 7, m_rcToolTip.Top,
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcToolTip.Right - 7, m_rcToolTip.Top,
 											m_rcToolTip.Right, m_rcToolTip.Bottom,
 											m_rtToolTipR.U0, m_rtToolTipR.V0, m_rtToolTipR.U1, m_rtToolTipR.V1,
 											0xFFFFFFFF );
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Text in tool tip
-		pDrawPort->PutTextEx( m_strToolTip, m_rcToolTip.Left + 8, m_rcToolTip.Top + 3 );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strToolTip, m_rcToolTip.Left + 8, m_rcToolTip.Top + 3 );
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
-
+	
+	// [090602: selo] 전체화면에 보여질 선택된 퀘스트를 랜더링 한다.
+	RenderSelectedQuest();
 	// [090608: selo] 전체화면에 보여질 시간제한 퀘스트의 남은시간을 랜더링 한다.
 	RenderTimeAttackRemainTime();
-	// [090817: selo] 퀘스트 공지 랜더링 한다.
-	RenderQuestNotice();
 }
 
 // ----------------------------------------------------------------------------
@@ -372,9 +331,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 0:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(B,Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
 
 				m_btnBoard.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnBoard.GetWidth();
@@ -384,9 +343,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 1:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
 
 				m_btnMessanger.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnMessanger.GetWidth();
@@ -395,17 +354,10 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 
 		case 2:		// System menu
 			{
-#if defined (G_GERMAN)
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Y,Alt+Y)" );
+					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Y)" );
-#else
-				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Z,Alt+Z)" );
-				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Z)" );
-#endif
+					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
 
 				m_btnSysMenu.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnSysMenu.GetWidth();
@@ -415,9 +367,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 3:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(I,Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(E,Alt+E)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+E)" );
 
 				m_btnInven.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnInven.GetWidth();
@@ -427,9 +379,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 4:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(Alt+T)" );
 
 				m_btnCharInfo.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnCharInfo.GetWidth();
@@ -438,22 +390,79 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		}
 
 		int nInfoWidth;
-#if defined(G_THAI)
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
-#else
+		if(g_iCountry == THAILAND) {
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
+		} else
 		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strToolTip.Length() *
 						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 		int	nInfoHeight = 22;
 
 		nInfoX += ( nWidth - nInfoWidth ) / 2;
 		nInfoY -= 1;
 
-		if( nInfoX < CUIManager::getSingleton()->GetMinI() )
-			nInfoX = CUIManager::getSingleton()->GetMinI();
+		if( nInfoX < _pUIMgr->GetMinI() )
+			nInfoX = _pUIMgr->GetMinI();
 
 		m_rcToolTip.SetRect( nInfoX, nInfoY - nInfoHeight, nInfoX + nInfoWidth, nInfoY );
 	}
+}
+
+// ----------------------------------------------------------------------------
+// Name : UpdateAllInfos()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIPlayerInfo::UpdateAllInfos()
+{
+	m_fHPRatio = _pNetwork->MyCharacterInfo.hp / (FLOAT)( _pNetwork->MyCharacterInfo.maxHP );
+	if( m_fHPRatio > 1.0f ) m_fHPRatio = 1.0f;
+	m_fMPRatio = _pNetwork->MyCharacterInfo.mp / (FLOAT)( _pNetwork->MyCharacterInfo.maxMP );
+	if( m_fMPRatio > 1.0f ) m_fMPRatio = 1.0f;
+	m_fEXPRatio = _pNetwork->MyCharacterInfo.curExp / (FLOAT)( _pNetwork->MyCharacterInfo.needExp );
+	FLOAT	fEXPBarRatio = m_fEXPRatio;
+	if( fEXPBarRatio > 1.0f ) fEXPBarRatio = 1.0f;
+	else if( fEXPBarRatio < 0.0f ) fEXPBarRatio = 0.0f;
+
+	m_rcHP.Right = m_rcHP.Left + PLAYERINFO_BAR_WIDTH * m_fHPRatio;
+	m_rcMP.Right = m_rcMP.Left + PLAYERINFO_BAR_WIDTH * m_fMPRatio;
+	m_rcEXP.Right = m_rcEXP.Left + PLAYERINFO_BAR_WIDTH * fEXPBarRatio;
+
+	m_strLevel.PrintF( "%d", _pNetwork->MyCharacterInfo.level );
+	m_strHP.PrintF( "%d/%d", _pNetwork->MyCharacterInfo.hp, _pNetwork->MyCharacterInfo.maxHP );
+	m_strMP.PrintF( "%d/%d", _pNetwork->MyCharacterInfo.mp, _pNetwork->MyCharacterInfo.maxMP );
+	m_strEXP.PrintF( "%.2f%%", m_fEXPRatio * 100.0f );
+}
+
+// ----------------------------------------------------------------------------
+// Name : UpdateHPInfo()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIPlayerInfo::UpdateHPInfo()
+{
+	m_fHPRatio = _pNetwork->MyCharacterInfo.hp / (FLOAT)( _pNetwork->MyCharacterInfo.maxHP );
+	if( m_fMPRatio > 1.0f )
+	{
+		m_fMPRatio = 1.0f;
+		_pNetwork->MyCharacterInfo.mp = _pNetwork->MyCharacterInfo.maxMP;
+	}
+
+	m_rcHP.Right = m_rcHP.Left + PLAYERINFO_BAR_WIDTH * m_fHPRatio;
+	m_strHP.PrintF( "%d/%d", _pNetwork->MyCharacterInfo.hp, _pNetwork->MyCharacterInfo.maxHP );
+}
+
+// ----------------------------------------------------------------------------
+// Name : UpdateEXPInfo()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIPlayerInfo::UpdateEXPInfo()
+{
+	m_fEXPRatio = _pNetwork->MyCharacterInfo.curExp / (FLOAT)( _pNetwork->MyCharacterInfo.needExp );
+	FLOAT	fEXPBarRatio = m_fEXPRatio;
+	if( fEXPBarRatio > 1.0f ) fEXPBarRatio = 1.0f;
+	else if( fEXPBarRatio < 0.0f ) fEXPBarRatio = 0.0f;
+
+	m_rcEXP.Right = m_rcEXP.Left + PLAYERINFO_BAR_WIDTH * fEXPBarRatio;
+
+	m_strEXP.PrintF( "%.2f%%", m_fEXPRatio * 100.0f );
 }
 
 // ----------------------------------------------------------------------------
@@ -462,7 +471,7 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::ToggleUIWebBoard()
 {
-	CUIManager::getSingleton()->GetWebBoard()->ToggleVisible();
+	_pUIMgr->GetWebBoard()->ToggleVisible();
 }
 
 // ----------------------------------------------------------------------------
@@ -471,7 +480,7 @@ void CUIPlayerInfo::ToggleUIWebBoard()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::ToggleUIMessanger()
 {
-	CUIManager::getSingleton()->GetMessenger()->ToggleVisible();
+	_pUIMgr->GetMessenger()->ToggleVisible();
 }
 
 // ----------------------------------------------------------------------------
@@ -480,7 +489,7 @@ void CUIPlayerInfo::ToggleUIMessanger()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::ToggleUISysMenu()
 {
-	CUIManager::getSingleton()->GetSystemMenu()->ToggleVisible();
+	_pUIMgr->GetSystemMenu()->ToggleVisible();
 }
 
 // ----------------------------------------------------------------------------
@@ -489,7 +498,7 @@ void CUIPlayerInfo::ToggleUISysMenu()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::ToggleUIInventory()
 {
-	CUIManager::getSingleton()->GetInventory()->ToggleVisible();
+	_pUIMgr->GetInventory()->ToggleVisible();
 }
 
 // ----------------------------------------------------------------------------
@@ -498,28 +507,46 @@ void CUIPlayerInfo::ToggleUIInventory()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::ToggleUICharacterInfo()
 {
-	CUIManager::getSingleton()->GetCharacterInfo()->ToggleVisible();
+	_pUIMgr->GetCharacterInfo()->ToggleVisible();
 }
 
 // ----------------------------------------------------------------------------
-// Name : ToggleUIHelp()
-// Desc :
+//  [6/2/2009 selo]
+// Name : RenderSelectedQuest()
+// Desc : 전체화면에 표시할 퀘스트 내용 랜더한다.
+//		  정보는 QuestBookList 에서 얻어온다.
 // ----------------------------------------------------------------------------
-void CUIPlayerInfo::ToggleUIHelp()
-{
-	CUIManager::getSingleton()->GetHelp()->ToggleVisible();
-}
+void CUIPlayerInfo::RenderSelectedQuest()
+{	
+	int nPosX = _pUIMgr->GetDrawPort()->GetWidth() - 20;
+	int nPosY = 280;
+	CTString strTemp;
 
-// ----------------------------------------------------------------------------
-//  [8/3/2009 sora]
-// Name : ClearSelectedQuest()
-// Desc : 선택된 퀘스트 리스트 clear
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::ClearSelectedQuest()
-{
-	GAMEDATAMGR()->GetQuest()->ClearSelectedQuestList();
-	m_iSelectedQuestLineCnt = 0;
-	m_lbSelectedQuest.ResetAllStrings();
+	std::list<int>::const_iterator iter = _pUIMgr->GetQuestBookList()->GetSelectedQuestList().begin();
+	while( iter != _pUIMgr->GetQuestBookList()->GetSelectedQuestList().end() )
+	{
+		CQuestDynamicData *pQuestDD = NULL;
+		if( !_pUIMgr->GetQuestBookList()->isRaidMessage(*iter) )
+		{
+			pQuestDD = CQuestSystem::Instance().GetDynamicDataByQuestIndex(*iter);	
+		}
+		else
+		{
+			CQuestDynamicData qdd(CQuestSystem::Instance().GetStaticData(*iter));
+			pQuestDD = &qdd;	
+		}
+		
+		strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), pQuestDD->GetTitleDesc( 0 ));
+		_pUIMgr->GetDrawPort()->PutTextExRX(strTemp, nPosX, nPosY, pQuestDD->GetColorTitleDesc( 0 ));
+		nPosY += 12;			
+		strTemp.PrintF("%s %s", pQuestDD->GetStatusDesc(0), pQuestDD->GetStatusDesc(1));
+		_pUIMgr->GetDrawPort()->PutTextExRX(strTemp, nPosX, nPosY, pQuestDD->GetColorStatusDesc(0));
+		nPosY += 12;		
+
+		++iter;
+	}	
+	
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -530,296 +557,17 @@ void CUIPlayerInfo::ClearSelectedQuest()
 // ----------------------------------------------------------------------------
 void CUIPlayerInfo::RenderTimeAttackRemainTime()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	DOUBLE dRemainTime = _pUIMgr->GetQuestBookList()->GetTimeAttackRemainTime();
 
-	if( TRUE == GAMEDATAMGR()->GetQuest()->IsRaidNow() )
+	if( dRemainTime >= 0 )
 	{
-		int nPosX = pUIManager->GetDrawPort()->GetWidth() - 120;
-		RenderTime(nPosX, 200, GAMEDATAMGR()->GetQuest()->GetRaidReminTime(), 0xFF0000FF);		
-	}	
-}
+		int nPosX = _pUIMgr->GetDrawPort()->GetWidth() - 20;
+		int nPosY = 240;
+		CTString strTemp;
 
-// ----------------------------------------------------------------------------
-//  [8/17/2009 selo]
-// Name : UpdateQuestNotice()
-// Desc : 퀘스트 공지를 갱신 한다
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::UpdateQuestNotice(INDEX iQuestIndex)
-{
-	// [090821: selo] 퀘스트 공지 닫기 버튼
-	m_btnQuestNoticeClose.SetEnable(TRUE);
-
-	m_lbQuestNotice.ResetAllStrings();
-	m_iQuestNoticeMaxStringCnt = 0;
-	m_iQuestNoticeLineCnt = 0;
-
-	CQuestDynamicData qdd(CQuestSystem::Instance().GetStaticData(iQuestIndex));
-
-	CTString strTemp;
-	strTemp.PrintF("%s", qdd.GetDesc3());
-	AddQuestNoticeString(strTemp, 0xFFA500FF);
-}
-
-// ----------------------------------------------------------------------------
-//  [8/17/2009 selo]
-// Name : AddQuestNoticeString()
-// Desc : 퀘스트 공지 스트링 등록 처리
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::AddQuestNoticeString(CTString& strMessage, const COLOR col)
-{
-	++m_iQuestNoticeLineCnt;
-
-	INDEX	nLength = strMessage.Length();
-	if( nLength == 0 )
-		return;	
-
-	int iPos;
-	for( iPos = 0; iPos < nLength; ++iPos )
-	{
-		if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-			break;
+		strTemp.PrintF(_S(2514, "%d초"), (int)dRemainTime);
+		_pUIMgr->GetDrawPort()->PutTextExRX(strTemp, nPosX, nPosY, 0xFFFFFFFF);
 	}
-
-	if( m_iQuestNoticeMaxStringCnt < iPos )
-		m_iQuestNoticeMaxStringCnt = iPos;
-
-	if( iPos == nLength )
-	{
-		m_lbQuestNotice.AddString(0, strMessage, col, FALSE);
-	}
-	else
-	{
-		CTString strTemp, strTemp2;
-		strMessage.Split(iPos + 1, strTemp2, strTemp);
-		
-		m_lbQuestNotice.AddString(0, strTemp2, col, FALSE);
-
-		AddQuestNoticeString(strTemp, col);
-	}
-
-}
-
-// ----------------------------------------------------------------------------
-//  [8/17/2009 selo]
-// Name : RenderQuestNotice()
-// Desc : 퀘스트 공지를 그린다
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::RenderQuestNotice()
-{
-	if( FALSE == m_btnQuestNoticeClose.IsEnabled() )
-		return;
-
-	if( 0 == m_iQuestNoticeMaxStringCnt )
-		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	if( 30 < GAMEDATAMGR()->GetQuest()->GetQuestNoticeElapsedTime() )
-	{
-		m_lbQuestNotice.ResetAllStrings();
-		m_iQuestNoticeMaxStringCnt = 0;
-		m_iQuestNoticeLineCnt = 0;
-
-		return;
-	}
-
-	int	nWidth = ( m_iQuestNoticeMaxStringCnt + 6 ) *
-				( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() ) - 1;
-
-	int			nCX = pDrawPort->dp_MinI + ( pDrawPort->dp_MaxI - pDrawPort->dp_MinI ) / 2;
-
-	UIRect rcNotice;
-	UIRectUV rtBoard;
-
-	pDrawPort->InitTextureData( m_ptdQuestBookTexture );
-
-	rcNotice.Left = nCX - nWidth / 2;
-	rcNotice.Right = rcNotice.Left + nWidth;
-	rcNotice.Top = 125;
-	rcNotice.Bottom = 125 + 13 + (m_iQuestNoticeLineCnt * (_pUIFontTexMgr->GetFontHeight() + 4));	
-
-	rtBoard.SetUV(16, 44, 16+200, 44+250, m_ptdQuestBookTexture->GetPixWidth(), m_ptdQuestBookTexture->GetPixHeight());
-
-	pDrawPort->AddTexture( rcNotice.Left, rcNotice.Top, rcNotice.Right, rcNotice.Bottom,
-		rtBoard.U0, rtBoard.V0, rtBoard.U1, rtBoard.V1,
-		0xFFFFFFC0 );	
-	
-	m_lbQuestNotice.SetPosX(rcNotice.Left);
-
-	m_lbQuestNotice.Render();
-	
-	// 리스트 박스 렌더 마침
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
-
-	// [090821: selo] 공지 닫기 버튼
-	pDrawPort->InitTextureData(m_ptdCommonBtnTexture);
-
-	m_btnQuestNoticeClose.SetPos(rcNotice.Right - 16 - 4, rcNotice.Top + 4);
-	m_btnQuestNoticeClose.Render();
-
-	pDrawPort->FlushRenderingQueue();
-}
-
-// ----------------------------------------------------------------------------
-//  [9/7/2009 selo]
-// Name : RenderTime()
-// 시작시간을 기점으로 흐른 시간 그리기(단위 초)
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::RenderElapsedTime(int nPosX, int nPosY, DOUBLE dStartTime, COLOR col)	
-{
-	DOUBLE dCurTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-	DOUBLE dTime = dCurTime - dStartTime;
-	
-	if( dCurTime < 0 )
-	{
-		RenderTime(nPosX, nPosY, 0, 0, 0, col);
-		return;
-	}
-
-	int nTime = static_cast<int>(dTime);
-	int nSec = nTime % 60;
-	nTime /= 60;
-
-	int nMin = nTime % 60;
-	int nHour = nTime /= 60;
-
-	RenderTime(nPosX, nPosY, nHour, nMin, nSec, col);
-}
-
-// ----------------------------------------------------------------------------
-//  [9/7/2009 selo]
-// Name : RenderTime()
-// 시작시간을 기점으로 남은 시간 그리기(단위 초)
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::RenderRemainTime(int nPosX, int nPosY, DOUBLE dTargetTime, COLOR col)
-{
-	DOUBLE dCurTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-	DOUBLE dTime = dTargetTime - dCurTime;
-	
-	if( dCurTime < 0 )
-	{
-		RenderTime(nPosX, nPosY, 0, 0, 0, col);
-		return;
-	}
-
-	int nTime = static_cast<int>(dTime);
-	int nSec = nTime % 60;
-	nTime /= 60;
-
-	int nMin = nTime % 60;
-	int nHour = nTime /= 60;
-
-	RenderTime(nPosX, nPosY, nHour, nMin, nSec, col);
-}
-
-
-// ----------------------------------------------------------------------------
-//  [9/8/2009 selo]
-// Name : RenderTime()
-// Desc : 시간을 그린다.
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::RenderTime(int nPosX, int nPosY, DOUBLE dTime, COLOR col)
-{
-	if( dTime < 0 )
-	{
-		RenderTime(nPosX, nPosY, 0, 0, 0, col);
-		return;
-	}
-
-	int nTime = static_cast<int>(dTime);
-	int nSec = nTime % 60;
-	nTime /= 60;
-
-	int nMin = nTime % 60;
-	int nHour = nTime /= 60;
-
-	RenderTime(nPosX, nPosY, nHour, nMin, nSec, col);	
-}
-
-// ----------------------------------------------------------------------------
-//  [9/7/2009 selo]
-// Name : RenderTime()
-// Desc : 시간을 그린다.
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::RenderTime(int nPosX, int nPosY, int nHour, int nMinute, int nSecond, COLOR col)
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	pDrawPort->InitTextureData(m_ptdGuildBattleTexture);
-
-	int t10 = 0;
-	
-	// 시 출력
-	t10 = nHour / 10;
-	nHour %= 10;
-
-	DrawNumber( nPosX, nPosY, t10, col );
-	nPosX += 16;
-	DrawNumber( nPosX, nPosY, nHour, col );
-	nPosX += 16;
-	DrawColon( nPosX, nPosY, col );
-	nPosX += 9;
-
-	// 분 출력
-	t10 = nMinute / 10;
-	nMinute %= 10;
-
-	DrawNumber( nPosX, nPosY, t10, col );
-	nPosX += 16;
-	DrawNumber( nPosX, nPosY, nMinute, col );
-	nPosX += 16;
-	DrawColon( nPosX, nPosY, col );
-	nPosX += 9;
-
-	// 초 출력
-	t10 = nSecond / 10;
-	nSecond %= 10;
-
-	DrawNumber( nPosX, nPosY, t10, col );
-	nPosX += 16;
-	DrawNumber( nPosX, nPosY, nSecond, col );
-	nPosX += 16;
-
-	pDrawPort->FlushRenderingQueue();
-}
-
-// ----------------------------------------------------------------------------
-//  [9/7/2009 selo]
-// Name : DrawNumber()
-// Desc : 숫자를 그린다.
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::DrawNumber(int nPosX, int nPosY, int nNumber, COLOR col, bool bLarge)
-{
-	UIRectUV rtNumber	= m_rtSmallNumber[nNumber];
-	int nWidth			= 16;
-	int nHeight			= 20;
-
-
-	if ( bLarge )
-	{
-		rtNumber	= m_rtLargeNumber[nNumber];
-		nWidth		= 21;	
-		nHeight		= 27;
-	}
-	
-	CUIManager::getSingleton()->GetDrawPort()->AddTexture( nPosX, nPosY, nPosX + nWidth, nPosY + nHeight,
-							rtNumber.U0, rtNumber.V0, rtNumber.U1, rtNumber.V1,
-							col );
-}
-
-// ----------------------------------------------------------------------------
-//  [9/7/2009 selo]
-// Name : DrawColon()
-// Desc : 콜론을 그린다. 
-// ----------------------------------------------------------------------------
-void CUIPlayerInfo::DrawColon(int nPosX, int nPosY, COLOR col)
-{
-	CUIManager::getSingleton()->GetDrawPort()->AddTexture( nPosX, nPosY, nPosX + 9, nPosY + 20,
-							m_rtColon.U0, m_rtColon.V0, m_rtColon.U1, m_rtColon.V1,
-							col );
 }
 
 // ----------------------------------------------------------------------------
@@ -834,7 +582,7 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 	if( ( wmsgResult = _pUIBuff->MouseMessageMyBuff( pMsg ) ) != WMSG_FAIL )
 	{
 		if( wmsgResult == WMSG_COMMAND )
-			CUIManager::getSingleton()->RearrangeOrder( UI_PLAYERINFO, TRUE );
+			_pUIMgr->RearrangeOrder( UI_PLAYERINFO, TRUE );
 
 		return wmsgResult;
 	}
@@ -848,10 +596,8 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 	{
 	case WM_MOUSEMOVE:
 		{
-			m_btnQuestNoticeClose.MouseMessage( pMsg );
-
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Web board button
 			if( m_btnBoard.MouseMessage( pMsg ) != WMSG_FAIL )
@@ -883,7 +629,8 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 				ShowToolTip( TRUE, 4 );
 				return WMSG_SUCCESS;
 			}
-			for(int i=0; i<QUICKMENU_BTN_MAX; ++i)
+
+			for(int i=0; i<9; ++i)
 			{
 				if( m_btnQuickMenu[i].MouseMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -894,49 +641,136 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 
 			// Hide tool tip
 			ShowToolTip( FALSE );
-			ShowQuickMenuToolTip(FALSE);
 		}
 		break;
 
 	case WM_LBUTTONDOWN:
 		{
-			// [090821: selo] 퀘스트 공지 닫기 버튼
-			if( m_btnQuestNoticeClose.MouseMessage( pMsg ) != WMSG_FAIL )
+			if( IsInside( nX, nY ) )
 			{
-				// Nothing
+				// Web board button
+				if( m_btnBoard.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// Messanger button
+				else if( m_btnMessanger.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// System menu button
+				else if( m_btnSysMenu.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// Character info button
+				else if( m_btnCharInfo.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				// Inventory button
+				else if( m_btnInven.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				else
+				{
+					//0806 kwon
+					CEntity			*penPlEntity;
+					CPlayerEntity	*penPlayerEntity;
+					penPlEntity = CEntity::GetPlayerEntity( 0 );
+					penPlayerEntity = static_cast<CPlayerEntity *>(penPlEntity);
+					penPlayerEntity->SetTargetMe();
+				}
+
+				_pUIMgr->RearrangeOrder( UI_PLAYERINFO, TRUE );
+				return WMSG_SUCCESS;
 			}
 
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
-			for(int i=0; i<QUICKMENU_BTN_MAX; ++i)
+			for(int i=0; i<9; ++i)
 			{
 				if( m_btnQuickMenu[i].MouseMessage( pMsg ) != WMSG_FAIL )
 				{
-					pUIManager->RearrangeOrder( UI_PLAYERINFO, TRUE );
+					_pUIMgr->RearrangeOrder( UI_PLAYERINFO, TRUE );
 					return WMSG_SUCCESS;
 				}
 			}
-
-			// Quick Menu 영역을 클릭하면 무효화
-			if (IsInsideRect(nX, nY, m_rcQuickMenu) == TRUE)
-				return WMSG_SUCCESS;
 		}
 		break;
 
 	case WM_LBUTTONUP:
 		{
-			// [090821: selo] 퀘스트 공지 닫기 버튼
-			if( ( wmsgResult = m_btnQuestNoticeClose.MouseMessage( pMsg ) ) != WMSG_FAIL )
+			if( IsInside( nX, nY ) )
 			{
-				if( wmsgResult == WMSG_COMMAND )
+				// If holding button doesn't exist
+				if( _pUIMgr->GetHoldBtn().IsEmpty() )
 				{
-					m_btnQuestNoticeClose.SetEnable(FALSE);
+					// If player info isn't focused
+					if( !IsFocused() )
+						return WMSG_FAIL;
+
+					// Web board button
+					if( ( wmsgResult = m_btnBoard.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult = WMSG_COMMAND )
+						{
+							ToggleUIWebBoard();
+						}
+
+						return WMSG_SUCCESS;
+					}
+					// Messanger button
+					else if( ( wmsgResult = m_btnMessanger.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult = WMSG_COMMAND )
+						{
+							ToggleUIMessanger();
+						}
+
+						return WMSG_SUCCESS;
+					}
+					// System menu button
+					else if( ( wmsgResult = m_btnSysMenu.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+						{
+							ToggleUISysMenu();
+						}
+
+						return WMSG_SUCCESS;
+					}
+					// Character info button
+					else if( ( wmsgResult = m_btnCharInfo.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+						{
+							ToggleUICharacterInfo();
+						}
+
+						return WMSG_SUCCESS;
+					}
+					// Inventory button
+					else if( ( wmsgResult = m_btnInven.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+						{
+							ToggleUIInventory();
+						}
+
+						return WMSG_SUCCESS;
+					}
 				}
-				
+				// If holding button exists
+				else
+				{
+					// Reset holding button
+					_pUIMgr->ResetHoldBtn();
+				}
+
 				return WMSG_SUCCESS;
 			}
 
-			for(int i=0; i<QUICKMENU_BTN_MAX; ++i)
+			for(int i=0; i<9; ++i)
 			{
 				if( m_btnQuickMenu[i].MouseMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -949,11 +783,13 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONDBLCLK:
 		{
-		}
-		break;
+			if( IsInside( nX, nY ) )
+				return WMSG_SUCCESS;
 
-	case WM_RBUTTONDOWN:
-		{
+			for(int i=0; i<9; ++i)
+			{
+				//QuickMenu 범위로 체크
+			}
 		}
 		break;
 	}
@@ -967,41 +803,10 @@ WMSG_RESULT CUIPlayerInfo::MouseMessage( MSG *pMsg )
 // ----------------------------------------------------------------------------
 BOOL CUIPlayerInfo::ProcessShortCut( MSG *pMsg )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsInputLock() )
-		return FALSE;
-
-	// locked short cut. [1/25/2011 rumist]
-	if( pUIManager->GetLacaBall()->IsVisible() )
-		return FALSE;
-	if( pUIManager->GetReformSystem()->IsVisible() ) // 리폼 시스템 UI가 열려 있을 경우 단축키 막음 [9/6/2012 Ranma]
-		return FALSE;
-	if (pUIManager->GetCashShopEX()->IsVisible()) // 캐시샵 UI가 열려 있을 경우 단축키 입력 막음
-		return FALSE;
-	if (pUIManager->GetRankingViewEx()->IsVisible() && pUIManager->GetRankingViewEx()->IsEditBoxFocused()) // 랭킹 시스템 보여지고, 에디트박스 포커싱일 경우 입력 막음
-		return FALSE;
+	if( _pUIMgr->GetBilling()->IsLock() ) return FALSE ; 
 	if( pMsg->wParam == VK_TAB )
 	{
-#if (defined(G_JAPAN) || defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2) || defined(G_NETHERLANDS) )
-		return FALSE;
-#endif
-		if (g_InputTabTime > 0)
-		{
-			INT64 DeltaTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds() - g_InputTabTime;
-			
-			if (DeltaTime < 500)
-			{
-				return TRUE;
-			}
-		}
-		
-		g_InputTabTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-		CEntity			*penPlEntity;
-		CPlayerEntity	*penPlayerEntity;
-		penPlEntity = CEntity::GetPlayerEntity( 0 );
-		penPlayerEntity = static_cast<CPlayerEntity *>(penPlEntity);
-		penPlayerEntity->EnemyTargetSelected_InputTab();
+		_pUIMgr->GetInventory()->ToggleVisible();
 		return TRUE;
 	}
 	else
@@ -1010,60 +815,31 @@ BOOL CUIPlayerInfo::ProcessShortCut( MSG *pMsg )
 		extern INDEX	g_iEnterChat;
 		extern UBYTE	_abKeysPressed[256];
 
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
 		// Quick slot
-		if( _abKeysPressed[KID_LALT] && !pUIManager->IsFocusAllEditBox())
+		if( _abKeysPressed[KID_LALT] )
 		{
-			/****
+#ifndef Pet_IMPROVEMENT_1ST
 			//Alt+F1~F3을 눌렀을 때 퀵슬롯 페이지 전환
 			if( iScanCode >= 59 && iScanCode <= 61 )
 			{
-				pUIManager->GetQuickSlot()->ChangePage( iScanCode - 59 );
+				_pUIMgr->GetQuickSlot()->ChangePage( iScanCode - 59 );
 				return TRUE;
 			}
-			****/
-
+#endif
 			//Alt+1~3을 눌렀을 때 퀵슬롯 페이지 전환
-			if( //g_iEnterChat && 
-				iScanCode >= 2 && iScanCode <= 4 )
+#ifdef Pet_IMPROVEMENT_1ST
+			//[070604: Su-won] 1차 펫 기능 개선
+			//Enter 채팅과 상관없이 항상 Alt+숫자로 퀵슬롯 페이지 전환
+			if( iScanCode >= 2 && iScanCode <= 4 )
+#else
+			if( g_iEnterChat && iScanCode >= 2 && iScanCode <= 4 )
+#endif
 			{
-				pUIManager->GetQuickSlot()->ChangePage( iScanCode - 2 );
+				_pUIMgr->GetQuickSlot()->ChangePage( iScanCode - 2 );
 				return TRUE;
 			}
 		}
-		else if( _abKeysPressed[KID_LCONTROL] && !pUIManager->IsFocusAllEditBox())
-		{
-			if( g_iEnterChat && !pUIManager->IsFocusAllEditBox() )
-			{
-				switch( iScanCode )
-				{
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 7:
-				case 8:
-				case 9:
-				case 10:
-				case 11:
-				case 12:
-				case 13:
-					{
-						if( pUIManager->GetQuickSlot()->GetPage() == 2 || pUIManager->GetUI(UI_QUICKSLOT3)->IsVisible() )
-						{
-							pUIManager->GetQuickSlot()->UseQuickSlot( iScanCode - 2 , 2);
-							break;
-						}
-					}
-				default:
-					return FALSE;
-				}
-			}
-			return TRUE;
-		}
-		else if( _abKeysPressed[KID_LSHIFT] && !pUIManager->IsFocusAllEditBox())
+		else if( _abKeysPressed[KID_LCONTROL] )
 		{
 			switch( iScanCode )
 			{
@@ -1071,20 +847,32 @@ BOOL CUIPlayerInfo::ProcessShortCut( MSG *pMsg )
 			case 3:
 			case 4:
 			case 5:			
-				pUIManager->GetSummonFirst()->SetCommand( iScanCode - 2 );
+				_pUIMgr->GetSummonFirst()->SetCommand( iScanCode - 2 );
 				break;			
 			case 6:
-				pUIManager->GetSummonFirst()->UseSkill();
+				_pUIMgr->GetSummonFirst()->UseSkill();
 				break;
-			case 44:  // 'z'    
-			case 45:  // 'x'    
-			case 46:  // 'c'    
-			case 47:  // 'v'
-				pUIManager->GetSummonSecond()->SetCommand( iScanCode - 44 );
+/*
+			case 7:
+			case 8:
+			case 9:			
+			case 10:			
+				_pUIMgr->GetSummonSecond()->SetCommand( iScanCode - 7 );
+				break;			
+			case 11:
+				_pUIMgr->GetSummonSecond()->UseSkill();
+				break;
+*/
+			case 16:  // 'q'    
+			case 17:  // 'w'    
+			case 18:  // 'e'    
+			case 19:  // 'r'
+				_pUIMgr->GetSummonSecond()->SetCommand( iScanCode - 16 );
 				break;       
-			case 48:  // 'b'
-				pUIManager->GetSummonSecond()->UseSkill();
+			case 20:  // 't'
+				_pUIMgr->GetSummonSecond()->UseSkill();
 				break;
+
 			default:
 				return FALSE;
 			}
@@ -1092,146 +880,108 @@ BOOL CUIPlayerInfo::ProcessShortCut( MSG *pMsg )
 		}
 		else
 		{
-			if( g_iEnterChat && !pUIManager->IsFocusAllEditBox() )
+			if(g_iCountry == JAPAN)
 			{
-				if( iScanCode >= 2 && iScanCode <= 13 && pUIManager->GetQuickSlot()->GetPage() == 0)
-				{
-					pUIManager->GetQuickSlot()->UseQuickSlot( iScanCode - 2 , 0);
-					return TRUE;
-				}
-				
-				if( pUIManager->GetQuickSlot()->GetPage() == 1 || pUIManager->GetUI(UI_QUICKSLOT2)->IsVisible() )
+				if( !g_iEnterChat)
 				{
 					if( iScanCode >= 59 && iScanCode <= 68 )
 					{
-						pUIManager->GetQuickSlot()->UseQuickSlot( iScanCode - 59, 1 );
+						_pUIMgr->GetQuickSlot()->UseQuickSlot( iScanCode - 59 );
 						return TRUE;
 					}
-					else if( iScanCode == 87 || iScanCode == 88 )
-					{
-						pUIManager->GetQuickSlot()->UseQuickSlot( iScanCode - 77, 1 );
-						return TRUE;
-					}
-				}
+				} 
+				
+			}
+			else if( iScanCode >= 59 && iScanCode <= 68 )
+			{
+				_pUIMgr->GetQuickSlot()->UseQuickSlot( iScanCode - 59 );
+				return TRUE;
+			}
+			else if( iScanCode == 87 || iScanCode == 88 )
+			{
+				_pUIMgr->GetQuickSlot()->UseQuickSlot( iScanCode - 77 );
+				return TRUE;
+			}
+
+			//if( g_iEnterChat && iScanCode >= 2 && iScanCode <= 11 )
+			if( g_iEnterChat && iScanCode >= 2 && iScanCode <= 13 )
+			{
+				int	nUIIndex = _pUIMgr->GetUIIndexByOrder( 0 );
+				if( _pUIMgr->GetUI( nUIIndex )->IsEditBoxFocused() )
+					return FALSE;
+
+				_pUIMgr->GetQuickSlot()->UseQuickSlot( iScanCode - 2 );
+				return TRUE;
 			}
 		}
 
 		// Short cut
-		if( (_abKeysPressed[KID_LALT] || g_iEnterChat) && !pUIManager->IsFocusAllEditBox())
+		if( _abKeysPressed[KID_LALT] || g_iEnterChat )
 		{
 			if( !_abKeysPressed[KID_LALT] )
 			{
-				int	nUIIndex = pUIManager->GetUIIndexByOrder( 0 );
-				if( pUIManager->GetUI( nUIIndex )->IsEditBoxFocused() )
+				int	nUIIndex = _pUIMgr->GetUIIndexByOrder( 0 );
+				if( _pUIMgr->GetUI( nUIIndex )->IsEditBoxFocused() )
 					return FALSE;
 			}
+
 			switch( iScanCode )
 			{
-			case 23:		// 'i' - inventory
-				pUIManager->GetInventory()->ToggleVisible();
+			case 18:		// 'e' - inventory
+				_pUIMgr->GetInventory()->ToggleVisible();
 				break;
 
-			case 50:		// 'm' - map
-				pUIManager->GetMap()->ToggleVisible();
+			case 17:		// 'w' - map
+				_pUIMgr->GetMap()->ToggleVisible();
 				break;
 
 			case 20:		// 't' - status
-				pUIManager->GetCharacterInfo()->ToggleVisibleStatus();
+				_pUIMgr->GetCharacterInfo()->ToggleVisibleStatus();
 				break;
 
-			case 24:		// 'o' - Syndicate
-				pUIManager->GetCharacterInfo()->ToggleVisibleSyndicate();
+			case 31:		// 's' - skill
+				_pUIMgr->GetCharacterInfo()->ToggleVisibleSkill();
 				break;
 
-			case 37:		// 'k' - skill
-				{
-					// ### skill new
-					//pUIManager->GetCharacterInfo()->ToggleVisibleSkill();
-					pUIManager->GetSkillNew()->OpenUI();
- 				}
+			case 30:		// 'a' - action
+				_pUIMgr->GetCharacterInfo()->ToggleVisibleAction();
 				break;
- 			case 27:// ']'UI 오픈 테스트를 위해서 만들어 놨다 테스트 끝나면 꼭 주석 처리 testcode mail
- 				{
- 				}
- 				break;
 
-			case 36:		// 'j' - action
-				{
-					pUIManager->GetCharacterInfo()->ToggleVisibleAction();
-				}
-				break;
-				
 			case 46:		// 'c' - social
-				pUIManager->GetCharacterInfo()->ToggleVisibleSocial();
+				_pUIMgr->GetCharacterInfo()->ToggleVisibleSocial();
 				break;
 
 			case 34:		// 'g' - group
-				pUIManager->GetCharacterInfo()->ToggleVisibleGroup();
+				_pUIMgr->GetCharacterInfo()->ToggleVisibleGroup();
 				break;
 
-			case 38:		// 'l' - quest
-				pUIManager->GetQuestBookList()->ToggleVisible();
+			case 16:		// 'q' - quest
+				_pUIMgr->GetQuestBookList()->ToggleVisible();
 				break;
 
 			case 44:		// 'z' - system menu
-				pUIManager->GetSystemMenu()->ToggleVisible();
+				_pUIMgr->GetSystemMenu()->ToggleVisible();
 				break;
-#if !defined(G_GERMAN) // 독일 로컬 요청으로 "B" 단축키 막음[4/13/2011 ldy1978220]
+
 			case 48:		// 'b' - web board
-				pUIManager->GetWebBoard()->ToggleVisible();
-				break;	
-#endif
+				_pUIMgr->GetWebBoard()->ToggleVisible();
+				break;
+
 			case 33:		// 'f' - messanger
-				pUIManager->GetMessenger()->ToggleVisible();
+				_pUIMgr->GetMessenger()->ToggleVisible();
 				break;
 
 			case 45:		// 'x' - all UIs
-				pUIManager->ToggleVisibleUIs();
+				_pUIMgr->ToggleVisibleUIs();
 				break;
 
-			case 25:	       // 'p' petInfo
-				{
-					bool bWildPet = false;
-					ObjInfo* pInfo = ObjInfo::getSingleton();
-
-					if (pInfo->GetMyApetInfo() != NULL)
-					{
-						bWildPet = pInfo->GetMyApetInfo()->bIsActive && !pInfo->GetMyApetInfo()->bDeath ? true : false;
-					}
-
-					if(bWildPet == true)
-					{
-						pUIManager->GetWildPetInfo()->ToggleVisible();
-					}else
-					{
-						pUIManager->GetPetInfo()->ToggleVisible();
-					}
-				}
+			case 32:		// 'd' - pet info
+				_pUIMgr->GetPetInfo()->ToggleVisible();
 				break;
-				// Short cut Help System.  [9/15/2009 rumist]
-			case 53:		// '/' - Help.
-				pUIManager->GetHelp()->ToggleVisible();
-				break;	
-				// short cut about wild pet mount [12/8/2010 rumist]
-			case 19:		// 'r' - wild pet mount
-				{
-					SQUAD llTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds() - m_llShortCutTime;
 
-					if (llTime >  500)
-					{
-						m_llShortCutTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-					}
-					else
-					{
-						return FALSE;
-					}
-					pUIManager->GetCharacterInfo()->UseAction( 50 );
-				}
-				break;
-				// ITS 4377 : ranking system view short cut [10/6/2011 rumist]
-				case 47: // 'v' - ranking system view.
-				{
-					pUIManager->GetRankingViewEx()->ToggleVisible();
+			case 25:		// 'P' - WildPet info
+				if(_pNetwork->_WildPetInfo.bIsActive) {
+					_pUIMgr->GetWildPetInfo()->ToggleVisible();
 				}
 				break;
 			default:
@@ -1249,7 +999,7 @@ void CUIPlayerInfo::ResetQuickMenuPosition( PIX pixMinI, PIX pixMinJ, PIX pixMax
 {
 	m_rcQuickMenu.SetRect( 0, pixMaxJ-28, 322, pixMaxJ );
 
-	for(int i=0; i<QUICKMENU_BTN_MAX; ++i)
+	for(int i=0; i<9; ++i)
 	{
 		m_btnQuickMenu[i].SetPosY(pixMaxJ -25);
 	}
@@ -1276,121 +1026,101 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 		nOldToolTipID = nToolTipID;
 		switch( nToolTipID )
 		{
-		case QUICKMENU_BTN_CHAR_INFO:		// Character information
+		case 0:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 69, "캐릭터 정보창" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 69, "캐릭터 정보창" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(Alt+T)" );
 			}
 			break;
-		case QUICKMENU_BTN_INVEN:		// Inventory
+		case 1:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(I,Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(E,Alt+E)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+E)" );
 			}
 			break;
-		case QUICKMENU_BTN_SKILL:		// Skill
+		case 2:		// Quest Book
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 91, "스킬" ), "(K,Alt+K)" );
+					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(Q,Alt+Q)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 91, "스킬" ), "(Alt+K)" );
+					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(Alt+Q)" );
 			}
 			break;
-		case QUICKMENU_BTN_QUEST:		// Quest Book
+		case 3:		// Pet Info
+			{
+				if(_pNetwork->_WildPetInfo.bIsActive)
+				{
+					if( g_iEnterChat )
+						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(D,Alt+P)" );
+					else
+						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(Alt+P)" );
+
+				}else
+				{
+					if( g_iEnterChat )
+						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(D,Alt+D)" );
+					else
+						m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(Alt+D)" );
+				}
+			}
+			break;
+		case 4:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(1700, "퀘스트북" ), "(L,Alt+L)" );
+					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(1700, "퀘스트북" ), "(Alt+L)" );
+					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
 			}
 			break;
-		case QUICKMENU_BTN_PET_INFO:		// Pet Info
+		case 5:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(2173, "펫 정보창" ), "(P,Alt+P)" );
+					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(2173, "펫 정보창" ), "(Alt+P)" );
+					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
 			}
 			break;
-		case QUICKMENU_BTN_MESSENGER:		// Messanger
+		case 6:		// System menu
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
 				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
 			}
 			break;
-		case QUICKMENU_BTN_WEB_BOARD:		// Web board
+		case 7:		// Help
 			{
-				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(B,Alt+B)" );
-				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(Alt+B)" );
+				m_strToolTip.PrintF( "%s", _S(284, "도움말"));
 			}
 			break;
-		case QUICKMENU_BTN_SYSTEM_MENU:		// System menu
+		case 8:		// Cash Shop
 			{
-#if defined(G_GERMAN)
-				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Y,Alt+Y)" );
-				else
-					m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Y)" );
-#else
-				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Z,Alt+Z)" );
-				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Z)" );
-#endif
-				
+				m_strToolTip.PrintF( "%s", _S(2572, "아이리스 상점"));
 			}
 			break;
-		case QUICKMENU_BTN_RANKING:		// Help
-			{
-#if defined (G_GERMAN)
-				m_strToolTip.PrintF( "%s", _S(5213, "랭킹"));
-#else
-				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(5213, "랭킹"), "(V,Alt+V)");
-				else
-					m_strToolTip.PrintF( "%s %s", (const char*)_S(5213, "랭킹"), "(Alt+V)");
-#endif		
-			}
-			break;
-		case QUICKMENU_BTN_CASH_SHOP:		// Cash Shop
-			{
-				m_strToolTip.PrintF( "%s", (const char*)_S(2572, "아이리스 상점"));
-			}
-			break;
-		case QUICKMENU_BTN_LAKA_BALL:
-			{
-				m_strToolTip.PrintF( "%s", (const char*)_S( 5350, "라카볼"));
-			}
-			break;
+
 		}
 
 		m_btnQuickMenu[nToolTipID].GetAbsPos( nInfoX, nInfoY );
 		nWidth = m_btnQuickMenu[nToolTipID].GetWidth();
 
 		int nInfoWidth;
-#if defined(G_THAI)
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
-#else
+		if(g_iCountry == THAILAND) {
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strToolTip);				
+		} else
 		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strToolTip.Length() *
 						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-#endif
 		int	nInfoHeight = 22;
 
 		nInfoX += ( nWidth - nInfoWidth ) / 2;
 		nInfoY -= 1;
 
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		if( nInfoX < pUIManager->GetMinI() )
-			nInfoX = pUIManager->GetMinI();
+		if( nInfoX < _pUIMgr->GetMinI() )
+			nInfoX = _pUIMgr->GetMinI();
 
 		m_rcToolTip.SetRect( nInfoX, nInfoY - nInfoHeight, nInfoX + nInfoWidth, nInfoY );
 	}
@@ -1398,73 +1128,73 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 
 void CUIPlayerInfo::OpenQuickMenu(int nMenu)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-
-	// if activate laca ball, disable all ui. [1/26/2011 rumist]
-	if( pUIManager->GetLacaBall()->IsVisible() )
-		return;
-
 	switch(nMenu)
 	{
 		//스테이터스
-	case QUICKMENU_BTN_CHAR_INFO:
+	case 0:
 		ToggleUICharacterInfo();
 		break;
 		//인벤토리
-	case QUICKMENU_BTN_INVEN:
+	case 1:
 		ToggleUIInventory();
 		break;
-		// Skill
-	case QUICKMENU_BTN_SKILL:
-		CUIManager::getSingleton()->GetSkillNew()->OpenUI();
-		break;
 		//퀘스트북
-	case QUICKMENU_BTN_QUEST:
-		pUIManager->GetQuestBookList()->ToggleVisible();
+	case 2:
+		_pUIMgr->GetQuestBookList()->ToggleVisible();
 		break;
 		//펫 정보창
-	case QUICKMENU_BTN_PET_INFO:
+	case 3:
 		{
-			if(pInfo->GetMyApetInfo() != NULL && pInfo->GetMyApetInfo()->bIsActive)
+			if(_pNetwork->_WildPetInfo.bIsActive)
 			{
-				pUIManager->GetWildPetInfo()->ToggleVisible();
+				_pUIMgr->GetWildPetInfo()->ToggleVisible();
 			}else
 			{
-				pUIManager->GetPetInfo()->ToggleVisible();
+				_pUIMgr->GetPetInfo()->ToggleVisible();
 			}
 		}
 		
 		break;
 		//메신저
-	case QUICKMENU_BTN_MESSENGER:
+	case 4:
 		ToggleUIMessanger();
 		break;
 		//게시판
-	case QUICKMENU_BTN_WEB_BOARD:
+	case 5:
 		ToggleUIWebBoard();
 		break;
 		//시스템
-	case QUICKMENU_BTN_SYSTEM_MENU:
+	case 6:
 		ToggleUISysMenu();
 		break;
 		//도움말
-	case QUICKMENU_BTN_RANKING:
-	// ITS : 4378 [Ranking] 채팅창 하단에 시스템 메뉴에서 랭킹 시스템 버튼 클릭 시 도움말 UI가 나오는 오류 [10/6/2011 rumist]
-		pUIManager->GetRankingViewEx()->ToggleVisible();
+	case 7:
+		_pUIMgr->GetHelp()->OpenHelp();
 		break;
 		//아이리스 상점
-	case QUICKMENU_BTN_CASH_SHOP:
+	case 8:
 		{
-			if (!pUIManager->GetCashShopEX()->IsVisible() && !pUIManager->GetCashShopEX()->GetCashShopLock())
-				_pNetwork->SendCashItemMessage(MSG_EX_CASHITEM_SHOP_OPEN_REQ);
-		}
-		break;
-	case QUICKMENU_BTN_LAKA_BALL:	// 라카렛
-		{
-			if( !pUIManager->GetLacaBall()->IsVisible() )
-				pUIManager->GetLacaBall()->ToggleVisible();
+			if( g_iCountry == TAIWAN )
+			{
+				if( !_pUIMgr->GetBilling()->IsVisible() )
+					_pNetwork->BillInfoUserInfoReq();
+			}
+			else if( g_iCountry == TAIWAN2 )
+			{
+				if( !_pUIMgr->GetBillItem()->IsVisible() )							
+					_pNetwork->BillInfoUserInfoReq();
+			}
+			else
+			{
+				if(_pUIMgr->GetCashShop()->IsEnabled()&&_pUIMgr->GetCashShop()->IsVisible()) _pUIMgr->GetCashShop()->CloseCashShop();
+				else{
+					_pUIMgr->GetCashShop()->OpenCashShop();
+					_pNetwork->SendCashItemMessage(MSG_EX_CASHITEM_BALANCE_REQ);														
+				}
+			}
 		}
 		break;
 	}
 }
+// UI_REFORM :Su-won
+/////////////////////////////////////////////////////////////////////////////////////////////////////////

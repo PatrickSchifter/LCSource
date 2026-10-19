@@ -4,66 +4,13 @@
 
 #include <Engine/Effect/CEffectGroup.h>
 #include <Engine/Effect/CEffectGroupManager.h>
-#include <Engine/Entities/Entity.h>
 #include <Engine/Base/Timer.h>
-#include <Engine/Entities/InternalClasses.h>
-#include <Engine/Info/MyInfo.h>
 
 extern UINT g_uiEngineVersion;
 
-enum ePetStashEffect
+CItemEffect::CItemEffect() : m_pAccessroyEffect(NULL)
 {
-	PET_STASH_GHOST = 0,
-	PET_STASH_PHOENIX,
-	PET_STASH_SEAHORSE,
-	PET_STASH_DRAGON,
-	PET_STASH_CUPID,
-	PET_STASH_GENIE,
-	PET_STASH_MAX
-};
-
-enum eRelicItemType
-{
-	eRELIC_10951 = 0, // 천사의 유물
-	eRELIC_10952, // 대 천사의 유물
-	eRELIC_10953, // 세라핌의 유물
-	eRELIC_MAX
-};
-
-const CTString g_strPetStashEffectName[PET_STASH_MAX] = 
-{
-	"PT_ghost_pet", "PT_phoenix_pet", "PT_seahorse_pet", "PT_dragon_pet", "PT_cupid_pet", "PT_genie_pet"
-};
-
-const CTString g_strLoginEffectName = "LoginBase";
-
-const CTString g_strRelicEffectName[eRELIC_MAX] = 
-{
-	"Angel_wing01", "Angel_wing02", "Angel_wing03"
-};
-
-CItemEffect::CItemEffect() 
-	: m_pAccessroyEffect(NULL)
-	, m_ItemERType(ER_NORMAL)
-	, m_ItemERSubType(ERS_NORMAL)
-	, m_nHolyWaterEffectType(0)
-	, m_nCurRelicEffectType(-1)
-{
-	int i;
-	for (i = 0; i < 2; ++i)
-	{
-		m_PlusEffectGourp[i].m_pEffectGroup = NULL;
-		m_pHolyWaterEffectGroup[i] = NULL;
-	}
-
-	for (i = 0; i < WEAR_TOTAL; ++i)
-	{
-		m_ItemEffectGroup[i].m_pEffectGroup = NULL;
-	}
-
-	m_NickEffectGroup.m_pEffectGroup = NULL;
-	m_PetStashEffectGroup.m_pEffectGroup = NULL;
-	m_RelicEffectGroup.m_pEffectGroup = NULL;
+	Clear();
 }
 
 CItemEffect::~CItemEffect()
@@ -73,84 +20,51 @@ CItemEffect::~CItemEffect()
 
 CItemEffect::CItemEffect(const CItemEffect &other)
 {
-	m_PlusEffectGourp[0] = other.m_PlusEffectGourp[0];
-	m_PlusEffectGourp[1] = other.m_PlusEffectGourp[1];
+	m_PlusEffectGourp = other.m_PlusEffectGourp;
 
 	for (int i=0; i<WEAR_TOTAL; i++)
 	{
 		m_ItemEffectGroup[i] = other.m_ItemEffectGroup[i];
 	}
 
-	m_NickEffectGroup = other.m_NickEffectGroup;
-	m_PetStashEffectGroup = other.m_PetStashEffectGroup;
-	m_RelicEffectGroup = other.m_RelicEffectGroup;
-	
 	memcpy(m_aItemPlus, other.m_aItemPlus, sizeof(int)*WEAR_TOTAL);
 }
 
 CItemEffect &CItemEffect::operator=(const CItemEffect &other)
 {
-	m_PlusEffectGourp[0] = other.m_PlusEffectGourp[0];
-	m_PlusEffectGourp[1] = other.m_PlusEffectGourp[1];
+	m_PlusEffectGourp = other.m_PlusEffectGourp;
 
 	for (int i=0; i<WEAR_TOTAL; i++)
 	{
 		m_ItemEffectGroup[i] = other.m_ItemEffectGroup[i];
 	}
 
-	m_NickEffectGroup = other.m_NickEffectGroup;
-	m_PetStashEffectGroup = other.m_PetStashEffectGroup;
-	m_RelicEffectGroup = other.m_RelicEffectGroup;
-	
 	memcpy(m_aItemPlus, other.m_aItemPlus, sizeof(int)*WEAR_TOTAL);
 	return *this;
 }
 
 void CItemEffect::Clear()
 {
-	memset(m_PlusEffectGourp[0].szEffectName, 0, sizeof(m_PlusEffectGourp[0].szEffectName));
-	memset(m_PlusEffectGourp[1].szEffectName, 0, sizeof(m_PlusEffectGourp[1].szEffectName));
-	DestroyEffectGroupIfValid(m_PlusEffectGourp[0].m_pEffectGroup);
-	DestroyEffectGroupIfValid(m_PlusEffectGourp[1].m_pEffectGroup);
+	memset(m_PlusEffectGourp.szEffectName, 0, sizeof(m_PlusEffectGourp.szEffectName));
+	DestroyEffectGroupIfValid(m_PlusEffectGourp.m_pEffectGroup);
 
-	for (int i = 0; i < WEAR_TOTAL; ++i)
+	for (int i=0; i<WEAR_TOTAL; i++)
 	{
 		m_aItemPlus[i] = -1;
 		memset(m_ItemEffectGroup[i].szEffectName, 0, sizeof(m_ItemEffectGroup[i].szEffectName));
 		DestroyEffectGroupIfValid(m_ItemEffectGroup[i].m_pEffectGroup);
 	}
-
-	memset(m_NickEffectGroup.szEffectName, 0, sizeof(m_NickEffectGroup.szEffectName));
-	memset(m_PetStashEffectGroup.szEffectName, 0, sizeof(m_PetStashEffectGroup.szEffectName));
-	memset(m_RelicEffectGroup.szEffectName, 0, sizeof(m_RelicEffectGroup.szEffectName));
-
-	DestroyEffectGroupIfValid(m_NickEffectGroup.m_pEffectGroup);
-	DestroyEffectGroupIfValid(m_PetStashEffectGroup.m_pEffectGroup);
-	DestroyEffectGroupIfValid(m_pHolyWaterEffectGroup[0]);
-	DestroyEffectGroupIfValid(m_pHolyWaterEffectGroup[1]);
-	DestroyEffectGroupIfValid(m_RelicEffectGroup.m_pEffectGroup);
-
-	m_nHolyWaterEffectType = 0;
-	m_nCurRelicEffectType = -1;
 }
 
 void CItemEffect::Refresh(CTagManager *pTM, SBYTE sbOption)
 {
-	AddHolyWaterEffect(m_nHolyWaterEffectType, pTM);
-	RefreshPetStashEffect(pTM);
-	RefreshRelicEffect(pTM);
-
 	if( !(sbOption & 0x01) )
 		pTM = NULL;
 
-	DestroyEffectGroupIfValid(m_PlusEffectGourp[0].m_pEffectGroup);
-	DestroyEffectGroupIfValid(m_PlusEffectGourp[1].m_pEffectGroup);
+	DestroyEffectGroupIfValid(m_PlusEffectGourp.m_pEffectGroup);
 
-	if (m_PlusEffectGourp[0].szEffectName[0] != 0)
-		m_PlusEffectGourp[0].m_pEffectGroup = StartEffectGroup(m_PlusEffectGourp[0].szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
-
-	if (m_PlusEffectGourp[1].szEffectName[0] != 0)
-		m_PlusEffectGourp[1].m_pEffectGroup = StartEffectGroup(m_PlusEffectGourp[1].szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
+	if (m_PlusEffectGourp.szEffectName[0] != 0)
+		m_PlusEffectGourp.m_pEffectGroup = StartEffectGroup(m_PlusEffectGourp.szEffectName, pTM, _pTimer->GetLerpedCurrentTick());
 	
 	RefreshAccessoryEffect(pTM);
 
@@ -161,29 +75,14 @@ void CItemEffect::Refresh(CTagManager *pTM, SBYTE sbOption)
 		if (m_ItemEffectGroup[i].szEffectName[0] != 0)
 		{
 			m_ItemEffectGroup[i].m_pEffectGroup = StartEffectGroup(m_ItemEffectGroup[i].szEffectName,
-																	pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
+																	pTM, _pTimer->GetLerpedCurrentTick());
 		}
-	}
-
-	DestroyEffectGroupIfValid(m_NickEffectGroup.m_pEffectGroup);
-
-	if (m_NickEffectGroup.szEffectName[0] != 0)
-	{
-		m_NickEffectGroup.m_pEffectGroup = StartEffectGroup(m_NickEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
 	}
 }
 
-void CItemEffect::DeleteEffect(const int wearPos, BOOL bClear)
+void CItemEffect::DeleteEffect(const int wearPos)
 {
-	if (wearPos < WEAR_HELMET || wearPos > WEAR_TOTAL) return;
-
-	if (bClear)
-	{
-		if (m_ItemEffectGroup[wearPos].szEffectName[0] != NULL)
-		{
-			memset(m_ItemEffectGroup[wearPos].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPos].szEffectName));
-		}
-	}
+	if (wearPos < WEAR_HELMET || wearPos > WEAR_ACCESSORY4) return;
 
 	DestroyEffectGroupIfValid(m_ItemEffectGroup[wearPos].m_pEffectGroup);
 }
@@ -212,12 +111,12 @@ void CItemEffect::RefreshAccessoryEffect(CTagManager *pTM)
 	DestroyEffectGroupIfValid(m_pAccessroyEffect);
 
 	if (m_szAccessoryEffectName != 0)
-		m_pAccessroyEffect = StartEffectGroup(m_szAccessoryEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType); // add effect
+		m_pAccessroyEffect = StartEffectGroup(m_szAccessoryEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
 }
 
 BOOL CItemEffect::AddWearEffect(const char* strEffectName, const int wearPos, CTagManager *pTM)
 {
-	if ( !strEffectName || !pTM || wearPos < WEAR_HELMET || wearPos > WEAR_TOTAL)
+	if ( !strEffectName || !pTM || wearPos < WEAR_HELMET || wearPos > WEAR_ACCESSORY4)
 		return FALSE;
 
 	DelWearEffect(wearPos); // reset
@@ -230,7 +129,7 @@ BOOL CItemEffect::AddWearEffect(const char* strEffectName, const int wearPos, CT
 
 BOOL CItemEffect::DelWearEffect(const int wearPos)
 {
-	if (wearPos < WEAR_HELMET || wearPos > WEAR_TOTAL)
+	if (wearPos < WEAR_HELMET || wearPos > WEAR_ACCESSORY4)
 		return FALSE;
 
 	memset(m_ItemEffectGroup[wearPos].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPos].szEffectName));
@@ -294,21 +193,7 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 			strType.PrintF( "%s%d", "wp", nNumWeapon );	
 		}
 
-		memset(m_ItemEffectGroup[wearPosNew].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPosNew].szEffectName));
-
-		if (strlen(ItemData->GetArmorEffectName()) > 0)
-		{
-			if (itemPlusNewIn >= 0)// itemPlusNewIn < 0이면 장비를 벗을때로 판단
-			{
-				strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
-			}
-		}
-		
-		if (job != NIGHTSHADOW)
-		{ // 나이트 쉐도우는 무기자체가 Effect이므로
-			//pStrName = &m_ItemEffectGroup[wearPosNew].szEffectName[0];
-			pStrName = &m_PlusEffectGourp[0].szEffectName[0];
-		}
+		pStrName = &m_ItemEffectGroup[wearPosNew].szEffectName[0];
 		bRefresh = TRUE;
 	}
 	else if(wearPosNew == WEAR_JACKET || wearPosNew == WEAR_PANTS
@@ -321,42 +206,37 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 #		undef MIN
 		itemPlusNew = itemPlusMin; 
 		strType = "am";
-		pStrName = &m_PlusEffectGourp[1].szEffectName[0];
+		pStrName = &m_PlusEffectGourp.szEffectName[0];
 		bRefresh = TRUE;
 
 		if (strlen(ItemData->GetArmorEffectName()) > 0)
 		{
 			memset(m_ItemEffectGroup[wearPosNew].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPosNew].szEffectName));
-			
-			if (itemPlusNewIn >= 0)// itemPlusNewIn < 0이면 장비를 벗을때로 판단
-			{
-				strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
-			}
+			strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
 		}
 	}
-	else if(wearPosNew == WEAR_SHIELD || wearPosNew == WEAR_HELMET || wearPosNew == WEAR_BACKWING)
+#ifdef HEAD_CHANGE
+	else if(wearPosNew == WEAR_SHIELD || wearPosNew == WEAR_HELMET)
 	{	
 		if (strlen(ItemData->GetArmorEffectName()) > 0)
 		{
 			memset(m_ItemEffectGroup[wearPosNew].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPosNew].szEffectName));
-			
-			if (itemPlusNewIn >= 0)// itemPlusNewIn < 0이면 장비를 벗을때로 판단
-			{
-				strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
-			}
+			strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
 		}
 		bRefresh = TRUE;
 	}
+#else
+	else if(wearPosNew == WEAR_SHIELD)
+	{	
+		bRefresh = TRUE;
+	}
+#endif
 	else if(wearPosNew >= WEAR_ACCESSORY1 && wearPosNew < WEAR_ACCESSORY4)
 	{
 		if (strlen(ItemData->GetArmorEffectName()) > 0 && itemPlusNew >= 0)
 		{
 			memset(m_ItemEffectGroup[wearPosNew].szEffectName, 0, sizeof(m_ItemEffectGroup[wearPosNew].szEffectName));
-			
-			if (itemPlusNewIn >= 0)// itemPlusNewIn < 0이면 장비를 벗을때로 판단
-			{
-				strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
-			}
+			strcpy(m_ItemEffectGroup[wearPosNew].szEffectName, ItemData->GetArmorEffectName());
 		}else if (itemPlusNew < 0)
 		{
 			m_ItemEffectGroup[wearPosNew].szEffectName[0] = 0;
@@ -386,10 +266,8 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 		switch(itemPlusNew)
 		{
 		case -1: case 0: case 1: case 2: case 3://음수값일 경우 장착 해제한 것임.
-			{
-				pStrName[0] = 0;
-				Refresh(pTM, sbOption);
-			}
+			pStrName[0] = 0;
+			Refresh(pTM, sbOption);
 			return;
 		case 4: case 5: szLevel = "1";	break;
 		case 6: case 7: szLevel = "2";	break;
@@ -401,27 +279,22 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 		//if(szLevel == NULL) return;//필요없음.
 	}
 
-	std::string strFormat;
+	static char *szEffectNameFormat = "i%s_%s_%s";
 
 	switch(job)
 	{
-	case TITAN:		szJobName = "a_t";	strFormat = "i%s_%s_%s"; break;
-	case MAGE:		szJobName = "_ma";	strFormat = "i%s_%s_%s"; break;
-	case HEALER:	szJobName = "_hw";	strFormat = "i%s_%s_%s"; break;
-	case KNIGHT:	szJobName = "a_k";	strFormat = "i%s_%s_%s"; break;
-	case ROGUE:		szJobName = "h_ro";	strFormat = "i%s_%s_%s"; break;
-	case SORCERER:	szJobName = "so";	strFormat = "%s_%s_%s";  break;
-	case NIGHTSHADOW: return;
-#ifdef CHAR_EX_ROGUE
-	case EX_ROGUE:		szJobName = "h_ro";	strFormat = "i%s_%s_%s"; break;	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	case EX_MAGE:		szJobName = "_ma";	strFormat = "i%s_%s_%s"; break;	//2013/01/08 jeil EX메이지 추가 
-#endif
+	case TITAN:		szJobName = "a_t";	strcpy( szEffectNameFormat, "i%s_%s_%s" );break;
+	case MAGE:		szJobName = "_ma";	strcpy( szEffectNameFormat, "i%s_%s_%s" );break;
+	case HEALER:	szJobName = "_hw";	strcpy( szEffectNameFormat, "i%s_%s_%s" );break;
+	case KNIGHT:	szJobName = "a_k";	strcpy( szEffectNameFormat, "i%s_%s_%s" );break;
+	case ROGUE:		szJobName = "h_ro";	strcpy( szEffectNameFormat, "i%s_%s_%s" );break;
+	case SORCERER:	szJobName = "so";	strcpy( szEffectNameFormat, "%s_%s_%s" );  break;
 	default:		ASSERTALWAYS("Unknown Character Type"); return;
 	}
 	//if(szJobName == NULL) return;//필요없음.
-	sprintf(pStrName, strFormat.c_str(), szJobName, (const char*)strType, szLevel);
+
+	//이펙트 이름 조합 후 이펙트 시작.
+	sprintf(pStrName, szEffectNameFormat, szJobName, strType, szLevel);
 	Refresh(pTM, sbOption);
 }
 
@@ -444,171 +317,4 @@ int CItemEffect::GetSubTypeWeapon ( int nSubType )
 	else return 1; // 현재 2차 무기 이외의 것들은 1차 무기로 판단
 	
 	return -1;
-}
-
-//------------------------------------------------------------------------------
-// CItemEffect::DeleteNickEffect
-// Explain : 호칭 이펙트 삭제
-// Date : 2010-01-10
-//------------------------------------------------------------------------------
-void CItemEffect::DeleteNickEffect()
-{
-	memset(m_NickEffectGroup.szEffectName, 0, sizeof(m_NickEffectGroup.szEffectName));
-	DestroyEffectGroupIfValid(m_NickEffectGroup.m_pEffectGroup);
-}
-
-//------------------------------------------------------------------------------
-// CItemEffect::AddNickEffect
-// Explain : 호칭 이펙트 추가
-// Date : 2010-01-10
-//------------------------------------------------------------------------------
-BOOL CItemEffect::AddNickEffect( const char* strEffectName, CTagManager *pTM )
-{
-	if ( !strEffectName || !pTM ) return FALSE;
-
-	// Refresh
-	DeleteNickEffect(); // reset
-	strcpy(m_NickEffectGroup.szEffectName, strEffectName);
-	m_NickEffectGroup.m_pEffectGroup = StartEffectGroup(m_NickEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
-
-	return TRUE;
-}
-
-//------------------------------------------------------------------------------
-// CItemEffect::DeletePetStashEffect
-// Explain : 펫 창고 이펙트 삭제
-// Date : 2013-09-11
-//------------------------------------------------------------------------------
-void CItemEffect::DeletePetStashEffect()
-{
-	memset(m_PetStashEffectGroup.szEffectName, 0, sizeof(m_PetStashEffectGroup.szEffectName));
-	DestroyEffectGroupIfValid(m_PetStashEffectGroup.m_pEffectGroup);
-}
-
-//------------------------------------------------------------------------------
-// CItemEffect::AddPetStashEffect
-// Explain : 펫 창고 이펙트 추가
-// Date : 2013-09-11
-//------------------------------------------------------------------------------
-BOOL CItemEffect::AddPetStashEffect( int nEffectType, CTagManager *pTM )
-{
-	if ( nEffectType >= PET_STASH_MAX || !pTM ) return FALSE;
-
-	// Refresh
-	DeletePetStashEffect(); // reset
-	if (nEffectType < 0)
-		return TRUE;
-
-	strcpy(m_PetStashEffectGroup.szEffectName, g_strPetStashEffectName[nEffectType]);
-	m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
-
-	return TRUE;
-}
-
-//로그인 이펙트 추가
-void CItemEffect::AddLoginEffect( CTagManager *pTM )
-{
-	if ( !pTM ) 
-		return;
-
-	DeleteLoginJinEffect();
-
-	strcpy(m_ItemEffectGroup[0].szEffectName, g_strLoginEffectName);
-	m_ItemEffectGroup[0].m_pEffectGroup = StartEffectGroup(m_ItemEffectGroup[0].szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
-}
-
-void CItemEffect::DeleteLoginJinEffect()
-{
-	memset(m_ItemEffectGroup[0].szEffectName, 0, sizeof(m_ItemEffectGroup[0].szEffectName));
-	DestroyEffectGroupIfValid(m_ItemEffectGroup[0].m_pEffectGroup);
-}
-
-void CItemEffect::AddHolyWaterEffect( int nEffecttype, CTagManager *pTM )
-{
-	m_nHolyWaterEffectType = nEffecttype;
-
-	if (m_pHolyWaterEffectGroup[0] != NULL)
-		StopEffectGroupIfValid(m_pHolyWaterEffectGroup[0], 0.1f);
-
-	if (m_pHolyWaterEffectGroup[1] != NULL)
-		StopEffectGroupIfValid(m_pHolyWaterEffectGroup[1], 0.1f);
-
-	if ( nEffecttype <= 0 || nEffecttype >= 5)
-	{		
-		return;
-	}
-
-	if ( pTM == NULL )
-	{
-		return;
-	}
-
-	CTag		*pTag = NULL;
-	CTString strEffect[5] = 
-	{
-		"empty",
-		"WEAPON_P_HOLYWATER01",
-		"WEAPON_M_HOLYWATER01",
-		"WEAPON_R_HOLYWATER01",
-		"WEAPON_MI_HOLYWATER01"
-	};
-
-	if (pTag = pTM->Find("LHAND", TRUE))
-	{
-		m_pHolyWaterEffectGroup[0] = StartEffectGroup(strEffect[nEffecttype], _pTimer->GetLerpedCurrentTick(), (ptr_tag)pTag);
-	}
-
-	if (pTag = pTM->Find("RHAND", TRUE))
-	{
-		m_pHolyWaterEffectGroup[1] = StartEffectGroup(strEffect[nEffecttype], _pTimer->GetLerpedCurrentTick(), (ptr_tag)pTag);
-	}
-}
-
-BOOL CItemEffect::AddRelicEffect( int nEffectType, CTagManager *pTM )
-{
-	if ( nEffectType >= eRELIC_MAX || !pTM ) return FALSE;
-
-	int nTemp = m_nCurRelicEffectType;
-	 
-	DeleteRelicEffect(); // reset
-
-	if(nTemp < nEffectType)
-		m_nCurRelicEffectType = nEffectType;
-	else
-		m_nCurRelicEffectType = nTemp;
-
-	if (m_nCurRelicEffectType < 0)
-		return FALSE;
-
-	strcpy(m_RelicEffectGroup.szEffectName, g_strRelicEffectName[m_nCurRelicEffectType]);
-	m_RelicEffectGroup.m_pEffectGroup = StartEffectGroup(m_RelicEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
-
-	return TRUE;
-}
-
-void CItemEffect::DeleteRelicEffect()
-{
-	memset(m_RelicEffectGroup.szEffectName, 0, sizeof(m_RelicEffectGroup.szEffectName));
-	DestroyEffectGroupIfValid(m_RelicEffectGroup.m_pEffectGroup);
-	m_nCurRelicEffectType = -1;
-}
-
-void CItemEffect::RefreshPetStashEffect( CTagManager *pTM )
-{
-	DestroyEffectGroupIfValid(m_PetStashEffectGroup.m_pEffectGroup);
-
-	if (m_PetStashEffectGroup.szEffectName[0] != 0 && pTM != NULL)
-	{
-		m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
-	}
-}
-
-void CItemEffect::RefreshRelicEffect( CTagManager *pTM )
-{
-	DestroyEffectGroupIfValid(m_RelicEffectGroup.m_pEffectGroup);
-
-	if (m_RelicEffectGroup.szEffectName[0] != 0 && pTM != NULL)
-	{
-		m_RelicEffectGroup.m_pEffectGroup = StartEffectGroup(m_RelicEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
-	}
 }

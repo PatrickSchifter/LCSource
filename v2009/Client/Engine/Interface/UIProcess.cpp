@@ -1,16 +1,12 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
+#include <Engine/Interface/UIProcess.h>
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Interface/UIProcess.h>
+#include <Engine/Entities/Items.h>
 #include <Engine/Interface/UISkillLearn.h>
-#include <Engine/Help/ItemHelp.h>
 #include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Interface/UIProduct.h>
-#include <Engine/Contents/Base/UICharacterInfoNew.h>
 
+extern INDEX g_iCountry;
 // Date : 2005-03-07,   By Lee Ki-hwan
 static int	_iMaxMsgStringChar = 0;
 
@@ -29,6 +25,7 @@ CUIProcess::CUIProcess()
 // ----------------------------------------------------------------------------
 CUIProcess::~CUIProcess()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -62,6 +59,18 @@ void CUIProcess::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_rtBackgroundBtm.SetUV( 0, PROCESS_TOP_HEIGHT + diff, 216, SKILLLEARN_HEIGHT, fTexWidth, fTexHeight );
 
 	m_rtSelOutline.SetUV( 218, 80, 250, 112, fTexWidth, fTexHeight );
+
+// Item information region
+	m_rtInfoUL.SetUV( 218, 113, 225, 120, fTexWidth, fTexHeight );
+	m_rtInfoUM.SetUV( 228, 113, 230, 120, fTexWidth, fTexHeight );
+	m_rtInfoUR.SetUV( 233, 113, 240, 120, fTexWidth, fTexHeight );
+	m_rtInfoML.SetUV( 218, 123, 225, 125, fTexWidth, fTexHeight );
+	m_rtInfoMM.SetUV( 228, 123, 230, 125, fTexWidth, fTexHeight );
+	m_rtInfoMR.SetUV( 233, 123, 240, 125, fTexWidth, fTexHeight );
+	m_rtInfoLL.SetUV( 218, 128, 225, 135, fTexWidth, fTexHeight );
+	m_rtInfoLM.SetUV( 228, 128, 230, 135, fTexWidth, fTexHeight );
+	m_rtInfoLR.SetUV( 233, 128, 240, 135, fTexWidth, fTexHeight );
+
 
 	// Close button
 	m_btnClose.Create( this, CTString( "" ), 184, 4, 14, 14 );
@@ -129,6 +138,10 @@ void CUIProcess::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_lbPreconditionDesc.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 
 	m_bSatisfied = FALSE;
+
+	m_bShowItemInfo = false;
+	m_nCurInfoLines = 0;
+	m_bDetailItemInfo = TRUE;
 }
 
 // ----------------------------------------------------------------------------
@@ -161,11 +174,11 @@ void CUIProcess::Clear()
 	m_bWaitProcessResult	= TRUE;
 	m_bSatisfied			= FALSE;
 
-	m_vecIcons.size();
+	m_btnProcessItems.size();
 
 	m_nProcessText			= -1;				
-	m_nTab					= -1;
-	m_nInvenIdx				= -1;
+	m_nRow					= -1;
+	m_nCol					= -1;
 	
 	m_nNeedItemCount		= 0;
 
@@ -176,7 +189,12 @@ void CUIProcess::Clear()
 	m_bWaitProcessResult = FALSE;
 	m_lbPreconditionDesc.ResetAllStrings();
 
-	clearIcon();
+	for(std::vector<CUIButtonEx>::iterator pos = m_btnProcessItems.begin(); pos != m_btnProcessItems.end(); ++pos)
+	{
+		(*pos).InitBtn();
+	}
+
+	m_btnProcessItems.clear ();
 }
 
 // ----------------------------------------------------------------------------
@@ -185,42 +203,40 @@ void CUIProcess::Clear()
 // ----------------------------------------------------------------------------
 void CUIProcess::InitProcess()
 {	
-	m_vecIcons.clear ();
-	CItemData* pTextItemData = _pNetwork->GetItemData ( m_nProcessText );
+	m_btnProcessItems.clear ();
+	CItemData &TextItemData = _pNetwork->GetItemData ( m_nProcessText );
 	const char* szItemName	= _pNetwork->GetItemName( m_nProcessText );
 	
 	// 임시 처리 
-	int nProcessType = pTextItemData->GetProcessType();
-	int nProcessSubType = pTextItemData->GetProcessSubType();
+	int nProcessType = TextItemData.GetProcessType();
+	int nProcessSubType = TextItemData.GetProcessSubType();
 	
 	// 제조  Type 설정
 	m_StrProcessType = szItemName;
 
-	
-	int bit = 0x00000001;	
-	CItemData::_map::iterator	iter = CItemData::_mapdata.begin();
-	CItemData::_map::iterator	eiter = CItemData::_mapdata.end();
+	CUIButtonEx UIButtonEx;
+	int bit = 0x00000001;
 
-	for (;iter != eiter; ++iter)
+	//!! 제조 문서로 제조 할수 있는 아이템 검색 
+	for( int nIndex = 0; nIndex <= _pNetwork->wo_iNumOfItem; nIndex++ )
 	{
-		CItemData* pItemData = (*iter).second;
+		CItemData& ItemData = _pNetwork->GetItemData ( nIndex );
 
-		if (pItemData == NULL)
-			continue;
-
-		if ( pItemData->GetFlag() & ITEM_FLAG_MADE )
+		if( ItemData.GetItemIndex() == -1 ) continue;
+		
+		if ( ItemData.GetFlag() & ITEM_FLAG_MADE )
 		{
-			if ( pItemData->GetType () == CItemData::ITEM_ETC && 
-				pItemData->GetSubType () == CItemData::ITEM_ETC_PROCESS && // 가공품 이라는 얘기
-				pItemData->GetProcessType () == nProcessType 
-				&& pItemData->GetProcessSubType () == nProcessSubType 
+			if ( ItemData.GetType () == CItemData::ITEM_ETC && 
+				ItemData.GetSubType () == CItemData::ITEM_ETC_PROCESS && // 가공품 이라는 얘기
+				ItemData.GetProcessType () == nProcessType 
+				&& ItemData.GetProcessSubType () == nProcessSubType 
 				)			
 			{
-				CUIIcon* pIcon;
-				pIcon = new CUIIcon;
-				pIcon->Create(this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PROCESS, UBET_ITEM);
-				pIcon->setData(UBET_ITEM, pItemData->GetItemIndex());
-				m_vecIcons.push_back ( pIcon );			
+				UIButtonEx.Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_PROCESS ); 
+				UIButtonEx.SetItemInfo ( 0, 0, 0, ItemData.GetItemIndex(), -1, -1 );
+				
+				m_btnProcessItems.push_back ( UIButtonEx );
+			
 			}
 		}
 	}		
@@ -228,7 +244,7 @@ void CUIProcess::InitProcess()
 	AddString ( _S( 561, "가공품을 선택해 주십시오." ), COLOR_TEXT  );		
 
 	m_sbProcessItem.SetScrollPos( 0 );
-	m_sbProcessItem.SetCurItemCount( m_vecIcons.size()  );
+	m_sbProcessItem.SetCurItemCount( m_btnProcessItems.size()  );
 
 	m_btnOK.SetEnable ( m_bSatisfied );
 }
@@ -237,36 +253,33 @@ void CUIProcess::InitProcess()
 // Name : OpenProcess()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIProcess::OpenProcess( int nItemIndex, int nTab, int inven_idx )
+void CUIProcess::OpenProcess( int nItemIndex, int nRow, int nCol )
 {
 	// If this is already exist
-	if( IsVisible() == TRUE )
-		return;
+	if( IsVisible() )	return;
 
 	// If inventory is already locked
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->GetInventory()->IsLocked() )
+	if( _pUIMgr->GetInventory()->IsLocked() )
 	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
+		_pUIMgr->GetInventory()->ShowLockErrorMessage();
 		return;
 	}
 
 	Clear ();
 
-	if( !pUIManager->GetInventory()->IsVisible() )
-		pUIManager->GetInventory()->ToggleVisible();
+	if( !_pUIMgr->GetInventory()->IsVisible() )
+		_pUIMgr->GetInventory()->ToggleVisible();
 
 	m_nProcessText	= nItemIndex;
-	m_nTab			= nTab;
-	m_nInvenIdx		= inven_idx;	
+	m_nRow			= nRow;
+	m_nCol			= nCol;
+	
 
-	pUIManager->RearrangeOrder( UI_PROCESS, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PROCESS, TRUE );
 	
 	InitProcess ();
 
-	pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_PROCESS );
+	_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_PROCESS );
 }
 
 // ----------------------------------------------------------------------------
@@ -275,13 +288,11 @@ void CUIProcess::OpenProcess( int nItemIndex, int nTab, int inven_idx )
 // ----------------------------------------------------------------------------
 void CUIProcess::CloseProcess()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close refine
-	pUIManager->RearrangeOrder( UI_PROCESS, FALSE );
+	_pUIMgr->RearrangeOrder( UI_PROCESS, FALSE );
 
 	// Unlock inventory
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_PROCESS );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_PROCESS );
 
 	Clear();
 }
@@ -292,28 +303,27 @@ void CUIProcess::CloseProcess()
 // ----------------------------------------------------------------------------
 void CUIProcess::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
-	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+// Set skill learn texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-	// Add render regions -----------------------------------------------------------------------------------------------
+// Add render regions -----------------------------------------------------------------------------------------------
 	// Background up
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + PROCESS_TOP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY + PROCESS_TOP_HEIGHT,
 										m_rtBackgroundTop.U0, m_rtBackgroundTop.V0, m_rtBackgroundTop.U1, m_rtBackgroundTop.V1,
 										0xFFFFFFFF );
 
 	// Background down 
-	pDrawPort->AddTexture( m_nPosX, m_nPosY+PROCESS_TOP_HEIGHT, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY+PROCESS_TOP_HEIGHT, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 										m_rtBackgroundBtm.U0, m_rtBackgroundBtm.V0, m_rtBackgroundBtm.U1, m_rtBackgroundBtm.V1,
 										0xFFFFFFFF );
 
 	// Render Title Text
-	pDrawPort->PutTextEx( _S( 560, "가공" ) , m_nPosX + PROCESS_TITLE_TEXT_OFFSETX,				
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 560, "가공" ) , m_nPosX + PROCESS_TITLE_TEXT_OFFSETX,				
 										m_nPosY + PROCESS_TITLE_TEXT_OFFSETY );
 
 	// Render Process Type
-	pDrawPort->PutTextExCX( m_StrProcessType, m_nPosX + 106, m_nPosY + 35, COLOR_TITLE );
+	_pUIMgr->GetDrawPort()->PutTextExCX( m_StrProcessType, m_nPosX + 106, m_nPosY + 35, COLOR_TITLE );
 	
 
 	// Process Item Scroll bar
@@ -331,7 +341,7 @@ void CUIProcess::Render()
 	// Cancel button
 	m_btnCancel.Render();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 
 	// Render Process Item
@@ -340,32 +350,33 @@ void CUIProcess::Render()
 	int	nY = SLEARN_SLOT_SY;
 
 	int	iEnd = m_sbProcessItem.GetScrollPos() + PRODUCT_SLOT_ROW;
-	if( iEnd > m_vecIcons.size() )
-		iEnd = m_vecIcons.size();
+	if( iEnd > m_btnProcessItems.size() )
+		iEnd = m_btnProcessItems.size();
 
 	for ( int i = m_sbProcessItem.GetScrollPos(); i < iEnd; i++ )
 	{
-		if( !m_vecIcons[i]->IsEmpty() )
+		if( !m_btnProcessItems[i].IsEmpty() )
 		{
 			// render Item
-			m_vecIcons[i]->SetPos ( nX, nY );
-			m_vecIcons[i]->Render(pDrawPort);
+			m_btnProcessItems[i].SetPos ( nX, nY );
+			m_btnProcessItems[i].Render();
 			
 			
 			// render Item desc 
-			CItemData* pItemData = _pNetwork->GetItemData ( m_vecIcons[i]->getIndex() );
-			const char* szItemName = _pNetwork->GetItemName ( m_vecIcons[i]->getIndex() );
+			CItemData& ItemData = _pNetwork->GetItemData ( m_btnProcessItems[i].GetIndex() );
+			const char* szItemName = _pNetwork->GetItemName ( m_btnProcessItems[i].GetIndex() );
 			
-			pDrawPort->PutTextExCX( CTString ( szItemName ), m_nPosX + 122, m_nPosY + nY + 8, 0xC3C3C3ff );
+			_pUIMgr->GetDrawPort()->PutTextExCX( CTString ( szItemName ), m_nPosX + 122, m_nPosY + nY + 8, 0xC3C3C3ff );
 												
 			nY += SLEARN_SLOT_OFFSETY;
 		}
 	}
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	nX = SLEARN_SLOT_SX;
 	nY = SLEARN_SLOT_SY;
@@ -383,13 +394,85 @@ void CUIProcess::Render()
 			BoxY = m_nPosY + nY + ( SLEARN_SLOT_OFFSETY *  nOffset ) -1;
 
 			
-			pDrawPort->AddTexture( BoxX, BoxY,	BoxX + 34, BoxY + 34,
+			_pUIMgr->GetDrawPort()->AddTexture( BoxX, BoxY,	BoxX + 34, BoxY + 34,
 											m_rtSelOutline.U0, m_rtSelOutline.V0, m_rtSelOutline.U1, m_rtSelOutline.V1,
 											0xffffffff );
 		}
 	}
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+	
+	RenderItemInfo ();
 }
+
+// ----------------------------------------------------------------------------
+// Name : RenderItemInfo()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIProcess::RenderItemInfo ()
+{
+	// ----------------------------------------------------------------------------
+	// Item information ( name and property etc... )
+	if( m_bShowItemInfo )
+	{
+
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+		// Item information region
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
+											m_rcItemInfo.Right, m_rcItemInfo.Top + 7,
+											m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom - 7,
+											m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom,
+											m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom,
+											m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
+											0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+											m_rcItemInfo.Right, m_rcItemInfo.Bottom,
+											m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
+											0xFFFFFFFF );
+
+		// Render all elements
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+		// Render item information
+		int	nInfoX = m_rcItemInfo.Left + 12;
+		int	nInfoY = m_rcItemInfo.Top + 8;
+		for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
+		{
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+			nInfoY += _pUIFontTexMgr->GetLineHeight();
+		}
+
+		// Flush all render text queue
+		_pUIMgr->GetDrawPort()->EndTextEx();
+	}
+}
+
+
 
 // ----------------------------------------------------------------------------
 // Name : MouseMessage()
@@ -414,14 +497,14 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 				int	iRowS = m_sbProcessItem.GetScrollPos();
 				int	iRowE = iRowS + PROCESS_SLOT_ROW;
 
-				if ( m_vecIcons.size() < iRowE )
+				if ( m_btnProcessItems.size() < iRowE )
 				{
-					iRowE = m_vecIcons.size();
+					iRowE = m_btnProcessItems.size();
 				}
 				
 				if ( IsInsideRect ( nX, nY, m_rcItem ) )
@@ -429,9 +512,18 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 					bool bShowItem = false;
 					for( int iRow = iRowS; iRow < iRowE; iRow++ )
 					{
-						m_vecIcons[iRow]->MouseMessage( pMsg );
+						if( m_btnProcessItems[iRow].MouseMessage( pMsg ) != WMSG_FAIL )
+						{
+							bShowItem = true;
+							ShowItemInfo( true, iRow ) ;					
+						}
 					}
+
+					if ( !bShowItem ) 
+						ShowItemInfo( false, -1 );
 				}
+				else
+					ShowItemInfo( false, -1 );
 			}
 			
 		
@@ -495,7 +587,7 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 						return WMSG_SUCCESS;
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_PROCESS, TRUE );
+				_pUIMgr->RearrangeOrder( UI_PROCESS, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -504,7 +596,7 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 	case WM_LBUTTONUP:
 		{
 			// If holding button doesn't exist
-			if (UIMGR()->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -546,14 +638,14 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 					int	iRowS = m_sbProcessItem.GetScrollPos();
 					int	iRowE = iRowS + PROCESS_SLOT_ROW;
 
-					if ( m_vecIcons.size() < iRowE )
+					if ( m_btnProcessItems.size() < iRowE )
 					{
-						iRowE = m_vecIcons.size();
+						iRowE = m_btnProcessItems.size();
 					}
 		
 					for( int iRow = iRowS; iRow < iRowE; iRow++ )
 					{
-						if( m_vecIcons[iRow]->MouseMessage( pMsg ) != WMSG_FAIL )
+						if( m_btnProcessItems[iRow].MouseMessage( pMsg ) != WMSG_FAIL )
 						{
 							m_nSelectProcessItem = iRow;
 
@@ -598,6 +690,239 @@ WMSG_RESULT CUIProcess::MouseMessage( MSG *pMsg )
 }
 
 // ----------------------------------------------------------------------------
+// Name : AddItemInfoString()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIProcess::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo )
+{
+	if( m_nCurInfoLines >= MAX_ITEMINFO_LINE )
+		return ;
+
+	// Get length of string
+	INDEX	nLength = strItemInfo.Length();
+	if( nLength <= 0 )
+		return;
+
+	// wooss 051002
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strItemInfo);
+		INDEX	nChatMax= (MAX_ITEMINFO_CHAR-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
+		{
+			m_strItemInfo[m_nCurInfoLines] = strItemInfo;
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = MAX_ITEMINFO_CHAR;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Split string
+			CTString	strTemp;
+			strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; ++iPos )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			AddItemInfoString( strTemp, colItemInfo );
+
+		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= MAX_ITEMINFO_CHAR )
+		{
+			m_strItemInfo[m_nCurInfoLines] = strItemInfo;
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = MAX_ITEMINFO_CHAR;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strItemInfo[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Split string
+			CTString	strTemp;
+			strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
+			m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
+
+			// Trim space
+			if( strTemp[0] == ' ' )
+			{
+				int	nTempLength = strTemp.Length();
+				for( iPos = 1; iPos < nTempLength; iPos++ )
+				{
+					if( strTemp[iPos] != ' ' )
+						break;
+				}
+
+				strTemp.TrimLeft( strTemp.Length() - iPos );
+			}
+
+			AddItemInfoString( strTemp, colItemInfo );
+		}
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+// Name : ShowItemInfo()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIProcess::ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew )
+{
+	static int	nOldBtnID = -1;
+	int			nBtnID;
+
+	m_bShowItemInfo = FALSE;
+
+	// Hide item information
+	if( !bShowInfo )
+	{
+		nOldBtnID = -1;
+		return;
+	}
+
+	BOOL	bUpdateInfo = FALSE;
+	int		nInfoWidth, nInfoHeight;
+	int		nInfoPosX, nInfoPosY;
+
+	
+	if( nItemIndex >= 0 )
+	{
+		m_bShowItemInfo = TRUE;
+		nBtnID = m_btnProcessItems[nItemIndex].GetBtnID();
+
+		// Update item information
+		if( nOldBtnID != nBtnID || bRenew )
+		{
+			bUpdateInfo = TRUE;
+			nOldBtnID = nBtnID;
+			m_btnProcessItems[nItemIndex].GetAbsPos( nInfoPosX, nInfoPosY );
+
+			// Get item information
+		//	m_bDetailItemInfo = m_nSelectProcessItem == nItemIndex;
+			
+			if( !GetItemInfo(  nItemIndex, nInfoWidth, nInfoHeight ) )
+				m_bShowItemInfo = FALSE;
+		}
+	}
+
+	// Update item information box
+	if( m_bShowItemInfo && bUpdateInfo )
+	{
+		nInfoPosX += BTN_SIZE / 2 - nInfoWidth / 2;
+
+		if( nInfoPosX < _pUIMgr->GetMinI() )
+			nInfoPosX = _pUIMgr->GetMinI();
+		else if( nInfoPosX + nInfoWidth > _pUIMgr->GetMaxI() )
+			nInfoPosX = _pUIMgr->GetMaxI() - nInfoWidth;
+
+		if( nInfoPosY - nInfoHeight < _pUIMgr->GetMinJ() )
+		{
+			nInfoPosY += BTN_SIZE;
+			m_rcItemInfo.SetRect( nInfoPosX, nInfoPosY, nInfoPosX + nInfoWidth, nInfoPosY + nInfoHeight );
+		}
+		else
+		{
+			m_rcItemInfo.SetRect( nInfoPosX, nInfoPosY - nInfoHeight, nInfoPosX + nInfoWidth, nInfoPosY );
+		}
+	}
+
+	if( !m_bShowItemInfo )
+		nOldBtnID = -1;
+}
+
+
+// ----------------------------------------------------------------------------
+// Name : GetItemInfo()
+// Desc : 
+// ----------------------------------------------------------------------------
+BOOL CUIProcess::GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight )
+{
+	CTString	strTemp;
+	m_nCurInfoLines = 0;
+
+	int			nIndex = m_btnProcessItems[nItemIndex].GetItemIndex();
+
+	if( nIndex < 0 )
+		return FALSE;
+
+	CItemData	&rItemData = _pNetwork->GetItemData( nIndex );
+	const char* szItemName = _pNetwork->GetItemName( nIndex );
+
+	// Get item name
+	strTemp = szItemName;
+	AddItemInfoString( strTemp ); // 리스트에 추가 
+
+	// Get item information in detail
+	if( m_bDetailItemInfo )
+	{
+		// Weight
+		strTemp.PrintF( _S( 165, "무게 : %d" ), rItemData.GetWeight() );
+		AddItemInfoString( strTemp, 0xDEC05BFF );
+
+		// Description
+		const char	*pDesc = _pNetwork->GetItemDesc( nIndex );
+		if( pDesc[0] != NULL )
+		{
+			strTemp.PrintF( "%s", pDesc );
+			AddItemInfoString( strTemp, 0x9E9684FF );
+		}
+
+		nInfoWidth = 27 - _pUIFontTexMgr->GetFontSpacing() + MAX_ITEMINFO_CHAR *
+						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		nInfoHeight = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
+	}
+	else 
+	{
+		if(g_iCountry == THAILAND) {
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strItemInfo[0]);				
+		} else
+		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strItemInfo[0].Length() *
+						( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		nInfoHeight = 30;
+	}
+
+	return TRUE;
+}
+
+
+// ----------------------------------------------------------------------------
 // Name : SelectItem()
 // Desc :
 // ----------------------------------------------------------------------------
@@ -609,8 +934,6 @@ void CUIProcess::SelectItem ( int _nIndex )
 		if ( _nIndex == -1 ) return;
 	}
 
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-
 	BOOL bNeedItem			= FALSE;	
 	BOOL bNeedItemCount		= FALSE;
 	BOOL bNeedSSkill		= FALSE;
@@ -618,47 +941,64 @@ void CUIProcess::SelectItem ( int _nIndex )
 		
 	m_lbPreconditionDesc.ResetAllStrings();
 	
-	// 생산 하고자 하는 아이템 목록
-	if ( m_vecIcons[_nIndex]->getIndex() == -1 ) return;
-	CItemData*		pProcessItemData	= _pNetwork-> GetItemData ( m_vecIcons[_nIndex]->getIndex() );
+	// 생산 하고자 하는 아이템 모록
+	if ( m_btnProcessItems[_nIndex].GetIndex() == -1 ) return;
+	CItemData&		ProcessItemData	= _pNetwork-> GetItemData ( m_btnProcessItems[_nIndex].GetIndex() );
 
-	if ( pProcessItemData->GetNeedSSkillIndex () == -1 ) return;
-	CItemData*		pTextItemData	= _pNetwork->GetItemData ( m_nProcessText );
+	if ( ProcessItemData.GetNeedSSkillIndex () == -1 ) return;
+	CItemData&		TextItemData	= _pNetwork->GetItemData ( m_nProcessText );
 	
-	CSpecialSkill*	pNeedSSkill		= CSpecialSkill::getData(pProcessItemData->GetNeedSSkillIndex () );
-	int				nSSkillLevel	= pProcessItemData->GetNeedSSkillCount ();
+	CSpecialSkill	NeedSSkill		= _pNetwork->GetSSkillData ( ProcessItemData.GetNeedSSkillIndex () );
+	int				nSSkillLevel	= ProcessItemData.GetNeedSSkillCount ();
 
-	if (pNeedSSkill == NULL)
-		return;
 // 조건 검색 
 	// 필요 스킬
-	if ( pNeedSSkill->GetIndex() == -1 ) return;
+	if ( NeedSSkill.GetIndex() == -1 ) return;
 	if ( nSSkillLevel == -1 ) return;
 
-	bNeedSSkill = pUIMgr->GetCharacterInfo()->CheckSSkillByIndex( pNeedSSkill->GetIndex(), nSSkillLevel, &bNeedSSkillLevel );
+	bNeedSSkill = _pUIMgr->GetCharacterInfo()->CheckSSkillByIndex( NeedSSkill.GetIndex(), nSSkillLevel, &bNeedSSkillLevel );
 	
 // 필요 아이템 
 	int nIndexTemp = 0;
+	CItemData InvenItem;
 
 	// 필요 아이템 종류와 갯수 얻기 
-	nIndexTemp = pProcessItemData->GetNeedItemIndex( 0 );
+	nIndexTemp = ProcessItemData.GetNeedItemIndex( 0 );
 
 	if( nIndexTemp == -1 ) return;
 		
 	m_NeedItems[0].ItemData	= _pNetwork->GetItemData ( nIndexTemp );
-	m_NeedItems[0].llCount	= pProcessItemData->GetNeedItemCount( 0 ); 
+	m_NeedItems[0].llCount	= ProcessItemData.GetNeedItemCount( 0 ); 
 
 
 	// 인벤에서 필요 아이템 검사 ( nUniIndex 처리 안했음 )
-	SWORD		nTab, nIndex;
-	if (ItemHelp::HaveItem(m_NeedItems[0].ItemData->GetItemIndex(), &nTab, &nIndex, m_NeedItems[0].llCount))
+	for ( int nTab = 0; nTab < INVEN_SLOT_TAB; nTab++ )
 	{
-		bNeedItem = TRUE;
-		bNeedItemCount = TRUE;
-
-		m_NeedItems[0].MatTab = nTab;
-		m_NeedItems[0].inven_idx = nIndex;
+		for ( int nRow = 0 ; nRow < INVEN_SLOT_ROW_TOTAL; nRow++ )
+		{
+			for ( int nCol = 0 ; nCol < INVEN_SLOT_COL; nCol++ )
+			{
+				InvenItem = _pNetwork->MySlotItem[nTab][nRow][nCol].ItemData;
+				
+				if ( InvenItem.GetItemIndex() == m_NeedItems[0].ItemData.GetItemIndex() )
+				{
+					bNeedItem = TRUE;
+					
+					if ( _pNetwork->MySlotItem[nTab][nRow][nCol].Item_Sum >= m_NeedItems[0].llCount )
+					{
+						bNeedItemCount = TRUE;
+					
+						m_NeedItems[0].sbMatTab = nTab;
+						m_NeedItems[0].sbMatRow = nRow;
+						m_NeedItems[0].sbMatCol = nCol;
+					}
+					
+				}
+		
+			}		
+		}
 	}
+
 
 // 조건 출력 
 	CTString strTitle;
@@ -666,13 +1006,13 @@ void CUIProcess::SelectItem ( int _nIndex )
 
 // 필요 스킬 출력 
 	AddString ( _S( 562, "필요 스킬" ), COLOR_SUB_TITLE ); 
-	AddString ( strSpace + pNeedSSkill->GetName(), bNeedSSkill? COLOR_TEXT : COLOR_NONE );
+	AddString ( strSpace + NeedSSkill.GetName(), bNeedSSkill? COLOR_TEXT : COLOR_NONE );
 	m_bSatisfied = bNeedSSkill;
 
 	AddString ( CTString ( " " ) );
 
 // 필요 물품
-	switch ( pTextItemData->GetProcessType () )
+	switch ( TextItemData.GetProcessType () )
 	{
 	case CItemData::PROCESS_DOC_STONE :
 		strTitle = _S( 563, "필요 스톤" );				
@@ -688,12 +1028,8 @@ void CUIProcess::SelectItem ( int _nIndex )
 
 	
 	bNeedItem &= bNeedItemCount;
-	const char* szItemName = NULL;
-	if (m_NeedItems[0].ItemData != NULL)
-	{
-		szItemName = _pNetwork->GetItemName( m_NeedItems[0].ItemData->GetItemIndex() );
-		strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName), m_NeedItems[0].llCount );
-	}
+	const char* szItemName = _pNetwork->GetItemName( m_NeedItems[0].ItemData.GetItemIndex() );
+	strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName, m_NeedItems[0].llCount );
 
 	AddString ( strTitle, bNeedItem? COLOR_TEXT : COLOR_NONE );
 	m_bSatisfied &= bNeedItem;
@@ -706,7 +1042,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProcess::AddString ( const CTString &strText, COLOR colText )
+void CUIProcess::AddString ( CTString& strText, COLOR colText )
 {
 	int nLength =  strText.Length();
 
@@ -728,7 +1064,7 @@ void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", (const char*)strTemp );
+		strTemp2.PrintF ( "%s", strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
@@ -754,24 +1090,24 @@ void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 // ----------------------------------------------------------------------------
 void CUIProcess::SendProcessReq()
 {
-	if( m_bWaitProcessResult == TRUE )
+	if( m_bWaitProcessResult )
 		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	if( ( (CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSkilling() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage(  _S( 941, "스킬 사용중에는 가공을 할 수 없습니다." ) , SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage(  _S( 941, "스킬 사용중에는 가공을 할 수 없습니다." ) , SYSMSG_ERROR );		
 		return;
 	}
 
-	if( pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+	if( _pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage(  _S( 942, "순간 이동중에는 가공을 할 수 없습니다." ) , SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage(  _S( 942, "순간 이동중에는 가공을 할 수 없습니다." ) , SYSMSG_ERROR );	
 		return;
 	}
 
-	_pNetwork->ProcessReq ( m_nTab, m_nInvenIdx, m_vecIcons[m_nSelectProcessItem]->getIndex(), 1, 
+	CItemData& ProcessItemData	= _pNetwork->GetItemData ( m_btnProcessItems[m_nSelectProcessItem].GetIndex() );
+
+	_pNetwork->ProcessReq ( m_nRow, m_nCol, m_btnProcessItems[m_nSelectProcessItem].GetIndex(), 1, 
 						m_NeedItems );
 
 	m_bWaitProcessResult = TRUE;
@@ -790,10 +1126,8 @@ void CUIProcess::SendProcessReq()
 // ----------------------------------------------------------------------------
 void CUIProcess::ProcessRep( SBYTE sbResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box
-	pUIManager->CloseMessageBox( MSGCMD_PROCESS_REP );
+	_pUIMgr->CloseMessageBox( MSGCMD_PROCESS_REP );
 
 	// Show result
 	CTString	strMessage;
@@ -815,6 +1149,9 @@ void CUIProcess::ProcessRep( SBYTE sbResult )
 	//case MSG_PROCESS_FAIL_SSKILL_LEVEL :	// 가공 스킬 레벨 오류
 	//	strMessage = _S( 569, "가공에 필요한 스킬 레벨이 부족합니다." );			
 	//	break;
+	case MSG_PROCESS_FAIL_OVER_WEIGHT: // 무게가 초과
+		strMessage = _S( 705, "무게가 초과하여 가공을 할 수 없습니다." );
+		break;
 	case MSG_PROCESS_FAIL_PROB :			// 확률 실패
 		strMessage = _S( 566, "가공에 실패하였습니다." );							
 		break;
@@ -829,15 +1166,7 @@ void CUIProcess::ProcessRep( SBYTE sbResult )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 560, "가공" ), UMBS_OK, UI_PROCESS, MSGCMD_PROCESS_REP );		
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	m_bWaitProcessResult = FALSE;	
-}
-
-void CUIProcess::clearIcon()
-{
-	for (int i = 0; i < m_vecIcons.size(); ++i)
-		SAFE_DELETE(m_vecIcons[i]);
-
-	m_vecIcons.clear();
 }

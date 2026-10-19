@@ -155,7 +155,7 @@ void CClientInterface::SendNew(const void *pvSend, SLONG slSize)
 	// so send it
 	ppaNewPacket = CreatePacket();
 	
-	ulSequence = _pNetwork->getSeq();
+	ulSequence = (++ci_ulSequence);
 	ppaNewPacket->WriteToPacket(pubData,slSizeToSend,uwPacketReliable,ulSequence,ci_adrAddress.adr_uwID,slTransferSize);
 	ppaNewPacket->pa_adrAddress.adr_ulAddress = ci_adrAddress.adr_ulAddress;
 	ppaNewPacket->pa_adrAddress.adr_uwPort = ci_adrAddress.adr_uwPort;

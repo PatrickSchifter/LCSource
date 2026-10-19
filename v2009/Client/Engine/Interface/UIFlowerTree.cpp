@@ -1,13 +1,7 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Effect/CEffectGroupManager.h>
-#include <vector>
 #include <Engine/Interface/UIFlowerTree.h>
-#include <Engine/Ska/Render.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Contents/Login/UIServerSelect.h>
 
 const int cFlowerTreeIndex = 342; // 꽃나무 npc Index
 
@@ -45,7 +39,6 @@ const CTString Event_Tree9_0 = CTString("event_tree_0");
 const CTString Event_Tree9_1 = CTString("event_tree_1");
 const CTString Event_Tree10_0 = CTString("event_tree_2");
 const CTString Event_Tree10_1 = CTString("event_tree_3");
-
 // X-MAS2007 트리 메쉬
 const CTString Xmas_Tree1 = CTString("Data\\Npc\\Christmas_tree\\christmastree_2.bm"); // 2단계
 const CTString Xmas_Tree2 = CTString("Data\\Npc\\Christmas_tree\\christmastree_deco.bm"); // 3단계
@@ -53,21 +46,10 @@ const CTString Xmas_Tree2 = CTString("Data\\Npc\\Christmas_tree\\christmastree_d
 const CTString Xmas_Tree1_Tex = CTString("Data\\Npc\\Christmas_tree\\Christmastree_tree.tex");
 const CTString Xmas_Tree2_Tex = CTString("Data\\Npc\\Christmas_tree\\Christmastree_deco.tex");
 
-// 가미고 10주년 이벤트 메쉬
-const CTString Gamigo_10th_cake1 = CTString("Data\\Npc\\10th_cake\\10th_cake-3_1.bm"); // 2단계
-const CTString Gamigo_10th_cake2 = CTString("Data\\Npc\\10th_cake\\10th_cake-3_2.bm"); // 3단계
-// 가미고 10주년 이벤트 텍스처
-const CTString Gamigo_10th_cake1_Tex = CTString("Data\\Npc\\10th_cake\\10th_cake01.tex");
-const CTString Gamigo_10th_cake2_Tex = CTString("Data\\Npc\\10th_cake\\10th_cake01.tex");
-
-const CTString Gamigo_10th_cake = CTString("10th_Cake");
-
-
 /************************************************************************/
 /* Name : CUIFlowerTree()                                               */
 /************************************************************************/
 CUIFlowerTree::CUIFlowerTree()
-	: m_pMobFlowerTree(NULL)
 {
 	m_CurFlowerStep = OP_FLOWERSTEP0;
 	
@@ -121,13 +103,6 @@ CUIFlowerTree::CUIFlowerTree()
 
 	m_XMASTREEMeshInfo[1].MeshBM = CTFileName(Xmas_Tree2);
 	m_XMASTREEMeshInfo[1].MeshTex = CTFileName(Xmas_Tree2_Tex);
-
-	// [ldy1978220 2011/5/31] 가미고 10주년 케익
-	m_GamigoCakeMeshInfo[0].MeshBM = CTFileName(Gamigo_10th_cake1);
-	m_GamigoCakeMeshInfo[0].MeshTex = CTFileName(Gamigo_10th_cake1_Tex);
-
-	m_GamigoCakeMeshInfo[1].MeshBM = CTFileName(Gamigo_10th_cake2);
-	m_GamigoCakeMeshInfo[1].MeshTex = CTFileName(Gamigo_10th_cake2_Tex);
 }
 
 /************************************************************************/
@@ -143,7 +118,9 @@ CUIFlowerTree::~CUIFlowerTree()
 /************************************************************************/
 void CUIFlowerTree::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight)
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos(nX, nY);
+	SetSize(nWidth, nHeight);
 
 	m_rcTitle.SetRect(0, 0, 216, 21);
 	
@@ -191,10 +168,7 @@ void CUIFlowerTree::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, in
 /************************************************************************/
 void CUIFlowerTree::Render()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(m_ptdBaseTexture);
 
 	int nY, nX1, nY1, nX2;
 
@@ -202,46 +176,46 @@ void CUIFlowerTree::Render()
 	nX2 = nX1 + (FLOWERTREE_WIDTH * 0.5);
 	nY1 = m_nPosY + 22;
 
-	pDrawPort->AddTexture(m_nPosX, m_nPosY, nX1, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, m_nPosY, nX1, nY1,
 		m_rtTitleL.U0, m_rtTitleL.V0, m_rtTitleL.U1, m_rtTitleL.V1, 0xFFFFFFFF);
 
-	pDrawPort->AddTexture(nX1, m_nPosY, nX2, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(nX1, m_nPosY, nX2, nY1,
 		m_rtTitleR.U0, m_rtTitleR.V0, m_rtTitleR.U1, m_rtTitleR.V1, 0xFFFFFFFF);
 
 	nY = nY1;
 	nY1 = nY + 4;
 
-	pDrawPort->AddTexture(m_nPosX, nY, nX1, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, nY, nX1, nY1,
 		m_rtGapL.U0, m_rtGapL.V0, m_rtGapL.U1, m_rtGapL.V1, 0xFFFFFFFF);
 
-	pDrawPort->AddTexture(nX1, nY, nX2, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(nX1, nY, nX2, nY1,
 		m_rtGapR.U0, m_rtGapR.V0, m_rtGapR.U1, m_rtGapR.V1, 0xFFFFFFFF);
 
 	nY = nY1;
 	nY1 = nY + 150;
 
-	pDrawPort->AddTexture(m_nPosX, nY, nX1, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, nY, nX1, nY1,
 		m_rtMiddleL.U0, m_rtMiddleL.V0, m_rtMiddleL.U1, m_rtMiddleL.V1, 0xFFFFFFFF);
 
-	pDrawPort->AddTexture(nX1, nY, nX2, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(nX1, nY, nX2, nY1,
 		m_rtMiddleR.U0, m_rtMiddleR.V0, m_rtMiddleR.U1, m_rtMiddleR.V1, 0xFFFFFFFF);
 
 	nY = nY1;
 	nY1 = nY + 34;
 
-	pDrawPort->AddTexture(m_nPosX, nY, nX1, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, nY, nX1, nY1,
 		m_rtBtGapL.U0, m_rtBtGapL.V0, m_rtBtGapL.U1, m_rtBtGapL.V1, 0xFFFFFFFF);
 
-	pDrawPort->AddTexture(nX1, nY, nX2, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(nX1, nY, nX2, nY1,
 		m_rtBtGapR.U0, m_rtBtGapR.V0, m_rtBtGapR.U1, m_rtBtGapR.V1, 0xFFFFFFFF);
 
 	nY = nY1;
 	nY1 = nY + 3;
 
-	pDrawPort->AddTexture(m_nPosX, nY, nX1, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(m_nPosX, nY, nX1, nY1,
 		m_rtBottomL.U0, m_rtBottomL.V0, m_rtBottomL.U1, m_rtBottomL.V1, 0xFFFFFFFF);
 
-	pDrawPort->AddTexture(nX1, nY, nX2, nY1,
+	_pUIMgr->GetDrawPort()->AddTexture(nX1, nY, nX2, nY1,
 		m_rtBottomR.U0, m_rtBottomR.V0, m_rtBottomR.U1, m_rtBottomR.V1, 0xFFFFFFFF);
 
 	std::vector<sServerScoreList>::iterator SvScItr;
@@ -254,11 +228,11 @@ void CUIFlowerTree::Render()
 	{
 		for (SvScItr=m_vecSvScoreList.begin(); SvScItr!=m_vecSvScoreList.end(); SvScItr++)
 		{
-			pDrawPort->AddTexture(testX+101, testY, testX+104, testY+13,
+			_pUIMgr->GetDrawPort()->AddTexture(testX+101, testY, testX+104, testY+13,
 				m_rtScoreL.U0, m_rtScoreL.V0, m_rtScoreL.U1, m_rtScoreL.V1, 0xFFFFFFFF);
-			pDrawPort->AddTexture(testX+104, testY, testX+150, testY+13,
+			_pUIMgr->GetDrawPort()->AddTexture(testX+104, testY, testX+150, testY+13,
 				m_rtScoreM.U0, m_rtScoreM.V0, m_rtScoreM.U1, m_rtScoreM.V1, 0xFFFFFFFF);
-			pDrawPort->AddTexture(testX+150, testY, testX+153, testY+13,
+			_pUIMgr->GetDrawPort()->AddTexture(testX+150, testY, testX+153, testY+13,
 				m_rtScoreR.U0, m_rtScoreR.V0, m_rtScoreR.U1, m_rtScoreR.V1, 0xFFFFFFFF);
 
 			testY += 15;
@@ -270,7 +244,7 @@ void CUIFlowerTree::Render()
 	m_btnRefresh.Render();
 
 	// Render all elements;
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	// _pNetwork->m_iServerGroup
 	CTString strScore;
 
@@ -280,19 +254,19 @@ void CUIFlowerTree::Render()
 
 		for (SvScItr=m_vecSvScoreList.begin(); SvScItr!=m_vecSvScoreList.end(); SvScItr++)
 		{
-			pDrawPort->PutTextEx( (*SvScItr).strServerName, m_nPosX+17, nY, 0xFFFFFFFF); // 서버 이름
+			_pUIMgr->GetDrawPort()->PutTextEx( (*SvScItr).strServerName, m_nPosX+17, nY, 0xFFFFFFFF); // 서버 이름
 			
 			strScore.PrintF("%d", (*SvScItr).ulScore); 
-			pDrawPort->PutTextExRX(strScore, testX+145, nY, 0xFFFFFFFF); // 서버 점수
+			_pUIMgr->GetDrawPort()->PutTextExRX(strScore, testX+145, nY, 0xFFFFFFFF); // 서버 점수
 			nY += 15;
 		}
 	}
 
-	pDrawPort->PutTextEx( _S(3486, "접속 서버 :"), m_nPosX+17, m_nPosY+FLOWERTREE_HEIGHT-70, 0xFFFFFFFF);
-	pDrawPort->PutTextExRX( pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), testX+155, m_nPosY+FLOWERTREE_HEIGHT-70, 0xFFFFFFFF);
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(3486, "접속 서버 :"), m_nPosX+17, m_nPosY+FLOWERTREE_HEIGHT-70, 0xFFFFFFFF);
+	_pUIMgr->GetDrawPort()->PutTextExRX( _pUIMgr->GetSelServer()->GetServerGroupName(_pNetwork->m_iServerGroup), testX+155, m_nPosY+FLOWERTREE_HEIGHT-70, 0xFFFFFFFF);
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 /************************************************************************/
@@ -300,19 +274,16 @@ void CUIFlowerTree::Render()
 /************************************************************************/
 void CUIFlowerTree::OpenFlowerTree()
 {
-	if ( IsVisible() == TRUE )
-		return;
+	if (IsVisible()) return;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	if (_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKET))
+		_pUIMgr->CloseMessageBox(MSGCMD_FLOWERTREE_TICKET);
 
-	if (pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKET))
-		pUIManager->CloseMessageBox(MSGCMD_FLOWERTREE_TICKET);
-
-	if (pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
-		pUIManager->CloseMessageBox(MSGCMD_FLOWERTREE_TICKETEX);
+	if (_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
+		_pUIMgr->CloseMessageBox(MSGCMD_FLOWERTREE_TICKETEX);
 
 	_pNetwork->SendFlowerTreeReq((UBYTE)MSG_EVENT_FLOWERTREE_2007_POINT_RANK);
-	pUIManager->RearrangeOrder(UI_FLOWERTREE, TRUE);
+	_pUIMgr->RearrangeOrder(UI_FLOWERTREE, TRUE);
 }
 
 /************************************************************************/
@@ -320,10 +291,10 @@ void CUIFlowerTree::OpenFlowerTree()
 /************************************************************************/
 void CUIFlowerTree::CloseFlowerTree()
 {
-	if ( IsVisible() == FALSE )
-		return;
-
-	CUIManager::getSingleton()->RearrangeOrder(UI_FLOWERTREE, FALSE);
+	if (IsVisible())
+	{
+		_pUIMgr->RearrangeOrder(UI_FLOWERTREE, FALSE);
+	}
 }
 
 /************************************************************************/
@@ -364,7 +335,7 @@ WMSG_RESULT CUIFlowerTree::MouseMessage(MSG *pMsg)
 	case WM_MOUSEMOVE:
 		{
 			if (IsInside(nX, nY))
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			int ndX = nX - nOldX;
 			int ndY = nY - nOldY;
@@ -406,7 +377,7 @@ WMSG_RESULT CUIFlowerTree::MouseMessage(MSG *pMsg)
 
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder(UI_FLOWERTREE, TRUE);
+				_pUIMgr->RearrangeOrder(UI_FLOWERTREE, TRUE);
 
 				return WMSG_SUCCESS;
 			}
@@ -414,10 +385,9 @@ WMSG_RESULT CUIFlowerTree::MouseMessage(MSG *pMsg)
 		break;
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
 			bLButtonDownInItem = FALSE;
 
-			if (pUIManager->GetDragIcon() == NULL)
+			if ( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				bTitleBarClick = FALSE;
 
@@ -434,18 +404,18 @@ WMSG_RESULT CUIFlowerTree::MouseMessage(MSG *pMsg)
 				{
 					if ( wmsg_Result == WMSG_COMMAND )
 					{ // 개화 돕기
-						if (!pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_SUPPORT))
+						if (!_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_SUPPORT))
 						{
-							if (pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKET))
-								pUIManager->CloseMessageBox(MSGCMD_FLOWERTREE_TICKET);
+							if (_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKET))
+								_pUIMgr->CloseMessageBox(MSGCMD_FLOWERTREE_TICKET);
 
-							if (pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
-								pUIManager->CloseMessageBox(MSGCMD_FLOWERTREE_TICKETEX);
+							if (_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
+								_pUIMgr->CloseMessageBox(MSGCMD_FLOWERTREE_TICKETEX);
 
 							CUIMsgBox_Info MsgBoxInfo;
 							MsgBoxInfo.SetMsgBoxInfo(_S(3485, "개화돕기"), UMBS_YESNO, UI_FLOWERTREE, MSGCMD_FLOWERTREE_SUPPORT);
 							MsgBoxInfo.AddString(_S(3487, "개화를 도우면 가지고 있는 퇴비와 정화수가 모두 사라집니다. 그래도 개화를 돕겠습니까?"));
-							pUIManager->CreateMessageBox(MsgBoxInfo);
+							_pUIMgr->CreateMessageBox(MsgBoxInfo);
 						}
 					}
 
@@ -485,17 +455,15 @@ void CUIFlowerTree::MsgBoxCommand(int nCommandCode, BOOL bOK, CTString &strInput
 		break;
 	case MSGCMD_FLOWERTREE_TICKET:
 		{
-			if (bOK)	// 교환권 받기
-			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				
-				if (!pUIManager->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
+			if (bOK)
+			{ // 교환권 받기
+				if (!_pUIMgr->DoesMessageBoxExist(MSGCMD_FLOWERTREE_TICKETEX))
 				{
 					CUIMsgBox_Info MsgBoxInfo;
 
 					MsgBoxInfo.SetMsgBoxInfo(_S(191, "확인"), UMBS_YESNO, UI_FLOWERTREE, MSGCMD_FLOWERTREE_TICKETEX);
 					MsgBoxInfo.AddString(_S(3488, "누적된 교환권을 받으시겠습니까?"));
-					pUIManager->CreateMessageBox(MsgBoxInfo);
+					_pUIMgr->CreateMessageBox(MsgBoxInfo);
 				}		
 			}
 			else
@@ -520,13 +488,9 @@ void CUIFlowerTree::AddFlowerTreeMesh(CModelInstance *pMI, int nFlowerStep)
 	INDEX iMeshID;
 	FlowerTreeMeshInfo* treeTemp = NULL;
 
-	if (m_pMobFlowerTree != NULL && m_pMobFlowerTree->m_nType == MOB_FLOWERTREE_INDEX)
+	if (m_MobFlowerTree.mob_iType == MOB_FLOWERTREE_INDEX)
 	{
 		treeTemp = &m_FlowerMeshInfo[nFlowerStep];
-	}
-	else if(m_pMobFlowerTree != NULL && m_pMobFlowerTree->m_nType == GAMIGO_10TH_CAKE)
-	{
-		treeTemp = &m_GamigoCakeMeshInfo[nFlowerStep];
 	}
 	else
 	{
@@ -560,12 +524,12 @@ void CUIFlowerTree::AddFlowerTreeMesh(CModelInstance *pMI, int nFlowerStep)
 void CUIFlowerTree::FlowerTreeUpdate(ULONG ulPoint)
 {
 	// 모델을 찾고 모델 정보를 먼저 얻는다.
-	if ( m_pMobFlowerTree == NULL || m_pMobFlowerTree->m_nIdxClient < 0 ) return; // 꽃나무 정보가 없다.
+	if ( m_MobFlowerTree.mob_iClientIndex < 0 ) return; // 꽃나무 정보가 없다.
 
 	CEntity* pEntity;
 	CModelInstance* pFlowerTreeMI;
 
-	_pNetwork->ga_World.EntityExists(m_pMobFlowerTree->m_nIdxClient, pEntity);
+	_pNetwork->ga_World.EntityExists(m_MobFlowerTree.mob_iClientIndex, pEntity);
 
 	if ( pEntity == NULL )  return;	
 
@@ -573,7 +537,7 @@ void CUIFlowerTree::FlowerTreeUpdate(ULONG ulPoint)
 
 	ASSERT( pFlowerTreeMI != NULL && "Invalid FlowerTree Model" );
 
-	if (m_pMobFlowerTree->m_nType == MOB_FLOWERTREE_INDEX) // 꽃나무
+	if (m_MobFlowerTree.mob_iType == MOB_FLOWERTREE_INDEX) // 꽃나무
 	{
 		eOpenFlowerStep eTempStep = m_CurFlowerStep;
 
@@ -650,39 +614,6 @@ void CUIFlowerTree::FlowerTreeUpdate(ULONG ulPoint)
 	//	case OP_FLOWERSTEP0: // 가지만 앙상
 		}
 	}
-	else if (m_pMobFlowerTree->m_nType == GAMIGO_10TH_CAKE) // [ldy1978220 2011/5/31] 가미고 10주년 이벤트 케익 
-	{
-		int nStep = 0; // 1단계
-
-		if (ulPoint >= 15000) { nStep = 2; } // 3단계
-		else if (ulPoint >= 1000) { nStep = 1; } // 2단계
-
-		switch(nStep)
-		{
-		case 2:
-			{
-				AddFlowerTreeMesh(pFlowerTreeMI, 1); // 3단계
-			}
-		case 1:
-			{
-				AddFlowerTreeMesh(pFlowerTreeMI, 0); // 2단계
-			}
-
-			// [ldy1978220 2011/6/2] 가미고 10주년 이벤트 케익관련 이펙트 적용
-			// 메쉬를 추가 하면서 이펙트 테그가 Refresh 되기  때문에 메쉬 적용 이후에 이펙트 적용함
-			if (nStep == 2)
-			{
-				if (m_pEG[0] == NULL)
-					m_pEG[0] = StartEffectGroup( Gamigo_10th_cake, &pFlowerTreeMI->m_tmSkaTagManager, _pTimer->GetLerpedCurrentTick());
-
-				if (m_pEG[3] == NULL)
-					m_pEG[3] = StartEffectGroup( Event_Tree10_0, &pFlowerTreeMI->m_tmSkaTagManager, _pTimer->GetLerpedCurrentTick());
-
-				if (m_pEG[4] == NULL)
-					m_pEG[4] = StartEffectGroup( Event_Tree10_1, &pFlowerTreeMI->m_tmSkaTagManager, _pTimer->GetLerpedCurrentTick());				
-			}
-		}
-	}
 	else
 	{
 		int nStep = 0; // 1단계
@@ -718,7 +649,7 @@ void CUIFlowerTree::AddServerNameList(ULONG ulScore, SLONG slGroup)
 
 	if (SvScItr == m_vecSvScoreList.end())
 	{
-		SvSctmp.strServerName = CUIManager::getSingleton()->GetServerSelect()->GetServerName(slGroup);
+		SvSctmp.strServerName = _pUIMgr->GetSelServer()->GetServerGroupName(slGroup);
 		m_vecSvScoreList.push_back(SvSctmp);
 		return; // 군정보만 추가하고 리턴
 	}
@@ -742,7 +673,7 @@ void CUIFlowerTree::AddServerNameList(ULONG ulScore, SLONG slGroup)
 /************************************************************************/
 void CUIFlowerTree::ClearList()
 {
-	m_pMobFlowerTree = NULL;
+	m_MobFlowerTree.Init();
 
 	m_vecSvScoreList.clear();
 
@@ -762,10 +693,4 @@ void CUIFlowerTree::ClearEffect()
 	{
 		DestroyEffectGroupIfValid(m_pEG[i]);
 	}
-}
-
-void CUIFlowerTree::initialize()
-{
-	m_rcTitle.SetRect(0, 0, 216, 21);
-
 }

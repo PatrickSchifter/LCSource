@@ -1,14 +1,8 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Effect/CEffectGroupManager.h>
-#include <map>
 #include <vector>
 #include <Engine/Interface/UIGuildWarPortal.h>
-#include <Engine/Ska/Render.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/EntityProperties.h>
-#include <Engine/Interface/UISelectResource.h>
 
 #define BUTTON_HEIGHT	21
 #define BUTTON_WIDTH	131
@@ -58,6 +52,7 @@ CUIGuildWarPortal::CUIGuildWarPortal()
 // ----------------------------------------------------------------------------
 CUIGuildWarPortal::~CUIGuildWarPortal()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -66,7 +61,9 @@ CUIGuildWarPortal::~CUIGuildWarPortal()
 // ----------------------------------------------------------------------------
 void CUIGuildWarPortal::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 236, 22 );
@@ -186,7 +183,7 @@ void CUIGuildWarPortal::OpenGuildWarPortal( int npcIndex  )
 	}
 	int nHeight = m_vectorResourceList.size() * (BUTTON_HEIGHT + BUTTON_SPAN) + TITLEBAR_HEIGHT + 10;
 	SetSize( m_nWidth, nHeight );
-	CUIManager::getSingleton()->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
+	_pUIMgr->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
 	return;
 }
 
@@ -250,20 +247,18 @@ void CUIGuildWarPortal::OpenGuildWarPortalDratan()
 		m_vectorResourceList.push_back(TempUIButton);
 		iCurPosY += BUTTON_HEIGHT + BUTTON_SPAN;
 	}
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	
 	// WSS_DRATAN_SIEGEWARFARE 2007/10/15
 	if( tLoop == 0 )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage(_S( 3810,"이동 가능한 워프타워가 존재하지 않습니다."));
+		_pUIMgr->GetChatting()->AddSysMessage(_S( 3810,"이동 가능한 워프타워가 존재하지 않습니다."));
 
 	}
 	else 
 	{
 		int nHeight = m_vectorResourceList.size() * (BUTTON_HEIGHT + BUTTON_SPAN) + TITLEBAR_HEIGHT + 10;
 		SetSize( m_nWidth, nHeight );
-		pUIManager->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
+		_pUIMgr->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
 	}
 	
 }
@@ -292,30 +287,28 @@ void CUIGuildWarPortal::Render()
 		}
 		return;
 	}
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
 	// Background
 	int nX = m_nPosX;
 	int nY = m_nPosY;
-	pDrawPort->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
 		m_rtBackTop.U0, m_rtBackTop.V0, 
 		m_rtBackTop.U1, m_rtBackTop.V1,
 		0xFFFFFFFF );
 	
 	nY += TITLEBAR_HEIGHT;	
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
 		m_rtBackMiddle1.U0, m_rtBackMiddle1.V0, 
 		m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 		0xFFFFFFFF );
 	
 	nY = m_nPosY + m_nHeight - 7;
 
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
 		m_rtBackBottom.U0, m_rtBackBottom.V0, 
 		m_rtBackBottom.U1, m_rtBackBottom.V1,
 		0xFFFFFFFF );	
@@ -331,14 +324,14 @@ void CUIGuildWarPortal::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 	
 	// Text in skill learn	
-	pDrawPort->PutTextEx( _S( 1926, "워프 게이트" ), m_nPosX + SELECTRESOURCE_TITLE_TEXT_OFFSETX, 
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 1926, "워프 게이트" ), m_nPosX + SELECTRESOURCE_TITLE_TEXT_OFFSETX, 
 		m_nPosY + SELECTRESOURCE_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -366,7 +359,7 @@ WMSG_RESULT	CUIGuildWarPortal::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -384,11 +377,6 @@ WMSG_RESULT	CUIGuildWarPortal::MouseMessage( MSG *pMsg )
 			// Close Button
 			if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-
-			for(int i = 0; i < m_vectorResourceList.size(); ++i)
-			{
-				m_vectorResourceList[i].MouseMessage(pMsg);
-			}
 		}
 		break;
 	case WM_LBUTTONDOWN:
@@ -417,7 +405,7 @@ WMSG_RESULT	CUIGuildWarPortal::MouseMessage( MSG *pMsg )
 					}
 				}	
 							
-				CUIManager::getSingleton()->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
+				_pUIMgr->RearrangeOrder( UI_GUILDWARPORTAL, TRUE );
 				return WMSG_SUCCESS;
 			}
 			else
@@ -475,12 +463,11 @@ void CUIGuildWarPortal::ResetGuildWarPortal()
 	m_nPortal			= -1;
 	m_tmLeftTime		= 0;
 	
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	pUIManager->RearrangeOrder( UI_GUILDWARPORTAL, FALSE );
+	_pUIMgr->RearrangeOrder( UI_GUILDWARPORTAL, FALSE );
 
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-	ResetPosition( pDrawPort->dp_MinI, pDrawPort->dp_MinJ, pDrawPort->dp_MaxI, pDrawPort->dp_MaxJ );
-
+	const CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+	ResetPosition( pdp->dp_MinI, pdp->dp_MinJ, pdp->dp_MaxI, pdp->dp_MaxJ );
+	// WSS_DRATAN_SEIGEWARFARE 2007/08/07
 	m_btNpcAvailable	= 0;
 	m_nSelPotalIdx		= 0;
 }
@@ -492,12 +479,10 @@ void CUIGuildWarPortal::ResetGuildWarPortal()
 //------------------------------------------------------------------------------
 void CUIGuildWarPortal::PortalCancel( BOOL bMessage )	// 워프 중인 상태를 취소한다.
 {
-	if( m_bPrePortal == FALSE )
-		return;
-
-	if( bMessage == TRUE )
+	if( !m_bPrePortal ) return;
+	if( bMessage )
 	{
-		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( _S( 1927, "워프가 취소되었습니다." ) );  
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1927, "워프가 취소되었습니다." ) );  
 	}
 
 	std::map<SLONG, CEffectGroup *>::iterator it = m_mapEG.find( _pNetwork->MyCharacterInfo.index );

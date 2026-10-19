@@ -69,6 +69,7 @@ CNetworkMessage::CNetworkMessage(UBYTE mtType)
   nm_pubMessage = (UBYTE*) AllocMemory(nm_slMaxSize);
   Initialize(mtType);
 }
+
 /* Copying. */
 CNetworkMessage::CNetworkMessage(const CNetworkMessage &nmOriginal)
 {
@@ -103,6 +104,7 @@ void CNetworkMessage::operator=(const CNetworkMessage &nmOriginal)
   // remember the type
   nm_mtType = nmOriginal.nm_mtType;
 }
+
 /*
  * Destructor.
  */
@@ -626,11 +628,7 @@ void CNetworkStreamBlock::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-#ifdef _MSC_VER
-      __debugbreak();
-#else
-      __builtin_debugtrap();
-#endif
+      _asm int 3;
     }
   }
   FreeMemory(p);
@@ -718,7 +716,7 @@ INDEX CNetworkStream::GetNewestSequence(void)
 void CNetworkStream::AddAllocatedBlock(CNetworkStreamBlock *pnsbBlock)
 {
   // search all blocks already in list
-  FOREACHINLIST_IN(CNetworkStreamBlock, nsb_lnInStream, ns_lhBlocks, itnsbInList) {
+  FOREACHINLIST(CNetworkStreamBlock, nsb_lnInStream, ns_lhBlocks, itnsbInList) {
     // if the block in list has same sequence as the one to add
     if (itnsbInList->nsb_iSequenceNumber == pnsbBlock->nsb_iSequenceNumber) {
       // just discard the new block
@@ -1015,8 +1013,7 @@ CNetworkMessage &operator>>(CNetworkMessage &nm, CPlayerAction &pa)
   }
 
   // find number of zero bits for flags
-  INDEX iZeros;
-  for(iZeros = 0; iZeros < 6; iZeros++) {
+  for(INDEX iZeros=0; iZeros<6; iZeros++) {
     UBYTE ub=0;
     nm.ReadBits(&ub, 1);
     if (ub!=0) {
@@ -1069,6 +1066,7 @@ CTStream &operator>>(CTStream &strm, CPlayerAction &pa)
   return strm;
 }
 
+
 // Create new network stream block (use instead of new CNetworkStreamBlock)
 extern CNetworkStreamBlock *CreateNetworkStreamBlock(void)
 {
@@ -1080,7 +1078,6 @@ extern CNetworkStreamBlock *CreateNetworkStreamBlock(void)
 extern void DeleteNetworkStreamBlock(CNetworkStreamBlock *pnsbBlock)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> orRestore(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> or(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
   _rcStreamBlockContainer.DeleteObject(pnsbBlock);
 }
-

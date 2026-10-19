@@ -1,9 +1,6 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISelectServer.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/World/World.h>
 #include <algorithm>
 #include <Engine/GameState.h>
@@ -12,7 +9,7 @@
 #include <Engine/Interface/UILogin.h>
 #include <Engine/Network/TcpIpConnection.h>
 #include <Engine/GlobalDefinition.h>
-#include <Engine/Base/md5.h>
+#include <Engine/LocalDefine.h>
 
 //#define USER_NUM_FULL		300
 //#define USER_NUM_BUSY		280
@@ -21,23 +18,17 @@
 extern INDEX g_iCountry;
 extern CDrawPort *_pdpMain;
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-extern INDEX g_iConnectEuroupean;
-#endif
-
 #define TEMP_SERVER_LIST // define 서버군 번호 순서로 정렬..
 // -----wooss 060425------------------------------------------->>
 #define NOTICE_SIZE_Y	112
 
+#ifndef RECOMMEND_SERVER_EVENT
+#undef NOTICE_SIZE_Y
+#define NOTICE_SIZE_Y	0
+#endif
+
 #define RECOMMEND_POS_X   133
 // -------------------------------------------------<<
-
-enum eSERVER_TYPE
-{
-	SERVER_TYPE_NONE = 0,
-	SERVER_TYPE_RECOMEND = 1,
-	SERVER_TYPE_SPEEDUP,
-};
 
 // ----------------------------------------------------------------------------
 // Name : CUISelectServer()
@@ -47,6 +38,8 @@ CUISelectServer::CUISelectServer()
 {
 	m_nRecentServerGroup = -1;
 	m_nRecentServer = -1;
+	m_nRecomendSvr = -1;	
+	m_nRecomendSvrOrder = -1;
 
 	m_astrServerName[0] = _S( 796, "카타르" ); 
 	m_astrServerName[1] = _S( 797, "크리스" ); 
@@ -92,21 +85,7 @@ CUISelectServer::CUISelectServer()
 	m_astrServerName[37] = _S( 246, "테스트 서버" );
 	m_astrServerName[38] = _S( 246, "테스트 서버" );
 	m_astrServerName[39] = _S( 246, "테스트 서버" );
-
-#ifdef EUROUPEAN_SERVER_LOGIN
-	m_astrServerName[40] = _S( 5786, "European1" );
-	m_astrServerName[41] = _S( 5787, "European2" );
-	m_astrServerName[42] = _S( 5788, "European3" );
-	m_astrServerName[43] = _S( 5789, "European4" );
-	m_astrServerName[44] = _S( 5790, "European5" );
-	m_astrServerName[45] = _S( 5791, "European6" );
-	m_astrServerName[46] = _S( 5792, "European7" );
-	m_astrServerName[47] = _S( 5793, "European8" );
-	m_astrServerName[48] = _S( 5794, "European9" );
-	m_astrServerName[49] = _S( 5795, "European10" );
-#endif
-	// test
-	m_plbServer = NULL;
+	
 }
 
 // ----------------------------------------------------------------------------
@@ -115,6 +94,7 @@ CUISelectServer::CUISelectServer()
 // ----------------------------------------------------------------------------
 CUISelectServer::~CUISelectServer()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -123,7 +103,13 @@ CUISelectServer::~CUISelectServer()
 // ----------------------------------------------------------------------------
 void CUISelectServer::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight + NOTICE_SIZE_Y);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+#ifdef RECOMMEND_SERVER_EVENT
+	SetSize( nWidth , nHeight + NOTICE_SIZE_Y );
+#else
+	SetSize( nWidth, nHeight );
+#endif
 
 	// Create portal texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\SelectServer.tex" ) );
@@ -132,18 +118,27 @@ void CUISelectServer::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 
 	// UV Coordinate of each part
 	// Background
+#ifdef 	RECOMMEND_SERVER_EVENT
 	m_rtBackTop.SetUV( 0, 0, 416, 28, fTexWidth, fTexHeight ); // 46- >24
 	m_rtBackTop1.SetUV( 0, 23, 416, 27, fTexWidth, fTexHeight );
 	// 공지 표시 창
 	m_rtBackTop2.SetUV( 20, 50, 30, 60, fTexWidth, fTexHeight );
 	// 서버군 , 서버 표시 
 	m_rtBackMiddle0.SetUV( 0, 29, 416, 59, fTexWidth, fTexHeight );
+#else 
+	m_rtBackTop.SetUV( 0, 0, 416, 46, fTexWidth, fTexHeight );
+#endif
 	m_rtBackMiddle.SetUV( 0, 50, 416, 62, fTexWidth, fTexHeight );
 	m_rtBackBottom.SetUV( 0, 66, 416, 105, fTexWidth, fTexHeight );
 
 	// 추천이벤트 이미지 wooss 060426
-	m_rtRecommend.SetUV(17,112,80,128,fTexWidth, fTexHeight );	// UV of Recommend Image
-	m_rtSpeed.SetUV(81,113,144,128,fTexWidth, fTexHeight );	// UV of SpeedServer Image
+	if(g_iCountry == BRAZIL)
+	{
+		m_rtRecommend.SetUV(83,112,145,128,fTexWidth, fTexHeight );	// UV of Recommend Image
+	}else
+	{
+		m_rtRecommend.SetUV(17,112,80,128,fTexWidth, fTexHeight );	// UV of Recommend Image
+	}	
 
 	// Ok button
 	m_btnOK.Create( this, _S( 249, "접속" ), 274, 205 + NOTICE_SIZE_Y, 63, 21 );
@@ -154,19 +149,7 @@ void CUISelectServer::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_btnOK.SetEnable(FALSE);
 
 	// Cancel button
-#ifdef RESTART_GAME
-	#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-		m_btnCancel.Create( this, _S( 2681, "이전" ), 208, 205+ NOTICE_SIZE_Y, 63, 21 );
-	#else
-		m_btnCancel.Create( this, _S( 286, "종료" ), 340, 205+ NOTICE_SIZE_Y, 63, 21 );
-	#endif
-#else
-	#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-		m_btnCancel.Create( this, _S( 2681, "이전" ), 208, 205+ NOTICE_SIZE_Y, 63, 21 );
-	#else
-		m_btnCancel.Create( this, _S( 139, "취소" ), 340, 205+ NOTICE_SIZE_Y, 63, 21 );
-	#endif
-#endif
+	m_btnCancel.Create( this, _S( 139, "취소" ), 340, 205+ NOTICE_SIZE_Y, 63, 21 );
 	m_btnCancel.SetUV( UBS_IDLE, 449, 0, 512, 21, fTexWidth, fTexHeight );
 	m_btnCancel.SetUV( UBS_CLICK, 449, 23, 512, 44, fTexWidth, fTexHeight );
 	m_btnCancel.CopyUV( UBS_IDLE, UBS_ON );
@@ -216,13 +199,6 @@ void CUISelectServer::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	m_lbServer.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 
 //	m_nRecomendSvr = FindRecomendSvr();
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	m_btnExit.Create( this, _S( 286, "종료" ), 340, 205+ NOTICE_SIZE_Y, 63, 21 );
-	m_btnExit.SetUV( UBS_IDLE, 449, 0, 512, 21, fTexWidth, fTexHeight );
-	m_btnExit.SetUV( UBS_CLICK, 449, 23, 512, 44, fTexWidth, fTexHeight );
-	m_btnExit.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnExit.CopyUV( UBS_IDLE, UBS_DISABLE );
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -249,88 +225,66 @@ void CUISelectServer::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX
 // ----------------------------------------------------------------------------
 void CUISelectServer::Render()
 {
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	extern BOOL g_bAutoRestart;
-	if(g_bAutoRestart)
-	{
-		CUIManager::getSingleton()->RenderLoading();
-		return;
-	}
-#endif
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	CDrawPort *pdp = _pUIMgr->GetDrawPort();
 
 	// Set select server texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	pdp->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	// Background
+#ifdef RECOMMEND_SERVER_EVENT
 	int	nY = m_nPosY + NOTICE_SIZE_Y + 29;
 	int	nY2 = m_nPosY + m_nHeight - 39;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY +28,
-		m_rtBackTop.U0, m_rtBackTop.V0, m_rtBackTop.U1, m_rtBackTop.V1,
+	pdp->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, m_nPosY +28,
+						m_rtBackTop.U0, m_rtBackTop.V0, m_rtBackTop.U1, m_rtBackTop.V1,
 						0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, m_nPosY +28, m_nPosX + m_nWidth, nY,
-		m_rtBackTop1.U0, m_rtBackTop1.V0, m_rtBackTop1.U1, m_rtBackTop1.V1,
+	pdp->AddTexture( m_nPosX, m_nPosY +28, m_nPosX + m_nWidth, nY,
+						m_rtBackTop1.U0, m_rtBackTop1.V0, m_rtBackTop1.U1, m_rtBackTop1.V1,
 						0xFFFFFFFF );
 	// 공지 창
-	pDrawPort->AddTexture( m_nPosX + 13 , m_nPosY +29, m_nPosX + m_nWidth - 13, nY -3,
+	pdp->AddTexture( m_nPosX + 13 , m_nPosY +29, m_nPosX + m_nWidth - 13, nY -3,
 						m_rtBackTop2.U0, m_rtBackTop2.V0, m_rtBackTop2.U1, m_rtBackTop2.V1,
 						0xFFFFFFFF );
-//	pDrawPort->AddTexture( m_nPosX + 18 , m_nPosY +29, m_nPosX + m_nWidth - 18, nY,
+//	pdp->AddTexture( m_nPosX + 18 , m_nPosY +29, m_nPosX + m_nWidth - 18, nY,
 //						m_rtBackTop2.U0, m_rtBackTop2.V0, m_rtBackTop2.U1, m_rtBackTop2.V1,
 //						0xFFFFFFFF );
 	// 서버군, 서버 표시
-	pDrawPort->AddTexture( m_nPosX, nY , m_nPosX + m_nWidth, nY + 29,
+	pdp->AddTexture( m_nPosX, nY , m_nPosX + m_nWidth, nY + 29,
 						m_rtBackMiddle0.U0, m_rtBackMiddle0.V0, m_rtBackMiddle0.U1, m_rtBackMiddle0.V1,
 						0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, nY + 29 , m_nPosX + m_nWidth, nY2 ,
+	pdp->AddTexture( m_nPosX, nY + 29 , m_nPosX + m_nWidth, nY2 ,
 						m_rtBackMiddle.U0, m_rtBackMiddle.V0, m_rtBackMiddle.U1, m_rtBackMiddle.V1,
 						0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX, nY2, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+	pdp->AddTexture( m_nPosX, nY2, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
 						m_rtBackBottom.U0, m_rtBackBottom.V0, m_rtBackBottom.U1, m_rtBackBottom.V1,
 						0xFFFFFFFF );
 
 	// 추천 서버 이미지
-	int count = m_vectorGroupInfo.size();
-
-	for ( int i = 0; i < count; i++)
+	if( m_nRecomendSvr > 0)
 	{
-		UBYTE Type = m_vectorGroupInfo[i].ubServerType;
-		int nOrder = m_vectorGroupInfo[i].nOrder;
-		FLOAT U0, U1, V0, V1;
-
-		switch (Type)
-		{
-		case SERVER_TYPE_RECOMEND:
-			U0 = m_rtRecommend.U0;
-			U1 = m_rtRecommend.U1;
-			V0 = m_rtRecommend.V0;
-			V1 = m_rtRecommend.V1;
-			break;
-		case SERVER_TYPE_SPEEDUP:
-			U0 = m_rtSpeed.U0;
-			U1 = m_rtSpeed.U1;
-			V0 = m_rtSpeed.V0;
-			V1 = m_rtSpeed.V1;			
-			break;
-		default:
-			continue;
-		}
-		
-		pDrawPort->AddTexture( m_nPosX+RECOMMEND_POS_X , nY+4+(15* nOrder) , m_nPosX +RECOMMEND_POS_X+ 63, nY + 4 + (15*(nOrder+1)),
-				U0, V0, U1, V1,	0xFFFFFFFF );	
+		pdp->AddTexture( m_nPosX+RECOMMEND_POS_X , nY+4+(15*m_nRecomendSvrOrder) , m_nPosX +RECOMMEND_POS_X+ 63, nY + 4 + (15*(m_nRecomendSvrOrder+1)),
+						m_rtRecommend.U0, m_rtRecommend.V0, m_rtRecommend.U1, m_rtRecommend.V1,
+						0xFFFFFFFF );
 	}
-	
+#else
+	int	nY = m_nPosY + 47;
+	int	nY2 = m_nPosY + m_nHeight - 39;
+	pdp->AddTexture( m_nPosX, m_nPosY, m_nPosX + m_nWidth, nY,
+						m_rtBackTop.U0, m_rtBackTop.V0, m_rtBackTop.U1, m_rtBackTop.V1,
+						0xFFFFFFFF );
+	pdp->AddTexture( m_nPosX, nY, m_nPosX + m_nWidth, nY2,
+						m_rtBackMiddle.U0, m_rtBackMiddle.V0, m_rtBackMiddle.U1, m_rtBackMiddle.V1,
+						0xFFFFFFFF );
+	pdp->AddTexture( m_nPosX, nY2, m_nPosX + m_nWidth, m_nPosY + m_nHeight,
+						m_rtBackBottom.U0, m_rtBackBottom.V0, m_rtBackBottom.U1, m_rtBackBottom.V1,
+						0xFFFFFFFF );
+
+#endif
 	// Ok button
 	m_btnOK.Render();
 
 	// Cancel button
 	m_btnCancel.Render();
-
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	m_btnExit.Render();
-#endif
 
 	// Server group list box
 	m_lbServerGroup.Render();
@@ -339,55 +293,38 @@ void CUISelectServer::Render()
 	m_lbServer.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	pdp->FlushRenderingQueue();
 
 	// text render
-	pDrawPort->PutTextEx( _S( 250, "서버 선택" ),
+	pdp->PutTextEx( _S( 250, "서버 선택" ),
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, m_nPosY + SELECTSERVER_TITLE_TEXT_OFFSETY , 0xFFFFFFFF );
-	pDrawPort->PutTextEx( _S( 251, "서버군" ),
+	pdp->PutTextEx( _S( 251, "서버군" ),
 					m_nPosX + SELECTSERVER_GROUP_TEXT_POSX, m_nPosY + SELECTSERVER_GROUP_TEXT_POSY + NOTICE_SIZE_Y, 0xFFB500FF );
-	pDrawPort->PutTextEx( _S( 370, "서버" ),
+	pdp->PutTextEx( _S( 370, "서버" ),
 					m_nPosX + SELECTSERVER_SERVER_TEXT_POSX, m_nPosY + SELECTSERVER_SERVER_TEXT_POSY + NOTICE_SIZE_Y, 0xFFB500FF );
-
+#ifdef RECOMMEND_SERVER_EVENT	
 	// --Add Message -------------------------------------------------->>
 	int tv_y = m_nPosY + SELECTSERVER_TITLE_TEXT_OFFSETY + 35;
-
-#if defined G_KOR
-	// 국내 설명 수정(초보지원)
-	pDrawPort->PutTextEx( _S(4874, "♣초보지원 서버란?" ),
+	pdp->PutTextEx( _S(2618, "♣추천 서버란?" ),
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFAAFFFF );
 	tv_y+=20;
-	pDrawPort->PutTextEx( _S(4875, "라스트카오스를 처음 시작하신다면 3채널(초보지원) 서버를 추천" ), 
+	pdp->PutTextEx( _S(2619, "매일 정오에 교체가 되며, 해당 서버에서 플레이를 하면 30레벨" ), 
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
 	tv_y+=15;
-	pDrawPort->PutTextEx( _S(4876, "해 드립니다. 3채널에 있는 '초보 지원사'를 통해 경험치/숙련도" ),
+	pdp->PutTextEx( _S(2620, "이하의 캐릭터는 사냥시 신비한 효과를 주는 버프 아이템을 얻을" ),
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
 	tv_y+=15;
-	pDrawPort->PutTextEx( _S(4877, "2배, 물리/마법 공격력이 20% 향상되는 '초보지원 버프'를 받으"), 
+	pdp->PutTextEx( _S(2621, "수 있으며, 모든 유저에 대해서 1시간 간격으로 추첨을 통하여 "), 
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
 	tv_y+=15;
-	pDrawPort->PutTextEx( _S(4878, "실 수 있습니다. '초보지원 버프'는 레벨 60까지만 제공됩니다."), 
+	pdp->PutTextEx( _S(2622, "문스톤 10개를 드리는 이벤트 입니다."), 
 					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
-#else
-	pDrawPort->PutTextEx( _S(2618, "♣추천 서버란?" ),
-					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFAAFFFF );
-	tv_y+=20;
-	pDrawPort->PutTextEx( _S(2619, "매일 정오에 교체가 되며, 해당 서버에서 플레이를 하면 30레벨" ), 
-					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
-	tv_y+=15;
-	pDrawPort->PutTextEx( _S(2620, "이하의 캐릭터는 사냥시 신비한 효과를 주는 버프 아이템을 얻을" ),
-					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
-	tv_y+=15;
-	pDrawPort->PutTextEx( _S(2621, "수 있으며, 모든 유저에 대해서 1시간 간격으로 추첨을 통하여 "), 
-					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
-	tv_y+=15;
-	pDrawPort->PutTextEx( _S(2622, "문스톤 10개를 드리는 이벤트 입니다."), 
-					m_nPosX + SELECTSERVER_TITLE_TEXT_OFFSETX, tv_y , 0xFFFFFFFF );
-#endif
+	
 	// ----------------------------------------------------------------<<
+#endif
 	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -396,11 +333,6 @@ void CUISelectServer::Render()
 // ----------------------------------------------------------------------------
 WMSG_RESULT CUISelectServer::MouseMessage( MSG *pMsg )
 {
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	extern BOOL g_bAutoRestart;
-	if(g_bAutoRestart)
-		return WMSG_FAIL;
-#endif
 	WMSG_RESULT	wmsgResult;
 
 	// Mouse point
@@ -416,10 +348,6 @@ WMSG_RESULT CUISelectServer::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_btnCancel.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-			else if( m_btnExit.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-#endif
 			else if( m_lbServerGroup.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
 			else if( m_lbServer.MouseMessage( pMsg ) != WMSG_FAIL )
@@ -439,38 +367,18 @@ WMSG_RESULT CUISelectServer::MouseMessage( MSG *pMsg )
 				{
 					// Nothing
 				}
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-				else if( m_btnExit.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-
-				}
-#endif
 				else if( ( wmsgResult = m_lbServerGroup.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
-					// is not have server list, connect button disable. [9/1/2010 rumist]
 					if( wmsgResult == WMSG_COMMAND )
-					{
 						SetServerList();
-					}
-					else
-					{
-						m_btnOK.SetEnable( FALSE );
-					}
 				}
 				else if( ( wmsgResult = m_lbServer.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
-					{
-						if( m_lbServerGroup.GetCurSel() >= 0 )
-							m_btnOK.SetEnable( TRUE );
-					}
-					else
-					{
-						m_btnOK.SetEnable( FALSE );
-					}
+						m_btnOK.SetEnable( TRUE );
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_SEL_SERVER, TRUE );
+				_pUIMgr->RearrangeOrder( UI_SEL_SERVER, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -493,19 +401,12 @@ WMSG_RESULT CUISelectServer::MouseMessage( MSG *pMsg )
 //#define AUTO_LOGIN
 //#ifdef AUTO_LOGIN
 					extern BOOL g_bAutoLogin;
-					extern BOOL g_bAutoRestart;
 					if(g_bAutoLogin)
 					{
 						_pGameState->Running()		= FALSE;
 						_pGameState->QuitScreen()	= TRUE;
-						CUIManager::getSingleton()->SetUIGameState( UGS_NONE );
+						_pUIMgr->SetUIGameState( UGS_NONE );
 					}
-					else if( g_bAutoRestart )
-					{
-						g_bAutoRestart = FALSE;
-						Close();
-					}
-
 //#endif
 #ifdef RESTRICT_SOUND
 					extern BOOL _bNTKernel;
@@ -524,18 +425,6 @@ WMSG_RESULT CUISelectServer::MouseMessage( MSG *pMsg )
 
 				return WMSG_SUCCESS;
 			}
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-			else if( ( wmsgResult = m_btnExit.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if( wmsgResult == WMSG_COMMAND )
-				{
-					_pGameState->Running()		= FALSE;
-					_pGameState->QuitScreen()	= FALSE;
-				}			
-
-				return WMSG_SUCCESS;
-			}
-#endif
 			else if( m_lbServerGroup.MouseMessage(pMsg) != WMSG_FAIL )
 			{
 				return WMSG_SUCCESS;
@@ -612,18 +501,11 @@ void CUISelectServer::PressOKBtn()
 		// 서버에 연결을 시도합니다.
 		if( SI.iPlayerNum < _cmiComm.cci_iFullUsers )
 		{
-			_pSound->Mute();
-			if(_pNetwork->m_iServerGroup != m_vectorGroupInfo[nSelServerGroup].iServerNo)
-			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				pUIManager->GetRankingViewEx()->ClearRankingList();
-			}
+				_pSound->Mute();		
 			_pNetwork->m_iServerGroup = m_vectorGroupInfo[nSelServerGroup].iServerNo;
-			_pNetwork->m_iServerCh = SI.iSubNum;		// UI_REFORM :Su-won
+			_pNetwork->m_iServerCh = SI.iSubNum;
 
 			ConnectToServer( SI.strAddress, SI.iPortNum );
-
-			_pGameState->ClearCharacterSlot();
 			
 #ifdef RESTRICT_SOUND
 			extern BOOL _bNTKernel;
@@ -640,20 +522,6 @@ void CUISelectServer::PressOKBtn()
 // ----------------------------------------------------------------------------
 void CUISelectServer::ResetServerList()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	// reset server list for server move items.
-#ifdef ENABLE_CHARACTER_MOVE_TO_OTHER_SERVER_ITEM
-	pUIManager->GetCharServerMove()->ResetServerList();	
-
-	// 캐릭터 서버 이전 서버리스트 받기 [7/24/2012 Ranma]
-	std::vector<sGroupInfo>::iterator			iter = m_vectorGroupInfo.begin();		
-	
-	for ( ; iter != m_vectorGroupInfo.end(); iter++)
-	{
-		pUIManager->GetCharServerMove()->AddServerListForCharMove(GetServerGroupName(iter->iServerNo), iter->iServerNo);
-	}
-#endif
-
 	// List box
 	m_lbServerGroup.ResetAllStrings();
 	m_lbServer.ResetAllStrings();
@@ -662,6 +530,8 @@ void CUISelectServer::ResetServerList()
 	m_vectorGroupInfo.clear();
 	m_nRecentServerGroup = -1;
 	m_nRecentServer = -1;
+	m_nRecomendSvr = -1;
+	m_nRecomendSvrOrder = -1;
 
 	// Button
 	m_btnOK.SetEnable( FALSE );
@@ -680,12 +550,10 @@ void CUISelectServer::ResetServerList()
 //			&strAddress - 
 //			lPortNum - 
 //-----------------------------------------------------------------------------
-void CUISelectServer::AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayerNum, CTString &strAddress, LONG lPortNum ,UBYTE ubServerType)
+void CUISelectServer::AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayerNum, CTString &strAddress, LONG lPortNum ,UBYTE bIsRecommend)
 {
 	sGroupInfo	GroupInfo;
 	GroupInfo.iServerNo		= lServerNo;
-	GroupInfo.ubServerType	= ubServerType;
-	GroupInfo.nOrder		= -1;
 
 	std::vector<sGroupInfo>::iterator iter = std::find_if(m_vectorGroupInfo.begin(), m_vectorGroupInfo.end(), 
 		FindGroup(GroupInfo));
@@ -695,9 +563,17 @@ void CUISelectServer::AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayer
 		m_vectorGroupInfo.push_back(GroupInfo);
 		iter = m_vectorGroupInfo.end() - 1;
 	}
+// Date : 2006-04-21(오후 4:13:13), By eons
+#if( g_iCountry == KOREA )
+#undef TEMP_SERVER_LIST
+#endif
+
+#ifdef TEMP_SERVER_LIST
+
+	extern INDEX	g_iCountry;
 
 	// 국내
-/*	if(g_iCountry == KOREA)
+	if(g_iCountry == KOREA)
 	{
 		// FIXME : 임의적으로 4, 2, 1, 5, 3의 순서로 나오도록 처리함...
 		// FIXME : 하드 코딩된 내용.
@@ -719,28 +595,49 @@ void CUISelectServer::AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayer
 			(*iter).iGroupState	= 0;
 			break;
 		}	
-	}*/
-	// server list change [8/19/2010 rumist]
-#if defined G_HONGKONG
-	// FIXME : 임의적으로 4, 2, 1, 5, 3의 순서로 나오도록 처리함...
-	// FIXME : 하드 코딩된 내용.
-	switch(lServerNo)
+	}
+	// 대만
+	else if(g_iCountry == TAIWAN || g_iCountry == TAIWAN2 ) //wooss 050929
 	{
-	case 2:
-		(*iter).iGroupState	= 3;
-		break;
-	case 3:
-		(*iter).iGroupState	= 2;
-		break;
-	case 1:
-		(*iter).iGroupState	= 1;
-		break;
-	case 4:
-		(*iter).iGroupState	= 0;
-		break;
-	}	
+		// FIXME : 임의적으로 1, 2, 3, 4, 5, 6, 7, 8의 순서로 나오도록 처리함...		
+		switch(lServerNo)
+		{
+		case 1:
+		case 11:
+			(*iter).iGroupState	= 7;
+			break;
+		case 2:
+		case 12:
+			(*iter).iGroupState	= 6;
+			break;
+		case 3:
+		case 13:
+			(*iter).iGroupState	= 5;
+			break;
+		case 4:
+		case 14:
+			(*iter).iGroupState	= 4;
+			break;
+		case 5:
+		case 15:
+			(*iter).iGroupState	= 3;
+			break;
+		case 6:
+		case 16:
+			(*iter).iGroupState	= 2;
+			break;
+		case 7:
+		case 17:
+			(*iter).iGroupState	= 1;
+			break;
+		case 8:
+		case 18:
+			(*iter).iGroupState	= 0;
+			break;
+		}
+		
+	}
 #endif
-//#endif
 
 	sServerInfo	ServerInfo;
 	ServerInfo.iPlayerNum	= lPlayerNum;
@@ -748,11 +645,30 @@ void CUISelectServer::AddToServerList(LONG lServerNo, LONG lSubNum, LONG lPlayer
 	ServerInfo.strAddress	= strAddress;
 	ServerInfo.iPortNum		= lPortNum;
 
-	// SERVER LIST 의 순차 정렬 요청 [20/05/2011 rumist]
-#if defined G_KOR
-	//(*iter).iGroupState		-= lPlayerNum;
+#ifndef TEMP_SERVER_LIST
+	(*iter).iGroupState		-= lPlayerNum;
+	/*
+	if( lPlayerNum == -1 )								// 점검
+	{
+		(*iter).iGroupState	+= 0;
+	}
+	else if( lPlayerNum >= _cmiComm.cci_iFullUsers )	// FULL
+	{
+		(*iter).iGroupState	+= 1;
+	}
+	else if( lPlayerNum >= _cmiComm.cci_iBusyUsers )	// BUSY
+	{
+		(*iter).iGroupState	+= 2;
+	}
+	else												// 원할
+	{
+		(*iter).iGroupState	+= 3;
+	}
+	*/
 #endif
-
+	if(bIsRecommend) {
+		m_nRecomendSvr = lServerNo;
+	}
 	(*iter).vectorServerInfo.push_back(ServerInfo);
 }
 
@@ -767,7 +683,7 @@ void CUISelectServer::Close()
 
 	ResetServerList();
 
-	CUIManager::getSingleton()->SetUIGameState( UGS_LOGIN );
+	_pUIMgr->SetUIGameState( UGS_LOGIN );
 }
 
 //-----------------------------------------------------------------------------
@@ -781,39 +697,24 @@ void CUISelectServer::ConnectToServer(CTString strIP, ULONG ulPortNum)
 	if(_pNetwork->m_bSendMessage)
 		return;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// 소켓의 연결을 끊었다가, 다시 연결함.
 	_cmiComm.Reconnect(strIP, ulPortNum);
 	if(_tcpip.Socket == INVALID_SOCKET)
 	{
 		//CPrintF("게임 서버와 연결할 수 없습니다.\n");
 
-		pUIManager->CloseMessageBox(MSGCMD_CONNECT_ERROR);
+		_pUIMgr->CloseMessageBox(MSGCMD_CONNECT_ERROR);
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 424, "접속 오류" ), UMBS_OK, UI_SEL_SERVER, MSGCMD_CONNECT_ERROR );
 		MsgBoxInfo.AddString( _S( 426, "게임 서버와 연결할 수 없습니다." ) );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 		_pNetwork->m_bSendMessage = FALSE;
 		return;
 	}
 
-	// [091103: selo] 미국에 md5 적용함
-#if defined(G_JAPAN)/* || defined(G_USA)*/ 
-	// 패스워드 MD5로 암호화
-	char tmpPass[1024];
-	char tmpResult[256];
-	md5_buffer(_pNetwork->m_strUserPW, _pNetwork->m_strUserPW.Length(), tmpPass);
-	md5_sig_to_string(tmpPass, tmpResult, sizeof(tmpResult));
-	CTString CT_tmpPass = tmpResult;
-	CT_tmpPass.ToUpper(); // MD5로 암호화된 패스워드는 대문자로 전송(서버에서 대문자로 된 패스워드로 처리)
-	_pNetwork->SendLoginMessage(_pNetwork->m_strUserID, CT_tmpPass, pUIManager->GetVersion());
-#else
-	_pNetwork->SendLoginMessage(_pNetwork->m_strUserID, _pNetwork->m_strUserPW, pUIManager->GetVersion());
-#endif
-
-	pUIManager->Lock(TRUE);
+	_pNetwork->SendLoginMessage(_pNetwork->m_strUserID, _pNetwork->m_strUserPW, _pUIMgr->GetVersion());
+	_pUIMgr->Lock(TRUE);
 }
 
 //-----------------------------------------------------------------------------
@@ -834,8 +735,7 @@ void CUISelectServer::SetRecentServer( int iRecentGroup, int iRecentServer )
 	// Sort server list - 추후 정렬 방식이 추가될 지도 모름..
 	std::sort(m_vectorGroupInfo.begin(), m_vectorGroupInfo.end());
 
-	int		iGroup;
-	for( iGroup = 0; iGroup < m_vectorGroupInfo.size(); iGroup++ )
+	for( int iGroup = 0; iGroup < m_vectorGroupInfo.size(); iGroup++ )
 		std::sort( m_vectorGroupInfo[iGroup].vectorServerInfo.begin(), m_vectorGroupInfo[iGroup].vectorServerInfo.end());		
 
 	m_nRecentServerGroup	= iRecentGroup;
@@ -889,13 +789,12 @@ void CUISelectServer::SetRecentServer( int iRecentGroup, int iRecentServer )
 	for( iGroup = 0; iGroup < m_vectorGroupInfo.size(); iGroup++ )
 	{
 		int	iGroupNo = m_vectorGroupInfo[iGroup].iServerNo;
-		int nServerType = m_vectorGroupInfo[iGroup].ubServerType;
 
 		// 테스트 서버면....
 		extern UINT g_uiEngineVersion;
 		if(g_uiEngineVersion >= 10000 ){
-			if( nServerType > SERVER_TYPE_NONE ) 
-				m_vectorGroupInfo[iGroup].nOrder = iGroupNo-1000;
+			if( iGroupNo == m_nRecomendSvr) 
+				m_nRecomendSvrOrder = iGroupNo-1000;
 		}
 
 		if ( iGroupNo == 1001 )
@@ -904,8 +803,8 @@ void CUISelectServer::SetRecentServer( int iRecentGroup, int iRecentServer )
 		}
 		
 		// 추천 서버 때문에.
-		else if (nServerType > SERVER_TYPE_NONE) 
-			m_vectorGroupInfo[iGroup].nOrder = iGroup +1;
+		else if (iGroupNo == m_nRecomendSvr) 
+			m_nRecomendSvrOrder = iGroup +1;
 		strRecomend = GetServerGroupName(iGroupNo);
 
 
@@ -951,14 +850,7 @@ void CUISelectServer::SetRecentServer( int iRecentGroup, int iRecentServer )
 			SetServerList();
 			m_lbServer.SetCurSel( iRecentServer );
 			m_btnOK.SetEnable( TRUE );
-		}		
-	}
-	else	// [090611: selo] 게임을 처음 시작하는 계정이면 default 값을 설정한다.
-	{
-		m_lbServerGroup.SetCurSel(0);
-		SetServerList();
-		m_lbServer.SetCurSel(0);
-		m_btnOK.SetEnable( TRUE );
+		}
 	}
 }
 
@@ -990,175 +882,92 @@ void CUISelectServer::SetServerList()
 			iGroupNo = 11;
 		}
 		
-#if defined G_USA
-		CTString strServer;
-
-		switch( iServerNo )
-		{ 
-		case 1:
-		case 2:
-			{
-				strServer = CTString("(PvP)");
-			}
-			break;
-		case 3:
-			{
-				strServer = CTString("(Raid)");
-			}
-			break;
-		case 4:
-			{
-				strServer = CTString("(Non-PvP)");
-			}
-			break;
-		case 5:
-		// change server no 6  to newbie server [9/2/2010 rumist]
-		case 6:
-			{
-				strServer = CTString("(Newbie)");
-			}				
-			break;
-		default:
-			strServer = CTString("");
-		}
-		strServerName.PrintF("%s-%d %s ", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined G_HONGKONG
-		CTString strServer;
-
-		switch( iServerNo )
+		if ( g_iCountry == USA )
 		{
-		// [111115] : 채널 변동 관련 Non-PvP 표기 by.Sol9
-		case 5:
-		case 6:
-			strServer = CTString("(Non-PvP)");
-			break;
-		default:
-			strServer = CTString("");
-		}
+			CTString strServer;
 
-		strServerName.PrintF("%s-%d %s ", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined G_GERMAN || defined G_EUROPE3 || defined G_EUROPE2 || defined G_NETHERLANDS
-		CTString strServer;
-
-		switch(iServerNo)
-		{
-		case 2:
-		case 5:
-			{
-				strServer = CTString("(Non-PvP)");
-			}break;
-		case 6:
-			{
-				if ((g_iCountry != GERMANY && (iGroupNo == 2 || iGroupNo == 3 || iGroupNo == 4)) || 
-					(g_iCountry == GERMANY && (iGroupNo == 6 || iGroupNo == 7)))
+			switch( iServerNo )
+			{ // USA 5, 6 Non-Pvp Server
+			case 3:
+			case 4:
 				{
-					strServer = CTString("(RPG)");
+					if (sGroup.iServerNo == 2 || sGroup.iServerNo == 3 || sGroup.iServerNo == 4 || sGroup.iServerNo == 5)
+					{
+						strServer = CTString("(Non-PvP)");
+					}
 				}
-			}break;
-		default:
-			strServer = CTString("");
-		}			
+				break;
+			case 5:
+			case 6:
+				{
+					if (sGroup.iServerNo == 1)
+					{
+						strServer = CTString("(Non-PvP)");
+					}
+					else if (sGroup.iServerNo == 2 && iServerNo == 6)
+					{
+						strServer = CTString("(Roleplaying)");
+					}
+				}
+				break;
+			default:
+				strServer = CTString("");
+			}
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-		if(g_iConnectEuroupean)
-			strServer = CTString("");
-#endif
-		strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined G_JAPAN
-		CTString strServer;
-
-		switch( iServerNo )
-		{
-		
-		// connie [2009/10/29] - 리얼 서버 설정 변경				
-		case 1:
-			strServer = CTString( "(Non-PvP)" );
-			break;
-		case 2:
-			strServer = CTString( "(Non-PvP)" );
-			break; 
-		case 3:
-			strServer.PrintF( "(%s)", _S( 2417, "공성" ) );
-
-			break;
-		case 4:
-			strServer = CTString( "(Non-PvP)" );
-			break;
-		default :
-			strServer = CTString( "" );
-			break;
+			strServerName.PrintF("%s-%d %s ", GetServerGroupName(iGroupNo), iServerNo, strServer);
 		}
-
-		strServerName.PrintF( "%s-%d %s ", GetServerGroupName( iGroupNo ), iServerNo, strServer );
-#elif defined G_RUSSIA
-		CTString strServer;
-		if(iServerNo < 5)
+		else if ( g_iCountry == BRAZIL )
 		{
-			strServer = CTString("(PvP)");
+			CTString strServer;
+			switch(iServerNo)
+			{
+			case 2:
+				{
+					strServer = CTString("(Serv-PVP)");
+				}
+				break;
+			case 7: case 8:
+				{
+					if (sGroup.iServerNo == 1)
+					{
+						strServer = CTString("(Non-PvP)");
+					}
+				}
+				break;
+			default:
+				strServer = CTString("");
+			}			
+			strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
+		}
+		else if ( g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+		{//공성채널 4번 
+			CTString strServer;
+			switch(iServerNo)
+			{
+			case 2:
+			case 5:
+				{
+					strServer = CTString("(Non-PvP)");
+				}break;
+			case 6:
+				{
+					if (
+						((g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) && iGroupNo == 2) ||
+						(g_iCountry == GERMANY && iGroupNo == 6))
+					{
+						strServer = CTString("(RPG)");
+					}
+				}break;
+			default:
+				strServer = CTString("");
+			}			
+			
+			strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
 		}
 		else
 		{
-			strServer = CTString("(Non-PvP)");
+			strServerName.PrintF( "%s-%d ", GetServerGroupName( iGroupNo ), iServerNo );
 		}
-		strServerName.PrintF("%s-%d %s", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined(G_MAXICO) || defined(G_BRAZIL)
-		CTString strServer;
-		switch(iServerNo)
-		{
-		case 1:
-			{
-				strServer = CTString("(PvP)");
-			}
-			break;
-		case 2:
-		case 3:
-			{
-				strServer = CTString("(no-PvP)");
-			}
-			break;
-		case 4:
-			{
-				strServer = CTString("(Free-PvP)");
-			}
-			break;
-		default:
-			strServer = CTString("");
-		}
-		strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined(G_THAI)
-		CTString strServer;
-		switch(iServerNo)
-		{
-		case 1:
-			{
-				strServer.PrintF( "(%s)", _S( 2417, "공성" ) );
-			}
-			break;
-		case 5:
-			{
-				strServer.PrintF( "(%s)", _S( 5599, "상점채널" ) );
-			}
-			break;
-		default:
-			strServer = CTString("");
-		}
-		strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strServer);
-#elif defined(G_KOR)
-		CTString strName;
-
-		switch(iServerNo)
-		{
-		case 2: // 국내 2채널 로얄 럼블 표시
-			strName.PrintF("(%s)", _S(5404, "로얄럼블"));
-			break;
-		default:
-			strName = CTString("");
-			break;
-		}
-		strServerName.PrintF("%s-%d%s", GetServerGroupName(iGroupNo), iServerNo, strName);
-#else
-		strServerName.PrintF( "%s-%d ", GetServerGroupName( iGroupNo ), iServerNo );
-#endif
 		
 		if( sGroup.iServerNo == m_nRecentServerGroup && iServerNo == m_nRecentServer )
 			m_lbServer.AddString( 0, strServerName, 0x7E8FEBFF );
@@ -1208,17 +1017,6 @@ CTString CUISelectServer::GetServerGroupName( int iGroupNo )
 
 	extern INDEX	g_iCountry;
 
-	if (iGroupNo >= 1000)
-		iGroupNo %= 1000;
-
-#ifdef EUROUPEAN_SERVER_LOGIN
-	if(g_iConnectEuroupean)
-	{
-		return m_astrServerName[iGroupNo + 40];
-	}
-#endif
-
-
 	if ( g_iCountry != CHINA )  // 중국 Local이 아니면 무조건 기존 루틴~
 		return m_astrServerName[iGroupNo];
 
@@ -1253,23 +1051,8 @@ int CUISelectServer::FindRecomendSvr()
 
 		if (iRSvr < -1 || (iRSvr > 4 && iRSvr != 11))
 			iRSvr = -1;
-
-		fclose(fp);
 		return iRSvr;
 	}
 
 	return iRSvr;
 }
-
-void CUISelectServer::initialize()
-{
-// 	m_plbServer = (CUIListBox*)findUI( "lb_server" );
-// 	CTString strTemp = "Test";
-// 	if( m_plbServer )
-// 	{
-// 		m_plbServer->AddString(0,  strTemp );
-// 		m_plbServer->InsertString(0, 15, strTemp );
-// 	}
-}
-
-

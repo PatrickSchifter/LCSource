@@ -1,10 +1,6 @@
 #include "StdH.h"
-//#define USING_SQLITE
-#include <Engine/Entities/EntityClass.h>
+//#include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIInternalClasses.h>
-#include "UIManager.h"
-#include <Engine/Ska/ModelInstance.h>
-
 #include <Engine/Base/Input.h>
 #include <Engine/Base/KeyNames.h>
 #include <Engine/GameState.h>
@@ -13,88 +9,53 @@
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/JobInfo.h>
 #include <Engine/World/World.h>
-#include <Engine/Effect/CMdlEffect.h>
-#include <Engine/Network/Web.h>
-#include <Common/Packet/ptype_old_do_exapet.h>
-#include <Common/Packet/ptype_old_do_item.h>
-#include <Engine/Entities/NoticeData.h>
-#include <Engine/Help/DefineHelp.h>
-#include <Engine/Help/LoadString.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Object/ActorMgr.h>
-#include <Engine/GameStageManager/StageMgr.h>
-#include <Engine/Loading.h>
-
-#include <Engine/Interface/UIInventory.h>
-
-#include <Engine/Contents/Base/InvenData.h>
-#include <Engine/Contents/Base/UIAuctionNew.h>
-#include <Engine/Contents/Base/UICharacterInfoNew.h>
-#include <Engine/Contents/Base/UIMsgBoxMgr.h>
-#include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
-#include <Engine/Contents/Base/UIMysteriousBead.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Contents/Login/BackImageManager.h>
-#include <Engine/Contents/Login/ServerSelect.h>
-#include <Engine/Contents/Login/UICharacterCreateNew.h>
-#include <Engine/Contents/Login/UICharacterSelect.h>
-#include <Engine/Contents/Login/UILoginNew.h>
-#include <Engine/Contents/Login/UIServerSelect.h>
-#include <Engine/Interface/UIAffinity.h>
+#include <Engine/Interface/UISignBoard.h>	// 이기환 추가 (04.12.17)
 #include <Engine/Interface/UIAutoHelp.h>
-#include <Engine/Interface/UICashShopEX.h>
-#include <Engine/Interface/UIChildInvenSlot.h>
-#include <Engine/Interface/UIExchange.h>
-#include <Engine/Interface/UIFactory.h>
-#include <Engine/Interface/UIGamble.h>
-#include <Engine/Interface/UIGuildBattle.h>
-#include <Engine/Interface/UIGuildStash.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIInvenCashBag.h>
-#include <Engine/Interface/UIMessenger.h>
-#include <Engine/Interface/UIMinigame.h>
-#include <Engine/Interface/UIMixNew.h>
-#include <Engine/Interface/UIMonsterCombo.h>
-#include <Engine/Interface/UIMouseCursor.h>
-#include <Engine/Interface/UINickName.h>
-#include <Engine/Interface/UIOption.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Engine/Contents/Base/Party.h>
-#include <Engine/Interface/UIPersonalShop.h>
+#include <Engine/Interface/UIBuff.h>
+#include <Engine/Interface/UISiegeWarfareDoc.h> // Date : 2005-07-15(오전 10:42:38), By Lee Ki-hwan
+#include <Engine/Interface/UINotice.h>
+#include <Engine/Interface/UISelectWord.h>
 #include <Engine/Interface/UIPetTraining.h>
-#include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Contents/function/UIPortalNew.h>
+#include <Engine/Interface/UIPetTarget.h>
+#include <Engine/Interface/UIPetInfo.h>
+#include <Engine/Interface/UISummon.h>
+#include <Engine/Interface/UISecurity.h>
+#include <Engine/Interface/UIInitJob.h>
+#include <Engine/Interface/UIChangeWeapon.h>
+#include <Engine/Interface/UISelectResource.h>
+#include <Engine/Interface/UIRanking.h>
+#include <Engine/Interface/UIGamble.h>
+#include <Engine/Interface/UIRemission.h>
 #include <Engine/Interface/UIQuickSlot.h>
-#include <Engine/Interface/UIRefine.h>
-#include <Engine/Interface/UIResurrection.h>
-#include <Engine/Interface/UIShop.h>
-#include <Engine/Interface/UISiegeWarfareDoc.h>
-#include <Engine/Interface/UISiegeWarfareNew.h>
-#include <Engine/Interface/UISignBoard.h>
-#include <Engine/Interface/UISkillToolTip.h>
-#include <Engine/Interface/UISocketSystem.h>
-#include <Engine/Interface/UISystemMenu.h>
-#include <Engine/Contents/function/TargetInfoNewUI.h>
-#include <Engine/Interface/UITatoo.h>
 #include <Engine/Interface/UIWareHouse.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Contents/function/ItemCollectionData.h>
-#include <Engine/Contents/function/SimplePlayerMenuUI.h>
-#include <Engine/Contents/function/PremiumChar.h>
-#include <Engine/Contents/function/News_Web_UI.h>
-#include <Engine/Contents/function/HelpWebUI.h>
-
-#include <Engine/Info/MyInfo.h>
-#include <Engine/Help/Util_Help.h>
-
-extern CDrawPort	*_pdpMain;
+#include <Engine/Interface/UIExchange.h>
+#include <Engine/Interface/UIPersonalShop.h>
+#include <Engine/Interface/UIShop.h>
+#include <Engine/Interface/UIProcessNPC.h>
+#include <Engine/Interface/UISelectServer.h>
+#include <Engine/Interface/UIPetTraining.h>
+#include <Engine/Interface/UIPetTarget.h>
+#include <Engine/Interface/UISummon.h>
+#include <Engine/Interface/UISingleBattle.h>
+#include <Engine/Interface/UITeleport.h>
+#include <Engine/Interface/UISkillLearn.h>
+#include <Engine/Interface/UICreateChar.h>
+#include <Engine/Interface/UISelChar.h>
+#include <Engine/Interface/UIShop.h>
+#include <Engine/Interface/UINpcHelp.h>
+// [KH_070419] 심플 팝업 관련 추가
+#include <Engine/Interface/UISimplePop.h>
+#include <Engine/Effect/CMdlEffect.h>
+// ttos_080116 : 몬스터 콤보
+#include <Engine/Interface/UIMonsterCombo.h>
+// [090709: selo] 펫 문양 시스템
+#include <Engine/Interface/UITatoo.h>
+ 
+CUIManager				*_pUIMgr = NULL;
 CUIButtonTextureManager	*_pUIBtnTexMgr = NULL;
 CUIFontTextureManager	*_pUIFontTexMgr = NULL;
 CUIBuff					*_pUIBuff = NULL;
 INDEX					_iNameType = 1;
-FLOAT					_fTmpTerLODMul = 1.0f;
-
-struct PlayerControls pctlCurrent;
 
 extern HWND		_hwndMain;
 extern INDEX	inp_iKeyboardReadingMethod;			// 0: getasynckey, 1: virtkeytrap, 2: scancodetrap
@@ -112,11 +73,6 @@ extern INDEX g_iCountry;
 extern BOOL		_bWorldEditorApp;
 extern CUIFiltering _UIFilteringCharacter;			// wooss 050812 name filtering 
 extern BOOL g_bIsMalEng;
-extern BOOL g_bAutoLogin;
-extern BOOL g_bAutoRestart;
-extern cWeb g_web;
-extern CFontData *_pfdDefaultFont;
-
 // For final consonant
 #define	COMP_STRING_COUNT	399
 
@@ -126,8 +82,6 @@ extern CFontData *_pfdDefaultFont;
 #define MAX_GUILD_NAME_SIZE		16 
 
 #define RAREITEM_NAME_COLOR		0xFFD31DFF
-
-const INDEX _RTRusToyWidth = 226, _RTRusToyHeight = 226;
 
 extern ENGINE_API INDEX g_iAutoAttack;
 
@@ -157,18 +111,8 @@ const static char	aszCompString[COMP_STRING_COUNT][3] =
 #define	COMP_DIGIT_COUNT	4
 const static INDEX	aiCompDigit[COMP_DIGIT_COUNT] = { 2, 4, 5, 9 };
 static __int64	llOldTime;
-#define ST_UNLOCK_URL	_S( 1406, "http://lastwar.bilagames.com")
+
 // WSS_GUILDMASTER 050717------------------------------------------------------>>
-
-class CmdDropItem : public Command
-{
-public:
-	void execute() 
-	{
-		UIMGR()->DropItemCallback();
-	}
-};
-
 void CUIManager::DrawGuildRankBox(UIRect m_rcRect,SBYTE sbGuildRank,FLOAT fPopupZ)
 {
 	WRect tRect;
@@ -198,20 +142,42 @@ void CUIManager::DrawGuildRankBox(UIRect m_rcRect,SBYTE sbGuildRank,FLOAT fPopup
 }
 // ---------------------------------------------------------------------------<<
 
+///////////////////////////////////////////////////////////
+//
+// Malaysia Language Check
+// 
+// g_bIsMalEng : TRUE  - English
+//				 FALSE - Traditional Chinese 
+//
+////////////////////////////////////////////////////////////
+BOOL CheckMalLang()
+{
+	CTString FileName = _fnmApplicationPath.FileDir();
+	FileName += "ln.dta";
+	FILE *fp		= NULL;
+	char readData; 
+	if ((fp = fopen(FileName, "rt")) == NULL) 
+	{
+		MessageBox(NULL, "File is not Exist.", "error!", MB_OK);
+		return -1;
+	}
+	fread(&readData, sizeof(char), 1, fp);
+	if(readData =='0' ) return TRUE;
+	else return FALSE;
+}
+
 // ----------------------------------------------------------------------------
 // Name : CUIManager()
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUIManager::CUIManager()
-	: m_pGame ( NULL )
-	, m_pIconGuildMark(NULL)
-	, m_pIconDrag(NULL)
-	, m_pBaseDrag(NULL)
+: m_pGame ( NULL )
 {
 
 	if( !_bWorldEditorApp )
 		_pInput->m_bTcpIp = TRUE;
-	
+
+	m_ugsGameState = UGS_NONE;
 	m_umctTypeInUI = UMCT_NORMAL;
 	m_pUIDrawPort = NULL;
 	m_pumcMouseCursor = NULL;
@@ -224,9 +190,7 @@ CUIManager::CUIManager()
 	m_pixMaxJ = 0;
 	m_ptdPopupTexture = NULL;
 	m_ptBlackTexture	= NULL;
-	m_ptdExpeditionTexture = NULL;
 	m_dwCSF = 0;
-	m_tCSFElapsedTime = 0;
 
 	for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 	{
@@ -237,33 +201,9 @@ CUIManager::CUIManager()
 	m_bDamageState = false;
 	m_nCoolTimeReductionRate =0;
 	m_nNeedMPReductionRate =0;
-
+#ifdef HELP_SYSTEM_1
 	m_nHelpNpc_Index = -1;		//NPC 안내 시스템
-
-	m_IsInField = TRUE;
-
-	m_nCurInfoLines = 0;
-
-	m_bShowAni = FALSE;
-	m_RenderTarget = NULL;
-//	InitRenderTarget();
-	m_fAniStartTime = 0.0f;
-	m_ptdAniBG = NULL;
-
-	m_apUIsOld = NULL;
-#ifdef	VER_TEST
-	m_bOutDebugString = false;
 #endif
-	
-	std::string strLocal = (const char*)DefHelp::getNationPostfix(g_iCountry, true);
-	// 패스 추가
-	m_vecAdditionalPath.push_back("Data\\Interface\\");
-	m_vecAdditionalPath.push_back("Data\\Interface\\Loading\\");
-	m_vecAdditionalPath.push_back("Local\\" + strLocal + "\\");
-	m_vecAdditionalPath.push_back("Local\\" + strLocal + "\\SignBoard\\");
-	m_vecAdditionalPath.push_back("Local\\" + strLocal + "\\Loading\\");
-
-	ItemNameColorInI();
 }
 
 // ----------------------------------------------------------------------------
@@ -272,17 +212,7 @@ CUIManager::CUIManager()
 // ----------------------------------------------------------------------------
 CUIManager::~CUIManager()
 {
-	DestroyAll();
-	DestroyRenderTarget();
-	CNoticeData::destroy();
-	UIFactory::destroy();
-	CUITooltipMgr::destroy();
-	CUIFocus::destroy();
-	CUISkillToolTip::destroy();
-	CInvenData::destroy();
-	CBackImageManager::destroy();
-	CUISupport::destroy();
-	SAFE_DELETE(m_pIconGuildMark);
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -291,9 +221,6 @@ CUIManager::~CUIManager()
 // ----------------------------------------------------------------------------
 void CUIManager::Create()
 {
-	UIFactory* pFactory = UIFactory::getSingleton();
-
-	CInvenData* pInventory = CInvenData::getSingleton();
 	// Mouse cursor
 	m_pumcMouseCursor = new CUIMouseCursor;
 
@@ -303,19 +230,186 @@ void CUIManager::Create()
 		//return;	//테스트 게임 실행시 UIManager를 사용하는 부분에서 에러가 발생해서 그냥 create 진행시킴 :Su-won
 	}
 
+	// Check Malaysia Language  - wooss 060330
+	if(g_iCountry==MALAYSIA || g_iCountry==HONGKONG){
+		if(CheckMalLang()) g_bIsMalEng = TRUE;
+		else g_bIsMalEng = FALSE;
+	}
+	
 	// Load string data
 	CTFileName	fnmStringData;
-
+#ifdef HELP_SYSTEM_1
 	CTFileName	fnmHelp1Data;
-
+#endif
 	CTString	strFullPath = _fnmApplicationPath.FileDir();
 	CTString	strImmoralWordList;	// 이기환 추가 ( 11.29 )
 	CTString	strImmoralCharacter;	// Date : 2005-02-16,   By Lee Ki-hwan
+	//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+#ifdef CHARATER_CHAT_FILTER
 	CTString	strChatFilter;
+#endif
 
+//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+#ifdef CHARATER_CHAT_FILTER
 	strChatFilter = strFullPath + "Data\\CharacterChatFilter.dat";
+#endif
 
-	InitUIString();	
+	switch( g_iCountry )
+	{
+	case KOREA:
+		fnmStringData = strFullPath + "data\\string.dta";
+		// wooss 070324 ------------------------------->><<
+		// kw : WSS_HELP_SYSTEM_1
+		// 우선 국내만 집어 넣음...
+#ifdef HELP_SYSTEM_1
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord.dat";	// 이기환 추가 ( 11.29 )
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName.dat"; // Date : 2005-02-16,   By Lee Ki-hwan
+		break;
+	case TAIWAN:
+	case TAIWAN2:
+		fnmStringData = strFullPath + "data\\string_t.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_t.dat";	// 이기환 추가 ( 11.29 )
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_t.dat"; // Date : 2005-02-16,   By Lee Ki-hwan
+		break;
+	case CHINA: 
+		fnmStringData = strFullPath + "data\\string_c.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_c.dat";	// Date : 2005-03-04,   By Lee Ki-hwan
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_c.dat"; // Date : 2005-03-04,   By Lee Ki-hwan
+		break;
+	case THAILAND:
+		fnmStringData = strFullPath + "data\\string_th.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_th.dat";	
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_th.dat"; // Date : 2005-09-08,   By Seo
+		break;
+	case JAPAN:
+		fnmStringData = strFullPath + "data\\string_jp.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_jp.dat";	
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_jp.dat"; // Date : 2005-11-07 , wooss
+		break;
+	case MALAYSIA:
+		if(g_bIsMalEng)
+		{
+			fnmStringData = strFullPath + "data\\string_maleng.dta";
+			strImmoralWordList = strFullPath + "Data\\ImmoralWord_mal.dat";	
+			strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_mal.dat"; // Date : 2005-11-07 , wooss
+
+#ifdef HELP_SYSTEM_1
+			fnmHelp1Data = strFullPath + "data\\help1_eng.dta";
+#endif
+		}
+		else 
+		{
+			fnmStringData = strFullPath + "data\\string_mal.dta";
+			strImmoralWordList = strFullPath + "Data\\ImmoralWord_mal.dat";	
+			strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_mal.dat"; // Date : 2005-11-07 , wooss
+
+#ifdef HELP_SYSTEM_1
+			fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif
+		}
+		break;
+	case USA:
+#ifdef HELP_SYSTEM_1
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif		
+		fnmStringData = strFullPath + "data\\string_usa.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_usa.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_usa.dat"; // Date : 2006-10-17 , eons
+		break;
+	case BRAZIL:
+#ifdef HELP_SYSTEM_1
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif
+		fnmStringData = strFullPath + "data\\string_brz.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_brz.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_brz.dat"; // Date : 2006-11-02 , eons
+		break;
+	case HONGKONG:
+		if(g_bIsMalEng){
+#ifdef HELP_SYSTEM_1
+			fnmHelp1Data = strFullPath + "data\\help1_eng.dta";
+#endif
+			fnmStringData = strFullPath + "data\\string_hkeng.dta";
+			strImmoralWordList = strFullPath + "Data\\ImmoralWord_hkeng.dat";
+			strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_hkeng.dat"; // Date : 2007-01-16 , eons
+		}
+		else {
+#ifdef HELP_SYSTEM_1
+			fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif
+			fnmStringData = strFullPath + "data\\string_hk.dta";
+			strImmoralWordList = strFullPath + "Data\\ImmoralWord_hk.dat";
+			strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_hk.dat"; // Date : 2007-01-16 , eons
+		}
+		break;
+	case GERMANY:
+#ifdef HELP_SYSTEM_1
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+#endif
+		fnmStringData = strFullPath + "data\\string_ger.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_ger.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_ger.dat"; // wooss 070309 kw : WSS_GERMAN_FONT
+		break;
+	case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+		fnmStringData = strFullPath + "data\\string_Spa.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_Spa.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_Spa.dat";
+		break;
+	case FRANCE:
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+		fnmStringData = strFullPath + "data\\string_Fra.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_Fra.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_Fra.dat";
+		break;
+	case POLAND:
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+		fnmStringData = strFullPath + "data\\string_Pol.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_Pol.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_Pol.dat";
+		break;
+		
+	case TURKEY:
+		fnmHelp1Data = strFullPath + "data\\help1.dta";
+		fnmStringData = strFullPath + "data\\string_tur.dta";
+		strImmoralWordList = strFullPath + "Data\\ImmoralWord_tur.dat";
+		strImmoralCharacter = strFullPath + "Data\\ImmoralCharacterName_tur.dat";
+		break;
+
+	}
+	LoadStringData( fnmStringData );
+#ifdef HELP_SYSTEM_1
+	// wooss 070324 ------------->><<
+	// kw : WSS_HELP_SYSTEM_1
+	LoadHelp1Data( fnmHelp1Data );
+#endif
+	
+	BOOL tFilter = TRUE;
+	// 이기환 추가 ( 04.11.29 )
+	tFilter &= _UIFiltering.Create( strImmoralWordList.str_String );
+	// Date : 2005-02-16,   By Lee Ki-hwan
+	tFilter &= _UIFilteringCharacter.Create ( strImmoralCharacter.str_String );
+//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+#ifdef CHARATER_CHAT_FILTER
+//	tFilter &= _UICharacterChatFilter.Create( strChatFilter.str_String, true);
+	tFilter &= _UICharacterChatFilter.Create( strChatFilter.str_String);
+#endif
+	//---------------------------------------------------------------------->>
+	// Name :
+	// Desc : 필터링 파일이 존재하지 않거나 훼손 됐을 경우 게임 종료
+	// Date : [6/27/2006] , Wooss
+	//----------------------------------------------------------------------<<
+	if (tFilter == FALSE)
+	{
+		ENGINE_API extern char *g_szExitError ;
+		if(g_szExitError) delete[] g_szExitError;
+		g_szExitError = new char[2048];
+		strcpy(g_szExitError, CTString("ErrorCode : 626"));
+		_pGameState->Running() = FALSE;
+		_pGameState->QuitScreen() = FALSE;	
+	}
 		
 	//!! 이기환 추가 (04.12.17) : 지역 이름 표시 
 	_UISignBoard = new CUISignBoard ();
@@ -335,6 +429,7 @@ void CUIManager::Create()
 	{
 		_pInput->inp_bInputEnabled = TRUE;
 		memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );
+		//_pInput->EnableInput(_hwndMain); // 추후에 마우스 훅킹을 통해서 처리
 	}
 
 	m_ptBlackTexture = _pTextureStock->Obtain_t( CTString( "Data\\Interface\\Black.tex" ) );
@@ -347,11 +442,6 @@ void CUIManager::Create()
 	m_rtNameL.SetUV( 0, 14, 2, 29, fTexWidth, fTexHeight );
 	m_rtNameC.SetUV( 4, 14, 14, 29, fTexWidth, fTexHeight );
 	m_rtNameR.SetUV( 30, 14, 32, 29, fTexWidth, fTexHeight );
-#ifdef PREMIUM_CHAR
-	m_rtPremiumNameL.SetUV( 238, 58, 240, 108, fTexWidth, fTexHeight );
-	m_rtPremiumNameC.SetUV( 240, 58, 241, 108, fTexWidth, fTexHeight );
-	m_rtPremiumNameR.SetUV( 241, 58, 304, 108, fTexWidth, fTexHeight );
-#endif	//	PREMIUM_CHAR
 	m_rtNameRPK.SetUV( 16, 14, 32, 29, fTexWidth, fTexHeight );
 	m_rtNameRDefPK1.SetUV( 0, 30, 16, 45, fTexWidth, fTexHeight );
 	m_rtNameRDefPK2.SetUV( 18, 30, 34, 45, fTexWidth, fTexHeight );
@@ -382,9 +472,7 @@ void CUIManager::Create()
 	m_rtShopPremLL.SetUV( 35, 16, 48, 29, fTexWidth, fTexHeight );
 	m_rtShopPremLo.SetUV( 49, 16, 50, 29, fTexWidth, fTexHeight );
 	m_rtShopPremRL.SetUV( 51, 16, 64, 29, fTexWidth, fTexHeight );
-	m_rtNickNameL.SetUV(35, 31, 37, 44, fTexWidth, fTexHeight );
-	m_rtNickNameC.SetUV(39, 31, 49, 44, fTexWidth, fTexHeight );
-	m_rtNickNameR.SetUV(65, 31, 67, 44, fTexWidth, fTexHeight );
+
 
 	// Number
 	int nOffsetX = 0;
@@ -415,158 +503,405 @@ void CUIManager::Create()
 	m_rcShowText[ST_DEADLY].SetRect( 0, 0, 101, 27 );
 	m_rtShowText[ST_DEADLY].SetUV( 118, 70, 219, 97, fTexWidth, fTexHeight );
 
-	// [sora] 원정대 타겟 지정
-	m_ptdExpeditionTexture = _pTextureStock->Obtain_t( CTString( "Data\\Interface\\Expedition.tex" ) );
-	fTexWidth = m_ptdExpeditionTexture->GetPixWidth();
-	fTexHeight = m_ptdExpeditionTexture->GetPixHeight();
+	// Button texture
+	_pUIBtnTexMgr = new CUIButtonTextureManager;
+	_pUIBtnTexMgr->Create();
+
+	// Font texture
+	_pUIFontTexMgr = new CUIFontTextureManager;
+	_pUIFontTexMgr->Create();
+
+	// Holding button
+	m_btnHoldBtn.Create( NULL, 0, 0, 32, 32 );
 
 
-	m_rtTargetLabel[6].SetUV( 355, 211, 397, 253, fTexWidth, fTexHeight);
-	m_rtTargetLabel[5].SetUV( 403, 210, 445, 252, fTexWidth, fTexHeight);
-	m_rtTargetLabel[4].SetUV( 459, 205, 501, 247, fTexWidth, fTexHeight);
-	m_rtTargetLabel[3].SetUV( 355, 261, 397, 303, fTexWidth, fTexHeight);
-	m_rtTargetLabel[2].SetUV( 401, 258, 443, 300, fTexWidth, fTexHeight);
-	m_rtTargetLabel[1].SetUV( 459, 256, 501, 298, fTexWidth, fTexHeight);
-	m_rtTargetLabel[0].SetUV( 358, 313, 400, 355, fTexWidth, fTexHeight);
+	// Chatting
+	m_apUIs[UI_CHATTING] = new CUIChatting;
+	m_apUIs[UI_CHATTING]->Create( NULL, 0, 588, CHATTING_WIDTH, CHATTING_HEIGHT );
 
-	CUITooltipMgr::getSingleton()->initialize();
-	UISUPPORT()->initialize();
+	// Player information
+	m_apUIs[UI_PLAYERINFO] = new CUIPlayerInfo;
+	m_apUIs[UI_PLAYERINFO]->Create( NULL, 0, 0, PLAYERINFO_WIDTH, PLAYERINFO_HEIGHT );
 
-	m_apUIs[UI_INVEN_SLOT1] = new CUIChildInvenSlot(INVEN_TAB_NORMAL1);
-	m_apUIs[UI_INVEN_SLOT1]->Create( NULL, 370, 346, ITEM_SLOT_TOTAL_WIDTH, ITEM_SLOT_TOTAL_HEIGHT );
-	((CUIChildInvenSlot *)m_apUIs[UI_INVEN_SLOT1])->SetRearrangeOrderID(UI_INVEN_SLOT1);
+	// Quick slot
+	m_apUIs[UI_QUICKSLOT] = new CUIQuickSlot;
+	m_apUIs[UI_QUICKSLOT]->Create( NULL, 619, 724, QUICKSLOT_WIDTH, QUICKSLOT_HEIGHT );
 
-	m_apUIs[UI_INVEN_SLOT2] = new CUIChildInvenSlot(INVEN_TAB_NORMAL2);
-	m_apUIs[UI_INVEN_SLOT2]->Create( NULL, 578, 346, ITEM_SLOT_TOTAL_WIDTH, ITEM_SLOT_TOTAL_HEIGHT );
-	((CUIChildInvenSlot *)m_apUIs[UI_INVEN_SLOT2])->SetRearrangeOrderID(UI_INVEN_SLOT2);
+	// Radar
+	m_apUIs[UI_RADAR] = new CUIRadar;
+	m_apUIs[UI_RADAR]->Create( NULL, 896, 0, RADAR_WIDTH, RADAR_HEIGHT );
 
-	m_apUIs[UI_INVEN_SLOT3] = new CUIChildInvenSlot(INVEN_TAB_NORMAL3);
-	m_apUIs[UI_INVEN_SLOT3]->Create( NULL, 578, 103, ITEM_SLOT_TOTAL_WIDTH, ITEM_SLOT_TOTAL_HEIGHT );
-	((CUIChildInvenSlot *)m_apUIs[UI_INVEN_SLOT3])->SetRearrangeOrderID(UI_INVEN_SLOT3);
+	// Target information
+	m_apUIs[UI_TARGETINFO] = new CUITargetInfo;
+	m_apUIs[UI_TARGETINFO]->Create( NULL, 448, 0, TARGETINFO_WIDTH, TARGETINFO_HEIGHT );
 
-	m_apUIs[UI_INVEN_CASH1] = new CUIInvenCashBag(INVEN_TAB_CASH1);
-	m_apUIs[UI_INVEN_CASH1]->Create( NULL, 786, 346, INVEN_CASH_BAG_W, INVEN_CASH_BAG_H);
-	if (CUIInvenCashBag* pCashBag = dynamic_cast<CUIInvenCashBag*>(m_apUIs[UI_INVEN_CASH1]))
-		pCashBag->SetRearrangeOrderID(UI_INVEN_CASH1);
-
-	m_apUIs[UI_INVEN_CASH2] = new CUIInvenCashBag(INVEN_TAB_CASH2);
-	m_apUIs[UI_INVEN_CASH2]->Create( NULL, 786, 103, INVEN_CASH_BAG_W, INVEN_CASH_BAG_H);
-	if (CUIInvenCashBag* pCashBag = dynamic_cast<CUIInvenCashBag*>(m_apUIs[UI_INVEN_CASH2]))
-		pCashBag->SetRearrangeOrderID(UI_INVEN_CASH2);
+	// wooss 070330 -------------------------------------------------------------------->>
+	// Help ICON
+	m_apUIs[UI_HELP_ICON] = new CUIHelpIcon;
+	m_apUIs[UI_HELP_ICON]->Create( NULL, 0, 0, HELPICON_WIDTH, HELPICON_HEIGHT );
+	// ---------------------------------------------------------------------------------<<
 
 	// Inventory
 	m_apUIs[UI_INVENTORY] = new CUIInventory;
 	m_apUIs[UI_INVENTORY]->Create( NULL, 0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT );
 
-	CUIWindowDeclare::initUI();
+	// Character information
+	m_apUIs[UI_CHARACTERINFO] = new CUICharacterInfo;
+	m_apUIs[UI_CHARACTERINFO]->Create( NULL, 0, 0, CHARINFO_WIDTH, CHARINFO_HEIGHT );
 
-	// added by sam 10/11/11
-	// Ranking System
-	InitRankSystem();
+	// Exchange
+	m_apUIs[UI_EXCHANGE] = new CUIExchange;
+	m_apUIs[UI_EXCHANGE]->Create( NULL, 0, 0, EXCHANGE_WIDTH, EXCHANGE_HEIGHT );
 
+	// Portal
+	m_apUIs[UI_PORTAL] = new CUIPortal;
+	m_apUIs[UI_PORTAL]->Create( NULL, 0, 0, PORTAL_WIDTH, PORTAL_HEIGHT );
+
+	// Shop
+	m_apUIs[UI_SHOP] = new CUIShop;
+	m_apUIs[UI_SHOP]->Create( NULL, 0, 0, SHOP_MAIN_WIDTH, SHOP_MAIN_HEIGHT );
+
+	// Quiz
+	m_apUIs[UI_QUIZ] = new CUIQuiz;
+	m_apUIs[UI_QUIZ]->Create( NULL, 0, 0, QUIZ_MAIN_WIDTH, QUIZ_MAIN_HEIGHT );
+
+	// Pet Training
+	m_apUIs[UI_PETTRAINING] = new CUIPetTraining;
+	m_apUIs[UI_PETTRAINING]->Create( NULL, 0, 0, PETTRAINING_WIDTH, PETTRAINING_HEIGHT );
+
+	// Pet Info
+	m_apUIs[UI_PETINFO] = new CUIPetInfo;
+	m_apUIs[UI_PETINFO]->Create( NULL, 0, 0, PETINFO_WIDTH, PETINFO_HEIGHT );
+
+	// Gamble
+	m_apUIs[UI_GAMBLE] = new CUIGamble;
+	m_apUIs[UI_GAMBLE]->Create( NULL, 0, 0, GAMBLE_MAIN_WIDTH, GAMBLE_MAIN_HEIGHT );
+
+	// Personal Shop
+	m_apUIs[UI_PERSONALSHOP] = new CUIPersonalShop;
+	m_apUIs[UI_PERSONALSHOP]->Create( NULL, 0, 0, PERSONAL_MAIN_WIDTH, PERSONAL_MAIN_HEIGHT );
+
+	// Guild
+	m_apUIs[UI_GUILD] = new CUIGuild;
+	m_apUIs[UI_GUILD]->Create( NULL, 0, 0, GUILD_WIDTH, GUILD_HEIGHT );
+
+	// Ranking
+	m_apUIs[UI_RANKING] = new CUIRanking;
+	m_apUIs[UI_RANKING]->Create( NULL, 0, 0, RANKING_WIDTH, RANKING_HEIGHT );
+
+	// Pet Target Info
+	m_apUIs[UI_PETTARGETINFO] = new CUIPetTargetInfo;
+	m_apUIs[UI_PETTARGETINFO]->Create( NULL, 0, 0, PETTARGETINFO_WIDTH, PETTARGETINFO_HEIGHT );
+
+	// WildPet Target Info
+	m_apUIs[UI_WILDPETTARGETINFO] = new CUIWildPetTargetInfo;
+	m_apUIs[UI_WILDPETTARGETINFO]->Create( NULL, 0, 0, PETTARGETINFO_WIDTH, PETTARGETINFO_HEIGHT );
+
+	// Process NPC
+	m_apUIs[UI_PROCESSNPC] = new CUIProcessNPC;
+	m_apUIs[UI_PROCESSNPC]->Create( NULL, 0, 0, PROCESSNPC_WIDTH, PROCESSNPC_HEIGHT );
+
+	// Select Resource
+	m_apUIs[UI_SELECTRESOURCE] = new CUISelectResource;
+	m_apUIs[UI_SELECTRESOURCE]->Create( NULL, 200, 200, SELECTRESOURCE_WIDTH, SELECTRESOURCE_HEIGHT );
+
+	// Single Battle
+	m_apUIs[UI_SINGLE_BATTLE] = new CUISingleBattle;
+	m_apUIs[UI_SINGLE_BATTLE]->Create( NULL, 0, 0, SB_WIDTH, SB_HEIGHT );
+#ifdef HELP_SYSTEM_1
+	// Help
+	m_apUIs[UI_HELP] = new CUIHelp;
+	m_apUIs[UI_HELP]->Create( NULL, 0, 0, HELP_WIDTH, HELP_HEIGHT );
+
+#else
+	// Help
+	m_apUIs[UI_HELP] = new CUIHelpOld;
+	m_apUIs[UI_HELP]->Create( NULL, 0, 0, HELPOLD_WIDTH, HELPOLD_HEIGHT );
+
+#endif
+	// Help3
+	m_apUIs[UI_HELP3] = new CUIHelp3;
+	m_apUIs[UI_HELP3]->Create( NULL, 0, 0, HELP3_WIDTH, HELP3_HEIGHT );
+
+	// Guild Battle // Date : 2005-03-17,   By Lee Ki-hwan
+	m_apUIs[UI_GUILD_BATTLE] = new CUIGuildBattle;
+	m_apUIs[UI_GUILD_BATTLE]->Create( NULL, 0, 0, GB_WIDTH, GB_HEIGHT );
+
+	// WareHouse
+	m_apUIs[UI_WAREHOUSE] = new CUIWareHouse;
+	m_apUIs[UI_WAREHOUSE]->Create( NULL, 0, 0, WAREHOUSE_WIDTH, WAREHOUSE_HEIGHT );
+
+	// SECURITY
+	m_apUIs[UI_SECURITY] = new CUISecurity;
+	m_apUIs[UI_SECURITY]->Create( NULL, 0, 0, SECURITY_CHANGEPW_WIDTH, SECURITY_CHANGEPW_HEIGHT );
+
+	// System menu
+	m_apUIs[UI_SYSTEMMENU] = new CUISystemMenu;
+	m_apUIs[UI_SYSTEMMENU]->Create( NULL, 0, 0, SYSTEMMENU_WIDTH, SYSTEMMENU_HEIGHT );
+
+	// GuildWar Portal
+	m_apUIs[UI_GUILDWARPORTAL] = new CUIGuildWarPortal;
+	m_apUIs[UI_GUILDWARPORTAL]->Create( NULL, 0, 0, GUILDWARPORTAL_WIDTH, GUILDWARPORTAL_HEIGHT );
+
+	// Party
+	m_apUIs[UI_PARTY] = new CUIParty;
+	m_apUIs[UI_PARTY]->Create( NULL, 0, 0, PARTY_WIDTH, PARTY_HEIGHT );
+
+	// party auto matching
+	m_apUIs[UI_PARTYAUTO] = new CUIPartyAuto;
+	m_apUIs[UI_PARTYAUTO]->Create( NULL, 0, 0, P_AUTO_WIDTH, P_AUTO_HEIGHT );
+
+	// Map
+	m_apUIs[UI_MAP] = new CUIMap;
+	m_apUIs[UI_MAP]->Create( NULL, 0, 0, MAP_FRAME_WIDTH, MAP_FRAME_HEIGHT );
+
+	// Option
+	m_apUIs[UI_OPTION] = new CUIOption;
+	m_apUIs[UI_OPTION]->Create( NULL, 0, 0, OPTION_WIDTH, OPTION_HEIGHT );
+
+	// Refine
+	m_apUIs[UI_REFINE] = new CUIRefine;
+	m_apUIs[UI_REFINE]->Create( NULL, 0, 0, REFINE_WIDTH, REFINE_HEIGHT );
+	
+	// Process
+	m_apUIs[UI_PROCESS] = new CUIProcess;
+	m_apUIs[UI_PROCESS]->Create( NULL, 0, 0, PROCESS_WIDTH, PROCESS_HEIGHT );
+
+	// Prodcut 이기환 (12.7)
+	m_apUIs[UI_PRODUCT] = new CUIProduct;
+	m_apUIs[UI_PRODUCT]->Create( NULL, 0, 0, PRODUCT_WIDTH, PRODUCT_HEIGHT );
+
+	// Mix :  이기환 (12.7)
+	m_apUIs[UI_MIX] = new CUIMix;
+	m_apUIs[UI_MIX]->Create( NULL, 0, 0, MIX_WIDTH, MIX_HEIGHT );
+	
+	// wooss 060523 mix new
+	m_apUIs[UI_MIXNEW] = new CUIMixNew;
+	m_apUIs[UI_MIXNEW]->Create( NULL, 0, 0, MIXNEW_WIDTH, MIXNEW_HEIGHT );
+
+	// UI_COMPOUND // Date : 2005-01-12,   By Lee Ki-hwan
+	m_apUIs[UI_COMPOUND] = new CUICompound;
+	m_apUIs[UI_COMPOUND]->Create( NULL, 0, 0, COMPOUND_WIDTH, COMPOUND_HEIGHT );
+
+	// Date : 2005-04-30(오후 3:56:59), By Lee Ki-hwan
+	m_apUIs[UI_BILLING] = new CUIBilling;
+	m_apUIs[UI_BILLING]->Create( NULL, 0, 0, BILLING_WIDTH, BILLING_HEIGHT );
+	
+	
+	m_apUIs[UI_BILL_ITEM] = new CUIBillItem;
+	m_apUIs[UI_BILL_ITEM]->Create( NULL, 0, 0, BILL_ITEM_WIDTH, BILL_ITEM_HEIGHT );
+
+	m_apUIs[UI_REMISSION] = new CUIRemission;
+	m_apUIs[UI_REMISSION]->Create( NULL, 0, 0, REMISSION_WIDTH, REMISSION_HEIGHT );
+
+	m_apUIs[UI_QUEST] = new CUIQuest;
+	m_apUIs[UI_QUEST]->Create( NULL, 0, 0, QUEST_WIDTH, QUEST_HEIGHT );
+
+	m_apUIs[UI_SELECTWORD] = new CUISelectWord;
+	m_apUIs[UI_SELECTWORD]->Create( NULL, 0, 0, SELECTREWORD_WIDTH, SELECTREWORD_HEIGHT );
+
+	// 친구 찾기 이벤트 060126
+	m_apUIs[UI_SELECTLIST] = new CUISelectList;
+	m_apUIs[UI_SELECTLIST]->Create( NULL, 0, 0, SELECTLIST_WIDTH, SELECTLIST_HEIGHT );
+
+	// 펫 아이템 조합( 유니크 아이템 제작 )
+	m_apUIs[UI_PETITEMMIX] = new CUIPetItemMix;
+	m_apUIs[UI_PETITEMMIX]->Create( NULL, 0, 0, PROCESS_WIDTH, PROCESS_HEIGHT );
+	
+	m_apUIs[UI_PETFREE] = new CUIPetFree;
+	m_apUIs[UI_PETFREE]->Create( NULL, 0, 0, UI_PETFREE_WIDTH, UI_PETFREE_HEIGHT );	
+	
+	m_apUIs[UI_QUIZEVENT] = new CUIOXQuizEvent;
+	m_apUIs[UI_QUIZEVENT]->Create( NULL, 0, 0, UI_OX_WIDTH, UI_OX_HEIGHT );
+
+	m_apUIs[UI_COLLECTBOX] = new CUICollectBox;
+	m_apUIs[UI_COLLECTBOX]->Create( NULL, 0, 0, UICOLLECTBOX_WIDTH, UICOLLECTBOX_HEIGHT );
+
+	m_apUIs[UI_BINGOBOX] = new CUIBingoBox;
+	m_apUIs[UI_BINGOBOX]->Create( NULL, 0, 0, UI_BINGOBOX_WIDTH, UI_BINGOBOX_HEIGHT );
+	// NPC 안내 시스템
+	m_apUIs[UI_NPCHELP]	= new CUINpcHelp;
+	m_apUIs[UI_NPCHELP]->Create( NULL, 0, 0, UI_NPCHELP_WIDTH, UI_NPCHELP_HEIGHT );
+
+	// 퀘스트 목록
+	m_apUIs[UI_QUESTBOOK_LIST] = new CUIQuestBook( UI_QUESTBOOK_LIST );
+	m_apUIs[UI_QUESTBOOK_LIST]->Create( NULL, 0, 0, QUESTBOOK_WIDTH, QUESTBOOK_HEIGHT );	
+
+	// 퀘스트 내용
+	m_apUIs[UI_QUESTBOOK_CONTENT] = new CUIQuestBook( UI_QUESTBOOK_CONTENT );
+	m_apUIs[UI_QUESTBOOK_CONTENT]->Create( NULL, 0, 0, QUESTBOOK_WIDTH, QUESTBOOK_HEIGHT );	
+
+	// 퀘스트 완료
+	m_apUIs[UI_QUESTBOOK_COMPLETE] = new CUIQuestBook( UI_QUESTBOOK_COMPLETE );
+	m_apUIs[UI_QUESTBOOK_COMPLETE]->Create( NULL, 0, 0, QUESTBOOK_WIDTH, QUESTBOOK_HEIGHT );	
+
+	// 신규 퀘스트
+	m_apUIs[UI_QUESTBOOK_NEW] = new CUIQuestBook( UI_QUESTBOOK_NEW );
+	m_apUIs[UI_QUESTBOOK_NEW]->Create( NULL, 0, 0, QUESTBOOK_WIDTH, QUESTBOOK_HEIGHT );	
+
+	// 소환수 컨트롤...
+	m_apUIs[UI_SUMMON_FIRST] = new CUISummon( UI_SUMMON_FIRST );
+	m_apUIs[UI_SUMMON_FIRST]->Create( NULL, 0, 0, SUMMON_WIDTH, SUMMON_HEIGHT );	
+
+	m_apUIs[UI_SUMMON_SECOND] = new CUISummon( UI_SUMMON_SECOND );
+	m_apUIs[UI_SUMMON_SECOND]->Create( NULL, 0, 0, SUMMON_WIDTH, SUMMON_HEIGHT );	
+	
+	// SkillLearn
+	m_apUIs[UI_SKILLLEARN] = new CUISkillLearn;
+	m_apUIs[UI_SKILLLEARN]->Create( NULL, 0, 0, SKILLLEARN_WIDTH, SKILLLEARN_HEIGHT );
+
+	// ChangeWeapon
+	m_apUIs[UI_CHANGEWEAPON] = new CUIChangeWeapon;
+	m_apUIs[UI_CHANGEWEAPON]->Create( NULL, 0, 0, CHANGEWEAPON_WIDTH, CHANGEWEAPON_HEIGHT );
+
+	// Init Job
+	m_apUIs[UI_INITJOB]	= new CUIInitJob;
+	m_apUIs[UI_INITJOB]->Create( NULL, 0, 0, INITJOB_WIDTH, INITJOB_HEIGHT );
+
+	// Init Job
+	m_apUIs[UI_HELPER]	= new CUIHelper;
+	m_apUIs[UI_HELPER]->Create( NULL, 0, 0, HELPER_WIDTH, HELPER_HEIGHT );
+
+	// Teleport
+	m_apUIs[UI_TELEPORT] = new CUITeleport;
+	m_apUIs[UI_TELEPORT]->Create( NULL, 0, 0, TELEPORT_WIDTH, TELEPORT_HEIGHT );
+
+	// [KH_070315] Primium Teleport
+	m_apUIs[UI_TELEPORT_PRIMIUM] = new CUITeleportPrimium;
+	m_apUIs[UI_TELEPORT_PRIMIUM]->Create( NULL, 0, 0, TELEPORT_PRIMIUM_WIDTH, TELEPORT_PRIMIUM_HEIGHT );
+
+	// Messenger
+	m_apUIs[UI_MESSENGER] = new CUIMessenger;
+	m_apUIs[UI_MESSENGER]->Create( NULL, 0, 0, MESSENGER_WIDTH, MESSENGER_HEIGHT );
+
+	// Web board
+	m_apUIs[UI_WEBBOARD] = new CUIWebBoard;
+	m_apUIs[UI_WEBBOARD]->Create( NULL, 0, 0, WBOARD_WIDTH, WBOARD_HEIGHT );
+
+	// SiegeWarfare(공성전)
+	m_apUIs[UI_SIEGE_WARFARE] = new CUISiegeWarfare;
+	m_apUIs[UI_SIEGE_WARFARE]->Create( NULL, 0, 0, 0, 0 );
+	
+	// WSS_DRATAN_SIEGEWARFARE
+	// SiegeWarfareNew(신공성전) -DRATAN
+	m_apUIs[UI_SIEGE_WARFARE_NEW] = new CUISiegeWarfareNew;
+	m_apUIs[UI_SIEGE_WARFARE_NEW]->Create( NULL, 0, 0, 0, 0 );
+
+	m_apUIs[UI_GW_MIX] = new CUIGWMix;
+	m_apUIs[UI_GW_MIX]->Create( NULL, 0, 0, 0, 0 );
+
+	// Notice
+	m_apUIs[UI_NOTICE] = new CUINotice;
+	m_apUIs[UI_NOTICE]->Create( NULL, 0, 0, NOTICE_WIDTH, NOTICE_HEIGHT );
+
+	m_apUIs[UI_GUILDSTASH] = new CUIGuildStash;
+	m_apUIs[UI_GUILDSTASH]->Create( NULL, 0, 0, 0, 0 );
+
+	m_apUIs[UI_AUCTION] = new CUIAuction;
+	m_apUIs[UI_AUCTION]->Create(NULL, 0, 0, AUCTION_WIDTH, AUCTION_HEIGHT);
+
+	m_apUIs[UI_WILDPET_INFO] = new CUIWildPetInfo;
+	m_apUIs[UI_WILDPET_INFO]->Create( NULL, 0, 0, WILDPETINFO_WIDTH,WILDPETINFO_HEIGHT);
+
+	m_apUIs[UI_TATOO] = new CUITatoo;
+	m_apUIs[UI_TATOO]->Create( NULL, 0, 0, TATOO_WIDTH, TATOO_HEIGHT);
+
+	// Messenger talk box
+	for( int iUI = UI_MESSENGER_TALK_START; iUI < UI_MESSENGER_TALK_END; iUI++ )
+	{
+		m_apUIs[iUI] = new CUITalk;
+		((CUITalk*)m_apUIs[iUI])->Create( NULL, iUI );
+	}
+
+	// Message box
+	for( iUI = UI_MESSAGEBOX_START; iUI < UI_MESSAGEBOX_END; iUI++ )
+	{
+		m_apUIs[iUI] = new CUIMessageBox;
+		m_apUIs[iUI]->Create( NULL, 0, 0, MSGBOX_WIDTH, MSGBOX_HEIGHT );
+		((CUIMessageBox *)m_apUIs[iUI])->SetUIIndex( iUI );
+	}
+
+	// Message box Large
+	for( iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
+	{
+		m_apUIs[iUI] = new CUIMessageBoxL;
+		m_apUIs[iUI]->Create( NULL, 0, 0, MSGBOXL_WIDTH, MSGBOXL_HEIGHT );
+		((CUIMessageBoxL *)m_apUIs[iUI])->SetUIIndex( iUI );
+	}
+
+	// Login
+	m_apUIs[UI_LOGIN] = new CUILogin;
+	m_apUIs[UI_LOGIN]->Create( NULL, 0, 0, LOGIN_WIDTH, LOGIN_HEIGHT );
+
+	// Select Server
+	m_apUIs[UI_SEL_SERVER] = new CUISelectServer;
+	m_apUIs[UI_SEL_SERVER]->Create( NULL, 0, 0, SELECTSERVER_WIDTH, SELECTSERVER_HEIGHT );
+
+	// Create character
+	m_apUIs[UI_CREATE_CHAR] = new CUICreateChar;
+	m_apUIs[UI_CREATE_CHAR]->Create( NULL, 0, 0, 0, 0 );
+
+	// Select character
+	m_apUIs[UI_SEL_CHAR] = new CUISelChar;
+	m_apUIs[UI_SEL_CHAR]->Create( NULL, 0, 0, SELCHAR_WIDTH, SELCHAR_HEIGHT );
+	
+	// wooss 050819
+	// UI cash shop
+	m_apUIs[UI_CASH_SHOP] = new CUICashShop;//CASHSHOP_WIDTH,CASHSHOP_HEIGHT
+	m_apUIs[UI_CASH_SHOP]->Create(NULL, 0, 0, 698,CASHSHOP_HEIGHT);
+	
+// [KH_070420]	추가
+	m_apUIs[UI_SIMPLE_POP] = new CUISimplePop;
+	m_apUIs[UI_SIMPLE_POP]->Create(NULL, 0, 0, 0, 0);
+	
+	// WSS_MINIGAME 070418 --------------------------------------------->>
+	// UI MINIGAME
+	m_apUIs[UI_MINIGAME] = new CUIMinigame;//CASHSHOP_WIDTH,CASHSHOP_HEIGHT
+	m_apUIs[UI_MINIGAME]->Create(NULL, 0, 0, MINIGAME_WIDTH,MINIGAME_HEIGHT);
+	// -----------------------------------------------------------------<<
+
+	// UI FlowerTree
+	m_apUIs[UI_FLOWERTREE] = new CUIFlowerTree;
+	m_apUIs[UI_FLOWERTREE]->Create(NULL, 0, 0, FLOWERTREE_WIDTH, FLOWERTREE_HEIGHT);
+	
+	// WSS_NEW_GUILD_SYSTEM --------------------------------------------------->>
+	// UI Guild Notice 
+	m_apUIs[UI_GUILD_NOTICE] = new CUIGuildNotice;
+	m_apUIs[UI_GUILD_NOTICE]->Create(NULL, 0, 0, GUILD_NOTICE_WIDTH, GUILD_NOTICE_HEIGHT);
+	// ------------------------------------------------------------------------<<
+	// ttos_080116 : 몬스터 콤보
+	m_apUIs[UI_MONSTER_COMBO] = new CUIMonsterCombo;
+	m_apUIs[UI_MONSTER_COMBO]->Create(NULL, 0, 0, UI_MONSTERCOMBO_WIDTH, UI_MONSTERCOMBO_HEIGHT);
+	// ------------------------------------------------------------------------<<
+
+	//[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
+	m_apUIs[UI_CHAT_FILTER] = new CUIChatFilter;
+	m_apUIs[UI_CHAT_FILTER]->Create( NULL, 0, 0, 250, 332);
+	// ------------------------------------------------------------------------<<
+	
 	SetTitleName( sam_bFullScreenActive, sam_iScreenSizeI, sam_iScreenSizeJ );
 
 	m_nShowMessageBox = -1;
-
-	m_ptdAniBG = _pTextureStock->Obtain_t( CTString( "Data\\Interface\\CommonBtn.tex" ) );
-	fTexWidth  = m_ptdAniBG->GetWidth();
-	fTexHeight = m_ptdAniBG->GetHeight();
-
-	m_AniBackGround.AddRectSurface(UIRect(0,0,20,20), UIRectUV(0,137,20,157,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(20,0,206,20), UIRectUV(20,137,121,157,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(206,0,226,20), UIRectUV(121,137,141,157,fTexWidth,fTexHeight));
-
-	m_AniBackGround.AddRectSurface(UIRect(0,20,20,206), UIRectUV(0,157,20,207,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(20,20,206,206), UIRectUV(20,157,121,207,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(206,20,226,206), UIRectUV(121,157,141,207,fTexWidth,fTexHeight));
-
-	m_AniBackGround.AddRectSurface(UIRect(0,206,20,226), UIRectUV(0,207,20,227,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(20,206,206,226), UIRectUV(20,207,121,227,fTexWidth,fTexHeight));
-	m_AniBackGround.AddRectSurface(UIRect(206,206,226,226), UIRectUV(121,207,141,227,fTexWidth,fTexHeight));
-	
-	CUISkillToolTip::getSingleton()->initialize();
-
-	MsgBoxMgr* pMsgMgr = MsgBoxMgr::getSingleton();
-	pMsgMgr->Initialize();
-
-	CLoadingImage::getSingleton()->initialize();		
-}
-
-void CUIManager::InitUIString()
-{
-	// Load string data
-	CTFileName	fnmStringData;
-
-	CTFileName	fnmHelp1Data;
-
-	CTString	strFullPath = _fnmApplicationPath.FileDir();
-	CTString	strImmoralWordList;	// 이기환 추가 ( 11.29 )
-	CTString	strImmoralCharacter;	// Date : 2005-02-16,   By Lee Ki-hwan
-	CTString	strChatFilter;
-	CTString	strLocalPath = strFullPath;
-	strLocalPath += "Local\\";
-	strLocalPath += DefHelp::getNationPostfix(g_iCountry, true);
-	strLocalPath += "\\String\\";
-
-
-	strChatFilter = strLocalPath + "CharacterChatFilter.dat";
-
-	strImmoralWordList = strLocalPath + "ImmoralWord";
-	strImmoralWordList += DefHelp::getNationPostfix(g_iCountry) + ".dat";
-	strImmoralCharacter = strLocalPath + "ImmoralCharacterName";
-	strImmoralCharacter += DefHelp::getNationPostfix(g_iCountry) + ".dat";
-
-	fnmStringData = strLocalPath + "\\strClient";
-	fnmStringData += DefHelp::getNationPostfix(g_iCountry);
-	fnmStringData += ".lod";
-
-	LoadStringData( fnmStringData );
-
-	fnmHelp1Data = strFullPath + "data\\Help1.dta";
-	LoadHelp1Data( fnmHelp1Data );
-	LoadHelp1String();
-
-	BOOL tFilter = TRUE;
-	// 이기환 추가 ( 04.11.29 )
-	tFilter &= _UIFiltering.Create( strImmoralWordList.str_String );
-	// Date : 2005-02-16,   By Lee Ki-hwan
-	tFilter &= _UIFilteringCharacter.Create ( strImmoralCharacter.str_String );
-	tFilter &= _UICharacterChatFilter.Create( strChatFilter.str_String, true );
-
-	//---------------------------------------------------------------------->>
-	// Name :
-	// Desc : 필터링 파일이 존재하지 않거나 훼손 됐을 경우 게임 종료
-	// Date : [6/27/2006] , Wooss
-	//----------------------------------------------------------------------<<
-	if (tFilter == FALSE)
-	{
-		ENGINE_API extern char *g_szExitError ;
-		if(g_szExitError) delete[] g_szExitError;
-		g_szExitError = new char[2048];
-		strcpy(g_szExitError, CTString("ErrorCode : 626"));
-		_pGameState->Running() = FALSE;
-		_pGameState->QuitScreen() = FALSE;	
-	}
-
-	// Button texture
-	_pUIBtnTexMgr = new CUIButtonTextureManager;
-	_pUIBtnTexMgr->Create();
-	// Font texture
-	_pUIFontTexMgr = new CUIFontTextureManager;
-	_pUIFontTexMgr->Create();
 }
 
 // ----------------------------------------------------------------------------
 // Name : Destroy()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::DestroyAll()
+void CUIManager::Destroy()
 {
 	// Popup texture
-	STOCK_RELEASE( m_ptdPopupTexture );
-	STOCK_RELEASE( m_ptBlackTexture );
-	STOCK_RELEASE(m_ptdExpeditionTexture);
-	STOCK_RELEASE( m_ptdAniBG );
+	if( m_ptdPopupTexture )
+	{
+		_pTextureStock->Release( m_ptdPopupTexture );
+		m_ptdPopupTexture = NULL;
+	}
+
+	if( m_ptBlackTexture )
+	{
+		_pTextureStock->Release( m_ptBlackTexture );
+		m_ptBlackTexture = NULL;
+	}
 
 	if( _bWorldEditorApp )
 		return;
@@ -584,28 +919,49 @@ void CUIManager::DestroyAll()
 	m_pGame = NULL;
 
 	// Button texture
-	SAFE_DELETE( _pUIBtnTexMgr );
+	if( _pUIBtnTexMgr )
+	{
+		delete _pUIBtnTexMgr;
+		_pUIBtnTexMgr = NULL;
+	}
 
 	// Text texture
-	SAFE_DELETE( _pUIFontTexMgr );
+	if( _pUIFontTexMgr )
+	{
+		delete _pUIFontTexMgr;
+		_pUIFontTexMgr = NULL;
+	}
 
 	// Buff
-	SAFE_DELETE( _pUIBuff );
+	if( _pUIBuff )
+	{
+		delete _pUIBuff;
+		_pUIBuff = NULL;
+	}
 
 	// UIs
 	for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 	{
 		if( m_apUIs[iUI] )
 		{
+			m_apUIs[iUI]->Destroy();
 			delete m_apUIs[iUI];
 			m_apUIs[iUI] = NULL;
 		}
 	}
 
-	SAFE_DELETE( _UISignBoard );
+	if ( _UISignBoard != NULL )
+	{
+		delete _UISignBoard;
+		_UISignBoard = NULL;
+	}
 
 	// Date : 2005-01-10,   By Lee Ki-hwan : 
-	SAFE_DELETE( _UIAutoHelp );
+	if ( _UIAutoHelp != NULL )
+	{
+		delete _UIAutoHelp;
+		_UIAutoHelp = NULL;
+	}
 
 	// Strings
 	m_aStringData.Clear();
@@ -617,9 +973,17 @@ void CUIManager::DestroyAll()
 		delete m_pumcMouseCursor;
 		 m_pumcMouseCursor = NULL;
 	}
+}
 
-	MsgBoxMgr::getSingleton()->DestroyAll();
-	MsgBoxMgr::destroy();
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : *pWorld - 
+//-----------------------------------------------------------------------------
+void CUIManager::SetBackgroundWorld(CWorld *pWorld)
+{
+	// NOTE : 카메라 설정 때문에 필요한 부분.
+	GetSelChar()->SetBackgroundWorld(pWorld);
+	GetCreateChar()->SetBackgroundWorld(pWorld);
 }
 
 void CUIManager::SetGameHandle(CGame *pGame)
@@ -632,7 +996,7 @@ void CUIManager::SetGameHandle(CGame *pGame)
 // Name : CreateMessageBox()
 // Desc :
 // ----------------------------------------------------------------------------
-BOOL CUIManager::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, int nPosY )
+void CUIManager::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, int nPosY )
 {
 	// Create message box
 	for( int iUI = UI_MESSAGEBOX_START; iUI < UI_MESSAGEBOX_END; iUI++ )
@@ -640,11 +1004,9 @@ BOOL CUIManager::CreateMessageBox( CUIMsgBox_Info &rMsgBoxInfo, int nPosX, int n
 		if( !m_apUIs[iUI]->IsEnabled() )
 		{
 			((CUIMessageBox *)m_apUIs[iUI])->CreateMessageBox( rMsgBoxInfo, nPosX, nPosY );
-			return TRUE;
+			break;
 		}
 	}
-
-	return FALSE;
 }
 
 // ----------------------------------------------------------------------------
@@ -699,26 +1061,10 @@ CUIMessageBox* CUIManager::GetMessageBox( int nCommandCode )
 }
 
 // ----------------------------------------------------------------------------
-// Name : GetMessageBoxL()
-// Desc :
-// ----------------------------------------------------------------------------
-CUIMessageBoxL* CUIManager::GetMessageBoxL( int nCommandCode )
-{
-	// Find message box and return result
-	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
-	{
-		if( m_apUIs[iUI]->IsEnabled() &&
-			((CUIMessageBoxL *)m_apUIs[iUI])->GetCmdCode() == nCommandCode )
-			return (CUIMessageBoxL *)m_apUIs[iUI];
-	}
-	return NULL;
-}
-
-// ----------------------------------------------------------------------------
 // Name : CreateMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	// Create message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -735,7 +1081,7 @@ void CUIManager::CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int 
 // Name : CloseMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
+void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
 {
 	// Find message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -748,7 +1094,11 @@ void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTStr
 			else
 			{
 				CTString strTemp;
-				strTemp.PrintF("%s %s", (const char*)strPrefix, (const char*)strMessage);
+#ifndef NEW_QUESTBOOK
+				strTemp.PrintF("%d. %s", ((CUIMessageBoxL *)m_apUIs[iUI])->GetCurNum()++, strMessage);				
+#else
+				strTemp.PrintF("%s %s", strPrefix, strMessage);
+#endif				
 				((CUIMessageBoxL *)m_apUIs[iUI])->AddSelString( strTemp, colDesc, iValue );
 			}
 			break;
@@ -803,29 +1153,7 @@ void CUIManager::ResetUIPos( CDrawPort *pdp )
 	m_pixMaxJ = pdp->dp_MaxJ;
 
 	for( int iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-	{
-		if (m_apUIs[iUI] == NULL)
-			continue;
-
 		m_apUIs[iUI]->ResetPosition( m_pixMinI, m_pixMinJ, m_pixMaxI, m_pixMaxJ );
-		m_apUIs[iUI]->updatePosition(true);
-	}
-}
-
-void CUIManager::ResetUISavePos( CDrawPort *pdp )
-{
-	m_pixMinI = pdp->dp_MinI;
-	m_pixMinJ = pdp->dp_MinJ;
-	m_pixMaxI = pdp->dp_MaxI;
-	m_pixMaxJ = pdp->dp_MaxJ;
-
-	for( int iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-	{
-		if (m_apUIs[iUI] == NULL)
-			continue;
-
-		m_apUIs[iUI]->ResetSavePosition( m_pixMinI, m_pixMinJ, m_pixMaxI, m_pixMaxJ );
-	}
 }
 
 // ----------------------------------------------------------------------------
@@ -843,16 +1171,8 @@ void CUIManager::AdjustUIPos( CDrawPort *pdp )
 		m_pixMaxJ = pdp->dp_MaxJ;
 
 		for( int iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-		{
-			if (m_apUIs[iUI] == NULL)
-				continue;
-
 			m_apUIs[iUI]->AdjustPosition( m_pixMinI, m_pixMinJ, m_pixMaxI, m_pixMaxJ );
-			m_apUIs[iUI]->updatePosition(true);
-		}
 	}
-
-	m_bMouseInsideUIs = FALSE;
 }
 
 // ----------------------------------------------------------------------------
@@ -864,17 +1184,13 @@ void CUIManager::InsertCommaToString( CTString &strCount )
 	char	szCount[256];
 	int		iChar = 0, iCharTemp = 0, ctComma = 0;
 	int		nLength = strCount.Length();
-
 	for( int iChiper = nLength; iChiper > 0; iChiper-- )
 	{
 		szCount[iChar++] = strCount[iCharTemp++];
 		if( ( iChiper % 3 ) == 1 && iChiper > 1 )
 		{
-			if (szCount[iChar - 1] != '-')
-			{
-				szCount[iChar++] = ',';
-				ctComma++;
-			}
+			szCount[iChar++] = ',';
+			ctComma++;
 		}
 	}
 	szCount[nLength + ctComma] = NULL;
@@ -937,71 +1253,64 @@ COLOR CUIManager::GetNasColor( CTString strNas )
 
 	szCount[++iChar] = NULL;
 
-	llNas = _atoi64( szCount );
+	llNas = atoi( szCount );
 
 	return GetNasColor( llNas );
 }
 
-//------------------------------------------------------------------------------
-// CUIManager::NasNumToWord
-// Explain:  나스의 금액에 따라서 단위를 나누어서 출력시켜줌
-// Date : 2009-02-18,Author: sora
-//------------------------------------------------------------------------------
 CTString CUIManager::NasNumToWord(SQUAD llNas)
 {
 	CTString strNasString = "";
 	CTString strTemp;
 
-	//switch(g_iCountry)
-	#if defined G_KOR
-	//{
-	//	case KOREA:
-		//{
-		int nQuotient = llNas / 100000000;
-		int nRemain = llNas % 100000000;
-		if(nQuotient > 0)
+	switch(g_iCountry)
+	{
+		case KOREA:
 		{
-			strTemp.PrintF("%d억", nQuotient);
-			strNasString += strTemp;
-		}
-		
-		if(nRemain > 0)
-		{
-			nQuotient = nRemain / 10000;
-			nRemain = nRemain % 10000;
+			int nQuotient = llNas / 100000000;
+			int nRemain = llNas % 100000000;
 			if(nQuotient > 0)
 			{
-				if(nRemain > 0)
+				strTemp.PrintF("%d억", nQuotient);
+				strNasString += strTemp;
+			}
+			
+			if(nRemain > 0)
+			{
+				nQuotient = nRemain / 10000;
+				nRemain = nRemain % 10000;
+
+				if(nQuotient > 0)
 				{
-					strTemp.PrintF("%d만%d", nQuotient, nRemain);
+					if(nRemain > 0)
+					{
+						strTemp.PrintF("%d¸¸%d", nQuotient, nRemain);
+					}
+					else
+					{
+						strTemp.PrintF("%d¸¸", nQuotient);
+					}
 				}
 				else
 				{
-					strTemp.PrintF("%d만", nQuotient);
+					if(nRemain > 0)
+					{
+						strTemp.PrintF("%d", nRemain);
+					}
 				}
-			}
-			else
-			{
-				if(nRemain > 0)
-				{
-					strTemp.PrintF("%d", nRemain);
-				}
-			}
-			strNasString += strTemp;
+				strNasString += strTemp;
 
+			}
 		}
-	//}
-	//	break;
+		break;
 
-	//	default: //국내만 단위를 나누어서 출력, 다른국가는 콤마로 구분
-	#else
+		default: //국내만 단위를 나누어서 출력, 다른국가는 콤마로 구분
 		{
 			strNasString.PrintF("%I64d", llNas);
-			InsertCommaToString( strNasString );
+			_pUIMgr->InsertCommaToString( strNasString );
 		}
-	#endif
-		//break;
-	//}
+		break;
+	}
 
 	return strNasString;
 }
@@ -1014,16 +1323,6 @@ void CUIManager::Render( CDrawPort *pdp, CProjection3D* pprProjection )
 {
 	m_pUIDrawPort = pdp;
 
-	CBackImageManager::getSingleton()->Render(pdp);
-
-	//if(g_iCountry == RUSSIA)
-#if defined G_RUSSIA
-	{			
-		m_pUIDrawPort->SetFont(_pfdDefaultFont);
-		m_pUIDrawPort->SetTextMode(-1);
-	}
-#endif
-
 	// If UIs are not shown
 	if( !m_bShowUIs )
 		return;
@@ -1035,7 +1334,7 @@ void CUIManager::Render( CDrawPort *pdp, CProjection3D* pprProjection )
 		CPrintF( "ClearAllDamageEffect\n" );
 		llOldTime = llElapsedTime;
 
-		if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY )
+		if( m_ugsGameState == UGS_GAMEON )
 		{
 			ClearDamageData();
 		}	
@@ -1046,7 +1345,7 @@ void CUIManager::Render( CDrawPort *pdp, CProjection3D* pprProjection )
 	FLOAT	fMipmapBias = GetOption()->GetTextureQuality( 2 );
 	gfxSetTextureBiasing( fMipmapBias );
 
-	if( STAGEMGR()->GetCurStage() == eSTAGE_ZONELOADING )
+	if( m_ugsGameState == UGS_GAMELOADING )
 	{
 		m_pUIDrawPort->InitTextureData( m_ptBlackTexture );
 		
@@ -1062,167 +1361,55 @@ void CUIManager::Render( CDrawPort *pdp, CProjection3D* pprProjection )
 	else
 		RenderObjectIndexPopup( pprProjection );
 
-	SetDamageState();
+	_pUIMgr->SetDamageState();
 
 	// Render UIs
 	for( INDEX iUI = UI_TYPE_END - 1; iUI >= UI_TYPE_START; iUI-- )
 	{
 		INDEX	iCurUI = m_aUIOrder[iUI];
-		if( m_apUIs[iCurUI] != NULL &&
-			m_apUIs[iCurUI]->IsEnabled() && m_apUIs[iCurUI]->IsVisible() )
-		{
+		if( m_apUIs[iCurUI]->IsEnabled() && m_apUIs[iCurUI]->IsVisible() ){
 			if(iCurUI>=UI_MESSAGEBOX_START)
-			{
-				if(DoesMessageBoxLExist(MSGLCMD_QUEST_REQ)||
-					DoesMessageBoxLExist(MSGLCMD_EVENT_2PAN4PAN_ONE)||
-					DoesMessageBoxLExist(MSGLCMD_EVENT_2PAN4PAN_TWO)||
-					DoesMessageBoxExist(MSGCMD_ASK_ONE_FIVE)||
-					DoesMessageBoxExist(MSGCMD_ASK_ONE_FOUR)||
-					DoesMessageBoxExist(MSGCMD_ASK_TWO_OPEN))
-				{
+				if(_pUIMgr->DoesMessageBoxLExist(MSGLCMD_QUEST_REQ)||
+					_pUIMgr->DoesMessageBoxLExist(MSGLCMD_EVENT_2PAN4PAN_ONE)||
+					_pUIMgr->DoesMessageBoxLExist(MSGLCMD_EVENT_2PAN4PAN_TWO)||
+					_pUIMgr->DoesMessageBoxExist(MSGCMD_ASK_ONE_FIVE)||
+					_pUIMgr->DoesMessageBoxExist(MSGCMD_ASK_ONE_FOUR)||
+					_pUIMgr->DoesMessageBoxExist(MSGCMD_ASK_TWO_OPEN)){
 
 					// 051104 npc에 의해 생성된 창을 거리가 멀어지면 지워준다
 					// Check distance
-					FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - GetQuest()->GetNpcPosX();
-					FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - GetQuest()->GetNpcPosZ();
-					if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
-					{
-						GetQuest()->CloseQuest();
+					FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - _pUIMgr->GetQuest()->GetNpcPosX();
+					FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - _pUIMgr->GetQuest()->GetNpcPosZ();
+					if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST ){
+						_pUIMgr->GetQuest()->CloseQuest();
 						continue;
 					}
 				}
-
-				if(DoesMessageBoxLExist(MSGLCMD_AUCTION))
-				{
-					if(GetAuction()->IsFarNPC())
-						CloseMessageBoxL(MSGLCMD_AUCTION);
-				}
-
-				if(DoesMessageBoxLExist(MSGLCMD_WAREHOUSE_REQ))
-				{
-					if (GetWareHouse()->GetUseCashRemote() == false)
-					{
-						FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - GetWareHouse()->GetNpcPosX();
-						FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - GetWareHouse()->GetNpcPosZ();
-						if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
-						{
-							CloseMessageBoxL(MSGLCMD_WAREHOUSE_REQ);
-							continue;
-						}
-					}
-				}				
-			}
-
-			if (isCreateVisible(UI_AUCTION) == true)
-			{
-				if (GetAuction()->IsFarNPC())
-					GetAuction()->CloseAuction();
-			}
-			// [7/29/2009 rumist] 특정 거리를 벗어나면 창 닫기 옵션. 
-			if( GetAffinity()->IsOpenUI() )
-			{
-				FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - GetAffinity()->GetNPCPosX();
-				FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - GetAffinity()->GetNPCPosZ();
-				if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST ){
-					GetAffinity()->CloseAllUI();
-					continue;
-				}
-			}
-			// close UI automatically. [6/16/2010 rumist]
-			if( GetSocketSystem()->IsOpenedUI() )
-			{
-				FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - GetSocketSystem()->GetNPCPosX();
-				FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - GetSocketSystem()->GetNPCPosZ();
-				if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST ){
-					GetSocketSystem()->absCloseAllUI();
-					CTString strMessage;
-					strMessage.PrintF( _S( 322, "거리가 멀어서 사용할 수 없습니다.") );
-					_pNetwork->ClientSystemMessage(strMessage, SYSMSG_ERROR);
-					continue;
-				}
-			}
+			 
 			m_apUIs[iCurUI]->Render();
 
-			// 새로운 방식 
-			m_apUIs[iCurUI]->Render(pdp);
-
 		}
 	}
 
-	// MSG Box Render;
-	MSGBOXMGR()->Render(pdp);
-
-	CUIBase* pUI = CUIFocus::getSingleton()->getUI();
-	if (pUI)
-		pUI->Render(pdp);
-
-	CUITooltipMgr::getSingleton()->Render(pdp);
-	CUISkillToolTip::getSingleton()->Render(pdp);
-
-	//----------------------------------------------------------------------
-	
-	// Post Render UIs
-	for( INDEX jUI = UI_TYPE_END - 1; jUI >= UI_TYPE_START; jUI-- )
-	{
-		INDEX	iCurUI = m_aUIOrder[jUI];
-		if( m_apUIs[iCurUI] != NULL &&
-			m_apUIs[iCurUI]->IsEnabled() && m_apUIs[iCurUI]->IsVisible() )
-		{
-			
-			m_apUIs[iCurUI]->PostRender();
-			
-		}
-	}
-
-	if ( IsShowAni() )
-	{
-		HUD_DrawItemModel();
-	}
 	_UISignBoard->Render();
 	_UIAutoHelp->Render();
 	_UIAutoHelp->RenderGMNotice();
-	GetCombo()->SysStateRender();
-	
+	_pUIMgr->GetCombo()->SysStateRender();
 
-//	if(g_iCountry == KOREA) 
-#if defined G_KOR
-		_UIAutoHelp->ClassificationShowRender();
-#endif
-
-	if (m_pIconDrag != NULL)
+	if( !m_btnHoldBtn.IsEmpty() )
 	{
-		int		ox, oy;
-		m_pIconDrag->GetPos(ox, oy);
-		m_pIconDrag->SetPos(m_nDragX, m_nDragY);
-		CUIBase* pParent = m_pIconDrag->getParent();
-		m_pIconDrag->setParent(NULL);
-		m_pIconDrag->Render(pdp);
-		m_pIconDrag->setParent(pParent);
-		m_pIconDrag->SetPos(ox, oy);
-	}
+		// Render holding button
+		m_btnHoldBtn.Render();
 
-	if (m_pBaseDrag != NULL)
-	{
-		int		ox, oy;
-		m_pBaseDrag->GetPos(ox, oy);
-		m_pBaseDrag->SetPos(m_nDragX, m_nDragY);
-		CUIBase* pParent = m_pBaseDrag->getParent();
-		m_pBaseDrag->setParent(NULL);
-		m_pBaseDrag->Render(pdp);
-		m_pBaseDrag->setParent(pParent);
-		m_pBaseDrag->SetPos(ox, oy);
+		// Render all button elements
+		m_pUIDrawPort->FlushBtnRenderingQueue( m_btnHoldBtn.GetBtnType() );
 	}
 
 	// Render cursor
 	if( !m_bRButtonDown )
 	{
 		if( m_bMouseInsideUIs )
-		{
-			if (!g_web.GetWebHandle())
-			{
-				GetMouseCursor()->SetCursorType( m_umctTypeInUI );
-			}
-		}
+			GetMouseCursor()->SetCursorType( m_umctTypeInUI );
 		else
 			m_umctTypeInUI = UMCT_NORMAL;
 	}
@@ -1237,9 +1424,9 @@ void CUIManager::Render( CDrawPort *pdp, CProjection3D* pprProjection )
 // Desc : Character, npc and item must use ska...
 // ----------------------------------------------------------------------------
 void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
-{	
+{
 	// If game state is not on game
-	if( STAGEMGR()->GetCurStage() != eSTAGE_GAMEPLAY || _pInput->inp_bFreeMode )
+	if( m_ugsGameState != UGS_GAMEON )
 		return;
 	extern INDEX	g_iShowName;
 	extern INDEX	g_iShowNameItem;
@@ -1247,7 +1434,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		return;
 
 	// Blinking name popup for pk
-	static bool		bHideName = TRUE;
+	static BOOL		bHideName = TRUE;
 	static __int64	llOldTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 	static __int64	llElapsedTime = 0;
 	__int64			llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
@@ -1262,19 +1449,17 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		}
 		while( llElapsedTime > 500 );
 	}
-
 	COLOR	colNameBlend;
 	if( bHideName ) colNameBlend = 0xFFFFFF00 | COLOR( 0x3C + 0xC3 * ( 1.0f - ( (FLOAT)llElapsedTime / 500.0f ) ) );
 	else colNameBlend = 0xFFFFFF00 | COLOR( 0x3C + 0xC3 * ( (FLOAT)llElapsedTime / 500.0f ) );
 
 	// Get font size
-	int	nBoxWidth = 0, nTextSX, nTextSY, nChatMsgLines, nShopMsgLines;
+	int	nBoxWidth, nTextSX, nTextSY, nChatMsgLines, nShopMsgLines;
 	int	nFontWidth = _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing();
 	int	nFontHeight = _pUIFontTexMgr->GetLineHeight();
 
 	CEntity			*penObject;
 	CTString		strName, strTemp;
-	CTString		myNick, otherNick;
 	CModelInstance	*pmi;
 	FLOAT3D			vObjectPos, vViewPos, vPopupPos, vObjCenter;
 	FLOATaabbox3D	boxModel;
@@ -1284,19 +1469,1120 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	FLOAT			fSqrDistanceItem = g_iShowNameItem * OPTION_NAME_DISTANCE;
 	fSqrDistance *= fSqrDistance;
 	fSqrDistanceItem *= fSqrDistanceItem;
-	UtilHelp* pHelp = UtilHelp::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-
-	if (pHelp == NULL)
-		return;
-
-	int				nMySyndiType = _pNetwork->MyCharacterInfo.iSyndicateType;
 
 	////////////////////////////////////////////////////////////////////////
 	// Show name of npc
 	if( g_iShowName > 0 )
 	{
-		ACTORMGR()->DrawObjectName(m_pUIDrawPort, pprProjection, colNameBlend, bHideName);
+		INDEX	ctMob = _pNetwork->ga_srvServer.srv_amtMob.Count();
+		for( INDEX iObj = 0; iObj < ctMob; iObj++ ) 
+		{
+			// Get target mob
+			CMobTarget	&mt = _pNetwork->ga_srvServer.srv_amtMob[iObj];
+			CMobData& MD = _pNetwork->GetMobData(mt.mob_iType);
+			// WSS_DRATAN_SEIGEWARFARE 2007/08/23 ----------------->>
+			// 공성 진행시 부활진지 이름이 변하므로...
+			if(//_pUIMgr->GetSiegeWarfareNew()->GetWarState() && 
+			   //_pNetwork->MyCharacterInfo.sbJoinFlagDratan != WCJF_NONE &&
+				_pNetwork->MyCharacterInfo.sbAttributePos == ATTC_WAR )
+			{			
+				if(mt.mob_iType >=390 && mt.mob_iType <=399)
+					mt.mob_Name = MD.GetName();
+			}
+			// ----------------------------------------------------<<
+			// 콤보 바닥 이펙트 NPC 표시 안함
+			if (mt.mob_iType == 491) continue;
+			
+			penObject = mt.mob_pEntity;
+
+			ASSERT( penObject != NULL );
+			if( penObject == NULL )
+				continue;
+
+			if (penObject->IsFlagOff(ENF_ALIVE))
+			{
+				StopTargetEffect(mt.mob_Index);
+				continue;
+			}
+			
+			if (penObject->IsFlagOn(ENF_HIDDEN)&&
+				(CEntity::GetPlayerEntity(0)->IsFlagOff(ENF_SHOWHIDDEN) ||
+				(CEntity::GetPlayerEntity(0)->IsFlagOn(ENF_SHOWHIDDEN)&&!penObject->IsEnemy())))//ENF_SHOWHIDDEN이면 npc는 볼 수 있다.
+				continue;
+
+			vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+			{
+#ifdef TARGET_MARK
+				StopTargetEffect(mt.mob_Index);
+#endif
+				continue;
+			}
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			if(pmi == NULL)
+				continue;
+			ASSERT( pmi->GetName() != "" );
+			if( pmi->GetName() == "" )
+				continue;
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(mt.mob_Name)+13; //wooss 051017
+			else nBoxWidth = mt.mob_Name.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			COLOR colPopup =0xFFFFFFFF;
+			BOOL bTarget =FALSE;
+			BOOL bTargetEffect = TRUE;
+#ifdef TARGET_MARK
+			switch (mt.mob_iType)
+			{
+			case 484: case 486: // 크리스 마스 트리 
+				{//타겟 이펙트가 필요 없다.
+					bTargetEffect = FALSE;
+				}
+			}
+
+			if (bTargetEffect)
+			{
+				//타겟으로 잡고 있는 NPC의 경우...
+				if( mt.mob_pEntity == _pNetwork->_TargetInfo.pen_pEntity)
+				{
+					bTarget =TRUE;
+					if( mt.mob_bNPC )				//NPC일 경우 테두리를 노란색으로...
+					{
+						colPopup =0xFFFF00FF;
+						StartTargetEffect(mt.mob_Index, mt.mob_pEntity, FALSE);
+					}
+					else							//몹일 경우 테두리를 빨간색으로...
+					{
+						colPopup =0xFF0000FF;
+						StartTargetEffect(mt.mob_Index, mt.mob_pEntity, TRUE);
+					}
+				}
+				else
+					StopTargetEffect(mt.mob_Index);
+			}
+
+#endif
+
+			if( bTarget )
+			{
+				int iAddFrame =3;
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+			else
+			{
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+												m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+												m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+												m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+
+			// 내가 때렸을때 나오는 데미지???
+			ShowDamageList( vPopupPos, fPopupZ, mt.mob_iClientIndex );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+
+			if( mt.IsNPC() )
+			{
+				m_pUIDrawPort->PutTextCharEx( mt.mob_Name, 0, nTextSX, nTextSY,
+												GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			}
+			else
+			{
+				nLevelDiff = mt.mob_iLevel - _pNetwork->MyCharacterInfo.level;
+				if( nLevelDiff > 5 ) nColIndex = 0;
+				else if( nLevelDiff > 2 ) nColIndex = 1;
+				else if( nLevelDiff > -3 ) nColIndex = 2;
+				else if( nLevelDiff > -6 ) nColIndex = 3;
+				else nColIndex = 4;
+				m_pUIDrawPort->PutTextCharEx( mt.mob_Name, 0, nTextSX, nTextSY,
+												GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
+			}
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+		////////////////////////////////////////////////////////////////////////
+		// Show name of pet
+		INDEX	ctPet = _pNetwork->ga_srvServer.srv_actPet.Count();
+		for( iObj = 0; iObj < ctPet; iObj++ ) 
+		{
+			// Get target mob
+			CPetTarget	&pt = _pNetwork->ga_srvServer.srv_actPet[iObj];
+			penObject = pt.pet_pEntity;
+
+			ASSERT( penObject != NULL );
+			if( penObject == NULL )
+				continue;
+
+			// Invisibility
+			if( penObject->IsFlagOn(ENF_HIDDEN) )
+				continue;
+			vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+			{
+#ifdef TARGET_MARK				
+				StopTargetEffect(pt.pet_Index);
+#endif
+				continue;
+			}
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			if(pmi == NULL)
+				continue;
+			ASSERT( pmi->GetName() != "" );
+			if( pmi->GetName() == "" )
+				continue;
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			if( pt.pet_strNameCard.Length() >0)
+				nBoxWidth = pt.pet_strNameCard.Length() * nFontWidth + 13;
+			else
+				nBoxWidth = pt.pet_Name.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			//이름 팝업 테두리색
+			COLOR colPopup =0xFFFFFFFF;
+			BOOL bTarget =FALSE;
+			
+#ifdef TARGET_MARK
+			//타겟으로 잡고 있는 펫의 경우...
+			if( pt.pet_pEntity == _pNetwork->_TargetInfo.pen_pEntity )
+			{
+				bTarget =TRUE;
+
+				if( IsEnemy(&pt, PET) )			//펫의 주인이 적이면 테두리를 빨간색으로...
+				{
+					colPopup =0xFF0000FF;
+					StartTargetEffect(pt.pet_Index, pt.pet_pEntity, TRUE);
+				}
+				else							//펫의 주인이 적이 아니면 노란색으로...
+				{
+					colPopup =0xFFFF00FF;
+					StartTargetEffect(pt.pet_Index, pt.pet_pEntity, FALSE);
+				}
+			}
+			else
+				StopTargetEffect(pt.pet_Index);
+#endif
+
+			if( bTarget )
+			{
+				int iAddFrame =3;
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+			else
+			{
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+												m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+												m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+												m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+			
+			if( pt.pet_strNameCard.Length()>0)
+				m_pUIDrawPort->PutTextCharEx( pt.pet_strNameCard, 0, nTextSX, nTextSY,
+												GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			else
+				m_pUIDrawPort->PutTextCharEx( pt.pet_Name, 0, nTextSX, nTextSY,
+											GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+		////////////////////////////////////////////////////////////////////////
+		// Show name of Slave
+		INDEX	ctSlave = _pNetwork->ga_srvServer.srv_actSlave.Count();
+		for( iObj = 0; iObj < ctSlave; iObj++ ) 
+		{
+			// Get target mob
+			CSlaveTarget	&st = _pNetwork->ga_srvServer.srv_actSlave[iObj];
+			penObject = st.slave_pEntity;
+
+			ASSERT( penObject != NULL );
+			if( penObject == NULL )
+				continue;
+
+#ifdef SORCERER_SUMMON_VILLAGE_VISIBLE_NA_20081008
+			if (penObject->IsFlagOn(ENF_HIDDEN))
+				continue;
+#endif
+			vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+			{
+#ifdef TARGET_MARK
+				StopTargetEffect(st.slave_Index);
+#endif
+				continue;
+			}
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			if(pmi == NULL)
+				continue;
+			ASSERT( pmi->GetName() != "" );
+			if( pmi->GetName() == "" )
+				continue;
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			nBoxWidth = st.slave_Name.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			//이름 팝업 테두리색
+			COLOR colPopup =0xFFFFFFFF;
+			BOOL bTarget =FALSE;
+			
+#ifdef TARGET_MARK
+			//타겟으로 잡고 있는 소환수의 경우...
+			if( st.slave_pEntity== _pNetwork->_TargetInfo.pen_pEntity)
+			{
+				bTarget =TRUE;
+
+				if( IsEnemy(&st, SUMMON) )		//소환수의 주인이 적이면 테두리를 빨간색으로...
+				{
+					colPopup =0xFF0000FF;
+					StartTargetEffect( st.slave_Index, st.slave_pEntity, TRUE);
+				}
+				else							//소환수의 주인이 적이 아니면 노란색으로...
+				{
+					colPopup =0xFFFF00FF;
+					StartTargetEffect( st.slave_Index, st.slave_pEntity, FALSE);
+				}
+			}
+			else
+				StopTargetEffect(st.slave_Index);
+#endif
+
+			if( bTarget )
+			{
+				int iAddFrame =3;
+				
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+			else
+			{
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+												m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+												m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+												m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+
+			// 내가 때렸을때 나오는 데미지???
+			ShowDamageList( vPopupPos, fPopupZ, st.slave_iClientIndex );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+			
+			m_pUIDrawPort->PutTextCharEx( st.slave_Name, 0, nTextSX, nTextSY,
+											GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			
+			
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+		////////////////////////////////////////////////////////////////////////
+		// Show name of Wildpet
+		INDEX	ctWildPet = _pNetwork->ga_srvServer.srv_actWildPet.Count();
+		for( iObj = 0; iObj < ctWildPet; iObj++ ) 
+		{
+			// Get target mob
+			CWildPetInfo	&pt = _pNetwork->ga_srvServer.srv_actWildPet[iObj];
+			penObject = pt.pet_pEntity;
+
+			ASSERT( penObject != NULL );
+			if( penObject == NULL )
+				continue;
+
+			// Invisibility
+			if( penObject->IsFlagOn(ENF_HIDDEN) )
+				continue;
+			vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+			{
+	#ifdef TARGET_MARK				
+				StopTargetEffect(pt.m_nNetIndex);
+	#endif
+				continue;
+			}
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			if(pmi == NULL)
+				continue;
+			ASSERT( pmi->GetName() != "" );
+			if( pmi->GetName() == "" )
+				continue;
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			if( pt.m_strName.Length() >0)
+				nBoxWidth = pt.m_strName.Length() * nFontWidth + 13;
+			else
+				nBoxWidth = pt.m_strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			//이름 팝업 테두리색
+			COLOR colPopup =0xFFFFFFFF;
+			BOOL bTarget =FALSE;
+			
+	#ifdef TARGET_MARK
+			//타겟으로 잡고 있는 펫의 경우...
+			if( pt.pet_pEntity == _pNetwork->_TargetInfo.pen_pEntity )
+			{
+				bTarget =TRUE;
+
+				if( IsEnemy(&pt, WILDPET) )			//펫의 주인이 적이면 테두리를 빨간색으로...
+				{
+					colPopup =0xFF0000FF;
+					StartTargetEffect(pt.m_nNetIndex, pt.pet_pEntity, TRUE);
+				}
+				else							//펫의 주인이 적이 아니면 노란색으로...
+				{
+					colPopup =0xFFFF00FF;
+					StartTargetEffect(pt.m_nNetIndex, pt.pet_pEntity, FALSE);
+				}
+			}
+			else
+				StopTargetEffect(pt.m_nNetIndex);
+	#endif
+
+			if( bTarget )
+			{
+				int iAddFrame =3;
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+			else
+			{
+				// Add render regions
+				m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+												m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+												m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+												m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+			CTString temString;
+			temString.PrintF("%s",pt.m_strName);
+			
+			if( pt.m_strName.Length()>0)
+				m_pUIDrawPort->PutTextCharEx(/* pt.m_strName*/temString, 0, nTextSX, nTextSY,
+												GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			else
+				m_pUIDrawPort->PutTextCharEx(/* pt.m_strName*/temString, 0, nTextSX, nTextSY,
+											GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+	}
+
+	////////////////////////////////////////////////////////////////////////
+	// Show name of item
+	if( g_iShowNameItem > 0 )
+	{
+		INDEX	ctItem = _pNetwork->ga_srvServer.srv_aitItem.Count();
+		for( INDEX iObj = 0; iObj < ctItem; iObj++ ) 
+		{
+			// Get target mob
+			CItemTarget	&it = _pNetwork->ga_srvServer.srv_aitItem[iObj];
+			penObject = it.item_pEntity;
+
+			if( penObject == NULL )
+				continue;
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistanceItem )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			if(pmi == NULL)
+				continue;
+			ASSERT( pmi->GetName() != "" );
+			if( pmi->GetName() == "" )
+				continue;
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			COLOR colNas = GetTargetInfo()->GetNameColor( 2 );
+
+			// Get box region
+			if( it.item_llCount > 1 )
+			{
+				strTemp.PrintF( "%I64d", it.item_llCount );
+				InsertCommaToString( strTemp );
+				strName.PrintF( "%s(%s)", it.item_Name, strTemp );
+				colNas = _pUIMgr->GetNasColor(  it.item_llCount );
+			}
+			else
+			{
+				strName = it.item_Name;
+				//strName.TrimRightChar( '(' );
+			}
+
+			if(g_iCountry == THAILAND) 
+				nBoxWidth = FindThaiLen(strName)+13; //wooss 051017
+			else 
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+
+			BOOL bRare = IsRareItem( it.item_Name);
+
+			if( bRare )
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, RAREITEM_NAME_COLOR, fPopupZ );
+			else
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, colNas, fPopupZ );
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////
+	// Show name & chatting of character
+	INDEX	ctCha = _pNetwork->ga_srvServer.srv_actCha.Count();
+	for( INDEX iObj = 0; iObj < ctCha; iObj++ ) 
+	{
+		// Get target character
+		CCharacterTarget	&ct = _pNetwork->ga_srvServer.srv_actCha[iObj];
+		penObject = ct.cha_pEntity;
+		nChatMsgLines = ct.ChatMsg.GetCount();
+
+		// Invisibility buff
+		if( ct.cha_statusEffect.GetStatus() & ( 1L << EST_ASSIST_INVISIBLE ) )
+			continue;
+
+		ASSERT( penObject != NULL );
+		if( penObject == NULL )
+			continue;
+		vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+
+		// Test distance
+		fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+		fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+		fSqrDist = fX * fX + fZ * fZ;
+		if( nChatMsgLines == 0 && ct.cha_sbShopType == PST_NOSHOP &&
+			ct.GetPkState() == CHA_PVP_STATE_PEACE && fSqrDist > fSqrDistance )
+		{
+#ifdef TARGET_MARK
+			StopTargetEffect(ct.cha_Index);
+#endif
+			continue;
+		}
+
+		// Get frame box
+		pmi = penObject->GetModelInstance();
+		ASSERT( pmi != NULL );
+		if(pmi == NULL)
+			continue;
+		ASSERT( pmi->GetName() != "" );
+		if( pmi->GetName() == "" )
+			continue;
+		pmi->GetAllFramesBBox( boxModel );
+		boxModel.StretchByVector( pmi->mi_vStretch );
+		fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+		fRadius = fHeight * 0.5f;
+
+		// Frustum test
+		vObjCenter = vObjectPos;
+		vObjCenter(2) += fRadius;
+		pprProjection->PreClip( vObjCenter, vViewPos );
+		if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+			continue;
+
+		// Object point to screen point
+		vObjectPos(2) += fHeight;
+		pprProjection->PreClip( vObjectPos, vViewPos );
+		pprProjection->PostClip( vViewPos, vPopupPos );
+		fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+					* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+		// Get box region
+		if(g_iCountry == THAILAND) { //wooss 051017 캐릭터 이름창 길이 수정
+			nBoxWidth = FindThaiLen(ct.cha_strName);
+			if( (ct.GetPkState() == CHA_PVP_STATE_PEACE) && !ct.IsLegitimate() ) 
+				nBoxWidth += 13; 
+			else 
+				nBoxWidth += 27; 
+		}
+		else 
+		if( ct.GetPkState() == CHA_PVP_STATE_PEACE && !ct.IsLegitimate())
+			nBoxWidth = ct.cha_strName.Length() * nFontWidth + 13;
+		else
+			nBoxWidth = ct.cha_strName.Length() * nFontWidth + 27;
+		m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+		m_rcName.Right = m_rcName.Left + nBoxWidth;
+		m_rcName.Bottom = vPopupPos(2) - 7;
+		m_rcName.Top = m_rcName.Bottom - 15;
+		nPopupY = m_rcName.Top;
+
+		// Set popup texture
+		m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+		//이름 팝업 테두리색
+		COLOR colPopup =0xFFFFFFFF;
+		BOOL bTarget =FALSE;
+		int iAddFrame =0;
+#ifdef TARGET_MARK
+		//타겟으로 잡고 있는 캐릭터의 경우...
+		if( ct.cha_pEntity== _pNetwork->_TargetInfo.pen_pEntity)
+		{
+			bTarget = TRUE;
+			iAddFrame =3;
+
+			if( IsEnemy(&ct, CHARACTER) )	//캐릭터가 적이면 테두리를 빨간색으로...
+			{
+				colPopup =0xFF0000FF;
+				StartTargetEffect( ct.cha_Index, ct.cha_pEntity, TRUE);
+			}
+			else							//캐릭터가 적이 아니면 노란색으로...
+			{
+				colPopup =0xFFFF00FF;
+				StartTargetEffect( ct.cha_Index, ct.cha_pEntity, FALSE);
+			}
+		}
+		else
+			StopTargetEffect(ct.cha_Index);
+#endif
+		// Add render regions
+		if( ct.IsLegitimate() )
+		{
+			if( bTarget )
+			{
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 16, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameRDefPK2.U0, m_rtNameRDefPK2.V0, m_rtNameRDefPK2.U1, m_rtNameRDefPK2.V1, colPopup, fPopupZ );
+			}
+			m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 16, m_rcName.Bottom +iAddFrame,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+										m_rtNameRDefPK2.U0, m_rtNameRDefPK2.V0, m_rtNameRDefPK2.U1, m_rtNameRDefPK2.V1, colPopup, fPopupZ );
+		}
+		else if( ct.GetPkState() == CHA_PVP_STATE_PEACE )
+		{
+			if( bTarget )
+			{
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom+iAddFrame,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+			}
+			m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom+iAddFrame,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 2, m_rcName.Bottom +iAddFrame,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
+		}
+		else		// PK
+		{
+			if( ct.GetPkState() == CHA_PVP_STATE_RELEASE )
+				colPopup= colNameBlend;
+
+			if( bTarget )
+			{
+				m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 16, m_rcName.Bottom +iAddFrame,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+											m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colPopup, fPopupZ );
+			}
+
+			m_pUIDrawPort->AddTexture( m_rcName.Left -iAddFrame, m_rcName.Top -iAddFrame, m_rcName.Left + 2, m_rcName.Bottom +iAddFrame,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top -iAddFrame, m_rcName.Right - 16, m_rcName.Bottom +iAddFrame,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
+										m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colPopup, fPopupZ );
+		}
+
+		// Guild Name
+		if( ct.cha_lGuildIndex > 0)
+		{
+			if(g_iCountry == THAILAND) { //wooss 051017 캐릭터 이름창 길이 수정
+				nBoxWidth = FindThaiLen(ct.cha_strGuildName)+13; }
+			else 
+			nBoxWidth = ct.cha_strGuildName.Length() * nFontWidth + 13;		
+			m_rcGuildName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcGuildName.Right = m_rcGuildName.Left + nBoxWidth;			
+			m_rcGuildName.Bottom = nPopupY - 5;
+			m_rcGuildName.Top = (m_rcGuildName.Bottom - 1 * nFontHeight) - 4;
+			nPopupY = m_rcGuildName.Top;
+
+			m_pUIDrawPort->AddTexture( m_rcGuildName.Left, m_rcGuildName.Top, m_rcGuildName.Left + 2, m_rcGuildName.Bottom,
+				m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcGuildName.Left + 2, m_rcGuildName.Top, m_rcGuildName.Right - 2, m_rcGuildName.Bottom,
+				m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcGuildName.Right - 2, m_rcGuildName.Top, m_rcGuildName.Right, m_rcGuildName.Bottom,
+				m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// WSS_GUILDMASTER 070517 -------------------------->>
+#ifdef	DISPLAY_GUILD_RANK			
+			DrawGuildRankBox(m_rcGuildName,ct.cha_sbGuildRank,fPopupZ);			
+#endif
+			// -------------------------------------------------<<
+
+		}
+
+		nShopMsgLines = 0;
+		if( ct.cha_sbShopType != PST_NOSHOP )
+		{
+			nShopMsgLines = ct.ShopMsg.GetCount();
+			if(g_iCountry == THAILAND) { //wooss 051017 이름창 길이 수정
+				nBoxWidth = FindThaiLen(ct.ShopMsg.GetString(0)); }
+			else 
+			nBoxWidth = ct.ShopMsg.GetWidth();
+			m_rcShop.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcShop.Right = m_rcShop.Left + nBoxWidth;
+
+			if( ct.cha_sbShopType & PST_PREMIUM )
+			{
+				m_rcShop.Bottom = nPopupY - 18;
+				m_rcShop.Top = m_rcShop.Bottom - nShopMsgLines * nFontHeight;
+
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Top - 13, m_rcShop.Left, m_rcShop.Top,
+											m_rtShopPremLU.U0, m_rtShopPremLU.V0, m_rtShopPremLU.U1, m_rtShopPremLU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top - 13, m_rcShop.Right, m_rcShop.Top,
+											m_rtShopPremUp.U0, m_rtShopPremUp.V0, m_rtShopPremUp.U1, m_rtShopPremUp.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top - 13, m_rcShop.Right + 13, m_rcShop.Top,
+											m_rtShopPremRU.U0, m_rtShopPremRU.V0, m_rtShopPremRU.U1, m_rtShopPremRU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Top, m_rcShop.Left, m_rcShop.Bottom,
+											m_rtShopPremL.U0, m_rtShopPremL.V0, m_rtShopPremL.U1, m_rtShopPremL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top, m_rcShop.Right, m_rcShop.Bottom,
+											m_rtShopPremC.U0, m_rtShopPremC.V0, m_rtShopPremC.U1, m_rtShopPremC.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top, m_rcShop.Right + 13, m_rcShop.Bottom,
+											m_rtShopPremR.U0, m_rtShopPremR.V0, m_rtShopPremR.U1, m_rtShopPremR.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Bottom, m_rcShop.Left, m_rcShop.Bottom + 13,
+											m_rtShopPremLL.U0, m_rtShopPremLL.V0, m_rtShopPremLL.U1, m_rtShopPremLL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Bottom, m_rcShop.Right, m_rcShop.Bottom + 13,
+											m_rtShopPremLo.U0, m_rtShopPremLo.V0, m_rtShopPremLo.U1, m_rtShopPremLo.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Bottom, m_rcShop.Right + 13, m_rcShop.Bottom + 13,
+											m_rtShopPremRL.U0, m_rtShopPremRL.V0, m_rtShopPremRL.U1, m_rtShopPremRL.V1, 0xFFFFFFFF, fPopupZ );
+
+				nPopupY = m_rcShop.Top - 8;
+			}
+			else
+			{
+				m_rcShop.Bottom = nPopupY - 10;
+				m_rcShop.Top = m_rcShop.Bottom - nShopMsgLines * nFontHeight;
+
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Top - 5, m_rcShop.Left, m_rcShop.Top,
+											m_rtShopLU.U0, m_rtShopLU.V0, m_rtShopLU.U1, m_rtShopLU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top - 5, m_rcShop.Right, m_rcShop.Top,
+											m_rtShopUp.U0, m_rtShopUp.V0, m_rtShopUp.U1, m_rtShopUp.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top - 5, m_rcShop.Right + 5, m_rcShop.Top,
+											m_rtShopRU.U0, m_rtShopRU.V0, m_rtShopRU.U1, m_rtShopRU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Top, m_rcShop.Left, m_rcShop.Bottom,
+											m_rtShopL.U0, m_rtShopL.V0, m_rtShopL.U1, m_rtShopL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top, m_rcShop.Right, m_rcShop.Bottom,
+											m_rtShopC.U0, m_rtShopC.V0, m_rtShopC.U1, m_rtShopC.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top, m_rcShop.Right + 5, m_rcShop.Bottom,
+											m_rtShopR.U0, m_rtShopR.V0, m_rtShopR.U1, m_rtShopR.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Bottom, m_rcShop.Left, m_rcShop.Bottom + 5,
+											m_rtShopLL.U0, m_rtShopLL.V0, m_rtShopLL.U1, m_rtShopLL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Bottom, m_rcShop.Right, m_rcShop.Bottom + 5,
+											m_rtShopLo.U0, m_rtShopLo.V0, m_rtShopLo.U1, m_rtShopLo.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Bottom, m_rcShop.Right + 5, m_rcShop.Bottom + 5,
+											m_rtShopRL.U0, m_rtShopRL.V0, m_rtShopRL.U1, m_rtShopRL.V1, 0xFFFFFFFF, fPopupZ );
+
+				nPopupY = m_rcShop.Top;
+			}
+		}
+
+		if( nChatMsgLines > 0 )
+		{
+			if(g_iCountry == THAILAND) { //wooss 051017 이름창 길이 수정
+				nBoxWidth = FindThaiLen(ct.ChatMsg.GetString(0)); }
+			else 
+			nBoxWidth = ct.ChatMsg.GetWidth();
+			m_rcChat.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcChat.Right = m_rcChat.Left + nBoxWidth;
+			m_rcChat.Bottom = nPopupY - 10;
+			m_rcChat.Top = m_rcChat.Bottom - nChatMsgLines * nFontHeight;
+			nPopupY = m_rcChat.Top;
+
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Top - 5, m_rcChat.Left, m_rcChat.Top,
+										m_rtChatLU.U0, m_rtChatLU.V0, m_rtChatLU.U1, m_rtChatLU.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Top - 5, m_rcChat.Right, m_rcChat.Top,
+										m_rtChatUp.U0, m_rtChatUp.V0, m_rtChatUp.U1, m_rtChatUp.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Top - 5, m_rcChat.Right + 5, m_rcChat.Top,
+										m_rtChatRU.U0, m_rtChatRU.V0, m_rtChatRU.U1, m_rtChatRU.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Top, m_rcChat.Left, m_rcChat.Bottom,
+										m_rtChatL.U0, m_rtChatL.V0, m_rtChatL.U1, m_rtChatL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Top, m_rcChat.Right, m_rcChat.Bottom,
+										m_rtChatC.U0, m_rtChatC.V0, m_rtChatC.U1, m_rtChatC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Top, m_rcChat.Right + 5, m_rcChat.Bottom,
+										m_rtChatR.U0, m_rtChatR.V0, m_rtChatR.U1, m_rtChatR.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Bottom, m_rcChat.Left, m_rcChat.Bottom + 5,
+										m_rtChatLL.U0, m_rtChatLL.V0, m_rtChatLL.U1, m_rtChatLL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Bottom, m_rcChat.Right, m_rcChat.Bottom + 5,
+										m_rtChatLo.U0, m_rtChatLo.V0, m_rtChatLo.U1, m_rtChatLo.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Bottom, m_rcChat.Right + 5, m_rcChat.Bottom + 5,
+										m_rtChatRL.U0, m_rtChatRL.V0, m_rtChatRL.U1, m_rtChatRL.V1, 0xFFFFFFFF, fPopupZ );
+		}
+
+		// 내가 때렸을때 나오는 데미지???
+		ShowDamageList( vPopupPos, fPopupZ, ct.cha_iClientIndex );
+
+		// Render all elements
+		m_pUIDrawPort->FlushRenderingQueue();
+
+		// Text
+		nTextSX = m_rcName.Left + 7;
+		nTextSY = m_rcName.Top + 1;
+		// Title
+		if( ct.cha_pkstate < -9 ) nColIndex = 11;
+		else if( ct.cha_pkstate > 9 ) nColIndex = 7;
+		else nColIndex = 9;
+		// PK
+		if( ct.GetPkState() != CHA_PVP_STATE_PEACE )
+			nColIndex--;
+
+		if(ct.cha_sbPresscorps != 0)
+		{
+			m_pUIDrawPort->PutTextEx( ct.cha_strName, nTextSX, nTextSY,
+										0x00C80FFF, fPopupZ );
+		}
+		else
+		{
+			m_pUIDrawPort->PutTextEx( ct.cha_strName, nTextSX, nTextSY,
+							GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
+		}
+
+
+		// Text
+		nTextSX = m_rcGuildName.Left + 7;
+		nTextSY = m_rcGuildName.Top + 2;
+
+		// Guild Name
+		if( ct.cha_lGuildIndex > 0)
+		{
+			// WSS_GUILDMASTER 070517 --------------------------->>
+/*			COLOR tRankColor = 0xD6A4D6FF;
+#ifdef DISPLAY_GUILD_RANK
+			// WSS_GUILDMASTER 070517
+			// 길드 랭킹에 따라 색표시 달리함
+			// 1 : 황금색
+			// 2 : 은색 
+			// 3 : 동색				
+			switch(ct.cha_sbGuildRank)
+			{
+			case 1:
+				tRankColor = 0xCDAF28FF;
+				break;
+			case 2:
+				tRankColor = 0xBEBEAAFF;
+				break;
+			case 3:
+				tRankColor = 0x9B7D50FF;
+				break;
+						
+			}
+#endif */
+			//[071123: Su-won] DRATAN_SIEGE_DUNGEON
+			//길드 이름 색 설정
+			COLOR colGuildName =0xD6A4D6FF;			//일반 길드
+
+			if( ct.cha_ubGuildNameColor == 1)	//메라크 성주 길드
+				colGuildName = 0xFF4500FF;
+			else if( ct.cha_ubGuildNameColor == 2)	//드라탄 성주 길드
+				colGuildName = 0xFFD700FF;
+
+				// --------------------------------------------------<<
+			m_pUIDrawPort->PutTextEx( ct.cha_strGuildName, nTextSX, nTextSY,
+				colGuildName, fPopupZ );
+		}
+
+		if( nShopMsgLines > 0 )
+		{
+			nTextSX = m_rcShop.Left + 1;
+			nTextSY = m_rcShop.Top + 1;
+			for( int i = 0; i < nShopMsgLines; i++ )
+			{
+				m_pUIDrawPort->PutTextEx( ct.ShopMsg.GetString( i ), nTextSX, nTextSY,
+											ct.ShopMsg.GetColor(), fPopupZ );
+				nTextSY += nFontHeight;
+			}
+		}
+
+		if( nChatMsgLines > 0 )
+		{
+			nTextSX = m_rcChat.Left + 1;
+			nTextSY = m_rcChat.Top + 1;
+			for( int i = 0; i < nChatMsgLines; i++ )
+			{
+				m_pUIDrawPort->PutTextEx( ct.ChatMsg.GetString( i ), nTextSX, nTextSY,
+											ct.ChatMsg.GetColor(), fPopupZ );
+				nTextSY += nFontHeight;
+			}
+
+			__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+			if( llCurTime - ct.ChatMsg.GetTime() > CHATMSG_TIME_DELAY || fSqrDist > CHATMSG_SQRDIST )
+				ct.ChatMsg.Reset();
+		}
+
+		// Flush all render text queue
+		_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
 	}
 
 	// My character
@@ -1322,58 +2608,26 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		pmi->GetAllFramesBBox( boxModel );
 		boxModel.StretchByVector( pmi->mi_vStretch );
 		fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
-
 		fRadius = fHeight * 0.5f;
 
 		// Object point to screen point
-
-		if (_pNetwork->MyCharacterInfo.ulPlayerState & PLAYER_STATE_FLYING)
-		{
-			vObjectPos(2) += (fHeight * 1.5f);
-		}
-		else
-		{
-			vObjectPos(2) += fHeight;
-		}
-		
+		vObjectPos(2) += fHeight;
 		pprProjection->PreClip( vObjectPos, vViewPos );
 		pprProjection->PostClip( vViewPos, vPopupPos );
 		fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
 					* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
 		// Get box region
-		//if(g_iCountry == THAILAND) 
-#if defined G_THAI
-		{
+		if(g_iCountry == THAILAND) {
 			nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.name); //wooss 051017
-			if(_pNetwork->MyCharacterInfo.pk_mode == 0 ) 
-				nBoxWidth+=13;
-			else 
-				nBoxWidth+=27;
+			if(_pNetwork->MyCharacterInfo.pk_mode == 0 ) nBoxWidth+=13;
+			else nBoxWidth+=27;
 		} 
-		//else 
-#else
+		else 
 		if( _pNetwork->MyCharacterInfo.pk_mode == 0 )
-		{
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-				nBoxWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.name) + 13;
-			//else
-			#else
-				nBoxWidth = _pNetwork->MyCharacterInfo.name.Length() * nFontWidth + 13;
-			#endif
-		}
+			nBoxWidth = _pNetwork->MyCharacterInfo.name.Length() * nFontWidth + 13;
 		else
-		{
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-				nBoxWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.name) + 27;
-			//else
-			#else
-				nBoxWidth = _pNetwork->MyCharacterInfo.name.Length() * nFontWidth + 27;
-			#endif
-		}
-#endif
+			nBoxWidth = _pNetwork->MyCharacterInfo.name.Length() * nFontWidth + 27;
 		m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 		m_rcName.Right = m_rcName.Left + nBoxWidth;
 		m_rcName.Bottom = vPopupPos(2) - 7;
@@ -1383,28 +2637,17 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		// Set popup texture
 		m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
 
-#ifdef PREMIUM_CHAR
-		if (GAMEDATAMGR()->GetPremiumChar()->getType() == PREMIUM_CHAR_TYPE_FIRST)
-		{
-			UIRect			rcPcName;
-			rcPcName.Left = m_rcName.Left - 2;
-			rcPcName.Top = m_rcName.Top - 11;
-			rcPcName.Right = m_rcName.Right + 30;
-			rcPcName.Bottom = m_rcName.Bottom + 24;
-
-			m_pUIDrawPort->AddTexture( rcPcName.Left, rcPcName.Top, rcPcName.Left + 2, rcPcName.Bottom,
-				m_rtPremiumNameL.U0, m_rtPremiumNameL.V0, m_rtPremiumNameL.U1, m_rtPremiumNameL.V1, 0xFFFFFFFF, fPopupZ );
-			m_pUIDrawPort->AddTexture( rcPcName.Left + 2, rcPcName.Top, rcPcName.Right - 63, rcPcName.Bottom,
-				m_rtPremiumNameC.U0, m_rtPremiumNameC.V0, m_rtPremiumNameC.U1, m_rtPremiumNameC.V1, 0xFFFFFFFF, fPopupZ );
-			m_pUIDrawPort->AddTexture( rcPcName.Right - 63, rcPcName.Top, rcPcName.Right, rcPcName.Bottom,
-				m_rtPremiumNameR.U0, m_rtPremiumNameR.V0, m_rtPremiumNameR.U1, m_rtPremiumNameR.V1, 0xFFFFFFFF, fPopupZ );
-
-			nPopupY = m_rcName.Top - 5;
-		}
-#endif	//	PREMIUM_CHAR
-
 		// Add render regions
-		if( _pNetwork->MyCharacterInfo.pk_mode == 0 )
+		/*if( _pNetwork->MyCharacterInfo.pk_mode == 3 )
+		{
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 16, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameRDefPK1.U0, m_rtNameRDefPK1.V0, m_rtNameRDefPK1.U1, m_rtNameRDefPK1.V1, 0xFFFFFFFF, fPopupZ );
+		}
+		else */if( _pNetwork->MyCharacterInfo.pk_mode == 0 )
 		{
 			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
 										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
@@ -1427,54 +2670,13 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 										m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colBlend, fPopupZ );
 		}
 
-		// 호칭
-		COLOR myNickColor;
-		INDEX iMyNickItemIndex;
-		if (_pNetwork->MyCharacterInfo.iNickType > 0)	// 호칭이 있을 때
-		{
-			//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-			iMyNickItemIndex	=CNickNameData::getData(_pNetwork->MyCharacterInfo.iNickType)->GetItemIndex();
-			myNick		= GetNickName()->GetName(iMyNickItemIndex);
-			COLOR tmpColor = CNickNameData::getData(_pNetwork->MyCharacterInfo.iNickType)->GetBGColor();
-			myNickColor = (tmpColor|255);
-
-#if defined G_RUSSIA
-			nBoxWidth = m_pUIDrawPort->GetTextWidth(myNick) + 13; 
-#else
-			nBoxWidth = myNick.Length() * nFontWidth + 13;
-#endif
-			m_rcNickName.Left = vPopupPos(1) - nBoxWidth / 2;
-			m_rcNickName.Right = m_rcNickName.Left + nBoxWidth;
-			m_rcNickName.Bottom = nPopupY - 5;
-			m_rcNickName.Top = (m_rcNickName.Bottom - 1 * nFontHeight) - 4;
-			nPopupY = m_rcNickName.Top;
-
-			m_pUIDrawPort->AddTexture( m_rcNickName.Left, m_rcNickName.Top, m_rcNickName.Left + 2, m_rcNickName.Bottom,
-										m_rtNickNameL.U0, m_rtNickNameL.V0, m_rtNickNameL.U1, m_rtNickNameL.V1, myNickColor, fPopupZ );
-			m_pUIDrawPort->AddTexture( m_rcNickName.Left + 2, m_rcNickName.Top, m_rcNickName.Right - 2, m_rcNickName.Bottom,
-										m_rtNickNameC.U0, m_rtNickNameC.V0, m_rtNickNameC.U1, m_rtNickNameC.V1, myNickColor, fPopupZ );
-			m_pUIDrawPort->AddTexture( m_rcNickName.Right - 2, m_rcNickName.Top, m_rcNickName.Right, m_rcNickName.Bottom,
-										m_rtNickNameR.U0, m_rtNickNameR.V0, m_rtNickNameR.U1, m_rtNickNameR.V1, myNickColor, fPopupZ );
-		}
 		// Guild Name
 		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
 		{
 			// Get box region
-			//if(g_iCountry == THAILAND) 
-			#if defined G_THAI
-				nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.strGuildName)+13; //wooss 051017
-			//else
-			#else
-			{
-				//if(g_iCountry == RUSSIA)
-				#if defined G_RUSSIA
-					nBoxWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.strGuildName) + 13;
-				//else
-				#else
-					nBoxWidth = _pNetwork->MyCharacterInfo.strGuildName.Length() * nFontWidth + 13;
-				#endif
-			}
-			#endif
+			if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.strGuildName)+13; //wooss 051017
+			else
+			nBoxWidth = _pNetwork->MyCharacterInfo.strGuildName.Length() * nFontWidth + 13;
 			m_rcGuildName.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcGuildName.Right = m_rcGuildName.Left + nBoxWidth;
 			m_rcGuildName.Bottom = nPopupY - 5;
@@ -1488,7 +2690,9 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 			m_pUIDrawPort->AddTexture( m_rcGuildName.Right - 2, m_rcGuildName.Top, m_rcGuildName.Right, m_rcGuildName.Bottom,
 										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
 			// WSS_GUILDMASTER 070517 -------------------------->>
+#ifdef	DISPLAY_GUILD_RANK	
 			DrawGuildRankBox(m_rcGuildName,_pNetwork->MyCharacterInfo.sbGuildRank,fPopupZ);
+#endif
 			// -------------------------------------------------<<
 
 		}
@@ -1497,21 +2701,9 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		if( _pNetwork->MyCharacterInfo.sbShopType != PST_NOSHOP )
 		{
 			nShopMsgLines = _pNetwork->MyCharacterInfo.ShopMsg.GetCount();
-			//if(g_iCountry == THAILAND) 
-			#if defined G_THAI
-				nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.ShopMsg.GetString(0)); //wooss 051017
-			//else
-			#else
-			{
-				//if(g_iCountry == RUSSIA)
-				#if defined G_RUSSIA
-					nBoxWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.ShopMsg.GetString(0));
-				//else
-				#else
-					nBoxWidth = _pNetwork->MyCharacterInfo.ShopMsg.GetWidth();
-				#endif
-			}
-			#endif
+			if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.ShopMsg.GetString(0)); //wooss 051017
+			else
+			nBoxWidth = _pNetwork->MyCharacterInfo.ShopMsg.GetWidth();
 			m_rcShop.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcShop.Right = m_rcShop.Left + nBoxWidth;
 
@@ -1571,31 +2763,9 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 
 		if( nChatMsgLines > 0 )
 		{
-			//if(g_iCountry == THAILAND) 
-			#if defined G_THAI
-				nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.ChatMsg.GetString(0)); //wooss 051017
-			//else
-			#else
-			{
-				//if(g_iCountry == RUSSIA)
-				#if defined G_RUSSIA
-					int nCurWidth = 0;
-					int nMaxWidth = 0;
-					for( int i=0; i<_pNetwork->MyCharacterInfo.ChatMsg.GetCount(); ++i )
-					{
-						nCurWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.ChatMsg.GetString(i));
-						if( nMaxWidth < nCurWidth )
-						{
-							nMaxWidth = nCurWidth;
-						}
-					}
-					nBoxWidth = nMaxWidth;
-				//else
-				#else
-					nBoxWidth = _pNetwork->MyCharacterInfo.ChatMsg.GetWidth();
-				#endif
-			}
-			#endif
+			if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(_pNetwork->MyCharacterInfo.ChatMsg.GetString(0)); //wooss 051017
+			else
+			nBoxWidth = _pNetwork->MyCharacterInfo.ChatMsg.GetWidth();
 			m_rcChat.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcChat.Right = m_rcChat.Left + nBoxWidth;
 			m_rcChat.Bottom = nPopupY - 10;
@@ -1627,88 +2797,18 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		// Render all elements
 		m_pUIDrawPort->FlushRenderingQueue();
 
-
-		// [sora] RAID_SYSTEM
-		if(_pNetwork->MyCharacterInfo.slLabel >= MSG_EXPED_SETLABEL_INDEX_1 && _pNetwork->MyCharacterInfo.slLabel <= MSG_EXPED_SETLABEL_INDEX_7) // 타겟 표식 render
-		{
-			m_pUIDrawPort->InitTextureData(m_ptdExpeditionTexture);
-			
-			int nPosX = ((m_rcName.Left + m_rcName.Right) / 2 ) - 21;
-			
-			int nPosY = 0;
-
-			if(nChatMsgLines > 0)
-			{
-				nPosY = m_rcChat.Top - 3;
-			}
-			else if(_pNetwork->MyCharacterInfo.lGuildIndex > 0)	// 소속 길드가 있을경우 길드명 위에 표시
-			{
-				nPosY = m_rcGuildName.Top;
-			}
-			else if (_pNetwork->MyCharacterInfo.iNickType > 0)	// 호칭이 있는 경우 호칭 위에 표시
-			{
-				nPosY = m_rcNickName.Top;
-			}
-			else
-			{
-				nPosY = m_rcName.Top;
-			}
-
-			m_pUIDrawPort->AddTexture(nPosX, nPosY - 42, nPosX + 42, nPosY,
-									  m_rtTargetLabel[_pNetwork->MyCharacterInfo.slLabel].U0, m_rtTargetLabel[_pNetwork->MyCharacterInfo.slLabel].V0,
-									  m_rtTargetLabel[_pNetwork->MyCharacterInfo.slLabel].U1, m_rtTargetLabel[_pNetwork->MyCharacterInfo.slLabel].V1,
-									  0xFFFFFFFF, fPopupZ);
-
-			m_pUIDrawPort->FlushRenderingQueue();
-		}
-// [sora] GUILD_MARK
-#ifdef GUILD_MARK
-		if (m_pIconGuildMark != NULL)
-		{
-			m_pIconGuildMark->SetPos(m_rcGuildName.Left - 17, m_rcGuildName.Top);
-			m_pIconGuildMark->setZ(fPopupZ);
-			m_pIconGuildMark->Render(m_pUIDrawPort);
-		}
-#endif
-		if ( _pNetwork->IsRvrZone() && nMySyndiType > 0 )
-		{
-			// 나의 결사대 마크
-			ActorMgr* pAcMgr = ActorMgr::getSingleton();
-			int nGrade = _pNetwork->MyCharacterInfo.iSyndicateGrade;
-			int nIdx = pAcMgr->CheckSyndiMark(nMySyndiType, nGrade);
-			pAcMgr->DrawSyndiMark(nIdx, m_pUIDrawPort, m_rcName.Left, m_rcName.Top, fPopupZ);
-		}
 		// Text
 		nTextSX = m_rcName.Left + 7;
 		nTextSY = m_rcName.Top + 1;
 		// Title
-#ifdef NEW_CHAO_SYS
-//		BOOL buseblindchao = TRUE;
-//		if(_pUIBuff->IsBuffBySkill(1395))
-//			buseblindchao = FALSE;
-		//자기 자신
-		if (_pNetwork->MyCharacterInfo.pkpenalty  > 19000 && _pNetwork->MyCharacterInfo.pkpenalty  <= 32000)
-			nColIndex = 14;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  > 6000 && _pNetwork->MyCharacterInfo.pkpenalty  <= 19000)
-			nColIndex = 15;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  > 0 && _pNetwork->MyCharacterInfo.pkpenalty  <= 6000)
-			nColIndex = 16;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -6000 && _pNetwork->MyCharacterInfo.pkpenalty  < 0)
-			nColIndex = 17;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -19000 && _pNetwork->MyCharacterInfo.pkpenalty  < -6000)
-			nColIndex = 18;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -32000 && _pNetwork->MyCharacterInfo.pkpenalty  < -19000)
-			nColIndex = 19;
-		else nColIndex = 9;
-#else
 		if( _pNetwork->MyCharacterInfo.pkpenalty < -9 ) nColIndex = 11;
 		else if( _pNetwork->MyCharacterInfo.pkpenalty > 9 ) nColIndex = 7;
 		else nColIndex = 9;
 		// PK
 		if( _pNetwork->MyCharacterInfo.pk_mode != 0 )
 			nColIndex--;
-#endif
-		if( _pNetwork->MyCharacterInfo.sbPresscorps > 0)
+
+		if( _pNetwork->MyCharacterInfo.sbPresscorps != 0)
 		{
 			m_pUIDrawPort->PutTextEx( _pNetwork->MyCharacterInfo.name, nTextSX, nTextSY,
 										0x00C80FFF, fPopupZ );
@@ -1716,19 +2816,10 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		else
 		{
 			m_pUIDrawPort->PutTextEx( _pNetwork->MyCharacterInfo.name, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
+										GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 		}
 
-		// 호칭
-		nTextSX = m_rcNickName.Left + 7;
-		nTextSY = m_rcNickName.Top + 2;
 
-		if( _pNetwork->MyCharacterInfo.iNickType > 0)
-		{
-			COLOR tmpColor2 = CNickNameData::getData(_pNetwork->MyCharacterInfo.iNickType)->GetColor();
-			
-			m_pUIDrawPort->PutTextEx(myNick, nTextSX, nTextSY, tmpColor2, fPopupZ );
-		}
 		// Text
 		nTextSX = m_rcGuildName.Left + 7;
 		nTextSY = m_rcGuildName.Top + 2;
@@ -1737,6 +2828,27 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
 		{		
 			// WSS_GUILDMASTER 070517 --------------------------->>
+/*			COLOR tRankColor = 0xD6A4D6FF;
+#ifdef DISPLAY_GUILD_RANK
+			// WSS_GUILDMASTER 070517
+			// 길드 랭킹에 따라 색표시 달리함
+			// 1 : 황금색
+			// 2 : 은색 
+			// 3 : 동색				
+			switch(_pNetwork->MyCharacterInfo.sbGuildRank)
+			{
+			case 1:
+				tRankColor = 0xCDAF28FF;
+				break;
+			case 2:
+				tRankColor = 0xBEBEAAFF;
+				break;
+			case 3:
+				tRankColor = 0x9B7D50FF;
+				break;
+						
+			}
+#endif */
 			// ----------------------------------------------------<<
 
 			//[071123: Su-won] DRATAN_SIEGE_DUNGEON
@@ -1780,26 +2892,19 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		}
 
 		// Flush all render text queue
-		GetDrawPort()->EndTextEx( TRUE );
+		_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
 	}
 
 #ifdef GM_INVISIBLE_MODE
 	} 
 #endif
 
-	// Get target
-	penObject = pInfo->GetTargetEntity(eTARGET_REAL);
-	
 	// If over target is not exist
-	if( !pInfo->IsTargetActive(eTARGET_REAL) || penObject == NULL )
+	if( !_pNetwork->_TargetInfoReal.bIsActive || _pNetwork->_TargetInfoReal.pen_pEntity == NULL )
 		return;
 
-	if (penObject != NULL && penObject->IsFirstExtraFlagOn(ENF_EX1_CLICK_OBJECT))
-	{
-		return;
-	}
-
-	vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+#ifdef TARGET_MARK
+	vObjectPos = _pNetwork->_TargetInfoReal.pen_pEntity->GetLerpedPlacement().pl_PositionVector;
 
 	// Test distance
 	fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
@@ -1807,7 +2912,14 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	fSqrDist = fX * fX + fZ * fZ;
 	if( fSqrDist > fSqrDistance )
 		return;
-	
+#endif
+
+	// Get target
+	penObject = _pNetwork->_TargetInfoReal.pen_pEntity;
+
+	ASSERT( penObject != NULL );
+	if( penObject == NULL )
+		return;
 	vObjectPos = penObject->en_plPlacement.pl_PositionVector;
 
 	// Get frame box
@@ -1822,105 +2934,51 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	pmi->GetAllFramesBBox( boxModel );
 	boxModel.StretchByVector( pmi->mi_vStretch );
 
-	if (penObject->IsCharacter() &&	penObject->en_pCharacterTarget->cha_state & PLAYER_STATE_FLYING)
-	{
-		FLOAT fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
-		vObjectPos(2) += (fHeight * 1.5f);
-	}
-	else
-	{
-		vObjectPos(2) += boxModel.maxvect(2) - boxModel.minvect(2);
-	}
-
 	// Object point to screen point
+	vObjectPos(2) += boxModel.maxvect(2) - boxModel.minvect(2);
 	pprProjection->PreClip( vObjectPos, vViewPos );
 	pprProjection->PostClip( vViewPos, vPopupPos );
 	fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
 				 * pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
-	COLOR colNas = pHelp->GetTargetNameColor( 2 );
-	SBYTE sbTargetType = pInfo->GetTargetType(eTARGET_REAL);
-	SQUAD llCount = pInfo->GetTargetCount();
-	int nPkMode = pInfo->GetTargetPKMode(eTARGET_REAL);
-	INDEX iNickIdx = pInfo->GetTargetNickIdx();
-	LONG lGuildIdx = pInfo->GetTargetGuildIdx();
+	COLOR colNas = GetTargetInfo()->GetNameColor( 2 );
+
 	// Get name
-	if( sbTargetType == ITEM )
+	if( _pNetwork->_TargetInfoReal.TargetType == ITEM )
 	{
-		if( llCount > 1 )
+		if( _pNetwork->_TargetInfoReal.llCount > 1 )
 		{
-			strTemp.PrintF( "%I64d", llCount );
+			strTemp.PrintF( "%I64d", _pNetwork->_TargetInfoReal.llCount );
 			InsertCommaToString( strTemp );
-			strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
-			colNas = GetNasColor( llCount );
+			strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, strTemp );
+			colNas = GetNasColor( _pNetwork->_TargetInfoReal.llCount );
 
 		}
 		else
 		{
-			strName = pInfo->GetTargetName(eTARGET_REAL);
-			// [091123 sora] 한쪽만 주석처리되어 이름에()가 들어간 아이템 이름이 올바로 표시되지 않음
+			strName = _pNetwork->_TargetInfoReal.TargetName;
 			//strName.TrimRightChar( '(' );
 		}
 	}
 	else
-	{
-		strName.PrintF( "%s", pInfo->GetTargetName(eTARGET_REAL) );
-
-		// [2010/10/20 : Sora] 몬스터 용병 카드
-		if( penObject->IsFirstExtraFlagOn(ENF_EX1_MONSTER_MERCENARY) )
-			strName = _S( 5151, "[용병]") + strName;
-	}
+		strName.PrintF( "%s", _pNetwork->_TargetInfoReal.TargetName );
 
 	// Get box region
-	if( sbTargetType == CHARACTER )
+	if( _pNetwork->_TargetInfoReal.TargetType == CHARACTER )
 	{
-		//if(g_iCountry == THAILAND) 
-	#if defined G_THAI
-		{
+		if(g_iCountry == THAILAND) {
 			nBoxWidth = FindThaiLen(strName); //wooss 051017
-			if(nPkMode == 0 ) 
-				nBoxWidth+=13;
-			else 
-				nBoxWidth+=27;			
+			if(_pNetwork->_TargetInfoReal.PkMode == 0 ) nBoxWidth+=13;
+			else nBoxWidth+=27;			
 		}
-		//else 
-	#else
-		if( nPkMode == 0 )
-		{
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-				nBoxWidth = m_pUIDrawPort->GetTextWidth(strName) + 13;
-			//else
-			#else
-				nBoxWidth = strName.Length() * nFontWidth + 13;
-			#endif
-		}
-		else
-		{
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-				nBoxWidth = m_pUIDrawPort->GetTextWidth(strName) + 27;
-			//else
-			#else
-				nBoxWidth = strName.Length() * nFontWidth + 27;
-			#endif
-		}
-	#endif
-	}
-	//else if(g_iCountry == THAILAND) 
-	//	nBoxWidth = FindThaiLen(strName)+13; //wooss 051017
-	else
-	{
-		//if(g_iCountry == RUSSIA)
-		#if defined G_RUSSIA
-			nBoxWidth = m_pUIDrawPort->GetTextWidth(strName) + 13;
-		#elif defined(G_THAI)
-			nBoxWidth = FindThaiLen(strName)+13; //wooss 051017
-		//else
-		#else
+		else 
+		if( _pNetwork->_TargetInfoReal.PkMode == 0 )
 			nBoxWidth = strName.Length() * nFontWidth + 13;
-		#endif
+		else
+			nBoxWidth = strName.Length() * nFontWidth + 27;
 	}
+	else if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(strName)+13; //wooss 051017
+		else nBoxWidth = strName.Length() * nFontWidth + 13;
 
 	m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
 	m_rcName.Right = m_rcName.Left + nBoxWidth;
@@ -1928,60 +2986,15 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	m_rcName.Top = m_rcName.Bottom - 15;
 	nPopupY = m_rcName.Top;
 
-#ifdef PREMIUM_CHAR
-	if( sbTargetType == CHARACTER )
-	{
-		ObjectBase* pChar = ACTORMGR()->GetObject( eOBJ_CHARACTER, penObject->GetNetworkID() );
-
-		if (pChar != NULL && pChar->GetPremiumType() == PREMIUM_CHAR_TYPE_FIRST)
-		{
-			nPopupY = m_rcName.Top - 5;
-		}
-	}
-#endif	//	PREMIUM_CHAR
-
-	if (iNickIdx > 0)	// 호칭이 있을 때
-	{
-		if( sbTargetType == CHARACTER )
-		{	
-			//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-			INDEX iTargetItemIndex  = CNickNameData::getData(iNickIdx)->GetItemIndex();
-			CTString tmpTargetNick	= GetNickName()->GetName(iTargetItemIndex);
-
-#if defined G_RUSSIA
-			nBoxWidth = m_pUIDrawPort->GetTextWidth(tmpTargetNick) + 13; 
-#else
-			nBoxWidth = tmpTargetNick.Length() * nFontWidth + 13;
-#endif
-
-			m_rcNickName.Left = vPopupPos(1) - nBoxWidth / 2;
-			m_rcNickName.Right = m_rcNickName.Left + nBoxWidth;
-			m_rcNickName.Bottom = nPopupY - 5;
-			m_rcNickName.Top = (m_rcNickName.Bottom - 1 * nFontHeight) - 4;
-			nPopupY = m_rcNickName.Top;
-		}
-	}
 	// Guild Name
-	if( lGuildIdx != -1 )
+	if( _pNetwork->_TargetInfoReal.lGuildIndex != -1 )
 	{
 		// Get box region
-		if( sbTargetType == CHARACTER )
+		if( _pNetwork->_TargetInfoReal.TargetType == CHARACTER )
 		{	
-			//if(g_iCountry == THAILAND) 
-			#if defined G_THAI
-				nBoxWidth = FindThaiLen(pInfo->GetTargetGuildName())+13; //wooss 051017
-			//else 
-			#else
-			{
-				//if(g_iCountry == RUSSIA)
-				#if defined G_RUSSIA
-					nBoxWidth = m_pUIDrawPort->GetTextWidth(pInfo->GetTargetGuildName()) + 13;
-				//else
-				#else
-					nBoxWidth = pInfo->GetTargetGuildName().Length() * nFontWidth + 13;
-				#endif
-			}
-			#endif
+			if(g_iCountry == THAILAND) nBoxWidth = FindThaiLen(_pNetwork->_TargetInfoReal.strGuildName)+13; //wooss 051017
+			else 
+			nBoxWidth = _pNetwork->_TargetInfoReal.strGuildName.Length() * nFontWidth + 13;
 		}
 		
 		m_rcGuildName.Left		= vPopupPos(1) - nBoxWidth / 2;
@@ -1995,25 +3008,26 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
  
 	// Add render regions
-	if( sbTargetType == CHARACTER )
+	if( _pNetwork->_TargetInfoReal.TargetType == CHARACTER )
 	{
 		COLOR colPopup =0xFFFFFFFF;
 		BOOL bTarget = FALSE;
 		int iAddFrame =0;
 
+#ifdef TARGET_MARK
 		//현재 타겟으로 잡고 있는 캐릭터일 때...
-		if( pInfo->GetTargetEntity(eTARGET) == penObject )
+		if( _pNetwork->_TargetInfo.pen_pEntity == _pNetwork->_TargetInfoReal.pen_pEntity )
 		{
 			bTarget =TRUE;
 			iAddFrame =3;
 
-			if( IsEnemy(penObject, CHARACTER, TRUE) )	//적이면 테두리를 빨간색으로...
+			if( IsEnemy(_pNetwork->_TargetInfoReal.pen_pEntity, CHARACTER, TRUE) )	//적이면 테두리를 빨간색으로...
 				colPopup =0xFF0000FF;
 			else							//적이 아니면 노란색으로...
 				colPopup =0xFFFF00FF;
 		}
-		
-		if( nPkMode == 3 )
+#endif
+		if( _pNetwork->_TargetInfoReal.PkMode == 3 )
 		{
 			if( bTarget )
 			{
@@ -2032,7 +3046,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top -iAddFrame, m_rcName.Right +iAddFrame, m_rcName.Bottom +iAddFrame,
 										m_rtNameRDefPK2.U0, m_rtNameRDefPK2.V0, m_rtNameRDefPK2.U1, m_rtNameRDefPK2.V1, colPopup, fPopupZ );
 		}
-		else if( nPkMode == 0 )
+		else if( _pNetwork->_TargetInfoReal.PkMode == 0 )
 		{
 			if( bTarget )
 			{
@@ -2054,7 +3068,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		}
 		else
 		{
-			if( nPkMode == 2 )
+			if( _pNetwork->_TargetInfoReal.PkMode == 2 )
 				colPopup = colNameBlend;
 
 			if( bTarget )
@@ -2075,12 +3089,8 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 										m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colPopup, fPopupZ );
 		}
 
-		if (iNickIdx > 0)	// 호칭이 있을 때
-		{
-			// 마우스 오버 시 처리
-		}
 		// Guild Name
-		if( lGuildIdx != -1 )
+		if( _pNetwork->_TargetInfoReal.lGuildIndex != -1 )
 		{
 			m_pUIDrawPort->AddTexture( m_rcGuildName.Left, m_rcGuildName.Top, m_rcGuildName.Left + 2, m_rcGuildName.Bottom,
 										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
@@ -2090,7 +3100,9 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
 
 			// WSS_GUILDMASTER 070517 -------------------------->>
-			DrawGuildRankBox(m_rcGuildName, pInfo->GetTargetGuildRank(), fPopupZ);	
+#ifdef	DISPLAY_GUILD_RANK
+		DrawGuildRankBox(m_rcGuildName,_pNetwork->_TargetInfoReal.sbGuildRank,fPopupZ);	
+#endif
 			// -------------------------------------------------<<
 		}
 	}
@@ -2099,50 +3111,39 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		COLOR colPopup =0xFFFFFFFF;
 		BOOL bTarget =FALSE;
 
+#ifdef TARGET_MARK
 		//현재 타겟으로 잡고 있는 대상일 때...
-		if( pInfo->GetTargetEntity(eTARGET) == penObject )
+		if( _pNetwork->_TargetInfo.pen_pEntity == _pNetwork->_TargetInfoReal.pen_pEntity )
 		{
 			bTarget =TRUE;
-			switch( sbTargetType )
+
+			switch( _pNetwork->_TargetInfoReal.TargetType )
 			{
-			case MOB:				
-				{
-					// 부활진지 이름이 수시로 바뀌므로 드라탄 공성에서는
-					// 마우스 오버시 MOB,NPC 이름 표시는 하지 않는다.
-					if( _pNetwork->MyCharacterInfo.sbAttributePos & MATT_WAR )
-						return;								
-
-					ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_MOB, pInfo->GetTargetServerIdx(eTARGET));
-
-					if (pObject != NULL)
-					{
-						CMobTarget* pTarget = static_cast< CMobTarget* >(pObject);
-
-						if ( pTarget->IsMercenary() || pTarget->IsTotem() || pTarget->IsTrap() || pTarget->IsParasite() )
-						{
-							if ( IsEnemy( pTarget, MOB ) )
-								colPopup = 0xFF0000FF;
-							else
-								colPopup = 0xFFFF00FF;
-						}
-						else
-							colPopup = 0xFF0000FF;
-						break;
-					}
-				}
+			case MOB:
+				// WSS_DRATAN_SEIGEWARFARE 2007/08/23 ----------------->>
+// 부활진지 이름이 수시로 바뀌므로 드라탄 공성에서는
+// 마우스 오버시 MOB,NPC 이름 표시는 하지 않는다.
+				if( //_pUIMgr->GetSiegeWarfareNew()->GetWarState() &&
+					//_pNetwork->MyCharacterInfo.sbJoinFlagDratan != WCJF_NONE &&
+					_pNetwork->MyCharacterInfo.sbAttributePos == ATTC_WAR )
+									return;				
+// ----------------------------------------------------<<
+				colPopup = 0xFF0000FF;
 				break;
 			case NPC:
 				// WSS_DRATAN_SEIGEWARFARE 2007/08/23 ----------------->>
 // 부활진지 이름이 수시로 바뀌므로 드라탄 공성에서는
 // 마우스 오버시 MOB,NPC 이름 표시는 하지 않는다.
-				if( _pNetwork->MyCharacterInfo.sbAttributePos & MATT_WAR )
+				if( //_pUIMgr->GetSiegeWarfareNew()->GetWarState() &&
+					//_pNetwork->MyCharacterInfo.sbJoinFlagDratan != WCJF_NONE &&
+					_pNetwork->MyCharacterInfo.sbAttributePos == ATTC_WAR )
 									return;				
 // ----------------------------------------------------<<
 				colPopup = 0xFFFF00FF;
 				break;
-			case P1PET:
+			case PET:
 				{
-					if( IsEnemy(penObject, P1PET, TRUE) )
+					if( IsEnemy(_pNetwork->_TargetInfoReal.pen_pEntity, PET, TRUE) )
 						colPopup =0xFF0000FF;
 					else
 						colPopup =0xFFFF00FF;
@@ -2150,7 +3151,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 				break;
 			case SUMMON:
 				{
-					if( IsEnemy(penObject, SUMMON, TRUE) )
+					if( IsEnemy(_pNetwork->_TargetInfoReal.pen_pEntity, SUMMON, TRUE) )
 						colPopup =0xFF0000FF;
 					else
 						colPopup =0xFFFF00FF;
@@ -2158,7 +3159,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 				break;
 			case WILDPET:
 				{
-					if(IsEnemy(penObject,WILDPET, TRUE))
+					if(IsEnemy(_pNetwork->_TargetInfoReal.pen_pEntity,WILDPET, TRUE))
 						colPopup =0xFF0000FF;
 					else
 						colPopup =0xFFFF00FF;
@@ -2168,6 +3169,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 				break;
 			}
 		}
+#endif
 
 		if( bTarget )
 		{
@@ -2189,15 +3191,12 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		}
 		else
 		{
-			if (pInfo->GetTargetType(eTARGET_REAL) != ITEM)
-			{
-	 			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
-	 											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
-	 			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
-	 											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
-	 			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
-	 											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
-			}
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+											m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+											m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colPopup, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+											m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, colPopup, fPopupZ );
 		}
 	}
 
@@ -2207,115 +3206,86 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 	// Text
 	nTextSX = m_rcName.Left + 7;
 	nTextSY = m_rcName.Top + 1;
-	switch( sbTargetType )
+	switch( _pNetwork->_TargetInfoReal.TargetType )
 	{
 	case MOB:
 		{
-			// [2010/10/20 : Sora] 몬스터 용병 카드
-			if( penObject->IsFirstExtraFlagOn(ENF_EX1_MONSTER_MERCENARY) )
-			{
-				nColIndex = 12;
-			}
-			else if ( penObject->GetFirstExFlags() & ( ENF_EX1_TOTEM | ENF_EX1_TRAP | ENF_EX1_SUICIDE ) )
-			{
-				nColIndex = 13;
-			}
-			else
-			{
-				nLevelDiff = pInfo->GetTargetLevel(eTARGET_REAL) - _pNetwork->MyCharacterInfo.level;
-				if( nLevelDiff > 5 ) nColIndex = 0;
-				else if( nLevelDiff > 2 ) nColIndex = 1;
-				else if( nLevelDiff > -3 ) nColIndex = 2;
-				else if( nLevelDiff > -6 ) nColIndex = 3;
-				else nColIndex = 4;
-			}
-
+			nLevelDiff = _pNetwork->_TargetInfoReal.iLevel - _pNetwork->MyCharacterInfo.level;
+			if( nLevelDiff > 5 ) nColIndex = 0;
+			else if( nLevelDiff > 2 ) nColIndex = 1;
+			else if( nLevelDiff > -3 ) nColIndex = 2;
+			else if( nLevelDiff > -6 ) nColIndex = 3;
+			else nColIndex = 4;
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
+										GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 		}
 		break;
+
 	case NPC:
-	case P1PET:
+		{
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+		}
+		break;
+
+	case PET:
 	case WILDPET:
 		{
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( 5 ), fPopupZ );
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
 		}
 		break;
 
 	case CHARACTER:
 		{
-#ifdef NEW_CHAO_SYS
-			//마우스 오버			
-			BOOL buseblindchao = TRUE;
-
-			if (penObject != NULL)
-			{
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, penObject->GetNetworkID());
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-					if (pTarget->IsBuffBySkill(1395))
-						buseblindchao = FALSE;
-				}
-			}
-
-			int nPKState = pInfo->GetTargetPKState(eTARGET_REAL);
-
-			if (nPKState > 19000 && nPKState <= 32000 && buseblindchao)
-				nColIndex = 14;
-			else if(nPKState > 6000 && nPKState <= 19000 && buseblindchao)
-				nColIndex = 15;
-			else if(nPKState > 0 && nPKState <= 6000 && buseblindchao)
-				nColIndex = 16;
-			else if(nPKState >= -6000 && nPKState < 0 && buseblindchao)
-				nColIndex = 17;
-			else if(nPKState >= -19000 && nPKState < -6000 && buseblindchao)
-				nColIndex = 18;
-			else if(nPKState >= -32000 && nPKState < -19000 && buseblindchao)
-				nColIndex = 19;
-			else nColIndex = 9;
-#else
-			if( nPKState < -9 ) nColIndex = 11;
-			else if( nPKState > 9 ) nColIndex = 7;
+			// Title
+			if( _pNetwork->_TargetInfoReal.PkState < -9 ) nColIndex = 11;
+			else if( _pNetwork->_TargetInfoReal.PkState > 9 ) nColIndex = 7;
 			else nColIndex = 9;
 			// PK
-			if( nPkMode != 0 )
+			if( _pNetwork->_TargetInfoReal.PkMode != 0 )
 				nColIndex--;
-#endif	
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
+										GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 
-			// NickName
-			nTextSX = m_rcNickName.Left + 7;
-			nTextSY = m_rcNickName.Top + 2;
-
-			if( iNickIdx > 0)
-			{
-				COLOR tmpColor2 = CNickNameData::getData(iNickIdx)->GetColor();
-				INDEX	temIndex = CNickNameData::getData(iNickIdx)->GetItemIndex();
-				CTString temNick = GetNickName()->GetName(temIndex);
-				m_pUIDrawPort->PutTextEx(temNick, nTextSX, nTextSY, tmpColor2, fPopupZ );
-			}
 			// Guild Name
-			if( lGuildIdx != -1 )
+			if( _pNetwork->_TargetInfoReal.lGuildIndex != -1 )
 			{
 				// WSS_GUILDMASTER 070517 --------------------------->>
+/*				COLOR tRankColor = 0xD6A4D6FF;
+#ifdef DISPLAY_GUILD_RANK
+				// WSS_GUILDMASTER 070517
+				// 길드 랭킹에 따라 색표시 달리함
+				// 1 : 황금색
+				// 2 : 은색 
+				// 3 : 동색				
+				switch(_pNetwork->_TargetInfoReal.sbGuildRank)
+				{
+				case 1:
+					tRankColor = 0xCDAF28FF;
+					break;
+				case 2:
+					tRankColor = 0xBEBEAAFF;
+					break;
+				case 3:
+					tRankColor = 0x9B7D50FF;
+					break;
+							
+				}
+#endif */
 				//[071123: Su-won] DRATAN_SIEGE_DUNGEON
 				//길드 이름 색 설정
 				COLOR colGuildName =0xD6A4D6FF;			//일반 길드
 
-				if( pInfo->GetTargetGuildColor() == 1)	//메라크 성주 길드
+				if( _pNetwork->_TargetInfoReal.ubGuildNameColor == 1)	//메라크 성주 길드
 					colGuildName = 0xFF4500FF;
-				else if( pInfo->GetTargetGuildColor() == 2)	//드라탄 성주 길드
+				else if( _pNetwork->_TargetInfoReal.ubGuildNameColor == 2)	//드라탄 성주 길드
 					colGuildName = 0xFFD700FF;
 
 				// --------------------------------------------------<<
 				nTextSX = m_rcGuildName.Left + 7;
 				nTextSY = m_rcGuildName.Top + 2;
-				m_pUIDrawPort->PutTextEx( pInfo->GetTargetGuildName(), nTextSX, nTextSY,
+				m_pUIDrawPort->PutTextEx( _pNetwork->_TargetInfoReal.strGuildName, nTextSX, nTextSY,
 										colGuildName, fPopupZ );
 			}
 		}
@@ -2323,48 +3293,23 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 
 	case ITEM:
 		{
-			bool bRare = false;
-			bool bOrigin = false;
-			int nDBIdx = pInfo->GetTargetDBIdx(eTARGET_REAL);
-
-			m_pUIDrawPort->InitTexture( NULL, FALSE, PBT_BLEND, TRUE);
-
-			m_pUIDrawPort->AddQuadrangle(m_rcName.Left, m_rcName.Top, m_rcName.Right, m_rcName.Bottom, GetItemNameColor(eDROPITEM_OVER_BG), fPopupZ);
-			m_pUIDrawPort->FlushRenderingQueue();
-
-			if (nDBIdx > 0)
-			{
-				bRare = _pNetwork->GetItemData(nDBIdx)->IsFlag(ITEM_FLAG_RARE);
-
-				if (bRare == false)
-					bOrigin = _pNetwork->GetItemData(nDBIdx)->IsFlag(ITEM_FLAG_ORIGIN);
-			}
-
-			if (bRare)
-			{
-				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, GetItemNameColor(eDROPITEM_OVER_NAME_RARE), fPopupZ );				
-			}
-			else if (bOrigin == true)
-			{
-				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, GetItemNameColor(eDROPITEM_OVER_NAME_ORIGIN), fPopupZ );
-			}
+			BOOL bRareItem =IsRareItem(strName);
+			if( bRareItem )
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, RAREITEM_NAME_COLOR, fPopupZ );
 			else
-			{
-				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, GetItemNameColor(eDROPITEM_OVER_NAME), fPopupZ );
-			}
-
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, colNas, fPopupZ );
 		}
 		break;
 
 	default:
 		{
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( 2 ), fPopupZ );
+										GetTargetInfo()->GetNameColor( 2 ), fPopupZ );
 		}
 	}
 
 	// Flush all render text queue
-	GetDrawPort()->EndTextEx( TRUE );
+	_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -2374,11 +3319,11 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 {
 	// If game state is not on game
-	if( STAGEMGR()->GetCurStage() != eSTAGE_GAMEPLAY )
+	if( m_ugsGameState != UGS_GAMEON )
 		return;
 
 	// Blinking name popup for pk
-	static bool		bHideName = TRUE;
+	static BOOL		bHideName = TRUE;
 	static __int64	llOldTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 	static __int64	llElapsedTime = 0;
 	__int64			llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
@@ -2410,33 +3355,449 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	FLOAT3D			vObjectPos, vViewPos, vPopupPos, vObjCenter;
 	FLOATaabbox3D	boxModel;
 	int				nColIndex, nLevelDiff, nPopupY;
-	FLOAT			fRadius, fHeight, fPopupZ;
+	FLOAT			fRadius, fHeight, fX, fZ, fPopupZ, fSqrDist;
 	FLOAT			fSqrDistance = g_iShowName * OPTION_NAME_DISTANCE;
 	FLOAT			fSqrDistanceItem = g_iShowNameItem * OPTION_NAME_DISTANCE;
 	fSqrDistance *= fSqrDistance;
 	fSqrDistanceItem *= fSqrDistanceItem;
 
-	UtilHelp* pHelp = UtilHelp::getSingleton();
-	ObjInfo* pInfo = ObjInfo::getSingleton();
-
-	if (pHelp == NULL)
-		return;
-
 	////////////////////////////////////////////////////////////////////////
 	// Show name of npc
 	if( g_iShowName > 0 )
 	{
-		ACTORMGR()->DrawObjectName(m_pUIDrawPort, pprProjection, colNameBlend, bHideName);	
+		INDEX	ctMob = _pNetwork->ga_srvServer.srv_amtMob.Count();
+		for( INDEX iObj = 0; iObj < ctMob; iObj++ ) 
+		{
+			// Get target mob
+			CMobTarget	&mt = _pNetwork->ga_srvServer.srv_amtMob[iObj];
+			penObject = mt.mob_pEntity;
+
+			if (penObject->IsFlagOff(ENF_ALIVE))
+				continue;
+
+			ASSERT( penObject != NULL );
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			strName.PrintF( "%s C%d S%d L%d", mt.mob_Name, mt.mob_iClientIndex, mt.mob_Index, mt.mob_yLayer );
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// 내가 때렸을때 나오는 데미지???
+			ShowDamageList( vPopupPos, fPopupZ, mt.mob_iClientIndex );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 2;
+
+			if( mt.IsNPC() )
+			{
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+											GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+			}
+			else
+			{
+				nLevelDiff = mt.mob_iLevel - _pNetwork->MyCharacterInfo.level;
+				if( nLevelDiff > 5 ) nColIndex = 0;
+				else if( nLevelDiff > 2 ) nColIndex = 1;
+				else if( nLevelDiff > -3 ) nColIndex = 2;
+				else if( nLevelDiff > -6 ) nColIndex = 3;
+				else nColIndex = 4;
+				m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+											GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
+			}
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+		////////////////////////////////////////////////////////////////////////
+		// Show Pet Name
+		INDEX	ctPet = _pNetwork->ga_srvServer.srv_actPet.Count();
+		for( iObj = 0; iObj < ctPet; iObj++ ) 
+		{
+			// Get target mob
+			CPetTarget	&pt = _pNetwork->ga_srvServer.srv_actPet[iObj];
+			penObject = pt.pet_pEntity;
+
+			ASSERT( penObject != NULL );
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			if( pt.pet_strNameCard.Length() >0 )
+				strName.PrintF( "%s C%d S%d L%d", pt.pet_strNameCard, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
+			else
+				strName.PrintF( "%s C%d S%d L%d", pt.pet_Name, pt.pet_iClientIndex, pt.pet_Index, pt.pet_yLayer );
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 2;
+
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );			
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+		////////////////////////////////////////////////////////////////////////
+		// Show WildPet Name
+		INDEX	ctWildPet = _pNetwork->ga_srvServer.srv_actWildPet.Count();
+		for( iObj = 0; iObj < ctWildPet; iObj++ ) 
+		{
+			// Get target mob
+			CWildPetInfo	&pt = _pNetwork->ga_srvServer.srv_actWildPet[iObj];
+			penObject = pt.pet_pEntity;
+
+			ASSERT( penObject != NULL );
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			strName.PrintF( "%s", pt.m_strName);
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 2;
+
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );			
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+
+
+		////////////////////////////////////////////////////////////////////////
+		// Show Slave Name
+		INDEX	ctSlave = _pNetwork->ga_srvServer.srv_actSlave.Count();
+		for( iObj = 0; iObj < ctSlave; iObj++ ) 
+		{
+			// Get target mob
+			CSlaveTarget	&st = _pNetwork->ga_srvServer.srv_actSlave[iObj];
+			penObject = st.slave_pEntity;
+
+			ASSERT( penObject != NULL );
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistance )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			// Get box region
+			strName.PrintF( "%s C%d S%d L%d", st.slave_Name, st.slave_iClientIndex, st.slave_Index, st.slave_yLayer );
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// 내가 때렸을때 나오는 데미지???
+			ShowDamageList( vPopupPos, fPopupZ, st.slave_iClientIndex );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 2;
+
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );			
+
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////
-	// My character
-	nChatMsgLines = _pNetwork->MyCharacterInfo.ChatMsg.GetCount();
-	if( g_iShowName > 0 || nChatMsgLines > 0 || _pNetwork->MyCharacterInfo.sbShopType != PST_NOSHOP ||
-		_pNetwork->MyCharacterInfo.pk_mode != 0 )
+	// Show name of item
+	if( g_iShowNameItem > 0 )
 	{
-		penObject = CEntity::GetPlayerEntity( 0 );
-		vObjectPos = penObject->GetLerpedPlacement().pl_PositionVector;
+		INDEX	ctItem = _pNetwork->ga_srvServer.srv_aitItem.Count();
+		for( INDEX iObj = 0; iObj < ctItem; iObj++ ) 
+		{
+			// Get target mob
+			CItemTarget	&it = _pNetwork->ga_srvServer.srv_aitItem[iObj];
+			penObject = it.item_pEntity;
+
+			if( penObject == NULL )
+				continue;
+			vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+			// Test distance
+			fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+			fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+			fSqrDist = fX * fX + fZ * fZ;
+			if( fSqrDist > fSqrDistanceItem )
+				continue;
+
+			// Get frame box
+			pmi = penObject->GetModelInstance();
+			ASSERT( pmi != NULL );
+			pmi->GetAllFramesBBox( boxModel );
+			boxModel.StretchByVector( pmi->mi_vStretch );
+			fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+			fRadius = fHeight * 0.5f;
+
+			// Frustum test
+			vObjCenter = vObjectPos;
+			vObjCenter(2) += fRadius;
+			pprProjection->PreClip( vObjCenter, vViewPos );
+			if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+				continue;
+
+			// Object point to screen point
+			vObjectPos(2) += fHeight;
+			pprProjection->PreClip( vObjectPos, vViewPos );
+			pprProjection->PostClip( vViewPos, vPopupPos );
+			fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+						* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+			COLOR colNas = GetTargetInfo()->GetNameColor( 5 );
+			// Get box region
+			if( it.item_llCount > 1 )
+			{
+				strTemp.PrintF( "%I64d", it.item_llCount );
+				InsertCommaToString( strTemp );
+				colNas = GetNasColor( it.item_llCount );
+				strName.PrintF( "%s(%s) C%d S%d", it.item_Name, strTemp, it.item_iClientIndex, it.item_Index );
+			}
+			else
+			{
+				strName.PrintF( "%s C%d S%d", it.item_Name, it.item_iClientIndex, it.item_Index );
+			}
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+			m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcName.Right = m_rcName.Left + nBoxWidth;
+			m_rcName.Bottom = vPopupPos(2) - 7;
+			m_rcName.Top = m_rcName.Bottom - 15;
+
+			// Set popup texture
+			m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+			// Add render regions
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+
+			// Render all elements
+			m_pUIDrawPort->FlushRenderingQueue();
+
+			// Text
+			nTextSX = m_rcName.Left + 7;
+			nTextSY = m_rcName.Top + 1;
+
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY, colNas, fPopupZ );
+			// Flush all render text queue
+			_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////
+	// Show name & chatting of character
+	INDEX	ctCha = _pNetwork->ga_srvServer.srv_actCha.Count();
+	for( INDEX iObj = 0; iObj < ctCha; iObj++ ) 
+	{
+		// Get target character
+		CCharacterTarget	&ct = _pNetwork->ga_srvServer.srv_actCha[iObj];
+		penObject = ct.cha_pEntity;
+		nChatMsgLines = ct.ChatMsg.GetCount();
+
+		// Invisibility buff
+		if( ct.cha_statusEffect.GetStatus() & ( 1L << EST_ASSIST_INVISIBLE ) )
+			continue;
+
+		ASSERT( penObject != NULL );
+		vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+		// Test distance
+		fX = vObjectPos(1) - _pNetwork->MyCharacterInfo.x;
+		fZ = vObjectPos(3) - _pNetwork->MyCharacterInfo.z;
+		fSqrDist = fX * fX + fZ * fZ;
+		if( nChatMsgLines == 0 && ct.cha_sbShopType == PST_NOSHOP &&
+			ct.GetPkState() == CHA_PVP_STATE_PEACE && fSqrDist > fSqrDistance )
+			continue;
 
 		// Get frame box
 		pmi = penObject->GetModelInstance();
@@ -2446,16 +3807,227 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
 		fRadius = fHeight * 0.5f;
 
-		if (_pNetwork->MyCharacterInfo.ulPlayerState & PLAYER_STATE_FLYING)
-		{
-			vObjectPos(2) += (fHeight * 1.5f);
-		}
-		else
-		{
-			vObjectPos(2) += fHeight;
-		}
+		// Frustum test
+		vObjCenter = vObjectPos;
+		vObjCenter(2) += fRadius;
+		pprProjection->PreClip( vObjCenter, vViewPos );
+		if( pprProjection->TestSphereToFrustum( vViewPos, fRadius ) < 0 )
+			continue;
 
 		// Object point to screen point
+		vObjectPos(2) += fHeight;
+		pprProjection->PreClip( vObjectPos, vViewPos );
+		pprProjection->PostClip( vViewPos, vPopupPos );
+		fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
+					* pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
+
+		// Get box region
+		strName.PrintF( "%s C%d S%d", ct.cha_strName, ct.cha_iClientIndex, ct.cha_Index );
+		if( ct.cha_state == 0 )
+			nBoxWidth = strName.Length() * nFontWidth + 13;
+		else
+			nBoxWidth = strName.Length() * nFontWidth + 27;
+		m_rcName.Left = vPopupPos(1) - nBoxWidth / 2;
+		m_rcName.Right = m_rcName.Left + nBoxWidth;
+		m_rcName.Bottom = vPopupPos(2) - 7;
+		m_rcName.Top = m_rcName.Bottom - 15;
+		nPopupY = m_rcName.Top;
+
+		// Set popup texture
+		m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
+
+		// Add render regions
+		if( ct.IsLegitimate() )
+		{
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 16, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameRDefPK2.U0, m_rtNameRDefPK2.V0, m_rtNameRDefPK2.U1, m_rtNameRDefPK2.V1, 0xFFFFFFFF, fPopupZ );
+		}
+		else if( ct.GetPkState() == CHA_PVP_STATE_PEACE )
+		{
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 2, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 2, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
+		}
+		else		// PK
+		{
+			COLOR	colBlend = 0xFFFFFFFF;
+			if( ct.GetPkState() == CHA_PVP_STATE_RELEASE )
+				colBlend = colNameBlend;
+
+			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
+										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, colBlend, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Left + 2, m_rcName.Top, m_rcName.Right - 16, m_rcName.Bottom,
+										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, colBlend, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
+										m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colBlend, fPopupZ );
+		}
+
+		nShopMsgLines = 0;
+		if( ct.cha_sbShopType != PST_NOSHOP )
+		{
+			nShopMsgLines = ct.ShopMsg.GetCount();
+
+			nBoxWidth = ct.ShopMsg.GetWidth();
+			m_rcShop.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcShop.Right = m_rcShop.Left + nBoxWidth;
+
+			if( ct.cha_sbShopType & PST_PREMIUM )
+			{
+				m_rcShop.Bottom = nPopupY - 18;
+				m_rcShop.Top = m_rcShop.Bottom - nShopMsgLines * nFontHeight;
+
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Top - 13, m_rcShop.Left, m_rcShop.Top,
+											m_rtShopPremLU.U0, m_rtShopPremLU.V0, m_rtShopPremLU.U1, m_rtShopPremLU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top - 13, m_rcShop.Right, m_rcShop.Top,
+											m_rtShopPremUp.U0, m_rtShopPremUp.V0, m_rtShopPremUp.U1, m_rtShopPremUp.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top - 13, m_rcShop.Right + 13, m_rcShop.Top,
+											m_rtShopPremRU.U0, m_rtShopPremRU.V0, m_rtShopPremRU.U1, m_rtShopPremRU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Top, m_rcShop.Left, m_rcShop.Bottom,
+											m_rtShopPremL.U0, m_rtShopPremL.V0, m_rtShopPremL.U1, m_rtShopPremL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top, m_rcShop.Right, m_rcShop.Bottom,
+											m_rtShopPremC.U0, m_rtShopPremC.V0, m_rtShopPremC.U1, m_rtShopPremC.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top, m_rcShop.Right + 13, m_rcShop.Bottom,
+											m_rtShopPremR.U0, m_rtShopPremR.V0, m_rtShopPremR.U1, m_rtShopPremR.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 13, m_rcShop.Bottom, m_rcShop.Left, m_rcShop.Bottom + 13,
+											m_rtShopPremLL.U0, m_rtShopPremLL.V0, m_rtShopPremLL.U1, m_rtShopPremLL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Bottom, m_rcShop.Right, m_rcShop.Bottom + 13,
+											m_rtShopPremLo.U0, m_rtShopPremLo.V0, m_rtShopPremLo.U1, m_rtShopPremLo.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Bottom, m_rcShop.Right + 13, m_rcShop.Bottom + 13,
+											m_rtShopPremRL.U0, m_rtShopPremRL.V0, m_rtShopPremRL.U1, m_rtShopPremRL.V1, 0xFFFFFFFF, fPopupZ );
+
+				nPopupY = m_rcShop.Top - 8;
+			}
+			else
+			{
+				m_rcShop.Bottom = nPopupY - 10;
+				m_rcShop.Top = m_rcShop.Bottom - nShopMsgLines * nFontHeight;
+
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Top - 5, m_rcShop.Left, m_rcShop.Top,
+											m_rtShopLU.U0, m_rtShopLU.V0, m_rtShopLU.U1, m_rtShopLU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top - 5, m_rcShop.Right, m_rcShop.Top,
+											m_rtShopUp.U0, m_rtShopUp.V0, m_rtShopUp.U1, m_rtShopUp.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top - 5, m_rcShop.Right + 5, m_rcShop.Top,
+											m_rtShopRU.U0, m_rtShopRU.V0, m_rtShopRU.U1, m_rtShopRU.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Top, m_rcShop.Left, m_rcShop.Bottom,
+											m_rtShopL.U0, m_rtShopL.V0, m_rtShopL.U1, m_rtShopL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Top, m_rcShop.Right, m_rcShop.Bottom,
+											m_rtShopC.U0, m_rtShopC.V0, m_rtShopC.U1, m_rtShopC.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Top, m_rcShop.Right + 5, m_rcShop.Bottom,
+											m_rtShopR.U0, m_rtShopR.V0, m_rtShopR.U1, m_rtShopR.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left - 5, m_rcShop.Bottom, m_rcShop.Left, m_rcShop.Bottom + 5,
+											m_rtShopLL.U0, m_rtShopLL.V0, m_rtShopLL.U1, m_rtShopLL.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Left, m_rcShop.Bottom, m_rcShop.Right, m_rcShop.Bottom + 5,
+											m_rtShopLo.U0, m_rtShopLo.V0, m_rtShopLo.U1, m_rtShopLo.V1, 0xFFFFFFFF, fPopupZ );
+				m_pUIDrawPort->AddTexture( m_rcShop.Right, m_rcShop.Bottom, m_rcShop.Right + 5, m_rcShop.Bottom + 5,
+											m_rtShopRL.U0, m_rtShopRL.V0, m_rtShopRL.U1, m_rtShopRL.V1, 0xFFFFFFFF, fPopupZ );
+
+				nPopupY = m_rcShop.Top;
+			}
+		}
+
+		if( nChatMsgLines > 0 )
+		{
+			nBoxWidth = ct.ChatMsg.GetWidth();
+			m_rcChat.Left = vPopupPos(1) - nBoxWidth / 2;
+			m_rcChat.Right = m_rcChat.Left + nBoxWidth;
+			m_rcChat.Bottom = nPopupY - 10;
+			m_rcChat.Top = m_rcChat.Bottom - nChatMsgLines * nFontHeight;
+			nPopupY = m_rcChat.Top;
+
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Top - 5, m_rcChat.Left, m_rcChat.Top,
+										m_rtChatLU.U0, m_rtChatLU.V0, m_rtChatLU.U1, m_rtChatLU.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Top - 5, m_rcChat.Right, m_rcChat.Top,
+										m_rtChatUp.U0, m_rtChatUp.V0, m_rtChatUp.U1, m_rtChatUp.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Top - 5, m_rcChat.Right + 5, m_rcChat.Top,
+										m_rtChatRU.U0, m_rtChatRU.V0, m_rtChatRU.U1, m_rtChatRU.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Top, m_rcChat.Left, m_rcChat.Bottom,
+										m_rtChatL.U0, m_rtChatL.V0, m_rtChatL.U1, m_rtChatL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Top, m_rcChat.Right, m_rcChat.Bottom,
+										m_rtChatC.U0, m_rtChatC.V0, m_rtChatC.U1, m_rtChatC.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Top, m_rcChat.Right + 5, m_rcChat.Bottom,
+										m_rtChatR.U0, m_rtChatR.V0, m_rtChatR.U1, m_rtChatR.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left - 5, m_rcChat.Bottom, m_rcChat.Left, m_rcChat.Bottom + 5,
+										m_rtChatLL.U0, m_rtChatLL.V0, m_rtChatLL.U1, m_rtChatLL.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Left, m_rcChat.Bottom, m_rcChat.Right, m_rcChat.Bottom + 5,
+										m_rtChatLo.U0, m_rtChatLo.V0, m_rtChatLo.U1, m_rtChatLo.V1, 0xFFFFFFFF, fPopupZ );
+			m_pUIDrawPort->AddTexture( m_rcChat.Right, m_rcChat.Bottom, m_rcChat.Right + 5, m_rcChat.Bottom + 5,
+										m_rtChatRL.U0, m_rtChatRL.V0, m_rtChatRL.U1, m_rtChatRL.V1, 0xFFFFFFFF, fPopupZ );
+		}
+
+		// Render all elements
+		m_pUIDrawPort->FlushRenderingQueue();
+
+		// Text
+		nTextSX = m_rcName.Left + 7;
+		nTextSY = m_rcName.Top + 1;
+		// Title
+		if( ct.cha_pkstate < -9 ) nColIndex = 11;
+		else if( ct.cha_pkstate > 9 ) nColIndex = 7;
+		else nColIndex = 9;
+		// PK
+		if( ct.GetPkState() != CHA_PVP_STATE_PEACE )
+			nColIndex--;
+		m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+									GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
+
+		if( nShopMsgLines > 0 )
+		{
+			nTextSX = m_rcShop.Left + 1;
+			nTextSY = m_rcShop.Top + 1;
+			for( int i = 0; i < nShopMsgLines; i++ )
+			{
+				m_pUIDrawPort->PutTextEx( ct.ShopMsg.GetString( i ), nTextSX, nTextSY,
+											ct.ShopMsg.GetColor(), fPopupZ );
+				nTextSY += nFontHeight;
+			}
+		}
+
+		if( nChatMsgLines > 0 )
+		{
+			nTextSX = m_rcChat.Left + 1;
+			nTextSY = m_rcChat.Top + 1;
+			for( int i = 0; i < nChatMsgLines; i++ )
+			{
+				m_pUIDrawPort->PutTextEx( ct.ChatMsg.GetString( i ), nTextSX, nTextSY,
+											ct.ChatMsg.GetColor(), fPopupZ );
+				nTextSY += nFontHeight;
+			}
+
+			__int64	llCurTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+			if( llCurTime - ct.ChatMsg.GetTime() > CHATMSG_TIME_DELAY || fSqrDist > CHATMSG_SQRDIST )
+				ct.ChatMsg.Reset();
+		}
+
+		// Flush all render text queue
+		_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
+	}
+
+	////////////////////////////////////////////////////////////////////////
+	// My character
+	nChatMsgLines = _pNetwork->MyCharacterInfo.ChatMsg.GetCount();
+	if( g_iShowName > 0 || nChatMsgLines > 0 || _pNetwork->MyCharacterInfo.sbShopType != PST_NOSHOP ||
+		_pNetwork->MyCharacterInfo.pk_mode != 0 )
+	{
+		penObject = CEntity::GetPlayerEntity( 0 );
+		vObjectPos = penObject->en_plPlacement.pl_PositionVector;
+
+		// Get frame box
+		pmi = penObject->GetModelInstance();
+		ASSERT( pmi != NULL );
+		pmi->GetAllFramesBBox( boxModel );
+		boxModel.StretchByVector( pmi->mi_vStretch );
+		fHeight = boxModel.maxvect(2) - boxModel.minvect(2);
+		fRadius = fHeight * 0.5f;
+
+		// Object point to screen point
+		vObjectPos(2) += fHeight;
 		pprProjection->PreClip( vObjectPos, vViewPos );
 		pprProjection->PostClip( vViewPos, vPopupPos );
 		fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
@@ -2508,51 +4080,12 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 										m_rtNameRPK.U0, m_rtNameRPK.V0, m_rtNameRPK.U1, m_rtNameRPK.V1, colBlend, fPopupZ );
 		}
 
-		CTString strGuildname;
-
-		// Guild Name
-		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
-		{
-			strGuildname.PrintF("%s (%d)", (const char*)_pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildIndex);
-
-			// Get box region
-			//if(g_iCountry == THAILAND) 
-			#if defined G_THAI
-				nBoxWidth = FindThaiLen(strGuildname)+13; //wooss 051017
-			//else
-			#else
-				nBoxWidth = strGuildname.Length() * nFontWidth + 13;
-			#endif
-			m_rcGuildName.Left = vPopupPos(1) - nBoxWidth / 2;
-			m_rcGuildName.Right = m_rcGuildName.Left + nBoxWidth;
-			m_rcGuildName.Bottom = nPopupY - 5;
-			m_rcGuildName.Top = (m_rcGuildName.Bottom - 1 * nFontHeight) - 4;
-			nPopupY = m_rcGuildName.Top;
-			
-			m_pUIDrawPort->AddTexture( m_rcGuildName.Left, m_rcGuildName.Top, m_rcGuildName.Left + 2, m_rcGuildName.Bottom,
-										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
-			m_pUIDrawPort->AddTexture( m_rcGuildName.Left + 2, m_rcGuildName.Top, m_rcGuildName.Right - 2, m_rcGuildName.Bottom,
-										m_rtNameC.U0, m_rtNameC.V0, m_rtNameC.U1, m_rtNameC.V1, 0xFFFFFFFF, fPopupZ );
-			m_pUIDrawPort->AddTexture( m_rcGuildName.Right - 2, m_rcGuildName.Top, m_rcGuildName.Right, m_rcGuildName.Bottom,
-										m_rtNameR.U0, m_rtNameR.V0, m_rtNameR.U1, m_rtNameR.V1, 0xFFFFFFFF, fPopupZ );
-			// WSS_GUILDMASTER 070517 -------------------------->>
-			DrawGuildRankBox(m_rcGuildName,_pNetwork->MyCharacterInfo.sbGuildRank,fPopupZ);
-			// -------------------------------------------------<<
-
-		}
-
 		nShopMsgLines = 0;
 		if( _pNetwork->MyCharacterInfo.sbShopType != PST_NOSHOP )
 		{
 			nShopMsgLines = _pNetwork->MyCharacterInfo.ShopMsg.GetCount();
 
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-				nBoxWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.ShopMsg.GetString(0));
-			//else
-			#else
-				nBoxWidth = _pNetwork->MyCharacterInfo.ShopMsg.GetWidth();
-			#endif
+			nBoxWidth = _pNetwork->MyCharacterInfo.ShopMsg.GetWidth();
 			m_rcShop.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcShop.Right = m_rcShop.Left + nBoxWidth;
 
@@ -2612,21 +4145,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 
 		if( nChatMsgLines > 0 )
 		{
-#if defined (G_RUSSIA)
-			int nCurWidth = 0;
-			int nMaxWidth = 0;
-			for( int i=0; i<_pNetwork->MyCharacterInfo.ChatMsg.GetCount(); ++i )
-			{
-				nCurWidth = m_pUIDrawPort->GetTextWidth(_pNetwork->MyCharacterInfo.ChatMsg.GetString(i));
-				if( nMaxWidth < nCurWidth )
-				{
-					nMaxWidth = nCurWidth;
-				}
-			}
-			nBoxWidth = nMaxWidth;			
-#else
 			nBoxWidth = _pNetwork->MyCharacterInfo.ChatMsg.GetWidth();
-#endif
 			m_rcChat.Left = vPopupPos(1) - nBoxWidth / 2;
 			m_rcChat.Right = m_rcChat.Left + nBoxWidth;
 			m_rcChat.Bottom = nPopupY - 10;
@@ -2659,55 +4178,18 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		// Render all elements
 		m_pUIDrawPort->FlushRenderingQueue();
 
+		// Text
 		nTextSX = m_rcName.Left + 7;
 		nTextSY = m_rcName.Top + 1;
 		// Title
-#ifdef NEW_CHAO_SYS
-		BOOL buseblindchao = TRUE;
-		if(_pUIBuff->IsBuffBySkill(1395))
-			buseblindchao = FALSE;
-		if (_pNetwork->MyCharacterInfo.pkpenalty  > 19000 && _pNetwork->MyCharacterInfo.pkpenalty  <= 32000 && buseblindchao)
-			nColIndex = 14;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  > 6000 && _pNetwork->MyCharacterInfo.pkpenalty  <= 19000 && buseblindchao)
-			nColIndex = 15;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  > 0 && _pNetwork->MyCharacterInfo.pkpenalty  <= 6000 && buseblindchao)
-			nColIndex = 16;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -6000 && _pNetwork->MyCharacterInfo.pkpenalty  < 0 && buseblindchao)
-			nColIndex = 17;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -19000 && _pNetwork->MyCharacterInfo.pkpenalty  < -6000 && buseblindchao)
-			nColIndex = 18;
-		else if(_pNetwork->MyCharacterInfo.pkpenalty  >= -32000 && _pNetwork->MyCharacterInfo.pkpenalty  < -19000 && buseblindchao)
-			nColIndex = 19;
-		else nColIndex = 9;
-#else
 		if( _pNetwork->MyCharacterInfo.pkpenalty < -9 ) nColIndex = 11;
 		else if( _pNetwork->MyCharacterInfo.pkpenalty > 9 ) nColIndex = 7;
 		else nColIndex = 9;
 		// PK
 		if( _pNetwork->MyCharacterInfo.pk_mode != 0 )
 			nColIndex--;
-#endif
 		m_pUIDrawPort->PutTextEx( _pNetwork->MyCharacterInfo.name, nTextSX, nTextSY,
-									pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
-
-		// Text
-		nTextSX = m_rcGuildName.Left + 7;
-		nTextSY = m_rcGuildName.Top + 2;
-
-		// Guild Name
-		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
-		{
-			COLOR colGuildName = 0xD6A4D6FF;
-
-			if( _pNetwork->MyCharacterInfo.ubGuildNameColor == 1 )			//메라크 성주 길드 
-				colGuildName = 0xFF4500FF;
-			else if( _pNetwork->MyCharacterInfo.ubGuildNameColor == 2 )		//드라탄 성주 길드
-				colGuildName = 0xFFD700FF;
-
-				// --------------------------------------------------<<
-			m_pUIDrawPort->PutTextEx( strGuildname, nTextSX, nTextSY,
-				colGuildName, fPopupZ );
-		}
+									GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 
 		if( nShopMsgLines > 0 )
 		{
@@ -2738,15 +4220,15 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		}
 
 		// Flush all render text queue
-		GetDrawPort()->EndTextEx( TRUE );
+		_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
 	}
 
-	// Get target
-	penObject = pInfo->GetTargetEntity(eTARGET_REAL);
-
 	// If over target is not exist
-	if( !pInfo->IsTargetActive(eTARGET_REAL) || penObject == NULL )
+	if( !_pNetwork->_TargetInfoReal.bIsActive || _pNetwork->_TargetInfoReal.pen_pEntity == NULL )
 		return;
+
+	// Get target
+	penObject = _pNetwork->_TargetInfoReal.pen_pEntity;
 
 	ASSERT( penObject != NULL );
 	vObjectPos = penObject->en_plPlacement.pl_PositionVector;
@@ -2765,26 +4247,24 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	fPopupZ = ( 1 - pprProjection->pr_fDepthBufferFactor / vViewPos(3) )
 				 * pprProjection->pr_fDepthBufferMul + pprProjection->pr_fDepthBufferAdd;
 
-	COLOR colNas = pHelp->GetTargetNameColor( 2 );
+	COLOR colNas = GetTargetInfo()->GetNameColor( 2 );
 
-	SBYTE sbTargetType = pInfo->GetTargetType(eTARGET_REAL);
-	SQUAD llCount = pInfo->GetTargetCount();
-	int nPkMode = pInfo->GetTargetPKMode(eTARGET_REAL);
 	// Get name
-	if( sbTargetType == ITEM &&	llCount > 1 )
+	if( _pNetwork->_TargetInfoReal.TargetType == ITEM &&
+		_pNetwork->_TargetInfoReal.llCount > 1 )
 	{
-		strTemp.PrintF( "%I64d", llCount );
+		strTemp.PrintF( "%I64d", _pNetwork->_TargetInfoReal.llCount );
 		InsertCommaToString( strTemp );
-		colNas = GetNasColor( llCount );
-		strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
+		colNas = GetNasColor( _pNetwork->_TargetInfoReal.llCount );
+		strName.PrintF( "%s(%s)", _pNetwork->_TargetInfoReal.TargetName, strTemp );
 	}
 	else
-		strName.PrintF( "%s", pInfo->GetTargetName(eTARGET_REAL) );
+		strName.PrintF( "%s", _pNetwork->_TargetInfoReal.TargetName );
 
 	// Get box region
-	if( sbTargetType == CHARACTER )
+	if( _pNetwork->_TargetInfoReal.TargetType == CHARACTER )
 	{
-		if( nPkMode == 0 )
+		if( _pNetwork->_TargetInfoReal.PkMode == 0 )
 			nBoxWidth = strName.Length() * nFontWidth + 13;
 		else
 			nBoxWidth = strName.Length() * nFontWidth + 27;
@@ -2801,9 +4281,9 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	m_pUIDrawPort->InitTextureData( m_ptdPopupTexture, FALSE, PBT_BLEND, TRUE );
 
 	// Add render regions
-	if( sbTargetType == CHARACTER )
+	if( _pNetwork->_TargetInfoReal.TargetType == CHARACTER )
 	{
-		if( nPkMode == 3 )
+		if( _pNetwork->_TargetInfoReal.PkMode == 3 )
 		{
 			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
 										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
@@ -2812,7 +4292,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 			m_pUIDrawPort->AddTexture( m_rcName.Right - 16, m_rcName.Top, m_rcName.Right, m_rcName.Bottom,
 										m_rtNameRDefPK2.U0, m_rtNameRDefPK2.V0, m_rtNameRDefPK2.U1, m_rtNameRDefPK2.V1, 0xFFFFFFFF, fPopupZ );
 		}
-		else if( nPkMode == 0 )
+		else if( _pNetwork->_TargetInfoReal.PkMode == 0 )
 		{
 			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
 										m_rtNameL.U0, m_rtNameL.V0, m_rtNameL.U1, m_rtNameL.V1, 0xFFFFFFFF, fPopupZ );
@@ -2824,7 +4304,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		else
 		{
 			COLOR	colBlend = 0xFFFFFFFF;
-			if( nPkMode == 2 )
+			if( _pNetwork->_TargetInfoReal.PkMode == 2 )
 				colBlend = colNameBlend;
 
 			m_pUIDrawPort->AddTexture( m_rcName.Left, m_rcName.Top, m_rcName.Left + 2, m_rcName.Bottom,
@@ -2851,80 +4331,46 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	// Text
 	nTextSX = m_rcName.Left + 7;
 	nTextSY = m_rcName.Top + 1;
-	switch( sbTargetType )
+	switch( _pNetwork->_TargetInfoReal.TargetType )
 	{
 	case MOB:
 		{
-			if( penObject->IsFirstExtraFlagOn(ENF_EX1_MONSTER_MERCENARY) )
-			{
-				nColIndex = 12;
-			}
-			else if ( penObject->GetFirstExFlags() & ( ENF_EX1_TOTEM | ENF_EX1_TRAP | ENF_EX1_SUICIDE ) )
-			{
-				nColIndex = 13;
-			}
-			nLevelDiff = pInfo->GetTargetLevel(eTARGET_REAL) - _pNetwork->MyCharacterInfo.level;
+			nLevelDiff = _pNetwork->_TargetInfoReal.iLevel - _pNetwork->MyCharacterInfo.level;
 			if( nLevelDiff > 5 ) nColIndex = 0;
 			else if( nLevelDiff > 2 ) nColIndex = 1;
 			else if( nLevelDiff > -3 ) nColIndex = 2;
 			else if( nLevelDiff > -6 ) nColIndex = 3;
 			else nColIndex = 4;
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
+										GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 		}
 		break;
+
 	case NPC:
-	case P1PET:
 		{
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-				pHelp->GetTargetNameColor( 5 ), fPopupZ );
+										GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
+		}
+		break;
+
+	case PET:
+		{
+			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
+				GetTargetInfo()->GetNameColor( 5 ), fPopupZ );
 		}
 		break;
 
 	case CHARACTER:
 		{
-#ifdef NEW_CHAO_SYS
-
-			BOOL buseblindchao = TRUE;
-
-			if (penObject != NULL)
-			{
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, penObject->GetNetworkID());
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-					if (pTarget->IsBuffBySkill(1395))
-						buseblindchao = FALSE;
-				}
-			}
-
-			int nPKState = pInfo->GetTargetPKState(eTARGET_REAL);
-
-			if (nPKState > 19000 && nPKState <= 32000 && buseblindchao)
-				nColIndex = 14;
-			else if(nPKState > 6000 && nPKState <= 19000 && buseblindchao)
-				nColIndex = 15;
-			else if(nPKState > 0 && nPKState <= 6000 && buseblindchao)
-				nColIndex = 16;
-			else if(nPKState >= -6000 && nPKState < 0 && buseblindchao)
-				nColIndex = 17;
-			else if(nPKState >= -19000 && nPKState < -6000 && buseblindchao)
-				nColIndex = 18;
-			else if(nPKState >= -32000 && nPKState < -19000 && buseblindchao)
-				nColIndex = 19;
-			else nColIndex = 9;
-#else
-			if( nPKState < -9 ) nColIndex = 11;
-			else if( nPKState > 9 ) nColIndex = 7;
+			// Title
+			if( _pNetwork->_TargetInfoReal.PkState < -9 ) nColIndex = 11;
+			else if( _pNetwork->_TargetInfoReal.PkState > 9 ) nColIndex = 7;
 			else nColIndex = 9;
 			// PK
-			if( nPkMode != 0 )
+			if( _pNetwork->_TargetInfoReal.PkMode != 0 )
 				nColIndex--;
-#endif	
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( nColIndex ), fPopupZ );
+										GetTargetInfo()->GetNameColor( nColIndex ), fPopupZ );
 		}
 		break;
 
@@ -2937,12 +4383,12 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 	default:
 		{
 			m_pUIDrawPort->PutTextEx( strName, nTextSX, nTextSY,
-										pHelp->GetTargetNameColor( 2 ), fPopupZ );
+										GetTargetInfo()->GetNameColor( 2 ), fPopupZ );
 		}
 	}
 
 	// Flush all render text queue
-	GetDrawPort()->EndTextEx( TRUE );
+	_pUIMgr->GetDrawPort()->EndTextEx( TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -2961,14 +4407,9 @@ void CUIManager::RearrangeOrder( int nCurrentUI, BOOL bFrontOrder )
 	for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 	{
 		if( m_aUIOrder[iUI] == nCurrentUI )
-		{ 
 			iSelOrder = iUI;
-		}
 		else
-		{
-			if (m_apUIs[m_aUIOrder[iUI]] != NULL)
-				m_apUIs[m_aUIOrder[iUI]]->SetFocus( FALSE );
-		}
+			m_apUIs[m_aUIOrder[iUI]]->SetFocus( FALSE );
 	}
 
 	// Rearrange
@@ -2982,13 +4423,16 @@ void CUIManager::RearrangeOrder( int nCurrentUI, BOOL bFrontOrder )
 	}
 	else
 	{
-		// Find index of last UI
-		INDEX iLastUI;
-		for( iLastUI = 0; iLastUI < UI_TYPE_END; iLastUI++ )
-		{
-			if (m_apUIs[m_aUIOrder[iLastUI]] == NULL)
-				continue;
 
+#ifdef HELP_SYSTEM_1
+// [KH_070426] 3차 도움말 관련 추가
+		if(_pUIMgr->GetHelp3()->IsEnabled() && _pUIMgr->GetHelp3()->m_pMammyWnd == m_apUIs[nCurrentUI])
+			RearrangeOrder(UI_HELP3, FALSE);
+#endif
+
+		// Find index of last UI
+		for( INDEX iLastUI = 0; iLastUI < UI_TYPE_END; iLastUI++ )
+		{
 			if( !m_apUIs[m_aUIOrder[iLastUI]]->IsEnabled() )
 				break;
 		}
@@ -3000,10 +4444,6 @@ void CUIManager::RearrangeOrder( int nCurrentUI, BOOL bFrontOrder )
 		for( INDEX iUI = iSelOrder + 1; iUI < iLastUI; iUI++ )
 			m_aUIOrder[iUI - 1] = m_aUIOrder[iUI];
 		m_aUIOrder[iLastUI - 1] = nCurrentUI;
-
-// [KH_070426] 3차 도움말 관련 추가
-		if(GetHelp3()->IsEnabled() && GetHelp3()->m_pMammyWnd == m_apUIs[nCurrentUI])
-			RearrangeOrder(UI_HELP3, FALSE);
 	}
 
 	// Set focus of first window
@@ -3053,31 +4493,24 @@ void CUIManager::ChangeOrder( int nCurrentUI, int nOrder )
 // Name : SetUIGameState()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::SetUIGameState(BOOL bGameOn)
+void CUIManager::SetUIGameState( UIGameState ugsGameState )
 {
-	extern FLOAT		ter_fLODMul;
-	int		iUI;
+	m_ugsGameState = ugsGameState;
 
 	if( _bWorldEditorApp )
 		return;
 
-	if( STAGEMGR()->GetCurStage() == eSTAGE_ZONELOADING )
-	{
+	if( ugsGameState == UGS_GAMELOADING )
 		Reset();
-	}
 
-	for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+	for( int iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 	{
 		m_aUIOrder[iUI] = iUI;
-
-		if (m_apUIs[iUI] == NULL)
-			continue;
-		
 		m_apUIs[iUI]->SetEnable( FALSE );
 		m_apUIs[iUI]->SetVisible( FALSE );
 	}
 
-	if( STAGEMGR()->GetCurStage() == eSTAGE_LOGIN )
+	if( ugsGameState == UGS_LOGIN )
 	{
 		RECT	rectClient;
 		GetClientRect( _hwndMain, &rectClient );
@@ -3085,19 +4518,57 @@ void CUIManager::SetUIGameState(BOOL bGameOn)
 		pt.x = 0;	pt.y = 0;
 		ClientToScreen( _hwndMain, &pt );
 		OffsetRect( &rectClient, pt.x, pt.y );
+
+		// remember mouse pos
 		GetCursorPos( &(_pInput->inp_ptOldMousePos) );
+		// set mouse clip region
+		//ClipCursor( &rectClient );
+		// determine screen center position
 		_pInput->inp_slScreenCenterX = ( rectClient.left + rectClient.right ) / 2;
 		_pInput->inp_slScreenCenterY = ( rectClient.top + rectClient.bottom ) / 2;
+
 		// clear button's buffer
-		memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );		
+		memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );
+		
 		// remember current status
 		_pInput->inp_bInputEnabled = TRUE;
 		_pInput->inp_bPollJoysticks = FALSE;
+
 		// Set type of cursor
 		GetMouseCursor()->SetCursorType( UMCT_NORMAL );
-	}
+
+		// 로그인 활성화.
+		GetLogin()->Reset();
+		RearrangeOrder( UI_LOGIN, TRUE );
 	
-	if( bGameOn == TRUE/*STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY*/ )
+	}
+	else if( ugsGameState == UGS_SELSERVER)
+	{
+		// 로그인 비활성화 서버 선택 활성화
+		GetLogin()->Reset();
+
+		//GetSelServer()->Reset();
+		RearrangeOrder( UI_SEL_SERVER, TRUE );
+
+	}
+	else if( ugsGameState == UGS_SELCHAR )
+	{
+		GetLogin()->Reset();
+
+		GetSelChar()->Reset();
+		RearrangeOrder( UI_SEL_CHAR, TRUE );
+
+		GetOption()->SetEnable( TRUE );
+	}
+	else if( ugsGameState == UGS_CREATECHAR )
+	{
+		GetLogin()->Reset();
+		GetSelChar()->Reset();
+		GetCreateChar()->Reset();
+
+		RearrangeOrder( UI_CREATE_CHAR, TRUE );
+	}
+	else if( ugsGameState == UGS_GAMEON )
 	{
 		RECT	rectClient;
 		GetClientRect( _hwndMain, &rectClient );
@@ -3105,36 +4576,75 @@ void CUIManager::SetUIGameState(BOOL bGameOn)
 		pt.x = 0;	pt.y = 0;
 		ClientToScreen( _hwndMain, &pt );
 		OffsetRect( &rectClient, pt.x, pt.y );
+
+		// remember mouse pos
+		//GetCursorPos( &(_pInput->inp_ptOldMousePos) );
+		// set mouse clip region
+		//ClipCursor( &rectClient );
+		// determine screen center position
 		_pInput->inp_slScreenCenterX = ( rectClient.left + rectClient.right ) / 2;
 		_pInput->inp_slScreenCenterY = ( rectClient.top + rectClient.bottom ) / 2;
 
 		// clear button's buffer
 		memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );
 
-		for( iUI = UI_ALWAYS_SHOW_START; iUI < UI_ALWAYS_SHOW_END; iUI++ )
-		{
-			if (m_apUIs[iUI] == NULL)
-				continue;
+		GetLogin()->Reset();
+		GetSelChar()->Reset();
+		//GetCreateChar()->Reset();
 
+		for( int iUI = UI_ALWAYS_SHOW_START; iUI < UI_ALWAYS_SHOW_END; iUI++ )
+		{
 			m_apUIs[iUI]->SetEnable( TRUE );
 			m_apUIs[iUI]->SetVisible( TRUE );
 		}
 
 		for( iUI = UI_SELECTIVE_SHOW_START; iUI < UI_SELECTIVE_SHOW_END; iUI++ )
-		{
-			if (m_apUIs[iUI] == NULL)
-				continue;
-
 			m_apUIs[iUI]->SetEnable( TRUE );
-		}
 
 		RearrangeOrder( UI_PLAYERINFO, TRUE );
 		m_apUIs[UI_PLAYERINFO]->SetFocus( TRUE );
 
 		_pGameState->GetGameMode() = CGameState::GM_NETWORK;	
-	}
 
-	CPrintF("Loading Session \n" );
+// 주석처리 : 로딩이 완료된후 서버에서 메세지 받도록 수정함.
+// Date : 2005-11-03(오후 2:03:57), By Lee Ki-hwan
+
+		// 게임 로딩시 UI데이터  셋팅후 UIManager에서 UI셋팅을 초기화 해버림...
+		//if( GetGuildBattle()->IsInBattle() ) GetGuildBattle()->SetVisible ( TRUE );
+		//if( _pUISWDoc->IsWar() ) GetSiegeWarfare()->SetVisible ( TRUE );
+		//if( GetBilling()->GetVisible() ) GetBilling()->SetVisible( TRUE );
+		
+		/*if( m_nShowMessageBox > 0 )
+		{
+			_pUIMgr->CloseMessageBox( MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM );
+				
+			_pUIMgr->m_nShowMessageBox = MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM;
+		
+			CUIMsgBox_Info	MsgBoxInfo;	
+			CTString		strMessage;
+			
+			MsgBoxInfo.SetMsgBoxInfo(  _S( 2071, "공성지역 이동" ), UMBS_YESNO, UI_NONE, MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM );	
+			strMessage.PrintF( _S( 2072, "공성 시작 지점으로 이동하시겠습니까?" ) );
+			MsgBoxInfo.AddString( strMessage );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->m_nShowMessageBox = -1;
+		}
+		*/
+
+		GetMessenger()->SetMyInfo( _pNetwork->MyCharacterInfo.index, 
+									_pNetwork->MyCharacterInfo.name,
+									(eJob)_pNetwork->MyCharacterInfo.job,
+									ONLINE );
+	}
+	//wooss 050822 
+	else if( ugsGameState == UGS_UI_TEST )
+	{
+		// TEST UI 활성화.
+//		_pUIMgr->GetSelectList()->CreateSelectList(SLS_OK|SLS_CANCEL|SLS_PREV|SLS_NEXT,10);
+		RearrangeOrder( _pUIMgr->m_testUI_TYPE, TRUE );
+
+			
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -3187,42 +4697,18 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 	if( _bWorldEditorApp )
 		return;
 
-	if (STAGEMGR()->GetCurStage() == eSTAGE_INTRO || STAGEMGR()->GetCurStage() == eSTAGE_ZONELOADING)
-		return;
-
-	if (g_web.IsWebHandle() == TRUE)
-	{
-		MsgProcWeb(pMsg);
-		return;
-	}
-
-	if(_pGameState->GetGameMode() == CGameState::GM_RESTART ||
-		_pNetwork->bMoveCharacterSelectUI == TRUE) 
-	{
-		memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );
-		return;
-	}
-
-	int		iUI;
-
 	static BOOL	bNeedCharMsg = TRUE;
 
 //강동민 수정 시작 시스템 마우스 작업	09.09
 // NOTE : UIMouseCursor.cpp와 항상 같도록 유지.
 //#define TEXTURE_CURSOR
-#if		!defined(TEXTURE_CURSOR) && !defined(UI_TOOL)
+#ifndef TEXTURE_CURSOR
 	// Get current mouse position
 	if( pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST )
 	{
 		_pInput->inp_ptMousePos.x = LOWORD(pMsg->lParam);
 		_pInput->inp_ptMousePos.y = HIWORD(pMsg->lParam);	
 		GetMouseCursor()->SetCursorType();
-
-		m_bCursorInGame = true;
-	}
-	else
-	{
-		m_bCursorInGame = false;
 	}
 #endif
 //강동민 수정 끝 시스템 마우스 작업		09.09
@@ -3231,6 +4717,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 // 이기환 수정 시작 (11. 15) : IME 메세지 처리
 	*pbIMEProc = false;
+	_bIMEProc = false;
 
 	if ( pMsg->message == WM_IME_COMPOSITION		// IME message
 		|| pMsg->message == WM_IME_STARTCOMPOSITION 
@@ -3242,297 +4729,145 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 	{
 		WMSG_RESULT wmsgResult;
 
-		if ( (wmsgResult = MSGBOXMGR()->IMEProc(pMsg))!= WMSG_FAIL)
-		{
-			if ( wmsgResult == WMSG_SUCCESS )
-			{
-				(*pbIMEProc) = true;
-			}
-			return;
-		}
-
-		if( m_apUIs[m_aUIOrder[0]] && m_apUIs[m_aUIOrder[0]]->IsEnabled() )
+		if( m_apUIs[m_aUIOrder[0]]->IsEnabled() )
 		{
 			if ( ( wmsgResult = m_apUIs[m_aUIOrder[0]]->IMEMessage( pMsg ) ) != WMSG_FAIL ) 
 			{
 				if ( wmsgResult == WMSG_SUCCESS )
 				{
-					(*pbIMEProc) = true;
+					_bIMEProc = *pbIMEProc = true;
 				}
 				return;
 			}
 		}
 
-		// [2011/12/29 : Sora] ITS 6315수정 전로컬 IME메시지 처리하지 않는 로컬은 문제가 될것으로 예상 우선 태국만 적용
-#if defined G_THAI
-		if( g_iEnterChat == 0 && GetChattingUI()->IsFocused() )
-#else
-		if( g_iEnterChat == 0 && GetChattingUI()->IsEnabled() )
-#endif
+		if( g_iEnterChat == 0 && GetChatting()->IsEnabled() )
 		{
-			//if (g_iCountry != JAPAN || pMsg->wParam != VK_F10 )
-			#if !defined G_JAPAN
-			{
-				RearrangeOrder( UI_CHATTING_NEW, TRUE );
-				GetChattingUI()->GetInputBox()->SetFocus( TRUE );
-			}
-			#else
-			if ( pMsg->wParam != VK_F10 )
-			{
-				RearrangeOrder( UI_CHATTING_NEW, TRUE );
-				GetChattingUI()->GetInputBox()->SetFocus( TRUE );
-			}
-			#endif
-
+			RearrangeOrder( UI_CHATTING, TRUE );
+			GetChatting()->GetInputBox().SetFocus( TRUE );
 			
-			if( ( wmsgResult = GetChattingUI()->IMEMessage( pMsg ) ) != WMSG_FAIL )
+			if( ( wmsgResult = GetChatting()->IMEMessage( pMsg ) ) != WMSG_FAIL )
 			{
 				if ( wmsgResult == WMSG_SUCCESS )
 				{
-					(*pbIMEProc) = true;
+					_bIMEProc = *pbIMEProc = true;
+				
 				}
 				return;
 			}
 		}
 	}
-
-	// MSG Mouse Message
-	if (MSGBOXMGR()->MsgProc(pMsg) != WMSG_FAIL)
-		return;
+// 이기환 수정 끝 
 
 	switch( pMsg->message )
 	{
+	_pUIMgr->m_mPosX = LOWORD( pMsg->lParam );
+	_pUIMgr->m_mPosY = HIWORD( pMsg->lParam );
 	case WM_MOUSEMOVE:
 		{
 			m_bMouseInsideUIs = FALSE;
 
-			m_mPosX = LOWORD( pMsg->lParam );
-			m_mPosY = HIWORD( pMsg->lParam );
-
 			// Move holding button
-			if (m_pIconDrag != NULL)
+			if( !m_btnHoldBtn.IsEmpty() )
 			{
-				int	nOffsetX = m_pIconDrag->GetWidth() / 2; 
-				int nOffsetY = m_pIconDrag->GetHeight() / 2;
-				m_nDragX = _pInput->inp_ptMousePos.x - nOffsetX;
-				m_nDragY = _pInput->inp_ptMousePos.y - nOffsetY;
+				int	nOffset = BTN_SIZE / 2; 
+				m_btnHoldBtn.SetPos( _pInput->inp_ptMousePos.x - nOffset,
+										_pInput->inp_ptMousePos.y - nOffset );
 			}
-			else if (m_pBaseDrag != NULL)
-			{
-				int	nOffsetX = m_pBaseDrag->GetWidth() / 2; 
-				int nOffsetY = m_pBaseDrag->GetHeight() / 2;
-				m_nDragX = _pInput->inp_ptMousePos.x - nOffsetX;
-				m_nDragY = _pInput->inp_ptMousePos.y - nOffsetY;
-			}
-			
-			CUIWindow* apUIsCurrent = NULL;
 
 			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-
-				if (m_apUIs[iCurUI] == NULL)
-					continue;				
-				if( !m_apUIs[iCurUI]->IsEnabled() )
-					break;
-				if( !m_apUIs[iCurUI]->IsVisible() )
-					continue;
-				if( m_apUIs[iCurUI]->IsInside(m_mPosX, m_mPosY) )
-				{
-					apUIsCurrent = m_apUIs[iCurUI];
-					break;
-				}
-				
-			}
-
-			if (apUIsCurrent != m_apUIsOld)
-			{
-				if (m_apUIsOld)
-				{
-					m_apUIsOld->FocusLeave();
-				}					
-				m_apUIsOld = apUIsCurrent;
-			}
-			
-
-			for( INDEX jUI = UI_TYPE_START; jUI < UI_TYPE_END; jUI++ )
-			{
-				INDEX	iCurUI = m_aUIOrder[jUI];
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
 					return;
 			}
-
-			if (IsInside(m_mPosX, m_mPosY) == FALSE)
-				m_bMouseInsideUIs = FALSE;
 		}
 		break;
 
 	case WM_LBUTTONDOWN:
 		{
-			if (m_pIconDrag != NULL || m_pBaseDrag != NULL)
+			if( !m_btnHoldBtn.IsEmpty() )
 			{
 				ResetHoldBtn();
 				return;
 			}
 
-			// Kill focus of edit box
-			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-			{
-				if (m_apUIs[iUI] != NULL)
-					m_apUIs[iUI]->KillFocusEditBox();
-			}
-
-			if( IsInputLock() )
-				return;
-
-			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->IsVisible() && m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
 					return;
 			}
 
-#if		!defined(UI_TOOL)
+			// Kill focus of edit box
+			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+				m_apUIs[iUI]->KillFocusEditBox();
+
 			// 다른 pc나 npc 또는 다른 지역을 마우스로 클릭시 않아 있다면 서기.
 			if( ((CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSitting() && 
 				!((CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsActionSitting() )
 			{
-				GetCharacterInfo()->UseAction( 3 );
+				_pUIMgr->GetCharacterInfo()->UseAction( 3 );
 				return;
 			}
-#endif	// !UI_TOOL
 
-			if (STAGEMGR()->GetCurStage() != eSTAGE_LOGIN && STAGEMGR()->GetCurStage() != eSTAGE_SELSERVER)
-			{
-				_abKeysPressed[KID_MOUSE1] = TRUE;
-			}
+			_abKeysPressed[KID_MOUSE1] = TRUE;
 		}
 		break;
 
 	case WM_LBUTTONDBLCLK:
 		{
-			if( IsInputLock() )
-				return;
-
-			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
 					return;
 			}
 
-#if		!defined(UI_TOOL)
 			// 다른 pc나 npc 또는 다른 지역을 마우스로 클릭시 않아 있다면 서기.
 			if( ((CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSitting() && 
 				!((CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsActionSitting() )
 			{
-				GetCharacterInfo()->UseAction( 3 );
+				_pUIMgr->GetCharacterInfo()->UseAction( 3 );
 				return;
 			}
-#endif	// UI_TOOL
+
+			_abKeysPressed[KID_MOUSE1] = TRUE;
 		}
 		break;
 
 	case WM_LBUTTONUP:
 		{
-			if( IsInputLock() )
-			{
-				ResetHoldBtn();
-				return;
-			}
-
-			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
 					return;
 			}
 
-			GetSimplePlayerMenuUI()->ClearAll();
-
-// 			if (!m_btnHoldBtn.IsEmpty())
-// 			{
-// 				if (m_btnHoldBtn.IsWearTab() == true)
-// 				{
-// 					GetChattingUI()->AddSysMessage( _S(3048, "버릴 수 없는 아이템입니다" ), SYSMSG_ERROR );
-// 					ResetHoldBtn();
-// 					return;
-// 				}
-// 
-// 				// Drop item
-// 				if( m_btnHoldBtn.GetWhichUI() == UI_INVENTORY && !IsCSFlagOn(CSF_WAREHOUSE) )
-// 					DropItem( m_btnHoldBtn.GetItemTab(), m_btnHoldBtn.GetInvenIndex() );
-// 
-// 				// Remove button in quick slot
-// 				if( m_btnHoldBtn.GetWhichUI() == UI_QUICKSLOT )
-// 					GetQuickSlot()->RemoveBtn( m_btnHoldBtn.GetBtnID() );
-// 				
-// 				if (m_btnHoldBtn.GetWhichUI() == UI_WILDPET_INFO)
-// 				{
-// 					GetWildPetInfo()->RemoveSlot(m_btnHoldBtn);
-// 				}
-// 
-// 				ResetHoldBtn();
-// 				return;
-// 			}
-
-			if (m_pIconDrag != NULL)
+			if( !m_btnHoldBtn.IsEmpty() )
 			{
-				if (m_pIconDrag->IsWearTab() == true)
-				{
-					GetChattingUI()->AddSysMessage( _S(3048, "버릴 수 없는 아이템입니다" ), SYSMSG_ERROR );
-					ResetHoldBtn();
-					return;
-				}
-
-				CItems* pItems = m_pIconDrag->getItems();
-
-				if (pItems != NULL)
-				{
-					// Drop item
-					if (m_pIconDrag->GetWhichUI() == UI_INVENTORY && !IsCSFlagOn(CSF_WAREHOUSE))
-						DropItem(pItems->Item_Tab, pItems->InvenIndex);					
-
- 					if (m_pIconDrag->GetWhichUI() == UI_WILDPET_INFO)
- 						GetWildPetInfo()->RemoveSlot(m_pIconDrag);
-				}
+				// Drop item
+				if( m_btnHoldBtn.GetWhichUI() == UI_INVENTORY && !IsCSFlagOn(CSF_WAREHOUSE) )
+					DropItem( m_btnHoldBtn.GetItemTab(), m_btnHoldBtn.GetItemRow(),	m_btnHoldBtn.GetItemCol() );
 
 				// Remove button in quick slot
-				if (m_pIconDrag->GetWhichUI() == UI_QUICKSLOT)
-					GetQuickSlot()->RemoveBtn(m_pIconDrag);
+				if( m_btnHoldBtn.GetWhichUI() == UI_QUICKSLOT )
+					GetQuickSlot()->RemoveBtn( m_btnHoldBtn.GetBtnID() );
 
-				ResetHoldBtn();
-
-				return;
-			}
-
-			if (m_pBaseDrag != NULL)
-			{
 				ResetHoldBtn();
 				return;
 			}
 
-			if (STAGEMGR()->GetCurStage() != eSTAGE_LOGIN && STAGEMGR()->GetCurStage() != eSTAGE_SELSERVER)
-			{
-				_abKeysPressed[KID_MOUSE1] = FALSE;
-			}
+			_abKeysPressed[KID_MOUSE1] = FALSE;
 		}
 		break;
 
@@ -3547,8 +4882,6 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
@@ -3560,69 +4893,16 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 			_pInput->m_WheelPos = iWheelValue;
 		}
 		break;
-	case WM_IME_KEYDOWN	:	// 이기환 추가 (11.15)
+
 	case WM_CHAR:				// Fot edit box
 		{
-			if (pMsg->message == WM_IME_KEYDOWN) // 윈도우7에서는 IME조합중 WM_CHAR 메시지가 오지 않는다.
-			{
-// 				if (pMsg->wParam == VK_RETURN)
-// 				{
-// 					if (MSGBOXMGR()->KeyProc(pMsg) != WMSG_FAIL)
-// 					{
-// 						bNeedCharMsg = FALSE;
-// 						return;
-// 					}
-// 
-// 					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-// 					{
-// 						INDEX	iCurUI = m_aUIOrder[iUI];
-// 						if (m_apUIs[iCurUI] == NULL)
-// 							continue;
-// 						if( !m_apUIs[iCurUI]->IsEnabled() )
-// 							break;
-// 						if( m_apUIs[iCurUI]->KeyMessage( pMsg ) != WMSG_FAIL )
-// 						{
-// 							bNeedCharMsg = FALSE;
-// 							return;
-// 						}
-// 					}
-//				}
-
-				if (MSGBOXMGR()->KeyProc(pMsg) != WMSG_FAIL)
-				{
-					bNeedCharMsg = FALSE;
-					return;
-				}
-
-				for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-				{
-					INDEX	iCurUI = m_aUIOrder[iUI];
-					if (m_apUIs[iCurUI] == NULL)
-						continue;
-					if( !m_apUIs[iCurUI]->IsEnabled() )
-						break;
-					if( m_apUIs[iCurUI]->KeyMessage( pMsg ) != WMSG_FAIL )
-					{
-						bNeedCharMsg = FALSE;
-						return;
-					}
-				}
-
-				_pInput->SendIMEKeyInput(pMsg);
-			}
-			
 			if( bNeedCharMsg )
 			{
-				if (MSGBOXMGR()->CharProc(pMsg) != WMSG_FAIL)
-					return;
-
 				if( g_iEnterChat )
 				{
 					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 					{
 						INDEX	iCurUI = m_aUIOrder[iUI];
-						if (m_apUIs[iCurUI] == NULL)
-							continue;
 						if( !m_apUIs[iCurUI]->IsEnabled() )
 							break;
 						if( m_apUIs[iCurUI]->CharMessage( pMsg ) != WMSG_FAIL )
@@ -3637,12 +4917,12 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 							return;
 					}
 
-					if( GetChattingUI()->IsEnabled() )
+					if( GetChatting()->IsEnabled() )
 					{
-						RearrangeOrder( UI_CHATTING_NEW, TRUE );
-						GetChattingUI()->GetInputBox()->SetFocus( TRUE );
+						RearrangeOrder( UI_CHATTING, TRUE );
+						GetChatting()->GetInputBox().SetFocus( TRUE );
 
-						if( GetChattingUI()->CharMessage( pMsg ) != WMSG_FAIL )
+						if( GetChatting()->CharMessage( pMsg ) != WMSG_FAIL )
 							return;
 					}
 				}
@@ -3650,19 +4930,30 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 		}
 		break;
 
+	case WM_IME_KEYDOWN	:	// 이기환 추가 (11.15)
 	case WM_KEYDOWN:		// For short cut and edit box
 		{
-			if (MSGBOXMGR()->KeyProc(pMsg) != WMSG_FAIL)
+			// 이기환 수정 시작  (11.19) : WM_CHAR 로 이동시 영문자 무시 하는 것 방지를 위해									
+			if ( pMsg->wParam == VK_PROCESSKEY ) 
 			{
-				bNeedCharMsg = FALSE;
+				if( m_ugsGameState == UGS_GAMEON && g_iEnterChat &&
+					GetPlayerInfo()->ProcessShortCut( pMsg ) )
+				{
+					// Kill focus of edit box
+					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+						m_apUIs[iUI]->KillFocusEditBox();
+
+					bNeedCharMsg = FALSE;
+				}
+
+				_bIMEProc = *pbIMEProc = true; 
 				return;
 			}
+			// 이기환 수정 끝
 
-			for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+			for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 			{
 				INDEX	iCurUI = m_aUIOrder[iUI];
-				if (m_apUIs[iCurUI] == NULL)
-					continue;
 				if( !m_apUIs[iCurUI]->IsEnabled() )
 					break;
 				if( m_apUIs[iCurUI]->KeyMessage( pMsg ) != WMSG_FAIL )
@@ -3672,19 +4963,14 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				}
 			}
 
-			if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY )
+			if( m_ugsGameState == UGS_GAMEON )
 			{
 				// Short cut
 				if( GetPlayerInfo()->ProcessShortCut( pMsg ) )
 				{
 					// Kill focus of edit box
 					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-					{
-						if (m_apUIs[iUI] == NULL)
-							continue;
-
 						m_apUIs[iUI]->KillFocusEditBox();
-					}
 
 					bNeedCharMsg = FALSE;
 					return;
@@ -3697,9 +4983,9 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 					// 1. 엔터 체팅 일 경우 체팅 포커스 취소 
 					if ( g_iEnterChat )
 					{
-						if ( GetChattingUI()->GetInputBox()->IsFocused() )
+						if ( GetChatting()->GetInputBox().IsFocused() )
 						{
-							GetChattingUI()->GetInputBox()->SetFocus( FALSE );
+							GetChatting()->GetInputBox().SetFocus( FALSE );
 							return;
 						}
 					}
@@ -3712,27 +4998,6 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 					// FIXME : RearrangeOrder에 보면 제일 위에 떠 있는 윈도우를 알 수 있지만,
 					// FIXME : UIWindow에 Close함수도 없구, 나머지 UI들에 CLose함수가 다 제각각이라서 처리하기 애매함.
 					// FiXME : 일단은 인벤토리와 캐릭터 인포만 닫도록 임시적으로 처리함.
-					if (GetCashShopEX()->IsVisible())
-					{
-						if (GetCashShopEX()->IsPopupOpened())
-						{
-							GetCashShopEX()->SetPopupVisible(FALSE);
-						}
-						else
-						{
-							RearrangeOrder(UI_CASHSHOP_EX, FALSE);
-						}
-						return;
-					}
-
-					if( m_apUIs[GetUIIndexByOrder(0)]->IsVisible() )
-					{
-						if( m_apUIs[GetUIIndexByOrder(0)]->CloseWindowByEsc() )
-						{
-							bNeedCharMsg = FALSE;
-							return;
-						}
-					}
 					if( GetInventory()->IsVisible() || GetCharacterInfo()->IsVisible() )
 					{
 						if( GetInventory()->IsVisible() )						
@@ -3743,7 +5008,25 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 						bNeedCharMsg = FALSE;
 						return;
+					}	
+					
+					//esc키로 거래 대행과 아이리스 상점을 닫을수 있도록 추가
+					if( GetCashShop()->IsVisible() )
+					{
+						GetCashShop()->CloseCashShop();
+
+						bNeedCharMsg = FALSE;
+						return;
 					}
+
+					if( GetAuction()->IsVisible() )
+					{
+						GetAuction()->CloseAuction();
+
+						bNeedCharMsg = FALSE;
+						return;
+					}
+
 
 					//2. ESC로 동작 정지 되는 Player 동작이 활성화 되어 있을 경우 취소 
 					if ( penPlayerEntity->CheckEscKey() )
@@ -3788,7 +5071,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				}			
 			}
 			// 키눌린 상태를 확인하기 위해서 두개의 UI만 예외처리			
-			if( m_apUIs[UI_MAP] != NULL && m_apUIs[UI_MAP]->IsEnabled() )
+			if( m_apUIs[UI_MAP]->IsEnabled() )
 			{
 				if( m_apUIs[UI_MAP]->KeyMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -3797,7 +5080,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 				}
 			}
 
-			if( m_apUIs[UI_RADAR] != NULL && m_apUIs[UI_RADAR]->IsEnabled() )
+			if( m_apUIs[UI_RADAR]->IsEnabled() )
 			{
 				if( m_apUIs[UI_RADAR]->KeyMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -3814,26 +5097,17 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 	case WM_RBUTTONDOWN:
 		{
-			if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY )
+			if( m_ugsGameState == UGS_GAMEON )
 			{
-				for( iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+				for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
 				{
 					INDEX	iCurUI = m_aUIOrder[iUI];
-					if (m_apUIs[iCurUI] == NULL)
-						continue;
 					if( !m_apUIs[iCurUI]->IsEnabled() )
 						break;
 					if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->MouseMessage( pMsg ) != WMSG_FAIL )
 						return;
 				}
 
-				GetSimplePlayerMenuUI()->ClearAll();
-
-				_abKeysPressed[KID_MOUSE2] = TRUE;
-				m_bRButtonDown = TRUE;
-			}
-			else if(STAGEMGR()->GetCurStage() == eSTAGE_CREATECHAR)
-			{
 				_abKeysPressed[KID_MOUSE2] = TRUE;
 				m_bRButtonDown = TRUE;
 			}
@@ -3842,7 +5116,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 	case WM_RBUTTONDBLCLK:
 		{
-			if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY )
+			if( m_ugsGameState == UGS_GAMEON )
 			{
 				_abKeysPressed[KID_MOUSE2] = TRUE;
 				m_bRButtonDown = TRUE;
@@ -3852,8 +5126,7 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 	case WM_RBUTTONUP:
 		{
-			if (STAGEMGR()->GetCurStage() != eSTAGE_LOGIN && STAGEMGR()->GetCurStage() != eSTAGE_SELSERVER)
-				_abKeysPressed[KID_MOUSE2] = FALSE;
+			_abKeysPressed[KID_MOUSE2] = FALSE;
 			m_bRButtonDown = FALSE;
 		}
 		break;
@@ -3861,41 +5134,37 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 	case WM_MBUTTONDOWN:
 	case WM_MBUTTONDBLCLK:
 		{
-			if (STAGEMGR()->GetCurStage() != eSTAGE_LOGIN && STAGEMGR()->GetCurStage() != eSTAGE_SELSERVER)
-				_abKeysPressed[KID_MOUSE3] = TRUE;
+			_abKeysPressed[KID_MOUSE3] = TRUE;
 		}
 		break;
 
 	case WM_MBUTTONUP:
 		{
-			if (STAGEMGR()->GetCurStage() != eSTAGE_LOGIN && STAGEMGR()->GetCurStage() != eSTAGE_SELSERVER)
-				_abKeysPressed[KID_MOUSE3] = FALSE;
+			_abKeysPressed[KID_MOUSE3] = FALSE;
 		}
 		break;
 
 	case WM_SYSKEYDOWN:
 		{
 			// F10
-			if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY && pMsg->wParam == VK_F10 )
+			if( m_ugsGameState == UGS_GAMEON && pMsg->wParam == VK_F10 )
 			{
-				if ( g_iEnterChat && !IsFocusAllEditBox())
-					GetQuickSlot()->UseQuickSlot( 21 );
-				
+				GetQuickSlot()->UseQuickSlot( 9 );
+
+				// Kill focus of edit box
+				for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
+					m_apUIs[iUI]->KillFocusEditBox();
+
 				return;
 			}
 			// Short cut
 			else if( _abKeysPressed[KID_LALT] )
 			{
-				if( STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY && GetPlayerInfo()->ProcessShortCut( pMsg ) )
+				if( m_ugsGameState == UGS_GAMEON && GetPlayerInfo()->ProcessShortCut( pMsg ) )
 				{
 					// Kill focus of edit box
 					for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-					{
-						if (m_apUIs[iUI] == NULL)
-							continue;
-
 						m_apUIs[iUI]->KillFocusEditBox();
-					}
 				}
 
 				return;
@@ -3914,86 +5183,11 @@ void CUIManager::MsgProc( MSG *pMsg, BOOL *pbIMEProc )
 
 	case WM_SETCURSOR:			//강동민 수정 시작 시스템 마우스 작업	09.09
 		{
-			if (g_web.GetWebHandle())
-			{
-				GetMouseCursor()->SetCursorNULL();
-			}
-			else
-			{
-				GetMouseCursor()->SetCursorType();
-			}
+			GetMouseCursor()->SetCursorType();
 		}
 		break;					//강동민 수정 끝 시스템 마우스 작업		09.09
-		
-		// key press bug fix. [11/25/2009 rumist]
-	case WM_ACTIVATEAPP:
-		{
-			// 윈도우 포커스를 잃었을때 키보드나 마우스로 부터 받았던 모든 메시지 버퍼를
-			// 날려버린다. 이유는 윈도우 특성상 메시지가 호출(!)되었던 시점에서만
-			// 스캔코드를 쓰기 때문.
-			// 즉, 스캔 코드에 입력된 후 포커스를 잃어버리면 메시지버퍼는 이전 내용을
-			// 가진채로 처리하게 된다. 이때문에 계속 달리기나, 지속적인 클릭이 발생한다.	
-			if( pMsg->wParam == FALSE )
-			{
-				memset( _abKeysPressed, 0, sizeof( _abKeysPressed ) );
-			}
-		}
-		break;
 	}
 }
-
-
-void CUIManager::MsgSimpleProc( MSG *pMsg )
-{
-	switch( pMsg->message )
-	{
-	case WM_IME_COMPOSITION :
-	case WM_IME_STARTCOMPOSITION :
-	case WM_IME_ENDCOMPOSITION :
-	case WM_IME_NOTIFY :
-	case WM_INPUTLANGCHANGE :
-	case WM_INPUTLANGCHANGEREQUEST :
-	case WM_SYSKEYDOWN :
-		{
-			IMEMessageProc(pMsg);
-		}
-		break;
-	case WM_KEYDOWN:
-		{
-			KeyMessageProc(pMsg);
-		}
-		break;
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_LBUTTONDBLCLK:
-	case WM_RBUTTONDOWN:
-	case WM_RBUTTONUP:
-	case WM_RBUTTONDBLCLK:
-	case WM_MOUSEMOVE:
-		{
-			MouseMessage(pMsg);
-		}		
-		break;
-	case WM_MOUSEWHEEL:
-		{
-			POINT	pt;
-			pt.x = LOWORD( pMsg->lParam );
-			pt.y = HIWORD( pMsg->lParam );
-
-			ScreenToClient( _hwndMain, &pt );
-			pMsg->lParam = MAKEWPARAM( pt.x, pt.y );
-
-			MouseMessage(pMsg);
-		}		
-		break;
-	case WM_CHAR:
-		{
-			CharMessageProc(pMsg);
-		}
-		break;
-	}
-}
-
 
 // ----------------------------------------------------------------------------
 // Name : IsInsideUpperUIs()
@@ -4001,8 +5195,7 @@ void CUIManager::MsgSimpleProc( MSG *pMsg )
 // ----------------------------------------------------------------------------
 BOOL CUIManager::IsInsideUpperUIs( INDEX iCurUIIndex, int nX, int nY )
 {
-	INDEX iCurUIOrder;
-	for( iCurUIOrder = UI_TYPE_START; iCurUIOrder < UI_TYPE_END; iCurUIOrder++ )
+	for( INDEX iCurUIOrder = UI_TYPE_START; iCurUIOrder < UI_TYPE_END; iCurUIOrder++ )
 	{
 		if( iCurUIIndex == m_aUIOrder[iCurUIOrder] )
 			break;
@@ -4011,10 +5204,6 @@ BOOL CUIManager::IsInsideUpperUIs( INDEX iCurUIIndex, int nX, int nY )
 	for( INDEX iUIOrder = UI_TYPE_START; iUIOrder < iCurUIOrder; iUIOrder++ )
 	{
 		INDEX	iCurUI = m_aUIOrder[iUIOrder];
-
-		if (m_apUIs[iCurUI] == NULL)
-			continue;
-
 		if( m_apUIs[iCurUI]->IsVisible() &&	m_apUIs[iCurUI]->IsInside( nX, nY ) )
 			return TRUE;
 	}
@@ -4022,6 +5211,7 @@ BOOL CUIManager::IsInsideUpperUIs( INDEX iCurUIIndex, int nX, int nY )
 	return FALSE;
 }
 
+#ifdef HELP_SYSTEM_1
 // wooss 070324 --------------------------------------------------->>
 // kw : WSS_HELP_SYSTEM_1
 void CUIManager::LoadHelp1Data( const CTFileName &fnString )
@@ -4032,7 +5222,7 @@ void CUIManager::LoadHelp1Data( const CTFileName &fnString )
 	CTFileStream	fsString;
 	fsString.Open_t( fnString );
 
-	char	szTemp[8196];
+	char	szTemp[4096];
 	INDEX	iIndex, iLength;
 	INDEX	iLastIndex = 0;
 	INDEX	iTotalCount = 0;
@@ -4055,11 +5245,6 @@ void CUIManager::LoadHelp1Data( const CTFileName &fnString )
 			szTemp[iLength] = NULL;
 			m_aHelp1Data[iIndex].m_strName = szTemp;
 		}
-		else
-		{
-			SetNoTranslateFlag( TRANS_NAME, &m_aHelp1Data[iIndex].transFlag );
-		}
-
 		// desc
 		fsString >> iLength;
 		if( iLength > 0 )
@@ -4068,16 +5253,6 @@ void CUIManager::LoadHelp1Data( const CTFileName &fnString )
 			szTemp[iLength] = NULL;
 			m_aHelp1Data[iIndex].m_strDesc = szTemp;
 		}
-		else
-		{
-			SetNoTranslateFlag( TRANS_DESC, &m_aHelp1Data[iIndex].transFlag );
-		}
-
-		if( m_aHelp1Data[iIndex].transFlag > 0 )
-		{
-			SetNoTranslationString( HELP1_STRING, iIndex );
-		}
-
 		// subNum
 		fsString >> m_aHelp1Data[iIndex].m_subNum;
 		// subLevel
@@ -4098,53 +5273,12 @@ void CUIManager::LoadHelp1Data( const CTFileName &fnString )
 		fsString >> m_aHelp1Data[iIndex].m_uv_y;
 		fsString >> m_aHelp1Data[iIndex].m_width;
 		fsString >> m_aHelp1Data[iIndex].m_height;
-		
+
 	}
 
 }
-
-void CUIManager::LoadHelp1String()
-{
-	StringLoader* pLoader = StringLoader::getSingleton();
-
-	if (pLoader == NULL)
-		return;
-
-	pLoader->LoadString(eSTRING_HELP1, g_iCountry);
-
-	int		i, nIdx;
-	int		nMax = m_aHelp1Data.Count();
-	const char* pRet = NULL;
-	const char* strtmp;
-
-	for (i = 0; i < nMax; ++i)
-	{
-		nIdx = m_aHelp1Data[i].m_index;
-
-		if (nIdx >= 0)
-		{
-			strtmp = pLoader->getData(eSTRING_HELP1, nIdx, 0);
-			if (strtmp != NULL)
-				m_aHelp1Data[i].m_strName = strtmp;
-			else
-				SetNoTranslateFlag(TRANS_NAME, &m_aHelp1Data[i].transFlag);
-
-			strtmp = pLoader->getData(eSTRING_HELP1, nIdx, 1);
-			
-			if (strtmp != NULL)
-				m_aHelp1Data[i].m_strDesc = strtmp;
-			else
-				SetNoTranslateFlag( TRANS_DESC, &m_aHelp1Data[i].transFlag );
-
-			if( m_aHelp1Data[i].transFlag > 0 )
-			{
-				SetNoTranslationString( HELP1_STRING, i );
-			}
-		}
-	}
-
-	pLoader->release(eSTRING_HELP1);
-}
+// -----------------------------------------------------------------<<
+#endif
 
 // ----------------------------------------------------------------------------
 // Name : Reset()
@@ -4153,11 +5287,6 @@ void CUIManager::LoadHelp1String()
 void CUIManager::LoadStringData( const CTFileName &fnString )
 {
 	if( m_aStringData.Count() > 0 )
-		return;
-
-	CJobInfo* pInfo = CJobInfo::getSingleton();
-
-	if (pInfo == NULL)
 		return;
 
 	CTFileStream	fsString;
@@ -4182,10 +5311,6 @@ void CUIManager::LoadStringData( const CTFileName &fnString )
 			fsString.Read_t( szTemp, iLength );
 			szTemp[iLength] = NULL;
 			m_aStringData[iIndex] = szTemp;
-		}
-		else
-		{
-			SetNoTranslationString( CLIENT_STRING, iIndex );			
 		}
 	}
 
@@ -4235,70 +5360,28 @@ void CUIManager::LoadStringData( const CTFileName &fnString )
 	_pGameState->m_astrErrorMsg[MSG_FAIL_CANNT_ENABLE_AREA] = CTString("area can't enable msg error");	// MSG_FAIL_CANNT_ENABLE_AREA
 																								// wooss 050824
 	_pGameState->m_astrErrorMsg[MSG_FAIL_NOTLEVEL_FORDELETE] = CTString("Something wrong, This charater can't delete");	// MSG_FAIL_DELETE_CHARATER (cause level is high(5))
-	_pGameState->m_astrErrorMsg[MSG_FAIL_DB_DELETE_DELAY_CHAR] = _s("만 18세 이상만 접속할 수 있습니다.");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_SCARD_NOT_MATCHING] = _s("보안 카드 인증 실패");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_BLOCK_USER] = _s("패스워드 입력 3번 오류로 블럭되었습니다.");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_BLOCK_ACCOUNT] = _s("계정 블럭상태");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_USE_SECURE_SYSTEM] = _s("전화 보안 시스템 사용 유저");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_CANNOT_CREATE_NS] = _S( 4700, "90레벨이상 캐릭터가 없거나, 이미 나이트쉐도우 캐릭터가 존재합니다.");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_DOESNOT_LASTCHAOSID] = _S(4759, "아이디가 존재하지 않습니다.");
-	_pGameState->m_astrErrorMsg[MSG_FAIL_CANNOT_CONNECT_UNDER_FIFTEEN] = _s("만 15세 미만의 계정은 게임을 이용하실 수 없습니다.");
 	_pGameState->m_astrErrorMsg[MSG_TIME_OUT] = GetString( 41 );			// TIME_OUT
-	
-//	if(g_iCountry == HONGKONG)
-#if defined G_HONGKONG
-	{
-		_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_BLOCK_ACCOUNT] = GetString( 4169 );
-	}
-	//else
-#else
-	{
-		_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_BLOCK_ACCOUNT] = GetString( 41 );
-	}
-#endif
-	_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_USE_SECURE_SYSTEM] = GetString(4168);
-
 	_pGameState->m_astrErrorMsg[MSG_FAIL_LOGINSERV_BLOCK_USER] = GetString(4116);	//ttos_080410 : 브라질 비밀번호 3회 제한
 
-	pInfo->SetName( TITAN, GetString( 43 ) );
-	pInfo->SetName( KNIGHT, GetString( 44 ) );
-	pInfo->SetName( HEALER, GetString( 45 ) );
-	pInfo->SetName( MAGE, GetString( 46 ) );
-	pInfo->SetName( ROGUE, GetString( 47 ) );
-	pInfo->SetName( SORCERER, GetString( 48 ) );
-	pInfo->SetName( NIGHTSHADOW, _S(4410, "나이트쉐도우") );
-#ifdef CHAR_EX_ROGUE
-	pInfo->SetName( EX_ROGUE, _S( 5732, "EX로그" ) );	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	pInfo->SetName( EX_MAGE, _S( 5820, "아크메이지" ) );	// 2013/01/08 jeil EX메이지 추가 스트링 나오면 추가 수정 필요 
-#endif
+	JobInfo().SetName( TITAN, GetString( 43 ) );
+	JobInfo().SetName( KNIGHT, GetString( 44 ) );
+	JobInfo().SetName( HEALER, GetString( 45 ) );
+	JobInfo().SetName( MAGE, GetString( 46 ) );
+	JobInfo().SetName( ROGUE, GetString( 47 ) );
+	JobInfo().SetName( SORCERER, GetString( 48 ) );
 	
-	pInfo->SetExtensionName( KNIGHT, 0, _S( 1188, "로열 나이트" ) );	
-	pInfo->SetExtensionName( KNIGHT, 1, _S( 1189, "템플 나이트" ) );	
-	pInfo->SetExtensionName( TITAN, 0, _S( 1190, "하이랜더" ) );		
-	pInfo->SetExtensionName( TITAN, 1, _S( 1191, "워 마스터" ) );	
-	pInfo->SetExtensionName( HEALER, 0, _S( 1192, "아처" ) );		
-	pInfo->SetExtensionName( HEALER, 1, _S( 1193, "클레릭" ) );		
-	pInfo->SetExtensionName( MAGE, 0, _S( 1194, "위자드" ) );		
-	pInfo->SetExtensionName( MAGE, 1, _S( 1195, "위치" ) );			
-	pInfo->SetExtensionName( ROGUE, 0, _S( 1196, "어쌔신" ) );		
-	pInfo->SetExtensionName( ROGUE, 1, _S( 1197, "레인저" ) );		
-	pInfo->SetExtensionName( SORCERER, 0, _S(2324, "엘리멘탈 리스트" ) );
-	pInfo->SetExtensionName( SORCERER, 1, _S(2325, "스페셜 리스트" ) );
-	pInfo->SetExtensionName( NIGHTSHADOW, 0, _S(4410, "나이트쉐도우") );
-	pInfo->SetExtensionName( NIGHTSHADOW, 1, _S(4410, "나이트쉐도우") );
-#ifdef CHAR_EX_ROGUE
-	pInfo->SetExtensionName( EX_ROGUE, 0, _S( 5734, "EX어쌔신" ) );		// [2012/08/27 : Sora] EX로그 추가
-	pInfo->SetExtensionName( EX_ROGUE, 1, _S( 5735, "EX레인저" ) );		// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE	// 2013/01/08 jeil EX메이지 추가 스트링 나오면 추가 수정 필요 
-	pInfo->SetExtensionName( EX_MAGE, 0, _S( 5822, "아크위자드" ) );	
-	pInfo->SetExtensionName( EX_MAGE, 1, _S( 5823, "아크위치" ) );		
-#endif
-
-	// [2010/08/27 : Sora] ADD_SUBJOB
-	m_strSubJobName[0] = _S(5048, "상인");
+	JobInfo().SetExtensionName( KNIGHT, 0, _S( 1188, "로열 나이트" ) );	
+	JobInfo().SetExtensionName( KNIGHT, 1, _S( 1189, "템플 나이트" ) );	
+	JobInfo().SetExtensionName( TITAN, 0, _S( 1190, "하이랜더" ) );		
+	JobInfo().SetExtensionName( TITAN, 1, _S( 1191, "워 마스터" ) );	
+	JobInfo().SetExtensionName( HEALER, 0, _S( 1192, "아처" ) );		
+	JobInfo().SetExtensionName( HEALER, 1, _S( 1193, "클레릭" ) );		
+	JobInfo().SetExtensionName( MAGE, 0, _S( 1194, "위자드" ) );		
+	JobInfo().SetExtensionName( MAGE, 1, _S( 1195, "위치" ) );			
+	JobInfo().SetExtensionName( ROGUE, 0, _S( 1196, "어쌔신" ) );		
+	JobInfo().SetExtensionName( ROGUE, 1, _S( 1197, "레인저" ) );		
+	JobInfo().SetExtensionName( SORCERER, 0, _S(2324, "엘리멘탈 리스트" ) );
+	JobInfo().SetExtensionName( SORCERER, 1, _S(2325, "스페셜 리스트" ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -4339,20 +5422,16 @@ CTString & CUIManager::GetString( INDEX iIndex, INDEX iSrc )
 {
 	ASSERT( iIndex < m_aStringData.Count() );
 
-	//extern INDEX	g_iCountry;
-	//if( g_iCountry != KOREA )
-	#if !defined G_KOR
-		//return m_aStringData[iIndex];
-		return GetString( iIndex );
-	#endif
+	extern INDEX	g_iCountry;
+	if( g_iCountry != KOREA )
+		return m_aStringData[iIndex];
 
 	static const CTString	strReplace[4] = { "<를>", "<가>", "<과>", "<는>" };
 	static const CTString	strReplace1[4] = { "를", "가", "와", "는" };
 	static const CTString	strReplace2[4] = { "을", "이", "과", "은" };
 	static CTString			strOrig;
 
-	//strOrig = m_aStringData[iIndex];
-	strOrig = GetString(iIndex);
+	strOrig = m_aStringData[iIndex];
 
 	if( CompareFinalConsonant( iSrc ) )
 	{
@@ -4383,10 +5462,8 @@ CTString & CUIManager::GetString( INDEX iIndex, const char *szSrc )
 	ASSERT( iIndex < m_aStringData.Count() );
 
 	
-	//if( g_iCountry != KOREA )
-	#if !defined G_KOR
-		return GetString(iIndex);
-	#endif
+	if( g_iCountry != KOREA )
+		return m_aStringData[iIndex];
 
 	static const CTString	strReplace[4] = { "<를>", "<가>", "<과>", "<는>" };
 	static const CTString	strReplace1[4] = { "를", "가", "와", "는" };
@@ -4395,8 +5472,7 @@ CTString & CUIManager::GetString( INDEX iIndex, const char *szSrc )
 	char					szCompSrc[2];
 	INDEX					iLength;
 
-	//strOrig = m_aStringData[iIndex];
-	strOrig = GetString(iIndex);
+	strOrig = m_aStringData[iIndex];
 
 	iLength = strlen( szSrc );
 	szCompSrc[0] = szSrc[iLength - 2];
@@ -4430,11 +5506,8 @@ CTString & CUIManager::GetString( INDEX iIndex, const CTString &strSrc )
 	ASSERT( iIndex < m_aStringData.Count() );
 
 	
-//	if( g_iCountry != KOREA )
-	#if !defined G_KOR
-		//return m_aStringData[iIndex];
-		return GetString(iIndex);
-	#endif
+	if( g_iCountry != KOREA )
+		return m_aStringData[iIndex];
 
 	static const CTString	strReplace[4] = { "<를>", "<가>", "<과>", "<는>" };
 	static const CTString	strReplace1[4] = { "를", "가", "와", "는" };
@@ -4443,8 +5516,7 @@ CTString & CUIManager::GetString( INDEX iIndex, const CTString &strSrc )
 	char					szCompSrc[2];
 	INDEX					iLength;
 
-	//strOrig = m_aStringData[iIndex];
-	strOrig = GetString(iIndex);
+	strOrig = m_aStringData[iIndex];
 
 	iLength = strSrc.Length();
 	szCompSrc[0] = strSrc[iLength - 2];
@@ -4478,11 +5550,8 @@ CTString & CUIManager::GetString( INDEX iIndex, const char *szSrc1, const char *
 	ASSERT( iIndex < m_aStringData.Count() );
 
 	
-	//if( g_iCountry != KOREA )
-	#if !defined G_KOR
-		//return m_aStringData[iIndex];
-		return GetString(iIndex);
-	#endif
+	if( g_iCountry != KOREA )
+		return m_aStringData[iIndex];
 
 	static const CTString	strReplace[4] = { "<를>", "<가>", "<과>", "<는>" };
 	static const CTString	strReplace1[4] = { "를", "가", "와", "는" };
@@ -4491,8 +5560,7 @@ CTString & CUIManager::GetString( INDEX iIndex, const char *szSrc1, const char *
 	char					szCompSrc[2];
 	INDEX					iLength;
 
-	//strOrig = m_aStringData[iIndex];
-	strOrig = GetString(iIndex);
+	strOrig = m_aStringData[iIndex];
 
 	iLength = strlen( szSrc1 );
 	szCompSrc[0] = szSrc1[iLength - 2];
@@ -4546,11 +5614,8 @@ CTString & CUIManager::GetString( INDEX iIndex, const CTString &strSrc1, const C
 	ASSERT( iIndex < m_aStringData.Count() );
 
 	
-	//if( g_iCountry != KOREA )
-	#if !defined G_KOR
-		//return m_aStringData[iIndex];
-		return GetString(iIndex);
-	#endif
+	if( g_iCountry != KOREA )
+		return m_aStringData[iIndex];
 
 	static const CTString	strReplace[4] = { "<를>", "<가>", "<과>", "<는>" };
 	static const CTString	strReplace1[4] = { "를", "가", "와", "는" };
@@ -4559,8 +5624,7 @@ CTString & CUIManager::GetString( INDEX iIndex, const CTString &strSrc1, const C
 	char					szCompSrc[2];
 	INDEX					iLength;
 
-	//strOrig = m_aStringData[iIndex];
-	strOrig = GetString(iIndex);
+	strOrig = m_aStringData[iIndex];
 
 	iLength = strSrc1.Length();
 	szCompSrc[0] = strSrc1[iLength - 2];
@@ -4612,7 +5676,6 @@ CTString & CUIManager::GetString( INDEX iIndex, const CTString &strSrc1, const C
 // ----------------------------------------------------------------------------
 void CUIManager::Reset()
 {
-	int		iUI;
 	m_nShowMessageBox = -1;
 
 	// Portal
@@ -4632,28 +5695,18 @@ void CUIManager::Reset()
 
 	// Unlock inventory
 	GetInventory()->Lock( FALSE, FALSE, LOCK_NONE );
-	GetInventory()->SetLockSelect(false);
 
-#ifdef ENABLE_GUILD_STASH
-	GetGuildStash_N()->CloseStash();
-#endif
-
-
-#ifdef	IMPROV1107_NOTICESYSTEM
-	// 자동 공지 시스템 [11/18/11 trylord]
-	GetChattingUI()->LoadScheduleSystemMessage();
-#endif
+	// Unlock requesting quest
+	//GetCharacterInfo()->UnlockQuest();
+	CUIQuestBook::UnlockQuest();
 
 	// Unlock using stat point
 	GetCharacterInfo()->UnlockStatPoint();
 
 	GetMessenger()->Reset();
 
-	if (isCreateVisible(UI_MYSTERYOUSBEAD) == true)
-		GetMysteryousBead()->CloseUI();
-
 	// Find message box and close it
-	for( iUI = UI_MESSAGEBOX_START; iUI < UI_MESSAGEBOX_END; iUI++ )
+	for( int iUI = UI_MESSAGEBOX_START; iUI < UI_MESSAGEBOX_END; iUI++ )
 	{
 		if( m_apUIs[iUI]->IsEnabled())
 		{
@@ -4673,100 +5726,93 @@ void CUIManager::Reset()
 }
 //강동민 수정 끝 다중 공격 작업		09.06
 
+// ----------------------------------------------------------------------------
+// Name : Lock()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIManager::Lock(BOOL bLock)
+{
+	if(m_ugsGameState == UGS_LOGIN)
+	{
+		GetLogin()->Lock(bLock);
+	}
+	else if(m_ugsGameState == UGS_SELCHAR)
+	{
+		GetSelChar()->Lock(bLock);
+	}
+	else if(m_ugsGameState == UGS_SELSERVER)
+	{
+		GetSelServer()->Lock(bLock);
+	}
+	else if(m_ugsGameState == UGS_CREATECHAR)
+	{
+		GetCreateChar()->Lock(bLock);
+	}
+}
 
 // ========================================================================= //
 //                             Command functions                             //
 // ========================================================================= //
-static int	nTempTab, nTempInvenIdx;
+static int	nTempTab, nTempRow, nTempCol;
 
 // ----------------------------------------------------------------------------
 // Name : DropItem()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::DropItem( int nTab, int inven_idx )
+void CUIManager::DropItem( int nTab, int nRow, int nCol )
 {
 	nTempTab = nTab;
-	nTempInvenIdx = inven_idx;
+	nTempRow = nRow;
+	nTempCol = nCol;
 
-	CUIManager* pUIMgr = CUIManager::getSingleton();
-	if (pUIMgr->GetInventory()->IsLockedArrange() == TRUE)
+	CItems	&rItems = _pNetwork->MySlotItem[nTab][nRow][nCol];
+	CItemData	&rItemData = rItems.ItemData;
+
+	// Can not drop item
+	if( nTab > 0 )
+		return;
+	if( !( rItemData.GetFlag() & ITEM_FLAG_DROP) 
+		|| rItems.IsFlag(FLAG_ITEM_LENT) 
+		|| rItems.IsFlag(FLAG_ITEM_COMPOSITION) 
+		|| rItems.IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED) )
 	{
-		pUIMgr->GetInventory()->ShowLockErrorMessage();
+		GetChatting()->AddSysMessage( _S(3048, "버릴 수 없는 아이템입니다" ), SYSMSG_ERROR );		
 		return;
 	}
-
-	CItems*		pItems = &_pNetwork->MySlotItem[nTab][inven_idx];
-	CItemData*	pItemData = pItems->ItemData;
-
-	if (pItemData == NULL)
-		return;
-
-#ifdef ADD_SUBJOB
-	if( pItemData->IsFlag( ITEM_FLAG_SELLER ) ? 
-		!CheckSellerItem(UI_INVENTORY, pItemData->GetFlag()) : 
-		!( pItemData->GetFlag() & ITEM_FLAG_DROP) || pItems->IsFlag(FLAG_ITEM_LENT) || pItems->IsFlag(FLAG_ITEM_COMPOSITION) ||
-		   pItems->IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED) || pItems->IsFlag(FLAG_ITEM_BELONG) )
-#else
-	if( !( pItemData->GetFlag() & ITEM_FLAG_DROP) 
-		|| pItems->IsFlag(FLAG_ITEM_LENT) 
-		|| pItems->IsFlag(FLAG_ITEM_COMPOSITION) 
-		|| pItems->IsFlag(FLAG_ITEM_PLATINUMBOOSTER_ADDED)
-		|| pItems->IsFlag(FLAG_ITEM_BELONG))
-#endif
-	{
-		GetChattingUI()->AddSysMessage( _S(3048, "버릴 수 없는 아이템입니다" ), SYSMSG_ERROR );		
-		return;
-	}
-
-	// Quest 추가
-	if ( (pItemData->GetType() == CItemData::ITEM_ETC && pItemData->GetSubType() == CItemData::ITEM_ETC_QUEST) ||
-		(pItemData->GetFlag() & ITEM_FLAG_QUEST) )
-	{
-		GetChattingUI()->AddSysMessage( _S(3048, "버릴 수 없는 아이템입니다" ), SYSMSG_ERROR );		
-		return;
-	}
-
 	// Wearing now
-	if( pItems->Item_Wearing >= 0 )
+	if( rItems.Item_Wearing >= 0 )
 		return;
 
 	if(_pNetwork->m_bSingleMode)
 	{
-		GetChattingUI()->AddSysMessage( _S( 529, "아이템을 버릴 수 없는 지역입니다." ), SYSMSG_ERROR );		
+		GetChatting()->AddSysMessage( _S( 529, "아이템을 버릴 수 없는 지역입니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
-	const char* szItemName = _pNetwork->GetItemName( pItemData->GetItemIndex() );
+	const char* szItemName = _pNetwork->GetItemName( rItemData.GetItemIndex() );
 	CTString	strMessage;
-
-	CUIMsgBoxNumericOnly* pMsgBoxNumOnly = GetMsgBoxNumOnly();
-
-	if (DoesMessageBoxExist( MSGCMD_DROPITEM ))
-		CloseMessageBox( MSGCMD_DROPITEM );
-	
-	if (pMsgBoxNumOnly->IsOpen() == true)
-		pMsgBoxNumOnly->CloseBox();
-
 	// Ask quantity
-	if( ( pItemData->GetFlag() & ITEM_FLAG_COUNT ) && pItems->Item_Sum > 1 )
+	if( ( rItemData.GetFlag() & ITEM_FLAG_COUNT ) && rItems.Item_Sum > 1 )
 	{
+		CUIMsgBox_Info	MsgBoxInfo;
+		MsgBoxInfo.SetMsgBoxInfo( _S( 187, "인벤토리" ), UMBS_OKCANCEL | UMBS_INPUTBOX,
+									UI_NONE, MSGCMD_DROPITEM );
+		// const char	*szItemName = rItemData.GetName();
 		strMessage.PrintF( _S2( 188, szItemName, "몇 개의 %s<를> 버리시겠습니까?" ), szItemName );
-		CTString strTmp;
-		strTmp.PrintF("%d", pItems->Item_Sum);
-
-		CmdDropItem* pCmd = new CmdDropItem;
-		pMsgBoxNumOnly->SetInfo(pCmd, _S(187, "인벤토리"), strMessage, 1, pItems->Item_Sum);
+		MsgBoxInfo.AddString( strMessage );
+		
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	}
 	else
 	{
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 187, "인벤토리" ), UMBS_OKCANCEL,
 									UI_NONE, MSGCMD_DROPITEM );
-		
+		// const char	*szItemName = rItemData.GetName();
 		strMessage.PrintF( _S2( 189, szItemName, "%s<를> 버립니다. 계속 하시겠습니까?" ), szItemName );
 		MsgBoxInfo.AddString( strMessage );
 
-		CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	}
 }
 // ----------------------------------------------------------------------------
@@ -4779,7 +5825,7 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 	{
 		case MSGCMD_USE_RECOVER_ITEM_HEXP:
 		
-			CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_HEXP);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_HEXP);
 
 			switch(btnNum)
 			{
@@ -4796,7 +5842,7 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 
 			break;	
 		case MSGCMD_USE_RECOVER_ITEM_AEXP:
-			CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_AEXP);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_AEXP);
 			switch(btnNum)
 			{
 			case 0:
@@ -4811,8 +5857,9 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 			}
 			
 			break;
+
 		case MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY:
-			CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY);
 			switch(btnNum)
 			{
 			case 0:
@@ -4828,7 +5875,7 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 
 			break;	
 		case MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY:
-			CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY);
 			switch(btnNum)
 			{
 			case 0:
@@ -4845,7 +5892,7 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 			break;
 		case MSGCMD_USE_REBIRTH_ITEM:
 			{
-				CloseMessageBox(MSGCMD_USE_REBIRTH_ITEM);
+				_pUIMgr->CloseMessageBox(MSGCMD_USE_REBIRTH_ITEM);
 				
 				LONG lUsedIndex =-1;
 
@@ -4858,31 +5905,7 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 					lUsedIndex =REBIRTH_ITEM;
 				else if( _pUIBuff->IsBuff(REBIRTH_ITEM_NEWBIE) )
 					lUsedIndex =REBIRTH_ITEM_NEWBIE;
-				else if (_pUIBuff->IsBuff(REBIRTH_ITEM_EVENT)) // 이벤트용 부활 주문서
-					lUsedIndex = REBIRTH_ITEM_EVENT;
 
-				switch(btnNum)
-				{
-				case 0:
-					//가까운 시작점에서 부활
-					_pNetwork->SendRebirthMessageEx(lUsedIndex,TRUE,FALSE);
-					break;
-				
-				case 1:
-					//사망 장소에서 부활	
-					_pNetwork->SendRebirthMessageEx(lUsedIndex,TRUE,TRUE);
-					break;
-				}
-			}
-			break;
-
-		case MSGCMD_USE_REBIRTH_ITEM_SCROLL2:
-			{
-				CloseMessageBox(MSGCMD_USE_REBIRTH_ITEM_SCROLL2);
-				
-				LONG lUsedIndex =-1;
-
-				lUsedIndex = GetResurrectionMsgBox()->GetResurrectionItemID();
 				switch(btnNum)
 				{
 				case 0:
@@ -4914,6 +5937,30 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 			}
 			break;
 
+		case MSGCMD_GAMBLE_READYSEL :
+			{	
+				_pUIMgr->CloseMessageBox(MSGCMD_GAMBLE_READYSEL);
+
+				int tv_idx = _pUIMgr->GetGamble()->GetCashItemList()[btnNum].cashIdx;
+				int tv_cnt = _pUIMgr->GetGamble()->GetCashItemList()[btnNum].cashCnt;
+				CUIButtonEx tv_btn = _pUIMgr->GetGamble()->GetSlotBtn();
+				int my_cnt = _pNetwork->MySlotItem[tv_btn.GetItemTab()][tv_btn.GetItemRow()][tv_btn.GetItemCol()].Item_Sum;
+				if(tv_cnt > my_cnt)
+				{
+					_pUIMgr->GetChatting()->AddSysMessage(_S(2912,"아이템 개수가 부족합니다."));
+					_pUIMgr->GetMessageBox(MSGCMD_GAMBLE_READY)->GetBtnEx().InitBtn();        
+				}
+				else 
+				{
+					_pUIMgr->GetGamble()->SetSelCashItemIdx(tv_idx);
+				}
+
+				_pUIMgr->GetMessageBox(MSGCMD_GAMBLE_READY)->GetBtnOK().SetEnable(TRUE);
+				
+
+			}
+			break;
+
 		// WSS_MINIGAME 070420 ----------------------------------->>
 		case MSGCMD_MINIGAME_SELECT_ITEM:
 			{
@@ -4921,15 +5968,15 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 				{
 				case 0:
 					//엽기 무기 선택 1
-					_pNetwork->SendMinigameSelectGift(((CUIMinigame*)GetUI(UI_MINIGAME))->m_extra1);										
+					_pNetwork->SendMinigameSelectGift(((CUIMinigame*)_pUIMgr->GetUI(UI_MINIGAME))->m_extra1);										
 					break;
 				
 				case 1:
 					//엽기 무기 선택 2
-					_pNetwork->SendMinigameSelectGift(((CUIMinigame*)GetUI(UI_MINIGAME))->m_extra2);
+					_pNetwork->SendMinigameSelectGift(((CUIMinigame*)_pUIMgr->GetUI(UI_MINIGAME))->m_extra2);
 					break;
 				}
-				CloseMessageBox(MSGCMD_MINIGAME_SELECT_ITEM);
+				_pUIMgr->CloseMessageBox(MSGCMD_MINIGAME_SELECT_ITEM);
 			break;
 
 
@@ -4942,53 +5989,14 @@ void CUIManager::MsgBoxBtnCommand( int nCommandCode, int btnNum, CTString &strIn
 				{
 				case 0:	//부활 진지로...				
 				case 1:	//가까운 마을로...
-					GetSiegeWarfareNew()->SendSiegewarfareRebirth(btnNum);
+					_pUIMgr->GetSiegeWarfareNew()->SendSiegewarfareRebirth(btnNum);
 					break;
 				}
-				CloseMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH);
+				_pUIMgr->CloseMessageBox(MSGCMD_SIEGEWARFARE_REBIRTH);
 				
 			}
 			break;
 		// -------------------------------------------------------<<
-		case MSGCMD_USE_PET_ACCUMULATE:
-			{
-				// 3월 착용한 펫의 축척량이 0인지 아닌지 구분 하기 [2/27/2013 Ranma]
-				sPetItem_Info temPetitem;
-				GetWildPetInfo()->GetWildPetInfo(MY_APET_INFO()->m_nIdxServer, temPetitem);
-				CloseMessageBox(MSGCMD_USE_PET_ACCUMULATE);
-
-				if (temPetitem.pet_accexp > 0)
-				{					
-					switch(btnNum)
-					{
-					case 0:
-						{
-							_pNetwork->SendPetAccumulateUse(MSG_CHAR_PC, _pNetwork->MyCharacterInfo.index);
-							GetInventory()->Lock(FALSE, FALSE, LOCK_EXP_PET);
-						}
-						break;
-					case 1:
-						{
-							CUIMsgBox_Info	MsgBoxInfo;
-							CTString strMsg;
-							
-							MsgBoxInfo.SetMsgBoxInfo(_S(5640, "펫에 사용"),UMBS_YESNO | UMBS_BUTTONEX,UI_NONE,MSGCMD_USE_PET_ACCUMULATE2);
-							MsgBoxInfo.SetBtnType(UBET_ITEM, CItemData::ITEM_ACCESSORY, CItemData::ACCESSORY_WILDPET);
-							strMsg.PrintF(_S(5641, "축적된 경험치를 적용 시킬 펫을 인벤토리에서 선택 하시길 바랍니다."));
-							MsgBoxInfo.AddString(strMsg);
-							strMsg.PrintF(_S(5642, "(단, 장착중인 펫은 적용 시킬 수 없습니다.)"));
-							MsgBoxInfo.AddString(strMsg);
-							CreateMessageBox(MsgBoxInfo);
-						}
-						break;
-					default:
-						{
-							GetInventory()->Lock(FALSE, FALSE, LOCK_EXP_PET);
-						}
-						break;
-					}
-				}
-			}
 
 	}			
 }
@@ -5004,13 +6012,13 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 	CTString		strMsg ;
 	CUIMsgBox_Info	MsgBoxInfo;
 	BuffInfo*		tv_buffInfo = _pUIBuff->GetBuffArray();
-	int				tv_tab, tv_idx;	// 임시 아이템 슬롯 위치 정보 
+	int				tv_tab,tv_row,tv_col;	// 임시 아이템 슬롯 위치 정보 
 
 	if( !bOK ) // NO, CANCEL 경우 
 	{
 		// wooss 050802
-		switch( nCommandCode )
-		{		
+	switch( nCommandCode )
+	{		
 		case MSGCMD_USE_CONFIRM_HEXP:
 			_pNetwork->SendRebirthMessageEx(RECOVER_HEXP_ITEM,FALSE,FALSE);
 			break;
@@ -5026,23 +6034,24 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		case MSGCMD_USE_CONFIRM_REBIRTH:
 			_pNetwork->SendRebirthMessageEx(REBIRTH_ITEM,FALSE,FALSE);
 			break;
+
 		case MSGCMD_WARP_TO_CANCEL:
-			strMsg	= GetMessageBox(MSGCMD_WARP_TO_CANCEL)->GetInputBox().GetString();
+			 strMsg	= _pUIMgr->GetMessageBox(MSGCMD_WARP_TO_CANCEL)->GetInputBox().GetString();
 			_pNetwork->SendWarpItemMessage(MSG_WARP_TO_REQING,strMsg);
-			CloseMessageBox(MSGCMD_WARP_TO_CANCEL);
+			_pUIMgr->CloseMessageBox(MSGCMD_WARP_TO_CANCEL);
 			break;
 		
 		case MSGCMD_WARP_TAKE_CANCEL:
-			strMsg	= GetMessageBox(MSGCMD_WARP_TAKE_CANCEL)->GetInputBox().GetString();
+			 strMsg	= _pUIMgr->GetMessageBox(MSGCMD_WARP_TAKE_CANCEL)->GetInputBox().GetString();
 			_pNetwork->SendWarpItemMessage(MSG_WARP_TAKE_REQING,strMsg);
-			CloseMessageBox(MSGCMD_WARP_TAKE_CANCEL);
+			_pUIMgr->CloseMessageBox(MSGCMD_WARP_TAKE_CANCEL);
 			break;
 
 		case MSGCMD_WARP_TO_REQ_CALL:
 			{
-				CTString strSendName = CTString( GetMessageBox(MSGCMD_WARP_TO_REQ_CALL)->GetInputBox().GetString() );
+				CTString strSendName = CTString( _pUIMgr->GetMessageBox(MSGCMD_WARP_TO_REQ_CALL)->GetInputBox().GetString() );
 
-				CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
+				_pUIMgr->CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
 				_pNetwork->SendWarpItemMessage(MSG_WARP_TO,
 					strSendName,
 					FALSE);
@@ -5051,9 +6060,9 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 
 		case MSGCMD_WARP_TAKE_REQ_CALL:
 			{
-				CTString strSendName = CTString( GetMessageBox(MSGCMD_WARP_TAKE_REQ_CALL)->GetInputBox().GetString() );
+				CTString strSendName = CTString( _pUIMgr->GetMessageBox(MSGCMD_WARP_TAKE_REQ_CALL)->GetInputBox().GetString() );
 
-				CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
+				_pUIMgr->CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
 				_pNetwork->SendWarpItemMessage(MSG_WARP_TAKE,
 					strSendName,
 					FALSE);
@@ -5068,98 +6077,72 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		case MSGLCMD_EVENT_XMAS_2006_CHANGE:
 			{
 				//교환할 케이크 개수 입력창이 띄워져 있지 않으면 창을 닫음.
-				if( !GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT) )
-					CloseMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE);
+				if( !_pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT) )
+					_pUIMgr->CloseMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE);
 				break;
 			}
 		case MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT:
 			{
-				GetCombo()->SendComboMessage(MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM,FALSE);
-				CloseMessageBox(MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT);
-			}
-			break;
-		case MSGCMD_ITEM_BELONG:
-			{
-				CloseMessageBox(MSGCMD_ITEM_BELONG);
-			}break;
-		case MSGCMD_CHANGE_START_POINT:
-			{
-				CNetworkMessage nmMessage(MSG_EXTEND);
-
-				nmMessage << (ULONG)MSG_EX_MSGBOX;
-				nmMessage << (UBYTE)MSG_EX_MSGBOX_CHANGE_START_POINT;
-				nmMessage << (SBYTE)FALSE;
-				
-				_pNetwork->SendToServerNew(nmMessage);
-
-			}break;
-		case MSGCMD_USE_PET_ACCUMULATE:
-			{
-				GetInventory()->Lock(FALSE, FALSE, LOCK_EXP_PET);
-				CloseMessageBox(nCommandCode);
-			}
-			break;
-		case MSGCMD_USE_PET_ACCUMULATE2:
-			{
-				GetInventory()->Lock(FALSE, FALSE, LOCK_EXP_PET);
-				CloseMessageBox(nCommandCode);
+				_pUIMgr->GetCombo()->SendComboMessage(MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM,FALSE);
+				_pUIMgr->CloseMessageBox(MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT);
 			}
 			break;
 		default : 
-			CloseMessageBox(nCommandCode);
+			_pUIMgr->CloseMessageBox(nCommandCode);
 			break;
-		}
+	}
 
-		return;
+	return;
 	}
 
 	// YES, OK 경우
 
-	CItems*		pItems = &_pNetwork->MySlotItem[nTempTab][nTempInvenIdx];
-	CItemData*	pItemData = pItems->ItemData;
+	CItems		&rItems = _pNetwork->MySlotItem[nTempTab][nTempRow][nTempCol];
+	CItemData	&rItemData = rItems.ItemData;
 
 	switch( nCommandCode )
 	{
+	
 		// wooss 050802
 	case MSGCMD_USE_CONFIRM_HEXP:
 
-		CloseMessageBox(MSGCMD_USE_CONFIRM_HEXP);
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_CONFIRM_HEXP);
 			
 		strMsg  = _S( 1888, "경험치 복구 주문서" );	 
 		MsgBoxInfo.SetMsgBoxInfo(strMsg ,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_RECOVER_ITEM_HEXP);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 		break;
 								
 	case MSGCMD_USE_CONFIRM_AEXP:	  
 	
-		CloseMessageBox(MSGCMD_USE_CONFIRM_AEXP);
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_CONFIRM_AEXP);
 		strMsg = _S( 1895, "숙련도 복구 주문서" );	
 		MsgBoxInfo.SetMsgBoxInfo(strMsg ,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_RECOVER_ITEM_AEXP);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
 		break;
-
+		
 	case MSGCMD_USE_CONFIRM_HEXP_LUCKY:
 
-		CloseMessageBox(MSGCMD_USE_CONFIRM_HEXP_LUCKY);
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_CONFIRM_HEXP_LUCKY);
 			
 		strMsg  = _pNetwork->GetItemName(RECOVER_HEXP_ITEM_LUCKY);
 		MsgBoxInfo.SetMsgBoxInfo(strMsg ,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_RECOVER_ITEM_HEXP_LUCKY);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 		break;
 								
 	case MSGCMD_USE_CONFIRM_AEXP_LUCKY:	  
 	
-		CloseMessageBox(MSGCMD_USE_CONFIRM_AEXP_LUCKY);
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_CONFIRM_AEXP_LUCKY);
 		strMsg = _pNetwork->GetItemName(RECOVER_AEXP_ITEM_LUCKY);
 		MsgBoxInfo.SetMsgBoxInfo(strMsg ,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_RECOVER_ITEM_AEXP_LUCKY);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
 		break;
 		
 	case MSGCMD_USE_CONFIRM_REBIRTH:	 
 		
-		CloseMessageBox(MSGCMD_USE_CONFIRM_REBIRTH);
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_CONFIRM_REBIRTH);
 		
 		if(_pUIBuff->IsBuff(REBIRTH_ITEM_PHOENIX))
 		{
@@ -5171,48 +6154,41 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 			strMsg =_S( 1896,  "부활 주문서" ); 
 		}
 		MsgBoxInfo.SetMsgBoxInfo(strMsg,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_REBIRTH_ITEM);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
 		break;
 
 	case MSGCMD_CHECK_ITEM_HEXP:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CHECK_ITEM_HEXP)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CHECK_ITEM_HEXP);
-			_pNetwork->UseSlotItem(tv_tab, tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_CHECK_ITEM_HEXP);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
+
 		break;
 
 	case MSGCMD_CHECK_ITEM_AEXP:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CHECK_ITEM_AEXP)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CHECK_ITEM_AEXP);			
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_CHECK_ITEM_AEXP);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 		
 	case MSGCMD_USE_WARP_ITEM:
-		{
-			CTString strName = GetMessageBox(MSGCMD_USE_WARP_ITEM)->GetInputBox().GetString();
 
-			if (checkName(strName, 0) == FALSE)
-				return;
-
-			strTitle	=	_S( 191, "확인" );
-			strMsg		=_S( 1912, 	"순간이동 할 위치에 있는 유저에게 순간이동 여부를 묻고 있습니다. 버튼을 누르면 취소 됩니다." ); 
-			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_CANCEL,UI_NONE,MSGCMD_WARP_TO_CANCEL);
-			MsgBoxInfo.AddString(strMsg);
-			if (CreateMessageBox(MsgBoxInfo))
-			{
-				GetMessageBox(MSGCMD_WARP_TO_CANCEL)->GetInputBox().SetString(strName.str_String);
+	//	_pUIMgr->CloseMessageBox(MSGCMD_USE_WARP_ITEM);
+		strTitle	=	_S( 191, "확인" );
+		strMsg		=_S( 1912, 	"순간이동 할 위치에 있는 유저에게 순간이동 여부를 묻고 있습니다. 버튼을 누르면 취소 됩니다." ); 
+		MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_CANCEL,UI_NONE,MSGCMD_WARP_TO_CANCEL);
+		MsgBoxInfo.AddString(strMsg);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
+		
+		strMsg		=	_pUIMgr->GetMessageBox(MSGCMD_USE_WARP_ITEM)->GetInputBox().GetString();
+		
+		_pUIMgr->GetMessageBox(MSGCMD_WARP_TO_CANCEL)->GetInputBox().SetString(strMsg.str_String);
+		
+		_pNetwork->SendWarpItemMessage(	MSG_WARP_TO_REQ,strMsg );
+		
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_WARP_ITEM);
+		  
 				
-				_pNetwork->SendWarpItemMessage(	MSG_WARP_TO_REQ,strName );
-				
-				CloseMessageBox(MSGCMD_USE_WARP_ITEM);
-			}
-		}
 		break;
 
 
@@ -5220,13 +6196,13 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		// Date : 2006-05-30(오전 11:39:42), By eons
 		if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsIdle() )
 		{
-			GetChattingUI()->AddSysMessage( _S( 2741, "다른 행동 중에는 순간 이동 요청을 승인 할 수 없습니다." ) );
-			CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
+			_pUIMgr->GetChatting()->AddSysMessage( _S( 2741, "다른 행동 중에는 순간 이동 요청을 승인 할 수 없습니다." ) );
+			_pUIMgr->CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
 			_pNetwork->SendWarpItemMessage(MSG_WARP_TO,strInput,FALSE);
 			return;
 		}
 
-		CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
+		_pUIMgr->CloseMessageBox(MSGCMD_WARP_TO_REQ_CALL);
 		_pNetwork->SendWarpItemMessage(MSG_WARP_TO,strInput,TRUE);
 		break;
 
@@ -5234,67 +6210,69 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		// Date : 2006-05-30(오전 11:39:42), By eons
 		if( !((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsIdle() )
 		{
-			GetChattingUI()->AddSysMessage( _S( 2742, "다른 행동 중에는 소환 요청을 승인 할 수 없습니다." ) );
-			CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
+			_pUIMgr->GetChatting()->AddSysMessage( _S( 2742, "다른 행동 중에는 소환 요청을 승인 할 수 없습니다." ) );
+			_pUIMgr->CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
 			_pNetwork->SendWarpItemMessage(MSG_WARP_TAKE,strInput,FALSE);
 			return;
 		}
 
-		CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
+		_pUIMgr->CloseMessageBox(MSGCMD_WARP_TAKE_REQ_CALL);
 		_pNetwork->SendWarpItemMessage(MSG_WARP_TAKE,strInput,TRUE);
-
-		UIMGR()->SetCSFlagOn(CSF_TELEPORT);
 		break;
 
 	// wooss 050817 
 	case MSGCMD_USE_PC_SUMMON_ITEM :
-		{
-			CTString strName = GetMessageBox(MSGCMD_USE_PC_SUMMON_ITEM)->GetInputBox().GetString();
-
-			if (checkName(strName, 0) == FALSE)
-				return;
-
-			strTitle	=	_S( 191, "확인" );
-			strMsg		=	_S( 1916, "소환할 유저에게 소환 여부를 묻고 있습니다. 버튼을 누르면 취소 됩니다" ); 
-			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_CANCEL,UI_NONE,MSGCMD_WARP_TAKE_CANCEL);
-			MsgBoxInfo.AddString(strMsg);
-			if (CreateMessageBox(MsgBoxInfo))
-			{
-				GetMessageBox(MSGCMD_WARP_TAKE_CANCEL)->GetInputBox().SetString(strName.str_String);
 	
-				_pNetwork->SendWarpItemMessage(	MSG_WARP_TAKE_REQ,strName );
-	
-				CloseMessageBox(MSGCMD_USE_PC_SUMMON_ITEM);
-			}
-		}
+		strTitle	=	_S( 191, "확인" );
+		strMsg		=	_S( 1916, "소환할 유저에게 소환 여부를 묻고 있습니다. 버튼을 누르면 취소 됩니다" ); 
+		MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_CANCEL,UI_NONE,MSGCMD_WARP_TAKE_CANCEL);
+		MsgBoxInfo.AddString(strMsg);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
+		
+		strMsg		=	_pUIMgr->GetMessageBox(MSGCMD_USE_PC_SUMMON_ITEM)->GetInputBox().GetString();
+
+		_pUIMgr->GetMessageBox(MSGCMD_WARP_TAKE_CANCEL)->GetInputBox().SetString(strMsg.str_String);
+
+		_pNetwork->SendWarpItemMessage(	MSG_WARP_TAKE_REQ,strMsg );
+		
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_PC_SUMMON_ITEM);
+
 		break;
  
 	// wooss 050818
-	case MSGCMD_USE_BOSS_SUMMON_ITEM:		
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_USE_BOSS_SUMMON_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_USE_BOSS_SUMMON_ITEM);
-			_pNetwork->UseSlotItem(tv_tab, tv_idx);
-		}
+	case MSGCMD_USE_BOSS_SUMMON_ITEM:
+		
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 	//<--
 	
 	case MSGCMD_DROPITEM:
+		if( ( rItemData.GetFlag() & ITEM_FLAG_COUNT ) && rItems.Item_Sum > 1 )
 		{
-			if (GetInventory()->IsLocked() == TRUE || GetInventory()->IsLockedArrange() == TRUE)
+			char	*pcInput = strInput.str_String;
+			int		nLength = strInput.Length();
+			for( int iChar = 0; iChar < nLength; iChar++ )
 			{
-				GetInventory()->ShowLockErrorMessage();
-				return;
+				if( pcInput[iChar] < '0' || pcInput[iChar] > '9' )
+					break;
 			}
 
-			SendDropItem( nTempTab, nTempInvenIdx, 1 );
+			if( iChar == nLength )
+			{
+				SQUAD	llCount = _atoi64( pcInput );
+				if( llCount > 0 && llCount <= rItems.Item_Sum )
+					SendDropItem( nTempTab, nTempRow, nTempCol, llCount );
+			}
+		}
+		else
+		{
+			SendDropItem( nTempTab, nTempRow, nTempCol, 1 );
 		}
 		break;
 
 	case MSGCMD_PC_DEATH:
 		_pNetwork->SendRebirthMessage();
-		
 		break;
 
 	case MSGCMD_DISCONNECT://kwon 접속 끊겨서 게임 종료.
@@ -5304,164 +6282,116 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		break;
 		
 	case MSGCMD_LOGIN_ERROR:
-		{
-			// 로그인 과정에서 에러 발생시.
-			CUIManager* pUIManager = CUIManager::getSingleton();
-			StageMgr* pStage = StageMgr::getSingleton();
-
-			if (pStage->GetCurStage() == eSTAGE_LOGIN)
-			{
-				//pUIManager->GetSelServer()->ResetServerList();
-				if (GameDataManager* pGameData = GameDataManager::getSingleton())
-				{
-					if (CServerSelect* pServerSelect = pGameData->GetServerData())
-						pServerSelect->ResetData();
-				}
-				pUIManager->GetLogin()->Lock(FALSE);
-			}
-			else if (pStage->GetCurStage() == eSTAGE_SELSERVER)
-			{
-				pUIManager->GetServerSelect()->Lock(FALSE);
-			}
-			else if (pStage->GetCurStage() == eSTAGE_SELCHAR)
-			{
-				pUIManager->GetCharacterSelect()->Lock(FALSE);
-			}
-			else if (pStage->GetCurStage() == eSTAGE_CREATECHAR)
-			{
-				pUIManager->GetCreateChar()->Lock(FALSE);
-			}
-		}
+		// 로그인 과정에서 에러 발생시.
+		//_pUIMgr->GetLogin()->Lock(FALSE);
+		_pUIMgr->Lock(FALSE);
 		break;
 
 	// wooss 050812
 	case MSGCMD_CONFIRM_CHANGE_MY_NAME:
 		
-		CloseMessageBox(MSGCMD_CONFIRM_CHANGE_MY_NAME);
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_CHANGE_MY_NAME);
 		strTitle = _S( 1919, "개명카드" ); 
 		strMsg = _S( 2140, "새로운 캐릭터의 이름을 입력하세요" ); 
 		MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_INPUTBOX|UMBS_OKCANCEL,UI_NONE,MSGCMD_USE_CHANGE_MY_NAME_ITEM);
 		MsgBoxInfo.AddString(strMsg);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
-		// [2011/11/02 : Sora] 커서 이동 불가플래그
-		CUIManager::getSingleton()->GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetInputBox().SetCursorMove( FALSE );
 		break;
 
 	case MSGCMD_CONFIRM_CHANGE_GUILD_NAME:
 
-		CloseMessageBox(MSGCMD_CONFIRM_CHANGE_GUILD_NAME);
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_CHANGE_GUILD_NAME);
 		strTitle = _S( 2141, "길드개명카드" ); 
 		strMsg = _S( 2142, "새로운 길드의 이름을 입력하세요" ); 
 		MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_INPUTBOX|UMBS_OKCANCEL,UI_NONE,MSGCMD_USE_CHANGE_GUILD_NAME_ITEM);
 		MsgBoxInfo.AddString(strMsg);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 
-		// [2011/11/02 : Sora] 커서 이동 불가플래그
-		CUIManager::getSingleton()->GetMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM)->GetInputBox().SetCursorMove( FALSE );
 		break;
 
 	case MSGCMD_USE_CHANGE_MY_NAME_ITEM: 
 		{	
-			strMsg	= GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetInputBox().GetString();
-			//GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetAbsPos(tv_col,tv_row);
-			//tv_row+=GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetHeight();
+			strMsg	= _pUIMgr->GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetInputBox().GetString();
+			//_pUIMgr->GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetAbsPos(tv_col,tv_row);
+			//tv_row+=_pUIMgr->GetMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM)->GetHeight();
 
 			if (!checkName(strMsg, 0)) return;
 
 			_pNetwork->SendChangMyName(strMsg);
-			CloseMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_CHANGE_MY_NAME_ITEM);
 		}
 		break;
 	
 	case MSGCMD_USE_CHANGE_GUILD_NAME_ITEM: 
 		{
-			strMsg	= GetMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM)->GetInputBox().GetString();
-			//GetMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM)->GetAbsPos(tv_col,tv_row);
+			strMsg	= _pUIMgr->GetMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM)->GetInputBox().GetString();
+			//_pUIMgr->GetMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM)->GetAbsPos(tv_col,tv_row);
 			
 			if (!checkName(strMsg, 1)) return;
 			
 			_pNetwork->SendChangGuildName(strMsg);			
-			CloseMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM);
+			_pUIMgr->CloseMessageBox(MSGCMD_USE_CHANGE_GUILD_NAME_ITEM);
 		}
 		break;
 		
 	case MSGCMD_CONFIRM_MEMSCROLL_EX:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_MEMSCROLL_EX)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CONFIRM_MEMSCROLL_EX);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}		
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_MEMSCROLL_EX);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 
 	case MSGCMD_CONFIRM_WAREHOUSE_EX:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_WAREHOUSE_EX)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CONFIRM_WAREHOUSE_EX);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_WAREHOUSE_EX);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 		
 	case MSGCMD_PROLONG_MEMSCROLL_EX :
-		{
-			CloseMessageBox(MSGCMD_PROLONG_MEMSCROLL_EX);
-			GetInventory()->GetUseItemSlotInfo( tv_tab, tv_idx );
-			_pNetwork->SendProlongMessage(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_PROLONG_MEMSCROLL_EX);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->SendProlongMessage(tv_tab,tv_row,tv_col);
 		break;
 	case MSGCMD_PROLONG_WAREHOUSE_EX :
-		{
-			CloseMessageBox(MSGCMD_PROLONG_WAREHOUSE_EX);
-			GetInventory()->GetUseItemSlotInfo( tv_tab, tv_idx );
-			_pNetwork->SendProlongMessage(tv_tab,tv_idx);
-		}
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->SendProlongMessage(tv_tab,tv_row,tv_col);
 		break;
 
 	//wooss 050820
 	case MSGCMD_CONFIRM_SLOT_ITEM :
 		strTitle = _S(2407,"캐릭터 슬롯 확장 카드");
 		MsgBoxInfo.SetMsgBoxInfo(strTitle ,UMBS_SELECTBOX,UI_NONE,MSGCMD_USE_SLOT_ITEM);
-		CreateMessageBox(MsgBoxInfo);
+		_pUIMgr->CreateMessageBox(MsgBoxInfo);
 		break;
 
 	// wooss 060306
 	case MSGCMD_CONFIRM_PARTY_RECALL_ITEM :
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_PARTY_RECALL_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CONFIRM_PARTY_RECALL_ITEM);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_PARTY_RECALL_ITEM);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 
 	case MSGCMD_NULL:
-		CloseMessageBox(MSGCMD_NULL);
+		_pUIMgr->CloseMessageBox(MSGCMD_NULL);
 		break;
 
 	case MSGCMD_USE_ITEM:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_USE_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_USE_ITEM);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_USE_ITEM);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 
 	
 	case MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM:
-		{
-			// 공성지역으로 이동 
-			_pNetwork->SendMovingGuildWarArea();
-		}
+		// 공성지역으로 이동 
+		_pNetwork->SendMovingGuildWarArea();
 		break;
 	case MSGCMD_BOOST_RANDON_PRODUCT_ERROR:
-		CloseMessageBox(MSGCMD_BOOST_RANDON_PRODUCT_ERROR); 
+		_pUIMgr->CloseMessageBox(MSGCMD_BOOST_RANDON_PRODUCT_ERROR); 
 		break;
 	case MSGCMD_GUILD_LORD_NOTICE: // 성주 공지
-		GetChattingUI()->SendChatMessage( strInput.str_String, TRUE );
-		GetCharacterInfo()->UseAction( 34 );
+		_pUIMgr->GetChatting()->SendChatMessage( strInput.str_String, TRUE );
+		_pUIMgr->GetCharacterInfo()->UseAction( 34 );
 		break;
 	case MSGCMD_EVENT_PRIZE:
 		{
@@ -5489,39 +6419,39 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 	// wooss 060516 platiunm item
 	case MSGCMD_CONFIRM_UPGRADESTONE_ITEM :
 		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_UPGRADESTONE_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_NULL);
-			CloseMessageBox(MSGCMD_CONFIRM_UPGRADESTONE_ITEM);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);				
+			_pUIMgr->CloseMessageBox(MSGCMD_NULL);
+			_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_UPGRADESTONE_ITEM);
+			_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+			_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
+				
 		}
 		break;
 
 	case MSGCMD_CONFIRM_MIXNEWREQ_ITEM :
 		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_MIXNEWREQ_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CONFIRM_MIXNEWREQ_ITEM);
-
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);				
+			_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_MIXNEWREQ_ITEM);
+			_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+			_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
+				
 		}
 		break;
 
 	case MSGCMD_CONFIRM_MIXNEW_ITEM :
 		{
-			CloseMessageBox(MSGCMD_CONFIRM_MIXNEW_ITEM);
-			GetMixNew()->OpenMixNew(TRUE);				
+			_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_MIXNEW_ITEM);
+			_pUIMgr->GetMixNew()->OpenMixNew(TRUE);
+			
+				
 		}
 		break;
 	case MSGCMD_COMFIRM_USE_ITEM:
 		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_COMFIRM_USE_ITEM)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_COMFIRM_USE_ITEM);
+			_pUIMgr->CloseMessageBox(MSGCMD_COMFIRM_USE_ITEM);
+			_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
 		
-			CItems& Items = _pNetwork->MySlotItem[tv_tab][tv_idx];
+			CItems& Items = _pNetwork->MySlotItem[tv_tab][tv_row][tv_col];
 			// 다시 아이템 사용 메세지 전송( etc = 1 )
-			_pNetwork->SendItemUse(Items.Item_Tab, Items.InvenIndex, Items.Item_UniIndex, 1 );
+			_pNetwork->SendItemUse(Items.Item_Tab, Items.Item_Row, Items.Item_Col, Items.Item_UniIndex, 1 );
 		}
 		break;
 	case MSGCMD_PET_MOUNT_CANCEL_CARD:
@@ -5533,71 +6463,66 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 			MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_NONE,MSGCMD_USE_PET_MOUNT_CANCEL_CARD);
 			strMessage.PrintF( _S( 2895, "[유료아이템] 선택한 애완동물의 탈 것(마운트) 상태를 취소하고 애완 동물 상태로 변환 하시겠습니까?" ) );
 			MsgBoxInfo.AddString(strMessage);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 		}
 		break;
 	case MSGCMD_USE_PET_MOUNT_CANCEL_CARD:
 		{
-			int tt, ti, nUniIndex;
-			GetMessageBox(MSGCMD_PET_MOUNT_CANCEL_CARD)->GetBtnUseItemInfo( tt, ti, nUniIndex );
+			int nUniIndex;
 
-			GetInventory()->GetUseItemSlotInfo(tv_tab, tv_idx);
+			_pUIMgr->GetMessageBox(MSGCMD_PET_MOUNT_CANCEL_CARD)->GetBtnUseItemInfo( tv_tab, tv_row, tv_col, nUniIndex );
+			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_row][tv_col];
 
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
-
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, nUniIndex );
-			CloseMessageBox( MSGCMD_USE_PET_MOUNT_CANCEL_CARD );
+			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.Item_Row, ItemsBtn.Item_Col, ItemsBtn.Item_UniIndex, nUniIndex );
+			_pUIMgr->CloseMessageBox( MSGCMD_PET_MOUNT_CANCEL_CARD );
 		}
 		break;
 	case MSGCMD_CONFIRM_UNMIX_ITEM : 
 		{
-			GetMixNew()->OpenMixNew(FALSE);
+			_pUIMgr->GetMixNew()->OpenMixNew(FALSE);
 		}
 		break;
 	case MSGCMD_RARE_IDENTIFY :
 		{
 			int nUniIndex;
 
-			GetMessageBox(MSGCMD_RARE_IDENTIFY)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
+			_pUIMgr->GetMessageBox(MSGCMD_RARE_IDENTIFY)->GetBtnUseItemInfo( tv_tab, tv_row, tv_col, nUniIndex );
+			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_row][tv_col];
 
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, nUniIndex );
-			CloseMessageBox( MSGCMD_RARE_IDENTIFY );
+			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.Item_Row, ItemsBtn.Item_Col, ItemsBtn.Item_UniIndex, nUniIndex );
+			_pUIMgr->CloseMessageBox( MSGCMD_RARE_IDENTIFY );
 		}
 		break;
 	case MSGLCMD_EVENT_XMAS_2006_COUNT :	// 2006 X-Mas Event [12/12/2006 Theodoric]
 		{
-			CUIEditBox& nInputBox = GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT)->GetInputBox();
+			CUIEditBox& nInputBox = _pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT)->GetInputBox();
 			int nCakeCount = atoi(nInputBox.GetString());
-			int nCakeMaxCount  = GetInventory()->GetItemCount(1975);			
+			int nCakeMaxCount  = _pUIMgr->GetInventory()->GetItemCount(1975);			
 
 			if(  nCakeMaxCount < 3 || !( nCakeCount > 2 && nCakeCount <= nCakeMaxCount ) )
 			{
-				CUIIcon* pIcon = GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetBtnEx();
-
-				if (pIcon != NULL)
-				{
-					pIcon->clearIconData();
-				}
+				_pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetBtnEx().InitBtn();
 			}
 			else
 			{
-				GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetInputBox().SetString( nInputBox.GetString());
-				GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetBtnOK().SetEnable(TRUE);	
+				_pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetInputBox().SetString( nInputBox.GetString());
+				_pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetBtnOK().SetEnable(TRUE);	
 			}
-
-			GetMessageBox(MSGLCMD_EVENT_XMAS_2006_COUNT)->InitMessageBox();
 		}
 		break;
 
 	case MSGLCMD_EVENT_XMAS_2006_CHANGE :
 		{
-			CUIEditBox& nInputBox = GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetInputBox();
+			CUIEditBox& nInputBox = _pUIMgr->GetMessageBox(MSGLCMD_EVENT_XMAS_2006_CHANGE)->GetInputBox();
 			int nCakeCount = atoi(nInputBox.GetString());
+
+			if (nCakeCount > 0)
+			{
+				_pNetwork->Send2006XMasEvent( (SLONG)nCakeCount );
+			}			
+
+			_pUIMgr->CloseMessageBox( MSGLCMD_EVENT_XMAS_2006_CHANGE );
 			
-			if( nCakeCount > 0 ) // [2009/6/8 Theodoric] MSGLCMD_EVENT_XMAS_2006_CHANGE
-			{	_pNetwork->Send2006XMasEvent( (SLONG)nCakeCount );	}
-			CloseMessageBox( MSGLCMD_EVENT_XMAS_2006_CHANGE );			
 		}
 		break;
 	case MSGCMD_USE_PACKING_PAPER: // 초코렛 포장지
@@ -5605,83 +6530,59 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		{
 			int nUniIndex;
 
-			GetMessageBox(nCommandCode)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
+			_pUIMgr->GetMessageBox(nCommandCode)->GetBtnUseItemInfo( tv_tab, tv_row, tv_col, nUniIndex );
+			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_row][tv_col];
 
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, nUniIndex );
-			CloseMessageBox( nCommandCode );
+			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.Item_Row, ItemsBtn.Item_Col, ItemsBtn.Item_UniIndex, nUniIndex );
+			_pUIMgr->CloseMessageBox( nCommandCode );
 		}
 		break;
 	case MSGCMD_GOTO_EGEHA:
 		{
-			GetPortal()->GotoCurSelZone();
+			_pUIMgr->GetPortal()->GotoCurSelZone();
 		}
 		break;
 // [KH_070326] 달걀 이벤트 관련
 	case MSGCMD_CONFIRM_EASTER_EGGS:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_CONFIRM_EASTER_EGGS)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_CONFIRM_EASTER_EGGS);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
-		break;
-	case MSGCMD_SONGKRAN_REWARD:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_SONGKRAN_REWARD)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_SONGKRAN_REWARD);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
+		_pUIMgr->CloseMessageBox(MSGCMD_CONFIRM_EASTER_EGGS);
+		_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+		_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		break;
 	case MSGCMD_PET_NAMECARD_USE:
 		{
-			if( !GetPetTraining()->IsNotPetWear())
+			if( !_pUIMgr->GetPetTraining()->IsNotPetWear())
 			{
-				if(DoesMessageBoxExist(MSGCMD_PET_NAMECARD_INPUT)) 
+				if(_pUIMgr->DoesMessageBoxExist(MSGCMD_PET_NAMECARD_INPUT)) 
 					return;
 				MsgBoxInfo.SetMsgBoxInfo( CTString(_pNetwork->GetItemName(PET_NAMECARD_ITEM)), UMBS_OKCANCEL|UMBS_INPUTBOX, UI_NONE, MSGCMD_PET_NAMECARD_INPUT);
 				MsgBoxInfo.AddString( _S(3528, "애완동물의 이름을 입력하세요.") );
 				MsgBoxInfo.AddString( _S(3529, "(최대 한글 8자)") );
 				MsgBoxInfo.AddString( _s("") );
 				MsgBoxInfo.m_nInputMaxChar =16;//.SetInputBox(3, 3, 16);
-				CreateMessageBox(MsgBoxInfo);
+				_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			}
 		}
 		break;
 	case MSGCMD_PET_NAMECARD_INPUT:
 		{
-			if( !GetPetTraining()->IsNotPetWear())
+			if( !_pUIMgr->GetPetTraining()->IsNotPetWear())
 			{
 				if( _UIFilteringCharacter.Filtering ( strInput.str_String ) == TRUE ) // find ...
 				{
-					CloseMessageBox(MSGCMD_CREATE_ERROR);
+					_pUIMgr->CloseMessageBox(MSGCMD_CREATE_ERROR);
 					CUIMsgBox_Info	MsgBoxInfo;
 					MsgBoxInfo.SetMsgBoxInfo( CTString(""), UMBS_OK,
 												UI_NONE, MSGCMD_CREATE_ERROR );
 					
 					MsgBoxInfo.AddString( _S(3530, "입력한 이름에 금지단어가 포함되어 있습니다. 다시 입력해 주십시오.") );
-					CreateMessageBox( MsgBoxInfo );
+					_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 					return;
 				}
-
-				// 펫이름 변경시 러시아 요청에 따라 특수 문자가 입력되지 않게 처리added by sam 11/01/03
-				/*
-				if ( (g_iCountry == RUSSIA || g_iCountry == GERMANY) && !checkName( strInput, 2) )
-				{
-					return;					
-				}
-
 				else
 				{
-					_pNetwork->SendPetNameChageReq( INFO()->_PetTargetInfo.lIndex, strInput);
+					_pNetwork->SendPetNameChageReq( _pNetwork->_PetTargetInfo.lIndex, strInput);
 				}
-				/**/									
-				if ( !checkName( strInput, 2 ))
-					return;
-
-				_pNetwork->SendPetNameChageReq( MY_PET_INFO()->lIndex, strInput);
 			}
 		}
 		break;
@@ -5689,23 +6590,22 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 	// [070824: Su-won] PET_COLOR_CHANGE
 	case MSGCMD_PET_COLORCHANGE_USE:
 		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_PET_COLORCHANGE_USE)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_PET_COLORCHANGE_USE);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
+			_pUIMgr->CloseMessageBox(MSGCMD_PET_COLORCHANGE_USE);
+			_pUIMgr->GetInventory()->GetUseItemSlotInfo(tv_tab,tv_row,tv_col);
+			_pNetwork->UseSlotItem(tv_tab,tv_row,tv_col);
 		}
 		break;
 
 	// [090713: selo] PET_TATOO_CHANGE
 	case MSGCMD_PET_TATOOCHANGE_USE:
 		{
-			CloseMessageBox(MSGCMD_PET_TATOOCHANGE_USE);
-			GetTatoo()->SendItemUse();
-			GetTatoo()->Close();
+			_pUIMgr->CloseMessageBox(MSGCMD_PET_TATOOCHANGE_USE);
+			_pUIMgr->GetTatoo()->SendItemUse();
+			_pUIMgr->GetTatoo()->Close();
 		}
 		break;
 
-	// [071211: Su-won] EVENT_NEWYEAR_2008
+	// [071217: Su-won] EVENT_NEWYEAR_2008
 	case MSGCMD_EVENT_NEWYEAR_2008:
 		{
 			CNetworkMessage	nmMsg( MSG_EVENT );
@@ -5715,198 +6615,14 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 		break;
 	case MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT:
 		{
-			GetCombo()->SendComboMessage(MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM,TRUE);
+			_pUIMgr->GetCombo()->SendComboMessage(MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM,TRUE);
 		}break;
 
 	case MSGCMD_EVENT_PHOENIX:		//피닉스 이벤트
 		{
 			_pNetwork->SendCreatePhoenixCharacter();
 		}break;
-	case MSGCMD_CONFIRM_OBJECTCLICK:
-		{
-			CEntity* ep_Send = ((CPlayerEntity*)(CEntity::GetPlayerEntity(0)))->GetClickObject();
 
-			if (ep_Send != NULL)
-			{
-				_pNetwork->SendRaidObjectEvent(ep_Send->en_ulID);
-			}
-		}
-		break;
-	case MSGCMD_ITEM_BELONG:		// 귀속 아이템 착용시
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_ITEM_BELONG)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-
-			CItems*		pItems = &_pNetwork->MySlotItem[tv_tab][tv_idx];
-
-			CNetworkMessage nmMessage;
-			RequestClient::doItemWear* packet = reinterpret_cast<RequestClient::doItemWear*>(nmMessage.nm_pubMessage);
-			packet->type = MSG_ITEM;
-			packet->subType = MSG_ITEM_WEAR;
-			packet->wearPos = pItems->ItemData->GetWearingPosition();
-			packet->tab = tv_tab;
-			packet->invenIndex = tv_idx;
-			//packet->extra = pItems->Item_UniIndex;
-			nmMessage.setSize( sizeof(*packet) );
-
-			_pNetwork->SendToServerNew(nmMessage);
-
-		}break;
-	case MSGCMD_PET_EVOLUTION:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_PET_EVOLUTION)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-
-			CItems& Items = _pNetwork->MySlotItem[tv_tab][tv_idx];
-
-			if (nUniIndex != Items.Item_UniIndex)
-				break;
-
-			CNetworkMessage nmMessage;
-			RequestClient::doExApetEvolution* packet = reinterpret_cast<RequestClient::doExApetEvolution*>(nmMessage.nm_pubMessage);
-			packet->type = MSG_EXTEND;
-			packet->subType = htonl(MSG_EX_ATTACK_PET);
-			packet->thirdType = MSG_SUB_EVOLUTION;
-			packet->tab = tv_tab;
-			packet->invenIndex = tv_idx;
-			nmMessage.setSize( sizeof(*packet) );
-
-			_pNetwork->SendToServerNew(nmMessage);
-			
-		}break;
-	case MSGCMD_SOCKETSYSTEM_CHANCECARD:
-		{
-			int nUniIndex;
-
-			GetMessageBox(MSGCMD_SOCKETSYSTEM_CHANCECARD)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
-
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, nUniIndex );
-			CloseMessageBox( MSGCMD_SOCKETSYSTEM_CHANCECARD );
-		}
-		break;
-	case MSGLCMD_SOCKET_SYSTEM_EMPTY_BOX:
-		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-			int	nTab;
-			int nUniIndex;
-			int nInvenIdx;
-
-			CUIIcon* pIcon = pUIManager->GetMessageBox(MSGLCMD_SOCKET_SYSTEM_EMPTY_BOX)->GetBtnEx();
-
-			if (pIcon != NULL)
-			{
-				CItems* pItems = pIcon->getItems();
-
-				if (pItems != NULL)
-				{
-					nTab	  = pItems->Item_Tab;
-					nInvenIdx = pItems->InvenIndex;
-					nUniIndex = pItems->Item_UniIndex;
-
-					pUIManager->GetSocketSystem()->SendCleanOneJewelReq(nTab, nInvenIdx, nUniIndex);
-				}
-			}
-
-			CloseMessageBox( MSGLCMD_SOCKET_SYSTEM_EMPTY_BOX );
-		}
-		break;
-	case MSGCMD_LOGINSERV_BLOCK_USER:
-		{
-			ShellExecute( 0, "open", ST_UNLOCK_URL, 0, 0, SW_SHOWNORMAL);
-			CloseMessageBox( MSGCMD_LOGINSERV_BLOCK_USER );
-		}
-		break;
-	case MSGCMD_PET_STAT_INIT_CARD_USE:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_PET_STAT_INIT_CARD_USE)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_PET_STAT_INIT_CARD_USE);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}
-		break;
-	case MSGCMD_CHANGE_START_POINT:
-		{
-			CNetworkMessage nmMessage(MSG_EXTEND);
-
-			nmMessage << (ULONG)MSG_EX_MSGBOX;
-			nmMessage << (UBYTE)MSG_EX_MSGBOX_CHANGE_START_POINT;
-			nmMessage << (SBYTE)TRUE;
-			
-			_pNetwork->SendToServerNew(nmMessage);
-		}break;
-	case MSGCMD_SHUTDOWN_TIME:
-		{
-			_pGameState->Running() = FALSE;
-			_pGameState->QuitScreen() = FALSE;	
-		}
-		break;
-	case MSGCMD_USE_PET_ACCUMULATE2:
-		{
-			CUIIcon* pIcon = GetMessageBox(MSGCMD_USE_PET_ACCUMULATE2)->GetBtnEx();
-
-			if (pIcon != NULL)
-			{
-				CItems* pItems = pIcon->getItems();
-
-				if (pItems != NULL)
-				{
-					LONG nPetIndex = pItems->Item_Plus;
-					_pNetwork->SendPetAccumulateUse(MSG_CHAR_WILDPET, nPetIndex);
-				}
-			}
-
-			GetInventory()->Lock(FALSE, FALSE, LOCK_EXP_PET);
-			
-		}break;
-	case MSGCMD_JUMPIMGPOTION:
-		{
-			int nUniIndex;
-			GetMessageBox(MSGCMD_JUMPIMGPOTION)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-			CloseMessageBox(MSGCMD_JUMPIMGPOTION);
-			_pNetwork->UseSlotItem(tv_tab,tv_idx);
-		}break;
-
-	case MSGCMD_ITEM_DUPLICATION_CHECK:
-		{
-			int nUniIndex;
-			int tv_tab, tv_idx;
-
-			GetMessageBox(MSGCMD_ITEM_DUPLICATION_CHECK)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
-
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, 0 );
-		}
-		break;
-	case MSGCMD_USE_SEALED_SOUL:
-		{
-			int nUniIndex;
-			int tv_tab, tv_idx;
-
-			GetMessageBox(MSGCMD_USE_SEALED_SOUL)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, 0 );
-		}
-		break;
-	case MSGCMD_EXP_PET_COOLTIME_REMOVE:
-		{
-			int nUniIndex;
-			int tv_tab, tv_idx;
-
-			GetMessageBox(MSGCMD_EXP_PET_COOLTIME_REMOVE)->GetBtnUseItemInfo( tv_tab, tv_idx, nUniIndex );
-
-			CItems& ItemsBtn = _pNetwork->MySlotItem[tv_tab][tv_idx];
-			_pNetwork->SendItemUse(ItemsBtn.Item_Tab, ItemsBtn.InvenIndex, ItemsBtn.Item_UniIndex, 0 );
-		}
-		break;
-
-	case MSGCMD_ATTENDANCE_ASSURE_OK_UPD:
-		{
-			_pNetwork->SendAttendanceReq(2);
-		}
-		break;
 	}
 }
 
@@ -5963,11 +6679,6 @@ void CUIManager::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput ,
 	}
 }
 
-void CUIManager::MsgCommonCommand( int nCommandCode )
-{
-
-}
-
 // ========================================================================= //
 //                           Send message functions                          //
 // ========================================================================= //
@@ -5976,9 +6687,9 @@ void CUIManager::MsgCommonCommand( int nCommandCode )
 // Name : SendDropItem()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::SendDropItem( int nTab, int inven_idx, SQUAD llCount )
+void CUIManager::SendDropItem( int nTab, int nRow, int nCol, SQUAD llCount )
 {
-	_pNetwork->DropItem( nTab, inven_idx, llCount );
+	_pNetwork->DropItem( nTab, nRow, nCol, llCount );
 }
 
 // ----------------------------------------------------------------------------
@@ -6002,20 +6713,15 @@ void CUIManager::LostTarget()
 
 //#define KEY_SHOW_STRING_INDEX_DEVtest
 
-ENGINE_API CTString _SFunc( int x )
+inline ENGINE_API CTString _SFunc( int x, char* )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( _pNetwork->m_ubGMLevel > 1 )
-	{
+	#ifndef KEY_SHOW_STRING_INDEX_DEV	
+		return _pUIMgr->GetString(x);
+	#else
 		CTString strString;
-		CTString strOrg = pUIManager->GetString( x );
-
-		strOrg.IsEmpty() ? strString.PrintF( "[%d]Client", x ) : strString.PrintF( "[%d]%s", x, (const char*)strOrg );
+		strString.PrintF( "(%d)%s", x,_pUIMgr->GetString(x));
 		return strString;
-	}
-	else
-		return pUIManager->GetString(x);
+	#endif
 }
 
 //------------------------------------------------------------------------------
@@ -6029,23 +6735,7 @@ void CUIManager::SetTitleName( INDEX bFullScreen, int iScreenSizeI, int iScreenS
 	// Date : 2005-09-22(오후 7:17:24), By Lee Ki-hwan
 	// 원도우 타이틀 바 조정 
 	CTString strTitleName;
-	strTitleName.PrintF( "%s (%s %dx%d)", (const char*)_S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
-
-#ifdef	VER_TEST
-	if (m_strIP.size() > 0)
-	{
-		strTitleName += " - ";
-		strTitleName += m_strIP.c_str();
-	}
-
-	if (_pNetwork->MyCharacterInfo.index > 0)
-	{
-		CTString str;
-		str.PrintF(" C(%d) U(%d)", _pNetwork->MyCharacterInfo.index, _pNetwork->MyCharacterInfo.userIndex);
-
-		strTitleName += str;
-	}
-#endif	// VER_TEST
+	strTitleName.PrintF( "%s (%s %dx%d)", _S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
 	
 	SetWindowText( _hwndMain, strTitleName.str_String );
 }
@@ -6083,7 +6773,31 @@ void CUIManager::AddDamageData( ULONG ulDamage, SBYTE sbTargetFlag, ULONG ulClie
 	Damage.ulIndex		= ulClientIndex;
 	Damage.fAlpha		= 0.0f;	
 	Damage.bDamaged		= bDamaged;
-	Damage.dStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+	
+	// 플레이어가 데미지를 받는 경우에는 erase하지 않음!!!
+	if( ulClientIndex != CEntity::GetPlayerEntity(0)->en_ulID )
+	{
+		if( !m_qDamage.empty() )
+		{
+			int DamageSize = m_qDamage.size();
+			int nCount;
+			DAMAGE_deque::iterator iter;
+
+			for (nCount = 0, iter = m_qDamage.begin(); nCount < DamageSize; nCount++)
+			{
+				DAMAGE tmpDamage = (*iter);
+
+				if (tmpDamage.ulIndex == ulClientIndex)
+				{
+					iter = m_qDamage.erase(iter);
+				}
+				else
+				{
+					++iter;
+				}
+			}
+		}
+	}
 	
 	m_qDamage.push_back( Damage );	
 }
@@ -6106,17 +6820,15 @@ void CUIManager::ShowDamage( ULONG ulClientIndex )
 	
 	for( iter = iterBegin; iter != iterEnd; iter++ )
 	{
-//		if( (*iter).bVisible )	// 화면에 보여지고 있으면 패스 
-//			continue;
+		if( (*iter).bVisible )	// 화면에 보여지고 있으면 패스 
+			continue;
 		
 		if( (*iter).ulIndex != ulClientIndex )	// 나를 공격한 몬스터가 아니면 패스 
 			continue;
 		
-		if (!(*iter).bVisible)
-		{
-			(*iter).bVisible = TRUE;
-			(*iter).dStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-		}
+		(*iter).bVisible = TRUE;
+		(*iter).dStartTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
+		return;
 	}		
 }
 
@@ -6147,19 +6859,17 @@ void CUIManager::ShowDamageList( FLOAT3D vPopupPos, FLOAT fPopupZ, ULONG ulClien
 
 	int qDamageSize = m_qDamage.size();
 	int nCount;
-	int nIdx = 0, nOldIndex = -1;
-	DOUBLE dbOldStart = 0.0;
 
-	for (nCount=0, iterDamage = m_qDamage.begin(); nCount < qDamageSize; ++nCount)
+	for (nCount=0, iterDamage = m_qDamage.begin(); nCount != qDamageSize; nCount++)
 	{
 		DAMAGE tmpDamage = (*iterDamage);
 
 		if (ulClientIndex == tmpDamage.ulIndex)
 		{
-			DOUBLE dDelayTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds() - tmpDamage.dStartTime;
-
 			if (tmpDamage.bVisible)
 			{
+				DOUBLE dDelayTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds() - tmpDamage.dStartTime;
+
 				if (dDelayTime > SHOW_DAMAGE_TIME)
 				{
 					iterDamage = m_qDamage.erase(iterDamage);
@@ -6167,23 +6877,16 @@ void CUIManager::ShowDamageList( FLOAT3D vPopupPos, FLOAT fPopupZ, ULONG ulClien
 				}
 				else
 				{
-					if (nOldIndex == tmpDamage.ulIndex && (tmpDamage.dStartTime - dbOldStart) < 300)
-					{
-						++nIdx;
-					}
-					else
-					{
-						nOldIndex = tmpDamage.ulIndex;
-						dbOldStart = tmpDamage.dStartTime;
-						nIdx = 0;
-					}
-
-					RenderDamage(nIdx, iterDamage, dDelayTime, vPopupPos(1), vPopupPos(2));
+					RenderDamage(iterDamage, dDelayTime, vPopupPos(1), vPopupPos(2));
 				}
 			}
+
+			++iterDamage;
 		}
-	
-		++iterDamage;
+		else
+		{
+			++iterDamage;
+		}
 	}
 }
 
@@ -6192,14 +6895,14 @@ void CUIManager::ShowDamageList( FLOAT3D vPopupPos, FLOAT fPopupZ, ULONG ulClien
 // Explain:  데미지 표시 루틴 ( 주로 시간에 따른 2D 과를 제ㅓ어 한다.
 // Date : 2005-11-16,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIManager::RenderDamage( int nIndex, DAMAGE_deque::iterator iter, DOUBLE dDealyTime, int nX, int nY )
+void CUIManager::RenderDamage( DAMAGE_deque::iterator iter, DOUBLE dDealyTime, int nX, int nY )
 {
-	const float fMoveSpeed		= 1.0f;		// After 이동 스피드
-	const float fReSize			= 0.2f;		// After 축소 비율 
-	const float fMiddleTime		= 200.0f;	// After까지의 시간
-	const float fShowHeight		= 70.0f;	// After까지의 높이 
-	const float fDefaultSize	= 1.5f;		// 기본 크기 
-	const float fOffsetY		= 10;		// 시작 Y 위치 
+	static float fMoveSpeed		= 1.0f;		// After 이동 스피드
+	static float fReSize		= 0.2f;		// After 축소 비율 
+	static float fMiddleTime	= 200.0f;	// After까지의 시간
+	static float fShowHeight	= 70.0f;	// After까지의 높이 
+	static float fDefaultSize	= 1.5f;		// 기본 크기 
+	static float fOffsetY		= 10;		// 시작 Y 위치 
 
 	float fTimeRatio = dDealyTime / fMiddleTime;
 
@@ -6212,18 +6915,6 @@ void CUIManager::RenderDamage( int nIndex, DAMAGE_deque::iterator iter, DOUBLE d
 	{
 		(*iter).fY = fShowHeight * fTimeRatio;
 		(*iter).fAlpha = 1.0f * fTimeRatio;
-
-		if (nIndex > 0)
-		{
-			if (nIndex % 2)
-				(*iter).fX = (fOffsetY * 2.f);
-			else
-				(*iter).fX = (fOffsetY * 2.f);
-
-			(*iter).fY -= (fOffsetY * 1.5f) * nIndex;
-		}
-
-		//LOG_DEBUG("RenderDamage : idx(%d) score(%d)", nIndex, (*iter).ulDamage);
 	}
 	else
 	{
@@ -6291,7 +6982,7 @@ void CUIManager::DrawText( int nX, int nY, SBYTE sbTargetFlag, COLOR colColor, F
 	
 	nX -= ( fWidth / 2 );
 	
-	GetDrawPort()->AddTexture( nX, nY, nX + fWidth ,nY + fHieght,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + fWidth ,nY + fHieght,
 							rtShowText.U0, rtShowText.V0, rtShowText.U1, rtShowText.V1,
 							colColor );
 }
@@ -6329,7 +7020,7 @@ void CUIManager::DrawNumber( int nX, int nY, int nNumber, COLOR colColor, FLOAT 
 
 		rtNumber = m_rtNumber[nUnitNumber];
 		
-		GetDrawPort()->AddTexture( nX, nY, nX + fWidth ,nY + fHieght,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + fWidth ,nY + fHieght,
 							rtNumber.U0, rtNumber.V0, rtNumber.U1, rtNumber.V1,
 							colColor );
 		
@@ -6342,15 +7033,15 @@ void CUIManager::DrawNumber( int nX, int nY, int nNumber, COLOR colColor, FLOAT 
 // Name : GetClassOfItem()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::GetClassOfItem( CItemData* pItemData, CTString &strClass )
+void CUIManager::GetClassOfItem( CItemData & rItemData, CTString &strClass )
 {
 	CTString	strTemp = CTString( "" );
 	
-	for(int i = 0; i < (TOTAL_JOB); ++i)
+	for(int i = 0; i < TOTAL_JOB; ++i)
 	{
-		if(pItemData->CanUse(i))
+		if(rItemData.CanUse(i))
 		{
-			strTemp += CJobInfo::getSingleton()->GetName(i);
+			strTemp += JobInfo().GetName(i);
 			strTemp += CTString(" ");
 		}
 	}
@@ -6363,23 +7054,78 @@ void CUIManager::GetClassOfItem( CItemData* pItemData, CTString &strClass )
 // Name : IsPetPlus()
 // Desc :
 // ----------------------------------------------------------------------------
-BOOL CUIManager::IsPet(CItemData* pItemData)
+BOOL CUIManager::IsPet(CItemData& rItemData)
 {
-	if (pItemData == NULL)
-		return FALSE;
-
-	if(pItemData->GetType() == CItemData::ITEM_ACCESSORY && pItemData->GetSubType() == CItemData::ACCESSORY_PET ) return TRUE;
+	if(rItemData.GetType() == CItemData::ITEM_ACCESSORY && rItemData.GetSubType() == CItemData::ACCESSORY_PET ) return TRUE;
 	
 	return FALSE;
 }
-BOOL CUIManager::IsWildPet(CItemData* pItemData)
+BOOL CUIManager::IsWildPet(CItemData& rItemData)
 {
-	if (pItemData == NULL)
-		return FALSE;
-
-	if(pItemData->GetType() == CItemData::ITEM_ACCESSORY && pItemData->GetSubType() == CItemData::ACCESSORY_WILDPET ) return TRUE;
+	if(rItemData.GetType() == CItemData::ITEM_ACCESSORY && rItemData.GetSubType() == CItemData::ACCESSORY_WILDPET ) return TRUE;
 	
 	return FALSE;
+}
+
+struct tm * CUIManager::LClocaltime ( time_t *timp )
+{
+		tm * ptb= new(tm);
+        ULONG caltim =((ULONG)(*timp))*24;            /* calendar time to convert */
+        int islpyr = 0;                 /* is-current-year-a-leap-year flag */
+            
+        if ( caltim < 0L )
+                return(NULL);
+
+        /*
+         * Determine years since 1970. First, identify the four-year interval
+         * since this makes handling leap-years easy (note that 2000 IS a
+         * leap year and 2100 is out-of-range).
+         */
+        ptb->tm_year = (int)(caltim / _LC_YEAR_SEC);
+        caltim -= ((ULONG)(ptb->tm_year) * _LC_YEAR_SEC);
+//		caltim = caltim % _LC_YEAR_SEC;
+
+	     /*
+         * tmptim now holds the value for tm_year. caltim now holds the
+         * number of elapsed seconds since the beginning of that year.
+         */
+        ptb->tm_mon = (int)(caltim / _LC_MONTH_SEC);
+        caltim -= ((ULONG)(ptb->tm_mon) * _LC_MONTH_SEC);
+//		caltim = caltim % _LC_MONTH_SEC;
+							
+        /*
+         * Determine days since January 1 (0 - 365). This is the tm_yday value.
+         * Leave caltim with number of elapsed seconds in that day.
+         */
+        ptb->tm_yday = (int)(caltim / _LC_DAY_SEC);
+        caltim -= (ULONG)(ptb->tm_yday) * _LC_DAY_SEC;
+//		caltim = caltim % _LC_DAY_SEC;
+
+        /*
+         * Determine months since January (0 - 11) and day of month (1 - 31)
+         */
+        ptb->tm_mday = ptb->tm_yday - _LC_DAY_IN_MONTH;
+
+        /*
+         * Determine days since Sunday (0 - 6)
+         */
+        ptb->tm_wday = ((int)(*timp / _LC_DAY_SEC) + _LC_BASE_DOW) % 7;
+
+        /*
+         *  Determine hours since midnight (0 - 23), minutes after the hour
+         *  (0 - 59), and seconds after the minute (0 - 59).
+         */
+        ptb->tm_hour = (int)(caltim / 3600);
+        caltim -= (ULONG)ptb->tm_hour * 3600L;
+//		caltim = caltim % 3600;
+
+        ptb->tm_min = (int)(caltim / 60);
+        ptb->tm_sec = (int)(caltim - (ptb->tm_min) * 60);
+//		caltim = caltim % 60;
+
+        ptb->tm_isdst = 0;
+        return( (struct tm *)ptb );
+
 }
 
 BOOL CUIManager::checkName(CTString strMsg, int chkType)
@@ -6397,7 +7143,7 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 = _S(433,"캐릭터 이름이 너무 짧습니다.\n(한글 2~8자, 영문 4~16자)");
 			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE;
 		}
 		
@@ -6406,7 +7152,7 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 = _S(434,"캐릭터 이름이 너무 깁니다.\n(한글 2~8자, 영문 4~16자)");
 			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE;
 		}
 				
@@ -6415,105 +7161,44 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 = _S( 437, "문장에 금지된 단어가 포함되어 있습니다."); 
 			MsgBoxInfo.SetMsgBoxInfo(strTitle, UMBS_OK,UI_NONE, MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE;
 		}
 	
 		// 공백 체크.		
 		for(const char *chr = strMsg.str_String; *chr != 0; chr++)
 		{
-			/*
 			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
 				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' ||
-				(g_iCountry == HONGKONG && !GetCreateChar()->CheckCharacterHK(chr)))
+				(g_iCountry == HONGKONG && !_pUIMgr->GetCreateChar()->CheckCharacterHK(chr)))
 			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
+				_pUIMgr->CloseMessageBox(MSGCMD_CREATE_ERROR);
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
 					UI_NONE, MSGCMD_BAN_NAME );
 				CTString	strMsg = _S( 146, "캐릭터명에 공백이나 특정문자는 들어갈 수 없습니다." );
 				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
-				
-				return FALSE;
-			}
-			/**/
-
-			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
-				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' )
-			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_NONE, MSGCMD_BAN_NAME );
-				CTString	strMsg = _S( 146, "캐릭터명에 공백이나 특정문자는 들어갈 수 없습니다." );
-				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				
 				return FALSE;
 			}
 
-			/*
 			// 말레이시아 개명카드 사용시 영문숫자만 가능하게
 			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
 				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
 				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
 				&& ( g_iCountry == MALAYSIA || g_iCountry == USA || g_iCountry == BRAZIL || g_iCountry == GERMANY 
-					|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND || g_iCountry == MEXICO 
-					|| g_iCountry == ITALY || g_iCountry == TURKEY || g_iCountry == NETHERLANDS) )//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+					|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) )//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
+				_pUIMgr->CloseMessageBox(MSGCMD_CREATE_ERROR);
 				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
 					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
 				CTString	strMessage = _S(2980, "아이디는 영문과 숫자만 허용됩니다." );
 				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				return FALSE;
 
 			}
-			/**/
-
-			// 말레이시아 개명카드 사용시 영문숫자만 가능하게
-			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
-				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
-				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
-				)
-			{
-			#if defined(G_USA) || defined(G_BRAZIL) || defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2) || defined(G_NETHERLANDS)
-
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-				CTString	strMessage = _S(2980, "아이디는 영문과 숫자만 허용됩니다." );
-				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
-				return FALSE;
-
-			#endif
-
-			}
-
-
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-			{
-				// [100510: selo] LC-RU-P20100504-006
-				// http://en.wikipedia.org/wiki/Windows-1251 참고하여 변경
-				if( !((*chr) >= 48 && (*chr) <= 57 )
-					&& !((*chr) >= -64 && (*chr) <= -1)
-					&& !((*chr) == -88)
-					&& !((*chr) == -72)	)				
-				{
-					CloseMessageBox(MSGCMD_CREATE_ERROR);
-					MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-						UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-					CTString	strMessage = _S(2980, "아이디는 영문과 숫자만 허용됩니다." );
-					MsgBoxInfo.AddString( strMessage );
-					CreateMessageBox( MsgBoxInfo );
-					return FALSE;
-				}
-			}
-			#endif
 		}
 		
 	} // 캐릭이름 변경시
@@ -6525,7 +7210,7 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 = _S(882,"길드 이름이 너무 짧습니다.\n(한글 2자이상, 영문 4자이상)");
 			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE;
 
 		}
@@ -6535,7 +7220,7 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 =_S( 2143,  "길드 이름이 너무 깁니다 \n(한글 2~8자 영문 4~16자 입니다)" );		
 			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE; 
 		}
 		if(_UIFilteringCharacter.Filtering((char *)(const char *)strMsg))
@@ -6543,327 +7228,64 @@ BOOL CUIManager::checkName(CTString strMsg, int chkType)
 			strMsg	 = _S( 437, "문장에 금지된 단어가 포함되어 있습니다."); 
 			MsgBoxInfo.SetMsgBoxInfo(strTitle, UMBS_OK,UI_NONE, MSGCMD_BAN_NAME);
 			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
+			_pUIMgr->CreateMessageBox(MsgBoxInfo);
 			return FALSE;
 		}
 	
 		// 공백 체크.		
 		for(const char *chr = strMsg.str_String; *chr != 0; chr++)
 		{
-			/*
 			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
 				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' ||
-				(g_iCountry == HONGKONG && !GetCreateChar()->CheckCharacterHK(chr)))
+				(g_iCountry == HONGKONG && !_pUIMgr->GetCreateChar()->CheckCharacterHK(chr)))
 			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
+				_pUIMgr->CloseMessageBox(MSGCMD_CREATE_ERROR);
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
 					UI_NONE, MSGCMD_BAN_NAME );
 				CTString	strMsg = _S( 883, "길드 이름에 잘못된 문자가 포함되어 있습니다." );
 				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
-				
-				return FALSE;
-			}
-			/**/
-
-			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
-				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' )
-			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_NONE, MSGCMD_BAN_NAME );
-				CTString	strMsg = _S( 883, "길드 이름에 잘못된 문자가 포함되어 있습니다." );
-				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				
 				return FALSE;
 			}
 
-			/*
 			// 말레이시아 개명카드 사용시 영문숫자만 가능하게
 			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
 				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
 				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
 				&& ( g_iCountry == MALAYSIA || g_iCountry == USA || g_iCountry == BRAZIL || g_iCountry == GERMANY 
-					|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND || g_iCountry == MEXICO 
-					|| g_iCountry == ITALY || g_iCountry == TURKEY || g_iCountry == NETHERLANDS) )//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+					|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND) )//FRANCE_SPAIN_CLOSEBETA_NA_20081124
 			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
+				_pUIMgr->CloseMessageBox(MSGCMD_CREATE_ERROR);
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
 					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
 				CTString	strMessage = _S(3113, "길드 이름은 영문과 숫자만 허용합니다." );
 				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				return FALSE;
 
 			}
-			*/
-			// 말레이시아 개명카드 사용시 영문숫자만 가능하게
-			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
-				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
-				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
-				)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-			{
-				#if defined(G_USA) || defined(G_BRAZIL) || defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2) || defined(G_NETHERLANDS)
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-				CTString	strMessage = _S(3113, "길드 이름은 영문과 숫자만 허용합니다." );
-				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
-				return FALSE;
-				#endif
-			}
-			
-			//if(g_iCountry == RUSSIA)
-			#if defined G_RUSSIA
-			{
-				// [100510: selo] LC-RU-P20100504-006
-				// http://en.wikipedia.org/wiki/Windows-1251 참고하여 변경
-				if( !((*chr) >= 48 && (*chr) <= 57 )
-					&& !((*chr) >= -64 && (*chr) <= -1)
-					&& !((*chr) == -88)
-					&& !((*chr) == -72)	)
-				{
-					CloseMessageBox(MSGCMD_CREATE_ERROR);
-					MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-						UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-					CTString	strMessage = _S(2980, "아이디는 영문과 숫자만 허용됩니다." );
-					MsgBoxInfo.AddString( strMessage );
-					CreateMessageBox( MsgBoxInfo );
-					return FALSE;
-				}
-			}
-			#endif
 		}
 
 	}
-	//펫이름 변경 added by sam 11/01/03
-	else if ( 2 == chkType )
-	{
-		strTitle = _S(191,"확인");
-		if(strMsg.Length()<1)
-		{
-			strMsg	 = _S(3257,"요청한 작업이 실패 하였습니다.");
-			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
-			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
-			return FALSE;
-
-		}
-
-		if(strMsg.Length()>16) 
-		{
-			strMsg	 =_S( 3257,  "요청한 작업이 실패 하였습니다." );		
-			MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_BAN_NAME);
-			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
-			return FALSE; 
-		}
-		if(_UIFilteringCharacter.Filtering((char *)(const char *)strMsg))
-		{
-			strMsg	 = _S( 437, "문장에 금지된 단어가 포함되어 있습니다."); 
-			MsgBoxInfo.SetMsgBoxInfo(strTitle, UMBS_OK,UI_NONE, MSGCMD_BAN_NAME);
-			MsgBoxInfo.AddString(strMsg);
-			CreateMessageBox(MsgBoxInfo);
-			return FALSE;
-		}
-	
-		// 공백 체크.		
-		for(const char *chr = strMsg.str_String; *chr != 0; chr++)
-		{
-			/*
-			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
-				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' ||
-				(g_iCountry == HONGKONG && !GetCreateChar()->CheckCharacterHK(chr)))
-			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_NONE, MSGCMD_BAN_NAME );
-				CTString	strMsg = _S( 3257, "요청한 작업이 실패 하였습니다." );
-				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
-				
-				return FALSE;
-			}
-			*/
-			if( (*chr) == ' ' || (*chr) == '\t' || (*chr) == '\n' || (*chr) == '\r' || 
-				(*chr) == '%' || (*chr) == '#' || (*chr) == '&' || (*chr) == '?' || (*chr) == '+' || (*chr) == '=' )
-			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_NONE, MSGCMD_BAN_NAME );
-				CTString	strMsg = _S( 3257, "요청한 작업이 실패 하였습니다." );
-				MsgBoxInfo.AddString( strMsg );
-				CreateMessageBox( MsgBoxInfo );
-				
-				return FALSE;
-			}
-
-			// 말레이시아 개명카드 사용시 영문숫자만 가능하게
-			/*
-			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
-				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
-				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
-				&& ( g_iCountry == MALAYSIA || g_iCountry == USA || g_iCountry == BRAZIL || g_iCountry == GERMANY 
-					|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND || g_iCountry == MEXICO 
-					|| g_iCountry == ITALY || g_iCountry == TURKEY || g_iCountry == NETHERLANDS) )//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-			{
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-				CTString	strMessage = _S(3, "잘못된 문자가 포함되어 있습니다." );
-				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
-				return FALSE;
-
-			}
-			/**/
-			
-			if( !((*chr) >= 48 && (*chr) <=57)  //! 0 ~ 9
-				&& !((*chr) >= 65 && (*chr) <=90) // ! A ~ Z 
-				&& !((*chr) >= 97 && (*chr) <=122) // ! a ~ z 
-				)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
-			{
-			#if defined(G_USA) || defined(G_BRAZIL) || defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2) || defined(G_NETHERLANDS)
-				CloseMessageBox(MSGCMD_CREATE_ERROR);
-				CUIMsgBox_Info	MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-					UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-				CTString	strMessage = _S(3, "잘못된 문자가 포함되어 있습니다." );
-				MsgBoxInfo.AddString( strMessage );
-				CreateMessageBox( MsgBoxInfo );
-				return FALSE;
-
-			#endif
-			}
-
-			#if defined G_RUSSIA
-			//if(g_iCountry == RUSSIA)
-			{
-				// [100510: selo] LC-RU-P20100504-006
-				// http://en.wikipedia.org/wiki/Windows-1251 참고하여 변경
-				if( !((*chr) >= 48 && (*chr) <= 57 )
-					&& !((*chr) >= -64 && (*chr) <= -1)
-					&& !((*chr) == -88)
-					&& !((*chr) == -72)	)
-				{
-					CloseMessageBox(MSGCMD_CREATE_ERROR);
-					MsgBoxInfo.SetMsgBoxInfo( strTitle, UMBS_OK,
-						UI_CREATE_CHAR, MSGCMD_CREATE_ERROR );
-					CTString	strMessage = _S(3, "잘못된 문자가 포함되어 있습니다." );
-					MsgBoxInfo.AddString( strMessage );
-					CreateMessageBox( MsgBoxInfo );
-					return FALSE;
-				}
-			}
-			#endif
-		}
-
-	}
-
 
 	return TRUE;
 
 }
 
-void CUIManager::SetRareOption( CNetworkMessage *istr, CItems& rItem )
-{
-	SBYTE	sbOptionType;
-	LONG	lOptionLevel;
-
-	//레어 옵션 인덱스
-	(*istr) >> sbOptionType;
-	(*istr) >> lOptionLevel;
-	
-	LONG iRareIndex = lOptionLevel;
-
-	rItem.SetRareIndex(iRareIndex);
-
-	//레어 옵션 종류
-	(*istr) >> sbOptionType;
-	(*istr) >> lOptionLevel;
-	
-	WORD iRareOption = lOptionLevel;
-	WORD wCBit =1;
-	SBYTE sbOption =-1;
-	for(int iBit=0; iBit<10; ++iBit)
-	{
-		if(iRareOption & wCBit)
-		{
-			CItemRareOption* pItem = CItemRareOption::getData(iRareIndex);
-
-			if (pItem == NULL )
-				continue;
-
-			if (pItem->GetIndex() < 0)
-				continue;
-
-			int OptionType = pItem->rareOption[iBit].OptionIdx;
-			int OptionLevel = pItem->rareOption[iBit].OptionLevel;
-			
-			rItem.SetOptionData( ++sbOption, OptionType, OptionLevel, ORIGIN_VAR_DEFAULT );
-		}
-		wCBit <<=1;
-	}
-}
-
-void CUIManager::SetRareOption( UpdateClient::itemInfo* pInfo, CItems& rItem )
-{
-	if (pInfo == NULL)
-		return;
-	
-	// option_level[0] rare_option index
-	LONG iRareIndex = pInfo->option_level[0];
-	rItem.SetRareIndex(iRareIndex);
-
-	// option_level[1] bit mask
-	WORD iRareOption = pInfo->option_level[1];
-	WORD wCBit =1;
-	SBYTE sbOption =-1;
-	for(int iBit=0; iBit<10; ++iBit)
-	{
-		if(iRareOption & wCBit)
-		{
-			CItemRareOption* pItem = CItemRareOption::getData(iRareIndex);
-
-			if (pItem == NULL )
-				continue;
-
-			if (pItem->GetIndex() < 0)
-				continue;
-
-			int OptionType = pItem->rareOption[iBit].OptionIdx;
-			int OptionLevel = pItem->rareOption[iBit].OptionLevel;
-			rItem.SetOptionData( ++sbOption, OptionType, OptionLevel, ORIGIN_VAR_DEFAULT );
-		}
-		wCBit <<=1;
-	}
-}
-
-
 // WSS_MINIGAME_070422 ---------------------------------------------------------------------------->>
 // For multilined string
-void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
+void CUIManager::AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
 {	
 	// Get length of string
 	INDEX	nLength = tStr.Length();
 	if( nLength <= 0 )
 		return;
 
-	int		iPos;
-
 	// wooss 051002
-	//if(g_iCountry == THAILAND)
-#if defined G_THAI
-	{
+	if(g_iCountry == THAILAND){
 		// Get length of string
 		INDEX	nThaiLen = FindThaiLen(tStr);
 		INDEX	nChatMax= (iMaxChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
@@ -6871,7 +7293,7 @@ void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDE
 		// If length of string is less than max char
 		if( nThaiLen <= nChatMax )
 		{
-			pListBox->AddString(ilistCol,tStr, tColor);
+			pListBox->AddString(ilistCol,tStr,tColor);
 		}
 		// Need multi-line
 		else
@@ -6879,7 +7301,7 @@ void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDE
 			// Check splitting position for 2 byte characters
 			int		nSplitPos;
 			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(tStr,0,iPos))
 					break;
@@ -6890,120 +7312,21 @@ void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDE
 			CTString	strLeft,strRight;
 			
 			tStr.Split( nSplitPos, strLeft, strRight );
-			pListBox->AddString(ilistCol,strLeft, tColor);
+			pListBox->AddString(ilistCol,strLeft,tColor);
 			AddStringToList(pListBox,strRight, iMaxChar, tColor, ilistCol);
 		}
 		
-	}
-	//else
-	#else
-	{
+	} else{
 		// If length of string is less than max char
 		if( nLength <= iMaxChar )
-		{	
-			// Check line character
-			for( iPos = 0; iPos < nLength; iPos++ )
-			{
-				if( tStr[iPos] == '\n' || tStr[iPos] == '\r' )
-					break;	
-			}
-
-			// Not exist
-			if( iPos == nLength )
-			{
-				pListBox->AddString(ilistCol,tStr,tColor);
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp, strTemp2;
-				tStr.Split(iPos, strTemp2, strTemp);
-				pListBox->AddString(ilistCol, strTemp2, tColor);
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddStringToList(pListBox, strTemp, iMaxChar, tColor, ilistCol );
-			}
+		{
+			pListBox->AddString(ilistCol,tStr,tColor);
 		}
 		// Need multi-line
 		else
 		{
-			// Check splitting position for 2 byte characters
-			int		nSplitPos = iMaxChar;
-#if defined(G_RUSSIA)
-			for( iPos=nSplitPos; iPos >=0; --iPos )
-			{
-				if( tStr[iPos] == ' ' )
-				{
-					nSplitPos = iPos;
-					break;
-				}
-			}
-#else
-			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
-			{
-				if( tStr[iPos] & 0x80 )
-					b2ByteChar = !b2ByteChar;
-				else
-					b2ByteChar = FALSE;
-			}
-
-			if( b2ByteChar )
-				nSplitPos--;
-#endif
-			// Check line character			
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
-			{
-				if( tStr[iPos] == '\n' || tStr[iPos] == '\r' )
-					break;
-			}
-
-			// Not exist
-			if( iPos == nSplitPos )
-			{
-				// Split string
-				CTString	strTemp, strTemp2;
-				tStr.Split( nSplitPos, strTemp2, strTemp );
-				pListBox->AddString(ilistCol, strTemp2, tColor);
-
-				// Trim space
-				if( strTemp[0] == ' ' )
-				{
-					int	nTempLength = strTemp.Length();
-					for( iPos = 1; iPos < nTempLength; iPos++ )
-					{
-						if( strTemp[iPos] != ' ' )
-							break;
-					}
-
-					strTemp.TrimLeft( strTemp.Length() - iPos );
-				}
-
-				AddStringToList(pListBox, strTemp, iMaxChar, tColor, ilistCol );
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp, strTemp2;
-				tStr.Split( iPos, strTemp2, strTemp );
-				pListBox->AddString(ilistCol, strTemp2, tColor);
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddStringToList(pListBox, strTemp, iMaxChar, tColor, ilistCol );
-			}
 		
-			/*
-			// Check splitting position for 2 byte characters			
+			// Check splitting position for 2 byte characters
 			int		nSplitPos = iMaxChar;
 			BOOL	b2ByteChar = FALSE;
 			for( int iPos = 0; iPos < nSplitPos; iPos++ )
@@ -7023,13 +7346,57 @@ void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDE
 			tStr.Split( nSplitPos, strLeft, strRight );
 			pListBox->AddString(ilistCol,strLeft,tColor);
 			AddStringToList(pListBox,strRight, iMaxChar, tColor, ilistCol);
-			*/
-
 		}
 	}
-	#endif
 }
 // ------------------------------------------------------------------------------------------------<<
+
+BOOL CUIManager::IsRareItem( CTString strName )
+{
+	for(int i=1828; i<=_pNetwork->wo_aItemName.Count(); ++i)
+	{
+		CTString strItemName =_pNetwork->GetItemName(i);
+		if( strName ==strItemName)
+		{
+			if( _pNetwork->GetItemData(i).IsFlag(ITEM_FLAG_RARE) )
+				return TRUE;
+			else 
+				return FALSE;
+		}
+	}
+
+	return FALSE;
+}
+
+void CUIManager::SetRareOption( CNetworkMessage *istr, CItems& rItem )
+{
+	SBYTE	sbOptionType, sbOptionLevel;
+
+	//레어 옵션 인덱스
+	(*istr) >> sbOptionType;
+	(*istr) >> sbOptionLevel;
+	UWORD iRareIndex = (static_cast<WORD>(sbOptionType) <<8) +sbOptionLevel;
+
+	rItem.SetRareIndex(iRareIndex);
+
+	//레어 옵션 종류
+	(*istr) >> sbOptionType;
+	(*istr) >> sbOptionLevel;
+	
+	WORD iRareOption = (static_cast<WORD>(sbOptionType) <<8) +sbOptionLevel;
+	WORD wCBit =1;
+	SBYTE sbOption =-1;
+	for(int iBit=0; iBit<10; ++iBit)
+	{
+		if( iRareOption & wCBit)
+		{
+			int OptionType =_pNetwork->wo_vecItemRareOption[iRareIndex].m_Option[iBit].index;
+			int OptionLevel =_pNetwork->wo_vecItemRareOption[iRareIndex].m_Option[iBit].level;
+			rItem.SetOptionData( ++sbOption, OptionType, OptionLevel );
+		}
+		wCBit <<=1;
+	}
+}
 
 BOOL CUIManager::IsEnemy( void* pTarget, TARGET_TYPE eType, BOOL bSearch )
 {
@@ -7040,178 +7407,118 @@ BOOL CUIManager::IsEnemy( void* pTarget, TARGET_TYPE eType, BOOL bSearch )
 	if (pTarget == NULL)
 	{ return FALSE; }
 
-	// rvr존이고
-	if (_pNetwork->IsRvrZone())
-	{	// 내 결사대 타입과 타겟의 결사대 타입이 다르다면 적!!!!!!!!!!!!!!!
-		if (_pNetwork->MyCharacterInfo.iSyndicateType != INFO()->GetTargetSyndiType())
-			return TRUE;
-		return FALSE;
-	}
-
 	switch(eType)
 	{
 		case CHARACTER:
 			{
 				if( bSearch )
-				{// 여기서 CharacterTarget클래스의 소멸자가 호출 되면 안된다.(ItemEffect 소멸자까지 호출되므로)
-					CCharacterTarget* ptCharacterTarget = NULL;
+				{
+					CCharacterTarget ptCharacterTarget;
 
 					if (static_cast<CEntity*>(pTarget)->en_pCharacterTarget == NULL)
 						return FALSE;
 
-					ptCharacterTarget = (static_cast<CEntity*>(pTarget)->en_pCharacterTarget);
-					iCha_Index = ptCharacterTarget->m_nIdxServer;
-					iGuild_Index = ptCharacterTarget->cha_lGuildIndex;
-					bLegit = ptCharacterTarget->cha_bLegit;
+					ptCharacterTarget = *(static_cast<CEntity*>(pTarget)->en_pCharacterTarget);
+					iCha_Index = ptCharacterTarget.cha_Index;
+					iGuild_Index = ptCharacterTarget.cha_lGuildIndex;
+					bLegit = ptCharacterTarget.cha_bLegit;
 				}
 				else
 				{
-					// safe code.
-					//if(NULL == static_cast<CCharacterTarget*>(pTarget))
-					if(NULL == pTarget)
-					{
-						return FALSE;
-					}
-					iCha_Index = (static_cast<CCharacterTarget*>(pTarget))->m_nIdxServer;
-					iGuild_Index =(static_cast<CCharacterTarget*>(pTarget))->cha_lGuildIndex;
-					bLegit =(static_cast<CCharacterTarget*>(pTarget))->cha_bLegit;
+					iCha_Index = ((CCharacterTarget*)pTarget)->cha_Index;
+					iGuild_Index =((CCharacterTarget*)pTarget)->cha_lGuildIndex;
+					bLegit =((CCharacterTarget*)pTarget)->cha_bLegit;
 				}
 			}
 			break;
 		case MOB:
-			{
-				CMobTarget* stMobTarget = NULL;
-
-				if( bSearch )
-				{
-					if (NULL == static_cast<CEntity*>(pTarget)->en_pMobTarget)
-						return FALSE;
-
-					stMobTarget = (static_cast<CEntity*>(pTarget)->en_pMobTarget);
-				}
-				else
-				{
-					// safe code.
-					//if(NULL == static_cast<CMobTarget*>(pTarget))
-					if(NULL == pTarget)
-						return FALSE;
-					stMobTarget = static_cast<CMobTarget*>(pTarget);
-				}
-
-				if ( stMobTarget->IsTotem() )
-					return FALSE;
-
-				if( stMobTarget->mob_iOwnerIndex == _pNetwork->MyCharacterInfo.index )
-					return FALSE;
-
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, stMobTarget->mob_iOwnerIndex);
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pCharTarget = static_cast< CCharacterTarget* >(pObject);
-
-					iCha_Index = pCharTarget->m_nIdxServer;
-					iGuild_Index = pCharTarget->cha_lGuildIndex;
-				}
-
-				if( iCha_Index < 0 )
-					return TRUE;
-			}
-			break;
+			return TRUE;
 		case NPC:
 			return FALSE;
-		case P1PET:
+		case PET:
 			{
-				CPetTarget* ptPetTarget = NULL;
+				CPetTarget ptPetTarget;
 
 				if( bSearch)
 				{
 					if (static_cast<CEntity*>(pTarget)->en_pPetTarget == NULL)
 						return FALSE;
 
-					ptPetTarget = (static_cast<CEntity*>(pTarget)->en_pPetTarget);
+					ptPetTarget = *(static_cast<CEntity*>(pTarget)->en_pPetTarget);
 				}
 				else
 				{
-					// safe code.
-					//if(NULL == static_cast<CPetTarget*>(pTarget))
-					if(NULL == pTarget)
-						return FALSE;
-
-					ptPetTarget = (static_cast<CPetTarget*>(pTarget));
+					ptPetTarget = *((CPetTarget*)pTarget);
 				}
 
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, ptPetTarget->pet_OwnerIndex);
-
-				if (pObject != NULL)
+				INDEX ctCha = _pNetwork->ga_srvServer.srv_actCha.Count();
+				for( INDEX iObj = 0; iObj < ctCha; iObj++ ) 
 				{
-					CCharacterTarget* pCharTarget = static_cast< CCharacterTarget* >(pObject);
-
-					iCha_Index = pCharTarget->m_nIdxServer;
-					iGuild_Index = pCharTarget->cha_lGuildIndex;
+					CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[iObj];
+					if( ptPetTarget.pet_OwnerIndex == ct.cha_Index )
+					{
+						iCha_Index =ct.cha_Index;
+						iGuild_Index =ct.cha_lGuildIndex;
+						break;
+					}
 				}
 			}
 			break;
 		case SUMMON:
 			{
-				CSlaveTarget* stSlaveTarget = NULL;
+				CSlaveTarget stSlaveTarget;
 
 				if( bSearch )
 				{
 					if (static_cast<CEntity*>(pTarget)->en_pSlaveTarget == NULL)
 						return FALSE;
 
-					stSlaveTarget = (static_cast<CEntity*>(pTarget)->en_pSlaveTarget);
+					stSlaveTarget = *(static_cast<CEntity*>(pTarget)->en_pSlaveTarget);
 				}
 				else
 				{
-					// safe code.
-					//if(NULL == static_cast<CSlaveTarget*>(pTarget))
-					if(NULL == pTarget)
-						return FALSE;
-
-					stSlaveTarget = (static_cast<CSlaveTarget*>(pTarget));
+					stSlaveTarget = *((CSlaveTarget*)pTarget);
 				}
 
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, stSlaveTarget->slave_OwnerIndex);
-
-				if (pObject != NULL)
+				INDEX ctCha = _pNetwork->ga_srvServer.srv_actCha.Count();
+				for( INDEX iObj = 0; iObj < ctCha; iObj++ ) 
 				{
-					CCharacterTarget* pCharTarget = static_cast< CCharacterTarget* >(pObject);
-
-					iCha_Index = pCharTarget->m_nIdxServer;
-					iGuild_Index = pCharTarget->cha_lGuildIndex;
+					CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[iObj];
+					if( stSlaveTarget.slave_OwnerIndex== ct.cha_Index )
+					{
+						iCha_Index =ct.cha_Index;
+						iGuild_Index =ct.cha_lGuildIndex;
+						break;
+					}
 				}
 			}
 			break;
 		case WILDPET:
 			{
-				CWildPetTarget* ptPetTarget = NULL;
+				CWildPetInfo ptPetTarget;
 
 				if( bSearch)
 				{
-					if (static_cast<CEntity*>(pTarget)->en_pWildPetTarget == NULL)
+					if (static_cast<CEntity*>(pTarget)->en_pWildPetInfo == NULL)
 						return FALSE;
 
-					ptPetTarget = (static_cast<CEntity*>(pTarget)->en_pWildPetTarget);
+					ptPetTarget = *(static_cast<CEntity*>(pTarget)->en_pWildPetInfo);
 				}
 				else
 				{
-					// safe code.
-					if(NULL == pTarget)
-						return FALSE;
-
-					ptPetTarget = static_cast< CWildPetTarget* >(pTarget);
+					ptPetTarget = *((CWildPetInfo*)pTarget);
 				}
 
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, ptPetTarget->m_nOwnerIndex);
-
-				if (pObject != NULL)
+				INDEX ctCha = _pNetwork->ga_srvServer.srv_actCha.Count();
+				for( INDEX iObj = 0; iObj < ctCha; iObj++ ) 
 				{
-					CCharacterTarget* pCharTarget = static_cast< CCharacterTarget* >(pObject);
-
-					iCha_Index = pCharTarget->m_nIdxServer;
-					iGuild_Index = pCharTarget->cha_lGuildIndex;
+					CCharacterTarget &ct = _pNetwork->ga_srvServer.srv_actCha[iObj];
+					if( ptPetTarget.m_nOwnerIndex == ct.cha_Index )
+					{
+						iCha_Index =ct.cha_Index;
+						iGuild_Index =ct.cha_lGuildIndex;
+						break;
+					}
 				}
 			}
 			break;
@@ -7227,76 +7534,17 @@ BOOL CUIManager::IsEnemy( void* pTarget, TARGET_TYPE eType, BOOL bSearch )
 	if( bLegit )
 		return TRUE;
 
-	const BOOL bIsDartanWar = GetSiegeWarfareNew()->GetWarState();
-	const BOOL bIsMeracWar	 = _pUISWDoc->IsWar();
-
-	//pTarget 의 NULL체크는 위에서 모두 했다. 만약 찾지 못했다면 return FALSE;로 이하의 pTarget값이 NULL아님을 보증한다.
-	const SBYTE sbJoinFlagMerac = _pNetwork->MyCharacterInfo.sbJoinFlagMerac;
-	const SBYTE sbJoinFlagDratan = _pNetwork->MyCharacterInfo.sbJoinFlagDratan;
-	const UWORD sbAttributePos = _pNetwork->MyCharacterInfo.sbAttributePos;
-
-	//ga_srvServer.srv_actCha[]에 자신의 정보는 없다. 따라서 검색이 안될 수 있다.
-	//때릴 수 있는 대상을 찾고 못 찾으면 못 때린다.
-	SBYTE sbCharacterJoinFlagMerac = WCJF_NONE;
-	SBYTE sbCharacterJoinFlagDratan = WCJF_NONE;
-	UWORD sbCharAttributePos = MATT_UNWALKABLE;
-	BOOL bIsCharacterInsideDratan = FALSE;
-
-	ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, iCha_Index);
-
-	if (pObject != NULL)
-	{
-		CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-		sbCharacterJoinFlagMerac = pTarget->cha_sbJoinFlagMerac;
-		sbCharacterJoinFlagDratan = pTarget->cha_sbJoinFlagDratan;
-		sbCharAttributePos = pTarget->cha_sbAttributePos;
-		bIsCharacterInsideDratan = CheckDratanWarInside( pTarget );
-	}
-
-#ifdef SIGEWAR_ATTACKRULE
-	//피스존에선 공격은 늘 안된다.
-	if(sbAttributePos & MATT_PEACE || sbCharAttributePos & MATT_PEACE)
-	{
-		return FALSE;
-	}
 	//PK 시...
-	//파티원이거나 같은 길드원이면 적 아님
-	if( (GAMEDATAMGR()->GetPartyInfo()->IsPartyMember(iCha_Index)) && (GAMEDATAMGR()->GetPartyInfo()->IsExpedetionMember(iCha_Index)) && 
-		(iGuild_Index == _pNetwork->MyCharacterInfo.lGuildIndex) && 
-		_pNetwork->MyCharacterInfo.EntranceType != CURRENT_ENTER_PARTYCUBE)
-	{
-		return FALSE;
-	}
-	// 진행중인 공성전에 참가 했는가?
-	if( (bIsDartanWar && sbJoinFlagDratan != WCJF_NONE && sbCharacterJoinFlagDratan != WCJF_NONE) || 
-		 (bIsMeracWar && sbJoinFlagMerac != WCJF_NONE&& sbCharacterJoinFlagMerac != WCJF_NONE) )
-	{
-		return TRUE;
-	}
-	// 내가 공성전에 참여했다면 공성지역에서는 무조건 때릴 수 있다.
-	else if( (bIsDartanWar && sbJoinFlagDratan != WCJF_NONE && sbCharAttributePos & MATT_WAR && bIsCharacterInsideDratan) ||
-		(bIsMeracWar && sbJoinFlagDratan != WCJF_NONE && sbCharAttributePos & MATT_WAR && !bIsCharacterInsideDratan) )
-	{
-		return TRUE;
-	}
-	if( _pNetwork->MyCharacterInfo.pk_mode != CHA_PVP_STATE_PEACE )
-	{
-		return TRUE;
-	}
-#else //SIGEWAR_ATTACKRULE
-		//PK 시...
 	if( _pNetwork->MyCharacterInfo.pk_mode != CHA_PVP_STATE_PEACE || 
-		GetSiegeWarfareNew()->GetWarState() ) // WSS_DRATAN_SEIGEWARFARE 2007/08/30
+		_pUIMgr->GetSiegeWarfareNew()->GetWarState() ) // WSS_DRATAN_SEIGEWARFARE 2007/08/30
 	{
-		//파티원도 아니고 같은 길드원도 아니면 적!!! [sora] 원정대 체크추가
-		if( (!GAMEDATAMGR()->GetPartyInfo()->IsPartyMember(iCha_Index)) && ( !GAMEDATAMGR()->GetPartyInfo()->IsExpedetionMember(iCha_Index) ) &&
-			(iGuild_Index != _pNetwork->MyCharacterInfo.lGuildIndex || _pNetwork->MyCharacterInfo.lGuildIndex<0) )
+		//파티원도 아니고 같은 길드원도 아니면 적!!!
+		if( (!GetParty()->IsPartyMember(iCha_Index)) && 
+					(iGuild_Index != _pNetwork->MyCharacterInfo.lGuildIndex || _pNetwork->MyCharacterInfo.lGuildIndex<0) )
 			return TRUE;
 		else
 			return FALSE;
 	}
-#endif //SIGEWAR_ATTACKRULE
 	else 
 		return FALSE;
 }
@@ -7332,12 +7580,7 @@ void CUIManager::StartTargetEffect( SLONG slIndex, CEntity* penEntity, BOOL bEne
 		return;
 
 	//모델의 충돌박스 크기에 맞춰 이펙트 크기 조정
-	FLOAT3D vBox = penEntity->en_pmiModelInstance->GetCollisionBoxMax()*3;
-	vBox(1) *= penEntity->en_pmiModelInstance->mi_vStretch(1);
-	vBox(2) *= penEntity->en_pmiModelInstance->mi_vStretch(2);
-	vBox(3) *= penEntity->en_pmiModelInstance->mi_vStretch(3);
-
-	((CMdlEffect*)(pEG->GetEffectKeyVector()[0].m_pCreatedEffect))->SetStretch(vBox);
+	((CMdlEffect*)(pEG->GetEffectKeyVector()[0].m_pCreatedEffect))->SetStretch(penEntity->en_pmiModelInstance->GetCollisionBoxMax()*3);
 	
 	std::map<SLONG, CEffectGroup *>::value_type tmpVal( slIndex, pEG);
 	m_mapEG.insert(tmpVal);
@@ -7354,16 +7597,19 @@ void CUIManager::StopTargetEffect( SLONG slIndex )
 
 // ----------------------------------------------------------------------------
 // Name : IsPlayInZone()
-// Desc : [sora] 인스턴트존 플레이중인지 체크
+// Desc : 인스턴트존 플레이중인지 체크
 // ----------------------------------------------------------------------------
 BOOL CUIManager::IsPlayInZone()
 {
-	return IsInstantZone(_pNetwork->MyCharacterInfo.zoneNo);
-}
+	SLONG slInZoneNum[3] = {33, 34, 35}; // 33(예배당1), 34(예배당2), 35(암흑의 제단)
 
-BOOL CUIManager::IsInstantZone(int nZone)
-{
-	return CZoneInfo::getSingleton()->GetRaidDungeon(nZone);
+	for(int i=0; i<3; i++)
+	{
+		if(_pNetwork->MyCharacterInfo.zoneNo == slInZoneNum[i])
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 // WSS_SELECTIVE_UI_FUCNTION 2007/08/15 
@@ -7402,903 +7648,4 @@ BOOL CUIManager::IsUIVisible(int nUIidx)
 		return TRUE;
 	return FALSE;
 }
-
-BOOL CUIManager::IsFocusAllEditBox()
-{
-	if (MSGBOXMGR()->IsEditBoxFocused())
-		return TRUE;
-
-	for( INDEX iUI = UI_TYPE_START; iUI < UI_TYPE_END; iUI++ )
-	{
-		if ( m_apUIs[iUI] == NULL)
-			continue;
-
-		if ( m_apUIs[iUI]->IsEditBoxFocused() )
-			return TRUE;
-	}
-	return FALSE;
-}
-// ----------------------------------------------------------------------------
-// Name : GetSubJobName()
-// Desc : [ADD_SUBJOB] 보조 직업명을 가져온다
-// ----------------------------------------------------------------------------
-CTString CUIManager::GetSubJobName(SLONG slSubJobCode)
-{
-	switch( slSubJobCode )
-	{
-		case SUBJOB_MERCHANT:
-			return m_strSubJobName[0];
-	}
-
-	return CTString("");
-}
-
-// ----------------------------------------------------------------------------
-// Name : CheckSellerItem()
-// Desc : [ADD_SUBJOB] seller 체크된 아이템 각 UI에서 사용 가능 여부 확인
-// ----------------------------------------------------------------------------
-BOOL CUIManager::CheckSellerItem( UI_TYPE uiType, int flag )
-{
-	BOOL bMerchant = _pNetwork->IsMySubJob( SUBJOB_MERCHANT );
-
-	if( ( flag & ITEM_FLAG_CASH ) ) //cash + seller
-	{
-		// [2010/10/14 : Sora] 요청으로 조건에 ITEM_FLAG_COMPOSITE 추가
-		if( ( flag & ITEM_FLAG_ABS ) || ( flag & ITEM_FLAG_COSTUME2 ) || ( flag & ITEM_FLAG_COMPOSITE ) )
-		{
-			return FALSE; // 기간제 코스튬2 아이템은 무조건 FALSE
-		}
-		else // 위에항목 제외한 나머지
-		{
-			if( bMerchant ) 
-				return ( uiType == UI_SHOP ? FALSE : TRUE ); // 상인은 상점판매를 제외하고는 모두 가능 
-			else
-			{
-				// [2012/04/09 : Sora]  ITS 8019 부활 주문서 창고 보관이 가능한 문제수정 
-				if( flag & ITEM_FLAG_NO_STASH )
-					return FALSE;
-				else
-					return ( uiType == UI_WAREHOUSE ? TRUE : FALSE ); // 상인이 아니면 창고를 제외하고는 모두 불가
-			}
-		}
-	}
-	else //not cash + seller
-	{
-		return ( uiType == UI_SHOP ? FALSE : TRUE );	// 상점 판매빼고 모두 가능
-	}
-
-	return FALSE;
-}
-
-// ----------------------------------------------------------------------------
-// Name : OpenSocketSystem()
-// Desc : Player.es에서 define이 적용되지 않아서 UIManager에서 define으로 호출여부 확인
-// ----------------------------------------------------------------------------
-void CUIManager::OpenSocketSystem(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
-{
-	GetSocketSystem()->OpenSocketSystem( iMobIndex, NULL, fX, fZ );
-}
-
 // --------------------------------------------------------------------------------------<<
-void CUIManager::AddItemInfoString(CTString &strItemInfo, COLOR colItemInfo ,int maxLine, int maxChars)
-{
-	if( m_nCurInfoLines >= maxLine )
-		return ;
-
-	// Get length of string
-	INDEX	nLength = strItemInfo.Length();
-	if( nLength <= 0 )
-		return;
-
-	// wooss 051002
-	//if(g_iCountry == THAILAND)
-#if defined G_THAI
-	{
-		// Get length of string
-		int		iPos;
-		INDEX	nThaiLen = FindThaiLen(strItemInfo);
-		INDEX	nChatMax= (maxChars-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-		if( nLength == 0 )
-			return;
-		// If length of string is less than max char
-		if( nThaiLen <= nChatMax )
-		{
-			// Check line character
-			for( iPos = 0; iPos < nLength; iPos++ )
-			{
-				if( strItemInfo[iPos] == '\n' || strItemInfo[iPos] == '\r' )
-					break;	
-			}
-
-			// Not exist
-			if (iPos == nLength)
-			{
-				m_strItemInfo[m_nCurInfoLines] = strItemInfo;
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( iPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-
-			}
-		}
-		// Need multi-line
-		else
-		{
-			// Check splitting position for 2 byte characters
-			int		nSplitPos = maxChars;
-			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
-			{
-				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
-					break;
-			}
-			nSplitPos = iPos;
-
-			// Check line character
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
-			{
-				if( strItemInfo[iPos] == '\n' || strItemInfo[iPos] == '\r' )
-					break;
-			}
-
-			// Not exist
-			if (iPos == nSplitPos)
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim space
-				if( strTemp[0] == ' ' )
-				{
-					int	nTempLength = strTemp.Length();
-					for( iPos = 1; iPos < nTempLength; ++iPos )
-					{
-						if( strTemp[iPos] != ' ' )
-							break;
-					}
-
-					strTemp.TrimLeft( strTemp.Length() - iPos );
-				}
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-			}
-		}
-		
-	}
-	 //else
-#else	// G_THAI
-	 {
-#if defined(G_RUSSIA)
-			{
-				INDEX iStrSub = strItemInfo.FindSubstr("\n");
-				if(iStrSub != -1)
-				{
-					CTString	strTemp, strTemp2;
-					strTemp = strItemInfo;
-					strTemp.str_String[iStrSub] = ' ';
-
-
-					strTemp.Split( iStrSub+1, strTemp, strTemp2 );
-
-					AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-					AddItemInfoString(strTemp2, colItemInfo, maxLine, maxChars);
-					return;
-				}
-			}
-#endif//#if defined(RUSSIA)
-
-		// If length of string is less than max char
-#if defined(G_RUSSIA)
-		int nMaxWidth = _pUIFontTexMgr->GetFontSpacing() + 34/*MAX_CASH_ITEMINFO_CHAR*/ *
-					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-		if( UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, strItemInfo.str_String ) <= nMaxWidth )
-#else
-		if( nLength <= maxChars )
-#endif
-		{
-			// Check line character
-			int iPos;
-			for( iPos = 0; iPos < nLength; iPos++ )
-			{
-				if( strItemInfo[iPos] == '\n' || strItemInfo[iPos] == '\r' )
-					break;	
-			}
-
-			// Not exist
-			if (iPos == nLength)
-			{
-				m_strItemInfo[m_nCurInfoLines] = strItemInfo;
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( iPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-			}
-		}
-		// Need multi-line
-		else
-		{
-			// Check splitting position for 2 byte characters
-			int		iPos;
-
-#if defined(G_RUSSIA)
-			int nSplitPos = UTIL_HELP()->CheckNoFixedLength(_pfdDefaultFont, strItemInfo.str_String, nMaxWidth);
-
-			for( int iPos=nSplitPos; iPos >=0; --iPos )
-			{
-				if( strItemInfo[iPos] == ' ' )
-				{
-					nSplitPos = iPos;
-					break;
-				}
-			}
-#else
-			int		nSplitPos = maxChars;
-			BOOL	b2ByteChar = FALSE;			
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
-			{
-				if( strItemInfo[iPos] & 0x80 )
-					b2ByteChar = !b2ByteChar;
-				else
-					b2ByteChar = FALSE;
-			}
-
-			if( b2ByteChar )
-				nSplitPos--;
-#endif
-
-			// Check line character			
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
-			{
-				if( strItemInfo[iPos] == '\n' || strItemInfo[iPos] == '\r' )
-					break;
-			}
-
-			// Not exist
-			if (iPos == nSplitPos)
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( nSplitPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim space
-				if( strTemp[0] == ' ' )
-				{
-					int	nTempLength = strTemp.Length();
-					for( iPos = 1; iPos < nTempLength; iPos++ )
-					{
-						if( strTemp[iPos] != ' ' )
-							break;
-					}
-
-					strTemp.TrimLeft( strTemp.Length() - iPos );
-				}
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-			}
-			else
-			{
-				// Split string
-				CTString	strTemp;
-				strItemInfo.Split( iPos, m_strItemInfo[m_nCurInfoLines], strTemp );
-				m_colItemInfo[m_nCurInfoLines++] = colItemInfo;
-
-				// Trim line character
-				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-					strTemp.TrimLeft( strTemp.Length() - 2 );
-				else
-					strTemp.TrimLeft( strTemp.Length() - 1 );
-
-				AddItemInfoString(strTemp, colItemInfo, maxLine, maxChars);
-			}
-		}
-	}
-	#endif
-}
-
-void CUIManager::RenderBtnInfo(CTextureData* texData, CUIButton& srcBtn, UIRectUV rtUV[], int nLength/* =34 */)
-{
-	if (texData == NULL)
-	{
-		return;
-	}
-
-	int tv_x =  srcBtn.GetAbsPosX() + BTN_SIZE+5/*SLOT_GAP*/;
-	int tv_y =  srcBtn.GetAbsPosY();
-	int tv_width = 25 - _pUIFontTexMgr->GetFontSpacing() + nLength/*MAX_CASH_ITEMINFO_CHAR*/ *
-					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-	int tv_height = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
-	UIRect rtTmpInfo = UIRect(tv_x,tv_y,tv_x+tv_width,tv_y+tv_height);
-	// Initialize texture data
-	GetDrawPort()->InitTextureData(texData);
-
-	// Item information region
-	GetDrawPort()->AddTexture( rtTmpInfo.Left, rtTmpInfo.Top,
-										rtTmpInfo.Left + 7, rtTmpInfo.Top + 7,
-										rtUV[UV_UL].U0, rtUV[UV_UL].V0, rtUV[UV_UL].U1, rtUV[UV_UL].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Left + 7, rtTmpInfo.Top,
-										rtTmpInfo.Right - 7, rtTmpInfo.Top + 7,
-										rtUV[UV_UM].U0, rtUV[UV_UM].V0, rtUV[UV_UM].U1, rtUV[UV_UM].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Right - 7, rtTmpInfo.Top,
-										rtTmpInfo.Right, rtTmpInfo.Top + 7,
-										rtUV[UV_UR].U0, rtUV[UV_UR].V0, rtUV[UV_UR].U1, rtUV[UV_UR].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Left, rtTmpInfo.Top + 7,
-										rtTmpInfo.Left + 7, rtTmpInfo.Bottom - 7,
-										rtUV[UV_ML].U0, rtUV[UV_ML].V0, rtUV[UV_ML].U1, rtUV[UV_ML].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Left + 7, rtTmpInfo.Top + 7,
-										rtTmpInfo.Right - 7, rtTmpInfo.Bottom - 7,
-										rtUV[UV_MM].U0, rtUV[UV_MM].V0, rtUV[UV_MM].U1, rtUV[UV_MM].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Right - 7, rtTmpInfo.Top + 7,
-										rtTmpInfo.Right, rtTmpInfo.Bottom - 7,
-										rtUV[UV_MR].U0, rtUV[UV_MR].V0, rtUV[UV_MR].U1, rtUV[UV_MR].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Left, rtTmpInfo.Bottom - 7,
-										rtTmpInfo.Left + 7, rtTmpInfo.Bottom,
-										rtUV[UV_LL].U0, rtUV[UV_LL].V0, rtUV[UV_LL].U1, rtUV[UV_LL].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Left + 7, rtTmpInfo.Bottom - 7,
-										rtTmpInfo.Right - 7, rtTmpInfo.Bottom,
-										rtUV[UV_LM].U0, rtUV[UV_LM].V0, rtUV[UV_LM].U1, rtUV[UV_LM].V1,
-										0xFFFFFFFF );
-	GetDrawPort()->AddTexture( rtTmpInfo.Right - 7, rtTmpInfo.Bottom - 7,
-										rtTmpInfo.Right, rtTmpInfo.Bottom,
-										rtUV[UV_LR].U0, rtUV[UV_LR].V0, rtUV[UV_LR].U1, rtUV[UV_LR].V1,
-										0xFFFFFFFF );
-
-	
-	// Render item information
-	int	nInfoX = rtTmpInfo.Left + 12;
-	int	nInfoY = rtTmpInfo.Top + 8;
-	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
-	{
-		GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
-		nInfoY += _pUIFontTexMgr->GetLineHeight();
-	}
-
-	GetDrawPort()->FlushRenderingQueue();
-	GetDrawPort()->EndTextEx();
-}
-
-// added by sam 11/03/02 번역되지 않은 스트링 넘버 보이기
-//[sora] 미번역 스트링 index 표시
-void _stHELP1::SetNoTranslate()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, transFlag ) )
-		m_strName.PrintF( "[%d] : help1 name", m_index );
-	if( pUIManager->IsNotTranslated( TRANS_DESC, transFlag ) )
-		m_strDesc.PrintF( "[%d] : help1 desc", m_index );
-}
-
-void _stHELP1::ClearNoTranslate()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->IsNotTranslated( TRANS_NAME, transFlag ) )
-		m_strName.Clear();
-	if( pUIManager->IsNotTranslated( TRANS_DESC, transFlag ) )
-		m_strDesc.Clear();
-}
-
-// 레어 옵션은 왜 vector...OTL 그래서 T* 사용
-template <typename T>
-void SetNoTranslate( NO_TRANS_STRING_INDEX transList, T* array )
-{
-	NO_TRANS_STRING_INDEX_IT it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		(*array)[(*it)].SetNoTranslate();
-	}
-}
-
-template <typename T>
-void SetNoTranslateNew( NO_TRANS_STRING_INDEX transList )
-{
-	NO_TRANS_STRING_INDEX_IT it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		T* pData = T::getData((*it));
-
-		if (pData != NULL)
-			pData->SetNoTranslate();
-	}
-}
-
-template <typename T>
-void ClearNoTranslate( NO_TRANS_STRING_INDEX transList, T* array )
-{
-	NO_TRANS_STRING_INDEX_IT it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		(*array)[(*it)].ClearNoTranslate();
-	}
-}
-
-template <typename T>
-void ClearNoTranslateNew( NO_TRANS_STRING_INDEX transList )
-{
-	NO_TRANS_STRING_INDEX_IT it = transList.begin();
-
-	for ( ; it != transList.end(); ++it )
-	{
-		T* pData = T::getData((*it));
-
-		if (pData != NULL)
-			pData->ClearNoTranslate();
-	}
-}
-
-// 미번역 찾아내기. [10/13/2011 rumist]
-void CUIManager::ShowNoTranslationString ()
-{
-	NO_TRANS_STRING_INDEX_IT it = m_vecNoTrans[CLIENT_STRING].begin();
-	for ( ; it != m_vecNoTrans[CLIENT_STRING].end(); ++it )
-	{		
-		CTString tempString;
-		tempString.PrintF("[%d] : client", *it );
-		m_aStringData[(*it)] = tempString;
-	}		
-
-	SetNoTranslateNew<CItemData>( m_vecNoTrans[ITEM_STRING] );	
-	SetNoTranslateNew<CMobData>( m_vecNoTrans[NPC_STRING] );	
-	SetNoTranslateNew<CItemRareOption>( m_vecNoTrans[RARE_OPTION_STRING]);
-	SetNoTranslateNew<CAction>( m_vecNoTrans[ACTION_STRING]);
-	SetNoTranslateNew<COptionData>( m_vecNoTrans[OPTION_STRING]);
-	SetNoTranslateNew<CSpecialSkill>( m_vecNoTrans[SPECIAL_SKILL_STRING]);
-	SetNoTranslateNew<CMissionCase>( m_vecNoTrans[MONSTER_COMBO_STRING]);
-	SetNoTranslateNew<CItemCollectionData>( m_vecNoTrans[ITEMCOLLECTION_STRING] );
-
-	SetNoTranslate( m_vecNoTrans[SKILL_STRING], &_pNetwork->ga_World.wo_aSkillData );
-	SetNoTranslate( m_vecNoTrans[HELP1_STRING], &m_aHelp1Data );
-
-	CQuestSystem::Instance().SetNoTranslate( m_vecNoTrans[QUEST_STRING] );
-
-	_pNetwork->GetAffinityData()->SetNoTranslate( m_vecNoTrans[AFFINITY_STRING] );
-
-	GetChattingUI()->AddSysMessage( _s("No Translation : On"), SYSMSG_ERROR );
-}
-
-void CUIManager::HideNoTranslationString()
-{
-	NO_TRANS_STRING_INDEX_IT it = m_vecNoTrans[CLIENT_STRING].begin();
-	for ( ; it != m_vecNoTrans[CLIENT_STRING].end(); ++it )
-	{	
-		m_aStringData[(*it)] = "";		
-	}		
-	
-	ClearNoTranslateNew<CItemData>( m_vecNoTrans[ITEM_STRING] );	
-	ClearNoTranslateNew<CMobData>( m_vecNoTrans[NPC_STRING] );	
-	ClearNoTranslateNew<CItemRareOption>( m_vecNoTrans[RARE_OPTION_STRING]);
-	ClearNoTranslateNew<CAction>( m_vecNoTrans[ACTION_STRING]);
-	ClearNoTranslateNew<COptionData>( m_vecNoTrans[OPTION_STRING]);
-	ClearNoTranslateNew<CSpecialSkill>( m_vecNoTrans[SPECIAL_SKILL_STRING]);
-	ClearNoTranslateNew<CMissionCase>( m_vecNoTrans[MONSTER_COMBO_STRING]);	
-	ClearNoTranslateNew<CItemCollectionData>( m_vecNoTrans[ITEMCOLLECTION_STRING] );
-
-	ClearNoTranslate( m_vecNoTrans[SKILL_STRING], &_pNetwork->ga_World.wo_aSkillData );
-	ClearNoTranslate( m_vecNoTrans[HELP1_STRING], &m_aHelp1Data );
-
-	CQuestSystem::Instance().ClearNoTranslate( m_vecNoTrans[QUEST_STRING] );
-
-	_pNetwork->GetAffinityData()->ClearNoTranslate( m_vecNoTrans[AFFINITY_STRING] );
-
-	GetChattingUI()->AddSysMessage( _s("No Translation : Off"), SYSMSG_ERROR );
-}
-
-void CUIManager::ToggleNoTranslationString()
-{
-	static bool bShow = false;
-
-	bShow = !bShow;
-
-	if ( bShow )
-		ShowNoTranslationString();
-	else
-		HideNoTranslationString();
-}
-
-void CUIManager::SetNoTranslationString( int transType, int index )
-{
-	m_vecNoTrans[transType].push_back( index );
-}
-
-void CUIManager::InitRenderTarget(int nWidth, int nHeight)
-{
-	if (m_RenderTarget == NULL)
-	{
-		m_RenderTarget = new CRenderTexture();
-		m_RenderTarget->Init(nWidth, nHeight);
-	}
-}
-
-void CUIManager::DestroyRenderTarget()
-{
-	SAFE_DELETE(m_RenderTarget);
-}
-
-void CUIManager::HUD_SetItemModelData( INDEX iIndex )
-{
-	m_fAniStartTime = _pTimer->GetLerpedCurrentTick();
-	((CPlayerEntity*)CEntity::GetPlayerEntity(0))->HUD_SetModelData( HUD_ITEM_TYPE, iIndex );
-}
-
-void CUIManager::HUD_DrawItemModel()
-{
-	FLOAT fAniTime = ((CPlayerEntity*)CEntity::GetPlayerEntity(0))->GetAnimationTime();
-	FLOAT fCurTime = _pTimer->GetLerpedCurrentTick();
-
-	if ( fCurTime - m_fAniStartTime > fAniTime )
-	{
-		SetShowAni( FALSE );
-		return;
-	}
-
-	int nPosX, nPosY;
-	nPosX = ( GetDrawPort()->GetWidth() - _RTRusToyWidth ) / 2;
-	nPosY = ( GetDrawPort()->GetHeight() - _RTRusToyHeight ) / 2;
-
-	GetDrawPort()->InitTextureData( m_ptdAniBG );
-	m_AniBackGround.SetPos( nPosX, nPosY );
-	m_AniBackGround.RenderRectSurface(GetDrawPort(), 0xFFFFFFFF);
-	GetDrawPort()->FlushRenderingQueue();
-
-	GetDrawPort()->Unlock();
-	m_RenderTarget->Begin();
-	m_RenderTarget->Clear(0x00000000);
-
-	((CPlayerEntity*)CEntity::GetPlayerEntity(0))->HUD_DrawModel(GetDrawPort(), DEF_DEFAULT_RT_WIDTH-_RTRusToyWidth, 0, DEF_DEFAULT_RT_WIDTH, _RTRusToyHeight, HUD_ITEM_TYPE, 0.0f, 0.0f );
-	m_RenderTarget->End();
-	GetDrawPort()->Lock();
-	
-	FLOAT fU;
-	fU = (DEF_DEFAULT_RT_WIDTH-_RTRusToyWidth)/(FLOAT)DEF_DEFAULT_RT_WIDTH;
-
-	GetDrawPort()->InitTextureData(&m_RenderTarget->rt_tdTexture, FALSE, PBT_ADD);
-#ifndef SE1_D3D
-	// an OpenGL render target starts at the bottom (Metal's and Vulkan's at the top, as Direct3D's)
-	if( _pGfx->gl_eCurrentAPI==GAT_OGL)
-		GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,1.0f,1.0f,0.0f,0xFFFFFFFF);
-	else
-#endif // SE1_D3D
-	GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,0.0f,1.0f,1.0f,0xFFFFFFFF);
-	GetDrawPort()->FlushRenderingQueue();
-}
-
-BOOL CUIManager::CheckDratanWarInside(CCharacterTarget* pTarget)
-{
-	if (pTarget == NULL)
-		return FALSE;
-
-	//[ttos_2010_5_25]:드라탄 공성 지역 체크
-	if (_pNetwork->MyCharacterInfo.zoneNo == 4 &&
-		(_pNetwork->MyCharacterInfo.x >= 72 && _pNetwork->MyCharacterInfo.x <= 696 &&
-		_pNetwork->MyCharacterInfo.z >= 2344 && _pNetwork->MyCharacterInfo.z <= 3016))
-	{
-		FLOAT3D			vObjectPos;
-		vObjectPos = pTarget->GetEntity()->en_plPlacement.pl_PositionVector;
-		if( vObjectPos(1) >= 72 && vObjectPos(1) <= 696 &&
-			vObjectPos(3) >= 2344 && vObjectPos(3) <= 3016)
-		{
-			return TRUE;
-		}
-	}
-	
-	return FALSE;
-}
-
-BOOL CUIManager::MyCheckDratanWarInside()
-{
-	//[ttos_2010_5_25]:드라탄 공성 지역 체크
-	if (_pNetwork->MyCharacterInfo.zoneNo == 4 &&
-		(_pNetwork->MyCharacterInfo.x >= 72 && _pNetwork->MyCharacterInfo.x <= 696 &&
-		_pNetwork->MyCharacterInfo.z >= 2344 && _pNetwork->MyCharacterInfo.z <= 3016))
-	{
-		return TRUE;
-	}
-	
-	return FALSE;
-}
-
-DWORD CUIManager::IsCSFlagOnElapsed( DWORD dwCSF, TIME tElapsedTime )
-{
-	TIME tTiem = (_pTimer->GetLerpedCurrentTick() * 1000) - m_tCSFElapsedTime;
-
-	if (tTiem > tElapsedTime) // 특정 경과 시간이 지나면 Reset한다.
-		SetCSFlagOffElapsed( dwCSF );
-
-	return m_dwCSF & dwCSF;
-}
-
-void CUIManager::Update( float fDeltaTime, float fElapsedTime )
-{
-	CUIBase::Update(fDeltaTime, fElapsedTime);
-
-	MSGBOXMGR()->Update(fDeltaTime, fElapsedTime);
-	TOOLTIPMGR()->Update(fDeltaTime, fElapsedTime);
-
-	for( INDEX iUI = UI_TYPE_END - 1; iUI >= UI_TYPE_START; iUI-- )
-	{
-		INDEX	iCurUI = m_aUIOrder[iUI];
-		if (m_apUIs[iCurUI] != NULL )
-			m_apUIs[iCurUI]->Update(fDeltaTime, fElapsedTime);
-
-	}
-
-	if (STAGEMGR()->GetCurStage() == eSTAGE_GAMEPLAY)
-	{
-		static int cnt = 0;
-		static int last_send = 0;
-
-		const int nBase = 100;
-
-		if (++cnt > nBase)
-		{
-			cnt = 0;
-
-			int	gap = abs(_pNetwork->slServerTime - (SLONG)time(NULL));
-			int cur = (int)time(NULL);
-			// 오차가 5분 이상이고, 동기화 시간이 1분 이상인지 검사
-			if (gap > 300 && 
-				abs(cur - last_send) > 60)
-			{
-				last_send = (int)time(NULL);
-				_pNetwork->SendReqServerTime();
-			}
-		}
-	}
-}
-
-BOOL CUIManager::IsInputLock()
-{
-	if( IsCSFlagOn( CSF_TELEPORT ) )
-		return TRUE;
-	
-	return FALSE;
-}
-
-void CUIManager::InitHardCoreCreate()
-{
-	if ( m_apUIs[UI_HARDCORE_WARNING] == NULL )
-		return;
-
-	static bool bLoad = false;
-
-	if (bLoad == false)
-	{
-		bLoad = true;
-		LoadXML( "HardCoreServerWarning.xml", m_apUIs[UI_HARDCORE_WARNING] );
-		m_apUIs[UI_HARDCORE_WARNING]->updatePosition(true);
-	}
-}
-
-std::string CUIManager::GetFullPath( std::string strFileName )
-{
-	int i, max = m_vecAdditionalPath.size();
-	
-	std::string path;
-	BOOL bFileExists = FALSE;
-
-	for (i = 0; i < max; ++i)
-	{
-		path = m_vecAdditionalPath[i] + strFileName;
-		
-		bFileExists = FileExists(path.c_str());
-
-		if (bFileExists == TRUE)
-			break;
-	}
-
-	// 에디셔날 패스로도 찾지 못했다면 기본 패스 리턴.
-	if (bFileExists == FALSE)
-		return strFileName;
-
-	return path;
-}
-
-void CUIManager::ItemNameColorInI()
-{
-	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
-	strFullPath += DEF_INI_PATH;
-
-	char szBuff[16];
-	std::string strTmp;
-
-	GetPrivateProfileString("DROP_ITEM", "NORMAL_NAME", "0xfff7f0FF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_NORMAL_NAME] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "NORMAL_NAME_RARE", "0xfffb40FF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_NORMAL_NAME_RARE] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "NORMAL_NAME_ORIGIN", "0xD338FFFF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_NORMAL_NAME_ORIGIN] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "NORMAL_BG", "0xD0E0DF44", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_NORMAL_BG] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "OVER_NAME", "0xFFFFFFFF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_OVER_NAME] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "OVER_NAME_RARE", "0xFFD31DFF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_OVER_NAME_RARE] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "OVER_NAME_ORIGIN", "0x9900ccFF", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_OVER_NAME_ORIGIN] = (COLOR)strtoul(szBuff, NULL, 16);
-	GetPrivateProfileString("DROP_ITEM", "OVER_BG", "0x2EFF0A44", szBuff, 16, strFullPath.c_str());
-	m_colItemDropName[eDROPITEM_OVER_BG] = (COLOR)strtoul(szBuff, NULL, 16);
-}
-
-void CUIManager::DropItemCallback()
-{
-	if (GetInventory()->IsLocked() == TRUE || GetInventory()->IsLockedArrange() == TRUE)
-	{
-		GetInventory()->ShowLockErrorMessage();
-		return;
-	}
-
-	if (GetMsgBoxNumOnly()->GetData() > 0)
-		SendDropItem( nTempTab, nTempInvenIdx, GetMsgBoxNumOnly()->GetData() );
-}
-
-void CUIManager::SetGuildMark()
-{
-	stGuildMark& mark = MY_INFO()->_guildmark;
-	
-	if (mark.gm_row < 0)
-	{
-		SAFE_DELETE(m_pIconGuildMark);
-	}
-	else
-	{
-		if (m_pIconGuildMark == NULL)
-		{
-			m_pIconGuildMark = new CUIGuildMarkIcon;
-			m_pIconGuildMark->Create(this, 0, 0, 15, 15);
-		}
-
-		m_pIconGuildMark->CalcUV(mark.gm_row, mark.gm_col, true);
-		m_pIconGuildMark->CalcUV(mark.bg_row, mark.bg_col, false);
-	}	
-}
-
-void CUIManager::SetHoldBtn( CUIIcon* pIcon )
-{
-	if (pIcon == NULL)
-		return;
-
-	if (pIcon->getBtnType() >= UBET_TYPE_MAX)
-		return;
-
-	if (pIcon->getBtnType() == UBET_ITEM)
-	{
-		CItems* pItems = pIcon->getItems();
-
-		if (pItems != NULL)
-		{
-			if (pItems->Item_Toggle == true)
-			{
-				if (GetInventory()->IsLocked() == TRUE ||
-					GetInventory()->IsLockedArrange() == TRUE)
-				{
-					GetChattingUI()->AddSysMessage(_S(7035, "활성화 된 아이템은 옮길 수 없습니다."));
-					return;
-				}
-				else if (pIcon->GetWhichUI() != UI_QUICKSLOT &&
-						 (pIcon->GetWhichUI() < UI_INVENTORY ||
-						  pIcon->GetWhichUI() > UI_QUICKSLOT3))
-				{
-					GetChattingUI()->AddSysMessage(_S(7035, "활성화 된 아이템은 옮길 수 없습니다."));
-					return;
-				}
-			}
-		}
-	}
-
-	m_pIconDrag = pIcon;
-}
-
-void CUIManager::SetHoldBtn( CUIBase* pBase )
-{
-	if (pBase == NULL)
-		return;
-
-	m_pBaseDrag = pBase;
-}
-
-void CUIManager::SetCSFlagOn( DWORD dwCSF )
-{
-	if (dwCSF == CSF_TELEPORT)
-	{
-		// 이동 잠금일 경우, 나를 정지 시킨다.
-		LOG_DEBUG("##### LOCK CSF_TELEPORT");
-
-		CEntity* penPlEntity;
-		CPlayerEntity* penPlayerEntity;
-		penPlEntity = CEntity::GetPlayerEntity(0); //캐릭터 자기 자신
-		penPlayerEntity = (CPlayerEntity*) penPlEntity;
-
-		penPlayerEntity->ClearMove();
-	}
-
-	m_dwCSF |= dwCSF;
-}
-
-void CUIManager::MsgProcWeb( MSG *pMsg )
-{
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		if (pMsg->wParam == VK_ESCAPE)
-		{
-			if (GetNewsWebUI()->GetHide() == FALSE)
-			{
-				GetNewsWebUI()->CloseWindowByEsc();
-			}
-			else if (GetHelpWebUI()->GetHide() == FALSE)
-			{
-				GetHelpWebUI()->CloseWindowByEsc();
-			}
-			else
-			{
-				HWND hTmpDlg = g_web.GetWebHandle();
-				ShowWindow(hTmpDlg, SW_HIDE);
-
-				if (GetCashShopEX()->IsVisible() == TRUE)
-				{
-					_pNetwork->SendCashItemMessage(MSG_EX_CASHITEM_BALANCE_REQ);
-				}
-			}
-		}
-	}
-	else if (pMsg->message >= WM_MOUSEFIRST &&
-		pMsg->message <= WM_MOUSELAST)
-	{
-		if (pMsg->hwnd == _hwndMain)
-		{
-			GetNewsWebUI()->MouseMessage(pMsg);
-			GetHelpWebUI()->MouseMessage(pMsg);
-		}
-	}
-}

@@ -11,7 +11,7 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Effect/CEffectGroupManager.h>
-// #include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Effect/CEffectGroup.h>
 #include <map>
 enum eSlaveAnimation
 {

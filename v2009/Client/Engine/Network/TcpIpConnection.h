@@ -2,10 +2,7 @@
 #define _TCPIPCONNECTION_H_
 
 
-#ifdef PLATFORM_WIN32
 #include "winsock.h"
-#endif
-#include <Engine/Network/SocketCompat.h>
 
 
 #define MAX_RECV_BUF_LEN	1024

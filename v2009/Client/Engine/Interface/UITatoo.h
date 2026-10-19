@@ -5,10 +5,10 @@
 #endif
 
 // Include Files
-// #include <Engine/Interface/UIWindow.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIEditBox.h>
 
 // Define size of Tatoo
 // 텍스쳐 왼쪽 위 (254, 609)
@@ -53,9 +53,6 @@ protected:
 	CUIButton			m_btnClose;							
 	CUIButton			m_btnOK;							
 	CUIButton			m_btnCancel;	
-	
-	CTextureData*		m_ptdCommonBtnTexture;
-	CTextureData*		m_ptdNewInventoryTexture;
 	
 	sTatooButton		m_btnColor[TATOO_TOTAL_ROW][TATOO_TOTAL_COL];
 	sTatooButton		m_btnShape[TATOO_TOTAL_ROW][TATOO_TOTAL_COL];

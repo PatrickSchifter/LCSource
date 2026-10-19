@@ -4,9 +4,6 @@
 #pragma once
 #endif
 
-#include <Engine/Help/LoadLod.h>
-#include <Common/header/def_skill.h>
-
 // Special Skill 타입
 #define		SSKILL_MINING		0	// 채굴
 #define		SSKILL_GATHERING	1	// 채집
@@ -41,59 +38,69 @@
 #define		SSKILL_ELEMENT_3	16	// 원소 B등급 정제술
 #define		SSKILL_ELEMENT_4	17	// 원소 A등급 정제술
 
-class CSpecialSkill : public stSpecailSkill, public LodLoader<CSpecialSkill>
+#define		SSKILL_MAX_LEVEL	5	// Special Skill 최대 레벨
+
+class CSpecialSkill
 {
 public:
-	static bool loadEx(const char* str_path);
-	std::string name;
-	std::string	desc;
-	int		transFlag;	//[sora] 미번역 스트링 index 표시	
+	struct _SSkillData
+	{
+		int		index;
+		char	name[50];
+		int		type;
+		int		maxLevel;
+		int		preference;
+		
+		int		needLevel[SSKILL_MAX_LEVEL];
+		int		needSP[SSKILL_MAX_LEVEL];
+		int		needSSkill;
+		int		needSSkillLevel;
+		int		textureID;
+		int		textureRow;
+		int		textureCol;
+		
+		char	desc[255];
+	};
+
+	CSpecialSkill();
+	~CSpecialSkill();
 
 	inline int GetIndex()			const
-	{	return index;	}
+	{	return SSkill_Data.index;	}
 
 	inline const char* GetName()	const
-	{	return name.c_str();	}
+	{	return SSkill_Data.name;	}
 
 	inline int GetType()			const
-	{	return type;	}
+	{	return SSkill_Data.type;	}
 
 	inline int GetLearnLevel( int iIndex) const
-	{	return needLevel[iIndex];	}
+	{	return SSkill_Data.needLevel[iIndex];	}
 
 	inline int GetLearnSP( int iIndex) const
-	{	return needSP[iIndex];	}
+	{	return SSkill_Data.needSP[iIndex];	}
 
 	inline int GetLearnSkillIndex()		const
-	{	return needSSkill;		}
+	{	return SSkill_Data.needSSkill;		}
 
 	inline int GetLearnSkillLevel()	const
-	{	return needSSkillLevel;	}
+	{	return SSkill_Data.needSSkillLevel;	}
 
 	inline int GetMaxLevel()	const
-	{	return maxLevel;	}
+	{	return SSkill_Data.maxLevel;	}
 
 	inline int GetPreference()	const
-	{	return preference;	}
+	{	return SSkill_Data.preference;	}
 
-	inline int	GetIconTexID()	const { return textureID; }
-	inline int	GetIconTexRow() const { return textureRow; }
-	inline int	GetIconTexCol() const { return textureCol; }	
+	inline int	GetIconTexID()	const { return SSkill_Data.textureID; }
+	inline int	GetIconTexRow() const { return SSkill_Data.textureRow; }
+	inline int	GetIconTexCol() const { return SSkill_Data.textureCol; }	
 
 	inline const char* GetDescription()	const
-	{	return desc.c_str();	}
-	
-//	static int LoadSSkillDataFromFile(CStaticArray<CSpecialSkill> &apSkillData, const char* FileName);
+	{	return SSkill_Data.desc;	}
 
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate();
-	void ClearNoTranslate();
+	_SSkillData							SSkill_Data;
 
-	void SetName(const char* str)		{name = str; }
-	void SetDesc(const char* str)		{desc = str; }
-	int& GetTransFlag()					{ return transFlag; }
-
-//	static CSpecialSkill* m_pCont;
+	static int LoadSSkillDataFromFile(CStaticArray<CSpecialSkill> &apSkillData, const char* FileName);
 };
-
 #endif

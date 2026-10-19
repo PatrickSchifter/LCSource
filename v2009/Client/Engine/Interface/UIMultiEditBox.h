@@ -15,7 +15,7 @@
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIScrollBar.h>
 #include <vector>
-
+ 
 // ----------------------------------------------------------------------------
 // Name : CUIMultiEditBox
 // Desc : Multi EditBox Control
@@ -34,20 +34,13 @@ protected:
 	// Properties
 	std::vector<CTString>	m_strTexts;		// 화면에 출력되는 텍스트
 	int						m_nCurrentLine;	// Current Line
-	int						m_nMaxLine;
 	int						m_nFontWidth;	// Font Width	( Use Set m_nMaxChar and Render )
 	int						m_nFontHeight;	// Font Height  ( Use Set m_nLineHeight and Render )
 	int						m_nMaxChar;		// Max Charactor Count
 	int						m_nLineHeight;	// Max Line Height
 	int						m_nBlankSpaceLeft;
 	int						m_nBlankSpaceTop;
-	BOOL					m_bNotEditBox;
-	ENGINE_API static int	s_nRefCount;
 
-protected:
-	void	IncRef()			{ s_nRefCount = 1;	}
-	void	DecRef()			{ s_nRefCount = 0;	}
-	void	AutoRef( BOOL ref )	{ ref ? IncRef() : DecRef();	}
 public:
 	CUIMultiEditBox();
 	virtual ~CUIMultiEditBox();
@@ -70,7 +63,6 @@ public:
 	
 	// String
 	CTString GetString();
-	CTString GetString( unsigned int nIndex );
 	int GetAllStringLength();
 	void ResetString();
 	void SetString( char* strString, char* strHead = NULL );
@@ -80,10 +72,6 @@ public:
 	void SetString ( char* strString, int nPos );
 	void AddString( char* strString, int nPos = -1 );
 	void DeleteString( int nPos = -1 );
-	BOOL AddEOLTokenString( CTString& strString, char* pstrToken );
-	BOOL AddEOLTokenString( char* pstrToken );
-	BOOL RemoveEOLTokenString( CTString& strString, char* pstrToken );
-	BOOL RemoveEOLTokenString( char *pstrToken );
 
 	void SplitLine( int nIndex  = -1 );
 	void Cutting();
@@ -96,8 +84,6 @@ public:
 	void ResizeScrollBar();
 	void SetScrollBarPos();
 
-	int GetLineCount()	{	 return m_strTexts.size();	}
-
 	// Cursor Control
 	void MoveCursorUp();
 	void MoveCursorDown();
@@ -107,8 +93,7 @@ public:
 	// 편집 중인 EditBox에 스트링 셋팅
 	void SetStringToEditBox();
 
-	BOOL	IsFocusedInAll() { return s_nRefCount;	}
-	void	SetEnableInput(BOOL benable) { m_bNotEditBox = benable; }
+	
 };
 
 

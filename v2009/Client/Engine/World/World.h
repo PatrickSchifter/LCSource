@@ -4,7 +4,6 @@
 	#pragma once
 #endif
 
-#include <Engine/DesignClasses/Singleton/SingletonBase.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Lists.h>
@@ -27,18 +26,18 @@
 #include <Engine/Entities/SpecialSkill.h>
 #include <Engine/Entities/ShopData.h>
 #include <Engine/Entities/Action.h>		// yjpark
-#include <Engine/Entities/NpcHelp.h>
+
+#ifdef HELP_SYSTEM_1
+	#include <Engine/Entities/NpcHelp.h>
+#endif
+
 #include <Engine/Entities/MissionCase.h> // ttos : 미션 케이스
 #include <Engine/Entities/WildPetData.h>	// ttos_080725: 신규 펫 데이터
-
 // wooss 050902
 #include <Engine/Entities/CashShopData.h>
 
 //강동민 수정 시작 시스템 마우스 작업	09.09
 #define ZONE_STRUCTURE	1
-#define MAX_ZONE_COUNT	43
-
-
 enum eZone
 {
 	ZONE_FIELD		= 0,	// 필드
@@ -49,22 +48,11 @@ enum eZone
 };
 //강동민 수정 끝 시스템 마우스 작업		09.09
 
-enum eObjects
-{
-	OJB_NONE		= -1,
-	OJB_TOUCHFIELD	= 0,
-	OBJ_DOORCONTROLLER,
-	OBJ_PORTAL,
-	OBJ_ITEMOBJECT,
-	OBJ_MODELHOLDER,
-	OBJ_CAMERACONTROLLER,
-};
-
 //안태훈 수정 시작	//(Zone Change System)(0.1)
 extern ENGINE_API SLONG g_slZone;	//current zone index
 extern ENGINE_API BOOL g_bFirstIntoWorld; // 이기환 추가 ( 12. 10 )
 
-class ENGINE_API CZoneInfo : public CSingletonBase<CZoneInfo>
+class ENGINE_API CZoneInfo
 {
 	typedef struct _tagZoneInfo
 	{
@@ -73,76 +61,44 @@ class ENGINE_API CZoneInfo : public CSingletonBase<CZoneInfo>
 			iZoneIndex		= 0;
 			//uiMinLevel		= 0;		// 최소 레벨
 			//uiMaxLevel		= 60;		// 최대 레벨
-			fTer_Lodmul		= 0.f;
 			dwAccessJob		= 63;
 			eZoneType		= ZONE_FIELD;
-			bRaidDungeon = FALSE;
-			vecExtraName.clear();
+			pStrExtraName	= NULL;
 		};
+
 		~_tagZoneInfo()
 		{
-			vecExtraName.clear();
-		}
+			if(pStrExtraName)
+			{
+				delete [] pStrExtraName;
+				pStrExtraName	= NULL;
+			}
+		};
 		
 		int			iZoneIndex;			// 존 번호
 		int			iExtraCount;
-		float		fTer_Lodmul;		// 터레인 배율.
 		//UINT		uiMinLevel;			// 최소 레벨
 		//UINT		uiMaxLevel;			// 최대 레벨
 		DWORD		dwAccessJob;		// 접근 가능 종족.
 		eZone		eZoneType;			// 월드 종류.
 		//UINT		uiTotalEnemies;		// 존 내의 전체 에너미 수(싱글 던젼에서만 사용됨)
-		BOOL		bRaidDungeon;		// 레이드 던전인가요?
-				
+		
 		CTString	strZoneName;		// 존이름 한글 8자, 영어 16자 제한
 		CTString	strZoneWldFile;		// 월드 화일명.
 		CTString	strDescription;		// 월드 설명.	
-		std::vector<CTString>	vecExtraName;
-
+		CTString	*pStrExtraName;		// 기타이름 한글 8자, 영어 16자 제한.
+		
 	}sZoneInfo;
 
-	struct stLoadingInfo
-	{
-		float fStep;
-		CTString strTex1;
-		CTString strTex2;
-	};
-
 public:
-
-	typedef struct _tagObjInZone // Raid object used information 
-	{
-		_tagObjInZone()
-		{
-			eObjType = OJB_NONE;
-			iObjectID = 0;
-			bActive = FALSE;
-			bOnTrigger = FALSE;
-		}
-
-		_tagObjInZone(eObjects Type, INDEX iId, CTString sName)
-		{
-			eObjType = Type;
-			iObjectID = iId;
-			strName = sName;
-			bActive = TRUE;
-			bOnTrigger = FALSE;
-		}
-
-		eObjects eObjType;
-		INDEX	iObjectID;
-		BOOL	bActive;
-		BOOL	bOnTrigger;
-		CTString	strName;
-	}ObjInZone;
-
 	CZoneInfo();	//존 정보 세팅, 하드코딩.
 	~CZoneInfo();
+
+	static CZoneInfo &Instance(){ return m_instance;	}
 
 	int			GetZoneCount()	const	{ return m_nZoneCount;	}
 	int			GetExtraCount(int zone) const;
 	eZone		GetZoneType(int nZone) const;
-	float		GetTerMul(int nZone);
 	//UINT		GetMinLevel(int nZone) const;
 	//UINT		GetMaxLevel(int nZone) const;
 	DWORD		GetAccessJob(int nZone) const;
@@ -152,23 +108,16 @@ public:
 	CTString GetExtraName(int nZone, int nExtra);
 
 	void	SetZoneName( int nZone, CTString &strZoneName );
-	void	SetExtraName(int nZone, int nExtra, const char* szName);
-	void	SetZoneData( int nZone, int nType, int nExtraCnt, const char* szName, const char* szWldFile, float fLodMul);
-
-	BOOL	LoadObjInZoneData(void);
-	BOOL	GetRaidDungeon(int zone);
-	ObjInZone*	GetInZoneData(int iIndex);
-	ObjInZone*	GetInZoneData(CTString strName);
-
-	void	AddLoadingInfo(float fStep, CTString strTex1, CTString strTex2);
-	void	GetLoadingInfo(int nZoneIndex, float& fStep, CTString& strTex1, CTString& strTex2);
+	void	SetExtraName( int nZone, int nExtra, CTString &strExtraName );
 
 protected:
+	static CZoneInfo m_instance;
+
 	int m_nZoneCount;
 	sZoneInfo	*m_pZoneInfo;
-	CStaticStackArray<ObjInZone>		m_ObjInZones;
-	std::vector<stLoadingInfo>			m_vecLoadingInfo;
 };
+inline CZoneInfo &ZoneInfo()	{ return CZoneInfo::Instance();	}
+//안태훈 수정 끝	//(Zone Change System)(0.1)
 
 class CTextureTransformation;
 class CTextureBlending;
@@ -204,15 +153,22 @@ public:
 
 	CEntityClass *wo_pecWorldBaseClass;   // world base class (used for some special features)
 	
+	CStaticArray<CMobData>		wo_aMobData; 
+	CStaticArray<CMobName>		wo_aMobName;
 	CStaticArray<CShopData>		wo_aShopData;	
 	CStaticArray<CSkill>		wo_aSkillData;
+	CStaticArray<CSpecialSkill>	wo_aSSkillData;
+	CStaticArray<CAction>		wo_aActionData;		// yjpark
+	
+	//wooss 050902
 	CStaticArray<CCashShopData> wo_aCashShopData;
-	CCashShopData				wo_aCashGoodsData; // 2010.11 version.
 	
 	CDynamicContainer<CEntity>	wo_cenEnemyHolders;
 
 	int		wo_iNumOfShop;
-	
+	int		wo_iNumOfNPC;	
+	int		wo_iNumOfItem;
+
 	CBrushArchive &wo_baBrushes;    // brush archive with all brushes in the world
 	CTerrainArchive &wo_taTerrains; // terrain archive with all terrains in the world
 
@@ -249,9 +205,6 @@ public:
 	CListHead wo_lhTimers;      // timer scheduled entities
 	CListHead wo_lhMovers;        // entities that want to/have to move
 	BOOL wo_bPortalLinksUpToDate; // set if portal-sector links are up to date
-
-	BOOL m_bLoad;
-	bool m_bTradeItemLoad;
 
 	/* Initialize collision grid. */
 	void InitCollisionGrid(void);
@@ -354,9 +307,6 @@ public:
 	std::vector<CEntity *> m_vectorPreCreateNPC;
 
 //강동민 수정 끝 싱글던젼 개선		10.07
-
-	// by Input Tab Target Entity
-	std::vector<CEntityPointer> m_vectorTabTargetEntities;
 
 	TIME wo_WorldGameTick;  // game tick that world is currently in
 
@@ -550,59 +500,6 @@ public:
 	void WriteState_t(CTStream *ostr, BOOL bImportDictionary = FALSE);  // throw char *
 	void WriteState_net_t(CTStream *ostr); // throw char *
 
-	/* by Input TAB. Search Target Enemy*/
-	void AddEntitiesInSector(CBrushSector *pbscSectorInside);
-	void AddEntityZoningSector(CBrushSector *pbsc);
-	void SearchSectorAroundEntity(CEntity* pen, const FLOAT3D &vEyesPos, CAnyProjection3D &prProjection);
-	void TargetSelectedEnemy_Sort(void);
-
-	void LoadLOD();
-
-	void LoadStringNPCName();		// 툴에서 읽어야 함.
-	void loadTradeItem();			// 타이머 이벤트.
-private:
-	void loadMob();
-	void loadShop();
-	void loadSkill();
-	void loadSkillTree();
-	void loadArmorPreview();
-	void loadSSkill();
-	void loadAction();
-	void loadItemData();
-	void loadSetItemData();
-	void loadAffinity();
-	void loadMakeItem();
-	void loadCatalog();
-	void loadEvent();
-	void loadNPCHelp();
-	void loadCombo();
-	void loadBigpet();
-	void loadRareOption();
-	void loadOption();
-	void loadTitleData();
-	void loadQuest();
-	void loadLacarette();
-	void loadZone();
-	void loadNotice();
-	void loadEntity();
-	void loadZoneData();
-	void loadTEventString();
-	void loadLevelUpGuide();
-	void loadChangeEquipment();
-	void LoadItemCollection();
-	void LoadItemCompose();
-	void LoadStringItem();
-	void LoadStringItemSet();
-	void LoadStringOption();
-	void LoadStringOptionRare();
-	void LoadStringQuest();
-	void LoadStringSkill();
-	void LoadStringSkillSpecial();
-	void LoadStringAction();
-	void LoadStringCombo();
-	void LoadStringAffinity();
-	void LoadStringLacarette();
-	void LoadStringItemCollection();
 };
 
 #endif  /* include-once check. */

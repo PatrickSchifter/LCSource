@@ -4,55 +4,43 @@
 #pragma once
 #endif
 
-#include <Engine/LocalDefine.h>
-#include <Engine/GlobalDefinition.h>
 #include <vector>
-#include <map>
 #include <Engine/Base/CTString.h>
-#include <Common/CommonDef.h>
-#include <Common/header/def_item.h>
-#include <Common/header/def_option.h>
-#include <Engine/Help/LoadLod.h>
 
 #define		MAX_MAKE_ITEM_MATERIAL		10	// 아이템 제작시 최대 재료 수
 
 // Item Proto flag
-#define		ITEM_FLAG_COUNT			((LONGLONG)1 << 0)	// 셀 수 있는 아이템인가
-#define		ITEM_FLAG_DROP			((LONGLONG)1 << 1)	// 드롭  가능 아이템인가가
-#define		ITEM_FLAG_UPGRADE		((LONGLONG)1 << 2)	// 업그레이드 가능한 아이템인가
-#define		ITEM_FLAG_EXCHANGE		((LONGLONG)1 << 3)	// 교환 가능 아이템인가가 (유저간)
-#define		ITEM_FLAG_TRADE			((LONGLONG)1 << 4)	// 매매 가능 아이템인가가
-#define		ITEM_FLAG_NOT_DELETE	((LONGLONG)1 << 5)	// 파괴 가능 아이템인가가
-#define		ITEM_FLAG_MADE			((LONGLONG)1 << 6)	// 생산 가능 아이템인가가
-#define		ITEM_FLAG_MIX			((LONGLONG)1 << 7)	// 조합 아이템 : DB에 저장안됨
-#define		ITEM_FLAG_CASH			((LONGLONG)1 << 8)	// 유료 아이템
-#define		ITEM_FLAG_LORD			((LONGLONG)1 << 9)	// 성주 전용 아이템
-#define		ITEM_FLAG_NO_STASH		((LONGLONG)1 << 10)	// 창고 보관 불가능 아이템
-#define		ITEM_FLAG_CHANGE		((LONGLONG)1 << 11)	// 다른 직업용 아이템으로 교환 가능 여부 //wooss 051217
-#define		ITEM_FLAG_COMPOSITE		((LONGLONG)1 << 12)	// 아이템 합성 가능 여부
-#define		ITEM_FLAG_DUPLICATION	((LONGLONG)1 << 13)	// 중복 사용 묻기
-#define		ITEM_FLAG_LENT			((LONGLONG)1 << 14)	// 대여용 무기
-#define		ITEM_FLAG_RARE			((LONGLONG)1 << 15)	// 레어 아이템
-#define		ITEM_FLAG_ABS			((LONGLONG)1 << 16)	// 아이템의 남은 시간 존재 여부
-#define		ITEM_FLAG_NOT_REFORM	((LONGLONG)1 << 17)	// 아이템 리폼 가능 여부
-#define		ITEM_FLAG_ZONEMOVE_DEL	((LONGLONG)1 << 18)	// 존 이동시 사라지는 아이템
-#define     ITEM_FLAG_ORIGIN		((LONGLONG)1 << 19)	// 오리지널 옵션(SET_ITEM_ADD [ttos_2009_5_22]: 세트 아이템 적용)
-#define		ITEM_FLAG_TRIGGER		((LONGLONG)1 << 20)	// 트리거 [090707: selo]
-#define		ITEM_FLAG_RAIDSPE		((LONGLONG)1 << 21)	// 레이드 스페셜 아이템 [090707: selo]
-#define		ITEM_FLAG_QUEST			((LONGLONG)1 << 22)	// 퀘스트 아이템 [090616: selo]
-#define		ITEM_FLAG_BOX			((LONGLONG)1 << 23)	// LuckyDrawBox
-#define		ITEM_FLAG_NOTTRADEAGENT	((LONGLONG)1 << 24)	// 거래대행등록불가
-#define		ITEM_FLAG_DURABILITY	((LONGLONG)1 << 25)	// 내구도 아이템
-#define		ITEM_FLAG_COSTUME2		((LONGLONG)1 << 26)	// 코스튬2 아이템
-#define		ITEM_FLAG_SOCKET		((LONGLONG)1 << 27)	// socket flag. [6/22/2010 rumist]
-#define		ITEM_FLAG_SELLER		((LONGLONG)1 << 28)		// [2010/08/27 : Sora] ADD_SUBJOB 상인추가
-#define		ITEM_FLAG_CASTLLAN		((LONGLONG)1 << 29)		// 성주만 착용 가능한 아이템
-#define		ITEM_FLAG_NONRVR		((LONGLONG)1 << 31)	// RVR일 경우 사용 불가 아이템 플래그.
-#define		ITEM_FLAG_QUESTGIVE		((LONGLONG)1 << 32)	// 퀘스트 기부 가능 아이템
-#define		ITEM_FLAG_TOGGLE		((LONGLONG)1 << 33)	// 토글 아이템.
-#define		ITEM_FLAG_COMPOSE		((LONGLONG)1 << 34)	// 합성 아이템.
-#define		ITEM_FLAG_NOTSINGLE		((LONGLONG)1 << 35) // 싱글 던전에서 사용 불가.
-#define		ITEM_FLAG_INVISIBLE_COSTUME ((LONGLONG)1 << 36)	// 투명 코스튬
+#define		ITEM_FLAG_COUNT		(1 << 0)	// 셀 수 있는 아이템인가
+#define		ITEM_FLAG_DROP		(1 << 1)	// 드롭  가능 아이템인가가
+#define		ITEM_FLAG_UPGRADE	(1 << 2)	// 업그레이드 가능한 아이템인가
+#define		ITEM_FLAG_EXCHANGE	(1 << 3)	// 교환 가능 아이템인가가 (유저간)
+#define		ITEM_FLAG_TRADE		(1 << 4)	// 매매 가능 아이템인가가
+#define		ITEM_FLAG_BORKEN	(1 << 5)	// 파괴 가능 아이템인가가
+#define		ITEM_FLAG_MADE		(1 << 6)	// 생산 가능 아이템인가가
+#define		ITEM_FLAG_MIX		(1 << 7)	// 조합 아이템 : DB에 저장안됨
+#define		ITEM_FLAG_CASH		(1 << 8)	// 유료 아이템
+#define		ITEM_FLAG_LORD		(1 << 9)	// 성주 전용 아이템
+#define		ITEM_FLAG_NO_STASH	(1 << 10)	// 창고 보관 불가능 아이템
+#define		ITEM_FLAG_CHANGE    (1 << 11)	// 다른 직업용 아이템으로 교환 가능 여부 //wooss 051217
+#define		ITEM_FLAG_COMPOSITE	(1 << 12)	// 아이템 합성 가능 여부
+#define		ITEM_FLAG_CASHMOON	(1 << 13)	// 캐쉬 문스톤 룰렛 가능 여부 
+#define		ITEM_FLAG_LENT		(1 << 14)	// 대여용 무기
+#define		ITEM_FLAG_RARE		(1 << 15)	// 레어 아이템
+#define		ITEM_FLAG_ABS		(1 << 16)	// 아이템의 남은 시간 존재 여부
+#define		ITEM_FLAG_GENERNAL	(1 << 17)	// 아이템 성향
+#define		ITEM_FLAG_CAO		(1 << 18)	// 카오 헌터 아이템
+#define     ITEM_FLAG_ORIGIN	(1 << 19)	// 오리지널 옵션(SET_ITEM_ADD [ttos_2009_5_22]: 세트 아이템 적용)
+#define		ITEM_FLAG_TRIGGER	(1 << 20)	// 트리거 [090707: selo]
+#define		ITEM_FLAG_RAIDSPE	(1 << 21)	// 레이드 스페셜 아이템 [090707: selo]
+#define		ITEM_FLAG_QUEST		(1 << 22)	// 퀘스트 아이템 [090616: selo]
+
+	
+/*
+#define		BLOOD_ITEM			(1 << 7)	// 아이템 플래그.
+#define		SEALED_ITEM			(1 << 8)	// 봉인된 아이템.
+#define		ITEM_FLAG_SUPER_STONE_USED		(1 << 9)	// 슈퍼고제로 업그레이드 했음..//0627
+#define		ITEM_FLAG_BOOSTER	(1 << 10)	// 부스터가 발라진 아이템인가?
+*/
 
 // Item Flag : 최상위 1비트는 사용 불가!!! 
 // 6비트까지 케르, 넨, 일반 제련석의 레벨과, 플레티늄 제련석을 바른 아이템의 레벨로 사용 
@@ -69,24 +57,6 @@
 #define		FLAG_ITEM_COMPOSITION			(1 << 14)	// 합성 아이템 적용 여부
 #define		FLAG_ITEM_LENT					(1 << 15)	// 대여된 아이템
 #define		FLAG_ITEM_LEVELDOWN				(1 << 16)	// 레벨 다운된 아이템
-#define		FLAG_ITEM_BELONG				(1 << 17)	// 귀속 아이템 귀속 상태(SET_ITEM_ADD [ttos_2009_5_22]: 세트 아이템 적용)
-#define		FLAG_ITEM_SOCKET				(1 << 18)	// 소켓 가공했는지 여부 [5/10/2010 rumist]
-#define		FLAG_ITEM_SUPER_RUNE_USED		(1 << 19)	// 가미고 요청으로 인한 초고급 룬 아이템 플래그 [8/24/2012 박훈] 
-
-// SOCKET_SYSTEM_S2 보석 착용 위치 여부 [4/2/2013 Ranma]
-#define		JEWEL_COMPOSITE_POSITION_WEAPON		(1 << 0)
-#define		JEWEL_COMPOSITE_POSITION_HELMET		(1 << 1)
-#define		JEWEL_COMPOSITE_POSITION_ARMOR		(1 << 2)
-#define		JEWEL_COMPOSITE_POSITION_PANTS		(1 << 3)
-#define		JEWEL_COMPOSITE_POSITION_GLOVES		(1 << 4)
-#define		JEWEL_COMPOSITE_POSITION_SHOES		(1 << 5)
-#define		JEWEL_COMPOSITE_POSITION_SHIELD		(1 << 6)
-#define		JEWEL_COMPOSITE_POSITION_BACKWING	(1 << 7)
-
-//SET_ITEM_ADD				//[ttos_2009_5_22]: 세트 아이템 적용
-#define MAX_SET_OPTION  11
-#define MAX_ITEM_SKILL			3			// 세트 아이템의 최대 스킬 
-#define RUNE_ITEM_LEVEL			146			// 룬 적용 아이템레벨		
 
 struct ItemSmcParseInfo 
 {
@@ -113,44 +83,123 @@ struct sPetItem_Info
 	INDEX		pet_con;
 	INDEX		pet_dex;
 	INDEX		pet_int;
-	INDEX		pet_cooltime;
-	__int64		pet_accexp;
 };
 
-struct JewelComosInfo
-{
-	int index;
-	int nor_comp_nas;
-	int ca_comp_nas;
-	int ca_jew_create;
-	int nor_comp_val;
-	int ca_comp_val;
-	int nor_up_2;
-	int nor_up_3;
-	int ca_up_2;
-	int ca_up_3;
-	int nor_down_1;
-	int nor_down_2;
-	int nor_down_3;
-	int ca_down_1;
-	int ca_down_2;
-	int ca_down_3;
-};
-
-class CFortuneData : public stFortune, public LodLoader<CFortuneData>
-{
-public:
-	static bool loadFortuneEx(const char* FileName);
-};
-
-class ENGINE_API CItemData : public stItem, public LodLoader<CItemData>
+class ENGINE_API CItemData
 {
 private:
 	// ITEM 툴에서 사용하고 있는 구조체
 	// CItemData의 내부에서만 사용됩니다.
-	int transFlag;
-	std::string name;		// 아이템 이름.
-	std::string descr;		// 설명.
+	struct _ItemStat
+	{
+		int		index;			// 아이템 고유 INDEX
+		char	name[50];		// 아이템 이름.
+		int		job;			// 직업.	
+		int		weight;			// 무게.
+		int		fame;			// 명성치.
+		int		level;			// 레벨
+		int		flag;			// 플래그~
+		int		wearing;		// 착용 위치.
+		int		type;			// 타입
+		int		subType;		// 서브 타입
+		char	descr[255];		// 설명.
+
+		int		needItemIndex[MAX_MAKE_ITEM_MATERIAL];
+		int		needItemCount[MAX_MAKE_ITEM_MATERIAL];
+
+		int		needSSkillIndex;
+		int		needSSkillCount;
+		int		needSSkillIndex2;
+		int		needSSkillCount2;
+
+		union
+		{
+			int	num0;
+			int pAttack;		// 물리 공격력
+			int	pDefense;		// 물리 방어력
+			int sec;			// 초(s)(마다) 즉효(-1)
+			int skillType;		// 보조.
+			int	warpType;		// 워프 타입
+			int questnum;		// 퀘스트 번호.
+			int processtype;	// 가공 타입
+			int optiontype;		// 옵션 타입
+			int	producttype;	// 제조 타입
+			int boxtype;		// Box Type // Date : 2005-01-12,   By Lee Ki-hwan
+			int	refinetype;		// Refine Type // Date : 2005-01-12,   By Lee Ki-hwan
+			int pettype;		// 애완동물 종류.
+		};
+
+		union
+		{
+			int num1;
+			int	mAttack;		// 마법 공격력
+			int	mDffense;		// 마법 방어력
+			int recoverHP;		// HP 회복...
+			int skillLevel;		// 보조
+			int zonenum;		// 월드 번호.
+			int processsubtype;	// 가공 서브 타입.
+			int	productsubtype;	// 제조 타입
+		};
+
+		union
+		{
+			int num2;
+			int attackSpeed;	// 공격 속도.
+			int recoverMP;		// MP 회복
+			int extranum;		// Extra 번호.
+			int sskill;			// 특수 스킬
+			int grade;			// 등급
+		};
+
+		union
+		{
+			int num3;
+			int count;			// 포션 제작 갯수 
+		};
+
+		int		price;
+		char	fileSMC[255];
+		char	ArmorEffectName[255];
+
+		int		iIconTexID;			// 아이콘 텍스쳐 ID
+		int		iIconTexRow;		// 아이콘의 ROW상의 위치(최대 8)
+		int		iIconTexCol;		// 아이콘의 COL상의 위치(최대 16)
+
+		// [090608: selo] 퀘스트 사용제한 아이템 관련
+		union
+		{
+			int		PetAI_Set0;
+			int		restrictionZoneNo;	// 사용제한 존 번호
+		};
+		
+		union
+		{
+			int		PetAI_Set1;
+			int		restrictionPosX;	// 사용제한 좌표 X
+		};
+		
+		union
+		{
+			int		PetAI_Set2;
+			int		restrictionPosZ;	// 사용제한 좌표 Z			
+		};
+		
+		union
+		{
+			int		PetAI_Set3;
+			int		restrictionPosY;	// 사용제한 좌표 Y			
+		};
+		
+		union
+		{
+			int		SetItem_Index;		//SET_ITEM_ADD				//[ttos_2009_5_22]: 세트 아이템 적용
+			int		restrictionRadius;	// 사용제한 반경
+		};
+
+	};	
+
+	_ItemStat	Item_Data;
+
 
 	//0601 kwon 추가.
 	char	fileBm[255];
@@ -199,7 +248,6 @@ public:
 		ITEM_WEAPON_WAND	= 12,	// 완드(힐러)
 		ITEM_WEAPON_SCYTHE	= 13,	// 사이드
 		ITEM_WEAPON_POLEARM	= 14,	// 폴암.		
-		ITEM_WEAPON_SOUL	= 15,	// 혼(나이트쉐도우)
 	};
 
 	// 탄환 종류
@@ -213,38 +261,21 @@ public:
 	// 기타 타입
 	enum ITEMETCTYPE
 	{
-		ITEM_ETC_QUEST			= 0,	// 퀘스트
-		ITEM_ETC_EVENT			= 1,	// 이벤트
-		ITEM_ETC_SKILL			= 2,	// 스킬 습득
-		ITEM_ETC_REFINE			= 3,	// 제련
-		ITEM_ETC_MATERIAL		= 4,	// 재료.
-		ITEM_ETC_MONEY			= 5,	// 돈
-		ITEM_ETC_PRODUCT		= 6,	// 생산품
-		ITEM_ETC_PROCESS		= 7,	// 가공품
-		ITEM_ETC_OPTION			= 8,	// 옵션 아이템
-		ITEM_ETC_SAMPLE			= 9,	// 시료
+		ITEM_ETC_QUEST		= 0,	// 퀘스트
+		ITEM_ETC_EVENT		= 1,	// 이벤트
+		ITEM_ETC_SKILL		= 2,	// 스킬 습득
+		ITEM_ETC_REFINE		= 3,	// 제련
+		ITEM_ETC_MATERIAL	= 4,	// 재료.
+		ITEM_ETC_MONEY		= 5,	// 돈
+		ITEM_ETC_PRODUCT	= 6,	// 생산품
+		ITEM_ETC_PROCESS	= 7,	// 가공품
+		ITEM_ETC_OPTION		= 8,	// 옵션 아이템
+		ITEM_ETC_SAMPLE		= 9,	// 시료
 		// 10번은 Texture보이기 위해서 사용.
-		IETC_MIX_TYPE1			= 11, // 공성조합1
-		IETC_MIX_TYPE2			= 12, // 공성조합2
-		IETC_MIX_TYPE3			= 13, // 공성조합3
-		ITEM_PET_AI				= 14,	// 펫 AI
-		ITEM_ETC_QUESTTRIGGER	= 15,	// quest trigger. server used only.
-		// 서버만 사용하는 퀘스트 트리거
-		ITEM_ETC_JEWEL			= 16,	// jewels in socket system.
-		ITEM_ETC_STABILIZER		= 17,	// stabilize about jewels combine.
-		ITEM_ETC_PROC_SCROLL	= 18,	// process about socket creation.	
-		ITEM_ETC_MONSTER_MERCENARY_CARD = 19, // 몬스터 용병 카드
-		ITEM_ETC_GUILD_MARK		= 20,	// [sora] GUILD_MARK
-		ITEM_ETC_REFORMER		= 21, //리폼 아이템
-		ITEM_ETC_CHAOSJEWEL		= 22,
-		ITEM_ETC_FUNCTIONS		= 23, // 기능성 아이템
-		ITEM_ETC_SYNDICATEJEWEL = 24, // 결사대 창조의 보석 아이템
-	};
-
-	enum ITEMREFORMERTYPE
-	{
-		ITEM_ETC_REFORMER_MID_GRADE		= 0,
-		ITEM_ETC_REFORMER_HIGH_GRADE	= 1,
+		IETC_MIX_TYPE1		= 11, // 공성조합1
+		IETC_MIX_TYPE2		= 12, // 공성조합2
+		IETC_MIX_TYPE3		= 13, // 공성조합3
+		ITEM_PET_AI			= 14,	// 펫 AI
 	};
 
 	// 옵션 아이템 종류.
@@ -262,9 +293,24 @@ public:
 		ITEM_SHIELD_PANTS	= 2,	// 하의
 		ITEM_SHIELD_GLOVE	= 3,	// 장갑
 		ITEM_SHIELD_SHOES	= 4,	// 신발
-		ITEM_SHIELD_SHIELD	= 5,	// 방패	
-		ITEM_SHIELD_BACKWING = 6,	// 날개
-		ITEM_SHIELD_ONE_SUIT  = 7,   // 한 벌 의상 added by sam 11/01/31 [SAM]		
+		ITEM_SHIELD_SHIELD	= 5,	// 방패		
+	};
+
+	// 착용 위치.
+	enum ITEMWEARINGPOS
+	{
+		ITEM_WEAR_NONE		= -1,	// 미착용
+		ITEM_WEAR_HEAD		= 0,	// 투구
+		ITEM_WEAR_COAT		= 1,	// 상의		
+		ITEM_WEAR_WEAPON	= 2,	// 무기
+		ITEM_WEAR_PANTS		= 3,	// 하의
+		ITEM_WEAR_SHIELD	= 4,	// 방패
+		ITEM_WEAR_GLOVE		= 5,	// 장갑
+		ITEM_WEAR_SHOES		= 6,	// 신발
+		ITEM_WEAR_ACCESSORY1= 7,	// 액서서리1
+		ITEM_WEAR_ACCESSORY2= 8,	// 액서서리2
+		ITEM_WEAR_ACCESSORY3= 9,	// 액서서리3
+		ITEM_WEAR_PET		= 10,	// 펫 착용
 	};
 
 	// 일회용
@@ -280,21 +326,8 @@ public:
 		ITEM_SUB_CHANGE_DOC			= 5,
 		ITEM_SUB_QUEST_SCROLL		= 6,
 		ITEM_SUB_CASH_ITEM			= 7,	// 일회용 캐쉬아이템
-		ITEM_SUB_ETC				= 9,	// 기타 일회
-		ITEM_SUB_TARGET				= 10,	// 타겟 아이템용
-		ITEM_SUB_TITLE				= 11,	// 호칭 아이템
-		ITEM_SUB_JUMPING_PAKAGE		= 12,	// 점핑 패키지 : 사용하면 점핑 포션과 보상 아이템을 지급해준다.
-		ITEM_SUB_JUMPING_POTION		= 13,	// 점핑 포션 : 사용하면 캐릭테 레벨을 특정 레벨로 올려주는 아이템
-		ITEM_SUB_CHAR_SLOT_EXTEND	= 14,	// 캐릭터 슬롯 확장
-		ITEM_SUB_CHAR_SERVER_MOVE	= 15,	// 캐릭터 서버 이전 [Ranma]
-		ITEM_SUB_EXPRESS_REMOTE		= 16,	// LCE 원격 
-		ITEM_SUB_JEWEL_POCKET		= 17,	// 일반 보석 주머니
-		ITEM_SUB_CHAOS_JEWEL_POCKET	= 18,	// 카오스 보석 주머니
-		ITEM_SUB_INVEN_CASH_BAG_KEY	= 19,	// 캐쉬 인벤토리 열쇠 아이템.
-		ITEM_SUB_PET_STASH_USE_ITEM = 20,	// 펫 창고 이용권
-		ITEM_SUB_GPS				= 21,	// GPS
-		ITEM_SUB_HOLY_WATER			= 22,	// 성수 아이템.
-		ITEM_SUB_PROTECT_PVP		= 23,	// PVP 방어아이템.
+		ITEM_SUB_ETC				= 9,
+		ITEM_SUB_TARGET				= 10,	// 타겟 아이템
 	};
 
 	enum ACCESSORYTYPE
@@ -307,7 +340,6 @@ public:
 		ACCESSORY_NECKLACE		= 5,	// 목걸이
 		ACCESSORY_PET			= 6,	// 펫
 		ACCESSORY_WILDPET		= 7,	// 공격형 펫
-		ACCESSORY_RELIC			= 8,	// 유물
 	};
 
 	// SubType : 포션  // Date : 2005-01-07,   By Lee Ki-hwan
@@ -322,13 +354,6 @@ public:
 		POTION_UP		= 6,	// 공방향상
 		POTION_TEARS	= 7,	// 눈물
 		POTION_CRYSTAL	= 8,	// 결정
-		POTION_POTAL_SCROLL = 9, // NPC포탈 스크롤
-		POTION_INC_HEAL_HP, // HP 회복속도 증가.
-		POTION_INC_HEAL_MP, // MP 회복속도 증가.
-		POTION_PET_HEAL_HP,		// 펫 HP회복.
-		POTION_INC_PET_MOVE_SPD, // 펫 이동속도 증가.
-		POTION_TOTEM,			// 토템 아이템.
-		POTION_PET_HEAL_MP		// 펫 MP회복
 	};
 
 	enum POTIONSUBTYPE_UP
@@ -388,16 +413,6 @@ public:
 	{
 		REFINE_GENERAL	= 0,		// 일반제련석
 		REFINE_SPECIAL	= 1,		// 고급제련석
-		REFINE_SUPER_SPECIAL = 2,	// 초고급제련석
-		REFINE_BOOSTER	= 3,		// 부스터
-		REFINE_LUCKY	= 4,		// 행운의 고급 제련석
-		REFINE_PLATINUM	= 5,		// 플래티넘 제련석
-		REFINE_CHAOS	= 6,		// 특급 제련석
-		REFINE_PURITY_RUNE = 7,		// 정화된 룬
-		REFINE_DEVIL_RUNE = 8,		// 악마의 룬 
-		REFINE_CHAOS_RUNE = 9,		// 카오스 룬 [8/24/2012 박훈] 
-		REFINE_SUPER_RUNE = 10,		// 초고급 룬
-		REFINE_LUCKY_RUNE = 11		// 행운 룬
 	};
 
 	enum LORD_ITEM_TYPE
@@ -425,6 +440,7 @@ public:
 		PET_AI_RANGE_10M	= 3,
 		PET_AI_RANGE_20M	= 4,
 		PET_AI_RANGE_30M	= 5,
+
 	};
 	// AI 세부선택
 	enum PET_AI_SET1
@@ -433,6 +449,7 @@ public:
 		PET_AI_MP		= 2,
 		PET_AI_STM		= 3,
 		PET_AI_FAITH	= 4,
+
 	};
 
 	// AI 세부선택 조건( %이하 )
@@ -458,21 +475,10 @@ public:
 		PET_AI_ITEM					= 7,	// 아이템
 	};
 
-	// 공성전 ITEM 사용
-	enum eCASTLE_WAR
-	{
-		eANYWHERE = 0,		//	0	어디서든 사용 가능
-		eSIEGEAREA_ALL,		//	1	전체 공성에서만 사용 가능
-		eSIEGEAREA_MERAC,	//	2	메라크 공성에서만 사용 가능
-		eSIEGEAREA_DRATAN,	//	3	드라탄 공성에서만 사용 가능
-	};
-	
 	/* Default constructor. */
 	CItemData(void);
 	/* Destructor. */
 	~CItemData(void);
-
-	CItemData& operator = (const CItemData& data);
 
 	//----------------------------------------------------
 	// Properties
@@ -489,20 +495,20 @@ public:
 	{	return FALSE; };
 
 	inline BOOL	CanUse(int iPlayerID)	
-	{	return ( job & (1 << iPlayerID) );	};
+	{	return ( Item_Data.job & (1 << iPlayerID) );	};
 	
 	inline BOOL IsProductionItem()
 	{
-		return ( subType == ITEM_WEAPON_MINING ||
-			subType == ITEM_WEAPON_GATHERING ||
-			subType == ITEM_WEAPON_CHARGE );
+		return ( Item_Data.subType == ITEM_WEAPON_MINING ||
+			Item_Data.subType == ITEM_WEAPON_GATHERING ||
+			Item_Data.subType == ITEM_WEAPON_CHARGE );
 	}
 
 	inline void SetItemSmcFileName(const char* FileName)
-	{	strcpy(fileSMC, FileName);}
+	{	strcpy(Item_Data.fileSMC, FileName);}
 
 	inline void SetArmorEffectName(const char* FileName)
-	{	strcpy(efffectName, FileName);	}
+	{	strcpy(Item_Data.ArmorEffectName, FileName);	}
 
 	inline void SetItemBMFileName(const char* FileName)
 	{	strcpy(fileBm, FileName);}
@@ -548,16 +554,10 @@ public:
 
 	//--------------------------------------------------------------
 	inline const char* GetItemSmcFileName()
-	{	return fileSMC;}
+	{	return Item_Data.fileSMC;}
 
 	inline const char* GetArmorEffectName()
-	{	return efffectName;	}
-
-	inline const char* GetMissileShotEffect()
-	{	return attackEffectName; }
-
-	inline const char* GetShotHitEffect()
-	{	return damageEffectName;	}
+	{	return Item_Data.ArmorEffectName;	}
 	
 	inline const char* GetItemBMFileName()
 	{	return fileBm;}
@@ -586,12 +586,19 @@ public:
 	inline const char* GetItemTEX3NormalFileName()
 	{	return fileTex3Normal;}
 	
-	inline __int64 GetFlag()		const
-	{	return flag;}
+	inline int GetFlag()		const
+	{	return Item_Data.flag;}
 
-	inline bool IsFlag( __int64 nFlag ) const 
+	/* Item_Data.flag 은 lod에서 로딩한 Property Flag임 
+	inline bool CanUseSuperGOJE() const
 	{
-		if( flag & nFlag ) return true;
+		return (Item_Data.flag & FLAG_ITEM_SUPER_STONE_USED) == 0;
+	}
+	*/
+	
+	inline bool IsFlag( int nFlag ) const 
+	{
+		if( Item_Data.flag & nFlag ) return true;
 		return false;
 	}
 
@@ -611,257 +618,180 @@ public:
 	{	return Item_Tex3Cnt;}
 	
 	inline int	GetNum0() const		
-	{	return num0;	}
+	{	return Item_Data.num0;	}
 
 	inline int	GetNum1() const		
-	{	return num1;	}
+	{	return Item_Data.num1;	}
 
 	inline int	GetNum2() const		
-	{	return num2;	}
+	{	return Item_Data.num2;	}
 
 	inline int	GetNum3() const		
-	{	return num3;	}
+	{	return Item_Data.num3;	}
 
 	inline int GetItemIndex()	const
-	{	return index;	}
+	{	return Item_Data.index;}
 	
 	inline int GetGrade()		const
-	{	return num2;}
+	{	return Item_Data.grade;}
 
 	inline int GetJob()			const
-	{	return job; }
+	{	return Item_Data.job; }
 
 	inline int GetLevel()		const
-	{	return level;	}
-	inline int GetStack() const { return stack;	}
+	{	return Item_Data.level;	}
+
+	inline int GetWeight()		const
+	{	return Item_Data.weight;	}
 
 	inline int GetFame()		const
-	{	return fame;	}
+	{	return Item_Data.fame;	}
 	
 	// 착용 위치를 반환합니다.
 	inline int GetWearingPosition()	const
-	{	return wearing;}
+	{	return Item_Data.wearing;}
 	
 	inline int	GetType()		const
-	{	return type;	}
+	{	return Item_Data.type;}
 	
 	inline int	GetSubType()	const
-	{	return subType;	}
+	{	return Item_Data.subType;}
 	
 	inline int	GetZoneNum()	const
-	{	return num1;	}
+	{	return Item_Data.zonenum;	}
 
 	inline int	GetExtraNum()	const
-	{	return num2;	}
+	{	return Item_Data.extranum;	}
 
 	inline int	GetQuestNum()	const
-	{	return	num0;	}
+	{	return	Item_Data.questnum;	}
 
 	inline int	GetPetType()	const
-	{	return num0;	}
+	{	return Item_Data.pettype;	}
 	
 	inline int	GetPrice()		const
-	{	return price;}
+	{	return Item_Data.price;}
 
 	inline int	GetProcessType()	const		// 가공 타입
-	{	return num0;	}
+	{	return Item_Data.processtype;	}
 
 	inline int	GetProcessSubType()	const		// 서브 타입
-	{	return num1;	}
+	{	return Item_Data.processsubtype;	}
 
 	inline int	GetProductType()	const		// 제조 타입
-	{	return num0;	}
+	{	return Item_Data.producttype;	}
 
 	inline int	GetProductSubType()	const		// 제조 서브 타입
-	{	return num1;	}
+	{	return Item_Data.productsubtype;	}
 
 	inline int	GetProcessSkill()	const		// 가공 스킬
-	{	return num2;	}
+	{	return Item_Data.sskill;	}
 
 	inline int	GetBoxType()	const		// Box type
-	{	return num0;	}
+	{	return Item_Data.boxtype;	}
 
 	inline int	GetRefineType()	const		// Refinetype type
-	{	return num0;	}
+	{	return Item_Data.refinetype;	}
 
 	inline int GetMakePotionCount () const 
-	{	return num3;	}
+	{	return Item_Data.count;	}
 
 	inline int	GetNeedItemIndex( int nIndex )	const	
-	{	return needItemIndex[nIndex];	}
+	{	return Item_Data.needItemIndex[nIndex];	}
 
 	inline int	GetNeedItemCount( int nIndex )	const
-	{	return needItemCount[nIndex];	}
+	{	return Item_Data.needItemCount[nIndex];	}
 
 	inline int	GetNeedSSkillIndex()	const
-	{	return needSSkillIndex;	}
+	{	return Item_Data.needSSkillIndex;	}
 
 	inline int	GetNeedSSkillCount()	const
-	{	return needSSkillCount;	}
+	{	return Item_Data.needSSkillCount;	}
 
 	inline int	GetNeedSSkillIndex2()	const
-	{	return needSSkillIndex2;	}
+	{	return Item_Data.needSSkillIndex2;	}
 
 	inline int	GetNeedSSkillCount2()	const
-	{	return needSSkillCount2;	}
+	{	return Item_Data.needSSkillCount2;	}
 	
 	inline int	GetPhysicalDefence()	const
-	{	return num0;	}
+	{	return Item_Data.pDefense;	}
 	
 	int	GetPhysicalAttack();		// 공성 보상 작업 추가로 일반 함수로 전환 
 	int	GetMagicAttack();
 		
 	inline int	GetMagicDefence()		const
-	{	return num1;	}
+	{	return Item_Data.mDffense;	}
 	
 	inline int	GetAttackSpeed()		const
-	{	return num2;}
+	{	return Item_Data.attackSpeed;}
 	
 	inline int	GetRecoverSec()			const
-	{	return num0;		}
+	{	return Item_Data.sec;		}
 
 	inline int	GetRecoverHP()			const
-	{	return num1;	}
+	{	return Item_Data.recoverHP;	}
 	
 	inline int	GetRecoverMP()			const
-	{	return num2;	}
+	{	return Item_Data.recoverMP;	}
 	
 	inline int	GetSkillType()			const
-	{	return num0;	}
+	{	return Item_Data.skillType;	}
 	
 	inline int	GetSkillLevel()			const
-	{	return num1;}
+	{	return Item_Data.skillLevel;}
 
 	inline int	GetOptionType()			const
-	{	return num0;}
+	{	return Item_Data.optiontype;}
 	
 	inline const char* GetName()
-	{	return name.c_str();	}
-
-	inline void SetName(const char* str)	{ name = str; }
+	{	return Item_Data.name;	}
 
 	inline const char* GetDesc()
-	{	return descr.c_str();	}
-
-	inline void SetDesc(const char* str)	{ descr = str; }
+	{	return Item_Data.descr;	}
 
 	inline int	GetWarpType() const 
-	{ return num0; }
+	{ return Item_Data.warpType; }
 	
 	inline int GetIconTexID()			const
-	{	return textureID;}
+	{	return Item_Data.iIconTexID;}
 	
 	inline int GetIconTexRow()			const
-	{	return textureRow;}
+	{	return Item_Data.iIconTexRow;}
 	
 	inline int GetIconTexCol()			const
-	{	return textureCol;	}
+	{	return Item_Data.iIconTexCol;	}
 
-	inline int GetPetAISet0() const // SOCKET_SYSTEM_S2 에서 보석일 경우 장착 위치가 넘어옴 [4/2/2013 Ranma]
-	{ return set0; }
+	inline int GetPetAISet0() const
+	{ return Item_Data.PetAI_Set0; }
 
 	inline int GetPetAISet1() const
-	{ return set1; }
+	{ return Item_Data.PetAI_Set1; }
 
 	inline int GetPetAISet2() const
-	{ return set2; }
+	{ return Item_Data.PetAI_Set2; }
 
 	inline int GetPetAISet3() const
-	{ return set3; }
-
-	//SET_ITEM_ADD				//[ttos_2009_5_22]: 세트 아이템 적용
-	inline int GetSetItemIndex() const
-	{ return set4; }
-
+	{ return Item_Data.PetAI_Set3; }
 
 	// [090608: selo] 퀘스트 아이템 사용 제한
 	inline int GetRestrictionZoneNo() const		// 사용제한 존 번호
-	{ return set0; }
+	{ return Item_Data.restrictionZoneNo; }
 
 	inline int GetRestrictionPosX() const		// 사용제한 X좌표
-	{ return set1; }
+	{ return Item_Data.restrictionPosX; }
 
 	inline int GetRestrictionPosY() const		// 사용제한 Y좌표
-	{ return set3; }
+	{ return Item_Data.restrictionPosY; }
 
 	inline int GetRestrictionPosZ() const		// 사용제한 Z좌표
-	{ return set2; }
+	{ return Item_Data.restrictionPosZ; }
 
 	inline int GetRestrictionRadius() const		// 사용제한 반경
-	{ return set4; }
-	
-	// socket system [7/16/2010 rumist]
-	inline int GetSocketOptionIndex()	const
-	{ return rareOptionType[0];	}
-
-	inline int GetSocketOptionLevel()	const
-	{ return rareOptionLevel[0];	}
-
-	inline	int GetJumpingLevel() const
-	{ return num0;	}
-
-	// [2013/02/13] sykim70 Fortune System
-	inline int GetFortuneIndex() const
-	{ return fortuneIndex; }
+	{ return Item_Data.restrictionRadius; }
 
 	static bool IsLordItem( int nIndex ) ; // 성주 무기 인지 아닌지 판다. 
 	static bool IsUniqueItem( int nIndex ) ; // 유니크 무기 인지 아닌지 판다. 
-
-	// [2010/10/20 : Sora] 용병 카드집 체크
-	bool IsMercenaryCardHolder();
-
-	inline int GetItemBelong()	{ return rareOptionType[0]; }
-
-	inline int GetOptionOriginType(int idx)
-	{ 
-		if (idx < 0 || idx >= MAX_ORIGIN_OPTION)
-			return 0;
-		return rareOptionType[idx + 1];
-	}
-	inline int GetOptionOriginLevel(int idx)
-	{ 
-		if (idx < 0 || idx >= MAX_ORIGIN_OPTION)
-			return 0;
-		return rareOptionLevel[idx + 1];
-	}
-
-	inline int GetOptionSkillType(int idx)
-	{ 
-		if (idx < 0 || idx >= MAX_ITEM_SKILL)
-			return 0;
-		return rareOptionType[idx + MAX_ORIGIN_OPTION + 1];
-	}
-	inline int GetOptionSkillLevel(int idx)
-	{ 
-		if (idx < 0 || idx >= MAX_ITEM_SKILL)
-			return 0;
-		return rareOptionLevel[idx + MAX_ORIGIN_OPTION + 1];
-	}
-
-	inline char GetCastleWar()
-	{ 
-		return castleWar;
-	}
-
-	int& GetTransFlag() {
-		return transFlag;
-	}
-
-	inline int GetSyndicateType()
-	{ 
-		return syndicate_type;
-	}
-
-	inline int GetSyndicateGrade()
-	{ 
-		return syndicate_grade;
-	}
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate();
-	void ClearNoTranslate();
-
-	static int LoadItemNameFromFile(const char* FileName);
 	
 	//-----------------------------------------------------------------------------
 	// Purpose: 아이템 데이터를 화일로부터 읽어들입니다.
@@ -869,133 +799,70 @@ public:
 	//			FileName - 파일명
 	// Output : 	static int
 	//-----------------------------------------------------------------------------
-	static bool loadItemEx(const char* FileName);
-	static int LoadJewelItemDataFromFile(CStaticArray<JewelComosInfo> &apJewelData, const char* FileName);
+	static int LoadItemDataFromFile(CStaticArray<CItemData> &apItemData, const char* FileName);
 	static void LoadItemSmcDataFromFile(CStaticArray<ItemSmcParseInfo> &apItemSmcData, const char* FileName);
-
 };
 
-class CItemRareOption : public stRareOption, public LodLoader<CItemRareOption>
+class CItemName
 {
 private:
-	std::string m_strPrefix;			// 접두어
+	// ITEM 툴에서 사용하고 있는 구조체
+	// CItemData의 내부에서만 사용됩니다.
+	struct _ItemStat
+	{
+		int		index;			// 아이템 고유 INDEX
+		char	name[50];		// 아이템 이름.		
+		char	descr[255];
+	};
+	_ItemStat	Item_Data;
+
+public:
+	CItemName();
+	~CItemName();
+
+	inline const char* GetName()
+	{	return Item_Data.name;	}
+
+	inline const char* GetDesc()
+	{	return Item_Data.descr;	}
+
+	static int LoadItemNameFromFile(CStaticArray<CItemName> &apItemName, const char* FileName);
+};
+
+class CItemRareOption
+{
+private:
+	struct RareOption
+	{
+		int index;
+		int level;
+	};
+
+	int			m_iIndex;				// 레어 옵션 인덱스
+	int			m_iGrade;				// 레어 옵션 등급 (0=A, 1=B, 2=C, 3=D, 4=E)
+	int			m_iType;				// 레어 옵션 종류 (0=무기, 1=방어구, 2=액서사리)
+	int			m_iLen_prefix;			// 접두어 길이
+	char		m_strPrefix[50];			// 접두어
+	int			m_iPhysical_attack;	// 물리 공격력
+	int			m_iPhysical_defence;	// 물리 방어력
+	int			m_iMagic_attack;		// 마법 공격력
+	int			m_iMagic_defence;		// 마법 방어력
+public:
+	RareOption	m_Option[10];			// 레어 옵션
+	
 public:
 	CItemRareOption();
 	~CItemRareOption();
 
-	inline const int GetIndex()				
-	{	return getindex(); }
-	inline const int GetGrade()				
-	{	return a_grade;		}	
-	inline const int GetType()				
-	{	return a_type; }
-	void SetPrefix(const char* str)			{ m_strPrefix = str;		}
-	inline const char* GetPrefix()			{ return m_strPrefix.c_str(); }
-	inline const int GetPhysicalAttack()	
-	{	return a_attack;	}
-	inline const int GetPhysicalDefence()	
-	{	return a_defense;	}
-	inline const int GetMagicAttack()		
-	{	return a_magic;		}
-	inline const int GetMagicDefence()		
-	{	return a_resist;	}
+	inline const int GetIndex()				{ return m_iIndex; }
+	inline const int GetGrade()				{ return m_iGrade; }	
+	inline const int GetType()				{ return m_iType;}
+	inline const char* GetPrefix()			{ return m_strPrefix; }
+	inline const int GetPhysicalAttack()	{ return m_iPhysical_attack; }
+	inline const int GetPhysicalDefence()	{ return m_iPhysical_defence; }
+	inline const int GetMagicAttack()		{ return m_iMagic_attack; }
+	inline const int GetMagicDefence()		{ return m_iMagic_defence;	}	
 
-	static bool loadEx(const char* FileName);
-
-	//[sora] 미번역 스트링 index 표시
-	void SetNoTranslate()
-	{
-		char buff[MAX_PATH] = {0,};
-		sprintf( buff, "[%d] : rare option", getindex() );
-		m_strPrefix = buff;
-	}
-
-	void ClearNoTranslate()
-	{
-		m_strPrefix = "";
-	}
+	static int LoadItemRareOptionFromFile(std::vector<CItemRareOption> &apItemRareOption, const char* FileName);
 };
-
-//SET_ITEM_ADD				//[ttos_2009_5_22]: 세트 아이템 적용
-class CSetItemData : public stSetItem, public LodLoader<CSetItemData>
-{
-private:
-	struct SetOption
-	{
-		int nSetCount;
-		int nSetType;
-		int nSetOptionIndex;
-		int nOptionLevel;
-	};
-	std::string	m_strSetItemName;	// SetItem Name
-
-public:
-	enum SET_OPTION_TYPE
-	{
-		SET_ITEM_TYPE_NONE = -1,
-		SET_ITEM_TYPE_OPTION = 0,
-		SET_ITEM_TYPE_SKILL = 1,
-	};
-	CSetItemData();
-	~CSetItemData();
-
-	inline const int GetSetItemIndex()		{ return getindex(); }
-	void SetName(const char* str)			{ m_strSetItemName = str; }
-	inline const char* GetName()			{ return m_strSetItemName.c_str(); }
-	inline const LONG GetApplyItemIndex(int nWearPos)	{ return item[nWearPos]; }
-	inline const SetOption GetOption(int OptionNum)		
-	{
-		SetOption setOpdata;
-		
-		setOpdata.nSetCount = wearCnt[OptionNum];
-		setOpdata.nSetType = optionType[OptionNum];
-		setOpdata.nSetOptionIndex = option[OptionNum];
-		setOpdata.nOptionLevel = optionLevel[OptionNum];
-			
-		return setOpdata;
-	}
-	inline const int GetMaxOption()		{ return optionCnt; }
-	static bool loadSetItemEx(const char* FileName);
-};
-
-#define  MAX_STUFF_ITEM	5
-
-class CMakeItemData
-{
-private:
-	struct SetStuff
-	{
-		int nStuff_Index;
-		int	nStuff_Count;
-	};
-
-	int		m_nFactory_Index;				// 제작 아이템 인덱스
-	char	m_strFactory_Name[50];			// 제작 아이템 이름
-	int		m_nFactory_Type;				// 제작 타입
-	int		m_nFactory_Subtype;				// 제작 서브 타입
-	int		m_nItemIndex;					// 아이템 데이터 인덱스
-	UQUAD	m_nMakeExp;						// 고유 숙련도
-	UQUAD	m_nNeedExp;						// 필요 숙련도
-	UQUAD	m_nNeedNas;						// 필요 나스
-	SetStuff m_StuffItem[MAX_STUFF_ITEM];	// 재료 아이템
-
-public:
-	CMakeItemData();
-	~CMakeItemData();
-
-	int GetMakeItemType() { return m_nFactory_Type; }
-	int	GetMakeItemSubType() { return m_nFactory_Subtype; }
-	char* GetName()	{ return m_strFactory_Name; }
-	int GetFactoryIndex()	{ return m_nFactory_Index; }
-	UQUAD GetMakeExp()		{ return m_nMakeExp; }
-	UQUAD GetNeedNas()		{ return m_nNeedNas; }
-	UQUAD GetNeedExp()		{ return m_nNeedExp; }
-	int GetItemButtonIndex() { return m_nItemIndex; }
-	SetStuff GetStuffItem(int Col)	{ return m_StuffItem[Col]; }
-	int	GetStuffItemIndex(int Col)	{ return m_StuffItem[Col].nStuff_Index; }
-	int	GetStuffItemCount(int Col)	{ return m_StuffItem[Col].nStuff_Count; }
-
-	static int LoadMakeItemFromFile(CStaticArray<CMakeItemData> &apMakeItem, const char* FileName);
-};
-
 #endif

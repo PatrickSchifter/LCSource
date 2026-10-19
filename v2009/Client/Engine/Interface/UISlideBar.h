@@ -10,14 +10,14 @@
 #endif
 
 
-// #include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIWindow.h>
 
 
 // ----------------------------------------------------------------------------
 // Name : CUISlideBar
 // Desc :
 // ----------------------------------------------------------------------------
-class ENGINE_API CUISlideBar : public CUIWindow
+class CUISlideBar : public CUIWindow
 {
 protected:
 	BOOL			m_bSlideBarClick;				// If slide bar is clicked or not
@@ -40,8 +40,6 @@ public:
 	CUISlideBar();
 	~CUISlideBar();
 
-	CUIBase* Clone();
-
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
 					int nBarWidth, int nBarHeight,
@@ -60,12 +58,6 @@ public:
 	int		GetMinPos() const { return m_nMinPos; }
 	int		GetMaxPos() const { return m_nMaxPos; }
 
-	void		setBar(int nWidth, int nHeight);
-	int			getBarWidth() { return m_rcBar.GetWidth(); }
-	int			getBarHeight() { return m_rcBar.GetHeight(); }
-	UIRectUV	getBackUV();
-	UIRectUV	getBarUV();
-
 	// UV
 	void	SetBackgroundUV( FLOAT fTx0, FLOAT fTy0, FLOAT fTx1, FLOAT fTy1, FLOAT fTexWidth, FLOAT fTexHeight )
 	{
@@ -78,9 +70,6 @@ public:
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
-
-protected:
-	void OnRender(CDrawPort* pDraw);
 };
 
 

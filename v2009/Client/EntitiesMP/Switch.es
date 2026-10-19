@@ -116,22 +116,7 @@ functions:
 
 
 procedures:
-  Main() {
-    // init as model
-    CModelHolder2::InitModelHolder();
 
-    if (m_bInvisible) {
-      SwitchToEditorModel();
-    }
-
-    if (m_swtType==SWT_ONCE) {
-      jump MainLoop_Once();
-    } else {
-      jump MainLoop_OnOff();
-    }
-
-    return;
-  };
 
   // turn the switch on
   SwitchON() {
@@ -279,5 +264,22 @@ procedures:
         resume;
       }
     }
+  };
+
+  Main() {
+    // init as model
+    CModelHolder2::InitModelHolder();
+
+    if (m_bInvisible) {
+      SwitchToEditorModel();
+    }
+
+    if (m_swtType==SWT_ONCE) {
+      jump MainLoop_Once();
+    } else {
+      jump MainLoop_OnOff();
+    }
+
+    return;
   };
 };

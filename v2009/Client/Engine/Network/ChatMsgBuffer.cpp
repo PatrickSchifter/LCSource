@@ -9,7 +9,6 @@
 ChatMsgBuffer::ChatMsgBuffer()
 {
 	m_ubMsgCount = 0;
-	m_bShowNPCTalk = FALSE;
 }
 
 // ----------------------------------------------------------------------------
@@ -24,7 +23,7 @@ ChatMsgBuffer::~ChatMsgBuffer()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void ChatMsgBuffer::AddString( const CTString &strMessage )
+void ChatMsgBuffer::AddString( CTString &strMessage )
 {
 	if( m_ubMsgCount >= CHATMSG_LINE_MAX )
 	{
@@ -67,16 +66,6 @@ void ChatMsgBuffer::AddString( const CTString &strMessage )
 	{
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = CHATMSG_CHAR_MAX;
-#if defined (G_RUSSIA)
-		for( int iPos=nSplitPos; iPos >=0; --iPos )
-		{
-			if( strMessage[iPos] == ' ' )
-			{
-				nSplitPos = iPos;
-				break;
-			}
-		}
-#else
 		BOOL	b2ByteChar = FALSE;
 		for( int iPos = 0; iPos < nSplitPos; iPos++ )
 		{
@@ -88,7 +77,6 @@ void ChatMsgBuffer::AddString( const CTString &strMessage )
 
 		if( b2ByteChar )
 			nSplitPos--;
-#endif
 
 		// Split string
 		CTString	strTemp;
@@ -103,11 +91,10 @@ void ChatMsgBuffer::AddString( const CTString &strMessage )
 // Name : SetChatMsg()
 // Desc :
 // ----------------------------------------------------------------------------
-void ChatMsgBuffer::SetChatMsg(const CTString &strMessage, COLOR colMessage /* = 0xC5C5C5FF */, BOOL bShowNPCTalk /* = FALSE  */)
+void ChatMsgBuffer::SetChatMsg( CTString &strMessage, COLOR colMessage )
 {
 	m_ubMsgCount = 0;
 	m_colMsg = colMessage;
-	m_bShowNPCTalk = bShowNPCTalk;
 	m_llMsgTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 
 	m_nWidth = 0;
@@ -115,14 +102,4 @@ void ChatMsgBuffer::SetChatMsg(const CTString &strMessage, COLOR colMessage /* =
 
 	int	nFontWidth = _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing();
 	m_nWidth = m_nWidth * nFontWidth + 1;
-}
-
-// NPC talk system [5/24/2011 rumist]
-void ChatMsgBuffer::CheckShowNPCTalk()
-{
-	if( !m_bShowNPCTalk )
-		return;
-	
-	m_bShowNPCTalk = FALSE;
-	m_llMsgTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 }

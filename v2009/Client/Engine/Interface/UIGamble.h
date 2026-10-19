@@ -9,10 +9,13 @@
 	#pragma once
 #endif
 
-class CUIIcon;
 
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIButtonEx.h>
+//#include <Engine/Interface/UIInventory.h>
+#include <Engine/Interface/UIListBox.h>
 #include <Engine/Ska/ModelInstance.h>
-
+#include <vector>
 
 // Define text position
 #define	GAMBLE_TITLE_TEXT_OFFSETX			25
@@ -27,12 +30,7 @@ class CUIIcon;
 
 // [071122] New_MoonStone :Su-won
 #define MAX_REWARD_COUNT					24		//최대 보상품 수
-
-#ifdef MOONSTONE_COUNT_ADD	// [2010/11/23 : Sora] 문스톤 개수 추가
-	#define MOONSTONE_COUNT						6		//문스톤의 종류 수
-#else
-	#define MOONSTONE_COUNT						5		//문스톤의 종류 수
-#endif
+#define MOONSTONE_COUNT						5		//문스톤의 종류 수
 
 // ----------------------------------------------------------------------------
 // Name : CUIGamble
@@ -65,6 +63,7 @@ protected:
 	UIRectUV			m_rtSmallNumber[GAMBLE_TOTAL_NUMBER];		// 문스톤 포인트 표시 숫자
 	
 	// Buttons	
+	CUIButton			m_btnStart;
 	CUIButton			m_btnStop;
 	CUIButton			m_btnCancel;
 
@@ -77,8 +76,11 @@ protected:
 	int					m_iStopSlot;
 	CEntity*			m_pNpcEntity;
 
+	// Cash MoonStone Valuables
+	CUIButtonEx		m_slotBtn;
 	BOOL			m_bIsCashMoonStone;
 	BOOL			m_bIsReady;			// Check Ready State
+	CUIButton		m_btnReady;			// Ready Button
 	INDEX			m_selCashItemIdx;
 
 	// Cash MoonStone Structure
@@ -93,13 +95,13 @@ protected:
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	// [071122: Su-won] NEW_MOONSTONE
-	CStaticArray<INDEX>	m_saReward[MOONSTONE_COUNT];
+	CStaticArray<INDEX>	m_saReward[5];
 	INDEX*				m_iTexID;					// 문스톤 아이콘 텍스쳐 ID
 	UIRectUV*			m_rtNewMark;				// 문스톤 아이콘 텍스쳐 좌표
 	
 	INDEX				m_iUsedMoonStone;							// 문스톤에 사용된 문스톤 종료
 
-	CUIIcon*			m_pIconsMoonStone[5];								// 룰렛에 사용할 문스톤 버튼
+	CUIButtonEx			m_btnMoonStone[5];								// 룰렛에 사용할 문스톤 버튼
 	// [071108: Su-won] NEW_MOONSTONE
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -130,10 +132,15 @@ public:
 	void	SetSelectedMarker( int iSlot, int iCount );
 	void	SetAccumulate( int iAccumulate );
 
+	// For Cash Moonstone
+	void	OpenReady();
+	void	OpenReadySelect();
 	// Check Cash Item
 	BOOL	 	CheckCashItem(int itemIdx);
 	void		SetSelCashItemIdx(int idx) { m_selCashItemIdx = idx; }
 	int			GetSelCashItemIdx() { return m_selCashItemIdx; }
+	CUIButtonEx GetSlotBtn() { return m_slotBtn; }
+	void		SetSlotBtn(CUIButtonEx btn) { m_slotBtn = btn; }
 
 	//////////////////////////////////////////////////////////
 	// [071122: Su-won] NEW_MOONSTONE
@@ -142,6 +149,10 @@ public:
 	void		SetSelectedItem( INDEX	iRewardItem );
 	// [071122: Su-won] NEW_MOONSTONE
 	//////////////////////////////////////////////////////////
+
+
+	// Command functions
+	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );

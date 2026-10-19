@@ -8,10 +8,10 @@
 #define MAX_STR_LENGTH          64
 
 // Date : 2005-01-28,   By Lee Ki-hwan
-// #include <string>
-// #include <vector>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
+#include <string>
+#include <vector>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
 
 using namespace std;
 
@@ -62,14 +62,13 @@ class CUIFiltering
 	char	m_strRefineWord[MAX_STR_LENGTH];
 	int		m_nListCount;
 	char	m_strFileName[1024];
-	bool	m_bCharacterfilter;
 
 public :
 	CUIFiltering()		{ Clear();		}	
 	~CUIFiltering()		{ Destroy();	}
 
 	void Clear();
-	BOOL Create( char* file_name , bool charfilter = false);
+	BOOL Create( char* file_name );
 	void Destroy();
 	
 	BOOL Filtering( char* syntax );
@@ -119,8 +118,6 @@ public:
 	~CUIChatFilter();
 	
 	void Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void OpenChatFilter();
 	void CloseChatFilter();
 	void Render();
@@ -131,8 +128,6 @@ public:
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
 	void Message( int nCommandCode, CTString strTitle, CTString strMessage, DWORD dwStyle );
 	void MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
-	
-	void CharacterFilterInSimplePopup( CTString strCharName );
 };
 //*********************************************************
 #endif

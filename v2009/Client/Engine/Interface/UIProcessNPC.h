@@ -5,13 +5,17 @@
 // ----------------------------------------------------------------------------
 
 #ifndef	UIProcessNPC_H_
-#define	UIProcessNPC_H_
+#define	UIProcessNPC_H
 #ifdef	PRAGMA_ONCE 
 #pragma once
 #endif
 
-#include <Engine/Entities/ItemData.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIProcessNPC.h>
 #include <Engine/Interface/UIProcess.h>
+#include <Engine/Interface/UIInventory.h>
 
 // Define max char and line of strings
 #define	MAX_PROCESSNPC_STRING			4
@@ -52,8 +56,7 @@ protected:
 	CUIButton				m_btnDown;							// 갯수 감소.
 	
 	// Skill buttons
-	typedef std::vector< CUIIcon* >::iterator		vecBtnEX_Iter;
-	std::vector< CUIIcon* > m_vecIcons;							// 가공 아이템
+	std::vector<CUIButtonEx> m_btnProcessNPCItems;				// 가공 아이템
 	int						m_nProcessItemCount;				// 만들고자 하는 수.
 	
 	// Etc ...
@@ -89,6 +92,27 @@ protected:
 	
 	// Network ...
 	BOOL					m_bWaitProcessNPCResult;				// Wait Message
+	
+	// ToolTip
+	
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+	
+	BOOL					m_bShowItemInfo;
+	
+	UIRect					m_rcItemInfo;
+	int						m_nCurInfoLines;
+	
+	CTString				m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR					m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
+	BOOL					m_bDetailItemInfo;
 
 	int						m_iResourceType;
 	int						m_iResourceSubType;
@@ -127,15 +151,17 @@ public:
 	// Send ...
 	void	SendProcessNPCReq();
 	
+	// RenderItemInfo ...
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nItemIndex, int &nInfoWidth, int &nInfoHeight );
+	void	ShowItemInfo( BOOL bShowInfo, int nItemIndex, BOOL bRenew = FALSE );
+	void	RenderItemInfo ();
 	// etc ...
 	void	SelectItem ( int nIndex = -1 );
-	void	AddString ( const CTString &strText, COLOR colText = 0xffffffff );
+	void	AddString ( CTString& strText, COLOR colText = 0xffffffff );
 
 	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	void	MsgBoxLCommand( int nCommandCode, int nResult );
-
-private:
-	void	clearVecBtnEX();
 };
 
 

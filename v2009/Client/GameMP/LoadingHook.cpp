@@ -2,7 +2,7 @@
 #include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <locale.h>
-#include <Engine/Loading.h>
+
 #define USECUSTOMTEXT 0
 
 extern CGame *_pGame;
@@ -65,7 +65,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 #endif
 
   // measure time since last call
-  static CTimerValue tvLast(((__int64)0));
+  static CTimerValue tvLast(0I64);
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
 
   // if not first or final update, and not enough time passed
@@ -131,8 +131,8 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 
   // map hook
   // by seo
-//     extern void RenderLoading( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi);
-//     RenderLoading(&dpHook, ulLevelMask, pphi);
+    extern void RenderLoading( CDrawPort *pdp, ULONG ulLevelMask, CProgressHookInfo *pphi);
+    RenderLoading(&dpHook, ulLevelMask, pphi);
 
     // finish rendering
     dpHook.dp_Raster->ra_pvpViewPort->SwapBuffers();

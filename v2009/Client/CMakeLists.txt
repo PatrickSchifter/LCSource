@@ -1,4 +1,9 @@
-# Last Chaos client build. Replaces Build_2010.sln (VS2010).
+# Last Chaos 2009 client build (v2009/Client): the ported low-level engine of Client Source/ with
+# the 2009 game layer (Engine/Interface, Network, Entities, EntitiesMP, GameMP).
+#
+#   cmake -S v2009/Client -B v2009/build-client -G Ninja -DCMAKE_BUILD_TYPE=Release
+#
+# What follows is the build of Client Source/ (the 2015 client), adapted:
 #
 # Two builds of the same sources:
 # - Windows (MSVC x86, 32 bits): the original Direct3D 8 client, the reference for the port and
@@ -20,7 +25,13 @@
 # The language data used at run time (Local\<nation>\, fonts) follows the persistent shell
 # symbol g_iCountry instead (BRAZIL = 8, see Engine/GlobalDefinition.h), set by the installation.
 # The server's LC_REGION is a different list (BRZ, USA, GER...) and is set separately.
-set(LC_CLIENT_COUNTRY "BRAZIL" CACHE STRING "Client country define (G_<COUNTRY>): BRAZIL, USA, GERMAN, KOR, RUSSIA, THAI")
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  cmake_minimum_required(VERSION 3.24)
+  project(LastChaos2009Client LANGUAGES C CXX)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
+
+set(LC_CLIENT_COUNTRY "USA" CACHE STRING "Client country define (G_<COUNTRY>): BRAZIL, USA, GERMAN, KOR, RUSSIA, THAI")
 set(_lc_client_countries BRAZIL USA GERMAN KOR RUSSIA THAI)  # the ones Engine/LocalDefine.h knows
 set_property(CACHE LC_CLIENT_COUNTRY PROPERTY STRINGS ${_lc_client_countries})
 if(NOT LC_CLIENT_COUNTRY IN_LIST _lc_client_countries)
@@ -203,11 +214,11 @@ add_library(tinyxml STATIC
   3rdparty/tinyxml_2_6_2/tinyxmlerror.cpp 3rdparty/tinyxml_2_6_2/tinyxmlparser.cpp)
 target_link_libraries(tinyxml PRIVATE lc_client_common)
 
-# LCCrypt: the client has no source of its own; the same code lives in the server's ShareLib.
-add_library(lccrypt STATIC "${LC_CLIENT_SRC}/../Server Source/ShareLib/LCCrypt.cpp")
-target_include_directories(lccrypt PUBLIC "${LC_CLIENT_SRC}/../Server Source/ShareLib")
-target_link_libraries(lccrypt PRIVATE lc_client_common)
-set_target_properties(lccrypt PROPERTIES OUTPUT_NAME LCCrypt_mt)  # #pragma comment(lib, "LCCrypt_mt.lib")
+# LCCrypt: the 2009 message encryption (CNM_* functions, the same code as the 2009 server's
+# LCCrypt), not the later DES3 one of the server's ShareLib.
+add_library(lccrypt STATIC "${LC_CLIENT_SRC}/LCCrypt/LCCrypt.cpp" "${LC_CLIENT_SRC}/LCCrypt/LCCrypt_ExternFunc.cpp")
+target_include_directories(lccrypt PUBLIC "${LC_CLIENT_SRC}/LCCrypt")
+set_target_properties(lccrypt PROPERTIES OUTPUT_NAME LCCrypt)  # #pragma comment(lib, "LCCrypt.lib")
 
 if(WIN32)
   add_library(f_socket STATIC

@@ -3,31 +3,22 @@
 
 #include "StdAfx.h"
 #include "Game.h"
-#ifdef PLATFORM_WIN32
 #include <direct.h> // for _mkdir()
-#endif
 #include <sys/timeb.h>
 #include <time.h>
 #include <locale.h>
-#ifdef PLATFORM_WIN32
 #include <io.h>
-#endif
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
 #include <Engine/GlobalDefinition.h>
-#include <Engine/Network/Web.h>
-#ifdef PLATFORM_WIN32
-#include <tlhelp32.h>  // the bot process scan, Windows only
-#endif
-#include <Engine/Interface/UIManager.h>
-#include <Engine/Object/ActorMgr.h>
+//#include <Engine/Interface/UIManager.h>
 #include "LCDDrawing.h"
 
 extern FLOAT con_fHeightFactor = 0.5f;
 extern FLOAT con_tmLastLines   = 5.0f;
 //extern INDEX con_bTalk = 0;		// yjpark
-//CTimerValue _tvMenuQuickSave(((__int64)0));
+//CTimerValue _tvMenuQuickSave(0I64);
 
 // used filenames
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
@@ -132,18 +123,19 @@ extern INDEX gam_iJpgScreenShot = 1;	// 0 = TGA, 1 = JPG
 
 extern INDEX gam_bUseExtraEnemies = TRUE;
 
-#ifdef _SHOW_DEBUG_STATUS
-INDEX hud_iStats = 3;
+//안태훈 수정 시작	//(Add Sun Moon Entity and etc)(0.2)
+#ifdef DEBUG
+static INDEX hud_iStats = 3;
 static INDEX hud_iFPSGraphSpeed = 1;
 static INDEX hud_iFPSGraphMax = 400;
 static INDEX hud_bShowTime = TRUE;
 #else
-INDEX hud_iStats = 0;
+static INDEX hud_iStats = 0;
 static INDEX hud_iFPSGraphSpeed = 4;
-static INDEX hud_iFPSGraphMax = 400;
+static INDEX hud_iFPSGraphMax = 100;
 static INDEX hud_bShowTime = FALSE;
-#endif	// _SHOW_DEBUG_STATUS
-
+#endif	//DEBUG
+//안태훈 수정 끝	//(Add Sun Moon Entity and etc)(0.2)
 static INDEX hud_bShowClock = FALSE;
 static INDEX hud_bShowNetGraph = FALSE;
 static INDEX hud_bShowResolution = FALSE;
@@ -167,6 +159,7 @@ extern BOOL _bUserBreakEnabled = FALSE;
 // for motion blur animation capturing
 static UWORD *_puwAccBuffer = NULL;
 static PIX _pixAccSize = 0;
+
 
 void AccumulateFrame( CImageInfo *pii, const INDEX ctInterFrames, const BOOL bRootFrame)
 {
@@ -216,88 +209,6 @@ void MaybeDiscardLastLines(void)
 	}
 }
 
-// Scanning other processes for bots (AutoIt windows) is Windows-only, like the old GameGuard.
-#ifdef _WIN32
-// [100122: selo] 윈도우 핸들을 찾아 프로세스 찾기 루틴
-ULONG ProcIDFromWnd(HWND hwnd) // 윈도우 핸들로 프로세스 아이디 얻기  
-{  
-  ULONG idProc;  
-  GetWindowThreadProcessId( hwnd, &idProc );  
-  return idProc;  
-}
-
-// [100122: selo] 위 함수와 연계되는 함수 
-HWND GetInputH(ULONG pid) // 프로세스 아이디로 윈도우 핸들 얻기  
-{  
-  HWND tempHwnd = FindWindow(NULL,NULL); // 최상위 윈도우 핸들 찾기  
-  
-  while( tempHwnd != NULL )  
-  {  
-    if( GetParent(tempHwnd) == NULL ) // 최상위 핸들인지 체크, 버튼 등도 핸들을 가질 수 있으므로 무시하기 위해  
-      if( pid == ProcIDFromWnd(tempHwnd) )  
-        return tempHwnd;  
-    tempHwnd = GetWindow(tempHwnd, GW_HWNDNEXT); // 다음 윈도우 핸들 찾기  
-  }  
-  return NULL;  
-}
-
-// [100122: selo] 해킹 프로세스 찾기
-BOOL InputState(void)
-{
-	HANDLE      hInputSnap = NULL;
-	BOOL		Return       = FALSE;
-	
-	PROCESSENTRY32 pe32         = {0};
-	
-	char buf[256];
-	
-	hInputSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);    
-	
-	if (hInputSnap == INVALID_HANDLE_VALUE)
-	{
-		return FALSE;
-	}
-	
-	pe32.dwSize = sizeof(PROCESSENTRY32);
-	
-	if (Process32First(hInputSnap, &pe32))
-	{   
-		do
-		{
-			HANDLE hInput;                        
-			// Get the actual priority class.            
-			hInput = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID);
-			
-			if( hInput != NULL )
-			{
-				HWND hWnd = GetInputH(pe32.th32ProcessID); // GetWinHandle --> GetInputH
-
-#if !defined (G_RUSSIA)
-				GetClassName((HWND)hWnd, buf, 256);	
-				if( 0 == strncmp(buf, "AutoIt", 6) )
-				{
-					Return = TRUE;	
-					CPrintF("나는 행유져");
-				}	
-#else
-				GetWindowText((HWND)hWnd, buf, 256);
-				if( 0 == strncmp(buf, "LastChaos-Bot -", 15) )
-				{
-					Return = TRUE;	
-					CPrintF("나는 행유져");
-				}	
-#endif			
-				CloseHandle (hInput);
-			}
-		}
-		while (Process32Next(hInputSnap, &pe32));		
-	}	
-	
-	CloseHandle (hInputSnap);
-
-	return Return;
-}
-#endif  // _WIN32
 
 /*
 class CEnableUserBreak {
@@ -518,7 +429,6 @@ void CControls::DoControlActions(void)
 	{
 		// test if first button is pressed
 		BOOL bFirstPressed = _pInput->GetControlValue(itButtonAction->ba_ulFirstControl)>0.0f;
-
 		// remember control value
 		ctl_fInputValue = _pInput->GetControlValue(itButtonAction->ba_ulFirstControl);
 
@@ -541,7 +451,6 @@ void CControls::DoControlActions(void)
 
 		// test if second button is pressed
 		BOOL bSecondPressed = _pInput->GetControlValue(itButtonAction->ba_ulSecondControl)>0.0f;
-
 		// remember control value
 		ctl_fInputValue = _pInput->GetControlValue(itButtonAction->ba_ulSecondControl);
 
@@ -572,13 +481,9 @@ void CControls::CreateAction(const CPlayerCharacter &pc, CPlayerAction &paAction
 	DoControlActions();
 //  CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
 //  pps->ps_iSensitivity = NormFloatToByte(_pGame->gm_ctrlControlsExtra.ctrl_fSensitivity/100 - 0.5);
+	//CPrintF("creating: prescan %d, x:%g\n", bPreScan, paAction.pa_aRotation(1));
 	// make the player class create the action packet
 	ctl_ComposeActionPacket(pc, paAction, bPreScan);
-
-/*	if (paAction.pa_aRotation(1) != 0.0f)
-	{
-		CPrintF("creating: prescan %d, x:%g\n", bPreScan, paAction.pa_aRotation(1));
-	}*/
 }
 
 CButtonAction &CControls::AddButtonAction(void)
@@ -675,22 +580,6 @@ static void CalcDemoProfile( INDEX ctFrames, INDEX &ctFramesNoPeaks,
 		if( tmLowPeak  < tmCurrent) tmLowPeak  = tmCurrent;
 	}
 	tmSigma = Sqrt( dSigmaSum/ctFramesNoPeaks);
-}
-
-CGame::CGame()
-	: m_oldTime(0)
-{
-	gmUpdateInputState = NULL;
-}
-
-CGame::~CGame()
-{
-#ifdef _WIN32  // the process scan thread exists only on Windows
-	if (gmUpdateInputState)
-	{
-		delete gmUpdateInputState;
-	}
-#endif
 }
 
 
@@ -933,7 +822,7 @@ void CGame::GameHandleTimer(void)
 					// publish player index to console
 					ctl_iCurrentPlayerLocal = iPlayer;
 					ctl_iCurrentPlayer = gm_lpLocalPlayers[iPlayer].lp_pplsPlayerSource->pls_Index;
-					
+
 					// copy its local controls to current controls
 					memcpy(	ctl_pvPlayerControls, gm_lpLocalPlayers[ iPlayer].lp_ubPlayerControlsState,
 							ctl_slPlayerControlsSize );
@@ -942,7 +831,6 @@ void CGame::GameHandleTimer(void)
 					CPlayerAction paAction;
 					INDEX iCurrentPlayer = gm_lpLocalPlayers[iPlayer].lp_iPlayer;
 					CControls &ctrls = gm_actrlControls[iCurrentPlayer];
-
 					ctrls.CreateAction( gm_apcPlayers[iCurrentPlayer], paAction, FALSE );
 					// set the action in the client source object
 					gm_lpLocalPlayers[iPlayer].lp_pplsPlayerSource->SetAction( paAction );
@@ -989,58 +877,6 @@ void CGame::GameHandleTimer(void)
 			}
 		}
 	}
-	static DWORD dwWhat = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-
-	if (gm_bGameOn && !_pNetwork->IsDisconnected())
-	{
-		if (_pTimer->GetHighPrecisionTimer().GetMilliseconds() - dwWhat >= 60000)
-		{
-#ifdef _WIN32
-			SetEvent(gmUpdateHandle);
-#endif
-			dwWhat = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-		}
-	}
-}
-
-UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
-{
-#ifdef _WIN32
-	while (1)
-	{
-		if (WAIT_OBJECT_0 == WaitForSingleObject(_pGame->GetUpdateHandle(), INFINITE))
-		{
-			BOOL bState = FALSE;
-#ifdef USE_PORTABLE_C
-			bState = InputState();
-#else
-			// IDA 등 디버깅 툴에서의 난독처리. 단 올리디버그 2.0 이상 버전에서는 난독처리 되지 않음. [3/2/2011 rumist]
-			__asm
-			{
-				push	eax
-				mov		eax,	1
-				cmp		eax,	0			// 항상 실패하도록 코드가 되어있음. 때문에 기본적으로 tagJunk로 이동함.
-				je		[tagOriginal]
-				jmp		[tagJunk]
-			tagOriginal:				
-				_emit	0xE8				// check Jmp short pos.  여기서는 그냥 안티 디버거에서 위치좌표 읽기 방해용임.
-											// _emit가 한 바이트의 수정이므로 실제로 tagJunk 포인터를 찾을 수 없도록 변경함.
-			tagJunk:
-				call	InputState
-				mov		bState, eax
-				pop		eax
-			}
-#endif
-			// if detected hack user, request disconnect.
-			if (bState)
-			{
-				_pNetwork->SendInput();
-			}
-		}
-	}
-
-#endif  // _WIN32
-	return 0;
 }
 
 /*
@@ -1213,12 +1049,6 @@ void CGame::InitInternal( void)
 	} catch (char *strError) {
 		FatalError(TRANS("Cannot load common controls: %s\n"), strError);
 	}
-	// 프로세스 검사용 이벤트 핸들 및 스레드
-#ifdef _WIN32
-	gmUpdateHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-	gmUpdateInputState = new cThreadWrapper(UpdateThreadFunction);
-	gmUpdateInputState->Start(NULL);
-#endif
 
 	// init LCD textures/fonts
 	LCDInit();
@@ -1250,14 +1080,6 @@ void CGame::EndInternal(void)
 {
 	// stop game if eventually started
 	StopGame();
-
-	// 프로세스 검사용 이벤트 핸들 및 스레드
-#ifdef _WIN32
-	delete gmUpdateInputState;
-	gmUpdateInputState = NULL;
-	CloseHandle(gmUpdateHandle);
-#endif
-
 	// remove game timer handler
 	_pTimer->RemHandler( &m_gthGameTimerHandler);
 	// save persistent symbols
@@ -1419,9 +1241,9 @@ BOOL CGame::NewGame(const CTString &strSessionName,
 //강동민 수정 시작 클로즈 준비 작업	08.10
 	extern BOOL	_bWorldEditorApp;
 	//if(_bWorldEditorApp)
-	//{
-	gm_bGameOn = TRUE;
-	//}
+	{
+		gm_bGameOn = TRUE;
+	}
 //강동민 수정 끝 클로즈 준비 작업		08.10
 	gm_CurrentSplitScreenCfg = gm_StartSplitScreenCfg;
 	// clear last set highscore
@@ -1430,6 +1252,58 @@ BOOL CGame::NewGame(const CTString &strSessionName,
 	MaybeDiscardLastLines();
 	return TRUE;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 BOOL CGame::JoinGame(CNetworkSession &session)
@@ -1652,10 +1526,7 @@ void CGame::StopGame(void)
 	// stop the game
 	_pNetwork->StopGame();
 	// stop the provider
-	if (_pNetwork->bMoveCharacterSelectUI == FALSE)
-	{
-		_pNetwork->StopProvider();
-	}	
+	_pNetwork->StopProvider();
 	// for all four local players
 //강동민 수정 시작 로그인 변경 작업	08.10
 	//for( INDEX iPlayer=0; iPlayer<4; iPlayer++)
@@ -2074,7 +1945,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 	// display resolution info (if needed)
 	if( hud_bShowResolution) {
 		CTString strRes;
-		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
+		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
 		pdpDrawPort->SetFont( _pfdDisplayFont);
 		pdpDrawPort->SetTextScaling( fTextScale);
 		pdpDrawPort->SetTextAspect( 1.0f);
@@ -2670,7 +2541,10 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 					_bPlayerViewRendered = TRUE;
 					// render it
 					// 결국은 RenderView()를 호출함.
-					apenViewers[i]->RenderGameView(pdp, (void*)(uintptr_t)ulFlags);
+					apenViewers[i]->RenderGameView(pdp, (void*)ulFlags);
+
+					// Render UIs
+					//_pUIMgr->Render( pdp );		// yjpark
 				} 
 				else 
 				{
@@ -2734,7 +2608,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			{
 				net_bLocalPrediction=TRUE;
 				/*
-				if (_tvMenuQuickSave.tv_llValue!=((__int64)0) && 
+				if (_tvMenuQuickSave.tv_llValue!=0I64 && 
 					(_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) 
 				{
 					strIndicator = TRANS("Use F6 for QuickSave during game!");
@@ -2743,13 +2617,13 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				{
 					CTString strMotd = _pNetwork->ga_sesSessionState.ses_strMOTD;
 					static CTString strLastMotd = "";
-					static CTimerValue tvLastMotd(((__int64)0));
+					static CTimerValue tvLastMotd(0I64);
 					if (strLastMotd!=strMotd) 
 					{
 						tvLastMotd = _pTimer->GetHighPrecisionTimer();
 						strLastMotd = strMotd;
 					}
-					if (tvLastMotd.tv_llValue!=((__int64)0) && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
+					if (tvLastMotd.tv_llValue!=0I64 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
 					{
 						strIndicator = strMotd;
 					}
@@ -2896,9 +2770,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			// save screen shot as TGA
 			else
 				iiImageInfo.SaveTGA_t( fnmScreenShot);
-
-			if( dem_iAnimFrame<0) 
-				CPrintF( TRANS("screen shot: %s\n"), (const char*)(CTString&)fnmScreenShot);
+			if( dem_iAnimFrame<0) CPrintF( TRANS("screen shot: %s\n"), (CTString&)fnmScreenShot);
 		}
 		// if failed
 		catch (char *strError) 
@@ -2932,14 +2804,8 @@ void CGame::GameRedrawCursor(CDrawPort *pdpDrawPort, ULONG ulFlags)
 		if (apenViewers != NULL) {
 			bHadViewers = TRUE;			
 			_bPlayerViewRendered = TRUE;
-			
-			extern ENGINE_API cWeb g_web;
-
-			if (!g_web.IsWebHandle())
-			{
-				// render it
-				apenViewers->RenderCursor(pdp, (void*)(uintptr_t)ulFlags);
-			}
+			// render it
+			apenViewers->RenderCursor(pdp, (void*)ulFlags);
 		}
 	}	
 //안태훈 수정 끝	//(Bug Fix)(0.1)
@@ -3044,7 +2910,7 @@ CTString CGame::GetDefaultGameDescription(BOOL bWithInfo)
 	strTimeline = achTimeLine;
 	setlocale(LC_ALL, "C");
 
-	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), (const char*)strTimeline);
+	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), strTimeline);
 
 	if (bWithInfo) {
 		CPlayer *penPlayer = (CPlayer *)&*CEntity::GetPlayerEntity(0);
@@ -3171,17 +3037,100 @@ CTFileName CGame::GetQuickSaveName(BOOL bSave)
 
 void CGame::GameMainLoop(void)
 {
+/*	
+	if (gam_bQuickSave && GetSP()->sp_gmGameMode!=CSessionProperties::GM_FLYOVER) {
+		if (gam_bQuickSave==2) {
+			_tvMenuQuickSave = _pTimer->GetHighPrecisionTimer();
+		}
+		gam_bQuickSave = FALSE;
+		CTFileName fnm = GetQuickSaveName(TRUE);
+		CTString strDes = GetDefaultGameDescription(TRUE);
+		SaveGame(fnm);
+		SaveStringVar(fnm.NoExt()+".des", strDes);
+	}
+*/
+//강동민 수정 시작 클로즈 준비 작업	08.10
+	/*
+	// if quickload invoked
+	if (gam_bQuickLoad && GetSP()->sp_gmGameMode!=CSessionProperties::GM_FLYOVER) 
+	{
+		gam_bQuickLoad = FALSE;
+		// if no game active, or this computer is server
+		if (!gm_bGameOn || _pNetwork->IsServer()) 
+		{
+			// do a quickload
+			LoadGame(GetQuickSaveName(FALSE));
+		// otherwise
+		} else {
+			// rejoin current section
+			JoinGame(CNetworkSession(gam_strJoinAddress));
+		}
+	}
+	if (gam_iRecordHighScore>=0) {
+		RecordHighScore();
+		gam_iRecordHighScore = -1.0f;
+	}
+	*/
+//강동민 수정 끝 클로즈 준비 작업		08.10
+	/*
+	// if server was restarted
+	if (gm_bGameOn && !_pNetwork->IsServer() && _pNetwork->IsGameFinished() && _pNetwork->IsDisconnected()) 
+	{
+		Sleep(1000);
+		// automatically reconnect
+		JoinGame(CNetworkSession(gam_strJoinAddress));
+	}
+
+	if (_bStartProfilingNextTime) 
+	{
+		_bStartProfilingNextTime = FALSE;
+		_bProfiling = TRUE;
+		_ctProfileRecording = 50;
+		// reset the profiles
+		_pfNetworkProfile.Reset();
+	} 
+	else if (_bProfiling) 
+	{
+		_ctProfileRecording--;
+		if (_ctProfileRecording<=0) 
+		{
+			_bProfiling = FALSE;
+			_bDumpNextTime = TRUE;
+			_strProfile = "===========================================================\n";
+
+			CTString strNetworkReport;
+			_pfNetworkProfile.Report(strNetworkReport);
+			_strProfile+=strNetworkReport;
+			_pfNetworkProfile.Reset();
+
+			CPrintF( TRANS("Profiling done.\n"));
+		}
+	}
+
+	if (_bDumpNextTime) 
+	{
+		_bDumpNextTime = FALSE;
+		try 
+		{
+			// create a file for profile
+			CTFileStream strmProfile;
+			strmProfile.Create_t(CTString("Game.profile"));
+			strmProfile.Write_t(_strProfile, strlen(_strProfile));
+		} 
+		catch (char *strError) 
+		{
+			CPutString(strError);
+		}
+	}
+	*/
+	// 이 윗부분은 거의다 쓸모없음.
+
+	// if game is started
 	// 실질적으로 게임의 루틴.
 	if (gm_bGameOn) 
 	{
 		// do main loop procesing
 		_pNetwork->MainLoop();
-
-		ULONG	cur = (ULONG)_pTimer->GetHighPrecisionTimer().GetMilliseconds();
-		float	delta = (float)(cur - m_oldTime) * 0.001f;
-		ActorMgr::getSingleton()->Update(delta, cur);
-		SE_Get_UIManagerPtr()->Update(delta, cur);
-		m_oldTime = cur;
 	}
 }
 
@@ -3206,7 +3155,7 @@ static FLOAT _tmNow_SE;
 static ULONG _ulA_SE;
 static BOOL  _bPopup;
 
-void TiledTextureSE( const PIXaabbox2D &_boxScreen, FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTextureSE( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
 	PIX pixW = _boxScreen.Size()(1);
 	PIX pixH = _boxScreen.Size()(2);
@@ -3469,9 +3418,4 @@ void CGame::MenuPreRenderMenu(const char *strMenuName)
 }
 void CGame::MenuPostRenderMenu(const char *strMenuName)
 {
-}
-
-void CGame::SetHud_Stats( INDEX stats )
-{
-	hud_iStats = stats;
 }

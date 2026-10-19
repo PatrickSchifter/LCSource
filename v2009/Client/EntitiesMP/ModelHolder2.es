@@ -633,7 +633,7 @@ functions:
 		try {
 			m_aoLightAnimation.SetData_t(m_fnmLightAnimation);
 		} catch (char *strError) {
-			WarningMessage(TRANS("Cannot load '%s': %s"), (const char*)(CTString&)m_fnmLightAnimation, strError);
+			WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmLightAnimation, strError);
 			m_fnmLightAnimation = "";
 		}
 		if (m_aoLightAnimation.GetData()!=NULL) {
@@ -641,10 +641,10 @@ functions:
 		}
 
 		if (m_penDestruction==NULL) {
-			m_strDescription.PrintF("%s,%s undestroyable", (const char*)m_fnModel.FileName(), (const char*)m_fnTexture.FileName());
+			m_strDescription.PrintF("%s,%s undestroyable", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName());
 		} else {
-			m_strDescription.PrintF("%s,%s -> %s", (const char*)m_fnModel.FileName(), (const char*)m_fnTexture.FileName(),
-				(const char*)m_penDestruction->GetName());
+			m_strDescription.PrintF("%s,%s -> %s", (CTString&)m_fnModel.FileName(), (CTString&)m_fnTexture.FileName(),
+				m_penDestruction->GetName());
 		}
 
 		return;
@@ -672,150 +672,6 @@ functions:
 
 
 procedures:
-	Main()
-	{
-		SetFlagOn(ENF_MARKDESTROY);
-		SetFlagOn(ENF_NONETCONNECT);
-		SetFlagOff(ENF_PROPSCHANGED);
-//강동민 수정 시작 테스트 클라이언트 작업	06.30
-		SetFlagOff(ENF_RENDERREFLECTION);
-//강동민 수정 끝 테스트 클라이언트 작업		06.30
-//강동민 수정 시작 로그인 처리 작업	07.20
-		SetFirstExtraFlagOff(ENF_EX1_TERRAINSHADOW);
-//강동민 수정 끝 로그인 처리 작업		07.20
-
-		// initialize the model
-		InitModelHolder();
-
-//강동민 수정 시작 테스트 클라이언트 작업	06.30
-		if(m_bRenderReflection)
-		{
-			SetFlagOn(ENF_RENDERREFLECTION);			
-		}
-//강동민 수정 끝 테스트 클라이언트 작업		06.30
-//강동민 수정 시작 로그인 처리 작업	07.20
-		if(m_bTerrainShadow)
-		{
-			SetFirstExtraFlagOn(ENF_EX1_TERRAINSHADOW);
-		}
-//강동민 수정 끝 로그인 처리 작업		07.20
-//안태훈 수정 시작	//(For Performance)(0.1)
-		SetFirstExtraFlagOff(ENF_EX1_DECORATION);
-		if(m_bDecorationObject) { SetFirstExtraFlagOn(ENF_EX1_DECORATION); }
-//안태훈 수정 끝	//(For Performance)(0.1)
-
-//안태훈 수정 시작	//(Effect Add & Modify for Close Beta)(0.1)
-		GetModelObject()->mo_colBlendColor = m_colModelColor;
-//안태훈 수정 끝	//(Effect Add & Modify for Close Beta)(0.1)
-		
-		if (m_fMipFadeLenMetric>m_rMipFadeDistMetric) { m_fMipFadeLenMetric = m_rMipFadeDistMetric; }
-		
-		// convert metric factors to mip factors
-		if (m_rMipFadeDistMetric>0.0f) {
-			m_fMipFadeDist = Log2(m_rMipFadeDistMetric*1024.0f*MIPRATIO);
-			m_fMipFadeLen  = Log2((m_rMipFadeDistMetric+m_fMipFadeLenMetric)*1024.0f*MIPRATIO) - m_fMipFadeDist;
-		} else {
-			m_fMipFadeDist = 0.0f;
-			m_fMipFadeLen  = 0.0f;
-		}
-		
-		
-		// check your destruction pointer
-		if( m_penDestruction!=NULL && !IsOfClass( m_penDestruction, &CModelDestruction_DLLClass)) {
-			WarningMessage("Destruction '%s' is wrong class!", (const char*)m_penDestruction->GetName());
-			m_penDestruction=NULL;
-		}
-
-		// wait forever
-		wait() {
-			// on the beginning
-			on(EBegin): {
-				// set your health
-				if (m_penDestruction!=NULL) {
-					SetHealth(GetDestruction()->m_fHealth);
-				}
-				resume;
-			}
-			// activate/deactivate shows/hides model
-			on (EActivate): {
-				if (_pNetwork->IsServer()) {
-					SendEvent(EModel2Activate(),TRUE);
-				}
-				resume;
-			}
-			on (EModel2Activate): {       
-				SetFlagOn(ENF_PROPSCHANGED);
-				SwitchToModel();
-				m_bActive = TRUE;
-				if (m_bColliding) {
-					SetPhysicsFlags(EPF_MODEL_FIXED);
-					SetCollisionFlags(ECF_MODEL_HOLDER);
-				}
-				resume;
-			}
-			on (EDeactivate): {
-				if (_pNetwork->IsServer()) {
-					SendEvent(EModel2Deactivate(),TRUE);
-				}
-				resume;
-			}
-			on (EModel2Deactivate): {
-				SetFlagOn(ENF_PROPSCHANGED);
-				SwitchToEditorModel();
-				SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
-				SetCollisionFlags(ECF_IMMATERIAL);
-				m_bActive = FALSE;
-				SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
-				SetCollisionFlags(ECF_IMMATERIAL);
-				resume;
-			}
-			// when your parent is destroyed
-			on(ERangeModelDestruction): {
-				// for each child of this entity
-				{FOREACHINLIST(CEntity, en_lnInParent, en_lhChildren, itenChild) {
-					// send it destruction event
-					itenChild->SendEvent(ERangeModelDestruction(),TRUE);
-				}}
-				// destroy yourself
-				Destroy(FALSE);
-				resume;
-			}
-			// when dead
-			on(EDeath): {
-				SendEvent(EModelDeath(),TRUE);
-				if (_pNetwork->IsServer() && m_penDestruction!=NULL) {
-					jump Die();
-				}
-				resume;
-			}
-			on(EModelDeath): {
-				if (!_pNetwork->IsServer() && m_penDestruction!=NULL) {
-					jump Die();
-				}
-				resume;
-			}
-			// when animation should be changed
-			on(EChangeAnim eChange): {
-				m_iModelAnimation   = eChange.iModelAnim;
-				m_iTextureAnimation = eChange.iTextureAnim;
-				m_iLightAnimation   = eChange.iLightAnim;
-				if (m_aoLightAnimation.GetData()!=NULL) {
-					m_aoLightAnimation.PlayAnim(m_iLightAnimation, eChange.bLightLoop?AOF_LOOPING:0);
-				}
-				if (GetModelObject()->GetData()!=NULL) {
-					GetModelObject()->PlayAnim(m_iModelAnimation, eChange.bModelLoop?AOF_LOOPING:0);
-				}
-				if (GetModelObject()->mo_toTexture.GetData()!=NULL) {
-					GetModelObject()->mo_toTexture.PlayAnim(m_iTextureAnimation, eChange.bTextureLoop?AOF_LOOPING:0);
-				}
-				resume;
-			}
-			otherwise(): {
-				resume;
-			}
-		};
-	}
-
 	Die()
 	{
 		// for each child of this entity
@@ -916,5 +772,149 @@ procedures:
 		// destroy yourself
 		Destroy(FALSE);
 		return;
+	}
+
+	Main()
+	{
+		SetFlagOn(ENF_MARKDESTROY);
+		SetFlagOn(ENF_NONETCONNECT);
+		SetFlagOff(ENF_PROPSCHANGED);
+//강동민 수정 시작 테스트 클라이언트 작업	06.30
+		SetFlagOff(ENF_RENDERREFLECTION);
+//강동민 수정 끝 테스트 클라이언트 작업		06.30
+//강동민 수정 시작 로그인 처리 작업	07.20
+		SetFirstExtraFlagOff(ENF_EX1_TERRAINSHADOW);
+//강동민 수정 끝 로그인 처리 작업		07.20
+
+		// initialize the model
+		InitModelHolder();
+
+//강동민 수정 시작 테스트 클라이언트 작업	06.30
+		if(m_bRenderReflection)
+		{
+			SetFlagOn(ENF_RENDERREFLECTION);			
+		}
+//강동민 수정 끝 테스트 클라이언트 작업		06.30
+//강동민 수정 시작 로그인 처리 작업	07.20
+		if(m_bTerrainShadow)
+		{
+			SetFirstExtraFlagOn(ENF_EX1_TERRAINSHADOW);
+		}
+//강동민 수정 끝 로그인 처리 작업		07.20
+//안태훈 수정 시작	//(For Performance)(0.1)
+		SetFirstExtraFlagOff(ENF_EX1_DECORATION);
+		if(m_bDecorationObject) { SetFirstExtraFlagOn(ENF_EX1_DECORATION); }
+//안태훈 수정 끝	//(For Performance)(0.1)
+
+//안태훈 수정 시작	//(Effect Add & Modify for Close Beta)(0.1)
+		GetModelObject()->mo_colBlendColor = m_colModelColor;
+//안태훈 수정 끝	//(Effect Add & Modify for Close Beta)(0.1)
+		
+		if (m_fMipFadeLenMetric>m_rMipFadeDistMetric) { m_fMipFadeLenMetric = m_rMipFadeDistMetric; }
+		
+		// convert metric factors to mip factors
+		if (m_rMipFadeDistMetric>0.0f) {
+			m_fMipFadeDist = Log2(m_rMipFadeDistMetric*1024.0f*MIPRATIO);
+			m_fMipFadeLen  = Log2((m_rMipFadeDistMetric+m_fMipFadeLenMetric)*1024.0f*MIPRATIO) - m_fMipFadeDist;
+		} else {
+			m_fMipFadeDist = 0.0f;
+			m_fMipFadeLen  = 0.0f;
+		}
+		
+		
+		// check your destruction pointer
+		if( m_penDestruction!=NULL && !IsOfClass( m_penDestruction, &CModelDestruction_DLLClass)) {
+			WarningMessage("Destruction '%s' is wrong class!", m_penDestruction->GetName());
+			m_penDestruction=NULL;
+		}
+
+		// wait forever
+		wait() {
+			// on the beginning
+			on(EBegin): {
+				// set your health
+				if (m_penDestruction!=NULL) {
+					SetHealth(GetDestruction()->m_fHealth);
+				}
+				resume;
+			}
+			// activate/deactivate shows/hides model
+			on (EActivate): {
+				if (_pNetwork->IsServer()) {
+					SendEvent(EModel2Activate(),TRUE);
+				}
+				resume;
+			}
+			on (EModel2Activate): {       
+				SetFlagOn(ENF_PROPSCHANGED);
+				SwitchToModel();
+				m_bActive = TRUE;
+				if (m_bColliding) {
+					SetPhysicsFlags(EPF_MODEL_FIXED);
+					SetCollisionFlags(ECF_MODEL_HOLDER);
+				}
+				resume;
+			}
+			on (EDeactivate): {
+				if (_pNetwork->IsServer()) {
+					SendEvent(EModel2Deactivate(),TRUE);
+				}
+				resume;
+			}
+			on (EModel2Deactivate): {
+				SetFlagOn(ENF_PROPSCHANGED);
+				SwitchToEditorModel();
+				SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+				SetCollisionFlags(ECF_IMMATERIAL);
+				m_bActive = FALSE;
+				SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+				SetCollisionFlags(ECF_IMMATERIAL);
+				resume;
+			}
+			// when your parent is destroyed
+			on(ERangeModelDestruction): {
+				// for each child of this entity
+				{FOREACHINLIST(CEntity, en_lnInParent, en_lhChildren, itenChild) {
+					// send it destruction event
+					itenChild->SendEvent(ERangeModelDestruction(),TRUE);
+				}}
+				// destroy yourself
+				Destroy(FALSE);
+				resume;
+			}
+			// when dead
+			on(EDeath): {
+				SendEvent(EModelDeath(),TRUE);
+				if (_pNetwork->IsServer() && m_penDestruction!=NULL) {
+					jump Die();
+				}
+				resume;
+			}
+			on(EModelDeath): {
+				if (!_pNetwork->IsServer() && m_penDestruction!=NULL) {
+					jump Die();
+				}
+				resume;
+			}
+			// when animation should be changed
+			on(EChangeAnim eChange): {
+				m_iModelAnimation   = eChange.iModelAnim;
+				m_iTextureAnimation = eChange.iTextureAnim;
+				m_iLightAnimation   = eChange.iLightAnim;
+				if (m_aoLightAnimation.GetData()!=NULL) {
+					m_aoLightAnimation.PlayAnim(m_iLightAnimation, eChange.bLightLoop?AOF_LOOPING:0);
+				}
+				if (GetModelObject()->GetData()!=NULL) {
+					GetModelObject()->PlayAnim(m_iModelAnimation, eChange.bModelLoop?AOF_LOOPING:0);
+				}
+				if (GetModelObject()->mo_toTexture.GetData()!=NULL) {
+					GetModelObject()->mo_toTexture.PlayAnim(m_iTextureAnimation, eChange.bTextureLoop?AOF_LOOPING:0);
+				}
+				resume;
+			}
+			otherwise(): {
+				resume;
+			}
+		};
 	}
 };

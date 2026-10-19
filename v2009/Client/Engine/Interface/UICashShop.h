@@ -9,10 +9,16 @@
 	#pragma once
 #endif
 
-#include <Engine/Interface/UIMessageBox.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIComboBox.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIMultiEditBox.h>
 #include <Engine/Interface/UIQuickSlot.h>
+#include <Engine/Interface/UIMessageBox.h>
 
-class CUIQuickSlot;
+
 #define CASHSHOP_WIDTH						598		
 #define	CASHSHOP_HEIGHT						449
 #define SETINFO_WIDTH						300
@@ -28,6 +34,7 @@ class CUIQuickSlot;
 
 // max line of item informaion 
 #define	MAX_CASH_ITEMINFO_LINE				20
+
 
 
 // type of Main TAB
@@ -241,7 +248,6 @@ protected:
 	CUIButton			m_btnCancel;						// same function with close button
 	CUIButton			m_btnSearch;						// Search puchase history button
 	CUIButton			m_btnPlatinum;	
-	CUIButton			m_btnBillingLink;					// Billing Homepage Link
 
 	// Set detail
 	CUIButton			m_aBtnSetItem[LEFT_SLOT_SIZE_BUY];	// set item array
@@ -296,8 +302,7 @@ protected :
 	UIRect				m_rcInvenItems;
 	UIRect				m_rcRecvItems;						// 받은 선물을 렌더링할 영역 :Su-won
 	UIRect				m_rcHelp;							// Region of Help
-	// connie [2009/10/23] - test
-	UIRect				m_rcKitItemsJP;
+	
 	// UV of each part
 	UIRectUV			m_rtBackUL;							// UV of upper left background
 	UIRectUV			m_rtBackUM;							// UV of upper middle background
@@ -398,18 +403,7 @@ public:
 	void	InsideNumXY(UIRect rc,int btnSize,int btnGap, int* n_x, int* n_y );
 	int		CalculateKitPrice();
 	BOOL	SetCashIndexToBtn(int nCashIndex,int nUniIndex,CUIButtonEx& btn );
-	inline void	SetMyCash( int nCash) 
-	{	m_nMyCash=nCash; 
-#if defined(G_GERMAN) || defined(G_EUROPE3) || defined(G_EUROPE2)
-		if(m_nMyCash <= 0)
-		{
-			m_btnPay.SetEnable(FALSE);
-		}else
-		{
-			m_btnPay.SetEnable(TRUE);	
-		}
-#endif
-	}
+	inline void	SetMyCash( int nCash) { m_nMyCash=nCash; }
 	inline int GetMyCash() { return m_nMyCash; }
 	inline int GetCurShopSection(){ return m_nCurShopSection; }
 
@@ -442,7 +436,6 @@ public:
 	WMSG_RESULT	IMEMessage( MSG *pMsg );
 	//	<---|
 
-	void OpenBillingHomePage();
 	// Item Buttons	
 	CUIButtonEx			m_abtnTradeItems[MAX_KIT_SIZE];						// Trade Slot items
 	

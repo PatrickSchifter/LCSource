@@ -11,11 +11,11 @@
 
 
 #include <Engine/Interface/UIListBox.h>
-#include <Engine/Interface/UIRectString.h>
+#include <Engine/Interface/UIButtonEx.h>
 
 //////////////////////////////////////////////////////////////////////////
 // NEW_USER_INTERFACE
-
+#include <Engine/Interface/UIRectString.h>
 
 // Define skill slot
 #define	SLEARN_SLOT_SX					18
@@ -43,6 +43,7 @@
 // Define size of skill learn
 #define	SKILLLEARN_WIDTH				216
 #define	SKILLLEARN_HEIGHT				400
+//#define ADJUST_MEMORIZE_SKILL 
 
 //////////////////////////////////////////////////////////////////////////
 // NEW_USER_INTERFACE
@@ -61,21 +62,18 @@
 #define  SKILLINFO_MAX_WIDTH  300
 #define	 SKILLINFO_MIN_WIDTH  150
 
-enum eSkillSatisfiedList	//스킬을 배울때 각 상황의 불만족을 체크하는 플래그
+enum eSkillSatisfiedList	//스킬을 배울때 각 상황의 만족을 체크하는 플래그
 {
 	ALL_SATISFIED =				0X00000000,
 	NOT_SATISFIED_LEVEL =		0x00000001, 
-	NOT_SATISFIED_SP =			0X00000002,
-	NOT_SATISFIED_STR =			0X00000004,
-	NOT_SATISFIED_DEX =			0X00000008,
-	NOT_SATISFIED_INT =			0X00000010,
-	NOT_SATISFIED_CON =			0X00000020,
-	NOT_SATISFIED_SKILL_0 =		0X00000040,	// 필요한 스킬은 최대 3개로 제한 되어 있다.
-	NOT_SATISFIED_SKILL_1 =		0X00000080,
-	NOT_SATISFIED_SKILL_2 =		0X00000100,
-	NOT_SATISFIED_ITEM_0 =		0X00000200, // 필요한 아이템은 최대 3개로 제한되어 있다.
-	NOT_SATISFIED_ITEM_1 =		0X00000400,
-	NOT_SATISFIED_ITEM_2 =		0X00000800,
+	NOT_SATISFIED_SP =			0X00000010,
+	NOT_SATISFIED_STR =			0X00000100,
+	NOT_SATISFIED_DEX =			0X00001000,
+	NOT_SATISFIED_INT =			0X00010000,
+	NOT_SATISFIED_CON =			0X00100000,
+	NOT_SATISFIED_SKILL =		0X01000000,
+	NOT_SATISFIED_ITEM =		0X10000000,
+	NOT_SATISFIED_SKILL_LEVEL = NOT_SATISFIED_ITEM, //특수스킬 전용(스킬은 배웠는데 스킬 레벨이 부족함?)
 };
 
 
@@ -89,11 +87,9 @@ enum eSkillInfoList
 
 enum eBtnType
 {
-	BTN_SKILL_ITEM = 0,
-	BTN_SKILL_ACTIVE,
+	BTN_SKILL_ACTIVE	= 0,
 	BTN_SKILL_PASSIVE,
 	BTN_SKILL_SPECIAL,
-	BTN_SKILL_VOUCHER,
 	BTN_ACTION_NORMAL,
 	BTN_ACTION_SOCIAL,
 	BTN_ACTION_PARTY,
@@ -113,6 +109,9 @@ protected:
 	{
 		SLEARN_TAB_ACTIVE	= 0,
 		SLEARN_TAB_PASSIVE,
+#ifdef ADJUST_MEMORIZE_SKILL
+		SLERAN_TAB_MEMORIZE,
+#endif
 		SLEARN_TAB_SPECIAL,
 		SLEARN_TAB_TOTAL,
 	};
@@ -122,10 +121,17 @@ protected:
 	CUIButton				m_btnClose;								// Close button
 	CUIButton				m_btnLearn;								// Learn button
 	CUIButton				m_btnCancel;							// Cancel button
+	CUIScrollBar			m_sbActiveSkillIcon;					// Scrollbar of active skill icon
+	CUIScrollBar			m_sbPassiveSkillIcon;					// Scrollbar of passive skill icon
+	CUIScrollBar			m_sbMemorizeSkillIcon;					// Scrollbar of memorize skill icon
 	CUIScrollBar			m_sbSpecialSkillIcon;					// Scrollbar of special skill icon
+	CUIListBox				m_lbSkillDesc;							// List box of skill description
 
 	// Skill buttons
-	CUIIcon*				m_pIconsSpecialSkill[SKILLLEARN_NEW_SLOT_TOTAL];	// Buttons of special skill
+	CUIButtonEx				m_btnActiveSkills[SKILLLEARN_NEW_SLOT_TOTAL];	// Buttons of active skill
+	CUIButtonEx				m_btnPassiveSkills[SKILLLEARN_NEW_SLOT_TOTAL];	// Buttons of passive skill
+	CUIButtonEx				m_btnMemorizeSkills[SKILLLEARN_NEW_SLOT_TOTAL];	// Buttons of passive skill
+	CUIButtonEx				m_btnSpecialSkills[SKILLLEARN_NEW_SLOT_TOTAL];	// Buttons of special skill
 
 	// Skill information
 	int						m_nSelActiveSkillID;					// Selected active skill ID
@@ -155,12 +161,30 @@ protected:
 
 	BOOL m_bSkillInfoVisible;
 
-	CTextureData*			m_ptdButtonTexture;
+	UIRectUV				m_rtInfoUL;								// UV of upper left region of information
+	UIRectUV				m_rtInfoUM;								// UV of upper middle region of information
+	UIRectUV				m_rtInfoUR;								// UV of upper right region of information
+	UIRectUV				m_rtInfoML;								// UV of middle left region of information
+	UIRectUV				m_rtInfoMM;								// UV of middle middle region of information
+	UIRectUV				m_rtInfoMR;								// UV of middle right region of information
+	UIRectUV				m_rtInfoLL;								// UV of lower left region of information
+	UIRectUV				m_rtInfoLM;								// UV of lower middle region of information
+	UIRectUV				m_rtInfoLR;								// UV of lower right region of information
+
+	CUIRectString			m_rsSkillName;
+	CUIRectString			m_rsSkillDesc;
+
+	CUIRectString			m_rsCurrentSkillInfo;
+	CUIRectString			m_rsNextSkillInfo;
+
+	UIRect					m_rcSkillInfo;
 
 protected:
 	// Internal functions
 	void	InitSkillLearn( BOOL  bSpecial );
 	void	RenderSkillBtns();
+	void	GetSkillDesc( int nIndex, int nLevel = 0, BOOL bSpecial = FALSE );
+	void	AddSkillDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 	void	CloseSkillLearn();
 
 	// Network message functions ( send )
@@ -215,7 +239,7 @@ protected:
 	UIRectUV				m_rtSelectedTab;
 	UIRectUV				m_rtUnSelectedTab;
 
-	CUIIcon**				m_ppIconsSelectedSkill;	//현재 스킬
+	CUIButtonEx*			m_btnSelectedSkill;	//현재 스킬
 
 	UIRect					m_rcButtonArea;	//버튼영역을 더 넓게 체크
 
@@ -243,6 +267,12 @@ protected:
 
 	void	RenderNewSkillLearnBtns();
 	void 	RenderNewSkillLearn();
+	void	RenderSkillInfoDesc();
+	void	AddSkillInfoString(int nSkillInfoList, CTString strSkillInfo, COLOR strColor = 0xF2F2F2FF);
+	void	ResetSkillInfoString();
+	void	SetSkillInfoPos(int nPosX, int nPosY);
+	int	    GetSkillInfoWidth();
+	int 	GetSkillInfoHeight();
 
 	enum SkillType
 {
@@ -256,13 +286,7 @@ protected:
 
 	WMSG_RESULT	SKillLearnNewMouseMessage( MSG *pMsg );
 //////////////////////////////////////////////////////////////////////////
-
-//------------------------스킬 리뉴얼------------------------------------>>
-	int m_iMobIdx;
-	BOOL m_bQuest;
-//-----------------------------------------------------------------------<<
-	int m_iMobVirIdx;
-
+	
 public:
 	CUISkillLearn();
 	~CUISkillLearn();
@@ -278,9 +302,8 @@ public:
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
 	// Open skill learn
-	ENGINE_API void	OpenSkillLearn( int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
-	// calling function modified. [10/13/2011 rumist]
-	void	PriorityOpen(int iIndex, BOOL bHasQuest, BOOL bUseCard=FALSE);
+	ENGINE_API void	OpenSkillLearn( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
+	void	PriorityOpen(int iIndex, BOOL bUseCard=FALSE);
 
 	// Messages
 	WMSG_RESULT	MouseMessage( MSG *pMsg );

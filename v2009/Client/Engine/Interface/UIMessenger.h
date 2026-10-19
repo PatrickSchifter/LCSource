@@ -27,8 +27,7 @@ enum eMemberMenu
 	MM_GROUP_CHANGE,	//그룹 이동
 	MM_CHAT,			//대화하기
 	MM_DELETE,			//삭제
-	MM_BLOCK,			//차단
-	MM_TELEPORT			//텔레포트
+	MM_BLOCK			//차단
 };
 //------------------------------------------------------------------------------
 // CUIMessenger
@@ -50,11 +49,10 @@ protected:
 	
 	CUIScrollBar			m_sbMemberList;				//스크롤
 
-	CTString				m_strTitle;					// 타이틀바 이름
+	CTString				m_strTitle;					//타이틀바 이름
 
 	// Information of friend & guild
-	CMemberInfo				m_MyInfo;					// 내 정보
-	int						m_nTarIndex;				// 상대방 인덱
+	CMemberInfo					m_MyInfo;				//내 정보
 
 	
 	// Region of each part
@@ -121,7 +119,6 @@ protected:
 
 	int						m_nActiveMenu;				//그룹 리스트(m_tpGroupList)를 나타낼 툴팁
 														// 0 => m_tpGroupMenu, 1 =>m_tpGroup
-	bool					m_bPremiumChar;
 
 	CTextureData*			m_ptdMenuTexture;			//툴팁에 사용될 화살표를 위한 텍스쳐
 	UIRectUV				m_rtArrow;					//화살표 텍스쳐 좌표
@@ -155,7 +152,6 @@ public:
 
 	// Adjust position
 	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
 	// Reset
@@ -179,9 +175,10 @@ public:
 	void DeleteMember( int nCharIndex );
 	//void SetMemberCondition( eCondition eState );
 	void SetMemberCondition( int nCharIndex, eCondition eState );
-	eCondition GetMemberCondition(int nCharIndex);
 	void SetMemberMenu(eMemberMenu eMenu, int nSubMenu);
 	void SetBlock( int nCharIndex, CTString strName, bool bBlock);
+
+
 
 	// Group
 	void AddGroup(int nGroupIndex, CTString strName);
@@ -204,12 +201,7 @@ public:
 	void Block(BYTE cError, int nCharIndex, CTString strName);
 	void UnBlock(BYTE cError, int nCharIndex, CTString strName);
 	
-	// 친구메뉴 업데이트
-	void UpdateMemberMenu();
 
-	// 프리미엄 캐릭터
-	void SetPremiumBenefit(bool bUse);
-	
 	//	Network
 	void RegistMemberReq( CTString strName );	// 친구등록 요청
 	void RegistMemberReq( int nCharIndex, CTString strName );	// 친구등록 요청
@@ -242,13 +234,11 @@ public:
 
 	bool IsUseLevel();
 	
-	std::vector<CUIGroup*>& GetGroup(void) { return m_vecGroup; }
-
+	
 	//  [12/8/2006 KwonYongDae]
 	int OpenTalk( int nChatIndex, const CMemberInfo targetInfo );
 	void RevOneVsOneTalk( int nSenderIndex, int nResiverIndex, CTString strSendName, CTString strChat, int nColIndex );
-
-	BOOL	CloseWindowByEsc()			{ ToggleVisible();	return TRUE;		}	
+	
 };
 
 

@@ -9,6 +9,13 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIScrollBar.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIInventory.h>
+#include <Engine/Entities/ItemData.h>
+
+
 // Define item slot
 #define SHOP_SHOP_WIDTH					216
 #define SHOP_SHOP_HEIGHT				151
@@ -27,12 +34,9 @@
 
 
 // Column & Row
-#define SHOP_SLOT_COL					5
-#define SHOP_SLOT_ROW					4
-#define SHOP_SLOT_ROW_BUY_TOTAL			50
-#define SHOP_SLOT_ROW_SELL_TOTAL		20
-#define SHOP_SLOT_BUY_MAX				(SHOP_SLOT_ROW_BUY_TOTAL * SHOP_SLOT_COL)
-#define SHOP_SLOT_SELL_MAX				(ITEM_COUNT_IN_INVENTORY_NORMAL + ITEM_COUNT_IN_INVENTORY_CASH_1 + ITEM_COUNT_IN_INVENTORY_CASH_2)
+#define SHOP_SHOP_SLOT_COL				5
+#define SHOP_SHOP_SLOT_ROW				4
+#define SHOP_SHOP_SLOT_ROW_TOTAL		50
 #define SHOP_TRADE_SLOT_COL				5
 #define	SHOP_TRADE_SLOT_TOTAL			10
 
@@ -72,7 +76,6 @@ protected:
 	CTString			m_strTotalPrice;
 
 	__int64				m_nTotalPrice;
-	__int64				m_nSendTotalPrice;
 	int					m_nNumOfItem;
 	// Region
 	UIRect				m_rcMainTitle;
@@ -90,7 +93,6 @@ protected:
 
 	// Position of target npc
 	FLOAT				m_fNpcX, m_fNpcZ;
-	int					m_nNpcVirIdx;
 
 	// Inventory
 	UIRectUV			m_rtTopInven;
@@ -121,6 +123,8 @@ protected:
 	BOOL				m_bShowItemInfo;						// If item tool tip is shown or not
 	BOOL				m_bDetailItemInfo;						// If item informaion is shown in detail or not
 	int					m_nCurInfoLines;						// Count of current item information lines
+	CTString			m_strItemInfo[MAX_ITEMINFO_LINE];		// Item information string
+	COLOR				m_colItemInfo[MAX_ITEMINFO_LINE];		// Color of item information string
 	UIRect				m_rcItemInfo;							// Item information region	
 
 	// Buttons
@@ -140,13 +144,10 @@ protected:
 	BOOL				m_bIsEvent;								// ttos : 2007 가정의 달 이벤트 
 	int					m_iEventjob;
 
+public:
 	// Items	
-	CUIIcon*			m_pIconsTrade[SHOP_TRADE_SLOT_TOTAL];		// Trade Slot items
-	CUIIcon*			m_pIconsShop[SHOP_SLOT_BUY_MAX];			// Shop Slot items
-
-	typedef		std::vector< CItems* >		vec_items;
-
-	vec_items			m_vecTrade;
+	CUIButtonEx			m_abtnTradeItems[SHOP_TRADE_SLOT_TOTAL];								// Trade Slot items
+	CUIButtonEx			m_abtnShopItems[SHOP_SHOP_SLOT_ROW_TOTAL][SHOP_SHOP_SLOT_COL];			// Shop Slot items
 
 public:
 	CUIShop();
@@ -154,7 +155,7 @@ public:
 
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-	void	OpenShop( int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
+	void	OpenShop( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
 	void	EventOpenShop( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ );
 
 	// Render
@@ -180,38 +181,28 @@ public:
 
 	void	CreateCubeStateMsgBox(CNetworkMessage *istr, BOOL bGuild);
 
-	void	AddItemCallback();
-	void	DelItemCallback();
-
-	CItems*	GetTradeItem(int idx);
-
-	void	OnUpdate( float fDeltaTime, ULONG ElapsedTime );
-	BOOL	IsBuyShop()	{ return m_bBuyShop;	}
-	int		GetShopID()	{ return m_nSelectedShopID;	}
-	__int64	CalculateItemPrice(int iShopID, const CItemData &ID, int iNumOfItem, BOOL bSell);
 protected:
 	// Internal functions
+	void	AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo = 0xF2F2F2FF );
+	BOOL	GetItemInfo( int nWhichSlot, int &nInfoWidth, int &nInfoHeight,
+							int nTradeItem = -1, int nRow = -1, int nCol = -1 );
+	void	ShowItemInfo( BOOL bShowInfo, BOOL bRenew = FALSE, int nTradeItem = -1, int nRow = -1, int nCol = -1 );
 	void	RenderShopItems();
 
 	void	TradeToShop( SQUAD llCount );
 	void	ShopToTrade( SQUAD llCount );
-	__int64	CalculateTotalPrice(int iShopID, int& iCount, BOOL bSell, BOOL bRate = TRUE);
-	
+	__int64	CalculateTotalPrice(int iShopID, int& iCount, BOOL bSell);
+	__int64	CalculateItemPrice(int iShopID, const CItemData &ID, int iNumOfItem, BOOL bSell);		
 	void	PrepareBuyShop();
 	void	PrepareSellShop();	
 	void	PrepareLeaseShop(int jobIdx, int itype = CItemData::ITEM_WEAPON);	
 
 	// Command functions
-	void	AddShopItem( int invenIdx, int nUniIndex, SQUAD llCount );
-	void	DelShopItem( int invenIdx, int nUniIndex, SQUAD llCount, int nTradeItemID );
+	void	AddShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount );
+	void	DelShopItem( int nRow, int nCol, int nUniIndex, SQUAD llCount, int nTradeItemID );
 	void	BuyItems();
 	void	SellItems();
 
-	int		RefreshShopItem(int iShopIndex);
-	int		RefreshLeaseItem(int iJobIndex);
-	int		RefreshEventItem(int iJobIndex, int itype); // 2007 가정의 달 이벤트 (어린이날 이벤트)
-
-	void	clearTrade();
 };
 
 #endif // UISHOP_H_

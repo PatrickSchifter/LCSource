@@ -11,11 +11,6 @@ CUIListBoxEx::CUIListBoxEx()
 , m_iPopBtnSpaceY( 0 )
 , m_iPopBtnWidth( 0 )
 , m_iPopBtnHeight( 0 )
-, m_iLastCheckedIndex( -1 )
-, m_iCheckBtnWidth( 0 )
-, m_iCheckBtnHeight( 0 )
-, m_iCheckBtnSpaceX( 0 )
-, m_iCheckBtnSpaceY( 0 )
 {
 }
 
@@ -63,26 +58,6 @@ void CUIListBoxEx::ChangeCurrentState(ePopState state)
 				m_aPopLine.push_back(line);
 			}
 		} break;
-		// 2009. 06. 02 김정래
-		// checkbutton 을 가지는 Child 처리
-	case PS_CHECKCHILD:
-		{
-			for(int i=m_iLastChangeLine; i<currentLine; ++i)
-			{
-				CUICheckButton *pBtn = new CUICheckButton;
-				pBtn->Create(this, m_iCheckBtnSpaceX, (currentLine+1) * m_nLineHeight + m_iCheckBtnSpaceY, m_iCheckBtnWidth, m_iCheckBtnHeight, CTString());
-				for(int i=0; i<UCBS_TOTAL; ++i)
-				{
-					pBtn->SetUV((UICheckBtnState)i, m_rtCheckBtnUV[i]);
-				}
-				pBtn->SetCheck( FALSE );
-				pBtn->SetEnable(TRUE);
-				sPopLine line(state, pBtn);
-				m_aPopLine.push_back(line);
-
-			}
-		} break;
-
 	case PS_EXTEND:
 	case PS_CLOSE:
 		{
@@ -144,14 +119,13 @@ void CUIListBoxEx::Close(int iLine)
 	ChangeState(iLine, PS_CLOSE);
 }
 
-void CUIListBoxEx::SetImageBox(int row, CUIImageBox::eImageType type, int index, BOOL bShowPopup /* = FALSE */, CTString popupInfo/* = CTString("") */, int nSyndiType/* = 0*/)
+void CUIListBoxEx::SetImageBox(int row, CUIImageBox::eImageType type, int index)
 {
 	CUIImageBox *pImageBox;
 	pImageBox = new CUIImageBox;
 	pImageBox->Create(this, 0, 0, 32, 32);
-	pImageBox->SetImageByType(type, index, nSyndiType);
+	pImageBox->SetImageByType(type, index);
 	pImageBox->SetRenderRegion(0,0,32,16);
-	pImageBox->SetPopupInfo( popupInfo, bShowPopup );
 	std::map<int, CUIImageBox*>::value_type value1(row, pImageBox);
 	m_mapImageBox.insert(value1);
 }
@@ -211,14 +185,11 @@ BOOL CUIListBoxEx::GetCheckState(int index)
 	return false;
 }
 
-
 void CUIListBoxEx::Render()
 {
 	// Get position
 	int	nX, nY;
 	GetAbsPos( nX, nY );
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	// Add render regions
 	// Selection bar
@@ -232,7 +203,7 @@ void CUIListBoxEx::Render()
 			{
 			
 				int	nBarY = nY + m_nTextSY + nSelLine * m_nLineHeight;
-				pDrawPort->AddTexture( nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
+				_pUIMgr->GetDrawPort()->AddTexture( nX + m_rcSelectOver.Left, nBarY + m_rcSelectOver.Top,
 													nX + m_rcSelectOver.Right, nBarY + m_rcSelectOver.Bottom,
 													m_rtSelectOver.U0, m_rtSelectOver.V0,
 													m_rtSelectOver.U1, m_rtSelectOver.V1,
@@ -325,22 +296,21 @@ void CUIListBoxEx::Render()
 			switch( m_vecAlign[nCol] )
 			{
 			case TEXT_LEFT:
-				pDrawPort->PutTextEx( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextEx( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			case TEXT_CENTER:
-				pDrawPort->PutTextExCX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextExCX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			case TEXT_RIGHT:
-				pDrawPort->PutTextExRX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
+				_pUIMgr->GetDrawPort()->PutTextExRX( m_vecString[nCol].vecString[nList], nTextX, nTextY, colText );
 				break;
 			}
 
 			nTextY += m_nLineHeight;
 		}
 	}
-	pDrawPort->FlushRenderingQueue();
-	pDrawPort->EndTextEx();
-	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
 	//주의 팝업-다운과 ImageBox는 같이 쓸 수 없음.
 	std::map<int, CUIImageBox*>::iterator iterBegin = m_mapImageBox.begin();
 	std::map<int, CUIImageBox*>::iterator iterEnd = m_mapImageBox.end();
@@ -403,13 +373,6 @@ WMSG_RESULT	CUIListBoxEx::MouseMessage( MSG *pMsg )
 		{
 			if( m_bSelectList )
 			{
-				std::map<int, CUIImageBox*>::const_iterator itr;
-				itr = m_mapImageBox.begin();
-				for ( ; itr != m_mapImageBox.end() ; ++itr )
-				{
-					CUIImageBox* pImageBox = (*itr).second;
-					pImageBox->MouseMessage( pMsg );
-				}
 				m_nOverList = -1;
 
 				if( IsInside( nX, nY ) )

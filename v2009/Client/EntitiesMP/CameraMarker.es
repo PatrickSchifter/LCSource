@@ -77,7 +77,7 @@ procedures:
     SetModelMainTexture(TEXTURE_MARKER);
 
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, &CCameraMarker_DLLClass)) {
-      WarningMessage( "Entity '%s' is not of Camera Marker class!", (const char*)m_penTarget->GetName());
+      WarningMessage( "Entity '%s' is not of Camera Marker class!", m_penTarget);
       m_penTarget = NULL;
     }
 

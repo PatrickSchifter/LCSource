@@ -1,12 +1,8 @@
-#include "StdH.h"
 
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
+
+#include "StdH.h"
 #include <Engine/Interface/UINpcHelp.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIMap.h>
-#include <Engine/Info/MyInfo.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
 static int	_nMsgBoxLineHeight = 0;
 
@@ -19,12 +15,14 @@ CUINpcHelp::CUINpcHelp()
 
 CUINpcHelp::~CUINpcHelp()
 {
+	Destroy();
 }
 
 void CUINpcHelp::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	_nMsgBoxLineHeight = _pUIFontTexMgr->GetFontHeight() + 4;
 		// Region of each part
 	m_rcTitle.SetRect( 0, 0, 216, 22 );	
@@ -105,13 +103,13 @@ void CUINpcHelp::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 
 void CUINpcHelp::OpenNpcHelp()
 {
-	CUIManager::getSingleton()->RearrangeOrder(UI_NPCHELP,TRUE);
+	_pUIMgr->RearrangeOrder(UI_NPCHELP,TRUE);
 }
 
 void CUINpcHelp::CloseNpcHelp()
 {
 	m_nRenType = NPC_LIST;
-	CUIManager::getSingleton()->RearrangeOrder( UI_NPCHELP, FALSE );
+	_pUIMgr->RearrangeOrder( UI_NPCHELP, FALSE );
 	m_vectorNpclist.clear();
 }
 
@@ -135,10 +133,9 @@ void CUINpcHelp::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixM
 		ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
 }
 
-
-bool StingOfComp( const INDEX x, const INDEX y )
+bool StingOfComp( const CNpcHelp& x, const CNpcHelp& y )
 {
-	int nReturn = strcmp(CMobData::getData(x)->GetName(), CMobData::getData(y)->GetName());
+	int nReturn = strcmp(x.m_NpcList.npc_name, y.m_NpcList.npc_name);
 	
 	if ( nReturn > 0) 
 	{
@@ -153,9 +150,9 @@ void CUINpcHelp::SetViewList()
 	m_lbNpcDesc.ResetAllStrings();
 	CTString tempDesc;
 	BOOL bCityChack = FALSE;
-	if (CMobData::getData(INFO()->GetTargetDBIdx(eTARGET))->GetType() & NPC_SUBCITY)
+	if (_pNetwork->GetMobData(_pNetwork->_TargetInfo.dbIdx).GetType() & NPC_SUBCITY)
 	{
-		tempDesc.PrintF(_S(3538, "하! 이게 누구야! 자네가 여기에 있다는 것은 누군가에게 쫒기고 있거나, 전투에 패배했다는 건데, 한마디로 당신도 패배자이군! 키득! 키득! 그래 무엇이 궁금한가?"));
+		tempDesc.PrintF(_S(3538, "하! 이게 누구야! 자네가 여기에 있다는 것은 누군가에게 ?기고 있거나, 전투에 패배했다는 건데, 한마디로 당신도 패배자이군! 키득! 키득! 그래 무엇이 궁금한가?"));
 		bCityChack = TRUE;
 	}else
 	{
@@ -165,56 +162,53 @@ void CUINpcHelp::SetViewList()
 
 	m_vectorNpclist.clear();
 	m_nCurZone = _pNetwork->MyCharacterInfo.zoneNo;
-
-	CNpcHelp::_map::iterator	iter = CNpcHelp::_mapdata.begin();
-	CNpcHelp::_map::iterator	eiter = CNpcHelp::_mapdata.end();
-
-	for (;iter != eiter; ++iter)
+	for(int i = 0; i < _pNetwork->wo_iNumofNpcList; i++)
 	{
-		CNpcHelp* pNpc = (*iter).second;
-
-		if (pNpc == NULL)
-			continue;
-
-		if (pNpc->zoneNum == m_nCurZone)
+		CNpcHelp TempNpc = _pNetwork->wo_aNpcList[i];
+		
+		if(m_nCurZone == TempNpc.m_NpcList.zone_index)
 		{
-			int nIdx = pNpc->getNpcIndex();
-			if (bCityChack)
+			if (bCityChack)		//070705_ttos: 은둔자의 마을 체크
 			{
-				if (CMobData::getData(nIdx)->GetType() & NPC_SUBCITY)
-					m_vectorNpclist.push_back(nIdx);
-			}
-			else
+				if (_pNetwork->GetMobData(TempNpc.m_NpcList.npc_index).GetType() & NPC_SUBCITY)
+				{
+					m_vectorNpclist.push_back(TempNpc);	
+				}
+
+			}else
 			{
-				if (!(CMobData::getData(nIdx)->GetType() & NPC_SUBCITY))
-					m_vectorNpclist.push_back(nIdx);
+				if (!(_pNetwork->GetMobData(TempNpc.m_NpcList.npc_index).GetType() & NPC_SUBCITY))
+				{
+					m_vectorNpclist.push_back(TempNpc);
+				}
 			}			
 		}
 	}
 
 	std::sort(m_vectorNpclist.begin(),m_vectorNpclist.end(),StingOfComp);
+	
 }
 
 void CUINpcHelp::SetViewContent( int iIndex )
 {
 	m_lbNpcExplan.ResetAllStrings();
-	INDEX index = m_vectorNpclist[iIndex];
-	m_lbNpcExplan.AddString(0, (CTString)CMobData::getData(index)->GetName(),0xFFF42BFF);
-	MultiLineString( CTString(CMobData::getData(index)->GetDesc()));
+	CNpcHelp NH = (CNpcHelp&)m_vectorNpclist[iIndex];
+	m_lbNpcExplan.AddString(0,(CTString)NH.m_NpcList.npc_name,0xFFF42BFF);
+	MultiLineString((CTString)NH.m_NpcList.npc_explan);
 
-	CUIManager::getSingleton()->m_nHelpNpc_Index = index;
+	_pUIMgr->m_nHelpNpc_Index = NH.m_NpcList.npc_index;
+
 } 
-void CUINpcHelp::MultiLineString(const CTString &strExplan)
+void CUINpcHelp::MultiLineString(CTString &strExplan)
 {
 	// If length of string is less than max char
 	int nLength = strExplan.Length();
 
-	int iPos;
 	// If length of string is less than max char
 	if( nLength <= READ_MAX_CHAR )
 	{
-		// Check line character		
-		for( iPos = 0; iPos < nLength; iPos++ )
+		// Check line character
+		for( int iPos = 0; iPos < nLength; iPos++ )
 		{
 			if( strExplan[iPos] == '\n' || strExplan[iPos] == '\r' )
 				break;	
@@ -260,7 +254,7 @@ void CUINpcHelp::MultiLineString(const CTString &strExplan)
 		// Check splitting position for 2 byte characters
 		int		nSplitPos = READ_MAX_CHAR;
 		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
+		for( int iPos = 0; iPos < nSplitPos; iPos++ )
 		{
 			if( strExplan[iPos] & 0x80 )
 				b2ByteChar = !b2ByteChar;
@@ -296,7 +290,6 @@ void CUINpcHelp::MultiLineString(const CTString &strExplan)
 			if( strTemp[0] == ' ' )
 			{
 				int	nTempLength = strTemp.Length();
-				int iPos;
 				for( iPos = 1; iPos < nTempLength; iPos++ )
 				{
 					if( strTemp[iPos] != ' ' )
@@ -337,12 +330,12 @@ void CUINpcHelp::MultiLineString(const CTString &strExplan)
 void CUINpcHelp::RefreshNpcList()
 {
 	m_lbNpcList.ResetAllStrings();
-	std::vector<int>::iterator it = m_vectorNpclist.begin();
-	std::vector<int>::iterator itend = m_vectorNpclist.end();
+	std::vector<CNpcHelp>::iterator it = m_vectorNpclist.begin();
+	std::vector<CNpcHelp>::iterator itend = m_vectorNpclist.end();
 	for( ; it != itend; ++it )
 	{
-		m_lbNpcList.AddString(0, (CTString)CMobData::getData((*it))->GetName(), 0xF2F2F2FF);
-	}
+		m_lbNpcList.AddString(0,(CTString)(*it).m_NpcList.npc_name,0xF2F2F2FF);
+	}	
 }
 void CUINpcHelp::Render()
 {
@@ -353,18 +346,17 @@ void CUINpcHelp::Render()
 
 	}
 	
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	
-	// Set shop texture
-	pUIManager->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+		// Set shop texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
+	int	nX, nY, nX2, nY2;
 	// Background
 	// Upper left
-	int nX = m_nPosX;
-	int nY = m_nPosY;
-	int nX2 = m_nPosX + m_nWidth;
-	int nY2 = m_nPosY + 28;
+	nX = m_nPosX;
+	nY = m_nPosY;
+	nX2 = m_nPosX + m_nWidth;
+	nY2 = m_nPosY + 28;
 
 	m_bxTitle.Render(m_nPosX,m_nPosY);
 
@@ -388,14 +380,14 @@ void CUINpcHelp::Render()
 		// Close button
 	m_btnClose.Render();
 
-	pUIManager->GetDrawPort()->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Text in web board
 	// Title
-	pUIManager->GetDrawPort()->PutTextEx( _S( 1748, "안내" ), m_nPosX + HELP_TITLE_OFFSETX,		
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 1748, "안내" ), m_nPosX + HELP_TITLE_OFFSETX,		
 										m_nPosY + HELP_TITLE_OFFSETY, 0xFFFFFFFF );	
-	// Flush all render text queue
-	pUIManager->GetDrawPort()->EndTextEx();	
+		// Flush all render text queue
+	_pUIMgr->GetDrawPort()->EndTextEx();	
 
 }
 
@@ -417,7 +409,7 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move web board
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -432,10 +424,6 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 			}
 			// Close button
 			else if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-			else if ( m_btnNpcHelp.MouseMessage(pMsg) != WMSG_FAIL)
-				return WMSG_SUCCESS;
-			else if ( m_btnList.MouseMessage(pMsg) != WMSG_FAIL)
 				return WMSG_SUCCESS;
 			// Top Scroll bar
 			else if( ( wmsgResult = m_lbNpcList.MouseMessage( pMsg ) ) != WMSG_FAIL )
@@ -456,8 +444,6 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 				SetFocus ( TRUE );
 				nOldX = nX;		nOldY = nY;
 
-				m_btnNpcHelp.MouseMessage(pMsg);
-
 				// Close button
 				if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
@@ -468,28 +454,18 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 				{
 					bTitleBarClick = TRUE;
 				}
-				else if (m_nRenType == NPC_EXPLAN)
+				// Top Scroll bar
+				else if( ( wmsgResult = m_lbNpcList.MouseMessage( pMsg ) ) != WMSG_SUCCESS )
 				{
-					if (m_btnList.MouseMessage(pMsg) != WMSG_FAIL && m_nRenType == NPC_EXPLAN)
+					int curnum = m_lbNpcList.GetCurSel(); 
+					if(curnum > -1  && m_nRenType == NPC_LIST)
 					{
-						// Nothing
+						m_nRenType = NPC_EXPLAN;
+						SetViewContent(curnum);
+						m_lbNpcList.SetCurSel(-1);		//선택한 리스트 초기화
 					}
-				}
-				else if (m_nRenType == NPC_LIST)
-				{
-					// Top Scroll bar
-					if( ( wmsgResult = m_lbNpcList.MouseMessage( pMsg ) ) != WMSG_FAIL )
-					{
-						int curnum = m_lbNpcList.GetCurSel(); 
-						if(curnum > -1  && m_nRenType == NPC_LIST)
-						{
-							m_nRenType = NPC_EXPLAN;
-							SetViewContent(curnum);
-							m_lbNpcList.SetCurSel(-1);		//선택한 리스트 초기화
-						}
-						if( wmsgResult == WMSG_COMMAND)
-							m_nCurRow = m_lbNpcList.GetScrollBarPos(); 
-					}
+					if( wmsgResult == WMSG_COMMAND)
+						m_nCurRow = m_lbNpcList.GetScrollBarPos(); 
 				}
 
 				return WMSG_SUCCESS;
@@ -500,7 +476,7 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 	case WM_LBUTTONUP:
 		{
 			// If holding button doesn't exist
-			if (UIMGR()->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -518,44 +494,26 @@ WMSG_RESULT CUINpcHelp::MouseMessage( MSG *pMsg )
 
 					return WMSG_SUCCESS;
 				}
-				else if (m_nRenType == NPC_EXPLAN)
+				else if( ( wmsgResult = m_btnNpcHelp.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
-					if( ( wmsgResult = m_btnNpcHelp.MouseMessage( pMsg ) ) != WMSG_FAIL )
-					{
-						CloseNpcHelp();
-						// [100526: selo] 그냥 RearrangeOrder(UI_MAP,TRUE); 로 되어 있던것 수정
-						// 토글로 처리해야 부수적인 기능을 얻을 수 있다.
-						CUIManager::getSingleton()->RearrangeOrder(UI_MAP,FALSE);
-						CUIManager::getSingleton()->GetMap()->ToggleVisible();
-			
-						// Nothing
-						return WMSG_SUCCESS;
-					} 
-					else if ((wmsgResult = m_btnList.MouseMessage(pMsg)) != WMSG_FAIL)
-					{
-						if (wmsgResult == WMSG_COMMAND)
-						{
-							m_nRenType = NPC_LIST;
-							m_lbNpcList.SetCurSel(-1);		//선택한 리스트 초기화
-						}
-					}
-				}
-				else if (m_nRenType == NPC_LIST)
+					CloseNpcHelp();
+					_pUIMgr->RearrangeOrder(UI_MAP,TRUE);
+		
+					// Nothing
+					return WMSG_SUCCESS;
+				} 
+				else if ((wmsgResult = m_btnList.MouseMessage(pMsg)) != WMSG_FAIL)
 				{
-					if (( wmsgResult = m_lbNpcList.MouseMessage( pMsg ) ) != WMSG_FAIL)
-					{
-						// Nothing
-					}
+					m_nRenType = NPC_LIST;
+					m_lbNpcList.SetCurSel(-1);		//선택한 리스트 초기화
 				}
-				
-				return WMSG_SUCCESS;
 			}
 			else
 			{
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					CUIManager::getSingleton()->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}

@@ -5,20 +5,16 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIWindow.h>
-// #include <vector>
-// #include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIWindow.h>
+#include <vector>
+#include <Engine/Interface/UIButton.h>
 //------------------------------------------------------------------------------
 // CUISpinButton
 // Explain:  
 // Date : 2005-06-23,Author: Lee Ki-hwan
 // History: 
 //------------------------------------------------------------------------------
-enum eBTN_STATE{ eBTN_UP,
-				 eBTN_DOWN, 
-				 eBTN_MAX	
-				};
-class ENGINE_API CUISpinButton : public CUIWindow
+class CUISpinButton : public CUIWindow
 {
 protected:
 	std::vector<CTString>	m_vecData;			// 저장되는 데이터 
@@ -40,8 +36,6 @@ public:
 
 	CUISpinButton();
 	
-	CUIBase* Clone();
-
 	// Create
 	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight, CTString strTitle, int nDataBackWidth );
 	void	CreateButtons( int nBtnWidth, int nBtnHeight, int nButtonGap = 0,  BOOL bVertical = TRUE );
@@ -98,53 +92,8 @@ public:
 	void RenderRectUV3( int nUnitSize, int nX, int nY, int nWidth, int nHeight, UIRectUV3 rtRectUV3 );	
 
 	void SetTitle( CTString strTitle );
-
-public:
-	WMSG_RESULT	OnLButtonUp(UINT16 x, UINT16 y);
-	WMSG_RESULT	OnMouseWheel(UINT16 x, UINT16 y, int wheel);
-
-	void		setUVDataBack( UIRectUV uv );
-	void		setDataBackWidth(int nWidth)	{ m_nDataBackWidth = nWidth;	}
-	void		setSpinButton( int nW, int nH, int nGap )
-	{ 
-		m_nSpinBtnWidth = nW; m_nSpinBtnHeight = nH; m_nSpinBtnGap = nGap;
-#ifdef UI_TOOL
-		setBtnAutoInfo(m_bBtnAutoInfo);
-#endif // UI_TOOL
-	}
-
-	int			getDataBackWidth()				{ return m_nDataBackWidth;		}
-	const char* getTitleText()					{ return m_strTitle.str_String; }
-	void		getSpinButton( int& nW, int& nH, int& nGap )
-	{
-		nW = m_nSpinBtnWidth; nH = m_nSpinBtnHeight; nGap = m_nSpinBtnGap;
-	}
-	int			getAdjust()						{ return m_nAdjust;				}
-
-#ifdef UI_TOOL
-	UIRectUV	getUVDataBack()					{ return m_uvDataBack;			}
-	bool		getBtnAutoInfo()				{ return m_bBtnAutoInfo;		}
-	UIRect		getWheelRect()					{ return m_rcWheel;				}
-	// 툴에서 만들어진 버튼을 클레스 맴버로 연결시켜 주기 위해 사용.
-	void		SetSpinButton( int type, CUIButton* pButton );
-	void		setBtnAutoInfo(bool bAuto);
-
-private :
-	UIRectUV	m_uvDataBack;
-	bool		m_bBtnAutoInfo;
-#endif // UI_TOOL
-
-protected:
-	void		initialize();
-	void		OnRender(CDrawPort* pDraw);
-
-private:
-	CUIButton*	m_pSpinBtn[eBTN_MAX];
-	int			m_nSpinBtnWidth;
-	int			m_nSpinBtnHeight;
-	int			m_nSpinBtnGap;
-	int			m_nAdjust;
 };
+
 
 #endif	// UISPINBUTTON_H_
 

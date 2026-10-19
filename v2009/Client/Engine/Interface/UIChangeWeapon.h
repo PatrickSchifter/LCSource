@@ -9,6 +9,14 @@
 	#pragma once
 #endif
 
+
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Entities/Items.h>
+
+#include <vector>
+
 // Define text position
 #define	CHANGEWEAPON_TITLE_TEXT_OFFSETX		25
 #define	CHANGEWEAPON_TITLE_TEXT_OFFSETY		5
@@ -69,7 +77,7 @@ protected:
 	std::vector<sWeaponInfo>		m_vectorWeaponInfo;
 	// wooss 051217
 	// selected item in inventory
-	CItems* 			m_pSelItem;
+	CItems 	m_selItem;
 
 	// Controls
 	CUIButton			m_btnClose;							// Close button
@@ -173,12 +181,6 @@ public:
 	void	SetCashItem(BOOL chk) {m_bCashItemChk=chk;} 
 	BOOL	GetCashItem() {return m_bCashItemChk;}
 	
-public :
-
-protected:
-	void initialize();
-	void OnUpdate( float fElapsedTime );
-	void OnRender( CDrawPort* pDraw );
 };
 
 

@@ -1,29 +1,12 @@
 #include "StdH.h"
-
-// «Ï¥ı ¡§∏Æ. [12/2/2009 rumist]
-#include <vector>
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/Interface/UIQuestBook.h>
+#include <Engine/Entities/QuestSystem.h>
+#include <Engine/Entities/Items.h>
 #include <Engine/Interface/UIPetTraining.h>
-#include <Engine/Interface/UIShop.h>
-#include <Engine/Interface/UIInventory.h>
-#include <algorithm>
-#include <Engine/Interface/UIQuest.h>
-#include <Engine/Interface/UIPortal.h>
-#include <Engine/Interface/UISiegeWarfare.h>
-#include <Engine/Interface/UIWareHouse.h>
-#include <Engine/Interface/UIGuild.h>
-#include <Engine/Interface/UIInitJob.h>
-#include <Engine/Interface/UIRefine.h>
-#include <Engine/Interface/UIChangeWeapon.h>
-#include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Interface/UIRemission.h>
-#include <Engine/Interface/UIProcessNPC.h>
 #include <Engine/Interface/UISkillLearn.h>
-#include <Engine/Interface/UIProduct.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/Quest.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
+#include <Engine/Interface/UIShop.h>
+#include <Engine/LocalDefine.h>
+#include <algorithm>
 
 static int	_iMaxDescStringChar = 0;
 static int	_iMaxSelStringChar = 0;
@@ -32,8 +15,10 @@ static int	_iMaxDescStringCharNew = 0;				// [090601: selo] Ω≈±‘ ƒ˘Ω∫∆Æ ∫œ¿ª ¿ß«
 static int  _iMaxSelStringCharNew = 0;				// [090601: selo] Ω≈±‘ ƒ˘Ω∫∆Æ ∫œ¿ª ¿ß«— «— ø≠ø° µÈæÓ∞°¥¬ º±≈√µ» πÆ¿⁄ø≠ √÷¥Î ±Ê¿Ã
 #define MAX_QUEST		16
 
-extern INDEX g_iXPosInQuest;
-extern INDEX g_iYPosInQuest;
+extern INDEX g_iCountry;
+
+BOOL CUIQuestBook::m_bLockRequestQuest;
+float CUIQuestBook::m_fLastRequestTime;
 
 const int iQuestListTitleTextOffsetX	= 5;		// ≈∏¿Ã∆≤ Text X ø¿«¡º¬
 const int iQuestListTitleTextOffsetY	= 25;		// ≈∏¿Ã∆≤ Text Y ø¿«¡º¬
@@ -47,13 +32,6 @@ const int iQuestListTitleHeight			= 36;		// ≈∏¿Ã∆≤ ≥Ù¿Ã
 const CTString strQuestListTexFileName  = "Data\\Interface\\QuestBook.tex";
 const CTString strCommonBtnTexFileName  = "Data\\Interface\\CommonBtn.tex";
 
-const int iQuestNoticeCnt				= 5;
-
-enum __tag_QUEST_TUTORIAL_RESPONSE
-{
-	RESPONSE_OK = 0,
-	RESPONSE_CALCEL,
-};
 
 // ----------------------------------------------------------------------------
 // Name : CUIQuestBook()
@@ -64,8 +42,8 @@ CUIQuestBook::CUIQuestBook( int nUIIndex )
 {
 	m_bTitleBarClick		= FALSE;
 	m_nSelectedQuestIndex	= -1;
+	m_bLockRequestQuest		= FALSE;
 	m_nTargetIndex			= -1;
-	m_nTargetVirIndex		= -1;
 	m_nTargetUIType			= -1;	
 	m_pQuestItem			= NULL;
 	m_bProceedListExtended	= TRUE;
@@ -75,15 +53,9 @@ CUIQuestBook::CUIQuestBook( int nUIIndex )
 	m_nPrevNPCUIType		= -1;
 	m_nSortType				= 0;
 	m_bLockQuestList		= FALSE;
-	m_dQuestNoticeStartTime = 0;
-	m_dRaidRemainTime		= 0;		// [090907: selo] ∑π¿ÃµÂ ≥≤¿∫ Ω√∞£ √ ±‚»≠
-	m_bIsRaidNow			= FALSE;	// [090907: selo] ∑π¿ÃµÂ ¡ﬂ¿Œ¡ˆ «√∑°±◊ √ ±‚»≠	
-	m_dRaidRemainTimeRecvTime = 0;		// [090908: selo] ∑π¿ÃµÂ ≥≤¿∫ Ω√∞£ πﬁ¿∫ Ω√∞£ √ ±‚»≠
 	
 	for( int i = 0; i < QCATEGORY_END; ++i )
 		m_bCategoryListExtended[i] = TRUE;
-
-	m_ptdCommonBtnTexture = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -93,8 +65,6 @@ CUIQuestBook::CUIQuestBook( int nUIIndex )
 CUIQuestBook::~CUIQuestBook()
 {
 	Destroy();
-
-	STOCK_RELEASE(m_ptdCommonBtnTexture);
 }
 
 // ----------------------------------------------------------------------------
@@ -103,7 +73,146 @@ CUIQuestBook::~CUIQuestBook()
 // ----------------------------------------------------------------------------
 void CUIQuestBook::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CreateQuestListNew(pParentWnd, nX, nY, nWidth, nHeight);
+#ifdef NEW_QUESTBOOK
+	//if( UI_QUESTBOOK_LIST == m_nUIIndex )
+	{
+		CreateQuestListNew(pParentWnd, nX, nY, nWidth, nHeight);
+		return;
+	}
+#endif
+
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
+
+	_iMaxDescStringChar = 266 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+	_iMaxSelStringChar = 275 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+	_nMsgBoxLineHeight = _pUIFontTexMgr->GetFontHeight() + 4;
+
+	// Region of each part
+	m_rcTitle.SetRect( 0, 0, 311, 22 );	
+
+	// Create message box texture
+	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
+	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
+	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
+
+	// UV Coordinate of each part
+	// Background
+	m_rtTopL.SetUV( 0, 0, 40, 26, fTexWidth, fTexHeight );
+	m_rtTopM.SetUV( 40, 0, 176, 26, fTexWidth, fTexHeight );
+	m_rtTopR.SetUV( 176, 0, 216, 26, fTexWidth, fTexHeight );
+	m_rtMiddleScrollL.SetUV( 0, 27, 40, 29, fTexWidth, fTexHeight );
+	m_rtMiddleScrollM.SetUV( 40, 27, 176, 29, fTexWidth, fTexHeight );
+	m_rtMiddleScrollR.SetUV( 176, 27, 216, 29, fTexWidth, fTexHeight );
+
+	m_rtMiddleGapL.SetUV( 0, 35, 40, 37, fTexWidth, fTexHeight );
+	m_rtMiddleGapM.SetUV( 40, 35, 176, 37, fTexWidth, fTexHeight );
+	m_rtMiddleGapR.SetUV( 176, 35, 216, 37, fTexWidth, fTexHeight );
+	m_rtBottomL.SetUV( 0, 38, 40, 45, fTexWidth, fTexHeight );
+	m_rtBottomM.SetUV( 40, 38, 176, 45, fTexWidth, fTexHeight );
+	m_rtBottomR.SetUV( 176, 38, 216, 45, fTexWidth, fTexHeight );
+
+	// Close button
+	m_btnClose.Create( this, CTString( "" ), 279, 4, 14, 14 );
+	m_btnClose.SetUV( UBS_IDLE, 219, 0, 233, 14, fTexWidth, fTexHeight );
+	m_btnClose.SetUV( UBS_CLICK, 234, 0, 248, 14, fTexWidth, fTexHeight );
+	m_btnClose.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	// OK button
+	m_btnOK.Create( this, _S( 191, "»Æ¿Œ" ), 240, 260, 63, 21 );
+	m_btnOK.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnOK.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnOK.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnOK.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	m_btnCancel.Create( this, _S( 870, "¥›±‚" ), 240, 260, 63, 21 );
+	m_btnCancel.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnCancel.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnCancel.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnCancel.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	m_btnDeny.Create( this, _S( 1696, "∞≈¿˝" ), 240, 260, 63, 21 );			
+	m_btnDeny.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnDeny.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnDeny.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnDeny.CopyUV( UBS_IDLE, UBS_DISABLE );
+		
+	m_btnGiveUp.Create( this, _S( 1697, "ƒ˘Ω∫∆Æ ∆˜±‚" ), 8, 260, 95, 21 );		
+	m_btnGiveUp.SetUV( UBS_IDLE, 134, 117, 229, 138, fTexWidth, fTexHeight );
+	m_btnGiveUp.SetUV( UBS_CLICK, 134, 139, 229, 160, fTexWidth, fTexHeight );
+	m_btnGiveUp.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnGiveUp.CopyUV( UBS_IDLE, UBS_DISABLE );
+		
+	m_btnAccept.Create( this, _S( 1698, "ºˆ∂Ù" ), 8, 260, 95, 21 );		
+	m_btnAccept.SetUV( UBS_IDLE, 134, 117, 229, 138, fTexWidth, fTexHeight );
+	m_btnAccept.SetUV( UBS_CLICK, 134, 139, 229, 160, fTexWidth, fTexHeight );
+	m_btnAccept.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnAccept.CopyUV( UBS_IDLE, UBS_DISABLE );
+	
+	m_btnReserve.Create( this, _S( 1699, "∫∏∑˘" ), 160, 260, 63, 21 );		
+	m_btnReserve.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnReserve.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnReserve.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnReserve.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	// == 2009. 05. 26 ±Ë¡§∑°
+	// »Æ¿Â∆— ±‚»πø° µ˚∏• ¿Ã¿¸ πˆ∆∞(NPC ∏ﬁ¥∫∑Œ µπæ∆∞°±‚) √ﬂ∞°	
+	m_btnPrev.Create( this, _S( 2681, "¿Ã¿¸" ), 160, 260, 63, 21 );		
+	m_btnPrev.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
+	m_btnPrev.SetUV( UBS_CLICK, 66, 46, 129, 67, fTexWidth, fTexHeight );
+	m_btnPrev.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnPrev.CopyUV( UBS_IDLE, UBS_DISABLE );	
+	// == End 2009. 05. 26 ±Ë¡§∑°
+	
+	// List box
+	m_lbDescription.Create( this, 7, 26, 288, 226, _nMsgBoxLineHeight, 12, 8, 1, TRUE, FALSE );
+	m_lbDescription.CreateScroll( TRUE, 0, 0, 9, 224, 9, 7, 0, 0, 10 );
+	// Up button
+	m_lbDescription.SetScrollUpUV( UBS_IDLE, 230, 16, 239, 23, fTexWidth, fTexHeight );
+	m_lbDescription.SetScrollUpUV( UBS_CLICK, 240, 16, 249, 23, fTexWidth, fTexHeight );
+	m_lbDescription.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+	m_lbDescription.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+	// Down button
+	m_lbDescription.SetScrollDownUV( UBS_IDLE, 230, 24, 239, 31, fTexWidth, fTexHeight );
+	m_lbDescription.SetScrollDownUV( UBS_CLICK, 240, 24, 249, 31, fTexWidth, fTexHeight );
+	m_lbDescription.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+	m_lbDescription.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+	// Bar button
+	m_lbDescription.SetScrollBarTopUV( 219, 16, 228, 26, fTexWidth, fTexHeight );
+	m_lbDescription.SetScrollBarMiddleUV( 219, 27, 228, 29, fTexWidth, fTexHeight );
+	m_lbDescription.SetScrollBarBottomUV( 219, 30, 228, 40, fTexWidth, fTexHeight );
+	m_lbDescription.SetSelectColor( 0xF8E1B5FF );
+
+	// List box
+	m_lbQuestList.Create( this, 7, 26, 288, 226, _nMsgBoxLineHeight, 12, 8, 2, TRUE );
+	m_lbQuestList.CreateScroll( TRUE, 0, 0, 9, 224, 9, 7, 0, 0, 10 );
+	m_lbQuestList.SetSelBar( 280, _pUIFontTexMgr->GetLineHeight(), 187, 46, 204, 61, fTexWidth, fTexHeight );
+	m_lbQuestList.SetOverColor( 0xF8E1B5FF );
+	m_lbQuestList.SetSelectColor( 0xF8E1B5FF );
+	m_lbQuestList.SetColumnPosX( 1, 10 );
+	// Up button
+	m_lbQuestList.SetScrollUpUV( UBS_IDLE, 230, 16, 239, 23, fTexWidth, fTexHeight );
+	m_lbQuestList.SetScrollUpUV( UBS_CLICK, 240, 16, 249, 23, fTexWidth, fTexHeight );
+	m_lbQuestList.CopyScrollUpUV( UBS_IDLE, UBS_ON );
+	m_lbQuestList.CopyScrollUpUV( UBS_IDLE, UBS_DISABLE );
+	// Down button
+	m_lbQuestList.SetScrollDownUV( UBS_IDLE, 230, 24, 239, 31, fTexWidth, fTexHeight );
+	m_lbQuestList.SetScrollDownUV( UBS_CLICK, 240, 24, 249, 31, fTexWidth, fTexHeight );
+	m_lbQuestList.CopyScrollDownUV( UBS_IDLE, UBS_ON );
+	m_lbQuestList.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
+	// Bar button
+	m_lbQuestList.SetScrollBarTopUV( 219, 16, 228, 26, fTexWidth, fTexHeight );
+	m_lbQuestList.SetScrollBarMiddleUV( 219, 27, 228, 29, fTexWidth, fTexHeight );
+	m_lbQuestList.SetScrollBarBottomUV( 219, 30, 228, 40, fTexWidth, fTexHeight );
+	// pop button
+	m_lbQuestList.SetPopBtnSpace(1, 0);
+	m_lbQuestList.SetPopBtnSize(14, 14);
+	m_lbQuestList.SetPopBtnUV( UCBS_NONE, 230, 33, 230+14, 33+14, fTexWidth, fTexHeight);
+	m_lbQuestList.SetPopBtnUV( UCBS_CHECK, 230, 117, 230+14, 117+14, fTexWidth, fTexHeight);
+	m_lbQuestList.SetPopBtnUV( UCBS_NONE_DISABLE, 230, 48, 230+14, 48+14, fTexWidth, fTexHeight);
+	m_lbQuestList.SetPopBtnUV( UCBS_CHECK_DISABLE, 230, 132, 230+14, 132+14, fTexWidth, fTexHeight);
 }
 
 // ----------------------------------------------------------------------------
@@ -116,16 +225,25 @@ void CUIQuestBook::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pix
 	{
 	case UI_QUESTBOOK_LIST:
 		{
+#ifdef NEW_QUESTBOOK
 			SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2 - 44, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 - 44 );
+#else
+			SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2 - 44, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 - 44 );
+#endif
+		}break;
+	case UI_QUESTBOOK_CONTENT:
+		{
+			SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2 - 22, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 - 22 );
+		}break;
+	case UI_QUESTBOOK_COMPLETE:
+		{
+			SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2 - 0, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 - 0 );
+		}break;
+	case UI_QUESTBOOK_NEW:
+		{
+			SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2 + 22, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 + 22 );
 		}break;
 	}
-}
-void CUIQuestBook::ResetSavePosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-
-	g_iXPosInQuest = GetPosX();
-	g_iYPosInQuest = GetPosY();
 }
 
 // ----------------------------------------------------------------------------
@@ -146,16 +264,9 @@ void CUIQuestBook::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pi
 void CUIQuestBook::ToggleVisible()
 {
 	if( IsVisible() )
-	{
-		g_iXPosInQuest = GetPosX();
-		g_iYPosInQuest = GetPosY();
 		CloseQuestBook();
-	}
 	else
-	{
-		SetPos( g_iXPosInQuest, g_iYPosInQuest );
 		OpenQuestBook();
-	}
 }
 
 // ----------------------------------------------------------------------------
@@ -170,6 +281,18 @@ void CUIQuestBook::OpenQuestBook( int iQuestIndex, CItems* pQuestItem )
 		{
 			m_strTitle	= _S( 1700, "ƒ˘Ω∫∆Æ ∫œ" );	
 		}break;
+	case UI_QUESTBOOK_CONTENT:
+		{
+			m_strTitle	= _S( 1701, "ƒ˘Ω∫∆Æ ≥ªøÎ" );	
+		}break;
+	case UI_QUESTBOOK_COMPLETE:
+		{
+			m_strTitle	= _S( 1702, "ƒ˘Ω∫∆Æ ∫∏ªÛ" );	
+		}break;
+	case UI_QUESTBOOK_NEW:
+		{
+			m_strTitle	= _S( 99, "ƒ˘Ω∫∆Æ" );
+		}break;
 	}
 
 	if( IsVisible() && m_nUIIndex == UI_QUESTBOOK_LIST )
@@ -181,21 +304,111 @@ void CUIQuestBook::OpenQuestBook( int iQuestIndex, CItems* pQuestItem )
 	if( ( m_nUIIndex != UI_QUESTBOOK_LIST ) )
 		InitQuestBook();
 
-	if (iQuestIndex > 0)
-		m_nSelectedQuestIndex	= iQuestIndex;
+	m_nSelectedQuestIndex	= iQuestIndex;
 
 	// ƒ˘Ω∫∆Æ ∏Ò∑œ
 	if( m_nUIIndex == UI_QUESTBOOK_LIST )
 	{
-		m_btnCancel.SetEnable( FALSE ); // ƒ˘Ω∫∆Æ ∏Ò∑œø°º≠ ¥›±‚ πˆ∆∞¿ª æ¯æ÷∞Ì, ∫∏ªÛ πˆ∆∞¿∏∑Œ πŸ≤ﬁ
+		m_btnCancel.SetEnable( TRUE );
+#ifdef NEW_QUESTBOOK // [090601: selo] Ω≈±‘ ƒ˘Ω∫∆Æ ∏Ò∑œ¿∫ ƒ˘Ω∫∆Æ ≥ªøÎ¿ª ∆˜«‘«—¥Ÿ.
 		m_lbDescription.SetEnable( TRUE );
+#else
+		m_lbDescription.SetEnable( FALSE );
+#endif
 		m_lbQuestList.SetEnable( TRUE );
 
 		RefreshQuestList();
 	}
+	// ƒ˘Ω∫∆Æ ≥ªøÎ
+	else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+	{
+		m_btnCancel.SetEnable( TRUE );
+		m_lbDescription.SetEnable( TRUE );
+		m_lbQuestList.SetEnable( FALSE );
 
+		RefreshQuestContent(m_nSelectedQuestIndex);
+	}
+	// ƒ˘Ω∫∆Æ øœ∑·
+	else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
+	{
+		if(iQuestIndex == -1 && !m_vectorCompleteQuestList.empty())
+		{
+			m_nSelectedQuestIndex = iQuestIndex = m_vectorCompleteQuestList[0].iQuestIndex;
+		}
+		if(m_nSelectedQuestIndex == -1) return;
+
+		m_nSelectPrizeCount = -1;
+		m_nSelectPrizeFirstIndex = -1;
+
+		// NOTE : ¬˜ø¯¿« πÆ¿∫ ∫∏ªÛ ¿Œ≈Õ∆‰¿ÃΩ∫∞° ∂ﬂ∏È æ»µÀ¥œ¥Ÿ.
+		if( iQuestIndex == 105 )
+		{
+			// FIXME : NPC ¿Œµ¶Ω∫±Ó¡ˆ «œµÂ ƒ⁄µ˘...§—.§—
+			m_nTargetIndex	= 71;
+			PrizeQuest();
+			CQuestSystem::Instance().DeleteCurrentRequest();
+			return;
+		}
+		else
+		{			
+			m_btnCancel.SetEnable( FALSE );
+			m_lbDescription.SetEnable( TRUE );
+			m_lbQuestList.SetEnable( FALSE );
+
+			m_btnPrev.SetEnable( TRUE );
+			if( 71 == _pUIMgr->GetQuestBookList()->m_nTargetIndex )
+				m_btnPrev.SetEnable( FALSE );
+			
+			RefreshQuestPrize(m_nSelectedQuestIndex);
+		}
+	}
+	// Ω≈±‘ ƒ˘Ω∫∆Æ
+	else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+	{
+		if( !m_pQuestItem )
+		{
+			m_pQuestItem	= pQuestItem;			
+		}
+		if(iQuestIndex == -1 && !m_vectorProceedQuestList.empty())
+		{
+			if(m_iNextQuestIndex == -1)
+			{
+				m_nSelectedQuestIndex = iQuestIndex = m_vectorProceedQuestList[0].iQuestIndex;
+			}
+			else
+			{
+				//¥Ÿ¿Ω ∞Õ¿ª √£æ∆∫∏∞Ì æ¯¿∏∏È √≥¿Ω ∞Õ¿∏∑Œ.
+				for(int i=0; i<m_vectorProceedQuestList.size(); ++i)
+				{
+					if(m_vectorProceedQuestList[i].iQuestIndex == m_iNextQuestIndex)
+					{
+						m_nSelectedQuestIndex = iQuestIndex = m_vectorProceedQuestList[i].iQuestIndex;
+						break;
+					}
+				}
+				if(i == m_vectorProceedQuestList.size())
+					m_nSelectedQuestIndex = iQuestIndex = m_vectorProceedQuestList[0].iQuestIndex;
+			}
+			m_iNextQuestIndex = -1;
+		}
+		if(m_nSelectedQuestIndex == -1) return;
+
+#ifndef NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ºˆ¡§
+		m_btnCancel.SetEnable( FALSE );
+#else
+		m_btnCancel.SetEnable( TRUE );
+#endif
+		m_lbDescription.SetEnable( TRUE );
+		m_lbQuestList.SetEnable( FALSE );
+		
+		m_btnPrev.SetEnable( TRUE );
+		if( 71 == _pUIMgr->GetQuestBookList()->m_nTargetIndex )
+			m_btnPrev.SetEnable( FALSE );
+
+		RefreshQuestNew(m_nSelectedQuestIndex);
+	}
 	CQuestSystem::Instance().DeleteCurrentRequest();
-	CUIManager::getSingleton()->RearrangeOrder( m_nUIIndex, TRUE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 }
 
 // ----------------------------------------------------------------------------
@@ -204,6 +417,9 @@ void CUIQuestBook::OpenQuestBook( int iQuestIndex, CItems* pQuestItem )
 // ----------------------------------------------------------------------------
 void CUIQuestBook::RefreshQuestContent(INDEX questIndex)
 {
+#ifndef NEW_QUESTBOOK	// [090601: selo] Ω≈±‘ ƒ˘Ω∫∆Æ ∫œ(ƒ˘Ω∫∆Æ∏ÆΩ∫∆Æ)¿∫ ƒ¡≈Ÿ√˜ UI ∏¶ µ˚∑Œ µŒ¡ˆ æ ¥¬¥Ÿ.
+	ASSERT(m_nUIIndex == UI_QUESTBOOK_CONTENT);		
+#endif
 	m_btnGiveUp.SetEnable(TRUE);
 	if( isRaidMessage(questIndex) )
 	{
@@ -231,6 +447,13 @@ void CUIQuestBook::RefreshQuestContent(INDEX questIndex)
 	
 	// 2009. 06. 01 ±Ë¡§∑°
 	// »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫œ ∫Ø∞Ê √≥∏Æø° ¿««— º≥∏Ì±€¿« º¯º≠ ∫Ø∞Ê
+
+#ifndef NEW_QUESTBOOK	// [090601: selo] ƒ˘Ω∫∆Æ ºˆ∂Ù º≥∏Ì º¯º≠ ∫Ø∞Ê
+	AddDescString( pQuestDD->GetTitleDesc( 0 ), pQuestDD->GetColorTitleDesc( 0 ) );
+	AddDescString( CTString(pQuestDD->GetDesc()), pQuestDD->GetColorIntroDesc() );		
+	AddDescString( CTString("\n"), 0xFFFFFFFF );		
+	AddDescString( CTString(pQuestDD->GetDesc3()), 0x34B603FF );	
+#else
 	AddDescString( pQuestDD->GetTitleDesc( 0 ), pQuestDD->GetColorTitleDesc( 0 ) );	
 	AddDescString( CTString("\n"), 0xFFFFFFFF );		
 	AddDescString( CTString(pQuestDD->GetDesc3()), 0x34B603FF );
@@ -239,11 +462,8 @@ void CUIQuestBook::RefreshQuestContent(INDEX questIndex)
 		AddDescString( _S( 1703, "\n¡¯«‡ªÛ»≤" ), 0xFFFFFFFF );
 	for(INDEX i=0; i<pQuestDD->GetCountStatusDesc(); ++i)
 		AddDescString( pQuestDD->GetStatusDesc( i ), pQuestDD->GetColorStatusDesc( i ) );
-	
-	CTString strSpace = CTString("     ");
-#if defined(G_RUSSIA)
-		strSpace = CTString("        ");
 #endif
+	
 	//∞Ì¡§∫∏ªÛ
 	if(pQuestDD->IsPrizeExist())
 	{
@@ -252,16 +472,13 @@ void CUIQuestBook::RefreshQuestContent(INDEX questIndex)
 		for( INDEX i = 1; i < pQuestDD->GetCountPrizeDesc(); ++i )
 		{
 			CTString strPrize = pQuestDD->GetPrizeDesc( i );
-			strPrize = strSpace + strPrize;				
-
-			// [090812: selo] ∫∏ªÛ º≥∏Ì ≈ÿΩ∫∆Æ √≥∏Æ ∫Ø∞Ê
-			bool bMultiLine = AddDescString( strPrize, pQuestDD->GetColorPrizeDesc( i ), FALSE, TRUE );
-			if( !bMultiLine )
-				AddDescString( strSpace, pQuestDD->GetColorPrizeDesc( i ) );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorPrizeDesc( i ) );
+			AddDescString( CTString("     "), pQuestDD->GetColorPrizeDesc( i ) );
 
 			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
 				, CUIImageBox::eImageType(pQuestDD->GetPrizeType(i-1))
-				, pQuestDD->GetPrizeIndex(i-1), 0, CTString(""), pQuestDD->GetSyndicateType());
+				, pQuestDD->GetPrizeIndex(i-1));
 		}
 	}
 
@@ -273,42 +490,180 @@ void CUIQuestBook::RefreshQuestContent(INDEX questIndex)
 		for( INDEX i = 1; i < pQuestDD->GetCountOptionPrizeDesc(); ++i )
 		{
 			CTString strPrize = pQuestDD->GetOptionPrizeDesc( i );
-			strPrize = strSpace + strPrize;
-
-			// [090812: selo] ∫∏ªÛ º≥∏Ì ≈ÿΩ∫∆Æ √≥∏Æ ∫Ø∞Ê
-			bool bMultiLine = AddDescString( strPrize, pQuestDD->GetColorOptionPrizeDesc( i ), FALSE, TRUE );
-			if( !bMultiLine )
-				AddDescString( strSpace, pQuestDD->GetColorOptionPrizeDesc( i ) );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorOptionPrizeDesc( i ) );
+			AddDescString( CTString("     "), pQuestDD->GetColorOptionPrizeDesc( i ) );
 
 			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
 				, CUIImageBox::eImageType(pQuestDD->GetOptionPrizeType(i-1))
-				, pQuestDD->GetOptionPrizeIndex(i-1), 0, CTString(""), pQuestDD->GetSyndicateType());
+				, pQuestDD->GetOptionPrizeIndex(i-1));
 		}
 	}
 
+#ifdef NEW_QUESTBOOK	// [090526: selo] ƒ˘Ω∫∆Æ ºˆ∂Ù º≥∏Ì º¯º≠ ∫Ø∞Ê	
 	AddDescString( CTString("\n"), 0xFFFFFFFF );
 	AddDescString( CTString(pQuestDD->GetDesc()), pQuestDD->GetColorIntroDesc() );
+#else
+	if(pQuestDD->GetCountStatusDesc() > 0)
+		AddDescString( _S( 1703, "\n¡¯«‡ªÛ»≤" ), 0xFFFFFFFF );
+	for(INDEX i=0; i<pQuestDD->GetCountStatusDesc(); ++i)
+		AddDescString( pQuestDD->GetStatusDesc( i ), pQuestDD->GetColorStatusDesc( i ) );
+
 	AddDescString( _S( 1704, "ºˆ«‡∞°¥… ∑π∫ß" ), 0xFFFFFFFF );
 	CTString strTemp;
 	if(pQuestDD->GetNeedMinLevel() == pQuestDD->GetNeedMaxLevel())
 	{
 		strTemp.PrintF(_S( 1705, "∑π∫ß %d" ), pQuestDD->GetNeedMinLevel());
 	}
-	else if(pQuestDD->GetNeedMaxLevel()==999)
+	else
 	{
-		strTemp.PrintF(_S( 5667, "∑π∫ß : %d ~ MAX" ), pQuestDD->GetNeedMinLevel());
+		strTemp.PrintF(_S( 1706, "∑π∫ß %d ~ ∑π∫ß %d" ), pQuestDD->GetNeedMinLevel(), pQuestDD->GetNeedMaxLevel());
+	}
+	AddDescString( strTemp, 0xD0D0FFFF );
+#endif
+
+	m_lbDescription.SetScrollBarPos(oldSbPos);
+}
+
+// ----------------------------------------------------------------------------
+// Name : RefreshQuestNew()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIQuestBook::RefreshQuestNew(INDEX questIndex)
+{
+	ASSERT(m_nUIIndex == UI_QUESTBOOK_NEW);
+	if(questIndex != m_nSelectedQuestIndex)
+		return;
+	CQuestDynamicData	*pQuestDD = CQuestSystem::Instance().Create( questIndex );
+
+	// 2009. 05. 26 ±Ë¡§∑°
+	// »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫œ ∫Ø∞Ê √≥∏Æø° ¿««— º≥∏Ì±€¿« º¯º≠ ∫Ø∞Ê
+
+#ifndef NEW_QUESTBOOK	// [090526: selo] ƒ˘Ω∫∆Æ ºˆ∂Ù º≥∏Ì º¯º≠ ∫Ø∞Ê
+	AddDescString( pQuestDD->GetTitleDesc( 0 ), pQuestDD->GetColorTitleDesc( 0 ) );
+	AddDescString( CTString(pQuestDD->GetDesc()), pQuestDD->GetColorIntroDesc() );		
+	AddDescString( CTString("\n"), 0xFFFFFFFF );		
+	AddDescString( CTString(pQuestDD->GetDesc3()), 0x34B603FF );
+#else
+	AddDescString( pQuestDD->GetTitleDesc( 0 ), pQuestDD->GetColorTitleDesc( 0 ) );	
+	AddDescString( CTString("\n"), 0xFFFFFFFF );
+	AddDescString( CTString(pQuestDD->GetDesc3()), 0x34B603FF );
+#endif
+	
+	//∞Ì¡§∫∏ªÛ
+	if(pQuestDD->IsPrizeExist())
+	{
+		AddDescString( CTString("\n"), 0xFFFFFFFF );
+		AddDescString( pQuestDD->GetPrizeDesc( 0 ), pQuestDD->GetColorPrizeDesc( 0 ) );
+		for( INDEX i = 1; i < pQuestDD->GetCountPrizeDesc(); ++i )
+		{
+			CTString strPrize = pQuestDD->GetPrizeDesc( i );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorPrizeDesc( i ) );
+			AddDescString( CTString("     "), pQuestDD->GetColorPrizeDesc( i ) );
+
+			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
+				, CUIImageBox::eImageType(pQuestDD->GetPrizeType(i-1))
+				, pQuestDD->GetPrizeIndex(i-1));
+		}
+	}
+
+	//º±≈√ ∫∏ªÛ
+	if(pQuestDD->IsOptionPrizeExist())
+	{
+		AddDescString( CTString("\n"), 0xFFFFFFFF );
+		AddDescString( pQuestDD->GetOptionPrizeDesc( 0 ), pQuestDD->GetColorOptionPrizeDesc( 0 ) );
+		for( INDEX i = 1; i < pQuestDD->GetCountOptionPrizeDesc(); ++i )
+		{
+			CTString strPrize = pQuestDD->GetOptionPrizeDesc( i );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorOptionPrizeDesc( i ) );
+			AddDescString( CTString("     "), pQuestDD->GetColorOptionPrizeDesc( i ) );
+
+			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
+				, CUIImageBox::eImageType(pQuestDD->GetOptionPrizeType(i-1))
+				, pQuestDD->GetOptionPrizeIndex(i-1));
+		}
+	}
+
+#ifdef NEW_QUESTBOOK	// [090526: selo] ƒ˘Ω∫∆Æ ºˆ∂Ù º≥∏Ì º¯º≠ ∫Ø∞Ê
+	AddDescString( CTString("\n"), 0xFFFFFFFF );
+	AddDescString( CTString(pQuestDD->GetDesc()), pQuestDD->GetColorIntroDesc() );
+#else
+	AddDescString( _S( 1704, "ºˆ«‡∞°¥… ∑π∫ß" ), 0xFFFFFFFF );
+	CTString strTemp;
+	if(pQuestDD->GetNeedMinLevel() == pQuestDD->GetNeedMaxLevel())
+	{
+		strTemp.PrintF(_S( 1705, "∑π∫ß %d" ), pQuestDD->GetNeedMinLevel());
 	}
 	else
 	{
 		strTemp.PrintF(_S( 1706, "∑π∫ß %d ~ ∑π∫ß %d" ), pQuestDD->GetNeedMinLevel(), pQuestDD->GetNeedMaxLevel());
 	}
 	AddDescString( strTemp, 0xD0D0FFFF );
+#endif
+}
 
-	m_lbDescription.SetScrollBarPos(oldSbPos);
-	if (IsCompleteQuest(pQuestDD->GetQuestIndex()) && pQuestDD->GetPrizeNPCIndex() == 0)
-		m_btnCancel.SetEnable(TRUE); // ∫∏ªÛ πˆ∆∞ »∞º∫»≠
-	else
-		m_btnCancel.SetEnable(FALSE);
+// ----------------------------------------------------------------------------
+// Name : RefreshQuestContent()
+// Desc :
+// ----------------------------------------------------------------------------
+void CUIQuestBook::RefreshQuestPrize(INDEX questIndex)
+{
+	ASSERT(m_nUIIndex == UI_QUESTBOOK_COMPLETE);
+	if(questIndex != m_nSelectedQuestIndex)
+		return;
+
+	CQuestDynamicData	*pQuestDD = CQuestSystem::Instance().Create( questIndex );
+	
+	AddDescString( pQuestDD->GetTitleDesc( 0 ), pQuestDD->GetColorTitleDesc( 0 ) );
+	AddDescString( CTString(pQuestDD->GetDesc2()), pQuestDD->GetColorIntroDesc() );		
+	
+	//∞Ì¡§∫∏ªÛ
+	if(pQuestDD->IsPrizeExist())
+	{
+		AddDescString( CTString("\n"), 0xFFFFFFFF );
+		AddDescString( pQuestDD->GetPrizeDesc( 0 ), pQuestDD->GetColorPrizeDesc( 0 ) );
+		for( INDEX i = 1; i < pQuestDD->GetCountPrizeDesc(); ++i )
+		{
+			CTString strPrize = pQuestDD->GetPrizeDesc( i );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorPrizeDesc( i ) );
+			AddDescString( CTString("     "), pQuestDD->GetColorPrizeDesc( i ) );
+
+			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
+				, CUIImageBox::eImageType(pQuestDD->GetPrizeType(i-1))
+				, pQuestDD->GetPrizeIndex(i-1));
+		}
+	}
+
+	//º±≈√ ∫∏ªÛ
+	if(pQuestDD->IsOptionPrizeExist())
+	{
+		AddDescString( CTString("\n"), 0xFFFFFFFF );
+		AddDescString( pQuestDD->GetOptionPrizeDesc( 0 ), pQuestDD->GetColorOptionPrizeDesc( 0 ) );
+		m_nSelectPrizeFirstIndex = m_lbDescription.GetCurItemCount(0);//º±≈√ ∫∏ªÛ¿« √ππ¯¬∞ index.
+		for( INDEX i = 1; i < pQuestDD->GetCountOptionPrizeDesc(); ++i )
+		{
+			CTString strPrize = pQuestDD->GetOptionPrizeDesc( i );
+			strPrize = CTString("     ") + strPrize;
+			AddDescString( strPrize, pQuestDD->GetColorOptionPrizeDesc( i ), TRUE );
+			AddDescString( CTString("     "), pQuestDD->GetColorOptionPrizeDesc( i ), TRUE );
+
+			m_lbDescription.SetImageBox(m_lbDescription.GetCurItemCount(0)-2
+				, CUIImageBox::eImageType(pQuestDD->GetOptionPrizeType(i-1))
+				, pQuestDD->GetOptionPrizeIndex(i-1));
+		}
+		m_nSelectPrizeCount = m_lbDescription.GetCurItemCount(0) - m_nSelectPrizeFirstIndex;
+/*
+		AddDescString( CTString("\n"), 0 );
+		AddDescString( pQuestDD->GetOptionPrizeDesc( 0 ), pQuestDD->GetColorOptionPrizeDesc( 0 ) );
+		m_nSelectPrizeFirstIndex = m_lbDescription.GetCurItemCount(0);//º±≈√ ∫∏ªÛ¿« √ππ¯¬∞ index.
+		for(INDEX i = 1; i < pQuestDD->GetCountOptionPrizeDesc(); ++i )
+			AddDescString( pQuestDD->GetOptionPrizeDesc( i ), pQuestDD->GetColorOptionPrizeDesc( i ), TRUE );
+		m_nSelectPrizeCount = m_lbDescription.GetCurItemCount(0) - m_nSelectPrizeFirstIndex;
+*/
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -324,7 +679,6 @@ void CUIQuestBook::InitQuestBook()
 	m_lbDescription.ResetAllStrings();
 	m_lbQuestList.Reset();
 	m_lbQuestList.ResetAllStrings();
-	m_pQuestItem = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -333,17 +687,13 @@ void CUIQuestBook::InitQuestBook()
 // ----------------------------------------------------------------------------
 void CUIQuestBook::CloseQuestBook()
 {
+	CUIQuestBook::UnlockQuest();
 	InitQuestBook();
 	if(m_nUIIndex != UI_QUESTBOOK_LIST) ClearQuestList();
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_QUEST );
 
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_QUEST );
-
-	g_iXPosInQuest = GetPosX();
-	g_iYPosInQuest = GetPosY();
-
-	pUIManager->RearrangeOrder( m_nUIIndex, FALSE );
+	_pUIMgr->RearrangeOrder( m_nUIIndex, FALSE );
 }
 
 // ƒ˘Ω∫∆Æ ∏Ò∑œø° √ﬂ∞°
@@ -359,7 +709,7 @@ BOOL CUIQuestBook::AddToQuestList( int iQuestIndex, BOOL bComplete )
 		CUIMsgBox_Info	MsgBoxInfo;		
 		MsgBoxInfo.SetMsgBoxInfo( _S( 191, "»Æ¿Œ" ), UMBS_OK, UI_NONE, MSGCMD_NULL );				
 		MsgBoxInfo.AddString( _S(4417, "ƒ˘Ω∫∆Æ √÷¥Î ºˆ∑Æ¿ª √ ∞˙«œø© ºˆ∂Ù«“ ºˆ æ¯Ω¿¥œ¥Ÿ.") );
-		CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 		return FALSE;
 	}
@@ -372,7 +722,7 @@ BOOL CUIQuestBook::AddToQuestList( int iQuestIndex, BOOL bComplete )
 	TempQuest.iQuestScale	= qdd.GetQuestPartyScale();
 	
 	// [090603: selo] ƒ´≈◊∞Ì∏Æ∫∞∑Œ ±∏∫–«œ¥¬ ∏ÆΩ∫∆Æø° √ﬂ∞°
-	if( TempQuest.iQuestType >= QCATEGORY_NORMAL && TempQuest.iQuestType <= QCATEGORY_SUPPLEMENT )
+	if( TempQuest.iQuestType >= QCATEGORY_NORMAL && TempQuest.iQuestType <= QCATEGORY_NIGHTSHADOW )
 	{
 		// «ÿ¥Á ƒ´≈◊∞Ì∏Æø° æ¯¿∏∏È √ﬂ∞°
 		if(m_vectorCategoryQuestList[TempQuest.iQuestType].end()
@@ -428,10 +778,7 @@ BOOL CUIQuestBook::DelFromQuestList( int iQuestIndex, BOOL bComplete )
 			break;
 		}
 	}
-
-	m_btnCancel.SetEnable(FALSE);
-	m_lbDescription.Reset();
-	m_lbDescription.ResetAllStrings();
+	
 	// [090609: selo] : ∫“« ø‰«œ∞‘ assert∞° ∞…∏Æ∞‘ µ«¥¬ ∫Œ∫–¿ª ∏∑±‚ ¿ß«ÿ
 	//					¡¯«‡¡ﬂ∞˙ øœ∑·¿Œ ∞Õ¡ﬂø° ¿÷±‚∏∏ «œ∏È ªË¡¶ «œµµ∑œ «œø¥¿Ω.
 	std::vector<sQuestInfo>::iterator it = std::find_if( m_vectorCompleteQuestList.begin(), m_vectorCompleteQuestList.end(), FindQuest( TempQuest ) );
@@ -447,7 +794,8 @@ BOOL CUIQuestBook::DelFromQuestList( int iQuestIndex, BOOL bComplete )
 		m_vectorProceedQuestList.erase( it );
 		return TRUE;
 	}
-
+	
+	
 	return FALSE;
 }
 
@@ -467,19 +815,6 @@ void CUIQuestBook::ClearQuestList()
 	{
 		m_vectorProceedQuestList.clear();
 	}
-	for( int i = 0; i < QCATEGORY_END; ++i )
-	{
-		m_bCategoryListExtended[i] = TRUE;
-		if (!m_vectorCategoryQuestList[i].empty())
-		{
-			m_vectorCategoryQuestList[i].clear();
-		}
-	}
-	m_bRaidMessageListExtended = TRUE;
-	if (!m_vectorRaidMessageList.empty())
-	{
-		m_vectorRaidMessageList.clear();
-	}
 }
 
 // ----------------------------------------------------------------------------
@@ -488,169 +823,293 @@ void CUIQuestBook::ClearQuestList()
 // ----------------------------------------------------------------------------
 void CUIQuestBook::RefreshQuestList()
 {
+#ifdef NEW_QUESTBOOK
 	RefreshQuestListNew();
+	return;
+#endif
+
+	CTString strTemp;
+	ASSERT(m_nUIIndex == UI_QUESTBOOK_LIST);
+	m_lbQuestList.ResetAllStrings();
+	m_lbQuestList.Reset();
+	m_lbQuestList.ChangeCurrentState(m_bProceedListExtended ? CUIListBoxEx::PS_EXTEND : CUIListBoxEx::PS_CLOSE);
+	m_lbQuestList.AddString( 0, CTString( "" ), 0xFFFFFFFF, FALSE );
+	strTemp.PrintF(_S( 1707, "¡¯«‡¡ﬂ¿Œ ƒ˘Ω∫∆Æ (%d)" ), m_vectorProceedQuestList.size()); 
+	m_lbQuestList.AddString( 1, strTemp, 0xffb72dff );
+
+	std::vector<sQuestInfo>::iterator it = m_vectorProceedQuestList.begin();
+	std::vector<sQuestInfo>::iterator itend = m_vectorProceedQuestList.end();
+	for( ; it != itend; ++it )
+	{
+		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHILD);
+		m_lbQuestList.AddString( 0, CTString( "" ), 0xF2F2F2FF );
+		m_lbQuestList.AddString( 1, (*it).strQuestTitle, 0xF2F2F2FF );
+	}
+
+	m_lbQuestList.ChangeCurrentState(m_bCompleteListExtended ? CUIListBoxEx::PS_EXTEND : CUIListBoxEx::PS_CLOSE);
+	m_lbQuestList.AddString( 0, CTString( "" ), 0xFFFFFFFF, FALSE );
+	strTemp.PrintF(_S( 1708, "øœ∑·µ» ƒ˘Ω∫∆Æ (%d)" ), m_vectorCompleteQuestList.size()); 
+	m_lbQuestList.AddString( 1, strTemp, 0xffb72dff );
+
+	it = m_vectorCompleteQuestList.begin();
+	itend = m_vectorCompleteQuestList.end();
+	for( ; it != itend; ++it )
+	{
+		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHILD);
+		m_lbQuestList.AddString( 0, CTString( "" ), 0xF2F2F2FF );
+		m_lbQuestList.AddString( 1, (*it).strQuestTitle, 0xF2F2F2FF );
+	}
 }
 
 // ----------------------------------------------------------------------------
 // Name : AddDescString()
-// Desc : [090812: selo] ∫∏ªÛ º≥∏Ì √≥∏Æ √ﬂ∞°
-//						 π›»Ø∞™ : ∏÷∆º∂Û¿Œ ¿Œ∞°? true / false
+// Desc :
 // ----------------------------------------------------------------------------
-bool CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable, BOOL bPrizeDesc )
+void CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOOL bSelectable )
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();
-	INDEX	limitstrpos = _iMaxDescStringChar;
 	if( nLength == 0 )
-		return false;
+		return;
 	// wooss 051002
-// ∫Í∂Û¡˙ƒ£»≠µµ∫∏ªÛæ∆¿Ã≈∆πˆ±◊ [1/16/2013 Ranma]
-#if defined(G_THAI) 
-	nLength = FindThaiLen(strMessage);
-	limitstrpos = (_iMaxDescStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-	if( UI_QUESTBOOK_LIST == m_nUIIndex )
-		limitstrpos =  (_iMaxDescStringCharNew-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-#else
-	nLength = strMessage.Length();
-	limitstrpos = _iMaxDescStringChar;
-	if( UI_QUESTBOOK_LIST == m_nUIIndex )
-			limitstrpos = _iMaxDescStringCharNew;
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strMessage);
+		INDEX	nChatMax= (_iMaxDescStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+#ifdef NEW_QUESTBOOK
+		if( UI_QUESTBOOK_LIST == m_nUIIndex )
+			nChatMax =  (_iMaxDescStringCharNew-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
 #endif
-	int		iPos;
-	// If length of string is less than max char
-	if( nLength <= limitstrpos )
-	{ 
-		// Check line character		
-		for( iPos = 0; iPos < strMessage.Length(); ++iPos )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;	
+
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
+		{ 
+			// Check line character
+			for( int iPos = 0; iPos < nLength; ++iPos )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;	
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strMessage, colDesc, bSelectable );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable ); 
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc, bSelectable );
+			}
 		}
-		
-		// Not exist
-		if( iPos == nLength )
-		{
-			m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
-			m_lbDescription.AddString( 0, strMessage, colDesc, bSelectable );
-		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strMessage.Split( iPos, strTemp2, strTemp );
-			
-			m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
-			m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable ); 
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddDescString( strTemp, colDesc, bSelectable );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = limitstrpos;
-		BOOL	b2ByteChar = FALSE;
-#if defined(G_THAI) 	
-		for( iPos = 0; iPos < strMessage.Length(); iPos++ )
-		{
-			if(nSplitPos < FindThaiLen(strMessage,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-#else
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strMessage[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-		
-		if( b2ByteChar )
-			nSplitPos--;
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxDescStringChar;
+#ifdef NEW_QUESTBOOK
+			if( UI_QUESTBOOK_LIST == m_nUIIndex )
+				nSplitPos = _iMaxDescStringCharNew;
 #endif
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; ++iPos )
-		{
-			if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
-				break;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strMessage,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; ++iPos )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; ++iPos )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddDescString( strTemp, colDesc, bSelectable );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc, bSelectable );
+			}
+
 		}
 		
-		// Not exist
-		if( iPos == nSplitPos )
+	} else {
+	
+		// If length of string is less than max char
+		int iTempMaxDescStringChar = _iMaxDescStringChar;
+#ifdef NEW_QUESTBOOK
+		if( UI_QUESTBOOK_LIST == m_nUIIndex )
+			iTempMaxDescStringChar = _iMaxDescStringCharNew;
+#endif
+		if( nLength <= iTempMaxDescStringChar )
 		{
-			// Split string
-			CTString	strTemp, strTemp2;
-#ifdef LINE_CHANGE_BY_WORD
-			if( strMessage[nSplitPos] != ' ' )
+			// Check line character
+			for( int iPos = 0; iPos < nLength; ++iPos )
 			{
-				for(int i = iPos; i>=0; --i)
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;	
+			}
+
+			// Not exist
+			if( iPos == nLength )
+			{
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strMessage, colDesc, bSelectable );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable ); 
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc, bSelectable );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxDescStringChar;
+#ifdef NEW_QUESTBOOK
+			if( UI_QUESTBOOK_LIST == m_nUIIndex )
+				nSplitPos = _iMaxDescStringCharNew;
+#endif
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; ++iPos )
+			{
+				if( strMessage[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
+
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; ++iPos )
+			{
+				if( strMessage[iPos] == '\n' || strMessage[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+
+#ifdef LINE_CHANGE_BY_WORD
+				if( strMessage[nSplitPos] != ' ' )
 				{
-					if( strMessage[i] == ' ' )
+					for(int i=iPos; i>=0; --i)
 					{
-						iPos = i;
-						break;
+						if( strMessage[i] == ' ' )
+						{
+							iPos =i;
+							break;
+						}
 					}
 				}
-			}
 #endif
-			strMessage.Split( iPos, strTemp2, strTemp );
-			m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
-			m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
-			
-			// Trim space
-			if( strTemp[0] == ' ' )
-			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; ++iPos )
+
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
 				{
-					if( strTemp[iPos] != ' ' )
-						break;
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; ++iPos )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
 				}
-				
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+
+				AddDescString( strTemp, colDesc, bSelectable );
 			}
-			// [090812: selo] ∫∏ªÛ«∞ ¿Œ ∞ÊøÏ "     " ∏¶ √ﬂ∞°
-			if( TRUE == bPrizeDesc )
-			{
-				CTString strSpace = CTString("     ");
-#if defined(G_RUSSIA)
-				strSpace = CTString("        ");
-#endif
-				
-				strTemp = strSpace + strTemp;
-			}
-			
-			AddDescString( strTemp, colDesc, bSelectable );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp, strTemp2;
-			strMessage.Split( iPos, strTemp2, strTemp );
-			m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
-			m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
-			
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-			
-			AddDescString( strTemp, colDesc, bSelectable );
+			{
+				// Split string
+				CTString	strTemp, strTemp2;
+				strMessage.Split( iPos, strTemp2, strTemp );
+				m_lbDescription.ChangeCurrentState(CUIListBoxEx::PS_NONE);
+				m_lbDescription.AddString( 0, strTemp2, colDesc, bSelectable );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddDescString( strTemp, colDesc, bSelectable );
+			}
 		}
-		// ∏÷∆º ∂Û¿Œ¿∫ true ∏Æ≈œ
-		return true;
-	}		
-	// ∏÷∆º ∂Û¿Œ æ∆¥œ∏È false ∏Æ≈œ
-	return false;
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -659,7 +1118,122 @@ bool CUIQuestBook::AddDescString( CTString &strMessage, const COLOR colDesc, BOO
 // ----------------------------------------------------------------------------
 void CUIQuestBook::Render()
 {
-	RenderQuestListNew();
+#ifdef NEW_QUESTBOOK
+	//if( UI_QUESTBOOK_LIST == m_nUIIndex )
+	{
+		RenderQuestListNew();
+		return;
+	}
+#endif
+
+	// Set texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+
+	// Add render regions
+	int	nY, nX2;
+	nX2 = m_nPosX + m_nWidth;
+	// Background
+	// Top
+	nY = m_nPosY + QUESTBOOK_TOP_HEIGHT;
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 40, nY,
+										m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, m_nPosY, nX2 - 40, nY,
+										m_rtTopM.U0, m_rtTopM.V0, m_rtTopM.U1, m_rtTopM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, m_nPosY, nX2, nY,
+										m_rtTopR.U0, m_rtTopR.V0, m_rtTopR.U1, m_rtTopR.V1,
+										0xFFFFFFFF );
+
+	// Desc middle
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, m_nPosY + QUESTBOOK_HEIGHT - 40,
+										m_rtMiddleScrollL.U0, m_rtMiddleScrollL.V0,
+										m_rtMiddleScrollL.U1, m_rtMiddleScrollL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, m_nPosY + QUESTBOOK_HEIGHT - 40,
+										m_rtMiddleScrollM.U0, m_rtMiddleScrollM.V0,
+										m_rtMiddleScrollM.U1, m_rtMiddleScrollM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, m_nPosY + QUESTBOOK_HEIGHT - 40,
+										m_rtMiddleScrollR.U0, m_rtMiddleScrollR.V0,
+										m_rtMiddleScrollR.U1, m_rtMiddleScrollR.V1,
+										0xFFFFFFFF );
+	
+	// Gap middle	
+	nY = m_nPosY + QUESTBOOK_HEIGHT - 40;
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, nY + 33,
+										m_rtMiddleGapL.U0, m_rtMiddleGapL.V0, m_rtMiddleGapL.U1, m_rtMiddleGapL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, nY + 33,
+										m_rtMiddleGapM.U0, m_rtMiddleGapM.V0, m_rtMiddleGapM.U1, m_rtMiddleGapM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, nY + 33,
+										m_rtMiddleGapR.U0, m_rtMiddleGapR.V0, m_rtMiddleGapR.U1, m_rtMiddleGapR.V1,
+										0xFFFFFFFF );	
+
+	// Bottom	
+	nY = m_nPosY + QUESTBOOK_HEIGHT - 7;
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 40, m_nPosY + QUESTBOOK_HEIGHT,
+										m_rtBottomL.U0, m_rtBottomL.V0, m_rtBottomL.U1, m_rtBottomL.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 40, nY, nX2 - 40, m_nPosY + QUESTBOOK_HEIGHT,
+										m_rtBottomM.U0, m_rtBottomM.V0, m_rtBottomM.U1, m_rtBottomM.V1,
+										0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 40, nY, nX2, m_nPosY + QUESTBOOK_HEIGHT,
+										m_rtBottomR.U0, m_rtBottomR.V0, m_rtBottomR.U1, m_rtBottomR.V1,
+										0xFFFFFFFF );	
+
+	// Close box
+	m_btnClose.Render();
+	if( m_nUIIndex == UI_QUESTBOOK_LIST )
+	{	
+		//RenderGroup();
+
+		//_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
+		m_btnCancel.Render();					// ¥›±‚
+		m_lbQuestList.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+	{
+		m_btnGiveUp.Render();					// ƒ˘Ω∫∆Æ ∆˜±‚
+		m_btnCancel.Render();					// ¥›±‚
+		// List box
+		m_lbDescription.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
+	{
+		m_btnOK.Render();						// »Æ¿Œ	
+#ifdef  NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ºˆ¡§
+		m_btnPrev.Render();						// ¿Ã¿¸
+#endif
+		// List box
+		m_lbDescription.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+	{		
+#ifndef	NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ºˆ¡§
+		m_btnAccept.Render();					// ºˆ∂Ù
+		m_btnReserve.Render();					// ∫∏∑˘	
+		m_btnDeny.Render();						// ∞≈¿˝
+#else
+		m_btnAccept.Render();					// ºˆ∂Ù
+		m_btnPrev.Render();						// ¿Ã¿¸
+		m_btnCancel.Render();					// ¥›±‚
+#endif
+		// List box
+		m_lbDescription.Render();
+	}	
+
+	// Render all elements
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+	// Title
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + QUESTBOOK_TITLE_TEXT_OFFSETX,
+										m_nPosY + QUESTBOOK_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
+
+
+	// Flush all render text queue
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -676,7 +1250,7 @@ void CUIQuestBook::AcceptQuest()				// ƒ˘Ω∫∆Æ ºˆ∂Ù
 	}
 	else
 	{
-		_pNetwork->SendItemUse(m_pQuestItem->Item_Tab, m_pQuestItem->InvenIndex, m_pQuestItem->Item_UniIndex, m_nSelectedQuestIndex);		
+		_pNetwork->SendItemUse(m_pQuestItem->Item_Tab, m_pQuestItem->Item_Row, m_pQuestItem->Item_Col, m_pQuestItem->Item_UniIndex, m_nSelectedQuestIndex);		
 	}
 }
 
@@ -709,12 +1283,9 @@ void CUIQuestBook::ReserveQuest()				// ƒ˘Ω∫∆Æ ∫∏∑˘
 // ----------------------------------------------------------------------------
 void CUIQuestBook::DenyQuest()				// ƒ˘Ω∫∆Æ ∞≈¿˝
 {
-	if(m_nSelectedQuestIndex == -1)
-		return;
+	if(m_nSelectedQuestIndex == -1) return;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->CloseMessageBox(MSGCMD_QUEST_GIVEUP);
+	_pUIMgr->CloseMessageBox(MSGCMD_QUEST_GIVEUP);
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;	
 	MsgBoxInfo.SetMsgBoxInfo( _S( 99, "ƒ˘Ω∫∆Æ" ), UMBS_OKCANCEL, m_nUIIndex, MSGCMD_QUEST_GIVEUP);
@@ -733,7 +1304,7 @@ void CUIQuestBook::DenyQuest()				// ƒ˘Ω∫∆Æ ∞≈¿˝
 		strMessage.PrintF( _S( 1710, "¡§∏ª ¿Ã ƒ˘Ω∫∆Æ∏¶ ∞≈¿˝«œΩ√∞⁄Ω¿¥œ±Ó?" ) );
 	}
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 // ----------------------------------------------------------------------------
@@ -751,7 +1322,7 @@ void CUIQuestBook::GiveUpQuest()				// ƒ˘Ω∫∆Æ ∆˜±‚
 	else
 	{
 		// æ∆¿Ã≈€¿ª ≈Î«ÿº≠ ƒ˘Ω∫∆Æ∏¶ æÚ¿∏∑¡ «“ ∞ÊøÏ
-		_pNetwork->SendItemUse( m_pQuestItem->Item_Tab, m_pQuestItem->InvenIndex, m_pQuestItem->Item_UniIndex, -1 );
+		_pNetwork->SendItemUse( m_pQuestItem->Item_Tab, m_pQuestItem->Item_Row, m_pQuestItem->Item_Col, m_pQuestItem->Item_UniIndex, -1 );
 		CloseQuestBook();
 	}
 }
@@ -783,7 +1354,7 @@ void CUIQuestBook::PrizeQuest()			// ƒ˘Ω∫∆Æ øœ∑·
 			CTString strMessage;
 			strMessage.PrintF( _S( 1711, "πﬁ∞Ì ΩÕ¿∫ ∫∏ªÛ¿ª º±≈√«œø© ¡÷Ω Ω√ø¿." ) );
 			MsgBoxInfo.AddString( strMessage );
-			CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
+			_pUIMgr->CreateMessageBox( MsgBoxInfo );
 			m_lbDescription.SetCurSel(-1);
 			return;
 		}
@@ -797,13 +1368,51 @@ void CUIQuestBook::PrizeQuest()			// ƒ˘Ω∫∆Æ øœ∑·
 		}
 		iItemPlus = pDD->GetOptionPrizePlus(iOptionPrizeIndex);
 	}
+	this->SendQuestPrize(m_nSelectedQuestIndex, m_nTargetIndex, iItemIndex, iItemPlus);
+}
 
-	// tutorial bug fix. [8/24/2010 rumist]
-	if (pDD->GetPrizeNPCIndex() == 0) { // ƒ˘Ω∫∆Æ ∫œ Ω∫≈©∑— ∫∏ªÛ
-		this->SendQuestPrize(m_nSelectedQuestIndex, pDD->GetPrizeNPCIndex(), iItemIndex, iItemPlus);
-	} else {
-		this->SendQuestPrize(m_nSelectedQuestIndex, m_nTargetIndex, iItemIndex, iItemPlus);
+// ----------------------------------------------------------------------------
+// [5/26/2009 selo]
+// Name : ReturnToNPCMenu()
+// Desc : NPC ∏ﬁ¥∫∑Œ µπæ∆∞£¥Ÿ
+// ----------------------------------------------------------------------------
+void CUIQuestBook::ReturnToNPCMenu()
+{
+	int nNpcIndex = -1;
+	int nTargetUIType = -1;
+	
+	if(_pUIMgr->GetQuestBookComplete()->GetCompleteQuestCount())
+	{
+		nNpcIndex = _pUIMgr->GetQuestBookComplete()->m_nPrevNPCIndex;
+		nTargetUIType = _pUIMgr->GetQuestBookComplete()->m_nPrevNPCUIType;
 	}
+	else if(_pUIMgr->GetQuestBookNew()->GetProceedQuestCount())
+	{
+		nNpcIndex = _pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex;
+		nTargetUIType = _pUIMgr->GetQuestBookNew()->m_nPrevNPCUIType;
+	}	
+	
+	// ¿œπ›¿˚¿Œ ƒ˘Ω∫∆Æ ºˆ«‡ ¿Ãø‹¿« øπø‹ ªÛ»≤¿« ∞ÊøÏ √≥∏Æ
+	if( -1 == nNpcIndex )
+	{
+		nNpcIndex = _pUIMgr->GetQuest()->GetNpcIndex();
+		nTargetUIType = UI_QUEST;
+	}
+
+	// ¥¯¿¸ ∏∂Ω∫≈Õ¿« ∞ÊøÏ π´Ω√«œ∞‘ «—¥Ÿ
+	if( 71 == nNpcIndex )
+		return;
+
+	CloseQuestBook();
+
+	// ¿Ã¿¸¿∏∑Œ µπæ∆∞• NPC ªÛ¥Î∞° æ¯¥Ÿ∏È ƒ˘Ω∫∆Æ ¿Áø‰√ª¿ª «œ¡ˆ æ ¥¬¥Ÿ.
+	if( -1 == nNpcIndex )
+		return;
+
+	m_nTargetIndex = nNpcIndex;
+	_pUIMgr->GetQuestBookList()->m_nTargetIndex = m_nTargetIndex;
+
+	RequestQuest( nNpcIndex, nTargetUIType, m_fNpcX, m_fNpcZ );
 }
 
 // ----------------------------------------------------------------------------
@@ -821,65 +1430,21 @@ void CUIQuestBook::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 		}
 		m_bLockQuestList = FALSE;
 		break;
-	case MSGCMD_QUEST_TUTORIAL_START:
-		if( bOK )
-		{
-			;	// nothing.
-		}
-		else
-		{
-			this->OpenTutorialWindow();
-		}
-		break;
-	case MSGCMD_QUEST_TUTORIAL_CANCEL:
-		if( bOK )
-		{
-			this->SendQuestCancel(45);
-		}
-		else
-		{
-			this->OpenTutorialWindow();
-		}
-		break;
 	}
 }
-void CUIQuestBook::MsgBoxLCommand(int nCommandCode, int nResult )
-{
-	switch( nCommandCode )
-	{
-		case MSGLCMD_QUEST_TUTORIAL_OPEN:
-		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
 
-			if( nResult == RESPONSE_OK )
-			{
-				CUIMsgBox_Info MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( _S( 928, "∆©≈‰∏ÆæÛ" ), UMBS_OKCANCEL, UI_QUESTBOOK_LIST, MSGCMD_QUEST_TUTORIAL_START );
-				MsgBoxInfo.AddString( _S( 5042, "∆©≈‰∏ÆæÛ¿ª ¡¯«‡«œΩ√∞⁄Ω¿¥œ±Ó?" ) );
-				pUIManager->CreateMessageBox( MsgBoxInfo );
-			}
-
-			if( nResult == RESPONSE_CALCEL )
-			{
-				CUIMsgBox_Info MsgBoxInfo;
-				MsgBoxInfo.SetMsgBoxInfo( _S( 928, "∆©≈‰∏ÆæÛ" ), UMBS_OKCANCEL, UI_QUESTBOOK_LIST, MSGCMD_QUEST_TUTORIAL_CANCEL );
-				MsgBoxInfo.AddString( _S( 5043, "∆©≈‰∏ÆæÛø°º≠ ≥™∞°Ω√∞⁄Ω¿¥œ±Ó?" ) );
-				pUIManager->CreateMessageBox( MsgBoxInfo );
-			}
-		}
-		break;
-	}
-}
 // ----------------------------------------------------------------------------
 // Name : MouseMessage()
 // Desc :
 // ----------------------------------------------------------------------------
 WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 {
+#ifdef NEW_QUESTBOOK
 	if( UI_QUESTBOOK_LIST == m_nUIIndex )
 	{
 		return MsgProcQuestListNew(pMsg);		
 	}
+#endif
 
 	WMSG_RESULT	wmsgResult;
 
@@ -894,7 +1459,7 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// If message box isn't focused
 			if( !IsFocused() )
@@ -920,9 +1485,26 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 			else if( m_lbDescription.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
 			else if( m_lbQuestList.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-			else if( m_btnPrev.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
+					return WMSG_SUCCESS;
+			else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+			{						
+				if( m_btnGiveUp.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;
+			}
+			else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
+			{
+				if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;
+			}
+			else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+			{				
+				if( m_btnAccept.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;
+				else if( m_btnReserve.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;
+				else if( m_btnDeny.MouseMessage( pMsg ) != WMSG_FAIL )
+					return WMSG_SUCCESS;			
+			}
 		}
 		break;
 
@@ -957,6 +1539,22 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 				// Quest List Box
 				else if( m_lbQuestList.MouseMessage( pMsg ) != WMSG_FAIL )
 				{
+					// º±≈√µ» ƒ˘Ω∫∆Æ.
+					int	iSelQuest = m_lbQuestList.GetCurSel();
+					if( iSelQuest != -1 )
+					{
+						// ¡¯«‡¡ﬂ¿Œ ƒ˘Ω∫∆Æ ¡ﬂ¿« «œ≥™ º±≈√.
+						if( iSelQuest >= 1 && iSelQuest <= m_vectorProceedQuestList.size() + 1 )
+						{
+							_pUIMgr->GetQuestBookContent()->OpenQuestBook( m_vectorProceedQuestList[iSelQuest - 1].iQuestIndex );
+							return WMSG_SUCCESS;
+						}
+						else if( iSelQuest >= ( m_vectorProceedQuestList.size() + 2 ) && iSelQuest < ( m_vectorProceedQuestList.size() + 2 ) + m_vectorCompleteQuestList.size() )
+						{
+							_pUIMgr->GetQuestBookContent()->OpenQuestBook( m_vectorCompleteQuestList[iSelQuest - m_vectorProceedQuestList.size() - 2].iQuestIndex );
+							return WMSG_SUCCESS;
+						}
+					}
 					int groupNameLine = 0;
 					for(int i=0; i<m_lbQuestList.GetCurItemCount(0); ++i)
 					{
@@ -977,8 +1575,46 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 						}
 					}
 				}
+				else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+				{
+					if( m_btnGiveUp.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+				}
+				else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
+				{
+					if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#ifdef NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫Ø∞Ê
+					if( m_btnPrev.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#endif
+				}
+				else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+				{				
+					if( m_btnAccept.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#ifndef	NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫Ø∞Ê
+					else if( m_btnReserve.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+					else if( m_btnDeny.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#else
+					else if( m_btnPrev.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+					else if( m_btnCancel.MouseMessage( pMsg ) != WMSG_FAIL )
+					{
+					}
+#endif
+				}
 
-				CUIManager::getSingleton()->RearrangeOrder( m_nUIIndex, TRUE );
+				_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -986,10 +1622,8 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				m_bTitleBarClick = FALSE;
@@ -1017,22 +1651,85 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 					return WMSG_SUCCESS;
 				else if( m_lbQuestList.MouseMessage( pMsg ) != WMSG_FAIL )
 					return WMSG_SUCCESS;
+				else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+				{
+					// ƒ˘Ω∫∆Æ ∆˜±‚
+					if( m_nSelectedQuestIndex != -1 && ( wmsgResult = m_btnGiveUp.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{						
+						_pUIMgr->CloseMessageBox(MSGCMD_QUEST_GIVEUP);
+						CTString	strMessage;
+						CUIMsgBox_Info	MsgBoxInfo;	
+						MsgBoxInfo.SetMsgBoxInfo( _S( 99, "ƒ˘Ω∫∆Æ" ), UMBS_OKCANCEL, m_nUIIndex, MSGCMD_QUEST_GIVEUP);	
+						strMessage.PrintF( _S( 504, "¡§∏ª ¿Ã ƒ˘Ω∫∆Æ∏¶ √Îº“«œΩ√∞⁄Ω¿¥œ±Ó?" ));	
+						MsgBoxInfo.AddString( strMessage );
+						_pUIMgr->CreateMessageBox( MsgBoxInfo );
+						return WMSG_SUCCESS;
+					}
+					if( ( wmsgResult = m_btnCancel.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							CloseQuestBook();
+						return WMSG_SUCCESS;				
+					}
+				}
 				else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
 				{
 					// ƒ˘Ω∫∆Æ øœ∑·
 					if( ( wmsgResult = m_btnOK.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
-						if( wmsgResult == WMSG_COMMAND )
-							PrizeQuest();
+						PrizeQuest();
 						return WMSG_SUCCESS;				
 					}
+#ifdef NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫Ø∞Ê
 					// NPC ∏ﬁ¥∫ ∏ÆΩ∫∆Æ∑Œ µπæ∆∞®
 					else if( ( wmsgResult = m_btnPrev.MouseMessage( pMsg ) ) != WMSG_FAIL )
 					{
 						if( wmsgResult == WMSG_COMMAND )
-							//ReturnToNPCMenu();
+							ReturnToNPCMenu();
 						return WMSG_SUCCESS;				
 					}
+#endif
+				}
+				else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+				{
+					// ƒ˘Ω∫∆Æ ºˆ∂Ù
+					if( ( wmsgResult = m_btnAccept.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							AcceptQuest();
+						return WMSG_SUCCESS;				
+					}
+#ifndef	NEW_QUESTBOOK	// [090526: selo] »Æ¿Â∆— ƒ˘Ω∫∆Æ ∫Ø∞Ê
+					// ƒ˘Ω∫∆Æ ∫∏∑˘
+					else if( ( wmsgResult = m_btnReserve.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							ReserveQuest();
+						return WMSG_SUCCESS;				
+					}
+					// ƒ˘Ω∫∆Æ ∞≈¿˝
+					else if( ( wmsgResult = m_btnDeny.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							DenyQuest();
+						return WMSG_SUCCESS;				
+					}
+#else
+					// NPC ∏ﬁ¥∫ ∏ÆΩ∫∆Æ∑Œ µπæ∆∞®
+					else if( ( wmsgResult = m_btnPrev.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							ReturnToNPCMenu();
+						return WMSG_SUCCESS;				
+					}
+					// ƒ˘Ω∫∆Æ ¥›±‚
+					else if( ( wmsgResult = m_btnCancel.MouseMessage( pMsg ) ) != WMSG_FAIL )
+					{
+						if( wmsgResult == WMSG_COMMAND )
+							CloseQuestBook();
+						return WMSG_SUCCESS;				
+					}					
+#endif
 				}
 				else if( m_nUIIndex == UI_QUESTBOOK_LIST )
 				{
@@ -1050,7 +1747,7 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -1094,44 +1791,230 @@ WMSG_RESULT CUIQuestBook::MouseMessage( MSG *pMsg )
 // Name : RequestQuest()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIQuestBook::RequestQuest( int nNpcIndex, int nNpcVirIndex, SBYTE sbUIType, FLOAT fX, FLOAT fZ )
+void CUIQuestBook::RequestQuest( int nNpcIndex, SBYTE sbUIType, FLOAT fX, FLOAT fZ )
 {
+/*
+	// too many request is deny
+	if( _pTimer->GetLerpedCurrentTick() - m_fLastRequestTime < 0.2f )
+	{
+		return;
+	}
+	m_fLastRequestTime = _pTimer->GetLerpedCurrentTick();
+*/
 
-}
-void CUIQuestBook::OpenTutorialWindow()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	// If this is alreay exist.
-	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_QUEST_TUTORIAL_OPEN ) )
+	// If quest is aleardy requested
+	if( m_bLockRequestQuest )
 		return;
 
-	pUIManager->CloseMessageBox(MSGCMD_QUEST_TUTORIAL_START);
-	pUIManager->CloseMessageBox(MSGCMD_QUEST_TUTORIAL_CANCEL);
+	// If requesting quest is exist
+	if( CQuestSystem::Instance().GetCurrentRequest() )
+		return;
 
-	// Create refine message box.
-	pUIManager->CreateMessageBoxL( _S( 928,"∆©≈‰∏ÆæÛ" ), UI_QUESTBOOK_LIST, MSGLCMD_QUEST_TUTORIAL_OPEN );
+	switch(sbUIType)
+	{
+	case UI_SHOP:
+		{
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_SHOP_REQ ))
+				return;
+		}
+		break;
+	case UI_REFINE:
+		{
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_REFINE_REQ ))
+				return;
+		}
+		break;
+	case UI_SKILLLEARN:
+		{
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_SKILLLEARN_REQ ) )
+				return;
+			// Special Skill
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_SSKILLLEARN_REQ ) )
+				return;
+		}
+		break;
+	case UI_PROCESSNPC:
+		{
+			if (_pUIMgr->DoesMessageBoxLExist( MSGLCMD_PROCESSNPC_REQ ))
+				return;
+		}
+		break;
+	case UI_REMISSION:
+		{			
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_REMISSION_REQ ) || IsVisible() )
+				return;
+		}
+		break;
+	case UI_QUEST:
+		{
+			if (_pUIMgr->IsUIVisible(sbUIType))
+				return;
 
-	pUIManager->AddMessageBoxLString( MSGLCMD_QUEST_TUTORIAL_OPEN, TRUE, _S( 928, "∆©≈‰∏ÆæÛ" ), -1, 0xE18600FF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_QUEST_TUTORIAL_OPEN, TRUE, _S( 5039, "∂ÛΩ∫∆Æƒ´ø¿Ω∫ø° ø¿Ω≈∞Õ¿ª »Øøµ«’¥œ¥Ÿ.\n¿Ã∞˜¿∫ √≥¿Ω ¡¢º”«œΩ√¥¬ ¿Ø¿˙∫–µÈ¿ª ¿ß«ÿ\n±‚∫ª ¡∂¿€ πÊπ˝¿ª æ»≥ª«œ¥¬ ∞˜¿‘¥œ¥Ÿ.\n\næ’ø° ¿÷¥¬ πÆ¿ª ø≠∞Ì ≈Î∑Œ∏¶ µ˚∂Û∞°Ω√∏È ∞¢¡æ\n∏ÛΩ∫≈Õ∞° µÓ¿Â«œ∞Ì, ≈Î∑Œ ≥°ø° ¡∏¿Á«œ¥¬ ∏ÛΩ∫≈Õ∏¶\nªÁ≥…«œ∏È ¡Í≥Î ∂ıµπ ∏∂¿ª∑Œ ¿Ãµø«œΩ« ºˆ ¿÷Ω¿¥œ¥Ÿ." ), -1, 0xA3A1A3FF );
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_QUEST_REQ ) || IsVisible() )
+				return;
+		}
+		break;
+	case UI_WAREHOUSE:
+		{			
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_WAREHOUSE_REQ ))
+				return;
+		}
+		break;
+	case UI_GUILD:
+		{
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_GUILD_REQ ))
+				return;
+		}
+		break;
+	case UI_CHANGEWEAPON:
+		{
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_CHANGEWEAPON_REQ ))
+				return;
+		}
+		break;
+	case UI_INITJOB:
+		{
+			if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_INITJOB_REQ ))
+				return;
+		}
+		break;
+	case UI_SIEGE_WARFARE:
+		{
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_SIEGE_WARFARE ))
+				return;
+		}
+		break;
+	case UI_PETTRAINING:	// æ÷øœµøπ∞ ¡∂∑√ªÁ.
+		{
+			if(_pUIMgr->DoesMessageBoxLExist( MSGLCMD_PETTRAINING_REQ ))
+				return;
+		}
+		break;
+		// ==! TODO[selo] ¡¶¿€ ∞¸∑√ √≥∏Æ ¡÷ºÆ «¨¥Ÿ
+	/*
+	case UI_PRODUCTNPC:
+		{
+			if (_pUIMgr->DoesMessageBoxLExist(MSGLCMD_PRODUCETNPC_VOUCHER))
+			{
+				return;
+			}
 
-	CTString strMessage;
+			if (_pUIMgr->DoesMessageBoxLExist(MSGLCMD_PRODUCETNPC_LEARN))
+			{
+				return;
+			}
+		}
+	*/
+	}
 
-	// accept
-	strMessage.PrintF( _S( 5040, "»Æ¿Œ (∆©≈‰∏ÆæÛ¿ª ¡¯«‡«’¥œ¥Ÿ.)" ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_QUEST_TUTORIAL_OPEN, FALSE, strMessage, RESPONSE_OK );
+	//INDEX	iPrizeQuestIndex = CQuestSystem::Instance().GetVectorIndexByPrizeNPCIndex( nNpcIndex );
+	CMobData& MD = _pNetwork->GetMobData(nNpcIndex);
+	m_nTargetIndex	= nNpcIndex;
+	m_nTargetUIType = sbUIType;	
 
-	// cancel.
-	strMessage.PrintF( _S( 5041, "≥™∞°±‚ (∆©≈‰∏ÆæÛ¿ª ¡¯«‡«œ¡ˆ æ Ω¿¥œ¥Ÿ.)") );
-	pUIManager->AddMessageBoxLString( MSGLCMD_QUEST_TUTORIAL_OPEN, FALSE, strMessage, RESPONSE_CALCEL );
+	_pUIMgr->GetQuestBookComplete()->m_nTargetIndex = nNpcIndex;
+
+	// Set position of target npc
+	m_fNpcX = fX;
+	m_fNpcZ = fZ;
+
+	SendQuestReq( nNpcIndex );
+	
+	_pUIMgr->GetQuestBookNew()->ClearQuestList();
+	_pUIMgr->GetQuestBookComplete()->ClearQuestList();
 }
+
+
 // ----------------------------------------------------------------------------
 // Name : OpenWindow()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUIQuestBook::OpenWindow( BOOL bHasQuestList )
 {
-	
+	int iMobIndex = m_nTargetIndex;
+	// [090527: selo] ∏˜¿Œµ¶Ω∫∏¶ √£¡ˆ ∏¯«œ¥¬ ∞ÊøÏ¥¬ ƒ˘Ω∫∆Æ ∫œø°º≠ ¿Ã¿¸¿ª ¥≠∑∂¿ª∂ß πﬂª˝«—¥Ÿ.
+	// ±◊∏Æ«œø© PrevNPCIndex ∑Œ ¥ŸΩ√ æÚæÓø¬¥Ÿ.
+	if( -1 == iMobIndex )
+		iMobIndex = m_nPrevNPCIndex;
+
+	switch( m_nTargetUIType )
+	{
+	case UI_SHOP:
+		{
+			_pUIMgr->GetShop()->OpenShop( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;		
+	case UI_REFINE:
+		{
+			_pUIMgr->GetRefine()->OpenRefine( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_SKILLLEARN:
+		{
+			_pUIMgr->GetSkillLearn()->OpenSkillLearn( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_PROCESSNPC:
+		{
+			_pUIMgr->GetProcessNPC()->OpenProcessNPC( );
+		}
+		break;
+	case UI_REMISSION:
+		{			
+			_pUIMgr->GetRemission()->OpenRemission( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_QUEST:
+		{
+			_pUIMgr->GetQuest()->OpenQuest( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_WAREHOUSE:
+		{			
+			_pUIMgr->GetWareHouse()->CheckHasPassWord( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_GUILD:
+		{
+			_pUIMgr->GetGuild()->OpenGuild( iMobIndex, bHasQuestList, _pNetwork->MyCharacterInfo.lGuildPosition, _pNetwork->MyCharacterInfo.lGuildLevel );
+		}
+		break;
+	case UI_CHANGEWEAPON:
+		{
+			_pUIMgr->GetChangeWeapon()->OpenChangeWeapon( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_INITJOB:
+		{
+			_pUIMgr->GetInitJob()->OpenInitJob( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+	case UI_SIEGE_WARFARE:
+		{
+			_pUIMgr->GetSiegeWarfare()->OpenSiegeWarfare();
+		}
+		break;
+	case UI_PETTRAINING:	// æ÷øœµøπ∞ ¡∂∑√ªÁ.
+		{
+			_pUIMgr->GetPetTraining()->OpenPetTraining( iMobIndex, bHasQuestList, m_fNpcX, m_fNpcZ );
+		}
+		break;
+		// ==! TODO[selo] ¡¶¿€ ∞¸∑√ √≥∏Æ ¡÷ºÆ «¨¥Ÿ
+	/*
+	case UI_PRODUCTNPC:
+		{
+			_pUIMgr->GetProductNPC()->OpenProductNPC(iMobIndex, m_fNpcX, m_fNpcZ );
+		}
+	*/
+
+		/*
+	case UI_GAMBLE:		// µµπ⁄ NPC
+		{			
+			_pUIMgr->GetGamble()->OpenGamble( m_fNpcX, m_fNpcZ );
+		}
+		break;
+		*/
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -1181,52 +2064,53 @@ void CUIQuestBook::SendQuestPrize(int iQuestIndex, INDEX iNpcIndex, INDEX iOptio
 // ----------------------------------------------------------------------------
 void CUIQuestBook::TalkWithNPC()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if(GAMEDATAMGR()->GetQuest()->GetCompleteQuestCount())
+	if(_pUIMgr->GetQuestBookComplete()->GetCompleteQuestCount())
 	{
 		// 2009. 05. 27 ±Ë¡§∑°
 		// NPC ∏ﬁ¥∫∑Œ µπæ∆∞• ∞Õ¿ª ¥Î∫Ò«ÿ NPC Index ∏¶ ¿˙¿Â«ÿ µ–¥Ÿ.
-		if( pUIManager->GetQuestBookList()->m_nTargetIndex != -1 )
+		if( _pUIMgr->GetQuestBookList()->m_nTargetIndex != -1 )
 		{
-			pUIManager->GetQuestBookComplete()->SetPrevNpcIdx(pUIManager->GetQuestBookList()->m_nTargetIndex);
-			pUIManager->GetQuestBookComplete()->SetPrevNpcUIType(pUIManager->GetQuestBookComplete()->GetNpcUIType());
+			_pUIMgr->GetQuestBookComplete()->m_nPrevNPCIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+			_pUIMgr->GetQuestBookComplete()->m_nPrevNPCUIType = _pUIMgr->GetQuestBookComplete()->m_nTargetUIType;
 		}
 		else
 		{
-			pUIManager->GetQuestBookList()->m_nTargetIndex = pUIManager->GetQuestBookComplete()->GetPrevNpcIdx();			
+			_pUIMgr->GetQuestBookList()->m_nTargetIndex = _pUIMgr->GetQuestBookComplete()->m_nPrevNPCIndex;			
 		}
 
-		pUIManager->GetQuestBookComplete()->SetTargetIndex(pUIManager->GetQuestBookList()->m_nTargetIndex);
-		pUIManager->GetQuestBookList()->m_nTargetIndex = -1;
-		pUIManager->GetQuestAccept()->SetTargetIndex(-1);
+		_pUIMgr->GetQuestBookComplete()->OpenQuestBook();
+		_pUIMgr->GetQuestBookComplete()->m_nTargetIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+		_pUIMgr->GetQuestBookList()->m_nTargetIndex = -1;
+		_pUIMgr->GetQuestBookNew()->m_nTargetIndex = -1;
 	}
-	else if(GAMEDATAMGR()->GetQuest()->GetProceedQuestCount())
+	else if(_pUIMgr->GetQuestBookNew()->GetProceedQuestCount())
 	{
 		// 2009. 05. 27 ±Ë¡§∑°
 		// NPC ∏ﬁ¥∫∑Œ µπæ∆∞• ∞Õ¿ª ¥Î∫Ò«ÿ NPC Index ∏¶ ¿˙¿Â«ÿ µ–¥Ÿ.
-		if( pUIManager->GetQuestBookList()->m_nTargetIndex != -1 )
+		if( _pUIMgr->GetQuestBookList()->m_nTargetIndex != -1 )
 		{
-			pUIManager->GetQuestAccept()->SetPrevNpcIdx(pUIManager->GetQuestBookList()->m_nTargetIndex);
-			pUIManager->GetQuestAccept()->SetPrevNpcUIType(pUIManager->GetQuestAccept()->GetNpcUIType());
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCUIType = _pUIMgr->GetQuestBookNew()->m_nTargetUIType;
 		}
 		else
 		{
-			pUIManager->GetQuestBookList()->m_nTargetIndex = pUIManager->GetQuestAccept()->GetPrevNpcIdx();			
+			_pUIMgr->GetQuestBookList()->m_nTargetIndex = _pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex;			
 		}
 
-		pUIManager->GetQuestAccept()->SetTargetIndex(pUIManager->GetQuestBookList()->m_nTargetIndex);
-		pUIManager->GetQuestBookList()->m_nTargetIndex = -1;
+		_pUIMgr->GetQuestBookNew()->OpenQuestBook();
+		_pUIMgr->GetQuestBookNew()->m_nTargetIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+		_pUIMgr->GetQuestBookList()->m_nTargetIndex = -1;
 	}
 	else
 	{
 		CUIMsgBox_Info	MsgBoxInfo;
-		MsgBoxInfo.SetMsgBoxInfo( _S( 99, "ƒ˘Ω∫∆Æ" ), UMBS_OK, UI_QUEST_ACCEPT, MSGCMD_QUEST_NOTIFY );
+		MsgBoxInfo.SetMsgBoxInfo( _S( 99, "ƒ˘Ω∫∆Æ" ), UMBS_OK, UI_QUESTBOOK_NEW, MSGCMD_QUEST_NOTIFY );
 		CTString strMessage;
 		strMessage.PrintF( _S( 584, "ºˆ«‡«“ ºˆ ¿÷¥¬ ƒ˘Ω∫∆Æ∞° æ¯Ω¿¥œ¥Ÿ." ) );					
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	}
+	CUIQuestBook::UnlockQuest();
 }
 
 
@@ -1265,42 +2149,26 @@ INDEX CUIQuestBook::GetCompleteQuestIndex(INDEX index)
 // =====================================================
 void CUIQuestBook::AddQuestListToMessageBoxL(const int& iMessageBoxType)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	int iQuestIndex = -1;
 	CTString strQuestTitle;
-	int count;
-
-	count = GAMEDATAMGR()->GetQuest()->GetCompleteQuestCount();
-
-	for( int iComplete = 0; iComplete < count; ++iComplete )
+	
+	for( int iComplete = 0; iComplete < _pUIMgr->GetQuestBookComplete()->GetCompleteQuestCount(); ++iComplete )
 	{
-		iQuestIndex = GAMEDATAMGR()->GetQuest()->GetCompleteQuestIndex(iComplete);
+		iQuestIndex = _pUIMgr->GetQuestBookComplete()->GetCompleteQuestIndex(iComplete);
 		
 		CQuestDynamicData qdd(CQuestSystem::Instance().GetStaticData(iQuestIndex));				
 		strQuestTitle = qdd.GetName();
-
-		// [090728: selo] ƒ˘Ω∫∆Æ ≈∏¿Ã∆≤¿Ã æ∆π´∞Õµµ æ¯¿∏∏È æ¯¥¬ ∞Õ¿∏∑Œ ∞£¡÷ «œ∞Ì ∏ﬁΩ√¡ˆ π⁄Ω∫ø° √ﬂ∞°«œ¡ˆ æ ¥¬¥Ÿ.
-		if( 0 == strQuestTitle.Length() )
-			continue;
 		
-		pUIManager->AddMessageBoxLString( iMessageBoxType, FALSE, strQuestTitle, ciQuestClassifier + iQuestIndex, 0xF2F200FF, CTString("A") );
+		_pUIMgr->AddMessageBoxLString( iMessageBoxType, FALSE, strQuestTitle, ciQuestClassifier + iQuestIndex, 0xF2F200FF, CTString("A") );
 	}
-
-	count = GAMEDATAMGR()->GetQuest()->GetProceedQuestCount();
-
-	for( int iNew = 0; iNew < count; ++iNew )
+	for( int iNew = 0; iNew < _pUIMgr->GetQuestBookNew()->GetProceedQuestCount(); ++iNew )
 	{
-		iQuestIndex = GAMEDATAMGR()->GetQuest()->GetProceedQuestIndex(iNew);
+		iQuestIndex = _pUIMgr->GetQuestBookNew()->GetProceedQuestIndex(iNew);
 		
 		CQuestDynamicData qdd(CQuestSystem::Instance().GetStaticData(iQuestIndex));				
 		strQuestTitle = qdd.GetName();
-
-		// [090728: selo] ƒ˘Ω∫∆Æ ≈∏¿Ã∆≤¿Ã æ∆π´∞Õµµ æ¯¿∏∏È æ¯¥¬ ∞Õ¿∏∑Œ ∞£¡÷ «œ∞Ì ∏ﬁΩ√¡ˆ π⁄Ω∫ø° √ﬂ∞°«œ¡ˆ æ ¥¬¥Ÿ.
-		if( 0 == strQuestTitle.Length() )
-			continue;
 		
-		pUIManager->AddMessageBoxLString( iMessageBoxType, FALSE, strQuestTitle, ciQuestClassifier + iQuestIndex, 0xF2F200FF, CTString("Q") );
+		_pUIMgr->AddMessageBoxLString( iMessageBoxType, FALSE, strQuestTitle, ciQuestClassifier + iQuestIndex, 0xF2F200FF, CTString("Q") );
 	}
 }
 
@@ -1318,42 +2186,40 @@ void CUIQuestBook::SelectQuestFromMessageBox(const int& iClassifierIndex)
 	SBYTE sbType = GetQuestType(iQuestIndex);	
 	if( 1 == sbType )	// ºˆ∂Ù
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		if( pUIManager->GetQuestBookList()->m_nTargetIndex != -1 )
+		if( _pUIMgr->GetQuestBookList()->m_nTargetIndex != -1 )
 		{
-			pUIManager->GetQuestAccept()->SetPrevNpcIdx(pUIManager->GetQuestBookList()->m_nTargetIndex);
-			pUIManager->GetQuestAccept()->SetPrevNpcUIType(pUIManager->GetQuestAccept()->GetNpcUIType());
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCUIType = _pUIMgr->GetQuestBookNew()->m_nTargetUIType;
 		}
 		else
 		{
-			pUIManager->GetQuestBookList()->m_nTargetIndex = pUIManager->GetQuestAccept()->GetPrevNpcIdx();			
+			_pUIMgr->GetQuestBookList()->m_nTargetIndex = _pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex;			
 		}
 
-		pUIManager->GetQuestAccept()->open(iQuestIndex);
-		pUIManager->GetQuestAccept()->SetTargetIndex(pUIManager->GetQuestBookList()->m_nTargetIndex);
-		pUIManager->GetQuestBookList()->m_nTargetIndex = -1;		
+		_pUIMgr->GetQuestBookNew()->OpenQuestBook(iQuestIndex);
+		_pUIMgr->GetQuestBookNew()->m_nTargetIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+		_pUIMgr->GetQuestBookList()->m_nTargetIndex = -1;		
 	}
 	else if( 2 == sbType ) // ∫∏ªÛ
 	{
-		CUIManager* pUIManager = CUIManager::getSingleton();
-
-		if( pUIManager->GetQuestBookList()->m_nTargetIndex != -1 )
+		if( _pUIMgr->GetQuestBookList()->m_nTargetIndex != -1 )
 		{
-			pUIManager->GetQuestBookComplete()->SetPrevNpcIdx(pUIManager->GetQuestBookList()->m_nTargetIndex);
-			pUIManager->GetQuestBookComplete()->SetPrevNpcUIType(pUIManager->GetQuestBookComplete()->GetNpcUIType());
-			pUIManager->GetQuestAccept()->SetPrevNpcIdx(pUIManager->GetQuestBookList()->m_nTargetIndex);
-			pUIManager->GetQuestAccept()->SetPrevNpcUIType(pUIManager->GetQuestAccept()->GetNpcUIType());
+			_pUIMgr->GetQuestBookComplete()->m_nPrevNPCIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+			_pUIMgr->GetQuestBookComplete()->m_nPrevNPCUIType = _pUIMgr->GetQuestBookComplete()->m_nTargetUIType;
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+			_pUIMgr->GetQuestBookNew()->m_nPrevNPCUIType = _pUIMgr->GetQuestBookNew()->m_nTargetUIType;
 		}
 		else
 		{
-			pUIManager->GetQuestBookList()->m_nTargetIndex = pUIManager->GetQuestBookComplete()->GetPrevNpcIdx();
+			_pUIMgr->GetQuestBookList()->m_nTargetIndex = _pUIMgr->GetQuestBookComplete()->m_nPrevNPCIndex;
+			/*if( -1 == _pUIMgr->GetQuestBookList()->m_nTargetIndex )
+				_pUIMgr->GetQuestBookList()->m_nTargetIndex = _pUIMgr->GetQuestBookNew()->m_nPrevNPCIndex;*/
 		}
 
-		pUIManager->GetQuestBookComplete()->open(iQuestIndex);
-		pUIManager->GetQuestBookComplete()->SetTargetIndex(pUIManager->GetQuestBookList()->m_nTargetIndex);
-		pUIManager->GetQuestBookList()->m_nTargetIndex = -1;
-		pUIManager->GetQuestAccept()->SetTargetIndex(-1);
+		_pUIMgr->GetQuestBookComplete()->OpenQuestBook(iQuestIndex);
+		_pUIMgr->GetQuestBookComplete()->m_nTargetIndex = _pUIMgr->GetQuestBookList()->m_nTargetIndex;
+		_pUIMgr->GetQuestBookList()->m_nTargetIndex = -1;
+		_pUIMgr->GetQuestBookNew()->m_nTargetIndex = -1;
 	}
 }
 
@@ -1365,25 +2231,18 @@ void CUIQuestBook::SelectQuestFromMessageBox(const int& iClassifierIndex)
 // =====================================================
 SBYTE CUIQuestBook::GetQuestType(const INDEX& iQuestIndex)
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	int iTempIndex = -1;
-	int count;
-
-	count = GAMEDATAMGR()->GetQuest()->GetCompleteQuestCount();
-
-	for( int iComplete = 0; iComplete < count; ++iComplete )
+	
+	for( int iComplete = 0; iComplete < _pUIMgr->GetQuestBookComplete()->GetCompleteQuestCount(); ++iComplete )
 	{
-		iTempIndex = GAMEDATAMGR()->GetQuest()->GetCompleteQuestIndex(iComplete);
+		iTempIndex = _pUIMgr->GetQuestBookComplete()->GetCompleteQuestIndex(iComplete);
 		
 		if( iQuestIndex == iTempIndex )
 			return 2;
 	}
-
-	count = GAMEDATAMGR()->GetQuest()->GetProceedQuestCount();
-	for( int iNew = 0; iNew < count; ++iNew )
+	for( int iNew = 0; iNew < _pUIMgr->GetQuestBookNew()->GetProceedQuestCount(); ++iNew )
 	{
-		iTempIndex = GAMEDATAMGR()->GetQuest()->GetProceedQuestIndex(iNew);
+		iTempIndex = _pUIMgr->GetQuestBookNew()->GetProceedQuestIndex(iNew);
 		
 		if( iQuestIndex == iTempIndex )
 			return 1;
@@ -1405,8 +2264,6 @@ void CUIQuestBook::AddSelectedQuest(const int& iQuestIndex)
 		return;
 
 	m_listSelectedQuestIndex.push_back(iQuestIndex);
-
-	CUIManager::getSingleton()->GetPlayerInfo()->UpdateSelectedQuest();
 }
 
 // =====================================================
@@ -1418,8 +2275,6 @@ void CUIQuestBook::AddSelectedQuest(const int& iQuestIndex)
 void CUIQuestBook::RemoveSelectedQuest(const int& iQuestIndex)
 {
 	m_listSelectedQuestIndex.remove(iQuestIndex);
-
-	CUIManager::getSingleton()->GetPlayerInfo()->UpdateSelectedQuest();
 }
 
 // =====================================================
@@ -1433,19 +2288,6 @@ bool CUIQuestBook::IsSelectedQuest(const int& iQuestIndex)
 		return true;	
 
 	return false;
-}
-
-// =====================================================
-//  [8/3/2009 sora]
-// Name : ClearSelectedQuestList()
-// Desc : listø° ¿˙¿Âµ«æÓ ¿÷¥¬ º±≈√µ» ƒ˘Ω∫∆Æ ∏ÆΩ∫∆Æ∏¶ clear
-// =====================================================
-void CUIQuestBook::ClearSelectedQuestList()
-{
-	if(!m_listSelectedQuestIndex.empty())
-	{
-		m_listSelectedQuestIndex.clear();
-	}
 }
 
 // =====================================================
@@ -1477,22 +2319,10 @@ void CUIQuestBook::SortQuestListByCondition()
 		if( pQuestDD )
 		{
 			strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle);
-
-			// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-			strTitle = MakeTitleString(strTitle, 20);
-			
-			// [090728: selo] ¡∂∞«ø° µ˚∏• ¡§∑ƒø°º≠µµ ∆ƒ∆º ±‘∏ø° µ˚∂Û ≤ø∏Æ∏ª¿ª ∫Ÿ¿Œ¥Ÿ.
-			if( IsCompleteQuest((*it).iQuestIndex) )
-				strTitle += _S(4422, " (øœ∑·)");
-			else if( QSCALE_PARTY == (*it).iQuestScale )
-				strTitle += _S(4423, " (∆ƒ∆º)");
-			else if( QSCALE_EXPEDITION == (*it).iQuestScale )
-				strTitle += _S(4424, " (ø¯¡§¥Î)");
 		}
 		else
 		{
-			// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-			strTitle = MakeTitleString((*it).strQuestTitle, 20);			
+			strTitle = (*it).strQuestTitle;
 		}
 		
 		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
@@ -1518,24 +2348,11 @@ void CUIQuestBook::SortQuestListByCondition()
 		
 		if( pQuestDD )
 		{
-			strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle);
-
-			// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-			strTitle = MakeTitleString(strTitle, 20);
-
-			// [090728: selo] ¡∂∞«ø° µ˚∏• ¡§∑ƒø°º≠µµ ∆ƒ∆º ±‘∏ø° µ˚∂Û ≤ø∏Æ∏ª¿ª ∫Ÿ¿Œ¥Ÿ.
-			if( IsCompleteQuest((*it).iQuestIndex) )
-				strTitle += _S(4422, " (øœ∑·)");
-			else if( QSCALE_PARTY == (*it).iQuestScale )
-				strTitle += _S(4423, " (∆ƒ∆º)");
-			else if( QSCALE_EXPEDITION == (*it).iQuestScale )
-				strTitle += _S(4424, " (ø¯¡§¥Î)");
+			strTitle.PrintF("[%d] %s (%s)", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle, _S( 429, "øœ∑·" ));
 		}
 		else
 		{
-			// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-			strTitle = MakeTitleString((*it).strQuestTitle, 20);
-			strTitle.PrintF("%s (%s)", strTitle, _S( 429, "øœ∑·" ));
+			strTitle.PrintF("%s (%s)", (*it).strQuestTitle, _S( 429, "øœ∑·" ));
 		}
 		
 		m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
@@ -1603,10 +2420,10 @@ void CUIQuestBook::SortQuestListByType()
 		{
 			strTemp.PrintF(_S(4420, "ø‹¿¸ (%d)"), m_vectorCategoryQuestList[i].size()); 
 		}
-		/*else if( QCATEGORY_NIGHTSHADOW == i )
+		else if( QCATEGORY_NIGHTSHADOW == i )
 		{
 			strTemp.PrintF(_S(4421, "≥™¿Ã∆Æ Ω¶µµøÏ (%d)"), m_vectorCategoryQuestList[i].size()); 
-		}*/		
+		}		
 		m_lbQuestList.AddString( 1, strTemp, 0xffb72dff );
 		
 		std::vector<sQuestInfo>::iterator it = m_vectorCategoryQuestList[i].begin();
@@ -1620,9 +2437,6 @@ void CUIQuestBook::SortQuestListByType()
 			{
 				strTitle.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (*it).strQuestTitle);
 
-				// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-				strTitle = MakeTitleString(strTitle, 20);
-
 				if( IsCompleteQuest((*it).iQuestIndex) )
 					strTitle += _S(4422, " (øœ∑·)");
 				else if( QSCALE_PARTY == (*it).iQuestScale )
@@ -1632,8 +2446,7 @@ void CUIQuestBook::SortQuestListByType()
 			}
 			else
 			{
-				// [090810: selo] ¡¶∏Ò¿Ã ±Ê∏È ... ¿∏∑Œ ¡Ÿ¿Œ¥Ÿ
-				strTitle = MakeTitleString((*it).strQuestTitle, 20);				
+				strTitle = (*it).strQuestTitle;
 			}
 			
 			m_lbQuestList.ChangeCurrentState(CUIListBoxEx::PS_CHECKCHILD);
@@ -1737,38 +2550,6 @@ void CUIQuestBook::SetQuestRemainTime(int iQuestIndex, int iRemainTime)
 	}	
 }
 
-
-// =====================================================
-//  [8/10/2009 selo]
-// Name : MakeTitleString
-// Desc : ¡¶∏Ò¿Ã ±ÊæÓ¡ˆ∏È ... ¿∏∑Œ ∫Ø∞Ê«œø© ¡ÿ¥Ÿ
-// =====================================================
-CTString CUIQuestBook::MakeTitleString(CTString strTitle, int iSplitPos)
-{
-	if( strTitle.Length() <= iSplitPos )
-		return strTitle;
-
-	BOOL b2ByteChar = FALSE;
-
-	for( int iPos = 0; iPos < iSplitPos; ++iPos )
-	{
-		if( strTitle[iPos] & 0x80 )
-			b2ByteChar = !b2ByteChar;
-		else
-			b2ByteChar = FALSE;
-	}
-	
-	if( b2ByteChar )
-		iSplitPos--;
-
-	CTString	strTemp, strTemp2;
-	strTitle.Split( iSplitPos, strTemp, strTemp2 );
-
-	strTemp += _s("...");
-
-	return strTemp;
-}
-
 // =====================================================
 //  [7/8/2009 selo]
 // Name : AddRaidMessage
@@ -1789,35 +2570,6 @@ void CUIQuestBook::AddRaidMessage(const int& iQuestIndex)
 
 	// [090709: selo] ¿Œµ¶Ω∫ ¿€¿∫∞‘ æ’¿∏∑Œ ∞°∞‘ ¡§∑ƒ«—¥Ÿ.
 	std::sort(m_vectorRaidMessageList.begin(), m_vectorRaidMessageList.end());
-	
-	// [090820: selo] ¿ÃπÃ πﬂª˝«— ƒ˘Ω∫∆Æ ∞¯¡ˆ¿Œ¡ˆ √º≈©«œ∞‘ «—¥Ÿ.
-	bool bExist = false;
-	for( int i = 0; i < m_aAlreadyShowQuestNotice.Count(); ++i )
-	{
-		if( iQuestIndex == m_aAlreadyShowQuestNotice[i] )
-		{
-			bExist = true;
-			break;		
-		}		
-	}
-	if( !bExist )
-	{
-		for( int index = 0; index < m_aAlreadyShowQuestNotice.Count(); ++index )
-		{
-			if( 0 == m_aAlreadyShowQuestNotice[index] )
-			{
-				m_aAlreadyShowQuestNotice[index] = iQuestIndex;
-				
-				// [090817: selo] ƒ˘Ω∫∆Æ ∞¯¡ˆ∏¶ ≥™ø¿∞‘ «—¥Ÿ.
-				CUIManager::getSingleton()->GetPlayerInfo()->UpdateQuestNotice(iQuestIndex);
-				
-				// [090818: selo] ƒ˘Ω∫∆Æ ∞¯¡ˆ Ω√¿€µ» Ω√∞£¿ª ±‚∑œ«—¥Ÿ.
-				m_dQuestNoticeStartTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-
-				break;
-			}
-		}
-	}	
 }
 
 // =====================================================
@@ -1833,8 +2585,6 @@ void CUIQuestBook::RemoveRaidMessage(const int& iQuestIndex)
 	// æ∆∑°¿« ±∏πÆ¿Ã ¿Ã«ÿ∞° æ»µ«¥¬ ªÁ∂˜¿∫
 	// " remove-erase «’º∫πÆ " ¿∏∑Œ ±∏±€ ∞Àªˆ «ÿ∫∏Ω√±Ê
 	m_vectorRaidMessageList.erase(std::remove(m_vectorRaidMessageList.begin(), m_vectorRaidMessageList.end(), TempQuest));
-	
-	m_listSelectedQuestIndex.remove(iQuestIndex);
 }
 
 // =====================================================
@@ -1844,17 +2594,7 @@ void CUIQuestBook::RemoveRaidMessage(const int& iQuestIndex)
 // =====================================================
 void CUIQuestBook::RemoveRaidMessageAll(void)
 {
-	std::vector<sQuestInfo>::iterator iter = m_vectorRaidMessageList.begin();
-	while( iter != m_vectorRaidMessageList.end() )
-	{
-		m_listSelectedQuestIndex.remove((*iter).iQuestIndex);
-
-		++iter;
-	}
-	CUIManager::getSingleton()->GetPlayerInfo()->UpdateSelectedQuest();
-
 	m_vectorRaidMessageList.clear();
-	RaidEnd();
 }
 
 // =====================================================
@@ -1905,60 +2645,6 @@ bool CUIQuestBook::isRaidMessage(const int& iQuestIndex)
 }
 
 // =====================================================
-//  [8/18/2009 selo]
-// Name : GetQuestNoticeElapsedTime
-// Desc : ƒ˘Ω∫∆Æ ∞¯¡ˆ∏¶ ∂ÁøÓ »ƒ »Â∏• Ω√∞£¿ª æÀ∑¡¡ÿ¥Ÿ.
-// =====================================================
-DOUBLE CUIQuestBook::GetQuestNoticeElapsedTime()
-{
-	return _pTimer->GetHighPrecisionTimer().GetSeconds() - m_dQuestNoticeStartTime;	
-}
-
-// =====================================================
-//  [9/7/2009 selo]
-// Name : RaidEnd
-// Desc : ∑π¿ÃµÂ ≥°
-// =====================================================
-void CUIQuestBook::RaidEnd(void)
-{
-	m_bIsRaidNow = false;
-	m_dRaidRemainTime = -1;	
-}
-
-// =====================================================
-//  [9/7/2009 selo]
-// Name : RaidStart
-// Desc : ∑π¿ÃµÂ ≥≤¿∫ Ω√∞£ º≥¡§
-// =====================================================
-void CUIQuestBook::SetRaidRemainTime(INDEX iRemainTime)
-{
-	m_bIsRaidNow = true;
-	m_dRaidRemainTime = iRemainTime;
-	m_dRaidRemainTimeRecvTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-}
-
-// =====================================================
-//  [9/7/2009 selo]
-// Name : GetRaidTargetTime
-// Desc : ∑π¿ÃµÂ ∏Ò«• Ω√∞£ æÚ±‚
-// =====================================================
-DOUBLE CUIQuestBook::GetRaidReminTime(void)
-{	
-	DOUBLE dOffset = _pTimer->GetHighPrecisionTimer().GetSeconds() - m_dRaidRemainTimeRecvTime;
-	return m_dRaidRemainTime - dOffset;
-}
-
-// =====================================================
-//  [9/7/2009 selo]
-// Name : IsRaidNow
-// Desc : ¡ˆ±› ∑π¿ÃµÂ ¡ﬂ¿Œ∞°?
-// =====================================================
-BOOL CUIQuestBook::IsRaidNow(void)
-{
-	return (CUIManager::getSingleton()->IsPlayInZone() && m_bIsRaidNow);
-}
-
-// =====================================================
 //  [5/29/2009 selo]
 // Name : CreateQuestListNew()
 // Desc : ƒ˘Ω∫∆Æ ∏ÆΩ∫∆Æ∏¶ »Æ¿Â«œ±‚ ¿ß«— ªı∑ŒøÓ ª˝º∫ «‘ºˆ
@@ -1968,10 +2654,11 @@ void CUIQuestBook::CreateQuestListNew( CUIWindow *pParentWnd, int nX, int nY, in
 	// ! Notice : nWidth, nHeight ¥¬ ªÁøÎ«œ¡ˆ æ ∞Ì 
 	// πÃ∏Æ º≥¡§«— WidthøÕ Height∏¶ ªÁøÎ «œ±‚∑Œ«—¥Ÿ.
 
-	CUIWindow::Create(pParentWnd, nX, nY, iQuestListWidth, iQuestListHeight + 30);
-
-	// ∫Í∂Û¡˙ƒ£»≠µµ∫∏ªÛæ∆¿Ã≈∆πˆ±◊ [1/16/2013 Ranma]
-	_iMaxDescStringCharNew = 192 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( iQuestListWidth, iQuestListHeight + 30 );
+	
+	_iMaxDescStringCharNew = 182 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	_iMaxSelStringCharNew = 191 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	_iMaxDescStringChar = _iMaxDescStringCharNew;
 	_iMaxSelStringChar = _iMaxSelStringCharNew;
@@ -2007,9 +2694,9 @@ void CUIQuestBook::CreateQuestListNew( CUIWindow *pParentWnd, int nX, int nY, in
 	m_cmbSort.AddString(_S(4426, "¡æ∑˘ø° µ˚∏• ¡§∑ƒ"));
 	m_cmbSort.SetCurSel(0);
 
-	m_ptdCommonBtnTexture = CreateTexture( strCommonBtnTexFileName );
-	fTexWidth = m_ptdCommonBtnTexture->GetPixWidth();
-	fTexHeight = m_ptdCommonBtnTexture->GetPixHeight();
+	CTextureData* pTexture = CreateTexture( strCommonBtnTexFileName );
+	fTexWidth = pTexture->GetPixWidth();
+	fTexHeight = pTexture->GetPixHeight();
 
 	// OK button
 	m_btnOK.Create( this, _S( 191, "»Æ¿Œ" ), 165, 304, 78, 22 );
@@ -2064,9 +2751,7 @@ void CUIQuestBook::CreateQuestListNew( CUIWindow *pParentWnd, int nX, int nY, in
 	
 	// Cancel button
 	if( UI_QUESTBOOK_LIST == m_nUIIndex )
-	{
-		m_btnCancel.Create( this, _S( 1695, "∫∏ªÛ" ), 388, 304, 78, 22 );
-	}
+		m_btnCancel.Create( this, _S( 870, "¥›±‚" ), 388, 304, 78, 22 );
 	else
 		m_btnCancel.Create( this, _S( 870, "¥›±‚" ), 165, 304, 78, 22 );
 	m_btnCancel.SetUV( UBS_IDLE, 113, 0, 182, 22, fTexWidth, fTexHeight );
@@ -2156,13 +2841,6 @@ void CUIQuestBook::CreateQuestListNew( CUIWindow *pParentWnd, int nX, int nY, in
 	m_lbDescription.SetScrollBarMiddleUV( 185, 41, 195, 51, fTexWidth, fTexHeight );
 	m_lbDescription.SetScrollBarBottomUV( 185, 61, 195, 71, fTexWidth, fTexHeight );
 	m_lbDescription.SetSelectColor( 0xF8E1B5FF );
-
-	// [090820: selo] ¿ÃπÃ ∫∏ø©¡¯ ƒ˘Ω∫∆Æ ∞¯¡ˆ∏¶ ¿˙¿Â«“ πËø≠
-	m_aAlreadyShowQuestNotice.New(iQuestNoticeCnt);
-	for( int i = 0; i < m_aAlreadyShowQuestNotice.Count(); ++i )
-	{
-		m_aAlreadyShowQuestNotice[i] = 0;
-	}
 }
 
 // =====================================================
@@ -2194,10 +2872,8 @@ void CUIQuestBook::RefreshQuestListNew()
 // =====================================================
 void CUIQuestBook::RenderQuestListNew()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nY, nX2;
@@ -2207,21 +2883,22 @@ void CUIQuestBook::RenderQuestListNew()
 	nY = m_nPosY + QUESTBOOK_TOP_HEIGHT;
 	if( UI_QUESTBOOK_LIST == m_nUIIndex )
 	{	
-		pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + iQuestListWidth, m_nPosY + iQuestListHeight,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + iQuestListWidth, m_nPosY + iQuestListHeight,
 											m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
 											0xFFFFFFFF );
 		m_cmbSort.Render();
 	}
 	else
 	{
-		pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 251, m_nPosY + 332,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 251, m_nPosY + 332,
 											m_rtTopL.U0, m_rtTopL.V0, m_rtTopL.U1, m_rtTopL.V1,
 											0xFFFFFFFF );
 	}
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData(m_ptdCommonBtnTexture);
+	CTextureData* pTexture = CreateTexture( strCommonBtnTexFileName );
+	_pUIMgr->GetDrawPort()->InitTextureData( pTexture );
 	
 	// Close box
 	m_btnClose.Render();
@@ -2230,19 +2907,44 @@ void CUIQuestBook::RenderQuestListNew()
 		m_btnGiveUp.Render();
 		m_btnCancel.Render();					// ¥›±‚
 		m_lbQuestList.Render();
-
-		pDrawPort->InitTextureData(m_ptdCommonBtnTexture);
+		m_lbDescription.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_CONTENT )
+	{
+		m_btnGiveUp.Render();					// ƒ˘Ω∫∆Æ ∆˜±‚
+		m_btnCancel.Render();					// ¥›±‚
+		// List box
+		m_lbDescription.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_COMPLETE )
+	{
+		m_btnOK.Render();						// »Æ¿Œ
+		m_btnPrev.Render();						// ¿Ã¿¸
+		// List box
+		m_lbDescription.Render();
+	}
+	else if( m_nUIIndex == UI_QUESTBOOK_NEW )
+	{		
+		m_btnAccept.Render();					// ºˆ∂Ù
+		m_btnPrev.Render();						// ¿Ã¿¸
+		m_btnCancel.Render();					// ¥›±‚
+		// List box
 		m_lbDescription.Render();
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Title
-	pDrawPort->PutTextEx( m_strTitle, m_nPosX + 209, m_nPosY + 15, 0xDED9A0FF );
+	if( UI_QUESTBOOK_LIST == m_nUIIndex )
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + 209, m_nPosY + 15, 0xDED9A0FF );
+	else if( UI_QUESTBOOK_NEW == m_nUIIndex )
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + 106, m_nPosY + 15, 0xDED9A0FF );
+	else
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strTitle, m_nPosX + 84, m_nPosY + 15, 0xDED9A0FF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // =====================================================
@@ -2252,12 +2954,6 @@ void CUIQuestBook::RenderQuestListNew()
 // =====================================================
 WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	// quest book bug fix. [8/26/2010 rumist]
-	if( m_bLockQuestList && (!pUIManager->DoesMessageBoxExist( MSGCMD_QUEST_GIVEUP )) )
-		m_bLockQuestList = FALSE;
-
 	if( TRUE == m_bLockQuestList )
 		return WMSG_FAIL;
 
@@ -2274,7 +2970,7 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				pUIManager->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// If message box isn't focused
 			if( !IsFocused() )
@@ -2345,9 +3041,6 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 				// Quest List Box
 				else if( ( wmsgResult = m_lbQuestList.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
-					// [090731: selo] Ω∫≈©∑—πŸ ¿ßƒ° √ ±‚»≠
-					m_lbDescription.SetScrollBarPos(0);
-					
 					// ¡¯«‡ ªÛ≈¬ø° µ˚∏• ¡§∑ƒ¿Ã∏È
 					if( 0 == m_nSortType )
 					{
@@ -2376,25 +3069,10 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 							// [090602: selo] √º≈©∞° ∫Ø∞Ê¿Ã∏È
 							if( WMSG_COMMAND == wmsgResult )
 							{
-								// [090727: selo] √º≈© ∞≥ºˆ∞° 6∞≥ ≥—æÓ∞°∏È ∏ﬁΩ√¡ˆ ∂ÁøÏ∞Ì π´Ω√
-								if( m_lbQuestList.GetCheckCount() > 6 )
-								{
-									// √º≈© «Æ∞Ì
-									// ∏ﬁΩ√¡ˆ π⁄Ω∫ ∂ÁøÓ¥Ÿ
-									m_lbQuestList.SetCheckState(iSelQuest, FALSE);
-
-									CUIMsgBox_Info	MsgBoxInfo;		
-									MsgBoxInfo.SetMsgBoxInfo( _S( 191, "»Æ¿Œ" ), UMBS_OK, UI_NONE, MSGCMD_NULL );				
-									MsgBoxInfo.AddString( _S(4694, "6∞≥ ¿ÃªÛ ºˆ«‡ ∏ÆΩ∫∆Æ∏¶ √‚∑¬«“ ºˆ æ¯Ω¿¥œ¥Ÿ.") );
-									pUIManager->CreateMessageBox( MsgBoxInfo );									
-								}
+								if( m_lbQuestList.GetCheckState(iSelQuest) )
+									AddSelectedQuest(m_nSelectedQuestIndex);
 								else
-								{								
-									if( m_lbQuestList.GetCheckState(iSelQuest) )
-										AddSelectedQuest(m_nSelectedQuestIndex);
-									else
-										RemoveSelectedQuest(m_nSelectedQuestIndex);
-								}
+									RemoveSelectedQuest(m_nSelectedQuestIndex);
 							}
 
 							return WMSG_SUCCESS;
@@ -2485,25 +3163,10 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 							// [090602: selo] √º≈©∞° ∫Ø∞Ê¿Ã∏È
 							if( WMSG_COMMAND == wmsgResult )
 							{
-								// [090727: selo] √º≈© ∞≥ºˆ∞° 6∞≥ ≥—æÓ∞°∏È ∏ﬁΩ√¡ˆ ∂ÁøÏ∞Ì π´Ω√
-								if( m_lbQuestList.GetCheckCount() > 6 )
-								{
-									// √º≈© «Æ∞Ì
-									// ∏ﬁΩ√¡ˆ π⁄Ω∫ ∂ÁøÓ¥Ÿ
-									m_lbQuestList.SetCheckState(iSelQuest, FALSE);
-
-									CUIMsgBox_Info	MsgBoxInfo;		
-									MsgBoxInfo.SetMsgBoxInfo( _S( 191, "»Æ¿Œ" ), UMBS_OK, UI_NONE, MSGCMD_NULL );				
-									MsgBoxInfo.AddString( _S(4694, "6∞≥ ¿ÃªÛ ºˆ«‡ ∏ÆΩ∫∆Æ∏¶ √‚∑¬«“ ºˆ æ¯Ω¿¥œ¥Ÿ.") );
-									pUIManager->CreateMessageBox( MsgBoxInfo );									
-								}
+								if( m_lbQuestList.GetCheckState(iSelQuest) )
+									AddSelectedQuest(m_nSelectedQuestIndex);
 								else
-								{								
-									if( m_lbQuestList.GetCheckState(iSelQuest) )
-										AddSelectedQuest(m_nSelectedQuestIndex);
-									else
-										RemoveSelectedQuest(m_nSelectedQuestIndex);
-								}
+									RemoveSelectedQuest(m_nSelectedQuestIndex);
 							}
 
 							return WMSG_SUCCESS;
@@ -2534,7 +3197,7 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 				{
 				}				
 
-				pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
+				_pUIMgr->RearrangeOrder( m_nUIIndex, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -2543,7 +3206,7 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 	case WM_LBUTTONUP:
 		{
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				m_bTitleBarClick = FALSE;
@@ -2564,22 +3227,20 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 				else if( ( wmsgResult = m_btnCancel.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
-					{
-						pUIManager->GetQuestBookComplete()->open(m_nSelectedQuestIndex);
-					}
+						CloseQuestBook();					
 
 					return WMSG_SUCCESS;
 				}
 				// Give up button				
 				else if( m_nSelectedQuestIndex != -1 && ( wmsgResult = m_btnGiveUp.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{						
-					pUIManager->CloseMessageBox(MSGCMD_QUEST_GIVEUP);
+					_pUIMgr->CloseMessageBox(MSGCMD_QUEST_GIVEUP);
 					CTString	strMessage;
 					CUIMsgBox_Info	MsgBoxInfo;	
 					MsgBoxInfo.SetMsgBoxInfo( _S( 99, "ƒ˘Ω∫∆Æ" ), UMBS_OKCANCEL, m_nUIIndex, MSGCMD_QUEST_GIVEUP);	
 					strMessage.PrintF( _S( 504, "¡§∏ª ¿Ã ƒ˘Ω∫∆Æ∏¶ √Îº“«œΩ√∞⁄Ω¿¥œ±Ó?" ));	
 					MsgBoxInfo.AddString( strMessage );
-					pUIManager->CreateMessageBox( MsgBoxInfo );
+					_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					m_bLockQuestList = TRUE;
 					return WMSG_SUCCESS;
 				}
@@ -2597,7 +3258,7 @@ WMSG_RESULT CUIQuestBook::MsgProcQuestListNew( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}

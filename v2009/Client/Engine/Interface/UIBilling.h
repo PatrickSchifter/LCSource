@@ -10,6 +10,10 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <vector>
+
 // Define Size Of Billing
 #define	BILLING_WIDTH				311
 #define	BILLING_HEIGHT				281

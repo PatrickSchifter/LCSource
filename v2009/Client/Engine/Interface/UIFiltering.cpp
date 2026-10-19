@@ -1,12 +1,14 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <string>
-#include <vector>
-#include <Engine/Interface/UIFiltering.h>
+#include <Engine/Base/Memory.h>
+#include "UIFiltering.h"
+#include "Engine/GlobalDefinition.h"
+#include <stdio.h>
+#include <Engine/Base/Memory.h>
 #include <algorithm>
+#include <iostream>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
+
 
 CUIFiltering _UIFiltering;
 CUIFiltering _UIFilteringCharacter;
@@ -16,13 +18,9 @@ extern INDEX g_iCountry;
 
 #define is_space(c)		(c == 0x20 || (c >= 0x09 && c <= 0x0D))
 
-// modified by D.K 
-// since 2009-09-29
-// comments : key change string to hexa code.
-#pragma warning( disable: 4305)		// disable truncation warning.
-#pragma warning( disable: 4309)		// disable truncation warning.
-const char	szKey_brz[32] = {0x8D,0x8F,0x81,0x90,0x9D,0x8D,0x90,0x9D,0x81,0x81,0x9D,0x8F,0x8D,0x8D,0x81,0x90,0x81,0x8D,0x90,0x8F,
-								0x8D,0x8F,0x9D,0x8F,0x9D,0x8D,0x90,0x9D,0x81,0x90,0x81,0x9D};
+char*	szKey	= "34toiuoakfaj2095lkjalsd;lweou";
+char*	szKey_brz = {"0x8D,0x8F,0x81,0x90,0x9D,0x8D,0x90,0x9D,0x81,0x81,0x9D,0x8F,0x8D,0x8D,0x81,0x90,0x81,0x8D,0x90,0x8F"}; 
+					//"%☆@□♠▶┏㉵ⓤⅵ㎥◑￦♩┛";
 
 //------------------------------------------------------------------------------
 // makeLowCase()
@@ -70,7 +68,7 @@ void CUIFiltering::Clear()
 // Explain:  
 // Date : 2005-01-13,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-BOOL CUIFiltering::Create( char* file_name , bool charfilter)
+BOOL CUIFiltering::Create( char* file_name )
 {
 	
 	FILE* fp;	
@@ -91,7 +89,6 @@ BOOL CUIFiltering::Create( char* file_name , bool charfilter)
 	
 	if ( strcmp ( szEndCodingBuffer, m_strRefineWord ) != 0 )
 	{
-		fclose(fp);
 		return FALSE;	
 	}
 
@@ -119,8 +116,6 @@ BOOL CUIFiltering::Create( char* file_name , bool charfilter)
 	fclose(fp);			
 
 	stable_sort ( m_vList.begin(), m_vList.end(), lessLength );
-
-	m_bCharacterfilter = charfilter;
 	
 	//MySort_ForFilter ( m_vList, m_nListCount );			
 
@@ -175,21 +170,18 @@ BOOL CUIFiltering::Filtering( char* syntax )
 	}
 
 	// add new temp val 060419--------------------<<
-	//char *tv_syntax = new(char[len+1]);
-	//strcpy(tv_syntax,syntax);
-	char chComp[256];
-	memcpy(chComp, syntax, len);
-	chComp[len] = '\0';
+	char *tv_syntax = new(char[len+1]);
+	strcpy(tv_syntax,syntax);
 	// ------------------------------------------->>
 
 	// space 를 모두 없애고, space 가 있던 
 	for ( i = 0; i < len; i++ ) 
 	{
-		if ( is_space ( chComp[i] ) ) 
+		if ( is_space ( tv_syntax[i] ) ) 
 		{
 			for ( pos = i; pos < len; pos++ ) 
 			{
-				chComp[pos] = chComp[pos+1];
+				tv_syntax[pos] = tv_syntax[pos+1];
 			}
 
 			space_array[space_cnt++] = i;
@@ -197,10 +189,8 @@ BOOL CUIFiltering::Filtering( char* syntax )
 			i--;
 		}
 		else {
-			//[ttos_2009_8_6]: 채팅무시는 캐릭터이름으로 비교하므로 스트링 변환을 시키지 않는다
 			// 영문자 소문자로 비교 060403
-			if(!m_bCharacterfilter) 
-				makeLowCase( &chComp[i] );
+			makeLowCase( &tv_syntax[i] );
 		}
 	}
 
@@ -220,16 +210,7 @@ BOOL CUIFiltering::Filtering( char* syntax )
 		{
 			mid = ( right + left ) / 2;
 			
-			int Res;
-			if (!m_bCharacterfilter)
-			{
-				Res = m_vList[mid].strString.compare ( 0, m_vList[mid].nString, chComp+i, 0, m_vList[mid].nString );
-			}else
-			{
-				Res = m_vList[mid].strString.compare ( 0, m_vList[mid].nString, chComp+i, 0, len);
-			}
-
-			
+			int Res = m_vList[mid].strString.compare ( 0, m_vList[mid].nString, tv_syntax+i, 0, m_vList[mid].nString );
 			//strncmp ( m_vList[mid].strString, &syntax[i], m_vList[mid].nString );
 					
 			if ( Res < 0 ) 
@@ -241,14 +222,10 @@ BOOL CUIFiltering::Filtering( char* syntax )
 				right = mid - 1; //  check_buffer이 더 작으면
 			} 
 			else // 찾았다.
-			{
-				if (!m_bCharacterfilter || (m_bCharacterfilter && m_vList[mid].nString == len))
-				{
-					memcpy ( &chComp[i], m_vList[mid].strReword.c_str(), m_vList[mid].nReword );
-					bFount = TRUE;
-					break;
-				}
-				
+			{ 
+				memcpy ( &tv_syntax[i], m_vList[mid].strReword.c_str(), m_vList[mid].nReword );
+				bFount = TRUE;
+				break;
 			}
 		}
 
@@ -261,7 +238,7 @@ BOOL CUIFiltering::Filtering( char* syntax )
 		} 
 		else 
 		{
-			if ( chComp[i] < 0 || chComp[i] > 127 )  //2바이트
+			if ( tv_syntax[i] < 0 || tv_syntax[i] > 127 )  //2바이트
 			{
 				i += 2;
 			} 
@@ -317,7 +294,7 @@ BOOL CUIFiltering::Filtering( char* syntax, int* szReturn )
 	{
 		if ( is_space ( chComp[i] ) ) 
 		{
-#if !defined(G_USA)
+			if (g_iCountry != USA)
 			{
 				for ( pos = i; pos < len; pos++ ) 
 				{
@@ -327,13 +304,10 @@ BOOL CUIFiltering::Filtering( char* syntax, int* szReturn )
 				len--;
 				i--;
 			}
-#endif
 		}
 		else {
-			//[ttos_2009_8_6]: 채팅무시는 캐릭터이름으로 비교하므로 스트링 변환을 시키지 않는다
-			// 영문자 소문자로 비교 060403 
-			if(!m_bCharacterfilter) 
-				makeLowCase( &chComp[i] );
+			// 영문자 소문자로 비교 060403
+			makeLowCase( &chComp[i] );
 		}
 	}
 
@@ -419,7 +393,10 @@ char* CUIFiltering::GetString ( int nIndex ) const
 //------------------------------------------------------------------------------
 char* CUIFiltering::GetKey() const
 {
-	return (char*)szKey_brz;
+	if(g_iCountry == BRAZIL || g_iCountry == HONGKONG || g_iCountry == USA || g_iCountry == GERMANY 
+		|| g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND || g_iCountry == TURKEY)//FRANCE_SPAIN_CLOSEBETA_NA_20081124
+		return (char*)szKey_brz;
+	else return (char*)szKey;
 }
 
 
@@ -430,13 +407,13 @@ char* CUIFiltering::GetKey() const
 //------------------------------------------------------------------------------
 void CUIFiltering::EnDecoding( char* szResult, const char* szData )
 {
+//	int nKeyLeng = strlen ( szKey );
 	char* TempKey = GetKey(); 
 	int nKeyLeng = strlen ( TempKey);
 	int nDataLen = strlen ( szData );
 	int nKeyIndex = 0;
 
-	int i;
-	for ( i = 0; i < nDataLen; i++ )
+	for ( int i = 0; i < nDataLen; i++ )
 	{
 		szResult[i] = szData[i] ^ TempKey[nKeyIndex];
 		if( ++nKeyIndex > nKeyLeng ) nKeyIndex = 0;
@@ -502,14 +479,11 @@ CUIChatFilter::CUIChatFilter()
 	m_nSelIndex = -1;
 
 	m_lbCharName.ResetAllStrings();
-	m_ptdButtonTexture = NULL;
 }
 
 CUIChatFilter::~CUIChatFilter()
 {
-	Destroy();
-
-	STOCK_RELEASE(m_ptdButtonTexture);
+	
 }
 
 static int	_nMsgBoxLineHeight = 0;
@@ -531,7 +505,7 @@ void CUIChatFilter::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, in
 	m_rtsBase.AddRectSurface(UIRect(0,0,nWidth,nHeight),UIRectUV(0,386,250,717,fTexWidth,fTexHeight));	// 위에 틀.
 
 	// Set title.
-	m_rtTitle.SetRect(20, 0, nWidth - 40, 37);
+	m_rtTitle.SetRect(0,0,nWidth,37);
 
 		// Get Button Texture Size.
 	fTexWidth = m_ptdButtonTexture->GetPixWidth();
@@ -578,39 +552,17 @@ void CUIChatFilter::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, in
 	m_lbCharName.SetScrollBarBottomUV( 185, 62, 194, 70, fTexWidth, fTexHeight );
 }
 
-// ----------------------------------------------------------------------------
-// Name : ResetPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUIChatFilter::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 );
-}
-
-// ----------------------------------------------------------------------------
-// Name : AdjustPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUIChatFilter::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	if( m_nPosX < pixMinI || m_nPosX + GetWidth() > pixMaxI ||
-		m_nPosY < pixMinJ || m_nPosY + GetHeight() > pixMaxJ )
-		ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-}
-
 void CUIChatFilter::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	// Set shop texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+		// Set shop texture
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	m_rtsBase.SetPos( m_nPosX, m_nPosY );
-	m_rtsBase.RenderRectSurface( pDrawPort, 0xFFFFFFFF );
+	m_rtsBase.RenderRectSurface( _pUIMgr->GetDrawPort(), 0xFFFFFFFF );
 	
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData( m_ptdButtonTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdButtonTexture );
 	
 	m_btnAddChar.Render();
 	m_btnDelChar.Render();
@@ -618,11 +570,11 @@ void CUIChatFilter::Render()
 
 	m_lbCharName.Render();
 
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	CTString strTemp;
 	strTemp.PrintF( _S( 4458, "채팅 차단" ) );
-	pDrawPort->PutTextExCX( strTemp, m_nPosX + 125, m_nPosY + 17, 0xC5C5C5FF );
-	pDrawPort->EndTextEx();	
+	_pUIMgr->GetDrawPort()->PutTextExCX( strTemp, m_nPosX + 125, m_nPosY + 17, 0xC5C5C5FF );
+	_pUIMgr->GetDrawPort()->EndTextEx();	
 	
 }
 
@@ -630,7 +582,7 @@ void CUIChatFilter::OpenChatFilter()
 {
 	ListUpdate();
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_CHAT_FILTER, TRUE );
+	_pUIMgr->RearrangeOrder( UI_CHAT_FILTER, TRUE );
 }
 
 void CUIChatFilter::CloseChatFilter()
@@ -638,7 +590,7 @@ void CUIChatFilter::CloseChatFilter()
 	m_lbCharName.ResetAllStrings();
 	m_strSelName.Clear();
 	m_nSelIndex = -1;
-	CUIManager::getSingleton()->RearrangeOrder( UI_CHAT_FILTER, FALSE );
+	_pUIMgr->RearrangeOrder( UI_CHAT_FILTER, FALSE );
 }
 
 void CUIChatFilter::ListUpdate()
@@ -646,7 +598,7 @@ void CUIChatFilter::ListUpdate()
 	_UICharacterChatFilter.Clear();
 	CTString	strFullPath = _fnmApplicationPath.FileDir();
 	strFullPath += "Data\\CharacterChatFilter.dat"; 
-	_UICharacterChatFilter.Create(strFullPath.str_String, true);
+	_UICharacterChatFilter.Create(strFullPath.str_String);
 	m_lbCharName.ResetAllStrings();
 	int count = _UICharacterChatFilter.GetListCount();
 	CTString strTem;
@@ -672,7 +624,7 @@ void CUIChatFilter::SaveFile()
 		MessageBox(NULL, "File is not Exist.", "error!", MB_OK);
 		return;
 	}
-//	_UICharacterChatFilter.Clear();
+	_UICharacterChatFilter.Clear();
 	int nCount = m_lbCharName.GetCurItemCount(0);
 
 	char szBuffer[MAX_STR_LENGTH]; 
@@ -719,12 +671,7 @@ void CUIChatFilter::DelCharName()
 		return;		
 	}
 
-	// 필터리스트에서 해제 되면 스패머 맵에서도 해제 added by sam 11/03/02
-	CUIManager::getSingleton()->GetChattingUI()->SpamerLift( m_strSelName );
-
 	m_lbCharName.RemoveString(m_nSelIndex,0);
-	m_nSelIndex = -1;
-	m_strSelName.Clear();
 	SaveFile();
 	ListUpdate();
 }
@@ -744,7 +691,7 @@ WMSG_RESULT	CUIChatFilter::MouseMessage( MSG *pMsg )
 		case WM_MOUSEMOVE:
 			{
 				if( IsInside( nX, nY ) )
-					CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+					_pUIMgr->SetMouseCursorInsideUIs();
 
 				int	ndX = nX - nOldX;
 				int	ndY = nY - nOldY;
@@ -802,7 +749,7 @@ WMSG_RESULT	CUIChatFilter::MouseMessage( MSG *pMsg )
 						return WMSG_SUCCESS;
 					}
 	
-					CUIManager::getSingleton()->RearrangeOrder( UI_CHAT_FILTER, TRUE );
+					_pUIMgr->RearrangeOrder( UI_CHAT_FILTER, TRUE );
 					return WMSG_SUCCESS;
 				}
 			}	
@@ -835,11 +782,6 @@ WMSG_RESULT	CUIChatFilter::MouseMessage( MSG *pMsg )
 
 			}
 		break;
-		case WM_LBUTTONDBLCLK:
-			{
-
-			}
-			break;
 		case WM_MOUSEWHEEL:
 			{
 				if (IsInside(nX, nY))
@@ -855,16 +797,14 @@ WMSG_RESULT	CUIChatFilter::MouseMessage( MSG *pMsg )
 
 void CUIChatFilter::Message( int nCommandCode, CTString strTitle, CTString strMessage, DWORD dwStyle )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( nCommandCode ) )
-		return;
+	if( _pUIMgr->DoesMessageBoxExist( nCommandCode ) )
+	return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( strTitle, dwStyle, UI_CHAT_FILTER, nCommandCode ); 
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 void CUIChatFilter::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
@@ -876,21 +816,20 @@ void CUIChatFilter::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInpu
 		{
 			if( bOK )
 			{
-				// 차단의 순서를 바꿈. [3/9/2011 rumist]
-// 				if( strInput.Length() < 2 || strInput.Length() > 16 )
-// 				{
-// 					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3009, "차단하고자 하는 이름이 올바르지 않습니다"), UMBS_OK);		
-// 					return;
-// 				}
-// 				if( _UICharacterChatFilter.Filtering((char *)((const char *)strInput)))
-// 				{
-// 					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3011, "이미 차단된 캐릭입니다."), UMBS_OK);
-// 					return;
-// 				}
-// 				
+				if( strInput.Length() < 2 || strInput.Length() > 16 )
+				{
+					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3009, "차단하고자 하는 이름이 올바르지 않습니다"), UMBS_OK);		
+					return;
+				}
+				if( _UICharacterChatFilter.Filtering((char *)((const char *)strInput)))
+				{
+					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3011, "이미 차단된 캐릭입니다."), UMBS_OK);
+					return;
+				}
+				
 	
 				CTString strMessage;
-				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strInput);
+				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), strInput);
 				m_strSelName = strInput;
 				Message( MSGCMD_CHAT_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );		
 			}
@@ -901,16 +840,6 @@ void CUIChatFilter::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInpu
 		{
 			if( bOK)
 			{
-				if( m_strSelName.Length() < 2 || m_strSelName.Length() > 16 )
-				{
-					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3009, "차단하고자 하는 이름이 올바르지 않습니다"), UMBS_OK);		
-					return;
-				}
-				if( _UICharacterChatFilter.Filtering((char *)((const char *)m_strSelName)))
-				{
-					Message( MSGCMD_CHAT_ERROR, _S(3008, "차단 에러"), _S(3011, "이미 차단된 캐릭입니다."), UMBS_OK);
-					return;
-				}
 				AddCharName(m_strSelName.str_String);	
 			}else
 			{
@@ -927,14 +856,5 @@ void CUIChatFilter::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInpu
 
 	}
 
-}
-
-// call by simple popup window.
-void	CUIChatFilter::CharacterFilterInSimplePopup( CTString strCharName )
-{
-	CTString strMessage;
-	strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strCharName);
-	m_strSelName = strCharName;
-	Message( MSGCMD_CHAT_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );	
 }
 //***********************************************************************************

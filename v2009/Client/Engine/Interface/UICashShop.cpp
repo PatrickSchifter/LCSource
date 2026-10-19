@@ -1,15 +1,12 @@
 
 #include "StdH.h"
-
-// 헤더파일 정리. [12/1/2009 rumist]
-// temporary header [11/20/2009 rumist]
-#include <Engine/Entities/CashShopData.h>
-#include <Engine/Interface/UIMultiEditBox.h>
-#include <vector>
 #include <Engine/Interface/UICashShop.h>
+#include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
+#include <Engine/Network/CNetwork.h>
+#include <Engine/Network/Server.h>
+#include <Engine/Entities/CashShopData.h>
 #include <Engine/Network/MessageDefine.h>
-#include <Engine/Interface/UIChatting.h>
 
 #define	CASHSHOP_TAB_WIDTH					100
 #define	CASHSHOP_TITLE_OFFSETX				25
@@ -23,12 +20,12 @@
 #define	SLOT_SIZE							33
 #define	SLOT_GAP							5
 #define	MIN_YEAR							2006
-#define	MAX_YEAR							2011
+#define	MAX_YEAR							2010
 #define	MIN_MONTH							1
 #define	MAX_MONTH							12
 #define	MIN_DAY								1
 #define	MAX_DAY								31
-#define LIST_SIZE							6	
+#define LIST_SIZE							5	
 #define SHOP_TOP_SLOT_SX					113
 #define SHOP_TOP_SLOT_SY					77
 #define TRADE_TOP_SLOT_SX					354	
@@ -53,7 +50,7 @@
 
 extern INDEX g_iCountry;
 
-//캐쉬아이템 선물하기 기능추가
+#define CASH_GIFT
 
 // ----------------------------------------------------------------------------
 // Name : CUICashShop()
@@ -123,15 +120,13 @@ int ReturnPlatinumItemTypeIndex(int idx)
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUICashShop::CUICashShop()
-	: m_pSetInfo(NULL)
-	, m_pConfirmInfo(NULL)
 {
 	m_nCurShopTab	  =		m_nOldShopTab		= UCST_NEW_CASH;
 	m_nCurShopSection =		m_nOldShopSection	= UCSS_NEWITEM;
 	m_nGoodsSlotNum   =     m_nKitSlotNum       = 0 ;
 	m_nShopItemID	  =     m_nTradeItemID		= -1;
 	m_nKitItemID	  =     m_nInvenItemID		= -1;
-//	m_pSetInfo = new CUISetInfo;
+	m_pSetInfo = new CUISetInfo;
 	m_nMyCash =0 ;
 	m_bShowShopInfo = FALSE;
 	m_bShowTradeInfo = FALSE;
@@ -146,11 +141,6 @@ CUICashShop::CUICashShop()
 	m_shopItemCnt = 0;
 	m_pbtnShopItems = NULL;
 	m_bBringItem = FALSE;
-
-
-
-
-
 	m_anInvenOrder.New(INVEN_SLOT_TOTAL);		//Su-won
 
 	m_nSendScrollPos = m_nRecvScrollPos =0; 	//Su-won
@@ -164,10 +154,8 @@ CUICashShop::CUICashShop()
 // ----------------------------------------------------------------------------
 CUICashShop::~CUICashShop()
 {
+	delete(m_pSetInfo);
 	Destroy();
-
-	SAFE_DELETE(m_pSetInfo);
-	SAFE_DELETE(m_pConfirmInfo);
 }
 
 // ----------------------------------------------------------------------------
@@ -176,9 +164,9 @@ CUICashShop::~CUICashShop()
 // ----------------------------------------------------------------------------
 void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
-	int		i;	
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 700, 22 );
@@ -189,8 +177,6 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_rcInvenItems.SetRect(INVEN_TOP_ITEM_SX + 50,INVEN_TOP_ITEM_SY,550 + 50,177);
 	m_rcHelp.SetRect(CASHSHOP_TITLE_OFFSETX, SHOP_TOP_SLOT_SY ,650,400);
 	m_rcRecvItems.SetRect( KIT_TOP_ITEM_SX + 30, KIT_TOP_ITEM_SY, 311 + 30, 295+ 70 );	//받은 선물을 나타낼 영역 :Su-won
-	// connie [2009/10/23] - test
-	m_rcKitItemsJP.SetRect(TRADE_TOP_SLOT_SX + 50, TRADE_TOP_SLOT_SY, 666, 290);
 	
 	// Create texture
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\WebBoard.tex" ) );
@@ -324,14 +310,12 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_btnConsume.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
 	m_btnConsume.CopyUV( UBS_IDLE, UBS_ON );
 	// TimeLimit 
-
 	m_btnTimeLimit.Create(this, _S(2372,"기간상품"), 23, 108 , BTN_WIDTH_3 , BTN_HEIGHT_1 );
 	m_btnTimeLimit.SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
 	m_btnTimeLimit.SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
 	m_btnTimeLimit.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
 	m_btnTimeLimit.CopyUV( UBS_IDLE, UBS_ON );
 	// Potion
-
 	m_btnPotion.Create(this, _S(2373,"물약"), 23, 145 , BTN_WIDTH_3 , BTN_HEIGHT_1 );
 	m_btnPotion.SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
 	m_btnPotion.SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
@@ -371,9 +355,10 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_btnPlatinum.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
 	m_btnPlatinum.CopyUV( UBS_IDLE, UBS_ON );
 
+
+
 	// Set Item Array
-	for( i = 0; i < LEFT_SLOT_SIZE_BUY ; i++ )
-	{
+	for(int i=0; i<LEFT_SLOT_SIZE_BUY ; i++){
 		m_aBtnSetItem[i].Create(this, _S(2378,"자세히"), 222, 83 + i*(SLOT_SIZE+SLOT_GAP)  , BTN_WIDTH_1 , 21);
 		m_aBtnSetItem[i].SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
 		m_aBtnSetItem[i].SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
@@ -454,7 +439,11 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_btnGift.CopyUV( UBS_IDLE, UBS_ON );
 
 	// Move Inventory
+#ifdef CASH_GIFT
 	m_btnInfoMove.Create(this, _S(2383,"가져오기"), 363+50+(SLOT_SIZE+SLOT_GAP)*5-SLOT_GAP -BTN_WIDTH_1, 210, BTN_WIDTH_1,21);		//수정: Su-won
+#else
+	m_btnInfoMove.Create(this, _S(2383,"가져오기"),428+50,210,BTN_WIDTH_1,21);
+#endif
 	m_btnInfoMove.SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
 	m_btnInfoMove.SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
 	m_btnInfoMove.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
@@ -492,16 +481,12 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_btnSearch.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
 	m_btnSearch.CopyUV( UBS_IDLE, UBS_ON );
 
-	m_btnBillingLink.Create(this, _S(2387,"캐쉬 충전"), 500, 407 , BTN_WIDTH_3 , 21 );
-	m_btnBillingLink.SetUV( UBS_IDLE, 0, 94, 63, 115, fTexWidth, fTexHeight );
-	m_btnBillingLink.SetUV( UBS_CLICK, 64, 94, 127, 115, fTexWidth, fTexHeight );
-	m_btnBillingLink.SetUV( UBS_DISABLE, 128, 76, 191, 97, fTexWidth, fTexHeight );
-	m_btnBillingLink.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnBillingLink.SetEnable(FALSE);
+	#ifndef CASH_GIFT
+		m_btnGift.SetEnable(FALSE);
+		m_btnInfoGiftHistory.SetEnable(FALSE);
+		m_btnInfoReceive.SetEnable(FALSE);
+	#endif
 
-#if defined(G_GERMAN)
-	m_btnBillingLink.SetEnable(TRUE);
-#endif
 
 	// ITEM SLOT
 	m_rtItemSlot.SetUV(193,0,227,34,fTexWidth,fTexHeight);
@@ -535,7 +520,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbYear.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cbYear.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	CTString tv_str;
-	for( i = MIN_YEAR; i <= MAX_YEAR ; i++)
+	for(i=MIN_YEAR; i<=MAX_YEAR ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbYear.AddString( tv_str);
@@ -567,7 +552,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbMonth.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	
 	
-	for( i = MIN_MONTH; i <= MAX_MONTH; i++)
+	for( i=MIN_MONTH; i<=MAX_MONTH ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbMonth.AddString( tv_str);
@@ -600,7 +585,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbDay.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cbDay.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	
-	for( i = MIN_DAY; i <= MAX_DAY; i++)
+	for( i=MIN_DAY; i<=MAX_DAY ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbDay.AddString( tv_str);
@@ -630,7 +615,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbGiftYear.SetScrollDownUV( UBS_CLICK, 76, 117, 84, 123, fTexWidth, fTexHeight );
 	m_cbGiftYear.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cbGiftYear.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
-	for( i = MIN_YEAR; i <= MAX_YEAR; i++)
+	for(i=MIN_YEAR; i<=MAX_YEAR ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbGiftYear.AddString( tv_str);
@@ -662,7 +647,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbGiftMonth.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	
 	
-	for( i = MIN_MONTH; i <= MAX_MONTH; i++)
+	for( i=MIN_MONTH; i<=MAX_MONTH ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbGiftMonth.AddString( tv_str);
@@ -695,7 +680,7 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cbGiftDay.CopyScrollDownUV( UBS_IDLE, UBS_ON );
 	m_cbGiftDay.CopyScrollDownUV( UBS_IDLE, UBS_DISABLE );
 	
-	for( i = MIN_DAY; i <= MAX_DAY; i++)
+	for( i=MIN_DAY; i<=MAX_DAY ;i++)
 	{
 		tv_str.PrintF("%d",i);
 		m_cbGiftDay.AddString( tv_str);
@@ -781,13 +766,13 @@ void CUICashShop::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 //		m_pbtnShopItems[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM);
 		
 	// KIT Slot  MAX 10
-	for( i = 0; i < MAX_KIT_SIZE; i++)
+	for(  i = 0; i < MAX_KIT_SIZE; i++ )
 		m_abtnTradeItems[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM );	
 
-	for( i = 0; i < INVEN_SLOT_TOTAL; i++)
+	for(  i= 0 ; i < INVEN_SLOT_TOTAL; i++)
 		 m_abtnInvenItems[i].Create(this, 0,0,BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM);		// items to move to Inventory 
 	
-	for( i = 0; i < KIT_SLOT_TOTAL; i++)
+	for( i = 0 ; i< KIT_SLOT_TOTAL; i++)
 		m_abtnKitItems[i].Create(this,0,0,BTN_SIZE, BTN_SIZE, UI_CASH_SHOP,UBET_ITEM);	// Bought items
 	
 	m_abtnShowItem.Create( this, 0, 0, 50, 50, UI_CASH_SHOP, UBET_ITEM );
@@ -811,10 +796,8 @@ void CUICashShop::OpenCashShop()
 	m_nCurShopTab = UCST_NEW_CASH;
 	m_nCurShopSection=UCSS_NEWITEM;
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_CASH_SHOP, TRUE );
+	_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 	PrepareShopItems(  );
-	
-
 }
 
 
@@ -858,10 +841,9 @@ void CUICashShop::CloseCashShop()
 	m_nSendScrollPos = m_nRecvScrollPos =0;
 	
 	m_bShowSendGift = FALSE;
-	m_ebChar.SetFocus(FALSE);
 	//Su-won	<--------|
 	
-	CUIManager::getSingleton()->RearrangeOrder( UI_CASH_SHOP, FALSE );
+	_pUIMgr->RearrangeOrder( UI_CASH_SHOP, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -899,11 +881,8 @@ void CUICashShop::RenderHelp()
 	m_nCurInfoLines	= 0;
 	CTString tv_str;
 	int tv_length = MAX_CASH_HELP_CHARS ;
-	
-#if defined(G_THAI)
-	tv_length = 90;
-#endif
-
+	extern INDEX g_iCountry; 
+	if (g_iCountry == THAILAND) tv_length = 90;
 	AddItemInfoString( _S( 2586,"♥아이리스 상점이란?"), 0xFFAA44FF , MAX_CASH_ITEMINFO_LINE , tv_length );
 	tv_str=_S(2587," 아이리스 상점은 게임이용에 유용한 특별한 아이템을 판매하는 곳입니다.");
 	tv_str+=_S(2588,"아이리스 상점의 아이템을 구매하려면 캐시가 필요하며, 캐시는 라스트 카오스 홈페이지에서 다양한 결제수단으로 바로 충전할 수 있습니다.");
@@ -919,12 +898,11 @@ void CUICashShop::RenderHelp()
 	tv_str=_S(2592,"③ [내역 확인]에서는 월별 충전내역과 일별 아이템 구매내역을 확인 할 수 있습니다.");
 	AddItemInfoString( tv_str, 0xFFFFFFFF , MAX_CASH_ITEMINFO_LINE , tv_length );
 	
-#if defined(G_USA)
+	if (g_iCountry == USA)
 	{
 		tv_str = _S(2674, "4. 지불 방식을 결정하고 순서에 따라 계정에 Aeria Points를 받는다.");
 		AddItemInfoString( tv_str, 0xFFFFFFFF, MAX_CASH_ITEMINFO_LINE, tv_length);
 	}
-#endif
 
 	AddItemInfoString( CTString("\n"), 0xFFFFFFFF , MAX_CASH_ITEMINFO_LINE , tv_length );
 	tv_str=_S(2593,"♥아이리스 상점 이용방법");
@@ -937,14 +915,12 @@ void CUICashShop::RenderHelp()
 	tv_str+=_S(2597,"아이템을 더블크릭하거나 오른쪽의 [옮길 물품]으로 끌어다 놓은 후 [가져오기]버튼을 클릭하면 됩니다.");
 	AddItemInfoString( tv_str, 0xFFFFFFFF , MAX_CASH_ITEMINFO_LINE , tv_length );
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Render item information
 	int	nInfoX = m_nPosX + m_rcHelp.Left;
 	int	nInfoY = m_nPosY +m_rcHelp.Top;
 	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
 	{
-		pUIManager->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
 		nInfoY += _pUIFontTexMgr->GetLineHeight()+2;
 	}
 
@@ -956,8 +932,6 @@ void CUICashShop::RenderHelp()
 
 void CUICashShop::RenderShopItems()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	int iShopX, iShopY , i;
 	
 	iShopX = SHOP_TOP_SLOT_SX + 20; // eons
@@ -1001,9 +975,9 @@ void CUICashShop::RenderShopItems()
 				strNum.PrintF( _S( 2891, "남은 수량 : 품절" ) );
 				numCol = 0x9b9595FF;
 			}
-			pDrawPort->PutTextEx(strTitle, tv_x,tv_y);
+			_pUIMgr->GetDrawPort()->PutTextEx(strTitle, tv_x,tv_y);
 			tv_y += SLOT_SIZE/2;
-			pDrawPort->PutTextEx(strNum, tv_x,tv_y,numCol);
+			_pUIMgr->GetDrawPort()->PutTextEx(strNum, tv_x,tv_y,numCol);
 			
 		}
 		else 
@@ -1020,7 +994,7 @@ void CUICashShop::RenderShopItems()
 
 			if( m_nCurShopSection != UCSS_SET) {
 				tv_y += SLOT_SIZE/4;
-				pDrawPort->PutTextEx(strTitle, tv_x,tv_y);
+				_pUIMgr->GetDrawPort()->PutTextEx(strTitle, tv_x,tv_y);
 			}
 		}
 		
@@ -1044,9 +1018,7 @@ void CUICashShop::RenderTradeItems()
 	int	nX = iShopX;
 	int	nY = iShopY;
 	int tv_pos = m_sbRight.GetScrollPos();
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	
 	for( i = tv_pos ; i < RIGHT_SLOT_SIZE_BUY+tv_pos; i++)
 	{
 		m_abtnTradeItems[i].SetPos( nX, nY );
@@ -1059,7 +1031,7 @@ void CUICashShop::RenderTradeItems()
 		int tv_x, tv_y;
 		m_abtnTradeItems[i].GetAbsPos(tv_x,tv_y);
 		tv_x  += SLOT_GAP+SLOT_SIZE;
-		pDrawPort->PutTextEx(m_abtnTradeItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
+		_pUIMgr->GetDrawPort()->PutTextEx(m_abtnTradeItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
 		
 	}
 	if(m_bShowTradeInfo){
@@ -1150,192 +1122,211 @@ void CUICashShop::RenderInvenItems()
 
 void CUICashShop::RenderHistoryItems()
 {
-	int nCnt = m_abtnHistoryItems.Count();
-	if( nCnt <= 0 )
-		return;
+	int nCnt;
+	if((nCnt=m_abtnHistoryItems.Count())>0){
 
-	int iShopX = HISTORY_TOP_ITEM_SX + 30;
-	int iShopY = HISTORY_TOP_ITEM_SY;
+		int iShopX, iShopY , i;
+		
+		iShopX = HISTORY_TOP_ITEM_SX + 30;
+		iShopY = HISTORY_TOP_ITEM_SY;
+		
+		int	nX = iShopX;
+		int	nY = iShopY;
+		int tv_pos = m_sbHistory.GetScrollPos();
+		int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
+		for( i = tv_pos ; i < tv_max+tv_pos; i++)
+		{
+			m_abtnHistoryItems[i].SetPos( nX, nY );
+			nY += SLOT_SIZE+SLOT_GAP;
+			if( m_abtnHistoryItems[i].IsEmpty() ){
+				continue;
+			}
+			
+			m_abtnHistoryItems[i].Render();
+			int tv_x, tv_y;
+			m_abtnHistoryItems[i].GetAbsPos(tv_x,tv_y);
+			tv_x  += SLOT_GAP+SLOT_SIZE;
+			
+			// Item Name
+			_pUIMgr->GetDrawPort()->PutTextEx(m_abtnHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
+			
+			CTString nTemp;
+			// Item Count
+			int tv_cnt=m_abtnHistoryItems[i].GetItemCount() ;
+			nTemp.PrintF("%d",tv_cnt);
+			_pUIMgr->GetDrawPort()->PutTextExCX(nTemp, tv_x+213,tv_y+SLOT_SIZE/4);
 
-	int	nX = iShopX;
-	int	nY = iShopY;
-	int tv_pos = m_sbHistory.GetScrollPos();
-	int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
+			// Item Price
+			CCashShopData& CD	= _pNetwork->GetCashShopData(m_abtnHistoryItems[i].GetCashType());
+			int tv_sum = CD.m_vShopItemArray[m_abtnHistoryItems[i].GetCashTypeIndex()].m_cash * tv_cnt;
+			nTemp.PrintF("%d", tv_sum);
+			_pUIMgr->GetDrawPort()->PutTextExCX(nTemp , tv_x+300,tv_y+SLOT_SIZE/4);
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	for(int i = tv_pos ; i < tv_max+tv_pos; i++)
-	{
-		m_abtnHistoryItems[i].SetPos( nX, nY );
-		nY += SLOT_SIZE+SLOT_GAP;
-		if( m_abtnHistoryItems[i].IsEmpty() ){
-			continue;
+	
 		}
-
-		m_abtnHistoryItems[i].Render();
-		int tv_x, tv_y;
-		m_abtnHistoryItems[i].GetAbsPos(tv_x,tv_y);
-		tv_x  += SLOT_GAP+SLOT_SIZE;
-
-		// Item Name
-		pDrawPort->PutTextEx(m_abtnHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
-
-		CTString nTemp;
-		// Item Count
-		int tv_cnt=m_abtnHistoryItems[i].GetItemCount() ;
-		nTemp.PrintF("%d",tv_cnt);
-		pDrawPort->PutTextExCX(nTemp, tv_x+213,tv_y+SLOT_SIZE/4);
-
-		// Item Price
-		CCashShopData& CD	= _pNetwork->GetCashShopData(m_abtnHistoryItems[i].GetCashType());
-		int tv_sum = CD.m_vShopItemArray[m_abtnHistoryItems[i].GetCashTypeIndex()].m_cash * tv_cnt;
-		nTemp.PrintF("%d", tv_sum);
-		pDrawPort->PutTextExCX(nTemp , tv_x+300,tv_y+SLOT_SIZE/4);
 	}
+
 }
 
 void CUICashShop::RenderSendHistoryItems()
 {
-	int nCnt = m_abtnSendHistoryItems.Count();
-	if( nCnt <= 0 )
-		return;
-
-	m_sbGift.SetCurItemCount(nCnt);
-
-	int iShopX = HISTORY_TOP_ITEM_SX + 30;
-	int iShopY = HISTORY_TOP_ITEM_SY + 31;
-
-	int	nX = iShopX;
-	int	nY = iShopY;
-	int tv_pos = m_sbGift.GetScrollPos();
-	int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	for( int i = tv_pos ; i < tv_max+tv_pos; i++ )
+	int nCnt;
+	if((nCnt=m_abtnSendHistoryItems.Count())>0)
 	{
-		m_abtnSendHistoryItems[i].SetPos( nX, nY );
-		nY += SLOT_SIZE+SLOT_GAP;
-		if( m_abtnSendHistoryItems[i].IsEmpty() ){
-			continue;
+		m_sbGift.SetCurItemCount(nCnt);
+
+		int iShopX, iShopY , i;
+		
+		iShopX = HISTORY_TOP_ITEM_SX + 30;
+		iShopY = HISTORY_TOP_ITEM_SY + 31;
+		
+		int	nX = iShopX;
+		int	nY = iShopY;
+		int tv_pos = m_sbGift.GetScrollPos();
+		int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
+		for( i = tv_pos ; i < tv_max+tv_pos; i++)
+		{
+			m_abtnSendHistoryItems[i].SetPos( nX, nY );
+			nY += SLOT_SIZE+SLOT_GAP;
+			if( m_abtnSendHistoryItems[i].IsEmpty() ){
+				continue;
+			}
+			
+			m_abtnSendHistoryItems[i].Render();
+			int tv_x, tv_y;
+			m_abtnSendHistoryItems[i].GetAbsPos(tv_x,tv_y);
+			tv_x  += SLOT_GAP+SLOT_SIZE;
+			
+			// Item Name
+			_pUIMgr->GetDrawPort()->PutTextEx(m_abtnSendHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
+			
+			
+			// Item Count
+			//CTString nTemp;
+			//int tv_cnt=m_abtnSendHistoryItems[i].GetItemCount() ;
+			//nTemp.PrintF("%d",tv_cnt);
+			//_pUIMgr->GetDrawPort()->PutTextExCX(nTemp, tv_x+213,tv_y+SLOT_SIZE/4);
+
+			// 받은 사람 이름
+			_pUIMgr->GetDrawPort()->PutTextExCX(m_astrSendChar[i] , tv_x+285,tv_y+SLOT_SIZE/4);
+
 		}
-
-		m_abtnSendHistoryItems[i].Render();
-		int tv_x, tv_y;
-		m_abtnSendHistoryItems[i].GetAbsPos(tv_x,tv_y);
-		tv_x  += SLOT_GAP+SLOT_SIZE;
-
-		// Item Name
-		pDrawPort->PutTextEx(m_abtnSendHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
-
-		// 받은 사람 이름
-		pDrawPort->PutTextExCX(m_astrSendChar[i] , tv_x+285,tv_y+SLOT_SIZE/4);
 	}
 }
 
 void CUICashShop::RenderReceiveHistoryItems()
 {
-	int nCnt = m_abtnRecvHistoryItems.Count();
-	if( nCnt <= 0 )
-		return;
-
-	m_sbGift.SetCurItemCount(nCnt);
-
-	int iShopX = HISTORY_TOP_ITEM_SX + 30;
-	int iShopY = HISTORY_TOP_ITEM_SY + 31;
-
-	int	nX = iShopX;
-	int	nY = iShopY;
-	int tv_pos = m_sbGift.GetScrollPos();
-	int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	for( int i = tv_pos ; i < tv_max+tv_pos; i++ )
+	int nCnt;
+	if((nCnt=m_abtnRecvHistoryItems.Count())>0)
 	{
-		m_abtnRecvHistoryItems[i].SetPos( nX, nY );
-		nY += SLOT_SIZE+SLOT_GAP;
-		if( m_abtnRecvHistoryItems[i].IsEmpty() ){
-			continue;
+		m_sbGift.SetCurItemCount(nCnt);
+
+		int iShopX, iShopY , i;
+		
+		iShopX = HISTORY_TOP_ITEM_SX + 30;
+		iShopY = HISTORY_TOP_ITEM_SY + 31;
+		
+		int	nX = iShopX;
+		int	nY = iShopY;
+		int tv_pos = m_sbGift.GetScrollPos();
+		int tv_max = HISTORY_SLOT_SIZE>nCnt?nCnt:HISTORY_SLOT_SIZE;
+		for( i = tv_pos ; i < tv_max+tv_pos; i++)
+		{
+			m_abtnRecvHistoryItems[i].SetPos( nX, nY );
+			nY += SLOT_SIZE+SLOT_GAP;
+			if( m_abtnRecvHistoryItems[i].IsEmpty() ){
+				continue;
+			}
+			
+			m_abtnRecvHistoryItems[i].Render();
+			int tv_x, tv_y;
+			m_abtnRecvHistoryItems[i].GetAbsPos(tv_x,tv_y);
+			tv_x  += SLOT_GAP+SLOT_SIZE;
+			
+			// Item Name
+			_pUIMgr->GetDrawPort()->PutTextEx(m_abtnRecvHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
+			
+
+			// Item Count
+			//CTString nTemp;			
+			//int tv_cnt=m_abtnRecvHistoryItems[i].GetItemCount() ;
+			//nTemp.PrintF("%d",tv_cnt);
+			//_pUIMgr->GetDrawPort()->PutTextExCX(nTemp, tv_x+213,tv_y+SLOT_SIZE/4);
+
+			// 보낸 사람 이름
+			_pUIMgr->GetDrawPort()->PutTextExCX(m_astrReceiveChar[i] , tv_x+285,tv_y+SLOT_SIZE/4);
+
 		}
-
-		m_abtnRecvHistoryItems[i].Render();
-		int tv_x, tv_y;
-		m_abtnRecvHistoryItems[i].GetAbsPos(tv_x,tv_y);
-		tv_x  += SLOT_GAP+SLOT_SIZE;
-
-		// Item Name
-		pDrawPort->PutTextEx(m_abtnRecvHistoryItems[i].GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
-
-		// 보낸 사람 이름
-		pDrawPort->PutTextExCX(m_astrReceiveChar[i] , tv_x+285,tv_y+SLOT_SIZE/4);
 	}
 }
 
 void CUICashShop::RenderRecvGift()
 {
-	int nCnt = m_abtnRecvGift.Count();
-	if( nCnt <= 0 )
-		return;
-
-	int	nX = 107+35+5;
-	int	nY = 95+5;
-
-	int tv_pos = m_sbReceive.GetScrollPos();
-	int tv_max = 2>nCnt ? nCnt:2;
-	int nEnable =0;
-
-	for( int j = 0 ; j< m_abtnRecvGift.sa_Count ; ++j)
-		m_abtnRecvGift[j].SetEnable(FALSE);
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	for( int i = 0 ; nEnable<tv_max && i<nCnt ; ++i)
+	int nCnt;
+	if((nCnt=m_abtnRecvGift.Count())>0)
 	{
-		if( m_abtnRecvGift[i].IsEmpty() ){
-			continue;
-		}
-		if( tv_pos >0)
+		int	nX = 107+35+5;
+		int	nY = 95+5;
+
+		int tv_pos = m_sbReceive.GetScrollPos();
+		int tv_max = 2>nCnt ? nCnt:2;
+
+		int nEnable =0;
+		//for( int i = tv_pos ; i < tv_max+tv_pos; i++)
+		for( int j = 0 ; j< m_abtnRecvGift.sa_Count ; ++j)
+			m_abtnRecvGift[j].SetEnable(FALSE);
+
+		for( int i = 0 ; nEnable<tv_max && i<nCnt ; ++i)
 		{
-			--tv_pos;
-			continue;
+			if( m_abtnRecvGift[i].IsEmpty() ){
+				continue;
+			}
+			if( tv_pos >0)
+			{
+				--tv_pos;
+				continue;
+			}
+			
+			m_abtnRecvGift[i].SetEnable(TRUE);
+
+			m_abtnRecvGift[i].SetPos( nX, nY );
+			nY += 142+5;
+			
+			m_abtnRecvGift[i].Render();
+			int tv_x, tv_y;
+			m_abtnRecvGift[i].GetAbsPos(tv_x,tv_y);
+				
+			// Item Name
+			_pUIMgr->GetDrawPort()->PutTextEx(m_abtnRecvGift[i].GetCashName(), tv_x+SLOT_GAP+SLOT_SIZE, tv_y+SLOT_SIZE/4);
+			
+			// Send Date
+			CTString nTemp;
+			struct tm *tmDate =localtime((time_t*)&m_anDate[m_anRecvOrder[i]]);
+			nTemp.PrintF(_S( 3091, "%d년 %d월 %d일" ), tmDate->tm_year+1900, tmDate->tm_mon+1, tmDate->tm_mday);
+			_pUIMgr->GetDrawPort()->PutTextEx(nTemp, tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE);
+			
+			// Send Character
+			//_pUIMgr->GetDrawPort()->PutTextEx(m_astrSend[i], tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE +15);
+			_pUIMgr->GetDrawPort()->PutTextEx(m_astrSend[m_anRecvOrder[i]], tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE +15);
+
+			// Gift Message
+			//_pUIMgr->GetDrawPort()->PutTextEx(m_astrGiftMessage[m_anRecvOrder[i]], tv_x, tv_y +SLOT_GAP+SLOT_SIZE +48);
+			CTString temp = m_ebRecvGiftMsg[nEnable].GetString();
+			if( temp != m_astrGiftMessage[m_anRecvOrder[i]] )
+			{
+				int	len	=strlen( m_astrGiftMessage[m_anRecvOrder[i]].str_String ) - 2;
+				if ( strncmp ( "\r\n", m_astrGiftMessage[m_anRecvOrder[i]].str_String + len, 2 ) != 0 )
+					m_astrGiftMessage[m_anRecvOrder[i]] +="\r\n";
+				m_ebRecvGiftMsg[nEnable].SetString(m_astrGiftMessage[m_anRecvOrder[i]].str_String);
+			}
+			m_ebRecvGiftMsg[nEnable].Render();
+			//_pUIMgr->GetDrawPort()->FlushRenderingQueue();
+
+			++nEnable;
 		}
 
-		m_abtnRecvGift[i].SetEnable(TRUE);
-
-		m_abtnRecvGift[i].SetPos( nX, nY );
-		nY += 142+5;
-
-		m_abtnRecvGift[i].Render();
-		int tv_x, tv_y;
-		m_abtnRecvGift[i].GetAbsPos(tv_x,tv_y);
-
-		// Item Name
-		pDrawPort->PutTextEx(m_abtnRecvGift[i].GetCashName(), tv_x+SLOT_GAP+SLOT_SIZE, tv_y+SLOT_SIZE/4);
-
-		// Send Date
-		CTString nTemp;
-		struct tm *tmDate =LocalTime32(m_anDate[m_anRecvOrder[i]]);
-		nTemp.PrintF(_S( 3091, "%d년 %d월 %d일" ), tmDate->tm_year+1900, tmDate->tm_mon+1, tmDate->tm_mday);
-		pDrawPort->PutTextEx(nTemp, tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE);
-
-		// Send Character
-		pDrawPort->PutTextEx(m_astrSend[m_anRecvOrder[i]], tv_x+10 +70, tv_y +SLOT_GAP+SLOT_SIZE +15);
-
-		// Gift Message
-		CTString temp = m_ebRecvGiftMsg[nEnable].GetString();
-		if( temp != m_astrGiftMessage[m_anRecvOrder[i]] )
-		{
-			int	len	=strlen( m_astrGiftMessage[m_anRecvOrder[i]].str_String ) - 2;
-			if ( strncmp ( "\r\n", m_astrGiftMessage[m_anRecvOrder[i]].str_String + len, 2 ) != 0 )
-				m_astrGiftMessage[m_anRecvOrder[i]] +="\r\n";
-			m_ebRecvGiftMsg[nEnable].SetString(m_astrGiftMessage[m_anRecvOrder[i]].str_String);
-		}
-		m_ebRecvGiftMsg[nEnable].Render();
-		++nEnable;
-	}
-
-	RenderInvenItems();
+		RenderInvenItems();
+	}	
 }
 
 
@@ -1346,8 +1337,11 @@ void CUICashShop::RenderRecvGift()
 void CUICashShop::RenderItemInfo(CUIButtonEx& btnInfo)
 {
 	m_nCurInfoLines	= 0;
-
 	CTString tv_name;
+/*	CCashShopData& CD = _pNetwork->GetCashShopData(btnInfo.GetCashType());
+	int tv_cnt = CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_vItemDataArray[0].m_itemCnt;
+	if( tv_cnt > 1) tv_name.PrintF("%s(%d)",btnInfo.GetCashName(),tv_cnt);
+	else*/
 	tv_name.PrintF("%s",btnInfo.GetCashName());
 	AddItemInfoString(tv_name,0xFF63B1FF,MAX_CASH_ITEMINFO_LINE,MAX_CASH_ITEMINFO_CHAR);
 	AddItemInfoString(btnInfo.GetCashDesc(),0xFFF284FF,MAX_CASH_ITEMINFO_LINE,MAX_CASH_ITEMINFO_CHAR);
@@ -1358,53 +1352,51 @@ void CUICashShop::RenderItemInfo(CUIButtonEx& btnInfo)
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	int tv_height = 19 - _pUIFontTexMgr->GetLineSpacing() + m_nCurInfoLines * _pUIFontTexMgr->GetLineHeight();
 	m_rcItemInfo.SetRect(tv_x,tv_y,tv_x+tv_width,tv_y+tv_height);
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Initialize texture data
-	pDrawPort->InitTextureData(m_ptdBaseTexture);
+	_pUIMgr->GetDrawPort()->InitTextureData(m_ptdBaseTexture);
 
 	// Item information region
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top,
 										m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
 										m_rtInfoUL.U0, m_rtInfoUL.V0, m_rtInfoUL.U1, m_rtInfoUL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top,
 										m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
 										m_rtInfoUM.U0, m_rtInfoUM.V0, m_rtInfoUM.U1, m_rtInfoUM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top,
 										m_rcItemInfo.Right, m_rcItemInfo.Top + 7,
 										m_rtInfoUR.U0, m_rtInfoUR.V0, m_rtInfoUR.U1, m_rtInfoUR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Top + 7,
 										m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
 										m_rtInfoML.U0, m_rtInfoML.V0, m_rtInfoML.U1, m_rtInfoML.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Top + 7,
 										m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
 										m_rtInfoMM.U0, m_rtInfoMM.V0, m_rtInfoMM.U1, m_rtInfoMM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Top + 7,
 										m_rcItemInfo.Right, m_rcItemInfo.Bottom - 7,
 										m_rtInfoMR.U0, m_rtInfoMR.V0, m_rtInfoMR.U1, m_rtInfoMR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left, m_rcItemInfo.Bottom - 7,
 										m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom,
 										m_rtInfoLL.U0, m_rtInfoLL.V0, m_rtInfoLL.U1, m_rtInfoLL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Left + 7, m_rcItemInfo.Bottom - 7,
 										m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom,
 										m_rtInfoLM.U0, m_rtInfoLM.V0, m_rtInfoLM.U1, m_rtInfoLM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_rcItemInfo.Right - 7, m_rcItemInfo.Bottom - 7,
 										m_rcItemInfo.Right, m_rcItemInfo.Bottom,
 										m_rtInfoLR.U0, m_rtInfoLR.V0, m_rtInfoLR.U1, m_rtInfoLR.V1,
 										0xFFFFFFFF );
@@ -1415,7 +1407,7 @@ void CUICashShop::RenderItemInfo(CUIButtonEx& btnInfo)
 	int	nInfoY = m_rcItemInfo.Top + 8;
 	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
 	{
-		pDrawPort->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
 		nInfoY += _pUIFontTexMgr->GetLineHeight();
 	}
 }
@@ -1427,7 +1419,7 @@ void CUICashShop::RenderItemInfo(CUIButtonEx& btnInfo)
 void CUICashShop::RednerShopItemInfo( CUIButtonEx& btnInfo )
 {
 	m_nCurInfoLines		= 0;
-
+//	AddItemInfoString(btnInfo.GetCashName(),0xFF63B1FF);
 	AddItemInfoString(btnInfo.GetCashDesc(),0xFFF284FF,MAX_CASH_ITEMINFO_LINE,MAX_CASH_ITEMINFO_CHAR);	
 
 	btnInfo.SetPos( 427, 111 );
@@ -1439,27 +1431,25 @@ void CUICashShop::RednerShopItemInfo( CUIButtonEx& btnInfo )
 	int tv_pos = m_sbLeft.GetScrollPos();
 	CCashShopData& CD = _pNetwork->GetCashShopData(m_nCurShopSection);
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	CTString strName,strPrice,strCnt;
 	strName =  btnInfo.GetCashName();
 	strPrice.PrintF( "%s : %d", _S( 2397, "가격" ), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_cash );
-	if( SET_ITEM != btnInfo.GetCashType() )
-	{
+	if( SET_ITEM != btnInfo.GetCashType() ){
+		
 		if(!IsSetItem(btnInfo.GetCashIndex()))
 		{
 			strCnt.PrintF( "%s : %d", _S( 2396, "수량" ), CD.m_vShopItemArray[btnInfo.GetCashTypeIndex()].m_vItemDataArray[0].m_itemCnt );
-			pDrawPort->PutTextEx( strCnt, nInfoX + 70, nInfoY + 20, 0x6BD2FFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( strCnt, nInfoX + 70, nInfoY + 20, 0x6BD2FFFF );
 		}
 	}
-	pDrawPort->PutTextEx( strName, nInfoX + 70, nInfoY , 0xFF63B1FF );
-	pDrawPort->PutTextEx( strPrice, nInfoX + 70, nInfoY + 40, 0x6BD2FFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( strName, nInfoX + 70, nInfoY , 0xFF63B1FF );
+	_pUIMgr->GetDrawPort()->PutTextEx( strPrice, nInfoX + 70, nInfoY + 40, 0x6BD2FFFF );
 
 	nInfoY +=80;
 
 	for( int iInfo = 0; iInfo < m_nCurInfoLines; iInfo++ )
 	{
-		pDrawPort->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strItemInfo[iInfo], nInfoX, nInfoY, m_colItemInfo[iInfo] );
 		nInfoY += _pUIFontTexMgr->GetLineHeight();
 	}
 	
@@ -1472,39 +1462,37 @@ void CUICashShop::RednerShopItemInfo( CUIButtonEx& btnInfo )
 // ----------------------------------------------------------------------------
 void CUICashShop::RenderOutline( const float fI0, const float fJ0 )
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
-	pDrawPort->AddTexture( fI0-1, fJ0, fI0+3, fJ0+2,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0-1, fJ0, fI0+3, fJ0+2,
 										m_rtSelectOutlineUL.U0, m_rtSelectOutlineUL.V0, m_rtSelectOutlineUL.U1, m_rtSelectOutlineUL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0+3, fJ0, fI0+29, fJ0+2,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0+3, fJ0, fI0+29, fJ0+2,
 										m_rtSelectOutlineUM.U0, m_rtSelectOutlineUM.V0, m_rtSelectOutlineUM.U1, m_rtSelectOutlineUM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0+29, fJ0, fI0+33, fJ0+2,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0+29, fJ0, fI0+33, fJ0+2,
 										m_rtSelectOutlineUR.U0, m_rtSelectOutlineUR.V0, m_rtSelectOutlineUR.U1, m_rtSelectOutlineUR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0-1, fJ0+2, fI0+1, fJ0+32,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0-1, fJ0+2, fI0+1, fJ0+32,
 										m_rtSelectOutlineML.U0, m_rtSelectOutlineML.V0, m_rtSelectOutlineML.U1, m_rtSelectOutlineML.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0+31, fJ0+2, fI0+33, fJ0+32,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0+31, fJ0+2, fI0+33, fJ0+32,
 										m_rtSelectOutlineMR.U0, m_rtSelectOutlineMR.V0, m_rtSelectOutlineMR.U1, m_rtSelectOutlineMR.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0-1, fJ0+32, fI0+3, fJ0+34,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0-1, fJ0+32, fI0+3, fJ0+34,
 										m_rtSelectOutlineLL.U0, m_rtSelectOutlineLL.V0, m_rtSelectOutlineLL.U1, m_rtSelectOutlineLL.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0+3, fJ0+32, fI0+29, fJ0+34,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0+3, fJ0+32, fI0+29, fJ0+34,
 										m_rtSelectOutlineLM.U0, m_rtSelectOutlineLM.V0, m_rtSelectOutlineLM.U1, m_rtSelectOutlineLM.V1,
 										0xFFFFFFFF );
-	pDrawPort->AddTexture( fI0+29, fJ0+32, fI0+33, fJ0+34,
+	_pUIMgr->GetDrawPort()->AddTexture( fI0+29, fJ0+32, fI0+33, fJ0+34,
 										m_rtSelectOutlineLR.U0, m_rtSelectOutlineLR.V0, m_rtSelectOutlineLR.U1, m_rtSelectOutlineLR.V1,
 										0xFFFFFFFF );
 }
@@ -1515,10 +1503,12 @@ void CUICashShop::RenderOutline( const float fI0, const float fJ0 )
 // ----------------------------------------------------------------------------
 void CUICashShop::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+//	CTString tv_pos;
+//	tv_pos.PrintF("Mouse X : %3d    Y : %3d", m_x,m_y);
+//	_pUIMgr->GetDrawPort()->PutTextEx(tv_pos,(m_nWidth-tv_pos.Length())/2,5);
 
 	// Set board texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2, nY2 ,i;
@@ -1528,43 +1518,43 @@ void CUICashShop::Render()
 	nY = m_nPosY;
 	nX2 = m_nPosX + m_nWidth;
 	nY2 = m_nPosY + 52;
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackUL.U0, m_rtBackUL.V0, m_rtBackUL.U1, m_rtBackUL.V1,
 										0xFFFFFFFF );
 	// Upper middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackUM.U0, m_rtBackUM.V0, m_rtBackUM.U1, m_rtBackUM.V1,
 										0xFFFFFFFF );
 	// Upper right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackUR.U0, m_rtBackUR.V0, m_rtBackUR.U1, m_rtBackUR.V1,
 										0xFFFFFFFF );
 
 	// Middle left
 	nY = m_nPosY + m_nHeight - 15;
-	pDrawPort->AddTexture( nX, nY2, nX + 49, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY2, nX + 49, nY,
 										m_rtBackML.U0, m_rtBackML.V0, m_rtBackML.U1, m_rtBackML.V1,
 										0xFFFFFFFF );
 	// Middle middle
-	pDrawPort->AddTexture( nX + 49, nY2, nX2 - 32, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY2, nX2 - 32, nY,
 										m_rtBackMM.U0, m_rtBackMM.V0, m_rtBackMM.U1, m_rtBackMM.V1,
 										0xFFFFFFFF );
 	// Middle right
-	pDrawPort->AddTexture( nX2 - 32, nY2, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY2, nX2, nY,
 										m_rtBackMR.U0, m_rtBackMR.V0, m_rtBackMR.U1, m_rtBackMR.V1,
 										0xFFFFFFFF );
 
 	// Lower left
 	nY2 = m_nPosY + m_nHeight;
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackLL.U0, m_rtBackLL.V0, m_rtBackLL.U1, m_rtBackLL.V1,
 										0xFFFFFFFF );
 	// Lower middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackLM.U0, m_rtBackLM.V0, m_rtBackLM.U1, m_rtBackLM.V1,
 										0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackLR.U0, m_rtBackLR.V0, m_rtBackLR.U1, m_rtBackLR.V1,
 										0xFFFFFFFF );
 
@@ -1575,7 +1565,7 @@ void CUICashShop::Render()
 	nY2 = m_nPosY + m_rcTab.Bottom;
 	for( i= 0; i < UCST_MAIN_END; i++ )
 	{
-		pDrawPort->AddTexture( nX, nY, nX2, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX2, nY2,
 											m_rtTab.U0, m_rtTab.V0, m_rtTab.U1, m_rtTab.V1,
 											0xFFFFFFFF );
 		nX += CASHSHOP_TAB_WIDTH;
@@ -1588,29 +1578,24 @@ void CUICashShop::Render()
 	// Cancel button
 	m_btnCancel.Render();
 
-#if defined(G_GERMAN)
-	{
-		m_btnBillingLink.Render();
-	}
-#endif
 	// Text in cash shop
 	// Title
-	pDrawPort->PutTextEx( _S(2384,"유료 상점"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2384,"유료 상점"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
 										m_nPosY + CASHSHOP_TITLE_OFFSETY, 0xFFFFFFFF );
 	// Tab  CASHSHOP_TAB_WIDTH
 	nY = m_nPosY + CASHSHOP_TAB_TEXT_OFFSETY;
 	nX = m_nPosX + m_rcTab.Left + CASHSHOP_TAB_WIDTH / 2;
 	
-	pDrawPort->PutTextExCX( _S( 2570, "신상품" ), nX, nY,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2570, "신상품" ), nX, nY,
 											m_nCurShopTab == UCST_NEW_CASH ? 0xE1B300FF : 0x6B6B6BFF );
 	nX += CASHSHOP_TAB_WIDTH;
-	pDrawPort->PutTextExCX( _S(2385,"아이템 구매"), nX, nY,	
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(2385,"아이템 구매"), nX, nY,	
 											m_nCurShopTab == UCST_BUY ? 0xE1B300FF : 0x6B6B6BFF );
 	nX += CASHSHOP_TAB_WIDTH;
-	pDrawPort->PutTextExCX( _S(2386,"구매 정보"), nX, nY,
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(2386,"구매 정보"), nX, nY,
 											m_nCurShopTab == UCST_BUY_INFO ? 0xE1B300FF : 0x6B6B6BFF );
 	nX += CASHSHOP_TAB_WIDTH;
-	pDrawPort->PutTextExCX( _S(284,"도움말"), nX, nY,	
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(284,"도움말"), nX, nY,	
 											m_nCurShopTab == UCST_HELP ? 0xE1B300FF : 0x6B6B6BFF );
 
 	
@@ -1624,69 +1609,69 @@ void CUICashShop::Render()
 			nY = m_nPosY;
 			
 			// left horizon line
-			pDrawPort->AddTexture( nX+128, nY+70, nX+384, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+128, nY+70, nX+384, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+128, nY+390, nX+384, nY+391,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+128, nY+390, nX+384, nY+391,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 			// right horizon line
-			pDrawPort->AddTexture( nX+398, nY+70, nX+667, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+70, nX+667, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+398, nY+90, nX+667, nY+91,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+90, nX+667, nY+91,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+398, nY+293, nX+667, nY+294,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+293, nX+667, nY+294,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+398, nY+350, nX+667, nY+351,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+350, nX+667, nY+351,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+398, nY+390, nX+667, nY+391,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+390, nX+667, nY+391,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 			// cash box horizon 
-			pDrawPort->AddTexture( nX+538, nY+304, nX+658, nY+305,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+304, nX+658, nY+305,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+538, nY+318, nX+658, nY+319,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+318, nX+658, nY+319,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+538, nY+327, nX+658, nY+328,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+327, nX+658, nY+328,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+538, nY+341, nX+658, nY+342,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+341, nX+658, nY+342,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
 
 			// left vertical line
-			pDrawPort->AddTexture( nX+127, nY+70, nX+128, nY+390, 
+			_pUIMgr->GetDrawPort()->AddTexture( nX+127, nY+70, nX+128, nY+390, 
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+384, nY+70, nX+385, nY+390, 
+			_pUIMgr->GetDrawPort()->AddTexture( nX+384, nY+70, nX+385, nY+390, 
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 			// right vertical line	
-			pDrawPort->AddTexture( nX+398, nY+70, nX+399, nY+390,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+398, nY+70, nX+399, nY+390,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+667, nY+70, nX+668, nY+390,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+667, nY+70, nX+668, nY+390,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
 			// cash box vertical	
-			pDrawPort->AddTexture( nX+538, nY+303, nX+539, nY+318,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+303, nX+539, nY+318,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+538, nY+328, nX+539, nY+342,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+538, nY+328, nX+539, nY+342,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+658, nY+303, nX+659, nY+318,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+658, nY+303, nX+659, nY+318,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+658, nY+328, nX+659, nY+342,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+658, nY+328, nX+659, nY+342,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 			
@@ -1694,14 +1679,14 @@ void CUICashShop::Render()
 			//left slot
 			nY2=SLOT_SIZE+SLOT_GAP;
 			for(i=0;i<LEFT_SLOT_SIZE_BUY;i++)
-				pDrawPort->AddTexture( nX+133, nY+77+nY2*i, nX+166, nY+110+nY2*i,
+				_pUIMgr->GetDrawPort()->AddTexture( nX+133, nY+77+nY2*i, nX+166, nY+110+nY2*i,
 												m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 												0xFFFFFFFF );
 
 			if( !m_bShowShopInfo )	// 아이템 정보를 보여주지 않을때 
 			{
 				for(i=0;i<RIGHT_SLOT_SIZE_BASKET;i++)
-					pDrawPort->AddTexture( nX+404, nY+97+nY2*i, nX+437, nY+130+nY2*i,
+					_pUIMgr->GetDrawPort()->AddTexture( nX+404, nY+97+nY2*i, nX+437, nY+130+nY2*i,
 													m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 													0xFFFFFFFF );
 			}			
@@ -1732,7 +1717,25 @@ void CUICashShop::Render()
 			
 			// Scrollbar 
 			m_sbLeft.Render();
-			
+
+			// Draw Text
+			if( m_bShowShopInfo ){ // 아이템 정보 보이기
+				RednerShopItemInfo( m_abtnShowItem );
+			}
+			else	// 장바구니 보이기
+			{
+				m_sbRight.Render();
+				_pUIMgr->GetDrawPort()->PutTextExCX( _S(2388,"장바구니"), m_nPosX+541,m_nPosY+75, 0xFFFFFFFF ); //( + 85 )
+			}
+
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2389,"상품 금액"), m_nPosX+495,m_nPosY+305, 0xFFFFFFFF );
+			CTString tv_price;
+			tv_price.PrintF("%d",CalculateKitPrice());
+			_pUIMgr->GetDrawPort()->PutTextExRX( tv_price , m_nPosX+655,m_nPosY+305, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2390,"보유 캐쉬"), m_nPosX+495,m_nPosY+329, 0xFFFFFFFF );
+			tv_price.PrintF("%d",m_nMyCash);
+			_pUIMgr->GetDrawPort()->PutTextExRX( tv_price , m_nPosX+655,m_nPosY+329, 0xFFFFFFFF );
+
 			switch(m_nCurShopSection)
 			{
 			case UCSS_CONSUME :
@@ -1750,44 +1753,28 @@ void CUICashShop::Render()
 			case UCSS_SET :
 				for(i=0;i<LEFT_SLOT_SIZE_BUY;i++)
 				{
+			//		_pUIMgr->GetDrawPort()->AddTexture(m_nPosX+192,	m_nPosY+85+nY2*i,	m_nPosX+258, m_nPosY+102+nY2*i,
+			//											m_rtBlackboxL.U0,m_rtBlackboxL.V0,m_rtBlackboxL.U1,m_rtBlackboxL.V1,
+			//											0xFFFFFFFF);
 					m_aBtnSetItem[i].Render();
+					//		_pUIMgr->GetDrawPort()->PutTextExCX(_S(2391,"상품보기"),m_nPosX+225,m_nPosY+87+nY2*i,0xFFFFFFFF );
 				}
+		//		if(m_pSetInfo->IsEnabled() && m_pSetInfo->IsVisible()) 
+		//			m_pSetInfo->Render(); 
 				break;
 			case UCSS_NEWITEM:
 				break;
 			case UCSS_HOTITEM:
 				break;
 			}
-			pDrawPort->FlushRenderingQueue();
-
-			// Draw Text
-			if( m_bShowShopInfo ){ // 아이템 정보 보이기
-				RednerShopItemInfo( m_abtnShowItem );
-			}
-			else	// 장바구니 보이기
-			{
-				m_sbRight.Render();
-				pDrawPort->PutTextExCX( _S(2388,"장바구니"), m_nPosX+541,m_nPosY+75, 0xFFFFFFFF ); //( + 85 )
-			}
-
-			CTString tv_price;
-			pDrawPort->PutTextExCX( _S(2389,"상품 금액"), m_nPosX+495,m_nPosY+305, 0xFFFFFFFF );			
-			tv_price.PrintF("%d",CalculateKitPrice());
-			pDrawPort->PutTextExRX( tv_price , m_nPosX+655,m_nPosY+305, 0xFFFFFFFF );
-			pDrawPort->PutTextExCX( _S(2390,"보유 캐쉬"), m_nPosX+495,m_nPosY+329, 0xFFFFFFFF );
-			tv_price.PrintF("%d",m_nMyCash);
-			pDrawPort->PutTextExRX( tv_price , m_nPosX+655,m_nPosY+329, 0xFFFFFFFF );			
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 
 			RenderShopItems();
-			
-			pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
-
 			if( !m_bShowShopInfo ) { RenderTradeItems(); }
 
 // eons outline			
@@ -1811,49 +1798,51 @@ void CUICashShop::Render()
 		m_btnInfoBuyItem.Render();
 		m_btnInfoBuyHistory.Render();
 
+#ifdef CASH_GIFT
 		m_btnInfoGiftHistory.Render();		// "선물 내역" 버튼 렌더링 :Su-won
 		m_btnInfoReceive.Render();			// "받은 선물" 버튼 렌더링: Su-won
+#endif
 
 		if(m_nCurShopSection==UCSS_BUY_INFO)
 		{
 				
 			
 			// left horizon line
-			pDrawPort->AddTexture( nX+108+30, nY+70, nX+334+30, nY+71,
+			_pUIMgr	->GetDrawPort()->AddTexture( nX+108+30, nY+70, nX+334+30, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+90, nX+334+30, nY+91,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+90, nX+334+30, nY+91,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+319, nX+334+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+319, nX+334+30, nY+320,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 			// right horizon line
-			pDrawPort->AddTexture( nX+348+50, nY+70, nX+567+50, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+70, nX+567+50, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+90, nX+567+50, nY+91,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+90, nX+567+50, nY+91,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+195, nX+567+50, nY+196,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+195, nX+567+50, nY+196,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+246, nX+567+50, nY+247,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+246, nX+567+50, nY+247,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
 			// left vertical line
-			pDrawPort->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+334+30, nY+70, nX+335+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+334+30, nY+70, nX+335+30, nY+320,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 			// right vertical line
-			pDrawPort->AddTexture( nX+348+50, nY+70, nX+349+50, nY+245,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+70, nX+349+50, nY+245,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+567+50, nY+70, nX+568+50, nY+245,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+567+50, nY+70, nX+568+50, nY+245,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
@@ -1861,33 +1850,35 @@ void CUICashShop::Render()
 			nY2=SLOT_SIZE+SLOT_GAP;
 			for(i=0;i<LEFT_SLOT_SIZE_BUY_INFO;i++)
 				for(int j=0;j<LEFT_SLOT_SIZE_BUY_INFO;j++)
-					pDrawPort->AddTexture( nX+125+30+nY2*j, nY+110+nY2*i, nX+158+30+nY2*j, nY+143+nY2*i,
+					_pUIMgr->GetDrawPort()->AddTexture( nX+125+30+nY2*j, nY+110+nY2*i, nX+158+30+nY2*j, nY+143+nY2*i,
 														m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 														0xFFFFFFFF );
 			// right item slot
 			for(i=0;i<RIGHT_SLOT_SIZE_MOVE_ROW;i++)
 				for(int j=0;j<RIGHT_SLOT_SIZE_MOVE_COL;j++)
-					pDrawPort->AddTexture( nX+363+50+nY2*j, nY+106+nY2*i, nX+396+50+nY2*j, nY+139+nY2*i,
+					_pUIMgr->GetDrawPort()->AddTexture( nX+363+50+nY2*j, nY+106+nY2*i, nX+396+50+nY2*j, nY+139+nY2*i,
 														m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 														0xFFFFFFFF );
 			m_btnInfoMove.Render();
 
+#ifdef CASH_GIFT
 			m_btnGift.Render();				// "선물하기" 버튼 렌더링 :Su-won
+#endif
 
 			// 선물 보내기창 렌더링 :Su-won
 			if( m_bShowSendGift )
 				RenderSendGiftUI();				
 
 			// Draw text
-			pDrawPort->PutTextExCX( _S(2392,"구매한 물품"), m_nPosX+220+30,m_nPosY+75, 0xFFFFFFFF );
-			pDrawPort->PutTextExCX( _S(2393,"옮길 물품"), m_nPosX+456+50, m_nPosY+75, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2392,"구매한 물품"), m_nPosX+220+30,m_nPosY+75, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2393,"옮길 물품"), m_nPosX+456+50, m_nPosY+75, 0xFFFFFFFF );
 
 		
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 			
 			// Render all button elements
-			pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+			_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 			// Draw button	
 			RenderInvenItems();	
@@ -1896,57 +1887,57 @@ void CUICashShop::Render()
 		else if(m_nCurShopSection==UCSS_BUY_HISTORY)
 		{
 			// horizon line
-			pDrawPort->AddTexture( nX+108+30, nY+70, nX+567+30, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+70, nX+567+30, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+319, nX+567+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+319, nX+567+30, nY+320,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 			// left vertical line
-			pDrawPort->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+566+30, nY+70, nX+567+30, nY+320,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+566+30, nY+70, nX+567+30, nY+320,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
-			pDrawPort->PutTextExCX( _S(2394,"구매 내역을 확인하시고 싶은 날짜를 선택해 주세요."), 
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2394,"구매 내역을 확인하시고 싶은 날짜를 선택해 주세요."), 
 												m_nPosX+341+30,m_nPosY+95, 0xFFFFFFFF );
 		
 
 			// Black Box
-			pDrawPort->AddTexture( nX+138+30, nY+139, nX+533+30, nY+315,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+138+30, nY+139, nX+533+30, nY+315,
 												m_rtBlackBox.U0, m_rtBlackBox.V0, m_rtBlackBox.U1, m_rtBlackBox.V1,
 												0xFFFFFFFF );
 			// Line Row
-			pDrawPort->AddTexture( nX+138+30,nY+139,nX+533+30, nY+160,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+138+30,nY+139,nX+533+30, nY+160,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 			// Line Column
-			pDrawPort->AddTexture( nX+356+30,nY+139,nX+357+30, nY+315,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+356+30,nY+139,nX+357+30, nY+315,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+442+30,nY+139,nX+443+30, nY+315,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+442+30,nY+139,nX+443+30, nY+315,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 			// Item Slot
 			nY2=SLOT_SIZE+SLOT_GAP;
 			for(i=0;i<HISTORY_SLOT_SIZE;i++)
-				pDrawPort->AddTexture( nX+149+30, nY+164+nY2*i, nX+182+30, nY+197+nY2*i,
+				_pUIMgr->GetDrawPort()->AddTexture( nX+149+30, nY+164+nY2*i, nX+182+30, nY+197+nY2*i,
 													m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 													0xFFFFFFFF );
 			m_sbHistory.Render();
 
-			pDrawPort->PutTextEx( _S(2121,"년"), m_nPosX + 226+30, m_nPosY + 119, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(2122,"월"), m_nPosX + 338+30, m_nPosY + 119, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(2123,"일"), m_nPosX + 446+30, m_nPosY + 119, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2121,"년"), m_nPosX + 226+30, m_nPosY + 119, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2122,"월"), m_nPosX + 338+30, m_nPosY + 119, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2123,"일"), m_nPosX + 446+30, m_nPosY + 119, 0xFFFFFFFF );
 
 //			if(!m_cbYear.IsDropList())			
-				pDrawPort->PutTextEx( _S(2395,"물품"), m_nPosX + 225+30,	m_nPosY + 143, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(2395,"물품"), m_nPosX + 225+30,	m_nPosY + 143, 0xFFFFFFFF );
 //			if(!m_cbMonth.IsDropList())
-				pDrawPort->PutTextEx( _S(2396,"수량"), m_nPosX + 381+30, m_nPosY + 143, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(2396,"수량"), m_nPosX + 381+30, m_nPosY + 143, 0xFFFFFFFF );
 //			if(!m_cbDay.IsDropList())
-				pDrawPort->PutTextEx( _S(2397,"가격"), m_nPosX + 482+30, m_nPosY + 143, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(2397,"가격"), m_nPosX + 482+30, m_nPosY + 143, 0xFFFFFFFF );
 		
 			// Search button
 			m_btnSearch.Render();
@@ -1954,16 +1945,16 @@ void CUICashShop::Render()
 			RenderHistoryItems();
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Render all button elements
-			pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+			_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 			
 			// Set board texture
-			pDrawPort->InitTextureData( m_ptdBaseTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 			
 			// List Box
 			m_cbYear.Render();
@@ -1977,64 +1968,64 @@ void CUICashShop::Render()
 			int nAddWidth =10;
 			int nAddHeight =31;
 			// horizon line
-			pDrawPort->AddTexture( nX+108+30, nY+70, nX+567+30 +nAddWidth, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+70, nX+567+30 +nAddWidth, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+319 +nAddHeight, nX+567+30 +nAddWidth, nY+320 +nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+319 +nAddHeight, nX+567+30 +nAddWidth, nY+320 +nAddHeight,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 			// vertical line
-			pDrawPort->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320 +nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320 +nAddHeight,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+566+30 +nAddWidth, nY+70, nX+567+30 +nAddWidth, nY+320 +nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+566+30 +nAddWidth, nY+70, nX+567+30 +nAddWidth, nY+320 +nAddHeight,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
 			if( m_nCurShopSection==UCSS_BUY_SENDHISTORY)
-				pDrawPort->PutTextExCX( _S(3092, "보낸 선물 내역을 확인하고 싶은 날짜를 선택해 주세요."), 
+				_pUIMgr->GetDrawPort()->PutTextExCX( _S(3092, "보낸 선물 내역을 확인하고 싶은 날짜를 선택해 주세요."), 
 													m_nPosX+341+30,m_nPosY+95 +nAddHeight, 0xFFFFFFFF );
 			else
-				pDrawPort->PutTextExCX( _S(3093, "받은 선물 내역을 확인하고 싶은 날짜를 선택해 주세요."), 
+				_pUIMgr->GetDrawPort()->PutTextExCX( _S(3093, "받은 선물 내역을 확인하고 싶은 날짜를 선택해 주세요."), 
 													m_nPosX+341+30,m_nPosY+95 +nAddHeight, 0xFFFFFFFF );
 		
 
 			// Black Box
-			pDrawPort->AddTexture( nX+138+30, nY+139 +nAddHeight, nX+533+30 +nAddWidth, nY+315 +nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+138+30, nY+139 +nAddHeight, nX+533+30 +nAddWidth, nY+315 +nAddHeight,
 												m_rtBlackBox.U0, m_rtBlackBox.V0, m_rtBlackBox.U1, m_rtBlackBox.V1,
 												0xFFFFFFFF );
 			// Line Row
-			pDrawPort->AddTexture( nX+138+30,nY+139 +nAddHeight, nX+533+30 +nAddWidth, nY+160 +nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+138+30,nY+139 +nAddHeight, nX+533+30 +nAddWidth, nY+160 +nAddHeight,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 
-			pDrawPort->AddTexture( nX+399+30,nY+139+nAddHeight,nX+400+30, nY+315+nAddHeight,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+399+30,nY+139+nAddHeight,nX+400+30, nY+315+nAddHeight,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 
 			// Item Slot
 			nY2=SLOT_SIZE+SLOT_GAP;
 			for(i=0;i<HISTORY_SLOT_SIZE;i++)
-				pDrawPort->AddTexture( nX+149+30, nY+164+nY2*i +nAddHeight, nX+182+30, nY+197+nY2*i +nAddHeight,
+				_pUIMgr->GetDrawPort()->AddTexture( nX+149+30, nY+164+nY2*i +nAddHeight, nX+182+30, nY+197+nY2*i +nAddHeight,
 													m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 													0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(2121,"년"), m_nPosX + 226+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(2122,"월"), m_nPosX + 338+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(2123,"일"), m_nPosX + 446+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2121,"년"), m_nPosX + 226+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2122,"월"), m_nPosX + 338+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2123,"일"), m_nPosX + 446+30, m_nPosY + 119 +nAddHeight, 0xFFFFFFFF );
 
 
 			//if(!m_cbMonth.IsDropList())
-			//	pDrawPort->PutTextEx( _S(2396,"수량"), m_nPosX + 381+30, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
+			//	_pUIMgr->GetDrawPort()->PutTextEx( _S(2396,"수량"), m_nPosX + 381+30, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
 			
 			if( m_nCurShopSection==UCSS_BUY_SENDHISTORY)
 			{
-				pDrawPort->PutTextEx( _S(3094, "보낸 물품"), m_nPosX + 225+30,	m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
-				pDrawPort->PutTextEx( _S(3095, "받는 캐릭터명"), m_nPosX + 482+5-20, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(3094, "보낸 물품"), m_nPosX + 225+30,	m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(3095, "받는 캐릭터명"), m_nPosX + 482+5-20, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
 			}
 			else
 			{
-				pDrawPort->PutTextEx( _S(3096, "받은 물품"), m_nPosX + 225+30,	m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
-				pDrawPort->PutTextEx( _S(3097, "보낸 캐릭터명"), m_nPosX + 482+5-20, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(3096, "받은 물품"), m_nPosX + 225+30,	m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextEx( _S(3097, "보낸 캐릭터명"), m_nPosX + 482+5-20, m_nPosY + 143 +nAddHeight, 0xFFFFFFFF );
 			}
 		
 			m_btnInfoSendHistory.Render();		//'보낸 선물내역 확인'	버튼 렌더링
@@ -2053,16 +2044,16 @@ void CUICashShop::Render()
 			m_sbGift.Render();
 
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 			// Render all button elements
-			pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+			_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 			// Flush all render text queue
-			pDrawPort->EndTextEx();
+			_pUIMgr->GetDrawPort()->EndTextEx();
 			
 			// Set board texture
-			pDrawPort->InitTextureData( m_ptdBaseTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 			
 			// List Box
 			m_cbGiftYear.Render();
@@ -2075,78 +2066,78 @@ void CUICashShop::Render()
 		else if(m_nCurShopSection==UCSS_BUY_RECEIVE)
 		{
 			// left horizon line
-			pDrawPort->AddTexture( nX+108+30, nY+70, nX+334+30, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+70, nX+334+30, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+90, nX+334+30, nY+91,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+90, nX+334+30, nY+91,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+30, nY+319 +70, nX+334+30, nY+320 +70,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+30, nY+319 +70, nX+334+30, nY+320 +70,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
-			pDrawPort->AddTexture( nX+108+35, nY+95, nX+334+15, nY+96,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+35, nY+95, nX+334+15, nY+96,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+35, nY+95+142, nX+334+15, nY+96+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+35, nY+95+142, nX+334+15, nY+96+142,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+35, nY+95+142+5, nX+334+15, nY+96+142+5,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+35, nY+95+142+5, nX+334+15, nY+96+142+5,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+108+35, nY+95+142+5+142, nX+334+15, nY+96+142+5+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+108+35, nY+95+142+5+142, nX+334+15, nY+96+142+5+142,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
 			// right horizon line
-			pDrawPort->AddTexture( nX+348+50, nY+70, nX+567+50, nY+71,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+70, nX+567+50, nY+71,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+90, nX+567+50, nY+91,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+90, nX+567+50, nY+91,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+195, nX+567+50, nY+196,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+195, nX+567+50, nY+196,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+348+50, nY+246, nX+567+50, nY+247,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+246, nX+567+50, nY+247,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
 			// left vertical line
-			pDrawPort->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320 +70,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+30, nY+70, nX+108+30, nY+320 +70,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+334+30, nY+70, nX+335+30, nY+320 +70,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+334+30, nY+70, nX+335+30, nY+320 +70,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
-			pDrawPort->AddTexture( nX+107+35, nY+95, nX+108+35, nY+95+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+35, nY+95, nX+108+35, nY+95+142,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+334+15, nY+95, nX+335+15, nY+95+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+334+15, nY+95, nX+335+15, nY+95+142,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+107+35, nY+95+142+5, nX+108+35, nY+95+142+5+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+35, nY+95+142+5, nX+108+35, nY+95+142+5+142,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+334+15, nY+95+142+5, nX+335+15, nY+95+142+5+142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+334+15, nY+95+142+5, nX+335+15, nY+95+142+5+142,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
 			// right vertical line
-			pDrawPort->AddTexture( nX+348+50, nY+70, nX+349+50, nY+245,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+70, nX+349+50, nY+245,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+567+50, nY+70, nX+568+50, nY+245,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+567+50, nY+70, nX+568+50, nY+245,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
 			
 			// left item slot
-			pDrawPort->AddTexture( nX+107+35+5, nY+95+5, nX+107+35+5 +SLOT_SIZE, nY+95+5 +SLOT_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+35+5, nY+95+5, nX+107+35+5 +SLOT_SIZE, nY+95+5 +SLOT_SIZE,
 														m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 														0xFFFFFFFF );
-			pDrawPort->AddTexture( nX+107+35+5, nY+95+10 +142, nX+107+35+5 +SLOT_SIZE, nY+95+10 +SLOT_SIZE +142,
+			_pUIMgr->GetDrawPort()->AddTexture( nX+107+35+5, nY+95+10 +142, nX+107+35+5 +SLOT_SIZE, nY+95+10 +SLOT_SIZE +142,
 														m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 														0xFFFFFFFF );
 
@@ -2154,7 +2145,7 @@ void CUICashShop::Render()
 			nY2=SLOT_SIZE+SLOT_GAP;
 			for(i=0;i<RIGHT_SLOT_SIZE_MOVE_ROW;i++)
 				for(int j=0;j<RIGHT_SLOT_SIZE_MOVE_COL;j++)
-					pDrawPort->AddTexture( nX+363+50+nY2*j, nY+106+nY2*i, nX+396+50+nY2*j, nY+139+nY2*i,
+					_pUIMgr->GetDrawPort()->AddTexture( nX+363+50+nY2*j, nY+106+nY2*i, nX+396+50+nY2*j, nY+139+nY2*i,
 														m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 														0xFFFFFFFF );
 			m_btnInfoMove.Render();
@@ -2162,31 +2153,31 @@ void CUICashShop::Render()
 			m_sbReceive.Render();
 
 			// Draw text
-			pDrawPort->PutTextExCX( _S(3098, "받은 선물함"), m_nPosX+220+30,m_nPosY+75, 0xFFFFFFFF );
-			pDrawPort->PutTextExCX( _S(2393,"옮길 물품"), m_nPosX+456+50, m_nPosY+75, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(3098, "받은 선물함"), m_nPosX+220+30,m_nPosY+75, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextExCX( _S(2393,"옮길 물품"), m_nPosX+456+50, m_nPosY+75, 0xFFFFFFFF );
 
-			pDrawPort->PutTextEx( _S(3099, "보낸날짜:"), nX+107+35+5 +10, nY+95+5 +nY2, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(3100, "보낸친구:"), nX+107+35+5 +10, nY+95+5 +nY2+15, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(3101, "선물메시지"), nX+107+35+5 +10, nY+95+5 +nY2+30, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3099, "보낸날짜:"), nX+107+35+5 +10, nY+95+5 +nY2, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3100, "보낸친구:"), nX+107+35+5 +10, nY+95+5 +nY2+15, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3101, "선물메시지"), nX+107+35+5 +10, nY+95+5 +nY2+30, 0xFFFFFFFF );
 			
-			pDrawPort->PutTextEx( _S(3099, "보낸날짜:"), nX+107+35+5 +10, nY+95+10 +nY2 +142, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(3100, "보낸친구:"), nX+107+35+5 +10, nY+95+10 +nY2+15 +142, 0xFFFFFFFF );
-			pDrawPort->PutTextEx( _S(3101, "선물메시지"), nX+107+35+5 +10, nY+95+10 +nY2+30 +142, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3099, "보낸날짜:"), nX+107+35+5 +10, nY+95+10 +nY2 +142, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3100, "보낸친구:"), nX+107+35+5 +10, nY+95+10 +nY2+15 +142, 0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(3101, "선물메시지"), nX+107+35+5 +10, nY+95+10 +nY2+30 +142, 0xFFFFFFFF );
 
 			
-			pDrawPort->AddTexture( nX+147 ,nY+100+nY2+48, nX+157 +187+3 , nY+100+nY2+48 +45-3,//+m_ebGiftMessage.GetHeight(),
+			_pUIMgr->GetDrawPort()->AddTexture( nX+147 ,nY+100+nY2+48, nX+157 +187+3 , nY+100+nY2+48 +45-3,//+m_ebGiftMessage.GetHeight(),
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 			
-			pDrawPort->AddTexture( nX+147 ,nY+100+nY2+48 +147, nX+157 +187+3 , nY+100+nY2+48 +147 +45-3,//+m_ebGiftMessage.GetHeight(),
+			_pUIMgr->GetDrawPort()->AddTexture( nX+147 ,nY+100+nY2+48 +147, nX+157 +187+3 , nY+100+nY2+48 +147 +45-3,//+m_ebGiftMessage.GetHeight(),
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 		
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 			
 			// Render all button elements
-			pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+			_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 			RenderRecvGift();
 		}
@@ -2202,33 +2193,33 @@ void CUICashShop::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Render all button elements
-	pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+	_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	if(m_pSetInfo->IsEnabled() && m_pSetInfo->IsVisible()) {
 				m_pSetInfo->Render(); 
 				// Render all button elements
-				pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+				_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 				
 				// Render all elements
-				pDrawPort->FlushRenderingQueue();
+				_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 				// Flush all render text queue
-				pDrawPort->EndTextEx();
+				_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 	if(m_pConfirmInfo->IsEnabled() && m_pConfirmInfo->IsVisible()) {
 		m_pConfirmInfo->Render();
 		// Render all button elements
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 
 }
@@ -2270,13 +2261,12 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
 			
-			if( !IsInsideRect( nX, nY, m_rcShopItems ) )
+			if( !IsInsideRect( nX, nY, m_rcShopItems )	)
 				InitShowInfo();
 
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				pUIManager->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 				
 				ButtonMoveMsg( pMsg );
 
@@ -2291,46 +2281,46 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 
 					Move( ndX, ndY );
 
-					pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+					_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 
 					return WMSG_SUCCESS;
 				}
 				// Hold item button
 				
-				else if( pUIManager->GetHoldBtn().IsEmpty() && bLButtonDownInItem && ( pMsg->wParam & MK_LBUTTON ) &&
+				else if( _pUIMgr->GetHoldBtn().IsEmpty() && bLButtonDownInItem && ( pMsg->wParam & MK_LBUTTON ) &&
 					( ndX != 0 || ndY != 0 ) )
 				{
 					InitShowInfo();
 
 					if(m_nShopItemID >=0){
-						pUIManager->SetHoldBtn( m_pbtnShopItems[m_nShopItemID] );
+						_pUIMgr->SetHoldBtn( m_pbtnShopItems[m_nShopItemID] );
 						int	nOffset = BTN_SIZE / 2;
-						pUIManager->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+						_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						m_pbtnShopItems[m_nShopItemID].SetBtnState( UBES_IDLE );
 						bLButtonDownInItem	= FALSE;
 					} else if(m_nTradeItemID >=0){
-						pUIManager->SetHoldBtn( m_abtnTradeItems[m_nTradeItemID] );
+						_pUIMgr->SetHoldBtn( m_abtnTradeItems[m_nTradeItemID] );
 						int	nOffset = BTN_SIZE / 2;
-						pUIManager->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+						_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						m_abtnTradeItems[m_nTradeItemID].SetBtnState( UBES_IDLE );
 						bLButtonDownInItem	= FALSE;
 
 					}else if(m_nKitItemID >=0){
-						pUIManager->SetHoldBtn( m_abtnKitItems[m_nKitItemID] );
+						_pUIMgr->SetHoldBtn( m_abtnKitItems[m_nKitItemID] );
 						int	nOffset = BTN_SIZE / 2;
-						pUIManager->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+						_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						m_abtnKitItems[m_nKitItemID].SetBtnState( UBES_IDLE );
 						bLButtonDownInItem	= FALSE;
 					} else if(m_nInvenItemID >=0){
-						pUIManager->SetHoldBtn( m_abtnInvenItems[m_nInvenItemID] );
+						_pUIMgr->SetHoldBtn( m_abtnInvenItems[m_nInvenItemID] );
 						int	nOffset = BTN_SIZE / 2;
-						pUIManager->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+						_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 						m_abtnInvenItems[m_nInvenItemID].SetBtnState( UBES_IDLE );
 						bLButtonDownInItem	= FALSE;
 					} else if(m_nRecvItemID >=0){
-					pUIManager->SetHoldBtn( m_abtnRecvGift[m_nRecvItemID] );
+					_pUIMgr->SetHoldBtn( m_abtnRecvGift[m_nRecvItemID] );
 					int	nOffset = BTN_SIZE / 2;
-					pUIManager->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
+					_pUIMgr->GetHoldBtn().SetPos( nX - nOffset, nY - nOffset );
 					m_abtnRecvGift[m_nRecvItemID].SetBtnState( UBES_IDLE );
 					bLButtonDownInItem	= FALSE;
 					}
@@ -2366,7 +2356,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 											m_bShowTradeInfo = TRUE;
 										}
 										
-										pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+										_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 										return tv_msg;							
 									}
 										
@@ -2430,10 +2420,8 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
 				SetFocus ( TRUE );
-				pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+				_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 
 				nOldX = nX;		nOldY = nY;
 
@@ -2474,7 +2462,6 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 				}
 			
 				else if( ( m_btnCancel.MouseMessage( pMsg ) ) != WMSG_FAIL ) {}
-				else if( ( m_btnBillingLink.MouseMessage(pMsg))!= WMSG_FAIL) {}
 				else if( m_nCurShopTab == UCST_BUY || m_nCurShopTab == UCST_NEW_CASH )
 				{	
 					if( ( m_btnConsume.MouseMessage(pMsg ) ) != WMSG_FAIL && m_nCurShopTab == UCST_BUY ) {}
@@ -2492,7 +2479,6 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 					else if( ( m_btnPay.MouseMessage(pMsg ) ) != WMSG_FAIL ) {}
 					else if( ( m_btnInfoBuyItem.MouseMessage(pMsg))!= WMSG_FAIL) {}
 					else if( ( m_btnInfoBuyHistory.MouseMessage(pMsg))!= WMSG_FAIL) {}
-					
 
 					if( ( m_sbLeft.MouseMessage(pMsg)) != WMSG_FAIL ){}
 					else if( ( m_sbRight.MouseMessage(pMsg)) != WMSG_FAIL ){}					
@@ -2531,7 +2517,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 										m_abtnShowItem.Copy( m_pbtnShopItems[i] );
 									}
 
-									pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+									_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 									return tv_msg;								
 								}
 								
@@ -2547,7 +2533,6 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 						m_nInvenItemID = -1;
 						m_nRecvItemID = -1;
 
-
 						for( i = 0; i < RIGHT_SLOT_SIZE_BUY; i++ )
 						{
 							WMSG_RESULT tv_msg =m_abtnTradeItems[i+m_sbRight.GetScrollPos()].MouseMessage( pMsg );
@@ -2558,7 +2543,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 									return tv_msg;							
 								}
 								
-						}						
+						}
 
 					}
 
@@ -2630,7 +2615,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 									
 										}
 
-										pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+										_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 										return tv_msg;	
 									}
 									
@@ -2667,7 +2652,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 											m_bShowInvenInfo = TRUE;
 									
 										}
-										pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+										_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 										return tv_msg;	
 									}
 								}
@@ -2747,7 +2732,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 									
 										}
 
-										pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+										_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 										return tv_msg;	
 									}
 							}
@@ -2780,7 +2765,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 											m_bShowInvenInfo = TRUE;
 
 										}
-										pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+										_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 										return tv_msg;	
 			
 									}
@@ -2798,10 +2783,8 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -2822,13 +2805,6 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 				{
 					if(wmsgResult== WMSG_COMMAND)
 						CloseCashShop();
-				}
-				else if( ( wmsgResult = m_btnBillingLink.MouseMessage(pMsg)) != WMSG_FAIL )
-				{
-					if(wmsgResult == WMSG_COMMAND)
-					{
-						OpenBillingHomePage();
-					}
 				}
 				else if( m_nCurShopTab == UCST_BUY || m_nCurShopTab == UCST_NEW_CASH )
 				{				
@@ -2902,7 +2878,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 							m_nCurShopSection=UCSS_SET;
 							PrepareShopItems(  );
 						}
-					}					
+					}
 					else if( ( wmsgResult = m_btnClear.MouseMessage(pMsg)) != WMSG_FAIL )
 					{
 						if(wmsgResult == WMSG_COMMAND){
@@ -2917,6 +2893,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 						m_pConfirmInfo->SetEnable(TRUE);
 						m_pConfirmInfo->SetVisible(TRUE);		
 						return wmsgResult;
+						
 					}
 					else if( IsInsideRect( nX, nY, m_rcShopItems ) )
 					{
@@ -3038,7 +3015,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 							m_bShowSendGift = !m_bShowSendGift;
 							if( m_bShowSendGift )
 							{
-								pUIManager->RearrangeOrder( UI_CASH_SHOP, TRUE );
+								_pUIMgr->RearrangeOrder( UI_CASH_SHOP, TRUE );
 								m_ebChar.SetFocus(TRUE);
 								m_ebGiftMessage.SetFocus(FALSE);
 
@@ -3245,41 +3222,29 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// If holding button is item and is from shop
-					if( pUIManager->GetHoldBtn().GetBtnType() == UBET_ITEM &&
-						pUIManager->GetHoldBtn().GetWhichUI() == UI_CASH_SHOP )
+					if( _pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM &&
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_CASH_SHOP )
 					{
 						
 						if( m_nCurShopTab == UCST_BUY || m_nCurShopTab == UCST_NEW_CASH ){
-
-							// connie [2009/10/23] - test
-							int tv_idx = 0;
-#if defined(G_JAPAN)							
-							if(IsInsideRect(nX, nY, m_rcKitItemsJP))
-							{
-								tv_idx = 0;
-								m_abtnTradeItems[0].Copy(pUIManager->GetHoldBtn());
-								// Reset holding button
-								pUIManager->ResetHoldBtn();
-								return WMSG_SUCCESS;
-							}
-#endif
+						
 							// Shop items
 							if( IsInsideRect( nX, nY, m_rcShopItems ) )
 							{
 								// If this item is moved from shop slot
 								if( m_nShopItemID < 0 ||
-									m_pbtnShopItems[m_nShopItemID].GetBtnID() != pUIManager->GetHoldBtn().GetBtnID() )
+									m_pbtnShopItems[m_nShopItemID].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 								{
 									if(m_nTradeItemID >=0 ){
 										m_abtnTradeItems[m_nTradeItemID].InitBtn();
 										m_nTradeItemID= -1;
 									}
-									pUIManager->ResetHoldBtn();
+									_pUIMgr->ResetHoldBtn();
 									return WMSG_SUCCESS;
 								}
 							}
 							// Trade items
-							else if( IsInsideRect( nX, nY, m_rcTradeItems ))
+							else if( IsInsideRect( nX, nY, m_rcTradeItems ) )
 							{
 								// If this item is moved from shop slot
 								int n_x = nX;
@@ -3293,10 +3258,10 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 								}
 								
 								int tv_idx = n_y+m_sbRight.GetScrollPos();
-								m_abtnTradeItems[tv_idx].Copy(pUIManager->GetHoldBtn());
+								m_abtnTradeItems[tv_idx].Copy(_pUIMgr->GetHoldBtn());
 																
 								// Reset holding button
-								pUIManager->ResetHoldBtn();
+								_pUIMgr->ResetHoldBtn();
 								return WMSG_SUCCESS;
 							} 
 							else {
@@ -3314,7 +3279,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 							{
 								// If this item is moved from shop slot
 								if( m_nKitItemID < 0 ||
-									m_abtnKitItems[m_nKitItemID].GetBtnID() != pUIManager->GetHoldBtn().GetBtnID() )
+									m_abtnKitItems[m_nKitItemID].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 								{
 									// If this item is moved from shop slot
 									int n_x = nX;
@@ -3323,10 +3288,10 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 									m_nKitItemID = n_x + n_y*LEFT_SLOT_SIZE_BUY_INFO;
 									if( m_abtnKitItems[m_nKitItemID].IsEmpty())
 									{						
-										m_abtnKitItems[m_nKitItemID].Copy(pUIManager->GetHoldBtn());
+										m_abtnKitItems[m_nKitItemID].Copy(_pUIMgr->GetHoldBtn());
 										m_abtnInvenItems[m_nInvenItemID].InitBtn();
 										// Reset holding buttonbutton
-										pUIManager->ResetHoldBtn();
+										_pUIMgr->ResetHoldBtn();
 										return WMSG_SUCCESS;
 									}
 								}
@@ -3341,7 +3306,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 								{
 									if(m_abtnRecvGift[i].IsEmpty())
 									{
-										m_abtnRecvGift[i].Copy(pUIManager->GetHoldBtn());
+										m_abtnRecvGift[i].Copy(_pUIMgr->GetHoldBtn());
 										m_abtnInvenItems[m_nInvenItemID].InitBtn();
 	
 										m_sbReceive.SetCurItemCount( m_sbReceive.GetCurItemCount() +1);
@@ -3349,7 +3314,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 										m_anRecvOrder[i] =m_anInvenOrder[m_nInvenItemID];
 										
 										// Reset holding buttonbutton
-										pUIManager->ResetHoldBtn();
+										_pUIMgr->ResetHoldBtn();
 										return WMSG_SUCCESS;
 									}
 								}
@@ -3358,7 +3323,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 							{
 								// If this item is moved from shop slot
 								if( m_nInvenItemID < 0  || 
-									m_abtnInvenItems[m_nInvenItemID].GetBtnID() != pUIManager->GetHoldBtn().GetBtnID() )
+									m_abtnInvenItems[m_nInvenItemID].GetBtnID() != _pUIMgr->GetHoldBtn().GetBtnID() )
 								{
 									// If this item is moved from shop slot
 									int n_x = nX;
@@ -3367,7 +3332,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 									m_nInvenItemID = n_x + n_y*RIGHT_SLOT_SIZE_MOVE_COL;
 									if( m_abtnInvenItems[m_nInvenItemID].IsEmpty() )
 									{						
-										m_abtnInvenItems[m_nInvenItemID].Copy(pUIManager->GetHoldBtn());
+										m_abtnInvenItems[m_nInvenItemID].Copy(_pUIMgr->GetHoldBtn());
 
 										if(m_nCurShopSection !=UCSS_BUY_RECEIVE)
 											m_abtnKitItems[m_nKitItemID].InitBtn();
@@ -3382,7 +3347,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 												m_sbReceive.SetScrollPos( m_sbReceive.GetCurItemCount()-2 );
 										}
 										// Reset holding button
-										pUIManager->ResetHoldBtn();
+										_pUIMgr->ResetHoldBtn();
 										return WMSG_SUCCESS;
 									}
 								}
@@ -3390,7 +3355,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 						} 
 						// If - If holding button is item
 						// Reset holding button
-						pUIManager->ResetHoldBtn();
+						_pUIMgr->ResetHoldBtn();
 					
 						return WMSG_SUCCESS;
 					}
@@ -3419,18 +3384,15 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 					{
 						if( wmsgResult == WMSG_COMMAND )
 						{
-
 							for( int i=0 ; i<MAX_KIT_SIZE ;i++){
-							if(m_abtnTradeItems[i].IsEmpty()){
-								m_abtnTradeItems[i].Copy(m_pbtnShopItems[n_y+m_sbLeft.GetScrollPos()]); 
-								m_bShowShopInfo = FALSE;
-								return WMSG_SUCCESS;
-							}
+								if(m_abtnTradeItems[i].IsEmpty()){
+									m_abtnTradeItems[i].Copy(m_pbtnShopItems[n_y+m_sbLeft.GetScrollPos()]); 
+									m_bShowShopInfo = FALSE;
+									return WMSG_SUCCESS;
+								}
 							}
 
-							CUIManager::getSingleton()->GetChatting()->AddSysMessage(_S(2398,"장바구니는 최대 10개까지 넣을 수 있습니다."));
-
-												
+							_pUIMgr->GetChatting()->AddSysMessage(_S(2398,"장바구니는 최대 10개까지 넣을 수 있습니다."));
 						}
 					}
 
@@ -3460,19 +3422,17 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 					int n_y = nY;
 					InsideNumXY(m_rcKitItems,SLOT_SIZE ,SLOT_GAP,&n_x, &n_y);
 					int tv_sum = n_x+n_y*LEFT_SLOT_SIZE_BUY_INFO;
-
-					for( int i=0 ; i<INVEN_SLOT_TOTAL ;i++)
-					{
-						if(m_abtnInvenItems[i].IsEmpty())
+						for( int i=0 ; i<INVEN_SLOT_TOTAL ;i++)
 						{
-						m_abtnInvenItems[i].Copy(m_abtnKitItems[tv_sum]);
-						m_abtnKitItems[tv_sum].InitBtn();
-						return WMSG_SUCCESS;
+							if(m_abtnInvenItems[i].IsEmpty())
+							{
+							m_abtnInvenItems[i].Copy(m_abtnKitItems[tv_sum]);
+							m_abtnKitItems[tv_sum].InitBtn();
+							return WMSG_SUCCESS;
+						}
+
 					}
-
-
-				}
-					CUIManager::getSingleton()->GetChatting()->AddSysMessage(_S(2399,"한번에 10개까지만 이동 가능 합니다."));
+					_pUIMgr->GetChatting()->AddSysMessage(_S(2399,"한번에 10개까지만 이동 가능 합니다."));
 					return WMSG_SUCCESS;
 				}
 				// Inven items
@@ -3493,7 +3453,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 						}
 
 					}
-					CUIManager::getSingleton()->GetChatting()->AddSysMessage(_S(2400,"빈 공간이 없습니다."));
+					_pUIMgr->GetChatting()->AddSysMessage(_S(2400,"빈 공간이 없습니다."));
 					return WMSG_SUCCESS;
 				} 
 				}
@@ -3528,7 +3488,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 										return WMSG_SUCCESS;
 									}
 								}
-								CUIManager::getSingleton()->GetChatting()->AddSysMessage(_S(2399,"한번에 10개까지만 이동 가능 합니다."));
+								_pUIMgr->GetChatting()->AddSysMessage(_S(2399,"한번에 10개까지만 이동 가능 합니다."));
 							}
 						}
 						return WMSG_SUCCESS;
@@ -3558,6 +3518,7 @@ WMSG_RESULT CUICashShop::MouseMessage( MSG *pMsg )
 								return WMSG_SUCCESS;
 							}
 						}
+						//_pUIMgr->GetChatting()->AddSysMessage(_S(2400,"빈 공간이 없습니다."));
 						return WMSG_SUCCESS;
 					} 
 				}
@@ -3663,35 +3624,16 @@ void CUICashShop::PrepareShopItems( )
 	if (m_pbtnShopItems !=NULL) delete[] m_pbtnShopItems;
 	m_pbtnShopItems = new CUIButtonEx[m_shopItemCnt];
 	
-#if defined(G_THAI) || defined(G_JAPAN)
-	{
-		for( i = 0,tv_num =CD.m_vShopItemArray.size()-1; i < m_shopItemCnt; --tv_num)		//캐쉬 아이템 리스트 꺼꾸로 정렬
-		{
-			tv_shop = CD.m_vShopItemArray[tv_num];
-			if(CD.m_vShopItemArray[tv_num].m_enable){
-				m_pbtnShopItems[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM);
-				m_pbtnShopItems[i].SetBaseInfo(UBET_ITEM, tv_shop.m_texID, tv_shop.m_texRow, tv_shop.m_texCol);
-				m_pbtnShopItems[i].SetItemInfo( -1, -1, -1, -1, -1,
-					tv_shop.m_shopItemIndex, m_nCurShopSection, tv_shop.m_itemName,tv_shop.m_itemDesc,tv_shop.m_itemListCnt,tv_shop.m_typeIndex);
-				i++;
-			}
+	for( i = 0,tv_num =0; i < m_shopItemCnt; tv_num++){
+		tv_shop = CD.m_vShopItemArray[tv_num];
+		if(CD.m_vShopItemArray[tv_num].m_enable){
+			m_pbtnShopItems[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM);
+			m_pbtnShopItems[i].SetItemInfo( tv_shop.m_texID, tv_shop.m_texRow,tv_shop.m_texCol , -1 ,-1,-1,
+				tv_shop.m_shopItemIndex, m_nCurShopSection, tv_shop.m_itemName,tv_shop.m_itemDesc,tv_shop.m_itemListCnt,tv_shop.m_typeIndex);
+			i++;
 		}
 	}
-#else
-	{
-		for( i = 0,tv_num =0; i < m_shopItemCnt; tv_num++)
-		{
-			tv_shop = CD.m_vShopItemArray[tv_num];
-			if(CD.m_vShopItemArray[tv_num].m_enable){
-				m_pbtnShopItems[i].Create( this, 0, 0, BTN_SIZE, BTN_SIZE, UI_CASH_SHOP, UBET_ITEM);
-				m_pbtnShopItems[i].SetBaseInfo(UBET_ITEM, tv_shop.m_texID, tv_shop.m_texRow, tv_shop.m_texCol);
-				m_pbtnShopItems[i].SetItemInfo( -1, -1, -1, -1, -1,
-					tv_shop.m_shopItemIndex, m_nCurShopSection, tv_shop.m_itemName,tv_shop.m_itemDesc,tv_shop.m_itemListCnt,tv_shop.m_typeIndex);
-				i++;
-			}
-		}
-	}
-#endif
+	
 }
 
 
@@ -3715,7 +3657,9 @@ CUIConfirmInfo::~CUIConfirmInfo()
 
 void CUIConfirmInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight)
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 300, 22 );
@@ -3804,55 +3748,56 @@ void CUIConfirmInfo::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX 
 
 void CUIConfirmInfo::Render()
 {
-	int nX = m_nPosX;
-	int nY = m_nPosY;
-	int nX2 = m_nPosX + m_nWidth;
-	int nY2 = m_nPosY + 60;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
+	// Add render regions
+	int	nX, nY, nX2, nY2 ,i;
+	// Background
+	// Upper left
+	nX = m_nPosX;
+	nY = m_nPosY;
+	nX2 = m_nPosX + m_nWidth;
+	nY2 = m_nPosY + 60;
 
 	// Set board texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackUL.U0, m_rtBackUL.V0, m_rtBackUL.U1, m_rtBackUL.V1,
 										0xFFFFFFFF );
 	// Upper middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackUM.U0, m_rtBackUM.V0, m_rtBackUM.U1, m_rtBackUM.V1,
 										0xFFFFFFFF );
 	// Upper right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackUR.U0, m_rtBackUR.V0, m_rtBackUR.U1, m_rtBackUR.V1,
 										0xFFFFFFFF );
 
 	// Middle left
 	nY = m_nPosY + m_nHeight - 40;
-	pDrawPort->AddTexture( nX, nY2, nX + 49, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY2, nX + 49, nY,
 										m_rtBackML.U0, m_rtBackML.V0, m_rtBackML.U1, m_rtBackML.V1,
 										0xFFFFFFFF );
 	// Middle middle
-	pDrawPort->AddTexture( nX + 49, nY2, nX2 - 32, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY2, nX2 - 32, nY,
 										m_rtBackMM.U0, m_rtBackMM.V0, m_rtBackMM.U1, m_rtBackMM.V1,
 										0xFFFFFFFF );
 	// Middle right
-	pDrawPort->AddTexture( nX2 - 32, nY2, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY2, nX2, nY,
 										m_rtBackMR.U0, m_rtBackMR.V0, m_rtBackMR.U1, m_rtBackMR.V1,
 										0xFFFFFFFF );
 
 	// Lower left
 	nY2 = m_nPosY + m_nHeight;
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackLL.U0, m_rtBackLL.V0, m_rtBackLL.U1, m_rtBackLL.V1,
 										0xFFFFFFFF );
 	// Lower middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackLM.U0, m_rtBackLM.V0, m_rtBackLM.U1, m_rtBackLM.V1,
 										0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackLR.U0, m_rtBackLR.V0, m_rtBackLR.U1, m_rtBackLR.V1,
 										0xFFFFFFFF );
 
@@ -3865,27 +3810,27 @@ void CUIConfirmInfo::Render()
 
 	// Text in cash shop
 	// Title
-	pDrawPort->PutTextEx( _S(2634,"구매 내역 확인창"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2634,"구매 내역 확인창"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
 										m_nPosY + CASHSHOP_TITLE_OFFSETY, 0xFFFFFFFF );
 
 	// horizon line
-	pDrawPort->AddTexture( m_nPosX+12, m_nPosY+80, m_nPosX+288, m_nPosY+81,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+12, m_nPosY+80, m_nPosX+288, m_nPosY+81,
 										m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+12, m_nPosY+260, m_nPosX+288, m_nPosY+261,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+12, m_nPosY+260, m_nPosX+288, m_nPosY+261,
 										m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+12, m_nPosY+290, m_nPosX+288, m_nPosY+291,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+12, m_nPosY+290, m_nPosX+288, m_nPosY+291,
 										m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,0xFFFFFFFF );
 	// vertical line
-	pDrawPort->AddTexture( m_nPosX+205, m_nPosY+57, m_nPosX+206, m_nPosY+260,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+205, m_nPosY+57, m_nPosX+206, m_nPosY+260,
 										m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,0xFFFFFFFF );
 
 	// 구매 내역 
 
-	pDrawPort->PutTextEx( _S(2392,"구입 물품"), 
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2392,"구입 물품"), 
 												m_nPosX + 99,
 												m_nPosY + 64, 
 												0x5566FFFF );
-	pDrawPort->PutTextEx( _S(2397, "가격"), 
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2397, "가격"), 
 												m_nPosX + 231,
 												m_nPosY + 64, 
 												0x5566FFFF );
@@ -3895,19 +3840,19 @@ void CUIConfirmInfo::Render()
 	int tv_type;	
 	CTString tv_str ;
 	
-	for( int i =0; i<MAX_KIT_SIZE ; i++ ){
-		if(!pUIManager->GetCashShop()->m_abtnTradeItems[i].IsEmpty()) {
-			pDrawPort->PutTextEx( pUIManager->GetCashShop()->m_abtnTradeItems[i].GetCashName(), 
+	for( i =0; i<MAX_KIT_SIZE ; i++){
+		if(!_pUIMgr->GetCashShop()->m_abtnTradeItems[i].IsEmpty()) {
+			_pUIMgr->GetDrawPort()->PutTextEx( _pUIMgr->GetCashShop()->m_abtnTradeItems[i].GetCashName(), 
 												m_nPosX + 19,
 												m_nPosY + 100 +15*i, 
 												0xEEFFFFFF );
-			tv_index=pUIManager->GetCashShop()->m_abtnTradeItems[i].GetCashTypeIndex();
-			tv_type = pUIManager->GetCashShop()->m_abtnTradeItems[i].GetCashType();
+			tv_index=_pUIMgr->GetCashShop()->m_abtnTradeItems[i].GetCashTypeIndex();
+			tv_type = _pUIMgr->GetCashShop()->m_abtnTradeItems[i].GetCashType();
 
 			CCashShopData& CD = _pNetwork->GetCashShopData( tv_type );
 
 			tv_str.PrintF("%d",CD.m_vShopItemArray[tv_index].m_cash);
-			pDrawPort->PutTextEx(  tv_str, 
+			_pUIMgr->GetDrawPort()->PutTextEx(  tv_str, 
 												m_nPosX + 231 ,
 												m_nPosY + 100 +15*i, 
 												0xFFEEFFFF );
@@ -3918,25 +3863,25 @@ void CUIConfirmInfo::Render()
 	}	
 	
 	tv_str.PrintF(_S(2635,"결제 금액 : %d"),tv_sum);
-	pDrawPort->PutTextEx(  tv_str, 
+	_pUIMgr->GetDrawPort()->PutTextEx(  tv_str, 
 												m_nPosX + 100 ,
 												m_nPosY + 268 , 
 												0x5566FFFF );
 
-	pDrawPort->PutTextEx(  _S(2636,"구매한 물품은 구매 정보에서"), 
+	_pUIMgr->GetDrawPort()->PutTextEx(  _S(2636,"구매한 물품은 구매 정보에서"), 
 										m_nPosX + 20 ,
 										m_nPosY + 310 , 
 										0xFF44aaFF );
-	pDrawPort->PutTextEx(  _S(2637,"캐릭의 인벤창으로 옮기실 수 있습니다."), 
+	_pUIMgr->GetDrawPort()->PutTextEx(  _S(2637,"캐릭의 인벤창으로 옮기실 수 있습니다."), 
 										m_nPosX + 20 ,
 										m_nPosY + 325 , 
 										0xFF44aaFF );
 	
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 
 }
@@ -3964,7 +3909,7 @@ WMSG_RESULT CUIConfirmInfo::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) ){
 				SetFocus(TRUE);
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			}
 			else SetFocus(FALSE);
 
@@ -4010,10 +3955,8 @@ WMSG_RESULT CUIConfirmInfo::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bConfirmTitleBarClick = FALSE;
@@ -4033,7 +3976,7 @@ WMSG_RESULT CUIConfirmInfo::MouseMessage( MSG *pMsg )
 					// TODO : 결제
 					if(wmsgResult == WMSG_COMMAND){
 						for( int i =0; i<MAX_KIT_SIZE ; i++){
-							if(!pUIManager->GetCashShop()->m_abtnTradeItems[i].IsEmpty()) {
+							if(!_pUIMgr->GetCashShop()->m_abtnTradeItems[i].IsEmpty()) {
 								_pNetwork->SendCashItemMessage(MSG_EX_CASHITEM_PURCHASE_REQ);
 								break;
 							}
@@ -4055,7 +3998,7 @@ WMSG_RESULT CUIConfirmInfo::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -4087,9 +4030,10 @@ CUISetInfo::~CUISetInfo()
 
 void CUISetInfo::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight ,int nGoodsNum)
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
-	m_nGoodsNum = nGoodsNum;	
+	m_pParentWnd = pParentWnd;
+	m_nGoodsNum = nGoodsNum;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcSetTitle.SetRect( 0, 0, 300, 22 );
@@ -4212,7 +4156,7 @@ void CUISetInfo::SetItemInfo(CUIButtonEx& btnSrc)
 	
 		ClearBtnItems(m_btnSetInfo,m_nGoodsNum);
 		for(int i=0 ; itr_go!= itr_end || i < nListCnt ; itr_go++ ,i++ ){
-			m_btnSetInfo[i].SetItemInfo(-1, -1, itr_go->m_itemIndex, -1, -1);
+			m_btnSetInfo[i].SetItemInfo(-1,-1,-1,itr_go->m_itemIndex,-1,-1);
 			m_btnSetInfo[i].SetItemCount(itr_go->m_itemCnt );
 		}		
 
@@ -4222,99 +4166,102 @@ void CUISetInfo::SetItemInfo(CUIButtonEx& btnSrc)
 
 void CUISetInfo::RenderSetItem()
 {
-	if( m_btnSetItem.IsEmpty() == TRUE )
-		return;
+	
 
-	int nX = SET_TOP_SLOT_SX;
-	int nY = SET_TOP_SLOT_SY;
-	int iShopX = SET_TOP_ITEM_SX;
-	int iShopY = SET_TOP_ITEM_SY;
-	int tv_pos = m_sbSet.GetScrollPos();
-
-	m_btnSetItem.SetPos( iShopX, iShopY );
-	m_btnSetItem.Render();	
-
-	int tv_x,tv_y;
-	m_btnSetItem.GetAbsPos(tv_x,tv_y);
-	tv_x += SLOT_GAP+SLOT_SIZE;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-	pDrawPort->PutTextEx(m_btnSetItem.GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
-				
-	CCashShopData& CS = _pNetwork->GetCashShopData(UCSS_SET);
-	int tv_num = (m_nGoodsNum > (SET_ITEM_INFO+tv_pos))?(SET_ITEM_INFO+tv_pos):m_nGoodsNum;
-	if( tv_num >= tv_pos )
+	if(!m_btnSetItem.IsEmpty())
 	{
-		for( int i = tv_pos ; i < tv_num; i++ )
-		{
-			if( m_btnSetInfo[i].IsEmpty() ){
+		int iShopX, iShopY , nX,nY,i;
+		int tv_x,tv_y;
+
+		nX = SET_TOP_SLOT_SX;
+		nY = SET_TOP_SLOT_SY;
+		iShopX = SET_TOP_ITEM_SX;
+		iShopY = SET_TOP_ITEM_SY;
+		int tv_pos = m_sbSet.GetScrollPos();
+		m_btnSetItem.SetPos( iShopX, iShopY );
+		m_btnSetItem.Render();	
+		
+		m_btnSetItem.GetAbsPos(tv_x,tv_y);
+		tv_x += SLOT_GAP+SLOT_SIZE;
+		_pUIMgr->GetDrawPort()->PutTextEx(m_btnSetItem.GetCashName(), tv_x,tv_y+SLOT_SIZE/4);
+				
+		CCashShopData& CS = _pNetwork->GetCashShopData(UCSS_SET);
+		int tv_num = (m_nGoodsNum > (SET_ITEM_INFO+tv_pos))?(SET_ITEM_INFO+tv_pos):m_nGoodsNum;
+		if( tv_num >= tv_pos ){
+			for( i = tv_pos ; i < tv_num; i++)
+			{
+				if( m_btnSetInfo[i].IsEmpty() ){
+					nY += SLOT_SIZE+SLOT_GAP;
+					continue;
+				}
+				m_btnSetInfo[i].SetPos( nX, nY );
+				m_btnSetInfo[i].Render();
+				m_btnSetInfo[i].GetAbsPos(tv_x,tv_y);
+				tv_x  += SLOT_GAP+SLOT_SIZE;
 				nY += SLOT_SIZE+SLOT_GAP;
-				continue;
+				CItemData& CD =	_pNetwork->GetItemData(m_btnSetInfo[i].GetIndex());
+				_pUIMgr->GetDrawPort()->PutTextEx(CD.GetName(), tv_x,tv_y+SLOT_SIZE/4);
+				CTString tv_str;
+				tv_str.PrintF("(%d)",m_btnSetInfo[i].GetItemCount());
+				_pUIMgr->GetDrawPort()->PutTextExRX( tv_str , tv_x + 220,tv_y+SLOT_SIZE/4);			
 			}
-			m_btnSetInfo[i].SetPos( nX, nY );
-			m_btnSetInfo[i].Render();
-			m_btnSetInfo[i].GetAbsPos(tv_x,tv_y);
-			tv_x  += SLOT_GAP+SLOT_SIZE;
-			nY += SLOT_SIZE+SLOT_GAP;
-			CItemData* pCD = _pNetwork->GetItemData(m_btnSetInfo[i].GetIndex());
-			pDrawPort->PutTextEx(pCD->GetName(), tv_x,tv_y+SLOT_SIZE/4);
-			CTString tv_str;
-			tv_str.PrintF("(%d)",m_btnSetInfo[i].GetItemCount());
-			pDrawPort->PutTextExRX( tv_str , tv_x + 220,tv_y+SLOT_SIZE/4);			
 		}
 	}
+
 }
 
 void CUISetInfo::Render()
 {
-	int nX = m_nPosX;
-	int nY = m_nPosY;
-	int nX2 = m_nPosX + m_nWidth;
-	int nY2 = m_nPosY + 60;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	// Add render regions
+	int	nX, nY, nX2, nY2 ,i;
+	// Background
+	// Upper left
+	nX = m_nPosX;
+	nY = m_nPosY;
+	nX2 = m_nPosX + m_nWidth;
+	nY2 = m_nPosY + 60;
 
 	// Set board texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackUL.U0, m_rtBackUL.V0, m_rtBackUL.U1, m_rtBackUL.V1,
 										0xFFFFFFFF );
 	// Upper middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackUM.U0, m_rtBackUM.V0, m_rtBackUM.U1, m_rtBackUM.V1,
 										0xFFFFFFFF );
 	// Upper right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackUR.U0, m_rtBackUR.V0, m_rtBackUR.U1, m_rtBackUR.V1,
 										0xFFFFFFFF );
 
 	// Middle left
 	nY = m_nPosY + m_nHeight - 40;
-	pDrawPort->AddTexture( nX, nY2, nX + 49, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY2, nX + 49, nY,
 										m_rtBackML.U0, m_rtBackML.V0, m_rtBackML.U1, m_rtBackML.V1,
 										0xFFFFFFFF );
 	// Middle middle
-	pDrawPort->AddTexture( nX + 49, nY2, nX2 - 32, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY2, nX2 - 32, nY,
 										m_rtBackMM.U0, m_rtBackMM.V0, m_rtBackMM.U1, m_rtBackMM.V1,
 										0xFFFFFFFF );
 	// Middle right
-	pDrawPort->AddTexture( nX2 - 32, nY2, nX2, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY2, nX2, nY,
 										m_rtBackMR.U0, m_rtBackMR.V0, m_rtBackMR.U1, m_rtBackMR.V1,
 										0xFFFFFFFF );
 
 	// Lower left
 	nY2 = m_nPosY + m_nHeight;
-	pDrawPort->AddTexture( nX, nY, nX + 49, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 49, nY2,
 										m_rtBackLL.U0, m_rtBackLL.V0, m_rtBackLL.U1, m_rtBackLL.V1,
 										0xFFFFFFFF );
 	// Lower middle
-	pDrawPort->AddTexture( nX + 49, nY, nX2 - 32, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX + 49, nY, nX2 - 32, nY2,
 										m_rtBackLM.U0, m_rtBackLM.V0, m_rtBackLM.U1, m_rtBackLM.V1,
 										0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - 32, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 32, nY, nX2, nY2,
 										m_rtBackLR.U0, m_rtBackLR.V0, m_rtBackLR.U1, m_rtBackLR.V1,
 										0xFFFFFFFF );
 
@@ -4326,7 +4273,7 @@ void CUISetInfo::Render()
 
 	// Text in cash shop
 	// Title
-	pDrawPort->PutTextEx( _S(2401,"세트상품 정보"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(2401,"세트상품 정보"), m_nPosX + CASHSHOP_TITLE_OFFSETX,
 										m_nPosY + CASHSHOP_TITLE_OFFSETY, 0xFFFFFFFF );
 
 	//item slot box
@@ -4334,17 +4281,17 @@ void CUISetInfo::Render()
 	nY2=SLOT_SIZE+SLOT_GAP;
 	
 	// set item slot
-	pDrawPort->AddTexture( m_nPosX+40, m_nPosY+64, m_nPosX+40+SLOT_SIZE, m_nPosY+64+SLOT_SIZE,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+40, m_nPosY+64, m_nPosX+40+SLOT_SIZE, m_nPosY+64+SLOT_SIZE,
 										m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 										0xFFFFFFFF );
 	
 	// items
-	for(int i=0;i<SET_ITEM_INFO;i++)
-		pDrawPort->AddTexture( m_nPosX+17, m_nPosY+105+nY2*i, m_nPosX+17+SLOT_SIZE, m_nPosY+105+SLOT_SIZE+nY2*i,
+	for(i=0;i<SET_ITEM_INFO;i++)
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+17, m_nPosY+105+nY2*i, m_nPosX+17+SLOT_SIZE, m_nPosY+105+SLOT_SIZE+nY2*i,
 										m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 										0xFFFFFFFF );
 	// horizon line
-	pDrawPort->AddTexture( m_nPosX+12, m_nPosY+100, m_nPosX+287, m_nPosY+102,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+12, m_nPosY+100, m_nPosX+287, m_nPosY+102,
 										m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,0xFFFFFFFF );
 
 	// Scrollbar 
@@ -4352,10 +4299,10 @@ void CUISetInfo::Render()
 	
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Render Set items
 	RenderSetItem();
@@ -4385,7 +4332,7 @@ WMSG_RESULT CUISetInfo::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) ){
 				SetFocus(TRUE);
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			}
 			else SetFocus(FALSE);
 
@@ -4405,6 +4352,9 @@ WMSG_RESULT CUISetInfo::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_sbSet.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
+		
+
+		
 		}
 		break;
 
@@ -4437,10 +4387,8 @@ WMSG_RESULT CUISetInfo::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bSetTitleBarClick = FALSE;
@@ -4466,7 +4414,8 @@ WMSG_RESULT CUISetInfo::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
+
 					return WMSG_SUCCESS;
 				}
 			}
@@ -4569,8 +4518,7 @@ BOOL CUICashShop::SetCashIndexToBtn(int nCashIndex,int nUniIndex,CUIButtonEx& bt
 			CCashShopData::CASH_SHOP_DATA tv_shop = CD.m_vShopItemArray[i];
 			if(tv_shop.m_shopItemIndex == nCashIndex){
 				btn.Create(this,-1,-1,BTN_SIZE,BTN_SIZE,UI_CASH_SHOP, UBET_ITEM);
-				btn.SetBaseInfo(UBET_ITEM, tv_shop.m_texID, tv_shop.m_texRow,tv_shop.m_texCol);
-				btn.SetItemInfo( -1, -1, -1 ,nUniIndex,-1,
+				btn.SetItemInfo( tv_shop.m_texID, tv_shop.m_texRow,tv_shop.m_texCol , -1 ,nUniIndex,-1,
 					tv_shop.m_shopItemIndex, tv_shop.m_type, tv_shop.m_itemName,tv_shop.m_itemDesc,tv_shop.m_itemListCnt,tv_shop.m_typeIndex);
 				return TRUE;
 			}
@@ -4596,10 +4544,8 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 		return;
 
 	// wooss 051002
-#if defined(G_THAI)
-	{
+	if(g_iCountry == THAILAND){
 		// Get length of string
-		int		iPos;
 		INDEX	nThaiLen = FindThaiLen(strItemInfo);
 		INDEX	nChatMax= (maxChars-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
 		if( nLength == 0 )
@@ -4616,7 +4562,7 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = maxChars;
 			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strItemInfo,0,iPos))
 					break;
@@ -4645,9 +4591,7 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 
 		}
 		
-	} 
-#else 
-	{
+	} else {
 		// If length of string is less than max char
 		if( nLength <= maxChars )
 		{
@@ -4680,7 +4624,6 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 			if( strTemp[0] == ' ' )
 			{
 				int	nTempLength = strTemp.Length();
-				int iPos;
 				for( iPos = 1; iPos < nTempLength; iPos++ )
 				{
 					if( strTemp[iPos] != ' ' )
@@ -4693,7 +4636,6 @@ void CUICashShop::AddItemInfoString( CTString &strItemInfo, COLOR colItemInfo ,i
 			AddItemInfoString( strTemp, colItemInfo ,maxLine,maxChars);
 		}
 	}
-#endif
 }
 
 void CUICashShop::InitShowInfo()
@@ -4726,63 +4668,55 @@ void CUICashShop::ButtonMoveMsg( MSG *pMsg )
 // 선물 보내기창 렌더링 :Su-won
 void CUICashShop::RenderSendGiftUI()										
 {
-	int nX = m_nPosX;
-	int nY = m_nPosY;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	int nX =m_nPosX;
+	int nY =m_nPosY;
 
 	//horizon line
-	pDrawPort->AddTexture( nX+349+50, nY+252, nX+567+50, nY+253,
+	_pUIMgr	->GetDrawPort()->AddTexture( nX+349+50, nY+252, nX+567+50, nY+253,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
-	pDrawPort->AddTexture( nX+349+50, nY+252 +20, nX+567+50, nY+253 +20,
+	_pUIMgr	->GetDrawPort()->AddTexture( nX+349+50, nY+252 +20, nX+567+50, nY+253 +20,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
-	pDrawPort->AddTexture( nX+349+50, nY+252 +150, nX+567+50, nY+253 +150,
+	_pUIMgr	->GetDrawPort()->AddTexture( nX+349+50, nY+252 +150, nX+567+50, nY+253 +150,
 												m_rtLineH.U0, m_rtLineH.V0, m_rtLineH.U1, m_rtLineH.V1,
 												0xFFFFFFFF );
 
 	//vertical line
-	pDrawPort->AddTexture( nX+348+50, nY+252, nX+349+50, nY+253 +150,
+	_pUIMgr->GetDrawPort()->AddTexture( nX+348+50, nY+252, nX+349+50, nY+253 +150,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
-	pDrawPort->AddTexture( nX+567+50, nY+252, nX+568+50, nY+253 +150,
+	_pUIMgr->GetDrawPort()->AddTexture( nX+567+50, nY+252, nX+568+50, nY+253 +150,
 												m_rtLineV.U0, m_rtLineV.V0, m_rtLineV.U1, m_rtLineV.V1,
 												0xFFFFFFFF );
 
-	pDrawPort->PutTextExCX( _S(3104, "선물 받을 친구"), nX+456+50, nY+252+3, 0xFFFFFFFF );
-	pDrawPort->PutTextEx( _S(3105, "캐릭터 명"), nX+348+50+10, nY+252+33, 0xFFFFFFFF );
-	pDrawPort->PutTextEx( _S(3101, "선물 메시지"), nX+348+50+10, nY+252+51, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(3104, "선물 받을 친구"), nX+456+50, nY+252+3, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(3105, "캐릭터 명"), nX+348+50+10, nY+252+33, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S(3101, "선물 메시지"), nX+348+50+10, nY+252+51, 0xFFFFFFFF );
 
-	pDrawPort->AddTexture( nX+m_ebChar.GetPosX() ,nY+m_ebChar.GetPosY(), nX +m_ebChar.GetPosX() +m_ebChar.GetWidth() , nY+m_ebChar.GetPosY() +m_ebChar.GetHeight(),
+	_pUIMgr->GetDrawPort()->AddTexture( nX+m_ebChar.GetPosX() ,nY+m_ebChar.GetPosY(), nX +m_ebChar.GetPosX() +m_ebChar.GetWidth() , nY+m_ebChar.GetPosY() +m_ebChar.GetHeight(),
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 	
-	pDrawPort->AddTexture( nX+m_ebGiftMessage.GetPosX() ,nY+m_ebGiftMessage.GetPosY(), nX +m_ebGiftMessage.GetPosX() +m_ebGiftMessage.GetWidth() +3, nY+m_ebGiftMessage.GetPosY() +45 -3,
+	_pUIMgr->GetDrawPort()->AddTexture( nX+m_ebGiftMessage.GetPosX() ,nY+m_ebGiftMessage.GetPosY(), nX +m_ebGiftMessage.GetPosX() +m_ebGiftMessage.GetWidth() +3, nY+m_ebGiftMessage.GetPosY() +45 -3,
 												m_rtLineH.U0,m_rtLineH.V0,m_rtLineH.U1,m_rtLineH.V1,
 												0xFFFFFFFF );
 
 	m_ebChar.Render();
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
 	m_ebGiftMessage.Render();
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	//			TEST			|->// 그냥 넣을까???
 	CTString temp;
-
-#if defined(G_RUSSIA)
-		temp.PrintF("(%d/100 蓀煜)", m_ebGiftMessage.GetAllStringLength());
-#else
-		temp.PrintF("(%d/100 Byte)", m_ebGiftMessage.GetAllStringLength());
-#endif
-
-	pDrawPort->PutTextEx( temp, nX+348+50+10 +90, nY+252+55, 0xFFFFFFFF );
+	temp.PrintF("(%d/100 Byte)", m_ebGiftMessage.GetAllStringLength());
+	_pUIMgr->GetDrawPort()->PutTextEx( temp, nX+348+50+10 +90, nY+252+55, 0xFFFFFFFF );
 	//			TEST			<-|//
 	
 	m_btnSend.Render();
@@ -4791,16 +4725,16 @@ void CUICashShop::RenderSendGiftUI()
 	if( m_ebChar.DoesShowReadingWindow() )
 	{
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		// Reading window
 		m_ebChar.RenderReadingWindow();
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 }
 
@@ -4914,16 +4848,14 @@ void CUICashShop::OpenRecvGiftPage()
 
 void CUICashShop::Message( int nCommandCode, CTString strTitle, CTString strMessage, DWORD dwStyle )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( nCommandCode ) )
+	if( _pUIMgr->DoesMessageBoxExist( nCommandCode ) )
 		return;
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( strTitle, dwStyle, UI_CASH_SHOP, nCommandCode ); 
 	
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 void CUICashShop::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
@@ -4950,11 +4882,6 @@ BOOL CUICashShop::IsEmptyRecvGift()
 			return FALSE;
 	}
 	
-	CUIManager::getSingleton()->GetQuickSlot()->SetGiftRecv(FALSE);
+	_pUIMgr->GetQuickSlot()->SetGiftRecv(FALSE);
 	return TRUE;
-}
-
-void CUICashShop::OpenBillingHomePage()
-{
-	ShellExecute(NULL, "open", "https://billing.gamigogames.de", NULL, NULL, SW_SHOWNORMAL);
 }

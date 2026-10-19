@@ -9,6 +9,13 @@
 	#pragma once
 #endif
 
+#include <Engine/Interface/UIWindow.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UIListBox.h>
+#include <vector>
+
 #define UI_BINGOBOX_WIDTH	144
 #define UI_BINGOBOX_HEIGHT	160
 
@@ -36,8 +43,8 @@ class CUIBingoBox : public CUIWindow
 {
 protected: // Var
 	CUIButton m_btnClose;
-	CUIIcon* m_pIconInsectItem[9]; // slot
-	CUIIcon* m_pIconTemp;
+	CUIButtonEx m_abtnInsectItem[9]; // slot
+	CUIButtonEx m_abtnTemp;
 
 	UIRect m_rcTitle;
 	UIRect m_rcbtnItems;
@@ -77,9 +84,10 @@ protected: // Var
 
 	int	m_nSelectItem;
 	int m_nTab;
-	int m_nInvenIdx;
+	int m_nRow;
+	int m_nCol;
 	int m_nTempItemArray;
-	int m_nTempItemIndex;
+	int m_nTempUniIndex;
 	int m_nBingo;
 
 	BOOL m_bSelectLock;
@@ -88,7 +96,7 @@ protected: // Var
 	CTString m_strNum; // ºù°í °¹¼ö Ç¥½Ã
 
 	sBingoInfo m_BingoBtnInfo[8];
-	sBingoOfCase m_BingoOfCase[9];	
+	sBingoOfCase m_BingoOfCase[9];
 	
 protected: // Func
 	void	SetBtnItem(int num, int nIndex);	
@@ -99,7 +107,7 @@ public:
 	void	Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight);
 
 	void	Init(void);
-	void	OpenBingoBox(int nTab, int inven_idx);
+	void	OpenBingoBox(int nTab, int nRow, int nCol);
 	void	Render();
 	void	RenderInfo();
 
@@ -115,6 +123,5 @@ public:
 	void	UpDateItem(void);
 	void	FindBingo(int num, BOOL bAllSearch=FALSE);
 	void	ErrorMessage(CNetworkMessage *istr);
-
 };
 #endif

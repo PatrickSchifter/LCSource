@@ -71,8 +71,6 @@ BOOL GetLineCountBackward(const char *pchrStringStart, const char *pchrStringEnd
 
 void CGame::ConsoleRender(CDrawPort *pdp)
 {
-#if		defined(VER_TEST)
-
   if( _pGame->gm_csConsoleState==CS_OFF) {
     con_iFirstLine = 1;
     tvConsoleLast  = _pTimer->GetHighPrecisionTimer();
@@ -151,7 +149,7 @@ void CGame::ConsoleRender(CDrawPort *pdp)
   //LCDRenderGrid();
   LCDRenderClouds2();
   dpConsole.DrawLine( 0, pixSizeJ-1, pixSizeI, pixSizeJ-1, LCDFadedColor(SE_COL_BLUE_NEUTRAL|255));
-  const COLOR colFill = (colDark & ~CT_AMASK) | 0x2F;
+  const colFill = (colDark & ~CT_AMASK) | 0x2F;
   dpConsole.Fill( 0, pixSizeJ-pixLineSpacing*1.6f, pixSizeI, pixLineSpacing*1.6f, colFill);
 
   // setup font
@@ -190,7 +188,6 @@ void CGame::ConsoleRender(CDrawPort *pdp)
     iBackwardLine++;
     pixYLine -= pixLineSpacing;
   }
-#endif		// VER_TEST
 }
 
 
@@ -294,7 +291,7 @@ void DoCheat(const CTString &strCommand, const CTString &strVar)
 {
   _pShell->SetINDEX(strVar, !_pShell->GetINDEX(strVar));
   BOOL bNew = _pShell->GetINDEX(strVar);
-  CPrintF("%s: %s\n", (const char*)strCommand, bNew?"ON":"OFF");
+  CPrintF("%s: %s\n", strCommand, bNew?"ON":"OFF");
 }
 
 static void Key_Return(void)
@@ -323,7 +320,7 @@ static void Key_Return(void)
   #define CHEAT_PREFIX "please"
   if (strEditingLine.HasPrefix(CHEAT_PREFIX) || strEditingLine.HasPrefix("/" CHEAT_PREFIX)) {
     strEditingLine.RemovePrefix(CHEAT_PREFIX);
-    strEditingLine.RemovePrefix("/ " CHEAT_PREFIX);
+    strEditingLine.RemovePrefix("/ "CHEAT_PREFIX);
     strEditingLine.TrimSpacesLeft();
     if (strEditingLine=="god") {
       DoCheat(strEditingLine, "cht_bGod");
@@ -357,13 +354,13 @@ static void Key_Return(void)
   // parse editing line
   } else if( strEditingLine[0]=='/') {
     // add to output and execute
-    CPrintF( "-> %s\n", (const char*)strEditingLine);
+    CPrintF( "-> %s\n", strEditingLine);
       strEditingLine+=";";
       _pShell->Execute(strEditingLine+1);
   } 
   else if( !_pGame->gm_bGameOn) {
     // add to output and execute
-    CPrintF( "-> %s\n", (const char*)strEditingLine);
+    CPrintF( "-> %s\n", strEditingLine);
     strEditingLine+=";";
     _pShell->Execute(strEditingLine);
   }
@@ -426,7 +423,7 @@ static void Key_Tab( BOOL bShift)
         // can we print last found symbol ?
         if( strLastMatched!="") {
           if( !bFirstFound) CPrintF( "  -\n");
-          CPrintF( "  %s\n", (const char*)strLastMatched);
+          CPrintF( "  %s\n", strLastMatched);
           bFirstFound = TRUE;
         }
         strLastMatched = strSymbol;
@@ -434,7 +431,7 @@ static void Key_Tab( BOOL bShift)
       }
     }}
     // print last symbol
-    if( ctSymbolsFound>1) CPrintF( "  %s\n", (const char*)strLastMatched);
+    if( ctSymbolsFound>1) CPrintF( "  %s\n", strLastMatched);
   }
 
   // for each of symbols in the shell
@@ -536,8 +533,6 @@ void CGame::ConsoleKeyDown( MSG msg)
 
 void CGame::ConsoleChar( MSG msg)
 {
-#if		defined(VER_TEST)
-
   // if console is off, do nothing
   if (_pGame->gm_csConsoleState==CS_OFF) return;
 
@@ -553,6 +548,5 @@ void CGame::ConsoleChar( MSG msg)
     // reset history line
     iHistoryLine = 0;
   }
-#endif
 }
 

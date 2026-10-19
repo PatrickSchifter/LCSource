@@ -156,7 +156,7 @@ bool CSmcInfo::SaveSmcInfoText(std::string sFilename)
 	int TexInfoSize = 0;
 	int i, j;
 
-	fout.open(HOSTPATH(sFilename.c_str()), ios_base::out);//|ios_base::app);
+	fout.open(sFilename.c_str(), ios_base::out);//|ios_base::app);
 
 	fout << "SMC Name: " << m_SmcFileName << '\n';
 	fout << "MESH Total NUM: " << MeshInfoSize << '\n'; // ¸Þ½¬ °¹¼ö

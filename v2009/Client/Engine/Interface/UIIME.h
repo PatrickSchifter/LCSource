@@ -70,6 +70,7 @@ inline DWORD GetLanguage ()		{ return LOWORD( _hKL ); }
 void SetEngMode ( HWND hWnd );
 
 char*	GetNationName ( DWORD dwNations );
+bool	CheckInputLocal ();
 
 // IME 언어 별 종류 및 버젼
 #define LANG_CHT            MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL)

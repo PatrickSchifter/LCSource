@@ -13,6 +13,7 @@
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Brushes/BrushArchive.h>
 #include <Engine/Terrain/TerrainArchive.h>
+#include <Engine/Base/ProgressHook.h>
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/Server.h>
 #include <Engine/Network/SessionState.h>
@@ -31,7 +32,6 @@
 #include <Engine/Entities/QuestSystem.h>
 #include <Engine/Effect/EffectCommon.h>
 //안태훈 수정 끝	//(Quest System)(0.1)
-#include <Engine/Loading.h>
 
 #define WORLDSTATEVERSION_NOCLASSCONTAINER 9
 #define WORLDSTATEVERSION_MULTITEXTURING 8
@@ -79,13 +79,7 @@ static void DictionaryPreload_t(CTStream *istr, const CTString &strPreloadExt)
 		qsort(cfnmFiles.sa_Array, ctFileNames, sizeof(CTFileName*), qsortCompareCTFileName);
 	}
 
-	//if(g_iCountry == RUSSIA)
-	#if defined G_RUSSIA
-		SetProgressDescription("행藎滄魏:" + strPreloadExt);
-	//else
-	#else
-		SetProgressDescription("Loading:" + strPreloadExt);
-	#endif
+	SetProgressDescription("Loading:" + strPreloadExt);
 	// for each filename
 	{for(INDEX iFileName=0; iFileName<ctFileNames; iFileName++) {
 		// preload it
@@ -198,10 +192,12 @@ void CWorld::Load_t(const CTFileName &fnmWorld) // throw char *
 	// if reinit is needed
 	if (bNeedsReinit) {
 		// reinitialize
+		SetProgressDescription(TRANS("converting from old version"));
 		CallProgressHook_t(0.0f);
 		ReinitializeEntities();
 		CallProgressHook_t(1.0f);
 		// reinitialize
+		SetProgressDescription(TRANS("saving converted file"));
 		CallProgressHook_t(0.0f);
 		Save_t(fnmWorld);
 		CallProgressHook_t(1.0f);
@@ -241,10 +237,12 @@ void CWorld::Load_t_ext(const CTFileName &fnmWorldWls) // throw char *
 	// 아마도 bNeedsReinit가 호출될 가능성은 없을 듯. by seo.
 	if (bNeedsReinit) {
 		// reinitialize
+		SetProgressDescription(TRANS("converting from old version"));
 		CallProgressHook_t(0.0f);
 		ReinitializeEntities();
 		CallProgressHook_t(1.0f);
 		// reinitialize
+		SetProgressDescription(TRANS("saving converted file"));
 		CallProgressHook_t(0.0f);
 		Save_t_ext(fnmWorldWls);				// modified by seo
 		CallProgressHook_t(1.0f);
@@ -392,16 +390,18 @@ void CWorld::ReadBrushes_t( CTStream *istrm)// throw char *
 	
 	ReadInfo_t(istrm, FALSE);
 
+	SetProgressDescription(TRANS("Loading list of Textures"));
 	CallProgressHook_t(0.0f);
 	// read the brushes from the file
 	_pwoCurrentLoading = this;
 	istrm->DictionaryReadBegin_t();
 	CallProgressHook_t(1.0f);
 
+	SetProgressDescription(TRANS("Loading World Textures"));
 	CallProgressHook_t(0.0f);
 	istrm->DictionaryPreload_t();
 	CallProgressHook_t(1.0f);
-	
+	SetProgressDescription(TRANS("Loading Brushes"));
 	CallProgressHook_t(0.0f);
 	wo_baBrushes.Read_t(istrm);
 	CallProgressHook_t(1.0f);
@@ -409,12 +409,14 @@ void CWorld::ReadBrushes_t( CTStream *istrm)// throw char *
 	// if there are some terrais in world							// yjpark |<--
 	if( istrm->PeekID_t() == CChunkID("TRAR") )			// 'terrain archive'
 	{
+		SetProgressDescription(TRANS("Loading Terrains"));
 		CallProgressHook_t(0.0f);
 		wo_taTerrains.Read_t( istrm );
 		CallProgressHook_t(1.0f);
 	}
 	else
 	{
+		SetProgressDescription(TRANS("Loading Terrains"));
 		CallProgressHook_t(0.0f);
 
 		CTFileName	fnmFullPath = istrm->strm_strStreamDescription;	
@@ -467,6 +469,7 @@ void CWorld::ReadState_t( CTStream *istr) // throw char *
 	CTmpPrecachingNow tpn;
 	_bReadEntitiesByID = FALSE;
 
+	SetProgressDescription(TRANS("Loading Models"));
 	CallProgressHook_t(0.0f);
 	wo_slStateDictionaryOffset = istr->DictionaryReadBegin_t();
 #if PRELOAD_BY_EXTENSIONS
@@ -789,11 +792,6 @@ void CWorld::ReadState_old_t( CTStream *istr) // throw char *
  */
 void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 {
-	if (!_bLoadingEffectData)
-	{
-		_bLoadingEffectData = TRUE;
-		Initialize_EffectSystem(); // 이펙트 데이터 로딩
-	}
 	// read the world info
 	ReadInfo_t(istr, TRUE);
 
@@ -855,7 +853,7 @@ void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 	wo_whWorldEntityContainer.Clear();
 	wo_whWorldEntityContainer.SetAllocationParameters(iNumCompartments,20,5);
 
-	extern INDEX	g_iCountry;
+	SetProgressDescription(TRANS("Creating Entities"));
 	CallProgressHook_t(0.0f);
 	// for each entity
 	{for(INDEX iEntity=0; iEntity<ctEntities; iEntity++) {
@@ -879,21 +877,1169 @@ void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 		CallProgressHook_t(FLOAT(iEntity)/ctEntities);
 	}}
 	CallProgressHook_t(1.0f);
-		
-	//if(g_iCountry == RUSSIA)
+	
+	SetProgressDescription(TRANS("Creating Effect Data"));
 	CallProgressHook_t(0.0f);
 	
+	if (!_bLoadingEffectData)
+	{
+		_bLoadingEffectData = TRUE;
+		Initialize_EffectSystem(); // 이펙트 데이터 로딩
+	}
+
 	CallProgressHook_t(1.0f);
  //0507 kwon 추가.
+	SetProgressDescription(TRANS("Loading Mob"));
 	CallProgressHook_t(0.0f);
 	CEntity* penEntity = NULL; 
 	CPlacement3D plPlacement;
 	plPlacement.pl_PositionVector = FLOAT3D(0,0,0);
 	plPlacement.pl_OrientationAngle = ANGLE3D(0,0,0);
 
-	LoadLOD();
+	CTString fnTemp; 
+	CTString strFullPath = _fnmApplicationPath.FileDir();
+	CTString fnZoneFlag		= strFullPath + "data\\ZoneFlag.lod";
+	
+	extern BOOL		_bWorldEditorApp;
+	extern BOOL		_bInTestGame;
+	extern INDEX	g_iCountry;
+	extern BOOL		g_bIsMalEng;
+	const BOOL		bLoadMobData = TRUE;
+	const BOOL		bWETestGame	= (_bWorldEditorApp && _bInTestGame);
 
-	//if(g_iCountry == RUSSIA)
+	const BOOL bLoadMobName = TRUE;
+	if( (bLoadMobName && !_bWorldEditorApp && _pNetwork->wo_iNumOfMobName <= 0)
+		|| _bInTestGame)
+	{
+		// 스킬 데이터 로딩 부분.
+		if ( _pNetwork->ga_World.wo_aMobName.Count() == 0 )
+		{
+			SetProgressDescription(TRANS("Loading Mob Name"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\MobName.lod";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\MobName_t.lod";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\MobName_c.lod";
+				break;
+			case THAILAND:
+				fnTemp = strFullPath + "data\\MobName_th.lod";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\MobName_jp.lod";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\MobName_maleng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\MobName_mal.lod";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\MobName_usa.lod";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\MobName_brz.lod";
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\MobName_hkeng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\MobName_hk.lod";
+				}
+				break;
+			case GERMANY: // wooss 070309 kw : WSS_GERMAN_FONT
+				fnTemp = strFullPath + "data\\MobName_ger.lod";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\Mobname_spn.lod";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\Mobname_frc.lod";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\mobname_pld.lod";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\mobname_tur.lod";
+				break;
+			}
+
+			int iNumOfMobName	= CMobName::LoadMobNameFromFile(_pNetwork->ga_World.wo_aMobName, fnTemp);		
+			_pNetwork->wo_iNumOfMobName = iNumOfMobName;
+
+			CallProgressHook_t(1.0f);
+		}
+	}
+
+	if((bLoadMobData && !_bWorldEditorApp) || bWETestGame)
+	{
+		CTString	fnMobData;
+
+		if( ( _pGameState && _pGameState->GetGameMode() != CGameState::GM_NONE ) || bWETestGame )
+		{
+			if ( wo_aMobData.Count() == 0 ) // only one loading npcdata
+			{
+				CallProgressHook_t(0.0f);
+
+				switch( g_iCountry )
+				{
+				case KOREA:
+					fnMobData.PrintF("data\\mobAll.lod");
+					break;
+				case TAIWAN:
+				case TAIWAN2:
+					fnMobData.PrintF("data\\mobAll_t.lod");
+					break;
+				case CHINA: 
+					fnMobData.PrintF("data\\mobAll_c.lod");
+					break;
+				case THAILAND:
+					fnMobData.PrintF("data\\mobAll_th.lod");
+					break;
+				case JAPAN:
+					fnMobData.PrintF("data\\mobAll_jp.lod");
+					break;
+				case MALAYSIA:
+					if(g_bIsMalEng){
+						fnMobData.PrintF("data\\mobAll_maleng.lod");
+					}
+					else {
+						fnMobData.PrintF("data\\mobAll_mal.lod");
+					}
+					break;
+				case USA:
+					fnMobData.PrintF("data\\mobAll_usa.lod");
+					break;
+				case BRAZIL:
+					fnMobData.PrintF("data\\mobAll_brz.lod");
+					break;
+				case HONGKONG:
+					if(g_bIsMalEng){
+						fnMobData.PrintF("data\\mobAll_hkeng.lod");
+					}
+					else
+					{
+						fnMobData.PrintF("data\\mobAll_hk.lod");
+					}
+					break;							
+				case GERMANY: // wooss 070309 kw : WSS_GERMAN_FONT
+					fnMobData.PrintF("data\\mobAll_ger.lod");
+					break;
+				case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+					fnMobData.PrintF("data\\mobAll_spn.lod");
+					break;
+				case FRANCE:
+					fnMobData.PrintF("data\\mobAll_frc.lod");
+					break;
+				case POLAND:
+					fnMobData.PrintF("data\\mobAll_pld.lod");
+					break;
+				case TURKEY:
+					fnMobData.PrintF("data\\mobAll_tur.lod");
+					break;
+				}
+				
+				fnTemp = strFullPath + fnMobData;
+				int iNumOfMob = CMobData::LoadNPCDataFromFile(wo_aMobData, fnTemp, fnZoneFlag);
+				_pNetwork->ga_World.wo_iNumOfNPC = iNumOfMob;
+				if(iNumOfMob)
+				{		
+					for(int i = 0; i <= iNumOfMob; ++i)
+					{
+						// FIXME : 메모리 누수를 막기 위한 부분.
+						/*
+						CMobData& MD = wo_aMobData[i];
+						if(MD.GetMobIndex() == -1) continue;
+						penEntity = _pNetwork->ga_World.CreateEntity_t(plPlacement, CLASS_ENEMY);
+						penEntity->InitAsSkaModel();
+						penEntity->SetSkaModel(MD.GetMobSmcFileName());
+						*/
+				
+						CallProgressHook_t(FLOAT(i)/iNumOfMob);
+					}
+				}
+				CallProgressHook_t(1.0f);
+			}
+		}
+	}
+
+	const BOOL bLoadShopData = TRUE;
+	if(bLoadShopData && !_bWorldEditorApp)
+	{
+		if ( wo_aShopData.Count() == 0 )
+		{
+			CallProgressHook_t(0.0f);
+
+			fnTemp = strFullPath + "data\\ShopAll.lod";
+
+			int iNumOfShop = CShopData::LoadShopDataFromFile(wo_aShopData, fnTemp);
+			_pNetwork->ga_World.wo_iNumOfShop = iNumOfShop;		
+			if(iNumOfShop)
+			{
+				for(int i = 0; i <= iNumOfShop; ++i)
+				{
+					CShopData &SD = wo_aShopData[i];
+					if(SD.GetIndex() == -1) continue;
+				}
+			}
+			
+			CallProgressHook_t(1.0f);
+		}
+	}
+	
+	//0724 스킬 로드.
+	const BOOL bLoadSkillData = TRUE;
+	if( bLoadSkillData && !_bWorldEditorApp && _pNetwork->wo_iNumOfSkill <= 0 )
+	{
+		if ( _pNetwork->ga_World.wo_aSkillData.Count() == 0 )
+		{
+			// 스킬 데이터 로딩 부분.
+			SetProgressDescription(TRANS("Loading Skill"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\Skills.bin";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\Skills_t.bin";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\Skills_c.bin";
+				break;
+			case THAILAND:
+				fnTemp = strFullPath + "data\\Skills_th.bin";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\Skills_jp.bin";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\Skills_maleng.bin";
+				}
+				else {
+					fnTemp = strFullPath + "data\\Skills_mal.bin";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\Skills_usa.bin";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\Skills_brz.bin";
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\Skills_hkeng.bin";
+				}
+				else {
+					fnTemp = strFullPath + "data\\Skills_hk.bin";
+				}
+				break;
+			case GERMANY: // wooss 070309 kw : WSS_GERMAN_FONT
+				fnTemp = strFullPath + "data\\Skills_ger.bin";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\Skills_spn.bin";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\Skills_frc.bin";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\skills_pld.bin";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\skills_tur.bin";
+				break;
+			}
+
+			int iNumOfSkill	= CSkill::LoadSkillDataFromFile(_pNetwork->ga_World.wo_aSkillData, fnTemp);
+			_pNetwork->wo_iNumOfSkill = iNumOfSkill;
+
+			CallProgressHook_t(1.0f);
+		}
+	}
+
+	const BOOL bLoadSSkillData = TRUE;
+	if( bLoadSSkillData && !_bWorldEditorApp && _pNetwork->wo_iNumOfSSkill <= 0 )
+	{
+		if ( _pNetwork->ga_World.wo_aSSkillData.Count() == 0 )
+		{
+			// 특수 스킬 데이터 로딩 부분.
+			SetProgressDescription(TRANS("Loading Special Skill"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\SSkill.lod";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\SSkill_t.lod";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\SSkill_c.lod";
+				break;
+			case THAILAND:
+				fnTemp = strFullPath + "data\\SSkill_th.lod";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\SSkill_jp.lod";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\SSkill_maleng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\SSkill_mal.lod";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\SSkill_usa.lod";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\SSkill_brz.lod";
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\SSkill_hkeng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\SSkill_hk.lod";
+				}
+				break;
+			case GERMANY: // wooss 070309 kw : WSS_GERMAN_FONT
+				fnTemp = strFullPath + "data\\SSkill_ger.lod";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\SSkill_spn.lod";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\SSkill_frc.lod";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\sskill_pld.lod";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\sskill_tur.lod";
+				break;
+			}
+			
+			int iNumOfSSkill	= CSpecialSkill::LoadSSkillDataFromFile(_pNetwork->ga_World.wo_aSSkillData, fnTemp);
+			_pNetwork->wo_iNumOfSSkill = iNumOfSSkill;
+
+			CallProgressHook_t(1.0f);
+		}
+	}
+
+	const BOOL	bLoadActionData = TRUE;
+	if( bLoadActionData && !_bWorldEditorApp && _pNetwork->wo_iNumOfAction <= 0 )
+	{
+		if ( _pNetwork->ga_World.wo_aActionData.Count() == 0 )
+		{
+			SetProgressDescription(TRANS("Loading Action"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + CTString( "data\\Actions.bin" );
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + CTString( "data\\Actions_t.bin" );
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + CTString( "data\\Actions_c.bin" );
+				break;
+			case THAILAND: 
+				fnTemp = strFullPath + CTString( "data\\Actions_th.bin" );
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + CTString ("data\\Actions_jp.bin");
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + CTString ("data\\Actions_maleng.bin");
+				}
+				else {
+					fnTemp = strFullPath + CTString ("data\\Actions_mal.bin");
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + CTString ("data\\Actions_usa.bin");
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + CTString ("data\\Actions_brz.bin");
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + CTString ("data\\Actions_hkeng.bin");	
+				}
+				else {
+					fnTemp = strFullPath + CTString ("data\\Actions_hk.bin");	
+				}
+				break;
+			case GERMANY: // wooss 070309 kw : WSS_GERMAN_FONT
+				fnTemp = strFullPath + CTString ("data\\Actions_ger.bin");
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + CTString ("data\\Actions_spn.bin");
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + CTString ("data\\Actions_frc.bin");
+				break;
+			case POLAND:
+				fnTemp = strFullPath + CTString ("data\\actions_pld.bin");
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + CTString ("data\\actions_tur.bin");
+				break;
+			}
+
+			int	nNumAction	= CAction::LoadActionDataFromFile( _pNetwork->ga_World.wo_aActionData, fnTemp );
+			_pNetwork->wo_iNumOfAction = nNumAction;
+
+			CallProgressHook_t(1.0f);
+		}
+	}
+	
+	const BOOL bLoadItemName = TRUE;
+	if( bLoadItemName && !_bWorldEditorApp && _pNetwork->wo_iNumOfItemName <= 0 )
+	{
+		if ( _pNetwork->wo_aItemName.Count() == 0 )
+		{
+			// 아이템 이름 로딩 부분.
+			SetProgressDescription(TRANS("Loading Item Name"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\ItemName.lod";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\ItemName_t.lod";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\ItemName_c.lod";
+				break;
+			case THAILAND: 
+				fnTemp = strFullPath + "data\\ItemName_th.lod";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\ItemName_jp.lod";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\ItemName_maleng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\ItemName_mal.lod";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\ItemName_usa.lod";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\ItemName_brz.lod";
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\ItemName_hkeng.lod";	
+				}
+				else {
+					fnTemp = strFullPath + "data\\ItemName_hk.lod";
+				}
+				break;
+			case GERMANY:
+				fnTemp = strFullPath + "data\\ItemName_ger.lod";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\ItemName_spn.lod";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\ItemName_frc.lod";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\itemname_pld.lod";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\itemname_tur.lod";
+				break;
+			}
+
+			int iNumOfItemName	= CItemName::LoadItemNameFromFile(_pNetwork->wo_aItemName, fnTemp);		
+			_pNetwork->wo_iNumOfItemName = iNumOfItemName;
+			
+			CallProgressHook_t(1.0f);
+		}
+	}
+	
+	const BOOL bLoadItemData = TRUE;//0601 FALSE;
+	if(bLoadItemData && !_bWorldEditorApp && _pNetwork->wo_iNumOfItem <= 0)
+	{
+		if (_pNetwork->wo_aItemSmcInfo.empty())
+		{
+			std::string strFilePath = strFullPath.str_String;
+			_pNetwork->wo_aItemSmcInfo.SmcInfoReadBin(strFilePath + "Data\\smc.lod");
+		}
+
+		if ( _pNetwork->wo_aItemData.Count() == 0 )
+		{
+			// 아이템 데이터 로딩 부분.
+			SetProgressDescription(TRANS("Loading Items"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\ItemAll.lod";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\ItemAll_t.lod";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\ItemAll_c.lod";
+				break;
+			case THAILAND: 
+				fnTemp = strFullPath + "data\\ItemAll_th.lod";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\ItemAll_jp.lod";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\ItemAll_maleng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\ItemAll_mal.lod";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\ItemAll_usa.lod";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\ItemAll_brz.lod";
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\ItemAll_hkeng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\ItemAll_hk.lod";
+				}
+				break;
+			case GERMANY:
+				fnTemp = strFullPath + "data\\ItemAll_ger.lod";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\ItemAll_spn.lod";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\ItemAll_frc.lod";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\ItemAll_pld.lod";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\ItemAll_tur.lod";
+				break;
+			}
+
+			int iNumOfItem	= CItemData::LoadItemDataFromFile(_pNetwork->wo_aItemData, fnTemp);
+			_pNetwork->wo_iNumOfItem = iNumOfItem;
+
+			CallProgressHook_t(1.0f);
+		}
+	}	
+
+	// wooss 050902 
+	// cash shop data load
+	// MALAYSIA CASH SHOP
+	if(g_iCountry == THAILAND || g_iCountry == JAPAN || g_iCountry == KOREA || g_iCountry == MALAYSIA || g_iCountry == USA 
+		|| g_iCountry == BRAZIL || g_iCountry == HONGKONG || g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND || g_iCountry == TURKEY )
+	{
+		
+		const BOOL bLoadCashShopData = TRUE;
+		if(bLoadCashShopData && !_bWorldEditorApp)
+		{
+			SetProgressDescription(TRANS("Loading CashShop Data"));
+			CallProgressHook_t(0.0f);
+			
+			if ( wo_aCashShopData.Count() == 0 )
+			{
+				if((g_iCountry == MALAYSIA && g_bIsMalEng) || (g_iCountry == HONGKONG && g_bIsMalEng))
+					fnTemp = strFullPath + "data\\catalog_eng.lod";
+				else 
+					fnTemp = strFullPath + "data\\catalog.lod";
+	
+				int iNumOfShop = CCashShopData::LoadShopDataFromFile(wo_aCashShopData, fnTemp);
+			}
+	/*		
+			if(iNumOfShop)
+			{
+				for(int i = 0; i < MAX_CASHSHOP_CLASS; ++i)
+				{
+					CCashShopData &SD = wo_aCashShopData[i];
+					if(SD.GetIndex() == -1) continue;
+					
+				}
+			}  */
+			CallProgressHook_t(1.0f);
+		}
+	}
+
+	//[070511: Su-won]
+	//월드에디터에서는 lod 파일 로드하지 않게.....
+	if( !_bWorldEditorApp )
+	{
+		// wooss 070228 --------------------------------------->>
+		// kw : WSS_EVENT_LOD
+		// Read Event Lod - event_x.lod
+		FILE* fEvent = NULL;
+		CTString tPath = strFullPath + "data\\event_";
+		CTString tEventLoc;
+		switch(g_iCountry)
+		{
+			case KOREA:
+				tEventLoc = CTString( "kr.lod" );
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				tEventLoc = CTString( "t.lod" );
+				break;
+			case CHINA: 
+				tEventLoc = CTString( "ch.lod" );
+				break;
+			case THAILAND: 
+				tEventLoc = CTString( "th.lod" );
+				break;
+			case JAPAN:
+				tEventLoc = CTString("jp.lod");
+				break;
+			case MALAYSIA:
+				tEventLoc = CTString("mal.lod");
+				break;
+			case USA:
+				tEventLoc = CTString("usa.lod");
+				break;
+			case BRAZIL:
+				tEventLoc = CTString("brz.lod");
+				break;
+			case HONGKONG:
+				tEventLoc = CTString("hk.lod");
+				break;
+			case GERMANY:
+				tEventLoc = CTString("ger.lod");
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				tEventLoc = CTString("spn.lod");
+				break;
+			case FRANCE:
+				tEventLoc = CTString("frc.lod");
+				break;
+			case POLAND:
+				tEventLoc = CTString("pld.lod");
+				break;	
+			case TURKEY:
+				tEventLoc = CTString("tur.lod");
+				break;	
+		}
+		tPath += tEventLoc;
+		
+		if( fEvent = fopen(tPath.str_String ,"rb") )
+		{
+			int		eCountry;	// EVENT Country
+			int		eNum;		// EVENT NUMBERS
+			int		eIndex;		// EVENT INDEX 
+			int		eValue; 	// EVENT AVAILUABLE ( x >0 : ENABLE or Event Vailuable , x = 0 : DISABLE )
+		
+			// 현재 클라이언트 국가코드와 이벤트 국가코드가 맞는지 체크...
+			fread(&eCountry,sizeof(int),1,fEvent);
+			if( _pNetwork->ReturnCCC(eCountry) != g_iCountry)
+			{
+				MessageBox(NULL,"wrong version event data file!!","ERRROR!!",MB_OK);
+				_pGameState->Running() = FALSE;
+				_pGameState->QuitScreen() = FALSE;	
+			}
+			
+			// 이벤트 개수 체크
+			fread(&eNum,sizeof(int),1,fEvent);
+
+			// 전체 이벤트를 생성한 배열에 값 설정하는 방식
+	/*		for( int i=0;i<eNum;i++)
+			{
+				fread(&eIndex,sizeof(int),1,fQuest);
+				fread(&eValue,sizeof(int),1,fQuest);
+
+				g_eventValue[eIndex] = eValue;
+			}*/
+			// map init
+			g_mapEvent.clear();
+			// 설정된 이벤트만 생성하여 값 설정하는 방식(동적)
+			for( int i=0;i<eNum;i++)
+			{
+				fread(&eIndex,sizeof(int),1,fEvent);
+				fread(&eValue,sizeof(int),1,fEvent);
+				
+				extern ENGINE_API std::map<int,int> g_mapEvent;
+				// if ENABLE ... 
+				if(eValue>0) g_mapEvent[eIndex] = eValue;
+			}
+							
+		}
+		else 
+		{
+			MessageBox(NULL,"Dose not exist or correct event data file!!","ERRROR!!",MB_OK);
+			_pGameState->Running() = FALSE;
+			_pGameState->QuitScreen() = FALSE;	
+		}
+	}
+	// -----------------------------------------------------<<
+		
+#ifdef HELP_SYSTEM_1
+	// -----------------------------------------------------<<
+	//ttos : 도움말 시스템 (안내시스템)
+	//
+	//[070511: Su-won]
+	//월드에디터에서는 lod 파일 로드하지 않게.....
+	if ( _pNetwork->wo_aNpcList.Count() == 0 && !_bWorldEditorApp )
+	{
+		CallProgressHook_t(0.0f);
+
+		CTString tNpclistLoc;
+		switch( g_iCountry )
+		{
+		case KOREA:
+			tNpclistLoc.PrintF("data\\npchelp.lod");
+			break;
+		case TAIWAN:
+		case TAIWAN2:
+			tNpclistLoc.PrintF("data\\npchelp_t.lod");
+			break;
+		case CHINA: 
+			tNpclistLoc.PrintF("data\\npchelp_c.lod");
+			break;
+		case THAILAND:
+			tNpclistLoc.PrintF("data\\npchelp_th.lod");
+			break;
+		case JAPAN:
+			tNpclistLoc.PrintF("data\\npchelp_jp.lod");
+			break;
+		case MALAYSIA:
+			if(g_bIsMalEng){
+				tNpclistLoc.PrintF("data\\npchelp_maleng.lod");				
+			}
+			else {
+				tNpclistLoc.PrintF("data\\npchelp_mal.lod");				
+			}
+			break;		
+		case USA:
+			tNpclistLoc.PrintF("data\\npchelp_usa.lod");
+			break;
+		case BRAZIL:
+			tNpclistLoc.PrintF("data\\npchelp_brz.lod");
+			break;
+		case HONGKONG:
+			if(g_bIsMalEng){
+				tNpclistLoc.PrintF("data\\npchelp_hkeng.lod");
+			}
+			else {
+				tNpclistLoc.PrintF("data\\npchelp_hk.lod");
+			}
+			
+			break;
+		case GERMANY:
+			tNpclistLoc.PrintF("data\\npchelp_ger.lod");
+			break;
+		case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+			tNpclistLoc.PrintF("data\\npchelp_spa.lod");
+			break;
+		case FRANCE:
+			tNpclistLoc.PrintF("data\\npchelp_fra.lod");
+			break;
+		case POLAND:
+			tNpclistLoc.PrintF("data\\npchelp_pol.lod");
+			break;
+		case TURKEY:
+			tNpclistLoc.PrintF("data\\npchelp_tur.lod");
+			break;
+		}
+		fnTemp = strFullPath + tNpclistLoc;
+		int iNumOfNpcList = CNpcHelp::LoadNpcListFromFile(_pNetwork->wo_aNpcList, fnTemp);		
+		_pNetwork->wo_iNumofNpcList = iNumOfNpcList;
+
+		CallProgressHook_t(1.0f);
+	}
+#endif
+
+#ifdef MONSTER_COMBO	// 몬스터 콤보
+	// -----------------------------------------------------<<
+	//ttos : 몬스터 콤보 시스템 
+	//			미션 케이스
+	//
+	//월드에디터에서는 lod 파일 로드하지 않게.....
+	if ( !_bWorldEditorApp )
+	{
+		CallProgressHook_t(0.0f);
+
+		CTString tMissionCaseLoc;
+		switch( g_iCountry )
+		{
+		case KOREA:
+			tMissionCaseLoc.PrintF("data\\combo.lod");
+			break;
+		case TAIWAN:
+		case TAIWAN2:
+			tMissionCaseLoc.PrintF("data\\combo_t.lod");
+			break;
+		case CHINA: 
+			tMissionCaseLoc.PrintF("data\\combo_c.lod");
+			break;
+		case THAILAND:
+			tMissionCaseLoc.PrintF("data\\combo_th.lod");
+			break;
+		case JAPAN:
+			tMissionCaseLoc.PrintF("data\\combo_jp.lod");
+			break;
+		case MALAYSIA:
+			if(g_bIsMalEng){
+				tMissionCaseLoc.PrintF("data\\combo_maleng.lod");
+			}
+			else {
+				tMissionCaseLoc.PrintF("data\\combo_mal.lod");
+			}
+			break;		
+		case USA:
+			tMissionCaseLoc.PrintF("data\\combo_usa.lod");
+			break;
+		case BRAZIL:
+			tMissionCaseLoc.PrintF("data\\combo_brz.lod");
+			break;
+		case HONGKONG:
+			tMissionCaseLoc.PrintF("data\\combo_hk.lod");
+			break;
+		case GERMANY:
+			tMissionCaseLoc.PrintF("data\\combo_ger.lod");
+			break;
+		case SPAIN:
+			tMissionCaseLoc.PrintF("data\\combo_spn.lod");
+			break;
+		case FRANCE:
+			tMissionCaseLoc.PrintF("data\\combo_frc.lod");
+			break;
+		case POLAND:
+			tMissionCaseLoc.PrintF("data\\combo_pld.lod");
+			break;
+		case TURKEY:
+			tMissionCaseLoc.PrintF("data\\combo_tur.lod");
+			break;
+		}
+		fnTemp = strFullPath + tMissionCaseLoc;
+		int iNumOfMissionCase = CMissionCase::LoadMissionFromFile(_pNetwork->wo_aMissionCase, fnTemp);		
+		_pNetwork->wo_iNomofMissionCase = iNumOfMissionCase;
+
+		CallProgressHook_t(1.0f);
+	}
+#endif	//MONSTER_COMBO 몬스터 콤보
+
+#ifdef WILD_PET_ADD // ttos_080725: 신규 펫
+	if ( !_bWorldEditorApp )
+	{
+		CallProgressHook_t(0.0f);
+
+		CTString tWildPetDataLoc;
+		switch( g_iCountry )
+		{
+		case KOREA:
+			tWildPetDataLoc.PrintF("data\\bigpet.lod");
+			break;
+		case TAIWAN:
+		case TAIWAN2:
+			tWildPetDataLoc.PrintF("data\\bigpet_t.lod");
+			break;
+		case CHINA: 
+			tWildPetDataLoc.PrintF("data\\bigpet_c.lod");
+			break;
+		case THAILAND:
+			tWildPetDataLoc.PrintF("data\\bigpet_th.lod");
+			break;
+		case JAPAN:
+			tWildPetDataLoc.PrintF("data\\bigpet_jp.lod");
+			break;
+		case MALAYSIA:
+			tWildPetDataLoc.PrintF("data\\bigpet_mal.lod");
+			break;		
+		case USA:
+			tWildPetDataLoc.PrintF("data\\bigpet_usa.lod");
+			break;
+		case BRAZIL:
+			tWildPetDataLoc.PrintF("data\\bigpet_brz.lod");
+			break;
+		case HONGKONG:
+			tWildPetDataLoc.PrintF("data\\bigpet_hk.lod");
+			break;
+		case GERMANY://WILD_PET_ADD
+			tWildPetDataLoc.PrintF("data\\bigpet.lod");
+			break;
+		case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+			tWildPetDataLoc.PrintF("data\\bigpet.lod");
+			break;
+		case FRANCE:
+			tWildPetDataLoc.PrintF("data\\bigpet.lod");
+			break;
+		case POLAND:
+			tWildPetDataLoc.PrintF("data\\bigpet.lod");
+			break;
+		case TURKEY:
+			tWildPetDataLoc.PrintF("data\\bigpet_tur.lod");
+			break;
+		}
+		fnTemp = strFullPath + tWildPetDataLoc;
+		int iNumOfWildpetData = CWildPetData::LoadWildPetDataFromFile(_pNetwork->wo_aWildPetData, fnTemp);		
+		_pNetwork->wo_iNomOfWildPetData = iNumOfWildpetData;
+
+		CallProgressHook_t(1.0f);
+	}
+#endif	//WILD_PET_ADD // ttos_080725: 신규 펫
+	BOOL bLoadItemRareOption = FALSE;
+
+#ifdef RARE_ITEM
+	bLoadItemRareOption = TRUE; 
+#endif
+	
+	if( bLoadItemRareOption && !_bWorldEditorApp && _pNetwork->wo_iNumOfRareOption <= 0 )
+	{
+		if ( _pNetwork->wo_vecItemRareOption.empty() )
+		{
+			// 스킬 데이터 로딩 부분.
+			SetProgressDescription(TRANS("Loading Item Rare Option"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + "data\\RareOption.lod";
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + "data\\RareOption_t.lod";
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + "data\\RareOption_c.lod";
+				break;
+			case THAILAND: 
+				fnTemp = strFullPath + "data\\RareOption_th.lod";
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + "data\\RareOption_jp.lod";
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\RareOption_maleng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\RareOption_mal.lod";
+				}
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + "data\\RareOption_hkeng.lod";
+				}
+				else {
+					fnTemp = strFullPath + "data\\RareOption_hk.lod";
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + "data\\RareOption_usa.lod";
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + "data\\RareOption_brz.lod";
+				break;
+			case GERMANY:
+				fnTemp = strFullPath + "data\\RareOption_ger.lod";
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + "data\\RareOption_spn.lod";
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + "data\\RareOption_frc.lod";
+				break;
+			case POLAND:
+				fnTemp = strFullPath + "data\\RareOption_pld.lod";
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + "data\\RareOption_tur.lod";
+				break;
+			}
+
+			int iNumOfRareOption = CItemRareOption::LoadItemRareOptionFromFile(_pNetwork->wo_vecItemRareOption, fnTemp);		
+			_pNetwork->wo_iNumOfRareOption = iNumOfRareOption;
+
+			CallProgressHook_t(1.0f);
+		}
+	}
+	
+	const BOOL	bLoadOptionData = TRUE;
+	if( bLoadOptionData && !_bWorldEditorApp && _pNetwork->wo_iNumOfOption <= 0 )
+	{
+		if ( _pNetwork->wo_aOptionData.Count() == 0 )
+		{
+			SetProgressDescription(TRANS("Loading Option"));
+			CallProgressHook_t(0.0f);
+
+			switch( g_iCountry )
+			{
+			case KOREA:
+				fnTemp = strFullPath + CTString( "data\\Option.lod" );
+				break;
+			case TAIWAN:
+			case TAIWAN2:
+				fnTemp = strFullPath + CTString( "data\\Option_t.lod" );
+				break;
+			case CHINA: 
+				fnTemp = strFullPath + CTString( "data\\Option_c.lod" );
+				break;
+			case THAILAND: 
+				fnTemp = strFullPath + CTString( "data\\Option_th.lod" );
+				break;
+			case JAPAN:
+				fnTemp = strFullPath + CTString("data\\Option_jp.lod");
+				break;
+			case MALAYSIA:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + CTString("data\\Option_maleng.lod");
+				}
+				else {
+					fnTemp = strFullPath + CTString("data\\Option_mal.lod");
+				}
+				break;
+			case USA:
+				fnTemp = strFullPath + CTString("data\\Option_usa.lod");
+				break;
+			case BRAZIL:
+				fnTemp = strFullPath + CTString("data\\Option_brz.lod");
+				break;
+			case HONGKONG:
+				if(g_bIsMalEng){
+					fnTemp = strFullPath + CTString("data\\Option_hkeng.lod");
+				}
+				else {
+					fnTemp = strFullPath + CTString("data\\Option_hk.lod");
+				}			
+				break;
+			case GERMANY:
+				fnTemp = strFullPath + CTString("data\\Option_ger.lod");
+				break;
+			case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+				fnTemp = strFullPath + CTString("data\\Option_spn.lod");
+				break;
+			case FRANCE:
+				fnTemp = strFullPath + CTString("data\\Option_frc.lod");
+				break;
+			case POLAND:
+				fnTemp = strFullPath + CTString("data\\Option_pld.lod");
+				break;
+			case TURKEY:
+				fnTemp = strFullPath + CTString("data\\Option_tur.lod");
+				break;
+			}
+
+			int	nNumOption	= COptionData::LoadOptionDataFromFile( _pNetwork->wo_aOptionData, fnTemp );
+			_pNetwork->wo_iNumOfOption = nNumOption;
+
+			CallProgressHook_t(1.0f);
+		}
+	}	
+////////////////////
+//안태훈 수정 시작	//(Quest System)(0.1)
+	if(!_bWorldEditorApp)
+	{
+		SetProgressDescription(TRANS("Loading Quest Data"));
+		CallProgressHook_t(0.0f);
+
+		CTFileName fnmQuestData;
+		switch( g_iCountry )
+		{
+		case KOREA:
+			fnmQuestData = strFullPath + "data\\questAll.lod";
+			break;
+		case TAIWAN:
+		case TAIWAN2:
+			fnmQuestData = strFullPath + "data\\questAll_t.lod";
+			break;
+		case CHINA: 
+			fnmQuestData = strFullPath + "data\\questAll_c.lod";
+			break;
+		case THAILAND: 
+			fnmQuestData = strFullPath + "data\\questAll_th.lod";
+			break;
+		case JAPAN:
+			fnmQuestData = strFullPath + "data\\questAll_jp.lod";
+			break;
+		case MALAYSIA:
+			if(g_bIsMalEng){
+				fnmQuestData = strFullPath + "data\\questAll_maleng.lod";
+			}
+			else {
+				fnmQuestData = strFullPath + "data\\questAll_mal.lod";
+			}
+			break;
+		case USA:
+			fnmQuestData = strFullPath + "data\\questAll_usa.lod";
+			break;
+		case BRAZIL:
+			fnmQuestData = strFullPath + "data\\questAll_brz.lod";
+			break;
+		case HONGKONG:
+			if(g_bIsMalEng){
+				fnmQuestData = strFullPath + "data\\questAll_hkeng.lod";
+			}
+			else {
+				fnmQuestData = strFullPath + "data\\questAll_hk.lod";
+			}			
+			break;
+		case GERMANY:
+			fnmQuestData = strFullPath + "data\\questAll_ger.lod";
+			break;
+		case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
+			fnmQuestData = strFullPath + "data\\questAll_spn.lod";
+			break;
+		case FRANCE:
+			fnmQuestData = strFullPath + "data\\questAll_frc.lod";
+			break;
+		case POLAND:
+			fnmQuestData = strFullPath + "data\\questAll_pld.lod";
+			break;
+		case TURKEY:
+			fnmQuestData = strFullPath + "data\\questAll_tur.lod";
+			break;
+		}
+
+		if(CQuestSystem::Instance().GetStaticDataLastIndex() == 0)
+		{
+			CQuestSystem::Instance().Load(fnmQuestData, CallProgressHook_t);
+		}
+		CallProgressHook_t(1.0f);
+	}
+//안태훈 수정 끝	//(Quest System)(0.1)
+
+	SetProgressDescription(TRANS("Loading Entities"));
 	CallProgressHook_t(0.0f);
 	// for each entity
 	{for(INDEX iEntity=0; iEntity<ctEntities; iEntity++) {
@@ -947,6 +2093,7 @@ void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 	// some shadow layers might not have light sources, remove such to prevent crashes
 	wo_baBrushes.RemoveDummyLayers();
 
+	SetProgressDescription(TRANS("preparing world"));
 	CallProgressHook_t(0.0f);
 	// after all entities have been read and brushes are connected to entities,
 	// calculate bounding boxes of all brushes
@@ -965,8 +2112,6 @@ void CWorld::ReadState_new_t( CTStream *istr) // throw char *
 	CallProgressHook_t(1.0f);
 	_bPortalSectorLinksPreLoaded = FALSE;
 	_bEntitySectorLinksPreLoaded = FALSE;
-
-	m_bLoad = TRUE;
 }
 
 struct SEntityBasicData {
@@ -1040,6 +2185,7 @@ void CWorld::ReadState_net_t(CTStream *istr) // throw char *
 	CStaticArray<SEntityBasicData> aebdReceivedEntityList;
 	aebdReceivedEntityList.New(ctEntities);
 
+	SetProgressDescription(TRANS("receiving entity list"));
 	CallProgressHook_t(0.0f);
 	//! 각 엔티티에 대하여 엔티티id,클래스 아이디,위치를 읽어들인다.
 	// for each entity
@@ -1063,6 +2209,7 @@ void CWorld::ReadState_net_t(CTStream *istr) // throw char *
 	}}
 	CallProgressHook_t(1.0f);
 
+	SetProgressDescription(TRANS("Updating entities"));
 	CallProgressHook_t(0.0f);
 
 	//! 엔티티 업데이트.
@@ -1125,6 +2272,8 @@ void CWorld::ReadState_net_t(CTStream *istr) // throw char *
 
 	CallProgressHook_t(1.0f);
 
+
+	SetProgressDescription(TRANS("Loading Entities"));
 	CallProgressHook_t(0.0f);
 	iEntity=0;
 	//! 받은 엔티티중에 리스트에 존재하지 않는 엔티티를 생성한다.
@@ -1166,6 +2315,7 @@ void CWorld::ReadState_net_t(CTStream *istr) // throw char *
 	CallProgressHook_t(1.0f);
 	
  //! 생성된 모든 엔티티를 초기화 한다.
+	SetProgressDescription(TRANS("finishing"));
 	// initialize all entities created during loading
 	{FOREACHINSTATICARRAY(aebdReceivedEntityList,SEntityBasicData,itebd) {  
 		if (!itebd->bAlreadyExists) {
@@ -1497,23 +2647,17 @@ void CWorld::WriteAttributeMap( CTFileName &fnm, BOOL bField, INDEX iSelFloor, P
 	try
 	{
 		// Allocate memory
-		PIX		pixAttMapSizeHalf = pixWidth * pixHeight;
-		PIX		pixAttributeMapSize = pixAttMapSizeHalf * sizeof(UWORD);		
-		UWORD*	pubAttrBuffer = (UWORD*)AllocMemory(pixAttributeMapSize);
-
-		for (int i = 0; i < pixAttMapSizeHalf; ++i)
-		{
-			pubAttrBuffer[i] = MATT_UNWALKABLE;
-		}
-
-		UWORD*	pubTemp = pubAttrBuffer;
+		PIX		pixAttributeMapSize = pixWidth * pixHeight;
+		UBYTE	*pubAttrBuffer = (UBYTE*)AllocMemory( pixAttributeMapSize );
+		memset( pubAttrBuffer, 255, pixAttributeMapSize );
+		UBYTE	*pubTemp = pubAttrBuffer;
 		
 		if( bField && iSelFloor == 1 )
 		{
 			CTFileStream	strmFile;
 			strmFile.Open_t( fnm );
 			
-			for( PIX pix = 0; pix < pixAttMapSizeHalf; pix++ )
+			for( PIX pix = 0; pix < pixAttributeMapSize; pix++ )
 			{
 				strmFile >> *pubTemp;
 				pubTemp++;

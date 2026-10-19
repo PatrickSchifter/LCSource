@@ -1,9 +1,6 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIGuildNotice.h>
-#include <Engine/Interface/UIQuickSlot.h>
+#include <Engine/Interface/UITextureManager.h>
 
 extern CUIFontTextureManager	*_pUIFontTexMgr;
 
@@ -22,6 +19,7 @@ CUIGuildNotice::CUIGuildNotice()
 // ----------------------------------------------------------------------------
 CUIGuildNotice::~CUIGuildNotice()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -30,7 +28,9 @@ CUIGuildNotice::~CUIGuildNotice()
 // ----------------------------------------------------------------------------
 void CUIGuildNotice::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 212, 22 );	
@@ -49,7 +49,7 @@ void CUIGuildNotice::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 	m_bxBottomNotice.SetBoxUV(m_ptdBaseTexture,50,28,WRect(360,193,512,253));
 
 	// List box of Notice String
-	m_lbGuildNoticeStr.Create( this, 35 , 83, 145, 116, _pUIFontTexMgr->GetLineHeight(), 13, 3, 2, TRUE );
+	m_lbGuildNoticeStr.Create( this, 35 , 83, 145, 116, _pUIFontTexMgr->GetLineHeight(), 13, 3, 2, FALSE );
 	m_lbGuildNoticeStr.CreateScroll( TRUE, 0, 0, 9, 116, 9, 7, 0, 0, 10 );
 	m_lbGuildNoticeStr.SetSelBar( 129 , _pUIFontTexMgr->GetLineHeight(), 187, 46, 204, 61, fTexWidth, fTexHeight );
 	m_lbGuildNoticeStr.SetOverColor( 0xF8E1B5FF );
@@ -103,11 +103,9 @@ void CUIGuildNotice::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX 
 // Desc :
 // ----------------------------------------------------------------------------
 void CUIGuildNotice::Render()
-{
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+{	
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY;
@@ -130,13 +128,13 @@ void CUIGuildNotice::Render()
 
 	m_btnCloseNotice.Render();
 
-	pDrawPort->PutTextEx( m_strGuildName+CTString(" ")+_S(75, "길드" ), nX +22, nY+5);
-	pDrawPort->PutTextExCX( _S(252, "공지사항" ), nX +106, nY+35 ,0x471C0AFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( m_strGuildName+CTString(" ")+_S(75, "길드" ), nX +22, nY+5);
+	_pUIMgr->GetDrawPort()->PutTextExCX( _S(252, "공지 사항" ), nX +106, nY+35 ,0x471C0AFF );
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 }
 
@@ -161,13 +159,12 @@ WMSG_RESULT CUIGuildNotice::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
-				pUIManager->SetMouseCursorInsideUIs();
-				pUIManager->RearrangeOrder( UI_GUILD_NOTICE, TRUE );
+				_pUIMgr->SetMouseCursorInsideUIs();
+				_pUIMgr->RearrangeOrder( UI_GUILD_NOTICE, TRUE );
 				
-				m_lbGuildNoticeStr.MouseMessage(pMsg);
-				m_btnCloseNotice.MouseMessage(pMsg);
+				 if(m_lbGuildNoticeStr.MouseMessage(pMsg) != WMSG_FAIL){
+					// TODO : Nothing
+				}	
 			}			
 
 			// Move target information
@@ -203,7 +200,7 @@ WMSG_RESULT CUIGuildNotice::MouseMessage( MSG *pMsg )
 					// TODO : Nothing
 				}				
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_GUILD_NOTICE, TRUE );
+				_pUIMgr->RearrangeOrder( UI_GUILD_NOTICE, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -211,10 +208,8 @@ WMSG_RESULT CUIGuildNotice::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -222,7 +217,7 @@ WMSG_RESULT CUIGuildNotice::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					if(m_btnCloseNotice.MouseMessage(pMsg) != WMSG_FAIL){
-						pUIManager->RearrangeOrder( UI_GUILD_NOTICE, FALSE );						
+						_pUIMgr->RearrangeOrder( UI_GUILD_NOTICE, FALSE );						
 					}
 					else if(m_lbGuildNoticeStr.MouseMessage(pMsg) != WMSG_FAIL){
 					// TODO : Nothing
@@ -237,7 +232,7 @@ WMSG_RESULT CUIGuildNotice::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -273,9 +268,7 @@ void CUIGuildNotice::SetGuildNotice( CTString guildName,CTString noticeTitle,CTS
 {
 	m_strGuildName = guildName;
 	m_lbGuildNoticeStr.ResetAllStrings();
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	pUIManager->AddStringToList(&m_lbGuildNoticeStr,noticeTitle,18,0x471C0AFF);
-	pUIManager->AddStringToList(&m_lbGuildNoticeStr,guildNotice,18,0xFFFFFFFF);	
+	//m_lbGuildNoticeStr.AddString(0, noticeTitle,0x471C0AFF);
+	_pUIMgr->AddStringToList(&m_lbGuildNoticeStr,noticeTitle,20,0x471C0AFF,0);
+	_pUIMgr->AddStringToList(&m_lbGuildNoticeStr,guildNotice,20,0xEFEFEFFF);	
 }

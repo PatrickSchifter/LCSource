@@ -9,10 +9,10 @@
 	#pragma once
 #endif
 
-// #include <vector>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIButtonEx.h>
-// #include <Engine/GlobalDefinition.h>
+#include <vector>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIButtonEx.h>
+#include <Engine/GlobalDefinition.h>
 
 // Define size of notice slot
 #if COUNTRY == TAIWAN
@@ -27,16 +27,13 @@
 #define	NOTICE_WIDTH					35
 #define	NOTICE_HEIGHT					(BTN_SIZE*MAX_NOTICE)
 
-#define NOTICE_HEIGHT_GAP				(20 + CHILD_QUICKSLOT_HEIGHT * 2)
-
 enum eNoticeType
 {
 	NOTICE_QUEST	= 0,		// 퀘스트 일경우...
-	NOTICE_POLYMOPH,			// 변신 상태에서 되돌아옴.
-	NOTICE_EVENT,				// 이벤트.
-	NOTICE_TRANSFORM,			// 변신체(강신)
-//	NOTICE_AUCTION,				// 경매
-	NOTICE_AFFINITY,			// [100322: selo] 친화도 보상
+	NOTICE_POLYMOPH	= 1,		// 변신 상태에서 되돌아옴.
+	NOTICE_EVENT	= 2,		// 이벤트.
+	NOTICE_TRANSFORM= 3,		// 변신체(강신)
+	NOTICE_AUCTION	= 4,		// 경매
 };
 
 // ----------------------------------------------------------------------------
@@ -109,8 +106,6 @@ private:
 	int					m_nLeftTime;					// 남은 시간	
 	TIME				m_tmLeftTime;					// 타이머 용 임시 변수
 
-	// [2011/01/18 : Sora] 출석 이벤트
-	BOOL			m_bAttendanceEvent;
 private:
 	// Internal functions
 	void	RenderBtns();
@@ -146,19 +141,7 @@ public:
 	void	Clear();
 
 	void	SetLeftTime( int nLeftTime );
-	
-	// [2011/01/18 : Sora] 출석 이벤트
-	void	ShowAttendanceMessage( SLONG attendanceRate );
-	void	ShowAttendanceNotice( SLONG attendanceRate, SLONG enchantRate, SLONG expSpRate );
-	BOOL	IsAttendanceEventOn() { return m_bAttendanceEvent; }
-
-	// used party item. [4/25/2011 rumist]
-	void	ShowUsedPartyItemNotice( const INDEX& nItemIdx, const CTString& strNickName );
-
-	// royal rumble notice [4/26/2011 rumist]
-	void	ShowRoyalRumbleNotice( const UBYTE uType );
-	void	ShowRoyalRumbleWinner( const INDEX& iLevel, const CTString& strNickName );
-	void	ShowRoyalRumbleNextPlayerTime( const INDEX iLeftTime );
+	void	UpdateTimeInfo();
 };
 
 

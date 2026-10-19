@@ -9,12 +9,12 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIEditBox.h>
-// #include <Engine/Interface/UICheckButton.h>
-// #include <Engine/Interface/UIListBox.h>
-// #include <Engine/Interface/UIComboBox.h>
-// #include <vector>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIEditBox.h>
+#include <Engine/Interface/UICheckButton.h>
+#include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIComboBox.h>
+#include <vector>
 
 #define P_AUTO_WIDTH	598
 #define P_AUTO_HEIGHT	423
@@ -26,28 +26,7 @@
 #define JF_MAGE			0x00000008
 #define JF_ROGUE		0x00000010
 #define JF_SORCERER		0x00000020
-#define JF_NIGHTSHADOW	0x00000040
-
-#ifdef CHAR_EX_ROGUE
-	#define JF_EX_ROGUE		0x00000080	// [2012/08/27 : Sora] EX로그 추가
-		#ifdef CHAR_EX_MAGE
-			#define JF_EX_MAGE 0x00000100	//	2013/01/08 jeil EX메이지 추가 플레그 관련해서 물어보고 추가로 수정필요 임시값 
-			#define JF_ALLCLASS		0x000001FF	
-		#else
-			#define JF_ALLCLASS		0x000000FF
-	#endif
-#else
-	#define JF_ALLCLASS		0x0000007F
-#endif
-/*
-<<<<<<< .mine
-#ifdef CHAR_EX_MAGE
-	#define JF_EX_MAGE 0x00000100	//	2013/01/08 jeil EX메이지 추가 플레그 관련해서 물어보고 추가로 수정필요 임시값 
-#endif
-#define JF_ALLCLASS		0x0000007F	
-=======
->>>>>>> .r2954
-*/
+#define JF_ALLCLASS		0x0000003F
 
 enum eAutoPartySelection
 {
@@ -75,7 +54,6 @@ protected:
 		int			nZone;			// 파티 위치
 		int			nPartyType;		// 파티 종류
 		int			nLimitLv;		// 제한 레벨( 사용 안함 )
-		int			nPartyNum;		// 파티 현재 모집 인원
 	}PartyListData;
 
 	// storage current page list
@@ -104,13 +82,7 @@ protected:
 	CUICheckButton	m_cbtnMage;				// Mage
 	CUICheckButton	m_cbtnRogue;			// Rogue
 	CUICheckButton	m_cbtnSorcerer;			// Socceror
-	CUICheckButton	m_cbtnNightShadow;		// NightShadow
-#ifdef CHAR_EX_ROGUE
-	CUICheckButton	m_cbtnEXRogue;			// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	CUICheckButton	m_cbtnEXMage;			// 2013/01/08 jeil EX메이지 추가 
-#endif
+
 	CUICheckButton	m_cbtnLevelLimit;		// 레벨 제한
 	CUIComboBox		m_cmbNeedClass;			// 필요 클래스
 	CUIComboBox		m_cmbPartyType;			// 파티 타입
@@ -172,13 +144,6 @@ protected:
 	UIRectUV	m_rtMageImage;
 	UIRectUV	m_rtRogueImage;
 	UIRectUV	m_rtSorcererImage;
-	UIRectUV	m_rtNightShadowImage;
-#ifdef CHAR_EX_ROGUE
-	UIRectUV	m_rtEXRogueImage;		// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	UIRectUV	m_rtEXMageImage;		// 2013/01/08 jeil EX메이지 추가 
-#endif
 	UIRectUV	m_rtPartyLvImage;		// UV of limitlevel image
 	UIRectUV	m_rtPeaceeverImage;		// UV of PT_PEACEEVER image
 	UIRectUV	m_rtSurvival;			// UV of PT_SURVIVAL image

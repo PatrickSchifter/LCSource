@@ -21,19 +21,16 @@ protected:
 	COLOR		m_colMsg;
 	int			m_nWidth;
 	__int64		m_llMsgTime;
-	BOOL		m_bShowNPCTalk;
 
 protected:
-	void	AddString( const CTString &strMessage );
+	void	AddString( CTString &strMessage );
 
 public:
 	ChatMsgBuffer();
 	~ChatMsgBuffer();
 
 	void	Reset() { m_ubMsgCount = 0; }
-	void	SetChatMsg( const CTString &strMessage, COLOR colMessage = 0xC5C5C5FF, BOOL bShowNPCTalk = FALSE );
-
-	void		CheckShowNPCTalk();
+	void	SetChatMsg( CTString &strMessage, COLOR colMessage = 0xC5C5C5FF );
 
 	UBYTE		GetCount() const { return m_ubMsgCount; }
 	CTString	&GetString( int nIndex ) { return m_strMsg[nIndex]; }

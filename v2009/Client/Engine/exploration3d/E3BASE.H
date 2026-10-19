@@ -32,7 +32,7 @@ info@xdsoft.com
 #endif  /* _MSC_VER */
 
 #ifndef _A1874300_7147_11D4_9F76_F6D558E42026_
-#include "xdsoft\e3types.h"
+#include "xdsoft/e3types.h"
 #endif
 
 #define E3_MIN_API_VERSION 0x67

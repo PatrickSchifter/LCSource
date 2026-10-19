@@ -1,13 +1,9 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
+#include <Engine/Interface/UIParty.h>
 #include <Engine/Interface/UIPartyAuto.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Contents/Base/UIPartyNew.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Base/Party.h>
+
 
 extern INDEX		g_iCountry;
 extern CDrawPort	*_pdpMain;
@@ -19,7 +15,7 @@ extern CDrawPort	*_pdpMain;
 #define PT_PARTY_LIST_WIDTH		600
 #define PT_PARTY_LIST_HEIGHT	450
 
-#define MAX_PARTY_NAME_LEN	20	// [2012/04/03 : Sora]  파티 오토매칭 파티명 최대길이 수정
+#define MAX_PARTY_NAME_LEN	50
 
 // Window basic size
 #define WBS_TITLE_HEIGHT	22
@@ -39,7 +35,7 @@ extern CDrawPort	*_pdpMain;
 
 // UV Pos
 #define UVP_TAB_X	96
-#define UVP_TAB_Y   25	
+#define UVP_TAB_Y   29	
 
 // Rect Select Tab
 #define RST_HEIGHT_TAB	26
@@ -65,8 +61,6 @@ extern CDrawPort	*_pdpMain;
 // TEXT SCROLL DELAY TIME
 #define TEXT_DELAY_TIME		200
 
-
-
 // ----------------------------------------------------------------------------
 // Name : CUIPartyAuto()
 // Desc : Constructor
@@ -78,7 +72,6 @@ CUIPartyAuto::CUIPartyAuto()
 	m_FrontChPos = 0;
 	m_bTextDir = TRUE;
 	m_vectorPartyListData.clear();
-	m_ptdAddTexture = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -87,6 +80,8 @@ CUIPartyAuto::CUIPartyAuto()
 // ----------------------------------------------------------------------------
 CUIPartyAuto::~CUIPartyAuto()
 {
+	Destroy();
+
 	if( m_ptdAddTexture )
 	{
 		_pTextureStock->Release( m_ptdAddTexture );
@@ -108,11 +103,50 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	case KOREA:
 		tv_chat=tv_fame=tv_auto=tv_summon=3;
 		break;
+	case TAIWAN:
+	case TAIWAN2:
+		tv_chat=1;
+		tv_auto=3;
+		tv_fame=1;
+		tv_summon=0;
+		break;
 	case THAILAND:
 		tv_chat=tv_fame=tv_auto=tv_summon=3;
 		break;
+	case JAPAN:
+		tv_chat=tv_fame=tv_auto=tv_summon=3;
+		break;
+	case MALAYSIA:
+		if(g_bIsMalEng)
+		{
+			tv_chat=tv_summon=0;
+			tv_auto=1;
+			tv_fame=3;
+		}
+		else
+		{
+			tv_chat=1;
+			tv_auto=3;
+			tv_fame=1;
+			tv_summon=0;
+		}
+		break;
+	case HONGKONG:
+		if(g_bIsMalEng)
+		{
+			tv_chat=tv_summon=0;
+			tv_auto=1;
+			tv_fame=3;
+		}
+		else
+		{
+			tv_chat=1;
+			tv_auto=3;
+			tv_fame=1;
+			tv_summon=0;
+		}
+		break;
 	case USA:
-	case ENGLAND:
 		tv_chat=tv_summon=0;
 		tv_auto=1;
 		tv_fame=3;
@@ -122,18 +156,14 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	case SPAIN://FRANCE_SPAIN_CLOSEBETA_NA_20081124
 	case FRANCE:
 	case POLAND:
-	case RUSSIA:
 	case TURKEY:
-	case MEXICO:
-	case ITALY:
-	case USA_FRANCE:
-	case USA_SPAIN:
-	case NETHERLANDS:
 		tv_chat=tv_fame=tv_auto=tv_summon=3;
 		break;
 	}
 
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	// join set
@@ -174,22 +204,24 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_rtStrTooltipBottomL.SetUV( 164, 63, 165, 64, fTexWidth, fTexHeight );
 	m_rtStrTooltipBottomM.SetUV( 166, 63, 180, 64, fTexWidth, fTexHeight );
 	m_rtStrTooltipBottomR.SetUV( 181, 63, 182, 64, fTexWidth, fTexHeight );
-
-	m_btnEqualDivide.Create( this, _S(4743, "일반 파티" ), 59, 58, 95, 21 );
+	
+	m_btnEqualDivide.Create( this, _S( 2660, "균등분배 파티" ), 59, 43, 95, 21 );
 	m_btnEqualDivide.SetUV( UBS_IDLE, 134, 117, 228, 137, fTexWidth, fTexHeight );
 	m_btnEqualDivide.SetUV( UBS_CLICK, 134, 139, 228, 159, fTexWidth, fTexHeight );
 	m_btnEqualDivide.CopyUV( UBS_IDLE, UBS_ON );
 	m_btnEqualDivide.CopyUV( UBS_IDLE, UBS_DISABLE );
 
-	m_btnFight.Create( this, _S( 2662, "전투형 파티" ), 59, 106, 95, 21 );
+	m_btnFirstObtain.Create( this, _S( 2661, "입수우선 파티" ), 59, 82, 95, 21 );
+	m_btnFirstObtain.SetUV( UBS_IDLE, 134, 117, 228, 137, fTexWidth, fTexHeight );
+	m_btnFirstObtain.SetUV( UBS_CLICK, 134, 139, 228, 159, fTexWidth, fTexHeight );
+	m_btnFirstObtain.CopyUV( UBS_IDLE, UBS_ON );
+	m_btnFirstObtain.CopyUV( UBS_IDLE, UBS_DISABLE );
+
+	m_btnFight.Create( this, _S( 2662, "전투형 파티" ), 59, 121, 95, 21 );
 	m_btnFight.SetUV( UBS_IDLE, 134, 117, 228, 137, fTexWidth, fTexHeight );
 	m_btnFight.SetUV( UBS_CLICK, 134, 139, 228, 159, fTexWidth, fTexHeight );
 	m_btnFight.CopyUV( UBS_IDLE, UBS_ON );
 	m_btnFight.CopyUV( UBS_IDLE, UBS_DISABLE );	
-
-#ifdef DISABLE_PARTY_TYPE_BATTLE	// [2010/07/12 : Sora] 전투형 파티 제거
-	m_btnFight.SetEnable(FALSE);
-#endif
 
 	m_btnRegistOK.Create( this, _S( 191, "확인" ), 131, 171, 63, 21 );
 	m_btnRegistOK.SetUV( UBS_IDLE, 0, 46, 63, 67, fTexWidth, fTexHeight );
@@ -248,7 +280,7 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	nStrWidth = ( _S( 46, "메이지" ).Length() + tv_chat ) *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	// 메이지
-	m_cbtnMage.Create( this, 121+CB_TAB, /*103*/74+UVP_TAB_Y, 11, 11, _S( 46, "메이지" ), TRUE, CB_TAB, CB_TAB );
+	m_cbtnMage.Create( this, 121+CB_TAB, 103, 11, 11, _S( 46, "메이지" ), TRUE, CB_TAB, CB_TAB );
 	m_cbtnMage.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
 	m_cbtnMage.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
 	m_cbtnMage.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
@@ -262,7 +294,7 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	nStrWidth = ( _S( 47, "로그" ).Length() + tv_chat ) *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	// 로그
-	m_cbtnRogue.Create( this, 215+CB_TAB, /*103*/74+UVP_TAB_Y, 11, 11, _S( 47, "로그" ), TRUE, CB_TAB, CB_TAB );
+	m_cbtnRogue.Create( this, 215+CB_TAB, 103, 11, 11, _S( 47, "로그" ), TRUE, CB_TAB, CB_TAB );
 	m_cbtnRogue.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
 	m_cbtnRogue.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
 	m_cbtnRogue.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
@@ -276,7 +308,7 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	nStrWidth = ( _S( 48, "소서러" ).Length() + tv_chat ) *
 					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	// 소서러
-	m_cbtnSorcerer.Create( this, 312+CB_TAB, /*103*/74+UVP_TAB_Y, 11, 11, _S( 48, "소서러" ), TRUE, CB_TAB, CB_TAB );
+	m_cbtnSorcerer.Create( this, 312+CB_TAB, 103, 11, 11, _S( 48, "소서러" ), TRUE, CB_TAB, CB_TAB );
 	m_cbtnSorcerer.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
 	m_cbtnSorcerer.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
 	m_cbtnSorcerer.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
@@ -287,47 +319,6 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 
 	m_rtSorcererImage.SetUV( 304, 203, 325, 224, fTexWidth, fTexHeight );
 
-	nStrWidth = ( _S( 4410, "나이트셰도우" ).Length() + tv_chat ) *
-					( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-	// 나이트쉐도우
-	m_cbtnNightShadow.Create( this, 121+CB_TAB, 74+(UVP_TAB_Y*2), 11, 11, _S( 4410, "나이트셰도우"  ), TRUE, CB_TAB+35, CB_TAB );
-	m_cbtnNightShadow.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
-	m_cbtnNightShadow.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
-	m_cbtnNightShadow.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
-	m_cbtnNightShadow.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE);
-	m_cbtnNightShadow.SetTextColor( TRUE, 0xFFFFFFFF );
-	m_cbtnNightShadow.SetTextColor( FALSE, 0xFFFFFFFF );
-	m_cbtnNightShadow.SetCheck( FALSE );
-
-	m_rtNightShadowImage.SetUV( 471, 131, 492, 152, fTexWidth, fTexHeight );
-
-
-#ifdef CHAR_EX_ROGUE
-	// [2012/08/27 : Sora] EX로그 추가
-	m_cbtnEXRogue.Create( this, 215+CB_TAB, 74+(UVP_TAB_Y*2), 11, 11, _S(5732,"EX로그"), TRUE, CB_TAB, CB_TAB );
-	m_cbtnEXRogue.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
-	m_cbtnEXRogue.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
-	m_cbtnEXRogue.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
-	m_cbtnEXRogue.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE);
-	m_cbtnEXRogue.SetTextColor( TRUE, 0xFFFFFFFF );
-	m_cbtnEXRogue.SetTextColor( FALSE, 0xFFFFFFFF );
-	m_cbtnEXRogue.SetCheck( FALSE );
-
-	m_rtEXRogueImage.SetUV( 472, 107, 492, 127, fTexWidth, fTexHeight );
-#endif
-#ifdef CHAR_EX_MAGE
-	//	2013/01/08 jeil EX메이지 추가 및 스트링 나오면 다시 수정 필요 
-	m_cbtnEXMage.Create( this, 312+CB_TAB, 74+(UVP_TAB_Y*2), 11, 11, _S( 5820, "아크메이지" ), TRUE, CB_TAB, CB_TAB );
-	m_cbtnEXMage.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
-	m_cbtnEXMage.SetUV( UCBS_CHECK, 0, 161, 10, 171, fTexWidth, fTexHeight );
-	m_cbtnEXMage.CopyUV( UCBS_NONE, UCBS_CHECK_DISABLE);
-	m_cbtnEXMage.CopyUV( UCBS_NONE, UCBS_NONE_DISABLE);
-	m_cbtnEXMage.SetTextColor( TRUE, 0xFFFFFFFF );
-	m_cbtnEXMage.SetTextColor( FALSE, 0xFFFFFFFF );
-	m_cbtnEXMage.SetCheck( FALSE );
-	
-	m_rtEXMageImage.SetUV( 447, 107, 467, 127, fTexWidth, fTexHeight );
-#endif
 	// 레벨 제한
 	m_cbtnLevelLimit.Create( this, 98, 131, 11, 11, CTString( "" ) );
 	m_cbtnLevelLimit.SetUV( UCBS_NONE, 12, 161, 22, 171, fTexWidth, fTexHeight );
@@ -378,22 +369,8 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_rtListSubjectRect.SetUV( 90, 25, 106, 41, fTexWidth, fTexHeight );
 	m_rtline.SetUV( 90, 18, 98, 18, fTexWidth, fTexHeight );
 	m_rtSelectBar.SetUV( 109, 30, 120, 42, fTexWidth, fTexHeight );
-#ifdef CHAR_EX_ROGUE	//2013/01/08 jeil EX메이지 추가 나중에 좌표값 추가 수정 필요 
-#ifdef CHAR_EX_MAGE
-	m_cmbNeedClass.Create( this, 89, 363, 103, 16, 87, 2, 15, 13, 10, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );	
-#else
-	m_cmbNeedClass.Create( this, 89, 363, 103, 16, 87, 2, 15, 13, 9, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );	
-#endif
 	
-#else
-#ifdef CHAR_EX_MAGE
-	m_cmbNeedClass.Create( this, 89, 363, 103, 16, 87, 2, 15, 13, 9, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );	
-#else
-	m_cmbNeedClass.Create( this, 89, 363, 103, 16, 87, 2, 15, 13, 8, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );	
-#endif
-	
-#endif
-
+	m_cmbNeedClass.Create( this, 89, 363, 103, 16, 87, 2, 15, 13, 7, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );
 	m_cmbNeedClass.SetBackUV( 115, 44, 192, 59, fTexWidth, fTexHeight );
 	m_cmbNeedClass.SetDownBtnUV( 124, 0, 137, 13, fTexWidth, fTexHeight );
 	m_cmbNeedClass.SetUpBtnUV( 124, 14, 137, 27, fTexWidth, fTexHeight );	
@@ -405,13 +382,6 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cmbNeedClass.AddString( _S( 46, "메이지" ) );
 	m_cmbNeedClass.AddString( _S( 47, "로그" ) );
 	m_cmbNeedClass.AddString( _S( 48, "소서러" ) );
-	m_cmbNeedClass.AddString( _S(4410, "나이트셰도우" ));
-#ifdef CHAR_EX_ROGUE
-	m_cmbNeedClass.AddString( _S( 5732, "EX로그" ) );	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	m_cmbNeedClass.AddString( _S( 5820, "아크메이지" ) );	// 2013/01/08 jeil EX메이지 추가 스트링 나오면 추가 수정 필요 
-#endif
 	m_cmbNeedClass.SetCurSel( 0 );
 
 	m_cmbPartyType.Create( this, 463, 363, 103, 16, 87, 2, 15, 13, 4, _pUIFontTexMgr->GetFontHeight() + 4, 4, 4 );
@@ -420,12 +390,9 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 	m_cmbPartyType.SetUpBtnUV( 124, 14, 137, 27, fTexWidth, fTexHeight );	
 	m_cmbPartyType.SetDropListUV( 115, 60, 192, 75, fTexWidth, fTexHeight );
 	m_cmbPartyType.AddString( _S( 506, "전체" ) );
-	m_cmbPartyType.AddString( _S( 3354, "일반" ) );
-
-#ifndef DISABLE_PARTY_TYPE_BATTLE	// [2010/07/12 : Sora] 전투형 파티 제거
+	m_cmbPartyType.AddString( _S( 2663, "균등분배" ) );
+	m_cmbPartyType.AddString( _S( 2664, "입수우선" ) );
 	m_cmbPartyType.AddString( _S( 2665, "전투형" ) );
-#endif
-
 	m_cmbPartyType.SetCurSel( 0 );
 
 	m_btnNextbtn.Create( this, CTString( "" ), 343, 328, 9, 9 );
@@ -458,10 +425,8 @@ void CUIPartyAuto::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set refine texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Background
 	if( m_nSelectState == PARTY_REGIST )	// 파티(원) 등록
@@ -478,25 +443,25 @@ void CUIPartyAuto::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 
 	// Reading window
 	if( m_ebNoticeName.DoesShowReadingWindow() )
 	{
 		// Set texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		// Reading window
 		m_ebNoticeName.RenderReadingWindow();
 
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		_pUIMgr->GetDrawPort()->EndTextEx();
 	}
 }
 
@@ -511,74 +476,70 @@ void CUIPartyAuto::JoinRender()
 		
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + WBS_TITLE_HEIGHT;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+		
 	// Top
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
 									m_rtJoinTopL.U0, m_rtJoinTopL.V0, m_rtJoinTopL.U1, m_rtJoinTopL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
 									m_rtJoinTopM.U0, m_rtJoinTopM.V0, m_rtJoinTopM.U1, m_rtJoinTopM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, m_nPosY, nX, nY,
 									m_rtJoinTopR.U0, m_rtJoinTopR.V0, m_rtJoinTopR.U1, m_rtJoinTopR.V1,
 									0xFFFFFFFF );
 	// Gap
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapL.U0, m_rtJoinGapL.V0, m_rtJoinGapL.U1, m_rtJoinGapL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapM.U0, m_rtJoinGapM.V0, m_rtJoinGapM.U1, m_rtJoinGapM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapR.U0, m_rtJoinGapR.V0, m_rtJoinGapR.U1, m_rtJoinGapR.V1,
 									0xFFFFFFFF );
 	// middle
 	nY += WBS_GAP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_JOIN_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_JOIN_HEIGHT,
 									m_rtJoinMiddleL.U0, m_rtJoinMiddleL.V0, m_rtJoinMiddleL.U1, m_rtJoinMiddleL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_JOIN_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_JOIN_HEIGHT,
 									m_rtJoinMiddleM.U0, m_rtJoinMiddleM.V0, m_rtJoinMiddleM.U1, m_rtJoinMiddleM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_JOIN_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_JOIN_HEIGHT,
 									m_rtJoinMiddleR.U0, m_rtJoinMiddleR.V0, m_rtJoinMiddleR.U1, m_rtJoinMiddleR.V1,
 									0xFFFFFFFF );
 
 	// Gap
 	nY += WBS_JOIN_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapL.U0, m_rtJoinGapL.V0, m_rtJoinGapL.U1, m_rtJoinGapL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapM.U0, m_rtJoinGapM.V0, m_rtJoinGapM.U1, m_rtJoinGapM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapR.U0, m_rtJoinGapR.V0, m_rtJoinGapR.U1, m_rtJoinGapR.V1,
 									0xFFFFFFFF );
 
 	// bottom
 	nY += WBS_GAP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomL.U0, m_rtJoinBottomL.V0, m_rtJoinBottomL.U1, m_rtJoinBottomL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomM.U0, m_rtJoinBottomM.V0, m_rtJoinBottomM.U1, m_rtJoinBottomM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomR.U0, m_rtJoinBottomR.V0, m_rtJoinBottomR.U1, m_rtJoinBottomR.V1,
 									0xFFFFFFFF );
 
 	m_btnClose.Render();
 	m_btnEqualDivide.Render();
-
-#ifndef DISABLE_PARTY_TYPE_BATTLE	// [2010/07/12 : Sora] 전투형 파티 제거
+	m_btnFirstObtain.Render();
 	m_btnFight.Render();
-#endif
 
 	// Title
-	pDrawPort->PutTextEx( _S( 2666, "가입 희망 파티 설정" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2666, "가입 희망 파티 설정" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );
 }
 
 // ----------------------------------------------------------------------------
@@ -593,118 +554,97 @@ void CUIPartyAuto::LeaderJoinRender()
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + WBS_TITLE_HEIGHT;
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Top
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
 									m_rtJoinTopL.U0, m_rtJoinTopL.V0, m_rtJoinTopL.U1, m_rtJoinTopL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
 									m_rtJoinTopM.U0, m_rtJoinTopM.V0, m_rtJoinTopM.U1, m_rtJoinTopM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, m_nPosY, nX, nY,
 									m_rtJoinTopR.U0, m_rtJoinTopR.V0, m_rtJoinTopR.U1, m_rtJoinTopR.V1,
 									0xFFFFFFFF );
 
 	// Gap
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapL.U0, m_rtJoinGapL.V0, m_rtJoinGapL.U1, m_rtJoinGapL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapM.U0, m_rtJoinGapM.V0, m_rtJoinGapM.U1, m_rtJoinGapM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_GAP_HEIGHT,
 									m_rtJoinGapR.U0, m_rtJoinGapR.V0, m_rtJoinGapR.U1, m_rtJoinGapR.V1,
 									0xFFFFFFFF );
 
 	// middle 1
 	nY += WBS_GAP_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_LEADER_JOIN_HEIGHT_1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_LEADER_JOIN_HEIGHT_1,
 									m_rtJoinMiddleL.U0, m_rtJoinMiddleL.V0, m_rtJoinMiddleL.U1, m_rtJoinMiddleL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_LEADER_JOIN_HEIGHT_1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_LEADER_JOIN_HEIGHT_1,
 									m_rtJoinMiddleM.U0, m_rtJoinMiddleM.V0, m_rtJoinMiddleM.U1, m_rtJoinMiddleM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_LEADER_JOIN_HEIGHT_1,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_LEADER_JOIN_HEIGHT_1,
 									m_rtJoinMiddleR.U0, m_rtJoinMiddleR.V0, m_rtJoinMiddleR.U1, m_rtJoinMiddleR.V1,
 									0xFFFFFFFF );
 	// Notice Name 262, 16
-	pDrawPort->AddTexture( m_nPosX+98, m_nPosY+39, m_nPosX+99, m_nPosY+54, 
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+98, m_nPosY+39, m_nPosX+99, m_nPosY+54, 
 									m_rtNoticeNameL.U0, m_rtNoticeNameL.V0, m_rtNoticeNameL.U1, m_rtNoticeNameL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+100, m_nPosY+39, m_nPosX+357, m_nPosY+54, 
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+100, m_nPosY+39, m_nPosX+357, m_nPosY+54, 
 									m_rtNoticeNameM.U0, m_rtNoticeNameM.V0, m_rtNoticeNameM.U1, m_rtNoticeNameM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX+358, m_nPosY+39, m_nPosX+359, m_nPosY+54, 
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+358, m_nPosY+39, m_nPosX+359, m_nPosY+54, 
 									m_rtNoticeNameR.U0, m_rtNoticeNameR.V0, m_rtNoticeNameR.U1, m_rtNoticeNameR.V1,
 									0xFFFFFFFF );
 
 	// Gap
 	nY += WBS_LEADER_JOIN_HEIGHT_1;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_LEADER_JOIN_HEIGHT_2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_LEADER_JOIN_HEIGHT_2,
 									m_rtJoinGapL.U0, m_rtJoinGapL.V0, m_rtJoinGapL.U1, m_rtJoinGapL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_LEADER_JOIN_HEIGHT_2,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_LEADER_JOIN_HEIGHT_2,
 									m_rtJoinGapM.U0, m_rtJoinGapM.V0, m_rtJoinGapM.U1, m_rtJoinGapM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_LEADER_JOIN_HEIGHT_2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_LEADER_JOIN_HEIGHT_2,
 									m_rtJoinGapR.U0, m_rtJoinGapR.V0, m_rtJoinGapR.U1, m_rtJoinGapR.V1,
 									0xFFFFFFFF );
 	// bottom
 	nY += WBS_LEADER_JOIN_HEIGHT_2;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomL.U0, m_rtJoinBottomL.V0, m_rtJoinBottomL.U1, m_rtJoinBottomL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomM.U0, m_rtJoinBottomM.V0, m_rtJoinBottomM.U1, m_rtJoinBottomM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomR.U0, m_rtJoinBottomR.V0, m_rtJoinBottomR.U1, m_rtJoinBottomR.V1,
 									0xFFFFFFFF );
 	nX = m_nPosX + 96;	nY = m_nPosY + 66;
 	// Job Image
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtTitanImage.U0, m_rtTitanImage.V0, m_rtTitanImage.U1, m_rtTitanImage.V1,
 									0xFFFFFFFF );
 	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtKnightImage.U0, m_rtKnightImage.V0, m_rtKnightImage.U1, m_rtKnightImage.V1,
 									0xFFFFFFFF );
 	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtHealerImage.U0, m_rtHealerImage.V0, m_rtHealerImage.U1, m_rtHealerImage.V1,
 									0xFFFFFFFF );
 	nX = m_nPosX + 96;	nY += UVP_TAB_Y;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtMageImage.U0, m_rtMageImage.V0, m_rtMageImage.U1, m_rtMageImage.V1,
 									0xFFFFFFFF );
 	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtRogueImage.U0, m_rtRogueImage.V0, m_rtRogueImage.U1, m_rtRogueImage.V1,
 									0xFFFFFFFF );
 	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX+22, nY+22,
 									m_rtSorcererImage.U0, m_rtSorcererImage.V0, m_rtSorcererImage.U1, m_rtSorcererImage.V1,
 									0xFFFFFFFF );
-	nX = m_nPosX + 96; nY += UVP_TAB_Y;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
-									m_rtNightShadowImage.U0, m_rtNightShadowImage.V0, m_rtNightShadowImage.U1, m_rtNightShadowImage.V1,
-									0xFFFFFFFF );
-#ifdef CHAR_EX_ROGUE
-	// [2012/08/27 : Sora] EX로그 추가
-	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
-									m_rtEXRogueImage.U0, m_rtEXRogueImage.V0, m_rtEXRogueImage.U1, m_rtEXRogueImage.V1,
-									0xFFFFFFFF );
-#endif
-
-#ifdef CHAR_EX_MAGE
-	// 2013/01/08 jeil EX메이지 추가
-	nX += UVP_TAB_X;
-	pDrawPort->AddTexture( nX, nY, nX+22, nY+22,
-		m_rtEXMageImage.U0, m_rtEXMageImage.V0, m_rtEXMageImage.U1, m_rtEXMageImage.V1,
-		0xFFFFFFFF );
-#endif
 
 	m_btnClose.Render();
 	m_ebNoticeName.Render();
@@ -717,20 +657,14 @@ void CUIPartyAuto::LeaderJoinRender()
 	m_cbtnMage.Render();				// Mage
 	m_cbtnRogue.Render();			// Rogue
 	m_cbtnSorcerer.Render();			// Socceror
-	m_cbtnNightShadow.Render();
-#ifdef CHAR_EX_ROGUE
-	m_cbtnEXRogue.Render();	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	m_cbtnEXMage.Render();	// 2013/01/08 jeil EX메이지 추가 
-#endif
+
 	m_cbtnLevelLimit.Render();		// level limit
 
 	// Title
-	pDrawPort->PutTextEx( _S( 2667, "파티 등록" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );
-	pDrawPort->PutTextEx( _S( 2668, "파티 공고" ), m_nPosX + 25, m_nPosY + 39, 0xCC7D28FF );
-	pDrawPort->PutTextEx( _S( 2669, "필요 클래스" ), m_nPosX + 25, m_nPosY + 74, 0xCC7D28FF );
-	pDrawPort->PutTextEx( _S( 2670, "레벨 제한" ), m_nPosX + 25, m_nPosY + 141, 0xCC7D28FF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2667, "파티 등록" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2668, "파티 공고" ), m_nPosX + 25, m_nPosY + 39, 0xCC7D28FF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2669, "필요 클래스" ), m_nPosX + 25, m_nPosY + 74, 0xCC7D28FF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2670, "레벨 제한" ), m_nPosX + 25, m_nPosY + 131, 0xCC7D28FF );
 }
 
 // ----------------------------------------------------------------------------
@@ -744,47 +678,45 @@ void CUIPartyAuto::SelectListRender()
 		
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + WBS_TITLE_HEIGHT;
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
+	
 	// Top
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, m_nPosX + 22, nY,
 									m_rtJoinTopL.U0, m_rtJoinTopL.V0, m_rtJoinTopL.U1, m_rtJoinTopL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, m_nPosY, nX - 22, nY,
 									m_rtJoinTopM.U0, m_rtJoinTopM.V0, m_rtJoinTopM.U1, m_rtJoinTopM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, m_nPosY, nX, nY,
 									m_rtJoinTopR.U0, m_rtJoinTopR.V0, m_rtJoinTopR.U1, m_rtJoinTopR.V1,
 									0xFFFFFFFF );
 
 	// bottom
 	nY += WBS_PARTY_LIST_BGD_1;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomL.U0, m_rtJoinBottomL.V0, m_rtJoinBottomL.U1, m_rtJoinBottomL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 3, nY, nX - 3, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomM.U0, m_rtJoinBottomM.V0, m_rtJoinBottomM.U1, m_rtJoinBottomM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 3, nY, nX, nY + WBS_BOTTOM_HEIGHT,
 									m_rtJoinBottomR.U0, m_rtJoinBottomR.V0, m_rtJoinBottomR.U1, m_rtJoinBottomR.V1,
 									0xFFFFFFFF );
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 
 	// Set refine texture
-	pDrawPort->InitTextureData( m_ptdAddTexture );	
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdAddTexture );	
 
 	// Background 1
 	nY = m_nPosY + WBS_TITLE_HEIGHT;
-	pDrawPort->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_PARTY_LIST_BGD_1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, m_nPosX + 22, nY + WBS_PARTY_LIST_BGD_1,
 									m_rtSelListMiddleL.U0, m_rtSelListMiddleL.V0, m_rtSelListMiddleL.U1, m_rtSelListMiddleL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_PARTY_LIST_BGD_1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + 22, nY, nX - 22, nY + WBS_PARTY_LIST_BGD_1,
 									m_rtSelListMiddleM.U0, m_rtSelListMiddleM.V0, m_rtSelListMiddleM.U1, m_rtSelListMiddleM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX - 22, nY, nX, nY + WBS_PARTY_LIST_BGD_1,
+	_pUIMgr->GetDrawPort()->AddTexture( nX - 22, nY, nX, nY + WBS_PARTY_LIST_BGD_1,
 									m_rtSelListMiddleR.U0, m_rtSelListMiddleR.V0, m_rtSelListMiddleR.U1, m_rtSelListMiddleR.V1,
 									0xFFFFFFFF );
 
@@ -794,60 +726,60 @@ void CUIPartyAuto::SelectListRender()
 	nY1 = m_nPosY + 31;
 	nX2 = WBS_PARTY_LIST_BGD_WIDTH - 2;
 	// Top
-	pDrawPort->AddTexture( nX1, nY1, nX1 + 2, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1, nY1, nX1 + 2, nY1 + 2,
 									m_rtSelListBackTopL.U0, m_rtSelListBackTopL.V0, m_rtSelListBackTopL.U1, m_rtSelListBackTopL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + 2,
 									m_rtSelListBackTopM.U0, m_rtSelListBackTopM.V0, m_rtSelListBackTopM.U1, m_rtSelListBackTopM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + 2,
 									m_rtSelListBackTopR.U0, m_rtSelListBackTopR.V0, m_rtSelListBackTopR.U1, m_rtSelListBackTopR.V1,
 									0xFFFFFFFF );
 	// Middle
 	nY1 += 2;
 
-	pDrawPort->AddTexture( nX1, nY1, nX1 + 2, nY1 + WBS_PARTY_LIST_BGD_2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1, nY1, nX1 + 2, nY1 + WBS_PARTY_LIST_BGD_2,
 									m_rtSelListBackMiddleL.U0, m_rtSelListBackMiddleL.V0, m_rtSelListBackMiddleL.U1, m_rtSelListBackMiddleL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + WBS_PARTY_LIST_BGD_2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + WBS_PARTY_LIST_BGD_2,
 									m_rtSelListBackMiddleM.U0, m_rtSelListBackMiddleM.V0, m_rtSelListBackMiddleM.U1, m_rtSelListBackMiddleM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + WBS_PARTY_LIST_BGD_2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + WBS_PARTY_LIST_BGD_2,
 									m_rtSelListBackMiddleR.U0, m_rtSelListBackMiddleR.V0, m_rtSelListBackMiddleR.U1, m_rtSelListBackMiddleR.V1,
 									0xFFFFFFFF );
 	// bottom
 	nY1 += WBS_PARTY_LIST_BGD_2;
 
-	pDrawPort->AddTexture( nX1, nY1, nX1 + 2, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1, nY1, nX1 + 2, nY1 + 2,
 									m_rtSelListBackBottomL.U0, m_rtSelListBackBottomL.V0, m_rtSelListBackBottomL.U1, m_rtSelListBackBottomL.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + 2, nY1, nX1 + nX2, nY1 + 2,
 									m_rtSelListBackBottomM.U0, m_rtSelListBackBottomM.V0, m_rtSelListBackBottomM.U1, m_rtSelListBackBottomM.V1,
 									0xFFFFFFFF );
-	pDrawPort->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + 2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX1 + nX2, nY1, nX1 + WBS_PARTY_LIST_BGD_WIDTH, nY1 + 2,
 									m_rtSelListBackBottomR.U0, m_rtSelListBackBottomR.V0, m_rtSelListBackBottomR.U1, m_rtSelListBackBottomR.V1,
 									0xFFFFFFFF );
 
 	// Subject Background
-	pDrawPort->AddTexture( m_nPosX+15, m_nPosY+35, m_nPosX + 583, m_nPosY + 57,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+15, m_nPosY+35, m_nPosX + 583, m_nPosY + 57,
 									m_rtListSubjectRect.U0, m_rtListSubjectRect.V0, m_rtListSubjectRect.U1, m_rtListSubjectRect.V1,
 									0xFFFFFFFF );
 	
 	// line Background
 	nY = m_nPosY + 57;
 	nY1 = 26;
-	pDrawPort->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
 									m_rtline.U0, m_rtline.V0, m_rtline.U1, m_rtline.V1,
 									0xFFFFFFFF );
 	for( int i=0; i<9; i++ )
 	{
 		nY1 += 25;
-		pDrawPort->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
+		_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
 										m_rtline.U0, m_rtline.V0, m_rtline.U1, m_rtline.V1,
 										0xFFFFFFFF );
 	}
 	nY1 += 1;
-	pDrawPort->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+27, nY+nY1, m_nPosX+572, nY+nY1+1,
 									m_rtline.U0, m_rtline.V0, m_rtline.U1, m_rtline.V1,
 									0xFFFFFFFF );
 	////////////////////////////// line end ////////////////////////////////////
@@ -857,7 +789,7 @@ void CUIPartyAuto::SelectListRender()
 		int nSelX = m_nPosX+27;
 		int nSelY = m_nPosY+65+( m_nSelectLine * 25 );
 
-		pDrawPort->AddTexture( nSelX, nSelY, nSelX+545, nSelY+13,
+		_pUIMgr->GetDrawPort()->AddTexture( nSelX, nSelY, nSelX+545, nSelY+13,
 										m_rtSelectBar.U0, m_rtSelectBar.V0, m_rtSelectBar.U1, m_rtSelectBar.V1,
 										0xFFFFFFFF );
 	}
@@ -872,10 +804,10 @@ void CUIPartyAuto::SelectListRender()
 	ListRecordRender();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 
 	// Set refine texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	m_btnClose.Render();
 	m_cbtnLevelLimit.Render();		// level limit
@@ -885,60 +817,53 @@ void CUIPartyAuto::SelectListRender()
 	// menu
 	if( m_nSelectState == INVITE_LIST )
 	{
-		pDrawPort->PutTextEx( _S( 2671, "초대가능 파티원 리스트" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );// title
-		pDrawPort->PutTextExCX( _S( 2672, "번호" ), m_nPosX + NUMBER_POS, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 2673, "캐릭명" ), m_nPosX + SUBJECT_STR, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 73, "레벨" ), m_nPosX + LIMIT_DIFF, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 3857, "접속위치" ), m_nPosX + ZONE_POS, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 72, "클래스" ), m_nPosX + NEED_CLASS, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 2676, "희망파티" ), m_nPosX + PARTY_TYPE, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 2671, "초대가능 파티원 리스트" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );// title
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2672, "번호" ), m_nPosX + NUMBER_POS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2673, "캐릭명" ), m_nPosX + SUBJECT_STR, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 73, "레벨" ), m_nPosX + LIMIT_DIFF, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3857, "접속위치" ), m_nPosX + ZONE_POS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 72, "클래스" ), m_nPosX + NEED_CLASS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2676, "희망파티" ), m_nPosX + PARTY_TYPE, m_nPosY + 40, 0xFFFFCAFF );
 	}
 	else if( m_nSelectState == PARTY_LIST )
 	{
-		pDrawPort->PutTextEx( _S( 2677, "참가가능 파티 리스트" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );// title
-		pDrawPort->PutTextExCX( _S( 2672, "번호" ), m_nPosX + NUMBER_POS, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 2678, "파티모집창" ), m_nPosX + SUBJECT_STR, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 97, "파티" ), m_nPosX + LIMIT_DIFF-10, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 73, "레벨" ), m_nPosX + LIMIT_DIFF+30, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 3857, "접속위치" ), m_nPosX + ZONE_POS+20, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 2669, "필요클래스" ), m_nPosX + NEED_CLASS, m_nPosY + 40, 0xFFFFCAFF );
-		pDrawPort->PutTextExCX( _S( 2679, "파티종류" ), m_nPosX + PARTY_TYPE, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 2677, "참가가능 파티 리스트" ), m_nPosX + 25, m_nPosY + 5, 0xFFFFFFFF );// title
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2672, "번호" ), m_nPosX + NUMBER_POS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2678, "파티모집창" ), m_nPosX + SUBJECT_STR, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 73, "레벨" ), m_nPosX + LIMIT_DIFF, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 3857, "접속위치" ), m_nPosX + ZONE_POS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2669, "필요클래스" ), m_nPosX + NEED_CLASS, m_nPosY + 40, 0xFFFFCAFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( _S( 2679, "파티종류" ), m_nPosX + PARTY_TYPE, m_nPosY + 40, 0xFFFFCAFF );
 	}
 
 	int nStrWidth = _S( 2670, "레벨제한" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 	
-	pDrawPort->PutTextEx( _S( 2670, "레벨제한" ), m_nPosX+318-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2670, "레벨제한" ), m_nPosX+318-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
 
 	nStrWidth = _S( 2679, "파티종류" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
-	pDrawPort->PutTextEx( _S( 2679, "파티종류" ), m_nPosX+457-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2679, "파티종류" ), m_nPosX+457-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
 
 	if( m_nSelectState == INVITE_LIST )
 	{
 		nStrWidth = _S( 72, "클래스" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
-		pDrawPort->PutTextEx( _S( 72, "클래스" ), m_nPosX+83-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 72, "클래스" ), m_nPosX+83-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
 	}
 	else if( m_nSelectState == PARTY_LIST )
 	{
 		nStrWidth = _S( 2669, "필요클래스" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
-		pDrawPort->PutTextEx( _S( 2669, "필요클래스" ), m_nPosX+83-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 2669, "필요클래스" ), m_nPosX+83-nStrWidth, m_nPosY+366, 0xFFAC4FFF );
 	}
 
 	nStrWidth = _S( 386, "검색" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-	pDrawPort->PutTextEx( _S( 386, "검색" ), m_nPosX+540-nStrWidth-7, m_nPosY+326, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 386, "검색" ), m_nPosX+540-nStrWidth-7, m_nPosY+326, 0xFFFFFFFF );
 
-	// [091110: selo] "다음" 텍스트 위치 잡기
-	int nNext_ExtraX = 0;
-/*	if( USA_SPAIN == g_iCountry )
-		nNext_ExtraX = 10;	/**/
-
-	
 	nStrWidth = _S( 2680, "다음" ).Length() * ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-	pDrawPort->PutTextEx( _S( 2680, "다음" ), m_nPosX+343-nStrWidth-7 + nNext_ExtraX, m_nPosY+326, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2680, "다음" ), m_nPosX+343-nStrWidth-7, m_nPosY+326, 0xFFFFFFFF );
 
-	pDrawPort->PutTextEx( _S( 2681, "이전" ), m_nPosX+264, m_nPosY+326, 0xFFFFFFFF );
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 2681, "이전" ), m_nPosX+264, m_nPosY+326, 0xFFFFFFFF );
 }
 
 // ----------------------------------------------------------------------------
@@ -947,7 +872,7 @@ void CUIPartyAuto::SelectListRender()
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::ListRecordRender()
 {
-	if( m_vectorPartyListData.empty() == true )
+	if( m_vectorPartyListData.empty() )
 		return;
 
 	int		Number, nLeveldiff, nZone, nPartyType;
@@ -955,11 +880,8 @@ void CUIPartyAuto::ListRecordRender()
 	DWORD	dwClass;
 	CTString strSubject;
 	COLOR	strColor;
-	int		nPartyNum = 2;
 
 	int TotalListNum = m_vectorPartyListData.size();
-
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	for( int num=0; num<TotalListNum; num++ )
 	{
@@ -969,15 +891,13 @@ void CUIPartyAuto::ListRecordRender()
 		nZone = m_vectorPartyListData[num].nZone;				// 위치
 		dwClass = m_vectorPartyListData[num].dwJobflag;		// 직업 플래그
 		nPartyType = m_vectorPartyListData[num].nPartyType;	// 파티 종류
-		nPartyNum = m_vectorPartyListData[num].nPartyNum;
 		nSaveHeight = ( num * 25 );// 높이
 
 		CTString strOutput;
 		// 번호
 		strOutput.PrintF( CTString( "%d" ), Number );
-		pDrawPort->PutTextExCX( strOutput, m_nPosX + NUMBER_POS, m_nPosY+LESH_NUMBER+nSaveHeight, 0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->PutTextExCX( strOutput, m_nPosX + NUMBER_POS, m_nPosY+LESH_NUMBER+nSaveHeight, 0xFFFFFFFF );
 		// 제목
-
 		if( strSubject.Length() > 30 )
 		{
 			CTString strTemp1, strTemp2;
@@ -991,10 +911,6 @@ void CUIPartyAuto::ListRecordRender()
 
 			strOutput = strTemp1;
 			strColor = 0xFFF284FF;
-		}else if (nPartyNum >= 8)
-		{
-			strColor = 0xA7A9A5FF;
-			strOutput = strSubject;
 		}
 		else
 		{
@@ -1003,50 +919,32 @@ void CUIPartyAuto::ListRecordRender()
 		}
 		
 		if( m_nSelectState == INVITE_LIST )// 캐릭명 중앙 정렬
-			pDrawPort->PutTextExCX( strOutput, m_nPosX + SUBJECT_STR, m_nPosY+LESH_STRING+nSaveHeight, 0xFFFFFFFF );			
+			_pUIMgr->GetDrawPort()->PutTextExCX( strOutput, m_nPosX + SUBJECT_STR, m_nPosY+LESH_STRING+nSaveHeight, 0xFFFFFFFF );			
 		else if( m_nSelectState == PARTY_LIST )
 		{
-
 			if( m_bShowTextScroll && m_nSelectLine == num && strSubject.Length() > 30 )
 			{
 				TextScroll( m_vectorPartyListData[m_nSelectLine].strSubject );
 			}
 			else
 			{
-				pDrawPort->PutTextEx( strOutput, m_nPosX + 64, m_nPosY+LESH_STRING+nSaveHeight, strColor );
+				_pUIMgr->GetDrawPort()->PutTextEx( strOutput, m_nPosX + 64, m_nPosY+LESH_STRING+nSaveHeight, strColor );
 			}
 		}
+
 		// 레벨 제한
 		int nX = LIMIT_DIFF - 11;
 		int nY = LESH_LEVELDIFF + nSaveHeight;
-		int nTempGap = 0;
-		strColor = 0xFFFFFFFF;
-
-		if( m_nSelectState == PARTY_LIST )
-		{
-			if (nPartyNum >= 8)
-			{
-				strColor = 0xA7A9A5FF;
-			}			
-
-			CTString strPartyNum;
-			strPartyNum.PrintF("%d/8",nPartyNum);
-
-			pDrawPort->PutTextExCX( strPartyNum, m_nPosX + nX, m_nPosY+LESH_STRING+nSaveHeight, strColor );
-			
-			nX += 30;
-			nTempGap = 20;
-		}
-
+		
 		if( nLeveldiff == 0 )// 0일때 레벨제한 있음
 		{
-			pDrawPort->AddTexture( m_nPosX+nX, m_nPosY+nY, m_nPosX+nX+LEVELDIFF_IMAGE_SIZE , m_nPosY+nY+LEVELDIFF_IMAGE_SIZE ,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nX, m_nPosY+nY, m_nPosX+nX+LEVELDIFF_IMAGE_SIZE , m_nPosY+nY+LEVELDIFF_IMAGE_SIZE ,
 										m_rtPartyLvImage.U0, m_rtPartyLvImage.V0, m_rtPartyLvImage.U1, m_rtPartyLvImage.V1,
-										strColor );			
+										0xFFFFFFFF );			
 		}
 		// 위치
-		strOutput = CZoneInfo::getSingleton()->GetZoneName( nZone );
-		pDrawPort->PutTextExCX( strOutput, m_nPosX + ZONE_POS+nTempGap, m_nPosY+LESH_STRING+nSaveHeight, strColor );
+		strOutput = ZoneInfo().GetZoneName( nZone );
+		_pUIMgr->GetDrawPort()->PutTextExCX( strOutput, m_nPosX + ZONE_POS, m_nPosY+LESH_STRING+nSaveHeight, 0xFFFFFFFF );
 
 		// 파티 타입
 		int nSubWidth = PARTY_TYPE - 9;
@@ -1054,29 +952,29 @@ void CUIPartyAuto::ListRecordRender()
 
 		if( nPartyType == PT_PEACEEVER )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtPeaceeverImage.U0, m_rtPeaceeverImage.V0, m_rtPeaceeverImage.U1, m_rtPeaceeverImage.V1,
 										0xFFFFFFFF );			
 		}
 		else if( nPartyType == PT_SURVIVAL )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtSurvival.U0, m_rtSurvival.V0, m_rtSurvival.U1, m_rtSurvival.V1,
 										0xFFFFFFFF );	
 		}
 		else if(  nPartyType == PT_ATTACK )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtAttack.U0, m_rtAttack.V0, m_rtAttack.U1, m_rtAttack.V1,
 										0xFFFFFFFF );	
 		}
 
 		// 클래스
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();	
+		_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 
 		// Set refine texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
+		_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 		int	nJobCnt = 0;
 
@@ -1086,18 +984,12 @@ void CUIPartyAuto::ListRecordRender()
 		if( dwClass & JF_MAGE ) nJobCnt++;
 		if( dwClass & JF_ROGUE ) nJobCnt++;
 		if( dwClass & JF_SORCERER ) nJobCnt++;
-		if( dwClass & JF_NIGHTSHADOW ) nJobCnt++;
-#ifdef CHAR_EX_ROGUE
-		if( dwClass & JF_EX_ROGUE ) nJobCnt++;	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-		if( dwClass & JF_EX_MAGE ) nJobCnt++;	// 2013/01/08 jeil EX메이지 추가
-#endif
+
 		nSubWidth = NEED_CLASS - ( ( nJobCnt * CLASS_IMAGE_SIZE ) / 2 );
 
 		if( dwClass & JF_TITAN )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtTitanImage.U0, m_rtTitanImage.V0, m_rtTitanImage.U1, m_rtTitanImage.V1,
 										0xFFFFFFFF );
 			nSubWidth += CLASS_IMAGE_SIZE;
@@ -1105,7 +997,7 @@ void CUIPartyAuto::ListRecordRender()
 		
 		if( dwClass & JF_KNIGHT )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtKnightImage.U0, m_rtKnightImage.V0, m_rtKnightImage.U1, m_rtKnightImage.V1,
 										0xFFFFFFFF );
 			nSubWidth += CLASS_IMAGE_SIZE;	
@@ -1113,7 +1005,7 @@ void CUIPartyAuto::ListRecordRender()
 		
 		if( dwClass & JF_HEALER )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtHealerImage.U0, m_rtHealerImage.V0, m_rtHealerImage.U1, m_rtHealerImage.V1,
 										0xFFFFFFFF );
 			nSubWidth += CLASS_IMAGE_SIZE;	
@@ -1121,7 +1013,7 @@ void CUIPartyAuto::ListRecordRender()
 		
 		if( dwClass & JF_MAGE )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtMageImage.U0, m_rtMageImage.V0, m_rtMageImage.U1, m_rtMageImage.V1,
 										0xFFFFFFFF );
 			nSubWidth += CLASS_IMAGE_SIZE;	
@@ -1129,7 +1021,7 @@ void CUIPartyAuto::ListRecordRender()
 		
 		if( dwClass & JF_ROGUE )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtRogueImage.U0, m_rtRogueImage.V0, m_rtRogueImage.U1, m_rtRogueImage.V1,
 										0xFFFFFFFF );
 			nSubWidth += CLASS_IMAGE_SIZE;	
@@ -1137,48 +1029,18 @@ void CUIPartyAuto::ListRecordRender()
 		
 		if( dwClass & JF_SORCERER )
 		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
+			_pUIMgr->GetDrawPort()->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
 										m_rtSorcererImage.U0, m_rtSorcererImage.V0, m_rtSorcererImage.U1, m_rtSorcererImage.V1,
 										0xFFFFFFFF );
-			nSubWidth += CLASS_IMAGE_SIZE;
 		}
 		
-		if( dwClass & JF_NIGHTSHADOW )
-		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
-										m_rtNightShadowImage.U0, m_rtNightShadowImage.V0, m_rtNightShadowImage.U1, m_rtNightShadowImage.V1,
-										0xFFFFFFFF );
-
-			nSubWidth += CLASS_IMAGE_SIZE;	
-		}
-#ifdef CHAR_EX_ROGUE
-		if( dwClass & JF_EX_ROGUE )	// [2012/08/27 : Sora] EX로그 추가
-		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
-										m_rtEXRogueImage.U0, m_rtEXRogueImage.V0, m_rtEXRogueImage.U1, m_rtEXRogueImage.V1,
-										0xFFFFFFFF );
-			
-			nSubWidth += CLASS_IMAGE_SIZE;
-		}
-#endif
-
-#ifdef CHAR_EX_MAGE
-		if( dwClass & JF_EX_MAGE )	// 2013/01/08 jeil EX메이지 추가
-		{
-			pDrawPort->AddTexture( m_nPosX+nSubWidth, m_nPosY+nTypeY, m_nPosX+nSubWidth+CLASS_IMAGE_SIZE, m_nPosY+nTypeY+CLASS_IMAGE_SIZE,
-				m_rtEXMageImage.U0, m_rtEXMageImage.V0, m_rtEXMageImage.U1, m_rtEXMageImage.V1,
-				0xFFFFFFFF );
-				
-		}
-#endif
-
 		if( num < ( TotalListNum - 1 ) )
 		{
 			// Render all elements
-			pDrawPort->FlushRenderingQueue();	
+			_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 
 			// Set refine texture
-			pDrawPort->InitTextureData( m_ptdAddTexture );
+			_pUIMgr->GetDrawPort()->InitTextureData( m_ptdAddTexture );
 		}
 	}
 }
@@ -1207,19 +1069,10 @@ void CUIPartyAuto::Clear()
 	m_cbtnMage.SetCheck( FALSE );				// Mage
 	m_cbtnRogue.SetCheck( FALSE );			// Rogue
 	m_cbtnSorcerer.SetCheck( FALSE );			// Socceror
-	m_cbtnNightShadow.SetCheck( FALSE);
-#ifdef CHAR_EX_ROGUE
-	m_cbtnEXRogue.SetCheck(FALSE); // [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE 
-	m_cbtnEXMage.SetCheck(FALSE); // 2013/01/08 jeil EX메이지 추가
-#endif
 	m_cbtnLevelLimit.SetCheck( FALSE );
 
 	m_cmbNeedClass.SetCurSel( 0 );
 	m_cmbPartyType.SetCurSel( 0 );
-
-	m_ebNoticeName.SetFocus(FALSE);
 }
 
 // ----------------------------------------------------------------------------
@@ -1248,34 +1101,28 @@ void CUIPartyAuto::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pi
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::OpenPartyMatching()
 {
-	if( IsVisible() == TRUE )
-		return;
+	if( IsVisible() || _pUIMgr->GetParty()->IsPartyRequested() ) return;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( GAMEDATAMGR()->GetPartyInfo()->IsPartyRequested() )
-		return;
-
-	pUIManager->CloseMessageBoxL( MSGLCMD_PARTYAUTOMATCH_REQ );
-	pUIManager->CreateMessageBoxL( _S( 2682, "파티 매칭 시스템" ), UI_PARTYAUTO, MSGLCMD_PARTYAUTOMATCH_REQ );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, TRUE,
+	_pUIMgr->CloseMessageBoxL( MSGLCMD_PARTYAUTOMATCH_REQ );
+	_pUIMgr->CreateMessageBoxL( _S( 2682, "파티 매칭 시스템" ), UI_PARTYAUTO, MSGLCMD_PARTYAUTOMATCH_REQ );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, TRUE,
 				_S( 2683, "용사님들이 보다 수월하게 모험을 하실 수 있도록 파티원들을 모집해 주는 시스템입니다." ), -1, 0xA3A1A3FF );
 
 	CTString strMessage;
 	strMessage.PrintF( _S( 2684, "파티(원) 등록" ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_REGIST );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_REGIST );
 
 	strMessage.PrintF( _S( 2685, "초대가능 파티원 리스트" ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, INVITE_LIST );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, INVITE_LIST );
 
 	strMessage.PrintF( _S( 2686, "참가가능 파티 리스트" ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_LIST );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_LIST );
 
 	strMessage.PrintF( _S( 2687, "파티(원) 등록 삭제" ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_DEL );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage, PARTY_DEL );
 					
 	strMessage.PrintF( _S( 1220, "취소한다." ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_PARTYAUTOMATCH_REQ, FALSE, strMessage );
 }
 
 // ----------------------------------------------------------------------------
@@ -1284,8 +1131,7 @@ void CUIPartyAuto::OpenPartyMatching()
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::OpenAutoParty( int nType )
 {
-	if( IsVisible() == TRUE )
-		return;
+	if( IsVisible() ) return;
 
 	Clear();
 
@@ -1345,7 +1191,7 @@ void CUIPartyAuto::OpenAutoParty( int nType )
 		m_nSelectState = nType;
 	}
 
-	CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, TRUE );
+	_pUIMgr->RearrangeOrder( UI_PARTYAUTO, TRUE );
 	AdjustUIPos();
 }
 
@@ -1355,14 +1201,12 @@ void CUIPartyAuto::OpenAutoParty( int nType )
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::AdjustUIPos()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	PIX pixMinI, pixMaxI, pixMinJ, pixMaxJ;
-
-	pixMinI = pUIManager->GetMinI();
-	pixMinJ = pUIManager->GetMinJ();
-	pixMaxI = pUIManager->GetMaxI();
-	pixMaxJ = pUIManager->GetMaxJ();
+	
+	pixMinI = _pUIMgr->GetMinI();
+	pixMinJ = _pUIMgr->GetMinJ();
+	pixMaxI = _pUIMgr->GetMaxI();
+	pixMaxJ = _pUIMgr->GetMaxJ();
 
 	ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
 }
@@ -1373,8 +1217,7 @@ void CUIPartyAuto::AdjustUIPos()
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::CloseAutoParty()
 {
-	
-	CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, FALSE );
+	_pUIMgr->RearrangeOrder( UI_PARTYAUTO, FALSE );
 
 	Clear();
 }
@@ -1392,6 +1235,8 @@ WMSG_RESULT CUIPartyAuto::JoinMouseMsg( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		if( m_btnEqualDivide.MouseMessage( pMsg ) != WMSG_FAIL )
 			return WMSG_SUCCESS;
+		else if( m_btnFirstObtain.MouseMessage( pMsg ) != WMSG_FAIL )
+			return WMSG_SUCCESS;
 		else if( m_btnFight.MouseMessage( pMsg ) != WMSG_FAIL )
 			return WMSG_SUCCESS;
 		break;
@@ -1399,6 +1244,10 @@ WMSG_RESULT CUIPartyAuto::JoinMouseMsg( MSG *pMsg )
 		if( m_btnEqualDivide.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
 						
+		}
+		else if( m_btnFirstObtain.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
 		}
 		else if( m_btnFight.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
@@ -1411,6 +1260,15 @@ WMSG_RESULT CUIPartyAuto::JoinMouseMsg( MSG *pMsg )
 			if( wmsgResult == WMSG_COMMAND )
 			{
 				_pNetwork->SendPartyRegistNormal( PT_PEACEEVER );
+			}
+
+			return WMSG_SUCCESS;
+		}
+		else if( ( wmsgResult = m_btnFirstObtain.MouseMessage( pMsg ) ) != WMSG_FAIL )
+		{// 입수 우선 파티
+			if( wmsgResult == WMSG_COMMAND )
+			{
+				_pNetwork->SendPartyRegistNormal( PT_SURVIVAL );
 			}
 
 			return WMSG_SUCCESS;
@@ -1431,6 +1289,15 @@ WMSG_RESULT CUIPartyAuto::JoinMouseMsg( MSG *pMsg )
 			if( wmsgResult == WMSG_COMMAND )
 			{
 				_pNetwork->SendPartyRegistNormal( PT_PEACEEVER );
+			}
+
+			return WMSG_SUCCESS;
+		}
+		else if( ( wmsgResult = m_btnFirstObtain.MouseMessage( pMsg ) ) != WMSG_FAIL )
+		{// 입수 우선 파티
+			if( wmsgResult == WMSG_COMMAND )
+			{
+				_pNetwork->SendPartyRegistNormal( PT_SURVIVAL );
 			}
 
 			return WMSG_SUCCESS;
@@ -1471,7 +1338,7 @@ WMSG_RESULT CUIPartyAuto::LeaderRegMouseMsg( MSG *pMsg )
 	case WM_LBUTTONDOWN:
 		if( m_ebNoticeName.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
-			CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, TRUE );
+			_pUIMgr->RearrangeOrder( UI_PARTYAUTO, TRUE );
 		}
 		else if( m_cbtnTitan.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
@@ -1503,26 +1370,6 @@ WMSG_RESULT CUIPartyAuto::LeaderRegMouseMsg( MSG *pMsg )
 			if( m_cbtnSorcerer.IsChecked() )	m_dwJobFlag |= JF_SORCERER;
 			else	m_dwJobFlag &= ~JF_SORCERER;
 		}
-		else if( m_cbtnNightShadow.MouseMessage( pMsg ) != WMSG_FAIL )
-		{
-			if( m_cbtnNightShadow.IsChecked() )	m_dwJobFlag |= JF_NIGHTSHADOW;
-			else	m_dwJobFlag &= ~JF_NIGHTSHADOW;
-		}
-#ifdef CHAR_EX_ROGUE
-		else if( m_cbtnEXRogue.MouseMessage( pMsg ) != WMSG_FAIL )	// [2012/08/27 : Sora] EX로그 추가
-		{
-			if( m_cbtnEXRogue.IsChecked() )	m_dwJobFlag |= JF_EX_ROGUE;
-			else	m_dwJobFlag &= ~JF_EX_ROGUE;
-		}
-#endif
-
-#ifdef CHAR_EX_MAGE
-		else if( m_cbtnEXMage.MouseMessage( pMsg ) != WMSG_FAIL )	// 2013/01/08 jeil EX메이지 추가
-		{
-			if( m_cbtnEXMage.IsChecked() )	m_dwJobFlag |= JF_EX_MAGE;
-			else	m_dwJobFlag &= ~JF_EX_MAGE;
-		}
-#endif
 		else if( m_cbtnLevelLimit.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
 			m_nLevelLimit = m_cbtnLevelLimit.IsChecked() ? 1 : 0;
@@ -1604,21 +1451,40 @@ WMSG_RESULT CUIPartyAuto::PartyListMouseMsg( MSG *pMsg )
 			return WMSG_SUCCESS;
 		else if( m_cmbNeedClass.MouseMessage( pMsg ) != WMSG_FAIL )
 			return WMSG_SUCCESS;
-		else if (m_btnRefresh.MouseMessage( pMsg ) != WMSG_FAIL)
-			return WMSG_SUCCESS;
 		break;
 	case WM_LBUTTONDOWN:
 		if( m_cbtnLevelLimit.MouseMessage( pMsg ) != WMSG_FAIL )
 		{
 			m_nLevelLimit = m_cbtnLevelLimit.IsChecked() ? 1 : 0;
 		}
-		m_btnRegistOK.MouseMessage( pMsg );
-		m_btnRegistCancel.MouseMessage( pMsg );
-		m_btnNextbtn.MouseMessage( pMsg );
-		m_btnPrevbtn.MouseMessage( pMsg );
-		m_btnRefresh.MouseMessage( pMsg );
-		m_cmbNeedClass.MouseMessage( pMsg );
-		m_cmbPartyType.MouseMessage( pMsg );
+		else if( m_btnRegistOK.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
+		else if( m_btnRegistCancel.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
+		else if( m_btnNextbtn.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
+		else if( m_btnPrevbtn.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+		
+		}
+		else if( m_btnRefresh.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
+		else if( m_cmbNeedClass.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
+		else if( m_cmbPartyType.MouseMessage( pMsg ) != WMSG_FAIL )
+		{
+
+		}
 		break;
 	case WM_LBUTTONUP:
 		if( ( wmsgResult = m_btnRegistOK.MouseMessage( pMsg ) ) != WMSG_FAIL )
@@ -1741,7 +1607,7 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			if( m_nSelectState >= PARTY_REGIST )
 			{
@@ -1875,7 +1741,7 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 						}
 					}
 					
-					CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, TRUE );
+					_pUIMgr->RearrangeOrder( UI_PARTYAUTO, TRUE );
 					return WMSG_SUCCESS;
 				}
 				else
@@ -1886,7 +1752,7 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 						{
 							if( wmsgResult != WMSG_FAIL )
 							{
-								CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, TRUE );
+								_pUIMgr->RearrangeOrder( UI_PARTYAUTO, TRUE );
 								return WMSG_SUCCESS;
 							}
 						}
@@ -1894,7 +1760,7 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 						{
 							if( wmsgResult != WMSG_FAIL )
 							{
-								CUIManager::getSingleton()->RearrangeOrder( UI_PARTYAUTO, TRUE );
+								_pUIMgr->RearrangeOrder( UI_PARTYAUTO, TRUE );
 								return WMSG_SUCCESS;
 							}
 						}
@@ -1905,10 +1771,8 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 		break;
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -1963,7 +1827,7 @@ WMSG_RESULT CUIPartyAuto::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -2121,26 +1985,24 @@ void CUIPartyAuto::MsgBoxLCommand( int nCommandCode, int nResult )
 		{
 			if( nResult == PARTY_REGIST ) // 파티 등록
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
-				if( GAMEDATAMGR()->GetPartyInfo()->GetMemberCount() <= 0 ) // 파티중이 아니라면
+				if( _pUIMgr->GetParty()->GetMemberCount() <= 0 ) // 파티중이 아니라면
 				{
 					OpenAutoParty( PARTY_REGIST );
 				}
 				else
 				{
-					if( GAMEDATAMGR()->GetPartyInfo()->AmILeader() )
+					if( _pUIMgr->GetParty()->AmILeader() )
 					{
 						OpenAutoParty( PARTY_REGIST_LEADER );
 					}
 					else
 					{
-						pUIManager->CloseMessageBoxL( MSGLCMD_PARTYAUTOMATCH_REQ );
+						_pUIMgr->CloseMessageBoxL( MSGLCMD_PARTYAUTOMATCH_REQ );
 						CUIMsgBox_Info MsgBoxInfo;
 						MsgBoxInfo.SetMsgBoxInfo( _S( 2667, "파티 등록" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
 						CTString	strMessage = _S( 2690, "파티장만 등록할 수 있습니다" );
 						MsgBoxInfo.AddString( strMessage );
-						pUIManager->CreateMessageBox( MsgBoxInfo );
+						_pUIMgr->CreateMessageBox( MsgBoxInfo );
 					}
 				}
 			}
@@ -2173,28 +2035,24 @@ void CUIPartyAuto::PressOKBtn()
 		{
 			m_strNoticeName = m_ebNoticeName.GetString();
 
-			if( m_strNoticeName.Length() > MAX_PARTY_NAME_LEN )
+			if( m_strNoticeName.Length() > 50 )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
-				pUIManager->CloseMessageBox( MSGCMD_PARTYAUTO_REGIST_ERROR );
+				_pUIMgr->CloseMessageBox( MSGCMD_PARTYAUTO_REGIST_ERROR );
 				CUIMsgBox_Info MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( _S( 2667, "파티 등록" ), UMBS_OK, UI_PARTYAUTO, MSGCMD_PARTYAUTO_REGIST_ERROR );
 				CTString	strMessage = _S( 2691, "파티 공고가 너무 깁니다.\n( 한글 최대 25자, 영문 최대 50자" );
 				MsgBoxInfo.AddString( strMessage );
-				pUIManager->CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				return;
 			}
 			else if( m_strNoticeName.Length() <= 0 )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-
-				pUIManager->CloseMessageBox( MSGCMD_PARTYAUTO_REGIST_ERROR );
+				_pUIMgr->CloseMessageBox( MSGCMD_PARTYAUTO_REGIST_ERROR );
 				CUIMsgBox_Info MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( _S( 2667, "파티 등록" ), UMBS_OK, UI_PARTYAUTO, MSGCMD_PARTYAUTO_REGIST_ERROR );
 				CTString	strMessage = _S( 2692, "파티 공고를 입력하세요." );
 				MsgBoxInfo.AddString( strMessage );
-				pUIManager->CreateMessageBox( MsgBoxInfo );
+				_pUIMgr->CreateMessageBox( MsgBoxInfo );
 				return;
 			}
 			
@@ -2259,7 +2117,7 @@ void CUIPartyAuto::MatchRegMemberRep( int nErrorcode )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 2667, "파티 등록" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
 	MsgBoxInfo.AddString( strMessage );
-	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 // ----------------------------------------------------------------------------
@@ -2291,7 +2149,7 @@ void CUIPartyAuto::MatchRegPartyRep( int nErrorcode )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 2667, "파티 등록" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
 	MsgBoxInfo.AddString( strMessage );
-	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 // ----------------------------------------------------------------------------
@@ -2333,12 +2191,7 @@ void CUIPartyAuto::AddCharData( int nIndex, int nLvdiff, int nZone,
 	else if( nJob == MAGE ) { CharData.dwJobflag |= JF_MAGE; }
 	else if( nJob == ROGUE ) { CharData.dwJobflag |= JF_ROGUE; }
 	else if( nJob == SORCERER ) { CharData.dwJobflag |= JF_SORCERER; }
-#ifdef CHAR_EX_ROGUE
-	else if( nJob == EX_ROGUE ) { CharData.dwJobflag |= JF_EX_ROGUE; }	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	else if( nJob == EX_MAGE ) { CharData.dwJobflag |= JF_EX_MAGE; }	// 2013/01/08 jeil EX메이지 추가
-#endif
+
 	CharData.nLimitLv = limitLv;
 	CharData.nPartyType = nPtType;
 
@@ -2402,13 +2255,7 @@ void CUIPartyAuto::ReceiveMemberData( CNetworkMessage *istr )
 		else if( sbJob == 3 )	TempData.dwJobflag = JF_MAGE;
 		else if( sbJob == 4 )	TempData.dwJobflag = JF_ROGUE;
 		else if( sbJob == 5 )	TempData.dwJobflag = JF_SORCERER;
-		else if( sbJob == 6 )	TempData.dwJobflag = JF_NIGHTSHADOW;
-#ifdef CHAR_EX_ROGUE
-		else if( sbJob == 7 )	TempData.dwJobflag = JF_EX_ROGUE;	// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-		else if( sbJob == 8 )	TempData.dwJobflag = JF_EX_MAGE;	// 2013/01/08 jeil EX메이지 추가
-#endif
+
 		TempData.nPartyType = (int)sbPtType;
 
 		m_vectorPartyListData.push_back( TempData );
@@ -2437,17 +2284,13 @@ void CUIPartyAuto::ReceivePartyData( CNetworkMessage *istr )
 	{
 		SLONG		slIndex, slZone, slJobFlag;
 		SBYTE		sbLvdiff, sbPtType, sbLimitLv;
-		CTString	strName;
-		// [ldy1978220 2011/6/7] 파티 오토 매칭 개선 
-		SLONG		slPartyNum = 2;
+		CTString	strName;		
 
 		PartyListData	TempData;
 
 		(*istr) >> slIndex;	// 파티장 식별자(n)
 		(*istr) >> sbLvdiff;	// 레벨 제한(c)
 		(*istr) >> slZone;	// 위치(n)
-		// [ldy1978220 2011/6/7] 파티 오토 매칭 개선 
-		(*istr) >> slPartyNum;		// 파티 매칭 인원 
 		(*istr) >> slJobFlag;		// 직업(n)
 		(*istr) >> sbPtType;	// 파티 종류(c)
 		(*istr) >> sbLimitLv;		// 제한 레벨( 쓰지 않음 )(c)
@@ -2456,7 +2299,6 @@ void CUIPartyAuto::ReceivePartyData( CNetworkMessage *istr )
 		TempData.nIndex = (int)slIndex;
 		TempData.nLeveldiff = (int)sbLvdiff;
 		TempData.nZone = (int)slZone;
-		TempData.nPartyNum = (int)slPartyNum;
 		TempData.dwJobflag = (DWORD)slJobFlag;
 		TempData.nPartyType = (int)sbPtType;
 		TempData.nLimitLv = (int)sbLimitLv;
@@ -2492,15 +2334,13 @@ void CUIPartyAuto::ReceivePartyInviteMessage( int nErrorcode, CNetworkMessage *i
 
 			SLONG slMyIndex = _pNetwork->MyCharacterInfo.index; 
 
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			if( slBoss == slMyIndex )
 			{
-				GAMEDATAMGR()->GetPartyInfo()->SetPartyRequested( TRUE );
-				GAMEDATAMGR()->GetPartyInfo()->SetDestName( strDestName );
+				_pUIMgr->GetParty()->SetPartyRequested( TRUE );
+				_pUIMgr->GetParty()->SetDestName( strDestName );
 			}
 
-			GAMEDATAMGR()->GetPartyInfo()->PartyInvite( sbPartyType, slBoss, strBossName );
+			_pUIMgr->GetParty()->PartyInvite( sbPartyType, slBoss, strBossName );
 
 			return;
 		}
@@ -2630,36 +2470,29 @@ void CUIPartyAuto::PartyMatchJoin( SBYTE sbType, SLONG slBoss, CTString strBossN
 	else if( sbCharJob == MAGE ) { strJob = _S( 46, "메이지" ); }
 	else if( sbCharJob == ROGUE ) { strJob = _S( 47, "로그" ); }
 	else if( sbCharJob == SORCERER ) { strJob = _S( 48, "소서러" ); }
-#ifdef CHAR_EX_ROGUE
-	else if( sbCharJob == EX_ROGUE ) { strJob = _S( 5732, "EX로그" ); }// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-	else if( sbCharJob == EX_MAGE ) { strJob = _S( 5820, "아크메이지" ); }// 2013/01/08 jeil EX메이지 추가
-#endif
+
 	m_nCharIndex = (int)slChar;
 	m_bIsPartyRequested = TRUE;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	SLONG slMyIndex = _pNetwork->MyCharacterInfo.index; 
 
 	if( slBoss == slMyIndex )
 	{
-		strMessage.PrintF( _S( 2716, "%s님(%s)이 파티 가입 신청을 하셨습니다. 허락하시겠습니까?" ), (const char*)strCharName, (const char*)strJob );
+		strMessage.PrintF( _S( 2716, "%s님(%s)이 파티 가입 신청을 하셨습니다. 허락하시겠습니까?" ), strCharName, strJob );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_YESNO, UI_PARTYAUTO, MSGCMD_PARTYAUTO_JOIN_ALLOW );
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	}
 	else
 	{
-		strMessage.PrintF( _S( 2717, "파티장 %s에게 파티참가를 요청 중입니다" ), (const char*)strBossName );
+		strMessage.PrintF( _S( 2717, "파티장 %s에게 파티참가를 요청 중입니다" ), strBossName );
 
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_CANCEL, UI_PARTYAUTO, MSGCMD_PARTYAUTO_JOIN_ALLOW );
 		MsgBoxInfo.AddString( strMessage );
-		pUIManager->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->CreateMessageBox( MsgBoxInfo );
 	}
 }
 
@@ -2674,8 +2507,7 @@ void CUIPartyAuto::SendPartyReq( int nNum )
 
 	int nSendPage;
 	int nJob = m_cmbNeedClass.GetCurSel();
-	// 입수우선이 없으르로 중간에 +1을 함
-	int nPtType = (m_cmbPartyType.GetCurSel() == 2 ? m_cmbPartyType.GetCurSel()+1 : m_cmbPartyType.GetCurSel());
+	int nPtType = m_cmbPartyType.GetCurSel();
 	int nLvLimit = m_cbtnLevelLimit.IsChecked() ? 1 : 0;
 	
 	m_nSelectLine = -1;
@@ -2702,8 +2534,6 @@ void CUIPartyAuto::SendPartyReq( int nNum )
 // ----------------------------------------------------------------------------
 void CUIPartyAuto::TextScroll( CTString strText )
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	CTString strTemp1, strTemp2;
 	CTString strSaveSplit = strText;
 	char cCurrent;
@@ -2738,7 +2568,7 @@ void CUIPartyAuto::TextScroll( CTString strText )
 			}
 			
 			nX = nStartPos;
-			pDrawPort->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
 		}
 		else
 		{
@@ -2749,7 +2579,7 @@ void CUIPartyAuto::TextScroll( CTString strText )
 							( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 			nX = nEndPos-nStrWidth;
 
-			pDrawPort->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
 		}
 
 		return;
@@ -2795,7 +2625,7 @@ void CUIPartyAuto::TextScroll( CTString strText )
 				strSaveSplit = strTemp1;				
 			}
 
-			pDrawPort->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
 		}
 		else
 		{
@@ -2830,7 +2660,7 @@ void CUIPartyAuto::TextScroll( CTString strText )
 			int nStrWidth = strSaveSplit.Length() * 
 							( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 			nX = nEndPos-nStrWidth;
-			pDrawPort->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( strSaveSplit, nX, nY, 0xFFF284FF );
 
 			if( m_FrontChPos >= 30 )
 			{
@@ -2852,18 +2682,13 @@ BOOL CUIPartyAuto::Is2ByteChar( int nCharIndex, int nFirstCheck, CTString strTex
 
 	for( int iPos = nFirstCheck; iPos < nCharIndex; iPos++, pcTemp++ )
 	{
-#if defined (G_THAI)
-		b2ByteChar = FALSE;
-#else
-		if( (*pcTemp & 0x80) )
-		{
+		if( (*pcTemp & 0x80) && (g_iCountry !=THAILAND) ){
 			if( _pUIFontTexMgr->GetLanguage() == FONT_JAPANESE && ((UCHAR)*pcTemp >= 0xa1 && (UCHAR)*pcTemp <= 0xdf) ) 
 				b2ByteChar = FALSE;
 			else b2ByteChar = !b2ByteChar;
 		}
 		else
 			b2ByteChar = FALSE;
-#endif
 	}
 
 	return b2ByteChar;

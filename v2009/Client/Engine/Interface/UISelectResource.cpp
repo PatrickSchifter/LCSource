@@ -1,12 +1,8 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
 #include <vector>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISelectResource.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/EntityProperties.h>
-#include <Engine/Entities/InternalClasses.h>
-#include <Engine/Ska/Render.h>
 
 #define BUTTON_HEIGHT	21
 #define BUTTON_WIDTH	131
@@ -37,6 +33,7 @@ CUISelectResource::CUISelectResource()
 // ----------------------------------------------------------------------------
 CUISelectResource::~CUISelectResource()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -45,7 +42,9 @@ CUISelectResource::~CUISelectResource()
 // ----------------------------------------------------------------------------
 void CUISelectResource::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 	
 	// Region of each part
 	m_rcTitle.SetRect( 0, 0, 236, 22 );
@@ -67,10 +66,7 @@ void CUISelectResource::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidt
 	m_btnClose.SetUV( UBS_IDLE, 219, 0, 233, 14, fTexWidth, fTexHeight );
 	m_btnClose.SetUV( UBS_CLICK, 234, 0, 248, 14, fTexWidth, fTexHeight );
 	m_btnClose.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	// 수집 채굴 채집 일 경우 키보드 이동을 막기 위한 플래그 [3/26/2013 Ranma]
-	m_bKeyMove = true;
+	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );	
 }
 
 // ----------------------------------------------------------------------------
@@ -153,11 +149,8 @@ void CUISelectResource::OpenSelectResource( int npcIndex, int iType )
 		}
 		int nHeight = m_vectorResourceList.size() * (BUTTON_HEIGHT + BUTTON_SPAN) + TITLEBAR_HEIGHT + 10;
 		SetSize( m_nWidth, nHeight );
-		CUIManager::getSingleton()->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
+		_pUIMgr->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
 	}
-
-	// 시작 되면 키보드 이동 막기 [3/26/2013 Ranma]
-	m_bKeyMove = false;
 	return;
 }
 
@@ -173,7 +166,7 @@ void CUISelectResource::ResetSelectResource()
 
 	if(!m_vectorResourceList.empty())
 		m_vectorResourceList.clear();
-	CUIManager::getSingleton()->RearrangeOrder( UI_SELECTRESOURCE, FALSE );
+	_pUIMgr->RearrangeOrder( UI_SELECTRESOURCE, FALSE );
 }
 
 // ----------------------------------------------------------------------------
@@ -182,29 +175,27 @@ void CUISelectResource::ResetSelectResource()
 // ----------------------------------------------------------------------------
 void CUISelectResource::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set skill learn texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 	
 	// Add render regions
 	// Background
 	int nX = m_nPosX;
 	int nY = m_nPosY;
-	pDrawPort->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, m_nPosY, nX + m_nWidth, nY + TITLEBAR_HEIGHT,
 		m_rtBackTop.U0, m_rtBackTop.V0, 
 		m_rtBackTop.U1, m_rtBackTop.V1,
 		0xFFFFFFFF );
 	
 	nY += TITLEBAR_HEIGHT;	
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight - 7,
 		m_rtBackMiddle1.U0, m_rtBackMiddle1.V0, 
 		m_rtBackMiddle1.U1, m_rtBackMiddle1.V1,
 		0xFFFFFFFF );
 	
 	nY = m_nPosY + m_nHeight - 7;
 
-	pDrawPort->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + m_nWidth, m_nPosY + m_nHeight,
 		m_rtBackBottom.U0, m_rtBackBottom.V0, 
 		m_rtBackBottom.U1, m_rtBackBottom.V1,
 		0xFFFFFFFF );	
@@ -220,7 +211,7 @@ void CUISelectResource::Render()
 	}
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();	
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();	
 	
 	CTString strTitle = _S( 1823, "미네랄 선택" );
 	
@@ -230,11 +221,11 @@ void CUISelectResource::Render()
 		strTitle =_S( 1974,  "생산방법 선택" );
 	}
 		
-	pDrawPort->PutTextEx( strTitle, m_nPosX + SELECTRESOURCE_TITLE_TEXT_OFFSETX,	
+	_pUIMgr->GetDrawPort()->PutTextEx( strTitle, m_nPosX + SELECTRESOURCE_TITLE_TEXT_OFFSETX,	
 		m_nPosY + SELECTRESOURCE_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 	
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -262,7 +253,7 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 			
 			int	ndX = nX - nOldX;
 			int	ndY = nY - nOldY;
@@ -280,21 +271,25 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 			// Close Button
 			if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-
-			for(int i = 0; i < m_vectorResourceList.size(); ++i)
+/*
+			else
 			{
-				if( (wmsgResult = m_vectorResourceList[i].MouseMessage( pMsg ) )!= WMSG_FAIL )
+				std::vector<CUIButton>::iterator end = m_vectorResourceList.end();
+				std::vector<CUIButton>::iterator it = m_vectorResourceList.begin();
+
+				for(; it != end; ++it)
 				{
-					return WMSG_SUCCESS;
+					if( (*it).MouseMessage( pMsg ) != WMSG_FAIL )
+						return WMSG_SUCCESS;
 				}
 			}
+*/
 		}
 		break;
 	case WM_LBUTTONDOWN:
 		{
 			if( IsInside( nX, nY ) )
 			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
 				nOldX = nX;		nOldY = nY;
 				
 				// Close button
@@ -342,14 +337,14 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 									for(INDEX i=0; i<3; ++i)
 									{
 	
-										strName = _pNetwork->GetItemData( g_iProductItemDBIndex[m_iResourceType-1][i] )->GetName();
+										strName = _pNetwork->GetItemData( g_iProductItemDBIndex[m_iResourceType-1][i] ).GetName();
 										TempUIButton.Create(this, strName, 20, iCurPosY, BUTTON_WIDTH, BUTTON_HEIGHT );
 										m_vectorResourceList.push_back(TempUIButton);
 										iCurPosY += BUTTON_HEIGHT + BUTTON_SPAN;
 									}
 									int nHeight = m_vectorResourceList.size() * (BUTTON_HEIGHT + BUTTON_SPAN) + TITLEBAR_HEIGHT + 10;
 									SetSize( m_nWidth, nHeight );
-									pUIManager->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
+									_pUIMgr->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
 								}
 							}
 							else
@@ -363,13 +358,12 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 					}
 				}
 				
-				pUIManager->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
+				_pUIMgr->RearrangeOrder( UI_SELECTRESOURCE, TRUE );
 				return WMSG_SUCCESS;
 			}
 			else
 			{
 				ResetSelectResource();
-				m_bKeyMove = true;
 			}
 		}
 		break;
@@ -383,7 +377,6 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 				if(wmsgResult == WMSG_COMMAND)
 				{
 					ResetSelectResource();
-					m_bKeyMove = true;
 				}
 				return WMSG_SUCCESS;
 			}
@@ -414,33 +407,6 @@ WMSG_RESULT	CUISelectResource::MouseMessage( MSG *pMsg )
 //------------------------------------------------------------------------------
 void CUISelectResource::StartProduct( int nSelectResource )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	// 생산시 보내는 메세지에 담을 데이터 저장 
-	CTString strTemp;
-	// BUG-FIX : ITS(#1727) 펫에 탑승시에는 수집/생산을 할 수 없다. [5/20/2011 rumist]
-	if( _pNetwork->MyCharacterInfo.bWildPetRide || _pNetwork->MyCharacterInfo.bPetRide )
-	{
-		if( m_iResourceType == 4 )
-			strTemp = _S( 5490, "펫에 탑승한 상태에서는 퀘스트 아이템을 수집할 수 없습니다." );
-		else
-			strTemp = _S( 5491, "펫에 탑승한 상태에서는 생산할 수 없습니다." );
-		
-		pUIManager->GetChattingUI()->AddSysMessage( strTemp, SYSMSG_ERROR );
-		return;
-	}
-
-	// BUG-FIX : 강신상태에서는 수집 / 채집 불가. [6/3/2011 rumist]
-	CPlayerEntity* pPlayerEntity = (static_cast<CPlayerEntity*>(CEntity::GetPlayerEntity(0)));
-
-	if( pPlayerEntity->IsTransforming())
-	{
-		strTemp = _S( 5494, "강신 상태에서는 수집/채집/생산을 할 수 없습니다." );
-		
-		pUIManager->GetChattingUI()->AddSysMessage( strTemp, SYSMSG_ERROR );
-		return;
-	}
-
 	// 선택 한 생산 종류에 따라서 에니메이션 시작 
 	extern INDEX idPlayerWhole_Animation[ANIM_TOTAL];
 	switch(m_iResourceType)
@@ -479,10 +445,13 @@ void CUISelectResource::StartProduct( int nSelectResource )
 		break;
 	}
 
+	// 생산시 보내는 메세지에 담을 데이터 저장 
+	CTString strTemp;
+
 	if( nSelectResource >= 0 ) 
 	{
 		m_iProduceItemDBIndex = g_iProductItemDBIndex[m_iResourceType-1][nSelectResource];
-		strTemp = _pNetwork->GetItemData( g_iProductItemDBIndex[m_iResourceType-1][nSelectResource] )->GetName();
+		strTemp = _pNetwork->GetItemData( g_iProductItemDBIndex[m_iResourceType-1][nSelectResource] ).GetName();
 	}
 	else 
 	{
@@ -511,8 +480,8 @@ void CUISelectResource::StartProduct( int nSelectResource )
 	// 수집일경우 
 	if(m_iResourceType == 4)
 		strTemp += _S(3053, "퀘스트 아이템 수집을 시작합니다." );
-	else strTemp += _S( 1824, "생산을 시작합니다." );
+		else strTemp += _S( 1824, "생산을 시작합니다." );
 
-	pUIManager->GetChattingUI()->AddSysMessage(strTemp, SYSMSG_NORMAL);
+	_pUIMgr->GetChatting()->AddSysMessage(strTemp, SYSMSG_NORMAL);
 
 }

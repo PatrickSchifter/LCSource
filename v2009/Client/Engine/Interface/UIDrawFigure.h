@@ -34,8 +34,6 @@ public:
 	void	CopyRect( const UIRect &rcSrc );
 	void	Scale( FLOAT fScale );
 	void	Offset( int nX, int nY );
-
-	UIRect	GetUIRect();
 	
 	inline	int		GetCenterX() { return ( Left + Right ) / 2; }
 	inline	int		GetCenterY() { return ( Top + Bottom ) / 2; }
@@ -85,7 +83,6 @@ public :
 	void	CopyUV(CUIDrawBox* pDrawBox);
 	// Render
 	void	Render(int nX=0,int nY=0,const COLOR nCol =0xFFFFFFFF,FLOAT fDepth =0);
-
 };
 
 

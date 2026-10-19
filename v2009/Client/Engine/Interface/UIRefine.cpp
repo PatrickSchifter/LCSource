@@ -1,14 +1,7 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIRefine.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/LocalDefine.h>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Contents/Base/UIQuestBookNew.h>
-#include <Engine/Interface/UIHelp.h>
 
 enum eSelection
 {
@@ -19,15 +12,18 @@ enum eSelection
 
 static int	_iMaxMsgStringChar = 0;
 
+extern INDEX g_iCountry;
+
+#ifdef HELP_SYSTEM_1
 // [KH_07044] 3차 도움말 관련 추가
 extern INDEX g_iShowHelp1Icon;
+#endif
 
 // ----------------------------------------------------------------------------
 // Name : CUIRefine()
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUIRefine::CUIRefine()
-	: m_pIconSlotItem(NULL)
 {
 	m_nStringCount = 0;
 	m_bWaitRefineResult = TRUE;
@@ -41,7 +37,7 @@ CUIRefine::CUIRefine()
 // ----------------------------------------------------------------------------
 CUIRefine::~CUIRefine()
 {
-	SAFE_DELETE(m_pIconSlotItem);
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -50,7 +46,9 @@ CUIRefine::~CUIRefine()
 // ----------------------------------------------------------------------------
 void CUIRefine::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = 190 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -117,8 +115,7 @@ void CUIRefine::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int n
 	SetHeight( nNewHeight );
 
 	// Slot item button
-	m_pIconSlotItem = new CUIIcon;
-	m_pIconSlotItem->Create(this, m_rcItemSlot.Left + 1, m_rcItemSlot.Top + 1, BTN_SIZE, BTN_SIZE, UI_REFINE, UBET_ITEM);
+	m_btnSlotItem.Create( this, m_rcItemSlot.Left + 1, m_rcItemSlot.Top + 1, BTN_SIZE, BTN_SIZE, UI_REFINE, UBET_ITEM );
 }
 
 // ----------------------------------------------------------------------------
@@ -147,16 +144,14 @@ void CUIRefine::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMa
 // ----------------------------------------------------------------------------
 void CUIRefine::OpenRefine(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// If this is already exist
-	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_REFINE_REQ ) || IsVisible() )
+	if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_REFINE_REQ ) || IsVisible() )
 		return;
 
 	// If inventory is already locked
-	if( pUIManager->GetInventory()->IsLocked() )
+	if( _pUIMgr->GetInventory()->IsLocked() )
 	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
+		_pUIMgr->GetInventory()->ShowLockErrorMessage();
 		return;
 	}
 
@@ -164,43 +159,36 @@ void CUIRefine::OpenRefine(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
 
-	CMobData* MD = CMobData::getData(iMobIndex);
+	CMobData& MD = _pNetwork->GetMobData(iMobIndex);
 
 	// Create refine message box
-	pUIManager->CreateMessageBoxL( _S( 226, "제련" ), UI_REFINE, MSGLCMD_REFINE_REQ );
+	_pUIMgr->CreateMessageBoxL( _S( 226, "제련" ), UI_REFINE, MSGLCMD_REFINE_REQ );
 
-	CTString	strNpcName = CMobData::getData(iMobIndex)->GetName();
-	pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, strNpcName, -1, 0xE18600FF );
+	CTString	strNpcName = _pNetwork->GetMobName(iMobIndex);
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, strNpcName, -1, 0xE18600FF );
 
-	pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, _S( 227, "어서 오시오, 젊은 전사여.\n나는 긍지있는 연금술사 제랄 드 모랄이오.\n\n음? 아니 아니, 아무 말 하지 않아도 좋소. 여행자들이 나를 찾아온 용무는 언제나 같으니.\n" ), -1, 0xA3A1A3FF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, _S( 228, "내게 있어선 이 또한 하나의 수행이자 경험.\n제련석으로 만들고자 하는 물건을 넘겨주게나." ), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, _S( 227, "어서 오시오, 젊은 전사여.\n나는 긍지있는 연금술사 제랄 드 모랄이오.\n\n음? 아니 아니, 아무 말 하지 않아도 좋소. 여행자들이 나를 찾아온 용무는 언제나 같으니.\n" ), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, TRUE, _S( 228, "내게 있어선 이 또한 하나의 수행이자 경험.\n제련석으로 만들고자 하는 물건을 넘겨주게나." ), -1, 0xA3A1A3FF );
 
-	pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 229, "제련석을 만든다." ), REFINE_OK  );	
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// [070807: Su-won] EVENT_ADULT_OPEN
-	//if( IS_EVENT_ON(TEVENT_ADULT_OPEN) )
-	if( 0 )
-	{
-		pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S(3635, "장비조합 연금술 이벤트" ), EVENT_ADULT_ALCHEMIST  );	
-	}
-	// [070807: Su-won] EVENT_ADULT_OPEN
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 1220, "취소한다." ) );	
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 229, "제련석을 만든다." ), REFINE_OK  );	
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 1220, "취소한다." ) );	
 
 	if( bHasQuest )
 	{
+#ifdef	NEW_QUESTBOOK
 		// 2009. 05. 27 김정래
 		// 이야기한다 변경 처리
 		CUIQuestBook::AddQuestListToMessageBoxL(MSGLCMD_REFINE_REQ);				
+#else
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 1053, "이야기한다." ), REFINE_TALK  );	
+#endif
 	}
 
 	// FIXME : 퀘스트가 없을 경우에 문제가 됨.
 	// FIXME : 고로, 이벤트 NPC는 되도록 퀘스트를 갖고 있는 형태로???
-	if( MD->IsEvent() )
+	if( MD.IsEvent() )
 	{
-		pUIManager->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 100, "이벤트" ), REFINE_EVENT );		
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_REFINE_REQ, FALSE, _S( 100, "이벤트" ), REFINE_EVENT );		
 	}
 
 	m_bWaitRefineResult = FALSE;
@@ -213,15 +201,13 @@ void CUIRefine::OpenRefine(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
 void CUIRefine::CloseRefine()
 {
 	// Reset slot item
-	m_pIconSlotItem->clearIconData();
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
+	m_btnSlotItem.InitBtn();
 
 	// Close refine
-	pUIManager->RearrangeOrder( UI_REFINE, FALSE );
+	_pUIMgr->RearrangeOrder( UI_REFINE, FALSE );
 
 	// Unlock inventory
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_REFINE );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REFINE );
 
 	m_strRefineMoney.Clear();
 	m_bWaitRefineResult = FALSE;
@@ -231,7 +217,7 @@ void CUIRefine::CloseRefine()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIRefine::AddString( const CTString &strDesc )
+void CUIRefine::AddString( CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_REFINE_STRING )
 		return;
@@ -241,192 +227,191 @@ void CUIRefine::AddString( const CTString &strDesc )
 	if( nLength == 0 )
 		return;
 
-	int		iPos;
 	// wooss 051002
-#if defined G_THAI
-	// Get length of string
-	INDEX	nThaiLen = FindThaiLen(strDesc);
-	INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
-	if( nLength == 0 )
-		return;
-	// If length of string is less than max char
-	if( nThaiLen <= nChatMax )
-	{
-		// Check line character
-		for( iPos = 0; iPos < nLength; iPos++ )
+	if(g_iCountry == THAILAND){
+		// Get length of string
+		INDEX	nThaiLen = FindThaiLen(strDesc);
+		INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
+		if( nLength == 0 )
+			return;
+		// If length of string is less than max char
+		if( nThaiLen <= nChatMax )
 		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nLength )
-			m_strRefineDesc[m_nStringCount++] = strDesc;
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddString( strTemp );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nLength; iPos++ )
-		{
-			if(nChatMax < FindThaiLen(strDesc,0,iPos))
-				break;
-		}
-		nSplitPos = iPos;
-
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( nSplitPos, m_strRefineDesc[m_nStringCount++], strTemp );
-
-			// Trim space
-			if( strTemp[0] == ' ' )
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
-
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 
-			AddString( strTemp );
-		}
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
+			// Not exist
+			if( iPos == nLength )
+				m_strRefineDesc[m_nStringCount++] = strDesc;
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddString( strTemp );
-		}
-
-	}
-#else
-	// If length of string is less than max char
-	if( nLength <= _iMaxMsgStringChar )
-	{
-		// Check line character
-		int iPos;
-		for( iPos = 0; iPos < nLength; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nLength )
-			m_strRefineDesc[m_nStringCount++] = strDesc;
-		else
-		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
-
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
-			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
-
-			AddString( strTemp );
-		}
-	}
-	// Need multi-line
-	else
-	{
-		// Check splitting position for 2 byte characters
-		int		nSplitPos = _iMaxMsgStringChar;
-		BOOL	b2ByteChar = FALSE;
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] & 0x80 )
-				b2ByteChar = !b2ByteChar;
-			else
-				b2ByteChar = FALSE;
-		}
-
-		if( b2ByteChar )
-			nSplitPos--;
-
-		// Check line character
-		for( iPos = 0; iPos < nSplitPos; iPos++ )
-		{
-			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
-				break;
-		}
-
-		// Not exist
-		if( iPos == nSplitPos )
-		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( nSplitPos, m_strRefineDesc[m_nStringCount++], strTemp );
-
-			// Trim space
-			if( strTemp[0] == ' ' )
 			{
-				int	nTempLength = strTemp.Length();
-				for( iPos = 1; iPos < nTempLength; iPos++ )
-				{
-					if( strTemp[iPos] != ' ' )
-						break;
-				}
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
 
-				strTemp.TrimLeft( strTemp.Length() - iPos );
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp );
+			}
+		}
+		// Need multi-line
+		else
+		{
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if(nChatMax < FindThaiLen(strDesc,0,iPos))
+					break;
+			}
+			nSplitPos = iPos;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
 			}
 
-			AddString( strTemp );
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( nSplitPos, m_strRefineDesc[m_nStringCount++], strTemp );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddString( strTemp );
+			}
+			else
+			{
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp );
+			}
+
 		}
+		
+	} else {
+		// If length of string is less than max char
+		if( nLength <= _iMaxMsgStringChar )
+		{
+			// Check line character
+			for( int iPos = 0; iPos < nLength; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nLength )
+				m_strRefineDesc[m_nStringCount++] = strDesc;
+			else
+			{
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
+
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp );
+			}
+		}
+		// Need multi-line
 		else
 		{
-			// Split string
-			CTString	strTemp;
-			strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
+			// Check splitting position for 2 byte characters
+			int		nSplitPos = _iMaxMsgStringChar;
+			BOOL	b2ByteChar = FALSE;
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] & 0x80 )
+					b2ByteChar = !b2ByteChar;
+				else
+					b2ByteChar = FALSE;
+			}
 
-			// Trim line character
-			if( strTemp[0] == '\r' && strTemp[1] == '\n' )
-				strTemp.TrimLeft( strTemp.Length() - 2 );
+			if( b2ByteChar )
+				nSplitPos--;
+
+			// Check line character
+			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			{
+				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
+					break;
+			}
+
+			// Not exist
+			if( iPos == nSplitPos )
+			{
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( nSplitPos, m_strRefineDesc[m_nStringCount++], strTemp );
+
+				// Trim space
+				if( strTemp[0] == ' ' )
+				{
+					int	nTempLength = strTemp.Length();
+					for( iPos = 1; iPos < nTempLength; iPos++ )
+					{
+						if( strTemp[iPos] != ' ' )
+							break;
+					}
+
+					strTemp.TrimLeft( strTemp.Length() - iPos );
+				}
+
+				AddString( strTemp );
+			}
 			else
-				strTemp.TrimLeft( strTemp.Length() - 1 );
+			{
+				// Split string
+				CTString	strTemp;
+				strDesc.Split( iPos, m_strRefineDesc[m_nStringCount++], strTemp );
 
-			AddString( strTemp );
+				// Trim line character
+				if( strTemp[0] == '\r' && strTemp[1] == '\n' )
+					strTemp.TrimLeft( strTemp.Length() - 2 );
+				else
+					strTemp.TrimLeft( strTemp.Length() - 1 );
+
+				AddString( strTemp );
+			}
 		}
 	}
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -441,38 +426,38 @@ void CUIRefine::Render()
 	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		CloseRefine();
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	// Set refine texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
+	// Add render regions
+	int	nX, nY;
 	// Background
 	// Top
-	int nX = m_nPosX + m_nWidth;
-	int nY = m_nPosY + 26;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	nX = m_nPosX + m_nWidth;
+	nY = m_nPosY + 26;
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 										m_rtTop.U0, m_rtTop.V0, m_rtTop.U1, m_rtTop.V1,
 										0xFFFFFFFF );
 
 	// Middle 1
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + m_nTextRegionHeight,
 										m_rtMiddle1.U0, m_rtMiddle1.V0, m_rtMiddle1.U1, m_rtMiddle1.V1,
 										0xFFFFFFFF );
 
 	// Middle 2
 	nY += m_nTextRegionHeight;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 										m_rtMiddle2.U0, m_rtMiddle2.V0, m_rtMiddle2.U1, m_rtMiddle2.V1,
 										0xFFFFFFFF );
 
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 										m_rtBottom.U0, m_rtBottom.V0, m_rtBottom.U1, m_rtBottom.V1,
 										0xFFFFFFFF );
 
 	// Slot item region
-	pDrawPort->AddTexture( m_nPosX + m_rcItemSlot.Left, m_nPosY + m_rcItemSlot.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcItemSlot.Left, m_nPosY + m_rcItemSlot.Top,
 										m_nPosX + m_rcItemSlot.Right, m_nPosY + m_rcItemSlot.Bottom,
 										m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 										0xFFFFFFFF );
@@ -487,36 +472,36 @@ void CUIRefine::Render()
 	m_btnCancel.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Item
-	if (m_pIconSlotItem->IsEmpty() == false)
+	if( !m_btnSlotItem.IsEmpty() )
 	{
-		m_pIconSlotItem->Render(pDrawPort);
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		m_btnSlotItem.Render();
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	// Text in refine
-	pDrawPort->PutTextEx( _S( 231, "제련" ), m_nPosX + REFINE_TITLE_TEXT_OFFSETX,
+	_pUIMgr->GetDrawPort()->PutTextEx( _S( 231, "제련" ), m_nPosX + REFINE_TITLE_TEXT_OFFSETX,
 										m_nPosY + REFINE_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
 	nX = m_nPosX + REFINE_DESC_TEXT_SX;
 	nY = m_nPosY + REFINE_DESC_TEXT_SY;
 	for( int iDesc = 0; iDesc < m_nStringCount; iDesc++ )
 	{
-		pDrawPort->PutTextEx( m_strRefineDesc[iDesc], nX , nY, 0xC5C5C5FF );
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strRefineDesc[iDesc], nX , nY, 0xC5C5C5FF );
 		nY += _pUIFontTexMgr->GetLineHeight();
 	}
 
 	// Refineing money
 	if( m_llRefineMoney > 0 )
 	{
-		pDrawPort->PutTextEx( m_strRefineMoney,
+		_pUIMgr->GetDrawPort()->PutTextEx( m_strRefineMoney,
 											m_nPosX + REFINE_DESC_TEXT_SX, m_nPosY + m_nMoneyPosY, 0xE1B300FF );
 	}
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -541,7 +526,7 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move refine
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -593,7 +578,7 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 					// Nothing
 				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_REFINE, TRUE );
+				_pUIMgr->RearrangeOrder( UI_REFINE, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -601,10 +586,8 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -644,8 +627,8 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// If holding button is item and comes from inventory
-					if (pUIManager->GetDragIcon()->getBtnType() == UBET_ITEM &&
-						pUIManager->GetDragIcon()->GetWhichUI() == UI_INVENTORY)
+					if( _pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM &&
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_INVENTORY )
 					{
 						if( IsInsideRect( nX, nY, m_rcInsertItem ) )
 						{
@@ -655,7 +638,7 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 					}
 
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -685,48 +668,43 @@ WMSG_RESULT CUIRefine::MouseMessage( MSG *pMsg )
 // ----------------------------------------------------------------------------
 void CUIRefine::SetRefineItem()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	CUIIcon* pDrag = pUIManager->GetDragIcon();
-
-	if (pDrag == NULL)
-		return;
-
-	CItems* pItems = pDrag->getItems();
-
-	if (pItems == NULL)
-		return;
-
 	// If this is wearing item
-	if (pDrag->IsWearTab() == true)
+	if( _pUIMgr->GetHoldBtn().GetItemWearType() >= 0 )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 232, "착용된 아이템은 제련석으로 전환이 불가능합니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 232, "착용된 아이템은 제련석으로 전환이 불가능합니다." ), SYSMSG_ERROR );
 		return;
 	}
 
 	// If this is not weapon or armor
-	CItemData	*pItemData = pItems->ItemData;
-	if( pItemData->GetType() != CItemData::ITEM_WEAPON &&
-		pItemData->GetType() != CItemData::ITEM_SHIELD )
+	int	nTab = _pUIMgr->GetHoldBtn().GetItemTab();
+	int	nRow = _pUIMgr->GetHoldBtn().GetItemRow();
+	int	nCol = _pUIMgr->GetHoldBtn().GetItemCol();
+	CItems		&rItems = _pNetwork->MySlotItem[nTab][nRow][nCol];
+	CItemData	&rItemData = rItems.ItemData;
+	if( rItemData.GetType() != CItemData::ITEM_WEAPON &&
+		rItemData.GetType() != CItemData::ITEM_SHIELD )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 233, "무기와 방어구만 제련 할 수 있습니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 233, "무기와 방어구만 제련 할 수 있습니다." ), SYSMSG_ERROR );
 		return;
 	}
 
 	// If this item is upgraded
-	if( pItems->Item_Plus > 0 )
+	if( rItems.Item_Plus > 0 )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 234, "업그레이드 된 아이템은 제련석으로 전환이 불가능합니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 234, "업그레이드 된 아이템은 제련석으로 전환이 불가능합니다." ), SYSMSG_ERROR );
 		return;
 	}
 
 	// If refining money is short
-	SLONG	slWearLevel = pItemData->GetLevel();
+	SLONG	slWearLevel = rItemData.GetLevel();
 	m_llRefineMoney = ( ( slWearLevel + 1 ) * ( slWearLevel + 3 ) * ( slWearLevel -1 ) + 100 ) / 4;
 	m_strRefineMoney.PrintF( _S( 419, "제련 비용 : %I64d" ), m_llRefineMoney );
 
 	// Insert upgrade slot
-	m_pIconSlotItem->copyItem(pDrag);
+	m_btnSlotItem.Copy( _pUIMgr->GetHoldBtn() );
+
+	// Lock inventory
+	_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_REFINE );
 }
 
 // ----------------------------------------------------------------------------
@@ -735,8 +713,6 @@ void CUIRefine::SetRefineItem()
 // ----------------------------------------------------------------------------
 void CUIRefine::MsgBoxLCommand( int nCommandCode, int nResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	switch( nCommandCode )
 	{
 	case MSGLCMD_REFINE_REQ:
@@ -744,71 +720,67 @@ void CUIRefine::MsgBoxLCommand( int nCommandCode, int nResult )
 		{
 			if( ( (CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSkilling() )
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 946, "스킬 사용중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );		
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 946, "스킬 사용중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );		
 				CloseRefine();
 				return;
 			}
 
-			if( pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+			if( _pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 			{
-				pUIManager->GetChattingUI()->AddSysMessage( _S( 947, "순간 이동중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );	
+				_pUIMgr->GetChatting()->AddSysMessage( _S( 947, "순간 이동중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );	
 				CloseRefine();
 				return;
 			}
 
 			// If inventory is already locked
-			if (pUIManager->GetInventory()->IsLocked() == TRUE ||
-				pUIManager->GetInventory()->IsLockedArrange() == TRUE)
+			if( _pUIMgr->GetInventory()->IsLocked() )
 			{
-				pUIManager->GetInventory()->ShowLockErrorMessage();
+				_pUIMgr->GetInventory()->ShowLockErrorMessage();
 				CloseRefine();
 				return;
 			}
 
-			if( !pUIManager->GetInventory()->IsVisible() )
-				pUIManager->GetInventory()->ToggleVisible();
+			if( !_pUIMgr->GetInventory()->IsVisible() )
+				_pUIMgr->GetInventory()->ToggleVisible();
 
-			pUIManager->RearrangeOrder( UI_REFINE, TRUE );
-
-			pUIManager->GetInventory()->Lock(TRUE, TRUE, LOCK_REFINE);
+			_pUIMgr->RearrangeOrder( UI_REFINE, TRUE );
 			
+#ifdef HELP_SYSTEM_1
 // [KH_07044] 3차 도움말 관련 추가
 			if(g_iShowHelp1Icon)
 			{
-				pUIManager->GetHelp3()->ClearHelpString();
-				pUIManager->GetHelp3()->AddHelpString(_S(3298, "제련석으로 만들고자 하는 장비를 인벤토리로부터 드래그하여 옆 창의 빈 공간에 올려 놓은 뒤 확인 버튼을 클릭하면 해당 장비가 동일한 레벨의 일반 제련석으로 변환됩니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3299, "※ 무기는 2개의 제련석으로 변환되며 방어구는 1개의 제련석으로 변환됩니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3300, "※ 착용중인 장비 또는 장비가 아닌 아이템은 제련석으로 변환 할 수 없습니다."));
-				pUIManager->GetHelp3()->OpenHelp(this);
+				_pUIMgr->GetHelp3()->ClearHelpString();
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3298, "제련석으로 만들고자 하는 장비를 인벤토리로부터 드래그하여 옆 창의 빈 공간에 올려 놓은 뒤 확인 버튼을 클릭하면 해당 장비가 동일한 레벨의 일반 제련석으로 변환됩니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3299, "※ 무기는 2개의 제련석으로 변환되며 방어구는 1개의 제련석으로 변환됩니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3300, "※ 착용중인 장비 또는 장비가 아닌 아이템은 제련석으로 변환 할 수 없습니다."));
+				_pUIMgr->GetHelp3()->OpenHelp(this);
 				
 			}
+#endif
 		}
 		else if( nResult == REFINE_TALK )
 		{
 			//TODO : NewQuestSystem
 			// 퀘스트 창 띄우기
 			CUIQuestBook::TalkWithNPC();
+			// Unlock inventory
+			_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REFINE );
 		}
 		else if( nResult == REFINE_EVENT )		// Event
 		{
 		}
 
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// [070807: Su-won] EVENT_ADULT_OPEN
-		else if( nResult == EVENT_ADULT_ALCHEMIST )
-		{
-			pUIManager->GetQuest()->MsgBoxLCommand(MSGLCMD_QUEST_REQ, EVENT_ADULT_ALCHEMIST);
-		}
-		// [070807: Su-won] EVENT_ADULT_OPEN
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
 		// [090527: selo] 확장팩 퀘스트 수정
 		else if( ciQuestClassifier < nResult )	
 		{
 			// 선택한 퀘스트에 대해 수락 또는 보상 창을 연다.
 			CUIQuestBook::SelectQuestFromMessageBox( nResult );
+			// Unlock inventory
+			_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REFINE );
 		}
-
+		else
+		{
+		}
 		break;
 	}
 }
@@ -824,39 +796,37 @@ void CUIRefine::MsgBoxLCommand( int nCommandCode, int nResult )
 // ----------------------------------------------------------------------------
 void CUIRefine::SendRefineReq()
 {
-	if( m_bWaitRefineResult == TRUE )
+	if( m_bWaitRefineResult )
 		return;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
 
 	if( ( (CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSkilling() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 946, "스킬 사용중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 946, "스킬 사용중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
-	if( pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+	if( _pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 947, "순간 이동중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 947, "순간 이동중에는 제련을 할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 
-	if (m_pIconSlotItem->IsEmpty() == true)
+	if( m_btnSlotItem.IsEmpty() )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 235, "제련할 아이템이 없습니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 235, "제련할 아이템이 없습니다." ), SYSMSG_ERROR );
 		return;
 	}
 
 	if( m_llRefineMoney > _pNetwork->MyCharacterInfo.money )
 	{
-		pUIManager->GetChattingUI()->AddSysMessage( _S( 369, "제련 비용이 부족합니다." ), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 369, "제련 비용이 부족합니다." ), SYSMSG_ERROR );
 		return;
 	}
 
-	CItems* pItems = m_pIconSlotItem->getItems();
+	SBYTE	sbRow = m_btnSlotItem.GetItemRow();
+	SBYTE	sbCol = m_btnSlotItem.GetItemCol();
 
-	if (pItems != NULL)
-		_pNetwork->RefineReq((SWORD)pItems->Item_Tab, (SWORD)pItems->InvenIndex);
+	_pNetwork->RefineReq( sbRow, sbCol );
 
 	m_bWaitRefineResult = TRUE;
 }
@@ -872,10 +842,8 @@ void CUIRefine::SendRefineReq()
 // ----------------------------------------------------------------------------
 void CUIRefine::RefineRep( SBYTE sbResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close message box
-	pUIManager->CloseMessageBox( MSGCMD_REFINE_REP );
+	_pUIMgr->CloseMessageBox( MSGCMD_REFINE_REP );
 
 	// Show result
 	CTString	strMessage;
@@ -897,10 +865,13 @@ void CUIRefine::RefineRep( SBYTE sbResult )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 231, "제련" ), UMBS_OK, UI_REFINE, MSGCMD_REFINE_REP );
 	MsgBoxInfo.AddString( strMessage );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 
 	// Reset slot item
-	m_pIconSlotItem->clearIconData();
+	m_btnSlotItem.InitBtn();
+
+	// Unlock inventory
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_REFINE );
 
 	m_strRefineMoney.Clear();
 	m_bWaitRefineResult = FALSE;

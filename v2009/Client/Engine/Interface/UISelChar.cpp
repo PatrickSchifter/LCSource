@@ -1,53 +1,43 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/GameState.h>
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISelChar.h>
-#include <Engine/Ska/Render.h>
+#include <Engine/Interface/UIInternalClasses.h>
+#include <Engine/Rendering/Render.h>
 #include <Engine/GlobalDefinition.h>
+#include <Engine/GameState.h>
+
 #include <Engine/Entities/InternalClasses.h>
+#include <Engine/Interface/UICreateChar.h>
 #include <Engine/Sound/SoundLibrary.h>
+
+// 임시 Define
+#include <Engine/Entities/Entity.h>
+#include <Engine/Entities/EntityClass.h>
+#include <Engine/Entities/EntityProperties.h>
 #include <Engine/World/WorldRayCasting.h>
+
+#include <Engine/Ska/Mesh.h>
+
+#include <Engine/JobInfo.h>
 //wooss 051017
 #include <Engine/Base/Input.h>
-#include <Engine/GameDataManager/GameDataManager.h>
-#include <Engine/Contents/Login/ServerSelect.h>
-#include <Engine/Interface/UIOption.h>
+#include <Engine/LocalDefine.h>
 
+extern INDEX g_iCountry;
 extern BOOL g_bAutoLogin;
-extern BOOL g_bAutoRestart;
 #define CHECK_NUM 7
-#define MIN_NAME_LEN	(4)
-#define MAX_NAME_LEN	(16)
+
 #define MODEL_TREASURE	("Data\\Item\\Common\\ITEM_treasure02.smc")
-#define CAMERA_TURN_RIGHT	(43819)
-#define CAMERA_TURN_LEFT	(43818)
 //#define EXSLOT // 슬롯 확장
-
-typedef enum __tag_char_move_stat
-{
-	CMS_NORMAL = 1,
-	CMS_MOVE_WAIT,
-	CMS_MOVE_ROLLBACK,
-} CMSTAT;
-
 // ----------------------------------------------------------------------------
 // Name : CUISelChar()
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUISelChar::CUISelChar() : 
 m_iDestPosID(-1),
-m_pWorld(NULL),
-m_bIsShowMessageInfo(FALSE),
-m_bIsShowCharMoveMsgInfo(FALSE),
-m_bIsLeftView(TRUE),
-m_ulCharSlotTime(0),
-m_CharSlotTimeOld(0)
+m_pWorld(NULL)
 {	
 	memset(&m_aEGslotPosID[0], NULL, sizeof(m_aEGslotPosID));
-	m_strServerMoveFailCharName = CTString("");
-	m_ptdMsgTexture = NULL;
+
 }
 
 // ----------------------------------------------------------------------------
@@ -55,10 +45,9 @@ m_CharSlotTimeOld(0)
 // Desc : Destructor
 // ----------------------------------------------------------------------------
 CUISelChar::~CUISelChar()
-{
+{	
 	Destroy();
-
-	STOCK_RELEASE(m_ptdMsgTexture);
+	
 }
 
 // ----------------------------------------------------------------------------
@@ -67,7 +56,9 @@ CUISelChar::~CUISelChar()
 // ----------------------------------------------------------------------------
 void CUISelChar::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Region of each part
 	m_rcHP.SetRect( 0, 25, 0, 33 );
@@ -125,23 +116,6 @@ void CUISelChar::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 	m_btnExit.SetUV( UBS_CLICK, 0, 23, 63, 44, fTexWidth, fTexHeight );
 	m_btnExit.CopyUV( UBS_IDLE, UBS_ON );
 	m_btnExit.CopyUV( UBS_IDLE, UBS_DISABLE );
-	// hongkong used auto login. [8/26/2010 rumist]
-	// [2012/10/10 : Sora] 빌라 자동로그인 추가로 버튼 비활성화
-#if defined G_HONGKONG //|| defined (G_KOR)
-	m_btnExit.SetEnable(FALSE);
-#endif
-
-	m_btnTurnR.Create( NULL, CTString( "" ), 0, 0, 100, 32 );
-	m_btnTurnR.SetUV( UBS_IDLE, 4, 191, 110, 254, fTexWidth, fTexHeight );
-	m_btnTurnR.SetUV( UBS_CLICK, 120, 191, 226, 254, fTexWidth, fTexHeight );
-	m_btnTurnR.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnTurnR.CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	m_btnTurnL.Create( NULL, CTString( "" ), 0, 0, 100, 32 );
-	m_btnTurnL.SetUV( UBS_IDLE, 4, 129, 110, 192, fTexWidth, fTexHeight );
-	m_btnTurnL.SetUV( UBS_CLICK, 120, 129, 226, 192, fTexWidth, fTexHeight );
-	m_btnTurnL.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnTurnL.CopyUV( UBS_IDLE, UBS_DISABLE );
 
 	// Delete Time
 	//RECT
@@ -158,38 +132,6 @@ void CUISelChar::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int 
 		m_aSlotAni[i].m_idAni = ANIM_IDLE;
 		m_aSlotAni[i].m_startTime = -1;
 	}
-	
- 	m_ptdMsgTexture = CreateTexture( CTString( "Data\\Interface\\TopUI.tex" ) );
-	m_rcMessageInfo.SetRect( 20, 40, 215, 122 );
- 	m_bxNoticeMsg.SetBoxUV(m_ptdMsgTexture,7,WRect(239,253,335,269));
-
-	m_msgNCText.SetRenderRect( 20, 45, 187, 62 );
-	m_msgNCText.AddString( _S(4794, "나이트쉐도우 캐릭터를 생성할 수 있는 조건을 만족하였습니다. 나이트쉐도우 캐릭터를 생성하여 육성하십시오." ) );
-	
-	// alert notice that enabled character move to other servers. [7/19/2012 rumist]
-	m_rcCharMoveMsgInfo.SetRect(20, 40, 215, 122);
-	m_bxCharMoveNoticeMsg.SetBoxUV(m_ptdMsgTexture, 7, WRect(239, 253, 335, 269));
-	m_msgCMText.SetRenderRect(20, 45, 187, 62);
-	m_msgCMText.AddString( _s("your some character waiting time that move to another server." ) );
-
- 	m_bxCharSlotHelp.SetBoxUV(m_ptdMsgTexture,7,WRect(239,253,335,269));
-
-	m_msgCharSlotHelp.SetRenderRect( 20, 135, 187, 72 );
-	m_msgCharSlotHelp.AddString( _S( 5702, "총 8개까지의 캐릭터 생성이 가능 합니다. 기간이 만료 된 이후에는 이미 생성된 캐릭터의 플레이는 가능 하지만 캐릭터의 생성은 4개까지로 제한 됩니다." ) );
-
-	// [2012/07/27 : Sora] 캐릭터 슬롯 확장 텍스트 길이에 맞추에서 박스 크기를 늘리도록 수정
-	m_rcCharSlotHelp.SetRect( 20, 130, 215, 130 + m_msgCharSlotHelp.GetRenderHeight() + 7 );
-
-	m_rcCharSlotRemain.SetRect( 0, 0, 300, 36 );
- 	m_bxCharSlotRemain.SetBoxUV(m_ptdMsgTexture,7,WRect(239,253,335,269));
-	m_strCharServerMove = _S(5715, "서버 이전 대기중");
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	m_btnBack.Create( NULL, _S( 2681, "이전" ),  440, 0, 63, 21 );
-	m_btnBack.SetUV( UBS_IDLE, 0, 0, 63, 21, fTexWidth, fTexHeight );
-	m_btnBack.SetUV( UBS_CLICK, 0, 23, 63, 44, fTexWidth, fTexHeight );
-	m_btnBack.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnBack.CopyUV( UBS_IDLE, UBS_DISABLE );
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -210,18 +152,8 @@ void CUISelChar::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMa
 
 //	m_rcDelTime.SetRect(pixMaxI - 182,68,pixMaxI,115);		
 
-	m_btnTurnL.SetPos(pixMaxI / 2 - 100, pixMaxJ - 80);
-	m_btnTurnR.SetPos(pixMaxI / 2, pixMaxJ - 80);
-
 	m_rcHP.Left = m_rcMP.Left = m_rcEXP.Left = pixMaxI - 171;
 	UpdateStatus();
-
-	m_rcCharSlotRemain.SetRect( pixMaxI / 2 - (m_rcCharSlotRemain.GetWidth()/2), 30,
-								pixMaxI / 2 + (m_rcCharSlotRemain.GetWidth()/2), 30 + m_rcCharSlotRemain.GetHeight() );
-
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-	m_btnBack.SetPos(pixMinI + 20, pixMaxJ - 38);
-#endif								
 }
 
 // ----------------------------------------------------------------------------
@@ -238,7 +170,6 @@ void CUISelChar::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixM
 //-----------------------------------------------------------------------------
 void CUISelChar::Reset()
 {
-	m_bIsLeftView = TRUE;
 }
 
 // ----------------------------------------------------------------------------
@@ -276,46 +207,44 @@ void CUISelChar::UpdateStatus()
 // Name : Render()
 // Desc :
 // ----------------------------------------------------------------------------
-#define TEXCOLOR_W  (0xFFFFFFFF)
-#define TEXCOLOR_B	(0x484848FF)
 void CUISelChar::Render()
 {
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
 	if(m_pWorld)
-	{
+	{		
+		CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+
 		// Set select character texture
-		pDrawPort->InitTextureData( m_ptdBaseTexture );
-		
+		pdp->InitTextureData( m_ptdBaseTexture );
+
 		// Character information
 		// Background
-		pDrawPort->AddTexture( m_rcCharInfo.Left, m_rcCharInfo.Top, m_rcCharInfo.Right, m_rcCharInfo.Bottom,
-			m_rtCharInfo.U0, m_rtCharInfo.V0, m_rtCharInfo.U1, m_rtCharInfo.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcCharInfo.Left, m_rcCharInfo.Top, m_rcCharInfo.Right, m_rcCharInfo.Bottom,
+											m_rtCharInfo.U0, m_rtCharInfo.V0, m_rtCharInfo.U1, m_rtCharInfo.V1,
+											0xFFFFFFFF );
 #ifdef EXSLOT
 		//wooss 050819
 		// Extend Slot
 		// -------------확장 슬롯 (유료아이템)------------------------------->>
 		// ------------------------------------------------------------------>>
-		pDrawPort->AddTexture( m_rcExSlot.Left, m_rcExSlot.Top, m_rcExSlot.Right, m_rcExSlot.Bottom,
-			m_rtExSlot.U0, m_rtExSlot.V0, m_rtExSlot.U1, m_rtExSlot.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcExSlot.Left, m_rcExSlot.Top, m_rcExSlot.Right, m_rcExSlot.Bottom,
+											m_rtExSlot.U0, m_rtExSlot.V0, m_rtExSlot.U1, m_rtExSlot.V1,
+											0xFFFFFFFF );
 		// Slot mid Vertical line
-		pDrawPort->AddTexture( m_rcExSlotLineMidV.Left, m_rcExSlotLineMidV.Top, m_rcExSlotLineMidV.Right, m_rcExSlotLineMidV.Bottom,
-			m_rtExSlotLineMidV.U0, m_rtExSlotLineMidV.V0, m_rtExSlotLineMidV.U1, m_rtExSlotLineMidV.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcExSlotLineMidV.Left, m_rcExSlotLineMidV.Top, m_rcExSlotLineMidV.Right, m_rcExSlotLineMidV.Bottom,
+											m_rtExSlotLineMidV.U0, m_rtExSlotLineMidV.V0, m_rtExSlotLineMidV.U1, m_rtExSlotLineMidV.V1,
+											0xFFFFFFFF );
 		// Slot top line
-		pDrawPort->AddTexture( m_rcExSlotLineTop.Left, m_rcExSlotLineTop.Top, m_rcExSlotLineTop.Right, m_rcExSlotLineTop.Bottom,
-			m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcExSlotLineTop.Left, m_rcExSlotLineTop.Top, m_rcExSlotLineTop.Right, m_rcExSlotLineTop.Bottom,
+											m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
+											0xFFFFFFFF );
 		// slot middle line
-		pDrawPort->AddTexture( m_rcExSlotLineMidH.Left, m_rcExSlotLineMidH.Top, m_rcExSlotLineMidH.Right, m_rcExSlotLineMidH.Bottom,
-			m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcExSlotLineMidH.Left, m_rcExSlotLineMidH.Top, m_rcExSlotLineMidH.Right, m_rcExSlotLineMidH.Bottom,
+											m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
+											0xFFFFFFFF );
 		// slot bottom line
-		pDrawPort->AddTexture( m_rcExSlotLineBtm.Left, m_rcExSlotLineBtm.Top, m_rcExSlotLineBtm.Right, m_rcExSlotLineBtm.Bottom,
-			m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
-			0xFFFFFFFF );
+		_pUIMgr->GetDrawPort()->AddTexture( m_rcExSlotLineBtm.Left, m_rcExSlotLineBtm.Top, m_rcExSlotLineBtm.Right, m_rcExSlotLineBtm.Bottom,
+											m_rtExSlotLine.U0, m_rtExSlotLine.V0, m_rtExSlotLine.U1, m_rtExSlotLine.V1,
+											0xFFFFFFFF );
 		// ------------------------------------------------------------------<<
 #endif
 		
@@ -323,76 +252,65 @@ void CUISelChar::Render()
 		// Text in Character information
 		int	nSX = m_rcCharInfo.Left;
 		int	nSY = m_rcCharInfo.Top;
-		
+
 #ifdef EXSLOT		
 		// -------------확장 슬롯 (유료아이템)------------------------------->>
 		// ------------------------------------------------------------------>>
 		CTString slotStr1,slotStr2;
 		slotStr1.PrintF(_S( 2114, "확장슬롯 1 : %5d" ),m_exSlot1);   
 		slotStr2.PrintF(_S( 2115, "확장슬롯 2 : %5d" ),m_exSlot2);
-		
-		pDrawPort->PutTextExCX( CTString("확장슬롯 남은 기간"), nSX + SELCHAR_EX_SLOT_X1,nSY + SELCHAR_EX_SLOT_Y1 );
-		pDrawPort->PutTextExCX( slotStr1, nSX + SELCHAR_EX_SLOT_X2, nSY + SELCHAR_EX_SLOT_Y2 );
-		pDrawPort->PutTextExCX( slotStr2, nSX + SELCHAR_EX_SLOT_X2, nSY + SELCHAR_EX_SLOT_Y3 );
+
+		_pUIMgr->GetDrawPort()->PutTextExCX( CTString("확장슬롯 남은 기간"), nSX + SELCHAR_EX_SLOT_X1,nSY + SELCHAR_EX_SLOT_Y1 );
+		_pUIMgr->GetDrawPort()->PutTextExCX( slotStr1, nSX + SELCHAR_EX_SLOT_X2, nSY + SELCHAR_EX_SLOT_Y2 );
+		_pUIMgr->GetDrawPort()->PutTextExCX( slotStr2, nSX + SELCHAR_EX_SLOT_X2, nSY + SELCHAR_EX_SLOT_Y3 );
 		// ------------------------------------------------------------------<<
 #endif
 		if( _pGameState->SelectedSlot() > 0 )
 		{
 			// HP
-			pDrawPort->AddTexture( m_rcHP.Left, m_rcHP.Top, m_rcHP.Right, m_rcHP.Bottom,
-				m_rtHP.U0, m_rtHP.V0, m_rtHP.U1, m_rtHP.V1,
-				0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcHP.Left, m_rcHP.Top, m_rcHP.Right, m_rcHP.Bottom,
+												m_rtHP.U0, m_rtHP.V0, m_rtHP.U1, m_rtHP.V1,
+												0xFFFFFFFF );
 			// MP
-			pDrawPort->AddTexture( m_rcMP.Left, m_rcMP.Top, m_rcMP.Right, m_rcMP.Bottom,
-				m_rtMP.U0, m_rtMP.V0, m_rtMP.U1, m_rtMP.V1,
-				0xFFFFFFFF );
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcMP.Left, m_rcMP.Top, m_rcMP.Right, m_rcMP.Bottom,
+												m_rtMP.U0, m_rtMP.V0, m_rtMP.U1, m_rtMP.V1,
+												0xFFFFFFFF );
 			// EXP
-			pDrawPort->AddTexture( m_rcEXP.Left, m_rcEXP.Top, m_rcEXP.Right, m_rcEXP.Bottom,
-				m_rtEXP.U0, m_rtEXP.V0, m_rtEXP.U1, m_rtEXP.V1,
-				0xFFFFFFFF );
-			
+			_pUIMgr->GetDrawPort()->AddTexture( m_rcEXP.Left, m_rcEXP.Top, m_rcEXP.Right, m_rcEXP.Bottom,
+												m_rtEXP.U0, m_rtEXP.V0, m_rtEXP.U1, m_rtEXP.V1,
+												0xFFFFFFFF );
+
 			// Text in Character information
 			
-			pDrawPort->PutTextExCX( m_strLevel, nSX + SELCHAR_LEVEL_CX,
-				nSY + SELCHAR_NAME_SY, 0xFFD3A7FF );
-			pDrawPort->PutTextEx( m_strName, nSX + SELCHAR_NAME_SX, nSY + SELCHAR_NAME_SY );
-#if defined G_RUSSIA
-			pDrawPort->PutTextEx( _S( 4411, "HP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_HP_SY );
-			pDrawPort->PutTextEx( _S( 4412, "MP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_MP_SY );
-			pDrawPort->PutTextEx( _S( 4413, "EXP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_EXP_SY );
-#else
-			pDrawPort->PutTextEx( CTString( "HP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_HP_SY );
-			pDrawPort->PutTextEx( CTString( "MP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_MP_SY );
-			pDrawPort->PutTextEx( CTString( "EXP" ), nSX + SELCHAR_HP_SX,
-				nSY + SELCHAR_EXP_SY );
-#endif
-			pDrawPort->PutTextExCX( m_strHP, nSX + SELCHAR_HP_CX,
-				nSY + SELCHAR_HP_SY );
-			pDrawPort->PutTextExCX( m_strMP, nSX + SELCHAR_HP_CX,
-				nSY + SELCHAR_MP_SY );
-			pDrawPort->PutTextExCX( m_strEXP, nSX + SELCHAR_HP_CX,
-				nSY + SELCHAR_EXP_SY );
-
-
-			
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strLevel, nSX + SELCHAR_LEVEL_CX,
+													nSY + SELCHAR_NAME_SY, 0xFFD3A7FF );
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strName, nSX + SELCHAR_NAME_SX, nSY + SELCHAR_NAME_SY );
+			_pUIMgr->GetDrawPort()->PutTextEx( CTString( "HP" ), nSX + SELCHAR_HP_SX,
+													nSY + SELCHAR_HP_SY );
+			_pUIMgr->GetDrawPort()->PutTextEx( CTString( "MP" ), nSX + SELCHAR_HP_SX,
+													nSY + SELCHAR_MP_SY );
+			_pUIMgr->GetDrawPort()->PutTextEx( CTString( "EXP" ), nSX + SELCHAR_HP_SX,
+													nSY + SELCHAR_EXP_SY );
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strHP, nSX + SELCHAR_HP_CX,
+													nSY + SELCHAR_HP_SY );
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strMP, nSX + SELCHAR_HP_CX,
+													nSY + SELCHAR_MP_SY );
+			_pUIMgr->GetDrawPort()->PutTextExCX( m_strEXP, nSX + SELCHAR_HP_CX,
+													nSY + SELCHAR_EXP_SY );
+#ifdef	NEW_DELETE_CHAR										
 			SLONG tv_time = _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time;
 			if( tv_time  > 0 ) {
 				CTString str_time,str_time2;
-				//	time_t tv_time2;
+			//	time_t tv_time2;
 				int tv_hour,tv_min;
-				//	time(&tv_time2); 
-				//	tv_time -= tv_time2;
+			//	time(&tv_time2); 
+			//	tv_time -= tv_time2;
 				tv_hour = tv_time / (60*60);
 				tv_min = (tv_time %(60*60)) /60;
-		
+					
 				str_time.PrintF(_S( 2903, "삭제대기 남은시간"));
-				pDrawPort->PutTextEx(str_time, 37,	3 );
-				
+				_pUIMgr->GetDrawPort()->PutTextEx(str_time, 37,	3 );
+			
 				str_time.Clear();
 				if(tv_hour >0 )	str_time.PrintF(_S( 2512, "%d시간"),tv_hour);
 				if(tv_min > 0 ) {
@@ -400,25 +318,19 @@ void CUISelChar::Render()
 					str_time += str_time2;
 				}
 				int tv_posX = (m_rcDelTime.Right - m_rcDelTime.Left)/2;
-				pDrawPort->PutTextExCX(str_time, tv_posX , 21 ,0xFFAA44FF);
-									
-				pDrawPort->AddTexture( m_rcDelTime.Left, m_rcDelTime.Top, m_rcDelTime.Right, m_rcDelTime.Bottom,
-					m_rtDelTime.U0, m_rtDelTime.V0, m_rtDelTime.U1, m_rtDelTime.V1,
-					0xFFFFFFFF );
+				_pUIMgr->GetDrawPort()->PutTextExCX(str_time, tv_posX , 21 ,0xFFAA44FF);
+
+				_pUIMgr->GetDrawPort()->AddTexture( m_rcDelTime.Left, m_rcDelTime.Top, m_rcDelTime.Right, m_rcDelTime.Bottom,
+												m_rtDelTime.U0, m_rtDelTime.V0, m_rtDelTime.U1, m_rtDelTime.V1,
+												0xFFFFFFFF );
 				
-			}
-			// 캐릭터 이전중 표시 [7/25/2012 Ranma]
-#ifdef ENABLE_CHARACTER_MOVE_TO_OTHER_SERVER_ITEM			
-			if ( _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].sbMoveState == CMS_MOVE_WAIT )	
-			{
-				int tv_posX = (m_rcDelTime.Right - m_rcDelTime.Left)/2;
-				pDrawPort->PutTextExCX(m_strCharServerMove, tv_posX , 21 ,0xFFAA44FF);
-				pDrawPort->AddTexture( m_rcDelTime.Left, m_rcDelTime.Top, m_rcDelTime.Right, m_rcDelTime.Bottom,
-					m_rtDelTime.U0, m_rtDelTime.V0, m_rtDelTime.U1, m_rtDelTime.V1,	0xFFFFFFFF );
 			}
 #endif
 		}
-			
+
+
+
+		
 		// OK Button(Connect)
 		m_btnOK.Render();
 		
@@ -434,154 +346,79 @@ void CUISelChar::Render()
 		// Exit Button
 		m_btnExit.Render();
 
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-		m_btnBack.Render();
-#endif
-
-
-		if (_pGameState->GetExistCharNum() <= 4)
-		{
-			m_btnTurnR.SetEnable(FALSE);
-			m_btnTurnL.SetEnable(FALSE);
-		}else
-		{
-			m_btnTurnR.SetEnable(TRUE);
-			m_btnTurnL.SetEnable(TRUE);
-
-			 if (m_bIsLeftView)
-			{
-				m_btnTurnR.Render(TEXCOLOR_W);
-				m_btnTurnL.Render(TEXCOLOR_B);
-			}else
-			{
-				m_btnTurnR.Render(TEXCOLOR_B);
-				m_btnTurnL.Render(TEXCOLOR_W);
-			}
-		}		
-
-		
 		// Render all elements
-		pDrawPort->FlushRenderingQueue();
-		
+		pdp->FlushRenderingQueue();
+
 		// Flush all render text queue
-		pDrawPort->EndTextEx();
+		pdp->EndTextEx();
 	}
-	
-	
-	// Check ANI
-	// 선택된 캐릭터에 idle Animation을 제거함.
-	for(int j = 0; j < MAX_SLOT; j++)
-	{
-		CEntity *pEntity = _pGameState->m_pEntModels[j];
-		if(pEntity)
+
+		
+#ifdef NEW_DELETE_CHAR
+		// Check ANI
+		// 선택된 캐릭터에 idle Animation을 제거함.
+		for(int j = 0; j < MAX_SLOT; j++)
 		{
-			int iJob		= _pGameState->m_SlotInfo[j].job;
-			INDEX idAni		= ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, m_aSlotAni[j].m_idAni ) );
-			CModelInstance* pMI =  pEntity->GetModelInstance();
-			
-			if(pMI)
+			CEntity *pEntity = _pGameState->m_pEntModels[j];
+			if(pEntity)
 			{
-				if(	pMI->IsAnimationPlaying(idAni)	&& m_aSlotAni[j].m_idAni != ANIM_IDLE && m_aSlotAni[j].m_idAni != ANIM_ATTACK_IDLE
-					&& m_aSlotAni[j].m_idAni != ANIM_EXT_ATTACK_IDLE)
-				{			
-					if(_pTimer->CurrentTick() - m_aSlotAni[j].m_startTime	
-						>= (pMI->GetAnimLength(idAni) + 0.3f ) )
-					{
-						pMI->NewClearState(CLEAR_STATE_LENGTH);
-						INDEX idWalk = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_IDLE ) );
-						m_aSlotAni[j].m_idAni = ANIM_IDLE;
-						// put on - weapon ----------------------------------------------------<<
-						int nItemSubType;
-						int nItemIndex = -1;
-						
-						// 무기 착용 확인 
-						SLONG iWear		=	_pGameState->m_SlotInfo[j].wear[WEAR_WEAPON]; // 무기 
-						SLONG iWear3	=	_pGameState->m_SlotInfo[j].wear[WEAR_SHIELD];	// 방패 
-						
-						if (iWear > 0)
+				int iJob		= _pGameState->m_SlotInfo[j].job;
+				INDEX idAni		= ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, m_aSlotAni[j].m_idAni ) );
+				CModelInstance* pMI =  pEntity->GetModelInstance();
+
+				if(pMI)
+				{
+					if(	pMI->IsAnimationPlaying(idAni)	&& m_aSlotAni[j].m_idAni != ANIM_IDLE)
+					{			
+						if(_pTimer->CurrentTick() - m_aSlotAni[j].m_startTime	
+							>= (pMI->GetAnimLength(idAni) + 0.3f ) )
 						{
-							if (_pGameState->m_SlotInfo[j].bExtension)
-							{
-								idWalk = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_EXT_ATTACK_IDLE ) );
-								m_aSlotAni[j].m_idAni = ANIM_EXT_ATTACK_IDLE;
-							}
-							else
-							{
-								idWalk = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_ATTACK_IDLE ) );
-								m_aSlotAni[j].m_idAni = ANIM_ATTACK_IDLE;
-							}
-						}
-						
-						pMI->AddAnimation(idWalk,AN_LOOPING|AN_NORESTART,1,0);
-						
-						if(iWear > 0)
-						{				
-							CItemData* pID = _pNetwork->GetItemData(iWear);
-							nItemIndex = pID->GetItemIndex();
-							nItemSubType = pID->GetSubType();
-							_pGameState->WearingArmor(pMI, *pID);
-							_pGameState->m_SlotInfo[j].itemEffect.Change(
+							pMI->NewClearState(CLEAR_STATE_LENGTH);
+							INDEX idWalk		= ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_IDLE ) );
+							m_aSlotAni[j].m_idAni		= ANIM_IDLE;	
+							pMI->AddAnimation(idWalk,AN_LOOPING|AN_NORESTART,1,0);
+
+							// put on - weapon ----------------------------------------------------<<
+							int nItemSubType;
+							int nItemIndex = -1;
+#ifdef HEAD_CHANGE
+							// 무기 착용 확인 
+							SLONG iWear		=	_pGameState->m_SlotInfo[j].wear[2]; // 무기 
+							SLONG iWear3	=	_pGameState->m_SlotInfo[j].wear[4];	// 방패 
+#else
+							// 무기 착용 확인 
+							SLONG iWear		=	_pGameState->m_SlotInfo[j].wear[1]; // 무기 
+							SLONG iWear3	=	_pGameState->m_SlotInfo[j].wear[3];	// 방패 
+#endif
+							if(iWear > 0)
+							{				
+								CItemData &ID = _pNetwork->GetItemData(iWear);
+								nItemIndex = ID.GetItemIndex();
+								nItemSubType = ID.GetSubType();
+								_pGameState->WearingArmor(pMI, ID);
+								_pGameState->m_SlotInfo[j].itemEffect.Change(
 								_pGameState->m_SlotInfo[j].job
-								, pID
-								, pID->GetWearingPosition()
-								, _pGameState->m_SlotInfo[j].itemPlus[WEAR_WEAPON]
+								, &ID
+								, wearTypeTable[1]
+								, _pGameState->m_SlotInfo[j].itemPlus[1]
 								, &pMI->m_tmSkaTagManager
 								, 1, nItemSubType );
+								
+							}
+							if(iWear3 > 0)	
+							{
+								CItemData &ID = _pNetwork->GetItemData(iWear3);
+								_pGameState->WearingArmor(pMI, ID);
+							}
+							// ---------------------------------------------------------------------------->>
 						}
-						if(iWear3 > 0)	
-						{
-							CItemData* pID = _pNetwork->GetItemData(iWear3);
-							_pGameState->WearingArmor(pMI, *pID);
-						}
-						
-						// ---------------------------------------------------------------------------->>
 					}
+
 				}
-				
 			}
 		}
-	}
-	// show night shadow message [11/6/2009 rumist]
-	if( m_bIsShowMessageInfo )
-	{
-		pDrawPort->InitTextureData( m_ptdMsgTexture );
-		m_bxNoticeMsg.SetBoxPos(m_rcMessageInfo);
-		m_bxNoticeMsg.Render();
-		
-		// Render all elements
-		pDrawPort->FlushRenderingQueue();
-		
-		m_msgNCText.SetRenderPos( m_rcMessageInfo.Left, m_rcMessageInfo.Top );
-		m_msgNCText.Render();
-		const int GAP = 10;
-	
-	}
-	
-	// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-	UpdateCharSlotTime();
 
-	if( m_ulCharSlotTime > 0 )
-	{
-		// 캐릭터 슬롯 확장 도움말
-		pDrawPort->InitTextureData( m_ptdMsgTexture );
-		m_bxCharSlotHelp.SetBoxPos(m_rcCharSlotHelp);
-		m_bxCharSlotHelp.Render();
-		pDrawPort->FlushRenderingQueue();
-		
-		m_msgCharSlotHelp.SetRenderPos( m_rcCharSlotHelp.Left, m_rcCharSlotHelp.Top );
-		m_msgCharSlotHelp.Render();
-
-		// 캐릭터 슬롯 남은 시간 출력
-		pDrawPort->InitTextureData( m_ptdMsgTexture );
-		m_bxCharSlotRemain.SetBoxPos(m_rcCharSlotRemain);
-		m_bxCharSlotRemain.Render();
-		pDrawPort->FlushRenderingQueue();
-
-		pDrawPort->PutTextExCX( _S( 5707, "추가 슬롯 사용 기간 : " ) + GetRemainTime(),
-								m_rcCharSlotRemain.Left + (m_rcCharSlotRemain.GetWidth()/2),
-								m_rcCharSlotRemain.Top + 12);
-		pDrawPort->EndTextEx();
-	}
+#endif 
 }
 
 // ----------------------------------------------------------------------------
@@ -612,14 +449,6 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 				return WMSG_SUCCESS;
 			else if( m_btnExit.MouseMessage( pMsg ) != WMSG_FAIL )
 				return WMSG_SUCCESS;
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-			else if( m_btnBack.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-#endif
-			if (!m_bIsLeftView)
-				m_btnTurnL.MouseMessage( pMsg );
-			else
-				m_btnTurnR.MouseMessage( pMsg );
 		}
 		break;
 
@@ -628,38 +457,47 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 			if( IsInside( nX, nY ) )
 			{
 				//-- Down 동작을 표현하기위해
-				m_btnOK.MouseMessage( pMsg );
-				m_btnCreateChar.MouseMessage( pMsg );
-				m_btnDeleteChar.MouseMessage( pMsg );
-				m_btnOptions.MouseMessage( pMsg );
-				m_btnExit.MouseMessage( pMsg );
+				if( m_btnOK.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				else if( m_btnCreateChar.MouseMessage( pMsg ) != WMSG_FAIL ) 
+				{
+					// Nothing
+				}
+				else if( m_btnDeleteChar.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				else if( m_btnOptions.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
+				else if( m_btnExit.MouseMessage( pMsg ) != WMSG_FAIL )
+				{
+					// Nothing
+				}
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_SEL_CHAR, TRUE );		
+				_pUIMgr->RearrangeOrder( UI_SEL_CHAR, TRUE );		
 				return WMSG_SUCCESS;
 			}
-			if (!m_bIsLeftView)
-				m_btnTurnL.MouseMessage( pMsg );
 			else
-				m_btnTurnR.MouseMessage( pMsg );
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-			m_btnBack.MouseMessage( pMsg );
-#endif
-			SelectCharacter(nX, nY);
+				SelectCharacter(nX, nY);
 		}
 		break;
 		
 	case WM_LBUTTONDBLCLK:
 		{
+			SelectCharacter(nX, nY);
+		
 			if( _pGameState->GetGameMode() != CGameState::GM_NETWORK )
 			{
-				SelectCharacter(nX, nY);
-
 				if(_pGameState->SelectedSlot() > 0)
 				{
 
+#ifdef NEW_DELETE_CHAR
 					if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0) break;
-					if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].sbMoveState == CMS_MOVE_WAIT ) break;
-#ifdef EXSLOT
+#endif
 					// wooss 050822 
 					// 확장된 슬롯을 선택 했다면 남은 기간을 체크한다
 					int tv_t1,tv_t2;
@@ -668,33 +506,28 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 					{
 						if(tv_t1<=0)
 						{
-							CUIManager* pUIManager = CUIManager::getSingleton();
-
-							pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 							CUIMsgBox_Info	MsgBoxInfo;
 							MsgBoxInfo.SetMsgBoxInfo( CTString("캐릭터 선택 오류" ), UMBS_OK,UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 							MsgBoxInfo.AddString( CTString( "확장슬롯 1 의 이용 기간이 지났습니다"));
-							pUIManager->CreateMessageBox( MsgBoxInfo );
+							_pUIMgr->CreateMessageBox( MsgBoxInfo );
 							return WMSG_FAIL;
 						}
 
 					}
 					else if(_pGameState->SelectedSlot()==6)
 					{
-						CUIManager* pUIManager = CUIManager::getSingleton();
-
 						if(tv_t2<=0)
 						{
-							pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 							CUIMsgBox_Info	MsgBoxInfo;
 							MsgBoxInfo.SetMsgBoxInfo( CTString("캐릭터 선택 오류" ), UMBS_OK,UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 							MsgBoxInfo.AddString( CTString( "확장슬롯 2 의 이용 기간이 지났습니다"));
-							pUIManager->CreateMessageBox( MsgBoxInfo );
+							_pUIMgr->CreateMessageBox( MsgBoxInfo );
 							return WMSG_FAIL;
 
 						}
 					}
-#endif
 					StartGame();					
 				}
 			}
@@ -711,7 +544,6 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 					{
 						if(_pGameState->SelectedSlot() > 0)
 						{
-#ifdef EXSLOT
 							// wooss 050822 
 							// 확장된 슬롯을 선택 했다면 남은 기간을 체크한다
 							int tv_t1,tv_t2;
@@ -720,13 +552,11 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 							{
 								if(tv_t1<=0)
 								{
-									CUIManager* pUIManager = CUIManager::getSingleton();
-
-									pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+									_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 									CUIMsgBox_Info	MsgBoxInfo;
 									MsgBoxInfo.SetMsgBoxInfo( CTString("캐릭터 선택 오류" ), UMBS_OK,UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 									MsgBoxInfo.AddString( CTString( "확장슬롯 1 의 이용 기간이 지났습니다"));
-									pUIManager->CreateMessageBox( MsgBoxInfo );
+									_pUIMgr->CreateMessageBox( MsgBoxInfo );
 									return WMSG_FAIL;
 								}
 
@@ -735,19 +565,16 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 							{
 								if(tv_t2<=0)
 								{
-									CUIManager* pUIManager = CUIManager::getSingleton();
-
-									pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+									_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 									CUIMsgBox_Info	MsgBoxInfo;
 									MsgBoxInfo.SetMsgBoxInfo( CTString("캐릭터 선택 오류" ), UMBS_OK,UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 									MsgBoxInfo.AddString( CTString( "확장슬롯 2 의 이용 기간이 지났습니다"));
-									pUIManager->CreateMessageBox( MsgBoxInfo );
+									_pUIMgr->CreateMessageBox( MsgBoxInfo );
 									return WMSG_FAIL;
 
 								}
 
 							}
-#endif
 							// 게임을 시작함.
 							//_pSound->Mute();
 							StartGame();
@@ -755,15 +582,13 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 						}
 						else
 						{
-							CUIManager* pUIManager = CUIManager::getSingleton();
-
-							pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 							
 							CUIMsgBox_Info	MsgBoxInfo;
 							MsgBoxInfo.SetMsgBoxInfo( _S( 241, "캐릭터 선택 오류" ), UMBS_OK,
 														UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 							MsgBoxInfo.AddString( _S( 242, "캐릭터를 선택하지 않으셨습니다." ) );
-							pUIManager->CreateMessageBox( MsgBoxInfo );
+							_pUIMgr->CreateMessageBox( MsgBoxInfo );
 						}
 					}
 				}
@@ -771,26 +596,24 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND)
 					{
-						int slotMax = m_ulCharSlotTime > 0 ? MAX_SLOT : 4;
-						if(_pGameState->GetExistCharNum() >= slotMax)
+						if(_pGameState->GetExistCharNum() >= MAX_SLOT)
 						{
-//#ifndef G_RUSSIA//릴리즈 버그 러시아의 경우만 이 경우에 메모리 침범으로 클라가 죽는다.
 							_pGameState->DisplayErrorMessage( MSG_FAIL_DB_FULL_CHAR, UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR);
-//#endif
 						}
 						else
 						{
-							// connie LoginWorld 2 
-							_pGameState->SetCameraByJob(0);
+							_pGameState->SetCameraByJob();
 
 							// 슬롯에 몇개의 공간이 있는지 확인해서,
 							// 꽉 차 있으면 더이상 생성할수 없음을 나타내줌.
-							CUIManager::getSingleton()->SetUIGameState(UGS_CREATECHAR);
-
+							_pUIMgr->SetUIGameState(UGS_CREATECHAR);
+					
+#ifdef NEW_DELETE_CHAR
 							// init slot effect 
-							//for(int i=0;i<MAX_SLOT;i++)
-							//	DestroyEffectGroupIfValid(m_aEGslotPosID[i]);
+							for(int i=0;i<MAX_SLOT;i++)
+								DestroyEffectGroupIfValid(m_aEGslotPosID[i]);
 
+#endif
 						}
 					}
 				}
@@ -798,137 +621,121 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 				{
 					if( wmsgResult == WMSG_COMMAND)
 					{
-						CUIManager* pUIManager = CUIManager::getSingleton();
-
 						if(_pGameState->SelectedSlot() > 0)
 						{
 							BOOL tv_chk = FALSE;
+							int tv_line;
 
 							// FIXME : 캐릭터 삭제 메세지 정의할것.
-							pUIManager->CloseMessageBox( MSGCMD_DELETE_CHARACTER );
+							_pUIMgr->CloseMessageBox( MSGCMD_DELETE_CHARACTER );
 							
 							CUIMsgBox_Info	MsgBoxInfo;
-#if defined G_KOR || defined G_THAI
-							int tv_line;
-							// 주민번호 -> 주민번호 뒤 7자리 [10/29/2009 rumist]
-							MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_OK | UMBS_INPUTPASSWORD,
-													UI_SEL_CHAR, MSGCMD_DELETE_CHARACTER_SECURITY, 260 );
-								
-							if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0) tv_chk = TRUE;
-							if( !tv_chk )
-							{
-								// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-								if( _pGameState->SelectedSlot()-1 >= 4 &&  m_ulCharSlotTime == 0 )
-								{
-									pUIManager->CloseMessageBox( MSGCMD_NULL );
+							if(g_iCountry == TAIWAN2 || g_iCountry == THAILAND ){
+								if( atoi(m_strLevel) >= 15 )
+								{					
+									_pUIMgr->CloseMessageBox( MSGCMD_NULL );
 									
 									CUIMsgBox_Info	MsgBoxInfo;
-									MsgBoxInfo.SetMsgBoxInfo( _S( 42, "오류 발생" ), UMBS_OK, UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
-									MsgBoxInfo.AddString( _S( 5703, "해당 기능은 캐릭터 확장 슬롯 아이템 사용 시 가능 합니다." ) );
-									pUIManager->CreateMessageBox( MsgBoxInfo );
-									return WMSG_SUCCESS;
+									MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_OK,
+																UI_NONE, MSGCMD_NULL);
+									MsgBoxInfo.AddString( _S( 1856, "레벨 15이상의 캐릭터는 삭제할 수 없습니다"  ) );
+									_pUIMgr->CreateMessageBox( MsgBoxInfo );
+									break;	
 								}
-
-								MsgBoxInfo.AddString( _S( 2904, "아이디를 입력하세요.\n(삭제요청 후 24시간이 지나면 자동삭제)" ) );
-								MsgBoxInfo.AddString( CTString( " " ) );
-								tv_line = 3;
 							}
-							else 
-							{
-								MsgBoxInfo.AddString( _S( 2905, "캐릭 삭제를 취소하시겠습니까?" ) );
-								tv_line = 2;
+							if(g_iCountry == KOREA && !g_bAutoLogin) {
+								MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_OK | UMBS_INPUTPASSWORD,
+														UI_SEL_CHAR, MSGCMD_DELETE_CHARACTER_SECURITY );
 								
-							}
-
-							MsgBoxInfo.AddString( CTString( " " ) );
-
-							// 주민번호 -> 주민번호 뒤 7자리 [10/29/2009 rumist]
-							//MsgBoxInfo.AddStringEx( _S( 2906, "아이디 입력"),tv_line,0,0xFF9156FF);
-							MsgBoxInfo.SetInputBox(tv_line,10,MAX_NAME_LEN+1);
-							pUIManager->CreateMessageBox( MsgBoxInfo );
-							pUIManager->Lock(TRUE);
-#else // G_KOR
-							
-							MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_YESNO,
-								UI_SEL_CHAR, MSGCMD_DELETE_CHARACTER );
-							
-							tv_chk = FALSE;
-							if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0) tv_chk = TRUE;
-							if( !tv_chk )
-							{
-								// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-								if( _pGameState->SelectedSlot()-1 >= 4 &&  m_ulCharSlotTime == 0 )
-								{
-									pUIManager->CloseMessageBox( MSGCMD_NULL );
+								
+#ifdef NEW_DELETE_CHAR
+								if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0) tv_chk = TRUE;
+								if( !tv_chk ){
+									MsgBoxInfo.AddString( _S( 2904, "캐릭터 삭제는 삭제요청 후 24시간이 지나야 삭제가 됩니다. 단, 시간안에 취소 가능" ) );
+									MsgBoxInfo.AddString( CTString( " " ) );
+									tv_line = 4;
+								}
+								else {
+									MsgBoxInfo.AddString( _S( 2905, "캐릭 삭제를 취소하시겠습니까?" ) );
+									tv_line = 2;
 									
-									CUIMsgBox_Info	MsgBoxInfo;
-									MsgBoxInfo.SetMsgBoxInfo( _S( 42, "오류 발생" ), UMBS_OK, UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
-									MsgBoxInfo.AddString( _S( 5703, "해당 기능은 캐릭터 확장 슬롯 아이템 사용 시 가능 합니다." ) );
-									pUIManager->CreateMessageBox( MsgBoxInfo );
-									return WMSG_SUCCESS;
 								}
+#else
+								{
+									MsgBoxInfo.AddString( _S( 1724, "계정에 등록된 주민등록 번호 뒷자리 7자리를 입력하여 주십시오." ) );
+									MsgBoxInfo.AddString( CTString( " " ) );
+									MsgBoxInfo.AddString( CTString( " " ) );
+									tv_line = 4;
 
-								MsgBoxInfo.AddString( _S( 2904, "캐릭터 삭제는 삭제요청 후 24시간이 지나야 삭제가 됩니다. 단, 시간안에 취소 가능" ) );
+								}
+#endif
 								MsgBoxInfo.AddString( CTString( " " ) );
+
+								MsgBoxInfo.AddStringEx( _S( 2906, "주민번호"),tv_line,1,0xFF9156FF);
+								MsgBoxInfo.SetInputBox(tv_line,10,7);
+								_pUIMgr->CreateMessageBox( MsgBoxInfo );
+								_pUIMgr->Lock(TRUE);
 							}
-							else 
-							{
-								MsgBoxInfo.AddString( _S( 2905, "캐릭 삭제를 취소하시겠습니까?" ) );
-								
+							else{
+								MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_YESNO,
+														UI_SEL_CHAR, MSGCMD_DELETE_CHARACTER );
+#ifdef NEW_DELETE_CHAR
+								BOOL tv_chk = FALSE;
+								if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0) tv_chk = TRUE;
+								if( !tv_chk ){
+									MsgBoxInfo.AddString( _S( 2904, "캐릭터 삭제는 삭제요청 후 24시간이 지나야 삭제가 됩니다. 단, 시간안에 취소 가능" ) );
+									MsgBoxInfo.AddString( CTString( " " ) );
+									tv_line = 4;
+								}
+								else {
+									MsgBoxInfo.AddString( _S( 2905, "캐릭 삭제를 취소하시겠습니까?" ) );
+									tv_line = 2;
+									
+								}
+#else								
+								MsgBoxInfo.AddString( _S( 243, "캐릭터를 삭제 하시겠습니까?" ) );
+#endif
+								_pUIMgr->CreateMessageBox( MsgBoxInfo );
 							}
-							
-							pUIManager->CreateMessageBox( MsgBoxInfo );
-#endif // G_KOR
 						}
 						else
 						{
-							pUIManager->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
+							_pUIMgr->CloseMessageBox( MSGCMD_SELCHAR_ERROR );
 							
 							CUIMsgBox_Info	MsgBoxInfo;
 							MsgBoxInfo.SetMsgBoxInfo( _S( 241, "캐릭터 선택 오류" ), UMBS_OK,
 														UI_SEL_CHAR, MSGCMD_SELCHAR_ERROR );
 							MsgBoxInfo.AddString( _S( 242, "캐릭터를 선택하지 않으셨습니다." ) );
-							pUIManager->CreateMessageBox( MsgBoxInfo );
+							_pUIMgr->CreateMessageBox( MsgBoxInfo );
 						}
 					}
 				}
 				else if( ( wmsgResult = m_btnOptions.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
-						CUIManager::getSingleton()->GetOption()->OpenOption();
+						_pUIMgr->GetOption()->OpenOption();
 				}
 				else if( ( wmsgResult = m_btnExit.MouseMessage( pMsg ) ) != WMSG_FAIL )
 				{
 					if( wmsgResult == WMSG_COMMAND )
 					{
-						CUIManager* pUIManager = CUIManager::getSingleton();
+						
 
+// wooss 060209 TEST JAPAN 
+//#define AUTO_LOGIN
+//#ifdef AUTO_LOGIN
+						extern BOOL g_bAutoLogin;
 						if(g_bAutoLogin)
 						{
-							extern BOOL	_bLoginProcess;
-							_bLoginProcess = TRUE;
-							_pGameState->GetGameMode() = CGameState::GM_NONE;
-							pUIManager->GetGame()->StopGame();							
-
+						
 							extern CTString g_nmID;
 							extern CTString g_nmPW;
-							extern CTString g_nmCID;
 
 							_pNetwork->m_strUserID = g_nmID;
 							_pNetwork->m_strUserPW = g_nmPW;
-							_pNetwork->m_strUserCID = g_nmCID;
-
-							if (GameDataManager* pGameData = GameDataManager::getSingleton())
-							{
-								if (CServerSelect* pServerSelect = pGameData->GetServerData())
-									pServerSelect->ConnectToServer(_cmiComm.cci_szAddr, _cmiComm.cci_iPort);
-							}
-
-							//pUIManager->GetSelServer()->ConnectToServer(_cmiComm.cci_szAddr, _cmiComm.cci_iPort);
+							_pUIMgr->GetSelServer()->ConnectToServer(_cmiComm.cci_szAddr, _cmiComm.cci_iPort);
 						
-							// connie [2009/7/21] - login2 
-							const int	iCameraEntityID	= 43565;
-
+							const int	iCameraEntityID	= 1628;
 							CEntity		*pCameraEntity = NULL;
 							CEntity		*pEntity = NULL;
 							BOOL bExist = _pNetwork->ga_World.EntityExists( iCameraEntityID, pCameraEntity );
@@ -937,18 +744,19 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 								((CPlayerEntity*)CEntity::GetPlayerEntity(0))->StartCamera(pCameraEntity, FALSE);
 							}
 
-							pUIManager->SetUIGameState( UGS_SELSERVER );						
+							_pUIMgr->SetUIGameState( UGS_SELSERVER );	
+												
 						}
+//#else
 						else
 						{
-							g_bAutoRestart = FALSE;
 							
 							_pSound->Mute();
 							// NOTE : 로그인 실패시 소켓을 닫고 다시 생성해야하는 부분.				
 							//_cmiComm.Reconnect(_cmiComm.cci_szAddr, _cmiComm.cci_iPort);
 							_cmiComm.Disconnect();
 
-							pUIManager->SetUIGameState(UGS_LOGIN);
+							_pUIMgr->SetUIGameState(UGS_LOGIN);
 							// 기존에 월드에 있던 엔티티를 제거함.
 							for(int i = 0; i < MAX_SLOT; ++i)
 							{
@@ -962,9 +770,7 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 							
 							_pGameState->BackToLogin();
 						}
-						
-						// initialize NC card flag. [12/2/2009 rumist]
-						_pGameState->SetCreatableNightShadow( FALSE );
+//#endif
 						
 //#define RESTRICT_SOUND 	
 #ifdef RESTRICT_SOUND
@@ -974,71 +780,17 @@ WMSG_RESULT CUISelChar::MouseMessage( MSG *pMsg )
 							_pSound->UpdateSounds();
 						#endif
 
+#ifdef NEW_DELETE_CHAR
 						// init slot effect 
-						//for(int i=0;i<MAX_SLOT;i++)
-						//	DestroyEffectGroupIfValid(m_aEGslotPosID[i]);
+						for(int i=0;i<MAX_SLOT;i++)
+							DestroyEffectGroupIfValid(m_aEGslotPosID[i]);
 
-					}
-				}
-
-				return WMSG_SUCCESS;
-			}
-			else if ( !m_bIsLeftView && ( wmsgResult = m_btnTurnL.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				pUIManager->CloseMessageBox( MSGCMD_DELETE_CHARACTER_SECURITY );
-				pUIManager->CloseMessageBox( MSGCMD_DELETE_CHARACTER );
-				pUIManager->Lock(FALSE);
-
-				_pGameState->SelectedSlot() = 0;
-				_pGameState->SelCharToMove(CAMERA_TURN_LEFT);
-				m_bIsLeftView = TRUE;
-				return WMSG_SUCCESS;
-			}
-			else if ( m_bIsLeftView && ( wmsgResult = m_btnTurnR.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				CUIManager* pUIManager = CUIManager::getSingleton();
-				pUIManager->CloseMessageBox( MSGCMD_DELETE_CHARACTER_SECURITY );
-				pUIManager->CloseMessageBox( MSGCMD_DELETE_CHARACTER );
-				pUIManager->Lock(FALSE);
-
-				_pGameState->SelectedSlot() = 0;
-				_pGameState->SelCharToMove(CAMERA_TURN_RIGHT);
-				m_bIsLeftView = FALSE;
-				return WMSG_SUCCESS;
-			}
-#ifdef AUTO_RESTART	// [2012/10/18 : Sora] 재시작시 자동 로그인
-			else if( ( wmsgResult = m_btnBack.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if( wmsgResult == WMSG_COMMAND )
-				{
-					CUIManager* pUIManager = CUIManager::getSingleton();
-					
-					_pSound->Mute();
-					// NOTE : 로그인 실패시 소켓을 닫고 다시 생성해야하는 부분.				
-					//_cmiComm.Reconnect(_cmiComm.cci_szAddr, _cmiComm.cci_iPort);
-					_cmiComm.Disconnect();
-
-					// 기존에 월드에 있던 엔티티를 제거함.
-					for(int i = 0; i < MAX_SLOT; ++i)
-					{
-						CEntity *pEntity = _pGameState->m_pEntModels[i];
-						if(pEntity)
-						{
-							pEntity->en_RenderType = CEntity::RT_SKAEDITORMODEL;
-						}
-					}
-					_pGameState->SelectedSlot() = 0; //슬롯 선택 커서 초기화.
-					
-					g_bAutoRestart = TRUE;
-					_pGameState->BackToLogin();											
-
-					pUIManager->SetUIGameState(UGS_LOGIN);
-					Sleep(1000);
-				}
-			}
 #endif
-			
+					}
+				}
+
+				return WMSG_SUCCESS;
+			}
 		}
 		break;
 	}
@@ -1079,17 +831,10 @@ void CUISelChar::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 				_pSound->UpdateSounds();
 			#endif
 				
-				break;			
+				break;
+			
 		}
-	}
-	else
-	{
-		switch( nCommandCode )	
-		{
-		case MSGCMD_DELETE_CHARACTER_SECURITY: // 예외처리: 캐릭터 삭제 팝업창에서 x버튼 클릭 문제 수정
-			Lock(FALSE);
-			break;
-		}
+
 	}
 }
 
@@ -1100,14 +845,20 @@ void CUISelChar::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 BOOL CUISelChar::ShowCharacter()
 {
 	if(!m_pWorld) return FALSE;
-	
-	// 받아들인 정보를 바탕으로...
-	// 엔티티를 생성하고 , ModelInstance를 생성하고...
 
+	// 받아들인 정보를 바탕으로...
+	// 엔티티를 생성하고, ModelInstance를 생성하고...
+#ifdef EXSLOT
+#undef	MAX_SLOT
+#define 	MAX_SLOT	6 	
+#endif
 	int aiMarker[MAX_SLOT] =
 	{
-		43585, 43571, 43406, 43570,
-		43826, 43827, 43828, 43829,
+#ifdef EXSLOT
+		3377, 3378, 3379, 3380, 3953, 3954		//wooss 050819 add new slot maker index 3953,3954
+#else 
+		3377, 3378, 3379, 3380, // 3953, 3954
+#endif
 	};	
 
 //강동민 수정 시작 클로즈 2차 작업	08.18
@@ -1123,9 +874,11 @@ BOOL CUISelChar::ShowCharacter()
 //강동민 수정 끝 클로즈 2차 작업		08.18
 
 	int iSlot = 0;
-	while(_pGameState->m_SlotInfo[iSlot].bActive == TRUE)
+	while( iSlot <MAX_SLOT && _pGameState->m_SlotInfo[iSlot].bActive == TRUE )
 	{	
 		CEntity *penMarker					= m_pWorld->EntityFromID(aiMarker[iSlot]);
+		if( penMarker == NULL )
+			return TRUE;
 		//CPlacement3D plMarker	= penMarker->GetLerpedPlacement();		
 		_pGameState->m_pEntModels[iSlot]	= penMarker;
 		penMarker->en_RenderType			= CEntity::RT_SKAMODEL;
@@ -1148,7 +901,7 @@ BOOL CUISelChar::ShowCharacter()
 
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->SetCharacterAppearance(pMI, iSlotJob, _pGameState->m_SlotInfo[iSlot].hairstyle, _pGameState->m_SlotInfo[iSlot].facestyle);
 		CPrintF("Slot : %d, Hair : %d, Face : %d\n", iSlot, _pGameState->m_SlotInfo[iSlot].hairstyle, _pGameState->m_SlotInfo[iSlot].facestyle);
-		BOOL bIsWeapon = FALSE;
+
 		
 		if( _pNetwork->wo_iNumOfItem > 0 )
 		{
@@ -1163,26 +916,28 @@ BOOL CUISelChar::ShowCharacter()
 				int nItemIndex = -1;
 
 				const SLONG iWear = _pGameState->m_SlotInfo[iSlot].wear[i];
-				CItemData* pID = _pNetwork->GetItemData(iWear);
+				CItemData &ID = _pNetwork->GetItemData(iWear);
 				
 				if(iWear > 0)
 				{
-					if(pID->GetWearingPosition() != WEAR_HELMET || (CTString)pID->GetItemSmcFileName() != MODEL_TREASURE)
+#ifdef HEAD_CHANGE
+					if(ID.GetWearingPosition() != WEAR_HELMET || (CTString)ID.GetItemSmcFileName() != MODEL_TREASURE)
 					{
-						nItemIndex = pID->GetItemIndex();
-						nItemSubType = pID->GetSubType();
-						_pGameState->DeleteDefaultArmor(pMI, pID->GetWearingPosition(), iSlotJob);
-						_pGameState->WearingArmor(pMI, *pID);
-
-						if (pID->GetWearingPosition() == WEAR_WEAPON)
-						{
-							bIsWeapon = TRUE;
-						}
+						nItemIndex = ID.GetItemIndex();
+						nItemSubType = ID.GetSubType();
+						_pGameState->DeleteDefaultArmor(pMI, ID.GetWearingPosition(), iSlotJob);
+						_pGameState->WearingArmor(pMI, ID);
 					}
+#else
+					nItemIndex = ID.GetItemIndex();
+					nItemSubType = ID.GetSubType();
+					_pGameState->DeleteDefaultArmor(pMI, ID.GetWearingPosition(), iSlotJob);
+					_pGameState->WearingArmor(pMI, ID);
+#endif
 				}
 				_pGameState->m_SlotInfo[iSlot].itemEffect.Change(
 					_pGameState->m_SlotInfo[iSlot].job
-					, pID
+					, &ID
 					, wearTypeTable[i]
 					, _pGameState->m_SlotInfo[iSlot].itemPlus[i]
 					, &pMI->m_tmSkaTagManager
@@ -1192,91 +947,24 @@ BOOL CUISelChar::ShowCharacter()
 		
 		if(pMI)
 		{
-			const int iJob = _pGameState->m_SlotInfo[iSlot].job;
-			INDEX idIdle;
-
-			if (bIsWeapon)
-			{
-				if (_pGameState->m_SlotInfo[iSlot].bExtension)
-				{
-					idIdle = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_EXT_ATTACK_IDLE ) );
-				}
-				else
-				{
-					idIdle = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_ATTACK_IDLE ) );
-				}
-			}
-			else
-			{
-				idIdle = ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_IDLE ) );
-			}
-
+			const int iJob		= _pGameState->m_SlotInfo[iSlot].job;
+			INDEX idIdle		= ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, ANIM_IDLE ) );
 			pMI->AddAnimation(idIdle,AN_LOOPING|AN_NORESTART|AN_CLEAR,1,0);
-	
+
+#ifdef NEW_DELETE_CHAR		
 			// 060608
-			if( _pGameState->m_SlotInfo[iSlot].m_time >0 )
-			{
-				pMI->SetModelColor( 0x000000FF );
-				//pMI->m_tmSkaTagManager.SetOwner(_pGameState->m_pEntModels[iSlot]);
-				//if(!CEffectGroupManager::Instance().IsValidCreated(m_aEGslotPosID[iSlot]))
-				//	m_aEGslotPosID[iSlot] = StartEffectGroup("STATE_DELETE",&pMI->m_tmSkaTagManager,_pTimer->GetLerpedCurrentTick());
+			if(_pGameState->m_SlotInfo[iSlot].m_time >0){
+				pMI->m_tmSkaTagManager.SetOwner(_pGameState->m_pEntModels[iSlot]);
+				if(!CEffectGroupManager::Instance().IsValidCreated(m_aEGslotPosID[iSlot]))
+					m_aEGslotPosID[iSlot] = StartEffectGroup("STATE_DELETE",&pMI->m_tmSkaTagManager,_pTimer->GetLerpedCurrentTick());
 			}
-			else
-			{
-				pMI->SetModelColor( 0xFFFFFFFF );
-				//StopEffectGroupIfValid(m_aEGslotPosID[iSlot],0.1f);
-			}
-#ifdef ENABLE_CHARACTER_MOVE_TO_OTHER_SERVER_ITEM
-			// 캐릭터 이동 관련 조건 삽입 [7/19/2012 rumist]
-			if( _pGameState->m_SlotInfo[iSlot].sbMoveState == CMS_MOVE_WAIT )
-			{
-				// 특정 캐릭터 검정색으로 도배. 나중에 색깔을 바꿔달라면 바꿔줄 수 있음.
-				pMI->SetModelColor( 0x000000FF );
-			
-				m_bIsShowCharMoveMsgInfo = TRUE;
-			}
-			if ( _pGameState->m_SlotInfo[iSlot].sbMoveState == CMS_MOVE_ROLLBACK )
-			{
-				CTString strTemp = _pGameState->m_SlotInfo[iSlot].name;
-				if (m_strServerMoveFailCharName == _s(""))
-				{
-					m_strServerMoveFailCharName += strTemp;
-				}
-				else
-				{
-					m_strServerMoveFailCharName += _s(" , ") + strTemp;
-				}
-			}
+			else StopEffectGroupIfValid(m_aEGslotPosID[iSlot],0.1f);
 #endif
-		}	
+		}
 
 		iSlot++;
 	}
-	// night shadow card. [11/6/2009 rumist]
-	m_bIsShowMessageInfo = _pGameState->IsCreatableNightShadow();
-	// show message box for roll back.
 	return TRUE;
-}
-
-void CUISelChar::ShowCharMoveRollbackMsgBox(bool bShow)
-{
- 	if (m_strServerMoveFailCharName.Length() <= 0)
-		return;
-
-	if (bShow)
-	{
-		CUIMsgBox_Info	MsgBoxInfo;
-		MsgBoxInfo.SetMsgBoxInfo( _S(5722,"에러 메시지"), UMBS_OK, UI_NONE, MSGCMD_NULL, 316 );
-		CTString strTemp;
-		CTString strTemp2;
-		strTemp = _S(5716, "신청 하신 서버 이전이 다음과 같은 이유로 취소 되었습니다.");
-		MsgBoxInfo.AddString( strTemp, 0xF2F2F2FF, TEXT_CENTER );
-		strTemp2.PrintF(_S(5717, " [ %s ] 캐릭터의 서버 이전이 실패 하였습니다. 자세한 문의는 고객 센터에서 확인 하실 수 있습니다."), m_strServerMoveFailCharName);
-		MsgBoxInfo.AddString( strTemp2, 0xF2F2F2FF, TEXT_CENTER );
-		CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
-		
-		m_strServerMoveFailCharName = "";
-	}		
 }
 
 //-----------------------------------------------------------------------------
@@ -1284,20 +972,22 @@ void CUISelChar::ShowCharMoveRollbackMsgBox(bool bShow)
 //-----------------------------------------------------------------------------
 BOOL CUISelChar::DeleteCharacter()
 {	
-	if(_pGameState->SelectedSlot() <= 0)
-		return FALSE;
-
-	if( _pNetwork->m_bSendMessage == TRUE )
-		return FALSE;
-
-	ULONG ulDelIndex = _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].index;
-	BOOL tv_chk = FALSE;
-	
-	if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0 ) tv_chk = TRUE;
-	
-	_pNetwork->SendDeleteCharacter(ulDelIndex,tv_chk);
-	CUIManager::getSingleton()->Lock(TRUE);
-
+	CTString strMessage;
+	if(_pGameState->SelectedSlot() > 0)
+	{
+		ULONG	ulDelIndex;
+		ulDelIndex	= _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].index;
+		
+		if(_pNetwork->m_bSendMessage)
+			return FALSE;
+		
+		BOOL tv_chk = FALSE;
+#ifdef NEW_DELETE_CHAR
+		if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0 ) tv_chk = TRUE;
+#endif
+		_pNetwork->SendDeleteCharacter(ulDelIndex,tv_chk);
+		_pUIMgr->Lock(TRUE);
+	}
 	return FALSE;
 }
 
@@ -1308,19 +998,31 @@ BOOL CUISelChar::DeleteCharacter()
 BOOL CUISelChar::DeleteCharacter(CTString  secuNum)
 {	
 	CTString strMessage;
-	if(_pGameState->SelectedSlot() <= 0)
+	if(secuNum.Length()!=CHECK_NUM) {
+		_pUIMgr->CloseMessageBox(MSGCMD_NULL);
+		CUIMsgBox_Info	MsgBoxInfo;
+		MsgBoxInfo.SetMsgBoxInfo( _S( 240, "캐릭터 삭제" ), UMBS_OK,
+									UI_SEL_CHAR, MSGCMD_NULL );
+		MsgBoxInfo.AddString(_S(2340, "7자리 숫자를 입력하여 주십시오" ) );
+									_pUIMgr->CreateMessageBox( MsgBoxInfo );
+		_pUIMgr->Lock(FALSE);
 		return FALSE;
+	}
+	if(_pGameState->SelectedSlot() > 0)
+	{
+		ULONG	ulDelIndex;
+		ulDelIndex	= _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].index;
+		
+		if(_pNetwork->m_bSendMessage)
+			return FALSE;
+		BOOL tv_chk = FALSE;
+		if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0 ) tv_chk = TRUE;
 
-	if( _pNetwork->m_bSendMessage == TRUE )
-		return FALSE;
+		_pNetwork->SendDeleteCharacter(ulDelIndex, secuNum, tv_chk );
+		_pUIMgr->Lock(TRUE);
 
-	ULONG ulDelIndex = _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].index;
-	BOOL tv_chk = FALSE;
-	if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time > 0 ) tv_chk = TRUE;
-
-	_pNetwork->SendDeleteCharacter(ulDelIndex, secuNum, tv_chk );
-	CUIManager::getSingleton()->Lock(TRUE);
-
+	
+	}
 	return FALSE;
 }
 
@@ -1329,9 +1031,6 @@ BOOL CUISelChar::DeleteCharacter(CTString  secuNum)
 //-----------------------------------------------------------------------------
 void CUISelChar::StartGame()
 {
-	if( PopUpMsgBoxExist() )
-		return;
-
 	const int iSelectedSlot		= _pGameState->SelectedSlot()-1;
 	ASSERT( iSelectedSlot >= 0 && iSelectedSlot <= (MAX_SLOT - 1) && "Invalid Selected Slot!!!" );
 	if( iSelectedSlot < 0 || iSelectedSlot > (MAX_SLOT - 1) )
@@ -1340,18 +1039,14 @@ void CUISelChar::StartGame()
 	}
 
 	ULONG	StartIndex;
-	StartIndex	= _pGameState->m_SlotInfo[iSelectedSlot].index;
+	StartIndex	= _pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].index;
 
 	if(_pNetwork->m_bSendMessage)
 		return;
 
 	_pNetwork->SendGameStart(StartIndex);
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	_pGameState->ClearCharacterSlot();
-/*
-	CGame* _pGame			= pUIManager->GetGame();
+	
+	CGame* _pGame			= _pUIMgr->GetGame();
 	CPlayerCharacter &pc	= _pGame->gm_apcPlayers[0];
 	pc.pc_iPlayerType		= _pGameState->m_SlotInfo[iSelectedSlot].job;
 	
@@ -1359,15 +1054,13 @@ void CUISelChar::StartGame()
 	CEntity* penPlEntity			= NULL;
 	penPlEntity						= CEntity::GetPlayerEntity(0); //캐릭터 자기 자신
 	penPlayerEntity					= (CPlayerEntity*) penPlEntity;	
-	penPlayerEntity->CharacterChanged(pc);
-	*/
-	pUIManager->Lock(TRUE);
+	penPlayerEntity->CharacterChanged(pc);		
+	_pUIMgr->Lock(TRUE);
 	// wooss 051017 
 	// 캐릭터 선택시 Input.cpp ReadKeyboardDevice::_abKeysDressed[KIP_MOUSE1] 에서 토글식으로 처리하여
 	// 캐릭터를 선택하고 게임시작을 누르면 마우스 버튼이 누른 상태로 표시되어 게임을 시작하면 캐릭터가 마우스 포인터쪽으로 뛰어가게 된다.
 	_pInput->SetLMousePressed(FALSE);
 
-	m_bIsShowMessageInfo = _pGameState->IsCreatableNightShadow();
 }
 
 //-----------------------------------------------------------------------------
@@ -1378,9 +1071,6 @@ void CUISelChar::StartGame()
 //-----------------------------------------------------------------------------
 void CUISelChar::SelectCharacter(int nX, int nY)
 {
-	if( PopUpMsgBoxExist() )
-		return;
-
 	CEntity*		penPlEntity		= NULL;
 	CPlayerEntity*	penPlayerEntity = NULL;
 	penPlEntity						= CEntity::GetPlayerEntity(0); //캐릭터 자기 자신
@@ -1392,13 +1082,11 @@ void CUISelChar::SelectCharacter(int nX, int nY)
 	if( apr == NULL )
 		return;
 	apr->Prepare();
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
+	
 	// make the ray from viewer point through the mouse point, in current projection
 	CPlacement3D plRay;
 	apr->RayThroughPoint(
-		FLOAT3D((float)nX, ( pUIManager->GetMaxJ() - pUIManager->GetMinJ() ) - (float)nY, 0.0f), 
+		FLOAT3D((float)nX, ( _pUIMgr->GetMaxJ() - _pUIMgr->GetMinJ() ) - (float)nY, 0.0f), 
 		plRay);
 	
 	// construct cast ray for base world
@@ -1451,7 +1139,7 @@ void CUISelChar::SelectCharacter(int nX, int nY)
 
 							INDEX idAttack;
 							int tv_flag =0;
-
+#ifdef	NEW_DELETE_CHAR	
 					//		if( pMI->IsNotAnimationPlaying()) return;
 							if(_pGameState->m_SlotInfo[_pGameState->SelectedSlot()-1].m_time <=0 )
 							{
@@ -1470,75 +1158,67 @@ void CUISelChar::SelectCharacter(int nX, int nY)
 								m_aSlotAni[iSelectedSlot - 1].m_idAni = ANIM_SOCIAL_5;
 								tv_flag = NULL;
 							}
+#else 
+							{
+								m_aSlotAni[iSelectedSlot - 1].m_idAni = ANIM_ATTACK_IDLE;
+								tv_flag = AN_NORESTART|AN_CLEAR;
 
+							}
+#endif
 							idAttack		= ska_GetIDFromStringTable( JobInfo().GetAnimationName( iJob, m_aSlotAni[iSelectedSlot - 1].m_idAni ) );
 
 							pMI->AddAnimation(idAttack,tv_flag,1,0);
-
+#ifdef	NEW_DELETE_CHAR	
 							// Check animation time
 							m_aSlotAni[iSelectedSlot - 1].m_startTime = _pTimer->CurrentTick();
 							
 							// put off - weapon ----------------------------------------------------<<
+	#ifdef HEAD_CHANGE
 							// 무기 착용 확인 
-							SLONG iWear		=	_pGameState->m_SlotInfo[i].wear[WEAR_WEAPON]; // 무기 
-							SLONG iWear3	=	_pGameState->m_SlotInfo[i].wear[WEAR_SHIELD];	// 방패 
-
+							SLONG iWear		=	_pGameState->m_SlotInfo[i].wear[2]; // 무기 
+							SLONG iWear3	=	_pGameState->m_SlotInfo[i].wear[4];	// 방패 
+	#else
+							// 무기 착용 확인 
+							SLONG iWear		=	_pGameState->m_SlotInfo[i].wear[1]; // 무기 
+							SLONG iWear3	=	_pGameState->m_SlotInfo[i].wear[3];	// 방패 
+	#endif
 							BOOL bTakeOffArmor = FALSE;
 							
 							if(iWear > 0 ){
-								CItemData* pID = _pNetwork->GetItemData(iWear);
-
-								if (_pGameState->m_SlotInfo[i].job != NIGHTSHADOW)
-								{
-									_pGameState->TakeOffArmor(pMI, *pID);
-								}
-								_pGameState->m_SlotInfo[i].itemEffect.DeleteEffect(pID->GetWearingPosition());
+								CItemData &ID = _pNetwork->GetItemData(iWear);
+								_pGameState->TakeOffArmor(pMI, ID);
+								_pGameState->m_SlotInfo[i].itemEffect.DeleteEffect(ID.GetWearingPosition());
 								bTakeOffArmor = TRUE;
-								_pGameState->m_SlotInfo[i].itemEffect.Change(
-									_pGameState->m_SlotInfo[i].job,
-									pID,
-									pID->GetWearingPosition(),
-									-1,
-									&pMI->m_tmSkaTagManager,
-									1, pID->GetSubType() );
+								
 							}
 							if(iWear3 > 3)	
 							{
-								CItemData* pID = _pNetwork->GetItemData(iWear3);
-								_pGameState->TakeOffArmor(pMI, *pID);
+								CItemData &ID = _pNetwork->GetItemData(iWear3);
+								_pGameState->TakeOffArmor(pMI, ID);
 								bTakeOffArmor = TRUE;
-								_pGameState->m_SlotInfo[i].itemEffect.Change(
-									_pGameState->m_SlotInfo[i].job,
-									pID,
-									pID->GetWearingPosition(),
-									-1,
-									&pMI->m_tmSkaTagManager,
-									1, pID->GetSubType() );
 							}
 
-							//if (bTakeOffArmor)
-								//_pGameState->m_SlotInfo[i].itemEffect.Refresh(&pMI->m_tmSkaTagManager, 1);
-							// ---------------------------------------------------------------------------->>																					
+							if (bTakeOffArmor)
+								_pGameState->m_SlotInfo[i].itemEffect.Refresh(&pMI->m_tmSkaTagManager, 1);
+							// ---------------------------------------------------------------------------->>
+#endif																							
 						}
 					}
 
 					// Update character status
 					UpdateStatus();
-					
-					// reset button status.	
-					m_btnOK.SetEnable(TRUE);
-					m_btnDeleteChar.SetEnable(TRUE);
 
-					if((_pGameState->m_SlotInfo[iSelectedSlot - 1].m_time) > 0)
+#ifdef	NEW_DELETE_CHAR		
+				
+					if(_pGameState->m_SlotInfo[iSelectedSlot - 1].m_time>0)
 					{	
 						m_btnOK.SetEnable(FALSE);	
 					}
-					// ITS#10074 : BUGFIX : 조건식의 조건상의 문제 발생. [8/3/2012 rumist]
-					else if(_pGameState->m_SlotInfo[iSelectedSlot-1].sbMoveState == CMS_MOVE_WAIT)			// 캐릭터 이동 [7/19/2012 rumist]					
-					{	
-						m_btnOK.SetEnable(FALSE);
-						m_btnDeleteChar.SetEnable(FALSE);	
+					else{
+						m_btnOK.SetEnable(TRUE);
 					}
+			
+#endif
 				}
 
 				return;
@@ -1555,9 +1235,7 @@ void CUISelChar::SelectCharacter(int nX, int nY)
 //-----------------------------------------------------------------------------
 void CUISelChar::Lock(BOOL bLock)
 {
-#if !defined(G_KOR)
 	m_btnCreateChar.SetEnable(!bLock);
-#endif
 	m_btnDeleteChar.SetEnable(!bLock);
 	//m_btnOptions.SetEnable(!bLock);	
 	m_btnOK.SetEnable(!bLock);
@@ -1582,81 +1260,4 @@ int	CUISelChar::GetExSlotTime(int slotNum,int* tSlot1,int* tSlot2)
 		*tSlot2=m_exSlot2;
 	}
 	return 0;
-}
-
-//-----------------------------------------------------------------------------
-// SetCharSlotTime 남은시간을 계산하여 스트링으로 반환
-// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-//-----------------------------------------------------------------------------
-void CUISelChar::SetCharSlotTime( ULONG ulTime )
-{
-	m_ulCharSlotTime = ulTime;
-	m_CharSlotTimeOld = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-}
-
-//-----------------------------------------------------------------------------
-// GetRemainTime 남은시간을 계산하여 스트링으로 반환
-// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-//-----------------------------------------------------------------------------
-CTString CUISelChar::GetRemainTime()
-{
-	CTString strtemp = "";
-	
-	if( m_ulCharSlotTime >=  86400 ) // 60 * 60 * 24 (하루)
-	{
-		strtemp.PrintF( _S( 2511, "%d일" ),  m_ulCharSlotTime / 86400 );
-	}
-	else if( m_ulCharSlotTime >= 3600 )
-	{
-		strtemp.PrintF( _S( 2512, "%d시간" ),  m_ulCharSlotTime / 3600 );
-	}
-	else
-	{
-		// 60초 미만도 1분으로 표시
-		strtemp.PrintF( _S( 2513, "%d분" ),  m_ulCharSlotTime >= 60  ? m_ulCharSlotTime/60 : 1 );
-	}
-
-	return strtemp;
-}
-
-//-----------------------------------------------------------------------------
-// UpdateCharSlotTime 남은시간을 갱신
-// [2012/07/05 : Sora]  캐릭터 슬롯 확장
-//-----------------------------------------------------------------------------
-void CUISelChar::UpdateCharSlotTime()
-{
-	if( m_ulCharSlotTime == 0 )
-		return;
-
-	__int64 tmpTime = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-	
-	if( tmpTime - m_CharSlotTimeOld < 1000 )
-		return;
-
-	__int64 passedTime = ( ( tmpTime - m_CharSlotTimeOld ) / 1000 );
-
-	if( m_ulCharSlotTime > passedTime )
-	{
-		m_ulCharSlotTime -= passedTime;
-	}
-	else
-	{
-		m_ulCharSlotTime = 0;
-	}
-
-	m_CharSlotTimeOld = tmpTime;
-}
-
-BOOL CUISelChar::PopUpMsgBoxExist()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->DoesMessageBoxExist( MSGCMD_DELETE_CHARACTER_SECURITY ) ||
-		pUIManager->DoesMessageBoxExist( MSGCMD_DELETE_CHARACTER ) ||
-		pUIManager->DoesMessageBoxExist( MSGCMD_SELCHAR_ERROR ) )
-	{
-		return TRUE;
-	}
-
-	return FALSE;
 }

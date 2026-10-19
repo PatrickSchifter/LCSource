@@ -3,11 +3,8 @@
 // -----------------------------------------------------------------<<
 
 #include "StdH.h"
-
-// 헤더 정리. [12/2/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIMinigame.h>
-#include <Engine/Interface/UIMap.h>
+#include <Engine/Interface/UIInternalClasses.h>
 
 #define MINIGAME_BUTTON_SIZE 47
 #define MINIGAME_BUTTON_POS_Y 125
@@ -27,8 +24,6 @@ CUIMinigame::CUIMinigame()
 	m_whowin =-1;
 	m_bTalkOnce =FALSE;
 	m_npcState = MINIGAME_NPC_NOTHING;
-	m_ptdAddTexture = NULL;
-	m_dwTimePass = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -37,11 +32,7 @@ CUIMinigame::CUIMinigame()
 // ----------------------------------------------------------------------------
 CUIMinigame::~CUIMinigame()
 {
-	if (m_ptdAddTexture)
-	{
-		_pTextureStock->Release(m_ptdAddTexture);
-		m_ptdAddTexture = NULL;
-	}
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +117,9 @@ void CUIMinigame::SetButtonState(UBYTE iState)
 // ----------------------------------------------------------------------------
 void CUIMinigame::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	// Create Minigame texture ----------------------------------->><<
 	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\MessageBox.tex" ) );
@@ -285,13 +278,11 @@ void CUIMinigame::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pix
 // Name : OpenMinigame()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMinigame::OpenMinigame(UBYTE eventType)
+void CUIMinigame::OpenMinigame()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	CDrawPort* pDrawPort = pUIManager->GetDrawPort();
-	int	nX = ( pDrawPort->dp_MinI + pDrawPort->dp_MaxI ) / 2 - m_nWidth / 2;
-	int	nY = ( pDrawPort->dp_MinJ + pDrawPort->dp_MaxJ ) / 2 - m_nHeight / 2;
+	CDrawPort	*pdp = _pUIMgr->GetDrawPort();
+	int	nX = ( pdp->dp_MinI + pdp->dp_MaxI ) / 2 - m_nWidth / 2;
+	int	nY = ( pdp->dp_MinJ + pdp->dp_MaxJ ) / 2 - m_nHeight / 2;
 
 	SetPos( nX, nY );	
 	SetButtonState(BTN_STATE_OPEN);
@@ -309,19 +300,9 @@ void CUIMinigame::OpenMinigame(UBYTE eventType)
 	
 	m_bxBack2.SetBoxUV( m_ptdBaseTexture, 2, rtBack );
 
-	m_ubEventType   = eventType;
-
 	// set npc talk
-	if (m_ubEventType == MSG_EVENT_GOMDORI_2007)
-	{
-		m_strNpcTalk[MINIGAME_START] = _S(3409, "9개의 곰돌이 웬디 조각을 모두 찾으셨군요. 그렇다면 가위바위보를 시작해요, 준비 됐으면 ~가위바위~가위!바위!보!");
-		m_strNpcTalk[MINIGAME_LOSE]	 = _S(3410, "나의 승리네요~~! 냐하하하! 자, 아쉽지만 여기까지입니다~ 새로 곰돌이를 모아 오면 재도전을 받아 주겠습니다. 아, 참. 그래도 지금까지 노력한 건 무시하지 않아요. 원하던 것엔 못 미치겠지만, 그래도 이거라도 받아주세요.");
-	}
-	else if (m_ubEventType == MSG_EVENT_XMAS_2007)
-	{
-		m_strNpcTalk[MINIGAME_START] = _S(5799, "9개의 산타클로스 인형 조각을 모두 찾으셨군요. 그렇다면 가위바위보를 시작해요. 준비 됐으면 ~가위바위~가위! 바위! 보!");
-		m_strNpcTalk[MINIGAME_LOSE]	 = _S(5800, "나의 승리네요~~! 냐하하하! 자, 아쉽지만 여기까지입니다~ 새로 산타클로스 인형을 모아 오면 재도전을 받아 주겠습니다. 아, 참. 그래도 지금까지 노력한 건 무시하지 않아요. 원하던 것엔 못 미치겠지만, 그래도 이거라도 받아주세요.");
-	}
+	m_strNpcTalk[MINIGAME_START] = _S(3409, "9개의 곰돌이 웬디 조각을 모두 찾으셨군요. 그렇다면 가위바위보를 시작해요, 준비 됐으면 ~가위바위~가위!바위!보!");
+	m_strNpcTalk[MINIGAME_LOSE]	 = _S(3410, "나의 승리네요~~! 냐하하하! 자, 아쉽지만 여기까지입니다~ 새로 곰돌이를 모아 오면 재도전을 받아 주겠습니다. 아, 참. 그래도 지금까지 노력한 건 무시하지 않아요. 원하던 것엔 못 미치겠지만, 그래도 이거라도 받아주세요.");
 	m_strNpcTalk[MINIGAME_DRAW] = _S(3411, "이런~ 비겼네요! 자, 다시 한번, 가위 바위~  가위!    바위!   보!");
 	m_strNpcTalk[MINIGAME_WIN_1] = _S(3412, "승리 하셨네요! 여기서 그만 두고 물약을 받으시겠어요?  아니면 한번 더 해서 더 큰 상품을 노려보시겠어요?");
 	m_strNpcTalk[MINIGAME_WIN_2] = _S(3413, "이번에도 이기셨네요. 여기서 그만 두시겠어요? 아니면 한번 더 해서 더 큰 상품을 노려보시겠어요? 다음 판에서 승리한다면, 3승 상품을 받을 수 있어요!");
@@ -333,32 +314,8 @@ void CUIMinigame::OpenMinigame(UBYTE eventType)
 	m_strNpcTalk[MINIGAME_WIN_8] = _S(3419, "이번에도 사로얀은 지고 말았네요! 가위바위보의 신이시네요!  사로얀이 줄 수 있는 가장 큰 보상이에요. 축하합니다.");
 
 	SetNpcTalk(MINIGAME_START);
-
-	// Setup minigame network messages
-	if (m_ubEventType == MSG_EVENT_GOMDORI_2007)
-	{
-		m_ubMsgStart    = MSG_EVENT_GOMDORI_2007_START;
-		m_ubMsgSelect   = MSG_EVENT_GOMDORI_2007_SELECT;
-		m_ubMsgContinue = MSG_EVENT_GOMDORI_2007_CONTINUE;
-		m_ubMsgEnd      = MSG_EVENT_GOMDORI_2007_END;
-	}
-	else if (m_ubEventType == MSG_EVENT_XMAS_2007)
-	{
-		m_ubMsgStart    = MSG_EVENT_XMAS_PUZZLE_START_REQ;
-		m_ubMsgSelect   = MSG_EVENT_XMAS_PUZZLE_SELECT_REQ;
-		m_ubMsgContinue = MSG_EVENT_XMAS_PUZZLE_CONTINUE_REQ;
-		m_ubMsgEnd      = MSG_EVENT_XMAS_PUZZLE_END_REQ;
-	}
-	else
-	{
-		m_ubEventType   = 0;
-		m_ubMsgStart    = 0;
-		m_ubMsgSelect   = 0;
-		m_ubMsgContinue = 0;
-		m_ubMsgEnd      = 0;
-	}
 	
-	pUIManager->RearrangeOrder( UI_MINIGAME, TRUE );
+	_pUIMgr->RearrangeOrder( UI_MINIGAME, TRUE );
 	
 	InitData();
 
@@ -373,13 +330,8 @@ void CUIMinigame::SetMinigameWinMark()
 	// 비겼을 경우
 	if( m_whowin == 1 || m_whowin ==-1) return ;
 
-	// 졌을 경우
-	if( m_whowin == 2)
-	{
-		m_rtSelBtn.SetRect(186, MINIGAME_BUTTON_POS_Y,186+MINIGAME_BUTTON_SIZE, MINIGAME_BUTTON_POS_Y+MINIGAME_BUTTON_SIZE); 
-	}
 	// 이겼을 경우
-	else if( m_whowin == 0)
+	if( m_whowin == 2)
 	{
 		if(m_userChoice==0)
 			m_rtSelBtn.SetRect( 97, MINIGAME_BUTTON_POS_Y + 94, 97+MINIGAME_BUTTON_SIZE, MINIGAME_BUTTON_POS_Y + MINIGAME_BUTTON_SIZE +94);
@@ -387,6 +339,11 @@ void CUIMinigame::SetMinigameWinMark()
 			m_rtSelBtn.SetRect(186, MINIGAME_BUTTON_POS_Y + 94, 186+MINIGAME_BUTTON_SIZE, MINIGAME_BUTTON_POS_Y + MINIGAME_BUTTON_SIZE +94);
 		else if(m_userChoice==2)
 			m_rtSelBtn.SetRect(275, MINIGAME_BUTTON_POS_Y + 94, 275+MINIGAME_BUTTON_SIZE, MINIGAME_BUTTON_POS_Y + MINIGAME_BUTTON_SIZE +94);
+	}
+	// 졌을 경우
+	else if( m_whowin == 0)
+	{
+		m_rtSelBtn.SetRect(186, MINIGAME_BUTTON_POS_Y,186+MINIGAME_BUTTON_SIZE, MINIGAME_BUTTON_POS_Y+MINIGAME_BUTTON_SIZE); 
 	}
 }
 
@@ -412,7 +369,7 @@ void CUIMinigame::SetNpcTalk(int iTalkIdx)
 	ASSERT(iTalkIdx<MINIGAME_STATE_END);
 
 	m_listNpcTalk.ResetAllStrings();
-	CUIManager::getSingleton()->AddStringToList( &m_listNpcTalk ,m_strNpcTalk[iTalkIdx],48);
+	_pUIMgr->AddStringToList( &m_listNpcTalk ,m_strNpcTalk[iTalkIdx],48);
 }
 
 // ----------------------------------------------------------------------------
@@ -422,7 +379,7 @@ void CUIMinigame::SetNpcTalk(int iTalkIdx)
 void CUIMinigame::RenderNpcSlot(INDEX npcState)
 {
 	static int tRoll=0;
-	static DWORD tTimeOld= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	static DWORD tTimeOld=timeGetTime();
 	DWORD tTimeNew;
 
 	switch(npcState)
@@ -434,7 +391,7 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 		{
 			m_btnNpcChoice[tRoll].Render();
 
-			tTimeNew = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+			tTimeNew = timeGetTime();
 
 			if( tTimeOld + 300 < tTimeNew)
 			{
@@ -448,9 +405,10 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 		{
 			FLOAT	fTexWidth = m_ptdAddTexture->GetPixWidth();
 			FLOAT	fTexHeight = m_ptdAddTexture->GetPixHeight();
-			
-			//if(tTimePass==0) tTimePass=timeGetTime();
-			tTimeNew = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+
+			static DWORD tTimePass=0;
+			if(tTimePass==0) tTimePass=timeGetTime();
+			tTimeNew = timeGetTime();
 		
 			if( tTimeOld +50< tTimeNew)
 			{
@@ -464,10 +422,10 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 			m_btnNpcChoiceMove.Render();	
 			
 			// 2초가 경과 했으면 결과 출력
-			if ((m_dwTimePass + 2000 < tTimeNew) && m_whowin >=0)
+			if ((tTimePass + 2000 < tTimeNew) && m_whowin >=0)
 			{
 				m_npcState = MINIGAME_NPC_RESULT;
-				m_dwTimePass =0;
+				tTimePass =0;
 			}
 		}
 		break;
@@ -478,19 +436,19 @@ void CUIMinigame::RenderNpcSlot(INDEX npcState)
 
 			if( !m_bTalkOnce )
 			{
-				if (m_whowin == 2) // 졌을 때
+				if( m_whowin == 0) // 졌을 때
 				{			
 					SetButtonState(BTN_STATE_DEFEAT);
 					SetNpcTalk(MINIGAME_LOSE);
 				}
-				else if (m_whowin == 1) // 비겼을 때
+				else if(m_whowin == 1) // 비겼을 때
 				{
 					SetButtonState(BTN_STATE_WIN_DRAW);	
 					SetNpcTalk(MINIGAME_DRAW);
 				}
-				else if (m_whowin == 0) // 이겼을 때
+				else if( m_whowin ==2) // 이겼을 때
 				{
-					if (m_iWinNum >= 8)
+					if(m_iWinNum>=8 )
 					{
 						// 8승 이상일 때 그만하고 상품받기만 활성화
 						SetButtonState(0x81);	
@@ -525,10 +483,10 @@ void CUIMinigame::Render()
 	if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
 		Close();
 */
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
+	CDrawPort *pdp = _pUIMgr->GetDrawPort();
 	
 	// Set Minigame texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	pdp->InitTextureData( m_ptdBaseTexture );
 	// Add render regions
 	// Background
 	m_bxTitle.Render(m_nPosX,m_nPosY);
@@ -547,9 +505,9 @@ void CUIMinigame::Render()
 	m_listNpcTalk.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	pdp->FlushRenderingQueue();
 
-	pDrawPort->InitTextureData( m_ptdAddTexture );
+	pdp->InitTextureData( m_ptdAddTexture );
 
 	// Render Buttons
 	m_btnScissors.Render();
@@ -562,7 +520,7 @@ void CUIMinigame::Render()
 	// Render Select Mark 
 //	if(m_npcState==MINIGAME_NPC_START)
 	{
-		pDrawPort->AddTexture(
+		_pUIMgr->GetDrawPort()->AddTexture(
 		m_nPosX+m_rtSelBtn2.Left,m_nPosY+m_rtSelBtn2.Top,m_nPosX+m_rtSelBtn2.Right,m_nPosY+m_rtSelBtn2.Bottom,
 		m_rcSelBtn2.U0,m_rcSelBtn2.V0,m_rcSelBtn2.U1,m_rcSelBtn2.V1,
 		0xFFFFFFFF);
@@ -573,37 +531,37 @@ void CUIMinigame::Render()
 	{
 		SetMinigameWinMark();
 
-		pDrawPort->AddTexture(
+		_pUIMgr->GetDrawPort()->AddTexture(
 		m_nPosX+m_rtSelBtn.Left,m_nPosY+m_rtSelBtn.Top,m_nPosX+m_rtSelBtn.Right,m_nPosY+m_rtSelBtn.Bottom,
 		m_rcSelBtn.U0,m_rcSelBtn.V0,m_rcSelBtn.U1,m_rcSelBtn.V1,
 		0xFFFFFFFF);
 	}
 
 	// Render VS mark
-	pDrawPort->AddTexture(
+	pdp->AddTexture(
 		m_nPosX+m_rtVS.Left,m_nPosY+m_rtVS.Top,
 		m_nPosX+m_rtVS.Right,m_nPosY+m_rtVS.Bottom,
 		m_rcVS.U0,m_rcVS.V0,m_rcVS.U1,m_rcVS.V1,
 		0xFFFFFFFF);
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	pdp->FlushRenderingQueue();
 
 	// Render Text
 	CTString tStr;
 	tStr=_S(3455, "승수" );
-	pDrawPort->PutTextEx(tStr, m_nPosX + 351, m_nPosY + 48, 0xFFFFFFFF );
+	pdp->PutTextEx(tStr, m_nPosX + 351, m_nPosY + 48, 0xFFFFFFFF );
 	
 	if(m_npcState == MINIGAME_NPC_RESULT) 
 		m_iWinNumOld = m_iWinNum;
 
 	tStr.PrintF("%d", m_iWinNumOld);
-	pDrawPort->PutTextEx( tStr, m_nPosX + 387, m_nPosY + 60, 0xFFFFFFFF );
+	pdp->PutTextEx( tStr, m_nPosX + 387, m_nPosY + 60, 0xFFFFFFFF );
 	tStr=_S(3456, "가위바위보 게임" );
-	pDrawPort->PutTextEx(tStr, m_nPosX +25, m_nPosY + 5, 0xFFFFFFFF );
+	pdp->PutTextEx(tStr, m_nPosX +25, m_nPosY + 5, 0xFFFFFFFF );
 
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	pdp->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -631,7 +589,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
 			{
@@ -698,17 +656,15 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 				bTitleBarClick = TRUE;
 			}			
 
-			CUIManager::getSingleton()->RearrangeOrder( UI_MINIGAME, TRUE );
+			_pUIMgr->RearrangeOrder( UI_MINIGAME, TRUE );
 			return WMSG_SUCCESS;
 		}
 		break;
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if (pUIManager->GetDragIcon() == NULL)
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				bTitleBarClick = FALSE;
 
@@ -718,14 +674,13 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 				if( m_btnReceiveItem.MouseMessage( pMsg ) != WMSG_FAIL)
 				{
 					// TODO : 그만하고 아이템 받기
-					if (m_ubEventType)
-						_pNetwork->SendMinigameDefaultMessage(m_ubEventType, m_ubMsgEnd);
+					_pNetwork->SendMinigameDefaultMessage(MSG_EVENT_GOMDORI_2007_END);
+
 				}
 				if( m_btnStartGame.MouseMessage( pMsg ) != WMSG_FAIL)
 				{
 					// 게임 시작하기 
-					if (m_ubEventType)
-						_pNetwork->SendMinigameDefaultMessage(m_ubEventType, m_ubMsgStart);
+					_pNetwork->SendMinigameDefaultMessage(MSG_EVENT_GOMDORI_2007_START);
 					// 승수 초기화
 					m_iWinNum = 0;
 					// Win Mark Disable
@@ -738,8 +693,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 				if( m_btnKeepGoing.MouseMessage( pMsg ) != WMSG_FAIL)
 				{
 					// TODO : 계속 하기
-					if (m_ubEventType)
-						_pNetwork->SendMinigameDefaultMessage(m_ubEventType, m_ubMsgContinue);
+					_pNetwork->SendMinigameDefaultMessage(MSG_EVENT_GOMDORI_2007_CONTINUE);
 					// Win Mark Disable
 					m_whowin = -1;
 					// set npc state
@@ -751,11 +705,9 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 					m_btnScissors.SetSize(MINIGAME_BUTTON_SIZE,MINIGAME_BUTTON_SIZE);
 					// 모두 비활성화
 					SetButtonState(0x80);
-					if (m_ubEventType)
-						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 0);
+					_pNetwork->SendMinigameSelect(0);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 					
 				}
 				else if( m_btnStone.MouseMessage( pMsg ) == WMSG_COMMAND )				
@@ -763,22 +715,18 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 					m_btnStone.SetSize(MINIGAME_BUTTON_SIZE,MINIGAME_BUTTON_SIZE);
 					// 모두 비활성화 
 					SetButtonState(0x80);
-					if (m_ubEventType)
-						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 1);
+					_pNetwork->SendMinigameSelect(1);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 				}
 				else if( m_btnPaper.MouseMessage( pMsg ) == WMSG_COMMAND )
 				{
 					m_btnPaper.SetSize(MINIGAME_BUTTON_SIZE,MINIGAME_BUTTON_SIZE);
 					// 모두 비활성화
 					SetButtonState(0x80);
-					if (m_ubEventType)
-						_pNetwork->SendMinigameSelect(m_ubEventType, m_ubMsgSelect, 2);
+					_pNetwork->SendMinigameSelect(2);
 					// set npc state
 					m_npcState = MINIGAME_NPC_START;
-					m_dwTimePass = ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000));
 				}
 				else if( m_listNpcTalk.MouseMessage( pMsg ) != WMSG_FAIL ) 
 				{
@@ -793,7 +741,7 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -821,222 +769,5 @@ WMSG_RESULT CUIMinigame::MouseMessage( MSG *pMsg )
 void CUIMinigame::Close()
 {
 	InitData();
-	CUIManager::getSingleton()->RearrangeOrder( UI_MINIGAME, FALSE );
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// 2011-04-22 보물 지도
-//////////////////////////////////////////////////////////////////////////
-
-CUITreasureMap::CUITreasureMap()
-{
-	m_nZoneIndex = -1;
-	m_fposX = 0.0;
-	m_fposY = 0.0;
-	m_ptdWorldMapTexture = NULL;
-}
-
-CUITreasureMap::~CUITreasureMap()
-{
-
-	InitData();
-}
-
-void CUITreasureMap::InitData()
-{
-	m_nZoneIndex = -1;
-	m_fposX = 0.0;
-	m_fposY = 0.0;
-	
-	if (m_ptdWorldMapTexture)
-	{
-		_pTextureStock->Release(m_ptdWorldMapTexture);
-		m_ptdWorldMapTexture = NULL;
-	}
-}
-
-void CUITreasureMap::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
-{
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
-
-	m_ptdBaseTexture = CreateTexture( CTString( "Data\\Interface\\Map.tex" ) );
-	FLOAT	fTexWidth = m_ptdBaseTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdBaseTexture->GetPixHeight();
-	m_bxBack.SetBoxUV(m_ptdBaseTexture, 30, 24, WRect(0,0,84,48));
-	m_bxBack.SetBoxPos(WRect(0, 0, nWidth, nHeight));
-
-	m_btnClose.Create(this, CTString( "" ), 338, 4, 14, 14);
-	m_btnClose.SetUV(UBS_IDLE, 46, 97, 59, 110, fTexWidth, fTexHeight);
-	m_btnClose.SetUV(UBS_CLICK, 31, 97, 44, 110, fTexWidth, fTexHeight);
-	m_btnClose.CopyUV( UBS_IDLE, UBS_ON );
-	m_btnClose.CopyUV( UBS_IDLE, UBS_DISABLE );
-
-	m_rvTreasureMark.SetUV(0, 130, 38, 168, fTexWidth, fTexHeight);
-}
-
-void CUITreasureMap::OpenMap(INDEX ZoneIndex, FLOAT fPosX, FLOAT fPosY)
-{
-	m_nZoneIndex = ZoneIndex;
-	m_fposX = fPosX;
-	m_fposY = fPosY;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	BOOL bChackMap = FALSE;
-	bChackMap = pUIManager->GetMap()->GetWorldToMapPos(ZoneIndex, m_fposX, m_fposY, 0.73f);
-
-	if (!bChackMap)
-	{
-		return;
-	}
-
-	// Create map texture
-	CTString	strFileName;
-	strFileName.PrintF( "Data\\Interface\\Map_World%d%d.tex", ZoneIndex, 0 );
-	m_ptdWorldMapTexture = CreateTexture(strFileName);
-
-	FLOAT	fTexWidth = m_ptdWorldMapTexture->GetPixWidth();
-	FLOAT	fTexHeight = m_ptdWorldMapTexture->GetPixHeight();
-
-	m_rtWorldMap.SetRect( 0, 0, 359, 359);
-	m_rtWorldMap.Offset(3,22);
-	m_rvWorldMap.SetUV(0, 0, 512, 512, fTexWidth, fTexHeight);
-	m_rtTreasureMark.SetRect(0, 0, 38, 38);
-	m_rtTreasureMark.Offset(m_fposX-15, m_fposY);
-
-	pUIManager->RearrangeOrder(UI_TREASUREMAP,TRUE);
-
-}
-
-void CUITreasureMap::Close()
-{
-	InitData();
-	CUIManager::getSingleton()->RearrangeOrder(UI_TREASUREMAP,FALSE);
-}
-
-// ----------------------------------------------------------------------------
-// Name : ResetPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUITreasureMap::ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	SetPos( ( pixMaxI + pixMinI - GetWidth() ) / 2, ( pixMaxJ + pixMinJ - GetHeight() ) / 2 );
-}
-
-// ----------------------------------------------------------------------------
-// Name : AdjustPosition()
-// Desc :
-// ----------------------------------------------------------------------------
-void CUITreasureMap::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ )
-{
-	if( m_nPosX < pixMinI || m_nPosX + GetWidth() > pixMaxI ||
-		m_nPosY < pixMinJ || m_nPosY + GetHeight() > pixMaxJ )
-		ResetPosition( pixMinI, pixMinJ, pixMaxI, pixMaxJ );
-}
-
-void CUITreasureMap::Render()
-{
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
-
-	pDrawPort->InitTextureData(m_ptdWorldMapTexture);
-	pDrawPort->AddTexture(m_nPosX+m_rtWorldMap.Left, m_nPosY+m_rtWorldMap.Top, m_nPosX+m_rtWorldMap.Right, m_nPosY+m_rtWorldMap.Bottom,
-					m_rvWorldMap.U0, m_rvWorldMap.V0, m_rvWorldMap.U1, m_rvWorldMap.V1, 0xFFFFFFFF);
-
-	pDrawPort->FlushRenderingQueue();
-
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
-
-	m_bxBack.Render(m_nPosX, m_nPosY);
-	m_btnClose.Render();
-
-	pDrawPort->AddTexture(m_nPosX+m_rtTreasureMark.Left, m_nPosY+m_rtTreasureMark.Top, m_nPosX+m_rtTreasureMark.Right, m_nPosY+m_rtTreasureMark.Bottom,
-					m_rvTreasureMark.U0, m_rvTreasureMark.V0, m_rvTreasureMark.U1, m_rvTreasureMark.V1, 0xFFFFFFFF);
-
-	pDrawPort->FlushRenderingQueue();
-
-	CTString tStr;
-	tStr = _S(5440, "보물 지도");
-	pDrawPort->PutTextExCX(tStr, m_nPosX +182, m_nPosY + 5, 0xFFFFFFFF );
-
-	// Flush all render text queue
-	pDrawPort->EndTextEx();
-
-
-}
-
-WMSG_RESULT	CUITreasureMap::MouseMessage( MSG *pMsg )
-{
-	WMSG_RESULT	wmsgResult;
-	// Mouse point
-	static int	nOldX, nOldY;
-	int	nX = LOWORD( pMsg->lParam );
-	int	nY = HIWORD( pMsg->lParam );
-
-	// Title bar
-	static BOOL bTitleBarClick = FALSE;
-	UIRect tTitle(0, 0, 324, 21);
-
-	// Mouse message
-	switch(pMsg->message)
-	{
-	case WM_MOUSEMOVE:
-		{
-			if( !IsFocused() )
-				return WMSG_FAIL;
-
-			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
-			{
-				int	ndX = nX - nOldX;
-				int	ndY = nY - nOldY;
-				nOldX = nX;	nOldY = nY;
-
-				Move( ndX, ndY );
-
-				return WMSG_SUCCESS;
-			}
-			// Close Button
-			if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-				return WMSG_SUCCESS;
-		}break;
-	case WM_LBUTTONDOWN:
-		{
-			if(IsInside(nX,nY))
-			{
-				nOldX = nX;		nOldY = nY;
-
-				// Close button
-				if( m_btnClose.MouseMessage( pMsg ) != WMSG_FAIL )
-				{
-				}
-
-				if( IsInsideRect( nX, nY, tTitle ) )
-				{
-					bTitleBarClick = TRUE;
-					
-				}
-				
-				CUIManager::getSingleton()->RearrangeOrder( UI_TREASUREMAP, TRUE );
-				return WMSG_SUCCESS;
-			}
-		}break;
-	case WM_LBUTTONUP:
-		{
-			// Title bar
-			bTitleBarClick = FALSE;
-
-			if( !IsFocused() )
-					return WMSG_FAIL;
-
-			if( (wmsgResult = m_btnClose.MouseMessage( pMsg ) ) != WMSG_FAIL )
-			{
-				if( wmsgResult == WMSG_COMMAND )
-				{
-					Close();
-				}
-				return WMSG_SUCCESS;
-			}
-		}
-	}
-	return WMSG_FAIL;
+	_pUIMgr->RearrangeOrder( UI_MINIGAME, FALSE );
 }

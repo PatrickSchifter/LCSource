@@ -11,50 +11,13 @@
 
 #include <Engine/Network/CPacket.h>
 #include <Engine/Network/InputBuffer.h> 
-#include <Engine/Network/SocketCompat.h>
-
-struct LoginServer;
-
-struct sIPFilter
-{
-	unsigned char	chSB1;
-	unsigned char	chSB2;
-	unsigned char	chSB3;
-	unsigned char	chSB4;
-	INDEX			iCountry;	// 국가
-
-	sIPFilter()
-	{
-		chSB1		= -1;
-		chSB2		= -1;
-		chSB3		= -1;
-		chSB4		= -1;
-		iCountry	= -1;
-	}
-
-	void	SetIP( unsigned char SB1, unsigned char SB2, unsigned char SB3, unsigned char SB4, INDEX Country )
-	{
-		chSB1		= SB1;
-		chSB2		= SB2;
-		chSB3		= SB3;
-		chSB4		= SB4;
-		iCountry	= Country;
-	}
-
-	bool operator<(const sIPFilter &other) const
-	{
-		if( iCountry < other.iCountry )
-			return true;
-		return false;
-	}
-};
 
 // Communication class
 class ENGINE_API CCommunicationInterface 
 {
 public:
 	// Login Server Information
-	char	cci_szAddr[100];
+	char	cci_szNick[100], cci_szAddr[100];
 	int		cci_iPort;
 	int		cci_iSelectedServerNum;
 
@@ -82,13 +45,7 @@ public:
 
 	// Date : 2005-05-02(오전 10:11:01), By Lee Ki-hwan
 	BOOL	m_b2stLocal;				// 2번째 지역인지 확인 (중국 Local )
-
-protected:
-	// [2013/01/09] sykim70
-	CLCCRC32 m_crc;
-
-	// IP Filter 목록.
-	std::vector<sIPFilter>	m_vecIPFilter;	
+	
 public:
 	// client
 	void Client_OpenLocal(void);
@@ -183,17 +140,6 @@ public:
 	BOOL IsInitUpdateMasterBuffer(){return cci_bInitUpdateMasterBuffer;}
 
 	BOOL Is2rdLocal(); // Date : 2005-05-02(오전 10:11:01), By Lee Ki-hwan	// 2번째 지역인지 확인 (중국 Local )
-	
-	void attachCRC(CPacket* packet);
-
-protected:
-
-	int ReadInfo( LoginServer* stLogin );
-	void ShowDisconnMsg();
-	void SetIPFilter();
-	BOOL CheckIPFilter();
-	BOOL IsValidIP();
-	bool FindHosNameIP(const char* szHostName, sIPFilter &ip, INDEX iCountry);
 
 };
 

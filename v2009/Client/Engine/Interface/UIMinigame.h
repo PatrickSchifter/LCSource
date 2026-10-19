@@ -9,9 +9,9 @@
 	#pragma once
 #endif
 
-// #include <Engine/Interface/UIDrawFigure.h>
-// #include <Engine/Interface/UIButton.h>
-// #include <Engine/Interface/UIListBox.h>
+#include <Engine/Interface/UIDrawFigure.h>
+#include <Engine/Interface/UIButton.h>
+#include <Engine/Interface/UIListBox.h>
 
 // Define size of MINIGAME
 #define	MINIGAME_WIDTH				428
@@ -97,15 +97,6 @@ protected:
 	CUIListBox			m_listNpcTalk;
 	BOOL				m_bTalkOnce;
 
-	// Minigame network messages
-	UBYTE m_ubEventType;
-	UBYTE m_ubMsgStart;
-	UBYTE m_ubMsgSelect;
-	UBYTE m_ubMsgContinue;
-	UBYTE m_ubMsgEnd;
-
-	DWORD m_dwTimePass;
-
 public:
 	CUIMinigame();
 	~CUIMinigame();
@@ -137,7 +128,7 @@ public:
 	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
 
 	// Open portal
-	void	OpenMinigame(UBYTE eventType);
+	void	OpenMinigame();
 
 	// Set data
 	void	SetMinigameResult(int wincount,int usersel,int npcsel,int whowin);
@@ -152,45 +143,6 @@ public:
 	
 };
 
-#define TREASUREMAP_WIDTH				365
-#define TREASUREMAP_HEIGHT				384
-
-class CUITreasureMap : public CUIWindow
-{
-protected:
-	// Addtional Texture
-	CTextureData		*m_ptdWorldMapTexture;			// Texture of event image
-	CUIDrawBox			m_bxBack;
-	UIRect				m_rtTreasureMark;
-	UIRect				m_rtWorldMap;
-	UIRectUV			m_rvTreasureMark;
-	UIRectUV			m_rvWorldMap;
-	CUIButton			m_btnClose;
-
-	INDEX				m_nZoneIndex;
-	FLOAT				m_fposX;
-	FLOAT				m_fposY;
-public:
-	CUITreasureMap();
-	~CUITreasureMap();
-
-	// close
-	void	Close();
-
-	void	InitData();
-	// Create
-	void	Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight );
-
-	// Adjust position
-	void	ResetPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX pixMaxJ );
-	void	OpenMap(INDEX ZoneIndex, FLOAT fPosX, FLOAT fPosY);
-
-	// Render
-	void	Render();
-	// Messages
-	WMSG_RESULT	MouseMessage( MSG *pMsg );
-};
 
 #endif	// UIMinigame_H_
 

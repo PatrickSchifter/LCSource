@@ -9,7 +9,25 @@
 	#pragma once
 #endif
 
-#include <Engine/Platform/Platform.h>
+
+// UI mouse cursor type
+enum UIMCType
+{
+	UMCT_NORMAL			= 0,
+	UMCT_ATT_NORMAL		= 1,
+	UMCT_ATT_SKILL		= 2,
+	UMCT_ATT_MAGIC		= 3,
+	UMCT_ATT_BOW		= 4,
+	UMCT_PICK			= 5,
+	UMCT_TALK			= 6,
+	UMCT_PRODUCE		= 7,
+	UMCT_SIZE			= 8,
+	UMCT_ZOOMIN			= 9,
+	UMCT_SIGNAL			= 10,
+	UMCT_TOTAL			= 11,
+	UMCT_CURRENT		= -1,
+};
+
 
 // ----------------------------------------------------------------------------
 // Name : CUIMouseCursor
@@ -22,7 +40,7 @@ protected:
 	HCURSOR			m_hCursors[UMCT_TOTAL];			// Handles of mouse cursor
 
 public:
-	CUIMouseCursor() { m_umctType = UMCT_NORMAL; memset(m_hCursors, 0, sizeof(m_hCursors)); }
+	CUIMouseCursor() { m_umctType = UMCT_NORMAL; }
 	~CUIMouseCursor() {}
 
 	// Type
@@ -31,21 +49,12 @@ public:
 		if( umctType != UMCT_CURRENT )
 			m_umctType = umctType;
 
-#ifdef LC_PLATFORM_SDL
-		PLT_SetCursor(m_hCursors[m_umctType]);
-#else
 		SetCursor(m_hCursors[m_umctType]);
-#endif
 	}
 	UIMCType	GetCursorType() const { return m_umctType; }
 
 	// Handles
 	void	SetCursorHandle( UIMCType umctType, HCURSOR hCursor ) { m_hCursors[umctType] = hCursor; }
-#ifdef LC_PLATFORM_SDL
-	void	SetCursorNULL(void) { PLT_SetCursor(NULL); }
-#else
-	void	SetCursorNULL(void) { SetCursor(LoadCursor(NULL, IDC_ARROW)); }
-#endif
 };
 
 

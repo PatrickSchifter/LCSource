@@ -1,21 +1,16 @@
 #include "StdH.h"
-
-// 헤더 정리. [12/1/2009 rumist]
-#include <Engine/Interface/UIInternalClasses.h>
-#include <vector>
 #include <Engine/Interface/UIChangeWeapon.h>
+#include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
+#include <Engine/Entities/ItemData.h>
 #include <algorithm>
-#include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIHelp.h>
-#include <Engine/Interface/UIMixNew.h>
-#include <Engine/Contents/Base/UIQuestNew.h>
-#include <Engine/Contents/Base/UIQuestBookNew.h>
 
 extern INDEX g_iCountry;
 
 // [KH_07044] 3차 도움말 관련 추가
+#ifdef HELP_SYSTEM_1
 extern INDEX g_iShowHelp1Icon;
+#endif
 
 enum eSelection
 {
@@ -23,7 +18,7 @@ enum eSelection
 	CHANGEWEAPON_TALK,
 	CHANGEWEAPON_EVENT,
 	CHANGESHIELD_OK,
-	CHANGEWEAPON_MASTERSTONE,
+
 };
 
 static int	_iMaxMsgStringChar = 0;
@@ -42,7 +37,7 @@ static int	_iMaxMsgStringChar = 0;
 
 // NOTE : 서버측에 하드코딩 되어 있는 무기 교체 가능 아이템 인덱스.
 // 레벨, 한손검, 석궁, 스태프, 대검, 도끼, 숏스테프, 활, 단검, -1, -1, -1, 이도류, 완드, 사이드, 폴암 : 할일 : 소서러
-const static int matchTable[12][16] = {
+const static matchTable[12][16] = {
 	{1,48,530,600,12,558,356,50,528,-1,-1,-1,459,599,-1,-1},
 	{5,53,666,628,51,601,357,56,529,-1,-1,-1,610,619,-1,-1},
 	{9,55,637,629,52,602,358,57,532,-1,-1,-1,611,620,-1,-1},
@@ -84,7 +79,6 @@ BOOL CUIChangeWeapon::IsChangeableWeapon( int iWeaponIndex )
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUIChangeWeapon::CUIChangeWeapon()
-	: m_pSelItem(NULL)
 {
 	m_eChangeWeaponState	= CHANGEWEAPON_REQ;
 	m_nStringCount			= 0;
@@ -109,6 +103,7 @@ CUIChangeWeapon::CUIChangeWeapon()
 // ----------------------------------------------------------------------------
 CUIChangeWeapon::~CUIChangeWeapon()
 {
+	Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -117,7 +112,9 @@ CUIChangeWeapon::~CUIChangeWeapon()
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight )
 {
-	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
+	m_pParentWnd = pParentWnd;
+	SetPos( nX, nY );
+	SetSize( nWidth, nHeight );
 
 	_iMaxMsgStringChar = 190 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
 
@@ -223,7 +220,7 @@ void CUIChangeWeapon::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth,
 	AddWeaponInfo( CItemData::ITEM_WEAPON_SSTAFF,	_S( 1043, "숏스태프" ), MAGE );			
 	AddWeaponInfo( CItemData::ITEM_WEAPON_BOW,		_S( 1044, "활" ),		HEALER );		
 	AddWeaponInfo( CItemData::ITEM_WEAPON_DAGGER,	_S( 1045, "단검" ),		ROGUE );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_TWOSWORD, _S( 1046, "이도류" ),	KNIGHT );	
+	AddWeaponInfo( CItemData::ITEM_WEAPON_TWOSWORD, _S( 1046, "이도류" ),	KNIGHT );		
 	AddWeaponInfo( CItemData::ITEM_WEAPON_WAND,		_S( 1047, "힐러완드" ),		HEALER );		
 	AddWeaponInfo( CItemData::ITEM_WEAPON_SCYTHE,	_S( 2306,"사이드" ),		SORCERER );		
 	AddWeaponInfo( CItemData::ITEM_WEAPON_POLEARM,		_S(2307, "폴암" ),		SORCERER );		
@@ -258,100 +255,75 @@ void CUIChangeWeapon::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::OpenChangeWeapon(int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT fZ )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	if( pUIManager->GetInventory()->IsLocked() == TRUE ||
-		pUIManager->GetInventory()->IsLockedArrange() == TRUE)
-	{
-		pUIManager->GetInventory()->ShowLockErrorMessage();
-		return;
-	}
-
 	// If this is already exist
-	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_CHANGEWEAPON_REQ ) || IsVisible() )
+	if( _pUIMgr->DoesMessageBoxLExist( MSGLCMD_CHANGEWEAPON_REQ ) || IsVisible() )
 		return;
 
 	// 전직 캐릭터인지를 체크함!!!
 	// 전직 캐릭터가 아니라면 return;
-	//pUIManager->GetChatting()->AddSysMessage( _S( 1048, "전직 캐릭터만 무기 교체를 할 수 있습니다." ), SYSMSG_ERROR );		
+	//_pUIMgr->GetChatting()->AddSysMessage( _S( 1048, "전직 캐릭터만 무기 교체를 할 수 있습니다." ), SYSMSG_ERROR );		
 
-	pUIManager->CloseMessageBox( MSGCMD_CHANGEWEAPON_REP );
-	pUIManager->CloseMessageBox( MSGCMD_CHANGEWEAPON_NOTIFY );
+	_pUIMgr->CloseMessageBox( MSGCMD_CHANGEWEAPON_REP );
+	_pUIMgr->CloseMessageBox( MSGCMD_CHANGEWEAPON_NOTIFY );
 
 	// Set position of target npc
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
 
-	CMobData* MD = CMobData::getData(iMobIndex);
-
-	CTString strMessage;	
-
-#ifdef	MASTERSTONE
-	if(iMobIndex == 1261)		// 인챈트 마스터 닐리 ; 마스터 스톤용
-	{
-		pUIManager->CreateMessageBoxL( _S(5435, "마스터 스톤으로 업그레이드하기" ), UI_CHANGEWEAPON, MSGLCMD_CHANGEWEAPON_REQ );		
-
-		CTString	strNpcName = CMobData::getData(iMobIndex)->GetName();
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, strNpcName, -1, 0xE18600FF );
-
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(5443,"일반인이 아이템을 업그레이드하는 데는 한계가 있습니다. 저는 그 한계를 뛰어 넘는 업그레이드하는 방법을 알고 있으며 또한 저만 업그레이드 한계 수치 이상 +26까지 업그레이드 할 수 있습니다."), -1, 0xA3A1A3FF );
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(5444,"그 방법은 마스터 스톤입니다. 마스터 스톤은 크게 무기마스터 스톤과 방어 구 마스터 스톤 2가지가 있으며 무기 마스터 스톤은 등급별로 6단계가 존재합니다."), -1, 0xA3A1A3FF );
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(5445,"(0~16, 0~18, 0~20, 0~22, 0~24, 0~25) 방어 구 마스터 스톤은 등급 없이 사용 가능합니다. 제가하는 업그레이드는 실패 없이 100%성공을 자랑합니다."), -1, 0xA3A1A3FF );
-
-		strMessage= _S(5435, "마스터 스톤으로 업그레이드 하기" );			
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_MASTERSTONE );	
-
-		strMessage.PrintF( _S( 1220, "취소한다." ) );
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage );	
-
-		return;
-	}
-#endif
+	CMobData& MD = _pNetwork->GetMobData(iMobIndex);
 
 	// Create refine message box
-	pUIManager->CreateMessageBoxL( _S(2308, "무기및 방어구 교체" ), UI_CHANGEWEAPON, MSGLCMD_CHANGEWEAPON_REQ );		
+	_pUIMgr->CreateMessageBoxL( _S(2308, "무기및 방어구 교체" ), UI_CHANGEWEAPON, MSGLCMD_CHANGEWEAPON_REQ );		
 
-	CTString	strNpcName = CMobData::getData(iMobIndex)->GetName();
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, strNpcName, -1, 0xE18600FF );
+	CTString	strNpcName = _pNetwork->GetMobName(iMobIndex);
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, strNpcName, -1, 0xE18600FF );
 
 #ifndef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S( 1050, "지금 사용하고 있는 무기나 방어구가 마음에 들지 않는겐가?" ), -1, 0xA3A1A3FF );		
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S( 1051, "그럼 내가 자네를 도와줄 수 있겠구만." ), -1, 0xA3A1A3FF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2309,"하지만 주의해야할 사항이 있네"), -1, 0xA3A1A3FF );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2310,"교체되는 장비는 제련된 수치만 남고 블러드 옵션값이 삭제되니까 잘 생각해 보시고 교체게나."), -1, 0xF3BA0CFF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2311,"그래도 이렇게 쉽게 새로운 장비를 구할 수 있는 곳이 어디 있겠나..."), -1, 0xA3A1A3FF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2312,"자 빨리 교환하게나...  사람들이 더 몰리기 전에..."), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S( 1050, "지금 사용하고 있는 무기나 방어구가 마음에 들지 않는겐가?" ), -1, 0xA3A1A3FF );		
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S( 1051, "그럼 내가 자네를 도와줄 수 있겠구만." ), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2309,"하지만 주의해야할 사항이 있네"), -1, 0xA3A1A3FF );			
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2310,"교체되는 장비는 제련된 수치만 남고 블러드 옵션값이 삭제되니까 잘 생각해 보시고 교체게나."), -1, 0xF3BA0CFF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2311,"그래도 이렇게 쉽게 새로운 장비를 구할 수 있는 곳이 어디 있겠나..."), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2312,"자 빨리 교환하게나...  사람들이 더 몰리기 전에..."), -1, 0xA3A1A3FF );
 #else
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2152,"당신도 무기 교체를 하러 오신 것 맞죠?"), -1, 0xA3A1A3FF );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2153,"사용하던 무기를 무료로 다른 종류의 무기로 바꿔 준다는 소문이 어찌나 빠르게 퍼졌던지 쉴세없이 사람들이 몰려와서 정신이 없네요."), -1, 0xA3A1A3FF );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2154,"하지만 주의해야할 사항이 있어요!"), -1, 0xA3A1A3FF );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2155,"교체되는 무기는 제련된 수치만 남고 블러드 옵션값이 삭제되니까 잘 생각해 보시고 교체하세요."), -1, 0xF3BA0CFF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2156,"그래도 이렇게 쉽게 새로운 무기를 구할 수 있는 곳이 어디 있겠어요..."), -1, 0xA3A1A3FF );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2157,"자 빨리 교환하세요.  사람들이 더 몰리기 전에요..."), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2152,"당신도 무기 교체를 하러 오신 것 맞죠?"), -1, 0xA3A1A3FF );			
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2153,"사용하던 무기를 무료로 다른 종류의 무기로 바꿔 준다는 소문이 어찌나 빠르게 퍼졌던지 쉴세없이 사람들이 몰려와서 정신이 없네요."), -1, 0xA3A1A3FF );			
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2154,"하지만 주의해야할 사항이 있어요!"), -1, 0xA3A1A3FF );			
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2155,"교체되는 무기는 제련된 수치만 남고 블러드 옵션값이 삭제되니까 잘 생각해 보시고 교체하세요."), -1, 0xF3BA0CFF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2156,"그래도 이렇게 쉽게 새로운 무기를 구할 수 있는 곳이 어디 있겠어요..."), -1, 0xA3A1A3FF );
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, TRUE, _S(2157,"자 빨리 교환하세요.  사람들이 더 몰리기 전에요..."), -1, 0xA3A1A3FF );
+	
 #endif
 
+	CTString strMessage;	
 	strMessage.PrintF( _S( 1049, "무기 교체" ) );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_OK );	
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_OK );	
 	
 	// wooss add shield item exchange
 	strMessage= _S(2313, "방어구 교체" );			
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGESHIELD_OK );	
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGESHIELD_OK );	
 
 	if( bHasQuest )
 	{
+#ifdef	NEW_QUESTBOOK
 		// 2009. 05. 27 김정래
 		// 이야기한다 변경 처리
 		CUIQuestBook::AddQuestListToMessageBoxL(MSGLCMD_CHANGEWEAPON_REQ);				
+#else
+		strMessage.PrintF( _S( 1053, "이야기한다." ) );	
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_TALK );
+#endif
+
 	}
 	
-	if( MD->IsEvent() )
+	if( MD.IsEvent() )
 	{
 		strMessage.PrintF( _S( 100, "이벤트." ) );			
-		pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_EVENT );
+		_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage, CHANGEWEAPON_EVENT );
 	}
 
 	strMessage.PrintF( _S( 1220, "취소한다." ) );
-	pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage );	
+	_pUIMgr->AddMessageBoxLString( MSGLCMD_CHANGEWEAPON_REQ, FALSE, strMessage );	
 
 }
 
@@ -377,12 +349,10 @@ void CUIChangeWeapon::CloseChangeWeapon()
 	m_strWeight.Clear();
 	m_slLevel				= -1;
 
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// Close refine
-	pUIManager->RearrangeOrder( UI_CHANGEWEAPON, FALSE );
+	_pUIMgr->RearrangeOrder( UI_CHANGEWEAPON, FALSE );
 
-	pUIManager->GetInventory()->Lock( FALSE, FALSE, LOCK_CHANGEWEAPON );
+	_pUIMgr->GetInventory()->Lock( FALSE, FALSE, LOCK_CHANGEWEAPON );
 
 	m_strChangeWeaponMoney.Clear();
 
@@ -400,18 +370,13 @@ void CUIChangeWeapon::Render()
 	FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - m_fNpcX;
 	FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - m_fNpcZ;
 	// cash item check wooss 051011
-	if( m_bCashItemChk == FALSE )
-	{
+	if(!m_bCashItemChk)
 		if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
-		{
 			CloseChangeWeapon();
-		}
-	}
 
-	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	// Set refine texture
-	pDrawPort->InitTextureData( m_ptdBaseTexture );
+	_pUIMgr->GetDrawPort()->InitTextureData( m_ptdBaseTexture );
 
 	// Add render regions
 	int	nX, nY, nX2, nY2;
@@ -420,67 +385,67 @@ void CUIChangeWeapon::Render()
 	// Top
 	nX = m_nPosX + m_nWidth;
 	nY = m_nPosY + 26;
-	pDrawPort->AddTexture( m_nPosX, m_nPosY, nX, nY,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, m_nPosY, nX, nY,
 		m_rtTop.U0, m_rtTop.V0,
 		m_rtTop.U1, m_rtTop.V1,
 		0xFFFFFFFF );
 	
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 103,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 103,
 		m_rtMiddle1.U0, m_rtMiddle1.V0,
 		m_rtMiddle1.U1, m_rtMiddle1.V1,
 		0xFFFFFFFF );
 
 	nY += 103;
 	
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 11,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 11,
 		m_rtMiddle2.U0, m_rtMiddle2.V0,
 		m_rtMiddle2.U1, m_rtMiddle2.V1,
 		0xFFFFFFFF );
 
 	nY += 11;
 
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 18,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 18,
 		m_rtMiddle3.U0, m_rtMiddle3.V0,
 		m_rtMiddle3.U1, m_rtMiddle3.V1,
 		0xFFFFFFFF );
 
 	nY += 18;
 
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 101,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 101,
 		m_rtMiddle1.U0, m_rtMiddle1.V0,
 		m_rtMiddle1.U1, m_rtMiddle1.V1,
 		0xFFFFFFFF );
 
 	nY += 101;
 
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 4,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 4,
 		m_rtMiddle2.U0, m_rtMiddle2.V0,
 		m_rtMiddle2.U1, m_rtMiddle2.V1,
 		0xFFFFFFFF );
 	
 	nY += 4;
 	
-	pDrawPort->AddTexture( m_nPosX, nY, nX, nY + 101,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, nY + 101,
 		m_rtMiddle1.U0, m_rtMiddle1.V0,
 		m_rtMiddle1.U1, m_rtMiddle1.V1,
 		0xFFFFFFFF );
 
 	nY += 101;
 
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight - 7,
 		m_rtMiddle2.U0, m_rtMiddle2.V0,
 		m_rtMiddle2.U1, m_rtMiddle2.V1,
 		0xFFFFFFFF );
 	
 	// Bottom
 	nY = m_nPosY + m_nHeight - 7;
-	pDrawPort->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX, nY, nX, m_nPosY + m_nHeight,
 		m_rtBottom.U0, m_rtBottom.V0,
 		m_rtBottom.U1, m_rtBottom.V1,
 		0xFFFFFFFF );
 
 	// Slot item region
-	pDrawPort->AddTexture( m_nPosX + m_rcItemSlot.Left, m_nPosY + m_rcItemSlot.Top,
+	_pUIMgr->GetDrawPort()->AddTexture( m_nPosX + m_rcItemSlot.Left, m_nPosY + m_rcItemSlot.Top,
 										m_nPosX + m_rcItemSlot.Right, m_nPosY + m_rcItemSlot.Bottom,
 										m_rtItemSlot.U0, m_rtItemSlot.V0, m_rtItemSlot.U1, m_rtItemSlot.V1,
 										0xFFFFFFFF );
@@ -492,15 +457,15 @@ void CUIChangeWeapon::Render()
 
 	if(!m_bCashItemChk){
 	// Point    금액 박스 wooss 051011
-	pDrawPort->AddTexture( nX, nY, nX + 4, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX, nY, nX + 4, nY2,
 		m_rtInputBoxL.U0, m_rtInputBoxL.V0, m_rtInputBoxL.U1, m_rtInputBoxL.V1,
 		0xFFFFFFFF );
 	//Lower middle
-		pDrawPort->AddTexture( nX + 4, nY, nX2 - 4, nY2,
+		_pUIMgr->GetDrawPort()->AddTexture( nX + 4, nY, nX2 - 4, nY2,
 			m_rtInputBoxM.U0, m_rtInputBoxM.V0, m_rtInputBoxM.U1, m_rtInputBoxM.V1,
 			0xFFFFFFFF );
 	// Lower right
-	pDrawPort->AddTexture( nX2 - 4, nY, nX2, nY2,
+	_pUIMgr->GetDrawPort()->AddTexture( nX2 - 4, nY, nX2, nY2,
 		m_rtInputBoxR.U0, m_rtInputBoxR.V0, m_rtInputBoxR.U1, m_rtInputBoxR.V1,
 		0xFFFFFFFF );
 	}
@@ -518,137 +483,148 @@ void CUIChangeWeapon::Render()
 	m_lbWeaponList.Render();
 
 	// Render all elements
-	pDrawPort->FlushRenderingQueue();
+	_pUIMgr->GetDrawPort()->FlushRenderingQueue();
 
 	// Item
 	if( !m_btnSlotItem.IsEmpty() )
 	{
 		m_btnSlotItem.Render();
-		pDrawPort->FlushBtnRenderingQueue( UBET_ITEM );
+		_pUIMgr->GetDrawPort()->FlushBtnRenderingQueue( UBET_ITEM );
 	}
 
 	if( m_eChangeWeaponState == CHANGEWEAPON_STAT ){
 	
 		// Text in refine
-		pDrawPort->PutTextEx( _S( 1049, "무기 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1049, "무기 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
 											m_nPosY + CHANGEWEAPON_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextEx( _S( 1057, "교체무기" ), m_nPosX + 40,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1057, "교체무기" ), m_nPosX + 40,		
 											m_nPosY + 60, 0xFFFFFFFF );
 
 		// cash item check wooss 051011
 		if(!m_bCashItemChk) {
 			nY = m_nPosY + 104;
-			pDrawPort->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
+			_pUIMgr->GetDrawPort()->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
 										nY, 0xFFFFFFFF );
 			// ChangeWeaponing money
 #ifdef CHANGE_WEAPON_SHIELD_EVENT	
-			pDrawPort->PutTextEx( _S(2315," 교체 이벤트"),	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2315," 교체 이벤트"),	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
 #else
-			pDrawPort->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
 #endif 
 
 		}
 		
 		nY = m_nPosY + 143;
-		pDrawPort->PutTextEx( _S( 1059, "무기 리스트" ), m_nPosX + 12,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1059, "무기 리스트" ), m_nPosX + 12,		
 											nY, 0xE18600FF );
 
 		nY = m_nPosY + 269;
-		pDrawPort->PutTextEx( _S( 1065, "무기 이름" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1065, "무기 이름" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S( 1066, "무기 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1066, "무기 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S( 1068, "공격력" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1068, "공격력" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponAttack, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponAttack, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S( 1069, "마법 공격력" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1069, "마법 공격력" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponMagicAttack, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponMagicAttack, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
-		
+		nY += 15;
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1070, "무게" ), m_nPosX + WEAPON_INFO_START_X,		
+											nY, 0xFFFFFFFF );
+
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeight, m_nPosX + WEAPON_DESC_START_X,
+											nY, 0xFFd223FF );
 	}
 	else if( m_eChangeWeaponState == CHANGEWEAPON_SHIELD){
 		// Text in refine
-		pDrawPort->PutTextEx( _S( 2313,"방어구 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 2313,"방어구 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
 											m_nPosY + CHANGEWEAPON_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextEx( _S( 2314,"교체 방어구" ), m_nPosX + 30,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 2314,"교체 방어구" ), m_nPosX + 30,		
 											m_nPosY + 60, 0xFFFFFFFF );
 
 		// cash item check wooss 051011
 		if(!m_bCashItemChk) {
 			nY = m_nPosY + 104;
-			pDrawPort->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
+			_pUIMgr->GetDrawPort()->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
 										nY, 0xFFFFFFFF );
 #ifdef CHANGE_WEAPON_SHIELD_EVENT	
-			pDrawPort->PutTextEx( _S(2315," 교체 이벤트"), m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
+			_pUIMgr->GetDrawPort()->PutTextEx( _S(2315," 교체 이벤트"), m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
 #else
-			pDrawPort->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
+			_pUIMgr->GetDrawPort()->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
 #endif 
 		}
 		
 		nY = m_nPosY + 143;
-		pDrawPort->PutTextEx( _S(2316, "클래스 리스트" ), m_nPosX + 12,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S(2316, "클래스 리스트" ), m_nPosX + 12,		
 											nY, 0xE18600FF );
 
 		nY = m_nPosY + 269;
-		pDrawPort->PutTextEx( _S(2317, "방어구 이름" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S(2317, "방어구 이름" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S(2318, "방어구 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S(2318, "방어구 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
 		nY += 15;
-		pDrawPort->PutTextEx( _S(87, "방어력" ), m_nPosX + WEAPON_INFO_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextEx( _S(87, "방어력" ), m_nPosX + WEAPON_INFO_START_X,		
 											nY, 0xFFFFFFFF );
 
-		pDrawPort->PutTextExRX( m_strWeaponDefence, m_nPosX + WEAPON_DESC_START_X,		
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeaponDefence, m_nPosX + WEAPON_DESC_START_X,		
 											nY, 0xFFd223FF );
 
-	
+		nY += 15;
+		_pUIMgr->GetDrawPort()->PutTextEx( _S( 1070, "무게" ), m_nPosX + WEAPON_INFO_START_X,		
+											nY, 0xFFFFFFFF );
+
+		_pUIMgr->GetDrawPort()->PutTextExRX( m_strWeight, m_nPosX + WEAPON_DESC_START_X,
+											nY, 0xFFd223FF );
 
 	}
 
+
 	// Flush all render text queue
-	pDrawPort->EndTextEx();
+	_pUIMgr->GetDrawPort()->EndTextEx();
 }
 
 // ----------------------------------------------------------------------------
@@ -673,7 +649,7 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 	case WM_MOUSEMOVE:
 		{
 			if( IsInside( nX, nY ) )
-				CUIManager::getSingleton()->SetMouseCursorInsideUIs();
+				_pUIMgr->SetMouseCursorInsideUIs();
 
 			// Move refine
 			if( bTitleBarClick && ( pMsg->wParam & MK_LBUTTON ) )
@@ -744,7 +720,7 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 						
 							// FIXME : 이 함수를 호출하기 전에, 아이템을 선택했는지부터 확인.
 							// 아이템 설명을 얻습니다.
-							GetWeaponInfo( TempMember.iJob, m_slLevel, TempMember.iIndex );
+							GetWeaponInfo( _pNetwork->MyCharacterInfo.job, m_slLevel, TempMember.iIndex );
 						}
 						else if( m_eChangeWeaponState == CHANGEWEAPON_SHIELD )
 						{
@@ -753,13 +729,7 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 						
 							// FIXME : 이 함수를 호출하기 전에, 아이템을 선택했는지부터 확인.
 							// 아이템 설명을 얻습니다.
-							
-							// 나이트셰도우 아이템은 교환 품목이 아니다. 따라서 6번탭에 나이트셰도우가 빠져있기 때문에 예외처리.
-							if (iSelWeapon >= 6)
-								++iSelWeapon;
-
-							if (m_pSelItem->ItemData != NULL)
-								GetShieldInfo( iSelWeapon, m_slLevel, m_pSelItem->ItemData->GetSubType());
+							GetShieldInfo( iSelWeapon, m_slLevel,m_selItem.ItemData.GetSubType());
 						}
 						
 					}
@@ -768,7 +738,7 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 				else if( m_lbWeaponDesc.MouseMessage( pMsg ) != WMSG_FAIL )
 					return WMSG_SUCCESS;
 
-				CUIManager::getSingleton()->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
+				_pUIMgr->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
 				return WMSG_SUCCESS;
 			}
 		}
@@ -776,10 +746,8 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 
 	case WM_LBUTTONUP:
 		{
-			CUIManager* pUIManager = CUIManager::getSingleton();
-
 			// If holding button doesn't exist
-			if( pUIManager->GetHoldBtn().IsEmpty() )
+			if( _pUIMgr->GetHoldBtn().IsEmpty() )
 			{
 				// Title bar
 				bTitleBarClick = FALSE;
@@ -831,8 +799,8 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 				if( IsInside( nX, nY ) )
 				{
 					// If holding button is item and comes from inventory
-					if( pUIManager->GetHoldBtn().GetBtnType() == UBET_ITEM &&
-						pUIManager->GetHoldBtn().GetWhichUI() == UI_INVENTORY )
+					if( _pUIMgr->GetHoldBtn().GetBtnType() == UBET_ITEM &&
+						_pUIMgr->GetHoldBtn().GetWhichUI() == UI_INVENTORY )
 					{
 						if( IsInsideRect( nX, nY, m_rcInsertItem ) )
 						{
@@ -845,7 +813,7 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 					}
 
 					// Reset holding button
-					pUIManager->ResetHoldBtn();
+					_pUIMgr->ResetHoldBtn();
 
 					return WMSG_SUCCESS;
 				}
@@ -887,78 +855,70 @@ WMSG_RESULT CUIChangeWeapon::MouseMessage( MSG *pMsg )
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::SetChangeShieldItem()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// If this is wearing item
-	if( pUIManager->GetHoldBtn().GetItemWearType() >= 0 )
+	if( _pUIMgr->GetHoldBtn().GetItemWearType() >= 0 )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1071, "착용된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1071, "착용된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 	// If this is not weapon or armor
-	int	nTab = pUIManager->GetHoldBtn().GetItemTab();
-	int	nIdx = pUIManager->GetHoldBtn().GetInvenIndex();
+	int	nTab = _pUIMgr->GetHoldBtn().GetItemTab();
+	int	nRow = _pUIMgr->GetHoldBtn().GetItemRow();
+	int	nCol = _pUIMgr->GetHoldBtn().GetItemCol();
+	// CItems		&rItems = _pNetwork->MySlotItem[nTab][nRow][nCol];
 	// wooss : add shield item exchange
-	m_pSelItem = &_pNetwork->MySlotItem[nTab][nIdx];
-	CItemData*	pItemData = m_pSelItem->ItemData;
-	
-	if( pItemData->GetType() != CItemData::ITEM_SHIELD )	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2320, "방어구만 교체 할 수 있습니다." ), SYSMSG_ERROR );		
+	m_selItem = _pNetwork->MySlotItem[nTab][nRow][nCol];
+	CItemData	&rItemData = m_selItem.ItemData;
+	if( rItemData.GetType() != CItemData::ITEM_SHIELD )
+	{
+		_pUIMgr->GetChatting()->AddSysMessage( _S(2320, "방어구만 교체 할 수 있습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 #ifndef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
-	if( pItemData->GetLevel() < 29 || pItemData->GetLevel() >72)
+	if( rItemData.GetLevel() < 29 || rItemData.GetLevel() >72)
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1073, "교체할 수 있는 아이템 레벨이 아닙니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1073, "교체할 수 있는 아이템 레벨이 아닙니다." ), SYSMSG_ERROR );		
 		return;
 	}
-#if defined SOCKET_CHANGEWEAPON_ENABLE
-	if( (m_pSelItem->GetSocketCount() > 0) )
-	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
-		return;
-	}
-#endif
 #else
 
 	// 교환 가능한 아이템 목록인지 확인합니다.
-	if( !IsChangeableWeapon( rItems.Item_Index )
-#if defined SOCKET_CHANGEWEAPON_ENABLE
-		|| (m_pSelItem->GetSocketCount() > 0) 
-#endif
-		)
+	if( !IsChangeableWeapon( rItems.Item_Index ) )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
 		return;
 	}
 #endif
 
 	// If refining money is short
-	m_slLevel = pItemData->GetLevel();
+	m_slLevel = rItemData.GetLevel();
 
 	// Insert upgrade slot
-	m_btnSlotItem.Copy( pUIManager->GetHoldBtn() );
+	m_btnSlotItem.Copy( _pUIMgr->GetHoldBtn() );
 	
 	m_llChangeWeaponMoney = CalculateNeedNasS( m_slLevel );
 	m_strChangeWeaponMoney.PrintF( "%I64d", m_llChangeWeaponMoney );
 
 	// Lock inventory
-	//pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
+	//_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
 	int	iSelWeapon = m_lbWeaponList.GetCurSel();
-	
-	if (iSelWeapon >= 0)
+	if( iSelWeapon == -1 )
+	{
+		return;
+	}
+	else
 	{
 		sWeaponInfo &TempMember = m_vectorWeaponInfo[iSelWeapon];
 
 		// FIXME : 이 함수를 호출하기 전에, 아이템을 선택했는지부터 확인.
 		// 아이템 설명을 얻습니다.
-		GetShieldInfo( _pNetwork->MyCharacterInfo.job, m_slLevel, m_pSelItem->ItemData->GetSubType());
-	}
+		GetShieldInfo( _pNetwork->MyCharacterInfo.job, m_slLevel,m_selItem.ItemData.GetSubType());
 
-	// Lock inventory
-	pUIManager->GetInventory()->Lock( TRUE, TRUE, LOCK_CHANGEWEAPON );
+		// Lock inventory
+		_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -967,47 +927,41 @@ void CUIChangeWeapon::SetChangeShieldItem()
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::SetChangeWeaponItem()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	// If this is wearing item
-	if( pUIManager->GetHoldBtn().GetItemWearType() >= 0 )
+	if( _pUIMgr->GetHoldBtn().GetItemWearType() >= 0 )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1071, "착용된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1071, "착용된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 	// If this is not weapon or armor
-	int	nTab = pUIManager->GetHoldBtn().GetItemTab();
-	int	nIdx = pUIManager->GetHoldBtn().GetInvenIndex();
+	int	nTab = _pUIMgr->GetHoldBtn().GetItemTab();
+	int	nRow = _pUIMgr->GetHoldBtn().GetItemRow();
+	int	nCol = _pUIMgr->GetHoldBtn().GetItemCol();
+	// CItems		&rItems = _pNetwork->MySlotItem[nTab][nRow][nCol];
 	// wooss : add shield item exchange
-
-	m_pSelItem = &_pNetwork->MySlotItem[nTab][nIdx];
-	CItemData*	pItemData = m_pSelItem->ItemData;
-	if( pItemData->GetType() != CItemData::ITEM_WEAPON )
+	CItems		&m_selItem = _pNetwork->MySlotItem[nTab][nRow][nCol];
+	CItemData	&rItemData = m_selItem.ItemData;
+	if( rItemData.GetType() != CItemData::ITEM_WEAPON )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1072, "무기만 교체 할 수 있습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1072, "무기만 교체 할 수 있습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 	// 060810 wooss
 	// 추가된 교환 불가 아이템
 	// 1. 플래티늄 제련석 적용 아이템 2. 합성한 아이템
-	if(		m_pSelItem->IsFlag(PLATINUM_MAX_PLUS) 
-		||	m_pSelItem->IsFlag(FLAG_ITEM_COMPOSITION)
-#if defined SOCKET_CHANGEWEAPON_ENABLE
-		||	(m_pSelItem->GetSocketCount() > 0) 
-#endif
-		)
-
+	if(		m_selItem.IsFlag(PLATINUM_MAX_PLUS) 
+		||	m_selItem.IsFlag(FLAG_ITEM_COMPOSITION))
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
 		return;
 	}
 
 #ifndef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
-	if( pItemData->GetLevel() < 29 || pItemData->GetLevel() >69)
+	if( rItemData.GetLevel() < 29 || rItemData.GetLevel() >69)
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1073, "교체할 수 있는 아이템 레벨이 아닙니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1073, "교체할 수 있는 아이템 레벨이 아닙니다." ), SYSMSG_ERROR );		
 		return;
 	}
 #else
@@ -1015,17 +969,17 @@ void CUIChangeWeapon::SetChangeWeaponItem()
 	// 교환 가능한 아이템 목록인지 확인합니다.
 	if( !IsChangeableWeapon( rItems.Item_Index ) )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
+		_pUIMgr->GetChatting()->AddSysMessage( _S(2158,"교체할 수 없는 아이템입니다."), SYSMSG_ERROR );
 		return;
 	}
 #endif
 
 	// If refining money is short
-	m_slLevel = pItemData->GetLevel();
+	m_slLevel = rItemData.GetLevel();
 
 
 	// Insert upgrade slot
-	m_btnSlotItem.Copy( pUIManager->GetHoldBtn() );
+	m_btnSlotItem.Copy( _pUIMgr->GetHoldBtn() );
 
 	m_llChangeWeaponMoney = CalculateNeedNas( m_slLevel );
 	m_strChangeWeaponMoney.PrintF( "%I64d", m_llChangeWeaponMoney );
@@ -1033,20 +987,23 @@ void CUIChangeWeapon::SetChangeWeaponItem()
 
 
 	// Lock inventory
-	//pUIManager->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
+	//_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
 	int	iSelWeapon = m_lbWeaponList.GetCurSel();
-	
-	if (iSelWeapon >= 0)
+	if( iSelWeapon == -1 )
+	{
+		return;
+	}
+	else
 	{
 		sWeaponInfo &TempMember = m_vectorWeaponInfo[iSelWeapon];
 
 		// FIXME : 이 함수를 호출하기 전에, 아이템을 선택했는지부터 확인.
 		// 아이템 설명을 얻습니다.
 		GetWeaponInfo( _pNetwork->MyCharacterInfo.job, m_slLevel,  TempMember.iIndex );
-	}
 
-	// Lock inventory
-	pUIManager->GetInventory()->Lock( TRUE, TRUE, LOCK_CHANGEWEAPON );
+		// Lock inventory
+		_pUIMgr->GetInventory()->Lock( TRUE, FALSE, LOCK_CHANGEWEAPON );
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -1064,35 +1021,21 @@ void CUIChangeWeapon::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 				int	iSelWeapon = m_lbWeaponList.GetCurSel();
 				if( iSelWeapon != -1 )
 				{
-					SWORD nTab		= m_btnSlotItem.GetItemTab();
-					SWORD nIdx		= m_btnSlotItem.GetInvenIndex();
+					SBYTE sbRow		= m_btnSlotItem.GetItemRow();
+					SBYTE sbCol		= m_btnSlotItem.GetItemCol();
 					int iUniIndex	= m_btnSlotItem.GetItemUniIndex();
 					// 서버쪽으로 메세지 보내기.
 					sWeaponInfo &TempMember = m_vectorWeaponInfo[iSelWeapon];
 
-					int nCheckIdx = _pNetwork->MySlotItem[nTab][nIdx].Item_UniIndex;
-
-					if (iUniIndex != nCheckIdx)
-					{
-						m_btnSlotItem.InitBtn();
-						break;
-					}
-					
 #ifndef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
 					if(m_bCashItemChk)
-						_pNetwork->UseChangeWeaponItem( nTab, nIdx, iUniIndex, TempMember.iIndex );
+						_pNetwork->UseChangeWeaponItem( sbRow, sbCol, iUniIndex, TempMember.iIndex );
 					else
 					{
 						if(m_eChangeWeaponState == CHANGEWEAPON_STAT)
-							_pNetwork->ChangeWeaponReq( nTab, nIdx, iUniIndex, TempMember.iIndex );
+							_pNetwork->ChangeWeaponReq( sbRow, sbCol, iUniIndex, TempMember.iIndex );
 						else if(m_eChangeWeaponState == CHANGEWEAPON_SHIELD)
-						{
-							// 나이트셰도우 아이템은 교환 품목이 아니다. 따라서 6번탭에 나이트셰도우가 빠져있기 때문에 예외처리.
-							if (iSelWeapon >= 6)
-								++iSelWeapon;
-
-							_pNetwork->ChangeWeaponReq( nTab, nIdx, iUniIndex, iSelWeapon);
-						}
+							_pNetwork->ChangeWeaponReq( sbRow, sbCol, iUniIndex, iSelWeapon);
 					}
 							
 #else				
@@ -1116,15 +1059,13 @@ void CUIChangeWeapon::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strIn
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::MsgBoxLCommand( int nCommandCode, int nResult )
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	switch( nCommandCode )
 	{
 	case MSGLCMD_CHANGEWEAPON_REQ:
 		if( nResult == CHANGEWEAPON_OK )
 		{
 			m_vectorWeaponInfo.clear();		
-			AddWeaponInfo( CItemData::ITEM_WEAPON_KNIFE,	_S( 1038, "기사도" ),	KNIGHT ); // [2012/05/18 : Sora]  ITS 9075 TITAN -> KNIGHT	
+			AddWeaponInfo( CItemData::ITEM_WEAPON_KNIFE,	_S( 1038, "기사도" ),	TITAN );		
 			AddWeaponInfo( CItemData::ITEM_WEAPON_CROSSBOW, _S( 1039, "석궁" ),		ROGUE );		
 			AddWeaponInfo( CItemData::ITEM_WEAPON_STAFF,	_S( 1040, "스태프" ),	MAGE );			
 			AddWeaponInfo( CItemData::ITEM_WEAPON_BIGSWORD, _S( 1041, "대검" ),		TITAN );		
@@ -1140,27 +1081,29 @@ void CUIChangeWeapon::MsgBoxLCommand( int nCommandCode, int nResult )
 			RefreshWeaponList();
 
 			m_eChangeWeaponState = CHANGEWEAPON_STAT;
-			pUIManager->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
+			_pUIMgr->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
 
-			if( !pUIManager->GetInventory()->IsVisible() )
-				pUIManager->GetInventory()->ToggleVisible();			
-			// [KH_07044] 3차 도움말 관련 추가
+			if( !_pUIMgr->GetInventory()->IsVisible() )
+				_pUIMgr->GetInventory()->ToggleVisible();
+#ifdef HELP_SYSTEM_1			
+// [KH_07044] 3차 도움말 관련 추가
 			if(g_iShowHelp1Icon)
 			{
-				pUIManager->GetHelp3()->ClearHelpString();
-				pUIManager->GetHelp3()->AddHelpString(_S(3288, "교체하고자 하는 무기나 방어구를 왼쪽 상단의 빈 칸에 올려 놓으면 교체비용이 계산되며, 교체하려는 종류를 선택하고 확인을 누르면 비용이 지불되고 제련된 수치 그대로 선택한 종류의 장비로 교환이 이루어 집니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3289, "※ 교체되는 무기 및 방어구의 블러드 옵션은 옮겨지지 않습니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3290, "※ 29레벨 이상의 장비부터 교체가 가능합니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3291, "※ 착용 중인 장비나 레어옵션 장비(73레벨 이상)는 교체할 수 없습니다."));
-				pUIManager->GetHelp3()->OpenHelp(this);
+				_pUIMgr->GetHelp3()->ClearHelpString();
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3288, "교체하고자 하는 무기나 방어구를 왼쪽 상단의 빈 칸에 올려 놓으면 교체비용이 계산되며, 교체하려는 종류를 선택하고 확인을 누르면 비용이 지불되고 제련된 수치 그대로 선택한 종류의 장비로 교환이 이루어 집니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3289, "※ 교체되는 무기 및 방어구의 블러드 옵션은 옮겨지지 않습니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3290, "※ 29레벨 이상의 장비부터 교체가 가능합니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3291, "※ 착용 중인 장비나 레어옵션 장비(73레벨 이상)는 교체할 수 없습니다."));
+				_pUIMgr->GetHelp3()->OpenHelp(this);
 			}
+#endif
 		}		
 		else if( nResult == CHANGEWEAPON_TALK )				// 이야기하기.
 		{
 			//TODO : NewQuestSystem
 			// 퀘스트 창 띄우기
 			CUIQuestBook::TalkWithNPC();
-			//pUIManager->GetQuest()->OpenQuest( pUIManager->GetCharacterInfo()->GetMobIndex(), m_fNpcX, m_fNpcZ );
+			//_pUIMgr->GetQuest()->OpenQuest( _pUIMgr->GetCharacterInfo()->GetMobIndex(), m_fNpcX, m_fNpcZ );
 		}
 		else if( nResult == CHANGEWEAPON_EVENT )			// Event
 		{
@@ -1175,34 +1118,27 @@ void CUIChangeWeapon::MsgBoxLCommand( int nCommandCode, int nResult )
 			AddWeaponInfo( MAGE,	_S( 46, "메이지" ),	MAGE );			
 			AddWeaponInfo( ROGUE,	_S( 47, "로그" ),		ROGUE );		
 			AddWeaponInfo( SORCERER, _S( 48,"소서러" ),	SORCERER );		
-#ifdef CHAR_EX_ROGUE
-			AddWeaponInfo( EX_ROGUE,	_S( 5732, "EX로그" ),		EX_ROGUE );		// [2012/08/27 : Sora] EX로그 추가
-#endif
-#ifdef CHAR_EX_MAGE
-			AddWeaponInfo( EX_MAGE,	_S( 5820, "아크메이지" ),		EX_MAGE );		// 2013/01/08 jeil EX메이지 추가 나중에 스트링 나오면 수정 
-#endif
+		
 			RefreshWeaponList();
 		
 
 			m_eChangeWeaponState = CHANGEWEAPON_SHIELD;
-			pUIManager->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
+			_pUIMgr->RearrangeOrder( UI_CHANGEWEAPON, TRUE );
 
-			if( !pUIManager->GetInventory()->IsVisible() )
-				pUIManager->GetInventory()->ToggleVisible();
+			if( !_pUIMgr->GetInventory()->IsVisible() )
+				_pUIMgr->GetInventory()->ToggleVisible();
+#ifdef HELP_SYSTEM_1
 			// [KH_07044] 3차 도움말 관련 추가
 			if(g_iShowHelp1Icon)
 			{
-				pUIManager->GetHelp3()->ClearHelpString();
-				pUIManager->GetHelp3()->AddHelpString(_S(3288, "교체하고자 하는 무기나 방어구를 왼쪽 상단의 빈 칸에 올려 놓으면 교체비용이 계산되며, 교체하려는 종류를 선택하고 확인을 누르면 비용이 지불되고 제련된 수치 그대로 선택한 종류의 장비로 교환이 이루어 집니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3289, "※ 교체되는 무기 및 방어구의 블러드 옵션은 옮겨지지 않습니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3290, "※ 29레벨 이상의 장비부터 교체가 가능합니다."));
-				pUIManager->GetHelp3()->AddHelpString(_S(3291, "※ 착용 중인 장비나 레어옵션 장비(73레벨 이상)는 교체할 수 없습니다."));
-				pUIManager->GetHelp3()->OpenHelp(this);
+				_pUIMgr->GetHelp3()->ClearHelpString();
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3288, "교체하고자 하는 무기나 방어구를 왼쪽 상단의 빈 칸에 올려 놓으면 교체비용이 계산되며, 교체하려는 종류를 선택하고 확인을 누르면 비용이 지불되고 제련된 수치 그대로 선택한 종류의 장비로 교환이 이루어 집니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3289, "※ 교체되는 무기 및 방어구의 블러드 옵션은 옮겨지지 않습니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3290, "※ 29레벨 이상의 장비부터 교체가 가능합니다."));
+				_pUIMgr->GetHelp3()->AddHelpString(_S(3291, "※ 착용 중인 장비나 레어옵션 장비(73레벨 이상)는 교체할 수 없습니다."));
+				_pUIMgr->GetHelp3()->OpenHelp(this);
 			}
-		}
-		else if(nResult == CHANGEWEAPON_MASTERSTONE)
-		{
-			pUIManager->GetMixNew()->OpenMixNewMasterStone();
+#endif
 		}
 		// [090527: selo] 확장팩 퀘스트 수정
 		else if( ciQuestClassifier < nResult )	
@@ -1212,9 +1148,10 @@ void CUIChangeWeapon::MsgBoxLCommand( int nCommandCode, int nResult )
 		}
 		else
 		{
-			pUIManager->RearrangeOrder( UI_CHANGEWEAPON, FALSE );
+			_pUIMgr->RearrangeOrder( UI_CHANGEWEAPON, FALSE );
 		}
 		break;
+		
 	
 	}
 }
@@ -1270,62 +1207,79 @@ SQUAD CUIChangeWeapon::CalculateNeedNasS( int iWeaponLevel )
 // ----------------------------------------------------------------------------
 void CUIChangeWeapon::SendChangeWeaponReq()
 {
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
 	if( ( (CPlayerEntity*)CEntity::GetPlayerEntity(0) )->IsSkilling() )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1074, "스킬 사용중에는 아이템을 교체할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1074, "스킬 사용중에는 아이템을 교체할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 	
-	if( pUIManager->IsCSFlagOn( CSF_TELEPORT ) )
+	if( _pUIMgr->IsCSFlagOn( CSF_TELEPORT ) )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1075, "순간 이동중에는 아이템를 교체할 수 없습니다." ), SYSMSG_ERROR );	
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1075, "순간 이동중에는 아이템를 교체할 수 없습니다." ), SYSMSG_ERROR );	
 		return;
 	}
 	
 	if( m_btnSlotItem.IsEmpty() )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1076, "교체할 아이템이 없습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1076, "교체할 아이템이 없습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 	const ULONG ulFlag = m_btnSlotItem.GetItemFlag();
+/*
+#ifndef CHANGE_WEAPON_SHIELD_EVENT		// 2판4판 무기 교체 이벤트.
+	if( m_btnSlotItem.GetItemPlus() > 0 )
+	{
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1077, "플러스 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
+		return;
+	}
+#endif
+
+	
+
+#ifndef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
+	if( ulFlag & FLAG_ITEM_OPTION_ENABLE )
+	{
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1078, "블러드 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
+		return;
+	}
+#endif
+*/
 	if( ulFlag & FLAG_ITEM_SEALED )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1079, "봉인된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1079, "봉인된 아이템은 교체할 수 없습니다." ), SYSMSG_ERROR );		
 		return;
 	}
 
 #ifndef CHANGE_WEAPON_SHIELD_EVENT
 	if( m_llChangeWeaponMoney > _pNetwork->MyCharacterInfo.money && !m_bCashItemChk )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 1080, "교체 비용이 부족합니다." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 1080, "교체 비용이 부족합니다." ), SYSMSG_ERROR );		
 		return;
 	}
 #endif
 
 	if( m_lbWeaponList.GetCurSel() == -1 )
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S( 2321,"새로운 무기및 방어구를 선택해주십시요." ), SYSMSG_ERROR );		
+		_pUIMgr->GetChatting()->AddSysMessage( _S( 2321,"새로운 무기및 방어구를 선택해주십시요." ), SYSMSG_ERROR );		
 		return;
 	}
 
 	// wooss 051217 add shield item exchange
 	if(m_slLevel < EXCHANGE_LIMIT_LEVEL)
 	{
-		pUIManager->GetChatting()->AddSysMessage( _S(2322,"29Lv이상의 무기및 방어구만 교체를 하실 수 있습니다."));
+		_pUIMgr->GetChatting()->AddSysMessage( _S(2322,"29Lv이상의 무기및 방어구만 교체를 하실 수 있습니다."));
 		return;
 	}
 
 	
-	pUIManager->CloseMessageBox( MSGCMD_CHANGEWEAPON_REP );
+	_pUIMgr->CloseMessageBox( MSGCMD_CHANGEWEAPON_REP );
 	
 	// Create message box of remission
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S(2308, "무기및 방어구 교체" ), UMBS_OKCANCEL,UI_CHANGEWEAPON, MSGCMD_CHANGEWEAPON_REP );
 	MsgBoxInfo.AddString( _S(2323,"교체 무기및 방어구에 제련된 기록은 옮겨지지만 블러드 옵션은 옮겨지지 않습니다. 무기및 방어구를 교체하시겠습니까?" ) );
-	pUIManager->CreateMessageBox( MsgBoxInfo );
+	_pUIMgr->CreateMessageBox( MsgBoxInfo );
 }
 
 
@@ -1341,9 +1295,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 		return;
 
 	// wooss 051002
-#if defined(G_THAI)
-	{
-		int		iPos;
+	if(g_iCountry == THAILAND){
 		// Get length of string
 		INDEX	nThaiLen = FindThaiLen(strDesc);
 		INDEX	nChatMax= (_iMaxMsgStringChar-1)*(_pUIFontTexMgr->GetFontWidth()+_pUIFontTexMgr->GetFontSpacing());
@@ -1353,7 +1305,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 		if( nThaiLen <= nChatMax )
 		{
 			// Check line character
-		for( iPos = 0; iPos < nLength; iPos++ )
+		for( int iPos = 0; iPos < nLength; iPos++ )
 		{
 			if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 				break;
@@ -1386,7 +1338,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if(nChatMax < FindThaiLen(strDesc,0,iPos))
 					break;
@@ -1441,15 +1393,12 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 
 		}
 		
-	}
-#else
-	{
+	} else {
 		// If length of string is less than max char
 		if( nLength <= _iMaxMsgStringChar )
 		{
 			// Check line character
-			int iPos;
-			for( iPos = 0; iPos < nLength; iPos++ )
+			for( int iPos = 0; iPos < nLength; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
 					break;
@@ -1482,8 +1431,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			// Check splitting position for 2 byte characters
 			int		nSplitPos = _iMaxMsgStringChar;
 			BOOL	b2ByteChar = FALSE;
-			int iPos;
-			for( iPos = 0; iPos < nSplitPos; iPos++ )
+			for( int iPos = 0; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] & 0x80 )
 					b2ByteChar = !b2ByteChar;
@@ -1494,7 +1442,7 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			if( b2ByteChar )
 				nSplitPos--;
 
-			// Check line character			
+			// Check line character
 			for( iPos = 0; iPos < nSplitPos; iPos++ )
 			{
 				if( strDesc[iPos] == '\n' || strDesc[iPos] == '\r' )
@@ -1541,7 +1489,6 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 			}
 		}
 	}
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -1551,50 +1498,33 @@ void CUIChangeWeapon::AddWeaponDescString( CTString &strDesc, COLOR colDesc )
 void CUIChangeWeapon::GetWeaponInfo( int iJob, int iWeaponLevel, int iWeaponType )
 {
 	ASSERT( iWeaponLevel != -1 && "Invalid Weapon Level" );	
-	CItemData::_map::iterator	iter = CItemData::_mapdata.begin();
-	CItemData::_map::iterator	eiter = CItemData::_mapdata.end();
-
-	for (;iter != eiter; ++iter)
+	for( int i = 1; i < _pNetwork->wo_iNumOfItem; ++i )
 	{
-		CItemData* pID = (*iter).second;
-		
-		if (pID == NULL)
+		CItemData& ID = _pNetwork->GetItemData( i );
+		if( ID.GetType() != CItemData::ITEM_WEAPON )
 			continue;
 		
-		if( pID->GetType() != CItemData::ITEM_WEAPON )
+		if( ID.GetSubType() != iWeaponType )
 			continue;
 		
-		if( pID->GetSubType() != iWeaponType )
+		if( ID.GetLevel() != iWeaponLevel )
 			continue;
-		
-		if( pID->GetLevel() != iWeaponLevel )
-			continue;
-
-		// [2012/05/18 : Sora] ITS 9075 무기교환 카드 버그 (조건이 왜 방어구하고 다르지..일단 통일 -_-;)
-		if( !(pID->GetJob()&(1<<iJob)))
-			continue;
-
-		if( !(pID->IsFlag(ITEM_FLAG_CHANGE)))
-			continue;
-		// [2012/05/18 : Sora]  //
 
 #ifdef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
-		if( !IsChangeableWeapon( pID->GetItemIndex() ) )
+		if( !IsChangeableWeapon( ID.GetItemIndex() ) )
 		{
 			continue;
 		}
 #endif
 		
-		m_strWeaponName			= pID->GetName();
-		m_strWeaponLevel.PrintF( "%d", pID->GetLevel() );
+		m_strWeaponName			= ID.GetName();
+		m_strWeaponLevel.PrintF( "%d", ID.GetLevel() );
 		
 		// FIXME : 하나의 무기를 다른 두 직업이 쓸수 있나???
-		// [2012/05/18 : Sora] ITS 9075 윗 말처럼 필요 없을듯...빼자
-		/*
 		CTString strTemp;
 		for(int i = 0; i < TOTAL_JOB; ++i)
 		{
-			if( pID->CanUse(i) )
+			if( ID.CanUse(i) )
 			{
 				strTemp += JobInfo().GetName(i);
 				break;
@@ -1602,11 +1532,9 @@ void CUIChangeWeapon::GetWeaponInfo( int iJob, int iWeaponLevel, int iWeaponType
 		}
 		
 		m_strWeaponClass		= strTemp;
-		*/
-		m_strWeaponClass		= CJobInfo::getSingleton()->GetName(iJob);
-		// [2012/05/18 : Sora]  //
-		m_strWeaponAttack.PrintF( "%d", pID->GetPhysicalAttack() );
-		m_strWeaponMagicAttack.PrintF( "%d", pID->GetMagicAttack() );
+		m_strWeaponAttack.PrintF( "%d", ID.GetPhysicalAttack() );
+		m_strWeaponMagicAttack.PrintF( "%d", ID.GetMagicAttack() );
+		m_strWeight.PrintF( "%d", ID.GetWeight() );
 		return;
 	}	
 
@@ -1626,43 +1554,37 @@ void CUIChangeWeapon::GetWeaponInfo( int iJob, int iWeaponLevel, int iWeaponType
 void CUIChangeWeapon::GetShieldInfo( int iJob, int iWeaponLevel ,int iWeaponType)
 {
 	ASSERT( iWeaponLevel != -1 && "Invalid Weapon Level" );	
-	CItemData::_map::iterator	iter = CItemData::_mapdata.begin();
-	CItemData::_map::iterator	eiter = CItemData::_mapdata.end();
-
-	for (;iter != eiter; ++iter)
+	for( int i = 1; i < _pNetwork->wo_iNumOfItem; ++i )
 	{
-		CItemData* pID = (*iter).second;
-
-		if (pID == NULL)
+		CItemData& ID = _pNetwork->GetItemData( i );
+		if( ID.GetType() != CItemData::ITEM_SHIELD )
 			continue;
 
-		if( pID->GetType() != CItemData::ITEM_SHIELD )
-			continue;
-
-		if( pID->GetSubType() != iWeaponType )
+		if( ID.GetSubType() != iWeaponType )
 			continue;
 				
-		if( pID->GetLevel() != iWeaponLevel )
+		if( ID.GetLevel() != iWeaponLevel )
 			continue;
 		
-		if( !(pID->GetJob()&(1<<iJob)))
+		if( !(ID.GetJob()&(1<<iJob)))
 			continue;
 
-		if( !(pID->IsFlag(ITEM_FLAG_CHANGE)))
+		if( !(ID.IsFlag(ITEM_FLAG_CHANGE)))
 			continue;
 		
 
 #ifdef CHANGE_WEAPON_EVENT_2PAN4PAN		// 2판4판 무기 교체 이벤트.
-		if( !IsChangeableWeapon( pID->GetItemIndex() ) )
+		if( !IsChangeableWeapon( ID.GetItemIndex() ) )
 		{
 			continue;
 		}
 #endif
 		
-		m_strWeaponName			= pID->GetName();
-		m_strWeaponLevel.PrintF( "%d", pID->GetLevel() );
-		m_strWeaponClass		= CJobInfo::getSingleton()->GetName(iJob);
-		m_strWeaponDefence.PrintF( "%d", pID->GetPhysicalDefence() );
+		m_strWeaponName			= ID.GetName();
+		m_strWeaponLevel.PrintF( "%d", ID.GetLevel() );
+		m_strWeaponClass		= JobInfo().GetName(iJob);
+		m_strWeaponDefence.PrintF( "%d", ID.GetPhysicalDefence() );
+		m_strWeight.PrintF( "%d", ID.GetWeight() );
 		return;
 	}	
 
@@ -1703,214 +1625,5 @@ void CUIChangeWeapon::RefreshWeaponList()
 		m_lbWeaponList.AddString( 0, (*it).strName );
 	}
 	
-}
-
-void CUIChangeWeapon::initialize()
-{
-	_iMaxMsgStringChar = 190 / ( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
-
-	// Region of each part
-	m_rcTitle.SetRect( 0, 0, 216, 22 );
-	m_rcItemSlot.SetRect( 97, 0, 131, 0 );
-	m_rcInsertItem.SetRect( 3, 0, 213, 0 );
-	
-	m_rcItemSlot.Top		= 51;
-	m_rcItemSlot.Bottom		= m_rcItemSlot.Top + 34;
-
-	m_rcInsertItem.Top		= 33;
-	m_rcInsertItem.Bottom	= m_rcItemSlot.Bottom + 33;
-
-	// Slot item button
-	m_btnSlotItem.Create( this, m_rcItemSlot.Left + 1, m_rcItemSlot.Top + 1, BTN_SIZE, BTN_SIZE, UI_CHANGEWEAPON, UBET_ITEM );
-/*
-	AddWeaponInfo( CItemData::ITEM_WEAPON_KNIFE,	_S( 1038, "기사도" ),	TITAN );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_CROSSBOW, _S( 1039, "석궁" ),		ROGUE );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_STAFF,	_S( 1040, "스태프" ),	MAGE );			
-	AddWeaponInfo( CItemData::ITEM_WEAPON_BIGSWORD, _S( 1041, "대검" ),		TITAN );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_AXE,		_S( 1042, "도끼" ),		TITAN );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_SSTAFF,	_S( 1043, "숏스태프" ), MAGE );			
-	AddWeaponInfo( CItemData::ITEM_WEAPON_BOW,		_S( 1044, "활" ),		HEALER );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_DAGGER,	_S( 1045, "단검" ),		ROGUE );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_TWOSWORD, _S( 1046, "이도류" ),	KNIGHT );	
-	AddWeaponInfo( CItemData::ITEM_WEAPON_WAND,		_S( 1047, "힐러완드" ),		HEALER );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_SCYTHE,	_S( 2306,"사이드" ),		SORCERER );		
-	AddWeaponInfo( CItemData::ITEM_WEAPON_POLEARM,		_S(2307, "폴암" ),		SORCERER );		
-
-	RefreshWeaponList();
-	*/
-}
-
-void CUIChangeWeapon::OnUpdate( float fElapsedTime )
-{
-
-}
-
-void CUIChangeWeapon::OnRender( CDrawPort* pDraw )
-{
-	// Check distance
-	FLOAT	fDiffX = _pNetwork->MyCharacterInfo.x - m_fNpcX;
-	FLOAT	fDiffZ = _pNetwork->MyCharacterInfo.z - m_fNpcZ;
-	// cash item check wooss 051011
-	if( m_bCashItemChk == FALSE )
-	{
-		if( fDiffX * fDiffX + fDiffZ * fDiffZ > UI_VALID_SQRDIST )
-		{
-			CloseChangeWeapon();
-		}
-	}
-
-	// Set refine texture
-	pDraw->InitTextureData( m_ptdBaseTexture );
-
-	// Add render regions
-	int	nX, nY, nX2, nY2;
-
-	nX	= m_nPosX + 95;
-	nX2	= nX + 84;
-	nY	= m_nPosY + 102;
-	nY2 = nY + 13;
-
-	if(!m_bCashItemChk){
-		// Point    금액 박스 wooss 051011
-		pDraw->AddTexture( nX, nY, nX + 4, nY2,
-			m_rtInputBoxL.U0, m_rtInputBoxL.V0, m_rtInputBoxL.U1, m_rtInputBoxL.V1,
-			0xFFFFFFFF );
-		//Lower middle
-		pDraw->AddTexture( nX + 4, nY, nX2 - 4, nY2,
-			m_rtInputBoxM.U0, m_rtInputBoxM.V0, m_rtInputBoxM.U1, m_rtInputBoxM.V1,
-			0xFFFFFFFF );
-		// Lower right
-		pDraw->AddTexture( nX2 - 4, nY, nX2, nY2,
-			m_rtInputBoxR.U0, m_rtInputBoxR.V0, m_rtInputBoxR.U1, m_rtInputBoxR.V1,
-			0xFFFFFFFF );
-	}
-
-	// Render all elements
-	pDraw->FlushRenderingQueue();
-
-	// Item
-	if( !m_btnSlotItem.IsEmpty() )
-	{
-		m_btnSlotItem.Render();
-		pDraw->FlushBtnRenderingQueue( UBET_ITEM );
-	}
-
-	if( m_eChangeWeaponState == CHANGEWEAPON_STAT ){
-
-		// Text in refine
-		pDraw->PutTextEx( _S( 1049, "무기 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
-			m_nPosY + CHANGEWEAPON_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
-
-		pDraw->PutTextEx( _S( 1057, "교체무기" ), m_nPosX + 40,		
-			m_nPosY + 60, 0xFFFFFFFF );
-
-		// cash item check wooss 051011
-		if(!m_bCashItemChk) {
-			nY = m_nPosY + 104;
-			pDraw->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
-				nY, 0xFFFFFFFF );
-			// ChangeWeaponing money
-#ifdef CHANGE_WEAPON_SHIELD_EVENT	
-			pDraw->PutTextEx( _S(2315," 교체 이벤트"),	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
-#else
-			pDraw->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
-#endif 
-
-		}
-
-		nY = m_nPosY + 143;
-		pDraw->PutTextEx( _S( 1059, "무기 리스트" ), m_nPosX + 12,		
-			nY, 0xE18600FF );
-
-		nY = m_nPosY + 269;
-		pDraw->PutTextEx( _S( 1065, "무기 이름" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S( 1066, "무기 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S( 1068, "공격력" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponAttack, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S( 1069, "마법 공격력" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponMagicAttack, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-	}
-	else if( m_eChangeWeaponState == CHANGEWEAPON_SHIELD){
-		// Text in refine
-		pDraw->PutTextEx( _S( 2313,"방어구 교체"  ), m_nPosX + CHANGEWEAPON_TITLE_TEXT_OFFSETX,		
-			m_nPosY + CHANGEWEAPON_TITLE_TEXT_OFFSETY, 0xFFFFFFFF );
-
-		pDraw->PutTextEx( _S( 2314,"교체 방어구" ), m_nPosX + 30,		
-			m_nPosY + 60, 0xFFFFFFFF );
-
-		// cash item check wooss 051011
-		if(!m_bCashItemChk) {
-			nY = m_nPosY + 104;
-			pDraw->PutTextEx( _S( 1058, "필요나스" ), m_nPosX + 40,		
-				nY, 0xFFFFFFFF );
-#ifdef CHANGE_WEAPON_SHIELD_EVENT	
-			pDraw->PutTextEx( _S(2315," 교체 이벤트"), m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );	
-#else
-			pDraw->PutTextEx( m_strChangeWeaponMoney,	m_nPosX + 95, m_nPosY + 102, 0xE1B300FF );				
-#endif 
-		}
-
-		nY = m_nPosY + 143;
-		pDraw->PutTextEx( _S(2316, "클래스 리스트" ), m_nPosX + 12,		
-			nY, 0xE18600FF );
-
-		nY = m_nPosY + 269;
-		pDraw->PutTextEx( _S(2317, "방어구 이름" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponName, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S(2318, "방어구 레벨" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponLevel, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S( 1067, "사용 클래스" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponClass, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-
-		nY += 15;
-		pDraw->PutTextEx( _S(87, "방어력" ), m_nPosX + WEAPON_INFO_START_X,		
-			nY, 0xFFFFFFFF );
-
-		pDraw->PutTextExRX( m_strWeaponDefence, m_nPosX + WEAPON_DESC_START_X,		
-			nY, 0xFFd223FF );
-	}
-
-	// Flush all render text queue
-	pDraw->EndTextEx();
 }
 

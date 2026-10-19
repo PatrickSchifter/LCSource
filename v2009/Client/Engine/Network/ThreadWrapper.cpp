@@ -3,11 +3,6 @@
 
 #include "ThreadWrapper.h"
 #include <assert.h>
-
-// Windows only: the threads it runs exist only there (the page reader of Web.cpp and the
-// process check of GameMP/Game.cpp), and suspending or killing a thread from outside
-// (Suspend, Terminate) has no portable counterpart.
-#ifdef PLATFORM_WIN32
 #include <process.h>
 
 //cThreadWrapper::cThreadWrapper(LPTHREAD_START_ROUTINE pRunningFunction)
@@ -52,7 +47,7 @@ BOOL cThreadWrapper::Start(void *parameter)
 
 BOOL cThreadWrapper::Terminate(DWORD exitCode)
 {
-	BOOL bRet = TerminateThread(m_hThreadHandle, exitCode);
+	BOOL bRet = ::TerminateThread(m_hThreadHandle, exitCode);
 
 	// Thread가 종료될때 까지 기다린다.(현재는 무한대로 처리)
 	WaitForSingleObject(m_hThreadHandle, INFINITE);
@@ -64,12 +59,11 @@ BOOL cThreadWrapper::Terminate(DWORD exitCode)
 
 void cThreadWrapper::Resume()
 {
-	m_dwThreadSuspendCount = ResumeThread(m_hThreadHandle);
+	m_dwThreadSuspendCount = ::ResumeThread(m_hThreadHandle);
 }
 
 void cThreadWrapper::Suspend()
 {
-	m_dwThreadSuspendCount = SuspendThread(m_hThreadHandle);
+	m_dwThreadSuspendCount = ::SuspendThread(m_hThreadHandle);
 }
-#endif  // PLATFORM_WIN32
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
