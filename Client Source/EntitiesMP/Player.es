@@ -2113,7 +2113,8 @@ functions:
 	
 	void SetRotation(INDEX &iRotPacked,FLOAT fUnpacked) 
 	{    
-		iRotPacked = (UWORD)(fUnpacked*20);
+		// through a signed int, as x86 converts: straight to UWORD a negative angle is 0 on ARM
+		iRotPacked = (UWORD)(SLONG)(fUnpacked*20);
 	}
 	
 	FLOAT GetRotation(INDEX iRotPacked) 
@@ -2123,7 +2124,7 @@ functions:
 	
 	FLOAT GetRotationDiff(INDEX iRotPacked,FLOAT fUnpacked)
 	{
-		UWORD uwRotPacked2 = (UWORD)(fUnpacked*20);
+		UWORD uwRotPacked2 = (UWORD)(SLONG)(fUnpacked*20);
 		UWORD uwDiff = uwRotPacked2 - ((UWORD)iRotPacked);
 		return ((FLOAT) ((SWORD)uwDiff))/20;
 	}
