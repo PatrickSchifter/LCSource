@@ -313,6 +313,7 @@ ENGINE_API void shaSetVertexProgramConst_LightColor(GFXColor colDiffuseColor, GF
 ENGINE_API void shaSetVertexProgramConst_Multiply();
 //강동민 수정 시작 Water 구현		04.20
 ENGINE_API void shaSetEMBM();
+ENGINE_API void shaSetProjectedTexture(INDEX iTexUnit, BOOL bProjected);  // OpenGL's D3DTTFF_PROJECTED for texbem
 //강동민 수정 끝 Water 구현			04.20
 ENGINE_API void shaSetVertexProgramConst_BoneMatrix();
 //원래는 없는 함수들의 추가 끝

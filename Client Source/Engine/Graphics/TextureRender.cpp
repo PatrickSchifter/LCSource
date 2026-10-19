@@ -197,6 +197,8 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag)
 
 	if( eStatus!=GL_FRAMEBUFFER_COMPLETE_EXT) {
 		CPrintF( "Cannot create a %dx%d render target (framebuffer status 0x%X)\n", width, height, eStatus);
+		pglDeleteFramebuffersEXT( 1, (GLuint*)&m_ulFramebuffer);
+		m_ulFramebuffer = 0;
 		return FALSE;
 	}
 	return TRUE;
@@ -204,6 +206,8 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag)
 
 void CRenderTexture::Begin()	// SetRenderTarget current
 {
+	// some callers keep a render target whose Init() failed: nothing to bind
+	if( m_ulFramebuffer==0) return;
 	GLint iOld = 0;
 	pglGetIntegerv( GL_FRAMEBUFFER_BINDING_EXT, &iOld);
 	m_iOldFramebuffer = iOld;
@@ -220,6 +224,7 @@ void CRenderTexture::Begin()	// SetRenderTarget current
 
 void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal)
 {
+	if( m_ulFramebuffer==0) return;
 	// colClear is a D3DCOLOR (ARGB), as for Direct3D's Clear(); that clears regardless of the write masks
 	GLfloat afOldColor[4], fOldDepth;
 	GLboolean abOldColorMask[4], bOldDepthMask;
@@ -241,6 +246,7 @@ void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal)
 
 void CRenderTexture::End()		// SetRenderTarget old
 {
+	if( m_ulFramebuffer==0) return;
 	pglBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_iOldFramebuffer);
 	pglViewport( m_aiOldViewport[0], m_aiOldViewport[1], m_aiOldViewport[2], m_aiOldViewport[3]);
 	pglScissor(  m_aiOldScissor[0],  m_aiOldScissor[1],  m_aiOldScissor[2],  m_aiOldScissor[3]);

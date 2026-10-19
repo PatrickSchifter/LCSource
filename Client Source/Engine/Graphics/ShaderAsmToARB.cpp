@@ -544,6 +544,31 @@ bool Translator::PixelInstruction(const Str &strOpFull, std::vector<Operand> &ao
 		MarkWritten(strDest, "xyzw");
 		return true;
 	}
+	if( strOp=="texbem") {
+		// t(dst) = texture(dst) at its coordinates (divided by w if projected) plus the 2x2 bump
+		// environment matrix times the red and green of t(src)
+		if( tr_iVersion>=14 || aop.size()!=2 || aop[0].chFile!='t' || aop[1].chFile!='t') return Fail("bad texbem");
+		Str strDest, strMask;
+		if( !GetDest(aop[0], strDest, strMask)) return false;
+		Source srcBump;
+		if( !GetSource(aop[1], srcBump)) return false;
+		const int iStage = aop[0].iIndex;
+		char strCoord[32], strMatrix[32], strProjected[32];
+		sprintf(strCoord,     "fragment.texcoord[%d]", iStage);
+		sprintf(strMatrix,    "program.env[%d]", ARB_PIXEL_BUMPENVMAT+iStage);
+		sprintf(strProjected, "program.env[%d]", ARB_PIXEL_PROJECTED+iStage);
+		const Str strUV = Scratch();
+		const Str strQ  = Scratch();
+		Emit("LRP " + strQ + ".x, " + strProjected + ".x, " + strCoord + ".w, " + Constant(1,1,1,1));
+		Emit("RCP " + strQ + ".x, " + strQ + ".x");
+		Emit("MUL " + strUV + ", " + strCoord + ", " + strQ + ".x");
+		Emit("MAD " + strUV + ".xy, " + srcBump.strBase + ".x, " + strMatrix + ", " + strUV);
+		Emit("MAD " + strUV + ".xy, " + srcBump.strBase + ".y, " + strMatrix + ".zwzw, " + strUV);
+		sprintf(str, "TEX %s, %s, texture[%d], 2D", strDest.c_str(), strUV.c_str(), iStage);
+		Emit(str);
+		MarkWritten(strDest, "xyzw");
+		return true;
+	}
 	if( strOp=="texkill") {
 		if( aop.size()!=1) return Fail("bad texkill");
 		Source src;

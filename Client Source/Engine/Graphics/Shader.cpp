@@ -5,6 +5,7 @@
 #include <Engine/Ska/Render.h>
 #include <Engine/Graphics/Shader.h>
 #include <Engine/Graphics/Texture.h>
+#include <Engine/Graphics/ShaderAsmToARB.h>
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
@@ -490,6 +491,26 @@ extern void shaSetVertexProgramConst_ProjectionMatrix()
 		// c21~24
 		shaSetVertexProgramConst( 21, (Matrix16*)&mat, 4);
 	//}
+#else
+	// as in Direct3D, with OpenGL's view and the projection of the reflection (_matWaterProj); but
+	// the first row of an OpenGL render target is at the bottom, so v goes up: 0.5+0.5y
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	D3DXMATRIX mat;
+	D3DXMATRIX matView;
+	D3DXMATRIX matProj;
+	pglGetFloatv( GL_MODELVIEW_MATRIX, (FLOAT*)&matView);
+	Matrix16 matScaleOffset;
+	memset(&matScaleOffset, 0, sizeof(float)*16);
+	matScaleOffset[0]  = 0.5f;
+	matScaleOffset[5]  = 0.5f;
+	matScaleOffset[10] = 1.0f;
+	matScaleOffset[12] = 0.5f;
+	matScaleOffset[13] = 0.5f;
+	matScaleOffset[15] = 1.0f;
+	D3DXMatrixMultiply( &matProj, (D3DXMATRIX*)&_matWaterProj, (D3DXMATRIX*)&matScaleOffset);
+	D3DXMatrixMultiply( &mat, &matView, &matProj);
+	D3DXMatrixTranspose( &mat, &mat);
+	shaSetVertexProgramConst( 21, (Matrix16*)&mat, 4);
 #endif // SE1_D3D
 }
 //강동민 수정 끝		03.17
@@ -574,6 +595,26 @@ extern void shaSetEMBM()
 		hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_BUMPENVMAT10,   F2DW(matBumpMat._21));	D3D_CHECKERROR(hr);
 		hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_BUMPENVMAT11,   F2DW(matBumpMat._22));	D3D_CHECKERROR(hr);
 	//}
+#else
+	// texture stage 1's bump environment matrix, where the translated texbem reads it
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL || !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
+	const GLfloat afBumpMat[4] = {
+		_WaterInformation.m_fBumpMat11, _WaterInformation.m_fBumpMat12,
+		_WaterInformation.m_fBumpMat21, _WaterInformation.m_fBumpMat22 };
+	pglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, ARB_PIXEL_BUMPENVMAT+1, afBumpMat);
+	OGL_CHECKERROR;
+#endif // SE1_D3D
+}
+
+// OpenGL: texture coordinates of a texture unit divided by w before a pixel program's texbem
+// reads them, as Direct3D's D3DTTFF_PROJECTED does (WaterShader)
+extern void shaSetProjectedTexture(INDEX iTexUnit, BOOL bProjected)
+{
+#ifndef SE1_D3D
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL || !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
+	const GLfloat afProjected[4] = { bProjected ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f };
+	pglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, ARB_PIXEL_PROJECTED+iTexUnit, afProjected);
+	OGL_CHECKERROR;
 #endif // SE1_D3D
 }
 //강동민 수정 끝 Water 구현			04.20

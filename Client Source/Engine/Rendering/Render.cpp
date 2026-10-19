@@ -2223,9 +2223,6 @@ void CRenderer::Render(void)
 		!re_bRenderingShadows &&
 		(g_iReflectionDetail != REFLECTION_NONE) &&
 		bHardwareShader &&
-#ifndef SE1_D3D
-		FALSE &&  // the reflection is rendered to a texture (no OpenGL render targets yet, C8)
-#endif // SE1_D3D
 		!re_pdpDrawPort->IsOverlappedRendering()
 		)
 	{
@@ -2582,6 +2579,8 @@ void CRenderer::RenderReflection(/*Matrix16 &matWaterProj*/)
 		re_pdpDrawPort->SetProjection(*papr);
 #ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, (D3DXMATRIX*)&_matWaterProj);
+#else
+		pglGetFloatv( GL_PROJECTION_MATRIX, _matWaterProj);
 #endif // SE1_D3D
 	}
 //강동민 수정 끝 Water 구현			04.21

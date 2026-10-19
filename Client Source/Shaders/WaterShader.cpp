@@ -48,6 +48,8 @@ static void SetRenderingState()
 	//_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_PROJECTED );
+#else
+	shaSetProjectedTexture( 1, TRUE);
 #endif // SE1_D3D
 //강동민 수정 끝 Water 구현			04.26
 }
@@ -119,6 +121,8 @@ SHADER_MAIN(WaterHolder)
 		Render();
 #ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, 0);		
+#else
+		shaSetProjectedTexture( 1, FALSE);
 #endif // SE1_D3D
 		shaDisableBlend();
 	}

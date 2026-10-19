@@ -20,6 +20,12 @@
 
 #define ARB_VERTEX_CONSTANTS 96
 
+// Pixel programs: what Direct3D keeps in texture stage states, for texbem on texture unit n:
+//   program.env[ARB_PIXEL_BUMPENVMAT+n] = (BUMPENVMAT00, BUMPENVMAT01, BUMPENVMAT10, BUMPENVMAT11)
+//   program.env[ARB_PIXEL_PROJECTED+n].x = 1 for D3DTTFF_PROJECTED (coordinates divided by w)
+#define ARB_PIXEL_BUMPENVMAT 8
+#define ARB_PIXEL_PROJECTED  12
+
 // Return false with the reason in strError when the program uses something with no translation.
 bool TranslateVertexProgramToARB(const char *strD3D, std::string &strARB, std::string &strError);
 bool TranslatePixelProgramToARB(const char *strD3D, std::string &strARB, std::string &strError);
