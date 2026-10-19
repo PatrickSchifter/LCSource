@@ -1232,7 +1232,11 @@ void CUICashShopEX::InitCatalogNameNodes(void)
 	if (m_strXMLFileName.Length() > 0) {
 		TiXmlDocument doc;
 
-		if (doc.LoadFile(m_strXMLFileName, TIXML_DEFAULT_ENCODING))
+		// opened by the engine's fopen (game paths outside Windows too), not tinyxml's
+		FILE* pFile = fopen(m_strXMLFileName, "rb");
+		const bool bLoaded = pFile != NULL && doc.LoadFile(pFile, TIXML_DEFAULT_ENCODING);
+		if (pFile != NULL) fclose(pFile);
+		if (bLoaded)
 		{
 			bFileLoaded = true;
 			TiXmlHandle docH(&doc);

@@ -29,7 +29,14 @@ bool UIFactory::loadXML( CUIBase* root, const char* pathname )
 	std::string		strTmp;
 	std::string		strComment;
 	
-	if( doc.LoadFile( strPath.c_str() ) == false )
+	// opened by the engine's fopen, which also takes the game's backslash paths outside Windows
+	// (tinyxml's own fopen would not)
+	FILE* pFile = fopen( strPath.c_str(), "rb" );
+	if( pFile == NULL )
+		return false;
+	const bool bLoaded = doc.LoadFile( pFile );
+	fclose( pFile );
+	if( bLoaded == false )
 		return false;
 
 	CUIWindow*	pCurUI = NULL;
