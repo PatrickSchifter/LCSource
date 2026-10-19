@@ -220,12 +220,12 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [x] Etapa OpenGL (D2.1): completar o backend `GAT_OGL` existente no macOS (perfil legado 2.1); shaders programáveis estão como "Not implemented yet", então SKA e terreno usam o caminho sem shader
   - [x] Contexto via SDL3 (janela com `SDL_WINDOW_OPENGL`, funções por `SDL_GL_GetProcAddress`, swap/vsync pelo SDL, sem gama); check do Mac com 0 erros (2026-10-18)
   - [x] Roda no Mac (2026-10-19): login, Juno, combate, itens, terreno (mapas de sombra e luz dinâmica em fixed function), multitextura, clamp to edge, Retina na tela cheia, vsync; ~20% de um núcleo em jogo. Detalhes em `HANDOFF.md` ("C8 — cliente Mac rodando")
-- [ ] Etapa Metal (D2.2): novo backend `GAT_MTL` ao lado do D3D8 e do OpenGL (`LC_GFX_API=metal`); plano e estado em `HANDOFF.md` ("C8 — Metal")
+- [x] Etapa Metal (D2.2): novo backend `GAT_MTL` ao lado do D3D8 e do OpenGL (padrão no Mac; `LC_GFX_API=opengl` para o OpenGL); plano e estado em `HANDOFF.md` ("C8 — Metal")
   - [x] M1: dispositivo, quadros, estado, texturas (RGBA8 e DXT), função fixa emulada em MSL; tela de login (2026-10-19)
   - [x] M2: Juno sem programas (terreno, brushes, modelos, partículas, névoa), conferido contra o OpenGL (2026-10-19)
   - [x] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, pelo ARB do tradutor do OpenGL (2026-10-19)
   - [x] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela — feita (2026-10-19, `98defbc`), conferida em jogo pelo usuário
-  - [ ] M5: Metal como padrão no Mac
+  - [x] M5: Metal como padrão no Mac, OpenGL com `LC_GFX_API=opengl` ou se o Metal não abrir (2026-10-19)
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
@@ -301,3 +301,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C8: Metal M2, Juno sem programas conferida contra o OpenGL (billboards no Metal) | e3aec26 |
 | 2026-10-19 | C8: Metal M3, programas D3D em MSL (pelo ARB do OpenGL) | 165fd29 |
 | 2026-10-19 | C8: Metal M4, render targets, bloom, sombras projetadas, previews, reflexo da água, flares e captura (conferida em jogo) | 98defbc |
+| 2026-10-19 | C8: Metal M5, Metal como padrão no Mac (`LC_GFX_API=opengl` para o OpenGL) | 3cfa01a |

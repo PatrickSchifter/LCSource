@@ -27,12 +27,14 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M4 feita e conferida em jogo pelo usuário (2026-10-19,
-   `98defbc`); próximo: M5 (Metal como padrão no Mac).
+2. **Metal** (D2.2), ver "C8 — Metal": M1–M4 conferidas em jogo; M5 (2026-10-19, `3cfa01a`): o Metal é o padrão
+   no Mac, `LC_GFX_API=opengl` volta ao OpenGL. Falta conferir em jogo com o padrão novo.
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
-- Escolha: `LC_GFX_API=metal` (só na partida, `Nksp.cpp`); sem ela, OpenGL. `GAT_MTL` = 2 existe em
+- Escolha (M5): Metal por padrão quando há dispositivo Metal; `LC_GFX_API=opengl` (ou `gl`) escolhe o
+  OpenGL (só na partida, `Nksp.cpp`). Se o Metal não abrir o modo, o `StartNewMode` tenta o OpenGL no
+  mesmo modo antes dos modos de recuperação. O `sam_iGfxAPI` persistente não é lido na partida. `GAT_MTL` = 2 existe em
   todas as plataformas (o backend só com `SE1_METAL`, definido no CMake do Mac), então os
   testes de API nas chamadas comuns não precisam de `#ifdef`. `stdout.log` mostra
   `Metal: <GPU>, drawable WxH` quando o Metal abre.
@@ -78,8 +80,8 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   `shaPrepareForBillboard` (`Shader.cpp`): saía cedo fora do OpenGL, então os billboards dos
   shaders `Default`/`NormalMap` não giravam para a câmera no Metal; agora lê `GetViewMatrix_MTL`.
   Log sem erros. CPU ainda não comparado com o OpenGL em condições iguais (janela em foco, mesmo lugar).
-- Comparar: `LC_GFX_API=metal scripts/macos/play.sh`, login sem mexer, captura da janela; depois
-  sem a variável. A câmera guarda o zoom entre sessões, então o enquadramento pode diferir.
+- Comparar: `scripts/macos/play.sh` (Metal), login sem mexer, captura da janela; depois com
+  `LC_GFX_API=opengl`. A câmera guarda o zoom entre sessões, então o enquadramento pode diferir.
 - `grep` nos fontes: use `-a` (os bytes coreanos fazem o grep tratá-los como binário e calar).
 
 ## C8 — Metal M4: render targets e leituras da tela (2026-10-19, `98defbc`, conferida em jogo)
@@ -113,7 +115,7 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   alvo, orientação, cópia da tela, leitura de cor e profundidade (dentro e fora), profundidade
   mantida entre quadros — tudo certo, sem avisos da validação. Login no jogo com a validação ligada
   sem erros. **Não visto em jogo** (precisa do login do usuário).
-- Conferir em jogo (`LC_GFX_API=metal scripts/macos/play.sh`, comparando com o OpenGL): sombra do
+- Conferir em jogo (`scripts/macos/play.sh`, comparando com `LC_GFX_API=opengl`): sombra do
   personagem no terreno e no chão das cidades; loja de cash (preview do personagem) e modelo de
   item no centro da tela; reflexo na água (`g_iReflectionDetail`); bloom (`g_iUseBloom` é
   persistente e pode ter ficado 0 nos testes da M3, quando o `InitBloom` falhava: religar o filtro
