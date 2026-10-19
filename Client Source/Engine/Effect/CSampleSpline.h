@@ -354,7 +354,7 @@ void CSampleSpline<ValueType, InterpolateFunc>::Prepare()
 
 //Natural Cubic이외의 것에서는 안쓰임.
 template<>
-void CSampleSpline< FLOAT3D, CCubicSplineInterpolate<FLOAT3D> >::Prepare()
+inline void CSampleSpline< FLOAT3D, CCubicSplineInterpolate<FLOAT3D> >::Prepare()
 {
 	if(m_bPrepared) return;
 	m_bPrepared = true;
@@ -404,7 +404,7 @@ const ValueType CSampleSpline< ValueType, InterpolateFunc >::Value(float key)
 
 //현재 Natural Cubic Spline은 FLOAT3D하고만 같이 쓰임.
 template<>
-const FLOAT3D CSampleSpline< FLOAT3D, CCubicSplineInterpolate<FLOAT3D> >::Value(float key)
+inline const FLOAT3D CSampleSpline< FLOAT3D, CCubicSplineInterpolate<FLOAT3D> >::Value(float key)
 {
 	if(m_iCount == 0) return ValueType();
 
@@ -429,7 +429,7 @@ const FLOAT3D CSampleSpline< FLOAT3D, CCubicSplineInterpolate<FLOAT3D> >::Value(
 
 //현재 Hermite Spline은 FLOAT3D하고만 같이 쓰임.
 template<>
-const FLOAT3D CSampleSpline< FLOAT3D, CHermiteSplineInterpolate<FLOAT3D> >::Value(float key)
+inline const FLOAT3D CSampleSpline< FLOAT3D, CHermiteSplineInterpolate<FLOAT3D> >::Value(float key)
 {
 	if(m_iCount == 0) return ValueType();
 

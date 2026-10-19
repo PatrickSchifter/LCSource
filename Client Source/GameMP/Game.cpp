@@ -17,7 +17,9 @@
 #include <Engine/CurrentVersion.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Network/Web.h>
-#include <tlhelp32.h>
+#ifdef PLATFORM_WIN32
+#include <tlhelp32.h>  // the bot process scan, Windows only
+#endif
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Object/ActorMgr.h>
 #include "LCDDrawing.h"
@@ -683,10 +685,12 @@ CGame::CGame()
 
 CGame::~CGame()
 {
+#ifdef _WIN32  // the process scan thread exists only on Windows
 	if (gmUpdateInputState)
 	{
 		delete gmUpdateInputState;
 	}
+#endif
 }
 
 

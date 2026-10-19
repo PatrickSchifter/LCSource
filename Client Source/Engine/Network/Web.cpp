@@ -160,7 +160,9 @@ cWeb::cWeb()
 
 cWeb::~cWeb()
 {
+#ifdef PLATFORM_WIN32
 	if(m_pThread) delete m_pThread;
+#endif
 
 	if (m_hWebPage)
 	{

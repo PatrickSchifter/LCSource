@@ -112,6 +112,15 @@ ENGINE_API CTString _strLogFile = "";
 //안태훈 수정 시작
 ENGINE_API BOOL g_bBadWeather = FALSE;
 ENGINE_API COLOR g_colWeather = C_WHITE|CT_OPAQUE;
+// declared in Engine.h (auto login, event flags, Brazilian 'Nas' notation)
+ENGINE_API BOOL g_bAutoLogin;
+ENGINE_API BOOL g_bAutoRestart;
+ENGINE_API CTString g_nmID;
+ENGINE_API CTString g_nmPW;
+ENGINE_API CTString g_nmCID;
+ENGINE_API CTString g_nmVER;
+ENGINE_API std::map<int,int> g_mapEvent;
+ENGINE_API BOOL g_bNasTrans;
 ENGINE_API INDEX g_bRenderDecoration = TRUE;
 ENGINE_API INDEX g_iUseBloom = 1;	//0 : none, 1 : normal bloom, 2 : strong bloom
 FLOAT g_fFarClipPlus = 0.0f;

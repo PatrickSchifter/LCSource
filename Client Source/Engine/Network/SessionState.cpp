@@ -100,7 +100,9 @@
 #include <Engine/Contents/Base/UIQuestRestore.h>
 #include <Engine/Contents/function/ItemCollection.h>
 #include <Engine/Contents/function/PremiumChar.h>
-#include <tlhelp32.h>
+#ifdef PLATFORM_WIN32
+#include <tlhelp32.h>  // the bot process scan, Windows only
+#endif
 
 #include <Engine/Contents/Login/ServerSelect.h>
 #include <Engine/Contents/Login/UIServerSelect.h>
