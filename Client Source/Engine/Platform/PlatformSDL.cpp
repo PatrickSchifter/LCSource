@@ -23,6 +23,11 @@ BOOL PLT_Init(void)
 {
   // the client has its own main(); SDL does not need to run it
   SDL_SetMainReady();
+#ifndef PLATFORM_WIN32
+  // a fullscreen game on macOS stays in its place when another app is in front; minimized, the
+  // game stops drawing (IsIconic) and the screen stays black until it is restored
+  SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+#endif
   if (!SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS|SDL_INIT_GAMEPAD)) {
     CPrintF("SDL_Init failed: %s\n", SDL_GetError());
     return FALSE;

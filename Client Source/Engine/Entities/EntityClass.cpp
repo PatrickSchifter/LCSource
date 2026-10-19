@@ -431,7 +431,23 @@ void CEntityClass::AddToCRCTable(void)
 	CRCT_AddFile_t(fnm);
 
 	// add its DLL
+#ifdef PLATFORM_WIN32
 	CRCT_AddFile_t(ec_fnmClassDLL);
+#else
+	// the file on disk is Bin\X.dylib (LoadLibrary opens it in place of Bin\X.dll); the table
+	// keeps the name the worlds use. Every entity created comes here: the CRC of each library
+	// is computed once (CRCT_AddFile_t only computes it for names not yet in the table)
+	if (CRCT_bGatherCRCs) {
+		static std::map<std::string, ULONG> _mapLibraryCRCs;
+		const std::string strDLL = (const char*)ec_fnmClassDLL;
+		std::map<std::string, ULONG>::iterator it = _mapLibraryCRCs.find(strDLL);
+		if (it == _mapLibraryCRCs.end()) {
+			CTFileName fnmLib = ec_fnmClassDLL.NoExt() + ".dylib";
+			it = _mapLibraryCRCs.insert(std::make_pair(strDLL, GetFileCRC32_t(fnmLib))).first;
+		}
+		CRCT_AddFile_t(ec_fnmClassDLL, it->second);
+	}
+#endif
 
 	// add to container
 
