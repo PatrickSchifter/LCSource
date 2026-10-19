@@ -224,9 +224,9 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
-- [ ] **Próximo, decidido em 2026-10-19: animações (skinning SKA) na GPU** no OpenGL, em GLSL; hoje na CPU (`LC_NO_HW_SHADERS=1`), é o que mais pesa e esquenta o Mac
-- [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo
-- [ ] Reescrever em GLSL/MSL os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
+- [x] Animações (skinning SKA), terreno e efeitos na GPU no OpenGL (2026-10-19): o assembly D3D8 traduzido para programas ARB (`Graphics/ShaderAsmToARB.cpp`); malhas estáticas em VBOs. Detalhes em `HANDOFF.md` ("C8 — shaders na GPU e VBOs")
+- [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo (no OpenGL rodam pelo tradutor ARB, menos a água com reflexo e o `texbem`)
+- [ ] Reescrever em MSL (Metal) os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura
 - [ ] Fontes e UI (`Engine/Interface`), drawports, render-to-texture
 - [ ] Suporte a Retina/HiDPI e tela cheia
@@ -286,3 +286,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-18 | C7: som pelo SDL3, Ogg com libvorbisfile, MP3 com dr_mp3; C6: sockets BSD, web/ThreadWrapper só no Windows; check do Mac 864 → 128 erros únicos | 3b366e5..ef6097c |
 | 2026-10-18 | C1/C8: contexto OpenGL pelo SDL3, CMake do Mac, primeiro link do cliente no Mac (inicia até as fontes, sem dados); `CTString` em varargs, `inline`, Ecc `-line` | 2f57203..1bcb824 |
 | 2026-10-19 | C8/C9: cliente Mac joga (login, Juno, combate, itens); terreno, multitextura, clamp, trackpad, 64 bits da rede, desempenho (vsync, névoa, loop inativo) | dd78396..7c678d3 |
+| 2026-10-19 | C8: shaders na GPU no OpenGL (assembly D3D8 → programas ARB), terreno e efeitos; VBOs para as malhas estáticas | 369a9d8 |

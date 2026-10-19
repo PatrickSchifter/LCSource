@@ -1,7 +1,7 @@
 # Passagem de contexto — porte do Last Chaos para macOS
 
 Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`; aqui está o
-**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-18.
+**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-19.
 
 ## Onde estamos
 
@@ -12,7 +12,8 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 - Cliente **Mac** (2026-10-19, `build-client-mac`, OpenGL 2.1 via SDL3): loga no servidor do Mac,
   entra em Juno, anda, luta, pega itens; trackpad (dois dedos giram a câmera, pinça dá zoom).
   Instalação em `~/Projects/LC-BR2014` (cópia de `C:\LC-BR2014`), aberta por `scripts/macos/play.sh`.
-  Ver "C8 — cliente Mac rodando" abaixo.
+  Shaders (skinning, terreno, efeitos) na GPU e malhas em VBOs desde 2026-10-19 (`369a9d8`).
+  Ver "C8 — cliente Mac rodando" e "C8 — shaders na GPU e VBOs" abaixo.
 - Branch de trabalho: `macos-port` no fork `git@github.com:PatrickSchifter/LCSource.git` (remote
   `origin`; `upstream` é pwesty/LCSource). Commits terminam com a linha `Co-Authored-By` do Claude.
 - O usuário conversa em português; mensagens de commit em inglês.
@@ -23,15 +24,36 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C8, animações na GPU** (decidido pelo usuário em 2026-10-19): o skinning dos modelos SKA (e o
-   terreno com shader) é "Not implemented yet" no backend OpenGL; hoje o Mac roda com
-   `LC_NO_HW_SHADERS=1` (skinning na CPU). Em jogo o cliente usa ~20% de um núcleo a 60 FPS e o Mac
-   esquenta; os modelos animados são a maior parte. Caminho: programas GLSL (OpenGL 2.1) no lugar
-   dos `vs.1.1` do D3D (`Graphics/ShaderCode.h`, `Ska/RMRender.cpp`, `shaSetVertexProgram`).
-2. **Conversões float→inteiro sem sinal**: no ARM saturam em 0 onde o x86 dá a volta (achado no
+1. **Conversões float→inteiro sem sinal**: no ARM saturam em 0 onde o x86 dá a volta (achado no
    giro da câmera, `e53b9eb`). Um build com `-fsanitize=float-cast-overflow` acharia as outras.
-3. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets),
+2. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets;
+   com o `CRenderTexture` em FBO os shaders deles já rodam),
    Retina (hoje 1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
+
+## C8 — shaders na GPU e VBOs (2026-10-19, `369a9d8`)
+
+- `Graphics/ShaderAsmToARB.cpp` traduz o assembly D3D8 dos shaders (vs.1.1, ps.1.1–1.4) para
+  `ARB_vertex_program`/`ARB_fragment_program` na criação do programa: todos os shaders do motor
+  (SKA, terreno, efeitos) rodam sem reescrever. Escolhido no lugar de GLSL porque o ARB tem a mesma
+  semântica do D3D8 (programas de vértice e pixel independentes, constantes compartilhadas em
+  `program.env`). Entradas fixas: `ShaderAsmToARB.h` (pesos/índices = atributos 6/7, tangente = 1).
+  Programa que não traduz ou não carrega: uma linha `Cannot translate`/`Cannot load` no console,
+  com o código, e a superfície sai sem programa.
+- Faltavam no OpenGL (eram só D3D no `Shader.cpp`): c0..c3 (`shaSetVertexProgramConst_TransformMatrix`),
+  `shaSetDefaultConstantRegisters` (o terreno saía branco), billboards. A matriz do OpenGL tem o
+  mesmo layout de floats da do D3D (`gfxSetViewMatrix` passa os mesmos), então a mesma conta vale.
+- Água com reflexo desligada fora do D3D (`Render.cpp`): desenha numa textura, que o OpenGL não tem
+  ainda; com shaders ligados aparecia um quadrado azul com o céu.
+- VBOs: os buffers estáticos (`gfxCreateVertexBuffer` sem `GFX_DYNAMIC`) ganham um buffer object,
+  preenchido no `Unlock` depois de lock de escrita; a cópia em memória fica para as leituras do motor.
+  Dinâmicos (morph) seguem em memória. Sem *compiled vertex arrays* quando as posições vêm de VBO.
+- **Armadilha achada**: com VBO o ponteiro de um array é um deslocamento, e o deslocamento 0 é
+  `NULL`. Uma função que tratava `NULL` como "desligar o array" tirava os índices dos ossos de toda
+  superfície que começa no vértice 0 (mãos, pés e espada no osso errado; o tronco escapava porque o
+  osso 0 é o dele). Deslocamentos também não podem sair de aritmética em ponteiro nulo.
+- Interruptores: `LC_NO_HW_SHADERS=1` (skinning na CPU), `LC_NO_VBO=1` (arrays em memória).
+- CPU (Juno, M-series, 60 FPS com vsync): parado ~17%, em combate ~21% de um núcleo; a thread
+  principal passa ~80% do quadro esperando o vsync. O que resta é a montagem da cena e o driver.
 
 ## C1 — build no Mac (2026-10-18)
 
