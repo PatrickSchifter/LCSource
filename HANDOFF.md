@@ -27,8 +27,8 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M4 implementada (`98defbc`), **falta conferir em
-   jogo** (lista em "C8 — Metal M4"); depois M5 (Metal como padrão no Mac).
+2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M4 feita e conferida em jogo pelo usuário (2026-10-19,
+   `98defbc`); próximo: M5 (Metal como padrão no Mac).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
@@ -82,7 +82,7 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   sem a variável. A câmera guarda o zoom entre sessões, então o enquadramento pode diferir.
 - `grep` nos fontes: use `-a` (os bytes coreanos fazem o grep tratá-los como binário e calar).
 
-## C8 — Metal M4: render targets e leituras da tela (2026-10-19, `98defbc`)
+## C8 — Metal M4: render targets e leituras da tela (2026-10-19, `98defbc`, conferida em jogo)
 
 - `CRenderTexture` (`TextureRender.cpp`) no Metal: textura BGRA8 (o formato do drawable, então os
   pipelines servem para os dois) com profundidade própria (`mtlTextureRenderTarget`).
