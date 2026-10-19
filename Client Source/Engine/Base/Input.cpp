@@ -2439,7 +2439,9 @@ static void ReadMouseDevice(CInputDevice &idDevice, BOOL bPreScan)
 		// (Platform/PlatformSDL.cpp; it is only gathered while the mouse is not over the interface)
 		{
 			FLOAT fDX, fDY;
-			if (PLT_GetTrackpadPan(fDX, fDY) && _pInput->m_bTcpIp && !_pInput->m_bRButtonDown) {
+			// (taken by the main reading only: the prescan for rendering, which comes first in a frame,
+			// would leave it out of the player's action)
+			if (!bPreScan && PLT_GetTrackpadPan(fDX, fDY) && _pInput->m_bTcpIp && !_pInput->m_bRButtonDown) {
 				if (fabs(fDX) >= fabs(fDY)) fDY = 0.0f; else fDX = 0.0f;
 				const FLOAT fSensitivity = inp_fMouseSensitivity*0.25f;
 				const FLOAT fMouseRelX = +fDX*fSensitivity;

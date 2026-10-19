@@ -471,15 +471,25 @@ bool PLT_MacTrackpadScroll(float fDX, float fDY, bool bGestureStart, bool bMomen
 }
 
 // A pinch zooms as the wheel: spreading the fingers is the wheel turned forward, one notch for
-// every tenth of change in scale.
+// every 5% of change in scale, in one message (the camera takes the last wheel message of a
+// frame, not their sum: PlayerView.es).
 void PLT_MacMagnify(float fMagnification)
 {
-  _fMagnifyRemainder += fMagnification * 10.0f * WHEEL_DELTA;
-  const int iDelta = (int)_fMagnifyRemainder;
-  if (iDelta == 0) {
+  // whole notches only: the camera zooms by |delta|/120 steps
+  _fMagnifyRemainder += fMagnification * 20.0f;
+  const int ctNotches = (int)_fMagnifyRemainder;
+  if (ctNotches == 0) {
     return;
   }
-  _fMagnifyRemainder -= iDelta;
+  _fMagnifyRemainder -= ctNotches;
+  int iDelta = ctNotches * WHEEL_DELTA;
+  // added to a wheel message not taken yet, if there is one at the end of the queue
+  if (!_dqMessages.empty() && _dqMessages.back().message == WM_MOUSEWHEEL) {
+    MSG &msg = _dqMessages.back();
+    iDelta += (SWORD)HIWORD(msg.wParam);
+    msg.wParam = MAKEWPARAM(LOWORD(msg.wParam), (SWORD)iDelta);
+    return;
+  }
   const POINT pt = ScreenCursorPos();
   PostMsg(WM_MOUSEWHEEL, MAKEWPARAM(MouseKeyFlags(), (SWORD)iDelta), MAKELPARAM((SWORD)pt.x, (SWORD)pt.y));
 }
