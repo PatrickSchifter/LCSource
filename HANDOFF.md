@@ -24,9 +24,25 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets;
-   com o `CRenderTexture` em FBO os shaders deles já rodam),
+1. O que falta no OpenGL sem D3D: bloom, reflexo/refração da água, preview de personagem da loja
+   (todos usam o `CRenderTexture`, que já tem FBO; falta trocar as chamadas D3D de cada um),
    Retina (hoje 1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
+
+## C8 — render targets e sombras projetadas no OpenGL (2026-10-19, `28e947e`)
+
+- `CRenderTexture` (`TextureRender.cpp`) fora do D3D: FBO (`GL_EXT_framebuffer_object`, funções em
+  `Gfx_OpenGL.cpp` como as dos VBOs) com a textura RGBA8 como cor e renderbuffer de profundidade
+  de 16 bits. `Begin()` põe viewport e caixa do scissor no alvo (o GL do motor deixa o scissor
+  sempre ligado, `DrawPort.cpp` confere) e `End()` devolve; `Clear()` recebe D3DCOLOR (ARGB) e
+  limpa ignorando as máscaras, como o D3D. A textura é ligada por `gfxSetTexture()` para o cache
+  do motor saber o que está no bind.
+- Sombras dos modelos no terreno e nos brushes (`Render.cpp`) saíram do `#ifdef SE1_D3D`; cada
+  chamada D3D tem o equivalente GL ao lado (Windows compila o mesmo). A projeção da sombra
+  (`D3DXMatrixOrthoRH`) vale como projeção GL (profundidade em 0..1 do -1..1).
+  `D3DTSS_TCI_CAMERASPACEPOSITION` + `D3DTTFF_PROJECTED` = texgen `EYE_LINEAR` (planos com modelview
+  identidade) + matriz de textura, mesmos floats; mas a textura do D3D começa no topo e a do GL
+  embaixo, então `t = q-t` (`SetShadowTexGen_OGL`). Testado em jogo pelo usuário.
+- Pendente: render targets não são recriados se o contexto GL for refeito (troca de modo).
 
 ## Conversões float→inteiro sem sinal (2026-10-19, concluído)
 
