@@ -393,6 +393,7 @@ public:
 #endif // SE1_D3D
 	};
 	INDEX vb_ctLockedVertices[GFX_MAX_VBA];
+	ULONG vb_aulBufferObjects[GFX_MAX_VBA]; // OpenGL: buffer object of each array of a static buffer (0 = none)
 	SLONG vb_slSize;            // total size of this vertex buffer (in bytes)
 	INDEX vb_ctVertices;        // number of vertices
 	ULONG vb_ulArrayMask;       // which array(s) exist in this buffer

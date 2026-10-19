@@ -241,6 +241,7 @@ set(ENGINE_SOURCES
   "Engine/Graphics/MultiMonitor.cpp"
   "Engine/Graphics/Raster.cpp"
   "Engine/Graphics/Shader.cpp"
+  "Engine/Graphics/ShaderAsmToARB.cpp"
   "Engine/Graphics/ShadowMap.cpp"
   "Engine/Graphics/Stereo.cpp"
   "Engine/Graphics/Texture.cpp"

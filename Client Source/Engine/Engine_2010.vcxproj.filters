@@ -336,6 +336,9 @@
     <ClCompile Include="Graphics\Shader.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\ShaderAsmToARB.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="Graphics\ShadowMap.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
@@ -2229,6 +2232,9 @@
       <Filter>Header Files\Graphics Headers</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ShaderCode.h">
+      <Filter>Header Files\Graphics Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ShaderAsmToARB.h">
       <Filter>Header Files\Graphics Headers</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ShadowMap.h">

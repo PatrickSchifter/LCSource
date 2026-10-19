@@ -5,6 +5,9 @@
 #include <Engine/Math/Vector.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ViewPort.h>
+#include <Engine/Graphics/ShaderAsmToARB.h>
+
+#include <set>
 
 #include <Engine/Base/Statistics_Internal.h>
 
@@ -712,6 +715,7 @@ extern void InitVertexBuffers(void)
 	// set one for dynamic array
 	VertexBuffer &vb  = _avbVertexBuffers.Push();
 	vb.vb_ulLockMask  = NONE;
+	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_aulBufferObjects[iVA] = 0;
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 //	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX; //원본
 	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX|GFX_VBM_TAN;
@@ -764,11 +768,24 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
 			vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA] = NULL;
+			vb.vb_i1stLockedVertex[iVA] = vb.vb_ctLockedVertices[iVA] = 0;
+			vb.vb_aulBufferObjects[iVA] = 0;
 			if( !((ulTypeMask>>iVA)&1)) continue;
 			const SLONG slSize = ctVertices*_aslVBTypeSizes[iVA];
 			vb.vb_paWriteArray[iVA] = AllocMemory(slSize);
 			if( bRead) vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA];
 			slTotalSize += slSize;
+			// a static buffer also goes to video memory (filled at unlock); the copy in memory is
+			// what locks return. Dynamic ones change every frame and stay plain arrays.
+			if( !bDynamic && pglGenBuffersARB!=NULL) {
+				GLuint uiBuffer = 0;
+				pglGenBuffersARB( 1, &uiBuffer);
+				pglBindBufferARB( GL_ARRAY_BUFFER_ARB, uiBuffer);
+				pglBufferDataARB( GL_ARRAY_BUFFER_ARB, slSize, NULL, GL_STATIC_DRAW_ARB);
+				pglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0);
+				OGL_CHECKERROR;
+				vb.vb_aulBufferObjects[iVA] = uiBuffer;
+			}
 		}
 	}
 
@@ -858,6 +875,10 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 	if( eAPI==GAT_OGL)
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
+			if( vb.vb_aulBufferObjects[iVA]!=0) {
+				pglDeleteBuffersARB( 1, (GLuint*)&vb.vb_aulBufferObjects[iVA]);
+				vb.vb_aulBufferObjects[iVA] = 0;
+			}
 			if( vb.vb_paWriteArray[iVA] == NULL) continue;
 			FreeMemory( vb.vb_paWriteArray[iVA]);
 			vb.vb_paWriteArray[iVA] = NULL;
@@ -1106,27 +1127,34 @@ extern ULONG gfxGetColorMask(void)
 }
 
 
+// OpenGL turns programs on and off right away (Gfx_wrapper_OpenGL.cpp)
+static void ogl_SyncPrograms(void);
+
 extern void gfxEnableVertexProgram(void)
 {
 	GFX_bUseVertexProgram = TRUE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxDisableVertexProgram(void)
 {
 	GFX_bUseVertexProgram = FALSE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxEnablePixelProgram(void)
 {
 	GFX_bUsePixelProgram = TRUE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxDisablePixelProgram(void)
 {
 	GFX_bUsePixelProgram = FALSE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 

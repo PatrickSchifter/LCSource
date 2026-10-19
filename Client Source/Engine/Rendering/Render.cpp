@@ -2131,6 +2131,9 @@ void CRenderer::Render(void)
 		!re_bRenderingShadows &&
 		(g_iReflectionDetail != REFLECTION_NONE) &&
 		bHardwareShader &&
+#ifndef SE1_D3D
+		FALSE &&  // the reflection is rendered to a texture (no OpenGL render targets yet, C8)
+#endif // SE1_D3D
 		!re_pdpDrawPort->IsOverlappedRendering()
 		)
 	{

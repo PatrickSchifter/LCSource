@@ -2217,6 +2217,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='GERLIVE|Win32'">StdH.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Graphics\Shader.cpp" />
+    <ClCompile Include="Graphics\ShaderAsmToARB.cpp" />
     <ClCompile Include="Graphics\ShadowMap.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GERLIVEKalydo|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='GERLIVEKalydo|Win32'">StdH.h</PrecompiledHeaderFile>
@@ -4162,6 +4163,7 @@
     <ClInclude Include="Graphics\RenderScene.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\ShaderCode.h" />
+    <ClInclude Include="Graphics\ShaderAsmToARB.h" />
     <ClInclude Include="Graphics\ShadowMap.h" />
     <ClInclude Include="Graphics\Stereo.h" />
     <ClInclude Include="Graphics\Texture.h" />

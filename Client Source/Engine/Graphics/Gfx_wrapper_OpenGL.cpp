@@ -338,47 +338,181 @@ static void ogl_DisableBlend(void)
 }
 
 
+// VERTEX AND PIXEL PROGRAMS
+// Direct3D's shader assembly translated into ARB programs (ShaderAsmToARB.cpp). A handle is the
+// program's name; gl_dwVertexShader/gl_dwPixelShader keep the current ones, and a program is
+// enabled while it is set and gfxEnableVertexProgram()/gfxEnablePixelProgram() are in effect.
+
+static BOOL _bVertexProgramEnabled = FALSE;
+static BOOL _bPixelProgramEnabled  = FALSE;
+static ULONG _ulAttribArrays = 0;  // generic attribute arrays enabled (bit per attribute)
+
+// called on a new context
+extern void ResetPrograms_OGL(void)
+{
+  _bVertexProgramEnabled = FALSE;
+  _bPixelProgramEnabled  = FALSE;
+  _ulAttribArrays = 0;
+}
+
+
+// enable or disable programs as the engine's state asks for
+static void ogl_SyncPrograms(void)
+{
+  ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
+  if( !(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM)) return;
+  const BOOL bVertex = GFX_bUseVertexProgram && _pGfx->gl_dwVertexShader!=NONE;
+  const BOOL bPixel  = GFX_bUsePixelProgram  && _pGfx->gl_dwPixelShader !=NONE;
+  if( bVertex!=_bVertexProgramEnabled) {
+    if( bVertex) pglEnable( GL_VERTEX_PROGRAM_ARB);
+    else pglDisable( GL_VERTEX_PROGRAM_ARB);
+    _bVertexProgramEnabled = bVertex;
+  }
+  if( bPixel!=_bPixelProgramEnabled) {
+    if( bPixel) pglEnable( GL_FRAGMENT_PROGRAM_ARB);
+    else pglDisable( GL_FRAGMENT_PROGRAM_ARB);
+    _bPixelProgramEnabled = bPixel;
+  }
+  OGL_CHECKERROR;
+}
+
+
+// enable a generic vertex attribute array (pvData may be an offset in a buffer object, 0 too)
+static void ogl_SetAttribArray( INDEX iAttrib, GLint iSize, GLenum eType, GLboolean bNormalized,
+                                GLsizei slStride, const void *pvData)
+{
+  const ULONG ulBit = 1UL<<iAttrib;
+  pglVertexAttribPointerARB( iAttrib, iSize, eType, bNormalized, slStride, pvData);
+  if( !(_ulAttribArrays&ulBit)) pglEnableVertexAttribArrayARB(iAttrib);
+  _ulAttribArrays |= ulBit;
+  OGL_CHECKERROR;
+}
+
+static void ogl_DisableAttribArrays(void)
+{
+  for( INDEX iAttrib=0; _ulAttribArrays!=0; iAttrib++) {
+    const ULONG ulBit = 1UL<<iAttrib;
+    if( !(_ulAttribArrays&ulBit)) continue;
+    pglDisableVertexAttribArrayARB(iAttrib);
+    _ulAttribArrays &= ~ulBit;
+  }
+  OGL_CHECKERROR;
+}
+
+
 static void ogl_SetVertexProgram(const ULONG ulHandle)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  if( _pGfx->gl_dwVertexShader!=ulHandle) {
+    pglBindProgramARB( GL_VERTEX_PROGRAM_ARB, ulHandle);
+    OGL_CHECKERROR;
+    _pGfx->gl_dwVertexShader = ulHandle;
+  }
+  ogl_SyncPrograms();
 }
 
 
 static void ogl_SetPixelProgram(const ULONG ulHandle)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  if( _pGfx->gl_dwPixelShader!=ulHandle) {
+    pglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, ulHandle);
+    OGL_CHECKERROR;
+    _pGfx->gl_dwPixelShader = ulHandle;
+  }
+  ogl_SyncPrograms();
 }
 
 
 static void ogl_DeleteVertexProgram(ULONG ulHandle)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  ASSERT( ulHandle!=NONE);
+  if( _pGfx->gl_dwVertexShader==ulHandle) ogl_SetVertexProgram(NONE);
+  pglDeleteProgramsARB( 1, (GLuint*)&ulHandle);
+  OGL_CHECKERROR;
 }
 
 
 static void ogl_DeletePixelProgram(ULONG ulHandle)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  ASSERT( ulHandle!=NONE);
+  if( _pGfx->gl_dwPixelShader==ulHandle) ogl_SetPixelProgram(NONE);
+  pglDeleteProgramsARB( 1, (GLuint*)&ulHandle);
+  OGL_CHECKERROR;
+}
+
+
+// print a program that failed, line by line (the console has a line limit)
+static void ogl_PrintProgram( const char *strProgram)
+{
+  const char *pch = strProgram;
+  while( *pch!=0) {
+    const char *pchEnd = strchr( pch, '\n');
+    const INDEX ctChars = (pchEnd!=NULL) ? (INDEX)(pchEnd-pch) : (INDEX)strlen(pch);
+    CPrintF( "  %.*s\n", (int)ctChars, pch);
+    pch += ctChars;
+    if( *pch=='\n') pch++;
+  }
+}
+
+
+// translate and load a program (NONE if it cannot be done)
+static ULONG ogl_CreateProgram( GLenum eTarget, const char *strD3D)
+{
+  ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
+  ASSERT( strD3D!=NULL && strlen(strD3D)>0);
+  const BOOL bVertex = (eTarget==GL_VERTEX_PROGRAM_ARB);
+  if( !(_pGfx->gl_ulFlags & (bVertex ? GLF_VERTEXPROGRAM : GLF_PIXELPROGRAM))) return NONE;
+  // the engine asks again for a program it did not get: report it once
+  static std::set<std::string> _setFailed;
+  if( _setFailed.count(strD3D)) return NONE;
+
+  std::string strARB, strError;
+  const bool bTranslated = bVertex ? TranslateVertexProgramToARB( strD3D, strARB, strError)
+                                   : TranslatePixelProgramToARB(  strD3D, strARB, strError);
+  if( !bTranslated) {
+    CPrintF( "Cannot translate %s program: %s\n", bVertex ? "vertex" : "pixel", strError.c_str());
+    ogl_PrintProgram( strD3D);
+    _setFailed.insert(strD3D);
+    return NONE;
+  }
+
+  GLuint uiProgram = 0;
+  pglGenProgramsARB( 1, &uiProgram);
+  pglBindProgramARB( eTarget, uiProgram);
+  pglProgramStringARB( eTarget, GL_PROGRAM_FORMAT_ASCII_ARB, (GLsizei)strARB.size(), strARB.c_str());
+  GLint gliErrorPos = -1;
+  pglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &gliErrorPos);
+  const GLenum eError = pglGetError();
+  // back to the current program
+  pglBindProgramARB( eTarget, bVertex ? _pGfx->gl_dwVertexShader : _pGfx->gl_dwPixelShader);
+  OGL_CHECKERROR;
+
+  if( gliErrorPos!=-1 || eError!=GL_NO_ERROR) {
+    CPrintF( "Cannot load %s program at %d: %s\n", bVertex ? "vertex" : "pixel", gliErrorPos,
+      (const char*)pglGetString(GL_PROGRAM_ERROR_STRING_ARB));
+    ogl_PrintProgram( strARB.c_str());
+    pglDeleteProgramsARB( 1, &uiProgram);
+    _setFailed.insert(strD3D);
+    return NONE;
+  }
+  return uiProgram;
 }
 
 
 static ULONG ogl_CreateVertexProgram(const char *strVertexProgram, ULONG ulStreamMasks)
 {
-  ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
-  return NONE;
+  // the inputs are fixed (ShaderAsmToARB.h), so the streams need no declaration
+  (void)ulStreamMasks;
+  return ogl_CreateProgram( GL_VERTEX_PROGRAM_ARB, strVertexProgram);
 }
 
 
 static ULONG ogl_CreatePixelProgram(const char *strPixelProgram)
 {
-  ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
-  return NONE;
+  return ogl_CreateProgram( GL_FRAGMENT_PROGRAM_ARB, strPixelProgram);
 }
 
 
@@ -386,15 +520,40 @@ static ULONG ogl_CreatePixelProgram(const char *strPixelProgram)
 static void ogl_SetVertexProgramConst(INDEX iRegister, const void *pData, INDEX ctRegisters)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  ASSERT( iRegister>=0 && ctRegisters>0 && iRegister+ctRegisters<=96);
+  ASSERT( pData!=NULL);
+  if( !(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM)) return;
+  const GLfloat *pfData = (const GLfloat*)pData;
+  for( INDEX iReg=0; iReg<ctRegisters; iReg++) {
+    pglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, iRegister+iReg, pfData+iReg*4);
+  }
+  OGL_CHECKERROR;
 }
 
 
-// Set value of constant register for vertex shader
+// Set value of constant register for pixel shader
 static void ogl_SetPixelProgramConst(INDEX iRegister, const void *pData, INDEX ctRegisters)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERTALWAYS("Not implemented yet");
+  ASSERT( iRegister>=0 && ctRegisters>0 && iRegister+ctRegisters<=8);
+  ASSERT( pData!=NULL);
+  if( !(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM)) return;
+  const GLfloat *pfData = (const GLfloat*)pData;
+  for( INDEX iReg=0; iReg<ctRegisters; iReg++) {
+    pglProgramEnvParameter4fvARB( GL_FRAGMENT_PROGRAM_ARB, iRegister+iReg, pfData+iReg*4);
+  }
+  OGL_CHECKERROR;
+}
+
+
+// Get value of constant registers (for shaGet*ProgramConst)
+extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters)
+{
+  GLfloat *pfData = (GLfloat*)pData;
+  for( INDEX iReg=0; iReg<ctRegisters; iReg++) {
+    pglGetProgramEnvParameterfvARB( bVertex ? GL_VERTEX_PROGRAM_ARB : GL_FRAGMENT_PROGRAM_ARB, iRegister+iReg, pfData+iReg*4);
+  }
+  OGL_CHECKERROR;
 }
 
 
@@ -1235,11 +1394,15 @@ static void ogl_DeleteTexture( ULONG &ulTexObject)
 // VERTEX ARRAYS
 
 
+// positions come from a buffer object (compiled vertex arrays are not used then: the driver
+// caches what it locks by address, and offsets in different buffers are the same numbers)
+static BOOL _bVerticesInBufferObject = FALSE;
+
 // prepare vertex array for API
 static void ogl_SetVertexArray( GFXVertex *pvtx, INDEX ctVtx)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERT( ctVtx>0 && pvtx!=NULL && GFX_iActiveTexUnit==0);
+  ASSERT( ctVtx>0 && GFX_iActiveTexUnit==0);  // pvtx may be an offset in a buffer object
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
   GFX_ctVertices = ctVtx;
 
@@ -1252,6 +1415,8 @@ static void ogl_SetVertexArray( GFXVertex *pvtx, INDEX ctVtx)
   ASSERT(  pglIsEnabled( GL_VERTEX_ARRAY));
   pglVertexPointer( 3, GL_FLOAT, 0, pvtx);
   OGL_CHECKERROR;
+  ogl_DisableAttribArrays();
+  _bVerticesInBufferObject = FALSE;
   GFX_bColorArray = FALSE; // mark that color array has been disabled (because of potential LockArrays)
 
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -1263,7 +1428,7 @@ static void ogl_SetVertexArray( GFXVertex *pvtx, INDEX ctVtx)
 static void ogl_SetNormalArray( GFXNormal *pnor)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERT( pnor!=NULL);
+  // (pnor may be an offset in a buffer object)
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
   pglEnableClientState(GL_NORMAL_ARRAY);
@@ -1275,12 +1440,33 @@ static void ogl_SetNormalArray( GFXNormal *pnor)
 }
 
 
-// prepare normal array for API
+// prepare weight array for API (bone indices and weights, for vertex programs)
 static void ogl_SetWeightArray( GFXWeight *pwgh)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERT( pwgh!=NULL);
-  ASSERTALWAYS("Not implemented yet");
+  // (pwgh may be an offset in a buffer object)
+  if( !(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM)) return;
+  _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+
+  // (by offset of the members: pwgh may be an offset in a buffer object)
+  ogl_SetAttribArray( ARB_ATTRIB_INDICES, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GFXWeight), (UBYTE*)pwgh + offsetof(GFXWeight, aubIndices));
+  ogl_SetAttribArray( ARB_ATTRIB_WEIGHTS, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GFXWeight), (UBYTE*)pwgh + offsetof(GFXWeight, aubWeights));
+
+  _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+}
+
+
+// prepare tangent array for API (for vertex programs)
+static void ogl_SetTangentArray( GFXTangent *ptan)
+{
+  ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
+  // (ptan may be an offset in a buffer object)
+  if( !(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM)) return;
+  _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+
+  ogl_SetAttribArray( ARB_ATTRIB_TANGENT, 4, GL_FLOAT, GL_FALSE, sizeof(GFXTangent), ptan);
+
+  _sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
 
@@ -1288,7 +1474,7 @@ static void ogl_SetWeightArray( GFXWeight *pwgh)
 static void ogl_SetColorArray( GFXColor *pcol)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERT( pcol!=NULL);
+  // (pcol may be an offset in a buffer object)
   ogl_EnableColorArray();
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
   
@@ -1304,7 +1490,7 @@ static void ogl_SetColorArray( GFXColor *pcol)
 static void ogl_SetTexCoordArray( GFXTexCoord *ptex, BOOL bProjectiveMapping=FALSE)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
-  ASSERT( ptex!=NULL);
+  // (ptex may be an offset in a buffer object)
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
   pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1344,6 +1530,7 @@ static void ogl_DrawElements( const INDEX ctIndices, const UWORD *puwIndices)
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
   _pGfx->gl_ctTotalElements += ctIndices;  // for profiling
 
+  ogl_SyncPrograms();
   // arrays or elements
   if( puwIndices==NULL) pglDrawArrays( GL_QUADS, 0, ctIndices);
   else pglDrawElements( GL_TRIANGLES, ctIndices, GL_UNSIGNED_SHORT, puwIndices);
@@ -1385,6 +1572,11 @@ static void *ogl_LockSubBuffer( const INDEX iID, const INDEX i1stVertex, const I
   else {
     const SLONG slTypeSize = GetVBTypeSize(iType);
     pRet = (UBYTE*)vb.vb_paWriteArray[iType] + slTypeSize*i1stVertex;
+    // what is written goes to the buffer object at unlock
+    if( eLockType!=GFX_READ) {
+      vb.vb_i1stLockedVertex[iType] = i1stVertex;
+      vb.vb_ctLockedVertices[iType] = ctVertices;
+    }
   }
 
   // mark that buffer has been locked
@@ -1421,9 +1613,17 @@ static void ogl_UnlockSubBuffer( const INDEX iID, const INDEX ctVertices/*=0*/)
   // static buffer?
   else {
     ASSERT( ctVertices==0); // cannot adjust size of static buffer
-    // when real video-memory buffers will get implemented, at this point we'll copy read buffer
-    // (that one that acctually got 'locked') to write one to keep 'em synchronized
-    // (if lock was for writing, of course)
+    // copy what was written to the buffer object
+    const INDEX ctLocked = vb.vb_ctLockedVertices[iType];
+    if( vb.vb_aulBufferObjects[iType]!=0 && ctLocked>0) {
+      const SLONG slTypeSize = GetVBTypeSize(iType);
+      const SLONG slOffset = slTypeSize*vb.vb_i1stLockedVertex[iType];
+      pglBindBufferARB( GL_ARRAY_BUFFER_ARB, vb.vb_aulBufferObjects[iType]);
+      pglBufferSubDataARB( GL_ARRAY_BUFFER_ARB, slOffset, slTypeSize*ctLocked, (UBYTE*)vb.vb_paWriteArray[iType]+slOffset);
+      pglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0);
+      OGL_CHECKERROR;
+    }
+    vb.vb_ctLockedVertices[iType] = 0;
   }
 
   // mark that buffer has been unlocked
@@ -1433,6 +1633,24 @@ static void ogl_UnlockSubBuffer( const INDEX iID, const INDEX ctVertices/*=0*/)
 
 
 static INDEX _iCurrent1stVertex = 0;
+
+// a static buffer's array is drawn from its buffer object: bind it (returns it, 0 if none) and
+// give the array pointer as an offset in it (unbind after setting the pointer)
+static ULONG ogl_BindVertexBufferArray( const VertexBuffer &vb, INDEX iType)
+{
+  const ULONG ulBuffer = vb.vb_aulBufferObjects[iType];
+  if( ulBuffer!=0) pglBindBufferARB( GL_ARRAY_BUFFER_ARB, ulBuffer);
+  return ulBuffer;
+}
+
+// address of a vertex in an array, or its offset in the buffer object (computed as an integer:
+// arithmetic on a null pointer is undefined, and the optimizer took the array's address instead)
+static void *ogl_VertexBufferAddress( const VertexBuffer &vb, INDEX iType, INDEX iVertex)
+{
+  const size_t slOffset = (size_t)iVertex*GetVBTypeSize(iType);
+  if( vb.vb_aulBufferObjects[iType]!=0) return (void*)slOffset;
+  return (UBYTE*)vb.vb_paWriteArray[iType] + slOffset;
+}
 
 // set vertex sub-buffer to be the current one for rendering
 static void ogl_SetVertexSubBuffer( const INDEX iID,  const INDEX i1stVertex/*=0*/,
@@ -1444,7 +1662,10 @@ static void ogl_SetVertexSubBuffer( const INDEX iID,  const INDEX i1stVertex/*=0
   ASSERT( iType==GFX_VBA_POS && iBind<_avbVertexBuffers.Count());
   VertexBuffer &vb = _avbVertexBuffers[iBind];
   GFX_ctVertices = (ctVertices>0) ? ctVertices : vb.vb_ctVertices;
-  ogl_SetVertexArray( &((GFXVertex*)vb.vb_paWriteArray[0])[i1stVertex], GFX_ctVertices);
+  const ULONG ulBuffer = ogl_BindVertexBufferArray( vb, GFX_VBA_POS);
+  ogl_SetVertexArray( (GFXVertex*)ogl_VertexBufferAddress( vb, GFX_VBA_POS, i1stVertex), GFX_ctVertices);
+  if( ulBuffer!=0) pglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0);
+  _bVerticesInBufferObject = (ulBuffer!=0);
   _iCurrent1stVertex = i1stVertex; 
 }
 
@@ -1458,18 +1679,23 @@ static void ogl_SetSubBuffer( const INDEX iID, const INDEX iUnit/*=-1*/)
   const INDEX iType = iID & 15;
   ASSERT( iType>GFX_VBA_POS && iType<GFX_MAX_VBA && iBind<_avbVertexBuffers.Count());
   VertexBuffer &vb = _avbVertexBuffers[iBind];
+  const ULONG ulBuffer = ogl_BindVertexBufferArray( vb, iType);
+  void *pvArray = ogl_VertexBufferAddress( vb, iType, _iCurrent1stVertex);
   // normal or color array?
   switch( iType) {
-  case GFX_VBA_NOR:  ogl_SetNormalArray( &((GFXNormal*)vb.vb_paWriteArray[1])[_iCurrent1stVertex]);  break;
-  case GFX_VBA_COL:  ogl_SetColorArray(  &((GFXColor*) vb.vb_paWriteArray[3])[_iCurrent1stVertex]);  break;
+  case GFX_VBA_NOR:  ogl_SetNormalArray( (GFXNormal*) pvArray);  break;
+  case GFX_VBA_COL:  ogl_SetColorArray(  (GFXColor*)  pvArray);  break;
+  case GFX_VBA_WGH:  ogl_SetWeightArray( (GFXWeight*) pvArray);  break;
+  case GFX_VBA_TAN:  ogl_SetTangentArray((GFXTangent*)pvArray);  break;
   default:
     // tex coord array
     ASSERT( iType>=GFX_VBA_TEX);
     const BOOL bSetUnit = (iUnit>=0) && (iUnit!=GFX_iActiveTexUnit);
     if( bSetUnit) pglActiveTexture(iUnit);
-    ogl_SetTexCoordArray( &((GFXTexCoord*)vb.vb_paWriteArray[iType])[_iCurrent1stVertex]);
+    ogl_SetTexCoordArray( (GFXTexCoord*)pvArray);
     if( bSetUnit) pglActiveTexture(GFX_iActiveTexUnit);
   }
+  if( ulBuffer!=0) pglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -1502,7 +1728,7 @@ static void ogl_LockArrays(void)
   // only if supported
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
   ASSERT( GFX_ctVertices>0 && !_bCVAReallyLocked);
-  if( !(_pGfx->gl_ulFlags&GLF_EXT_COMPILEDVERTEXARRAY)) return;
+  if( !(_pGfx->gl_ulFlags&GLF_EXT_COMPILEDVERTEXARRAY) || _bVerticesInBufferObject) return;
   pglLockArraysEXT( 0, GFX_ctVertices);
   OGL_CHECKERROR;
  _bCVAReallyLocked = TRUE;

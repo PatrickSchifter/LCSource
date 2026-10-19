@@ -13,6 +13,5 @@ pkill -9 -f "$GAME/Bin/Nksp" 2>/dev/null || true
 mkdir -p "$GAME/Bin"
 rsync -a --exclude ecc "$BUILD/Bin/" "$GAME/Bin/"
 cd "$GAME"
-# no hardware shaders in the OpenGL backend yet (as LC_NO_HW_SHADERS=1 on Windows)
-export LC_NO_HW_SHADERS=${LC_NO_HW_SHADERS:-1}
+# shaders run on the GPU (ARB programs); LC_NO_HW_SHADERS=1 goes back to skinning on the CPU
 exec "$GAME/Bin/Nksp" 'fkzktlfgod!' "$@" > "$GAME/stdout.log" 2>&1

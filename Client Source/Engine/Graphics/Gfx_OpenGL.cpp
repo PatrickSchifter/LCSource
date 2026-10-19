@@ -81,6 +81,25 @@ GLint     (__stdcall *pwglGetSwapIntervalEXT)(void) = NULL;
 void (__stdcall *pglActiveTextureARB)(GLenum texunit) = NULL;
 void (__stdcall *pglClientActiveTextureARB)(GLenum texunit) = NULL;
 
+// ARB vertex and fragment programs
+void (__stdcall *pglGenProgramsARB)(GLsizei n, GLuint *programs) = NULL;
+void (__stdcall *pglDeleteProgramsARB)(GLsizei n, const GLuint *programs) = NULL;
+void (__stdcall *pglBindProgramARB)(GLenum target, GLuint program) = NULL;
+void (__stdcall *pglProgramStringARB)(GLenum target, GLenum format, GLsizei len, const GLvoid *string) = NULL;
+void (__stdcall *pglProgramEnvParameter4fvARB)(GLenum target, GLuint index, const GLfloat *params) = NULL;
+void (__stdcall *pglGetProgramEnvParameterfvARB)(GLenum target, GLuint index, GLfloat *params) = NULL;
+void (__stdcall *pglGetProgramivARB)(GLenum target, GLenum pname, GLint *params) = NULL;
+void (__stdcall *pglVertexAttribPointerARB)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer) = NULL;
+void (__stdcall *pglEnableVertexAttribArrayARB)(GLuint index) = NULL;
+void (__stdcall *pglDisableVertexAttribArrayARB)(GLuint index) = NULL;
+
+// ARB vertex buffer objects
+void (__stdcall *pglGenBuffersARB)(GLsizei n, GLuint *buffers) = NULL;
+void (__stdcall *pglDeleteBuffersARB)(GLsizei n, const GLuint *buffers) = NULL;
+void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer) = NULL;
+void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage) = NULL;
+void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data) = NULL;
+
 // t-buffer support
 char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);
 BOOL  (__stdcall *pwglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
@@ -676,7 +695,59 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // test for clip volume hint
   TestExtension_OGL( GLF_EXT_CLIPHINT, "GL_EXT_clip_volume_hint");
-  
+
+  // vertex buffer objects: static vertex buffers are kept in video memory (Gfx_wrapper.cpp)
+  pglGenBuffersARB = NULL;  pglDeleteBuffersARB = NULL;  pglBindBufferARB = NULL;
+  pglBufferDataARB = NULL;  pglBufferSubDataARB = NULL;
+  // (LC_NO_VBO: dev switch, keeps them as plain arrays)
+  if( HasExtension( go_strExtensions, "GL_ARB_vertex_buffer_object") && getenv("LC_NO_VBO")==NULL) {
+    pglGenBuffersARB    = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenBuffersARB");
+    pglDeleteBuffersARB = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteBuffersARB");
+    pglBindBufferARB    = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindBufferARB");
+    pglBufferDataARB    = (void (__stdcall*)(GLenum, ptrdiff_t, const GLvoid*, GLenum))pwglGetProcAddress( "glBufferDataARB");
+    pglBufferSubDataARB = (void (__stdcall*)(GLenum, ptrdiff_t, ptrdiff_t, const GLvoid*))pwglGetProcAddress( "glBufferSubDataARB");
+    if( pglGenBuffersARB!=NULL && pglDeleteBuffersARB!=NULL && pglBindBufferARB!=NULL
+     && pglBufferDataARB!=NULL && pglBufferSubDataARB!=NULL) {
+      AddExtension_OGL( NONE, "GL_ARB_vertex_buffer_object");
+    } else {
+      pglGenBuffersARB = NULL;
+    }
+  }
+
+  // vertex and pixel programs: Direct3D's shader assembly runs translated into ARB programs
+  // (ShaderAsmToARB.cpp), which need 96 vertex constants and 4 texture units like Direct3D's
+  gl_ulFlags &= ~(GLF_VERTEXPROGRAM|GLF_PIXELPROGRAM);
+  pglGenProgramsARB = NULL;  pglDeleteProgramsARB = NULL;  pglBindProgramARB = NULL;
+  pglProgramStringARB = NULL;  pglProgramEnvParameter4fvARB = NULL;  pglGetProgramEnvParameterfvARB = NULL;
+  pglGetProgramivARB = NULL;  pglVertexAttribPointerARB = NULL;
+  pglEnableVertexAttribArrayARB = NULL;  pglDisableVertexAttribArrayARB = NULL;
+  if( HasExtension( go_strExtensions, "GL_ARB_vertex_program")
+   && HasExtension( go_strExtensions, "GL_ARB_fragment_program")) {
+    pglGenProgramsARB              = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenProgramsARB");
+    pglDeleteProgramsARB           = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteProgramsARB");
+    pglBindProgramARB              = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindProgramARB");
+    pglProgramStringARB            = (void (__stdcall*)(GLenum, GLenum, GLsizei, const GLvoid*))pwglGetProcAddress( "glProgramStringARB");
+    pglProgramEnvParameter4fvARB   = (void (__stdcall*)(GLenum, GLuint, const GLfloat*))pwglGetProcAddress( "glProgramEnvParameter4fvARB");
+    pglGetProgramEnvParameterfvARB = (void (__stdcall*)(GLenum, GLuint, GLfloat*))pwglGetProcAddress( "glGetProgramEnvParameterfvARB");
+    pglGetProgramivARB             = (void (__stdcall*)(GLenum, GLenum, GLint*))pwglGetProcAddress( "glGetProgramivARB");
+    pglVertexAttribPointerARB      = (void (__stdcall*)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid*))pwglGetProcAddress( "glVertexAttribPointerARB");
+    pglEnableVertexAttribArrayARB  = (void (__stdcall*)(GLuint))pwglGetProcAddress( "glEnableVertexAttribArrayARB");
+    pglDisableVertexAttribArrayARB = (void (__stdcall*)(GLuint))pwglGetProcAddress( "glDisableVertexAttribArrayARB");
+    GLint gliEnvParams = 0, gliTextureUnits = 0;
+    if( pglGetProgramivARB!=NULL) {
+      pglGetProgramivARB( GL_VERTEX_PROGRAM_ARB, GL_MAX_PROGRAM_ENV_PARAMETERS_ARB, &gliEnvParams);
+      pglGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &gliTextureUnits);
+      OGL_CHECKERROR;
+    }
+    if( pglGenProgramsARB!=NULL && pglDeleteProgramsARB!=NULL && pglBindProgramARB!=NULL
+     && pglProgramStringARB!=NULL && pglProgramEnvParameter4fvARB!=NULL && pglGetProgramEnvParameterfvARB!=NULL
+     && pglVertexAttribPointerARB!=NULL && pglEnableVertexAttribArrayARB!=NULL && pglDisableVertexAttribArrayARB!=NULL
+     && gliEnvParams>=96 && gliTextureUnits>=4) {
+      AddExtension_OGL( GLF_VERTEXPROGRAM, "GL_ARB_vertex_program");
+      AddExtension_OGL( GLF_PIXELPROGRAM,  "GL_ARB_fragment_program");
+    }
+  }
+
   pglGenOcclusionQueriesNV = NULL;  pglDeleteOcclusionQueriesNV = NULL;
   pglBeginOcclusionQueryNV = NULL;  pglEndOcclusionQueryNV      = NULL;
   pglGetOcclusionQueryivNV = NULL;  pglGetOcclusionQueryuivNV   = NULL;
@@ -742,6 +813,8 @@ void CGfxLibrary::InitContext_OGL(void)
   GFX_ctVertices = 0;
   gl_dwVertexShader = NONE;
   gl_dwPixelShader  = NONE;
+  extern void ResetPrograms_OGL(void);
+  ResetPrograms_OGL();
 
   // set default texture filtering/biasing
   extern INDEX gap_iTextureFiltering;
@@ -865,6 +938,12 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
 // shutdown OpenGL driver
 void CGfxLibrary::EndDriver_OGL(void)
 {
+  // programs belong to the context
+  if( gl_ulFlags & GLF_VERTEXPROGRAM) {
+    extern void ClearVertexAndPixelPrograms(void);
+    ClearVertexAndPixelPrograms();
+  }
+
   // release occlusion queries
   if( _puiOcclusionQueryIDs!=NULL) { 
     if( gl_ulFlags & GLF_EXT_OCCLUSIONQUERY) {

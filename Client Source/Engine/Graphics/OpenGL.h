@@ -32,6 +32,25 @@ extern GLint     (__stdcall *pwglGetSwapIntervalEXT)(void);
 extern void (__stdcall *pglActiveTextureARB)(GLenum texunit);
 extern void (__stdcall *pglClientActiveTextureARB)(GLenum texunit);
 
+// ARB vertex and fragment programs
+extern void (__stdcall *pglGenProgramsARB)(GLsizei n, GLuint *programs);
+extern void (__stdcall *pglDeleteProgramsARB)(GLsizei n, const GLuint *programs);
+extern void (__stdcall *pglBindProgramARB)(GLenum target, GLuint program);
+extern void (__stdcall *pglProgramStringARB)(GLenum target, GLenum format, GLsizei len, const GLvoid *string);
+extern void (__stdcall *pglProgramEnvParameter4fvARB)(GLenum target, GLuint index, const GLfloat *params);
+extern void (__stdcall *pglGetProgramEnvParameterfvARB)(GLenum target, GLuint index, GLfloat *params);
+extern void (__stdcall *pglGetProgramivARB)(GLenum target, GLenum pname, GLint *params);
+extern void (__stdcall *pglVertexAttribPointerARB)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
+extern void (__stdcall *pglEnableVertexAttribArrayARB)(GLuint index);
+extern void (__stdcall *pglDisableVertexAttribArrayARB)(GLuint index);
+
+// ARB vertex buffer objects
+extern void (__stdcall *pglGenBuffersARB)(GLsizei n, GLuint *buffers);
+extern void (__stdcall *pglDeleteBuffersARB)(GLsizei n, const GLuint *buffers);
+extern void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer);
+extern void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage);
+extern void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data);
+
 #ifdef PLATFORM_WIN32 /* !!! FIXME: Move to abstraction layer. --rcg. */
 // t-buffer support
 extern char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);

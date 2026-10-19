@@ -22,6 +22,8 @@
 #include <d3d8.h>
 #include <d3dx8core.h>
 #pragma comment(lib, "d3dx8.lib")
+#else
+#include <d3dx8math.h>  // just the math (Compat/d3dx8)
 #endif // SE1_D3D
 
 // asm shortcuts
@@ -316,7 +318,6 @@ static void SetConstantRegisters(void)
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 extern void shaSetDefaultConstantRegisters(void)
 {
-#ifdef SE1_D3D
 	if( !( (_pGfx->gl_ulFlags & GLF_VERTEXPROGRAM)
 		&& (_pGfx->gl_ulFlags & GLF_PIXELPROGRAM)
 		&& (_pGfx->gl_ctTextureUnits >= 4) ) ) return;
@@ -324,8 +325,15 @@ extern void shaSetDefaultConstantRegisters(void)
 	D3DXMATRIX mat;
 	D3DXMATRIX matView;
 	D3DXMATRIX matProj;
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_VIEW,&matView);
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION,&matProj);
+#else
+	// as in shaSetVertexProgramConst_TransformMatrix()
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	pglGetFloatv( GL_MODELVIEW_MATRIX,  (FLOAT*)&matView);
+	pglGetFloatv( GL_PROJECTION_MATRIX, (FLOAT*)&matProj);
+#endif // SE1_D3D
 	D3DXMatrixMultiply( &mat, &matView, &matProj);
 	D3DXMatrixTranspose( &mat, &mat);
 
@@ -358,7 +366,6 @@ extern void shaSetDefaultConstantRegisters(void)
 		const Matrix12 *pbm = _pamBoneMatrices[ibm];
 		shaSetVertexProgramConst(21+ibm*3, pbm, 3);
 	}
-#endif // SE1_D3D
 }
 
 //강동민 수정 시작		03.19
@@ -381,6 +388,18 @@ extern void shaSetVertexProgramConst_TransformMatrix()
 	D3DXMATRIX matProj;
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_VIEW,&matView);
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION,&matProj);
+	D3DXMatrixMultiply( &mat, &matView, &matProj);
+	D3DXMatrixTranspose( &mat, &mat);
+	shaSetVertexProgramConst( 0, (Matrix16*)&mat, 4);
+#else
+	// OpenGL keeps the view matrix in the layout Direct3D does (gfxSetViewMatrix gives both the
+	// same floats), and its projection the same way: the same product, into OpenGL's clip space
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	D3DXMATRIX mat;
+	D3DXMATRIX matView;
+	D3DXMATRIX matProj;
+	pglGetFloatv( GL_MODELVIEW_MATRIX,  (FLOAT*)&matView);
+	pglGetFloatv( GL_PROJECTION_MATRIX, (FLOAT*)&matProj);
 	D3DXMatrixMultiply( &mat, &matView, &matProj);
 	D3DXMatrixTranspose( &mat, &mat);
 	shaSetVertexProgramConst( 0, (Matrix16*)&mat, 4);
@@ -637,13 +656,17 @@ extern void shaSetVertexProgramConst_BoneMatrix()
 
 extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCalcLight/* = FALSE*/)
 {
-#ifdef SE1_D3D
 	D3DXMATRIX mat;
 	D3DXMATRIX matView, matNewView, matInvViewRot, matViewRot;
 	D3DXMATRIX matProj;
 	
 	//현재의 modelView행렬을 가져온다.
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetTransform(D3DTS_VIEW,&matView);
+#else
+	if( _pGfx->gl_eCurrentAPI!=GAT_OGL) return;
+	pglGetFloatv( GL_MODELVIEW_MATRIX, (FLOAT*)&matView);
+#endif // SE1_D3D
 	//현재의 modelView행렬의 4번째줄을 기억한다.
 	D3DXVECTOR3 viewRow4(matView._41, matView._42, matView._43);
 	//현재의 modelView의 위치를 기억한다.
@@ -727,7 +750,11 @@ extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCal
 	}
 
 	//최종적으로 SetTransform한다.
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->SetTransform(D3DTS_VIEW, &matNewView);
+#else
+	pglMatrixMode( GL_MODELVIEW);
+	pglLoadMatrixf( (FLOAT*)&matNewView);
 #endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
@@ -756,18 +783,27 @@ extern void shaGetVertexProgramConst(INDEX iRegister, ShaderRegister &pData)
 {
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, &pData, 1);
+#else
+	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, &pData, 1);
 #endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix12 &pmData)
 {
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 3);
+#else
+	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, pmData, 3);
 #endif // SE1_D3D
 }
 extern void shaGetVertexProgramConst(INDEX iRegister, Matrix16 &pmData)
 {
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetVertexShaderConstant(iRegister, pmData, 4);
+#else
+	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( TRUE, iRegister, pmData, 4);
 #endif // SE1_D3D
 }
 // Set const pixel program register
@@ -775,6 +811,9 @@ extern void shaGetPixelProgramConst(INDEX iRegister, ShaderRegister &pData)
 {
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->GetPixelShaderConstant(iRegister, &pData, 1);
+#else
+	extern void GetProgramConst_OGL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters);
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) GetProgramConst_OGL( FALSE, iRegister, &pData, 1);
 #endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)
@@ -2085,6 +2124,10 @@ static void shaSetVertexProgram_Default(INDEX iVertexProgram)
 		// Set current vertex program
 		gfxSetVertexProgram(ulHandle);
 	}
+#ifndef SE1_D3D
+	// a program that failed to load: none rather than the last one
+	else if(!_bPrecachingShaders) gfxSetVertexProgram(NONE);
+#endif // SE1_D3D
 }
 
 static void shaSetVertexProgram_NMMObjSpace(INDEX iVertexProgram)
@@ -2172,6 +2215,10 @@ static void shaSetVertexProgram_NMMTanSpace(INDEX iVertexProgram)
 		// Set current vertex program
 		gfxSetVertexProgram(ulHandle);
 	}
+#ifndef SE1_D3D
+	// a program that failed to load: none rather than the last one
+	else if(!_bPrecachingShaders) gfxSetVertexProgram(NONE);
+#endif // SE1_D3D
 }
 
 extern void shaSetVertexProgram(INDEX iVertexProgram, NormalMapMeshType nmmType/* = NMMT_NONE*/)
@@ -2253,6 +2300,10 @@ extern void shaSetPixelProgram(INDEX iPixelProgram)
 		// Set current pixel program
 		gfxSetPixelProgram(ulHandle);
 	}
+#ifndef SE1_D3D
+	// a program that failed to load: none rather than the last one
+	else gfxSetPixelProgram(NONE);
+#endif // SE1_D3D
 }
 
 // Set array of texcoords index

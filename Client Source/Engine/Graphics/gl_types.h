@@ -780,6 +780,20 @@ typedef enum {
   GL_TEXTURE2_ARB                     = 0x84C2,
   GL_TEXTURE3_ARB                     = 0x84C3,
 
+  /* GL_ARB_vertex_program, GL_ARB_fragment_program */
+  GL_VERTEX_PROGRAM_ARB               = 0x8620,
+  GL_FRAGMENT_PROGRAM_ARB             = 0x8804,
+  GL_PROGRAM_FORMAT_ASCII_ARB         = 0x8875,
+  GL_PROGRAM_ERROR_POSITION_ARB       = 0x864B,
+  GL_PROGRAM_ERROR_STRING_ARB         = 0x8874,
+  GL_MAX_PROGRAM_ENV_PARAMETERS_ARB   = 0x88B5,
+  GL_MAX_TEXTURE_IMAGE_UNITS_ARB      = 0x8872,
+  GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB  = 0x88B6,
+
+  /* GL_ARB_vertex_buffer_object */
+  GL_ARRAY_BUFFER_ARB                 = 0x8892,
+  GL_STATIC_DRAW_ARB                  = 0x88E4,
+
   /* GL_EXT_texture_env_combine */
   GL_COMBINE_EXT                      = 0x8570,
   GL_COMBINE_RGB_EXT                  = 0x8571,
