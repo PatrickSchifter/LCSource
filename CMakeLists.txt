@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 project(LastChaos LANGUAGES C CXX)
 
 option(LC_BUILD_SERVER "Build the server programs" ON)
-option(LC_BUILD_CLIENT "Build the game client (32-bit Windows/MSVC only for now)" OFF)
+option(LC_BUILD_CLIENT "Build the game client (32-bit Windows/MSVC, or macOS)" OFF)
 
 # Region the code is compiled for. The original Makefiles passed -DLC_<REGION>=<id>.
 set(LC_REGION "USA" CACHE STRING "Target region (KOR, TWN, TLD, JPN, MAL, USA, BRZ, HBK, GER, SPN, FRC, PLD, RUS, TUR, ITA, MEX, ESP_USA, FRA_USA, NLD, UK)")
