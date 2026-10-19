@@ -400,17 +400,17 @@ functions:
 			if( !(penToDamage->GetFlags()&ENF_ALIVE ) )	{ return; }
 			_pUIMgr->ShowDamage( penToDamage->en_ulID );
 			INDEX preHealth, curHealth;
-			preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-			curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+			preHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nPreHealth : 0;	// (the player is not a CUnit)
+			curHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 			if(preHealth!= -1)// && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;			
+				if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }			
 			}
 			else fDamageAmmount = 0;
 	
-			((CUnit*)penToDamage)->m_nPreHealth = -1; //1103
+			if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nPreHealth = -1; } //1103
 		}
 
 		CEntity::InflictDirectDamage(penToDamage, penInflictor, dmtType,
@@ -467,7 +467,7 @@ functions:
 
 		if(penToDamage )
 		{
-			if(((CUnit*)penToDamage)->m_nCurrentHealth <= 0 && penToDamage != this)
+			if(!penToDamage->IsPlayer() && ((CUnit*)penToDamage)->m_nCurrentHealth <= 0 && penToDamage != this)
 			{
 				((CUnit*)((CEntity*)penToDamage))->DeathNow();
 			}

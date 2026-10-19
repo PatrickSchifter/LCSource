@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Entities/LodRead.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/MissionCase.h>
@@ -53,7 +54,7 @@ int CMissionCase::LoadMissionFromFile(CStaticArray<CMissionCase> &apMissiondata,
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fMissiondata);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fMissiondata);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fMissiondata);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fMissiondata); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fMissiondata, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 	for(int i = 0; i < nMission_total; ++i)

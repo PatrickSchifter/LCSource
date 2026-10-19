@@ -4534,7 +4534,8 @@ void CUISkillLearn::LearnSkill( SLONG slIndex, SBYTE sbIsNew, SBYTE sbLevel, BOO
 		}
 #else
 		// Not Special Skill
-		for( int iRow = 0; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
+		int iRow;
+		for( iRow = 0; iRow < SKILLLEARN_NEW_SLOT_TOTAL; iRow++ )
 		{
 			if( m_btnActiveSkills[iRow].GetSkillIndex() == slIndex )
 			{

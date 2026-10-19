@@ -469,13 +469,13 @@ functions:
 			if( !(penToDamage->GetFlags()&ENF_ALIVE ) )	{ return; }
 			_pUIMgr->ShowDamage( penToDamage->en_ulID );
 			INDEX preHealth, curHealth;
-			preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-			curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+			preHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nPreHealth : 0;	// (the player is not a CUnit)
+			curHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 			if(preHealth!= -1 && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;
+				if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }
 				
 			}
 			else fDamageAmmount = 0;
@@ -487,11 +487,11 @@ functions:
 				}
 				else
 				{
-					penToDamage->UpdateTargetInfo(((CUnit*) penToDamage)->m_nMaxiHealth,((CUnit*) penToDamage)->m_nCurrentHealth);
+					if(!penToDamage->IsPlayer()) { penToDamage->UpdateTargetInfo(((CUnit*) penToDamage)->m_nMaxiHealth,((CUnit*) penToDamage)->m_nCurrentHealth); }
 				}
 			}
 
-			if(((CUnit*)penToDamage)->m_nCurrentHealth ==0)//0827
+			if(!penToDamage->IsPlayer() && ((CUnit*)penToDamage)->m_nCurrentHealth ==0)//0827
 			{
 				if(penToDamage == _pNetwork->_TargetInfo.pen_pEntity)
 				{

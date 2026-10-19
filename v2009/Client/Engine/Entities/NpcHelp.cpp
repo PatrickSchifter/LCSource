@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Entities/LodRead.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/NpcHelp.h>
@@ -53,7 +54,7 @@ int CNpcHelp::LoadNpcListFromFile(CStaticArray<CNpcHelp> &apNpcList, const char*
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fNpclist);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fNpclist);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fNpclist);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fNpclist); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fNpclist, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 	for(int i = 0; i < nNpc_total; ++i)

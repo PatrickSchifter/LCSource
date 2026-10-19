@@ -36,7 +36,7 @@ class CUITargetInfo : public CUIWindow
 {
 protected:
 	// Information
-	COLOR				m_colNameColor[11];				// Colors of target name
+	COLOR				m_colNameColor[12];	// (the constructor sets [0]..[11])				// Colors of target name
 	COLOR				m_colCurNameColor;				// Current color of target name
 	BOOL				m_bShowBuff;					// If buff of target is shown or not
 	BOOL				m_bShowPkHp;					// WSS_PK_TARGET_HP 070726

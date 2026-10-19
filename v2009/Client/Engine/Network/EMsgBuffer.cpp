@@ -921,7 +921,7 @@ BOOL CEMsgBuffer::WriteMessage(CEntityMessage  &emEntityMessage, BOOL bExpand /*
   ASSERT(bu_slFree>=0 && bu_slFree<=bu_slSize);
   // entity id must fit into 24 bits
   ASSERT(emEntityMessage.em_ulEntityID < 0x10000000);
-	ULONG ulTemp;
+	ULONG ulTemp = 0;
 
   int iTickMarker;  
 
@@ -963,7 +963,7 @@ BOOL CEMsgBuffer::WriteMessage(CEntityMessage  &emEntityMessage, BOOL bExpand /*
 // read a message from the bufffer
 int CEMsgBuffer::ReadMessage(CEntityMessage  &emEntityMessage)
 {
-	ULONG ulTemp;
+	ULONG ulTemp = 0;
   UBYTE* pubData;
   ASSERT (bu_slReadOffset <= bu_slWriteOffset);
 
@@ -1001,7 +1001,7 @@ int CEMsgBuffer::ReadMessage(CEntityMessage  &emEntityMessage)
 int CEMsgBuffer::PeekMessageAtOffset(CEntityMessage &emEntityMessage,SLONG &slTickOffset)
 {
   ASSERT(slTickOffset >= 0 && slTickOffset <= bu_slSize);
-  ULONG ulTemp;
+  ULONG ulTemp = 0;
   UBYTE* pubData;
 
   // get the combined entity id and message type

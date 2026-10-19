@@ -184,7 +184,10 @@ void CUISimplePop::Execution(INDEX exeNum)
 		}
 		break;
 	case SPSO_FRIEND:
-		_pUIMgr->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, CTString(_pNetwork->_TargetInfo.TargetName) );
+		{
+			CTString strTarget = _pNetwork->_TargetInfo.TargetName;	// (a named string: the parameter is CTString&)
+			_pUIMgr->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, strTarget );
+		}
 		break;
 	case SPSO_TRADE:
 		_pUIMgr->GetCharacterInfo()->UseAction( 5 );

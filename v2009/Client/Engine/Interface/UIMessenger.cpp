@@ -1358,7 +1358,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 // Explain:  
 // Date : 2005-05-18,Author: Lee Ki-hwan
 //------------------------------------------------------------------------------
-void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, const CTString &strInput )
+void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 {
 	static CTString strBlockMember;
 	static CMemberInfo miDelMember;

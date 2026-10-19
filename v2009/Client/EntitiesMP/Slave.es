@@ -487,11 +487,11 @@ functions:
 			if(preHealth!= -1)// && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				if (bUnit) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }			
+				if (bUnit) { if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; } }			
 			}
 			else fDamageAmmount = 0;
 	
-			((CUnit*)penToDamage)->m_nPreHealth = -1; //1103
+			if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nPreHealth = -1; } //1103
 		}
 		
 		if(penToDamage)
@@ -553,7 +553,7 @@ functions:
 
 		if(penToDamage )
 		{
-			if(((CUnit*)penToDamage)->m_nCurrentHealth <= 0 && penToDamage != this)
+			if(!penToDamage->IsPlayer() && ((CUnit*)penToDamage)->m_nCurrentHealth <= 0 && penToDamage != this)
 			{
 				((CUnit*)((CEntity*)penToDamage))->DeathNow();				
 			}

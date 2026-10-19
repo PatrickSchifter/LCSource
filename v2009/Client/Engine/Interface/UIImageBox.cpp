@@ -84,9 +84,9 @@ void CUIImageBox::SetImageByType(eImageType type, int index)
 {
 	FLOAT fTexWidth;
 	FLOAT fTexHeight;
-	int nTexRow, nTexCol;
-	int nTextureID;
-	int nUBET;
+	int nTexRow = 0, nTexCol = 0;
+	int nTextureID = 0;
+	int nUBET = UBET_ITEM;
 	
 	switch(type)
 	{

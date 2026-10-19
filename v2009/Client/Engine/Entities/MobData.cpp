@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Entities/LodRead.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/MobData.h>
@@ -74,12 +75,7 @@ int CMobData::LoadNPCDataFromFile(CStaticArray<CMobData> &apMobData, const char*
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-// (bounded: a string longer than the field, as in data made for later clients, is cut instead
-// of overwriting what follows it)
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
-								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
-								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
-								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fp, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 	
@@ -89,9 +85,12 @@ int CMobData::LoadNPCDataFromFile(CStaticArray<CMobData> &apMobData, const char*
 		int iIndex = -1;
 		LOADINT(iIndex);
 		if(iReadBytes <= 0)		break;										// EOF
-		if(iIndex < 0 || iIndex >= apMobData.Count())	break;	// the -9999 footer of the BR data, or an index past the table
+		if(iIndex == -9999)		break;	// the footer of the BR data (-9999 and a checksum)
 
-		CMobData& MD		= apMobData[iIndex];				
+		// an index outside the table is read into a scratch record and dropped
+		static CMobData _mdOutOfRange;
+		const BOOL bInRange = iIndex >= 0 && iIndex < apMobData.Count();
+		CMobData& MD		= bInRange ? apMobData[iIndex] : _mdOutOfRange;				
 		_npcStat& NpcData	= MD.mob_Data;
 		NpcData.index		= iIndex;
 
@@ -436,12 +435,7 @@ int CMobName::LoadMobNameFromFile(CStaticArray<CMobName> &apMobData, const char*
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-// (bounded: a string longer than the field, as in data made for later clients, is cut instead
-// of overwriting what follows it)
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
-								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
-								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
-								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fp, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 	//apMobData.New(iNumOfNPC);

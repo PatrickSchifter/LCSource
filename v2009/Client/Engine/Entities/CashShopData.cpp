@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Entities/LodRead.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/CashShopData.h>
 #include <Engine/Entities/EntityClass.h>
@@ -48,12 +49,7 @@ int CCashShopData::LoadShopDataFromFile(CStaticArray<CCashShopData> &apShopData,
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fp);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fp);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fp);
-// (bounded: a string longer than the field, as in data made for later clients, is cut instead
-// of overwriting what follows it)
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); \
-								int iKeep = (iLen < 0) ? 0 : (iLen < (int)sizeof(d) ? iLen : (int)sizeof(d)-1); \
-								iReadBytes = fread(&d, iKeep, 1, fp); ((char*)&d)[iKeep] = 0; \
-								if (iLen > iKeep) fseek(fp, iLen-iKeep, SEEK_CUR); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fp, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 

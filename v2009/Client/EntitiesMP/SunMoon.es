@@ -394,7 +394,7 @@ functions:
 				, GetLight()->m_lsLightSource.GetLightColor()) | CT_OPAQUE;
 			if(GetSkyHorizon())
 			{
-				ENGINE_API INDEX g_iUseBloom;
+				ENGINE_API extern INDEX g_iUseBloom;
 				static COLOR col2nd = 0x9E9E9EFF;
 				static COLOR col1st = 0xA5A5A5FF;
 				COLOR color = g_iUseBloom == 0

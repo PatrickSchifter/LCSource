@@ -595,7 +595,7 @@ void CGameState::WearingHairBand( CModelInstance *pMI, INDEX iIndex )
 	CTString strBMPath[2];
 	CTString strTexPath[2];
 
-	int iJob;
+	int iJob = TITAN;	// (a model of none of the classes)
 
 	if( pMI->GetName() == CTString("ti") )
 		iJob =TITAN;
@@ -630,7 +630,7 @@ void CGameState::TakeOffHairBand( CModelInstance *pMI, INDEX iIndex )
 	CTString strBMPath[2];
 	CTString strTexPath[2];
 
-	int iJob;
+	int iJob = TITAN;	// (a model of none of the classes)
 
 	if( pMI->GetName() == CTString("ti") )
 		iJob =TITAN;
@@ -705,7 +705,7 @@ void CGameState::WearingRudolphNose(CModelInstance *pMI, INDEX iIndex)
 	CTString strBMPath;
 	CTString strTexPath;
 
-	int iJob;
+	int iJob = TITAN;	// (a model of none of the classes)
 
 	if( pMI->GetName() == CTString("ti") )
 		iJob =TITAN;
@@ -732,7 +732,7 @@ void CGameState::TakeOffRudolphNose(CModelInstance *pMI, INDEX iIndex)
 	CTString strBMPath;
 	CTString strTexPath;
 
-	int iJob;
+	int iJob = TITAN;	// (a model of none of the classes)
 
 	if( pMI->GetName() == CTString("ti") )
 		iJob =TITAN;

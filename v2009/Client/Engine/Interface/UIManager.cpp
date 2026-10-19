@@ -389,12 +389,15 @@ void CUIManager::Create()
 	BOOL tFilter = TRUE;
 	// 이기환 추가 ( 04.11.29 )
 	tFilter &= _UIFiltering.Create( strImmoralWordList.str_String );
+	if (!tFilter) CPrintF("Cannot read the word filter %s\n", strImmoralWordList.str_String);
 	// Date : 2005-02-16,   By Lee Ki-hwan
 	tFilter &= _UIFilteringCharacter.Create ( strImmoralCharacter.str_String );
+	if (!tFilter) CPrintF("Cannot read the name filter %s\n", strImmoralCharacter.str_String);
 //[ttos_2009_7_17]: CHARATER_CHAT_FILTER 캐릭터 채팅 필터
 #ifdef CHARATER_CHAT_FILTER
 //	tFilter &= _UICharacterChatFilter.Create( strChatFilter.str_String, true);
 	tFilter &= _UICharacterChatFilter.Create( strChatFilter.str_String);
+	if (!tFilter) CPrintF("Cannot read the chat filter %s\n", strChatFilter.str_String);
 #endif
 	//---------------------------------------------------------------------->>
 	// Name :

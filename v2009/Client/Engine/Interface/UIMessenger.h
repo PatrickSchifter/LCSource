@@ -161,7 +161,7 @@ public:
 	WMSG_RESULT	MouseMessage( MSG *pMsg );
 
 	// Command functions
-	void	MsgBoxCommand( int nCommandCode, BOOL bOK, const CTString &strInput );
+	void	MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );
 	
 	//wooss 051005
 	void	SetMyInfo( int nCharIndex, CTString strName, eJob nJob=TOTAL_JOB, eCondition eState = ONLINE );

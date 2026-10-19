@@ -1,4 +1,5 @@
 #include "StdH.h"
+#include <Engine/Entities/LodRead.h>
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/WildPetData.h>
@@ -36,7 +37,7 @@ int CWildPetData::LoadWildPetDataFromFile(CStaticArray<CWildPetData> &apWildPetD
 #define LOADSHORT(d)		iReadBytes = fread(&d, sizeof(short), 1, fPetdata);
 #define LOADCHAR(d)			iReadBytes = fread(&d, sizeof(char), 1, fPetdata);
 #define LOADFLOAT(d)		iReadBytes = fread(&d, sizeof(float), 1, fPetdata);
-#define LOADSTR(d)			{ int iLen; LOADINT(iLen); iReadBytes = fread(&d, iLen, 1, fPetdata); }
+#define LOADSTR(d)			iReadBytes = LC_ReadLodString(fPetdata, &d, sizeof(d));	// (Entities/LodRead.h)
 	//////////////////////////////////////////////////////////////////////////	
 
 	for(int i = 0; i < nPetData_total; ++i)

@@ -944,7 +944,7 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
 extern UINT g_uiEntityVersion;
 extern ENGINE_API INDEX g_bTestClient;
 extern ENGINE_API HWND  _hwndMain;
-ENGINE_API char *g_szExitError;
+ENGINE_API extern char *g_szExitError;
 
 
 void CPlayer_Precache(void)
@@ -17323,8 +17323,8 @@ void InflictDirectDamage(CEntity *penToDamage, CEntity *penInflictor, enum Damag
 	{
 		CPrintF("------%f--InflictDirectDamage\n", _pTimer->GetLerpedCurrentTick());
 		INDEX preHealth, curHealth;
-		preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-		curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+		preHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nPreHealth : 0;	// (the player is not a CUnit)
+		curHealth = !penToDamage->IsPlayer() ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 		if(preHealth!= -1)// && curHealth > preHealth)
 		{
@@ -17333,16 +17333,16 @@ void InflictDirectDamage(CEntity *penToDamage, CEntity *penInflictor, enum Damag
 			{
 				fDamageAmmount = 1;
 			}
-			((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;			
+			if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }			
 		}
 		else fDamageAmmount = 0;
 
 		if(_pNetwork->_TargetInfo.pen_pEntity == penToDamage)//타겟팅이 되어있다면...//0121
 		{
-			penToDamage->UpdateTargetInfo(((CUnit*) penToDamage)->m_nMaxiHealth,((CUnit*) penToDamage)->m_nCurrentHealth);//1022
+			if(!penToDamage->IsPlayer()) { penToDamage->UpdateTargetInfo(((CUnit*) penToDamage)->m_nMaxiHealth,((CUnit*) penToDamage)->m_nCurrentHealth); }//1022
 		}
 	
-		if(((CUnit*)penToDamage)->m_nCurrentHealth ==0)//0827
+		if(!penToDamage->IsPlayer() && ((CUnit*)penToDamage)->m_nCurrentHealth ==0)//0827
 		{			
 			if(penToDamage == _pNetwork->_TargetInfo.pen_pEntity)
 			{
@@ -17350,7 +17350,7 @@ void InflictDirectDamage(CEntity *penToDamage, CEntity *penInflictor, enum Damag
 			}
 		}
 		
-		((CUnit*)penToDamage)->m_nPreHealth = -1; //1103
+		if(!penToDamage->IsPlayer()) { ((CUnit*)penToDamage)->m_nPreHealth = -1; } //1103
 	}
 
 	// NOTE : 죽을때는 밀리도록 설정함.
