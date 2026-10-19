@@ -312,7 +312,7 @@ bool CUIExpressSystem::_SetItemListString(int nIndex, bool bItem)
 				CTString strPrefix = pkRareOpt->GetPrefix();
 
 				if( strPrefix.Length() >0)
-					strItemName.PrintF("%s %s", strPrefix, strItemName);
+					strItemName.PrintF("%s %s", (const char*)strPrefix, (const char*)strItemName);
 			}			
 		}
 

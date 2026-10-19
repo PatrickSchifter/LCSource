@@ -455,7 +455,7 @@ void CUIRadar::Render()
 	}
 
 	CTString strServerInfo;
-	strServerInfo.PrintF("%s Ch. %d", pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
+	strServerInfo.PrintF("%s Ch. %d", (const char*)pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
 	pDrawPort->PutTextExCX( strServerInfo, m_nPosX +this->GetWidth()/2, m_nLocalTimeY + 17, 0xF2F2F2B2 );
 	
 	// Render all elements
@@ -640,7 +640,7 @@ void CUIRadar::RenderObjectLocation()
 
 		if( sbSubType == CHARGE_PRIVATE || sbSubType == MINE_PRIVATE || sbSubType == GATHER_PRIVATE )
 		{
-			strTemp.PrintF( _S( 549, "%s(사유지)" ), CZoneInfo::getSingleton()->GetExtraName( md->World.nZoneIndex, md->vecSubZone[i].nSubZoneIndex ) );
+			strTemp.PrintF( _S( 549, "%s(사유지)" ), (const char*)CZoneInfo::getSingleton()->GetExtraName( md->World.nZoneIndex, md->vecSubZone[i].nSubZoneIndex ) );
 		}
 		else
 		{
@@ -976,9 +976,9 @@ void CUIRadar::ShowToolTip( BOOL bShow, int nToolTipID )
 		case STT_MAP:		// Map
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 190, "지도" ), CTString( "(Alt+M)" ) );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 190, "지도" ), (const char*)CTString( "(Alt+M)" ) );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 190, "지도" ), CTString( "(M,Alt+M)" ) );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 190, "지도" ), (const char*)CTString( "(M,Alt+M)" ) );
 
 				m_colTooltip = 0xF2F2F2FF;
 				m_btnMap.GetAbsPos( nInfoX, nInfoY );

@@ -527,7 +527,7 @@ static void DumpEnemies(void)
 		if( IsDerivedFromClass( pen, &CEnemyBase_DLLClass) && !((CEnemyBase*)pen)->m_bTemplate) {
 			FLOAT3D vPos=pen->GetPlacement().pl_PositionVector;
 			CPrintF("Class: %s, Name: %s, ID: %d, Coordinates(%d,%d,%d)\n", 
-				pen->GetClass()->ec_pdecDLLClass->dec_strName, pen->GetName(),
+				pen->GetClass()->ec_pdecDLLClass->dec_strName, (const char*)pen->GetName(),
 				pen->en_ulID, (INDEX)vPos(1), (INDEX)vPos(2), (INDEX)vPos(3));
 		}
 	}}
@@ -553,8 +553,8 @@ static void DumpSpawners(void)
 				strEnemyName=penSpawner->m_penTarget->GetName();
 			}
 			CPrintF("Spawner: %s (ID=%d), Pos=%d,%d,%d Not spawned yet %d enemies of class \"%s\", named: \"%s\")\n", 
-				pen->GetName(), pen->en_ulID, (INDEX)vPos(1), (INDEX)vPos(2), (INDEX)vPos(3),
-				penSpawner->m_ctTotal, strEnemyClass, strEnemyName);
+				(const char*)pen->GetName(), pen->en_ulID, (INDEX)vPos(1), (INDEX)vPos(2), (INDEX)vPos(3),
+				penSpawner->m_ctTotal, (const char*)strEnemyClass, (const char*)strEnemyName);
 		}
 	}}
 }
@@ -2175,7 +2175,7 @@ functions:
 	virtual void DumpToConsole() 
 	{
 		CPlayerWeapons* penWeapons = (CPlayerWeapons*)(CEntity*) m_penWeapons;
-		CPrintF(TRANS("Entity ID: %X, Name: %s\n"),en_ulID,en_pcCharacter.pc_strName);
+		CPrintF(TRANS("Entity ID: %X, Name: %s\n"),en_ulID,(const char*)en_pcCharacter.pc_strName);
 		CPrintF(TRANS("   Health: %d, Armor: %d\n"),(INDEX)en_fHealth,m_fArmor);
 		//CTString strWeaponName;
 		//UWORD uwAmmo = penWeapons->GetWeaponAmmo(penWeapons->m_iCurrentWeapon);
@@ -6268,7 +6268,7 @@ functions:
 		switch(targetFlag)
 		{
 		case HITTYPE_MISS:
-			strSysMessage.PrintF( _S( 413, "%s의 공격을 피했습니다." ), strName );
+			strSysMessage.PrintF( _S( 413, "%s의 공격을 피했습니다." ), (const char*)strName );
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );
 			break;
 		case HITTYPE_WEAK:
@@ -6276,15 +6276,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 685, "약한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );		
+				strSysMessage.PrintF( _S( 685, "약한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
@@ -6293,15 +6293,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 414, "일반공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 414, "일반공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );
 			break;
@@ -6310,15 +6310,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 686, "강한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage  );		
+				strSysMessage.PrintF( _S( 686, "강한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage  );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
@@ -6327,15 +6327,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );		
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );		
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 687, "매우 강한 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage  );		
+				strSysMessage.PrintF( _S( 687, "매우 강한 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage  );		
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			break;
@@ -6344,15 +6344,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 411, "크리티컬 히트! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 411, "크리티컬 히트! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );
 			m_bCriticalDamageMe = TRUE;
@@ -6362,15 +6362,15 @@ functions:
 			{
 				//2012/11/12 jeil 스킬공격을 받았을때 대미지가 0이라면 스킬공격을 막았다는 메시지 출력 추가 -> String 필요
 				if(targetDamage != 0){
-					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );	
+					strSysMessage.PrintF( _S( 1390, "스킬 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );	
 				}else{
-					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),strName );	
+					strSkillMessage.PrintF( _S( 5814, "%s의 스킬 공격을 막았습니다." ),(const char*)strName );	
 					_pNetwork->ClientSystemMessage( strSkillMessage);
 				}
 			}
 			else
 			{
-				strSysMessage.PrintF( _S( 688, "데들리 공격! %s에게 %d의 데미지를 받았습니다." ), strName, targetDamage );
+				strSysMessage.PrintF( _S( 688, "데들리 공격! %s에게 %d의 데미지를 받았습니다." ), (const char*)strName, targetDamage );
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACKED );				
 			m_bCriticalDamageMe = TRUE;
@@ -6393,39 +6393,39 @@ functions:
 		switch(targetFlag)
 		{
 		case HITTYPE_MISS:
-			strSysMessage.PrintF( _S2( 409, strMobName, "%s<가> 당신의 공격을 피했습니다." ), strMobName );
+			strSysMessage.PrintF( _S2( 409, strMobName, "%s<가> 당신의 공격을 피했습니다." ), (const char*)strMobName );
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );
 			break;
 		case HITTYPE_WEAK:
-			strSysMessage.PrintF( _S( 689, "약한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);
+			strSysMessage.PrintF( _S( 689, "약한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_NORMAL:
 			if( skillIndex == -1 )
 			{
-				strSysMessage.PrintF( _S( 410, "일반공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage );
+				strSysMessage.PrintF( _S( 410, "일반공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage );
 			}
 			else
 			{				
-				strSysMessage.PrintF( _S( 787, "스킬 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);			
+				strSysMessage.PrintF( _S( 787, "스킬 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);			
 			}
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_STRONG:// 강하게			
-			strSysMessage.PrintF(_S( 690, "강한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);
+			strSysMessage.PrintF(_S( 690, "강한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_HARD:// 매우 강하게
-			strSysMessage.PrintF( _S( 691, "매우 강한 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);	
+			strSysMessage.PrintF( _S( 691, "매우 강한 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);	
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );				
 			break;
 		case HITTYPE_CRITICAL:// 크리티컬
-			strSysMessage.PrintF( _S( 407, "크리티컬 히트! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage );
+			strSysMessage.PrintF( _S( 407, "크리티컬 히트! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage );
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );	
 			m_bCriticalDamage = TRUE;			
 			break;
 		case HITTYPE_DEADLY:// 죽도록 강하게			
-			strSysMessage.PrintF( _S( 692, "데들리 공격! %s에게 %d의 데미지를 주었습니다." ), strMobName, targetDamage);		
+			strSysMessage.PrintF( _S( 692, "데들리 공격! %s에게 %d의 데미지를 주었습니다." ), (const char*)strMobName, targetDamage);		
 			_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ATTACK );	
 			m_bCriticalDamage = TRUE;
 			break;
@@ -7202,12 +7202,12 @@ functions:
 				if(pUIManager->IsCSFlagOn(CSF_EXPEDITION)) // [sora] 원정대 아이템 획득 추가
 				{
 					//strMessage.PrintF( _S(4682, "[원정대] %s님이 %s를 %ld개 획득하였습니다." ), strName, szItemName, slCount);
-					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %ld개 획득하였습니다." ), strName, szItemName, slCount);
+					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %ld개 획득하였습니다." ), (const char*)strName, szItemName, slCount);
 				}
 				else
 				{
 					//strMessage.PrintF( _S2( 707, CTString(szItemName), "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), strName, szItemName, slCount);
-					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), strName, szItemName, slCount);
+					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), (const char*)strName, szItemName, slCount);
 				}
 				_pNetwork->ClientSystemMessage(strMessage);					
 			}
@@ -7791,7 +7791,7 @@ functions:
 	void GetShortStats(CTString &strStats)
 	{
 		strStats.PrintF( TRANS("%s Kills: %d/%d"), 
-			TimeToString(GetStatsInGameTimeLevel()), m_psLevelStats.ps_iKills, m_psLevelTotal.ps_iKills);
+			(const char*)TimeToString(GetStatsInGameTimeLevel()), m_psLevelStats.ps_iKills, m_psLevelTotal.ps_iKills);
 	}
 	
 	// get detailed statistics for deathmatch game
@@ -7806,7 +7806,7 @@ functions:
 		const INDEX ctPlayers = SetAllPlayersStats(bFragMatch?5:3); // sort by frags or by score
 		
 		// get time elapsed since the game start
-		strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME"), TimeToString(_pNetwork->GetGameTime())));
+		strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME"), (const char*)TimeToString(_pNetwork->GetGameTime())));
 		strStats+="\n";
 		
 		// find maximum frags/score that one player has
@@ -7822,7 +7822,7 @@ functions:
 		const CSessionProperties &sp = *GetSP();
 		if (sp.sp_iTimeLimit>0) {
 			FLOAT fTimeLeft = ClampDn(sp.sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
-			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME LEFT"), TimeToString(fTimeLeft)));
+			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME LEFT"), (const char*)TimeToString(fTimeLeft)));
 			strStats+="\n";
 		}
 		if (bFragMatch && sp.sp_iFragLimit>0) {
@@ -7972,9 +7972,9 @@ functions:
 //			strStats+="\n";
 			//strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("DIFFICULTY"), GetDifficultyString()));
 			//strStats+="\n";
-			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("STARTED"), GetStatsRealWorldStarted()));
+			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("STARTED"), (const char*)GetStatsRealWorldStarted()));
 			strStats+="\n";
-			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("PLAYING TIME"), TimeToString(GetStatsRealWorldTime())));
+			strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("PLAYING TIME"), (const char*)TimeToString(GetStatsRealWorldTime())));
 			strStats+="\n";
 //			if( m_psGameStats.ps_iScore<=plr_iHiScore) {
 //				strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%d", TRANS("HI-SCORE"), plr_iHiScore));
@@ -7989,7 +7989,7 @@ functions:
 		strStats+="\n";
 		if (iCoopType<=1) {
 			if( m_bEndOfLevel) {
-				strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("ESTIMATED TIME"), TimeToString(m_tmEstTime)));
+				strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("ESTIMATED TIME"), (const char*)TimeToString(m_tmEstTime)));
 				strStats+="\n";
 				strStats+=AlignString(CTString(0, "  %s:\n%d", TRANS("TIME BONUS"), m_iTimeScore));
 				strStats+="\n";
@@ -8009,7 +8009,7 @@ functions:
 //		strStats+=AlignString(CTString(0, "  %s:\n%d/%d", TRANS("SECRETS"), m_psLevelStats.ps_iSecrets, m_psLevelTotal.ps_iSecrets));
 //		strStats+="\n";
 		if (iCoopType<=1) {
-			strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("TIME"), TimeToString(GetStatsInGameTimeLevel())));
+			strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("TIME"), (const char*)TimeToString(GetStatsInGameTimeLevel())));
 			strStats+="\n";
 		}
 		strStats+="\n";
@@ -8028,7 +8028,7 @@ functions:
 		//strStats+=AlignString(CTString(0, "  %s:\n%d/%d", TRANS("SECRETS"), m_psGameStats.ps_iSecrets, m_psGameTotal.ps_iSecrets));
 		//strStats+="\n";
 		if (iCoopType<=1) {
-			strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("GAME TIME"), TimeToString(GetStatsInGameTimeGame())));
+			strStats+=AlignString(CTString(0, "  %s:\n%s", TRANS("GAME TIME"), (const char*)TimeToString(GetStatsInGameTimeGame())));
 			strStats+="\n";
 		}
 		strStats+="\n";
@@ -8607,7 +8607,7 @@ functions:
 			pdp->SetTextAspect( 1.0f);
 			pdp->SetTextShadow(+2);
 			CTString strMsg;
-			strMsg.PrintF(TRANS("%s connected"), GetPlayerName());
+			strMsg.PrintF(TRANS("%s connected"), (const char*)GetPlayerName());
 			pdp->PutTextCXY( strMsg, pixDPWidth*0.5f, pixDPHeight*0.5f, SE_COL_BLUE_NEUTRAL_LT|CT_OPAQUE);
 		}
 	}
@@ -10563,7 +10563,7 @@ functions:
 		if (pcOrg.GetName()!=pcNew.GetName()) {
 			// report that
 			CPrintF(TRANS("%s is now known as %s\n"), 
-				pcOrg.GetNameForPrinting(), pcNew.GetNameForPrinting());
+				(const char*)pcOrg.GetNameForPrinting(), (const char*)pcNew.GetNameForPrinting());
 		}
 		
 		// if appearance changed
@@ -10614,7 +10614,7 @@ functions:
 		} else {
 			// report that
 			CPrintF(TRANS("Cannot change appearance for %s: setting '%s' is unavailable\n"), 
-				pcNew.GetNameForPrinting(), (const char*)ppsNew->GetModelFilename());
+				(const char*)pcNew.GetNameForPrinting(), (const char*)ppsNew->GetModelFilename());
 		}
 		// attach weapon to new appearance
 		//0105
@@ -13990,7 +13990,7 @@ functions:
 			if (pen==NULL) {
 				// try to find normal start marker
 				CTString strPlayerStart;
-				strPlayerStart.PrintF("Player Start - %s", m_strGroup);
+				strPlayerStart.PrintF("Player Start - %s", (const char*)m_strGroup);
 				pen = _pNetwork->GetEntityWithName(strPlayerStart, 0);
 				if (m_strGroup=="") {
 					bSetHealth = TRUE;
@@ -16921,7 +16921,7 @@ functions:
 						strSysMessage.PrintF( _S( 697, "생산도구를 장착하지 않았습니다." ) );		
 						_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );	
 						
-						strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), strItemName );		
+						strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), (const char*)strItemName );		
 						_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );										
 																
 						return TRUE;
@@ -16938,7 +16938,7 @@ functions:
 						strSysMessage.PrintF ( _S( 697, "생산도구를 장착하지 않았습니다." ) );		
 						_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );					
 
-						strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), strItemName );		
+						strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), (const char*)strItemName );		
 						_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );										
 
 						return TRUE;
@@ -16974,7 +16974,7 @@ functions:
 							strSysMessage.PrintF( _S( 701, "생산도구가 올바르지 않습니다." ) );		
 							_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );			
 
-							strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), strItemName );		
+							strSysMessage.PrintF( _S( 788, "%s를 착용하여 주십시오," ), (const char*)strItemName );		
 							_pNetwork->ClientSystemMessage( strSysMessage, SYSMSG_ERROR );										
 							
 							/*// Date : 2005-01-10,   By Lee Ki-hwan

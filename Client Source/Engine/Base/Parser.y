@@ -95,7 +95,7 @@ void Declaration(
 		if (!ShellTypeIsSame(ssNew.ss_istType, istType) || 
 			((ssNew.ss_ulFlags&SSF_CONSTANT)!=(ulQualifiers&SSF_CONSTANT))) {
 			// error
-			_pShell->ErrorF("Symbol '%s' is already declared diferrently", ssNew.ss_strName);
+			_pShell->ErrorF("Symbol '%s' is already declared diferrently", (const char*)ssNew.ss_strName);
 			return;
 		}
 
@@ -112,7 +112,7 @@ void Declaration(
 			NOTHING;  // function values are not retained
 		} else {
 			// error
-			_pShell->ErrorF("'%s': old value couldn't be retained", ssNew.ss_strName);
+			_pShell->ErrorF("'%s': old value couldn't be retained", (const char*)ssNew.ss_strName);
 			return;
 		}
 	}
@@ -331,7 +331,7 @@ pre_func_opt
 		||_shell_ast[_shell_ast[$3->ss_istType].st_istBaseType].st_sttType!=STT_INDEX
 		||_shell_ast[$3->ss_istType].st_istFirstArgument!=_shell_ast[$3->ss_istType].st_istLastArgument
 		||_shell_ast[_shell_ast[$3->ss_istType].st_istFirstArgument].st_sttType!=STT_INDEX) {
-		_pShell->ErrorF("'%s' must return 'INDEX' and take 'INDEX' as input", $3->ss_strName);
+		_pShell->ErrorF("'%s' must return 'INDEX' and take 'INDEX' as input", (const char*)$3->ss_strName);
 	} else {
 		void *pv = $3->ss_pvValue;
 		$$ = (INDEX(*)(INDEX))$3->ss_pvValue;
@@ -347,7 +347,7 @@ post_func_opt
 		||_shell_ast[_shell_ast[$3->ss_istType].st_istBaseType].st_sttType!=STT_VOID
 		||_shell_ast[$3->ss_istType].st_istFirstArgument!=_shell_ast[$3->ss_istType].st_istLastArgument
 		||_shell_ast[_shell_ast[$3->ss_istType].st_istFirstArgument].st_sttType!=STT_INDEX) {
-		_pShell->ErrorF("'%s' must return 'void' and take 'INDEX' as input", $3->ss_strName);
+		_pShell->ErrorF("'%s' must return 'void' and take 'INDEX' as input", (const char*)$3->ss_strName);
 	} else {
 		$$ = (void(*)(INDEX))$3->ss_pvValue;
 	}
@@ -430,7 +430,7 @@ statement
 | lvalue '=' expression ';' {
 	// if it is constant
 	if ($1.lv_pssSymbol->ss_ulFlags&SSF_CONSTANT) {
-		_pShell->ErrorF("Symbol '%s' is a constant", $1.lv_pssSymbol->ss_strName);
+		_pShell->ErrorF("Symbol '%s' is a constant", (const char*)$1.lv_pssSymbol->ss_strName);
 	// if it is not constant
 	} else {
 		// if it can be changed
@@ -473,7 +473,7 @@ statement
 	// if it is constant
 	if (ssSymbol.ss_ulFlags&SSF_CONSTANT) {
 		// error
-		_pShell->ErrorF("Symbol '%s' is a constant", ssSymbol.ss_strName);
+		_pShell->ErrorF("Symbol '%s' is a constant", (const char*)ssSymbol.ss_strName);
 	}
 
 	// get symbol type
@@ -496,7 +496,7 @@ statement
 		_pShell->ErrorF("Warning: assigning INDEX to FLOAT!");  
 		*(FLOAT*)ssSymbol.ss_pvValue = $5.iIndex;
 	} else {
-		_pShell->ErrorF("Symbol '%s' and its initializer have different types", ssSymbol.ss_strName);
+		_pShell->ErrorF("Symbol '%s' and its initializer have different types", (const char*)ssSymbol.ss_strName);
 	}
 }
 | k_help identifier { 
@@ -566,7 +566,7 @@ lvalue
 	$$.lv_pssSymbol = &ssSymbol;
 	if (!ssSymbol.IsDeclared()) {
 		// error
-		_pShell->ErrorF("Identifier '%s' is not declared", $1->ss_strName);
+		_pShell->ErrorF("Identifier '%s' is not declared", (const char*)$1->ss_strName);
 		fDummy = -666;
 		$$.lv_sttType = STT_VOID;
 		$$.lv_pvAddress = &fDummy;
@@ -578,7 +578,7 @@ lvalue
 	// if the identifier is something else
 	} else {
 		// error
-		_pShell->ErrorF("'%s' doesn't have a value", $1->ss_strName);
+		_pShell->ErrorF("'%s' doesn't have a value", (const char*)$1->ss_strName);
 		fDummy = -666.0f;
 		$$.lv_sttType = STT_VOID;
 		$$.lv_pvAddress = &fDummy;
@@ -616,7 +616,7 @@ lvalue
 			}
 		}
 	} else {
-		_pShell->ErrorF("'%s[]' doesn't have a value", $1->ss_strName);
+		_pShell->ErrorF("'%s[]' doesn't have a value", (const char*)$1->ss_strName);
 		fDummy = -666.0f;
 		$$.lv_pvAddress = &fDummy;
 	}
@@ -673,7 +673,7 @@ expression
 	} else {
 		$$.sttType = STT_FLOAT;
 		$$.fFloat = -666.0f;
-		_pShell->ErrorF("'%s' is of wrong type", $1.lv_pssSymbol->ss_strName);
+		_pShell->ErrorF("'%s' is of wrong type", (const char*)$1.lv_pssSymbol->ss_strName);
 	}
 }
 /* shift */
@@ -975,7 +975,7 @@ expression
 	// if the identifier is not declared
 	if (!$1->IsDeclared()) {
 		// error
-		_pShell->ErrorF("Identifier '%s' is not declared", $1->ss_strName);
+		_pShell->ErrorF("Identifier '%s' is not declared", (const char*)$1->ss_strName);
 	// if the identifier is declared
 	} else {
 		// get its type
@@ -1028,13 +1028,13 @@ expression
 			} else {
 				// error
 				$$.sttType = STT_VOID;
-				_pShell->ErrorF("Wrong parameters for '%s'", $1->ss_strName);
+				_pShell->ErrorF("Wrong parameters for '%s'", (const char*)$1->ss_strName);
 			}
 		// if the identifier is something else
 		} else {
 			// error
 			$$.sttType = STT_VOID;
-			_pShell->ErrorF("Can't call '%s'", $1->ss_strName);
+			_pShell->ErrorF("Can't call '%s'", (const char*)$1->ss_strName);
 		}
 	}
 

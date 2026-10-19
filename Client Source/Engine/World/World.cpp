@@ -579,7 +579,7 @@ CEntity *CWorld::CreateEntity(const CPlacement3D &plPlacement, CEntityClass *pec
 		
 		if (net_bReportServerTraffic) 
 		{
-			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,pecClass->GetName());
+			CPrintF("Created entity: ID: %X, Class: %s\n",penEntity->en_ulID,(const char*)pecClass->GetName());
 		}
 		
 		extern CEntityMessage _emEntityMessage;

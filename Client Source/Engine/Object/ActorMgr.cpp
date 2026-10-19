@@ -1838,7 +1838,7 @@ void ActorMgr::DrawItem( CItemTarget* pTarget, CDrawPort* pDraw, CProjection3D* 
 	if( pTarget->item_llCount > 1 )
 	{
 		strTemp.PrintF( "%I64d", pTarget->item_llCount );
-		strName.PrintF( "%s(%s)", pTarget->m_strName.c_str(), strTemp );
+		strName.PrintF( "%s(%s)", pTarget->m_strName.c_str(), (const char*)strTemp );
 		pUIMgr->InsertCommaToString( strTemp );
 		colNas = pUIMgr->GetNasColor(  pTarget->item_llCount );
 	}
@@ -1854,7 +1854,7 @@ void ActorMgr::DrawItem( CItemTarget* pTarget, CDrawPort* pDraw, CProjection3D* 
 			strTemp.PrintF( "%I64d", pTarget->item_llCount );
 			pUIMgr->InsertCommaToString( strTemp );
 			colNas = pUIMgr->GetNasColor( pTarget->item_llCount );
-			strName.PrintF( "%s(%s) S%d", pTarget->m_strName.c_str(), strTemp, pTarget->m_nIdxServer );
+			strName.PrintF( "%s(%s) S%d", pTarget->m_strName.c_str(), (const char*)strTemp, pTarget->m_nIdxServer );
 		}
 		else
 		{
@@ -2171,7 +2171,7 @@ void ActorMgr::DrawPet( CPetTarget* pTarget, CDrawPort* pDraw, CProjection3D* pp
 		strName = pTarget->pet_strNameCard;
 
 		if (_iNameType == 0)
-			strName.PrintF( "%s S%d L%d", pTarget->pet_strNameCard, pTarget->m_nIdxServer, pTarget->m_yLayer );
+			strName.PrintF( "%s S%d L%d", (const char*)pTarget->pet_strNameCard, pTarget->m_nIdxServer, pTarget->m_yLayer );
 
 		//if(g_iCountry == RUSSIA)
 #if defined G_RUSSIA

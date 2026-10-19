@@ -1269,7 +1269,7 @@ WMSG_RESULT	CUIMessenger::MouseMessage( MSG *pMsg )
 				if( m_tpBlock.GetCurSel() ==0)
 				{
 					CTString strMessage;
-					strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), m_miSelectMember.m_strName );
+					strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), (const char*)m_miSelectMember.m_strName );
 					Message( MSGCMD_MESSENGER_UNBLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );
 				}
 				else  if( m_tpBlock.GetCurSel() ==1)
@@ -1455,7 +1455,7 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 					CTString strMessage;
 					if( miDelMember.m_nGroupIndex >=0 )
 					{
-						strMessage.PrintF(_S(3000,"%s님을 삭제하시겠습니까?"), miDelMember.m_strName);
+						strMessage.PrintF(_S(3000,"%s님을 삭제하시겠습니까?"), (const char*)miDelMember.m_strName);
 
 						if (nCommandCode == MSGCMD_MESSENGER_DEL_REQ)
 							Message( MSGCMD_MESSENGER_DEL, _S(2999, "캐릭터 삭제"), strMessage, UMBS_YESNO );
@@ -1464,7 +1464,7 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 					}
 					else
 					{
-						strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), miDelMember.m_strName);
+						strMessage.PrintF(_S(3014, "%s님을 차단해제하시겠습니까?"), (const char*)miDelMember.m_strName);
 						Message( MSGCMD_MESSENGER_UNBLOCK, _S(3013, "차단 해제"), strMessage, UMBS_YESNO );						
 					}
 				}
@@ -1551,7 +1551,7 @@ void CUIMessenger::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput
 					return;
 
 				CTString strMessage;
-				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), strInput);
+				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strInput);
 				Message( MSGCMD_MESSENGER_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );		
 			}
 		}
@@ -1757,7 +1757,7 @@ void CUIMessenger::RegistMemberReq( int nCharIndex, CTString strName )
 	s_strReqCharName = strName;
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 1623, "%s님이 친구등록 요청을 하셨습니다. 수락 하시겠습니까?" ), strName );
+	strMessage.PrintF( _S( 1623, "%s님이 친구등록 요청을 하셨습니다. 수락 하시겠습니까?" ), (const char*)strName );
 	Message( MSGCMD_MESSENGER_ADD_REP, _S(2996, "친구등록 요청"), strMessage, UMBS_YESNO );
 }
 
@@ -1799,7 +1799,7 @@ void CUIMessenger::DeleteMember()
 	ResizeScrollBar();
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3001, "%s님을 삭제했습니다."), strName);
+	strMessage.PrintF(_S(3001, "%s님을 삭제했습니다."), (const char*)strName);
 	Message( MSGCMD_MESSENGER_ERROR, _S(2999, "캐릭터 삭제"), strMessage, UMBS_OK );		
 }
 
@@ -1949,7 +1949,7 @@ void CUIMessenger::AddFriendList( int nCharIndex, int nGroupIndex, CTString strN
 	if( CUIManager::getSingleton()->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), strName  );
+		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), (const char*)strName  );
 
 		ErrorMessage( strMessage );		
 	}
@@ -1979,7 +1979,7 @@ void CUIMessenger::AddFriendList( CMemberInfo miMember,  bool bBlock )
 	if( CUIManager::getSingleton()->DoesMessageBoxExist( MSGCMD_MESSENGER_ADD_WAIT ) )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), miMember.m_strName  );
+		strMessage.PrintF( _S( 1626, "%s님을 친구 목록에 추가였습니다." ), (const char*)miMember.m_strName  );
 
 		ErrorMessage( strMessage );		
 	}
@@ -2480,7 +2480,7 @@ void CUIMessenger::SetGroup(enum eGroup eState, int nSubMenu)
 				}
 
 				CTString strMessage;
-				strMessage.PrintF( _S(3024, "%s 그룹을 삭제하시겠습니까?" ), m_vecGroup[nSubMenu]->m_strGroupName );
+				strMessage.PrintF( _S(3024, "%s 그룹을 삭제하시겠습니까?" ), (const char*)m_vecGroup[nSubMenu]->m_strGroupName );
 				Message( MSGCMD_MESSENGER_GROUP_DEL, _S(3023, "그룹 삭제"), strMessage, UMBS_OKCANCEL );
 			}
 			else
@@ -2903,7 +2903,7 @@ void CUIMessenger::UnBlock(BYTE cError, int nCharIndex, CTString strName)
 	m_mgBlock.DeleteMember(nCharIndex);
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 3015, "%s님이 차단해제되었습니다." ), strName );
+	strMessage.PrintF( _S( 3015, "%s님이 차단해제되었습니다." ), (const char*)strName );
 	Message( MSGCMD_MESSENGER_ERROR, _S(3013, "차단 해제"), strMessage, UMBS_OK );
 }
 
@@ -2940,7 +2940,7 @@ void CUIMessenger::Block(BYTE cError, int nCharIndex, CTString strName)
 		m_mgBlock.AddMember( CMemberInfo(nCharIndex, strName) );
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3006, "%s님이 차단되었습니다."), strName);
+	strMessage.PrintF(_S(3006, "%s님이 차단되었습니다."), (const char*)strName);
 	Message( MSGCMD_MESSENGER_ERROR, _S(3004, "캐릭터 차단"), strMessage, UMBS_OK );
 }
 

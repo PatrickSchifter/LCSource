@@ -1447,10 +1447,10 @@ void CUISkillLearn::OpenSkillLearn( int iMobIndex, int iMobVirIdx, BOOL bHasQues
 		if( _pNetwork->MyCharacterInfo.level >= EXTENSION_LEVEL && _pNetwork->MyCharacterInfo.job2 == 0 &&
 			_pNetwork->MyCharacterInfo.job != NIGHTSHADOW )
 		{
-			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), CJobInfo::getSingleton()->GetExtensionName( iJob, 0 ) );	
+			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), (const char*)CJobInfo::getSingleton()->GetExtensionName( iJob, 0 ) );	
 			pUIManager->AddMessageBoxLString( MSGLCMD_SKILLLEARN_REQ, FALSE, strMessage, SKILL_JOB_1 );
 
-			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), CJobInfo::getSingleton()->GetExtensionName( iJob, 1 ) );	
+			strMessage.PrintF( _S( 1223, "[%s]로 전직" ), (const char*)CJobInfo::getSingleton()->GetExtensionName( iJob, 1 ) );	
 			pUIManager->AddMessageBoxLString( MSGLCMD_SKILLLEARN_REQ, FALSE, strMessage, SKILL_JOB_2 );
 		}
 
@@ -1860,7 +1860,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 			}
 
 			CTString strMessage;
-			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, 0 ) );		
+			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), (const char*)pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, 0 ) );		
 			pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, strMessage, 0 );
 			pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, _S( 1268, "취소하기") );			
 
@@ -2065,7 +2065,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 			
 			
 			CTString strMessage;
-			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, 1 ) );		
+			strMessage.PrintF( _S( 1267, "[%s]로 전직한다." ), (const char*)pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, 1 ) );		
 			pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, strMessage, 0 );
 			pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, FALSE, _S( 1268, "취소하기" ) );			
 
@@ -2097,7 +2097,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 				CTString	strMessage;
 				CUIMsgBox_Info	MsgBoxInfo;
 				MsgBoxInfo.SetMsgBoxInfo( _S( 1317, "전직" ), UMBS_OKCANCEL, UI_SKILLLEARN, MSGCMD_CHANGEJOB );		
-				strMessage.PrintF( _S( 1318, "%s로 전직 하시겠습니까?" ), pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, m_iSelChangeJob - 1 ) );	
+				strMessage.PrintF( _S( 1318, "%s로 전직 하시겠습니까?" ), (const char*)pInfo->GetExtensionName( _pNetwork->MyCharacterInfo.job, m_iSelChangeJob - 1 ) );	
 				MsgBoxInfo.AddString( strMessage );
 				pUIManager->CreateMessageBox( MsgBoxInfo );
 			}

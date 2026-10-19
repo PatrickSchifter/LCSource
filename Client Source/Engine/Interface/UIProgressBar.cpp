@@ -148,23 +148,23 @@ void			CUIProgressBar::Render()
 		if( m_enStatus == PR_STAT_IDLE )
 		{	
 			if( IsShowIdlePercentText() )
-				strTemp.PrintF( "%s (%0.00f%%)",  m_strIdleText, fPercent );
+				strTemp.PrintF( "%s (%0.00f%%)",  (const char*)m_strIdleText, fPercent );
 			else
-				strTemp.PrintF( "%s",  m_strIdleText );
+				strTemp.PrintF( "%s",  (const char*)m_strIdleText );
 		}
 		else if( m_enStatus == PR_STAT_DOING )
 		{
 			if( IsShowDoingPercentText() )
-				strTemp.PrintF( "%s (%0.00f%%)",  m_strDoingText, fPercent );
+				strTemp.PrintF( "%s (%0.00f%%)",  (const char*)m_strDoingText, fPercent );
 			else
-				strTemp.PrintF( "%s",  m_strDoingText );
+				strTemp.PrintF( "%s",  (const char*)m_strDoingText );
 		}
 		else if( m_enStatus == PR_STAT_COMPLETE )
 		{
 			if( IsShowCompletePercentText() )
-				strTemp.PrintF( "%s (%0.00f%%)",  m_strCompleteText, fPercent );
+				strTemp.PrintF( "%s (%0.00f%%)",  (const char*)m_strCompleteText, fPercent );
 			else
-				strTemp.PrintF( "%s",  m_strCompleteText );
+				strTemp.PrintF( "%s",  (const char*)m_strCompleteText );
 		}
 		else
 		{
@@ -227,9 +227,9 @@ void CUIProgressBar::OnRender( CDrawPort* pDraw )
 		CTString strTemp;
 
 		if( getShowPercentText( m_enStatus ) )
-			strTemp.PrintF( "%s (%0.00f%%)",  m_strProgressText[m_enStatus], fPercent );
+			strTemp.PrintF( "%s (%0.00f%%)",  (const char*)m_strProgressText[m_enStatus], fPercent );
 		else
-			strTemp.PrintF( "%s",  m_strProgressText[m_enStatus] );
+			strTemp.PrintF( "%s",  (const char*)m_strProgressText[m_enStatus] );
 
 		pDraw->PutTextExCX(strTemp, nX+m_nWidth/2, nY+m_nHeight/2-5, m_colProgressText[m_enStatus] );
 		pDraw->EndTextEx();

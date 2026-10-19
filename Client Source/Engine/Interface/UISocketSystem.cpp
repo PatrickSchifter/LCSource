@@ -1678,7 +1678,7 @@ void CUISocketSystem::_emptyRender()
 	CTString sqMoney;
 	sqMoney.PrintF( "%I64d", m_sqNeedMoney );
 	pUIManager->InsertCommaToString( sqMoney );
-	strTemp.PrintF( "%s:%s", _S( 4979, "제거 비용"), sqMoney );
+	strTemp.PrintF( "%s:%s", (const char*)_S( 4979, "제거 비용"), (const char*)sqMoney );
 	pDrawPort->PutTextExCX(	strTemp, m_nPosX+m_nWidth/2, 
 											m_nPosY + SOCKET_UI_FRAME_TITLE + SOCKET_UI_FRAME_BORDER * 4+m_msgEmptyText.GetRenderHeight()+BTN_SIZE+2, 
 											0xFFFFFFFF);
@@ -2148,7 +2148,7 @@ WMSG_RESULT CUISocketSystem::_createMouseMessage(MSG *pMsg )
 								CUIMsgBox_Info MsgInfo;
 								CTString strTemp;
 								MsgInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), _S( 4973, "소켓 생성" ) );
+								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), (const char*)_S( 4973, "소켓 생성" ) );
 								MsgInfo.AddString( strTemp );
 								pUIManager->CreateMessageBox( MsgInfo );
 								return WMSG_SUCCESS;
@@ -2416,7 +2416,7 @@ WMSG_RESULT CUISocketSystem::_combineMouseMessage(MSG *pMsg )
 								CUIMsgBox_Info MsgInfo;
 								CTString strTemp;
 								MsgInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), _S( 4976, "보석 결합" ) );
+								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), (const char*)_S( 4976, "보석 결합" ) );
 								MsgInfo.AddString( strTemp );
 								pUIManager->CreateMessageBox( MsgInfo );
 								return WMSG_SUCCESS;
@@ -2795,7 +2795,7 @@ WMSG_RESULT CUISocketSystem::_upgradeMouseMessage(MSG *pMsg )
 								CUIMsgBox_Info MsgInfo;
 								CTString strTemp;
 								MsgInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), _S( 4977, "보석 강화" ) );
+								strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), (const char*)_S( 4977, "보석 강화" ) );
 								MsgInfo.AddString( strTemp );
 								pUIManager->CreateMessageBox( MsgInfo );
 								return WMSG_SUCCESS;
@@ -3312,7 +3312,7 @@ WMSG_RESULT CUISocketSystem::_emptyMouseMessage(MSG *pMsg )
 							CUIMsgBox_Info MsgInfo;
 							CTString strTemp;
 							MsgInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-							strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), _S( 4978, "보석 제거" ) );
+							strTemp.PrintF( _S( 5010, "%s 중에는 아이템을 옮길 수 없습니다."), (const char*)_S( 4978, "보석 제거" ) );
 							MsgInfo.AddString( strTemp );
 							pUIManager->CreateMessageBox( MsgInfo );
 							return WMSG_SUCCESS;

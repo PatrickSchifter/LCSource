@@ -105,7 +105,7 @@ void CStock_TYPE::FreeUnused(void)
 		{FOREACHINDYNAMICCONTAINER(ctToFree, TYPE, itt) {
 			extern INDEX dbg_bShowDeletedObjectsFromStock;
 			if(dbg_bShowDeletedObjectsFromStock) {
-				CPrintF("Deleting '%s'\n", itt->ser_FileName);
+				CPrintF("Deleting '%s'\n", (const char*)itt->ser_FileName);
 			}
 			st_ctObjects.Remove(itt);
 			st_ntObjects.Remove(itt);
@@ -180,7 +180,7 @@ void CStock_TYPE::DumpMemoryUsage_t(CTStream &strm) // throw char *
 			return;
 		}
 		CTString strLine;
-		strLine.PrintF("%s(%d) %s", (const char*)(itt->GetName()), itt->GetUsedCount(), itt->GetDescription());
+		strLine.PrintF("%s(%d) %s", (const char*)(itt->GetName()), itt->GetUsedCount(), (const char*)itt->GetDescription());
 		SortLine &sl = aslDump.Push();
 		sl.sl_pstrString = new char[strLine.Length()+1];
 		sl.sl_slSize = slUsedByObject;

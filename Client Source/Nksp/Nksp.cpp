@@ -293,16 +293,16 @@ void GetNM(LPSTR lpCmdLine)
 		switch(ii)
 		{
 			case 0 :
-				g_nmVER.PrintF("%s", strInsert);
+				g_nmVER.PrintF("%s", (const char*)strInsert);
 				break;
 			case 1 :
-				g_nmCID.PrintF("%s", strInsert);
+				g_nmCID.PrintF("%s", (const char*)strInsert);
 				break;
 			case 2 :
-				g_nmID.PrintF("%s", strInsert);
+				g_nmID.PrintF("%s", (const char*)strInsert);
 				break;
 			case 3 :
-				g_nmPW.PrintF("%s", strTemp);
+				g_nmPW.PrintF("%s", (const char*)strTemp);
 				break;
 		}
 
@@ -634,12 +634,12 @@ void InitializeGame(void)
 		g_hGame = LoadLibrary(fnmExpanded);
 		if (g_hGame==NULL) 
 		{
-			ThrowF_t("%s", GetWindowsError(GetLastError()));
+			ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 		}
 		CGame* (*GAME_Create)(void) = (CGame* (*)(void))GetProcAddress(g_hGame, "GAME_Create");
 		if (GAME_Create==NULL) 
 		{
-			ThrowF_t("%s", GetWindowsError(GetLastError()));
+			ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 		}
 //안태훈 수정 끝	//(DevPartner Bug Fix)(2005-01-14)
 		_pGame = GAME_Create();		
@@ -801,7 +801,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 		_pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
 	}
 
-	CPrintF(TRANS("Nksp version: %s\n"), sam_strVersion);
+	CPrintF(TRANS("Nksp version: %s\n"), (const char*)sam_strVersion);
 
 	// apply application mode
 #ifdef SE1_D3D
@@ -918,7 +918,7 @@ void End(void)
 	void (*GAME_Destroy)(void) = (void (*)(void))GetProcAddress(g_hGame, "GAME_Destroy");
 	if (GAME_Destroy==NULL) 
 	{
-		ThrowF_t("%s", GetWindowsError(GetLastError()));
+		ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 	}
 	GAME_Destroy();
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-14)
@@ -951,7 +951,7 @@ void PrintDisplayModeInfo(void)
 	// get resolution
 	CTString strRes;
 	extern CTString _strPreferencesDescription;
-	strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+	strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
 	if( dm.IsDualHead())   strRes += TRANS(" DualMonitor");
 	if( dm.IsTripleHead()) strRes += TRANS(" TripleMonitor");
 	if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
@@ -962,7 +962,7 @@ void PrintDisplayModeInfo(void)
 #endif // SE1_D3D
 
 	CTString strDescr;
-	strDescr.PrintF("\n%s (%s)\n", _strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
+	strDescr.PrintF("\n%s (%s)\n", (const char*)_strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
 	strRes += strDescr;
 	// tell if application is started for the first time, or failed to set mode
 		if( _iDisplayModeChangeFlag==0) 
@@ -1765,7 +1765,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	CDisplayMode dmTmp;
 	dmTmp.dm_ddDepth = eColorDepth;
 	CPrintF( TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
-					 pixSizeI, pixSizeJ, dmTmp.DepthString(),
+					 pixSizeI, pixSizeJ, (const char*)dmTmp.DepthString(),
 					 bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
 
 	// mark to start ignoring window size/position messages until settled down

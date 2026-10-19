@@ -399,7 +399,7 @@ void CUITalk::Render()
 	// 타이틀 바 ( 상대방의 대화명 추가  ~ ) : 다중 대화시에는 0번 대화상대만
 	CTString strTitle;
 	//strTitle.PrintF( "%s - %s", m_miTarget.m_strName, m_strTitle );	===>
-	strTitle.PrintF( "%s", m_strTitle );		//타이틀만...
+	strTitle.PrintF( "%s", (const char*)m_strTitle );		//타이틀만...
 	
 	pDrawPort->PutTextEx( strTitle, nX + TALK_TITLE_SX, nY + TALK_TITLE_SY );
 
@@ -1209,7 +1209,7 @@ void CUITalk::AddTalkTarget( CTString strName)
 		if( strName != CUIManager::getSingleton()->GetMessenger()->GetMyInfo().m_strName)
 		{
 			CTString strMessage;
-			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), strName );
+			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), (const char*)strName );
 			AddErrorTalk( strMessage ); 
 		}
 	}
@@ -1237,7 +1237,7 @@ void CUITalk::DeleteTalkTarget(CTString strName)
 		return;
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (*iter) );
+	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (const char*)(*iter) );
 	AddErrorTalk( strMessage ); 
 
 	m_vecTarget.erase(iter);

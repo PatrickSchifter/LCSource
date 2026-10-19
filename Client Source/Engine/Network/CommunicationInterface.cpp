@@ -456,7 +456,7 @@ BOOL CCommunicationInterface::PrepareForUse(BOOL bUseNetwork, BOOL bClient, BOOL
 			}
 		}
 		
-		CPrintF(TRANS("  local addresses: %s (%s)\n"), cm_strName, cm_strAddress);
+		CPrintF(TRANS("  local addresses: %s (%s)\n"), (const char*)cm_strName, (const char*)cm_strAddress);
 		CPrintF(TRANS("  port: %d\n"), net_iPort);
 		
 		// try to open master UDP socket
@@ -1848,7 +1848,7 @@ BOOL CCommunicationInterface::Client_Update(void)
 				// warn about possible attack
 				extern INDEX net_bReportMiscErrors;
 				if (net_bReportMiscErrors) {
-					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
+					CPrintF(TRANS("WARNING: Invalid message from: %s\n"), (const char*)AddressToString(ppaPacket->pa_adrAddress.adr_ulAddress));
 				}
 			}
 		}

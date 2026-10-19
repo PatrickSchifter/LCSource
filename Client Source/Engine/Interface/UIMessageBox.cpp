@@ -2408,7 +2408,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 
 						CTString str;
 						LONGLONG llnas = nData * SERVER_INFO()->GetDG_EnvNas();
-						str.PrintF( _s("%s: %I64d %s%s"), _S(1058, "필요나스"), llnas, _S(1762, "나스"), _s("   ") );
+						str.PrintF( _s("%s: %I64d %s%s"), (const char*)_S(1058, "필요나스"), llnas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 
@@ -2418,7 +2418,7 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 						LONGLONG llnas = nData * SERVER_INFO()->GetDG_MonsterNas();
 
 						CTString str;
-						str.PrintF( _s("%s: %I64d %s%s"), _S(1058, "필요나스"), llnas, _S(1762, "나스"), _s("   ") );
+						str.PrintF( _s("%s: %I64d %s%s"), (const char*)_S(1058, "필요나스"), llnas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 					return WMSG_SUCCESS;

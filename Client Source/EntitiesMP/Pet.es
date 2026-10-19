@@ -232,7 +232,7 @@ functions:
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("A %s sent %s into the halls of Valhalla") ,m_strName, strPlayerName);
+		str.PrintF(TRANS("A %s sent %s into the halls of Valhalla") ,(const char*)m_strName, (const char*)strPlayerName);
 		return str;
 	}
 

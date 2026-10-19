@@ -105,7 +105,7 @@ void CTFileName::RemoveApplicationPath_t(void) // throws char *
 	if (!bHadRightPath) {
 		// throw error
 		ThrowF_t(TRANS("File '%s' has got wrong path!\nAll files must reside in directory '%s'."),
-			str_String, (CTString&)_fnmApplicationPath);
+			str_String, (const char*)(CTString&)_fnmApplicationPath);
 	}
 }
 

@@ -347,7 +347,7 @@ void CUINpcScroll::SetViewList()
 	CTString	tempDesc;
 
 	tempDesc.PrintF(_S(5031,"%s 지역의 NPC들 앞으로 이동할 수 있는 포탈을 생성합니다. 리스트에서 이름을 클릭하면 위치 안내 또는 포탈을 사용 하실 수 있습니다."),
-					CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
+					(const char*)CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
 
 	MultiLineString(tempDesc);
 	
@@ -547,7 +547,7 @@ void CUINpcScroll::RefreshNpcList()
 	m_lbNpcList.ResetAllStrings();
 
 	CTString strTemp;
-	strTemp.PrintF("[%s]", _S(446, "NPC"));
+	strTemp.PrintF("[%s]", (const char*)_S(446, "NPC"));
 
 	m_lbNpcList.AddString(0, strTemp, 0xE36C0AFF);
 
@@ -569,7 +569,7 @@ void CUINpcScroll::RefreshNpcList()
 		m_lbNpcList.AddString(0,strTemp , 0xF2F2F2FF);
 	}
 
-	strTemp.PrintF("[%s]", _S(448, "몬스터"));
+	strTemp.PrintF("[%s]", (const char*)_S(448, "몬스터"));
 
 	m_lbNpcList.AddString(0, _s(""));
 	m_lbNpcList.AddString(0, strTemp, 0xC20000FF);

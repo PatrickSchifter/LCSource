@@ -799,7 +799,7 @@ void CUIProcessNPC::SelectItem(int _nIndex)
     if (m_NeedItems[0].ItemData != NULL)
     {
         szItemName = _pNetwork->GetItemName(m_NeedItems[0].ItemData->GetItemIndex());
-        strTitle.PrintF(_S(576, "%s : %d개 "), strSpace + szItemName
+        strTitle.PrintF(_S(576, "%s : %d개 "), (const char*)(strSpace + szItemName)
                         , m_nProcessItemCount * m_NeedItems[0].llCount);
     }
 
@@ -816,7 +816,7 @@ void CUIProcessNPC::SelectItem(int _nIndex)
         , {10, 21, 40, 63, 94}
     };
     __int64 needMoney = s_iMoney[m_iResourceType][m_iResourceSubType] * m_nProcessItemCount * m_NeedItems[0].llCount;
-    strMoney.PrintF("%I64d %s", needMoney, _S(1762, "나스"));
+    strMoney.PrintF("%I64d %s", needMoney, (const char*)_S(1762, "나스"));
     AddString(strMoney, needMoney <= myMoney ? COLOR_TEXT : COLOR_NONE);
 
     m_bSatisfied = m_bSatisfied && needMoney <= myMoney;
@@ -851,7 +851,7 @@ void CUIProcessNPC::AddString(const CTString &strText, COLOR colText)
         strText.Split(nLength, strTemp2, strTemp);
         m_lbPreconditionDesc.AddString(0, strTemp2, colText);
 
-        strTemp2.PrintF("%s", strTemp);
+        strTemp2.PrintF("%s", (const char*)strTemp);
 
         m_lbPreconditionDesc.AddString(0, strTemp2, colText);
 

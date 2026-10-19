@@ -294,7 +294,7 @@ void DoCheat(const CTString &strCommand, const CTString &strVar)
 {
   _pShell->SetINDEX(strVar, !_pShell->GetINDEX(strVar));
   BOOL bNew = _pShell->GetINDEX(strVar);
-  CPrintF("%s: %s\n", strCommand, bNew?"ON":"OFF");
+  CPrintF("%s: %s\n", (const char*)strCommand, bNew?"ON":"OFF");
 }
 
 static void Key_Return(void)
@@ -357,13 +357,13 @@ static void Key_Return(void)
   // parse editing line
   } else if( strEditingLine[0]=='/') {
     // add to output and execute
-    CPrintF( "-> %s\n", strEditingLine);
+    CPrintF( "-> %s\n", (const char*)strEditingLine);
       strEditingLine+=";";
       _pShell->Execute(strEditingLine+1);
   } 
   else if( !_pGame->gm_bGameOn) {
     // add to output and execute
-    CPrintF( "-> %s\n", strEditingLine);
+    CPrintF( "-> %s\n", (const char*)strEditingLine);
     strEditingLine+=";";
     _pShell->Execute(strEditingLine);
   }
@@ -426,7 +426,7 @@ static void Key_Tab( BOOL bShift)
         // can we print last found symbol ?
         if( strLastMatched!="") {
           if( !bFirstFound) CPrintF( "  -\n");
-          CPrintF( "  %s\n", strLastMatched);
+          CPrintF( "  %s\n", (const char*)strLastMatched);
           bFirstFound = TRUE;
         }
         strLastMatched = strSymbol;
@@ -434,7 +434,7 @@ static void Key_Tab( BOOL bShift)
       }
     }}
     // print last symbol
-    if( ctSymbolsFound>1) CPrintF( "  %s\n", strLastMatched);
+    if( ctSymbolsFound>1) CPrintF( "  %s\n", (const char*)strLastMatched);
   }
 
   // for each of symbols in the shell

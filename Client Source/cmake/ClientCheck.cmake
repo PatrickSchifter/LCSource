@@ -66,6 +66,7 @@ target_compile_options(lc_engine_check PRIVATE
   # what this check is for
   -Wshorten-64-to-32 -Wpointer-to-int-cast -Wint-to-pointer-cast -Wvoid-pointer-to-int-cast
   -Wformat -Wunsequenced
+  -Werror=non-pod-varargs  # a CTString through '...' traps at run time (pass (const char*)str)
   -ferror-limit=0)
 
 # With LC_CHECK_DIRS=ALL, the other client projects too (entity classes, game, shaders,

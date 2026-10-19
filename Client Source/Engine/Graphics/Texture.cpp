@@ -1032,7 +1032,7 @@ void CTextureData::Read_t( CTStream *inFile)
 				if( fnTex == fnBaseTexture) 
 				{
 					// generate exception
-					ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
+					ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (const char*)(CTString&)fnTex);
 				}
 				else 
 				{
@@ -1350,7 +1350,7 @@ void CTextureData::Read_PNG( CTStream* inFile )
 
 	if (png_sig_cmp((png_const_bytep)header, 0, 8))
 	{
-		CPrintF("[read_png_file] File %s is not recognized as a PNG file", inFile->GetDescription());
+		CPrintF("[read_png_file] File %s is not recognized as a PNG file", (const char*)inFile->GetDescription());
 		return;
 	}
 
@@ -1436,7 +1436,7 @@ void CTextureData::Write_t( CTStream *outFile)   // throw char *
 		CTFileName fnTex = outFile->GetDescription();
 		if( fnTex == td_ptdBaseTexture->GetName()) 
 		{
-			ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (CTString&)fnTex);
+			ThrowF_t( TRANS("Texture \"%s\" has same name as its base texture."), (const char*)(CTString&)fnTex);
 		}
 	}
 	
@@ -2443,7 +2443,7 @@ CTString CTextureData::GetDescription(void)
 		strSizeM.PrintF("%.2fx%.2fm", fSizeU, fSizeV);
 	}
 	CTString str;
-	str.PrintF( "%s(%dx%d) %d/%d", strSizeM, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
+	str.PrintF( "%s(%dx%d) %d/%d", (const char*)strSizeM, pixSizeU, pixSizeV, ctFineMips, ctTotalMips);
 	
 	// print flags
 	CTString strFlags = "";

@@ -495,7 +495,7 @@ int CUIGroup::Render( int& nLineY, int nShowHeight )
 		CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 		CTString strGroupName;
 
-		strGroupName.PrintF( "%s (%d)", m_strGroupName, m_vecMember.size() );
+		strGroupName.PrintF( "%s (%d)", (const char*)m_strGroupName, m_vecMember.size() );
 		//strGroupName.PrintF( "%s (%d)", m_strGroupName, (nShowRange/m_nLineHeight) -1 );
 		
 		if( m_nSelectLine ==-1 && IsFocused())

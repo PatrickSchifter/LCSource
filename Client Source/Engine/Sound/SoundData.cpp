@@ -139,8 +139,8 @@ void CSoundData::Read_t( CTStream *inFile)  // throw char *
     LoadWAV_t( inFile, slMaxSampleRate);  // sample rate is valid only if library is active 
     extern INDEX snd_bReportStereoWaves;
     if( snd_bReportStereoWaves) {
-      if( sd_wfeFormat.nChannels     !=1) CPrintF( "! Stereo wave: %s\n", fnm);
-      if( sd_wfeFormat.wBitsPerSample==8) CPrintF( "! 8-bits wave: %s\n", fnm);
+      if( sd_wfeFormat.nChannels     !=1) CPrintF( "! Stereo wave: %s\n", (const char*)fnm);
+      if( sd_wfeFormat.wBitsPerSample==8) CPrintF( "! 8-bits wave: %s\n", (const char*)fnm);
     }
     // determine length of sound in seconds
     sd_tmLength = sd_ctSamples / (DOUBLE)sd_wfeFormat.nSamplesPerSec;

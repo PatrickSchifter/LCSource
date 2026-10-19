@@ -777,7 +777,7 @@ void CUIProduct::SelectItem ( int _nIndex )
 	AddString ( _S( 562, "필요 스킬" ), COLOR_SUB_TITLE );		
 	AddString ( CTString ( pNeedSSkill->GetName() ), bNeedSSkill? COLOR_TEXT : COLOR_NONE );
 
-	strTitle.PrintF ( _S( 573, "%s : %d " ), _S( 574, "레벨" ), nSSkillLevel ); 
+	strTitle.PrintF ( _S( 573, "%s : %d " ), (const char*)_S( 574, "레벨" ), nSSkillLevel ); 
 	AddString ( strTitle, bNeedSSkillLevel? COLOR_TEXT : COLOR_NONE );
 
 
@@ -834,7 +834,7 @@ void CUIProduct::AddString ( const CTString &strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

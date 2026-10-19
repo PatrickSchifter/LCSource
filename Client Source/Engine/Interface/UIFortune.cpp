@@ -156,7 +156,7 @@ void CUIFortune::Render()
 				m_lbDescription.AddString(0, CTString(skill.GetName()), 0xBBC200FF, TRUE, NULL, TRUE);
 				vecOutput.clear();
 				CTString strText;
-				strText.PrintF(_S(5894, "조언: %s"), _S(m_vecFortuneSkill[m_nFortuneIndex].string_index, "조언"));
+				strText.PrintF(_S(5894, "조언: %s"), (const char*)_S(m_vecFortuneSkill[m_nFortuneIndex].string_index, "조언"));
 				StringSplit(vecOutput, strText, width);
 				for( j = 0; j < vecOutput.size(); j++ )
 					m_lbDescription.AddString(0, vecOutput[j], 0xBD6F3EFF);

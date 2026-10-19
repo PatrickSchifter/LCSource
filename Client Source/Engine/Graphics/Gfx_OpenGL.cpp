@@ -105,7 +105,7 @@ void WIN_CheckError(BOOL bRes, const char *strDescription)
   if( bRes) return;
   DWORD dwWindowsErrorCode = GetLastError();
   if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error 
-  WarningMessage("%s: %s", strDescription, GetWindowsError(dwWindowsErrorCode));
+  WarningMessage("%s: %s", strDescription, (const char*)GetWindowsError(dwWindowsErrorCode));
 }
 
 
@@ -398,7 +398,7 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // report
   CPrintF( TRANS("\n* OpenGL context created: *----------------------------------\n"));
-  CPrintF( "  (%s, %s, %s)\n\n", da.da_strVendor, da.da_strRenderer, da.da_strVersion);
+  CPrintF( "  (%s, %s, %s)\n\n", (const char*)da.da_strVendor, (const char*)da.da_strRenderer, (const char*)da.da_strVersion);
 
   // test for used extensions
   GLint   gliRet;

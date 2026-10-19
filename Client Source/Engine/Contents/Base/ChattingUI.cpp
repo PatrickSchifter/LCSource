@@ -184,7 +184,7 @@ void CChattingUI::initialize()
 					pCheck->SetCommand(pCmd);
 				}
 
-				strTemp.PrintF("tp_%s", strName[j]);
+				strTemp.PrintF("tp_%s", (const char*)strName[j]);
 				m_pChatMode[i][j] = (CUITabPage*)m_pTabSubChat[i]->findUI(strTemp.str_String);
 
 				if (m_pChatMode[i][j] == NULL)
@@ -209,7 +209,7 @@ void CChattingUI::initialize()
 
 		for (int i = 0; i < eCM_MAX; ++i)
 		{
-			strTemp.PrintF("cb%s", strName[i]);
+			strTemp.PrintF("cb%s", (const char*)strName[i]);
 			m_pChatOption[i] = (CUICheckButton*)m_pImgOptionBack->findUI(strTemp.str_String);
 
 			if (m_pChatOption[i] != NULL)
@@ -221,7 +221,7 @@ void CChattingUI::initialize()
 				m_pChatOption[i]->SetCheck(TRUE);
 			}
 
-			strTemp.PrintF("text%s", strName[i]);
+			strTemp.PrintF("text%s", (const char*)strName[i]);
 			m_pTextOption[i] = (CUIText*)m_pImgOptionBack->findUI(strTemp.str_String);
 		}
 	}
@@ -264,7 +264,7 @@ void CChattingUI::AddChatMessage(UBYTE ubChatType, SLONG slSendIndex, CTString &
 
 	if (ubChatType == CHATMSG_WHISPER || ubChatType == CHATMSG_GMTOOL)
 	{
-		strOutputName.PrintF("%s -> ", strSendName);
+		strOutputName.PrintF("%s -> ", (const char*)strSendName);
 
 		if (slSendIndex == _pNetwork->MyCharacterInfo.index)
 			AddWhisperTarget(m_strWhisperTarget);
@@ -276,12 +276,12 @@ void CChattingUI::AddChatMessage(UBYTE ubChatType, SLONG slSendIndex, CTString &
 		if (ubChatType == CHATMSG_EXPEDITION)
 		{
 			if (slGroup == -1)	// 원정대 전체 채팅
-				strOutputName.PrintF("[%s]%s >", _S(4493, "원정대"), strSendName);
+				strOutputName.PrintF("[%s]%s >", (const char*)_S(4493, "원정대"), (const char*)strSendName);
 			else	// 원정대 그룹 채팅
 			{
 				CTString strTemp;
 				strTemp.PrintF(_S(4494, "그룹%d"), slGroup + 1);
-				strOutputName.PrintF("[%s]%s >", strTemp, strSendName);
+				strOutputName.PrintF("[%s]%s >", (const char*)strTemp, (const char*)strSendName);
 
 				colName = colChat = m_colExGroup[slGroup];
 			}
@@ -289,9 +289,9 @@ void CChattingUI::AddChatMessage(UBYTE ubChatType, SLONG slSendIndex, CTString &
 		else
 		{
 			if (channelNumber > 0)
-				strOutputName.PrintF("[%s%d]%s > ", _S(5392, "채널"), channelNumber, strSendName);
+				strOutputName.PrintF("[%s%d]%s > ", (const char*)_S(5392, "채널"), channelNumber, (const char*)strSendName);
 			else
-				strOutputName.PrintF("%s > ", strSendName);
+				strOutputName.PrintF("%s > ", (const char*)strSendName);
 		}
 	}
 
@@ -1139,7 +1139,7 @@ void CChattingUI::SpamerBlock ( CTString& strName )
 {
 	CUIManager::getSingleton()->GetChatFilter()->AddCharName(strName.str_String);
 	CTString temStr;
-	temStr.PrintF(_S(3006, "%s님이 차단되었습니다."),strName);
+	temStr.PrintF(_S(3006, "%s님이 차단되었습니다."),(const char*)strName);
 	AddSysMessage(temStr);
 }
 
@@ -1305,7 +1305,7 @@ WMSG_RESULT CChattingUI::OnLButtonUp( UINT16 x, UINT16 y )
 		{
 			CTString strTemp;
 
-			strTemp.PrintF("!%s ", m_strUserNoticeOwner);
+			strTemp.PrintF("!%s ", (const char*)m_strUserNoticeOwner);
 			m_pChatInput->ResetString();
 			m_pChatInput->SetString(strTemp.str_String);
 			m_pChatInput->SetFocus(TRUE);
@@ -1470,7 +1470,7 @@ BOOL CChattingUI::CheckInputChannelChat( ChattingMsgType cmtType, CTString strMe
 		{
 			if (_pNetwork->MyCharacterInfo.level < CHANNEL_CHAT_NEEDLEVEL) // 50레벨 이상 입력 가능
 			{
-				strMoney.PrintF(_S(5388, "[%s] %d레벨 이상에서만 이용이 가능합니다."), _S(5390, "전체 채널모드"), CHANNEL_CHAT_NEEDLEVEL);
+				strMoney.PrintF(_S(5388, "[%s] %d레벨 이상에서만 이용이 가능합니다."), (const char*)_S(5390, "전체 채널모드"), CHANNEL_CHAT_NEEDLEVEL);
 				AddSysMessage(strMoney, SYSMSG_ERROR);
 				bResult = FALSE;
 			}
@@ -1480,7 +1480,7 @@ BOOL CChattingUI::CheckInputChannelChat( ChattingMsgType cmtType, CTString strMe
 		{
 			if (_pNetwork->MyCharacterInfo.level < CHANNEL_TRADE_NEEDLEVEL) // 10레벨 이상 입력 가능
 			{
-				strMoney.PrintF(_S(5388, "[%s] %d레벨 이상에서만 이용이 가능합니다."), _S(5391, "매매 채널모드"), CHANNEL_TRADE_NEEDLEVEL);
+				strMoney.PrintF(_S(5388, "[%s] %d레벨 이상에서만 이용이 가능합니다."), (const char*)_S(5391, "매매 채널모드"), CHANNEL_TRADE_NEEDLEVEL);
 				AddSysMessage(strMoney, SYSMSG_ERROR);
 				bResult = FALSE;
 			}
@@ -1489,7 +1489,7 @@ BOOL CChattingUI::CheckInputChannelChat( ChattingMsgType cmtType, CTString strMe
 
 			if (nNeedNas > _pNetwork->MyCharacterInfo.money)
 			{
-				strMoney.PrintF(_S(5389, "[%s] 나스가 부족합니다.(%d 나스)"), _S(5391, "매매 채널모드"), nNeedNas);
+				strMoney.PrintF(_S(5389, "[%s] 나스가 부족합니다.(%d 나스)"), (const char*)_S(5391, "매매 채널모드"), nNeedNas);
 				AddSysMessage(strMoney, SYSMSG_ERROR);
 				bResult = FALSE;
 			}
@@ -1509,13 +1509,13 @@ void CChattingUI::ConditionsysMsg(ChattingMsgType cmtType)
 	{
 	case CHATMSG_NORMAL:
 		{
-			strMessage.PrintF(_S(5386, "[%s] 50레벨 이상 입력할 수 있습니다."), _S(5390, "전체 채널모드"));
+			strMessage.PrintF(_S(5386, "[%s] 50레벨 이상 입력할 수 있습니다."), (const char*)_S(5390, "전체 채널모드"));
 			AddSysMessage(strMessage, SYSMSG_USER, 0x6BD2FFFF);
 		}
 		break;
 	case CHATMSG_TRADE:
 		{
-			strMessage.PrintF(_S(5387, "[%s] 10레벨 이상 나스를 소모하면서 사용이 가능합니다."), _S(5391, "매매 채널모드"));
+			strMessage.PrintF(_S(5387, "[%s] 10레벨 이상 나스를 소모하면서 사용이 가능합니다."), (const char*)_S(5391, "매매 채널모드"));
 			AddSysMessage(strMessage, SYSMSG_USER, 0xE18600FF);
 		}
 		break;
@@ -1533,7 +1533,7 @@ void CChattingUI::SaveSysMessageStart()
 	}
 
 	CTString strMsg;
-	strMsg.PrintF("Begin_SaveSysMessage at [%s] file", m_strSaveSysMsgFileName);
+	strMsg.PrintF("Begin_SaveSysMessage at [%s] file", (const char*)m_strSaveSysMsgFileName);
 	AddSysMessage(strMsg);
 
 	m_bSaveSysMsg = true;
@@ -1564,7 +1564,7 @@ void CChattingUI::SaveSysMessageComplete(int iType/* = 0*/)
 	m_bSaveSysMsg = false;
 
 	CTString strMsg;
-	strMsg.PrintF("End_SaveSysMessage at [%s] file", m_strSaveSysMsgFileName);
+	strMsg.PrintF("End_SaveSysMessage at [%s] file", (const char*)m_strSaveSysMsgFileName);
 	AddSysMessage(strMsg);
 
 	m_strSaveSysMsgFileName = "";
@@ -2077,7 +2077,7 @@ void CChattingUI::AddUserNotice( CTString strOwner, CTString strMsg )
 
 	// 유저공지 형식 생성 (채팅과 같다)
 	CTString	strGenerate;
-	strGenerate.PrintF("%s > %s", strOwner, strMsg);
+	strGenerate.PrintF("%s > %s", (const char*)strOwner, (const char*)strMsg);
 	m_pTextUserNotice->SetText(strGenerate);
 
 	m_strUserNoticeOwner = strOwner;

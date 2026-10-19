@@ -1010,7 +1010,7 @@ void CMesh::SplitSurfaces(MeshLOD &mlod)
 				// This must never hapend
 				if(cttwNew>=MAX_WEIGHTS_PER_SURFACE) 
 				{
-					CPrintF("Triangle %d in Surface '%s' has more than %d weight maps",its,ska_IDToString(msrf.msrf_iSurfaceID),MAX_WEIGHTS_PER_SURFACE-1);
+					CPrintF("Triangle %d in Surface '%s' has more than %d weight maps",its,(const char*)ska_IDToString(msrf.msrf_iSurfaceID),MAX_WEIGHTS_PER_SURFACE-1);
 					ASSERT(FALSE);
 					return;
 				}
@@ -2228,7 +2228,7 @@ void CMesh::Read_t_new(CTStream *istrFile, BOOL bHasContext)
 				}
 				catch(char *strErr) 
 				{
-					CPrintF("Model: %s - %s\n", mlod.mlod_fnSourceFile, strErr);
+					CPrintF("Model: %s - %s\n", (const char*)mlod.mlod_fnSourceFile, strErr);
 					msrf.msrf_pShader = NULL;
 					pshMeshShader = &_shDummyShader;
 					pshpShaderParams = &_shpDummyShaderParams;
@@ -2779,7 +2779,7 @@ void CMesh::Read_t_old(CTStream *istrFile, BOOL bHasContext)
 				}
 				catch(char *strErr) 
 				{
-					CPrintF("Model: %s - %s\n", mlod.mlod_fnSourceFile, strErr);
+					CPrintF("Model: %s - %s\n", (const char*)mlod.mlod_fnSourceFile, strErr);
 					msrf.msrf_pShader = NULL;
 					pshMeshShader = &_shDummyShader;
 					pshpShaderParams = &_shpDummyShaderParams;

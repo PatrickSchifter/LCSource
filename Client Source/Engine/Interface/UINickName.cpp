@@ -409,7 +409,7 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 					{
 						//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
 						INDEX iItemIndex = CNickNameData::getData(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor())->GetItemIndex();
-						strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  GetName(iItemIndex)); 
+						strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  (const char*)GetName(iItemIndex)); 
 						msgInfo.SetMsgBoxInfo( _S(4835, "호칭 삭제"), UMBS_YESNO, UI_NICKNAME, MSGCMD_NICKNAME_DELETE );
 						msgInfo.AddString(strMsg);
 						pUIManager->CreateMessageBox(msgInfo);

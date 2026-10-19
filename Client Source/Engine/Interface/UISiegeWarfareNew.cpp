@@ -456,19 +456,19 @@ void CUISiegeWarfareNew::RenderUpgradeTower()
 				pDrawPort->PutTextEx( tStr1, nX+23, nY+6 );
 				pDrawPort->PutTextEx( _S( 3701, "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
 				tStr.PrintF(_S( 3702, "%d단계" ),1);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,30);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,30);
 				tStr = tStr + CTString(" ") + tStr1;
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),2);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,50);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,50);
 				tStr = tStr + CTString(" ") + tStr1;
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,50);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,50);
 				tStr = tStr +CTString("/") + tStr1; 				
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),3);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr2,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr2,100);
 				tStr = tStr + CTString(" ") + tStr1;
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,100);
 				tStr = tStr +CTString("/") + tStr1; 
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);				
 			}
@@ -480,15 +480,15 @@ void CUISiegeWarfareNew::RenderUpgradeTower()
 				pDrawPort->PutTextEx( tStr1, nX+23, nY+6 );
 				pDrawPort->PutTextEx( _S( 3701,  "얼마나 강화 하시겠습니까?" ), nX2, nY2+=nCab ,COLOR(0xD3BFFFFF));
 				tStr.PrintF(_S( 3702, "%d단계" ),1);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,50);				
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,50);				
 				tStr = tStr+CTString(" ")+ tStr1;
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),2);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,100);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,100);
 				tStr = tStr+CTString(" ")+ tStr1;
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
 				tStr.PrintF(_S( 3702, "%d단계" ),3);
-				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),tStr3,200);
+				tStr1.PrintF(_S( 3703, "%s %d% 증가" ),(const char*)tStr3,200);
 				tStr = tStr+CTString(" ")+ tStr1;
 				pDrawPort->PutTextEx( tStr, nX2, nY2+=nCab);
 			}
@@ -1313,7 +1313,7 @@ void CUISiegeWarfareNew::CreateBuyQuarterBox(int iNpcIdx)
 	strMessage.PrintF( _S( 3737, "부활 진지 %d"), iNpcIdx - 389 );
 	MsgBoxInfo.AddString( strMessage );
 	strMessage.PrintF("%d",tNas);
-	strMessage.PrintF(_S( 255, "가격 : %s"), strMessage);
+	strMessage.PrintF(_S( 255, "가격 : %s"), (const char*)strMessage);
 	MsgBoxInfo.AddString( strMessage );
 	strMessage=_S( 3738, "선택한 부활진지를 구입하시겠습니까?");
 	MsgBoxInfo.AddString( strMessage );

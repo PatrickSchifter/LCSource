@@ -66,7 +66,7 @@ functions:
   const CTString &GetDescription(void) const {
     ((CTString&)m_strDescription).PrintF("-><none>");
     if (m_penTarget!=NULL) {
-      ((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+      ((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penTarget->GetName());
     }
     return m_strDescription;
   };
@@ -108,7 +108,7 @@ functions:
 
     // assure valid target
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, &CEnvironmentMarker_DLLClass)) {
-      WarningMessage("Target '%s' is not of Environment Marker class!", m_penTarget->GetName());
+      WarningMessage("Target '%s' is not of Environment Marker class!", (const char*)m_penTarget->GetName());
       m_penTarget = NULL;
       return FALSE;
     }
@@ -247,7 +247,7 @@ functions:
 
     // assure valid target
     if( m_penTarget!=NULL && !IsOfClass( m_penTarget, &CEnvironmentMarker_DLLClass)) {
-      WarningMessage("Target '%s' is not of Environment Marker class!", m_penTarget->GetName());
+      WarningMessage("Target '%s' is not of Environment Marker class!", (const char*)m_penTarget->GetName());
       m_penTarget = NULL;
     }
 };

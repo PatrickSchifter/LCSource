@@ -387,7 +387,7 @@ void CUIMonsterCombo::MissionCaseRender(int iX, int iY)
 #	if defined(G_KOR) || defined(G_THAI) || defined(G_GERMAN) || defined(G_USA)
 			strTemp.PrintF( _S(4141, "%d Nas %d Point"), MC->nas, MC->point);
 #	else
-			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), MC->nas, MC->point);
+			strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), MC->nas, MC->point);
 #	endif 
 			pDrawPort->PutTextEx(strTemp, iX+370, iY+60+(52*i));
 		}
@@ -442,7 +442,7 @@ void CUIMonsterCombo::RenderComboList(int nCurScrollNum,int nX, int nY)
 #	if defined(G_KOR) || defined(G_THAI) || defined(G_GERMAN) || defined(G_USA)
 				strTemp.PrintF( _S(4141, "%d Nas %d Point"), MC->nas, MC->point);
 #	else
-				strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), MC->nas, MC->point);
+				strTemp.PrintF( _S(4141, "패널티: %s %d Nas %d Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), MC->nas, MC->point);
 #	endif 
 				pDrawPort->PutTextEx(strTemp, nX+5, nY+28);
 			}

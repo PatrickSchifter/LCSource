@@ -492,9 +492,9 @@ static void DetectCPU(void)
 	CTString strYes = TRANS("Yes");
 	CTString strNo  = TRANS("No");
 
-	CPrintF(TRANS("   MMX: %s\n"), bMMX  ? strYes : strNo);
-	CPrintF(TRANS("   SSE: %s\n"), bSSE  ? strYes : strNo);
-	CPrintF(TRANS("  CMOV: %s\n"), bCMOV ? strYes : strNo);
+	CPrintF(TRANS("   MMX: %s\n"), (const char*)(bMMX  ? strYes : strNo));
+	CPrintF(TRANS("   SSE: %s\n"), (const char*)(bSSE  ? strYes : strNo));
+	CPrintF(TRANS("  CMOV: %s\n"), (const char*)(bCMOV ? strYes : strNo));
 	CPrintF(TRANS(" Clock: %.0f MHz\n"), fMHz);
 
 	sys_strCPUVendor = strVendor;
@@ -822,11 +822,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// print basic engine info
 	CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-	CPrintF("  %s\n\n", _strEngineBuild);
+	CPrintF("  %s\n\n", (const char*)_strEngineBuild);
 
 	// print info on the started application
 	CPrintF(TRANS("Executable: %s\n"), strExePath);
-	CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
+	CPrintF(TRANS("Assumed engine directory: %s\n"), (const char*)_fnmApplicationPath);
 
 	CPrintF("\n");
 

@@ -103,11 +103,11 @@ functions:
 	
 		if (m_penTarget!=NULL) 
 		{
-			((CTString&)m_strDescription).PrintF("->%s", m_penTarget->GetName());
+			((CTString&)m_strDescription).PrintF("->%s", (const char*)m_penTarget->GetName());
 			if (m_penSeriousTarget!=NULL) 
 			{
 				((CTString&)m_strDescription).PrintF("->%s, %s", 
-				m_penTarget->GetName(), m_penSeriousTarget->GetName());
+				(const char*)m_penTarget->GetName(), (const char*)m_penSeriousTarget->GetName());
 			}
 		}
 		
@@ -583,14 +583,14 @@ procedures:
 	    // check target
 		if (m_penTarget!=NULL) {
 			if( !IsDerivedFromClass( m_penTarget, &CEnemyBase_DLLClass)) {
-				WarningMessage("Target '%s' is of wrong class!", m_penTarget->GetName());
+				WarningMessage("Target '%s' is of wrong class!", (const char*)m_penTarget->GetName());
 				m_penTarget = NULL;
 			}
 		}
 		
 		if (m_penSeriousTarget!=NULL) {
 			if( !IsDerivedFromClass(m_penSeriousTarget, &CEnemyBase_DLLClass)) {
-				WarningMessage("Target '%s' is of wrong class!", m_penSeriousTarget->GetName());
+				WarningMessage("Target '%s' is of wrong class!", (const char*)m_penSeriousTarget->GetName());
 				m_penSeriousTarget = NULL;
 			}
 		}

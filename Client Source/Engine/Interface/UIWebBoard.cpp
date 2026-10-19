@@ -293,13 +293,13 @@ BOOL CCommandView::ExecuteImmediate(CUIWebBoard &rUIWebBoard)
 		sprintf(szURL, "%s?indexNo=%d&noticeNo=%s&pageNo=%d"
 				, pWebAddress->get("help_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage);	//HardCoding
 	else if(rUIWebBoard.m_nCurSection == UWS_NOTICE)
 		sprintf(szURL, "%s?indexNo=%d&noticeNo=%s&pageNo=%d"
 				, pWebAddress->get("notice_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage);	//HardCoding
 	else if(rUIWebBoard.m_nCurSection == UWS_FREEBOARD)
 	{
@@ -308,7 +308,7 @@ BOOL CCommandView::ExecuteImmediate(CUIWebBoard &rUIWebBoard)
 		sprintf(szURL, "%s?indexNo=%d&bbsNo=%s&pageNo=%d&charIndex=%d&UserId=%s"
 				, pWebAddress->get("freebbs_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage
 				, _pNetwork->MyCharacterInfo.index
 				, strWebParameter.c_str()
@@ -321,7 +321,7 @@ BOOL CCommandView::ExecuteImmediate(CUIWebBoard &rUIWebBoard)
 		sprintf(szURL, "%s?indexNo=%d&bbsNo=%s&pageNo=%d&charIndex=%d&UserId=%s&guildno=%d&server=%d&master=%d"
 				, pWebAddress->get("guildbbs_view")
 				, rUIWebBoard.m_nListIndex[rUIWebBoard.m_nWantWrite]
-				, rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
+				, (const char*)rUIWebBoard.m_lbListContent.GetString( 0, rUIWebBoard.m_nWantWrite )		// No
 				, rUIWebBoard.m_nCurrentPage
 				, _pNetwork->MyCharacterInfo.index
 				, strWebParameter.c_str()
@@ -2861,7 +2861,7 @@ WMSG_RESULT CUIWebBoard::MouseMessage( MSG *pMsg )
 								// 답글 페이지로
 								m_nCurBoardType = UWT_REPLY;
 								CTString strTemp;
-								strTemp.PrintF("Re: %s", m_strReadSubject);
+								strTemp.PrintF("Re: %s", (const char*)m_strReadSubject);
 								m_ebWriteSubject.ResetString();
 								m_ebWriteSubject.InsertChars(0, strTemp.str_String);
 								//멀티에디터에 내용 삽입. 내용이 아래와 같이 수정됨.

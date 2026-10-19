@@ -417,7 +417,7 @@ void CUIMysteriousBead::SendItemMsgBox()
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OKCANCEL, UI_MYSTERYOUSBEAD, MSGCMD_MYSTERIOUS_BEAD_SEND_ITEM );								
-	strMessage.PrintF( _S(6046, "%s %d개를 %s의 신비한 석상으로 전송 하시겠습니까?"), szItemName, nCount, strName);
+	strMessage.PrintF( _S(6046, "%s %d개를 %s의 신비한 석상으로 전송 하시겠습니까?"), szItemName, nCount, (const char*)strName);
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -432,7 +432,7 @@ void CUIMysteriousBead::Success()
 	CUIMsgBox_Info	MsgBoxInfo;
 
 	MsgBoxInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL);
-	strMessage.PrintF(_S(6047, "%s %d개를 %s의 신비한 석상으로 전송 하였습니다."), szItemName, nCount, strName);
+	strMessage.PrintF(_S(6047, "%s %d개를 %s의 신비한 석상으로 전송 하였습니다."), szItemName, nCount, (const char*)strName);
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 	CloseUI();

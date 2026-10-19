@@ -2958,7 +2958,7 @@ void CUICashShopEX::Render()
 					CTString strPrice, strRemain, strCash;
 					strCash.PrintF("%d", m_GoodsBoxList[i].GoodsData->m_cash);
 					pUIManager->InsertCommaToString(strCash);
-					strPrice.PrintF(_S(255, "가격: %s"), strCash);
+					strPrice.PrintF(_S(255, "가격: %s"), (const char*)strCash);
 
 					if (m_GoodsBoxList[i].GoodsData->m_limitCnt > 0)
 					{
@@ -3184,7 +3184,7 @@ void CUICashShopEX::Render()
 					CTString strPrice, strRemain, strCash;
 					strCash.PrintF("%d", m_WishBoxList[i].GoodsData->m_cash);
 					pUIManager->InsertCommaToString(strCash);
-					strPrice.PrintF(_S(255, "가격: %s"), strCash);
+					strPrice.PrintF(_S(255, "가격: %s"), (const char*)strCash);
 					strRemain.PrintF(_S(2890, "남은 수량: %d"), m_WishBoxList[i].GoodsData->m_limitCnt);
 					pDrawPort->PutTextExRX(strPrice, m_nPosX+rtTmpBox.Left+203, m_nPosY+rtTmpBox.Top+46, 0xFFFFFFFF); // 상품 가격
 				}

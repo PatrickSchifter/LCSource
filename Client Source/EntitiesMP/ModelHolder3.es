@@ -168,7 +168,7 @@ functions:
 				OffSetAnimationQueue(FRnd()*10.0f);        
 			} else {
 				CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-					m_strModelAnimation, GetName());
+					(const char*)m_strModelAnimation, (const char*)GetName());
 			}
 		}
 		if(GetModelInstance() && m_strEffectGroupName != "")
@@ -642,7 +642,7 @@ functions:
 		}
 		if (!bLoadOK) {
 			SetSkaModel(CTFILENAME("Data\\Models\\Editor\\Ska\\Axis.smc"));
-			WarningMessage(TRANS("Cannot load ska model '%s'"), (CTString&)m_fnModel);
+			WarningMessage(TRANS("Cannot load ska model '%s'"), (const char*)(CTString&)m_fnModel);
 		}
 		
 		// set model stretch
@@ -706,7 +706,7 @@ functions:
 		if (m_penDestruction==NULL) {
 			m_strDescription.PrintF("%s undestroyable", (const char*)m_fnModel.FileName());
 		} else {
-			m_strDescription.PrintF("%s -> %s", (const char*)m_fnModel.FileName(), m_penDestruction->GetName());
+			m_strDescription.PrintF("%s -> %s", (const char*)m_fnModel.FileName(), (const char*)m_penDestruction->GetName());
 		}
 		
 		m_strDescription.PrintF("%s", (const char*)m_fnModel.FileName());
@@ -798,7 +798,7 @@ procedures:
 
 		// check your destruction pointer
 		if( m_penDestruction!=NULL && !IsOfClass( m_penDestruction, &CModelDestruction_DLLClass)) {
-			WarningMessage("Destruction '%s' is wrong class!", m_penDestruction->GetName());
+			WarningMessage("Destruction '%s' is wrong class!", (const char*)m_penDestruction->GetName());
 			m_penDestruction=NULL;
 		}
 		
@@ -820,7 +820,7 @@ procedures:
 				OffSetAnimationQueue(FRnd()*10.0f);        
 			} else {
 				CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-					m_strModelAnimation, GetName());
+					(const char*)m_strModelAnimation, (const char*)GetName());
 			}
 		}
 		
@@ -968,7 +968,7 @@ procedures:
 							AddAnimation(iAnim, ulFlags, 1, 1);            
 						} else {
 							CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-								m_strModelAnimation, GetName());
+								(const char*)m_strModelAnimation, (const char*)GetName());
 						}
 					} 
 				}
@@ -1056,7 +1056,7 @@ procedures:
 							OffSetAnimationQueue(FRnd()*10.0f);        
 						} else {
 							CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-								m_strModelAnimation, GetName());
+								(const char*)m_strModelAnimation, (const char*)GetName());
 						}
 					}
 
@@ -1222,7 +1222,7 @@ procedures:
 			OffSetAnimationQueue(FRnd()*10.0f);        
 		} else {
 			CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-				m_strModelAnimation, GetName());
+				(const char*)m_strModelAnimation, (const char*)GetName());
 		}
 
 		return EReturn();

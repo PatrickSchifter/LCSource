@@ -304,10 +304,10 @@ void CUIMonsterMercenary::SetMonsterMercenaryInfo()
 
 	m_rsMercenaryInfo.ClearString();
 
-	strtemp.PrintF(_s("%s%s"), _S( 5151, "[용병]"), CMobData::getData(_pNetwork->MonsterMercenaryInfo.index)->GetName());
+	strtemp.PrintF(_s("%s%s"), (const char*)_S( 5151, "[용병]"), CMobData::getData(_pNetwork->MonsterMercenaryInfo.index)->GetName());
 	m_rsMercenaryInfo.AddString(strtemp);
 
-	strtemp.PrintF(_S( 5156, "등급 : %s"), CUIManager::getSingleton()->GetMonsterMercenary()->GetMonsterGrade(_pNetwork->MonsterMercenaryInfo.grade) );
+	strtemp.PrintF(_S( 5156, "등급 : %s"), (const char*)CUIManager::getSingleton()->GetMonsterMercenary()->GetMonsterGrade(_pNetwork->MonsterMercenaryInfo.grade) );
 	m_rsMercenaryInfo.AddString(strtemp);
 
 	strtemp.PrintF(_S( 5157, "스킬 : %s"), _pNetwork->GetSkillData( MD->GetSkill0Index() ).GetName() );

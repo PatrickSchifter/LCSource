@@ -485,7 +485,7 @@ CTString CUIDurability::GetStateString( eSTATE eState )
 			if (m_eOpenType == eRECOVERY)
 			{
 				CTString strItemName = _pNetwork->GetItemName(RECOVER_ITEM);
-				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "%s 아이템을 사용하여 최대 내구도를 복구 합니다."), strItemName);
+				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "%s 아이템을 사용하여 최대 내구도를 복구 합니다."), (const char*)strItemName);
 				break;
 			}
 		}
@@ -502,12 +502,12 @@ CTString CUIDurability::GetStateString( eSTATE eState )
 				CTString strTemp;
 				strTemp.PrintF( "%I64d", m_llNas );
 				CUIManager::getSingleton()->InsertCommaToString( strTemp );
-				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "수리비용:%s"), strTemp);
+				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "수리비용:%s"), (const char*)strTemp);
 			}
 			else
 			{
 				CTString strItemName = _pNetwork->GetItemName(RECOVER_ITEM);
-				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "%s 아이템을 올려 주세요."), strItemName);
+				strState.PrintF(_S(nStingIdx[m_eOpenType][eState], "%s 아이템을 올려 주세요."), (const char*)strItemName);
 			}
 		}
 		break;
@@ -562,7 +562,7 @@ void CUIDurability::ShowMsgBox( eMSG_BOX eType )
 		CTString strTemp;
 		strTemp.PrintF( "%I64d", m_llNas );
 		pUIManager->InsertCommaToString( strTemp );
-		strMessage.PrintF(_S( 6268, "수리비용: %s"), strTemp);
+		strMessage.PrintF(_S( 6268, "수리비용: %s"), (const char*)strTemp);
 		MsgInfo.AddString( _S( 6175, "일반 수리를 하시 겠습니까? (일반 수리 시 최대 내구도가 손실 됩니다.)") );
 		MsgInfo.AddString(strMessage, col);
 		

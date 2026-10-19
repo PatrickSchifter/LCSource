@@ -86,7 +86,7 @@ void CSerial::Reload(void)
   // if there is some error while reloading
   } catch (char *strError) {
     // quit the application with error explanation
-    FatalError(TRANS("Cannot reload file '%s':\n%s"), (CTString&)fnmOldName, strError);
+    FatalError(TRANS("Cannot reload file '%s':\n%s"), (const char*)(CTString&)fnmOldName, strError);
   }
 
   // if still here (no exceptions raised)

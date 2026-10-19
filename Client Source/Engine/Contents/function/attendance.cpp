@@ -31,7 +31,7 @@ void Attendance::RecvAttendanceMsg( CNetworkMessage* istr )
 				pUIManager->CloseMessageBoxL(MSGLCMD_ATTENDANCE_SYSTEM);
 
 			pUIManager->CreateMessageBoxL( _S(5017, "출석 현황 보기"), UI_QUEST, MSGLCMD_ATTENDANCE_SYSTEM );
-			strMessage.PrintF( _S(5018, "[%s]님의 출석현황을 알려드리겠습니다."), _pNetwork->MyCharacterInfo.name );
+			strMessage.PrintF( _S(5018, "[%s]님의 출석현황을 알려드리겠습니다."), (const char*)_pNetwork->MyCharacterInfo.name );
 			pUIManager->AddMessageBoxLString( MSGLCMD_ATTENDANCE_SYSTEM, TRUE, strMessage );
 			strMessage.PrintF( _S(5019, "현재 %d일째 연속 출석중입니다."), m_nAccDate );
 			pUIManager->AddMessageBoxLString( MSGLCMD_ATTENDANCE_SYSTEM, TRUE, strMessage, -1, 0x6BD2FFFF );

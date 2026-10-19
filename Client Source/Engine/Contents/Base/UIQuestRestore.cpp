@@ -97,7 +97,7 @@ void CUIQuestRestore::UpdateContent()
 			{
 				CTString strTemp2;
 				strTemp2.PrintF(_S(457, "╫ц╫╨еш"));
-				strTemp.PrintF("<%s>", strTemp2);				
+				strTemp.PrintF("<%s>", (const char*)strTemp2);				
 			}
 
 			pText->SetText(strTemp);

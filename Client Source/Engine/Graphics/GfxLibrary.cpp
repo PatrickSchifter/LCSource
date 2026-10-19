@@ -493,11 +493,11 @@ static void TexturesInfo(void)
 	CTString strTmp;
 	strTmp = tex_bFineEffect ? "32-bit" : "16-bit";
 	CPrintF( "\n");
-	CPrintF( "Normal-opaque textures quality:         %s\n", ReportQuality(TS.ts_iNormQualityO));
-	CPrintF( "Normal-translucent textures quality:    %s\n", ReportQuality(TS.ts_iNormQualityA));
-	CPrintF( "Animation-opaque textures quality:      %s\n", ReportQuality(TS.ts_iAnimQualityO));
-	CPrintF( "Animation-translucent textures quality: %s\n", ReportQuality(TS.ts_iAnimQualityA));
-	CPrintF( "Effect textures quality:                %s\n", strTmp);
+	CPrintF( "Normal-opaque textures quality:         %s\n", (const char*)ReportQuality(TS.ts_iNormQualityO));
+	CPrintF( "Normal-translucent textures quality:    %s\n", (const char*)ReportQuality(TS.ts_iNormQualityA));
+	CPrintF( "Animation-opaque textures quality:      %s\n", (const char*)ReportQuality(TS.ts_iAnimQualityO));
+	CPrintF( "Animation-translucent textures quality: %s\n", (const char*)ReportQuality(TS.ts_iAnimQualityA));
+	CPrintF( "Effect textures quality:                %s\n", (const char*)strTmp);
 	CPrintF( "\n");
 	CPrintF( "Max allowed normal texture area size:    %3dx%d\n", pixNormDim, pixNormDim);
 	CPrintF( "Max allowed animation texture area size: %3dx%d\n", pixAnimDim, pixAnimDim);
@@ -544,9 +544,9 @@ extern CTString ReformatExtensionsString( CTString strUnformatted)
 static void ListOpenGLExtensions(void)
 {
 	CPrintF("\n");
-	CPrintF("- Published extensions: %s", ReformatExtensionsString(_pGfx->go_strExtensions));
-	if( _pGfx->go_strWinExtensions != "") CPrintF("%s", ReformatExtensionsString(_pGfx->go_strWinExtensions));
-	CPrintF("\n- Supported extensions: %s\n", ReformatExtensionsString(_pGfx->go_strSupportedExtensions));
+	CPrintF("- Published extensions: %s", (const char*)ReformatExtensionsString(_pGfx->go_strExtensions));
+	if( _pGfx->go_strWinExtensions != "") CPrintF("%s", (const char*)ReformatExtensionsString(_pGfx->go_strWinExtensions));
+	CPrintF("\n- Supported extensions: %s\n", (const char*)ReformatExtensionsString(_pGfx->go_strSupportedExtensions));
 	CPrintF("\n");
 }
 
@@ -585,9 +585,9 @@ static void GAPInfo(void)
 
 	// report renderer
 	CDisplayAdapter &da = _pGfx->gl_gaAPI[eAPI].ga_adaAdapter[_pGfx->gl_iCurrentAdapter];
-	if( eAPI==GAT_OGL) CPrintF( "- Vendor:   %s\n", da.da_strVendor);
-	CPrintF( "- Renderer: %s\n", da.da_strRenderer);
-	CPrintF( "- Version:  %s\n", da.da_strVersion);
+	if( eAPI==GAT_OGL) CPrintF( "- Vendor:   %s\n", (const char*)da.da_strVendor);
+	CPrintF( "- Renderer: %s\n", (const char*)da.da_strRenderer);
+	CPrintF( "- Version:  %s\n", (const char*)da.da_strVersion);
 	CPrintF( "\n");
 
 	// Z-buffer depth
@@ -640,7 +640,7 @@ static void GAPInfo(void)
 				if( gap_bForceTruform) CPrintF( "(for all models)\n");
 				else CPrintF( "(only for Truform-ready models)\n");
 				CTString strNormalMode = ogl_bTruformLinearNormals ? "linear" : "quadratic";
-				CPrintF( "- Tesselation level: %d of %d (%s normals)\n", _pGfx->gl_iTessellationLevel, _pGfx->gl_iMaxTessellationLevel, strNormalMode);
+				CPrintF( "- Tesselation level: %d of %d (%s normals)\n", _pGfx->gl_iTessellationLevel, _pGfx->gl_iMaxTessellationLevel, (const char*)strNormalMode);
 			} else CPrintF( "disabled\n");
 		} else CPrintF( "not supported\n");
 
@@ -667,8 +667,8 @@ static void GAPInfo(void)
 				CTString strSep="";
 				CPrintF( "enabled (for ");
 				if( CVA_bWorld)  { CPrintF( "world");               strSep="/"; }
-				if( CVA_bModels) { CPrintF( "%smodels",    strSep); strSep="/"; }
-				if( CVA_b2D)     { CPrintF( "%sparticles", strSep); }
+				if( CVA_bModels) { CPrintF( "%smodels",    (const char*)strSep); strSep="/"; }
+				if( CVA_b2D)     { CPrintF( "%sparticles", (const char*)strSep); }
 				CPrintF( ")\n");
 			} else CPrintF( "disabled\n");
 		} else CPrintF( "not supported\n");
@@ -679,9 +679,9 @@ static void GAPInfo(void)
 		else {
 			CTString strSep="";
 			if( _pGfx->gl_ulFlags & GLF_EXTC_ARB)    { CPrintF( "ARB");                strSep=", "; }
-			if( _pGfx->gl_ulFlags & GLF_EXTC_S3TC)   { CPrintF( "%sS3TC",     strSep); strSep=", "; }
-			if( _pGfx->gl_ulFlags & GLF_EXTC_FXT1)   { CPrintF( "%sFXT1",     strSep); strSep=", "; }
-			if( _pGfx->gl_ulFlags & GLF_EXTC_LEGACY) { CPrintF( "%sold S3TC", strSep); }
+			if( _pGfx->gl_ulFlags & GLF_EXTC_S3TC)   { CPrintF( "%sS3TC",     (const char*)strSep); strSep=", "; }
+			if( _pGfx->gl_ulFlags & GLF_EXTC_FXT1)   { CPrintF( "%sFXT1",     (const char*)strSep); strSep=", "; }
+			if( _pGfx->gl_ulFlags & GLF_EXTC_LEGACY) { CPrintF( "%sold S3TC", (const char*)strSep); }
 			CPrintF( "\n- Current texture compression system: ");
 			switch( ogl_iTextureCompressionType) {
 			case 0:   CPrintF( "none\n");         break;

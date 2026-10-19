@@ -951,7 +951,7 @@ void CUIAuctionNew::updateResult(eRESULT_TYPE eType, TradeAgentItem* pItem, CUIL
 				{
 					CTString strPrefix = pRareOpt->GetPrefix();
 					if( strPrefix.Length() >0)
-						strName.PrintF("%s %s", strPrefix, strName);
+						strName.PrintF("%s %s", (const char*)strPrefix, (const char*)strName);
 				}				
 			}
 			

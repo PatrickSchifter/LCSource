@@ -83,7 +83,7 @@ void WarningMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// if warnings are enabled
 	if( !con_bNoWarnings) {
 		// create message box
@@ -100,7 +100,7 @@ void InfoMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// create message box
 	MessageBoxA(NULL, strBuffer, TRANS("Information"), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND|MB_TASKMODAL);
 }
@@ -115,7 +115,7 @@ BOOL YesNoMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// create message box
 	return MessageBoxA(NULL, strBuffer, TRANS("Erorr"), MB_OK|MB_ICONEXCLAMATION|MB_SETFOREGROUND|MB_TASKMODAL)==IDYES;
 }

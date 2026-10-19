@@ -263,7 +263,7 @@ void CUISystemMenu::Render()
 
 
 	CTString strServerInfo;
-	strServerInfo.PrintF("%s - %d", pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
+	strServerInfo.PrintF("%s - %d", (const char*)pUIManager->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
 
 	pDrawPort->PutTextExCX( _S(4167, "접속중인 서버"), m_nPosX + m_nWidth/2,
 										m_nPosY + 82, 0xFFFFFFFF );

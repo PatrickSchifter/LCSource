@@ -537,7 +537,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 			CTString strNewItem = _pNetwork->GetItemName(lNewIndex);
 
 			CTString strMessage;
-			strMessage.PrintF( _S( 1344, "[%s] 무기가 [%s] 무기로 교체되었습니다." ), strOldItem, strNewItem );		
+			strMessage.PrintF( _S( 1344, "[%s] 무기가 [%s] 무기로 교체되었습니다." ), (const char*)strOldItem, (const char*)strNewItem );		
 			pUIManager->GetChattingUI()->AddSysMessage( strMessage );			
 		}
 		break;
@@ -813,7 +813,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 
 					for( i = 0; i < nTreasureBoxCount; ++i )
 					{
-						strMessage.PrintF( _S( 61, "%s %d개" ), strItemName[i], lItemCount[i] );
+						strMessage.PrintF( _S( 61, "%s %d개" ), (const char*)strItemName[i], lItemCount[i] );
 						pUIManager->AddMessageBoxLString( MSGLCMD_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );
 					}
 
@@ -1839,7 +1839,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					tStr = CTString("");
 				}
 
-				tMsg.PrintF( _S( 3266, "부활절 달걀 보상품 %s%s를 획득하였습니다."), tStr, _pNetwork->GetItemName( exItemType ) );
+				tMsg.PrintF( _S( 3266, "부활절 달걀 보상품 %s%s를 획득하였습니다."), (const char*)tStr, _pNetwork->GetItemName( exItemType ) );
 
 				MsgBoxInfo.AddString( tMsg );
 
@@ -1927,7 +1927,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 				{
 					CTString strMessage,tGuild,tItem;
 					(*istr)>>tGuild>>tItem;
-					strMessage.PrintF(_S(3478,"[%s]길드의 길드 마스터가 [%s]아이템에 당첨 되었습니다."),tGuild,tItem);
+					strMessage.PrintF(_S(3478,"[%s]길드의 길드 마스터가 [%s]아이템에 당첨 되었습니다."),(const char*)tGuild,(const char*)tItem);
 					_UIAutoHelp->SetGMNotice ( strMessage );
 				}
 				break;
@@ -2038,7 +2038,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					for(int i=0;i<serverCnt;i++)
 					{
 						(*istr)>>itemCnt;
-						strMessage.PrintF( _S(576, "%s : %d개" ),pUIManager->GetServerSelect()->GetServerName(i+1),itemCnt);
+						strMessage.PrintF( _S(576, "%s : %d개" ),(const char*)pUIManager->GetServerSelect()->GetServerName(i+1),itemCnt);
 						msgInfo.AddString(strMessage);
 
 						itemAll+=itemCnt;
@@ -2188,7 +2188,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					(*istr) >> CharName;
 					(*istr) >> nItemIndex;
 
-					strMessage.PrintF(_S(3503, "%s님이 %s 아이템에 당첨되었습니다."), CharName, _pNetwork->GetItemData(nItemIndex)->GetName());
+					strMessage.PrintF(_S(3503, "%s님이 %s 아이템에 당첨되었습니다."), (const char*)CharName, _pNetwork->GetItemData(nItemIndex)->GetName());
 					_UIAutoHelp->SetGMNotice ( strMessage );
 				}
 				break;
@@ -2229,13 +2229,13 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 						strColor = _S(3579, "골드");
 
 					if( nResult == 1 )
-						strMessage.PrintF( _S(3580, "색종이로 %s 꽃을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3580, "색종이로 %s 꽃을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==2) 
-						strMessage.PrintF( _S(3581, "색종이로 %s 개구리를 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3581, "색종이로 %s 개구리를 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==0) 
-						strMessage.PrintF( _S(3582, "색종이로 %s 종이학을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3582, "색종이로 %s 종이학을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					else if( nResult%3 ==1) 
-						strMessage.PrintF( _S(3583, "색종이로 %s 드래곤을 접으셨네요! 축하합니다!"), strColor);
+						strMessage.PrintF( _S(3583, "색종이로 %s 드래곤을 접으셨네요! 축하합니다!"), (const char*)strColor);
 					MsgBoxInfo.AddString(strMessage);
 
 					if( nReward == 19 )
@@ -2350,7 +2350,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 						break;
 					}
 
-					strMessage.PrintF( _S(3637, "[성인서버 오픈 이벤트] 이벤트 진행요원으로부터 %s 마법주문을 받았습니다."), strBuff);
+					strMessage.PrintF( _S(3637, "[성인서버 오픈 이벤트] 이벤트 진행요원으로부터 %s 마법주문을 받았습니다."), (const char*)strBuff);
 
 					MsgBoxInfo.SetMsgBoxInfo(_S(191, "확인"), UMBS_OK, UI_NONE, MSGCMD_NULL);
 					MsgBoxInfo.AddString( strMessage );
@@ -2994,7 +2994,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 			(*istr) >> strCharName;
 
 			CTString strMsg;
-			strMsg.PrintF(_S(3965, "%s님으로부터 새해복 많이 받으세요 새해인사가 도착하였습니다."), strCharName);
+			strMsg.PrintF(_S(3965, "%s님으로부터 새해복 많이 받으세요 새해인사가 도착하였습니다."), (const char*)strCharName);
 			_pNetwork->ClientSystemMessage( strMsg, SYSMSG_ERROR );
 
 			CUIMsgBox_Info MsgBoxInfo;
@@ -3040,7 +3040,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					(*istr) >> iItemIndex;
 
 					CTString strNotice;
-					strNotice.PrintF( _S(4115, "%s님이 벚꽃선물 상자를 열어 %s을 획득하였습니다."), strName, _pNetwork->GetItemName(iItemIndex));
+					strNotice.PrintF( _S(4115, "%s님이 벚꽃선물 상자를 열어 %s을 획득하였습니다."), (const char*)strName, _pNetwork->GetItemName(iItemIndex));
 
 					_UIAutoHelp->SetGMNotice( strNotice );
 
@@ -3355,7 +3355,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 									int nBtnCnt = 1;
 									CUIMsgBox_Info	MsgBoxInfo;
 									MsgBoxInfo.SetMsgBoxInfo(_S(4911, "내 응모 현황"), UMBS_OK | UMBS_BUTTONEX, UI_QUEST, MSGCMD_EVENT_WORLDCUP_EVENT2_STATUS);
-									strDesc.PrintF(_S(4924, "응모 방식 : %s"), _S(4908, "우승 국가 응모"));
+									strDesc.PrintF(_S(4924, "응모 방식 : %s"), (const char*)_S(4908, "우승 국가 응모"));
 									strDesc2.PrintF(_S(4925, "등록 국가 : %s"), _pNetwork->GetItemName(nCountryItem1));
 
 									MsgBoxInfo.SetBtnType(UBET_ITEM, CItemData::ITEM_ETC, CItemData::ITEM_ETC_EVENT, nBtnCnt);

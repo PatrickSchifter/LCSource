@@ -2070,7 +2070,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 	// display resolution info (if needed)
 	if( hud_bShowResolution) {
 		CTString strRes;
-		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
 		pdpDrawPort->SetFont( _pfdDisplayFont);
 		pdpDrawPort->SetTextScaling( fTextScale);
 		pdpDrawPort->SetTextAspect( 1.0f);
@@ -2894,7 +2894,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				iiImageInfo.SaveTGA_t( fnmScreenShot);
 
 			if( dem_iAnimFrame<0) 
-				CPrintF( TRANS("screen shot: %s\n"), (CTString&)fnmScreenShot);
+				CPrintF( TRANS("screen shot: %s\n"), (const char*)(CTString&)fnmScreenShot);
 		}
 		// if failed
 		catch (char *strError) 
@@ -3040,7 +3040,7 @@ CTString CGame::GetDefaultGameDescription(BOOL bWithInfo)
 	strTimeline = achTimeLine;
 	setlocale(LC_ALL, "C");
 
-	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), strTimeline);
+	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), (const char*)strTimeline);
 
 	if (bWithInfo) {
 		CPlayer *penPlayer = (CPlayer *)&*CEntity::GetPlayerEntity(0);

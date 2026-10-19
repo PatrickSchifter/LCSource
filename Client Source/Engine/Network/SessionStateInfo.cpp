@@ -639,7 +639,7 @@ void CSessionState::updateNpcAppear( CNetworkMessage *istr )
 			if (pObject != NULL)
 				Ownername = pObject->m_strName.c_str();
 		}
-		strMobName.PrintF("%s%s %s", Ownername,_S(2228, "의"), szMobName );
+		strMobName.PrintF("%s%s %s", (const char*)Ownername,(const char*)_S(2228, "의"), szMobName );
 	}
 	else
 	{
@@ -1954,7 +1954,7 @@ IMPLEMENT_MSG_UPDATE(updateAttrPc)
 	strAtt = UtilHelp::getSingleton()->GetAttributeString(ubAttr);
 
 	CTString strErrorMsg;
-	strErrorMsg.PrintF(_S( nMsgCode, "%s 속성 변경 "), strAtt);
+	strErrorMsg.PrintF(_S( nMsgCode, "%s 속성 변경 "), (const char*)strAtt);
 	_pNetwork->ClientSystemMessage(strErrorMsg, SYSMSG_ERROR);
 }
 

@@ -695,7 +695,7 @@ void CUISkillNew::UpdateSPointAndMoney(int sp /* = -1 */)
 
 		CUIManager::getSingleton()->InsertCommaToString( strTmp2 );
 
-		strTmp.PrintF("%s / %s", strTmp, strTmp2);
+		strTmp.PrintF("%s / %s", (const char*)strTmp, (const char*)strTmp2);
 
 		pText->SetText(strTmp);
 		pText->setFontColor(colNas);

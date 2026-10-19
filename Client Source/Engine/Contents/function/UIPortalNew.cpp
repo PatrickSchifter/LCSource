@@ -174,7 +174,7 @@ void CUIPortal::updateUI()
 
 		if (pText != NULL)
 		{
-			strTemp.PrintF("%s", CZoneInfo::getSingleton()->GetZoneName( m_vectorListInfo[i].zone ) );
+			strTemp.PrintF("%s", (const char*)CZoneInfo::getSingleton()->GetZoneName( m_vectorListInfo[i].zone ) );
 
 			ULONG nStringWidth = pDrawPort->GetTextWidth2(strTemp);
 			if (nStringWidth > pText->GetWidth())
@@ -189,7 +189,7 @@ void CUIPortal::updateUI()
 
 		if (pText != NULL)
 		{
-			strTemp.PrintF("%s", CZoneInfo::getSingleton()->GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ) );
+			strTemp.PrintF("%s", (const char*)CZoneInfo::getSingleton()->GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ) );
 
 			ULONG nStringWidth = pDrawPort->GetTextWidth2(strTemp);
 			if (nStringWidth > pText->GetWidth())
@@ -795,7 +795,7 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 
 	int nNeedNas = SERVER_INFO()->GetDG_EnvNas() * 10;
 		
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nNeedNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), (const char*)_S(1058, "필요나스"), nNeedNas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 
 	
@@ -872,7 +872,7 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 
 	int nNeedNas = SERVER_INFO()->GetDG_MonsterNas() * 10;
 		
-	strMessage.PrintF( _s("%s: %d %s%s"), _S(1058, "필요나스"), nNeedNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %d %s%s"), (const char*)_S(1058, "필요나스"), nNeedNas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 	
 	MsgBoxInfo.m_nColorBoxCount =4;

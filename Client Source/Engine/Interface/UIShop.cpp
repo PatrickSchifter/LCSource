@@ -608,24 +608,24 @@ void CUIShop::EventOpenShop( int iMobIndex, BOOL bHasQuest,FLOAT fX, FLOAT fZ )
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, TRUE, tv_str,-1, 0xA3A1A3FF );
 		tv_str = _S(3402, "제가 요즘 너무 바빠서 좋아하는 노란 개나리꽃을 구해다 주시면 제가 장비를 드릴께요 한번 받은 장비는 또 다시 주어지지 않습니다.");
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, TRUE, tv_str,-1, 0xA3A1A3FF );
-		tv_str.PrintF("%s %s",_S(43,"타이탄"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(43,"타이탄"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_TITAN );
-		tv_str.PrintF("%s %s",_S(44,"기사"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(44,"기사"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_KNIGHT  );
-		tv_str.PrintF("%s %s",_S(45,"힐러"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(45,"힐러"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_HEALER  );
-		tv_str.PrintF("%s %s",_S(46,"메이지"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(46,"메이지"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_MAGE  );
-		tv_str.PrintF("%s %s",_S(47,"로그"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(47,"로그"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_ROGUE  );
-		tv_str.PrintF("%s %s",_S(48,"소서러"),_S(2736,"장비 아이템"));
+		tv_str.PrintF("%s %s",(const char*)_S(48,"소서러"),(const char*)_S(2736,"장비 아이템"));
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_SOCERER  );
 #ifdef CHAR_EX_ROGUE
-		tv_str.PrintF("%s %s",_S(5732,"EX로그"),_S(2736,"장비 아이템"));	// [2012/08/27 : Sora] EX로그 추가
+		tv_str.PrintF("%s %s",(const char*)_S(5732,"EX로그"),(const char*)_S(2736,"장비 아이템"));	// [2012/08/27 : Sora] EX로그 추가
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_ROGUE  );
 #endif
 #ifdef CHAR_EX_MAGE		//2013/01/08 jeil EX메이지 추가 스트링 나오면 추가 수정 필요 
-		tv_str.PrintF("%s %s",_S(5820,"아크메이지"),_S(2736,"장비 아이템"));	
+		tv_str.PrintF("%s %s",(const char*)_S(5820,"아크메이지"),(const char*)_S(2736,"장비 아이템"));	
 		pUIManager->AddMessageBoxLString( MSGLCMD_SHOP_REQ, FALSE, tv_str, LEASE_WEAPON_MAGE  );
 #endif
 		
@@ -1353,7 +1353,7 @@ void CUIShop::Render()
 		if(m_bIsEvent) // ttos : 가정의 달 이벤트
 		{
 		//	tv_str = CTString("개나리 개수 ");
-			tv_str.PrintF("%s %s", _pNetwork->GetItemName(2344), _S(2396,"수량"));
+			tv_str.PrintF("%s %s", _pNetwork->GetItemName(2344), (const char*)_S(2396,"수량"));
 			pDrawPort->PutTextEx( tv_str, m_nPosX + 10, tv_posY ,tv_clr);
 		}else
 		{

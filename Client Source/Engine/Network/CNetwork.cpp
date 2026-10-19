@@ -349,7 +349,7 @@ void DumpAllPlayers(INDEX iVerbose)
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
 			if (!iVerbose) {
-				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
+				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,(const char*)plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
 			} else {
 				plt.plt_penPlayerEntity->DumpToConsole();
 				CPrintF("\n");
@@ -378,7 +378,7 @@ void DumpClassReferences(void)
 		EntityClassEntry* peceEntry = FindClassInContainer(iClass);
 		CPrintF(TRANS("%d  \t%d  \t"),iClass,aulClasses[iClass]);
 		if (peceEntry != NULL) {
-			CPrintF(TRANS("%s\n"),peceEntry->ece_fnmEntityClass);
+			CPrintF(TRANS("%s\n"),(const char*)peceEntry->ece_fnmEntityClass);
 		} else {
 			CPrintF(TRANS("N/A\n"));
 		}
@@ -404,7 +404,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("All entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenAllEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -424,7 +424,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("Existing entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -458,7 +458,7 @@ static void DumpEntity(INDEX ulEntityID)
 		return;
 	} else {
 		CPrintF(TRANS("Entity ID: %X\n"),ulEntityID);
-		CPrintF(TRANS("   Entity class: %s\n"),penEntity->en_pecClass->GetName());
+		CPrintF(TRANS("   Entity class: %s\n"),(const char*)penEntity->en_pecClass->GetName());
 		CPrintF(TRANS("   Flags:  0x%X    Physics flags: 0x%X\n"),penEntity->en_ulFlags,penEntity->en_ulPhysicsFlags);
 		if (penEntity->IsSentOverNet()) {
 			CPrintF(TRANS("   IsSentOverNet = TRUE\n"));
@@ -503,7 +503,7 @@ static void NetworkInfo(void)
 			CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 			if (plt.plt_bActive) {
 				CPrintF("    %2d(%2d):'%s'@client%2d: (%dact)\n", 
-					iplt, plt.plt_Index, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
+					iplt, plt.plt_Index, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
 					plt.plt_iClient, plt.plt_abReceived.GetCount());
 			}
 		}
@@ -511,7 +511,7 @@ static void NetworkInfo(void)
 		for(INDEX iSession=0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); ++iSession) {
 			CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
 			if (sso.sso_bActive) {
-				CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession)),
+				CPrintF("  %2d:'%s'\n", iSession, (const char*)_cmiComm.Server_GetClientName(iSession)),
 					CPrintF("    buffer: %dblk=%dk\n", 
 					sso.sso_nsBuffer.GetUsedBlocks(),
 					sso.sso_nsBuffer.GetUsedMemory()/1024);
@@ -566,7 +566,7 @@ static void ListPlayers(void)
 	for(INDEX iplt=0; iplt<_pNetwork->ga_srvServer.srv_apltPlayers.Count(); iplt++) {
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
-			CPrintF("     %-2d   %s\n", plt.plt_iClient, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
+			CPrintF("     %-2d   %s\n", plt.plt_iClient, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
 		}
 	}
 	CPrintF("  ----------------------\n");
@@ -587,7 +587,7 @@ static void KickClient(INDEX iClient, const CTString &strReason)
 		CPrintF(TRANS("Can't kick local client!\n"));
 		return;
 	}
-	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason);
+	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, (const char*)strReason);
 	_pNetwork->ga_srvServer.SendDisconnectMessage(iClient, "Admin: "+strReason);
 }
 
@@ -823,7 +823,7 @@ static void StockDump(void)
 		strm.Create_t(fnm);
 		// Dump stock to file
 		StockDumpToStream(&strm);
-		CPrintF("Dumped to '%s'\n", CTString(fnm));
+		CPrintF("Dumped to '%s'\n", (const char*)CTString(fnm));
 	} catch (char *strError) {
 		CPrintF("Error: %s\n", strError);
 	}
@@ -1490,7 +1490,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   CallProgressHook_t(0.f);
 
   // report session addres
-  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress);
+  CPrintF( TRANS("Joining session at: '%s'\n"), (const char*)nsSesssion.ns_strAddress);
 
   ga_bLocalPause = FALSE;
 
@@ -3115,7 +3115,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
   if (iCurrent<iSaved) {
     // it cannot be reinitialized
     ThrowF_t(TRANS("File '%s' was saved by a newer version of engine, it cannot be loaded"),
-      strm.GetDescription());
+      (const char*)strm.GetDescription());
     return;
   }
 
@@ -3134,7 +3134,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
     // if it may not be reinitialized
     if (!bAllowReinit) {
       ThrowF_t(TRANS("File '%s' was saved by an older version of engine, it cannot be loaded"),
-        strm.GetDescription());
+        (const char*)strm.GetDescription());
     }
     return;
   }

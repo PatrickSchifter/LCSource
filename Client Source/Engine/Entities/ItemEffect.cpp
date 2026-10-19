@@ -421,7 +421,7 @@ void CItemEffect::Change(const int job, CItemData* ItemData, const int wearPosNe
 	default:		ASSERTALWAYS("Unknown Character Type"); return;
 	}
 	//if(szJobName == NULL) return;//필요없음.
-	sprintf(pStrName, strFormat.c_str(), szJobName, strType, szLevel);
+	sprintf(pStrName, strFormat.c_str(), szJobName, (const char*)strType, szLevel);
 	Refresh(pTM, sbOption);
 }
 

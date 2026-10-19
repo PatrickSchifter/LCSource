@@ -369,7 +369,7 @@ void CSimplePlayerInfoUI::SetDungeonList(SLONG slExp)
 			CTString strTemp;
 
 			if (slExp > 0)
-				strTemp.PrintF(CTString("%s(%d%%)"), _S(4959, "던전 몬스터 경험치를 추가로 획득"), slExp);
+				strTemp.PrintF(CTString("%s(%d%%)"), (const char*)_S(4959, "던전 몬스터 경험치를 추가로 획득"), slExp);
 			else
 				strTemp = _S(4959, "던전 몬스터 경험치를 추가로 획득");
 

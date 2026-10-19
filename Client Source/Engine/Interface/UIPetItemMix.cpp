@@ -906,7 +906,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 			if (m_NeedItems[i].ItemData != NULL)
 			{
 				szItemName = m_NeedItems[i].ItemData->GetName();
-				strTitle.PrintF ( _S( 576, "%s : %d개" ), strSpace + szItemName, m_NeedItems[i].llCount );
+				strTitle.PrintF ( _S( 576, "%s : %d개" ), (const char*)(strSpace + szItemName), m_NeedItems[i].llCount );
 			}
 
 			AddString ( strTitle, bNeedItems[i]? COLOR_TEXT : COLOR_NONE );
@@ -925,7 +925,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 			if (m_NeedItems[i].ItemData != NULL)
 			{
 				szItemName = m_NeedItems[i].ItemData->GetName();
-				strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName, m_NeedItems[i].llCount );
+				strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName), m_NeedItems[i].llCount );
 			}
 
 			AddString ( strTitle, bNeedItems[i]? COLOR_TEXT : COLOR_NONE );
@@ -939,7 +939,7 @@ void CUIPetItemMix::SelectItem ( int _nIndex )
 			if (m_NeedItems[i+3].ItemData != NULL)
 			{
 				szItemName = m_NeedItems[i+3].ItemData->GetName();
-				strTitle.PrintF ( _S( 576, "%s : %d개 " ), strSpace + szItemName, m_NeedItems[i+3].llCount );
+				strTitle.PrintF ( _S( 576, "%s : %d개 " ), (const char*)(strSpace + szItemName), m_NeedItems[i+3].llCount );
 			}
 
 			AddString ( strTitle, bNeedItems[i+3]? COLOR_TEXT : COLOR_NONE );
@@ -981,7 +981,7 @@ void CUIPetItemMix::AddString ( const CTString &strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

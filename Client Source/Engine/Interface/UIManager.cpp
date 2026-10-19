@@ -748,7 +748,7 @@ void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTStr
 			else
 			{
 				CTString strTemp;
-				strTemp.PrintF("%s %s", strPrefix, strMessage);
+				strTemp.PrintF("%s %s", (const char*)strPrefix, (const char*)strMessage);
 				((CUIMessageBoxL *)m_apUIs[iUI])->AddSelString( strTemp, colDesc, iValue );
 			}
 			break;
@@ -1851,7 +1851,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		{
 			strTemp.PrintF( "%I64d", llCount );
 			InsertCommaToString( strTemp );
-			strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), strTemp );
+			strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
 			colNas = GetNasColor( llCount );
 
 		}
@@ -2513,7 +2513,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		// Guild Name
 		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
 		{
-			strGuildname.PrintF("%s (%d)", _pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildIndex);
+			strGuildname.PrintF("%s (%d)", (const char*)_pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildIndex);
 
 			// Get box region
 			//if(g_iCountry == THAILAND) 
@@ -2776,7 +2776,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		strTemp.PrintF( "%I64d", llCount );
 		InsertCommaToString( strTemp );
 		colNas = GetNasColor( llCount );
-		strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), strTemp );
+		strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
 	}
 	else
 		strName.PrintF( "%s", pInfo->GetTargetName(eTARGET_REAL) );
@@ -6011,7 +6011,7 @@ inline ENGINE_API CTString _SFunc( int x )
 		CTString strString;
 		CTString strOrg = pUIManager->GetString( x );
 
-		strOrg.IsEmpty() ? strString.PrintF( "[%d]Client", x ) : strString.PrintF( "[%d]%s", x, strOrg );
+		strOrg.IsEmpty() ? strString.PrintF( "[%d]Client", x ) : strString.PrintF( "[%d]%s", x, (const char*)strOrg );
 		return strString;
 	}
 	else
@@ -6029,7 +6029,7 @@ void CUIManager::SetTitleName( INDEX bFullScreen, int iScreenSizeI, int iScreenS
 	// Date : 2005-09-22(오후 7:17:24), By Lee Ki-hwan
 	// 원도우 타이틀 바 조정 
 	CTString strTitleName;
-	strTitleName.PrintF( "%s (%s %dx%d)", _S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
+	strTitleName.PrintF( "%s (%s %dx%d)", (const char*)_S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
 
 #ifdef	VER_TEST
 	if (m_strIP.size() > 0)

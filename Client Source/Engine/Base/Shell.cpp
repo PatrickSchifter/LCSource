@@ -452,14 +452,14 @@ extern void PrintShellSymbolHelp(const CTString &strSymbol)
 	try {
 		CTString strHelp = GetShellSymbolHelp_t(strSymbol);
 		if (strHelp!="") {
-			CPrintF("%s\n", strHelp);
+			CPrintF("%s\n", (const char*)strHelp);
 		} else {
-			CPrintF( TRANS("No help found for '%s'.\n"), strSymbol);
+			CPrintF( TRANS("No help found for '%s'.\n"), (const char*)strSymbol);
 		}
 	// if failed
 	} catch(char *strError) {
 		// just print the error
-		CPrintF( TRANS("Cannot print help for '%s': %s\n"), strSymbol, strError);
+		CPrintF( TRANS("Cannot print help for '%s': %s\n"), (const char*)strSymbol, strError);
 	}
 }
 
@@ -490,23 +490,23 @@ extern void ListSymbolsByPattern(CTString strPattern)
 
 		// print its declaration to the console
 		if (st.st_sttType == STT_FUNCTION) {
-			CPrintF("void %s(void)", ss.ss_strName);
+			CPrintF("void %s(void)", (const char*)ss.ss_strName);
 
 		} else if (st.st_sttType == STT_STRING) {
-			CPrintF("CTString %s = \"%s\"", ss.ss_strName, *(CTString*)ss.ss_pvValue);
+			CPrintF("CTString %s = \"%s\"", (const char*)ss.ss_strName, (const char*)(*(CTString*)ss.ss_pvValue));
 		} else if (st.st_sttType == STT_FLOAT) {
-			CPrintF("FLOAT %s = %g", ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
+			CPrintF("FLOAT %s = %g", (const char*)ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
 		} else if (st.st_sttType == STT_INDEX) {
-			CPrintF("INDEX %s = %d (0x%08x)", ss.ss_strName, *(INDEX*)ss.ss_pvValue, *(INDEX*)ss.ss_pvValue);
+			CPrintF("INDEX %s = %d (0x%08x)", (const char*)ss.ss_strName, *(INDEX*)ss.ss_pvValue, *(INDEX*)ss.ss_pvValue);
 		} else if (st.st_sttType == STT_ARRAY) {
 			// get base type
 			ShellType &stBase = _shell_ast[st.st_istBaseType];
 			if (stBase.st_sttType == STT_FLOAT) {
-				CPrintF("FLOAT %s[%d]", ss.ss_strName, st.st_ctArraySize);
+				CPrintF("FLOAT %s[%d]", (const char*)ss.ss_strName, st.st_ctArraySize);
 			} else if (stBase.st_sttType == STT_INDEX) {
-				CPrintF("INDEX %s[%d]", ss.ss_strName, st.st_ctArraySize);
+				CPrintF("INDEX %s[%d]", (const char*)ss.ss_strName, st.st_ctArraySize);
 			} else if (stBase.st_sttType == STT_STRING) {
-				CPrintF("CTString %s[%d]", ss.ss_strName, st.st_ctArraySize);
+				CPrintF("CTString %s[%d]", (const char*)ss.ss_strName, st.st_ctArraySize);
 			} else {
 				ASSERT(FALSE);
 			}
@@ -535,7 +535,7 @@ static void ListSymbols(void)
 // output any string to console
 void Echo(const CTString &str)
 {
-	CPrintF( "%s", str); 
+	CPrintF( "%s", (const char*)str); 
 }
 
 
@@ -605,7 +605,7 @@ void LoadCommands(void)
 			// assign value
 			*(CTString*)ssNew.ss_pvValue = "!command "+strCmd;
 		} else {
-			_pShell->ErrorF("Symbol '%s' is not suitable to be a command", ssNew.ss_strName);
+			_pShell->ErrorF("Symbol '%s' is not suitable to be a command", (const char*)ssNew.ss_strName);
 		}
 	}
 }
@@ -1047,39 +1047,39 @@ void CShell::StorePersistentSymbols(const CTFileName &fnScript)
 				if (stBase.st_sttType==STT_FLOAT) {
 					// dump all members as floats
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						fScript.FPrintF_t("%s[%d]=(FLOAT)%g;\n", ss.ss_strName, i, ((FLOAT*)ss.ss_pvValue)[i]);
+						fScript.FPrintF_t("%s[%d]=(FLOAT)%g;\n", (const char*)ss.ss_strName, i, ((FLOAT*)ss.ss_pvValue)[i]);
 					}
 				// if index
 				} else if (stBase.st_sttType==STT_INDEX) {
 					// dump all members as indices
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						fScript.FPrintF_t("%s[%d]=(INDEX)%d;\n", ss.ss_strName, i, ((INDEX*)ss.ss_pvValue)[i]);
+						fScript.FPrintF_t("%s[%d]=(INDEX)%d;\n", (const char*)ss.ss_strName, i, ((INDEX*)ss.ss_pvValue)[i]);
 					}
 				// if string
 				} else if (stBase.st_sttType==STT_STRING) {
 					// dump all members
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						fScript.FPrintF_t("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
+						fScript.FPrintF_t("%s[%d]=\"%s\";\n", (const char*)ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
 					}
 				// otherwise
 				} else {
-					ThrowF_t("%s is an array of wrong type", ss.ss_strName);
+					ThrowF_t("%s is an array of wrong type", (const char*)ss.ss_strName);
 				}
 			// if float
 			} else if (st.st_sttType==STT_FLOAT) {
 				// dump as float
-				fScript.FPrintF_t("persistent extern %sFLOAT %s=(FLOAT)%g;\n", strUser, ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
+				fScript.FPrintF_t("persistent extern %sFLOAT %s=(FLOAT)%g;\n", strUser, (const char*)ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
 			// if index
 			} else if (st.st_sttType==STT_INDEX) {
 				// dump as index
-				fScript.FPrintF_t("persistent extern %sINDEX %s=(INDEX)%d;\n", strUser, ss.ss_strName, *(INDEX*)ss.ss_pvValue);
+				fScript.FPrintF_t("persistent extern %sINDEX %s=(INDEX)%d;\n", strUser, (const char*)ss.ss_strName, *(INDEX*)ss.ss_pvValue);
 			// if string
 			} else if (st.st_sttType==STT_STRING) {
 				// dump as index
-				fScript.FPrintF_t("persistent extern %sCTString %s=\"%s\";\n", strUser, ss.ss_strName, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
+				fScript.FPrintF_t("persistent extern %sCTString %s=\"%s\";\n", strUser, (const char*)ss.ss_strName, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
 			// otherwise
 			} else {
-				ThrowF_t("%s of wrong type", ss.ss_strName);
+				ThrowF_t("%s of wrong type", (const char*)ss.ss_strName);
 			}
 		}
 	} catch (char *strError) {
@@ -1118,45 +1118,45 @@ void CShell::StoreEncodePersistentSymbols(const CTFileName &fnScript)
 				if (stBase.st_sttType==STT_FLOAT) {
 					// dump all members as floats
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						strTemp.PrintF("%s[%d]=(FLOAT)%g;\n", ss.ss_strName, i, ((FLOAT*)ss.ss_pvValue)[i]);
+						strTemp.PrintF("%s[%d]=(FLOAT)%g;\n", (const char*)ss.ss_strName, i, ((FLOAT*)ss.ss_pvValue)[i]);
 						strContents += strTemp;
 					}
 				// if index
 				} else if (stBase.st_sttType==STT_INDEX) {
 					// dump all members as indices
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						strTemp.PrintF("%s[%d]=(INDEX)%d;\n", ss.ss_strName, i, ((INDEX*)ss.ss_pvValue)[i]);
+						strTemp.PrintF("%s[%d]=(INDEX)%d;\n", (const char*)ss.ss_strName, i, ((INDEX*)ss.ss_pvValue)[i]);
 						strContents += strTemp;
 					}
 				// if string
 				} else if (stBase.st_sttType==STT_STRING) {
 					// dump all members
 					for(INDEX i=0; i<st.st_ctArraySize; i++) {
-						strTemp.PrintF("%s[%d]=\"%s\";\n", ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
+						strTemp.PrintF("%s[%d]=\"%s\";\n", (const char*)ss.ss_strName, i, (const char*)ScriptEsc(((CTString*)ss.ss_pvValue)[i]) );
 						strContents += strTemp;
 					}
 				// otherwise
 				} else {
-					ThrowF_t("%s is an array of wrong type", ss.ss_strName);
+					ThrowF_t("%s is an array of wrong type", (const char*)ss.ss_strName);
 				}
 			// if float
 			} else if (st.st_sttType==STT_FLOAT) {
 				// dump as float
-				strTemp.PrintF("persistent extern %sFLOAT %s=(FLOAT)%g;\n", strUser, ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
+				strTemp.PrintF("persistent extern %sFLOAT %s=(FLOAT)%g;\n", (const char*)strUser, (const char*)ss.ss_strName, *(FLOAT*)ss.ss_pvValue);
 				strContents += strTemp;
 			// if index
 			} else if (st.st_sttType==STT_INDEX) {
 				// dump as index
-				strTemp.PrintF("persistent extern %sINDEX %s=(INDEX)%d;\n", strUser, ss.ss_strName, *(INDEX*)ss.ss_pvValue);
+				strTemp.PrintF("persistent extern %sINDEX %s=(INDEX)%d;\n", (const char*)strUser, (const char*)ss.ss_strName, *(INDEX*)ss.ss_pvValue);
 				strContents += strTemp;
 			// if string
 			} else if (st.st_sttType==STT_STRING) {
 				// dump as index
-				strTemp.PrintF("persistent extern %sCTString %s=\"%s\";\n", strUser, ss.ss_strName, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
+				strTemp.PrintF("persistent extern %sCTString %s=\"%s\";\n", (const char*)strUser, (const char*)ss.ss_strName, (const char*)ScriptEsc(*(CTString*)ss.ss_pvValue) );
 				strContents += strTemp;
 			// otherwise
 			} else {
-				ThrowF_t("%s of wrong type", ss.ss_strName);
+				ThrowF_t("%s of wrong type", (const char*)ss.ss_strName);
 			}
 		}
 		SavePersistentSymbolFile(fnScript, strContents);

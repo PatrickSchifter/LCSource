@@ -404,7 +404,7 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
   char strFormatBuffer[slBufferSize];
   char strBuffer[slBufferSize];
   // add the stream description to the format string
-  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription);
+  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, (const char*)strm_strStreamDescription);
   // format the message in buffer
   va_list arg;
   va_start(arg, strFormat); // variable arguments start after this argument
@@ -552,7 +552,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
   // test if EOF reached
   if( strm_pubCurrentPos >= strm_pubEOF)
   {
-    Throw_t(TRANS("EOF reached, file %s"), strm_strStreamDescription);
+    Throw_t(TRANS("EOF reached, file %s"), (const char*)strm_strStreamDescription);
   }
   // get line from istream
   FOREVER
@@ -701,7 +701,7 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
     SBYTE chKeywordChar;
     (*this)>>chKeywordChar;
     if (chKeywordChar!=strKeyword[iKeywordChar]) {
-      Throw_t(TRANS("Expected keyword %s not found"), strKeyword);
+      Throw_t(TRANS("Expected keyword %s not found"), (const char*)strKeyword);
     }
   }
 }
@@ -1095,7 +1095,7 @@ void CTStream::DictionaryPreload_t(void)
     } catch (char *strError) {
 		fnm.fnm_pserPreloaded = NULL;
 		//CPrintF( TRANS("Cannot preload %s: %s\n"), (CTString&)fnm, strError);
-		FatalError(TRANS("[%s] File is not exist!!!\n"), (CTString&)fnm, strError);
+		FatalError(TRANS("[%s] File is not exist!!!\n"), (const char*)(CTString&)fnm, strError);
     }
   }}
 }
@@ -1291,7 +1291,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 	{
 		// error
 		::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
-		  (CTString&)fnFileName);
+		  (const char*)(CTString&)fnFileName);
 	}
 
 	// check parameters
@@ -1439,14 +1439,14 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 			if(fstrm_pFile == NULL && fstrm_iZipHandle==-1)
 			{
 				// throw exception
-				Throw_t(TRANS("Cannot open file `%s' (%s)"), (CTString&)fnmFullFileName,
+				Throw_t(TRANS("Cannot open file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName,
 						strerror(errno));
 			}
 		}
 		else
 		{
 			// throw exception
-			Throw_t(TRANS("Cannot open file `%s' (%s)"), (CTString&)fnmFullFileName,
+			Throw_t(TRANS("Cannot open file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName,
 					strerror(errno));
 		}
 	}
@@ -1515,7 +1515,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if (0 == _bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileName);
+      (const char*)(CTString&)fnFileName);
   }
 
   CTFileName fnmFullFileName;
@@ -1543,13 +1543,13 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
         // if still not successfull
         if(fstrm_pFile == NULL) {
           // throw exception
-          Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName, strerror(errno));
+          Throw_t(TRANS("Cannot create file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName, strerror(errno));
         }
       }
     // else if some other error
     } else {
       // throw exception
-      Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName, strerror(errno));
+      Throw_t(TRANS("Cannot create file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName, strerror(errno));
     }
   }
   // allocate amount of memory needed to hold maximum allowed file lenght (when saving)
@@ -2072,7 +2072,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
   // try to open file for reading
   file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
   if(file_handle==-1) {
-    ThrowF_t(TRANS("Cannot open file '%s' for reading"), CTString(fnm));
+    ThrowF_t(TRANS("Cannot open file '%s' for reading"), (const char*)CTString(fnm));
     return -1;
   }
   struct stat statFileStatus;

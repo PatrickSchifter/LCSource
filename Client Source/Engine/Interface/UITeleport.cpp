@@ -261,9 +261,9 @@ void CUITeleport::OpenMemorizeMsgBox()
 		return;
 
 	CTString	strZone, strCoord;
-	strZone.PrintF( "%-8s: %s", _S( 291, "존" ),
-								CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
-	strCoord.PrintF( "%-8s: %d,%d", _S( 292, "좌표" ),
+	strZone.PrintF( "%-8s: %s", (const char*)_S( 291, "존" ),
+								(const char*)CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
+	strCoord.PrintF( "%-8s: %d,%d", (const char*)_S( 292, "좌표" ),
 										(int)_pNetwork->MyCharacterInfo.x, (int)_pNetwork->MyCharacterInfo.z );
 
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -860,7 +860,7 @@ void CUITeleportPrimium::Create(CUIWindow *pParentWnd, int nX, int nY, int nWidt
 
 	for(INDEX i = 0; i < TELEPORT_PAGE_MAX; i++)
 	{
-		strPage.PrintF("%d%s", i + 1, _S(3076, "페이지"));
+		strPage.PrintF("%d%s", i + 1, (const char*)_S(3076, "페이지"));
 		m_btnPage[i].Create(this, strPage, 159 + 66 * i, 27, 63, 21);
 		m_btnPage[i].SetUV(UBS_IDLE, 0, 164, 63, 185, fTexWidth, fTexHeight);
 		m_btnPage[i].SetUV(UBS_CLICK, 66, 164, 129, 185, fTexWidth, fTexHeight);

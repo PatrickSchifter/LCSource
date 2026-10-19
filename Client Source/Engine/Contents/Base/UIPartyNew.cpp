@@ -657,7 +657,7 @@ void CUIParty::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 
 			if(pParty->IsExpedetionMember(slIndex))
 			{
-				strMessage.PrintF( _S( 4524, "이미 %s와 원정대 상태입니다." ), strInput );
+				strMessage.PrintF( _S( 4524, "이미 %s와 원정대 상태입니다." ), (const char*)strInput );
 				pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 				return;
 			}
@@ -782,7 +782,7 @@ void CUIParty::OpenDivisionInfoWindow()
 			strTemp2 = _S(4525, "균등분배");
 		}
 
-		strTemp.PrintF(_s("%s : %s"),m_strDivisionType[MSG_DIVITYPE_EXP], strTemp2);
+		strTemp.PrintF(_s("%s : %s"),(const char*)m_strDivisionType[MSG_DIVITYPE_EXP], (const char*)strTemp2);
 	}
 	else if(pUIManager->IsCSFlagOn(CSF_PARTY))
 	{
@@ -791,17 +791,17 @@ void CUIParty::OpenDivisionInfoWindow()
 		strPartyType[PT_SURVIVAL] = m_strExpeditionType[MSG_EXPED_TYPE_FIRSTGET]; //_s("입수우선")
 		strPartyType[PT_ATTACK] = m_strExpeditionType[MSG_EXPED_TYPE_BATTLE] ; // _s("전투형");
 
-		strTemp.PrintF(_S(4571, "파티 종류: %s"), strPartyType[pParty->GetPartyType()]);
+		strTemp.PrintF(_S(4571, "파티 종류: %s"), (const char*)strPartyType[pParty->GetPartyType()]);
 	}
 	// 경험치 분배 타입 (파티에서는 파티 타입)
 	MsgBoxInfo.AddString(strTemp);
 
 	// 아이템 분배 타입
-	strTemp.PrintF(_s("%s : %s"), m_strDivisionType[MSG_DIVITYPE_ITEM], m_strExpeditionType[pParty->GetDiveisionTypeItem()]);
+	strTemp.PrintF(_s("%s : %s"), (const char*)m_strDivisionType[MSG_DIVITYPE_ITEM], (const char*)m_strExpeditionType[pParty->GetDiveisionTypeItem()]);
 	MsgBoxInfo.AddString(strTemp);
 
 	// 스페셜 아이템 분배 타입
-	strTemp.PrintF(_s("%s : %s"), m_strDivisionType[MSG_DIVITYPE_SPECIAL], m_strExpeditionType[pParty->GetDiveisionTypeSpItem()]);
+	strTemp.PrintF(_s("%s : %s"), (const char*)m_strDivisionType[MSG_DIVITYPE_SPECIAL], (const char*)m_strExpeditionType[pParty->GetDiveisionTypeSpItem()]);
 	MsgBoxInfo.AddString(strTemp);
 
 	pUIManager->CreateMessageBox( MsgBoxInfo );

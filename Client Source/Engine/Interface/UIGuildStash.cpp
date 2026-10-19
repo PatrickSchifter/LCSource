@@ -287,7 +287,7 @@ void CUIGuildStash::OpenTake( LONGLONG nBalance )
 	strNas.PrintF( "%I64d", m_llBalance );
 	pUIManager->InsertCommaToString( strNas );
 		
-	strSysMessage.PrintF( _S( 1914, "잔액 : %s Nas" ) , strNas); 
+	strSysMessage.PrintF( _S( 1914, "잔액 : %s Nas" ) , (const char*)strNas); 
 	MsgBoxInfo.AddString( strSysMessage, pUIManager->GetNasColor( strNas ), TEXT_CENTER );
 	
 	strSysMessage.PrintF( " " );
@@ -549,7 +549,7 @@ void CUIGuildStash::Render()
 		strDate.PrintF( "%02d / %02d", iter->m_nMonth, iter->m_nDay );
 		strMoney.PrintF( "%I64d", iter->m_llMoney );
 		pUIManager->InsertCommaToString( strMoney );
-		strTempMoney.PrintF( "%25s %s", strMoney, _S(1762, "나스") );
+		strTempMoney.PrintF( "%25s %s", (const char*)strMoney, (const char*)_S(1762, "나스") );
 		
 		pDrawPort->PutTextEx( strDate, nX + TAKE_LIST_TITLE_OFFSETX,	
 		nY, 0xFFFFFFFF );
@@ -909,7 +909,7 @@ void CUINewGuildStash::OpenGuildStash()
 // 	m_strTitle = _pNetwork->MyCharacterInfo.strGuildName;
 // 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, strGuildName, -1, 0xA3A1A3FF );		
 // 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, _s( "어떤 용무가 있으신가요?" ), -1, 0xA3A1A3FF );		
-	strGuildName.PrintF( _S( 5536, "어서 오십시오.\n저는 [%s]길드의 소중한 재산을 관리하고 지키는 재무 관리인입니다.\n어떤 용무가 있으신가요?" ), _pNetwork->MyCharacterInfo.strGuildName );
+	strGuildName.PrintF( _S( 5536, "어서 오십시오.\n저는 [%s]길드의 소중한 재산을 관리하고 지키는 재무 관리인입니다.\n어떤 용무가 있으신가요?" ), (const char*)_pNetwork->MyCharacterInfo.strGuildName );
 	m_strTitle = _pNetwork->MyCharacterInfo.strGuildName;
 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, strGuildName, -1, 0xA3A1A3FF );		
 	
@@ -1961,7 +1961,7 @@ void		CUINewGuildStash::_renderStashView()
 	}
 
 	CTString strTemp;
-	strTemp.PrintF( _s("[%s]"), m_strTitle );
+	strTemp.PrintF( _s("[%s]"), (const char*)m_strTitle );
 	strTemp += _S( 5542, "길드 창고" );
 //	strTemp.PrintF( _S(5542, "[%s]길드 창고"), m_strTitle );
 	pDrawPort->PutTextExCX( strTemp, m_nPosX+GSUI_STASH_WIDTH/2, m_nPosY + 6, 0xF2F200FF );
@@ -2012,7 +2012,7 @@ void		CUINewGuildStash::_renderStashLog()
 	m_lbLog.Render();
 	pDrawPort->FlushRenderingQueue();
 	CTString strTemp;
-	strTemp.PrintF( _S( 5544, "[%s]길드 창고 이용 기록"), m_strTitle );
+	strTemp.PrintF( _S( 5544, "[%s]길드 창고 이용 기록"), (const char*)m_strTitle );
 	pDrawPort->PutTextExCX( strTemp, m_nPosX + GSUI_LOG_WIDTH/2, m_nPosY + 4 );
 	pDrawPort->PutTextExCX( _S(5545, "일시"), m_nPosX + 10 + GSUI_LOG_COLUMN1_SIZE/2, m_nPosY + 33 );
 	pDrawPort->PutTextExCX( _S(5214, "캐릭터 명"), m_nPosX + 10 + GSUI_LOG_COLUMN1_W + GSUI_LOG_COLUMN2_SIZE/2, m_nPosY + 33 );

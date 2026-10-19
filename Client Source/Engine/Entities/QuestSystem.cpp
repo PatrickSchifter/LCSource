@@ -502,7 +502,7 @@ void CQuestDynamicData::MakeQuestPrizeDesc()
 		case QPRIZE_EXP:
 			{
 				CTString strTemp;
-				strTemp.PrintF( "%s %I64u", _S( 89, "경험치"), GetPrizeData( iPrize ) );
+				strTemp.PrintF( "%s %I64u", (const char*)_S( 89, "경험치"), GetPrizeData( iPrize ) );
 				m_strPrizeDesc[m_ctPrizeDesc] = strTemp;
 				m_colPrizeDesc[m_ctPrizeDesc++] = 0xFFB54DFF;
 			} break;
@@ -620,7 +620,7 @@ void CQuestDynamicData::MakeQuestNeedDesc()
 	const int iNeedJob = GetNeedJob();
 	if(iNeedJob != -1)
 	{
-		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), pInfo->GetName(iNeedJob, 0));
+		m_strNeedDesc[m_ctNeedDesc].PrintF( _S( 466, "직업 : %s" ), (const char*)pInfo->GetName(iNeedJob, 0));
 		m_colNeedDesc[m_ctNeedDesc++] = 0xFFB54DFF;
 	}
 	

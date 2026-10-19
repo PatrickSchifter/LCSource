@@ -91,7 +91,7 @@ void CPremiumChar::RecvPremiumCharMsg( CNetworkMessage* istr )
 	case ERR_PREMIUM_CHAR_NONE:					// 성공
 		{
 			if (pPacket->subType == MSG_SUB_PREMIUM_CHAR_USE_ITEM)
-				strErrorMsg.PrintF( _S( 6324, "%s 에게 프리미엄 혜택이 적용 되었습니다.") , _pNetwork->MyCharacterInfo.name);
+				strErrorMsg.PrintF( _S( 6324, "%s 에게 프리미엄 혜택이 적용 되었습니다.") , (const char*)_pNetwork->MyCharacterInfo.name);
 			else if (pPacket->subType == MSG_SUB_PREMIUM_CHAR_JUMP_TO_CHAR)
 				strErrorMsg.PrintF( _S( 395, "이동이 완료되었습니다."));
 		}		

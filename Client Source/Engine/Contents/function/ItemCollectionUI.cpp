@@ -548,7 +548,7 @@ void CItemCollectionUI::UpdateSelectItem( int nThemeIdx )
 	if (pData->IsCompleteTheme() == true)
 	{
 		strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-		strTmp.PrintF("%s %s", strTmp2, _S(7051, "완료"));
+		strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)_S(7051, "완료"));
 	}
 	else
 	{
@@ -558,7 +558,7 @@ void CItemCollectionUI::UpdateSelectItem( int nThemeIdx )
 		str.PrintF("(%d %s)", nPer, "%");
 
 		strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-		strTmp.PrintF("%s %s", strTmp2, str);
+		strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)str);
 	}
 
 	pText = (CUIText*)pTree->findUI("text_name");
@@ -1041,7 +1041,7 @@ void CItemCollectionUI::UpdateThemeList()
 			if (pData->IsCompleteTheme() == true)
 			{
 				strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-				strTmp.PrintF("%s %s", strTmp2, _S(7051, "완료"));
+				strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)_S(7051, "완료"));
 			}
 			else
 			{
@@ -1051,7 +1051,7 @@ void CItemCollectionUI::UpdateThemeList()
 				str.PrintF("(%d %s)", nPer, "%");
 
 				strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-				strTmp.PrintF("%s %s", strTmp2, str);
+				strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)str);
 			}
 
 			pText = (CUIText*)pTheme->findUI("text_name");
@@ -1177,7 +1177,7 @@ void CItemCollectionUI::UpdateSearchList()
 			if (pData->IsCompleteTheme() == true)
 			{
 				strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-				strTmp.PrintF("%s %s", strTmp2, _S(7051, "완료"));
+				strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)_S(7051, "완료"));
 			}
 			else
 			{
@@ -1187,7 +1187,7 @@ void CItemCollectionUI::UpdateSearchList()
 				str.PrintF("(%d %s)", nPer, "%");
 
 				strTmp2 = UtilHelp::getSingleton()->GetCalcStringEllipsis(pData->GetName(), 110, "...");
-				strTmp.PrintF("%s %s", strTmp2, str);
+				strTmp.PrintF("%s %s", (const char*)strTmp2, (const char*)str);
 			}
 
 			pText = (CUIText*)pTheme->findUI("text_name");

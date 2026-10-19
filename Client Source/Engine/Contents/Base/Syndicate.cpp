@@ -224,9 +224,9 @@ void CSyndicate::RecvUpdateIncreasePoint( CNetworkMessage* istr )
 	CTString strType = GetSyndicateName(pRecv->syndicateType);
 
 	if (pRecv->point > 0)
-		strMessage.PrintF(_S(6269, "%s 결사대의 기여도가 %d 상승하였습니다."), strType, pRecv->point);
+		strMessage.PrintF(_S(6269, "%s 결사대의 기여도가 %d 상승하였습니다."), (const char*)strType, pRecv->point);
 	else if (pRecv->point < 0)
-		strMessage.PrintF(_S(6270, "%s 결사대의 기여도가 %d 하락하였습니다."), strType, pRecv->point);
+		strMessage.PrintF(_S(6270, "%s 결사대의 기여도가 %d 하락하였습니다."), (const char*)strType, pRecv->point);
 	
 	if (strMessage.IsEmpty() == FALSE)
 		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage(strMessage, SYSMSG_NORMAL, DEF_UI_COLOR_WHITE);
@@ -311,7 +311,7 @@ void CSyndicate::ErrMessage( CNetworkMessage* istr )
 	{
 	case ERROR_SYNDICATE_JOIN_SUCCESS:
 		{	// 가입 성공
-			strTitle.PrintF(_S(6119, "[%s] 가입 성공"), name);
+			strTitle.PrintF(_S(6119, "[%s] 가입 성공"), (const char*)name);
 
 			if (m_bFirstJoin == true)
 			{	// 최초 가입이라면 기여도 추가 지급.
@@ -319,13 +319,13 @@ void CSyndicate::ErrMessage( CNetworkMessage* istr )
 				MsgBoxInfo.AddString( strMessage );
 			}
 
-			strMessage.PrintF( _S( 6121, "[%s] 결사대에 가입하신 것을 축하 드리며 앞으로 더욱 더 활발한 활동 부탁 드립니다."), name );
+			strMessage.PrintF( _S( 6121, "[%s] 결사대에 가입하신 것을 축하 드리며 앞으로 더욱 더 활발한 활동 부탁 드립니다."), (const char*)name );
 		}
 		break;
 	case ERROR_SYNDICATE_REMOVE_SUCCESS:
 		{	// 탈퇴 성공
 			strTitle.PrintF(_S(6123, "결사대 탈퇴 요청"));
-			strMessage.PrintF(_S(6128, "[%s] 결사대의 탈퇴가 완료되었습니다. 언제든 재 가입이 가능하니 다음에 다시 찾아주세요."), name);
+			strMessage.PrintF(_S(6128, "[%s] 결사대의 탈퇴가 완료되었습니다. 언제든 재 가입이 가능하니 다음에 다시 찾아주세요."), (const char*)name);
 
 			// RVR퀘스트 하드코딩. 연관퀘스트 타입이 없기 때문에 퀘스트 상태를 임의로 바꿔줘야함.
 			CQuestSystem::Instance().SetQuestAllow(682, CQuestSystem::QAT_ALLOW);
@@ -333,7 +333,7 @@ void CSyndicate::ErrMessage( CNetworkMessage* istr )
 		}
 		break;
 	case ERROR_SYNICATE_GIVE_SUCCESS:
-			strMessage.PrintF(_S(6116, "[%s] 결사대에 창조의 보석을 기부하였습니다."), name);
+			strMessage.PrintF(_S(6116, "[%s] 결사대에 창조의 보석을 기부하였습니다."), (const char*)name);
 		break;
 	case ERROR_SYNDICATE_REMOVE_FAIL_NOT_ENOUGH_MONEY:
 			strMessage.PrintF( _S( 967, "나스가 부족 합니다.") );	// 나스 부족으로 인한 탈퇴 실패.
@@ -348,7 +348,7 @@ void CSyndicate::ErrMessage( CNetworkMessage* istr )
 			{// 결사대 아이템을 하나라도 착용중이라면 에러~
 				CTString strWearItem;
 				strWearItem = _pNetwork->GetItemName(index);
-				strMessage.PrintF(_S(6129, "[%s] 착용하신 결사대 전용 장비를 해제하여 주시기 바랍니다."), strWearItem);
+				strMessage.PrintF(_S(6129, "[%s] 착용하신 결사대 전용 장비를 해제하여 주시기 바랍니다."), (const char*)strWearItem);
 			}
 		}
 		break;

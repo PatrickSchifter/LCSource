@@ -482,7 +482,7 @@ void CUITatoo::MakeMessageBox()
 
 	CUIMsgBox_Info	MsgBoxInfo;
 	CTString		strMessage;
-	strMessage.PrintF(_S(4433, "%s색상 %s문양을 선택하셨습니다. 이대로 진행하시겠습니까?"), strColor, strShape);
+	strMessage.PrintF(_S(4433, "%s색상 %s문양을 선택하셨습니다. 이대로 진행하시겠습니까?"), (const char*)strColor, (const char*)strShape);
 	MsgBoxInfo.SetMsgBoxInfo(_S(4430, "문양 변경"), UMBS_YESNO, UI_NONE, MSGCMD_PET_TATOOCHANGE_USE);
 	MsgBoxInfo.AddString(strMessage);
 	CUIManager::getSingleton()->CreateMessageBox(MsgBoxInfo);

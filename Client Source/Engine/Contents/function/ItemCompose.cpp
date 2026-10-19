@@ -65,22 +65,22 @@ void CItemCompose::UpdateItemComposeMsg( CNetworkMessage* istr )
 	switch(pUpdate->systype)
 	{
 	case ARTIFACT_SYSMSG_TAKE:
-		strError.PrintF(_S(6400, "%s님이 %s지역에서 %s을 획득하였습니다."), strName, strZoneName, strItemName);
+		strError.PrintF(_S(6400, "%s님이 %s지역에서 %s을 획득하였습니다."), (const char*)strName, (const char*)strZoneName, (const char*)strItemName);
 		break;
 	case ARTIFACT_SYSMSG_COMPOSE:
-		strError.PrintF(_S(6401, "%s님이 %s지역에서 유물 아이템을 합성하여 %s를 만들었습니다."), strName, strZoneName, strItemName);
+		strError.PrintF(_S(6401, "%s님이 %s지역에서 유물 아이템을 합성하여 %s를 만들었습니다."), (const char*)strName, (const char*)strZoneName, (const char*)strItemName);
 		break;
 	case ARTIFACT_SYSMSG_DIE_TO_NPC:
-		strError.PrintF(_S(6406, "%s님이 몬스터에게 사망하여 보유 중인 %s이 사라졌습니다."), strName, strItemName);
+		strError.PrintF(_S(6406, "%s님이 몬스터에게 사망하여 보유 중인 %s이 사라졌습니다."), (const char*)strName, (const char*)strItemName);
 		break;		
 	case ARTIFACT_SYSMSG_LOGOUT:
-		strError.PrintF(_S(6405, "%s님이 게임에서 이탈하여 보유 중인 %s이(가) 사라졌습니다."), strName, strItemName);
+		strError.PrintF(_S(6405, "%s님이 게임에서 이탈하여 보유 중인 %s이(가) 사라졌습니다."), (const char*)strName, (const char*)strItemName);
 		break;	
 	case ARTIFACT_SYSMSG_MOVE_ZONE:
-		strError.PrintF(_S(6402, "%s님이 %s지역으로 이동하였습니다."), strName, strZoneName);
+		strError.PrintF(_S(6402, "%s님이 %s지역으로 이동하였습니다."), (const char*)strName, (const char*)strZoneName);
 		break;	
 	case ARTIFACT_SYSMSG_EXPIRE_TIME:
-		strError.PrintF(_S(6404, "%s님이 보유중인 %s의 사용시간이 다 되어 사라졌습니다."), strName, strItemName);
+		strError.PrintF(_S(6404, "%s님이 보유중인 %s의 사용시간이 다 되어 사라졌습니다."), (const char*)strName, (const char*)strItemName);
 		break;	
 	default:
 		return;

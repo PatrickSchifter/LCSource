@@ -48,7 +48,7 @@ static CTFileName CallFileRequester(char *achrTitle, char *achrSelectedFile, cha
   HMODULE hGUI = GetModuleHandle(ENGINEGUI_DLL_NAME);
   if (hGUI==NULL) {
     WarningMessage(TRANS("Cannot load %s:\n%s\nCannot replace files!"), 
-      ENGINEGUI_DLL_NAME, GetWindowsError(GetLastError()));
+      ENGINEGUI_DLL_NAME, (const char*)GetWindowsError(GetLastError()));
     return CTString("");
   }
   FileRequester_t *pFileRequester = (FileRequester_t*)GetProcAddress(hGUI, 
@@ -122,7 +122,7 @@ if(FileExists(fnModified)) {
     (void) strError;
   }
   CTString strTitle;
-  strTitle.PrintF(TRANS("For:\"%s\""), (CTString&)fnSourceFile);
+  strTitle.PrintF(TRANS("For:\"%s\""), (const char*)(CTString&)fnSourceFile);
   // call file requester for substituting file
   CTString strDefaultFile;
   strDefaultFile = fnSourceFile.FileName() + fnSourceFile.FileExt();
@@ -139,7 +139,7 @@ if(FileExists(fnModified)) {
       strBase.Load_t( fnBaseName);
     }
     CTString strNewRemap;
-    strNewRemap.PrintF( "\"%s\" \"%s\"\n", (CTString&)fnSourceFile, (CTString&)fnReplacingFile);
+    strNewRemap.PrintF( "\"%s\" \"%s\"\n", (const char*)(CTString&)fnSourceFile, (const char*)(CTString&)fnReplacingFile);
     strBase += strNewRemap;
     strBase.Save_t( fnBaseName);
   }
@@ -175,7 +175,7 @@ void SetTextureWithPossibleReplacing_t(CTextureObject &to, CTFileName &fnmTextur
       else
       {
         ThrowF_t( TRANS("Unable to load world because texture \"%s\" can't be found."),
-          (CTString&)fnmTexture);
+          (const char*)(CTString&)fnmTexture);
       }
     }
   }
@@ -201,7 +201,7 @@ void ReadTextureObject_t(CTStream &strm, CTextureObject &to)
         // replacing texture was provided
         fnTexture = fnReplacingTexture;
       } else {
-        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (CTString&)fnTexture);
+        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (const char*)(CTString&)fnTexture);
       }
     }
   }
@@ -250,7 +250,7 @@ void ReadModelObject_t(CTStream &strm, CModelObject &mo)
         // replacing model was provided
         fnModel = fnReplacingModel;
       } else {
-        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (CTString&)fnModel);
+        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (const char*)(CTString&)fnModel);
       }
     }
   }
@@ -930,7 +930,7 @@ void ReadAnimObject_t(CTStream &strm, CAnimObject &ao)
         // replacing anim was provided
         fnAnim = fnReplacingAnim;
       } else {
-        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (CTString&)fnAnim);
+        ThrowF_t( TRANS("Cannot find substitution for \"%s\""), (const char*)(CTString&)fnAnim);
       }
     }
   }

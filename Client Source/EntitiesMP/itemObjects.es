@@ -59,7 +59,7 @@ functions:
 				OffSetAnimationQueue(FRnd()*10.0f);        
 			} else {
 				CPrintF("WARNING! Animation '%s' not found in SKA entity '%s'!\n",
-					m_strAnimation, GetName());
+					(const char*)m_strAnimation, (const char*)GetName());
 			}
 		}
 	}
@@ -105,7 +105,7 @@ procedures:
 		}
 		if (!bLoadOK) {
 			SetSkaModel(CTFILENAME("Data\\Models\\Editor\\Ska\\Axis.smc"));
-			WarningMessage(TRANS("Cannot load ska model '%s'"), (CTString&)m_fnModel);
+			WarningMessage(TRANS("Cannot load ska model '%s'"), (const char*)(CTString&)m_fnModel);
 		}
 			
 //		SetFlags(GetFlags()|ENF_ITEM);					

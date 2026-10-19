@@ -692,7 +692,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 	if (m_NeedItems[0].ItemData != NULL)
 	{
 		szItemName = _pNetwork->GetItemName( m_NeedItems[0].ItemData->GetItemIndex() );
-		strTitle.PrintF ( _S( 576, "%s : %d°³ " ), strSpace + szItemName, m_NeedItems[0].llCount );
+		strTitle.PrintF ( _S( 576, "%s : %d°³ " ), (const char*)(strSpace + szItemName), m_NeedItems[0].llCount );
 	}
 
 	AddString ( strTitle, bNeedItem? COLOR_TEXT : COLOR_NONE );
@@ -728,7 +728,7 @@ void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 		strText.Split( nLength, strTemp2, strTemp );
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 
-		strTemp2.PrintF ( "%s", strTemp );
+		strTemp2.PrintF ( "%s", (const char*)strTemp );
 		
 		m_lbPreconditionDesc.AddString ( 0, strTemp2, colText );
 

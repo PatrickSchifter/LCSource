@@ -1285,7 +1285,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
 				CEntity *ppenObstacleDummy;
 				if (pmme->CheckForCollisionNow(pmme->en_iCollisionBox, &ppenObstacleDummy)) {
 					CPrintF("Entity '%s' was teleported inside a wall at (%g,%g,%g)!\n", 
-						GetName(), 
+						(const char*)GetName(), 
 						en_plPlacement.pl_PositionVector(1),
 						en_plPlacement.pl_PositionVector(2),
 						en_plPlacement.pl_PositionVector(3));
@@ -2921,7 +2921,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default model '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 	UpdateSpatialRange();
@@ -3658,7 +3658,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default texture '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }
@@ -4200,7 +4200,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default sound '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }

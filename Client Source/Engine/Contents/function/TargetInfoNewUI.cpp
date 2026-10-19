@@ -827,7 +827,7 @@ CTString CTargetInfoUI::_getAttrTooltip(int attrType)
 	CTString strAtt;
 	// 속성 시스템 스킬 공격 속성 스트링 얻기
 	strAtt = UtilHelp::getSingleton()->GetAttributeString(nAttr);
-	strTooltip.PrintF( _S( nStringID, "공격 or 방어 : [%s]속성 [%d]단계"), strAtt, nAttrLv);
+	strTooltip.PrintF( _S( nStringID, "공격 or 방어 : [%s]속성 [%d]단계"), (const char*)strAtt, nAttrLv);
 		
 	return strTooltip;
 }

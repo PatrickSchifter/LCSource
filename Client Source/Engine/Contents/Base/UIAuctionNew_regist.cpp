@@ -418,7 +418,7 @@ void CUIAuctionNew::showRegOK()
 
 	MsgBoxInfo.AddString(_S(4304, "거래 대행 서비스를 이용해 주셔서 감사합니다"));
 	
-	MsgBoxInfo.AddString( CTString(0, _S(4305, "%s %d개를 %d나스로 등록하셨습니다"), m_strRegname, m_nQty, m_nPrice) );
+	MsgBoxInfo.AddString( CTString(0, _S(4305, "%s %d개를 %d나스로 등록하셨습니다"), (const char*)m_strRegname, m_nQty, m_nPrice) );
 	LOG_DEBUG("deposti %I64d", m_pAuction->getDeposit());
 	MsgBoxInfo.AddString( CTString(0, _S(4306, "보증금으로 %I64d나스를 지불하셨습니다"), m_pAuction->getDeposit()) );
 

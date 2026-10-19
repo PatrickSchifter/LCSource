@@ -213,7 +213,7 @@ void CUIExpManage::RunCommand(INDEX iCommand)
 
 			MsgBoxInfo.SetMsgBoxInfo( _S(4493, "원정대" ), UMBS_YESNO, UI_PARTY, MSGCMD_EXPEDITION_SET_BOSS );
 
-			strMessage.PrintF( _S(4584, "%s님께 원정대장을 위임하시겠습니까?" ), m_strDestName );
+			strMessage.PrintF( _S(4584, "%s님께 원정대장을 위임하시겠습니까?" ), (const char*)m_strDestName );
 
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
@@ -227,7 +227,7 @@ void CUIExpManage::RunCommand(INDEX iCommand)
 
 			MsgBoxInfo.SetMsgBoxInfo( _S(4493, "원정대" ), UMBS_YESNO, UI_PARTY, MSGCMD_EXPEDITION_SET_MBOSS );
 
-			strMessage.PrintF( _S(4585, "%s님을 부대장으로 임명하시겠습니까?" ), m_strDestName );
+			strMessage.PrintF( _S(4585, "%s님을 부대장으로 임명하시겠습니까?" ), (const char*)m_strDestName );
 
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
@@ -241,7 +241,7 @@ void CUIExpManage::RunCommand(INDEX iCommand)
 
 			MsgBoxInfo.SetMsgBoxInfo( _S(4493, "원정대" ), UMBS_YESNO, UI_PARTY, MSGCMD_EXPEDITION_RESET_MBOSS );
 
-			strMessage.PrintF( _S(4586, "%s님을 부대장에서 해임하시겠습니까?" ), m_strDestName );
+			strMessage.PrintF( _S(4586, "%s님을 부대장에서 해임하시겠습니까?" ), (const char*)m_strDestName );
 
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
@@ -255,7 +255,7 @@ void CUIExpManage::RunCommand(INDEX iCommand)
 
 			MsgBoxInfo.SetMsgBoxInfo( _S(4493, "원정대" ), UMBS_YESNO, UI_PARTY, MSGCMD_EXPEDITION_KICK );
 
-			strMessage.PrintF( _S(4587, "%s님을 추방하시겠습니까?" ), m_strDestName );
+			strMessage.PrintF( _S(4587, "%s님을 추방하시겠습니까?" ), (const char*)m_strDestName );
 
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
@@ -580,7 +580,7 @@ WMSG_RESULT CUIExpManage::OnLButtonUp( UINT16 x, UINT16 y )
 						if (pParty->GetExpeditionMemberOnline(i, j) == FALSE)
 							strTemp.PrintF(_S(4590, "오프라인 멤버는 그룹을 이동할 수 없습니다."));
 						else
-							strTemp.PrintF(_S(4589, "이미 %s가 지정되어 있습니다."), pParty->GetExpeditionMemberName(i, j));
+							strTemp.PrintF(_S(4589, "이미 %s가 지정되어 있습니다."), (const char*)pParty->GetExpeditionMemberName(i, j));
 
 						UIMGR()->GetChattingUI()->AddSysMessage(strTemp);
 					}
