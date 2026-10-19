@@ -459,6 +459,11 @@ bool PLT_MacTrackpadScroll(float fDX, float fDY, bool bGestureStart, bool bMomen
     CUIManager *pUIManager = SE_Get_UIManagerPtr();
     _bGestureOverUI = pUIManager == NULL || pUIManager->IsMouseInsideUIs();
   }
+  static const bool bDebug = getenv("LC_DEBUG_INPUT") != NULL;
+  if (bDebug) {
+    fprintf(stderr, "trackpad: %+7.2f %+7.2f%s%s%s\n", fDX, fDY, bGestureStart ? " start" : "",
+            bMomentum ? " momentum" : "", _bGestureOverUI ? " (UI)" : "");
+  }
   if (_bGestureOverUI) {
     return false;
   }
