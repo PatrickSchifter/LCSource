@@ -9,6 +9,38 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Graphics/ImageInfo.h>
+#include <vector>
+
+// The fog and haze tables are built again for every frame, but they change only with the fog or
+// haze parameters. Re-uploading a texture the GPU is still drawing with makes OpenGL on macOS
+// wait for it (40% of a frame in Juno), so a table goes up only when it differs from what its
+// texture got last time (or the driver changed since).
+struct UploadedTable {
+	ULONG ut_ulTexture;
+	INDEX ut_ctDriverChanges;
+	PIX ut_pixSizeU, ut_pixSizeV;
+	ULONG ut_ulFormat;
+	std::vector<ULONG> ut_aulData;
+	UploadedTable() : ut_ulTexture(0), ut_ctDriverChanges(-1), ut_pixSizeU(0), ut_pixSizeV(0), ut_ulFormat(0) {}
+};
+
+static BOOL TableChanged(UploadedTable &ut, ULONG ulTexture, const ULONG *pulData, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat)
+{
+	const size_t ctPixels = (size_t)pixSizeU*pixSizeV;
+	if (ut.ut_ulTexture==ulTexture && ut.ut_ctDriverChanges==_pGfx->gl_ctDriverChanges
+	 && ut.ut_pixSizeU==pixSizeU && ut.ut_pixSizeV==pixSizeV && ut.ut_ulFormat==ulFormat
+	 && ut.ut_aulData.size()==ctPixels && memcmp(&ut.ut_aulData[0], pulData, ctPixels*sizeof(ULONG))==0) {
+		return FALSE;
+	}
+	ut.ut_ulTexture = ulTexture;
+	ut.ut_ctDriverChanges = _pGfx->gl_ctDriverChanges;
+	ut.ut_pixSizeU = pixSizeU;
+	ut.ut_pixSizeV = pixSizeV;
+	ut.ut_ulFormat = ulFormat;
+	ut.ut_aulData.assign(pulData, pulData+ctPixels);
+	return TRUE;
+}
+static UploadedTable _utFog, _utHaze;
 
 
 // asm shortcuts
@@ -320,8 +352,10 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
 	} // set'n'upload
 	gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
 	gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
-	gfxUploadTexture( (ULONG*)(_fog_pubTable + _fog_pixSizeL*_fog_pixSizeH),
-									 _fog_pixSizeL, _fog_pixSizeH, ulFormat, bNoDiscard);
+	const ULONG *pulFog = (ULONG*)(_fog_pubTable + _fog_pixSizeL*_fog_pixSizeH);
+	if( TableChanged( _utFog, _fog_ulTexture, pulFog, _fog_pixSizeL, _fog_pixSizeH, ulFormat)) {
+		gfxUploadTexture( (ULONG*)pulFog, _fog_pixSizeL, _fog_pixSizeH, ulFormat, bNoDiscard);
+	}
 }
 
 
@@ -429,7 +463,10 @@ void StartHaze( CHazeParameters &hp,
 	} // set'n'upload
 	gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
 	gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
-	gfxUploadTexture( (ULONG*)(_haze_pubTable + _haze_pixSize*1), _haze_pixSize, 1, ulFormat, bNoDiscard);
+	const ULONG *pulHaze = (ULONG*)(_haze_pubTable + _haze_pixSize*1);
+	if( TableChanged( _utHaze, _haze_ulTexture, pulHaze, _haze_pixSize, 1, ulFormat)) {
+		gfxUploadTexture( (ULONG*)pulHaze, _haze_pixSize, 1, ulFormat, bNoDiscard);
+	}
 }
 
 
