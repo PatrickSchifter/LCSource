@@ -24,9 +24,24 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. O que falta no OpenGL sem D3D: nome de item que pisca ao passar o mouse (não visto ainda).
-   Bloom, reflexo da água, preview da loja, Retina e gama já estão no OpenGL. Refração da água
-   não existe no motor (nem no D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
+1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
+   nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
+   D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
+2. Próxima etapa: **Metal** (D2.2), backend novo sobre a interface `gfx*`, com os programas D3D
+   (`vs.1.1`/`ps.1.x`) reescritos em MSL. Antes: handles de textura do `gfx*` com largura de
+   ponteiro (hoje `ULONG`, ver PORTING_MACOS.md).
+
+## C8 — nome de item com mouse em cima; largar item (2026-10-19, `c7e0d31`)
+
+- Nome do item no chão (`ActorMgr::DrawItem`) e o de mouse em cima (`RenderObjectNamePopup`,
+  `UIManager.cpp`, caso `ITEM`) saem no mesmo z com teste e escrita de profundidade; `SetOrtho`
+  (perto 0, longe -1) com `DepthRange(0,1)` dá o mesmo z no D3D e no OpenGL. Nada a portar;
+  conferido em jogo pelo usuário. O "piscar" do código é proposital: nome em modo PK.
+- Largar item não funcionava em lugar nenhum (nem no cliente Windows): `do_ItemThrow`
+  (`GameServer/doFuncItem.cpp`) saía quando `CanDrop()` era verdadeiro, então todo item largável era
+  ignorado em silêncio (a caixa de confirmação fechava e o item ficava). Herdado do upstream.
+- No shell do Claude o `grep` é uma função do perfil e deixou de achar arquivos do `Engine` (causa
+  não vista): usar `/usr/bin/grep -a`; `sed` com acentos coreanos precisa de `LC_ALL=C`.
 
 ## C8 — gama no macOS e acertos do Retina (2026-10-19, `4390866`)
 
