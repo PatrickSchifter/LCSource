@@ -10,6 +10,7 @@
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Base/Shell.h>
 #include <Engine/Base/ErrorReporting.h>
+#include <Engine/Platform/Platform.h>
 #include <Engine/Templates/StaticStackArray.cpp>
 //#include <Engine/Interface/UIManager.h>			// yjpark
 
@@ -2432,6 +2433,27 @@ static void ReadMouseDevice(CInputDevice &idDevice, BOOL bPreScan)
 				}
 			//} // if (fDx > 5 && fDY > 5)
 		}
+
+#ifdef __APPLE__
+		// a two-finger drag on the trackpad turns the camera as a right-button drag does
+		// (Platform/PlatformSDL.cpp; it is only gathered while the mouse is not over the interface)
+		{
+			FLOAT fDX, fDY;
+			if (PLT_GetTrackpadPan(fDX, fDY) && _pInput->m_bTcpIp && !_pInput->m_bRButtonDown) {
+				if (fabs(fDX) >= fabs(fDY)) fDY = 0.0f; else fDX = 0.0f;
+				const FLOAT fSensitivity = inp_fMouseSensitivity*0.25f;
+				const FLOAT fMouseRelX = +fDX*fSensitivity;
+				FLOAT fMouseRelY = -fDY*fSensitivity;
+				if (inp_bInvertMouse) {
+					fMouseRelY = -fMouseRelY;
+				}
+				idDevice.id_aicControls[0].ic_fValue =  Max(0.0f,fMouseRelX*3/4);
+				idDevice.id_aicControls[1].ic_fValue = -Min(0.0f,fMouseRelX*3/4);
+				idDevice.id_aicControls[2].ic_fValue =  Max(0.0f,fMouseRelY*3/4);
+				idDevice.id_aicControls[3].ic_fValue = -Min(0.0f,fMouseRelY*3/4);
+			}
+		}
+#endif
 
 		// if reading async keystate
 		if(inp_iKeyboardReadingMethod==0) {

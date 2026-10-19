@@ -18,6 +18,14 @@
 static SDL_Window *_pwndMain = NULL;
 static std::deque<MSG> _dqMessages;  // messages translated from events, not taken yet
 static float _fWheelRemainder = 0.0f;  // fraction of a wheel notch not reported yet
+#ifdef __APPLE__
+#include <Engine/Interface/UIManager.h>
+ENGINE_API CUIManager *SE_Get_UIManagerPtr();  // Engine.cpp
+extern void PLT_MacInstallGestureMonitors(void);  // PlatformMac.mm
+static float _fPanX = 0.0f, _fPanY = 0.0f;       // trackpad camera turning not taken yet
+static bool _bGestureOverUI = true;              // where the current two-finger drag began
+static float _fMagnifyRemainder = 0.0f;          // pinch not reported as wheel yet
+#endif
 
 BOOL PLT_Init(void)
 {
@@ -32,6 +40,9 @@ BOOL PLT_Init(void)
     CPrintF("SDL_Init failed: %s\n", SDL_GetError());
     return FALSE;
   }
+#ifdef __APPLE__
+  PLT_MacInstallGestureMonitors();
+#endif
   return TRUE;
 }
 
@@ -436,6 +447,51 @@ static void TranslateMouseWheel(const SDL_MouseWheelEvent &mwe)
   const POINT pt = ScreenCursorPos();
   PostMsg(WM_MOUSEWHEEL, MAKEWPARAM(MouseKeyFlags(), (SWORD)iDelta), MAKELPARAM((SWORD)pt.x, (SWORD)pt.y));
 }
+
+#ifdef __APPLE__
+// Trackpad gestures (PlatformMac.mm). A two-finger drag that begins over the game turns the
+// camera, as a right-button drag does (Base/Input.cpp takes it through PLT_GetTrackpadPan);
+// one that begins over a window of the interface stays a wheel, which scrolls lists and the
+// chat. The whole drag, and its coasting, keeps the choice made when it began.
+bool PLT_MacTrackpadScroll(float fDX, float fDY, bool bGestureStart, bool bMomentum)
+{
+  if (bGestureStart) {
+    CUIManager *pUIManager = SE_Get_UIManagerPtr();
+    _bGestureOverUI = pUIManager == NULL || pUIManager->IsMouseInsideUIs();
+  }
+  if (_bGestureOverUI) {
+    return false;
+  }
+  // the coasting after the fingers lift does not turn the camera
+  if (!bMomentum) {
+    _fPanX += fDX;
+    _fPanY += fDY;
+  }
+  return true;
+}
+
+// A pinch zooms as the wheel: spreading the fingers is the wheel turned forward, one notch for
+// every tenth of change in scale.
+void PLT_MacMagnify(float fMagnification)
+{
+  _fMagnifyRemainder += fMagnification * 10.0f * WHEEL_DELTA;
+  const int iDelta = (int)_fMagnifyRemainder;
+  if (iDelta == 0) {
+    return;
+  }
+  _fMagnifyRemainder -= iDelta;
+  const POINT pt = ScreenCursorPos();
+  PostMsg(WM_MOUSEWHEEL, MAKEWPARAM(MouseKeyFlags(), (SWORD)iDelta), MAKELPARAM((SWORD)pt.x, (SWORD)pt.y));
+}
+
+BOOL PLT_GetTrackpadPan(FLOAT &fDX, FLOAT &fDY)
+{
+  fDX = _fPanX;
+  fDY = _fPanY;
+  _fPanX = _fPanY = 0.0f;
+  return fDX != 0.0f || fDY != 0.0f;
+}
+#endif  // __APPLE__
 
 static void TranslateEvent(const SDL_Event &ev)
 {

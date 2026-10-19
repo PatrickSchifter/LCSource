@@ -41,6 +41,12 @@ ENGINE_API void PLT_SetCursor(HCURSOR hCursor);
 // where the system's input method shows its composition and candidates (client coordinates)
 ENGINE_API void PLT_SetTextInputArea(PIX pixX, PIX pixY, PIX pixWidth, PIX pixHeight);
 
+#ifdef __APPLE__
+// trackpad two-finger drag over the game since the last call, as finger movement in points (it
+// turns the camera like a right-button drag; Base/Input.cpp)
+ENGINE_API BOOL PLT_GetTrackpadPan(FLOAT &fDX, FLOAT &fDY);
+#endif
+
 // clipboard text, in the client's code page
 ENGINE_API BOOL PLT_GetClipboardText(char *strBuffer, INDEX ctBufferSize);
 ENGINE_API BOOL PLT_SetClipboardText(const char *strText);
