@@ -4547,7 +4547,7 @@ void Particles_BloodSpray(enum SprayParticlesType sptType, FLOAT3D vSource, FLOA
 		{
 			UBYTE ubRndH = UBYTE( 24+afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][0]*16);
 			UBYTE ubRndS = UBYTE( 32+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][1]+0.5)*64);
-			UBYTE ubRndV = UBYTE( 196+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*128);
+			UBYTE ubRndV = UBYTE(SLONG( 196+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*128));
 			col = HSVToColor(ubRndH, ubRndS, ubRndV)|ubAlpha;
 			fSize*=0.10f;
 			fRotation = fT*200.0f;
@@ -6091,7 +6091,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
 	if( (tmEnd-tmNow)<6.0f)
 	{
 		fColMul = (tmEnd-tmNow)/6.0f;
-		ubColMul = (INDEX) 255.0f*fColMul;
+		ubColMul = (INDEX)(255.0f*fColMul);
 	}
 	//UBYTE ubColMul=UBYTE(CT_OPAQUE*fColMul);
 	//COLOR colMul=RGBAToColor(ubColMul,ubColMul,ubColMul,ubColMul);
