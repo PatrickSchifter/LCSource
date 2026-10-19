@@ -24,9 +24,30 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. O que falta no OpenGL sem D3D: gama. Nome de item que pisca ao passar o mouse (não visto
-   ainda). Bloom, reflexo da água, preview da loja e Retina já estão no OpenGL. Refração da água
+1. O que falta no OpenGL sem D3D: nome de item que pisca ao passar o mouse (não visto ainda).
+   Bloom, reflexo da água, preview da loja, Retina e gama já estão no OpenGL. Refração da água
    não existe no motor (nem no D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
+
+## C8 — gama no macOS e acertos do Retina (2026-10-19, `4390866`)
+
+- Gama/brilho/contraste: rampa do monitor pelo CoreGraphics (`CGSetDisplayTransferByTable`,
+  `PlatformMac.mm`), aplicada pela camada de plataforma só com a janela em tela cheia e em primeiro
+  plano; perde o foco, sai da tela cheia ou fecha → `CGDisplayRestoreColorSyncSettings`. O jogo
+  abre os modos sempre "em janela" (`ResetDisplayMode` no `TryToSetDisplayMode` do `Nksp.cpp`) e
+  põe a janela em tela cheia, então `GLF_FULLSCREEN` fica desligado: no Mac `GLF_ADJUSTABLEGAMMA`
+  vale sempre e quem decide é a janela. Antes o motor zerava brilho/contraste (persistentes) a
+  cada quadro. Testado pelo usuário.
+- Login: `InitPos` da raiz da UI usava o tamanho pedido (2940x1912) em vez do `_pdpMain` (1470x956
+  pontos): fundo esticado e o modal fora da tela (`Nksp.cpp`, `UIOption.cpp`).
+- Seleção/criação de personagem (`Contents/Login/BackImageManager.cpp`): tabela de 12 resoluções
+  para distâncias; fora dela a distância era 0 (personagem sumia) → entrada mais próxima por
+  proporção e tamanho. `GetRatio` tratava qualquer proporção acima de 16:10 como 4:3 (câmera
+  perto) → classe mais próxima; nas resoluções da tabela dá o mesmo de antes.
+- Notch (MacBook com câmera no topo): para cada largura há o painel inteiro e um modo mais baixo,
+  abaixo do notch (1470x956 / 1470x918 pontos). A tela cheia troca pelo mais baixo e a lista
+  (`Adapter.cpp`, `PLT_IsBehindNotch`) omite os de painel inteiro; quem tinha 2940x1912 salvo abre
+  em 2940x1836. A lista ganhou os tamanhos abaixo do notch; `da_admDisplayModes` passou a 32.
+- O contexto OpenGL é atualizado (`PLT_UpdateDrawable`) depois de criado e quando a janela muda.
 
 ## C8 — Retina no OpenGL (2026-10-19, `2deb6bb`)
 

@@ -230,6 +230,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura
 - [ ] Fontes e UI (`Engine/Interface`), drawports, render-to-texture
 - [x] Suporte a Retina/HiDPI e tela cheia (2026-10-19): resolução em pixels desenhados, cena na densidade cheia com a UI em pontos; detalhes em `HANDOFF.md` ("C8 — Retina no OpenGL")
+- [x] Gama, brilho e contraste no macOS (2026-10-19): rampa do monitor em tela cheia; detalhes em `HANDOFF.md` ("C8 — gama no macOS e acertos do Retina")
 
 ### C9. Integração e jogo
 - [x] Engine inicializa, monta os `.gro` e carrega um mundo (2026-10-19)
