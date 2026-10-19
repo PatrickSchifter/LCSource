@@ -28,8 +28,24 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
 2. Próxima etapa: **Metal** (D2.2), backend novo sobre a interface `gfx*`, com os programas D3D
-   (`vs.1.1`/`ps.1.x`) reescritos em MSL. Antes: handles de textura do `gfx*` com largura de
-   ponteiro (hoje `ULONG`, ver PORTING_MACOS.md).
+   (`vs.1.1`/`ps.1.x`) reescritos em MSL. Pré-requisito feito: handles de textura com largura de
+   ponteiro (`TEXOBJ`, ver "C8 — handles de textura").
+
+## C8 — handles de textura (2026-10-19, `40f850b`)
+
+- `TEXOBJ` (`Base/Types.h`): objeto de textura da API gráfica; `uintptr_t` fora do Windows (o
+  Metal vai guardar ali um `id<MTLTexture>`), `ULONG` no Windows (tipos e código iguais aos de
+  antes). Usado em `CTextureData` (`td_ulObject`, `td_pulObjects`, `td_ulProbeObject`),
+  `CShadowMap`, névoa/neblina, textura de padrão das linhas, bloom, benchmark e na assinatura de
+  `gfxGenerateTexture`/`gfxDeleteTexture`/`gfxSetTexture`/`gfxGetTextureSize`/
+  `gfxGetTexturePixRatio`. `GFX_apulCurrentTexture` passou a `TEXOBJ*`. Os nomes das variáveis
+  (`ul...`) ficaram, para o diff ser reaplicável nas outras versões (Fase V).
+- OpenGL: `glGenTextures`/`glDeleteTextures` passam por um `GLuint` local (antes escreviam 32 bits
+  no campo pelo ponteiro); o bind faz `(GLuint)`.
+- Continuam `ULONG`: programas de shader (`gfxCreateVertexProgram`...), consultas de oclusão e
+  `vb_aulBufferObjects`. Para o Metal, ou tabela no backend com índice de 32 bits, ou o mesmo
+  tratamento; decidir quando o backend chegar lá.
+- Compila no Mac; não compilado no Windows (SSH recusado no dia), mas lá `TEXOBJ` = `ULONG`.
 
 ## C8 — nome de item com mouse em cima; largar item (2026-10-19, `c7e0d31`)
 

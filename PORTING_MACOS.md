@@ -159,7 +159,7 @@ stubs vazios dos headers do Windows (`Compat/checkonly`), só para listar erros 
 - [x] Ponteiros truncados: `CListHead::Sort` (ordenava ponteiros em `ULONG`), tags da BSP/CSG (`size_t`; no disco continuam 32 bits, e o tamanho gravado não usa mais `sizeof(BSPNode)`), `AllocMemoryAligned`, `td_ulObject`/`td_pulObjects` das texturas, `pwoCurrentWorld` (`CShell::GetPointer/SetPointer`), `DXTC.cpp`, hash de ponteiro negativo em `Particles.cpp`; casts de identidade/índice explícitos via `uintptr_t`/`intptr_t`
 - [x] Rede: campos `unsigned long` do cabeçalho de pacote (`InputBuffer.cpp`, `FGC_Net_Process.cpp`) e `DWORD` da SEED (`SEED_256_KISA.h`) com 32 bits fora do Windows
 - [x] Auditar `Common/Packet/` e `Common/header/def_*.h`: só `int`/`short`/`char`/`bool`/`float`/`__int64` (mesmos tamanhos e alinhamento em MSVC x86 e clang arm64); os `.lod` são lidos com `sizeof(st*)`, não com o da classe derivada. `stAffinity` tem ponteiros, mas o cliente não a usa
-- [ ] Ainda de 64 bits, mas da camada gráfica (C8): handles de textura do `gfx*` são `ULONG` e guardam ponteiros do D3D (`TextureRender.cpp`, `Gfx_wrapper.cpp`); servem ao OpenGL (nomes de 32 bits), Metal/Vulkan vão precisar de um tipo com largura de ponteiro
+- [x] Handles de textura do `gfx*` com largura de ponteiro (2026-10-19): tipo `TEXOBJ` (`Base/Types.h`), `uintptr_t` fora do Windows e `ULONG` no Windows (código igual lá). Programas de shader, consultas de oclusão e buffers dos VBOs continuam `ULONG`; ver `HANDOFF.md` ("C8 — handles de textura")
 - [ ] ~1.100 avisos `-Wshorten-64-to-32` (quase todos `strlen`/diferença de ponteiros em `INDEX`, inofensivos abaixo de 2 GB); revisar quando o cliente compilar de verdade
 - [ ] MSVC-isms gerais (`stricmp`, `_vsnprintf`, `__try/__except`, `_control87`, `_msize`...) e conformidade C++ restantes: aparecem no check; são da C5
 - Testado no cliente Windows em 2026-10-17 (login, mundo, combate, lojas): sem diferença
@@ -291,3 +291,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C2/C9: conversões float→inteiro sem sinal revisadas no cliente inteiro (AST do clang + UBSan); dano ao jogador em 64 bits; taxas do GameServer de volta às de junho/2015 | e53b9eb, d32de5a..1774afb |
 | 2026-10-19 | C8: render targets no OpenGL (FBO) e sombras projetadas dos modelos no terreno e nos brushes | 28e947e |
 | 2026-10-19 | C8: bloom, preview da loja, Retina e gama no OpenGL; etapa OpenGL concluída. Servidor: largar item voltou a funcionar | f478ad2..c7e0d31 |
+| 2026-10-19 | C2/C8: handles de textura do `gfx*` com largura de ponteiro (`TEXOBJ`), antes do Metal | 40f850b |
