@@ -736,6 +736,9 @@ CQuestDynamicData *CQuestSystem::Create(INDEX idxQuest)
 {
 	if(m_pCurrentRequest) DeleteCurrentRequest();
 	m_pCurrentRequest = new CQuestDynamicData(GetStaticData(idxQuest));
+	// a quest the client data does not have gets the dummy static data; it keeps its own index, or
+	// GetDynamicDataByQuestIndex() would not find it (the quest book used the NULL and crashed)
+	m_pCurrentRequest->m_iQuestIndex = idxQuest;
 	return m_pCurrentRequest;
 }
 
