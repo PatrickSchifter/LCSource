@@ -11,9 +11,12 @@ the paths in lc2009_data.t_zonedata (a_attrmap/a_heightmap, e.g. "data/StartZone
 cells row by row (z outer, x inner), width * height from t_zonedata.
 
 Sources, first match wins:
+  0. maps exported from the 2009 client's own worlds (LC_SERVER_MAPS, default
+     ~/Projects/LC-2009/ServerMaps/2009, written by ZoneMapExport + sat-to-2009.py). Zone 0 comes
+     from here: the client draws the old Juno (startzone.wld), but the BR StartZone_*.sht is the
+     new Juno's height map, which spawns players under the old terrain.
   1. the client's Data/World (LC_CLIENT_DIR, default ~/Projects/LC-BR2014): those .sat files are
-     already the one-byte format. Zone 0 comes from here: StartZone_* is the old Juno
-     (startzone.wld), which is the world the 2009 client draws for zone 0.
+     already the one-byte format.
   2. the 2015 port's run dir (LC2015_MAPS, default ~/Projects/LCSource/run/GameServer/data):
      16-bit MATT_* flags (LE) are turned back into the one-byte values.
 
@@ -28,6 +31,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "run" / "GameServer"
 CLIENT = pathlib.Path(os.environ.get("LC_CLIENT_DIR", pathlib.Path.home() / "Projects/LC-BR2014"))
+EXPORTED = pathlib.Path(os.environ.get("LC_SERVER_MAPS",
+                                       pathlib.Path.home() / "Projects/LC-2009/ServerMaps/2009"))
 MAPS2015 = pathlib.Path(os.environ.get("LC2015_MAPS",
                                        pathlib.Path.home() / "Projects/LCSource/run/GameServer/data"))
 
@@ -63,6 +68,7 @@ def index(directory):
 
 def main():
     wanted = {int(z) for z in sys.argv[1:]}
+    exported = index(EXPORTED)
     client = index(CLIENT / "Data" / "World")
     old = index(MAPS2015)
     installed = []
@@ -75,8 +81,11 @@ def main():
             name_a, name_h = pathlib.Path(attr).name.lower(), pathlib.Path(height).name.lower()
             sat = sht = None
             src = ""
+            ea, eh = exported.get(name_a), exported.get(name_h)
             ca, ch = client.get(name_a), client.get(name_h)
-            if ca and ch and ca.stat().st_size == cells and ch.stat().st_size == 2 * cells:
+            if ea and eh and ea.stat().st_size == cells and eh.stat().st_size == 2 * cells:
+                sat, sht, src = ea.read_bytes(), eh.read_bytes(), "exported"
+            elif ca and ch and ca.stat().st_size == cells and ch.stat().st_size == 2 * cells:
                 sat, sht, src = ca.read_bytes(), ch.read_bytes(), "client"
             else:
                 oa, oh = old.get(name_a), old.get(name_h)
