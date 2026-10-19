@@ -1,0 +1,432 @@
+#include "StdH.h"
+
+#include <Engine/Graphics/Adapter.h>
+#include <Engine/Graphics/GfxLibrary.h>
+#include <Engine/Base/Translation.h>
+#include <Engine/Base/Console.h>
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>
+#include <Engine/Platform/Platform.h>
+#endif
+#ifdef SE1_METAL
+#include <Engine/Graphics/MetalDevice.h>
+#endif // SE1_METAL
+#ifdef SE1_VULKAN
+#include <Engine/Graphics/VulkanDevice.h>
+#endif // SE1_VULKAN
+
+
+extern BOOL _bDedicatedServer;
+#ifdef SE1_D3D
+extern const D3DDEVTYPE d3dDevType;
+#endif // SE1_D3D
+
+
+// list of all modes avaliable through CDS
+static CListHead _lhCDSModes;
+
+class CResolution {
+public:
+  PIX   re_pixSizeI;
+  PIX   re_pixSizeJ;
+};
+
+/*static CResolution _areResolutions[] =
+{
+  {  320,  240 },
+  {  400,  300 },
+  {  480,  360 },
+  {  512,  384 },
+  {  640,  480 },
+  {  720,  540 },
+  {  720,  576 },
+  {  800,  500 },
+  {  800,  600 },
+  {  960,  720 },
+  { 1024,  768 },
+  { 1152,  864 },
+  { 1280,  800 },
+  { 1280,  960 },
+  { 1280, 1024 },
+  { 1600, 1200 },
+  { 1792, 1344 },
+  { 1856, 1392 },
+  { 1920, 1440 },
+  { 2048, 1536 },
+
+  // dualhead modes
+  { 1280,  480 },
+  { 1600,  600 },
+  { 2048,  768 },
+  { 2304,  864 },
+  { 2560,  960 },
+  { 3200, 1200 },
+
+  // triplehead modes
+  { 1920,  480 },
+  { 2400,  600 },
+  { 3072,  768 },
+  { 3456,  864 },
+  { 3840,  960 },
+  { 4800, 1200 },
+
+  // NTSC HDTV widescreen
+  {  848,  480 },
+  {  856,  480 },
+};*/
+static CResolution _areResolutions[] =
+{  
+  {  640,  480 }, 
+  {  800,  500 },
+  {  800,  600 },  
+  { 1024,  768 },
+  { 1152,  864 },
+  { 1280,  720 },
+  { 1280,  800 },
+  { 1280,  960 },
+  { 1280, 1024 },	// wide screen
+  { 1440, 900  },
+  { 1600, 900  },
+  { 1600, 1200 },   
+  { 1680, 1050  },	// wide screen
+  { 1920, 1200  },	// wide screen	//  [7/2/2010 rumist]
+  // Retina displays at full density (macOS, Platform/PlatformSDL.cpp), and 4K; a MacBook with a
+  // camera notch has its whole panel and, a little shorter, the part under the notch
+  { 2560, 1440 },
+  { 2560, 1600 },
+  { 2560, 1664 },
+  { 2880, 1800 },
+  { 2940, 1836 },	// MacBook Air 13" under the notch
+  { 2940, 1912 },
+  { 3024, 1890 },	// MacBook Pro 14" under the notch
+  { 3024, 1964 },
+  { 3420, 2136 },	// MacBook Air 15" under the notch
+  { 3420, 2224 },
+  { 3456, 2160 },	// MacBook Pro 16" under the notch
+  { 3456, 2234 },
+  { 3840, 2160 },
+};
+// THIS NUMBER MUST NOT BE OVER 32! (otherwise change it in adapter.h)
+static const INDEX MAX_RESOLUTIONS = sizeof(_areResolutions)/sizeof(_areResolutions[0]);
+
+
+
+// initialize CDS support (enumerate modes at startup)
+void CGfxLibrary::InitAPIs(void)
+{
+  // no need for gfx when dedicated server is on
+  if( _bDedicatedServer) return;
+
+  CDisplayAdapter *pda;
+  INDEX iResolution;
+
+
+#ifndef PLATFORM_WIN32
+  // the display modes the desktop can take, from SDL; changing them is up to the platform layer
+  // when the main window goes fullscreen (CDS_SetMode below does nothing)
+  {
+    const SDL_DisplayID idDisplay = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode *pdmDesktop = SDL_GetDesktopDisplayMode(idDisplay);
+    if( pdmDesktop!=NULL) {
+      CPrintF( TRANS("Current display: '%s' - %dx%d\n\n"), SDL_GetDisplayName(idDisplay), pdmDesktop->w, pdmDesktop->h);
+    }
+    gl_gaAPI[GAT_OGL].ga_ctAdapters = 1;
+    gl_gaAPI[GAT_OGL].ga_iCurrentAdapter = 0;
+    pda = &gl_gaAPI[GAT_OGL].ga_adaAdapter[0];
+    pda->da_ulFlags = 0;
+    pda->da_strVendor   = TRANS( "unknown");
+    pda->da_strRenderer = TRANS( "Default ICD");
+    pda->da_strVersion  = "1.1+";
+    pda->da_ctDisplayModes = 0;
+    pda->da_iCurrentDisplayMode = -1;
+    int ctModes = 0;
+    SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+    // the resolutions of the list that the display has, in points or, in a high density (Retina)
+    // mode, in pixels: PLT_SetMainWindowMode draws those at full density. Not those whose top is
+    // behind a MacBook's camera notch: the size under the notch is in the list instead.
+    PIX pixDesktopI, pixDesktopJ;
+    PLT_GetDesktopSize( pixDesktopI, pixDesktopJ);
+    const BOOL bHighDensity = pdmDesktop!=NULL && pixDesktopI>pdmDesktop->w;
+    for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
+    {
+      CResolution &re = _areResolutions[iResolution];
+      for( INDEX iMode=0; iMode<ctModes; iMode++) {
+        const SDL_DisplayMode &dmSDL = *apdm[iMode];
+        const BOOL bPoints = dmSDL.w==re.re_pixSizeI && dmSDL.h==re.re_pixSizeJ;
+        const BOOL bPixels = bHighDensity && dmSDL.pixel_density>1.0f
+                          && (PIX)(dmSDL.w*dmSDL.pixel_density+0.5f)==re.re_pixSizeI
+                          && (PIX)(dmSDL.h*dmSDL.pixel_density+0.5f)==re.re_pixSizeJ;
+        if( (bPoints || bPixels) && !PLT_IsBehindNotch( re.re_pixSizeI, re.re_pixSizeJ)) {
+          CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
+          dm.dm_pixSizeI = re.re_pixSizeI;
+          dm.dm_pixSizeJ = re.re_pixSizeJ;
+          dm.dm_ddDepth  = DISPD_DEFAULT;
+          pda->da_ctDisplayModes++;
+          break;
+        }
+      }
+    }
+    SDL_free(apdm);
+#ifdef SE1_METAL
+    // Metal draws on the same window, with the same modes
+    if( mtlIsAvailable()) {
+      gl_gaAPI[GAT_MTL] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daMetal = gl_gaAPI[GAT_MTL].ga_adaAdapter[0];
+      daMetal.da_strVendor   = "Apple";
+      daMetal.da_strRenderer = "Metal";
+      daMetal.da_strVersion  = "Metal";
+    }
+#endif // SE1_METAL
+#ifdef SE1_VULKAN
+    // and Vulkan (MoltenVK)
+    if( vlkIsAvailable()) {
+      gl_gaAPI[GAT_VK] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daVulkan = gl_gaAPI[GAT_VK].ga_adaAdapter[0];
+      daVulkan.da_strVendor   = "Apple";
+      daVulkan.da_strRenderer = "Vulkan";
+      daVulkan.da_strVersion  = "Vulkan";
+    }
+#endif // SE1_VULKAN
+  }
+#else
+  // detect current mode and print to console
+  memset( &gl_devmode, 0, sizeof(gl_devmode));
+  gl_devmode.dmSize = sizeof(gl_devmode);
+  LONG lRes = EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &gl_devmode);
+  CPrintF( TRANS("Current display: '%s' version %d - %dx%dx%d\n\n"), 
+           gl_devmode.dmDeviceName, gl_devmode.dmDriverVersion,
+           gl_devmode.dmPelsWidth, gl_devmode.dmPelsHeight, gl_devmode.dmBitsPerPel);
+
+  // fill OpenGL adapter info
+  gl_gaAPI[GAT_OGL].ga_ctAdapters = 1;
+  gl_gaAPI[GAT_OGL].ga_iCurrentAdapter = 0;
+  pda = &gl_gaAPI[GAT_OGL].ga_adaAdapter[0];
+  pda->da_ulFlags = DAF_USEGDIFUNCTIONS;
+  pda->da_strVendor   = TRANS( "unknown");
+  pda->da_strRenderer = TRANS( "Default ICD");
+  pda->da_strVersion  = "1.1+";
+
+  // detect modes for OpenGL ICD
+  pda->da_ctDisplayModes = 0;
+  pda->da_iCurrentDisplayMode = -1;
+
+  // enumerate modes thru resolution list
+  for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
+  {
+    DEVMODE devmode;
+    memset( &devmode, 0, sizeof(devmode));
+    CResolution &re = _areResolutions[iResolution];
+
+    // ask windows if they could set the mode
+    devmode.dmSize = sizeof(devmode);
+    devmode.dmPelsWidth  = re.re_pixSizeI;
+    devmode.dmPelsHeight = re.re_pixSizeJ;
+    devmode.dmDisplayFlags = CDS_FULLSCREEN;
+    devmode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFLAGS;
+    LONG lRes = ChangeDisplaySettings( &devmode, CDS_TEST|CDS_FULLSCREEN);
+    // skip if not successfull
+    if( lRes!=DISP_CHANGE_SUCCESSFUL) continue;
+
+    // make a new display mode
+    CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
+    dm.dm_pixSizeI = re.re_pixSizeI;
+    dm.dm_pixSizeJ = re.re_pixSizeJ;
+    dm.dm_ddDepth  = DISPD_DEFAULT;
+    pda->da_ctDisplayModes++;
+  }
+
+  // detect presence of 3Dfx standalone OpenGL driver (for Voodoo1/2)
+  char *strDummy;
+  char  strBuffer[_MAX_PATH+1];
+  int iRes = SearchPath( NULL, "3DFXVGL.DLL", NULL, _MAX_PATH, strBuffer, &strDummy);
+  // if present
+  if(iRes) {
+    // set adapter and force some enumeration of voodoo1/2 display modes
+    gl_gaAPI[GAT_OGL].ga_ctAdapters++;
+    pda = &gl_gaAPI[GAT_OGL].ga_adaAdapter[1];
+    pda->da_ctDisplayModes = 4; // voodoos have only 4 display modes
+    pda->da_ulFlags = DAF_ONEWINDOW | DAF_FULLSCREENONLY | DAF_16BITONLY;
+    pda->da_strVendor   = "3Dfx";
+    pda->da_strRenderer = "3Dfx Voodoo2";
+    pda->da_strVersion  = "1.1+";
+    CDisplayMode *adm = &pda->da_admDisplayModes[0];
+	adm[0].dm_pixSizeI =  512;  adm[0].dm_pixSizeJ = 384;  adm[0].dm_ddDepth = DISPD_16BIT;
+    adm[1].dm_pixSizeI =  640;  adm[1].dm_pixSizeJ = 480;  adm[1].dm_ddDepth = DISPD_16BIT;
+    adm[2].dm_pixSizeI =  800;  adm[2].dm_pixSizeJ = 600;  adm[2].dm_ddDepth = DISPD_16BIT;
+    adm[3].dm_pixSizeI = 1024;  adm[3].dm_pixSizeJ = 768;  adm[3].dm_ddDepth = DISPD_16BIT;
+  }
+#endif  // PLATFORM_WIN32
+#ifdef SE1_D3D
+  // try to init Direct3D 8
+  BOOL bRes = InitDriver_D3D();
+  if( !bRes) return; // didn't made it?
+  
+  // determine DX8 adapters and display modes
+  const INDEX ctMaxAdapters = gl_pD3D->GetAdapterCount();
+  INDEX &ctAdapters = gl_gaAPI[GAT_D3D].ga_ctAdapters;
+  ctAdapters = 0;
+
+  for( INDEX iAdapter=0; iAdapter<ctMaxAdapters; iAdapter++)
+  {
+    pda = &gl_gaAPI[1].ga_adaAdapter[ctAdapters];
+    pda->da_ulFlags = NONE;
+    pda->da_ctDisplayModes = 0;
+    INDEX ctModes = gl_pD3D->GetAdapterModeCount(iAdapter);
+    INDEX iMode;
+    HRESULT hr;
+
+    // check whether 32-bits rendering modes are supported
+    hr = gl_pD3D->CheckDeviceType( iAdapter, d3dDevType, D3DFMT_A8R8G8B8, D3DFMT_A8R8G8B8, FALSE);
+    if( hr!=D3D_OK) {
+      hr = gl_pD3D->CheckDeviceType( iAdapter, d3dDevType, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, FALSE);
+      if( hr!=D3D_OK) pda->da_ulFlags |= DAF_16BITONLY;
+    }
+
+    // check whether windowed rendering modes are supported
+    D3DCAPS8 d3dCaps;
+    gl_pD3D->GetDeviceCaps( iAdapter, d3dDevType, &d3dCaps);
+    if( !(d3dCaps.Caps2 & D3DCAPS2_CANRENDERWINDOWED)) pda->da_ulFlags |= DAF_FULLSCREENONLY;
+
+	_pGfx->gl_pd3dCaps = d3dCaps;		// Date : 2006-05-16(¿ÀÈÄ 4:47:51), By eons
+
+    // enumerate modes thru resolution list
+    for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
+    {
+      CResolution &re = _areResolutions[iResolution];
+      for( iMode=0; iMode<ctModes; iMode++) {
+        // if resolution matches and display depth is 16 or 32 bit
+        D3DDISPLAYMODE d3dDisplayMode;
+        gl_pD3D->EnumAdapterModes( iAdapter, iMode, &d3dDisplayMode);
+        if( d3dDisplayMode.Width==re.re_pixSizeI && d3dDisplayMode.Height==re.re_pixSizeJ
+         && (d3dDisplayMode.Format==D3DFMT_A8R8G8B8 || d3dDisplayMode.Format==D3DFMT_X8R8G8B8
+         ||  d3dDisplayMode.Format==D3DFMT_A1R5G5B5 || d3dDisplayMode.Format==D3DFMT_X1R5G5B5 
+         ||  d3dDisplayMode.Format==D3DFMT_R5G6B5)) {
+          hr = gl_pD3D->CheckDeviceType( iAdapter, d3dDevType, d3dDisplayMode.Format, d3dDisplayMode.Format, FALSE);
+          if( hr!=D3D_OK) continue;
+
+          // make a new display mode
+          CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
+          dm.dm_pixSizeI = re.re_pixSizeI;
+          dm.dm_pixSizeJ = re.re_pixSizeJ;
+          dm.dm_ddDepth  = DISPD_DEFAULT;
+          pda->da_ctDisplayModes++;
+          break;
+        }
+      }
+    }
+
+    // get adapter identifier
+    ctAdapters++;
+    D3DADAPTER_IDENTIFIER8 d3dAdapterIdentifier;
+    gl_pD3D->GetAdapterIdentifier( iAdapter, D3DENUM_NO_WHQL_LEVEL, &d3dAdapterIdentifier);
+    pda->da_strVendor   = "MS DirectX 8";
+    pda->da_strRenderer = d3dAdapterIdentifier.Description;
+    pda->da_strVersion.PrintF("%d.%d.%d.%d", d3dAdapterIdentifier.DriverVersion.HighPart >>16,
+                                             d3dAdapterIdentifier.DriverVersion.HighPart & 0xFFFF,
+                                             d3dAdapterIdentifier.DriverVersion.LowPart >>16,    
+                                             d3dAdapterIdentifier.DriverVersion.LowPart & 0xFFFF);
+  }
+  // shutdown DX8 (we'll start it again if needed)
+  D3DRELEASE( gl_pD3D, TRUE);
+  if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
+  gl_hiDriver = NONE;
+#endif // SE1_D3D
+}
+
+
+// get list of all modes avaliable through CDS -- do not modify/free the returned list
+CListHead &CDS_GetModes(void)
+{
+  return _lhCDSModes;
+}
+
+
+// set given display mode
+BOOL CDS_SetMode( PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd)
+{
+  // no need for gfx when dedicated server is on
+  if( _bDedicatedServer) return FALSE;
+
+#ifndef PLATFORM_WIN32
+  // the platform layer sets the display mode with the fullscreen window (PLT_SetMainWindowMode)
+  CPrintF(TRANS("  CDS: mode %dx%d left to the window\n"), pixSizeI, pixSizeJ);
+  return TRUE;
+#else
+  // prepare general mode parameters
+  DEVMODE devmode;
+  memset(&devmode, 0, sizeof(devmode));
+  devmode.dmSize = sizeof(devmode);
+  devmode.dmPelsWidth  = pixSizeI;
+  devmode.dmPelsHeight = pixSizeJ;
+  devmode.dmDisplayFlags = CDS_FULLSCREEN;
+  devmode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFLAGS;
+  extern INDEX gap_iRefreshRate;
+  if( gap_iRefreshRate>0) {
+    devmode.dmFields |= DM_DISPLAYFREQUENCY;
+    devmode.dmDisplayFrequency = gap_iRefreshRate;
+  }
+  // determine bits per pixel to try to set
+  SLONG slBPP2 = 0;
+  switch(dd) {
+  case DISPD_16BIT:
+    devmode.dmBitsPerPel = 16;
+    slBPP2 = 15;
+    devmode.dmFields |= DM_BITSPERPEL;
+    break;
+  case DISPD_32BIT:
+    devmode.dmBitsPerPel = 32;
+    slBPP2 = 24;
+    devmode.dmFields |= DM_BITSPERPEL;
+    break;
+  case DISPD_DEFAULT:
+    NOTHING;
+    break;
+  default:
+    ASSERT(FALSE);
+    NOTHING;
+  }
+
+  // try to set primary depth
+  LONG lRes = ChangeDisplaySettings(&devmode, CDS_FULLSCREEN);
+
+  // if failed
+  if( lRes!=DISP_CHANGE_SUCCESSFUL) {
+    // try to set secondary depth
+    devmode.dmBitsPerPel = slBPP2;
+    LONG lRes2 = ChangeDisplaySettings(&devmode, CDS_FULLSCREEN);
+    // if failed
+    if( lRes2!=DISP_CHANGE_SUCCESSFUL) {
+      CTString strError;
+      switch(lRes) {
+      case DISP_CHANGE_SUCCESSFUL:  strError = "DISP_CHANGE_SUCCESSFUL"; break;
+      case DISP_CHANGE_RESTART:     strError = "DISP_CHANGE_RESTART"; break;
+      case DISP_CHANGE_BADFLAGS:    strError = "DISP_CHANGE_BADFLAGS"; break;
+      case DISP_CHANGE_BADPARAM:    strError = "DISP_CHANGE_BADPARAM"; break;
+      case DISP_CHANGE_FAILED:      strError = "DISP_CHANGE_FAILED"; break;
+      case DISP_CHANGE_BADMODE:     strError = "DISP_CHANGE_BADMODE"; break;
+      case DISP_CHANGE_NOTUPDATED:  strError = "DISP_CHANGE_NOTUPDATED"; break;
+      default: strError.PrintF("%d", lRes); break;
+      }
+      CPrintF(TRANS("CDS error: %s\n"), strError);
+      return FALSE;
+    }
+  }
+  // report
+  CPrintF(TRANS("  CDS: mode set to %dx%dx%d\n"), pixSizeI, pixSizeJ, devmode.dmBitsPerPel);
+  return TRUE;
+#endif  // PLATFORM_WIN32
+}
+
+
+// reset windows to mode chosen by user within windows diplay properties
+void CDS_ResetMode(void)
+{
+  // no need for gfx when dedicated server is on
+  if( _bDedicatedServer) return;
+
+#ifdef PLATFORM_WIN32
+  LONG lRes = ChangeDisplaySettings( NULL, 0);
+  ASSERT(lRes==DISP_CHANGE_SUCCESSFUL);
+  CPrintF(TRANS("  CDS: mode reset to original desktop settings\n"));
+#endif
+}
