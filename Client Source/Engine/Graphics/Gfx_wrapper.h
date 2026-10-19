@@ -394,6 +394,9 @@ public:
 	};
 	INDEX vb_ctLockedVertices[GFX_MAX_VBA];
 	ULONG vb_aulBufferObjects[GFX_MAX_VBA]; // OpenGL: buffer object of each array of a static buffer (0 = none)
+#ifdef SE1_METAL
+	struct MtlBuffer *vb_apbufMetal[GFX_MAX_VBA]; // Metal: the same, as GPU buffers (NULL = none)
+#endif // SE1_METAL
 	SLONG vb_slSize;            // total size of this vertex buffer (in bytes)
 	INDEX vb_ctVertices;        // number of vertices
 	ULONG vb_ulArrayMask;       // which array(s) exist in this buffer

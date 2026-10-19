@@ -28,6 +28,15 @@
 #endif // SE1_D3D
 //강동민 수정 끝 로그인 처리 작업		07.10
 
+#ifdef SE1_METAL
+// Metal (Gfx_wrapper_Metal.cpp): rectangles from the top left of the render target
+#include <Engine/Graphics/MetalDevice.h>
+extern void MTL_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void MTL_Clear( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, BOOL bColor, COLOR col, BOOL bDepth, FLOAT fDepth);
+extern void MTL_DrawPrimitives( MtlPrimitive ePrimitive, const GFXVertex *pvtx, const GFXColor *pcol,
+                                const GFXTexCoord *ptex, INDEX ctVertices, FLOAT fPointSize);
+#endif // SE1_METAL
+
 extern INDEX gfx_bDecoratedText;
 extern INDEX ogl_iFinish;
 extern INDEX d3d_iFinish;
@@ -758,7 +767,15 @@ void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) c
 			pglVertex2f(fI,fJ);
 		pglEnd();
 		OGL_CHECKERROR;
-	} // Direct3D
+	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex vtx = { pixI+0.5f, pixJ+0.5f, 0 };
+		const GFXColor gcol(col);
+		MTL_DrawPrimitives( MTLP_POINTS, &vtx, &gcol, NULL, 1, fR);
+	}
+#endif // SE1_METAL
+	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		HRESULT hr;
@@ -806,7 +823,15 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 			pglVertex3f( v(1),v(2),v(3));
 		pglEnd();
 		OGL_CHECKERROR;
-	} // Direct3D
+	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex vtx = { v(1), v(2), v(3) };
+		const GFXColor gcol(col);
+		MTL_DrawPrimitives( MTLP_POINTS, &vtx, &gcol, NULL, 1, fRadius);
+	}
+#endif // SE1_METAL
+	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		HRESULT hr;
@@ -869,7 +894,18 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
 			pglTexCoord2f(fD,0); pglVertex2f(fI1,fJ1);
 		pglEnd();
 		OGL_CHECKERROR;
-	} // Direct3D
+	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex avtx[2] = { { pixI0+0.5f, pixJ0+0.5f, 0 }, { pixI1+0.5f, pixJ1+0.5f, 0 } };
+		const GFXColor acol[2] = { GFXColor(col), GFXColor(col) };
+		GFXTexCoord atex[2];
+		atex[0].s = 0;   atex[0].t = 0;
+		atex[1].s = fD;  atex[1].t = 0;
+		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, atex, 2, 1);
+	}
+#endif // SE1_METAL
+	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		HRESULT hr;
@@ -918,7 +954,15 @@ void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 			pglVertex3f( v1(1),v1(2),v1(3));
 		pglEnd();
 		OGL_CHECKERROR;
-	} // Direct3D
+	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex avtx[2] = { { v0(1), v0(2), v0(3) }, { v1(1), v1(2), v1(3) } };
+		const GFXColor acol[2] = { GFXColor(col), GFXColor(col) };
+		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, NULL, 2, 1);
+	}
+#endif // SE1_METAL
+	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		HRESULT hr;
@@ -989,6 +1033,23 @@ void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COL
 		pglEnd();
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex avtx[8] = {
+			{fI0,fJ0,  0}, {fI1,  fJ0,0},   // up
+			{fI1,fJ0,  0}, {fI1,  fJ1,0},   // right
+			{fI0,fJ1,  0}, {fI1+1,fJ1,0},   // down
+			{fI0,fJ0+1,0}, {fI0,  fJ1,0} }; // left
+		GFXColor acol[8];
+		GFXTexCoord atex[8];
+		for( INDEX i=0; i<8; i++) {
+			acol[i].Set(col);
+			atex[i].s = (i&1) ? fD : 0;
+			atex[i].t = 0;
+		}
+		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, atex, 8, 1);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
@@ -1047,6 +1108,13 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col
 		OGL_CHECKERROR;
 		if( !bFullDP) ResetScissor(this);
 	}
+#ifdef SE1_METAL
+	// Metal
+	else if( eAPI==GAT_MTL)
+	{
+		MTL_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, TRUE, col, FALSE, 0);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1109,6 +1177,14 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight,
 			glCOLOR(colUR);  pglVertex2f(fI1,fJ0);   // up-right
 		pglEnd();
 	}
+#ifdef SE1_METAL
+	else if( eAPI==GAT_MTL) {
+		const GFXVertex avtx[6] = { {fI0,fJ0,0}, {fI0,fJ1,0}, {fI1,fJ1,0}, {fI0,fJ0,0}, {fI1,fJ1,0}, {fI1,fJ0,0} };
+		const GFXColor acol[6] = { GFXColor(colUL), GFXColor(colDL), GFXColor(colDR),
+		                           GFXColor(colUL), GFXColor(colDR), GFXColor(colUR) };
+		MTL_DrawPrimitives( MTLP_TRIANGLES, avtx, acol, NULL, 6, 1);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { 
 		// thru Direct3D
@@ -1155,6 +1231,13 @@ void CDrawPort::Fill( COLOR col) const
 		pglClear( GL_COLOR_BUFFER_BIT);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_METAL
+	// Metal (inside the drawport's scissor, as OpenGL)
+	else if( eAPI==GAT_MTL)
+	{
+		MTL_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, TRUE, col, FALSE, 0);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1200,6 +1283,13 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
 		OGL_CHECKERROR;
 		ResetScissor(this);
 	}
+#ifdef SE1_METAL
+	// Metal
+	else if( eAPI==GAT_MTL)
+	{
+		MTL_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, FALSE, 0, TRUE, zval);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1243,6 +1333,13 @@ void CDrawPort::FillZBuffer( FLOAT zval) const
 		pglClear(bMask);
 		OGL_CHECKERROR
 	}
+#ifdef SE1_METAL
+	// Metal (inside the drawport's scissor, as OpenGL)
+	else if( eAPI==GAT_MTL)
+	{
+		MTL_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, FALSE, 0, TRUE, zval);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)

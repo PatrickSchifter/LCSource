@@ -808,7 +808,10 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #else
-	StartNewMode( GAT_OGL, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+	// OpenGL, or Metal with LC_GFX_API=metal (macOS, while the Metal backend is being made)
+	const char *strGfxAPI = getenv("LC_GFX_API");
+	const GfxAPIType eGfxAPI = (strGfxAPI!=NULL && stricmp(strGfxAPI, "metal")==0 && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
+	StartNewMode( eGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #endif // SE1_D3D
 
@@ -956,6 +959,7 @@ void PrintDisplayModeInfo(void)
 	if( dm.IsTripleHead()) strRes += TRANS(" TripleMonitor");
 	if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
 			 if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) strRes += " (Metal)";
 #ifdef SE1_D3D
 	else 
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D) strRes += " (Direct3D)";
@@ -1791,7 +1795,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ,bCenter);
 #endif // SE1_D3D
 	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-	if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+	if( bSuccess && (eGfxAPI==GAT_OGL || eGfxAPI==GAT_MTL)) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 	//	±è¿µÈ¯ : ¹«½Ã OpenMainWindowNormal() Ã³¸®µÊ.
 
 	// if new mode was set

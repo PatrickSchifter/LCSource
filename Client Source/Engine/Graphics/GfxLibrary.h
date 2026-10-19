@@ -79,6 +79,7 @@ enum GfxAPIType
 #ifdef SE1_D3D
 	GAT_D3D  =  1,     // Direct3D
 #endif // SE1_D3D
+	GAT_MTL  =  2,     // Metal (macOS, SE1_METAL)
 	GAT_CURRENT = 9,   // current API
 };
 
@@ -132,7 +133,7 @@ enum VtxType
 class ENGINE_API CGfxLibrary
 {
 public:
-	CGfxAPI gl_gaAPI[2];
+	CGfxAPI gl_gaAPI[3];  // by GfxAPIType
 	CViewPort *gl_pvpActive;   // active viewport
 	HINSTANCE  gl_hiDriver;    // DLL handle
 
@@ -243,6 +244,15 @@ private:
 	void SwapBuffers_D3D( CViewPort *pvpToSwap);
 #endif // SE1_D3D
 
+#ifdef SE1_METAL
+	// Metal specific (Gfx_Metal.cpp)
+	BOOL InitDriver_MTL(void);
+	void EndDriver_MTL(void);
+	void InitContext_MTL(void);
+	BOOL SetCurrentViewport_MTL( CViewPort *pvp);
+	void SwapBuffers_MTL( CViewPort *pvpToSwap);
+#endif // SE1_METAL
+
 public:
 
 	// common
@@ -299,6 +309,7 @@ public:
 #ifdef SE1_D3D
 		if( eAPI==GAT_D3D) return (gl_gaAPI[1].ga_ctAdapters>0);
 #endif // SE1_D3D
+		if( eAPI==GAT_MTL) return (gl_gaAPI[2].ga_ctAdapters>0);
 		return FALSE;
 	};
 
@@ -308,6 +319,7 @@ public:
 #ifdef SE1_D3D
 		if( gl_eCurrentAPI==GAT_D3D) return( gl_ulFlags & GLF_D3D_VISIBILITYTEST);
 #endif // SE1_D3D
+		if( gl_eCurrentAPI==GAT_MTL) return FALSE;
 		ASSERT(gl_eCurrentAPI==GAT_NONE);
 		return FALSE;
 	};

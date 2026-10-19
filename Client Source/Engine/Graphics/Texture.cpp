@@ -10,6 +10,9 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/TextureEffects.h>
+#ifdef SE1_METAL
+#include <Engine/Graphics/MetalDevice.h>
+#endif // SE1_METAL
 
 #include <Engine/Templates/DynamicArray.h>
 #include <Engine/Templates/DynamicArray.cpp>
@@ -75,6 +78,19 @@ extern void DetermineSupportedTextureFormats( GfxAPIType eAPI)
 		TS.ts_tfA8     = FindClosestFormat_D3D(D3DFMT_A8);
 	}
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	if( eAPI==GAT_MTL) 
+	{
+		TS.ts_tfRGB8   = MTLTF_RGB8;
+		TS.ts_tfRGBA8  = MTLTF_RGBA8;
+		TS.ts_tfRGB5   = MTLTF_RGB5;
+		TS.ts_tfRGBA4  = MTLTF_RGBA4;
+		TS.ts_tfRGB5A1 = MTLTF_RGB5A1;
+		TS.ts_tfLA8    = MTLTF_LA8;
+		TS.ts_tfL8     = MTLTF_L8;
+		TS.ts_tfA8     = MTLTF_A8;
+	}
+#endif // SE1_METAL
 }
 
 
@@ -121,6 +137,10 @@ extern void UpdateTextureSettings(void)
 	// Direct3D (just force DXTC - it's the only one)
 	if( eAPI==GAT_D3D && bAnyTC) iTCType = 5;
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	// Metal (DXT too)
+	if( eAPI==GAT_MTL && bAnyTC) iTCType = 6;
+#endif // SE1_METAL
 	
 	// set members
 	switch( iTCType) 
@@ -155,6 +175,13 @@ extern void UpdateTextureSettings(void)
 		TS.ts_tfRGBcAc = FindClosestFormat_D3D(D3DFMT_DXT5);
 		break;
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	case 6:  // DXT on Metal
+		TS.ts_tfRGBc   = MTLTF_DXT1;
+		TS.ts_tfRGBcA  = MTLTF_DXT3;
+		TS.ts_tfRGBcAc = MTLTF_DXT5;
+		break;
+#endif // SE1_METAL
 	default: // none
 		TS.ts_tfRGBc   = NONE;
 		TS.ts_tfRGBcA  = NONE;

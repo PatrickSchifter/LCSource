@@ -1763,7 +1763,7 @@ void RSRenderGroup( ScenePolygon *pspoGroup, ULONG ulGroupFlags, ULONG ulTestedF
 	extern INDEX d3d_iMaxBurstSize;
 	ogl_iMaxBurstSize = Clamp( ogl_iMaxBurstSize, 0L, 9999L);
 	d3d_iMaxBurstSize = Clamp( d3d_iMaxBurstSize, 0L, 9999L);
-	const INDEX iMaxBurstSize = (_eAPI==GAT_OGL) ? ogl_iMaxBurstSize : d3d_iMaxBurstSize;
+	const INDEX iMaxBurstSize = (_eAPI==GAT_OGL || _eAPI==GAT_MTL) ? ogl_iMaxBurstSize : d3d_iMaxBurstSize;
 
 	// if unlimited lock count
 	if( iMaxBurstSize==0)
@@ -1821,7 +1821,7 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
 #ifdef SE1_D3D
 	if( _eAPI!=GAT_OGL && _eAPI!=GAT_D3D) return;
 #else
-	if( _eAPI!=GAT_OGL) return;
+	if( _eAPI!=GAT_OGL && _eAPI!=GAT_MTL) return;
 #endif // SE1_D3D
 
 	// some cvars cannot be altered in multiplayer mode!

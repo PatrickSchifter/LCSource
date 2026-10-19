@@ -597,6 +597,7 @@ static void GAPInfo(void)
 	// report API
 	CPrintF( "- Graphics API: ");
 	if( eAPI==GAT_OGL) CPrintF( "OpenGL\n");
+	else if( eAPI==GAT_MTL) CPrintF( "Metal\n");
 	else CPrintF( "Direct3D\n");
 	// and number of adapters
 	CPrintF( "- Adapters found: %d\n", _pGfx->gl_gaAPI[eAPI].ga_ctAdapters);
@@ -1483,6 +1484,18 @@ BOOL CGfxLibrary::StartDisplayMode( enum GfxAPIType eAPI, INDEX iAdapter, PIX pi
 	}
 #endif // SE1_D3D
 
+#ifdef SE1_METAL
+	// Metal driver ? (the window's mode is up to the platform layer, as with OpenGL outside Windows)
+	else if( eAPI==GAT_MTL)
+	{
+		bSuccess = InitDriver_MTL();
+		if( !bSuccess) return FALSE;
+		gl_eCurrentAPI = GAT_MTL;
+		gl_iSwapInterval = 1234; // need to reset
+	 _iGfxAPI = 0;  // colors in memory are those of OpenGL
+	}
+#endif // SE1_METAL
+
 	// no driver
 	else
 	{
@@ -1588,6 +1601,12 @@ void CGfxLibrary::StopDisplayMode(void)
 		MonitorsOn();
 	}
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	else if( gl_eCurrentAPI==GAT_MTL)
+	{ // Metal
+		EndDriver_MTL();
+	}
+#endif // SE1_METAL
 	else
 	{ // none
 		ASSERT( gl_eCurrentAPI==GAT_NONE);
@@ -1625,6 +1644,9 @@ BOOL CGfxLibrary::SetCurrentViewport(CViewPort *pvp)
 #ifdef SE1_D3D
 	if( gl_eCurrentAPI==GAT_D3D)  return SetCurrentViewport_D3D(pvp);
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	if( gl_eCurrentAPI==GAT_MTL)  return SetCurrentViewport_MTL(pvp);
+#endif // SE1_METAL
 	if( gl_eCurrentAPI==GAT_NONE) return TRUE;
 	ASSERTALWAYS( "SetCurrenViewport: Wrong API!");
 	return FALSE;
@@ -1688,6 +1710,20 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 		GFX_fMaxDepthRange = 1.0f;
 	}
 #endif // SE1_D3D
+#ifdef SE1_METAL
+	// Metal ... (from the top left, as Direct3D)
+	else if( gl_eCurrentAPI==GAT_MTL)
+	{
+		extern void MTL_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+		extern void MTL_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+		const PIX pixMinSI = pdpToLock->dp_ScissorMinI;
+		const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI;
+		const PIX pixMinSJ = pdpToLock->dp_ScissorMinJ;
+		const PIX pixMaxSJ = pdpToLock->dp_ScissorMaxJ;
+		MTL_SetViewport( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
+		MTL_SetScissor(  pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
+	}
+#endif // SE1_METAL
 
 	// mark and set default projection
 	GFX_ulLastDrawPortID = ulThisDrawPortID;
@@ -2171,6 +2207,14 @@ void CGfxLibrary::SwapBuffers( CViewPort *pvp, const BOOL bWaitForRetrace/*=FALS
 	}
 #endif // SE1_D3D
 
+#ifdef SE1_METAL
+	// Metal
+	else if( gl_eCurrentAPI==GAT_MTL)
+	{
+		SwapBuffers_MTL(pvp);
+	}
+#endif // SE1_METAL
+
 	// update tessellation level
 	gl_iTessellationLevel = gap_iTruformLevel;
 
@@ -2292,6 +2336,8 @@ BOOL CGfxLibrary::HasCompression(void)
 #ifdef SE1_D3D
 	if( eAPI==GAT_D3D && (gl_ulFlags&GLF_TEXTURECOMPRESSION)) return TRUE;
 #endif // SE1_D3D
+	// Metal: DXT, if the device reads it
+	if( eAPI==GAT_MTL && (gl_ulFlags&GLF_TEXTURECOMPRESSION)) return TRUE;
 	// no API - no compression
 	return FALSE;
 }
@@ -2369,6 +2415,12 @@ static void AdjustGammaRamp( CViewPort *pvp)
 		PLT_SetGammaRamp( &_auwGammaTable[0]);
 #endif // PLATFORM_WIN32
 	}
+#ifdef SE1_METAL
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		// Metal (macOS): the display's, as with OpenGL
+		PLT_SetGammaRamp( &_auwGammaTable[0]);
+	}
+#endif // SE1_METAL
 #ifdef SE1_D3D
 	else if( _pGfx->gl_eCurrentAPI==GAT_D3D) {
 		// Direct3D

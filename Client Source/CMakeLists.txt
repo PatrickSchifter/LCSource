@@ -135,6 +135,8 @@ else()
   find_package(Iconv REQUIRED)
   target_link_libraries(lc_client_common INTERFACE SDL3::SDL3)
   target_compile_definitions(lc_client_common INTERFACE _MT)  # MSVC's multithreaded CRT flag (Base/Timer.h)
+  # The Metal backend (GAT_MTL, Graphics/Gfx_Metal.cpp), next to OpenGL; chosen with LC_GFX_API=metal.
+  target_compile_definitions(lc_client_common INTERFACE SE1_METAL)
   # -fms-extensions for the MSVC-isms the code still has (as in the check build). The rest keep
   # the semantics the code was written for under MSVC: signed overflow wraps, no type-based
   # aliasing, and 'this==NULL'-style checks are not optimized away. Warnings are off here: the
@@ -252,10 +254,13 @@ if(WIN32)
   target_link_libraries(Engine PRIVATE d3dx8_compat dsound winmm ws2_32 wininet imm32 version advapi32 dbghelp)
   target_link_options(Engine PRIVATE /MAP /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)
 else()
-  target_link_libraries(Engine PRIVATE PkgConfig::VORBISFILE Iconv::Iconv "-framework OpenGL" "-framework AppKit")
-  # trackpad gestures (Objective-C++, not in the generated source lists)
-  target_sources(Engine PRIVATE Engine/Platform/PlatformMac.mm)
-  set_source_files_properties(Engine/Platform/PlatformMac.mm PROPERTIES COMPILE_OPTIONS "-xobjective-c++;-fobjc-arc")
+  target_link_libraries(Engine PRIVATE PkgConfig::VORBISFILE Iconv::Iconv "-framework OpenGL" "-framework AppKit"
+    "-framework Metal" "-framework QuartzCore")
+  # trackpad gestures and the Metal device (Objective-C++), and the Metal backend: not in the
+  # generated source lists (Gfx_wrapper_Metal.cpp is included by Gfx_wrapper.cpp)
+  target_sources(Engine PRIVATE Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm Engine/Graphics/Gfx_Metal.cpp)
+  set_source_files_properties(Engine/Platform/PlatformMac.mm Engine/Graphics/MetalDevice.mm
+    PROPERTIES COMPILE_OPTIONS "-xobjective-c++;-fobjc-arc")
 endif()
 
 lc_client_target(Shaders SHARED ${SHADERS_SOURCES})

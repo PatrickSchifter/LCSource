@@ -794,8 +794,12 @@ extern void shaPrepareForBillboard(BOOL bCylinderType/* = FALSE*/, BOOL bNeedCal
 #ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->SetTransform(D3DTS_VIEW, &matNewView);
 #else
-	pglMatrixMode( GL_MODELVIEW);
-	pglLoadMatrixf( (FLOAT*)&matNewView);
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		gfxSetViewMatrix( (FLOAT*)&matNewView);
+	} else {
+		pglMatrixMode( GL_MODELVIEW);
+		pglLoadMatrixf( (FLOAT*)&matNewView);
+	}
 #endif // SE1_D3D
 }
 //안태훈 수정 끝	//(Add Tagent-space Normal Map)(0.1)

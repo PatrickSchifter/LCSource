@@ -974,9 +974,14 @@ void CRenderer::RenderOneSkaModelToTexture(CEntity &en, const CPlacement3D &plMo
 	D3D_CHECKERROR(hr);
 #else
 	// the same floats work as an OpenGL projection (its depth lands in 0..1 of OpenGL's -1..1)
-	pglMatrixMode( GL_PROJECTION);
-	pglLoadMatrixf( _matShadowProj);
-	pglMatrixMode( GL_MODELVIEW);
+	extern void SetProjectionMatrix_MTL( const FLOAT *pfMatrix);
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		SetProjectionMatrix_MTL( _matShadowProj);
+	} else {
+		pglMatrixMode( GL_PROJECTION);
+		pglLoadMatrixf( _matShadowProj);
+		pglMatrixMode( GL_MODELVIEW);
+	}
 #endif // SE1_D3D
 	
 	//-----------------------------------------------------------------------------

@@ -1335,6 +1335,8 @@ static void ClearShadowTexGen_OGL(void)
 void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 {
 	if(re_avvxViewVertices.Count() <= 0)		return;
+	// Metal: no render targets yet
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) return;
 
 	extern INDEX g_iShadowDetail;
 
@@ -1671,6 +1673,8 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlacement3D &plEye)
 {
 	extern INDEX g_iShadowDetail;
+	// Metal: no render targets yet
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) return;
 	// profile rendering
 	const BOOL bModelSetupTimer = _sfStats.CheckTimer(CStatForm::STI_MODELSETUP);
 	if( bModelSetupTimer) _sfStats.StopTimer(CStatForm::STI_MODELSETUP);
@@ -2576,7 +2580,9 @@ void CRenderer::RenderReflection(/*Matrix16 &matWaterProj*/)
 #ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, (D3DXMATRIX*)&_matWaterProj);
 #else
-		pglGetFloatv( GL_PROJECTION_MATRIX, _matWaterProj);
+		extern void GetProjectionMatrix_MTL( FLOAT *pfMatrix);
+		if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProjectionMatrix_MTL( (FLOAT*)_matWaterProj);
+		else pglGetFloatv( GL_PROJECTION_MATRIX, _matWaterProj);
 #endif // SE1_D3D
 	}
 //강동민 수정 끝 Water 구현			04.21

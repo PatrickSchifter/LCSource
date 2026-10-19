@@ -8,6 +8,9 @@
 #include <SDL3/SDL.h>
 #include <Engine/Platform/Platform.h>
 #endif
+#ifdef SE1_METAL
+#include <Engine/Graphics/MetalDevice.h>
+#endif // SE1_METAL
 
 
 extern BOOL _bDedicatedServer;
@@ -161,6 +164,16 @@ void CGfxLibrary::InitAPIs(void)
       }
     }
     SDL_free(apdm);
+#ifdef SE1_METAL
+    // Metal draws on the same window, with the same modes
+    if( mtlIsAvailable()) {
+      gl_gaAPI[GAT_MTL] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daMetal = gl_gaAPI[GAT_MTL].ga_adaAdapter[0];
+      daMetal.da_strVendor   = "Apple";
+      daMetal.da_strRenderer = "Metal";
+      daMetal.da_strVersion  = "Metal";
+    }
+#endif // SE1_METAL
   }
 #else
   // detect current mode and print to console

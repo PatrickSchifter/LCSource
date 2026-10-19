@@ -2019,7 +2019,9 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						dwBlendFactor |= 0xFF000000;
 						_pGfx->gl_pd3dDevice->SetRenderState(D3DRS_TEXTUREFACTOR, dwBlendFactor);
 #else
-						SetShadowMapBlend_OGL( ptr->tr_fShadowBlendFactor);
+						extern void MTL_SetShadowMapBlend( FLOAT fBlendFactor);
+						if( _pGfx->gl_eCurrentAPI==GAT_MTL) MTL_SetShadowMapBlend( ptr->tr_fShadowBlendFactor);
+						else SetShadowMapBlend_OGL( ptr->tr_fShadowBlendFactor);
 #endif // SE1_D3D
 
 						shaSetTexCoordArray( ptcTexCoords, 0 );
@@ -2047,7 +2049,9 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						_pGfx->gl_pd3dDevice->SetTextureStageState(2, D3DTSS_COLOROP, dw_tss_top_value2);
 					}
 #else
-					if( !_bUseHardwareShaders ) ResetShadowMapBlend_OGL();
+					extern void MTL_ResetShadowMapBlend(void);
+					if( _pGfx->gl_eCurrentAPI==GAT_MTL) MTL_ResetShadowMapBlend();
+					else if( !_bUseHardwareShaders ) ResetShadowMapBlend_OGL();
 #endif // SE1_D3D
 					TR_SETINFO( ti_ctVisibleTriangles += ctind / 3 );
 				}
