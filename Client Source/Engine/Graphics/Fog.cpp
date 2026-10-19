@@ -16,7 +16,7 @@
 // wait for it (40% of a frame in Juno), so a table goes up only when it differs from what its
 // texture got last time (or the driver changed since).
 struct UploadedTable {
-	ULONG ut_ulTexture;
+	TEXOBJ ut_ulTexture;
 	INDEX ut_ctDriverChanges;
 	PIX ut_pixSizeU, ut_pixSizeV;
 	ULONG ut_ulFormat;
@@ -24,7 +24,7 @@ struct UploadedTable {
 	UploadedTable() : ut_ulTexture(0), ut_ctDriverChanges(-1), ut_pixSizeU(0), ut_pixSizeV(0), ut_ulFormat(0) {}
 };
 
-static BOOL TableChanged(UploadedTable &ut, ULONG ulTexture, const ULONG *pulData, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat)
+static BOOL TableChanged(UploadedTable &ut, TEXOBJ ulTexture, const ULONG *pulData, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat)
 {
 	const size_t ctPixels = (size_t)pixSizeU*pixSizeV;
 	if (ut.ut_ulTexture==ulTexture && ut.ut_ctDriverChanges==_pGfx->gl_ctDriverChanges
@@ -64,7 +64,7 @@ FLOAT _fog_fMulZ=0;
 FLOAT _fog_fMulH=0;
 FLOAT _fog_fAddH=0;
 ULONG _fog_ulAlpha=0;
-ULONG _fog_ulTexture=0;
+TEXOBJ _fog_ulTexture=0;
 ULONG _fog_ulFormat=0;
 
 PIX _fog_pixSizeH=0;
@@ -387,7 +387,7 @@ FLOAT3D _haze_vViewDirAbs;
 FLOAT _haze_fMul=0;
 FLOAT _haze_fAdd=0;
 ULONG _haze_ulAlpha=0;
-ULONG _haze_ulTexture=0;
+TEXOBJ _haze_ulTexture=0;
 ULONG _haze_ulFormat=0;
 
 

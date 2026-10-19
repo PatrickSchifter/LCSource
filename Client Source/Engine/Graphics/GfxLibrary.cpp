@@ -1552,8 +1552,8 @@ void CGfxLibrary::StopDisplayMode(void)
 	}
 
 	// unbind fog, haze and flat texture
-	extern ULONG _fog_ulTexture;
-	extern ULONG _haze_ulTexture;
+	extern TEXOBJ _fog_ulTexture;
+	extern TEXOBJ _haze_ulTexture;
 	gfxDeleteTexture( _fog_ulTexture); 
 	gfxDeleteTexture( _haze_ulTexture);
 	ASSERT( _ptdFlat!=NULL);

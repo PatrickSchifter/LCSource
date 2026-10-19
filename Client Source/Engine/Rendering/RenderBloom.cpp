@@ -668,7 +668,7 @@ void CRenderer::Restore_SRS_Bloom()
 static ULONG _ulAddFourPixelProgram          = NONE;
 static ULONG _ulTexCoord4OffsetVertexProgram = NONE;
 // the drawport copied for the first pass (Direct3D copies it into _prtFilterTarget[1] in tiles)
-static ULONG _ulBackbufferCopy = NONE;
+static TEXOBJ _ulBackbufferCopy = NONE;
 static PIX   _pixBackbufferCopyWidth  = 0;
 static PIX   _pixBackbufferCopyHeight = 0;
 
@@ -746,7 +746,7 @@ HRESULT CRenderer::InitBloom()
 
 // a texture on units 0..3, as Direct3D sets it on four stages; the parameters go into the texture,
 // which only the bloom binds
-static void SetFilterTexture_OGL( ULONG ulTexture, GLenum eFilter)
+static void SetFilterTexture_OGL( TEXOBJ ulTexture, GLenum eFilter)
 {
 	for( INDEX i=3; i>=0; i--) {
 		pglActiveTextureARB( GLenum(GL_TEXTURE0_ARB+i));
@@ -846,7 +846,7 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	const PIX pixBottom = (re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ) * pixScale;
 	pglActiveTextureARB( GL_TEXTURE0_ARB);
 	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
-	pglBindTexture( GL_TEXTURE_2D, _ulBackbufferCopy);
+	pglBindTexture( GL_TEXTURE_2D, (GLuint)_ulBackbufferCopy);
 	if( pixWidth!=_pixBackbufferCopyWidth || pixHeight!=_pixBackbufferCopyHeight)
 	{
 		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, pixWidth, pixHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);

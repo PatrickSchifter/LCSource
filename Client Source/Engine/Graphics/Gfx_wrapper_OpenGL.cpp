@@ -1356,13 +1356,15 @@ static void ogl_SetTextureModulation( INDEX iScale)
 
 
 // generate texture for API
-static void ogl_GenerateTexture( ULONG &ulTexObject)
+static void ogl_GenerateTexture( TEXOBJ &ulTexObject)
 {
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
   _sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
-  pglGenTextures( 1, (GLuint*)&ulTexObject);
+  GLuint uiBindNo;
+  pglGenTextures( 1, &uiBindNo);
+  ulTexObject = uiBindNo;
   OGL_CHECKERROR;
 
   _sfStats.StopTimer(CStatForm::STI_BINDTEXTURE);
@@ -1372,7 +1374,7 @@ static void ogl_GenerateTexture( ULONG &ulTexObject)
 
  
 // unbind texture from API
-static void ogl_DeleteTexture( ULONG &ulTexObject)
+static void ogl_DeleteTexture( TEXOBJ &ulTexObject)
 {
   // skip if already unbound
   ASSERT( _pGfx->gl_eCurrentAPI==GAT_OGL);
@@ -1382,7 +1384,8 @@ static void ogl_DeleteTexture( ULONG &ulTexObject)
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
   MEMTRACK_FREE( (void*)(ulTexObject^0x80000000));
-  pglDeleteTextures( 1, (GLuint*)&ulTexObject);
+  GLuint uiBindNo = (GLuint)ulTexObject;
+  pglDeleteTextures( 1, &uiBindNo);
   ulTexObject = NONE;
 
   _sfStats.StopTimer(CStatForm::STI_BINDTEXTURE);

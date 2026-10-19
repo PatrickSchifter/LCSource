@@ -22,7 +22,7 @@ static BOOL _bVisible = FALSE;
 static BOOL _bDepth = FALSE;
 static INDEX _iTexture = 0; // how many texture units to use
 static UBYTE *_pubTexture;
-static ULONG _ulTexObject;
+static TEXOBJ _ulTexObject;
 static ULONG _ulTexFormat;
 static BOOL _bSubImage = FALSE;
 static INDEX _ctR = 100;

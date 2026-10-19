@@ -24,8 +24,8 @@
 
 
 // fog/haze textures
-extern ULONG _fog_ulTexture;
-extern ULONG _haze_ulTexture;
+extern TEXOBJ _fog_ulTexture;
+extern TEXOBJ _haze_ulTexture;
 
 // vertices in GPU
 extern INDEX GFX_ctVertices;
@@ -833,8 +833,10 @@ void CGfxLibrary::InitContext_OGL(void)
   extern PIX _fog_pixSizeH;
   extern PIX _fog_pixSizeL;
   extern PIX _haze_pixSize;
-  pglGenTextures( 1, (GLuint*)&_fog_ulTexture);
-  pglGenTextures( 1, (GLuint*)&_haze_ulTexture);
+  GLuint auiBindNo[3];
+  pglGenTextures( 3, auiBindNo);
+  _fog_ulTexture  = auiBindNo[0];
+  _haze_ulTexture = auiBindNo[1];
   _fog_pixSizeH = 0;
   _fog_pixSizeL = 0;
   _haze_pixSize = 0;
@@ -842,9 +844,9 @@ void CGfxLibrary::InitContext_OGL(void)
 
   // prepare pattern texture
   extern CTexParams _tpPattern;
-  extern ULONG _ulPatternTexture;
+  extern TEXOBJ _ulPatternTexture;
   extern ULONG _ulLastUploadedPattern;
-  pglGenTextures( 1, (GLuint*)&_ulPatternTexture);
+  _ulPatternTexture = auiBindNo[2];
   _ulLastUploadedPattern = 0;
   _tpPattern.Clear();
 

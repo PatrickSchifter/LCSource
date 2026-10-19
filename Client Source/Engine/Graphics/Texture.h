@@ -50,10 +50,10 @@ public:
   class CTexParams td_tpLocal;  // local texture parameters
   ULONG td_ulInternalFormat;    // format in which texture will be uploaded
   CTimerValue td_tvLastDrawn;   // timer for probing
-  ULONG td_ulProbeObject;
+  TEXOBJ td_ulProbeObject;
   union {
-    ULONG  td_ulObject;
-    ULONG *td_pulObjects;
+    TEXOBJ  td_ulObject;
+    TEXOBJ *td_pulObjects;
   };
   ULONG *td_pulFrames;          // all frames with their mip-maps and private palettes
   UBYTE *td_pubBuffer1, *td_pubBuffer2;       // buffers for effect textures

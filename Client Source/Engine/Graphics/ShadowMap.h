@@ -37,8 +37,8 @@ public:
   PIX sm_pixPolygonSizeU, sm_pixPolygonSizeV;  // dimensions of used part of shadowmap
   PIX sm_pixUploadWidth,  sm_pixUploadHeight;  // dimensions of last upload size
   ULONG sm_ulInternalFormat;    // last format in which shadowmap was uploaded
-  ULONG sm_ulObject;            // for API
-  ULONG sm_ulProbeObject;       // for API
+  TEXOBJ sm_ulObject;           // for API
+  TEXOBJ sm_ulProbeObject;      // for API
   CTexParams sm_tpLocal;        // local texture parameters
 
   INDEX sm_iRenderFrame; // frame number currently rendering (for profiling)

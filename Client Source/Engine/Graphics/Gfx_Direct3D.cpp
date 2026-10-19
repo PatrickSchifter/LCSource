@@ -40,8 +40,8 @@
 #endif
 
 
-extern ULONG _fog_ulTexture;
-extern ULONG _haze_ulTexture;
+extern TEXOBJ _fog_ulTexture;
+extern TEXOBJ _haze_ulTexture;
 
 // occlusion queries
 extern UINT *_puiOcclusionQueryIDs;
@@ -954,7 +954,7 @@ void CGfxLibrary::InitContext_D3D()
 
 	// prepare pattern texture
 	extern CTexParams _tpPattern;
-	extern ULONG _ulPatternTexture;
+	extern TEXOBJ _ulPatternTexture;
 	extern ULONG _ulLastUploadedPattern;
 	_ulPatternTexture = NONE;
 	_ulLastUploadedPattern = 0;

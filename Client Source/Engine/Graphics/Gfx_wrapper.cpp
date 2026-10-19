@@ -68,7 +68,7 @@ static CStaticStackArray<VertexBuffer> _avbVertexBuffers;
 extern BOOL _bUsingDynamicBuffer = TRUE;
 			 
 // current texture object/bind number and color mask (for Get... function)
-extern ULONG *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
+extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
 extern ULONG GFX_ulCurrentColorMask = (CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 
 // for D3D: mark need for clipping (when wants to be disable but cannot be because of user clip plane)
@@ -126,8 +126,8 @@ extern void (*gfxSetViewMatrix)( const FLOAT *pfMatrix) = NULL;
 extern void (*gfxPolygonMode)( GfxPolyMode ePolyMode) = NULL;
 extern void (*gfxSetTextureWrapping)( enum GfxWrap eWrapU, enum GfxWrap eWrapV) = NULL;
 extern void (*gfxSetTextureModulation)( INDEX iScale) = NULL;
-extern void (*gfxGenerateTexture)( ULONG &ulTexObject) = NULL;
-extern void (*gfxDeleteTexture)( ULONG &ulTexObject) = NULL;
+extern void (*gfxGenerateTexture)( TEXOBJ &ulTexObject) = NULL;
+extern void (*gfxDeleteTexture)( TEXOBJ &ulTexObject) = NULL;
 extern void (*gfxSetVertexArray)( GFXVertex *pvtx, INDEX ctVtx) = NULL;
 extern void (*gfxSetNormalArray)( GFXNormal *pnor) = NULL;
 extern void (*gfxSetWeightArray)( GFXWeight *pwgh) = NULL;
@@ -394,7 +394,7 @@ extern void gfxSetTextureUnit( INDEX iUnit)
 
 
 // set texture as current
-extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
+extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal)
 {
 	// clamp texture filtering if needed
 	static INDEX _iLastTextureFiltering = 0;
@@ -419,9 +419,9 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
 	if( eAPI==GAT_OGL) { // OpenGL
-		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (ULONG*)(uintptr_t)ulTexObject;  // OpenGL tracks bind number
+		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (TEXOBJ*)ulTexObject;  // OpenGL tracks bind number
 		extern void MimicTexParams_OGL( CTexParams &tpLocal);
-		pglBindTexture( GL_TEXTURE_2D, ulTexObject);
+		pglBindTexture( GL_TEXTURE_2D, (GLuint)ulTexObject);
 		MimicTexParams_OGL(tpLocal);
 	} 
 #ifdef SE1_D3D
@@ -514,10 +514,10 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 
 
 // returns size of uploaded texture
-extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
+extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 {
 	// nothing used if nothing uploaded
-	if( ulTexObject==NULL) return 0;
+	if( ulTexObject==NONE) return 0;
 
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
@@ -534,7 +534,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 	if( eAPI==GAT_OGL)
 	{ 
 		// was texture compressed?
-		pglBindTexture( GL_TEXTURE_2D, ulTexObject); 
+		pglBindTexture( GL_TEXTURE_2D, (GLuint)ulTexObject); 
 		BOOL bCompressed = FALSE;
 		if( _pGfx->gl_ulFlags & GLF_EXTC_ARB) {
 			pglGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_ARB, (BOOL*)&bCompressed);
@@ -576,7 +576,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 
 
 // returns bytes/pixels ratio for uploaded texture
-extern INDEX gfxGetTexturePixRatio( ULONG ulTextureObject)
+extern INDEX gfxGetTexturePixRatio( TEXOBJ ulTextureObject)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
@@ -627,7 +627,7 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 // PATTERN TEXTURE FOR LINES
 
 CTexParams _tpPattern;
-extern ULONG _ulPatternTexture = NONE;
+extern TEXOBJ _ulPatternTexture = NONE;
 extern ULONG _ulLastUploadedPattern = 0;
 
 // upload pattern to accelerator memory
@@ -1513,7 +1513,7 @@ static void none_PolygonMode( GfxPolyMode ePolyMode) { NOTHING; };
 static void none_SetLightColor( INDEX iLight, COLOR colLight, COLOR colAmbient, COLOR colSpecular) { NOTHING; };
 static void none_SetLightDirection( INDEX iLight, const FLOAT3D &vLightDir) { NOTHING; };
 static void none_SetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV) { NOTHING; };
-static void none_GenDelTexture( ULONG &ulTexObject) { NOTHING; };
+static void none_GenDelTexture( TEXOBJ &ulTexObject) { NOTHING; };
 static void none_SetVertexArray( GFXVertex *pvtx, INDEX ctVtx) { NOTHING; };
 static void none_SetNormalArray( GFXNormal *pnor) { NOTHING; };
 static void none_SetWeightArray( GFXWeight *pwgh) { NOTHING; };

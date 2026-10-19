@@ -151,6 +151,13 @@ typedef float  ANGLE;
 typedef float  TIME;
 typedef FLOAT  RANGE;
 typedef ULONG  COLOR;  // color is always in 32 bit true-color format
+// texture object of the graphics API: OpenGL bind number or Direct3D texture pointer
+// (pointer-sized outside Windows, for backends whose textures are objects)
+#ifdef PLATFORM_UNIX
+typedef uintptr_t TEXOBJ;
+#else
+typedef ULONG  TEXOBJ;
+#endif
 
 // file formats, streams and network packets rely on these sizes (those of 32-bit MSVC)
 static_assert(sizeof(SLONG) == 4 && sizeof(ULONG) == 4 && sizeof(INDEX) == 4, "32-bit SLONG/ULONG/INDEX");

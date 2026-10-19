@@ -317,14 +317,14 @@ extern void (*gfxSetTextureModulation)( INDEX iScale);
 extern void gfxSetTextureUnit( INDEX iUnit);
 
 // generate texture for API
-extern void (*gfxGenerateTexture)( ULONG &ulTexObject);
+extern void (*gfxGenerateTexture)( TEXOBJ &ulTexObject);
 // unbind texture from API
-extern void (*gfxDeleteTexture)( ULONG &ulTexObject);
+extern void (*gfxDeleteTexture)( TEXOBJ &ulTexObject);
 
 
 // set texture as current
 //  - ulTexture = bind number for OGL, or *LPDIRECT3DTEXTURE8 for D3D (pointer to pointer!)
-extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal);
+extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal);
 
 // upload texture
 // - ulTexture  = bind number for OGL, or LPDIRECT3DTEXTURE8 for D3D
@@ -334,10 +334,10 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal);
 extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, ULONG ulFormat, BOOL bNoDiscard);
 
 // returns size of uploaded texture
-extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps=TRUE);
+extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps=TRUE);
 
 // returns bytes/pixels ratio for uploaded texture or texture format
-extern INDEX gfxGetTexturePixRatio( ULONG ulTextureObject);
+extern INDEX gfxGetTexturePixRatio( TEXOBJ ulTextureObject);
 extern INDEX gfxGetFormatPixRatio(  ULONG ulTextureFormat);
 
 

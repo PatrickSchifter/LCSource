@@ -1485,7 +1485,7 @@ static void d3d_SetTextureModulation( INDEX iScale)
 
 
 
-static void d3d_GenerateTexture( ULONG &ulTexObject)
+static void d3d_GenerateTexture( TEXOBJ &ulTexObject)
 {
 	ASSERT( _pGfx->gl_eCurrentAPI==GAT_D3D);
 	_sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
@@ -1502,7 +1502,7 @@ static void d3d_GenerateTexture( ULONG &ulTexObject)
 
 
 // unbind texture from API
-static void d3d_DeleteTexture( ULONG &ulTexObject)
+static void d3d_DeleteTexture( TEXOBJ &ulTexObject)
 {
 	// skip if already unbound
 	ASSERT( _pGfx->gl_eCurrentAPI==GAT_D3D);

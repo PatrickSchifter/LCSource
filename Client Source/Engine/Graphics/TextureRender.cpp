@@ -86,7 +86,7 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag, D3DFORMAT fmt)
 	HRESULT hr = _pGfx->gl_pd3dDevice->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, fmt, D3DPOOL_DEFAULT, &pTexture);
 	if(hr == NOERROR)
 	{
-		rt_tdTexture.td_ulObject = (ULONG)pTexture;	//내가 작성했지만 싫다.  -_-;
+		rt_tdTexture.td_ulObject = (TEXOBJ)pTexture;	//내가 작성했지만 싫다.  -_-;
 		pTexture->GetSurfaceLevel(0, &rt_pSurface);
 		//일단 Depth Stencil Surface는 쓰지 않지만 설정해야 된다.
 		hr = _pGfx->gl_pd3dDevice->CreateDepthStencilSurface(width, height, D3DFMT_D16, D3DMULTISAMPLE_NONE, &m_pDepthStencil);

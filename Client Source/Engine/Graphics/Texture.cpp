@@ -1670,7 +1670,7 @@ BOOL CTextureData::UploadCompressed(void)
 		ASSERT( td_pulFrames!=NULL && td_pulFrames[0]!=0xDEADBEEF); 
 		if( td_ctFrames>1) 
 		{ // animation textures
-			td_pulObjects = (ULONG*)AllocMemory( td_ctFrames *sizeof(td_ulObject));
+			td_pulObjects = (TEXOBJ*)AllocMemory( td_ctFrames *sizeof(td_ulObject));
 			for( INDEX i=0; i<td_ctFrames; i++) 
 			{
 				gfxGenerateTexture( td_pulObjects[i]);
@@ -1684,7 +1684,7 @@ BOOL CTextureData::UploadCompressed(void)
 	
 	// upload frame-by-frame
 	td_tpLocal.tp_bSingleMipmap = (td_ctFineMipLevels<2);
-	ULONG *pulTexObject = (td_ctFrames>1) ? td_pulObjects : &td_ulObject;
+	TEXOBJ *pulTexObject = (td_ctFrames>1) ? td_pulObjects : &td_ulObject;
 	for( INDEX iFr=0; iFr<td_ctFrames; iFr++)
 	{ // determine frame offset and upload texture frame
 		UBYTE *pubCurrentFrame = (UBYTE*)td_pulFrames + (iFr*td_slFrameSize);
@@ -1882,7 +1882,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 		if( td_ctFrames>1) 
 		{
 			// animation textures
-			td_pulObjects = (ULONG*)AllocMemory( td_ctFrames *sizeof(td_ulObject));
+			td_pulObjects = (TEXOBJ*)AllocMemory( td_ctFrames *sizeof(td_ulObject));
 			for( INDEX i=0; i<td_ctFrames; i++) gfxGenerateTexture( td_pulObjects[i]);
 		}
 		else 
@@ -1930,11 +1930,11 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 		
 		// upload all texture frames
 		ASSERT( td_ulInternalFormat!=TEXFMT_NONE);
-		ULONG *pulTexObject = (td_ctFrames>1) ? td_pulObjects : &td_ulObject;
+		TEXOBJ *pulTexObject = (td_ctFrames>1) ? td_pulObjects : &td_ulObject;
 		for( INDEX iFr=0; iFr<td_ctFrames; iFr++)
 		{ // determine frame offset and upload texture frame
 			ULONG *pulCurrentFrame = td_pulFrames + (iFr * td_slFrameSize/BYTES_PER_TEXEL);
-			const ULONG ulOldObject = pulTexObject[iFr];
+			const TEXOBJ ulOldObject = pulTexObject[iFr];
 			gfxSetTexture( pulTexObject[iFr], td_tpLocal);
 			gfxUploadTexture( pulCurrentFrame, pixWidth, pixHeight, td_ulInternalFormat, bNoDiscard);
 		}
@@ -1973,7 +1973,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
 	} 
 	
 	// set corresponding probe or texture frame as current
-	ULONG ulTexObject = td_ulObject; // single-frame
+	TEXOBJ ulTexObject = td_ulObject; // single-frame
 	if( td_ctFrames>1) ulTexObject = td_pulObjects[iFrameNo]; // animation
 	if( bUseProbe) 
 	{
@@ -2335,7 +2335,7 @@ BOOL CTextureData::IsAutoFreed(void)
 SLONG CTextureData::GetUsedMemory(void)
 {
 	// readout texture object
-	ULONG ulTexObject = td_ulObject;
+	TEXOBJ ulTexObject = td_ulObject;
 	if( td_ctFrames>1) ulTexObject = td_pulObjects[0];
 	
 	// add structure size and anim block size
