@@ -499,6 +499,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	}
 	CTFileName fnmLog = _fnmApplicationPath+_strLogFile+".log";
 	_pConsole->Initialize(fnmLog, 80, 512);
+	// LC_CONSOLE_LOG=1 writes the console log (<exe>.log in the game directory)
+	if (getenv("LC_CONSOLE_LOG")) _pConsole->CreateLogFile(fnmLog);
 
 	CTFileName fnmExt	= CTFileName("ErrorLog.txt");
 	CTFileName fnmError = _fnmApplicationPath+fnmExt;

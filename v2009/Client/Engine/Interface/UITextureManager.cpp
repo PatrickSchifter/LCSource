@@ -321,6 +321,19 @@ CUIButtonTextureManager::~CUIButtonTextureManager()
 // Name : Create()
 // Desc :
 // ----------------------------------------------------------------------------
+// A page of button icons the data does not have (the BR 2014 data stops before the 2009 item
+// count, ItemBtn26) shows the first page instead of ending the game.
+static CTextureData *ObtainButtonTexture( const CTString &strPath, const CTString &strFirstPage )
+{
+	try {
+		return _pTextureStock->Obtain_t( strPath );
+	} catch( char *strError ) {
+		if( strPath == strFirstPage ) throw;
+		CPrintF( "%s (the first page is shown instead)\n", strError );
+		return _pTextureStock->Obtain_t( strFirstPage );
+	}
+}
+
 void CUIButtonTextureManager::Create()
 {
 	INDEX	iTex;
@@ -334,7 +347,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "ItemBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_ITEM][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_ITEM][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "ItemBtn0.tex" );
 	}
 
 	// Skill texture
@@ -343,7 +356,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "SkillBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_SKILL][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_SKILL][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "SkillBtn0.tex" );
 	}
 
 	// Action texture
@@ -352,7 +365,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "ActionBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_ACTION][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_ACTION][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "ActionBtn0.tex" );
 	}
 
 	// Quest texture
@@ -361,7 +374,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "QuestBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_QUEST][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_QUEST][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "QuestBtn0.tex" );
 	}
 
 	// Event texture
@@ -370,7 +383,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "EventBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_EVENT][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_EVENT][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "EventBtn0.tex" );
 	}
 
 	// Remission texture
@@ -379,7 +392,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "RemissionBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_REMISSION][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_REMISSION][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "RemissionBtn0.tex" );
 	}
 
 	// MissionCase texture
@@ -388,7 +401,7 @@ void CUIButtonTextureManager::Create()
 	{
 		strFileName.PrintF( "ComboBtn%d.tex", iTex );
 		strFullPath = strDirectory + strFileName;
-		m_aptdButton[UBET_COMBO][iTex] = _pTextureStock->Obtain_t( strFullPath );
+		m_aptdButton[UBET_COMBO][iTex] = ObtainButtonTexture( strFullPath, strDirectory + "ComboBtn0.tex" );
 	}
 
 

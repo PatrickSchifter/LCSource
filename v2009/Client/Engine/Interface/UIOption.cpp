@@ -1139,7 +1139,7 @@ static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
 static void ResetMainWindowNormal(void)
 {
 	// a position given on the command line is used once
-	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, IsFullScreen( sam_bFullScreenActive ), cmd_iWindowLeft, cmd_iWindowTop );
+	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, FALSE, cmd_iWindowLeft, cmd_iWindowTop );
 	cmd_iWindowLeft = -1;
 	cmd_iWindowTop = -1;
 }
@@ -1180,6 +1180,15 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	// try to set new display mode
 	BOOL bSuccess;
+#ifdef LC_PLATFORM_SDL
+	// the display mode is never changed: in fullscreen the window covers the screen at the mode's
+	// size (PLT_SetMainWindowMode picks the screen mode), as the ported 2015 client does
+	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
+	if( bSuccess) {
+		if( bFullScreenMode) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+		else OpenMainWindowNormal( pixSizeI, pixSizeJ);
+	}
+#else
 	if( bFullScreenMode) {
 #ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
@@ -1196,6 +1205,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
 #endif // SE1_D3D
 	}
+#endif  // LC_PLATFORM_SDL
 
 	// if new mode was set
 	if( bSuccess) {

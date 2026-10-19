@@ -947,6 +947,10 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 
 	// initialize engine
 	SE_InitEngine(sam_strGameName);
+	// the ported engine draws the game on the main window itself (CViewPort::OpenCanvas), as the
+	// 2015 client that sets this does
+	extern ENGINE_API BOOL _bClientApp;
+	_bClientApp = TRUE;
 
 	extern BOOL g_bNasTrans;
 	g_bNasTrans = FALSE;
@@ -2256,6 +2260,15 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	// try to set new display mode
 	BOOL bSuccess;
+#ifdef LC_PLATFORM_SDL
+	// the display mode is never changed: in fullscreen the window covers the screen at the mode's
+	// size (PLT_SetMainWindowMode picks the screen mode), as the ported 2015 client does
+	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
+	if( bSuccess) {
+		if( bFullScreenMode) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+		else OpenMainWindowNormal( pixSizeI, pixSizeJ);
+	}
+#else
 	if( bFullScreenMode) {
 #ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
@@ -2272,6 +2285,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
 #endif // SE1_D3D
 	}
+#endif  // LC_PLATFORM_SDL
 
 	// if new mode was set
 	if( bSuccess) {

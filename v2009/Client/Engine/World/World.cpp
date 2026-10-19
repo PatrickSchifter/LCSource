@@ -287,7 +287,8 @@ int CZoneInfo::GetExtraCount(int zone) const
 
 eZone CZoneInfo::GetZoneType(int nZone) const
 {
-	ASSERT(nZone >= 0 && nZone < m_nZoneCount);	
+	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
+	if(nZone < 0 || nZone >= m_nZoneCount) return ZONE_FIELD;	// the data knows zones the 2009 table does not	
 	return m_pZoneInfo[nZone].eZoneType;
 }
 
@@ -307,26 +308,31 @@ UINT CZoneInfo::GetMaxLevel(int nZone) const
 
 DWORD CZoneInfo::GetAccessJob(int nZone) const
 {
-	ASSERT(nZone >= 0 && nZone < m_nZoneCount);	
+	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
+	if(nZone < 0 || nZone >= m_nZoneCount) return 0;	// the data knows zones the 2009 table does not	
 	return m_pZoneInfo[nZone].dwAccessJob;
 }
 
 CTString CZoneInfo::GetZoneName(int nZone)
 {
 	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
+	if(nZone < 0 || nZone >= m_nZoneCount) return CTString("");	// the data knows zones the 2009 table does not
 	return m_pZoneInfo[nZone].strZoneName;
 }
 
 CTString CZoneInfo::GetZoneWldFile(int nZone)
 {
 	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
+	if(nZone < 0 || nZone >= m_nZoneCount) return CTString("");	// the data knows zones the 2009 table does not
 	return m_pZoneInfo[nZone].strZoneWldFile;
 }
 
 CTString CZoneInfo::GetExtraName(int nZone, int nExtra)
 {
 	ASSERT(nZone >= 0 && nZone < m_nZoneCount);
+	if(nZone < 0 || nZone >= m_nZoneCount) return CTString("");	// the data knows zones the 2009 table does not
 	ASSERT(nExtra >= 0 && nExtra < m_pZoneInfo[nZone].iExtraCount);
+	if(nExtra < 0 || nExtra >= m_pZoneInfo[nZone].iExtraCount) return CTString("");
 	return m_pZoneInfo[nZone].pStrExtraName[nExtra];
 }
 
