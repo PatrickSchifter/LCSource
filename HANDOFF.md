@@ -32,6 +32,18 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 3. **Vulkan** (D2.3), ver "C8 — Vulkan": V0–V5 feitas (`cf7102f`); `LC_GFX_API=vulkan` desenha pelo
    MoltenVK. Conferido em jogo pelo usuário (2026-10-19): tudo normal, igual ao Metal.
 
+Decidido (2026-10-19), com a renderização concluída, a ordem do que vem agora:
+
+4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`): portar as versões 2009/2015/2018
+   (cliente e servidor), assets e banco de cada uma, e o launcher que escolhe build, assets e
+   servidor correspondentes. Antes de começar: os links das fontes estão na memória do projeto e o
+   pacote do tx00100xt (2015/2018) em "Recursos externos no Windows" abaixo, não testado —
+   perguntar ao usuário antes de adotá-lo.
+5. **Empacotamento** (Fase F): `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
+   MoltenVK/loader do Vulkan e o glslang, hoje do Homebrew), diretórios do usuário, assinatura.
+6. Por último: **CI** (GitHub Actions, `macos-14`) e as **auditorias** (pacotes com `#pragma pack`,
+   leitura de `.bin` via struct, warnings que indicam bug).
+
 ## C8 — Vulkan (2026-10-19)
 
 - Dependências (Homebrew, decidido em 2026-10-19): `molten-vk vulkan-loader vulkan-headers
