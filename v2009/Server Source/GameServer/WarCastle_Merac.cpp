@@ -285,7 +285,8 @@ bool CMeracCastle::SetNextWarTime(int wday, int hour)
 	nexttm.tm_mday += next;
 	time_t nexttime = mktime(&nexttm);
 
-	// 현재 시간보다 작으면 ?	if (nexttime < curtime)
+	// 현재 시간보다 작으면 ?
+	if (nexttime < curtime)
 		return false;
 
 	m_nextWarTime = nexttime;

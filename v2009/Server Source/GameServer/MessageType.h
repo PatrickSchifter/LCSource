@@ -1319,7 +1319,8 @@ typedef enum _tagMsgSysType
 	MSG_SYS_EXCHANGE_NOTFOUND,		// 교환 대상 없음		:
 	MSG_SYS_EXCHANGE_ALREADY,		// 이미 교환 중			:
 	MSG_SYS_NOT_OWNER_ITEM,			// 아이템 우선권이 없음
-	MSG_SYS_OVER_WEIGHT,			// 10 무게가 오바 瑛?	MSG_SYS_UPGRADE_NOCONDITION,	// 조건이 안맞아 업그레이드 못함 (일반제련석 레벨이 맞지 않음)
+	MSG_SYS_OVER_WEIGHT,			// 10 무게가 오바 瑛?
+	MSG_SYS_UPGRADE_NOCONDITION,	// 조건이 안맞아 업그레이드 못함 (일반제련석 레벨이 맞지 않음)
 	MSG_SYS_MAKE_REFINE_KIND,		// 무기나 방어구가 아닌 다른걸 제련석으로 전환하려할 때
 	MSG_SYS_MAKE_REFINE_WEARING,	// 입고 있는 아이템으로 제련석 전환 불가능
 	MSG_SYS_MAKE_REFINE_PLUS,		// Plus 값이 셋팅되어 있는 아이템 제련석 전환 불가능
@@ -2957,7 +2958,8 @@ typedef enum _tagGuildErrorType
 	MSG_GUILD_ERROR_SOURCE_BUSY,				// 내가 다른 사람에게 요청한 후 결정 안된 상태에서 다시 제3자에게 요청
 	MSG_GUILD_ERROR_FULLMEMBER,					// 길드 정원이 초과
 	MSG_GUILD_ERROR_REGIST_OK,					// 길드원 가입 완료
-	MSG_GUILD_ERROR_OUTBOSS,					// 길드장이 탈퇴하려면 紵?	MSG_GUILD_ERROR_OUT_OK,						// 탈퇴 성공
+	MSG_GUILD_ERROR_OUTBOSS,					// 길드장이 탈퇴하려면 紵?
+	MSG_GUILD_ERROR_OUT_OK,						// 탈퇴 성공
 	MSG_GUILD_ERROR_NOTFOUNDMEMBER,				// 강퇴, 임명, 이임등에서 대상 길원이 없을때
 	MSG_GUILD_ERROR_CANTKICKBOSS,				// 길장은 당퇴 불능
 	MSG_GUILD_ERROR_KICK_OK,					// 퇴출 성공

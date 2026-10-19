@@ -691,7 +691,8 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 	nexttm.tm_mday += next;
 	time_t nexttime = mktime(&nexttm);
 
-	// 현재 시간보다 작으면 ?	if (nexttime < curtime)
+	// 현재 시간보다 작으면 ?
+	if (nexttime < curtime)
 		return false;
 
 #ifdef LC_JPN  // 일본의 경우 드라탄 공성전 자동 셋팅 안되게~

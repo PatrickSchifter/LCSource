@@ -736,7 +736,8 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return ;
 		}
-		// 같은 아이템 여러번 사려고 하면 ?		if (list.FindItem(true, itemindex) != -1 || list.FindItem(false, itemindex) != -1)
+		// 같은 아이템 여러번 사려고 하면 ?
+		if (list.FindItem(true, itemindex) != -1 || list.FindItem(false, itemindex) != -1)
 		{
 			CNetMsg rmsg;
 			PersonalShopErrorMsg(rmsg, MSG_PERSONALSHOP_ERROR_MONEY);

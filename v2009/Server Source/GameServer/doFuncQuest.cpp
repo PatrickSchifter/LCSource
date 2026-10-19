@@ -283,7 +283,8 @@ void do_QuestRequest(CPC* ch, CNetMsg& msg)
 		// 수행중이면서
 		if (pQuest && pQuest->GetQuestState() == QUEST_STATE_RUN)
 		{
-			// 완료면 ?			if (pQuest->IsCompleted())
+			// 완료면 ?
+			if (pQuest->IsCompleted())
 				continue;
 			// 완료 아니면
 			else
@@ -338,7 +339,8 @@ void do_QuestRequest(CPC* ch, CNetMsg& msg)
 		// 수행중이면서
 		if (idx != -1)
 		{
-			// 완료면 ?			if (ch->m_questList.IsCompleted(idx))
+			// 완료면 ?
+			if (ch->m_questList.IsCompleted(idx))
 				continue;
 			// 완료 아니면
 			else
@@ -1157,7 +1159,8 @@ void do_QuestStart(CPC* ch, CNetMsg& msg)
 				// 타입이 같고
 				if (sskill->m_proto->m_preference != -1 && node->m_sskill->m_proto->m_type == sskill->m_proto->m_type)
 				{
-					//우선순위가 높은 특수스킬일 가지고 있다면 ?					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
+					//우선순위가 높은 특수스킬일 가지고 있다면 ?
+					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
 					{
 						bAdd = false;
 						break;
@@ -1278,7 +1281,8 @@ void do_QuestStart(CPC* ch, CNetMsg& msg)
 				// 타입이 같고
 				if (sskill->m_proto->m_preference != -1 && node->m_sskill->m_proto->m_type == sskill->m_proto->m_type)
 				{
-					//우선순위가 높은 특수스킬일 가지고 있다면 ?					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
+					//우선순위가 높은 특수스킬일 가지고 있다면 ?
+					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
 					{
 						bAdd = false;
 						break;
@@ -1399,7 +1403,8 @@ void do_QuestStart(CPC* ch, CNetMsg& msg)
 				// 타입이 같고
 				if (sskill->m_proto->m_preference != -1 && node->m_sskill->m_proto->m_type == sskill->m_proto->m_type)
 				{
-					//우선순위가 높은 특수스킬일 가지고 있다면 ?					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
+					//우선순위가 높은 특수스킬일 가지고 있다면 ?
+					if (node->m_sskill->m_proto->m_preference >= sskill->m_proto->m_preference)
 					{
 						bAdd = false;
 						break;
