@@ -24,9 +24,25 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. O que falta no OpenGL sem D3D: bloom, reflexo/refração da água, preview de personagem da loja
-   (todos usam o `CRenderTexture`, que já tem FBO; falta trocar as chamadas D3D de cada um),
-   Retina (hoje 1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
+1. O que falta no OpenGL sem D3D: refração da água, preview de personagem da loja (usam o
+   `CRenderTexture`, que já tem FBO; falta trocar as chamadas D3D de cada um), Retina (hoje
+   1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
+   Bloom e reflexo da água já estão no OpenGL.
+
+## C8 — bloom no OpenGL (2026-10-19)
+
+- `RenderBloom.cpp` compila sem D3D: a matemática (gaussiana, offsets, matriz da cobertura) é
+  comum; `InitBloom`, `RenderBloom`, `DoCreateFlareTexture_Separable`, `Get/Restore_SRS_Bloom` e
+  `ReleaseBloomTexture` têm versão OpenGL no `#else`. Mesmos passos: tela reduzida a 512x512,
+  blur separável de 4 amostras por passe (1º opaco, depois `ONE, ONE_MINUS_SRC_COLOR`), soma na
+  tela com `SRC_COLOR, ONE`. Os programas são os do D3D pelo tradutor ARB (no vs, `v7` vira `v5`:
+  é onde o OpenGL recebe as coordenadas de textura).
+- Diferenças: uma cópia da tela inteira (`glCopyTexSubImage2D`, linhas contadas de baixo) no lugar
+  dos tiles de 512 do `CopyRects`; offsets do blur meio texel para trás (o D3D amostra no canto do
+  texel, o GL no centro); os passes sem pixel shader do D3D usam o mesmo programa com peso 1 só na
+  1ª amostra. O estado do GL é salvo com `glPushAttrib` e devolvido, mais os programas ligados.
+- Sem `GLF_VERTEXPROGRAM`/`GLF_PIXELPROGRAM` o `InitBloom` falha e o motor zera `g_iUseBloom`
+  (persistente), como no D3D. Testado em jogo pelo usuário (Juno, `g_iUseBloom` 6).
 
 ## C8 — render targets e sombras projetadas no OpenGL (2026-10-19, `28e947e`)
 
@@ -504,6 +520,9 @@ build no Mac"); o check continua sendo o lugar dos avisos de 64 bits.
 - Build: `cmake --build build -j8` (configurado com `LC_REGION=BRZ`).
 - `scripts/run-server.sh start|stop|status|log <Nome>`; logs em `run/<Servidor>/stdout.log`.
   Os servidores escutam no IP de `en0` (192.168.0.4); o cliente vem de 192.168.0.7.
+  Fora da rede de casa (`en0` sem 192.168.0.4; aconteceu em 2026-10-19), só o cliente Mac:
+  `LC_PUBLIC_IP=127.0.0.1 scripts/run-server.sh start` e `scripts/sl-dta.py write sl.dta "Mac
+  127.0.0.1 4001"` na instalação; o `sl.dta` da rede local fica em `sl.dta.lan`.
 - Banco: MariaDB (Homebrew), bancos `newproject_data`, `newproject_db`, `newproject_db_auth`.
   `mysql`/`mariadb` sem senha funcionam no shell. Conta de jogo: `teste`.
   Correções de schema ficam em `server-config/db-fixes.sql` (idempotente) — acrescente lá.

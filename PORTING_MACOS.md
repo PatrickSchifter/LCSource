@@ -225,7 +225,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
 - [x] Animações (skinning SKA), terreno e efeitos na GPU no OpenGL (2026-10-19): o assembly D3D8 traduzido para programas ARB (`Graphics/ShaderAsmToARB.cpp`); malhas estáticas em VBOs. Detalhes em `HANDOFF.md` ("C8 — shaders na GPU e VBOs")
-- [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo (no OpenGL rodam pelo tradutor ARB, menos a água com reflexo e o `texbem`)
+- [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo (no OpenGL rodam pelo tradutor ARB, a água com reflexo e o `texbem` inclusive; o bloom também)
 - [ ] Reescrever em MSL (Metal) os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura
 - [ ] Fontes e UI (`Engine/Interface`), drawports, render-to-texture
