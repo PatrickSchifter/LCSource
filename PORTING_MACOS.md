@@ -222,7 +222,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
   - [x] Roda no Mac (2026-10-19): login, Juno, combate, itens, terreno (mapas de sombra e luz dinâmica em fixed function), multitextura, clamp to edge, Retina na tela cheia, vsync; ~20% de um núcleo em jogo. Detalhes em `HANDOFF.md` ("C8 — cliente Mac rodando")
 - [ ] Etapa Metal (D2.2): novo backend `GAT_MTL` ao lado do D3D8 e do OpenGL (`LC_GFX_API=metal`); plano e estado em `HANDOFF.md` ("C8 — Metal")
   - [x] M1: dispositivo, quadros, estado, texturas (RGBA8 e DXT), função fixa emulada em MSL; tela de login (2026-10-19)
-  - [ ] M2: Juno sem programas (terreno, brushes, modelos, partículas, névoa), conferido contra o OpenGL
+  - [x] M2: Juno sem programas (terreno, brushes, modelos, partículas, névoa), conferido contra o OpenGL (2026-10-19)
   - [ ] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, como o tradutor ARB
   - [ ] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela
   - [ ] M5: Metal como padrão no Mac
@@ -298,3 +298,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C8: bloom, preview da loja, Retina e gama no OpenGL; etapa OpenGL concluída. Servidor: largar item voltou a funcionar | f478ad2..c7e0d31 |
 | 2026-10-19 | C2/C8: handles de textura do `gfx*` com largura de ponteiro (`TEXOBJ`), antes do Metal | 40f850b |
 | 2026-10-19 | C8: backend Metal, primeira etapa (tela de login com `LC_GFX_API=metal`) | 2c36d7c |
+| 2026-10-19 | C8: Metal M2, Juno sem programas conferida contra o OpenGL (billboards no Metal) | e3aec26 |

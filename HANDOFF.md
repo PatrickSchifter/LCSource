@@ -27,7 +27,7 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". Próximo: M2 (Juno sem programas).
+2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M2 concluída; próximo: M3 (programas D3D em MSL).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
@@ -61,7 +61,16 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   da loja; as sombras projetadas saem cedo em `Render.cpp`), consultas de oclusão, leitura de
   profundidade dos flares (`DepthCheck.cpp`), `GrabScreen` (captura de tela) e a cópia da tela do
   bloom. O `RenderPatches_View` (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
-- Visto: tela de login igual à do OpenGL (2026-10-19). Não visto: o jogo depois do login.
+- Visto: tela de login igual à do OpenGL (2026-10-19).
+- M2 (2026-10-19, `e3aec26`): Juno no Metal sem programas — campo, cidade (brushes), pontes, árvores com
+  alpha test, lobos, pet, efeitos de golpe com partículas e números de dano — igual ao OpenGL no
+  mesmo ponto de entrada, menos a sombra projetada do personagem (render target, M4). Faltava só
+  `shaPrepareForBillboard` (`Shader.cpp`): saía cedo fora do OpenGL, então os billboards dos
+  shaders `Default`/`NormalMap` não giravam para a câmera no Metal; agora lê `GetViewMatrix_MTL`.
+  Log sem erros. CPU ainda não comparado com o OpenGL em condições iguais (janela em foco, mesmo lugar).
+- Comparar: `LC_GFX_API=metal scripts/macos/play.sh`, login sem mexer, captura da janela; depois
+  sem a variável. A câmera guarda o zoom entre sessões, então o enquadramento pode diferir.
+- `grep` nos fontes: use `-a` (os bytes coreanos fazem o grep tratá-los como binário e calar).
 
 ## C8 — handles de textura (2026-10-19, `40f850b`)
 
