@@ -85,7 +85,7 @@ e `screencapture -l <id>`. Crash: `~/Library/Logs/DiagnosticReports/Nksp-*.ips` 
 e linha). Pilha de um processo vivo: `sample <pid> N -file x.txt`. Pixels do GL: lldb com
 breakpoint em `CGfxLibrary::SwapBuffers` e `pglReadPixels`.
 
-O que o Mac exigiu (todos commitados, `dd78396..7c678d3`):
+O que o Mac exigiu (todos commitados, `dd78396..fb5c009`):
 - Arquivos: o tinyxml abria os XML da UI com o `fopen` dele (sem `\`→`/`); CRC das classes de
   entidade pelo `.dylib` (o mundo pede `Bin\EntitiesMP.dll`), calculado uma vez por biblioteca
   (calcular a cada entidade deixava a carga de Juno acima do timeout de 70 s do servidor).
@@ -101,6 +101,9 @@ O que o Mac exigiu (todos commitados, `dd78396..7c678d3`):
 - Janela e entrada: o SDL não minimiza mais ao perder o foco (minimizado o jogo não desenha);
   trackpad por monitores do AppKit (`Platform/PlatformMac.mm`): dois dedos fora da UI giram, sobre a
   UI rolam; a decisão é tomada no início do gesto; a pinça manda passos inteiros de roda.
+- Dados: o `fopen` do macOS abre pastas (só a leitura falha); `LC_fopen` as recusa, como o Windows.
+  Itens que o servidor tem e os dados BR não (vêm como `CItemData` vazio) aparecem como saco de
+  tesouro em vez de `FatalError` ao carregar o modelo `''` (como os NPCs sem modelo, que são omitidos).
 - Desempenho: vsync sempre ligado (o jogo não tem limite: 170 FPS numa tela de 60 Hz); névoa enviada
   à GPU só quando muda (o reenvio a cada quadro esperava a GPU); escondido ou minimizado o loop roda
   a `sam_iMaxFPSInactive` (o `LimitFrameRate()` nunca era chamado). Resultado: ~20% de um núcleo em jogo.
