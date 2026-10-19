@@ -460,15 +460,15 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 
 			// 무제한 생산 페널티
 			if (npc->m_proto->CheckFlag(NPC_ETERNAL))
-				prob = prob * ETERNAL_PENALTY_PROB / 10000;
+				prob = prob * ETERNAL_PENALTY_PROB / 100;
 
 			if (npc->GetMapAttr() & MATT_PRODUCT_PUBLIC)
 			{
 				// 공유지 페널디
-				prob = prob * PUBLIC_PENALTY_PROB / 10000;
+				prob = prob * PUBLIC_PENALTY_PROB / 100;
 			}
 
-			prob = prob * gserver->m_bDoubleProducePercent / 10000;
+			prob = prob * gserver->m_bDoubleProducePercent / 100;
 
 			// 성공 결정
 			if (GetRandom(1, 10000) <= prob)
@@ -1007,11 +1007,11 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 
 					// 패널티 적용 : 무제한 생산
 					if (npc->m_proto->CheckFlag(NPC_ETERNAL))
-						probProduct[i] = probProduct[i] * ETERNAL_PENALTY_PROB / 10000;
+						probProduct[i] = probProduct[i] * ETERNAL_PENALTY_PROB / 100;
 
 					// 패널티 적용 : 공유지
 					if (npc->GetMapAttr() & MATT_PRODUCT_PUBLIC)
-						probProduct[i] = probProduct[i] * PUBLIC_PENALTY_PROB / 10000;
+						probProduct[i] = probProduct[i] * PUBLIC_PENALTY_PROB / 100;
 				}
 			}
 		}

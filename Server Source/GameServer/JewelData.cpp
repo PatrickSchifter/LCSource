@@ -8,11 +8,11 @@
 
 CJewelData::CJewelData()
 {
-	m_eventComposeProb = 10000;
-	m_eventChaosCreateProb = 10000;
-	m_eventUpgradeProb = 10000;
-	m_eventCombineProb = 10000;					//보석 결합 이벤트 확률 값
-	m_eventCollectProb = 10000;					//보석 결합 실패시 이벤트 회수 확률 증가 값
+	m_eventComposeProb = 100;
+	m_eventChaosCreateProb = 100;
+	m_eventUpgradeProb = 100;
+	m_eventCombineProb = 100;					//보석 결합 이벤트 확률 값
+	m_eventCollectProb = 100;					//보석 결합 실패시 이벤트 회수 확률 증가 값
 }
 CJewelData::~CJewelData()
 {

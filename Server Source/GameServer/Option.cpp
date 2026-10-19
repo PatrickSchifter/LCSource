@@ -298,8 +298,8 @@ void COption::ApplyOptionValue(CAPet* apet, int nType, int nValue, CItem* pItem)
 		break;
 
 	case OPTION_MOVESPEED:
-		//apet->m_runSpeed += apet->m_runSpeed * nValue / 1000;
-		apet->SetRunSpeed(apet->GetRunSpeed() + apet->GetRunSpeed() * nValue / 1000);
+		//apet->m_runSpeed += apet->m_runSpeed * nValue / 100;
+		apet->SetRunSpeed(apet->GetRunSpeed() + apet->GetRunSpeed() * nValue / 100);
 		break;
 	case OPTION_APET_TRANS_END:
 		{
@@ -354,7 +354,7 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 		return;
 	if (nPosition > -1)
 	{
-		nValue = nValue * pItem->getOriginVar(nPosition) / 1000;
+		nValue = nValue * pItem->getOriginVar(nPosition) / 100;
 	}
 	switch(nType)
 	{
@@ -516,20 +516,20 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 
 	case OPTION_RESIST_STONE:
 		pc->m_opResistStone += nValue;
-		if(pc->m_opResistStone > 100)
-			pc->m_opResistStone = 100;
+		if(pc->m_opResistStone > 80)
+			pc->m_opResistStone = 80;
 		break;
 
 	case OPTION_RESIST_STURN:
 		pc->m_opResistSturn += nValue;
-		if(pc->m_opResistSturn > 100)
-			pc->m_opResistSturn = 100;
+		if(pc->m_opResistSturn > 80)
+			pc->m_opResistSturn = 80;
 		break;
 
 	case OPTION_RESIST_SILENT:
 		pc->m_opResistSilent += nValue;
-		if(pc->m_opResistSilent > 100)
-			pc->m_opResistSilent = 100;
+		if(pc->m_opResistSilent > 80)
+			pc->m_opResistSilent = 80;
 		break;
 
 	case OPTION_BLOCKING:

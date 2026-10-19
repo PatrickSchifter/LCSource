@@ -228,7 +228,7 @@ bool DropPetItem(CPet* pet)
 
 		if (!bNoDrop)
 		{
-			CItem* dropItem = gserver->m_itemProtoList.CreateItem(selIndex, -1, 0, 0, 1);
+			CItem* dropItem = gserver->m_itemProtoList.CreateItem(selIndex, -1, 0, 0, 2);
 			if (dropItem)
 			{
 				// TODO : petlog

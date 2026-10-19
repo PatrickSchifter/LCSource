@@ -237,7 +237,7 @@ void DBProcess::CreateChar( boost::any& argv )
 
 #ifdef IMP_SPEED_SERVER
 		if( gserver->m_bSpeedServer )
-			bagicSkillPoint = 10000 * 10000;		//10,000,000 ( 1000 SP )
+			bagicSkillPoint = 1000 * 10000;		//10,000,000 ( 1000 SP )
 #endif
 
 		query += boost::str(boost::format("%1%,") % bagicSkillPoint);

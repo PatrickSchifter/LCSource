@@ -833,39 +833,39 @@ void ProcDead_RVR(CPC* op, CNPC* df)
 			switch(grade)
 			{
 			case 1:
-				op->m_syndicateManager.increaseSyndicatePoint(200);
+				op->m_syndicateManager.increaseSyndicatePoint(2);
 				break;
 			case 2:
-				op->m_syndicateManager.increaseSyndicatePoint(320);
+				op->m_syndicateManager.increaseSyndicatePoint(3);
 				break;
 			case 3:
-				op->m_syndicateManager.increaseSyndicatePoint(500);
+				op->m_syndicateManager.increaseSyndicatePoint(5);
 				break;
 			}
 		}
 		else
 		{
-			op->m_syndicateManager.increaseSyndicatePoint(1200);
+			op->m_syndicateManager.increaseSyndicatePoint(1);
 		}
 	}
 	else if(op->getSyndicateType() == SYNDICATE::eSYNDICATE_DEALERMOON)
 	{
 		if (jewelKailuxPoint < jewelDealerMoonPoint)
 		{
-			op->m_syndicateManager.increaseSyndicatePoint(1500);
+			op->m_syndicateManager.increaseSyndicatePoint(1);
 		}
 		else
 		{
 			switch(grade)
 			{
 			case 1:
-				op->m_syndicateManager.increaseSyndicatePoint(200);
+				op->m_syndicateManager.increaseSyndicatePoint(2);
 				break;
 			case 2:
-				op->m_syndicateManager.increaseSyndicatePoint(320);
+				op->m_syndicateManager.increaseSyndicatePoint(3);
 				break;
 			case 3:
-				op->m_syndicateManager.increaseSyndicatePoint(500);
+				op->m_syndicateManager.increaseSyndicatePoint(5);
 				break;
 			}
 		}

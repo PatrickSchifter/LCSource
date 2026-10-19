@@ -22,11 +22,11 @@ void getRvrQuest(CNPC* npc, int* questIndex)
 	{
 		if (0 < kailuxJoinCount)
 		{
-			kailuxJoinPercent		= kailuxJoinCount / totalJoinCount * 1000;
+			kailuxJoinPercent		= kailuxJoinCount / totalJoinCount * 100;
 		}
 		if (0 < dealermoonJoinCount)
 		{
-			dealermoonJoinPercent	= dealermoonJoinCount / totalJoinCount * 1000;
+			dealermoonJoinPercent	= dealermoonJoinCount / totalJoinCount * 100;
 		}
 	}
 
@@ -1830,7 +1830,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				}
 				if(ch->m_avPassiveRate.quest_exp > 0)
 				{
-					prize_exp = prize_exp * (ch->m_avPassiveRate.quest_exp - 1000) / SKILL_RATE_UNIT;
+					prize_exp = prize_exp * (ch->m_avPassiveRate.quest_exp - 100) / SKILL_RATE_UNIT;
 				}
 #ifdef CASHITEM_EXPSP_LIMIT_BUG
 				ch->AddExpSP(prize_exp, 0, true, true);
@@ -2287,7 +2287,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 			}
 			if(ch->m_avPassiveRate.affinity_quest > 0)
 			{
-				bonus = point * (ch->m_avPassiveRate.affinity_quest - 1000) / SKILL_RATE_UNIT;
+				bonus = point * (ch->m_avPassiveRate.affinity_quest - 100) / SKILL_RATE_UNIT;
 			}
 			affinity->AddPoint(point, ch, bonus);
 		}

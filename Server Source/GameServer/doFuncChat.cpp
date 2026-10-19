@@ -103,7 +103,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_CHAT_CHANNEL_LEVEL:
 		{
-			if( ch->m_level < 30 ) return;		// 50레벨 이하 채팅 불가
+			if( ch->m_level < 50 ) return;		// 50레벨 이하 채팅 불가
 			tmp.Format("CH_LEVEL SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
 		break;
@@ -183,7 +183,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		break;
 	case MSG_CHAT_CHANNEL_LEVEL:
 		{
-			if( ch->m_level < 30 ) return;		// 50레벨 이하 채팅 불가
+			if( ch->m_level < 50 ) return;		// 50레벨 이하 채팅 불가
 			tmp.Format("CH_LEVEL SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
 		break;

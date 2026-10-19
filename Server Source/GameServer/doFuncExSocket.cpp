@@ -270,16 +270,16 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		if (packet->itemCount > 0)
 		{
 			if(isChaos)
-				maxrand = jewelData->getChaosComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getChaosComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 			else
-				maxrand = jewelData->getNormalComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getNormalComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		else
 		{
 			if(isChaos)
-				maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 			else
-				maxrand = jewelData->getNormalComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getNormalComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		//isChaos = true;
 		if(rand < maxrand)		//보석 합성 성공 시
@@ -290,31 +290,31 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 			{
 				if (packet->itemCount > 0)
 				{
-					plus2 = jewelData->getChaosPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getChaosPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getChaosPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getChaosPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 				else
 				{
-					plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 			}
 			else
 			{
 				if (packet->itemCount > 0)
 				{
-					plus2 = jewelData->getNormalPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getNormalPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getNormalPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getNormalPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 				else
 				{
-					plus2 = jewelData->getNormalPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getNormalPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getNormalPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getNormalPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 			}
 
-			if(plus3 > 10000)	plus3 = 10000;
-			if(plus2 > 40000)	plus2 = 40000;
+			if(plus3 > 1000)	plus3 = 1000;
+			if(plus2 > 4000)	plus2 = 4000;
 
 			rand = GetRandom(1, 10000);
 
@@ -688,10 +688,10 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		int maxrand;
 		if (packet->itemCount > 0)
 		{
-			maxrand = jewelData->getChaosComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+			maxrand = jewelData->getChaosComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		else
-			maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+			maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 
 		if(rand < maxrand)		//보석 합성 성공 시
 		{
@@ -701,17 +701,17 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 			if (packet->itemCount > 0)
 			{
-				plus2 = jewelData->getChaosPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-				plus3 = jewelData->getChaosPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+				plus2 = jewelData->getChaosPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+				plus3 = jewelData->getChaosPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 			}
 			else
 			{
-				plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-				plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+				plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+				plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 			}
 
-			if(plus3 > 10000)	plus3 = 10000;
-			if(plus2 > 40000)	plus2 = 40000;
+			if(plus3 > 1000)	plus3 = 1000;
+			if(plus2 > 4000)	plus2 = 4000;
 
 			rand = GetRandom(1, 10000);
 
@@ -1293,7 +1293,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 	LONGLONG pJewel_item_for_log_count = pJewel_item->Count();
 
 
-	if (prob > pJewel_item->m_itemProto->getItemNum1() * eventValue / 10000)		//보석 결합 확률 (실패시)
+	if (prob > pJewel_item->m_itemProto->getItemNum1() * eventValue / 100)		//보석 결합 확률 (실패시)
 	{
 		// TODO:보석 아이템 결합 실패시
 		if(pProtect_item == NULL)
