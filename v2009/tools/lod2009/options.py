@@ -43,7 +43,8 @@ def build():
         w.lstr(name, NAME_LEN)
         w.ints(vals)
         rep.records += 1
-    rep.note("server-side option levels 8..%d have no client value (2009 array is value[7])."
-             % max(len(db.S(r["a_level"]).split()) for r in rows))
+    mx = max(len(db.S(r["a_level"]).split()) for r in rows)
+    if mx > OPTION_MAX_LEVEL:
+        rep.note("server-side option levels 8..%d have no client value (2009 array is value[7])." % mx)
     rep.note("no 8-byte timestamp header (old option_brz.lod had one).")
     return w.save(out("Option_brz.lod")), rep

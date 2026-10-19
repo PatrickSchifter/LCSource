@@ -2,7 +2,7 @@
 """Build every 2009-format client data file from the BR 2014 install + server DB,
 then verify them with verify2009.py.
 
-usage: build_all.py [--offline] [--out DIR]
+usage: build_all.py [--offline] [--out DIR] [--db lc2009_data|newproject_data]
   --offline   use the JSON cache of the DB tables (LC_2009_CACHE) instead of mysql
 Inputs: LC_BR_ROOT (default /Users/patrickschifter/Projects/LC-BR2014), DB
 newproject_data via the mysql CLI (LC_DB_* env). Output: LC_2009_OUT.
@@ -40,12 +40,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--out")
+    ap.add_argument("--db", default=None, help="data DB (default lc2009_data; or newproject_data)")
     a = ap.parse_args()
     if a.out:
         os.environ["LC_2009_OUT"] = a.out
     import common
     import db
     db.OFFLINE = a.offline
+    if a.db:
+        db.set_db(a.db)
+    print("data DB:", db.DB_NAME, "(offline cache)" if a.offline else "")
     import items, skills, options, catalog, npchelp, bigpet, quests, mobs, actions
 
     results = []
@@ -71,7 +75,7 @@ def main():
     print("footer-free copies of shipped BR files ->", nf, strip_footer_copies(nf))
 
     print("\n== verify (2009 read sequences) ==")
-    args = [sys.executable, os.path.join(HERE, "verify2009.py"), "--dir", common.OUT_DATA]
+    args = [sys.executable, os.path.join(HERE, "verify2009.py"), "--dir", common.OUT_DATA, "--db", db.DB_NAME]
     if a.offline:
         args.append("--offline")
     return subprocess.call(args)

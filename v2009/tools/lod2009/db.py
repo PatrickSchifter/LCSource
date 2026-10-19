@@ -10,16 +10,30 @@ import json
 import os
 import subprocess
 
+_MEMO = {}
+
 from common import OUT_DATA
 
-DB_NAME = os.environ.get("LC_DB_NAME", "newproject_data")
+# lc2009_data: the 2009 server's DB (newproject_data + v2009/server-config/db-fixes.sql:
+# options cut to 7 levels, jobs renumbered to 2009, 2009-unsupported rows disabled).
+# newproject_data: the untouched Feb/2016 dump used by the 2015 port (--db newproject_data).
+DB_NAME = os.environ.get("LC_DB_NAME", "lc2009_data")
 DB_USER = os.environ.get("LC_DB_USER", "lcserver")
 DB_PASS = os.environ.get("LC_DB_PASS", "lcserver")
 DB_HOST = os.environ.get("LC_DB_HOST", "127.0.0.1")
-CACHE = os.environ.get("LC_2009_CACHE", os.path.join(os.path.dirname(OUT_DATA), "cache"))
+CACHE_ROOT = os.environ.get("LC_2009_CACHE", os.path.join(os.path.dirname(OUT_DATA), "cache"))
+
+
+def set_db(name):
+    global DB_NAME
+    DB_NAME = name
+    _MEMO.clear()
+
+
+def cache_dir():
+    return os.path.join(CACHE_ROOT, DB_NAME)
 
 OFFLINE = False
-_MEMO = {}
 
 
 def _unescape(s):
@@ -45,8 +59,8 @@ def query(name, sql):
     """Return list of dicts. `name` is the cache key."""
     if name in _MEMO:
         return _MEMO[name]
-    os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, name + ".json")
+    os.makedirs(cache_dir(), exist_ok=True)
+    path = os.path.join(cache_dir(), name + ".json")
     if OFFLINE:
         with open(path, encoding="utf-8") as f:
             _MEMO[name] = json.load(f)

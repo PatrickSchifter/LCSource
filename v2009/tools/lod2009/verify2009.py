@@ -457,6 +457,12 @@ def spot_checks(name, res):
                 (db.I(r["a_type_idx"]), db.I(r["a_subtype_idx"]), db.I(r["a_num_0"]), db.I(r["a_price"])))
             chk("item %d smc/icon" % idx, (it["smc"], it["icon"]),
                 (to_bytes(r["a_file_smc"]), [db.I(r["a_texture_id"]), db.I(r["a_texture_row"]), db.I(r["a_texture_col"])]))
+        if db.DB_NAME == "lc2009_data":
+            bad = sorted(i for i, it in D.items() if it["job"] & ~0xFF)
+            chk("item job flags use only 2009 bits 0-5 classes, 6 pet, 7 attack pet", bad[:10], [])
+            ws = sorted(i for i, it in D.items() if it["wearing"] >= 11)
+            en = {db.I(r["a_index"]) for r in db._MEMO["t_item"] if db.I(r["a_enable"]) == 1}
+            chk("no enabled item wears slot >= 11 (2009 MAX_WEARING 11)", [i for i in ws if i in en][:10], [])
     elif name == "Skills_brz.bin":
         st = load_str("strSkill", 3)
         for idx in (1, 2, 36, 1854):
@@ -470,6 +476,14 @@ def spot_checks(name, res):
             chk("skill %d fireAni w0/w1" % idx, (s["client"][0]["strs"][3], s["client"][1]["strs"][3]),
                 (to_bytes(r["a_cd_fa"]), to_bytes(r["a_cd_fa2"])))
             chk("skill %d desc" % idx, s["desc"], strip_prefix(st.get(idx, 1))[:255] or s["desc"])
+        if db.DB_NAME == "lc2009_data":
+            import collections
+            jobs = collections.Counter(s["job"] for s in D.values())
+            SKJOB = {db.I(r["a_index"]): db.I(r["a_job"]) for r in db._MEMO["t_skill"]}
+            out.append("info skill jobs: %s" % dict(sorted(jobs.items())))
+            chk("no skill with 2016-only job 8/10/11", sorted(j for j in jobs if j in (8, 10, 11)), [])
+            chk("skill jobs == DB a_job", [i for i, s in D.items()
+                                         if s["job"] != SKJOB.get(i)][:10], [])
         lv = [L for L in db._MEMO["t_skilllevel"] if db.I(L["a_index"]) == 1]
         chk("skill 1 lv1 needMP/learnLevel", (D[1]["levels"][0][1], D[1]["levels"][0][8]),
             (db.I(lv[0]["a_needMP"]), db.I(lv[0]["a_learnLevel"])))
@@ -489,19 +503,26 @@ def spot_checks(name, res):
                      db.I(x["a_item_num"])] for x in cti if db.I(x["a_ctid"]) == idx]
             chk("catalog %d cash/items" % idx, d and (d["cash"], d["items"]), (db.I(c["a_cash"]), want))
             out.append("info catalog %d: tab %d name %r" % (idx, d["type"], d["name"][:40]))
+        chk("catalog ids == DB t_catalog", sorted(D), [db.I(c["a_ctid"]) for c in db._MEMO["t_catalog"]])
     elif name == "npchelp_brz.lod":
         st = load_str("strNpcName", 2)
         for d in D[:2] + D[-1:]:
             chk("npchelp npc %d name" % d["npc"], d["name"], st.get(d["npc"], 0)[:49] or d["name"])
     elif name == "bigpet_brz.lod":
-        for d, r in zip(D[:2] + D[-1:], db._MEMO["t_attack_pet"][:2] + db._MEMO["t_attack_pet"][-1:]):
+        import bigpet
+        rows = bigpet.load_rows()
+        sfx = bigpet.source()[1]
+        chk("bigpet indices == DB rows", [d["index"] for d in D], [db.I(r["a_index"]) for r in rows])
+        for d, r in zip(D[:2] + D[-1:], rows[:2] + rows[-1:]):
             chk("bigpet %d smc/idle/hungry" % d["index"], (d["file"], d["anis"][0], d["anis"][8]),
-                (to_bytes(r["a_smcFileName_1"]), to_bytes(r["a_ani_idle1_1"]), to_bytes(r["a_ani_levelup_1"])))
+                (to_bytes(r["a_smcFileName" + sfx]), to_bytes(r["a_ani_idle1" + sfx]), to_bytes(r["a_ani_levelup" + sfx])))
     elif name == "questAll_brz.lod":
         from common import pick
         st = load_str("strQuest", 4)
         enabled = [db.I(r["a_index"]) for r in db._MEMO["t_quest"] if db.I(r["a_enable"]) == 1]
         chk("quest records == enabled DB quests", sorted(D), enabled)
+        if db.DB_NAME == "lc2009_data":
+            chk("no quest needs a 2016-only job (6-8)", [i for i, q in D.items() if 6 <= q["head"][11] <= 8], [])
         for idx in enabled[:2] + enabled[-1:]:
             q = D.get(idx)
             r = row("t_quest", "a_index", idx)
@@ -538,11 +559,14 @@ def main():
     ap.add_argument("--dir", default=None)
     ap.add_argument("--no-spot", action="store_true")
     ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--db", default=None)
     ap.add_argument("files", nargs="*")
     a = ap.parse_args()
     from common import OUT_DATA
     import db
     db.OFFLINE = a.offline
+    if a.db:
+        db.set_db(a.db)
     d = a.dir or OUT_DATA
     files = a.files or [os.path.join(d, k) for k in LOADERS]
     allok = True
@@ -557,7 +581,7 @@ def main():
                               "a_texture_id, a_texture_row, a_texture_col from t_catalog order by a_ctid")
         db.query("t_ct_item", "select a_index, a_ctid, a_item_idx, a_item_flag, a_item_plus, a_item_option, a_item_num "
                               "from t_ct_item order by a_ctid, a_index")
-        db.query("t_attack_pet", "select * from t_attack_pet order by a_index")
+        bigpet.load_rows()
         db.query("t_quest", "select * from t_quest order by a_index")
         db.query("t_npc", mobs.SQL)
     for p in files:
