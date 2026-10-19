@@ -255,11 +255,51 @@ Fontes publicados (cada versão é um branch):
 - Cliente: [openlastchaos/lastchaos-source-client](https://github.com/openlastchaos/lastchaos-source-client): `2009` ([commit](https://github.com/openlastchaos/lastchaos-source-client/commit/708ca1364d8cba964ffcf1dedc38bd7068667dd4)), `june-2015`, `november-2018`; o commit `e8d45f8` tem o Serious Engine original
 - Servidor: [openlastchaos/lastchaos-source-server](https://github.com/openlastchaos/lastchaos-source-server), mesmos branches
 
-- [ ] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo)
+- [x] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo) — 2026-10-19, abaixo
+- [ ] Portar a versão 2018 (cliente e servidor) reaplicando as mudanças do porte — ordem a confirmar
+  com o usuário (ver a medição)
 - [ ] Portar a versão 2009 (cliente e servidor) reaplicando as mudanças do Engine
 - [ ] Assets e banco de cada versão
 - [ ] Seletor de versão (launcher: build do cliente, assets e servidor correspondentes)
 - Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las
+
+### Medição (2026-10-19)
+
+Clones em `~/Projects/LCVersions` (fora do repositório; por SSH, o HTTPS para o GitHub dava timeout),
+árvores extraídas em `trees/<versão>/{client,server}` e o nosso fonte original (`master`) em
+`trees/ours`. Só arquivos de código (`.c/.cpp/.h/.hpp/.inl/.es`), ignorando espaços e CRLF.
+O banco (`lastchaos-database`) ainda não clonou (timeout na rede).
+
+Diferença do nosso fonte original para cada versão (arquivos só na versão / linhas +/-):
+
+| Cliente | 2009 | june-2015 | november-2018 |
+|---|---|---|---|
+| Motor (Base, Graphics, Math, Rendering, Ska, Terrain, Sound, World...) | ~170 arquivos, +7.8k −6.8k | quase igual (Base: 2 arquivos novos) | Graphics 3 arquivos (+25 −37), Math 1 |
+| Jogo dentro do `Engine/` (Interface, Contents, Network, Entities, Effect) | Interface 215 (+56k −76k), sem `Contents/` (160 nossos), Network 49 | Contents 30 novos (+12.7k), Interface 66 (+1.5k −3.8k) | Contents 114 novos (+40k), Interface 142 (+8.7k −24k), Network 17 |
+| `EntitiesMP` (`.es`) | 49 (+17k −25k) | 6 (+246 −82) | 9 (+272 −169); os +147k da 2018 são `.cpp/.h` gerados pelo Ecc, versionados lá |
+| Servidor (GameServer) | outro código (sem ShareLib/CommonLib) | 219 (+14k −13k) | 223 (+25k −21k) |
+
+- A june-2015 publicada é um retrato um pouco **mais novo** que o nosso (tem arquivos a mais em
+  `Contents`, `Engine/Base`, `include`), não um pouco mais velho.
+- 2009: outra árvore (`LCadd`, `SDK`, `Classes`, `zlib` no `Engine`; sem `Contents`, `lua`,
+  `GameStageManager`, `3rdparty`, `include`), VC6. É quase outro porte da camada de jogo.
+
+Reaplicando o diff do porte (`master..macos-port`, só arquivos **modificados**, `git apply --reject`
+ignorando espaços) em cada versão:
+
+| | 2009 | june-2015 | november-2018 |
+|---|---|---|---|
+| Cliente (699 arquivos) | 271 com rejeição (792 trechos), 143 sem destino | 13 (19 trechos) | 63 (121 trechos) |
+| Servidor (59 arquivos) | 19 (32 trechos), 40 sem destino | 27 (44 trechos) | 28 (47 trechos) |
+
+- 2018: das 63 rejeições do cliente, 36 em `Engine/Interface`, 7 em `Contents`, 5 em `Network`,
+  só 2 em `Graphics`; o motor (OpenGL/Metal/Vulkan, SDL3, Win32Compat) entra quase inteiro.
+  O servidor rejeita igual em 2015 e 2018 (GameServer e ShareLib).
+- Os arquivos novos do porte (backends, `Compat`, CMake, scripts) não entram nessa conta: são
+  copiados como estão; os CMake precisam das listas de fontes de cada versão.
+- Conclusão: 2018 é o próximo porte barato (o motor é o mesmo); 2015 publicada é quase a nossa;
+  2009 é caro (camada de jogo e servidor diferentes). Os assets (cliente) de cada versão ainda não
+  têm fonte definida aqui (o pacote do tx00100xt tem 2015/2018 em inglês, não testado).
 
 ---
 
@@ -306,3 +346,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C8: Metal M5, Metal como padrão no Mac (`LC_GFX_API=opengl` para o OpenGL) | 3cfa01a |
 | 2026-10-19 | C8: Vulkan V0, o backend Metal sobre a interface comum `GpuDevice` | d9459a2 |
 | 2026-10-19 | C8: Vulkan V1–V5, backend `GAT_VK` no MoltenVK (Juno visto, validação limpa) | cf7102f |
+| 2026-10-19 | Fase V: medição das versões 2009/2015/2018 contra o nosso fonte e reaplicação do diff do porte | |
