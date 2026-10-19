@@ -226,7 +226,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
   - [x] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, pelo ARB do tradutor do OpenGL (2026-10-19)
   - [x] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela — feita (2026-10-19, `98defbc`), conferida em jogo pelo usuário
   - [x] M5: Metal como padrão no Mac, OpenGL com `LC_GFX_API=opengl` ou se o Metal não abrir (2026-10-19)
-- [x] Etapa Vulkan (D2.3): novo backend `GAT_VK` sobre o MoltenVK (`LC_GFX_API=vulkan`); plano e estado em `HANDOFF.md` ("C8 — Vulkan"); falta a conferência completa em jogo
+- [x] Etapa Vulkan (D2.3): novo backend `GAT_VK` sobre o MoltenVK (`LC_GFX_API=vulkan`); plano e estado em `HANDOFF.md` ("C8 — Vulkan"); conferido em jogo pelo usuário (2026-10-19)
   - [x] V0: o backend Metal sobre uma interface comum de dispositivo (`GpuDevice.h`), o wrapper (`Gfx_wrapper_Gpu.cpp`) servindo às duas APIs (2026-10-19)
   - [x] V1–V5: dispositivo Vulkan (`VulkanDevice.mm`), função fixa e programas em GLSL → SPIR-V (glslang), render targets e leituras, escolha por `LC_GFX_API=vulkan`; teste de paridade com o Metal em `scripts/macos/gpu-parity` (2026-10-19)
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend

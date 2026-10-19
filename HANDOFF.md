@@ -30,8 +30,7 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 2. **Metal** (D2.2), ver "C8 — Metal": M1–M5 feitas; o Metal é o padrão no Mac (`3cfa01a`),
    `LC_GFX_API=opengl` volta ao OpenGL. Juno visto no padrão novo depois da V0 (abaixo).
 3. **Vulkan** (D2.3), ver "C8 — Vulkan": V0–V5 feitas (`cf7102f`); `LC_GFX_API=vulkan` desenha pelo
-   MoltenVK. Juno visto no Vulkan pelo usuário com a validação ligada e limpa. Falta o usuário
-   conferir o resto em jogo (lista em "C8 — Vulkan") e comparar desempenho com o Metal.
+   MoltenVK. Conferido em jogo pelo usuário (2026-10-19): tudo normal, igual ao Metal.
 
 ## C8 — Vulkan (2026-10-19)
 
@@ -89,9 +88,10 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   mensagens saem no `stdout.log`, que mostra `Vulkan: <GPU>, drawable WxH` quando abre.
 - Visto em jogo (usuário logado, validação ligada): Juno com personagem animado, terreno, árvores
   com alpha test, sombra projetada, guarda, UI e minimapa; `stdout.log` sem nenhuma mensagem.
-- Conferir em jogo (`LC_GFX_API=vulkan`, comparando com o Metal): loja de cash (preview), modelo de
-  item no HUD, reflexo da água, bloom, flares, captura de tela, trocar resolução/tela cheia nas
-  opções (recria o dispositivo), CPU/FPS. Ainda não: consultas de oclusão (como no Metal).
+- Conferido em jogo pelo usuário (2026-10-19, comparando com o Metal): loja de cash (preview),
+  modelo de item no HUD, reflexo da água, bloom, flares, captura de tela, troca de resolução/tela
+  cheia (recria o dispositivo) e desempenho — tudo normal. Ainda não: consultas de oclusão (como no
+  Metal).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
