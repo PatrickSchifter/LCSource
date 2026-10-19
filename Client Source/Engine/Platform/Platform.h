@@ -31,6 +31,16 @@ ENGINE_API void PLT_GetDesktopSize(PIX &pixWidth, PIX &pixHeight);
 // pixels OpenGL draws per window point: the display's density when the size set needs it (macOS
 // Retina), else 1; sizes and coordinates the game sees stay in window points
 ENGINE_API INDEX PLT_GetDrawableScale(void);
+// after the OpenGL context is created: it takes the drawable's size at that density
+ENGINE_API void PLT_UpdateDrawable(void);
+// a fullscreen size (in pixels) whose top would be behind a MacBook's camera notch: fullscreen
+// takes the mode under the notch instead, and the list of resolutions leaves it out
+ENGINE_API BOOL PLT_IsBehindNotch(PIX pixWidth, PIX pixHeight);
+
+// the main window's display gamma ramp (macOS): 256 red, green and blue values of 0..65535, as
+// SetDeviceGammaRamp; NULL gives the display back its own
+ENGINE_API BOOL PLT_CanSetGammaRamp(void);
+ENGINE_API void PLT_SetGammaRamp(const UWORD *puwRamp);
 
 // the next message translated from the window's events, as PeekMessage(PM_REMOVE) would give it
 ENGINE_API BOOL PLT_PeekMessage(MSG *pmsg);

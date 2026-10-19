@@ -2364,7 +2364,10 @@ static void AdjustGammaRamp( CViewPort *pvp)
 #ifdef PLATFORM_WIN32
 		CTempDC tdc(pvp->vp_hWnd);
 		SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
-#endif // PLATFORM_WIN32 (SDL3 has no gamma ramps; GLF_ADJUSTABLEGAMMA is never set)
+#else
+		// the display's gamma ramp, from the platform layer (macOS)
+		PLT_SetGammaRamp( &_auwGammaTable[0]);
+#endif // PLATFORM_WIN32
 	}
 #ifdef SE1_D3D
 	else if( _pGfx->gl_eCurrentAPI==GAT_D3D) {

@@ -50,8 +50,65 @@ float PLT_MacSetHighDensity(SDL_Window *pwnd, bool bHighDensity)
   NSView *view = nswnd.contentView;
   if (view.wantsBestResolutionOpenGLSurface != bHighDensity) {
     view.wantsBestResolutionOpenGLSurface = bHighDensity;
-    // the context takes the new drawable size (none yet when the window is first set up)
-    [[NSOpenGLContext currentContext] update];
   }
+  // the context takes the drawable's size now: it may have been created after this was set, or
+  // the window may have just gone fullscreen (there is none yet when the window is first set up)
+  [[NSOpenGLContext currentContext] update];
   return bHighDensity ? (float)nswnd.backingScaleFactor : 1.0f;
+}
+
+// the display the window is on, for CoreGraphics
+static CGDirectDisplayID WindowDisplay(SDL_Window *pwnd)
+{
+  NSWindow *nswnd = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(pwnd),
+    SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+  NSScreen *screen = (nswnd != nil && nswnd.screen != nil) ? nswnd.screen : [NSScreen mainScreen];
+  NSNumber *num = screen.deviceDescription[@"NSScreenNumber"];
+  return num != nil ? (CGDirectDisplayID)num.unsignedIntValue : CGMainDisplayID();
+}
+
+// gamma ramps of the window's display (PLT_SetGammaRamp), as Windows' SetDeviceGammaRamp: 256
+// red, then green, then blue values of 0..65535
+bool PLT_MacCanSetGammaRamp(SDL_Window *pwnd)
+{
+  CGGammaValue afR[256], afG[256], afB[256];
+  uint32_t ctSamples = 0;
+  return CGGetDisplayTransferByTable(WindowDisplay(pwnd), 256, afR, afG, afB, &ctSamples) == kCGErrorSuccess
+      && ctSamples > 0;
+}
+
+bool PLT_MacSetGammaRamp(SDL_Window *pwnd, const unsigned short *puwRamp)
+{
+  CGGammaValue afR[256], afG[256], afB[256];
+  for (int i = 0; i < 256; i++) {
+    afR[i] = puwRamp[i] / 65535.0f;
+    afG[i] = puwRamp[i + 256] / 65535.0f;
+    afB[i] = puwRamp[i + 512] / 65535.0f;
+  }
+  return CGSetDisplayTransferByTable(WindowDisplay(pwnd), 256, afR, afG, afB) == kCGErrorSuccess;
+}
+
+// the displays' own gamma (ColorSync); the system also restores it when the game quits
+void PLT_MacRestoreGammaRamp(void)
+{
+  CGDisplayRestoreColorSyncSettings();
+}
+
+// whether the display of the window (the main display without one) has a camera notch: its full
+// panel modes put the top of the picture behind the camera (PlatformSDL.cpp)
+bool PLT_MacDisplayHasNotch(SDL_Window *pwnd)
+{
+  NSScreen *screen = nil;
+  if (pwnd != NULL) {
+    NSWindow *nswnd = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(pwnd),
+      SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    screen = nswnd.screen;
+  }
+  if (screen == nil) {
+    screen = NSScreen.screens.firstObject;
+  }
+  if (@available(macOS 12.0, *)) {
+    return screen != nil && screen.safeAreaInsets.top > 0;
+  }
+  return false;
 }

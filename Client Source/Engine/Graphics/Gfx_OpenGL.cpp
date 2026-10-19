@@ -435,6 +435,8 @@ BOOL CGfxLibrary::CreateContext_OGL(HWND hWnd)
   go_hglRC = (HGLRC)glctx;
   // SDL_GL_CreateContext() makes it current; failing that, as on Windows
   if( !SDL_GL_MakeCurrent( pwnd, glctx)) return FALSE;
+  // on a Retina display, draw at the density set with the window (PlatformSDL.cpp)
+  PLT_UpdateDrawable();
   // only accelerated contexts are created
   gl_ulFlags |= GLF_HASACCELERATION;
 
@@ -559,22 +561,25 @@ void CGfxLibrary::InitContext_OGL(void)
   }
 #endif // PLATFORM_WIN32
 
+  gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
+#ifdef PLATFORM_WIN32
   // if full screen and gamma adjustment is supported
   // (3Dfx OpenGL doesn't support gamma adjustment - the way we would like it:)
-  gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
   if( !_b3DfxDriver && (gl_ulFlags&GLF_FULLSCREEN)) {
-#ifdef PLATFORM_WIN32
     // store system gamma table
     const HDC hdc = GetDC(NULL);
     const BOOL bHasGamma = GetDeviceGammaRamp( hdc, &_auwSystemGammaTable[0]);
     if( bHasGamma) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
     else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
     ReleaseDC( NULL, hdc);
-#else
-    // SDL3 has no gamma ramps
-    CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
-#endif // PLATFORM_WIN32
   }
+#else
+  // SDL3 has no gamma ramps; on macOS the platform layer sets the display's. The game starts its
+  // display modes windowed (GLF_FULLSCREEN off) and makes the window fullscreen, so the platform
+  // layer puts the ramp on only while the window is fullscreen and in front.
+  if( PLT_CanSetGammaRamp()) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
+  else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
+#endif // PLATFORM_WIN32
 
   // multitexture is supported only thru GL_EXT_texture_env_combine extension (or its ARB version,
   // same enums, which is the one macOS reports)
@@ -1012,6 +1017,9 @@ void CGfxLibrary::EndDriver_OGL(void)
     go_hglRC = NULL;
   }
 #else
+  // restore system gamma table (macOS, the platform layer)
+  if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) PLT_SetGammaRamp(NULL);
+
   if( go_hglRC!=NULL) {
     SDL_GL_MakeCurrent( SDL_GL_GetCurrentWindow(), NULL);
     SDL_GL_DestroyContext( (SDL_GLContext)go_hglRC);

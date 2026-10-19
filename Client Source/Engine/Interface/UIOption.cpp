@@ -1612,7 +1612,10 @@ void CUIOption::ApplyOption()
 			CreateResolutionList();
 
 			// 해상도가 변경되었다면, UIManager 크기를 갱신해야 한다.
-			SE_Get_UIManagerPtr()->InitPos(0, 0, m_vecPixWidth[iRes], m_vecPixHeight[iRes]);
+			// (the main drawport's size: at a Retina display's density it counts fewer pixels than
+			// the mode has, Engine/Platform/PlatformSDL.cpp)
+			if( _pdpMain!=NULL) SE_Get_UIManagerPtr()->InitPos(0, 0, _pdpMain->GetWidth(), _pdpMain->GetHeight());
+			else SE_Get_UIManagerPtr()->InitPos(0, 0, m_vecPixWidth[iRes], m_vecPixHeight[iRes]);
 			// Adjust position of UIs
 			SE_Get_UIManagerPtr()->AdjustUIPos( _pdpMain );
 		}

@@ -1965,7 +1965,10 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 		_iDisplayModeChangeFlag = 1;  // all ok
 	}
 
-	SE_Get_UIManagerPtr()->InitPos(0, 0, pixSizeI, pixSizeJ);
+	// the UI covers the main drawport: at a Retina display's density it counts fewer pixels than
+	// the mode has (Engine/Platform/PlatformSDL.cpp)
+	if( _pdpMain!=NULL) SE_Get_UIManagerPtr()->InitPos(0, 0, _pdpMain->GetWidth(), _pdpMain->GetHeight());
+	else SE_Get_UIManagerPtr()->InitPos(0, 0, pixSizeI, pixSizeJ);
 
 	// apply 3D-acc settings
 	ApplyGLSettings(FALSE);

@@ -84,17 +84,23 @@ static CResolution _areResolutions[] =
   { 1600, 1200 },   
   { 1680, 1050  },	// wide screen
   { 1920, 1200  },	// wide screen	//  [7/2/2010 rumist]
-  // Retina displays at full density (macOS, Platform/PlatformSDL.cpp), and 4K
+  // Retina displays at full density (macOS, Platform/PlatformSDL.cpp), and 4K; a MacBook with a
+  // camera notch has its whole panel and, a little shorter, the part under the notch
   { 2560, 1440 },
   { 2560, 1600 },
   { 2560, 1664 },
   { 2880, 1800 },
+  { 2940, 1836 },	// MacBook Air 13" under the notch
   { 2940, 1912 },
+  { 3024, 1890 },	// MacBook Pro 14" under the notch
   { 3024, 1964 },
+  { 3420, 2136 },	// MacBook Air 15" under the notch
+  { 3420, 2224 },
+  { 3456, 2160 },	// MacBook Pro 16" under the notch
   { 3456, 2234 },
   { 3840, 2160 },
 };
-// THIS NUMBER MUST NOT BE OVER 25! (otherwise change it in adapter.h)
+// THIS NUMBER MUST NOT BE OVER 32! (otherwise change it in adapter.h)
 static const INDEX MAX_RESOLUTIONS = sizeof(_areResolutions)/sizeof(_areResolutions[0]);
 
 
@@ -130,7 +136,8 @@ void CGfxLibrary::InitAPIs(void)
     int ctModes = 0;
     SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
     // the resolutions of the list that the display has, in points or, in a high density (Retina)
-    // mode, in pixels: PLT_SetMainWindowMode draws those at full density
+    // mode, in pixels: PLT_SetMainWindowMode draws those at full density. Not those whose top is
+    // behind a MacBook's camera notch: the size under the notch is in the list instead.
     PIX pixDesktopI, pixDesktopJ;
     PLT_GetDesktopSize( pixDesktopI, pixDesktopJ);
     const BOOL bHighDensity = pdmDesktop!=NULL && pixDesktopI>pdmDesktop->w;
@@ -143,7 +150,7 @@ void CGfxLibrary::InitAPIs(void)
         const BOOL bPixels = bHighDensity && dmSDL.pixel_density>1.0f
                           && (PIX)(dmSDL.w*dmSDL.pixel_density+0.5f)==re.re_pixSizeI
                           && (PIX)(dmSDL.h*dmSDL.pixel_density+0.5f)==re.re_pixSizeJ;
-        if( bPoints || bPixels) {
+        if( (bPoints || bPixels) && !PLT_IsBehindNotch( re.re_pixSizeI, re.re_pixSizeJ)) {
           CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
           dm.dm_pixSizeI = re.re_pixSizeI;
           dm.dm_pixSizeJ = re.re_pixSizeJ;

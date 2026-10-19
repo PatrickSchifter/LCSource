@@ -212,7 +212,34 @@ int CBackImageManager::GetResolutionIndex()
 		}
 	}
 
-	return -1;
+	// a size of no entry (a Retina display counts its window in points, e.g. 1470x956): the
+	// entry closest in aspect ratio, then in size; with none the characters stood at the camera
+	if (nClientWidth <= 0 || nClientHeight <= 0)
+		return -1;
+
+	const float fRatio = (float)nClientHeight / (float)nClientWidth;
+	int iBest = -1;
+	float fBestRatio = 0.f;
+	int nBestSize = 0;
+
+	for (i = 0; i < eSIZE_MAX; ++i)
+	{
+		if (m_stResolution[i].nWidth <= 0 || m_stResolution[i].nHeight <= 0)
+			continue;
+
+		const float fDiffRatio = fabsf((float)m_stResolution[i].nHeight / (float)m_stResolution[i].nWidth - fRatio);
+		const int nDiffSize = abs(m_stResolution[i].nWidth - nClientWidth);
+
+		if (iBest < 0 || fDiffRatio < fBestRatio - 0.01f ||
+			(fDiffRatio < fBestRatio + 0.01f && nDiffSize < nBestSize))
+		{
+			iBest = i;
+			fBestRatio = fDiffRatio;
+			nBestSize = nDiffSize;
+		}
+	}
+
+	return iBest;
 }
 
 void CBackImageManager::SetArrangeOffset( int x, int y, int nResolusionIdx )
@@ -225,14 +252,19 @@ CBackImageManager::eRATIO CBackImageManager::GetRatio( int nWidth, int nHeight )
 {
 	float fRatio = (float)nHeight / (float)nWidth;
 
-	if (DEF_RATIO_16_10 < fRatio && DEF_RATIO_5_4 > fRatio)
-		return eRATIO_4_3;
-	else if (DEF_RATIO_16_10 > fRatio)
-		return eRATIO_16_9;
-	else if (DEF_RATIO_5_4 <= fRatio)
-		return eRATIO_5_4;
+	// the closest of the four: a shape between them (a Retina MacBook's 1470x956 is 1.54:1) took
+	// 4:3 for anything above 16:10, and its camera came close as for a narrower screen
+	const float afRatio[4] = { DEF_RATIO_4_3, DEF_RATIO_5_4, DEF_RATIO_16_9, DEF_RATIO_16_10 };
+	const eRATIO aeRatio[4] = { eRATIO_4_3, eRATIO_5_4, eRATIO_16_9, eRATIO_16_10 };
+	int iBest = 3;
 
-	return eRATIO_16_10;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (fabsf(afRatio[i] - fRatio) < fabsf(afRatio[iBest] - fRatio))
+			iBest = i;
+	}
+
+	return aeRatio[iBest];
 }
 
 float CBackImageManager::GetRatioCamera( float fFov, int nWidth, int nHeight )

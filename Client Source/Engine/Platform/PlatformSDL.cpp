@@ -24,6 +24,14 @@ static INDEX _iDrawableScale = 1;      // drawable pixels per window point (PLT_
 ENGINE_API CUIManager *SE_Get_UIManagerPtr();  // Engine.cpp
 extern void PLT_MacInstallGestureMonitors(void);  // PlatformMac.mm
 extern float PLT_MacSetHighDensity(SDL_Window *pwnd, bool bHighDensity);  // PlatformMac.mm
+extern bool PLT_MacCanSetGammaRamp(SDL_Window *pwnd);
+extern bool PLT_MacSetGammaRamp(SDL_Window *pwnd, const unsigned short *puwRamp);
+extern void PLT_MacRestoreGammaRamp(void);
+extern bool PLT_MacDisplayHasNotch(SDL_Window *pwnd);
+static UWORD _auwGammaRamp[256*3];  // the game's gamma ramp, while it is set (PLT_SetGammaRamp)
+static bool _bGammaRampSet = false;
+static bool _bGammaRampApplied = false;  // on the display now (not while the game is in the background)
+static void ApplyGammaRamp(bool bApply);
 static float _fPanX = 0.0f, _fPanY = 0.0f;       // trackpad camera turning not taken yet
 static bool _bGestureOverUI = true;              // where the current two-finger drag began
 static float _fMagnifyRemainder = 0.0f;          // pinch not reported as wheel yet
@@ -137,6 +145,56 @@ static void UpdateDrawableScale(void)
 #endif
 }
 
+// A MacBook with a camera notch has, for each width, the full panel and a mode a little shorter
+// that is the part under the notch (1470x956 and 1470x918 points). The full one puts the top of
+// the picture behind the camera, so fullscreen takes the shorter one and the list of
+// resolutions leaves the full ones out (PLT_IsBehindNotch).
+static bool ShorterModeUnderNotch(SDL_DisplayID idDisplay, const SDL_DisplayMode &dm, SDL_DisplayMode *pdmShorter)
+{
+  bool bFound = false;
+#ifdef __APPLE__
+  int ctModes = 0;
+  SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+  for (int iMode = 0; apdm != NULL && iMode < ctModes; iMode++) {
+    const SDL_DisplayMode &dmMode = *apdm[iMode];
+    if (dmMode.w == dm.w && dmMode.h < dm.h && dmMode.pixel_density == dm.pixel_density
+     && (!bFound || dmMode.h > pdmShorter->h)) {
+      *pdmShorter = dmMode;
+      bFound = true;
+    }
+  }
+  SDL_free(apdm);
+#endif
+  return bFound;
+}
+
+BOOL PLT_IsBehindNotch(PIX pixWidth, PIX pixHeight)
+{
+#ifdef __APPLE__
+  if (!PLT_MacDisplayHasNotch(_pwndMain)) return FALSE;
+  const SDL_DisplayID idDisplay = _pwndMain != NULL ? SDL_GetDisplayForWindow(_pwndMain) : SDL_GetPrimaryDisplay();
+  int ctModes = 0;
+  SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+  BOOL bBehind = FALSE;
+  for (int iMode = 0; apdm != NULL && iMode < ctModes && !bBehind; iMode++) {
+    const SDL_DisplayMode &dm = *apdm[iMode];
+    // the mode of that size, in points or in pixels at its density
+    const bool bPoints = dm.w == pixWidth && dm.h == pixHeight;
+    const bool bPixels = dm.pixel_density > 1.0f && lroundf(dm.w * dm.pixel_density) == pixWidth
+                                                 && lroundf(dm.h * dm.pixel_density) == pixHeight;
+    SDL_DisplayMode dmShorter;
+    if ((bPoints || bPixels) && ShorterModeUnderNotch(idDisplay, dm, &dmShorter)) {
+      bBehind = TRUE;
+    }
+  }
+  SDL_free(apdm);
+  return bBehind;
+#else
+  (void)pixWidth; (void)pixHeight;
+  return FALSE;
+#endif
+}
+
 void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX iLeft, INDEX iTop)
 {
   ASSERT(_pwndMain != NULL);
@@ -167,8 +225,19 @@ void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX 
     if (!bMode) {
       bMode = SDL_GetClosestFullscreenDisplayMode(idDisplay, pixWidth, pixHeight, 0.0f, true, &dm);
     }
+    // under the camera notch: the game sees the window's size, a little shorter than asked
+    int iWidth = (int)lroundf(pixWidth / fDensity);
+    int iHeight = (int)lroundf(pixHeight / fDensity);
+#ifdef __APPLE__
+    SDL_DisplayMode dmShorter;
+    if (bMode && PLT_MacDisplayHasNotch(_pwndMain) && ShorterModeUnderNotch(idDisplay, dm, &dmShorter)) {
+      dm = dmShorter;
+      iWidth = dm.w;
+      iHeight = dm.h;
+    }
+#endif
     SDL_SetWindowFullscreenMode(_pwndMain, bMode ? &dm : NULL);
-    SDL_SetWindowSize(_pwndMain, (int)lroundf(pixWidth / fDensity), (int)lroundf(pixHeight / fDensity));
+    SDL_SetWindowSize(_pwndMain, iWidth, iHeight);
     SDL_SetWindowFullscreen(_pwndMain, true);
   } else {
     // at the desktop's density when the size does not fit the desktop in points
@@ -186,11 +255,61 @@ void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX 
   SDL_ShowWindow(_pwndMain);
   SDL_SyncWindow(_pwndMain);
   UpdateDrawableScale();
+#ifdef __APPLE__
+  // the gamma ramp is on only fullscreen
+  ApplyGammaRamp(true);
+#endif
 }
 
 INDEX PLT_GetDrawableScale(void)
 {
   return _iDrawableScale;
+}
+
+void PLT_UpdateDrawable(void)
+{
+  UpdateDrawableScale();
+}
+
+// Gamma, brightness and contrast as on Windows, by the display's gamma ramp. It affects the whole
+// display, so it is on only while the window is fullscreen (as on Windows) and in front, and off
+// when the game gives it back; macOS also restores it when the game quits.
+BOOL PLT_CanSetGammaRamp(void)
+{
+#ifdef __APPLE__
+  return _pwndMain != NULL && PLT_MacCanSetGammaRamp(_pwndMain);
+#else
+  return FALSE;
+#endif
+}
+
+#ifdef __APPLE__
+// the ramp on the display when the game wants it there (bApply) and its window is fullscreen and
+// in front, else the display's own
+static void ApplyGammaRamp(bool bApply)
+{
+  const SDL_WindowFlags ulFlags = _pwndMain != NULL ? SDL_GetWindowFlags(_pwndMain) : 0;
+  bApply = bApply && (ulFlags & SDL_WINDOW_FULLSCREEN) && (ulFlags & SDL_WINDOW_INPUT_FOCUS);
+  if (bApply && _bGammaRampSet) {
+    _bGammaRampApplied = PLT_MacSetGammaRamp(_pwndMain, _auwGammaRamp);
+  } else if (_bGammaRampApplied) {
+    PLT_MacRestoreGammaRamp();
+    _bGammaRampApplied = false;
+  }
+}
+#endif
+
+void PLT_SetGammaRamp(const UWORD *puwRamp)
+{
+#ifdef __APPLE__
+  _bGammaRampSet = puwRamp != NULL;
+  if (puwRamp != NULL) {
+    memcpy(_auwGammaRamp, puwRamp, sizeof(_auwGammaRamp));
+  }
+  ApplyGammaRamp(_bGammaRampSet);
+#else
+  (void)puwRamp;
+#endif
 }
 
 void PLT_SetMainWindowTitle(const char *strTitle)
@@ -606,11 +725,17 @@ static void TranslateEvent(const SDL_Event &ev)
     TranslateMouseWheel(ev.wheel);
     break;
   case SDL_EVENT_WINDOW_FOCUS_GAINED:
+#ifdef __APPLE__
+    ApplyGammaRamp(true);
+#endif
     PostMsg(WM_ACTIVATEAPP, TRUE, 0);
     PostMsg(WM_ACTIVATE, WA_ACTIVE, 0);
     PostMsg(WM_SETFOCUS, 0, 0);
     break;
   case SDL_EVENT_WINDOW_FOCUS_LOST:
+#ifdef __APPLE__
+    ApplyGammaRamp(false);
+#endif
     PostMsg(WM_ACTIVATE, WA_INACTIVE, 0);
     PostMsg(WM_KILLFOCUS, 0, 0);
     PostMsg(WM_ACTIVATEAPP, FALSE, 0);
@@ -620,10 +745,19 @@ static void TranslateEvent(const SDL_Event &ev)
     break;
   case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
   case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
-    // to or from a Retina display
+  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+    // to or from a Retina display, or a size that macOS finished setting after the game asked
     UpdateDrawableScale();
     break;
+  case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+  case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+    UpdateDrawableScale();
+#ifdef __APPLE__
+    ApplyGammaRamp(true);  // only fullscreen
+#endif
+    break;
   case SDL_EVENT_WINDOW_RESIZED:
+    UpdateDrawableScale();
     PostMsg(WM_SIZE, 0 /*SIZE_RESTORED*/, MAKELPARAM((WORD)ev.window.data1, (WORD)ev.window.data2));
     break;
   default:
