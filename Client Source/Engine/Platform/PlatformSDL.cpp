@@ -85,10 +85,11 @@ void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX 
 {
   ASSERT(_pwndMain != NULL);
   if (bFullScreen) {
-    // the display mode closest to the requested size
+    // the display mode closest to the requested size, in window points: on a Retina display the
+    // 1280x800 mode has pixel density 2, and without high density modes SDL picked 1920x1200 at 1x
     SDL_DisplayMode dm;
     const SDL_DisplayID idDisplay = SDL_GetDisplayForWindow(_pwndMain);
-    if (SDL_GetClosestFullscreenDisplayMode(idDisplay, pixWidth, pixHeight, 0.0f, false, &dm)) {
+    if (SDL_GetClosestFullscreenDisplayMode(idDisplay, pixWidth, pixHeight, 0.0f, true, &dm)) {
       SDL_SetWindowFullscreenMode(_pwndMain, &dm);
     } else {
       SDL_SetWindowFullscreenMode(_pwndMain, NULL);

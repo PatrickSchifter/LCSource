@@ -256,10 +256,11 @@ int MessageBox(HWND hWnd, const char *strText, const char *strCaption, UINT uTyp
   mbd.message = strTextUTF8.c_str();
   mbd.numbuttons = ctButtons;
   mbd.buttons = abtn;
+  // the text on stderr too, for logs (and in case there is no message box, e.g. before video)
+  fprintf(stderr, "%s: %s\n", strCaptionUTF8.c_str(), strTextUTF8.c_str());
+  fflush(stderr);
   int iButton = abtn[0].buttonID;
   if (!SDL_ShowMessageBox(&mbd, &iButton)) {
-    // no message box (e.g. before video is up): at least the text
-    fprintf(stderr, "%s: %s\n", strCaptionUTF8.c_str(), strTextUTF8.c_str());
     return abtn[0].buttonID;
   }
   return iButton;
