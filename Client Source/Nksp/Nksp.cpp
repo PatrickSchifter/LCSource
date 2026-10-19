@@ -808,9 +808,10 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #else
-	// OpenGL, or Metal with LC_GFX_API=metal (macOS, while the Metal backend is being made)
+	// Metal where there is one (macOS); OpenGL with LC_GFX_API=opengl, or without Metal
 	const char *strGfxAPI = getenv("LC_GFX_API");
-	const GfxAPIType eGfxAPI = (strGfxAPI!=NULL && stricmp(strGfxAPI, "metal")==0 && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
+	const BOOL bOpenGL = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "opengl")==0 || stricmp(strGfxAPI, "gl")==0));
+	const GfxAPIType eGfxAPI = (!bOpenGL && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
 	StartNewMode( eGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
 #endif // SE1_D3D
@@ -1935,6 +1936,13 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 
 	// try to set the mode
 	BOOL bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
+
+	// if Metal failed, OpenGL in the same mode
+	if( !bSuccess && eGfxAPI==GAT_MTL && _pGfx->HasAPI(GAT_OGL)) {
+		CPrintF( TRANS("Metal could not be started, trying OpenGL...\n"));
+		eGfxAPI  = GAT_OGL;
+		bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
+	}
 
 	// if failed
 	if( !bSuccess)

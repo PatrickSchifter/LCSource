@@ -135,7 +135,7 @@ else()
   find_package(Iconv REQUIRED)
   target_link_libraries(lc_client_common INTERFACE SDL3::SDL3)
   target_compile_definitions(lc_client_common INTERFACE _MT)  # MSVC's multithreaded CRT flag (Base/Timer.h)
-  # The Metal backend (GAT_MTL, Graphics/Gfx_Metal.cpp), next to OpenGL; chosen with LC_GFX_API=metal.
+  # The Metal backend (GAT_MTL, Graphics/Gfx_Metal.cpp), the default; LC_GFX_API=opengl picks OpenGL.
   target_compile_definitions(lc_client_common INTERFACE SE1_METAL)
   # -fms-extensions for the MSVC-isms the code still has (as in the check build). The rest keep
   # the semantics the code was written for under MSVC: signed overflow wraps, no type-based

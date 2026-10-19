@@ -13,5 +13,6 @@ pkill -9 -f "$GAME/Bin/Nksp" 2>/dev/null || true
 mkdir -p "$GAME/Bin"
 rsync -a --exclude ecc "$BUILD/Bin/" "$GAME/Bin/"
 cd "$GAME"
-# shaders run on the GPU (ARB programs); LC_NO_HW_SHADERS=1 goes back to skinning on the CPU
+# renders with Metal; LC_GFX_API=opengl renders with OpenGL instead
+# shaders run on the GPU; LC_NO_HW_SHADERS=1 goes back to skinning on the CPU
 exec "$GAME/Bin/Nksp" 'fkzktlfgod!' "$@" > "$GAME/stdout.log" 2>&1
