@@ -1796,7 +1796,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ,bCenter);
 #endif // SE1_D3D
 	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-	if( bSuccess && (eGfxAPI==GAT_OGL || eGfxAPI==GAT_MTL)) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+	if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 	//	±è¿µÈ¯ : ¹«½Ã OpenMainWindowNormal() Ã³¸®µÊ.
 
 	// if new mode was set

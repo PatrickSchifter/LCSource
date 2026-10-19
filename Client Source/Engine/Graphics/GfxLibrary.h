@@ -83,6 +83,10 @@ enum GfxAPIType
 	GAT_CURRENT = 9,   // current API
 };
 
+// the APIs drawn through a GpuDevice (GpuDevice.h; Gfx_Gpu.cpp and Gfx_wrapper_Gpu.cpp, under
+// SE1_GPUDEVICE): those without fixed function
+inline bool GFX_IsGpuAPI( enum GfxAPIType eAPI) { return eAPI==GAT_MTL; }
+
 
 // vertex type (for lock/unlock function)
 enum VtxType
@@ -244,14 +248,14 @@ private:
 	void SwapBuffers_D3D( CViewPort *pvpToSwap);
 #endif // SE1_D3D
 
-#ifdef SE1_METAL
-	// Metal specific (Gfx_Metal.cpp)
-	BOOL InitDriver_MTL(void);
-	void EndDriver_MTL(void);
-	void InitContext_MTL(void);
-	BOOL SetCurrentViewport_MTL( CViewPort *pvp);
-	void SwapBuffers_MTL( CViewPort *pvpToSwap);
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	// the APIs on a GpuDevice (Gfx_Gpu.cpp)
+	BOOL InitDriver_GPU( enum GfxAPIType eAPI);
+	void EndDriver_GPU(void);
+	void InitContext_GPU(void);
+	BOOL SetCurrentViewport_GPU( CViewPort *pvp);
+	void SwapBuffers_GPU( CViewPort *pvpToSwap);
+#endif // SE1_GPUDEVICE
 
 public:
 
@@ -319,7 +323,7 @@ public:
 #ifdef SE1_D3D
 		if( gl_eCurrentAPI==GAT_D3D) return( gl_ulFlags & GLF_D3D_VISIBILITYTEST);
 #endif // SE1_D3D
-		if( gl_eCurrentAPI==GAT_MTL) return FALSE;
+		if( GFX_IsGpuAPI(gl_eCurrentAPI)) return FALSE;
 		ASSERT(gl_eCurrentAPI==GAT_NONE);
 		return FALSE;
 	};

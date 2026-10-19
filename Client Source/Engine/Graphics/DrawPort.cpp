@@ -28,14 +28,14 @@
 #endif // SE1_D3D
 //강동민 수정 끝 로그인 처리 작업		07.10
 
-#ifdef SE1_METAL
-// Metal (Gfx_wrapper_Metal.cpp): rectangles from the top left of the render target
-#include <Engine/Graphics/MetalDevice.h>
-extern void MTL_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
-extern void MTL_Clear( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, BOOL bColor, COLOR col, BOOL bDepth, FLOAT fDepth);
-extern void MTL_DrawPrimitives( MtlPrimitive ePrimitive, const GFXVertex *pvtx, const GFXColor *pcol,
+#ifdef SE1_GPUDEVICE
+// Metal (Gfx_wrapper_Gpu.cpp): rectangles from the top left of the render target
+#include <Engine/Graphics/GpuDevice.h>
+extern void GPU_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void GPU_Clear( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, BOOL bColor, COLOR col, BOOL bDepth, FLOAT fDepth);
+extern void GPU_DrawPrimitives( GpuPrimitive ePrimitive, const GFXVertex *pvtx, const GFXColor *pcol,
                                 const GFXTexCoord *ptex, INDEX ctVertices, FLOAT fPointSize);
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 extern INDEX gfx_bDecoratedText;
 extern INDEX ogl_iFinish;
@@ -768,13 +768,13 @@ void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) c
 		pglEnd();
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex vtx = { pixI+0.5f, pixJ+0.5f, 0 };
 		const GFXColor gcol(col);
-		MTL_DrawPrimitives( MTLP_POINTS, &vtx, &gcol, NULL, 1, fR);
+		GPU_DrawPrimitives( GPUP_POINTS, &vtx, &gcol, NULL, 1, fR);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
@@ -824,13 +824,13 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 		pglEnd();
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex vtx = { v(1), v(2), v(3) };
 		const GFXColor gcol(col);
-		MTL_DrawPrimitives( MTLP_POINTS, &vtx, &gcol, NULL, 1, fRadius);
+		GPU_DrawPrimitives( GPUP_POINTS, &vtx, &gcol, NULL, 1, fRadius);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
@@ -895,16 +895,16 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
 		pglEnd();
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex avtx[2] = { { pixI0+0.5f, pixJ0+0.5f, 0 }, { pixI1+0.5f, pixJ1+0.5f, 0 } };
 		const GFXColor acol[2] = { GFXColor(col), GFXColor(col) };
 		GFXTexCoord atex[2];
 		atex[0].s = 0;   atex[0].t = 0;
 		atex[1].s = fD;  atex[1].t = 0;
-		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, atex, 2, 1);
+		GPU_DrawPrimitives( GPUP_LINES, avtx, acol, atex, 2, 1);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
@@ -955,13 +955,13 @@ void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 		pglEnd();
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex avtx[2] = { { v0(1), v0(2), v0(3) }, { v1(1), v1(2), v1(3) } };
 		const GFXColor acol[2] = { GFXColor(col), GFXColor(col) };
-		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, NULL, 2, 1);
+		GPU_DrawPrimitives( GPUP_LINES, avtx, acol, NULL, 2, 1);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// Direct3D
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
@@ -1033,8 +1033,8 @@ void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COL
 		pglEnd();
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex avtx[8] = {
 			{fI0,fJ0,  0}, {fI1,  fJ0,0},   // up
 			{fI1,fJ0,  0}, {fI1,  fJ1,0},   // right
@@ -1047,9 +1047,9 @@ void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COL
 			atex[i].s = (i&1) ? fD : 0;
 			atex[i].t = 0;
 		}
-		MTL_DrawPrimitives( MTLP_LINES, avtx, acol, atex, 8, 1);
+		GPU_DrawPrimitives( GPUP_LINES, avtx, acol, atex, 8, 1);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
@@ -1108,13 +1108,13 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col
 		OGL_CHECKERROR;
 		if( !bFullDP) ResetScissor(this);
 	}
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
-		MTL_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, TRUE, col, FALSE, 0);
+		GPU_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, TRUE, col, FALSE, 0);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1177,14 +1177,14 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight,
 			glCOLOR(colUR);  pglVertex2f(fI1,fJ0);   // up-right
 		pglEnd();
 	}
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) {
 		const GFXVertex avtx[6] = { {fI0,fJ0,0}, {fI0,fJ1,0}, {fI1,fJ1,0}, {fI0,fJ0,0}, {fI1,fJ1,0}, {fI1,fJ0,0} };
 		const GFXColor acol[6] = { GFXColor(colUL), GFXColor(colDL), GFXColor(colDR),
 		                           GFXColor(colUL), GFXColor(colDR), GFXColor(colUR) };
-		MTL_DrawPrimitives( MTLP_TRIANGLES, avtx, acol, NULL, 6, 1);
+		GPU_DrawPrimitives( GPUP_TRIANGLES, avtx, acol, NULL, 6, 1);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { 
 		// thru Direct3D
@@ -1231,13 +1231,13 @@ void CDrawPort::Fill( COLOR col) const
 		pglClear( GL_COLOR_BUFFER_BIT);
 		OGL_CHECKERROR;
 	}
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal (inside the drawport's scissor, as OpenGL)
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
-		MTL_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, TRUE, col, FALSE, 0);
+		GPU_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, TRUE, col, FALSE, 0);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1283,13 +1283,13 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
 		OGL_CHECKERROR;
 		ResetScissor(this);
 	}
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
-		MTL_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, FALSE, 0, TRUE, zval);
+		GPU_Clear( dp_MinI+pixI, dp_MinJ+pixJ, pixWidth, pixHeight, FALSE, 0, TRUE, zval);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1333,13 +1333,13 @@ void CDrawPort::FillZBuffer( FLOAT zval) const
 		pglClear(bMask);
 		OGL_CHECKERROR
 	}
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal (inside the drawport's scissor, as OpenGL)
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
-		MTL_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, FALSE, 0, TRUE, zval);
+		GPU_Clear( dp_ScissorMinI, dp_ScissorMinJ, dp_ScissorMaxI-dp_ScissorMinI, dp_ScissorMaxJ-dp_ScissorMinJ, FALSE, 0, TRUE, zval);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 #ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
@@ -1369,7 +1369,7 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 
 	// prepare image info's dimensions (OpenGL on a Retina display: the pixels drawn, more than the
 	// engine counts; GfxLibrary.cpp)
-	const PIX pixScale = (eAPI==GAT_OGL || eAPI==GAT_MTL) ? GFX_DrawableScale() : 1;
+	const PIX pixScale = (eAPI==GAT_OGL || GFX_IsGpuAPI(eAPI)) ? GFX_DrawableScale() : 1;
 	iiGrabbedImage.Clear();
 	iiGrabbedImage.ii_Width  = GetWidth()  * pixScale;
 	iiGrabbedImage.ii_Height = GetHeight() * pixScale;
@@ -1407,17 +1407,17 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 								iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height, 2, iiGrabbedImage.ii_BitsPerPixel==32);
 	}
 
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal (rows from the top; it waits for the GPU)
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
-		extern BOOL MTL_ReadFrameRGB( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, UBYTE *pubRGB);
-		if( !MTL_ReadFrameRGB( dp_MinI*pixScale, dp_MinJ*pixScale, iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height,
+		extern BOOL GPU_ReadFrameRGB( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, UBYTE *pubRGB);
+		if( !GPU_ReadFrameRGB( dp_MinI*pixScale, dp_MinJ*pixScale, iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height,
 		                       iiGrabbedImage.ii_Picture)) {
 			memset( iiGrabbedImage.ii_Picture, 0, slBytes);
 		}
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 #ifdef SE1_D3D
 	// Direct3D

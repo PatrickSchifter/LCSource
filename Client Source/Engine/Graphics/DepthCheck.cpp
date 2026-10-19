@@ -124,11 +124,11 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     return;
   }
 
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
   // Metal: the depths at all the points in one read (it waits for the GPU); rows from the top
-  if( eAPI==GAT_MTL)
+  if( GFX_IsGpuAPI(eAPI))
   {
-    extern BOOL MTL_ReadFrameDepths( const int *piXY, INDEX ctPoints, FLOAT *pfDepths);
+    extern BOOL GPU_ReadFrameDepths( const int *piXY, INDEX ctPoints, FLOAT *pfDepths);
     extern PIX GFX_DrawableScale(void);
     _sfStats.StartTimer(CStatForm::STI_GFXAPI);
     const PIX pixScale = GFX_DrawableScale();
@@ -146,7 +146,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
       _aiPoints.push_back( idi);
     }
     _afDepths.resize( _aiPoints.size());
-    if( !_aiPoints.empty() && MTL_ReadFrameDepths( &_aiXY[0], (INDEX)_aiPoints.size(), &_afDepths[0])) {
+    if( !_aiPoints.empty() && GPU_ReadFrameDepths( &_aiXY[0], (INDEX)_aiPoints.size(), &_afDepths[0])) {
       for( size_t i=0; i<_aiPoints.size(); i++) {
         DepthInfo &di = pdi[_aiPoints[i]];
         // it is visible if there is nothing nearer in z-buffer already
@@ -156,7 +156,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     _sfStats.StopTimer(CStatForm::STI_GFXAPI);
     return;
   }
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 #ifdef SE1_D3D
   // Direct3D

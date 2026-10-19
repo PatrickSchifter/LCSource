@@ -1288,29 +1288,29 @@ void CRenderer::FillMirrorDepth(CMirror &mi)
 }
 
 #ifndef SE1_D3D
-#ifdef SE1_METAL
-// Gfx_wrapper_Metal.cpp
-extern void GetProjectionMatrix_MTL( FLOAT *pfMatrix);
-extern void SetProjectionMatrix_MTL( const FLOAT *pfMatrix);
-extern void MTL_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
-extern void MTL_SetTexGenViewPosition( BOOL bOn);
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+// Gfx_wrapper_Gpu.cpp
+extern void GetProjectionMatrix_GPU( FLOAT *pfMatrix);
+extern void SetProjectionMatrix_GPU( const FLOAT *pfMatrix);
+extern void GPU_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void GPU_SetTexGenViewPosition( BOOL bOn);
+#endif // SE1_GPUDEVICE
 
 // the projection while a shadow is drawn into its texture, and the viewport in the texture (a
 // pixel in from each side, as Direct3D's; the same from the top or the bottom)
 static void GetShadowProjection( FLOAT *pfMatrix)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) { GetProjectionMatrix_MTL( pfMatrix);  return; }
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { GetProjectionMatrix_GPU( pfMatrix);  return; }
+#endif // SE1_GPUDEVICE
 	pglGetFloatv( GL_PROJECTION_MATRIX, pfMatrix);
 }
 
 static void SetShadowProjection( const FLOAT *pfMatrix)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) { SetProjectionMatrix_MTL( pfMatrix);  return; }
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { SetProjectionMatrix_GPU( pfMatrix);  return; }
+#endif // SE1_GPUDEVICE
 	pglMatrixMode( GL_PROJECTION);
 	pglLoadMatrixf( pfMatrix);
 	pglMatrixMode( GL_MODELVIEW);
@@ -1318,9 +1318,9 @@ static void SetShadowProjection( const FLOAT *pfMatrix)
 
 static void SetShadowViewport(void)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) { MTL_SetViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);  return; }
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { GPU_SetViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);  return; }
+#endif // SE1_GPUDEVICE
 	pglViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);
 }
 
@@ -1331,13 +1331,13 @@ static void SetShadowViewport(void)
 // the top as Direct3D's).
 static void SetShadowTexGen(const Matrix16 &matShadowUV)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
 		gfxSetTextureMatrix( (const FLOAT*)matShadowUV);
-		MTL_SetTexGenViewPosition( TRUE);
+		GPU_SetTexGenViewPosition( TRUE);
 		return;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	static const GLenum aeCoords[4] = { GL_S, GL_T, GL_R, GL_Q };
 	static const GLenum aeGens[4]   = { GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_Q };
 	static const GLfloat aafPlanes[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} };
@@ -1364,13 +1364,13 @@ static void SetShadowTexGen(const Matrix16 &matShadowUV)
 
 static void ClearShadowTexGen(void)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
-		MTL_SetTexGenViewPosition( FALSE);
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		GPU_SetTexGenViewPosition( FALSE);
 		gfxSetTextureMatrix( NULL);
 		return;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	pglDisable( GL_TEXTURE_GEN_S);
 	pglDisable( GL_TEXTURE_GEN_T);
 	pglDisable( GL_TEXTURE_GEN_R);
@@ -2096,7 +2096,7 @@ void CRenderer::Render(void)
 	{
 		// OpenGL allows us to check z-buffer from previous frame - cool deal!
 		// Direct3D is, of course, totally different story. :(
-		if( _pGfx->gl_eCurrentAPI==GAT_OGL || _pGfx->gl_eCurrentAPI==GAT_MTL || d3d_bAlternateDepthReads) 
+		if( _pGfx->gl_eCurrentAPI==GAT_OGL || GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI) || d3d_bAlternateDepthReads) 
 		{
 			ChangeStatsMode(CStatForm::STI_FLARESRENDERING);
 			extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel=0);
@@ -2624,8 +2624,8 @@ void CRenderer::RenderReflection(/*Matrix16 &matWaterProj*/)
 #ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, (D3DXMATRIX*)&_matWaterProj);
 #else
-		extern void GetProjectionMatrix_MTL( FLOAT *pfMatrix);
-		if( _pGfx->gl_eCurrentAPI==GAT_MTL) GetProjectionMatrix_MTL( (FLOAT*)_matWaterProj);
+		extern void GetProjectionMatrix_GPU( FLOAT *pfMatrix);
+		if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) GetProjectionMatrix_GPU( (FLOAT*)_matWaterProj);
 		else pglGetFloatv( GL_PROJECTION_MATRIX, _matWaterProj);
 #endif // SE1_D3D
 	}

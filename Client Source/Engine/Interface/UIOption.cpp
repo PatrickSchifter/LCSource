@@ -1419,7 +1419,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
 #endif // SE1_D3D
 		bSuccess = _pGfx->SetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth);
-		if( bSuccess && (eGfxAPI==GAT_OGL || eGfxAPI==GAT_MTL)) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
 	} 
 	else 
 	{
@@ -1427,7 +1427,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 #endif // SE1_D3D
 		bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-		if( bSuccess && (eGfxAPI==GAT_OGL || eGfxAPI==GAT_MTL)) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 #ifdef SE1_D3D
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
 #endif // SE1_D3D

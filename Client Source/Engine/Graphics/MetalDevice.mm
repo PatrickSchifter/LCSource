@@ -1,6 +1,6 @@
-// The Metal device under the engine's Metal backend (see MetalDevice.h).
+// The Metal device under the engine's Metal backend (GAT_MTL): the GpuDevice of GpuDevice.h.
 //
-// Frames: the first thing drawn after mtlPresent() takes a command buffer (at most three frames
+// Frames: the first thing drawn after Present() takes a command buffer (at most three frames
 // are with the GPU at a time) and the next drawable of the window's layer. Data the engine gives
 // from memory (vertex arrays, indices, constants) is copied into the frame's part of a ring
 // buffer, so the engine may change it right after the draw, as with OpenGL.
@@ -20,23 +20,24 @@
 #include <vector>
 
 #include "MetalDevice.h"
+#include "ShaderARBToMSL.h"
 
-struct MtlTexture {
+struct MtlTexture : GpuTexture {
   id<MTLTexture> tex;
   int iW = 0, iH = 0, ctMips = 0;
-  MtlTextureFormat eFormat = MTLTF_NONE;
+  GpuTextureFormat eFormat = GPUTF_NONE;
   uint64_t ulLastUse = 0;   // command buffer that last drew with it
   id<MTLTexture> texDepth;  // a render target's depth buffer
   bool bTarget = false;     // drawn into by the GPU (render target, frame copy): never replaced
 };
 
-struct MtlBuffer {
+struct MtlBuffer : GpuBuffer {
   id<MTLBuffer> buf;
   size_t slSize = 0;
   uint64_t ulLastUse = 0;
 };
 
-struct MtlProgram {
+struct MtlProgram : GpuProgram {
   id<MTLFunction> fn;
   uint32_t ulID = 0;        // for the pipeline cache
 };
@@ -81,11 +82,11 @@ struct State {
   float fMinZ = 0, fMaxZ = 1;
   int aiScissor[4] = {0, 0, 1, 1};
   bool bBlend = false;
-  MtlBlend eSrc = MTLB_ONE, eDst = MTLB_ZERO;
+  GpuBlend eSrc = GPUB_ONE, eDst = GPUB_ZERO;
   uint8_t ubColorMask = 15;
   bool bDepthTest = false, bDepthWrite = false;
-  MtlCompare eDepthFunc = MTLC_LESS_EQUAL;
-  MtlCull eCull = MTLCULL_NONE;
+  GpuCompare eDepthFunc = GPUC_LESS_EQUAL;
+  GpuCull eCull = GPUCULL_NONE;
   bool bFrontCCW = true;
   bool bWireframe = false;
   bool bDepthBias = false;
@@ -106,21 +107,21 @@ struct Stream {
   MtlBuffer *pbuf = NULL;      // or a GPU buffer
   size_t slOffset = 0;
 };
-static Stream _astr[MTLS_COUNT];
+static Stream _astr[GPUS_COUNT];
 
 struct Unit {
   MtlTexture *ptex = NULL;
-  MtlSampler smp = {};
+  GpuSampler smp = {};
 };
-static Unit _aunit[MTL_MAXTEXUNITS];
+static Unit _aunit[GPU_MAXTEXUNITS];
 
 static std::vector<uint8_t> _aubVertexConst, _aubFragmentConst;
 
-// what mtlPushState() kept
+// what PushState() kept
 struct SavedState {
   State st;
-  Stream astr[MTLS_COUNT];
-  Unit aunit[MTL_MAXTEXUNITS];
+  Stream astr[GPUS_COUNT];
+  Unit aunit[GPU_MAXTEXUNITS];
   std::vector<uint8_t> aubVertexConst, aubFragmentConst;
 };
 static std::vector<SavedState> _asavStates;
@@ -153,6 +154,10 @@ static const char *_strClearShaders =
   "}\n"
   "fragment float4 clear_fs(constant float4 &col [[buffer(0)]]) { return col; }\n";
 
+static void mtlFinish(void);
+static bool mtlTextureHasStorage(MtlTexture *ptex, int iW, int iH, int ctMips, GpuTextureFormat eFormat);
+static MtlProgram *mtlCreateFunction(const char *strSource, const char *strFunction, char *strError, size_t slErrorSize);
+
 
 static NSView *ContentView(SDL_Window *pwnd)
 {
@@ -180,12 +185,12 @@ bool mtlIsAvailable(void)
   }
 }
 
-bool mtlHasDXT(void)
+static bool mtlHasDXT(void)
 {
   return _device != nil && _device.supportsBCTextureCompression;
 }
 
-bool mtlInit(SDL_Window *pwnd, int iScale)
+static bool mtlInit(SDL_Window *pwnd, int iScale)
 {
   @autoreleasepool {
     NSView *viewContent = ContentView(pwnd);
@@ -224,8 +229,8 @@ bool mtlInit(SDL_Window *pwnd, int iScale)
     _smpDummy = [_device newSamplerStateWithDescriptor:[MTLSamplerDescriptor new]];
 
     char strError[1024];
-    MtlProgram *pprVS = mtlCreateProgram(_strClearShaders, "clear_vs", strError, sizeof(strError));
-    MtlProgram *pprFS = mtlCreateProgram(_strClearShaders, "clear_fs", strError, sizeof(strError));
+    MtlProgram *pprVS = mtlCreateFunction(_strClearShaders, "clear_vs", strError, sizeof(strError));
+    MtlProgram *pprFS = mtlCreateFunction(_strClearShaders, "clear_fs", strError, sizeof(strError));
     if (pprVS == NULL || pprFS == NULL) {
       fprintf(stderr, "Metal: %s\n", strError);
       return false;
@@ -243,7 +248,7 @@ bool mtlInit(SDL_Window *pwnd, int iScale)
   }
 }
 
-void mtlEnd(void)
+static void mtlEnd(void)
 {
   @autoreleasepool {
     mtlFinish();
@@ -253,10 +258,10 @@ void mtlEnd(void)
     _mapDepthStates.clear();
     _mapSamplers.clear();
     _mapLibraries.clear();
-    for (int i = 0; i < MTLS_COUNT; i++) {
+    for (int i = 0; i < GPUS_COUNT; i++) {
       _astr[i] = Stream();
     }
-    for (int i = 0; i < MTL_MAXTEXUNITS; i++) {
+    for (int i = 0; i < GPU_MAXTEXUNITS; i++) {
       _aunit[i] = Unit();
     }
     _prClearVS = MtlProgram();
@@ -280,17 +285,17 @@ void mtlEnd(void)
   }
 }
 
-const char *mtlDeviceName(void)
+static const char *mtlDeviceName(void)
 {
   return _device != nil ? _device.name.UTF8String : "";
 }
 
-void mtlSetDrawableScale(int iScale)
+static void mtlSetDrawableScale(int iScale)
 {
   _iScale = iScale > 0 ? iScale : 1;
 }
 
-void mtlSetVSync(bool bWait)
+static void mtlSetVSync(bool bWait)
 {
   _layer.displaySyncEnabled = bWait;
 }
@@ -382,7 +387,7 @@ static void EndEncoder(void)
   }
 }
 
-void mtlPresent(void)
+static void mtlPresent(void)
 {
   @autoreleasepool {
     EndEncoder();
@@ -397,7 +402,7 @@ void mtlPresent(void)
   }
 }
 
-void mtlFinish(void)
+static void mtlFinish(void)
 {
   @autoreleasepool {
     EndEncoder();
@@ -413,8 +418,9 @@ void mtlFinish(void)
 
 // RENDER TARGETS AND READING THE FRAME
 
-void mtlTextureRenderTarget(MtlTexture *ptex, int iW, int iH)
+static void mtlTextureRenderTarget(GpuTexture *ptexGpu, int iW, int iH)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   @autoreleasepool {
     MTLTextureDescriptor *td = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
       width:iW height:iH mipmapped:NO];
@@ -428,14 +434,15 @@ void mtlTextureRenderTarget(MtlTexture *ptex, int iW, int iH)
     ptex->texDepth = [_device newTextureWithDescriptor:td];
     ptex->iW = iW;  ptex->iH = iH;
     ptex->ctMips = 1;
-    ptex->eFormat = MTLTF_RGBA8;
+    ptex->eFormat = GPUTF_RGBA8;
     ptex->bTarget = true;
     ptex->ulLastUse = 0;
   }
 }
 
-void mtlSetRenderTarget(MtlTexture *ptex)
+static void mtlSetRenderTarget(GpuTexture *ptexGpu)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   if (ptex == _ptexTarget) {
     return;
   }
@@ -445,7 +452,7 @@ void mtlSetRenderTarget(MtlTexture *ptex)
   _ptexTarget = ptex;
 }
 
-MtlTexture *mtlGetRenderTarget(void)
+static GpuTexture *mtlGetRenderTarget(void)
 {
   return _ptexTarget;
 }
@@ -472,8 +479,9 @@ static id<MTLTexture> FrameTexture(void)
   return _drawable.texture;
 }
 
-void mtlCopyFrameToTexture(MtlTexture *ptex, int iX, int iY, int iW, int iH)
+static void mtlCopyFrameToTexture(GpuTexture *ptexGpu, int iX, int iY, int iW, int iH)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   @autoreleasepool {
     EndEncoder();
     BeginCommandBuffer();
@@ -497,7 +505,7 @@ void mtlCopyFrameToTexture(MtlTexture *ptex, int iX, int iY, int iW, int iH)
       ptex->tex = [_device newTextureWithDescriptor:td];
       ptex->iW = iW;  ptex->iH = iH;
       ptex->ctMips = 1;
-      ptex->eFormat = MTLTF_RGBA8;
+      ptex->eFormat = GPUTF_RGBA8;
       ptex->bTarget = true;
     }
     id<MTLBlitCommandEncoder> blit = [_cmd blitCommandEncoder];
@@ -538,7 +546,7 @@ static id<MTLBuffer> ReadFrame(bool bDepth, int iX, int iY, int iW, int iH, size
   return buf;
 }
 
-bool mtlReadFrameRGB(int iX, int iY, int iW, int iH, uint8_t *pubRGB)
+static bool mtlReadFrameRGB(int iX, int iY, int iW, int iH, uint8_t *pubRGB)
 {
   @autoreleasepool {
     if (_layer == nil) {
@@ -566,7 +574,7 @@ bool mtlReadFrameRGB(int iX, int iY, int iW, int iH, uint8_t *pubRGB)
   }
 }
 
-bool mtlReadFrameDepths(const int *piXY, int ctPoints, float *pfDepths)
+static bool mtlReadFrameDepths(const int *piXY, int ctPoints, float *pfDepths)
 {
   if (ctPoints <= 0) {
     return true;
@@ -626,72 +634,72 @@ static void Upload(const void *pvData, size_t slSize, id<MTLBuffer> __strong &bu
 
 // RENDER STATE
 
-void mtlSetViewport(int iX, int iY, int iW, int iH, float fMinZ, float fMaxZ)
+static void mtlSetViewport(int iX, int iY, int iW, int iH, float fMinZ, float fMaxZ)
 {
   _st.aiViewport[0] = iX;  _st.aiViewport[1] = iY;
   _st.aiViewport[2] = iW;  _st.aiViewport[3] = iH;
   _st.fMinZ = fMinZ;  _st.fMaxZ = fMaxZ;
 }
 
-void mtlSetScissor(int iX, int iY, int iW, int iH)
+static void mtlSetScissor(int iX, int iY, int iW, int iH)
 {
   _st.aiScissor[0] = iX;  _st.aiScissor[1] = iY;
   _st.aiScissor[2] = iW;  _st.aiScissor[3] = iH;
 }
 
-void mtlSetBlend(bool bBlend, MtlBlend eSrc, MtlBlend eDst)
+static void mtlSetBlend(bool bBlend, GpuBlend eSrc, GpuBlend eDst)
 {
   _st.bBlend = bBlend;  _st.eSrc = eSrc;  _st.eDst = eDst;
 }
 
-void mtlSetColorMask(bool bR, bool bG, bool bB, bool bA)
+static void mtlSetColorMask(bool bR, bool bG, bool bB, bool bA)
 {
   _st.ubColorMask = (bR ? 1 : 0) | (bG ? 2 : 0) | (bB ? 4 : 0) | (bA ? 8 : 0);
 }
 
-void mtlSetDepth(bool bTest, bool bWrite, MtlCompare eFunc)
+static void mtlSetDepth(bool bTest, bool bWrite, GpuCompare eFunc)
 {
   _st.bDepthTest = bTest;  _st.bDepthWrite = bWrite;  _st.eDepthFunc = eFunc;
 }
 
-void mtlSetCull(MtlCull eCull, bool bFrontCCW)
+static void mtlSetCull(GpuCull eCull, bool bFrontCCW)
 {
   _st.eCull = eCull;  _st.bFrontCCW = bFrontCCW;
 }
 
-void mtlSetWireframe(bool bWireframe)
+static void mtlSetWireframe(bool bWireframe)
 {
   _st.bWireframe = bWireframe;
 }
 
-void mtlSetDepthBias(bool bBias)
+static void mtlSetDepthBias(bool bBias)
 {
   _st.bDepthBias = bBias;
 }
 
-void mtlSetProgram(MtlProgram *pprVertex, MtlProgram *pprFragment)
+static void mtlSetProgram(GpuProgram *pprVertex, GpuProgram *pprFragment)
 {
-  _st.pprVertex = pprVertex;  _st.pprFragment = pprFragment;
+  _st.pprVertex = static_cast<MtlProgram *>(pprVertex);  _st.pprFragment = static_cast<MtlProgram *>(pprFragment);
 }
 
-void mtlSetTexture(int iUnit, MtlTexture *ptex, const MtlSampler &smp)
+static void mtlSetTexture(int iUnit, GpuTexture *ptex, const GpuSampler &smp)
 {
-  _aunit[iUnit].ptex = ptex;
+  _aunit[iUnit].ptex = static_cast<MtlTexture *>(ptex);
   _aunit[iUnit].smp = smp;
 }
 
-void mtlSetTextureNone(int iUnit)
+static void mtlSetTextureNone(int iUnit)
 {
   _aunit[iUnit].ptex = NULL;
 }
 
-void mtlSetTextureWrap(int iUnit, bool bClampU, bool bClampV)
+static void mtlSetTextureWrap(int iUnit, bool bClampU, bool bClampV)
 {
   _aunit[iUnit].smp.ubClampU = bClampU ? 1 : 0;
   _aunit[iUnit].smp.ubClampV = bClampV ? 1 : 0;
 }
 
-void mtlSetStreamData(MtlStream eStream, const void *pvData, size_t slSize)
+static void mtlSetStreamData(GpuStream eStream, const void *pvData, size_t slSize)
 {
   Stream &str = _astr[eStream];
   str.pvData = pvData;
@@ -701,25 +709,25 @@ void mtlSetStreamData(MtlStream eStream, const void *pvData, size_t slSize)
   str.pbuf = NULL;
 }
 
-void mtlSetStreamBuffer(MtlStream eStream, MtlBuffer *pbuf, size_t slOffset)
+static void mtlSetStreamBuffer(GpuStream eStream, GpuBuffer *pbuf, size_t slOffset)
 {
   Stream &str = _astr[eStream];
   str.pvData = NULL;
   str.ulCopied = 0;
   str.bufCopy = nil;
-  str.pbuf = pbuf;
+  str.pbuf = static_cast<MtlBuffer *>(pbuf);
   str.slOffset = slOffset;
 }
 
-void mtlClearStream(MtlStream eStream)
+static void mtlClearStream(GpuStream eStream)
 {
   _astr[eStream] = Stream();
 }
 
-uint32_t mtlGetStreamMask(void)
+static uint32_t mtlGetStreamMask(void)
 {
   uint32_t ulMask = 0;
-  for (int iStream = 0; iStream < MTLS_COUNT; iStream++) {
+  for (int iStream = 0; iStream < GPUS_COUNT; iStream++) {
     const Stream &str = _astr[iStream];
     if (str.pbuf != NULL || (str.pvData != NULL && str.slSize > 0)) {
       ulMask |= 1u << iStream;
@@ -728,80 +736,80 @@ uint32_t mtlGetStreamMask(void)
   return ulMask;
 }
 
-void mtlPushState(void)
+static void mtlPushState(void)
 {
   _asavStates.emplace_back();
   SavedState &sav = _asavStates.back();
   sav.st = _st;
-  for (int i = 0; i < MTLS_COUNT; i++) sav.astr[i] = _astr[i];
-  for (int i = 0; i < MTL_MAXTEXUNITS; i++) sav.aunit[i] = _aunit[i];
+  for (int i = 0; i < GPUS_COUNT; i++) sav.astr[i] = _astr[i];
+  for (int i = 0; i < GPU_MAXTEXUNITS; i++) sav.aunit[i] = _aunit[i];
   sav.aubVertexConst = _aubVertexConst;
   sav.aubFragmentConst = _aubFragmentConst;
 }
 
-void mtlPopState(void)
+static void mtlPopState(void)
 {
   if (_asavStates.empty()) {
     return;
   }
   SavedState &sav = _asavStates.back();
   _st = sav.st;
-  for (int i = 0; i < MTLS_COUNT; i++) _astr[i] = sav.astr[i];
-  for (int i = 0; i < MTL_MAXTEXUNITS; i++) _aunit[i] = sav.aunit[i];
+  for (int i = 0; i < GPUS_COUNT; i++) _astr[i] = sav.astr[i];
+  for (int i = 0; i < GPU_MAXTEXUNITS; i++) _aunit[i] = sav.aunit[i];
   _aubVertexConst.swap(sav.aubVertexConst);
   _aubFragmentConst.swap(sav.aubFragmentConst);
   _asavStates.pop_back();
 }
 
-void mtlSetVertexConstants(const void *pvData, size_t slSize)
+static void mtlSetVertexConstants(const void *pvData, size_t slSize)
 {
   _aubVertexConst.assign((const uint8_t *)pvData, (const uint8_t *)pvData + slSize);
 }
 
-void mtlSetFragmentConstants(const void *pvData, size_t slSize)
+static void mtlSetFragmentConstants(const void *pvData, size_t slSize)
 {
   _aubFragmentConst.assign((const uint8_t *)pvData, (const uint8_t *)pvData + slSize);
 }
 
 
-static MTLBlendFactor BlendFactor(MtlBlend e)
+static MTLBlendFactor BlendFactor(GpuBlend e)
 {
   switch (e) {
-  case MTLB_ONE:           return MTLBlendFactorOne;
-  case MTLB_ZERO:          return MTLBlendFactorZero;
-  case MTLB_SRC_COLOR:     return MTLBlendFactorSourceColor;
-  case MTLB_INV_SRC_COLOR: return MTLBlendFactorOneMinusSourceColor;
-  case MTLB_DST_COLOR:     return MTLBlendFactorDestinationColor;
-  case MTLB_INV_DST_COLOR: return MTLBlendFactorOneMinusDestinationColor;
-  case MTLB_SRC_ALPHA:     return MTLBlendFactorSourceAlpha;
-  case MTLB_INV_SRC_ALPHA: return MTLBlendFactorOneMinusSourceAlpha;
-  case MTLB_DST_ALPHA:     return MTLBlendFactorDestinationAlpha;
-  case MTLB_INV_DST_ALPHA: return MTLBlendFactorOneMinusDestinationAlpha;
+  case GPUB_ONE:           return MTLBlendFactorOne;
+  case GPUB_ZERO:          return MTLBlendFactorZero;
+  case GPUB_SRC_COLOR:     return MTLBlendFactorSourceColor;
+  case GPUB_INV_SRC_COLOR: return MTLBlendFactorOneMinusSourceColor;
+  case GPUB_DST_COLOR:     return MTLBlendFactorDestinationColor;
+  case GPUB_INV_DST_COLOR: return MTLBlendFactorOneMinusDestinationColor;
+  case GPUB_SRC_ALPHA:     return MTLBlendFactorSourceAlpha;
+  case GPUB_INV_SRC_ALPHA: return MTLBlendFactorOneMinusSourceAlpha;
+  case GPUB_DST_ALPHA:     return MTLBlendFactorDestinationAlpha;
+  case GPUB_INV_DST_ALPHA: return MTLBlendFactorOneMinusDestinationAlpha;
   }
   return MTLBlendFactorOne;
 }
 
-static MTLCompareFunction CompareFunction(MtlCompare e)
+static MTLCompareFunction CompareFunction(GpuCompare e)
 {
   switch (e) {
-  case MTLC_NEVER:         return MTLCompareFunctionNever;
-  case MTLC_LESS:          return MTLCompareFunctionLess;
-  case MTLC_LESS_EQUAL:    return MTLCompareFunctionLessEqual;
-  case MTLC_EQUAL:         return MTLCompareFunctionEqual;
-  case MTLC_NOT_EQUAL:     return MTLCompareFunctionNotEqual;
-  case MTLC_GREATER_EQUAL: return MTLCompareFunctionGreaterEqual;
-  case MTLC_GREATER:       return MTLCompareFunctionGreater;
-  case MTLC_ALWAYS:        return MTLCompareFunctionAlways;
+  case GPUC_NEVER:         return MTLCompareFunctionNever;
+  case GPUC_LESS:          return MTLCompareFunctionLess;
+  case GPUC_LESS_EQUAL:    return MTLCompareFunctionLessEqual;
+  case GPUC_EQUAL:         return MTLCompareFunctionEqual;
+  case GPUC_NOT_EQUAL:     return MTLCompareFunctionNotEqual;
+  case GPUC_GREATER_EQUAL: return MTLCompareFunctionGreaterEqual;
+  case GPUC_GREATER:       return MTLCompareFunctionGreater;
+  case GPUC_ALWAYS:        return MTLCompareFunctionAlways;
   }
   return MTLCompareFunctionAlways;
 }
 
 static id<MTLRenderPipelineState> Pipeline(MtlProgram *pprVertex, MtlProgram *pprFragment, bool bBlend,
-  MtlBlend eSrc, MtlBlend eDst, uint8_t ubColorMask)
+  GpuBlend eSrc, GpuBlend eDst, uint8_t ubColorMask)
 {
   if (!bBlend) {
-    eSrc = MTLB_ONE;
-    eDst = MTLB_ZERO;
+    eSrc = GPUB_ONE;
+    eDst = GPUB_ZERO;
   }
   const uint64_t ulKey = (uint64_t)pprVertex->ulID | ((uint64_t)pprFragment->ulID << 20)
     | ((uint64_t)bBlend << 40) | ((uint64_t)eSrc << 41) | ((uint64_t)eDst << 45) | ((uint64_t)ubColorMask << 49);
@@ -829,7 +837,7 @@ static id<MTLRenderPipelineState> Pipeline(MtlProgram *pprVertex, MtlProgram *pp
   return pso;
 }
 
-static id<MTLDepthStencilState> DepthState(bool bTest, bool bWrite, MtlCompare eFunc)
+static id<MTLDepthStencilState> DepthState(bool bTest, bool bWrite, GpuCompare eFunc)
 {
   const uint32_t ulKey = (bTest ? 1 : 0) | (bWrite ? 2 : 0) | ((uint32_t)eFunc << 2);
   auto it = _mapDepthStates.find(ulKey);
@@ -845,7 +853,7 @@ static id<MTLDepthStencilState> DepthState(bool bTest, bool bWrite, MtlCompare e
   return dss;
 }
 
-static id<MTLSamplerState> Sampler(const MtlSampler &smp)
+static id<MTLSamplerState> Sampler(const GpuSampler &smp)
 {
   const uint64_t ulKey = smp.ubMagLinear | (smp.ubMinLinear << 1) | (smp.ubMip << 2) | (smp.ubClampU << 4)
     | (smp.ubClampV << 5) | ((uint64_t)smp.ubAnisotropy << 8);
@@ -918,8 +926,8 @@ static bool PrepareDraw(void)
   }
   [_enc setScissorRect:rcScissor];
   if (bAll || _st.eCull != _stSet.eCull) {
-    [_enc setCullMode:_st.eCull == MTLCULL_FRONT ? MTLCullModeFront
-                    : _st.eCull == MTLCULL_BACK ? MTLCullModeBack : MTLCullModeNone];
+    [_enc setCullMode:_st.eCull == GPUCULL_FRONT ? MTLCullModeFront
+                    : _st.eCull == GPUCULL_BACK ? MTLCullModeBack : MTLCullModeNone];
   }
   if (bAll || _st.bFrontCCW != _stSet.bFrontCCW) {
     [_enc setFrontFacingWinding:_st.bFrontCCW ? MTLWindingCounterClockwise : MTLWindingClockwise];
@@ -938,7 +946,7 @@ static bool PrepareDraw(void)
   _bEncoderFresh = false;
 
   // vertex streams (buffer 0 is for the constants)
-  for (int iStream = 0; iStream < MTLS_COUNT; iStream++) {
+  for (int iStream = 0; iStream < GPUS_COUNT; iStream++) {
     Stream &str = _astr[iStream];
     if (str.pbuf != NULL) {
       [_enc setVertexBuffer:str.pbuf->buf offset:str.slOffset atIndex:iStream+1];
@@ -956,7 +964,7 @@ static bool PrepareDraw(void)
     }
   }
   // textures
-  for (int iUnit = 0; iUnit < MTL_MAXTEXUNITS; iUnit++) {
+  for (int iUnit = 0; iUnit < GPU_MAXTEXUNITS; iUnit++) {
     Unit &unit = _aunit[iUnit];
     if (unit.ptex != NULL && unit.ptex->tex != nil) {
       [_enc setFragmentTexture:unit.ptex->tex atIndex:iUnit];
@@ -983,7 +991,7 @@ static bool PrepareDraw(void)
   return true;
 }
 
-void mtlDrawIndexed(int ctIndices, const uint16_t *puwIndices)
+static void mtlDrawIndexed(int ctIndices, const uint16_t *puwIndices)
 {
   if (ctIndices <= 0) {
     return;
@@ -1000,7 +1008,7 @@ void mtlDrawIndexed(int ctIndices, const uint16_t *puwIndices)
   }
 }
 
-void mtlDrawQuads(int ctVertices)
+static void mtlDrawQuads(int ctVertices)
 {
   const int ctQuads = ctVertices/4;
   if (ctQuads <= 0) {
@@ -1029,7 +1037,7 @@ void mtlDrawQuads(int ctVertices)
   }
 }
 
-void mtlDrawPrimitives(MtlPrimitive ePrimitive, int ctVertices)
+static void mtlDrawPrimitives(GpuPrimitive ePrimitive, int ctVertices)
 {
   if (ctVertices <= 0) {
     return;
@@ -1038,13 +1046,13 @@ void mtlDrawPrimitives(MtlPrimitive ePrimitive, int ctVertices)
     if (!PrepareDraw()) {
       return;
     }
-    const MTLPrimitiveType ePrim = ePrimitive == MTLP_LINES ? MTLPrimitiveTypeLine
-                                 : ePrimitive == MTLP_POINTS ? MTLPrimitiveTypePoint : MTLPrimitiveTypeTriangle;
+    const MTLPrimitiveType ePrim = ePrimitive == GPUP_LINES ? MTLPrimitiveTypeLine
+                                 : ePrimitive == GPUP_POINTS ? MTLPrimitiveTypePoint : MTLPrimitiveTypeTriangle;
     [_enc drawPrimitives:ePrim vertexStart:0 vertexCount:ctVertices];
   }
 }
 
-void mtlClear(int iX, int iY, int iW, int iH, bool bColor, const float afColor[4], bool bDepth, float fDepth)
+static void mtlClear(int iX, int iY, int iW, int iH, bool bColor, const float afColor[4], bool bDepth, float fDepth)
 {
   if (!bColor && !bDepth) {
     return;
@@ -1062,8 +1070,8 @@ void mtlClear(int iX, int iY, int iW, int iH, bool bColor, const float afColor[4
     _st.fMinZ = 0;  _st.fMaxZ = 1;
     _st.bBlend = false;
     _st.ubColorMask = bColor ? 15 : 0;
-    _st.bDepthTest = bDepth;  _st.bDepthWrite = bDepth;  _st.eDepthFunc = MTLC_ALWAYS;
-    _st.eCull = MTLCULL_NONE;
+    _st.bDepthTest = bDepth;  _st.bDepthWrite = bDepth;  _st.eDepthFunc = GPUC_ALWAYS;
+    _st.eCull = GPUCULL_NONE;
     _st.bWireframe = false;
     _st.bDepthBias = false;
     _st.pprVertex = &_prClearVS;  _st.pprFragment = &_prClearFS;
@@ -1083,17 +1091,18 @@ void mtlClear(int iX, int iY, int iW, int iH, bool bColor, const float afColor[4
 
 // TEXTURES
 
-MtlTexture *mtlCreateTexture(void)
+static GpuTexture *mtlCreateTexture(void)
 {
   return new MtlTexture;
 }
 
-void mtlDeleteTexture(MtlTexture *ptex)
+static void mtlDeleteTexture(GpuTexture *ptexGpu)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   if (_ptexTarget == ptex) {
     mtlSetRenderTarget(NULL);
   }
-  for (int iUnit = 0; iUnit < MTL_MAXTEXUNITS; iUnit++) {
+  for (int iUnit = 0; iUnit < GPU_MAXTEXUNITS; iUnit++) {
     if (_aunit[iUnit].ptex == ptex) _aunit[iUnit].ptex = NULL;
   }
   delete ptex;
@@ -1105,12 +1114,12 @@ static bool InUse(uint64_t ulLastUse)
   return ulLastUse != 0 && ulLastUse > _ulCompleted.load();
 }
 
-static MTLPixelFormat PixelFormat(MtlTextureFormat eFormat)
+static MTLPixelFormat PixelFormat(GpuTextureFormat eFormat)
 {
   switch (eFormat) {
-  case MTLTF_DXT1: return MTLPixelFormatBC1_RGBA;
-  case MTLTF_DXT3: return MTLPixelFormatBC2_RGBA;
-  case MTLTF_DXT5: return MTLPixelFormatBC3_RGBA;
+  case GPUTF_DXT1: return MTLPixelFormatBC1_RGBA;
+  case GPUTF_DXT3: return MTLPixelFormatBC2_RGBA;
+  case GPUTF_DXT5: return MTLPixelFormatBC3_RGBA;
   default:         return MTLPixelFormatRGBA8Unorm;
   }
 }
@@ -1125,8 +1134,9 @@ static void NewStorage(MtlTexture *ptex)
   ptex->ulLastUse = 0;
 }
 
-void mtlTextureStorage(MtlTexture *ptex, int iW, int iH, int ctMips, MtlTextureFormat eFormat)
+static void mtlTextureStorage(GpuTexture *ptexGpu, int iW, int iH, int ctMips, GpuTextureFormat eFormat)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   @autoreleasepool {
     if (mtlTextureHasStorage(ptex, iW, iH, ctMips, eFormat)) {
       return;
@@ -1138,13 +1148,14 @@ void mtlTextureStorage(MtlTexture *ptex, int iW, int iH, int ctMips, MtlTextureF
   }
 }
 
-bool mtlTextureHasStorage(MtlTexture *ptex, int iW, int iH, int ctMips, MtlTextureFormat eFormat)
+static bool mtlTextureHasStorage(MtlTexture *ptex, int iW, int iH, int ctMips, GpuTextureFormat eFormat)
 {
   return ptex->tex != nil && ptex->iW == iW && ptex->iH == iH && ptex->ctMips == ctMips && ptex->eFormat == eFormat;
 }
 
-void mtlTextureUpload(MtlTexture *ptex, int iMip, int iW, int iH, const uint32_t *pulRGBA)
+static void mtlTextureUpload(GpuTexture *ptexGpu, int iMip, int iW, int iH, const uint32_t *pulRGBA)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   if (ptex->tex == nil || iMip >= ptex->ctMips) {
     return;
   }
@@ -1156,17 +1167,17 @@ void mtlTextureUpload(MtlTexture *ptex, int iMip, int iW, int iH, const uint32_t
     // what OpenGL makes of the formats without color or alpha (32-bit RGBA in memory, R first)
     const uint32_t *pulData = pulRGBA;
     std::vector<uint32_t> aulConverted;
-    const MtlTextureFormat eFormat = ptex->eFormat;
-    if (eFormat == MTLTF_RGB8 || eFormat == MTLTF_RGB5 || eFormat == MTLTF_L8 || eFormat == MTLTF_A8 || eFormat == MTLTF_LA8) {
+    const GpuTextureFormat eFormat = ptex->eFormat;
+    if (eFormat == GPUTF_RGB8 || eFormat == GPUTF_RGB5 || eFormat == GPUTF_L8 || eFormat == GPUTF_A8 || eFormat == GPUTF_LA8) {
       const size_t ctPixels = (size_t)iW*iH;
       aulConverted.resize(ctPixels);
       for (size_t i = 0; i < ctPixels; i++) {
         const uint32_t ul = pulRGBA[i];
         const uint32_t ulR = ul & 0xFF, ulA = ul & 0xFF000000;
         switch (eFormat) {
-        case MTLTF_L8:  aulConverted[i] = ulR | (ulR << 8) | (ulR << 16) | 0xFF000000;  break;
-        case MTLTF_LA8: aulConverted[i] = ulR | (ulR << 8) | (ulR << 16) | ulA;  break;
-        case MTLTF_A8:  aulConverted[i] = 0x00FFFFFF | ulA;  break;
+        case GPUTF_L8:  aulConverted[i] = ulR | (ulR << 8) | (ulR << 16) | 0xFF000000;  break;
+        case GPUTF_LA8: aulConverted[i] = ulR | (ulR << 8) | (ulR << 16) | ulA;  break;
+        case GPUTF_A8:  aulConverted[i] = 0x00FFFFFF | ulA;  break;
         default:        aulConverted[i] = ul | 0xFF000000;  break;
         }
       }
@@ -1176,8 +1187,9 @@ void mtlTextureUpload(MtlTexture *ptex, int iMip, int iW, int iH, const uint32_t
   }
 }
 
-void mtlTextureUploadCompressed(MtlTexture *ptex, int iMip, int iW, int iH, const void *pvData, size_t slSize)
+static void mtlTextureUploadCompressed(GpuTexture *ptexGpu, int iMip, int iW, int iH, const void *pvData, size_t slSize)
 {
+  MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
   if (ptex->tex == nil || iMip >= ptex->ctMips) {
     return;
   }
@@ -1186,7 +1198,7 @@ void mtlTextureUploadCompressed(MtlTexture *ptex, int iMip, int iW, int iH, cons
       NewStorage(ptex);
     }
     const int ctBlocksW = (iW + 3)/4, ctBlocksH = (iH + 3)/4;
-    const size_t slBlock = ptex->eFormat == MTLTF_DXT1 ? 8 : 16;
+    const size_t slBlock = ptex->eFormat == GPUTF_DXT1 ? 8 : 16;
     if (slSize < ctBlocksW*ctBlocksH*slBlock) {
       return;
     }
@@ -1195,16 +1207,17 @@ void mtlTextureUploadCompressed(MtlTexture *ptex, int iMip, int iW, int iH, cons
   }
 }
 
-int mtlTextureSize(MtlTexture *ptex)
+static int mtlTextureSize(GpuTexture *ptexGpu)
 {
-  const bool bDXT = ptex->eFormat == MTLTF_DXT1 || ptex->eFormat == MTLTF_DXT3 || ptex->eFormat == MTLTF_DXT5;
+  const MtlTexture *ptex = static_cast<MtlTexture *>(ptexGpu);
+  const bool bDXT = ptex->eFormat == GPUTF_DXT1 || ptex->eFormat == GPUTF_DXT3 || ptex->eFormat == GPUTF_DXT5;
   int slSize = 0;
   for (int iMip = 0; iMip < ptex->ctMips; iMip++) {
     int iW = ptex->iW >> iMip, iH = ptex->iH >> iMip;
     if (iW < 1) iW = 1;
     if (iH < 1) iH = 1;
     if (bDXT) {
-      slSize += ((iW + 3)/4)*((iH + 3)/4)*(ptex->eFormat == MTLTF_DXT1 ? 8 : 16);
+      slSize += ((iW + 3)/4)*((iH + 3)/4)*(ptex->eFormat == GPUTF_DXT1 ? 8 : 16);
     } else {
       slSize += iW*iH*4;
     }
@@ -1212,13 +1225,11 @@ int mtlTextureSize(MtlTexture *ptex)
   return slSize;
 }
 
-int mtlTextureWidth(MtlTexture *ptex)  { return ptex->iW; }
-int mtlTextureHeight(MtlTexture *ptex) { return ptex->iH; }
 
 
 // BUFFERS
 
-MtlBuffer *mtlCreateBuffer(size_t slSize)
+static GpuBuffer *mtlCreateBuffer(size_t slSize)
 {
   @autoreleasepool {
     MtlBuffer *pbuf = new MtlBuffer;
@@ -1228,16 +1239,18 @@ MtlBuffer *mtlCreateBuffer(size_t slSize)
   }
 }
 
-void mtlDeleteBuffer(MtlBuffer *pbuf)
+static void mtlDeleteBuffer(GpuBuffer *pbufGpu)
 {
-  for (int iStream = 0; iStream < MTLS_COUNT; iStream++) {
+  MtlBuffer *pbuf = static_cast<MtlBuffer *>(pbufGpu);
+  for (int iStream = 0; iStream < GPUS_COUNT; iStream++) {
     if (_astr[iStream].pbuf == pbuf) _astr[iStream] = Stream();
   }
   delete pbuf;
 }
 
-void mtlBufferUpdate(MtlBuffer *pbuf, size_t slOffset, const void *pvData, size_t slSize)
+static void mtlBufferUpdate(GpuBuffer *pbufGpu, size_t slOffset, const void *pvData, size_t slSize)
 {
+  MtlBuffer *pbuf = static_cast<MtlBuffer *>(pbufGpu);
   @autoreleasepool {
     // drawn with before: the draws keep the old storage, the new one starts as a copy of it
     if (InUse(pbuf->ulLastUse)) {
@@ -1252,7 +1265,7 @@ void mtlBufferUpdate(MtlBuffer *pbuf, size_t slOffset, const void *pvData, size_
 
 // PROGRAMS
 
-MtlProgram *mtlCreateProgram(const char *strSource, const char *strFunction, char *strError, size_t slErrorSize)
+static MtlProgram *mtlCreateFunction(const char *strSource, const char *strFunction, char *strError, size_t slErrorSize)
 {
   @autoreleasepool {
     if (strError != NULL && slErrorSize > 0) {
@@ -1288,9 +1301,124 @@ MtlProgram *mtlCreateProgram(const char *strSource, const char *strFunction, cha
   }
 }
 
-void mtlDeleteProgram(MtlProgram *ppr)
+static void mtlDeleteProgram(GpuProgram *ppr)
 {
   if (_st.pprVertex == ppr) _st.pprVertex = NULL;
   if (_st.pprFragment == ppr) _st.pprFragment = NULL;
-  delete ppr;
+  delete static_cast<MtlProgram *>(ppr);
+}
+
+// the fixed function emulation (constants: GpuFFVertexConst and GpuFFFragmentConst), with the
+// stage interface of the programs (ShaderARBToMSL.h), so either can go with the other
+static const char *_strFixedFunction = MSL_PROGRAM_INTERFACE R"MSL(
+struct FFVertexConst {
+  float4x4 mProjection;
+  float4x4 mView;
+  float4x4 amTexture[4];
+  float4 vClipPlane;     // in view space
+  float4 colConstant;    // without color array
+  uint ulFlags;          // 1=color array, 2=clip plane
+  uint ulTexCoords;      // 4 bits per texture unit: 1=array, 2=s,t,r,q, 4=texture matrix,
+                         // 8=the position in view space (Direct3D's D3DTSS_TCI_CAMERASPACEPOSITION)
+  float fPointSize;
+  uint ulPad;
+};
+
+static float4 TexCoord(const device float *pfTex, uint vid, uint ulMode, float4x4 mTexture, float4 vView)
+{
+  float4 v = float4(0, 0, 0, 1);
+  if (ulMode & 8) {
+    v = vView;
+  } else if (ulMode & 1) {
+    if (ulMode & 2) v = float4(pfTex[vid*4], pfTex[vid*4+1], pfTex[vid*4+2], pfTex[vid*4+3]);
+    else v = float4(pfTex[vid*2], pfTex[vid*2+1], 0, 1);
+  }
+  if (ulMode & 4) v = mTexture * v;
+  return v;
+}
+
+vertex MtlVSOut ff_vs(uint vid [[vertex_id]], constant FFVertexConst &c [[buffer(0)]],
+  const device packed_float3 *pvtx [[buffer(1)]], const device uchar4 *pcol [[buffer(2)]],
+  const device float *ptex0 [[buffer(4)]], const device float *ptex1 [[buffer(5)]],
+  const device float *ptex2 [[buffer(6)]], const device float *ptex3 [[buffer(7)]])
+{
+  MtlVSOut o;
+  const float4 vView = c.mView * float4(float3(pvtx[vid]), 1);
+  o.pos = c.mProjection * vView;
+  o.col0 = (c.ulFlags & 1) ? float4(pcol[vid]) / 255.0 : c.colConstant;
+  o.col1 = float4(0);
+  o.tex0 = TexCoord(ptex0, vid, (c.ulTexCoords >>  0) & 15, c.amTexture[0], vView);
+  o.tex1 = TexCoord(ptex1, vid, (c.ulTexCoords >>  4) & 15, c.amTexture[1], vView);
+  o.tex2 = TexCoord(ptex2, vid, (c.ulTexCoords >>  8) & 15, c.amTexture[2], vView);
+  o.tex3 = TexCoord(ptex3, vid, (c.ulTexCoords >> 12) & 15, c.amTexture[3], vView);
+  o.fPointSize = c.fPointSize;
+  o.afClip[0] = (c.ulFlags & 2) ? dot(vView, c.vClipPlane) : 1.0;
+  return o;
+}
+
+struct FFFragmentConst {
+  uint4 aulTexMode;      // per texture unit: 0=off, 1=modulate, 2=modulate 2x, 3=replace, 4=interpolate
+  float fAlphaRef;
+  uint bAlphaTest;
+  float fLODBias;
+  float fFactor;         // for 4
+};
+
+// as GL_MODULATE, GL_COMBINE with GL_MODULATE and GL_RGB_SCALE 2 (results clamped), GL_REPLACE,
+// or GL_COMBINE with GL_INTERPOLATE of the previous color and the texture by the constant (the
+// terrain's shadow map blend, TRRender.cpp)
+static float4 Stage(float4 col, float4 tex, uint ulMode, float fFactor)
+{
+  if (ulMode == 2) return float4(saturate(col.rgb*tex.rgb*2.0), col.a*tex.a);
+  if (ulMode == 3) return tex;
+  if (ulMode == 4) return float4(mix(tex.rgb, col.rgb, fFactor), col.a);
+  return col*tex;
+}
+
+fragment float4 ff_fs(MtlPSIn in [[stage_in]], constant FFFragmentConst &c [[buffer(0)]],
+  texture2d<float> t0 [[texture(0)]], sampler s0 [[sampler(0)]],
+  texture2d<float> t1 [[texture(1)]], sampler s1 [[sampler(1)]],
+  texture2d<float> t2 [[texture(2)]], sampler s2 [[sampler(2)]],
+  texture2d<float> t3 [[texture(3)]], sampler s3 [[sampler(3)]])
+{
+  float4 col = in.col0;
+  if (c.aulTexMode.x) col = Stage(col, t0.sample(s0, in.tex0.xy/in.tex0.w, bias(c.fLODBias)), c.aulTexMode.x, c.fFactor);
+  if (c.aulTexMode.y) col = Stage(col, t1.sample(s1, in.tex1.xy/in.tex1.w, bias(c.fLODBias)), c.aulTexMode.y, c.fFactor);
+  if (c.aulTexMode.z) col = Stage(col, t2.sample(s2, in.tex2.xy/in.tex2.w, bias(c.fLODBias)), c.aulTexMode.z, c.fFactor);
+  if (c.aulTexMode.w) col = Stage(col, t3.sample(s3, in.tex3.xy/in.tex3.w, bias(c.fLODBias)), c.aulTexMode.w, c.fFactor);
+  if (c.bAlphaTest && col.a < c.fAlphaRef) discard_fragment();
+  return col;
+}
+)MSL";
+
+static GpuProgram *mtlCreateFixedFunction(bool bVertex, char *strError, size_t slErrorSize)
+{
+  return mtlCreateFunction(_strFixedFunction, bVertex ? "ff_vs" : "ff_fs", strError, slErrorSize);
+}
+
+// the programs from ShaderARBToMSL.cpp ("vp" and "pp")
+static GpuProgram *mtlCreateProgram(bool bVertex, const char *strSource, char *strError, size_t slErrorSize)
+{
+  return mtlCreateFunction(strSource, bVertex ? "vp" : "pp", strError, slErrorSize);
+}
+
+
+static const GpuDevice _gpuMetal = {
+  "Metal",
+  mtlInit, mtlEnd, mtlDeviceName, mtlHasDXT, mtlSetDrawableScale, mtlSetVSync, mtlPresent, mtlFinish,
+  mtlSetViewport, mtlSetScissor, mtlSetBlend, mtlSetColorMask, mtlSetDepth, mtlSetCull, mtlSetWireframe,
+  mtlSetDepthBias, mtlSetProgram, mtlSetTexture, mtlSetTextureNone, mtlSetTextureWrap,
+  mtlSetStreamData, mtlSetStreamBuffer, mtlClearStream, mtlGetStreamMask, mtlSetVertexConstants,
+  mtlSetFragmentConstants, mtlDrawIndexed, mtlDrawQuads, mtlDrawPrimitives, mtlClear,
+  mtlCreateTexture, mtlDeleteTexture, mtlTextureStorage, mtlTextureUpload, mtlTextureUploadCompressed,
+  mtlTextureSize,
+  mtlTextureRenderTarget, mtlSetRenderTarget, mtlGetRenderTarget, mtlCopyFrameToTexture,
+  mtlReadFrameRGB, mtlReadFrameDepths, mtlPushState, mtlPopState,
+  mtlCreateBuffer, mtlDeleteBuffer, mtlBufferUpdate,
+  mtlCreateFixedFunction, TranslateARBToMSL, mtlCreateProgram, mtlDeleteProgram,
+};
+
+const GpuDevice *mtlDevice(void)
+{
+  return &_gpuMetal;
 }

@@ -122,7 +122,7 @@ bool Translator::Base(const Str &strBase, bool bDest, Str &strMSL)
 		const Str strInner = strBase.substr(2, strBase.size()-3);
 		if( strInner.compare(0, 4, "a0.x")==0) {
 			const int iOffset = atoi(strInner.c_str()+4);  // "+21" or "-3"
-			sprintf(str, "K.c[clamp(a0 + %d, 0, %d)]", iOffset, MSL_VERTEX_CONSTANTS-1);
+			sprintf(str, "K.c[clamp(a0 + %d, 0, %d)]", iOffset, GPU_VERTEX_CONSTANTS-1);
 		} else {
 			sprintf(str, "K.c[%d]", atoi(strInner.c_str()));
 		}
@@ -130,7 +130,7 @@ bool Translator::Base(const Str &strBase, bool bDest, Str &strMSL)
 		return true;
 	}
 	if( sscanf(strBase.c_str(), "program.env[%d]", &i)==1) {
-		if( i<0 || i>=(tr_bVertex ? MSL_VERTEX_CONSTANTS : MSL_PIXEL_CONSTANTS)) return Fail("no such parameter " + strBase);
+		if( i<0 || i>=(tr_bVertex ? GPU_VERTEX_CONSTANTS : GPU_PIXEL_CONSTANTS)) return Fail("no such parameter " + strBase);
 		sprintf(str, "K.c[%d]", i);  strMSL = str;
 		return true;
 	}
@@ -350,18 +350,18 @@ bool Translator::Translate(const Str &strARB, Str &strMSL, Str &strError)
 	if( tr_bVertex) {
 		sprintf(str,
 			"struct VPConst { float4 c[%d]; float4 colConstant; uint ulStreams; uint ulTexCoords; uint2 ulPad; };\n",
-			MSL_VERTEX_CONSTANTS);
+			GPU_VERTEX_CONSTANTS);
 		strMSL += str;
 	} else {
 		sprintf(str,
 			"struct PPConst { float4 c[%d]; float fAlphaRef; uint bAlphaTest; float fLODBias; uint ulPad; };\n",
-			MSL_PIXEL_CONSTANTS);
+			GPU_PIXEL_CONSTANTS);
 		strMSL += str;
 	}
 	strMSL += _strHelpers;
 
 	if( tr_bVertex) {
-		// streams as the fixed function emulation reads them (MtlStream + 1)
+		// streams as the fixed function emulation reads them (GpuStream + 1)
 		strMSL +=
 			"vertex MtlVSOut vp(uint vid [[vertex_id]], constant VPConst &K [[buffer(0)]],\n"
 			"  const device packed_float3 *pvtx [[buffer(1)]], const device uchar4 *pcol [[buffer(2)]],\n"

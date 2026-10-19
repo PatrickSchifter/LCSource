@@ -6,9 +6,9 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <Engine/Graphics/ShaderAsmToARB.h>
-#ifdef SE1_METAL
-#include <Engine/Graphics/MetalDevice.h>
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+#include <Engine/Graphics/GpuDevice.h>
+#endif // SE1_GPUDEVICE
 
 #include <set>
 
@@ -74,12 +74,12 @@ extern BOOL _bUsingDynamicBuffer = TRUE;
 extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
 extern ULONG GFX_ulCurrentColorMask = (CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 
-#ifdef SE1_METAL
-// Metal: the texture functions (Gfx_wrapper_Metal.cpp, included below)
-static void SetTexture_MTL( TEXOBJ &ulTexObject, CTexParams &tpLocal);
-static void UploadTexture_MTL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat);
-static BOOL UploadCompressedTexture_MTL( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, ULONG ulFormat);
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+// Metal (a GpuDevice): the texture functions (Gfx_wrapper_Gpu.cpp, included below)
+static void SetTexture_GPU( TEXOBJ &ulTexObject, CTexParams &tpLocal);
+static void UploadTexture_GPU( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat);
+static BOOL UploadCompressedTexture_GPU( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, ULONG ulFormat);
+#endif // SE1_GPUDEVICE
 
 // for D3D: mark need for clipping (when wants to be disable but cannot be because of user clip plane)
 static BOOL _bWantsClipping = TRUE;
@@ -443,11 +443,11 @@ extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal)
 		MimicTexParams_D3D(tpLocal);
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) { // Metal
-		SetTexture_MTL( ulTexObject, tpLocal);
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+		SetTexture_GPU( ulTexObject, tpLocal);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_BINDTEXTURE);
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -484,11 +484,11 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 		}
 	} 
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) { // Metal
-		UploadTexture_MTL( pulTexture, pixWidth, pixHeight, ulFormat);
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+		UploadTexture_GPU( pulTexture, pixWidth, pixHeight, ulFormat);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
@@ -526,11 +526,11 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 		}
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) { // Metal
-		bUploaded = UploadCompressedTexture_MTL( pubMipmaps, pixWidth, pixHeight, slSize, ulFormat);
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal
+		bUploaded = UploadCompressedTexture_GPU( pubMipmaps, pixWidth, pixHeight, slSize, ulFormat);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 	return bUploaded;
@@ -590,14 +590,14 @@ extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 		slMipSize = d3dSurfDesc.Size;
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal (all mipmaps)
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
 		_sfStats.StopTimer(CStatForm::STI_GFXAPI);
-		return mtlTextureSize( (MtlTexture*)ulTexObject);
+		return _pgpu->TextureSize( (GpuTexture*)ulTexObject);
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 	// eventually count in all the mipmaps (takes extra 33% of texture size)
 	const SLONG slUploadSize = bHasMipmaps ? slMipSize*4/3 : slMipSize;
@@ -628,9 +628,9 @@ extern INDEX gfxGetTexturePixRatio( TEXOBJ ulTextureObject)
 		return GetTexturePixRatio_D3D( (LPDIRECT3DTEXTURE8)ulTextureObject);
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) return 4;  // (all textures are 8-bit RGBA)
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) return 4;  // (all textures are 8-bit RGBA)
+#endif // SE1_GPUDEVICE
 	else return 0;
 }
 
@@ -655,9 +655,9 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 		return GetFormatPixRatio_D3D( (D3DFORMAT)ulTextureFormat);
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	else if( eAPI==GAT_MTL) return 4;
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) return 4;
+#endif // SE1_GPUDEVICE
 	else return 0;
 }
 
@@ -755,9 +755,9 @@ extern void InitVertexBuffers(void)
 	VertexBuffer &vb  = _avbVertexBuffers.Push();
 	vb.vb_ulLockMask  = NONE;
 	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_aulBufferObjects[iVA] = 0;
-#ifdef SE1_METAL
-	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_apbufMetal[iVA] = NULL;
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_apbufGpu[iVA] = NULL;
+#endif // SE1_GPUDEVICE
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 //	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX; //원본
 	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX|GFX_VBM_TAN;
@@ -831,24 +831,24 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 		}
 	}
 
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal (as OpenGL: arrays in memory, those of a static buffer also on the GPU)
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
 			vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA] = NULL;
 			vb.vb_i1stLockedVertex[iVA] = vb.vb_ctLockedVertices[iVA] = 0;
 			vb.vb_aulBufferObjects[iVA] = 0;
-			vb.vb_apbufMetal[iVA] = NULL;
+			vb.vb_apbufGpu[iVA] = NULL;
 			if( !((ulTypeMask>>iVA)&1)) continue;
 			const SLONG slSize = ctVertices*_aslVBTypeSizes[iVA];
 			vb.vb_paWriteArray[iVA] = AllocMemory(slSize);
 			if( bRead) vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA];
 			slTotalSize += slSize;
-			if( !bDynamic) vb.vb_apbufMetal[iVA] = mtlCreateBuffer(slSize);
+			if( !bDynamic) vb.vb_apbufGpu[iVA] = _pgpu->CreateBuffer(slSize);
 		}
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 #ifdef SE1_D3D
 	// Direct3D
@@ -947,14 +947,14 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 		}
 	}
 
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal
-	else if( eAPI==GAT_MTL)
+	else if( GFX_IsGpuAPI(eAPI))
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
-			if( vb.vb_apbufMetal[iVA]!=NULL) {
-				mtlDeleteBuffer( vb.vb_apbufMetal[iVA]);
-				vb.vb_apbufMetal[iVA] = NULL;
+			if( vb.vb_apbufGpu[iVA]!=NULL) {
+				_pgpu->DeleteBuffer( vb.vb_apbufGpu[iVA]);
+				vb.vb_apbufGpu[iVA] = NULL;
 			}
 			if( vb.vb_paWriteArray[iVA] == NULL) continue;
 			FreeMemory( vb.vb_paWriteArray[iVA]);
@@ -962,7 +962,7 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 			vb.vb_paReadArray[iVA]  = NULL;
 		}
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 
 #ifdef SE1_D3D
 	// Direct3D
@@ -1117,7 +1117,7 @@ extern void gfxFlushQuads(void)
 	extern INDEX ogl_bAllowQuadArrays;
 	extern INDEX xbx_bAllowQuadArrays;
 	if( (_pGfx->gl_eCurrentAPI==GAT_OGL && ogl_bAllowQuadArrays) 
-		|| _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		|| GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
 		// OpenGL supports quads (and the Metal wrapper draws them)
 		FlushArrays( NULL, _avtxCommon.Count());  
 	} else {
@@ -1266,7 +1266,7 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 #else
 		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return FALSE;
 #endif // SE1_D3D
-		if( eAPI==GAT_MTL) return FALSE;  // (no occlusion queries with Metal yet)
+		if( GFX_IsGpuAPI(eAPI)) return FALSE;  // (no occlusion queries with Metal yet)
 
 	// get last if available
 	if( _ctUsedOcclusionQueries < GFX_MAXOCCQUERIES) {
@@ -1319,7 +1319,7 @@ void gfxEndOcclusionTest(void)
 #else
 		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return;
 #endif // SE1_D3D
-		if( eAPI==GAT_MTL) return;
+		if( GFX_IsGpuAPI(eAPI)) return;
 
 	ASSERT( _iCurrentOccQuery>=0 && _iCurrentOccQuery<GFX_MAXOCCQUERIES);
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -1358,7 +1358,7 @@ BOOL gfxPullOcclusionQuery( ULONG ulQueryID, SLONG &slPixCount, BOOL bDontWait/*
 #else
 		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return TRUE;
 #endif // SE1_D3D
-		if( eAPI==GAT_MTL) return TRUE;
+		if( GFX_IsGpuAPI(eAPI)) return TRUE;
 
 	// skip if no queries are pending
 	ASSERT( _ctUsedOcclusionQueries>=0 && _ctUsedOcclusionQueries<=GFX_MAXOCCQUERIES);
@@ -1579,9 +1579,9 @@ extern void gfxSetBlendType( const enum PredefinedBlendType pbt)
 #include "Gfx_wrapper_Direct3D.cpp"
 #endif // SE1_D3D
 
-#ifdef SE1_METAL
-#include "Gfx_wrapper_Metal.cpp"
-#endif // SE1_METAL
+#ifdef SE1_GPUDEVICE
+#include "Gfx_wrapper_Gpu.cpp"
+#endif // SE1_GPUDEVICE
 
 
 
@@ -1765,78 +1765,78 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 
 	}
 #endif // SE1_D3D
-#ifdef SE1_METAL
-	// Metal?
-	else if( iAPI==(INDEX)GAT_MTL)
+#ifdef SE1_GPUDEVICE
+	// Metal (a GpuDevice)?
+	else if( GFX_IsGpuAPI((GfxAPIType)iAPI))
 	{
-		gfxEnableDepthWrite     = &mtl_EnableDepthWrite;
-		gfxEnableDepthBias      = &mtl_EnableDepthBias;
-		gfxEnableDepthTest      = &mtl_EnableDepthTest;
-		gfxEnableAlphaTest      = &mtl_EnableAlphaTest;
-		gfxEnableBlend          = &mtl_EnableBlend;
-		gfxEnableDither         = &mtl_EnableDither;
-		gfxEnableTexture        = &mtl_EnableTexture;
-		gfxEnableLight          = &mtl_EnableLight;
-		gfxEnableLighting       = &mtl_EnableLighting;
-		gfxEnableClipping       = &mtl_EnableClipping;
-		gfxEnableClipPlane      = &mtl_EnableClipPlane;
-		gfxEnableTruform        = &mtl_EnableTruform;
-		gfxDisableDepthWrite    = &mtl_DisableDepthWrite;
-		gfxDisableDepthBias     = &mtl_DisableDepthBias;
-		gfxDisableDepthTest     = &mtl_DisableDepthTest;
-		gfxDisableAlphaTest     = &mtl_DisableAlphaTest;
-		gfxDisableBlend         = &mtl_DisableBlend;
-		gfxDisableDither        = &mtl_DisableDither;
-		gfxDisableTexture       = &mtl_DisableTexture;
-		gfxDisableLight         = &mtl_DisableLight;
-		gfxDisableLighting      = &mtl_DisableLighting;
-		gfxDisableClipping      = &mtl_DisableClipping;
-		gfxDisableClipPlane     = &mtl_DisableClipPlane;
-		gfxDisableTruform       = &mtl_DisableTruform;
-		gfxBlendFunc            = &mtl_BlendFunc;
-		gfxDepthFunc            = &mtl_DepthFunc;
-		gfxDepthRange           = &mtl_DepthRange;
-		gfxCullFace             = &mtl_CullFace;
-		gfxFrontFace            = &mtl_FrontFace;
-		gfxClipPlane            = &mtl_ClipPlane;
-		gfxSetOrtho             = &mtl_SetOrtho;
-		gfxSetFrustum           = &mtl_SetFrustum;
-		gfxSetTextureMatrix     = &mtl_SetTextureMatrix;
-		gfxSetViewMatrix        = &mtl_SetViewMatrix;
-		gfxPolygonMode          = &mtl_PolygonMode;
-		gfxSetLightColor        = &mtl_SetLightColor;
-		gfxSetLightDirection    = &mtl_SetLightDirection;
-		gfxSetTextureWrapping   = &mtl_SetTextureWrapping;
-		gfxSetTextureModulation = &mtl_SetTextureModulation;
-		gfxGenerateTexture      = &mtl_GenerateTexture;
-		gfxDeleteTexture        = &mtl_DeleteTexture;
-		gfxSetVertexArray       = &mtl_SetVertexArray;
-		gfxSetNormalArray       = &mtl_SetNormalArray;
-		gfxSetWeightArray       = &mtl_SetWeightArray;
-		gfxSetTexCoordArray     = &mtl_SetTexCoordArray;
-		gfxSetColorArray        = &mtl_SetColorArray;
-		gfxDrawElements         = &mtl_DrawElements;
-		gfxSetConstantColor     = &mtl_SetConstantColor;
-		gfxEnableColorArray     = &mtl_EnableColorArray;
-		gfxDisableColorArray    = &mtl_DisableColorArray;
-		gfxFinish               = &mtl_Finish;
-		gfxLockArrays           = &mtl_LockArrays;
-		gfxSetColorMask         = &mtl_SetColorMask;
-		gfxLockSubBuffer        = &mtl_LockSubBuffer;
-		gfxUnlockSubBuffer      = &mtl_UnlockSubBuffer;
-		gfxSetSubBuffer         = &mtl_SetSubBuffer;
-		gfxSetVertexSubBuffer   = &mtl_SetVertexSubBuffer;
+		gfxEnableDepthWrite     = &gpu_EnableDepthWrite;
+		gfxEnableDepthBias      = &gpu_EnableDepthBias;
+		gfxEnableDepthTest      = &gpu_EnableDepthTest;
+		gfxEnableAlphaTest      = &gpu_EnableAlphaTest;
+		gfxEnableBlend          = &gpu_EnableBlend;
+		gfxEnableDither         = &gpu_EnableDither;
+		gfxEnableTexture        = &gpu_EnableTexture;
+		gfxEnableLight          = &gpu_EnableLight;
+		gfxEnableLighting       = &gpu_EnableLighting;
+		gfxEnableClipping       = &gpu_EnableClipping;
+		gfxEnableClipPlane      = &gpu_EnableClipPlane;
+		gfxEnableTruform        = &gpu_EnableTruform;
+		gfxDisableDepthWrite    = &gpu_DisableDepthWrite;
+		gfxDisableDepthBias     = &gpu_DisableDepthBias;
+		gfxDisableDepthTest     = &gpu_DisableDepthTest;
+		gfxDisableAlphaTest     = &gpu_DisableAlphaTest;
+		gfxDisableBlend         = &gpu_DisableBlend;
+		gfxDisableDither        = &gpu_DisableDither;
+		gfxDisableTexture       = &gpu_DisableTexture;
+		gfxDisableLight         = &gpu_DisableLight;
+		gfxDisableLighting      = &gpu_DisableLighting;
+		gfxDisableClipping      = &gpu_DisableClipping;
+		gfxDisableClipPlane     = &gpu_DisableClipPlane;
+		gfxDisableTruform       = &gpu_DisableTruform;
+		gfxBlendFunc            = &gpu_BlendFunc;
+		gfxDepthFunc            = &gpu_DepthFunc;
+		gfxDepthRange           = &gpu_DepthRange;
+		gfxCullFace             = &gpu_CullFace;
+		gfxFrontFace            = &gpu_FrontFace;
+		gfxClipPlane            = &gpu_ClipPlane;
+		gfxSetOrtho             = &gpu_SetOrtho;
+		gfxSetFrustum           = &gpu_SetFrustum;
+		gfxSetTextureMatrix     = &gpu_SetTextureMatrix;
+		gfxSetViewMatrix        = &gpu_SetViewMatrix;
+		gfxPolygonMode          = &gpu_PolygonMode;
+		gfxSetLightColor        = &gpu_SetLightColor;
+		gfxSetLightDirection    = &gpu_SetLightDirection;
+		gfxSetTextureWrapping   = &gpu_SetTextureWrapping;
+		gfxSetTextureModulation = &gpu_SetTextureModulation;
+		gfxGenerateTexture      = &gpu_GenerateTexture;
+		gfxDeleteTexture        = &gpu_DeleteTexture;
+		gfxSetVertexArray       = &gpu_SetVertexArray;
+		gfxSetNormalArray       = &gpu_SetNormalArray;
+		gfxSetWeightArray       = &gpu_SetWeightArray;
+		gfxSetTexCoordArray     = &gpu_SetTexCoordArray;
+		gfxSetColorArray        = &gpu_SetColorArray;
+		gfxDrawElements         = &gpu_DrawElements;
+		gfxSetConstantColor     = &gpu_SetConstantColor;
+		gfxEnableColorArray     = &gpu_EnableColorArray;
+		gfxDisableColorArray    = &gpu_DisableColorArray;
+		gfxFinish               = &gpu_Finish;
+		gfxLockArrays           = &gpu_LockArrays;
+		gfxSetColorMask         = &gpu_SetColorMask;
+		gfxLockSubBuffer        = &gpu_LockSubBuffer;
+		gfxUnlockSubBuffer      = &gpu_UnlockSubBuffer;
+		gfxSetSubBuffer         = &gpu_SetSubBuffer;
+		gfxSetVertexSubBuffer   = &gpu_SetVertexSubBuffer;
 
-		gfxSetVertexProgram     = &mtl_SetVertexProgram;
-		gfxSetPixelProgram      = &mtl_SetPixelProgram;
-		gfxDeleteVertexProgram  = &mtl_DeleteProgram;
-		gfxDeletePixelProgram   = &mtl_DeleteProgram;
-		gfxCreateVertexProgram  = &mtl_CreateVertexProgram;
-		gfxCreatePixelProgram   = &mtl_CreatePixelProgram;
-		gfxSetVertexProgramConst= &mtl_SetVertexProgramConst;
-		gfxSetPixelProgramConst = &mtl_SetPixelProgramConst;
+		gfxSetVertexProgram     = &gpu_SetVertexProgram;
+		gfxSetPixelProgram      = &gpu_SetPixelProgram;
+		gfxDeleteVertexProgram  = &gpu_DeleteProgram;
+		gfxDeletePixelProgram   = &gpu_DeleteProgram;
+		gfxCreateVertexProgram  = &gpu_CreateVertexProgram;
+		gfxCreatePixelProgram   = &gpu_CreatePixelProgram;
+		gfxSetVertexProgramConst= &gpu_SetVertexProgramConst;
+		gfxSetPixelProgramConst = &gpu_SetPixelProgramConst;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// NONE!
 	else
 	{

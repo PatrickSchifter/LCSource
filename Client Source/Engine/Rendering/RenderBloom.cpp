@@ -673,14 +673,14 @@ static TEXOBJ _ulBackbufferCopy = NONE;
 static PIX   _pixBackbufferCopyWidth  = 0;
 static PIX   _pixBackbufferCopyHeight = 0;
 
-#ifdef SE1_METAL
-// Gfx_wrapper_Metal.cpp
-extern void MTL_BeginFilter(void);
-extern void MTL_EndFilter(void);
-extern void MTL_DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, ULONG ulVertexProgram, ULONG ulPixelProgram,
+#ifdef SE1_GPUDEVICE
+// Gfx_wrapper_Gpu.cpp
+extern void GPU_BeginFilter(void);
+extern void GPU_EndFilter(void);
+extern void GPU_DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, ULONG ulVertexProgram, ULONG ulPixelProgram,
                                 BOOL bBlend, GfxBlend eSrc, GfxBlend eDst);
-extern void MTL_CopyFrameToTexture( TEXOBJ ulTexture, PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
-#endif // SE1_METAL
+extern void GPU_CopyFrameToTexture( TEXOBJ ulTexture, PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+#endif // SE1_GPUDEVICE
 
 static const char *_strTexCoord4OffsetVertexProgram =
 	"vs.1.1\n"
@@ -791,12 +791,12 @@ static void SetFilterSampleAsIs(void)
 // whose render targets start at the bottom; Metal's start at the top as Direct3D's.
 static void DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, BOOL bBlend, GfxBlend eSrc, GfxBlend eDst)
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
-		MTL_DrawFilterQuad( ulTexture, bLinear, _ulTexCoord4OffsetVertexProgram, _ulAddFourPixelProgram, bBlend, eSrc, eDst);
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		GPU_DrawFilterQuad( ulTexture, bLinear, _ulTexCoord4OffsetVertexProgram, _ulAddFourPixelProgram, bBlend, eSrc, eDst);
 		return;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	SetFilterTexture_OGL( ulTexture, bLinear ? GL_LINEAR : GL_NEAREST);
 	if( bBlend) {
 		// (the factors the bloom uses)
@@ -871,12 +871,12 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	const PIX pixHeight = re_pdpDrawPort->GetHeight() * pixScale;
 	const PIX pixLeft   = re_pdpDrawPort->dp_MinI * pixScale;
 	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
 		// from the top, as Metal counts rows
-		MTL_CopyFrameToTexture( _ulBackbufferCopy, pixLeft, re_pdpDrawPort->dp_MinJ * pixScale, pixWidth, pixHeight);
+		GPU_CopyFrameToTexture( _ulBackbufferCopy, pixLeft, re_pdpDrawPort->dp_MinJ * pixScale, pixWidth, pixHeight);
 	} else
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	{
 		// OpenGL counts rows from the bottom
 		const PIX pixBottom = (re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ) * pixScale;
@@ -993,13 +993,13 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 
 void CRenderer::Get_SRS_Bloom()
 {
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 	// Metal: the quads go to the device without the engine's state; its streams and textures are kept
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
-		MTL_BeginFilter();
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		GPU_BeginFilter();
 		return;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	// The passes change the GL state directly and put it back as it was, so the engine's cache of
 	// it stays right: enables (programs too), blending and color mask, depth mask, the textures of
 	// each unit and the active one, and the current texture coordinates of the quad.
@@ -1009,12 +1009,12 @@ void CRenderer::Get_SRS_Bloom()
 
 void CRenderer::Restore_SRS_Bloom()
 {
-#ifdef SE1_METAL
-	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
-		MTL_EndFilter();
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		GPU_EndFilter();
 		return;
 	}
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
 	pglPopAttrib();
 	// the bound programs are not attributes
 	pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _pGfx->gl_dwVertexShader);

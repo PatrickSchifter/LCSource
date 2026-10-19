@@ -1,14 +1,17 @@
 #include "StdH.h"
 
-// The library side of the Metal backend (GAT_MTL, macOS): starting and ending it, the context
-// on the game's window and the end of a frame. The device is MetalDevice.mm; the gfx* functions
-// are Gfx_wrapper_Metal.cpp.
+// The library side of the APIs drawn through a GpuDevice (GFX_IsGpuAPI(): Metal, GAT_MTL):
+// starting and ending them, the context on the game's window and the end of a frame. The devices
+// are the APIs' (MetalDevice.mm); the gfx* functions are Gfx_wrapper_Gpu.cpp.
 
-#ifdef SE1_METAL
+#ifdef SE1_GPUDEVICE
 
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ViewPort.h>
+#include <Engine/Graphics/GpuDevice.h>
+#ifdef SE1_METAL
 #include <Engine/Graphics/MetalDevice.h>
+#endif // SE1_METAL
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/Console.h>
@@ -47,40 +50,46 @@ extern ULONG GFX_ulCurrentColorMask;
 
 extern INDEX gap_iSwapInterval;
 
-extern BOOL InitFixedFunction_MTL(void);
-extern void EndFixedFunction_MTL(void);
+extern BOOL InitFixedFunction_GPU(void);
+extern void EndFixedFunction_GPU(void);
 
 
-// whether Metal can be used (the device is made on the window, SetCurrentViewport_MTL)
-BOOL CGfxLibrary::InitDriver_MTL(void)
+// whether the API can be used, and its device (made on the window, SetCurrentViewport_GPU)
+BOOL CGfxLibrary::InitDriver_GPU( enum GfxAPIType eAPI)
 {
-	if( !mtlIsAvailable()) {
-		CPrintF( TRANS("Error starting Metal: no Metal device\n"));
-		return FALSE;
+	_pgpu = NULL;
+#ifdef SE1_METAL
+	if( eAPI==GAT_MTL) {
+		if( !mtlIsAvailable()) {
+			CPrintF( TRANS("Error starting Metal: no Metal device\n"));
+			return FALSE;
+		}
+		_pgpu = mtlDevice();
 	}
-	return TRUE;
+#endif // SE1_METAL
+	return _pgpu!=NULL;
 }
 
 
-void CGfxLibrary::EndDriver_MTL(void)
+void CGfxLibrary::EndDriver_GPU(void)
 {
 	// programs belong to the device
 	extern void ClearVertexAndPixelPrograms(void);
 	ClearVertexAndPixelPrograms();
-	// occlusion query IDs (not used with Metal, but kept as with OpenGL)
+	// occlusion query IDs (not used here, but kept as with OpenGL)
 	if( _puiOcclusionQueryIDs!=NULL) {
 		FreeMemory(_puiOcclusionQueryIDs);
 		_puiOcclusionQueryIDs = NULL;
 	}
 	// restore the display's gamma (platform layer)
 	if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) PLT_SetGammaRamp(NULL);
-	EndFixedFunction_MTL();
-	mtlEnd();
+	EndFixedFunction_GPU();
+	_pgpu->End();
 }
 
 
 // state and capabilities of a new device (as InitContext_OGL)
-void CGfxLibrary::InitContext_MTL(void)
+void CGfxLibrary::InitContext_GPU(void)
 {
 	ASSERT( gl_pvpActive!=NULL);
 
@@ -114,15 +123,15 @@ void CGfxLibrary::InitContext_MTL(void)
 	GFX_fMaxDepthRange = 1.0f;
 	for( INDEX iLight=0; iLight<GFX_MAXLIGHTS; iLight++) GFX_abLights[iLight] = FALSE;
 	GFX_bColorArray = FALSE;
-	if( !InitFixedFunction_MTL()) {
-		FatalError( TRANS("Cannot compile the Metal fixed function emulation (see the console log)."));
+	if( !InitFixedFunction_GPU()) {
+		FatalError( TRANS("Cannot compile the %s fixed function emulation (see the console log)."), _pgpu->strAPI);
 	}
 
-	CDisplayAdapter &da = gl_gaAPI[GAT_MTL].ga_adaAdapter[gl_iCurrentAdapter];
+	CDisplayAdapter &da = gl_gaAPI[gl_eCurrentAPI].ga_adaAdapter[gl_iCurrentAdapter];
 	da.da_strVendor   = "Apple";
-	da.da_strRenderer = mtlDeviceName();
-	da.da_strVersion  = "Metal";
-	CPrintF( TRANS("\n* Metal device created: *----------------------------------\n"));
+	da.da_strRenderer = _pgpu->DeviceName();
+	da.da_strVersion  = _pgpu->strAPI;
+	CPrintF( TRANS("\n* %s device created: *----------------------------------\n"), _pgpu->strAPI);
 	CPrintF( "  (%s)\n", (const char*)da.da_strRenderer);
 	int iW=0, iH=0;
 	SDL_GetWindowSize( (SDL_Window*)gl_pvpActive->vp_hWnd, &iW, &iH);
@@ -130,11 +139,11 @@ void CGfxLibrary::InitContext_MTL(void)
 	CPrintF( "  Window: %dx%d points, %dx%d pixels\n\n", iW, iH, iW*iScale, iH*iScale);
 
 	// what the device has (none of the OpenGL extensions); vertex and pixel programs are Direct3D's
-	// assembly translated into MSL (Gfx_wrapper_Metal.cpp)
+	// assembly translated into the device's shading language (Gfx_wrapper_Gpu.cpp)
 	gl_ulFlags |= GLF_HASACCELERATION|GLF_32BITTEXTURES|GLF_VSYNC|GLF_VERTEXPROGRAM|GLF_PIXELPROGRAM;
 	gl_ulFlags &= ~(GLF_STENCILBUFFER|GLF_TEXTURECOMPRESSION);
 	gl_ctDepthBits = 32;
-	if( mtlHasDXT()) gl_ulFlags |= GLF_TEXTURECOMPRESSION;  // the textures that come compressed
+	if( _pgpu->HasDXT()) gl_ulFlags |= GLF_TEXTURECOMPRESSION;  // the textures that come compressed
 	gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
 	if( PLT_CanSetGammaRamp()) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
 	else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
@@ -201,19 +210,19 @@ void CGfxLibrary::InitContext_MTL(void)
 
 
 // the device is made on the first viewport (the game's window), as the OpenGL context
-BOOL CGfxLibrary::SetCurrentViewport_MTL( CViewPort *pvp)
+BOOL CGfxLibrary::SetCurrentViewport_GPU( CViewPort *pvp)
 {
 	if( gl_ulFlags & GLF_INITONNEXTWINDOW)
 	{
 		gl_ulFlags &= ~GLF_INITONNEXTWINDOW;
 		pvp->CloseCanvas();
 		pvp->OpenCanvas();
-		if( !mtlInit( (SDL_Window*)pvp->vp_hWnd, PLT_GetDrawableScale())) {
-			CPrintF( TRANS("Error starting Metal on the window\n"));
+		if( !_pgpu->Init( (SDL_Window*)pvp->vp_hWnd, PLT_GetDrawableScale())) {
+			CPrintF( TRANS("Error starting %s on the window\n"), _pgpu->strAPI);
 			return FALSE;
 		}
 		gl_pvpActive = pvp;
-		InitContext_MTL();
+		InitContext_GPU();
 		pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
 		return TRUE;
 	}
@@ -228,7 +237,7 @@ BOOL CGfxLibrary::SetCurrentViewport_MTL( CViewPort *pvp)
 
 
 // end of a frame
-void CGfxLibrary::SwapBuffers_MTL( CViewPort *pvp)
+void CGfxLibrary::SwapBuffers_GPU( CViewPort *pvp)
 {
 	extern INDEX ogl_iFinish;
 	extern INDEX ogl_bHardFinish;
@@ -236,12 +245,12 @@ void CGfxLibrary::SwapBuffers_MTL( CViewPort *pvp)
 	// vertical sync (the swap interval is a wait or not)
 	if( gl_iSwapInterval!=gap_iSwapInterval) {
 		gl_iSwapInterval = gap_iSwapInterval;
-		mtlSetVSync( gl_iSwapInterval>0);
+		_pgpu->SetVSync( gl_iSwapInterval>0);
 	}
-	mtlPresent();
+	_pgpu->Present();
 	// the next frame at the window's density (Retina, fullscreen or not)
-	mtlSetDrawableScale( PLT_GetDrawableScale());
+	_pgpu->SetDrawableScale( PLT_GetDrawableScale());
 	if( ogl_iFinish==3) gfxFinish(ogl_bHardFinish);
 }
 
-#endif // SE1_METAL
+#endif // SE1_GPUDEVICE
