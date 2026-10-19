@@ -422,6 +422,11 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 
 			if (questProto->m_startType == QSTART_NPC  && questProto->m_startData == npc->m_idNum)
 			{
+				if (npc->m_nQuestCount >= QUEST_MAX_NPC)
+				{
+					GAMELOG << init("SYS_ERR") << "NPC QUEST OVERFLOW" << delim << npc->m_idNum << delim << questProto->m_index << end;
+					continue;
+				}
 				npc->m_quest[npc->m_nQuestCount] = questProto->m_index;
 				npc->m_nQuestCount++;
 			}

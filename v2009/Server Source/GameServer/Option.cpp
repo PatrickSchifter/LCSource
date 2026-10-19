@@ -77,7 +77,8 @@ bool COptionProtoList::Load()
 		dbOption.GetRec("a_prob",			optionProb);
 
 		j = 0;
-		while (*pLevel && *pProb)
+		// 2016 rows carry up to 36 levels; the arrays hold OPTION_MAX_LEVEL
+		while (*pLevel && *pProb && j < OPTION_MAX_LEVEL)
 		{
 			pLevel = AnyOneArg(pLevel, buf);
 			m_proto[i].m_levelValue[j] = atoi(buf);

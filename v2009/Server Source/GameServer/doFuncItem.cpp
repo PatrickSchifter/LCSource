@@ -2191,7 +2191,7 @@ void do_ItemWear(CPC* ch, CNetMsg& msg)
 		col1 = -1;
 	}
 	
-	if (wear_pos < 0 || wear_pos > MAX_WEARING)
+	if (wear_pos < 0 || wear_pos >= MAX_WEARING)
 	{
 		SysMsg(rmsg, MSG_SYS_CANNOT_WEAR);
 		SEND_Q(rmsg, ch->m_desc);

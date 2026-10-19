@@ -351,7 +351,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg& msg )
 		return;
 	}
 
-	if ( wear_pos < 0 || wear_pos > APET_WEARPOINT )
+	if ( wear_pos < 0 || wear_pos >= APET_WEARPOINT )
 	{
 		SysMsg(rmsg, MSG_SYS_CANNOT_WEAR);
 		SEND_Q(rmsg, ch->m_desc);
