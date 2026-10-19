@@ -9,9 +9,7 @@
 #include "resource.h"
 #include "CmdLine.h"
 #include "Engine/GameState.h"
-#include <Engine/Network/Web.h>
 #include <Engine/Platform/Platform.h>
-
 
 extern PIX _pixDesktopWidth;
 extern PIX _pixDesktopHeight;
@@ -22,11 +20,7 @@ extern PIX _pixDesktopHeight;
 
 extern ENGINE_API BOOL	_bWindowChanging;    // ignores window messages while this is set	// yjpark
 extern ENGINE_API HWND	_hwndMain;
-extern ENGINE_API HWND	_hDlgWeb;
-extern ENGINE_API cWeb  g_web;
-// kalydo 
-extern HWND g_parenthWnd;
-extern ENGINE_API INDEX sam_bFullScreenActive;
+
 static char achWindowTitle[256]; // current window title
 
 #ifndef LC_PLATFORM_SDL
@@ -34,22 +28,12 @@ static HBITMAP _hbmSplash = NULL;
 static BITMAP  _bmSplash;
 #endif
 
-
 // for window reposition function
 static PIX _pixLastSizeI, _pixLastSizeJ;
 
 BOOL _bIMEProc = false; // 이기환 수정 11.12
 
-//	김영환:
-bool	_bWinSize = false;
-
 #ifndef LC_PLATFORM_SDL
-
-static void QuitGame(void)
-{
-	_pGameState->Running()		= FALSE;
-	_pGameState->QuitScreen()	= FALSE;
-}
 
 // window procedure active while window changes are occuring
 long FAR PASCAL WindowProc_WindowChanging( HWND hWnd, UINT message, 
@@ -106,12 +90,7 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 			    WPARAM wParam, LPARAM lParam )
 {
 	switch( message ) {
-#if 1
-	// forget erase bacground messages
-	//if (Msg==WM_ERASEBKGND) return TRUE;
-	case WM_ERASEBKGND:
-		return TRUE;
-#endif
+
 	case WM_POWERBROADCAST:
 		{
 //			delete _pTimer;
@@ -125,45 +104,29 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 			return true;
 		} break;
 	// system commands
-	case WM_SYSCOMMAND: 
-		{
-			switch( wParam & ~0x0F) 
-			{
-				// window resizing messages
-				case SC_MINIMIZE:
-				case SC_RESTORE:
-				case SC_MAXIMIZE:
-				  if (g_web.IsWebHandle())
-				  {
-					  HWND tmpDlg = g_web.GetWebHandle();
-					  if (g_web.CloseWebPage(tmpDlg) == TRUE)
-					  {
-						ShowWindow(tmpDlg, SW_HIDE);
-					  }
-					  UpdateWindow(tmpDlg);
-				  }
-					// do not allow automatic resizing
-					break;
-					// prevent screen saver and monitor power down
-				case SC_SCREENSAVE:
-				case SC_MONITORPOWER:
-					break;
-			}
-		} break;
+	case WM_SYSCOMMAND: {
+		switch( wParam & ~0x0F) {
+		// window resizing messages
+		case SC_MINIMIZE:
+		case SC_RESTORE:
+		case SC_MAXIMIZE:
+			// relay to application
+		  PostMessage(NULL, message, wParam & ~0x0F, lParam);
+			// do not allow automatic resizing
+			return 0;
+			break;
+		// prevent screen saver and monitor power down
+		case SC_SCREENSAVE:
+		case SC_MONITORPOWER:
+			return 0;
+		}
+											} break;
 	// when close box is clicked
 	case WM_CLOSE:
 		// relay to application
-		QuitGame();
-		break;
-	case WM_MOVE:
-		{
-			if (g_web.GetWebHandle())
-			{
-				g_web.UpdatePos();
-				SetFocus(g_web.GetWebHandle());
-			}
-		}
-		break;
+		PostMessage(NULL, message, wParam, lParam);
+		// do not pass to default wndproc
+		return 0;
 
 	// some standard focus loose/gain messages
 	case WM_LBUTTONUP:
@@ -174,84 +137,18 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 	case WM_SETFOCUS:
 	case WM_KILLFOCUS:
 	case WM_ACTIVATEAPP:
-	//case WM_SETCURSOR:
+	case WM_SETCURSOR:
 	case WM_MOUSEMOVE:
 	case WM_INPUTLANGCHANGE:
 	case WM_INPUTLANGCHANGEREQUEST:
-		break;
-	case WM_EXITSIZEMOVE:
-		{
-			//	김영환 : 윈도우 창 크기 변경이 발생한 경우
-			if((sam_bFullScreenActive != 1)&&(_bWinSize))
-			{
-				//	윈도우 모드에서 크기 변경이 발생한 경우에만,
-				_bWinSize = false;
-				//Set_Window_Size();
-			}
-			break;
-		}
-	case WM_SIZE:
-		{
-			//	김영환 : 윈도우 창 크기 변경이 발생한 경우 변수 설정.
-			_bWinSize = true;
-			break;
-		}
-	case WM_GETMINMAXINFO:
-		{
-			(reinterpret_cast<MINMAXINFO*>(lParam))->ptMaxTrackSize.x = 2200;
-			(reinterpret_cast<MINMAXINFO*>(lParam))->ptMaxTrackSize.y = 1500;
-		}
+		// relay to application
+		PostMessage(NULL, message, wParam, lParam);
+		// pass to default wndproc
 		break;
 	}
 
 	// if we get to here, we pass the message to default procedure
 	return _bIMEProc?0:DefWindowProc(hWnd, message, wParam, lParam);  // 이기환 수정 11.12
-}
-
-
-BOOL CALLBACK WebDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST)
-		return TRUE;
-
-	switch(uMsg)
-	{
-	case WM_PARENTNOTIFY:
-		{
-			WORD loMessage = LOWORD(wParam);
-
-			if (loMessage == WM_DESTROY)
-			{
-				if (g_web.IsWebHandle())
-				{
-					ShowWindow(hDlg, SW_HIDE);
-					UpdateWindow(hDlg);
-				}
-			}
-		}
-		break;
-	case WM_SHOWWINDOW:
-		{
-			if (g_web.IsWebHandle())
-			{
-				g_web.CloseWebPage(hDlg);
-			}
-			else
-			{
-				g_web.OpenWebPage(hDlg);
-			}
-		}
-		break;
-	case WM_DESTROY:
-		{
-			g_web.CloseWebPage(hDlg);
-		}
-		break;
-	default:
-		return FALSE;
-	}
-
-	return TRUE;
 }
 
 // main window procedure
@@ -262,6 +159,8 @@ long FAR PASCAL WindowProc( HWND hWnd, UINT message,
 		message = message; 
 		return 1;
 	}*/
+
+	// dispatch to proper window procedure
 	if(_bWindowChanging) {
 		return WindowProc_WindowChanging(hWnd, message, wParam, lParam);
 	} else {
@@ -281,7 +180,7 @@ void MainWindow_Init(void)
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = _hInstanceMain;
-	wc.hIcon = LoadIcon( _hInstanceMain, (LPCTSTR)IDR_ICON_BLUE );
+	wc.hIcon = LoadIcon( _hInstanceMain, (LPCTSTR)IDR_MAINFRAME );
 	wc.hCursor = NULL;
 	wc.hbrBackground = NULL;
 	wc.lpszMenuName = APPLICATION_NAME;
@@ -294,7 +193,6 @@ void MainWindow_Init(void)
 	ASSERT(_hbmSplash!=NULL);
 	GetObject(_hbmSplash, sizeof(BITMAP), (LPSTR) &_bmSplash); 
 	// here was loading and setting of no-windows-mouse-cursor
-
 }
 
 
@@ -305,224 +203,98 @@ void MainWindow_End(void)
 
 
 // close the main application window
-void CloseMainWindow(bool p_Exit)
+void CloseMainWindow(void)
 {
-	if (_hDlgWeb!=NULL)
-	{
-		g_web.CloseWebPage(_hDlgWeb);
-		DestroyWindow(_hDlgWeb);
-		g_web.SetWebHandle(NULL);
-	}
-
 	// if window exists
-	//	김영환 : 진짜 종료인경우만.
-	if(p_Exit)
-	{
-		if( _hwndMain!=NULL) {
-			// destroy it
-			DestroyWindow(_hwndMain);
-			_hwndMain = NULL;
-		}
+	if( _hwndMain!=NULL) {
+		// destroy it
+		DestroyWindow(_hwndMain);
+		_hwndMain = NULL;
 	}
 }
 
 
-void ResetMainWindowNormal(bool p_Center)
+void ResetMainWindowNormal(void)
 {
-	// 김영환 이거 제거. 깜박거림
-	// ShowWindow( _hwndMain, SW_HIDE);
-
-	if (sam_bFullScreenActive)
-	{
-		HDC hDC = GetDC( GetDesktopWindow() );
-		int iDesktopBitsPixel = GetDeviceCaps( hDC, BITSPIXEL );
-		int iDesktopWidth = GetDeviceCaps( hDC, HORZRES );
-		int iDesktopHeight = GetDeviceCaps( hDC, VERTRES );
-		ReleaseDC( GetDesktopWindow(), hDC );
-
-		DEVMODE dm;
-		memset( &dm, 0, sizeof( dm ) );
-		dm.dmSize = sizeof( dm );
-		dm.dmPelsWidth  = _pixLastSizeI;
-		dm.dmPelsHeight = _pixLastSizeJ;
-		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
-		ChangeDisplaySettings( &dm, CDS_FULLSCREEN );
-	}
-
+	ShowWindow( _hwndMain, SW_HIDE);
+	// add edges and title bar to window size so client area would have size that we requested
+	RECT rWindow, rClient;
+	GetClientRect( _hwndMain, &rClient);
+	GetWindowRect( _hwndMain, &rWindow);
+	const PIX pixWidth  = _pixLastSizeI + (rWindow.right-rWindow.left) - (rClient.right-rClient.left);
+	const PIX pixHeight = _pixLastSizeJ + (rWindow.bottom-rWindow.top) - (rClient.bottom-rClient.top);
 	int pixPosX,pixPosY;
-	PIX pixWidth, pixHeight;
-
-	if( sam_bFullScreenActive )
-	{
-		pixPosX = 0;
-		pixPosY = 0;
-
-		pixWidth  = _pixLastSizeI;
-		pixHeight = _pixLastSizeJ;
+	if (cmd_iWindowLeft > 0) {    
+		pixPosX = cmd_iWindowLeft>(::GetSystemMetrics(SM_CXSCREEN))?(::GetSystemMetrics(SM_CXSCREEN)):cmd_iWindowLeft;
+		cmd_iWindowLeft = -1;
+	} else {
+		pixPosX   = (::GetSystemMetrics(SM_CXSCREEN) - pixWidth ) /2;
 	}
-	else
-	{
-		// add edges and title bar to window size so client area would have size that we requested
-		RECT rWindow, rClient;
-		GetClientRect( _hwndMain, &rClient);
-		GetWindowRect( _hwndMain, &rWindow);
-		pixWidth  = _pixLastSizeI + (rWindow.right-rWindow.left) - (rClient.right-rClient.left);
-		pixHeight = _pixLastSizeJ + (rWindow.bottom-rWindow.top) - (rClient.bottom-rClient.top);
-		
-		if (cmd_iWindowLeft > 0) {    
-			pixPosX = cmd_iWindowLeft>(::GetSystemMetrics(SM_CXSCREEN))?(::GetSystemMetrics(SM_CXSCREEN)):cmd_iWindowLeft;
-			cmd_iWindowLeft = -1;
-		} else {
-			pixPosX   = (::GetSystemMetrics(SM_CXSCREEN) - pixWidth ) /2;
-		}
-		if (cmd_iWindowTop > 0) {
-			pixPosY = cmd_iWindowTop>(::GetSystemMetrics(SM_CYSCREEN))?(::GetSystemMetrics(SM_CYSCREEN)):cmd_iWindowTop;
-			cmd_iWindowTop = -1;
-		} else {
-			pixPosY   = (::GetSystemMetrics(SM_CYSCREEN) - pixHeight ) /2;
-		}
+	if (cmd_iWindowTop > 0) {
+		pixPosY = cmd_iWindowTop>(::GetSystemMetrics(SM_CYSCREEN))?(::GetSystemMetrics(SM_CYSCREEN)):cmd_iWindowTop;
+		cmd_iWindowTop = -1;
+	} else {
+		pixPosY   = (::GetSystemMetrics(SM_CYSCREEN) - pixHeight ) /2;
 	}
-
+	// set new window size and show it
 	SetWindowPos( _hwndMain, NULL, pixPosX,pixPosY, pixWidth,pixHeight, SWP_NOZORDER);
 	ShowWindow(   _hwndMain, SW_SHOW);
 }
 
 
 // open the main application window for windowed mode
-void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ,bool p_Center)
+void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ)
 {
-	
-	//	김영환 : 윈도 다시생성 안함
-	if(_hwndMain == NULL)
-	{
-		ASSERT(_hwndMain==NULL);
+	ASSERT(_hwndMain==NULL);
 
-		if (sam_bFullScreenActive)
-		{
-			// create a window, invisible initially
-			_hwndMain = CreateWindowEx(
-			  WS_EX_TOPMOST | WS_EX_APPWINDOW,
-			  APPLICATION_NAME,
-			  "",   // title
-			  WS_POPUP,//WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
-			  10,10,
-			  100,100,  // window size
-			  NULL,
-			  NULL,
-			  _hInstanceMain,
-			  NULL);
-		}
-		else
-		{
-			// create a window, invisible initially
-			_hwndMain = CreateWindowEx(
-			  WS_EX_APPWINDOW,
-			  APPLICATION_NAME,
-			  "",   // title
-			  // 김영환
-			  WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
-			  //WS_OVERLAPPEDWINDOW,//WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
-			  10,10,
-			  100,100,  // window size
-			  g_parenthWnd,
-			  NULL,
-			  _hInstanceMain,
-			  NULL);
-		}
+	// create a window, invisible initially
+	_hwndMain = CreateWindowEx(
+	  WS_EX_APPWINDOW,
+	  APPLICATION_NAME,
+	  "",   // title
+		WS_OVERLAPPED|WS_CAPTION|WS_MINIMIZEBOX|WS_SYSMENU,
+	  10,10,
+	  100,100,  // window size
+	  NULL,
+	  NULL,
+	  _hInstanceMain,
+	  NULL);
+	// didn't make it?
+	if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
+	SE_UpdateWindowHandle( _hwndMain);
 
-		// didn't make it?
-		if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
-	}
-	else
-	{
-		//	김영환 : 기존 윈도의 상태값 변경
-		if (sam_bFullScreenActive)
-		{
-			//	풀모드
-			SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_TOPMOST | WS_EX_APPWINDOW);
-			SetWindowLong(_hwndMain,GWL_STYLE,WS_POPUP);
-		}
-		else
-		{
-			//	창모드
-			SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_APPWINDOW);
-			SetWindowLong(_hwndMain,GWL_STYLE, (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX ));
-			//SetWindowLong(_hwndMain,GWL_STYLE,WS_OVERLAPPEDWINDOW);
-		}
-	}
-
-	_hDlgWeb = CreateDialog(_hInstanceMain, MAKEINTRESOURCE(IDD_WEBPAGE), _hwndMain, WebDialogProc);
-
-	if( _hDlgWeb==NULL) FatalError(TRANS("Cannot open Web Dialog!"));
-
-	g_web.SetWebDlgID(IDD_WEBPAGE);
-	g_web.SetWebDlgCallBack(WebDialogProc);
-
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
-
-	//	김영환 : 타이틀이름 변경 하지말자 번역이슈만 발생. 
-	/*
-#if defined G_RUSSIA
-	sprintf( achWindowTitle, TRANS("행藎滄魏") );
-#else
 	sprintf( achWindowTitle, TRANS("Loading...") );
-#endif
+	
 	SetWindowText( _hwndMain, achWindowTitle);
-	*/
 	_pixLastSizeI = pixSizeI;
 	_pixLastSizeJ = pixSizeJ;
-	ResetMainWindowNormal(p_Center);
+	ResetMainWindowNormal();
 }
 
 
 // open the main application window for fullscreen mode
 void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ)
 {
-	//	김영환 : 윈도 다시생성 안함
-	if(_hwndMain == NULL)
-	{
-		ASSERT( _hwndMain==NULL);
-		// create a window, invisible initially
-		_hwndMain = CreateWindowEx(
-			WS_EX_TOPMOST | WS_EX_APPWINDOW,
-			APPLICATION_NAME,
-			"",   // title
-			WS_POPUP,
-			0,0,
-			pixSizeI, pixSizeJ,  // window size
-			g_parenthWnd,
-			NULL,
-			_hInstanceMain,
-			NULL);
-		// didn't make it?
-		if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
-	}
-	else
-	{
-		//	김영환 : 기존 윈도의 상태값 변경 : 풀 화면.
-		SetWindowLong(_hwndMain,GWL_EXSTYLE,WS_EX_TOPMOST | WS_EX_APPWINDOW);
-		SetWindowLong(_hwndMain,GWL_STYLE,WS_POPUP);
-	}
+	ASSERT( _hwndMain==NULL);
+	// create a window, invisible initially
+	_hwndMain = CreateWindowEx(
+		WS_EX_TOPMOST | WS_EX_APPWINDOW,
+		APPLICATION_NAME,
+		"",   // title
+		WS_POPUP,
+		0,0,
+		pixSizeI, pixSizeJ,  // window size
+		NULL,
+		NULL,
+		_hInstanceMain,
+		NULL);
+	// didn't make it?
+	if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
+	SE_UpdateWindowHandle( _hwndMain);
 
-	_hDlgWeb = CreateDialog(_hInstanceMain, MAKEINTRESOURCE(IDD_WEBPAGE), _hwndMain, WebDialogProc);
-
-	if( _hDlgWeb==NULL) FatalError(TRANS("Cannot open Web Dialog!"));
-
-	g_web.SetWebDlgID(IDD_WEBPAGE);
-	g_web.SetWebDlgCallBack(WebDialogProc);
-
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
-	
-	//	김영환 : 타이틀이름 변경 하지말자 번역이슈만 발생. 
-	/*
-#if defined G_RUSSIA
-	sprintf( achWindowTitle, TRANS("행藎滄魏") );
-#else
 	sprintf( achWindowTitle, TRANS("Loading...") );
-#endif
 
 	SetWindowText( _hwndMain, achWindowTitle);
-	*/
 	ShowWindow(    _hwndMain, SW_SHOWNORMAL);
 }
 
@@ -530,46 +302,26 @@ void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ)
 // open the main application window invisible
 void OpenMainWindowInvisible(void)
 {
-	//	김영환 : 초기 생성 부분.
-	if(_hwndMain == NULL)
-	{
-		ASSERT(_hwndMain==NULL);
-		// create a window, invisible initially
-		_hwndMain = CreateWindowEx(
-		  WS_EX_APPWINDOW,
-		  APPLICATION_NAME,
-		  // unique한 타이틀 네임이 있어야지만 잡는다. [3/28/2012 rumist]
-		  "BarunsonGames.Inc",   // title
-		  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX ),
-		  //WS_OVERLAPPEDWINDOW,//	WS_POPUP,
-		  0,0,
-		  10, 10,  // window size
-		  NULL,
-		  NULL,
-		  _hInstanceMain,
-		  NULL);
-		// didn't make it?
-		if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
-	}
+	ASSERT(_hwndMain==NULL);
+	// create a window, invisible initially
+	_hwndMain = CreateWindowEx(
+	  WS_EX_APPWINDOW,
+	  APPLICATION_NAME,
+	  "",   // title
+		WS_POPUP,
+	  0,0,
+	  10, 10,  // window size
+	  NULL,
+	  NULL,
+	  _hInstanceMain,
+	  NULL);
+	// didn't make it?
+	if( _hwndMain==NULL) FatalError(TRANS("Cannot open main window!"));
+	SE_UpdateWindowHandle( _hwndMain);
 
-	_hDlgWeb = CreateDialog(_hInstanceMain, MAKEINTRESOURCE(IDD_WEBPAGE), _hwndMain, WebDialogProc);
-
-	if( _hDlgWeb==NULL) FatalError(TRANS("Cannot open Web Dialog!"));
-
-	g_web.SetWebDlgID(IDD_WEBPAGE);
-	g_web.SetWebDlgCallBack(WebDialogProc);
-
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
-
-	//	김영환 : 타이틀이름 변경 하지말자 번역이슈만 발생. 
-	/*
-#if defined
-	sprintf( achWindowTitle, TRANS("행藎滄魏?") );
-#else
 	sprintf( achWindowTitle, TRANS("Loading...") );
-#endif
+
 	SetWindowText( _hwndMain, achWindowTitle);
-	*/
 }
 
 #else  // LC_PLATFORM_SDL
@@ -584,16 +336,15 @@ void MainWindow_Init(void)
 
 void MainWindow_End(void)
 {
-}
-
-// close the main application window
-void CloseMainWindow(bool p_Exit)
-{
-	// the window is kept between display modes, as in the Windows build
-	if(p_Exit && _hwndMain!=NULL) {
+	if(_hwndMain!=NULL) {
 		PLT_DestroyMainWindow();
 		_hwndMain = NULL;
 	}
+}
+
+// close the main application window: kept between display modes (MainWindow_End destroys it)
+void CloseMainWindow(void)
+{
 }
 
 static void CreateMainWindowIfNeeded(void)
@@ -601,26 +352,24 @@ static void CreateMainWindowIfNeeded(void)
 	if(_hwndMain==NULL) {
 		_hwndMain = PLT_CreateMainWindow(APPLICATION_NAME);
 	}
-	_hDlgWeb = NULL;
-	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
+	SE_UpdateWindowHandle( _hwndMain);
 }
 
-void ResetMainWindowNormal(bool p_Center)
+void ResetMainWindowNormal(void)
 {
-	(void)p_Center;
 	// a position given on the command line is used once
-	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, sam_bFullScreenActive, cmd_iWindowLeft, cmd_iWindowTop);
+	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, FALSE, cmd_iWindowLeft, cmd_iWindowTop);
 	cmd_iWindowLeft = -1;
 	cmd_iWindowTop = -1;
 }
 
 // open the main application window for windowed mode
-void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ,bool p_Center)
+void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ)
 {
 	CreateMainWindowIfNeeded();
 	_pixLastSizeI = pixSizeI;
 	_pixLastSizeJ = pixSizeJ;
-	ResetMainWindowNormal(p_Center);
+	ResetMainWindowNormal();
 }
 
 // open the main application window for fullscreen mode

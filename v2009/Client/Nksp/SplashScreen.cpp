@@ -66,7 +66,7 @@ void ShowSplashScreen(HINSTANCE hInstance)
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = hInstance;
-  wc.hIcon = LoadIcon( hInstance, (LPCTSTR)IDR_ICON_BLUE );
+  wc.hIcon = LoadIcon( hInstance, (LPCTSTR)IDR_MAINFRAME );
   wc.hCursor = LoadCursor( NULL, IDC_ARROW );
   wc.hbrBackground = NULL;
   wc.lpszMenuName = NAME;
