@@ -27,8 +27,36 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. **Metal** (D2.2), ver "C8 — Metal": M1–M4 conferidas em jogo; M5 (2026-10-19, `3cfa01a`): o Metal é o padrão
-   no Mac, `LC_GFX_API=opengl` volta ao OpenGL. Falta conferir em jogo com o padrão novo.
+2. **Metal** (D2.2), ver "C8 — Metal": M1–M5 feitas; o Metal é o padrão no Mac (`3cfa01a`),
+   `LC_GFX_API=opengl` volta ao OpenGL. Juno visto no padrão novo depois da V0 (abaixo).
+3. **Vulkan** (D2.3), ver "C8 — Vulkan": V0 feita (`d9459a2`, interface comum `GpuDevice`). Próximo: V1,
+   que precisa do MoltenVK. Decidido (2026-10-19): Homebrew (`molten-vk vulkan-loader vulkan-headers
+   vulkan-validationlayers glslang vulkan-tools`) e programas ARB → GLSL → SPIR-V pelo glslang em
+   tempo de execução. O `brew install` falhou sem rede (ghcr.io inacessível); refazer.
+
+## C8 — Vulkan (2026-10-19)
+
+- Plano: V0 interface comum (feita); V1 dispositivo Vulkan (MoltenVK) até a tela de login; V2 Juno
+  sem programas (função fixa emulada em GLSL); V3 programas ARB → GLSL → SPIR-V; V4 render targets e
+  leituras da tela; V5 escolha por `LC_GFX_API=vulkan`.
+- V0 (`d9459a2`): o que era o backend Metal virou o de toda API sem função fixa. `GpuDevice.h` é uma
+  tabela de funções do dispositivo (como os `gfx*` do motor) com tipos C++ simples: estado, streams,
+  texturas, render targets, leituras, programas. `MetalDevice.mm` preenche a sua (`mtlDevice()`); as
+  structs internas derivam de `GpuTexture`/`GpuBuffer`/`GpuProgram` vazias (sem ODR entre
+  dispositivos). Ficam no dispositivo a função fixa emulada (MSL em `MetalDevice.mm`) e a tradução
+  do ARB (`TranslateProgram` = `TranslateARBToMSL`); os layouts das constantes (`GpuVPConst`,
+  `GpuPPConst`, `GpuFFVertexConst`, `GpuFFFragmentConst`) são comuns e o GLSL tem de seguir os mesmos.
+- `Gfx_wrapper_Gpu.cpp` (era `Gfx_wrapper_Metal.cpp`: `gpu_*`, `GPU_*`, `*_GPU`) chama `_pgpu->...`;
+  `Gfx_Gpu.cpp` (era `Gfx_Metal.cpp`) tem `InitDriver_GPU(eAPI)`, que escolhe o `_pgpu` da API.
+  Nos pontos do motor, `GFX_IsGpuAPI(eAPI)` (`GfxLibrary.h`, hoje só `GAT_MTL`) sob `SE1_GPUDEVICE`
+  (definido no CMake do Mac ao lado de `SE1_METAL`). Continuam só do Metal: `HasAPI`, a lista de
+  adaptadores (`Adapter.cpp`), a escolha e a volta ao OpenGL no `Nksp.cpp`.
+- Para a V1: `GAT_VK` = 3 em `GfxAPIType`, `gl_gaAPI[3]`, entrar em `GFX_IsGpuAPI`, `HasAPI` e
+  `InitDriver_GPU`; `VulkanDevice.cpp` preenchendo um `GpuDevice` (sem headers do motor, como o do
+  Metal); superfície pelo `SDL_Vulkan_CreateSurface`. Comentários "// Metal" em `Gfx_wrapper.cpp`
+  passam a valer para os dois.
+- Visto: compila sem erro; jogo no Metal pelo caminho novo, Juno com terreno, skinning, sombra
+  projetada, UI e minimapa, nenhum programa falhando no `Nksp.log`.
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
