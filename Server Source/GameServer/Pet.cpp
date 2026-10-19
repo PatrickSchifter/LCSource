@@ -203,7 +203,7 @@ bool CPet::AddExp()
 		return false;
 
 	// 접속 이후 처음이거나 매 3초마다
-	if (m_pulseExpUp == 0 || m_pulseExpUp + PULSE_REAL_SEC * 30 < gserver->m_pulse)
+	if (m_pulseExpUp == 0 || m_pulseExpUp + PULSE_REAL_SEC * 3 < gserver->m_pulse)
 	{
 		m_pulseExpUp = gserver->m_pulse;
 
@@ -215,16 +215,16 @@ bool CPet::AddExp()
 					&& (gserver->m_pulse - m_owner->m_pulseLastAttackSkill) < PULSE_ATTACKMODE_DELAY
 					&& m_owner->m_bNotMiss)
 			{
-				addexp = 1000;
+				addexp = 1;
 #ifdef DOUBLE_PET_EXP
 				if( gserver->m_bDoublePetExpEvent == true )
-					addexp = addexp * gserver->m_PetExpPercent / 10000;
+					addexp = addexp * gserver->m_PetExpPercent / 100;
 #endif // DOUBLE_PET_EXP
 
 				if( m_owner->m_assist.m_avAddition.hcCashPetExpUp_2358 == true )
-					m_exp += 200 * addexp;
+					m_exp += 2 * addexp;
 				else if( m_owner->m_assist.m_avAddition.hcCashPetExpUp_2359 == true )
-					m_exp += 300 * addexp;
+					m_exp += 3 * addexp;
 				else
 					m_exp += addexp;
 

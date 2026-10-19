@@ -768,13 +768,13 @@ bool CAPet::AddExpSP( LONGLONG exp, int sp, bool bDirect )
 
 #ifdef DOUBLE_PET_EXP
 		if( gserver->m_bDoublePetExpEvent == true )
-			add_exp = add_exp * gserver->m_PetExpPercent / 10000000;
+			add_exp = add_exp * gserver->m_PetExpPercent / 100;
 #endif // DOUBLE_PET_EXP
 	}
 
-	if(add_exp > exp * (1500000 / 1000))	// 1500%이상 못먹게 함.
+	if(add_exp > exp * (1500 / 100))	// 1500%이상 못먹게 함.
 	{
-		add_exp = exp * (1500000 / 1000);
+		add_exp = exp * (1500 / 100);
 	}
 
 	m_exp += add_exp;
@@ -1100,7 +1100,7 @@ void CAPet::AddAccExp( LONGLONG _exp , LONGLONG _charLevelupExp )
 {
 	if( m_pProto->IsFlag(APET_FLAG_EXP) && GetCooltime() == 0 )
 	{
-		m_llAccExp += _exp * (LONGLONG)GetAccRate( m_level ) / 1000;
+		m_llAccExp += _exp * (LONGLONG)GetAccRate( m_level ) / 100;
 		if( m_llAccExp > GetMaxAccExp( m_level, _charLevelupExp ) )
 		{
 			m_llAccExp =  GetMaxAccExp( m_level, _charLevelupExp );
@@ -1128,7 +1128,7 @@ bool CAPet::UseAccExp( CAPet* _apet, bool bDirect )
 		return false;
 
 	// 팻 레벨에 따른 경험치 적용 2012-02-22
-	LONGLONG llAddExp = ( _apet->GetNeedExp() * ( 50 - (_apet->m_level * 1818 ) / 10000 ) ) / 1000;
+	LONGLONG llAddExp = ( _apet->GetNeedExp() * ( 50 - (_apet->m_level * 1818 ) / 10000 ) ) / 100;
 
 	// 적용 가능한 경험치와 축적된 경험치를 비교
 	if( llAddExp > m_llAccExp )
