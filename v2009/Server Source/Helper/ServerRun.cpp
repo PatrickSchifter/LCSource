@@ -44,14 +44,14 @@ void CServer::Run()
 	
 	while(1)
 	{
-		rankInitUpdateTime.tm_mday = rankInitUpdateTime.tm_mday++;
+		rankInitUpdateTime.tm_mday++;
 		mktime( &rankInitUpdateTime );
 
-		rewardInitUpdateTime.tm_mday = rewardInitUpdateTime.tm_mday++;
+		rewardInitUpdateTime.tm_mday++;
 		mktime( &rewardInitUpdateTime );
 		
 
-		rewardEndUpdateTime.tm_mday = rewardEndUpdateTime.tm_mday++;
+		rewardEndUpdateTime.tm_mday++;
 		mktime( &rewardEndUpdateTime );
 
 		if(rankInitUpdateTime.tm_wday == 2) break;
