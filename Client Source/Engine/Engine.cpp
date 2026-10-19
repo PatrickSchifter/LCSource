@@ -793,6 +793,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	if (_pConsole != NULL)
 	{
 		_pConsole->Initialize(fnmLog, 80, 512);
+		// (the original build never creates the file: LC_CONSOLE_LOG asks for it)
+		_pConsole->CreateLogFile(fnmLog);
 	}
 	
 
