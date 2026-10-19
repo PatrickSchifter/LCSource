@@ -66,9 +66,12 @@ BOOL IsWindow(HWND hWnd)
   return hWnd != NULL && SDL_GetWindowID(SDLWindow(hWnd)) != 0;
 }
 
+// also when nothing of the window can be seen (another Space, under a fullscreen app): the game
+// does not draw then and runs at sam_iMaxFPSInactive, as when minimized (the window stays in
+// place when it loses focus outside Windows, PlatformSDL.cpp)
 BOOL IsIconic(HWND hWnd)
 {
-  return hWnd != NULL && (SDL_GetWindowFlags(SDLWindow(hWnd)) & SDL_WINDOW_MINIMIZED) != 0;
+  return hWnd != NULL && (SDL_GetWindowFlags(SDLWindow(hWnd)) & (SDL_WINDOW_MINIMIZED|SDL_WINDOW_OCCLUDED)) != 0;
 }
 
 BOOL ShowWindow(HWND hWnd, int nCmdShow)

@@ -152,10 +152,12 @@ static SDL_FunctionPointer pwglGetProcAddress(const char *strName)
   return SDL_GL_GetProcAddress(strName);
 }
 
-// swap interval of the current context (WGL_EXT_swap_control on Windows)
+// swap interval of the current context (WGL_EXT_swap_control on Windows). At least 1: the game
+// has no frame limit, and without the display's sync it draws as fast as it can (170 frames a
+// second on a 60 Hz display) and heats the machine; gap_iSwapInterval is 0 by default.
 static GLboolean SwapInterval_SDL(GLint iInterval)
 {
-  return SDL_GL_SetSwapInterval(iInterval) ? GL_TRUE : GL_FALSE;
+  return SDL_GL_SetSwapInterval(Max(iInterval, (GLint)1)) ? GL_TRUE : GL_FALSE;
 }
 
 static GLint GetSwapInterval_SDL(void)
