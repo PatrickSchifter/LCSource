@@ -27,7 +27,7 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 1. Etapa OpenGL concluída (2026-10-19): bloom, reflexo da água, preview da loja, Retina, gama e o
    nome de item com mouse em cima conferidos no Mac. Refração da água não existe no motor (nem no
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
-2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M2 concluída; próximo: M3 (programas D3D em MSL).
+2. Em andamento: **Metal** (D2.2), ver "C8 — Metal". M3 concluída; próximo: M4 (render targets).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 
@@ -56,11 +56,22 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   `Read_t` lança "Cannot upload compressed texture").
 - `DrawPort`: preencher e z-buffer por `mtlClear` (triângulo no retângulo), pontos/linhas/borda e
   o retângulo de 4 cores pelo `MTL_DrawPrimitives`.
-- Ainda não (o motor pula ou faz sem): programas (`GLF_VERTEXPROGRAM` desligado, então skinning
-  na CPU e terreno sem shader), render targets (`CRenderTexture::Init` falha: sem bloom, preview
+- Programas (M3, 2026-10-19, `165fd29`): o assembly D3D vira ARB pelo mesmo `ShaderAsmToARB.cpp` do OpenGL, e
+  o ARB vira MSL em `Graphics/ShaderARBToMSL.cpp` (uma instrução MSL por instrução ARB; o ARB já tem
+  a semântica do D3D escrita). Interface comum com a função fixa emulada (`MSL_PROGRAM_INTERFACE`),
+  então programa de vértice e função fixa de pixel (ou o contrário) se combinam. As constantes
+  (96 de vértice, 16 de pixel: c0..c7 + `ARB_PIXEL_*`) ficam no wrapper e vão a cada draw, com a
+  máscara de streams (`mtlGetStreamMask`) para as entradas sem array. c0..c3 e os billboards usam
+  as matrizes do Metal (`GetViewAndProjection` no `Shader.cpp`). Alpha test depois do programa,
+  como no OpenGL. Clip plane e névoa (`oFog`) ignorados com programa de vértice.
+- Visto (M3): Juno com skinning, terreno e efeitos nos programas, 45 programas sem erro, ~11% de
+  CPU. `LC_DUMP_PROGRAMS=<dir>` grava o assembly de cada programa criado (`<hash>.vs/.ps`); um
+  testador offline (ObjC++: `ShaderAsmToARB.cpp` + `ShaderARBToMSL.cpp` + compilar e ligar no
+  `MTLDevice`; não há compilador `metal` offline só com as Command Line Tools) refaz todos sem login.
+- Ainda não (o motor pula ou faz sem): render targets (`CRenderTexture::Init` falha: sem bloom, preview
   da loja; as sombras projetadas saem cedo em `Render.cpp`), consultas de oclusão, leitura de
   profundidade dos flares (`DepthCheck.cpp`), `GrabScreen` (captura de tela) e a cópia da tela do
-  bloom. O `RenderPatches_View` (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
+  bloom (com programas o `InitBloom` falha no render target e põe `g_iUseBloom` = 0). O `RenderPatches_View` (patches de modelos MDL) chama o OpenGL direto até no D3D; não é usado.
 - Visto: tela de login igual à do OpenGL (2026-10-19).
 - M2 (2026-10-19, `e3aec26`): Juno no Metal sem programas — campo, cidade (brushes), pontes, árvores com
   alpha test, lobos, pet, efeitos de golpe com partículas e números de dano — igual ao OpenGL no

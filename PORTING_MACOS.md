@@ -223,7 +223,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Etapa Metal (D2.2): novo backend `GAT_MTL` ao lado do D3D8 e do OpenGL (`LC_GFX_API=metal`); plano e estado em `HANDOFF.md` ("C8 — Metal")
   - [x] M1: dispositivo, quadros, estado, texturas (RGBA8 e DXT), função fixa emulada em MSL; tela de login (2026-10-19)
   - [x] M2: Juno sem programas (terreno, brushes, modelos, partículas, névoa), conferido contra o OpenGL (2026-10-19)
-  - [ ] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, como o tradutor ARB
+  - [x] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, pelo ARB do tradutor do OpenGL (2026-10-19)
   - [ ] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela
   - [ ] M5: Metal como padrão no Mac
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
@@ -231,7 +231,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
 - [x] Animações (skinning SKA), terreno e efeitos na GPU no OpenGL (2026-10-19): o assembly D3D8 traduzido para programas ARB (`Graphics/ShaderAsmToARB.cpp`); malhas estáticas em VBOs. Detalhes em `HANDOFF.md` ("C8 — shaders na GPU e VBOs")
 - [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo (no OpenGL rodam pelo tradutor ARB, a água com reflexo e o `texbem` inclusive; o bloom também)
-- [ ] Reescrever em MSL (Metal) os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
+- [x] Reescrever em MSL (Metal) os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura
 - [ ] Fontes e UI (`Engine/Interface`), drawports, render-to-texture
 - [x] Suporte a Retina/HiDPI e tela cheia (2026-10-19): resolução em pixels desenhados, cena na densidade cheia com a UI em pontos; detalhes em `HANDOFF.md` ("C8 — Retina no OpenGL")
@@ -299,3 +299,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C2/C8: handles de textura do `gfx*` com largura de ponteiro (`TEXOBJ`), antes do Metal | 40f850b |
 | 2026-10-19 | C8: backend Metal, primeira etapa (tela de login com `LC_GFX_API=metal`) | 2c36d7c |
 | 2026-10-19 | C8: Metal M2, Juno sem programas conferida contra o OpenGL (billboards no Metal) | e3aec26 |
+| 2026-10-19 | C8: Metal M3, programas D3D em MSL (pelo ARB do OpenGL) | 165fd29 |
