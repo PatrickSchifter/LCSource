@@ -2791,17 +2791,17 @@ extern void TR_ExportServerHeightMap_t( CTerrain *ptrTerrain, CTFileName &fnm )
 		for( PIX pixX = 0; pixX < pixHeightMapWidth; pixX++ )
 		{
 			fX = pixX;
-			uwTempHeight = ( TR_GetHeight( ptr, fX, fZ ) + 0.009999f ) * 100.0f;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 1.0f, fZ ) + 0.009999f ) * 100.0f;
+			uwTempHeight = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX, fZ ) + 0.009999f ) * 100.0f);
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 1.0f, fZ ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX, fZ + 1.0f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX, fZ + 1.0f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 1.0f, fZ + 1.0f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 1.0f, fZ + 1.0f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 0.5f, fZ + 0.5f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 0.5f, fZ + 0.5f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
 			uwHeight = ( ( uwTempHeight & 0xFF00 ) >> 8 ) | ( ( uwTempHeight & 0x00FF ) << 8 );

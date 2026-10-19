@@ -793,7 +793,7 @@ void CSoundObject::Write_t(CTStream *pistr, BOOL bNetwork/*=FALSE*/) // throw ch
 		*pistr << so_slLeftFilter;
 		*pistr << so_slRightFilter;
 		*pistr << (UBYTE)(so_fPitchShift*63);
-		*pistr << (UBYTE)(so_fPhaseShift*63);
+		*pistr << (UBYTE)(SLONG)(so_fPhaseShift*63);
 		*pistr << (SLONG)0;
 
 		*pistr << (SLONG)0;
