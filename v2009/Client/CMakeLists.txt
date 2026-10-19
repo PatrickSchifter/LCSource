@@ -346,6 +346,15 @@ if(NOT WIN32 OR LC_PLATFORM_SDL)
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LC_CURSOR_FILES} "${LC_BIN}/Cursors")
 endif()
 
+# Command-line exporter of the GameServer's zone maps (.sat/.sht) from client worlds; on macOS too
+# (v2009: to make the 2009 server's maps from the worlds this client loads).
+if(NOT WIN32)
+  add_executable(ZoneMapExport ZoneMapExport/ZoneMapExport.cpp)
+  target_link_libraries(ZoneMapExport PRIVATE lc_client_common Engine)
+  add_dependencies(ZoneMapExport lc_entities EntitiesMP)
+  set_target_properties(ZoneMapExport PROPERTIES BUILD_RPATH "@executable_path")
+endif()
+
 if(WIN32)
   # Development check: which vertex shaders the D3D8 runtime accepts from the D3DX8 shim.
   add_executable(ShaderCheck Compat/d3dx8/ShaderCheck.cpp)

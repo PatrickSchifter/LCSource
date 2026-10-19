@@ -739,6 +739,9 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	if (!_bDedicatedServer) {
 //안태훈 수정 시작	//(Taiwan Closed beta)(0.2)
 		_pShell->Execute(CTString("decode \"")+fnmPersistentSymbols+"\";");
+		// LC_COUNTRY=<n> overrides the persistent g_iCountry (which picks the data files, Local\<nation>)
+		if (getenv("LC_COUNTRY") != NULL) g_iCountry = atoi(getenv("LC_COUNTRY"));
+		CPrintF("g_iCountry: %d\n", g_iCountry);
 //안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
 	}
 

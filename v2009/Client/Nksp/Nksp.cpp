@@ -40,6 +40,9 @@
 #include <float.h>
 #include <Engine/Platform/Platform.h>
 #include <Engine/Interface/UIOption.h>
+#include <Engine/Interface/UISelectServer.h>
+#include <Engine/Interface/UISelChar.h>
+#include <Engine/Interface/UILogin.h>
 
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
@@ -2070,6 +2073,22 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 			strID.TrimRight(iSpace);
 			CPrintF("LC_AUTO_LOGIN: logging in as '%s'\n", (const char*)strID);
 			_pUIMgr->GetLogin()->AutoLogin(strID, strPW);
+		}
+		// then the first server and the first character (counted in frames of each screen)
+		if( strAutoLogin!=NULL && !bAutoLoginPending) {
+			static UIGameState ugsLast = UGS_NONE;
+			static INDEX ctFramesInState = 0;
+			const UIGameState ugs = _pUIMgr->GetUIGameState();
+			if( ugs!=ugsLast) { ugsLast = ugs; ctFramesInState = 0; }
+			ctFramesInState++;
+			if( ugs==UGS_SELSERVER && ctFramesInState%120==60) {
+				CPrintF("LC_AUTO_LOGIN: connecting to the first server\n");
+				_pUIMgr->GetSelServer()->AutoConnect();
+			} else if( ugs==UGS_SELCHAR && ctFramesInState%120==60) {
+				if( _pGameState->SelectedSlot()<=0) _pGameState->SelectedSlot() = 1;
+				CPrintF("LC_AUTO_LOGIN: starting with slot %d\n", _pGameState->SelectedSlot());
+				_pUIMgr->GetSelChar()->StartGame();
+			}
 		}
 		// minimized or hidden, nothing is drawn and the loop would spin: run it at
 		// sam_iMaxFPSInactive (LimitFrameRate() was never called in this client)

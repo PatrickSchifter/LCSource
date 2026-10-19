@@ -168,6 +168,20 @@ CZoneInfo::CZoneInfo()
 	m_pZoneInfo[29].strZoneWldFile	= CTString("Data\\World\\DirtyMine\\DirtyMine.wld");
 	m_pZoneInfo[30].strZoneWldFile	= CTString("Data\\World\\LosePlace\\LosePlace.wld");
 	m_pZoneInfo[31].strZoneWldFile	= CTString("Data\\World\\EgehaCave_01\\EgehaCave_01.wld");
+	// development: LC_ZONE_WLD="<zone>=<world file>" loads another world for a zone (to match the
+	// world the server's height map was made from)
+	if( getenv("LC_ZONE_WLD") != NULL )
+	{
+		CTString strOverride = getenv("LC_ZONE_WLD");
+		const INDEX iEq = strOverride.FindSubstr("=");
+		const int iZone = atoi(strOverride);
+		if( iEq > 0 && iZone >= 0 && iZone < MAX_ZONE_COUNT )
+		{
+			CTString strWld = strOverride;
+			strWld.TrimLeft(strWld.Length()-iEq-1);
+			m_pZoneInfo[iZone].strZoneWldFile = strWld;
+		}
+	}
 	m_pZoneInfo[0].iExtraCount		= MAX_ZONE0_EXTRA_COUNT;
 	m_pZoneInfo[1].iExtraCount		= MAX_ZONE1_EXTRA_COUNT;
 	m_pZoneInfo[2].iExtraCount		= MAX_ZONE2_EXTRA_COUNT;

@@ -181,6 +181,16 @@ protected:
 	void	SetServerList();
 
 public:
+	// development (LC_AUTO_LOGIN, Nksp.cpp): the first server of the first group
+	void	AutoConnect()
+	{
+		if( m_vectorGroupInfo.empty() ) return;
+		if( m_lbServerGroup.GetCurSel() == -1 ) m_lbServerGroup.SetCurSel( 0 );
+		SetServerList();
+		if( m_lbServer.GetCurSel() == -1 ) m_lbServer.SetCurSel( 0 );
+		PressOKBtn();
+	}
+
 	CUISelectServer();
 	~CUISelectServer();
 
