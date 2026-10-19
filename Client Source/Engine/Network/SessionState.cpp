@@ -455,6 +455,17 @@ void ConfirmMsgProc(UBYTE subType,UBYTE errorType = NULL,CTString charName = CTS
 ENGINE_API void SetDropItemModel(CEntity *penEntity, CItemData* pItemData, CItemTarget* pTarget)
 {
 	penEntity->InitAsSkaModel();
+
+	// items newer than the client data come as an empty CItemData, with no model file: loading ''
+	// is a fatal error, so they show as a treasure bag (as NPCs with no model are left out)
+	if (CTString(pItemData->GetItemSmcFileName()) == "" && CTString(pItemData->GetName()) == "")
+	{
+		CPrintF("Item %d is not in the client data, shown as a treasure bag\n", pTarget != NULL ? pTarget->m_nType : -1);
+		penEntity->SetSkaModel(MODEL_TREASURE);
+		penEntity->Initialize();
+		penEntity->FallDownToFloor();
+		return;
+	}
 	char *szEffectName = NULL;
 	INDEX animID = -1;
 
