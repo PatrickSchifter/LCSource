@@ -16,8 +16,11 @@
 #undef W
 #undef NONE
 
+// the 3D Exploration library (a Windows DLL with plugins) imports models for the tools
+#ifdef PLATFORM_WIN32
 #include <Engine/exploration3d/E3EXT.H>
 #include <Engine/exploration3d/EXPLOR3D.H>
+#endif // PLATFORM_WIN32
 
 void FillConversionArrays_t(const FLOATmatrix3D &mTransform);
 void ClearConversionArrays( void);
@@ -116,6 +119,7 @@ inline float ConvertFloat( SBYTE *pfm)
 };
 
 //--------------------------------------------------------------------------------------------
+#ifdef PLATFORM_WIN32
 // function recognizes and loads many 3D file formats, throws char* errors
 HINSTANCE _h3dExploration = NULL;
 TInitExploration3D _Init3d;
@@ -373,6 +377,22 @@ void FillConversionArrays_t(const FLOATmatrix3D &mTransform)
 	}
 	acmMaterials.Unlock();
 }
+#else
+void CObject3D::BatchLoading_t(BOOL bOn)
+{
+	if (bOn) {
+		throw("3D Exploration dll not found !");
+	}
+}
+
+void CObject3D::LoadAny3DFormat_t(
+	const CTFileName &fnmFileName,
+	const FLOATmatrix3D &mTransform,
+	enum LoadType ltLoadType/*= LT_NORMAL*/)
+{
+	BatchLoading_t(TRUE);
+}
+#endif // PLATFORM_WIN32
 
 void ClearConversionArrays( void)
 {
