@@ -85,6 +85,58 @@ static Matrix12 _mObjToAbsStretch  = {0};
 static BOOL    _bUseShadowMap       = TRUE;  // Use shadow map
 static INDEX   _iForcedLOD          = -1;    // Use forced LOD
 static BOOL    _bUseHardwareShaders = FALSE; // use vertex program
+
+#ifndef SE1_D3D
+#include <Engine/Graphics/OpenGL.h>
+extern INDEX GFX_iActiveTexUnit;
+extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS];
+
+// The terrain's shadow map blend without vertex/pixel programs, set as the Direct3D path sets
+// its texture stages: unit 0 takes the current shadow map, unit 1 goes to the next one by the
+// blend factor (D3DTOP_LERP of D3DTA_TFACTOR, D3DTA_CURRENT and D3DTA_TEXTURE). Without it the
+// two maps were multiplied and the terrain came out dark.
+static void SetShadowMapBlend_OGL(FLOAT fBlendFactor)
+{
+	const INDEX iOldUnit = GFX_iActiveTexUnit;
+	gfxSetTextureUnit(0);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	gfxSetTextureUnit(1);
+	const GLfloat afFactor[4] = { fBlendFactor, fBlendFactor, fBlendFactor, 1.0f };
+	pglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_INTERPOLATE_EXT);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_PREVIOUS_EXT);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_TEXTURE);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+	pglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1.0f);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE);
+	pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+	pglTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, afFactor);
+	gfxSetTextureUnit(iOldUnit);
+}
+
+// back to what gfxSetTextureModulation() keeps for units 0 and 1 (GFX_iTexModulation)
+static void ResetShadowMapBlend_OGL(void)
+{
+	const INDEX iOldUnit = GFX_iActiveTexUnit;
+	for (INDEX iUnit = 0; iUnit < 2; iUnit++) {
+		gfxSetTextureUnit(iUnit);
+		pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+		pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
+		pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+		pglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE);
+		pglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
+		if (GFX_iTexModulation[iUnit] == 2) {
+			pglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			pglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE);
+			pglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2.0f);
+		} else {
+			pglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			pglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1.0f);
+		}
+	}
+	gfxSetTextureUnit(iOldUnit);
+}
+#endif // SE1_D3D
 static CStaticStackArray<INDEX> _aiVisibleTiles;            // Array of tiles that are visible
 static CStaticStackArray<TerrainViewer> _atvTerrainViewers; // Array of terrain viewers
 static CStaticStackArray<GFXVertex>   _avxTileVertices;     // Array of tile vertices prepared for rendering
@@ -1966,7 +2018,9 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						DWORD dwBlendFactor = (ubBlendFactor << 24) | (ubBlendFactor << 16) | (ubBlendFactor << 8) | ubBlendFactor;
 						dwBlendFactor |= 0xFF000000;
 						_pGfx->gl_pd3dDevice->SetRenderState(D3DRS_TEXTUREFACTOR, dwBlendFactor);
-#endif // SE1_D3D (no fixed-function shadow blend without D3D yet, C8)
+#else
+						SetShadowMapBlend_OGL( ptr->tr_fShadowBlendFactor);
+#endif // SE1_D3D
 
 						shaSetTexCoordArray( ptcTexCoords, 0 );
 						shaSetTextureMatrix( tt.tt_mShadowMap, 0 );
@@ -1992,6 +2046,8 @@ static void RenderTerrainView(CTerrain *ptrTerrain)
 						_pGfx->gl_pd3dDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, dw_tss_aop_value1);
 						_pGfx->gl_pd3dDevice->SetTextureStageState(2, D3DTSS_COLOROP, dw_tss_top_value2);
 					}
+#else
+					if( !_bUseHardwareShaders ) ResetShadowMapBlend_OGL();
 #endif // SE1_D3D
 					TR_SETINFO( ti_ctVisibleTriangles += ctind / 3 );
 				}
