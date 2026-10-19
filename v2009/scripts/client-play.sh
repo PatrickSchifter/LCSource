@@ -14,5 +14,7 @@ mkdir -p "$GAME/Bin"
 rsync -a --exclude ecc build-client/Bin/ "$GAME/Bin/"
 cd "$GAME"
 # '6574': the 2009 client's own switch to run without the launcher (no "dlwltnr" check) and
-# without comparing its binaries against the publisher's
+# without comparing its binaries against the publisher's. LC_SCREEN: "desktop" (default here) is
+# fullscreen at the display's own pixels, "<W>x<H>" a window; "options" keeps the game's settings
+[[ ${LC_SCREEN:-desktop} == options ]] && unset LC_SCREEN || export LC_SCREEN=${LC_SCREEN:-desktop}
 exec "$GAME/Bin/Nksp" 6574 "$@" > "$GAME/stdout.log" 2>&1

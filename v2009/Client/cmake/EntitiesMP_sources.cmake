@@ -56,6 +56,7 @@ set(ENTITIESMP_ES
   "EntitiesMP/HazeMarker.es"
   "EntitiesMP/HudPicHolder.es"
   "EntitiesMP/Item.es"
+  "EntitiesMP/itemObjects.es"
   "EntitiesMP/items.es"
   "EntitiesMP/Light.es"
   "EntitiesMP/Lightning.es"
