@@ -1513,6 +1513,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 		UpdatePauseState();
 		// do the main game loop and render screen
 		DoGame();
+		// minimized or hidden, nothing is drawn and the loop would spin: run it at
+		// sam_iMaxFPSInactive (LimitFrameRate() was never called in this client)
+		if( IsIconic(_hwndMain)) LimitFrameRate();
 		
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 		extern ENGINE_API FLOAT g_fFramePerSecond;
