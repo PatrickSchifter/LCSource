@@ -661,8 +661,16 @@ void CGfxLibrary::InitContext_OGL(void)
     OGL_CHECKERROR;
   } 
 
-  // test for clamp to edge
+  // test for clamp to edge (what Direct3D's clamp does; core since OpenGL 1.2, same enum,
+  // which is how macOS has it)
   TestExtension_OGL( GLF_EXT_EDGECLAMP, "GL_EXT_texture_edge_clamp");
+  if( !(gl_ulFlags&GLF_EXT_EDGECLAMP)) {
+    INDEX iMajor=0, iMinor=0;
+    sscanf( da.da_strVersion, "%d.%d", &iMajor, &iMinor);
+    if( iMajor>1 || (iMajor==1 && iMinor>=2) || HasExtension( go_strExtensions, "GL_SGIS_texture_edge_clamp")) {
+      AddExtension_OGL( GLF_EXT_EDGECLAMP, "GL_SGIS_texture_edge_clamp");
+    }
+  }
 
   // test for clip volume hint
   TestExtension_OGL( GLF_EXT_CLIPHINT, "GL_EXT_clip_volume_hint");
