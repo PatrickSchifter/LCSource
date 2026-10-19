@@ -3154,7 +3154,7 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 	
-	if(item->CanDrop())
+	if(!item->CanDrop())
 	{
 		return;
 	}
