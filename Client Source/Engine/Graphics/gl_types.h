@@ -794,6 +794,15 @@ typedef enum {
   GL_ARRAY_BUFFER_ARB                 = 0x8892,
   GL_STATIC_DRAW_ARB                  = 0x88E4,
 
+  /* GL_EXT_framebuffer_object */
+  GL_FRAMEBUFFER_EXT                  = 0x8D40,
+  GL_RENDERBUFFER_EXT                 = 0x8D41,
+  GL_FRAMEBUFFER_BINDING_EXT          = 0x8CA6,
+  GL_COLOR_ATTACHMENT0_EXT            = 0x8CE0,
+  GL_DEPTH_ATTACHMENT_EXT             = 0x8D00,
+  GL_FRAMEBUFFER_COMPLETE_EXT         = 0x8CD5,
+  GL_DEPTH_COMPONENT16                = 0x81A5,
+
   /* GL_EXT_texture_env_combine */
   GL_COMBINE_EXT                      = 0x8570,
   GL_COMBINE_RGB_EXT                  = 0x8571,

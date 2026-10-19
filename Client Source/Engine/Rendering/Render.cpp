@@ -1291,10 +1291,53 @@ void CRenderer::FillMirrorDepth(CMirror &mi)
 	RenderSceneZOnly( re_pdpDrawPort, pspoFirst, re_prProjection);
 }
 
+#ifndef SE1_D3D
+// OpenGL for the texture stage of the projected shadows: Direct3D takes the texture coordinates
+// from the camera space position (D3DTSS_TCI_CAMERASPACEPOSITION) through matShadowUV, projected
+// (D3DTTFF_COUNT4|D3DTTFF_PROJECTED); here eye-linear texgen, the texture matrix and its divide by q
+static void SetShadowTexGen_OGL(const Matrix16 &matShadowUV)
+{
+	static const GLenum aeCoords[4] = { GL_S, GL_T, GL_R, GL_Q };
+	static const GLenum aeGens[4]   = { GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_Q };
+	static const GLfloat aafPlanes[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} };
+	// eye planes go through the modelview matrix of the moment: identity gives the camera space
+	pglMatrixMode( GL_MODELVIEW);
+	pglPushMatrix();
+	pglLoadIdentity();
+	for( INDEX i=0; i<4; i++) {
+		pglTexGeni(  aeCoords[i], GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+		pglTexGenfv( aeCoords[i], GL_EYE_PLANE, aafPlanes[i]);
+		pglEnable( aeGens[i]);
+	}
+	pglPopMatrix();
+	// same floats for both APIs (row vectors in Direct3D, columns in OpenGL), but the first row of
+	// a Direct3D render target is at the top and OpenGL's at the bottom: t = q-t
+	Matrix16 mat;
+	memcpy( mat, matShadowUV, sizeof(mat));
+	for( INDEX iRow=0; iRow<4; iRow++) mat[iRow*4+1] = matShadowUV[iRow*4+3] - matShadowUV[iRow*4+1];
+	pglMatrixMode( GL_TEXTURE);
+	pglLoadMatrixf( mat);
+	pglMatrixMode( GL_MODELVIEW);
+	OGL_CHECKERROR;
+}
+
+static void ClearShadowTexGen_OGL(void)
+{
+	pglDisable( GL_TEXTURE_GEN_S);
+	pglDisable( GL_TEXTURE_GEN_T);
+	pglDisable( GL_TEXTURE_GEN_R);
+	pglDisable( GL_TEXTURE_GEN_Q);
+	pglMatrixMode( GL_TEXTURE);
+	pglLoadIdentity();
+	pglMatrixMode( GL_MODELVIEW);
+	OGL_CHECKERROR;
+}
+#endif // SE1_D3D
+
+
 //강동민 수정 시작 접속 시퀀스 작업	06.01
 void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 {
-#ifdef SE1_D3D  // shadow textures need D3D render targets (no OpenGL version yet, C8)
 	if(re_avvxViewVertices.Count() <= 0)		return;
 
 	extern INDEX g_iShadowDetail;
@@ -1330,7 +1373,9 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 		GFX_INV_SRC_ALPHA);			// 바닥
 
 	CPlacement3D plLight;
+#ifdef SE1_D3D
 	HRESULT hr;
+#endif // SE1_D3D
 	//-------------------------------------------------------------------------------
 	// 모델들에 대해서 처리함.
 	for( INDEX iModel=0; iModel<CRenderer::re_admDelayedModels.Count(); iModel++) 
@@ -1433,6 +1478,7 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			//////////////////////////////////////////////////////////////////////////
 			// Shadow Map 생성.
+#ifdef SE1_D3D
 			D3DXMATRIX matProjOld;
 			hr = _pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, &matProjOld);
 			
@@ -1440,11 +1486,16 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			D3DVIEWPORT8 vpOld;
 			D3DVIEWPORT8 vpNew;
 			_pGfx->gl_pd3dDevice->GetViewport(&vpOld);
+#else
+			FLOAT afProjOld[16];
+			pglGetFloatv( GL_PROJECTION_MATRIX, afProjOld);
+#endif // SE1_D3D
 			
 			_prtShadow->Begin();				
 			_prtShadow->Clear(0x00050505);
 			RM_SetRenderingType(1);
 			
+#ifdef SE1_D3D
 			vpNew = vpOld;
 			vpNew.X = 1;
 			vpNew.Y = 1;
@@ -1454,6 +1505,9 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);				D3D_CHECKERROR(hr);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);	D3D_CHECKERROR(hr);
+#else
+			pglViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);
+#endif // SE1_D3D
 			
 			// Shadow Map을 생성하기 위해서 지정한 색으로 칠해진 모델을 렌더링합니다.
 			RM_AddFlag(RMF_SHOWSHADOW);
@@ -1464,11 +1518,19 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			_bRenderProjectionShadow = FALSE;
 			RM_RemoveFlag(RMF_SHOWSHADOW);
 			_prtShadow->End();
+#ifdef SE1_D3D
 			_pGfx->gl_pd3dDevice->SetViewport(&vpOld);
+#endif // SE1_D3D
 			RM_SetRenderingType(0);
 			
 			// 이전의 투영행렬로 복구시킵니다.(이 코드가 없으면 화면이 제대로 Clear되지 않음)
+#ifdef SE1_D3D
 			hr = _pGfx->gl_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProjOld);
+#else
+			pglMatrixMode( GL_PROJECTION);
+			pglLoadMatrixf( afProjOld);
+			pglMatrixMode( GL_MODELVIEW);
+#endif // SE1_D3D
 			//////////////////////////////////////////////////////////////////////////
 			gfxEnableBlend();			
 			
@@ -1493,12 +1555,16 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			// NOTE : 엔진에서 설정하는 부분이 없으므로, 직접 설정했음.
 			// 카메라 좌표계의 버텍스좌표를 텍스쳐 행렬의 입력으로 사용함.
+#ifdef SE1_D3D
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);	D3D_CHECKERROR(hr);
 			hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_TEXTURE0, (_D3DMATRIX*)&matShadowUV);						D3D_CHECKERROR(hr);
 			
 			// 동차좌표계 텍스쳐 변환 행렬을 사용하도록 설정해준다. 
 			// 이렇게 해야 D3D가 투영 나눗셈(projection divide)연산을 한다.
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );	D3D_CHECKERROR(hr);
+#else
+			SetShadowTexGen_OGL( matShadowUV);
+#endif // SE1_D3D
 
 		int iCount = _avtxScene.Count();
 		if(iCount <= 0)				continue;
@@ -1582,8 +1648,12 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 	}
 	}
 	//-------------------------------------------------------------------------------
+#ifdef SE1_D3D
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU );		D3D_CHECKERROR(hr);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);		D3D_CHECKERROR(hr);
+#else
+	ClearShadowTexGen_OGL();
+#endif // SE1_D3D
 
 	gfxDisableTexture();
 	shaClearTextureMatrix();
@@ -1595,7 +1665,6 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 	gfxDisableBlend();
 	//gfxCullFace(GFX_FRONT);
 	//gfxPolygonMode(GFX_FILL);
-#endif // SE1_D3D
 }
 
 //-----------------------------------------------------------------------------
@@ -1605,7 +1674,6 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 //-----------------------------------------------------------------------------
 void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlacement3D &plEye)
 {
-#ifdef SE1_D3D  // shadow textures need D3D render targets (no OpenGL version yet, C8)
 	extern INDEX g_iShadowDetail;
 	// profile rendering
 	const BOOL bModelSetupTimer = _sfStats.CheckTimer(CStatForm::STI_MODELSETUP);
@@ -1778,6 +1846,7 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				
 				//////////////////////////////////////////////////////////////////////////
 				// Shadow Map 생성.
+#ifdef SE1_D3D
 				D3DXMATRIX matProjOld;
 				HRESULT hr = _pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, &matProjOld);				
 				
@@ -1785,18 +1854,26 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				D3DVIEWPORT8 vpOld;
 				D3DVIEWPORT8 vpNew;
 				_pGfx->gl_pd3dDevice->GetViewport(&vpOld);
+#else
+				FLOAT afProjOld[16];
+				pglGetFloatv( GL_PROJECTION_MATRIX, afProjOld);
+#endif // SE1_D3D
 				
 				_prtShadow->Begin();				
 				//				_prtShadow->Clear(0x00FFFFFF);
 				_prtShadow->Clear(0x00050505);
 				RM_SetRenderingType(1);
 				
+#ifdef SE1_D3D
 				vpNew = vpOld;
 				vpNew.X = 1;
 				vpNew.Y = 1;
 				vpNew.Width = SHADOWTEXTURESIZE-2;
 				vpNew.Height = SHADOWTEXTURESIZE-2;
 				_pGfx->gl_pd3dDevice->SetViewport(&vpNew);
+#else
+				pglViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);
+#endif // SE1_D3D
 				
 				// Shadow Map을 생성하기 위해서 지정한 색으로 칠해진 모델을 렌더링합니다.
 				RM_AddFlag(RMF_SHOWSHADOW);
@@ -1808,11 +1885,19 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				_bRenderProjectionShadow = FALSE;
 				RM_RemoveFlag(RMF_SHOWSHADOW);
 				_prtShadow->End();
+#ifdef SE1_D3D
 				_pGfx->gl_pd3dDevice->SetViewport(&vpOld);
+#endif // SE1_D3D
 				RM_SetRenderingType(0);
 				
 				// 이전의 투영행렬로 복구시킵니다.(이 코드가 없으면 화면이 제대로 Clear되지 않음)
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProjOld);
+#else
+				pglMatrixMode( GL_PROJECTION);
+				pglLoadMatrixf( afProjOld);
+				pglMatrixMode( GL_MODELVIEW);
+#endif // SE1_D3D
 				//////////////////////////////////////////////////////////////////////////
 				//gfxEnableAlphaTest();
 				gfxEnableBlend();
@@ -1859,12 +1944,16 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				
 				// NOTE : 엔진에서 설정하는 부분이 없으므로, 직접 설정했음.
 				// 카메라 좌표계의 버텍스좌표를 텍스쳐 행렬의 입력으로 사용함.
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION );		D3D_CHECKERROR(hr);
 				hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_TEXTURE0, (_D3DMATRIX*)&matShadowUV);							D3D_CHECKERROR(hr);
 				
 				// 동차좌표계 텍스쳐 변환 행렬을 사용하도록 설정해준다. 
 				// 이렇게 해야 D3D가 투영 나눗셈(projection divide)연산을 한다.
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );	D3D_CHECKERROR(hr);
+#else
+				SetShadowTexGen_OGL( matShadowUV);
+#endif // SE1_D3D
 				
 				//////////////////////////////////////////////////////////////////////////
 				// Fog 및 Haze의 적용.
@@ -1886,8 +1975,12 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				//////////////////////////////////////////////////////////////////////////
 				//gfxDisableAlphaTest();
 				gfxDisableBlend();
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU );		D3D_CHECKERROR(hr);
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);		D3D_CHECKERROR(hr);
+#else
+				ClearShadowTexGen_OGL();
+#endif // SE1_D3D
 			}
 		}		
 		//////////////////////////////////////////////////////////////////////////
@@ -1906,7 +1999,6 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 	}
 	_sfStats.StopTimer(CStatForm::STI_SHADOWRENDERING);
 //-----------------------------------------------------------------------------
-#endif // SE1_D3D
 }
 
 // do the rendering

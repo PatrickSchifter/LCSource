@@ -51,6 +51,18 @@ extern void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer);
 extern void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage);
 extern void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data);
 
+// EXT framebuffer objects (render targets)
+extern void   (__stdcall *pglGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers);
+extern void   (__stdcall *pglDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers);
+extern void   (__stdcall *pglBindFramebufferEXT)(GLenum target, GLuint framebuffer);
+extern void   (__stdcall *pglFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void   (__stdcall *pglGenRenderbuffersEXT)(GLsizei n, GLuint *renderbuffers);
+extern void   (__stdcall *pglDeleteRenderbuffersEXT)(GLsizei n, const GLuint *renderbuffers);
+extern void   (__stdcall *pglBindRenderbufferEXT)(GLenum target, GLuint renderbuffer);
+extern void   (__stdcall *pglRenderbufferStorageEXT)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+extern void   (__stdcall *pglFramebufferRenderbufferEXT)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+extern GLenum (__stdcall *pglCheckFramebufferStatusEXT)(GLenum target);
+
 #ifdef PLATFORM_WIN32 /* !!! FIXME: Move to abstraction layer. --rcg. */
 // t-buffer support
 extern char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);

@@ -100,6 +100,18 @@ void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer) = NULL;
 void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage) = NULL;
 void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data) = NULL;
 
+// EXT framebuffer objects
+void   (__stdcall *pglGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers) = NULL;
+void   (__stdcall *pglDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers) = NULL;
+void   (__stdcall *pglBindFramebufferEXT)(GLenum target, GLuint framebuffer) = NULL;
+void   (__stdcall *pglFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = NULL;
+void   (__stdcall *pglGenRenderbuffersEXT)(GLsizei n, GLuint *renderbuffers) = NULL;
+void   (__stdcall *pglDeleteRenderbuffersEXT)(GLsizei n, const GLuint *renderbuffers) = NULL;
+void   (__stdcall *pglBindRenderbufferEXT)(GLenum target, GLuint renderbuffer) = NULL;
+void   (__stdcall *pglRenderbufferStorageEXT)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = NULL;
+void   (__stdcall *pglFramebufferRenderbufferEXT)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = NULL;
+GLenum (__stdcall *pglCheckFramebufferStatusEXT)(GLenum target) = NULL;
+
 // t-buffer support
 char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);
 BOOL  (__stdcall *pwglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
@@ -711,6 +723,32 @@ void CGfxLibrary::InitContext_OGL(void)
       AddExtension_OGL( NONE, "GL_ARB_vertex_buffer_object");
     } else {
       pglGenBuffersARB = NULL;
+    }
+  }
+
+  // framebuffer objects: render targets (CRenderTexture in TextureRender.cpp)
+  pglGenFramebuffersEXT = NULL;  pglDeleteFramebuffersEXT = NULL;  pglBindFramebufferEXT = NULL;
+  pglFramebufferTexture2DEXT = NULL;  pglGenRenderbuffersEXT = NULL;  pglDeleteRenderbuffersEXT = NULL;
+  pglBindRenderbufferEXT = NULL;  pglRenderbufferStorageEXT = NULL;  pglFramebufferRenderbufferEXT = NULL;
+  pglCheckFramebufferStatusEXT = NULL;
+  if( HasExtension( go_strExtensions, "GL_EXT_framebuffer_object")) {
+    pglGenFramebuffersEXT         = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenFramebuffersEXT");
+    pglDeleteFramebuffersEXT      = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteFramebuffersEXT");
+    pglBindFramebufferEXT         = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindFramebufferEXT");
+    pglFramebufferTexture2DEXT    = (void (__stdcall*)(GLenum, GLenum, GLenum, GLuint, GLint))pwglGetProcAddress( "glFramebufferTexture2DEXT");
+    pglGenRenderbuffersEXT        = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenRenderbuffersEXT");
+    pglDeleteRenderbuffersEXT     = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteRenderbuffersEXT");
+    pglBindRenderbufferEXT        = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindRenderbufferEXT");
+    pglRenderbufferStorageEXT     = (void (__stdcall*)(GLenum, GLenum, GLsizei, GLsizei))pwglGetProcAddress( "glRenderbufferStorageEXT");
+    pglFramebufferRenderbufferEXT = (void (__stdcall*)(GLenum, GLenum, GLenum, GLuint))pwglGetProcAddress( "glFramebufferRenderbufferEXT");
+    pglCheckFramebufferStatusEXT  = (GLenum (__stdcall*)(GLenum))pwglGetProcAddress( "glCheckFramebufferStatusEXT");
+    if( pglGenFramebuffersEXT!=NULL && pglDeleteFramebuffersEXT!=NULL && pglBindFramebufferEXT!=NULL
+     && pglFramebufferTexture2DEXT!=NULL && pglGenRenderbuffersEXT!=NULL && pglDeleteRenderbuffersEXT!=NULL
+     && pglBindRenderbufferEXT!=NULL && pglRenderbufferStorageEXT!=NULL && pglFramebufferRenderbufferEXT!=NULL
+     && pglCheckFramebufferStatusEXT!=NULL) {
+      AddExtension_OGL( NONE, "GL_EXT_framebuffer_object");
+    } else {
+      pglGenFramebuffersEXT = NULL;
     }
   }
 

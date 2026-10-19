@@ -202,7 +202,7 @@ public:
 #ifdef SE1_D3D
 	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT, D3DFORMAT fmt = D3DFMT_A8R8G8B8);
 #else
-	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // no render targets yet without D3D (C8)
+	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // OpenGL framebuffer object
 #endif // SE1_D3D
 	void Begin();	// SetRenderTarget current
 	// Must be call this func in begin-end block
@@ -222,6 +222,13 @@ protected:
 	IDirect3DSurface8 *m_pOldDepthStencil;
 	IDirect3DSurface8 *m_pDepthStencil;
 	BOOL m_bOldZEnable;
+#else
+protected:
+	ULONG m_ulFramebuffer;      // OpenGL framebuffer object with the texture as its color
+	ULONG m_ulDepthBuffer;      // and a 16-bit depth renderbuffer
+	INDEX m_iOldFramebuffer;    // what Begin() replaced, for End()
+	INDEX m_aiOldViewport[4];
+	INDEX m_aiOldScissor[4];
 #endif // SE1_D3D
 };
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)
