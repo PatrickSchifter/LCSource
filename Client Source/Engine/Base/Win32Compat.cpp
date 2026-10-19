@@ -1,4 +1,6 @@
 #include "StdH.h"
+#include <sys/stat.h>
+#include <errno.h>
 
 // Win32 functions emulated outside Windows (declared in Win32Compat.h). Compiled empty on Windows.
 #ifndef _WIN32
@@ -271,7 +273,16 @@ std::string LC_HostPath(const char *strPath)
 
 FILE *LC_fopen(const char *strFileName, const char *strMode)
 {
-  return fopen(LC_HostPath(strFileName).c_str(), strMode);
+  FILE *pFile = fopen(LC_HostPath(strFileName).c_str(), strMode);
+  // a directory opens fine here and fails only when read; on Windows fopen() fails, which is
+  // what the engine expects (an item with no model file name opened the game directory)
+  struct stat st;
+  if (pFile != NULL && fstat(fileno(pFile), &st) == 0 && S_ISDIR(st.st_mode)) {
+    fclose(pFile);
+    errno = EISDIR;
+    return NULL;
+  }
+  return pFile;
 }
 
 int _open(const char *strFileName, int iFlags)
