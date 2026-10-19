@@ -224,6 +224,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Etapa Vulkan (D2.3): novo backend `GAT_*`
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
+- [ ] **Próximo, decidido em 2026-10-19: animações (skinning SKA) na GPU** no OpenGL, em GLSL; hoje na CPU (`LC_NO_HW_SHADERS=1`), é o que mais pesa e esquenta o Mac
 - [ ] Shaders SKA (`Shaders/`: Base, Detail, NormalMap, Reflection, Water...) funcionando no backend novo
 - [ ] Reescrever em GLSL/MSL os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura

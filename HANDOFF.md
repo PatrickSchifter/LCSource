@@ -23,9 +23,11 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. **C8, shaders programáveis no OpenGL**: o skinning dos modelos SKA e o terreno com shader são
-   "Not implemented yet" no backend; hoje o Mac roda com `LC_NO_HW_SHADERS=1` (skinning na CPU).
-   Em jogo o cliente usa ~20% de um núcleo a 60 FPS; os modelos animados são a maior parte.
+1. **C8, animações na GPU** (decidido pelo usuário em 2026-10-19): o skinning dos modelos SKA (e o
+   terreno com shader) é "Not implemented yet" no backend OpenGL; hoje o Mac roda com
+   `LC_NO_HW_SHADERS=1` (skinning na CPU). Em jogo o cliente usa ~20% de um núcleo a 60 FPS e o Mac
+   esquenta; os modelos animados são a maior parte. Caminho: programas GLSL (OpenGL 2.1) no lugar
+   dos `vs.1.1` do D3D (`Graphics/ShaderCode.h`, `Ska/RMRender.cpp`, `shaSetVertexProgram`).
 2. **Conversões float→inteiro sem sinal**: no ARM saturam em 0 onde o x86 dá a volta (achado no
    giro da câmera, `e53b9eb`). Um build com `-fsanitize=float-cast-overflow` acharia as outras.
 3. O que falta no OpenGL sem D3D: sombras projetadas, bloom, reflexo/refração da água (render targets),
