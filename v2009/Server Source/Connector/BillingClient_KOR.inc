@@ -69,6 +69,13 @@ bool CBillingClient::Create()
 		m_brunning = false;
 	}
 
+	// No [Billing Server] section (the Billing server is Windows-only): keep the connector
+	// running without billing instead of passing NULL to inet_addr/atoi.
+	const char* billingIP = gserver.m_config.Find("Billing Server", "IP");
+	const char* billingPort = gserver.m_config.Find("Billing Server", "Port");
+	if (!billingIP || !*billingIP || !billingPort || !*billingPort)
+		return false;
+
 	m_desc = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_desc < 0)
 	{
@@ -79,8 +86,8 @@ bool CBillingClient::Create()
 	struct sockaddr_in msg_socket;
 	memset (&msg_socket, 0, sizeof(msg_socket));
 	msg_socket.sin_family = AF_INET;
-	msg_socket.sin_addr.s_addr = inet_addr(gserver.m_config.Find("Billing Server", "IP"));
-	msg_socket.sin_port = htons(atoi(gserver.m_config.Find("Billing Server", "Port")));
+	msg_socket.sin_addr.s_addr = inet_addr(billingIP);
+	msg_socket.sin_port = htons(atoi(billingPort));
 
 	if (connect(m_desc, (struct sockaddr*)&msg_socket, sizeof(msg_socket)) < 0)
 	{
