@@ -96,7 +96,7 @@ bool CAPetProtoList::Load()
 		cmdAPet.GetRec("a_attack",m_pApetProtoList[i].m_nAttack );
 		cmdAPet.GetRec("a_defence",m_pApetProtoList[i].m_nDefence );
 		cmdAPet.GetRec("a_Mattack",m_pApetProtoList[i].m_nMagicAttack );
-		cmdAPet.GetRec("a_Mdeffence",m_pApetProtoList[i].m_nMagicDefence );
+		cmdAPet.GetRec("a_Mdefence",m_pApetProtoList[i].m_nMagicDefence );
 		cmdAPet.GetRec("a_hitpoint",m_pApetProtoList[i].m_nHitPoint );
 		cmdAPet.GetRec("a_avoidpoint",m_pApetProtoList[i].m_nAvoidPoint );
 		cmdAPet.GetRec("a_Mavoidpoint",m_pApetProtoList[i].m_nMagicAvoidPoint );

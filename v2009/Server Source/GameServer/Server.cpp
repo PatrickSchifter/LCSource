@@ -98,9 +98,12 @@ CServer::CServer()
 	m_resetAdjustItem = 0;
 	
 	mysql_init(&m_dbchar);
+	mysql_options(&m_dbchar, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 	mysql_init(&m_dbdata);
+	mysql_options(&m_dbdata, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 #ifdef ENABLE_WAR_CASTLE
 	mysql_init(&m_dbcastle);
+	mysql_options(&m_dbcastle, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 #endif
 	
 	m_brunconnector = false;

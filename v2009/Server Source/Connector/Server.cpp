@@ -44,7 +44,9 @@ CServer::CServer()
 	m_pulseSaveCount = mktime(&m_now);
 	
 	mysql_init(&m_dbuser);
+	mysql_options(&m_dbuser, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 	mysql_init(&m_dbauth);
+	mysql_options(&m_dbauth, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 	
 	m_pulseDBPing = 0;
 

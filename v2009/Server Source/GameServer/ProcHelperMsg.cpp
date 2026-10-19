@@ -2540,7 +2540,7 @@ void ProcHelperGuildChangeBossNotify(CNetMsg& msg)
 		CDBCmd cmd;
 		cmd.Init(&gserver.m_dbcastle);
 
-		sprintf(g_buf, "update t_castle set a_owner_charindex = %d, a_owner_char_name = '%s' where a_zone_index = %d ", member->charindex(), member->GetName(), cast->GetZoneIndex() );
+		sprintf(g_buf, "update t_castle set a_owner_char_index = %d, a_owner_char_name = '%s' where a_zone_index = %d ", member->charindex(), member->GetName(), cast->GetZoneIndex() );
 		cmd.SetQuery(g_buf);
 		cmd.Update();
 		GAMELOG << init("WARCASTLE BOSS CHANGE")

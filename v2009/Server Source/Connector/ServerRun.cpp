@@ -162,10 +162,18 @@ void CServer::Run()
 
 					CDBCmd cmd;
 					cmd.Init(&m_dbuser);
-					sprintf(g_buf, "delete from t_purchase where a_serial = %d", d->m_waitbill);
-					cmd.SetQuery(g_buf);
+					// t_purchase is sharded into t_purchase00..09 by user index; this
+					// descriptor is a GameServer link, so try every shard.
+					bool bRolledBack = true;
+					for (int nShard = 0; nShard < 10; nShard++)
+					{
+						sprintf(g_buf, "delete from t_purchase0%d where a_serial = %d", nShard, d->m_waitbill);
+						cmd.SetQuery(g_buf);
+						if (!cmd.Update())
+							bRolledBack = false;
+					}
 
-					if( !cmd.Update() )
+					if( !bRolledBack )
 					{
 						GAMELOG << init("CASH_PURCHASE_REP_ERROR-RollBack-update fail")
 								<< d->m_waitbill

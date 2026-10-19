@@ -38,8 +38,11 @@ CServer::CServer()
 	m_pulseServerTime = 0;
 
 	mysql_init(&m_dbuser);
+	mysql_options(&m_dbuser, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 	mysql_init(&m_dbdata);
+	mysql_options(&m_dbdata, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 	mysql_init(&m_dbAuth);
+	mysql_options(&m_dbAuth, MYSQL_INIT_COMMAND, "SET SESSION sql_mode=''");
 
 	m_pulseDBPing = 0;
 
