@@ -134,13 +134,26 @@ void CRenderTexture::End()		// SetRenderTarget old
 }
 #else
 // OpenGL: a framebuffer object with the texture as its color and a 16-bit depth renderbuffer,
-// as the Direct3D version has; Init() fails without GL_EXT_framebuffer_object and callers skip the effect
+// as the Direct3D version has; Init() fails without GL_EXT_framebuffer_object and callers skip the effect.
+// Metal: the texture with a depth buffer of its own (MTL_MakeRenderTarget); it starts at the top
+// as Direct3D's, so callers use Direct3D's texture coordinates with it.
+#ifdef SE1_METAL
+// Gfx_wrapper_Metal.cpp
+extern void  MTL_MakeRenderTarget( TEXOBJ ulTexture, PIX pixW, PIX pixH);
+extern TEXOBJ MTL_SetRenderTarget( TEXOBJ ulTexture);
+extern void  MTL_ClearRenderTarget( PIX pixW, PIX pixH, ULONG ulARGB, FLOAT fDepth);
+extern void  MTL_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void  MTL_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void  MTL_GetViewportAndScissor( PIX *ppixViewport, PIX *ppixScissor);
+#endif // SE1_METAL
+
 CRenderTexture::CRenderTexture()
 {
 	m_ulFramebuffer = 0;
 	m_ulDepthBuffer = 0;
 	m_iOldFramebuffer = 0;
 	m_iOldTargetHeight = 0;
+	m_ulOldTarget = NONE;
 }
 
 CRenderTexture::~CRenderTexture()
@@ -154,11 +167,12 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag)
 {
 	TRACKTEX_HEAP();
 
-	if( _pGfx->gl_eCurrentAPI!=GAT_OGL || pglGenFramebuffersEXT==NULL) return FALSE;
+	const BOOL bMetal = (_pGfx->gl_eCurrentAPI==GAT_MTL);
+	if( !bMetal && (_pGfx->gl_eCurrentAPI!=GAT_OGL || pglGenFramebuffersEXT==NULL)) return FALSE;
 	if( width>MAX_MEX || height>MAX_MEX) return FALSE;
 
 	// same texture data as the Direct3D version
-	rt_tdTexture.td_ulInternalFormat = GL_RGBA8;
+	rt_tdTexture.td_ulInternalFormat = bMetal ? TS.ts_tfRGBA8 : GL_RGBA8;
 	rt_tdTexture.td_iFirstMipLevel = 0;
 	rt_tdTexture.td_ulFlags = flag;
 	rt_tdTexture.td_ulFlags |= TEX_ALPHACHANNEL;
@@ -174,6 +188,14 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag)
 	rt_tdTexture.td_pulFrames = NULL;
 	rt_tdTexture.td_ctFrames = 1;
 	rt_tdTexture.td_tpLocal.tp_bSingleMipmap = TRUE;
+
+#ifdef SE1_METAL
+	if( bMetal) {
+		gfxGenerateTexture( rt_tdTexture.td_ulObject);
+		MTL_MakeRenderTarget( rt_tdTexture.td_ulObject, width, height);
+		return TRUE;
+	}
+#endif // SE1_METAL
 
 	// the texture, bound through gfxSetTexture() so the engine knows what is bound
 	gfxGenerateTexture( rt_tdTexture.td_ulObject);
@@ -207,6 +229,21 @@ BOOL CRenderTexture::Init(INDEX width, INDEX height, ULONG flag)
 
 void CRenderTexture::Begin()	// SetRenderTarget current
 {
+	extern PIX GFX_pixRenderTargetHeight;
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		if( rt_tdTexture.td_ulObject==NONE) return;
+		// as Direct3D's SetRenderTarget(): the viewport (and here the scissor) on the whole target
+		MTL_GetViewportAndScissor( (PIX*)m_aiOldViewport, (PIX*)m_aiOldScissor);
+		m_ulOldTarget = MTL_SetRenderTarget( rt_tdTexture.td_ulObject);
+		MTL_SetViewport( 0, 0, rt_tdTexture.td_mexWidth, rt_tdTexture.td_mexHeight);
+		MTL_SetScissor(  0, 0, rt_tdTexture.td_mexWidth, rt_tdTexture.td_mexHeight);
+		// (one pixel drawn per pixel the engine counts in it, GFX_DrawableScale())
+		m_iOldTargetHeight = GFX_pixRenderTargetHeight;
+		GFX_pixRenderTargetHeight = rt_tdTexture.td_mexHeight;
+		return;
+	}
+#endif // SE1_METAL
 	// some callers keep a render target whose Init() failed: nothing to bind
 	if( m_ulFramebuffer==0) return;
 	GLint iOld = 0;
@@ -223,13 +260,19 @@ void CRenderTexture::Begin()	// SetRenderTarget current
 	OGL_CHECKERROR;
 	// drawports locked from here on count their rows in the target; its first row is at the
 	// bottom, so what they draw is upside down for v going down from the top (callers flip v)
-	extern PIX GFX_pixRenderTargetHeight;
 	m_iOldTargetHeight = GFX_pixRenderTargetHeight;
 	GFX_pixRenderTargetHeight = pixHeight;
 }
 
 void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal)
 {
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		if( rt_tdTexture.td_ulObject==NONE) return;
+		MTL_ClearRenderTarget( rt_tdTexture.td_mexWidth, rt_tdTexture.td_mexHeight, colClear, fZVal);
+		return;
+	}
+#endif // SE1_METAL
 	if( m_ulFramebuffer==0) return;
 	// colClear is a D3DCOLOR (ARGB), as for Direct3D's Clear(); that clears regardless of the write masks
 	GLfloat afOldColor[4], fOldDepth;
@@ -252,6 +295,18 @@ void CRenderTexture::Clear(COLOR colClear, FLOAT fZVal)
 
 void CRenderTexture::End()		// SetRenderTarget old
 {
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		if( rt_tdTexture.td_ulObject==NONE) return;
+		MTL_SetRenderTarget( m_ulOldTarget);
+		m_ulOldTarget = NONE;
+		MTL_SetViewport( m_aiOldViewport[0], m_aiOldViewport[1], m_aiOldViewport[2], m_aiOldViewport[3]);
+		MTL_SetScissor(  m_aiOldScissor[0],  m_aiOldScissor[1],  m_aiOldScissor[2],  m_aiOldScissor[3]);
+		extern PIX GFX_pixRenderTargetHeight;
+		GFX_pixRenderTargetHeight = m_iOldTargetHeight;
+		return;
+	}
+#endif // SE1_METAL
 	if( m_ulFramebuffer==0) return;
 	pglBindFramebufferEXT( GL_FRAMEBUFFER_EXT, m_iOldFramebuffer);
 	pglViewport( m_aiOldViewport[0], m_aiOldViewport[1], m_aiOldViewport[2], m_aiOldViewport[3]);

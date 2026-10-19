@@ -32,15 +32,18 @@ struct FFVertexConst {
   float4 vClipPlane;     // in view space
   float4 colConstant;    // without color array
   uint ulFlags;          // 1=color array, 2=clip plane
-  uint ulTexCoords;      // 4 bits per texture unit: 1=array, 2=s,t,r,q, 4=texture matrix
+  uint ulTexCoords;      // 4 bits per texture unit: 1=array, 2=s,t,r,q, 4=texture matrix,
+                         // 8=the position in view space (Direct3D's D3DTSS_TCI_CAMERASPACEPOSITION)
   float fPointSize;
   uint ulPad;
 };
 
-static float4 TexCoord(const device float *pfTex, uint vid, uint ulMode, float4x4 mTexture)
+static float4 TexCoord(const device float *pfTex, uint vid, uint ulMode, float4x4 mTexture, float4 vView)
 {
   float4 v = float4(0, 0, 0, 1);
-  if (ulMode & 1) {
+  if (ulMode & 8) {
+    v = vView;
+  } else if (ulMode & 1) {
     if (ulMode & 2) v = float4(pfTex[vid*4], pfTex[vid*4+1], pfTex[vid*4+2], pfTex[vid*4+3]);
     else v = float4(pfTex[vid*2], pfTex[vid*2+1], 0, 1);
   }
@@ -58,10 +61,10 @@ vertex MtlVSOut ff_vs(uint vid [[vertex_id]], constant FFVertexConst &c [[buffer
   o.pos = c.mProjection * vView;
   o.col0 = (c.ulFlags & 1) ? float4(pcol[vid]) / 255.0 : c.colConstant;
   o.col1 = float4(0);
-  o.tex0 = TexCoord(ptex0, vid, (c.ulTexCoords >>  0) & 15, c.amTexture[0]);
-  o.tex1 = TexCoord(ptex1, vid, (c.ulTexCoords >>  4) & 15, c.amTexture[1]);
-  o.tex2 = TexCoord(ptex2, vid, (c.ulTexCoords >>  8) & 15, c.amTexture[2]);
-  o.tex3 = TexCoord(ptex3, vid, (c.ulTexCoords >> 12) & 15, c.amTexture[3]);
+  o.tex0 = TexCoord(ptex0, vid, (c.ulTexCoords >>  0) & 15, c.amTexture[0], vView);
+  o.tex1 = TexCoord(ptex1, vid, (c.ulTexCoords >>  4) & 15, c.amTexture[1], vView);
+  o.tex2 = TexCoord(ptex2, vid, (c.ulTexCoords >>  8) & 15, c.amTexture[2], vView);
+  o.tex3 = TexCoord(ptex3, vid, (c.ulTexCoords >> 12) & 15, c.amTexture[3], vView);
   o.fPointSize = c.fPointSize;
   o.afClip[0] = (c.ulFlags & 2) ? dot(vView, c.vClipPlane) : 1.0;
   return o;
@@ -130,6 +133,7 @@ static FLOAT _mtl_afProjection[16];
 static FLOAT _mtl_afView[16];
 static FLOAT _mtl_aafTexture[GFX_USETEXUNITS][16];
 static ULONG _mtl_ulTexMatrices = 0;                  // units with a texture matrix (bits)
+static ULONG _mtl_ulTexGenView = 0;                   // units whose coordinates are the view space position (bits)
 static UBYTE _mtl_aubTexCoords[GFX_USETEXUNITS];      // per unit: 1=array, 2=s,t,r,q
 static FLOAT _mtl_afClipPlane[4];
 static COLOR _mtl_colConstant = C_WHITE|CT_OPAQUE;
@@ -173,6 +177,7 @@ extern BOOL InitFixedFunction_MTL(void)
 	}
 	for( INDEX iUnit=0; iUnit<GFX_MAXTEXUNITS; iUnit++) _mtl_abSingleMipmap[iUnit] = FALSE;
 	_mtl_ulTexMatrices = 0;
+	_mtl_ulTexGenView = 0;
 	_mtl_afClipPlane[0] = _mtl_afClipPlane[1] = _mtl_afClipPlane[2] = _mtl_afClipPlane[3] = 0;
 	_mtl_colConstant = C_WHITE|CT_OPAQUE;
 	_mtl_fPointSize = 1.0f;
@@ -209,6 +214,13 @@ extern void MTL_SetScissor( PIX pixI, PIX pixJ, PIX pixW, PIX pixH)
 {
 	_mtl_aiScissor[0] = pixI;  _mtl_aiScissor[1] = pixJ;
 	_mtl_aiScissor[2] = pixW;  _mtl_aiScissor[3] = pixH;
+}
+
+// both, as x,y,w,h (for CRenderTexture, which puts them back)
+extern void MTL_GetViewportAndScissor( PIX *ppixViewport, PIX *ppixScissor)
+{
+	memcpy( ppixViewport, _mtl_aiViewport, sizeof(_mtl_aiViewport));
+	memcpy( ppixScissor,  _mtl_aiScissor,  sizeof(_mtl_aiScissor));
 }
 
 // fill a rectangle with a color and/or a depth (as glClear in a scissor, without the masks)
@@ -269,6 +281,7 @@ static void mtl_SyncState(void)
 			memcpy( vc.aafTexture[iUnit], _mtl_aafTexture[iUnit], sizeof(vc.aafTexture[iUnit]));
 			ULONG ulMode = _mtl_aubTexCoords[iUnit];
 			if( _mtl_ulTexMatrices&(1UL<<iUnit)) ulMode |= 4;
+			if( _mtl_ulTexGenView &(1UL<<iUnit)) ulMode |= 8;
 			ulTexCoords |= ulMode<<(iUnit*4);
 		}
 		memcpy( vc.afClipPlane, _mtl_afClipPlane, sizeof(vc.afClipPlane));
@@ -452,6 +465,17 @@ extern void SetProjectionMatrix_MTL( const FLOAT *pfMatrix)
 	GFX_fLastL = GFX_fLastR = GFX_fLastT = GFX_fLastB = GFX_fLastN = GFX_fLastF = 0;  // (no cached ortho)
 }
 
+// texture coordinates of the current unit from the position in view space, through its texture
+// matrix and divided by q: Direct3D's D3DTSS_TCI_CAMERASPACEPOSITION with D3DTTFF_COUNT4|D3DTTFF_PROJECTED
+// (the projected shadows, Render.cpp; Metal's render targets start at the top as Direct3D's)
+extern void MTL_SetTexGenViewPosition( BOOL bOn)
+{
+	const INDEX iUnit = GFX_iActiveTexUnit;
+	if( iUnit>=GFX_USETEXUNITS) return;
+	if( bOn) _mtl_ulTexGenView |=  (1UL<<iUnit);
+	else     _mtl_ulTexGenView &= ~(1UL<<iUnit);
+}
+
 // the terrain's shadow map blend without programs: unit 0 takes the current shadow map, unit 1
 // goes to the next one by the factor (as SetShadowMapBlend_OGL in TRRender.cpp)
 extern void MTL_SetShadowMapBlend( FLOAT fBlendFactor)
@@ -474,6 +498,8 @@ static void mtl_SetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV)
 {
 	_tpGlobal[GFX_iActiveTexUnit].tp_eWrapU = eWrapU;
 	_tpGlobal[GFX_iActiveTexUnit].tp_eWrapV = eWrapV;
+	// on the texture set now too, as OpenGL's glTexParameteri() and Direct3D's stage state
+	if( GFX_iActiveTexUnit<GFX_USETEXUNITS) mtlSetTextureWrap( GFX_iActiveTexUnit, eWrapU==GFX_CLAMP, eWrapV==GFX_CLAMP);
 }
 
 static void mtl_SetTextureModulation( INDEX iScale)
@@ -932,4 +958,104 @@ static void mtl_SetPixelProgramConst( INDEX iRegister, const void *pData, INDEX 
 extern void GetProgramConst_MTL( BOOL bVertex, INDEX iRegister, void *pData, INDEX ctRegisters)
 {
 	memcpy( pData, bVertex ? _mtl_afVertexConst[iRegister] : _mtl_afPixelConst[iRegister], ctRegisters*4*sizeof(FLOAT));
+}
+
+
+// RENDER TARGETS AND THE FRAME (TextureRender.cpp, DrawPort.cpp, DepthCheck.cpp)
+// Metal's render targets start at the top, as Direct3D's: what is drawn into them is the right
+// way up for the texture coordinates Direct3D uses.
+
+extern void MTL_MakeRenderTarget( TEXOBJ ulTexture, PIX pixW, PIX pixH)
+{
+	mtlTextureRenderTarget( (MtlTexture*)ulTexture, pixW, pixH);
+}
+
+// draw into a render target (NONE: the window); returns where the draws went before
+extern TEXOBJ MTL_SetRenderTarget( TEXOBJ ulTexture)
+{
+	const TEXOBJ ulOld = (TEXOBJ)mtlGetRenderTarget();
+	mtlSetRenderTarget( (MtlTexture*)ulTexture);
+	return ulOld;
+}
+
+// fill the whole render target (as Direct3D's Clear(): a D3DCOLOR, alpha too, without the masks)
+extern void MTL_ClearRenderTarget( PIX pixW, PIX pixH, ULONG ulARGB, FLOAT fDepth)
+{
+	const float afColor[4] = { ((ulARGB>>16)&0xFF)/255.0f, ((ulARGB>>8)&0xFF)/255.0f, (ulARGB&0xFF)/255.0f, ((ulARGB>>24)&0xFF)/255.0f };
+	mtlClear( 0, 0, pixW, pixH, true, afColor, true, fDepth);
+}
+
+// copy a rectangle of the frame into a texture (in the pixels drawn, from the top left)
+extern void MTL_CopyFrameToTexture( TEXOBJ ulTexture, PIX pixI, PIX pixJ, PIX pixW, PIX pixH)
+{
+	if( ulTexture==NONE) return;
+	mtlCopyFrameToTexture( (MtlTexture*)ulTexture, pixI, pixJ, pixW, pixH);
+}
+
+// the frame's 24-bit RGB rows from the top, and depths at points (in the pixels drawn)
+extern BOOL MTL_ReadFrameRGB( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, UBYTE *pubRGB)
+{
+	return mtlReadFrameRGB( pixI, pixJ, pixW, pixH, pubRGB);
+}
+extern BOOL MTL_ReadFrameDepths( const int *piXY, INDEX ctPoints, FLOAT *pfDepths)
+{
+	return mtlReadFrameDepths( piXY, ctPoints, pfDepths);
+}
+
+
+// THE BLOOM'S PASSES (RenderBloom.cpp)
+// Quads straight to the device, with their own state: the engine's state stays as it was, and its
+// streams and textures on the device are put back by MTL_EndFilter().
+
+extern void MTL_BeginFilter(void) { mtlPushState(); }
+extern void MTL_EndFilter(void)   { mtlPopState();  }
+
+// the quad from -1,-1 to 1,1 (that the constants c0..c3 put over the viewport) with the texture on
+// units 0..3, through the programs and their constants as they are set
+extern void MTL_DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, ULONG ulVertexProgram, ULONG ulPixelProgram,
+                                BOOL bBlend, GfxBlend eSrc, GfxBlend eDst)
+{
+	MtlProgram *pprVertex = mtl_Program(ulVertexProgram);
+	MtlProgram *pprPixel  = mtl_Program(ulPixelProgram);
+	if( pprVertex==NULL || pprPixel==NULL || ulTexture==NONE) return;
+	// texture coordinates from the top, as Direct3D's
+	static const FLOAT afPositions[4][3] = { {-1,-1,0}, {1,-1,0}, {1,1,0}, {-1,1,0} };
+	static const FLOAT afTexCoords[4][2] = { {0,1}, {1,1}, {1,0}, {0,0} };
+	for( INDEX iStream=0; iStream<MTLS_COUNT; iStream++) mtlClearStream( (MtlStream)iStream);
+	mtlSetStreamData( MTLS_POSITION,  afPositions, sizeof(afPositions));
+	mtlSetStreamData( MTLS_TEXCOORD0, afTexCoords, sizeof(afTexCoords));
+	MtlSampler smp;
+	smp.ubMagLinear = smp.ubMinLinear = bLinear ? 1 : 0;
+	smp.ubMip = 0;
+	smp.ubClampU = smp.ubClampV = 1;
+	smp.ubAnisotropy = 1;
+	for( INDEX iUnit=0; iUnit<MTL_MAXTEXUNITS; iUnit++) mtlSetTexture( iUnit, (MtlTexture*)ulTexture, smp);
+
+	const PIX pixScale = GFX_DrawableScale();
+	mtlSetViewport( _mtl_aiViewport[0]*pixScale, _mtl_aiViewport[1]*pixScale,
+	                _mtl_aiViewport[2]*pixScale, _mtl_aiViewport[3]*pixScale, 0.0f, 1.0f);
+	mtlSetScissor( _mtl_aiScissor[0]*pixScale, _mtl_aiScissor[1]*pixScale, _mtl_aiScissor[2]*pixScale, _mtl_aiScissor[3]*pixScale);
+	mtlSetBlend( bBlend!=FALSE, (MtlBlend)(eSrc-GFX_ONE), (MtlBlend)(eDst-GFX_ONE));
+	mtlSetColorMask( true, true, true, true);
+	mtlSetDepth( false, false, MTLC_ALWAYS);
+	mtlSetCull( MTLCULL_NONE, true);
+	mtlSetWireframe( false);
+	mtlSetDepthBias( false);
+	mtlSetProgram( pprVertex, pprPixel);
+
+	MtlVPConst vc;
+	memcpy( vc.afConst, _mtl_afVertexConst, sizeof(vc.afConst));
+	vc.afColor[0] = vc.afColor[1] = vc.afColor[2] = vc.afColor[3] = 1.0f;
+	vc.ulStreams = (1UL<<MTLS_POSITION) | (1UL<<MTLS_TEXCOORD0);
+	vc.ulTexCoords = 0;
+	vc.aulPad[0] = vc.aulPad[1] = 0;
+	mtlSetVertexConstants( &vc, sizeof(vc));
+	MtlPPConst pc;
+	memcpy( pc.afConst, _mtl_afPixelConst, sizeof(pc.afConst));
+	pc.fAlphaRef  = 0.5f;
+	pc.bAlphaTest = 0;
+	pc.fLODBias   = 0.0f;
+	pc.ulPad = 0;
+	mtlSetFragmentConstants( &pc, sizeof(pc));
+	mtlDrawQuads( 4);
 }

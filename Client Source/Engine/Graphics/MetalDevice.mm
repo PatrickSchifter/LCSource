@@ -26,6 +26,8 @@ struct MtlTexture {
   int iW = 0, iH = 0, ctMips = 0;
   MtlTextureFormat eFormat = MTLTF_NONE;
   uint64_t ulLastUse = 0;   // command buffer that last drew with it
+  id<MTLTexture> texDepth;  // a render target's depth buffer
+  bool bTarget = false;     // drawn into by the GPU (render target, frame copy): never replaced
 };
 
 struct MtlBuffer {
@@ -65,6 +67,7 @@ static id<CAMetalDrawable> _drawable;
 static bool _bDrawableNew = false;                  // not drawn to yet: clear it when the pass starts
 static id<MTLTexture> _texDepth;
 static int _iTargetW = 0, _iTargetH = 0;
+static MtlTexture *_ptexTarget = NULL;              // render target drawn into (NULL: the drawable)
 
 // ring buffer for data copied from memory, a part per frame
 static const size_t SL_RING = 32*1024*1024;
@@ -112,6 +115,15 @@ struct Unit {
 static Unit _aunit[MTL_MAXTEXUNITS];
 
 static std::vector<uint8_t> _aubVertexConst, _aubFragmentConst;
+
+// what mtlPushState() kept
+struct SavedState {
+  State st;
+  Stream astr[MTLS_COUNT];
+  Unit aunit[MTL_MAXTEXUNITS];
+  std::vector<uint8_t> aubVertexConst, aubFragmentConst;
+};
+static std::vector<SavedState> _asavStates;
 
 // caches
 static std::unordered_map<uint64_t, id<MTLRenderPipelineState>> _mapPipelines;
@@ -235,6 +247,8 @@ void mtlEnd(void)
 {
   @autoreleasepool {
     mtlFinish();
+    _ptexTarget = NULL;
+    _asavStates.clear();
     _mapPipelines.clear();
     _mapDepthStates.clear();
     _mapSamplers.clear();
@@ -310,6 +324,22 @@ static bool BeginEncoder(void)
     return true;
   }
   BeginCommandBuffer();
+  // a render target keeps what was drawn into it (callers clear it)
+  if (_ptexTarget != NULL) {
+    _iTargetW = _ptexTarget->iW;
+    _iTargetH = _ptexTarget->iH;
+    MTLRenderPassDescriptor *rpd = [MTLRenderPassDescriptor renderPassDescriptor];
+    rpd.colorAttachments[0].texture = _ptexTarget->tex;
+    rpd.colorAttachments[0].loadAction = MTLLoadActionLoad;
+    rpd.colorAttachments[0].storeAction = MTLStoreActionStore;
+    rpd.depthAttachment.texture = _ptexTarget->texDepth;
+    rpd.depthAttachment.loadAction = MTLLoadActionLoad;
+    rpd.depthAttachment.storeAction = MTLStoreActionStore;
+    _enc = [_cmd renderCommandEncoderWithDescriptor:rpd];
+    _ptexTarget->ulLastUse = _ulSerial;
+    _bEncoderFresh = true;
+    return true;
+  }
   if (_drawable == nil) {
     UpdateDrawableSize();
     _drawable = [_layer nextDrawable];
@@ -377,6 +407,203 @@ void mtlFinish(void)
       _cmd = nil;
       [cmd waitUntilCompleted];
     }
+  }
+}
+
+
+// RENDER TARGETS AND READING THE FRAME
+
+void mtlTextureRenderTarget(MtlTexture *ptex, int iW, int iH)
+{
+  @autoreleasepool {
+    MTLTextureDescriptor *td = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+      width:iW height:iH mipmapped:NO];
+    td.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+    td.storageMode = MTLStorageModePrivate;
+    ptex->tex = [_device newTextureWithDescriptor:td];
+    td = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
+      width:iW height:iH mipmapped:NO];
+    td.usage = MTLTextureUsageRenderTarget;
+    td.storageMode = MTLStorageModePrivate;
+    ptex->texDepth = [_device newTextureWithDescriptor:td];
+    ptex->iW = iW;  ptex->iH = iH;
+    ptex->ctMips = 1;
+    ptex->eFormat = MTLTF_RGBA8;
+    ptex->bTarget = true;
+    ptex->ulLastUse = 0;
+  }
+}
+
+void mtlSetRenderTarget(MtlTexture *ptex)
+{
+  if (ptex == _ptexTarget) {
+    return;
+  }
+  @autoreleasepool {
+    EndEncoder();
+  }
+  _ptexTarget = ptex;
+}
+
+MtlTexture *mtlGetRenderTarget(void)
+{
+  return _ptexTarget;
+}
+
+// the drawable of the frame (taken if nothing was drawn yet), for copies and reads
+static id<MTLTexture> FrameTexture(void)
+{
+  if (_drawable == nil) {
+    UpdateDrawableSize();
+    _drawable = [_layer nextDrawable];
+    if (_drawable == nil) {
+      return nil;
+    }
+    _bDrawableNew = true;
+  }
+  // not drawn to yet: it gets cleared, as the first pass would
+  if (_bDrawableNew) {
+    MtlTexture *ptexTarget = _ptexTarget;
+    _ptexTarget = NULL;
+    BeginEncoder();
+    EndEncoder();
+    _ptexTarget = ptexTarget;
+  }
+  return _drawable.texture;
+}
+
+void mtlCopyFrameToTexture(MtlTexture *ptex, int iX, int iY, int iW, int iH)
+{
+  @autoreleasepool {
+    EndEncoder();
+    BeginCommandBuffer();
+    id<MTLTexture> texFrame = FrameTexture();
+    if (texFrame == nil) {
+      return;
+    }
+    if (iX < 0) { iW += iX;  iX = 0; }
+    if (iY < 0) { iH += iY;  iY = 0; }
+    if (iX + iW > (int)texFrame.width)  iW = (int)texFrame.width - iX;
+    if (iY + iH > (int)texFrame.height) iH = (int)texFrame.height - iY;
+    if (iW <= 0 || iH <= 0) {
+      return;
+    }
+    // new storage when the size changes (the draws before keep the old one)
+    if (ptex->tex == nil || !ptex->bTarget || ptex->iW != iW || ptex->iH != iH) {
+      MTLTextureDescriptor *td = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:texFrame.pixelFormat
+        width:iW height:iH mipmapped:NO];
+      td.usage = MTLTextureUsageShaderRead;
+      td.storageMode = MTLStorageModePrivate;
+      ptex->tex = [_device newTextureWithDescriptor:td];
+      ptex->iW = iW;  ptex->iH = iH;
+      ptex->ctMips = 1;
+      ptex->eFormat = MTLTF_RGBA8;
+      ptex->bTarget = true;
+    }
+    id<MTLBlitCommandEncoder> blit = [_cmd blitCommandEncoder];
+    [blit copyFromTexture:texFrame sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(iX, iY, 0)
+      sourceSize:MTLSizeMake(iW, iH, 1) toTexture:ptex->tex destinationSlice:0 destinationLevel:0
+      destinationOrigin:MTLOriginMake(0, 0, 0)];
+    [blit endEncoding];
+    ptex->ulLastUse = _ulSerial;
+  }
+}
+
+// copy what the frame has into a shared buffer and wait for it (nil if there is no frame). The
+// depth buffer stays from frame to frame: before anything is drawn it has the last frame's depths
+// (as OpenGL's back buffer has them).
+static id<MTLBuffer> ReadFrame(bool bDepth, int iX, int iY, int iW, int iH, size_t &slRow)
+{
+  if (bDepth && _texDepth == nil) {
+    return nil;
+  }
+  EndEncoder();
+  BeginCommandBuffer();
+  id<MTLTexture> texRead = bDepth ? _texDepth : FrameTexture();
+  if (texRead == nil) {
+    return nil;
+  }
+  slRow = (size_t)iW*4;
+  id<MTLBuffer> buf = [_device newBufferWithLength:slRow*iH options:MTLResourceStorageModeShared];
+  id<MTLBlitCommandEncoder> blit = [_cmd blitCommandEncoder];
+  [blit copyFromTexture:texRead sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(iX, iY, 0)
+    sourceSize:MTLSizeMake(iW, iH, 1) toBuffer:buf destinationOffset:0 destinationBytesPerRow:slRow
+    destinationBytesPerImage:slRow*iH];
+  [blit endEncoding];
+  // the drawable stays for the rest of the frame
+  id<MTLCommandBuffer> cmd = _cmd;
+  [cmd commit];
+  _cmd = nil;
+  [cmd waitUntilCompleted];
+  return buf;
+}
+
+bool mtlReadFrameRGB(int iX, int iY, int iW, int iH, uint8_t *pubRGB)
+{
+  @autoreleasepool {
+    if (_layer == nil) {
+      return false;
+    }
+    const int iFrameW = (int)_layer.drawableSize.width, iFrameH = (int)_layer.drawableSize.height;
+    if (iX < 0 || iY < 0 || iW <= 0 || iH <= 0 || iX + iW > iFrameW || iY + iH > iFrameH) {
+      return false;
+    }
+    size_t slRow;
+    id<MTLBuffer> buf = ReadFrame(false, iX, iY, iW, iH, slRow);
+    if (buf == nil) {
+      return false;
+    }
+    const uint8_t *pubRow = (const uint8_t *)buf.contents;
+    for (int j = 0; j < iH; j++, pubRow += slRow) {
+      for (int i = 0; i < iW; i++) {
+        // BGRA
+        *pubRGB++ = pubRow[i*4+2];
+        *pubRGB++ = pubRow[i*4+1];
+        *pubRGB++ = pubRow[i*4+0];
+      }
+    }
+    return true;
+  }
+}
+
+bool mtlReadFrameDepths(const int *piXY, int ctPoints, float *pfDepths)
+{
+  if (ctPoints <= 0) {
+    return true;
+  }
+  @autoreleasepool {
+    if (_texDepth == nil) {
+      return false;
+    }
+    // one copy of the rectangle around all the points
+    const int iFrameW = (int)_texDepth.width, iFrameH = (int)_texDepth.height;
+    int iX0 = iFrameW, iY0 = iFrameH, iX1 = -1, iY1 = -1;
+    for (int i = 0; i < ctPoints; i++) {
+      const int iX = piXY[i*2], iY = piXY[i*2+1];
+      if (iX < 0 || iY < 0 || iX >= iFrameW || iY >= iFrameH) continue;
+      if (iX < iX0) iX0 = iX;
+      if (iY < iY0) iY0 = iY;
+      if (iX > iX1) iX1 = iX;
+      if (iY > iY1) iY1 = iY;
+    }
+    for (int i = 0; i < ctPoints; i++) {
+      pfDepths[i] = 0.0f;   // (outside: hidden)
+    }
+    if (iX1 < iX0) {
+      return true;
+    }
+    size_t slRow;
+    id<MTLBuffer> buf = ReadFrame(true, iX0, iY0, iX1-iX0+1, iY1-iY0+1, slRow);
+    if (buf == nil) {
+      return false;
+    }
+    const uint8_t *pub = (const uint8_t *)buf.contents;
+    for (int i = 0; i < ctPoints; i++) {
+      const int iX = piXY[i*2], iY = piXY[i*2+1];
+      if (iX < iX0 || iY < iY0 || iX > iX1 || iY > iY1) continue;
+      pfDepths[i] = *(const float *)(pub + (iY-iY0)*slRow + (iX-iX0)*4);
+    }
+    return true;
   }
 }
 
@@ -458,6 +685,12 @@ void mtlSetTextureNone(int iUnit)
   _aunit[iUnit].ptex = NULL;
 }
 
+void mtlSetTextureWrap(int iUnit, bool bClampU, bool bClampV)
+{
+  _aunit[iUnit].smp.ubClampU = bClampU ? 1 : 0;
+  _aunit[iUnit].smp.ubClampV = bClampV ? 1 : 0;
+}
+
 void mtlSetStreamData(MtlStream eStream, const void *pvData, size_t slSize)
 {
   Stream &str = _astr[eStream];
@@ -493,6 +726,31 @@ uint32_t mtlGetStreamMask(void)
     }
   }
   return ulMask;
+}
+
+void mtlPushState(void)
+{
+  _asavStates.emplace_back();
+  SavedState &sav = _asavStates.back();
+  sav.st = _st;
+  for (int i = 0; i < MTLS_COUNT; i++) sav.astr[i] = _astr[i];
+  for (int i = 0; i < MTL_MAXTEXUNITS; i++) sav.aunit[i] = _aunit[i];
+  sav.aubVertexConst = _aubVertexConst;
+  sav.aubFragmentConst = _aubFragmentConst;
+}
+
+void mtlPopState(void)
+{
+  if (_asavStates.empty()) {
+    return;
+  }
+  SavedState &sav = _asavStates.back();
+  _st = sav.st;
+  for (int i = 0; i < MTLS_COUNT; i++) _astr[i] = sav.astr[i];
+  for (int i = 0; i < MTL_MAXTEXUNITS; i++) _aunit[i] = sav.aunit[i];
+  _aubVertexConst.swap(sav.aubVertexConst);
+  _aubFragmentConst.swap(sav.aubFragmentConst);
+  _asavStates.pop_back();
 }
 
 void mtlSetVertexConstants(const void *pvData, size_t slSize)
@@ -832,6 +1090,9 @@ MtlTexture *mtlCreateTexture(void)
 
 void mtlDeleteTexture(MtlTexture *ptex)
 {
+  if (_ptexTarget == ptex) {
+    mtlSetRenderTarget(NULL);
+  }
   for (int iUnit = 0; iUnit < MTL_MAXTEXUNITS; iUnit++) {
     if (_aunit[iUnit].ptex == ptex) _aunit[iUnit].ptex = NULL;
   }

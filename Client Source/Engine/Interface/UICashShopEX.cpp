@@ -3261,14 +3261,15 @@ void CUICashShopEX::Render()
 		FLOAT fU = _PreviewX/(FLOAT)_RTWidth;
 
 		pDrawPort->InitTextureData(&m_ModelRenderTarget->rt_tdTexture);
-#ifdef SE1_D3D
+#ifndef SE1_D3D
+		// an OpenGL render target starts at the bottom (Metal's at the top, as Direct3D's)
+		if( _pGfx->gl_eCurrentAPI==GAT_OGL)
+			pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
+				0.0f,1.0f,fU,0.0f,0xFFFFFFFF);
+		else
+#endif // SE1_D3D
 		pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
 			0.0f,0.0f,fU,1.0f,0xFFFFFFFF);
-#else
-		// an OpenGL render target starts at the bottom
-		pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
-			0.0f,1.0f,fU,0.0f,0xFFFFFFFF);
-#endif // SE1_D3D
 		pDrawPort->FlushRenderingQueue();
 		m_ModelRenderTarget = NULL;
 	}

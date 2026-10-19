@@ -8004,12 +8004,13 @@ void CUIManager::HUD_DrawItemModel()
 	fU = (DEF_DEFAULT_RT_WIDTH-_RTRusToyWidth)/(FLOAT)DEF_DEFAULT_RT_WIDTH;
 
 	GetDrawPort()->InitTextureData(&m_RenderTarget->rt_tdTexture, FALSE, PBT_ADD);
-#ifdef SE1_D3D
-	GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,0.0f,1.0f,1.0f,0xFFFFFFFF);
-#else
-	// an OpenGL render target starts at the bottom
-	GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,1.0f,1.0f,0.0f,0xFFFFFFFF);
+#ifndef SE1_D3D
+	// an OpenGL render target starts at the bottom (Metal's at the top, as Direct3D's)
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL)
+		GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,1.0f,1.0f,0.0f,0xFFFFFFFF);
+	else
 #endif // SE1_D3D
+	GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,0.0f,1.0f,1.0f,0xFFFFFFFF);
 	GetDrawPort()->FlushRenderingQueue();
 }
 

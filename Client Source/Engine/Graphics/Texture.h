@@ -202,7 +202,7 @@ public:
 #ifdef SE1_D3D
 	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT, D3DFORMAT fmt = D3DFMT_A8R8G8B8);
 #else
-	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // OpenGL framebuffer object
+	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // OpenGL framebuffer object or Metal texture
 #endif // SE1_D3D
 	void Begin();	// SetRenderTarget current
 	// Must be call this func in begin-end block
@@ -230,6 +230,7 @@ protected:
 	INDEX m_aiOldViewport[4];
 	INDEX m_aiOldScissor[4];
 	INDEX m_iOldTargetHeight;   // GFX_pixRenderTargetHeight
+	TEXOBJ m_ulOldTarget;       // Metal: the render target Begin() replaced
 #endif // SE1_D3D
 };
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)

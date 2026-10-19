@@ -1369,7 +1369,7 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 
 	// prepare image info's dimensions (OpenGL on a Retina display: the pixels drawn, more than the
 	// engine counts; GfxLibrary.cpp)
-	const PIX pixScale = (eAPI==GAT_OGL) ? GFX_DrawableScale() : 1;
+	const PIX pixScale = (eAPI==GAT_OGL || eAPI==GAT_MTL) ? GFX_DrawableScale() : 1;
 	iiGrabbedImage.Clear();
 	iiGrabbedImage.ii_Width  = GetWidth()  * pixScale;
 	iiGrabbedImage.ii_Height = GetHeight() * pixScale;
@@ -1406,6 +1406,18 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 		FlipBitmap( iiGrabbedImage.ii_Picture, iiGrabbedImage.ii_Picture,
 								iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height, 2, iiGrabbedImage.ii_BitsPerPixel==32);
 	}
+
+#ifdef SE1_METAL
+	// Metal (rows from the top; it waits for the GPU)
+	else if( eAPI==GAT_MTL)
+	{
+		extern BOOL MTL_ReadFrameRGB( PIX pixI, PIX pixJ, PIX pixW, PIX pixH, UBYTE *pubRGB);
+		if( !MTL_ReadFrameRGB( dp_MinI*pixScale, dp_MinJ*pixScale, iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height,
+		                       iiGrabbedImage.ii_Picture)) {
+			memset( iiGrabbedImage.ii_Picture, 0, slBytes);
+		}
+	}
+#endif // SE1_METAL
 
 #ifdef SE1_D3D
 	// Direct3D

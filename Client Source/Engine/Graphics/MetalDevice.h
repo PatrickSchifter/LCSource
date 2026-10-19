@@ -98,6 +98,8 @@ void mtlSetDepthBias(bool bBias);
 void mtlSetProgram(MtlProgram *pprVertex, MtlProgram *pprFragment);
 void mtlSetTexture(int iUnit, MtlTexture *ptex, const MtlSampler &smp);
 void mtlSetTextureNone(int iUnit);
+// wrapping of the texture set on a unit (the sampling is the unit's, as in Direct3D)
+void mtlSetTextureWrap(int iUnit, bool bClampU, bool bClampV);
 
 // vertex data: an array in memory (copied when it is drawn, until set again) or a GPU buffer
 void mtlSetStreamData(MtlStream eStream, const void *pvData, size_t slSize);
@@ -128,6 +130,22 @@ bool mtlTextureHasStorage(MtlTexture *ptex, int iW, int iH, int ctMips, MtlTextu
 int  mtlTextureSize(MtlTexture *ptex);   // bytes
 int  mtlTextureWidth(MtlTexture *ptex);
 int  mtlTextureHeight(MtlTexture *ptex);
+
+// render targets: a texture to draw into instead of the window (BGRA, with a depth buffer of its
+// own; drawn from the top left, as in Direct3D)
+void mtlTextureRenderTarget(MtlTexture *ptex, int iW, int iH);
+// where the next draws go (NULL: the window), and where they go now
+void mtlSetRenderTarget(MtlTexture *ptex);
+MtlTexture *mtlGetRenderTarget(void);
+// copy a rectangle of the window's frame into a texture (made BGRA of that size; a GPU copy)
+void mtlCopyFrameToTexture(MtlTexture *ptex, int iX, int iY, int iW, int iH);
+// read the window's frame as it is now (they wait for the GPU): a rectangle as 8-bit R,G,B rows
+// from the top, and depths at points (x,y pairs); false if there is no frame
+bool mtlReadFrameRGB(int iX, int iY, int iW, int iH, uint8_t *pubRGB);
+bool mtlReadFrameDepths(const int *piXY, int ctPoints, float *pfDepths);
+// keep the state of the draws (programs, render state, streams, textures, constants) and put it back
+void mtlPushState(void);
+void mtlPopState(void);
 
 // GPU buffers for vertex data
 MtlBuffer *mtlCreateBuffer(size_t slSize);

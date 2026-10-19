@@ -661,16 +661,26 @@ void CRenderer::Restore_SRS_Bloom()
 	d3dSetVertexShader(D3DFVF_CTVERTEX);
 //안태훈 수정 끝	//(Bug Fix)(0.1)
 }
-#else // OpenGL
+#else // OpenGL and Metal
 
-// The same programs as Direct3D's, through ShaderAsmToARB. The quad's texture coordinates come in
-// as v5 here (ShaderAsmToARB.h); Direct3D's declaration of the quad puts them in v7.
+// The same programs as Direct3D's, through ShaderAsmToARB (and ShaderARBToMSL for Metal). The
+// quad's texture coordinates come in as v5 here (ShaderAsmToARB.h); Direct3D's declaration of the
+// quad puts them in v7.
 static ULONG _ulAddFourPixelProgram          = NONE;
 static ULONG _ulTexCoord4OffsetVertexProgram = NONE;
 // the drawport copied for the first pass (Direct3D copies it into _prtFilterTarget[1] in tiles)
 static TEXOBJ _ulBackbufferCopy = NONE;
 static PIX   _pixBackbufferCopyWidth  = 0;
 static PIX   _pixBackbufferCopyHeight = 0;
+
+#ifdef SE1_METAL
+// Gfx_wrapper_Metal.cpp
+extern void MTL_BeginFilter(void);
+extern void MTL_EndFilter(void);
+extern void MTL_DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, ULONG ulVertexProgram, ULONG ulPixelProgram,
+                                BOOL bBlend, GfxBlend eSrc, GfxBlend eDst);
+extern void MTL_CopyFrameToTexture( TEXOBJ ulTexture, PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+#endif // SE1_METAL
 
 static const char *_strTexCoord4OffsetVertexProgram =
 	"vs.1.1\n"
@@ -761,7 +771,7 @@ static void SetFilterTexture_OGL( TEXOBJ ulTexture, GLenum eFilter)
 
 // what each of the four samples is multiplied by (c0..c3 of the pixel program) and where it is
 // taken from (c10..c13 of the vertex program, added to the quad's texture coordinates)
-static void SetFilterSamples_OGL( const float afMult[4][4], const D3DXVECTOR4 *pvOffsets)
+static void SetFilterSamples( const float afMult[4][4], const D3DXVECTOR4 *pvOffsets)
 {
 	gfxSetPixelProgramConst( 0, afMult, 4);			//PCN_MULTFACTOR_0
 	gfxSetVertexProgramConst( 10, pvOffsets, 4);	//CV_T0_OFFSET
@@ -769,17 +779,34 @@ static void SetFilterSamples_OGL( const float afMult[4][4], const D3DXVECTOR4 *p
 
 // one texture sample as it is: the passes Direct3D draws with no pixel shader and the texture
 // modulated by the texture factor (white)
-static void SetFilterSampleAsIs_OGL(void)
+static void SetFilterSampleAsIs(void)
 {
 	static const float afMult[4][4] = { {1,1,1,1}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0} };
 	static const D3DXVECTOR4 avOffsets[4] = { D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0), D3DXVECTOR4(0,0,0,0) };
-	SetFilterSamples_OGL( afMult, avOffsets);
+	SetFilterSamples( afMult, avOffsets);
 }
 
-// the quad from -1,-1 to 1,1 that m_matFullCoverage_WVP puts over the whole render target; its
-// texture coordinates go up with y, since an OpenGL render target starts at the bottom
-static void DrawFullCoverageQuad_OGL(void)
+// the quad from -1,-1 to 1,1 that m_matFullCoverage_WVP puts over the whole render target, with
+// the texture on units 0..3 and the programs. Its texture coordinates go up with y in OpenGL,
+// whose render targets start at the bottom; Metal's start at the top as Direct3D's.
+static void DrawFilterQuad( TEXOBJ ulTexture, BOOL bLinear, BOOL bBlend, GfxBlend eSrc, GfxBlend eDst)
 {
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		MTL_DrawFilterQuad( ulTexture, bLinear, _ulTexCoord4OffsetVertexProgram, _ulAddFourPixelProgram, bBlend, eSrc, eDst);
+		return;
+	}
+#endif // SE1_METAL
+	SetFilterTexture_OGL( ulTexture, bLinear ? GL_LINEAR : GL_NEAREST);
+	if( bBlend) {
+		// (the factors the bloom uses)
+		const GLenum gleSrc = (eSrc==GFX_SRC_COLOR) ? GL_SRC_COLOR : GL_ONE;
+		const GLenum gleDst = (eDst==GFX_INV_SRC_COLOR) ? GL_ONE_MINUS_SRC_COLOR : (eDst==GFX_ZERO) ? GL_ZERO : GL_ONE;
+		pglEnable( GL_BLEND);
+		pglBlendFunc( gleSrc, gleDst);
+	} else {
+		pglDisable( GL_BLEND);
+	}
 	pglBegin( GL_QUADS);
 	pglTexCoord2f( 0.0f, 0.0f);  pglVertex3f( -1.0f, -1.0f, 0.0f);
 	pglTexCoord2f( 1.0f, 0.0f);  pglVertex3f(  1.0f, -1.0f, 0.0f);
@@ -794,19 +821,22 @@ HRESULT CRenderer::RenderBloom()
 	// main bloom render
 	Get_SRS_Bloom();
 
-	// what every pass has: no depth, culling, fog or alpha test, and the two programs
-	pglDisable( GL_DEPTH_TEST);
-	pglDepthMask( GL_FALSE);
-	pglDisable( GL_CULL_FACE);
-	pglDisable( GL_FOG);
-	pglDisable( GL_ALPHA_TEST);
-	pglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _ulTexCoord4OffsetVertexProgram);
-	pglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, _ulAddFourPixelProgram);
-	pglEnable( GL_VERTEX_PROGRAM_ARB);
-	pglEnable( GL_FRAGMENT_PROGRAM_ARB);
+	// what every pass has (OpenGL: no depth, culling, fog or alpha test, and the two programs;
+	// Metal sets it with each quad)
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) {
+		pglDisable( GL_DEPTH_TEST);
+		pglDepthMask( GL_FALSE);
+		pglDisable( GL_CULL_FACE);
+		pglDisable( GL_FOG);
+		pglDisable( GL_ALPHA_TEST);
+		pglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _ulTexCoord4OffsetVertexProgram);
+		pglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, _ulAddFourPixelProgram);
+		pglEnable( GL_VERTEX_PROGRAM_ARB);
+		pglEnable( GL_FRAGMENT_PROGRAM_ARB);
+		OGL_CHECKERROR;
+	}
 	gfxSetVertexProgramConst( 0, &m_matFullCoverage_WVP(0, 0), 4);	//CV_WORLDVIEWPROJ_0
-	OGL_CHECKERROR;
 
 	DoCreateFlareTexture_Separable();
 
@@ -816,11 +846,8 @@ HRESULT CRenderer::RenderBloom()
 
 	/////////////////////////////////////////////////////
 	// Render Flare texture added on top of the object
-	SetFilterTexture_OGL( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, GL_LINEAR);	// FILTER_BLOOM_TEX_TO_SCREEN
-	pglEnable( GL_BLEND);
-	pglBlendFunc( GL_SRC_COLOR, GL_ONE);
-	SetFilterSampleAsIs_OGL();
-	DrawFullCoverageQuad_OGL();
+	SetFilterSampleAsIs();
+	DrawFilterQuad( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, TRUE, TRUE, GFX_SRC_COLOR, GFX_ONE);	// FILTER_BLOOM_TEX_TO_SCREEN
 
 	Restore_SRS_Bloom();
 
@@ -836,32 +863,39 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 
 	// The drawport shrunk into _prtFilterTarget[0]. Direct3D copies it in tiles of m_nTexRes
 	// into _prtFilterTarget[1] and draws each to its part of the target; here it is one copy
-	// (OpenGL counts rows from the bottom) and one quad, sampled linearly as there.
+	// and one quad, sampled linearly as there.
 	// (in the pixels drawn: GFX_DrawableScale() per pixel the engine counts on a Retina display)
 	extern PIX GFX_DrawableScale(void);
 	const PIX pixScale  = GFX_DrawableScale();
 	const PIX pixWidth  = re_pdpDrawPort->GetWidth() * pixScale;
 	const PIX pixHeight = re_pdpDrawPort->GetHeight() * pixScale;
 	const PIX pixLeft   = re_pdpDrawPort->dp_MinI * pixScale;
-	const PIX pixBottom = (re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ) * pixScale;
-	pglActiveTextureARB( GL_TEXTURE0_ARB);
 	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
-	pglBindTexture( GL_TEXTURE_2D, (GLuint)_ulBackbufferCopy);
-	if( pixWidth!=_pixBackbufferCopyWidth || pixHeight!=_pixBackbufferCopyHeight)
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		// from the top, as Metal counts rows
+		MTL_CopyFrameToTexture( _ulBackbufferCopy, pixLeft, re_pdpDrawPort->dp_MinJ * pixScale, pixWidth, pixHeight);
+	} else
+#endif // SE1_METAL
 	{
-		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, pixWidth, pixHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		_pixBackbufferCopyWidth  = pixWidth;
-		_pixBackbufferCopyHeight = pixHeight;
+		// OpenGL counts rows from the bottom
+		const PIX pixBottom = (re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ) * pixScale;
+		pglActiveTextureARB( GL_TEXTURE0_ARB);
+		pglBindTexture( GL_TEXTURE_2D, (GLuint)_ulBackbufferCopy);
+		if( pixWidth!=_pixBackbufferCopyWidth || pixHeight!=_pixBackbufferCopyHeight)
+		{
+			pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, pixWidth, pixHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			_pixBackbufferCopyWidth  = pixWidth;
+			_pixBackbufferCopyHeight = pixHeight;
+		}
+		pglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, pixLeft, pixBottom, pixWidth, pixHeight);
+		OGL_CHECKERROR;
 	}
-	pglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, pixLeft, pixBottom, pixWidth, pixHeight);
-	OGL_CHECKERROR;
 
 	_prtFilterTarget[0]->Begin();
 	_prtFilterTarget[0]->Clear( 0xFF000000);	// D3DCOLOR_XRGB( 0x0, 0x00, 0x00 )
-	SetFilterTexture_OGL( _ulBackbufferCopy, GL_LINEAR);	// FILTER_BLOOM_TEX_TO_SCREEN
-	pglDisable( GL_BLEND);
-	SetFilterSampleAsIs_OGL();
-	DrawFullCoverageQuad_OGL();
+	SetFilterSampleAsIs();
+	DrawFilterQuad( _ulBackbufferCopy, TRUE, FALSE, GFX_ONE, GFX_ZERO);	// FILTER_BLOOM_TEX_TO_SCREEN
 	_prtFilterTarget[0]->End();
 
 	///////////////////////////////////////////////////////////////
@@ -870,32 +904,26 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 
 	_prtFilterTarget[1]->Begin();
 	_prtFilterTarget[1]->Clear( 0xFF000000);
-	SetFilterTexture_OGL( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, GL_NEAREST);	// FILTER_BLOOM_TEX
 
 	float pix_mult[4][4];
 	float woff, hoff;
 	float centw, centh;
 
-	// Direct3D samples a pixel at the corner of its texel and OpenGL at the center: half a texel
-	// back to read what the Direct3D offsets (no centering there) read
+	// Direct3D samples a pixel at the corner of its texel, OpenGL and Metal at the center: half a
+	// texel back to read what the Direct3D offsets (no centering there) read
 	centw = -m_fPerTexelWidth  * 0.5f;
 	centh = -m_fPerTexelHeight * 0.5f;
 
-	//  1st pass is opaque; additive blending when alphablend is enabled
-	pglDisable( GL_BLEND);
-	pglBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+	//  1st pass is opaque; additive blending (ONE, INV_SRC_COLOR) from the 2nd pass on
 
 	int iFilterNum;
 	iFilterNum = (g_iUseBloom > 3) ? 1 : 0;
 
 	for( i=0; i < m_vGaussian1D[iFilterNum].size(); i += 4 )
 	{
-		if( i == 4 )
-		{
-			// switch to additive blending if > 1 pass - ie if
-			//  gaussian has more than 4 elements.
-			pglEnable( GL_BLEND);
-		}
+		// switch to additive blending if > 1 pass - ie if
+		//  gaussian has more than 4 elements.
+		const BOOL bBlend = (i >= 4);
 
 		for( n=0; n < 4; n++ )
 		{
@@ -913,10 +941,10 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 			m_Offsets[ 2 ].t[n] = D3DXVECTOR4( centw + woff, centh + hoff, 0.0f, 0.0f );
 		}
 
-		SetFilterSamples_OGL( pix_mult, m_Offsets[ 2 ].t);
+		SetFilterSamples( pix_mult, m_Offsets[ 2 ].t);
 
 		// Draw the fan to cover the entire render target
-		DrawFullCoverageQuad_OGL();
+		DrawFilterQuad( _prtFilterTarget[0]->rt_tdTexture.td_ulObject, FALSE, bBlend, GFX_ONE, GFX_INV_SRC_COLOR);	// FILTER_BLOOM_TEX
 	}
 	_prtFilterTarget[1]->End();
 
@@ -927,19 +955,14 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	// Switch render targets
 	_prtFilterTarget[0]->Begin();
 	_prtFilterTarget[0]->Clear( 0xFF000000);
-	SetFilterTexture_OGL( _prtFilterTarget[1]->rt_tdTexture.td_ulObject, GL_NEAREST);	// FILTER_BLOOM_TEX
 
 	//  1st pass is opaque
-	pglDisable( GL_BLEND);
 
 	for( i=0; i < m_vGaussian1D[iFilterNum].size(); i += 4 )
 	{
-		if( i == 4 )
-		{
-			// switch to additive blending if > 1 pass - ie if
-			//  gaussian has more than 4 elements.
-			pglEnable( GL_BLEND);
-		}
+		// switch to additive blending if > 1 pass - ie if
+		//  gaussian has more than 4 elements.
+		const BOOL bBlend = (i >= 4);
 
 		for( n=0; n < 4; n++ )
 		{
@@ -958,10 +981,10 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 			m_Offsets[ 2 ].t[n] = D3DXVECTOR4( centw + woff, centh + hoff, 0.0f, 0.0f );
 		}
 
-		SetFilterSamples_OGL( pix_mult, m_Offsets[ 2 ].t);
+		SetFilterSamples( pix_mult, m_Offsets[ 2 ].t);
 
 		// Draw the fan to cover the entire render target
-		DrawFullCoverageQuad_OGL();
+		DrawFilterQuad( _prtFilterTarget[1]->rt_tdTexture.td_ulObject, FALSE, bBlend, GFX_ONE, GFX_INV_SRC_COLOR);	// FILTER_BLOOM_TEX
 	}
 	_prtFilterTarget[0]->End();
 
@@ -970,6 +993,13 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 
 void CRenderer::Get_SRS_Bloom()
 {
+#ifdef SE1_METAL
+	// Metal: the quads go to the device without the engine's state; its streams and textures are kept
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		MTL_BeginFilter();
+		return;
+	}
+#endif // SE1_METAL
 	// The passes change the GL state directly and put it back as it was, so the engine's cache of
 	// it stays right: enables (programs too), blending and color mask, depth mask, the textures of
 	// each unit and the active one, and the current texture coordinates of the quad.
@@ -979,6 +1009,12 @@ void CRenderer::Get_SRS_Bloom()
 
 void CRenderer::Restore_SRS_Bloom()
 {
+#ifdef SE1_METAL
+	if( _pGfx->gl_eCurrentAPI==GAT_MTL) {
+		MTL_EndFilter();
+		return;
+	}
+#endif // SE1_METAL
 	pglPopAttrib();
 	// the bound programs are not attributes
 	pglBindProgramARB( GL_VERTEX_PROGRAM_ARB,   _pGfx->gl_dwVertexShader);
