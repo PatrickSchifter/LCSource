@@ -542,16 +542,19 @@ void CGfxLibrary::InitContext_OGL(void)
 #endif // PLATFORM_WIN32
   }
 
-  // multitexture is supported only thru GL_EXT_texture_env_combine extension
+  // multitexture is supported only thru GL_EXT_texture_env_combine extension (or its ARB version,
+  // same enums, which is the one macOS reports)
   gl_ctTextureUnits = 1;
   gl_ctRealTextureUnits = 1;
   pglActiveTextureARB       = NULL;
   pglClientActiveTextureARB = NULL;
   if( HasExtension( go_strExtensions, "GL_ARB_multitexture")) {
     pglGetIntegerv( GL_MAX_TEXTURE_UNITS_ARB, (int*)&gl_ctRealTextureUnits); // get number of texture units
-    if( gl_ctRealTextureUnits>1 && HasExtension( go_strExtensions, "GL_EXT_texture_env_combine")) {
+    const char *strCombine = HasExtension( go_strExtensions, "GL_EXT_texture_env_combine")
+      ? "GL_EXT_texture_env_combine" : "GL_ARB_texture_env_combine";
+    if( gl_ctRealTextureUnits>1 && HasExtension( go_strExtensions, strCombine)) {
       AddExtension_OGL( NONE, "GL_ARB_multitexture");
-      AddExtension_OGL( NONE, "GL_EXT_texture_env_combine");
+      AddExtension_OGL( NONE, strCombine);
       pglActiveTextureARB       = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glActiveTextureARB");
       pglClientActiveTextureARB = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glClientActiveTextureARB");
       ASSERT( pglActiveTextureARB!=NULL && pglClientActiveTextureARB!=NULL);
