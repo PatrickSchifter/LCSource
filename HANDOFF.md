@@ -29,16 +29,19 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
    D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
 2. **Metal** (D2.2), ver "C8 — Metal": M1–M5 feitas; o Metal é o padrão no Mac (`3cfa01a`),
    `LC_GFX_API=opengl` volta ao OpenGL. Juno visto no padrão novo depois da V0 (abaixo).
-3. **Vulkan** (D2.3), ver "C8 — Vulkan": V0 feita (`d9459a2`, interface comum `GpuDevice`). Próximo: V1,
-   que precisa do MoltenVK. Decidido (2026-10-19): Homebrew (`molten-vk vulkan-loader vulkan-headers
-   vulkan-validationlayers glslang vulkan-tools`) e programas ARB → GLSL → SPIR-V pelo glslang em
-   tempo de execução. O `brew install` falhou sem rede (ghcr.io inacessível); refazer.
+3. **Vulkan** (D2.3), ver "C8 — Vulkan": V0–V5 feitas (`cf7102f`); `LC_GFX_API=vulkan` desenha pelo
+   MoltenVK. Juno visto no Vulkan pelo usuário com a validação ligada e limpa. Falta o usuário
+   conferir o resto em jogo (lista em "C8 — Vulkan") e comparar desempenho com o Metal.
 
 ## C8 — Vulkan (2026-10-19)
 
-- Plano: V0 interface comum (feita); V1 dispositivo Vulkan (MoltenVK) até a tela de login; V2 Juno
-  sem programas (função fixa emulada em GLSL); V3 programas ARB → GLSL → SPIR-V; V4 render targets e
-  leituras da tela; V5 escolha por `LC_GFX_API=vulkan`.
+- Dependências (Homebrew, decidido em 2026-10-19): `molten-vk vulkan-loader vulkan-headers
+  vulkan-validationlayers glslang vulkan-tools`. O CMake só liga o backend (`SE1_VULKAN`) se acha o
+  loader e o glslang; os dois são ligados fracos (`-weak_library`), então o jogo abre num Mac sem
+  eles (`vlkIsAvailable()` olha `dlsym` e o Vulkan some da lista de APIs).
+- Plano: V0 interface comum; V1 dispositivo até a tela de login; V2 Juno sem programas (função fixa
+  em GLSL); V3 programas ARB → GLSL → SPIR-V; V4 render targets e leituras da tela; V5 escolha por
+  `LC_GFX_API=vulkan`. Todas feitas em 2026-10-19 (`cf7102f`).
 - V0 (`d9459a2`): o que era o backend Metal virou o de toda API sem função fixa. `GpuDevice.h` é uma
   tabela de funções do dispositivo (como os `gfx*` do motor) com tipos C++ simples: estado, streams,
   texturas, render targets, leituras, programas. `MetalDevice.mm` preenche a sua (`mtlDevice()`); as
@@ -51,12 +54,44 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
   Nos pontos do motor, `GFX_IsGpuAPI(eAPI)` (`GfxLibrary.h`, hoje só `GAT_MTL`) sob `SE1_GPUDEVICE`
   (definido no CMake do Mac ao lado de `SE1_METAL`). Continuam só do Metal: `HasAPI`, a lista de
   adaptadores (`Adapter.cpp`), a escolha e a volta ao OpenGL no `Nksp.cpp`.
-- Para a V1: `GAT_VK` = 3 em `GfxAPIType`, `gl_gaAPI[3]`, entrar em `GFX_IsGpuAPI`, `HasAPI` e
-  `InitDriver_GPU`; `VulkanDevice.cpp` preenchendo um `GpuDevice` (sem headers do motor, como o do
-  Metal); superfície pelo `SDL_Vulkan_CreateSurface`. Comentários "// Metal" em `Gfx_wrapper.cpp`
-  passam a valer para os dois.
-- Visto: compila sem erro; jogo no Metal pelo caminho novo, Juno com terreno, skinning, sombra
-  projetada, UI e minimapa, nenhum programa falhando no `Nksp.log`.
+- Visto na V0: jogo no Metal pelo caminho novo, Juno com terreno, skinning, sombra projetada, UI e
+  minimapa, nenhum programa falhando.
+- V1–V5 (`cf7102f`): `GAT_VK` = 3 (`gl_gaAPI[4]`, `HasAPI`, `GFX_IsGpuAPI`, adaptador em `Adapter.cpp`,
+  `InitDriver_GPU`); `LC_GFX_API=vulkan` (ou `vk`) no `Nksp.cpp`, o Metal continua o padrão; se o
+  Vulkan não abrir, OpenGL. `VulkanDevice.mm` (Objective-C++ só pela camada da janela: uma `NSView`
+  com `CAMetalLayer`, como a do Metal, e `VK_EXT_metal_surface`; o SDL não cria superfície Vulkan
+  numa janela sem `SDL_WINDOW_VULKAN`). Prefixo `vlk` (o `vk` é da API).
+- Como desenha (comentário do topo de `VulkanDevice.mm`): Vulkan 1.3 com renderização dinâmica,
+  push descriptors (`VK_KHR_push_descriptor`) por draw — constantes em UBO (do ring), os 9 streams
+  como storage buffers lidos por índice de vértice como no Metal (o deslocamento que não alinha a
+  16 bytes vai em push constants, `GpuStreamBases`) e as 4 texturas; pipelines num cache pela
+  chave do estado; viewport de altura negativa (projeções e enrolamento do D3D/Metal sem mexer).
+  Três slots de command buffer com ring de 32 MB cada, contados por um timeline semaphore (o
+  `ulLastUse`/`InUse` do Metal). Cópias não podem ficar dentro de um passe: os uploads de textura
+  vão a um command buffer de upload que roda antes dos draws do slot; textura já desenhada ganha
+  armazenamento novo (como no Metal), então a ordem do motor se mantém. Texturas fora de upload,
+  cópia ou passe ficam em `SHADER_READ_ONLY`; barreiras "tudo espera tudo" só em volta de passes,
+  cópias e trocas de layout. Leituras (`ReadFrameRGB`/`Depths`) enviam e esperam a GPU, como no
+  Metal. Ao destruir o dispositivo, as texturas e buffers vivos do motor perdem o armazenamento e
+  ganham outro no próximo (o motor recarrega).
+- Programas: `ShaderARBToMSL.cpp` virou `ShaderARBTranslate.cpp`, um tradutor com dialeto MSL e
+  GLSL (`ShaderARBToGLSL.h`: interface, bindings e funções de leitura dos streams); a saída MSL é
+  byte a byte a de antes (conferido nos 45 programas). GLSL → SPIR-V 1.5 pelo glslang (API C) em
+  tempo de execução, guardado por fonte; no 1.6 o `discard` pede `shaderDemoteToHelperInvocation`.
+  A função fixa emulada em GLSL está em `VulkanDevice.mm`, igual à MSL.
+- Teste de paridade (`scripts/macos/gpu-parity/`, `build.sh`): as mesmas cenas (função fixa,
+  culling, profundidade, blend, alpha test, viewport/scissor/máscara, linhas/pontos, clip plane e
+  texgen, DXT/L8/mipmaps, wireframe/depth bias, render target, cópia da tela, push/pop) e os 45
+  programas do jogo (`programs/`, do `LC_DUMP_PROGRAMS`) desenhados pelo Metal e pelo Vulkan e lidos
+  de volta: 63 de 63 iguais, profundidades iguais, validação (com sincronização) limpa.
+- Validação: `LC_VK_VALIDATION=1 LC_GFX_API=vulkan scripts/macos/play.sh` (o script põe o
+  `VK_LAYER_PATH`, o `DYLD_FALLBACK_LIBRARY_PATH` da camada e a validação de sincronização); as
+  mensagens saem no `stdout.log`, que mostra `Vulkan: <GPU>, drawable WxH` quando abre.
+- Visto em jogo (usuário logado, validação ligada): Juno com personagem animado, terreno, árvores
+  com alpha test, sombra projetada, guarda, UI e minimapa; `stdout.log` sem nenhuma mensagem.
+- Conferir em jogo (`LC_GFX_API=vulkan`, comparando com o Metal): loja de cash (preview), modelo de
+  item no HUD, reflexo da água, bloom, flares, captura de tela, trocar resolução/tela cheia nas
+  opções (recria o dispositivo), CPU/FPS. Ainda não: consultas de oclusão (como no Metal).
 
 ## C8 — Metal (2026-10-19, M1 em `2c36d7c`)
 

@@ -226,8 +226,9 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
   - [x] M3: programas D3D (`vs.1.1`/`ps.1.x`) traduzidos para MSL, pelo ARB do tradutor do OpenGL (2026-10-19)
   - [x] M4: render targets (bloom, sombras projetadas, preview da loja), cópia da tela, leituras de profundidade (flares), captura de tela — feita (2026-10-19, `98defbc`), conferida em jogo pelo usuário
   - [x] M5: Metal como padrão no Mac, OpenGL com `LC_GFX_API=opengl` ou se o Metal não abrir (2026-10-19)
-- [~] Etapa Vulkan (D2.3): novo backend `GAT_VK` sobre o MoltenVK; plano e estado em `HANDOFF.md` ("C8 — Vulkan")
+- [x] Etapa Vulkan (D2.3): novo backend `GAT_VK` sobre o MoltenVK (`LC_GFX_API=vulkan`); plano e estado em `HANDOFF.md` ("C8 — Vulkan"); falta a conferência completa em jogo
   - [x] V0: o backend Metal sobre uma interface comum de dispositivo (`GpuDevice.h`), o wrapper (`Gfx_wrapper_Gpu.cpp`) servindo às duas APIs (2026-10-19)
+  - [x] V1–V5: dispositivo Vulkan (`VulkanDevice.mm`), função fixa e programas em GLSL → SPIR-V (glslang), render targets e leituras, escolha por `LC_GFX_API=vulkan`; teste de paridade com o Metal em `scripts/macos/gpu-parity` (2026-10-19)
 - [ ] Implementar a interface `gfx*` (estados, texturas, vertex buffers, matrizes) no novo backend
 - [ ] Texturas: upload, mipmaps, formatos DXT/compressed
 - [x] Animações (skinning SKA), terreno e efeitos na GPU no OpenGL (2026-10-19): o assembly D3D8 traduzido para programas ARB (`Graphics/ShaderAsmToARB.cpp`); malhas estáticas em VBOs. Detalhes em `HANDOFF.md` ("C8 — shaders na GPU e VBOs")
@@ -304,3 +305,4 @@ Fontes publicados (cada versão é um branch):
 | 2026-10-19 | C8: Metal M4, render targets, bloom, sombras projetadas, previews, reflexo da água, flares e captura (conferida em jogo) | 98defbc |
 | 2026-10-19 | C8: Metal M5, Metal como padrão no Mac (`LC_GFX_API=opengl` para o OpenGL) | 3cfa01a |
 | 2026-10-19 | C8: Vulkan V0, o backend Metal sobre a interface comum `GpuDevice` | d9459a2 |
+| 2026-10-19 | C8: Vulkan V1–V5, backend `GAT_VK` no MoltenVK (Juno visto, validação limpa) | cf7102f |
