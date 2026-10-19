@@ -1918,10 +1918,11 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 {
 	CPrintF( TRANS("\n* START NEW DISPLAY MODE ...\n"));
 
-	// clamp window size to screen size if in window mode
+	// clamp window size to screen size if in window mode (fullscreen can have the desktop's size:
+	// a Retina display's own resolution, PLT_GetDesktopSize)
 	PIX pixMaxSizeI = _pixDesktopWidth  - 1; // need 1st lower resolution than desktop
 	PIX pixMaxSizeJ = _pixDesktopHeight - 1;
-	if( pixSizeI>pixMaxSizeI || pixSizeJ>pixMaxSizeJ) {
+	if( !bFullScreenMode && (pixSizeI>pixMaxSizeI || pixSizeJ>pixMaxSizeJ)) {
 		extern void FindMaxResolution( PIX &pixSizeI, PIX &pixSizeJ);
 		FindMaxResolution( pixMaxSizeI, pixMaxSizeJ);
 		pixSizeI = pixMaxSizeI;

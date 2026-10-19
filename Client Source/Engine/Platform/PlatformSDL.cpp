@@ -18,10 +18,12 @@
 static SDL_Window *_pwndMain = NULL;
 static std::deque<MSG> _dqMessages;  // messages translated from events, not taken yet
 static float _fWheelRemainder = 0.0f;  // fraction of a wheel notch not reported yet
+static INDEX _iDrawableScale = 1;      // drawable pixels per window point (PLT_GetDrawableScale)
 #ifdef __APPLE__
 #include <Engine/Interface/UIManager.h>
 ENGINE_API CUIManager *SE_Get_UIManagerPtr();  // Engine.cpp
 extern void PLT_MacInstallGestureMonitors(void);  // PlatformMac.mm
+extern float PLT_MacSetHighDensity(SDL_Window *pwnd, bool bHighDensity);  // PlatformMac.mm
 static float _fPanX = 0.0f, _fPanY = 0.0f;       // trackpad camera turning not taken yet
 static bool _bGestureOverUI = true;              // where the current two-finger drag began
 static float _fMagnifyRemainder = 0.0f;          // pinch not reported as wheel yet
@@ -65,9 +67,9 @@ static HWND WindowHandle(SDL_Window *pwnd)
 HWND PLT_CreateMainWindow(const char *strTitle)
 {
   ASSERT(_pwndMain == NULL);
-  // the client area size is set by PLT_SetMainWindowMode(); one window point is one pixel
-  // (no high pixel density yet); outside Windows OpenGL draws on it (Graphics/Gfx_OpenGL.cpp),
-  // on Windows Direct3D 8 takes its HWND
+  // the client area size is set by PLT_SetMainWindowMode(); the game counts in window points
+  // (on a Retina display OpenGL draws more pixels than that, PLT_GetDrawableScale); outside
+  // Windows OpenGL draws on it (Graphics/Gfx_OpenGL.cpp), on Windows Direct3D 8 takes its HWND
 #ifdef PLATFORM_WIN32
   const SDL_WindowFlags ulFlags = SDL_WINDOW_HIDDEN;
 #else
@@ -97,30 +99,98 @@ SDL_Window *PLT_GetMainWindow(void)
   return _pwndMain;
 }
 
+// Retina. The size the game asks for is in pixels drawn. When the screen has it only at a pixel
+// density above 1 (2560x1600 is 1280x800 points at 2x), the window gets that many points over the
+// density and OpenGL draws at the full density, while the game keeps counting in window points
+// (sizes, mouse, UI): the engine scales its viewports by PLT_GetDrawableScale (Graphics/
+// GfxLibrary.cpp), so the 3D scene is sharp and the UI keeps its size. Any other size is one pixel
+// per point, scaled up by the system. LC_NO_HIGH_DENSITY=1 never draws at high density.
+static bool _bHighDensity = false;  // the window draws at its display's density
+
+static bool HighDensityAllowed(void)
+{
+#ifdef __APPLE__
+  static const bool bAllowed = getenv("LC_NO_HIGH_DENSITY") == NULL;
+  return bAllowed;
+#else
+  return false;
+#endif
+}
+
+// the pixel density of the window's desktop, when the window can draw at it
+static float DisplayDensity(SDL_DisplayID idDisplay)
+{
+  const SDL_DisplayMode *pdm = SDL_GetDesktopDisplayMode(idDisplay);
+  if (HighDensityAllowed() && pdm != NULL && pdm->pixel_density > 1.0f) {
+    return pdm->pixel_density;
+  }
+  return 1.0f;
+}
+
+// the drawable's pixels per point, after the window changed size, mode or display
+static void UpdateDrawableScale(void)
+{
+#ifdef __APPLE__
+  if (_pwndMain == NULL) return;
+  const INDEX iScale = (INDEX)lroundf(PLT_MacSetHighDensity(_pwndMain, _bHighDensity));
+  _iDrawableScale = iScale > 1 ? iScale : 1;
+#endif
+}
+
 void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX iLeft, INDEX iTop)
 {
   ASSERT(_pwndMain != NULL);
+  const SDL_DisplayID idDisplay = SDL_GetDisplayForWindow(_pwndMain);
+  float fDensity = 1.0f;  // window pixels per point for this size
   if (bFullScreen) {
-    // the display mode closest to the requested size, in window points: on a Retina display the
-    // 1280x800 mode has pixel density 2, and without high density modes SDL picked 1920x1200 at 1x
+    // a high density mode with exactly that many pixels, else the mode closest in points: on a
+    // Retina display the 1280x800 mode has pixel density 2, and without high density modes SDL
+    // picked 1920x1200 at 1x
     SDL_DisplayMode dm;
-    const SDL_DisplayID idDisplay = SDL_GetDisplayForWindow(_pwndMain);
-    if (SDL_GetClosestFullscreenDisplayMode(idDisplay, pixWidth, pixHeight, 0.0f, true, &dm)) {
-      SDL_SetWindowFullscreenMode(_pwndMain, &dm);
-    } else {
-      SDL_SetWindowFullscreenMode(_pwndMain, NULL);
+    bool bMode = false;
+    if (DisplayDensity(idDisplay) > 1.0f) {
+      int ctModes = 0;
+      SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+      for (int iMode = 0; apdm != NULL && iMode < ctModes; iMode++) {
+        const SDL_DisplayMode &dmMode = *apdm[iMode];
+        if (dmMode.pixel_density > 1.0f
+         && lroundf(dmMode.w * dmMode.pixel_density) == pixWidth
+         && lroundf(dmMode.h * dmMode.pixel_density) == pixHeight) {
+          dm = dmMode;
+          bMode = true;
+          fDensity = dmMode.pixel_density;
+          break;
+        }
+      }
+      SDL_free(apdm);
     }
-    SDL_SetWindowSize(_pwndMain, pixWidth, pixHeight);
+    if (!bMode) {
+      bMode = SDL_GetClosestFullscreenDisplayMode(idDisplay, pixWidth, pixHeight, 0.0f, true, &dm);
+    }
+    SDL_SetWindowFullscreenMode(_pwndMain, bMode ? &dm : NULL);
+    SDL_SetWindowSize(_pwndMain, (int)lroundf(pixWidth / fDensity), (int)lroundf(pixHeight / fDensity));
     SDL_SetWindowFullscreen(_pwndMain, true);
   } else {
+    // at the desktop's density when the size does not fit the desktop in points
+    const SDL_DisplayMode *pdmDesktop = SDL_GetDesktopDisplayMode(idDisplay);
+    if (pdmDesktop != NULL && (pixWidth > pdmDesktop->w || pixHeight > pdmDesktop->h)) {
+      fDensity = DisplayDensity(idDisplay);
+    }
     SDL_SetWindowFullscreen(_pwndMain, false);
-    SDL_SetWindowSize(_pwndMain, pixWidth, pixHeight);
+    SDL_SetWindowSize(_pwndMain, (int)lroundf(pixWidth / fDensity), (int)lroundf(pixHeight / fDensity));
     SDL_SetWindowPosition(_pwndMain,
       iLeft >= 0 ? iLeft : (int)SDL_WINDOWPOS_CENTERED,
       iTop >= 0 ? iTop : (int)SDL_WINDOWPOS_CENTERED);
   }
+  _bHighDensity = fDensity > 1.0f;
   SDL_ShowWindow(_pwndMain);
   SDL_SyncWindow(_pwndMain);
+  UpdateDrawableScale();
+}
+
+INDEX PLT_GetDrawableScale(void)
+{
+  return _iDrawableScale;
 }
 
 void PLT_SetMainWindowTitle(const char *strTitle)
@@ -137,9 +207,12 @@ BOOL PLT_IsMainWindowMinimized(void)
 
 void PLT_GetDesktopSize(PIX &pixWidth, PIX &pixHeight)
 {
-  const SDL_DisplayMode *pdm = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-  pixWidth = pdm != NULL ? pdm->w : 1024;
-  pixHeight = pdm != NULL ? pdm->h : 768;
+  // in pixels: on a Retina display its size in points times the density (PLT_SetMainWindowMode)
+  const SDL_DisplayID idDisplay = SDL_GetPrimaryDisplay();
+  const SDL_DisplayMode *pdm = SDL_GetDesktopDisplayMode(idDisplay);
+  const float fDensity = DisplayDensity(idDisplay);
+  pixWidth = pdm != NULL ? (PIX)lroundf(pdm->w * fDensity) : 1024;
+  pixHeight = pdm != NULL ? (PIX)lroundf(pdm->h * fDensity) : 768;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -544,6 +617,11 @@ static void TranslateEvent(const SDL_Event &ev)
     break;
   case SDL_EVENT_WINDOW_MOVED:
     PostMsg(WM_MOVE, 0, MAKELPARAM((SWORD)ev.window.data1, (SWORD)ev.window.data2));
+    break;
+  case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+  case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+    // to or from a Retina display
+    UpdateDrawableScale();
     break;
   case SDL_EVENT_WINDOW_RESIZED:
     PostMsg(WM_SIZE, 0 /*SIZE_RESTORED*/, MAKELPARAM((WORD)ev.window.data1, (WORD)ev.window.data2));

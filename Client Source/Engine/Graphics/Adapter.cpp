@@ -6,6 +6,7 @@
 #include <Engine/Base/Console.h>
 #ifndef PLATFORM_WIN32
 #include <SDL3/SDL.h>
+#include <Engine/Platform/Platform.h>
 #endif
 
 
@@ -83,6 +84,15 @@ static CResolution _areResolutions[] =
   { 1600, 1200 },   
   { 1680, 1050  },	// wide screen
   { 1920, 1200  },	// wide screen	//  [7/2/2010 rumist]
+  // Retina displays at full density (macOS, Platform/PlatformSDL.cpp), and 4K
+  { 2560, 1440 },
+  { 2560, 1600 },
+  { 2560, 1664 },
+  { 2880, 1800 },
+  { 2940, 1912 },
+  { 3024, 1964 },
+  { 3456, 2234 },
+  { 3840, 2160 },
 };
 // THIS NUMBER MUST NOT BE OVER 25! (otherwise change it in adapter.h)
 static const INDEX MAX_RESOLUTIONS = sizeof(_areResolutions)/sizeof(_areResolutions[0]);
@@ -119,12 +129,21 @@ void CGfxLibrary::InitAPIs(void)
     pda->da_iCurrentDisplayMode = -1;
     int ctModes = 0;
     SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
-    // the resolutions of the list that the display has
+    // the resolutions of the list that the display has, in points or, in a high density (Retina)
+    // mode, in pixels: PLT_SetMainWindowMode draws those at full density
+    PIX pixDesktopI, pixDesktopJ;
+    PLT_GetDesktopSize( pixDesktopI, pixDesktopJ);
+    const BOOL bHighDensity = pdmDesktop!=NULL && pixDesktopI>pdmDesktop->w;
     for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
     {
       CResolution &re = _areResolutions[iResolution];
       for( INDEX iMode=0; iMode<ctModes; iMode++) {
-        if( apdm[iMode]->w==re.re_pixSizeI && apdm[iMode]->h==re.re_pixSizeJ) {
+        const SDL_DisplayMode &dmSDL = *apdm[iMode];
+        const BOOL bPoints = dmSDL.w==re.re_pixSizeI && dmSDL.h==re.re_pixSizeJ;
+        const BOOL bPixels = bHighDensity && dmSDL.pixel_density>1.0f
+                          && (PIX)(dmSDL.w*dmSDL.pixel_density+0.5f)==re.re_pixSizeI
+                          && (PIX)(dmSDL.h*dmSDL.pixel_density+0.5f)==re.re_pixSizeJ;
+        if( bPoints || bPixels) {
           CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
           dm.dm_pixSizeI = re.re_pixSizeI;
           dm.dm_pixSizeJ = re.re_pixSizeJ;

@@ -837,10 +837,13 @@ HRESULT CRenderer::DoCreateFlareTexture_Separable()
 	// The drawport shrunk into _prtFilterTarget[0]. Direct3D copies it in tiles of m_nTexRes
 	// into _prtFilterTarget[1] and draws each to its part of the target; here it is one copy
 	// (OpenGL counts rows from the bottom) and one quad, sampled linearly as there.
-	const PIX pixWidth  = re_pdpDrawPort->GetWidth();
-	const PIX pixHeight = re_pdpDrawPort->GetHeight();
-	const PIX pixLeft   = re_pdpDrawPort->dp_MinI;
-	const PIX pixBottom = re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ;
+	// (in the pixels drawn: GFX_DrawableScale() per pixel the engine counts on a Retina display)
+	extern PIX GFX_DrawableScale(void);
+	const PIX pixScale  = GFX_DrawableScale();
+	const PIX pixWidth  = re_pdpDrawPort->GetWidth() * pixScale;
+	const PIX pixHeight = re_pdpDrawPort->GetHeight() * pixScale;
+	const PIX pixLeft   = re_pdpDrawPort->dp_MinI * pixScale;
+	const PIX pixBottom = (re_pdpDrawPort->dp_Raster->ra_Height - re_pdpDrawPort->dp_MaxJ) * pixScale;
 	pglActiveTextureARB( GL_TEXTURE0_ARB);
 	if( _ulBackbufferCopy==NONE) gfxGenerateTexture( _ulBackbufferCopy);
 	pglBindTexture( GL_TEXTURE_2D, _ulBackbufferCopy);

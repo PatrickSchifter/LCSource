@@ -26,6 +26,7 @@
 #include <Engine/Graphics/MultiMonitor.h>
 #ifndef PLATFORM_WIN32
 #include <SDL3/SDL.h>  // the OpenGL context of an SDL window (Gfx_OpenGL.cpp)
+#include <Engine/Platform/Platform.h>
 #endif
 
 #include <Engine/Templates/DynamicStackArray.h>
@@ -114,6 +115,18 @@ static ULONG GFX_ulLastDrawPortID = 0;
 // OpenGL: height of the bound render target (CRenderTexture), 0 for the window; drawports count rows
 // from its bottom, so a drawport locked inside the target lands where Direct3D puts it
 extern PIX GFX_pixRenderTargetHeight = 0;
+
+// OpenGL: pixels drawn per pixel the engine counts. On a Retina display the window draws at the
+// display's density while sizes, mouse and UI stay in window points (PLT_GetDrawableScale), so
+// viewports and scissors are scaled: the 3D scene comes out sharp and the UI keeps its size.
+// 1 in a render target, which has the pixels the engine asked for.
+extern PIX GFX_DrawableScale(void)
+{
+#ifndef PLATFORM_WIN32
+	if( GFX_pixRenderTargetHeight==0) return PLT_GetDrawableScale();
+#endif
+	return 1;
+}
 
 // last size of vertex buffers
 extern INDEX _iLastVertexBufferSize = 0;
@@ -1641,10 +1654,11 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 	{ 
 		// pass drawport dimensions to OpenGL
 		const PIX pixRasterH = GFX_pixRenderTargetHeight>0 ? GFX_pixRenderTargetHeight : pdpToLock->dp_Raster->ra_Height;
-		const PIX pixMinSI = pdpToLock->dp_ScissorMinI;
-		const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI;
-		const PIX pixMinSJ = pixRasterH - pdpToLock->dp_ScissorMaxJ;
-		const PIX pixMaxSJ = pixRasterH - pdpToLock->dp_ScissorMinJ;
+		const PIX pixScale = GFX_DrawableScale();
+		const PIX pixMinSI = pdpToLock->dp_ScissorMinI * pixScale;
+		const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI * pixScale;
+		const PIX pixMinSJ = (pixRasterH - pdpToLock->dp_ScissorMaxJ) * pixScale;
+		const PIX pixMaxSJ = (pixRasterH - pdpToLock->dp_ScissorMinJ) * pixScale;
 		pglViewport( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 		pglScissor(  pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
 		OGL_CHECKERROR;

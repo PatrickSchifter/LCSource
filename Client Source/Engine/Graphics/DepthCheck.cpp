@@ -110,7 +110,10 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
       // skip if not in required mirror level or was already checked in this iteration
       if( iMirrorLevel!=di.di_iMirrorLevel || _iCheckIteration!=di.di_iSwapLastRequest) continue;
       const PIX pixJ = pra->ra_Height-1 - di.di_pixJ; // OpenGL has Y-inversed buffer!
-      pglReadPixels( di.di_pixI, pixJ, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &fPointOoK);
+      // a pixel the engine counts is GFX_DrawableScale() pixels across on a Retina display
+      extern PIX GFX_DrawableScale(void);
+      const PIX pixScale = GFX_DrawableScale();
+      pglReadPixels( di.di_pixI*pixScale, pixJ*pixScale, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &fPointOoK);
       OGL_CHECKERROR;
       // it is visible if there is nothing nearer in z-buffer already
       di.di_bVisible = (di.di_fOoK<fPointOoK);

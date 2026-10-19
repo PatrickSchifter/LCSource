@@ -123,8 +123,10 @@ static BOOL ClipToDrawPort( const CDrawPort *pdp, PIX &pixI, PIX &pixJ, PIX &pix
 
 
 
-// OpenGL: height of the bound render target, 0 for the window (GfxLibrary.cpp)
+// OpenGL: height of the bound render target, 0 for the window, and pixels drawn per pixel the
+// engine counts (Retina; GfxLibrary.cpp)
 extern PIX GFX_pixRenderTargetHeight;
+extern PIX GFX_DrawableScale(void);
 static inline PIX RasterHeight_OGL( const CDrawPort *pdp)
 {
 	return GFX_pixRenderTargetHeight>0 ? GFX_pixRenderTargetHeight : pdp->dp_Raster->ra_Height;
@@ -137,7 +139,8 @@ static void SetScissor( const CDrawPort *pdp, PIX pixI, PIX pixJ, PIX pixW, PIX 
 	ASSERT( pixJ>=0 && pixJ<pdp->GetHeight());
 	ASSERT( pixW>0  && pixH>0);
 	const PIX pixInvMinJ = RasterHeight_OGL(pdp) - (pdp->dp_MinJ+pixJ+pixH);
-	pglScissor( pdp->dp_MinI+pixI, pixInvMinJ, pixW, pixH);
+	const PIX pixScale = GFX_DrawableScale();
+	pglScissor( (pdp->dp_MinI+pixI)*pixScale, pixInvMinJ*pixScale, pixW*pixScale, pixH*pixScale);
 	ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
 	OGL_CHECKERROR;
 }
@@ -151,7 +154,8 @@ static void ResetScissor( const CDrawPort *pdp)
 	const PIX pixMaxSI = pdp->dp_ScissorMaxI;
 	const PIX pixMinSJ = RasterHeight_OGL(pdp) - pdp->dp_ScissorMaxJ;
 	const PIX pixMaxSJ = RasterHeight_OGL(pdp) - pdp->dp_ScissorMinJ;
-	pglScissor( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI, pixMaxSJ-pixMinSJ);
+	const PIX pixScale = GFX_DrawableScale();
+	pglScissor( pixMinSI*pixScale, pixMinSJ*pixScale, (pixMaxSI-pixMinSI)*pixScale, (pixMaxSJ-pixMinSJ)*pixScale);
 	ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
 	OGL_CHECKERROR;
 }
@@ -749,7 +753,7 @@ void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) c
 		const FLOAT fI = pixI+0.5f;
 		const FLOAT fJ = pixJ+0.5f;
 		glCOLOR(col);
-		pglPointSize(fR);
+		pglPointSize(fR*GFX_DrawableScale());
 		pglBegin(GL_POINTS);
 			pglVertex2f(fI,fJ);
 		pglEnd();
@@ -797,7 +801,7 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 	// OpenGL
 	if( eAPI==GAT_OGL) {
 		glCOLOR(col);
-		pglPointSize(fRadius);
+		pglPointSize(fRadius*GFX_DrawableScale());
 		pglBegin(GL_POINTS);
 			pglVertex3f( v(1),v(2),v(3));
 		pglEnd();
@@ -1266,10 +1270,12 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 	extern INDEX ogl_bGrabDepthBuffer;
 	const BOOL bGrabDepth = (eAPI==GAT_OGL) && ((iGrabZBuffer==1 && ogl_bGrabDepthBuffer) || iGrabZBuffer==2);
 
-	// prepare image info's dimensions
+	// prepare image info's dimensions (OpenGL on a Retina display: the pixels drawn, more than the
+	// engine counts; GfxLibrary.cpp)
+	const PIX pixScale = (eAPI==GAT_OGL) ? GFX_DrawableScale() : 1;
 	iiGrabbedImage.Clear();
-	iiGrabbedImage.ii_Width  = GetWidth();
-	iiGrabbedImage.ii_Height = GetHeight();
+	iiGrabbedImage.ii_Width  = GetWidth()  * pixScale;
+	iiGrabbedImage.ii_Height = GetHeight() * pixScale;
 	iiGrabbedImage.ii_BitsPerPixel = bGrabDepth ? 32 : 24;
 
 	// allocate memory for 24-bit raw picture and copy buffer context
@@ -1281,15 +1287,15 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
 	if( eAPI==GAT_OGL)
 	{ 
 		// determine drawport starting location inside raster
-		const PIX pixStartI = dp_MinI;
-		const PIX pixStartJ = dp_Raster->ra_Height-(dp_MinJ+GetHeight());
-		pglReadPixels( pixStartI, pixStartJ, GetWidth(), GetHeight(), GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)iiGrabbedImage.ii_Picture);
+		const PIX pixStartI = dp_MinI * pixScale;
+		const PIX pixStartJ = (dp_Raster->ra_Height-(dp_MinJ+GetHeight())) * pixScale;
+		pglReadPixels( pixStartI, pixStartJ, iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)iiGrabbedImage.ii_Picture);
 		OGL_CHECKERROR;
 		// grab z-buffer to alpha channel, if needed
 		if( bGrabDepth) {
 			// grab
 			FLOAT *pfZBuffer = (FLOAT*)AllocMemory( pixPicSize*sizeof(FLOAT));
-			pglReadPixels( pixStartI, pixStartJ, GetWidth(), GetHeight(), GL_DEPTH_COMPONENT, GL_FLOAT, (GLvoid*)pfZBuffer);
+			pglReadPixels( pixStartI, pixStartJ, iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height, GL_DEPTH_COMPONENT, GL_FLOAT, (GLvoid*)pfZBuffer);
 			OGL_CHECKERROR;
 			// convert
 			UBYTE *pubZBuffer = (UBYTE*)pfZBuffer;

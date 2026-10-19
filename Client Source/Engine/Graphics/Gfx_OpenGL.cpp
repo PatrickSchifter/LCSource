@@ -19,6 +19,7 @@
 // its SDL_Window and go_hglRC holds the SDL_GLContext.
 #ifndef PLATFORM_WIN32
 #include <SDL3/SDL.h>
+#include <Engine/Platform/Platform.h>
 #endif
 
 
@@ -448,10 +449,10 @@ BOOL CGfxLibrary::CreateContext_OGL(HWND hWnd)
   CPrintF( TRANS("\nPixel Format Description:\n"));
   CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), iRed+iGreen+iBlue+iAlpha, iRed, iGreen, iBlue, iAlpha);
   CPrintF( TRANS("  Depth bits: %d (%d for stencil)\n"), iDepth, iStencil);
-  int iW=0, iH=0, iPixW=0, iPixH=0;
+  int iW=0, iH=0;
   SDL_GetWindowSize( pwnd, &iW, &iH);
-  SDL_GetWindowSizeInPixels( pwnd, &iPixW, &iPixH);
-  CPrintF( "  Window: %dx%d points, %dx%d pixels\n", iW, iH, iPixW, iPixH);
+  const INDEX iScale = PLT_GetDrawableScale();
+  CPrintF( "  Window: %dx%d points, %dx%d pixels\n", iW, iH, iW*iScale, iH*iScale);
   CPrintF( "\n");
   gl_ctDepthBits = iDepth;
   if( iStencil>0) gl_ulFlags |= GLF_STENCILBUFFER;

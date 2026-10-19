@@ -286,9 +286,10 @@ int GetSystemMetrics(int nIndex)
   switch (nIndex) {
   case SM_CXSCREEN:
   case SM_CYSCREEN: {
-    PIX pixWidth, pixHeight;
-    PLT_GetDesktopSize(pixWidth, pixHeight);
-    return nIndex == SM_CXSCREEN ? pixWidth : pixHeight;
+    // in points, as window positions (PLT_GetDesktopSize is in pixels)
+    const SDL_DisplayMode *pdm = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+    if (pdm == NULL) return nIndex == SM_CXSCREEN ? 1024 : 768;
+    return nIndex == SM_CXSCREEN ? pdm->w : pdm->h;
   }
   case SM_CMONITORS: {
     int ctDisplays = 0;

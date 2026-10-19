@@ -21,11 +21,16 @@ ENGINE_API void PLT_End(void);
 ENGINE_API HWND PLT_CreateMainWindow(const char *strTitle);
 ENGINE_API void PLT_DestroyMainWindow(void);
 ENGINE_API SDL_Window *PLT_GetMainWindow(void);
-// client area size, windowed (centered, or at iLeft/iTop when not negative) or fullscreen
+// client area size in pixels drawn (in window points over the density when the size needs a
+// Retina display's density, PLT_GetDrawableScale), windowed (centered, or at iLeft/iTop when not negative) or fullscreen
 ENGINE_API void PLT_SetMainWindowMode(PIX pixWidth, PIX pixHeight, BOOL bFullScreen, INDEX iLeft, INDEX iTop);
 ENGINE_API void PLT_SetMainWindowTitle(const char *strTitle);
 ENGINE_API BOOL PLT_IsMainWindowMinimized(void);
+// the desktop in pixels (on a Retina display, its size in points times the density)
 ENGINE_API void PLT_GetDesktopSize(PIX &pixWidth, PIX &pixHeight);
+// pixels OpenGL draws per window point: the display's density when the size set needs it (macOS
+// Retina), else 1; sizes and coordinates the game sees stay in window points
+ENGINE_API INDEX PLT_GetDrawableScale(void);
 
 // the next message translated from the window's events, as PeekMessage(PM_REMOVE) would give it
 ENGINE_API BOOL PLT_PeekMessage(MSG *pmsg);
