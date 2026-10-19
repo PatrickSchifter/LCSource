@@ -22,7 +22,8 @@ import sys
 CRYPT_DIR = pathlib.Path(__file__).resolve().parent.parent / "Server Source" / "LCCrypt"
 INIT_KEY = 1852535664  # CNM_INIT_KEY ("nksp")
 
-MSG_FAIL, MSG_DB, MSG_LOGIN, MSG_LOGINSERV_PLAYER = 1, 2, 3, 34
+MSG_FAIL, MSG_DB, MSG_LOGIN, MSG_MENU, MSG_START_GAME, MSG_APPEAR, MSG_LOGINSERV_PLAYER = 1, 2, 3, 4, 5, 7, 34
+MSG_MENU_NEW, MSG_MENU_START = 0, 2
 MSG_DB_NAMES = {0: "MSG_DB_SUCCESS", 1: "MSG_DB_OK", 2: "MSG_DB_CHAR_EXIST", 3: "MSG_DB_CHAR_END",
                 4: "MSG_DB_OTHER_SERVER"}
 
@@ -137,6 +138,8 @@ def main():
     ap.add_argument("--password", default="teste2009")
     ap.add_argument("--version", type=int, default=1648)
     ap.add_argument("--nation", type=int, default=10)
+    ap.add_argument("--create", metavar="NAME", help="create a character (titan) if the list is empty")
+    ap.add_argument("--start", action="store_true", help="enter the game with the first character")
     args = ap.parse_args()
 
     print(f"LoginServer {args.host}:{args.login_port}")
@@ -173,6 +176,39 @@ def main():
     print(f"GameServer {ip}:{port}")
     g = Conn(ip, port)
     g.send(login_msg(args.user, args.password, args.version, args.nation))
+    chars = read_char_list(g)
+    if not chars and args.create:
+        print(f"creating {args.create}")
+        g.send(bytes([MSG_MENU, MSG_MENU_NEW]) + args.create.encode() + b"\0" + bytes([0, 1, 1]))
+        chars = read_char_list(g)
+    if args.start and chars:
+        index, name = chars[0]
+        print(f"starting {name} ({index})")
+        g.send(bytes([MSG_MENU, MSG_MENU_START]) + struct.pack(">i", index))
+        while True:
+            m = g.recv()
+            r = Reader(m)
+            t = r.u8()
+            if t == MSG_FAIL:
+                sys.exit(f"  MSG_FAIL {r.u8()}")
+            if t == MSG_DB and r.u8() == 1:  # MSG_DB_OK: zone(n)
+                print(f"  MSG_DB_OK zone {r.i32()}; sending MSG_START_GAME")
+                g.send(bytes([MSG_START_GAME]))
+                break
+        seen = {}
+        try:
+            while sum(seen.values()) < 200:
+                t = g.recv()[0]
+                seen[t] = seen.get(t, 0) + 1
+        except socket.timeout:
+            pass
+        print("  in game; message types received:", dict(sorted(seen.items())))
+        if MSG_APPEAR in seen:
+            print(f"  {seen[MSG_APPEAR]} MSG_APPEAR (NPCs / players around)")
+
+
+def read_char_list(g):
+    chars = []
     try:
         while True:
             m = g.recv()
@@ -180,18 +216,22 @@ def main():
             t = r.u8()
             if t == MSG_FAIL:
                 sys.exit(f"  MSG_FAIL {r.u8()}")
-            if t == MSG_DB:
-                sub = r.u8()
-                name = MSG_DB_NAMES.get(sub, sub)
-                print(f"  MSG_DB {name}")
-                if name == "MSG_DB_CHAR_END":
-                    print("character list reached (end of list)")
-                    return
-            else:
+            if t != MSG_DB:
                 print(f"  message type {t} ({len(m)} bytes)")
+                continue
+            sub = r.u8()
+            name = MSG_DB_NAMES.get(sub, sub)
+            if name == "MSG_DB_CHAR_EXIST":
+                index, cname = r.i32(), r.str()
+                print(f"  MSG_DB_CHAR_EXIST {index} {cname}")
+                chars.append((index, cname))
+            elif name == "MSG_DB_CHAR_END":
+                print(f"  MSG_DB_CHAR_END: character list reached ({len(chars)} characters)")
+                return chars
+            else:
+                print(f"  MSG_DB {name}")
     except socket.timeout:
         sys.exit("timed out waiting for the character list")
-
 
 if __name__ == "__main__":
     main()
