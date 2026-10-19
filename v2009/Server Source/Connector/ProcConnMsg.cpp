@@ -1286,7 +1286,7 @@ void ConnStashNewPassword(CDescriptor* d, CNetMsg& msg)
 		}
 		else
 		{
-			if(oldpw == '\0')
+			if(oldpw[0] == '\0')	// was `oldpw == '\0'` (pointer vs. null, never true)
 			{
 				StashSetNewPasswordMsg(rmsg, userindex, charindex, 2);
 				SEND_Q(rmsg, d);

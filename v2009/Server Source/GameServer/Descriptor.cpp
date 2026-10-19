@@ -267,7 +267,7 @@ int CDescriptor::ProcessInput(int maxqueuesize)
 
 		if (bytes_read < 0)	/* Error, disconnect them. */
 		{
-			GAMELOG << init("bytes_read < 0") << delim << bytes_read << end;
+			GAMELOG << init("bytes_read < 0") << delim << (int)bytes_read << end;
 			return -1;
 		}
 		else if (bytes_read == 0)	/* Just blocking, no problems. */
@@ -351,7 +351,7 @@ ssize_t CDescriptor::PerformSocketRead(socket_t m_desc, char *read_point, size_t
 	/* read() returned 0, meaning we got an EOF. */
 	if (ret == 0)
 	{
-		GAMELOG << init("PerformSocketRead") << delim << "read error" << delim << ret << end;
+		GAMELOG << init("PerformSocketRead") << delim << "read error" << delim << (int)ret << end;
 		return -1;
 	}
 

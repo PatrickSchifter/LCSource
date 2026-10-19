@@ -5533,7 +5533,7 @@ void do_GMSilenceMulti(CPC* ch, const char* arg)
 	}
 	sec = atoi(g_buf);
 
-	if(distance <= 0 || time <= 0)
+	if(distance <= 0 || sec <= 0)	// was `time <= 0`, a comparison of the time() function pointer
 		return ;
 
 	int sx = ch->m_cellX - 2;

@@ -1028,7 +1028,7 @@ void CServer::ConnectorConnect(void* i)
 #else
 void* CServer::ConnectorConnect(void* i)
 {
-	int idx = (int)i;
+	int idx = (int)(intptr_t)i;
 	gserver.m_brunconn[idx] = true;
 	while (true)
 	{

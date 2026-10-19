@@ -88,7 +88,9 @@
 #define HAVE_ARPA_INET_H 1
 #define HAVE_ARPA_TELNET_H 1
 #define HAVE_ASSERT_H 1
+#ifndef __APPLE__	// macOS has crypt() in <unistd.h>, no <crypt.h>
 #define HAVE_CRYPT_H 1
+#endif
 #define HAVE_ERRNO_H 1
 #define HAVE_FCNTL_H 1
 #define HAVE_LIMITS_H 1

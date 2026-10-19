@@ -48,6 +48,8 @@
 #endif
 
 
+// macOS provides ntohll/htonll as macros (<sys/_endian.h>); they swap the same way.
+#ifndef ntohll
 inline LONGLONG ntohll(LONGLONG n)
 {
 #ifdef LC_BIG_ENDIAN
@@ -62,7 +64,9 @@ inline LONGLONG ntohll(LONGLONG n)
 	return n;
 #endif
 }
+#endif // ntohll
 
+#ifndef htonll
 inline LONGLONG htonll(LONGLONG n)
 {
 #ifdef LC_BIG_ENDIAN
@@ -77,6 +81,7 @@ inline LONGLONG htonll(LONGLONG n)
 	return n;
 #endif
 }
+#endif // htonll
 
 extern CNetMsgPool g_netmsgpool;
 

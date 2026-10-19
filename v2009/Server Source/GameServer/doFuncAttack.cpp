@@ -170,7 +170,12 @@ void do_Attack(CPC* pc, CNetMsg& msg)
 				return ;
 
 			// 공속 검사
+#ifdef NIGHT_SHADOW
 			if ( ch->ChekAttackType() && ch->CheckHackAttack(pc))
+#else
+			// ChekAttackType() only exists with NIGHT_SHADOW (no shipping region defines it)
+			if (ch->CheckHackAttack(pc))
+#endif
 				return ;
 
 			// 펫 타고 있으면 불가능

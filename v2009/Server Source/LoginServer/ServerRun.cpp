@@ -375,7 +375,7 @@ void CServer::Run()
 				m_brunconn[i] = (_beginthread(ConnectorConnect, 0, (void*)i) > 0);
 #else
 				pthread_t threadConnector;
-				m_brunconn[i] = (pthread_create(&threadConnector, NULL, ConnectorConnect, (void*)i)) ? false : true;
+				m_brunconn[i] = (pthread_create(&threadConnector, NULL, ConnectorConnect, (void*)(intptr_t)i)) ? false : true;
 #endif
 			}
 		} // end for (i=0; i < m_nConnector; i++)
