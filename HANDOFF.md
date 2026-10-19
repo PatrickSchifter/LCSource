@@ -24,10 +24,34 @@ Decidido (2026-10-17): renderização em OpenGL primeiro (o backend `GAT_OGL` qu
 com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (trocado de SDL2 em
 2026-10-17: no Homebrew o `sdl2` já é o sdl2-compat rodando sobre o SDL3).
 
-1. O que falta no OpenGL sem D3D: refração da água, preview de personagem da loja (usam o
-   `CRenderTexture`, que já tem FBO; falta trocar as chamadas D3D de cada um), Retina (hoje
-   1280x800 ampliado), gama. Nome de item que pisca ao passar o mouse (não visto ainda).
-   Bloom e reflexo da água já estão no OpenGL.
+1. O que falta no OpenGL sem D3D: gama. Nome de item que pisca ao passar o mouse (não visto
+   ainda). Bloom, reflexo da água, preview da loja e Retina já estão no OpenGL. Refração da água
+   não existe no motor (nem no D3D: `re_prtRefraction` é declarado e liberado, nunca criado).
+
+## C8 — Retina no OpenGL (2026-10-19, `2deb6bb`)
+
+- Decidido com o usuário: a resolução das opções é em **pixels desenhados**; cena nítida com a UI
+  no tamanho normal. A lista ganhou 2560x1440..3840x2160 (`Adapter.cpp`), mostrados quando a tela
+  tem um modo com esses pixels em densidade > 1; `PLT_GetDesktopSize` dá pixels.
+- `PLT_SetMainWindowMode`: tela cheia procura um modo de densidade > 1 com exatamente esses pixels
+  (2560x1600 = 1280x800 a 2x), senão o mais próximo em pontos (1x, ampliado como antes); em janela,
+  densidade só se o tamanho não cabe no desktop em pontos. A janela fica com pixels/densidade
+  pontos e o `NSView` desenha na densidade cheia (`PLT_MacSetHighDensity`, `PlatformMac.mm`; a
+  janela é criada sem `SDL_WINDOW_HIGH_PIXEL_DENSITY`, então o SDL segue em pontos).
+- O jogo continua contando em **pontos** (tamanhos, mouse, UI, `GetClientRect`); o motor multiplica
+  por `GFX_DrawableScale()` (`GfxLibrary.cpp`; 1 dentro de render target) a viewport e o scissor
+  (`LockDrawPort`, `DrawPort.cpp`), a cópia da tela do bloom, o `glReadPixels` do teste de
+  profundidade dos flares, `glPointSize` e a captura de tela (sai na resolução cheia).
+- `StartNewMode` (`Nksp.cpp`) limitava ao desktop - 1 mesmo em tela cheia; agora só em janela.
+- `LC_NO_HIGH_DENSITY=1` desliga. Testado em jogo pelo usuário (tela cheia nas resoluções grandes).
+
+## C8 — preview da loja no OpenGL (2026-10-19, `b2f97cf`)
+
+- Drawports travados dentro de um `CRenderTexture` contam as linhas pela altura do alvo
+  (`GFX_pixRenderTargetHeight`, posto por `Begin()`/`End()`), não pela da janela; a loja de cash e o
+  modelo de item do centro da tela invertem o v no OpenGL (o alvo começa embaixo).
+- A loja abre vazia: só pede itens ao clicar numa categoria (`MSG_EX_CASHITEM_LIST_REQ`); o banco não
+  tem itens de tipo 1xxxx, então "HOT and New" fica vazia.
 
 ## C8 — bloom no OpenGL (2026-10-19)
 

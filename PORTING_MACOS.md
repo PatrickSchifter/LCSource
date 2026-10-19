@@ -229,7 +229,7 @@ Como ficou: `HANDOFF.md` ("C6 e C7 — como ficou"). Commits `3b366e5`..`fd81b47
 - [ ] Reescrever em MSL (Metal) os programas D3D `vs.1.1`/`ps.1.x` (`Graphics/ShaderCode.h`, `Terrain/TRShader_*`, `Effect/*`, `Rendering/RenderBloom.cpp`)
 - [ ] Remover a dependência de D3DX (183 usos em 13 arquivos): matrizes, carregamento de textura
 - [ ] Fontes e UI (`Engine/Interface`), drawports, render-to-texture
-- [ ] Suporte a Retina/HiDPI e tela cheia
+- [x] Suporte a Retina/HiDPI e tela cheia (2026-10-19): resolução em pixels desenhados, cena na densidade cheia com a UI em pontos; detalhes em `HANDOFF.md` ("C8 — Retina no OpenGL")
 
 ### C9. Integração e jogo
 - [x] Engine inicializa, monta os `.gro` e carrega um mundo (2026-10-19)
