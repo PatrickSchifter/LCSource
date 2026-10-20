@@ -10,6 +10,7 @@
 #endif
 
 #include <Engine/Base/FileName.h>
+#include <stdlib.h>
 
 //0707
 #define COMPRESSION_MESSAGE
@@ -28,7 +29,13 @@
 
 
 #define START_WORLD		("Data\\world\\StartZone\\startzone.wld")  
-#define LOGIN_WORLD		("Data\\World\\LoginWorld\\LoginWorld.wld")
+// development: LC_LOGIN_WLD=<world file> shows another world behind the login window
+inline const char *LC_LoginWorldFile(void)
+{
+	const char *strWld = getenv("LC_LOGIN_WLD");
+	return (strWld != NULL && *strWld != '\0') ? strWld : "Data\\World\\LoginWorld\\LoginWorld.wld";
+}
+#define LOGIN_WORLD		(LC_LoginWorldFile())
 
 //---------------------------------------------------------------------
 #define CLASS_ENEMY		("Classes\\enemy.ecl")

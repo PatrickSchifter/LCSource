@@ -5,6 +5,7 @@
 #     Data/                     a symlink per entry of the BR 2014 Data/, except
 #       Etc/                    a copy (the game writes ps.dat there)
 #       <files of LC-2009-gen>  the data files regenerated in the 2009 format
+#       World/                  a link per world, from LC-2009-gen/Data/World when it has one
 #     everything else           symlinks into the BR 2014 install, except the files the game
 #                               writes or that differ per install (sl.dta, vtm.brn: copies)
 # Run it again after LC-2009-gen/Data changes; the copies already there are kept.
@@ -32,7 +33,9 @@ done
 genlist=" "
 if [[ -d $GEN ]]; then
   for f in "$GEN"/*; do
-    n=$(basename "$f"); genlist="$genlist$(lower "$n") "
+    n=$(basename "$f")
+    [[ $(lower "$n") == world ]] && continue   # merged world by world below
+    genlist="$genlist$(lower "$n") "
     rm -f "$DST/Data/$n"; ln -s "$f" "$DST/Data/$n"
   done
 fi
@@ -41,6 +44,16 @@ for f in "$SRC"/Data/*; do
   [[ $genlist == *" $l "* ]] && continue
   if [[ $l == etc ]]; then
     [[ -d $DST/Data/$n && ! -L $DST/Data/$n ]] || { rm -f "$DST/Data/$n"; cp -Rp "$f" "$DST/Data/$n"; }
+  elif [[ $l == world ]]; then
+    # a link per world, except the worlds in $GEN/World (the classic LoginWorld the 2009 code's
+    # entity numbers belong to)
+    [[ -L $DST/Data/$n ]] && rm -f "$DST/Data/$n"
+    mkdir -p "$DST/Data/$n"
+    for w in "$f"/*; do
+      wn=$(basename "$w")
+      if [[ -e $GEN/World/$wn ]]; then ln -sfn "$GEN/World/$wn" "$DST/Data/$n/$wn"
+      else ln -sfn "$w" "$DST/Data/$n/$wn"; fi
+    done
   else
     ln -sfn "$f" "$DST/Data/$n"
   fi

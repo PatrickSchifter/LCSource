@@ -267,6 +267,23 @@ void CGame::LoginGame(const CTFileName &fnMapName)
 		return;
 	}
 	_pUIMgr->SetBackgroundWorld(&_pNetwork->ga_World);
+	// the login camera path (Camera_login): the world starts it from a touch field next to the player
+	// start, which the local player does not reach here; start it as going back to the login does
+	_pGameState->BackToLogin();
+
+	// development: LC_DUMP_ENTITIES=1 lists the login world's entities (id, class, name, position)
+	// in the console log, to find the cameras and markers the code refers to by id
+	if( getenv("LC_DUMP_ENTITIES") != NULL )
+	{
+		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
+			CEntity *pen = iten;
+			const FLOAT3D &v = pen->GetPlacement().pl_PositionVector;
+			const ANGLE3D &a = pen->GetPlacement().pl_OrientationAngle;
+			CPrintF("entity %d %s '%s' at %.1f %.1f %.1f angle %.1f %.1f %.1f\n", pen->en_ulID,
+				pen->en_pecClass->ec_pdecDLLClass->dec_strName, (const char*)pen->GetName(),
+				v(1), v(2), v(3), a(1), a(2), a(3));
+		}
+	}
 
 //wooss 060209 TEST JAPAN
 //#define AUTO_LOGIN
