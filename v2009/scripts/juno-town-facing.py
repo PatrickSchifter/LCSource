@@ -7,8 +7,9 @@ For each zone 0 NPC placed from the classic Map.dta (zone0-town-mapdta.sql) and 
 casts rays every 5 degrees on the installed .sat (1 m cells, 255 = blocked), smooths the free
 distance over +-20 degrees and faces the most open direction: NPCs stand with their backs to a
 building, facing the street.
-Heading convention (a_pos_r, degrees), fitted to two spots set in game with /whereami:
-direction = (sin r, -cos r) in (x, z), i.e. r = 0 faces -z and r = 90 faces +x.
+Heading convention (a_pos_r, degrees), fitted to two spots set in game with /whereami: a player
+with heading h looks along (sin h, -cos h) in (x, z). NPC models face the other way: an NPC with
+a_pos_r = h + 180 looks where that player looks (checked in game).
 Rows set by hand in zone0-town-manual.sql are applied after this file and win.
 """
 import math
@@ -41,7 +42,8 @@ def heading(x, z):
     n = len(raw)
     sm = [sum(raw[(i + k) % n] for k in range(-4, 5)) for i in range(n)]
     a = math.radians(5 * max(range(n), key=lambda i: sm[i]))
-    return round(math.degrees(math.atan2(math.cos(a), -math.sin(a))), 1)
+    h = math.degrees(math.atan2(math.cos(a), -math.sin(a))) + 180.0
+    return round((h + 180.0) % 360.0 - 180.0, 1)
 
 
 def sql(q):
