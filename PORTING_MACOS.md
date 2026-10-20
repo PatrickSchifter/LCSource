@@ -358,4 +358,4 @@ ignorando espaços) em cada versão:
 | 2026-10-19 | Fase V: versão 2009 no Mac (servidor, cliente, dados no formato 2009, Juno antiga) | branch `v2009` |
 | 2026-10-20 | Fase V: branches da 2009 juntados; 2018 importada e o porte reaplicado por merge | `v2009` 5f67d65, `v2018` |
 | 2026-10-20 | Fase F: `LastChaos.app` em volta do launcher; 2009 e 2018 unificadas no `macos-port` (`v2009/`, `v2018/`) | 964e8d7, 8df8bf7, 55dda42 |
-| 2026-10-20 | A 2015 em `v2015/`, como as outras; na raiz só docs e o launcher | (este) |
+| 2026-10-20 | A 2015 em `v2015/`, como as outras; na raiz só docs e o launcher | f3c984d |
