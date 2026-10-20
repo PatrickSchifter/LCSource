@@ -12,7 +12,7 @@
 #include "../ShareLib/packetType/ptype_old_login.h"
 
 #ifdef PASSWORD_ENCRYPT_SHA256
-#include "../Sharelib/LCSha256.h"
+#include "../ShareLib/LCSha256.h"
 #endif // PASSWORD_ENCRYPT_SHA256
 #if defined(BCRYPT_USA) && !defined (CIRCLE_WINDOWS)
 #include "../ShareLib/CheckPassword.h"

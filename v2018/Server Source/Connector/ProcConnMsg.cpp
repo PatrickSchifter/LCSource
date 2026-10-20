@@ -11,7 +11,7 @@
 #include "../ShareLib/CheckPassword.h"
 #endif
 #ifdef PASSWORD_ENCRYPT_SHA256
-#include "../Sharelib/LCSha256.h"
+#include "../ShareLib/LCSha256.h"
 #endif // PASSWORD_ENCRYPT_SHA256
 #include <boost/format.hpp>
 

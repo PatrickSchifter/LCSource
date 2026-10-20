@@ -1,0 +1,11 @@
+# docker build context (deploy/linux/Dockerfile): only server sources and the deploy scripts
+*
+!v2009/Server Source
+!v2015/CMakeLists.txt
+!v2015/Server Source
+!v2018/CMakeLists.txt
+!v2018/Server Source
+!deploy/linux
+**/build-*
+**/*.o
+**/*.a

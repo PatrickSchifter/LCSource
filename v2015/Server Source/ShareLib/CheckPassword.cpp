@@ -4,6 +4,7 @@
 
 #include "md5.h"
 #include <botan/bcrypt.h>
+#include <algorithm>
 bool CCheckPassword::checkPass(const std::string& pass, const std::string& dbpass)
 {
 	//if(crypted) return Botan::check_bcrypt(pass, dbpass);
