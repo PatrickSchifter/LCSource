@@ -17,3 +17,6 @@ UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=90; -- Armor 
 UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Weapon Trader (Vendedor de Armas Baran)
 UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663188; -- 91 Miner Trainer (Ferreiro)
 UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Weapon Lending Dealer (Aluguel de Arma)
+UPDATE t_shop SET a_pos_r=-140 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Baran: 10 more to the right
+UPDATE t_npc_regen SET a_pos_r=-140 WHERE a_index=3663188; -- Ferreiro: 10 more to the right
+UPDATE t_shop SET a_pos_r=-175 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Aluguel de Arma: 45 more to the right
