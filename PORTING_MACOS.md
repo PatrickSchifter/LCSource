@@ -256,12 +256,12 @@ Fontes publicados (cada versão é um branch):
 - Servidor: [openlastchaos/lastchaos-source-server](https://github.com/openlastchaos/lastchaos-source-server), mesmos branches
 
 - [x] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo) — 2026-10-19, abaixo
-- [~] Portar a versão 2018 (cliente e servidor): branch `v2018`, merge de três vias do `macos-port`
-  sobre os fontes publicados (2026-10-20); compila e liga (`85544ac`), falta rodar e jogar
+- [x] Portar a versão 2018 (cliente e servidor): branch `v2018`, merge de três vias do `macos-port`
+  sobre os fontes publicados (2026-10-20); login, personagem e jogo conferidos pelo usuário
 - [x] Portar a versão 2009 (cliente e servidor): branch `v2009` (2026-10-19, juntado em `5f67d65`);
   login, Juno antiga com NPCs no lugar, jogada pelo usuário
 - [~] Assets e banco de cada versão: 2009 feitos (`lc2009_*` do dump de 2016, `.lod` regenerados
-  por `v2009/tools/lod2009`); 2018 do pacote do tx00100xt (aprovado), ainda não trazidos
+  por `v2009/tools/lod2009`); 2018 do pacote do tx00100xt (`lc2018_*`, `~/Projects/LC-2018`)
 - Um branch por versão, cada um na sua worktree (decidido em 2026-10-20; `HANDOFF.md`, "Fase V — versões")
 - [ ] Seletor de versão (launcher: build do cliente, assets e servidor correspondentes)
 - Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las

@@ -53,7 +53,7 @@ assets e o servidor de cada versão.
 |---|---|---|
 | 2015 (a nossa) | `macos-port` / `~/Projects/LCSource` | completa |
 | 2009 | `v2009` / `~/Projects/LCSource-2009` | servidor e cliente no Mac, jogada pelo usuário em Juno |
-| 2018 | `v2018` / `~/Projects/LCSource-2018` | servidor e cliente compilam e ligam no Mac; falta rodar (assets e banco) |
+| 2018 | `v2018` / `~/Projects/LCSource-2018` | servidor e cliente no Mac; login, criação de personagem e jogo conferidos pelo usuário (2026-10-20) |
 
 ### 2009 (`v2009`)
 
@@ -97,8 +97,19 @@ assets e o servidor de cada versão.
   427 casts `(const char*)` (achados pelo `-Wnon-pod-varargs` e postos por script), parâmetros
   `const CTString&` nas telas novas, OpenAES e o Lua 5.1 de `Engine/lua` como bibliotecas
   estáticas (a 2018 lê dados `.lua`). Ainda não rodou: nada testado em execução.
-- Assets e banco (aprovado em 2026-10-20): `LC2018\Client\Data` e `DB\2018\2018_nov_*.sql` do
-  pacote do tx00100xt no Windows; ainda não trazidos (o Windows estava desligado).
+- Assets e banco (aprovado em 2026-10-20), do pacote do tx00100xt no Windows:
+  - Instalação `~/Projects/LC-2018` (Data, Local, Fonts, Shaders, Classes, Bin e os arquivos do topo de
+    `LC2018\Client`); `sl.dta` = `Mac 192.168.0.4 4301` (o do pacote em `sl.dta.original`). Abrir:
+    `scripts/macos/play.sh` na worktree da 2018 (o padrão dela é `~/Projects/LC-2018`).
+  - Bancos `lc2018_data`, `lc2018_db`, `lc2018_auth` dos `2018_nov_{data,db,db_auth}.sql` (dumps em
+    `~/Projects/LC-2018-db`, importados com `sql_mode=''`); o `2018_nov_post.sql` não é lido pelo código.
+    Conta `teste` / `teste123`: a região USA confere a senha por SHA-256 de `id + salt + senha`
+    (`[SHA256] Salt=lcdev` no LoginServer/Connector), em maiúsculas no `bg_user.passwd`.
+  - Servidores nas portas 43xx/44xx (os da 2015 em 40xx/41xx e os da 2009 em 42xx continuam juntos):
+    `scripts/run-server.sh start` na worktree, usando `build-server`.
+  - Mapas do GameServer em `run/GameServer/data`: os de `ServerRelease\GameServer\data` do pacote,
+    menos a zona 13 (`Dungeon3_pvp`, que o pacote não tem) e o `.sat` da zona 16 (`Egeha_PK`, de 1 byte
+    por célula no pacote; o original ficou como `.sat.1byte`), copiados da 2015 (o 16 é o plano provisório).
 
 ## C8 — Vulkan (2026-10-19)
 
