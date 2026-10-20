@@ -10,3 +10,5 @@ UPDATE t_npc_regen SET a_pos_r=20, a_y_layer=0 WHERE a_index=3663309; -- 136 Cap
 UPDATE t_npc_regen SET a_pos_r=-80 WHERE a_index=3663377; -- 254 Domain Merchant (Randy)
 UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=78; -- Scroll Trader (Vendedor Ambulante Gerel)
 UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=226; -- Magical Shopkeeper (Armarinheiro Mágico Coen)
+UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=517; -- Pet Merchant (Vendedor Polly): same as Geres
+UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663125; -- 55 Transmuter (Alkemist): -85 from zone0-town-facing.sql, turned 45 to the right
