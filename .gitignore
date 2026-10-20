@@ -32,3 +32,7 @@ run/
 /Client Source/Engine/Classes/*_tables.h
 *.cpp_tmp
 *.h_tmp
+
+# Local tool caches and leftovers
+.cache/
+__pycache__/
