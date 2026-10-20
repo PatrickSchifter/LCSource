@@ -3,21 +3,25 @@
 #
 #   scripts/macos/launcher.sh            asks which version (a macOS list dialog)
 #   scripts/macos/launcher.sh 2018       goes straight to that version (2009, 2015 or 2018)
+#   scripts/macos/launcher.sh 2018 nuvem plays on the cloud server instead (deploy/linux)
 #   scripts/macos/launcher.sh --stop     stops the servers of every version
 #   scripts/macos/launcher.sh --status   shows which servers run
 #
 # Each version lives in its directory of this repository (HANDOFF.md, "Fase V — versões"):
-# v2009/, v2015/ and v2018/, each with its build, game install and servers. The versions use different ports, so their servers can run
-# side by side. When a version's LoginServer already runs, its address is kept; otherwise the
+# v2009/, v2015/ and v2018/, each with its build, game install and servers. The versions use
+# different ports, so their servers can run side by side. When a version's LoginServer already runs, its address is kept; otherwise the
 # servers start on 127.0.0.1 (LC_PUBLIC_IP overrides it). The install's sl.dta is rewritten to
 # the address the LoginServer listens on. Extra environment (LC_GFX_API, LC_SCREEN...) reaches
-# the client.
+# the client. On the cloud server (the dialog's "<version> (nuvem)"), nothing starts here and
+# the sl.dta points to the cloud host, at the same ports.
 #
 # LC_PROJECTS: the directory holding the game installs (default ~/Projects).
+# LC_CLOUD_HOST: the cloud server (default the Oracle Cloud instance of deploy/linux/README.md).
 set -euo pipefail
 
 PROJECTS=${LC_PROJECTS:-$HOME/Projects}
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"   # this repository
+CLOUD_HOST=${LC_CLOUD_HOST:-136.248.115.250}
 
 # version | directory | server script | client script | game install | LoginServer port | name in sl.dta
 VERSIONS=(
@@ -61,10 +65,13 @@ case ${1:-} in
 esac
 
 version=${1:-}
+cloud=0
+[[ ${2:-} == nuvem ]] && cloud=1
 if [[ -z $version ]]; then
-  choices=$(for v in "${VERSIONS[@]}"; do printf '"%s",' "${v%%|*}"; done)
+  choices=$(for v in "${VERSIONS[@]}"; do printf '"%s","%s (nuvem)",' "${v%%|*}" "${v%%|*}"; done)
   version=$(osascript -e "choose from list {${choices%,}} with title \"Last Chaos\" with prompt \"Qual versão jogar?\" default items {\"2015\"}") || true
   [[ -n $version && $version != false ]] || exit 0
+  [[ $version == *" (nuvem)" ]] && { cloud=1; version=${version% (nuvem)}; }
   GUI=1   # chosen in the dialog: errors are shown as alerts too
 fi
 field "$version" 1 >/dev/null || fail "versão desconhecida: $version (2009, 2015 ou 2018)"
@@ -78,7 +85,13 @@ name=$(field "$version" 7)
 
 [[ -d $game/Data ]] || fail "a instalação da $version não existe: $game"
 
-addr=$(listen_addr "$port")
+if [[ $cloud == 1 ]]; then
+  addr=$CLOUD_HOST
+  nc -z -G 5 "$addr" "$port" 2>/dev/null || fail "o servidor da $version na nuvem ($addr:$port) não responde"
+  name="Nuvem"
+else
+  addr=$(listen_addr "$port")
+fi
 if [[ -z $addr ]]; then
   echo "starting the $version servers"
   LC_PUBLIC_IP=${LC_PUBLIC_IP:-127.0.0.1} "$server_script" start || fail "os servidores da $version não subiram (veja os stdout.log em run/)"
