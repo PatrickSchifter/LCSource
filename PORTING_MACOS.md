@@ -257,7 +257,7 @@ Fontes publicados (cada versão é um branch):
 
 - [x] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo) — 2026-10-19, abaixo
 - [~] Portar a versão 2018 (cliente e servidor): branch `v2018`, merge de três vias do `macos-port`
-  sobre os fontes publicados (2026-10-20); falta compilar e jogar
+  sobre os fontes publicados (2026-10-20); compila e liga (`85544ac`), falta rodar e jogar
 - [x] Portar a versão 2009 (cliente e servidor): branch `v2009` (2026-10-19, juntado em `5f67d65`);
   login, Juno antiga com NPCs no lugar, jogada pelo usuário
 - [~] Assets e banco de cada versão: 2009 feitos (`lc2009_*` do dump de 2016, `.lod` regenerados

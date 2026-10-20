@@ -53,7 +53,7 @@ assets e o servidor de cada versão.
 |---|---|---|
 | 2015 (a nossa) | `macos-port` / `~/Projects/LCSource` | completa |
 | 2009 | `v2009` / `~/Projects/LCSource-2009` | servidor e cliente no Mac, jogada pelo usuário em Juno |
-| 2018 | `v2018` / `~/Projects/LCSource-2018` | merge do porte feito, compilando (abaixo) |
+| 2018 | `v2018` / `~/Projects/LCSource-2018` | servidor e cliente compilam e ligam no Mac; falta rodar (assets e banco) |
 
 ### 2009 (`v2009`)
 
@@ -93,7 +93,10 @@ assets e o servidor de cada versão.
   GameGuard, xTrap e os parsers gerados; põe Win32Compat, plataforma SDL, ShaderAsmToARB, SEED,
   `Nksp.cpp`, `Shaders/Common.cpp`, `DisplaceShader.cpp`).
 - Builds: `build-server` (Debug, `LC_REGION=USA`) e `build-client-mac` (Release,
-  `LC_CLIENT_COUNTRY=USA`) na worktree.
+  `LC_CLIENT_COUNTRY=USA`) na worktree; os dois compilam e ligam (`85544ac`). Correções do cliente:
+  427 casts `(const char*)` (achados pelo `-Wnon-pod-varargs` e postos por script), parâmetros
+  `const CTString&` nas telas novas, OpenAES e o Lua 5.1 de `Engine/lua` como bibliotecas
+  estáticas (a 2018 lê dados `.lua`). Ainda não rodou: nada testado em execução.
 - Assets e banco (aprovado em 2026-10-20): `LC2018\Client\Data` e `DB\2018\2018_nov_*.sql` do
   pacote do tx00100xt no Windows; ainda não trazidos (o Windows estava desligado).
 
