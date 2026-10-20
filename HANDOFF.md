@@ -5,32 +5,35 @@ Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`
 
 ## Próximo passo (para o próximo agente) — 2026-10-20
 
-**Fase F: empacotar o launcher num `.app`** que o usuário abre pelo Finder/Dock. Combinado com o usuário
-em 2026-10-20, depois do launcher e da tela de login clássica da 2009.
+**Fase F: empacotar o launcher num `.app`.** Passo 1 feito (2026-10-20); o resto depende de respostas
+do usuário (marcadas com *).
 
-Estado de partida: as três versões rodam no Mac e o usuário jogou cada uma; `scripts/macos/launcher.sh`
-(neste branch) escolhe a versão, sobe os servidores dela e abre o cliente (ver "Fase V — versões").
+Feito:
+- **Um branch só** (pedido do usuário, 2026-10-20): `v2009` e `v2018` foram juntados no `macos-port`
+  (`8df8bf7`, `55dda42`). A 2009 já morava em `v2009/`; a 2018 trocava o `Client Source`/`Server Source`
+  da 2015, então entrou em `v2018/` (merge `-s ours` + `read-tree --prefix`, histórico preservado). Os
+  branches `v2009*`/`v2018` e as worktrees `LCSource-2009*`/`LCSource-2018` foram apagados; builds e
+  `run/` de cada versão ficam dentro da pasta dela (`v2009/build-*`, `v2018/build-*`, `v2009/run`,
+  `v2018/run`). Mudança que valha para as três (motor, plataforma) tem de ser feita três vezes:
+  `Client Source/`, `v2009/Client/` e `v2018/Client Source/` (o `PlatformMac.mm` é igual nas três).
+- `scripts/macos/make-app.sh` gera `build-app/LastChaos.app` ("fino": o executável chama o
+  `launcher.sh` deste repositório, com o Homebrew no PATH; log em `~/Library/Logs/LastChaos/launcher.log`;
+  assinatura ad hoc). Ícone oficial: o do `LC.exe` do Last Chaos Brasil no Windows (atalho da área de
+  trabalho), em `Client Source/Nksp/res/LC.ico` (48x48 no máximo). O cliente não é um bundle, então o
+  Dock mostrava um ícone de terminal: `LC_APP_ICON` (que o app define) põe o ícone no Dock
+  (`PLT_MacSetAppIcon`, nas três versões). O nome no Dock continua "Nksp".
 
-O que fazer, nesta ordem (confirme com o usuário as escolhas marcadas com *):
-1. Um `LastChaos.app` cujo executável chama o `launcher.sh` (o diálogo de versão já existe). Info.plist,
-   ícone (`Client Source/Nksp/LC.ico`, ou o `LC.ico` da instalação, convertido em `.icns`).
-   Comece pelo `.app` "fino": ele usa as worktrees, os builds e as instalações de `~/Projects`
-   como estão (é o uso do próprio usuário). Gere-o por script (`scripts/macos/make-app.sh`), não à mão.
-2. Bibliotecas: hoje o cliente liga no Homebrew (`otool -L build-client-mac/Bin/*`): boost (atomic,
-   chrono, container, date_time, thread), SDL3, libvorbisfile, glslang (2 dylibs) e o loader do
-   Vulkan; o MoltenVK vem pelo ICD do Homebrew. Os dylibs do motor (`Engine`, `EntitiesMP`, `GameMP`,
-   `Shaders`) já são `@rpath`. Para um `.app` que funcione em outro Mac: copiar essas bibliotecas
-   para `Contents/Frameworks`, reescrever com `install_name_tool`, levar o MoltenVK e o JSON do ICD
-   (`VK_ICD_FILENAMES`/`VK_DRIVER_FILES`). *Perguntar se o `.app` precisa rodar fora deste Mac
-   antes de fazer isso; se não, o passo 1 basta.
-3. *Servidores dentro do `.app`?* Hoje cada versão usa os binários e o `run/` da sua worktree e o
-   MariaDB do Homebrew. Levar tudo para dentro é bem mais trabalho (banco incluso); perguntar.
-4. *Assinatura: ad hoc (`codesign -s -`) basta para uso local; notarização só para distribuir.
-5. Diretórios do usuário (`~/Library/Application Support/LastChaos`): o jogo grava no próprio
-   diretório (`Data/Etc/ps.dat`, logs). Só mexer se o `.app` for levar os assets dentro.
+Falta (perguntado ao usuário, sem resposta ainda):
+2. *O `.app` precisa rodar em outro Mac? Se sim: bibliotecas do Homebrew (`otool -L build-client-mac/Bin/*`:
+   boost atomic/chrono/container/date_time/thread, SDL3, libvorbisfile, glslang, loader do Vulkan) em
+   `Contents/Frameworks` com `install_name_tool`, mais o MoltenVK e o JSON do ICD
+   (`VK_ICD_FILENAMES`/`VK_DRIVER_FILES`). Os dylibs do motor já são `@rpath`.
+3. *Servidores e MariaDB dentro do `.app`? (hoje usam os binários e `run/` de cada versão e o MariaDB do
+   Homebrew; bem mais trabalho).
+4. *Assinatura: ad hoc basta para uso local; notarização só para distribuir.
+5. Diretórios do usuário (`~/Library/Application Support/LastChaos`): só se o `.app` levar os assets.
 
-Depois: CI (GitHub Actions, `macos-14`) e as auditorias (item 6 abaixo). Nada foi enviado ao
-GitHub nesta rodada: `macos-port`, `v2009` e `v2018` estão só locais (perguntar antes do push).
+Depois: CI (GitHub Actions, `macos-14`) e as auditorias (item 6 abaixo).
 
 ## Onde estamos
 
@@ -64,39 +67,38 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 Decidido (2026-10-19), com a renderização concluída, a ordem do que vem agora:
 
 4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`), ver "Fase V — versões" abaixo: feito
-   (2026-10-20). 2009 (`v2009`) e 2018 (`v2018`) portadas e jogadas; `scripts/macos/launcher.sh`.
+   (2026-10-20). 2009 (`v2009/`) e 2018 (`v2018/`) portadas e jogadas; `scripts/macos/launcher.sh`.
    O pacote do tx00100xt foi aprovado pelo usuário (2026-10-20) só para os assets e o banco da 2018.
-5. **Empacotamento** (Fase F) — **o próximo**, ver o topo deste arquivo: `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
+5. **Empacotamento** (Fase F) — **em andamento**, ver o topo deste arquivo: `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
    MoltenVK/loader do Vulkan e o glslang, hoje do Homebrew), diretórios do usuário, assinatura.
 6. Por último: **CI** (GitHub Actions, `macos-14`) e as **auditorias** (pacotes com `#pragma pack`,
    leitura de `.bin` via struct, warnings que indicam bug).
 
 ## Fase V — versões (2026-10-19/20)
 
-Para jogar: **`scripts/macos/launcher.sh`** (neste branch). Sem argumento abre uma lista do macOS
+Para jogar: **`build-app/LastChaos.app`** (`scripts/macos/make-app.sh`) ou **`scripts/macos/launcher.sh`**. Sem argumento abre uma lista do macOS
 para escolher 2009/2015/2018; `launcher.sh 2018` vai direto; `--status` / `--stop` para os servidores
 de todas. Ele sobe os servidores da versão se o LoginServer dela não está escutando (em 127.0.0.1, ou
 `LC_PUBLIC_IP`), reescreve o `sl.dta` da instalação com o endereço em que ele escuta (o primeiro
-`sl.dta` fica em `sl.dta.original`) e abre o cliente pelo script da worktree. Os clientes abrem em
+`sl.dta` fica em `sl.dta.original`) e abre o cliente pelo script da versão. Os clientes abrem em
 tela cheia (`LC_SCREEN=desktop`, padrão dos scripts; `LC_SCREEN=1600x900` para janela): numa janela
 o teclado e o trackpad às vezes ficavam sem foco.
 
-Decidido com o usuário (2026-10-20): **um branch por versão**, cada um com a sua worktree ao lado
-deste repositório; o launcher (ainda não feito) fica no `macos-port` e aponta para o build, os
-assets e o servidor de cada versão.
+As três versões ficam neste branch (`macos-port`), cada uma na sua pasta. Primeiro foi um branch por
+versão com a sua worktree; o usuário pediu para unificar (2026-10-20, ver o topo deste arquivo).
 
-| Versão | Branch / worktree | Estado |
+| Versão | Pasta | Estado |
 |---|---|---|
-| 2015 (a nossa) | `macos-port` / `~/Projects/LCSource` | completa |
-| 2009 | `v2009` / `~/Projects/LCSource-2009` | servidor e cliente no Mac, jogada pelo usuário em Juno |
-| 2018 | `v2018` / `~/Projects/LCSource-2018` | servidor e cliente no Mac; login, criação de personagem e jogo conferidos pelo usuário (2026-10-20) |
+| 2015 (a nossa) | raiz do repositório | completa |
+| 2009 | `v2009/` | servidor e cliente no Mac, jogada pelo usuário em Juno |
+| 2018 | `v2018/` | servidor e cliente no Mac; login, criação de personagem e jogo conferidos pelo usuário (2026-10-20) |
 
-### 2009 (`v2009`)
+### 2009 (`v2009/`)
 
-- Tudo fica em `v2009/` dentro do branch (os fontes publicados em `v2009/Client Source` e
+- Tudo fica em `v2009/` (os fontes publicados em `v2009/Client Source` e
   `v2009/Server Source`; o cliente portado em `v2009/Client`). O trabalho foi feito em três
   branches (`v2009` servidor e Juno, `v2009-client`, `v2009-data`), juntados no `v2009` em
-  2026-10-20 (`5f67d65`); as worktrees `LCSource-2009-client` e `-data` ficaram só como histórico.
+  2026-10-20 (`5f67d65`) e no `macos-port` em seguida (`8df8bf7`).
 - Servidor: CMake próprio (`cmake -S "v2009/Server Source" -B v2009/build-server -G Ninja`),
   bancos `lc2009_data`/`lc2009_db`/`lc2009_auth` feitos do dump de 2016 por
   `v2009/scripts/setup-db.sh` (nunca toca os `newproject_*`), portas 42xx,
@@ -119,7 +121,14 @@ assets e o servidor de cada versão.
   (`lc2009_data`) e dos textos BR, em `~/Projects/LC-2009-gen` (`BUILD_REPORT.txt`);
   `verify2009.py` relê com os loaders de 2009.
 
-### 2018 (`v2018`)
+### 2018 (`v2018/`)
+
+- No `macos-port` desde `55dda42`, em `v2018/`: os fontes, o `CMakeLists.txt` de cima, `server-config/`
+  e os dois scripts que diferem dos nossos (`scripts/run-server.sh`, `scripts/macos/play.sh`). Builds:
+  `cmake -S v2018 -B v2018/build-server -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLC_REGION=USA` e
+  `cmake -S v2018 -B v2018/build-client-mac -G Ninja -DCMAKE_BUILD_TYPE=Release -DLC_BUILD_CLIENT=ON
+  -DLC_BUILD_SERVER=OFF -DLC_CLIENT_COUNTRY=USA -DLC_NO_IP_FILTER=ON`. Abaixo, "worktree" e os caminhos
+  sem `v2018/` são do tempo do branch próprio.
 
 - `7f1f6be`: os branches `november-2018` do openlastchaos (cliente e servidor) sobre o `master`,
   com os finais de linha do `master` (sem os 25 binários que o `master` não tinha e sem os 324

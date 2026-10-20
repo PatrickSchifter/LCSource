@@ -1,9 +1,9 @@
 #!/bin/bash
 # Builds LastChaos.app, a macOS application around scripts/macos/launcher.sh, to open from the
-# Finder or the Dock. The app is "thin": it runs this worktree's launcher, which uses the
-# worktrees, builds, game installs and servers in ~/Projects as they are (HANDOFF.md, "Fase F").
+# Finder or the Dock. The app is "thin": it runs this repository's launcher, which uses the
+# builds and servers here and the game installs in ~/Projects as they are (HANDOFF.md, "Fase F").
 #
-#   scripts/macos/make-app.sh [output directory]     default build-app/ in this worktree
+#   scripts/macos/make-app.sh [output directory]     default build-app/ in this repository
 #
 # The app's own output (the launcher's, the servers' start) goes to
 # ~/Library/Logs/LastChaos/launcher.log; the client still writes stdout.log in its install.

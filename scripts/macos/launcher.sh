@@ -6,24 +6,24 @@
 #   scripts/macos/launcher.sh --stop     stops the servers of every version
 #   scripts/macos/launcher.sh --status   shows which servers run
 #
-# Each version is a branch with its own worktree (HANDOFF.md, "Fase V — versões"): its build,
-# its game install and its servers. The versions use different ports, so their servers can run
+# Each version lives in this repository (HANDOFF.md, "Fase V — versões"): the 2015 at the top,
+# the 2009 in v2009/ and the 2018 in v2018/, each with its build, game install and servers. The versions use different ports, so their servers can run
 # side by side. When a version's LoginServer already runs, its address is kept; otherwise the
 # servers start on 127.0.0.1 (LC_PUBLIC_IP overrides it). The install's sl.dta is rewritten to
 # the address the LoginServer listens on. Extra environment (LC_GFX_API, LC_SCREEN...) reaches
 # the client.
 #
-# LC_PROJECTS: the directory holding the worktrees and installs (default ~/Projects).
+# LC_PROJECTS: the directory holding the game installs (default ~/Projects).
 set -euo pipefail
 
 PROJECTS=${LC_PROJECTS:-$HOME/Projects}
-HERE="$(cd "$(dirname "$0")/../.." && pwd)"   # this worktree (macos-port), for sl-dta.py
+HERE="$(cd "$(dirname "$0")/../.." && pwd)"   # this repository
 
-# version | worktree | server script | client script | game install | LoginServer port | name in sl.dta
+# version | directory | server script | client script | game install | LoginServer port | name in sl.dta
 VERSIONS=(
-  "2015|LCSource|scripts/run-server.sh|scripts/macos/play.sh|LC-BR2014|4001|Mac"
-  "2009|LCSource-2009|v2009/scripts/run-server.sh|v2009/scripts/client-play.sh|LC-2009|4201|Mac2009"
-  "2018|LCSource-2018|scripts/run-server.sh|scripts/macos/play.sh|LC-2018|4301|Mac2018"
+  "2015|.|scripts/run-server.sh|scripts/macos/play.sh|LC-BR2014|4001|Mac"
+  "2009|v2009|scripts/run-server.sh|scripts/client-play.sh|LC-2009|4201|Mac2009"
+  "2018|v2018|scripts/run-server.sh|scripts/macos/play.sh|LC-2018|4301|Mac2018"
 )
 
 fail() {
@@ -46,12 +46,12 @@ listen_addr() {
 }
 
 servers() { # command
-  local v tree
+  local v ver dir script
   for v in "${VERSIONS[@]}"; do
-    IFS='|' read -r ver tree script _ <<<"$v"
-    [[ -x $PROJECTS/$tree/$script ]] || continue
+    IFS='|' read -r ver dir script _ <<<"$v"
+    [[ -x $HERE/$dir/$script ]] || continue
     echo "== $ver"
-    "$PROJECTS/$tree/$script" "$1"
+    "$HERE/$dir/$script" "$1"
   done
 }
 
@@ -69,14 +69,13 @@ if [[ -z $version ]]; then
 fi
 field "$version" 1 >/dev/null || fail "versão desconhecida: $version (2009, 2015 ou 2018)"
 
-tree=$PROJECTS/$(field "$version" 2)
-server_script=$tree/$(field "$version" 3)
-client_script=$tree/$(field "$version" 4)
+dir=$HERE/$(field "$version" 2)
+server_script=$dir/$(field "$version" 3)
+client_script=$dir/$(field "$version" 4)
 game=$PROJECTS/$(field "$version" 5)
 port=$(field "$version" 6)
 name=$(field "$version" 7)
 
-[[ -d $tree ]] || fail "a worktree da $version não existe: $tree"
 [[ -d $game/Data ]] || fail "a instalação da $version não existe: $game"
 
 addr=$(listen_addr "$port")
