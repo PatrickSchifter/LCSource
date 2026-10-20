@@ -34,15 +34,82 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 
 Decidido (2026-10-19), com a renderização concluída, a ordem do que vem agora:
 
-4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`): portar as versões 2009/2015/2018
-   (cliente e servidor), assets e banco de cada uma, e o launcher que escolhe build, assets e
-   servidor correspondentes. Antes de começar: os links das fontes estão na memória do projeto e o
-   pacote do tx00100xt (2015/2018) em "Recursos externos no Windows" abaixo, não testado —
-   perguntar ao usuário antes de adotá-lo.
+4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`), ver "Fase V — versões" abaixo: a 2009
+   está portada (branch `v2009`), a 2018 em andamento (branch `v2018`); faltam assets e banco da
+   2018 e o launcher que escolhe build, assets e servidor correspondentes. O pacote do tx00100xt
+   foi aprovado pelo usuário (2026-10-20) só para os assets e o banco da 2018.
 5. **Empacotamento** (Fase F): `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
    MoltenVK/loader do Vulkan e o glslang, hoje do Homebrew), diretórios do usuário, assinatura.
 6. Por último: **CI** (GitHub Actions, `macos-14`) e as **auditorias** (pacotes com `#pragma pack`,
    leitura de `.bin` via struct, warnings que indicam bug).
+
+## Fase V — versões (2026-10-19/20)
+
+Decidido com o usuário (2026-10-20): **um branch por versão**, cada um com a sua worktree ao lado
+deste repositório; o launcher (ainda não feito) fica no `macos-port` e aponta para o build, os
+assets e o servidor de cada versão.
+
+| Versão | Branch / worktree | Estado |
+|---|---|---|
+| 2015 (a nossa) | `macos-port` / `~/Projects/LCSource` | completa |
+| 2009 | `v2009` / `~/Projects/LCSource-2009` | servidor e cliente no Mac, jogada pelo usuário em Juno |
+| 2018 | `v2018` / `~/Projects/LCSource-2018` | servidor e cliente no Mac; login, criação de personagem e jogo conferidos pelo usuário (2026-10-20) |
+
+### 2009 (`v2009`)
+
+- Tudo fica em `v2009/` dentro do branch (os fontes publicados em `v2009/Client Source` e
+  `v2009/Server Source`; o cliente portado em `v2009/Client`). O trabalho foi feito em três
+  branches (`v2009` servidor e Juno, `v2009-client`, `v2009-data`), juntados no `v2009` em
+  2026-10-20 (`5f67d65`); as worktrees `LCSource-2009-client` e `-data` ficaram só como histórico.
+- Servidor: CMake próprio (`cmake -S "v2009/Server Source" -B v2009/build-server -G Ninja`),
+  bancos `lc2009_data`/`lc2009_db`/`lc2009_auth` feitos do dump de 2016 por
+  `v2009/scripts/setup-db.sh` (nunca toca os `newproject_*`), portas 42xx,
+  `v2009/scripts/run-server.sh start`. Mapas da zona 0: a Juno antiga (`startzone.wld`),
+  `install-zone-maps.py`; NPCs, spawns e coleta da cidade antiga acertados em jogo
+  (`server-config/zone0-*.sql`).
+- Cliente: motor portado (SDL3, Metal/OpenGL/Vulkan) com a camada de jogo de 2009
+  (`cmake -S v2009/Client -B v2009/build-client -G Ninja -DCMAKE_BUILD_TYPE=Release
+  -DLC_CLIENT_COUNTRY=USA -DLC_NO_IP_FILTER=ON`). Instalação `~/Projects/LC-2009` montada por
+  `v2009/scripts/client-install.sh` (links para a BR 2014 + os dados regenerados);
+  `v2009/scripts/client-play.sh` abre o jogo. `LC_AUTO_LOGIN="id senha"` loga sozinho.
+- Dados: `v2009/tools/lod2009` gera os `.lod/.bin` no formato 2009 a partir do banco
+  (`lc2009_data`) e dos textos BR, em `~/Projects/LC-2009-gen` (`BUILD_REPORT.txt`);
+  `verify2009.py` relê com os loaders de 2009.
+
+### 2018 (`v2018`)
+
+- `7f1f6be`: os branches `november-2018` do openlastchaos (cliente e servidor) sobre o `master`,
+  com os finais de linha do `master` (sem os 25 binários que o `master` não tinha e sem os 324
+  `.cpp/.h` que o Ecc gera). Depois `merge macos-port`: o porte entra por merge de três vias.
+- A codificação dos fontes do cliente 2018 é a mesma (CP949); os do servidor vieram em UTF-8.
+  Os conflitos foram: 32 arquivos apagados pelo porte (`.bak`, projetos, VLD, IJL) → apagados;
+  ~100 trechos em 72 arquivos, resolvidos com o lado 2018 e as mudanças do porte reaplicadas à mão
+  (as de cast `(const char*)` ficam para o compilador achar). As taxas do GameServer de 2018 já
+  são as de junho/2015 que o porte tinha restaurado.
+- Ainda do 2015 e a rever com o banco de 2018: o SQL do Helper que cria `t_extend_guild*` (as
+  colunas da 2018 são outras, o porte listava as de 2015).
+- Listas de fontes do CMake: geradas do `.vcxproj` da 2018 por `scripts/vcxproj-to-cmake.py`, com
+  a mesma diferença que o porte fez à mão sobre as do 2015 (tira Kalydo, Protection, MiniDump,
+  GameGuard, xTrap e os parsers gerados; põe Win32Compat, plataforma SDL, ShaderAsmToARB, SEED,
+  `Nksp.cpp`, `Shaders/Common.cpp`, `DisplaceShader.cpp`).
+- Builds: `build-server` (Debug, `LC_REGION=USA`) e `build-client-mac` (Release,
+  `LC_CLIENT_COUNTRY=USA`) na worktree; os dois compilam e ligam (`85544ac`). Correções do cliente:
+  427 casts `(const char*)` (achados pelo `-Wnon-pod-varargs` e postos por script), parâmetros
+  `const CTString&` nas telas novas, OpenAES e o Lua 5.1 de `Engine/lua` como bibliotecas
+  estáticas (a 2018 lê dados `.lua`). Ainda não rodou: nada testado em execução.
+- Assets e banco (aprovado em 2026-10-20), do pacote do tx00100xt no Windows:
+  - Instalação `~/Projects/LC-2018` (Data, Local, Fonts, Shaders, Classes, Bin e os arquivos do topo de
+    `LC2018\Client`); `sl.dta` = `Mac 192.168.0.4 4301` (o do pacote em `sl.dta.original`). Abrir:
+    `scripts/macos/play.sh` na worktree da 2018 (o padrão dela é `~/Projects/LC-2018`).
+  - Bancos `lc2018_data`, `lc2018_db`, `lc2018_auth` dos `2018_nov_{data,db,db_auth}.sql` (dumps em
+    `~/Projects/LC-2018-db`, importados com `sql_mode=''`); o `2018_nov_post.sql` não é lido pelo código.
+    Conta `teste` / `teste123`: a região USA confere a senha por SHA-256 de `id + salt + senha`
+    (`[SHA256] Salt=lcdev` no LoginServer/Connector), em maiúsculas no `bg_user.passwd`.
+  - Servidores nas portas 43xx/44xx (os da 2015 em 40xx/41xx e os da 2009 em 42xx continuam juntos):
+    `scripts/run-server.sh start` na worktree, usando `build-server`.
+  - Mapas do GameServer em `run/GameServer/data`: os de `ServerRelease\GameServer\data` do pacote,
+    menos a zona 13 (`Dungeon3_pvp`, que o pacote não tem) e o `.sat` da zona 16 (`Egeha_PK`, de 1 byte
+    por célula no pacote; o original ficou como `.sat.1byte`), copiados da 2015 (o 16 é o plano provisório).
 
 ## C8 — Vulkan (2026-10-19)
 

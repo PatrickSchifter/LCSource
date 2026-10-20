@@ -747,6 +747,22 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 #else
 	// Metal where there is one (macOS); OpenGL with LC_GFX_API=opengl, or without Metal; Vulkan
 	// (MoltenVK) with LC_GFX_API=vulkan
+	// LC_SCREEN=desktop: fullscreen at the display's own pixels (a Retina display draws them at its
+	// density, so the interface keeps its size); LC_SCREEN=<W>x<H>: a window of that many points.
+	// Otherwise the persistent sam_* settings (the options window).
+	const char *strScreen = getenv("LC_SCREEN");
+	if( strScreen!=NULL) {
+		int iW = 0, iH = 0;
+		if( stricmp(strScreen, "desktop")==0) {
+			sam_iScreenSizeI = _pixDesktopWidth;
+			sam_iScreenSizeJ = _pixDesktopHeight;
+			sam_bFullScreenActive = FULLSCREEN_MODE;
+		} else if( sscanf(strScreen, "%dx%d", &iW, &iH)==2 && iW>=640 && iH>=480) {
+			sam_iScreenSizeI = iW;
+			sam_iScreenSizeJ = iH;
+			sam_bFullScreenActive = OLD_WINDOW_MODE;
+		}
+	}
 	const char *strGfxAPI = getenv("LC_GFX_API");
 	const BOOL bOpenGL = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "opengl")==0 || stricmp(strGfxAPI, "gl")==0));
 	const BOOL bVulkan = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "vulkan")==0 || stricmp(strGfxAPI, "vk")==0));

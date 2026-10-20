@@ -19,5 +19,8 @@ if [[ ${LC_VK_VALIDATION:-0} != 0 ]]; then
   VVL=$(brew --prefix vulkan-validationlayers 2>/dev/null)
   export VK_LAYER_PATH=$VVL/share/vulkan/explicit_layer.d DYLD_FALLBACK_LIBRARY_PATH=$VVL/lib VK_LAYER_VALIDATE_SYNC=true
 fi
+# LC_SCREEN: "desktop" (default here) is fullscreen at the display's own pixels, "<W>x<H>" a
+# window, "options" keeps the game's own settings (a window does not always get the keyboard focus)
+[[ ${LC_SCREEN:-desktop} == options ]] && unset LC_SCREEN || export LC_SCREEN=${LC_SCREEN:-desktop}
 # shaders run on the GPU; LC_NO_HW_SHADERS=1 goes back to skinning on the CPU
 exec "$GAME/Bin/Nksp" 'fkzktlfgod!' "$@" > "$GAME/stdout.log" 2>&1
