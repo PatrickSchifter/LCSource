@@ -86,15 +86,15 @@ DELETE FROM lc2009_data.t_catalog WHERE a_ctid BETWEEN 54 AND 59;
 UPDATE lc2009_data.t_bigpet SET a_enable = 0 WHERE a_index = 10;
 
 -- Zone 0 is the old Juno (startzone.wld, maps installed by install-zone-maps.py); the respawn
--- rectangles (metres) were laid out for the new Juno. [0]/[2] town centre: the new town square
--- is open field by the lake in the old Juno, so use the old town square (all peace zone, south-east
--- of the round central monument). [1] Belfist entrance, [4] Worm nest 2, [5] Ebony mine, [6] farm:
+-- rectangles (metres) were laid out for the new Juno. [0]/[2] town centre: inside the central
+-- octagon in front of the Animal Trainer, where players start in the classic game (set in game with
+-- /whereami at 1111.5, 951.5). [1] Belfist entrance, [4] Worm nest 2, [5] Ebony mine, [6] farm:
 -- moved by a few metres to the nearest rectangle without blocked cells. [3] and [7] are valid.
 -- Also declares 9 points but lists 8 (the ninth was (0,0)).
 UPDATE lc2009_data.t_zonedata SET a_poscount = 8,
-  a_posleft   = ' 1184 91 1184 1185 228 1315 137 783',
-  a_postop    = ' 1024 810 1024 559 363 1321 1134 171',
-  a_posright  = ' 1202 103 1202 1197 240 1325 155 795',
-  a_posbottom = ' 1042 821 1042 571 375 1331 1152 183'
+  a_posleft   = ' 1108 91 1108 1185 228 1315 137 783',
+  a_postop    = ' 948 810 948 559 363 1321 1134 171',
+  a_posright  = ' 1115 103 1115 1197 240 1325 155 795',
+  a_posbottom = ' 955 821 955 571 375 1331 1152 183'
   WHERE a_zone_index = 0;
 -- Regen points and shop keepers: zone0-oldjuno.sql (applied after this file).
