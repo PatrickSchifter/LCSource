@@ -23,6 +23,7 @@ static INDEX _iDrawableScale = 1;      // drawable pixels per window point (PLT_
 #include <Engine/Interface/UIManager.h>
 // (_pUIMgr, the 2009 UI manager)
 extern void PLT_MacInstallGestureMonitors(void);  // PlatformMac.mm
+extern void PLT_MacSetAppIcon(void);
 extern float PLT_MacSetHighDensity(SDL_Window *pwnd, bool bHighDensity);  // PlatformMac.mm
 extern bool PLT_MacCanSetGammaRamp(SDL_Window *pwnd);
 extern bool PLT_MacSetGammaRamp(SDL_Window *pwnd, const unsigned short *puwRamp);
@@ -52,6 +53,7 @@ BOOL PLT_Init(void)
   }
 #ifdef __APPLE__
   PLT_MacInstallGestureMonitors();
+  PLT_MacSetAppIcon();
 #endif
   return TRUE;
 }

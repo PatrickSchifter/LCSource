@@ -1,7 +1,7 @@
 // macOS pieces of the SDL platform layer (PlatformSDL.cpp). Trackpad gestures, which SDL does
 // not tell apart from a mouse: a two-finger drag turns the camera like a right-button drag, and a
 // pinch zooms like the mouse wheel. Scrolling from a mouse wheel (no precise deltas) is left to
-// SDL. And the window's pixel density (Retina).
+// SDL. The window's pixel density (Retina). And the Dock icon.
 
 #define GL_SILENCE_DEPRECATION  // NSOpenGLContext
 #import <AppKit/AppKit.h>
@@ -34,6 +34,21 @@ void PLT_MacInstallGestureMonitors(void)
     PLT_MacMagnify((float)ev.magnification);
     return ev;
   }];
+}
+
+// the Dock icon: the client is not a bundle, so the Dock shows a generic program icon.
+// LC_APP_ICON (an .icns, .ico or .png) replaces it; LastChaos.app (scripts/macos/make-app.sh)
+// sets it to its own icon.
+void PLT_MacSetAppIcon(void)
+{
+  const char *strIcon = getenv("LC_APP_ICON");
+  if (strIcon == NULL || strIcon[0] == 0) {
+    return;
+  }
+  NSImage *img = [[NSImage alloc] initWithContentsOfFile:[NSString stringWithUTF8String:strIcon]];
+  if (img != nil) {
+    NSApp.applicationIconImage = img;
+  }
 }
 
 // Retina: OpenGL draws the window at the full pixel density of its display (bHighDensity) or one
