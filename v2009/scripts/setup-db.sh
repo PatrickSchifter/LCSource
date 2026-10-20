@@ -48,12 +48,13 @@ echo "applying db-fixes.sql"
 # NPC regen / shop positions fitted to the zone maps the 2009 server reads (written by
 # v2009/scripts/fix-regen-positions.py): zone 0 is the old Juno, the others are small fixes for
 # maps converted from the 2015 port. zone0-mobs-map.sql (v2009/scripts/juno-from-map.py) then lays
-# out the zone 0 monster spawns after the classic Juno map, and zone0-town-mapdta.sql
+# out the zone 0 monster spawns after the classic Juno map, zone0-gathering.sql puts the gathering
+# nodes in their production circles (set in game), and zone0-town-mapdta.sql
 # (v2009/scripts/juno-town-from-mapdta.py) puts the town NPCs where the classic client's Map.dta shows them;
 # zone0-town-removed.sql disables the zone 0 NPCs the classic game doesn't have; zone0-town-facing.sql turns the town
 # NPCs to the open street (v2009/scripts/juno-town-facing.py); zone0-town-manual.sql has
 # the positions set by hand in game (/whereami).
-for f in zone0-oldjuno.sql zone0-mobs-map.sql zone0-town-mapdta.sql zone0-town-removed.sql zone0-town-facing.sql zone0-town-manual.sql zone-maps-regen.sql; do
+for f in zone0-oldjuno.sql zone0-mobs-map.sql zone0-gathering.sql zone0-town-mapdta.sql zone0-town-removed.sql zone0-town-facing.sql zone0-town-manual.sql zone-maps-regen.sql; do
   echo "applying $f"
   "${MYSQL[@]}" <"$ROOT/server-config/$f"
 done
