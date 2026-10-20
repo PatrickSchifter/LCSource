@@ -12,3 +12,8 @@ UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=78; -- Scroll 
 UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=226; -- Magical Shopkeeper (Armarinheiro Mágico Coen)
 UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=517; -- Pet Merchant (Vendedor Polly): same as Geres
 UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663125; -- 55 Transmuter (Alkemist): -85 from zone0-town-facing.sql, turned 45 to the right
+-- Rowel, Baran, Ferreiro and Aluguel de Arma face the same way as the Alkemist (-130).
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=90; -- Armor Trader (Vendedor de Armaduras Rowel)
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Weapon Trader (Vendedor de Armas Baran)
+UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663188; -- 91 Miner Trainer (Ferreiro)
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Weapon Lending Dealer (Aluguel de Arma)
