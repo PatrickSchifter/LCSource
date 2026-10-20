@@ -45,6 +45,14 @@ Decidido (2026-10-19), com a renderização concluída, a ordem do que vem agora
 
 ## Fase V — versões (2026-10-19/20)
 
+Para jogar: **`scripts/macos/launcher.sh`** (neste branch). Sem argumento abre uma lista do macOS
+para escolher 2009/2015/2018; `launcher.sh 2018` vai direto; `--status` / `--stop` para os servidores
+de todas. Ele sobe os servidores da versão se o LoginServer dela não está escutando (em 127.0.0.1, ou
+`LC_PUBLIC_IP`), reescreve o `sl.dta` da instalação com o endereço em que ele escuta (o primeiro
+`sl.dta` fica em `sl.dta.original`) e abre o cliente pelo script da worktree. Os clientes abrem em
+tela cheia (`LC_SCREEN=desktop`, padrão dos scripts; `LC_SCREEN=1600x900` para janela): numa janela
+o teclado e o trackpad às vezes ficavam sem foco.
+
 Decidido com o usuário (2026-10-20): **um branch por versão**, cada um com a sua worktree ao lado
 deste repositório; o launcher (ainda não feito) fica no `macos-port` e aponta para o build, os
 assets e o servidor de cada versão.

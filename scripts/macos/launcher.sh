@@ -1,0 +1,101 @@
+#!/bin/bash
+# Picks a Last Chaos version, starts its servers and opens its macOS client.
+#
+#   scripts/macos/launcher.sh            asks which version (a macOS list dialog)
+#   scripts/macos/launcher.sh 2018       goes straight to that version (2009, 2015 or 2018)
+#   scripts/macos/launcher.sh --stop     stops the servers of every version
+#   scripts/macos/launcher.sh --status   shows which servers run
+#
+# Each version is a branch with its own worktree (HANDOFF.md, "Fase V — versões"): its build,
+# its game install and its servers. The versions use different ports, so their servers can run
+# side by side. When a version's LoginServer already runs, its address is kept; otherwise the
+# servers start on 127.0.0.1 (LC_PUBLIC_IP overrides it). The install's sl.dta is rewritten to
+# the address the LoginServer listens on. Extra environment (LC_GFX_API, LC_SCREEN...) reaches
+# the client.
+#
+# LC_PROJECTS: the directory holding the worktrees and installs (default ~/Projects).
+set -euo pipefail
+
+PROJECTS=${LC_PROJECTS:-$HOME/Projects}
+HERE="$(cd "$(dirname "$0")/../.." && pwd)"   # this worktree (macos-port), for sl-dta.py
+
+# version | worktree | server script | client script | game install | LoginServer port | name in sl.dta
+VERSIONS=(
+  "2015|LCSource|scripts/run-server.sh|scripts/macos/play.sh|LC-BR2014|4001|Mac"
+  "2009|LCSource-2009|v2009/scripts/run-server.sh|v2009/scripts/client-play.sh|LC-2009|4201|Mac2009"
+  "2018|LCSource-2018|scripts/run-server.sh|scripts/macos/play.sh|LC-2018|4301|Mac2018"
+)
+
+fail() {
+  echo "launcher: $*" >&2
+  [[ ${GUI:-0} == 1 ]] && osascript -e "display alert \"Last Chaos\" message \"$*\" as critical" >/dev/null 2>&1 || true
+  exit 1
+}
+
+field() { # version field-number
+  local v
+  for v in "${VERSIONS[@]}"; do
+    [[ ${v%%|*} == "$1" ]] && { cut -d'|' -f"$2" <<<"$v"; return; }
+  done
+  return 1
+}
+
+# Address the LoginServer of a port listens on, if it runs.
+listen_addr() {
+  lsof -nP -iTCP:"$1" -sTCP:LISTEN 2>/dev/null | awk 'NR > 1 { sub(/:[0-9]+$/, "", $9); print $9; exit }'
+}
+
+servers() { # command
+  local v tree
+  for v in "${VERSIONS[@]}"; do
+    IFS='|' read -r ver tree script _ <<<"$v"
+    [[ -x $PROJECTS/$tree/$script ]] || continue
+    echo "== $ver"
+    "$PROJECTS/$tree/$script" "$1"
+  done
+}
+
+case ${1:-} in
+  --stop) servers stop; exit ;;
+  --status) servers status; exit ;;
+esac
+
+version=${1:-}
+if [[ -z $version ]]; then
+  choices=$(for v in "${VERSIONS[@]}"; do printf '"%s",' "${v%%|*}"; done)
+  version=$(osascript -e "choose from list {${choices%,}} with title \"Last Chaos\" with prompt \"Qual versão jogar?\" default items {\"2015\"}") || true
+  [[ -n $version && $version != false ]] || exit 0
+  GUI=1   # chosen in the dialog: errors are shown as alerts too
+fi
+field "$version" 1 >/dev/null || fail "versão desconhecida: $version (2009, 2015 ou 2018)"
+
+tree=$PROJECTS/$(field "$version" 2)
+server_script=$tree/$(field "$version" 3)
+client_script=$tree/$(field "$version" 4)
+game=$PROJECTS/$(field "$version" 5)
+port=$(field "$version" 6)
+name=$(field "$version" 7)
+
+[[ -d $tree ]] || fail "a worktree da $version não existe: $tree"
+[[ -d $game/Data ]] || fail "a instalação da $version não existe: $game"
+
+addr=$(listen_addr "$port")
+if [[ -z $addr ]]; then
+  echo "starting the $version servers"
+  LC_PUBLIC_IP=${LC_PUBLIC_IP:-127.0.0.1} "$server_script" start || fail "os servidores da $version não subiram (veja os stdout.log em run/)"
+  for _ in {1..30}; do
+    addr=$(listen_addr "$port")
+    [[ -n $addr ]] && break
+    sleep 1
+  done
+  [[ -n $addr ]] || fail "o LoginServer da $version não abriu a porta $port"
+fi
+echo "$version LoginServer on $addr:$port"
+
+line="$name $addr $port 1500 1000"
+if [[ $(python3 -I "$HERE/scripts/sl-dta.py" read "$game/sl.dta" 2>/dev/null) != "$line" ]]; then
+  [[ -f $game/sl.dta && ! -f $game/sl.dta.original ]] && cp "$game/sl.dta" "$game/sl.dta.original"
+  python3 -I "$HERE/scripts/sl-dta.py" write "$game/sl.dta" "$line" >/dev/null
+fi
+
+LC_GAME_DIR=$game exec "$client_script"
