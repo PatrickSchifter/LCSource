@@ -1,0 +1,6 @@
+-- Schema fixes applied on top of the November 2018 dumps (lc2018_* databases) so they match this
+-- server source. Safe to run more than once (MariaDB).
+--   mysql < server-config/db-fixes.sql
+--
+-- None needed yet. (The 2015 fix for t_characters.a_guildoutdate does not apply: the 2018 server
+-- does not use that column.)
