@@ -10,6 +10,7 @@
 # host, port, user, password and ssl=1; not in the repository). Loading a dump there replaces its
 # tables, so the cloud copy is the state of the last backup.
 set -euo pipefail
+umask 077   # the dumps hold the accounts' password hashes
 
 DBS=(lc2009_auth lc2009_data lc2009_db newproject_db_auth newproject_data newproject_db lc2018_auth lc2018_data lc2018_db)
 DIR=/srv/lc/backups/$(date +%Y%m%d-%H%M)
