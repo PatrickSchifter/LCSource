@@ -12,6 +12,15 @@ caminhos sem pasta de versão (`Client Source/...`, `scripts/run-server.sh`, `sc
 da 2015 virou `v2015/build-server` (era `build/`). `C:\LCSource` no Windows continua espelhando a 2015
 no layout antigo (`v2015/scripts/windows/sync.sh` cuida disso).
 
+**No Mac, só as instalações (2026-10-20, pedido do usuário):** `~/Projects/LC-BR2014`, `LC-2009` (agora
+sem links para a `LC-2009-gen`; ainda com links para a BR 2014) e `LC-2018`. O que só serve para refazer
+tudo foi para o HD lento do Windows, **`E:\LastChaos-backup`** (com `LEIA-ME.txt` e `SHA256SUMS`):
+`lastchaos-database` (dumps de 2016, lidos por `v2009/scripts/setup-db.sh`), `LC-2018-db` (dumps da
+2018), `LC-2009-gen` (saída do `lod2009`, lida pelo `v2009/scripts/client-install.sh`) e um
+`mysqldump` de cada banco (`lc2009_*`, `lc2018_*`, `newproject_*`). Esses scripts esperam as pastas em
+`~/Projects`: extrair o `.tar.gz` de lá antes de rodá-los. `LCVersions` e o clone
+`lastchaos-source-client-2018` foram descartados (fontes já no repositório; dá para clonar de novo).
+
 ## Próximo passo (para o próximo agente) — 2026-10-20
 
 **Fase F: empacotar o launcher num `.app`.** Passo 1 feito (2026-10-20); o resto depende de respostas
