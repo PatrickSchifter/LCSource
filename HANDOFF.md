@@ -80,6 +80,13 @@ assets e o servidor de cada versão.
   -DLC_CLIENT_COUNTRY=USA -DLC_NO_IP_FILTER=ON`). Instalação `~/Projects/LC-2009` montada por
   `v2009/scripts/client-install.sh` (links para a BR 2014 + os dados regenerados);
   `v2009/scripts/client-play.sh` abre o jogo. `LC_AUTO_LOGIN="id senha"` loga sozinho.
+- Tela de login clássica (2026-10-20, `9c02ecf`): o código 2009 liga câmeras e marcadores do
+  `LoginWorld` por ID (Camera_login 1628, Camera_Select 3229, profissões 3607...); o `LoginWorld.wld`
+  da BR 2014 tem outros IDs, então a vista ficava no ponto de partida (um morro). O `LoginWorld`
+  clássico (`.wld/.wtr/.tbn` e algumas texturas) veio do cliente "Last Chaos Brasil Clássico" em
+  Downloads no Windows e fica em `~/Projects/LC-2009-gen/Data/World/LoginWorld`; o
+  `client-install.sh` monta `Data/World` mundo a mundo, com os de `LC-2009-gen/Data/World` no lugar.
+  Ganchos: `LC_LOGIN_WLD=<mundo>`, `LC_DUMP_ENTITIES=1` (com `LC_CONSOLE_LOG=1`, em `Nksp.log`).
 - Dados: `v2009/tools/lod2009` gera os `.lod/.bin` no formato 2009 a partir do banco
   (`lc2009_data`) e dos textos BR, em `~/Projects/LC-2009-gen` (`BUILD_REPORT.txt`);
   `verify2009.py` relê com os loaders de 2009.
