@@ -50,8 +50,9 @@ echo "applying db-fixes.sql"
 # maps converted from the 2015 port. zone0-mobs-map.sql (v2009/scripts/juno-from-map.py) then lays
 # out the zone 0 monster spawns after the classic Juno map, and zone0-town-mapdta.sql
 # (v2009/scripts/juno-town-from-mapdta.py) puts the town NPCs where the classic client's Map.dta shows them;
-# zone0-town-removed.sql disables the zone 0 NPCs the classic game doesn't have.
-for f in zone0-oldjuno.sql zone0-mobs-map.sql zone0-town-mapdta.sql zone0-town-removed.sql zone-maps-regen.sql; do
+# zone0-town-removed.sql disables the zone 0 NPCs the classic game doesn't have; zone0-town-manual.sql has
+# the positions set by hand in game (/whereami).
+for f in zone0-oldjuno.sql zone0-mobs-map.sql zone0-town-mapdta.sql zone0-town-removed.sql zone0-town-manual.sql zone-maps-regen.sql; do
   echo "applying $f"
   "${MYSQL[@]}" <"$ROOT/server-config/$f"
 done
