@@ -425,7 +425,7 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 						if (CustomTitleData::IsKeepTitleInfo(iCustomIndex) == true)
 							strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  CustomTitleData::m_mapCustomTitleItemInfo[iCustomIndex]->name);
 						else
-							strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  GetName(iItemIndex));
+							strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  (const char*)GetName(iItemIndex));
 
 						msgInfo.SetMsgBoxInfo( _S(4835, "호칭 삭제"), UMBS_YESNO, UI_NICKNAME, MSGCMD_NICKNAME_DELETE );
 						msgInfo.AddString(strMsg);

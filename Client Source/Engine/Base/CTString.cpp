@@ -269,7 +269,7 @@ BOOL CTString::HasPrefix( const CTString &strPrefix) const
 }
 
 /* Find index of a substring in a string (returns -1 if not found). */
-INDEX CTString::FindSubstr(const CTString &strSub)
+INDEX CTString::FindSubstr(const CTString &strSub) const
 {
 	INDEX ct = Length();
 	INDEX ctSub = strSub.Length();

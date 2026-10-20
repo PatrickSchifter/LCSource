@@ -683,7 +683,7 @@ void CUIExpressSystem::_CreateMsgBox(eMsgType msgType)
 					CTString strName = _pNetwork->GetItemName(pInfo->item_index);
 	
 					strMessage.PrintF( _S( 7041, "%s %d개를 %s 나스로 구입 하였습니다. 보관 중인 아이템..."),
-						strName.str_String, pInfo->item_count, strTemp);
+						strName.str_String, pInfo->item_count, (const char*)strTemp);
 				}
 			}
 			else if (pInfo->send_type == EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_SELL)
@@ -695,7 +695,7 @@ void CUIExpressSystem::_CreateMsgBox(eMsgType msgType)
 					CTString strName = _pNetwork->GetItemName(pInfo->tradeagent_itemIndex);
 	
 					strMessage.PrintF( _S( 7040, "%s %d개를 판매하여 %s 나스를 보관 중입니다. 보관 중인 나스를..."),
-						strName.str_String, pInfo->tradeagent_itemCount, strTemp);
+						strName.str_String, pInfo->tradeagent_itemCount, (const char*)strTemp);
 				}
 			}
 			

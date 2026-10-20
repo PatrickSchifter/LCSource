@@ -195,7 +195,7 @@ void CTeleportUI::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput 
 	}
 }
 
-void CTeleportUI::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment )
+void CTeleportUI::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment )
 {
 	m_nZoneNum[ubSlot] = slZone;
 	m_strZone[ubSlot] = CZoneInfo::getSingleton()->GetZoneName( slZone );
@@ -440,9 +440,9 @@ void CTeleportUI::OpenMemorizeMsgBox()
 		return;
 
 	CTString	strZone, strCoord;
-	strZone.PrintF( "%-8s: %s", _S( 291, "Á¸" ),
-		CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
-	strCoord.PrintF( "%-8s: %d,%d", _S( 292, "ÁÂÇ¥" ),
+	strZone.PrintF( "%-8s: %s", (const char*)_S( 291, "Á¸" ),
+		(const char*)CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
+	strCoord.PrintF( "%-8s: %d,%d", (const char*)_S( 292, "ÁÂÇ¥" ),
 		(int)_pNetwork->MyCharacterInfo.x, (int)_pNetwork->MyCharacterInfo.z );
 
 	CUIMsgBox_Info	MsgBoxInfo;

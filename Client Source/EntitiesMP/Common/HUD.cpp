@@ -2047,7 +2047,8 @@ void HUD_DrawSkaModel_Old(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT 
 	RM_SetObjectPlacement(pl);
 	RM_SetFlags(RM_GetFlags()|RMF_INSIDE|RMF_OVERDRAW);
 	RM_SetLightColor(LerpColor(C_BLACK, C_WHITE, 0.4f)|CT_OPAQUE, LerpColor(C_BLACK, C_WHITE, 0.2f)|CT_OPAQUE);
-	RM_SetLightDirection(FLOAT3D( -0.2f, -0.4f, -0.6f));
+	FLOAT3D vLightDir( -0.2f, -0.4f, -0.6f);
+	RM_SetLightDirection(vLightDir);
 	RM_RenderSKA(*Draw_MI, TRUE);
 	RM_EndRenderingView();
 

@@ -159,14 +159,14 @@ void CAffinityUI::MsgBoxLCommand( int nCommandCode, int nResult )
 					pUIManager->InsertCommaToString(strNas);
 
 					if( needItemIndex == 19 )	// 나스
-						strItemName.PrintF(_S( 836,"%s 나스"), strNas );
+						strItemName.PrintF(_S( 836,"%s 나스"), (const char*)strNas );
 					else
 					{
 						CTString strCount = pUIManager->IntegerToCommaString(needItemCount);
-						strItemName.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(needItemIndex), strCount );
+						strItemName.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(needItemIndex), (const char*)strCount );
 					}
 
-					strTemp.PrintF( _s("%s : %s"), _S( 351, "필요 아이템" ), strItemName );
+					strTemp.PrintF( _s("%s : %s"), (const char*)_S( 351, "필요 아이템" ), (const char*)strItemName );
 					MsgBoxInfo.AddString( strTemp );
 				}
 
@@ -182,7 +182,7 @@ void CAffinityUI::MsgBoxLCommand( int nCommandCode, int nResult )
 
 					strTemp.PrintF( _S( 5316, "필요 친화도 : %s 세력 %s" ), 
 						_pNetwork->GetAffinityData()->GetAffinityNameByIndex( needAffinityIndex ),
-						strPoint);
+						(const char*)strPoint);
 
 					MsgBoxInfo.AddString( strTemp );
 				}
@@ -270,25 +270,25 @@ void CAffinityUI::OpenAffinity( int iMobIndex, BOOL bHasQuest, FLOAT fX, FLOAT f
 	if( _pNetwork->GetAffinityData()->IsContract(iMobIndex) )
 	{	
 		// contract to force.
-		strMessage.PrintF( _S( 5298, "%s 세력과 친구 맺기"), strAffinityName );
+		strMessage.PrintF( _S( 5298, "%s 세력과 친구 맺기"), (const char*)strAffinityName );
 		pUIManager->AddMessageBoxLString( MSGLCMD_AFFINITY_DONATE_REQ, FALSE, strMessage, AFFINITY_CONTRACT );
 	}
 	if( _pNetwork->GetAffinityData()->IsDonate(iMobIndex) )
 	{	
 		// donate item to force.
-		strMessage.PrintF( _S( 5299, "%s 세력에 아이템 기부하기"), strAffinityName );
+		strMessage.PrintF( _S( 5299, "%s 세력에 아이템 기부하기"), (const char*)strAffinityName );
 		pUIManager->AddMessageBoxLString( MSGLCMD_AFFINITY_DONATE_REQ, FALSE, strMessage, AFFINITY_DONATE );
 	}
 	if( _pNetwork->GetAffinityData()->IsShop(iMobIndex) )
 	{	
 		// using force shop.
-		strMessage.PrintF( _S( 5300, "%s 세력의 상점 이용하기"), strAffinityName );
+		strMessage.PrintF( _S( 5300, "%s 세력의 상점 이용하기"), (const char*)strAffinityName );
 		pUIManager->AddMessageBoxLString( MSGLCMD_AFFINITY_DONATE_REQ, FALSE, strMessage, AFFINITY_SHOP );
 	}
 	if( _pNetwork->GetAffinityData()->IsPresent(iMobIndex) )
 	{	
 		// take a present.
-		strMessage.PrintF( _S( 5301, "%s 세력에게 선물 받기"), strAffinityName );
+		strMessage.PrintF( _S( 5301, "%s 세력에게 선물 받기"), (const char*)strAffinityName );
 		pUIManager->AddMessageBoxLString( MSGLCMD_AFFINITY_DONATE_REQ, FALSE, strMessage, AFFINITY_PRESENT );
 	}
 	// quest
@@ -640,7 +640,7 @@ void CAffinityUI::UpdateDonationPoint()
 
 	strCurPoint = UIMGR()->IntegerToCommaString(nCur);
 	strMaxPoint = UIMGR()->IntegerToCommaString(nMax);
-	strPoint.PrintF(" %s/%s", strCurPoint, strMaxPoint);
+	strPoint.PrintF(" %s/%s", (const char*)strCurPoint, (const char*)strMaxPoint);
 	strTemp += strPoint;
 
 	m_pTextDonationPoint->SetText(strTemp);

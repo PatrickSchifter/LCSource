@@ -193,14 +193,14 @@ void GuildBattleMatchUI::Updatedata()
 		pTxt = (CUIText*)pClone->findUI("nas");
 		if (pTxt != NULL)
 		{
-			strTmp.PrintF("%s", pUIMgr->IntegerToCommaString(pData->stake_nas));
+			strTmp.PrintF("%s", (const char*)pUIMgr->IntegerToCommaString(pData->stake_nas));
 			pTxt->SetText(strTmp);
 		}
 
 		pTxt = (CUIText*)pClone->findUI("gp");
 		if (pTxt != NULL)
 		{
-			strTmp.PrintF("%s", pUIMgr->IntegerToCommaString((__int64)pData->stake_gp));
+			strTmp.PrintF("%s", (const char*)pUIMgr->IntegerToCommaString((__int64)pData->stake_gp));
 			pTxt->SetText(strTmp);
 		}
 

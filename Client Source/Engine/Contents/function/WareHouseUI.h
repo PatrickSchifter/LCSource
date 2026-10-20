@@ -68,7 +68,7 @@ public:
 	inline bool HasPassword() const	{ return m_bHasPassword; }
 	
 	// Network functions
-	void SendListReq(CTString& strPW);
+	void SendListReq(const CTString &strPW);
 
 	void ReceiveNas(CNetworkMessage *istr);
 	void ReceiveList(CNetworkMessage *istr);

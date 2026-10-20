@@ -585,7 +585,7 @@ void CUITooltip::SetAffinity(eUIBTN_ETC_TYPE eType)
 			UIMGR()->InsertCommaToString(strPoint);
 
 			strTemp.PrintF(_S(5857, "%s, 친화도를 %s 상승 시켜줍니다."),
-				_pNetwork->GetItemDesc(m_pItemEtc->nIndex), strPoint);
+				_pNetwork->GetItemDesc(m_pItemEtc->nIndex), (const char*)strPoint);
 		}
 		break;
 	case eETC_TYPE_AFFINITY_QUEST:
@@ -595,7 +595,7 @@ void CUITooltip::SetAffinity(eUIBTN_ETC_TYPE eType)
 
 			strTemp.PrintF(_S(5858, "%s 세력 퀘스트, 완료시 친화도를 %s 상승 시켜줍니다."),
 				_pNetwork->GetAffinityData()->GetAffinityDataByIndex(m_pItemEtc->nIndex)->GetName()
-				, strPoint);
+				, (const char*)strPoint);
 		}
 		break;
 	case eETC_TYPE_AFFINITY_MONSTER:
@@ -612,9 +612,9 @@ void CUITooltip::SetAffinity(eUIBTN_ETC_TYPE eType)
 			UIMGR()->InsertCommaToString(strPoint);
 
 			strTemp.PrintF( _S(5864, "[%s] %d Lv %s 처치 시 친화도를 %s 상승 시켜줍니다."),
-				strZone, CMobData::getData(m_pItemEtc->nIndex)->GetLevel(),
-				CTString(CMobData::getData(m_pItemEtc->nIndex)->GetName()),
-				strPoint);
+				(const char*)strZone, CMobData::getData(m_pItemEtc->nIndex)->GetLevel(),
+				(const char*)CTString(CMobData::getData(m_pItemEtc->nIndex)->GetName()),
+				(const char*)strPoint);
 		}
 		break;
 	case eETC_TYPE_AFFINITY_REWARD:
@@ -623,7 +623,7 @@ void CUITooltip::SetAffinity(eUIBTN_ETC_TYPE eType)
 			UIMGR()->InsertCommaToString(strPoint);
 
 			strTemp.PrintF( _S(5866, "친화도 %s 달성 시 %s 아이템을 보상으로 받을 수 있습니다."),
-				strPoint, _pNetwork->GetItemName(m_pItemEtc->nIndex));
+				(const char*)strPoint, _pNetwork->GetItemName(m_pItemEtc->nIndex));
 		}
 		break;
 	}
@@ -877,7 +877,7 @@ void CUITooltip::SetPriceInfo()
 			pUIManager->InsertCommaToString(strMoney);
 			pUIManager->InsertCommaToString(strRate);
 
-			strTmp.PrintF(_S(255, "가격 : %s"), strMoney);
+			strTmp.PrintF(_S(255, "가격 : %s"), (const char*)strMoney);
 
 			if (iAddPrice >= 0)
 				strResult.PrintF("%s(+%s)", (const char*)strTmp, (const char*)strRate);
@@ -900,7 +900,7 @@ void CUITooltip::SetPriceInfo()
 	}
 
     pUIManager->InsertCommaToString(strMoney);
-    strTmp.PrintF(_S(255, "가격 : %s"), strMoney);
+    strTmp.PrintF(_S(255, "가격 : %s"), (const char*)strMoney);
 
     AddText(strTmp, pUIManager->GetNasColor(strMoney));
 }
@@ -1664,7 +1664,7 @@ void CUITooltip::SetWildPetInfo()
 			CTString strExp;
 			strExp.PrintF("%I64d", pInfo.pet_accexp);
 			pUIManager->InsertCommaToString(strExp);
-            strTmp.PrintF(_S(5639, "축적 경험치: %s"), strExp);
+            strTmp.PrintF(_S(5639, "축적 경험치: %s"), (const char*)strExp);
         }
 
         AddText(strTmp, 0xfd9d28FF);
@@ -2247,7 +2247,7 @@ void CUITooltip::SetSetItemInfo()
 			if (UtilHelp* pHelp = UtilHelp::getSingleton())
 			{
 				CTString strOption = UTIL_HELP()->GetOptionPaciveInfo(sbOptionType, lOptionLevel);
-				strTmp.PrintF( _S(4488, "(%d)세트 옵션 효과 [%s]"), pData->GetOption(i).nSetCount, strOption );
+				strTmp.PrintF( _S(4488, "(%d)세트 옵션 효과 [%s]"), pData->GetOption(i).nSetCount, (const char*)strOption );
 			}
 		}else	// 스킬
 		{
@@ -2527,7 +2527,7 @@ void CUITooltip::SetSkillName()
         strLv.PrintF("%d", m_nSkillLv + 1);
     }
 
-	strTmp.PrintF("%s %s %s", m_pSkill->GetName(), _S(4414, "LV"), strLv);
+	strTmp.PrintF("%s %s %s", m_pSkill->GetName(), (const char*)_S(4414, "LV"), (const char*)strLv);
 
     AddText(strTmp, col);
 }
@@ -2613,7 +2613,7 @@ void CUITooltip::SetNeed4Stat()
 		if (nStr[i] == 257)
 		{
 			CTString strCount = UIMGR()->IntegerToCommaString(nCondition[i]);
-			strTmp.PrintF(_S(257, "필요 숙련도 : %s"), strCount);
+			strTmp.PrintF(_S(257, "필요 숙련도 : %s"), (const char*)strCount);
 		}
 		else
 			strTmp.PrintF(_S(nStr[i], "필요 능력치 : %d"), nCondition[i]);
@@ -2643,7 +2643,7 @@ void CUITooltip::SetNeed4Skill()
 
         CSkill* pSkill = &_pNetwork->GetSkillData(need);
 
-        strTmp.PrintF(" : %s %s.%d", pSkill->GetName(), _S(4414, "LV"), lv);
+        strTmp.PrintF(" : %s %s.%d", pSkill->GetName(), (const char*)_S(4414, "LV"), lv);
 
         strTmp = _S(258, "필요 스킬") + strTmp;
 
@@ -2681,7 +2681,7 @@ void CUITooltip::SetNeed4Item()
 
         count = m_pSkill->GetLearnItemCount(m_nSkillLv, i);
 		strCount = UIMGR()->IntegerToCommaString(count);
-        strTmp.PrintF(_S(260, "  %s %s개"), _pNetwork->GetItemName(need), strCount);
+        strTmp.PrintF(_S(260, "  %s %s개"), _pNetwork->GetItemName(need), (const char*)strCount);
         strTmp = _S(259, "필요 아이템") + strTmp;
 
         // eType == eTOOLTIP_FIRST : 현재 스킬 레벨을 가져와서 비교. 0보다 작거나 같은 경우에만 조건 검사.
@@ -2825,7 +2825,7 @@ void CUITooltip::SetNeed4GPInfo()
 			
 		strTmp2.PrintF("%d", nGP);
 		UIMGR()->InsertCommaToString(strTmp2);
-		strTmp.PrintF( _S( 5032, "소모 GP : %s" ), strTmp2);
+		strTmp.PrintF( _S( 5032, "소모 GP : %s" ), (const char*)strTmp2);
 		AddText(strTmp, col);
 	}
 
@@ -2837,7 +2837,7 @@ void CUITooltip::SetNeed4GPInfo()
 
 		strTmp2.PrintF("%d", nGP);
 		UIMGR()->InsertCommaToString(strTmp2);
-		strTmp.PrintF(_S(5119, "필요 GP : %s"), strTmp2);
+		strTmp.PrintF(_S(5119, "필요 GP : %s"), (const char*)strTmp2);
 		AddText(strTmp, col);
 	}
 }
@@ -3095,7 +3095,7 @@ void CUITooltip::SetSSKillNeed4Stat()
 	}
 
 	CTString strSp = UIMGR()->IntegerToCommaString(nCondition);
-	strTmp.PrintF(_S(257, "필요 숙련도 : %s"), strSp);
+	strTmp.PrintF(_S(257, "필요 숙련도 : %s"), (const char*)strSp);
 	AddText(strTmp, colLearn);
 }
 
@@ -3118,7 +3118,7 @@ void CUITooltip::SetSSkillNeed4Skill()
 
 	CSpecialSkill* pSSkill = CSpecialSkill::getData(need);
 
-	strTmp.PrintF(" : %s %s.%d", pSSkill->GetName(), _S(4414, "LV"), lv);
+	strTmp.PrintF(" : %s %s.%d", pSSkill->GetName(), (const char*)_S(4414, "LV"), lv);
 
 	strTmp = _S(258, "필요 스킬") + strTmp;
 

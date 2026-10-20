@@ -765,7 +765,7 @@ void CUIShop::CreateCubeStateMsgBox(CNetworkMessage *istr, BOOL bGuild)
 
 	MsgBoxInfo.SetMsgBoxInfo(strMsg, UMBS_OK | UMBS_LISTBOX, UI_SHOP, MSGCMD_CUBE_STATE);
 
-	strMsg.PrintF(strMsgEx, strPoint);
+	strMsg.PrintF(strMsgEx, (const char*)strPoint);
 	MsgBoxInfo.AddStringEx(strMsg, 0, 1);
 	MsgBoxInfo.AddStringEx(_S(4343, "큐브포인트 현황"), 2, 1);
 	MsgBoxInfo.AddStringEx(_S(1714, "순위"), 4, 1);

@@ -95,7 +95,7 @@ enum eALIGN_V
 	eALIGN_V_BOTTOM,
 };
 
-enum UIMCType
+enum UIMCType : int
 {
 	UMCT_NORMAL			= 0,
 	UMCT_ATT_NORMAL		= 1,

@@ -203,6 +203,15 @@ add_library(tinyxml STATIC
   3rdparty/tinyxml_2_6_2/tinyxmlerror.cpp 3rdparty/tinyxml_2_6_2/tinyxmlparser.cpp)
 target_link_libraries(tinyxml PRIVATE lc_client_common)
 
+# Lua 5.1 (Engine/lua): LuaFileLoader reads the .lua data files.
+file(GLOB LC_LUA_SOURCES "${LC_CLIENT_SRC}/Engine/lua/l*.c")
+add_library(lua51 STATIC ${LC_LUA_SOURCES})
+
+# OpenAES: the news page request (News_Web_UI.cpp) is AES-encrypted.
+add_library(openaes STATIC
+  3rdparty/OpenAES/src/oaes_lib.c 3rdparty/OpenAES/src/oaes_base64.c 3rdparty/OpenAES/src/isaac/rand.c)
+target_include_directories(openaes PUBLIC 3rdparty/OpenAES/inc PRIVATE 3rdparty/OpenAES/src/isaac)
+
 # LCCrypt: the client has no source of its own; the same code lives in the server's ShareLib.
 add_library(lccrypt STATIC "${LC_CLIENT_SRC}/../Server Source/ShareLib/LCCrypt.cpp")
 target_include_directories(lccrypt PUBLIC "${LC_CLIENT_SRC}/../Server Source/ShareLib")
@@ -263,7 +272,7 @@ endif()
 lc_client_target(Engine SHARED ${ENGINE_SOURCES} ${ENGINE_GENERATED} ${ENGINE_PARSER_SOURCES} ${_engine_def})
 target_compile_definitions(Engine PRIVATE ENGINE_EXPORTS _USRDLL)
 target_include_directories(Engine PRIVATE "${LC_GEN}/Engine")
-target_link_libraries(Engine PRIVATE zlib libpng tinyxml lccrypt Boost::thread Boost::system)
+target_link_libraries(Engine PRIVATE zlib libpng tinyxml openaes lua51 lccrypt Boost::thread Boost::system)
 if(WIN32)
   target_link_libraries(Engine PRIVATE d3dx8_compat dsound winmm ws2_32 wininet imm32 version advapi32 dbghelp)
   target_link_options(Engine PRIVATE /MAP /ignore:4197 /NODEFAULTLIB:libci.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:libc.lib)

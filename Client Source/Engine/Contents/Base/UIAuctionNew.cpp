@@ -822,7 +822,7 @@ void CUIAuctionNew::ShowMsgBuy(__int64 nas)
 	CTString strTemp;
 	strTemp.PrintF("%I64d", nas);
 	pUIMgr->InsertCommaToString(strTemp);
-	MsgBoxInfo.AddString( CTString(0, _S(5984, "가격: %s"), strTemp) );
+	MsgBoxInfo.AddString( CTString(0, _S(5984, "가격: %s"), (const char*)strTemp) );
 
 	pUIMgr->CreateMessageBox(MsgBoxInfo);
 }

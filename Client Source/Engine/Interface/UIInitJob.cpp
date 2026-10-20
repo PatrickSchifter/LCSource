@@ -1342,7 +1342,7 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 
 				strTemp.PrintF( "%I64d", need );
 				pUIManager->InsertCommaToString(strTemp);
-				m_strGivePrice.PrintF( "%s", strTemp );
+				m_strGivePrice.PrintF( "%s", (const char*)strTemp );
 
 				// [100208: selo] 포기 퀘스트 복구와 같이 사용하기 위해 String 리셋 부분 추가
 				ResetString();
@@ -1359,7 +1359,7 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 
 				strTemp.PrintF( "%I64d", llPrice );
 				pUIManager->InsertCommaToString(strTemp);
-				m_strResetQuestPrice.PrintF( "%s", strTemp );
+				m_strResetQuestPrice.PrintF( "%s", (const char*)strTemp );
 
 				ResetString();
 				AddString( _S(4814, "포기 상태의 모든 퀘스트가 원상태로 복구 됩니다. 포기 퀘스트를 복구 하기 위해서는 일정 금액의 나스가 필요합니다. 원하시면 확인 버튼을 아니면 취소 버튼을 누르세요." ) );
@@ -1468,7 +1468,7 @@ void CUIInitJob::RestoreStatPoint( SBYTE sbStatType )
 	strTemp.PrintF("%I64d", m_llInitJobMoney);
 	UIMGR()->InsertCommaToString(strTemp);
 
-	m_strInitJobMoney.PrintF( "%s", strTemp );
+	m_strInitJobMoney.PrintF( "%s", (const char*)strTemp );
 }
 
 // ----------------------------------------------------------------------------

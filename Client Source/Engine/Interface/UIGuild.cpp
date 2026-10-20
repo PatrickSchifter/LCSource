@@ -1534,7 +1534,7 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 
 			strTemp2.PrintF("%I64d", _GuildConditionTable[0].llNeedMoney);
 			pUIMgr->InsertCommaToString(strTemp2);
-			strTemp.PrintF( _S( 904, "필요 나스 : %s 나스" ), strTemp2);
+			strTemp.PrintF( _S( 904, "필요 나스 : %s 나스" ), (const char*)strTemp2);
 			AddGuildDescString( strTemp, llMyMoney >= llNeedMoney ? 0xFFC672FF : 0xBCBCBCFF );
 
 			if( lMySP < iNeedSP )
@@ -1544,7 +1544,7 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 
 			strTemp2.PrintF("%d", _GuildConditionTable[0].iNeedSP);
 			pUIMgr->InsertCommaToString(strTemp2);
-			strTemp.PrintF( _S( 905, "필요 S P  : %s SP" ), strTemp2);		
+			strTemp.PrintF( _S( 905, "필요 S P  : %s SP" ), (const char*)strTemp2);		
 			AddGuildDescString( strTemp, lMySP >= iNeedSP ? 0xFFC672FF : 0xBCBCBCFF );
 		}
 		break;
@@ -1585,7 +1585,7 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 
 			strTemp2.PrintF("%I64d", _GuildConditionTable[m_iGuildLevel].llNeedMoney);
 			pUIMgr->InsertCommaToString(strTemp2);
-			strTemp.PrintF( _S( 904, "필요 나스 : %s 나스" ), strTemp2);		
+			strTemp.PrintF( _S( 904, "필요 나스 : %s 나스" ), (const char*)strTemp2);		
 			AddGuildDescString( strTemp, llMyMoney >= llNeedMoney ? 0xFFC672FF : 0xBCBCBCFF );
 
 			if( lMySP < iNeedSP )
@@ -1595,12 +1595,12 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 
 			strTemp2.PrintF("%d", _GuildConditionTable[m_iGuildLevel].iNeedSP);
 			pUIMgr->InsertCommaToString(strTemp2);
-			strTemp.PrintF( _S( 905, "필요 S P  : %s SP" ), strTemp2);		
+			strTemp.PrintF( _S( 905, "필요 S P  : %s SP" ), (const char*)strTemp2);		
 			AddGuildDescString( strTemp, lMySP >= iNeedSP ? 0xFFC672FF : 0xBCBCBCFF );
 			
 			strTemp2.PrintF("%d", _GuildConditionTable[m_iGuildLevel].iNeedGP);
 			pUIMgr->InsertCommaToString(strTemp2);
-			strTemp.PrintF( _S(3839, "필요 G P  : %s GP" ), strTemp2);		
+			strTemp.PrintF( _S(3839, "필요 G P  : %s GP" ), (const char*)strTemp2);		
 			AddGuildDescString( strTemp, 0x70BEFFFF);
 		}
 		break;
@@ -6759,16 +6759,16 @@ void CUIGuild::AdjustGuildMemberInfo()
 	m_lbManageMemberList.SetString(1, tRow, m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_CHANGE_POSITION));
 
 	CTString strTmp;
-	strTmp.PrintF("%s%%", m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_EXP_MIN));
+	strTmp.PrintF("%s%%", (const char*)m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_EXP_MIN));
 	m_lbManageMemberListEx.SetString(0, tRow, strTmp);
 
-	strTmp.PrintF("%s%%", m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_EXP_MAX));
+	strTmp.PrintF("%s%%", (const char*)m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_EXP_MAX));
 	m_lbManageMemberListEx.SetString(1, tRow, strTmp);
 
-	strTmp.PrintF("%s%%", m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_FAME_MIN));
+	strTmp.PrintF("%s%%", (const char*)m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_FAME_MIN));
 	m_lbManageMemberListEx.SetString(2, tRow, strTmp);
 
-	strTmp.PrintF("%s%%", m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_FAME_MAX));
+	strTmp.PrintF("%s%%", (const char*)m_pGuildChangeSetUI->GetString(CGuildChangeSetUI::eEDIT_FAME_MAX));
 	m_lbManageMemberListEx.SetString(3, tRow, strTmp);
 
 #ifdef ENABLE_GUILD_STASH
@@ -6816,22 +6816,22 @@ void CUIGuild::AdjustDonateMinMaxInfo()
 	int nSize = m_vManageMemberIndex.size();
 
 	CTString strExpMin;
-	strExpMin.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP_MIN));
+	strExpMin.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP_MIN));
 
 	CTString strExpMax;
-	strExpMax.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP_MAX));
+	strExpMax.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP_MAX));
 
 	CTString strFameMin;
-	strFameMin.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME_MIN));
+	strFameMin.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME_MIN));
 
 	CTString strFameMax;
-	strFameMax.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME_MAX));
+	strFameMax.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME_MAX));
 
 	CTString strExp;
-	strExp.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP));
+	strExp.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP));
 
 	CTString strFame;
-	strFame.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME));
+	strFame.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME));
 
 	for (int i = 0; i < nSize; ++i)
 	{		
@@ -6866,12 +6866,12 @@ void CUIGuild::AdjustMyDonateInfo()
 
 	CTString strTemp;
 
-	strTemp.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP));
+	strTemp.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_EXP));
 
 	if (m_lbManageMemberList.GetCurItemCount(4) > nMyCharPosInMemberList)
 		m_lbManageMemberList.SetString( 4, nMyCharPosInMemberList, strTemp);
 
-	strTemp.PrintF("%s%%", m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME));
+	strTemp.PrintF("%s%%", (const char*)m_pGuildDonateUI->GetString(CGuildDonateUI::eEDIT_FAME));
 	
 	if (m_lbManageMemberList.GetCurItemCount(5) > nMyCharPosInMemberList)
 		m_lbManageMemberList.SetString( 5, nMyCharPosInMemberList, strTemp);
@@ -7340,7 +7340,7 @@ void CUIGuild::SetGuildSkillInfo()
 		{	// Need GP
 			strTemp.PrintF("%d", nNeedGP);
 			pUIManager->InsertCommaToString(strTemp);
-			strMessage.PrintF( _S( 5032, "소모 GP : %s" ), strTemp);
+			strMessage.PrintF( _S( 5032, "소모 GP : %s" ), (const char*)strTemp);
 			pUIManager->AddStringToList(&m_lbUseInfo, strMessage, 20, colUseSkillInfo);
 		}
 		if ( nNeedItemIndex1 > 0 || nNeedItemIndex2 > 0 )
@@ -7350,13 +7350,13 @@ void CUIGuild::SetGuildSkillInfo()
 			if ( nNeedItemIndex1 > 0)
 			{	// Need Item1
 				strCount = pUIManager->IntegerToCommaString(nNeedItemCount1);
-				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName(nNeedItemIndex1), strCount );
+				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName(nNeedItemIndex1), (const char*)strCount );
 				pUIManager->AddStringToList(&m_lbUseInfo, strMessage, 20, colUseSkillInfo);
 			}
 			if ( nNeedItemIndex2 > 0)
 			{	// Need Item2
 				strCount = pUIManager->IntegerToCommaString(nNeedItemCount2);
-				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName(nNeedItemIndex1), strCount );
+				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName(nNeedItemIndex1), (const char*)strCount );
 				pUIManager->AddStringToList(&m_lbUseInfo, strMessage, 20, colUseSkillInfo);
 			}
 		}
@@ -7440,7 +7440,7 @@ void CUIGuild::SetGuildSkillInfo()
 		{	// Learn GP
 			strTemp.PrintF("%d", nLearnGP);
 			pUIManager->InsertCommaToString(strTemp);
-			strMessage.PrintF( _S( 5119, "필요 GP : %s" ), strTemp);
+			strMessage.PrintF( _S( 5119, "필요 GP : %s" ), (const char*)strTemp);
 			pUIManager->AddStringToList(&m_lbLearnInfo, strMessage, 20, colLearnSkillInfo);
 		}
 
@@ -7449,7 +7449,7 @@ void CUIGuild::SetGuildSkillInfo()
 			if ( nLearnItemIndex[i] > 0 )
 			{
 				strCount = pUIManager->IntegerToCommaString(nLearnItemCount[i]);
-				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+				strMessage.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 				strMessage = _S( 259, "필요 아이템" ) + strMessage;
 				pUIManager->AddStringToList(&m_lbLearnInfo, strMessage, 20, colLearnSkillInfo);
 			}
@@ -7487,7 +7487,7 @@ void CUIGuild::SetGuildSkillInfo()
 		{	// Need GP
 			strTemp.PrintF("%d", nNeedGP);
 			pUIManager->InsertCommaToString(strTemp);
-			strMessage.PrintF( _S( 5032, "소모 GP : %s" ), strTemp);
+			strMessage.PrintF( _S( 5032, "소모 GP : %s" ), (const char*)strTemp);
 			pUIManager->AddStringToList(&m_lbLearnInfo, strMessage, 20, colLearnSkillInfo);
 		}
 		if ( nPower > 0 )

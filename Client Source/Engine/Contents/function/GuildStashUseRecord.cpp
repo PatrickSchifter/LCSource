@@ -52,7 +52,7 @@ void CGuildStashUseRecordUI::initialize()
 void CGuildStashUseRecordUI::OpenUI(CTString& strGuildName)
 {
 	CTString strTemp;
-	strTemp.PrintF(_S(5544, "[%s]길드 창고 이용 기록"), strGuildName);
+	strTemp.PrintF(_S(5544, "[%s]길드 창고 이용 기록"), (const char*)strGuildName);
 	m_pTitle->SetText(strTemp);
 
 	m_pListRecord->DeleteAllListItem();

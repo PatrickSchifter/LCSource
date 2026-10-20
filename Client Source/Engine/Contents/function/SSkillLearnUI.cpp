@@ -401,7 +401,7 @@ void CSSkillLearnUI::updateList()
 
 			if (pText != NULL)
 			{
-				strTemp.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), nlearnSp );
+				strTemp.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), nlearnSp );
 				pText->SetText(strTemp);
 			}		
 

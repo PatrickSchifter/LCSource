@@ -1073,10 +1073,10 @@ void CUIGuildBattle::OpenGBReq( int nTargetCharIndex, CTString strGuildName )
 	strMinNas = pUIManager->IntegerToCommaString(GB_MIN_NAS);
 	strMaxNas = pUIManager->IntegerToCommaString(GB_MAX_NAS);
 
-	strMessage.PrintF( "%s %s ~ %s", _S( 1388, "전투 신청금 :"), strMinNas, strMaxNas);
+	strMessage.PrintF( "%s %s ~ %s", (const char*)_S( 1388, "전투 신청금 :"), (const char*)strMinNas, (const char*)strMaxNas);
 	AddGBReqdDescString( strMessage );
 
-	strMessage.PrintF( "%s %d ~ %d", _S( 1389, "전투 시간 :" ), GB_MIN_TIME, GB_MAX_TIME );
+	strMessage.PrintF( "%s %d ~ %d", (const char*)_S( 1389, "전투 시간 :" ), GB_MIN_TIME, GB_MAX_TIME );
 	AddGBReqdDescString( strMessage );
 
 	m_ebGuildReqNas.SetFocus( TRUE );
@@ -1451,7 +1451,7 @@ void CUIGuildBattle::GBReq()
 		strMinNas = pUIMgr->IntegerToCommaString(GB_MIN_NAS);
 		strMaxNas = pUIMgr->IntegerToCommaString(GB_MAX_NAS);
 
-		strMessage.PrintF( _S( 1106, "%s에서 %s 나스의 금액을 입력하여 주십시오." ), strMinNas, strMaxNas );	
+		strMessage.PrintF( _S( 1106, "%s에서 %s 나스의 금액을 입력하여 주십시오." ), (const char*)strMinNas, (const char*)strMaxNas );	
 		GBErrorMessage( MSGCMD_GUILD_BATTLE_ERROR, strMessage );
 		m_ebGuildReqNas.ResetString();
 		return;
@@ -1806,22 +1806,22 @@ void CUIGuildBattle::GBEnd( int nWinnerGuildIndex, int nGuildIndex1, CTString st
 
 	if ( nWinnerGuildIndex == -1 )
 	{
-		strMessage.PrintF( _S( 1122, "[%s]길드와 [%s]길드간의 길드전투가 무승부가 되었습니다." ), strGuildName1, strGuildName2 );
+		strMessage.PrintF( _S( 1122, "[%s]길드와 [%s]길드간의 길드전투가 무승부가 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 );
 
 		CTString strTempNas;
 		strTempNas.PrintF("%d",nPrize);
 		CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-		strMessage2.PrintF( _S( 1123, "세금 %d%%를 제외한 길드 전투 신청금 %s나스는 각 길드장에게 되돌아 갑니다." ), GB_COMMISSION, strTempNas ); 	
+		strMessage2.PrintF( _S( 1123, "세금 %d%%를 제외한 길드 전투 신청금 %s나스는 각 길드장에게 되돌아 갑니다." ), GB_COMMISSION, (const char*)strTempNas ); 	
 	}
 	else
 	{
 		strWinnerGuildName = (nGuildIndex1 == nWinnerGuildIndex)?strGuildName1:strGuildName2;
-		strMessage.PrintF( _S( 1124, "[%s]길드와 [%s]길드간의 길드전투에서 [%s]길드가 승리하였습니다." ), strGuildName1, strGuildName2, strWinnerGuildName ); 	
+		strMessage.PrintF( _S( 1124, "[%s]길드와 [%s]길드간의 길드전투에서 [%s]길드가 승리하였습니다." ), (const char*)strGuildName1, (const char*)strGuildName2, (const char*)strWinnerGuildName ); 	
 
 		CTString strTempNas;
 		strTempNas.PrintF("%d",nPrize);
 		CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-		strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %s나스를 지급합니다." ), strWinnerGuildName, GB_COMMISSION, strTempNas ); 	
+		strMessage2.PrintF( _S( 1125, "[%s]길드에게 세금 %d%%를 제외한 전투 신청금 %s나스를 지급합니다." ), (const char*)strWinnerGuildName, GB_COMMISSION, (const char*)strTempNas ); 	
 	}
 
 	SetNotice ( strMessage, strMessage2 );

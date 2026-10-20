@@ -431,7 +431,7 @@ void CUIPetInfo::GetPetDesc( )
 		pUIMgr->InsertCommaToString(strExp);
 		pUIMgr->InsertCommaToString(strNeedExp);
 
-		strTemp.PrintF("%s/%s", strExp, strNeedExp);
+		strTemp.PrintF("%s/%s", (const char*)strExp, (const char*)strNeedExp);
 		m_lbPetDesc.AddString( 1, strTemp, 0xffe3a8ff );	
 
 		m_lbPetDesc.AddString( 0, _S(2180,"교감도"), 0xc5c5c5ff );		
@@ -584,7 +584,7 @@ void CUIPetInfo::GetSkillDesc( int nSkillIndex, int nSkillLevel )
 		{
 			m_strShortDesc.PrintF( "%s ", rSelSkill.GetName() );
 
-			m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
+			m_strShortDesc2.PrintF( "%s %d", (const char*)_S( 4414, "LV" ), nSkillLevel);
 		}
 		break;
 	case CSkill::ST_PET_SKILL_ACTIVE:		// Skill
@@ -596,22 +596,22 @@ void CUIPetInfo::GetSkillDesc( int nSkillIndex, int nSkillLevel )
 			{
 				if( nNeedMP == 0 )
 				{
-					m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
+					m_strShortDesc2.PrintF( "%s %d", (const char*)_S( 4414, "LV" ), nSkillLevel);
 				}
 				else
 				{
-					m_strShortDesc2.PrintF( "%s %d %s %d", _S( 4414, "LV" ), nSkillLevel, _S( 4412, "MP" ), nNeedMP);						
+					m_strShortDesc2.PrintF( "%s %d %s %d", (const char*)_S( 4414, "LV" ), nSkillLevel, (const char*)_S( 4412, "MP" ), nNeedMP);						
 				}
 			}
 			else
 			{
 				if( nNeedMP == 0 )
 				{
-					m_strShortDesc2.PrintF( "%s %d %s %d", _S( 4414, "LV" ), nSkillLevel, _S( 4412, "MP" ) ,nNeedMP);
+					m_strShortDesc2.PrintF( "%s %d %s %d", (const char*)_S( 4414, "LV" ), nSkillLevel, (const char*)_S( 4412, "MP" ) ,nNeedMP);
 				}
 				else
 				{
-					m_strShortDesc2.PrintF( "%s %d %s %d %s %d",_S( 4414, "LV" ), nSkillLevel,_S( 4412, "MP" ), nNeedMP,_S( 4411, "HP" ), nNeedHP );
+					m_strShortDesc2.PrintF( "%s %d %s %d %s %d",(const char*)_S( 4414, "LV" ), nSkillLevel,(const char*)_S( 4412, "MP" ), nNeedMP,(const char*)_S( 4411, "HP" ), nNeedHP );
 				}
 			}
 		}
@@ -619,7 +619,7 @@ void CUIPetInfo::GetSkillDesc( int nSkillIndex, int nSkillLevel )
 	case CSkill::ST_PET_SKILL_PASSIVE:		
 		{
 			m_strShortDesc.PrintF( "%s ", rSelSkill.GetName() );
-			m_strShortDesc2.PrintF( "%s %d", _S( 4414, "LV" ), nSkillLevel);
+			m_strShortDesc2.PrintF( "%s %d", (const char*)_S( 4414, "LV" ), nSkillLevel);
 		}
 		break;
 	}
@@ -1415,7 +1415,7 @@ BOOL CUIPetInfo::GetPetExchangeInfo( int nPetIndex, SPetExchangeInfoString& strP
 	strNeedExp.PrintF("%I64d", TempPet.llNeedExp);
 	pUIMgr->InsertCommaToString(strExp);
 	pUIMgr->InsertCommaToString(strNeedExp);
-	strPetExchangeInfo.strlExp.PrintF( _S(2256,"경험치 : %s/%s"), strExp, strNeedExp);
+	strPetExchangeInfo.strlExp.PrintF( _S(2256,"경험치 : %s/%s"), (const char*)strExp, (const char*)strNeedExp);
 
 	strPetExchangeInfo.strHungry.PrintF( _S(2257,"배고픔 :  %d"),TempPet.lHungry );
 	if( TempPet.lMaxSympathy == 0 ) TempPet.lMaxSympathy = 1;

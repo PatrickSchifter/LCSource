@@ -45,7 +45,7 @@ void CInterfaceSymbol::SaveInterfaceSymbol()
 
 	for (int i = 0; i < eUISYMBOL_INT_MAX; ++i)
 	{
-		strSave.PrintF("%s=%d\n", strIntegerField[i], _nValue[i]);
+		strSave.PrintF("%s=%d\n", (const char*)strIntegerField[i], _nValue[i]);
 		fputs(strSave.str_String, fs);
 	}
 

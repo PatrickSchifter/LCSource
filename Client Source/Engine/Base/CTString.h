@@ -55,7 +55,7 @@ public:
 	CTString Undecorated(void) const;
 
 	/* Find index of a substring in a string (returns -1 if not found). */
-	INDEX FindSubstr(const CTString &strSub);
+	INDEX FindSubstr(const CTString &strSub) const;
 	/* Replace a substring in a string. */
 	BOOL ReplaceSubstr(const CTString &strSub, const CTString &strNewSub);
 	/* Check if has given prefix */

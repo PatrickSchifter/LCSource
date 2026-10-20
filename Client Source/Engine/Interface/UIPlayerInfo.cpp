@@ -400,16 +400,16 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 				if (IsGamigo(g_iCountry) == TRUE)
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Y,Alt+Y)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Y,Alt+Y)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Y)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Y)" );
 				}
 				else
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Z,Alt+Z)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Z)" );
 				}
 
 				m_btnSysMenu.GetAbsPos( nInfoX, nInfoY );
@@ -1340,16 +1340,16 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 				if (IsGamigo(g_iCountry) == TRUE)
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Y,Alt+Y)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Y,Alt+Y)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Y)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Y)" );
 				}
 				else
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Z,Alt+Z)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Z,Alt+Z)" );
 					else
-						m_strToolTip.PrintF( "%s %s", _S( 299, "시스템" ), "(Alt+Z)" );
+						m_strToolTip.PrintF( "%s %s", (const char*)_S( 299, "시스템" ), "(Alt+Z)" );
 				}				
 			}
 			break;
@@ -1357,14 +1357,14 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 			{
 				if (IsGamigo(g_iCountry) == TRUE)
 				{
-					m_strToolTip.PrintF( "%s", _S(5213, "랭킹"));
+					m_strToolTip.PrintF( "%s", (const char*)_S(5213, "랭킹"));
 				}
 				else
 				{
 					if( g_iEnterChat )
-						m_strToolTip.PrintF( "%s %s", _S(5213, "랭킹"), "(V,Alt+V)");
+						m_strToolTip.PrintF( "%s %s", (const char*)_S(5213, "랭킹"), "(V,Alt+V)");
 					else
-						m_strToolTip.PrintF( "%s %s", _S(5213, "랭킹"), "(Alt+V)");
+						m_strToolTip.PrintF( "%s %s", (const char*)_S(5213, "랭킹"), "(Alt+V)");
 				}
 			}
 			break;

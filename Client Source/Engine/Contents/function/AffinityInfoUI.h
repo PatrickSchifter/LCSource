@@ -98,7 +98,7 @@ private:
 		, eUIBTN_ETC_TYPE btn_type
 		, int idx
 		, int point
-		, CTString& str
+		, const CTString &str
 		, COLOR col = DEF_UI_COLOR_WHITE);
 	void SetDonationMonsterList(CAffinityData::_AffinityMonsterInfo* pData);
 

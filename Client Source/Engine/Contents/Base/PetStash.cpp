@@ -8,6 +8,7 @@
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/Server.h>
 #include <Engine/Templates/StaticArray.h>
+#include <Engine/Templates/DynamicContainer.cpp>	// CDynamicContainer<CModelInstance>::Pointer
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Ska/Render.h>

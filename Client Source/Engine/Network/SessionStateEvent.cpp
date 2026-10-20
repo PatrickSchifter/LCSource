@@ -815,7 +815,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					for( i = 0; i < nTreasureBoxCount; ++i )
 					{
 						strCount = pUIManager->IntegerToCommaString(lItemCount[i]);
-						strMessage.PrintF( _S( 61, "%s %s개" ), strItemName[i], strCount );
+						strMessage.PrintF( _S( 61, "%s %s개" ), (const char*)strItemName[i], (const char*)strCount );
 						pUIManager->AddMessageBoxLString( MSGLCMD_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );
 					}
 
@@ -2042,7 +2042,7 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					{
 						(*istr)>>itemCnt;
 						strCount = UIMGR()->IntegerToCommaString(itemCnt);
-						strMessage.PrintF( _S(576, "%s : %s개" ),pUIManager->GetServerSelect()->GetServerName(i+1), strCount);
+						strMessage.PrintF( _S(576, "%s : %s개" ),(const char*)pUIManager->GetServerSelect()->GetServerName(i+1), (const char*)strCount);
 						msgInfo.AddString(strMessage);
 
 						itemAll+=itemCnt;
@@ -2245,9 +2245,9 @@ void CSessionState::ReceiveEventMessage(CNetworkMessage *istr)
 					CTString strCount = UIMGR()->IntegerToCommaString(nCount);
 
 					if( nReward == 19 )
-						strMessage.PrintF( _S(3584, "보상으로 %s 나스를 드리겠습니다."), strCount );
+						strMessage.PrintF( _S(3584, "보상으로 %s 나스를 드리겠습니다."), (const char*)strCount );
 					else
-						strMessage.PrintF( _S(3585, "보상으로 %s %s개를 드리겠습니다."), _pNetwork->GetItemName(nReward), strCount );
+						strMessage.PrintF( _S(3585, "보상으로 %s %s개를 드리겠습니다."), _pNetwork->GetItemName(nReward), (const char*)strCount );
 
 					MsgBoxInfo.AddString(strMessage);
 

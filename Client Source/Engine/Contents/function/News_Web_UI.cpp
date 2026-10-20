@@ -113,7 +113,7 @@ bool CNewsWebUI::UpdateUrl()
 	CTString strFull;
 
 	strTemp.PrintF("popups/popup_%03d.htm", nUrl);
-	strFull.PrintF("%s%s?v=%s", m_strDefUrl.c_str(), strTemp, m_strParam);
+	strFull.PrintF("%s%s?v=%s", m_strDefUrl.c_str(), (const char*)strTemp, m_strParam.c_str());
 	g_web.SetWebUrl(std::string(strFull.str_String));
 	++m_nCurPage;
 

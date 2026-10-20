@@ -112,9 +112,9 @@ private:
 
 	void	clearItems();
 	
-	void	AddString(CTString& strText, COLOR colText = 0xffffffff);
+	void	AddString(const CTString &strText, COLOR colText = 0xffffffff);
 
-	void	pushback_string(CTString& strText, COLOR color);
+	void	pushback_string(const CTString &strText, COLOR color);
 	void	callback_select();
 
 	CUIText*	m_pTxtSubject;

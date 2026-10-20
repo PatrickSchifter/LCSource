@@ -914,7 +914,7 @@ CTString CUIManager::RealNumberToCommaString( double fCount, int nDecimalplaces 
 
 void CUIManager::FitOrderDecimalString(CTString &strCount, int nDecimalplaces )
 {
-	std::string strTemp = strCount;
+	std::string strTemp = (const char*)strCount;
 	std::string strResult;
 
 	int nFindPos = strTemp.find(".");
@@ -974,7 +974,7 @@ void CUIManager::InsertCommaToString( CTString &strCount )
 
 void CUIManager::InsertCommaToStringEx( CTString &strRealNumber)
 {
-	std::string strTemp = strRealNumber;
+	std::string strTemp = (const char*)strRealNumber;
 
 	int nFindPos = strTemp.find(".");
 
@@ -994,7 +994,7 @@ void CUIManager::InsertCommaToStringEx( CTString &strRealNumber)
 		CTString strTail = strTemp.substr(nFindPos, nLeftCnt).c_str();
 
 		InsertCommaToString(strFront);
-		strRealNumber.PrintF("%s%s", strFront, strTail);
+		strRealNumber.PrintF("%s%s", (const char*)strFront, (const char*)strTail);
 	}
 }
 

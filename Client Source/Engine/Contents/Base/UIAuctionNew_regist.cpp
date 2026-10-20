@@ -412,12 +412,12 @@ void CUIAuctionNew::showRegOK()
 	CTString strNas;
 	strNas.PrintF("%I64d", m_nPrice);
 	pUIMgr->InsertCommaToString(strNas);
-	MsgBoxInfo.AddString( CTString(0, _S(4305, "%s %ld개를 %s나스로 등록하셨습니다."), m_strRegname, m_nQty, strNas) );
+	MsgBoxInfo.AddString( CTString(0, _S(4305, "%s %ld개를 %s나스로 등록하셨습니다."), (const char*)m_strRegname, m_nQty, (const char*)strNas) );
 
 	LOG_DEBUG("deposti %I64d", m_pAuction->getDeposit());
 	strNas.PrintF("%I64d", m_pAuction->getDeposit());
 	pUIMgr->InsertCommaToString(strNas);
-	MsgBoxInfo.AddString( CTString(0, _S(4306, "보증금으로 %s나스를 지불하셨습니다."), strNas) );
+	MsgBoxInfo.AddString( CTString(0, _S(4306, "보증금으로 %s나스를 지불하셨습니다."), (const char*)strNas) );
 
 	pUIMgr->CreateMessageBox(MsgBoxInfo);
 }

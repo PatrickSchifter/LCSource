@@ -199,7 +199,7 @@ void CCubeRankingUI::SetTitle( bool bGuild )
 	if (bGuild == true)
 	{
 		m_pTextTitle->SetText(CTString(_S(4388, "길드 큐브 포인트 현황")));
-		strTemp.PrintF(_S(4389, "자신이 소속된 길드 큐브 포인트 : %s"), strPoint);
+		strTemp.PrintF(_S(4389, "자신이 소속된 길드 큐브 포인트 : %s"), (const char*)strPoint);
 		m_pTextPoint->SetText(strTemp);
 
 		for (int i = 0; i < eRANK_MAX; ++i)
@@ -214,7 +214,7 @@ void CCubeRankingUI::SetTitle( bool bGuild )
 	else
 	{
 		m_pTextTitle->SetText(CTString(_S(4390, "개인 큐브 포인트 현황")));
-		strTemp.PrintF(_S(4391, "자신의 개인 큐브 포인트 : %s"), strPoint);
+		strTemp.PrintF(_S(4391, "자신의 개인 큐브 포인트 : %s"), (const char*)strPoint);
 		m_pTextPoint->SetText(strTemp);
 
 		for (int i = 0; i < eRANK_MAX; ++i)

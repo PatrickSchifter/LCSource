@@ -177,7 +177,7 @@ void CUIProduct::InitProduct()
 						if (pText != NULL)
 						{
 							strCount = UIMGR()->IntegerToCommaString(nCnt);
-							tmpStr.PrintF(_S(766, "%s 개"), strCount);
+							tmpStr.PrintF(_S(766, "%s 개"), (const char*)strCount);
 							pText->SetText(tmpStr);
 						}
 					}
@@ -383,7 +383,7 @@ void CUIProduct::SelectItem( int _nIndex )
 			szItemName = _pNetwork->GetItemName( m_NeedItems[nIndex].ItemData->GetItemIndex() );
 
 		CTString strCount = UIMGR()->IntegerToCommaString(m_NeedItems[nIndex].llCount);
-		strTitle.PrintF ( _S( 576, "%s : %s개" ), szItemName, strCount );
+		strTitle.PrintF ( _S( 576, "%s : %s개" ), szItemName, (const char*)strCount );
 		AddString ( strTitle, bNeedItemCount[nIndex]? COLOR_TEXT : COLOR_NONE );
 	}
 
@@ -591,7 +591,7 @@ void CUIProduct::clearItems()
 	m_vecItems.clear ();
 }
 
-void CUIProduct::pushback_string( CTString& strText, COLOR color )
+void CUIProduct::pushback_string( const CTString &strText, COLOR color )
 {
 	if (m_pListDesc == NULL)
 		return;

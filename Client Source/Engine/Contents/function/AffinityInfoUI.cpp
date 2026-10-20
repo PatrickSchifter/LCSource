@@ -114,13 +114,13 @@ void CAffinityInfoUI::initialize()
 	{
 		for (int i = 0; i < UI_TAB_END; ++i)
 		{
-			strTmp.PrintF("tp_%s", strName[i]);
+			strTmp.PrintF("tp_%s", (const char*)strName[i]);
 			m_pTPDonation[i] = (CUITabPage*)findUI(strTmp.str_String);
 
 			if (m_pTPDonation[i] == NULL)
 				continue;
 
-			strTmp.PrintF("list_%s", strName[i]);
+			strTmp.PrintF("list_%s", (const char*)strName[i]);
 			m_pListDonation[i] = (CUIList*)m_pTPDonation[i]->findUI(strTmp);
 		}
 	}
@@ -377,7 +377,7 @@ void CAffinityInfoUI::_SetAffinityListData()
 
 			CTString strCurPoint = UIMGR()->IntegerToCommaString(nCur);
 			CTString strMaxPoint = UIMGR()->IntegerToCommaString(nMax);
-			strTmp.PrintF("%s/%s", strCurPoint, strMaxPoint);
+			strTmp.PrintF("%s/%s", (const char*)strCurPoint, (const char*)strMaxPoint);
 			
 			if (m_pTextAffinityPt != NULL)
 				m_pTextAffinityPt->SetText(strTmp);
@@ -482,7 +482,7 @@ const	ULONG	CAffinityInfoUI::_getUIType() const
 	return UI_NPC_AFFINITYINFO;	
 }
 
-void CAffinityInfoUI::AddDonationList( _eAffinityTab_UI tab, eUIBTN_ETC_TYPE btn_type, int idx, int point, CTString& str, COLOR col /*= DEF_UI_COLOR_WHITE*/ )
+void CAffinityInfoUI::AddDonationList( _eAffinityTab_UI tab, eUIBTN_ETC_TYPE btn_type, int idx, int point, const CTString &str, COLOR col /*= DEF_UI_COLOR_WHITE*/ )
 {
 	if (m_pListDonation[tab] == NULL)
 		return;

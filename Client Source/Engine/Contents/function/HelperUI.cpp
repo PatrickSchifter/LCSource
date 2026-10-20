@@ -165,7 +165,7 @@ void CHelperUI::TeacherAccept( LONG lIndex, const CTString& strStudentName )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1154, "후견인 등록" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_STUDENT_ACCEPT );	
-	strMessage.PrintF( _S( 1155,  "[%s] 님이 후견인이 되어달라는 부탁을 합니다. 수락하시겠습니까?"  ),  strStudentName );	
+	strMessage.PrintF( _S( 1155,  "[%s] 님이 후견인이 되어달라는 부탁을 합니다. 수락하시겠습니까?"  ),  (const char*)strStudentName );	
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -340,7 +340,7 @@ void CHelperUI::FireMyStudent()
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 5068, "후견인 포기" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_FIRE_MYSTUDENT );		
-		strMessage.PrintF( _S( 5081, "[%s]님의 후견인을 그만 두시겠습니까? 그만 두게되면 명성치 5를 잃게 됩니다." ), strStudentName );	
+		strMessage.PrintF( _S( 5081, "[%s]님의 후견인을 그만 두시겠습니까? 그만 두게되면 명성치 5를 잃게 됩니다." ), (const char*)strStudentName );	
 		MsgBoxInfo.AddString( strMessage );
 		CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );	
 	}

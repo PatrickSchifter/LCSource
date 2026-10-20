@@ -346,15 +346,15 @@ void CUIMonsterCombo::Render()
 
 	strPoint = pUIMgr->IntegerToCommaString(m_nComboPoint);
 	strCount = pUIMgr->IntegerToCommaString(m_nComboCount);
-	strTemp.PrintF( _S(4138, "몬스터 콤보 점수: %s Point 미션 개수: %s 개"), strPoint,strCount);
+	strTemp.PrintF( _S(4138, "몬스터 콤보 점수: %s Point 미션 개수: %s 개"), (const char*)strPoint,(const char*)strCount);
 	pDrawPort->PutTextEx(strTemp, nX+15, nY+310);
 
 	strCount = pUIMgr->IntegerToCommaString(_pNetwork->MyCharacterInfo.money);
-	strTemp.PrintF( _S(4139, "보유 금액: %s Nas"), strCount);
+	strTemp.PrintF( _S(4139, "보유 금액: %s Nas"), (const char*)strCount);
 	pDrawPort->PutTextEx(strTemp, nX+320, nY+310);
 
 	strCount = pUIMgr->IntegerToCommaString(m_nAdmissionPay);
-	strTemp.PrintF( _S(4140, "입장료: %s Nas"), strCount);
+	strTemp.PrintF( _S(4140, "입장료: %s Nas"), (const char*)strCount);
 	pDrawPort->PutTextEx(strTemp, nX+320, nY+345);
 
 	// Flush all render text queue
@@ -387,7 +387,7 @@ void CUIMonsterCombo::MissionCaseRender(int iX, int iY)
 			strTemp.PrintF("%s",MC->GetName()); 								
 			pDrawPort->PutTextEx(strTemp, iX+370, iY+37+(52*i));
 			
-			strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), strNas, strPoint);
+			strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), (const char*)strNas, (const char*)strPoint);
 			
 			INDEX nindex = strTemp.FindSubstr("., ");
 			if(nindex != -1)
@@ -403,9 +403,9 @@ void CUIMonsterCombo::MissionCaseRender(int iX, int iY)
 			pDrawPort->PutTextEx(strTemp, iX+370, iY+40+(52*i));
 
 			if (IsBila(g_iCountry) == TRUE)
-				strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), strNas, strPoint);
+				strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), (const char*)strNas, (const char*)strPoint);
 			else
-				strTemp.PrintF( _S(4141, "%s Nas %s Point"), strNas, strPoint);
+				strTemp.PrintF( _S(4141, "%s Nas %s Point"), (const char*)strNas, (const char*)strPoint);
 
 			pDrawPort->PutTextEx(strTemp, iX+370, iY+60+(52*i));
 		}
@@ -448,7 +448,7 @@ void CUIMonsterCombo::RenderComboList(int nCurScrollNum,int nX, int nY)
 				strTemp.PrintF("%s",MC->GetName()); 								
 				pDrawPort->PutTextEx(strTemp, nX+5, nY+5);
 				
-				strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), strNas, strPoint);
+				strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), (const char*)strNas, (const char*)strPoint);
 				
 				INDEX nindex = strTemp.FindSubstr("., ");
 				if(nindex != -1)
@@ -464,9 +464,9 @@ void CUIMonsterCombo::RenderComboList(int nCurScrollNum,int nX, int nY)
 				pDrawPort->PutTextEx(strTemp, nX+5, nY+8);
 
 				if (IsBila(g_iCountry) == TRUE)
-					strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), MC->bSkill ? _S( 192, "Yes"):_S( 193, "No"), strNas, strPoint);
+					strTemp.PrintF( _S(4141, "패널티: %s %s Nas %s Point"), (const char*)(MC->bSkill ? _S( 192, "Yes"):_S( 193, "No")), (const char*)strNas, (const char*)strPoint);
 				else
-					strTemp.PrintF( _S(4141, "%s Nas %s Point"), strNas, strPoint);
+					strTemp.PrintF( _S(4141, "%s Nas %s Point"), (const char*)strNas, (const char*)strPoint);
 		
 				pDrawPort->PutTextEx(strTemp, nX+5, nY+28);
 			}

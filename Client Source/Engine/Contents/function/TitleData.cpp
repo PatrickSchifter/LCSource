@@ -88,7 +88,7 @@ void TitleNetwork::RecvTitleMessage( CNetworkMessage* istr )
 			if (CustomTitleData::IsKeepTitleInfo(pRecv->custom_title_index) == true)
 				strSysMessage.PrintF(_S(4828, "%s 호칭을 추가하였습니다."), CustomTitleData::m_mapCustomTitleItemInfo[pRecv->custom_title_index]->name);
 			else
-				strSysMessage.PrintF(_S(4828, "%s 호칭을 추가하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));
+				strSysMessage.PrintF(_S(4828, "%s 호칭을 추가하였습니다."), (const char*)pUIManager->GetNickName()->GetName(iItemIndex));
 		}
 		break;
 
@@ -120,7 +120,7 @@ void TitleNetwork::RecvTitleMessage( CNetworkMessage* istr )
 					if (bCustomEffect == true)
 						strSysMessage.PrintF(_S(4830,"%s 호칭으로 설정 완료하였습니다."), CustomTitleData::m_mapCustomTitleItemInfo[pRecv->custom_title_index]->name);
 					else
-						strSysMessage.PrintF(_S(4830,"%s 호칭으로 설정 완료하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));					
+						strSysMessage.PrintF(_S(4830,"%s 호칭으로 설정 완료하였습니다."), (const char*)pUIManager->GetNickName()->GetName(iItemIndex));					
 				}
 				else
 					pUIManager->GetHelp()->SetBeginner( FALSE );
@@ -189,7 +189,7 @@ void TitleNetwork::RecvTitleMessage( CNetworkMessage* istr )
 			if (CustomTitleData::IsKeepTitleInfo(pRecv->custom_title_index) == true)
 				strSysMessage.PrintF(_S(4832, "정상적으로 %s 호칭을 삭제하였습니다."), CustomTitleData::m_mapCustomTitleItemInfo[pRecv->custom_title_index]->name);
 			else
-				strSysMessage.PrintF(_S(4832, "정상적으로 %s 호칭을 삭제하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));
+				strSysMessage.PrintF(_S(4832, "정상적으로 %s 호칭을 삭제하였습니다."), (const char*)pUIManager->GetNickName()->GetName(iItemIndex));
 		}
 		break;
 

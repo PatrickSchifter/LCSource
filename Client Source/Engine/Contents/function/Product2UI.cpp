@@ -508,7 +508,7 @@ void CUIProduct2::set_list_item()
 				CTString strCount;
 				strCount.PrintF("%I64d", llstuff_count);
 				UIMGR()->InsertCommaToString(strCount);
-				tmpStr.PrintF(_S(4809, "%s °³"), strCount);
+				tmpStr.PrintF(_S(4809, "%s °³"), (const char*)strCount);
 			}
 			else
 				tmpStr = "";

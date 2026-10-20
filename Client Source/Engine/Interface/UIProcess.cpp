@@ -314,7 +314,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 	{
 		szItemName = _pNetwork->GetItemName(m_NeedItems[0].ItemData->GetItemIndex());
 		CTString strCount = UIMGR()->IntegerToCommaString(m_NeedItems[0].llCount);
-		strTitle.PrintF(_S(576, "%s : %s°³ "), strSpace + szItemName, strCount);
+		strTitle.PrintF(_S(576, "%s : %s°³ "), (const char*)(strSpace + szItemName), (const char*)strCount);
 	}
 
 	AddString(strTitle, bNeedItem ? COLOR_TEXT : COLOR_NONE);
@@ -517,7 +517,7 @@ WMSG_RESULT CUIProcess::OnLButtonDown( UINT16 x, UINT16 y )
 	return CUIWindow::OnLButtonDown(x, y);
 }
 
-void CUIProcess::pushback_string( CTString& strText, COLOR color )
+void CUIProcess::pushback_string( const CTString &strText, COLOR color )
 {
 	if (m_pListDesc == NULL)
 		return;

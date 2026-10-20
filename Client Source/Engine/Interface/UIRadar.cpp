@@ -1240,7 +1240,7 @@ void CUIRadar::RoyalRumbleJoinReqMsgBox()
 
 	MsgBoxInfo.SetMsgBoxInfo( _S(5407, "로얄럼블 참가신청"), UMBS_YESNO, UI_RADAR, MSGCMD_ROYALRUMBLE_JOIN_REQ);
 	
-	strTemp.PrintF(_S(5408, "안녕하십니까? 로얄럼블 관리회입니다. 수습 검투사 %s, 전문 검투사 %s, 고급 검투사 %s"), strFee1, strFee2, strFee3);
+	strTemp.PrintF(_S(5408, "안녕하십니까? 로얄럼블 관리회입니다. 수습 검투사 %s, 전문 검투사 %s, 고급 검투사 %s"), (const char*)strFee1, (const char*)strFee2, (const char*)strFee3);
 	MsgBoxInfo.AddString(strTemp);
 	pUIMgr->CreateMessageBox(MsgBoxInfo);
 }
@@ -1653,7 +1653,7 @@ void CUIRadar::updateChannelInfo()
 
 	CTString strServerInfo;
 	strServerInfo.PrintF("%s Ch. %d", 
-		UIMGR()->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), 
+		(const char*)UIMGR()->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), 
 		_pNetwork->m_iServerCh);
 
 	m_pTxtChInfo->SetText(strServerInfo);

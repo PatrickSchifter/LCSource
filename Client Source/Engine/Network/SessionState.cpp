@@ -3046,7 +3046,7 @@ void CSessionState::SessionStateLoop(void)
 							{
 								strTemp.PrintF("%I64d", loseExp);
 								pUIManager->InsertCommaToString(strTemp);
-								strMessage.PrintF( _S( 5768, "부활주문서3을 소모하여 EXP %s 를 복구 하였습니다."), strTemp );
+								strMessage.PrintF( _S( 5768, "부활주문서3을 소모하여 EXP %s 를 복구 하였습니다."), (const char*)strTemp );
 								pUIManager->GetChattingUI()->AddSysMessage( strMessage );
 							}
 						
@@ -3054,7 +3054,7 @@ void CSessionState::SessionStateLoop(void)
 							{
 								strTemp.PrintF("%I64d", loseSp);
 								pUIManager->InsertCommaToString(strTemp);
-								strMessage.PrintF( _S( 5769, "부활주문서3을 소모하여 SP %s 를 복구 하였습니다."), strTemp );
+								strMessage.PrintF( _S( 5769, "부활주문서3을 소모하여 SP %s 를 복구 하였습니다."), (const char*)strTemp );
 								pUIManager->GetChattingUI()->AddSysMessage( strMessage );
 							}
 						}
@@ -5506,13 +5506,13 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 						pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )	// 0829 드롭사운드
 					{
 						penPlayerEntity->PlayItemSound( FALSE, TRUE );
-						strSysMessage.PrintF( _S( 301, "%s 나스를 버렸습니다." ), strCount );	// 번역 수정
+						strSysMessage.PrintF( _S( 301, "%s 나스를 버렸습니다." ), (const char*)strCount );	// 번역 수정
 						_pNetwork->ClientSystemMessage( strSysMessage );
 					}
 					else
 					{
 						penPlayerEntity->PlayItemSound( FALSE, FALSE );
-						strSysMessage.PrintF( _S( 302, "%s %s개를 버렸습니다." ), szItemName, strCount );
+						strSysMessage.PrintF( _S( 302, "%s %s개를 버렸습니다." ), szItemName, (const char*)strCount );
 						_pNetwork->ClientSystemMessage( strSysMessage );		
 					}
 				}
@@ -5665,7 +5665,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 				strCount.PrintF("%I64d", delta);
 				pUIManager->InsertCommaToString(strCount);
 
-				strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
+				strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, (const char*)strCount );
 				_pNetwork->ClientSystemMessage( strSysMessage );
 
 			}
@@ -5928,7 +5928,7 @@ void CSessionState::ReceiveItemMessage(CNetworkMessage *istr)
 				CTString strCount;
 				strCount.PrintF("%I64d", count);
 				pUIManager->InsertCommaToString(strCount);
-				strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
+				strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, (const char*)strCount );
 			}
 			else
 				strSysMessage.PrintF( _S2( 303, szItemName, "%s<를> 얻었습니다." ),
@@ -8193,7 +8193,7 @@ void CSessionState::ReceiveSystemMessage( CNetworkMessage *istr )
 			strExp.PrintF("%I64d", lExp);
 			pUIManager->InsertCommaToString(strExp);
 
-			strSysMessage.PrintF(_S( 4663, "숙련도가 %s 상승하였습니다."), strExp);
+			strSysMessage.PrintF(_S( 4663, "숙련도가 %s 상승하였습니다."), (const char*)strExp);
 			pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_NOTIFY );
 		}break;
 	case MSG_SYS_CANNOT_DESTROY:
@@ -8212,7 +8212,7 @@ void CSessionState::ReceiveSystemMessage( CNetworkMessage *istr )
 				(*istr) >> iIndex;
 				//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
 				iItemIndex = TitleStaticData::getData(iIndex)->GetItemIndex();
-				strSysMessage.PrintF(_S(4838, "%s 호칭의 기간이 만료 되었습니다." ), pUIManager->GetNickName()->GetName(iItemIndex));
+				strSysMessage.PrintF(_S(4838, "%s 호칭의 기간이 만료 되었습니다." ), (const char*)pUIManager->GetNickName()->GetName(iItemIndex));
 				pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_NOTIFY );
 			}
 		}break;
@@ -8782,17 +8782,12 @@ void CSessionState::ReceiveEXPMessage( CNetworkMessage *istr )
 	pUIManager->InsertCommaToString(strSp);	
 
 	CTString strSysMessage;
-	// Some localized strings (e.g. Brazil) take the numbers as %s instead of %I64d/%d.
-	CTString strExp, strSp;
-	strExp.PrintF("%I64d", Exp);
-	strSp.PrintF("%d", Sp);
-	CTString strFormat;
 	if( Exp > 0 && Sp > 0 )
-		strSysMessage.PrintF( _S( 337, "%s의 경험치와 %s의 SP를 얻었습니다." ), strExp, strSp );
+		strSysMessage.PrintF( _S( 337, "%s의 경험치와 %s의 SP를 얻었습니다." ), (const char*)strExp, (const char*)strSp );
 	else if( Exp > 0 )
-		strSysMessage.PrintF( _S( 427, "%s의 경험치를 얻었습니다." ), strExp );
+		strSysMessage.PrintF( _S( 427, "%s의 경험치를 얻었습니다." ), (const char*)strExp );
 	else
-		strSysMessage.PrintF( _S( 428, "%s의 SP를 얻었습니다." ), strSp );	
+		strSysMessage.PrintF( _S( 428, "%s의 SP를 얻었습니다." ), (const char*)strSp );	
 
 	pUIManager->GetChattingUI()->AddSysMessage( strSysMessage );
 	pUIManager->GetSimplePlayerInfo()->UpdateEXP();
@@ -10871,11 +10866,11 @@ void CSessionState::ReceiveWareHouseMessage(CNetworkMessage *istr)
 				if( pItemData->GetType() == CItemData::ITEM_ETC &&
 					pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
 				{
-					strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount);		
+					strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), (const char*)strCount);		
 				}
 				else
 				{
-					strMessage.PrintF(_S( 808, "%s를 %s개 보관하였습니다." ), szName, strCount);
+					strMessage.PrintF(_S( 808, "%s를 %s개 보관하였습니다." ), szName, (const char*)strCount);
 				}
 				_pNetwork->ClientSystemMessage( strMessage );
 			}
@@ -13146,7 +13141,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 							else
 							{
 								
-								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다." ), strStudentName, LIMIT_GUARDIAN_APP_LEVEL);	
+								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다." ), (const char*)strStudentName, LIMIT_GUARDIAN_APP_LEVEL);	
 
 								if (lUpFame > 0)
 								{
@@ -13165,7 +13160,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 								MsgBoxInfo.AddString(_S(3346, "축하합니다. 견습생 양성을 성공적으로 이루어 내 노란 카네이션을 획득 하였습니다."));
 							else
 							{
-								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다." ), strStudentName, LIMIT_GUARDIAN_APP_LEVEL);	
+								strMessage.PrintF( _S( 1356, "[%s]님의 레벨이 %d이 되어 후견인 관계가 종료 되었습니다." ), (const char*)strStudentName, LIMIT_GUARDIAN_APP_LEVEL);	
 
 								if (lUpFame > 0)
 								{
@@ -13198,7 +13193,7 @@ void CSessionState::ReceiveTeachMessage(CNetworkMessage *istr)
 						if(IS_EVENT_ON(TEVENT_TEACHER_2007))
 							MsgBoxInfo.AddString(_S(3347, "축하합니다. 레벨 20을 달성하여 스승의날 이벤트 노란 견장과 이벤트검을 획득 하였습니다."));
 						else
-							strMessage.PrintF( _S( 1357, "레벨이 %d이 되어 [%s]님과의 후견인 관계가 종료 되었습니다." ), LIMIT_GUARDIAN_APP_LEVEL, strTeacherName );	
+							strMessage.PrintF( _S( 1357, "레벨이 %d이 되어 [%s]님과의 후견인 관계가 종료 되었습니다." ), LIMIT_GUARDIAN_APP_LEVEL, (const char*)strTeacherName );	
 #endif
 
 						GAMEDATAMGR()->GetHelperManager()->ClearHelperList();

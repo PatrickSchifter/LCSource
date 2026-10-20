@@ -1316,7 +1316,7 @@ void CUICharacterInfo::UpdateExpAndSp(void)
 	pUIMgr->InsertCommaToString(strCur);
 	pUIMgr->InsertCommaToString(strNeed);
 
-	strString.PrintF( "%s/%s", strCur, strNeed );
+	strString.PrintF( "%s/%s", (const char*)strCur, (const char*)strNeed );
 
 	if (m_ptxtBase[eCHARINFO_BASE_EXP] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_EXP]->SetText(strString);
@@ -1551,13 +1551,13 @@ void CUICharacterInfo::UpdateStatus( int iAttack, int iMagic, int iDefense, int 
 	
 	CUIManager* pUIManager = UIMGR();
 	CTString strTemp = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.pkcount);
-	strString.PrintF( "%s", strTemp );
+	strString.PrintF( "%s", (const char*)strTemp );
 
 	if (m_pstrPkPointAcc != NULL)
 		m_pstrPkPointAcc->SetText(strString);
 
 	strTemp = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.fame);
-	strString.PrintF( "%s", strTemp );
+	strString.PrintF( "%s", (const char*)strTemp );
 
 	if (m_ptxtBase[eCHARINFO_BASE_FRAME] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_FRAME]->SetText(strString);
@@ -2529,7 +2529,7 @@ void CUICharacterInfo::UpdateBaseInfo()
 	strCur = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.hp);
 	strMax = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.maxHP);
 
-	strString.PrintF("%s/%s", strCur, strMax);
+	strString.PrintF("%s/%s", (const char*)strCur, (const char*)strMax);
 
 	if (m_ptxtStat[eCHARINFO_STAT_HP] != NULL)
 		m_ptxtStat[eCHARINFO_STAT_HP]->SetText(strString);
@@ -2538,7 +2538,7 @@ void CUICharacterInfo::UpdateBaseInfo()
 	strCur = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.mp);
 	strMax = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.maxMP);
 
-	strString.PrintF("%s/%s", strCur, strMax);
+	strString.PrintF("%s/%s", (const char*)strCur, (const char*)strMax);
 	
 	if (m_ptxtStat[eCHARINFO_STAT_MP] != NULL)
 		m_ptxtStat[eCHARINFO_STAT_MP]->SetText(strString);
@@ -2584,7 +2584,7 @@ void CUICharacterInfo::UpdateBaseInfo()
 	}
 
 	strCur = pUIManager->IntegerToCommaString(_pNetwork->MyCharacterInfo.pkpenalty);
-	strString.PrintF( "%s", strCur );
+	strString.PrintF( "%s", (const char*)strCur );
 
 	if (m_pstrPkPoint != NULL)
 	{
@@ -2682,7 +2682,7 @@ void CUICharacterInfo::SetSSkill()
 
 		if( pText != NULL )
 		{
-			strString.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), pSSkill->GetLearnSP( sbLevel - 1 ) );
+			strString.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), pSSkill->GetLearnSP( sbLevel - 1 ) );
 
 			pText->SetText(strString);
 			strColor = 0xBDA99FFF;
@@ -2807,7 +2807,7 @@ void CUICharacterInfo::SetItemSkill()
 
 		if( pText != NULL )
 		{
-			strString.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
+			strString.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
 
 			strColor = 0xBDA99FFF;
 			pText->SetText(strString);
@@ -2914,7 +2914,7 @@ void CUICharacterInfo::SetSeal()
 			strExp.PrintF("%I64d", MY_INFO()->GetSkillExp(rSkill.GetIndex()));
 			UIMGR()->InsertCommaToString(strExp);
 
-			strString.PrintF(_S(4491, "¼÷·Ãµµ : %s"), strExp);
+			strString.PrintF(_S(4491, "¼÷·Ãµµ : %s"), (const char*)strExp);
 			
 			strColor = 0xBDA99FFF;
 			pText->SetText(strString);
@@ -3520,12 +3520,12 @@ void CUICharacterInfo::UpdateMySyndiPos()
 			strMaxExp.PrintF("%I64d", llMaxExp);
 			pUIMgr->InsertCommaToString(strMaxExp);
 
-			strExp.PrintF( "%s/%s (%.1f%%)", strCurExp, strMaxExp, fPercentage );
+			strExp.PrintF( "%s/%s (%.1f%%)", (const char*)strCurExp, (const char*)strMaxExp, fPercentage );
 		}
 		else
 		{
 			fPercentage = 100.f;
-			strExp.PrintF( "%s (%.1f%%)", strCurExp, fPercentage );
+			strExp.PrintF( "%s (%.1f%%)", (const char*)strCurExp, fPercentage );
 		}
 	}
 

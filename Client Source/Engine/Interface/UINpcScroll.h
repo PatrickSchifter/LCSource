@@ -63,7 +63,7 @@ public:
 
 	void	choose(int idx, bool bnpc);
 private:
-	bool	add_list(CTString& str, COLOR col = DEF_UI_COLOR_WHITE, int idx = -1, bool bnpc = true);
+	bool	add_list(const CTString &str, COLOR col = DEF_UI_COLOR_WHITE, int idx = -1, bool bnpc = true);
 
 	void	set_status(eSTATUS status);
 

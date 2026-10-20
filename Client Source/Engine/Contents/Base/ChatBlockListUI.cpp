@@ -625,7 +625,7 @@ void CChatBlockListUI::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strI
 			if( bOK )
 			{
 				CTString strMessage;
-				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), strInput);
+				strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strInput);
 				m_strSelName = strInput;
 				Message( MSGCMD_CHAT_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );		
 			}
@@ -660,7 +660,7 @@ void CChatBlockListUI::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strI
 void	CChatBlockListUI::CharacterFilterInSimplePopup( CTString strCharName )
 {
 	CTString strMessage;
-	strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), strCharName);
+	strMessage.PrintF(_S(3005, "%s님을 차단하시겠습니까?"), (const char*)strCharName);
 	m_strSelName = strCharName;
 	Message( MSGCMD_CHAT_BLOCK, _S(3004, "캐릭터 차단"), strMessage, UMBS_YESNO );	
 }

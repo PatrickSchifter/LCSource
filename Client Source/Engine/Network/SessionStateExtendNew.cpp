@@ -113,7 +113,7 @@ void CSessionState::recvExMonsterCombo( CNetworkMessage* istr )
 
 			strNas.PrintF("%I64d", pPack->nas);
 			pUIManager->InsertCommaToString(strNas);
-			tv_str.PrintF(_S(4049,"몬스터 콤보 %s Nas 입장료를 내고 입장하시겠습니까?"), strNas);
+			tv_str.PrintF(_S(4049,"몬스터 콤보 %s Nas 입장료를 내고 입장하시겠습니까?"), (const char*)strNas);
 			MsgBoxInfo.AddString(tv_str);
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 		}

@@ -93,11 +93,11 @@ void GuildBattleMatch::RecvError( CNetworkMessage* istr )
 		strError = _S(6487, "길드전투 챌린지에 등록할 수 없는 상태입니다.");
 		break;
 	case GUILD_BATTLE_SUCCESS_REGIST:				//길드가 길드전투 챌린지에 등록되었습니다.
-		strError.PrintF(_S(6494, "[%s]길드가 길드전투 챌린지에 등록되었습니다."), _pNetwork->MyCharacterInfo.strGuildName);
+		strError.PrintF(_S(6494, "[%s]길드가 길드전투 챌린지에 등록되었습니다."), (const char*)_pNetwork->MyCharacterInfo.strGuildName);
 		SendReqList(m_nCurTime, 0);
 		break;
 	case GUILD_BATTLE_SUCCESS_CANCEL:				//길드의 길드전투 챌린지의 등록이 취소되었습니다.
-		strError.PrintF(_S(6495, "[%s]길드의 길드전투 챌린지의 등록이 취소되었습니다."), _pNetwork->MyCharacterInfo.strGuildName);
+		strError.PrintF(_S(6495, "[%s]길드의 길드전투 챌린지의 등록이 취소되었습니다."), (const char*)_pNetwork->MyCharacterInfo.strGuildName);
 		SendReqList(m_nCurTime, 0);
 		break;
 	}
@@ -141,7 +141,7 @@ void GuildBattleMatch::RecvGuildBattleChallengeAgree( CNetworkMessage* istr )
 	{
 	case GUILD_BATTLE_SUCCESS_AGREE:				//길드전투 신청을 받아드렸습니다. 즉시 길드전투가 시작됩니다.
 		{			
-			strError.PrintF(_S(6506, "[%s]이 길드전투 신청을 받아드렸습니다. [%s]에서 즉시 길드전투가 시작됩니다."), pRecv->guild_name, ZONEINFO()->GetZoneName(pRecv->zone_index));
+			strError.PrintF(_S(6506, "[%s]이 길드전투 신청을 받아드렸습니다. [%s]에서 즉시 길드전투가 시작됩니다."), pRecv->guild_name, (const char*)ZONEINFO()->GetZoneName(pRecv->zone_index));
 			UIMGR()->GetGuildBattleMatch()->close();
 		}
 		break;
@@ -256,28 +256,28 @@ void GuildBattleMatch::show_challenge(const char* guild_name, int glv,
 
 	MsgBoxInfo.m_nWidth = 350;
 
-	strMessage.PrintF("%s : %d", _S(3861, "길드레벨"), glv);
+	strMessage.PrintF("%s : %d", (const char*)_S(3861, "길드레벨"), glv);
 	MsgBoxInfo.AddString(strMessage);
 
 	//strMessage.PrintF("%s : %d (%s : %d)", _S(893, "길드원"), mem_total, _S(895, "온라인"), mem_online);
-	strMessage.PrintF("%s : %d", _S(893, "길드원"), mem_total);
+	strMessage.PrintF("%s : %d", (const char*)_S(893, "길드원"), mem_total);
 	MsgBoxInfo.AddString(strMessage);
 
 	//strMessage.PrintF("%s : %d (%s : %d)", _S(3863, "길드 평균 레벨"), avg_lv, _S(895, "온라인"), avg_lv_online);
-	strMessage.PrintF("%s : %d", _S(3863, "길드 평균 레벨"), avg_lv);
+	strMessage.PrintF("%s : %d", (const char*)_S(3863, "길드 평균 레벨"), avg_lv);
 	MsgBoxInfo.AddString(strMessage);
 
-	strMessage.PrintF("%s : %d", _S(6502, "총 길드전투 진행 횟수"), war_cnt);
+	strMessage.PrintF("%s : %d", (const char*)_S(6502, "총 길드전투 진행 횟수"), war_cnt);
 	MsgBoxInfo.AddString(strMessage);
 
-	strMessage.PrintF("%s : %d", _S(6503, "승리한 길드전투 수"), win_cnt);
+	strMessage.PrintF("%s : %d", (const char*)_S(6503, "승리한 길드전투 수"), win_cnt);
 	MsgBoxInfo.AddString(strMessage);
 
 	strMessage = " ";
 	MsgBoxInfo.AddString(strMessage);
 
 	strMessage.PrintF(_S(6504, "이 길드전투의 신청금은 [%s] 나스와 [%s] 길드포인트 입니다."), 
-		pUIMgr->IntegerToCommaString(nas), pUIMgr->IntegerToCommaString((__int64)gp));
+		(const char*)pUIMgr->IntegerToCommaString(nas), (const char*)pUIMgr->IntegerToCommaString((__int64)gp));
 	MsgBoxInfo.AddString(strMessage);
 
 	strMessage = _S(6505, "도전 신청을 받겠습니까?");

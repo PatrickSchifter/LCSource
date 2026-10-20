@@ -56,8 +56,8 @@ void GuildBattleMatchRegUI::initialize()
 	{
 		CTString strTmp;
 		strTmp.PrintF("%s ~ %s", 
-			pUIMgr->IntegerToCommaString(GuildBattleMatch::NAS_MIN),
-			pUIMgr->IntegerToCommaString(GuildBattleMatch::NAS_MAX));
+			(const char*)pUIMgr->IntegerToCommaString(GuildBattleMatch::NAS_MIN),
+			(const char*)pUIMgr->IntegerToCommaString(GuildBattleMatch::NAS_MAX));
 
 		pTxt->SetText(strTmp);
 	}
@@ -68,8 +68,8 @@ void GuildBattleMatchRegUI::initialize()
 	{
 		CTString strTmp;
 		strTmp.PrintF("%s ~ %s", 
-			pUIMgr->IntegerToCommaString(GuildBattleMatch::GP_MIN),
-			pUIMgr->IntegerToCommaString(GuildBattleMatch::GP_MAX));
+			(const char*)pUIMgr->IntegerToCommaString(GuildBattleMatch::GP_MIN),
+			(const char*)pUIMgr->IntegerToCommaString(GuildBattleMatch::GP_MAX));
 
 		pTxt->SetText(strTmp);
 	}

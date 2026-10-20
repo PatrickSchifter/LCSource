@@ -57,7 +57,7 @@ private:
 
 	// 줄바꿈 문자가 있을 경우에 true 리턴.
 	bool calcSplit(std::string& str, int& nCurCnt, int& nSplitCnt);	
-	bool checkWidth(std::string& strPrev, std::string& strAdd, int nTextArea, int& nSplitPos);
+	bool checkWidth(const std::string &strPrev, std::string& strAdd, int nTextArea, int& nSplitPos);
 	bool checkEnterString(std::string& str);
 	bool checkSpace(std::string& strAdd, int nTextArea, int& nSplitCnt);
 	std::string parseSyntax(std::string& src, std::string& tagID);

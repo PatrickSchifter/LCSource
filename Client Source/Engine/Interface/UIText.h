@@ -11,7 +11,7 @@ public:
 
 	virtual CUIBase* Clone();
 	void	OnRender( CDrawPort* pDraw );
-	void	SetText( CTString& str, CTString strEllipsis = "");
+	void	SetText( const CTString &str, CTString strEllipsis = "");
 	// 하위 호환을 위해 인터페이스 추가.
 	// 단일 폰트컬러 사용시 아래 함수 사용.
 	void	setFontColor( COLOR col );

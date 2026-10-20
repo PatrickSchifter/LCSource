@@ -523,30 +523,30 @@ CTString CSummonUI::GetCmdGuideString( int nCommandID )
 	{
 	case CSlaveInfo::COMMAND_ATTACK:
 		if( bFirstSlot )
-			strGuide.PrintF( "%s %s", _S(2354, "¼±°ø" ), CTString( "(Shift + 1)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2354, "¼±°ø" ), (const char*)CTString( "(Shift + 1)" ) );
 		else
-			strGuide.PrintF( "%s %s", _S(2354, "¼±°ø" ), CTString( "(Shift + Z)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2354, "¼±°ø" ), (const char*)CTString( "(Shift + Z)" ) );
 		break;
 
 	case CSlaveInfo::COMMAND_PINCER:
 		if( bFirstSlot )
-			strGuide.PrintF( "%s %s", _S(2355, "Çù°ø" ), CTString( "(Shift + 2)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2355, "Çù°ø" ), (const char*)CTString( "(Shift + 2)" ) );
 		else
-			strGuide.PrintF( "%s %s", _S(2355, "Çù°ø" ), CTString( "(Shift + X)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2355, "Çù°ø" ), (const char*)CTString( "(Shift + X)" ) );
 		break;
 
 	case CSlaveInfo::COMMAND_HOLD:
 		if( bFirstSlot )
-			strGuide.PrintF( "%s %s", _S(2356, "È¦µå" ), CTString( "(Shift + 3)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2356, "È¦µå" ), (const char*)CTString( "(Shift + 3)" ) );
 		else
-			strGuide.PrintF( "%s %s", _S(2356, "È¦µå" ), CTString( "(Shift + C)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2356, "È¦µå" ), (const char*)CTString( "(Shift + C)" ) );
 		break;
 
 	case CSlaveInfo::COMMAND_PROTECTION:
 		if( bFirstSlot )
-			strGuide.PrintF( "%s %s", _S(2357, "¼öÈ£" ), CTString( "(Shift + 4)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2357, "¼öÈ£" ), (const char*)CTString( "(Shift + 4)" ) );
 		else
-			strGuide.PrintF( "%s %s", _S(2357, "¼öÈ£" ), CTString( "(Shift + V)" ) );
+			strGuide.PrintF( "%s %s", (const char*)_S(2357, "¼öÈ£" ), (const char*)CTString( "(Shift + V)" ) );
 		break;
 
 	case COMMAND_SKILL_NUM:
@@ -561,9 +561,9 @@ CTString CSummonUI::GetCmdGuideString( int nCommandID )
 			}			
 
 			if( bFirstSlot )
-				strGuide.PrintF( "%s %s", strSkillName, CTString( "(Shift + 5)" ) );
+				strGuide.PrintF( "%s %s", (const char*)strSkillName, (const char*)CTString( "(Shift + 5)" ) );
 			else
-				strGuide.PrintF( "%s %s", strSkillName, CTString( "(Shift + B)" ) );
+				strGuide.PrintF( "%s %s", (const char*)strSkillName, (const char*)CTString( "(Shift + B)" ) );
 		}
 		break;
 	}

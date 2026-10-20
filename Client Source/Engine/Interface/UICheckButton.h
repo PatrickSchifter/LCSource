@@ -74,7 +74,7 @@ public:
 	BOOL	IsChecked() const { return m_bChecked; }
 
 	// Text
-	void	SetText( CTString &strText );
+	void	SetText( const CTString &strText );
 	// Color 
 	void	SetTextColor( UICheckBtnState state, COLOR colText )
 	{

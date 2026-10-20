@@ -249,7 +249,7 @@ void CSocketRemoveAllUI::setNeedMoney( SQUAD nas )
 		CTString sqMoney;
 		sqMoney.PrintF( "%I64d", nas );
 		pUIManager->InsertCommaToString( sqMoney );
-		strTemp.PrintF( "%s:%s", _S( 4979, "제거 비용"), sqMoney );
+		strTemp.PrintF( "%s:%s", (const char*)_S( 4979, "제거 비용"), (const char*)sqMoney );
 		m_pConsumeNas->SetText(strTemp);
 		m_pConsumeNas->setFontColor(pUIManager->GetNasColor(sqMoney));
 	}

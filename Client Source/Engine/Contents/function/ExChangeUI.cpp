@@ -537,9 +537,9 @@ void CExchangeUI::SendExchangeReq_Req( CTString &strDestName )
 	{
 		CTString	strSysMessage;
 		if( m_bAmISrc )
-			strSysMessage.PrintF( _S2( 422, m_strDestName, "이미 %s<과> 교환중입니다." ), m_strDestName );
+			strSysMessage.PrintF( _S2( 422, m_strDestName, "이미 %s<과> 교환중입니다." ), (const char*)m_strDestName );
 		else
-			strSysMessage.PrintF( _S2( 422, m_strSrcName, "이미 %s<과> 교환중입니다." ), m_strSrcName );
+			strSysMessage.PrintF( _S2( 422, m_strSrcName, "이미 %s<과> 교환중입니다." ), (const char*)m_strSrcName );
 
 		pUIManager->GetChattingUI()->AddSysMessage( strSysMessage, SYSMSG_ERROR );
 
@@ -607,7 +607,7 @@ void CExchangeUI::SendExchangeReq_Req( CTString &strDestName )
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 149, "교환" ), UMBS_CANCEL,
 								UI_EXCHANGE, MSGCMD_EXCH_REQ_SRC );
-	strMessage.PrintF( _S( 152, "%s에게 교환을 신청중입니다. 취소하시겠습니까?" ), m_strDestName );
+	strMessage.PrintF( _S( 152, "%s에게 교환을 신청중입니다. 취소하시겠습니까?" ), (const char*)m_strDestName );
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 
@@ -685,7 +685,7 @@ void CExchangeUI::ExchangeReq_Req( int nSrcIndex, CTString &strSrcName,
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 149, "교환" ), UMBS_YESNO,
 								UI_EXCHANGE, MSGCMD_EXCH_REQ_DEST );
-	strMessage.PrintF( _S2( 153, m_strSrcName, "%s<가> 교환을 신청했습니다. 수락하시겠습니까?" ), m_strSrcName );
+	strMessage.PrintF( _S2( 153, m_strSrcName, "%s<가> 교환을 신청했습니다. 수락하시겠습니까?" ), (const char*)m_strSrcName );
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 
@@ -710,10 +710,10 @@ void CExchangeUI::ExchangeReq_Rep()
 	if( m_bAmISrc )
 	{
 		pUIManager->CloseMessageBox( MSGCMD_EXCH_REQ_SRC );
-		strMessage.PrintF( _S2( 154, m_strDestName, "%s<과> 교환을 시작합니다." ), m_strDestName );
+		strMessage.PrintF( _S2( 154, m_strDestName, "%s<과> 교환을 시작합니다." ), (const char*)m_strDestName );
 	}
 	else
-		strMessage.PrintF( _S2( 154, m_strSrcName, "%s<과> 교환을 시작합니다." ), m_strSrcName );
+		strMessage.PrintF( _S2( 154, m_strSrcName, "%s<과> 교환을 시작합니다." ), (const char*)m_strSrcName );
 
 	// Add system message
 	pUIManager->GetChattingUI()->AddSysMessage( strMessage );
@@ -730,11 +730,11 @@ void CExchangeUI::ExchangeReq_Rej( BOOL bSrcReject )
 	if( m_bAmISrc )
 	{
 		if( bSrcReject )
-			strMessage.PrintF( _S2( 155, m_strDestName, "%s<과>의 교환을 취소하셨습니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 155, m_strDestName, "%s<과>의 교환을 취소하셨습니다." ), (const char*)m_strDestName );
 		else
 		{
 			pUIManager->CloseMessageBox( MSGCMD_EXCH_REQ_SRC );
-			strMessage.PrintF( _S2( 156, m_strDestName, "%s<가> 교환을 취소했습니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 156, m_strDestName, "%s<가> 교환을 취소했습니다." ), (const char*)m_strDestName );
 		}
 	}
 	else
@@ -742,10 +742,10 @@ void CExchangeUI::ExchangeReq_Rej( BOOL bSrcReject )
 		if( bSrcReject )
 		{
 			pUIManager->CloseMessageBox( MSGCMD_EXCH_REQ_DEST );
-			strMessage.PrintF( _S2( 156, m_strSrcName, "%s<가> 교환을 취소했습니다." ), m_strSrcName );
+			strMessage.PrintF( _S2( 156, m_strSrcName, "%s<가> 교환을 취소했습니다." ), (const char*)m_strSrcName );
 		}
 		else
-			strMessage.PrintF( _S2( 155, m_strSrcName, "%s<과>의 교환을 취소하셨습니다." ), m_strSrcName );
+			strMessage.PrintF( _S2( 155, m_strSrcName, "%s<과>의 교환을 취소하셨습니다." ), (const char*)m_strSrcName );
 	}
 
 	// Add system message
@@ -803,12 +803,12 @@ void CExchangeUI::ExchangeReq_Full( BOOL bSrcFull )
 		if( bSrcFull )
 			strMessage = _S( 265, "인벤토리 공간이 부족합니다." );
 		else
-			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), m_strDestName );
+			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), (const char*)m_strDestName );
 	}
 	else
 	{
 		if( bSrcFull )
-			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), m_strSrcName );
+			strMessage.PrintF( _S( 158, "%s의 인벤토리 공간이 부족합니다." ), (const char*)m_strSrcName );
 		else
 			strMessage = _S( 265, "인벤토리 공간이 부족합니다." );
 	}
@@ -864,7 +864,7 @@ void CExchangeUI::ExchangeReq_Pet_Err(BOOL petErr)
 	}
 	else{
 		CTString	strMessage;
-		strMessage.PrintF(_S(2555, "%s님은 펫을 더 이상 소유할 수 없는 상태 입니다." ) ,m_strDestName);
+		strMessage.PrintF(_S(2555, "%s님은 펫을 더 이상 소유할 수 없는 상태 입니다." ) ,(const char*)m_strDestName);
 		pUIManager->GetChattingUI()->AddSysMessage(strMessage,SYSMSG_ERROR); 
 	}
 		

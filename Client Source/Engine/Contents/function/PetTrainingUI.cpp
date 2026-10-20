@@ -823,7 +823,7 @@ void CPetTrainingUI::updateSkill()
 			if (pText == NULL)
 				continue;
 
-			strTemp.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
+			strTemp.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
 
 			pText->SetText(strTemp);
 			pText->setFontColor(0xBDA99FFF);
@@ -867,7 +867,7 @@ void CPetTrainingUI::updateSkill()
 			if (pText == NULL)
 				continue;
 
-			strTemp.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
+			strTemp.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
 
 			pText->SetText(strTemp);
 			pText->setFontColor(0xBDA99FFF);
@@ -1062,7 +1062,7 @@ void CPetTrainingUI::updateCommand()
 			if (pText == NULL)
 				continue;
 
-			strTemp.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
+			strTemp.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
 
 			pText->SetText(strTemp);
 			pText->setFontColor(0xBDA99FFF);
@@ -1106,7 +1106,7 @@ void CPetTrainingUI::updateCommand()
 			if (pText == NULL)
 				continue;
 
-			strTemp.PrintF( "%s %2d   %s %2d",_S( 4414, "LV" ), sbLevel, _S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
+			strTemp.PrintF( "%s %2d   %s %2d",(const char*)_S( 4414, "LV" ), sbLevel, (const char*)_S( 4415, "SP" ), rSkill.GetLearnSP( sbLevel - 1 ) );
 
 			pText->SetText(strTemp);
 			pText->setFontColor(0xBDA99FFF);
@@ -1380,7 +1380,7 @@ void CPetTrainingUI::SelectItem( int nSelectIndex, int nTabType )
 			strSp.PrintF("%d", rSkill.GetLearnSP( nSkillLv ));
 			UIMGR()->InsertCommaToString(strSp);
 
-			strTemp.PrintF( _S( 257, "필요 SP : %s" ), strSp ); // 숙련도
+			strTemp.PrintF( _S( 257, "필요 SP : %s" ), (const char*)strSp ); // 숙련도
 			_AddString(eDESIGN_INFO, strTemp);
 
 			const int iLearnStr = rSkill.GetLearnStr( nSkillLv );
@@ -1438,7 +1438,7 @@ void CPetTrainingUI::SelectItem( int nSelectIndex, int nTabType )
 					if( nLearnItemIndex[i] != -1 )
 					{
 						strCount = UIMGR()->IntegerToCommaString(nLearnItemCount[i]);
-						strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+						strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 						_AddString(eDESIGN_INFO, strTemp);
 					}
 				}
@@ -1492,7 +1492,7 @@ void CPetTrainingUI::SelectItem( int nSelectIndex, int nTabType )
 			strSp.PrintF("%d", rSkill.GetLearnSP( nSkillLv ));
 			UIMGR()->InsertCommaToString(strSp);
 
-			strTemp.PrintF( _S( 257, "필요 SP : %s" ), strSp ); // 숙련도
+			strTemp.PrintF( _S( 257, "필요 SP : %s" ), (const char*)strSp ); // 숙련도
 			_AddString(eDESIGN_INFO, strTemp);
 
 			const int iLearnStr = rSkill.GetLearnStr( nSkillLv );
@@ -1552,7 +1552,7 @@ void CPetTrainingUI::SelectItem( int nSelectIndex, int nTabType )
 					if( nLearnItemIndex[i] != -1 )
 					{
 						strCount = UIMGR()->IntegerToCommaString(nLearnItemCount[i]);
-						strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+						strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 						_AddString(eDESIGN_INFO, strTemp);
 					}
 				}

@@ -1431,7 +1431,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 								strTemp.PrintF("%I64d", llNas);
 								pUIManager->InsertCommaToString(strTemp);
 
-								strString.PrintF(_S(7065, "죄송하지만 성주님 지금은 일반 관리 모드 입니다. %s 나스를 저에게"), strTemp);
+								strString.PrintF(_S(7065, "죄송하지만 성주님 지금은 일반 관리 모드 입니다. %s 나스를 저에게"), (const char*)strTemp);
 								pUIManager->CreateMessageBoxL( _S(3908, "던전 관리"),UI_PORTAL, MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL);
 								pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL,TRUE, strString, -1, 0xa3a1a3ff);
 								pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL, FALSE, _S(191, "확인" ), DRATAN_SIEGE_DUNGEON_CHANGE_LORDMODE);
@@ -1610,7 +1610,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 							CTString strNas;
 							strNas.PrintF("%I64d", ulNeedNas);
 							pUIManager->InsertCommaToString(strNas);
-							strMessage.PrintF( _S(3945, "던전으로 이동하기 위해서는 %s나스가 필요합니다. 이동 하시겠습니까?" ), strNas );
+							strMessage.PrintF( _S(3945, "던전으로 이동하기 위해서는 %s나스가 필요합니다. 이동 하시겠습니까?" ), (const char*)strNas );
 							MsgBoxInfo.AddString(strMessage);
 
 							pUIManager->CreateMessageBox(MsgBoxInfo);
@@ -3769,7 +3769,7 @@ void CSessionState::ReceiveAffinityMessage( CNetworkMessage *istr )
 			pUIManager->InsertCommaToString(strTemp);
 
 			MsgTemp.PrintF( _S( 5302, "%s 세력을 위해 많은 노력을 해주셔서 친화도가 %s점이 되어 작은 선물을 준비했습니다. \n%s  %d개를 받으시겠습니까?" ),
-				_pNetwork->GetAffinityData()->GetAffinityName( pUIManager->GetAffinity()->GetNPCIndex() ), strTemp, _pNetwork->GetItemData( gift_item_index )->GetName(), gift_item_count );
+				_pNetwork->GetAffinityData()->GetAffinityName( pUIManager->GetAffinity()->GetNPCIndex() ), (const char*)strTemp, _pNetwork->GetItemData( gift_item_index )->GetName(), gift_item_count );
 			
 			Msg_Info.SetMsgBoxInfo( _S(4680, "선물 받기"), UMBS_OKCANCEL, UI_NPC_AFFINITY, MSGCMD_AFFINITY_TAKEPRESENT );
 			Msg_Info.AddString( MsgTemp );
@@ -3807,7 +3807,7 @@ void CSessionState::ReceiveAffinityMessage( CNetworkMessage *istr )
 					strBonus.PrintF("%d", affinity_point_bonus);
 					pUIManager->InsertCommaToString(strBonus);
 
-					MsgTemp.PrintF( _S(6445, "%s(+%s)만큼 %s친화도가 상승되었습니다."), strAp, strBonus,
+					MsgTemp.PrintF( _S(6445, "%s(+%s)만큼 %s친화도가 상승되었습니다."), (const char*)strAp, (const char*)strBonus,
 						_pNetwork->GetAffinityData()->GetAffinityNameByIndex(affinity_index) );
 				}
 				else
@@ -3815,7 +3815,7 @@ void CSessionState::ReceiveAffinityMessage( CNetworkMessage *istr )
 					strAp.PrintF("%d", ndelta);
 					pUIManager->InsertCommaToString(strAp);
 
-					MsgTemp.PrintF( _S(4681, "%s만큼 %s친화도가 상승되었습니다."), strAp,
+					MsgTemp.PrintF( _S(4681, "%s만큼 %s친화도가 상승되었습니다."), (const char*)strAp,
 						_pNetwork->GetAffinityData()->GetAffinityNameByIndex(affinity_index) );
 				}				
 

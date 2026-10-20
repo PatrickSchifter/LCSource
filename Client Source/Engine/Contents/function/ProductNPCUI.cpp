@@ -148,7 +148,7 @@ void CUIProductNPC::MsgBoxLCommand( int nCommandCode, int nResult )
 					CTString strTemp, strCount;
 					strCount.PrintF("%I64d", nNeedCount);
 					pUIManager->InsertCommaToString(strCount);
-					strTemp.PrintF(_S(904, "필요 나스 : %s" ), strCount);
+					strTemp.PrintF(_S(904, "필요 나스 : %s" ), (const char*)strCount);
 
 					MsgBoxInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OKCANCEL, UI_PRODUCTNPC, MSGCMD_SEAL_MEMBER );		
 					MsgBoxInfo.AddString( _S( 4712, "제작 연합 회원 등록을 하시겠습니까?") );
@@ -170,7 +170,7 @@ void CUIProductNPC::MsgBoxLCommand( int nCommandCode, int nResult )
 					CTString strTemp, strCount;
 					strCount.PrintF("%I64d", nNeedCount);
 					pUIManager->InsertCommaToString(strCount);
-					strTemp.PrintF(_S(904, "필요 나스 : %s" ), strCount);
+					strTemp.PrintF(_S(904, "필요 나스 : %s" ), (const char*)strCount);
 
 					MsgBoxInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OKCANCEL, UI_PRODUCTNPC, MSGCMD_LEARN_SEAL );		
 					MsgBoxInfo.AddString( _S( 4713, "제작자 증표를 획득 하시겠습니까?") );

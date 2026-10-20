@@ -1839,7 +1839,7 @@ void ActorMgr::DrawItem( CItemTarget* pTarget, CDrawPort* pDraw, CProjection3D* 
 	{
 		strTemp.PrintF( "%I64d", pTarget->item_llCount );
 		pUIMgr->InsertCommaToString( strTemp );
-		strName.PrintF( "%s(%s)", pTarget->m_strName.c_str(), strTemp );
+		strName.PrintF( "%s(%s)", pTarget->m_strName.c_str(), (const char*)strTemp );
 		colNas = pUIMgr->GetNasColor(  pTarget->item_llCount );
 	}
 	else

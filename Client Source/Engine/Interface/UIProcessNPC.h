@@ -87,7 +87,7 @@ public:
 private:
 	void	clearVecBtnEX();
 
-	void	pushback_string(CTString& strText, COLOR color);
+	void	pushback_string(const CTString &strText, COLOR color);
 	void	callback_select();
 
 	void	show_spinctrl(int idx, BOOL bhide);

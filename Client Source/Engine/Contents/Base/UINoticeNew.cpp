@@ -1444,52 +1444,52 @@ void CUINoticeNew::PressOK(Notice::eNoticeType iNoticeType, int nIndex)
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4122, "숨겨진 보물 목록"), -1, 0xA3A1A3FF);
 										
 					strCount = pUIManager->IntegerToCommaString(1);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(2844), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(2844), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					if (IsGamigo(g_iCountry) == TRUE)
 					{
 						strCount = pUIManager->IntegerToCommaString(1);
-						strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(974), strCount);
+						strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(974), (const char*)strCount);
 						pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 					}					
 
 					strCount = pUIManager->IntegerToCommaString(1);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(1416), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(1416), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					strCount = pUIManager->IntegerToCommaString(1);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(1288), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(1288), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					strCount = pUIManager->IntegerToCommaString(1);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(85), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(85), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4123, "스크롤 3종(경험/노력/행운) 1세트"));
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4124, "증폭제 3종(경험치/노력도/드롭율) 1세트"));
 
 					strCount = pUIManager->IntegerToCommaString(10);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(45), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(45), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					strCount = pUIManager->IntegerToCommaString(10);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(724), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(724), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4125, "12레벨 붉은 케르/푸른 케르 각 5개"));
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4126, "12레벨 붉은 넨/푸른 넨 각 5개"));
 
 					strCount = pUIManager->IntegerToCommaString(3);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(786), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(786), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					strCount = pUIManager->IntegerToCommaString(10);
-					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(556), strCount);
+					strReward.PrintF(_S(61, "%s %s개"), _pNetwork->GetItemName(556), (const char*)strCount);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 
 					CTString strNas;
 					strNas.PrintF("%d", 10000);
 					pUIManager->InsertCommaToString(strNas);
-					strReward.PrintF(_S(836, "%s 나스"), strNas);
+					strReward.PrintF(_S(836, "%s 나스"), (const char*)strNas);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, strReward);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, CTString(" "));
 

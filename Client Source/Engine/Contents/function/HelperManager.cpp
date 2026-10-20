@@ -71,7 +71,7 @@ void CHelperManager::OpenDialog()
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strTitle, -1, 0xE18600FF );
 
 		strMessage.PrintF( _S( 1141, "게임을 시작하는 유저들을 도와주기 위해서 후견인을 등록할 수 있습니다." \
-			"후견인 등록을 하면, 신규 유저가 후견인 리스트를 볼 때 [%s]님의 이름이 보이게 됩니다." ), _pNetwork->MyCharacterInfo.name );		
+			"후견인 등록을 하면, 신규 유저가 후견인 리스트를 볼 때 [%s]님의 이름이 보이게 됩니다." ), (const char*)_pNetwork->MyCharacterInfo.name );		
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 
 		strMessage.PrintF( _S( 5045, "견습생이 50레벨이 되는 동안, 다양한 보상을 얻을 수 있습니다." ), LIMIT_GUARDIAN_APP_LEVEL );
@@ -97,11 +97,11 @@ void CHelperManager::OpenDialog()
 
 		strMessage.PrintF( _S( 1148, "후견인은 [%s]님을 %d레벨까지 성장하는데 도움을 주는 사람을 이야기합니다." \
 			"후견인 리스트에서 [%s]님께 도움을 줄 수 있는 사람을 찾아보세요." )
-			, _pNetwork->MyCharacterInfo.name, LIMIT_GUARDIAN_APP_LEVEL, _pNetwork->MyCharacterInfo.name );
+			, (const char*)_pNetwork->MyCharacterInfo.name, LIMIT_GUARDIAN_APP_LEVEL, (const char*)_pNetwork->MyCharacterInfo.name );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 
 		strMessage.PrintF( _S( 5044, "최초 선정까지 총 3번을 선정할 수가 있으며, 30레벨이 넘으면 후견인을"\
-			"선정 할수가 없으니 참고하시기 바랍니다." ), _pNetwork->MyCharacterInfo.name );
+			"선정 할수가 없으니 참고하시기 바랍니다." ), (const char*)_pNetwork->MyCharacterInfo.name );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, FALSE,  _S( 1146, "확인하기." ), SEL_HELPER_STUDENT );		

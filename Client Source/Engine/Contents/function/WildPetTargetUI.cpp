@@ -633,7 +633,7 @@ void CWildPetTargetUI::_updateAccExpPetTooltip()
 		pUIMgr->InsertCommaToString(strAccExp);
 		pUIMgr->InsertCommaToString(strAccResult);
 
-		strTemp.PrintF("%s / %s", strAccExp, strAccResult);
+		strTemp.PrintF("%s / %s", (const char*)strAccExp, (const char*)strAccResult);
 	}
 
 	if (m_pTextExpPetUseExp != NULL)

@@ -88,7 +88,7 @@ void CHelper_GuardianInfoUI::FireMyTeacher( )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1152, "견습생 포기" ), UMBS_OKCANCEL, UI_HELPER_GUARDIAN_INFO, MSGCMD_HELPER_FIRE_MYTEACHER );		
-	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), _pNetwork->MyCharacterInfo.strTeacherName );	
+	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), (const char*)_pNetwork->MyCharacterInfo.strTeacherName );	
 	MsgBoxInfo.AddString( strMessage );
 	strMessage.PrintF( "" );
 	MsgBoxInfo.AddString( strMessage );

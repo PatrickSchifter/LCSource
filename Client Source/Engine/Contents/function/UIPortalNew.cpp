@@ -233,7 +233,7 @@ void CUIPortal::PressOk()
 				strFee.PrintF("%I64d", llMoveFee);
 				UIMGR()->InsertCommaToString(strFee);
 
-                strMessage.PrintF(_S(3223, "에게하 지역으로 이동하기 위해 %s 나스가 소비됩니다. 이동하시겠습니까?"), strFee);
+                strMessage.PrintF(_S(3223, "에게하 지역으로 이동하기 위해 %s 나스가 소비됩니다. 이동하시겠습니까?"), (const char*)strFee);
                 MsgBoxInfo.SetMsgBoxInfo(strTitle, UMBS_YESNO, UI_NONE, MSGCMD_GOTO_EGEHA);
                 MsgBoxInfo.AddString(strMessage);
                 UIMGR()->CreateMessageBox(MsgBoxInfo);
@@ -805,7 +805,7 @@ void CUIPortal::Create_SiegeDungeon_EnvCtr_MsgBox(int nCurRate)
 	strNas.PrintF("%I64d", llNeedNas);
 	pUIManager->InsertCommaToString(strNas);
 
-	strMessage.PrintF( _s("%s: %s %s%s"), _S(1058, "필요나스"), strNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %s %s%s"), (const char*)_S(1058, "필요나스"), (const char*)strNas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 
 	
@@ -885,7 +885,7 @@ void CUIPortal::Create_SiegeDungeon_MonCtr_MsgBox(int nCurRate)
 	strNas.PrintF("%I64d", llNeedNas);
 	pUIManager->InsertCommaToString(strNas);
 		
-	strMessage.PrintF( _s("%s: %s %s%s"), _S(1058, "필요나스"), strNas, _S(1762, "나스"), _s("   ") );
+	strMessage.PrintF( _s("%s: %s %s%s"), (const char*)_S(1058, "필요나스"), (const char*)strNas, (const char*)_S(1762, "나스"), (const char*)_s("   ") );
 	MsgBoxInfo.AddString( strMessage, 0xF2F2F2FF, TEXT_RIGHT );
 	
 	MsgBoxInfo.m_nColorBoxCount =4;

@@ -788,7 +788,7 @@ void CPetItemMixUI::SelectItem( int nIndex, int nOpenType )
 			{
 				szItemName = m_NeedItems[i].ItemData->GetName();
 				strCount = UIMGR()->IntegerToCommaString(m_NeedItems[i].llCount);
-				strTitle.PrintF ( _S( 576, "%s : %s개" ), strSpace + szItemName, strCount );
+				strTitle.PrintF ( _S( 576, "%s : %s개" ), (const char*)(strSpace + szItemName), (const char*)strCount );
 			}
 
 			pTextTemp = (CUIText*)pMetItem->findUI(strMeterilID[i].c_str());
@@ -831,7 +831,7 @@ void CPetItemMixUI::SelectItem( int nIndex, int nOpenType )
 				{
 					szItemName = m_NeedItems[i + (j * 3)].ItemData->GetName();
 					strCount = UIMGR()->IntegerToCommaString(m_NeedItems[i + (j * 3)].llCount);
-					strTitle.PrintF ( _S( 576, "%s : %s개" ), strSpace + szItemName, strCount );
+					strTitle.PrintF ( _S( 576, "%s : %s개" ), (const char*)(strSpace + szItemName), (const char*)strCount );
 				}
 
 				pTextTemp = (CUIText*)pMetItem->findUI(strMeterilID[i].c_str());

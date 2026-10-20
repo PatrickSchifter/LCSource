@@ -163,7 +163,7 @@ void CGuildStashUI::OpenGuildStash()
 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, _S( 5535, "길드 재무관리인" ), -1, 0xE18600FF );	 
 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, CTString( " " ), -1, 0xE18600FF );		
 
-	strGuildName.PrintF( _S( 5536, "어서 오십시오.\n저는 [%s]길드의 소중한 재산을 관리하고 지키는 재무 관리인입니다.\n어떤 용무가 있으신가요?" ), _pNetwork->MyCharacterInfo.strGuildName );
+	strGuildName.PrintF( _S( 5536, "어서 오십시오.\n저는 [%s]길드의 소중한 재산을 관리하고 지키는 재무 관리인입니다.\n어떤 용무가 있으신가요?" ), (const char*)_pNetwork->MyCharacterInfo.strGuildName );
 	m_strTitle = _pNetwork->MyCharacterInfo.strGuildName;
 	pUIManager->AddMessageBoxLString( MSGLCMD_NEWGUILDSTASH_REQ, TRUE, strGuildName, -1, 0xA3A1A3FF );		
 
@@ -206,7 +206,7 @@ void CGuildStashUI::OpenTake( LONGLONG nBalance )
 	strNas.PrintF( "%I64d", m_llBalance );
 	pUIManager->InsertCommaToString( strNas );
 	
-	strSysMessage.PrintF( _S( 1914, "잔액 : %s Nas" ) , strNas); 
+	strSysMessage.PrintF( _S( 1914, "잔액 : %s Nas" ) , (const char*)strNas); 
 	MsgBoxInfo.AddString( strSysMessage, pUIManager->GetNasColor( strNas ), TEXT_CENTER );
 	
 	strSysMessage.PrintF( " " );
@@ -690,7 +690,7 @@ void CGuildStashUI::_openStashView(__tagGuildStashMode _mode /* = GSMODE_TAKE  *
 #endif		// WORLD_EDITOR
 	
 	CTString strTemp;
-	strTemp.PrintF( _s("[%s]"), m_strTitle );
+	strTemp.PrintF( _s("[%s]"), (const char*)m_strTitle );
 	strTemp += _S( 5542, "길드 창고" );
 	m_pTxtTitle->SetText(strTemp);
 	CUIManager::getSingleton()->RearrangeOrder( UI_GUILDSTASH, TRUE );

@@ -727,7 +727,7 @@ void CUIRefine::SetRefineItem()
 	strRefineMoney.PrintF("%I64d", m_llRefineMoney);
 	pUIManager->InsertCommaToString(m_strRefineMoney);
 	
-	m_strRefineMoney.PrintF( _S( 419, "제련 비용 : %s" ), strRefineMoney );
+	m_strRefineMoney.PrintF( _S( 419, "제련 비용 : %s" ), (const char*)strRefineMoney );
 
 	// Insert upgrade slot
 	m_pIconSlotItem->copyItem(pDrag);

@@ -76,13 +76,13 @@ void GuildBattleMatchChallengeUI::open( const char* guild_name, __int64 nas, int
 
 	if (m_pTxtNas != NULL)
 	{
-		strTmp.PrintF("%s", pUIMgr->IntegerToCommaString(nas));
+		strTmp.PrintF("%s", (const char*)pUIMgr->IntegerToCommaString(nas));
 		m_pTxtNas->SetText(strTmp);
 	}
 
 	if (m_pTxtGP != NULL)
 	{
-		strTmp.PrintF("%s", pUIMgr->IntegerToCommaString((__int64)gp));
+		strTmp.PrintF("%s", (const char*)pUIMgr->IntegerToCommaString((__int64)gp));
 		m_pTxtGP->SetText(strTmp);
 	}
 

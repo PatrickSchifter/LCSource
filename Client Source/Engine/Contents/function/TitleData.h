@@ -128,8 +128,8 @@ public:
 template <typename T>
 static void ReleaseForVector(std::vector<T> releseVec)
 {
-	std::vector<T>::iterator iter;
-	std::vector<T>::iterator iter_end;
+	typename std::vector<T>::iterator iter;
+	typename std::vector<T>::iterator iter_end;
 
 	iter = releseVec.begin();
 	iter_end = releseVec.end();

@@ -158,7 +158,7 @@ void CUISkillToolTip::ShowSkillLearnInfo(int nSkillIdx)
 				CTString strSp;
 				strSp.PrintF("%d", rSkill.GetLearnSP(LevelAccess));
 				pUIManager->InsertCommaToString(strSp);
-				strNeedSP.PrintF(_S(257, "필요 SP : %s"), strSp);
+				strNeedSP.PrintF(_S(257, "필요 SP : %s"), (const char*)strSp);
 
 				strNeedStr.PrintF(_S(1391, "필요 힘 : %d"), iLearnStr);
 				strNeedDex.PrintF(_S(1392, "필요 민첩 : %d"), iLearnDex);
@@ -214,7 +214,7 @@ void CUISkillToolTip::ShowSkillLearnInfo(int nSkillIdx)
 						{
 							CSkill	&rNeedSkill = _pNetwork->GetSkillData( nLearnSkillIndex[i] );
 
-							strTemp.PrintF( " : %s %s.%d", rNeedSkill.GetName(), _S( 4414, "LV" ),sbLearnSkillLevel[i] );
+							strTemp.PrintF( " : %s %s.%d", rNeedSkill.GetName(), (const char*)_S( 4414, "LV" ),sbLearnSkillLevel[i] );
 
 							strTemp = _S( 258, "필요 스킬" ) + strTemp;
 
@@ -232,7 +232,7 @@ void CUISkillToolTip::ShowSkillLearnInfo(int nSkillIdx)
 						if( nLearnItemIndex[i] != -1 )
 						{
 							strCount = pUIManager->IntegerToCommaString(nLearnItemCount[i]);
-							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 							strTemp = _S( 259, "필요 아이템" ) + strTemp;
 
 							AddSkillInfoString(SKILLINFO_CURRENT + n, strTemp, (n==0 && bLearnedSkill) ? SKILL_LEARNED_COLOR : colNeed[SKILL_CONDITION_ITEM_0 + i]);
@@ -741,7 +741,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 
 				strSp.PrintF("%d", rSkill.GetLearnSP( nLevel ));
 				UIMGR()->InsertCommaToString(strSp);
-				strTemp.PrintF( _S( 257, "필요 SP : %s" ), strSp ); // 숙련도
+				strTemp.PrintF( _S( 257, "필요 SP : %s" ), (const char*)strSp ); // 숙련도
 				AddSkillDescString( strTemp, 0xBDA99FFF );				
 
 				const int iLearnStr = rSkill.GetLearnStr( nLevel );
@@ -783,7 +783,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 						{
 							CSkill	&rNeedSkill = _pNetwork->GetSkillData( nLearnSkillIndex[i] );
 
-							strTemp.PrintF( "  %s %s.%d", rNeedSkill.GetName(), _S( 4414, "LV" ),sbLearnSkillLevel[i] );
+							strTemp.PrintF( "  %s %s.%d", rNeedSkill.GetName(), (const char*)_S( 4414, "LV" ),sbLearnSkillLevel[i] );
 
 							AddSkillDescString( strTemp, 0xBDA99FFF );
 						}
@@ -800,7 +800,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 						if( nLearnItemIndex[i] != -1 )
 						{
 							strCount = UIMGR()->IntegerToCommaString(nLearnItemCount[i]);
-							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 							AddSkillDescString( strTemp, 0xBDA99FFF );
 						}
 					}
@@ -871,7 +871,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 
 				strSp.PrintF("%d", rSkill.GetLearnSP( nLevel ));
 				UIMGR()->InsertCommaToString(strSp);
-				strTemp.PrintF( _S( 257, "필요 SP : %s" ), strSp ); // 숙련도
+				strTemp.PrintF( _S( 257, "필요 SP : %s" ), (const char*)strSp ); // 숙련도
 				AddSkillDescString( strTemp, 0xBDA99FFF );
 
 				const int iLearnStr = rSkill.GetLearnStr( nLevel );
@@ -913,7 +913,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 						{
 							CSkill	&rNeedSkill = _pNetwork->GetSkillData( nLearnSkillIndex[i] );
 
-							strTemp.PrintF( "  %s %s.%d", rNeedSkill.GetName(), _S( 4414, "LV" ),sbLearnSkillLevel[i] );
+							strTemp.PrintF( "  %s %s.%d", rNeedSkill.GetName(), (const char*)_S( 4414, "LV" ),sbLearnSkillLevel[i] );
 
 							AddSkillDescString( strTemp, 0xBDA99FFF );
 						}
@@ -930,7 +930,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 						if( nLearnItemIndex[i] != -1 )
 						{
 							strCount = UIMGR()->IntegerToCommaString(nLearnItemCount[i]);
-							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), strCount );
+							strTemp.PrintF( _S( 260, "  %s %s개" ), _pNetwork->GetItemName( nLearnItemIndex[i] ), (const char*)strCount );
 							AddSkillDescString( strTemp, 0xBDA99FFF );
 						}
 					}
@@ -978,7 +978,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 
 		strSp.PrintF("%d", pSSkill->GetLearnSP( nLevel ));
 		UIMGR()->InsertCommaToString(strSp);
-		strTemp.PrintF( _S( 257, "필요 SP : %s" ), strSp ); // 숙련도
+		strTemp.PrintF( _S( 257, "필요 SP : %s" ), (const char*)strSp ); // 숙련도
 		AddSkillDescString( strTemp, 0xBDA99FFF );
 
 		// Need skill
@@ -992,7 +992,7 @@ void CUISkillToolTip::GetSkillDesc( int nIndex, int nLevel /*= 0*/, BOOL bSpecia
 				if (pNeedSSkill == NULL)
 					return;
 
-				strTemp.PrintF( "  %s %s.%d", pNeedSSkill->GetName(), _S( 4414, "LV" ),sbLearnSkillLevel );
+				strTemp.PrintF( "  %s %s.%d", pNeedSSkill->GetName(), (const char*)_S( 4414, "LV" ),sbLearnSkillLevel );
 
 				AddSkillDescString( strTemp, 0xBDA99FFF );
 			}

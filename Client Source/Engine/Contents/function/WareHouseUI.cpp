@@ -1276,7 +1276,7 @@ LONGLONG CWareHouseUI::GetWareHouseItemCount( int nInvenIdx )
 	return m_vectorStorageItems[nInvenIdx]->Item_Sum;
 }
 
-void CWareHouseUI::SendListReq( CTString& strPW )
+void CWareHouseUI::SendListReq( const CTString &strPW )
 {
 	CNetworkMessage nmMessage;
 	RequestClient::doStashList* packet = reinterpret_cast<RequestClient::doStashList*>(nmMessage.nm_pubMessage);
@@ -1313,7 +1313,7 @@ void CWareHouseUI::ReceiveNas( CNetworkMessage *istr )
 			strTotalNas.PrintF("%I64d", delta_nas);
 			pUIMgr->InsertCommaToString(strTotalNas);
 
-			strOutNas.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strTotalNas);		
+			strOutNas.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), (const char*)strTotalNas);		
 
 			_pNetwork->ClientSystemMessage( strOutNas );
 		}

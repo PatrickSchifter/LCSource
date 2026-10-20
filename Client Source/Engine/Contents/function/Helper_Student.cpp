@@ -110,7 +110,7 @@ void CHelper_StudentUI::BeMyTeacher( )
 	CUIMsgBox_Info	MsgBoxInfo;
 	
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1150, "후견인 신청" ), UMBS_OKCANCEL, UI_HELPER_STUDENT, MSGCMD_HELPER_BEMYTEACHER );	
-	strMessage.PrintF( _S( 1151, "[%s]님을 후견인으로 신청하시겠습니까?" ), TempMember->strName );			
+	strMessage.PrintF( _S( 1151, "[%s]님을 후견인으로 신청하시겠습니까?" ), (const char*)TempMember->strName );			
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -129,7 +129,7 @@ void CHelper_StudentUI::FireMyTeacher( )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1152, "견습생 포기" ), UMBS_OKCANCEL, UI_HELPER_STUDENT, MSGCMD_HELPER_FIRE_MYTEACHER );		
-	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), _pNetwork->MyCharacterInfo.strTeacherName );	
+	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), (const char*)_pNetwork->MyCharacterInfo.strTeacherName );	
 	MsgBoxInfo.AddString( strMessage );
 	strMessage.PrintF( "" );
 	MsgBoxInfo.AddString( strMessage );
@@ -256,7 +256,7 @@ void CHelper_StudentUI::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &str
 			CUIMsgBox_Info	MsgBoxInfo;
 
 			MsgBoxInfo.SetMsgBoxInfo( _S( 1162, "후견인 신청" ), UMBS_CANCEL, UI_HELPER_STUDENT, MSGCMD_HELPER_BEMYTEACHER_REQ );	
-			strMessage.PrintF( _S( 1163, "%s 님께 후견인이 되어달라는 메시지를 보내고, 수락을 기다리는 중입니다."  ), m_strTeacherName );	
+			strMessage.PrintF( _S( 1163, "%s 님께 후견인이 되어달라는 메시지를 보내고, 수락을 기다리는 중입니다."  ), (const char*)m_strTeacherName );	
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 			_pNetwork->TeachTeacherRequest( m_slIndex, m_strTeacherName );

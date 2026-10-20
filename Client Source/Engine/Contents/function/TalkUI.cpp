@@ -104,7 +104,7 @@ void CTalkUI::AddTalkListString( CTString &strDesc, COLOR colDesc /*= 0xF2F2F2FF
 	m_pChatDesign->erase();
 }
 
-void CTalkUI::AddErrorTalk( CTString &strDesc, COLOR colDesc /*= 0xE28769FF */ )
+void CTalkUI::AddErrorTalk( const CTString &strDesc, COLOR colDesc /*= 0xE28769FF */ )
 {
 	AddTalkListString( "", strDesc, false, colDesc );
 }
@@ -123,7 +123,7 @@ void CTalkUI::AddTalkTarget( CTString strName )
 		if( strName != CUIManager::getSingleton()->GetMessenger()->GetMyInfo().m_strName)
 		{
 			CTString strMessage;
-			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), strName );
+			strMessage.PrintF(_S( 3036,"%s님이 대화방에 들어오셨습니다."), (const char*)strName );
 			AddErrorTalk( strMessage ); 
 		}
 	}
@@ -140,7 +140,7 @@ void CTalkUI::DeleteTalkTarget( CTString strName )
 		return;
 
 	CTString strMessage;
-	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (*iter) );
+	strMessage.PrintF(_S(3039,"%s 님이 대화방에서 나가셨습니다."), (const char*)(*iter) );
 	AddErrorTalk( strMessage ); 
 
 	//채팅 멤버 리스트에서 지움.

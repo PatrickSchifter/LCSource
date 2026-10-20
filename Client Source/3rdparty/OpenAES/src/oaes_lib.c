@@ -39,6 +39,8 @@ static const char _NR[] = {
 
 #ifdef WIN32
 #include <process.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "oaes_config.h"

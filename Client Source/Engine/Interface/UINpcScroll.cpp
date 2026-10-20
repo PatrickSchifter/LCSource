@@ -236,7 +236,7 @@ void CUINpcScroll::SetViewList()
 	CTString	tempDesc;
 	tempDesc.PrintF(_S(5031,"%s 지역의 NPC들 앞으로 이동할 수 있는 포탈을 생성합니다. \
 							리스트에서 이름을 클릭하면 위치 안내 또는 포탈을 사용 하실 수 있습니다."),
-					CZoneInfo::getSingleton()->GetZoneName(m_nCurZone));
+					(const char*)CZoneInfo::getSingleton()->GetZoneName(m_nCurZone));
 
 	if (m_pTbDesc != NULL)
 		m_pTbDesc->SetText(tempDesc);	
@@ -577,7 +577,7 @@ void CUINpcScroll::choose( int idx, bool bnpc )
 
 //----------------------------------------------------------------------------
 
-bool CUINpcScroll::add_list( CTString& str, COLOR col, int idx, bool bnpc )
+bool CUINpcScroll::add_list( const CTString &str, COLOR col, int idx, bool bnpc )
 {
 	if (m_pList == NULL)
 		return false;

@@ -7264,11 +7264,11 @@ functions:
 				
 				if(pUIManager->IsCSFlagOn(CSF_EXPEDITION)) // [sora] 원정대 아이템 획득 추가
 				{
-					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %s개 획득하였습니다." ), strName, szItemName, strCount);
+					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %s개 획득하였습니다." ), (const char*)strName, szItemName, (const char*)strCount);
 				}
 				else
 				{
-					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %s개 획득하였습니다." ), strName, szItemName, strCount);
+					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %s개 획득하였습니다." ), (const char*)strName, szItemName, (const char*)strCount);
 				}
 				_pNetwork->ClientSystemMessage(strMessage);					
 			}

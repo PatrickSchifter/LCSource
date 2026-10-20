@@ -23,7 +23,7 @@ public:
 	void PressSaveBtn();
 
 	void ShowTeleportError();
-	void SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment );
+	void SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment );
 	void NotUseMemEx();
 
 	void MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput );

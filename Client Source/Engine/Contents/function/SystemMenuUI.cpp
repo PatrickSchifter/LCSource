@@ -407,7 +407,7 @@ void CSystemMenuUI::_setServerInfo()
 		return;
 
 	CTString strServerInfo;
-	strServerInfo.PrintF("%s - %d", UIMGR()->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
+	strServerInfo.PrintF("%s - %d", (const char*)UIMGR()->GetServerSelect()->GetServerName(_pNetwork->m_iServerGroup), _pNetwork->m_iServerCh );
 
 	m_pTextConnetingServerName->SetText(strServerInfo);
 }

@@ -613,7 +613,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 
 					strMessage.PrintF( _S( 1227, "선결 조건 : %dlv달성, 보디 크래셔 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );					
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1229, "힘 : 공격상승, 물리방어 상승" ), -1, 0xA3A1A3FF );	
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1230, "민첩 : 명중, 회피상승" ), -1, 0xA3A1A3FF );								
@@ -633,7 +633,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1235, "사용 무기 : 이도류" ), -1, 0xA3A1A3FF );							
 					strMessage.PrintF( _S( 1236, "선결 조건 : %dlv달성, 마나 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1238, "힘 : 공격상승, 물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1239, "민첩 : 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -655,7 +655,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1244, "사용 무기 : 활" ), -1, 0xA3A1A3FF );							
 					strMessage.PrintF( _S( 1245, "선결 조건 : %dlv달성, 더블 스팅샷 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1246, "힘 :  물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1247, "민첩 : 공격 상승, 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -675,7 +675,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1253, "선결 조건 : %dlv달성, 노바 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1254, "힘 :  물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1255, "민첩 : 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -696,7 +696,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1380, "선결 조건 : %dlv달성, 인비저빌리티 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1381, "힘 :  물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1382, "민첩 : 공격 상승 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -717,7 +717,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S(2344, "선결 조건 : %dlv달성, 아이스 스파이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S(2345, "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );	
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S(2346, "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -737,7 +737,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 5741, "선결 조건 : %dlv달성, 인비저빌리티 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5742, "힘 :  물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5743, "민첩 : 공격 상승 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -759,7 +759,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 5829, "선결 조건 : %dlv달성, 골든 노바 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 					
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5830, "힘 :  물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5831, "민첩 : 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -802,7 +802,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1270,  "사용 무기 : 대검"  ), -1, 0xA3A1A3FF );							
 					strMessage.PrintF( _S( 1271, "선결 조건 : %dlv달성, 보디 크래셔 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1272,  "힘 : 공격상승, 물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1273,  "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -825,7 +825,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1279, "선결 조건 : %dlv달성, 마나 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1280,  "힘 : 공격상승, 물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1281,  "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -849,7 +849,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1287, "선결 조건 : %dlv달성, 더블 스팅샷 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1288, "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1289, "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -872,7 +872,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1295, "선결 조건 : %dlv달성, 노바 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1296,  "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1297,  "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -895,7 +895,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 1303, "선결 조건 : %dlv달성, 인비저빌리티 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1304,  "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 1305,  "민첩 : 공격 상승 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -919,7 +919,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S(2344, "선결 조건 : %dlv달성, 아이스 스파이크 lv5 습득" ), iNeedLevel );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S(2345, "힘 : 물리방어 상승" ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S(2346, "민첩 : 명중, 회피상승" ), -1, 0xA3A1A3FF );							
@@ -939,7 +939,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 5749, "선결 조건 : %dlv달성, 인비저빌리티 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5750,  "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );	
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5751,  "민첩 : 공격 상승 명중, 회피상승"  ), -1, 0xA3A1A3FF );							
@@ -965,7 +965,7 @@ void CUISkillLearn::MsgBoxLCommand( int nCommandCode, int nResult )
 					strMessage.PrintF( _S( 5837, "선결 조건 : %dlv달성, 골든 노바 브레이크 lv5 습득" ), iNeedLevel );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );							
 					
-					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), strNeedNas );		
+					strMessage.PrintF( _S( 1228, "필요 나스 : %s 나스" ), (const char*)strNeedNas );		
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, strMessage, -1, 0xE18600FF );
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5838,  "힘 :  물리방어 상승"  ), -1, 0xA3A1A3FF );							
 					pUIManager->AddMessageBoxLString( MSGLCMD_CHANGEJOB_REQ, TRUE, _S( 5839,  "민첩 : 명중, 회피상승"  ), -1, 0xA3A1A3FF );							

@@ -657,7 +657,7 @@ void CSessionState::updateItemAdd( CNetworkMessage* istr )
 			CTString strCount;
 			strCount.PrintF("%I64d", pPack->info.itemCount);
 			pUIManager->InsertCommaToString(strCount);
-			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
+			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, (const char*)strCount );
 		}
 		else
 			strSysMessage.PrintF( _S2( 303, szItemName, "%s<를> 얻었습니다." ),
@@ -722,11 +722,11 @@ void CSessionState::updateItemAdd( CNetworkMessage* istr )
 		if( pItemData->GetType() == CItemData::ITEM_ETC &&
 			pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
 		{
-			strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount);		
+			strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), (const char*)strCount);		
 		}
 		else
 		{
-			strMessage.PrintF(_S( 808, "%s를 %s개 보관하였습니다." ), szName, strCount);
+			strMessage.PrintF(_S( 808, "%s를 %s개 보관하였습니다." ), szName, (const char*)strCount);
 		}
 		_pNetwork->ClientSystemMessage( strMessage );
 
@@ -818,7 +818,7 @@ void CSessionState::updateItemCount(CNetworkMessage* istr)
 			strCount.PrintF("%d", delta);
 			pUIManager->InsertCommaToString(strCount);
 
-			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
+			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, (const char*)strCount );
 			_pNetwork->ClientSystemMessage( strSysMessage );
 
 			setNewItemEffect(pPack->tab_no, pPack->invenIndex, TRUE);
@@ -845,11 +845,11 @@ void CSessionState::updateItemCount(CNetworkMessage* istr)
 			if( pItemData->GetType() == CItemData::ITEM_ETC &&
 				pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
 			{
-				strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount );		
+				strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), (const char*)strCount );		
 			}
 			else
 			{
-				strMessage.PrintF( _S( 808, "%s를 %s개 보관하였습니다." ), szName, strCount );
+				strMessage.PrintF( _S( 808, "%s를 %s개 보관하였습니다." ), szName, (const char*)strCount );
 			}
 			_pNetwork->ClientSystemMessage( strMessage );
 		}	
@@ -1484,7 +1484,7 @@ void CSessionState::updateMoneyReason( CNetworkMessage* istr )
 			CTString strCount;
 			strCount.PrintF("%I64d", pPack->nas);
 			UIMGR()->InsertCommaToString(strCount);
-			strSysMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount ); // 번역 수정
+			strSysMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), (const char*)strCount ); // 번역 수정
 			_pNetwork->ClientSystemMessage( strSysMessage );	
 		}
 		break;

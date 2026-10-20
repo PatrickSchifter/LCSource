@@ -365,7 +365,7 @@ void CChattingUI::AddChatMessage(UBYTE ubChatType, SLONG slSendIndex, CTString &
 				{
 					UIMGR()->GetChatFilter()->AddCharName(strSendName.str_String);
 					CTString strTemp;
-					strTemp.PrintF(_S(3006, "%s님이 차단되었습니다."), strSendName);
+					strTemp.PrintF(_S(3006, "%s님이 차단되었습니다."), (const char*)strSendName);
 					AddSysMessage(strTemp);
 
 					return;
@@ -1528,7 +1528,7 @@ BOOL CChattingUI::CheckInputChannelChat( ChattingMsgType cmtType, CTString strMe
 				strNas.PrintF("%d", nNeedNas);
 				UIMGR()->InsertCommaToString(strNas);
 
-				strMoney.PrintF(_S(5389, "[%s] 나스가 부족합니다.(%s 나스)"), _S(5391, "매매 채널모드"), strNas);
+				strMoney.PrintF(_S(5389, "[%s] 나스가 부족합니다.(%s 나스)"), (const char*)_S(5391, "매매 채널모드"), (const char*)strNas);
 				AddSysMessage(strMoney, SYSMSG_ERROR);
 				bResult = FALSE;
 			}

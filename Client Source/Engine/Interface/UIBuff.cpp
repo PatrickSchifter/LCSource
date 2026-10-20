@@ -1853,7 +1853,7 @@ void CUIBuff::GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int
 	{
 		if( nSkillLevel > 0 )
 		{
-			strTemp.PrintF( "%s %s %d", rSelSkill.GetName(), _S( 4414, "LV" ),nSkillLevel );
+			strTemp.PrintF( "%s %s %d", rSelSkill.GetName(), (const char*)_S( 4414, "LV" ),nSkillLevel );
 		}
 		else
 			strTemp.PrintF( "%s", rSelSkill.GetName() );
@@ -1864,7 +1864,7 @@ void CUIBuff::GetBuffInfo( int nItemIndex, int nSkillIndex, int nSkillLevel, int
 		//CItemData	&rItemData = _pNetwork->GetItemData( nItemIndex );
 		if( nSkillLevel > 0 )
 		{
-			strTemp.PrintF( "%s %s %d", szItemName, _S( 4414, "LV" ), nSkillLevel );
+			strTemp.PrintF( "%s %s %d", szItemName, (const char*)_S( 4414, "LV" ), nSkillLevel );
 		}
 		else
 			strTemp.PrintF( "%s", szItemName );

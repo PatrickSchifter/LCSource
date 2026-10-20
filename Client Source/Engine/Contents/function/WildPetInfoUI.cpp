@@ -152,7 +152,7 @@ void CWildPetInfoUI::updateBaseTab()
 	pUIMgr->InsertCommaToString(strExp);
 	pUIMgr->InsertCommaToString(strNextExp);
 
-	strTemp.PrintF("%s / %s", strExp, strNextExp);
+	strTemp.PrintF("%s / %s", (const char*)strExp, (const char*)strNextExp);
 
 	if (m_pText[eSTRING_EXP] != NULL)
 		m_pText[eSTRING_EXP]->SetText(strTemp);
@@ -285,7 +285,7 @@ void CWildPetInfoUI::updateSkillTab()
 			pText->setFontColor(color);
 		}
 		// skill Level
-		strTemp.PrintF("%s %d", _S(4414, "LV"), sbLevel);
+		strTemp.PrintF("%s %d", (const char*)_S(4414, "LV"), sbLevel);
 
 		pText = (CUIText*)pItem->findUI("str_skillLevel");
 
@@ -1784,7 +1784,7 @@ void CWildPetInfoUI::ReceiveDeleteEquip( CNetworkMessage *istr )
 	(*istr) >> nItem_Index;
 	(*istr) >> wear_pos;
 
-	strmassage.PrintF(_S(4213, "%s 의 %s 아이템이 기간 만료로 사라집니다." ),strPetname,_pNetwork->GetItemName(nItem_Index));
+	strmassage.PrintF(_S(4213, "%s 의 %s 아이템이 기간 만료로 사라집니다." ),(const char*)strPetname,_pNetwork->GetItemName(nItem_Index));
 	pUIManager->GetChattingUI()->AddSysMessage( strmassage, SYSMSG_NORMAL );
 
 	DeleteEquip(wear_pos, nItem_Index);
@@ -1920,7 +1920,7 @@ bool CWildPetInfoUI::check_upgrade( int idx )
 		{
 			if (nPlus >= DEF_PET_ITEM_UPGRADE_MAX)
 			{
-				strMsg.PrintF("%s", _S(2642, "더이상 업그레이드 할 수 없습니다."));
+				strMsg.PrintF("%s", (const char*)_S(2642, "더이상 업그레이드 할 수 없습니다."));
 				pUIMgr->GetChattingUI()->AddSysMessage(strMsg, SYSMSG_ERROR);
 
 				// 장비 장착으로 메세지 전달하지 않음. (true)
@@ -1998,7 +1998,7 @@ bool CWildPetInfoUI::check_upgrade( int idx )
 					strItemname.PrintF("[%s]", _pNetwork->GetItemName(pPetItems->Item_Index));
 
 				strTitle.PrintF(_S(175, "아이템 업그레이드"));
-				strMsg.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), strItemname);
+				strMsg.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), (const char*)strItemname);
 				style = UMBS_OKCANCEL;
 				bLock = true;
 			}

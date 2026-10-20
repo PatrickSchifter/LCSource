@@ -387,7 +387,7 @@ void CUIRanking::RefreshPrizeList( BOOL bInit )
 		
 		CTString strItemName = _pNetwork->GetItemName( (*it).iItemIndex );
 		CTString strCount = UIMGR()->IntegerToCommaString((*it).iNumOfItem);
-		strTemp.PrintF( _S( 61, "%s %s°³" ), strItemName, strCount );
+		strTemp.PrintF( _S( 61, "%s %s°³" ), (const char*)strItemName, (const char*)strCount );
 		m_lbPrizeList.AddString( 2, strTemp, 0xFFFFFFFF );
 		
 		if( (*it).bReward == FALSE && 

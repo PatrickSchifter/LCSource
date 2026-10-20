@@ -6,7 +6,7 @@
 #include <Engine/Interface/UIBase.h>
 
 // User interface types
-enum UI_TYPE
+enum UI_TYPE : int
 {
 	UI_NONE					= -1,
 	UI_TYPE_START			= 0,

@@ -337,7 +337,7 @@ void CUIProcessNPC::SelectItem(int _nIndex)
     {
         szItemName = _pNetwork->GetItemName(m_NeedItems[0].ItemData->GetItemIndex());
 		CTString strCount = UIMGR()->IntegerToCommaString(m_nProcessItemCount * m_NeedItems[0].llCount);
-        strTitle.PrintF(_S(576, "%s : %s개 "), strSpace + szItemName, strCount);
+        strTitle.PrintF(_S(576, "%s : %s개 "), (const char*)(strSpace + szItemName), (const char*)strCount);
     }
 
     AddString(strTitle, bNeedItem ? COLOR_TEXT : COLOR_NONE);
@@ -358,7 +358,7 @@ void CUIProcessNPC::SelectItem(int _nIndex)
 	strNeedNas.PrintF("%I64d", needMoney);
 	UIMGR()->InsertCommaToString(strNeedNas);
 
-    strMoney.PrintF("%s %s", strNeedNas, _S(1762, "나스"));
+    strMoney.PrintF("%s %s", (const char*)strNeedNas, (const char*)_S(1762, "나스"));
     AddString(strMoney, needMoney <= myMoney ? COLOR_TEXT : COLOR_NONE);
 
     m_bSatisfied = m_bSatisfied && needMoney <= myMoney;
@@ -721,7 +721,7 @@ void CUIProcessNPC::initialize()
 #endif		// WORLD_EDITOR
 }
 
-void CUIProcessNPC::pushback_string( CTString& strText, COLOR color )
+void CUIProcessNPC::pushback_string( const CTString &strText, COLOR color )
 {
 	if (m_pListDesc == NULL)
 		return;

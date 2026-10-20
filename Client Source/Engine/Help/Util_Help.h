@@ -41,8 +41,8 @@ enum eWEAR_TYPE
 	WEAR_TYPE_COSTUME,	// 코스튬 장비
 };
 
-enum UIMCType;
-enum UI_TYPE;
+enum UIMCType : int;
+enum UI_TYPE : int;
 class CItems;
 
 class UtilHelp : public CSingletonBase< UtilHelp >

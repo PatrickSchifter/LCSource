@@ -1311,17 +1311,17 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 				pUIManager->AddMessageBoxLString( MSGLCMD_RED_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xE18600FF );			
 
 				strCount = pUIManager->IntegerToCommaString(5);
-				strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2658), strCount);
+				strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2658), (const char*)strCount);
 				pUIManager->AddMessageBoxLString( MSGLCMD_RED_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );
 
 				strCount = pUIManager->IntegerToCommaString(5);
-				strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2659), strCount);
+				strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2659), (const char*)strCount);
 				pUIManager->AddMessageBoxLString( MSGLCMD_RED_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );
 				
 				if( iTreasureBoxLevel == 12 )
 				{
 					strCount = pUIManager->IntegerToCommaString(10);
-					strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2860), strCount);
+					strMessage.PrintF( _S( 61, "%s %s개" ), _pNetwork->GetItemName(2860), (const char*)strCount);
 					pUIManager->AddMessageBoxLString( MSGLCMD_RED_TREASUREBOX_EVENT, TRUE, strMessage, -1, 0xA3A1A3FF );
 				}
 				
@@ -2282,12 +2282,12 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE,	_S(5058, "세상의 모든 돈을 얻고자 하는 자여, 상인이 되어 대륙 최고의 부자가 되어 보지 않겠나?") );
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE, _S(5059, "(경비가 삼엄해서 불법장사는 안된다네!)" ) );
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE, _S(5060, "필요 레벨 : 50Lv~55Lv" ), -1, 0xE18600FF);
-						strTemp.PrintF(_S(5061, "필요 SP : %s" ), strSp);
+						strTemp.PrintF(_S(5061, "필요 SP : %s" ), (const char*)strSp);
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE, strTemp, -1, 0xE18600FF);
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE, _S(5062, "명성치 : 5" ), -1, 0xE18600FF);
-						strTemp.PrintF(_S(5063, "나스 : %s" ), strNas);
+						strTemp.PrintF(_S(5063, "나스 : %s" ), (const char*)strNas);
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, TRUE, strTemp, -1, 0xE18600FF);
-						strTemp.PrintF( _S( 5056, "상인으로 등록"), pUIManager->GetSubJobName(SUBJOB_MERCHANT) );
+						strTemp.PrintF( _S( 5056, "상인으로 등록"), (const char*)pUIManager->GetSubJobName(SUBJOB_MERCHANT) );
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, FALSE, strTemp, 1 );
 						pUIManager->AddMessageBoxLString( MSGLCMD_REGISTER_MERCHANT, FALSE, _S(1220, "취소한다." ) );
 					}
@@ -3202,7 +3202,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 			CTString strTemp;
 			strTemp.PrintF("%I64d", pSyndicateData->GetSecssionNas());
 			pUIManager->InsertCommaToString(strTemp);
-			strMessage.PrintF(_S( 6125, "위약금:%s 나스"), strTemp);
+			strMessage.PrintF(_S( 6125, "위약금:%s 나스"), (const char*)strTemp);
 			MsgBoxInfo.AddString( strMessage );
 
 			strMessage.PrintF(_S( 6285,
