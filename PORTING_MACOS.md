@@ -263,7 +263,7 @@ Fontes publicados (cada versão é um branch):
 - [~] Assets e banco de cada versão: 2009 feitos (`lc2009_*` do dump de 2016, `.lod` regenerados
   por `v2009/tools/lod2009`); 2018 do pacote do tx00100xt (`lc2018_*`, `~/Projects/LC-2018`)
 - Um branch por versão, cada um na sua worktree (decidido em 2026-10-20; `HANDOFF.md`, "Fase V — versões")
-- [ ] Seletor de versão (launcher: build do cliente, assets e servidor correspondentes)
+- [x] Seletor de versão: `scripts/macos/launcher.sh` (2026-10-20; diálogo do macOS ou argumento; o `.app` vem na Fase F)
 - Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las
 
 ### Medição (2026-10-19)
