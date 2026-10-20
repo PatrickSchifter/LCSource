@@ -6,8 +6,8 @@
 #   scripts/macos/launcher.sh --stop     stops the servers of every version
 #   scripts/macos/launcher.sh --status   shows which servers run
 #
-# Each version lives in this repository (HANDOFF.md, "Fase V — versões"): the 2015 at the top,
-# the 2009 in v2009/ and the 2018 in v2018/, each with its build, game install and servers. The versions use different ports, so their servers can run
+# Each version lives in its directory of this repository (HANDOFF.md, "Fase V — versões"):
+# v2009/, v2015/ and v2018/, each with its build, game install and servers. The versions use different ports, so their servers can run
 # side by side. When a version's LoginServer already runs, its address is kept; otherwise the
 # servers start on 127.0.0.1 (LC_PUBLIC_IP overrides it). The install's sl.dta is rewritten to
 # the address the LoginServer listens on. Extra environment (LC_GFX_API, LC_SCREEN...) reaches
@@ -21,7 +21,7 @@ HERE="$(cd "$(dirname "$0")/../.." && pwd)"   # this repository
 
 # version | directory | server script | client script | game install | LoginServer port | name in sl.dta
 VERSIONS=(
-  "2015|.|scripts/run-server.sh|scripts/macos/play.sh|LC-BR2014|4001|Mac"
+  "2015|v2015|scripts/run-server.sh|scripts/macos/play.sh|LC-BR2014|4001|Mac"
   "2009|v2009|scripts/run-server.sh|scripts/client-play.sh|LC-2009|4201|Mac2009"
   "2018|v2018|scripts/run-server.sh|scripts/macos/play.sh|LC-2018|4301|Mac2018"
 )

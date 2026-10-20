@@ -1,6 +1,7 @@
 #!/bin/bash
 # Copies the files changed since the last sync (committed, modified or untracked) to C:\LCSource on
-# the Windows host. The last synced commit is kept in .git/lc-windows-last-sync; delete that file to
+# the Windows host. C:\LCSource mirrors v2015/ (the 2015 sources were at the top of the repository
+# before 1d4c8bc; a last sync from then is compared against that top-level tree). The last synced commit is kept in .git/lc-windows-last-sync; delete that file to
 # send everything changed since the source import (07197bf), or use --verify to compare every file
 # by hash and copy the ones that differ.
 set -e
@@ -8,6 +9,16 @@ cd "$(dirname "$0")/../.."
 STATE=.git/lc-windows-last-sync
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
+
+# files changed since $BASE, relative to v2015/ (git diff options in "$@")
+changed() {
+  if git cat-file -e "$BASE:v2015" 2>/dev/null; then
+    git diff --name-only --relative "$@" "$BASE"
+  else
+    git diff --name-only "$@" "$BASE:" HEAD:v2015
+    git diff --name-only --relative "$@" HEAD
+  fi
+}
 
 if [[ $1 == --verify ]]; then
   git ls-files "Client Source" "Server Source/ShareLib" | while read -r f; do
@@ -26,13 +37,13 @@ EOF
   tr '\n' '\0' < "$TMP/diff.txt" > "$TMP/list"
 else
   BASE=$(cat "$STATE" 2>/dev/null || echo 07197bf)
-  { git diff --name-only "$BASE"; git ls-files --others --exclude-standard; } | sort -u |
+  { changed; git ls-files --others --exclude-standard; } | sort -u |
     while read -r f; do [[ -f $f ]] && printf '%s\0' "$f"; done > "$TMP/list" || true
 fi
 
 if [[ $1 != --verify ]]; then
   # Files deleted here since the last sync are deleted there too.
-  { git diff --name-only --diff-filter=D "$BASE"; git ls-files --deleted; } | sort -u |
+  { changed --diff-filter=D; git ls-files --deleted; } | sort -u |
     while read -r f; do [[ -e $f ]] || printf '%s\n' "$f"; done > "$TMP/deleted.txt"
   if [[ -s $TMP/deleted.txt ]]; then
     scp -q -o BatchMode=yes "$TMP/deleted.txt" windows:C:/LCSource/mac-deleted.txt

@@ -10,7 +10,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BIN_DIR="$ROOT/build/Server Source"
+BIN_DIR="$ROOT/build-server/Server Source"
 RUN_DIR="$ROOT/run"
 CONFIG_DIR="$ROOT/server-config"
 ALL=(Messenger Connector Helper SubHelper GameServer LoginServer)

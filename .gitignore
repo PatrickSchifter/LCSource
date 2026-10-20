@@ -17,19 +17,19 @@ ipch/
 .DS_Store
 
 # Linux server binaries from the original tree
-/Server Source/Billing/Billing
-/Server Source/Connector/Connector
-/Server Source/Helper/Helper
-/Server Source/LoginServer/LoginServer
-/Server Source/Messenger/Messenger
-/Server Source/SubHelper/SubHelper
-/Server Source/GameServer/GameServer
-/Server Source/CharDBServer/INC/test
+/v2015/Server Source/Billing/Billing
+/v2015/Server Source/Connector/Connector
+/v2015/Server Source/Helper/Helper
+/v2015/Server Source/LoginServer/LoginServer
+/v2015/Server Source/Messenger/Messenger
+/v2015/Server Source/SubHelper/SubHelper
+/v2015/Server Source/GameServer/GameServer
+/v2015/Server Source/CharDBServer/INC/test
 run/
 
 # Entity Class Compiler (Ecc) outputs generated from *.es
-/Client Source/EntitiesMP/*_tables.h
-/Client Source/Engine/Classes/*_tables.h
+/v2015/Client Source/EntitiesMP/*_tables.h
+/v2015/Client Source/Engine/Classes/*_tables.h
 *.cpp_tmp
 *.h_tmp
 

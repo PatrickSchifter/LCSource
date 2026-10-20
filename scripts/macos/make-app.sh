@@ -13,7 +13,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT=${1:-$HERE/build-app}
 APP=$OUT/LastChaos.app
-ICON="$HERE/Client Source/Nksp/res/LC.ico"   # the Windows LC.exe's (Last Chaos Brasil launcher)
+ICON="$HERE/v2015/Client Source/Nksp/res/LC.ico"   # the Windows LC.exe's (Last Chaos Brasil launcher)
 VERSION=$(git -C "$HERE" describe --always --dirty 2>/dev/null || echo 0)
 
 rm -rf "$APP"

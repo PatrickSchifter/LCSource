@@ -19,6 +19,6 @@ brew install sdl3 libvorbis
 cat <<MSG
 
 Done. Configure and build with:
-  cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENSSL_ROOT_DIR=\$(brew --prefix openssl@3)
-  ninja -C build
+  cmake -S v2015 -B v2015/build-server -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENSSL_ROOT_DIR=\$(brew --prefix openssl@3)
+  ninja -C v2015/build-server
 MSG
