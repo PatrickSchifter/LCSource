@@ -65,11 +65,11 @@
 //#include "ModelsMP/Weapons/Flamer/Body.h"
 //#include "ModelsMP/Weapons/Flamer/FuelReservoir.h"
 //#include "ModelsMP/Weapons/Flamer/Flame.h"  
-#include "ModelsMP/Weapons/Chainsaw/Chainsaw.h"
-#include "ModelsMP/Weapons/Chainsaw/ChainSawForPlayer.h"
-#include "ModelsMP/Weapons/Chainsaw/Body.h"
-#include "ModelsMP/Weapons/Chainsaw/Blade.h"
-#include "ModelsMP/Weapons/Chainsaw/Teeth.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainSaw.h"
+#include "ModelsMP/Weapons/ChainSaw/ChainsawForPlayer.h"
+#include "ModelsMP/Weapons/ChainSaw/Body.h"
+#include "ModelsMP/Weapons/ChainSaw/Blade.h"
+#include "ModelsMP/Weapons/ChainSaw/Teeth.h"
 
 // Mission Pack player body instead of the old one
 #include "ModelsMP/Player/SeriousSam/Body.h"
@@ -1620,7 +1620,7 @@ void PlayAttackSound(CSoundObject &so, int what_sound, SLONG slPlayType){
           }
           // keep player name, mana and health for eventual printout or coloring
 //          m_fEnemyHealth = ((CPlayer*)pen)->GetHealth() / ((CPlayer*)pen)->m_fMaxHealth;
-          m_strLastTarget.PrintF( "%s", ((CPlayer*)pen)->GetPlayerName());
+          m_strLastTarget.PrintF( "%s", (const char*)((CPlayer*)pen)->GetPlayerName());
 		  /*
           if( GetSP()->sp_gmGameMode==CSessionProperties::GM_SCOREMATCH) {
             // add mana to player name

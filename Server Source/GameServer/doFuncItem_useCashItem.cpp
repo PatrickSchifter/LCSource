@@ -1339,7 +1339,7 @@ bool local_useCashItem_PetHPRecover(CPC* ch, CItem* item, bool bprolong, Request
 		return false;
 
 	CPet* pet = ch->GetPet();
-	if (pet == false)
+	if (pet == NULL)
 		return false;
 
 	if( item->m_itemProto->getItemIndex() != PET_HPRECOVER_ITEM )

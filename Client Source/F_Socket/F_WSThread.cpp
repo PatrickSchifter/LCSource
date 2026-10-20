@@ -1,4 +1,4 @@
-#include <WinSock2.h>
+#include <winsock2.h>
 #include "F_WSThread.h"
 
 F_WSThread::F_WSThread(void)

@@ -68,7 +68,7 @@ private:
 	std::vector<Fortune_head*> fh;
 };
 
-class Compare_fortune_list : public std::binary_function<Fortune_head*, Fortune_head*, bool>
+class Compare_fortune_list
 {
 public:
 	bool operator()(Fortune_head* l, Fortune_head* r) const

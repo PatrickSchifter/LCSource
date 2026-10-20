@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UILacarette.h>
@@ -363,7 +363,7 @@ void		CUILacaball::_renderCourseInfo()
 	// draw token info.
 	if( m_vecTokenInfo.size() != 0 )
 	{
-		szTokenName.PrintF( "%s", m_vecTokenInfo[m_iCurrentTokenPos].tokenName );
+		szTokenName.PrintF( "%s", (const char*)m_vecTokenInfo[m_iCurrentTokenPos].tokenName );
 	}
 	else
 	{
@@ -372,7 +372,7 @@ void		CUILacaball::_renderCourseInfo()
 	pDrawPort->PutTextExCX( szTokenName,		m_nPosX + 224 + 135,
 															m_nPosY + 37 + 4, 0xDED9A0FF );
 	// draw course remain / max count.
-	szTokenName.PrintF( "%s/%s", _S( 5351, "남은개수" ), _S( 5352, "총개수") );
+	szTokenName.PrintF( "%s/%s", (const char*)_S( 5351, "남은개수" ), (const char*)_S( 5352, "총개수") );
 	pDrawPort->PutTextExRX( szTokenName,		m_nPosX + 368,
 															m_nPosY + 139 + 6, 0xDED9A0FF );
 	remainCnt = m_Course[m_iCurrentCoursePos - m_iShowCoursePos].rewardItemRemainCount;
@@ -1076,7 +1076,7 @@ void		CUILacaball::_setBtnStatus(const BOOL bLocked )
 void		CUILacaball::_showWinner()
 {
 	CTString strMsg;
-	strMsg.PrintF( _S( 5349, "%s님이 %s 아이템을 획득하였습니다."), m_strWinner, _pNetwork->GetItemName( m_iWinnerItemIdx ) );
+	strMsg.PrintF( _S( 5349, "%s님이 %s 아이템을 획득하였습니다."), (const char*)m_strWinner, _pNetwork->GetItemName( m_iWinnerItemIdx ) );
 	_UIAutoHelp->SetGMNotice( strMsg );
 	// winner 가 등장했을 때만 리스트가 초기화 됨.
 	_resetDropPos();

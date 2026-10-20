@@ -5,7 +5,9 @@
 #endif
 
 
-#include <DSound.h>
+#ifndef LC_SOUND_SDL
+#include <dsound.h>
+#endif
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Math/Vector.h>
@@ -14,7 +16,7 @@
 #include <Engine/Templates/StaticStackArray.h>
 #include <Engine/Templates/DynamicArray.h>
 
-#ifdef PLATFORM_WIN32 /* rcg10042001 */
+#ifndef LC_SOUND_SDL /* rcg10042001 */
 
   #define DSBCAPS_GETPOS (DSBCAPS_GETCURRENTPOSITION2)
   #define DSBCAPS_2D (DSBCAPS_LOCDEFER|DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLFREQUENCY|DSBCAPS_CTRLPAN)
@@ -56,7 +58,10 @@ enum SndEnvFX
 #define SLF_HASEFX       (1UL<<2)  // HW has environment effects (EAX and such)
 
 
-/* !!! FIXME: rcg10042001 This is going to need OpenAL or SDL_audio... */
+// With LC_SOUND_SDL the output is an SDL3 audio stream fed by the software mixer, as DirectSound's
+// streaming buffer is with snd_iInterface=1; the DirectSound3D hardware mixer and EAX
+// (snd_iInterface 2 and 3) and WaveOut exist only in the Windows build.
+struct SDL_AudioStream;
 
 
 // holds the sound that is currently playing
@@ -64,9 +69,11 @@ struct PlayingBuffer
 {
   CSoundData   *pb_psd;     // what sound data is playing
   CSoundObject *pb_pso;     // which sound object is playing
+#ifndef LC_SOUND_SDL
   LPDIRECTSOUNDBUFFER   pb_pdsb;
   LPDIRECTSOUND3DBUFFER pb_pdsb3d;  // (NULL if buffer is 2D)
   LPKSPROPERTYSET pb_pksps;  // for setting properties of EAX (NULL for 2D)
+#endif
 };
 
 
@@ -81,12 +88,13 @@ public:
     SF_ILLEGAL  = 4
   };
 
-/* rcg !!! FIXME: This needs to be abstracted. */
-#ifdef PLATFORM_WIN32
+#ifndef LC_SOUND_SDL
   HWAVEOUT sl_hwoWaveOut;                   // wave out handle
   CStaticStackArray<HWAVEOUT> sl_ahwoExtra; // preventively taken channels
   CStaticArray<WAVEHDR> sl_awhWOBuffers;    // wave-out buffers
+#endif
   INDEX sl_ctWaveDevices;                   // number of devices detected
+#ifndef LC_SOUND_SDL
   UBYTE *sl_pubBuffersMemory;               // memory for wave-out buffers
   LPDIRECTSOUNDBUFFER sl_pdsbPrimary;       // primary (for initialization on PC)
   LPKSPROPERTYSET sl_pKSProperty;           // for setting properties of EAX
@@ -94,6 +102,9 @@ public:
   LPDIRECTSOUND sl_pDS;                     // direct sound 'handle'
   LPDIRECTSOUNDBUFFER sl_pdsbStream;        // streaming (for music)
   LPDIRECTSOUND3DLISTENER sl_pds3dListener; // for 3D positioning and effects
+#else
+  SDL_AudioStream *sl_pasStream;            // output stream (on the SDL audio device it opened)
+#endif
 
   CListHead sl_lhActiveListeners;   // active listeners for current frame of listening
   ULONG sl_ulFlags;                 // various flags (see #defines)
@@ -110,11 +121,15 @@ public:
   CListHead sl_lhPendingSounds; // list of sounds scheduled for playing (first couple from list are actually playing)
   DOUBLE sl_tmMuteUntil;        // time to keep sounds muted
 
-#endif // PLATFORM_WIN32
-
 private:
   // internal stuff
   void SetFormat_internal( CSoundLibrary::SoundFormat esfNew, BOOL bReport);
+#ifdef LC_SOUND_SDL
+  BOOL StartUp_sdl( BOOL bReport=TRUE);
+  void ShutDown_sdl(void);
+  void CopyMixerBuffer_sdl( SLONG slMixedSize);
+ SLONG PrepareSoundBuffer_sdl(void);
+#else
   BOOL StartUp_waveout( BOOL bReport=TRUE);
   BOOL StartUp_dsound(  BOOL bReport=TRUE);
   void ShutDown_waveout(void);
@@ -130,10 +145,11 @@ private:
 
   // update dsound buffers (if using HW mixer)
   void PlayBuffers(void);
-  // update SW mixer
-  void MixSounds(void);
   // request a playing buffer (bWasUsed=TRUE if this buffer was in use before by some quieter sound)
   INDEX CommitPlayingBuffer( CSoundObject &so, BOOL &bWasUsed);
+#endif
+  // update SW mixer
+  void MixSounds(void);
 
 public:
   CSoundLibrary(void);

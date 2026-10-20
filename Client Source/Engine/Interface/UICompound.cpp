@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 
 // 헤더 정리. [12/1/2009 rumist]
@@ -219,7 +219,7 @@ void CUICompound::CloseCompound()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUICompound::AddString( CTString &strDesc )
+void CUICompound::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_COMPOUND_STRING )
 		return;

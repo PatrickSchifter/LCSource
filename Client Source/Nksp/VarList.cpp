@@ -205,7 +205,7 @@ void FlushVarSettings(BOOL bApply)
 
   for(INDEX i=0; i<astrScheduled.Count(); i++) {
     CTString strCmd;
-    strCmd.PrintF("include \"%s\"", astrScheduled[i]);
+    strCmd.PrintF("include \"%s\"", (const char*)astrScheduled[i]);
     _pShell->Execute(strCmd);
   }
 }

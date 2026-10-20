@@ -46,7 +46,7 @@
  * 78901234567890") = 57edf4a22be3c955ac49da2e2107b67a
  */
 
-#include "stdh.h"
+#include "StdH.h"
 
 #include <stdlib.h>
 #include <string.h>

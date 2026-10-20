@@ -1,7 +1,5 @@
 #include <StdH.h>
 
-#if		(_MSC_VER > 1200)
-
 #include "NetClient.h"
 #include <boost/array.hpp>
 #include <Engine/Network/NetworkMessage.h>
@@ -10,7 +8,7 @@
 
 #define		BUFF_SIZE		10240
 
-CNetSocket::CNetSocket(boost::asio::io_service& io)
+CNetSocket::CNetSocket(boost::asio::io_context& io)
 	: _bConnect(false)
 	, _socket(io)
 {
@@ -35,10 +33,10 @@ bool CNetSocket::isValid()
 
 bool CNetSocket::connect( std::string& IP, std::string& port )
 {
-	boost::asio::ip::tcp::resolver resolver(_socket.get_io_service());
-	boost::asio::ip::tcp::resolver::query query(IP, port);
-	boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-	boost::asio::ip::tcp::resolver::iterator end;
+	boost::asio::ip::tcp::resolver resolver(_socket.get_executor());
+	boost::asio::ip::tcp::resolver::results_type results = resolver.resolve(IP, port);
+	boost::asio::ip::tcp::resolver::results_type::iterator endpoint_iterator = results.begin();
+	boost::asio::ip::tcp::resolver::results_type::iterator end = results.end();
 
 	// resolving된 endpoint로 접속을 시도한다.
 	boost::system::error_code error = boost::asio::error::host_not_found;
@@ -132,6 +130,4 @@ void CNetClient::recv()
 
 	_pSock->recv();
 }
-
-#endif	// (_MSC_VER > 1200)
 

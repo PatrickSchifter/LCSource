@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Network/NetworkMessage.h>
 #include <Engine/Network/MessageDefine.h>
@@ -626,7 +626,11 @@ void CNetworkStreamBlock::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-      _asm int 3;
+#ifdef _MSC_VER
+      __debugbreak();
+#else
+      __builtin_debugtrap();
+#endif
     }
   }
   FreeMemory(p);
@@ -1076,7 +1080,7 @@ extern CNetworkStreamBlock *CreateNetworkStreamBlock(void)
 extern void DeleteNetworkStreamBlock(CNetworkStreamBlock *pnsbBlock)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> or(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> orRestore(_rcStreamBlockContainer.rc_bNowDeleting,TRUE);
   _rcStreamBlockContainer.DeleteObject(pnsbBlock);
 }
 

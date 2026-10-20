@@ -2,7 +2,7 @@
 	UISocketSystem.cpp : implementation of the CUISocketSystem class.
 *********************************************************************/
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISocketSystem.h>
 #include <Engine/Contents/function/SocketRemoveAllUI.h>

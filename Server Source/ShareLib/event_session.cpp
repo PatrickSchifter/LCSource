@@ -1,7 +1,7 @@
 #include "bnf.h"
 #include "event_session.h"
 
-EventSession::EventSession( boost::asio::io_service& io_service )
+EventSession::EventSession( boost::asio::io_context& io_service )
 	: SessionBase(io_service, SessionBase::EVENT_SESSION)
 {
 	bnf::instance()->event_session_seq_.pop(handle_);

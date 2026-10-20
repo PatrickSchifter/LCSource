@@ -46,7 +46,11 @@ static void SetRenderingState()
 //강동민 수정 시작 Water 구현		04.26
 	// 원본.
 	//_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );
+#ifdef SE1_D3D
 	_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_PROJECTED );
+#else
+	shaSetProjectedTexture( 1, TRUE);
+#endif // SE1_D3D
 //강동민 수정 끝 Water 구현			04.26
 }
 
@@ -115,7 +119,11 @@ SHADER_MAIN(WaterHolder)
 		VertexShaderProcess(iWaterHolderVP);
 		PixelShaderProcess(iWaterHolderPP);
 		Render();
+#ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->SetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, 0);		
+#else
+		shaSetProjectedTexture( 1, FALSE);
+#endif // SE1_D3D
 		shaDisableBlend();
 	}
 	else	//USE VS(SOFT or HARD), NON-PS
@@ -155,7 +163,9 @@ SHADER_DESC(WaterHolder, ShaderDesc *&pshDesc)
 		shDescMe.sd_ctPixelPrograms = ctPixelPrograms;
 		shDescMe.sd_ulStreamFlags.New(ctVertexPrograms);
 		shDescMe.sd_ulStreamFlags[0] = GFX_POSITION_STREAM | GFX_TEXCOORD0;
+#ifdef SE1_D3D
 		shDescMe.PixelShaderVersion = D3DPS_VERSION(1,1); /// WaterHolder는 1.4에서 사용할 수 없는 texbem명령으로 인해 1.1을 사용.
+#endif // SE1_D3D
 			// 범프 맵 텍스처의 사용 방식을 바꾸는게 어렵기 때문에, 1.1사용
 			// 추후 Water 구현에 대해 수정이 필요할 것으로 보임.
 	}

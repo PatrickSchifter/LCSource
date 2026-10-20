@@ -5,7 +5,7 @@
 #endif
 
 #include <Engine/Help/LoadLod.h>
-#include <common/header/def_skill.h>
+#include <Common/header/def_skill.h>
 
 // Special Skill ≈∏¿‘
 #define		SSKILL_MINING		0	// √§±º

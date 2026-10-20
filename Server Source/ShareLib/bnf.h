@@ -73,7 +73,7 @@ public:
 
 	static bnf*					instance();
 
-	boost::asio::io_service&	GetIoService()
+	boost::asio::io_context&	GetIoService()
 	{
 		return io_service_;
 	}
@@ -168,11 +168,11 @@ private:
 	session_queue_t						session_queue_;
 
 	boost::thread_group					thread_group_;
-	boost::asio::io_service				io_service_;
+	boost::asio::io_context				io_service_;
 
 	queue_ts<session_handle>			remove_session_queue_;
 
-	std::auto_ptr<boost::asio::io_service::work>	io_service_work_;
+	std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> >	io_service_work_;
 
 	bool								stopped_;
 	bool								run_flag_;

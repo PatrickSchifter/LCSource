@@ -3,6 +3,11 @@
 #include "Ecc/StdH.h"
 #include "Ecc/Main.h"
 
+// YYSTYPE (SType) is a C++ class, so bison cannot grow its stack; start it big
+// enough for the deeply nested procedures in EntitiesMP/Player.es.
+#define YYINITDEPTH 100000
+#define YYMAXDEPTH 100000
+
 static char *_strCurrentClass;
 static int _iCurrentClassID;
 static char *_strCurrentBase;
@@ -312,7 +317,8 @@ enum_declaration
     _strCurrentEnum = $2.strString;
     fprintf(_fTables, "EP_ENUMBEG(%s)\n", _strCurrentEnum );
     fprintf(_fDeclaration, "extern DECL_DLL CEntityPropertyEnumType %s_enum;\n", _strCurrentEnum );
-    fprintf(_fDeclaration, "enum %s {\n", _strCurrentEnum );
+    // fixed underlying type (the size MSVC gives it anyway), so other headers can declare it ahead
+    fprintf(_fDeclaration, "enum %s : int {\n", _strCurrentEnum );
   } '{' enum_values_list opt_comma '}' ';' {
     fprintf(_fTables, "EP_ENUMEND(%s);\n\n", _strCurrentEnum);
     fprintf(_fDeclaration, "};\n");
@@ -1164,7 +1170,7 @@ statements
   ;
 statement
   : expression ';' {$$=$1+$2;}
-  | k_switch '(' expression ')' '{' statements '}' {$$=$1+$2+$3+$4+$5+$6+$7}
+  | k_switch '(' expression ')' '{' statements '}' {$$=$1+$2+$3+$4+$5+$6+$7;}
   | k_case case_constant_expression ':' {$$=$1+" "+$2+$3+" ";}
   | '{' statements '}' {$$=$1+$2+$3;}
   | expression '{' statements '}' {$$=$1+$2+$3+$4;}

@@ -14,6 +14,139 @@
 #include "svn_info.h"
 #endif
 
+#ifdef __APPLE__
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <mach/mach.h>
+#endif
+
+#ifndef WIN32
+namespace
+{
+#ifdef __APPLE__
+	// macOS has no /proc: read the same information through sysctl and the mach host API.
+	std::string SysctlString(const char* name)
+	{
+		size_t len = 0;
+		if (sysctlbyname(name, NULL, &len, NULL, 0) != 0 || len == 0)
+			return "";
+		std::string value(len, '\0');
+		if (sysctlbyname(name, &value[0], &len, NULL, 0) != 0)
+			return "";
+		value.resize(strnlen(value.c_str(), len));
+		return value;
+	}
+
+	template <typename T>
+	bool SysctlValue(const char* name, T& value)
+	{
+		size_t len = sizeof(value);
+		return sysctlbyname(name, &value, &len, NULL, 0) == 0 && len == sizeof(value);
+	}
+
+	void AppendKb(std::string& out, const char* label, unsigned long long bytes)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "%-16s%12llu kB\n", label, bytes / 1024);
+		out += buf;
+	}
+#endif
+
+	// Same lines the Linux build took from /proc/cpuinfo ("processor" / "model name").
+	std::string GetCpuInfoString()
+	{
+		std::string outstr = "\n-- CPU INFORMATION --\n";
+		outstr.reserve(10240);
+#if defined(__linux__)
+		std::string line;
+		std::ifstream finfo("/proc/cpuinfo");
+		while (std::getline(finfo, line))
+		{
+			if (line.find("processor", 0) != std::string::npos)
+			{
+				outstr += line + "\n";
+			}
+			else if (line.find("model name", 0) != std::string::npos)
+			{
+				outstr += line + "\n";
+			}
+		}
+#elif defined(__APPLE__)
+		std::string model = SysctlString("machdep.cpu.brand_string");
+		if (model.empty())
+			model = SysctlString("hw.model");
+		int ncpu = 0, nphys = 0;
+		if (!SysctlValue("hw.logicalcpu", ncpu))
+			SysctlValue("hw.ncpu", ncpu);
+		SysctlValue("hw.physicalcpu", nphys);
+		char buf[256];
+		for (int i = 0; i < ncpu; ++i)
+		{
+			snprintf(buf, sizeof(buf), "processor\t: %d\nmodel name\t: %s\n", i, model.c_str());
+			outstr += buf;
+		}
+		snprintf(buf, sizeof(buf), "logical cpus\t: %d, physical cpus : %d\n", ncpu, nphys);
+		outstr += buf;
+#else
+		outstr += "(not available on this platform)\n";
+#endif
+		return outstr;
+	}
+
+	// Linux: /proc/meminfo verbatim. macOS: the closest equivalents, in the same "Name: N kB" style.
+	std::string GetMemInfoString()
+	{
+		std::string outstr = "\n-- MEMORY INFORMATION --\n";
+		outstr.reserve(10240);
+#if defined(__linux__)
+		std::string line;
+		std::ifstream finfo("/proc/meminfo");
+		while (std::getline(finfo, line))
+		{
+			outstr += line + "\n";
+		}
+#elif defined(__APPLE__)
+		unsigned long long memsize = 0;
+		if (SysctlValue("hw.memsize", memsize))
+			AppendKb(outstr, "MemTotal:", memsize);
+
+		mach_port_t host = mach_host_self();
+		vm_size_t page_size = 0;
+		if (host_page_size(host, &page_size) != KERN_SUCCESS)
+			page_size = 4096;
+
+		vm_statistics64_data_t vm;
+		mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+		if (host_statistics64(host, HOST_VM_INFO64, (host_info64_t)&vm, &count) == KERN_SUCCESS)
+		{
+			unsigned long long ps = page_size;
+			AppendKb(outstr, "MemFree:", (unsigned long long)(vm.free_count - vm.speculative_count) * ps);
+			AppendKb(outstr, "MemAvailable:", (unsigned long long)(vm.free_count + vm.inactive_count + vm.purgeable_count) * ps);
+			AppendKb(outstr, "Active:", (unsigned long long)vm.active_count * ps);
+			AppendKb(outstr, "Inactive:", (unsigned long long)vm.inactive_count * ps);
+			AppendKb(outstr, "Speculative:", (unsigned long long)vm.speculative_count * ps);
+			AppendKb(outstr, "Wired:", (unsigned long long)vm.wire_count * ps);
+			AppendKb(outstr, "Purgeable:", (unsigned long long)vm.purgeable_count * ps);
+			AppendKb(outstr, "Compressed:", (unsigned long long)vm.compressor_page_count * ps);
+			AppendKb(outstr, "FileBacked:", (unsigned long long)vm.external_page_count * ps);
+			AppendKb(outstr, "Anonymous:", (unsigned long long)vm.internal_page_count * ps);
+		}
+		mach_port_deallocate(mach_task_self(), host);
+
+		struct xsw_usage swap;
+		if (SysctlValue("vm.swapusage", swap))
+		{
+			AppendKb(outstr, "SwapTotal:", swap.xsu_total);
+			AppendKb(outstr, "SwapFree:", swap.xsu_avail);
+		}
+#else
+		outstr += "(not available on this platform)\n";
+#endif
+		return outstr;
+	}
+}
+#endif
+
 PrintExcuteInfo::PrintExcuteInfo( void )
 {
 #ifdef _DEBUG
@@ -56,38 +189,8 @@ void PrintExcuteInfo::PrintStart( const std::string server_name, const std::stri
 				 uts.sysname, uts.release, uts.version, uts.machine);
 	}
 
-	{
-		// CPU 정보 출력하기
-		std::string outstr = "\n-- CPU INFORMATION --\n";
-		outstr.reserve(10240);
-		std::string line;
-		std::ifstream finfo("/proc/cpuinfo");
-		while (std::getline(finfo, line))
-		{
-			if (line.find("processor", 0) != std::string::npos)
-			{
-				outstr += line + "\n";
-			}
-			else if (line.find("model name", 0) != std::string::npos)
-			{
-				outstr += line + "\n";
-			}
-		}
-		LOG_INFO(outstr.c_str());
-	}
-
-	{
-		// MEMORY 정보 출력하기
-		std::string outstr = "\n-- MEMORY INFORMATION --\n";
-		outstr.reserve(10240);
-		std::string line;
-		std::ifstream finfo("/proc/meminfo");
-		while (std::getline(finfo, line))
-		{
-			outstr += line + "\n";
-		}
-		LOG_INFO(outstr.c_str());
-	}
+	LOG_INFO("%s", GetCpuInfoString().c_str());
+	LOG_INFO("%s", GetMemInfoString().c_str());
 
 #endif
 

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/Console.h>
@@ -16,6 +16,15 @@
 
 #define TEST_GETTIME
 
+#ifdef USE_PORTABLE_C
+#include <chrono>
+// no rdtsc: a nanosecond clock stands in for the CPU clock counter (so the CPU measures as 1 GHz)
+static inline __int64 ReadTSC(void)
+{
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+#else
 // Read the Pentium TimeStampCounter
 static inline __int64 ReadTSC(void)
 {
@@ -27,6 +36,7 @@ static inline __int64 ReadTSC(void)
   }
   return mmRet;
 }
+#endif
 
 
 // link with Win-MultiMedia
@@ -39,6 +49,13 @@ TIME _CurrentTickTimer = 0.0f;
 
 // pointer to global timer object
 CTimer *_pTimer = NULL;
+
+// a Unix time kept in 32 bits as local time (see Base/Types.h)
+struct tm *LocalTime32(SLONG slTime)
+{
+  time_t t = (time_t)slTime;
+  return localtime(&t);
+}
 //! 
 //안태훈 수정 시작	//(Adjust Time Tick)(0.1)
 const TIME	CTimer::TickQuantum = TIME(1/20.0);		// 원래 20 ticks per second
@@ -117,7 +134,7 @@ void CTimer_TimerFunc_internal(void)
 
   } CTSTREAM_END;
 }
-void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, ULONG dwUser, ULONG dw1, ULONG dw2)
+void CALLBACK CTimer_TimerFunc(UINT uID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 {
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
@@ -135,6 +152,10 @@ static INDEX _aiTries[MAX_MEASURE_TRIES];
 // Get processor speed in Hertz
 static __int64 GetCPUSpeedHz(void)
 {
+#ifdef USE_PORTABLE_C
+  // ReadTSC counts nanoseconds
+  return 1000000000;
+#else
   // get the frequency of the 'high' precision timer
   __int64 llTimerFrequency;
   BOOL bPerformanceCounterPresent = QueryPerformanceFrequency((LARGE_INTEGER*)&llTimerFrequency);
@@ -216,7 +237,7 @@ static __int64 GetCPUSpeedHz(void)
     // use measured value
     return (__int64)slSpeedRead*1000000;
   }
-//#endif
+#endif  // USE_PORTABLE_C
 }
 
 
@@ -254,6 +275,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   
   uPeriod = TARGET_RESOLUTION;
 
+#ifdef _WIN32
   TIMECAPS tc;
 
   if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) != TIMERR_NOERROR)
@@ -263,6 +285,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
 
   uPeriod = min(max(tc.wPeriodMin, TARGET_RESOLUTION), tc.wPeriodMax);
   timeBeginPeriod(uPeriod);
+#endif
 
   //0216
   tm_tvStartTime = GetHighPrecisionTimer();
@@ -300,7 +323,9 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
 CTimer::~CTimer(void)
 {
   ASSERT(_pTimer == this);
+#ifdef _WIN32
 	timeEndPeriod(uPeriod);
+#endif
   // destroy timer
   if (tm_bInterrupt) {
     ASSERT(tm_TimerID!=NULL);

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 
 #include <Engine/Base/Console.h>
@@ -6,14 +6,17 @@
 #include <Engine/Graphics/Raster.h>
 #include <Engine/Graphics/ViewPort.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/StaticStackArray.cpp>
+#include <vector>
 
 
 extern INDEX gap_iOptimizeDepthReads;
 extern INDEX gap_bUseOcclusionCulling;
+#ifdef SE1_D3D
 extern COLOR UnpackColor_D3D( UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slColorSize);
+#endif // SE1_D3D
 
 static INDEX _iCheckIteration = 0;
 static CTimerValue _tvLast[8];  // 8 is max mirror recursion
@@ -30,16 +33,22 @@ struct DepthInfo {
   BOOL  di_bVisible;          // whether the point was visible
 };
 CStaticStackArray<DepthInfo> _adiDelayed;  // active delayed points
+#ifdef SE1_D3D
 // don't ask, these are for D3D
 CStaticStackArray<CTVERTEX> _avtxDelayed;  
 CStaticStackArray<COLOR>    _acolDelayed;  
+#endif // SE1_D3D
 
 // read depth buffer and update visibility flag of depth points
 static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirrorLevel,
                                          DepthInfo *pdi, const INDEX ctCount)
 {
   const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
   ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+  ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
   ASSERT( pdp!=NULL && ctCount>0);
   const CRaster *pra = pdp->dp_Raster;
 
@@ -102,7 +111,10 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
       // skip if not in required mirror level or was already checked in this iteration
       if( iMirrorLevel!=di.di_iMirrorLevel || _iCheckIteration!=di.di_iSwapLastRequest) continue;
       const PIX pixJ = pra->ra_Height-1 - di.di_pixJ; // OpenGL has Y-inversed buffer!
-      pglReadPixels( di.di_pixI, pixJ, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &fPointOoK);
+      // a pixel the engine counts is GFX_DrawableScale() pixels across on a Retina display
+      extern PIX GFX_DrawableScale(void);
+      const PIX pixScale = GFX_DrawableScale();
+      pglReadPixels( di.di_pixI*pixScale, pixJ*pixScale, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &fPointOoK);
       OGL_CHECKERROR;
       // it is visible if there is nothing nearer in z-buffer already
       di.di_bVisible = (di.di_fOoK<fPointOoK);
@@ -112,6 +124,41 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     return;
   }
 
+#ifdef SE1_GPUDEVICE
+  // Metal: the depths at all the points in one read (it waits for the GPU); rows from the top
+  if( GFX_IsGpuAPI(eAPI))
+  {
+    extern BOOL GPU_ReadFrameDepths( const int *piXY, INDEX ctPoints, FLOAT *pfDepths);
+    extern PIX GFX_DrawableScale(void);
+    _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+    const PIX pixScale = GFX_DrawableScale();
+    static std::vector<int> _aiXY;
+    static std::vector<FLOAT> _afDepths;
+    static std::vector<INDEX> _aiPoints;
+    _aiXY.clear();
+    _aiPoints.clear();
+    for( INDEX idi=0; idi<ctCount; idi++) {
+      const DepthInfo &di = pdi[idi];
+      // skip if not in required mirror level or was already checked in this iteration
+      if( iMirrorLevel!=di.di_iMirrorLevel || _iCheckIteration!=di.di_iSwapLastRequest) continue;
+      _aiXY.push_back( di.di_pixI*pixScale);
+      _aiXY.push_back( di.di_pixJ*pixScale);
+      _aiPoints.push_back( idi);
+    }
+    _afDepths.resize( _aiPoints.size());
+    if( !_aiPoints.empty() && GPU_ReadFrameDepths( &_aiXY[0], (INDEX)_aiPoints.size(), &_afDepths[0])) {
+      for( size_t i=0; i<_aiPoints.size(); i++) {
+        DepthInfo &di = pdi[_aiPoints[i]];
+        // it is visible if there is nothing nearer in z-buffer already
+        di.di_bVisible = (di.di_fOoK<_afDepths[i]);
+      }
+    }
+    _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+    return;
+  }
+#endif // SE1_GPUDEVICE
+
+#ifdef SE1_D3D
   // Direct3D
   if( eAPI==GAT_D3D)
   {
@@ -226,6 +273,7 @@ static void UpdateDepthPointsVisibility( const CDrawPort *pdp, const INDEX iMirr
     _sfStats.StopTimer(CStatForm::STI_GFXAPI);
     return;
   }
+#endif // SE1_D3D
 }
 
 

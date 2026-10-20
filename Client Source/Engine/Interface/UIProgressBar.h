@@ -107,11 +107,11 @@ public:
 								SetShowCompletePercent( _bShowPercentText );
 								SetShowDoingPercent( _bShowPercentText );
 							}
-	void					SetIdleText( CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
+	void					SetIdleText( const CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
 							{ m_strIdleText = strText; SetIdleTextColor(colText); SetShowIdlePercent(_bShowPercent);				}
-	void					SetCompleteText( CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
+	void					SetCompleteText( const CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
 							{ m_strCompleteText = strText; SetCompleteTextColor(colText); SetShowCompletePercent(_bShowPercent);	}
-	void					SetDoingText( CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
+	void					SetDoingText( const CTString &strText, BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF )
 							{ m_strDoingText = strText; SetDoingTextColor(colText); SetShowDoingPercent(_bShowPercent);				}
 	void					SetTextColor( COLOR colText )				{ m_colText			= colText;			}
 	void					SetIdleTextColor( COLOR colText )			{ m_colIdleText		= colText;			}
@@ -137,7 +137,7 @@ public:
 	inline	void			SetAutoComplete( BOOL _auto = TRUE )		{ m_bAutoProgressComplete = _auto;	}
 	inline	void			StartProgress()								{ m_enStatus = PR_STAT_DOING;	}
 	inline	void			IdleProgress()								{ m_enStatus = PR_STAT_IDLE;	}
-	inline	void			CompleteProgress();
+	void			CompleteProgress();
 
 	inline	void			SetProgressRange( SQUAD sqRower = 0, SQUAD sqUpper = 100 )	
 							{ ASSERT( sqRower < sqUpper ); m_sqLower = sqRower; m_sqUpper = sqUpper;	_setTextureGap();	}
@@ -219,7 +219,7 @@ public:
 				}
 	
 	void		setProgressTextColor( _tagProgressStatus state, COLOR colText ) { m_colProgressText[state] = colText; }
-	void		setProgressText( _tagProgressStatus state, CTString &strText,
+	void		setProgressText( _tagProgressStatus state, const CTString &strText,
 					BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF );
 
 	void SetCmdComplete(Command* pCmd)	{SAFE_DELETE(m_pCmdComplete); m_pCmdComplete = pCmd;}

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -204,7 +204,7 @@ void CUINpcHelp::SetViewContent( int iIndex )
 
 	CUIManager::getSingleton()->m_nHelpNpc_Index = index;
 } 
-void CUINpcHelp::MultiLineString(CTString &strExplan)
+void CUINpcHelp::MultiLineString(const CTString &strExplan)
 {
 	// If length of string is less than max char
 	int nLength = strExplan.Length();

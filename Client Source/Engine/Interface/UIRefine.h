@@ -66,7 +66,7 @@ protected:
 
 protected:
 	// Internal functions
-	void	AddString( CTString &strDesc );
+	void	AddString( const CTString &strDesc );
 
 	// Command functions
 	void	SetRefineItem();

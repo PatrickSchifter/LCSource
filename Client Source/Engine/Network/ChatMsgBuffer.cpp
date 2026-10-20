@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Network/ChatMsgBuffer.h>
 #include <Engine/Interface/UITextureManager.h>
 
@@ -26,7 +26,7 @@ ChatMsgBuffer::~ChatMsgBuffer()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void ChatMsgBuffer::AddString( CTString &strMessage )
+void ChatMsgBuffer::AddString( const CTString &strMessage )
 {
 	if( m_ubMsgCount >= CHATMSG_LINE_MAX )
 	{
@@ -108,7 +108,7 @@ void ChatMsgBuffer::AddString( CTString &strMessage )
 // Name : SetChatMsg()
 // Desc :
 // ----------------------------------------------------------------------------
-void ChatMsgBuffer::SetChatMsg(CTString &strMessage, COLOR colMessage /* = 0xC5C5C5FF */, BOOL bShowNPCTalk /* = FALSE  */)
+void ChatMsgBuffer::SetChatMsg(const CTString &strMessage, COLOR colMessage /* = 0xC5C5C5FF */, BOOL bShowNPCTalk /* = FALSE  */)
 {
 	m_ubMsgCount = 0;
 	m_colMsg = colMessage;

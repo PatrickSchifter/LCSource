@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIGuild.h>
 #include <algorithm>
@@ -843,7 +843,7 @@ void CUIGuild::PressOKBtn()
 			CTString	strMessage;
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_DESTROY );	
-			strMessage.PrintF( _S( 881, "정말로 [%s] 길드를 해산 하시겠습니까?" ), _pNetwork->MyCharacterInfo.strGuildName );		
+			strMessage.PrintF( _S( 881, "정말로 [%s] 길드를 해산 하시겠습니까?" ), (const char*)_pNetwork->MyCharacterInfo.strGuildName );		
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 		}
@@ -992,7 +992,7 @@ void CUIGuild::JoinGuild( LONG lGuildIndex, LONG lChaIndex, const CTString& strN
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_JOIN );	
-	strMessage.PrintF( _S( 884, "[%s] 길드에 가입 신청을 하시겠습니까?" ), strName );		
+	strMessage.PrintF( _S( 884, "[%s] 길드에 가입 신청을 하시겠습니까?" ), (const char*)strName );		
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -1017,7 +1017,7 @@ void CUIGuild::QuitGuild( )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_QUIT );	
-	strMessage.PrintF( _S( 885, "[%s] 길드를 탈퇴 하시겠습니까?" ), _pNetwork->MyCharacterInfo.strGuildName );		
+	strMessage.PrintF( _S( 885, "[%s] 길드를 탈퇴 하시겠습니까?" ), (const char*)_pNetwork->MyCharacterInfo.strGuildName );		
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -1057,7 +1057,7 @@ void CUIGuild::ChangeBoss()
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_CHANGE_BOSS );	
-	strMessage.PrintF( _S( 886, "[%s] 에게 길드장을 이임 하시겠습니까?" ), TempMember.strMemberName );		
+	strMessage.PrintF( _S( 886, "[%s] 에게 길드장을 이임 하시겠습니까?" ), (const char*)TempMember.strMemberName );		
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -1097,7 +1097,7 @@ void CUIGuild::AddViceBoss()
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_ADD_VICE_BOSS );	
-		strMessage.PrintF( _S( 887, "[%s]를 길드부장으로 임명 하시겠습니까?" ), TempMember.strMemberName );		
+		strMessage.PrintF( _S( 887, "[%s]를 길드부장으로 임명 하시겠습니까?" ), (const char*)TempMember.strMemberName );		
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );		
 	}
@@ -1137,7 +1137,7 @@ void CUIGuild::DelViceBoss()
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_DEL_VICE_BOSS );	
-		strMessage.PrintF( _S( 888, "[%s]를 길드부장에서 해임 하시겠습니까?" ), TempMember.strMemberName );		
+		strMessage.PrintF( _S( 888, "[%s]를 길드부장에서 해임 하시겠습니까?" ), (const char*)TempMember.strMemberName );		
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );
 	}
@@ -1178,7 +1178,7 @@ void CUIGuild::MemberFire()
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_KICK );	
-		strMessage.PrintF( _S( 889, "[%s]를 퇴출 하시겠습니까?" ), TempMember.strMemberName );		
+		strMessage.PrintF( _S( 889, "[%s]를 퇴출 하시겠습니까?" ), (const char*)TempMember.strMemberName );		
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );		
 	}
@@ -1205,7 +1205,7 @@ void CUIGuild::ApplicantAccept( LONG lIndex )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILD_APPLICANT_JOIN );	
-	strMessage.PrintF( _S( 890, "[%s] 님께서 가입 신청을 하셨습니다. 수락하시겠습니까?" ),  strMemberName );		
+	strMessage.PrintF( _S( 890, "[%s] 님께서 가입 신청을 하셨습니다. 수락하시겠습니까?" ),  (const char*)strMemberName );		
 	MsgBoxInfo.AddString( strMessage );
 	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
 }
@@ -1622,7 +1622,7 @@ void CUIGuild::GetGuildDesc( BOOL bShow )
 // Name : AddGuildDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIGuild::AddGuildDescString( CTString &strDesc, COLOR colDesc )
+void CUIGuild::AddGuildDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();
@@ -2010,7 +2010,7 @@ void CUIGuild::Render()
 		break;
 	case GUILD_MANAGER:
 		//strTitle = _S( 918, "길드 관리" );		
-		strTitle.PrintF( _S( 919, "%s 길드 Lv.%d" ), _pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildLevel ); 
+		strTitle.PrintF( _S( 919, "%s 길드 Lv.%d" ), (const char*)_pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildLevel ); 
 		break;
 	}
 
@@ -2061,7 +2061,7 @@ void CUIGuild::Render()
 				break;
 			}
 
-			strText.PrintF( "%s %s", _pNetwork->MyCharacterInfo.name, strLevel );
+			strText.PrintF( "%s %s", (const char*)_pNetwork->MyCharacterInfo.name, (const char*)strLevel );
 			pDrawPort->PutTextExCX( strText, m_nPosX + (GUILD_WIDTH / 2),
 											m_nPosY + 46, 0xFFFFFFFF );
 		}
@@ -3121,7 +3121,7 @@ void CUIGuild::MsgBoxLCommand( int nCommandCode, int nResult )
 					CTString	strMessage;
 					CUIMsgBox_Info	MsgBoxInfo;
 					MsgBoxInfo.SetMsgBoxInfo( _S( 865, "길드" ), UMBS_OKCANCEL, UI_GUILD, MSGCMD_GUILDMASTER_KICK_REQUEST );	
-					strMessage.PrintF( _S(5615, "[%s] 길드의 길드장 해임 심사를 신청 하시겠습니까?"), _pNetwork->MyCharacterInfo.strGuildName );
+					strMessage.PrintF( _S(5615, "[%s] 길드의 길드장 해임 심사를 신청 하시겠습니까?"), (const char*)_pNetwork->MyCharacterInfo.strGuildName );
 					MsgBoxInfo.AddString( strMessage );
 					CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
 				}
@@ -4678,7 +4678,7 @@ WMSG_RESULT	CUIGuild::MouseMessageNewBoard( MSG *pMsg )
 							// 답글 페이지로
 							pWEB->m_nCurBoardType = UWT_REPLY;
 							CTString strTemp;
-							strTemp.PrintF("Re: %s", pWEB->m_strReadSubject);
+							strTemp.PrintF("Re: %s", (const char*)pWEB->m_strReadSubject);
 							m_ebWriteSubject.ResetString();
 							m_ebWriteSubject.InsertChars(0, strTemp.str_String);
 							//멀티에디터에 내용 삽입. 내용이 아래와 같이 수정됨.
@@ -7130,7 +7130,7 @@ void CUIGuild::RenderNewGuildSkillExtend(int nX,int nY)
 		tLv = SkillData.GetCurLevel();
 		nMaxLevel = SkillData.GetMaxLevel();
 		strSkillName = SkillData.GetName();
-		tStr.PrintF( "%s Lv%d/Lv%d", strSkillName, tLv, nMaxLevel );
+		tStr.PrintF( "%s Lv%d/Lv%d", (const char*)strSkillName, tLv, nMaxLevel );
 		pDrawPort->PutTextEx( tStr, nX + 91 , nY +nY2+80,C_lYELLOW|CT_AMASK);
 		nY2 += GUILD_SKILL_SLOT_OFFSETY;
 	}

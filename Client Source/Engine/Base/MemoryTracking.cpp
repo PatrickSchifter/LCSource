@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -87,8 +87,8 @@ public:
 #define TYPE CMemBlock
 #define CHashTableSlot_TYPE CHashTableSlot_CMemBlock
 #define CHashTable_TYPE     CHashTable_CMemBlock
-#include <Engine\Templates\HashTableTemplate.h>
-#include <Engine\Templates\HashTableTemplate.cpp>
+#include <Engine/Templates/HashTableTemplate.h>
+#include <Engine/Templates/HashTableTemplate.cpp>
 #undef VALUE_TYPE
 #undef TYPE
 #undef CHashTableSlot_TYPE

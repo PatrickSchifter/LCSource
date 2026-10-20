@@ -2,7 +2,7 @@
 #define _LEVELUP_MSG_H_
 
 #include <Engine/Help/LoadLod.h>
-#include <common/header/def_base.h>
+#include <Common/header/def_base.h>
 
 struct stLevelUpMsgData : public LodLoader<stLevelUpMsgData>
 {

@@ -2,6 +2,8 @@
 
 #include "LCHttps.h"
 #include "logsystem.h"
+#include <unistd.h>
+#include <openssl/x509v3.h>
 
 CURLcode CLCHttps::sslctxfun(CURL *curl, SSL_CTX *sslctx, void *parm)
 {
@@ -12,7 +14,8 @@ CURLcode CLCHttps::sslctxfun(CURL *curl, SSL_CTX *sslctx, void *parm)
 int CLCHttps::verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
 {
 	X509*	cert = X509_STORE_CTX_get_current_cert(x509_ctx);
-	if( cert->valid == 0 || cert->ex_xkusage == 0 )
+	uint32_t xkusage = X509_get_extended_key_usage(cert);
+	if( xkusage == 0 || xkusage == UINT32_MAX )
 		return 1;
 
 	int j;

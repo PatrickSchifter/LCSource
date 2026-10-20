@@ -1,5 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
+#ifndef LC_SOUND_SDL
 #include "initguid.h"
+#endif
 
 #include <Engine/Sound/SoundLibrary.h>
 #include <Engine/Base/Translation.h>
@@ -25,13 +27,18 @@
 
 #include <Engine/World/WorldSettings.h>
 
-template CStaticArray<CSoundListener>;
+template class CStaticArray<CSoundListener>;
 
 
-
+#ifdef PLATFORM_WIN32
 	// on PC, we need GUIDs and multi-media library
 	#pragma comment(lib, "winmm.lib")
-	#include <Engine/Sound/EAX.h>
+#endif
+
+#ifdef LC_SOUND_SDL
+	#include <SDL3/SDL.h>
+#else
+	#include <Engine/Sound/eax.h>
 
 	// environment types for EAX
 	static INDEX aiEnvTypes[] = {
@@ -53,6 +60,7 @@ template CStaticArray<CSoundListener>;
 		EAX_ENVIRONMENT_CONCERTHALL,
 		EAX_ENVIRONMENT_UNDERWATER,
 	};
+#endif
 
 
 
@@ -90,10 +98,14 @@ static FLOAT snd_tmOpenFailDelay = 0.5f;
 extern INDEX snd_iEmulationType = 0;
 extern INDEX snd_bReportStereoWaves = FALSE;
 
+#ifndef LC_SOUND_SDL
 extern HWND  _hwndMain; // global handle for application window
 static HWND  _hwndCurrent = NULL;
 static HINSTANCE _hInstDS = NULL;
 static INDEX _iWriteOffset = 0;
+#else
+static BOOL _bSDLAudio = FALSE;  // SDL audio subsystem started (in Init())
+#endif
 static INDEX _iLastEnvType = 1234;
 static FLOAT _fLastPanning = 1234;
 static INDEX _bLastHeadphones = 1234;
@@ -130,16 +142,22 @@ CSoundLibrary::CSoundLibrary(void)
 	sl_sfFormat = SF_NONE;
 
 	// clear data
+#ifndef LC_SOUND_SDL
 	_hInstDS = NULL;
 	sl_pDS   = NULL;
 	sl_pdsbStream = NULL;
 	sl_pds3dListener = NULL;
+#else
+	sl_pasStream = NULL;
+#endif
 	sl_ulFlags = NONE;
 	sl_tmMuteUntil = 0;
+#ifndef LC_SOUND_SDL
 	sl_hwoWaveOut = NULL;
 	sl_pdsbPrimary = NULL;
 	sl_pKSProperty = NULL; 
 	sl_pubBuffersMemory = NULL;
+#endif
 
 	// reset buffer ptrs
 	sl_pswMixerBuffer  = NULL;
@@ -147,9 +165,11 @@ CSoundLibrary::CSoundLibrary(void)
 	for( INDEX iPB=0; iPB<SND_MAXBUFFERS; iPB++) {
 		sl_appbPlaying[iPB].pb_pso = NULL;
 		sl_appbPlaying[iPB].pb_psd = NULL;
+#ifndef LC_SOUND_SDL
 		sl_appbPlaying[iPB].pb_pdsb   = NULL;
 		sl_appbPlaying[iPB].pb_pdsb3d = NULL;
 		sl_appbPlaying[iPB].pb_pksps = NULL;
+#endif
 	}
 }
 
@@ -163,6 +183,12 @@ CSoundLibrary::~CSoundLibrary(void)
 	Clear();
 	// clear any installed sound decoders
 	CSoundDecoder::EndPlugins();
+#ifdef LC_SOUND_SDL
+	if( _bSDLAudio) {
+		SDL_QuitSubSystem( SDL_INIT_AUDIO);
+		_bSDLAudio = FALSE;
+	}
+#endif
 }
 
 
@@ -198,6 +224,7 @@ static void SndPostFunc(void *pvVar)
  *  some internal functions
  */
 
+#ifndef LC_SOUND_SDL
 
 // DirectSound shutdown procedure
 void CSoundLibrary::ShutDown_dsound(void)
@@ -287,6 +314,38 @@ void CSoundLibrary::ShutDown_waveout(void)
 	}
 }
 
+#else  // LC_SOUND_SDL
+
+/*
+ *  SDL3 output. The engine mixes in software as with DirectSound's streaming buffer
+ *  (snd_iInterface=1): MixSounds() asks how much room there is ahead of what is playing,
+ *  mixes that much and hands it over. Here the output is an SDL audio stream that the device
+ *  drains on its own thread, and the room is what the stream lacks to hold snd_tmMixAhead
+ *  seconds, so the latency is the one DirectSound's buffer gives. If the game stalls for
+ *  longer than that, the device plays silence (DirectSound would repeat the old buffer).
+ */
+
+// SDL shutdown procedure
+void CSoundLibrary::ShutDown_sdl(void)
+{
+	// close the stream (and the device that was opened with it)
+	if( sl_pasStream!=NULL) {
+		SDL_DestroyAudioStream( sl_pasStream);
+		sl_pasStream = NULL;
+	}
+	// free memory
+	if( sl_pswMixerBuffer!=NULL) {
+		FreeMemory( sl_pswMixerBuffer);
+		sl_pswMixerBuffer = NULL;
+	}
+	if( sl_pswDecodeBuffer!=NULL) {
+		FreeMemory( sl_pswDecodeBuffer);
+		sl_pswDecodeBuffer = NULL;
+	}
+}
+
+#endif // LC_SOUND_SDL
+
 
 
 /*
@@ -334,6 +393,8 @@ static void SetLibraryFormat( CSoundLibrary &sl)
 	}
 }
 
+
+#ifndef LC_SOUND_SDL
 
 // common fail for direct-sound
 BOOL CSoundLibrary::DSFail( char *strError) 
@@ -682,6 +743,82 @@ BOOL CSoundLibrary::StartUp_waveout( BOOL bReport/*=TRUE*/)
 	return TRUE;
 }
 
+#else  // LC_SOUND_SDL
+
+// init and set SDL audio format (internal)
+
+BOOL CSoundLibrary::StartUp_sdl( BOOL bReport/*=TRUE*/)
+{
+	// software mixer only
+	sl_ulFlags = NONE;
+	ASSERT( sl_pasStream==NULL);
+	WAVEFORMATEX &wfe = sl_wfeFormat;  // shortcut
+	if( bReport) CPrintF(TRANS("SDL audio initialization ...\n"));
+	if( !_bSDLAudio) {
+		CPrintF( TRANS("  ! SDL audio error: no audio subsystem.\n"));
+		return FALSE;
+	}
+
+	// the default device, or one from the list that Init() printed
+	SDL_AudioDeviceID idDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+	CTString strDevice = TRANS("default device");
+	if( snd_iDevice>=0) {
+		int ctDevices = 0;
+		SDL_AudioDeviceID *aidDevices = SDL_GetAudioPlaybackDevices( &ctDevices);
+		if( aidDevices!=NULL && snd_iDevice<ctDevices) {
+			idDevice = aidDevices[snd_iDevice];
+			strDevice.PrintF( TRANS("device %d"), snd_iDevice);
+		}
+		SDL_free( aidDevices);
+	}
+
+	// open the device with a stream in the mixer's format (SDL converts if the device differs)
+	ASSERT( wfe.wFormatTag==WAVE_FORMAT_PCM && wfe.wBitsPerSample==16 && wfe.nChannels==2);
+	SDL_AudioSpec spec;
+	spec.format   = SDL_AUDIO_S16;
+	spec.channels = wfe.nChannels;
+	spec.freq     = wfe.nSamplesPerSec;
+	sl_pasStream = SDL_OpenAudioDeviceStream( idDevice, &spec, NULL, NULL);
+	if( sl_pasStream==NULL) {
+		CPrintF( TRANS("  ! SDL audio error: Cannot open device: %s\n"), SDL_GetError());
+		return FALSE;
+	}
+
+	// mixer buffer holds the whole mix-ahead, as the DirectSound streaming buffer
+	// (decoder buffer always works at 44khz)
+	const SLONG slBufferSize = (SLONG)(ceil(snd_tmMixAhead*wfe.nSamplesPerSec) *16/8 *2);
+	sl_slMixerBufferSize  = slBufferSize;
+	sl_slDecodeBufferSize = slBufferSize *44100.0f/wfe.nSamplesPerSec +32;
+	// allocate mixing and decoding buffers
+	sl_pswMixerBuffer  = (SWORD*)AllocMemory( sl_slMixerBufferSize);
+	sl_pswDecodeBuffer = (SWORD*)AllocMemory( sl_slDecodeBufferSize+4); // (+4 because of linear interpolation of last samples)
+
+	// devices opened with a stream start paused
+	if( !SDL_ResumeAudioStreamDevice( sl_pasStream)) {
+		CPrintF( TRANS("  ! SDL audio error: Cannot start device: %s\n"), SDL_GetError());
+		ShutDown_sdl();
+		return FALSE;
+	}
+
+	// report success
+	if( bReport) {
+		SDL_AudioSpec specDevice;
+		int ctDeviceFrames = 0;
+		const SDL_AudioDeviceID idOpened = SDL_GetAudioStreamDevice( sl_pasStream);
+		if( !SDL_GetAudioDeviceFormat( idOpened, &specDevice, &ctDeviceFrames)) specDevice.freq = 0;
+		const char *strName = SDL_GetAudioDeviceName( idOpened);
+		CPrintF( TRANS("  opened device: %s (%s)\n"), strName!=NULL ? strName : "?", SDL_GetCurrentAudioDriver());
+		CPrintF( TRANS("  %dHz, %dbit, %s, mix-ahead: %gs\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, (const char*)strDevice, snd_tmMixAhead);
+		CPrintF( TRANS("  device: %dHz, %d channels, %d sample frames per buffer\n"), specDevice.freq, specDevice.channels, ctDeviceFrames);
+		CPrintF( TRANS("  mixer buffer size:  %d KB\n"), sl_slMixerBufferSize /1024);
+		CPrintF( TRANS("  decode buffer size: %d KB\n"), sl_slDecodeBufferSize/1024);
+	}
+	// done
+	return TRUE;
+}
+
+#endif // LC_SOUND_SDL
+
 
 
 
@@ -710,6 +847,7 @@ void CSoundLibrary::SetFormat_internal( CSoundLibrary::SoundFormat sfNew, BOOL b
 	snd_tmMixAhead = Clamp( snd_tmMixAhead, 0.1f, 0.4f);
 	snd_iInterface = Clamp( snd_iInterface, 0L, 3L);
 
+#ifndef LC_SOUND_SDL
 	if( snd_iInterface>0) {
 		// if wanted, 1st try DirectSound
 		bStarted = StartUp_dsound(bReport);  
@@ -720,6 +858,10 @@ void CSoundLibrary::SetFormat_internal( CSoundLibrary::SoundFormat sfNew, BOOL b
 		bStarted = StartUp_waveout(bReport); 
 		if( bStarted) snd_iInterface = 0; // mark that DirectSound didn't make it
 	}
+#else
+	// SDL with the software mixer, whatever the interface asked for
+	bStarted = StartUp_sdl(bReport);
+#endif
 
 	// if didn't make it by now
 	if( bReport) CPrintF("\n");
@@ -770,12 +912,21 @@ void CSoundLibrary::Init(void)
 	// print header
 	CPrintF(TRANS("Initializing sound...\n"));
 
+#ifdef LC_SOUND_SDL
+	// SDL's audio subsystem (counted, so independent of the platform layer's SDL_Init)
+	if( !_bSDLAudio) {
+		_bSDLAudio = SDL_InitSubSystem( SDL_INIT_AUDIO);
+		if( !_bSDLAudio) CPrintF( TRANS("  ! SDL audio error: %s\n"), SDL_GetError());
+	}
+#endif
+
 	// initialize sound library
 	SetFormat(SF_NONE, FALSE);     
 
 	// initialize any installed sound decoders
 	CSoundDecoder::InitPlugins();
 
+#ifndef LC_SOUND_SDL
 	// get number of devices
 	INDEX ctDevices = waveOutGetNumDevs();
 	CPrintF(TRANS("  Detected devices: %d\n"), ctDevices);
@@ -801,12 +952,43 @@ void CSoundLibrary::Init(void)
 		CPrintF(TRANS("      form: 0x%08x, ch: %d, support: 0x%08x\n"), 
 			woc.dwFormats, woc.wChannels, woc.dwSupport);
 	}
+#else
+	// get playback devices (snd_iDevice is an index in this list)
+	int ctDevices = 0;
+	SDL_AudioDeviceID *aidDevices = NULL;
+	if( _bSDLAudio) {
+		CPrintF(TRANS("  SDL audio driver: %s\n"), SDL_GetCurrentAudioDriver());
+		aidDevices = SDL_GetAudioPlaybackDevices( &ctDevices);
+		if( aidDevices==NULL) ctDevices = 0;
+	}
+	CPrintF(TRANS("  Detected devices: %d\n"), ctDevices);
+	sl_ctWaveDevices = ctDevices;
+
+	// for ErrorLog.txt (as on Windows: the last device listed)
+	extern CTString	_strSoundDriver;
+
+	// for each device
+	for(INDEX iDevice=0; iDevice<ctDevices; iDevice++) {
+		// get description
+		const char *strName = SDL_GetAudioDeviceName( aidDevices[iDevice]);
+		if( strName==NULL) strName = "?";
+		CPrintF(TRANS("    device %d: %s\n"), iDevice, strName);
+		_strSoundDriver = strName;
+		SDL_AudioSpec spec;
+		int ctFrames = 0;
+		if( SDL_GetAudioDeviceFormat( aidDevices[iDevice], &spec, &ctFrames)) {
+			CPrintF(TRANS("      form: %dHz, ch: %d, buffer: %d sample frames\n"), spec.freq, spec.channels, ctFrames);
+		}
+	}
+	SDL_free( aidDevices);
+#endif
 	// done
 	CPrintF("\n");
 }
 
 
 
+#ifndef LC_SOUND_SDL
 // stop and/or release sound buffer
 static void StopReleaseSoundBuffer( PlayingBuffer &pb, const BOOL bForceRelease)
 {
@@ -833,6 +1015,7 @@ static void StopReleaseSoundBuffer( PlayingBuffer &pb, const BOOL bForceRelease)
 	pb.pb_pso = NULL;
 	pb.pb_psd = NULL;
 }
+#endif
 
 
 /*
@@ -854,13 +1037,21 @@ void CSoundLibrary::ClearLibrary(void)
 		// skip unused or already freed
 		PlayingBuffer &pb = sl_appbPlaying[iPB];
 		ASSERT( pb.pb_pso==NULL && pb.pb_psd==NULL);
+#ifndef LC_SOUND_SDL
 		if( pb.pb_pdsb==NULL) ReleasePlayingBuffer( iPB, TRUE);
+#else
+		ReleasePlayingBuffer( iPB, TRUE);
+#endif
 	}
 
 	// shut down direct sound buffers (if needed)
 	sl_tmMuteUntil = 0;
+#ifndef LC_SOUND_SDL
 	ShutDown_dsound();
 	ShutDown_waveout();
+#else
+	ShutDown_sdl();
+#endif
 
 	// free mixer and decoder memory buffers
 	if( sl_pswMixerBuffer!=NULL) {
@@ -889,10 +1080,12 @@ void CSoundLibrary::SetEnvironment( enum SndEnvFX eEnvFX)
 
 	// set new environment
 	if( !(sl_ulFlags&SLF_HASEFX)) return;
+#ifndef LC_SOUND_SDL
 	INDEX iEnvEAX = aiEnvTypes[iEnvNo];
 	HRESULT hr = sl_pKSProperty->Set( DSPROPSETID_EAX_ListenerProperties,
 		DSPROPERTY_EAXLISTENER_ENVIRONMENT|DSPROPERTY_EAXLISTENER_DEFERRED, NULL, 0, &iEnvEAX, sizeof(DWORD));
 	ASSERT( hr==DS_OK);
+#endif
 }
 
 
@@ -908,6 +1101,7 @@ void CSoundLibrary::Mute( const TIME tmSeconds/*=0*/)
 	sl_tmMuteUntil = tvNow.GetSeconds() + tmSeconds;
 	if( sl_ulFlags & SLF_USINGWAVEOUT) return;   // waveout will shut-up by itself
 
+#ifndef LC_SOUND_SDL
 	// release all HW playing buffers 
 	if( sl_ulFlags & SLF_USINGDS3D) {
 		FOREACHINLIST( CSoundObject, so_Node, sl_lhPendingSounds, itso) {
@@ -928,6 +1122,10 @@ void CSoundLibrary::Mute( const TIME tmSeconds/*=0*/)
 			sl_pdsbStream->Unlock( lpData, dwSize, NULL, 0);
 		}
 	}
+#else
+	// drop what is queued for playing
+	if( sl_pasStream!=NULL) SDL_ClearAudioStream( sl_pasStream);
+#endif
 }
 
 
@@ -939,13 +1137,16 @@ void CSoundLibrary::Flush(void)
 	// stop direct sound buffers, but skip if there's no more sound library (waveout will shut-up by itself)
 	sl_tmMuteUntil = 0;
 	if( this==NULL || (sl_ulFlags&SLF_USINGWAVEOUT)) return;
+#ifndef LC_SOUND_SDL
 	DWORD dwStatus;
 	HRESULT hr;
+#endif
 
 	// stop sounds
 	{FORDELETELIST( CSoundObject, so_Node, sl_lhPendingSounds, itso) {
 		itso->Stop();
 	}}
+#ifndef LC_SOUND_SDL
 	// stop 'streaming' buffer(s)
 	if( sl_pdsbStream!=NULL) {
 		hr = sl_pdsbStream->Stop();
@@ -960,6 +1161,10 @@ void CSoundLibrary::Flush(void)
 		do sl_pdsbPrimary->GetStatus(&dwStatus);
 		while( dwStatus&DSBSTATUS_PLAYING);
 	}
+#else
+	// drop what is queued for playing (the device keeps running, on silence)
+	if( sl_pasStream!=NULL) SDL_ClearAudioStream( sl_pasStream);
+#endif
 }
 
 
@@ -1067,12 +1272,14 @@ void CSoundLibrary::UpdateSounds(void)
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 	_sfStats.StartTimer(CStatForm::STI_SOUNDUPDATE);
 
+#ifndef LC_SOUND_SDL
 	// see if we have valid handle for direct sound and eventually reinit sound
 	if( !(sl_ulFlags&SLF_USINGWAVEOUT) && _hwndCurrent!=_hwndMain) {
 		_hwndCurrent = _hwndMain;
 		sl_pDS->SetCooperativeLevel( _hwndCurrent, DSSCL_PRIORITY);
 		SetFormat( sl_sfFormat);
 	}
+#endif
 
 	// clamp master volumes
 	snd_fSoundVolume = Clamp( snd_fSoundVolume, 0.0f, 1.0f);
@@ -1126,11 +1333,13 @@ void CSoundLibrary::UpdateSounds(void)
 	// clamp allowed buffer counts
 	snd_iMaxVoices = Clamp( snd_iMaxVoices, SND_MINBUFFERS, SND_MAXBUFFERS);
 
+#ifndef LC_SOUND_SDL
 	// make sure that main HW buffers are playing
 	if( !(sl_ulFlags&SLF_USINGWAVEOUT)) DSPlayMainBuffers();
+#endif
 
 	// mixin the sounds via SW mixer (20 times per second should be enough)
-	static CTimerValue tvLast = 0I64;
+	static CTimerValue tvLast = ((__int64)0);
 	const TIME tmElapsed = (tvNow-tvLast).GetSeconds();
 	if( tmElapsed>0.05f) {
 	//if( tmElapsed>0.2f) {		// tested by seo
@@ -1140,6 +1349,7 @@ void CSoundLibrary::UpdateSounds(void)
 	 _sfStats.StartTimer(CStatForm::STI_SOUNDUPDATE);
 	}
 
+#ifndef LC_SOUND_SDL
 	// if using direct sound hardware
 	if( sl_ulFlags & SLF_USINGDS3D)
 	{
@@ -1147,6 +1357,7 @@ void CSoundLibrary::UpdateSounds(void)
 		PlayBuffers();
 		sl_pds3dListener->CommitDeferredSettings();
 	}
+#endif
 
 	// remove all listeners
 	{FORDELETELIST( CSoundListener, sli_lnInActiveListeners, sl_lhActiveListeners, itsli) {
@@ -1166,6 +1377,8 @@ void CSoundLibrary::UpdateSounds(void)
 
 
 // copying of mixer buffer to sound buffer(s)
+
+#ifndef LC_SOUND_SDL
 
 static LPVOID _lpData, _lpData2;
 static DWORD  _dwSize, _dwSize2;
@@ -1255,6 +1468,34 @@ SLONG CSoundLibrary::PrepareSoundBuffer_waveout(void)
 
 }
 
+#else  // LC_SOUND_SDL
+
+void CSoundLibrary::CopyMixerBuffer_sdl( SLONG slMixedSize)
+{
+	// the stream keeps its own copy
+	if( !SDL_PutAudioStreamData( sl_pasStream, sl_pswMixerBuffer, slMixedSize)) {
+		ASSERTALWAYS( "SDL_PutAudioStreamData failed");
+	}
+}
+
+
+// finds room in the stream to copy in next crop of samples
+SLONG CSoundLibrary::PrepareSoundBuffer_sdl(void)
+{
+	// what is missing for the stream to hold the whole mixer buffer (mix-ahead) again
+	ASSERT( sl_pasStream!=NULL);
+	const int iQueued = SDL_GetAudioStreamQueued( sl_pasStream);
+	if( iQueued<0) return 0;
+	SLONG slDataToMix = sl_slMixerBufferSize - iQueued;
+	if( slDataToMix<=0) return 0;
+	// whole stereo 16-bit samples
+	slDataToMix &= ~3;
+	ASSERT( slDataToMix <= sl_slMixerBufferSize);
+	return slDataToMix;
+}
+
+#endif // LC_SOUND_SDL
+
 	
 // listen from this listener this frame
 void CSoundLibrary::Listen( CSoundListener &sli)
@@ -1286,6 +1527,7 @@ void CSoundLibrary::RemoveFromPendingList( CSoundObject &so, const BOOL bRelease
 }
 
 
+#ifndef LC_SOUND_SDL
 // request a playing buffer
 INDEX CSoundLibrary::CommitPlayingBuffer( CSoundObject &so, BOOL &bWasUsed)
 {
@@ -1380,6 +1622,7 @@ INDEX CSoundLibrary::CommitPlayingBuffer( CSoundObject &so, BOOL &bWasUsed)
 	pb.pb_psd = &sd;
 	return iBuffer;
 }
+#endif
 
 
 // remove references to sound object and data from playing buffer
@@ -1388,7 +1631,9 @@ void CSoundLibrary::ReleasePlayingBuffer( const INDEX iBuffer, const BOOL bImmed
 	ASSERT( iBuffer>=0 && iBuffer<SND_MAXBUFFERS);
 	sl_appbPlaying[iBuffer].pb_pso = NULL;
 	sl_appbPlaying[iBuffer].pb_psd = NULL;
+#ifndef LC_SOUND_SDL
 	if( bImmediately) StopReleaseSoundBuffer( sl_appbPlaying[iBuffer], TRUE);
+#endif
 }
 
 
@@ -1403,6 +1648,7 @@ void CSoundLibrary::MixSounds(void)
 	SLONG slDataToMix;
 	const BOOL bUsingDS3D    = sl_ulFlags & SLF_USINGDS3D;
 	const BOOL bUsingWaveOut = sl_ulFlags & SLF_USINGWAVEOUT;
+#ifndef LC_SOUND_SDL
 	if( bUsingWaveOut) {
 		// using wave out 
 		slDataToMix = PrepareSoundBuffer_waveout();
@@ -1410,6 +1656,10 @@ void CSoundLibrary::MixSounds(void)
 		// using direct sound
 		slDataToMix = PrepareSoundBuffer_dsound();
 	}
+#else
+	// using SDL
+	slDataToMix = PrepareSoundBuffer_sdl();
+#endif
 
 	// skip mixing if all sound buffers are still busy playing
 	ASSERT( slDataToMix>=0);
@@ -1455,6 +1705,7 @@ void CSoundLibrary::MixSounds(void)
 	}}
 
 	// copy mixer buffer to playing buffer
+#ifndef LC_SOUND_SDL
 	if( bUsingWaveOut) {
 		// using wave out 
 		CopyMixerBuffer_waveout();
@@ -1462,6 +1713,10 @@ void CSoundLibrary::MixSounds(void)
 		// using direct sound
 		CopyMixerBuffer_dsound(slDataToMix);
 	}
+#else
+	// using SDL
+	CopyMixerBuffer_sdl(slDataToMix);
+#endif
 
 	// all done
 	_sfStats.StopTimer(CStatForm::STI_SOUNDMIXING);
@@ -1469,6 +1724,7 @@ void CSoundLibrary::MixSounds(void)
 
 
 
+#ifndef LC_SOUND_SDL
 // update dsound buffers (if using HW mixer)
 void CSoundLibrary::PlayBuffers(void)
 {
@@ -1646,3 +1902,4 @@ void CSoundLibrary::PlayBuffers(void)
 		//_strDebug += "\n";
 	}}
 }
+#endif // LC_SOUND_SDL

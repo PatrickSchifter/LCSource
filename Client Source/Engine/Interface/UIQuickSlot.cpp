@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -289,7 +289,7 @@ void CUIQuickSlot::ShowExSlotInfo( BOOL bShowInfo, int nSlotIndex )
 				m_btnPrevSlot.GetAbsPos( nInfoPosX, nInfoPosY );
 				int PrevPage = m_nCurrentPage>0 ? m_nCurrentPage : 3 ;
 				CTString str;
-				str.PrintF("%d %s(Alt+%d)", PrevPage, _S(3076, "페이지"), PrevPage);
+				str.PrintF("%d %s(Alt+%d)", PrevPage, (const char*)_S(3076, "페이지"), PrevPage);
 				m_strSlotInfo =str;
 				
 			}
@@ -300,7 +300,7 @@ void CUIQuickSlot::ShowExSlotInfo( BOOL bShowInfo, int nSlotIndex )
 				m_btnNextSlot.GetAbsPos( nInfoPosX, nInfoPosY );
 				int NextPage = (m_nCurrentPage+2)<=3 ? m_nCurrentPage+2 : 1;
 				CTString str;
-				str.PrintF("%d %s(Alt+%d)", NextPage, _S(3076, "페이지"), NextPage);
+				str.PrintF("%d %s(Alt+%d)", NextPage, (const char*)_S(3076, "페이지"), NextPage);
 				m_strSlotInfo =str;
 				
 			}

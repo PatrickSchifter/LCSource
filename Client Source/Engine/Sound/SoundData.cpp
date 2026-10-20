@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Sound/SoundData.h>
 
@@ -13,10 +13,6 @@
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <Engine/Base/MemoryTracking.h>
 
-#ifdef KALYDO
-#include <Kalydo/KRFReadLib/Include/KRFReadLib.h>
-CTString CSoundData::strDefaultSoundPath = "data\\defaults\\default.wav";
-#endif
 
 #define SD_ENCHEADERSIZE 16*1024 // header size for sound decoder
 
@@ -24,7 +20,9 @@ CTString CSoundData::strDefaultSoundPath = "data\\defaults\\default.wav";
 CSoundData::CSoundData()
 {
   sd_pswSamples = NULL;
+#ifndef LC_SOUND_SDL
   sd_pdsBuffer  = NULL;
+#endif
   sd_pubDecoderHeader = NULL;
   sd_slHeaderSize = 0;
   sd_ctSamples = 0;      
@@ -44,8 +42,10 @@ CSoundData::~CSoundData()
 // Free Buffer (and all linked Objects)
 void CSoundData::ClearBuffer(void)
 {
+#ifndef LC_SOUND_SDL
   // cannot have both at same time
   ASSERT( sd_pswSamples==NULL || sd_pdsBuffer==NULL);
+#endif
 
   // if this is decoded sound
   if(sd_pubDecoderHeader!=NULL) {
@@ -60,11 +60,13 @@ void CSoundData::ClearBuffer(void)
     sd_pswSamples = NULL;
   }
 
+#ifndef LC_SOUND_SDL
   // if direct sound buffer exist
   if( sd_pdsBuffer!=NULL) {
     sd_pdsBuffer->Release();
     sd_pdsBuffer = NULL;
   }
+#endif
 }
 
 
@@ -92,7 +94,11 @@ DOUBLE CSoundData::GetSecondsLength(void)
 // Read sound in memory
 void CSoundData::Read_t( CTStream *inFile)  // throw char *
 {
+#ifndef LC_SOUND_SDL
   ASSERT( sd_pswSamples==NULL && sd_pdsBuffer==NULL);
+#else
+  ASSERT( sd_pswSamples==NULL);
+#endif
   sd_ulFlags = NONE;
   sd_tmLength   = 0;
   sd_ctSamples  = 0;      
@@ -133,8 +139,8 @@ void CSoundData::Read_t( CTStream *inFile)  // throw char *
     LoadWAV_t( inFile, slMaxSampleRate);  // sample rate is valid only if library is active 
     extern INDEX snd_bReportStereoWaves;
     if( snd_bReportStereoWaves) {
-      if( sd_wfeFormat.nChannels     !=1) CPrintF( "! Stereo wave: %s\n", fnm);
-      if( sd_wfeFormat.wBitsPerSample==8) CPrintF( "! 8-bits wave: %s\n", fnm);
+      if( sd_wfeFormat.nChannels     !=1) CPrintF( "! Stereo wave: %s\n", (const char*)fnm);
+      if( sd_wfeFormat.wBitsPerSample==8) CPrintF( "! 8-bits wave: %s\n", (const char*)fnm);
     }
     // determine length of sound in seconds
     sd_tmLength = sd_ctSamples / (DOUBLE)sd_wfeFormat.nSamplesPerSec;
@@ -178,140 +184,6 @@ void CSoundData::Clear(void)
   ClearBuffer();
 }
 
-#ifdef KALYDO
-static void KCPSoundDownloaded(const char* fileName, TKResult result, void* id)
-{
-	switch (result)
-	{
-	case KR_OK:
-		{
-	// 		((CSerial*)id)->Clear();
-	// 		((CSerial*)id)->Load_t( CTFileName( fileName ) );
-			SLS* pSLS = new SLS();
-			pSLS->pTarget = reinterpret_cast<CSerial*>(id);
-			pSLS->pTargetFilePath = fileName;
-			g_deqLoadData.push_back( pSLS );
-		}
-		break;
-	case KR_DOWNLOAD_FAILED:
-	case KR_FILE_CORRUPT:
-		krfRequestKCPFile(fileName, &KCPSoundDownloaded, id);
-	//default:
-		// unknown error!
-	}
-}
-
-void CSoundData::Load_t(const CTFileName &fnFileName)
-{
-  ASSERT(!IsUsed());
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  TKResult tkResult = krfRequestKCPFile( fnFileName, NULL, NULL );
-  if( KR_OK == tkResult )
-  {
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-  }
-  else
-  {
-	CPrintF("Request file to kcp : %s\n", fnFileName );
-	//?????????????
-	CTFileStream istrFile;
-	istrFile.Open_t( strDefaultSoundPath );
-	Read_t(&istrFile);
-	ser_FileName = fnFileName;
-	// 위쪽에서 요청하면서 이미 처리됨.
-	if( KR_FILE_NOT_AVAILABLE == tkResult )
-	{
-		MarkUsed();
-	}
-	tkResult = krfRequestKCPFile(fnFileName, &KCPSoundDownloaded, this);
-	if( KR_FILE_NOT_FOUND == tkResult )
-	{
-		CPrintF("[Load_t] Sound File Not Found in kalydo...\n" );
-	}
-	else if( KR_IO_PENDING == tkResult )
-	{
-		CPrintF("[Load_t] Sound File already request...\n" );
-	}
-	else
-	{
-		;
-	}
-  }  
-}
-
-void CSoundData::Load_Delay_t(const CTFileName &fnFileName)
-{
-  // mark that you have changed
-  MarkChanged();
-  // 근데 이게 확실한가?? 호출 매커니즘의 정확한 해명이 필요할 거 같다.
-
-  //if( kfileExists( fnFileName ) )
-	// open a stream
-	CTFileStream istrFile;
-	istrFile.Open_t(fnFileName);
-	// read object from stream
-	Read_t(&istrFile);
-	// if still here (no exceptions raised)
-	// remember filename
-	ser_FileName = fnFileName;
-	MarkUnused();
-}
-
-void CSoundData::Reload(void)
-{
-	/* if not found, */
-	TRACKMEM(Mem, strrchr((const char*)ser_FileName, '.'));
-
-	// mark that you have changed
-	MarkChanged();
-
-	CTFileName fnmOldName = ser_FileName;
-	Clear();
-
-	TKResult tkResult = krfRequestKCPFile( fnmOldName, NULL, NULL );
-	if( KR_OK == tkResult )
-	{
-		// try to
-		try {
-		  // open a stream
-		  CTFileStream istrFile;
-		  istrFile.Open_t(fnmOldName);
-		  // read object from stream
-		  Read_t(&istrFile);
-
-		// if there is some error while reloading
-		} catch (char *strError) {
-		  // quit the application with error explanation
-		  FatalError(TRANS("Cannot reload file '%s':\n%s"), (CTString&)fnmOldName, strError);
-		}
-
-		// if still here (no exceptions raised)
-		// remember filename
-		ser_FileName = fnmOldName;
-	}
-	else
-	{
-		// it is already request in load_t()
-		CPrintF("Request file to kcp : %s\n", fnmOldName );
-		//?????????????
-		CTFileStream istrFile;
-		istrFile.Open_t( strDefaultSoundPath );
-		Read_t(&istrFile);
-		ser_FileName = fnmOldName;
-	}
-}
-
-#endif
 
 
 // check if this kind of objects is auto-freed
@@ -325,11 +197,17 @@ BOOL CSoundData::IsAutoFreed(void)
 SLONG CSoundData::GetUsedMemory(void)
 {
   SLONG slUsed = sizeof(*this);
+#ifndef LC_SOUND_SDL
   if( sd_pswSamples!=NULL || sd_pdsBuffer!=NULL) {
+#else
+  if( sd_pswSamples!=NULL) {
+#endif
     ASSERT( sd_wfeFormat.nChannels==1 || sd_wfeFormat.nChannels==2);
     SLONG slSize = sd_ctSamples * sd_wfeFormat.nChannels *sd_wfeFormat.wBitsPerSample/8;
     slUsed += slSize; 
+#ifndef LC_SOUND_SDL
     if( sd_pdsBuffer!=NULL) slUsed += sizeof(sd_pdsBuffer);
+#endif
   } 
   return slUsed;
 }
@@ -547,6 +425,7 @@ void CSoundData::LoadWAV_t( CTStream *inFile, SLONG slMaxSampleRate)
   const INDEX ctStereoSamples = sd_ctSamples * wfe.nChannels;
   sd_slBufferSize = ulDataLength;
 
+#ifndef LC_SOUND_SDL
   if( _pSound->sl_ulFlags&SLF_USINGDS3D)
   {
     // create direct sound buffer
@@ -590,6 +469,7 @@ void CSoundData::LoadWAV_t( CTStream *inFile, SLONG slMaxSampleRate)
 
   // convert to memory
   else
+#endif
   {
     if( !bADPCM) {
       ASSERT( sd_pswSamples==NULL);

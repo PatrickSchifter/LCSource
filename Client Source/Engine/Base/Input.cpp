@@ -1,15 +1,16 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/Input.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/KeyNames.h>
 #include <Engine/Math/Functions.h>
-#include <Engine/Graphics/Viewport.h>
+#include <Engine/Graphics/ViewPort.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Base/Shell.h>
 #include <Engine/Base/ErrorReporting.h>
+#include <Engine/Platform/Platform.h>
 #include <Engine/Templates/StaticStackArray.cpp>
 //#include <Engine/Interface/UIManager.h>			// yjpark
 
@@ -58,7 +59,7 @@ int _iMouseZ = 0;
 
 //#define	WORLD_EDITOR
 
-#ifdef WORLD_EDITOR
+#if defined(WORLD_EDITOR) || !defined(PLATFORM_WIN32)
 typedef MSG MSGTYPE;
 #else
 typedef CWPSTRUCT MSGTYPE;
@@ -82,7 +83,7 @@ static INDEX _iByteNum = 0;
 static UBYTE _aubComBytes[4] = {0,0,0,0};
 static INDEX _iLastPort = -1;
 
-#if	!defined(WINDOW_SDK_70A)
+#if	!defined(WINDOW_SDK_70A) || !defined(PLATFORM_WIN32)
 /*
  * Structure used by WH_MOUSE_LL
  */
@@ -298,9 +299,11 @@ static void MakeConversionTables(void)
 }
 
 // variables for message interception
+#ifdef PLATFORM_WIN32
 static HHOOK _hGetMsgHook = NULL;
 static HHOOK _hSendMsgHook = NULL;
 static HHOOK _hMouseHook = NULL;
+#endif
 static BOOL _bWheelUp = FALSE;
 static BOOL _bWheelDn = FALSE;
 
@@ -308,7 +311,9 @@ CTCriticalSection csInput;
 
 // set a key according to a keydown/keyup message
 //static void SetKeyFromMsg(MSG *pMsg, BOOL bDown)
-static void SetKeyFromMsg(MSGTYPE* pMsg, BOOL bDown)
+// (from a hook's message structure, or from a MSG with the SDL platform layer)
+template<class TMsg>
+static void SetKeyFromMsg(const TMsg* pMsg, BOOL bDown)
 {
 	INDEX iKID = -1;
 	// if capturing scan codes
@@ -405,7 +410,8 @@ static void CheckMouseMsg(MSLLHOOKSTRUCT *pm, WPARAM wp)
 	}
 }
 
-static void CheckKeyMsg(MSGTYPE *pMsg)
+template<class TMsg>
+static void CheckKeyMsg(const TMsg *pMsg)
 {
 	if (pMsg->message==WM_KEYUP || pMsg->message==WM_SYSKEYUP) {
 		SetKeyFromMsg(pMsg, FALSE);
@@ -414,6 +420,7 @@ static void CheckKeyMsg(MSGTYPE *pMsg)
 	}
 }
 
+#ifdef PLATFORM_WIN32
 // procedure called when message is retreived
 LRESULT CALLBACK GetMsgProc(
 	int nCode,      // hook code
@@ -470,8 +477,32 @@ LRESULT CALLBACK LowLevelMouseProc(
 	return retValue;
 }
 
+#endif  // PLATFORM_WIN32
+
+#ifdef LC_PLATFORM_SDL
+// With the SDL3 platform layer there are no message hooks: PLT_PeekMessage() hands every message
+// here, and keys and mouse buttons are tracked as the hooks did.
+void INP_HandleMessage(const MSG &msg)
+{
+	if (_pInput==NULL || !_pInput->inp_bInputEnabled) {
+		return;
+	}
+	CheckKeyMsg(&msg);
+	if (msg.message>=WM_MOUSEFIRST && msg.message<=WM_MOUSELAST) {
+		MSLLHOOKSTRUCT ms;
+		memset(&ms, 0, sizeof(ms));
+		ms.pt = msg.pt;
+		if (msg.message==WM_MOUSEWHEEL) {
+			ms.mouseData = (DWORD)(msg.wParam & 0xFFFF0000);
+		}
+		CheckMouseMsg(&ms, msg.message);
+	}
+}
+#endif  // LC_PLATFORM_SDL
+
 // --------- 2ND MOUSE HANDLING
 
+#ifdef PLATFORM_WIN32
 static void Poll2ndMouse(void)
 {
 	// reset (mouse reading is relative)
@@ -528,8 +559,16 @@ static void Poll2ndMouse(void)
 		return;
 	}
 }
+#else
+static void Poll2ndMouse(void)
+{
+	_i2ndMouseX = 0;
+	_i2ndMouseY = 0;
+}
+#endif  // PLATFORM_WIN32
 
 
+#ifdef PLATFORM_WIN32
 static void Startup2ndMouse(INDEX iPort)
 {
 	// skip if disabled
@@ -599,6 +638,15 @@ static void Shutdown2ndMouse(void)
 	} // over and out
 	_bIgnoreMouse2 = TRUE;
 }
+#else
+static void Startup2ndMouse(INDEX iPort)
+{
+	(void)iPort;
+}
+static void Shutdown2ndMouse(void)
+{
+}
+#endif  // PLATFORM_WIN32
 
  
 
@@ -694,7 +742,9 @@ CInput::CInput(void)
 // destructor
 CInput::~CInput()
 {
+#ifdef PLATFORM_WIN32
 	if( _h2ndMouse!=NONE) CloseHandle( _h2ndMouse);
+#endif
 	_h2ndMouse = NONE;
 }
 
@@ -832,6 +882,7 @@ void CInput::EnableInput(HWND hwnd)
 	// clear mouse from screen
 	// 40906-seo
 	//while (ShowCursor(TRUE) >= 0);
+#ifdef PLATFORM_WIN32
 	// save system mouse settings
 	SystemParametersInfo(SPI_GETMOUSE, 0, &inp_mscMouseSettings, 0);
 	// set new mouse speed
@@ -839,9 +890,11 @@ void CInput::EnableInput(HWND hwnd)
 		MouseSpeedControl mscNewSetting = { 0, 0, 0};
 		SystemParametersInfo(SPI_SETMOUSE, 0, &mscNewSetting, 0);
 	}
+#endif
 	// set cursor position to screen center
 	SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
 
+#ifndef LC_PLATFORM_SDL
 	_hGetMsgHook  = SetWindowsHookEx(WH_GETMESSAGE, &GetMsgProc, NULL, GetCurrentThreadId());
 	_hSendMsgHook = SetWindowsHookEx(WH_CALLWNDPROC, &SendMsgProc, NULL, GetCurrentThreadId());
 #ifndef WH_MOUSE_LL
@@ -850,6 +903,7 @@ void CInput::EnableInput(HWND hwnd)
 	//_hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, &LowLevelMouseProc, NULL, GetCurrentThreadId());
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 	_hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, &LowLevelMouseProc, hInstance, 0);
+#endif  // LC_PLATFORM_SDL (the platform layer hands messages to INP_HandleMessage)
 
 	// if required, try to enable 2nd mouse
 	Shutdown2ndMouse(); 
@@ -907,9 +961,11 @@ void CInput::DisableInput( void)
 	// skip if already disabled
 	if( !inp_bInputEnabled) return;
 	
+#ifndef LC_PLATFORM_SDL
 	UnhookWindowsHookEx(_hGetMsgHook);
 	UnhookWindowsHookEx(_hSendMsgHook);
 	UnhookWindowsHookEx(_hMouseHook);
+#endif
 
 	// set mouse clip region to entire screen
 	ClipCursor(NULL);
@@ -920,7 +976,9 @@ void CInput::DisableInput( void)
 	// 40906-seo
 	//while (ShowCursor(TRUE) < 0);
 	// set system mouse settings
+#ifdef PLATFORM_WIN32
 	SystemParametersInfo(SPI_SETMOUSE, 0, &inp_mscMouseSettings, 0);
+#endif
 
 	// eventually disable 2nd mouse
 	Shutdown2ndMouse();
@@ -1334,6 +1392,11 @@ static BOOL InitDeviceAsJoystick(CInputDevice &idDevice)
 	idDevice.id_strDeviceName.PrintF("Joystick %d",iJoy+1); // jc.szPname;
 	idDevice.id_strDeviceShortName.PrintF("Joy %d",iJoy+1);
 
+#ifndef PLATFORM_WIN32
+	// (joysticks are read through winmm; SDL gamepads are not hooked up yet)
+	CPrintF(TRANS("  joy %d: not available on this platform\n"), iJoy+1);
+	return FALSE;
+#else
 	JOYCAPS jc;
 	CPrintF(TRANS("  joy %d:"), iJoy+1);
 
@@ -1417,6 +1480,7 @@ static BOOL InitDeviceAsJoystick(CInputDevice &idDevice)
 	idDevice.id_aicControls[10].ic_slMin = jc.wVmin; idDevice.id_aicControls[10].ic_slMax = jc.wVmax;
 	idDevice.id_aicControls[11].ic_slMin = jc.wVmin; idDevice.id_aicControls[11].ic_slMax = jc.wVmax;
 	return TRUE;
+#endif  // PLATFORM_WIN32
 }
 
 
@@ -2370,6 +2434,29 @@ static void ReadMouseDevice(CInputDevice &idDevice, BOOL bPreScan)
 			//} // if (fDx > 5 && fDY > 5)
 		}
 
+#ifdef __APPLE__
+		// a two-finger drag on the trackpad turns the camera as a right-button drag does
+		// (Platform/PlatformSDL.cpp; it is only gathered while the mouse is not over the interface)
+		{
+			FLOAT fDX, fDY;
+			// (taken by the main reading only: the prescan for rendering, which comes first in a frame,
+			// would leave it out of the player's action)
+			if (!bPreScan && PLT_GetTrackpadPan(fDX, fDY) && _pInput->m_bTcpIp && !_pInput->m_bRButtonDown) {
+				if (fabs(fDX) >= fabs(fDY)) fDY = 0.0f; else fDX = 0.0f;
+				const FLOAT fSensitivity = inp_fMouseSensitivity*0.25f;
+				const FLOAT fMouseRelX = +fDX*fSensitivity;
+				FLOAT fMouseRelY = -fDY*fSensitivity;
+				if (inp_bInvertMouse) {
+					fMouseRelY = -fMouseRelY;
+				}
+				idDevice.id_aicControls[0].ic_fValue =  Max(0.0f,fMouseRelX*3/4);
+				idDevice.id_aicControls[1].ic_fValue = -Min(0.0f,fMouseRelX*3/4);
+				idDevice.id_aicControls[2].ic_fValue =  Max(0.0f,fMouseRelY*3/4);
+				idDevice.id_aicControls[3].ic_fValue = -Min(0.0f,fMouseRelY*3/4);
+			}
+		}
+#endif
+
 		// if reading async keystate
 		if(inp_iKeyboardReadingMethod==0) {
 			// Get state for each mouse button
@@ -2614,6 +2701,7 @@ static void ReadJoystickDevice(CInputDevice &idDevice, BOOL bPreScan)
 		return;
 	}
 
+#ifdef PLATFORM_WIN32
 	// if joystick polling is enabled
 	if(_pInput->inp_bPollJoysticks || inp_bForceJoystickPolling) {
 
@@ -2689,6 +2777,7 @@ static void ReadJoystickDevice(CInputDevice &idDevice, BOOL bPreScan)
 			}
 		}
 	}
+#endif  // PLATFORM_WIN32
 }
 
 

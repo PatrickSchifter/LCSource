@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/MobData.h>
@@ -65,17 +65,37 @@ bool CMobData::LoadZoneData( const char* ZNFileName )
 		LOADINT(nCount);
 		ASSERT(nCount > 0 && "Invalid Zone Move Npc Data");
 
+		// Two layouts exist. This code's: nCount records of (NPC index, zone flags, extra flags).
+		// Older clients' (the BR 2014 data): one (zone flags, extra flags) pair per NPC index,
+		// from index 0, without the index. Tell them apart by the file size.
+		fseek(fp, 0, SEEK_END);
+		long lSize = ftell(fp);
+		fseek(fp, sizeof(int), SEEK_SET);
+
+		const long lIndexedRecord = sizeof(int) + 2 * sizeof(ZONEFLAGS);
+		const long lDenseRecord = 2 * sizeof(ZONEFLAGS);
+		BOOL bDense = (lSize - (long)sizeof(int)) != nCount * lIndexedRecord;
+		if (bDense)
+			nCount = (lSize - sizeof(int)) / lDenseRecord;
+
 		for (int i = 0; i < nCount; ++i)
 		{
-			iReadBytes = fread(&nIndex,	sizeof(int), 1, fp);
-			
-			CMobData* pData = CMobData::getData(nIndex);
-			
-			if (pData == NULL)
-				return false;
+			if (bDense)
+				nIndex = i;
+			else
+				iReadBytes = fread(&nIndex,	sizeof(int), 1, fp);
 
-			iReadBytes = fread(&pData->mob_ulZoneFlag,	sizeof(ZONEFLAGS), 1, fp);	// Zone Flag
-			iReadBytes = fread(&pData->mob_ulExtraFlag,	sizeof(ZONEFLAGS), 1, fp);	// Extra Flag			
+			ZONEFLAGS ulZoneFlag = 0, ulExtraFlag = 0;
+			iReadBytes = fread(&ulZoneFlag,	sizeof(ZONEFLAGS), 1, fp);	// Zone Flag
+			iReadBytes = fread(&ulExtraFlag,	sizeof(ZONEFLAGS), 1, fp);	// Extra Flag
+
+			// NPCs this mobAll.lod does not have (getData() gives the shared dummy) are skipped.
+			CMobData* pData = CMobData::getData(nIndex);
+			if (pData == NULL || pData->GetMobIndex() != nIndex)
+				continue;
+
+			pData->mob_ulZoneFlag	= ulZoneFlag;
+			pData->mob_ulExtraFlag	= ulExtraFlag;
 		}
 
 		fclose(fp);

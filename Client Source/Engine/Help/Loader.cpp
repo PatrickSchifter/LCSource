@@ -2,7 +2,6 @@
 #include "StdH.h"
 #include "Loader.h"
 
-#pragma warning(disable:4172)
 
 bool TableLoader::load_file( const char* str_path, int strCnt )
 {
@@ -60,7 +59,10 @@ stSTRING& TableLoader::get_data( int index )
 		return iter->second;
 	}
 
-	return stSTRING();
+	// Was "return stSTRING();": a reference to a destroyed temporary (warning C4172 was
+	// disabled above). It only worked by accident with VS2010.
+	static stSTRING s_empty;
+	return s_empty;
 }
 
 void TableLoader::release()

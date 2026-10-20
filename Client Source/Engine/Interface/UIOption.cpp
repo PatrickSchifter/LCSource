@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -8,6 +8,9 @@
 #include <Engine/Network/Web.h>
 #include <Engine/Graphics/Adapter.h>
 #include <Engine/GameStageManager/StageMgr.h>
+#ifdef LC_PLATFORM_SDL
+#include <Engine/Platform/Platform.h>
+#endif
 
 //2013/04/15 jeil 런처에 해상도 변경 추가
 #include <fstream>
@@ -68,9 +71,6 @@ extern ENGINE_API INDEX sam_bFullScreenActive;
 int	g_nCurSelResolution;
 extern INDEX	g_iCountry;
 
-#ifdef KALYDO
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-#endif
 
 // ----------------------------------------------------------------------------
 // Name : CUIOption()
@@ -350,6 +350,7 @@ void CUIOption::CreateResolutionList()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -359,6 +360,9 @@ void CUIOption::CreateResolutionList()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;  // the OpenGL desktop mode
+#endif // SE1_D3D
 	}
 
 	for( INDEX idm = 0; idm < ctDisplayMode; idm++ )
@@ -464,6 +468,7 @@ void	CUIOption::ToggleOption()
 		OpenOption();
 }
 
+#ifndef LC_PLATFORM_SDL
 // ----------------------------------------------------------------------------
 // Name : CloseMainWindow()
 // Desc : close the main application window
@@ -702,6 +707,39 @@ static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
 	CUIManager::getSingleton()->DestroyRenderTarget();
 }
 
+#else  // LC_PLATFORM_SDL
+
+// The SDL3 platform layer keeps the main window between display modes, as Nksp/MainWindow.cpp
+// does; the title is set afterwards (CUIManager::SetTitleName) and the web dialog is Windows only.
+static void CloseMainWindow(void)
+{
+	CUIManager::getSingleton()->DestroyRenderTarget();
+}
+
+static void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ )
+{
+	PLT_SetMainWindowMode( pixSizeI, pixSizeJ, TRUE, -1, -1 );
+	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb );
+}
+
+static void ResetMainWindowNormal(void)
+{
+	// a position given on the command line is used once
+	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, sam_bFullScreenActive, cmd_iWindowLeft, cmd_iWindowTop );
+	cmd_iWindowLeft = -1;
+	cmd_iWindowTop = -1;
+}
+
+static void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ )
+{
+	_pixLastSizeI = pixSizeI;
+	_pixLastSizeJ = pixSizeJ;
+	ResetMainWindowNormal();
+	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb );
+	CUIManager::getSingleton()->DestroyRenderTarget();
+}
+#endif  // LC_PLATFORM_SDL
+
 // ----------------------------------------------------------------------------
 // Name : TryToSetDisplayMode()
 // Desc : try to start a new display mode
@@ -731,6 +769,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	extern void FinalizeShaders(void);
 	FinalizeShaders();	// Effect shader handle 삭제
 
+#ifndef LC_PLATFORM_SDL  // with SDL, PLT_SetMainWindowMode() picks the fullscreen mode
 	if (bFullScreenMode && !sam_bFullScreenActive)
 	{
 		DEVMODE dm;
@@ -746,6 +785,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		//ChangeDisplaySettings(&_pGfx->gl_devmode, CDS_RESET);
 		ChangeDisplaySettings(NULL, 0);
 	}
+#endif
 
 	sam_bFullScreenActive = (bFullScreenMode==FULLSCREEN_MODE)?FULLSCREEN_MODE:OLD_WINDOW_MODE;
 
@@ -754,16 +794,22 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 	if( bFullScreenMode) 
 	{
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->SetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth);
-		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowFullScreen( pixSizeI, pixSizeJ);
 	} 
 	else 
 	{
+#ifdef SE1_D3D
 		if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#endif // SE1_D3D
 		bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-		if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+		if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+#ifdef SE1_D3D
 		if( bSuccess && eGfxAPI==GAT_D3D) ResetMainWindowNormal();
+#endif // SE1_D3D
 	}
 
 	// if new mode was set
@@ -787,7 +833,9 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 		// Win7 듀얼 모니터 환경에서 
 		// 전체화면 변경 시 서브 모니터에서 전체 화면이 풀린다.
+#ifndef LC_PLATFORM_SDL
 		SetFocus(_hwndMain);
+#endif
 
 		// if the mode is not working, or is not accelerated
 		if( !_pGfx->IsCurrentModeAccelerated() )
@@ -807,6 +855,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			return FALSE;
 		}
 
+#ifdef SE1_D3D
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
 		{
@@ -831,6 +880,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
+#endif // SE1_D3D
 
 		sam_iScreenSizeI = pixSizeI;
 		sam_iScreenSizeJ = pixSizeJ;
@@ -926,6 +976,7 @@ void CUIOption::ApplyOption()
 		pixDepth = 32;
 	else if( _pGfx->gl_dmCurrentDisplayMode.dm_ddDepth == DISPD_DEFAULT )
 	{
+#ifdef SE1_D3D
 		if( _pGfx->gl_d3dColorFormat == D3DFMT_X8R8G8B8 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A8R8G8B8 )
 			pixDepth = 32;
@@ -935,6 +986,9 @@ void CUIOption::ApplyOption()
 			_pGfx->gl_d3dColorFormat == D3DFMT_X4R4G4B4 ||
 			_pGfx->gl_d3dColorFormat == D3DFMT_A4R4G4B4 )
 			pixDepth = 16;
+#else
+		pixDepth = 32;  // the OpenGL desktop mode
+#endif // SE1_D3D
 	}
 #ifdef KALYDO
 	// 만약 스크린이 변경되었으면 아래 루틴은 우회한다.
@@ -966,7 +1020,10 @@ void CUIOption::ApplyOption()
 			CreateResolutionList();
 
 			// 해상도가 변경되었다면, UIManager 크기를 갱신해야 한다.
-			SE_Get_UIManagerPtr()->InitPos(0, 0, m_vecPixWidth[iRes], m_vecPixHeight[iRes]);
+			// (the main drawport's size: at a Retina display's density it counts fewer pixels than
+			// the mode has, Engine/Platform/PlatformSDL.cpp)
+			if( _pdpMain!=NULL) SE_Get_UIManagerPtr()->InitPos(0, 0, _pdpMain->GetWidth(), _pdpMain->GetHeight());
+			else SE_Get_UIManagerPtr()->InitPos(0, 0, m_vecPixWidth[iRes], m_vecPixHeight[iRes]);
 			// Adjust position of UIs
 			SE_Get_UIManagerPtr()->AdjustUIPos( _pdpMain );
 		}

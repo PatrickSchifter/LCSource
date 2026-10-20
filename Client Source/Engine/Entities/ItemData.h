@@ -873,19 +873,6 @@ public:
 	static int LoadJewelItemDataFromFile(CStaticArray<JewelComosInfo> &apJewelData, const char* FileName);
 	static void LoadItemSmcDataFromFile(CStaticArray<ItemSmcParseInfo> &apItemSmcData, const char* FileName);
 
-#if		(_MSC_VER <= 1200)
-
-	static int getsize()	{ return (int)_mapdata.size(); }
-
-	static CItemData* getDataSeq(int Idx)
-	{
-		if (Idx < 0 || Idx >= _vecdata.size())
-			return m_dummy;
-
-		return _vecdata[Idx];
-	}
-
-#endif	// (_MSC_VER <= 1200)
 };
 
 class CItemRareOption : public stRareOption, public LodLoader<CItemRareOption>

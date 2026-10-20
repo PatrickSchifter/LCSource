@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include "UIQuestView.h"
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Help/Util_Help.h>
@@ -283,8 +283,8 @@ BOOL CUIQuestView::UpdateContent()
 			if (pImg)
 			{
 				CTString strTemp2;
-				strTemp2.PrintF("%s", _S(429, "완료"));
-				strTemp.PrintF("[%s]", strTemp2);
+				strTemp2.PrintF("%s", (const char*)_S(429, "완료"));
+				strTemp.PrintF("[%s]", (const char*)strTemp2);
 				pImg->setTooltip(strTemp);
 			}
 		}
@@ -307,7 +307,7 @@ BOOL CUIQuestView::UpdateContent()
 			
 			if (pText != NULL)
 			{
-				strTemp.PrintF("%s", pQuestDD->GetStatusDesc(index));
+				strTemp.PrintF("%s", (const char*)pQuestDD->GetStatusDesc(index));
 				strTemp = UtilHelp::getSingleton()->GetCalcStringEllipsis(strTemp, pText->GetWidth(), CTString("..."));
 				pText->SetText(strTemp);
 			}			

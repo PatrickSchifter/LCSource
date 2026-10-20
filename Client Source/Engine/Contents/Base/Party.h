@@ -21,14 +21,14 @@ public:
 	void		MandateBossReq( CTString strManadateChaName );
 	void		MandateBoss( CTString strBossName, SLONG nManadateChaIndex, CTString strManadateChaName, SBYTE sbMandate );
 	// 파티 관련
-	void		AddPartyMember(SBYTE sbLeader, SLONG slIndex, CTString& strName, SBYTE sbJob, SBYTE sbJob2,
+	void		AddPartyMember(SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	                           int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	                           FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone);
 	void		RemoveMember(SLONG slIndex);
 	void		PartyEnd();
 	void		PartyInvite(SBYTE sbType, SLONG slSrcIndex, CTString& strSrcName, SBYTE sbPartyTypeItem = -1, SBYTE sbPartyTypeSPItem = -1);
 	void		PartyReject(BOOL bLeader);
-	void		PartyAddMember(SBYTE sbLeader, SLONG slIndex, CTString& strName, SBYTE sbJob, SBYTE sbJob2,
+	void		PartyAddMember(SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	                           int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	                           FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone);
 	void		PartyQuit(SLONG slIndex);
@@ -148,8 +148,8 @@ public:
 
 	void		SendExpeditionAllow();														// 원정대 수락 메시지 전송
 	void		SendExpeditionReject();
-	void		SendExpeditionInvite( CTString &strDestName );								// 원정대 초대 메시지 전송
-	void		SendExpeditionInviteReq(int slIndex, CTString &strDestName);
+	void		SendExpeditionInvite( const CTString &strDestName );								// 원정대 초대 메시지 전송
+	void		SendExpeditionInviteReq(int slIndex, const CTString &strDestName);
 	void		SendExpeditionQuit();														// 원정대 탈퇴 메시지 전송
 	void		SendExpeditionKick( SLONG slIndex );										// 원정대 강퇴 메시지 전송
 	void		SendExpeditionEnd();														// 원정대 종료 메시지 전송

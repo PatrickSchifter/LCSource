@@ -1848,7 +1848,7 @@ void Particles_Stardust( CEntity *pen, FLOAT fSize, FLOAT fHeight,
 		FLOAT fFade = -2.0f * Abs(fT*(1.0f/STARDUST_EXIST_TIME)-0.5f)+1.0f;
 
 		INDEX iRandomFromPlacement = 
-			(ULONG)(plSource.pl_PositionVector(1)+plSource.pl_PositionVector(3))&(ctOffsetSpace-1);
+			(ULONG)(SLONG)(plSource.pl_PositionVector(1)+plSource.pl_PositionVector(3))&(ctOffsetSpace-1);
 		INDEX iMemeber = iStar+iRandomFromPlacement;
 		const FLOAT3D vPos = vCenter+FLOAT3D( afStarsPositions[iMemeber][0], 
 																					afStarsPositions[iMemeber][1],
@@ -3142,13 +3142,13 @@ void Particles_Rain(CEntity *pen, CEnvironmentParticlesHolder* eph, FLOAT fGridS
 
 	for( INDEX iZ=0; iZ<ctGrids; iZ++)
 	{
-		INDEX iRndZ = (ULONG(vPos(3)+iZ)) % CT_MAX_PARTICLES_TABLE;
+		INDEX iRndZ = ((ULONG)(SLONG)(vPos(3)+iZ)) % CT_MAX_PARTICLES_TABLE;
 		FLOAT fZOrg = vPos(3) + (iZ+afStarsPositions[iRndZ][3])*fGridSize;
 		for( INDEX iX=0; iX<ctGrids; iX++)
 		{
 
 			FLOAT fZ = fZOrg;
-			INDEX iRndX = (ULONG(vPos(1)+iX)) % CT_MAX_PARTICLES_TABLE;
+			INDEX iRndX = ((ULONG)(SLONG)(vPos(1)+iX)) % CT_MAX_PARTICLES_TABLE;
 			FLOAT fX = vPos(1) + (iX+afStarsPositions[iRndX][1])*fGridSize;
 			FLOAT fT0 = afStarsPositions[(INDEX(2+Abs(fX)+Abs(fZ))*262147) % CT_MAX_PARTICLES_TABLE][2];
 
@@ -3264,10 +3264,10 @@ void Particles_Snow(CEntity *pen, CEnvironmentParticlesHolder* eph, FLOAT fGridS
 
 	for( INDEX iZ=0; iZ<ctGrids; iZ++)
 	{
-		INDEX iRndZ = (ULONG(vPos(3)+iZ*fGridSize)) % CT_MAX_PARTICLES_TABLE;
+		INDEX iRndZ = ((ULONG)(SLONG)(vPos(3)+iZ*fGridSize)) % CT_MAX_PARTICLES_TABLE;
 		for( INDEX iX=0; iX<ctGrids; iX++)
 		{
-			INDEX iRndX = (ULONG(vPos(1)+iX*fGridSize)) % CT_MAX_PARTICLES_TABLE;
+			INDEX iRndX = ((ULONG)(SLONG)(vPos(1)+iX*fGridSize)) % CT_MAX_PARTICLES_TABLE;
 
 			INDEX iRndXZ=(iRndZ+iRndX*37)%CT_MAX_PARTICLES_TABLE;
 			FLOAT fD = afStarsPositions[iRndXZ][1]*YGRID_SIZE;
@@ -4547,7 +4547,7 @@ void Particles_BloodSpray(enum SprayParticlesType sptType, FLOAT3D vSource, FLOA
 		{
 			UBYTE ubRndH = UBYTE( 24+afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][0]*16);
 			UBYTE ubRndS = UBYTE( 32+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][1]+0.5)*64);
-			UBYTE ubRndV = UBYTE( 196+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*128);
+			UBYTE ubRndV = UBYTE(SLONG( 196+(afStarsPositions[ int(iSpray+tmStarted*10)%CT_MAX_PARTICLES_TABLE][2])*128));
 			col = HSVToColor(ubRndH, ubRndS, ubRndV)|ubAlpha;
 			fSize*=0.10f;
 			fRotation = fT*200.0f;
@@ -4879,7 +4879,7 @@ void Particles_AfterBurner(CEntity *pen, FLOAT tmSpawn, FLOAT fStretch, INDEX iG
 		FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
 		FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
 		INDEX iIndex=fRatio*255;
-		INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+		INDEX iRnd=INDEX(ULONG(uintptr_t(pvPos1))%CT_MAX_PARTICLES_TABLE);
 
 		// smoke
 		FLOAT3D vPosS = *pvPos1;
@@ -6091,7 +6091,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
 	if( (tmEnd-tmNow)<6.0f)
 	{
 		fColMul = (tmEnd-tmNow)/6.0f;
-		ubColMul = (INDEX) 255.0f*fColMul;
+		ubColMul = (INDEX)(255.0f*fColMul);
 	}
 	//UBYTE ubColMul=UBYTE(CT_OPAQUE*fColMul);
 	//COLOR colMul=RGBAToColor(ubColMul,ubColMul,ubColMul,ubColMul);
@@ -6108,7 +6108,7 @@ void Particles_RunAfterBurner(CEntity *pen, FLOAT tmEnd, FLOAT fStretch, INDEX i
 		FLOAT fT=(iPos+_pTimer->GetLerpFactor())*_pTimer->TickQuantum;
 		FLOAT fRatio=fT/(CT_AFTERBURNER_SMOKES*_pTimer->TickQuantum);
 		INDEX iIndex=fRatio*255;
-		INDEX iRnd=INDEX(pvPos1)%CT_MAX_PARTICLES_TABLE;
+		INDEX iRnd=INDEX(ULONG(uintptr_t(pvPos1))%CT_MAX_PARTICLES_TABLE);
 
 		// smoke
 		FLOAT3D vPosS = *pvPos1;

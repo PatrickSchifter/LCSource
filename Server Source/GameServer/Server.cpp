@@ -1173,7 +1173,7 @@ bool CServer::ConnectDB()
 		return false;
 	}
 
-	cmdCheckCharDB.SetQuery("SELECT "CASH_ITEM_DATE_FIELD_MEMPOS", "CASH_ITEM_DATE_FIELD_CHAR_SLOT0", "CASH_ITEM_DATE_FIELD_CHAR_SLOT1", "CASH_ITEM_DATE_FIELD_STASHEXT" FROM t_cashItemdate LIMIT 1");
+	cmdCheckCharDB.SetQuery("SELECT " CASH_ITEM_DATE_FIELD_MEMPOS ", " CASH_ITEM_DATE_FIELD_CHAR_SLOT0 ", " CASH_ITEM_DATE_FIELD_CHAR_SLOT1 ", " CASH_ITEM_DATE_FIELD_STASHEXT " FROM t_cashItemdate LIMIT 1");
 	if (!cmdCheckCharDB.Open())
 	{
 		GAMELOG << init("Error: Character DB Check: Not Found t_cashItemdate.a_xxx_new!") << end;

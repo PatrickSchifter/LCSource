@@ -8,7 +8,6 @@
 #define __NKSP_H__
 
 #define APPLICATION_NAME "Nksp"
-#include "CDCheck.h"
 
 //extern HINSTANCE _hInstance;		// yjpark
 extern BOOL _bRunning, _bQuitScreen;
@@ -46,16 +45,5 @@ bool	Set_Window_Size();
 void GetWindowSizeFromTxt();
 void SaveWindowSizeToTxt();
 
-#ifdef KALYDO
-#include <deque>
-void KalydoUserData();
-void KalydoSetUserAccount( std::string& sID, std::string& sPWD );
-bool KalydoInit( HWND Parent );
-void KalydoStart();
-bool KalydoUpdate();
-void KalydoEnd();
-HWND getGameWindow();
-extern std::deque<MSG> deqMsg;
-#endif
 
 #endif

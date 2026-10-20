@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIInternalClasses.h>
 #include <vector>
@@ -174,7 +174,7 @@ void CUIPortal::updateUI()
 
 		if (pText != NULL)
 		{
-			strTemp.PrintF("%s", CZoneInfo::getSingleton()->GetZoneName( m_vectorListInfo[i].zone ) );
+			strTemp.PrintF("%s", (const char*)CZoneInfo::getSingleton()->GetZoneName( m_vectorListInfo[i].zone ) );
 
 			ULONG nStringWidth = pDrawPort->GetTextWidth2(strTemp);
 			if (nStringWidth > pText->GetWidth())
@@ -189,7 +189,7 @@ void CUIPortal::updateUI()
 
 		if (pText != NULL)
 		{
-			strTemp.PrintF("%s", CZoneInfo::getSingleton()->GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ) );
+			strTemp.PrintF("%s", (const char*)CZoneInfo::getSingleton()->GetExtraName( m_vectorListInfo[i].zone, m_vectorListInfo[i].extra ) );
 
 			ULONG nStringWidth = pDrawPort->GetTextWidth2(strTemp);
 			if (nStringWidth > pText->GetWidth())

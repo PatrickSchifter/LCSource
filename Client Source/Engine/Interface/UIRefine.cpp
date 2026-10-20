@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -231,7 +231,7 @@ void CUIRefine::CloseRefine()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIRefine::AddString( CTString &strDesc )
+void CUIRefine::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_REFINE_STRING )
 		return;

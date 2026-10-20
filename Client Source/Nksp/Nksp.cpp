@@ -8,11 +8,15 @@
 
 #include "StdH.h"
 
+#ifdef PLATFORM_WIN32
 #include <io.h>
+#endif
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef PLATFORM_WIN32
 #include <process.h>
 #include <shlwapi.h>	// for PathFileExists()
+#endif
 
 #include <Engine/CurrentVersion.h>
 #include <Engine/Templates/Stock_CEntityClass.h>
@@ -27,7 +31,9 @@
 #include <Engine/Contents/Login/UILoginNew.h>
 #include <Engine/GameStageManager/StageMgr.h>
 
+#ifdef PLATFORM_WIN32
 #include <crtdbg.h>
+#endif
 
 
 #include <Engine/Network/Web.h>
@@ -41,33 +47,23 @@
 
 //#include "SplashScreen.h"
 #include "MainWindow.h"
-#include "GlSettings.h"
+#include "GLSettings.h"
 //#include "LevelInfo.h"
 //#include "LCDDrawing.h"
 #include "CmdLine.h"
 //#include "Credits.h"
-#include <Engine/Base/Protection.h>
-#if COPY_PROTECTION
-	#include <Engine/Base/Protection.cpp>
+#ifdef PLATFORM_WIN32
+#include <tlhelp32.h>
 #endif
-#include <TlHelp32.h>
 #include <float.h>
+#include <Engine/Platform/Platform.h>
+#ifdef PLATFORM_WIN32
 #include <Ext_ipc_event.h> // IPC
+#endif
 HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
 
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    #include "xTrapWrapper.h"
-#endif
-#endif
-
-#ifdef KALYDO
-#include <Engine/Kalydo/PackageManager.h>
-#include <Nksp/social/TLastChaosApplication.h>
-
-#endif
 
 //2013/04/15 jeil 런처에 해상도 변경 추가
 #include <fstream>
@@ -75,9 +71,6 @@ extern ENGINE_API char *g_szExitError;
 using namespace std;
 
 
-//#undef XTRAP_SECURE_CKBANG_2010_07_20
-
-//CTString _fnmForCDCheck = "Bin\\SeriousSam.exe";
 
 // application state variables by NSP
 extern BOOL g_bTcp = TRUE;
@@ -123,11 +116,13 @@ static PIX _apixRes[][2] = {
 
 extern void enableFPExceptions()
 {
+#ifdef _MSC_VER
     int i = _controlfp (0,0);
 
     i &= ~ (EM_ZERODIVIDE);
 
     _controlfp (i, MCW_EM);
+#endif
 }
 
 // helper for limiting window size when changing mode out of full screen
@@ -262,12 +257,6 @@ extern ENGINE_API HINSTANCE	_hInstanceMain;
 
 ENGINE_API extern INDEX g_iCountry;
 
-// WSS_NPROTECT 070402 -------------------------->>
-#ifndef NO_GAMEGUARD
-	#include <Nksp/GameGuard.h>
-	extern ENGINE_API CTString g_szHackMsg;
-#endif
-// ----------------------------------------------<<
 
 void GetNM(LPSTR lpCmdLine)
 {
@@ -295,16 +284,16 @@ void GetNM(LPSTR lpCmdLine)
 		switch(ii)
 		{
 			case 0 :
-				g_nmVER.PrintF("%s", strInsert);
+				g_nmVER.PrintF("%s", (const char*)strInsert);
 				break;
 			case 1 :
-				g_nmCID.PrintF("%s", strInsert);
+				g_nmCID.PrintF("%s", (const char*)strInsert);
 				break;
 			case 2 :
-				g_nmID.PrintF("%s", strInsert);
+				g_nmID.PrintF("%s", (const char*)strInsert);
 				break;
 			case 3 :
-				g_nmPW.PrintF("%s", strTemp);
+				g_nmPW.PrintF("%s", (const char*)strTemp);
 				break;
 		}
 
@@ -346,6 +335,9 @@ void GetNM(LPSTR lpCmdLine)
 *************************************************************************************************/
 BOOL IsRunning(void)
 {
+#ifndef PLATFORM_WIN32
+	return FALSE;  // a second client is allowed outside Windows
+#else
 	PROCESSENTRY32 peNext;
 
 	// 접근 프로세스 핸들을 생성한다.
@@ -408,6 +400,7 @@ BOOL IsRunning(void)
 	}
 
 	return FALSE;
+#endif  // PLATFORM_WIN32
 }
 
 
@@ -441,6 +434,7 @@ static HANDLE _hLock = NULL;
 static CTFileName _fnmLock;
 static void DirectoryLockOn(void)
 {
+#ifdef PLATFORM_WIN32
 	// create lock filename
 	_fnmLock = _fnmApplicationPath+"nksp.loc";
 	// try to open lock file
@@ -457,18 +451,22 @@ static void DirectoryLockOn(void)
 		// report warning
 		CPrintF(TRANS("WARNING: Last Chaos didn't shut down properly last time!\n"));
 	}
+#endif
 }
 static void DirectoryLockOff(void)
 {
+#ifdef PLATFORM_WIN32
 	// if lock is open
 	if (_hLock!=NULL) {
 		// close it
 		CloseHandle(_hLock);
 	}
+#endif
 }
 
 //강동민 수정 시작 시스템 마우스 작업	09.09
 // NOTE : 애니메이션 커서를 리소스로부터 읽어옴.
+#ifdef ANIMATION_CURSOR
 static HCURSOR LoadAnimationCursor(HINSTANCE hInstance, UINT nID)
 {
 	HRSRC hRes		= FindResource(hInstance, MAKEINTRESOURCE(nID), "CURSORS");
@@ -477,6 +475,7 @@ static HCURSOR LoadAnimationCursor(HINSTANCE hInstance, UINT nID)
 	LPBYTE pBytes	= (LPBYTE)LockResource(hGlob);
 	return (HCURSOR)CreateIconFromResource(pBytes, dwSize, FALSE, 0x00030000);	
 }
+#endif
 //강동민 수정 끝 시스템 마우스 작업		09.09
 
 void End(void);
@@ -559,7 +558,7 @@ HMODULE g_hGame = NULL;
 void InitializeGame(void)
 {
 	try {
-#ifndef NDEBUG 
+#if !defined(NDEBUG) && defined(_MSC_VER)
 //#	define GAMEDLL ("Bin\\Debug\\Game"+_strModExt+"D.dll")
 #	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
 #		define GAMEDLL ("Bin\\Debug2010\\Game"+_strModExt+"D.dll")
@@ -577,12 +576,12 @@ void InitializeGame(void)
 		g_hGame = LoadLibrary(fnmExpanded);
 		if (g_hGame==NULL) 
 		{
-			ThrowF_t("%s", GetWindowsError(GetLastError()));
+			ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 		}
 		CGame* (*GAME_Create)(void) = (CGame* (*)(void))GetProcAddress(g_hGame, "GAME_Create");
 		if (GAME_Create==NULL) 
 		{
-			ThrowF_t("%s", GetWindowsError(GetLastError()));
+			ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 		}
 //안태훈 수정 끝	//(DevPartner Bug Fix)(2005-01-14)
 		_pGame = GAME_Create();		
@@ -602,9 +601,17 @@ ENGINE_API void CheckEngineVersion();
 BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 {
 	_hInstanceMain = hInstance;
+#ifdef LC_PLATFORM_SDL
+	if (!PLT_Init()) {
+		return FALSE;
+	}
+	// remember desktop dimensions
+	PLT_GetDesktopSize(_pixDesktopWidth, _pixDesktopHeight);
+#else
 	// remember desktop dimensions
 	_pixDesktopWidth  = ::GetSystemMetrics(SM_CXSCREEN);
 	_pixDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+#endif
 
 #if	!defined(VER_TEST) && !defined(G_CHINA) //&& !defined(G_USA)
 	if(strCmdLine.IsEqualCaseSensitive(CTString("fkzktlfgod!")))
@@ -618,10 +625,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	}
 	else
 	{
-		// WSS_NPROTECT 070405 ------------------>><<	
-		// 홍콩의 경우 nProtect로 중복 검출
-//#ifdef NO_GAMEGUARD
-#ifndef MULTI_CLIENT
+#if !defined(MULTI_CLIENT) && defined(PLATFORM_WIN32)
 		if(FindWindow(APPLICATION_NAME,NULL))
 		{
 			return FALSE;
@@ -642,15 +646,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	// prepare main window
 	MainWindow_Init();
 
-#ifndef _DEBUG
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-
-    if (XTRAP())
-        XTRAP()->EngineConfirm();
-
-#endif
-#endif
-
 	OpenMainWindowInvisible();
 
 	// parse command line before initializing engine
@@ -668,64 +663,13 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	switch(g_iCountry)
 	{
 		case BRAZIL:
+#ifndef LC_PLATFORM_SDL
 			SetClassLong( _hwndMain, GCL_HICON, (LONG)LoadIcon( _hInstanceMain, (LPCTSTR)IDI_GUNSOFT ) );
+#endif
 			g_bNasTrans = TRUE;
 			break;
 	}
 
-#if COPY_PROTECTION
-
-	// get full path to the exe
-	char strExePath[MAX_PATH] = "";
-	GetModuleFileName( NULL, strExePath, sizeof(strExePath)-1);
-	char strDrive[] = "C:\\";
-	strDrive[0] = strExePath[0];
-	DWORD dwSerial;
-	GetVolumeInformation(strDrive, NULL, 0, &dwSerial, NULL, NULL, NULL, 0);
-
-	CTFileName fnmKey = CTString("TSE.key");
-	INDEX iSerial = dwSerial;
-
-	// init encryption table two times
-	BLOWFISH_CTX ctx1;
-	BLOWFISH_CTX ctx2;
-	CTString strEnKey = _strEngineBuild;
-	strEnKey.TrimLeft(16);
-	char aubKey1[16];
-	char aubKey2[16];
-	for(INDEX i=0; i<16; i++) {
-		aubKey1[i] = strEnKey[i];
-		aubKey2[i] = strEnKey[16-1-i];
-	}
-	Blowfish_Init (&ctx1, (unsigned char*)aubKey1, 16);
-	Blowfish_Init (&ctx2, (unsigned char*)aubKey2, 16);
-
-	// if no key
-	if (!FileExists(fnmKey)) {
-		// just bail out
-		FatalError(TRANS("No registration key!\nPlease request registration key for code:\n\n%08X"), iSerial);
-		return FALSE;
-	// if key is here
-	} else {
-		// load it
-		CTString strKey;
-		LoadStringVar(fnmKey, strKey);
-		__int64 llCodeRead = 0;
-		strKey.ScanF("%I64x", &llCodeRead);
-		__int64 llCode1 = llCodeRead;
-		__int64 llCode2 = llCodeRead;
-
-		// decrypt the code
-		Blowfish_Decrypt(&ctx1, (ULONG*)&llCode1+1, ((ULONG*)&llCode1));
-		Blowfish_Decrypt(&ctx2, (ULONG*)&llCode2+1, ((ULONG*)&llCode2));
-		// if not valid
-		if (llCode1!=iSerial && llCode2!=iSerial) {
-			// bail out
-			FatalError(TRANS("Registration key is invalid!"));
-			return FALSE;
-		}
-	}
-#endif
 
 	SE_LoadDefaultFonts();
 	// now print the output of command line parsing
@@ -782,12 +726,6 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	//	김영환 : 클라이언트용 엔진DLL 사용
 	_bClientApp = TRUE;
 	// if kalydo options.
-#ifdef KALYDO
-	RECT rcKalydoClient;
-	GetClientRect( application->getKalydoWindow(), &rcKalydoClient );
-	sam_iScreenSizeI = rcKalydoClient.right - rcKalydoClient.left;
-	sam_iScreenSizeJ = rcKalydoClient.bottom - rcKalydoClient.top;
-#endif
 	InitializeGame();
 	_pNetwork->md_strGameID = sam_strGameName;
 
@@ -800,14 +738,26 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 		_pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
 	}
 
-	CPrintF(TRANS("Nksp version: %s\n"), sam_strVersion);
+	CPrintF(TRANS("Nksp version: %s\n"), (const char*)sam_strVersion);
 
-#ifdef KALYDO
-	sam_bFullScreenActive = FALSE;
-#endif
 	// apply application mode
+#ifdef SE1_D3D
 	StartNewMode( GAT_D3D, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
 								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
+#else
+	// Metal where there is one (macOS); OpenGL with LC_GFX_API=opengl, or without Metal; Vulkan
+	// (MoltenVK) with LC_GFX_API=vulkan
+	const char *strGfxAPI = getenv("LC_GFX_API");
+	const BOOL bOpenGL = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "opengl")==0 || stricmp(strGfxAPI, "gl")==0));
+	const BOOL bVulkan = (strGfxAPI!=NULL && (stricmp(strGfxAPI, "vulkan")==0 || stricmp(strGfxAPI, "vk")==0));
+	GfxAPIType eGfxAPI = (!bOpenGL && _pGfx->HasAPI(GAT_MTL)) ? GAT_MTL : GAT_OGL;
+	if( bVulkan) {
+		if( _pGfx->HasAPI(GAT_VK)) eGfxAPI = GAT_VK;
+		else CPrintF( TRANS("Vulkan is not available (no MoltenVK?), using %s\n"), eGfxAPI==GAT_MTL ? "Metal" : "OpenGL");
+	}
+	StartNewMode( eGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
+								(enum DisplayDepth)sam_iDisplayDepth, IsFullScreen( sam_bFullScreenActive) );
+#endif // SE1_D3D
 
 	GameDataManager* pGameDataManager = SE_Get_GameDataManagerPtr();
 	pGameDataManager->Create();
@@ -838,7 +788,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIZE, LoadAnimationCursor( _hInstanceMain, IDC_SIZE_CURSOR) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ZOOMIN, LoadAnimationCursor( _hInstanceMain, IDC_ZOOMIN_CURSOR) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIGNAL, LoadAnimationCursor( _hInstanceMain, IDC_SIGNAL_CURSOR) );
-#else
+#elif !defined(LC_PLATFORM_SDL)
 	// FIXME : Engine의 Resource에 *.cur 화일을 넣어줬을때, 해당 커서를 얻어오지 못해서 이런식으로 처리함.	
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_NORMAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_NORMAL_CURSOR) ) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ATT_NORMAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_ATTACK_CURSOR) ) );
@@ -852,6 +802,20 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_ZOOMIN, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_ZOOMIN_CURSOR) ) );
 	pUIManager->GetMouseCursor()->SetCursorHandle( UMCT_SIGNAL, LoadCursor( _hInstanceMain, MAKEINTRESOURCE(IDC_SIGNAL_CURSOR) ) );
 	
+#else
+	// the same cursors, read from Bin\Cursors\ (copied there from Nksp\res\ by the build)
+	{
+		static const struct { UIMCType umct; const char *strFile; } aCursors[] = {
+			{ UMCT_NORMAL, "cur_00" }, { UMCT_ATT_NORMAL, "cur_01" }, { UMCT_ATT_SKILL, "cur_02" },
+			{ UMCT_ATT_MAGIC, "cur_03" }, { UMCT_ATT_BOW, "cur_04" }, { UMCT_PICK, "cur_05" },
+			{ UMCT_TALK, "cur_06" }, { UMCT_ZOOMIN, "cur_07" }, { UMCT_SIZE, "cur_08" },
+			{ UMCT_PRODUCE, "cur_09" }, { UMCT_SIGNAL, "cur_10" },
+		};
+		for (INDEX iCursor = 0; iCursor < ARRAYCOUNT(aCursors); iCursor++) {
+			CTString strFile = _fnmApplicationPath + "Bin\\Cursors\\" + aCursors[iCursor].strFile + ".cur";
+			pUIManager->GetMouseCursor()->SetCursorHandle( aCursors[iCursor].umct, PLT_LoadCursorFile(strFile) );
+		}
+	}
 #endif
 
 	SE_Get_WebAddressPtr()->initialize();
@@ -901,11 +865,14 @@ void End(void)
 	void (*GAME_Destroy)(void) = (void (*)(void))GetProcAddress(g_hGame, "GAME_Destroy");
 	if (GAME_Destroy==NULL) 
 	{
-		ThrowF_t("%s", GetWindowsError(GetLastError()));
+		ThrowF_t("%s", (const char*)GetWindowsError(GetLastError()));
 	}
 	GAME_Destroy();
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-14)
 	if(g_hGame) FreeLibrary(g_hGame);
+#ifdef LC_PLATFORM_SDL
+	PLT_End();
+#endif
 //안태훈 수정 끝	//(DevPartner Bug Fix)(2005-01-14)
 }
 
@@ -931,16 +898,20 @@ void PrintDisplayModeInfo(void)
 	// get resolution
 	CTString strRes;
 	extern CTString _strPreferencesDescription;
-	strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+	strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
 	if( dm.IsDualHead())   strRes += TRANS(" DualMonitor");
 	if( dm.IsTripleHead()) strRes += TRANS(" TripleMonitor");
 	if( dm.IsWideScreen()) strRes += TRANS(" WideScreen");
 			 if( _pGfx->gl_eCurrentAPI==GAT_OGL) strRes += " (OpenGL)";
+	else if( _pGfx->gl_eCurrentAPI==GAT_MTL) strRes += " (Metal)";
+	else if( _pGfx->gl_eCurrentAPI==GAT_VK)  strRes += " (Vulkan)";
+#ifdef SE1_D3D
 	else 
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D) strRes += " (Direct3D)";
+#endif // SE1_D3D
 
 	CTString strDescr;
-	strDescr.PrintF("\n%s (%s)\n", _strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
+	strDescr.PrintF("\n%s (%s)\n", (const char*)_strPreferencesDescription, RenderingPreferencesDescription(sam_iVideoSetup));
 	strRes += strDescr;
 	// tell if application is started for the first time, or failed to set mode
 		if( _iDisplayModeChangeFlag==0) 
@@ -1099,7 +1070,11 @@ void QuitScreenLoop(void)
 		_pSound->UpdateSounds();
 		// while there are any messages in the message queue
 		MSG msg;
+#ifdef LC_PLATFORM_SDL
+		while(PLT_PeekMessage(&msg)) 
+#else
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) 
+#endif
 		{
 			// if it is not a keyboard or mouse message
 			if(msg.message==WM_LBUTTONDOWN||
@@ -1151,7 +1126,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 {
 	(void)hPrevInstance;
 
-#if		!defined(KALYDO) && !defined(G_CHINA) && !defined(VER_TEST)
+#if		!defined(G_CHINA) && !defined(VER_TEST) && defined(PLATFORM_WIN32)
 	CTString strparam = CTString(lpCmdLine);
 	IPCEventInfo EventInfo;
 	memset(EventInfo.ulParameter2, 0, sizeof(EventInfo.ulParameter2));
@@ -1223,13 +1198,14 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 
 	GetNM(EventInfo.ulParameter2);
 
-#endif	// !defined(KALYDO) && !defined(G_CHINA) && !defined(VER_TEST)
+#endif	// !defined(G_CHINA) && !defined(VER_TEST) && defined(PLATFORM_WIN32)
 	
 	ShowCursor(FALSE);
 	
 	if( !Init( hInstance, nCmdShow, lpCmdLine )) return FALSE;
 
-#ifndef		KALYDO
+#ifdef PLATFORM_WIN32
+	// the version shown on the login screen comes from the executable's resources
 	{
 		// 현재 실행된 프로그램의 경로를 저장할 변수이다.
 		char temp_path[MAX_PATH] = {0,};
@@ -1271,19 +1247,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 		GlobalUnlock(h_memory); 
 		GlobalFree(h_memory);
 	}
-#endif	// KALYDO
+#endif
 
 	BOOL bInit = TRUE;
-	// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-//	CPrintF("[ ---->> GameGuard Init...Start <<---- ] - %lu\n",timeGetTime());
-	//bInit = _pNetwork->Init_nProtect();
-	CREATE_GAMEGUARD_WRAPPER();
-	bInit = GAME_GUARD()->Init();		
-	_pGameState->Running() = bInit;
-//	CPrintF("[ ---->> GameGuard Init...End <<---- ] - %lu\n",timeGetTime());
-#endif
-	// ---------------------------------------------------<<
 	
 	// initialy, application is running and active, console and menu are off
 	//_bRunning    = TRUE;
@@ -1308,7 +1274,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	ShowCursor(TRUE);
 	
 	// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 	SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 	// 이기환 수정 끝 
 
 
@@ -1319,22 +1287,20 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	FLOAT tmLastSndMute = 0;
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
-	// WSS_NPROTECT 070402 ------------------------------->>
-	// 윈도우 핸들 생성 이후 모든 그래픽 UI관련 초기화가 끝난 후 SetHwnd() 호출
-	// 이 함수로 부터 CallBack 함수가 호출 되기 시작함...
-#ifndef NO_GAMEGUARD
-//	CPrintF("[ ---->> GameGuard SetHwnd...Start <<---- ] - %lu\n",timeGetTime());
-	//_pNetwork->SetHwnd_nProtect(_hwndMain);
-	GAME_GUARD()->SetMainHwnd( _hwndMain );
-//	CPrintF("[ ---->> GameGuard SetHwnd...End <<---- ] - %lu\n",timeGetTime());
-#endif
-	// ---------------------------------------------------<<
 
 	//while( _bRunning && _fnmModToLoad=="")
 	while( _pGameState->Running() && _fnmModToLoad=="")
 	{
 		// while there are any messages in the message queue
 		MSG msg;
+#ifdef LC_PLATFORM_SDL
+		while( PLT_PeekMessage( &msg)) 
+		{
+			// what the window procedure did with it (MainWindow.cpp)
+			if( msg.message==WM_CLOSE) {
+				QuitGame();
+			}
+#else
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE)) 
 		{
 			// if it is not a mouse message
@@ -1351,6 +1317,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 					}
 				}
 			}
+#endif  // LC_PLATFORM_SDL
 			
 			// system commands (also send by the application itself)
 			if( msg.message==WM_SYSCOMMAND)
@@ -1381,12 +1348,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 						(enum DisplayDepth)sam_iDisplayDepth, TRUE);
 					ShowWindow( _hwndMain, SW_SHOWNORMAL);
 
-					#ifdef USE_GAMEGUARD
-					//DESTROY_GAMEGUARD_WRAPPER();
-					//CREATE_GAMEGUARD_WRAPPER();
-					//bInit = GAME_GUARD()->Init();		
-						GAME_GUARD()->SetMainHwnd( _hwndMain );
-					#endif
 
 					break;
 				}
@@ -1405,7 +1366,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				|| (msg.message==WM_ACTIVATEAPP && !msg.wParam)) 
 			{
 				// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 				SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 				// 이기환 수정 끝 
 			}
 			// if application is activated or minimized
@@ -1416,7 +1379,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				if (msg.message == WM_SETFOCUS)
 					msg = msg;
 				// 이기환 수정 시작 (11. 15) : IME 상태 창 제거 
+#ifndef LC_PLATFORM_SDL
 				SendMessage ( _hwndMain, WM_IME_NOTIFY, IMN_CLOSESTATUSWINDOW, NULL );
+#endif
 				// 이기환 수정 끝 
 			}
 			// UI message
@@ -1494,12 +1459,11 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 #endif	// VER_TEST
 		
 		UpdatePauseState();
-#ifdef KALYDO
-		// update resource queue.
-		SE_UpdateStreamingData();
-#endif		
 		// do the main game loop and render screen
 		DoGame();
+		// minimized or hidden, nothing is drawn and the loop would spin: run it at
+		// sam_iMaxFPSInactive (LimitFrameRate() was never called in this client)
+		if( IsIconic(_hwndMain)) LimitFrameRate();
 		
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 		extern ENGINE_API FLOAT g_fFramePerSecond;
@@ -1525,12 +1489,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 				cntFrame = 0;
 				tmPrev = tmNow;
 
-				// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-				//_pNetwork->Check_nProtect();
-				GAME_GUARD()->CheckGameGuard();
-#endif
-				// ---------------------------------------------------<<
 			}
 		}
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
@@ -1539,10 +1497,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 	//_pInput->DisableInput();
 	_pGame->StopGame();
 
-#ifndef NO_GAMEGUARD
-	GAME_GUARD()->ShowErrMsg();
-	DESTROY_GAMEGUARD_WRAPPER();
-#endif
 	
 	End();
 	
@@ -1551,6 +1505,7 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
 
 void CheckModReload(void)
 {
+#ifdef PLATFORM_WIN32
 	if (_fnmModToLoad!="") {
 #ifndef NDEBUG
 		//CTString strDebug = "Debug\\";
@@ -1578,8 +1533,11 @@ void CheckModReload(void)
 		}
 		_execv(strCommand, argv);
 	}
+#endif
 }
 
+// The launcher (IPC on start, replacing its own executable) is Windows-only.
+#ifdef PLATFORM_WIN32
 // 2012-07-19 sykim70
 void ReleaseIPC()
 {
@@ -1654,7 +1612,9 @@ BOOL UpdateNewLauncher()
 	MoveFile(strNewLauncher.str_String, strLauncher.str_String);
 	return TRUE;
 }
+#endif  // PLATFORM_WIN32
 
+#ifdef PLATFORM_WIN32
 int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			LPSTR lpCmdLine, int nCmdShow)
 {
@@ -1683,12 +1643,6 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    CREATE_XTRAP_WRAPPER("");
-#endif
-#endif
-
 #ifdef CKBANG_UI_TWITTER
 
     LUA_OPEN();
@@ -1703,12 +1657,6 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	CheckModReload();
 
-
-#ifndef _DEBUG	// bypass this code when debug mode build [3/29/2012 rumist]
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    DESTROY_XTRAP_WRAPPER();
-#endif
-#endif
 
 #ifdef CKBANG_UI_TWITTER
     
@@ -1727,6 +1675,34 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	return iResult;
 }
+#else  // PLATFORM_WIN32
+
+// Outside Windows: the arguments become the command line WinMain would get.
+int main(int argc, char *argv[])
+{
+	CTString strCmdLine;
+	for (int iArg = 1; iArg < argc; iArg++) {
+		if (iArg > 1) strCmdLine += " ";
+		strCmdLine += argv[iArg];
+	}
+
+	CMessageDispatcher::InitSEEDEncrypt();
+
+	int iResult;
+	CTSTREAM_BEGIN {
+		iResult = SubMain(NULL, NULL, (char*)(const char*)strCmdLine, 0);
+	} CTSTREAM_END;
+	CTStream::ClearStreamHandling();
+
+	if(g_szExitError != NULL)
+	{
+		::MessageBox(NULL, g_szExitError, "Error", MB_OK);
+		delete[] g_szExitError;
+	}
+	return iResult;
+}
+
+#endif  // PLATFORM_WIN32
 
 
 // try to start a new display mode
@@ -1739,7 +1715,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	CDisplayMode dmTmp;
 	dmTmp.dm_ddDepth = eColorDepth;
 	CPrintF( TRANS("  Starting display mode: %dx%dx%s (%s)\n"),
-					 pixSizeI, pixSizeJ, dmTmp.DepthString(),
+					 pixSizeI, pixSizeJ, (const char*)dmTmp.DepthString(),
 					 bFullScreenMode ? TRANS("fullscreen") : TRANS("window"));
 
 	// mark to start ignoring window size/position messages until settled down
@@ -1758,9 +1734,11 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 	// try to set new display mode
 	BOOL bSuccess;
 	//	김영환 : 함수 파라미터 변경.
+#ifdef SE1_D3D
 	if( eGfxAPI==GAT_D3D) OpenMainWindowNormal( pixSizeI, pixSizeJ,bCenter);
+#endif // SE1_D3D
 	bSuccess = _pGfx->ResetDisplayMode( eGfxAPI);
-	if( bSuccess && eGfxAPI==GAT_OGL) OpenMainWindowNormal( pixSizeI, pixSizeJ);
+	if( bSuccess && (eGfxAPI==GAT_OGL || GFX_IsGpuAPI(eGfxAPI))) OpenMainWindowNormal( pixSizeI, pixSizeJ);
 	//	김영환 : 무시 OpenMainWindowNormal() 처리됨.
 
 	// if new mode was set
@@ -1816,6 +1794,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 			// report failure
 			return FALSE;
 		}
+#ifdef SE1_D3D
 
 		// Compressed texture
 		if( eGfxAPI == GAT_D3D )
@@ -1841,6 +1820,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 
 			_pGfx->gl_bCompressedTexture = SUCCEEDED( hrDXT1 ) && SUCCEEDED( hrDXT3 ) && SUCCEEDED( hrDXT5 );
 		}
+#endif // SE1_D3D
 
 		sam_iScreenSizeI = pixSizeI;
 		sam_iScreenSizeJ = pixSizeJ;
@@ -1849,9 +1829,7 @@ BOOL TryToSetDisplayMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI,
 		sam_iGfxAPI = eGfxAPI;
 
 		SE_Get_UIManagerPtr()->DestroyRenderTarget();
-//#ifdef KALYDO
 		SE_Get_UIManagerPtr()->InitRenderTarget();
-//#endif
 				
 		// report success
 		return TRUE;
@@ -1873,9 +1851,11 @@ const INDEX aDefaultModes[][3] =
 	{ DISPD_DEFAULT, GAT_OGL, 0},
 	{ DISPD_16BIT,   GAT_OGL, 0},
 	{ DISPD_16BIT,   GAT_OGL, 1}, // 3dfx Voodoo2
+#ifdef SE1_D3D
 	{ DISPD_DEFAULT, GAT_D3D, 0},
 	{ DISPD_16BIT,   GAT_D3D, 0},
 	{ DISPD_16BIT,   GAT_D3D, 1},
+#endif // SE1_D3D
 };
 const INDEX ctDefaultModes = ARRAYCOUNT(aDefaultModes);
 
@@ -1885,10 +1865,11 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 {
 	CPrintF( TRANS("\n* START NEW DISPLAY MODE ...\n"));
 
-	// clamp window size to screen size if in window mode
+	// clamp window size to screen size if in window mode (fullscreen can have the desktop's size:
+	// a Retina display's own resolution, PLT_GetDesktopSize)
 	PIX pixMaxSizeI = _pixDesktopWidth  - 1; // need 1st lower resolution than desktop
 	PIX pixMaxSizeJ = _pixDesktopHeight - 1;
-	if( pixSizeI>pixMaxSizeI || pixSizeJ>pixMaxSizeJ) {
+	if( !bFullScreenMode && (pixSizeI>pixMaxSizeI || pixSizeJ>pixMaxSizeJ)) {
 		extern void FindMaxResolution( PIX &pixSizeI, PIX &pixSizeJ);
 		FindMaxResolution( pixMaxSizeI, pixMaxSizeJ);
 		pixSizeI = pixMaxSizeI;
@@ -1897,6 +1878,13 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 
 	// try to set the mode
 	BOOL bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
+
+	// if Metal or Vulkan failed, OpenGL in the same mode
+	if( !bSuccess && GFX_IsGpuAPI(eGfxAPI) && _pGfx->HasAPI(GAT_OGL)) {
+		CPrintF( TRANS("%s could not be started, trying OpenGL...\n"), eGfxAPI==GAT_VK ? "Vulkan" : "Metal");
+		eGfxAPI  = GAT_OGL;
+		bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, bFullScreenMode);
+	}
 
 	// if failed
 	if( !bSuccess)
@@ -1931,7 +1919,10 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 		_iDisplayModeChangeFlag = 1;  // all ok
 	}
 
-	SE_Get_UIManagerPtr()->InitPos(0, 0, pixSizeI, pixSizeJ);
+	// the UI covers the main drawport: at a Retina display's density it counts fewer pixels than
+	// the mode has (Engine/Platform/PlatformSDL.cpp)
+	if( _pdpMain!=NULL) SE_Get_UIManagerPtr()->InitPos(0, 0, _pdpMain->GetWidth(), _pdpMain->GetHeight());
+	else SE_Get_UIManagerPtr()->InitPos(0, 0, pixSizeI, pixSizeJ);
 
 	// apply 3D-acc settings
 	ApplyGLSettings(FALSE);
@@ -1965,7 +1956,7 @@ void GetWindowSizeFromTxt()
 
 	fstream fs;
 
-	fs.open(fileName, ios::in | ios::out);
+	fs.open(HOSTPATH(fileName), ios::in | ios::out);
 
 	if(fs.is_open())
 	{
@@ -1991,7 +1982,7 @@ void SaveWindowSizeToTxt()
 	
 	ofstream fs;
 
-	fs.open(fileName);
+	fs.open(HOSTPATH(fileName));
 	
 	if(fs.is_open())
 	{
@@ -2004,84 +1995,3 @@ void SaveWindowSizeToTxt()
 	}
 }
 
-#ifdef KALYDO
-
-////////////////////////////////////////////////////////////////////
-// kalydo functions.
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-CTFileName fnmDefaultPersistentSymbols = CTString("Data\\etc\\ps.dat");
-
-void KalydoUserData()
-{
-	// test existing ps.dat file.
-	FILE* fp = fopen( fnmPersistentSymbols, "rb" );
-	// if not exist ps.dat, copy from krf packages.
-	if( NULL == fp )
-	{
-		// not supporting Windows File I/O APIs.
-		//BOOL bSuccess = CopyFile( fnmDefaultPersistentSymbols, fnmPersistentSymbols, TRUE );
-		FILE* fr = fopen( fnmDefaultPersistentSymbols, "rb" );
-		FILE* fw = fopen( fnmPersistentSymbols, "wb" );
-
-		if( fr == NULL || fw == NULL )
-			return;
-
-		while ( !feof( fr ) )
-		{
-			char data;
-			fread( &data, sizeof(char), 1, fr );
-			fwrite( &data, sizeof(char), 1, fw );
-		}
-
-		fclose( fr );
-		fclose( fw );
-	}
-	else
-	{
-		fclose( fp );
-	}	
-}
-
-void KalydoSetUserAccount(std::string& sID, std::string& sPWD )
-{
-	extern BOOL g_bAutoLogin;
-	if (sID == "" && sPWD == "")
-	{
-		g_bAutoLogin = FALSE;
-	}
-	else
-	{
-		extern CTString g_nmID;
-		extern CTString g_nmPW;
-		g_nmID.PrintF( "%s", sID.c_str() );
-		g_nmPW.PrintF( "%s", sPWD.c_str() );
-		g_bAutoLogin = TRUE;
-
-		_pNetwork->m_strUserID = g_nmID;
-		_pNetwork->m_strUserPW = g_nmPW;
-	}
-}
-
-bool KalydoInit( HWND Parent )
-{
-	return true;
-}
-
-void KalydoStart()
-{
-}
-
-bool KalydoUpdate()
-{
-	return false;
-}
-
-void KalydoEnd()
-{
-}
-
-HWND getGameWindow()
-{
-	return _hwndMain;
-}
-#endif

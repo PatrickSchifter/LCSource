@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/1/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -1706,17 +1706,17 @@ void CUICharacterInfo::SetCurrentPageNewCharacterInfo(int nTabNum)
 	
 	if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_SKILL)
 	{
-		m_strTitleName.PrintF("%s", _S(6077, "특수 스킬") );
+		m_strTitleName.PrintF("%s", (const char*)_S(6077, "특수 스킬") );
 		SetCurrentSkillInfo(PAGE_CHARINFO_NEW_SKILL, m_nSkillActionUpperTab[0]);
 	}
 	else if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_ACTION_SOCIAL)
 	{
-		m_strTitleName.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );
+		m_strTitleName.PrintF( "%s,%s",(const char*)_S(94, "액션") ,(const char*)_S(96, "소셜") );
 		SetCurrentSkillInfo(PAGE_CHARINFO_NEW_ACTION_SOCIAL, m_nSkillActionUpperTab[1]);	
 	}
 	else if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_GUILD_PARTY)
 	{
-		m_strTitleName.PrintF("%s,%s",_S(97, "파티") ,_S(98, "길드") );
+		m_strTitleName.PrintF("%s,%s",(const char*)_S(97, "파티") ,(const char*)_S(98, "길드") );
 		SetCurrentSkillInfo(PAGE_CHARINFO_NEW_GUILD_PARTY, m_nSkillActionUpperTab[2]);	
 	}
 	else if(m_ucipCurrentPage == PAGE_CHARINFO_NEW_SYNDICATE)
@@ -1727,7 +1727,7 @@ void CUICharacterInfo::SetCurrentPageNewCharacterInfo(int nTabNum)
 		if (pSyndi != NULL)
 			pSyndi->SendSyndicateInfoUser();
 
-		m_strTitleName.PrintF("%s", _S(6130, "결사대 정보"));
+		m_strTitleName.PrintF("%s", (const char*)_S(6130, "결사대 정보"));
 		UpdateSyndicateMark();
 		UpdateMySyndiPos();
 		UpdateSyndiHistory();
@@ -1736,7 +1736,7 @@ void CUICharacterInfo::SetCurrentPageNewCharacterInfo(int nTabNum)
 	}
 	else
 	{
-		m_strTitleName.PrintF("%s", _S(69, "캐릭터 정보") );
+		m_strTitleName.PrintF("%s", (const char*)_S(69, "캐릭터 정보") );
 		UpdateStatTooltip();
 
 		UpdateSelectImage(NULL);
@@ -1872,7 +1872,7 @@ void CUICharacterInfo::initialize()
 
 	if (m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_STATUS] != NULL)
 	{
-		strTooltip.PrintF("%s", _S(69, "캐릭터 정보") );
+		strTooltip.PrintF("%s", (const char*)_S(69, "캐릭터 정보") );
 		m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_STATUS]->setTooltip(strTooltip);
 	}
 
@@ -1880,7 +1880,7 @@ void CUICharacterInfo::initialize()
 
 	if (m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_SKILL] != NULL)
 	{
-		strTooltip.PrintF("%s", _S(6077, "특수 스킬") );
+		strTooltip.PrintF("%s", (const char*)_S(6077, "특수 스킬") );
 		m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_SKILL]->setTooltip(strTooltip);
 	}
 
@@ -1888,7 +1888,7 @@ void CUICharacterInfo::initialize()
 
 	if (m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_ACTION_SOCIAL] != NULL)
 	{
-		strTooltip.PrintF( "%s,%s",_S(94, "액션") ,_S(96, "소셜") );
+		strTooltip.PrintF( "%s,%s",(const char*)_S(94, "액션") ,(const char*)_S(96, "소셜") );
 		m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_ACTION_SOCIAL]->setTooltip(strTooltip);
 	}
 
@@ -1896,7 +1896,7 @@ void CUICharacterInfo::initialize()
 
 	if (m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_GUILD_PARTY] != NULL)
 	{
-		strTooltip.PrintF("%s,%s",_S(97, "파티") ,_S(98, "길드") );
+		strTooltip.PrintF("%s,%s",(const char*)_S(97, "파티") ,(const char*)_S(98, "길드") );
 		m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_GUILD_PARTY]->setTooltip(strTooltip);
 	}
 
@@ -1904,7 +1904,7 @@ void CUICharacterInfo::initialize()
 
 	if (m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_SYNDICATE] != NULL)
 	{
-		strTooltip.PrintF("%s", _S(6130, "결사대 정보"));
+		strTooltip.PrintF("%s", (const char*)_S(6130, "결사대 정보"));
 		m_pBtnMainCheckBtn[PAGE_CHARINFO_NEW_SYNDICATE]->setTooltip(strTooltip);
 	}
 
@@ -2461,13 +2461,13 @@ void CUICharacterInfo::UpdateBaseInfo()
 	int added = 0;
 
 	// 이름
-	strString.PrintF( "%s", _pNetwork->MyCharacterInfo.name);
+	strString.PrintF( "%s", (const char*)_pNetwork->MyCharacterInfo.name);
 	
 	if (m_ptxtBase[eCHARINFO_BASE_NAME] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_NAME]->SetText(strString);
 	
 	// 클래스
-	strString.PrintF( "%s", CJobInfo::getSingleton()->GetName(_pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2));
+	strString.PrintF( "%s", (const char*)CJobInfo::getSingleton()->GetName(_pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2));
 
 	if (m_ptxtBase[eCHARINFO_BASE_CLASS] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_CLASS]->SetText(strString);
@@ -2482,7 +2482,7 @@ void CUICharacterInfo::UpdateBaseInfo()
 	if (_pNetwork->MyCharacterInfo.lGuildIndex == -1)
 		strString.PrintF( _S( 76, "길드 없음" ) );
 	else
-		strString.PrintF( "%s", _pNetwork->MyCharacterInfo.strGuildName);
+		strString.PrintF( "%s", (const char*)_pNetwork->MyCharacterInfo.strGuildName);
 
 	if (m_ptxtBase[eCHARINFO_BASE_GUILD] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_GUILD]->SetText(strString);
@@ -2491,7 +2491,7 @@ void CUICharacterInfo::UpdateBaseInfo()
 	if ( _pNetwork->MyCharacterInfo.guildPosName.Length() == 0 )
 		strString.PrintF( _S( 4177, "직위 없음") );
 	else
-		strString.PrintF( "%s", _pNetwork->MyCharacterInfo.guildPosName);
+		strString.PrintF( "%s", (const char*)_pNetwork->MyCharacterInfo.guildPosName);
 
 	if (m_ptxtBase[eCHARINFO_BASE_GUILDPOS] != NULL)
 		m_ptxtBase[eCHARINFO_BASE_GUILDPOS]->SetText(strString);
@@ -3020,7 +3020,7 @@ void CUICharacterInfo::SetAction()
 		if( pText != NULL )
 		{
 			if (pSelAction != NULL)
-				strString.PrintF("%s", pSelAction->GetName());
+				strString.PrintF("%s", (const char*)pSelAction->GetName());
 			strColor = 0xFFC672FF;
 			pText->SetText(strString);
 			pText->setFontColor(strColor);
@@ -3128,7 +3128,7 @@ void CUICharacterInfo::SetSocial()
 		if( pText != NULL )
 		{
 			if (pSelAction != NULL)
-				strString.PrintF("%s", pSelAction->GetName());
+				strString.PrintF("%s", (const char*)pSelAction->GetName());
 			strColor = 0xFFC672FF;
 			pText->SetText(strString);
 			pText->setFontColor(strColor);
@@ -3233,7 +3233,7 @@ void CUICharacterInfo::SetGuild()
 		if( pText != NULL )
 		{
 			if (pSelAction != NULL)
-				strString.PrintF("%s", pSelAction->GetName());
+				strString.PrintF("%s", (const char*)pSelAction->GetName());
 			strColor = 0xFFC672FF;
 			pText->SetText(strString);
 			pText->setFontColor(strColor);
@@ -3337,7 +3337,7 @@ void CUICharacterInfo::SetParty()
 		if( pText != NULL )
 		{
 			if (pSelAction != NULL)
-				strString.PrintF("%s", pSelAction->GetName());
+				strString.PrintF("%s", (const char*)pSelAction->GetName());
 			strColor = 0xFFC672FF;
 			pText->SetText(strString);
 			pText->setFontColor(strColor);
@@ -3585,7 +3585,7 @@ CTString CUICharacterInfo::GetHistoryText( eSTRING_TYPE eType, int nIdx )
 	if (eType == eSTRING_TYPE_TIME)
 	{
 		tm*	pTime = NULL;
-		pTime = localtime((time_t*)&pData->time);
+		pTime = LocalTime32(pData->time);
 		
 		strString.PrintF(_S(6068,"%d년 %d월 %d일 %d시"), pTime->tm_year + 1900, pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour);
 	}
@@ -3594,22 +3594,22 @@ CTString CUICharacterInfo::GetHistoryText( eSTRING_TYPE eType, int nIdx )
 		switch(pData->type)
 		{
 		case JOIN:		// 가입			
-			strString.PrintF( _S(6159,"%s 결사대에 가입하셨습니다."), pSyndi->GetSyndicateName(pData->syndicateType));
+			strString.PrintF( _S(6159,"%s 결사대에 가입하셨습니다."), (const char*)pSyndi->GetSyndicateName(pData->syndicateType));
 			break;
 		case REMOVE:	// 탈퇴
-			strString.PrintF( _S(6160,"%s 결사대에서 탈퇴하셨습니다."), pSyndi->GetSyndicateName(pData->syndicateType));
+			strString.PrintF( _S(6160,"%s 결사대에서 탈퇴하셨습니다."), (const char*)pSyndi->GetSyndicateName(pData->syndicateType));
 			break;
 		case DEGRADE:	// 강등
-			strString.PrintF( _S(6158,"%s의 직위로 강등되었습니다."), pSyndi->GetGradeName(pData->syndicateType, pData->grade));
+			strString.PrintF( _S(6158,"%s의 직위로 강등되었습니다."), (const char*)pSyndi->GetGradeName(pData->syndicateType, pData->grade));
 			break;
 		case PROMOTION:	// 승급
-			strString.PrintF( _S(6157,"%s의 직위로 승급하였습니다."), pSyndi->GetGradeName(pData->syndicateType, pData->grade));
+			strString.PrintF( _S(6157,"%s의 직위로 승급하였습니다."), (const char*)pSyndi->GetGradeName(pData->syndicateType, pData->grade));
 			break;
 		case WIN:		// 승리
-			strString.PrintF( _S(6161,"%s [%s결사대] 에게 승리하였습니다."), pData->targetName, pSyndi->GetSyndicateName(pData->targetSyndicateType));
+			strString.PrintF( _S(6161,"%s [%s결사대] 에게 승리하였습니다."), pData->targetName, (const char*)pSyndi->GetSyndicateName(pData->targetSyndicateType));
 			break;
 		case LOSE:		// 지다
-			strString.PrintF( _S(6162,"%s [%s결사대] 에게 패배하였습니다."), pData->targetName, pSyndi->GetSyndicateName(pData->targetSyndicateType));
+			strString.PrintF( _S(6162,"%s [%s결사대] 에게 패배하였습니다."), pData->targetName, (const char*)pSyndi->GetSyndicateName(pData->targetSyndicateType));
 			break;
 		}
 	}

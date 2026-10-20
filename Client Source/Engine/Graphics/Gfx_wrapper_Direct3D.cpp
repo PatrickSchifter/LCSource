@@ -454,6 +454,17 @@ static void d3d_DeletePixelProgram(ULONG ulHandle)
 
 
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)
+// Debug aid: append shader creation failures to ThrowLog.txt when it exists
+// (D3D_CHECKERROR is compiled out in release builds).
+static void LogShaderFailure(const char *strWhat, HRESULT hr, const char *strProgram)
+{
+	FILE *fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return;
+	fseek(fLog, 0, SEEK_END);
+	fprintf(fLog, "%s failed (0x%08lX)\n--- source ---\n%s\n--- end ---\n", strWhat, (unsigned long)hr, strProgram);
+	fclose(fLog);
+}
+
 static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStreamFlags)
 {
 	extern void GetShaderDeclaration_D3D(ULONG *ulRetDecl, ULONG ulStreamFlags);
@@ -468,6 +479,7 @@ static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStrea
 	GetShaderDeclaration_D3D(ulDeclaration,ulStreamFlags);
 	LPD3DXBUFFER pBuffer = NULL;
 	ULONG *pulShaderTokens = CompileVertexProgram_D3D(strVertexProgram, &pBuffer);
+	if (pulShaderTokens == NULL) return 0;  // assembly failed: no program
 	ASSERT(pBuffer->GetBufferPointer() == pulShaderTokens);
 
 	// create new vertex shader
@@ -476,6 +488,7 @@ static ULONG d3d_CreateVertexProgram(const char *strVertexProgram, ULONG ulStrea
 	// create programmable vertex shader
 	HRESULT hr = _pGfx->gl_pd3dDevice->CreateVertexShader( ulDeclaration, pulShaderTokens, &ulProgramHandle, dwFlags);
 	pBuffer->Release();
+	if (FAILED(hr)) { LogShaderFailure("CreateVertexShader", hr, strVertexProgram); return 0; }
 	D3D_CHECKERROR(hr);
 	return ulProgramHandle;
 }
@@ -492,12 +505,14 @@ static ULONG d3d_CreatePixelProgram(const char *strPixelProgram)
 	ULONG ulProgramHandle;
 	LPD3DXBUFFER pBuffer = NULL;
 	ULONG *pulShaderTokens = CompilePixelProgram_D3D(strPixelProgram, &pBuffer);
+	if (pulShaderTokens == NULL) return 0;  // assembly failed: no program
 	ASSERT(pBuffer->GetBufferPointer() == pulShaderTokens);
 
 #define D3DPIXELSHADERDEF ULONG
 	// create programmable pixel shader
 	HRESULT hr = _pGfx->gl_pd3dDevice->CreatePixelShader( (D3DPIXELSHADERDEF*)pulShaderTokens, &ulProgramHandle);
 	pBuffer->Release();
+	if (FAILED(hr)) { LogShaderFailure("CreatePixelShader", hr, strPixelProgram); return 0; }
 	D3D_CHECKERROR(hr);
 	return ulProgramHandle;
 }
@@ -1470,7 +1485,7 @@ static void d3d_SetTextureModulation( INDEX iScale)
 
 
 
-static void d3d_GenerateTexture( ULONG &ulTexObject)
+static void d3d_GenerateTexture( TEXOBJ &ulTexObject)
 {
 	ASSERT( _pGfx->gl_eCurrentAPI==GAT_D3D);
 	_sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
@@ -1487,7 +1502,7 @@ static void d3d_GenerateTexture( ULONG &ulTexObject)
 
 
 // unbind texture from API
-static void d3d_DeleteTexture( ULONG &ulTexObject)
+static void d3d_DeleteTexture( TEXOBJ &ulTexObject)
 {
 	// skip if already unbound
 	ASSERT( _pGfx->gl_eCurrentAPI==GAT_D3D);

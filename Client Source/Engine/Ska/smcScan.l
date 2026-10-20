@@ -1,6 +1,11 @@
 %option prefix="syy"
+%top{
+// Engine headers first, as in every Engine source
+#include <Engine/StdH.h>
+}
+%option never-interactive nounistd noyywrap
 %{
-#include "ParsingSmbs.h"
+#include <Engine/Ska/ParsingSmbs.h>
 #include "smcPars.h"
 
 #include <Engine/Base/CTString.h>
@@ -10,12 +15,6 @@
 
 #include <Engine/Templates/DynamicStackArray.cpp>
 extern CTFileName _fnmApplicationPath;
-
-int syywrap(void)
-{
-  // no more buffers
-  return 1;
-};
 
 // declarations for recursive SMC script parsing
 struct BufferStackEntry {

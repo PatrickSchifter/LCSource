@@ -29,6 +29,18 @@ bool regist_signal_stack()
 #endif
 
 #ifndef WIN32
+#if defined(__APPLE__) && (defined(__aarch64__) || defined(__arm64__))
+#define LC_FAULT_PC(uc) ((void*)__darwin_arm_thread_state64_get_pc((uc)->uc_mcontext->__ss))
+#elif defined(__APPLE__)
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext->__ss.__rip)
+#elif defined(__x86_64__)
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext.gregs[REG_RIP])
+#else
+#define LC_FAULT_PC(uc) ((void*)(uc)->uc_mcontext.gregs[REG_EIP])
+#endif
+#endif
+
+#ifndef WIN32
 static const int exceptionSignals[] =
 {
 	SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS, SIGINT, SIGHUP, -1

@@ -79,7 +79,7 @@ protected:
 	int					m_nMasProb[3];		// success, nochange, fail
 
 	// Internal functions
-	void	AddString( CTString &strDesc );
+	void	AddString( const CTString &strDesc );
 
 	// Network message functions ( send )
 	void	SendMixNewReq();

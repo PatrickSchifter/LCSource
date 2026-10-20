@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/World/World.h>
@@ -433,7 +433,8 @@ void CWorld::SplitSectors(CEntity &enThis, CBrushSectorSelection &selbscSectorsT
 	FOREACHINDYNAMICCONTAINER(selbscSectorsToSplit, CBrushSector, itbsc) 
 	{
 		// split the sector using the copy of other object
-		SplitOneSector(*itbsc, CObject3D(obOther));
+		CObject3D obCopy(obOther);
+		SplitOneSector(*itbsc, obCopy);
 	}
 	
 	// update the bounding boxes of this brush

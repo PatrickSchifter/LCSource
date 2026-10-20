@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Base/ReplaceFile.h>
@@ -16,7 +16,7 @@
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Loading.h>
-template CDynamicArray<CBrush3D>;
+template class CDynamicArray<CBrush3D>;
 
 extern BOOL _bPortalSectorLinksPreLoaded = FALSE;
 extern BOOL _bEntitySectorLinksPreLoaded = FALSE;
@@ -919,12 +919,9 @@ void CBrushArchive::MakeWalkableAttributeMap( UWORD *pAttrBuffer, INDEX iFloor, 
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
-
-			if (iEX > pixWidth)
-				iEX = pixWidth;
-
-			if (iEZ > pixHeight)
-				iEZ = pixHeight;
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1045,12 +1042,9 @@ void CBrushArchive::MakePeaceAttributeMap( UWORD *pAttrBuffer, INDEX iFloor, PIX
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
-
-			if (iEX > pixWidth)
-				iEX = pixWidth;
-
-			if (iEZ > pixHeight)
-				iEZ = pixHeight;
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1171,6 +1165,9 @@ void CBrushArchive::MakeProductPublicAttributeMap( UWORD *pAttrBuffer, INDEX iFl
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1291,6 +1288,9 @@ void CBrushArchive::MakeProductPrivateAttributeMap( UWORD *pAttrBuffer, INDEX iF
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1411,6 +1411,9 @@ void CBrushArchive::MakeWarAttributeMap( UWORD *pAttrBuffer, INDEX iFloor, PIX p
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1531,6 +1534,9 @@ void CBrushArchive::MakeFreePKAttributeMap( UWORD *pAttrBuffer, INDEX iFloor, PI
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1663,6 +1669,9 @@ void CBrushArchive::MakeStairAttributeMap( UWORD *pAttrBuffer, INDEX iFloor, PIX
 			fMaxY += 1.0f;
 			iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 			iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+			// Keep triangles that reach past the map edge inside the buffer
+			if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+			if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 			FLOAT	fT;
 			for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -1995,6 +2004,9 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 				fMaxY += 1.0f;
 				iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 				iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+				// Keep triangles that reach past the map edge inside the buffer
+				if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+				if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 				FLOAT	fT;
 				for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -2008,7 +2020,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2016,7 +2028,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2024,7 +2036,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2032,7 +2044,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2040,7 +2052,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2121,6 +2133,9 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 					fMaxY += 1.0f;
 					iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 					iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+					// Keep triangles that reach past the map edge inside the buffer
+					if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+					if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 					FLOAT	fT;
 					for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -2134,7 +2149,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 							if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 							{
 								vHit = vDir * fT + vOrig;
-								uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+								uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 								if( uwTempHeight < uwTempHeight2 )
 									uwTempHeight = uwTempHeight2;
 							}
@@ -2142,7 +2157,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 							if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 							{
 								vHit = vDir * fT + vOrig;
-								uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+								uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 								if( uwTempHeight < uwTempHeight2 )
 									uwTempHeight = uwTempHeight2;
 							}
@@ -2150,7 +2165,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 							if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 							{
 								vHit = vDir * fT + vOrig;
-								uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+								uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 								if( uwTempHeight < uwTempHeight2 )
 									uwTempHeight = uwTempHeight2;
 							}
@@ -2158,7 +2173,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 							if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 							{
 								vHit = vDir * fT + vOrig;
-								uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+								uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 								if( uwTempHeight < uwTempHeight2 )
 									uwTempHeight = uwTempHeight2;
 							}
@@ -2166,7 +2181,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 							if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 							{
 								vHit = vDir * fT + vOrig;
-								uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+								uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 								if( uwTempHeight < uwTempHeight2 )
 									uwTempHeight = uwTempHeight2;
 							}
@@ -2246,6 +2261,9 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 				fMaxY += 1.0f;
 				iSX = (INDEX)fMinX;		iEX = (INDEX)( fMaxX + 0.99999f );
 				iSZ = (INDEX)fMinZ;		iEZ = (INDEX)( fMaxZ + 0.99999f );
+				// Keep triangles that reach past the map edge inside the buffer
+				if( iSX < 0 ) iSX = 0;		if( iEX > pixWidth ) iEX = pixWidth;
+				if( iSZ < 0 ) iSZ = 0;		if( iEZ > pixHeight ) iEZ = pixHeight;
 
 				FLOAT	fT;
 				for( iZ = iSZ; iZ < iEZ; iZ++ )
@@ -2259,7 +2277,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2267,7 +2285,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2275,7 +2293,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2283,7 +2301,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}
@@ -2291,7 +2309,7 @@ void CBrushArchive::MakeSvrHeightMap( UWORD *pHeightBuffer, INDEX iFloor, PIX pi
 						if( RayHitsTriangle( vOrig, vDir, vP0, vP1, vP2, &fT ) )
 						{
 							vHit = vDir * fT + vOrig;
-							uwTempHeight2 = ( vHit( 2 ) + 0.009999f ) * 100.0f;
+							uwTempHeight2 = (UWORD)(SLONG)(( vHit( 2 ) + 0.009999f ) * 100.0f);
 							if( uwTempHeight < uwTempHeight2 )
 								uwTempHeight = uwTempHeight2;
 						}

@@ -711,7 +711,7 @@ void CUIAuctionNew::ShowErrorSearch( int nError )
 	case eSEARCH_TYPE_PRICE:
 		{
 			CTString str;
-			str.PrintF( _S(6032, "%s의 검색조건이 올바르지 않습니다. 다시 확인해 주시길 바랍니다."), getText(nStr[nError]) );
+			str.PrintF( _S(6032, "%s의 검색조건이 올바르지 않습니다. 다시 확인해 주시길 바랍니다."), (const char*)getText(nStr[nError]) );
 			MsgBoxInfo.AddString(str);
 		}
 		break;

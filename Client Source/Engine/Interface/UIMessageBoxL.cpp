@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIMessageBoxL.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
@@ -123,7 +123,7 @@ void CUIMessageBoxL::AdjustPosition( PIX pixMinI, PIX pixMinJ, PIX pixMaxI, PIX 
 // Name : CreateMessageBox()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::CreateMessageBox( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIMessageBoxL::CreateMessageBox( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 
@@ -179,7 +179,7 @@ void CUIMessageBoxL::InitMessageBox()
 // Name : AddDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMessageBoxL::AddDescString( CTString &strMessage, const COLOR colDesc )
+void CUIMessageBoxL::AddDescString( const CTString &strMessage, const COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strMessage.Length();

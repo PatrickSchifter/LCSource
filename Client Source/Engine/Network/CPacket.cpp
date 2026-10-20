@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Translation.h>
@@ -8,9 +8,10 @@
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Network/CPacket.h>
+#include <Engine/Network/SocketCompat.h>
 #include <Engine/Base/ObjectRestore.h>
 
-#include <Engine/Base/Listiterator.inl>
+#include <Engine/Base/ListIterator.inl>
 #include <Engine/Templates/ReusableContainer.cpp>
 
 // should the packet transfers in/out of the buffer be reported to the console
@@ -95,7 +96,11 @@ void CPacket::operator delete(void *p)
     // Halt release version if not this isn't final version
     extern INDEX dbg_bAtHome;
     if(dbg_bAtHome) {
-      _asm int 3;
+#ifdef _MSC_VER
+      __debugbreak();
+#else
+      __builtin_debugtrap();
+#endif
     }
   }
 //안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)
@@ -851,6 +856,6 @@ extern CPacket *CreatePacket(void)
 extern void DeletePacket(CPacket *ppaPacket)
 {
   TRACKMEM(Mem,"Network");
-  CObjectRestore<BOOL> or(_rcPacketContainer.rc_bNowDeleting,TRUE);
+  CObjectRestore<BOOL> orRestore(_rcPacketContainer.rc_bNowDeleting,TRUE);
   _rcPacketContainer.DeleteObject(ppaPacket);
 }

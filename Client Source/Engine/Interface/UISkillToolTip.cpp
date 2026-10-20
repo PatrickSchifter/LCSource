@@ -347,7 +347,7 @@ void CUISkillToolTip::ShowSkillLearnInfo(int nSkillIdx)
 			else 
 				nAttLv = int(rSkill.GetAttrAttLv(nLevel - 1));
 
-			strTemp.PrintF( _S(5845, "加己 沥焊 : [%s]加己 [%d]窜拌"), strAtt, nAttLv);
+			strTemp.PrintF( _S(5845, "加己 沥焊 : [%s]加己 [%d]窜拌"), (const char*)strAtt, nAttLv);
 
 			AddSkillInfoString(SKILLINFO_CURRENT + n, strTemp, 0xFF0000FF);
 		}
@@ -368,7 +368,7 @@ void CUISkillToolTip::ShowSkillLearnInfo(int nSkillIdx)
 			else 
 				nAttLv = int(rSkill.GetAttrDefLv(nLevel - 1));
 
-			strTemp.PrintF( _S(5845, "加己 沥焊 : [%s]加己 [%d]窜拌"), strAtt, nAttLv);
+			strTemp.PrintF( _S(5845, "加己 沥焊 : [%s]加己 [%d]窜拌"), (const char*)strAtt, nAttLv);
 
 			AddSkillInfoString(SKILLINFO_CURRENT + n, strTemp, 0x0000EEFF);
 		}
@@ -455,7 +455,7 @@ void CUISkillToolTip::RenderSkillInfoDesc()
 	pDrawPort->FlushRenderingQueue();
 }
 
-void CUISkillToolTip::AddSkillDescString( CTString &strDesc, COLOR colDesc /*= 0xF2F2F2FF */ )
+void CUISkillToolTip::AddSkillDescString( const CTString &strDesc, COLOR colDesc /*= 0xF2F2F2FF */ )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();

@@ -1,6 +1,5 @@
-#include "stdh.h"
+#include "StdH.h"
 //#define USING_SQLITE
-// KALYDO
 #include <Engine/Entities/EntityClass.h>
 #include <Engine/Interface/UIInternalClasses.h>
 #include "UIManager.h"
@@ -103,7 +102,6 @@ CUIBuff					*_pUIBuff = NULL;
 INDEX					_iNameType = 1;
 FLOAT					_fTmpTerLODMul = 1.0f;
 
-// KALYDO
 struct PlayerControls pctlCurrent;
 
 extern HWND		_hwndMain;
@@ -266,7 +264,7 @@ CUIManager::CUIManager()
 	m_bOutDebugString = false;
 #endif
 	
-	std::string strLocal = DefHelp::getNationPostfix(g_iCountry, true);
+	std::string strLocal = (const char*)DefHelp::getNationPostfix(g_iCountry, true);
 	// 패스 추가
 	m_vecAdditionalPath.push_back("Data\\Interface\\");
 	m_vecAdditionalPath.push_back("Data\\Interface\\Loading\\");
@@ -757,7 +755,7 @@ CUIMessageBoxL* CUIManager::GetMessageBoxL( int nCommandCode )
 // Name : CreateMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
+void CUIManager::CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode, int nPosX, int nPosY )
 {
 	// Create message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -774,7 +772,7 @@ void CUIManager::CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nComma
 // Name : CloseMessageBoxL()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
+void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue, const COLOR colDesc, CTString strPrefix )
 {
 	// Find message box
 	for( int iUI = UI_MESSAGEBOXL_START; iUI < UI_MESSAGEBOXL_END; iUI++ )
@@ -787,7 +785,7 @@ void CUIManager::AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &s
 			else
 			{
 				CTString strTemp;
-				strTemp.PrintF("%s %s", strPrefix, strMessage);
+				strTemp.PrintF("%s %s", (const char*)strPrefix, (const char*)strMessage);
 				((CUIMessageBoxL *)m_apUIs[iUI])->AddSelString( strTemp, colDesc, iValue );
 			}
 			break;
@@ -1954,7 +1952,7 @@ void CUIManager::RenderObjectNamePopup( CProjection3D* pprProjection )
 		{
 			strTemp.PrintF( "%I64d", llCount );
 			InsertCommaToString( strTemp );
-			strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), strTemp );
+			strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
 			colNas = GetNasColor( llCount );
 
 		}
@@ -2609,7 +2607,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		// Guild Name
 		if( _pNetwork->MyCharacterInfo.lGuildIndex > 0)
 		{
-			strGuildname.PrintF("%s (%d)", _pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildIndex);
+			strGuildname.PrintF("%s (%d)", (const char*)_pNetwork->MyCharacterInfo.strGuildName, _pNetwork->MyCharacterInfo.lGuildIndex);
 
 			// Get box region
 			//if(g_iCountry == THAILAND) 
@@ -2874,7 +2872,7 @@ void CUIManager::RenderObjectIndexPopup( CProjection3D* pprProjection )
 		strTemp.PrintF( "%I64d", llCount );
 		InsertCommaToString( strTemp );
 		colNas = GetNasColor( llCount );
-		strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), strTemp );
+		strName.PrintF( "%s(%s)", pInfo->GetTargetName(eTARGET_REAL), (const char*)strTemp );
 	}
 	else
 		strName.PrintF( "%s", pInfo->GetTargetName(eTARGET_REAL) );
@@ -6037,7 +6035,7 @@ void CUIManager::LostTarget()
 
 //#define KEY_SHOW_STRING_INDEX_DEVtest
 
-inline ENGINE_API CTString _SFunc( int x )
+ENGINE_API CTString _SFunc( int x )
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 
@@ -6046,7 +6044,7 @@ inline ENGINE_API CTString _SFunc( int x )
 		CTString strString;
 		CTString strOrg = pUIManager->GetString( x );
 
-		strOrg.IsEmpty() ? strString.PrintF( "[%d]Client", x ) : strString.PrintF( "[%d]%s", x, strOrg );
+		strOrg.IsEmpty() ? strString.PrintF( "[%d]Client", x ) : strString.PrintF( "[%d]%s", x, (const char*)strOrg );
 		return strString;
 	}
 	else
@@ -6064,7 +6062,7 @@ void CUIManager::SetTitleName( INDEX bFullScreen, int iScreenSizeI, int iScreenS
 	// Date : 2005-09-22(오후 7:17:24), By Lee Ki-hwan
 	// 원도우 타이틀 바 조정 
 	CTString strTitleName;
-	strTitleName.PrintF( "%s (%s %dx%d)", _S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
+	strTitleName.PrintF( "%s (%s %dx%d)", (const char*)_S( 147, "Title Name"), (bFullScreen?"FullScreen":"Window"), iScreenSizeI, iScreenSizeJ );
 
 #ifdef	VER_TEST
 	if (m_strIP.size() > 0)
@@ -6770,7 +6768,7 @@ void CUIManager::SetRareOption( UpdateClient::itemInfo* pInfo, CItems& rItem )
 
 // WSS_MINIGAME_070422 ---------------------------------------------------------------------------->>
 // For multilined string
-void CUIManager::AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
+void CUIManager::AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor,INDEX ilistCol)
 {	
 	// Get length of string
 	INDEX	nLength = tStr.Length();
@@ -7911,6 +7909,12 @@ void CUIManager::HUD_DrawItemModel()
 	fU = (DEF_DEFAULT_RT_WIDTH-_RTRusToyWidth)/(FLOAT)DEF_DEFAULT_RT_WIDTH;
 
 	GetDrawPort()->InitTextureData(&m_RenderTarget->rt_tdTexture, FALSE, PBT_ADD);
+#ifndef SE1_D3D
+	// an OpenGL render target starts at the bottom (Metal's and Vulkan's at the top, as Direct3D's)
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL)
+		GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,1.0f,1.0f,0.0f,0xFFFFFFFF);
+	else
+#endif // SE1_D3D
 	GetDrawPort()->AddTexture( nPosX, nPosY, nPosX+_RTRusToyWidth, nPosY+_RTRusToyHeight, fU,0.0f,1.0f,1.0f,0xFFFFFFFF);
 	GetDrawPort()->FlushRenderingQueue();
 }
@@ -7986,13 +7990,13 @@ void CUIManager::Update( float fDeltaTime, float fElapsedTime )
 		{
 			cnt = 0;
 
-			int	gap = abs(_pNetwork->slServerTime - time(NULL));
-			int cur = time(NULL);
+			int	gap = abs(_pNetwork->slServerTime - (SLONG)time(NULL));
+			int cur = (int)time(NULL);
 			// 오차가 5분 이상이고, 동기화 시간이 1분 이상인지 검사
 			if (gap > 300 && 
 				abs(cur - last_send) > 60)
 			{
-				last_send = time(NULL);
+				last_send = (int)time(NULL);
 				_pNetwork->SendReqServerTime();
 			}
 		}
@@ -8048,7 +8052,7 @@ std::string CUIManager::GetFullPath( std::string strFileName )
 
 void CUIManager::ItemNameColorInI()
 {
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_INI_PATH;
 
 	char szBuff[16];

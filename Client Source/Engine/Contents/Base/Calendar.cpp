@@ -4,7 +4,7 @@
 #include <Engine/Interface/UIManager.h>
 #include <Common/Packet/ptype_reserved_gm_command.h>
 #include <Engine/Network/NetworkMessage.h>
-#include <Engine/network/CNetwork.h>
+#include <Engine/Network/CNetwork.h>
 
 #include "UICalendar.h"
 #include "Calendar.h"

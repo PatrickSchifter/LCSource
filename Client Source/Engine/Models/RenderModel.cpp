@@ -1,7 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Float.h>
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>
@@ -603,7 +603,7 @@ void CModelObject::RenderModel( CRenderModel &rm)
 		extern INDEX gap_bUseOcclusionCulling;
 		const BOOL bMirrored = (rm.rm_ulFlags & RMF_MIRROR); // mirrored models cannot have occlusion culling!
 		const BOOL bDoOcclusionCheck = (gap_bUseOcclusionCulling&1) && _pGfx->HasOcclusionCulling() && !mo_bSkipOcclusionTest;
-		const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)this);
+		const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)(uintptr_t)this);
 
 		BOOL bOccluded = FALSE;
 		if( !bMirrored) { // don't test models in mirror

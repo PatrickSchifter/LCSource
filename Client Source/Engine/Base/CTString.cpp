@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -699,8 +699,138 @@ INDEX CTString::PrintF(const char *strFormat, ...)
 static TLVar<INDEX> _ctBufferSize = 0;
 //static TLVar<char*> _pchBuffer = NULL;
 
+#if defined(_M_IX86) || (defined(__APPLE__) && defined(__aarch64__))
+#define FIXSTRINGARGS
+// Localized strings from other client versions sometimes use %s where this code passes a
+// number (e.g. Brazil's "%s de Exp"). Feeding an integer to %s crashes, so before printing,
+// any %s argument that is not a readable pointer is replaced by its decimal text.
+// Where va_list is a plain pointer to the argument slots: x86 (4-byte slots, 64-bit values
+// take two) and macOS arm64 (every variadic argument takes one 8-byte slot).
+#if defined(_M_IX86)
+typedef ULONG ArgSlot;
+#define FIXARGS_WIDESLOTS 2
+static BOOL IsReadablePointer(ArgSlot ul)
+{
+	if (ul < 0x10000) return FALSE;
+	MEMORY_BASIC_INFORMATION mbi;
+	if (VirtualQuery((void*)ul, &mbi, sizeof(mbi)) == 0) return FALSE;
+	if (mbi.State != MEM_COMMIT) return FALSE;
+	return (mbi.Protect & (PAGE_NOACCESS|PAGE_GUARD)) == 0;
+}
+#else
+#include <mach/mach.h>
+#include <mach/mach_vm.h>
+typedef uint64_t ArgSlot;
+#define FIXARGS_WIDESLOTS 1
+// No valid pointer lies below 4 GB in a 64-bit macOS process (__PAGEZERO); an int given for
+// %s leaves the upper half of its slot undefined, so its number is the low 32 bits.
+static BOOL IsReadablePointer(ArgSlot ul)
+{
+	if (ul < 0x100000000ULL) return FALSE;
+	mach_vm_address_t addr = ul;
+	mach_vm_size_t size = 0;
+	vm_region_basic_info_data_64_t info;
+	mach_msg_type_number_t ct = VM_REGION_BASIC_INFO_COUNT_64;
+	mach_port_t port;
+	if (mach_vm_region(mach_task_self(), &addr, &size, VM_REGION_BASIC_INFO_64,
+	                   (vm_region_info_t)&info, &ct, &port) != KERN_SUCCESS) return FALSE;
+	// (the region given is the first one at or after the address)
+	if (addr > ul) return FALSE;
+	return (info.protection & VM_PROT_READ) != 0;
+}
+#endif
+
+#define FIXARGS_MAXSLOTS 64
+#define FIXARGS_MAXNUMBERS 16
+struct FixedArgs {
+	ArgSlot aulSlots[FIXARGS_MAXSLOTS];
+	char achNumbers[FIXARGS_MAXNUMBERS][16];
+};
+
+// Returns the arguments to print with: arg itself, or fa's copy with numbers put in for bad %s.
+static va_list FixStringArgs(const char *strFormat, va_list arg, FixedArgs &fa)
+{
+	const ArgSlot *pulArgs = (const ArgSlot *)arg;
+	INDEX ctSlots = 0, ctNumbers = 0;
+	BOOL bChanged = FALSE;
+	for (const char *pch = strFormat; *pch != 0; pch++) {
+		if (*pch != '%') continue;
+		pch++;
+		if (*pch == '%') continue;
+		while (*pch && strchr("-+ #0", *pch)) pch++;
+		if (*pch == '*') { ctSlots++; pch++; } else { while (isdigit((UBYTE)*pch)) pch++; }
+		if (*pch == '.') {
+			pch++;
+			if (*pch == '*') { ctSlots++; pch++; } else { while (isdigit((UBYTE)*pch)) pch++; }
+		}
+		INDEX ctSize = 1;
+		if (strncmp(pch, "I64", 3) == 0) { ctSize = FIXARGS_WIDESLOTS; pch += 3; }
+		else if (strncmp(pch, "I32", 3) == 0) { pch += 3; }
+		else if (strncmp(pch, "ll", 2) == 0) { ctSize = FIXARGS_WIDESLOTS; pch += 2; }
+		else if (strncmp(pch, "hh", 2) == 0) { pch += 2; }
+		else if (*pch == 'j') { ctSize = FIXARGS_WIDESLOTS; pch++; }
+		else if (*pch && strchr("lhLwzItI", *pch)) { pch++; }
+		if (*pch == 0) break;
+		if (ctSlots + 2 > FIXARGS_MAXSLOTS) return arg;
+		switch (*pch) {
+		case 's': case 'S': {
+			const ArgSlot ul = pulArgs[ctSlots];
+			fa.aulSlots[ctSlots] = ul;
+			if (ul != 0 && !IsReadablePointer(ul)) {
+				if (ctNumbers >= FIXARGS_MAXNUMBERS) return arg;
+				_snprintf(fa.achNumbers[ctNumbers], 16, "%ld", (long)(SLONG)ul);
+				fa.aulSlots[ctSlots] = (ArgSlot)(uintptr_t)fa.achNumbers[ctNumbers];
+				if (*pch == 'S') return arg;  // wide string: leave it alone
+				ctNumbers++;
+				bChanged = TRUE;
+			}
+			ctSlots++;
+			break; }
+		case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A':
+			ctSize = FIXARGS_WIDESLOTS;  // doubles
+			// fall through
+		case 'd': case 'i': case 'u': case 'o': case 'x': case 'X': case 'c': case 'C': case 'p': case 'n':
+			for (INDEX i = 0; i < ctSize; i++) { fa.aulSlots[ctSlots] = pulArgs[ctSlots]; ctSlots++; }
+			break;
+		default:
+			return arg;  // unknown conversion: print as is
+		}
+	}
+	return bChanged ? (va_list)(void*)fa.aulSlots : arg;
+}
+#endif  // FIXSTRINGARGS
+
+#ifndef _MSC_VER
+// MSVC's size prefixes in formats (%I64d, in the code and in localized strings) for the C
+// library's printf: I64 becomes ll, I32 goes away. strOut is used only when something changed.
+static const char *TranslateMSVCFormat(const char *strFormat, std::string &strOut)
+{
+	if (strstr(strFormat, "I64") == NULL && strstr(strFormat, "I32") == NULL) {
+		return strFormat;
+	}
+	strOut.clear();
+	for (const char *pch = strFormat; *pch != 0; ) {
+		if (*pch != '%') { strOut += *pch++; continue; }
+		strOut += *pch++;
+		if (*pch == '%') { strOut += *pch++; continue; }
+		while (*pch != 0 && strchr("-+ #0123456789.*'", *pch)) strOut += *pch++;
+		if (strncmp(pch, "I64", 3) == 0) { strOut += "ll"; pch += 3; }
+		else if (strncmp(pch, "I32", 3) == 0) { pch += 3; }
+	}
+	return strOut.c_str();
+}
+#endif
+
 INDEX CTString::VPrintF(const char *strFormat, va_list arg)
 {
+#ifndef _MSC_VER
+	std::string strTranslated;
+	strFormat = TranslateMSVCFormat(strFormat, strTranslated);
+#endif
+#ifdef FIXSTRINGARGS
+	FixedArgs fa;
+	arg = FixStringArgs(strFormat, arg, fa);
+#endif
 	INDEX ctBufferSize = 0;
 	char *pchBuffer = NULL;
 	// if buffer was not allocated yet
@@ -715,8 +845,9 @@ INDEX CTString::VPrintF(const char *strFormat, va_list arg)
 	FOREVER {
 		// print to the buffer
 		iLen = _vsnprintf(pchBuffer, ctBufferSize, strFormat, arg);
-		// if printed ok
-		if (iLen!=-1) {
+		// if printed ok (MSVC gives -1 when the buffer is too small, C99 the length needed;
+		// a length equal to the buffer left out the terminator)
+		if (iLen!=-1 && iLen<ctBufferSize) {
 			// stop
 			break;
 		}
@@ -742,8 +873,18 @@ extern void FreeVPrintF(void)
 //	}
 }
 
-static void *psscanf = &sscanf;
 // Scan formatted from a string
+#ifdef USE_PORTABLE_C
+INDEX CTString::ScanF(const char *strFormat, ...)
+{
+	va_list arg;
+	va_start(arg, strFormat);
+	const INDEX iRet = vsscanf(str_String, strFormat, arg);
+	va_end(arg);
+	return iRet;
+}
+#else
+static void *psscanf = &sscanf;
 __declspec(naked) INDEX CTString::ScanF(const char *strFormat, ...)
 {
 	__asm {
@@ -755,10 +896,11 @@ __declspec(naked) INDEX CTString::ScanF(const char *strFormat, ...)
 		jmp     dword ptr [psscanf]
 	}
 }
+#endif
 
 
 	// split string in two strings at specified position (char AT splitting position goes to str2)
-void CTString::Split( INDEX iPos, CTString &str1, CTString &str2)
+void CTString::Split( INDEX iPos, CTString &str1, CTString &str2) const
 {
 	str1 = str_String;
 	str2 = str_String;
@@ -931,7 +1073,7 @@ void CTString::LoadVar(const class CTFileName &fnmFile)
 		str.Load_t(fnmFile);
 		*this = str;
 	} catch (char *strError) {
-		CPrintF(TRANS("Cannot load variable from '%s':\n%s\n"), (CTString&)fnmFile, strError);
+		CPrintF(TRANS("Cannot load variable from '%s':\n%s\n"), (const char*)(CTString&)fnmFile, strError);
 	}
 }
 
@@ -940,7 +1082,7 @@ void CTString::SaveVar(const class CTFileName &fnmFile)
 	try {
 		Save_t(fnmFile);
 	} catch (char *strError) {
-		CPrintF(TRANS("Cannot save variable to '%s':\n%s\n"), (CTString&)fnmFile, strError);
+		CPrintF(TRANS("Cannot save variable to '%s':\n%s\n"), (const char*)(CTString&)fnmFile, strError);
 	}
 }
 

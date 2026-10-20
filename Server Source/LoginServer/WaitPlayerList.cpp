@@ -24,7 +24,8 @@ int CWaitPlayerList::Add( const char*id, const char* password, CDescriptor* desc
 	strcpy( newplayer->id , id );
 	strcpy( newplayer->password , password );
 	newplayer->desc		= desc;
-	newplayer->key		= (int)newplayer;
+	static int s_nextKey = 0;	// was (int)newplayer, which truncates pointers on 64-bit
+	newplayer->key		= ++s_nextKey;
 	m_waitPlayerList.insert( newplayer );
 
 	return newplayer->key;

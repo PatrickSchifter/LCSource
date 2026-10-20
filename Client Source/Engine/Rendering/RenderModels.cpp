@@ -969,8 +969,20 @@ void CRenderer::RenderOneSkaModelToTexture(CEntity &en, const CPlacement3D &plMo
 		0.1f, 300.0f);					// FrameBBox의 Height
 
 	// NOTE : 직접적으로 투영행렬을 설정하는 부분.  Serious 엔진에서 제공하는 함수를 이용하는 방향으로 변환할것.
+#ifdef SE1_D3D
 	HRESULT hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_PROJECTION, (const _D3DMATRIX*)&_matShadowProj);
 	D3D_CHECKERROR(hr);
+#else
+	// the same floats work as an OpenGL projection (its depth lands in 0..1 of OpenGL's -1..1)
+	extern void SetProjectionMatrix_GPU( const FLOAT *pfMatrix);
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		SetProjectionMatrix_GPU( _matShadowProj);
+	} else {
+		pglMatrixMode( GL_PROJECTION);
+		pglLoadMatrixf( _matShadowProj);
+		pglMatrixMode( GL_MODELVIEW);
+	}
+#endif // SE1_D3D
 	
 	//-----------------------------------------------------------------------------
 	// 모델을 렌더링할 때 사용할 VIEW 행렬로 지정합니다.
@@ -1606,9 +1618,9 @@ void CRenderer::RenderLensFlares(void)
 			const FLOAT fThisR  = (fR + (fI-fR)*olf.olf_fLightDesaturation) * fIntensityFactor;
 			const FLOAT fThisG  = (fG + (fI-fG)*olf.olf_fLightDesaturation) * fIntensityFactor;
 			const FLOAT fThisB  = (fB + (fI-fB)*olf.olf_fLightDesaturation) * fIntensityFactor;
-			const SLONG slThisR = Min( FloatToInt(fThisR), 255L);
-			const SLONG slThisG = Min( FloatToInt(fThisG), 255L);
-			const SLONG slThisB = Min( FloatToInt(fThisB), 255L);
+			const SLONG slThisR = Min( FloatToInt(fThisR), (SLONG)255);
+			const SLONG slThisG = Min( FloatToInt(fThisG), (SLONG)255);
+			const SLONG slThisB = Min( FloatToInt(fThisB), (SLONG)255);
 			const COLOR colBlending = RGBToColor( slThisR,slThisG,slThisB);
 
 			// render the flare

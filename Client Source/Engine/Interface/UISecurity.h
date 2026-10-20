@@ -75,7 +75,7 @@ protected:
 
 	// Description
 	void	GetSecurityDesc( BOOL bShow = TRUE );
-	void	AddSecurityDescString( CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
+	void	AddSecurityDescString( const CTString &strDesc, COLOR colDesc = 0xF2F2F2FF );
 
 	void	MsgBoxInputNewPW();
 

@@ -51,7 +51,7 @@ ENGINE_API extern void SetErrorInsufficientMemoryCallback(void(*pErrorInsufficie
 // fast memory copy of ULONGs
 inline void CopyLongs( ULONG *pulSrc, ULONG *pulDst, INDEX ctLongs)
 {
-#if (defined _MSC_VER)
+#ifndef USE_PORTABLE_C
   __asm {
     mov   ecx,dword ptr [ctLongs]
     jecxz skip
@@ -70,7 +70,7 @@ skip:
 // fast memory set of ULONGs
 inline void StoreLongs( ULONG ulVal, ULONG *pulDst, INDEX ctLongs)
 {
-#if (defined _MSC_VER)
+#ifndef USE_PORTABLE_C
   __asm {
     mov   ecx,dword ptr [ctLongs]
     jecxz skip
@@ -89,7 +89,7 @@ skip:
 // return position (offset) where we encounter specified byte or ctBytes
 inline INDEX FindByte( UBYTE ubByte, UBYTE *pubMemory, INDEX ctBytes)
 {
-#if (defined _MSC_VER)
+#ifndef USE_PORTABLE_C
   __asm {
     cld
     mov    al, byte ptr [ubByte]
@@ -112,7 +112,7 @@ inline INDEX FindByte( UBYTE ubByte, UBYTE *pubMemory, INDEX ctBytes)
 // return position (offset) where we encounter specified long or ctLongs
 inline INDEX FindWord( UWORD uwWord, UWORD *puwMemory, INDEX ctWords)
 {
-#if (defined _MSC_VER)
+#ifndef USE_PORTABLE_C
   __asm {
     cld
     mov   ax,word ptr [uwWord]
@@ -135,7 +135,7 @@ inline INDEX FindWord( UWORD uwWord, UWORD *puwMemory, INDEX ctWords)
 // return position (offset) where we encounter specified long or ctLongs
 inline INDEX FindLong( ULONG ulLong, ULONG *pulMemory, INDEX ctLongs)
 {
-#if (defined _MSC_VER)
+#ifndef USE_PORTABLE_C
   __asm {
     cld
     mov   eax,dword ptr [ulLong]

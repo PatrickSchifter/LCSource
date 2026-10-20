@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 
 #include <map>
@@ -6,7 +6,7 @@
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/Ska/Render.h>
 #include <Engine/Entities/InternalClasses.h>
-#include <Engine/Interface/UISignboard.h>
+#include <Engine/Interface/UISignBoard.h>
 #include <Engine/Interface/UIAutoHelp.h>
 #include <Engine/Interface/UISiegeWarfare.h>
 #include <Engine/Interface/UISiegeWarfareNew.h>
@@ -143,8 +143,8 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 			
 		CTString strMessage,  strMessage2;
 		
-		strMessage.PrintF(_S(2012, "[%s]지역 [%s]공성이 시작됩니다." ), CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ));	
-		strMessage2.PrintF(_S(2013,  "[%s]지역 내에 있는 공성 참여 유저들은 공성 시작 지점으로 이동합니다."), CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
+		strMessage.PrintF(_S(2012, "[%s]지역 [%s]공성이 시작됩니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ));	
+		strMessage2.PrintF(_S(2013,  "[%s]지역 내에 있는 공성 참여 유저들은 공성 시작 지점으로 이동합니다."), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
 
 		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
@@ -170,7 +170,7 @@ void CUISiegeWarfareDoc::GuildWarStart( int nZoneIndex,  int nRemainSec )
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 6, FALSE );
 		((CPlayerEntity*)CEntity::GetPlayerEntity(0))->OpenGate( 7, FALSE );
 		CTString strMessage;
-		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
+		strMessage.PrintF( _S( 2012, "[%s]지역 공성이 시작됩니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ));	
 		// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 		// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
 		pUIManager->GetSiegeWarfare()->SetNotice( strMessage );
@@ -302,7 +302,7 @@ void CUISiegeWarfareDoc::RemainFiledTime( int nZoneIndex, int nRemainSec )
 	SetLeftTime( nRemainSec );
 	
 	CTString strMessage;
-	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (m_lLeftTime) / 60);	
+	strMessage.PrintF(_S( 2016,  "[%s]지역 [야전전투]가 %d분 남았습니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (m_lLeftTime) / 60);	
 	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
 	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );	
@@ -319,7 +319,7 @@ void CUISiegeWarfareDoc::TimeConfirm( int nZoneIndex, int nMonth, int nDay, int 
 	
 	CTString strMessage;
 	strMessage.PrintF( _S( 2017, "[%s]지역 [%s]공성이 %d월 %d일 %d시로 예정되었습니다." ),	
-		CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMonth, nDay, nHour );	
+		(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), nMonth, nDay, nHour );	
 	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
 	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );
@@ -336,7 +336,7 @@ void CUISiegeWarfareDoc::RemainStartTime( int nZoneIndex, int nMin )
 	
 	CTString strMessage;
 	
-	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), nMin );	
+	strMessage.PrintF( _S( 2018, "[%s]지역 [%s]공성이 %d분 남았습니다." ), (const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), nMin );	
 	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
 	CUIManager::getSingleton()->GetSiegeWarfare()->SetNotice( strMessage );	
@@ -526,23 +526,23 @@ void CUISiegeWarfareDoc::EndWar( int nZoneIndex, int nWinDefense, int nOwnerGuil
 		if( strOwnerGuildName.Length() <= 0 )
 		{
 			strMessage1.PrintF( _S( 2019, "[%s]지역 [%s]공성에 실패 하였습니다." ), 
-			CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ) );	
+			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ) );	
 		}
 		else
 		{
 			strMessage1.PrintF( _S(2020 , "[%s]지역 [%s]공성이 종료되었습니다. [%s]길드가 수성에 성공하였습니다." ),
-			CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName );		
+			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), (const char*)strOwnerGuildName );		
 		}
 		
 	}
 	else
 	{
 		strMessage1.PrintF( _S(2021 , "[%s]지역 [%s]공성이 종료되었습니다. 새로운 성주로 [%s]길드의 [%s]길드장이 선출 되었습니다." ), 
-			CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), GetCastleName( nZoneIndex ), strOwnerGuildName, strOwnerName );	
+			(const char*)CZoneInfo::getSingleton()->GetZoneName( nZoneIndex ), (const char*)GetCastleName( nZoneIndex ), (const char*)strOwnerGuildName, (const char*)strOwnerName );	
 	}
 	
 	strMessage2.PrintF(_S( 2022, "다음 공성전 신청은 %d월 %d일 %s요일 오후 %d시부터 신청이 가능합니다." ), 
-		nNextMonth, nNextDay, pUIManager->GetWeekToString( nNextWeek ), nNextHour );	
+		nNextMonth, nNextDay, (const char*)pUIManager->GetWeekToString( nNextWeek ), nNextHour );	
 	// [2012/06/04 : Sora] ITS 8986 공성시작전 공성시작 지점으로 이동 시 캐릭터 이동불가 상태 발생 수정
 	// 공성 메시지 출력하면서 해당 UI를 활성화 시켜주어햐 한다. 공성 메시지 출력 방식 변경
 	pUIManager->GetSiegeWarfare()->SetNotice( strMessage1, strMessage2 );

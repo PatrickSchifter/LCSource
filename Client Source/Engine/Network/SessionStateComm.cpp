@@ -12,7 +12,7 @@
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIMessenger.h>
 #include <Engine/Interface/UIMessageBox.h>
-#include <Engine/interface/UIGuild.h>
+#include <Engine/Interface/UIGuild.h>
 #include <Engine/Contents/Base/ChattingUI.h>
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Contents/function/gps.h>

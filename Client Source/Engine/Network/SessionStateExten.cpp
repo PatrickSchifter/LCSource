@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/Server.h>
@@ -76,7 +76,6 @@
 #define MODEL_TREASURE	("Data\\Item\\Common\\ITEM_treasure02.smc")
 // #include <map>
 // #include <algorithm>
-//#define XTRAP_LOG_ENABLE
 // ----------------------------------------------------------------------------
 // Name : CheckDratanSiegewarfareError()
 // Desc : 
@@ -262,9 +261,6 @@ BOOL CheckCashItemMessage(UBYTE errcode)
 }
 void CheckSocketSystemError(UBYTE errcode);
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    #include <Engine/XTrapInterface/XTrapInterface.h>
-#endif
 
 void CheckTimerEvent()
 {
@@ -975,7 +971,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 									{
 										CTString arg1;
 										(*istr) >> arg1;
-										strMessage.PrintF(_S(strIdx,""),arg1);
+										strMessage.PrintF(_S(strIdx,""),(const char*)arg1);
 									}
 									break;
 							}
@@ -1093,9 +1089,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			break;
 		case MSG_EX_NPROTECT:
 			{
-#ifndef NO_GAMEGUARD
-				ReceiveExnProtect(istr);
-#endif
 			}
 			
 			break;
@@ -1120,7 +1113,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 				case MSG_CASTLE_CRISTAL_RESPOND_END:	// 교감 완료								
 					(*istr) >> charIdx;
 					(*istr) >> tStrtmp;
-					tStr.PrintF(_S(3898,"[%s]님이 크리스탈 교감에 성공하였습니다."), tStrtmp);
+					tStr.PrintF(_S(3898,"[%s]님이 크리스탈 교감에 성공하였습니다."), (const char*)tStrtmp);
 					pUIManager->GetChattingUI()->AddSysMessage( tStr, SYSMSG_ERROR );
 					pUIManager->GetSiegeWarfareNew()->CompleteConsensus(charIdx);
 					break;
@@ -1172,7 +1165,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 							tStr = _S( 3755,"성문");
 							break;
 						}						
-						tStr2.PrintF("%d %s",(int)tLevel, _S( 3756,"단계가 정상적으로 강화되었습니다." ));
+						tStr2.PrintF("%d %s",(int)tLevel, (const char*)_S( 3756,"단계가 정상적으로 강화되었습니다." ));
 						tStr += tStr2;
 						pUIManager->GetChattingUI()->AddSysMessage( tStr, SYSMSG_ERROR );
 					}
@@ -1231,7 +1224,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 						ULONG tNpcIdx,tGuildIdx;
 						SLONG tNpcUniIndex;
 						(*istr) >> tNpcIdx >> tGuildIdx >> tGuildName >> tNpcUniIndex;
-						tStr.PrintF(_S( 3759,"[%s]길드가 [%d]번 부활진지를 점령했습니다." ),tGuildName,tNpcIdx-389); // TEMP
+						tStr.PrintF(_S( 3759,"[%s]길드가 [%d]번 부활진지를 점령했습니다." ),(const char*)tGuildName,tNpcIdx-389); // TEMP
 						_pNetwork->MyCharacterInfo.mQuarter[tNpcIdx] = tGuildIdx;
 						_pNetwork->MyCharacterInfo.mQuarterName[tNpcIdx] = tGuildName;						
 						pUIManager->GetChattingUI()->AddSysMessage( tStr, SYSMSG_ERROR );
@@ -2050,7 +2043,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 					(*istr) >> nZoneNum;
 					(*istr) >> nRoomNum;
 
-					strMessage.PrintF(_S(4755, "귀속된 레이드 존 이름 : %s"),CZoneInfo::getSingleton()->GetZoneName(nZoneNum));
+					strMessage.PrintF(_S(4755, "귀속된 레이드 존 이름 : %s"),(const char*)CZoneInfo::getSingleton()->GetZoneName(nZoneNum));
 					MsgBoxInfo.AddString(strMessage);
 					strMessage.PrintF(_S(4756, "귀속된 레이드 존 ID : %d"), nRoomNum);
 					MsgBoxInfo.AddString(strMessage);
@@ -2180,32 +2173,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			RecieveSocketSystemMessage( istr );
 		}
 		break;
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-    case MSG_EX_XTRAP:
-        {
-            if (g_pXTrap_CS_Step2Func)
-            {
-                CNetworkMessage nmMessageTest(MSG_EXTEND);
-                #define XTRAP_CMD_STEP_TWO  0x002
-                nmMessageTest << (ULONG)MSG_EX_XTRAP;
-                nmMessageTest << (BYTE)XTRAP_CMD_STEP_TWO;
-                char szBuf[128] , szSendBuf[128];
-                
-				istr->Read(szBuf, 128);
-#ifdef XTRAP_LOG_ENABLE
-				g_pHexaDump4XTrap_V1("TestXtrapLog.txt", szBuf, 128, "XTrap_stap1_RecBufData");
-#endif
-                g_pXTrap_CS_Step2Func(szBuf, szSendBuf);
-
-                nmMessageTest.Write(szSendBuf , 128 );
-#ifdef XTRAP_LOG_ENABLE
-				g_pHexaDump4XTrap_V1("TestXtrapLog.txt", szSendBuf, 128, "XTrap_stap2_SendBufData");
-#endif
-                _pNetwork->SendToServerNew( nmMessageTest );
-            }
-        }
-        break;
-#endif
 		case MSG_EX_TUTORIAL_RENEWER_2010:
 		{
 			pUIManager->GetHelp()->RepBeginnerTitle( istr );
@@ -2298,7 +2265,7 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 					 pUIManager->InitRenderTarget();
 				}
 				
-				temURL.PrintF("http://shop.gamigo.com/game_%d/login/user/%s/hash/%s/", nGrupID, strUserID, strCode);
+				temURL.PrintF("http://shop.gamigo.com/game_%d/login/user/%s/hash/%s/", nGrupID, (const char*)strUserID, (const char*)strCode);
 				ShellExecute( NULL, "open", temURL, NULL,NULL, SW_SHOWNORMAL );
 			}else
 			{
@@ -3527,14 +3494,14 @@ void CSessionState::ReceivePartyRecall( CNetworkMessage *istr )
 			   {
 			   		pUIManager->CloseMessageBox(MSGCMD_NULL);
 					MsgBoxInfo.SetMsgBoxInfo( _S(191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-					tv_str.PrintF(_S(2518, "%s파티원님이 소환을 거절하였습니다."), strTgt_char);
+					tv_str.PrintF(_S(2518, "%s파티원님이 소환을 거절하였습니다."), (const char*)strTgt_char);
 					MsgBoxInfo.AddString(tv_str);
 					pUIManager->CreateMessageBox( MsgBoxInfo );
 			   }
 			   else {
 				   pUIManager->CloseMessageBox(MSGCMD_NULL);
 					MsgBoxInfo.SetMsgBoxInfo( _S(191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
-					tv_str.PrintF(_S(2519, "%s파티원님의 소환을 거절하였습니다."), strReq_char);
+					tv_str.PrintF(_S(2519, "%s파티원님의 소환을 거절하였습니다."), (const char*)strReq_char);
 					MsgBoxInfo.AddString( tv_str );
 					pUIManager->CreateMessageBox( MsgBoxInfo );				   
 			   }
@@ -4242,7 +4209,7 @@ void CSessionState::RecieveSubJobMessage(CNetworkMessage* istr)
 				SLONG subJobCode;
 				(*istr) >> subJobCode;
 				CTString strMessage;
-				strMessage.PrintF( _S( 5083, "[%s]으로 등록 되었습니다." ), CUIManager::getSingleton()->GetSubJobName(subJobCode) );
+				strMessage.PrintF( _S( 5083, "[%s]으로 등록 되었습니다." ), (const char*)CUIManager::getSingleton()->GetSubJobName(subJobCode) );
 				_pNetwork->ClientSystemMessage(strMessage, SYSMSG_NORMAL);
 				_pNetwork->MyCharacterInfo.slSubJob = subJobCode;
 			}
@@ -4335,7 +4302,7 @@ void CSessionState::RecieveMonsterMercenaryCardMessage(CNetworkMessage* istr)
 				CItems	&rItems = _pNetwork->MySlotItem[tab][nInvenIdx];
 
 				strMessage.PrintF(_S( 5158, "[%s]%s용병 사용 기간 만료까지 %d분 남았습니다."), 
-									pUIManager->GetMonsterMercenary()->GetMonsterGrade(rItems.Item_Used2),
+									(const char*)pUIManager->GetMonsterMercenary()->GetMonsterGrade(rItems.Item_Used2),
 									CMobData::getData(rItems.Item_Plus)->GetName(), time);
 
 				pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
@@ -4819,9 +4786,9 @@ void	CSessionState::RecieveRoyalrumbleMessage(CNetworkMessage* istr )
 				(*istr) >> strAttacker >> strVictim;
 				// ADD-Contents : ITS#3620 공격자 스스로 사망시 메시지 추가.  [8/22/2011 rumist]
 				if( strAttacker == strVictim )
-					strTemp.PrintF( _S( 5580, "%님이 아웃되었습니다."), strAttacker );
+					strTemp.PrintF( _S( 5580, "%님이 아웃되었습니다."), (const char*)strAttacker );
 				else
-					strTemp.PrintF( _S( 5578, "%s님이 %s님을 아웃시켰습니다."), strAttacker, strVictim );
+					strTemp.PrintF( _S( 5578, "%s님이 %s님을 아웃시켰습니다."), (const char*)strAttacker, (const char*)strVictim );
 				pUIManager->GetChattingUI()->AddSysMessage( strTemp, SYSMSG_ERROR );
 			}
 			break;

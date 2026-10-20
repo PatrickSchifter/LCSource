@@ -1,14 +1,15 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ViewPort.h>
 
 #include <Engine/Graphics/GfxLibrary.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Interface/UIIME.h>
 extern INDEX ogl_bExclusive;
 //	김영환 전역 설정 값 가져오기
 extern BOOL _bClientApp;
 
+#ifdef SE1_D3D
 // helper for D3D surface
 static HRESULT CreateSwapChain_D3D( CViewPort *pvp, PIX pixSizeI, PIX pixSizeJ)
 {
@@ -62,10 +63,12 @@ static void SetAsRenderTarget_D3D( CViewPort *pvp)
 		D3DRELEASE( pColorSurface, TRUE);
 	}
 }
+#endif // SE1_D3D
 
 
 // helper for OGL
 
+#ifdef PLATFORM_WIN32
 CTempDC::CTempDC(HWND hWnd)
 {
 	ASSERT(hWnd!=NULL);
@@ -78,6 +81,7 @@ CTempDC::~CTempDC(void)
 {
 	ReleaseDC(hwnd, hdc);
 }
+#endif // PLATFORM_WIN32
 
 
 /*
@@ -89,8 +93,10 @@ vp_Raster( pixWidth, pixHeight, 0)
 {
 	vp_hWnd = NULL;
 	vp_hWndParent = hWnd;
+#ifdef SE1_D3D
 	vp_pSwapChain = NULL;
 	vp_pSurfDepth = NULL;
+#endif // SE1_D3D
 	vp_ctDisplayChanges = 0;
 	OpenCanvas();
 	vp_Raster.ra_pvpViewPort = this;
@@ -109,6 +115,7 @@ CViewPort::~CViewPort(void)
 
 
 
+#ifdef PLATFORM_WIN32
 #define CViewPortCLASS "ViewPort Window"
 static BOOL _bClassRegistered = FALSE;
 
@@ -134,6 +141,7 @@ LRESULT CALLBACK CViewPortCLASS_WindowProc(
 	return _bIMEProc?0:DefWindowProc(hWnd, Msg, wParam, lParam);
 	// 이기환 수정 끝 (11. 15)
 }
+#endif // PLATFORM_WIN32
 
 
 
@@ -155,6 +163,7 @@ void CViewPort::OpenCanvas(void)
 		ASSERT( (dm.dm_pixSizeI==0 && dm.dm_pixSizeJ==0) || (dm.dm_pixSizeI!=0 && dm.dm_pixSizeJ!=0));
 		const BOOL bFullScreen = (dm.dm_pixSizeI==pixWinSizeI && dm.dm_pixSizeJ==pixWinSizeJ);
 
+#ifdef SE1_D3D
 		// prepare new swap chain for D3D
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && !bFullScreen)
 		{
@@ -165,15 +174,19 @@ void CViewPort::OpenCanvas(void)
 			}
 			// ----------------------------------------------------------->>
 		}
+#endif // SE1_D3D
 
 		// resize raster
 		Resize();
 		ShowWindow( vp_hWnd, SW_SHOW);
 
+#ifdef SE1_D3D
 		// set as rendering target
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL) 
 			SetAsRenderTarget_D3D(this);
+#endif // SE1_D3D
 	}
+#ifdef PLATFORM_WIN32
 	else
 	{
 		// do nothing if not feasable
@@ -228,6 +241,7 @@ void CViewPort::OpenCanvas(void)
 		  NULL);
 		ASSERT( vp_hWnd!=NULL);
 		
+#ifdef SE1_D3D
 		// prepare new swap chain for D3D
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && !bFullScreen)
 		{
@@ -245,20 +259,25 @@ void CViewPort::OpenCanvas(void)
 			}
 			// ----------------------------------------------------------->>
 		}
+#endif // SE1_D3D
 
 		// resize raster
 		Resize();
 		ShowWindow( vp_hWnd, SW_SHOW);
 
+#ifdef SE1_D3D
 		// set as rendering target
 		if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL) SetAsRenderTarget_D3D(this);
+#endif // SE1_D3D
 	}
+#endif // PLATFORM_WIN32 (outside Windows only the game, which draws on its main window)
 }
 
 
 // close overlaid window
 void CViewPort::CloseCanvas(void)
 {
+#ifdef SE1_D3D
 	// release D3D swap chain if allocated
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D) 
 	{
@@ -273,8 +292,10 @@ void CViewPort::CloseCanvas(void)
 		vp_pSwapChain = NULL;
 		vp_pSurfDepth = NULL;
 	}
+#endif // SE1_D3D
 	// destroy window
 	//	김영환 : 클라이언트용이 아닌 경우만.(툴에서 사용하는 경우)
+#ifdef PLATFORM_WIN32
 	if(_bClientApp == FALSE)
 	{
 		if( vp_hWnd!=NULL && IsWindow(vp_hWnd)) 
@@ -283,6 +304,7 @@ void CViewPort::CloseCanvas(void)
 			ASSERT(bRes);
 		}
 	}
+#endif // PLATFORM_WIN32
 	// mark
 	vp_hWnd = NULL;
 }
@@ -313,15 +335,18 @@ void CViewPort::Resize(void)
 
 	// resize child window
 	//	김영환 : 크기조절 안함.
+#ifdef PLATFORM_WIN32
 	if(_bClientApp == FALSE)
 	{
 		ASSERT( vp_hWnd!=NULL);
 		SetWindowPos( vp_hWnd, NULL, 0,0, pixNewWidth, pixNewHeight, SWP_NOZORDER|SWP_NOMOVE);
 	}
+#endif // PLATFORM_WIN32
 
 	// resize the raster
 	vp_Raster.Resize( pixNewWidth, pixNewHeight);
 
+#ifdef SE1_D3D
 	// "resize" D3D surface (if any)
 	if( _pGfx->gl_eCurrentAPI==GAT_D3D && vp_pSwapChain!=NULL)// && vp_pSurfDepth!=NULL) 
 	{
@@ -343,6 +368,7 @@ void CViewPort::Resize(void)
 		// ----------------------------------------------------------->>
 		SetAsRenderTarget_D3D(this);
 	}
+#endif // SE1_D3D
 }
 
 

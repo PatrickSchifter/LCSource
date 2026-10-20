@@ -256,7 +256,7 @@ WMSG_RESULT CUIText::OnLButtonDown( UINT16 x, UINT16 y )
 	return ret;
 }
 
-void CUIText::SetText( CTString& str, CTString strEllipsis /*= ""*/ )
+void CUIText::SetText( const CTString &str, CTString strEllipsis /*= ""*/ )
 { 
 	std::string strReplace = str.str_String;
 	int nFind = strReplace.find("\r\n");
@@ -303,7 +303,7 @@ void CUIText::SetPointColor( char* str, COLOR col )
 
 	m_vecData.clear();
 
-	std::string strText = m_strView;
+	std::string strText = (const char*)m_strView;
 	std::string strTemp;
 
 	int pos = strText.find(str);

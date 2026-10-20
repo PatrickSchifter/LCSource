@@ -6,7 +6,7 @@
 #include <Engine/Entities/TradeItem.h>
 #include <Engine/Network/CNetwork.h>
 #include <Common/Packet/ptype_old_do_item.h>
-#include <common/header/EventTrade.h>
+#include <Common/header/EventTrade.h>
 #include <Engine/Interface/UIInventory.h>
 
 #define DEF_CONDITION_ITEM_MAX	(5)

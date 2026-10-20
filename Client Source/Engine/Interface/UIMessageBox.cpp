@@ -1,7 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIMessageBox.h>
-#include <Engine/Petinfo.h>
+#include <Engine/PetInfo.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIPetInfo.h>
 #include <Engine/Interface/UITextureManager.h>
@@ -224,7 +224,7 @@ void CUIMsgBox_Info::Reset()
 // Name : SetMsgBoxInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
+void CUIMsgBox_Info::SetMsgBoxInfo( const CTString &strTitle, DWORD dwStyle, int nWhichUI, int nCommandCode, int nWidth, FLOAT fNPCPosX, FLOAT fNPCPosZ )
 {
 	m_strTitle = strTitle;
 	m_dwStyle = dwStyle;
@@ -249,7 +249,7 @@ void CUIMsgBox_Info::SetMsgBoxInfo( CTString &strTitle, DWORD dwStyle, int nWhic
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddString( const CTString &strMessage, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
@@ -418,7 +418,7 @@ void CUIMsgBox_Info::AddString( CTString &strMessage, COLOR colMessage, TEXT_ALI
 // Name : AddStringEx()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMsgBox_Info::AddStringEx( CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
+void CUIMsgBox_Info::AddStringEx( const CTString &strMessage, int nRow, int nCol, COLOR colMessage, TEXT_ALIGN eAlign )
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;
@@ -657,7 +657,7 @@ void CUIMsgBox_Info::SetSpinButton(int nRow, int nCol, int nWidth, CTString strT
 }
 
 // Ãß°¡. [11/19/2009 rumist]
-void		CUIMultiLineText::AddString(CTString &strMessage, COLOR colMessage /* = 0xF2F2F2FF */, TEXT_ALIGN eAlign /* = TEXT_LEFT  */)
+void		CUIMultiLineText::AddString(const CTString &strMessage, COLOR colMessage /* = 0xF2F2F2FF */, TEXT_ALIGN eAlign /* = TEXT_LEFT  */)
 {
 	if( m_nCurStringCount >= MAX_MSGSTRING )
 		return;

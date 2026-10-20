@@ -1,7 +1,8 @@
 
 // DIRECT3D "LOW-LEVEL" INTERFACE (COMMON)
 
-#include "stdh.h"
+#include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/ErrorReporting.h>
@@ -22,7 +23,7 @@
 //안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 
 #undef new
-#include <D3dx8core.h>
+#include <d3dx8core.h>
 
 
 // asm shortcuts
@@ -32,11 +33,15 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
-extern ULONG _fog_ulTexture;
-extern ULONG _haze_ulTexture;
+extern TEXOBJ _fog_ulTexture;
+extern TEXOBJ _haze_ulTexture;
 
 // occlusion queries
 extern UINT *_puiOcclusionQueryIDs;
@@ -323,8 +328,11 @@ extern ULONG *CompileVertexProgram_D3D(const char *strVertexProgram, ID3DXBuffer
 #else 
 	HRESULT hr = D3DXAssembleShader(strVertexProgram,strlen(strVertexProgram),ulFlags,NULL,ppOut,NULL);
 #endif
-	ASSERT(hr==D3D_OK);
-	D3D_CHECKERROR(hr);
+	// D3DX9 rejects some D3D8-era shader sources; report "no program" instead of crashing.
+	if (FAILED(hr) || *ppOut == NULL) {
+		*ppOut = NULL;
+		return NULL;
+	}
 	return (ULONG*)(*ppOut)->GetBufferPointer();
 }
 
@@ -946,7 +954,7 @@ void CGfxLibrary::InitContext_D3D()
 
 	// prepare pattern texture
 	extern CTexParams _tpPattern;
-	extern ULONG _ulPatternTexture;
+	extern TEXOBJ _ulPatternTexture;
 	extern ULONG _ulLastUploadedPattern;
 	_ulPatternTexture = NONE;
 	_ulLastUploadedPattern = 0;
@@ -1817,8 +1825,8 @@ elemEnd:
 		const INDEX iIndex = puwIndices[idx];
 		puwLockedBuffer[idx] = iIndex;
 		if( !bSetRange) continue;
-				 if( iMinIndex>iAdj) iMinIndex = iIndex;
-		else if( iMaxIndex<iAdj) iMaxIndex = iIndex;
+		if( iMinIndex>iIndex) iMinIndex = iIndex;
+		if( iMaxIndex<iIndex) iMaxIndex = iIndex;
 	}
 	// set range?
 	if( bSetRange) { 
@@ -1884,3 +1892,4 @@ elemEnd:
 
 
 
+#endif // SE1_D3D

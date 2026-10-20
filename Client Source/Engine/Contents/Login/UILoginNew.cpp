@@ -41,9 +41,6 @@ extern INDEX g_iConnectEuroupean;
 #define	DEF_BASIC_SERVER 0
 #define	DEF_EUROUPEAN_SERVER 1
 
-#ifndef NO_GAMEGUARD
-#include "Engine/GameGuardInterface.h"    
-#endif
 
 CUILoginNew::CUILoginNew(void)
 	: m_pLogoFrame(NULL)
@@ -665,7 +662,7 @@ void CUILoginNew::sendIP()
 {
 #if		!defined(WORLD_EDITOR)
 	CNetClient _net;
-	boost::asio::io_service& _service = _net.get_service();
+	boost::asio::io_context& _service = _net.get_service();
 
 	std::string strIP, strPort;
 

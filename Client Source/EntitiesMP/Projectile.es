@@ -9,7 +9,7 @@
 //#include "Models/Enemies/ElementalLava/Projectile/LavaStone.h"
 //#include "Models/Enemies/ElementalLava/Projectile/LavaBomb.h"
 //#include "Models/Enemies/Headman/Projectile/Blade.h"
-#include "Models/Enemies/Huanman/Projectile/Projectile.h"
+#include "Models/Enemies/HuanMan/Projectile/Projectile.h"
 //#include "Models/Enemies/Cyborg/Projectile/LaserProjectile.h"
 	
 //#include "ModelsMP/Enemies/Grunt/Projectile/GruntProjectile.h"

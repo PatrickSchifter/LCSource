@@ -15,12 +15,18 @@
 // maximum length of file that can be saved (default: 8Mb)
 ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
 
+#ifdef PLATFORM_WIN32
 #define CTSTREAM_BEGIN CTStream::EnableStreamHandling(); __try
 #define CTSTREAM_END __except( CTStream::ExceptionFilter( GetExceptionCode(),\
                                                           GetExceptionInformation()) )\
   {\
      CTStream::ExceptionFatalError();\
   }; CTStream::DisableStreamHandling();
+#else
+// no structured exceptions: stream buffers outside Windows are filled without page faults
+#define CTSTREAM_BEGIN CTStream::EnableStreamHandling();
+#define CTSTREAM_END CTStream::DisableStreamHandling();
+#endif
 
 /*
  * Chunk ID class
@@ -182,7 +188,9 @@ public:
   inline CTStream &operator>>(SLONG &sl) { Read_t(&sl, sizeof(sl)); return *this; } // throw char *
   inline CTStream &operator>>(SWORD &sw) { Read_t(&sw, sizeof(sw)); return *this; } // throw char *
   inline CTStream &operator>>(SBYTE &sb) { Read_t(&sb, sizeof(sb)); return *this; } // throw char *
+#ifndef PLATFORM_UNIX  // there BOOL and SLONG are both int
   inline CTStream &operator>>(BOOL   &b) { Read_t( &b, sizeof( b)); return *this; } // throw char *
+#endif
   inline CTStream &operator>>(__int64 &i64) { Read_t( &i64, sizeof(i64)); return *this; } // throw char *
   /* Write an object into stream. */
   inline CTStream &operator<<(const float  &f) { Write_t( &f, sizeof( f)); return *this; } // throw char *
@@ -193,7 +201,9 @@ public:
   inline CTStream &operator<<(const SLONG &sl) { Write_t(&sl, sizeof(sl)); return *this; } // throw char *
   inline CTStream &operator<<(const SWORD &sw) { Write_t(&sw, sizeof(sw)); return *this; } // throw char *
   inline CTStream &operator<<(const SBYTE &sb) { Write_t(&sb, sizeof(sb)); return *this; } // throw char *
+#ifndef PLATFORM_UNIX  // there BOOL and SLONG are both int
   inline CTStream &operator<<(const BOOL   &b) { Write_t( &b, sizeof( b)); return *this; } // throw char *
+#endif
   inline CTStream &operator<<(const __int64 &i64) { Write_t( &i64, sizeof(i64)); return *this; } // throw char *
 
   // CTFileName reading/writing
@@ -275,6 +285,10 @@ public:
   void FileCommitPage( INDEX iPageToCommit);
   /* Decommites given page and writes it into file (if file is opened for writting) */
   void FileDecommitPage( INDEX iPageToDecommit);
+#ifndef PLATFORM_WIN32
+  /* Reads the whole file into the buffer (no page faults outside Windows) */
+  void FileLoadBuffer_t(void);
+#endif
   /* Get CRC32 of stream */
   ULONG GetStreamCRC32_t(void);
 

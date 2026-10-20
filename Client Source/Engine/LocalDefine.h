@@ -145,15 +145,8 @@ extern ENGINE_API std::map<int,int> g_mapEvent;
 #define IS_EVENT_ON(x) ((g_mapEvent.find(x)==g_mapEvent.end())?0:g_mapEvent[x])
 // ------------------------------------------------------------------<<
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#if defined( DEBUG ) || defined( _DEBUG ) || !defined ( USE_GAMEGUARD )
-#define NO_GAMEGUARD
-#endif
-//#define NO_GAMEGUARD
-// ---------------------------------------------------<<
-
 // 디스어셈블러를 속이기 위한 간단한 코드 난독화 매크로
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(VER_TEST)
+#if !defined(_DEBUG) && !defined(VER_TEST) && defined(_M_IX86) && !defined(USE_PORTABLE_C)
 #define paste(a, b) a##b
 #define pastesymbols(a, b) paste(a, b)
 #define OBFUSCATE() \

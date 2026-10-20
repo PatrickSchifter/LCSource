@@ -256,9 +256,6 @@ struct ENGINE_API MeshVertexMorph
 
 class ENGINE_API CMesh : public CSerial
 {
-#ifdef KALYDO
-  static CTString strDefaultMeshPath;
-#endif
 public:
 	CMesh();
 	~CMesh();
@@ -286,10 +283,6 @@ public:
 	void Unbind(void);
 	// Clear mesh
 	void Clear(void);
-#ifdef KALYDO
-  void Load_t(const CTFileName &fnFileName);
-  void Load_Delay_t(const CTFileName &fnFileName);
-#endif
 	// Count memory used by mesh
 	SLONG GetUsedMemory(void);
 	/* Get the description of this object. */

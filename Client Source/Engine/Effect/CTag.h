@@ -11,8 +11,8 @@
 
 #include <Engine/Math/Vector.h>
 #include <Engine/Math/Quaternion.h>
-#include <Engine/base/Types.h>
-#include <Engine/base/CTString.h>
+#include <Engine/Base/Types.h>
+#include <Engine/Base/CTString.h>
 #include <deque>
 #include <string>
 
@@ -70,8 +70,10 @@ public:
 	inline TAG_TYPE GetType()					{ return m_eType; }
 
 	inline std::string &GetName()				{ return m_strName; }
-	inline void SetName(const std::string &name){ m_strName = strupr(const_cast<char*>(name.c_str()));	}
-	inline void SetName(const char *name)		{ m_strName = strupr(const_cast<char*>(name));			}
+	// upper case, in a copy: strupr() on the caller's string wrote into literals like "__ROOT",
+	// which are read-only outside Windows
+	inline void SetName(const std::string &name){ SetName(name.c_str()); }
+	inline void SetName(const char *name)		{ m_strName = name; for (size_t i = 0; i < m_strName.size(); i++) m_strName[i] = (char)toupper((unsigned char)m_strName[i]); }
 
 	inline FLOAT3D &GetOffsetPos()						{ return m_vOffsetPos; }
 	inline void SetOffsetPos(const FLOAT3D &pos)		{ m_vOffsetPos = pos; }

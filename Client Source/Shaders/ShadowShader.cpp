@@ -103,6 +103,7 @@ SHADER_MAIN(Shadow)
 			SetRenderingState();
 
 //강동민 수정 시작 테스트 클라이언트 작업	06.27
+#ifdef SE1_D3D
 			DWORD dwAlphaArg, dwColorArg;
 			DWORD dwAlphaOP, dwColorOp;
 			HRESULT hr;
@@ -118,17 +119,20 @@ SHADER_MAIN(Shadow)
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+#endif // SE1_D3D
 //강동민 수정 끝 테스트 클라이언트 작업		06.27
 
 			Render();
 
 //강동민 수정 시작 테스트 클라이언트 작업	06.27
+#ifdef SE1_D3D
 			// Restore Stage State
 			hr = _pGfx->gl_pd3dDevice->SetRenderState( D3DRS_TEXTUREFACTOR, 0xFFFFFFFF);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, dwAlphaArg);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP,	dwAlphaOP);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, dwColorArg);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP,	dwColorOp);
+#endif // SE1_D3D
 //강동민 수정 끝 테스트 클라이언트 작업		06.27
 //강동민 수정 끝 접속 시퀀스 작업	06.01
 		}

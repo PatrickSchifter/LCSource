@@ -7,7 +7,7 @@
 class TimerSession : public SessionBase
 {
 public:
-	TimerSession( boost::asio::io_service& io_service );
+	TimerSession( boost::asio::io_context& io_service );
 	~TimerSession();
 
 public:
@@ -24,7 +24,7 @@ protected:
 class MSecTimerSession : public TimerSession, public MemoryPoolBaseWithMutex<MSecTimerSession>
 {
 public:
-	MSecTimerSession( boost::asio::io_service& io_service, int start_msec, int period_msec );
+	MSecTimerSession( boost::asio::io_context& io_service, int start_msec, int period_msec );
 	~MSecTimerSession();
 
 private:
@@ -37,7 +37,7 @@ private:
 class SecTimerSession : public TimerSession, public MemoryPoolBaseWithMutex<SecTimerSession>
 {
 public:
-	SecTimerSession( boost::asio::io_service& io_service, int start_sec, int period_sec );
+	SecTimerSession( boost::asio::io_context& io_service, int start_sec, int period_sec );
 	~SecTimerSession();
 
 private:
@@ -50,7 +50,7 @@ private:
 class AbsoluteTimerSession : public TimerSession, public MemoryPoolBaseWithMutex<AbsoluteTimerSession>
 {
 public:
-	AbsoluteTimerSession( boost::asio::io_service& io_service, int start_sec, int period_sec );
+	AbsoluteTimerSession( boost::asio::io_context& io_service, int start_sec, int period_sec );
 	~AbsoluteTimerSession();
 
 private:

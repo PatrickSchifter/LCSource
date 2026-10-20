@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <map>
@@ -407,7 +407,7 @@ void CUIPetInfo::GetPetDesc( )
 			m_lbPetDesc.AddString( 1, (*iter).strNameCard, 0xffe3a8ff );				
 		}
 
-		strTemp.PrintF( "%s", PetInfo().GetName(pPetInfo->iType, pPetInfo->iAge) );
+		strTemp.PrintF( "%s", (const char*)PetInfo().GetName(pPetInfo->iType, pPetInfo->iAge) );
 		m_lbPetDesc.AddString( 0, strTemp );	
 
 		strTemp.PrintF( _S(2176,"%d 레벨"), (*iter).lLevel );	
@@ -1405,7 +1405,7 @@ BOOL CUIPetInfo::GetPetExchangeInfo( int nPetIndex, SPetExchangeInfoString& strP
 	}
 
 	if( TempPet.strNameCard.Length() >0 )
-		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), _S(3526, "명찰"), TempPet.strNameCard);
+		strPetExchangeInfo.strNameCard.PrintF( _s("%s : %s"), (const char*)_S(3526, "명찰"), (const char*)TempPet.strNameCard);
 	strPetExchangeInfo.strLevel.PrintF( _S(2254 , "레벨 : %d"), TempPet.lLevel );
 	strPetExchangeInfo.strHP.PrintF( _S(2255,"생명력 : %d/%d"), TempPet.lHP, TempPet.lMaxHP );
 

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/Color.h>
@@ -7,8 +7,9 @@
 #include <Engine/Base/Memory.h>
 #include <Engine/Math/Functions.h>
 
-#include <ijl.h>
-#pragma comment(lib, "ijl15L.lib")
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <3rdparty/stb/stb_image_write.h>
 
 extern void FlipBitmap( UBYTE *pubSrc, UBYTE *pubDst, PIX pixWidth, PIX pixHeight, INDEX iFlipType, BOOL bAlphaChannel);
 
@@ -79,9 +80,9 @@ void CImageInfo::Read_t( CTStream *inFile)   // throw char *
   inFile->ExpectID_t( CChunkID("CTII"));
   if( inFile->GetSize_t() != 5*4) throw( "Invalid image info file.");
 
-  *inFile >> (PIX)ii_Width;
-  *inFile >> (PIX)ii_Height;
-  *inFile >> (SLONG)ii_BitsPerPixel;
+  *inFile >> ii_Width;
+  *inFile >> ii_Height;
+  *inFile >> ii_BitsPerPixel;
 
   // read image contents (all channels)
   ULONG pic_size = ii_Width*ii_Height * ii_BitsPerPixel/8;
@@ -401,70 +402,25 @@ void CImageInfo::SaveTGA_t( const CTFileName &strFileName) const // throw char *
 //강동민 수정 시작 다중 공격 작업	09.06
 void CImageInfo::SaveJPG_t(const CTFileName &strFileName)	const
 {
-	JPEG_CORE_PROPERTIES jcp;
-	if(ijlInit(&jcp) != IJL_OK)
-	{
-		ijlFree(&jcp);
-		return;
-	}
-
-	jcp.DIBChannels		= 3;
-	jcp.DIBColor		= IJL_BGR;	
-	jcp.DIBHeight		= -ii_Height; // 음수로 하니까 뒤집혔던 그림이 다시 원래대로..
-	jcp.DIBWidth		= ii_Width;
-	long DIBLineSize	= ((ii_Width)*3)/4*4;
-	jcp.DIBPadBytes		= DIBLineSize - ii_Width * 3;	
-	jcp.JPGHeight		= ii_Height;
-	jcp.JPGWidth		= ii_Width;
-	jcp.jquality		= 100;
-	jcp.JPGFile			= strFileName.str_String;	
-	
-	UBYTE *pJPGBuffer	= NULL;
-	SLONG slFileSize;
-	PIX pixBitmapSize	= ii_Width*ii_Height;	
-	
 	// determine and check image info format
 	SLONG slBytesPerPixel = ii_BitsPerPixel/8;
 	ASSERT( slBytesPerPixel==3 || slBytesPerPixel==4);
 	if( slBytesPerPixel!=3 && slBytesPerPixel!=4) 
 		throw( TRANS( "Unsupported BitsPerPixel in ImageInfo header."));
-	
-	// determine TGA file size and allocate memory
-	slFileSize = pixBitmapSize * slBytesPerPixel;
-	pJPGBuffer = (UBYTE*)AllocMemory( slFileSize);	
-	
-	// flip image vertically
-	BOOL bAlphaChannel = (slBytesPerPixel==4);
-	FlipBitmap( ii_Picture, pJPGBuffer, ii_Width, ii_Height, 2, bAlphaChannel);	
 
-	// convert CroTeam's pixel format to TGA format
-	UBYTE *pubTmp = pJPGBuffer;  // need 'walking' pointer
-	for( INDEX iPix=0; iPix<pixBitmapSize; iPix++)
-	{ // flip bytes
-		Swap( pubTmp[0], pubTmp[2]);  // R & B channels
-		pubTmp += slBytesPerPixel; 
-	}
-
-	jcp.DIBBytes = (unsigned char*)pJPGBuffer;
-
-	if(ijlWrite(&jcp, IJL_JFILE_WRITEWHOLEIMAGE) != IJL_OK)
-	{
-		ijlFree(&jcp);
-		FreeMemory( pJPGBuffer);
+	// CroTeam true color is RGB(A) from the top row down, as the JPEG writer wants it (alpha is dropped)
+	if( !stbi_write_jpg( strFileName.str_String, ii_Width, ii_Height, slBytesPerPixel, ii_Picture, 100))
 		return;
-	}
-	ijlFree(&jcp);
-	
-	// free temorary allocated memory for TGA image format
-	FreeMemory( pJPGBuffer);
 
 	// [2012/02/22 : Sora] 스크린샷 파일 변조 확인용 헤더 추가
+	// (the size of the JPEG data, inverted, appended to the file)
 	FILE *file;
 	file = fopen( strFileName, "a+" );
+	if( file==NULL) return;
 
 	if( fseek( file, 0,  SEEK_END ) == 0 )
 	{
-		int sltemp = jcp.JPGSizeBytes;
+		int sltemp = (int)ftell( file );
 		sltemp ^= 0xFFFFFFFF;
 		fwrite( &sltemp, sizeof(int), 1, file );
 	}

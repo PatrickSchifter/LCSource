@@ -369,7 +369,7 @@ void CSimplePlayerInfoUI::SetDungeonList(SLONG slExp)
 			CTString strTemp;
 
 			if (slExp > 0)
-				strTemp.PrintF(CTString("%s(%d%%)"), _S(4959, "던전 몬스터 경험치를 추가로 획득"), slExp);
+				strTemp.PrintF(CTString("%s(%d%%)"), (const char*)_S(4959, "던전 몬스터 경험치를 추가로 획득"), slExp);
 			else
 				strTemp = _S(4959, "던전 몬스터 경험치를 추가로 획득");
 
@@ -381,7 +381,7 @@ void CSimplePlayerInfoUI::SetDungeonList(SLONG slExp)
 			pText->SetText(_S(4960, "던전 타임!"));
 			pText->setFontColor(0xA3A1A3FF);
 		}
-		else
+		else if (i - 2 < (int)(sizeof(nStrIndex) / sizeof(nStrIndex[0])))  // the UI file may list more dungeons
 		{
 			pText->SetText(_S(nStrIndex[i-2], "던전 이름"));
 			pText->setFontColor(DEF_UI_COLOR_WHITE);

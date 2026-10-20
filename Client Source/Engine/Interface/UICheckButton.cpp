@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UICheckButton.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
@@ -54,7 +54,7 @@ CUIBase* CUICheckButton::Clone()
 // Desc :
 // ----------------------------------------------------------------------------
 void CUICheckButton::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, int nHeight,
-								CTString &strText, BOOL bCheckRegionLeft, int nTextSX, int nCheckRegion )
+								const CTString &strText, BOOL bCheckRegionLeft, int nTextSX, int nCheckRegion )
 {
 	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
 
@@ -81,7 +81,7 @@ void CUICheckButton::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, 
 // Name : SetText()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUICheckButton::SetText( CTString &strText )
+void CUICheckButton::SetText( const CTString &strText )
 {
 	int	nLength = strText.Length();
 	m_bValidText = nLength > 0;

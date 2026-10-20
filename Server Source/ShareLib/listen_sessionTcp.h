@@ -15,7 +15,7 @@
 class ListenSessionTcp : public ListenSession, public MemoryPoolBaseWithMutex<ListenSessionTcp>
 {
 public:
-	ListenSessionTcp(boost::asio::io_service& io_service, int read_wait_time_sec = 0, int write_wait_time_sec = 0);
+	ListenSessionTcp(boost::asio::io_context& io_service, int read_wait_time_sec = 0, int write_wait_time_sec = 0);
 	~ListenSessionTcp();
 
 	virtual bool Run( std::string& host, const int port, rnSocketIOHandler* func,

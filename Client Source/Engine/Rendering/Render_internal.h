@@ -22,7 +22,11 @@
 
 //강동민 수정 시작
 // NOTE : RenderOneSkaModelToTexture()를 위해서 필요한 부분.  나중에 제거할것.
+#ifdef SE1_D3D
 #include <d3dx8.h>
+#else
+#include <d3dx8math.h>  // just the math (Compat/d3dx8)
+#endif // SE1_D3D
 #define SHADOWTEXTURESIZE (256)
 //강동민 수정 끝
 
@@ -306,11 +310,13 @@ struct FourTextureStage_TexCoordOffsets
 	D3DXVECTOR4	t[4];
 };
 
+#ifdef SE1_D3D
 typedef struct tagQuadVertex
 {
 	D3DXVECTOR3 Position;
 	D3DXVECTOR2 Tex;
 } QuadVertex;
+#endif // SE1_D3D
 
 #ifndef SAFE_ARRAY_DELETE
 	#define SAFE_ARRAY_DELETE(d) if (d) {delete[]d; d = NULL;}
@@ -667,7 +673,9 @@ public:
 	BOOL re_bRenderBloom;
 	HRESULT RenderBloom();
 	HRESULT InitBloom();
+#ifdef SE1_D3D
 	HRESULT CreateBackVertexBuffer();
+#endif // SE1_D3D
 
 	GaussianProp	* m_pGaussianProp;
 	float		m_fPerTexelWidth;
@@ -695,7 +703,9 @@ public:
 	//LPDIRECT3DVERTEXBUFFER8  m_pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT]; // 1280 X 1024 까지만 지원되는걸로 가정한다.
 
 	D3DXMATRIX		m_matFullCoverage_WVP;
+#ifdef SE1_D3D
 	LPD3DXBUFFER            m_pD3DXBufShader;
+#endif // SE1_D3D
 //강동민 수정 시작 버그 사냥 작업	09.09
 //	DWORD                   m_dwAddFourPixelShader;
 //	DWORD                   m_dwTexCoord4OffsetVertexShader;
@@ -707,9 +717,11 @@ public:
 	void    CreateUVOffsets(int width, int height);
 	void	CreateGaussianBlur(int filterNum);
 	void	CalcFullCoverageMatrix();
+#ifdef SE1_D3D
 	HRESULT	CreatePShAddFour( );
 	HRESULT CreateVShTexCoord4Offset( LPDIRECT3DDEVICE8 pd3dDevice, 
                                     DWORD* pdwVertexDecl );
+#endif // SE1_D3D
 	// SRS Settings
 	DWORD m_dwZenable, m_dwZwriteenable, m_dwCullmode, m_dwAlphablendenable;
 	DWORD m_dwSrcblend, m_dwDestblend, m_dwFogEnable;

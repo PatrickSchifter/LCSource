@@ -24,7 +24,7 @@ extern PIX _fog_pixSizeL;
 extern FLOAT _fog_fStart;
 extern FLOAT _fog_fEnd;  
 extern ULONG _fog_ulAlpha;
-extern ULONG _fog_ulTexture;
+extern TEXOBJ _fog_ulTexture;
 extern UBYTE *_fog_pubTable;
 
 // start fog with given parameters
@@ -45,7 +45,7 @@ extern FLOAT _haze_fMul;
 extern FLOAT _haze_fAdd;
 extern PIX _haze_pixSize;
 extern ULONG _haze_ulAlpha;
-extern ULONG _haze_ulTexture;
+extern TEXOBJ _haze_ulTexture;
 extern FLOAT _haze_fStart;
 
 // start haze with given parameters

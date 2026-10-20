@@ -8,7 +8,7 @@
 #	pragma once
 #endif
 
-#include <Engine/base/CTString.h>
+#include <Engine/Base/CTString.h>
 #include <Engine/Effect/CTag.h>
 
 struct MeshLOD;

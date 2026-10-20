@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIListBox.h>
 #include <Engine/Interface/UITextureManager.h>
 
@@ -218,7 +218,7 @@ void StringSplit(std::vector<CTString>& vecOutput, CTString strInput, ULONG ulCo
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIListBox::AddString( int nCol, CTString &strText, COLOR colText, BOOL bSelectable, void* ptr, BOOL bBold )
+void CUIListBox::AddString( int nCol, const CTString &strText, COLOR colText, BOOL bSelectable, void* ptr, BOOL bBold )
 {
 	ASSERT( nCol < m_nColumnCount );
 
@@ -381,7 +381,7 @@ void CUIListBox::ResetAllStrings()
 // Name : SetString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIListBox::SetString( int nCol, int nIndex, CTString &strText )
+void CUIListBox::SetString( int nCol, int nIndex, const CTString &strText )
 {
 	ASSERT( nCol < m_nColumnCount );
 	ASSERT( nIndex < m_vecString[nCol].vecString.size() );

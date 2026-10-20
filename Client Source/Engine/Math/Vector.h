@@ -5,6 +5,7 @@
 #endif
 
 #include <Engine/Base/Assert.h>
+#include <Engine/Math/Functions.h>
 #include <Engine/Math/Matrix.h>
 					 
 /*
@@ -133,12 +134,12 @@ __forceinline Vector<Type, iDimensions>::Vector(Type x1, Type x2, Type x3, Type 
 /*
  * Conversion into scalar -- length of vector.
  */
-__forceinline FLOAT Vector<FLOAT,3>::Length(void) const
+template<> __forceinline FLOAT Vector<FLOAT,3>::Length(void) const
 {
 	return (FLOAT)sqrt( (DOUBLE)((*this)(1)*(*this)(1) + (*this)(2)*(*this)(2) + (*this)(3)*(*this)(3)));
 }
 
-__forceinline DOUBLE Vector<DOUBLE,3>::Length(void) const
+template<> __forceinline DOUBLE Vector<DOUBLE,3>::Length(void) const
 {
 	return (DOUBLE)sqrt( (DOUBLE)((*this)(1)*(*this)(1) + (*this)(2)*(*this)(2) + (*this)(3)*(*this)(3)));
 }
@@ -154,11 +155,11 @@ __forceinline Type Vector<Type, iDimensions>::Length(void) const
 }
 
 //안태훈 수정 시작	//(Remake Effect)(0.1)
-__forceinline FLOAT Vector<FLOAT,3>::Magnitude(void) const
+template<> __forceinline FLOAT Vector<FLOAT,3>::Magnitude(void) const
 {
 	return (FLOAT)((*this)(1)*(*this)(1) + (*this)(2)*(*this)(2) + (*this)(3)*(*this)(3));
 }
-__forceinline DOUBLE Vector<DOUBLE,3>::Magnitude(void) const
+template<> __forceinline DOUBLE Vector<DOUBLE,3>::Magnitude(void) const
 {
 	return (DOUBLE)((*this)(1)*(*this)(1) + (*this)(2)*(*this)(2) + (*this)(3)*(*this)(3));
 }
@@ -249,7 +250,7 @@ __forceinline Vector<Type, iDimensions> &Vector<Type, iDimensions>::SafeNormaliz
 
 
 // unary minus FLOAT3D
-__forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::Flip(void)
+template<> __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::Flip(void)
 {
 	(*this)(1) = -(*this)(1);
 	(*this)(2) = -(*this)(2);
@@ -258,7 +259,7 @@ __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::Flip(void)
 }
 
 // unary minus DOUBLE3D
-__forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::Flip(void)
+template<> __forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::Flip(void)
 {
 	(*this)(1) = -(*this)(1);
 	(*this)(2) = -(*this)(2);
@@ -286,7 +287,7 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator-(voi
 
 
 // sum of two vectors FLOAT3D
-__forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator+=(const Vector<FLOAT,3> &vector2)
+template<> __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator+=(const Vector<FLOAT,3> &vector2)
 {
 	// add member by member
 	(*this)(1) += vector2(1);
@@ -296,7 +297,7 @@ __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator+=(const Vector<FLOAT,3>
 }
 
 // sum of two vectors DOUBLE3D
-__forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator+=(const Vector<DOUBLE,3> &vector2)
+template<> __forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator+=(const Vector<DOUBLE,3> &vector2)
 {
 	// add member by member
 	(*this)(1) += vector2(1);
@@ -325,7 +326,7 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator+(con
 
 
 // difference of two vectors FLOAT3D
-__forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator-=(const Vector<FLOAT,3> &vector2)
+template<> __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator-=(const Vector<FLOAT,3> &vector2)
 {
 	// add member by member
 	(*this)(1) -= vector2(1);
@@ -335,7 +336,7 @@ __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator-=(const Vector<FLOAT,3>
 }
 
 // difference of two vectors DOUBLE3D
-__forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator-=(const Vector<DOUBLE,3> &vector2)
+template<> __forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator-=(const Vector<DOUBLE,3> &vector2)
 {
 	// add member by member
 	(*this)(1) -= vector2(1);
@@ -365,7 +366,7 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator-(con
 
 
 // multiplication with scalar FLOAT3D
-__forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator*=(const FLOAT scalar)
+template<> __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator*=(const FLOAT scalar)
 {
 	(*this)(1) *= scalar;
 	(*this)(2) *= scalar;
@@ -374,7 +375,7 @@ __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator*=(const FLOAT scalar)
 }
 
 // multiplication with scalar DOUBLE3D
-__forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator*=(const DOUBLE scalar)
+template<> __forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator*=(const DOUBLE scalar)
 {
 	(*this)(1) *= scalar;
 	(*this)(2) *= scalar;
@@ -399,7 +400,7 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator*(con
 
 
 // division with scalar FLOAT3D
-__forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator/=(const FLOAT scalar)
+template<> __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator/=(const FLOAT scalar)
 {
 	if ( scalar > 0.0f || scalar < 0.0f )
 	{
@@ -419,7 +420,7 @@ __forceinline Vector<FLOAT,3> &Vector<FLOAT,3>::operator/=(const FLOAT scalar)
 }
 
 // division with scalar DOUBLE3D
-__forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator/=(const DOUBLE scalar)
+template<> __forceinline Vector<DOUBLE,3> &Vector<DOUBLE,3>::operator/=(const DOUBLE scalar)
 {
 	if ( scalar > 0.0f || scalar < 0.0f )
 	{
@@ -460,7 +461,7 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator/(con
  */
 // NOTE: The matrix should have been on the left side of the vector, but the template syntax wouldn't allow that.
 
-__forceinline Vector<DOUBLE,3> Vector<DOUBLE,3>::operator*(const Matrix<DOUBLE,3,3> &matrix2) const
+template<> __forceinline Vector<DOUBLE,3> Vector<DOUBLE,3>::operator*(const Matrix<DOUBLE,3,3> &matrix2) const
 {
 	Vector<DOUBLE,3> result;
 	result(1) = matrix2(1,1) * (*this)(1) + matrix2(1,2) * (*this)(2) + matrix2(1,3) * (*this)(3);
@@ -469,7 +470,7 @@ __forceinline Vector<DOUBLE,3> Vector<DOUBLE,3>::operator*(const Matrix<DOUBLE,3
 	return result;
 }
 
-__forceinline Vector<FLOAT,3> Vector<FLOAT,3>::operator*(const Matrix<FLOAT,3,3> &matrix2) const
+template<> __forceinline Vector<FLOAT,3> Vector<FLOAT,3>::operator*(const Matrix<FLOAT,3,3> &matrix2) const
 {
 	Vector<FLOAT,3> result;
 	result(1) = matrix2(1,1) * (*this)(1) + matrix2(1,2) * (*this)(2) + matrix2(1,3) * (*this)(3);
@@ -501,13 +502,13 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator*(con
 
 
 // scalar product - dot product, inner product for FLOAT3D
-__forceinline FLOAT Vector<FLOAT,3>::operator%(const Vector<FLOAT,3> &vector2) const
+template<> __forceinline FLOAT Vector<FLOAT,3>::operator%(const Vector<FLOAT,3> &vector2) const
 {
 	return (FLOAT)((*this)(1)*vector2(1) + (*this)(2)*vector2(2) + (*this)(3)*vector2(3));
 }
 
 // scalar product - dot product, inner product for DOUBLE3D
-__forceinline DOUBLE Vector<DOUBLE,3>::operator%(const Vector<DOUBLE,3> &vector2) const
+template<> __forceinline DOUBLE Vector<DOUBLE,3>::operator%(const Vector<DOUBLE,3> &vector2) const
 {
 	return (DOUBLE)((*this)(1)*vector2(1) + (*this)(2)*vector2(2) + (*this)(3)*vector2(3));
 }
@@ -552,13 +553,13 @@ __forceinline Vector<Type, iDimensions> Vector<Type, iDimensions>::operator*(con
 
 
 // comparation FLOAT3D
-__forceinline BOOL Vector<FLOAT,3>::operator==(const Vector<FLOAT,3> &vector2) const
+template<> __forceinline BOOL Vector<FLOAT,3>::operator==(const Vector<FLOAT,3> &vector2) const
 {
 	return( (*this)(1)==vector2(1) && (*this)(2)==vector2(2) && (*this)(3)==vector2(3));
 }
 
 // comparation DOUBLE3D
-__forceinline BOOL Vector<DOUBLE,3>::operator==(const Vector<DOUBLE,3> &vector2) const
+template<> __forceinline BOOL Vector<DOUBLE,3>::operator==(const Vector<DOUBLE,3> &vector2) const
 {
 	return( (*this)(1)==vector2(1) && (*this)(2)==vector2(2) && (*this)(3)==vector2(3));
 }

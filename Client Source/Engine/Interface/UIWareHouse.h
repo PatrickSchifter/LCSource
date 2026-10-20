@@ -107,7 +107,7 @@ public:
 
 	bool GetUseCashRemote() { return m_bCashRemote; }
 
-	void	SendListReq(CTString& strPW);
+	void	SendListReq(const CTString &strPW);
 
 	void	AddItemCallback();
 	void	DelItemCallback();

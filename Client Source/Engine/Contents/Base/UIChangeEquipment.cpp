@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Contents/Base/UIChangeEquipment.h>
 #include <Engine/Entities/InternalClasses.h>

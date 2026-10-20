@@ -14,7 +14,9 @@
 #pragma warning(disable : 4200)
 
 #include <stdlib.h>
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -166,10 +168,6 @@ ENGINE_API void SE_UpdateWindowHandle( HWND hwndWindowed, HWND hdlgWebInterface 
 ENGINE_API void SE_PretouchIfNeeded(void);
 ENGINE_API const int	SE_GetEngineDllRefCnt();
 
-#ifdef KALYDO
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-ENGINE_API void SE_UpdateStreamingData(void);
-#endif
 
 // Singleton Classes
 class CWebAddress;
@@ -246,21 +244,23 @@ ENGINE_API extern COLOR g_colWeather;
 //안태훈 수정 끝	//(Add Sun Moon Entity and etc)(0.2)
 
 // 일본 자동 로그인 060209 wooss 
-ENGINE_API BOOL g_bAutoLogin;
-ENGINE_API BOOL g_bAutoRestart;
-ENGINE_API CTString g_nmID ;
-ENGINE_API CTString g_nmPW ;
-ENGINE_API CTString g_nmCID ;
-ENGINE_API CTString g_nmVER ;
+// (these are defined in Engine.cpp; without the extern every library that includes this header
+// defined them again outside Windows, where ENGINE_API is not dllimport)
+ENGINE_API extern BOOL g_bAutoLogin;
+ENGINE_API extern BOOL g_bAutoRestart;
+ENGINE_API extern CTString g_nmID ;
+ENGINE_API extern CTString g_nmPW ;
+ENGINE_API extern CTString g_nmCID ;
+ENGINE_API extern CTString g_nmVER ;
 
 // wooss 070228 ---------------------------->>
 // kw : WSS_EVENT_LOD
 // 이벤트 플래그 변수
-ENGINE_API std::map<int,int> g_mapEvent;
+ENGINE_API extern std::map<int,int> g_mapEvent;
 // -----------------------------------------<<
 	
 //070308_ttos : 브라질 나스 표기 번환
-ENGINE_API BOOL g_bNasTrans;
+ENGINE_API extern BOOL g_bNasTrans;
 extern bool g_bDrawportRus;
 
 extern ENGINE_API INDEX g_iCountry;

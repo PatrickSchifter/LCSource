@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/DisplayMode.h>
 #include <Engine/Base/Translation.h>

@@ -3,10 +3,6 @@
 #include <Engine/Interface/UIInternalClasses.h>
 #include "UISupport.h"
 
-#if		!defined(_MSC_VER) || (_MSC_VER <= 1200)
-#define	sprintf_s	sprintf
-#endif	
-
 CUISupport::CUISupport()
 	: m_pIconSupport(NULL)
 	, m_pTxtPlus(NULL)

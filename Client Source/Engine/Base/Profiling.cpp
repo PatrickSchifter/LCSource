@@ -1,12 +1,21 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Profiling.h>
 
 #include <Engine/Templates/StaticArray.cpp>
-template CStaticArray<CProfileCounter>;
-template CStaticArray<CProfileTimer>;
+template class CStaticArray<CProfileCounter>;
+template class CStaticArray<CProfileTimer>;
 
 
+#ifdef USE_PORTABLE_C
+#include <chrono>
+// same clock as ReadTSC() in Timer.cpp
+static inline __int64 ReadTSC_profile(void)
+{
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+#else
 static inline __int64 ReadTSC_profile(void)
 {
 	__int64 mmRet;
@@ -18,6 +27,7 @@ static inline __int64 ReadTSC_profile(void)
 	}
 	return mmRet;
 }
+#endif
 
 
 /////////////////////////////////////////////////////////////////////
@@ -140,7 +150,7 @@ CProfileForm::CProfileForm(
 	FOREACHINSTATICARRAY(pf_aptTimers, CProfileTimer, itpt) {
 		// clear the timer
 		itpt->pt_tvElapsed.Clear();
-		itpt->pt_tvStarted.tv_llValue = -__int64(1);
+		itpt->pt_tvStarted.tv_llValue = -(__int64)(1);
 		itpt->pt_ctAveraging = 0;
 	}
 }
@@ -196,7 +206,7 @@ void CProfileForm::StopTimer_internal(INDEX iTimer)
 	if (pf_ctRunningTimers==0) {
 		pf_tvOverAllElapsed += tvNow-pf_tvOverAllStarted;
 	}
-	IFDEBUG(pt.pt_tvStarted.tv_llValue = -__int64(1));
+	IFDEBUG(pt.pt_tvStarted.tv_llValue = -(__int64)(1));
 	_tvCurrentProfilingEpsilon += _tvStopEpsilon;
 }
 
@@ -258,7 +268,7 @@ void CProfileForm::Reset(void)
 	FOREACHINSTATICARRAY(pf_aptTimers, CProfileTimer, itpt) {
 		// clear the timer
 		itpt->pt_tvElapsed.Clear();
-		itpt->pt_tvStarted.tv_llValue = -__int64(1);
+		itpt->pt_tvStarted.tv_llValue = -(__int64)(1);
 		itpt->pt_ctAveraging = 0;
 	}
 }
@@ -270,7 +280,7 @@ void CProfileCounter::Report(char *&strBuffer, INDEX ctAveragingCount)
 		ctAveragingCount = 1;
 	}
 	strBuffer += sprintf(strBuffer, "%-45s: %7d %7.2f\n",
-		pc_strName, pc_ctCount, (double)pc_ctCount/ctAveragingCount);
+		(const char*)pc_strName, pc_ctCount, (double)pc_ctCount/ctAveragingCount);
 }
 
 /* Print one timer in report. */
@@ -284,7 +294,7 @@ void CProfileTimer::Report(char *&strBuffer,
 	
 	if (pt_strAveragingName=="") {
 		strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms\n",
-			pt_strName,
+			(const char*)pt_strName,
 			pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
 			pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
 			pt_tvElapsed.GetSeconds()/ctAveragingCount*1000
@@ -295,12 +305,12 @@ void CProfileTimer::Report(char *&strBuffer,
 			ctLocalAveraging = 1;
 		}
 		strBuffer += sprintf(strBuffer, "%-45s: %6.2f%% %6.2f%% %6.2f ms (%4.0fc/%s x%d)\n",
-			pt_strName,
+			(const char*)pt_strName,
 			pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
 			pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
 			pt_tvElapsed.GetSeconds()/ctAveragingCount*1000,
 			pt_tvElapsed.GetSeconds()/ctLocalAveraging*_pTimer->tm_llCPUSpeedHZ,
-			pt_strAveragingName,
+			(const char*)pt_strAveragingName,
 			pt_ctAveraging/ctAveragingCount
 			);
 	}
@@ -327,7 +337,7 @@ void CProfileForm::Report(CTString &strReport)
 	CTimerValue tvModuleElapsed = pf_tvOverAllElapsed;
 	// print the main header
 	strBuffer += sprintf(strBuffer, "%s profile for last %d %s:\n",
-		pf_strTitle, GetAveragingCounter(), pf_strAveragingUnits);
+		(const char*)pf_strTitle, GetAveragingCounter(), (const char*)pf_strAveragingUnits);
 	
 	// print header for timers
 	strBuffer += sprintf(strBuffer,

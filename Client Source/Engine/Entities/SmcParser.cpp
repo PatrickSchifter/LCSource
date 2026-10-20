@@ -1,6 +1,8 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <fstream>
+#ifdef PLATFORM_WIN32
 #include <tchar.h>
+#endif
 #include <Engine/Base/FileName.h>
 #include <Engine/Entities/SmcParser.h>
 #include <Engine/Templates/StaticArray.cpp>
@@ -174,7 +176,7 @@ bool CSmcParser::LoadSmcParse(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(sFilename.c_str());
+	File.open(HOSTPATH(sFilename.c_str()));
 	if(!File.good())
 		return HandleError("ERROR: file %s can't be opened for parsing.\n",(const char*)sFilename.c_str());
 
@@ -404,7 +406,7 @@ bool CSmcParserList::SmcInfoWriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(sFilename.c_str(), ios::out | ios::binary | ios::trunc);
+	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::binary | ios::trunc);
 
 	if(!File.good())
 		return false; // 에러
@@ -417,7 +419,7 @@ bool CSmcParserList::SmcParsingLogWritetxt(std::string sFilename)
 	ofstream fout;
 	std::vector<std::string>::iterator strItor;
 
-	fout.open(sFilename.c_str(), ios_base::out | ios_base::trunc);//|ios_base::app);
+	fout.open(HOSTPATH(sFilename.c_str()), ios_base::out | ios_base::trunc);//|ios_base::app);
 
 	if (!fout.good())
 		return false;
@@ -461,7 +463,7 @@ bool CSmcParserList::SmcInfoReadBin(std::string sFilename)
 {
 	ifstream File;
 
-	File.open(sFilename.c_str(), ios::binary);
+	File.open(HOSTPATH(sFilename.c_str()), ios::binary);
 
 	if( !File.good() )
 		return false; // 에러
@@ -473,7 +475,7 @@ void CSmcParserList::WriteBin(std::string sFilename)
 {
 	ofstream File;
 
-	File.open(sFilename.c_str(), ios::out | ios::trunc);
+	File.open(HOSTPATH(sFilename.c_str()), ios::out | ios::trunc);
 
 	if(!File.good())
 		return; // 에러
@@ -620,13 +622,12 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 		
 		for (int j = 0; j < nMeshInfo; ++j)
 		{
-			CMeshInfo& pInfo = smcList[index].GetMeshInfo(j);
+			CMeshInfo pInfo = smcList[index].GetMeshInfo(j);
 			const char* strMeshPath = pInfo.GetMeshTFNM();
 			
 			CTString path = strFullPath + strMeshPath;
 			
-			WIN32_FIND_DATA wfd;
-			if (FindFirstFile(path, &wfd) == INVALID_HANDLE_VALUE)
+			if (GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES)
 			{
 				CTString log;
 				log.PrintF("[%d] Missing Mesh\t : %s", index, strMeshPath);
@@ -642,7 +643,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 				const char* strTexturePath = pInfo.GetTexInfoTFNM(k);
 				CTString path2 = strFullPath + strTexturePath;
 				
-				if (FindFirstFile(path2, &wfd) == INVALID_HANDLE_VALUE)
+				if (GetFileAttributes(path2) == INVALID_FILE_ATTRIBUTES)
 				{
 					CTString log;
 					log.PrintF("[%d] Missing Texture\t : %s", index, strTexturePath);
@@ -653,7 +654,7 @@ bool CSmcParserList::CheckItemExist(const CStaticArray<CItemData>& arrItemList, 
 		}
 	}
 
- 	std::ofstream file(saveFilePath, std::ios::trunc);
+ 	std::ofstream file(HOSTPATH(saveFilePath), std::ios::trunc);
 	file << "<< Item Resource : START Check ! >>" << endl << endl;
 	file << "Total : " << nTotalCount << endl;
 	file << "Missing : " << nMissingCount << endl << endl;

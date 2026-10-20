@@ -10,14 +10,8 @@
 #include "CmdLine.h"
 #include "Engine/GameState.h"
 #include <Engine/Network/Web.h>
-//#include "Social/TLastChaosApplication.h"
+#include <Engine/Platform/Platform.h>
 
-#ifdef KALYDO
-#include <Nksp/Social/TLastChaosApplication.h>
-#include <Engine/Kalydo/PackageManager.h>
-
-extern ENGINE_API HWND	g_KalydoWindowHandle;
-#endif
 
 extern PIX _pixDesktopWidth;
 extern PIX _pixDesktopHeight;
@@ -35,8 +29,10 @@ extern HWND g_parenthWnd;
 extern ENGINE_API INDEX sam_bFullScreenActive;
 static char achWindowTitle[256]; // current window title
 
+#ifndef LC_PLATFORM_SDL
 static HBITMAP _hbmSplash = NULL;
 static BITMAP  _bmSplash;
+#endif
 
 
 // for window reposition function
@@ -46,6 +42,8 @@ BOOL _bIMEProc = false; // 이기환 수정 11.12
 
 //	김영환:
 bool	_bWinSize = false;
+
+#ifndef LC_PLATFORM_SDL
 
 static void QuitGame(void)
 {
@@ -196,9 +194,6 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 		{
 			//	김영환 : 윈도우 창 크기 변경이 발생한 경우 변수 설정.
 			_bWinSize = true;
-#ifdef KALYDO
-			sam_bFullScreenActive = 0;
-#endif
 			break;
 		}
 	case WM_GETMINMAXINFO:
@@ -207,14 +202,6 @@ long FAR PASCAL WindowProc_Normal( HWND hWnd, UINT message,
 			(reinterpret_cast<MINMAXINFO*>(lParam))->ptMaxTrackSize.y = 1500;
 		}
 		break;
-#ifdef KALYDO
-	case WM_KRFREQUEST:
-		{
-			//(dynamic_cast<TLastChaosApplication*>(application))->requestZoneKRF( KPackManager::GetInstance()->GetZoneNo() );
-			(dynamic_cast<TLastChaosApplication*>(application))->requestZoneKRF( static_cast<unsigned int>(wParam) );
-		}
-		break;
-#endif
 	}
 
 	// if we get to here, we pass the message to default procedure
@@ -308,10 +295,6 @@ void MainWindow_Init(void)
 	GetObject(_hbmSplash, sizeof(BITMAP), (LPSTR) &_bmSplash); 
 	// here was loading and setting of no-windows-mouse-cursor
 
-#ifdef KALYDO
-	KalydoUserData();
-	g_KalydoWindowHandle = application->getKalydoWindow();
-#endif
 }
 
 
@@ -569,3 +552,71 @@ void OpenMainWindowInvisible(void)
 	SetWindowText( _hwndMain, achWindowTitle);
 	*/
 }
+
+#else  // LC_PLATFORM_SDL
+
+// The main window from the SDL3 platform layer (Engine/Platform). It is created once, hidden,
+// and then only changes mode; events reach the game through PLT_PeekMessage() in Nksp.cpp.
+// There is no web dialog (g_web) in this build.
+
+void MainWindow_Init(void)
+{
+}
+
+void MainWindow_End(void)
+{
+}
+
+// close the main application window
+void CloseMainWindow(bool p_Exit)
+{
+	// the window is kept between display modes, as in the Windows build
+	if(p_Exit && _hwndMain!=NULL) {
+		PLT_DestroyMainWindow();
+		_hwndMain = NULL;
+	}
+}
+
+static void CreateMainWindowIfNeeded(void)
+{
+	if(_hwndMain==NULL) {
+		_hwndMain = PLT_CreateMainWindow(APPLICATION_NAME);
+	}
+	_hDlgWeb = NULL;
+	SE_UpdateWindowHandle( _hwndMain, _hDlgWeb);
+}
+
+void ResetMainWindowNormal(bool p_Center)
+{
+	(void)p_Center;
+	// a position given on the command line is used once
+	PLT_SetMainWindowMode( _pixLastSizeI, _pixLastSizeJ, sam_bFullScreenActive, cmd_iWindowLeft, cmd_iWindowTop);
+	cmd_iWindowLeft = -1;
+	cmd_iWindowTop = -1;
+}
+
+// open the main application window for windowed mode
+void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ,bool p_Center)
+{
+	CreateMainWindowIfNeeded();
+	_pixLastSizeI = pixSizeI;
+	_pixLastSizeJ = pixSizeJ;
+	ResetMainWindowNormal(p_Center);
+}
+
+// open the main application window for fullscreen mode
+void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ)
+{
+	CreateMainWindowIfNeeded();
+	_pixLastSizeI = pixSizeI;
+	_pixLastSizeJ = pixSizeJ;
+	PLT_SetMainWindowMode( pixSizeI, pixSizeJ, TRUE, -1, -1);
+}
+
+// open the main application window invisible
+void OpenMainWindowInvisible(void)
+{
+	CreateMainWindowIfNeeded();
+}
+
+#endif  // LC_PLATFORM_SDL

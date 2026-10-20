@@ -1,6 +1,6 @@
- #include "stdh.h"
+ #include "StdH.h"
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>
@@ -23,7 +23,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 
 extern BOOL CVA_bModels;
@@ -654,8 +658,8 @@ static void GetFogMapInVertex( GFXVertex &vtx, GFXTexCoord &tex)
     fstp    D [edi+4]
   }
 #else
-  const FLOAT fD = vtx.x*_vFViewerObj(1) + vtx.y*_vFViewerObj(2) + vtx.z*_vFViewerObj(3);
-  const FLOAT fH = vtx.x*_vHDirObj(1)    + vtx.y*_vHDirObj(2)    + vtx.z*_vHDirObj(3);
+  const DOUBLE fD = (DOUBLE)vtx.x*_vFViewerObj(1) + (DOUBLE)vtx.y*_vFViewerObj(2) + (DOUBLE)vtx.z*_vFViewerObj(3);
+  const DOUBLE fH = (DOUBLE)vtx.x*_vHDirObj(1)    + (DOUBLE)vtx.y*_vHDirObj(2)    + (DOUBLE)vtx.z*_vHDirObj(3);
   tex.s = (fD+_fFogAddZ) * _fog_fMulZ;
   tex.t = (fH+_fFogAddH) * _fog_fMulH;
 #endif
@@ -684,7 +688,7 @@ static void GetHazeMapInVertex( GFXVertex &vtx, FLOAT &tx1)
     fstp    D [edi]
   }
 #else
-  const FLOAT fD = vtx.x*_vViewerObj(1) + vtx.y*_vViewerObj(2) + vtx.z*_vViewerObj(3);
+  const DOUBLE fD = (DOUBLE)vtx.x*_vViewerObj(1) + (DOUBLE)vtx.y*_vViewerObj(2) + (DOUBLE)vtx.z*_vViewerObj(3);
   tx1 = (fD+_fHazeAdd) * _haze_fMul;
 #endif
 }
@@ -1090,9 +1094,9 @@ vtxNext16:
         const ModelFrameVertex16 &mfv0 = pFrame0[iMdlVx];
         // store vertex
         GFXVertex &vtx = pvtxMipBase[iMipVx];
-        vtx.x = (mfv0.mfv_SWPoint(1) -fOffsetX) *fStretchX;
-        vtx.y = (mfv0.mfv_SWPoint(2) -fOffsetY) *fStretchY;
-        vtx.z = (mfv0.mfv_SWPoint(3) -fOffsetZ) *fStretchZ;
+        vtx.x = ((DOUBLE)mfv0.mfv_SWPoint(1) -fOffsetX) *fStretchX;
+        vtx.y = ((DOUBLE)mfv0.mfv_SWPoint(2) -fOffsetY) *fStretchY;
+        vtx.z = ((DOUBLE)mfv0.mfv_SWPoint(3) -fOffsetZ) *fStretchZ;
         // determine normal
         const FLOAT fSinH0 = _pfSinTable[mfv0.mfv_ubNormH];
         const FLOAT fSinP0 = _pfSinTable[mfv0.mfv_ubNormP];
@@ -1101,8 +1105,8 @@ vtxNext16:
         const FLOAT fNX = -fSinH0*fCosP0;
         const FLOAT fNY = -fSinP0;
         const FLOAT fNZ = -fCosH0*fCosP0;
-        // store vertex shade
-        pswMipCol[iMipVx] = FloatToInt(fNX*fLightObjX + fNY*fLightObjY + fNZ*fLightObjZ);
+        // store vertex shade (asm sums in x87 precision; fistp truncated to 16 bits)
+        pswMipCol[iMipVx] = (SWORD)lrint( (DOUBLE)fNX*fLightObjX + (DOUBLE)fNY*fLightObjY + (DOUBLE)fNZ*fLightObjZ);
         // store normal (if needed)
         if( bKeepNormals) {
           pnorMipBase[iMipVx].nx = fNX;
@@ -1248,26 +1252,35 @@ vtxNext16L:
       }
 #else
       // for each vertex in mip
+      const SLONG fixLerpRatio = FloatToInt(fLerpRatio*256.0f); // fix 8:8
       for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++) {
         // get destination for unpacking
         const INDEX iMdlVx = puwMipToMdl[iMipVx];
         const ModelFrameVertex16 &mfv0 = pFrame0[iMdlVx];
         const ModelFrameVertex16 &mfv1 = pFrame1[iMdlVx];
-        // store lerped vertex
+        // store lerped vertex (lerp in 8:8 fixint like asm, result floored to integer)
+        const SLONG slX0 = mfv0.mfv_SWPoint(1);
+        const SLONG slY0 = mfv0.mfv_SWPoint(2);
+        const SLONG slZ0 = mfv0.mfv_SWPoint(3);
+        const SLONG slX = slX0 + (((mfv1.mfv_SWPoint(1)-slX0)*fixLerpRatio)>>8);
+        const SLONG slY = slY0 + (((mfv1.mfv_SWPoint(2)-slY0)*fixLerpRatio)>>8);
+        const SLONG slZ = slZ0 + (((mfv1.mfv_SWPoint(3)-slZ0)*fixLerpRatio)>>8);
         GFXVertex &vtx = pvtxMipBase[iMipVx];
-        vtx.x = (Lerp( (FLOAT)mfv0.mfv_SWPoint(1), (FLOAT)mfv1.mfv_SWPoint(1), fLerpRatio) -fOffsetX) * fStretchX;
-        vtx.y = (Lerp( (FLOAT)mfv0.mfv_SWPoint(2), (FLOAT)mfv1.mfv_SWPoint(2), fLerpRatio) -fOffsetY) * fStretchY;
-        vtx.z = (Lerp( (FLOAT)mfv0.mfv_SWPoint(3), (FLOAT)mfv1.mfv_SWPoint(3), fLerpRatio) -fOffsetZ) * fStretchZ;
+        vtx.x = ((DOUBLE)slX -fOffsetX) * fStretchX;
+        vtx.y = ((DOUBLE)slY -fOffsetY) * fStretchY;
+        vtx.z = ((DOUBLE)slZ -fOffsetZ) * fStretchZ;
         // determine lerped normal
         const FLOAT fSinH0 = _pfSinTable[mfv0.mfv_ubNormH];  const FLOAT fSinH1 = _pfSinTable[mfv1.mfv_ubNormH];
         const FLOAT fSinP0 = _pfSinTable[mfv0.mfv_ubNormP];  const FLOAT fSinP1 = _pfSinTable[mfv1.mfv_ubNormP];
         const FLOAT fCosH0 = _pfCosTable[mfv0.mfv_ubNormH];  const FLOAT fCosH1 = _pfCosTable[mfv1.mfv_ubNormH];
         const FLOAT fCosP0 = _pfCosTable[mfv0.mfv_ubNormP];  const FLOAT fCosP1 = _pfCosTable[mfv1.mfv_ubNormP];
-        const FLOAT fNX = Lerp( -fSinH0*fCosP0, -fSinH1*fCosP1, fLerpRatio);
-        const FLOAT fNY = Lerp( -fSinP0,        -fSinP1,        fLerpRatio);
-        const FLOAT fNZ = Lerp( -fCosH0*fCosP0, -fCosH1*fCosP1, fLerpRatio);
-        // store vertex shade
-        pswMipCol[iMipVx] = FloatToInt(fNX*fLightObjX + fNY*fLightObjY + fNZ*fLightObjZ);
+        const DOUBLE fSHCP0 = (DOUBLE)fSinH0*fCosP0;  const DOUBLE fSHCP1 = (DOUBLE)fSinH1*fCosP1;
+        const DOUBLE fCHCP0 = (DOUBLE)fCosH0*fCosP0;  const DOUBLE fCHCP1 = (DOUBLE)fCosH1*fCosP1;
+        const FLOAT fNX = -(fSHCP0 + (fSHCP1-fSHCP0)*fLerpRatio);
+        const FLOAT fNY = -(fSinP0 + ((DOUBLE)fSinP1-fSinP0)*fLerpRatio);
+        const FLOAT fNZ = -(fCHCP0 + (fCHCP1-fCHCP0)*fLerpRatio);
+        // store vertex shade (asm sums in x87 precision; fistp truncated to 16 bits)
+        pswMipCol[iMipVx] = (SWORD)lrint( (DOUBLE)fNX*fLightObjX + (DOUBLE)fNY*fLightObjY + (DOUBLE)fNZ*fLightObjZ);
         // store lerped normal (if needed)
         if( bKeepNormals) {
           pnorMipBase[iMipVx].nx = fNX;
@@ -1364,16 +1377,16 @@ vtxNext8:
         const ModelFrameVertex8 &mfv0 = pFrame0[iMdlVx];
         // store vertex
         GFXVertex &vtx = pvtxMipBase[iMipVx];
-        vtx.x = (mfv0.mfv_SBPoint(1) -fOffsetX) * fStretchX;
-        vtx.y = (mfv0.mfv_SBPoint(2) -fOffsetY) * fStretchY;
-        vtx.z = (mfv0.mfv_SBPoint(3) -fOffsetZ) * fStretchZ;
+        vtx.x = ((DOUBLE)mfv0.mfv_SBPoint(1) -fOffsetX) * fStretchX;
+        vtx.y = ((DOUBLE)mfv0.mfv_SBPoint(2) -fOffsetY) * fStretchY;
+        vtx.z = ((DOUBLE)mfv0.mfv_SBPoint(3) -fOffsetZ) * fStretchZ;
         // determine normal
         const FLOAT3D &vNormal0 = avGouraudNormals[mfv0.mfv_NormIndex];
         const FLOAT fNX = vNormal0(1);
         const FLOAT fNY = vNormal0(2);
         const FLOAT fNZ = vNormal0(3);
-        // store vertex shade
-        pswMipCol[iMipVx] = FloatToInt(fNX*fLightObjX + fNY*fLightObjY + fNZ*fLightObjZ);
+        // store vertex shade (asm sums in x87 precision; fistp truncated to 16 bits)
+        pswMipCol[iMipVx] = (SWORD)lrint( (DOUBLE)fNX*fLightObjX + (DOUBLE)fNY*fLightObjY + (DOUBLE)fNZ*fLightObjZ);
         // store lerped normal (if needed)
         if( bKeepNormals) {
           pnorMipBase[iMipVx].nx = fNX;
@@ -1501,30 +1514,41 @@ vtxNext8L:
         jl      vtxLoop8L
       }
 #else
+      const SLONG fixLerpRatio = FloatToInt(fLerpRatio*256.0f); // fix 8:8
+      // re-adjust stretching factors because of fixint lerping (divide by 256)
+      fStretchX*=0.00390625f;  fOffsetX*=256.0f;  
+      fStretchY*=0.00390625f;  fOffsetY*=256.0f;
+      fStretchZ*=0.00390625f;  fOffsetZ*=256.0f;
       // for each vertex in mip
       for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++) {
         // get destination for unpacking
         const INDEX iMdlVx = puwMipToMdl[iMipVx];
         const ModelFrameVertex8 &mfv0 = pFrame0[iMdlVx];
         const ModelFrameVertex8 &mfv1 = pFrame1[iMdlVx];
-        // store lerped vertex
+        // store lerped vertex (lerp in 24:8 fixint like asm)
+        const SLONG slX0 = mfv0.mfv_SBPoint(1);
+        const SLONG slY0 = mfv0.mfv_SBPoint(2);
+        const SLONG slZ0 = mfv0.mfv_SBPoint(3);
+        const SLONG slX = slX0*256 + (mfv1.mfv_SBPoint(1)-slX0)*fixLerpRatio;
+        const SLONG slY = slY0*256 + (mfv1.mfv_SBPoint(2)-slY0)*fixLerpRatio;
+        const SLONG slZ = slZ0*256 + (mfv1.mfv_SBPoint(3)-slZ0)*fixLerpRatio;
         GFXVertex &vtx = pvtxMipBase[iMipVx];
-        vtx.x = (Lerp( (FLOAT)mfv0.mfv_SBPoint(1), (FLOAT)mfv1.mfv_SBPoint(1), fLerpRatio) -fOffsetX) * fStretchX;
-        vtx.y = (Lerp( (FLOAT)mfv0.mfv_SBPoint(2), (FLOAT)mfv1.mfv_SBPoint(2), fLerpRatio) -fOffsetY) * fStretchY;
-        vtx.z = (Lerp( (FLOAT)mfv0.mfv_SBPoint(3), (FLOAT)mfv1.mfv_SBPoint(3), fLerpRatio) -fOffsetZ) * fStretchZ;
-        // determine lerped normal
+        vtx.x = ((DOUBLE)slX -fOffsetX) * fStretchX;
+        vtx.y = ((DOUBLE)slY -fOffsetY) * fStretchY;
+        vtx.z = ((DOUBLE)slZ -fOffsetZ) * fStretchZ;
+        // determine lerped normal (asm keeps it unrounded for the shade)
         const FLOAT3D &vNormal0 = avGouraudNormals[mfv0.mfv_NormIndex];
         const FLOAT3D &vNormal1 = avGouraudNormals[mfv1.mfv_NormIndex];
-        const FLOAT fNX = Lerp( (FLOAT)vNormal0(1), (FLOAT)vNormal1(1), fLerpRatio);
-        const FLOAT fNY = Lerp( (FLOAT)vNormal0(2), (FLOAT)vNormal1(2), fLerpRatio);
-        const FLOAT fNZ = Lerp( (FLOAT)vNormal0(3), (FLOAT)vNormal1(3), fLerpRatio);
-        // store vertex shade
-        pswMipCol[iMipVx] = FloatToInt(fNX*fLightObjX + fNY*fLightObjY + fNZ*fLightObjZ);
+        const DOUBLE fNX = vNormal0(1) + ((DOUBLE)vNormal1(1)-vNormal0(1))*fLerpRatio;
+        const DOUBLE fNY = vNormal0(2) + ((DOUBLE)vNormal1(2)-vNormal0(2))*fLerpRatio;
+        const DOUBLE fNZ = vNormal0(3) + ((DOUBLE)vNormal1(3)-vNormal0(3))*fLerpRatio;
+        // store vertex shade (fistp truncated to 16 bits)
+        pswMipCol[iMipVx] = (SWORD)lrint( fNX*fLightObjX + fNY*fLightObjY + fNZ*fLightObjZ);
         // store lerped normal (if needed)
         if( bKeepNormals) {
-          pnorMipBase[iMipVx].nx = fNX;
-          pnorMipBase[iMipVx].ny = fNY;
-          pnorMipBase[iMipVx].nz = fNZ;
+          pnorMipBase[iMipVx].nx = (FLOAT)fNX;
+          pnorMipBase[iMipVx].ny = (FLOAT)fNY;
+          pnorMipBase[iMipVx].nz = (FLOAT)fNZ;
         }
       }
 #endif
@@ -1620,13 +1644,15 @@ colEnd:
   }
 #else
     // generate colors from shades
+    // (same math as MMX: shade expanded to 15 bits, pmulhw with doubled light, alpha uses 0x1FE light)
     for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++) {
       GFXColor &col = pcolMipBase[iMipVx];
       const SLONG slShade = Clamp( (SLONG)pswMipCol[iMipVx], 0L, 255L);
-      col.r = _pubClipByte[_slAR + ((_slLR*slShade)>>8)];
-      col.g = _pubClipByte[_slAG + ((_slLG*slShade)>>8)];
-      col.b = _pubClipByte[_slAB + ((_slLB*slShade)>>8)];
-      col.a = slShade;
+      const SLONG slShade15 = (slShade*257)>>1;
+      col.r = Clamp( _slAR + ((slShade15*(_slLR<<1))>>16), 0L, 255L);
+      col.g = Clamp( _slAG + ((slShade15*(_slLG<<1))>>16), 0L, 255L);
+      col.b = Clamp( _slAB + ((slShade15*(_slLB<<1))>>16), 0L, 255L);
+      col.a = ClampUp( (slShade15*(0x01FE<<1))>>16, 255L); // asm quirk: alpha is ~2*shade (saturated)
     }
 #endif
 }
@@ -1642,7 +1668,11 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
 {
   // cache API
   _eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
   ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_D3D || _eAPI==GAT_NONE);
+#else
+  ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_NONE);
+#endif // SE1_D3D
   if( _eAPI==GAT_NONE) return;  // must have API
 
   // adjust Truform usage
@@ -2065,9 +2095,15 @@ diffColLoop:
       }
 #else
       // setup diffuse color array
+      // (same math as MMX: (2*mip * (diff*128+127))>>16; mip alpha forced to 255, so 255 alpha gives 254)
       for( INDEX iSrfVx=0; iSrfVx<ctSrfVx; iSrfVx++) {
         const INDEX iMipVx = puwSrfToMip[iSrfVx];
-        pcolSrfBase[iSrfVx].MultiplyRGBCopyA1( colSrfDiff, pcolMipBase[iMipVx]);
+        const GFXColor &colMip = pcolMipBase[iMipVx];
+        GFXColor &colSrf = pcolSrfBase[iSrfVx];
+        colSrf.r = ((ULONG(colMip.r)<<1) * ((ULONG(colSrfDiff.r)<<7)+127))>>16;
+        colSrf.g = ((ULONG(colMip.g)<<1) * ((ULONG(colSrfDiff.g)<<7)+127))>>16;
+        colSrf.b = ((ULONG(colMip.b)<<1) * ((ULONG(colSrfDiff.b)<<7)+127))>>16;
+        colSrf.a = ((255UL<<1)           * ((ULONG(colSrfDiff.a)<<7)+127))>>16;
       }
 #endif
     }
@@ -2299,17 +2335,17 @@ reflMipLoop:
     for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
     { // get normal in absolute space
       const GFXNormal &nor = pnorMipBase[iMipVx];
-      const FLOAT fNx = nor.nx*m(1,1) + nor.ny*m(1,2) + nor.nz*m(1,3);
-      const FLOAT fNy = nor.nx*m(2,1) + nor.ny*m(2,2) + nor.nz*m(2,3);
-      const FLOAT fNz = nor.nx*m(3,1) + nor.ny*m(3,2) + nor.nz*m(3,3);
+      const DOUBLE fNx = (DOUBLE)nor.nx*m(1,1) + (DOUBLE)nor.ny*m(1,2) + (DOUBLE)nor.nz*m(1,3);
+      const DOUBLE fNy = (DOUBLE)nor.nx*m(2,1) + (DOUBLE)nor.ny*m(2,2) + (DOUBLE)nor.nz*m(2,3);
+      const DOUBLE fNz = (DOUBLE)nor.nx*m(3,1) + (DOUBLE)nor.ny*m(3,2) + (DOUBLE)nor.nz*m(3,3);
       // reflect viewer around normal
-      const FLOAT fNV  = fNx*_vViewer(1) + fNy*_vViewer(2) + fNz*_vViewer(3);
-      const FLOAT fRVx = _vViewer(1) - 2*fNx*fNV;
-      const FLOAT fRVy = _vViewer(2) - 2*fNy*fNV;
-      const FLOAT fRVz = _vViewer(3) - 2*fNz*fNV;
+      const DOUBLE fNV  = fNx*_vViewer(1) + fNy*_vViewer(2) + fNz*_vViewer(3);
+      const DOUBLE fRVx = _vViewer(1) - 2*fNx*fNV;
+      const DOUBLE fRVy = _vViewer(2) - 2*fNy*fNV;
+      const DOUBLE fRVz = _vViewer(3) - 2*fNz*fNV;
       // map reflected vector to texture 
       // NOTE: using X and Z axes, so that singularity gets on -Y axis (where it will least probably be seen)
-      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVy);  
+      const DOUBLE f1oFM = 0.5 / sqrt(2+2*fRVy);  
       ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
       ptexMipBase[iMipVx].t = fRVz*f1oFM +0.5f;
     }
@@ -2483,16 +2519,16 @@ specMipLoop:
     for( INDEX iMipVx=0; iMipVx<_ctAllMipVx; iMipVx++)
     { // reflect light vector around vertex normal in object space
       GFXNormal &nor = pnorMipBase[iMipVx];
-      const FLOAT fNL = nor.nx*_vLightObj(1) + nor.ny*_vLightObj(2) +	nor.nz*_vLightObj(3);
-      const FLOAT fRx = _vLightObj(1) - 2*nor.nx*fNL;
-      const FLOAT fRy = _vLightObj(2) - 2*nor.ny*fNL;
-      const FLOAT fRz = _vLightObj(3) - 2*nor.nz*fNL;
+      const DOUBLE fNL = (DOUBLE)nor.nx*_vLightObj(1) + (DOUBLE)nor.ny*_vLightObj(2) + (DOUBLE)nor.nz*_vLightObj(3);
+      const DOUBLE fRx = _vLightObj(1) - 2*nor.nx*fNL;
+      const DOUBLE fRy = _vLightObj(2) - 2*nor.ny*fNL;
+      const DOUBLE fRz = _vLightObj(3) - 2*nor.nz*fNL;
       // transform the reflected vector to viewer space
-      const FLOAT fRVx = fRx*m(1,1) + fRy*m(1,2) + fRz*m(1,3);
-      const FLOAT fRVy = fRx*m(2,1) + fRy*m(2,2) + fRz*m(2,3);
-      const FLOAT fRVz = fRx*m(3,1) + fRy*m(3,2) + fRz*m(3,3);
+      const DOUBLE fRVx = fRx*m(1,1) + fRy*m(1,2) + fRz*m(1,3);
+      const DOUBLE fRVy = fRx*m(2,1) + fRy*m(2,2) + fRz*m(2,3);
+      const DOUBLE fRVz = fRx*m(3,1) + fRy*m(3,2) + fRz*m(3,3);
       // map reflected vector to texture
-      const FLOAT f1oFM = 0.5f / sqrt(2+2*fRVz);  // was 2*sqrt(2+2*fRVz)
+      const DOUBLE f1oFM = 0.5 / sqrt(2+2*fRVz);  // was 2*sqrt(2+2*fRVz)
       ptexMipBase[iMipVx].s = fRVx*f1oFM +0.5f;
       ptexMipBase[iMipVx].t = fRVy*f1oFM +0.5f;
     }

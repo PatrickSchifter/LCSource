@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIGuildMark.h>
 #include <Engine/Interface/UIInventory.h>
@@ -362,7 +362,7 @@ void CUIGuildMark::Render()
 	strTemp.PrintF( _s("%d"), m_guildMarkBGPage );
 	pDrawPort->PutTextExCX( strTemp, m_nPosX + 355, m_nPosY + 228 );
 
-	strTemp.PrintF( _s("%s : %s" ), _S( 3451, "길드 명"), _pNetwork->MyCharacterInfo.strGuildName );
+	strTemp.PrintF( _s("%s : %s" ), (const char*)_S( 3451, "길드 명"), (const char*)_pNetwork->MyCharacterInfo.strGuildName );
 	pDrawPort->PutTextExCX( strTemp, m_nPosX + 263, m_nPosY + 263 );
 
 	pDrawPort->EndTextEx();

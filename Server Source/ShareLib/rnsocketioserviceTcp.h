@@ -23,7 +23,7 @@ public:
 //	typedef boost::shared_ptr<rnSocketIOServiceTcp>	SP;
 
 public:
-	rnSocketIOServiceTcp(boost::asio::io_service& io_service);
+	rnSocketIOServiceTcp(boost::asio::io_context& io_service);
 	virtual ~rnSocketIOServiceTcp();
 
 	virtual void							Open(session_handle handle, int packet_type);
@@ -136,7 +136,7 @@ protected:
 
 	void							Init();
 
-	void							HandleAsyncConnect( const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator );
+	void							HandleAsyncConnect( const boost::system::error_code& error, boost::asio::ip::tcp::resolver::results_type::iterator endpoint_iterator );
 	void							HandleReadHeader(const boost::system::error_code& error);
 	void							HandleReadBody(const boost::system::error_code& error);
 	void							HandleWrite(const boost::system::error_code& error, std::size_t bytes_transferred);
@@ -202,7 +202,7 @@ private:
 
 	int								unique_id_;			// 각 세션이 연결될때마다 부여받는 고유 번호
 
-	boost::asio::strand				boost_strand_;
+	boost::asio::io_context::strand				boost_strand_;
 };
 
 inline bool	rnSocketIOServiceTcp::isInvalidAction()

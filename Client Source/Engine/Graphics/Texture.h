@@ -38,9 +38,6 @@
  * Bitmap data for a class of texture objects
  */
 class ENGINE_API CTextureData : public CAnimData {
-#ifdef KALYDO
-  static CTString strDefaultTexturePath;
-#endif
 public:
 // implementation:
   ULONG td_ulFlags;             // see defines
@@ -53,10 +50,10 @@ public:
   class CTexParams td_tpLocal;  // local texture parameters
   ULONG td_ulInternalFormat;    // format in which texture will be uploaded
   CTimerValue td_tvLastDrawn;   // timer for probing
-  ULONG td_ulProbeObject;
+  TEXOBJ td_ulProbeObject;
   union {
-    ULONG  td_ulObject;
-    ULONG *td_pulObjects;
+    TEXOBJ  td_ulObject;
+    TEXOBJ *td_pulObjects;
   };
   ULONG *td_pulFrames;          // all frames with their mip-maps and private palettes
   UBYTE *td_pubBuffer1, *td_pubBuffer2;       // buffers for effect textures
@@ -120,13 +117,7 @@ public:
   void Unbind(void);
   // free memory allocated for texture
   void Clear(void);
-#ifdef	KALYDO
-  void Load_t(const CTFileName &fnFileName);
-  void Load_Delay_t(const CTFileName &fnFileName);
   void Reload();
-#else	// KALYDO
-  void Reload();
-#endif	// KALYDO
 
   // read texture from file
   void Read_t( CTStream *inFile);
@@ -208,22 +199,39 @@ public:
 	~CRenderTexture();
 
 	// sehan D3DFORMAT fmt = D3DFMT_A8R8G8B8 추가 // sehan end
+#ifdef SE1_D3D
 	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT, D3DFORMAT fmt = D3DFMT_A8R8G8B8);
+#else
+	BOOL Init(INDEX width, INDEX height, ULONG flag = TEX_32BIT);  // OpenGL framebuffer object or Metal texture
+#endif // SE1_D3D
 	void Begin();	// SetRenderTarget current
 	// Must be call this func in begin-end block
 	void Clear(COLOR colClear=0xFFFFFFFF, FLOAT fZVal=ZBUF_BACK);
 	void End();		// SetRenderTarget old
 
 	//기본 정보들
+#ifdef SE1_D3D
 	IDirect3DSurface8 *rt_pSurface;	// IDirect3DSurface8* in IDirect3DTexture8
+#endif // SE1_D3D
 	CTextureData rt_tdTexture;
 
+#ifdef SE1_D3D
 protected:
 	//begin, end block에서 사용되는 변수들, 외부로 들어나서 좋을거 없다.
 	IDirect3DSurface8 *m_pOldRenderTarget;
 	IDirect3DSurface8 *m_pOldDepthStencil;
 	IDirect3DSurface8 *m_pDepthStencil;
 	BOOL m_bOldZEnable;
+#else
+protected:
+	ULONG m_ulFramebuffer;      // OpenGL framebuffer object with the texture as its color
+	ULONG m_ulDepthBuffer;      // and a 16-bit depth renderbuffer
+	INDEX m_iOldFramebuffer;    // what Begin() replaced, for End()
+	INDEX m_aiOldViewport[4];
+	INDEX m_aiOldScissor[4];
+	INDEX m_iOldTargetHeight;   // GFX_pixRenderTargetHeight
+	TEXOBJ m_ulOldTarget;       // Metal: the render target Begin() replaced
+#endif // SE1_D3D
 };
 //안태훈 수정 끝	//(Add CRenderTexture class for Render to Texture)(0.1)
 

@@ -278,7 +278,7 @@ int CDBCmd::FindField( const char* fieldname )
 		return it->second;
 	}
 
-	std::string title = boost::str(boost::format("query[%s] / not found mysql field names ('%1%') : ") % m_sql % fieldname);
+	std::string title = boost::str(boost::format("query[%1%] / not found mysql field names ('%2%') : ") % m_sql % fieldname);
 	std::string str = title;
 	map_t::iterator eit = map_.begin();
 	map_t::iterator eendit = map_.end();

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/ListIterator.inl>
@@ -44,6 +44,9 @@ extern void TerrainMapCrop(Type *ptDst, SLONG slDstWidth, SLONG slDstHeight,
 		slOld += slOldStepX;
 	}
 }
+// used by Terrain.cpp and TRLayerImp.cpp
+template void TerrainMapCrop<UBYTE>(UBYTE *ptDst, SLONG slDstWidth, SLONG slDstHeight,
+	const UBYTE *ptSrc, SLONG slSrcWidth, SLONG slSrcHeight, UBYTE ubFill);
 
 // Copy terrain map from one mem location to another with optional map resizing
 template <class Type>
@@ -2788,17 +2791,17 @@ extern void TR_ExportServerHeightMap_t( CTerrain *ptrTerrain, CTFileName &fnm )
 		for( PIX pixX = 0; pixX < pixHeightMapWidth; pixX++ )
 		{
 			fX = pixX;
-			uwTempHeight = ( TR_GetHeight( ptr, fX, fZ ) + 0.009999f ) * 100.0f;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 1.0f, fZ ) + 0.009999f ) * 100.0f;
+			uwTempHeight = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX, fZ ) + 0.009999f ) * 100.0f);
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 1.0f, fZ ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX, fZ + 1.0f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX, fZ + 1.0f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 1.0f, fZ + 1.0f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 1.0f, fZ + 1.0f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
-			uwTempHeight2 = ( TR_GetHeight( ptr, fX + 0.5f, fZ + 0.5f ) + 0.009999f ) * 100.0f;
+			uwTempHeight2 = (UWORD)(SLONG)(( TR_GetHeight( ptr, fX + 0.5f, fZ + 0.5f ) + 0.009999f ) * 100.0f);
 			if( uwTempHeight < uwTempHeight2 )
 				uwTempHeight = uwTempHeight2;
 			uwHeight = ( ( uwTempHeight & 0xFF00 ) >> 8 ) | ( ( uwTempHeight & 0x00FF ) << 8 );

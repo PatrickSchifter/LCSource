@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Source Files\Platform">
+      <UniqueIdentifier>{6c3d2a1e-5b7f-4e2a-9c1d-8f0e3b2a1c55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Platform Headers">
+      <UniqueIdentifier>{7d4e3b2f-6c8a-4f3b-8d2e-9a1f4c3b2d66}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{62b8a299-adf0-431b-87e1-b8c769401707}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
@@ -328,6 +334,9 @@
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Shader.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ShaderAsmToARB.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\ShadowMap.cpp">
@@ -1253,6 +1262,15 @@
     </ClCompile>
     <ClCompile Include="Base\Updateable.cpp">
       <Filter>Source Files\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Base\Win32Compat.cpp">
+      <Filter>Source Files\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformSDL.cpp">
+      <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Win32WindowSDL.cpp">
+      <Filter>Source Files\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Brushes\Brush.cpp">
       <Filter>Source Files\Brushes</Filter>
@@ -2183,6 +2201,12 @@
     <ClInclude Include="Base\Unzip.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Base\Win32Compat.h">
+      <Filter>Header Files\Base Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Platform.h">
+      <Filter>Header Files\Platform Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Base\Updateable.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
@@ -2301,6 +2325,9 @@
       <Filter>Header Files\Graphics Headers</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ShaderCode.h">
+      <Filter>Header Files\Graphics Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ShaderAsmToARB.h">
       <Filter>Header Files\Graphics Headers</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ShadowMap.h">

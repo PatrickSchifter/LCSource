@@ -17,7 +17,7 @@
 class CDisplayAdapter
 {
 public:
-  CDisplayMode da_admDisplayModes[25]; // 25 should be just enough
+  CDisplayMode da_admDisplayModes[32]; // 32 should be just enough (MAX_RESOLUTIONS in Adapter.cpp)
   INDEX da_ctDisplayModes;       // number of display modes with hardware acceleration (>=1)
   INDEX da_iCurrentDisplayMode;  // currently active display mode (-1 if none)
   ULONG da_ulFlags;              // various flags (DAF_ ...) 

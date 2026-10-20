@@ -117,7 +117,7 @@ void Party::MandateBossReq( CTString strManadateChaName )
 
 	CTString strMessage;
 
-	strMessage.PrintF( _S(2170, "정말로 %s님께 파티장을 위임하시겠습니까?" ), strManadateChaName );
+	strMessage.PrintF( _S(2170, "정말로 %s님께 파티장을 위임하시겠습니까?" ), (const char*)strManadateChaName );
 
 	MsgBoxInfo.AddString( strMessage );
 	CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
@@ -159,11 +159,11 @@ void Party::MandateBoss( CTString strBossName, SLONG nManadateChaIndex, CTString
 
 	if( sbMandate )
 	{
-		strMessage.PrintF( _S(2171, "%s님이 파티장을 위임하여 %s님이 새로운 파티장으로 임명되었습니다." ), strBossName, strManadateChaName );
+		strMessage.PrintF( _S(2171, "%s님이 파티장을 위임하여 %s님이 새로운 파티장으로 임명되었습니다." ), (const char*)strBossName, (const char*)strManadateChaName );
 	}
 	else
 	{
-		strMessage.PrintF( _S(2172, "%s님이 새로운 파티장으로 임명되었습니다." ), strManadateChaName );
+		strMessage.PrintF( _S(2172, "%s님이 새로운 파티장으로 임명되었습니다." ), (const char*)strManadateChaName );
 	}
 
 	MsgBoxInfo.AddString( strMessage );
@@ -210,7 +210,7 @@ void Party::SetDivisionType(SBYTE sbDivisionType, SBYTE sbType, BOOL bFirst /* =
 
 	if(!bFirst)
 	{
-		strTemp.PrintF(_S(4569, "%s 분배 방식이 %s(으)로 변경되었습니다."), m_strDivisionType[sbType], strTemp2);
+		strTemp.PrintF(_S(4569, "%s 분배 방식이 %s(으)로 변경되었습니다."), (const char*)m_strDivisionType[sbType], (const char*)strTemp2);
 		pUIManager->GetChattingUI()->AddSysMessage( strTemp );
 	}
 
@@ -818,7 +818,7 @@ bool Party::SearchExpeditionMember(SLONG slIndex, int &nGroup, int &nPos)
 
 ///////////////////////////////////Party 관련/////////////////////////////////
 
-void Party::AddPartyMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void Party::AddPartyMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -859,7 +859,7 @@ void Party::RemoveMember( SLONG slIndex )
 		return;
 
 	CTString	strSysMessage;
-	strSysMessage.PrintF( _S2( 421, m_PartyInfo[iMem].strName, "%s<가> 파티에서 탈퇴하셨습니다." ), m_PartyInfo[iMem].strName );
+	strSysMessage.PrintF( _S2( 421, m_PartyInfo[iMem].strName, "%s<가> 파티에서 탈퇴하셨습니다." ), (const char*)m_PartyInfo[iMem].strName );
 	CUIManager::getSingleton()->GetChattingUI()->AddSysMessage(strSysMessage );
 
 	m_nMemberCount--;
@@ -962,7 +962,7 @@ void Party::PartyInvite(SBYTE sbType, SLONG slSrcIndex, CTString &strSrcName, SB
 	{
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 215, "파티" ), UMBS_CANCEL, UI_PARTY, MSGCMD_PARTY_INVITE );
-		strMessage.PrintF( _S( 216, "%s에게 파티를 신청중입니다. 취소하시겠습니까?" ), m_strDestName );
+		strMessage.PrintF( _S( 216, "%s에게 파티를 신청중입니다. 취소하시겠습니까?" ), (const char*)m_strDestName );
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );
 
@@ -982,12 +982,12 @@ void Party::PartyInvite(SBYTE sbType, SLONG slSrcIndex, CTString &strSrcName, SB
 			// 세부 파티 타입이 있다면
 			if(sbPartyTypeItem >= 0 && sbPartyTypeSPItem >= 0)
 			{
-				strMessage.PrintF( _S(4526, "%s가 파티(%s)(아이템분배:%s, 스페셜아이템 분배:%s)신청을 했습니다. 수락하시겠습니까?" ), strSrcName, 
-					strPartyType[sbType], m_strExpeditionType[sbPartyTypeItem], m_strExpeditionType[sbPartyTypeSPItem]);
+				strMessage.PrintF( _S(4526, "%s가 파티(%s)(아이템분배:%s, 스페셜아이템 분배:%s)신청을 했습니다. 수락하시겠습니까?" ), (const char*)strSrcName, 
+					(const char*)strPartyType[sbType], (const char*)m_strExpeditionType[sbPartyTypeItem], (const char*)m_strExpeditionType[sbPartyTypeSPItem]);
 			}
 			else // 세부 지정이 없다면
 			{
-				strMessage.PrintF( _S(4527, "%s가 파티(%s)신청을 했습니다. 수락하시겠습니까?" ), strSrcName, strPartyType[sbType]);
+				strMessage.PrintF( _S(4527, "%s가 파티(%s)신청을 했습니다. 수락하시겠습니까?" ), (const char*)strSrcName, (const char*)strPartyType[sbType]);
 			}
 
 			CUIMsgBox_Info	MsgBoxInfo;
@@ -1034,7 +1034,7 @@ void Party::PartyReject( BOOL bLeader )
 	pUIManager->SetCSFlagOff( CSF_PARTY_REQ );
 }
 
-void Party::PartyAddMember( SBYTE sbLeader, SLONG slIndex, CTString &strName, SBYTE sbJob, SBYTE sbJob2,
+void Party::PartyAddMember( SBYTE sbLeader, SLONG slIndex, const CTString &strName, SBYTE sbJob, SBYTE sbJob2,
 	int iLevel, int iHP, int iMaxHP, int iMP, int iMaxMP,
 	FLOAT fX, FLOAT fZ, SBYTE sbLayer, SLONG slZone )
 {
@@ -1336,7 +1336,7 @@ void Party::ExpeditionQuit( SLONG slType, SLONG slIndex )
 			if (SearchExpeditionMember(slIndex, nGroup, nPos) == true)
 			{
 				CTString	strSysMessage;
-				strSysMessage.PrintF( _S( 4566, "%s가 원정대에서 탈퇴하셨습니다." ), m_ExpeditionGroup[nGroup][nPos].m_strName);
+				strSysMessage.PrintF( _S( 4566, "%s가 원정대에서 탈퇴하셨습니다." ), (const char*)m_ExpeditionGroup[nGroup][nPos].m_strName);
 				pUIManager->GetChattingUI()->AddSysMessage(strSysMessage );
 
 				RemoveExpeditionMember(nGroup, nPos);
@@ -1372,7 +1372,7 @@ void Party::ExpeditionKick( SLONG slIndex )
 		if (SearchExpeditionMember(slIndex, nGroup, nPos) == true)
 		{
 			CTString	strSysMessage;
-			strSysMessage.PrintF( _S( 4566, "%s가 원정대에서 탈퇴하셨습니다." ), m_ExpeditionGroup[nGroup][nPos].m_strName);
+			strSysMessage.PrintF( _S( 4566, "%s가 원정대에서 탈퇴하셨습니다." ), (const char*)m_ExpeditionGroup[nGroup][nPos].m_strName);
 			pUIManager->GetChattingUI()->AddSysMessage(strSysMessage );
 
 			RemoveExpeditionMember(nGroup, nPos);
@@ -1417,11 +1417,11 @@ void Party::ChangeGroup(SLONG slIndex, int nGroupNum, int nPosNum) // 캐릭터 인�
 		CTString strMessage;
 		if(nGroup != nGroupNum)
 		{
-			strMessage.PrintF(_S( 4567, "%s가 %d그룹 %d번에서 %d그룹 %d번으로 이동하였습니다." ), m_ExpeditionGroup[nGroupNum][nPosNum].m_strName, nGroup+1, nPos+1, nGroupNum+1, nPosNum+1);	//그룹명 표시할때는 +1(0~3) -> (1~4)
+			strMessage.PrintF(_S( 4567, "%s가 %d그룹 %d번에서 %d그룹 %d번으로 이동하였습니다." ), (const char*)m_ExpeditionGroup[nGroupNum][nPosNum].m_strName, nGroup+1, nPos+1, nGroupNum+1, nPosNum+1);	//그룹명 표시할때는 +1(0~3) -> (1~4)
 		}
 		else
 		{
-			strMessage.PrintF(_S( 4568, "%s가 %d그룹 %d번에서 %d번으로 이동하였습니다." ), m_ExpeditionGroup[nGroupNum][nPosNum].m_strName, nGroupNum+1, nPos+1, nPosNum+1);	//그룹명 표시할때는 +1(0~3) -> (1~4)
+			strMessage.PrintF(_S( 4568, "%s가 %d그룹 %d번에서 %d번으로 이동하였습니다." ), (const char*)m_ExpeditionGroup[nGroupNum][nPosNum].m_strName, nGroupNum+1, nPos+1, nPosNum+1);	//그룹명 표시할때는 +1(0~3) -> (1~4)
 		}
 
 		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strMessage );
@@ -1631,7 +1631,7 @@ void Party::SetExpeditionPosition(SLONG slIndex, SLONG slPosition)
 
 			CTString strMessage;
 
-			strMessage.PrintF(_S( 4572, "%s님이 원정부대장이 되었습니다." ), m_ExpeditionGroup[nGroup][nPos].m_strName);
+			strMessage.PrintF(_S( 4572, "%s님이 원정부대장이 되었습니다." ), (const char*)m_ExpeditionGroup[nGroup][nPos].m_strName);
 
 			MsgBoxInfo.AddString( strMessage );
 			CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );
@@ -1676,7 +1676,7 @@ void Party::ChangeExpeditionLeader(SLONG slIndexSrc, SLONG slIndexDesc, SLONG sl
 
 	CTString strMessage;
 
-	strMessage.PrintF(_S( 4573, "%s님이 원정대장이 되었습니다." ), m_ExpeditionGroup[nGroup][nPos].m_strName);
+	strMessage.PrintF(_S( 4573, "%s님이 원정대장이 되었습니다." ), (const char*)m_ExpeditionGroup[nGroup][nPos].m_strName);
 
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
@@ -1759,7 +1759,7 @@ void Party::SendPartyInviteReq( SBYTE sbType, SLONG	slIndex, CTString &strDestNa
 	CTString	strMessage;
 	if( m_bIsPartyRequested )
 	{
-		strMessage.PrintF( _S( 361, "이미 %s에게 파티를 신청중입니다." ), m_strDestName );
+		strMessage.PrintF( _S( 361, "이미 %s에게 파티를 신청중입니다." ), (const char*)m_strDestName );
 		pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		return;
 	}
@@ -1787,7 +1787,7 @@ void Party::SendPartyInviteReq( SBYTE sbType, SLONG	slIndex, CTString &strDestNa
 	{
 		if( slIndex == m_PartyInfo[iMem].slIndice )
 		{
-			strMessage.PrintF( _S2( 420, m_strDestName, "이미 %s<과> 파티중입니다." ), m_strDestName );
+			strMessage.PrintF( _S2( 420, m_strDestName, "이미 %s<과> 파티중입니다." ), (const char*)m_strDestName );
 			pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 
 			return;
@@ -1967,7 +1967,7 @@ void Party::SendChangeExpedition()
 	_pNetwork->ExpeditionCreateReq();
 }
 
-void Party::SendExpeditionInvite( CTString &strDestName )
+void Party::SendExpeditionInvite( const CTString &strDestName )
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 	ObjInfo* pInfo = ObjInfo::getSingleton();
@@ -1993,7 +1993,7 @@ void Party::SendExpeditionInvite( CTString &strDestName )
 	SendExpeditionInviteReq(slIndex, strDestName);
 }
 
-void Party::SendExpeditionInviteReq(int slIndex, CTString &strDestName)
+void Party::SendExpeditionInviteReq(int slIndex, const CTString &strDestName)
 {
 	CUIManager* pUIManager = CUIManager::getSingleton();
 	ObjInfo* pInfo = ObjInfo::getSingleton();
@@ -2009,7 +2009,7 @@ void Party::SendExpeditionInviteReq(int slIndex, CTString &strDestName)
 
 	if(pUIManager->IsCSFlagOn(CSF_EXPEDITION_REQ))
 	{
-		strMessage.PrintF( _S( 4521, "이미 %s에게 원정대를 신청중입니다." ), m_strDestName );
+		strMessage.PrintF( _S( 4521, "이미 %s에게 원정대를 신청중입니다." ), (const char*)m_strDestName );
 		pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		return;
 	}
@@ -2023,7 +2023,7 @@ void Party::SendExpeditionInviteReq(int slIndex, CTString &strDestName)
 
 	if(IsExpedetionMember(slIndex))
 	{
-		strMessage.PrintF( _S( 4524, "이미 %s와 원정대 상태입니다." ), strDestName );
+		strMessage.PrintF( _S( 4524, "이미 %s와 원정대 상태입니다." ), (const char*)strDestName );
 		pUIManager->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		return;
 	}
@@ -2185,7 +2185,7 @@ void Party::RecvExpeditionInvite( CNetworkMessage *istr )
 	if(slIndex == _pNetwork->MyCharacterInfo.index)
 	{
 		MsgBoxInfo.SetMsgBoxInfo( _S( 4493, "원정대" ), UMBS_CANCEL, UI_PARTY, MSGCMD_EXPEDITION_INVITE );
-		strMessage.PrintF( _S( 4533, "%s에게 원정대를 신청중입니다. 취소하시겠습니까?" ), m_strDestName );
+		strMessage.PrintF( _S( 4533, "%s에게 원정대를 신청중입니다. 취소하시겠습니까?" ), (const char*)m_strDestName );
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );
 	}
@@ -2193,8 +2193,8 @@ void Party::RecvExpeditionInvite( CNetworkMessage *istr )
 	{
 		// BUGFIX : ITS(#2544) 원정대 속성 변경후 다른 인원 초대시 속성값 표시 오류  [6/10/2011 rumist]
  		strMessage.PrintF(_S(4534, "%s가 원정대(경험치:%s, 일반아이템:%s, 스페셜아이템:%s) 신청을 했습니다. 수락하시겠습니까?"),
- 			strName, m_strExpeditionType[sbDivisionTypeEXP], m_strExpeditionType[sbDivisionTypeITEM],
- 			m_strExpeditionType[sbDivisionTypeSPITEM]);
+ 			(const char*)strName, (const char*)m_strExpeditionType[sbDivisionTypeEXP], (const char*)m_strExpeditionType[sbDivisionTypeITEM],
+ 			(const char*)m_strExpeditionType[sbDivisionTypeSPITEM]);
 
 		MsgBoxInfo.SetMsgBoxInfo( _S( 4493, "원정대" ), UMBS_YESNO, UI_PARTY, MSGCMD_EXPEDITION_ALLOW );
 		MsgBoxInfo.AddString( strMessage );
@@ -2225,7 +2225,7 @@ void Party::RecvExpeditionError(CNetworkMessage *istr )
 
 	case MSG_EXPED_ERROR_ALREADY_REQUEST:  // 다른 사람에게 이미 요청 중
 		{
-			strError.PrintF(_S( 4536, "이미 %s에게 원정대를 신청중입니다." ), m_strDestName);
+			strError.PrintF(_S( 4536, "이미 %s에게 원정대를 신청중입니다." ), (const char*)m_strDestName);
 		}
 		break;
 

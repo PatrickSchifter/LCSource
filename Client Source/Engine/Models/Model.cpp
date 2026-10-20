@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Models/ModelObject.h>
 #include <Engine/Models/ModelData.h>
@@ -17,12 +17,12 @@
 
 #include <Engine/Templates/Stock_CModelData.h>
 
-template CStaticArray<MappingSurface>;
-template CStaticArray<ModelPolygon>;
-template CStaticArray<ModelPolygonVertex>;
-template CStaticArray<ModelTextureVertex>;
-template CStaticArray<PolygonsPerPatch>;
-template CDynamicArray<CAttachedModelPosition>;
+template class CStaticArray<MappingSurface>;
+template class CStaticArray<ModelPolygon>;
+template class CStaticArray<ModelPolygonVertex>;
+template class CStaticArray<ModelTextureVertex>;
+template class CStaticArray<PolygonsPerPatch>;
+template class CDynamicArray<CAttachedModelPosition>;
 
 
 // model LOD biasing control
@@ -460,8 +460,8 @@ ModelTextureVertex::ModelTextureVertex(void)
 //------------------------------------------ WRITE
 void ModelPolygonVertex::Write_t( CTStream *pFile)  // throw char *
 {
-  (*pFile) << (INDEX) mpv_ptvTransformedVertex;
-  (*pFile) << (INDEX) mpv_ptvTextureVertex;
+  (*pFile) << (INDEX)(intptr_t) mpv_ptvTransformedVertex;
+  (*pFile) << (INDEX)(intptr_t) mpv_ptvTextureVertex;
 }
 //------------------------------------------ READ
 void ModelPolygonVertex::Read_t( CTStream *pFile) // throw char *
@@ -469,9 +469,9 @@ void ModelPolygonVertex::Read_t( CTStream *pFile) // throw char *
   INDEX itmp;
 
   (*pFile) >> itmp;
-  mpv_ptvTransformedVertex = (struct TransformedVertexData *) itmp;
+  mpv_ptvTransformedVertex = (struct TransformedVertexData *)(intptr_t) itmp;
   (*pFile) >> itmp;
-  mpv_ptvTextureVertex = (ModelTextureVertex *) itmp;
+  mpv_ptvTextureVertex = (ModelTextureVertex *)(intptr_t) itmp;
 }
 //--------------------------------------------------------------------------------------------
 //------------------------------------------ WRITE
@@ -1012,14 +1012,14 @@ void CModelData::PtrsToIndices()
           if( it2.Current().mpv_ptvTransformedVertex == &md_TransformedVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *) j;
+        it2.Current().mpv_ptvTransformedVertex = (struct TransformedVertexData *)(intptr_t) j;
 
         for( j=0; j<md_MipInfos[ i].mmpi_TextureVertices.Count(); j++)
         {
           if( it2.Current().mpv_ptvTextureVertex == &md_MipInfos[ i].mmpi_TextureVertices[ j])
             break;
         }
-        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *) j;
+        it2.Current().mpv_ptvTextureVertex = (ModelTextureVertex *)(intptr_t) j;
       }
     }
   }
@@ -1040,9 +1040,9 @@ void CModelData::IndicesToPtrs()
       FOREACHINSTATICARRAY(it1.Current().mp_PolygonVertices, ModelPolygonVertex, it2)
       {
         struct ModelPolygonVertex * pMPV = &it2.Current();
-        j = (INDEX) it2.Current().mpv_ptvTransformedVertex;
+        j = (INDEX)(intptr_t) it2.Current().mpv_ptvTransformedVertex;
         it2.Current().mpv_ptvTransformedVertex = &md_TransformedVertices[ j];
-        j = (INDEX) it2.Current().mpv_ptvTextureVertex;
+        j = (INDEX)(intptr_t) it2.Current().mpv_ptvTextureVertex;
         it2.Current().mpv_ptvTextureVertex = &md_MipInfos[ i].mmpi_TextureVertices[ j];
       }
     }

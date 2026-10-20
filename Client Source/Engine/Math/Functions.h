@@ -65,20 +65,24 @@ __forceinline void Swap( Type &a, Type &b)
 	Type t=a; a=b;  b=t;
 } 
 
+// The limits take the type of x: calls like Clamp(iIndex, 0L, ct-1L) are written for a 32-bit
+// long INDEX, and must also compile where INDEX is int and long is 64-bit.
+template<class Type> struct ClampLimit { typedef Type type; };
+
 template<class Type>
-__forceinline Type ClampUp( const Type x, const Type uplimit)
+__forceinline Type ClampUp( const Type x, const typename ClampLimit<Type>::type uplimit)
 {
 	return ( x<=uplimit ? x : uplimit );
 }
 
 template<class Type>
-__forceinline Type ClampDn( const Type x, const Type dnlimit)
+__forceinline Type ClampDn( const Type x, const typename ClampLimit<Type>::type dnlimit)
 {
 	return ( x>=dnlimit ? x : dnlimit );
 }
 
 template<class Type>
-__forceinline Type Clamp( const Type x, const Type dnlimit, const Type uplimit)
+__forceinline Type Clamp( const Type x, const typename ClampLimit<Type>::type dnlimit, const typename ClampLimit<Type>::type uplimit)
 {
 	return ( x>=dnlimit ? (x<=uplimit ? x : uplimit): dnlimit );
 }
@@ -90,7 +94,7 @@ __forceinline Type Clamp( const Type x, const Type dnlimit, const Type uplimit)
 
 __forceinline DOUBLE Abs( const DOUBLE f) { return fabs(f); }
 __forceinline FLOAT  Abs( const FLOAT f)  { return (FLOAT)fabs(f); }
-__forceinline SLONG  Abs( const SLONG sl) { return labs(sl); }
+__forceinline SLONG  Abs( const SLONG sl) { return abs(sl); }
 
 
 /*
@@ -276,8 +280,7 @@ __forceinline FLOAT FastRcp( const FLOAT f)
 // convert float from 0.0f to 1.0f -> ulong form 0 to 255
 __forceinline ULONG NormFloatToByte( const FLOAT f)
 {
-		/* rcg10042001 !!! FIXME: Move this elsewhere. */
-#ifdef _MSC_VER
+#ifndef USE_PORTABLE_C
 	const FLOAT f255 = 255.0f;
 	ULONG ulRet;
 	__asm {
@@ -287,8 +290,8 @@ __forceinline ULONG NormFloatToByte( const FLOAT f)
 	}
 	return ulRet;
 #else
-	assert((f >= 0.0) && (f <= 1.0));
-	return( (ULONG) (f * 255.0) );
+	// fistp rounds to nearest
+	return (ULONG)(SLONG)lrintf(f*255.0f);
 #endif
 }
 
@@ -303,37 +306,27 @@ __forceinline FLOAT NormByteToFloat( const ULONG ul)
 __forceinline SLONG FloatToInt( FLOAT f)
 {
 #if (defined USE_PORTABLE_C)
-	return((SLONG) f);  /* best of luck to you. */
+	// like fistp: rounds to nearest (not towards zero), and out of range gives 0x80000000
+	const FLOAT fRounded = nearbyintf(f);
+	if( fRounded>=-2147483648.0f && fRounded<2147483648.0f) return (SLONG)fRounded;
+	return (SLONG)0x80000000;
 
-#elif (defined _MSC_VER)
+#else
 	SLONG slRet;
 	__asm {
 		fld    D [f]
 		fistp  D [slRet]
 	}
 	return slRet;
-
-#elif (defined __GNUC__)
-	SLONG slRet;
-	__asm__ __volatile__ (
-		"flds     (%%ebx)   \n\t"
-		"fistpl   (%%esi)   \n\t"
-				:
-				: "b" (&f), "S" (&slRet)
-				: "memory"
-	);
-	return(slRet);
-#else
-	#error Fill this in for your platform.
 #endif
 }
 
 // log base 2 of any float numero
 __forceinline FLOAT Log2( FLOAT f) {
 #if (defined USE_PORTABLE_C)
-	return (FLOAT)(log10(x)*3.321928094887);  // log10(x)/log10(2)
+	return (FLOAT)(log((DOUBLE)f)*1.4426950408889634);  // log(f)/log(2)
 
-#elif (defined _MSC_VER)
+#else
 	FLOAT fRet;
 	_asm {
 		fld1
@@ -342,21 +335,6 @@ __forceinline FLOAT Log2( FLOAT f) {
 		fstp    D [fRet]
 	}
 	return fRet;
-
-#elif (defined __GNUC__)
-	FLOAT fRet;
-	__asm__ __volatile__ (
-		"fld1               \n\t"
-		"flds     (%%ebx)   \n\t"
-		"fyl2x              \n\t"
-		"fstps    (%%esi)   \n\t"
-				:
-				: "b" (&f), "S" (&fRet)
-				: "memory"
-	);
-	return(fRet);
-#else
-	#error Fill this in for your platform.
 #endif
 }
 
@@ -365,28 +343,19 @@ __forceinline FLOAT Log2( FLOAT f) {
 __forceinline SLONG FastLog2( SLONG x)
 {
 #if (defined USE_PORTABLE_C)
-	#error write me.
+	// index of the highest set bit, like bsr (0 for x==0, where bsr is undefined)
+	ULONG ul = (ULONG)x;
+	SLONG slRet = 0;
+	while( ul>>=1) slRet++;
+	return slRet;
 
-#elif (defined _MSC_VER)
+#else
 	SLONG slRet;
 	__asm {
 		bsr   eax,D [x]
 		mov   D [slRet],eax
 	}
 	return slRet;
-
-#elif (defined __GNUC__)
-	SLONG slRet;
-	__asm__ __volatile__ (
-		"bsrl  (%%ebx), %%eax     \n\t"
-		"movl   %%eax, (%%esi)    \n\t"
-				:
-				: "b" (&x), "S" (&slRet)
-				: "memory"
-	);
-	return(slRet);
-#else
-	#error Fill this in for your platform.
 #endif
 }
 
@@ -394,9 +363,12 @@ __forceinline SLONG FastLog2( SLONG x)
 __forceinline SLONG FastMaxLog2( SLONG x)
 { 
 #if (defined USE_PORTABLE_C)
-	#error write me.
+	// highest set bit, plus one if any lower bit is set (x is not a power of 2)
+	const ULONG ul = (ULONG)x;
+	const SLONG slLog = FastLog2(x);
+	return slLog + ((ul & (ul-1)) ? 1 : 0);
 
-#elif (defined _MSC_VER)
+#else
 	SLONG slRet;
 	__asm {
 		bsr   eax,D [x]
@@ -406,22 +378,6 @@ __forceinline SLONG FastMaxLog2( SLONG x)
 		mov   D [slRet],eax
 	}
 	return slRet;
-
-#elif (defined __GNUC__)
-	SLONG slRet;
-	__asm__ __volatile__ (
-		"bsrl  (%%ebx), %%eax     \n\t"
-		"bsfl  (%%ebx), %%edx     \n\t"
-		"cmpl  %%eax, %%edx       \n\t"
-		"adcl  $0, %%eax          \n\t"
-		"movl  %%eax, (%%esi)     \n\t"
-				:
-				: "b" (&x), "S" (&slRet)
-				: "memory"
-	);
-	return(slRet);
-#else
-	#error Fill this in for your platform.
 #endif
 }
 

@@ -61,7 +61,7 @@ CUITextBoxEx::~CUITextBoxEx()
 	Destroy();
 }
 
-void CUITextBoxEx::AddText( std::string& str, DWORD dwCol /*= DEF_UI_COLOR_WHITE*/ )
+void CUITextBoxEx::AddText( std::string str, DWORD dwCol /*= DEF_UI_COLOR_WHITE*/ )
 {
 	if (str.empty() == true)
 		return;
@@ -481,7 +481,7 @@ void CUITextBoxEx::insertBtn( CUITextEx* pTextEx, vecValcont& val, std::string& 
 	m_pBtnCmd = NULL;
 }
 
-bool CUITextBoxEx::checkWidth( std::string& strPrev, std::string& strAdd, int nTextArea, int& nSplitPos )
+bool CUITextBoxEx::checkWidth( const std::string &strPrev, std::string& strAdd, int nTextArea, int& nSplitPos )
 {
 	if (g_iCountry == RUSSIA)
 	{

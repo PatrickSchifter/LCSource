@@ -2,10 +2,10 @@
 // CTag.cpp
 //
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CTag.h"
-#include <Engine/ska/ModelInstance.h>
-#include <Engine/ska/Render.h>
+#include <Engine/Ska/ModelInstance.h>
+#include <Engine/Ska/Render.h>
 #include <Engine/Math/Matrix.h>
 #include <Engine/Math/Matrix12.h>
 #include <Engine/Base/Memory.h>

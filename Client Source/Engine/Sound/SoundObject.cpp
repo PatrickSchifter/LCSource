@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
@@ -759,7 +759,7 @@ void CSoundObject::Write_t(CTStream *pistr, BOOL bNetwork/*=FALSE*/) // throw ch
 
 	if( !bNetwork) {
 		// save object preferences
-		*pistr << 0L;
+		*pistr << (SLONG)0;
 		*pistr << so_ulFlags;
 
 		*pistr << so_fLeftVolume;
@@ -793,10 +793,10 @@ void CSoundObject::Write_t(CTStream *pistr, BOOL bNetwork/*=FALSE*/) // throw ch
 		*pistr << so_slLeftFilter;
 		*pistr << so_slRightFilter;
 		*pistr << (UBYTE)(so_fPitchShift*63);
-		*pistr << (UBYTE)(so_fPhaseShift*63);
-		*pistr << 0L;
+		*pistr << (UBYTE)(SLONG)(so_fPhaseShift*63);
+		*pistr << (SLONG)0;
 
-		*pistr << 0L;
+		*pistr << (SLONG)0;
 		*pistr << (UBYTE)0;
 		*pistr << (UBYTE)0;
 		*pistr << so_swLastLeftSample;

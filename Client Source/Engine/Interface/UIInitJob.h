@@ -101,7 +101,7 @@ protected:
 	CPlacement3D		plLastViewPoint;						// Last View Point : 데코 모드 진입 직전 뷰 포인트
 protected:
 	// Internal functions
-	void	AddString( CTString &strDesc );
+	void	AddString( const CTString &strDesc );
 	void	ResetString();	// [100208: selo] 스트링 초기화
 
 	// Command functions

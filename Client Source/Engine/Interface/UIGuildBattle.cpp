@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -605,7 +605,7 @@ void CUIGuildBattle::RenderGBStatus()
 
 	CTString strMessage;
 	
-	strMessage.PrintF ( _S( 1099, "전투지역 : %s" ), CZoneInfo::getSingleton()->GetZoneName( m_nBattleZone ) ); 	
+	strMessage.PrintF ( _S( 1099, "전투지역 : %s" ), (const char*)CZoneInfo::getSingleton()->GetZoneName( m_nBattleZone ) ); 	
 	
 	int nX = m_rcRedBox.Left + ( m_rcRedBox.Right - m_rcRedBox.Left ) / 2;
 
@@ -1058,10 +1058,10 @@ void CUIGuildBattle::OpenGBReq( int nTargetCharIndex, CTString strGuildName )
 		
 	CTString strMessage;
 
-	strMessage.PrintF( _S( 1103, "[%s]길드에게 길드 전투를 신청합니다." ), m_strTargetGuildName ); 	
+	strMessage.PrintF( _S( 1103, "[%s]길드에게 길드 전투를 신청합니다." ), (const char*)m_strTargetGuildName ); 	
 	AddGBReqdDescString ( strMessage );
 
-	strMessage.PrintF( _S( 1386, "전투 신청금과 전투시간을 입력하세요." ), m_strTargetGuildName ); 	
+	strMessage.PrintF( _S( 1386, "전투 신청금과 전투시간을 입력하세요." ), (const char*)m_strTargetGuildName ); 	
 	AddGBReqdDescString ( strMessage );
 	
 	strMessage.PrintF( _S( 1387, "길드전투에서 승리하게 되면 %d%%의 수수료를 제외한 양쪽 길드의 모든 신청금을 갖습니다." ), GB_COMMISSION ); 	
@@ -1502,7 +1502,7 @@ void CUIGuildBattle::GBReq( int nGuildIndex, CTString strGuildName, int nPrize, 
 
 		CUIManager::getSingleton()->InsertCommaToString( strTempNas ); 
 		strMessage.PrintF( _S( 1904, "[%s]길드가 길드 전투를 신청하였습니다. 전투 신청금은 %s 나스 전투 시간은 %d분입니다.\n수락 하시겠습니까?" ), 
-			strGuildName.str_String, strTempNas,(nTime/60) ); 	
+			strGuildName.str_String, (const char*)strTempNas,(nTime/60) ); 	
 	}else
 	{
 		strMessage.PrintF( _S( 1904, "[%s]길드가 길드 전투를 신청하였습니다. 전투 신청금은 %d만나스 전투 시간은 %d분입니다.\n수락 하시겠습니까?" ), strGuildName.str_String, nPrize, (nTime/60) ); 	
@@ -1568,7 +1568,7 @@ void CUIGuildBattle::GBReqAccept( int nGuildIndex1, CTString strGuildName1, int 
 
 	//길드전 공표 메세지 출력	
 	CTString strMessage, strMessage2;
-	strMessage.PrintF( _S( 1111, "[%s]길드와 [%s]길드간의 길드 전투가 성립 되었습니다." ), strGuildName1, strGuildName2 ); 	
+	strMessage.PrintF( _S( 1111, "[%s]길드와 [%s]길드간의 길드 전투가 성립 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 ); 	
 	strMessage2.PrintF( _S( 1112, "%d분 후부터 %d분 동안 두 길드는 적대 상태가 됩니다." ), GB_START_MINUTE, (m_lLeftTime/60) ); 	
 	
 	SetNotice ( strMessage, strMessage2 );
@@ -1607,14 +1607,14 @@ void CUIGuildBattle::GBStart( int nGuildIndex1, CTString strGuildName1, int nGui
 		
 	// 길드전 시작 메세지 출력 // Dealy Time 을 정해 주여야 한다!!!
 	CTString strMessage, strMessage2;
-	strMessage.PrintF( _S( 1116, "[%s]길드와 [%s]길드간의 길드 전투가 시작 되었습니다." ), strGuildName1, strGuildName2 );
+	strMessage.PrintF( _S( 1116, "[%s]길드와 [%s]길드간의 길드 전투가 시작 되었습니다." ), (const char*)strGuildName1, (const char*)strGuildName2 );
 	if (g_bNasTrans)//브라질 나스 표시 수정
 	{
 		CTString strTempNas;
 		strTempNas.PrintF("%d0000",nPrize);
 
 		CUIManager::getSingleton()->InsertCommaToString( strTempNas );
-		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %s 나스 입니다." ), strTempNas );
+		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %s 나스 입니다." ), (const char*)strTempNas );
 	}else
 	{
 		strMessage2.PrintF( _S( 1117, "양 길드의 전투 신청금 총 합은 %d만 나스 입니다." ), nPrize );
@@ -1734,7 +1734,7 @@ void CUIGuildBattle::GBStopReq( int nTargetCharIndex, CTString strGuildName )
 	m_nTargetCharIndex = nTargetCharIndex;
 	
 	CTString strMessage;
-	strMessage.PrintF( _S( 1118, "[%s]길드에게 길드 전투중단 신청을 하시겠습니까?" ), strGuildName ); 	
+	strMessage.PrintF( _S( 1118, "[%s]길드에게 길드 전투중단 신청을 하시겠습니까?" ), (const char*)strGuildName ); 	
 
 	GBMessage ( MSGCMD_GUILD_BATTLE_STOP_REQ, strMessage, UMBS_YESNO );	
 
@@ -1751,7 +1751,7 @@ void CUIGuildBattle::GBStopReqRev( int nGuildIndex, CTString strGuildName )
 	CloseAllMsgBox();
 
 	CTString strMessage;
-	strMessage.PrintF( _S( 1119, "[%s]길드가 길드 전투중단 신청을 하였습니다. 수락하시겠습니까?" ), strGuildName ); 	
+	strMessage.PrintF( _S( 1119, "[%s]길드가 길드 전투중단 신청을 하였습니다. 수락하시겠습니까?" ), (const char*)strGuildName ); 	
 	
 	GBMessage ( MSGCMD_GUILD_BATTLE_STOP_REQ_REP, strMessage, UMBS_YESNO );
 }

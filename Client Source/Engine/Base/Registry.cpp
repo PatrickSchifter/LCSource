@@ -1,7 +1,9 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Registry.h>
+
+#ifdef PLATFORM_WIN32
 
 static void ParseKeyName(const CTString &strKey, HKEY &hKeyRoot, CTString &strKeyPath, CTString &strKeyName)
 {
@@ -124,3 +126,27 @@ ENGINE_API BOOL REG_SetString(const CTString &strKey, const CTString &strString)
 	return lRes==ERROR_SUCCESS;
 }
 
+#else  // PLATFORM_WIN32
+
+// There is no registry outside Windows. The engine only reads the CPU speed from it (Timer.cpp,
+// Windows-only) and the model importer of the tools writes plugin settings, so every key is
+// simply missing.
+ENGINE_API BOOL REG_GetString(const CTString &strKey, CTString &strString)
+{
+	(void)strKey; (void)strString;
+	return FALSE;
+}
+
+ENGINE_API BOOL REG_GetLong(const CTString &strKey, ULONG &ulLong)
+{
+	(void)strKey; (void)ulLong;
+	return FALSE;
+}
+
+ENGINE_API BOOL REG_SetString(const CTString &strKey, const CTString &strString)
+{
+	(void)strKey; (void)strString;
+	return FALSE;
+}
+
+#endif  // PLATFORM_WIN32

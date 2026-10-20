@@ -11,4 +11,3 @@
 #define NEW_CHAO_SYS
 #define NEW_WORLD_MAP	// [2012/10/11 : Sora] 월드맵 개편
 #define UPDATE1107_GUILDSYSTEM	// 길드 시스템 개편
-#define XTRAP_SECURE_CKBANG_2010_07_20	// XTrap 보안 솔루션 적용

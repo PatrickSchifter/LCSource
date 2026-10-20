@@ -12,7 +12,7 @@
 #include <Engine/Network/SlaveTarget.h>
 #include <Engine/Network/ItemTarget.h>
 #include <Engine/Network/SessionSocket.h>
-#include <Engine/Network/Cmd.h>
+#include <Engine/Network/cmd.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/LocalDefine.h>
 #include <Engine/Base/Command.h>
@@ -267,11 +267,6 @@ public:
   ///////////////////////////////////////////////////////////////////////////////////
 	//2013/04/03 jeil 나스 아이템 삭제
   void ReceiveMoneyMessage(CNetworkMessage *istr);
-  // WSS_NPROTECT 070402 ------------------------------->>
- #ifndef NO_GAMEGUARD
-  void ReceiveExnProtect(CNetworkMessage *istr);
- #endif
-  // ---------------------------------------------------<<
   
   void ReceivePetStatusMessage( CNetworkMessage *istr ); 
   void ReceivePetMountMessage( CNetworkMessage *istr );
@@ -360,31 +355,10 @@ void ReceiveRVRMessage(CNetworkMessage* istr);
 
   void ReceiveItemComposMessage(CNetworkMessage* istr); // 1407 유물 사냥꾼 ( 합성 시스템 )
 
-#ifdef KALYDO
-  enum eKALYDO_SEND_TYPE
-  {
-	  eKST_LOGIN,
-	  eKST_SEL_SERVER,
-	  eKST_CREATE_CHAR,
-	  eKST_ENTER_GAME,
-	  
-	  eKST_MAX
-  };
-
-  void DelayLoadingFromKalydo();
-
-  void SetSendCommand(eKALYDO_SEND_TYPE eType, Command* pCmd) {
-	  if (eType >= 0 && eType < eKST_MAX)
-		  m_pCmdKalydo[eType] = pCmd;
-  }
-#endif
 
 protected:
 	int		m_iRecentGroup;
 	int		m_iRecentServer;
-#ifdef	KALYDO
-	Command*	m_pCmdKalydo[eKST_MAX];
-#endif	// KALYDO
 
 private:
 	void updateMoney(CNetworkMessage* istr);

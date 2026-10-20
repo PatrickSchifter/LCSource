@@ -1,12 +1,18 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Math/Vector.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/ViewPort.h>
+#include <Engine/Graphics/ShaderAsmToARB.h>
+#ifdef SE1_GPUDEVICE
+#include <Engine/Graphics/GpuDevice.h>
+#endif // SE1_GPUDEVICE
 
-#include <Engine/Base/Statistics_internal.h>
+#include <set>
+
+#include <Engine/Base/Statistics_Internal.h>
 
 
 // track texture memory allocated in main heap
@@ -65,8 +71,15 @@ static CStaticStackArray<VertexBuffer> _avbVertexBuffers;
 extern BOOL _bUsingDynamicBuffer = TRUE;
 			 
 // current texture object/bind number and color mask (for Get... function)
-extern ULONG *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
+extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS] = {0};
 extern ULONG GFX_ulCurrentColorMask = (CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
+
+#ifdef SE1_GPUDEVICE
+// Metal, Vulkan (a GpuDevice): the texture functions (Gfx_wrapper_Gpu.cpp, included below)
+static void SetTexture_GPU( TEXOBJ &ulTexObject, CTexParams &tpLocal);
+static void UploadTexture_GPU( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, ULONG ulFormat);
+static BOOL UploadCompressedTexture_GPU( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, ULONG ulFormat);
+#endif // SE1_GPUDEVICE
 
 // for D3D: mark need for clipping (when wants to be disable but cannot be because of user clip plane)
 static BOOL _bWantsClipping = TRUE;
@@ -123,8 +136,8 @@ extern void (*gfxSetViewMatrix)( const FLOAT *pfMatrix) = NULL;
 extern void (*gfxPolygonMode)( GfxPolyMode ePolyMode) = NULL;
 extern void (*gfxSetTextureWrapping)( enum GfxWrap eWrapU, enum GfxWrap eWrapV) = NULL;
 extern void (*gfxSetTextureModulation)( INDEX iScale) = NULL;
-extern void (*gfxGenerateTexture)( ULONG &ulTexObject) = NULL;
-extern void (*gfxDeleteTexture)( ULONG &ulTexObject) = NULL;
+extern void (*gfxGenerateTexture)( TEXOBJ &ulTexObject) = NULL;
+extern void (*gfxDeleteTexture)( TEXOBJ &ulTexObject) = NULL;
 extern void (*gfxSetVertexArray)( GFXVertex *pvtx, INDEX ctVtx) = NULL;
 extern void (*gfxSetNormalArray)( GFXNormal *pnor) = NULL;
 extern void (*gfxSetWeightArray)( GFXWeight *pwgh) = NULL;
@@ -195,6 +208,7 @@ extern void OGL_CheckError(void)
 
 
 
+#ifdef SE1_D3D
 extern void D3D_CheckError(HRESULT hr)
 {
 #ifndef NDEBUG
@@ -203,6 +217,7 @@ extern void D3D_CheckError(HRESULT hr)
 	else ASSERT( eAPI==GAT_NONE);
 #endif
 }
+#endif // SE1_D3D
 
 
 
@@ -212,20 +227,24 @@ extern void D3D_CheckError(HRESULT hr)
 //d3d의 SetTextureStageState를 wrapping한 것임. 태훈
 extern void gfxSetTextureSelectArg(INDEX iStage, GFX_TEXTURE_ARG argColor, GFX_TEXTURE_ARG argAlpha)
 {
+#ifdef SE1_D3D
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
 	ASSERT( eAPI==GAT_D3D );
+#endif // SE1_D3D
 	
 	//extern INDEX GFX_iActiveTexUnit;
 	//extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS];
 	GFX_iTexModulation[GFX_iActiveTexUnit] = 0;
 
+#ifdef SE1_D3D
 	HRESULT hr;
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_COLORARG1, argColor);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_ALPHAARG1, argAlpha);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( iStage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 	GFX_abTexture[GFX_iActiveTexUnit] = D3DTOP_SELECTARG1;
+#endif // SE1_D3D (no OpenGL version yet)
 }
 //안태훈 수정 끝	//(Remake Effect)(0.1)
 
@@ -236,7 +255,11 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 { 
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	// only if supported and needed
 	if( _fCurrentLODBias==fLODBias && _pGfx->gl_fMaxTextureLODBias==0) return;
 	_fCurrentLODBias = fLODBias;
@@ -261,6 +284,7 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 			OGL_CHECKERROR;
 		}
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{ // just set it
@@ -270,6 +294,7 @@ extern void UpdateLODBias( const FLOAT fLODBias)
 			D3D_CHECKERROR(hr);
 		}
 	}
+#endif // SE1_D3D
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
@@ -299,6 +324,7 @@ extern void gfxSetTextureFiltering( INDEX &iFilterType, INDEX &iAnisotropyDegree
 	_tpGlobal[0].tp_iAnisotropy = iAnisotropyDegree;
 
 	// for OpenGL, that's about it
+#ifdef SE1_D3D
 	if( _pGfx->gl_eCurrentAPI!=GAT_D3D) return;
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -323,6 +349,7 @@ extern void gfxSetTextureFiltering( INDEX &iFilterType, INDEX &iAnisotropyDegree
 	}
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
+#endif // SE1_D3D
 }
 
 
@@ -344,7 +371,11 @@ extern void gfxSetTextureUnit( INDEX iUnit)
 {
 	// check API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	ASSERT( iUnit>=0 && iUnit<GFX_MAXTEXUNITS); 
 
 	// check consistency
@@ -373,7 +404,7 @@ extern void gfxSetTextureUnit( INDEX iUnit)
 
 
 // set texture as current
-extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
+extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal)
 {
 	// clamp texture filtering if needed
 	static INDEX _iLastTextureFiltering = 0;
@@ -387,18 +418,23 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 
 	// determine API, enable texturing and keep current texture
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	gfxEnableTexture();
 
 	_sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
 	if( eAPI==GAT_OGL) { // OpenGL
-		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (ULONG*)ulTexObject;  // OpenGL tracks bind number
+		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = (TEXOBJ*)ulTexObject;  // OpenGL tracks bind number
 		extern void MimicTexParams_OGL( CTexParams &tpLocal);
-		pglBindTexture( GL_TEXTURE_2D, ulTexObject);
+		pglBindTexture( GL_TEXTURE_2D, (GLuint)ulTexObject);
 		MimicTexParams_OGL(tpLocal);
 	} 
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		GFX_apulCurrentTexture[GFX_iActiveTexUnit] = &ulTexObject;    // Direct3D track pointer to texture pointer
 		extern void MimicTexParams_D3D( CTexParams &tpLocal);
@@ -406,6 +442,12 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
 		D3D_CHECKERROR(hr);
 		MimicTexParams_D3D(tpLocal);
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
+		SetTexture_GPU( ulTexObject, tpLocal);
+	}
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_BINDTEXTURE);
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
@@ -418,13 +460,18 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
 	if( eAPI==GAT_OGL) { // OpenGL
 		extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV, GLenum eInternalFormat, BOOL bUseSubImage);
 		UploadTexture_OGL( pulTexture, pixWidth, pixHeight, (GLenum)ulFormat, bNoDiscard);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		LPDIRECT3DTEXTURE8 *ppd3dCurrentTexture  = (LPDIRECT3DTEXTURE8*)GFX_apulCurrentTexture[GFX_iActiveTexUnit];
 		const LPDIRECT3DTEXTURE8 pd3dLastTexture = *ppd3dCurrentTexture;
@@ -436,6 +483,12 @@ extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, UL
 			D3D_CHECKERROR(hr);
 		}
 	} 
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
+		UploadTexture_GPU( pulTexture, pixWidth, pixHeight, ulFormat);
+	}
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
@@ -448,7 +501,11 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 	BOOL bUploaded = FALSE;
 
@@ -456,6 +513,7 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 		extern BOOL UploadCompressedTexture_OGL( UBYTE *pubTexture, PIX pixSizeU, PIX pixSizeV, SLONG slSize, GLenum eInternalFormat);
 		bUploaded = UploadCompressedTexture_OGL( pubMipmaps, pixWidth, pixHeight, slSize, (GLenum)ulFormat);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) { // Direct3D
 		LPDIRECT3DTEXTURE8 *ppd3dCurrentTexture  = (LPDIRECT3DTEXTURE8*)GFX_apulCurrentTexture[GFX_iActiveTexUnit];
 		const LPDIRECT3DTEXTURE8 pd3dLastTexture = *ppd3dCurrentTexture;
@@ -467,6 +525,12 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 			D3D_CHECKERROR(hr);
 		}
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) { // Metal, Vulkan
+		bUploaded = UploadCompressedTexture_GPU( pubMipmaps, pixWidth, pixHeight, slSize, ulFormat);
+	}
+#endif // SE1_GPUDEVICE
 	// done
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 	return bUploaded;
@@ -475,14 +539,18 @@ extern BOOL gfxUploadCompressedTexture( UBYTE *pubMipmaps, PIX pixWidth, PIX pix
 
 
 // returns size of uploaded texture
-extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
+extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 {
 	// nothing used if nothing uploaded
-	if( ulTexObject==NULL) return 0;
+	if( ulTexObject==NONE) return 0;
 
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	SLONG slMipSize;
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -491,7 +559,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 	if( eAPI==GAT_OGL)
 	{ 
 		// was texture compressed?
-		pglBindTexture( GL_TEXTURE_2D, ulTexObject); 
+		pglBindTexture( GL_TEXTURE_2D, (GLuint)ulTexObject); 
 		BOOL bCompressed = FALSE;
 		if( _pGfx->gl_ulFlags & GLF_EXTC_ARB) {
 			pglGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_ARB, (BOOL*)&bCompressed);
@@ -511,6 +579,7 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 			slMipSize = pixWidth*pixHeight * gfxGetTexturePixRatio(ulTexObject);
 		}
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -520,6 +589,15 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 		D3D_CHECKERROR(hr);
 		slMipSize = d3dSurfDesc.Size;
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	// Metal, Vulkan (all mipmaps)
+	else if( GFX_IsGpuAPI(eAPI))
+	{
+		_sfStats.StopTimer(CStatForm::STI_GFXAPI);
+		return _pgpu->TextureSize( (GpuTexture*)ulTexObject);
+	}
+#endif // SE1_GPUDEVICE
 
 	// eventually count in all the mipmaps (takes extra 33% of texture size)
 	const SLONG slUploadSize = bHasMipmaps ? slMipSize*4/3 : slMipSize;
@@ -531,19 +609,28 @@ extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*/)
 
 
 // returns bytes/pixels ratio for uploaded texture
-extern INDEX gfxGetTexturePixRatio( ULONG ulTextureObject)
+extern INDEX gfxGetTexturePixRatio( TEXOBJ ulTextureObject)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	if( eAPI==GAT_OGL) {
 		extern INDEX GetTexturePixRatio_OGL( GLuint uiBindNo);
 		return GetTexturePixRatio_OGL( (GLuint)ulTextureObject);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		extern INDEX GetTexturePixRatio_D3D( LPDIRECT3DTEXTURE8 pd3dTexture);
 		return GetTexturePixRatio_D3D( (LPDIRECT3DTEXTURE8)ulTextureObject);
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) return 4;  // (all textures are 8-bit RGBA)
+#endif // SE1_GPUDEVICE
 	else return 0;
 }
 
@@ -553,15 +640,24 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	if( eAPI==GAT_OGL) {
 		extern INDEX GetFormatPixRatio_OGL( GLenum eFormat);
 		return GetFormatPixRatio_OGL( (GLenum)ulTextureFormat);
 	}
+#ifdef SE1_D3D
 	else if( eAPI==GAT_D3D) {
 		extern INDEX GetFormatPixRatio_D3D( D3DFORMAT d3dFormat);
 		return GetFormatPixRatio_D3D( (D3DFORMAT)ulTextureFormat);
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	else if( GFX_IsGpuAPI(eAPI)) return 4;
+#endif // SE1_GPUDEVICE
 	else return 0;
 }
 
@@ -570,7 +666,7 @@ extern INDEX gfxGetFormatPixRatio( ULONG ulTextureFormat)
 // PATTERN TEXTURE FOR LINES
 
 CTexParams _tpPattern;
-extern ULONG _ulPatternTexture = NONE;
+extern TEXOBJ _ulPatternTexture = NONE;
 extern ULONG _ulLastUploadedPattern = 0;
 
 // upload pattern to accelerator memory
@@ -642,7 +738,11 @@ extern void InitVertexBuffers(void)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// vertex buffers should be deleted by now
 	const INDEX ctBuffers = _avbVertexBuffers.Count();
@@ -654,6 +754,10 @@ extern void InitVertexBuffers(void)
 	// set one for dynamic array
 	VertexBuffer &vb  = _avbVertexBuffers.Push();
 	vb.vb_ulLockMask  = NONE;
+	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_aulBufferObjects[iVA] = 0;
+#ifdef SE1_GPUDEVICE
+	for( INDEX iVA=0; iVA<GFX_MAX_VBA; iVA++) vb.vb_apbufGpu[iVA] = NULL;
+#endif // SE1_GPUDEVICE
 //안태훈 수정 시작	//(Add Tagent-space Normal Map)(0.1)
 //	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX; //원본
 	vb.vb_ulArrayMask = GFX_VBM_POS|GFX_VBM_NOR|GFX_VBM_WGH|GFX_VBM_COL|GFX_VBM_TEX|GFX_VBM_TAN;
@@ -668,7 +772,11 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 	ASSERT(eType==GFX_READWRITE || eType==GFX_WRITEONLY || eType==GFX_DYNAMIC);
 
 	// check number of tex coord arrays and reconstruct mask
@@ -702,14 +810,47 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
 			vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA] = NULL;
+			vb.vb_i1stLockedVertex[iVA] = vb.vb_ctLockedVertices[iVA] = 0;
+			vb.vb_aulBufferObjects[iVA] = 0;
 			if( !((ulTypeMask>>iVA)&1)) continue;
 			const SLONG slSize = ctVertices*_aslVBTypeSizes[iVA];
 			vb.vb_paWriteArray[iVA] = AllocMemory(slSize);
 			if( bRead) vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA];
 			slTotalSize += slSize;
+			// a static buffer also goes to video memory (filled at unlock); the copy in memory is
+			// what locks return. Dynamic ones change every frame and stay plain arrays.
+			if( !bDynamic && pglGenBuffersARB!=NULL) {
+				GLuint uiBuffer = 0;
+				pglGenBuffersARB( 1, &uiBuffer);
+				pglBindBufferARB( GL_ARRAY_BUFFER_ARB, uiBuffer);
+				pglBufferDataARB( GL_ARRAY_BUFFER_ARB, slSize, NULL, GL_STATIC_DRAW_ARB);
+				pglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0);
+				OGL_CHECKERROR;
+				vb.vb_aulBufferObjects[iVA] = uiBuffer;
+			}
 		}
 	}
 
+#ifdef SE1_GPUDEVICE
+	// Metal, Vulkan (as OpenGL: arrays in memory, those of a static buffer also on the GPU)
+	else if( GFX_IsGpuAPI(eAPI))
+	{
+		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
+			vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA] = NULL;
+			vb.vb_i1stLockedVertex[iVA] = vb.vb_ctLockedVertices[iVA] = 0;
+			vb.vb_aulBufferObjects[iVA] = 0;
+			vb.vb_apbufGpu[iVA] = NULL;
+			if( !((ulTypeMask>>iVA)&1)) continue;
+			const SLONG slSize = ctVertices*_aslVBTypeSizes[iVA];
+			vb.vb_paWriteArray[iVA] = AllocMemory(slSize);
+			if( bRead) vb.vb_paReadArray[iVA] = vb.vb_paWriteArray[iVA];
+			slTotalSize += slSize;
+			if( !bDynamic) vb.vb_apbufGpu[iVA] = _pgpu->CreateBuffer(slSize);
+		}
+	}
+#endif // SE1_GPUDEVICE
+
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -763,6 +904,7 @@ extern INDEX gfxCreateVertexBuffer( const INDEX ctVertices, ULONG ulTypeMask, IN
 		}//TRACKVB_HW();
 
 	}
+#endif // SE1_D3D
 
 	// phew, made it
 	vb.vb_slSize      = slTotalSize;
@@ -780,7 +922,11 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	ASSERT( iBindNo>0 && iBindNo<_avbVertexBuffers.Count());
 	VertexBuffer &vb = _avbVertexBuffers[iBindNo];
@@ -790,6 +936,10 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 	if( eAPI==GAT_OGL)
 	{
 		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
+			if( vb.vb_aulBufferObjects[iVA]!=0) {
+				pglDeleteBuffersARB( 1, (GLuint*)&vb.vb_aulBufferObjects[iVA]);
+				vb.vb_aulBufferObjects[iVA] = 0;
+			}
 			if( vb.vb_paWriteArray[iVA] == NULL) continue;
 			FreeMemory( vb.vb_paWriteArray[iVA]);
 			vb.vb_paWriteArray[iVA] = NULL;
@@ -797,6 +947,24 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 		}
 	}
 
+#ifdef SE1_GPUDEVICE
+	// Metal, Vulkan
+	else if( GFX_IsGpuAPI(eAPI))
+	{
+		for( iVA=0; iVA<GFX_MAX_VBA; iVA++) {
+			if( vb.vb_apbufGpu[iVA]!=NULL) {
+				_pgpu->DeleteBuffer( vb.vb_apbufGpu[iVA]);
+				vb.vb_apbufGpu[iVA] = NULL;
+			}
+			if( vb.vb_paWriteArray[iVA] == NULL) continue;
+			FreeMemory( vb.vb_paWriteArray[iVA]);
+			vb.vb_paWriteArray[iVA] = NULL;
+			vb.vb_paReadArray[iVA]  = NULL;
+		}
+	}
+#endif // SE1_GPUDEVICE
+
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D)
 	{
@@ -822,6 +990,7 @@ extern void gfxDeleteVertexBuffer( const INDEX iBindNo)
 		}
 
 	}
+#endif // SE1_D3D
 
 	// mark that this vertex buffer has been deleted
 	vb.vb_ulArrayMask = NONE;
@@ -948,8 +1117,8 @@ extern void gfxFlushQuads(void)
 	extern INDEX ogl_bAllowQuadArrays;
 	extern INDEX xbx_bAllowQuadArrays;
 	if( (_pGfx->gl_eCurrentAPI==GAT_OGL && ogl_bAllowQuadArrays) 
-		) {
-		// OpenGL supports quads
+		|| GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		// OpenGL supports quads (and the GpuDevice wrapper draws them)
 		FlushArrays( NULL, _avtxCommon.Count());  
 	} else {
 		// make sure that enough quad elements has been initialized
@@ -996,7 +1165,11 @@ extern void gfxSetTruform( INDEX iLevel, BOOL bLinearNormals)
 
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
@@ -1007,12 +1180,14 @@ extern void gfxSetTruform( INDEX iLevel, BOOL bLinearNormals)
 		pglPNTrianglesiATI( GL_PN_TRIANGLES_NORMAL_MODE_ATI, eTriMode);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// if disabled, Direct3D will set tessellation level at "enable" call
 	else if( eAPI==GAT_D3D && GFX_bTruform) { 
 		FLOAT fSegments = iLevel+1;
 		HRESULT hr = _pGfx->gl_pd3dDevice->SetRenderState( D3DRS_PATCHSEGMENTS, *((DWORD*)&fSegments));
 		D3D_CHECKERROR(hr);
 	}
+#endif // SE1_D3D
 
 	// keep current truform params
 	truform_iLevel  = iLevel;
@@ -1030,27 +1205,34 @@ extern ULONG gfxGetColorMask(void)
 }
 
 
+// OpenGL turns programs on and off right away (Gfx_wrapper_OpenGL.cpp)
+static void ogl_SyncPrograms(void);
+
 extern void gfxEnableVertexProgram(void)
 {
 	GFX_bUseVertexProgram = TRUE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxDisableVertexProgram(void)
 {
 	GFX_bUseVertexProgram = FALSE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxEnablePixelProgram(void)
 {
 	GFX_bUsePixelProgram = TRUE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
 extern void gfxDisablePixelProgram(void)
 {
 	GFX_bUsePixelProgram = FALSE;
+	if( _pGfx->gl_eCurrentAPI==GAT_OGL) ogl_SyncPrograms();
 }
 
 
@@ -1071,11 +1253,20 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 		 || (eAPI==GAT_D3D)) return FALSE;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return FALSE;
+#endif // SE1_D3D
+		if( GFX_IsGpuAPI(eAPI)) return FALSE;  // (no occlusion queries with Metal or Vulkan yet)
 
 	// get last if available
 	if( _ctUsedOcclusionQueries < GFX_MAXOCCQUERIES) {
@@ -1095,9 +1286,11 @@ BOOL gfxBeginOcclusionTest( ULONG ulQueryID)
 		pglBeginOcclusionQueryNV(iBindID);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 
@@ -1113,11 +1306,20 @@ void gfxEndOcclusionTest(void)
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 		|| (eAPI==GAT_D3D)) return;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return;
+#endif // SE1_D3D
+		if( GFX_IsGpuAPI(eAPI)) return;
 
 	ASSERT( _iCurrentOccQuery>=0 && _iCurrentOccQuery<GFX_MAXOCCQUERIES);
 	_sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -1127,9 +1329,11 @@ void gfxEndOcclusionTest(void)
 		pglEndOcclusionQueryNV();
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 	_iCurrentOccQuery = -1;
@@ -1141,11 +1345,20 @@ BOOL gfxPullOcclusionQuery( ULONG ulQueryID, SLONG &slPixCount, BOOL bDontWait/*
 {
 	// determine API
 	const GfxAPIType eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( eAPI==GAT_OGL || eAPI==GAT_D3D || eAPI==GAT_NONE);
+#else
+	ASSERT( eAPI==GAT_OGL || eAPI==GAT_NONE);
+#endif // SE1_D3D
 
 	// skip if not supported
+#ifdef SE1_D3D
 		if( (eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY))
 			|| (eAPI==GAT_D3D)) return TRUE;
+#else
+		if( eAPI==GAT_OGL && !(_pGfx->gl_ulFlags&GLF_EXT_OCCLUSIONQUERY)) return TRUE;
+#endif // SE1_D3D
+		if( GFX_IsGpuAPI(eAPI)) return TRUE;
 
 	// skip if no queries are pending
 	ASSERT( _ctUsedOcclusionQueries>=0 && _ctUsedOcclusionQueries<=GFX_MAXOCCQUERIES);
@@ -1175,9 +1388,11 @@ BOOL gfxPullOcclusionQuery( ULONG ulQueryID, SLONG &slPixCount, BOOL bDontWait/*
 		pglGetOcclusionQueryivNV( iBindID, GL_PIXEL_COUNT_NV, (GLint*)&slPixCount);
 		OGL_CHECKERROR;
 	}
+#ifdef SE1_D3D
 	// Direct3D
 	else if( eAPI==GAT_D3D) {
 	}
+#endif // SE1_D3D
 
 	_sfStats.StopTimer(CStatForm::STI_GFXAPI);
 
@@ -1358,9 +1573,15 @@ extern void gfxSetBlendType( const enum PredefinedBlendType pbt)
 
 
 
-#include "GFX_wrapper_OpenGL.cpp"
+#include "Gfx_wrapper_OpenGL.cpp"
 
-#include "GFX_wrapper_Direct3D.cpp"
+#ifdef SE1_D3D
+#include "Gfx_wrapper_Direct3D.cpp"
+#endif // SE1_D3D
+
+#ifdef SE1_GPUDEVICE
+#include "Gfx_wrapper_Gpu.cpp"
+#endif // SE1_GPUDEVICE
 
 
 
@@ -1377,7 +1598,7 @@ static void none_PolygonMode( GfxPolyMode ePolyMode) { NOTHING; };
 static void none_SetLightColor( INDEX iLight, COLOR colLight, COLOR colAmbient, COLOR colSpecular) { NOTHING; };
 static void none_SetLightDirection( INDEX iLight, const FLOAT3D &vLightDir) { NOTHING; };
 static void none_SetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV) { NOTHING; };
-static void none_GenDelTexture( ULONG &ulTexObject) { NOTHING; };
+static void none_GenDelTexture( TEXOBJ &ulTexObject) { NOTHING; };
 static void none_SetVertexArray( GFXVertex *pvtx, INDEX ctVtx) { NOTHING; };
 static void none_SetNormalArray( GFXNormal *pnor) { NOTHING; };
 static void none_SetWeightArray( GFXWeight *pwgh) { NOTHING; };
@@ -1471,6 +1692,7 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 		gfxSetPixelProgramConst = &ogl_SetPixelProgramConst;
 
 	}
+#ifdef SE1_D3D
 	// Direct3D?
 	else if( iAPI==(INDEX)GAT_D3D)
 	{
@@ -1542,6 +1764,79 @@ extern void GFX_SetFunctionPointers( INDEX iAPI)
 		gfxSetPixelProgramConst = &d3d_SetPixelProgramConst;
 
 	}
+#endif // SE1_D3D
+#ifdef SE1_GPUDEVICE
+	// Metal, Vulkan (a GpuDevice)?
+	else if( GFX_IsGpuAPI((GfxAPIType)iAPI))
+	{
+		gfxEnableDepthWrite     = &gpu_EnableDepthWrite;
+		gfxEnableDepthBias      = &gpu_EnableDepthBias;
+		gfxEnableDepthTest      = &gpu_EnableDepthTest;
+		gfxEnableAlphaTest      = &gpu_EnableAlphaTest;
+		gfxEnableBlend          = &gpu_EnableBlend;
+		gfxEnableDither         = &gpu_EnableDither;
+		gfxEnableTexture        = &gpu_EnableTexture;
+		gfxEnableLight          = &gpu_EnableLight;
+		gfxEnableLighting       = &gpu_EnableLighting;
+		gfxEnableClipping       = &gpu_EnableClipping;
+		gfxEnableClipPlane      = &gpu_EnableClipPlane;
+		gfxEnableTruform        = &gpu_EnableTruform;
+		gfxDisableDepthWrite    = &gpu_DisableDepthWrite;
+		gfxDisableDepthBias     = &gpu_DisableDepthBias;
+		gfxDisableDepthTest     = &gpu_DisableDepthTest;
+		gfxDisableAlphaTest     = &gpu_DisableAlphaTest;
+		gfxDisableBlend         = &gpu_DisableBlend;
+		gfxDisableDither        = &gpu_DisableDither;
+		gfxDisableTexture       = &gpu_DisableTexture;
+		gfxDisableLight         = &gpu_DisableLight;
+		gfxDisableLighting      = &gpu_DisableLighting;
+		gfxDisableClipping      = &gpu_DisableClipping;
+		gfxDisableClipPlane     = &gpu_DisableClipPlane;
+		gfxDisableTruform       = &gpu_DisableTruform;
+		gfxBlendFunc            = &gpu_BlendFunc;
+		gfxDepthFunc            = &gpu_DepthFunc;
+		gfxDepthRange           = &gpu_DepthRange;
+		gfxCullFace             = &gpu_CullFace;
+		gfxFrontFace            = &gpu_FrontFace;
+		gfxClipPlane            = &gpu_ClipPlane;
+		gfxSetOrtho             = &gpu_SetOrtho;
+		gfxSetFrustum           = &gpu_SetFrustum;
+		gfxSetTextureMatrix     = &gpu_SetTextureMatrix;
+		gfxSetViewMatrix        = &gpu_SetViewMatrix;
+		gfxPolygonMode          = &gpu_PolygonMode;
+		gfxSetLightColor        = &gpu_SetLightColor;
+		gfxSetLightDirection    = &gpu_SetLightDirection;
+		gfxSetTextureWrapping   = &gpu_SetTextureWrapping;
+		gfxSetTextureModulation = &gpu_SetTextureModulation;
+		gfxGenerateTexture      = &gpu_GenerateTexture;
+		gfxDeleteTexture        = &gpu_DeleteTexture;
+		gfxSetVertexArray       = &gpu_SetVertexArray;
+		gfxSetNormalArray       = &gpu_SetNormalArray;
+		gfxSetWeightArray       = &gpu_SetWeightArray;
+		gfxSetTexCoordArray     = &gpu_SetTexCoordArray;
+		gfxSetColorArray        = &gpu_SetColorArray;
+		gfxDrawElements         = &gpu_DrawElements;
+		gfxSetConstantColor     = &gpu_SetConstantColor;
+		gfxEnableColorArray     = &gpu_EnableColorArray;
+		gfxDisableColorArray    = &gpu_DisableColorArray;
+		gfxFinish               = &gpu_Finish;
+		gfxLockArrays           = &gpu_LockArrays;
+		gfxSetColorMask         = &gpu_SetColorMask;
+		gfxLockSubBuffer        = &gpu_LockSubBuffer;
+		gfxUnlockSubBuffer      = &gpu_UnlockSubBuffer;
+		gfxSetSubBuffer         = &gpu_SetSubBuffer;
+		gfxSetVertexSubBuffer   = &gpu_SetVertexSubBuffer;
+
+		gfxSetVertexProgram     = &gpu_SetVertexProgram;
+		gfxSetPixelProgram      = &gpu_SetPixelProgram;
+		gfxDeleteVertexProgram  = &gpu_DeleteProgram;
+		gfxDeletePixelProgram   = &gpu_DeleteProgram;
+		gfxCreateVertexProgram  = &gpu_CreateVertexProgram;
+		gfxCreatePixelProgram   = &gpu_CreatePixelProgram;
+		gfxSetVertexProgramConst= &gpu_SetVertexProgramConst;
+		gfxSetPixelProgramConst = &gpu_SetPixelProgramConst;
+	}
+#endif // SE1_GPUDEVICE
 	// NONE!
 	else
 	{

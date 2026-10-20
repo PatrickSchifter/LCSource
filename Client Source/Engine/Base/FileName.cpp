@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/FileName.h>
 
@@ -7,10 +7,10 @@
 #include <Engine/Templates/NameTable_CTFileName.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
 
-template CDynamicArray<CTFileName>;
-template CDynamicStackArray<CTFileName>;
+template class CDynamicArray<CTFileName>;
+template class CDynamicStackArray<CTFileName>;
 #include <Engine/Templates/StaticStackArray.cpp>
-template CStaticStackArray<long>;
+template class CStaticStackArray<long>;
 
 /*
  * Get directory part of a filename.
@@ -105,7 +105,7 @@ void CTFileName::RemoveApplicationPath_t(void) // throws char *
 	if (!bHadRightPath) {
 		// throw error
 		ThrowF_t(TRANS("File '%s' has got wrong path!\nAll files must reside in directory '%s'."),
-			str_String, (CTString&)_fnmApplicationPath);
+			str_String, (const char*)(CTString&)_fnmApplicationPath);
 	}
 }
 

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIBuff.h>
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Contents/function/TargetInfoNewUI.h>
@@ -1663,7 +1663,7 @@ void CUIBuff::RemoveTargetBuff( SLONG slItemIndex, SLONG slSkillIndex )
 // Name : AddBuffInfoString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIBuff::AddBuffInfoString( CTString &strBuffInfo, COLOR colBuffInfo )
+void CUIBuff::AddBuffInfoString( const CTString &strBuffInfo, COLOR colBuffInfo )
 {
 	if( m_nCurInfoLines >= MAX_BUFFINFO_LINE )
 		return;

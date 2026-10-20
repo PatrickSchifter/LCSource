@@ -1220,7 +1220,7 @@ public:
 		#pragma warning( disable:4172 )
 		static CTString nullStr = "";
 		//nullStr = "";
-		return iIndex < m_aStringData.Count() ? m_aStringData[iIndex] : nullStr;
+		return (iIndex >= 0 && iIndex < m_aStringData.Count()) ? m_aStringData[iIndex] : nullStr;  // negative indexes come from data files
 	}
 	CTString	&GetString( INDEX iIndex, INDEX iSrc );
 	CTString	&GetString( INDEX iIndex, const char *szSrc );
@@ -1302,9 +1302,9 @@ public:
 	void	CloseMessageBox( int nCommandCode );
 	BOOL	DoesMessageBoxExist( int nCommandCode );
 
-	void	CreateMessageBoxL( CTString &strTitle, int nWhichUI, int nCommandCode,
+	void	CreateMessageBoxL( const CTString &strTitle, int nWhichUI, int nCommandCode,
 								int nPosX = -1, int nPosY = -1 );
-	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o" );
+	void	AddMessageBoxLString( int nCommandCode, BOOL bDesc, const CTString &strMessage, int iValue = -1, const COLOR colDesc = 0xF2F2F2FF, CTString strPrefix = "o" );
 	void	CloseMessageBoxL( int nCommandCode );
 	BOOL	DoesMessageBoxLExist( int nCommandCode );
 	CUIMessageBox *GetMessageBox( int nCommandCode );
@@ -1445,7 +1445,7 @@ public:
 
 	// WSS_MINIGAME_070422 -------------------------------------->>
 	// For multilined string
-	void AddStringToList(CUIListBox* pListBox,CTString& tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
+	void AddStringToList(CUIListBox* pListBox,const CTString &tStr, INDEX iMaxChar, COLOR tColor =0xFFFFFFFF,INDEX ilistCol=0);
 
 	// ----------------------------------------------------------<<
 
@@ -1564,12 +1564,11 @@ private:
 
 #define		UIMGR()		CUIManager::getSingleton()
 
-// KALYDO
 ENGINE_API extern  struct PlayerControls pctlCurrent;
 
 
 
-inline ENGINE_API CTString _SFunc( int x );
+ENGINE_API CTString _SFunc( int x );
 
 //#define KEY_SHOW_STRING_INDEX
 // 미번역 찾아내기 [10/13/2011 rumist]

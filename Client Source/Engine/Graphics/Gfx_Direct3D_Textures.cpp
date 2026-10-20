@@ -1,9 +1,10 @@
-#include "stdh.h"
+#include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/MemoryTracking.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Functions.h>
 
 #include <Engine/Base/ListIterator.inl>
@@ -337,3 +338,4 @@ extern INDEX AdjustDitheringType_D3D( D3DFORMAT eFormat, INDEX iDitheringType)
     return iDitheringType;
   }
 }
+#endif // SE1_D3D

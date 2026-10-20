@@ -6,19 +6,6 @@
 #include <Engine/Contents/Base/UIQuestView.h>
 #include <Engine/Interface/UIPlayerInfo.h>
 
-#if		(_MSC_VER < 1600)
-bool Compare(Quest::stRestoreInfo& lhs, Quest::stRestoreInfo& rhs)
-{
-	bool bResult;
-		
-	bResult = lhs.iQuestLevel < rhs.iQuestLevel;
-		
-	if (lhs.iQuestLevel == rhs.iQuestLevel)
-		bResult = lhs.iQuestIndex < rhs.iQuestIndex;
-		
-	return bResult;
-}
-#endif	// (_MSC_VER < 1600)
 
 Quest::Quest(void)
 {
@@ -490,11 +477,7 @@ void Quest::ClearAllRestoreList()
 
 void Quest::SortRestoreQuest()
 {
-#if		(_MSC_VER >= 1600)
 	std::sort(m_vectorRestoreList.begin(), m_vectorRestoreList.end(), Compare());
-#else	// (_MSC_VER >= 1600)
-	std::sort(m_vectorRestoreList.begin(), m_vectorRestoreList.end(), Compare);
-#endif	// (_MSC_VER >= 1600)
 }
 
 

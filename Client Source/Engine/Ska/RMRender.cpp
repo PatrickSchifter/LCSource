@@ -15,8 +15,8 @@
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Graphics/Fog_internal.h>
 #include <Engine/Templates/DynamicContainer.cpp>
-#include <Engine/Graphics/Drawport.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Graphics/DrawPort.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/ObjectRestore.h>
 
@@ -30,7 +30,11 @@
 
 //강동민 수정 시작
 // NOTE : 나중에 제거해야 할듯(CreateShadowMatrix() 때문에 필요함.)
+#ifdef SE1_D3D
 #include <d3dx8.h>
+#else
+#include <d3dx8math.h>  // just the math (Compat/d3dx8)
+#endif // SE1_D3D
 #define SHADOWTEXTURESIZE (256)
 //강동민 수정 끝
 
@@ -147,7 +151,7 @@ static void *_pAdjustShaderData = NULL;
 
 inline static INDEX FindRenBoneIndex(const RenModel &rm,INDEX iBoneID);
 inline extern void LockMeshReadBuffers(const MeshLOD &mlod);
-inline extern void UnlockMeshReadBuffers(const MeshLOD &mlod);
+extern void UnlockMeshReadBuffers(const MeshLOD &mlod);
 inline static void SetSurfaceMatrices(const RenMesh &rmsh, const MeshSurface &msrf, const MeshLOD &mlod);
 extern void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod);
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
@@ -335,7 +339,7 @@ __forceinline static void RotateVector_add( FLOAT3 &vDst, FLOAT3 &vSrc, const Ma
 
 
 // calculate fade factor of animation list in animqueue
-__forceinline extern FLOAT CalculateFadeFactor(const AnimList &alList)
+extern FLOAT CalculateFadeFactor(const AnimList &alList)
 {
 	if(alList.al_fFadeTime==0) 
 	{
@@ -347,7 +351,7 @@ __forceinline extern FLOAT CalculateFadeFactor(const AnimList &alList)
 }
 
 // set view matrix
-__forceinline extern void SetViewMatrix( Matrix12 &mView12)
+extern void SetViewMatrix( Matrix12 &mView12)
 {
 	FLOAT mView16[16];
 	mView16[ 0] = mView12[ 0];  mView16[ 1] = mView12[ 4];  mView16[ 2] = mView12[ 8];  mView16[ 3] = 0;
@@ -406,7 +410,7 @@ extern void RM_GetModelVertices( CModelInstance &mi, CStaticStackArray<FLOAT3D> 
 								FLOATmatrix3D &mRotation, FLOAT3D &vPosition, FLOAT fNormalOffset, FLOAT fDistance)
 {
 	extern INDEX ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CObjectRestore<BOOL> or2(_bUseHardwareShaders,FALSE);
 	CObjectRestore<INDEX> or3(ska_iMaxWeightsPerVertex,1);
 	
@@ -512,10 +516,10 @@ public:
 public:
 	binfo() : bw(0), bi(0) {}
 
-	bool operator < (binfo &other)	{ return bw < other.bw;		}
-	bool operator <= (binfo &other)	{ return bw <= other.bw;	}
-	bool operator > (binfo &other)	{ return bw > other.bw;		}
-	bool operator >= (binfo &other)	{ return bw >= other.bw;	}
+	bool operator < (const binfo &other) const	{ return bw < other.bw;		}
+	bool operator <= (const binfo &other) const	{ return bw <= other.bw;	}
+	bool operator > (const binfo &other) const	{ return bw > other.bw;		}
+	bool operator >= (const binfo &other) const	{ return bw >= other.bw;	}
 };
 FLOAT RM_TestRayCastHit( CModelInstance &mi, FLOATmatrix3D &mRotation, FLOAT3D &vPosition,const FLOAT3D &vOrigin,
 						const FLOAT3D &vTarget,FLOAT fOldDistance,INDEX *piBoneID, void *pSkatag)
@@ -523,7 +527,7 @@ FLOAT RM_TestRayCastHit( CModelInstance &mi, FLOATmatrix3D &mRotation, FLOAT3D &
 {
 	FLOAT fDistance = 1E6f;
 	extern INDEX ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CObjectRestore<BOOL> or2(_bUseHardwareShaders,FALSE);
 	CObjectRestore<INDEX> or3(ska_iMaxWeightsPerVertex,1);
 	
@@ -748,7 +752,7 @@ BOOL RM_TestRayCastHitForTerrainShadow( CModelInstance &mi, FLOATmatrix3D &mRota
 {
 	FLOAT					fDistance = 1E6f;
 	extern INDEX			ska_iMaxWeightsPerVertex;
-	CObjectRestore<BOOL>	or( _bTransAllToAbsolute, TRUE );
+	CObjectRestore<BOOL>	orRestore( _bTransAllToAbsolute, TRUE );
 	CObjectRestore<BOOL>	or2( _bUseHardwareShaders, FALSE );
 	CObjectRestore<INDEX>	or3( ska_iMaxWeightsPerVertex, 1 );
 	
@@ -1609,6 +1613,7 @@ ENGINE_API extern BOOL RM_AreHardwareShadersAvailable(void)
 {
 //강동민 수정 시작 접속 시퀀스 작업	06.01
 	extern INDEX ska_bUseHardwareShaders;			// 원본.
+	if (getenv("LC_NO_HW_SHADERS") != NULL) return FALSE;  // dev switch, see GfxLibrary.cpp
 	return ska_bUseHardwareShaders && 
 		(_pGfx->gl_ulFlags&GLF_VERTEXPROGRAM) && 
 		(_pGfx->gl_ulFlags&GLF_PIXELPROGRAM) && 
@@ -3731,7 +3736,7 @@ inline extern void LockMeshReadBuffers(const MeshLOD &mlod)
 	_bMeshBuffersLocked = TRUE;
 }
 
-inline extern void UnlockMeshReadBuffers(const MeshLOD &mlod)
+extern void UnlockMeshReadBuffers(const MeshLOD &mlod)
 {
 	if(_bUseHardwareShaders) 
 	{
@@ -4298,7 +4303,7 @@ extern void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonLOD)
 	else if( _bTransAllToAbsolute) 
 	{
 		// do not use vertex program
-		CObjectRestore<BOOL> or(_bUseHardwareShaders,FALSE); // ????
+		CObjectRestore<BOOL> orRestore(_bUseHardwareShaders,FALSE); // ????
 		
 		// prepare final vertices and normals
 		_pavWeightedVertices = _aFinalVertices.Push(_ctMeshVertices);
@@ -4481,7 +4486,7 @@ BOOL RM_GetRenBoneAbs(CModelInstance &mi,INDEX iBoneID,RenBone &rb)
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	CalculateRenderingData(mi, FALSE);
 	INDEX ctrb = _aRenBones.Count();
 	// for each render bone after dummy one
@@ -4507,7 +4512,7 @@ BOOL RM_GetBoneRelPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoin
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	// use higher lod for bone finding
 	RM_SetCurrentDistance(0);
 	CalculateRenderingData(mi, FALSE);
@@ -4534,7 +4539,7 @@ BOOL RM_GetBoneRelPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoin
 
 extern BOOL RM_GetBoneAbsPosition(CModelInstance &mi,INDEX iBoneID, FLOAT3D &vStartPoint, FLOAT3D &vEndPoint)
 {
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	BOOL bRet = RM_GetBoneRelPosition(mi,iBoneID, vStartPoint, vEndPoint);
 	return bRet;
 }
@@ -4543,7 +4548,7 @@ extern BOOL RM_GetBoneTransformations(CModelInstance &mi,INDEX iBoneID, Matrix12
 {
 	// do not transform to view space
 	MakeIdentityMatrix(_mAbsToViewer);
-	CObjectRestore<BOOL> or(_bTransAllToAbsolute,TRUE);
+	CObjectRestore<BOOL> orRestore(_bTransAllToAbsolute,TRUE);
 	// use higher lod for bone finding
 	RM_SetCurrentDistance(0);
 	CalculateRenderingData(mi, FALSE);
@@ -4639,6 +4644,47 @@ extern void CalculateRenderingData(CModelInstance &mi, BOOL bRenderToScreen)
 
 
 // Render one SKA model with its children
+// Debug aid (LC_DEBUG_SKA set): log to ThrowLog.txt how the first frames of each model are rendered.
+static void LogRenderedModel(CModelInstance &mi)
+{
+	static INDEX iEnabled = -1;
+	if (iEnabled < 0) iEnabled = getenv("LC_DEBUG_SKA") != NULL;
+	if (!iEnabled) return;
+	static CTString astrSeen[256];
+	static INDEX ctSeen = 0;
+	static INDEX actFrames[256];
+	INDEX iSeen = 0;
+	for (; iSeen < ctSeen; iSeen++) if (astrSeen[iSeen] == mi.GetName()) break;
+	if (iSeen == ctSeen) {
+		if (ctSeen >= 256) return;
+		astrSeen[ctSeen] = mi.GetName(); actFrames[ctSeen] = 0; ctSeen++;
+	}
+	if (actFrames[iSeen]++ >= 3) return;
+	FILE *fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return;
+	fseek(fLog, 0, SEEK_END);
+	fprintf(fLog, "SKA '%s' color=%08lX dist=%g stretch=(%g,%g,%g) renmodels=%d renmeshes=%d bones=%d hw=%d\n",
+		(const char*)mi.GetName(), (unsigned long)_colModel, _fDistanceFactor,
+		mi.mi_vStretch(1), mi.mi_vStretch(2), mi.mi_vStretch(3),
+		_aRenModels.Count()-1, _aRenMeshes.Count(), _aRenBones.Count(), _bUseHardwareShaders);
+	for (INDEX irm = 1; irm < _aRenModels.Count(); irm++) {
+		RenModel &rm = _aRenModels[irm];
+		fprintf(fLog, "   model '%s' meshes=%d", (const char*)rm.rm_pmiModel->GetName(), rm.rm_ctMeshes);
+		for (INDEX im = 0; im < rm.rm_pmiModel->mi_aMeshInst.Count(); im++) {
+			CMesh &msh = *rm.rm_pmiModel->mi_aMeshInst[im].mi_pMesh;
+			fprintf(fLog, " [lods=%d", msh.msh_aMeshLODs.Count());
+			for (INDEX il = 0; il < msh.msh_aMeshLODs.Count(); il++) fprintf(fLog, " max=%g", msh.msh_aMeshLODs[il].mlod_fMaxDistance);
+			fprintf(fLog, "]");
+		}
+		fprintf(fLog, "\n");
+	}
+	if (_aRenBones.Count() > 1) {
+		const Matrix12 &m = _aRenBones[1].rb_mBonePlacement;
+		fprintf(fLog, "   bone1 %g %g %g %g | %g %g %g %g | %g %g %g %g\n", m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11]);
+	}
+	fclose(fLog);
+}
+
 void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 {
 	TRACKMEM(Mem, "RenderSKA()");
@@ -4646,7 +4692,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 	// mask rendering?  
 	if( _iRenderingType==2) 
 	{
-		CObjectRestore<BOOL> or(_bUseHardwareShaders,FALSE);
+		CObjectRestore<BOOL> orRestore(_bUseHardwareShaders,FALSE);
 		// calculate all rendering data for this model instance
 		CalculateRenderingData(mi, FALSE);
 		// render each RenModel to mask
@@ -4667,7 +4713,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 	extern INDEX gap_bUseOcclusionCulling;
 	const BOOL bMirrored = (RM_GetRenderFlags() & SRMF_MIRROR); // mirrored models cannot have occlusion culling!
 	const BOOL bDoOcclusionCheck = (gap_bUseOcclusionCulling&1) && _pGfx->HasOcclusionCulling() && !mi.mi_bSkipOcclusionTest;
-	const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)&mi);
+	const ULONG ulQueryID = _ulDrawPortID ^ ((ULONG)(uintptr_t)&mi);
 	
 	BOOL bOccluded = FALSE;
 	if( !bMirrored) 
@@ -4702,6 +4748,7 @@ void RM_RenderSKA( CModelInstance &mi, BOOL bRenderToScreen )
 		gfxSetColorMask(CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
 		// calculate all rendering data for this model instance
 		CalculateRenderingData(mi, bRenderToScreen);
+		LogRenderedModel(mi);
 		const INDEX ctrm = _aRenModels.Count();
 		_sfStats.IncrementCounter( CStatForm::SCI_SKAMESHES_RENDERED, ctrm-1); // meshes rendered
 		// render each RenModel to view

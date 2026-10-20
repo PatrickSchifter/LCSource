@@ -70,7 +70,7 @@ const int							CAffinityData::GetAffinityPoint(const int npcIdx, const int item
 	CAffinityData::_AffinityInfo* pData = GetAffinityData( npcIdx );
 	
 	vecDonateListIter iter = std::find_if( ((pData)->vecDonateList).begin(), ((pData)->vecDonateList).end(), 
-										bind2nd( CompareDonationItemData(), itemIdx ) );
+										[&](const auto& d) { return CompareDonationItemData()(d, itemIdx); } );
 	if( iter != (pData->vecDonateList).end() )
 	{
 		return (*iter).point;
@@ -176,7 +176,7 @@ bool		CAffinityData::IsDonationItem( int npcIdx, int itemIdx )
 	if( pData != NULL )
 	{
 		vecDonateListIter veciter = std::find_if( pData->vecDonateList.begin(), pData->vecDonateList.end(), 
-												bind2nd( CompareDonationItemData(), itemIdx ) );
+												[&](const auto& d) { return CompareDonationItemData()(d, itemIdx); } );
 		if( veciter != pData->vecDonateList.end() )
 		{
 			return true;

@@ -133,7 +133,7 @@ void CSessionState::updateMoney( CNetworkMessage* istr )
 				strBonus.PrintF( "%I64d", pPack->bonus );
 				pUIMgr->InsertCommaToString( strBonus );
 
-				strResult.PrintF( "%s(+%s)", strCount, strBonus );				
+				strResult.PrintF( "%s(+%s)", (const char*)strCount, (const char*)strBonus );				
 			}
 			else
 			{
@@ -141,7 +141,7 @@ void CSessionState::updateMoney( CNetworkMessage* istr )
 				pUIMgr->InsertCommaToString( strResult );
 			}
 
-			strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), strResult ); // 번역 수정
+			strSysMessage.PrintF( _S( 416, "%s 나스를 얻었습니다." ), (const char*)strResult ); // 번역 수정
 			_pNetwork->ClientSystemMessage( strSysMessage );	
 		}
 	}

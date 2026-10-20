@@ -889,7 +889,9 @@ FIRST_CONNECT:
 		{
 			// 처음 접속 사용자 수 전송
 #if defined (BILA_INTERGRATION_SERVER)
-			if ( packet->nation == INTERGRATION_BRAZIL )
+			// Brazil/Mexico connector split only applies when the integration server is on.
+			if ( !gserver.m_intergrationInfo.IsEnable() ) {}
+			else 			if ( packet->nation == INTERGRATION_BRAZIL )
 			{
 				if ( i == 0 || i == 1 )
 				{
@@ -917,6 +919,12 @@ FIRST_CONNECT:
 	}
 	catch (MSG_FAIL_TYPE failtype)
 	{
+		{
+			const RequestClient::LoginFromClient* loginPacket = reinterpret_cast<const RequestClient::LoginFromClient*>(msg->m_buf);
+			LOG_INFO("LOGIN reject: fail[%d] mtype[%d] size[%d] version[%d] (server %d) nation[%d] (server %d) ip[%s]",
+				(int)failtype, (int)msg->m_mtype, (int)msg->m_size, (int)loginPacket->version, (int)VERSION_FOR_CLIENT,
+				(int)loginPacket->nation, (int)gserver.m_national, service_->ip().c_str());
+		}
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			FailMsg(rmsg, failtype);

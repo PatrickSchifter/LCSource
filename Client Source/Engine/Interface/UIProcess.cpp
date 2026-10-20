@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -329,7 +329,7 @@ void CUIProcess::SelectItem ( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProcess::AddString ( CTString& strText, COLOR colText )
+void CUIProcess::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength = UTIL_HELP()->GetFontWidth(strText.str_String);
 

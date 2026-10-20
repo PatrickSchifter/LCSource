@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIScrollBar.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Help/UISupport.h>

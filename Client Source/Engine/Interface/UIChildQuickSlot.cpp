@@ -1,7 +1,7 @@
 // UIChildQuickSlot.cpp: implementation of the UIChildQuickSlot class.
 //
 //////////////////////////////////////////////////////////////////////
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIQuickSlot.h>
 #include <Engine/Interface/UIChildQuickSlot.h>

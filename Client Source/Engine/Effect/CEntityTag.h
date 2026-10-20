@@ -20,9 +20,9 @@ public:
 	virtual ~CEntityTag();
 	virtual CTag *Copy();
 
-	void AddNewTagInfo(TagInfo &info);
-	void AddNewTagInfo(FLOAT time, Matrix12 &mInfo, Matrix12 &mStrInfo);
-	void AddNewTagInfo(FLOAT time, FLOATquat3D &rot, FLOAT3D &pos, FLOAT3D &stretch);
+	void AddNewTagInfo(const TagInfo &info);
+	void AddNewTagInfo(FLOAT time, const Matrix12 &mInfo, const Matrix12 &mStrInfo);
+	void AddNewTagInfo(FLOAT time, const FLOATquat3D &rot, const FLOAT3D &pos, const FLOAT3D &stretch);
 	
 	inline void SetEntity(CEntityPointer pen) { m_epEntity = pen; }
 	

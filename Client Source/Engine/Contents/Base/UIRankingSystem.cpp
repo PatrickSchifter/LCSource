@@ -1038,23 +1038,23 @@ void CUIRankingSystem::RecvRankingList(CNetworkMessage& nmMessage)
 	SLONG	nTotalCount				= 0;
 	SLONG	nRecvListCount			= 0;
 
-	nmMessage >> (SLONG)iListType;		// (INT)MSG_EX_RANKING_SYSTEM_EX_TYPE
+	nmMessage >> iListType;		// (INT)MSG_EX_RANKING_SYSTEM_EX_TYPE
 	switch(iListType)
 	{
 	case MSG_EX_RANKING_LIST:		// (s->c) (uc)type, (uc)subtype, (int)total_count, (int)list_count, (str)name, (int)ranking, (int)ranking_pre, (int)exp, (int)exp_pre, (int)level, (uc)job, (str)date.....
 		{
-			nmMessage >> (UCHAR)ucType;			// (uc)type
-			nmMessage >> (UCHAR)ucClass;		// (uc)subtype
-			nmMessage >> (SLONG)nTotalCount;	// (int)total_count
-			nmMessage >> (SLONG)nRecvListCount;	// (int)list_count
+			nmMessage >> ucType;			// (uc)type
+			nmMessage >> ucClass;		// (uc)subtype
+			nmMessage >> nTotalCount;	// (int)total_count
+			nmMessage >> nRecvListCount;	// (int)list_count
 		}
 		break;
 
 	case MSG_EX_RANKING_SEARCH:		// (s->c) (uc)type, (uc)subtype, (int)list_count, (str)name, (int)ranking, (int)ranking_pre, (int)exp, (int)exp_pre, (int)level, (uc)job, (str)date.....
 		{
-			nmMessage >> (UCHAR)ucType;			// (uc)type
-			nmMessage >> (UCHAR)ucClass;		// (uc)subtype
-			nmMessage >> (SLONG)nRecvListCount;	// (int)list_count
+			nmMessage >> ucType;			// (uc)type
+			nmMessage >> ucClass;		// (uc)subtype
+			nmMessage >> nRecvListCount;	// (int)list_count
 
 			nTotalCount		= nRecvListCount;
 		}
@@ -1069,7 +1069,7 @@ void CUIRankingSystem::RecvRankingList(CNetworkMessage& nmMessage)
 
 	case MSG_EX_RANKING_ERROR:		// (s->c) (uc)type
 		{
-			nmMessage >> (UCHAR)ucType;			// (uc)type
+			nmMessage >> ucType;			// (uc)type
 
 			switch(ucType)
 			{
@@ -1145,12 +1145,12 @@ void CUIRankingSystem::RecvRankingList(CNetworkMessage& nmMessage)
 		CTString	cstrDate;
 
 		nmMessage >> cstrName;			// (str)name
-		nmMessage >> (SLONG)nRanking;		// (int)ranking
-		nmMessage >> (SLONG)nRankingLast;	// (int)ranking_pre
-		nmMessage >> (SLONG)nPoint;		// (int)exp
-		nmMessage >> (SLONG)nPointLast;	// (int)exp_pre
-		nmMessage >> (SLONG)nLevel;		// (int)level
-		nmMessage >> (UCHAR)ucJob;		// (uc)job
+		nmMessage >> nRanking;		// (int)ranking
+		nmMessage >> nRankingLast;	// (int)ranking_pre
+		nmMessage >> nPoint;		// (int)exp
+		nmMessage >> nPointLast;	// (int)exp_pre
+		nmMessage >> nLevel;		// (int)level
+		nmMessage >> ucJob;		// (uc)job
 		nmMessage >> cstrDate;			// (str)date
 
 

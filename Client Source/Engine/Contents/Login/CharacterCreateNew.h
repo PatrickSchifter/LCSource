@@ -20,7 +20,7 @@ public:
 	void	SetFace(int nSelIdx)	{ m_nSelectFace = nSelIdx; }
 	void	SetArmor(int nSelIdx)	{ m_nSelectArmor = nSelIdx; }
 	void	SetSocial(int nSelIdx)	{ m_nSelectSocial = nSelIdx; }
-	void	SetNewName(CTString& strName) { m_charName = strName; }
+	void	SetNewName(const CTString &strName) { m_charName = strName; }
 	void	SetSocialShowIdx(int nIdx) { m_nSocialShowLastIdx = nIdx; }
 
 	void	SetNightShadowCreate(BOOL bCreate) { m_bNSCreate = bCreate; }

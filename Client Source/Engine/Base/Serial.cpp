@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Serial.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -6,9 +6,6 @@
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/CRCTable.h>
 
-#ifdef KALYDO
-deqSLS g_deqLoadData;
-#endif
 
 /*
  * Default constructor.
@@ -89,7 +86,7 @@ void CSerial::Reload(void)
   // if there is some error while reloading
   } catch (char *strError) {
     // quit the application with error explanation
-    FatalError(TRANS("Cannot reload file '%s':\n%s"), (CTString&)fnmOldName, strError);
+    FatalError(TRANS("Cannot reload file '%s':\n%s"), (const char*)(CTString&)fnmOldName, strError);
   }
 
   // if still here (no exceptions raised)

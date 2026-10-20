@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UISiegeWarfare.h>
 #include <Engine/Interface/UISiegeWarfareDoc.h>
@@ -852,7 +852,7 @@ void CUISiegeWarfare::OpenSWInfo()
 	}
 	else
 	{
-		strMessage.PrintF(_S( 2146,  "%s 길드" ), _pUISWDoc->m_gdDefGuild.m_strGuildName ); 
+		strMessage.PrintF(_S( 2146,  "%s 길드" ), (const char*)_pUISWDoc->m_gdDefGuild.m_strGuildName ); 
 	}
 	
 	MsgBoxInfo.AddString( strMessage, SW_COLOR_TEXT, TEXT_CENTER ); // XXXXXXXXX길드이름
@@ -894,7 +894,7 @@ void CUISiegeWarfare::OpenSetSWTime()
 
 	for( int i=0; i<m_vecSWInfo.size(); ++i )
 	{
-		strTemp.PrintF(_s("%s(%s)"), CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), _pUISWDoc->GetCastleName( m_vecSWInfo[i].zone ) );
+		strTemp.PrintF(_s("%s(%s)"), (const char*)CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), (const char*)_pUISWDoc->GetCastleName( m_vecSWInfo[i].zone ) );
 		m_sbtnSWZone.AddData( strTemp );
 
 		hour = m_vecSWInfo[i].zone == 4 ? m_vecSWInfo[i].hour - 12 + 2 : m_vecSWInfo[i].hour - 12 + 1;
@@ -918,15 +918,15 @@ void CUISiegeWarfare::OpenSetSWTime()
 		if ( -1 != iStringIndex)
 		{
 			ctDay = _S(iStringIndex,"요일");
-			strTemp.PrintF( _s("[%s] %s : PM%d:00 ~ %s%d:00"), CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), 							
-						ctDay, m_vecSWInfo[i].hour - 12, 
-						 strAmPm, hour);	// 드라탄 2시간 메라크 1시간
+			strTemp.PrintF( _s("[%s] %s : PM%d:00 ~ %s%d:00"), (const char*)CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), 							
+						(const char*)ctDay, m_vecSWInfo[i].hour - 12, 
+						 (const char*)strAmPm, hour);	// 드라탄 2시간 메라크 1시간
 		}
 		else
 		{
-			strTemp.PrintF( _s("[%s] %s : PM%d:00 ~ %s%d:00"), CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), 
-						pUIManager->GetWeekToString( m_vecSWInfo[i].wday ), m_vecSWInfo[i].hour - 12, 							
-						 strAmPm, hour);	// 드라탄 2시간 메라크 1시간
+			strTemp.PrintF( _s("[%s] %s : PM%d:00 ~ %s%d:00"), (const char*)CZoneInfo::getSingleton()->GetZoneName( m_vecSWInfo[i].zone ), 
+						(const char*)pUIManager->GetWeekToString( m_vecSWInfo[i].wday ), m_vecSWInfo[i].hour - 12, 							
+						 (const char*)strAmPm, hour);	// 드라탄 2시간 메라크 1시간
 		}
 		/*
 		strTemp.PrintF( _s("[%s] %s : PM%d:00 ~ %s%d:00"), ZoneInfo().GetZoneName( m_vecSWInfo[i].zone ), 

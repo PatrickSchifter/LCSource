@@ -1,6 +1,8 @@
 #ifdef LC_TLD
 
+#ifndef LC_NO_SERVER_AUTHENTICATION	// 30-day build expiry + call-home to the publisher
 #define SERVER_AUTHENTICATION		// 서버 기동 제한 시스템
+#endif
 
 #define GIVE_ITEM_IN_CHANGE_JOB		// 전직시 아이템 지급하기
 #define TLD_EVENT_SONG

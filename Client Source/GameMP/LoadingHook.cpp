@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "LCDDrawing.h"
 #include <locale.h>
 #include <Engine/Loading.h>
@@ -65,7 +65,7 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 #endif
 
   // measure time since last call
-  static CTimerValue tvLast(0I64);
+  static CTimerValue tvLast(((__int64)0));
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
 
   // if not first or final update, and not enough time passed

@@ -1,6 +1,6 @@
 // needed for parser and scanner
 extern int yylex(void);
-extern void yyerror(char *s);
+extern void yyerror(const char *s);
 extern int syyparse(void);
 extern void syyrestart(FILE *f);
 

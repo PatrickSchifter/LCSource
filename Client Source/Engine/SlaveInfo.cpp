@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Ska/ModelInstance.h>
 #include <Engine/SlaveInfo.h>
 #include <Engine/GlobalDefinition.h>

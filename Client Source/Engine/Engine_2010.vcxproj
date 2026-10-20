@@ -2277,6 +2277,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='GERLIVE|Win32'">StdH.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Graphics\Shader.cpp" />
+    <ClCompile Include="Graphics\ShaderAsmToARB.cpp" />
     <ClCompile Include="Graphics\ShadowMap.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GERLIVEKalydo|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='GERLIVEKalydo|Win32'">StdH.h</PrecompiledHeaderFile>
@@ -3753,6 +3754,9 @@
     <ClCompile Include="Base\Translation.cpp" />
     <ClCompile Include="Base\Unzip.cpp" />
     <ClCompile Include="Base\Updateable.cpp" />
+    <ClCompile Include="Base\Win32Compat.cpp" />
+    <ClCompile Include="Platform\PlatformSDL.cpp" />
+    <ClCompile Include="Platform\Win32WindowSDL.cpp" />
     <ClCompile Include="Brushes\Brush.cpp" />
     <ClCompile Include="Brushes\BrushArchive.cpp" />
     <ClCompile Include="Brushes\BrushExport.cpp" />
@@ -4217,6 +4221,8 @@
     <ClInclude Include="Base\TranslationPair.h" />
     <ClInclude Include="Base\Types.h" />
     <ClInclude Include="Base\Unzip.h" />
+    <ClInclude Include="Base\Win32Compat.h" />
+    <ClInclude Include="Platform\Platform.h" />
     <ClInclude Include="Base\Updateable.h" />
     <ClInclude Include="Base\UpdateableRT.h" />
     <ClInclude Include="Math\AABBox.h" />
@@ -4257,6 +4263,7 @@
     <ClInclude Include="Graphics\RenderScene.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\ShaderCode.h" />
+    <ClInclude Include="Graphics\ShaderAsmToARB.h" />
     <ClInclude Include="Graphics\ShadowMap.h" />
     <ClInclude Include="Graphics\Stereo.h" />
     <ClInclude Include="Graphics\Texture.h" />

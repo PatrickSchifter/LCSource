@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <vector>
 #include <set>
@@ -973,8 +973,8 @@ void			CUIAffinityInfo::_SetAffinityTab(int affinityIdx)
 			textZonename = CZoneInfo::getSingleton()->GetZoneName( nZoneNum );
 
 		textMonster.PrintF( _S(5864, "[%s] %d Lv %s 처치 시 친화도를 %d 상승 시켜줍니다."),
-		textZonename, CMobData::getData(b2->index)->GetLevel(),
-		CTString(CMobData::getData(b2->index)->GetName()),
+		(const char*)textZonename, CMobData::getData(b2->index)->GetLevel(),
+		(const char*)CTString(CMobData::getData(b2->index)->GetName()),
 		b2->point );
 		m_AffinityTab[UI_TAB_MONSTER].AddIcon(0, CUIImageBox::IT_AFFINITY_MONSTER, b2->index, TRUE, textMonster);
 		m_AffinityTab[UI_TAB_MONSTER].AddString(1, CTString(CMobData::getData(b2->index)->GetName()));

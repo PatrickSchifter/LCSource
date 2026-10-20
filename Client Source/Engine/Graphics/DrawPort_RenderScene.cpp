@@ -1,8 +1,8 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/DrawPort.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Math/Projection.h>
 #include <Engine/Graphics/RenderScene.h>
@@ -22,7 +22,11 @@
 #define W  word ptr
 #define B  byte ptr
 
-#define ASMOPT 1
+#ifdef USE_PORTABLE_C
+  #define ASMOPT 0
+#else
+  #define ASMOPT 1
+#endif
 
 #define SHADOWTEXTURE 3
 
@@ -541,12 +545,16 @@ static void RSBinToGroups( ScenePolygon *pspoFirst)
 
 	// determine maximum used groups
 	ASSERT( _ctGroupsCount);
+#ifdef USE_PORTABLE_C
+	_ctGroupsCount = 2<<FastLog2(_ctGroupsCount);
+#else
 	__asm {
 		mov     eax,2
 		bsr     ecx,D [_ctGroupsCount]
 		shl     eax,cl
 		mov     D [_ctGroupsCount],eax
 	}
+#endif
 
 	// done
 	_ctGroupVtx = 0;
@@ -907,7 +915,6 @@ vtxLoop:
 			jnz     vtxLoop
 		}
 #else
-		const FLOAT3D &vO = pspo->spo_amvMapping[iLayer].mv_vO;
 		const FLOAT3D &vU = pspo->spo_amvMapping[iLayer].mv_vU;
 		const FLOAT3D &vV = pspo->spo_amvMapping[iLayer].mv_vV;
 		for( INDEX i=0; i<pspo->spo_ctVtx; i++) {
@@ -1756,7 +1763,7 @@ void RSRenderGroup( ScenePolygon *pspoGroup, ULONG ulGroupFlags, ULONG ulTestedF
 	extern INDEX d3d_iMaxBurstSize;
 	ogl_iMaxBurstSize = Clamp( ogl_iMaxBurstSize, 0L, 9999L);
 	d3d_iMaxBurstSize = Clamp( d3d_iMaxBurstSize, 0L, 9999L);
-	const INDEX iMaxBurstSize = (_eAPI==GAT_OGL) ? ogl_iMaxBurstSize : d3d_iMaxBurstSize;
+	const INDEX iMaxBurstSize = (_eAPI==GAT_OGL || GFX_IsGpuAPI(_eAPI)) ? ogl_iMaxBurstSize : d3d_iMaxBurstSize;
 
 	// if unlimited lock count
 	if( iMaxBurstSize==0)
@@ -1806,8 +1813,16 @@ void RenderScene( CDrawPort *pDP, ScenePolygon *pspoFirst, CAnyProjection3D &prP
 {
 	// check API
 	_eAPI = _pGfx->gl_eCurrentAPI;
+#ifdef SE1_D3D
 	ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_D3D || _eAPI==GAT_NONE);
+#else
+	ASSERT( _eAPI==GAT_OGL || _eAPI==GAT_NONE);
+#endif // SE1_D3D
+#ifdef SE1_D3D
 	if( _eAPI!=GAT_OGL && _eAPI!=GAT_D3D) return;
+#else
+	if( _eAPI!=GAT_OGL && !GFX_IsGpuAPI(_eAPI)) return;
+#endif // SE1_D3D
 
 	// some cvars cannot be altered in multiplayer mode!
 	if( _bMultiPlayer) {

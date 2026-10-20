@@ -2,6 +2,7 @@
 #define __SESSION_BASE_H__
 
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/shared_ptr.hpp>
 
 typedef unsigned int session_type;
@@ -23,7 +24,7 @@ public:
 	};
 
 public:
-	SessionBase(boost::asio::io_service& io_service, session_type type)	: io_service_(io_service)
+	SessionBase(boost::asio::io_context& io_service, session_type type)	: io_service_(io_service)
 	{
 		type_ = type;
 		handle_ = INVALID_SESSION_HANDLE;
@@ -109,7 +110,7 @@ protected:
 
 	std::string					error_message_;
 
-	boost::asio::io_service&	io_service_;
+	boost::asio::io_context&	io_service_;
 	bool						close_error_;
 };
 

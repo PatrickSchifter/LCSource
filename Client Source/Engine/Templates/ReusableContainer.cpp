@@ -24,7 +24,7 @@ CReusableContainer<Type>::CReusableContainer(INDEX ctMaxAllocated)
 template<class Type>
 CReusableContainer<Type>::~CReusableContainer(void)
 {
-	CObjectRestore<BOOL> or(rc_bNowDeleting,TRUE);
+	CObjectRestore<BOOL> orRestore(rc_bNowDeleting,TRUE);
 	INDEX ctt = rc_atObjects.Count();
 	for(INDEX it=0;it<ctt;it++) {
 		Type *pType = &rc_atObjects[rc_atObjects.Count()-1];

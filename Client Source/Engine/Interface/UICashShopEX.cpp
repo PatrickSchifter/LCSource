@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Entities/CashShopData.h>
@@ -2835,7 +2835,7 @@ void CUICashShopEX::Render()
 					CTString strPrice, strRemain, strCash;
 					strCash.PrintF("%d", m_GoodsBoxList[i].GoodsData->m_cash);
 					pUIManager->InsertCommaToString(strCash);
-					strPrice.PrintF(_S(255, "가격: %s"), strCash);
+					strPrice.PrintF(_S(255, "가격: %s"), (const char*)strCash);
 
 					if (m_GoodsBoxList[i].GoodsData->m_limitCnt > 0)
 					{
@@ -2966,7 +2966,7 @@ void CUICashShopEX::Render()
 				{
 					INDEX iRef = m_GiftScroll.GetScrollPos() + i;
 					CTString nTemp;
-					struct tm *tmDate =localtime((time_t*)&m_RevGiftList[iRef].ulDate);
+					struct tm *tmDate =LocalTime32(m_RevGiftList[iRef].ulDate);
 					nTemp.PrintF(_S( 3091, "%d년 %d월 %d일" ), tmDate->tm_year+1900, tmDate->tm_mon+1, tmDate->tm_mday);
 					pDrawPort->PutTextEx(m_RevGiftList[iRef].strName, 61+m_nPosX,m_pIconRevGift[i]->GetAbsPosY()+4, 0xFFFFFFFF);
 					pDrawPort->PutTextEx(nTemp,61+m_nPosX, m_pIconRevGift[i]->GetAbsPosY()+19, 0xFFFFFFFF);
@@ -3061,7 +3061,7 @@ void CUICashShopEX::Render()
 					CTString strPrice, strRemain, strCash;
 					strCash.PrintF("%d", m_WishBoxList[i].GoodsData->m_cash);
 					pUIManager->InsertCommaToString(strCash);
-					strPrice.PrintF(_S(255, "가격: %s"), strCash);
+					strPrice.PrintF(_S(255, "가격: %s"), (const char*)strCash);
 					strRemain.PrintF(_S(2890, "남은 수량: %d"), m_WishBoxList[i].GoodsData->m_limitCnt);
 					pDrawPort->PutTextExRX(strPrice, m_nPosX+rtTmpBox.Left+203, m_nPosY+rtTmpBox.Top+46, 0xFFFFFFFF); // 상품 가격
 				}
@@ -3134,6 +3134,13 @@ void CUICashShopEX::Render()
 		FLOAT fU = _PreviewX/(FLOAT)_RTWidth;
 
 		pDrawPort->InitTextureData(&m_ModelRenderTarget->rt_tdTexture);
+#ifndef SE1_D3D
+		// an OpenGL render target starts at the bottom (Metal's and Vulkan's at the top, as Direct3D's)
+		if( _pGfx->gl_eCurrentAPI==GAT_OGL)
+			pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
+				0.0f,1.0f,fU,0.0f,0xFFFFFFFF);
+		else
+#endif // SE1_D3D
 		pDrawPort->AddTexture(m_nPosX+m_rtPreview.Left, m_nPosY+m_rtPreview.Top, m_nPosX+m_rtPreview.Right, m_nPosY+m_rtPreview.Bottom,
 			0.0f,0.0f,fU,1.0f,0xFFFFFFFF);
 		pDrawPort->FlushRenderingQueue();

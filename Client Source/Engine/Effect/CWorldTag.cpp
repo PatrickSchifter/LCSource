@@ -1,10 +1,10 @@
 //안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 
-#include "stdh.h"
+#include "StdH.h"
 #include "CWorldTag.h"
 
 #include <Engine/World/World.h>
-#include <engine/Base/Memory.h>
+#include <Engine/Base/Memory.h>
 #include <Engine/Base/Memory.h>
 
 CWorldTag::CWorldTag()

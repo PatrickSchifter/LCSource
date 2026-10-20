@@ -38,6 +38,30 @@
 
 #endif  // defined _MSC_VER
 
+#if !defined(_MSC_VER) && !defined(PLATFORM_UNIX)
+  #define PLATFORM_UNIX
+#endif
+
+// Outside Windows the window, events and input come from SDL3 (Engine/Platform/Platform.h); the
+// Windows build uses them only when configured with LC_PLATFORM_SDL.
+#if defined(PLATFORM_UNIX) && !defined(LC_PLATFORM_SDL)
+  #define LC_PLATFORM_SDL
+#endif
+
+// Sound output through SDL3 instead of DirectSound/WaveOut (Engine/Sound/SoundLibrary.cpp); the
+// Windows build uses it only when configured with LC_SOUND_SDL (which needs LC_PLATFORM_SDL).
+#if defined(PLATFORM_UNIX) && !defined(LC_SOUND_SDL)
+  #define LC_SOUND_SDL
+#endif
+
+// The x86 inline assembly is MSVC syntax for 32-bit x86 only; everywhere else the engine uses
+// its C paths. Define USE_PORTABLE_C in the Windows build too to test the C paths there.
+#if !defined(_MSC_VER) || !defined(_M_IX86)
+  #ifndef USE_PORTABLE_C
+    #define USE_PORTABLE_C
+  #endif
+#endif
+
 
 #ifdef PLATFORM_UNIX  /* rcg10042001 */
   #define ENGINE_API

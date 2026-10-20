@@ -4,12 +4,12 @@
   #pragma once
 #endif
 
-#include <Engine\Base\Types.h>
-#include <Engine\Entities\EntityPointer.h>
-#include <Engine\Entities\Entity.h>
-#include <Engine\Math\Placement.h>
-#include <Engine\Network\CommunicationInterface.h>
-#include <Engine\Network\EMsgBuffer.h>
+#include <Engine/Base/Types.h>
+#include <Engine/Entities/EntityPointer.h>
+#include <Engine/Entities/Entity.h>
+#include <Engine/Math/Placement.h>
+#include <Engine/Network/CommunicationInterface.h>
+#include <Engine/Network/EMsgBuffer.h>
 
 
 
@@ -62,7 +62,7 @@ public:
 #define TYPE CEntityHashItem
 #define CHashTableSlot_TYPE CEntityHashTableSlot
 #define CHashTable_TYPE     CEntityHashTable
-#include <Engine\Templates\HashTableTemplate.h>
+#include <Engine/Templates/HashTableTemplate.h>
 #undef VALUE_TYPE
 #undef TYPE
 #undef CHashTableSlot_TYPE

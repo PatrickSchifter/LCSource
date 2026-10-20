@@ -1,9 +1,11 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Unzip.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
+#ifdef PLATFORM_WIN32
 #include <io.h>
+#endif
 
 extern CDynamicStackArray<CTFileName> _afnmBaseBrowseInc;
 extern CDynamicStackArray<CTFileName> _afnmBaseBrowseExc;

@@ -8,9 +8,9 @@
 inline CTimerValue::CTimerValue(double fSeconds)
 {
 #ifdef TEST_GETTIME
-	tv_llValue = __int64(fSeconds*1000);
+	tv_llValue = (__int64)(fSeconds*1000);
 #else 
-	tv_llValue = __int64(fSeconds*_pTimer->tm_llPerformanceCounterFrequency);
+	tv_llValue = (__int64)(fSeconds*_pTimer->tm_llPerformanceCounterFrequency);
 #endif
 }
 /* Clear timer value (set it to zero). */

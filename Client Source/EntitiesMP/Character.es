@@ -553,7 +553,7 @@ functions:
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("A Orcman sent %s into the halls of Valhalla"), strPlayerName);
+		str.PrintF(TRANS("A Orcman sent %s into the halls of Valhalla"), (const char*)strPlayerName);
 		return str;
 	}
 
@@ -583,13 +583,16 @@ functions:
 			if( !(penToDamage->GetFlags()&ENF_ALIVE ) )	{ return; }
 			SE_Get_UIManagerPtr()->ShowDamage( penToDamage->en_ulID );
 			INDEX preHealth, curHealth;
-			preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-			curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+			// the player is not a CUnit and has none of these (on 64 bits m_nCurrentHealth falls on
+			// its name pointer); it takes the damage as if the server had sent it
+			const BOOL bUnit = !penToDamage->IsPlayer();
+			preHealth = bUnit ? ((CUnit*)penToDamage)->m_nPreHealth : 0;
+			curHealth = bUnit ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 			if(preHealth!= -1 || penToDamage->IsPlayer())// && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;
+				if (bUnit) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }
 			}
 			else 
 			{
@@ -1472,11 +1475,11 @@ functions:
 		CTFileName strBmName;
 		CTFileName fnFileName;
 		cnt = GetCurrentPlayerModelInstance()->mi_aMeshInst.Count(); 
-		CPrintF("%s \n",m_strName);				
+		CPrintF("%s \n",(const char*)m_strName);				
 		for(int i=0;i<cnt;++i)
 		{
 			strBmName = GetCurrentPlayerModelInstance()->mi_aMeshInst[i].mi_pMesh->GetName();
-			CPrintF("%s \n",strBmName);
+			CPrintF("%s \n",(const char*)strBmName);
 		}
 	}
 
@@ -2430,15 +2433,15 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 		{
 			if(m_bTransformMinimize == FALSE)//작아진다. 
 			{
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 				if(m_iPolymophStep == 0)
 				{  	
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					m_iPolymophStep++;
 				}
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;
@@ -2474,11 +2477,11 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 			}
 			else//이제 커져야한다.
 			{
-				static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+				static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 				
 				if(m_iPolymophStep == 10)
 				{
-					tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+					tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 					m_iPolymophStep--;
 
 					if(m_nChangeMonsterId == GM_CHANGE)
@@ -2497,7 +2500,7 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 				}
 		
 
-				int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+				int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 				if(time < 1)
 				{
 					return;

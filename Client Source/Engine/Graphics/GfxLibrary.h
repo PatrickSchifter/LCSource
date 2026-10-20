@@ -4,7 +4,9 @@
 	#pragma once
 #endif
 
+#ifdef SE1_D3D
 #include <d3d8.h>
+#endif // SE1_D3D
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Lists.h>
@@ -18,8 +20,8 @@
 
 #define GFX_MAXOCCQUERIES (512L) // maximum allowed occlusion queries
 
-#define GFX_MAXTEXUNITS (8L) // maximum number of supported texture units for multitexturing
-#define GFX_MINSTREAMS  (4L) // minimum number of D3D streams in order to support HW T&L (position, normal, texture & color)
+#define GFX_MAXTEXUNITS ((INDEX)8) // maximum number of supported texture units for multitexturing
+#define GFX_MINSTREAMS  ((INDEX)4) // minimum number of D3D streams in order to support HW T&L (position, normal, texture & color)
 #define GFX_MAXLAYERS   (6L) // suggested maximum number of multi-passes per one polygon
 #define GFX_MAXLIGHTS   (8L) // maximum number of HW lights allowed
 #define GFX_USETEXUNITS (4L) // maximum usable texture units by engine
@@ -43,7 +45,7 @@ extern CStaticStackArray<UWORD>			_auwText[FONT_MAX];
 
 // Button element arrays
 // item button image count. [3/15/2012 rumist]
-#define	MAX_BTN		21
+#define	MAX_BTN		40  // item data of newer clients uses ItemBtn20..30
 // NOTICE. 18 번 은 보석으로만 하기로 협의, size 1024 x 1024
 extern CStaticStackArray<GFXVertex>		_avtxBtn[MAX_BTN];
 extern CStaticStackArray<GFXColor>		_acolBtn[MAX_BTN];
@@ -52,7 +54,7 @@ extern CStaticStackArray<UWORD>			_auwBtn[MAX_BTN];
 // yjpark     -->|
 
 
-#include <Engine/Graphics/GFX_wrapper.h>
+#include <Engine/Graphics/Gfx_wrapper.h>
 
 
 // D3D vertex for simple draw functions
@@ -61,7 +63,9 @@ struct CTVERTEX {
 	ULONG ulColor;   // color
 	FLOAT fU,fV;     // texture coordinates
 };
+#ifdef SE1_D3D
 #define D3DFVF_CTVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+#endif // SE1_D3D
 
 // Max shader declaration size
 #define MAXSTREAMS (8L)
@@ -72,9 +76,17 @@ enum GfxAPIType
 {
 	GAT_NONE = -1,     // no gfx API (gfx functions are disabled)
 	GAT_OGL  =  0,     // OpenGL
+#ifdef SE1_D3D
 	GAT_D3D  =  1,     // Direct3D
+#endif // SE1_D3D
+	GAT_MTL  =  2,     // Metal (macOS, SE1_METAL)
+	GAT_VK   =  3,     // Vulkan (on MoltenVK on macOS, SE1_VULKAN)
 	GAT_CURRENT = 9,   // current API
 };
+
+// the APIs drawn through a GpuDevice (GpuDevice.h; Gfx_Gpu.cpp and Gfx_wrapper_Gpu.cpp, under
+// SE1_GPUDEVICE): those without fixed function
+inline bool GFX_IsGpuAPI( enum GfxAPIType eAPI) { return eAPI==GAT_MTL || eAPI==GAT_VK; }
 
 
 // vertex type (for lock/unlock function)
@@ -126,7 +138,7 @@ enum VtxType
 class ENGINE_API CGfxLibrary
 {
 public:
-	CGfxAPI gl_gaAPI[2];
+	CGfxAPI gl_gaAPI[4];  // by GfxAPIType
 	CViewPort *gl_pvpActive;   // active viewport
 	HINSTANCE  gl_hiDriver;    // DLL handle
 
@@ -138,6 +150,7 @@ public:
 	ULONG gl_ulFlags;
 	BOOL  gl_bCompressedTexture;
 
+#ifdef SE1_D3D
 	// DirectX info
 	LPDIRECT3D8       gl_pD3D;       // used to create the D3DDevice
 	LPDIRECT3DDEVICE8 gl_pd3dDevice; // rendering device
@@ -153,6 +166,7 @@ public:
 	LPDIRECT3DVERTEXBUFFER8 gl_pd3dCol[GFX_MAXLAYERS];
 	LPDIRECT3DVERTEXBUFFER8 gl_pd3dTex[GFX_MAXLAYERS];
 	LPDIRECT3DINDEXBUFFER8  gl_pd3dIdx;
+#endif // SE1_D3D
 	INDEX gl_ctVertices, gl_ctIndices;  // size of buffers
 	INDEX gl_ctColBuffers, gl_ctTexBuffers; // number of color and texture buffers (for multi-pass rendering)
 	INDEX gl_ctMaxStreams;              // maximum number of streams
@@ -165,9 +179,11 @@ public:
 	CTString go_strWinExtensions;
 	CTString go_strSupportedExtensions; // supported extensions
 
+#ifdef SE1_D3D
 	// D3DCAPSINFO
 	D3DCAPS8		gl_pd3dCaps;	// Date : 2006-05-16(오후 4:48:07), By eons
 
+#endif // SE1_D3D
 	// common stuff
 	PIX   gl_pixMaxTextureDimension;  // maximum allowed texture dimension by driver
 	INDEX gl_iSwapInterval;           // current swap interval (0=immediate, n=VSyncs to wait)
@@ -194,7 +210,9 @@ public:
 	INDEX gl_ctParticleTriangles;  // how many particle polygons were rendered in last frame
 	INDEX gl_ctTotalElements;      // total = (world & lensflares) + (model & shadows) + particle + 2D
 
+#ifdef PLATFORM_WIN32
 	DEVMODE gl_devmode;
+#endif
 
 private:
 
@@ -212,12 +230,15 @@ private:
 #ifdef PLATFORM_WIN32
 	BOOL CreateContext_OGL( HDC hdc);
 	BOOL SetupPixelFormat_OGL( HDC hdc, BOOL bReport=FALSE);
+#else
+	BOOL CreateContext_OGL( HWND hWnd);  // SDL window
 #endif
 	void InitContext_OGL(void);
 	BOOL SetCurrentViewport_OGL( CViewPort *pvp);
 	void UploadPattern_OGL( ULONG ulPatternEven); 
 	void SwapBuffers_OGL( CViewPort *pvpToSwap);
 
+#ifdef SE1_D3D
 	// Direct3D specific
 	BOOL InitDriver_D3D(void);
 	void EndDriver_D3D(void);
@@ -226,6 +247,16 @@ private:
 	BOOL SetCurrentViewport_D3D( CViewPort *pvp);
 	void UploadPattern_D3D( ULONG ulPatternEven);
 	void SwapBuffers_D3D( CViewPort *pvpToSwap);
+#endif // SE1_D3D
+
+#ifdef SE1_GPUDEVICE
+	// the APIs on a GpuDevice (Gfx_Gpu.cpp)
+	BOOL InitDriver_GPU( enum GfxAPIType eAPI);
+	void EndDriver_GPU(void);
+	void InitContext_GPU(void);
+	BOOL SetCurrentViewport_GPU( CViewPort *pvp);
+	void SwapBuffers_GPU( CViewPort *pvpToSwap);
+#endif // SE1_GPUDEVICE
 
 public:
 
@@ -280,14 +311,21 @@ public:
 	inline BOOL HasAPI( enum GfxAPIType eAPI) {
 		if( eAPI==GAT_CURRENT) return TRUE;
 		if( eAPI==GAT_OGL) return (gl_gaAPI[0].ga_ctAdapters>0);
+#ifdef SE1_D3D
 		if( eAPI==GAT_D3D) return (gl_gaAPI[1].ga_ctAdapters>0);
+#endif // SE1_D3D
+		if( eAPI==GAT_MTL) return (gl_gaAPI[2].ga_ctAdapters>0);
+		if( eAPI==GAT_VK)  return (gl_gaAPI[3].ga_ctAdapters>0);
 		return FALSE;
 	};
 
 	// is occlusion culling supported
 	inline BOOL HasOcclusionCulling(void) {
 		if( gl_eCurrentAPI==GAT_OGL) return( gl_ulFlags & GLF_EXT_OCCLUSIONQUERY);
+#ifdef SE1_D3D
 		if( gl_eCurrentAPI==GAT_D3D) return( gl_ulFlags & GLF_D3D_VISIBILITYTEST);
+#endif // SE1_D3D
+		if( GFX_IsGpuAPI(gl_eCurrentAPI)) return FALSE;
 		ASSERT(gl_eCurrentAPI==GAT_NONE);
 		return FALSE;
 	};

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리 [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -357,7 +357,7 @@ void CUIProduct::SelectItem( int _nIndex )
 	AddString ( _S( 562, "필요 스킬" ), COLOR_SUB_TITLE );		
 	AddString ( CTString ( pNeedSSkill->GetName() ), bNeedSSkill? COLOR_TEXT : COLOR_NONE );
 
-	strTitle.PrintF ( _S( 573, "%s : %d " ), _S( 574, "레벨" ), nSSkillLevel ); 
+	strTitle.PrintF ( _S( 573, "%s : %d " ), (const char*)_S( 574, "레벨" ), nSSkillLevel ); 
 	AddString ( strTitle, bNeedSSkillLevel? COLOR_TEXT : COLOR_NONE );
 
 
@@ -395,7 +395,7 @@ void CUIProduct::SelectItem( int _nIndex )
 // Name : AddString()
 // Desc : 
 // ----------------------------------------------------------------------------
-void CUIProduct::AddString ( CTString& strText, COLOR colText )
+void CUIProduct::AddString ( const CTString &strText, COLOR colText )
 {
 	int nLength = UTIL_HELP()->GetFontWidth(strText.str_String);
 

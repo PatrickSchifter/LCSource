@@ -28,11 +28,11 @@ public:
 	BOOL Register(CTag *pTag);	//copy하면서 등록
 	BOOL RegisterNoCopy(CTag *pTag);	//copy하지 않으며서 등록
 //안태훈 수정 시작	//(For Performance)(0.2)
-	BOOL Unregister(std::string &name);
+	BOOL Unregister(const std::string &name);
 	BOOL Unregister(const char *name);
-	BOOL IsRegister(std::string &name);
+	BOOL IsRegister(const std::string &name);
 	BOOL IsRegister(const char *name);
-	CTag *Find(std::string &name, BOOL bFindHierarchy = FALSE);
+	CTag *Find(const std::string &name, BOOL bFindHierarchy = FALSE);
 	CTag *Find(const char *name, BOOL bFindHierarchy = FALSE);
 //안태훈 수정 끝	//(For Performance)(0.2)
 	void Clear();

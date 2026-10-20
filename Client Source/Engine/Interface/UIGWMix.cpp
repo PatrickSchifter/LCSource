@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -223,7 +223,7 @@ void CUIGWMix::CloseGWMix()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIGWMix::AddString( CTString &strDesc )
+void CUIGWMix::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_GW_MIX_STRING )
 		return;

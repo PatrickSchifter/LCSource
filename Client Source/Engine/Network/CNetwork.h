@@ -1208,7 +1208,7 @@ public:
 	void SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle);
 
 	// 0 = SYSMSG_NORMAL
-	void ClientSystemMessage( CTString &strSysMessage, int nSysType = 0 );
+	void ClientSystemMessage( const CTString &strSysMessage, int nSysType = 0 );
 	void SendRebirthMessage();
 	void DeleteAllMob();
 	
@@ -1440,17 +1440,6 @@ public:
 	void SendParentsdayAddPoint(int charIdx);
 	// ----------------------------------------------------------------<<		
 
-	/*
-#ifndef NO_GAMEGUARD
-	// WSS_NPROTECT 070402 -------------------------------------------->>
-    void SendnProtectAuth2(DWORD dwArg);
-	BOOL Init_nProtect();
-	void SetHwnd_nProtect(HWND _hwndMain);
-	void Check_nProtect();
-	BOOL NPGameMonCallbackErrChk( DWORD dwMsg, DWORD dwArg);
-	// ----------------------------------------------------------------<<		
-#endif
-	/**/
 	// WSS_MINIGAME 070420 -------------------------------------------->>
 	void SendMinigameDefaultMessage(UBYTE eventType, UBYTE subType);
 	void SendMinigameSelect(UBYTE eventType, UBYTE subType, UBYTE cSelect);

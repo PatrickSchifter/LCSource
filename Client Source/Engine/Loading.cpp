@@ -23,7 +23,7 @@ CLoadingImage::CLoadingImage()
 	, m_nCurStep(0)
 	, m_nOriginWidth(0)
 	, m_eState(ePS_END)
-	, m_tvLastUpdate(0I64)
+	, m_tvLastUpdate(((__int64)0))
 	, m_fLoadingUniStep(0.f)
 {
 }

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -11,7 +11,7 @@
 #include <Engine/Contents/Base/UIQuestBookNew.h>
 #include <Engine/Contents/function/GuildWarMixUI.h>
 #include <Engine/Contents/function/ShopUI.h>
-#include <Engine/info/MyInfo.h>
+#include <Engine/Info/MyInfo.h>
 
 #define ENABLE_GUILD_CUBE
 

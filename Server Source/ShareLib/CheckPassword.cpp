@@ -3,7 +3,6 @@
 #ifndef WIN32
 
 #include "md5.h"
-#include <botan/botan.h>
 #include <botan/bcrypt.h>
 bool CCheckPassword::checkPass(const std::string& pass, const std::string& dbpass)
 {

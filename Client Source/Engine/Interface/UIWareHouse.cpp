@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/3/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -849,7 +849,7 @@ void CUIWareHouse::Render()
 	{
 		tm* pTime = NULL;
 
-		pTime = localtime((time_t*)&m_useTime);
+		pTime = LocalTime32(m_useTime);
 
 		tv_str.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),pTime->tm_year + 1900
 			,pTime->tm_mon + 1,pTime->tm_mday,pTime->tm_hour, pTime->tm_min);
@@ -2517,7 +2517,7 @@ void CUIWareHouse::ErrMessage( int nErr )
 	CUIManager::getSingleton()->CreateMessageBox( MsgInfo );
 }
 
-void CUIWareHouse::SendListReq(CTString& strPW)
+void CUIWareHouse::SendListReq(const CTString &strPW)
 {
 	CNetworkMessage nmMessage;
 	RequestClient::doStashList* packet = reinterpret_cast<RequestClient::doStashList*>(nmMessage.nm_pubMessage);

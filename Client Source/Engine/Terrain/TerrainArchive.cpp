@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainArchive.h>
@@ -12,7 +12,7 @@
 #include <Engine/Templates/DynamicArray.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Loading.h>
-template CDynamicArray<CBrush3D>;
+template class CDynamicArray<CBrush3D>;
 
 /*
  * Read from stream.

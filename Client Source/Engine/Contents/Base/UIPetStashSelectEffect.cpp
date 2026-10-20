@@ -168,7 +168,7 @@ void CUIPetStashSelectEffect::SelectModel()
 // ini 파일에서 에니타임 얻는 함수
 void CUIPetStashSelectEffect::InitPSAniTIme()
 {
-	std::string strFullPath = _fnmApplicationPath.FileDir();
+	std::string strFullPath = (const char*)_fnmApplicationPath.FileDir();
 	strFullPath += DEF_PSANI_FILE;
 
 	m_dwAniMaitionTime = GetPrivateProfileInt( DEF_APP_NAME, DEF_KEY_TOTAL, DEF_DEFAULT_TOTAL, 

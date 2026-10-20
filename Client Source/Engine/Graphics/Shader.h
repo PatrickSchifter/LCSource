@@ -12,7 +12,7 @@
 
 //강동민 수정 시작 Water 구현		04.13
 #include <Engine/Effect/CNiceWater.h>
-#include <Engine/SKA/ModelInstance.h>
+#include <Engine/Ska/ModelInstance.h>
 //강동민 수정 끝 Water 구현			04.13
 
 #include <Engine/Entities/SmcParser.h>
@@ -66,8 +66,13 @@ struct ShaderDesc
 
 	ShaderDesc()
 	{
+#ifdef SE1_D3D
 		VertexShaderVersion = D3DVS_VERSION(1,1);
 		PixelShaderVersion	= D3DVS_VERSION(1,4);
+#else
+		VertexShaderVersion = 0;  // no shader programs without D3D yet (C8)
+		PixelShaderVersion	= 0;
+#endif // SE1_D3D
 	}
 };
 
@@ -308,6 +313,7 @@ ENGINE_API void shaSetVertexProgramConst_LightColor(GFXColor colDiffuseColor, GF
 ENGINE_API void shaSetVertexProgramConst_Multiply();
 //강동민 수정 시작 Water 구현		04.20
 ENGINE_API void shaSetEMBM();
+ENGINE_API void shaSetProjectedTexture(INDEX iTexUnit, BOOL bProjected);  // OpenGL's D3DTTFF_PROJECTED for texbem
 //강동민 수정 끝 Water 구현			04.20
 ENGINE_API void shaSetVertexProgramConst_BoneMatrix();
 //원래는 없는 함수들의 추가 끝
@@ -483,7 +489,7 @@ ENGINE_API void shaDisableInverted(void);
 #if (defined _MSC_VER)
  #define DECLSPEC_DLLEXPORT _declspec (dllexport)
 #else
- #define DECLSPEC_DLLEXPORT
+ #define DECLSPEC_DLLEXPORT __attribute__((visibility("default")))
 #endif
 
 #define SHADER_MAIN(name) \

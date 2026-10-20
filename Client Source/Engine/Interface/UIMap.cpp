@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <vector>
 #include <deque>
 
@@ -519,7 +519,7 @@ void CUIMap::ReadMapData()
 // Name : ShowToolTip()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIMap::ShowToolTip( BOOL bShow, CTString &strName, int nX, int nY )
+void CUIMap::ShowToolTip( BOOL bShow, const CTString &strName, int nX, int nY )
 {
 	if( !bShow )
 	{
@@ -555,7 +555,7 @@ void CUIMap::ShowToolTip( BOOL bShow, CTString &strName, int nX, int nY )
 		nY += m_rcViewportDetail.Top - rcTempDetail.Top + m_nPosY + MAP_SY;
 	}
 	
-	m_strToolTip.PrintF( "%s", strName );
+	m_strToolTip.PrintF( "%s", (const char*)strName );
 	
 	CUIManager* pUIManager = CUIManager::getSingleton();
 	int nInfoWidth;
@@ -767,7 +767,7 @@ void CUIMap::SetCurrentWorldMap( int nWorld, SBYTE sbLayer )
 
 	if (nWorld == ZONE_WORLD_MAP)
 	{
-		strFileName.PrintF( "Local\\%s\\Map_World%d%d.tex", DefHelp::getNationPostfix(g_iCountry, true), nWorld, sbLayer );
+		strFileName.PrintF( "Local\\%s\\Map_World%d%d.tex", (const char*)DefHelp::getNationPostfix(g_iCountry, true), nWorld, sbLayer );
 	}
 	else
 	{
@@ -3019,7 +3019,7 @@ WMSG_RESULT CUIMap::MouseMessage( MSG *pMsg )
 									if( sbType == CHARGE_PRIVATE || sbType == MINE_PRIVATE || sbType == GATHER_PRIVATE )
 									{
 										strTemp.PrintF( _S( 549, "%s(사유지)" ),			
-														CZoneInfo::getSingleton()->GetExtraName( m_vecMapData[m_nCurMapData].World.nZoneIndex,
+														(const char*)CZoneInfo::getSingleton()->GetExtraName( m_vecMapData[m_nCurMapData].World.nZoneIndex,
 																					m_vecMapData[m_nCurMapData].vecSubZone[i].nSubZoneIndex ) );
 									}
 									else
@@ -4163,17 +4163,17 @@ CTString CUIMap::GetZoneName( int zone, int layer )
 	CTString strReturn;
 	if( CZoneInfo::getSingleton()->GetZoneType( zone ) == ZONE_DUNGEON )
 	{
-		strReturn.PrintF( "%s %dF", CZoneInfo::getSingleton()->GetZoneName( zone ), ( layer + 2 ) / 2);
+		strReturn.PrintF( "%s %dF", (const char*)CZoneInfo::getSingleton()->GetZoneName( zone ), ( layer + 2 ) / 2);
 	}
 	else
 	{
 		if( layer > 0 )
 		{
-			strReturn.PrintF( _S( 3083, "%s 공성지역" ), _pUISWDoc->GetCastleName( zone ) );
+			strReturn.PrintF( _S( 3083, "%s 공성지역" ), (const char*)_pUISWDoc->GetCastleName( zone ) );
 		}
 		else
 		{
-			strReturn.PrintF( "%s", CZoneInfo::getSingleton()->GetZoneName( zone ) );
+			strReturn.PrintF( "%s", (const char*)CZoneInfo::getSingleton()->GetZoneName( zone ) );
 		}
 	}
 

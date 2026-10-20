@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <vector>
@@ -668,7 +668,7 @@ void CUIPetTraining::Render()
 // Name : AddSkillDescString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIPetTraining::AddSkillDescString( CTString &strDesc, COLOR colDesc )
+void CUIPetTraining::AddSkillDescString( const CTString &strDesc, COLOR colDesc )
 {
 	// Get length of string
 	INDEX	nLength = strDesc.Length();

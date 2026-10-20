@@ -4,7 +4,6 @@
 #include "UIBase.h"
 #include <Engine/Interface/UIManager.h>
 
-#pragma warning(disable: 4172)
 
 stTooltipInfo CUIBase::temp_tooltip_data("", DEF_UI_COLOR_WHITE);
 
@@ -241,7 +240,14 @@ void CUIBase::setTexString(const char* strTex)
 
         ASSERT(FileExists(strPath.c_str()));
 
-        m_pTexData = CreateTexture(strPath.c_str());
+        // A missing or unreadable UI texture (e.g. an event logo absent from this data
+        // set) leaves the control without an image instead of aborting startup.
+        try {
+            m_pTexData = CreateTexture(strPath.c_str());
+        } catch (char* strError) {
+            CPrintF("UI texture \"%s\" not loaded: %s\n", strPath.c_str(), strError);
+            m_pTexData = NULL;
+        }
     }
 }
 
@@ -267,7 +273,9 @@ CTString& CUIBase::getText(INDEX idx)
         return ret;
     }
 
-    return CTString("");
+    static CTString s_empty;  // was: return CTString(""), a reference to a temporary
+    s_empty.Clear();
+    return s_empty;
 }
 
 void CUIBase::InitPos(int x, int y, int w, int h)

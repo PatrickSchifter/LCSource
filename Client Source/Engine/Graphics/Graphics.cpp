@@ -1,6 +1,6 @@
-#include "stdh.h"
+#include "StdH.h"
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/RenderPoly.h>
 #include <Engine/Graphics/Color.h>
@@ -187,6 +187,20 @@ static void MakeOneMipmap( ULONG *pulSrcMipmap, ULONG *pulDstMipmap, PIX pixWidt
   pixWidth >>=1;
   pixHeight>>=1;
 
+#ifdef USE_PORTABLE_C
+  // each channel: rounded average of the 2x2 source pixels
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    const UBYTE *pubUp = (const UBYTE*)(pulSrcMipmap + pixY*pixWidth*4);
+    const UBYTE *pubDn = pubUp + pixWidth*2*BYTES_PER_TEXEL;
+    UBYTE *pubDst = (UBYTE*)(pulDstMipmap + pixY*pixWidth);
+    for( PIX pixX=0; pixX<pixWidth; pixX++) {
+      for( INDEX iCh=0; iCh<4; iCh++) {
+        pubDst[pixX*4+iCh] = (pubUp[pixX*8+iCh] + pubUp[pixX*8+4+iCh]
+                            + pubDn[pixX*8+iCh] + pubDn[pixX*8+4+iCh] + 2) >>2;
+      }
+    }
+  }
+#else
   __asm {
     pxor    mm0,mm0
     movq    mm7,Q [mmRounder]
@@ -225,6 +239,7 @@ pixLoop:
     jnz     rowLoop
     emms
   }
+#endif
 }
 
 
@@ -272,6 +287,16 @@ void MakeMipmaps( ULONG *pulMipmaps, PIX pixWidth, PIX pixHeight, INDEX iFilter/
 void MakeSubMipmap( ULONG *pulSrc, ULONG *pulDst, PIX pixDstSize)
 {
   ASSERT( pixDstSize>0);
+#ifdef USE_PORTABLE_C
+  // each channel: average of the two source pixels
+  const UBYTE *pubSrc = (const UBYTE*)pulSrc;
+  UBYTE *pubDst = (UBYTE*)pulDst;
+  for( PIX pix=0; pix<pixDstSize; pix++) {
+    for( INDEX iCh=0; iCh<4; iCh++) {
+      pubDst[pix*4+iCh] = (pubSrc[pix*8+iCh] + pubSrc[pix*8+4+iCh]) >>1;
+    }
+  }
+#else
   __asm {   
     pxor    mm0,mm0
     mov     esi,D [pulSrc]
@@ -292,6 +317,7 @@ pixLoop:
     jnz     pixLoop
     emms
   }
+#endif
 }
 
 
@@ -413,6 +439,8 @@ void DitherBitmap( INDEX iDitherType, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth
   if( pulDst!=pulSrc) CopyLongs( pulSrc, pulDst, pixCanvasWidth*pixCanvasHeight);
   goto theEnd;
 
+  // dithering is disabled by the goto above, so the MMX routines below have no C version
+#ifndef USE_PORTABLE_C
   // determine proper dither type
   switch( iDitherType)
   { // low dithers
@@ -620,6 +648,7 @@ allDoneE:
     emms
   }
   goto theEnd;
+#endif // USE_PORTABLE_C
 
   // all done
 theEnd:
@@ -668,6 +697,8 @@ static __int64 mmCm;  // middle
 #define mmCe mmEch // edge
 static __int64 mmInvDiv;
 static __int64 mmAdd = 0x0007000700070007;
+// the same values for the C version
+static INDEX _iMc, _iMe, _iMm, _iInvDiv;
 
 // temp rows for in-place filtering support
 extern ULONG _aulTempRow[4096] = {0};  // filtering will be skipped if width of bitmap is larger than this buffer
@@ -706,7 +737,34 @@ static void GenerateConvolutionMatrix( INDEX iFilter)
   mm = iEch & 0xFFFF;  mmEch= (mm<<48) | (mm<<32) | (mm<<16) | mm;
   mm = iEm  & 0xFFFF;  mmEm = (mm<<48) | (mm<<32) | (mm<<16) | mm;
   mm = iCm  & 0xFFFF;  mmCm = (mm<<48) | (mm<<32) | (mm<<16) | mm;
+  _iMc = iMc;
+  _iMe = iMe;
+  _iMm = iMm;
+  _iInvDiv = (SWORD)(mmInvDiv & 0xFFFF);
 }
+
+
+#ifdef USE_PORTABLE_C
+// filters one pixel (each channel) like the MMX code: 16-bit wrapping products and sums,
+// saturating rounding add, signed high multiply by the inverse divider, clamp to a byte
+static ULONG FilterPixel( const ULONG *pulUp, const ULONG *pulMid, const ULONG *pulDn,
+                          PIX pixL, PIX pixM, PIX pixR)
+{
+  ULONG ulRet = 0;
+  for( INDEX iShift=0; iShift<32; iShift+=8) {
+    #define CH(pul, pix) ((SLONG)((pul[pix]>>iShift) & 0xFF))
+    const SLONG slSum = _iMc * (CH(pulUp,pixL) + CH(pulUp,pixR) + CH(pulDn,pixL) + CH(pulDn,pixR))
+                      + _iMe * (CH(pulUp,pixM) + CH(pulMid,pixL) + CH(pulMid,pixR) + CH(pulDn,pixM))
+                      + _iMm *  CH(pulMid,pixM);
+    #undef CH
+    SLONG sl = (SWORD)(slSum & 0xFFFF);  // pmullw/paddw
+    sl = ClampUp( sl+7, 32767L);          // paddsw
+    sl = (sl*_iInvDiv) >>16;              // pmulhw
+    ulRet |= (ULONG)Clamp( sl, 0L, 255L) << iShift;  // packuswb
+  }
+  return ulRet;
+}
+#endif
 
  
 // applies filter to bitmap
@@ -732,6 +790,22 @@ void FilterBitmap( INDEX iFilter, ULONG *pulSrc, ULONG *pulDst, PIX pixWidth, PI
   SLONG slModulo1 = (pixCanvasWidth-pixWidth+1) *BYTES_PER_TEXEL;
   SLONG slCanvasWidth = pixCanvasWidth *BYTES_PER_TEXEL;
 
+#ifdef USE_PORTABLE_C
+  // Rows are written one row late, through the temp row, so the filter can run in place.
+  // Edge pixels use themselves for the missing neighbours. In place, the row above and the
+  // pixel to the left already hold filtered values when read, exactly as in the MMX code.
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    const ULONG *pulUp  = pulSrc + Max( pixY-1, (PIX)0) *pixCanvasWidth;
+    const ULONG *pulMid = pulSrc + pixY *pixCanvasWidth;
+    const ULONG *pulDn  = pulSrc + Min( pixY+1, pixHeight-1) *pixCanvasWidth;
+    for( PIX pixX=0; pixX<pixWidth; pixX++) {
+      const ULONG ul = FilterPixel( pulUp, pulMid, pulDn, Max( pixX-1, (PIX)0), pixX, Min( pixX+1, pixWidth-1));
+      if( pixY>0) pulDst[(pixY-1)*pixCanvasWidth +pixX] = _aulTempRow[pixX];
+      if( pixY==pixHeight-1) pulDst[pixY*pixCanvasWidth +pixX] = ul;
+      else _aulTempRow[pixX] = ul;
+    }
+  }
+#else
   // lets roll ...
   __asm {
     cld
@@ -1044,6 +1118,7 @@ lowerLoop:
     movd    D [edi+ edx*4],mm2
     emms
   }
+#endif
 }
  
 

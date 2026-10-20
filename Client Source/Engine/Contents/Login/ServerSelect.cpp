@@ -3,7 +3,7 @@
 
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Network/NetworkMessage.h>
-#include <Engine/network/CNetwork.h>
+#include <Engine/Network/CNetwork.h>
 #include <Engine/Network/TcpIpConnection.h>
 
 #include "UIServerSelect.h"

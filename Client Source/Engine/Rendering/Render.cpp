@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Brushes/BrushTransformed.h>
@@ -36,7 +36,7 @@
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Graphics/Fog_internal.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/MemoryTracking.h>
 
 #include <Engine/Templates/LinearAllocator.cpp>
@@ -51,9 +51,11 @@
 
 // sehan
 //BOOL g_bUseBloom = FALSE;
+#ifdef SE1_D3D
 extern CRenderTexture       *_prtFilterTarget   [];
 extern LPDIRECT3DVERTEXBUFFER8  _pFilterVertexBuffer;
 extern LPDIRECT3DVERTEXBUFFER8  _pBackVertexBuffer[MAX_BACKVERTEX_WIDTH][MAX_BACKVERTEX_HEIGHT];
+#endif // SE1_D3D
 // sehan end
 
 extern BOOL _bSomeDarkExists;
@@ -1285,6 +1287,102 @@ void CRenderer::FillMirrorDepth(CMirror &mi)
 	RenderSceneZOnly( re_pdpDrawPort, pspoFirst, re_prProjection);
 }
 
+#ifndef SE1_D3D
+#ifdef SE1_GPUDEVICE
+// Gfx_wrapper_Gpu.cpp
+extern void GetProjectionMatrix_GPU( FLOAT *pfMatrix);
+extern void SetProjectionMatrix_GPU( const FLOAT *pfMatrix);
+extern void GPU_SetViewport( PIX pixI, PIX pixJ, PIX pixW, PIX pixH);
+extern void GPU_SetTexGenViewPosition( BOOL bOn);
+#endif // SE1_GPUDEVICE
+
+// the projection while a shadow is drawn into its texture, and the viewport in the texture (a
+// pixel in from each side, as Direct3D's; the same from the top or the bottom)
+static void GetShadowProjection( FLOAT *pfMatrix)
+{
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { GetProjectionMatrix_GPU( pfMatrix);  return; }
+#endif // SE1_GPUDEVICE
+	pglGetFloatv( GL_PROJECTION_MATRIX, pfMatrix);
+}
+
+static void SetShadowProjection( const FLOAT *pfMatrix)
+{
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { SetProjectionMatrix_GPU( pfMatrix);  return; }
+#endif // SE1_GPUDEVICE
+	pglMatrixMode( GL_PROJECTION);
+	pglLoadMatrixf( pfMatrix);
+	pglMatrixMode( GL_MODELVIEW);
+}
+
+static void SetShadowViewport(void)
+{
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) { GPU_SetViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);  return; }
+#endif // SE1_GPUDEVICE
+	pglViewport( 1, 1, SHADOWTEXTURESIZE-2, SHADOWTEXTURESIZE-2);
+}
+
+// The texture stage of the projected shadows: Direct3D takes the texture coordinates from the
+// camera space position (D3DTSS_TCI_CAMERASPACEPOSITION) through matShadowUV, projected
+// (D3DTTFF_COUNT4|D3DTTFF_PROJECTED). OpenGL: eye-linear texgen, the texture matrix and its divide
+// by q. Metal, Vulkan: the same as Direct3D in the fixed function emulation (its render targets start at
+// the top as Direct3D's).
+static void SetShadowTexGen(const Matrix16 &matShadowUV)
+{
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		gfxSetTextureMatrix( (const FLOAT*)matShadowUV);
+		GPU_SetTexGenViewPosition( TRUE);
+		return;
+	}
+#endif // SE1_GPUDEVICE
+	static const GLenum aeCoords[4] = { GL_S, GL_T, GL_R, GL_Q };
+	static const GLenum aeGens[4]   = { GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_Q };
+	static const GLfloat aafPlanes[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} };
+	// eye planes go through the modelview matrix of the moment: identity gives the camera space
+	pglMatrixMode( GL_MODELVIEW);
+	pglPushMatrix();
+	pglLoadIdentity();
+	for( INDEX i=0; i<4; i++) {
+		pglTexGeni(  aeCoords[i], GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+		pglTexGenfv( aeCoords[i], GL_EYE_PLANE, aafPlanes[i]);
+		pglEnable( aeGens[i]);
+	}
+	pglPopMatrix();
+	// same floats for both APIs (row vectors in Direct3D, columns in OpenGL), but the first row of
+	// a Direct3D render target is at the top and OpenGL's at the bottom: t = q-t
+	Matrix16 mat;
+	memcpy( mat, matShadowUV, sizeof(mat));
+	for( INDEX iRow=0; iRow<4; iRow++) mat[iRow*4+1] = matShadowUV[iRow*4+3] - matShadowUV[iRow*4+1];
+	pglMatrixMode( GL_TEXTURE);
+	pglLoadMatrixf( mat);
+	pglMatrixMode( GL_MODELVIEW);
+	OGL_CHECKERROR;
+}
+
+static void ClearShadowTexGen(void)
+{
+#ifdef SE1_GPUDEVICE
+	if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) {
+		GPU_SetTexGenViewPosition( FALSE);
+		gfxSetTextureMatrix( NULL);
+		return;
+	}
+#endif // SE1_GPUDEVICE
+	pglDisable( GL_TEXTURE_GEN_S);
+	pglDisable( GL_TEXTURE_GEN_T);
+	pglDisable( GL_TEXTURE_GEN_R);
+	pglDisable( GL_TEXTURE_GEN_Q);
+	pglMatrixMode( GL_TEXTURE);
+	pglLoadIdentity();
+	pglMatrixMode( GL_MODELVIEW);
+	OGL_CHECKERROR;
+}
+#endif // SE1_D3D
+
+
 //강동민 수정 시작 접속 시퀀스 작업	06.01
 void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 {
@@ -1323,7 +1421,9 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 		GFX_INV_SRC_ALPHA);			// 바닥
 
 	CPlacement3D plLight;
+#ifdef SE1_D3D
 	HRESULT hr;
+#endif // SE1_D3D
 	//-------------------------------------------------------------------------------
 	// 모델들에 대해서 처리함.
 	for( INDEX iModel=0; iModel<CRenderer::re_admDelayedModels.Count(); iModel++) 
@@ -1426,6 +1526,7 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			//////////////////////////////////////////////////////////////////////////
 			// Shadow Map 생성.
+#ifdef SE1_D3D
 			D3DXMATRIX matProjOld;
 			hr = _pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, &matProjOld);
 			
@@ -1433,11 +1534,16 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			D3DVIEWPORT8 vpOld;
 			D3DVIEWPORT8 vpNew;
 			_pGfx->gl_pd3dDevice->GetViewport(&vpOld);
+#else
+			FLOAT afProjOld[16];
+			GetShadowProjection( afProjOld);
+#endif // SE1_D3D
 			
 			_prtShadow->Begin();				
 			_prtShadow->Clear(0x00050505);
 			RM_SetRenderingType(1);
 			
+#ifdef SE1_D3D
 			vpNew = vpOld;
 			vpNew.X = 1;
 			vpNew.Y = 1;
@@ -1447,6 +1553,9 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);				D3D_CHECKERROR(hr);
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);	D3D_CHECKERROR(hr);
+#else
+			SetShadowViewport();
+#endif // SE1_D3D
 			
 			// Shadow Map을 생성하기 위해서 지정한 색으로 칠해진 모델을 렌더링합니다.
 			RM_AddFlag(RMF_SHOWSHADOW);
@@ -1457,11 +1566,17 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			_bRenderProjectionShadow = FALSE;
 			RM_RemoveFlag(RMF_SHOWSHADOW);
 			_prtShadow->End();
+#ifdef SE1_D3D
 			_pGfx->gl_pd3dDevice->SetViewport(&vpOld);
+#endif // SE1_D3D
 			RM_SetRenderingType(0);
 			
 			// 이전의 투영행렬로 복구시킵니다.(이 코드가 없으면 화면이 제대로 Clear되지 않음)
+#ifdef SE1_D3D
 			hr = _pGfx->gl_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProjOld);
+#else
+			SetShadowProjection( afProjOld);
+#endif // SE1_D3D
 			//////////////////////////////////////////////////////////////////////////
 			gfxEnableBlend();			
 			
@@ -1486,12 +1601,16 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 			
 			// NOTE : 엔진에서 설정하는 부분이 없으므로, 직접 설정했음.
 			// 카메라 좌표계의 버텍스좌표를 텍스쳐 행렬의 입력으로 사용함.
+#ifdef SE1_D3D
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);	D3D_CHECKERROR(hr);
 			hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_TEXTURE0, (_D3DMATRIX*)&matShadowUV);						D3D_CHECKERROR(hr);
 			
 			// 동차좌표계 텍스쳐 변환 행렬을 사용하도록 설정해준다. 
 			// 이렇게 해야 D3D가 투영 나눗셈(projection divide)연산을 한다.
 			hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );	D3D_CHECKERROR(hr);
+#else
+			SetShadowTexGen( matShadowUV);
+#endif // SE1_D3D
 
 		int iCount = _avtxScene.Count();
 		if(iCount <= 0)				continue;
@@ -1575,8 +1694,12 @@ void CRenderer::RenderShadowToBrushPolygon(const CPlacement3D &plEye)
 	}
 	}
 	//-------------------------------------------------------------------------------
+#ifdef SE1_D3D
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU );		D3D_CHECKERROR(hr);
 	hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);		D3D_CHECKERROR(hr);
+#else
+	ClearShadowTexGen();
+#endif // SE1_D3D
 
 	gfxDisableTexture();
 	shaClearTextureMatrix();
@@ -1769,6 +1892,7 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				
 				//////////////////////////////////////////////////////////////////////////
 				// Shadow Map 생성.
+#ifdef SE1_D3D
 				D3DXMATRIX matProjOld;
 				HRESULT hr = _pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, &matProjOld);				
 				
@@ -1776,18 +1900,26 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				D3DVIEWPORT8 vpOld;
 				D3DVIEWPORT8 vpNew;
 				_pGfx->gl_pd3dDevice->GetViewport(&vpOld);
+#else
+				FLOAT afProjOld[16];
+				GetShadowProjection( afProjOld);
+#endif // SE1_D3D
 				
 				_prtShadow->Begin();				
 				//				_prtShadow->Clear(0x00FFFFFF);
 				_prtShadow->Clear(0x00050505);
 				RM_SetRenderingType(1);
 				
+#ifdef SE1_D3D
 				vpNew = vpOld;
 				vpNew.X = 1;
 				vpNew.Y = 1;
 				vpNew.Width = SHADOWTEXTURESIZE-2;
 				vpNew.Height = SHADOWTEXTURESIZE-2;
 				_pGfx->gl_pd3dDevice->SetViewport(&vpNew);
+#else
+				SetShadowViewport();
+#endif // SE1_D3D
 				
 				// Shadow Map을 생성하기 위해서 지정한 색으로 칠해진 모델을 렌더링합니다.
 				RM_AddFlag(RMF_SHOWSHADOW);
@@ -1799,11 +1931,17 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				_bRenderProjectionShadow = FALSE;
 				RM_RemoveFlag(RMF_SHOWSHADOW);
 				_prtShadow->End();
+#ifdef SE1_D3D
 				_pGfx->gl_pd3dDevice->SetViewport(&vpOld);
+#endif // SE1_D3D
 				RM_SetRenderingType(0);
 				
 				// 이전의 투영행렬로 복구시킵니다.(이 코드가 없으면 화면이 제대로 Clear되지 않음)
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProjOld);
+#else
+				SetShadowProjection( afProjOld);
+#endif // SE1_D3D
 				//////////////////////////////////////////////////////////////////////////
 				//gfxEnableAlphaTest();
 				gfxEnableBlend();
@@ -1850,12 +1988,16 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				
 				// NOTE : 엔진에서 설정하는 부분이 없으므로, 직접 설정했음.
 				// 카메라 좌표계의 버텍스좌표를 텍스쳐 행렬의 입력으로 사용함.
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION );		D3D_CHECKERROR(hr);
 				hr = _pGfx->gl_pd3dDevice->SetTransform( D3DTS_TEXTURE0, (_D3DMATRIX*)&matShadowUV);							D3D_CHECKERROR(hr);
 				
 				// 동차좌표계 텍스쳐 변환 행렬을 사용하도록 설정해준다. 
 				// 이렇게 해야 D3D가 투영 나눗셈(projection divide)연산을 한다.
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT4|D3DTTFF_PROJECTED );	D3D_CHECKERROR(hr);
+#else
+				SetShadowTexGen( matShadowUV);
+#endif // SE1_D3D
 				
 				//////////////////////////////////////////////////////////////////////////
 				// Fog 및 Haze의 적용.
@@ -1877,8 +2019,12 @@ void CRenderer::RenderSkaModelShadowToTerrain(CTerrain *ptrTerrain, const CPlace
 				//////////////////////////////////////////////////////////////////////////
 				//gfxDisableAlphaTest();
 				gfxDisableBlend();
+#ifdef SE1_D3D
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU );		D3D_CHECKERROR(hr);
 				hr = _pGfx->gl_pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);		D3D_CHECKERROR(hr);
+#else
+				ClearShadowTexGen();
+#endif // SE1_D3D
 			}
 		}		
 		//////////////////////////////////////////////////////////////////////////
@@ -1950,7 +2096,7 @@ void CRenderer::Render(void)
 	{
 		// OpenGL allows us to check z-buffer from previous frame - cool deal!
 		// Direct3D is, of course, totally different story. :(
-		if( _pGfx->gl_eCurrentAPI==GAT_OGL || d3d_bAlternateDepthReads) 
+		if( _pGfx->gl_eCurrentAPI==GAT_OGL || GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI) || d3d_bAlternateDepthReads) 
 		{
 			ChangeStatsMode(CStatForm::STI_FLARESRENDERING);
 			extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel=0);
@@ -2402,7 +2548,11 @@ void CRenderer::Render(void)
 	// and D3D can't guarantee that it won't be discarded upon swapbuffers (especially if multisampling is on!) :(
 //강동민 수정 시작 Water 구현		04.16
 	//if( !re_bRenderingShadows && ((_pGfx->gl_eCurrentAPI==GAT_D3D && !d3d_bAlternateDepthReads) || re_iIndex>0))	// 원본
+#ifdef SE1_D3D
 	if( re_iIndex != IDX_WATER_RENDERER && !re_bRenderingShadows && ((_pGfx->gl_eCurrentAPI==GAT_D3D && !d3d_bAlternateDepthReads) || re_iIndex>0)) 
+#else
+	if( re_iIndex != IDX_WATER_RENDERER && !re_bRenderingShadows && re_iIndex>0)
+#endif // SE1_D3D
 //강동민 수정 끝 Water 구현			04.16
 	{
 		extern void CheckDelayedDepthPoints( const CDrawPort *pdp, INDEX iMirrorLevel=0);
@@ -2471,7 +2621,13 @@ void CRenderer::RenderReflection(/*Matrix16 &matWaterProj*/)
 		re_prProjection->Prepare();
 		papr = &re_prProjection;
 		re_pdpDrawPort->SetProjection(*papr);
+#ifdef SE1_D3D
 		_pGfx->gl_pd3dDevice->GetTransform(D3DTS_PROJECTION, (D3DXMATRIX*)&_matWaterProj);
+#else
+		extern void GetProjectionMatrix_GPU( FLOAT *pfMatrix);
+		if( GFX_IsGpuAPI(_pGfx->gl_eCurrentAPI)) GetProjectionMatrix_GPU( (FLOAT*)_matWaterProj);
+		else pglGetFloatv( GL_PROJECTION_MATRIX, _matWaterProj);
+#endif // SE1_D3D
 	}
 //강동민 수정 끝 Water 구현			04.21
 	//-----------------------------------------------------------------------------
@@ -2634,20 +2790,24 @@ CRenderer::CRenderer(void)
 	// sehan
 	re_bRenderBloom = FALSE;
 
+#ifdef SE1_D3D
 	for (i = 0; i < 2; ++i )
 	{
 		_prtFilterTarget[i] = NULL;
 	}
+#endif // SE1_D3D
 
 	m_pGaussianProp		= NULL;
 	m_fTemp = -0.1f;
 	m_bElimSmallContributors	= false;
+#ifdef SE1_D3D
 	//_pVertexBuffer			= NULL;
 	for (int height = 0; height < MAX_BACKVERTEX_HEIGHT; height++) {
 		for (int width = 0; width < MAX_BACKVERTEX_WIDTH; width++) {
 			_pBackVertexBuffer[width][height] = NULL;
 		}
 	}
+#endif // SE1_D3D
 //강동민 수정 시작 버그 사냥 작업	09.09
     //m_dwTexCoord4OffsetVertexShader = 0L;
     //m_dwAddFourPixelShader = 0L;

@@ -532,10 +532,10 @@ CTString CUIServerSelect::GetChannelSubString( int nServer, int nChannel )
 		switch(channelNum)
 		{
 		case 1:
-			strServer.PrintF( "(%s)", _S( 2417, "공성" ) );
+			strServer.PrintF( "(%s)", (const char*)_S( 2417, "공성" ) );
 			break;
 		case 5:
-			strServer.PrintF( "(%s)", _S( 5599, "상점채널" ) );
+			strServer.PrintF( "(%s)", (const char*)_S( 5599, "상점채널" ) );
 			break;
 		default:
 			strServer = CTString("");
@@ -546,7 +546,7 @@ CTString CUIServerSelect::GetChannelSubString( int nServer, int nChannel )
 		if (nStrIdx <= 0)
 			strServer = CTString("");
 		else
-			strServer.PrintF( "%s", _S( nStrIdx, "서버 상태" ) );
+			strServer.PrintF( "%s", (const char*)_S( nStrIdx, "서버 상태" ) );
 	}
 
 	return strServer;

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -1134,7 +1134,7 @@ void CUIHelp3::CloseHelp()
 // Name : AddReadingString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIHelp3::AddHelpString( CTString &strContent, COLOR colContent, int iMaxChar )
+void CUIHelp3::AddHelpString( const CTString &strContent, COLOR colContent, int iMaxChar )
 {
 	// Get length of string
 	INDEX	nLength = strContent.Length();

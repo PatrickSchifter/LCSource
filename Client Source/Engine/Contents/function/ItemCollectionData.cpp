@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include "ItemCollectionData.h"
 #include <Engine/Util.h>
 #include <Engine/Interface/UIManager.h>
@@ -380,7 +380,7 @@ void CItemCollectionData::CheckInvalidItem()
 	CTString strFullPath = _fnmApplicationPath.FileDir();
 	CTString fileName = strFullPath + "Bin\\ItemCollection_" + strLocal + ".txt";
 
-	std::ofstream file(fileName.str_String);
+	std::ofstream file(HOSTPATH(fileName.str_String));
 	CTString strText;
 
 	for (i = 0; i < m_invalid_data.size(); ++i)

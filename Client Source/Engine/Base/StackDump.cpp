@@ -1,11 +1,13 @@
-#include "stdh.h"
+#include "StdH.h"
 
-#include <DbgHelp.h>
+#ifdef _WIN32
+
+#include <dbghelp.h>
 #include <tchar.h>
 #include <Engine/Build.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/StackDump.h>
-#include <Engine/Base/Console_Internal.h>
+#include <Engine/Base/Console_internal.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Network/Web.h>
@@ -250,7 +252,9 @@ static void GenerateExceptionReport(HANDLE hFile, PEXCEPTION_POINTERS pException
 		sizeof(szFaultingModule), section, offset);
 	ASSERT(bSuccess);
 //	_tprintf(hFile, "[%08X][v.%d-%d][%d]\r\n", pExceptionRecord->ExceptionAddress, g_uiEngineVersion, g_iLocalVersion, g_slZone );
-	_tprintf(hFile, "[Ver %s]\r\n", CUIManager::getSingleton()->GetLogin()->getVersion());
+	// The UI may not exist yet when the engine crashes during startup.
+	if (CUIManager::getSingleton() != NULL && CUIManager::getSingleton()->GetLogin() != NULL)
+		_tprintf(hFile, "[Ver %s]\r\n", CUIManager::getSingleton()->GetLogin()->getVersion());
 #else 
 #define GETVARNAME(x) #x
 	_tprintf(hFile, "Referent variable: %s 0x%08X\r\n",GETVARNAME(__RefFuncAtAbsAddr),&__RefFuncAtAbsAddr);
@@ -466,8 +470,53 @@ static LONG WINAPI _UnhandledExceptionFilter(PEXCEPTION_POINTERS pExceptionInfo)
 	}
 }
 
+// Debug aid: when ThrowLog.txt exists, log the call stack (function, file:line from the
+// PDBs) of every C++ exception thrown from the standard library (MSVCP140), since the
+// crash report cannot walk the stack through it.
+static bool _bLcThrowSymbolsReady = false;
+static LONG CALLBACK LcLogStdExceptionStack(PEXCEPTION_POINTERS pInfo)
+{
+	if (pInfo->ExceptionRecord->ExceptionCode != 0xE06D7363) return EXCEPTION_CONTINUE_SEARCH;
+	void* apFrames[48];
+	const USHORT ctFrames = RtlCaptureStackBackTrace(0, 48, apFrames, NULL);
+	HMODULE hStd = GetModuleHandleA("MSVCP140.dll");
+	bool bFromStd = false;
+	for (USHORT i = 0; i < ctFrames && !bFromStd; i++) {
+		HMODULE hMod = NULL;
+		GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)apFrames[i], &hMod);
+		bFromStd = (hMod != NULL && hMod == hStd);
+	}
+	if (!bFromStd) return EXCEPTION_CONTINUE_SEARCH;
+	FILE* fLog = fopen("ThrowLog.txt", "r+");
+	if (fLog == NULL) return EXCEPTION_CONTINUE_SEARCH;
+	fseek(fLog, 0, SEEK_END);
+	HANDLE hProcess = GetCurrentProcess();
+	if (!_bLcThrowSymbolsReady) { SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME); _bLcThrowSymbolsReady = SymInitialize(hProcess, NULL, TRUE) != FALSE; }
+	fprintf(fLog, "C++ exception from the standard library, stack:\n");
+	for (USHORT i = 0; i < ctFrames; i++) {
+		char achSym[sizeof(SYMBOL_INFO) + 256];
+		SYMBOL_INFO* pSym = (SYMBOL_INFO*)achSym;
+		memset(achSym, 0, sizeof(achSym));
+		pSym->SizeOfStruct = sizeof(SYMBOL_INFO);
+		pSym->MaxNameLen = 255;
+		DWORD64 dwDisp = 0; DWORD dwLineDisp = 0;
+		IMAGEHLP_LINE64 line; memset(&line, 0, sizeof(line)); line.SizeOfStruct = sizeof(line);
+		const DWORD64 addr = (DWORD64)(UINT_PTR)apFrames[i];
+		const BOOL bSym = _bLcThrowSymbolsReady && SymFromAddr(hProcess, addr, &dwDisp, pSym);
+		const BOOL bLine = _bLcThrowSymbolsReady && SymGetLineFromAddr64(hProcess, addr, &dwLineDisp, &line);
+		fprintf(fLog, "  %08X %s", (unsigned)(UINT_PTR)apFrames[i], bSym ? pSym->Name : "?");
+		if (bLine) fprintf(fLog, "  (%s:%u)", line.FileName, (unsigned)line.LineNumber);
+		fprintf(fLog, "\n");
+	}
+	fclose(fLog);
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 extern void InitExceptionHandler(const char* FileName)
 {
+	// See LcLogStdExceptionStack above.
+	AddVectoredExceptionHandler(1, LcLogStdExceptionStack);
+
 	// Set current exception filter function
 	_efPreviousFilter = SetUnhandledExceptionFilter(_UnhandledExceptionFilter);
 	
@@ -547,8 +596,12 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 	
 	ULONG aulStack[STACKTRACKDEPTH];
 	
-	ULONG	ulFrame;
 	int		isd;
+#ifdef USE_PORTABLE_C
+	// the frame walk below reads 32-bit x86 frames only
+	aulStack[0] = 0;
+#else
+	ULONG	ulFrame;
 	// Get current frame (ebp)
 	__asm mov dword ptr ulFrame, ebp;
 	// walk all frames
@@ -573,6 +626,7 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 		}
 		ulFrame = ulPrevFrame; // go to next frame
 	}
+#endif
 	
 	for( isd = 0; isd < STACKTRACKDEPTH; isd++) {
 		ULONG ulAddress = aulStack[isd];
@@ -606,9 +660,93 @@ extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
 	FCPrintF(pstrm,"\n");
 }
 
+#else // !_WIN32
 
+// Outside Windows: fatal signals append the call stack (backtrace()) to the same report file
+// (ErrorLog.txt), then the signal is raised again so the system's crash report is made too.
+#include <execinfo.h>
+#include <signal.h>
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <unistd.h>
 
+extern void FCPrintF(CTFileStream *pstrm,const char *strFormat, ...);
 
+static char _strReportHostPath[1024] = "";  // resolved at init; the handler cannot allocate
+static const int _aiFatalSignals[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
 
+static void WriteString(int fd, const char *str)
+{
+	ssize_t ctWritten = write(fd, str, strlen(str));
+	(void)ctWritten;
+}
 
+static void FatalSignalHandler(int iSignal)
+{
+	int fd = open(_strReportHostPath, O_WRONLY|O_CREAT|O_APPEND, 0644);
+	if (fd < 0) fd = STDERR_FILENO;
+	char strNumber[16];
+	int iPos = (int)sizeof(strNumber) - 1;
+	strNumber[iPos] = 0;
+	int iValue = iSignal;
+	do { strNumber[--iPos] = (char)('0' + iValue % 10); iValue /= 10; } while (iValue > 0 && iPos > 0);
+	WriteString(fd, "\n*** Fatal signal ");
+	WriteString(fd, strNumber + iPos);
+	WriteString(fd, " (");
+	WriteString(fd, strsignal(iSignal));
+	WriteString(fd, ")\nCall stack:\n");
+	void *apvFrames[128];
+	const int ctFrames = backtrace(apvFrames, 128);
+	backtrace_symbols_fd(apvFrames, ctFrames, fd);
+	if (fd != STDERR_FILENO) {
+		close(fd);
+		backtrace_symbols_fd(apvFrames, ctFrames, STDERR_FILENO);
+	}
+	// let the default action (and the system's crash reporter) happen
+	signal(iSignal, SIG_DFL);
+	raise(iSignal);
+}
 
+extern void InitExceptionHandler(const char* FileName)
+{
+	strncpy(_strReportHostPath, LC_HostPath(FileName).c_str(), sizeof(_strReportHostPath) - 1);
+	for (size_t i = 0; i < sizeof(_aiFatalSignals) / sizeof(_aiFatalSignals[0]); i++) {
+		signal(_aiFatalSignals[i], FatalSignalHandler);
+	}
+}
+
+extern void CloseExceptionHandler(void)
+{
+	for (size_t i = 0; i < sizeof(_aiFatalSignals) / sizeof(_aiFatalSignals[0]); i++) {
+		signal(_aiFatalSignals[i], SIG_DFL);
+	}
+}
+
+extern BOOL GetLogicalAddress(void *pAddr, char *szModule, ULONG ulLen, ULONG &ulSection, ULONG &ulOffset)
+{
+	// the module that contains the address, and the offset in it
+	Dl_info dli;
+	if (dladdr(pAddr, &dli) == 0 || dli.dli_fname == NULL) {
+		return FALSE;
+	}
+	strncpy(szModule, dli.dli_fname, ulLen);
+	if (ulLen > 0) szModule[ulLen - 1] = 0;
+	ulSection = 0;
+	ulOffset = (ULONG)((UBYTE*)pAddr - (UBYTE*)dli.dli_fbase);
+	return TRUE;
+}
+
+extern void DumpCurrentStack(CTFileStream *pstrm/*=NULL*/)
+{
+	void *apvFrames[128];
+	const int ctFrames = backtrace(apvFrames, 128);
+	char **astrSymbols = backtrace_symbols(apvFrames, ctFrames);
+	FCPrintF(pstrm, "Call stack:\n");
+	for (int iFrame = 0; iFrame < ctFrames; iFrame++) {
+		FCPrintF(pstrm, "  %s\n", astrSymbols != NULL ? astrSymbols[iFrame] : "?");
+	}
+	FCPrintF(pstrm, "\n");
+	free(astrSymbols);
+}
+
+#endif // _WIN32

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -362,7 +362,7 @@ void CUIInitJob::CloseInitJob()
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIInitJob::AddString( CTString &strDesc )
+void CUIInitJob::AddString( const CTString &strDesc )
 {
 	if( m_nStringCount >= MAX_INITJOB_STRING )
 		return;
@@ -802,7 +802,7 @@ void CUIInitJob::Render()
 	else if( m_eInitJobState == INITJOB_GIVEUP )
 	{
 		CTString strMessage;
-		strMessage.PrintF( _S( 1113, "[%s] 직업 포기" ), CJobInfo::getSingleton()->GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) ); 
+		strMessage.PrintF( _S( 1113, "[%s] 직업 포기" ), (const char*)CJobInfo::getSingleton()->GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) ); 
 
 		int nX1 = m_nPosX + 30;		
 		nY		= m_nPosY + 29;
@@ -1030,7 +1030,7 @@ WMSG_RESULT CUIInitJob::MouseMessage( MSG *pMsg )
 						CTString	strMessage;
 						CUIMsgBox_Info	MsgBoxInfo;
 						MsgBoxInfo.SetMsgBoxInfo( _S( 1182, "직업 포기" ), UMBS_OKCANCEL, UI_INITJOB, MSGCMD_INITJOB_GIVEUP );	
-						strMessage.PrintF( CTString( _S( 1183, "[%s] 직업을 포기 하시겠습니까?" ) ), CJobInfo::getSingleton()->GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) );			
+						strMessage.PrintF( CTString( _S( 1183, "[%s] 직업을 포기 하시겠습니까?" ) ), (const char*)CJobInfo::getSingleton()->GetName( _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.job2 ) );			
 						MsgBoxInfo.AddString( strMessage );
 						pUIManager->CreateMessageBox( MsgBoxInfo );
 					}

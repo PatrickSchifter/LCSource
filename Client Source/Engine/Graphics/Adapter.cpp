@@ -1,13 +1,25 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/Adapter.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/Console.h>
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>
+#include <Engine/Platform/Platform.h>
+#endif
+#ifdef SE1_METAL
+#include <Engine/Graphics/MetalDevice.h>
+#endif // SE1_METAL
+#ifdef SE1_VULKAN
+#include <Engine/Graphics/VulkanDevice.h>
+#endif // SE1_VULKAN
 
 
 extern BOOL _bDedicatedServer;
+#ifdef SE1_D3D
 extern const D3DDEVTYPE d3dDevType;
+#endif // SE1_D3D
 
 
 // list of all modes avaliable through CDS
@@ -78,8 +90,23 @@ static CResolution _areResolutions[] =
   { 1600, 1200 },   
   { 1680, 1050  },	// wide screen
   { 1920, 1200  },	// wide screen	//  [7/2/2010 rumist]
+  // Retina displays at full density (macOS, Platform/PlatformSDL.cpp), and 4K; a MacBook with a
+  // camera notch has its whole panel and, a little shorter, the part under the notch
+  { 2560, 1440 },
+  { 2560, 1600 },
+  { 2560, 1664 },
+  { 2880, 1800 },
+  { 2940, 1836 },	// MacBook Air 13" under the notch
+  { 2940, 1912 },
+  { 3024, 1890 },	// MacBook Pro 14" under the notch
+  { 3024, 1964 },
+  { 3420, 2136 },	// MacBook Air 15" under the notch
+  { 3420, 2224 },
+  { 3456, 2160 },	// MacBook Pro 16" under the notch
+  { 3456, 2234 },
+  { 3840, 2160 },
 };
-// THIS NUMBER MUST NOT BE OVER 25! (otherwise change it in adapter.h)
+// THIS NUMBER MUST NOT BE OVER 32! (otherwise change it in adapter.h)
 static const INDEX MAX_RESOLUTIONS = sizeof(_areResolutions)/sizeof(_areResolutions[0]);
 
 
@@ -94,6 +121,74 @@ void CGfxLibrary::InitAPIs(void)
   INDEX iResolution;
 
 
+#ifndef PLATFORM_WIN32
+  // the display modes the desktop can take, from SDL; changing them is up to the platform layer
+  // when the main window goes fullscreen (CDS_SetMode below does nothing)
+  {
+    const SDL_DisplayID idDisplay = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode *pdmDesktop = SDL_GetDesktopDisplayMode(idDisplay);
+    if( pdmDesktop!=NULL) {
+      CPrintF( TRANS("Current display: '%s' - %dx%d\n\n"), SDL_GetDisplayName(idDisplay), pdmDesktop->w, pdmDesktop->h);
+    }
+    gl_gaAPI[GAT_OGL].ga_ctAdapters = 1;
+    gl_gaAPI[GAT_OGL].ga_iCurrentAdapter = 0;
+    pda = &gl_gaAPI[GAT_OGL].ga_adaAdapter[0];
+    pda->da_ulFlags = 0;
+    pda->da_strVendor   = TRANS( "unknown");
+    pda->da_strRenderer = TRANS( "Default ICD");
+    pda->da_strVersion  = "1.1+";
+    pda->da_ctDisplayModes = 0;
+    pda->da_iCurrentDisplayMode = -1;
+    int ctModes = 0;
+    SDL_DisplayMode **apdm = SDL_GetFullscreenDisplayModes(idDisplay, &ctModes);
+    // the resolutions of the list that the display has, in points or, in a high density (Retina)
+    // mode, in pixels: PLT_SetMainWindowMode draws those at full density. Not those whose top is
+    // behind a MacBook's camera notch: the size under the notch is in the list instead.
+    PIX pixDesktopI, pixDesktopJ;
+    PLT_GetDesktopSize( pixDesktopI, pixDesktopJ);
+    const BOOL bHighDensity = pdmDesktop!=NULL && pixDesktopI>pdmDesktop->w;
+    for( iResolution=0; iResolution<MAX_RESOLUTIONS; iResolution++)
+    {
+      CResolution &re = _areResolutions[iResolution];
+      for( INDEX iMode=0; iMode<ctModes; iMode++) {
+        const SDL_DisplayMode &dmSDL = *apdm[iMode];
+        const BOOL bPoints = dmSDL.w==re.re_pixSizeI && dmSDL.h==re.re_pixSizeJ;
+        const BOOL bPixels = bHighDensity && dmSDL.pixel_density>1.0f
+                          && (PIX)(dmSDL.w*dmSDL.pixel_density+0.5f)==re.re_pixSizeI
+                          && (PIX)(dmSDL.h*dmSDL.pixel_density+0.5f)==re.re_pixSizeJ;
+        if( (bPoints || bPixels) && !PLT_IsBehindNotch( re.re_pixSizeI, re.re_pixSizeJ)) {
+          CDisplayMode &dm = pda->da_admDisplayModes[pda->da_ctDisplayModes];
+          dm.dm_pixSizeI = re.re_pixSizeI;
+          dm.dm_pixSizeJ = re.re_pixSizeJ;
+          dm.dm_ddDepth  = DISPD_DEFAULT;
+          pda->da_ctDisplayModes++;
+          break;
+        }
+      }
+    }
+    SDL_free(apdm);
+#ifdef SE1_METAL
+    // Metal draws on the same window, with the same modes
+    if( mtlIsAvailable()) {
+      gl_gaAPI[GAT_MTL] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daMetal = gl_gaAPI[GAT_MTL].ga_adaAdapter[0];
+      daMetal.da_strVendor   = "Apple";
+      daMetal.da_strRenderer = "Metal";
+      daMetal.da_strVersion  = "Metal";
+    }
+#endif // SE1_METAL
+#ifdef SE1_VULKAN
+    // and Vulkan (MoltenVK)
+    if( vlkIsAvailable()) {
+      gl_gaAPI[GAT_VK] = gl_gaAPI[GAT_OGL];
+      CDisplayAdapter &daVulkan = gl_gaAPI[GAT_VK].ga_adaAdapter[0];
+      daVulkan.da_strVendor   = "Apple";
+      daVulkan.da_strRenderer = "Vulkan";
+      daVulkan.da_strVersion  = "Vulkan";
+    }
+#endif // SE1_VULKAN
+  }
+#else
   // detect current mode and print to console
   memset( &gl_devmode, 0, sizeof(gl_devmode));
   gl_devmode.dmSize = sizeof(gl_devmode);
@@ -160,6 +255,8 @@ void CGfxLibrary::InitAPIs(void)
     adm[2].dm_pixSizeI =  800;  adm[2].dm_pixSizeJ = 600;  adm[2].dm_ddDepth = DISPD_16BIT;
     adm[3].dm_pixSizeI = 1024;  adm[3].dm_pixSizeJ = 768;  adm[3].dm_ddDepth = DISPD_16BIT;
   }
+#endif  // PLATFORM_WIN32
+#ifdef SE1_D3D
   // try to init Direct3D 8
   BOOL bRes = InitDriver_D3D();
   if( !bRes) return; // didn't made it?
@@ -233,6 +330,7 @@ void CGfxLibrary::InitAPIs(void)
   D3DRELEASE( gl_pD3D, TRUE);
   if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
   gl_hiDriver = NONE;
+#endif // SE1_D3D
 }
 
 
@@ -249,6 +347,11 @@ BOOL CDS_SetMode( PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd)
   // no need for gfx when dedicated server is on
   if( _bDedicatedServer) return FALSE;
 
+#ifndef PLATFORM_WIN32
+  // the platform layer sets the display mode with the fullscreen window (PLT_SetMainWindowMode)
+  CPrintF(TRANS("  CDS: mode %dx%d left to the window\n"), pixSizeI, pixSizeJ);
+  return TRUE;
+#else
   // prepare general mode parameters
   DEVMODE devmode;
   memset(&devmode, 0, sizeof(devmode));
@@ -311,6 +414,7 @@ BOOL CDS_SetMode( PIX pixSizeI, PIX pixSizeJ, enum DisplayDepth dd)
   // report
   CPrintF(TRANS("  CDS: mode set to %dx%dx%d\n"), pixSizeI, pixSizeJ, devmode.dmBitsPerPel);
   return TRUE;
+#endif  // PLATFORM_WIN32
 }
 
 
@@ -320,7 +424,9 @@ void CDS_ResetMode(void)
   // no need for gfx when dedicated server is on
   if( _bDedicatedServer) return;
 
+#ifdef PLATFORM_WIN32
   LONG lRes = ChangeDisplaySettings( NULL, 0);
   ASSERT(lRes==DISP_CHANGE_SUCCESSFUL);
   CPrintF(TRANS("  CDS: mode reset to original desktop settings\n"));
+#endif
 }

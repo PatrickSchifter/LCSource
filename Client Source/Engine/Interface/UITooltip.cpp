@@ -10,14 +10,14 @@
 #include <Engine/Interface/UINickName.h>
 #include <Engine/Interface/UIShop.h>
 #include <Engine/Contents/function/ShopUI.h>
-#include <Engine/Interface/UICashShopEx.h>
+#include <Engine/Interface/UICashShopEX.h>
 
 #include <Engine/Help/Util_Help.h>
 #include <Engine/Help/ItemHelp.h>
 
 #include <Engine/Contents/Base/InvenData.h>
 #include <Engine/Contents/Base/Syndicate.h>
-#include <Engine/contents/Base/UICharacterInfoNew.h>
+#include <Engine/Contents/Base/UICharacterInfoNew.h>
 #include <Engine/Contents/function/ItemCollectionData.h>
 #include <Engine/Contents/function/PremiumChar.h>
 
@@ -297,7 +297,7 @@ void CUITooltip::SetCashItemInfo()
 
 	strCash.PrintF("%d", pCashData->m_cash);
 	UIMGR()->InsertCommaToString(strCash);
-	strTmp.PrintF(_S(255, "가격: %s"), strCash);
+	strTmp.PrintF(_S(255, "가격: %s"), (const char*)strCash);
 	col = 0x6BD2FFFF;
 	AddText(strTmp, col, eALIGN_H_LEFT, eLIST_FIRST, 34);
 
@@ -349,7 +349,7 @@ void CUITooltip::SetCashItemInfo()
 				return;
 
 			strTmp.PrintF(_S(5222, "착용해 볼 수 있습니다.(%s)"),
-				CJobInfo::getSingleton()->GetName(nJob));
+				(const char*)CJobInfo::getSingleton()->GetName(nJob));
 			AddText(strTmp, 0x6060FFFF, eALIGN_H_LEFT, eLIST_FIRST, 34);
 		}
 	}
@@ -394,7 +394,7 @@ void CUITooltip::SetCashPackageItemInfo()
 			return;
 
 		strTmp.PrintF(_S(5223, "더블클릭으로 착용해 볼 수 있습니다.(%s)"),
-			CJobInfo::getSingleton()->GetName(nJob));
+			(const char*)CJobInfo::getSingleton()->GetName(nJob));
 		AddText(strTmp, 0x6060FFFF, eALIGN_H_LEFT, eLIST_FIRST, 34);
 	}
 }
@@ -650,7 +650,7 @@ void CUITooltip::SetName()
     if (strItemName.IsEmpty() == TRUE)
         return;
 
-	 strTmp.PrintF("%s", strItemName);
+	 strTmp.PrintF("%s", (const char*)strItemName);
 
     CUIManager* pUIManager = CUIManager::getSingleton();
 	UtilHelp* pHelp = UtilHelp::getSingleton();
@@ -662,7 +662,7 @@ void CUITooltip::SetName()
 		if (rItemRare != NULL )
 		{
 			if (strlen(rItemRare->GetPrefix()) > 0)
-				strItemName.PrintF("%s %s", rItemRare->GetPrefix(), strTmp);
+				strItemName.PrintF("%s %s", rItemRare->GetPrefix(), (const char*)strTmp);
 
 			col = pHelp->GetRareItemColor(m_pItem->Item_RareIndex, m_pItemData->GetFlag(), m_pItem->Item_RareIndex > 0 ? 1 : 0);
 		}        
@@ -676,9 +676,9 @@ void CUITooltip::SetName()
         col = pUIManager->GetNasColor(m_pItem->Item_Sum);
 
 		if (m_pItem->Item_Sum <= 0)
-			strTmp.PrintF("%s", strItemName);
+			strTmp.PrintF("%s", (const char*)strItemName);
 		else
-			strTmp.PrintF("%s(%s)", strItemName, strItemCnt);
+			strTmp.PrintF("%s(%s)", (const char*)strItemName, (const char*)strItemCnt);
     }
     else if (m_pItemData->GetType() == CItemData::ITEM_ACCESSORY &&
 			(m_pItemData->GetSubType() == CItemData::ACCESSORY_PET ||
@@ -695,7 +695,7 @@ void CUITooltip::SetName()
 
 		    _pNetwork->CheckPetType(sbPetTypeGrade, iPetType, iPetAge);
 
-		    strTmp.PrintF("%s - %s", strItemName, strPetName);
+		    strTmp.PrintF("%s - %s", (const char*)strItemName, (const char*)strPetName);
 		}
     }
 	else if (m_pItemData->GetType() == CItemData::ITEM_ONCEUSE &&
@@ -714,19 +714,19 @@ void CUITooltip::SetName()
 
         if (m_pItem->Item_Flag & FLAG_ITEM_BOOSTER_ADDED)
         {
-            strTmp.PrintF(_S(1929, "부스트 %s"), strItemName);
+            strTmp.PrintF(_S(1929, "부스트 %s"), (const char*)strItemName);
         }
         else if (m_pItem->Item_Flag & FLAG_ITEM_SILVERBOOSTER_ADDED)
         {
-            strTmp.PrintF(_S(2429, "실버 부스트 %s"), strItemName);
+            strTmp.PrintF(_S(2429, "실버 부스트 %s"), (const char*)strItemName);
         }
         else if (m_pItem->Item_Flag & FLAG_ITEM_GOLDBOOSTER_ADDED)
         {
-            strTmp.PrintF(_S(2430, "골드 부스트 %s"), strItemName);
+            strTmp.PrintF(_S(2430, "골드 부스트 %s"), (const char*)strItemName);
         }
         else if (m_pItem->Item_Flag & FLAG_ITEM_PLATINUMBOOSTER_ADDED)
         {
-            strTmp.PrintF(_S(2639, "플래티늄 부스트 %s"), strItemName);
+            strTmp.PrintF(_S(2639, "플래티늄 부스트 %s"), (const char*)strItemName);
         }
         else if (m_pItem->Item_Flag & FLAG_ITEM_LENT)
         {
@@ -831,7 +831,7 @@ void CUITooltip::SetExpireInfo()
     COLOR	col = 0xFFAA44FF;
 
     tm* pTime;
-    pTime = localtime((time_t*)&m_pItem->Item_Used);
+    pTime = LocalTime32(m_pItem->Item_Used);
     strTmp.PrintF(_S(6070, "만료 : %d년%d월%d일%d시%d분"), pTime->tm_year + 1900
                   , pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour, pTime->tm_min);
 
@@ -880,9 +880,9 @@ void CUITooltip::SetPriceInfo()
 			strTmp.PrintF(_S(255, "가격 : %s"), strMoney);
 
 			if (iAddPrice >= 0)
-				strResult.PrintF("%s(+%s)", strTmp, strRate);
+				strResult.PrintF("%s(+%s)", (const char*)strTmp, (const char*)strRate);
 			else
-				strResult.PrintF("%s(%s)", strTmp, strRate);
+				strResult.PrintF("%s(%s)", (const char*)strTmp, (const char*)strRate);
 
 			AddText(strResult, pUIManager->GetNasColor(strMoney));
 			return;
@@ -1098,10 +1098,10 @@ void CUITooltip::SetSyndicateInfo()
         {
             CTString strTmp;
 
-            strTmp.PrintF(_S(6169, "결사대:%s"), pSyndicate->GetSyndicateName(m_pItemData->GetSyndicateType()));
+            strTmp.PrintF(_S(6169, "결사대:%s"), (const char*)pSyndicate->GetSyndicateName(m_pItemData->GetSyndicateType()));
             AddText(strTmp);
 
-            strTmp.PrintF(_S(6170, "직위:%s 이상"), pSyndicate->GetGradeName(m_pItemData->GetSyndicateType(), m_pItemData->GetSyndicateGrade()));
+            strTmp.PrintF(_S(6170, "직위:%s 이상"), (const char*)pSyndicate->GetGradeName(m_pItemData->GetSyndicateType(), m_pItemData->GetSyndicateGrade()));
             AddText(strTmp);
         }
     }
@@ -1614,7 +1614,7 @@ void CUITooltip::SetWildPetInfo()
     if (pUIManager->GetWildPetInfoUI()->GetWildPetInfo(m_pItem->Item_Plus, pInfo) == FALSE)
         return;
 
-    strTmp.PrintF(_S(4215, "이름: %s"), pInfo.pet_name);
+    strTmp.PrintF(_S(4215, "이름: %s"), (const char*)pInfo.pet_name);
     AddText(strTmp, 0xF2F2F2FF);
 
     strTmp.PrintF(_S(4216, "펫 레벨: %d"), pInfo.pet_level);
@@ -1713,7 +1713,7 @@ void CUITooltip::SetSocketInfo()
             ++nCount;
     }
 
-    strTmp.PrintF("%s ( %d / %d )", _S(4994, "소켓 정보"), nCount, m_pItem->Item_SocketCount);
+    strTmp.PrintF("%s ( %d / %d )", (const char*)_S(4994, "소켓 정보"), nCount, m_pItem->Item_SocketCount);
     AddText(strTmp);
 
     int nImgIndex = -1;
@@ -1760,7 +1760,7 @@ void CUITooltip::SetSocketInfo()
                 case OPTION_TYPE_PACIVE:
                     {
                         CTString strOption = UTIL_HELP()->GetOptionPaciveInfo(sbOptionType, lOptionLevel);
-                        strTmp.PrintF("%s : %s", pItemData->GetName(), strOption);
+                        strTmp.PrintF("%s : %s", pItemData->GetName(), (const char*)strOption);
                     }
                     break;
 
@@ -1815,7 +1815,7 @@ void CUITooltip::SetJewelInfo()
 		case OPTION_TYPE_PACIVE:
 			{
 				CTString strOption = UTIL_HELP()->GetOptionPaciveInfo(sbOptionType, lOptionLevel);
-				strTmp.PrintF("%s : %s", m_pItemData->GetName(), strOption);
+				strTmp.PrintF("%s : %s", m_pItemData->GetName(), (const char*)strOption);
 			}
 			break;
 
@@ -1867,12 +1867,12 @@ void CUITooltip::SetOptionInfo()
 
                 if (odItem->GetValue(lLevel - 1) == 0)
                 {
-                    strTmp.PrintF("%s", _S(5305, "변신 해제"));
+                    strTmp.PrintF("%s", (const char*)_S(5305, "변신 해제"));
 
                 }
                 else if (odItem->GetValue(lLevel - 1) == 100)
                 {
-                    strTmp.PrintF("%s", _S(5306, "변신 상태 유지"));
+                    strTmp.PrintF("%s", (const char*)_S(5306, "변신 상태 유지"));
                 }
                 else
                 {
@@ -1906,7 +1906,7 @@ void CUITooltip::SetSkillInfo()
         CSkill& rSkill = _pNetwork->GetSkillData(m_pItem->Item_SkillIndex[i]);
 
         strSkill = rSkill.GetDescription();
-        strTmp.PrintF(_S(4486, "스킬 효과 : %s"), strSkill);
+        strTmp.PrintF(_S(4486, "스킬 효과 : %s"), (const char*)strSkill);
 
         if (strTmp.IsEmpty() == TRUE)
             continue;
@@ -1955,7 +1955,7 @@ void CUITooltip::SetMonsterMercenaryInfo()
 
     COLOR col = 0x94B7C6FF;
 
-    strTmp.PrintF(_s("[%s]%s"), pUIManager->GetMonsterMercenary()->GetMonsterGrade(m_pItem->Item_Used2),
+    strTmp.PrintF(_s("[%s]%s"), (const char*)pUIManager->GetMonsterMercenary()->GetMonsterGrade(m_pItem->Item_Used2),
                   CMobData::getData(m_pItem->Item_Plus)->GetName());
 
     AddText(strTmp, col);
@@ -2026,7 +2026,7 @@ void CUITooltip::SetJewelDescInfo()
     if (strPos.IsEmpty() == TRUE)
         return;
 
-    strTmp.PrintF(_S(5915, "결합 가능 부위 : %s"), strPos);
+    strTmp.PrintF(_S(5915, "결합 가능 부위 : %s"), (const char*)strPos);
 
     AddText(strTmp, col);
 }
@@ -2318,7 +2318,7 @@ bool CUITooltip::SetFortuneInfo()
 			pInfo->skill_level != nFortuneLevel)
 			continue;
 
-		strTmp.PrintF(_S(5894, "조언: %s"), _S(pInfo->string_index, "조언"));
+		strTmp.PrintF(_S(5894, "조언: %s"), (const char*)_S(pInfo->string_index, "조언"));
 		AddText(strTmp, 0xBD6F3EFF);
 
 		break;
@@ -2984,7 +2984,7 @@ void CUITooltip::SetAttributeInfo()
         int nAttLv = int(m_pSkill->GetAttrAttLv(m_nSkillLv));
 
         strAtt = _S(nAttribute[nAttrAtt - 1], "Att");
-        strTmp.PrintF(_S(5845, "속성 정보 : [%s]속성 [%d]단계"), strAtt, nAttLv);
+        strTmp.PrintF(_S(5845, "속성 정보 : [%s]속성 [%d]단계"), (const char*)strAtt, nAttLv);
 
         AddText(strTmp, DEF_UI_COLOR_RED);
     }
@@ -2994,7 +2994,7 @@ void CUITooltip::SetAttributeInfo()
         int nAttLv = int(m_pSkill->GetAttrDefLv(m_nSkillLv));
 
         strAtt = _S(nAttribute[nAttrDef - 1], "Def");
-        strTmp.PrintF(_S(5845, "속성 정보 : [%s]속성 [%d]단계"), strAtt, nAttLv);
+        strTmp.PrintF(_S(5845, "속성 정보 : [%s]속성 [%d]단계"), (const char*)strAtt, nAttLv);
 
         AddText(strTmp, DEF_UI_COLOR_BLUE);
     }
@@ -3048,7 +3048,7 @@ void CUITooltip::SetSSkillName()
 		strLv.PrintF("%d", m_nSkillLv + 1);
 	}
 
-	strTmp.PrintF("%s Lv %s", m_pSSkill->GetName(), strLv);
+	strTmp.PrintF("%s Lv %s", m_pSSkill->GetName(), (const char*)strLv);
 
 	AddText(strTmp, col);
 }

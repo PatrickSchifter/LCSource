@@ -49,7 +49,7 @@ public:
 			return iQuestIndex == rhs.iQuestIndex;
 		}		
 		// 정렬위한 연산자 오버로딩
-		inline const bool operator< (const stQuestInfo& rhs)
+		inline bool operator< (const stQuestInfo& rhs) const
 		{
 			return iQuestIndex < rhs.iQuestIndex;
 		}
@@ -185,8 +185,7 @@ private:
 	DOUBLE					m_dRaidRemainTimeRecvTime;	// 레이드 남은 시간을 받은 시간
 };
 
-#if		(_MSC_VER >= 1600)
-class Compare : std::unary_function<Quest::stRestoreInfo, bool>
+class Compare
 {
 public:
 	bool operator()(const Quest::stRestoreInfo& lhs, const Quest::stRestoreInfo& rhs) const
@@ -201,6 +200,5 @@ public:
 		return bResult;
 	}
 };
-#endif	// (_MSC_VER >= 1600)
 
 #endif	//	__QUEST__

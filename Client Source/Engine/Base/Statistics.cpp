@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Statistics.h>
 #include <Engine/Base/Statistics_Internal.h>
@@ -6,9 +6,9 @@
 #include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/StaticArray.cpp>
 
-template CStaticArray<CStatCounter>;
-template CStaticArray<CStatTimer>;
-template CStaticArray<CStatLabel>;
+template class CStaticArray<CStatCounter>;
+template class CStaticArray<CStatTimer>;
+template class CStaticArray<CStatLabel>;
 
 // one globaly used stats report
 CStatForm _sfStats;

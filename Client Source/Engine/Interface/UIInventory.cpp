@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Entities/InternalClasses.h>
@@ -2105,8 +2105,8 @@ void CUIInventory::ToggleVisible()
 		}
 
 		// 아무것도 선택하지 않았다면 셀렉트 이미지 안보이게 처리.
-		if (m_nSelSlotItemID < 0)
-			UpdateSelectItem();
+		// was "if (m_nSelSlotItemID < 0) UpdateSelectItem();": the array compared with 0, never true
+
 	}
 
 	BOOL	bVisible = !IsVisible();
@@ -2341,8 +2341,8 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 				bLock = FALSE;
 			}
 			else if(refineItemData->GetNum1() == 0 && slWearPlus > ITEM_MEX_LEVEL) {		// NUM 1 이 0인경우 기존 제련석 사용
-				strMessage.PrintF("%s%s", _S( 2642, "더 이상 업그레이드 할 수 없습니다." ), 
-					_S( 5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다." ));
+				strMessage.PrintF("%s%s", (const char*)_S( 2642, "더 이상 업그레이드 할 수 없습니다." ), 
+					(const char*)_S( 5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다." ));
 
 				style = UMBS_OK;
 				commandCode = MSGCMD_BOOSTER_UPGRADE_REP;
@@ -2393,7 +2393,7 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 					strItemname.PrintF("[%s]", szItemName);
 
 				strTitle.PrintF(_S(175, "아이템 업그레이드"));
-				strMessage.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), strItemname);
+				strMessage.PrintF( _S(4135, "%s<를> 카오스 제련석을 사용하여 업그레이드 하시겠습니까?" ), (const char*)strItemname);
 				style = UMBS_OKCANCEL;
 				commandCode = MSGCMD_INVEN_UPGRADE_REQ;
 			}
@@ -2410,8 +2410,8 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 
 			if (slWearPlus >= ITEM_MEX_LEVEL)
 			{
-				strMessage.PrintF("%s%s", _S(2642, "더이상 업그레이드 할 수 없습니다."), 
-					_S(5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다."));
+				strMessage.PrintF("%s%s", (const char*)_S(2642, "더이상 업그레이드 할 수 없습니다."), 
+					(const char*)_S(5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다."));
 				pUIManager->GetChattingUI()->AddSysMessage(strMessage, SYSMSG_ERROR);
 				return;
 			}
@@ -2475,7 +2475,7 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 					strItemname.PrintF("[%s]", szItemName);
 				
 				strTitle.PrintF(_S(175, "아이템 업그레이드"));
-				strMessage.PrintF( _S(5725, "%s를 카오스 룬을 사용하여 업그레이드 하시겠습니까?" ), strItemname);
+				strMessage.PrintF( _S(5725, "%s를 카오스 룬을 사용하여 업그레이드 하시겠습니까?" ), (const char*)strItemname);
 				style = UMBS_OKCANCEL;
 				commandCode = MSGCMD_INVEN_UPGRADE_REQ;
 			}
@@ -2531,7 +2531,7 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 					strItemname.PrintF("[%s]", szItemName);
 				
 				strTitle.PrintF(_S(175, "아이템 업그레이드"));
-				strMessage.PrintF( _S(5730, "%s를 행운의 룬을 사용하여 업그레이드 하시겠습니까? " ), strItemname);
+				strMessage.PrintF( _S(5730, "%s를 행운의 룬을 사용하여 업그레이드 하시겠습니까? " ), (const char*)strItemname);
 				style = UMBS_OKCANCEL;
 				commandCode = MSGCMD_INVEN_UPGRADE_REQ;
 			}
@@ -2543,8 +2543,8 @@ void CUIInventory::UpgradeItem(SLONG nTargetPos, SLONG nTargetVirIndex, SWORD nR
 		{
 			if (slWearPlus >= ITEM_MEX_LEVEL)
 			{
-				strMessage.PrintF("%s%s", _S(2642, "더이상 업그레이드 할 수 없습니다."), 
-					_S(5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다."));
+				strMessage.PrintF("%s%s", (const char*)_S(2642, "더이상 업그레이드 할 수 없습니다."), 
+					(const char*)_S(5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다."));
 				pUIManager->GetChattingUI()->AddSysMessage(strMessage, SYSMSG_ERROR);
 				return;
 			}
@@ -3239,7 +3239,7 @@ void CUIInventory::SendUseSlotItem( int nTab, int inven_idx, SBYTE sbWearType )
 		pItemData->CanUse(WILDPET_JOB) == FALSE)
 	{
 		CTString str;
-		str.PrintF(_S(6085, "%s는 사용 할 수 없는 아이템 입니다."), UtilHelp::getSingleton()->GetClassName((eJob)_pNetwork->MyCharacterInfo.job));
+		str.PrintF(_S(6085, "%s는 사용 할 수 없는 아이템 입니다."), (const char*)UtilHelp::getSingleton()->GetClassName((eJob)_pNetwork->MyCharacterInfo.job));
 		pUIManager->GetChattingUI()->AddSysMessage( str, SYSMSG_ERROR );
 
 		return;
@@ -3476,7 +3476,7 @@ void CUIInventory::SendUseSlotItem( int nTab, int inven_idx, SBYTE sbWearType )
 
 		MsgBoxInfo.SetMsgBoxInfo( CTString(pItemData->GetName()), UMBS_OKCANCEL, UI_INVENTORY, MSGCMD_MONSTER_MERCENARY_CARD_USE );
 
-		strTemp.PrintF( _S( 5150, "카드를 사용하게 되면 거래를 할 수 없으며 %s의 직속부하가 됩니다. 계약 하시겠습니까?" ), _pNetwork->MyCharacterInfo.name );
+		strTemp.PrintF( _S( 5150, "카드를 사용하게 되면 거래를 할 수 없으며 %s의 직속부하가 됩니다. 계약 하시겠습니까?" ), (const char*)_pNetwork->MyCharacterInfo.name );
 		MsgBoxInfo.AddString( strTemp );
 		pUIManager->CreateMessageBox( MsgBoxInfo );
 		return;

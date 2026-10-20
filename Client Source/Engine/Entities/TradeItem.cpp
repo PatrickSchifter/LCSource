@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Entities/EntityClass.h>
 #include <Engine/Entities/EntityProperties.h>

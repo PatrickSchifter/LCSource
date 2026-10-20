@@ -197,7 +197,7 @@ __forceinline ULONG ByteSwap( ULONG ul)
             ((ul >> 8) & 0x0000FF00) |
             ((ul >> 24)            ) );
 
-#elif (defined _MSC_VER)
+#else
   ULONG ulRet;
   __asm {
     mov   eax,dword ptr [ul]
@@ -205,16 +205,6 @@ __forceinline ULONG ByteSwap( ULONG ul)
     mov   dword ptr [ulRet],eax
   }
   return ulRet;
-#elif (defined __GNUC__)
-  __asm__ __volatile__ (
-    "bswapl   %%eax    \n\t"
-        : "=a" (ul)
-        : "a" (ul)
-  );
-  return(ul);
-
-#else
-  #error please define for your platform.
 #endif
 }
 
@@ -223,7 +213,7 @@ __forceinline ULONG rgba2argb( COLOR col)
 #if (defined USE_PORTABLE_C)
 	return( (col << 24) | (col >> 8) );
 
-#elif (defined _MSC_VER)
+#else
   ULONG ulRet;
   __asm {
     mov   eax,dword ptr [col]
@@ -231,9 +221,6 @@ __forceinline ULONG rgba2argb( COLOR col)
     mov   dword ptr [ulRet],eax
   }
   return ulRet;
-
-#else
-  #error please define for your platform.
 #endif
 }
 
@@ -247,7 +234,7 @@ __forceinline ULONG abgr2argb( ULONG ul)
          ((ul >> 24)            ) );
 	return( (ul << 24) | (ul >> 8) );
 
-#elif (defined _MSC_VER)
+#else
   ULONG ulRet;
   __asm {
     mov   eax,dword ptr [ul]
@@ -256,9 +243,6 @@ __forceinline ULONG abgr2argb( ULONG ul)
     mov   dword ptr [ulRet],eax
   }
   return ulRet;
-
-#else
-  #error please define for your platform.
 #endif
 }
 
@@ -267,12 +251,10 @@ __forceinline ULONG abgr2argb( ULONG ul)
 __forceinline ULONG ColorAPI( COLOR col)
 {
 #if (defined USE_PORTABLE_C)
-	// this could be simplified, this is just a safe conversion from asm code
-       if( _iGfxAPI==0) return ByteSwap(col);
-  else if( _iGfxAPI==1) return rgba2argb(col);
-  else return col;
+  // Direct3D wants ARGB, anything else (OpenGL) ABGR
+  return (_iGfxAPI==1) ? rgba2argb(col) : ByteSwap(col);
 
-#elif (defined _MSC_VER)
+#else
   ULONG ulRet;
   __asm { 
     mov   eax,dword ptr [col]
@@ -284,9 +266,6 @@ __forceinline ULONG ColorAPI( COLOR col)
     mov   dword ptr [ulRet],eax
   }
   return ulRet;
-
-#else
-  #error please define for your platform.
 #endif
 }
 

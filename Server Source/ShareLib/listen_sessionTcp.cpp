@@ -6,7 +6,7 @@
 #include "listen_sessionTcp.h"
 #include "logsystem.h"
 
-ListenSessionTcp::ListenSessionTcp( boost::asio::io_service& io_service, int read_wait_time_sec, int write_wait_time_sec )
+ListenSessionTcp::ListenSessionTcp( boost::asio::io_context& io_service, int read_wait_time_sec, int write_wait_time_sec )
 	: ListenSession(io_service, SessionBase::LISTEN_SESSION)
 	, acceptor_( io_service )
 	, read_wait_time_sec_( read_wait_time_sec )
@@ -30,8 +30,7 @@ bool ListenSessionTcp::Run( std::string& host, const int port, rnSocketIOHandler
 
 	boost::asio::ip::tcp::resolver resolver( io_service_ );
 
-	boost::asio::ip::tcp::resolver::query query( host, port_string );
-	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve( query );
+	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve( host, port_string ).begin();
 
 	boost::system::error_code error;
 
@@ -56,7 +55,7 @@ bool ListenSessionTcp::Run( std::string& host, const int port, rnSocketIOHandler
 		return false;
 	}
 
-	acceptor_.listen( boost::asio::socket_base::max_connections, error );
+	acceptor_.listen( boost::asio::socket_base::max_listen_connections, error );
 	if( error )
 	{
 		LOG_ERROR( "bnf - acceptor_.listen error. error[%s] / host[%s] / port[%d]", error.message().c_str(), host.c_str(), port);
@@ -80,13 +79,13 @@ bool ListenSessionTcp::Run( std::string& host, const int port, rnSocketIOHandler
 	acceptor_.async_accept( pSession->Socket(),
 							boost::bind( &ListenSessionTcp::HandleAccept, this, pSession, boost::asio::placeholders::error ) );
 
-	LOG_INFO( "bnf - open listen socket. ip: %s, port: %d, fd: %d, handle: %X", host.c_str(), port, acceptor_.native(), GetHandle() );
+	LOG_INFO( "bnf - open listen socket. ip: %s, port: %d, fd: %d, handle: %X", host.c_str(), port, acceptor_.native_handle(), GetHandle() );
 	return true;
 }
 
 void ListenSessionTcp::Close()
 {
-	io_service_.post( boost::bind( &ListenSessionTcp::HandleClose, this ) );
+	boost::asio::post( io_service_, boost::bind( &ListenSessionTcp::HandleClose, this ) );
 }
 
 void ListenSessionTcp::HandleAccept( rnSocketIOService* pSessionService, const boost::system::error_code& error )
@@ -118,7 +117,7 @@ void ListenSessionTcp::HandleAccept( rnSocketIOService* pSessionService, const b
 			if( ((rnSocketIOServiceTcp*)pSession)->Socket().is_open() == false )
 				break;
 
-			LOG_INFO( "bnf - skip rnSocketIOService. handle: %X, fd: %d", pSession->GetHandle(), pSession->Socket().native() );
+			LOG_INFO( "bnf - skip rnSocketIOService. handle: %X, fd: %d", pSession->GetHandle(), pSession->Socket().native_handle() );
 		}
 
 		pSession->Open( shandle, handle_, read_wait_time_sec_, write_wait_time_sec_ );
@@ -127,7 +126,7 @@ void ListenSessionTcp::HandleAccept( rnSocketIOService* pSessionService, const b
 	}
 	else
 	{
-		LOG_ERROR( "bnf - HandleAccept error. error[%s] / fd[%d], handle[%X]", error.message().c_str(), acceptor_.native(), GetHandle());
+		LOG_ERROR( "bnf - HandleAccept error. error[%s] / fd[%d], handle[%X]", error.message().c_str(), acceptor_.native_handle(), GetHandle());
 	}
 }
 
@@ -140,10 +139,10 @@ void ListenSessionTcp::HandleClose()
 void ListenSessionTcp::closeOnExecOn()
 {
 #ifndef WIN32
-	int oldflags = fcntl (acceptor_.native(), F_GETFD, 0);
+	int oldflags = fcntl (acceptor_.native_handle(), F_GETFD, 0);
 	if ( oldflags >= 0 )
 	{
-		fcntl( acceptor_.native(), F_SETFD, oldflags | FD_CLOEXEC );
+		fcntl( acceptor_.native_handle(), F_SETFD, oldflags | FD_CLOEXEC );
 	}
 #endif
 }
@@ -151,10 +150,10 @@ void ListenSessionTcp::closeOnExecOn()
 void ListenSessionTcp::closeOnExecOff()
 {
 #ifndef WIN32
-	int oldflags = fcntl (acceptor_.native(), F_GETFD, 0);
+	int oldflags = fcntl (acceptor_.native_handle(), F_GETFD, 0);
 	if ( oldflags >= 0 )
 	{
-		fcntl( acceptor_.native(), F_SETFD, oldflags & ~FD_CLOEXEC );
+		fcntl( acceptor_.native_handle(), F_SETFD, oldflags & ~FD_CLOEXEC );
 	}
 #endif
 }

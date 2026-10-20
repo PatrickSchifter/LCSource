@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -259,7 +259,7 @@ void CUINpcScroll::RefreshNpcList()
 	m_pList->DeleteAllListItem();
 
 	CTString strTemp;
-	strTemp.PrintF("[%s]", _S(446, "NPC"));
+	strTemp.PrintF("[%s]", (const char*)_S(446, "NPC"));
 
 	add_list(strTemp, 0xE36C0AFF);
 
@@ -281,7 +281,7 @@ void CUINpcScroll::RefreshNpcList()
 		add_list(strTemp, DEF_UI_FONT_COLOR, (*it), true);
 	}
 
-	strTemp.PrintF("[%s]", _S(448, "몬스터"));
+	strTemp.PrintF("[%s]", (const char*)_S(448, "몬스터"));
 
 	add_list(_s(""));
 	add_list(strTemp, 0xC20000FF);

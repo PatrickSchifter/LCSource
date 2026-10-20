@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/ShadowMap.h>
 
@@ -13,7 +13,7 @@
 #include <Engine/Brushes/Brush.h>
 #include <Engine/Base/ListIterator.inl>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 
 #define SHADOWMAXBYTES (256*256*4*4/3)
 
@@ -51,7 +51,7 @@ CShadowMap::CShadowMap()
   sm_ulInternalFormat = NONE;
   sm_iRenderFrame = -1;
   sm_iFirstMipLevel = 0;
-  sm_tvLastDrawn = 0I64;
+  sm_tvLastDrawn = ((__int64)0);
   sm_mexOffsetX = 0;
   sm_mexOffsetY = 0;
   sm_mexWidth  = 0;
@@ -148,7 +148,7 @@ void CShadowMap::Cache( INDEX iWantedMipLevel)
   }
 
   // let the higher level driver mix its layers
-  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-1L);
+  INDEX iLastMipLevelToCache = Min( sm_iLastMipLevel, sm_iFirstCachedMipLevel-(INDEX)1);
   sm_iFirstCachedMipLevel = iWantedMipLevel;
   ASSERT( iWantedMipLevel <= iLastMipLevelToCache); 
 
@@ -291,7 +291,7 @@ SLONG CShadowMap::Uncache(void)
   sm_iFirstCachedMipLevel = 31;
   sm_pulCachedShadowMap = NULL;
   sm_slMemoryUsed = 0;
-  sm_tvLastDrawn = 0I64;
+  sm_tvLastDrawn = ((__int64)0);
   sm_iRenderFrame = -1;
   sm_ulFlags = NONE;
   sm_tpLocal.Clear();
@@ -313,7 +313,7 @@ void CShadowMap::Clear()
   sm_pulDynamicShadowMap = NULL;
   sm_iFirstMipLevel = 0;
   sm_slMemoryUsed = 0;
-  sm_tvLastDrawn = 0I64;
+  sm_tvLastDrawn = ((__int64)0);
   sm_mexOffsetX = 0;
   sm_mexOffsetY = 0;
   sm_mexWidth  = 0;
@@ -347,13 +347,13 @@ void CShadowMap::Read_old_t(CTStream *pstrm) // throw char *
   //  pstrm->ExpectID_t( CChunkID("CTSM")); // read in Read_t()
   if( pstrm->GetSize_t() != 5*4) throw( TRANS("Invalid shadow cluster map file."));
 
-  *pstrm >> (INDEX)sm_iFirstMipLevel;
+  *pstrm >> sm_iFirstMipLevel;
   INDEX iNoOfMipmaps;
-  *pstrm >> (INDEX)iNoOfMipmaps;
-  *pstrm >> (MEX)sm_mexOffsetX;
-  *pstrm >> (MEX)sm_mexOffsetY;
-  *pstrm >> (MEX)sm_mexWidth;
-  *pstrm >> (MEX)sm_mexHeight;
+  *pstrm >> iNoOfMipmaps;
+  *pstrm >> sm_mexOffsetX;
+  *pstrm >> sm_mexOffsetY;
+  *pstrm >> sm_mexWidth;
+  *pstrm >> sm_mexHeight;
   BOOL bStaticImagePresent, bAnimatingImagePresent;
   *pstrm >> (INDEX&)bStaticImagePresent;
   *pstrm >> (INDEX&)bAnimatingImagePresent;

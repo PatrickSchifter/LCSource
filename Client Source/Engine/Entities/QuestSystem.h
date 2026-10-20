@@ -9,7 +9,7 @@
 #include <Engine/Interface/UIDefine.h>
 
 #include <Engine/Help/LoadLod.h>
-#include <common/header/def_quest.h>
+#include <Common/header/def_quest.h>
 
 #define QUEST_FLAG_NOT_LEVEL	0		// 수행 불가능 : 레벨
 #define QUEST_FLAG_NOT_JOB		1		// 수행 불가능 : 직업

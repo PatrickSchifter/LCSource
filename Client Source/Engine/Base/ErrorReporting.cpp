@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Base/ErrorTable.h>
@@ -83,7 +83,7 @@ void WarningMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// if warnings are enabled
 	if( !con_bNoWarnings) {
 		// create message box
@@ -100,7 +100,7 @@ void InfoMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// create message box
 	MessageBoxA(NULL, strBuffer, TRANS("Information"), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND|MB_TASKMODAL);
 }
@@ -115,7 +115,7 @@ BOOL YesNoMessage(const char *strFormat, ...)
 	strBuffer.VPrintF(strFormat, arg);
 	
 	// print it to console
-	CPrintF("%s\n", strBuffer);
+	CPrintF("%s\n", (const char*)strBuffer);
 	// create message box
 	return MessageBoxA(NULL, strBuffer, TRANS("Erorr"), MB_OK|MB_ICONEXCLAMATION|MB_SETFOREGROUND|MB_TASKMODAL)==IDYES;
 }
@@ -131,7 +131,10 @@ void ThrowF_t(char *strFormat, ...)  // throws char *
 	va_list arg;
 	va_start(arg, strFormat); // variable arguments start after this argument
 	_vsnprintf(strBuffer, slBufferSize, strFormat, arg);
-	throw strBuffer;
+	  // Debug aid: if ThrowLog.txt exists in the working directory, append every
+  // thrown engine error to it (most of them are never shown otherwise).
+  { FILE *fLog = fopen("ThrowLog.txt", "r+"); if (fLog != NULL) { fseek(fLog, 0, SEEK_END); fprintf(fLog, "%s\n", strBuffer); fclose(fLog); } }
+  throw strBuffer;
 }
 
 /*
@@ -169,6 +172,10 @@ const char *ErrorDescription(const struct ErrorTable *pet, SLONG ulErrCode)
 */
 extern const CTString GetWindowsError(DWORD dwWindowsErrorCode)
 {
+#ifndef PLATFORM_WIN32
+	// GetLastError() is errno outside Windows (Win32Compat.h)
+	return CTString(strerror((int)dwWindowsErrorCode));
+#else
 	// buffer to recieve error description
 	LPVOID lpMsgBuf;
 	// call function that will prepare text abount given windows error code
@@ -180,12 +187,17 @@ extern const CTString GetWindowsError(DWORD dwWindowsErrorCode)
 	// Free the buffer.
 	LocalFree( lpMsgBuf );
 	return strResultMessage;
+#endif
 }
 
 // must be in separate function to disable stupid optimizer
 extern void Breakpoint(void)
 {
-	__asm int 0x03;
+#ifdef _MSC_VER
+	__debugbreak();
+#else
+	__builtin_debugtrap();
+#endif
 }
 
 // Set callback function that will be called on fatal error

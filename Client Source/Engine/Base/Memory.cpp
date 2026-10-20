@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/MemoryTracking.h>
@@ -124,14 +124,16 @@ size_t MEM_GetFreeMemory(void)
 // aligned allocation functions (do we really need this currently?)
 void *AllocMemoryAligned( SLONG memsize, SLONG slAlignPow2)
 {
-	ULONG ulMem = (ULONG)AllocMemory(memsize+slAlignPow2*2);
-	ULONG ulMemAligned = ((ulMem+slAlignPow2-1) & ~(slAlignPow2-1)) + slAlignPow2;
-	((ULONG *)ulMemAligned)[-1] = ulMem;
+	// the original pointer is kept just below the aligned block
+	ASSERT(slAlignPow2>=(SLONG)sizeof(void*));
+	uintptr_t ulMem = (uintptr_t)AllocMemory(memsize+slAlignPow2*2);
+	uintptr_t ulMemAligned = ((ulMem+slAlignPow2-1) & ~(uintptr_t)(slAlignPow2-1)) + slAlignPow2;
+	((void **)ulMemAligned)[-1] = (void *)ulMem;
 	return (void*)ulMemAligned;
 }
 void FreeMemoryAligned( void *memory)
 {
-	FreeMemory((void*) ( ( (ULONG*)memory )[-1] ) );
+	FreeMemory( ((void **)memory)[-1] );
 }
 
 

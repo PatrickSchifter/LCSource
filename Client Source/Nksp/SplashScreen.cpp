@@ -1,4 +1,7 @@
 #include "StdH.h"
+
+// A splash window drawn with GDI; not called by the client, kept for the Windows build.
+#ifdef PLATFORM_WIN32
 #include "resource.h"
 
 #define NAME "Splash"
@@ -106,3 +109,5 @@ void HideSplashScreen(void)
   DeleteObject(_hbmSplash);
   DeleteObject(_hbmSplashMask);
 }
+
+#endif  // PLATFORM_WIN32

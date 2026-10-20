@@ -5,9 +5,6 @@
 #endif
 
 #include <Engine/Base/Types.h>
-#ifdef KALYDO
-#include <Engine/Base/TLVar.h>
-#endif
 
 /*
  * Main string class
@@ -106,7 +103,7 @@ public:
 	ENGINE_API friend CTString operator+(const char *strFirst, const CTString &strSecond);
 
 	// split string in two strings at specified position (char AT splitting position goes to str2)
-	void Split( INDEX iPos, CTString &str1, CTString &str2);
+	void Split( INDEX iPos, CTString &str1, CTString &str2) const;
 	void InsertChar( INDEX iPos, char cChr); // insert char at position
 	void DeleteChar( INDEX iPos); // delete char at position
 	void InsertSubString( INDEX iPos, const CTString &strToInsert);

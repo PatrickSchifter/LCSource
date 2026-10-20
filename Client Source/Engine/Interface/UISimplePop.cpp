@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UITrackPopup.h>
@@ -366,9 +366,9 @@ void CUISimplePop::SetExeList(CTString strUserName, BOOL bParty, BOOL bGuild)
 		if(bGuild)
 		{
 			CTString tempString;
-			tempString.PrintF("%s", _S(4800, "길드전투 신청"));
+			tempString.PrintF("%s", (const char*)_S(4800, "길드전투 신청"));
 			AddMenuList(tempString, 0xc2bac5FF, SPSO_GUILD_WAR_START);
-			tempString.PrintF("%s", _S(4801, "길드전투 중단"));
+			tempString.PrintF("%s", (const char*)_S(4801, "길드전투 중단"));
 			AddMenuList(tempString, 0xc2bac5FF, SPSO_GUILD_WAR_END);
 		}
 
@@ -470,7 +470,7 @@ void CUISimplePop::Execution(INDEX exeNum)
 			if (m_bTarget == true)
 				tempInput.PrintF("!%s ", pInfo->GetTargetName(eTARGET));
 			else
-				tempInput.PrintF("!%s ", m_strNoTargetName);
+				tempInput.PrintF("!%s ", (const char*)m_strNoTargetName);
 
 			pUIManager->GetChattingUI()->SetInputString(tempInput);
 		}
@@ -478,7 +478,10 @@ void CUISimplePop::Execution(INDEX exeNum)
 	case SPSO_FRIEND:
 		{
 			if (m_bTarget == true)
-				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, CTString(pInfo->GetTargetName(eTARGET)) );
+			{
+				CTString strTarget = pInfo->GetTargetName(eTARGET);
+				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, strTarget );
+			}
 			else
 				pUIManager->GetMessenger()->MsgBoxCommand( MSGCMD_MESSENGER_ADD_REQ, TRUE, m_strNoTargetName );
 		}
@@ -614,7 +617,7 @@ void CUISimplePop::Execution(INDEX exeNum)
 			if (m_bTarget == true)
 				strMessage.PrintF( _S(4655, "%s님을 추방하시겠습니까?" ), pInfo->GetTargetName(eTARGET) );
 			else
-				strMessage.PrintF( _S(4655, "%s님을 추방하시겠습니까?" ), m_strNoTargetName );			
+				strMessage.PrintF( _S(4655, "%s님을 추방하시겠습니까?" ), (const char*)m_strNoTargetName );			
 
 			pUIManager->GetExpedition()->SetSelectIndex(slIndex);
 				

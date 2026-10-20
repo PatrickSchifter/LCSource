@@ -53,9 +53,6 @@
 #include <Engine/Contents/Base/UIMsgBoxMgr.h>
 #include <Engine/Interface/UIRadar.h>
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-	#include <Engine/XTrapInterface/XTrapInterface.h>
-#endif
 #include <Engine/Info/MyInfo.h>
 
 extern INDEX g_iCountry;
@@ -260,17 +257,6 @@ void CSessionState::updateStatus( CNetworkMessage* istr )
 	pUIManager->GetSimplePlayerInfo()->UpdatePlayerBaseInfo();
 	pUIManager->GetCharacterInfo()->UpdateStatus( pPack->attack, pPack->magic, pPack->defense, pPack->resist);		// yjpark
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-	if (g_pXTrap_C_SetUserInfoEx_Interface)
-	{
-		g_pXTrap_C_SetUserInfoEx_Interface("ssss",
-			"",
-			"",
-			"",
-			0,
-			0);
-	}
-#endif
 
 	//[ttos_2009_1_15]:쿨타임 감소 및 MP량 감소 옵션을 클라에서 계산하지 않고 서버에서 받음
 	pUIManager->SetCoolTimeReductionRate(pPack->prob);
@@ -581,6 +567,12 @@ void CSessionState::updateNpcAppear( CNetworkMessage *istr )
 		OutputDebugString("Cannot find Mob Data!!!\n");
 		return;
 	}
+	// NPCs newer than the client data have no model; loading '' would be a fatal error.
+	if (CTString(MD->GetMobSmcFileName()) == "")
+	{
+		CPrintF("NPC %d has no model in the client data, not shown\n", pPack->charDbIndex);
+		return;
+	}
 
 	UBYTE ubAttrdef = GET_AT_VAR(pPack->attrdef);
 	UBYTE ubAttratt = GET_AT_VAR(pPack->attratt);
@@ -652,7 +644,7 @@ void CSessionState::updateNpcAppear( CNetworkMessage *istr )
 			if (pObject != NULL)
 				Ownername = pObject->m_strName.c_str();
 		}
-		strMobName.PrintF("%s%s %s", Ownername,_S(2228, "의"), szMobName );
+		strMobName.PrintF("%s%s %s", (const char*)Ownername,(const char*)_S(2228, "의"), szMobName );
 	}
 	else
 	{
@@ -1969,7 +1961,7 @@ IMPLEMENT_MSG_UPDATE(updateAttrPc)
 	strAtt = UtilHelp::getSingleton()->GetAttributeString(ubAttr);
 
 	CTString strErrorMsg;
-	strErrorMsg.PrintF(_S( nMsgCode, "%s 속성 변경 "), strAtt);
+	strErrorMsg.PrintF(_S( nMsgCode, "%s 속성 변경 "), (const char*)strAtt);
 	_pNetwork->ClientSystemMessage(strErrorMsg, SYSMSG_ERROR);
 }
 

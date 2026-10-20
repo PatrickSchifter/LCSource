@@ -286,7 +286,7 @@ functions:
 	virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
 	{
 		CTString str;
-		str.PrintF(TRANS("A %s sent %s into the halls of Valhalla") ,m_strName, strPlayerName);
+		str.PrintF(TRANS("A %s sent %s into the halls of Valhalla") ,(const char*)m_strName, (const char*)strPlayerName);
 		return str;
 	}
 
@@ -433,13 +433,16 @@ functions:
 			// Date : 2005-11-16(오후 2:05:09), By Lee Ki-hwan
 
 			INDEX preHealth, curHealth;
-			preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-			curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+			// the player is not a CUnit and has none of these (on 64 bits m_nCurrentHealth falls on
+			// its name pointer); it takes the damage as if the server had sent it
+			const BOOL bUnit = !penToDamage->IsPlayer();
+			preHealth = bUnit ? ((CUnit*)penToDamage)->m_nPreHealth : 0;
+			curHealth = bUnit ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 			if(preHealth!= -1)// && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;			
+				if (bUnit) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }			
 			}
 			else fDamageAmmount = 0;
 	
@@ -1001,15 +1004,15 @@ functions:
 		{
 			static int cnt=0;//누적 카운트
 
-			static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);
+			static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);
 
 			if(cnt==0)
 			{  	
-				tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+				tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 				cnt++;
 			}
 
-			int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+			int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 			if(time < 1)
 			{
 				return;
@@ -1045,18 +1048,18 @@ functions:
 
 			static int cnt=10;//누적 카운트
 
-			static unsigned int tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);	
+			static unsigned int tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);	
 			
 			if(cnt==10)
 			{
-				tmStartTime = unsigned int(_pTimer->GetLerpedCurrentTick()*1000);		
+				tmStartTime = (unsigned int)(_pTimer->GetLerpedCurrentTick()*1000);		
 				cnt--;
 				StartEffectGroup("Polymorph", &GetModelInstance()->m_tmSkaTagManager, _pTimer->GetLerpedCurrentTick());
 				PlaySound(m_soMessage, SOUND_POLYMOPH, SOF_3D | SOF_VOLUMETRIC);	
 			}
 	
 
-			int time = ((unsigned int(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
+			int time = (((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000) - tmStartTime )%1000)/100;
 			if(time < 1)
 			{
 				return;

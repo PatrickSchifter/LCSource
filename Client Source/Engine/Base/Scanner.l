@@ -1,5 +1,10 @@
+%top{
+// Engine headers first, as in every Engine source
+#include <Engine/StdH.h>
+}
+%option never-interactive nounistd noyywrap
 %{
-#include "ParsingSymbols.h"
+#include <Engine/Base/ParsingSymbols.h>
 #include "Parser.h"
 
 #include <Engine/Base/FileName.h>
@@ -12,12 +17,6 @@
 
 #define YY_DECL int yylex (YYSTYPE *lvalp)
 #define yylval (*lvalp)
-
-int yywrap(void)
-{
-	// no more bufers
-	return 1;
-};
 
 static int _iBlockDepth = 0;
 static int _iDummyDepth = 0;

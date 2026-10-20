@@ -14,10 +14,14 @@
 #pragma warning(disable : 4603)		// packet zero-base array
 
 #include <stdlib.h>
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
+#ifdef _WIN32
 #include <conio.h>
+#endif
 #include <string.h>
 #include <stddef.h>
 #include <time.h>
@@ -25,7 +29,9 @@
 #include <search.h>   // for qsort
 #include <float.h>    // for FPU control
 
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
 
 extern "C"
 {
@@ -34,11 +40,11 @@ extern "C"
     #include <Engine/lua/lauxlib.h>
 };
 
-#include <Engine/Xbox/XKeyboard.h>
-
+#ifdef _WIN32
   #include <winsock2.h>
   #include <windows.h>
   #include <mmsystem.h> // for timers
+#endif
 
 #include <Engine/Base/Types.h>
 #include <Engine/Base/Assert.h>

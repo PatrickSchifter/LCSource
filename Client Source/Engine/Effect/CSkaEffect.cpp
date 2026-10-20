@@ -172,7 +172,8 @@ FLOATquat3D CSkaEffect::GetInstanceRotation()
 BOOL CSkaEffect::BeginRender(CAnyProjection3D &apr, CDrawPort *pdp)
 {
 	RM_BeginRenderingView(apr, pdp);
-	RM_SetLightDirection(FLOAT3D(0,-1,0));
+	FLOAT3D vLightDir(0,-1,0);
+	RM_SetLightDirection(vLightDir);
 	RM_SetLightColor(0x80808080, 0x20202020);
 	RM_SetMaxWeightsPerVertex( 4 );
 	RM_SetCurrentDistance( 0.0f );	//always use first lod

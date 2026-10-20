@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/3/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -263,9 +263,9 @@ void CUITeleport::OpenMemorizeMsgBox()
 		return;
 
 	CTString	strZone, strCoord;
-	strZone.PrintF( "%-8s: %s", _S( 291, "존" ),
-								CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
-	strCoord.PrintF( "%-8s: %d,%d", _S( 292, "좌표" ),
+	strZone.PrintF( "%-8s: %s", (const char*)_S( 291, "존" ),
+								(const char*)CZoneInfo::getSingleton()->GetZoneName( _pNetwork->MyCharacterInfo.zoneNo ) );
+	strCoord.PrintF( "%-8s: %d,%d", (const char*)_S( 292, "좌표" ),
 										(int)_pNetwork->MyCharacterInfo.x, (int)_pNetwork->MyCharacterInfo.z );
 
 	CUIMsgBox_Info	MsgBoxInfo;
@@ -394,7 +394,7 @@ void CUITeleport::Render()
 	if (m_useTime > 0)
 	{
 		tm* pTime = NULL;
-		pTime = localtime((time_t*)&m_useTime);
+		pTime = LocalTime32(m_useTime);
 		CTString strExpireTime;
 	
 		strExpireTime.PrintF(  _S( 6070,"만료 : %d년%d월%d일%d시%d분"),pTime->tm_year + 1900
@@ -781,7 +781,7 @@ void CUITeleport::SendTeleportMove()
 // Name : SetTeleportInfo()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, CTString &strComment )
+void CUITeleport::SetTeleportInfo( UBYTE ubSlot, SLONG slZone, FLOAT fX, FLOAT fZ, const CTString &strComment )
 {
 	if (ubSlot > TELEPORT_MAX_MEMO)
 		return;

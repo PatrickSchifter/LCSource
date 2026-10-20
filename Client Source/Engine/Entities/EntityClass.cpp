@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Stream.h>
 #include <Engine/Entities/EntityClass.h>
@@ -294,6 +294,9 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 
 	// if the DLL can not be loaded
 	if (hiDLL==NULL) {
+#ifndef PLATFORM_WIN32
+		ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, dlerror());
+#else
 		// get the error code
 		DWORD dwMessageId = GetLastError();
 		// format the windows error message
@@ -327,6 +330,7 @@ HINSTANCE LoadDLL_t(const char *strFileName) // throw char *
 
 		// report error
 		ThrowF_t(TRANS("Cannot load DLL file '%s':\n%s"), strFileName, strWinError);
+#endif
 	}	
 	return hiDLL;
 }
@@ -342,8 +346,8 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 	CTString strClassName;
 	strClassName.ReadFromText_t(*istr, "Class: ");
 
-	// create name of dll
-#ifndef NDEBUG
+	// create name of dll (debug builds name their DLLs differently only with MSVC)
+#if !defined(NDEBUG) && defined(_MSC_VER)
 		//fnmDLL = fnmDLL.FileDir()+"Debug\\"+fnmDLL.FileName()+_strModExt+"D"+fnmDLL.FileExt();
 #	if		defined(_MSC_VER) && (_MSC_VER >= 1600)
 #		ifdef	WORLD_EDITOR
@@ -383,7 +387,7 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
 		ec_hiClassDLL = NULL;
 		ec_fnmClassDLL.Clear();
 		// report error
-		ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), strClassName, fnmDLL);
+		ThrowF_t(TRANS("Class '%s' not found in entity class package file '%s'"), (const char*)strClassName, (const char*)fnmDLL);
 	}
 
 	// obtain all components needed by the DLL
@@ -427,7 +431,23 @@ void CEntityClass::AddToCRCTable(void)
 	CRCT_AddFile_t(fnm);
 
 	// add its DLL
+#ifdef PLATFORM_WIN32
 	CRCT_AddFile_t(ec_fnmClassDLL);
+#else
+	// the file on disk is Bin\X.dylib (LoadLibrary opens it in place of Bin\X.dll); the table
+	// keeps the name the worlds use. Every entity created comes here: the CRC of each library
+	// is computed once (CRCT_AddFile_t only computes it for names not yet in the table)
+	if (CRCT_bGatherCRCs) {
+		static std::map<std::string, ULONG> _mapLibraryCRCs;
+		const std::string strDLL = (const char*)ec_fnmClassDLL;
+		std::map<std::string, ULONG>::iterator it = _mapLibraryCRCs.find(strDLL);
+		if (it == _mapLibraryCRCs.end()) {
+			CTFileName fnmLib = ec_fnmClassDLL.NoExt() + ".dylib";
+			it = _mapLibraryCRCs.insert(std::make_pair(strDLL, GetFileCRC32_t(fnmLib))).first;
+		}
+		CRCT_AddFile_t(ec_fnmClassDLL, it->second);
+	}
+#endif
 
 	// add to container
 

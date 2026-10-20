@@ -1,7 +1,7 @@
 //안태훈 수정 시작	//(Add Sun Moon Entity and etc)(0.2)
 1001
 %{
-#include "stdH.h"
+#include "StdH.h"
 #include <Engine/Base/Timer.h>
 #include <Engine/Terrain/Terrain.h>
 #include <math.h>
@@ -456,7 +456,7 @@ procedures:
 		}
 		catch (char *strError)
 		{
-			WarningMessage(TRANS("Cannot load '%s': %s"), (CTString&)m_fnmColAniFile, strError);
+			WarningMessage(TRANS("Cannot load '%s': %s"), (const char*)(CTString&)m_fnmColAniFile, strError);
 			m_fnmColAniFile = "";
 		}
 		if(m_aoSkyColAni.GetData() != NULL)

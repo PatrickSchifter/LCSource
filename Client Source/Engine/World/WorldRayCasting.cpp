@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/World/World.h>
@@ -17,7 +17,7 @@
 #include <Engine/Ska/Render.h>
 #include <Engine/Terrain/Terrain.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Templates/StaticStackArray.cpp>
 #include <Engine/Network/CharacterTarget.h>
 

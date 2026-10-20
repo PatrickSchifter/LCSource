@@ -1,6 +1,9 @@
-#include "stdh.h"
+#include "StdH.h"
+#ifdef PLATFORM_WIN32
 #include <dimm.h>
 #include <imm.h>	// Date : 2005-03-05,   By Lee Ki-hwan
+#endif
+#include <Engine/Platform/Platform.h>
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UITextureManager.h>
@@ -2331,7 +2334,7 @@ WMSG_RESULT CUIEditBox::GetCand()
 
 		int nPageTopIndex = 0;
         
-		s_CandList.dwPageSize = min( lpCandList->dwPageSize, MAX_CANDLIST );
+		s_CandList.dwPageSize = ( lpCandList->dwPageSize < MAX_CANDLIST ? lpCandList->dwPageSize : MAX_CANDLIST );
         
 		{
             nPageTopIndex = lpCandList->dwPageStart;
@@ -2424,6 +2427,10 @@ void CUIEditBox::SetFocus( BOOL bVisible )
 		// SetFocus ( FALSE )를 호출 하기 때문에 계속 영문으로 바뀌는 현상이 일어 난다.
 		// 그래서 SetFocus ( TRUE )일 때만 영문 모드 전환 한다.
 		CUIEditBox::s_FocusingEditBox = this;
+#ifdef LC_PLATFORM_SDL
+		// the system's input method composes next to this box
+		PLT_SetTextInputArea( GetAbsPosX(), GetAbsPosY(), GetWidth(), GetHeight() );
+#endif
 		if( m_bIsPWEditBox && m_bMsgInput )	// 영문 모드로 전환 
 		{	
 			SetEngMode( _hwndMain );	// Date : 2005-01-17,   By Lee Ki-hwan
@@ -2713,6 +2720,20 @@ bool CUIEditBox::Paste( HWND hWnd )
 	if (IsFocused() == FALSE)
 		return false;
 
+#ifdef LC_PLATFORM_SDL
+	(void)hWnd;
+	{
+		char szData[1024];
+		if (PLT_GetClipboardText(szData, sizeof(szData)))
+		{
+			DelChars();
+			if (strlen(szData) <= m_nMaxCharCount)
+				InsertChars(m_nCursorIndex, szData);
+		}
+		return true;
+	}
+#else
+
 	if (::OpenClipboard(hWnd))
 	{
 		HGLOBAL hGlobal = ::GetClipboardData(CF_TEXT);
@@ -2736,6 +2757,7 @@ bool CUIEditBox::Paste( HWND hWnd )
 		return true;
 	}
 
+#endif  // LC_PLATFORM_SDL
 	return false;
 }
 
@@ -2743,6 +2765,22 @@ bool CUIEditBox::Copy( HWND hWnd )
 {
 	if (m_nCopyStartPos < 0 || IsFocused() == FALSE)
 		return false;
+
+#ifdef LC_PLATFORM_SDL
+	(void)hWnd;
+	{
+		int nStart = m_nCopyStartPos;
+		int nSize = m_nCursorIndex - m_nCopyStartPos;
+		if (nStart > m_nCursorIndex)
+		{
+			nStart = m_nCursorIndex;
+			nSize = m_nCopyStartPos - m_nCursorIndex;
+		}
+		std::string strTemp = m_pInputBuffer;
+		strTemp = strTemp.substr(nStart, nSize);
+		return !strTemp.empty() && PLT_SetClipboardText(strTemp.c_str());
+	}
+#else
 
 	if (::OpenClipboard(hWnd))
 	{
@@ -2774,6 +2812,7 @@ bool CUIEditBox::Copy( HWND hWnd )
 		}
 	}
 
+#endif  // LC_PLATFORM_SDL
 	return false;
 }
 

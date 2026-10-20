@@ -1,7 +1,7 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
-#include <Engine/Base/Console_Internal.h>
+#include <Engine/Base/Console_internal.h>
 
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/ErrorReporting.h>

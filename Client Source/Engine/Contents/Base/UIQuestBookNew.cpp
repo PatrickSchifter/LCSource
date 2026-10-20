@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include "UIQuestBookNew.h"
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <vector>
@@ -288,7 +288,7 @@ void CUIQuestBook::RefreshQuestListNew()
 
 			if( pQuestDD )
 			{
-				strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), strQuestTitle);
+				strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (const char*)strQuestTitle);
 				strTemp = MakeTitleString(strTemp, 30);
 			}
 			else
@@ -370,7 +370,7 @@ void CUIQuestBook::RefreshQuestListNew()
 
 			if( pQuestDD )
 			{
-				strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), strQuestTitle);
+				strTemp.PrintF("[%d] %s", pQuestDD->GetNeedMinLevel(), (const char*)strQuestTitle);
 				strTemp = MakeTitleString(strTemp, 30);
 			}
 			else
@@ -445,7 +445,7 @@ void CUIQuestBook::RefreshQuestListNew()
 			CQuestDynamicData* pQuestDD = CQuestSystem::Instance().GetDynamicDataByQuestIndex( nQuestIndex );
 
 			if( pQuestDD )
-				strTemp.PrintF("%s", strQuestTitle);
+				strTemp.PrintF("%s", (const char*)strQuestTitle);
 
 			pQuestText->SetText(strTemp);
 			CmdQuestBookSelect* pCmd = new CmdQuestBookSelect;

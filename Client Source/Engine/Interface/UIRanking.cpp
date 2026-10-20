@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <vector>
@@ -198,7 +198,7 @@ void CUIRanking::OpenRankingList( )
 	int i = 0; 
 	for( ; i < (TOTAL_JOB) ; ++i )
 	{
-		strJobName.PrintF( "%s", CJobInfo::getSingleton()->GetName(i, 0) );
+		strJobName.PrintF( "%s", (const char*)CJobInfo::getSingleton()->GetName(i, 0) );
 		m_lbChoiceList.AddString( 0, strJobName );
 	}	
 	strJobName.PrintF( _S( 1220, "취소한다." ) );		

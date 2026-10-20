@@ -313,13 +313,16 @@ functions:
 
 			if( !(penToDamage->GetFlags()&ENF_ALIVE ) )	{ return; }
 			INDEX preHealth, curHealth;
-			preHealth = ((CUnit*)penToDamage)->m_nPreHealth;
-			curHealth = ((CUnit*)penToDamage)->m_nCurrentHealth;
+			// the player is not a CUnit and has none of these (on 64 bits m_nCurrentHealth falls on
+			// its name pointer); it takes the damage as if the server had sent it
+			const BOOL bUnit = !penToDamage->IsPlayer();
+			preHealth = bUnit ? ((CUnit*)penToDamage)->m_nPreHealth : 0;
+			curHealth = bUnit ? ((CUnit*)penToDamage)->m_nCurrentHealth : 1;
 
 			if(preHealth!= -1)// && curHealth > preHealth)
 			{
 				fDamageAmmount = 1;
-				((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth;			
+				if (bUnit) { ((CUnit*)penToDamage)->m_nCurrentHealth = ((CUnit*)penToDamage)->m_nPreHealth; }			
 			}
 			else 
 			{

@@ -1,9 +1,9 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Base/MemoryTracking.h>
 
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Graphics/Color.h>
 #include <Engine/Graphics/Texture.h>
@@ -203,9 +203,9 @@ extern void UploadTexture_OGL( ULONG *pulTexture, PIX pixSizeU, PIX pixSizeV,
 
 #if MEMORY_TRACKING
   // signal to memory tracker  
-  extern ULONG *GFX_apulCurrentTexture[GFX_MAXTEXUNITS];
+  extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS];
   const SLONG slSize = pixOffset * GetFormatPixRatio_OGL(eInternalFormat);
-  MEMTRACK_ALLOC( (void*)((ULONG)(GFX_apulCurrentTexture[GFX_iActiveTexUnit])^0x80000000), (slSize+4095)/4096*4096, slSize);
+  MEMTRACK_ALLOC( (void*)((uintptr_t)(GFX_apulCurrentTexture[GFX_iActiveTexUnit])^0x80000000), (slSize+4095)/4096*4096, slSize);
 #endif
 
   // all done
@@ -254,8 +254,8 @@ extern BOOL UploadCompressedTexture_OGL( UBYTE *pubTexture, PIX pixSizeU, PIX pi
   }
 
   // signal to memory tracker  
-  extern ULONG *GFX_apulCurrentTexture[GFX_MAXTEXUNITS];
-  MEMTRACK_ALLOC( (void*)((ULONG)(GFX_apulCurrentTexture[GFX_iActiveTexUnit])^0x80000000), (slSize+4095)/4096*4096, slSize);
+  extern TEXOBJ *GFX_apulCurrentTexture[GFX_MAXTEXUNITS];
+  MEMTRACK_ALLOC( (void*)((uintptr_t)(GFX_apulCurrentTexture[GFX_iActiveTexUnit])^0x80000000), (slSize+4095)/4096*4096, slSize);
 
   // all done
   _sfStats.IncrementCounter( CStatForm::SCI_TEXTUREUPLOADS, 1);

@@ -276,6 +276,7 @@ public:
 //안태훈 수정 시작	//(Remake Effect)(0.1)
 enum GFX_TEXTURE_ARG
 {
+#ifdef SE1_D3D
 	GFX_TA_DIFFUSE	= D3DTA_DIFFUSE,
 	GFX_TA_CURRENT	= D3DTA_CURRENT,
 	GFX_TA_TEXTURE	= D3DTA_TEXTURE,
@@ -284,6 +285,15 @@ enum GFX_TEXTURE_ARG
 	GFX_TA_TEMP		= D3DTA_TEMP,
 	//GFX_TA_COMPLEMENT = D3DTA_COMPLEMENT,
 	//GFX_TA_ALPHAREPLICATE = D3DTA_ALPHAREPLICATE,
+#else
+	// same values as D3DTA_*
+	GFX_TA_DIFFUSE	= 0,
+	GFX_TA_CURRENT	= 1,
+	GFX_TA_TEXTURE	= 2,
+	GFX_TA_TFACTOR	= 3,
+	GFX_TA_SPECULAR	= 4,
+	GFX_TA_TEMP		= 5,
+#endif // SE1_D3D
 };
 
 //d3d의 SetTextureStageState를 wrapping한 것임. 태훈
@@ -307,14 +317,14 @@ extern void (*gfxSetTextureModulation)( INDEX iScale);
 extern void gfxSetTextureUnit( INDEX iUnit);
 
 // generate texture for API
-extern void (*gfxGenerateTexture)( ULONG &ulTexObject);
+extern void (*gfxGenerateTexture)( TEXOBJ &ulTexObject);
 // unbind texture from API
-extern void (*gfxDeleteTexture)( ULONG &ulTexObject);
+extern void (*gfxDeleteTexture)( TEXOBJ &ulTexObject);
 
 
 // set texture as current
 //  - ulTexture = bind number for OGL, or *LPDIRECT3DTEXTURE8 for D3D (pointer to pointer!)
-extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal);
+extern void gfxSetTexture( TEXOBJ &ulTexObject, CTexParams &tpLocal);
 
 // upload texture
 // - ulTexture  = bind number for OGL, or LPDIRECT3DTEXTURE8 for D3D
@@ -324,10 +334,10 @@ extern void gfxSetTexture( ULONG &ulTexObject, CTexParams &tpLocal);
 extern void gfxUploadTexture( ULONG *pulTexture, PIX pixWidth, PIX pixHeight, ULONG ulFormat, BOOL bNoDiscard);
 
 // returns size of uploaded texture
-extern SLONG gfxGetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps=TRUE);
+extern SLONG gfxGetTextureSize( TEXOBJ ulTexObject, BOOL bHasMipmaps=TRUE);
 
 // returns bytes/pixels ratio for uploaded texture or texture format
-extern INDEX gfxGetTexturePixRatio( ULONG ulTextureObject);
+extern INDEX gfxGetTexturePixRatio( TEXOBJ ulTextureObject);
 extern INDEX gfxGetFormatPixRatio(  ULONG ulTextureFormat);
 
 
@@ -378,9 +388,15 @@ public:
 	void *vb_paReadArray[GFX_MAX_VBA]; // pointers to read array(s) that exist in this buffer (non-exist = NULL)
 	union {
 		void *vb_paWriteArray[GFX_MAX_VBA]; // pointers to write array(s)...
+#ifdef SE1_D3D
 		LPDIRECT3DVERTEXBUFFER8 vb_pavbWrite[GFX_MAX_VBA];
+#endif // SE1_D3D
 	};
 	INDEX vb_ctLockedVertices[GFX_MAX_VBA];
+	ULONG vb_aulBufferObjects[GFX_MAX_VBA]; // OpenGL: buffer object of each array of a static buffer (0 = none)
+#ifdef SE1_GPUDEVICE
+	struct GpuBuffer *vb_apbufGpu[GFX_MAX_VBA]; // Metal, Vulkan: the same, as GPU buffers (NULL = none)
+#endif // SE1_GPUDEVICE
 	SLONG vb_slSize;            // total size of this vertex buffer (in bytes)
 	INDEX vb_ctVertices;        // number of vertices
 	ULONG vb_ulArrayMask;       // which array(s) exist in this buffer
@@ -470,7 +486,9 @@ extern void gfxFlushBtnElements( INDEX ctElements, INDEX iBuffer );			// yjpark
 // check GFX errors only in debug builds
 #ifndef NDEBUG
 	extern void OGL_CheckError(void);
+#ifdef SE1_D3D
 	extern void D3D_CheckError(HRESULT hr);
+#endif // SE1_D3D
 	#define OGL_CHECKERROR     OGL_CheckError();
 	#define D3D_CHECKERROR(hr) D3D_CheckError(hr);
 #else
@@ -484,7 +502,7 @@ extern void gfxFlushBtnElements( INDEX ctElements, INDEX iBuffer );			// yjpark
 // (ZW = z-writes, AT = alpha-test)
 // WARNING: BPT_BLEND is implicitly set as default in some of drawport functions as 203 ULONG!
 
-enum PredefinedBlendType
+enum PredefinedBlendType : int  // declared ahead in DrawPort.h
 {
 	PBT_OPAQUE      = 201,    // ZW
 	PBT_TRANSPARENT = 202,    // ZW, AT
@@ -512,6 +530,7 @@ extern void (*gfxEnableTruform)( void);
 extern void (*gfxDisableTruform)(void);
 
 
+#ifdef SE1_D3D
 // set D3D vertex shader only if different than last time
 extern void d3dSetVertexShader(DWORD dwHandle);
 
@@ -531,5 +550,6 @@ extern void d3dSetVertexShader(DWORD dwHandle);
 		object = NONE; \
 	} \
 }
+#endif // SE1_D3D
 
 

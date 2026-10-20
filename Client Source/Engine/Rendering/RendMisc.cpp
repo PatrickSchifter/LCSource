@@ -99,6 +99,9 @@ static SLONG slTmp;
 
 static inline PIX PIXCoord(FLOAT f) // (f+0.9999f) or (ceil(f))
 {
+#ifdef USE_PORTABLE_C
+	return (PIX)ceil(f);
+#else
 	PIX pixRet;
 	__asm {
 		fld     dword ptr [f]
@@ -112,6 +115,7 @@ static inline PIX PIXCoord(FLOAT f) // (f+0.9999f) or (ceil(f))
 		mov     dword ptr [pixRet],eax
 	}
 	return pixRet;
+#endif
 }
 
 

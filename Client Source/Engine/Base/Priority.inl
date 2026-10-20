@@ -1,4 +1,5 @@
 
+#ifdef _WIN32
 class CSetPriority {
 public:
   DWORD sp_dwProcessOld;
@@ -23,3 +24,12 @@ public:
     ASSERT(bSuccessProcess && bSuccessThread);
   }
 };
+#else
+// raising process and thread priority is Windows-only (and mostly meant for Win9x timing)
+#define REALTIME_PRIORITY_CLASS       0x00000100
+#define THREAD_PRIORITY_TIME_CRITICAL 15
+class CSetPriority {
+public:
+  CSetPriority(DWORD dwProcess, int iThread) { (void)dwProcess; (void)iThread; }
+};
+#endif

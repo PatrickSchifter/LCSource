@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/PetInfo.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Entities/EntityClass.h>

@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -398,7 +398,7 @@ void CUIRadar::RenderObjectLocation()
 
 		if( sbSubType == CHARGE_PRIVATE || sbSubType == MINE_PRIVATE || sbSubType == GATHER_PRIVATE )
 		{
-			strTemp.PrintF( _S( 549, "%s(사유지)" ), CZoneInfo::getSingleton()->GetExtraName( md->World.nZoneIndex, md->vecSubZone[i].nSubZoneIndex ) );
+			strTemp.PrintF( _S( 549, "%s(사유지)" ), (const char*)CZoneInfo::getSingleton()->GetExtraName( md->World.nZoneIndex, md->vecSubZone[i].nSubZoneIndex ) );
 		}
 		else
 		{
@@ -1882,7 +1882,7 @@ void CUIRadar::updateServerTime()
 	m_fUpdateServerTime = m_fUpdateServerTime - (int)m_fUpdateServerTime;
 
 	time_t tmt;
-	tmt = (ULONG)time(NULL) - _pNetwork->slServerTimeGap;
+	tmt = (SLONG)time(NULL) - _pNetwork->slServerTimeGap;
 
 	struct tm* pTime = localtime(&tmt);
 
@@ -1909,7 +1909,7 @@ void CUIRadar::setBtnLCETooltip()
 		int	nTime	= _pUIBuff->GetMyTimerItemBuffExpireTime(TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM);
 		char expire[25] = {0,};
 
-		pTimeEnd = localtime((time_t*)&nTime);
+		pTimeEnd = LocalTime32(nTime);
 		if (pTimeEnd)
 		{
 			strftime(expire, sizeof(expire), "%Y/%m/%d %I:%M:%S", pTimeEnd);
@@ -1970,7 +1970,7 @@ void CUIRadar::setBtnPremiumTooltip()
 		int	nTime	= pChar->getExpireTime();
 		char expire[25] = {0,};
 
-		pTimeEnd = localtime((time_t*)&nTime);
+		pTimeEnd = LocalTime32(nTime);
 
 		if (pTimeEnd)
 		{

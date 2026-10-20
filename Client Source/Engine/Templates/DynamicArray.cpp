@@ -75,7 +75,7 @@ void CDynamicArray<Type>::Clear(void) {
     // for all pointers
     for (INDEX iPointer=0; iPointer<da_Count; iPointer++) {
       // destroy the object that it points to
-      ::Clear(*da_Pointers[iPointer]);
+      ClearElement(*da_Pointers[iPointer]);
     }
 
     // free the pointers
@@ -211,7 +211,7 @@ void CDynamicArray<Type>::Delete(Type *ptMember) {
 #endif
 
   // clear the object
-  ::Clear(*ptMember);
+  ClearElement(*ptMember);
 
   INDEX iMember=GetIndex(ptMember);
   // move last pointer here

@@ -1,4 +1,4 @@
-#include "StdH.H"
+#include "StdH.h"
 
 #include <Engine/World/World.h>
 #include <Engine/Interface/UIInternalClasses.h>

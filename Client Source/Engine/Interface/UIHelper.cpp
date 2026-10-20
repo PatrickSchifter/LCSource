@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <Engine/Interface/UIInternalClasses.h>
@@ -438,7 +438,7 @@ void CUIHelper::OpenHelper( )
 		pUIManager->CreateMessageBoxL( strTitle, UI_HELPER, MSGLCMD_HELPER_REQ );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strTitle, -1, 0xE18600FF );
 		
-		strMessage.PrintF( _S( 1141, "게임을 시작하는 유저들을 도와주기 위해서 후견인을 등록할 수 있습니다. 후견인 등록을 하면, 신규 유저가 후견인 리스트를 볼 때 [%s]님의 이름이 보이게 됩니다." ), _pNetwork->MyCharacterInfo.name );		
+		strMessage.PrintF( _S( 1141, "게임을 시작하는 유저들을 도와주기 위해서 후견인을 등록할 수 있습니다. 후견인 등록을 하면, 신규 유저가 후견인 리스트를 볼 때 [%s]님의 이름이 보이게 됩니다." ), (const char*)_pNetwork->MyCharacterInfo.name );		
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 		
 		strMessage.PrintF( _S( 5045, "견습생이 50레벨이 되는 동안, 다양한 보상을 얻을 수 있습니다." ), GetLimitLevel() );
@@ -456,10 +456,10 @@ void CUIHelper::OpenHelper( )
 		pUIManager->CreateMessageBoxL( strTitle, UI_HELPER, MSGLCMD_HELPER_REQ );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strTitle, -1, 0xE18600FF );
 		
-		strMessage.PrintF( _S( 1148, "후견인은 [%s]님을 %d레벨까지 성장하는데 도움을 주는 사람을 이야기합니다. 후견인 리스트에서 [%s]님께 도움을 줄 수 있는 사람을 찾아보세요." ), _pNetwork->MyCharacterInfo.name, GetLimitLevel(), _pNetwork->MyCharacterInfo.name );
+		strMessage.PrintF( _S( 1148, "후견인은 [%s]님을 %d레벨까지 성장하는데 도움을 주는 사람을 이야기합니다. 후견인 리스트에서 [%s]님께 도움을 줄 수 있는 사람을 찾아보세요." ), (const char*)_pNetwork->MyCharacterInfo.name, GetLimitLevel(), (const char*)_pNetwork->MyCharacterInfo.name );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 		
-		strMessage.PrintF( _S( 5044, "최초 선정까지 총 3번을 선정할 수가 있으며, 30레벨이 넘으면 후견인을 선정 할수가 없으니 참고하시기 바랍니다." ), _pNetwork->MyCharacterInfo.name );
+		strMessage.PrintF( _S( 5044, "최초 선정까지 총 3번을 선정할 수가 있으며, 30레벨이 넘으면 후견인을 선정 할수가 없으니 참고하시기 바랍니다." ), (const char*)_pNetwork->MyCharacterInfo.name );
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, TRUE, strMessage, -1, 0xA3A1A3FF );			
 		
 		pUIManager->AddMessageBoxLString( MSGLCMD_HELPER_REQ, FALSE,  _S( 1146, "확인하기." ), SEL_HELPER_STUDENT );		
@@ -533,7 +533,7 @@ void CUIHelper::BeMyTeacher( )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1150, "후견인 신청" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_BEMYTEACHER );	
-	strMessage.PrintF( _S( 1151, "[%s]님을 후견인으로 신청하시겠습니까?" ), TempMember.strName );			
+	strMessage.PrintF( _S( 1151, "[%s]님을 후견인으로 신청하시겠습니까?" ), (const char*)TempMember.strName );			
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -564,7 +564,7 @@ void CUIHelper::FireMyTeacher( )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1152, "견습생 포기" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_FIRE_MYTEACHER );		
-	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), _pNetwork->MyCharacterInfo.strTeacherName );	
+	strMessage.PrintF( _S( 1153, "[%s]님의 견습생을 그만 두시겠습니까? 한번 그만 두게되면 다시는 후견인을 선정할 수 없습니다." ), (const char*)_pNetwork->MyCharacterInfo.strTeacherName );	
 	MsgBoxInfo.AddString( strMessage );
 	strMessage.PrintF( "" );
 	MsgBoxInfo.AddString( strMessage );
@@ -590,7 +590,7 @@ void CUIHelper::TeacherAccept( LONG lIndex, const CTString& strStudentName )
 	CTString	strMessage;
 	CUIMsgBox_Info	MsgBoxInfo;
 	MsgBoxInfo.SetMsgBoxInfo( _S( 1154, "후견인 등록" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_STUDENT_ACCEPT );	
-	strMessage.PrintF( _S( 1155,  "[%s] 님이 후견인이 되어달라는 부탁을 합니다. 수락하시겠습니까?"  ),  strStudentName );	
+	strMessage.PrintF( _S( 1155,  "[%s] 님이 후견인이 되어달라는 부탁을 합니다. 수락하시겠습니까?"  ),  (const char*)strStudentName );	
 	MsgBoxInfo.AddString( strMessage );
 	pUIManager->CreateMessageBox( MsgBoxInfo );
 }
@@ -1068,7 +1068,7 @@ void CUIHelper::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 			CTString	strMessage;
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 1162, "후견인 신청" ), UMBS_CANCEL, UI_HELPER, MSGCMD_HELPER_BEMYTEACHER_REQ );	
-			strMessage.PrintF( _S( 1163, "%s 님께 후견인이 되어달라는 메시지를 보내고, 수락을 기다리는 중입니다."  ), g_strTeacherName );	
+			strMessage.PrintF( _S( 1163, "%s 님께 후견인이 되어달라는 메시지를 보내고, 수락을 기다리는 중입니다."  ), (const char*)g_strTeacherName );	
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 			_pNetwork->TeachTeacherRequest( g_lChaIndex, g_strTeacherName );
@@ -1940,7 +1940,7 @@ void CUIHelper::FireMyStudent()
 		CTString	strMessage;
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 5068, "후견인 포기" ), UMBS_OKCANCEL, UI_HELPER, MSGCMD_HELPER_FIRE_MYSTUDENT );		
-		strMessage.PrintF( _S( 5081, "[%s]님의 후견인을 그만 두시겠습니까? 그만 두게되면 명성치 5를 잃게 됩니다." ), strStudentName );	
+		strMessage.PrintF( _S( 5081, "[%s]님의 후견인을 그만 두시겠습니까? 그만 두게되면 명성치 5를 잃게 됩니다." ), (const char*)strStudentName );	
 		MsgBoxInfo.AddString( strMessage );
 		CUIManager::getSingleton()->CreateMessageBox( MsgBoxInfo );	
 	}

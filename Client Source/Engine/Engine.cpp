@@ -1,9 +1,12 @@
 #include "StdH.h"
+#ifndef PLATFORM_WIN32
+#include <sys/statvfs.h>
+#include <sys/utsname.h>
+#endif
 
 #include <Engine/Build.h>
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Input.h>
-#include <Engine/Base/Protection.h>
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Console_internal.h>
 #include <Engine/Base/Statistics_Internal.h>
@@ -17,7 +20,8 @@
 #include <Engine/Network/CNetwork.h>
 #include <Engine/Network/WebAddress.h>
 #include <Engine/Network/NetworkProfile.h>
-#include <Engine/templates/DynamicContainer.cpp>
+#include <Engine/Network/SocketCompat.h>
+#include <Engine/Templates/DynamicContainer.cpp>
 #include <Engine/Templates/Stock_CAnimData.h>
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CFontData.h>
@@ -43,7 +47,6 @@
 #include <Engine/Contents/Base/UIMsgBoxMgr.h>
 
 #include <Engine/GameState.h>
-#include <Engine/MiniDump.h>
 #include <Engine/Network/Web.h>
 #include <Engine/JobInfo.h>
 #include <Engine/Entities/SkillTree.h>
@@ -61,41 +64,17 @@
 #include <Engine/Contents/function/TitleData.h>
 #include <Engine/Base/InterfaceSymbol.h>
 
-#ifndef NO_GAMEGUARD
-//	#include <NPGameLib.h>
-	#include <Engine\GameState.h>
-#endif
 
 #include <Engine/Help/LoadString.h>
 #include <Engine/Help/Util_Help.h>
 
-#ifdef XTRAP_SECURE_CKBANG_2010_07_20
-#include <Engine/XTrapInterface/XTrapInterface.h>
-XTrap_CS_Step2_Interface g_pXTrap_CS_Step2Func = NULL;
-XTrap_C_SetUserInfoEx_Interface g_pXTrap_C_SetUserInfoEx_Interface = NULL;
-pHexaDump4XTrap_V1 g_pHexaDump4XTrap_V1 = NULL;
 
-#endif
-
-#ifndef NO_GAMEGUARD
-#include <Engine/GameGuardInterface.h>
-GAME_GUARD_RECV_AUTH g_pGameGuardRecvAuth = NULL;
-GAME_GUARD_SEND_USERID g_pGameGuardSendUserID = NULL;
-#endif 
 
 ENGINE_API cWeb g_web;
 
-//#define USE_MINIDUMP
-#ifdef USE_MINIDUMP
-MiniDumper	g_MiniDumper(TRUE);
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-#ifdef KALYDO
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-#else
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 // this version string can be referenced from outside the engine
@@ -135,6 +114,15 @@ ENGINE_API CTString _strLogFile = "";
 //안태훈 수정 시작
 ENGINE_API BOOL g_bBadWeather = FALSE;
 ENGINE_API COLOR g_colWeather = C_WHITE|CT_OPAQUE;
+// declared in Engine.h (auto login, event flags, Brazilian 'Nas' notation)
+ENGINE_API BOOL g_bAutoLogin;
+ENGINE_API BOOL g_bAutoRestart;
+ENGINE_API CTString g_nmID;
+ENGINE_API CTString g_nmPW;
+ENGINE_API CTString g_nmCID;
+ENGINE_API CTString g_nmVER;
+ENGINE_API std::map<int,int> g_mapEvent;
+ENGINE_API BOOL g_bNasTrans;
 ENGINE_API INDEX g_bRenderDecoration = TRUE;
 ENGINE_API INDEX g_iUseBloom = 1;	//0 : none, 1 : normal bloom, 2 : strong bloom
 FLOAT g_fFarClipPlus = 0.0f;
@@ -240,11 +228,6 @@ extern ENGINE_API HWND	_hDlgWeb = NULL;
 extern BOOL  _bFullScreen = FALSE;
 extern INDEX _iGfxAPI = -1; // -1=NONE, 0=OGL, 1=D3D
 
-// WSS_NPROTECT 070402 ------------------------------->>
-#ifndef NO_GAMEGUARD
-//	ENGINE_API CNPGameLib npgl("LastChaosHK");
-#endif
-// ---------------------------------------------------<<
 
 // 태국버전 패치 flag 051109
 INDEX g_iTempFlag;
@@ -460,6 +443,7 @@ int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
 // 실행된다. 또한 마찬가지로 강제 종료시 정상 처리가 되지 않으면 클라이언트를
 // 다시 실행할 수 없다.
 //- detect multi client.
+#ifdef PLATFORM_WIN32
 #pragma data_seg( ".SHAREDATA" )
 int g_nEngineDllRefCnt = 0;
 #pragma data_seg()
@@ -469,35 +453,6 @@ void	IncRef()	{ ++g_nEngineDllRefCnt;	}
 void	DecRef()	{ g_nEngineDllRefCnt > 0 ? --g_nEngineDllRefCnt : g_nEngineDllRefCnt=0; }
 ENGINE_API const int	SE_GetEngineDllRefCnt() { return g_nEngineDllRefCnt;	}
 
-#ifdef KALYDO
-ENGINE_API HWND	g_KalydoWindowHandle = NULL;
-ENGINE_API void SE_UpdateStreamingData()
-{
-	if( g_deqLoadData.empty() )
-		return;
-	
-	DWORD start = GetTickCount();
-	while(!g_deqLoadData.empty())
-	{
-		SLS* pSLS = reinterpret_cast<SLS*>(g_deqLoadData.front());
-		// if still alive, step in.
-		if( pSLS->pTarget->IsUsed() )
-		{
-			pSLS->pTarget->Clear();
-			pSLS->pTarget->Load_Delay_t( pSLS->pTargetFilePath );
-			//pSLS->pTarget->Reload();
-		}
-
-		delete pSLS;
-
-		g_deqLoadData.pop_front();
-
-		if (GetTickCount() - start > 10)
-			// take 10ms max to prevent frame drops
-			break;
-	}
-}
-#endif
 
 //- end.
 BOOL APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -528,6 +483,11 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	}
 	return TRUE;
 }
+#else
+// one engine per process: the count shared by every process that loads the DLL (Windows) does
+// not exist here, so another client is not detected this way
+ENGINE_API const int	SE_GetEngineDllRefCnt() { return 1; }
+#endif  // PLATFORM_WIN32
 
 
 static void DetectCPU(void)
@@ -537,6 +497,12 @@ static void DetectCPU(void)
 	ULONG ulTFMS;
 	ULONG ulFeatures;
 
+#ifdef USE_PORTABLE_C
+	// no cpuid: the C paths need none of the x86 features checked below
+	strcpy(strVendor, "unknown");
+	ulTFMS = 0;
+	ulFeatures = 0;
+#else
 	// test MMX presence and update flag
 	__asm {
 		mov     eax,0 // request for basic id
@@ -549,6 +515,7 @@ static void DetectCPU(void)
 		mov     dword ptr [ulTFMS],eax   // remember type, family, model and stepping
 		mov     dword ptr [ulFeatures],edx
 	}
+#endif
 
 	const INDEX iType     = (ulTFMS>>12)&0x3;
 	const INDEX iFamily   = (ulTFMS>> 8)&0xF;
@@ -567,9 +534,9 @@ static void DetectCPU(void)
 	CTString strYes = TRANS("Yes");
 	CTString strNo  = TRANS("No");
 
-	CPrintF(TRANS("   MMX: %s\n"), bMMX  ? strYes : strNo);
-	CPrintF(TRANS("   SSE: %s\n"), bSSE  ? strYes : strNo);
-	CPrintF(TRANS("  CMOV: %s\n"), bCMOV ? strYes : strNo);
+	CPrintF(TRANS("   MMX: %s\n"), (const char*)(bMMX  ? strYes : strNo));
+	CPrintF(TRANS("   SSE: %s\n"), (const char*)(bSSE  ? strYes : strNo));
+	CPrintF(TRANS("  CMOV: %s\n"), (const char*)(bCMOV ? strYes : strNo));
 	CPrintF(TRANS(" Clock: %.0f MHz\n"), fMHz);
 
 	sys_strCPUVendor = strVendor;
@@ -582,16 +549,22 @@ static void DetectCPU(void)
 	sys_bCPUHasCMOV = bCMOV!=0;
 	sys_iCPUMHz = (INDEX)fMHz;
 
+#ifndef USE_PORTABLE_C
 	if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
+#endif
 }
 
 static void DetectCPUWrapper(void)
 {
+#ifdef _MSC_VER
 	__try {
 		DetectCPU();
 	} __except(EXCEPTION_EXECUTE_HANDLER) {
 		CPrintF( TRANS("Cannot detect CPU: exception raised.\n"));
 	}
+#else
+	DetectCPU();
+#endif
 }
 
 
@@ -646,6 +619,7 @@ static void AnalyzeApplicationPath(void)
 	strDirPath[sizeof(strDirPath)-1] = 0;
 }
 
+#ifdef PLATFORM_WIN32
 // [2013/01/16] sykim70
 inline UINT GetFileLastWriteTime(HANDLE hFile)
 {
@@ -679,6 +653,30 @@ inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
 	CloseHandle(hFile);
 	return true;
 }
+#else
+// the same values as above: the UTC modification time taken apart (FileTimeToSystemTime) and
+// put back together by mktime as if it were local time
+inline bool GetFileInfo(const char* filename, UINT& len, UINT& time)
+{
+	struct stat st;
+	if (stat(LC_HostPath(filename).c_str(), &st) != 0)
+		return false;
+	len = (UINT)st.st_size;
+	struct tm tmUTC;
+	gmtime_r(&st.st_mtime, &tmUTC);
+	tm stTm = {
+		tmUTC.tm_sec,
+		tmUTC.tm_min,
+		tmUTC.tm_hour,
+		tmUTC.tm_mday,
+		tmUTC.tm_mon,
+		tmUTC.tm_year,
+		0, 0, 0
+	};
+	time = (UINT)mktime(&stTm);
+	return true;
+}
+#endif  // PLATFORM_WIN32
 
 // [2013/01/16] sykim70
 inline CTString OpenPersistentSymbolFile2(const CTFileName &fnmPS)
@@ -746,7 +744,7 @@ inline bool GetOneLine(CTString& str, CTString& line)
 // [2013/01/16] sykim70
 ENGINE_API bool SE_CheckEngine()
 {
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(G_USA)  //PWESTY FIXED VER_TEST
+#if !defined(_DEBUG) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(G_USA) && !defined(LC_NO_BINARY_CHECK)	// binary.lod lists the official binaries
 	AnalyzeApplicationPath();
 
 	// check binary.lod
@@ -781,8 +779,8 @@ ENGINE_API bool SE_CheckEngine()
 		if (srcLen != targetLen)
 			return false;
 
-		minTime = min(minTime, targetTime);
-		maxTime = max(maxTime, targetTime);
+		minTime = Min(minTime, targetTime);
+		maxTime = Max(maxTime, targetTime);
 	}
 	if (maxTime-minTime > 60*3)	// 3 min
 		return false;
@@ -816,7 +814,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 #if		defined(VER_TEST)
 	_pConsole = new CConsole;
 #else
-	_pConsole = NULL;
+	// LC_CONSOLE_LOG=1 writes the console log (<exe>.log next to Bin) in release builds too.
+	_pConsole = getenv("LC_CONSOLE_LOG") ? new CConsole : NULL;
 #endif
 
 	if (_strLogFile=="") {
@@ -827,6 +826,8 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	if (_pConsole != NULL)
 	{
 		_pConsole->Initialize(fnmLog, 80, 512);
+		// (the original build never creates the file: LC_CONSOLE_LOG asks for it)
+		_pConsole->CreateLogFile(fnmLog);
 	}
 	
 
@@ -847,9 +848,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShaderStock      = new CStock_CShader;
 	_pModelInstanceStock = new CStock_CModelInstance;
 
-#ifdef KALYDO
-	g_deqLoadData.clear();
-#endif
 
 	_pTimer = new CTimer;
 	_pGfx   = new CGfxLibrary;
@@ -868,16 +866,17 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// print basic engine info
 	CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-	CPrintF("  %s\n\n", _strEngineBuild);
+	CPrintF("  %s\n\n", (const char*)_strEngineBuild);
 
 	// print info on the started application
 	CPrintF(TRANS("Executable: %s\n"), strExePath);
-	CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
+	CPrintF(TRANS("Assumed engine directory: %s\n"), (const char*)_fnmApplicationPath);
 
 	CPrintF("\n");
 
 	// report os info
 	CPrintF(TRANS("Examining underlying OS...\n"));
+#ifdef PLATFORM_WIN32
 	OSVERSIONINFO osv;
 	memset(&osv, 0, sizeof(osv));
 	osv.dwOSVersionInfoSize = sizeof(osv);
@@ -904,6 +903,24 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	} else {
 		CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()) );
 	}
+#else
+	struct utsname uts;
+	if (uname(&uts) == 0) {
+		sys_strOS = uts.sysname;  // "Darwin"; the version is the kernel's
+		int iMajor = 0, iMinor = 0, iBuild = 0;
+		sscanf(uts.release, "%d.%d.%d", &iMajor, &iMinor, &iBuild);
+		sys_iOSMajor = iMajor;
+		sys_iOSMinor = iMinor;
+		sys_iOSBuild = iBuild;
+		sys_strOSMisc = uts.version;
+
+		CPrintF(TRANS("  Type: %s\n"), (const char*)sys_strOS);
+		CPrintF(TRANS("  Version: %d.%d, build %d\n"), iMajor, iMinor, iBuild);
+		CPrintF(TRANS("  Misc: %s\n"), uts.version);
+	} else {
+		CPrintF(TRANS("Error getting OS info: %s\n"), strerror(errno) );
+	}
+#endif  // PLATFORM_WIN32
 	CPrintF("\n");
 
 	// report CPU
@@ -927,6 +944,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 
 	// get info on the first disk in system
+#ifdef PLATFORM_WIN32
 	DWORD dwSerial;
 	DWORD dwFreeClusters;
 	DWORD dwClusters;
@@ -938,9 +956,18 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	GetVolumeInformation(strDrive, NULL, 0, &dwSerial, NULL, NULL, NULL, 0);
 	GetDiskFreeSpace(strDrive, &dwSectors, &dwBytes, &dwFreeClusters, &dwClusters);
-	sys_iHDDSize = __int64(dwSectors)*dwBytes*dwClusters/MB;
-	sys_iHDDFree = __int64(dwSectors)*dwBytes*dwFreeClusters/MB;
+	sys_iHDDSize = (__int64)(dwSectors)*dwBytes*dwClusters/MB;
+	sys_iHDDFree = (__int64)(dwSectors)*dwBytes*dwFreeClusters/MB;
 	sys_iHDDMisc = dwSerial;
+#else
+	// the disk the game is on; there is no volume serial number
+	struct statvfs svfs;
+	if (statvfs(LC_HostPath(_fnmApplicationPath.str_String).c_str(), &svfs) == 0) {
+		sys_iHDDSize = (__int64)svfs.f_frsize*svfs.f_blocks/MB;
+		sys_iHDDFree = (__int64)svfs.f_frsize*svfs.f_bavail/MB;
+	}
+	sys_iHDDMisc = 0;
+#endif  // PLATFORM_WIN32
  
 	// add console variables
 	extern INDEX con_bNoWarnings;
@@ -1376,6 +1403,8 @@ ENGINE_API void SE_UpdateWindowHandle( HWND hwndMain, HWND hdlgWebInterface)
 }
 
 
+// Pretouching walks the process' committed memory with VirtualQuery; Windows only.
+#ifdef _WIN32
 static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 {
 	// cannot pretouch block that are smaller than 64KB :(
@@ -1385,6 +1414,14 @@ static BOOL TouchBlock(UBYTE *pubMemoryBlock, INDEX ctBlockSize)
 	__try {
 		// 4 times should be just enough
 		for( INDEX i=0; i<4; i++) {
+#ifdef USE_PORTABLE_C
+			// volatile keeps the compiler from dropping the reads
+			const volatile ULONG *pul = (const volatile ULONG*)pubMemoryBlock;
+			for( INDEX iLong=0; iLong<ctBlockSize/4; iLong++) {
+				ULONG ul = pul[iLong] + pul[iLong+16*0x1000/4];
+				(void)ul;
+			}
+#else
 			// must do it in asm - don't know what VC will try to optimize
 			__asm {
 				// The 16-page skip is to keep Win 95 from thinking we're trying to page ourselves in
@@ -1400,6 +1437,7 @@ touchLoop:
 				dec   ecx
 				jnz   touchLoop
 			}
+#endif
 		}
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER) { 
@@ -1407,6 +1445,7 @@ touchLoop:
 	}
 	return TRUE;
 }
+#endif  // _WIN32
 
 // pretouch all memory commited by process
 extern BOOL _bNeedPretouch = FALSE;
@@ -1416,6 +1455,7 @@ ENGINE_API extern void SE_PretouchIfNeeded(void)
 	extern INDEX gam_bPretouch;
 	if( !_bNeedPretouch || !gam_bPretouch) return;
 	_bNeedPretouch = FALSE;
+#ifdef _WIN32
 
 	CallProgressHook_t(0.0f);
 
@@ -1481,6 +1521,7 @@ nextRegion:
 	// some blocks failed?
 	if( ctFails>1) CPrintF( TRANS("(%d blocks were skipped)\n"), ctFails);
 	//_pShell->Execute("StockDump();");
+#endif  // _WIN32
 }
 
 

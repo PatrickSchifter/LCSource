@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Entities/WildPetData.h>

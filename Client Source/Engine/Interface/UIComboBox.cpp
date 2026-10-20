@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIComboBox.h>
 #include <Engine/Interface/UIDefine.h>
 #include <Engine/Interface/UIManager.h>
@@ -133,7 +133,7 @@ void CUIComboBox::CreateScroll( BOOL bRight, int nBtnWidth, int nBtnHeight, int 
 // Name : AddString()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIComboBox::AddString( CTString &strString )
+void CUIComboBox::AddString( const CTString &strString )
 {
 #if		!defined(UI_TOOL)
 	if( !m_bScrollBarExist && m_vecString.size() >= m_nMaxLine )

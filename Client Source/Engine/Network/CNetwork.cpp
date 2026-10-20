@@ -5,7 +5,7 @@
 #include <Engine/Base/CRCTable.h>
 #include <Engine/Base/MemoryTracking.h>
 #include <Engine/Base/Shell.h>
-#include <Engine/Base/Statistics_internal.h>
+#include <Engine/Base/Statistics_Internal.h>
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/Timer.h>
@@ -34,7 +34,7 @@
 #include <Engine/Network/NetworkProfile.h>
 #include <Engine/Network/LevelChange.h>
 #include <Engine/Network/EntityHashing.h>
-#include <Engine/Network/tcpipconnection.h>
+#include <Engine/Network/TcpIpConnection.h>
 #include <Engine/Network/MessageDefine.h>
 
 #include <Engine/Templates/Stock_CFontData.h>
@@ -54,9 +54,9 @@
 #include <Engine/Templates/StaticStackArray.cpp>
 
 #include <Engine/Interface/UIInternalClasses.h>
-#include <Engine/interface/UIManager.h>
-#include <Engine/interface/UISpinButton.h>
-#include <Engine/interface/UIMessageBox.h>
+#include <Engine/Interface/UIManager.h>
+#include <Engine/Interface/UISpinButton.h>
+#include <Engine/Interface/UIMessageBox.h>
 #include <Engine/Interface/UIProcess.h>			// 이기환 추가 ( 12. 6 )
 #include <Engine/Interface/UISiegeWarfareDoc.h>
 #include <Engine/Interface/UIGuild.h>
@@ -120,7 +120,7 @@
 #include <Common/Packet/ptype_old_extend.h>
 #include <Common/Packet/ptype_attendance.h>
 #include <Common/Packet/ptype_old_login.h>
-#include <common/Packet/ptype_premium_char.h>
+#include <Common/Packet/ptype_premium_char.h>
 
 #define MAX_MOVE_LIST		(20)
 #define	DEF_SKILL_SEND_DELAY	200
@@ -266,7 +266,7 @@ extern void CacheShadows(void)
 {
 	// mute all soundsf
 	_pSound->Mute();
-	CWorld *pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+	CWorld *pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	if( pwo!=NULL) {
 		pwo->wo_baBrushes.CacheAllShadowmaps();
 		CPrintF( TRANS("All shadows recached"));
@@ -361,7 +361,7 @@ void DumpAllPlayers(INDEX iVerbose)
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
 			if (!iVerbose) {
-				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
+				CPrintF(TRANS("Entity ID: %X, Name: %s\n"),plt.plt_penPlayerEntity->en_ulID,(const char*)plt.plt_penPlayerEntity->en_pcCharacter.pc_strName);
 			} else {
 				plt.plt_penPlayerEntity->DumpToConsole();
 				CPrintF("\n");
@@ -390,7 +390,7 @@ void DumpClassReferences(void)
 		EntityClassEntry* peceEntry = FindClassInContainer(iClass);
 		CPrintF(TRANS("%d  \t%d  \t"),iClass,aulClasses[iClass]);
 		if (peceEntry != NULL) {
-			CPrintF(TRANS("%s\n"),peceEntry->ece_fnmEntityClass);
+			CPrintF(TRANS("%s\n"),(const char*)peceEntry->ece_fnmEntityClass);
 		} else {
 			CPrintF(TRANS("N/A\n"));
 		}
@@ -416,7 +416,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("All entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenAllEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -436,7 +436,7 @@ void DumpEntityInfo(INDEX iVerbose,BOOL bAll)
 		CPrintF(TRANS("Existing entities list:\n"));
 		FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
 			CEntity* penEntity = iten;
-			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,iten->en_pecClass->GetName());
+			CPrintF(TRANS("  EntityID: %X     References: %d    Class: %s\n"),iten->en_ulID,iten->en_ctReferences,(const char*)iten->en_pecClass->GetName());
 			if (iVerbose>=1) {
 				_pNetwork->ga_World.DumpReferenceInfo(penEntity);
 				
@@ -470,7 +470,7 @@ static void DumpEntity(INDEX ulEntityID)
 		return;
 	} else {
 		CPrintF(TRANS("Entity ID: %X\n"),ulEntityID);
-		CPrintF(TRANS("   Entity class: %s\n"),penEntity->en_pecClass->GetName());
+		CPrintF(TRANS("   Entity class: %s\n"),(const char*)penEntity->en_pecClass->GetName());
 		CPrintF(TRANS("   Flags:  0x%X    Physics flags: 0x%X\n"),penEntity->en_ulFlags,penEntity->en_ulPhysicsFlags);
 		if (penEntity->IsSentOverNet()) {
 			CPrintF(TRANS("   IsSentOverNet = TRUE\n"));
@@ -515,7 +515,7 @@ static void NetworkInfo(void)
 			CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 			if (plt.plt_bActive) {
 				CPrintF("    %2d(%2d):'%s'@client%2d: (%dact)\n", 
-					iplt, plt.plt_Index, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
+					iplt, plt.plt_Index, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()),
 					plt.plt_iClient, plt.plt_abReceived.GetCount());
 			}
 		}
@@ -523,7 +523,7 @@ static void NetworkInfo(void)
 		for(INDEX iSession=0; iSession<_pNetwork->ga_srvServer.srv_assoSessions.Count(); ++iSession) {
 			CSessionSocket &sso = _pNetwork->ga_srvServer.srv_assoSessions[iSession];
 			if (sso.sso_bActive) {
-				CPrintF("  %2d:'%s'\n", iSession, _cmiComm.Server_GetClientName(iSession)),
+				CPrintF("  %2d:'%s'\n", iSession, (const char*)_cmiComm.Server_GetClientName(iSession)),
 					CPrintF("    buffer: %dblk=%dk\n", 
 					sso.sso_nsBuffer.GetUsedBlocks(),
 					sso.sso_nsBuffer.GetUsedMemory()/1024);
@@ -578,7 +578,7 @@ static void ListPlayers(void)
 	for(INDEX iplt=0; iplt<_pNetwork->ga_srvServer.srv_apltPlayers.Count(); iplt++) {
 		CPlayerTarget &plt = _pNetwork->ga_srvServer.srv_apltPlayers[iplt];
 		if (plt.plt_bActive) {
-			CPrintF("     %-2d   %s\n", plt.plt_iClient, RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
+			CPrintF("     %-2d   %s\n", plt.plt_iClient, (const char*)RemoveSpecialCodes(plt.plt_pcCharacter.GetNameForPrinting()));
 		}
 	}
 	CPrintF("  ----------------------\n");
@@ -599,7 +599,7 @@ static void KickClient(INDEX iClient, const CTString &strReason)
 		CPrintF(TRANS("Can't kick local client!\n"));
 		return;
 	}
-	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason);
+	CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, (const char*)strReason);
 	_pNetwork->ga_srvServer.SendDisconnectMessage(iClient, "Admin: "+strReason);
 }
 
@@ -699,7 +699,7 @@ extern void StockInfoToStream(CTFileStream *pstrm)
 	CWorld *pwo = NULL;
 	// if pwoCurrentWorld exists
 	if(_pShell->GetSymbol("pwoCurrentWorld",TRUE)!=NULL) {
-		pwo = (CWorld*)_pShell->GetINDEX("pwoCurrentWorld");
+		pwo = (CWorld*)_pShell->GetPointer("pwoCurrentWorld");
 	}
 	if( pwo!=NULL)
 	{
@@ -835,7 +835,7 @@ static void StockDump(void)
 		strm.Create_t(fnm);
 		// Dump stock to file
 		StockDumpToStream(&strm);
-		CPrintF("Dumped to '%s'\n", CTString(fnm));
+		CPrintF("Dumped to '%s'\n", (const char*)CTString(fnm));
 	} catch (char *strError) {
 		CPrintF("Error: %s\n", strError);
 	}
@@ -1275,7 +1275,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
 		throw;
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	CallProgressHook_t(0.0f);
 	if (_pNetwork->bMoveCharacterSelectUI == FALSE)
@@ -1444,7 +1444,7 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   }
   
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set time and pause for server from the saved game
   ga_ubNumLevelChanges++;
@@ -1504,7 +1504,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   CallProgressHook_t(0.f);
 
   // report session addres
-  CPrintF( TRANS("Joining session at: '%s'\n"), nsSesssion.ns_strAddress);
+  CPrintF( TRANS("Joining session at: '%s'\n"), (const char*)nsSesssion.ns_strAddress);
 
   ga_bLocalPause = FALSE;
 
@@ -1540,7 +1540,7 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // eventually cache all shadowmaps in world (memory eater!)
   if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
@@ -1763,7 +1763,7 @@ void CNetworkLibrary::StopGame(void)
 		ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 	}
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
+	_pShell->SetPointer("pwoCurrentWorld", NULL);
 	
 	ClearEntityClassContainer();
 	
@@ -1922,7 +1922,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
 	// remember the world filename
 	ga_fnmWorld = ga_fnmNextLevel;
 	// remember the world pointer
-	_pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+	_pShell->SetPointer("pwoCurrentWorld", &ga_World);
 	
 	// set overdue timers in just loaded world to be due in current time
 	ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
@@ -2033,7 +2033,7 @@ void CNetworkLibrary::ChangeLevel_client_internal_t(void)
   // remember the world filename
   ga_fnmWorld = ga_fnmNextLevel;
   // remember the world pointer
-  _pShell->SetINDEX("pwoCurrentWorld", (INDEX)&ga_World);
+  _pShell->SetPointer("pwoCurrentWorld", &ga_World);
 
   // set overdue timers in just loaded world to be due in current time
   ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
@@ -2066,8 +2066,13 @@ void CNetworkLibrary::MainLoop(void)
 {
   TRACKMEM(Mem,"Network");
 
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(VER_TEST)
+#if !defined(_DEBUG) && !defined(VER_TEST)
   BOOL bIsDebuggerPresent = FALSE;
+#ifdef USE_PORTABLE_C
+  #ifdef PLATFORM_WIN32
+  bIsDebuggerPresent = IsDebuggerPresent();
+  #endif
+#else
   __asm {
 	  // TIB(Thread Information Block)의 위치 얻기
 	  mov		eax, fs:[0x18]
@@ -2078,6 +2083,7 @@ void CNetworkLibrary::MainLoop(void)
 	  // 결과 리턴
 	  mov		bIsDebuggerPresent, eax
   }
+#endif
   if (bIsDebuggerPresent) {
 	  static int counter = 0;
 	  counter++;
@@ -2739,7 +2745,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
   if (iCurrent<iSaved) {
     // it cannot be reinitialized
     ThrowF_t(TRANS("File '%s' was saved by a newer version of engine, it cannot be loaded"),
-      strm.GetDescription());
+      (const char*)strm.GetDescription());
     return;
   }
 
@@ -2758,7 +2764,7 @@ void CNetworkLibrary::CheckVersion_t(CTStream &strm, BOOL bAllowReinit, BOOL &bN
     // if it may not be reinitialized
     if (!bAllowReinit) {
       ThrowF_t(TRANS("File '%s' was saved by an older version of engine, it cannot be loaded"),
-        strm.GetDescription());
+        (const char*)strm.GetDescription());
     }
     return;
   }
@@ -7035,7 +7041,7 @@ void CNetworkLibrary::SetMyPosition(CPlacement3D plPlacement, FLOAT camera_angle
 	MyCharacterInfo.camera_angle = camera_angle;
 }
 
-void CNetworkLibrary::ClientSystemMessage( CTString &strSysMessage, int nSysType )
+void CNetworkLibrary::ClientSystemMessage( const CTString &strSysMessage, int nSysType )
 {
 	CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strSysMessage, nSysType );
 }
@@ -7548,11 +7554,7 @@ void CNetworkLibrary::MgrRegistReq( int nCharIndex, CTString strCharName )
 	packet->type = MSG_FRIEND;
 	packet->subType = MSG_FRIEND_REGIST_REQUEST;
 	packet->requesterindex = nCharIndex;
-#if		(_MSC_VER > 1200)
 	sprintf_s(packet->name, MAX_CHAR_NAME_LENGTH, "%s", strCharName.str_String);
-#else
-	sprintf(packet->name, "%s", strCharName.str_String);
-#endif
 	nmMessage.setSize(sizeof(*packet));
 
 	SendToServerNew(nmMessage);
@@ -8299,13 +8301,8 @@ void CNetworkLibrary::SendLoginMessage(CTString& strID, CTString& strPW, ULONG u
 	packet->mode = 0;
 	packet->version = VERSION_FOR_CLIENT;
 
-#if	(_MSC_VER > 1200)
 	strncpy_s(packet->id, MAX_ID_NAME_LENGTH, strID.str_String, strID.Length());
 	strncpy_s(packet->pw, MAX_PWD_LENGTH, strPW.str_String, strPW.Length());
-#else
-	strncpy(packet->id, strID.str_String, strID.Length());
-	strncpy(packet->pw, strPW.str_String, strPW.Length());
-#endif
 
 	// new Version serialization 060710
 	// national code 
@@ -8352,7 +8349,7 @@ void CNetworkLibrary::SendLoginMessage(CTString& strID, CTString& strPW, ULONG u
 	nmMessage.setSize(sizeof(*packet));
 
 	SendToServerNew(nmMessage, TRUE);
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 
 	// EDIT : BS : 070413 : 신규 패킷 암호화
@@ -8402,7 +8399,7 @@ void CNetworkLibrary::SendDeleteCharacter(ULONG ulIndex,BYTE del)
 	nmChaDel << del;
 
 	SendToServerNew(nmChaDel,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8420,7 +8417,7 @@ void CNetworkLibrary::SendDeleteCharacter(ULONG ulIndex, CTString& strSecuNum, B
 	
 		
 	SendToServerNew(nmChaDel,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8435,7 +8432,7 @@ void CNetworkLibrary::SendGameStart(ULONG ulIndex)
 	nmChaStart << (unsigned char)MSG_MENU_START;
 	nmChaStart << ulIndex;
 	SendToServerNew(nmChaStart,TRUE);	
-	m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	m_bSendMessage		= TRUE;
 }
 
@@ -8463,7 +8460,7 @@ void CNetworkLibrary::SendCreateCharacter( CTString& strName, UBYTE ubJob, UBYTE
 	nmChaNew << (UBYTE)ubHair;
 	nmChaNew << (UBYTE)ubFace;
     _pNetwork->SendToServerNew(nmChaNew,TRUE);	
-	_pNetwork->m_uiSendedTime		= (unsigned int(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
+	_pNetwork->m_uiSendedTime		= ((unsigned int)(_pTimer->GetLerpedCurrentTick()*1000)); //timeGetTime();
 	_pNetwork->m_bSendMessage		= TRUE;
 } 
 
@@ -9256,162 +9253,6 @@ void CNetworkLibrary::SendParentsdayAddPoint(int charIdx)
 		
 	SendToServerNew(nmMessage);
 }
-// ----------------------------------------------------------------<<	
-/*
-#ifndef NO_GAMEGUARD
-// WSS_NPROTECT 070402 --------------------------------->>
-
-void CNetworkLibrary::SendnProtectAuth2(DWORD dwArg)
-{
-	GG_AUTH_DATA m_AuthData;
-	int msgLen = sizeof(GG_AUTH_DATA);
-	memcpy(&m_AuthData,(PVOID)dwArg,msgLen);
-	CNetworkMessage nmItem(MSG_EXTEND);
-	nmItem << (ULONG)MSG_EX_NPROTECT;
-	nmItem << m_AuthData.dwIndex;
-	nmItem << m_AuthData.dwValue1;
-	nmItem << m_AuthData.dwValue2;
-	nmItem << m_AuthData.dwValue3;			
-	_pNetwork->SendToServerNew(nmItem);
-
-//	CPrintF("Send Index  : %x\n", m_AuthData.dwIndex);
-// 	CPrintF("Send Value1 : %x\n", m_AuthData.dwValue1);
-// 	CPrintF("Send Value2 : %x\n", m_AuthData.dwValue2);
-//	CPrintF("Send Value3 : %x\n", m_AuthData.dwValue3);
-}
-
-BOOL CNetworkLibrary::Init_nProtect()
-{	
-	// npgl 초기화 에러 메시지 출력
-	DWORD dwResult = npgl.Init();
-	if ( dwResult != NPGAMEMON_SUCCESS )
-	{
-		CTString msg,errStr;
-		switch(dwResult)
-		{
-			// TODO : 메시지 출력(p18)
-		case NPGAMEMON_ERROR_EXIST:
-			errStr = _S(3321,"게임가드가 실행 중입니다. 잠시 후나 재부팅 후에 다시 실행해 보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_GAME_EXIST:
-			errStr = _S(3322,"게임이 중복 실행되었거나 게임가드가 이미 실행 중 입니다. 게임 종료 후 다시 실행해 보시기 바랍니다,");
-			break;
-		case NPGAMEMON_ERROR_INIT:
-			errStr = _S(3323,"게임가드 초기화 에러입니다. 재부팅 후 다시 실행해 보거나 충돌할 수 있는 다른 프로그램들을 종료한 후 실행해 보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_AUTH_GAMEGUARD:
-		case NPGAMEMON_ERROR_NFOUND_GG:			
-		case NPGAMEMON_ERROR_AUTH_INI:		
-		case NPGAMEMON_ERROR_NFOUND_INI:
-			errStr = _S(3324,"게임가드 파일이 없거나 변조되었습니다. 게임가드 셋업 파일을 설치해보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_CRYPTOAPI:
-			errStr = _S(3325,"윈도우의 일부 시스템 파일이 손상되었습니다. 인터넷 익스플로러(IE)를 다시 설치해 보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_EXECUTE:
-			errStr = _S(3326,"게임가드 실행에 실패했습니다. 게임가드 셋업 파일을 다시 설치해 보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_ILLEGAL_PRG:
-			errStr = _S(3327,"불법 프로그램이 발견되었습니다. 불필요한 프로그램을 종료한 후 다시 실행해 보시기 바랍니다.");
-//			break;
-		case NPGMUP_ERROR_ABORT:
-			errStr = _S(3328,"게임가드 업데이트를 취소하셨습니다. 접속이 계속되지 않을 경우 인터넷 및 개인 방화벽 설정을 조정해 보시기 바랍니다.");
-			break;
-		case NPGMUP_ERROR_CONNECT:			
-		case HOOK_TIMEOUT:
-			errStr = _S(3329,"바이러스나 스파이웨어로 인해 후킹이 실패하였습니다. 최신백신을 받으신 후 컴퓨터 전체검사를 해 주십시오");
-			break;
-		case NPGAMEMON_ERROR_GAMEGUARD:
-			errStr = _S(3330,"게임가드 초기화 에러 또는 구버젼의 게임가드 파일입니다. 게임가드 셋업 파일을 다시 설치하고 게임을 실행해 주십시오");
-			break;
-		case NPGMUP_ERROR_PARAM:
-			errStr = _S(3331,"ini 파일이 없거나 변조되었습니다. 게임가드 셋업 파일을 설치하면 해결할 수 있습니다.");
-			break;
-		case NPGMUP_ERROR_INIT:
-			errStr = _S(3332,"npgmup.des 초기화 에러입니다. 게임가드 폴더를 삭제후 다시 게임 실행해 주십시오.");
-			break;
-		case NPGMUP_ERROR_DOWNCFG:
-			errStr = _S(3333,"게임가드 업데이트 서버 접속에 실패하였습니다. 잠시 후 재시도 해보거나, 개인 방화벽이 있다면 설정을 조정해 보시기 바랍니다.");
-			break;
-		case NPGMUP_ERROR_AUTH:
-			errStr = _S(3334,"게임가드 업데이트를 완료하지 못 했습니다. 바이러스 백신을 일시 중지시킨 후 재시도 해보시거나, PC관리 프로그램을 사용하시면 설정을 조정해 보시기 바랍니다.");
-			break;
-		case NPGAMEMON_ERROR_NPSCAN:
-			errStr = _S(3335,"바이러스 및 해킹툴 검사 모듈 로딩에 실패 했습니다. 메모리 부족이거나 바이러스에 의한 감염일 수 있습니다.");			
-			break;
-		default:
-			errStr = _S(3336,"게임가드 실행 중 에러가 발생하였습니다. 게임 폴더 안의 GameGuard폴더에 있는 *erl 파일을 버그레포팅시 첨부하여 주시기 바랍니다.");
-			break;			
-		}
-		msg.PrintF(_S(3342,"게임가드 에러 : %lu"),dwResult);
-		MessageBox(NULL,errStr.str_String,msg,MB_OK);
-		
-		// 게임 종료
-		return FALSE;
-	}	
-
-	return TRUE;
-}
-
-
-BOOL CNetworkLibrary::NPGameMonCallbackErrChk(DWORD dwMsg, DWORD dwArg)
-{
-	BOOL tAppExit = FALSE;
-	extern ENGINE_API CTString g_szHackMsg;
-
-	switch(dwMsg)
-	{
-		// TODO : 메시지 처리 (p21)		
-		case NPGAMEMON_COMM_ERROR :
-		case NPGAMEMON_COMM_CLOSE :
-			tAppExit = TRUE;
-			break;
-		case NPGAMEMON_INIT_ERROR :
-			tAppExit = TRUE;
-			g_szHackMsg.PrintF(_S(3337,"게임가드 초기화 에러 : %lu"), dwArg);
-			break;
-		case NPGAMEMON_SPEEDHACK :
-			tAppExit = TRUE;
-			g_szHackMsg = _S(3338,"스피드핵이 감지되었습니다.");
-			break;						
-		case NPGAMEMON_GAMEHACK_KILLED :
-			tAppExit = TRUE;
-			g_szHackMsg.PrintF(_S(3339,"게임핵이 발견되었습니다.\r\n%s"),npgl.GetInfo());
-			break;
-		case NPGAMEMON_GAMEHACK_DETECT :
-			tAppExit = TRUE;
-			g_szHackMsg.PrintF(_S(3340,"게임핵이 발견되었습니다.\r\n%s"),npgl.GetInfo());
-			break;
-		case NPGAMEMON_GAMEHACK_DOUBT :
-			tAppExit = TRUE;
-			g_szHackMsg.PrintF(_S(3341,"게임이나 게임가드가 변조되었습니다.\r\n%s"),npgl.GetInfo());
-			break;
-		case NPGAMEMON_CHECK_CSAUTH2 :
-			SendnProtectAuth2(dwArg);
-			break;
-	}
-
-	return tAppExit;
-}
-
-void CNetworkLibrary::SetHwnd_nProtect(HWND _hwndMain)
-{
-	npgl.SetHwnd(_hwndMain);
-}
-
-void CNetworkLibrary::Check_nProtect()
-{
-	if( npgl.Check() != NPGAMEMON_SUCCESS )
-	{
-		// 게임 종료
-		_pGameState->Running()		= FALSE;
-		_pGameState->QuitScreen()	= FALSE;
-	}
-}
-
-#endif
-  /**/
-// -----------------------------------------------------<<
 
 // WSS_MINIGAME 070420 -------------------------------------------->>
 

@@ -17,7 +17,7 @@ struct DeleteEntity
 	}
 };
 /*template<typename T>
-struct DeleteEntity : public std::unary_function<const T*, void> 
+struct DeleteEntity 
 {
 	void operator()(const T* ptr) const
 	{

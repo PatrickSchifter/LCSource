@@ -1,7 +1,9 @@
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
 #include "StdH.h"
 #include "Web.h"
-#include <WinInet.h>
+#ifdef PLATFORM_WIN32
+#include <wininet.h>
+#endif
 #include <assert.h>
 #include "ThreadWrapper.h"
 #include <Engine/Interface/UIManager.h>
@@ -9,7 +11,16 @@
 
 extern HWND	_hDlgWeb;
 
+// Two services, both only on Windows:
+// - pages read over HTTP by a thread (wininet), for the web board (CUIWebBoard: help, notices,
+//   free and guild boards on the publisher's site, lastchaos.barunsongames.com by default);
+// - an embedded Internet Explorer (cwebpage.dll) in a Win32 dialog, for news, help and the cash
+//   shop pages.
+// Both talk to the publisher's web sites, which our server does not provide. Elsewhere the
+// requests are dropped (Read() never has a page, as when the site does not answer on Windows)
+// and no browser is embedded; reading pages would need libcurl, and a browser a web view.
 
+#ifdef PLATFORM_WIN32
 /**
 리턴값
 0 : 이상 없음
@@ -117,27 +128,41 @@ UINT WINAPI WebThreadFunction(void *parameter)
 
 	return exitCode;
 }
+#endif  // PLATFORM_WIN32
 
 cWeb::cWeb()
 : m_eStatus( WS_PREBEGIN )
 {
 	m_sharedData.ResetAll();
+#ifdef PLATFORM_WIN32
 	m_pThread = new cThreadWrapper(WebThreadFunction);
 	m_hWebPage = ::LoadLibrary("cwebpage.dll");
+#else
+	m_pThread = NULL;
+	m_hWebPage = NULL;
+#endif
 
 	m_hWebWnd = NULL;
 
 	// It's linking web embed functions
+#ifdef PLATFORM_WIN32
 	EmbedBrowserObject = (long (WINAPI *)(HWND hwnd))GetProcAddress(m_hWebPage, "EmbedBrowserObject");
 	UnEmbedBrowserObject = (void (WINAPI *)(HWND hwnd))GetProcAddress(m_hWebPage, "UnEmbedBrowserObject");
 	DisplayHTMLPage = (long (WINAPI *)(HWND hwnd, const char *webPageName))GetProcAddress(m_hWebPage, "DisplayHTMLPage");
+#else
+	EmbedBrowserObject = NULL;
+	UnEmbedBrowserObject = NULL;
+	DisplayHTMLPage = NULL;
+#endif
 	WebDialogProc = NULL;
 	m_fnWebCallBack = NULL;
 }
 
 cWeb::~cWeb()
 {
+#ifdef PLATFORM_WIN32
 	if(m_pThread) delete m_pThread;
+#endif
 
 	if (m_hWebPage)
 	{
@@ -148,19 +173,27 @@ cWeb::~cWeb()
 BOOL cWeb::Begin()
 {
 	if(!IsPreBegin()) return FALSE;
+#ifdef PLATFORM_WIN32
 	if(m_pThread->Start(&m_sharedData))
 	{
 		m_eStatus = WS_READYREQUEST;
 		return TRUE;
 	}
 	return FALSE;
+#else
+	// no reader thread: requests are accepted and dropped (see the top of this file)
+	m_eStatus = WS_READYREQUEST;
+	return TRUE;
+#endif
 }
 
 BOOL cWeb::End()
 {
 	if(!IsBegin()) return TRUE;
 	m_sharedData.SetExit(true);
+#ifdef PLATFORM_WIN32
 	SetEvent(m_sharedData.GetSendReadEventHandle());
+#endif
 	Sleep(0);
 	m_sharedData.ResetAll();
 	m_eStatus = WS_PREBEGIN;
@@ -169,6 +202,7 @@ BOOL cWeb::End()
 
 void cWeb::Request(const char *szURL)	//web page 요청
 {
+#ifdef PLATFORM_WIN32
 	ResetEvent(m_sharedData.GetSendWriteEventHandle());
 	int lenURL = strlen(szURL);
 	m_sharedData.AllocSendMsgBuffer(lenURL+1);
@@ -176,10 +210,14 @@ void cWeb::Request(const char *szURL)	//web page 요청
 	memcpy(sendBuf, szURL, lenURL+1);
 	sendBuf[lenURL] = '\0';
 	SetEvent(m_sharedData.GetSendReadEventHandle());
+#endif
 }
 
 BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web page 읽기
 {
+#ifndef PLATFORM_WIN32
+	return FALSE;  // no page ever arrives (see the top of this file)
+#else
 	DWORD waitRet = WaitForSingleObject(m_sharedData.GetReceiveReadEventHandle(), 1000/*INFINITE*/);
 	if(WAIT_OBJECT_0 == waitRet)
 	{
@@ -197,10 +235,14 @@ BOOL cWeb::Read(std::string &strContent, std::string &strError)		//요청했던 web 
 		return TRUE;
 	}
 	return FALSE;
+#endif
 }
 
 BOOL cWeb::OpenWebPage(HWND hDlg)
 {
+#ifndef PLATFORM_WIN32
+	return FALSE;  // no embedded browser
+#endif
 	m_hWebWnd = hDlg;
 	EmbedBrowserObject(hDlg);
 	CUIManager::getSingleton()->GetMouseCursor()->SetCursorNULL();
@@ -213,7 +255,9 @@ void cWeb::SetWebMoveWindow(void)
 	if (_hDlgWeb != NULL)
 	{
 		SetWebPosition(500, 400);
+#ifdef PLATFORM_WIN32
 		BOOL bSuccess = MoveWindow(_hDlgWeb, m_nPosX, m_nPosY, m_nWidth, m_nHeight, FALSE);
+#endif
 	}
 }
 
@@ -287,6 +331,7 @@ void cWeb::UpdatePos()
 	if (_hDlgWeb == NULL)
 		return;
 
+#ifdef PLATFORM_WIN32
 	extern ENGINE_API HWND	_hwndMain;
 	RECT	rcMain;
 	int nOffY = GetSystemMetrics(SM_CYCAPTION);
@@ -297,9 +342,10 @@ void cWeb::UpdatePos()
 
 	MoveWindow(_hDlgWeb, rcMain.left + nOffX + m_nPosX, rcMain.top + nOffY + m_nPosY, m_nWidth, m_nHeight, FALSE);
 	UpdateWindow(_hDlgWeb);
+#endif
 }
 
-void cWeb::SetWebUrl( std::string& url )
+void cWeb::SetWebUrl( const std::string& url )
 {
 	if (m_hWebWnd == NULL)
 		return;

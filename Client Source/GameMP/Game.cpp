@@ -1,19 +1,25 @@
 // Game.cpp : Defines the initialization routines for the DLL.
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Game.h"
+#ifdef PLATFORM_WIN32
 #include <direct.h> // for _mkdir()
+#endif
 #include <sys/timeb.h>
 #include <time.h>
 #include <locale.h>
+#ifdef PLATFORM_WIN32
 #include <io.h>
+#endif
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Statistics.h>
 #include <Engine/CurrentVersion.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/Network/Web.h>
-#include <tlhelp32.h>
+#ifdef PLATFORM_WIN32
+#include <tlhelp32.h>  // the bot process scan, Windows only
+#endif
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Object/ActorMgr.h>
 #include "LCDDrawing.h"
@@ -21,15 +27,11 @@
 extern FLOAT con_fHeightFactor = 0.5f;
 extern FLOAT con_tmLastLines   = 5.0f;
 //extern INDEX con_bTalk = 0;		// yjpark
-//CTimerValue _tvMenuQuickSave(0I64);
+//CTimerValue _tvMenuQuickSave(((__int64)0));
 
 // used filenames
 //안태훈 수정 시작	//(5th Closed beta)(0.2)
-#ifdef KALYDO
-CTFileName fnmPersistentSymbols = CTString("ps.dat");
-#else
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
-#endif
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 //CTFileName fnmStartupScript     = CTString("Data\\Etc\\Game_startup.ini");
 //CTFileName fnmConsoleHistory    = CTString("Data\\Etc\\ConsoleHistory.txt");
@@ -216,6 +218,8 @@ void MaybeDiscardLastLines(void)
 	}
 }
 
+// Scanning other processes for bots (AutoIt windows) is Windows-only, like the old GameGuard.
+#ifdef _WIN32
 // [100122: selo] 윈도우 핸들을 찾아 프로세스 찾기 루틴
 ULONG ProcIDFromWnd(HWND hwnd) // 윈도우 핸들로 프로세스 아이디 얻기  
 {  
@@ -300,6 +304,7 @@ BOOL InputState(void)
 
 	return Return;
 }
+#endif  // _WIN32
 
 /*
 class CEnableUserBreak {
@@ -687,10 +692,12 @@ CGame::CGame()
 
 CGame::~CGame()
 {
+#ifdef _WIN32  // the process scan thread exists only on Windows
 	if (gmUpdateInputState)
 	{
 		delete gmUpdateInputState;
 	}
+#endif
 }
 
 
@@ -995,7 +1002,9 @@ void CGame::GameHandleTimer(void)
 	{
 		if (_pTimer->GetHighPrecisionTimer().GetMilliseconds() - dwWhat >= 60000)
 		{
+#ifdef _WIN32
 			SetEvent(gmUpdateHandle);
+#endif
 			dwWhat = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
 		}
 	}
@@ -1003,11 +1012,15 @@ void CGame::GameHandleTimer(void)
 
 UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 {
+#ifdef _WIN32
 	while (1)
 	{
 		if (WAIT_OBJECT_0 == WaitForSingleObject(_pGame->GetUpdateHandle(), INFINITE))
 		{
 			BOOL bState = FALSE;
+#ifdef USE_PORTABLE_C
+			bState = InputState();
+#else
 			// IDA 등 디버깅 툴에서의 난독처리. 단 올리디버그 2.0 이상 버전에서는 난독처리 되지 않음. [3/2/2011 rumist]
 			__asm
 			{
@@ -1024,6 +1037,7 @@ UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 				mov		bState, eax
 				pop		eax
 			}
+#endif
 			// if detected hack user, request disconnect.
 			if (bState)
 			{
@@ -1032,6 +1046,7 @@ UINT WINAPI CGame::UpdateThreadFunction(void *parameter)
 		}
 	}
 
+#endif  // _WIN32
 	return 0;
 }
 
@@ -1206,9 +1221,11 @@ void CGame::InitInternal( void)
 		FatalError(TRANS("Cannot load common controls: %s\n"), strError);
 	}
 	// 프로세스 검사용 이벤트 핸들 및 스레드
+#ifdef _WIN32
 	gmUpdateHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 	gmUpdateInputState = new cThreadWrapper(UpdateThreadFunction);
 	gmUpdateInputState->Start(NULL);
+#endif
 
 	// init LCD textures/fonts
 	LCDInit();
@@ -1242,9 +1259,11 @@ void CGame::EndInternal(void)
 	StopGame();
 
 	// 프로세스 검사용 이벤트 핸들 및 스레드
+#ifdef _WIN32
 	delete gmUpdateInputState;
 	gmUpdateInputState = NULL;
 	CloseHandle(gmUpdateHandle);
+#endif
 
 	// remove game timer handler
 	_pTimer->RemHandler( &m_gthGameTimerHandler);
@@ -2062,7 +2081,7 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 	// display resolution info (if needed)
 	if( hud_bShowResolution) {
 		CTString strRes;
-		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, _pGfx->gl_dmCurrentDisplayMode.DepthString());
+		strRes.PrintF( "%dx%dx%s", slDPWidth, slDPHeight, (const char*)_pGfx->gl_dmCurrentDisplayMode.DepthString());
 		pdpDrawPort->SetFont( _pfdDisplayFont);
 		pdpDrawPort->SetTextScaling( fTextScale);
 		pdpDrawPort->SetTextAspect( 1.0f);
@@ -2658,7 +2677,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 					_bPlayerViewRendered = TRUE;
 					// render it
 					// 결국은 RenderView()를 호출함.
-					apenViewers[i]->RenderGameView(pdp, (void*)ulFlags);
+					apenViewers[i]->RenderGameView(pdp, (void*)(uintptr_t)ulFlags);
 				} 
 				else 
 				{
@@ -2722,7 +2741,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 			{
 				net_bLocalPrediction=TRUE;
 				/*
-				if (_tvMenuQuickSave.tv_llValue!=0I64 && 
+				if (_tvMenuQuickSave.tv_llValue!=((__int64)0) && 
 					(_pTimer->GetHighPrecisionTimer()-_tvMenuQuickSave).GetSeconds()<3) 
 				{
 					strIndicator = TRANS("Use F6 for QuickSave during game!");
@@ -2731,13 +2750,13 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				{
 					CTString strMotd = _pNetwork->ga_sesSessionState.ses_strMOTD;
 					static CTString strLastMotd = "";
-					static CTimerValue tvLastMotd(0I64);
+					static CTimerValue tvLastMotd(((__int64)0));
 					if (strLastMotd!=strMotd) 
 					{
 						tvLastMotd = _pTimer->GetHighPrecisionTimer();
 						strLastMotd = strMotd;
 					}
-					if (tvLastMotd.tv_llValue!=0I64 && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
+					if (tvLastMotd.tv_llValue!=((__int64)0) && (_pTimer->GetHighPrecisionTimer()-tvLastMotd).GetSeconds()<3) 
 					{
 						strIndicator = strMotd;
 					}
@@ -2886,7 +2905,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags, CEntity* penV
 				iiImageInfo.SaveTGA_t( fnmScreenShot);
 
 			if( dem_iAnimFrame<0) 
-				CPrintF( TRANS("screen shot: %s\n"), (CTString&)fnmScreenShot);
+				CPrintF( TRANS("screen shot: %s\n"), (const char*)(CTString&)fnmScreenShot);
 		}
 		// if failed
 		catch (char *strError) 
@@ -2926,7 +2945,7 @@ void CGame::GameRedrawCursor(CDrawPort *pdpDrawPort, ULONG ulFlags)
 			if (!g_web.IsWebHandle())
 			{
 				// render it
-				apenViewers->RenderCursor(pdp, (void*)ulFlags);
+				apenViewers->RenderCursor(pdp, (void*)(uintptr_t)ulFlags);
 			}
 		}
 	}	
@@ -3032,7 +3051,7 @@ CTString CGame::GetDefaultGameDescription(BOOL bWithInfo)
 	strTimeline = achTimeLine;
 	setlocale(LC_ALL, "C");
 
-	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), strTimeline);
+	strDescription.PrintF( "%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), (const char*)strTimeline);
 
 	if (bWithInfo) {
 		CPlayer *penPlayer = (CPlayer *)&*CEntity::GetPlayerEntity(0);
@@ -3194,7 +3213,7 @@ static FLOAT _tmNow_SE;
 static ULONG _ulA_SE;
 static BOOL  _bPopup;
 
-void TiledTextureSE( PIXaabbox2D &_boxScreen, FLOAT fStretch, MEX2D &vScreen, MEXaabbox2D &boxTexture)
+void TiledTextureSE( const PIXaabbox2D &_boxScreen, FLOAT fStretch, const MEX2D &vScreen, MEXaabbox2D &boxTexture)
 {
 	PIX pixW = _boxScreen.Size()(1);
 	PIX pixH = _boxScreen.Size()(2);

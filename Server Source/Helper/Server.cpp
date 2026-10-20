@@ -303,7 +303,7 @@ bool CServer::LoadSettings()
 	{
 		// 테이블에 내용이 없을때
 		cmdNewGuild.SetQuery("insert into t_characters_guildpoint select a_index, 0, 0 from t_characters");
-		cmdNewGuild.Open();
+		cmdNewGuild.Update();
 	}
 
 	cmdNewGuild.SetQuery("SELECT count(*) FROM t_extend_guild");

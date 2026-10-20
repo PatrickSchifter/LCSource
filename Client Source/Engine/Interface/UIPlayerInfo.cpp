@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIPlayerInfo.h>
@@ -374,9 +374,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 0:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(Alt+B)" );
 
 				m_btnBoard.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnBoard.GetWidth();
@@ -386,9 +386,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 1:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(Alt+F)" );
 
 				m_btnMessanger.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnMessanger.GetWidth();
@@ -420,9 +420,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 3:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(I,Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(I,Alt+I)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(Alt+I)" );
 
 				m_btnInven.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnInven.GetWidth();
@@ -432,9 +432,9 @@ void CUIPlayerInfo::ShowToolTip( BOOL bShow, int nToolTipID )
 		case 4:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 101, "스테이터스" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 101, "스테이터스" ), "(Alt+T)" );
 
 				m_btnCharInfo.GetAbsPos( nInfoX, nInfoY );
 				nWidth = m_btnCharInfo.GetWidth();
@@ -1282,57 +1282,57 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 		case QUICKMENU_BTN_CHAR_INFO:		// Character information
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 69, "캐릭터 정보창" ), "(T,Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 69, "캐릭터 정보창" ), "(T,Alt+T)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 69, "캐릭터 정보창" ), "(Alt+T)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 69, "캐릭터 정보창" ), "(Alt+T)" );
 			}
 			break;
 		case QUICKMENU_BTN_INVEN:		// Inventory
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(I,Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(I,Alt+I)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 166, "인벤토리" ), "(Alt+I)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 166, "인벤토리" ), "(Alt+I)" );
 			}
 			break;
 		case QUICKMENU_BTN_SKILL:		// Skill
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 91, "스킬" ), "(K,Alt+K)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 91, "스킬" ), "(K,Alt+K)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 91, "스킬" ), "(Alt+K)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 91, "스킬" ), "(Alt+K)" );
 			}
 			break;
 		case QUICKMENU_BTN_QUEST:		// Quest Book
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(L,Alt+L)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S(1700, "퀘스트북" ), "(L,Alt+L)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S(1700, "퀘스트북" ), "(Alt+L)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S(1700, "퀘스트북" ), "(Alt+L)" );
 			}
 			break;
 		case QUICKMENU_BTN_PET_INFO:		// Pet Info
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(P,Alt+P)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S(2173, "펫 정보창" ), "(P,Alt+P)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S(2173, "펫 정보창" ), "(Alt+P)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S(2173, "펫 정보창" ), "(Alt+P)" );
 			}
 			break;
 		case QUICKMENU_BTN_MESSENGER:		// Messanger
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(F,Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(F,Alt+F)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 458, "메신저" ), "(Alt+F)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 458, "메신저" ), "(Alt+F)" );
 			}
 			break;
 		case QUICKMENU_BTN_WEB_BOARD:		// Web board
 			{
 				if( g_iEnterChat )
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(B,Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(B,Alt+B)" );
 				else
-					m_strToolTip.PrintF( "%s %s", _S( 385, "게시판" ), "(Alt+B)" );
+					m_strToolTip.PrintF( "%s %s", (const char*)_S( 385, "게시판" ), "(Alt+B)" );
 			}
 			break;
 		case QUICKMENU_BTN_SYSTEM_MENU:		// System menu
@@ -1370,12 +1370,12 @@ void CUIPlayerInfo::ShowQuickMenuToolTip(BOOL bShow, int nToolTipID)
 			break;
 		case QUICKMENU_BTN_CASH_SHOP:		// Cash Shop
 			{
-				m_strToolTip.PrintF( "%s", _S(2572, "아이리스 상점"));
+				m_strToolTip.PrintF( "%s", (const char*)_S(2572, "아이리스 상점"));
 			}
 			break;
 		case QUICKMENU_BTN_LAKA_BALL:
 			{
-				m_strToolTip.PrintF( "%s", _S( 5350, "라카볼"));
+				m_strToolTip.PrintF( "%s", (const char*)_S( 5350, "라카볼"));
 			}
 			break;
 		}

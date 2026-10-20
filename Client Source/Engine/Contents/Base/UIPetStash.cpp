@@ -84,7 +84,7 @@ void CUIPetStash::UpdateReuseTime()
 		int	nTime	= _pUIBuff->GetMyTimerItemBuffExpireTime(TIMERITEM_TYPE_PET_STASH);
 
 		tm*	pTimeEnd = NULL;
-		pTimeEnd = localtime((time_t*)&nTime);
+		pTimeEnd = LocalTime32(nTime);
 		col = 0xFFFFFFFF;
 
 		if( pTimeEnd != NULL )

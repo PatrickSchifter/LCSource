@@ -1,11 +1,15 @@
-#include "stdh.h"
+#include "StdH.h"
 
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#ifdef PLATFORM_WIN32
 #include <io.h>
 #include <direct.h>
-#include <Engine/Base/Protection.h>
+#else
+#include <sys/mman.h>
+#include <sys/statvfs.h>
+#endif
 
 #include <Engine/Base/Stream.h>
 
@@ -150,11 +154,15 @@ static CTFileName _fnmApp;
 void InitStreams(void)
 {
   TRACKMEM(Mem, ".gro file headers");
+#ifdef PLATFORM_WIN32
   // obtain information about system
   SYSTEM_INFO siSystemInfo;
   GetSystemInfo( &siSystemInfo);
   // and remember page size
   _ulPageSize = siSystemInfo.dwPageSize*16;   // cca. 64kB on WinNT/Win95
+#else
+  _ulPageSize = (ULONG)getpagesize()*16;
+#endif
 
   // keep a copy of path for setting purposes
   _fnmApp = _fnmApplicationPath;
@@ -279,53 +287,7 @@ void InitStreams(void)
 
   LoadFileList(_afnmNoCRC, CTFILENAME("Data\\NoCRC.lst"));
 
-#if COPY_PROTECTION
-  CTFileName fnmKey = CTString("T")+"S"+"E"+"."+"k"+"e"+"y";
-  INDEX iSerial = _pShell->GetINDEX(CTString("sys")+"_iHDD"+"Misc");
-
-  // init encryption table two times
-  BLOWFISH_CTX ctx1;
-  BLOWFISH_CTX ctx2;
-  extern CTString _strEngineBuild;
-  CTString strEnKey = _strEngineBuild;
-  strEnKey.TrimLeft(16);
-  char aubKey1[16];
-  char aubKey2[16];
-  for(INDEX i=0; i<16; i++) {
-    aubKey1[i] = strEnKey[i];
-    aubKey2[i] = strEnKey[16-1-i];
-  }
-  Blowfish_Init (&ctx1, (unsigned char*)aubKey1, 16);
-  Blowfish_Init (&ctx2, (unsigned char*)aubKey2, 16);
-
-  BOOL bKeyOK = TRUE;
-
-  // if no key
-  if (!FileExists(fnmKey)) {
-    bKeyOK = FALSE;
-  // if key is here
-  } else {
-    // load it
-    CTString strKey;
-    LoadStringVar(fnmKey, strKey);
-    __int64 llCodeRead = 0;
-    strKey.ScanF("%I64x", &llCodeRead);
-    __int64 llCode1 = llCodeRead;
-    __int64 llCode2 = llCodeRead;
-
-    // decrypt the code
-    Blowfish_Decrypt(&ctx1, (ULONG*)&llCode1+1, ((ULONG*)&llCode1));
-    Blowfish_Decrypt(&ctx2, (ULONG*)&llCode2+1, ((ULONG*)&llCode2));
-    // if not valid
-    if (llCode1!=iSerial && llCode2!=iSerial) {
-      bKeyOK = FALSE;
-    }
-  }
-
-  _pShell->SetINDEX(CTString("sys")+"_iCPU"+"Misc", bKeyOK);
-#else
   _pShell->SetINDEX(CTString("sys")+"_iCPU"+"Misc", 1);
-#endif
 }
 
 void EndStreams(void)
@@ -376,6 +338,7 @@ void CTStream::ClearStreamHandling(void)
   _plhOpenedStreams = NULL;
 }
 
+#ifdef PLATFORM_WIN32
 int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoPtrs)
 {
   // If the exception is not a page fault, exit.
@@ -422,6 +385,7 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
   // Continue execution where the page fault occurred
   return EXCEPTION_CONTINUE_EXECUTION;
 }
+#endif  // PLATFORM_WIN32
 
 /*
  * Static function to report fatal exception error.
@@ -440,11 +404,14 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
   char strFormatBuffer[slBufferSize];
   char strBuffer[slBufferSize];
   // add the stream description to the format string
-  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, strm_strStreamDescription);
+  _snprintf(strFormatBuffer, slBufferSize, "%s (%s)", strFormat, (const char*)strm_strStreamDescription);
   // format the message in buffer
   va_list arg;
   va_start(arg, strFormat); // variable arguments start after this argument
   _vsnprintf(strBuffer, slBufferSize, strFormatBuffer, arg);
+    // Debug aid: if ThrowLog.txt exists in the working directory, append every
+  // thrown engine error to it (most of them are never shown otherwise).
+  { FILE *fLog = fopen("ThrowLog.txt", "r+"); if (fLog != NULL) { fseek(fLog, 0, SEEK_END); fprintf(fLog, "%s\n", strBuffer); fclose(fLog); } }
   throw strBuffer;
 }
 
@@ -585,7 +552,7 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
   // test if EOF reached
   if( strm_pubCurrentPos >= strm_pubEOF)
   {
-    Throw_t(TRANS("EOF reached, file %s"), strm_strStreamDescription);
+    Throw_t(TRANS("EOF reached, file %s"), (const char*)strm_strStreamDescription);
   }
   // get line from istream
   FOREVER
@@ -734,7 +701,7 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
     SBYTE chKeywordChar;
     (*this)>>chKeywordChar;
     if (chKeywordChar!=strKeyword[iKeywordChar]) {
-      Throw_t(TRANS("Expected keyword %s not found"), strKeyword);
+      Throw_t(TRANS("Expected keyword %s not found"), (const char*)strKeyword);
     }
   }
 }
@@ -1128,7 +1095,7 @@ void CTStream::DictionaryPreload_t(void)
     } catch (char *strError) {
 		fnm.fnm_pserPreloaded = NULL;
 		//CPrintF( TRANS("Cannot preload %s: %s\n"), (CTString&)fnm, strError);
-		FatalError(TRANS("[%s] File is not exist!!!\n"), (CTString&)fnm, strError);
+		FatalError(TRANS("[%s] File is not exist!!!\n"), (const char*)(CTString&)fnm, strError);
     }
   }}
 }
@@ -1161,10 +1128,14 @@ void CTStream::FreeBuffer(void)
   {
     // release it
 	BOOL bSuccess = TRUE;
+#ifdef PLATFORM_WIN32
 	if(m_bUseVirtualMem)
 		bSuccess = VirtualFree( strm_pubBufferBegin, 0, MEM_RELEASE);
 	else
 		free(strm_pubBufferBegin);
+#else
+	bSuccess = munmap( strm_pubBufferBegin, strm_pubBufferEnd-strm_pubBufferBegin)==0;
+#endif
     // if failed to release
     if( !bSuccess)
     {
@@ -1194,6 +1165,7 @@ CTStream::~CTStream(void)
 void CTStream::AllocateVirtualMemory(ULONG ulBytesToAllocate)
 {
   CTSingleLock sl(&_csStreams, TRUE);
+#ifdef PLATFORM_WIN32
   // reserve virtual memory of requested ammount
   strm_pubBufferBegin = (UBYTE *)VirtualAlloc( NULL, ulBytesToAllocate, MEM_RESERVE, PAGE_NOACCESS);
   if( strm_pubBufferBegin == NULL )
@@ -1205,6 +1177,17 @@ void CTStream::AllocateVirtualMemory(ULONG ulBytesToAllocate)
 	  if( strm_pubBufferBegin ==NULL )
 		FatalError(TRANS("VirtualAlloc() & malloc() failed\n"));
   }
+#else
+  // Windows commits each page on its first access, from an access violation (ExceptionFilter).
+  // Here the whole range is readable and writeable at once: the system gives zeroed pages as
+  // they are touched, and file streams read their file in when opened (FileLoadBuffer_t).
+  void *pvBuffer = mmap( NULL, ulBytesToAllocate, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+  if( pvBuffer == MAP_FAILED)
+  {
+    FatalError(TRANS("Cannot allocate %d bytes for a stream (%s)\n"), ulBytesToAllocate, strerror(errno));
+  }
+  strm_pubBufferBegin = (UBYTE *)pvBuffer;
+#endif
   // calculate end ptr
   strm_pubBufferEnd = strm_pubBufferBegin+ulBytesToAllocate;
   // reset current and max ptrs
@@ -1218,6 +1201,7 @@ void CTStream::AllocateVirtualMemory(ULONG ulBytesToAllocate)
 void CTStream::CommitPage(INDEX iPage)
 {
   CTSingleLock sl(&_csStreams, TRUE);
+#ifdef PLATFORM_WIN32
   // commit requested page
   if( VirtualAlloc( strm_pubBufferBegin+iPage*_ulPageSize, _ulPageSize, MEM_COMMIT,
                     PAGE_READWRITE) == NULL)
@@ -1225,6 +1209,7 @@ void CTStream::CommitPage(INDEX iPage)
     // report failure in commiting page
     FatalError( TRANS("Unable to commit page: %s\n"), GetWindowsError( GetLastError()) );
   }
+#endif
 }
 
 /*
@@ -1233,6 +1218,7 @@ void CTStream::CommitPage(INDEX iPage)
 void CTStream::DecommitPage(INDEX iPage)
 {
   CTSingleLock sl(&_csStreams, TRUE);
+#ifdef PLATFORM_WIN32
   // decommit given page (decommiting page automaticly protects page from access)
   BOOL bSuccess = VirtualFree( strm_pubBufferBegin+iPage*_ulPageSize, _ulPageSize,
                                MEM_DECOMMIT);
@@ -1242,6 +1228,7 @@ void CTStream::DecommitPage(INDEX iPage)
     // report failure in decommiting page
     FatalError( TRANS("Unable to decommit page: %s\n"), GetWindowsError( GetLastError()) );
   }
+#endif
 }
 
 /*
@@ -1250,6 +1237,7 @@ void CTStream::DecommitPage(INDEX iPage)
 void CTStream::ProtectPageFromWritting(INDEX iPage)
 {
   CTSingleLock sl(&_csStreams, TRUE);
+#ifdef PLATFORM_WIN32
   DWORD dwLastProtection;
   // protect from writting given page
   BOOL bSuccess = VirtualProtect( strm_pubBufferBegin+iPage*_ulPageSize, _ulPageSize,
@@ -1260,6 +1248,7 @@ void CTStream::ProtectPageFromWritting(INDEX iPage)
     // report failure in protecting page
     FatalError( TRANS("Unable to protect page\n"));
   }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1302,7 +1291,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 	{
 		// error
 		::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"),
-		  (CTString&)fnFileName);
+		  (const char*)(CTString&)fnFileName);
 	}
 
 	// check parameters
@@ -1450,18 +1439,21 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 			if(fstrm_pFile == NULL && fstrm_iZipHandle==-1)
 			{
 				// throw exception
-				Throw_t(TRANS("Cannot open file `%s' (%s)"), (CTString&)fnmFullFileName,
+				Throw_t(TRANS("Cannot open file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName,
 						strerror(errno));
 			}
 		}
 		else
 		{
 			// throw exception
-			Throw_t(TRANS("Cannot open file `%s' (%s)"), (CTString&)fnmFullFileName,
+			Throw_t(TRANS("Cannot open file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName,
 					strerror(errno));
 		}
 	}
 
+#ifndef PLATFORM_WIN32
+	FileLoadBuffer_t();
+#endif
 	// if file opening was successefull, set stream description to file name
 	strm_strStreamDescription = fnFileName;
 	// add this newly opened file into opened stream list
@@ -1523,7 +1515,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   if (0 == _bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileName);
+      (const char*)(CTString&)fnFileName);
   }
 
   CTFileName fnmFullFileName;
@@ -1538,8 +1530,12 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   // if not successfull
   if(fstrm_pFile == NULL) {
     // if directory for file does not exist
+#ifdef PLATFORM_WIN32
     ULONG ulError = GetLastError();
     if(ulError == ERROR_PATH_NOT_FOUND) {
+#else
+    if(errno == ENOENT) {
+#endif
       // if creation of directory path succeeded
       if(CreateDirectoryPath(fnmFullFileName)) {
         // open file stream for writting
@@ -1547,13 +1543,13 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
         // if still not successfull
         if(fstrm_pFile == NULL) {
           // throw exception
-          Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName, strerror(errno));
+          Throw_t(TRANS("Cannot create file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName, strerror(errno));
         }
       }
     // else if some other error
     } else {
       // throw exception
-      Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName, strerror(errno));
+      Throw_t(TRANS("Cannot create file `%s' (%s)"), (const char*)(CTString&)fnmFullFileName, strerror(errno));
     }
   }
   // allocate amount of memory needed to hold maximum allowed file lenght (when saving)
@@ -1641,6 +1637,7 @@ void CTFileStream::Close(void)
     return;
   }
 
+#ifdef PLATFORM_WIN32
   // if any page was accessed and file was opened for writting
   if( (fstrm_iLastAccessedPage != -1) && (!fstrm_bReadOnly) )
   {
@@ -1648,6 +1645,19 @@ void CTFileStream::Close(void)
     WritePageToFile( fstrm_iLastAccessedPage);
     WritePageToFile( fstrm_iLastAccessedPage+1);
   }
+#else
+  // without page tracking, write everything up to the furthest position reached
+  if( !fstrm_bReadOnly && fstrm_pFile!=NULL)
+  {
+    UpdateMaxPos();
+    const ULONG ctBytesToWrite = strm_pubMaxPos-strm_pubBufferBegin;
+    fseek( fstrm_pFile, 0, SEEK_SET);
+    if( fwrite( strm_pubBufferBegin, 1, ctBytesToWrite, fstrm_pFile)!=ctBytesToWrite) {
+      NotifyWritingError(GetDescription());
+    }
+    fflush( fstrm_pFile);
+  }
+#endif
   // clear commited page indexes
   fstrm_iLastAccessedPage = -1;
   // clear stream description
@@ -1725,6 +1735,47 @@ void CTFileStream::FileCommitPage( INDEX iPageToCommit)
     }
   }
 }
+
+#ifndef PLATFORM_WIN32
+// Called at the end of Open_t: what Windows reads in page by page, as the pages are accessed
+// (FileCommitPage), is read here at once.
+void CTFileStream::FileLoadBuffer_t(void)
+{
+  CTSingleLock sl(&_csStreams, TRUE);
+  if( strm_pubBufferBegin==NULL) {
+    return;
+  }
+  SLONG slSize = 0;
+  if( fstrm_bReadOnly) {
+    slSize = strm_pubEOF-strm_pubBufferBegin;
+  } else if (fstrm_pFile!=NULL) {
+    // an existing file opened for writing keeps its contents
+    fseek( fstrm_pFile, 0, SEEK_END);
+    slSize = Min( (SLONG)ftell( fstrm_pFile), (SLONG)(strm_pubBufferEnd-strm_pubBufferBegin));
+  }
+  if( slSize<=0) {
+    return;
+  }
+
+  // if file on disk
+  if (fstrm_pFile != NULL) {
+    fseek( fstrm_pFile, 0, SEEK_SET);
+    SLONG slRead = fread( strm_pubBufferBegin, 1, slSize, fstrm_pFile);
+    if( slRead!=slSize && ferror(fstrm_pFile)) {
+      NotifyReadingError(GetDescription());
+    }
+    _ctTotalFromDisk+=slRead;
+    _ctTotalEffective+=slRead;
+  // if file in zip
+  } else if (fstrm_iZipHandle >=0) {
+    try {
+      UNZIPReadBlock_t(fstrm_iZipHandle, strm_pubBufferBegin, 0, slSize);
+    } catch (char *strError) {
+      CPrintF(TRANS("Cannot read from zip: %s\n"), strError);
+    }
+  }
+}
+#endif  // !PLATFORM_WIN32
 
 void CTFileStream::FileDecommitPage( INDEX iPageToDecommit)
 {
@@ -2021,7 +2072,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
   // try to open file for reading
   file_handle = _open( fnmExpanded, _O_RDONLY | _O_BINARY);
   if(file_handle==-1) {
-    ThrowF_t(TRANS("Cannot open file '%s' for reading"), CTString(fnm));
+    ThrowF_t(TRANS("Cannot open file '%s' for reading"), (const char*)CTString(fnm));
     return -1;
   }
   struct stat statFileStatus;
@@ -2080,7 +2131,7 @@ BOOL CTDeleteFile(const CTFileName &fnmFile)
   CTFileName fnmExpanded;
   INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmExpanded);
   if (iFile==EFP_FILE) {
-    int ires = remove(fnmExpanded);
+    int ires = remove(HOSTPATH(fnmExpanded));
     return ires==0;
   } else {
     return FALSE;
@@ -2096,7 +2147,7 @@ BOOL CTMoveFile(const CTFileName &fnmFileOld, const CTFileName &fnmFileNew)
   INDEX iFileOld = ExpandFilePath(EFP_WRITE, fnmFileOld, fnmExpandedOld);
   INDEX iFileNew = ExpandFilePath(EFP_WRITE, fnmFileNew, fnmExpandedNew);
   if(iFileOld==EFP_FILE && iFileNew==EFP_FILE) {
-    int ires = rename(fnmExpandedOld,fnmExpandedNew);
+    int ires = rename(HOSTPATH(fnmExpandedOld),HOSTPATH(fnmExpandedNew));
     return ires==0;
   } else {
     return FALSE;
@@ -2230,8 +2281,13 @@ INDEX ExpandFilePath( ULONG ulType, const CTFileName &fnmOriginal, CTFileName &f
   const CTFileName fnmFile = GetFileReplacement(fnmOriginal);
 
   // if this is a fully qualified path
+#ifdef PLATFORM_WIN32
   if( (fnmFile[0]!=0 && fnmFile[1]==':')
     ||(fnmFile[0]=='\\' && fnmFile[1]=='\\')) {
+#else
+  // (an absolute path outside Windows starts with a single backslash, see Win32Compat.h)
+  if( fnmFile[0]=='\\' || fnmFile[0]=='/') {
+#endif
     if((ulType&EFP_WRITE) || IsFileReadable_internal(fnmFile)) {
       // use it directly
       fnmExpanded = fnmFile;
@@ -2284,12 +2340,20 @@ INDEX ExpandFilePath( ULONG ulType, const CTFileName &fnmOriginal, CTFileName &f
 
 extern __int64 GetDiskFreeSpace(const CTString &strDirectory)
 {
+#ifdef PLATFORM_WIN32
   ULARGE_INTEGER ullFreeSize;
   ULARGE_INTEGER ullTotalSize;
   ullFreeSize.QuadPart = 0;
   BOOL bSuccess = GetDiskFreeSpaceEx((const char*)strDirectory,&ullFreeSize,&ullTotalSize,NULL);
   ASSERT(bSuccess);
   return ullFreeSize.QuadPart;
+#else
+  struct statvfs svfs;
+  if( statvfs(LC_HostPath(strDirectory).c_str(), &svfs)!=0) {
+    return 0;
+  }
+  return (__int64)svfs.f_bavail*svfs.f_frsize;
+#endif
 }
 
 

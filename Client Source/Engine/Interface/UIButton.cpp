@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Interface/UIButton.h>
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIWindow.h>
@@ -56,7 +56,7 @@ CUIBase* CUIButton::Clone()
 // Name : Create()
 // Desc :
 // ----------------------------------------------------------------------------
-void CUIButton::Create( CUIWindow *pParentWnd, CTString &strText, int nX, int nY, int nWidth, int nHeight )
+void CUIButton::Create( CUIWindow *pParentWnd, const CTString &strText, int nX, int nY, int nWidth, int nHeight )
 {
 	CUIWindow::Create(pParentWnd, nX, nY, nWidth, nHeight);
 	
@@ -79,7 +79,7 @@ void CUIButton::Create( CUIWindow *pParentWnd, CTString &strText, int nX, int nY
 // Name : SetText()
 // Desc :
 // ----------------------------------------------------------------------------
-int CUIButton::SetText( CTString &strText, BOOL bVerticality, BOOL bOnlyText )
+int CUIButton::SetText( const CTString &strText, BOOL bVerticality, BOOL bOnlyText )
 {
 	m_strText = strText;
 	m_bVerticality = bVerticality;

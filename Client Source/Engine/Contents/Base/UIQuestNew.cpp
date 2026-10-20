@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <vector>
@@ -775,7 +775,7 @@ void CUIQuest::OpenQuest( int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOAT f
 		CTString strSyndicateName = pSyndicateData->GetSyndicateName(_pNetwork->MyCharacterInfo.iSyndicateType);
 		CTString strTmp;
 
-		strTmp.PrintF(_S(6113, "창조의 보석을 발견하셨나요? [%s] 결사대를 위해 기부해 주시면 유용하게 사용하겠습니다."), strSyndicateName);
+		strTmp.PrintF(_S(6113, "창조의 보석을 발견하셨나요? [%s] 결사대를 위해 기부해 주시면 유용하게 사용하겠습니다."), (const char*)strSyndicateName);
 
 		pUIManager->CreateMessageBoxL(_S(6114, "창조의 보석 기부"), UI_QUEST, MSGLCMD_SYNDICATE_JEWEL_GIVE);
 		pUIManager->AddMessageBoxLString(MSGLCMD_SYNDICATE_JEWEL_GIVE, TRUE, strTmp, -1, 0xA3A1A3FF );
@@ -1130,7 +1130,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 				pUIManager->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );				
 				strMessage = _S(3567, "색종이를 가지고 오시면 재미있는 종이 접기를 가르쳐 드리겠습니다." );
 				pUIManager->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
-				strMessage.PrintF("※ %s", _S(3565, "※ 이벤트 기간 : 2007년 7월 10일(화) ~ 8월 24일(화)") );
+				strMessage.PrintF("※ %s", (const char*)_S(3565, "※ 이벤트 기간 : 2007년 7월 10일(화) ~ 8월 24일(화)") );
 				pUIManager->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
 				strMessage = _S(3568, "※ 색종이는 종이 접기 후 소비되며, 이벤트기간 종류 후 한달 간 사용가능합니다." );
 				pUIManager->AddMessageBoxLString( MSGLCMD_SUMMER_2007, TRUE, strMessage, -1, 0xA3A1A3FF );
@@ -1691,9 +1691,9 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 						}
 
 						CTString strMessageA, strMessageB, strMessageC;
-						strMessageA.PrintF( _S( 2808, "현재 골든볼 이벤트는 %s VS %s 의 축구 경기 입니다." ), m_strTeamA, m_strTeamB );
-						strMessageB.PrintF( _S( 2809, "%s VS %s 골든 볼 응모" ), m_strTeamA, m_strTeamB );
-						strMessageC.PrintF( _S( 2810, "%s VS %s 골든 볼 보상" ), m_strTeamA, m_strTeamB );
+						strMessageA.PrintF( _S( 2808, "현재 골든볼 이벤트는 %s VS %s 의 축구 경기 입니다." ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+						strMessageB.PrintF( _S( 2809, "%s VS %s 골든 볼 응모" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+						strMessageC.PrintF( _S( 2810, "%s VS %s 골든 볼 보상" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
 
 						pUIManager->CreateMessageBoxL( _S( 169, "이벤트" ), UI_QUEST, MSGCMD_WORLDCUP_GOLDENBALL );
 						pUIManager->AddMessageBoxLString( MSGCMD_WORLDCUP_GOLDENBALL, TRUE, strMessageA );
@@ -1704,7 +1704,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 						if( m_bGoldenBallRequital ) // 골든볼 보상중이라면
 						{// 경기결과를 표시
 							strMessageA.PrintF( _S( 2791, "%s VS %s 축구경기의 결과는 %d : %d 입니다." ),
-								pUIManager->GetQuest()->GetStrTeamA(), pUIManager->GetQuest()->GetStrTeamB(),
+								(const char*)pUIManager->GetQuest()->GetStrTeamA(), (const char*)pUIManager->GetQuest()->GetStrTeamB(),
 								pUIManager->GetQuest()->GetScoreTeamA(), pUIManager->GetQuest()->GetScoreTeamB() );
 
 							pUIManager->AddMessageBoxLString( MSGCMD_WORLDCUP_GOLDENBALL, TRUE, strMessageA, 0x6BD2FFFF );
@@ -2618,8 +2618,8 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 					}
 					
 					CTString strMessageA, strMessageB;
-					strMessageA.PrintF( _S( 2832, "%s VS %s 경기\n\n승리국가와 점수를 예상하여 입력해 주세요\n\n" ), m_strTeamA, m_strTeamB );
-					strMessageB.PrintF( _S( 2833, "%-5s점수     %-5s점수" ), m_strTeamA, m_strTeamB );
+					strMessageA.PrintF( _S( 2832, "%s VS %s 경기\n\n승리국가와 점수를 예상하여 입력해 주세요\n\n" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
+					strMessageB.PrintF( _S( 2833, "%-5s점수     %-5s점수" ), (const char*)m_strTeamA, (const char*)m_strTeamB );
 
 					strMessageA += strMessageB;
 
@@ -3212,7 +3212,7 @@ void CUIQuest::MsgBoxLCommand( int nCommandCode, int nResult )
 
 			MsgBoxInfo.SetBtnType( UBET_ITEM, CItemData::ITEM_ETC, CItemData::ITEM_ETC_MATERIAL );
 
-			strMessage.PrintF(_S( 6126, "[%s] 결사대를 정말로 탈퇴 하시겠습니까?"), strSyndicateName);
+			strMessage.PrintF(_S( 6126, "[%s] 결사대를 정말로 탈퇴 하시겠습니까?"), (const char*)strSyndicateName);
 			MsgBoxInfo.AddString( strMessage );
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 			pUIManager->GetMessageBox(MSGCMD_SYNDICATE_SECESSION_REQ)->GetBtnOK().SetEnable(TRUE);

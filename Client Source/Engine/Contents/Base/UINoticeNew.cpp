@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 // 헤더 정리. [12/2/2009 rumist]
 #include <vector>
@@ -861,7 +861,7 @@ void CUINoticeNew::PressOK(Notice::eNoticeType iNoticeType, int nIndex)
 					
 					CTString strMessage;
 					strMessage.PrintF( _S( 2785, " %s VS %s 축구경기의 결과를 맞춰 보시기 바랍니다." ),
-						pUIManager->GetQuest()->GetStrTeamA(), pUIManager->GetQuest()->GetStrTeamB() );
+						(const char*)pUIManager->GetQuest()->GetStrTeamA(), (const char*)pUIManager->GetQuest()->GetStrTeamB() );
 
 					strMsg += strMessage;
 					strMsg += _S( 2786, "이벤트 종료 후 경기 결과에 따라 아이템과 나스를 지급합니다." );
@@ -888,7 +888,7 @@ void CUINoticeNew::PressOK(Notice::eNoticeType iNoticeType, int nIndex)
 
 					CTString strMessage;
 					strMessage.PrintF( _S( 2791, "%s VS %s 축구경기의 결과는 %d : %d 입니다." ),
-						pUIManager->GetQuest()->GetStrTeamA(), pUIManager->GetQuest()->GetStrTeamB(),
+						(const char*)pUIManager->GetQuest()->GetStrTeamA(), (const char*)pUIManager->GetQuest()->GetStrTeamB(),
 						pUIManager->GetQuest()->GetScoreTeamA(), pUIManager->GetQuest()->GetScoreTeamB() );
 					pUIManager->AddMessageBoxLString( MSGLCMD_EVENT_NOTICE, TRUE, strMessage );
 					
@@ -1407,7 +1407,7 @@ void CUINoticeNew::PressOK(Notice::eNoticeType iNoticeType, int nIndex)
 					
 					CTString str1, str2;
 					str1.PrintF( _S(4016, "교복세트(%d일)"), 7);
-					str2.PrintF( "%s + %s", str1, _pNetwork->GetItemName(2664));
+					str2.PrintF( "%s + %s", (const char*)str1, _pNetwork->GetItemName(2664));
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, str2);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, _S(4017, "이벤트 기간: 2008년 2월 14일(목) ~"), -1, 0x6BD2FFFF);
 					pUIManager->AddMessageBoxLString(MSGLCMD_EVENT_NOTICE, TRUE, CTString(" "));
@@ -2076,7 +2076,7 @@ void CUINoticeNew::ShowAttendanceNotice( SLONG attendanceRate, SLONG enchantRate
 void CUINoticeNew::ShowUsedPartyItemNotice( const INDEX& nItemIdx, const CTString& strNickName )
 {
 	CTString strTemp;
-	strTemp.PrintF( _S( 5395, "%s님께서 %s라고 외칩니다."), strNickName, _pNetwork->GetItemDesc( nItemIdx ) );
+	strTemp.PrintF( _S( 5395, "%s님께서 %s라고 외칩니다."), (const char*)strNickName, _pNetwork->GetItemDesc( nItemIdx ) );
 	_UIAutoHelp->SetGMNotice ( strTemp, 0xA8A8F8FF );
 }
 
@@ -2117,7 +2117,7 @@ void CUINoticeNew::ShowRoyalRumbleWinner(const INDEX& iLevel, const CTString& st
 		strType = _S(5401, "고급 검투사");
 	}
 
-	strTemp.PrintF( _S( 5402, "%s님께서 %s 대전에서 우승하셨습니다!" ), strNickName, strType );
+	strTemp.PrintF( _S( 5402, "%s님께서 %s 대전에서 우승하셨습니다!" ), (const char*)strNickName, (const char*)strType );
 	_UIAutoHelp->SetGMNotice( strTemp, 0xFFFF40FF );
 }
 

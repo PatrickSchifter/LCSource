@@ -4,7 +4,7 @@
 	Ver 1.00 : 2011년 9월 일반 소켓관리 모델
 */
 #pragma once
-#include <WinSock2.h>
+#include <winsock2.h>
 
 //	1바이트 단위 구조체 계산
 #pragma	pack(push, 1)

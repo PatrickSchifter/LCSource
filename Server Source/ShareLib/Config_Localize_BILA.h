@@ -1,7 +1,9 @@
 #define LC_BILA
 
 #define JUNO_RENEWAL_MESSAGEBOX					// 독일용, 신규캐릭터 이동 시 쥬노로 갔다가 버뱅크로 간다.
+#ifndef LC_NO_SERVER_AUTHENTICATION	// 30-day build expiry + call-home to the publisher
 #define SERVER_AUTHENTICATION		// 서버 기동 제한 시스템
+#endif
 #define GIVE_ITEM_IN_CHANGE_JOB		// 전직시 아이템 지급하기
 
 ////// 국가 필드 설정 //////////////////////////////////////////////////////////////////////////
@@ -57,7 +59,9 @@
 ////// 업데이트 시스템 /////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef LC_NO_XTRAP	// XTrap server library is Linux 32-bit only
 #define XTRAP
+#endif
 
 #define BUGFIX_GUILD_SKILL_COOLTIME
 #define DROP_MAKE_DOCUMENT

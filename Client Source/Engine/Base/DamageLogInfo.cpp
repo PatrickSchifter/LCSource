@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Base/DamageLogInfo.h>
 
 bool CDamageLogInfo::writeInfo(LogDamage& In)
@@ -143,7 +143,7 @@ void CDamageLogInfo::CalculateDPS()
 	}
 
 	//fprintf(fLog, "Total Damage: %d, Interval Time : %d√ , DPS : %02f\n", totalDamage, intervalTime, m_DPS);
-	fprintf(fLog, "%d\t%d\t%02f\t%d\t%d\t%d\t%d\n", totalDamage, intervalTime, m_DPS, EndDamage.att_EntityInfo.hp, EndDamage.att_EntityInfo.mp,
+	fprintf(fLog, "%d\t%d\t%02f\t%d\t%d\t%d\t%d\n", totalDamage, (int)intervalTime, m_DPS, EndDamage.att_EntityInfo.hp, EndDamage.att_EntityInfo.mp,
 		Critical, Deadly);
 	fflush(fLog);
 }

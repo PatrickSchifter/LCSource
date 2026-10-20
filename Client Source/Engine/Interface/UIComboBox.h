@@ -51,7 +51,7 @@ public:
 	std::vector<CTString> GetVecString() { return m_vecString; }
 
 	// Strings
-	void	AddString( CTString &strString );
+	void	AddString( const CTString &strString );
 	void	ResetStrings();
 
 	// UV of combo box

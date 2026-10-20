@@ -29,13 +29,13 @@ void CServer::initTime()
 
 	while(1)
 	{
-		rankInitUpdateTime.tm_mday = rankInitUpdateTime.tm_mday++;
+		++rankInitUpdateTime.tm_mday;	// was `x = x++`, a no-op in C++17 (infinite loop)
 		mktime( &rankInitUpdateTime );
 
-		rewardInitUpdateTime.tm_mday = rewardInitUpdateTime.tm_mday++;
+		++rewardInitUpdateTime.tm_mday;	// was `x = x++`, a no-op in C++17 (infinite loop)
 		mktime( &rewardInitUpdateTime );
 
-		rewardEndUpdateTime.tm_mday = rewardEndUpdateTime.tm_mday++;
+		++rewardEndUpdateTime.tm_mday;	// was `x = x++`, a no-op in C++17 (infinite loop)
 		mktime( &rewardEndUpdateTime );
 
 		if(rankInitUpdateTime.tm_wday == 2) break;

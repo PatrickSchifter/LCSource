@@ -12,7 +12,7 @@ public:
 	~CUITextBoxEx();
 
 	CUIBase* Clone();
-	void AddText(std::string& str, DWORD dwCol = DEF_UI_COLOR_WHITE);
+	void AddText(std::string str, DWORD dwCol = DEF_UI_COLOR_WHITE);
 	void AddBtn(std::string& str, Command* pCmd, 
 		DWORD dwColIdle = DEF_UI_COLOR_WHITE, DWORD dwColOver = DEF_UI_COLOR_BLUE,
 		DWORD dwColClick = DEF_UI_COLOR_BLUE, DWORD dwColDisable = DEF_UI_COLOR_WHITE);

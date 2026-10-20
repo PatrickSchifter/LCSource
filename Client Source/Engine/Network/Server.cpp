@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Build.h>
 #include <Engine/Network/CNetwork.h>
@@ -527,7 +527,7 @@ void CServer::ResendGameStreamBlocks(INDEX iClient, INDEX iSequence0, INDEX ctSe
   extern INDEX net_bReportMiscErrors;
   if (net_bReportMiscErrors) {
     CPrintF(TRANS("Server: Resending sequences %d-%d(%d) to '%s'..."), 
-      iSequence0, iSequence0+ctSequences-1, ctSequences, _cmiComm.Server_GetClientName(iClient));
+      iSequence0, iSequence0+ctSequences-1, ctSequences, (const char*)_cmiComm.Server_GetClientName(iClient));
   }
 
   // get corresponding session socket
@@ -841,7 +841,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   if (_strModName!=strGivenMod) {
     // disconnect the client
     // NOTE: DO NOT TRANSLATE THIS STRING!
-    CTString strMod(0, "MOD:%s\\%s", _strModName, _strModURL);
+    CTString strMod(0, "MOD:%s\\%s", (const char*)_strModName, (const char*)_strModURL);
     SendDisconnectMessage(iClient, strMod, /*bStream=*/TRUE);
     return;
   }
@@ -1174,7 +1174,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
   // if the client is disconnected
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char*)_cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -1199,7 +1199,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
 
 	// if the client has confirmed disconnect in this loop
   if (!_cmiComm.Server_IsClientUsed(iClient) || sso.sso_iDisconnectedState>1) {
-    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), _cmiComm.Server_GetClientName(iClient));
+    CPrintF(TRANS("Server: Client '%s' disconnected.\n"), (const char*)_cmiComm.Server_GetClientName(iClient));
     // clear it
     _cmiComm.Server_ClearClient(iClient);
     // free all that data that was allocated for the client
@@ -2500,7 +2500,7 @@ void CServer::DropLaggingClients()
 
         // report to console
         if (net_bReportServerTraffic) {
-          CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
+          CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),(const char*)AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
         }
         // clear communication data
         _cmiComm.Server_ClearClient(iSession);
@@ -2527,7 +2527,7 @@ void CServer::DropLaggingClients()
       HandleClientDisconected(iSession);
       // report to console
       if (net_bReportServerTraffic) {
-        CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
+        CPrintF(TRANS("Unable to deliver game update to client '%s', disconnecting.\n"),(const char*)AddressToString(cm_aciClients[iSession].ci_adrAddress.adr_ulAddress));
       }
       // clear communication data
       _cmiComm.Server_ClearClient(iSession);

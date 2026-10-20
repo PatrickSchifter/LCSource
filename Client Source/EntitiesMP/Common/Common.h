@@ -58,6 +58,16 @@
 #define INVISIBILITY_ALPHA_LOCAL  0x55
 #define INVISIBILITY_ALPHA_REMOTE 0x11
 
+// Entity enums (Ecc gives them an int underlying type) used here and in entity headers that
+// can come before the entity that defines them.
+enum BasicEffectType : int;       // BasicEffects.es
+enum DebrisParticlesType : int;   // Debris.es
+enum EffectorEffectType : int;    // Effector.es
+enum MusicType : int;             // MusicHolder.es
+enum ShadowType : int;            // ModelHolder2.es
+enum CustomShadingType : int;     // ModelHolder2.es
+enum WorldLinkType : int;         // WorldLink.es
+
 enum EmptyShellType {
   ESL_NONE = -1,
   ESL_BULLET = 0,

@@ -5,6 +5,7 @@
 #endif
 
 #include <Engine/Network/CPacket.h>
+#include <Engine/Network/SocketCompat.h>
 
 class CClientInterface {
 public:

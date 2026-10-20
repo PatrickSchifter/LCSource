@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Base/Console.h>
 #include <Engine/Base/Timer.h>
@@ -22,7 +22,7 @@ static BOOL _bVisible = FALSE;
 static BOOL _bDepth = FALSE;
 static INDEX _iTexture = 0; // how many texture units to use
 static UBYTE *_pubTexture;
-static ULONG _ulTexObject;
+static TEXOBJ _ulTexObject;
 static ULONG _ulTexFormat;
 static BOOL _bSubImage = FALSE;
 static INDEX _ctR = 100;
@@ -134,7 +134,7 @@ CTString FillRateString(void)
        if( _iTexture==0) strTex = "no texture";
   else if( _iTexture==1) strTex = "1 texture ";
   else if( _iTexture>=2) strTex.PrintF( "%d textures", _iTexture);
-  str.PrintF( "%s, %s, %s ", strTex,
+  str.PrintF( "%s, %s, %s ", (const char*)strTex,
              _bBlend ? "blending"  : "no blending", 
              _bDepth ? "z-buffer:" : "no z-buffer:");
   return str;
@@ -348,9 +348,11 @@ void CGfxLibrary::Benchmark(CViewPort *pvp, CDrawPort *pdp)
   // off to the testing...
   CTString strAPI = "";
        if( _pGfx->gl_eCurrentAPI==GAT_OGL) strAPI = "OpenGL";
+#ifdef SE1_D3D
   else if( _pGfx->gl_eCurrentAPI==GAT_D3D) strAPI = "Direct3D";
+#endif // SE1_D3D
   CPrintF("=====================================\n");
-  CPrintF("%s performance testing ...\n", strAPI);
+  CPrintF("%s performance testing ...\n", (const char*)strAPI);
 
   InitTexture();
   InitTris();
@@ -444,22 +446,22 @@ void CGfxLibrary::Benchmark(CViewPort *pvp, CDrawPort *pdp)
   CPrintF("\n--- Fill rate\n");
   _bBlend = 0; _bDepth = 0; _iTexture = 0;
   RunTest(FillRate, 9);
-  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
   _bBlend = 0; _bDepth = 0; _iTexture = 1;
   RunTest(FillRate, 9);
-  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
   _bBlend = 1; _bDepth = 1; _iTexture = 1;
   RunTest(FillRate, 9);
-  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
   _bBlend = 0; _bDepth = 1; _iTexture = 1;
   RunTest(FillRate, 9);
-  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
 
   // multi-texturing
   if( ctTextureUnits>1) {
     for( _iTexture=2; _iTexture<=ctTextureUnits; _iTexture++) {
       RunTest(FillRate, 9);
-      CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+      CPrintF("%-38s %6.01f +- %5.02f Mpix/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
     } // reset current tex unit
     _iTexture = 1;
   }
@@ -469,15 +471,15 @@ void CGfxLibrary::Benchmark(CViewPort *pvp, CDrawPort *pdp)
   CPrintF("\n--- Geometry speed (%dpix tris)\n", (_pixSizeI/_ctR)*(_pixSizeI/_ctC)/2);
   _iTexture = 0;
   RunTest(TrisTroughput, 5);
-  CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
   _iTexture = 1;
   RunTest(TrisTroughput, 5);
-  CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+  CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
 
   if( ctTextureUnits>1) {
     for( _iTexture=2; _iTexture<=ctTextureUnits; _iTexture++) {
       RunTest(TrisTroughput, 5);
-      CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", FillRateString(), _dX/1000/1000, _dD/1000/1000);
+      CPrintF("%-38s %5.02f +- %4.02f Mtri/s\n", (const char*)FillRateString(), _dX/1000/1000, _dD/1000/1000);
     }
   }
 

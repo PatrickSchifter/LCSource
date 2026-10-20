@@ -40,7 +40,7 @@ public:
 	inline bool Empty()							{ return m_vectorParticle.empty();	}
 	inline UINT Size()							{ return m_vectorParticle.size();	}
 
-	inline void RenderQuad(MEX mexWidth, MEX mexHeight);
+	void RenderQuad(MEX mexWidth, MEX mexHeight);  // defined in CParticles.cpp, used by CParticleGroup.cpp
 	void RenderLine(MEX mexWidth, MEX mexHeight);
 	void RenderTrail(MEX mexWidth, MEX mexHeight);
 	void RenderTrailVelocity(MEX mexWidth, MEX mexHeight);

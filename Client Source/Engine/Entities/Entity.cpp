@@ -1,4 +1,4 @@
-#include "stdh.h"
+#include "StdH.h"
 
 #include <Engine/Entities/Entity.h>
 #include <Engine/Entities/EntityClass.h>
@@ -136,8 +136,8 @@ const CEntityID &CEntityID::operator=(CEntity *pen) {
 	eid_ulEntityID = pen->en_ulID;
 	return *this;
 }
-const CEntityID &CEntityID::operator=(CEntityID &eidOther) {
-	(eidOther.GetEntity())->AddReference();    // must first add, then remove!
+const CEntityID &CEntityID::operator=(const CEntityID &eidOther) {
+	(const_cast<CEntityID &>(eidOther).GetEntity())->AddReference();    // must first add, then remove!
 	GetEntity()->RemReference();
 	eid_ulEntityID = eidOther.eid_ulEntityID;
 	return *this;
@@ -1285,7 +1285,7 @@ void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
 				CEntity *ppenObstacleDummy;
 				if (pmme->CheckForCollisionNow(pmme->en_iCollisionBox, &ppenObstacleDummy)) {
 					CPrintF("Entity '%s' was teleported inside a wall at (%g,%g,%g)!\n", 
-						GetName(), 
+						(const char*)GetName(), 
 						en_plPlacement.pl_PositionVector(1),
 						en_plPlacement.pl_PositionVector(2),
 						en_plPlacement.pl_PositionVector(3));
@@ -2921,7 +2921,7 @@ void CEntity::SetModel(const CTFileName &fnmModel)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default model '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 	UpdateSpatialRange();
@@ -3270,7 +3270,7 @@ void CEntity::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX 
 		*(INDEX*)pubData = iModelInstanceID; pubData += sizeof(iModelInstanceID);
 		*(FLOAT*)pubData = fSpeedMul; pubData += sizeof(fSpeedMul);  
 		extern CEntityMessage _emEntityMessage;
-		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,(SLONG)slDataSize);
+		_emEntityMessage.WriteSka(en_ulID,EM_SKA_ADD,_abSkaData,slDataSize);
 		_pNetwork->ga_srvServer.SendMessage(_emEntityMessage);
 	}
 }  
@@ -3463,7 +3463,7 @@ BOOL CEntity::IsAnimationPlaying(INDEX iAnimID, INDEX iModelInstanceID /*=master
 
 
 /* Stretch model instance */
-void CEntity::StretchModel(FLOAT3D &vStretch, INDEX iModelInstanceID)
+void CEntity::StretchModel(const FLOAT3D &vStretch, INDEX iModelInstanceID)
 {
 	ASSERT (en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
 	ASSERT (en_pmiModelInstance != NULL);
@@ -3658,7 +3658,7 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default texture '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }
@@ -4200,7 +4200,7 @@ void CEntity::PlaySound(CSoundObject &so, const CTFileName &fnmSound, SLONG slPl
 		// if failed
 		} catch(char *strErrorDefault) {
 			FatalError(TRANS("Cannot load default sound '%s':\n%s"),
-				(CTString&)fnmDefault, strErrorDefault);
+				(const char*)(CTString&)fnmDefault, strErrorDefault);
 		}
 	}
 }

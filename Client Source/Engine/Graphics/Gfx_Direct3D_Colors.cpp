@@ -1,5 +1,6 @@
 
-#include "stdh.h"
+#include "StdH.h"
+#ifdef SE1_D3D  // Direct3D only; compiled out without SE1_D3D
 
 #include <d3dx8tex.h>
 #pragma comment(lib, "d3dx8.lib")
@@ -74,6 +75,16 @@ static void ConvertAny( ULONG *pulSrc, LPDIRECT3DTEXTURE8 ptexDst, PIX pixWidth,
 static void ConvARGB8( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<2);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      ((ULONG*)pubDst)[pix] = abgr2argb( pulSrc[pix] | _ulAlphaMask);
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -95,12 +106,24 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
 static void ConvARGB5( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<1);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      const ULONG x = pulSrc[pix] | _ulAlphaMask;
+      ((UWORD*)pubDst)[pix] = (UWORD)(((x&0x000000F8)<<7) | ((x&0x0000F800)>>6) | ((x&0x00F80000)>>(16+3)) | ((x&0x80000000)>>16));
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -136,12 +159,24 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
 static void ConvARGB4( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<1);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      const ULONG x = pulSrc[pix];
+      ((UWORD*)pubDst)[pix] = (UWORD)(((x&0x000000F0)<<4) | ((x&0x0000F000)>>8) | ((x&0x00F00000)>>(16+4)) | ((x&0xF0000000)>>16));
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -176,12 +211,24 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
 static void ConvRGB5( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<1);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      const ULONG x = pulSrc[pix];
+      ((UWORD*)pubDst)[pix] = (UWORD)(((x&0x000000F8)<<8) | ((x&0x0000FC00)>>5) | ((x&0x00F80000)>>(8+5+6)));
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -212,12 +259,24 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
 static void ConvAL8( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<1);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      const ULONG x = pulSrc[pix];
+      ((UWORD*)pubDst)[pix] = (UWORD)(((x>>16)&0xFF00) | (x&0xFF));
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -238,6 +297,7 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
@@ -245,6 +305,17 @@ pixLoop:
 static void ConvL8( ULONG *pulSrc, void *pDst, PIX pixWidth, PIX pixHeight, SLONG slDstPitch)
 {
   const ULONG slRowModulo = slDstPitch - (pixWidth<<0);
+#ifdef USE_PORTABLE_C
+  (void)slRowModulo;
+  for( PIX pixY=0; pixY<pixHeight; pixY++) {
+    UBYTE *pubDst = (UBYTE*)pDst + pixY*slDstPitch;
+    for( PIX pix=0; pix<pixWidth; pix++) {
+      const ULONG x = pulSrc[pix];
+      ((UBYTE*)pubDst)[pix] = (UBYTE)(x&0xFF);
+    }
+    pulSrc += pixWidth;
+  }
+#else
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pDst]
@@ -263,9 +334,20 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+#endif
 }
 
 
+
+// swizzling (Xbox) is never used: bSwizzle in UploadMipmap_D3D() is always FALSE
+#ifdef USE_PORTABLE_C
+#define SwizARGB8 NULL
+#define SwizARGB5 NULL
+#define SwizARGB4 NULL
+#define SwizRGB5  NULL
+#define SwizAL8   NULL
+#define SwizL8    NULL
+#else
 
 // generates mask for U and V depending on texture dimenstion
 inline void GetMasks( const PIX pixWidth, const PIX pixHeight, const INDEX iShiftBPT,
@@ -907,6 +989,7 @@ clusterLoop:
 	}
 }
 
+#endif // USE_PORTABLE_C
 
 
 // set color conversion routine
@@ -1015,3 +1098,4 @@ extern COLOR UnpackColor_D3D( UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slCo
   return RGBToColor(ubR,ubG,ubB);
 }
 
+#endif // SE1_D3D

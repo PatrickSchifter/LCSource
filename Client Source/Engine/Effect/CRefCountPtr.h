@@ -5,7 +5,7 @@
 
 //class T는 ULONG AddRef()와 ULONG Release()를 갖고 있어야 한다.
 #include "CTag.h"
-#include <engine/Base/Memory.h>
+#include <Engine/Base/Memory.h>
 
 template<class T>
 class CRefCountPtr

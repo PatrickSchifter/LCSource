@@ -177,7 +177,7 @@ void CNewsUI::SetNews()
 
 		if (pText = (CUIText*)pItem->findUI("text_time"))
 		{
-			pTime = localtime((time_t*)&(pNotiData->data[i].date));
+			pTime = LocalTime32(pNotiData->data[i].date);
 			strTemp.PrintF("%d/%02d/%02d %02d:%02d", pTime->tm_year + 1900, pTime->tm_mon + 1,
 				pTime->tm_mday, pTime->tm_hour ,pTime->tm_min);
 

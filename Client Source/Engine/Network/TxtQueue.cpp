@@ -1,9 +1,9 @@
 /*
-#include "stdafx.h"
+#include "StdAfx.h"
 #include <assert.h>
 #include "TxtQueue.h"
 */
-#include "stdh.h"
+#include "StdH.h"
 #include <Engine/Network/TxtQueue.h>
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }

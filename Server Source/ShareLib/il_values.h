@@ -59,8 +59,10 @@ typedef unsigned int		ILUInt32;
 #endif
 #endif
 #ifndef	IL_HAVE_INT32
-typedef long					ILInt32;
-typedef unsigned long			ILUInt32;
+// was `long`, which is 64-bit on LP64 and breaks the SHA-256 rotations
+#include <stdint.h>
+typedef int32_t				ILInt32;
+typedef uint32_t			ILUInt32;
 #endif
 
 /*
