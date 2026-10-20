@@ -5,8 +5,9 @@
 #
 # Creates lc2009_data, lc2009_db and lc2009_auth (never touches the newproject_* databases of the
 # 2015 port), loads newproject_{data,db,db_auth}.sql (the *-unused.sql dumps first: the 2009 code
-# still uses several of those tables), applies v2009/server-config/db-fixes.sql and grants the
-# lcserver user. Without --reset an existing lc2009_* database is kept and only the fixes run.
+# still uses several of those tables), grants the lcserver user and applies
+# v2009/server-config/db-fixes.sql, then the regen position fixes (zone0-oldjuno.sql,
+# zone-maps-regen.sql). Without --reset an existing lc2009_* database is kept and only the fixes run.
 #
 # LC_DB_DUMPS points at the dump checkout (default: ~/Projects/lastchaos-database).
 set -euo pipefail
@@ -43,4 +44,12 @@ done
 
 echo "applying db-fixes.sql"
 "${MYSQL[@]}" <"$ROOT/server-config/db-fixes.sql"
+
+# NPC regen / shop positions fitted to the zone maps the 2009 server reads (written by
+# v2009/scripts/fix-regen-positions.py): zone 0 is the old Juno, the others are small fixes for
+# maps converted from the 2015 port.
+for f in zone0-oldjuno.sql zone-maps-regen.sql; do
+  echo "applying $f"
+  "${MYSQL[@]}" <"$ROOT/server-config/$f"
+done
 echo done
