@@ -3,6 +3,15 @@
 Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`; aqui está o
 **estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-20.
 
+**Layout (2026-10-20):** cada versão na sua pasta — `v2009/`, `v2015/` (a nossa, que era a raiz até
+`1d4c8bc`) e `v2018/`. Na raiz ficam só estes documentos e o que serve às três: `scripts/macos/launcher.sh`,
+`scripts/macos/make-app.sh`, `scripts/sl-dta.py`, `scripts/macos-deps.sh`. Ao longo deste arquivo,
+caminhos sem pasta de versão (`Client Source/...`, `scripts/run-server.sh`, `scripts/windows/*`,
+`build-client-mac`, `run/`, `server-config/`) são da 2015, **dentro de `v2015/`**, e os comandos
+(`cmake -S . ...`, `scripts/...`) rodam de dentro dela; `scripts/sl-dta.py` ficou na raiz. O build do servidor
+da 2015 virou `v2015/build-server` (era `build/`). `C:\LCSource` no Windows continua espelhando a 2015
+no layout antigo (`v2015/scripts/windows/sync.sh` cuida disso).
+
 ## Próximo passo (para o próximo agente) — 2026-10-20
 
 **Fase F: empacotar o launcher num `.app`.** Passo 1 feito (2026-10-20); o resto depende de respostas
@@ -13,13 +22,13 @@ Feito:
   (`8df8bf7`, `55dda42`). A 2009 já morava em `v2009/`; a 2018 trocava o `Client Source`/`Server Source`
   da 2015, então entrou em `v2018/` (merge `-s ours` + `read-tree --prefix`, histórico preservado). Os
   branches `v2009*`/`v2018` e as worktrees `LCSource-2009*`/`LCSource-2018` foram apagados; builds e
-  `run/` de cada versão ficam dentro da pasta dela (`v2009/build-*`, `v2018/build-*`, `v2009/run`,
-  `v2018/run`). Mudança que valha para as três (motor, plataforma) tem de ser feita três vezes:
-  `Client Source/`, `v2009/Client/` e `v2018/Client Source/` (o `PlatformMac.mm` é igual nas três).
+  `run/` de cada versão ficam dentro da pasta dela. Depois a 2015 também foi para `v2015/` (ver
+  "Layout" acima). Mudança que valha para as três (motor, plataforma) tem de ser feita três vezes:
+  `v2015/Client Source/`, `v2009/Client/` e `v2018/Client Source/` (o `PlatformMac.mm` é igual nas três).
 - `scripts/macos/make-app.sh` gera `build-app/LastChaos.app` ("fino": o executável chama o
   `launcher.sh` deste repositório, com o Homebrew no PATH; log em `~/Library/Logs/LastChaos/launcher.log`;
   assinatura ad hoc). Ícone oficial: o do `LC.exe` do Last Chaos Brasil no Windows (atalho da área de
-  trabalho), em `Client Source/Nksp/res/LC.ico` (48x48 no máximo). O cliente não é um bundle, então o
+  trabalho), em `v2015/Client Source/Nksp/res/LC.ico` (48x48 no máximo). O cliente não é um bundle, então o
   Dock mostrava um ícone de terminal: `LC_APP_ICON` (que o app define) põe o ícone no Dock
   (`PLT_MacSetAppIcon`, nas três versões). O nome no Dock continua "Nksp".
 
@@ -84,12 +93,12 @@ de todas. Ele sobe os servidores da versão se o LoginServer dela não está esc
 tela cheia (`LC_SCREEN=desktop`, padrão dos scripts; `LC_SCREEN=1600x900` para janela): numa janela
 o teclado e o trackpad às vezes ficavam sem foco.
 
-As três versões ficam neste branch (`macos-port`), cada uma na sua pasta. Primeiro foi um branch por
+As três versões ficam neste branch (`macos-port`), cada uma na sua pasta (`v2009/`, `v2015/`, `v2018/`). Primeiro foi um branch por
 versão com a sua worktree; o usuário pediu para unificar (2026-10-20, ver o topo deste arquivo).
 
 | Versão | Pasta | Estado |
 |---|---|---|
-| 2015 (a nossa) | raiz do repositório | completa |
+| 2015 (a nossa) | `v2015/` | completa |
 | 2009 | `v2009/` | servidor e cliente no Mac, jogada pelo usuário em Juno |
 | 2018 | `v2018/` | servidor e cliente no Mac; login, criação de personagem e jogo conferidos pelo usuário (2026-10-20) |
 

@@ -8,12 +8,17 @@ anote o commit/PR ao lado quando fizer sentido.
 **Alvo:** macOS 14+ em Apple Silicon (arm64), clang/Xcode atual, CMake.
 **Fork:** `origin` = PatrickSchifter/LCSource, `upstream` = pwesty/LCSource.
 
-**Como compilar (servidor):**
+**Layout:** cada versão na sua pasta (`v2009/`, `v2015/` — a nossa —, `v2018/`); na raiz, os
+documentos e o launcher (`scripts/macos/launcher.sh`, `scripts/macos/make-app.sh`). Caminhos da 2015
+neste arquivo são relativos a `v2015/`.
+
+**Como compilar (servidor da 2015):**
 
 ```sh
 scripts/macos-deps.sh
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
-ninja -C build            # binários em build/Server Source/
+cd v2015
+cmake -S . -B build-server -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLC_REGION=BRZ -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
+ninja -C build-server     # binários em build-server/Server Source/
 brew install mariadb && brew services start mariadb   # banco local; importar os dumps de openlastchaos/lastchaos-database
 scripts/make-placeholder-maps.py && scripts/run-server.sh start
 ```
@@ -262,7 +267,7 @@ Fontes publicados (cada versão é um branch):
   login, Juno antiga com NPCs no lugar, jogada pelo usuário
 - [~] Assets e banco de cada versão: 2009 feitos (`lc2009_*` do dump de 2016, `.lod` regenerados
   por `v2009/tools/lod2009`); 2018 do pacote do tx00100xt (`lc2018_*`, `~/Projects/LC-2018`)
-- Um branch por versão, cada um na sua worktree (decidido em 2026-10-20); unificados no `macos-port` no mesmo dia, a 2009 em `v2009/` e a 2018 em `v2018/` (`HANDOFF.md`, "Fase V — versões")
+- Um branch por versão, cada um na sua worktree (decidido em 2026-10-20); unificados no `macos-port` no mesmo dia, cada versão na sua pasta (`v2009/`, `v2015/`, `v2018/`) (`HANDOFF.md`, "Fase V — versões")
 - [x] Seletor de versão: `scripts/macos/launcher.sh` (2026-10-20; diálogo do macOS ou argumento; o `.app` vem na Fase F)
 - Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las
 
@@ -353,3 +358,4 @@ ignorando espaços) em cada versão:
 | 2026-10-19 | Fase V: versão 2009 no Mac (servidor, cliente, dados no formato 2009, Juno antiga) | branch `v2009` |
 | 2026-10-20 | Fase V: branches da 2009 juntados; 2018 importada e o porte reaplicado por merge | `v2009` 5f67d65, `v2018` |
 | 2026-10-20 | Fase F: `LastChaos.app` em volta do launcher; 2009 e 2018 unificadas no `macos-port` (`v2009/`, `v2018/`) | 964e8d7, 8df8bf7, 55dda42 |
+| 2026-10-20 | A 2015 em `v2015/`, como as outras; na raiz só docs e o launcher | (este) |
