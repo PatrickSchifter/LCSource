@@ -2,4 +2,4 @@
 -- corrections). An NPC with heading r looks where a player with heading r looks.
 -- Applied after zone0-town-facing.sql. Idempotent.
 UPDATE t_npc_regen SET a_pos_x=1152.24, a_pos_z=962.45, a_pos_r=142.15, a_y_layer=0 WHERE a_index=3663376; -- 253 Animal Trainer (/whereami 142.15)
-UPDATE t_npc_regen SET a_pos_x=1158.96, a_pos_z=950.77, a_pos_r=73.14, a_y_layer=0 WHERE a_index=3663343; -- 149 Storekeeper Bianca (53.14, then "a bit to the left": +20)
+UPDATE t_npc_regen SET a_pos_x=1158.96, a_pos_z=950.77, a_pos_r=93.14, a_y_layer=0 WHERE a_index=3663343; -- 149 Storekeeper Bianca (53.14, then turned left twice by 20)
