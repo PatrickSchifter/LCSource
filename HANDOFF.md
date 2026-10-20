@@ -1,7 +1,36 @@
 # Passagem de contexto — porte do Last Chaos para macOS
 
 Leia isto antes de continuar. O plano e o checklist estão em `PORTING_MACOS.md`; aqui está o
-**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-19.
+**estado do ambiente**, como operar e o que já se aprendeu na prática. Atualizado em 2026-10-20.
+
+## Próximo passo (para o próximo agente) — 2026-10-20
+
+**Fase F: empacotar o launcher num `.app`** que o usuário abre pelo Finder/Dock. Combinado com o usuário
+em 2026-10-20, depois do launcher e da tela de login clássica da 2009.
+
+Estado de partida: as três versões rodam no Mac e o usuário jogou cada uma; `scripts/macos/launcher.sh`
+(neste branch) escolhe a versão, sobe os servidores dela e abre o cliente (ver "Fase V — versões").
+
+O que fazer, nesta ordem (confirme com o usuário as escolhas marcadas com *):
+1. Um `LastChaos.app` cujo executável chama o `launcher.sh` (o diálogo de versão já existe). Info.plist,
+   ícone (`Client Source/Nksp/LC.ico`, ou o `LC.ico` da instalação, convertido em `.icns`).
+   Comece pelo `.app` "fino": ele usa as worktrees, os builds e as instalações de `~/Projects`
+   como estão (é o uso do próprio usuário). Gere-o por script (`scripts/macos/make-app.sh`), não à mão.
+2. Bibliotecas: hoje o cliente liga no Homebrew (`otool -L build-client-mac/Bin/*`): boost (atomic,
+   chrono, container, date_time, thread), SDL3, libvorbisfile, glslang (2 dylibs) e o loader do
+   Vulkan; o MoltenVK vem pelo ICD do Homebrew. Os dylibs do motor (`Engine`, `EntitiesMP`, `GameMP`,
+   `Shaders`) já são `@rpath`. Para um `.app` que funcione em outro Mac: copiar essas bibliotecas
+   para `Contents/Frameworks`, reescrever com `install_name_tool`, levar o MoltenVK e o JSON do ICD
+   (`VK_ICD_FILENAMES`/`VK_DRIVER_FILES`). *Perguntar se o `.app` precisa rodar fora deste Mac
+   antes de fazer isso; se não, o passo 1 basta.
+3. *Servidores dentro do `.app`?* Hoje cada versão usa os binários e o `run/` da sua worktree e o
+   MariaDB do Homebrew. Levar tudo para dentro é bem mais trabalho (banco incluso); perguntar.
+4. *Assinatura: ad hoc (`codesign -s -`) basta para uso local; notarização só para distribuir.
+5. Diretórios do usuário (`~/Library/Application Support/LastChaos`): o jogo grava no próprio
+   diretório (`Data/Etc/ps.dat`, logs). Só mexer se o `.app` for levar os assets dentro.
+
+Depois: CI (GitHub Actions, `macos-14`) e as auditorias (item 6 abaixo). Nada foi enviado ao
+GitHub nesta rodada: `macos-port`, `v2009` e `v2018` estão só locais (perguntar antes do push).
 
 ## Onde estamos
 
@@ -34,11 +63,10 @@ com skinning na CPU), depois Metal, por último Vulkan; plataforma em **SDL3** (
 
 Decidido (2026-10-19), com a renderização concluída, a ordem do que vem agora:
 
-4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`), ver "Fase V — versões" abaixo: a 2009
-   está portada (branch `v2009`), a 2018 em andamento (branch `v2018`); faltam assets e banco da
-   2018 e o launcher que escolhe build, assets e servidor correspondentes. O pacote do tx00100xt
-   foi aprovado pelo usuário (2026-10-20) só para os assets e o banco da 2018.
-5. **Empacotamento** (Fase F): `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
+4. **Seletor de versões** (Fase V do `PORTING_MACOS.md`), ver "Fase V — versões" abaixo: feito
+   (2026-10-20). 2009 (`v2009`) e 2018 (`v2018`) portadas e jogadas; `scripts/macos/launcher.sh`.
+   O pacote do tx00100xt foi aprovado pelo usuário (2026-10-20) só para os assets e o banco da 2018.
+5. **Empacotamento** (Fase F) — **o próximo**, ver o topo deste arquivo: `.app` (Info.plist, ícone, bibliotecas dentro, inclusive o
    MoltenVK/loader do Vulkan e o glslang, hoje do Homebrew), diretórios do usuário, assinatura.
 6. Por último: **CI** (GitHub Actions, `macos-14`) e as **auditorias** (pacotes com `#pragma pack`,
    leitura de `.bin` via struct, warnings que indicam bug).
