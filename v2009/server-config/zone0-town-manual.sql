@@ -20,3 +20,20 @@ UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Weapo
 UPDATE t_shop SET a_pos_r=-140 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Baran: 10 more to the right
 UPDATE t_npc_regen SET a_pos_r=-140 WHERE a_index=3663188; -- Ferreiro: 10 more to the right
 UPDATE t_shop SET a_pos_r=-175 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Aluguel de Arma: 45 more to the right
+-- Turned in game (left = +, right = -).
+UPDATE t_npc_regen SET a_pos_r=-60.0 WHERE a_index=3663187; -- 89 Líder da Guarda Real: -150 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-60.0 WHERE a_index=3663933; -- 1155 Soldado Gerente da Guerra: -150 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-5.0 WHERE a_index=3663237; -- 110 Frade: -50 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=-180.0 WHERE a_index=3663346; -- 179 Crean: -150 turned 30 to the right
+UPDATE t_npc_regen SET a_pos_r=-5.0 WHERE a_index=3663239; -- 112 Fazendeiro: -95 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-55.0 WHERE a_index=3663189; -- 92 Alfaiata: 35 turned 90 to the right
+UPDATE t_npc_regen SET a_pos_r=-45.0 WHERE a_index=3663238; -- 111 Feiticeira: -90 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=55.0 WHERE a_index=3663190; -- 93 Teleporte Eteal: 100 turned 45 to the right
+UPDATE t_npc_regen SET a_pos_r=20.0 WHERE a_index=3663182; -- 71 Mestre Dungeon: -70 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-45.0 WHERE a_index=3663312; -- 139 Lorein: -60 turned 15 to the left
+UPDATE t_npc_regen SET a_pos_r=-80.0 WHERE a_index=3663185; -- 76 Mestre Knight: -125 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=85.0 WHERE a_index=3663184; -- 75 Mestre Titan: 40 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=155.0 WHERE a_index=3663378; -- 255 Mestre Sorcerer: 110 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=80.0 WHERE a_index=3663344; -- 176 Mestre Rogue: 170 turned 90 to the right
+UPDATE t_npc_regen SET a_pos_r=-100.0 WHERE a_index=3663186; -- 77 Mestre Healer: -115 turned 15 to the left
+UPDATE t_npc_regen SET a_pos_r=-100.0 WHERE a_index=3663308; -- 123 Mestre Mage: -10 turned 90 to the right
