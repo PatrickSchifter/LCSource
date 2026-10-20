@@ -256,10 +256,13 @@ Fontes publicados (cada versão é um branch):
 - Servidor: [openlastchaos/lastchaos-source-server](https://github.com/openlastchaos/lastchaos-source-server), mesmos branches
 
 - [x] Medir quanto cada versão difere do nosso fonte (Engine x camada de jogo) — 2026-10-19, abaixo
-- [ ] Portar a versão 2018 (cliente e servidor) reaplicando as mudanças do porte — ordem a confirmar
-  com o usuário (ver a medição)
-- [ ] Portar a versão 2009 (cliente e servidor) reaplicando as mudanças do Engine
-- [ ] Assets e banco de cada versão
+- [~] Portar a versão 2018 (cliente e servidor): branch `v2018`, merge de três vias do `macos-port`
+  sobre os fontes publicados (2026-10-20); falta compilar e jogar
+- [x] Portar a versão 2009 (cliente e servidor): branch `v2009` (2026-10-19, juntado em `5f67d65`);
+  login, Juno antiga com NPCs no lugar, jogada pelo usuário
+- [~] Assets e banco de cada versão: 2009 feitos (`lc2009_*` do dump de 2016, `.lod` regenerados
+  por `v2009/tools/lod2009`); 2018 do pacote do tx00100xt (aprovado), ainda não trazidos
+- Um branch por versão, cada um na sua worktree (decidido em 2026-10-20; `HANDOFF.md`, "Fase V — versões")
 - [ ] Seletor de versão (launcher: build do cliente, assets e servidor correspondentes)
 - Até lá: mudanças do Engine em commits separados das mudanças de jogo, para poder reaplicá-las
 
@@ -346,4 +349,6 @@ ignorando espaços) em cada versão:
 | 2026-10-19 | C8: Metal M5, Metal como padrão no Mac (`LC_GFX_API=opengl` para o OpenGL) | 3cfa01a |
 | 2026-10-19 | C8: Vulkan V0, o backend Metal sobre a interface comum `GpuDevice` | d9459a2 |
 | 2026-10-19 | C8: Vulkan V1–V5, backend `GAT_VK` no MoltenVK (Juno visto, validação limpa) | cf7102f |
-| 2026-10-19 | Fase V: medição das versões 2009/2015/2018 contra o nosso fonte e reaplicação do diff do porte | |
+| 2026-10-19 | Fase V: medição das versões 2009/2015/2018 contra o nosso fonte e reaplicação do diff do porte | 74370c9 |
+| 2026-10-19 | Fase V: versão 2009 no Mac (servidor, cliente, dados no formato 2009, Juno antiga) | branch `v2009` |
+| 2026-10-20 | Fase V: branches da 2009 juntados; 2018 importada e o porte reaplicado por merge | `v2009` 5f67d65, `v2018` |
