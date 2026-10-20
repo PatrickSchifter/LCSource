@@ -53,6 +53,22 @@ Falta (perguntado ao usuário, sem resposta ainda):
 
 Depois: CI (GitHub Actions, `macos-14`) e as auditorias (item 6 abaixo).
 
+## Servidores na nuvem (2026-10-20)
+
+Pedido do usuário: os servidores numa instância Oracle Cloud. Tudo em `deploy/linux/` (o README de lá
+explica montar, mandar e operar). Estado:
+- Instância `oci-ia-api` (136.248.115.250, São Paulo, x86_64, 1 GB; o projeto prontu-api que rodava lá
+  foi apagado a pedido). Imagem Docker `lastchaos-servers` com as três versões, cross-compilada no Mac
+  (o gcc quebrava sob QEMU). Rede: `lc-network.service` põe o IP público no `lo` e faz DNAT das portas
+  do jogo; a lista de segurança da sub-rede `public-sn` libera 4001/4010/4201/4210/4301/4310.
+- Banco: MariaDB local (container `db`), porque o da layerbase (Virgínia) tinha 120 ms por consulta e
+  os servidores consultam uma de cada vez. A layerbase recebe backup a cada 6 horas (`lc-backup.timer`).
+  Senhas só na instância (`/srv/lc/lc.env`, `/srv/lc/backup.cnf`).
+- **Só a 2009 roda**: 1 GB não comporta as três e o banco. A Ampere A1 grátis (2 OCPU/12 GB nesta
+  conta) e uma segunda Micro deram "Out of capacity" em São Paulo; tentar de novo e migrar (na A1, a
+  imagem é arm64, sem cross-compilação).
+- No Mac: "<versão> (nuvem)" no launcher.
+
 ## Onde estamos
 
 - Os 6 servidores rodam no Mac (arm64) contra MariaDB local.
