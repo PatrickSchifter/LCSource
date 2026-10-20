@@ -72,7 +72,7 @@ bool CLuckyDrawBox::Load()
 		dbQuest.GetRec("a_random",	(int&)td[j].random);
 
 		char strTmp[512]= {0,};
-		strcpy(strTmp, "SELECT * FROM t_luckydrawNeed WHERE a_luckydraw_idx=");
+		strcpy(strTmp, "SELECT * FROM t_luckydrawneed WHERE a_luckydraw_idx=");
 		IntCat(strTmp, td[j].index, false);
 		strcat(strTmp, " ORDER BY a_item_idx");
 
@@ -98,7 +98,7 @@ bool CLuckyDrawBox::Load()
 			td[j].needList = ntd;
 		}
 
-		strcpy(strTmp, "SELECT * FROM t_luckydrawResult WHERE a_luckydraw_idx=");
+		strcpy(strTmp, "SELECT * FROM t_luckydrawresult WHERE a_luckydraw_idx=");
 		IntCat(strTmp, td[j].index, false);
 		strcat(strTmp, " ORDER BY a_item_idx");
 

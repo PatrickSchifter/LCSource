@@ -3124,7 +3124,7 @@ void DBProcess::SelectChar( boost::any& argv )
 
 	// 유료 아이템 사용시간 읽기
 	std::string select_cashItemdate_query = boost::str(boost::format(
-			"SELECT a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new FROM t_cashItemdate WHERE a_portal_idx=%1%") % m_index);
+			"SELECT a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new FROM t_cashitemdate WHERE a_portal_idx=%1%") % m_index);
 	dbChar.SetQuery(select_cashItemdate_query.c_str());
 	if (dbChar.Open())
 	{

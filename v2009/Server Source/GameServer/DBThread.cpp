@@ -1433,32 +1433,32 @@ bool CDBThread::UpdateChar(CDescriptor* d)
 	// 유료아이템 사용시간 업데이트
 #ifdef KJTEST
 	// 테이블에 해당 캐릭터의 레코드가 있는지 확인
-	sprintf(m_buf, "select * from t_cashItemdate where a_portal_idx=%d", d->m_index);
+	sprintf(m_buf, "select * from t_cashitemdate where a_portal_idx=%d", d->m_index);
 	dbChar.SetQuery(m_buf);
 	dbChar.Open();
 
 	if( dbChar.m_nrecords < 1)
 	{	// 해당 캐릭터의 레코드가 없는 경우
 		sprintf(m_buf,
-			"insert into t_cashItemdate(a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) values(%d, %d, 0, 0, 0)", 
+			"insert into t_cashitemdate(a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) values(%d, %d, 0, 0, 0)", 
 			d->m_index, pChar->m_memposTime);
 	}
 	else
 	{	// 해당 캐릭터의 레코드가 있는 경우
 		sprintf(m_buf,
-			"UPDATE t_cashItemdate SET a_mempos_new=%d where a_portal_idx=%d",
+			"UPDATE t_cashitemdate SET a_mempos_new=%d where a_portal_idx=%d",
 			pChar->m_memposTime, d->m_index);
 	}
 
 	dbChar.SetQuery(m_buf);
 	dbChar.Update();
 #else
-	sprintf(m_buf, "UPDATE t_cashItemdate SET a_mempos_new = %d where a_portal_idx = %d", pChar->m_memposTime, d->m_index);
+	sprintf(m_buf, "UPDATE t_cashitemdate SET a_mempos_new = %d where a_portal_idx = %d", pChar->m_memposTime, d->m_index);
 	dbChar.SetQuery(m_buf);
 	dbChar.Update();
 	if (dbChar.m_nrecords < 1)
 	{
-		sprintf(m_buf, "insert into t_cashItemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) values ( %d, %d, 0, 0, 0 ) ", d->m_index, pChar->m_memposTime);
+		sprintf(m_buf, "insert into t_cashitemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) values ( %d, %d, 0, 0, 0 ) ", d->m_index, pChar->m_memposTime);
 		dbChar.SetQuery(m_buf);
 		if (!dbChar.Update())
 		{
@@ -1476,7 +1476,7 @@ bool CDBThread::UpdateChar(CDescriptor* d)
 #ifdef CHARSLOTEXT_CARD
 	for(int j = 0; j < MAX_EXT_CHAR_COUNT; j++)
 	{
-		sprintf(m_buf, "UPDATE t_cashItemdate SET a_charslot%d_new = %d where a_portal_idx = %d", j, pChar->m_charslotTime[j], d->m_index);
+		sprintf(m_buf, "UPDATE t_cashitemdate SET a_charslot%d_new = %d where a_portal_idx = %d", j, pChar->m_charslotTime[j], d->m_index);
 		dbChar.SetQuery(m_buf);
 		if (!dbChar.Update())
 		{
@@ -1489,7 +1489,7 @@ bool CDBThread::UpdateChar(CDescriptor* d)
 	}
 #endif // CHARSLOTEXT_CARD
 
-	sprintf(m_buf, "UPDATE t_cashItemdate SET a_stashext_new = %d where a_portal_idx = %d", pChar->m_stashextTime, d->m_index);
+	sprintf(m_buf, "UPDATE t_cashitemdate SET a_stashext_new = %d where a_portal_idx = %d", pChar->m_stashextTime, d->m_index);
 	dbChar.SetQuery(m_buf);
 	if (!dbChar.Update())
 	{
@@ -2273,7 +2273,7 @@ bool CDBThread::OnUserDB(CDescriptor* d)
 	remain0 = remain1 = 0;
 
 #ifdef CHARSLOTEXT_CARD
-	sprintf(m_buf, "select a_charslot0_new, a_charslot1_new from t_cashItemdate "
+	sprintf(m_buf, "select a_charslot0_new, a_charslot1_new from t_cashitemdate "
 		"where a_portal_idx = %d ", d->m_index);
 	cmd.SetQuery(m_buf);
 
@@ -2281,7 +2281,7 @@ bool CDBThread::OnUserDB(CDescriptor* d)
 
 	if( cmd.m_nrecords < 1)
 	{
-		sprintf(m_buf, "insert into t_cashItemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) "
+		sprintf(m_buf, "insert into t_cashitemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) "
 			"values (%d, 0, 0, 0, 0) ", d->m_index);
 		cmd.SetQuery(m_buf);
 		cmd.Update();
@@ -2551,7 +2551,7 @@ bool CDBThread::OnNewCharDB(CDescriptor* d)
 	dbChar.Init(&gserver.m_dbchar);
 #ifdef CHARSLOTEXT_CARD
 
-	sprintf(m_buf, "select a_charslot0_new , a_charslot1_new from t_cashItemdate where a_portal_idx = %d", d->m_index);
+	sprintf(m_buf, "select a_charslot0_new , a_charslot1_new from t_cashitemdate where a_portal_idx = %d", d->m_index);
 	dbChar.SetQuery(m_buf);
 
 	int slot0, slot1, remain0, remain1;
@@ -6957,7 +6957,7 @@ bool CDBThread::OnPlayCharDB(CDescriptor* d)
 
 #ifdef FEEITEM
 	// 유료 아이템 사용시간 읽기
-	strcpy(m_buf, "SELECT a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new FROM t_cashItemdate WHERE a_portal_idx=");
+	strcpy(m_buf, "SELECT a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new FROM t_cashitemdate WHERE a_portal_idx=");
 	IntCat(m_buf, d->m_index, false);
 	dbChar.SetQuery(m_buf);
 	if (dbChar.Open())

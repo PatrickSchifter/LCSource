@@ -1545,7 +1545,7 @@ typedef enum _tagPetColorType
 #endif //ATTACK_PET
 
 
-// t_cashItemdate 필드명
+// t_cashitemdate 필드명
 #define CASH_ITEM_DATE_FIELD_MEMPOS			"a_mempos_new"
 #define CASH_ITEM_DATE_FIELD_CHAR_SLOT0		"a_charslot0_new"
 #define CASH_ITEM_DATE_FIELD_CHAR_SLOT1		"a_charslot1_new"

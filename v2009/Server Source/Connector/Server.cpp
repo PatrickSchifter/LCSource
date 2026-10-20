@@ -677,7 +677,7 @@ bool CServer::ConnectDB()
 	cmdUser.SetQuery("SELECT * FROM t_new_promoitem LIMIT 0");
 	if( !cmdUser.Open() )
 	{
-		GAMELOG << init("ERROR : NEW PROMOTION ITEM TABLE NOT FOUND:t_new_promoItem") << end;
+		GAMELOG << init("ERROR : NEW PROMOTION ITEM TABLE NOT FOUND:t_new_promoitem") << end;
 		return false;
 	}
 #endif // NEW_SERIAL_PACKAGE_EVENT

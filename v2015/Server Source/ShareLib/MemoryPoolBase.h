@@ -15,7 +15,7 @@ public:
 	void * operator new (size_t size)
 	{
 		(void)size;
-		return (void *)(m_pool.malloc());
+		return (void *)(pool().malloc());
 	}
 
 	void * operator new (size_t size, void *p)
@@ -25,7 +25,7 @@ public:
 
 	void operator delete (void *ptr)
 	{
-		m_pool.free( (T *)ptr );
+		pool().free( (T *)ptr );
 	}
 
 	void operator delete (void *ptr, T *p)
@@ -33,11 +33,10 @@ public:
 	}
 
 private:
-	static boost::pool<>	m_pool;
+	// built on first use: objects with these pools are created by other files' static
+	// initializers (bnf's instance), whose order against a static member's is unspecified
+	static boost::pool<>& pool() { static boost::pool<> p(sizeof(T), 32); return p; }
 };
-
-template <class T>
-boost::pool<>	MemoryPoolBase<T>::m_pool(sizeof(T), 32);
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -52,8 +51,8 @@ public:
 	{
 		(void)size;
 
-		boost::recursive_mutex::scoped_lock lock(m_mutex);
-		return (void *)(m_pool.malloc());
+		boost::recursive_mutex::scoped_lock lock(mutex());
+		return (void *)(pool().malloc());
 	}
 
 	void * operator new (size_t size, void *p)
@@ -63,8 +62,8 @@ public:
 
 	void operator delete (void *ptr)
 	{
-		boost::recursive_mutex::scoped_lock lock(m_mutex);
-		m_pool.free( (T *)ptr );
+		boost::recursive_mutex::scoped_lock lock(mutex());
+		pool().free( (T *)ptr );
 	}
 
 	void operator delete (void *ptr, T *p)
@@ -72,14 +71,9 @@ public:
 	}
 
 private:
-	static boost::pool<>	m_pool;
-	static boost::recursive_mutex	m_mutex;
+	// built on first use (see MemoryPoolBase)
+	static boost::pool<>& pool() { static boost::pool<> p(sizeof(T), 32); return p; }
+	static boost::recursive_mutex& mutex() { static boost::recursive_mutex m; return m; }
 };
-
-template <class T>
-boost::pool<>	MemoryPoolBaseWithMutex<T>::m_pool(sizeof(T), 32);
-
-template <class T>
-boost::recursive_mutex	MemoryPoolBaseWithMutex<T>::m_mutex;
 
 #endif

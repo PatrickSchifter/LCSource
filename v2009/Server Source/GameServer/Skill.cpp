@@ -661,7 +661,7 @@ bool CMagicProtoList::Load()
 #ifdef NIGHTSHADOW_SKILL
 			cmd1.GetRec("a_togle", bTogel);
 #endif // NIGHTSHADOW_SKILL
-			sprintf(g_buf, "SELECT * FROM t_magicLevel WHERE a_index=%d ORDER BY a_level", index);
+			sprintf(g_buf, "SELECT * FROM t_magiclevel WHERE a_index=%d ORDER BY a_level", index);
 			
 			cmd2.SetQuery(g_buf);
 			if (!cmd2.Open())
@@ -923,7 +923,7 @@ bool CSkillProtoList::Load()
 		cmd1.GetRec("a_app_needWearingType", appWearing);
 #endif // NIGHTSHADOW_SKILL
 
-		sprintf(g_buf, "SELECT * FROM t_skillLevel WHERE a_index=%d ORDER BY a_level", index);
+		sprintf(g_buf, "SELECT * FROM t_skilllevel WHERE a_index=%d ORDER BY a_level", index);
 		cmd2.SetQuery(g_buf);
 		if (!cmd2.Open())
 			return false;

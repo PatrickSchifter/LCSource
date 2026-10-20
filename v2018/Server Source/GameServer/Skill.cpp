@@ -608,7 +608,7 @@ bool CMagicProtoList::Load()
 			cmd1.GetRec("a_htp", htp);
 			cmd1.GetRec("a_togle", bTogel);
 			std::string select_magicLevel_query = boost::str(boost::format(
-					"SELECT * FROM t_magicLevel WHERE a_index=%d ORDER BY a_level") % index);
+					"SELECT * FROM t_magiclevel WHERE a_index=%d ORDER BY a_level") % index);
 
 			cmd2.SetQuery(select_magicLevel_query);
 			if (!cmd2.Open())
@@ -978,7 +978,7 @@ bool CSkillProtoList::Load()
 #endif // EXTREME_CUBE_VER2
 		cmd1.GetRec("a_summon_idx", summonIDX);
 		std::string select_skillLevel_query = boost::str(boost::format(
-				"SELECT * FROM t_skillLevel WHERE a_index=%d ORDER BY a_level") % index);
+				"SELECT * FROM t_skilllevel WHERE a_index=%d ORDER BY a_level") % index);
 		cmd2.SetQuery(select_skillLevel_query);
 		if (!cmd2.Open())
 			return false;

@@ -1,15 +1,43 @@
-# The servers of the three versions on the remote host (deploy/linux/README.md). Host networking:
-# each version has its own ports (40xx/41xx, 42xx, 43xx/44xx) and the servers talk on 127.0.0.1.
-# /srv/lc/lc.env holds LC_PUBLIC_IP and the database (LC_DB_HOST, LC_DB_PORT, LC_DB_USER,
-# LC_DB_PASSWORD); it is not in the repository.
+# The servers of the three versions and their database on the remote host (deploy/linux/README.md).
+# Host networking: each version has its own ports (40xx/41xx, 42xx, 43xx/44xx) and everything talks
+# on 127.0.0.1. /srv/lc/lc.env holds LC_PUBLIC_IP, the game's database login (LC_DB_HOST, LC_DB_PORT,
+# LC_DB_USER, LC_DB_PASSWORD) and MARIADB_ROOT_PASSWORD; it is not in the repository.
 x-server: &server
   image: lastchaos-servers
   network_mode: host
   restart: unless-stopped
   env_file: /srv/lc/lc.env
   stop_grace_period: 30s
+  depends_on:
+    db: { condition: service_healthy }
 
 services:
+  # The game's database, local so each query takes well under a millisecond (the servers query
+  # one at a time). Table names compared without case, as on the Mac where the data came from;
+  # no strict mode (the 2015 and 2018 servers do not turn it off). lc-backup.sh copies it to the
+  # cloud database.
+  db:
+    image: mariadb:11.8
+    network_mode: host
+    restart: unless-stopped
+    env_file: /srv/lc/lc.env
+    command:
+      - --bind-address=127.0.0.1
+      - --port=3306
+      - --lower-case-table-names=1
+      - --sql-mode=NO_ENGINE_SUBSTITUTION
+      - --character-set-server=utf8mb4
+      - --innodb-buffer-pool-size=96M
+      - --performance-schema=OFF
+      - --max-connections=100
+      - --skip-name-resolve
+    volumes:
+      - /srv/lc/mariadb:/var/lib/mysql
+      - /srv/lc/backup.cnf:/backup.cnf:ro   # the cloud database, for lc-backup.sh
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 30
   v2009:
     <<: *server
     command: v2009

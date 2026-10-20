@@ -553,23 +553,23 @@ void DBManager::_SaveCharacterMemposQuery(std::vector<std::string> & vec, CPC* p
 void DBManager::_SaveCharacterCashItemDateQuery(std::vector<std::string> & vec, CPC* pChar, int descriptorUserIndex)
 {
 	std::string selectQuery = boost::str(boost::format(
-			"SELECT a_portal_idx FROM t_cashItemdate WHERE a_portal_idx = %d LIMIT 1") % descriptorUserIndex);
+			"SELECT a_portal_idx FROM t_cashitemdate WHERE a_portal_idx = %d LIMIT 1") % descriptorUserIndex);
 	vec.push_back(selectQuery);
 
 	std::string updateQuery;
 	updateQuery = boost::str(boost::format(
-								 "UPDATE t_cashItemdate SET a_mempos_new = %d where a_portal_idx = %d") % pChar->m_memposTime % descriptorUserIndex);
+								 "UPDATE t_cashitemdate SET a_mempos_new = %d where a_portal_idx = %d") % pChar->m_memposTime % descriptorUserIndex);
 	vec.push_back(updateQuery);
 
 	std::string insertQuery;
 	insertQuery.reserve(MAX_DB_QUERY);
 	insertQuery = boost::str(boost::format(
-								 "INSERT INTO t_cashItemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) VALUES ( %d, %d, 0, 0, 0 )") % descriptorUserIndex % pChar->m_memposTime);
+								 "INSERT INTO t_cashitemdate (a_portal_idx, a_mempos_new, a_charslot0_new, a_charslot1_new, a_stashext_new) VALUES ( %d, %d, 0, 0, 0 )") % descriptorUserIndex % pChar->m_memposTime);
 	vec.push_back(insertQuery);
 
 	std::string cashItemStashQuery;
 	cashItemStashQuery = boost::str(boost::format(
-										"UPDATE t_cashItemdate SET a_stashext_new = %d where a_portal_idx = %d") % pChar->m_stashextTime % descriptorUserIndex);
+										"UPDATE t_cashitemdate SET a_stashext_new = %d where a_portal_idx = %d") % pChar->m_stashextTime % descriptorUserIndex);
 
 	vec.push_back(cashItemStashQuery);
 }
