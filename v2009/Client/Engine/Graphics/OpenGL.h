@@ -1,0 +1,155 @@
+#ifndef SE_INCL_OPENGL_H
+#define SE_INCL_OPENGL_H
+#ifdef PRAGMA_ONCE
+  #pragma once
+#endif
+
+#include "gl_types.h"
+
+/* rcg10042001 wraped for platform. */
+#if (defined _MSC_VER)
+#define DLLFUNCTION(dll, output, name, inputs, params, required) \
+  extern output (__stdcall *p##name) inputs
+#elif (defined PLATFORM_UNIX)
+#define DLLFUNCTION(dll, output, name, inputs, params, required) \
+  extern output (*p##name) inputs
+  #define __stdcall
+#else
+  #error please define your platform here.
+#endif
+
+#include "gl_functions.h"
+
+#undef DLLFUNCTION
+
+// extensions
+extern void (__stdcall *pglLockArraysEXT)(GLint first, GLsizei count);
+extern void (__stdcall *pglUnlockArraysEXT)(void);
+
+extern GLboolean (__stdcall *pwglSwapIntervalEXT)(GLint interval);
+extern GLint     (__stdcall *pwglGetSwapIntervalEXT)(void);
+
+extern void (__stdcall *pglActiveTextureARB)(GLenum texunit);
+extern void (__stdcall *pglClientActiveTextureARB)(GLenum texunit);
+
+// ARB vertex and fragment programs
+extern void (__stdcall *pglGenProgramsARB)(GLsizei n, GLuint *programs);
+extern void (__stdcall *pglDeleteProgramsARB)(GLsizei n, const GLuint *programs);
+extern void (__stdcall *pglBindProgramARB)(GLenum target, GLuint program);
+extern void (__stdcall *pglProgramStringARB)(GLenum target, GLenum format, GLsizei len, const GLvoid *string);
+extern void (__stdcall *pglProgramEnvParameter4fvARB)(GLenum target, GLuint index, const GLfloat *params);
+extern void (__stdcall *pglGetProgramEnvParameterfvARB)(GLenum target, GLuint index, GLfloat *params);
+extern void (__stdcall *pglGetProgramivARB)(GLenum target, GLenum pname, GLint *params);
+extern void (__stdcall *pglVertexAttribPointerARB)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
+extern void (__stdcall *pglEnableVertexAttribArrayARB)(GLuint index);
+extern void (__stdcall *pglDisableVertexAttribArrayARB)(GLuint index);
+
+// ARB vertex buffer objects
+extern void (__stdcall *pglGenBuffersARB)(GLsizei n, GLuint *buffers);
+extern void (__stdcall *pglDeleteBuffersARB)(GLsizei n, const GLuint *buffers);
+extern void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer);
+extern void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage);
+extern void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data);
+
+// EXT framebuffer objects (render targets)
+extern void   (__stdcall *pglGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers);
+extern void   (__stdcall *pglDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers);
+extern void   (__stdcall *pglBindFramebufferEXT)(GLenum target, GLuint framebuffer);
+extern void   (__stdcall *pglFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void   (__stdcall *pglGenRenderbuffersEXT)(GLsizei n, GLuint *renderbuffers);
+extern void   (__stdcall *pglDeleteRenderbuffersEXT)(GLsizei n, const GLuint *renderbuffers);
+extern void   (__stdcall *pglBindRenderbufferEXT)(GLenum target, GLuint renderbuffer);
+extern void   (__stdcall *pglRenderbufferStorageEXT)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+extern void   (__stdcall *pglFramebufferRenderbufferEXT)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+extern GLenum (__stdcall *pglCheckFramebufferStatusEXT)(GLenum target);
+
+#ifdef PLATFORM_WIN32 /* !!! FIXME: Move to abstraction layer. --rcg. */
+// t-buffer support
+extern char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);
+extern BOOL  (__stdcall *pwglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+extern BOOL  (__stdcall *pwglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int *piAttributes, int *piValues);
+#endif
+extern void  (__stdcall *pglTBufferMask3DFX)(GLuint mask);
+
+// GL_NV_vertex_array_range & GL_NV_fence
+#ifdef PLATFORM_WIN32 /* !!! FIXME: Move to abstraction layer. --rcg. */
+extern void *(__stdcall *pwglAllocateMemoryNV)(GLint size, GLfloat readfreq, GLfloat writefreq, GLfloat priority);
+extern void  (__stdcall *pwglFreeMemoryNV)(void *pointer);
+#endif
+extern void  (__stdcall *pglVertexArrayRangeNV)(GLsizei length, void *pointer);
+extern void  (__stdcall *pglFlushVertexArrayRangeNV)(void);
+
+extern GLboolean (__stdcall *pglTestFenceNV)(GLuint fence);
+extern GLboolean (__stdcall *pglIsFenceNV)(GLuint fence);
+extern void  (__stdcall *pglGenFencesNV)(GLsizei n, GLuint *fences);
+extern void  (__stdcall *pglDeleteFencesNV)(GLsizei n, const GLuint *fences);
+extern void  (__stdcall *pglSetFenceNV)(GLuint fence, GLenum condition);
+extern void  (__stdcall *pglFinishFenceNV)(GLuint fence);
+extern void  (__stdcall *pglGetFenceivNV)(GLuint fence, GLenum pname, GLint *params);
+
+// ATI GL_ATI[X]_pn_triangles
+extern void  (__stdcall *pglPNTrianglesiATI)(GLenum pname, GLint param);
+extern void  (__stdcall *pglPNTrianglesfATI)(GLenum pname, GLfloat param);
+
+// GL_NV_occlusion_query
+extern void (__stdcall *pglGenOcclusionQueriesNV)(GLsizei n, GLuint *ids);
+extern void (__stdcall *pglDeleteOcclusionQueriesNV)(GLsizei n, const GLuint *ids);
+extern void (__stdcall *pglBeginOcclusionQueryNV)(GLuint id);
+extern void (__stdcall *pglEndOcclusionQueryNV)(void);
+extern void (__stdcall *pglGetOcclusionQueryivNV)(GLuint id, GLenum pname, GLint *params);
+extern void (__stdcall *pglGetOcclusionQueryuivNV)(GLuint id, GLenum pname, GLuint *params);
+extern GLboolean (__stdcall *pglIsOcclusionQueryNV)(GLuint id);
+
+// some ARB texture compression functions
+extern void (__stdcall *pglCompressedTexImageARB)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
+extern void (__stdcall *pglGetCompressedTexImageARB)(GLenum target, GLint lod, GLvoid *img);
+
+
+
+// additional tools -----------------------------------------------------
+
+
+// set color from croteam format
+inline void glCOLOR( COLOR col)
+{
+/* rcg10052001 Platform-wrappers. */
+#if (defined USE_PORTABLE_C)
+	col = ( ((col << 24)            ) |
+            ((col << 8) & 0x00FF0000) |
+            ((col >> 8) & 0x0000FF00) |
+            ((col >> 24)            ) );
+
+#else
+  __asm {
+    mov     eax,dword ptr [col]
+    bswap   eax
+    mov     dword ptr [col],eax
+  }
+#endif
+
+  pglColor4ubv((GLubyte*)&col);
+}
+
+// check windows errors always
+extern void WIN_CheckError(BOOL bRes, const char *strDescription);
+#define WIN_CHECKERROR(result, string)   WIN_CheckError(result, string);
+
+// common textures
+extern GLuint _uiFillTextureNo;    // binding for flat fill emulator texture
+extern GLuint _uiFogTextureNo;     // binding for fog texture
+extern GLuint _uiHazeTextureNo;    // binding for haze texture
+extern GLuint _uiPatternTextureNo; // binding for pattern texture
+
+
+// internal!
+inline void pglActiveTexture(INDEX texunit)
+{
+  ASSERT( texunit>=0 && texunit<4);
+  ASSERT( pglActiveTextureARB!=NULL);
+  ASSERT( pglClientActiveTextureARB!=NULL);
+  pglActiveTextureARB(      GLenum(GL_TEXTURE0_ARB+texunit));
+  pglClientActiveTextureARB(GLenum(GL_TEXTURE0_ARB+texunit));
+}
+
+#endif  /* include-once check. */
+

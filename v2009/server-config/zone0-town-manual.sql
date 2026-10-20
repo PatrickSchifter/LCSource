@@ -1,0 +1,39 @@
+-- Zone 0 (old Juno) NPC positions and headings set by hand in game (/whereami and the user's
+-- corrections). An NPC with heading r looks where a player with heading r looks.
+-- Applied after zone0-town-facing.sql. Idempotent.
+UPDATE t_npc_regen SET a_pos_x=1152.24, a_pos_z=962.45, a_pos_r=142.15, a_y_layer=0 WHERE a_index=3663376; -- 253 Animal Trainer (/whereami 142.15)
+UPDATE t_npc_regen SET a_pos_x=1158.96, a_pos_z=950.77, a_pos_r=93.14, a_y_layer=0 WHERE a_index=3663343; -- 149 Storekeeper Bianca (53.14, then turned left twice by 20)
+UPDATE t_npc_regen SET a_pos_r=-10, a_y_layer=0 WHERE a_index=3663380; -- 408 Estella (Leonor in BR): 80 from zone0-town-facing.sql, turned 90 to the right
+UPDATE t_npc_regen SET a_pos_r=15, a_y_layer=0 WHERE a_index=3663838; -- 834 Phoenix Club Master (Ikki in BR): -75 from zone0-town-facing.sql, turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=20, a_y_layer=0 WHERE a_index=3663309; -- 136 Captain Leon (Capitão Leon): -70 from zone0-town-facing.sql, turned 90 to the left
+-- Randy, Gerel and Coen face the same way as Merchant Geres (shop 20, -80 from zone0-town-facing.sql).
+UPDATE t_npc_regen SET a_pos_r=-80 WHERE a_index=3663377; -- 254 Domain Merchant (Randy)
+UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=78; -- Scroll Trader (Vendedor Ambulante Gerel)
+UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=226; -- Magical Shopkeeper (Armarinheiro Mágico Coen)
+UPDATE t_shop SET a_pos_r=-80 WHERE a_zone_num=0 AND a_keeper_idx=517; -- Pet Merchant (Vendedor Polly): same as Geres
+UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663125; -- 55 Transmuter (Alkemist): -85 from zone0-town-facing.sql, turned 45 to the right
+-- Rowel, Baran, Ferreiro and Aluguel de Arma face the same way as the Alkemist (-130).
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=90; -- Armor Trader (Vendedor de Armaduras Rowel)
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Weapon Trader (Vendedor de Armas Baran)
+UPDATE t_npc_regen SET a_pos_r=-130 WHERE a_index=3663188; -- 91 Miner Trainer (Ferreiro)
+UPDATE t_shop SET a_pos_r=-130 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Weapon Lending Dealer (Aluguel de Arma)
+UPDATE t_shop SET a_pos_r=-140 WHERE a_zone_num=0 AND a_keeper_idx=33; -- Baran: 10 more to the right
+UPDATE t_npc_regen SET a_pos_r=-140 WHERE a_index=3663188; -- Ferreiro: 10 more to the right
+UPDATE t_shop SET a_pos_r=-175 WHERE a_zone_num=0 AND a_keeper_idx=272; -- Aluguel de Arma: 45 more to the right
+-- Turned in game (left = +, right = -).
+UPDATE t_npc_regen SET a_pos_r=-60.0 WHERE a_index=3663187; -- 89 Líder da Guarda Real: -150 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-60.0 WHERE a_index=3663933; -- 1155 Soldado Gerente da Guerra: -150 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-5.0 WHERE a_index=3663237; -- 110 Frade: -50 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=-180.0 WHERE a_index=3663346; -- 179 Crean: -150 turned 30 to the right
+UPDATE t_npc_regen SET a_pos_r=-5.0 WHERE a_index=3663239; -- 112 Fazendeiro: -95 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-55.0 WHERE a_index=3663189; -- 92 Alfaiata: 35 turned 90 to the right
+UPDATE t_npc_regen SET a_pos_r=-45.0 WHERE a_index=3663238; -- 111 Feiticeira: -90 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=55.0 WHERE a_index=3663190; -- 93 Teleporte Eteal: 100 turned 45 to the right
+UPDATE t_npc_regen SET a_pos_r=20.0 WHERE a_index=3663182; -- 71 Mestre Dungeon: -70 turned 90 to the left
+UPDATE t_npc_regen SET a_pos_r=-45.0 WHERE a_index=3663312; -- 139 Lorein: -60 turned 15 to the left
+UPDATE t_npc_regen SET a_pos_r=-80.0 WHERE a_index=3663185; -- 76 Mestre Knight: -125 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=85.0 WHERE a_index=3663184; -- 75 Mestre Titan: 40 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=155.0 WHERE a_index=3663378; -- 255 Mestre Sorcerer: 110 turned 45 to the left
+UPDATE t_npc_regen SET a_pos_r=80.0 WHERE a_index=3663344; -- 176 Mestre Rogue: 170 turned 90 to the right
+UPDATE t_npc_regen SET a_pos_r=-100.0 WHERE a_index=3663186; -- 77 Mestre Healer: -115 turned 15 to the left
+UPDATE t_npc_regen SET a_pos_r=-100.0 WHERE a_index=3663308; -- 123 Mestre Mage: -10 turned 90 to the right

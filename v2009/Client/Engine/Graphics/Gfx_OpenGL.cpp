@@ -1,0 +1,1097 @@
+#include "StdH.h"
+
+#include <Engine/Graphics/GfxLibrary.h>
+#include <Engine/Base/Translation.h>
+#include <Engine/Base/ErrorReporting.h>
+#include <Engine/Base/Memory.h>
+#include <Engine/Base/Console.h>
+
+#include <Engine/Graphics/ViewPort.h>
+#include <Engine/Graphics/MultiMonitor.h>
+
+#include <Engine/Templates/DynamicContainer.cpp>
+#include <Engine/Templates/Stock_CTextureData.h>
+
+#include <Engine/Base/ListIterator.inl>
+
+// Outside Windows the OpenGL context comes from SDL3 (the main window is an SDL window created
+// with SDL_WINDOW_OPENGL, Platform/PlatformSDL.cpp), in place of WGL: the HWND of a viewport is
+// its SDL_Window and go_hglRC holds the SDL_GLContext.
+#ifndef PLATFORM_WIN32
+#include <SDL3/SDL.h>
+#include <Engine/Platform/Platform.h>
+#endif
+
+
+// fog/haze textures
+extern TEXOBJ _fog_ulTexture;
+extern TEXOBJ _haze_ulTexture;
+
+// vertices in GPU
+extern INDEX GFX_ctVertices;
+
+// occlusion queries
+extern UINT *_puiOcclusionQueryIDs;
+
+// system gamma table
+extern UWORD _auwSystemGammaTable[256*3];
+
+
+// 3Dfx standalone driver
+static BOOL _b3DfxDriver = FALSE;
+
+// engine's internal opengl state variables
+extern BOOL GFX_bDepthTest;
+extern BOOL GFX_bDepthWrite;
+extern BOOL GFX_bAlphaTest;
+extern BOOL GFX_bBlending;
+extern BOOL GFX_bDithering;
+extern BOOL GFX_bLighting;
+extern BOOL GFX_bClipping;
+extern BOOL GFX_bClipPlane;
+extern BOOL GFX_bColorArray;
+extern BOOL GFX_bFrontFace;
+extern BOOL GFX_bTruform;
+extern INDEX GFX_iActiveTexUnit;
+extern FLOAT GFX_fMinDepthRange;
+extern FLOAT GFX_fMaxDepthRange;
+extern GfxBlend GFX_eBlendSrc;
+extern GfxBlend GFX_eBlendDst;
+extern GfxComp  GFX_eDepthFunc;
+extern GfxFace  GFX_eCullFace;
+extern INDEX GFX_iTexModulation[GFX_MAXTEXUNITS];
+extern BOOL  GFX_abLights[GFX_MAXLIGHTS];
+extern ULONG GFX_ulCurrentColorMask;
+
+extern BOOL  GFX_bUseVertexProgram;
+extern BOOL  GFX_bUsePixelProgram;
+
+// define gl function pointers
+#define DLLFUNCTION(dll, output, name, inputs, params, required) \
+  output (__stdcall *p##name) inputs = NULL;
+#include "gl_functions.h"
+#undef DLLFUNCTION
+
+// extensions
+void (__stdcall *pglLockArraysEXT)(GLint first, GLsizei count) = NULL;
+void (__stdcall *pglUnlockArraysEXT)(void) = NULL;
+
+GLboolean (__stdcall *pwglSwapIntervalEXT)(GLint interval) = NULL;
+GLint     (__stdcall *pwglGetSwapIntervalEXT)(void) = NULL;
+
+void (__stdcall *pglActiveTextureARB)(GLenum texunit) = NULL;
+void (__stdcall *pglClientActiveTextureARB)(GLenum texunit) = NULL;
+
+// ARB vertex and fragment programs
+void (__stdcall *pglGenProgramsARB)(GLsizei n, GLuint *programs) = NULL;
+void (__stdcall *pglDeleteProgramsARB)(GLsizei n, const GLuint *programs) = NULL;
+void (__stdcall *pglBindProgramARB)(GLenum target, GLuint program) = NULL;
+void (__stdcall *pglProgramStringARB)(GLenum target, GLenum format, GLsizei len, const GLvoid *string) = NULL;
+void (__stdcall *pglProgramEnvParameter4fvARB)(GLenum target, GLuint index, const GLfloat *params) = NULL;
+void (__stdcall *pglGetProgramEnvParameterfvARB)(GLenum target, GLuint index, GLfloat *params) = NULL;
+void (__stdcall *pglGetProgramivARB)(GLenum target, GLenum pname, GLint *params) = NULL;
+void (__stdcall *pglVertexAttribPointerARB)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer) = NULL;
+void (__stdcall *pglEnableVertexAttribArrayARB)(GLuint index) = NULL;
+void (__stdcall *pglDisableVertexAttribArrayARB)(GLuint index) = NULL;
+
+// ARB vertex buffer objects
+void (__stdcall *pglGenBuffersARB)(GLsizei n, GLuint *buffers) = NULL;
+void (__stdcall *pglDeleteBuffersARB)(GLsizei n, const GLuint *buffers) = NULL;
+void (__stdcall *pglBindBufferARB)(GLenum target, GLuint buffer) = NULL;
+void (__stdcall *pglBufferDataARB)(GLenum target, ptrdiff_t size, const GLvoid *data, GLenum usage) = NULL;
+void (__stdcall *pglBufferSubDataARB)(GLenum target, ptrdiff_t offset, ptrdiff_t size, const GLvoid *data) = NULL;
+
+// EXT framebuffer objects
+void   (__stdcall *pglGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers) = NULL;
+void   (__stdcall *pglDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers) = NULL;
+void   (__stdcall *pglBindFramebufferEXT)(GLenum target, GLuint framebuffer) = NULL;
+void   (__stdcall *pglFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = NULL;
+void   (__stdcall *pglGenRenderbuffersEXT)(GLsizei n, GLuint *renderbuffers) = NULL;
+void   (__stdcall *pglDeleteRenderbuffersEXT)(GLsizei n, const GLuint *renderbuffers) = NULL;
+void   (__stdcall *pglBindRenderbufferEXT)(GLenum target, GLuint renderbuffer) = NULL;
+void   (__stdcall *pglRenderbufferStorageEXT)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = NULL;
+void   (__stdcall *pglFramebufferRenderbufferEXT)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) = NULL;
+GLenum (__stdcall *pglCheckFramebufferStatusEXT)(GLenum target) = NULL;
+
+// t-buffer support
+char *(__stdcall *pwglGetExtensionsStringARB)(HDC hdc);
+BOOL  (__stdcall *pwglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+BOOL  (__stdcall *pwglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int *piAttributes, int *piValues);
+void  (__stdcall *pglTBufferMask3DFX)(GLuint mask);
+
+// NV occlusion query
+void (__stdcall *pglGenOcclusionQueriesNV)(GLsizei n, GLuint *ids);
+void (__stdcall *pglDeleteOcclusionQueriesNV)(GLsizei n, const GLuint *ids);
+void (__stdcall *pglBeginOcclusionQueryNV)(GLuint id);
+void (__stdcall *pglEndOcclusionQueryNV)(void);
+void (__stdcall *pglGetOcclusionQueryivNV)(GLuint id, GLenum pname, GLint *params);
+void (__stdcall *pglGetOcclusionQueryuivNV)(GLuint id, GLenum pname, GLuint *params);
+GLboolean (__stdcall *pglIsOcclusionQueryNV)(GLuint id);
+
+// ATI GL_ATI_pn_triangles
+void (__stdcall *pglPNTrianglesiATI)( GLenum pname, GLint param);
+void (__stdcall *pglPNTrianglesfATI)( GLenum pname, GLfloat param);
+
+// some ARB texture compression functions
+void (__stdcall *pglCompressedTexImageARB)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data); 
+void (__stdcall *pglGetCompressedTexImageARB)(GLenum target, GLint lod, GLvoid *img);
+ 
+
+
+// check windows error
+void WIN_CheckError(BOOL bRes, const char *strDescription)
+{
+  if( bRes) return;
+  DWORD dwWindowsErrorCode = GetLastError();
+  if( dwWindowsErrorCode==ERROR_SUCCESS) return; // ignore stupid 'successful' error 
+  WarningMessage("%s: %s", strDescription, (const char*)GetWindowsError(dwWindowsErrorCode));
+}
+
+
+static void FailFunction_t(const char *strName) {
+  ThrowF_t(TRANS("Required function %s not found."), strName);
+}
+
+
+#ifdef PLATFORM_WIN32
+static void OGL_SetFunctionPointers_t(HINSTANCE hiOGL)
+{
+  const char *strName;
+  // get gl function pointers
+  #define DLLFUNCTION(dll, output, name, inputs, params, required) \
+    strName = #name;  \
+    p##name = (output (__stdcall*) inputs) GetProcAddress( hi##dll, strName); \
+    if( required && p##name == NULL) FailFunction_t(strName);
+  #include "gl_functions.h"
+  #undef DLLFUNCTION
+}
+#else
+// from the OpenGL library SDL loaded (SDL_GL_LoadLibrary)
+static void OGL_SetFunctionPointers_t(void)
+{
+  const char *strName;
+  #define DLLFUNCTION(dll, output, name, inputs, params, required) \
+    strName = #name;  \
+    p##name = (output (__stdcall*) inputs) SDL_GL_GetProcAddress(strName); \
+    if( required && p##name == NULL) FailFunction_t(strName);
+  #include "gl_functions.h"
+  #undef DLLFUNCTION
+}
+
+// what wglGetProcAddress gives on Windows: the extension functions
+static SDL_FunctionPointer pwglGetProcAddress(const char *strName)
+{
+  return SDL_GL_GetProcAddress(strName);
+}
+
+// swap interval of the current context (WGL_EXT_swap_control on Windows). At least 1: the game
+// has no frame limit, and without the display's sync it draws as fast as it can (170 frames a
+// second on a 60 Hz display) and heats the machine; gap_iSwapInterval is 0 by default.
+static GLboolean SwapInterval_SDL(GLint iInterval)
+{
+  return SDL_GL_SetSwapInterval(Max(iInterval, (GLint)1)) ? GL_TRUE : GL_FALSE;
+}
+
+static GLint GetSwapInterval_SDL(void)
+{
+  int iInterval = 0;
+  SDL_GL_GetSwapInterval(&iInterval);
+  return iInterval;
+}
+#endif // PLATFORM_WIN32
+
+
+static void OGL_ClearFunctionPointers(void)
+{
+  // clear gl function pointers
+  #define DLLFUNCTION(dll, output, name, inputs, params, required) p##name = NULL;
+  #include "gl_functions.h"
+  #undef DLLFUNCTION
+}
+
+
+
+#ifdef PLATFORM_WIN32
+// HELPER: find closest pixels format
+static INDEX FindPixelFormat_OGL( HDC hdc, PIXELFORMATDESCRIPTOR &pfd, INDEX iDepthBits)
+{
+  // if depth bits aren't explicit
+  if( iDepthBits==0) {
+    // match the color depth and try again
+    iDepthBits = pfd.cColorBits;
+  }
+
+  // tries' tables
+  const  INDEX ctTries = 4;
+  static INDEX ai16BitsTable[] = { 16,0, 32,0, 24,0, 24,8 };
+  static INDEX ai24BitsTable[] = { 24,0, 24,8, 32,0, 16,0 };
+  static INDEX ai32BitsTable[] = { 32,0, 24,0, 24,8, 16,0 };
+
+  // find corresponding table based on depth bits
+                   INDEX *piDepthTable = &ai32BitsTable[0];
+       if( iDepthBits<21) piDepthTable = &ai16BitsTable[0];
+  else if( iDepthBits<28) piDepthTable = &ai24BitsTable[0];
+
+  // loop thru table
+  for( INDEX i=0; i<ctTries; i++)
+  { // let MS find the closest format
+    pfd.cDepthBits   = piDepthTable[i*2+0];
+    pfd.cStencilBits = piDepthTable[i*2+1];
+    const INDEX iFoundFormat = pwglChoosePixelFormat( hdc, &pfd);
+    if( iFoundFormat==0) continue; // skip to next if not found
+    // see what we've found
+    PIXELFORMATDESCRIPTOR pfdOut;
+    if( !pwglDescribePixelFormat( hdc, iFoundFormat, sizeof(pfdOut), &pfdOut)) return 0;
+    if( pfdOut.cDepthBits==pfd.cDepthBits) return iFoundFormat; // found if depths match!
+  }
+
+  // nothing found :(
+  ASSERT( "FindPixelFormat_OGL: Not found?!" );
+  return 0;
+}
+
+
+// prepares pixel format for OpenGL context
+BOOL CGfxLibrary::SetupPixelFormat_OGL( HDC hdc, BOOL bReport/*=FALSE*/)
+{
+  int iPixelFormat = 0;
+  const PIX pixResWidth  = gl_dmCurrentDisplayMode.dm_pixSizeI;
+  const PIX pixResHeight = gl_dmCurrentDisplayMode.dm_pixSizeJ;
+  const DisplayDepth dd  = gl_dmCurrentDisplayMode.dm_ddDepth;
+
+  PIXELFORMATDESCRIPTOR pfd;
+  memset( &pfd, 0, sizeof(pfd));
+  pfd.nSize      = sizeof(pfd);
+  pfd.nVersion   = 1;
+  pfd.dwFlags    = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+  pfd.iPixelType = PFD_TYPE_RGBA;
+
+  // clamp depth values
+  extern INDEX gap_iDepthBits;
+       if( gap_iDepthBits<12) gap_iDepthBits = 0;
+  else if( gap_iDepthBits<21) gap_iDepthBits = 16;
+  else if( gap_iDepthBits<28) gap_iDepthBits = 24;
+  else                        gap_iDepthBits = 32;
+
+  // find closest pixel format
+  pfd.cColorBits = (dd!=DISPD_16BIT) ? 32 : 16;
+  iPixelFormat = FindPixelFormat_OGL( hdc, pfd, gap_iDepthBits);
+
+  if( !iPixelFormat) {
+    WIN_CHECKERROR( 0, "ChoosePixelFormat");
+    return FALSE;
+  }
+  if( !pwglSetPixelFormat( hdc, iPixelFormat, &pfd)) {
+    WIN_CHECKERROR( 0, "SetPixelFormat");
+    return FALSE;
+  }
+
+  // test acceleration
+  memset( &pfd, 0, sizeof(pfd));
+  if( !pwglDescribePixelFormat( hdc, iPixelFormat, sizeof(pfd), &pfd)) return FALSE;
+  BOOL bGenericFormat      = pfd.dwFlags & PFD_GENERIC_FORMAT;
+  BOOL bGenericAccelerated = pfd.dwFlags & PFD_GENERIC_ACCELERATED;
+  BOOL bHasAcceleration    = (bGenericFormat &&  bGenericAccelerated) ||  // MCD
+                            (!bGenericFormat && !bGenericAccelerated);    // ICD
+  if( bHasAcceleration) gl_ulFlags |=  GLF_HASACCELERATION;
+  else                  gl_ulFlags &= ~GLF_HASACCELERATION;
+
+  // done if report pixel format info isn't required
+  if( !bReport) return TRUE;
+
+  // prepare pixel type description
+  CTString strPixelType;
+  if( pfd.iPixelType==PFD_TYPE_RGBA) strPixelType = "TYPE_RGBA"; 
+  else if( pfd.iPixelType&PFD_TYPE_COLORINDEX) strPixelType = "TYPE_COLORINDEX";
+  else strPixelType = "unknown";
+  // prepare flags description
+  CTString strFlags = "";
+  if( pfd.dwFlags&PFD_DRAW_TO_WINDOW)        strFlags += "DRAW_TO_WINDOW "; 
+  if( pfd.dwFlags&PFD_DRAW_TO_BITMAP)        strFlags += "DRAW_TO_BITMAP "; 
+  if( pfd.dwFlags&PFD_SUPPORT_GDI)           strFlags += "SUPPORT_GDI "; 
+  if( pfd.dwFlags&PFD_SUPPORT_OPENGL)        strFlags += "SUPPORT_OPENGL "; 
+  if( pfd.dwFlags&PFD_GENERIC_ACCELERATED)   strFlags += "GENERIC_ACCELERATED "; 
+  if( pfd.dwFlags&PFD_GENERIC_FORMAT)        strFlags += "GENERIC_FORMAT "; 
+  if( pfd.dwFlags&PFD_NEED_PALETTE)          strFlags += "NEED_PALETTE "; 
+  if( pfd.dwFlags&PFD_NEED_SYSTEM_PALETTE)   strFlags += "NEED_SYSTEM_PALETTE "; 
+  if( pfd.dwFlags&PFD_DOUBLEBUFFER)          strFlags += "DOUBLEBUFFER "; 
+  if( pfd.dwFlags&PFD_STEREO)                strFlags += "STEREO "; 
+  if( pfd.dwFlags&PFD_SWAP_LAYER_BUFFERS)    strFlags += "SWAP_LAYER_BUFFERS "; 
+  if( pfd.dwFlags&PFD_DEPTH_DONTCARE)        strFlags += "DEPTH_DONTCARE "; 
+  if( pfd.dwFlags&PFD_DOUBLEBUFFER_DONTCARE) strFlags += "DOUBLEBUFFER_DONTCARE "; 
+  if( pfd.dwFlags&PFD_STEREO_DONTCARE)       strFlags += "STEREO_DONTCARE "; 
+  if( pfd.dwFlags&PFD_SWAP_COPY)             strFlags += "SWAP_COPY "; 
+  if( pfd.dwFlags&PFD_SWAP_EXCHANGE)         strFlags += "SWAP_EXCHANGE "; 
+  if( strFlags=="") strFlags = "none";
+                              
+  // output pixel format description to console (for debugging purposes)
+  CPrintF( TRANS("\nPixel Format Description:\n"));
+  CPrintF( TRANS("  Number:     %d (%s)\n"), iPixelFormat, strPixelType);
+  CPrintF( TRANS("  Flags:      %s\n"), strFlags);
+  CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), pfd.cColorBits, 
+           pfd.cRedBits, pfd.cGreenBits, pfd.cBlueBits, pfd.cAlphaBits);
+  CPrintF( TRANS("  Depth bits: %d (%d for stencil)\n"), pfd.cDepthBits, pfd.cStencilBits);
+  gl_ctDepthBits = pfd.cDepthBits; // keep depth bits
+  if( pfd.cStencilBits>0) gl_ulFlags |= GLF_STENCILBUFFER; // and stencil buffer presence
+  else gl_ulFlags &= ~GLF_STENCILBUFFER;
+
+  // all done
+  CPrintF( "\n");
+  return TRUE;
+}
+#endif // PLATFORM_WIN32
+
+
+// test if an extension exists
+static BOOL HasExtension( const char *strAllExtensions, const char *strExtension)
+{
+  // find substring
+  const char *strFound = strstr( strAllExtensions, strExtension);
+  //  no extension if not found
+  if( strFound==NULL) return FALSE;
+  INDEX iExtensionLen = strlen(strExtension);
+  // if found substring is substring of some other extension
+  if( strFound[iExtensionLen]!=' ' && strFound[iExtensionLen]!=0) {
+    // continue searching after that char
+    return HasExtension( strFound+iExtensionLen, strExtension);
+  }
+  // extension found
+  return TRUE; 
+}
+
+
+// add OpenGL extensions to engine
+void CGfxLibrary::AddExtension_OGL( ULONG ulFlag, const char *strName)
+{
+  gl_ulFlags = (gl_ulFlags & ~ulFlag) | ulFlag;
+  go_strSupportedExtensions += strName;
+  go_strSupportedExtensions += " ";
+}
+
+
+// determine OpenGL extensions that engine supports
+void CGfxLibrary::TestExtension_OGL( ULONG ulFlag, const char *strName)
+{
+  if( HasExtension( go_strExtensions, strName)) AddExtension_OGL( ulFlag, strName);
+}
+
+
+#ifdef PLATFORM_WIN32
+// creates OpenGL drawing context
+BOOL CGfxLibrary::CreateContext_OGL(HDC hdc)
+{
+  if( !SetupPixelFormat_OGL( hdc, TRUE)) return FALSE;
+  go_hglRC = pwglCreateContext(hdc);
+  if( go_hglRC==NULL) {
+    WIN_CHECKERROR(0, "CreateContext");
+    return FALSE;
+  }
+  if( !pwglMakeCurrent(hdc, go_hglRC)) {
+    // NOTE: This error is sometimes reported without a reason on 3dfx hardware
+    // so we just have to ignore it.
+    //WIN_CHECKERROR(0, "MakeCurrent after CreateContext");
+    return FALSE;
+  }
+  return TRUE;
+}
+#else
+// creates the OpenGL context of an SDL window: double buffered RGBA with the depth/stencil
+// combinations FindPixelFormat_OGL() tries on Windows, in the same order (legacy context:
+// OpenGL 2.1 on macOS, the fixed function pipeline the engine uses)
+BOOL CGfxLibrary::CreateContext_OGL(HWND hWnd)
+{
+  extern INDEX gap_iDepthBits;
+       if( gap_iDepthBits<12) gap_iDepthBits = 0;
+  else if( gap_iDepthBits<21) gap_iDepthBits = 16;
+  else if( gap_iDepthBits<28) gap_iDepthBits = 24;
+  else                        gap_iDepthBits = 32;
+  const DisplayDepth dd = gl_dmCurrentDisplayMode.dm_ddDepth;
+  const INDEX iColorBits = (dd!=DISPD_16BIT) ? 32 : 16;
+  const INDEX iDepthBits = (gap_iDepthBits!=0) ? gap_iDepthBits : iColorBits;
+  static const INDEX ai16BitsTable[] = { 16,0, 32,0, 24,0, 24,8 };
+  static const INDEX ai24BitsTable[] = { 24,0, 24,8, 32,0, 16,0 };
+  static const INDEX ai32BitsTable[] = { 32,0, 24,0, 24,8, 16,0 };
+                        const INDEX *piDepthTable = &ai32BitsTable[0];
+       if( iDepthBits<21) piDepthTable = &ai16BitsTable[0];
+  else if( iDepthBits<28) piDepthTable = &ai24BitsTable[0];
+
+  SDL_Window *pwnd = (SDL_Window*)hWnd;
+  SDL_GLContext glctx = NULL;
+  for( INDEX i=0; i<4 && glctx==NULL; i++) {
+    SDL_GL_ResetAttributes();
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute( SDL_GL_RED_SIZE,   iColorBits==16 ? 5 : 8);
+    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, iColorBits==16 ? 6 : 8);
+    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE,  iColorBits==16 ? 5 : 8);
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE,   piDepthTable[i*2+0]);
+    SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, piDepthTable[i*2+1]);
+    glctx = SDL_GL_CreateContext(pwnd);
+  }
+  if( glctx==NULL) {
+    CPrintF( TRANS("Cannot create OpenGL context: %s\n"), SDL_GetError());
+    return FALSE;
+  }
+  go_hglRC = (HGLRC)glctx;
+  // SDL_GL_CreateContext() makes it current; failing that, as on Windows
+  if( !SDL_GL_MakeCurrent( pwnd, glctx)) return FALSE;
+  // on a Retina display, draw at the density set with the window (PlatformSDL.cpp)
+  PLT_UpdateDrawable();
+  // only accelerated contexts are created
+  gl_ulFlags |= GLF_HASACCELERATION;
+
+  // report what we got
+  int iRed=0, iGreen=0, iBlue=0, iAlpha=0, iDepth=0, iStencil=0;
+  SDL_GL_GetAttribute( SDL_GL_RED_SIZE,     &iRed);
+  SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE,   &iGreen);
+  SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE,    &iBlue);
+  SDL_GL_GetAttribute( SDL_GL_ALPHA_SIZE,   &iAlpha);
+  SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE,   &iDepth);
+  SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &iStencil);
+  CPrintF( TRANS("\nPixel Format Description:\n"));
+  CPrintF( TRANS("  Color bits: %d (%d:%d:%d:%d)\n"), iRed+iGreen+iBlue+iAlpha, iRed, iGreen, iBlue, iAlpha);
+  CPrintF( TRANS("  Depth bits: %d (%d for stencil)\n"), iDepth, iStencil);
+  int iW=0, iH=0;
+  SDL_GetWindowSize( pwnd, &iW, &iH);
+  const INDEX iScale = PLT_GetDrawableScale();
+  CPrintF( "  Window: %dx%d points, %dx%d pixels\n", iW, iH, iW*iScale, iH*iScale);
+  CPrintF( "\n");
+  gl_ctDepthBits = iDepth;
+  if( iStencil>0) gl_ulFlags |= GLF_STENCILBUFFER;
+  else gl_ulFlags &= ~GLF_STENCILBUFFER;
+  return TRUE;
+}
+#endif // PLATFORM_WIN32
+
+
+
+// prepares OpenGL drawing context
+void CGfxLibrary::InitContext_OGL(void)
+{
+  // must have context
+  ASSERT( gl_pvpActive!=NULL);
+
+  // reset engine's internal OpenGL state variables
+  extern BOOL GFX_abTexture[GFX_MAXTEXUNITS];
+  for( INDEX iUnit=0; iUnit<GFX_MAXTEXUNITS; iUnit++) {
+    GFX_abTexture[iUnit] = FALSE;
+    GFX_iTexModulation[iUnit] = 1;
+  }
+  // set default texture unit and modulation mode
+  GFX_iActiveTexUnit = 0;
+  gl_ctMaxStreams = 16; // GL always has enough "streams" for multi-texturing
+  // reset frustum/ortho stuff
+  extern BOOL  GFX_bViewMatrix;
+  extern FLOAT GFX_fLastL, GFX_fLastR, GFX_fLastT, GFX_fLastB, GFX_fLastN, GFX_fLastF;
+  GFX_fLastL = GFX_fLastR = GFX_fLastT = GFX_fLastB = GFX_fLastN = GFX_fLastF = 0;
+  GFX_bViewMatrix = TRUE;
+
+  GFX_bTruform  = FALSE;
+  GFX_bClipping = TRUE;
+  GFX_ulCurrentColorMask = 12345678; // force next call to this function to be efficient
+  pglEnable(  GL_TEXTURE_2D);     GFX_abTexture[0] = TRUE;
+  pglEnable(  GL_DITHER);         GFX_bDithering   = TRUE;
+  pglDisable( GL_BLEND);          GFX_bBlending    = FALSE;
+  pglDisable( GL_DEPTH_TEST);     GFX_bDepthTest   = FALSE;
+  pglDisable( GL_ALPHA_TEST);     GFX_bAlphaTest   = FALSE;
+  pglDisable( GL_LIGHTING);       GFX_bLighting    = FALSE;
+  pglDisable( GL_CLIP_PLANE0);    GFX_bClipPlane   = FALSE;
+  pglDisable( GL_CULL_FACE);      GFX_eCullFace    = GFX_NONE;
+  pglFrontFace( GL_CCW);          GFX_bFrontFace   = TRUE;
+  pglDepthMask( GL_FALSE);        GFX_bDepthWrite  = FALSE;
+  pglDepthFunc( GL_LEQUAL);       GFX_eDepthFunc   = GFX_LESS_EQUAL;
+  pglBlendFunc( GL_ONE, GL_ONE);  GFX_eBlendSrc = GFX_eBlendDst = GFX_ONE;
+  pglDepthRange( 0.0f, 1.0f);     GFX_fMinDepthRange = 0.0f;
+                                  GFX_fMaxDepthRange = 1.0f;
+
+  // set global ambient to black and disable all lights
+  const FLOAT afAmbient[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  pglLightModelfv( GL_LIGHT_MODEL_AMBIENT, &afAmbient[0]);
+  for( INDEX iLight=0; iLight<GFX_MAXLIGHTS; iLight++) {
+    GFX_abLights[iLight] = FALSE;
+    pglDisable( (GLenum)(GL_LIGHT0+iLight));
+  }
+
+  // (re)set some OpenGL defaults
+  gfxPolygonMode( GFX_FILL);
+  pglShadeModel( GL_SMOOTH);
+  pglEnable( GL_SCISSOR_TEST);
+  pglDrawBuffer( GL_BACK);
+  pglAlphaFunc( GL_GEQUAL, 0.5f);
+  pglColor4f( 1.0f, 1.0f, 1.0f, 1.0f);
+  pglMatrixMode( GL_MODELVIEW);
+  pglLoadIdentity();
+  pglMatrixMode( GL_TEXTURE);
+  pglLoadIdentity();
+  // enable rendering only thru vertex arrays by default
+  pglEnableClientState(  GL_VERTEX_ARRAY);
+  pglDisableClientState( GL_NORMAL_ARRAY);
+  pglDisableClientState( GL_TEXTURE_COORD_ARRAY);
+  pglDisableClientState( GL_COLOR_ARRAY);
+  GFX_bColorArray = FALSE;
+
+  // set single byte pixel alignment
+  pglPixelStorei( GL_PACK_ALIGNMENT,   1);
+  pglPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+
+  // TEST EXTENSIONS
+  CDisplayAdapter &da = gl_gaAPI[GAT_OGL].ga_adaAdapter[gl_iCurrentAdapter];
+  da.da_strVendor   = (const char*)pglGetString(GL_VENDOR);
+  da.da_strRenderer = (const char*)pglGetString(GL_RENDERER);
+  da.da_strVersion  = (const char*)pglGetString(GL_VERSION);
+  go_strExtensions  = (const char*)pglGetString(GL_EXTENSIONS);
+
+  // report
+  CPrintF( TRANS("\n* OpenGL context created: *----------------------------------\n"));
+  CPrintF( "  (%s, %s, %s)\n\n", (const char*)da.da_strVendor, (const char*)da.da_strRenderer, (const char*)da.da_strVersion);
+
+  // test for used extensions
+  GLint   gliRet;
+  GLfloat glfRet;
+  go_strSupportedExtensions = "";
+
+  // check for WGL extensions, too
+  go_strWinExtensions = "";
+#ifdef PLATFORM_WIN32
+  pwglGetExtensionsStringARB = (char* (__stdcall*)(HDC))pwglGetProcAddress("wglGetExtensionsStringARB");
+  if( pwglGetExtensionsStringARB != NULL) {
+    AddExtension_OGL( NONE, "WGL_ARB_extensions_string"); // register
+    CTempDC tdc(gl_pvpActive->vp_hWnd);
+    go_strWinExtensions = (char*)pwglGetExtensionsStringARB(tdc.hdc);
+  }
+#endif // PLATFORM_WIN32
+
+  gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
+#ifdef PLATFORM_WIN32
+  // if full screen and gamma adjustment is supported
+  // (3Dfx OpenGL doesn't support gamma adjustment - the way we would like it:)
+  if( !_b3DfxDriver && (gl_ulFlags&GLF_FULLSCREEN)) {
+    // store system gamma table
+    const HDC hdc = GetDC(NULL);
+    const BOOL bHasGamma = GetDeviceGammaRamp( hdc, &_auwSystemGammaTable[0]);
+    if( bHasGamma) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
+    else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
+    ReleaseDC( NULL, hdc);
+  }
+#else
+  // SDL3 has no gamma ramps; on macOS the platform layer sets the display's. The game starts its
+  // display modes windowed (GLF_FULLSCREEN off) and makes the window fullscreen, so the platform
+  // layer puts the ramp on only while the window is fullscreen and in front.
+  if( PLT_CanSetGammaRamp()) gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
+  else CPrintF( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable.\n\n"));
+#endif // PLATFORM_WIN32
+
+  // multitexture is supported only thru GL_EXT_texture_env_combine extension (or its ARB version,
+  // same enums, which is the one macOS reports)
+  gl_ctTextureUnits = 1;
+  gl_ctRealTextureUnits = 1;
+  pglActiveTextureARB       = NULL;
+  pglClientActiveTextureARB = NULL;
+  if( HasExtension( go_strExtensions, "GL_ARB_multitexture")) {
+    pglGetIntegerv( GL_MAX_TEXTURE_UNITS_ARB, (int*)&gl_ctRealTextureUnits); // get number of texture units
+    const char *strCombine = HasExtension( go_strExtensions, "GL_EXT_texture_env_combine")
+      ? "GL_EXT_texture_env_combine" : "GL_ARB_texture_env_combine";
+    if( gl_ctRealTextureUnits>1 && HasExtension( go_strExtensions, strCombine)) {
+      AddExtension_OGL( NONE, "GL_ARB_multitexture");
+      AddExtension_OGL( NONE, strCombine);
+      pglActiveTextureARB       = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glActiveTextureARB");
+      pglClientActiveTextureARB = (void (__stdcall*)(GLenum))pwglGetProcAddress( "glClientActiveTextureARB");
+      ASSERT( pglActiveTextureARB!=NULL && pglClientActiveTextureARB!=NULL);
+      gl_ctTextureUnits = Min( (INDEX)GFX_USETEXUNITS, gl_ctRealTextureUnits);
+    } else {
+      CPrintF( TRANS("  GL_TEXTURE_ENV_COMBINE extension missing - multi-texturing cannot be used.\n"));
+    }
+  }
+
+  // find all supported texture compression extensions
+  TestExtension_OGL( GLF_EXTC_S3TC,   "GL_EXT_texture_compression_s3tc");
+  TestExtension_OGL( GLF_EXTC_FXT1,   "GL_3DFX_texture_compression_FXT1");
+  TestExtension_OGL( GLF_EXTC_LEGACY, "GL_S3_s3tc");
+
+  // (need some functions from ARB compression (if available)
+  pglCompressedTexImageARB    = NULL;
+  pglGetCompressedTexImageARB = NULL;
+  if( HasExtension( go_strExtensions, "GL_ARB_texture_compression")) {
+    AddExtension_OGL( GLF_EXTC_ARB, "GL_ARB_texture_compression");
+    pglCompressedTexImageARB    = (void (__stdcall*)(GLenum,GLint,GLenum,GLsizei,GLsizei,GLint,GLsizei,const GLvoid*))pwglGetProcAddress( "glCompressedTexImage2DARB");
+    pglGetCompressedTexImageARB = (void (__stdcall*)(GLenum,GLint,GLvoid*))pwglGetProcAddress( "glGetCompressedTexImageARB");
+    ASSERT( pglCompressedTexImageARB!=NULL && pglGetCompressedTexImageARB!=NULL);
+  }
+
+  // mark if there is at least one extension present
+  gl_ulFlags &= ~GLF_TEXTURECOMPRESSION;
+  if( (gl_ulFlags&GLF_EXTC_ARB)  || (gl_ulFlags&GLF_EXTC_FXT1)
+   || (gl_ulFlags&GLF_EXTC_S3TC) || (gl_ulFlags&GLF_EXTC_LEGACY)) {
+    gl_ulFlags |= GLF_TEXTURECOMPRESSION;
+  }
+
+  // determine max supported dimension of texture
+  pglGetIntegerv( GL_MAX_TEXTURE_SIZE, (GLint*)&gl_pixMaxTextureDimension);
+  OGL_CHECKERROR;
+
+  // set max primitive count (OpenGL supports a lot!)
+  gl_ctMaxPrimitives = 16777215;
+
+  // determine support for texture LOD biasing
+  gl_fMaxTextureLODBias = 0.0f;
+  if( HasExtension( go_strExtensions, "GL_EXT_texture_lod_bias")) {
+    AddExtension_OGL( NONE, "GL_EXT_texture_lod_bias"); // register
+    // check max possible lod bias (absolute)
+    pglGetFloatv( GL_MAX_TEXTURE_LOD_BIAS_EXT, &glfRet);
+    GLenum gleError = pglGetError();  // just because of invalid extension implementations (S3)
+    if( gleError || glfRet<0.1f || glfRet>4.0f) glfRet = 4.0f;
+    gl_fMaxTextureLODBias = glfRet;
+    OGL_CHECKERROR;
+  }
+
+  // determine support for anisotropic filtering
+  gl_iMaxTextureAnisotropy = 1;
+  if( HasExtension( go_strExtensions, "GL_EXT_texture_filter_anisotropic")) {
+    AddExtension_OGL( NONE, "GL_EXT_texture_filter_anisotropic"); // register
+    // keep max allowed anisotropy degree
+    pglGetIntegerv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gliRet);
+    gl_iMaxTextureAnisotropy = gliRet;
+    OGL_CHECKERROR;
+  }
+
+  // check support for compiled vertex arrays
+  pglLockArraysEXT   = NULL;
+  pglUnlockArraysEXT = NULL;
+  if( HasExtension( go_strExtensions, "GL_EXT_compiled_vertex_array")) {
+    AddExtension_OGL( GLF_EXT_COMPILEDVERTEXARRAY, "GL_EXT_compiled_vertex_array");
+    pglLockArraysEXT   = (void (__stdcall*)(GLint,GLsizei))pwglGetProcAddress( "glLockArraysEXT");
+    pglUnlockArraysEXT = (void (__stdcall*)(void)         )pwglGetProcAddress( "glUnlockArraysEXT");
+    ASSERT( pglLockArraysEXT!=NULL && pglUnlockArraysEXT!=NULL);
+  }
+
+  // check support for swap interval
+  pwglSwapIntervalEXT    = NULL;
+  pwglGetSwapIntervalEXT = NULL;
+#ifdef PLATFORM_WIN32
+  if( HasExtension( go_strExtensions, "WGL_EXT_swap_control")) {
+    AddExtension_OGL( GLF_VSYNC, "WGL_EXT_swap_control");
+    pwglSwapIntervalEXT    = (GLboolean (__stdcall*)(GLint))pwglGetProcAddress( "wglSwapIntervalEXT");
+    pwglGetSwapIntervalEXT = (GLint     (__stdcall*)(void) )pwglGetProcAddress( "wglGetSwapIntervalEXT");
+    ASSERT( pwglSwapIntervalEXT!=NULL && pwglGetSwapIntervalEXT!=NULL);
+  }
+#else
+  AddExtension_OGL( GLF_VSYNC, "SDL_GL_SetSwapInterval");
+  pwglSwapIntervalEXT    = SwapInterval_SDL;
+  pwglGetSwapIntervalEXT = GetSwapInterval_SDL;
+#endif // PLATFORM_WIN32
+
+  // determine support for ATI Truform technology
+  extern INDEX truform_iLevel;
+  extern BOOL  truform_bLinear;
+  truform_iLevel  = -1;
+  truform_bLinear = FALSE;
+  pglPNTrianglesiATI = NULL;
+  pglPNTrianglesfATI = NULL;
+  gl_iTessellationLevel    = 0;
+  gl_iMaxTessellationLevel = 0;
+  if( HasExtension( go_strExtensions, "GL_ATI_pn_triangles")) {
+    AddExtension_OGL( NONE, "GL_ATI_pn_triangles");
+    pglPNTrianglesiATI = (void (__stdcall*)(GLenum,GLint  ))pwglGetProcAddress( "glPNTrianglesiATI");
+    pglPNTrianglesfATI = (void (__stdcall*)(GLenum,GLfloat))pwglGetProcAddress( "glPNTrianglesfATI");
+    ASSERT( pglPNTrianglesiATI!=NULL && pglPNTrianglesfATI!=NULL);
+    // check max possible tessellation
+    pglGetIntegerv( GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI, &gliRet);
+    gl_iMaxTessellationLevel = gliRet;
+    OGL_CHECKERROR;
+  } 
+
+  // test for clamp to edge (what Direct3D's clamp does; core since OpenGL 1.2, same enum,
+  // which is how macOS has it)
+  TestExtension_OGL( GLF_EXT_EDGECLAMP, "GL_EXT_texture_edge_clamp");
+  if( !(gl_ulFlags&GLF_EXT_EDGECLAMP)) {
+    INDEX iMajor=0, iMinor=0;
+    sscanf( da.da_strVersion, "%d.%d", &iMajor, &iMinor);
+    if( iMajor>1 || (iMajor==1 && iMinor>=2) || HasExtension( go_strExtensions, "GL_SGIS_texture_edge_clamp")) {
+      AddExtension_OGL( GLF_EXT_EDGECLAMP, "GL_SGIS_texture_edge_clamp");
+    }
+  }
+
+  // test for clip volume hint
+  TestExtension_OGL( GLF_EXT_CLIPHINT, "GL_EXT_clip_volume_hint");
+
+  // vertex buffer objects: static vertex buffers are kept in video memory (Gfx_wrapper.cpp)
+  pglGenBuffersARB = NULL;  pglDeleteBuffersARB = NULL;  pglBindBufferARB = NULL;
+  pglBufferDataARB = NULL;  pglBufferSubDataARB = NULL;
+  // (LC_NO_VBO: dev switch, keeps them as plain arrays)
+  if( HasExtension( go_strExtensions, "GL_ARB_vertex_buffer_object") && getenv("LC_NO_VBO")==NULL) {
+    pglGenBuffersARB    = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenBuffersARB");
+    pglDeleteBuffersARB = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteBuffersARB");
+    pglBindBufferARB    = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindBufferARB");
+    pglBufferDataARB    = (void (__stdcall*)(GLenum, ptrdiff_t, const GLvoid*, GLenum))pwglGetProcAddress( "glBufferDataARB");
+    pglBufferSubDataARB = (void (__stdcall*)(GLenum, ptrdiff_t, ptrdiff_t, const GLvoid*))pwglGetProcAddress( "glBufferSubDataARB");
+    if( pglGenBuffersARB!=NULL && pglDeleteBuffersARB!=NULL && pglBindBufferARB!=NULL
+     && pglBufferDataARB!=NULL && pglBufferSubDataARB!=NULL) {
+      AddExtension_OGL( NONE, "GL_ARB_vertex_buffer_object");
+    } else {
+      pglGenBuffersARB = NULL;
+    }
+  }
+
+  // framebuffer objects: render targets (CRenderTexture in TextureRender.cpp)
+  pglGenFramebuffersEXT = NULL;  pglDeleteFramebuffersEXT = NULL;  pglBindFramebufferEXT = NULL;
+  pglFramebufferTexture2DEXT = NULL;  pglGenRenderbuffersEXT = NULL;  pglDeleteRenderbuffersEXT = NULL;
+  pglBindRenderbufferEXT = NULL;  pglRenderbufferStorageEXT = NULL;  pglFramebufferRenderbufferEXT = NULL;
+  pglCheckFramebufferStatusEXT = NULL;
+  if( HasExtension( go_strExtensions, "GL_EXT_framebuffer_object")) {
+    pglGenFramebuffersEXT         = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenFramebuffersEXT");
+    pglDeleteFramebuffersEXT      = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteFramebuffersEXT");
+    pglBindFramebufferEXT         = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindFramebufferEXT");
+    pglFramebufferTexture2DEXT    = (void (__stdcall*)(GLenum, GLenum, GLenum, GLuint, GLint))pwglGetProcAddress( "glFramebufferTexture2DEXT");
+    pglGenRenderbuffersEXT        = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenRenderbuffersEXT");
+    pglDeleteRenderbuffersEXT     = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteRenderbuffersEXT");
+    pglBindRenderbufferEXT        = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindRenderbufferEXT");
+    pglRenderbufferStorageEXT     = (void (__stdcall*)(GLenum, GLenum, GLsizei, GLsizei))pwglGetProcAddress( "glRenderbufferStorageEXT");
+    pglFramebufferRenderbufferEXT = (void (__stdcall*)(GLenum, GLenum, GLenum, GLuint))pwglGetProcAddress( "glFramebufferRenderbufferEXT");
+    pglCheckFramebufferStatusEXT  = (GLenum (__stdcall*)(GLenum))pwglGetProcAddress( "glCheckFramebufferStatusEXT");
+    if( pglGenFramebuffersEXT!=NULL && pglDeleteFramebuffersEXT!=NULL && pglBindFramebufferEXT!=NULL
+     && pglFramebufferTexture2DEXT!=NULL && pglGenRenderbuffersEXT!=NULL && pglDeleteRenderbuffersEXT!=NULL
+     && pglBindRenderbufferEXT!=NULL && pglRenderbufferStorageEXT!=NULL && pglFramebufferRenderbufferEXT!=NULL
+     && pglCheckFramebufferStatusEXT!=NULL) {
+      AddExtension_OGL( NONE, "GL_EXT_framebuffer_object");
+    } else {
+      pglGenFramebuffersEXT = NULL;
+    }
+  }
+
+  // vertex and pixel programs: Direct3D's shader assembly runs translated into ARB programs
+  // (ShaderAsmToARB.cpp), which need 96 vertex constants and 4 texture units like Direct3D's
+  gl_ulFlags &= ~(GLF_VERTEXPROGRAM|GLF_PIXELPROGRAM);
+  pglGenProgramsARB = NULL;  pglDeleteProgramsARB = NULL;  pglBindProgramARB = NULL;
+  pglProgramStringARB = NULL;  pglProgramEnvParameter4fvARB = NULL;  pglGetProgramEnvParameterfvARB = NULL;
+  pglGetProgramivARB = NULL;  pglVertexAttribPointerARB = NULL;
+  pglEnableVertexAttribArrayARB = NULL;  pglDisableVertexAttribArrayARB = NULL;
+  if( HasExtension( go_strExtensions, "GL_ARB_vertex_program")
+   && HasExtension( go_strExtensions, "GL_ARB_fragment_program")) {
+    pglGenProgramsARB              = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenProgramsARB");
+    pglDeleteProgramsARB           = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteProgramsARB");
+    pglBindProgramARB              = (void (__stdcall*)(GLenum, GLuint))pwglGetProcAddress( "glBindProgramARB");
+    pglProgramStringARB            = (void (__stdcall*)(GLenum, GLenum, GLsizei, const GLvoid*))pwglGetProcAddress( "glProgramStringARB");
+    pglProgramEnvParameter4fvARB   = (void (__stdcall*)(GLenum, GLuint, const GLfloat*))pwglGetProcAddress( "glProgramEnvParameter4fvARB");
+    pglGetProgramEnvParameterfvARB = (void (__stdcall*)(GLenum, GLuint, GLfloat*))pwglGetProcAddress( "glGetProgramEnvParameterfvARB");
+    pglGetProgramivARB             = (void (__stdcall*)(GLenum, GLenum, GLint*))pwglGetProcAddress( "glGetProgramivARB");
+    pglVertexAttribPointerARB      = (void (__stdcall*)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid*))pwglGetProcAddress( "glVertexAttribPointerARB");
+    pglEnableVertexAttribArrayARB  = (void (__stdcall*)(GLuint))pwglGetProcAddress( "glEnableVertexAttribArrayARB");
+    pglDisableVertexAttribArrayARB = (void (__stdcall*)(GLuint))pwglGetProcAddress( "glDisableVertexAttribArrayARB");
+    GLint gliEnvParams = 0, gliTextureUnits = 0;
+    if( pglGetProgramivARB!=NULL) {
+      pglGetProgramivARB( GL_VERTEX_PROGRAM_ARB, GL_MAX_PROGRAM_ENV_PARAMETERS_ARB, &gliEnvParams);
+      pglGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &gliTextureUnits);
+      OGL_CHECKERROR;
+    }
+    if( pglGenProgramsARB!=NULL && pglDeleteProgramsARB!=NULL && pglBindProgramARB!=NULL
+     && pglProgramStringARB!=NULL && pglProgramEnvParameter4fvARB!=NULL && pglGetProgramEnvParameterfvARB!=NULL
+     && pglVertexAttribPointerARB!=NULL && pglEnableVertexAttribArrayARB!=NULL && pglDisableVertexAttribArrayARB!=NULL
+     && gliEnvParams>=96 && gliTextureUnits>=4) {
+      AddExtension_OGL( GLF_VERTEXPROGRAM, "GL_ARB_vertex_program");
+      AddExtension_OGL( GLF_PIXELPROGRAM,  "GL_ARB_fragment_program");
+    }
+  }
+
+  pglGenOcclusionQueriesNV = NULL;  pglDeleteOcclusionQueriesNV = NULL;
+  pglBeginOcclusionQueryNV = NULL;  pglEndOcclusionQueryNV      = NULL;
+  pglGetOcclusionQueryivNV = NULL;  pglGetOcclusionQueryuivNV   = NULL;
+  pglIsOcclusionQueryNV    = NULL;
+
+  if( HasExtension( go_strExtensions, "GL_NV_occlusion_query"))
+  { // prepare extension's functions
+    AddExtension_OGL( GLF_EXT_OCCLUSIONQUERY, "GL_NV_occlusion_query");
+    pglGenOcclusionQueriesNV    = (void (__stdcall*)(GLsizei, GLuint*))pwglGetProcAddress( "glGenOcclusionQueriesNV");
+    pglDeleteOcclusionQueriesNV = (void (__stdcall*)(GLsizei, const GLuint*))pwglGetProcAddress( "glDeleteOcclusionQueriesNV");
+    pglBeginOcclusionQueryNV    = (void (__stdcall*)(GLuint))pwglGetProcAddress( "glBeginOcclusionQueryNV");
+    pglEndOcclusionQueryNV      = (void (__stdcall*)(void))pwglGetProcAddress( "glEndOcclusionQueryNV");
+    pglGetOcclusionQueryivNV    = (void (__stdcall*)(GLuint, GLenum, GLint*))pwglGetProcAddress( "glGetOcclusionQueryivNV");
+    pglGetOcclusionQueryuivNV   = (void (__stdcall*)(GLuint, GLenum, GLuint*))pwglGetProcAddress( "glGetOcclusionQueryuivNV");
+    pglIsOcclusionQueryNV  = (GLboolean (__stdcall*)(GLuint))pwglGetProcAddress( "glIsOcclusionQueryNV");
+    ASSERT( pglGenOcclusionQueriesNV!=NULL && pglDeleteOcclusionQueriesNV!=NULL
+         && pglBeginOcclusionQueryNV!=NULL && pglEndOcclusionQueryNV!=NULL
+         && pglGetOcclusionQueryivNV!=NULL && pglGetOcclusionQueryuivNV!=NULL
+         && pglIsOcclusionQueryNV!=NULL);
+  }
+  
+  // done with seeking for supported extensions
+  if( go_strSupportedExtensions=="") go_strSupportedExtensions = "none";
+
+  // check if 32-bit textures are supported
+  GLuint uiTmpTex;
+  const ULONG ulTmpTex = 0xFFFFFFFF;
+  pglGenTextures( 1, &uiTmpTex);
+  pglBindTexture( GL_TEXTURE_2D, uiTmpTex);
+  pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, 1,1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &ulTmpTex);
+  OGL_CHECKERROR;
+  gl_ulFlags &= ~GLF_32BITTEXTURES;
+  pglGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, &gliRet);
+  if( gliRet==8) gl_ulFlags |= GLF_32BITTEXTURES;
+  pglDeleteTextures( 1, &uiTmpTex);
+  OGL_CHECKERROR;
+  
+  // setup fog and haze textures
+  extern PIX _fog_pixSizeH;
+  extern PIX _fog_pixSizeL;
+  extern PIX _haze_pixSize;
+  GLuint auiBindNo[3];
+  pglGenTextures( 3, auiBindNo);
+  _fog_ulTexture  = auiBindNo[0];
+  _haze_ulTexture = auiBindNo[1];
+  _fog_pixSizeH = 0;
+  _fog_pixSizeL = 0;
+  _haze_pixSize = 0;
+  OGL_CHECKERROR;
+
+  // prepare pattern texture
+  extern CTexParams _tpPattern;
+  extern TEXOBJ _ulPatternTexture;
+  extern ULONG _ulLastUploadedPattern;
+  _ulPatternTexture = auiBindNo[2];
+  _ulLastUploadedPattern = 0;
+  _tpPattern.Clear();
+
+  // init vertex buffers
+  extern void InitVertexBuffers(void);
+  InitVertexBuffers();
+
+  // reset texture filtering and array locking
+  for( INDEX i=0; i<GFX_MAXTEXUNITS; i++) _tpGlobal[i].Clear();
+  GFX_ctVertices = 0;
+  gl_dwVertexShader = NONE;
+  gl_dwPixelShader  = NONE;
+  extern void ResetPrograms_OGL(void);
+  ResetPrograms_OGL();
+
+  // set default texture filtering/biasing
+  extern INDEX gap_iTextureFiltering;
+  extern INDEX gap_iTextureAnisotropy;
+  extern FLOAT gap_fTextureLODBias;
+  gfxSetTextureFiltering( gap_iTextureFiltering, gap_iTextureAnisotropy);
+  gfxSetTextureBiasing( gap_fTextureLODBias);
+
+  // generate occlusion query IDs
+  _puiOcclusionQueryIDs = (UINT*)AllocMemory( GFX_MAXOCCQUERIES*sizeof(UINT));
+  if( gl_ulFlags & GLF_EXT_OCCLUSIONQUERY) pglGenOcclusionQueriesNV( GFX_MAXOCCQUERIES, _puiOcclusionQueryIDs);
+  else for( INDEX iID=0; iID<GFX_MAXOCCQUERIES; iID++) _puiOcclusionQueryIDs[iID] = iID;
+  OGL_CHECKERROR;
+
+  // mark pretouching and probing
+  extern BOOL _bNeedPretouch;
+  _bNeedPretouch = TRUE;
+  gl_bAllowProbing = FALSE;
+
+  // update console system vars
+  extern void UpdateGfxSysCVars(void);
+  UpdateGfxSysCVars();
+
+  // reload all loaded textures and eventually shadows
+  extern INDEX shd_bCacheAll;
+  extern void ReloadTextures(void);
+  extern void ReloadMeshes(void);
+  extern void CacheShadows(void);
+  ReloadTextures();
+  ReloadMeshes();
+  if( shd_bCacheAll) CacheShadows();
+}
+
+
+// initialize OpenGL driver
+#ifdef PLATFORM_WIN32
+BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
+{
+  ASSERT( gl_hiDriver==NONE);
+  UINT iOldErrorMode = SetErrorMode( SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
+  CTString strDriverFileName = b3Dfx ? "3DFXVGL.DLL" : "OPENGL32.DLL";
+
+  try
+  { // if driver doesn't exists on disk
+    char strBuffer[_MAX_PATH+1];
+    char *strDummy;
+    int iRes = SearchPath( NULL, strDriverFileName, NULL, _MAX_PATH, strBuffer, &strDummy);
+    if( iRes==0) ThrowF_t(TRANS("OpenGL driver '%s' not present"), strDriverFileName);
+
+    // load opengl library
+    gl_hiDriver = ::LoadLibrary( strDriverFileName);
+    // if it cannot be loaded (although it is present on disk)
+    if( gl_hiDriver==NONE) {
+      // if it is 3dfx stand-alone driver
+      if( b3Dfx) {
+        // do a fatal error and inform user to deinstall it,
+        // since this loading attempt probably messed up the entire system
+        FatalError(TRANS( "3Dfx OpenGL driver '%s' is installed, but cannot be loaded!\n"
+                          "If you previously had a 3Dfx card and it was removed,\n"
+                          "please deinstall the driver and restart windows before\n"
+                          "continuing.\n"), strDriverFileName);
+      } // fail!
+      ThrowF_t(TRANS("Cannot load OpenGL driver '%s'"), strDriverFileName);
+    }
+    // prepare functions
+    OGL_SetFunctionPointers_t(gl_hiDriver);
+  }
+  catch( char *strError)
+  { // didn't make it :(
+    if( gl_hiDriver!=NONE) FreeLibrary(gl_hiDriver);
+    gl_hiDriver = NONE;
+    CPrintF( TRANS("Error starting OpenGL: %s\n"), strError);
+    SetErrorMode(iOldErrorMode);
+    return FALSE;
+  }
+
+  // revert to old error mode
+  SetErrorMode(iOldErrorMode);
+
+  // if default driver
+  if( !b3Dfx) {
+    // use GDI functions
+    // NOTE: some ICD implementations are not infact in OPENGL32.DLL, but in some other 
+    //       installed DLL, which is loaded when original OPENGL32.DLL from MS is loaded. 
+    //       For those, we in fact load OPENGL32.DLL from MS, so we must _not_ call these
+    //       functions directly, because they are in MS dll. We must call functions from GDI,
+    //       which in turn call either OPENGL32.DLL, _or_ the client driver, as appropriate.
+    pwglSwapBuffers       = ::SwapBuffers;
+    pwglSetPixelFormat    = ::SetPixelFormat;
+    pwglChoosePixelFormat = ::ChoosePixelFormat;
+  }
+
+  // done (mark driver type for gamma adjustment support)
+  _b3DfxDriver = b3Dfx;
+  return TRUE;
+} 
+#else
+// outside Windows: the system's OpenGL through SDL (there is no 3Dfx driver)
+BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
+{
+  ASSERT( gl_hiDriver==NONE);
+  if( b3Dfx) return FALSE;
+  if( !SDL_GL_LoadLibrary(NULL)) {
+    CPrintF( TRANS("Error starting OpenGL: %s\n"), SDL_GetError());
+    return FALSE;
+  }
+  try {
+    OGL_SetFunctionPointers_t();
+  } catch( char *strError) {
+    OGL_ClearFunctionPointers();
+    SDL_GL_UnloadLibrary();
+    CPrintF( TRANS("Error starting OpenGL: %s\n"), strError);
+    return FALSE;
+  }
+  _b3DfxDriver = FALSE;
+  return TRUE;
+}
+#endif // PLATFORM_WIN32
+
+
+// shutdown OpenGL driver
+void CGfxLibrary::EndDriver_OGL(void)
+{
+  // programs belong to the context
+  if( gl_ulFlags & GLF_VERTEXPROGRAM) {
+    extern void ClearVertexAndPixelPrograms(void);
+    ClearVertexAndPixelPrograms();
+  }
+
+  // release occlusion queries
+  if( _puiOcclusionQueryIDs!=NULL) { 
+    if( gl_ulFlags & GLF_EXT_OCCLUSIONQUERY) {
+      pglDeleteOcclusionQueriesNV( GFX_MAXOCCQUERIES, _puiOcclusionQueryIDs);
+    } // and free memory
+    FreeMemory(_puiOcclusionQueryIDs);
+   _puiOcclusionQueryIDs = NULL;
+  }
+
+#ifdef PLATFORM_WIN32
+  // restore system gamma table
+  if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) {
+    const HDC hdc = GetDC(NULL);
+    SetDeviceGammaRamp( hdc, &_auwSystemGammaTable[0]);
+    ReleaseDC( NULL, hdc);
+  }
+
+  // shut the driver down
+  if( go_hglRC!=NULL) {
+    if( pwglMakeCurrent!=NULL) {
+      BOOL bRes = pwglMakeCurrent(NULL, NULL);
+      WIN_CHECKERROR( bRes, "MakeCurrent(NULL, NULL)");
+    }
+    ASSERT( pwglDeleteContext!=NULL);
+    BOOL bRes = pwglDeleteContext(go_hglRC);
+    WIN_CHECKERROR( bRes, "DeleteContext");
+    go_hglRC = NULL;
+  }
+#else
+  // restore system gamma table (macOS, the platform layer)
+  if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) PLT_SetGammaRamp(NULL);
+
+  if( go_hglRC!=NULL) {
+    SDL_GL_MakeCurrent( SDL_GL_GetCurrentWindow(), NULL);
+    SDL_GL_DestroyContext( (SDL_GLContext)go_hglRC);
+    go_hglRC = NULL;
+  }
+  SDL_GL_UnloadLibrary();
+#endif // PLATFORM_WIN32
+
+  // done
+  OGL_ClearFunctionPointers();
+}
+
+
+
+// prepare current viewport for rendering thru OpenGL
+BOOL CGfxLibrary::SetCurrentViewport_OGL(CViewPort *pvp)
+{
+  // if must init entire opengl
+  if( gl_ulFlags & GLF_INITONNEXTWINDOW)
+  {
+    gl_ulFlags &= ~GLF_INITONNEXTWINDOW;
+    // reopen window
+    pvp->CloseCanvas();
+    pvp->OpenCanvas();
+    // init now
+#ifdef PLATFORM_WIN32
+    CTempDC tdc(pvp->vp_hWnd);
+    if( !CreateContext_OGL(tdc.hdc)) return FALSE;
+#else
+    if( !CreateContext_OGL(pvp->vp_hWnd)) return FALSE;
+#endif // PLATFORM_WIN32
+    gl_pvpActive = pvp; // remember as current viewport (must do that BEFORE InitContext)
+    InitContext_OGL();
+    pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
+    return TRUE;
+  }
+
+  // if window was not set for this driver
+  if( pvp->vp_ctDisplayChanges<gl_ctDriverChanges)
+  {
+    // reopen window
+    pvp->CloseCanvas();
+    pvp->OpenCanvas();
+#ifdef PLATFORM_WIN32
+    // set it
+    CTempDC tdc(pvp->vp_hWnd);
+    if( !SetupPixelFormat_OGL(tdc.hdc)) return FALSE;
+#endif // PLATFORM_WIN32 (an SDL window keeps its pixel format)
+    pvp->vp_ctDisplayChanges = gl_ctDriverChanges;
+  }
+
+  if( gl_pvpActive!=NULL) {
+    // fail, if only one window is allowed (3dfx driver), already initialized and trying to set non-primary viewport
+    const BOOL bOneWindow = (gl_gaAPI[GAT_OGL].ga_adaAdapter[gl_iCurrentAdapter].da_ulFlags & DAF_ONEWINDOW);
+    if( bOneWindow && gl_pvpActive->vp_hWnd!=NULL && gl_pvpActive->vp_hWnd!=pvp->vp_hWnd) return FALSE;
+    // no need to set context if it is the same window as last time
+    if( gl_pvpActive->vp_hWnd==pvp->vp_hWnd) return TRUE;
+  }
+
+  // try to set context to this window
+#ifdef PLATFORM_WIN32
+  pwglMakeCurrent( NULL, NULL);
+  CTempDC tdc(pvp->vp_hWnd);
+  // fail, if cannot set context to this window
+  if( !pwglMakeCurrent( tdc.hdc, go_hglRC)) return FALSE;
+#else
+  if( !SDL_GL_MakeCurrent( (SDL_Window*)pvp->vp_hWnd, (SDL_GLContext)go_hglRC)) return FALSE;
+#endif // PLATFORM_WIN32
+
+  // remember as current window
+  gl_pvpActive = pvp;
+  return TRUE;
+}
