@@ -67,7 +67,7 @@ bool CSocketPos::SetJewel(int itemidx, int pos)
 	if(itemproto->getItemRareIndex(0) == -1 /*|| itemproto->getItemRareIndex(0) == 0*/)
 		return false;
 
-//	if(itemproto->getItemSet1() == 0 && pos > 0)		//Ä«¿À½º º¸¼®ÀÌ µé¾î°¡¸é Å×½ºÆ®
+//	if(itemproto->getItemSet1() == 0 && pos > 0)		//ì¹´ì˜¤ìŠ¤ ë³´ì„ì´ ë“¤ì–´ê°€ë©´ í…ŒìŠ¤íŠ¸
 	if(itemproto->getItemSet1() == 0)
 	{
 		COptionProto* m_optionProto = gserver->m_optionProtoList.FindProto(itemproto->getItemRareIndex(0));
@@ -88,7 +88,7 @@ bool CSocketPos::SetJewel(int itemidx, int pos)
 		m_itemproto = itemproto;
 		SetItemIdx(itemidx);
 	}
-//	else if((itemproto->getItemSet1() == 1 || itemproto->getItemSet0() == 2) && pos == 0)	//Ä«¿À½º º¸¼®ÀÌ µé¾î°¡¸é Å×½ºÆ®
+//	else if((itemproto->getItemSet1() == 1 || itemproto->getItemSet0() == 2) && pos == 0)	//ì¹´ì˜¤ìŠ¤ ë³´ì„ì´ ë“¤ì–´ê°€ë©´ í…ŒìŠ¤íŠ¸
 	else if((itemproto->getItemSet1() == 1 || itemproto->getItemSet1() == 2))
 	{
 		if(m_skill)
@@ -129,12 +129,12 @@ void CSocketPos::ApplyJewelOption(CPC* pc, CItem* pItem, bool isOption) const
 	{
 		CSkill* skill = gserver->m_skillProtoList.Create(m_itemproto->getItemRareIndex(0));
 
-		if(m_itemproto->getItemSet1() == 1) 						//°ø°Ý ¹ßµ¿Çü ½ºÅ³ÀÎ °æ¿ì¿¡
+		if(m_itemproto->getItemSet1() == 1) 						//ê³µê²© ë°œë™í˜• ìŠ¤í‚¬ì¸ ê²½ìš°ì—
 		{
 			pc->m_optionAttSkillList.AddOptionSkill(skill, m_skillProb, pItem->m_itemProto->getItemWearing());
 		}
 
-		if(m_itemproto->getItemSet1() == 2) 						//¹æ¾î ¹ßµ¿Çü ½ºÅ³ÀÎ °æ¿ì¿¡
+		if(m_itemproto->getItemSet1() == 2) 						//ë°©ì–´ ë°œë™í˜• ìŠ¤í‚¬ì¸ ê²½ìš°ì—
 		{
 			pc->m_optionDefSkillList.AddOptionSkill(skill, m_skillProb, pItem->m_itemProto->getItemWearing());
 		}

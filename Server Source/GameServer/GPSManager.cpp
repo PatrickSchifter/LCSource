@@ -32,31 +32,31 @@ bool CGPSManager::isGpsInterrupt()
 
 void CGPSManager::sendGpsTargetMoveInfo()
 {
-	//gps ¹öÇÁ Ã¼Å©
+	//gps ë²„í”„ ì²´í¬
 	if(this->isGps() == false)
 		return;
 
-	//Ä³¸¯ÅÍ°¡ ·Î±×¿ÀÇÁ ÇßÀ» ½Ã¿¡
+	//ìºë¦­í„°ê°€ ë¡œê·¸ì˜¤í”„ í–ˆì„ ì‹œì—
 	if(m_gpsTarget != NULL && m_gpsTarget->m_type == MSG_CHAR_UNKNOWN)
 		m_gpsTarget = NULL;
 
-	//Ä³¸¯ÅÍ°¡ ·Î±×ÀÎ »óÅÂ°¡ ¾Æ´Ï¶ó¸é
+	//ìºë¦­í„°ê°€ ë¡œê·¸ì¸ ìƒíƒœê°€ ì•„ë‹ˆë¼ë©´
 	if(m_gpsTarget == NULL)
 	{
 		sendNotFound();
 	}
 
-	//Ä³¸¯ÅÍ°¡ ·Î±×ÀÎ »óÅÂ¶ó¸é
+	//ìºë¦­í„°ê°€ ë¡œê·¸ì¸ ìƒíƒœë¼ë©´
 	else
 	{
-		//À§Ä¡ ¾ÆÀÌÅÛ ¹æÇØÁßÀÌ¸é
+		//ìœ„ì¹˜ ì•„ì´í…œ ë°©í•´ì¤‘ì´ë©´
 		if(m_gpsTarget->m_gpsManager.isGpsInterrupt() == true)
 		{
 			sendNotFound();
 			return;
 		}
 
-		//°°Àº Á¸¿¡ ÀÖ´ÂÁö °Ë»ç
+		//ê°™ì€ ì¡´ì— ìžˆëŠ”ì§€ ê²€ì‚¬
 		if(m_gpsTarget->m_pZone->m_index == _owner->m_pZone->m_index)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -158,11 +158,11 @@ void CGPSManager::deleteTarget()
 
 void CGPSManager::sendNotFound()
 {
-	//ÇÑ¹øÀÌ¶óµµ º¸³½Àû ÀÖÀ¸¸é ¸®ÅÏ
+	//í•œë²ˆì´ë¼ë„ ë³´ë‚¸ì  ìžˆìœ¼ë©´ ë¦¬í„´
 	if(isNotFoundSend == true)
 		return;
 
-	//¹°À½Ç¥ send
+	//ë¬¼ìŒí‘œ send
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateClient::makeGPSTargetMoveInfo(rmsg, false, -1, -1, -1, -1);
 	SEND_Q(rmsg, _owner->m_desc);

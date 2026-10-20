@@ -63,7 +63,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ∫Í∂Û¡˙ ø‰√ª æ˜µ•¿Ã∆Æ, OX ƒ˚¡Ó∑Îø°º± ∞≥¿ŒªÛ¡° ±›¡ˆ...yhj 090227
+	// Î∏åÎùºÏßà ÏöîÏ≤≠ ÏóÖÎç∞Ïù¥Ìä∏, OX ÌÄ¥Ï¶àÎ£∏ÏóêÏÑ† Í∞úÏù∏ÏÉÅÏ†ê Í∏àÏßÄ...yhj 090227
 	if ( ch->m_pZone->IsOXQuizRoom()
 			|| ch->m_pZone->IsWarGroundZone()
 	   )
@@ -133,7 +133,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 
 	if(findPercentChar(shopname.getBuffer()) != NULL)
 	{
-		//πÊ¿Ã∏ßø° % πÆ¿⁄ø≠ ¿‘∑¬ ∫“∞°
+		//Î∞©Ïù¥Î¶ÑÏóê % Î¨∏ÏûêÏó¥ ÏûÖÎ†• Î∂àÍ∞Ä
 		CNetMsg::SP rmsg(new CNetMsg);
 		PersonalShopErrorMsg(rmsg, MSG_PERSONALSHOP_ERROR_INSUFF_ETC);
 		SEND_Q(rmsg, ch->m_desc);
@@ -207,7 +207,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// 060406 : bs : ∫¿¿Œµ» æ∆¿Ã≈€ ±≥»Ø ∫“∞°
+		// 060406 : bs : Î¥âÏù∏Îêú ÏïÑÏù¥ÌÖú ÍµêÌôò Î∂àÍ∞Ä
 		CItem* item = ch->m_inventory.getItem(tab, invenIndex);
 		if (item == NULL)
 		{
@@ -220,7 +220,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 #ifdef ENABLE_SUBJOB
 		if( item && item->CanUseTrader( TRADE_PERSONAL_SHOP, ch->IsSubJob(JOB_SUB_TRADER) ) == false )
 		{
-			// ∆«∏≈«“ºˆ æ¯¥¬ æ∆¿Ã≈€
+			// ÌåêÎß§Ìï†Ïàò ÏóÜÎäî ÏïÑÏù¥ÌÖú
 			CNetMsg::SP rmsg(new CNetMsg);
 			PersonalShopErrorMsg(rmsg, MSG_PERSONALSHOP_ERROR_INSUFF_ETC);
 			SEND_Q(rmsg, ch->m_desc);
@@ -232,7 +232,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 			item->m_itemProto->getItemIndex() == ARTIFACT_LEVEL2_ITEM_INDEX ||
 			item->m_itemProto->getItemIndex() == ARTIFACT_LEVEL3_ITEM_INDEX)
 		{
-			// ∆«∏≈«“ºˆ æ¯¥¬ æ∆¿Ã≈€
+			// ÌåêÎß§Ìï†Ïàò ÏóÜÎäî ÏïÑÏù¥ÌÖú
 			LOG_ERROR("HACKING? : Artifact Item. char_index[%d], item_index[%d]",
 				ch->m_index, item->getDBIndex());
 			ch->m_desc->Close("not found item");
@@ -254,7 +254,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return ;
 		}
-		// ∆Í¿œ ∞ÊøÏ Ω∫≈≥¿ª «œ≥™∂Ûµµ πËøÓ ∞Õ¿∫ ±≥»Ø ∫“∞°
+		// Ìé´Ïùº Í≤ΩÏö∞ Ïä§ÌÇ¨ÏùÑ ÌïòÎÇòÎùºÎèÑ Î∞∞Ïö¥ Í≤ÉÏùÄ ÍµêÌôò Î∂àÍ∞Ä
 		if (item->IsPet())
 		{
 			CPet* pet = ch->GetPet(item->getPlus());
@@ -343,7 +343,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// 060406 : bs : ∫¿¿Œµ» æ∆¿Ã≈€ ±≥»Ø ∫“∞°
+			// 060406 : bs : Î¥âÏù∏Îêú ÏïÑÏù¥ÌÖú ÍµêÌôò Î∂àÍ∞Ä
 			CItem* item = ch->m_inventory.getItem(tab, invenIndex);
 			if (item == NULL)
 			{
@@ -384,7 +384,7 @@ void do_PersonalShopSellStart(CPC* ch, CNetMsg::SP& msg)
 				SEND_Q(rmsg, ch->m_desc);
 				return ;
 			}
-			// ∆Í¿œ ∞ÊøÏ Ω∫≈≥¿ª «œ≥™∂Ûµµ πËøÓ ∞Õ¿∫ ±≥»Ø ∫“∞°
+			// Ìé´Ïùº Í≤ΩÏö∞ Ïä§ÌÇ¨ÏùÑ ÌïòÎÇòÎùºÎèÑ Î∞∞Ïö¥ Í≤ÉÏùÄ ÍµêÌôò Î∂àÍ∞Ä
 			if (item->IsPet())
 			{
 				CPet* pet = ch->GetPet(item->getPlus());
@@ -488,7 +488,7 @@ void do_PersonalShopSellList(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¿œπ› æ∆¿Ã≈€ø°º≠ ∆Í¿Ã∏È ∆Í ¡§∫∏ ∫∏≥ª±‚
+	// ÏùºÎ∞ò ÏïÑÏù¥ÌÖúÏóêÏÑú Ìé´Ïù¥Î©¥ Ìé´ Ï†ïÎ≥¥ Î≥¥ÎÇ¥Í∏∞
 	if (tch->m_personalshop->GetNormalCount())
 	{
 		int i;
@@ -517,7 +517,7 @@ void do_PersonalShopSellList(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 	}
-	// ∆–≈∞¡ˆ æ∆¿Ã≈€ø°º≠ ∆Í¿Ã∏È ∆Í ¡§∫∏ ∫∏≥ª±‚
+	// Ìå®ÌÇ§ÏßÄ ÏïÑÏù¥ÌÖúÏóêÏÑú Ìé´Ïù¥Î©¥ Ìé´ Ï†ïÎ≥¥ Î≥¥ÎÇ¥Í∏∞
 	if (tch->m_personalshop->GetType() & PST_PACKAGE)
 	{
 		int i;
@@ -624,10 +624,10 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±∏∏≈Ω√ « ø‰«— ≥™Ω∫
+	// Íµ¨Îß§Ïãú ÌïÑÏöîÌïú ÎÇòÏä§
 	LONGLONG needmoney = 0;
 
-	// ªÛ¡° √£±‚
+	// ÏÉÅÏ†ê Ï∞æÍ∏∞
 	int charindex = -1;
 	char packbuy = -1;
 	RefMsg(msg) >> charindex
@@ -662,10 +662,10 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ±∏∏≈ ∏ÆΩ∫∆Æ
+	// Íµ¨Îß§ Î¶¨Ïä§Ìä∏
 	CPersonalShop list(shoptype, "");
 
-	// ∆–≈∞¡ˆ ∞ÀªÁ
+	// Ìå®ÌÇ§ÏßÄ Í≤ÄÏÇ¨
 	if (packbuy)
 	{
 		if ((shoptype & PST_PACKAGE) == 0)
@@ -685,7 +685,8 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ∆–≈∞¡ˆ ±∏∏≈ ∏ÆΩ∫∆Æø° √ﬂ∞°
+		// Ìå®ÌÇ§ÏßÄ Íµ¨Îß§ Î¶¨Ïä§Ìä∏Ïóê Ï∂îÍ∞Ä
+		std::vector<possible_search_t> search_vec;
 		int i, j = -1;
 		int packageCount = ps->GetPackageCount();
 		for (i = 0; i < packageCount; i++)
@@ -717,10 +718,19 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			list.AddItem(false, ps->GetPackageItemIndex(j), ps->GetPackageItemCount(j), ps->GetPackagePrice());
+			search_vec.push_back(possible_search_t(item, ps->GetPackageItemCount(j)));
+		}
+
+		if (ch->m_inventory.isPossibleAdd(search_vec) == false)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			PersonalShopErrorMsg(rmsg, MSG_PERSONALSHOP_ERROR_BUY_FULLINVENTORY);
+			SEND_Q(rmsg, ch->m_desc);
+			return ;
 		}
 	}
 
-	// ¿œπ› ªÛ«∞ ∞ÀªÁ
+	// ÏùºÎ∞ò ÏÉÅÌíà Í≤ÄÏÇ¨
 	char normalcount = -1;
 	RefMsg(msg) >> normalcount;
 	if (normalcount == 0 && !packbuy)
@@ -739,6 +749,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	int i;
+	std::vector<possible_search_t> search_vec_normal;
 	for (i = 0; i < normalcount; i++)
 	{
 		int itemindex = -1;
@@ -795,7 +806,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return ;
 		}
-		// ∞∞¿∫ æ∆¿Ã≈€ ø©∑Øπ¯ ªÁ∑¡∞Ì «œ∏È æ»µ 
+		// Í∞ôÏùÄ ÏïÑÏù¥ÌÖú Ïó¨Îü¨Î≤à ÏÇ¨Î†§Í≥† ÌïòÎ©¥ ÏïàÎê®
 		if (list.FindItem(true, itemindex) != -1 || list.FindItem(false, itemindex) != -1)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -805,6 +816,15 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 		list.AddItem(true, ps->GetNormalItemIndex(pos), count, ps->GetNormalItemPrice(pos));
+		search_vec_normal.push_back(possible_search_t(item, count));
+	}
+	
+	if (ch->m_inventory.isPossibleAdd(search_vec_normal) == false)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		PersonalShopErrorMsg(rmsg, MSG_PERSONALSHOP_ERROR_BUY_FULLINVENTORY);
+		SEND_Q(rmsg, ch->m_desc);
+		return ;
 	}
 
 	if (nCountOfPet > MAX_OWN_PET)
@@ -820,7 +840,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 	pos = list.GetNextNormalItem(-1);
 	while (pos != -1)
 	{
-		// ∆ƒ¥¬ æ∆¿Ã≈€ ∞ÀªÁ
+		// ÌååÎäî ÏïÑÏù¥ÌÖú Í≤ÄÏÇ¨
 		int itemindex = list.GetNormalItemIndex(pos);
 		CItem* pitem = tch->m_inventory.FindByVirtualIndex(itemindex);
 		if (!pitem)
@@ -838,7 +858,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ¿Œ∫•≈‰∏Æ ∞°¥… ∞ÀªÁ
+		// Ïù∏Î≤§ÌÜ†Î¶¨ Í∞ÄÎä• Í≤ÄÏÇ¨
 		if (!(pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT) || !ch->m_inventory.FindByDBIndex(pitem->getDBIndex(), pitem->getPlus(), pitem->getFlag()))
 			needspace++;
 
@@ -847,7 +867,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 	pos = list.GetNextPackageItem(-1);
 	while (pos != -1)
 	{
-		// ∆ƒ¥¬ æ∆¿Ã≈€ ∞ÀªÁ
+		// ÌååÎäî ÏïÑÏù¥ÌÖú Í≤ÄÏÇ¨
 		int itemindex = list.GetPackageItemIndex(pos);
 		CItem* pitem = tch->m_inventory.FindByVirtualIndex(itemindex);
 		if (!pitem)
@@ -865,14 +885,14 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ¿Œ∫•≈‰∏Æ ∞°¥… ∞ÀªÁ
+		// Ïù∏Î≤§ÌÜ†Î¶¨ Í∞ÄÎä• Í≤ÄÏÇ¨
 		if (!(pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT) || !ch->m_inventory.FindByDBIndex(pitem->getDBIndex(), pitem->getPlus(), pitem->getFlag()))
 			needspace++;
 
 		pos = list.GetNextPackageItem(pos);
 	}
 
-	// ¿Œ∫•≈‰∏Æ ∞ÀªÁ
+	// Ïù∏Î≤§ÌÜ†Î¶¨ Í≤ÄÏÇ¨
 	if (ch->m_inventory.getEmptyCount() < needspace)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -892,7 +912,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 	GAMELOG << "NEEDMONEY" << delim << needmoney << delim;
 	GAMELOG << "ITEMS";
 
-	// ¿œπ› æ∆¿Ã≈€ ±∏∏≈/∆«∏≈
+	// ÏùºÎ∞ò ÏïÑÏù¥ÌÖú Íµ¨Îß§/ÌåêÎß§
 	pos = list.GetNextNormalItem(-1);
 	while (pos != -1)
 	{
@@ -947,14 +967,14 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 
 		CItem* nitem = NULL;
 
-		// ±∏∏≈ ∏ÆΩ∫∆Æ¿« ƒ´øÓ∆Æ∫∏¥Ÿ ≈©∏È
+		// Íµ¨Îß§ Î¶¨Ïä§Ìä∏Ïùò Ïπ¥Ïö¥Ìä∏Î≥¥Îã§ ÌÅ¨Î©¥
 		if (pitem->Count() > count)
 		{
-			// ∞„ƒ°¥¬ æ∆¿Ã≈€¿Ã ∆«∏≈ »ƒø°µµ ≥≤¥¬ ∞ÊøÏ
+			// Í≤πÏπòÎäî ÏïÑÏù¥ÌÖúÏù¥ ÌåêÎß§ ÌõÑÏóêÎèÑ ÎÇ®Îäî Í≤ΩÏö∞
 			nitem = gserver->m_itemProtoList.CreateItem(pitem->getDBIndex(), -1, pitem->getPlus(), pitem->getFlag(), count);
 			ch->m_inventory.addItem(nitem);
 
-			// ª©∞Ì
+			// ÎπºÍ≥†
 			tch->m_inventory.decreaseItemCount(pitem, count);
 		}
 		else
@@ -965,14 +985,14 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			ch->m_inventory.addItem(pitem);
 			nitem = pitem;
 
-			// ª©∞Ì
+			// ÎπºÍ≥†
 			tch->m_inventory.eraseNotFreeByInvenIndex(tab, invenIndex);
 		}
 
 		GAMELOG << delim << itemlog(nitem)
 				<< delim << count;
 
-		// ∆«∏≈ ∏ÆΩ∫∆Æ ∞ªΩ≈
+		// ÌåêÎß§ Î¶¨Ïä§Ìä∏ Í∞±Ïã†
 		ps->RemoveNormalItem(itemindex, count);
 
 		pos = list.GetNextNormalItem(pos);
@@ -983,7 +1003,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ∆–≈∞¡ˆ æ∆¿Ã≈€ ±∏∏≈ ∆«∏≈
+	// Ìå®ÌÇ§ÏßÄ ÏïÑÏù¥ÌÖú Íµ¨Îß§ ÌåêÎß§
 	pos = list.GetNextPackageItem(-1);
 	while (pos != -1)
 	{
@@ -1035,17 +1055,17 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ±∏∏≈ ∏ÆΩ∫∆Æ¿« ƒ´øÓ∆Æ∫∏¥Ÿ ≈©∏È
+		// Íµ¨Îß§ Î¶¨Ïä§Ìä∏Ïùò Ïπ¥Ïö¥Ìä∏Î≥¥Îã§ ÌÅ¨Î©¥
 		CItem* nitem = NULL;
 
 		if (pitem->Count() > count)
 		{
-			// ∞„ƒ°¥¬ æ∆¿Ã≈€¿Ã ∆«∏≈ »ƒø°µµ ≥≤¥¬ ∞ÊøÏ
-			// ∏∏µÈ∞Ì
+			// Í≤πÏπòÎäî ÏïÑÏù¥ÌÖúÏù¥ ÌåêÎß§ ÌõÑÏóêÎèÑ ÎÇ®Îäî Í≤ΩÏö∞
+			// ÎßåÎì§Í≥†
 			nitem = gserver->m_itemProtoList.CreateItem(pitem->getDBIndex(), -1, pitem->getPlus(), pitem->getFlag(), count);
 			ch->m_inventory.addItem(nitem);
 
-			// ª©∞Ì
+			// ÎπºÍ≥†
 			tch->m_inventory.decreaseItemCount(pitem, count);
 		}
 		else
@@ -1056,14 +1076,14 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 			ch->m_inventory.addItem(pitem);
 			nitem = pitem;
 
-			// ª©∞Ì
+			// ÎπºÍ≥†
 			tch->m_inventory.eraseNotFreeByInvenIndex(tab, invenIndex);
 		}
 
 		GAMELOG << delim << itemlog(nitem)
 				<< delim << count;
 
-		// ∆«∏≈ ∏ÆΩ∫∆Æ ∞ªΩ≈
+		// ÌåêÎß§ Î¶¨Ïä§Ìä∏ Í∞±Ïã†
 		ps->RemovePackage();
 
 		pos = list.GetNextPackageItem(pos);
@@ -1076,7 +1096,7 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 
 	GAMELOG << end;
 
-	// µ∑ ≥÷∞Ì ª©±‚
+	// Îèà ÎÑ£Í≥† ÎπºÍ∏∞
 	if (ch->m_inventory.getMoney() >= needmoney)
 	{
 		ch->m_inventory.decreaseMoney(needmoney);
@@ -1086,19 +1106,19 @@ void do_PersonalShopBuy(CPC* ch, CNetMsg::SP& msg)
 
 	tch->m_inventory.increaseMoney(needmoney - (needmoney * rate / 10000));
 
-	// Ω«Ω√∞£ ¿˙¿Â
+	// Ïã§ÏãúÍ∞Ñ Ï†ÄÏû•
 	DBManager::instance()->SaveCharacterInfo(ch->m_desc, false);
 	DBManager::instance()->SaveCharacterInfo(tch->m_desc, false);
 
-	// ∆«∏≈¿⁄ø°∞‘ ∆«∏≈µ  æÀ∏≤
+	// ÌåêÎß§ÏûêÏóêÍ≤å ÌåêÎß§Îê® ÏïåÎ¶º
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		PersonalShopBuyMsg(rmsg, msg, ch);
 		SEND_Q(rmsg, tch->m_desc);
 	}
 
-	// ªÛ¡° ¡æ∑· π◊ ªÛ≈¬ ∫Ø»≠ ∞ÀªÁ
-	// ∆–≈∞¡ˆ ªÛ≈¬ ∞ÀªÁ
+	// ÏÉÅÏ†ê Ï¢ÖÎ£å Î∞è ÏÉÅÌÉú Î≥ÄÌôî Í≤ÄÏÇ¨
+	// Ìå®ÌÇ§ÏßÄ ÏÉÅÌÉú Í≤ÄÏÇ¨
 	if (ps->GetType() != shoptype)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);

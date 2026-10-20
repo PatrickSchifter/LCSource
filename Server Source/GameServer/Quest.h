@@ -14,57 +14,57 @@ class CAffinityProto;
 
 typedef std::vector<CAffinityProto*>	vec_quest_affinityList_t;
 
-// Äù½ºÆ® ÇÁ·ÎÅä Å¸ÀÔ
+// í€˜ìŠ¤íŠ¸ í”„ë¡œí†  íƒ€ì…
 class CQuestProto
 {
 public:
 
 	// DB
-	int			m_index;							// Äù½ºÆ® DB ¹øÈ£
-	int			m_type[2];							// Äù½ºÆ® Á¾·ù : ¹æ½Ä/È½¼ö¿¡ µû¸¥ ºĞ·ù
+	int			m_index;							// í€˜ìŠ¤íŠ¸ DB ë²ˆí˜¸
+	int			m_type[2];							// í€˜ìŠ¤íŠ¸ ì¢…ë¥˜ : ë°©ì‹/íšŸìˆ˜ì— ë”°ë¥¸ ë¶„ë¥˜
 
-	int			m_startType;						// ½ÃÀÛ ¹æ¹ı
-	int			m_startData;						// ½ÃÀÛ ¹æ¹ı¿¡ µû¸¥ µ¥ÀÌÅ¸
-	int			m_prizeNPC;							// Äù½ºÆ®¸¦ ¿Ï·á½ÃÅ°´Â NPC
+	int			m_startType;						// ì‹œì‘ ë°©ë²•
+	int			m_startData;						// ì‹œì‘ ë°©ë²•ì— ë”°ë¥¸ ë°ì´íƒ€
+	int			m_prizeNPC;							// í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œì‹œí‚¤ëŠ” NPC
 
-	// ÇÊ¿äÁ¶°Ç : Äù½ºÆ® ¼º¸³ Á¶°Ç
-	int			m_needMinLevel;							// ÃÖ¼Ò·¹º§
-	int			m_needMaxLevel;							// ÃÖ´ë·¹º§
-	int			m_needJob;								// Á÷¾÷
-	int			m_needItemIndex[QUEST_MAX_NEED_ITEM];	// ÇÊ¿ä¾ÆÀÌÅÛ ÀÎµ¦½º : ¾øÀ¸¸é -1
-	int			m_needItemCount[QUEST_MAX_NEED_ITEM];	// ÇÊ¿ä¾ÆÀÌÅÛ ¼ö·®
+	// í•„ìš”ì¡°ê±´ : í€˜ìŠ¤íŠ¸ ì„±ë¦½ ì¡°ê±´
+	int			m_needMinLevel;							// ìµœì†Œë ˆë²¨
+	int			m_needMaxLevel;							// ìµœëŒ€ë ˆë²¨
+	int			m_needJob;								// ì§ì—…
+	int			m_needItemIndex[QUEST_MAX_NEED_ITEM];	// í•„ìš”ì•„ì´í…œ ì¸ë±ìŠ¤ : ì—†ìœ¼ë©´ -1
+	int			m_needItemCount[QUEST_MAX_NEED_ITEM];	// í•„ìš”ì•„ì´í…œ ìˆ˜ëŸ‰
 
 	int			m_needRvRType;
 	int			m_needRvRGrade;
 
-	int			m_prequestNum;							//¼±ÇàÄù½ºÆ® ¹øÈ£
-	int			m_startNpcZoneNum;						//½ÃÀÛ NPC Á¸¹øÈ£
-	int			m_prizeNpcZoneNum;						//º¸»ó NPC Á¸¹øÈ£
-	int		m_needExp;									//ÇÊ¿ä °æÇèÄ¡
+	int			m_prequestNum;							//ì„ í–‰í€˜ìŠ¤íŠ¸ ë²ˆí˜¸
+	int			m_startNpcZoneNum;						//ì‹œì‘ NPC ì¡´ë²ˆí˜¸
+	int			m_prizeNpcZoneNum;						//ë³´ìƒ NPC ì¡´ë²ˆí˜¸
+	int		m_needExp;									//í•„ìš” ê²½í—˜ì¹˜
 
-	// ¼öÇà Á¶°Ç : Äù½ºÆ® ¼öÇà Á¶°Ç
-	int			m_conditionType[QUEST_MAX_CONDITION];	// ¼öÇà Á¾·ù
-	int			m_conditionIndex[QUEST_MAX_CONDITION];	// ¼öÇà Á¾·ù ÀÎµ¦½º
-	int			m_conditionNum[QUEST_MAX_CONDITION];	// ¼öÇà ¼ö
-	int			m_conditionData[QUEST_MAX_CONDITION][QUEST_MAX_CONDITION_DATA];	// ¼öÇà Á¶°Ç ºÎ°¡ µ¥ÀÌÅ¸
+	// ìˆ˜í–‰ ì¡°ê±´ : í€˜ìŠ¤íŠ¸ ìˆ˜í–‰ ì¡°ê±´
+	int			m_conditionType[QUEST_MAX_CONDITION];	// ìˆ˜í–‰ ì¢…ë¥˜
+	int			m_conditionIndex[QUEST_MAX_CONDITION];	// ìˆ˜í–‰ ì¢…ë¥˜ ì¸ë±ìŠ¤
+	int			m_conditionNum[QUEST_MAX_CONDITION];	// ìˆ˜í–‰ ìˆ˜
+	int			m_conditionData[QUEST_MAX_CONDITION][QUEST_MAX_CONDITION_DATA];	// ìˆ˜í–‰ ì¡°ê±´ ë¶€ê°€ ë°ì´íƒ€
 
-	// º¸»ó Á¶°Ç
-	int			m_prizeType[QUEST_MAX_PRIZE];		// º¸»ó Á¾·ù
-	int			m_prizeIndex[QUEST_MAX_PRIZE];		// º¸»ó ÀÎµ¦½º
-	LONGLONG			m_prizeData[QUEST_MAX_PRIZE];		// º¸»ó µ¥ÀÌÅ¸
+	// ë³´ìƒ ì¡°ê±´
+	int			m_prizeType[QUEST_MAX_PRIZE];		// ë³´ìƒ ì¢…ë¥˜
+	int			m_prizeIndex[QUEST_MAX_PRIZE];		// ë³´ìƒ ì¸ë±ìŠ¤
+	LONGLONG			m_prizeData[QUEST_MAX_PRIZE];		// ë³´ìƒ ë°ì´íƒ€
 
-	int			m_optPrizeType[QUEST_MAX_OPTPRIZE];		// ¼±ÅÃ º¸»ó Á¾·ù
-	int			m_optPrizeIndex[QUEST_MAX_OPTPRIZE];		// ¼±ÅÃ º¸»ó ÀÎµ¦½º
-	int			m_optPrizeData[QUEST_MAX_OPTPRIZE];		// ¼±ÅÃ º¸»ó µ¥ÀÌÅ¸
-	int			m_failValue;						// ½ÇÆĞ °ª
+	int			m_optPrizeType[QUEST_MAX_OPTPRIZE];		// ì„ íƒ ë³´ìƒ ì¢…ë¥˜
+	int			m_optPrizeIndex[QUEST_MAX_OPTPRIZE];		// ì„ íƒ ë³´ìƒ ì¸ë±ìŠ¤
+	int			m_optPrizeData[QUEST_MAX_OPTPRIZE];		// ì„ íƒ ë³´ìƒ ë°ì´íƒ€
+	int			m_failValue;						// ì‹¤íŒ¨ ê°’
 
 	int			m_partyScale;
 
 	vec_quest_affinityList_t m_affinityList;
 
-	int			m_StartGiveItem[QUESTITEM_MAX_ARRAYCOUNT];		// Äù½ºÆ® ½ÃÀÛ ½Ã ÁÖ´Â ¾ÆÀÌÅÛ
-	int			m_StartGiveKindCount;							// Äù½ºÆ® ½ÃÀÛ ½Ã ÁÖ´Â ¾ÆÀÌÅÛ Á¾·ù
-	int			m_StartGiveNumCount[QUESTITEM_MAX_ARRAYCOUNT];	// Äù½ºÆ® ½ÃÀÛ ½Ã ÁÖ´Â ¾ÆÀÌÅÛ È¹µæ °³¼ö
+	int			m_StartGiveItem[QUESTITEM_MAX_ARRAYCOUNT];		// í€˜ìŠ¤íŠ¸ ì‹œì‘ ì‹œ ì£¼ëŠ” ì•„ì´í…œ
+	int			m_StartGiveKindCount;							// í€˜ìŠ¤íŠ¸ ì‹œì‘ ì‹œ ì£¼ëŠ” ì•„ì´í…œ ì¢…ë¥˜
+	int			m_StartGiveNumCount[QUESTITEM_MAX_ARRAYCOUNT];	// í€˜ìŠ¤íŠ¸ ì‹œì‘ ì‹œ ì£¼ëŠ” ì•„ì´í…œ íšë“ ê°œìˆ˜
 	CQuestProto();
 };
 
@@ -74,15 +74,15 @@ public:
 	typedef std::map<int, CQuestProto*> map_t;
 
 	map_t			map_;
-	CQuestProto*	m_proto;		// Äù½ºÆ® ÇÁ·ÎÅä ¸®½ºÆ®
-	int				m_nCount;		// Äù½ºÆ® ¼ö
+	CQuestProto*	m_proto;		// í€˜ìŠ¤íŠ¸ í”„ë¡œí†  ë¦¬ìŠ¤íŠ¸
+	int				m_nCount;		// í€˜ìŠ¤íŠ¸ ìˆ˜
 
 	CQuestProtoList();
 	~CQuestProtoList();
 
-	bool Load();							// DB ÀĞ±â
-	CQuestProto* FindProto(int index);		// Äù½ºÆ® proto Ã£±â
-	CQuestProto* GetProtoIndexByNPC(int mobIndex );	// ¸÷ÀÎµ¦½º proto Ã£±â
+	bool Load();							// DB ì½ê¸°
+	CQuestProto* FindProto(int index);		// í€˜ìŠ¤íŠ¸ proto ì°¾ê¸°
+	CQuestProto* GetProtoIndexByNPC(int mobIndex );	// ëª¹ì¸ë±ìŠ¤ proto ì°¾ê¸°
 
 private:
 	std::vector<std::string> a_need_item_str;
@@ -309,14 +309,14 @@ public:
 	CQuest* FindQuestByItem(int nitemIndex);
 	CQuest* FindQuestByMob(int nMobIndex);
 
-	bool	IsQuestType0( int qType0 );		//  [2/26/2007 KwonYongDae] ÇöÀç Äù½ºÆ® Å¸ÀÔÀÌ ÁøÇà ÁßÀÎÁö È®ÀÎ
+	bool	IsQuestType0( int qType0 );		//  [2/26/2007 KwonYongDae] í˜„ì¬ í€˜ìŠ¤íŠ¸ íƒ€ì…ì´ ì§„í–‰ ì¤‘ì¸ì§€ í™•ì¸
 
 	void SetQuestState(CQuest* pQuest, char cQuestState);
 
-	// pCurrentQuest ´ÙÀ½ÀÇ cQuestState »óÅÂÀÇ Äù½ºÆ®¸¦ ¹İÈ¯, pCurrentQuest°¡ NULLÀÌ¸é Ã³À½ºÎÅÍ °Ë»ö
+	// pCurrentQuest ë‹¤ìŒì˜ cQuestState ìƒíƒœì˜ í€˜ìŠ¤íŠ¸ë¥¼ ë°˜í™˜, pCurrentQuestê°€ NULLì´ë©´ ì²˜ìŒë¶€í„° ê²€ìƒ‰
 	CQuest* GetNextQuest(CQuest* pCurrentQuest, char cQuestState = QUEST_STATE_ALL);
 
-	void CheckComplete(CPC* pc);				// Äù½ºÆ® Áß Complete µÇ¾ú´Âµ¥ Msg ¾Èº¸³Â´Ù¸é º¸³½´Ù Ã¼Å©!
+	void CheckComplete(CPC* pc);				// í€˜ìŠ¤íŠ¸ ì¤‘ Complete ë˜ì—ˆëŠ”ë° Msg ì•ˆë³´ëƒˆë‹¤ë©´ ë³´ë‚¸ë‹¤ ì²´í¬!
 	void clear();
 	bool isRvrQuest(CPC* pc, int questIndex);
 };

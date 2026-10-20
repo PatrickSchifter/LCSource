@@ -252,13 +252,13 @@ int Fortune_proto_list::Make_skill_index_level_bit_sum(Fortune_data *d)
 	skill_level = d->Get_fortune_data_skill_level();
 
 	/**
-	* µÎ ¼ö¸¦ ÇÏ³ªÀÇ º¯¼ö¿¡ ´ã´Â´Ù.
+	* ë‘ ìˆ˜ë¥¼ í•˜ë‚˜ì˜ ë³€ìˆ˜ì— ë‹´ëŠ”ë‹¤.
 	*/
 	return Make(skill_index, skill_level);
 }
 
 /**
-* skill_index´Â plusÀÇ »óÀ§ 2Byte, skill_levelÀº plusÀÇ ÇÏÀ§ 2Byte¸¦ »ç¿ëÇÑ´Ù.
+* skill_indexëŠ” plusì˜ ìƒìœ„ 2Byte, skill_levelì€ plusì˜ í•˜ìœ„ 2Byteë¥¼ ì‚¬ìš©í•œë‹¤.
 */
 int Fortune_proto_list::Make(int skill_index, int skill_level)
 {
@@ -271,7 +271,7 @@ int Fortune_proto_list::Make(int skill_index, int skill_level)
 }
 
 /**
-* »óÀ§ 2Byte¸¦ ²¨³»¾î skill_index¿¡ ´ëÀÔÇÏ°í, ÇÏÀ§ 2Byte´Â skill_level¿¡ ´ëÀÔÇÑ´Ù.
+* ìƒìœ„ 2Byteë¥¼ êº¼ë‚´ì–´ skill_indexì— ëŒ€ì…í•˜ê³ , í•˜ìœ„ 2ByteëŠ” skill_levelì— ëŒ€ì…í•œë‹¤.
 */
 void Fortune_proto_list::Resolve_fortune_value(int &skill_index, int &skill_level, int bit_sum_value)
 {

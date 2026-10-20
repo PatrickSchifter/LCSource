@@ -50,52 +50,52 @@ public:
 	~CServer();
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	CDescriptor* m_desclist;		// ¿¬°áµÈ ¼ÒÄÏ ¸®½ºÆ®
-	int			m_nDesc;			// ¸®½ºÆ®ÀÇ ¼ÒÄÏ °³¼ö
+	// ì†Œì¼“ ê´€ë ¨
+	CDescriptor* m_desclist;		// ì—°ê²°ëœ ì†Œì¼“ ë¦¬ìŠ¤íŠ¸
+	int			m_nDesc;			// ë¦¬ìŠ¤íŠ¸ì˜ ì†Œì¼“ ê°œìˆ˜
 
 	////////////////////////////
-	// ¸Ş½ÃÁö ¸®½ºÆ®
+	// ë©”ì‹œì§€ ë¦¬ìŠ¤íŠ¸
 	CMsgList	m_msgList;
 	int			m_seqGen;
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
+	// ì„œë²„ ì„¤ì •
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
 	MYSQL		m_dbchar;
 	int			m_serverno;
 
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_bshutdown;		// ¼­¹ö Á¾·á
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_bshutdown;		// ì„œë²„ ì¢…ë£Œ
 
 	virtual void operate(rnSocketIOService* service);
 
 	///////////////////
-	// ¸Ş½ÃÁö ¹øÈ£ °ü·Ã
+	// ë©”ì‹œì§€ ë²ˆí˜¸ ê´€ë ¨
 	int GetNextSeqNo()
 	{
 		return m_seqGen++;
 	}
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
-	int GetMaxPlayers();			// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö ±¸ÇÏ±â
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
+	int GetMaxPlayers();			// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜ êµ¬í•˜ê¸°
 
 	bool ConnectDB();
 	void DisconnectDB();
 	bool LoadSettings();
 
 	///////////////////////
-	// Å¬¶óÀÌ¾ğÆ® ¼ÒÄÏ °ü·Ã
+	// í´ë¼ì´ì–¸íŠ¸ ì†Œì¼“ ê´€ë ¨
 	void SendToAllGameServer(CNetMsg::SP& msg);
 
 	/////////////////
-	// ¸í·É Ã³¸® °ü·Ã
-	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ¸í·· Ã³¸®
+	// ëª…ë ¹ ì²˜ë¦¬ ê´€ë ¨
+	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ëª…ë  ì²˜ë¦¬
 
 	void HeartBeat();
 
@@ -103,8 +103,8 @@ public:
 
 	MYSQL		m_dbData;
 	std::list<int> m_tradeAgentBuyList;
-	float		m_tradeAgentFee;			//°Å·¡´ëÇà ¼ö¼ö·á
-	int			m_tradeAgentDeposit;			//°Å·¡´ëÇà º¸Áõ±İ
+	float		m_tradeAgentFee;			//ê±°ë˜ëŒ€í–‰ ìˆ˜ìˆ˜ë£Œ
+	int			m_tradeAgentDeposit;			//ê±°ë˜ëŒ€í–‰ ë³´ì¦ê¸ˆ
 
 	bool CopyToTradeAgentItemInfo();
 };
@@ -127,7 +127,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ¸Å ½Ã
+// ë§¤ ì‹œ
 class CServerTimerPerHour : public rnSocketIOHandler
 {
 public:

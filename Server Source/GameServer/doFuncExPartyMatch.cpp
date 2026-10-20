@@ -104,7 +104,7 @@ void do_ExPartyMatch_RegPartyReq(CPC* ch, CNetMsg::SP& msg)
 	int				nJobFlag = 0;
 	char			cLimitLevel = 0;
 
-	// ÆÄÆ¼ÁßÀÌ°í ÆÄÀå
+	// íŒŒí‹°ì¤‘ì´ê³  íŒŒìž¥
 	if (ch->m_party == NULL || ch->m_party->GetBossIndex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -167,19 +167,19 @@ void do_ExPartyMatchMemberListReq(CPC* ch, CNetMsg::SP& msg)
 		CPartyMatchMember* pMatchMember = it->second;
 		bool bValidCondition = true;
 
-		// Á÷¾÷ÀÌ -1ÀÌ ¾Æ´Ï¸é Æ¯Á¤ Á÷¾÷
+		// ì§ì—…ì´ -1ì´ ì•„ë‹ˆë©´ íŠ¹ì • ì§ì—…
 		if (cJob != -1 && pMatchMember->GetJob() != cJob)
 			bValidCondition = false;
 
-		// ·¹º§ Á¦ÇÑÀº 2·¹º§±îÁö
+		// ë ˆë²¨ ì œí•œì€ 2ë ˆë²¨ê¹Œì§€
 		if (cLimitLevel && ABS(pMatchMember->GetLevel() - ch->m_level) > PARTY_MATCHING_LIMIT_LEVEL)
 			bValidCondition = false;
 
-		// Èñ¸Á ÆÄÆ¼ °Ë»ç, -1ÀÌ¸é ÀüÃ¼
+		// í¬ë§ íŒŒí‹° ê²€ì‚¬, -1ì´ë©´ ì „ì²´
 		if (cPartyType != -1 && pMatchMember->GetPartyType() != cPartyType)
 			bValidCondition = false;
 
-		// Á¶°Ç¿¡ ¸ÂÀ» ¶§, page¸¸Å­ ³Ñ±â°í Àü´Þ
+		// ì¡°ê±´ì— ë§žì„ ë•Œ, pageë§Œí¼ ë„˜ê¸°ê³  ì „ë‹¬
 		if (bValidCondition)
 		{
 			if (nSkipCount > 0)
@@ -224,19 +224,19 @@ void do_ExPartyMatchPartyListReq(CPC* ch, CNetMsg::SP& msg)
 		CPartyMatchParty* pMatchParty = it->second;
 		bool bValidCondition = true;
 
-		// Á÷¾÷ÀÌ -1ÀÌ ¾Æ´Ï¸é Æ¯Á¤ Á÷¾÷
+		// ì§ì—…ì´ -1ì´ ì•„ë‹ˆë©´ íŠ¹ì • ì§ì—…
 		if (cJob != -1 && (pMatchParty->GetJobFlag() & (1 << cJob)) == 0)
 			bValidCondition = false;
 
-		// ·¹º§ Á¦ÇÑÀº 2·¹º§±îÁö
+		// ë ˆë²¨ ì œí•œì€ 2ë ˆë²¨ê¹Œì§€
 		if (cLimitLevel && ABS(pMatchParty->GetBossLevel() - ch->m_level) > PARTY_MATCHING_LIMIT_LEVEL)
 			bValidCondition = false;
 
-		// Èñ¸Á ÆÄÆ¼ °Ë»ç, -1ÀÌ¸é ÀüÃ¼
+		// í¬ë§ íŒŒí‹° ê²€ì‚¬, -1ì´ë©´ ì „ì²´
 		if (cPartyType != -1 && pMatchParty->GetPartyType() != cPartyType)
 			bValidCondition = false;
 
-		// Á¶°Ç¿¡ ¸ÂÀ» ¶§, page¸¸Å­ ³Ñ±â°í Àü´Þ
+		// ì¡°ê±´ì— ë§žì„ ë•Œ, pageë§Œí¼ ë„˜ê¸°ê³  ì „ë‹¬
 		if (bValidCondition)
 		{
 			if (nSkipCount > 0)
@@ -337,7 +337,7 @@ void do_ExPartyMatchJoinReq(CPC* ch, CNetMsg::SP& msg)
 	if(pExped)
 		return ;
 
-	// Âü°¡ ¿äÃ»ÀÚ°¡ ÆÛ½º³Î´øÀü, ·Î¾â·³ºí, ¸Á°¢ÀÇ ½ÅÀü¿¡ ÀÖÀ¸¸é ¸®ÅÏ
+	// ì°¸ê°€ ìš”ì²­ìžê°€ í¼ìŠ¤ë„ë˜ì „, ë¡œì–„ëŸ¼ë¸”, ë§ê°ì˜ ì‹ ì „ì— ìžˆìœ¼ë©´ ë¦¬í„´
 	if( ch->m_pZone->IsPersonalDungeon()
 			|| ch->m_pZone->IsWarGroundZone()
 			|| ch->m_pZone->IsPersonalRaid()

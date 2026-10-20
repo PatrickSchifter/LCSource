@@ -6,7 +6,7 @@
 #define EXPRESS_SYSTEM_COUNT_PER_PAGE		(10)
 #define EXPRESS_SYSTEM_EXPIRE_DATE			(15)
 
-#define EXPRESS_SENDER_NAME					(16)		// Å¬¶óÀÌ¾ğÆ® ±âÁØÀ¸·Î ¸ÂÃã
+#define EXPRESS_SENDER_NAME					(16)		// í´ë¼ì´ì–¸íŠ¸ ê¸°ì¤€ìœ¼ë¡œ ë§ì¶¤
 
 #ifdef WIN32
 typedef unsigned int expressIndex_t;
@@ -14,44 +14,46 @@ typedef unsigned int expressIndex_t;
 typedef unsigned int expressIndex_t;
 #endif
 
-// Ã¢°íNPC (Express system)
+// ì°½ê³ NPC (Express system)
 enum
 {
-	MSG_SUB_EXPRESS_EXIST,							// Ã¢°í NPC¿¡ ¾ÆÀÌÅÛ(¶Ç´Â µ·)ÀÌ ÀÖ´ÂÁö 0 - ¾øÀ½, 1 - ÀÖÀ½
-	MSG_SUB_EXPREES_LIST,							// Ã¢°í NPC¿¡¼­ ¸®½ºÆ® ¿äÃ» Ã³¸®
-	MSG_SUB_EXPRESS_TAKE,							// Ã¢°í NPC¿¡¼­ ¾ÆÀÌÅÛ(¶Ç´Â µ·)À» ¼ö·É
-	MSG_SUB_EXPRESS_DELETE,							// Ã¢°í NPC¿¡¼­ ¾ÆÀÌÅÛ(¶Ç´Â µ·)À» »èÁ¦
+	MSG_SUB_EXPRESS_EXIST,							// ì°½ê³  NPCì— ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì´ ìˆëŠ”ì§€ 0 - ì—†ìŒ, 1 - ìˆìŒ
+	MSG_SUB_EXPREES_LIST,							// ì°½ê³  NPCì—ì„œ ë¦¬ìŠ¤íŠ¸ ìš”ì²­ ì²˜ë¦¬
+	MSG_SUB_EXPRESS_TAKE,							// ì°½ê³  NPCì—ì„œ ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ìˆ˜ë ¹
+	MSG_SUB_EXPRESS_TAKE_ALL,						// ì°½ê³  NPCì—ì„œ ëª¨ë“  ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ìˆ˜ë ¹
+	MSG_SUB_EXPRESS_DELETE,							// ì°½ê³  NPCì—ì„œ ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ì‚­ì œ
+	MSG_SUB_EXPRESS_DELETE_ALL,						// ì°½ê³  NPCì—ì„œ ëª¨ë“  ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ì‚­ì œ
 
-	MSG_SUB_AUTHORIZE = 100,						// ¿î¿µÅø ÀÎÁõ ÀıÂ÷
-	MSG_SUB_EXPRESS_ALL_USER,						// Á¢¼ÓÇÑ ¸ğµç À¯Àú¿¡°Ô ¾ÆÀÌÅÛ(¶Ç´Â µ·)Áö±İ - Game Server¿¡¼­ Ã³¸®
-	MSG_SUB_EXPRESS_SERVER_GROUP,					// Æ¯Á¤ ¼­¹ö ±×·ì - Game Server¿¡¼­ Ã³¸®
-	MSG_SUB_EXPRESS_ZONE,							// Æ¯Á¤ ¼­¹ö ±×·ì / Æ¯Á¤ Á¸ - Game Server¿¡¼­ Ã³¸®
-	MSG_SUB_EXPRESS_ONE_USER,						// Æ¯Á¤ À¯Àú - SubHelper¿¡¼­ Ã³¸®
+	MSG_SUB_AUTHORIZE = 100,						// ìš´ì˜íˆ´ ì¸ì¦ ì ˆì°¨
+	MSG_SUB_EXPRESS_ALL_USER,						// ì ‘ì†í•œ ëª¨ë“  ìœ ì €ì—ê²Œ ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì§€ê¸ˆ - Game Serverì—ì„œ ì²˜ë¦¬
+	MSG_SUB_EXPRESS_SERVER_GROUP,					// íŠ¹ì • ì„œë²„ ê·¸ë£¹ - Game Serverì—ì„œ ì²˜ë¦¬
+	MSG_SUB_EXPRESS_ZONE,							// íŠ¹ì • ì„œë²„ ê·¸ë£¹ / íŠ¹ì • ì¡´ - Game Serverì—ì„œ ì²˜ë¦¬
+	MSG_SUB_EXPRESS_ONE_USER,						// íŠ¹ì • ìœ ì € - SubHelperì—ì„œ ì²˜ë¦¬
 
-	MSG_SUB_EXPRESS_SEARCH_NICKNAME,				// ¼ö·ÉÀÎ ÀÌ¸§ °Ë»ö
-	MSG_SUB_EXPRESS_SEND_ITEM_TO_NICKNAME,			// ¼ö·ÉÀÎÀÇ Express·Î ¾ÆÀÌÅÛ Àü´Ş
+	MSG_SUB_EXPRESS_SEARCH_NICKNAME,				// ìˆ˜ë ¹ì¸ ì´ë¦„ ê²€ìƒ‰
+	MSG_SUB_EXPRESS_SEND_ITEM_TO_NICKNAME,			// ìˆ˜ë ¹ì¸ì˜ Expressë¡œ ì•„ì´í…œ ì „ë‹¬
 };
 
 enum
 {
-	EXPRESS_SEND_TYPE_NONE,			// µ¥ÀÌÅÍ°¡ ¾ø´Â °æ¿ì
-	EXPRESS_SEND_TYPE_LOGIN,		// ·Î±×ÀÎ½Ã ÀÚµ¿À¸·Î º¸³»´Â °æ¿ì
-	EXPRESS_SEND_TYPE_GM,			// ¿î¿µÅø
-	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_BUY,		// ÆÇ¸Å ´ëÇà ½Ã½ºÅÛ (±¸¸Å¿Ï·á)
-	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_SELL,		// ÆÇ¸Å ´ëÇà ½Ã½ºÅÛ (ÆÇ¸Å¿Ï·á)
-	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_CANCEL,		// ÆÇ¸Å ´ëÇà ½Ã½ºÅÛ (ÆÇ¸ÅÃë¼Ò)
-	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_RETURN,	// ÆÇ¸Å ´ëÇà ½Ã½ºÅÛ (¹İ¼Û)
-	EXPRESS_SEND_TYPE_ETC,			// ±âÅ¸
-	EXPRESS_SEND_UNSEARCHABLE_STONESTATUS,		// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
+	EXPRESS_SEND_TYPE_NONE,			// ë°ì´í„°ê°€ ì—†ëŠ” ê²½ìš°
+	EXPRESS_SEND_TYPE_LOGIN,		// ë¡œê·¸ì¸ì‹œ ìë™ìœ¼ë¡œ ë³´ë‚´ëŠ” ê²½ìš°
+	EXPRESS_SEND_TYPE_GM,			// ìš´ì˜íˆ´
+	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_BUY,		// íŒë§¤ ëŒ€í–‰ ì‹œìŠ¤í…œ (êµ¬ë§¤ì™„ë£Œ)
+	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_SELL,		// íŒë§¤ ëŒ€í–‰ ì‹œìŠ¤í…œ (íŒë§¤ì™„ë£Œ)
+	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_CANCEL,		// íŒë§¤ ëŒ€í–‰ ì‹œìŠ¤í…œ (íŒë§¤ì·¨ì†Œ)
+	EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_RETURN,	// íŒë§¤ ëŒ€í–‰ ì‹œìŠ¤í…œ (ë°˜ì†¡)
+	EXPRESS_SEND_TYPE_ETC,			// ê¸°íƒ€
+	EXPRESS_SEND_UNSEARCHABLE_STONESTATUS,		// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
 };
 
 #pragma pack(push, 1)
 //////////////////////////////////////////////////////////////////////////
 struct ExpressSystemItemInfo
 {
-	int				index;			// °íÀ¯ ¹øÈ£
+	int				index;			// ê³ ìœ  ë²ˆí˜¸
 	int				item_index;
-	unsigned char	plus;			// °­È­ ¼öÄ¡
+	unsigned char	plus;			// ê°•í™” ìˆ˜ì¹˜
 	unsigned char	plus2;
 	int				flag;
 	char			serial[MAX_SERIAL_LENGTH + 1];
@@ -102,13 +104,25 @@ struct expressTake : public pTypeBase
 	expressIndex_t	index;
 };
 
+struct expressTake_all : public pTypeBase
+{
+	unsigned short	npcIndex;
+	unsigned short	pageIndex;
+};
+
 struct expressDelete : public pTypeBase
 {
 	unsigned short	npcIndex;
 	expressIndex_t	index;
 };
 
-// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
+struct expressDelete_all : public pTypeBase
+{
+	unsigned short npcIndex;
+	unsigned short pageIndex;
+};
+
+// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
 struct express_unsearchable_stonestatue_searchName : public pTypeBase
 {
 	char nickName[MAX_CHAR_NAME_LENGTH + 1];
@@ -116,14 +130,14 @@ struct express_unsearchable_stonestatue_searchName : public pTypeBase
 
 struct express_use_unsearchable_stonestatue : public pTypeBase
 {
-	unsigned short		tab;			// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
+	unsigned short		tab;			// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
 	unsigned short		invenIndex;
 	int					virualIndex;
-	unsigned short		send_tab;		// º¸³¾ ¾ÆÀÌÅÛ
+	unsigned short		send_tab;		// ë³´ë‚¼ ì•„ì´í…œ
 	unsigned short		send_invenIndex;
 	int					send_virutalIndex;
 	int					itemCount;
-	char toNickName[MAX_CHAR_NAME_LENGTH + 1]; // ¹Ş´Â »ç¶÷
+	char toNickName[MAX_CHAR_NAME_LENGTH + 1]; // ë°›ëŠ” ì‚¬ëŒ
 };
 }
 
@@ -131,28 +145,28 @@ namespace ResponseClient
 {
 enum
 {
-	ERR_NO_ERROR,				// Á¤»ó
-	ERR_DB_ERROR,				// µğºñ ¿¡·¯
-	ERR_NO_TAKE_ITEM,			// Ã£À» ¹°°ÇÀÌ ¾øÀ½
-	ERR_CAN_NOT_CREATE_ITEM,	// ¾ÆÀÌÅÛÀ» »ı¼ºÇÒ ¼ö ¾÷À½
-	ERR_INVALID_INFORMATION,	// ¾ÆÀÌÅÛ(¶Ç´Â µ·)Á¤º¸°¡ Àß¸øµÈ Á¤º¸
-	ERR_FULL_INVENTORY,			// °¡¹æÀÌ ²ËÂü
-	ERR_NOT_FOUND_NPC,			// NPC¸¦ Ã£À» ¼ö ¾ø°Å³ª, °Å¸®°¡ ³Ê¹« ¸Ù´Ï´Ù.
+	ERR_NO_ERROR,				// ì •ìƒ
+	ERR_DB_ERROR,				// ë””ë¹„ ì—ëŸ¬
+	ERR_NO_TAKE_ITEM,			// ì°¾ì„ ë¬¼ê±´ì´ ì—†ìŒ
+	ERR_CAN_NOT_CREATE_ITEM,	// ì•„ì´í…œì„ ìƒì„±í•  ìˆ˜ ì—…ìŒ
+	ERR_INVALID_INFORMATION,	// ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì •ë³´ê°€ ì˜ëª»ëœ ì •ë³´
+	ERR_FULL_INVENTORY,			// ê°€ë°©ì´ ê½‰ì°¸
+	ERR_NOT_FOUND_NPC,			// NPCë¥¼ ì°¾ì„ ìˆ˜ ì—†ê±°ë‚˜, ê±°ë¦¬ê°€ ë„ˆë¬´ ë©‰ë‹ˆë‹¤.
 
-	ERR_NOT_SEND_ITEM,			// Àü´ŞÇÒ¼ö ¾ø´Â ¾ÆÀÌÅÛ
-	ERR_NOT_ENOUGHT_COUNT,		// Àü´ŞÇÒ ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ ¸ğÀÚ¸§
-	ERR_NOT_FOUND_NICKNAME_SYS_ERR,	// Àü´Ş¹Ş´Â nickÀÌ ¾ø¾î, ÀÚ½ÅÀÇ Express·Î ´Ù½Ã ³Ö¾îÁÜ
+	ERR_NOT_SEND_ITEM,			// ì „ë‹¬í• ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
+	ERR_NOT_ENOUGHT_COUNT,		// ì „ë‹¬í•  ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ ëª¨ìë¦„
+	ERR_NOT_FOUND_NICKNAME_SYS_ERR,	// ì „ë‹¬ë°›ëŠ” nickì´ ì—†ì–´, ìì‹ ì˜ Expressë¡œ ë‹¤ì‹œ ë„£ì–´ì¤Œ
 };
 
 struct ExpressExist : public pTypeBase
 {
-	unsigned char	flag;	// 0 - ¾øÀ½, 1 - ÀÖÀ½
+	unsigned char	flag;	// 0 - ì—†ìŒ, 1 - ìˆìŒ
 };
 
 struct expressList : public pTypeBase
 {
 	unsigned short	nowPage;
-	unsigned char	nextPage;			// 0 - ¾øÀ½, 1 - ÀÖÀ½
+	unsigned char	nextPage;			// 0 - ì—†ìŒ, 1 - ìˆìŒ
 	unsigned char	count;
 	ExpressSystemItemInfo	list[0];
 };
@@ -167,7 +181,7 @@ struct expressDelete : public pTypeBase
 	unsigned char	result;				// 0 - OK, 1 >= - ERROR
 };
 
-// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
+// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
 struct express_unsearchable_stonestatus_searchName : public pTypeBase
 {
 	unsigned char	result;				// 0 - found, 1 - not found
@@ -179,7 +193,7 @@ struct express_use_unsearchable_stonestatus : public pTypeBase
 };
 
 //////////////////////////////////////////////////////////////////////////
-#ifndef _CLIENT_	// Å¬¶óÀÌ¾îÆ®¸¦ À§ÇÑ Ã³¸®
+#ifndef _CLIENT_	// í´ë¼ì´ì–´íŠ¸ë¥¼ ìœ„í•œ ì²˜ë¦¬
 inline void makeExpressExist(CNetMsg::SP& msg, int flag)
 {
 	ExpressExist* packet = reinterpret_cast<ExpressExist*>(msg->m_buf);
@@ -237,9 +251,9 @@ struct authorize : public pTypeBase
 };
 
 /*
-	server_no == -1 && zone_no == -1 : ¸ğµç ¼­¹ö
-	server_no != -1 && zone_no == -1 : Æ¯Á¤ ¼­¹ö±º
-	server_no == -1 && zone_no != -1 : ¸ğµç ¼­¹ö±ºÀÇ Æ¯Á¤ Á¸
+	server_no == -1 && zone_no == -1 : ëª¨ë“  ì„œë²„
+	server_no != -1 && zone_no == -1 : íŠ¹ì • ì„œë²„êµ°
+	server_no == -1 && zone_no != -1 : ëª¨ë“  ì„œë²„êµ°ì˜ íŠ¹ì • ì¡´
 */
 struct sendItemToPlayingUser : public pTypeBase
 {
@@ -273,7 +287,7 @@ enum
 	ERR_ALREADY_CONNECT,
 	ERR_INVALID_SERVER_NO,
 	ERR_INVALID_ZONE_NO,
-	ERR_SENDER_IS_EMPTY,		// º¸³½ÀÌ°¡ ¾øÀ½
+	ERR_SENDER_IS_EMPTY,		// ë³´ë‚¸ì´ê°€ ì—†ìŒ
 	ERR_INVALID_ITEM_INDEX,
 	ERR_INVALID_ITEM_COUNT,
 	ERR_INVALID_NAS,

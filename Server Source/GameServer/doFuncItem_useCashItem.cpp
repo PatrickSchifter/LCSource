@@ -10,7 +10,7 @@
 #include "../ShareLib/packetType/ptype_old_do_skill.h"
 #include "../ShareLib/packetType/ptype_old_do_sskill.h"
 //////////////////////////////////////////////////////////////////////////
-// ½ºÅİ ÃÊ±âÈ­
+// ìŠ¤í…Ÿ ì´ˆê¸°í™”
 bool local_initStat(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
 	ch->m_statpt_remain += ch->m_statpt_str + ch->m_statpt_dex + ch->m_statpt_int + ch->m_statpt_con;
@@ -51,7 +51,7 @@ bool local_apetStatInit(CPC* ch, CItem* item, bool bprolong, RequestClient::doIt
 	}
 
 	CItem *pPetItem = ch->m_wearInventory.wearItemInfo[ WEARING_PET ];
-	if( !pPetItem )		// Âø¿ëÁßÀÎ Æê ¾ÆÀÌÅÛ ¾øÀ½
+	if( !pPetItem )		// ì°©ìš©ì¤‘ì¸ í« ì•„ì´í…œ ì—†ìŒ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExAPetFuntionMsg( rmsg, MSG_SUB_STATINIT, NULL, 1);
@@ -59,7 +59,7 @@ bool local_apetStatInit(CPC* ch, CItem* item, bool bprolong, RequestClient::doIt
 		return false;
 	}
 
-	if( pPetItem->getFlag() & FLAG_ITEM_SEALED || DEAD( apet ) )	// ºÀÀÎ¶Ç´Â Á×¾úÀ½
+	if( pPetItem->getFlag() & FLAG_ITEM_SEALED || DEAD( apet ) )	// ë´‰ì¸ë˜ëŠ” ì£½ì—ˆìŒ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExAPetFuntionMsg( rmsg, MSG_SUB_STATINIT, NULL, 2);
@@ -67,7 +67,7 @@ bool local_apetStatInit(CPC* ch, CItem* item, bool bprolong, RequestClient::doIt
 		return false;
 	}
 
-	if( !( apet->m_nPlusStr || apet->m_nPlusCon || apet->m_nPlusDex || apet->m_nPlusInt ) )		// ÃÊ±âÈ­ÇÒ ½ºÅİ ¾øÀ½
+	if( !( apet->m_nPlusStr || apet->m_nPlusCon || apet->m_nPlusDex || apet->m_nPlusInt ) )		// ì´ˆê¸°í™”í•  ìŠ¤í…Ÿ ì—†ìŒ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExAPetFuntionMsg( rmsg, MSG_SUB_STATINIT, NULL, 3);
@@ -75,14 +75,14 @@ bool local_apetStatInit(CPC* ch, CItem* item, bool bprolong, RequestClient::doIt
 		return false;
 	}
 
-	// ÀÌÀü ½ºÅİ ·Î±×
+	// ì´ì „ ìŠ¤í…Ÿ ë¡œê·¸
 	GAMELOG << init("APET_STAT_INIT BEFORE",ch ) << "REMAIN:" << apet->m_nRemainStat << delim
 			<< "STR:" << apet->m_nPlusStr << delim << "DEX:" << apet->m_nPlusDex << delim
 			<< "INT:" << apet->m_nPlusInt << delim << "CON:" << apet->m_nPlusCon <<  end;
 
 	apet->InitStat();
 
-	// »ç¿ëÈÄ ½ºÅİ ·Î±×
+	// ì‚¬ìš©í›„ ìŠ¤í…Ÿ ë¡œê·¸
 	GAMELOG << init("APET_STAT_INIT AFTER",ch ) << "REMAIN:" << apet->m_nRemainStat << delim
 			<< "STR:" << apet->m_nPlusStr << delim << "DEX:" << apet->m_nPlusDex << delim
 			<< "INT:" << apet->m_nPlusInt << delim << "CON:" << apet->m_nPlusCon << end;
@@ -228,8 +228,8 @@ bool local_initAllStatAndSkill(CPC* ch, CItem* item, bool bprolong, RequestClien
 	return true;
 }
 
-// bprolongÀº ¿¬±â½ÅÃ» Ã¢À» ¶ç¿ï°ÍÀÎ°¡·Î ¹Ù²Ş
-// return °ªÀº ¿Ï·á ±â°£
+// bprolongì€ ì—°ê¸°ì‹ ì²­ ì°½ì„ ë„ìš¸ê²ƒì¸ê°€ë¡œ ë°”ê¿ˆ
+// return ê°’ì€ ì™„ë£Œ ê¸°ê°„
 int usePeriodItem(int* useTime, bool* bprolong)
 {
 	bool reqProlong = false;
@@ -364,7 +364,7 @@ bool local_exchangeWeapon(CPC* ch, CItem* item, bool bprolong, RequestClient::do
 
 	int itemlevel = vitem->GetItemLevel();
 
-	// ·¹º§, ÇÑ¼Õ°Ë, ¼®±Ã, ½ºÅÂÇÁ, ´ë°Ë, µµ³¢, ¼ô½ºÅ×ÇÁ, È°, ´Ü°Ë, -1, -1, -1, ÀÌµµ·ù, ¿Ïµå, »çÀÌµå, Æú¾Ï : ÇÒÀÏ : ¼Ò¼­·¯
+	// ë ˆë²¨, í•œì†ê²€, ì„ê¶, ìŠ¤íƒœí”„, ëŒ€ê²€, ë„ë¼, ìˆìŠ¤í…Œí”„, í™œ, ë‹¨ê²€, -1, -1, -1, ì´ë„ë¥˜, ì™„ë“œ, ì‚¬ì´ë“œ, í´ì•” : í• ì¼ : ì†Œì„œëŸ¬
 	const static int matchTable[12][16] =
 	{
 		{1,48,530,600,12,558,356,50,528,-1,-1,-1,459,599,-1,-1},
@@ -425,7 +425,7 @@ bool local_exchangeWeapon(CPC* ch, CItem* item, bool bprolong, RequestClient::do
 
 bool local_platinumSmelt(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// ÀÎº¥Åä¸®¿¡ ÃÖ¼Ò 1°³ÀÇ ºó°ø°£ÀÌ ÀÖ¾î¾ß ÇÑ´Ù
+	// ì¸ë²¤í† ë¦¬ì— ìµœì†Œ 1ê°œì˜ ë¹ˆê³µê°„ì´ ìˆì–´ì•¼ í•œë‹¤
 	if (ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -442,16 +442,16 @@ bool local_platinumSmelt(CPC* ch, CItem* item, bool bprolong, RequestClient::doI
 	else if( item->m_itemProto->getItemIndex() == 3269 )
 		giveItemIndex=3270;
 
-	// ÀÎº¥Åä¸®¿¡ ÃÖ¼Ò ¹«°Ô°¡ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
+	// ì¸ë²¤í† ë¦¬ì— ìµœì†Œ ë¬´ê²Œê°€ ë³´ì¥ë˜ì–´ì•¼ í•œë‹¤.
 	const CItemProto* pItemProto = gserver->m_itemProtoList.FindIndex(giveItemIndex);
 	if (pItemProto == NULL)
 		return false;
 
-	// ÇÃ·¯½º¸¦ ºÙÀÎ ÇÃ·¡Æ¼´½ Á¦·Ã¼®À» Áö±ŞÇÑ´Ù
+	// í”ŒëŸ¬ìŠ¤ë¥¼ ë¶™ì¸ í”Œë˜í‹°ëŠ„ ì œë ¨ì„ì„ ì§€ê¸‰í•œë‹¤
 	int rand = GetRandom(1, 100);
 
-	// 5ÇÁ·Î +3, 15ÇÁ·Î +2, ³ª¸ÓÁö +1
-	//+1 60%, +2 25%, +3 15% ·Î º¯°æ /bw : 060613
+	// 5í”„ë¡œ +3, 15í”„ë¡œ +2, ë‚˜ë¨¸ì§€ +1
+	//+1 60%, +2 25%, +3 15% ë¡œ ë³€ê²½ /bw : 060613
 	if( rand <= 15 )
 	{
 		rand = 3;
@@ -466,7 +466,7 @@ bool local_platinumSmelt(CPC* ch, CItem* item, bool bprolong, RequestClient::doI
 	}
 
 	if( giveItemIndex == 3270 )
-		rand = 3;			// +3 Àü¿ë Á¦·Ã ¾ÆÀÌÅÛ
+		rand = 3;			// +3 ì „ìš© ì œë ¨ ì•„ì´í…œ
 
 	if( !ch->GiveItem(giveItemIndex, rand, 0, 1) )
 	{
@@ -482,10 +482,10 @@ bool local_platinumSmelt(CPC* ch, CItem* item, bool bprolong, RequestClient::doI
 	return true;
 }
 
-// ¹Ì°¨Á¤ °áÇÕ ¾ÆÀÌÅÛ °¨Á¤
+// ë¯¸ê°ì • ê²°í•© ì•„ì´í…œ ê°ì •
 bool local_useCashItem_1420(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// ÀÎº¥Åä¸®¿¡ ÃÖ¼Ò 1°³ÀÇ ºó°ø°£ÀÌ ÀÖ¾î¾ß ÇÑ´Ù
+	// ì¸ë²¤í† ë¦¬ì— ìµœì†Œ 1ê°œì˜ ë¹ˆê³µê°„ì´ ìˆì–´ì•¼ í•œë‹¤
 	if (ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -525,10 +525,10 @@ bool local_useCashItem_1420(CPC* ch, CItem* item, bool bprolong, RequestClient::
 	return true;
 }
 
-// ¹Ì°¨Á¤ ÃÊº¸ÀÚ¿ë °áÇÕ ¾ÆÀÌÅÛ °¨Á¤
+// ë¯¸ê°ì • ì´ˆë³´ììš© ê²°í•© ì•„ì´í…œ ê°ì •
 bool local_useCashItem_2664(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// ÀÎº¥Åä¸®¿¡ ÃÖ¼Ò 1°³ÀÇ ºó°ø°£ÀÌ ÀÖ¾î¾ß ÇÑ´Ù
+	// ì¸ë²¤í† ë¦¬ì— ìµœì†Œ 1ê°œì˜ ë¹ˆê³µê°„ì´ ìˆì–´ì•¼ í•œë‹¤
 	if (ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -581,7 +581,7 @@ void GetSendErrorType(MSG_ITEM_USE_ERROR_TYPE& type, const int& result)
 	}
 }
 
-//XXX °áÇÕÀÇ»ó Ã³¸®·çÆ¾
+//XXX ê²°í•©ì˜ìƒ ì²˜ë¦¬ë£¨í‹´
 int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
 	int extra1 = packet->extra_1;
@@ -596,7 +596,7 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemEquip->tab() >= INVENTORY_TAB_STASH)
 		return 1;
 
-	// pItemClothes °Ë»ç
+	// pItemClothes ê²€ì‚¬
 	// 1. ITEM_FLAG_COMPOSITE		ON
 	// 2. FLAG_ITEM_COMPOSITION		OFF
 	// 3. USED						< NOW
@@ -609,11 +609,11 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 		return 3;
 	if (pItemClothes->getUsed() < gserver->getNowSecond())
 	{
-		// pItemClothes->m_used == -1 ÀÏ °æ¿ì ±â°£ ¹«Á¦ÇÑ yhj
-		// ÇÇ´Ğ½º ÀÌº¥Æ® ¾ÆÀÌÅÛÀÌ ¾Æ´Ò°æ¿ì
+		// pItemClothes->m_used == -1 ì¼ ê²½ìš° ê¸°ê°„ ë¬´ì œí•œ yhj
+		// í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ì•„ì´í…œì´ ì•„ë‹ê²½ìš°
 		if( pItemClothes->getUsed() == -1 )
 		{
-			/* ¹«Á¦ÇÑ ÀÌ¹Ç·Î ³Ñ¾î°¨*/
+			/* ë¬´ì œí•œ ì´ë¯€ë¡œ ë„˜ì–´ê°*/
 		}
 		else
 		{
@@ -627,7 +627,7 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemClothes->getWearPos() != WEARING_NONE)
 		return 7;
 
-	// pItemEquip °Ë»ç
+	// pItemEquip ê²€ì‚¬
 	// 1. FLAG_ITEM_COMPOSITION		OFF
 	// 2. TYPE						== pItemClothes.TYPE
 	// 3. SUBTYPE					== pItemClothes.SUBTYPE
@@ -653,7 +653,7 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemEquip->IsUsedPlatinumSpecial())
 		return 15;
 
-	// Ã³¸®
+	// ì²˜ë¦¬
 	// 1. FLAG						FLAG_ITEM_COMPOSITION
 	// 2. COMPOSITEITEM				pItemEquip.INDEX
 	// 3. pItemClothes.PLUS			item.PLUS + pItemEquip.PLUS
@@ -665,30 +665,30 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	pItemClothes->setPlus(item->getPlus() + pItemEquip->getPlus());
 	pItemClothes->setFlag(FLAG_ITEM_PLATINUM_SET(pItemClothes->getFlag(), pItemEquip->getPlus()));
 
-	// °áÇÕ ÁÖ¹®¼­ ¸¸·á ½Ã°£ ÀúÀå
+	// ê²°í•© ì£¼ë¬¸ì„œ ë§Œë£Œ ì‹œê°„ ì €ì¥
 	if (pItemClothes->m_itemProto->getItemFlag() & ITEM_FLAG_ABS)
 	{
-		// ½Ã°£Á¦ ¾ÆÀÌÅÛ
+		// ì‹œê°„ì œ ì•„ì´í…œ
 		pItemClothes->setUsed_2(pItemClothes->getUsed());
 	}
 	else
 	{
-		// ±â°£Á¦ ¾ÆÀÌÅÛ
+		// ê¸°ê°„ì œ ì•„ì´í…œ
 		static const int one_month = 60*60*24*30;
 
 		if (pItemClothes->getUsed() - gserver->getNowSecond() < one_month)
 		{
-			// 1°³¿ù ¹Ì¸¸ÀÎ °æ¿ì °áÇÕ½Ã°£Àº À¯·á ¾ÆÀÌÅÛ ¸¸·á ½Ã°£°ú °°´Ù
+			// 1ê°œì›” ë¯¸ë§Œì¸ ê²½ìš° ê²°í•©ì‹œê°„ì€ ìœ ë£Œ ì•„ì´í…œ ë§Œë£Œ ì‹œê°„ê³¼ ê°™ë‹¤
 			pItemClothes->setUsed_2(pItemClothes->getUsed());
 		}
 		else
 		{
-			// 1°³¿ù ÀÌ»óÀÎ °æ¿ì °áÇÕ½Ã°£Àº 1°³¿ùÀÌ´Ù.
+			// 1ê°œì›” ì´ìƒì¸ ê²½ìš° ê²°í•©ì‹œê°„ì€ 1ê°œì›”ì´ë‹¤.
 			pItemClothes->setUsed_2(gserver->getNowSecond() + one_month);
 		}
 	}
 
-	// ·Î±× ³²±è
+	// ë¡œê·¸ ë‚¨ê¹€
 	GAMELOG << init("ITEM COMPOSITION", ch)
 			<< "COMPOSITION DOC" << delim
 			<< itemlog(item, false) << delim
@@ -698,7 +698,7 @@ int local_useCashItem_1421_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 			<< itemlog(pItemEquip)
 			<< end;
 
-	// °á°ú Àü´Ş
+	// ê²°ê³¼ ì „ë‹¬
 	ch->m_inventory.sendOneItemInfo(pItemClothes);
 	ch->m_inventory.sendOneItemInfo(pItemEquip);
 
@@ -717,7 +717,7 @@ bool local_useCashItem_1421(CPC* ch, CItem* item, bool bprolong, RequestClient::
 {
 	int result = local_useCashItem_1421_Sub(ch, item, bprolong, packet);
 
-	if(result == 0) // ¼º°ø
+	if(result == 0) // ì„±ê³µ
 	{
 		return true;
 	}
@@ -732,7 +732,7 @@ bool local_useCashItem_1421(CPC* ch, CItem* item, bool bprolong, RequestClient::
 	}
 }
 
-// °¨Á¤µÈ °áÇÕ ÁÖ¹®¼­ »ç¿ë
+// ê°ì •ëœ ê²°í•© ì£¼ë¬¸ì„œ ì‚¬ìš©
 int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
 	int extra1 = packet->extra_1;
@@ -744,7 +744,7 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemClothes == NULL || pItemEquip == NULL || pItemClothes == pItemEquip || pItemClothes == item || pItemEquip == item)
 		return 1;
 
-	// pItemClothes °Ë»ç
+	// pItemClothes ê²€ì‚¬
 	// 1. ITEM_FLAG_COMPOSITE		ON
 	// 2. FLAG_ITEM_COMPOSITION		OFF
 	// 3. USED						< NOW
@@ -757,11 +757,11 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 		return 3;
 	if (pItemClothes->getUsed() < gserver->getNowSecond())
 	{
-		// pItemClothes->m_used == -1 ÀÏ °æ¿ì ±â°£ ¹«Á¦ÇÑ yhj
-		// ÇÇ´Ğ½º ÀÌº¥Æ® ¾ÆÀÌÅÛÀÌ ¾Æ´Ò°æ¿ì
+		// pItemClothes->m_used == -1 ì¼ ê²½ìš° ê¸°ê°„ ë¬´ì œí•œ yhj
+		// í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ì•„ì´í…œì´ ì•„ë‹ê²½ìš°
 		if( pItemClothes->getUsed() == -1 )
 		{
-			/* ¹«Á¦ÇÑ ÀÌ¹Ç·Î ³Ñ¾î°¨*/
+			/* ë¬´ì œí•œ ì´ë¯€ë¡œ ë„˜ì–´ê°*/
 		}
 		else
 		{
@@ -775,7 +775,7 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemClothes->getWearPos() != WEARING_NONE)
 		return 7;
 
-	// pItemEquip °Ë»ç
+	// pItemEquip ê²€ì‚¬
 	// 1. FLAG_ITEM_COMPOSITION		OFF
 	// 2. TYPE						== pItemClothes.TYPE
 	// 3. SUBTYPE					== pItemClothes.SUBTYPE
@@ -801,7 +801,7 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	if (pItemEquip->IsUsedPlatinumSpecial())
 		return 15;
 
-	// Ã³¸®
+	// ì²˜ë¦¬
 	// 1. FLAG						FLAG_ITEM_COMPOSITION
 	// 2. COMPOSITEITEM				pItemEquip.INDEX
 	// 3. pItemClothes.PLUS			item.PLUS + pItemEquip.PLUS
@@ -813,29 +813,29 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 	pItemClothes->setPlus(item->getPlus() + pItemEquip->getPlus());
 	pItemClothes->setFlag(FLAG_ITEM_PLATINUM_SET(pItemClothes->getFlag(), pItemEquip->getPlus()));
 
-	// °áÇÕ ÁÖ¹®¼­ ¸¸·á ½Ã°£ ÀúÀå
+	// ê²°í•© ì£¼ë¬¸ì„œ ë§Œë£Œ ì‹œê°„ ì €ì¥
 	if (pItemClothes->m_itemProto->getItemFlag() & ITEM_FLAG_ABS)
 	{
-		// ½Ã°£Á¦ ¾ÆÀÌÅÛ
+		// ì‹œê°„ì œ ì•„ì´í…œ
 		pItemClothes->setUsed_2(pItemClothes->getUsed());
 	}
 	else
 	{
-		// ±â°£Á¦ ¾ÆÀÌÅÛ
+		// ê¸°ê°„ì œ ì•„ì´í…œ
 		static const int one_month = 60*60*24*30;
 
 		if (pItemClothes->getUsed() - gserver->getNowSecond() < one_month)
 		{
-			// 1°³¿ù ¹Ì¸¸ÀÎ °æ¿ì °áÇÕ½Ã°£Àº À¯·á ¾ÆÀÌÅÛ ¸¸·á ½Ã°£°ú °°´Ù
+			// 1ê°œì›” ë¯¸ë§Œì¸ ê²½ìš° ê²°í•©ì‹œê°„ì€ ìœ ë£Œ ì•„ì´í…œ ë§Œë£Œ ì‹œê°„ê³¼ ê°™ë‹¤
 			pItemClothes->setUsed_2(pItemClothes->getUsed());
 		}
 		else
 		{
-			// 1°³¿ù ÀÌ»óÀÎ °æ¿ì °áÇÕ½Ã°£Àº 1°³¿ùÀÌ´Ù.
+			// 1ê°œì›” ì´ìƒì¸ ê²½ìš° ê²°í•©ì‹œê°„ì€ 1ê°œì›”ì´ë‹¤.
 			pItemClothes->setUsed_2(gserver->getNowSecond() + one_month);
 		}
 	}
-	// ·Î±× ³²±è
+	// ë¡œê·¸ ë‚¨ê¹€
 	GAMELOG << init("ITEM COMPOSITION", ch)
 			<< "COMPOSITION DOC" << delim
 			<< itemlog(item, false) << delim
@@ -845,7 +845,7 @@ int local_useCashItem_2665_Sub(CPC* ch, CItem* item, bool bprolong, RequestClien
 			<< itemlog(pItemEquip)
 			<< end;
 
-	// °á°ú Àü´Ş
+	// ê²°ê³¼ ì „ë‹¬
 	ch->m_inventory.sendOneItemInfo(pItemClothes);
 	ch->m_inventory.sendOneItemInfo(pItemEquip);
 
@@ -864,7 +864,7 @@ bool local_useCashItem_2665(CPC* ch, CItem* item, bool bprolong, RequestClient::
 {
 	int result = local_useCashItem_2665_Sub(ch, item, bprolong, packet);
 
-	if(result == 0) // ¼º°ø
+	if(result == 0) // ì„±ê³µ
 	{
 		return true;
 	}
@@ -886,14 +886,14 @@ bool local_useCashItem_1540(CPC* ch, CItem* item, bool bprolong, RequestClient::
 	CItem*		pItemClothes = NULL;
 	CItem*		pItemEquip = NULL;
 
-	// 1. nIndexClothes·Î ¾ÆÀÌÅÛ Ã£±â
-	// 2. ¾ÆÀÌÅÛ ÇÕ¼º ¿©ºÎ °Ë»ç
-	// 3. ÇÕ¼ºµÈ ¾ÆÀÌÅÛ Ã£±â
-	// 4. ºĞ¸® Ã³¸®
-	// 5. °ÔÀÓ ·Î±×
-	// 6. °á°ú ¾Ë¸²
+	// 1. nIndexClothesë¡œ ì•„ì´í…œ ì°¾ê¸°
+	// 2. ì•„ì´í…œ í•©ì„± ì—¬ë¶€ ê²€ì‚¬
+	// 3. í•©ì„±ëœ ì•„ì´í…œ ì°¾ê¸°
+	// 4. ë¶„ë¦¬ ì²˜ë¦¬
+	// 5. ê²Œì„ ë¡œê·¸
+	// 6. ê²°ê³¼ ì•Œë¦¼
 
-	// 1. nIndexClothes·Î ¾ÆÀÌÅÛ Ã£±â
+	// 1. nIndexClothesë¡œ ì•„ì´í…œ ì°¾ê¸°
 	pItemClothes = ch->m_inventory.FindByVirtualIndex(extra1);
 	if (pItemClothes == NULL)
 	{
@@ -903,15 +903,15 @@ bool local_useCashItem_1540(CPC* ch, CItem* item, bool bprolong, RequestClient::
 		return false;
 	}
 
-	// °ü·Ã ¼öÁ¤... m_used == -1 ÀÌ¸é ¹«ÇÑÀÎµ¥ ¿©±â¼­ ºĞ¸®°¡ ¾ÈµÇ°Ô µÇ¾îÀÖÀ½
-	// °í·Î m_used == -1 ÀÌ¸é °Ç³Ê ¶Ù°Ô ¼öÁ¤
-	// 2. ¾ÆÀÌÅÛ ÇÕ¼º ¿©ºÎ °Ë»ç
+	// ê´€ë ¨ ìˆ˜ì •... m_used == -1 ì´ë©´ ë¬´í•œì¸ë° ì—¬ê¸°ì„œ ë¶„ë¦¬ê°€ ì•ˆë˜ê²Œ ë˜ì–´ìˆìŒ
+	// ê³ ë¡œ m_used == -1 ì´ë©´ ê±´ë„ˆ ë›°ê²Œ ìˆ˜ì •
+	// 2. ì•„ì´í…œ í•©ì„± ì—¬ë¶€ ê²€ì‚¬
 	if (	   (pItemClothes->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 			   && ( pItemClothes->getUsed() == -1 || pItemClothes->getUsed() > gserver->getNowSecond() )
 			   && pItemClothes->getFlag() & FLAG_ITEM_COMPOSITION
 	   )
 	{
-		// 3. ÇÕ¼ºµÈ ¾ÆÀÌÅÛ Ã£±â
+		// 3. í•©ì„±ëœ ì•„ì´í…œ ì°¾ê¸°
 		pItemEquip = ch->m_inventory.FindByVirtualIndex(pItemClothes->m_nCompositeItem);
 		if (!pItemEquip)
 		{
@@ -921,16 +921,16 @@ bool local_useCashItem_1540(CPC* ch, CItem* item, bool bprolong, RequestClient::
 			return false;
 		}
 
-		// 4. ºĞ¸® Ã³¸®
+		// 4. ë¶„ë¦¬ ì²˜ë¦¬
 		pItemClothes->setFlag(pItemClothes->getFlag() & ~FLAG_ITEM_COMPOSITION);
 		pItemEquip->setFlag(pItemEquip->getFlag() & ~FLAG_ITEM_COMPOSITION);
 		pItemClothes->m_nCompositeItem = -1;
 		pItemClothes->setPlus(0);
 		pItemClothes->setFlag(FLAG_ITEM_PLATINUM_SET(pItemClothes->getFlag(), 0));
 
-		pItemClothes->setUsed_2(-1);		// °áÇÕ ÁÖ¹®¼­ ¸¸·á ½Ã°£ Á¦°Å
+		pItemClothes->setUsed_2(-1);		// ê²°í•© ì£¼ë¬¸ì„œ ë§Œë£Œ ì‹œê°„ ì œê±°
 
-		// 5. °ÔÀÓ ·Î±×
+		// 5. ê²Œì„ ë¡œê·¸
 		GAMELOG << init("ITEM COMPOSITE SEPARATE", ch)
 				<< "CLOTHES" << delim
 				<< itemlog(pItemClothes) << delim
@@ -939,7 +939,7 @@ bool local_useCashItem_1540(CPC* ch, CItem* item, bool bprolong, RequestClient::
 				<< end;
 
 		{
-			// 6. °á°ú ¾Ë¸²
+			// 6. ê²°ê³¼ ì•Œë¦¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysSeparateItemMsg(rmsg, pItemClothes->getDBIndex());
 			SEND_Q(rmsg, ch->m_desc);
@@ -958,32 +958,32 @@ bool local_useCashItem_1540(CPC* ch, CItem* item, bool bprolong, RequestClient::
 
 bool local_useCashItem_1519(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// 1. nPetIndex ¾ÆÀÌÅÛ Ã£°í
-	// 2. Æê Âø¿ë ÇØÁ¦ »óÅÂÀÎÁö º¸°í
-	// 3. ÇØ´ç ¾ÆÀÌÅÛÀÇ ÆêÀ» Ã£°í
-	// 4. ÆêÀÇ Å¸ÀÔ°ú ½ºÅ³ °Ë»çÇÏ°í
-	// 5. Æê ¸¶¿îÆ® Ãë¼ÒÈÄ
-	// 6. Æê »óÅÂ ¾Ë¸®°í
-	// 7. °á°ú ¾Ë¸²
+	// 1. nPetIndex ì•„ì´í…œ ì°¾ê³ 
+	// 2. í« ì°©ìš© í•´ì œ ìƒíƒœì¸ì§€ ë³´ê³ 
+	// 3. í•´ë‹¹ ì•„ì´í…œì˜ í«ì„ ì°¾ê³ 
+	// 4. í«ì˜ íƒ€ì…ê³¼ ìŠ¤í‚¬ ê²€ì‚¬í•˜ê³ 
+	// 5. í« ë§ˆìš´íŠ¸ ì·¨ì†Œí›„
+	// 6. í« ìƒíƒœ ì•Œë¦¬ê³ 
+	// 7. ê²°ê³¼ ì•Œë¦¼
 	int extra1 = packet->extra_1;
 	bool bFail = false;
 
-	// 1. extra1À¸·Î ¾ÆÀÌÅÛ Ã£°í
+	// 1. extra1ìœ¼ë¡œ ì•„ì´í…œ ì°¾ê³ 
 	CItem* pItemPet = ch->m_inventory.FindByVirtualIndex(extra1);
 	if (!pItemPet)
 		bFail = true;
 
-	// 2. Æê Âø¿ë ÇØÁ¦ »óÅÂÀÎÁö º¸°í
+	// 2. í« ì°©ìš© í•´ì œ ìƒíƒœì¸ì§€ ë³´ê³ 
 	else if (pItemPet->getWearPos() != WEARING_NONE)
 		bFail = true;
 	else
 	{
-		// 3. ÇØ´ç ¾ÆÀÌÅÛÀÇ ÆêÀ» Ã£°í
+		// 3. í•´ë‹¹ ì•„ì´í…œì˜ í«ì„ ì°¾ê³ 
 		CPet* pPet = ch->GetPet(pItemPet->getPlus());
 		if (!pPet)
 			bFail = true;
 
-		// 4. ÆêÀÇ Å¸ÀÔ°ú ½ºÅ³ °Ë»çÇÏ°í
+		// 4. í«ì˜ íƒ€ì…ê³¼ ìŠ¤í‚¬ ê²€ì‚¬í•˜ê³ 
 		else if (!pPet->IsMountType() || pPet->GetSkillList()->count() > 1)
 			bFail = true;
 
@@ -1009,11 +1009,11 @@ bool local_useCashItem_1519(CPC* ch, CItem* item, bool bprolong, RequestClient::
 				SEND_Q( rmsg, gserver->m_helper );
 			}
 
-			// 5. Æê ¸¶¿îÆ® Ãë¼ÒÈÄ
+			// 5. í« ë§ˆìš´íŠ¸ ì·¨ì†Œí›„
 			pPet->ResetMountType();
 
 			{
-				// 6. Æê »óÅÂ ¾Ë¸®°í
+				// 6. í« ìƒíƒœ ì•Œë¦¬ê³ 
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExPetStatusMsg(rmsg, pPet);
 				SEND_Q(rmsg, ch->m_desc);
@@ -1021,7 +1021,7 @@ bool local_useCashItem_1519(CPC* ch, CItem* item, bool bprolong, RequestClient::
 		}
 	}
 
-	// 7. °á°ú ¾Ë¸²
+	// 7. ê²°ê³¼ ì•Œë¦¼
 	if (bFail)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1038,7 +1038,7 @@ bool local_useCashItem_1519(CPC* ch, CItem* item, bool bprolong, RequestClient::
 	}
 }
 
-// pet »ö±ò º¯°æÇÏ±â
+// pet ìƒ‰ê¹” ë³€ê²½í•˜ê¸°
 bool local_useCashItem_PetColorChange(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
 	int extra1 = packet->extra_1;
@@ -1051,7 +1051,7 @@ bool local_useCashItem_PetColorChange(CPC* ch, CItem* item, bool bprolong, Reque
 			return false;
 		char PetColorType = 0 ;
 
-		// ¸»¸¸ °¡´ÉÇÑ °Íµé
+		// ë§ë§Œ ê°€ëŠ¥í•œ ê²ƒë“¤
 		if( (itemproto->getItemIndex() == PET_BLACK_HEART_COLOR_ITEM) ||
 				(itemproto->getItemIndex() == PET_WHITE_HEART_COLOR_ITEM) ||
 				(itemproto->getItemIndex() == PET_YELLOW_HEART_COLOR_ITEM) )
@@ -1067,7 +1067,7 @@ bool local_useCashItem_PetColorChange(CPC* ch, CItem* item, bool bprolong, Reque
 			}
 		}
 
-		// Å¸´Â¸»¸¸ °¡´ÉÇÑ °Íµé William,Alber,Red eye,Zebra,Harold,Violet
+		// íƒ€ëŠ”ë§ë§Œ ê°€ëŠ¥í•œ ê²ƒë“¤ William,Alber,Red eye,Zebra,Harold,Violet
 		if( (itemproto->getItemIndex() == HORSE_WILLIAM_COLOR_ITEM)	||
 				(itemproto->getItemIndex() == HORSE_ALBER_COLOR_ITEM)	||
 				(itemproto->getItemIndex() == HORSE_REDEYE_COLOR_ITEM)	 ||
@@ -1121,7 +1121,7 @@ bool local_useCashItem_PetColorChange(CPC* ch, CItem* item, bool bprolong, Reque
 		case PET_NON_COLOR_ITEM:
 			PetColorType = (char)NON_COLOR;
 			break;
-		// ÇÇ´Ğ½ºÀÇ °áÁ¤
+		// í”¼ë‹‰ìŠ¤ì˜ ê²°ì •
 		case 3262:
 			PetColorType = (char)PHOENIX_COLOR;
 			break;
@@ -1242,9 +1242,9 @@ bool local_useCashItem_PetColorChange(CPC* ch, CItem* item, bool bprolong, Reque
 
 bool local_useCashItem_PetTurnToNPC(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// »ç¿ëÁ¶°Ç °Ë»ç
-	// Âø¿ëÇÏ°í ÀÖ´Â Æê¿¡ Àû¿ë
-	// Æê ·¹º§ÀÌ 16 ÀÌ»óÀÇ ¸»ÀÌ°í, Å»¼ö ¾øÀ»¶§
+	// ì‚¬ìš©ì¡°ê±´ ê²€ì‚¬
+	// ì°©ìš©í•˜ê³  ìˆëŠ” í«ì— ì ìš©
+	// í« ë ˆë²¨ì´ 16 ì´ìƒì˜ ë§ì´ê³ , íƒˆìˆ˜ ì—†ì„ë•Œ
 	CItemProto* itemproto = item->m_itemProto;
 
 	if( ch->m_wearInventory.wearItemInfo[WEARING_PET])
@@ -1258,9 +1258,9 @@ bool local_useCashItem_PetTurnToNPC(CPC* ch, CItem* item, bool bprolong, Request
 
 		if( !pet->IsMountType() )
 		{
-			if( pet->GetPetTurnToNpc() == 0 ) // º¯½ÅÁßÀÌ ¾Æ´Ï´Ù
+			if( pet->GetPetTurnToNpc() == 0 ) // ë³€ì‹ ì¤‘ì´ ì•„ë‹ˆë‹¤
 			{
-				// ¾ÆÀÌÅÛÀÌ ¸»Å¸ÀÔ(1)ÀÌ°í ÆêÀÌ ¸»ÀÌ°Å³ª ¾ÆÀÌÅÛÀÌ ¿ëÅ¸ÀÔ(1)ÀÌ°í ÆêÀÌ ¿ëÀÌ°Å³ª ,¾ÆÀÌÅÛ Å¸ÀÔÀÌ ¸ğµÎ(0)ÀÏ¶§
+				// ì•„ì´í…œì´ ë§íƒ€ì…(1)ì´ê³  í«ì´ ë§ì´ê±°ë‚˜ ì•„ì´í…œì´ ìš©íƒ€ì…(1)ì´ê³  í«ì´ ìš©ì´ê±°ë‚˜ ,ì•„ì´í…œ íƒ€ì…ì´ ëª¨ë‘(0)ì¼ë•Œ
 				if( pet->m_level > 15 &&
 						( (itemproto->getItemNum4() == 1 && ( pet->GetPetType() & (0x10)) > 0 )
 						  || (itemproto->getItemNum4() == 2 && ( pet->GetPetType() & (0x00)) > 0 )
@@ -1268,23 +1268,23 @@ bool local_useCashItem_PetTurnToNPC(CPC* ch, CItem* item, bool bprolong, Request
 						)
 				  )
 				{
-					toNpc = itemproto->getItemNum0();	// º¯½Å NPC ÀÎµ¦½º
-					toNpcSize = itemproto->getItemNum1(); // º¯½Å npc size
+					toNpc = itemproto->getItemNum0();	// ë³€ì‹  NPC ì¸ë±ìŠ¤
+					toNpcSize = itemproto->getItemNum1(); // ë³€ì‹  npc size
 				}
 			}
-			else	// º¯½ÅÁßÀÌ¸é º¯½Å ÇØÁ¦¸¸ °¡´É
+			else	// ë³€ì‹ ì¤‘ì´ë©´ ë³€ì‹  í•´ì œë§Œ ê°€ëŠ¥
 			{
-				if( itemproto->getItemIndex() == 2605 )	// º¯½Å ÇØÁ¦ ¾ÆÀÌÅÛ
+				if( itemproto->getItemIndex() == 2605 )	// ë³€ì‹  í•´ì œ ì•„ì´í…œ
 					toNpc = 0;
 			}
 
 			if( toNpc > -1 )
 			{
-				// ÀÌºÎºĞÀº ÀÌº¥Æ® È°¼ºÈ­ ¿©ºÎ¿Í »ó°ü ¾øÀÌ ¸·À»Áö °áÁ¤ÇØ¾ßÇÔ.
-				if( toNpc > 0 )		// º¯½Å ¼º°ø
+				// ì´ë¶€ë¶„ì€ ì´ë²¤íŠ¸ í™œì„±í™” ì—¬ë¶€ì™€ ìƒê´€ ì—†ì´ ë§‰ì„ì§€ ê²°ì •í•´ì•¼í•¨.
+				if( toNpc > 0 )		// ë³€ì‹  ì„±ê³µ
 				{
-					//			int	nEventItemIndex = 2360;		// ÆêÀÇ ¸íÂû
-					int nEventItemIndex = 2605;		// Æê ¸®ÅÏÁÖ¹®¼­ 2009 Xmas ÀÌº¥Æ® º¯°æ
+					//			int	nEventItemIndex = 2360;		// í«ì˜ ëª…ì°°
+					int nEventItemIndex = 2605;		// í« ë¦¬í„´ì£¼ë¬¸ì„œ 2009 Xmas ì´ë²¤íŠ¸ ë³€ê²½
 
 					CItem* pEventItem =  gserver->m_itemProtoList.CreateItem( nEventItemIndex, -1, 0, 0, 1 );
 					if( !pEventItem )
@@ -1327,7 +1327,7 @@ bool local_useCashItem_PetTurnToNPC(CPC* ch, CItem* item, bool bprolong, Request
 		}
 		//else
 		//{
-		// Á¶°Ç¿¡ ¸ÂÁö ¾ÊÀ½
+		// ì¡°ê±´ì— ë§ì§€ ì•ŠìŒ
 		//}
 	}
 	return false;
@@ -1377,9 +1377,9 @@ bool local_squib(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* 
 
 bool local_NSCreateCard(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet)
 {
-	// 100·¹º§ÀÌ»ó Ä³¸¯ÅÍ°¡ ÀÖÀ¸¸é ¾ÈµÊ
-	// ³ªÀÌÆ® ½¦µµ¿ì Ä³¸¯ÅÍ°¡ ÀÖÀ¸¸é ¾ÈµÊ
-	// ³ªÀÌÆ® ½¦µµ¿ì »ı¼ºÄ«µå »ç¿ëÇß´ÂÁö È®ÀÎ
+	// 100ë ˆë²¨ì´ìƒ ìºë¦­í„°ê°€ ìˆìœ¼ë©´ ì•ˆë¨
+	// ë‚˜ì´íŠ¸ ì‰ë„ìš° ìºë¦­í„°ê°€ ìˆìœ¼ë©´ ì•ˆë¨
+	// ë‚˜ì´íŠ¸ ì‰ë„ìš° ìƒì„±ì¹´ë“œ ì‚¬ìš©í–ˆëŠ”ì§€ í™•ì¸
 	if( ch->m_desc->m_bCreate90Lv
 			|| ch->m_level >= 90
 			|| ch->m_desc->m_bNotCreateNightShadow
@@ -1445,7 +1445,7 @@ bool local_useCashItem_WareHouse_Grocery_ShowHP_Sub(CPC* ch, CItem* item, bool b
 		break;
 	}
 
-	// Æ÷¼Ç »ç¿ë ÀÌÆåÆ® ¸Ş½ÃÁö
+	// í¬ì…˜ ì‚¬ìš© ì´í™íŠ¸ ë©”ì‹œì§€
 	CNetMsg::SP effectMsg(new CNetMsg);
 	EffectItemMsg(effectMsg, ch, item);
 	ch->m_pArea->SendToCell(effectMsg, ch, true);
@@ -1548,7 +1548,7 @@ local_map_t _local_map = boost::assign::map_list_of
 						 (2765, local_useCashItem_PetTurnToNPC)
 						 (2605, local_useCashItem_PetTurnToNPC)
 
-#ifdef PET_HPRECOVER_ITEM		// Æê HP È¸º¹
+#ifdef PET_HPRECOVER_ITEM		// í« HP íšŒë³µ
 						 (2454, local_useCashItem_PetHPRecover)
 #endif
 

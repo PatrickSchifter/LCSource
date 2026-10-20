@@ -27,7 +27,7 @@ CJumpingSystem::~CJumpingSystem(void)
 
 bool CJumpingSystem::check(void)
 {
-	// ±âº» °Ë»ç
+	// ê¸°ë³¸ ê²€ì‚¬
 	if ( m_pc == NULL )
 		return false;
 
@@ -40,11 +40,11 @@ bool CJumpingSystem::check(void)
 		return false;
 	}
 
-	// ÇöÀç ·¹º§ >= Á¡ÇÎÇÒ ·¹º§ÀÌ¸é »ç¿ë ºÒ°¡´É
+	// í˜„ì¬ ë ˆë²¨ >= ì í•‘í•  ë ˆë²¨ì´ë©´ ì‚¬ìš© ë¶ˆê°€ëŠ¥
 	if ( m_pc->m_level >= m_jumpingLevel )
 		return false;
 
-	// º¸»ó Áö±Ş °¡´É ¿©ºÎ ¹× º¸»ó ¼³Á¤
+	// ë³´ìƒ ì§€ê¸‰ ê°€ëŠ¥ ì—¬ë¶€ ë° ë³´ìƒ ì„¤ì •
 	if ( m_rewardIndex > 0 )
 	{
 		return gserver->m_rewardMgr.setRewardData(m_pc, m_rewardIndex);
@@ -61,17 +61,17 @@ bool CJumpingSystem::jump(void)
 	if ( m_jumpingLevel <= 0 )
 		return false;
 
-	// ·¹º§¾÷
+	// ë ˆë²¨ì—…
 	m_pc->m_level = m_jumpingLevel;
 	m_pc->LevelUp(true);
 
-	// Ä³¸¯ÅÍ ÃÊ±âÈ­
+	// ìºë¦­í„° ì´ˆê¸°í™”
 	if ( !initCharacter() )
 	{
 		return false;
 	}
 
-	// º¸»ó Áö±Ş
+	// ë³´ìƒ ì§€ê¸‰
 	if ( !giveReward() )
 	{
 		GAMELOG << init("JUMPING SYSTEM")
@@ -84,7 +84,7 @@ bool CJumpingSystem::jump(void)
 
 bool CJumpingSystem::initCharacter(void)
 {
-	// Á÷¾÷ ÃÊ±âÈ­
+	// ì§ì—… ì´ˆê¸°í™”
 	if ( !initJob() )
 	{
 		GAMELOG << init("JUMPING SYSTEM")
@@ -92,7 +92,7 @@ bool CJumpingSystem::initCharacter(void)
 		return false;
 	}
 
-	// ½ºÅ³ ÃÊ±âÈ­
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”
 	if ( !initSkill() )
 	{
 		GAMELOG << init("JUMPING SYSTEM")
@@ -100,7 +100,7 @@ bool CJumpingSystem::initCharacter(void)
 		return false;
 	}
 
-	// ½ºÅÈ ÃÊ±âÈ­
+	// ìŠ¤íƒ¯ ì´ˆê¸°í™”
 	if ( !initStat() )
 	{
 		GAMELOG << init("JUMPING SYSTEM")
@@ -108,7 +108,7 @@ bool CJumpingSystem::initCharacter(void)
 		return false;
 	}
 
-	// HP, MP Ã¤¿ì±â
+	// HP, MP ì±„ìš°ê¸°
 	m_pc->m_hp = m_pc->m_maxHP;
 	m_pc->m_mp = m_pc->m_maxMP;
 
@@ -148,10 +148,10 @@ bool CJumpingSystem::initJob(void)
 
 bool CJumpingSystem::initSkill(void)
 {
-	// Active Skill ÃÊ±âÈ­
+	// Active Skill ì´ˆê¸°í™”
 	m_pc->InitSkill(&m_pc->m_activeSkillList);
 
-	// Passive Skill ÃÊ±âÈ­
+	// Passive Skill ì´ˆê¸°í™”
 	m_pc->InitSkill(&m_pc->m_passiveSkillList, true);
 
 	CNetMsg::SP rmsg(new CNetMsg);
@@ -163,8 +163,8 @@ bool CJumpingSystem::initSkill(void)
 
 bool CJumpingSystem::initStat(void)
 {
-	// ½ºÅÈ Àç°è»ê
-	// ½ºÅÈ Æ÷ÀÎÆ® ÃÊ±âÈ­
+	// ìŠ¤íƒ¯ ì¬ê³„ì‚°
+	// ìŠ¤íƒ¯ í¬ì¸íŠ¸ ì´ˆê¸°í™”
 	if ( m_pc->m_job == JOB_NIGHTSHADOW )
 	{
 		m_pc->m_statpt_remain = (m_pc->m_level - JOB_2ND_LEVEL) * 3 + (m_pc->m_level - JOB_2ND_LEVEL) / 2 + (JOB_2ND_LEVEL - 1);

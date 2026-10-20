@@ -73,17 +73,17 @@ void do_AffinityConnect(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_affinityList.FindAffinity(proto->m_index))
 	{
-		// ÀÌ¹Ì ÀÖÀ½
+		// ì´ë¯¸ ìˆìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_CONNECT_ALREADY);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// Ä³¸¯ÅÍ ·¹º§ °Ë»ç
+	// ìºë¦­í„° ë ˆë²¨ ê²€ì‚¬
 	if( ch->m_level < proto->m_needPCLevel )
 	{
-		// ·¹º§ °Ë»ç
+		// ë ˆë²¨ ê²€ì‚¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_CONNECT_PCLEVEL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -106,7 +106,7 @@ void do_AffinityConnect(CPC* ch, CNetMsg::SP& msg)
 			return ;
 	}
 
-	// ¾ÆÀÌÅÛ °Ë»ç
+	// ì•„ì´í…œ ê²€ì‚¬
 	int row, col;
 	CItem* item = NULL;
 	if(proto->m_needItemIdx > 0)
@@ -145,7 +145,7 @@ void do_AffinityConnect(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// Ä£È­µµ Ãß°¡ ¸Ş½ÃÁö
+		// ì¹œí™”ë„ ì¶”ê°€ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityAddInfoMsg(rmsg, proto->m_index, proto->m_maxvalue);
 		SEND_Q(rmsg, ch->m_desc);
@@ -199,16 +199,16 @@ void do_AffinityContributeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(!affinitynpc->GetFlag(AF_CONTRIBUTE))
 	{
-		// °ü¸®ÀÚ ¼³Á¤ ¿¡·¯
+		// ê´€ë¦¬ì ì„¤ì • ì—ëŸ¬
 		return;
 	}
 
 	CAffinity* affinity = ch->m_affinityList.FindAffinity(proto->m_index);
 
-	// Ä£È­µµ º¸À¯ÁßÀÎÁö È®ÀÎ
+	// ì¹œí™”ë„ ë³´ìœ ì¤‘ì¸ì§€ í™•ì¸
 	if (affinity == NULL)
 	{
-		// Ä£È­µµ°¡ ¾øÀ½.
+		// ì¹œí™”ë„ê°€ ì—†ìŒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_NOT_CONNECTED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -217,7 +217,7 @@ void do_AffinityContributeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(affinity->m_point >= proto->m_maxvalue)
 	{
-		// ´õÀÌ»ó point ¸¦ ¿Ã¸± ¼ö ¾ø´Ù.
+		// ë”ì´ìƒ point ë¥¼ ì˜¬ë¦´ ìˆ˜ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_ITEM_CONTRIBUTE_MAX);
 		SEND_Q(rmsg, ch->m_desc);
@@ -262,7 +262,7 @@ void do_AffinityContributeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¾ÆÀÌÅÛÀÌ ±âºÎ¸ñ·Ï¿¡ Æ÷ÇÔµÇ´ÂÁö È®ÀÎ
+		// ì•„ì´í…œì´ ê¸°ë¶€ëª©ë¡ì— í¬í•¨ë˜ëŠ”ì§€ í™•ì¸
 		serverPoint += (point * packet->list[i].count);
 	}
 
@@ -285,7 +285,7 @@ void do_AffinityContributeReq(CPC* ch, CNetMsg::SP& msg)
 
 	affinity->AddPoint(serverPoint, ch, bonus);
 
-	// ¾ÆÀÌÅÛ Á¦°Å
+	// ì•„ì´í…œ ì œê±°
 	for (int i = 0; i < packet->listCount; ++i)
 	{
 		ch->m_inventory.deleteItem(vec[i], packet->list[i].count);
@@ -335,7 +335,7 @@ void do_AffinityShopUseReq(CPC* ch, CNetMsg::SP& msg)
 	affinity = ch->m_affinityList.FindAffinity(proto->m_index);
 	if(!affinity)
 	{
-		// °ü·Ã Ä£È­µµ°¡ ¾ø´Ù.
+		// ê´€ë ¨ ì¹œí™”ë„ê°€ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_NOT_CONNECTED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -348,7 +348,7 @@ void do_AffinityShopUseReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(affinity->m_point < affinitynpc->m_shoppoint)
 	{
-		// Ä£È­µµ Á¡¼ö ºÎÁ·
+		// ì¹œí™”ë„ ì ìˆ˜ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_USESHOP_POINT);
 		SEND_Q(rmsg, ch->m_desc);
@@ -363,7 +363,7 @@ void do_AffinityShopUseReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-// ¸î¹øÂ° ¼±¹°À» ¹ŞÀ»°ÇÁö ¹°¾îº½
+// ëª‡ë²ˆì§¸ ì„ ë¬¼ì„ ë°›ì„ê±´ì§€ ë¬¼ì–´ë´„
 void do_AffinityGiftInfoReq(CPC* ch, CNetMsg::SP& msg)
 {
 	CAffinity* affinity = NULL;
@@ -385,7 +385,7 @@ void do_AffinityGiftInfoReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	if(!affinitynpc->GetFlag(AF_REWARD))
 	{
-		// °ü¸®ÀÚ ¼³Á¤ ¿¡·¯
+		// ê´€ë¦¬ì ì„¤ì • ì—ëŸ¬
 		return;
 	}
 
@@ -393,7 +393,7 @@ void do_AffinityGiftInfoReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(!affinity)
 	{
-		// NPC¿Í ¿¬°áµÈ Ä£È­µµ¸¦ º¸À¯ÇÏ°í ÀÖÁö ¾Ê´Ù.
+		// NPCì™€ ì—°ê²°ëœ ì¹œí™”ë„ë¥¼ ë³´ìœ í•˜ê³  ìˆì§€ ì•Šë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_NOT_CONNECTED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -403,14 +403,14 @@ void do_AffinityGiftInfoReq(CPC* ch, CNetMsg::SP& msg)
 	REWARDITEM* nextreward = affinity->GetNextReward(npc->m_proto->m_index);
 	if(!nextreward)
 	{
-		// ¹ŞÀ» º¸»ó¾ÆÀÌÅÛÀÌ ¾ø´Ù.
+		// ë°›ì„ ë³´ìƒì•„ì´í…œì´ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_GIFTINFO_NOITEM);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// Ä³¸¯ÅÍ ·¹º§ °Ë»ç
+	// ìºë¦­í„° ë ˆë²¨ ê²€ì‚¬
 	if( nextreward->needPCLevel > ch->m_level )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -434,7 +434,7 @@ void do_AffinityGiftInfoReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(nextreward->allowpoint > affinity->m_point)
 	{
-		// Æ÷ÀÎÆ®°¡ ºÎÁ·ÇÏ¿© ¹ŞÁö ¸øÇÑ´Ù.
+		// í¬ì¸íŠ¸ê°€ ë¶€ì¡±í•˜ì—¬ ë°›ì§€ ëª»í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_GIFTINFO_NOPOINT);
 		SEND_Q(rmsg, ch->m_desc);
@@ -460,7 +460,7 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 	CNPC* npc;
 	RefMsg(msg) >> npcidx;
 
-	// npc°¡ ÁÖÀ§¿¡ ÀÖ´ÂÁö
+	// npcê°€ ì£¼ìœ„ì— ìˆëŠ”ì§€
 	npc = (CNPC*)(ch->m_pArea->FindCharInCell(ch, npcidx, MSG_CHAR_NPC, false));
 	if(!npc)
 		return ;
@@ -481,7 +481,7 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(!affinity)
 	{
-		// NPC¿Í ¿¬°áµÈ Ä£È­µµ¸¦ º¸À¯ÇÏ°í ÀÖÁö ¾Ê´Ù.
+		// NPCì™€ ì—°ê²°ëœ ì¹œí™”ë„ë¥¼ ë³´ìœ í•˜ê³  ìˆì§€ ì•Šë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_NOT_CONNECTED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -491,7 +491,7 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 	REWARDITEM* nextreward = affinity->GetNextReward(npc->m_proto->m_index);
 	if(!nextreward)
 	{
-		// ¹ŞÀ» º¸»ó¾ÆÀÌÅÛÀÌ ¾ø´Ù.
+		// ë°›ì„ ë³´ìƒì•„ì´í…œì´ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_GIFTINFO_NOITEM);
 		SEND_Q(rmsg, ch->m_desc);
@@ -500,7 +500,7 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(nextreward->allowpoint > affinity->m_point)
 	{
-		// Æ÷ÀÎÆ®°¡ ºÎÁ·ÇÏ¿© ¹ŞÁö ¸øÇÑ´Ù.
+		// í¬ì¸íŠ¸ê°€ ë¶€ì¡±í•˜ì—¬ ë°›ì§€ ëª»í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_GIFTINFO_NOPOINT);
 		SEND_Q(rmsg, ch->m_desc);
@@ -509,14 +509,14 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥°ø°£ ºÎÁ·
+		// ì¸ë²¤ê³µê°„ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		AffinityErrorMsg(rmsg, MSG_EX_AFFINITY_ERROR_GIFT_NOSPACE);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// Ä³¸¯ÅÍ ·¹º§ °Ë»ç
+	// ìºë¦­í„° ë ˆë²¨ ê²€ì‚¬
 	if( nextreward->needPCLevel > ch->m_level )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -527,7 +527,7 @@ void do_AffinityGiftReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(nextreward->needItemIdx > 0)
 	{
-		// ÇÊ¿ä ¾ÆÀÌÅÛ °Ë»ç ¹× »èÁ¦
+		// í•„ìš” ì•„ì´í…œ ê²€ì‚¬ ë° ì‚­ì œ
 		item_search_t vec;
 		int sc = ch->m_inventory.searchItemByCondition(nextreward->needItemIdx, 0, 0, vec);
 		if (sc == 0 || sc < nextreward->needItemCount )
@@ -594,7 +594,7 @@ void do_AffinityInfoTabReq(CPC* ch, CNetMsg::SP& msg)
 	affinity = ch->m_affinityList.FindAffinity(proto->m_index);
 	if(!affinity)
 	{
-		// NPC¿Í ¿¬°áµÈ Ä£È­µµ¸¦ º¸À¯ÇÏ°í ÀÖÁö ¾Ê´Ù.
+		// NPCì™€ ì—°ê²°ëœ ì¹œí™”ë„ë¥¼ ë³´ìœ í•˜ê³  ìˆì§€ ì•Šë‹¤.
 		errorcode |= AFFINITY_INFOTAB_ERROR_NOTEXIST;
 
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -610,7 +610,7 @@ void do_AffinityInfoTabReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(!nextreward)
 	{
-		// ¹ŞÀ» º¸»ó¾ÆÀÌÅÛÀÌ ¾ø´Ù.
+		// ë°›ì„ ë³´ìƒì•„ì´í…œì´ ì—†ë‹¤.
 		REWARDSTEP* step = affinity->FindRewardInfo(proto->m_affinityNPC->m_npcidx);
 		allowpoint = step->point;
 		errorcode |= AFFINITY_INFOTAB_NOT_REWARD;

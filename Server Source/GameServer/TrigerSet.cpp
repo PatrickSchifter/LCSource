@@ -7,7 +7,7 @@
 
 #include "TrigerSet.h"
 
-// CTrigger ½ÃÀÛ
+// CTrigger ì‹œì‘
 CTrigger::CTrigger()
 {
 	m_index = 0;
@@ -217,7 +217,7 @@ void CTrigger::CopyTriggerDate(CTrigger* trigger)
 	m_nEffectNPCIndex = trigger->m_nEffectNPCIndex;
 }
 
-// CTrigger_List ½ÃÀÛ
+// CTrigger_List ì‹œì‘
 CTrigger_List::CTrigger_List()
 {
 	m_nCount = 0;
@@ -243,7 +243,7 @@ CTrigger_List::~CTrigger_List()
 
 bool CTrigger_List::Load_Trigger()
 {
-	// 1. ÀÏ´Ü ÀüÃ¼ trigger¸¦ ¹Ş¾Æ¿Â´Ù.
+	// 1. ì¼ë‹¨ ì „ì²´ triggerë¥¼ ë°›ì•„ì˜¨ë‹¤.
 	CDBCmd dbcmd;
 	dbcmd.Init(&gserver->m_dbdata);
 	dbcmd.SetQuery("SELECT a_index, a_triggerset_type, a_trigger_flag, a_trigger_touchID, a_trigger_playID, a_trigger_type, a_trigger_data, a_save_level, a_group_index FROM t_trigger_set ORDER BY a_index");
@@ -286,7 +286,7 @@ bool CTrigger_List::Load_Trigger()
 		dbcmd.MoveNext();
 	}
 
-	// 2. ·£´ı ±×·ìÀ¸·Î ¹­¿©ÀÖ´Â triggerÀÇ Á¾·ù °¡Áş ¼ö¸¦ È®ÀÎÇÑ´Ù.
+	// 2. ëœë¤ ê·¸ë£¹ìœ¼ë¡œ ë¬¶ì—¬ìˆëŠ” triggerì˜ ì¢…ë¥˜ ê°€ì§“ ìˆ˜ë¥¼ í™•ì¸í•œë‹¤.
 	dbcmd.SetQuery("SELECT DISTINCT a_group_index FROM t_trigger_set ");
 	if (!dbcmd.Open())
 	{
@@ -295,11 +295,11 @@ bool CTrigger_List::Load_Trigger()
 		return false;
 	}
 
-	// 1À» »©´Â ÀÌÀ¯´Â group_index == 0 ÀÌ¸é ±×·ìÀÌ ¾Æ´Ñ ´Üµ¶ triggerÀÌ¶ó¼­ Á¦¿Ü½ÃÅ°±â ¶§¹®
+	// 1ì„ ë¹¼ëŠ” ì´ìœ ëŠ” group_index == 0 ì´ë©´ ê·¸ë£¹ì´ ì•„ë‹Œ ë‹¨ë… triggerì´ë¼ì„œ ì œì™¸ì‹œí‚¤ê¸° ë•Œë¬¸
 	int nCount_randomGroup = dbcmd.m_nrecords - 1;
 	int j, number = 1;
 
-	// 3. trigger °¡Áş ¼ö¸¦ È®ÀÎ ÈÄ °°Àº ·£´ı ±×·ìÀÇ trigger´Â ¼¯¾îÁØ´Ù.
+	// 3. trigger ê°€ì§“ ìˆ˜ë¥¼ í™•ì¸ í›„ ê°™ì€ ëœë¤ ê·¸ë£¹ì˜ triggerëŠ” ì„ì–´ì¤€ë‹¤.
 	for (j=0; j < nCount_randomGroup; j++)
 	{
 		char buf[1000];
@@ -328,7 +328,7 @@ bool CTrigger_List::Load_Trigger()
 			continue;
 		}
 
-		// ÀÓ½Ã·Î ¸¸µç RandomGroup_List¿¡ µ¿ÀÏÇÑ ±×·ìÀ» ´ã´Â´Ù.
+		// ì„ì‹œë¡œ ë§Œë“  RandomGroup_Listì— ë™ì¼í•œ ê·¸ë£¹ì„ ë‹´ëŠ”ë‹¤.
 		for (i=0; i < nCount_triggers; i++)
 		{
 			dbcmd.GetRec("a_index",				RandomGroup_List[i].m_index);
@@ -338,7 +338,7 @@ bool CTrigger_List::Load_Trigger()
 			dbcmd.MoveNext();
 		}
 
-		// 100¹øÀ» swapÀ¸·Î ¼­·Î ¹Ù²Ù¾îÁØ´Ù.
+		// 100ë²ˆì„ swapìœ¼ë¡œ ì„œë¡œ ë°”ê¾¸ì–´ì¤€ë‹¤.
 		for (i=0; i < 100; i++)
 		{
 			int swapTriggerNum1 = GetRandom(0, nCount_triggers - 1);
@@ -347,18 +347,18 @@ bool CTrigger_List::Load_Trigger()
 			if(swapTriggerNum1 == swapTriggerNum2)
 				continue;
 
-			// µÎ trigger¸¦ ¼¯´Â ÇÔ¼ö
+			// ë‘ triggerë¥¼ ì„ëŠ” í•¨ìˆ˜
 			Swap_Trigger(&RandomGroup_List[swapTriggerNum1], &RandomGroup_List[swapTriggerNum2]);
 		}
 
 		int k=0;
-		// ¼¯Àº ÀÓ½ÃÀÇ RandomGroup_List¸¦ m_Trigger_ListÀÇ ÇØ´ç trigger¿¡ Ã£¾Æ¼­ ³Ö¾îÁØ´Ù.
+		// ì„ì€ ì„ì‹œì˜ RandomGroup_Listë¥¼ m_Trigger_Listì˜ í•´ë‹¹ triggerì— ì°¾ì•„ì„œ ë„£ì–´ì¤€ë‹¤.
 		for (i=0; i < nCount_triggers; i++)
 		{
-			// ÀüÃ¼ trigger list¿¡¼­
+			// ì „ì²´ trigger listì—ì„œ
 			for (k=0; k < m_nCount; k++)
 			{
-				// Ã£¾ÒÀ¸¸é µ¥ÀÌÅÍ¸¦ ¹Ù²Ù¾îÁØ´Ù.
+				// ì°¾ì•˜ìœ¼ë©´ ë°ì´í„°ë¥¼ ë°”ê¾¸ì–´ì¤€ë‹¤.
 				if ( m_Trigger[k].m_index == RandomGroup_List[i].m_index )
 				{
 					m_Trigger[k].m_trigger_type		= RandomGroup_List[i].m_trigger_type;
@@ -371,12 +371,12 @@ bool CTrigger_List::Load_Trigger()
 		delete[] RandomGroup_List;
 		RandomGroup_List = NULL;
 
-		number++;		// ´ÙÀ½ ·£´ı ±×·ì
+		number++;		// ë‹¤ìŒ ëœë¤ ê·¸ë£¹
 	} // for
 
 	CLCString arg(255);
 	char tmpBuf[MAX_STRING_LENGTH] = {0,};
-	// 4. triggerÀÇ m_trigger_data¸¦ type¿¡ ¸ÂÃß¾î¼­ ÂÉ°³¾î ÀúÀåÇÑ´Ù.
+	// 4. triggerì˜ m_trigger_dataë¥¼ typeì— ë§ì¶”ì–´ì„œ ìª¼ê°œì–´ ì €ì¥í•œë‹¤.
 	for (i=0; i < m_nCount; i++)
 	{
 		arg = m_Trigger[i].m_trigger_data;
@@ -577,14 +577,14 @@ bool CTrigger_List::ResetTriggerInfo(bool bDelete)
 
 	for (i=0; i < m_nCount; i++)
 	{
-		m_Trigger[i].SetTriggerTime(0);		// ½Ã°£ ÃÊ±âÈ­
-		m_Trigger[i].m_bUsed = false;		// È°¼ºÈ­ ÃÊ±âÈ­
+		m_Trigger[i].SetTriggerTime(0);		// ì‹œê°„ ì´ˆê¸°í™”
+		m_Trigger[i].m_bUsed = false;		// í™œì„±í™” ì´ˆê¸°í™”
 	}
 
-	m_flagTriggerEvent = 0;					// Æ®¸®°Å ÇÃ·¡±× ÃÊ±âÈ­
-	m_nNPC963_KilledCount = 0;				// ¿¹¹è´ç 1Â÷ 963npc ¼ıÀÚ ¼¼´Â °Í ÃÊ±âÈ­
+	m_flagTriggerEvent = 0;					// íŠ¸ë¦¬ê±° í”Œë˜ê·¸ ì´ˆê¸°í™”
+	m_nNPC963_KilledCount = 0;				// ì˜ˆë°°ë‹¹ 1ì°¨ 963npc ìˆ«ì ì„¸ëŠ” ê²ƒ ì´ˆê¸°í™”
 
-	// ÃÊ±âÈ­ ½ÃÅ² °Í ÀúÀåÇØ¾ß ÇÔ
+	// ì´ˆê¸°í™” ì‹œí‚¨ ê²ƒ ì €ì¥í•´ì•¼ í•¨
 	if(bDelete && !SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_NONE))
 	{
 		GAMELOG << init("SaveTriggerInfo Error : INTO ResetTriggerInfo() ")
@@ -592,8 +592,8 @@ bool CTrigger_List::ResetTriggerInfo(bool bDelete)
 		return false;
 	}
 
-	// ¸ğµç À¯Àú¸¦ ¸óÆ®»şÀÎ ¸¶À»·Î ÀÌµ¿½ÃÅ²´Ù.
-	// ÇöÀç´Â ¸óÆ®»şÀÎ ¸¶À»·Î ÀÌµ¿½ÃÅ°´Âµ¥ °¢ Á¸¸¶´Ù ´Ù¸¥ °÷À¸·Î Á¶ÀıÇÏ°í ½ÍÀ¸¸é ¼öÁ¤ÇÏÀÚ
+	// ëª¨ë“  ìœ ì €ë¥¼ ëª¬íŠ¸ìƒ¤ì¸ ë§ˆì„ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+	// í˜„ì¬ëŠ” ëª¬íŠ¸ìƒ¤ì¸ ë§ˆì„ë¡œ ì´ë™ì‹œí‚¤ëŠ”ë° ê° ì¡´ë§ˆë‹¤ ë‹¤ë¥¸ ê³³ìœ¼ë¡œ ì¡°ì ˆí•˜ê³  ì‹¶ìœ¼ë©´ ìˆ˜ì •í•˜ì
 	if(m_pArea_UseTrigerEvent)
 		m_pArea_UseTrigerEvent->GotoAllClient_StartPoint();
 
@@ -602,7 +602,7 @@ bool CTrigger_List::ResetTriggerInfo(bool bDelete)
 
 bool CTrigger_List::SaveTriggerInfo(int saveInfo, int roomNumber)
 {
-	// Æ®¸®°Å DB ÀúÀåÀ» À§ÇØ ÇïÆÛ·Î Àü¼Û
+	// íŠ¸ë¦¬ê±° DB ì €ì¥ì„ ìœ„í•´ í—¬í¼ë¡œ ì „ì†¡
 	if(m_pArea_UseTrigerEvent && m_pArea_UseTrigerEvent->m_zone)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -620,11 +620,11 @@ bool CTrigger_List::LoadTriggerInfo(int triggerSetType)
 	int i, curCount = 0;
 	int nCount = gserver->m_CTriggerDBInfo.m_nCount;
 
-	// Æ®¸®°Å ¼¼Æ® Å¸ÀÔÀÌ ¾ø´Â °æ¿ìÀÌ¹Ç·Î ½ºÅµ
+	// íŠ¸ë¦¬ê±° ì„¸íŠ¸ íƒ€ì…ì´ ì—†ëŠ” ê²½ìš°ì´ë¯€ë¡œ ìŠ¤í‚µ
 	if(triggerSetType == 0)
 		return false;
 
-	// ¸ÕÀú ¼Ò¼ÓµÈ Æ®¸®°ÅÀÇ °³¼ö¸¦ È®ÀÎÇÑ´Ù.
+	// ë¨¼ì € ì†Œì†ëœ íŠ¸ë¦¬ê±°ì˜ ê°œìˆ˜ë¥¼ í™•ì¸í•œë‹¤.
 	for (i=0; i < nCount; i++)
 	{
 		if (gserver->m_CTriggerDBInfo.m_Trigger[i].m_triggerset_type == triggerSetType)
@@ -636,7 +636,7 @@ bool CTrigger_List::LoadTriggerInfo(int triggerSetType)
 	m_Trigger = new CTrigger[curCount];
 	curCount = 0;
 
-	// ¼Ò¼ÓµÈ Æ®¸®°Å¸¸ °¡Á®¿Â´Ù.
+	// ì†Œì†ëœ íŠ¸ë¦¬ê±°ë§Œ ê°€ì ¸ì˜¨ë‹¤.
 	for (i=0; i < nCount; i++)
 	{
 		if (gserver->m_CTriggerDBInfo.m_Trigger[i].m_triggerset_type == triggerSetType)
@@ -646,7 +646,7 @@ bool CTrigger_List::LoadTriggerInfo(int triggerSetType)
 		}
 	}
 
-	// °¡Á®¿Â Æ®¸®°Å ¼ıÀÚ¸¦ ³Ö¾îÁØ´Ù.
+	// ê°€ì ¸ì˜¨ íŠ¸ë¦¬ê±° ìˆ«ìë¥¼ ë„£ì–´ì¤€ë‹¤.
 	m_nCount = curCount;
 
 	return true;
@@ -654,8 +654,8 @@ bool CTrigger_List::LoadTriggerInfo(int triggerSetType)
 
 void CTrigger_List::LoadTriggerSaveInfo(int roomNumber)
 {
-	// °¡Á®¿Â Æ®¸®°Å°¡ ÀÌ¹Ì È°¼ºÈ­°¡ µÈ °ÍÀ» ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
-	// Ã³À½ ¼­¹ö ºÎÆÃ½Ã¿¡¸¸ Áß°£ ÀúÀåÇÑ µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À¹Ç·Î Á÷Á¢ DB ¿¬°áÇÑ´Ù.
+	// ê°€ì ¸ì˜¨ íŠ¸ë¦¬ê±°ê°€ ì´ë¯¸ í™œì„±í™”ê°€ ëœ ê²ƒì„ ì—…ë°ì´íŠ¸ í•œë‹¤.
+	// ì²˜ìŒ ì„œë²„ ë¶€íŒ…ì‹œì—ë§Œ ì¤‘ê°„ ì €ì¥í•œ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ë¯€ë¡œ ì§ì ‘ DB ì—°ê²°í•œë‹¤.
 	int j, nCount;
 	CDBCmd dbcmd;
 	dbcmd.Init(&gserver->m_dbTrigger);
@@ -683,21 +683,21 @@ void CTrigger_List::LoadTriggerSaveInfo(int roomNumber)
 		dbcmd.GetRec("a_room_index",	roomIndex);
 		dbcmd.GetRec("a_save_info",		nSaveInfo);
 
-		// ÇØ´ç zone°ú area¿¡ ´ëÇÑ µ¥ÀÌÅÍ¸¦ Ã£À¸¸é
+		// í•´ë‹¹ zoneê³¼ areaì— ëŒ€í•œ ë°ì´í„°ë¥¼ ì°¾ìœ¼ë©´
 		if(m_pArea_UseTrigerEvent->m_zone->m_index == zoneIndex && roomNumber == roomIndex)
 		{
-			// Á¸¿¡ µû¶ó ÀúÀåµÈ Æ®¸®°Å È°¼ºÈ­ ºÎºĞÀÌ ´Ù¸£´Ù.
+			// ì¡´ì— ë”°ë¼ ì €ì¥ëœ íŠ¸ë¦¬ê±° í™œì„±í™” ë¶€ë¶„ì´ ë‹¤ë¥´ë‹¤.
 			switch(zoneIndex)
 			{
 			case ZONE_ALTER_OF_DARK:
-				// saveTriggerInfo¿¡ µû¶ó Æ®¸®°Å È°¼ºÈ­¸¦ ½ÃÄÑÁØ´Ù.
+				// saveTriggerInfoì— ë”°ë¼ íŠ¸ë¦¬ê±° í™œì„±í™”ë¥¼ ì‹œì¼œì¤€ë‹¤.
 				for (j=0; j < m_nCount; j++)
 				{
 					if(m_Trigger[j].m_nSaveLevel <= nSaveInfo)
 						m_Trigger[j].m_bUsed = true;
 				}
 
-				// ±×¸®°í ¾ÏÈæÀÇ Á¦´Ü ³×ÀÓµå°¡ Á×¾úÀ¸¸é, Àü¿¡ Á×¾ú´Ù°í Ã¼Å©ÇØÁØ´Ù.
+				// ê·¸ë¦¬ê³  ì•”í‘ì˜ ì œë‹¨ ë„¤ì„ë“œê°€ ì£½ì—ˆìœ¼ë©´, ì „ì— ì£½ì—ˆë‹¤ê³  ì²´í¬í•´ì¤€ë‹¤.
 				switch(nSaveInfo)
 				{
 				case TRIGGER_SAVE_ALTER_OF_DARK_1002:
@@ -733,35 +733,35 @@ bool CTrigger_List::SyncForClient_TriggerInfo(CPC* ch)
 	int totalCount = m_nCount;
 	int i, usedCount =0;
 
-	// ¿ì¼± MessagePrint Å¸ÀÔÀÇ Æ®¸®°ÅÁß È°¼ºÈ­°¡ µÈ °ÍÀ» µû·Î º¸³»ÁÖ¸é¼­
-	// È°¼ºÈ­µÈ Æ®¸®°Å °³¼ö¸¦ ±¸ÇÑ´Ù.
+	// ìš°ì„  MessagePrint íƒ€ì…ì˜ íŠ¸ë¦¬ê±°ì¤‘ í™œì„±í™”ê°€ ëœ ê²ƒì„ ë”°ë¡œ ë³´ë‚´ì£¼ë©´ì„œ
+	// í™œì„±í™”ëœ íŠ¸ë¦¬ê±° ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 	for (i=0; i < totalCount; i++)
 	{
-		// MESSAGE_PRINTÀÇ µ¥ÀÌÅÍ´Â Äù½ºÆ® ÀÎµ¦½ºÀÌ´Ù.
+		// MESSAGE_PRINTì˜ ë°ì´í„°ëŠ” í€˜ìŠ¤íŠ¸ ì¸ë±ìŠ¤ì´ë‹¤.
 		if (m_Trigger[i].m_bUsed && m_Trigger[i].m_trigger_type == TRIGGER_MESSAGE_PRINT && m_Trigger[i].m_nStringIndex > 0)
 		{
-			// Äù½ºÆ® ÀÎµ¦½ºÁß ÀÌ¹Ì ¿Ï·áÇÑ °ÍÀÌ¸é º¸³¾ ÇÊ¿ä°¡ ¾ø´Ù.
+			// í€˜ìŠ¤íŠ¸ ì¸ë±ìŠ¤ì¤‘ ì´ë¯¸ ì™„ë£Œí•œ ê²ƒì´ë©´ ë³´ë‚¼ í•„ìš”ê°€ ì—†ë‹¤.
 			bool bSendMsg = false;
 
-			// ÃÖÁ¾ º¸½º¸¦ ÀâÀ¸¸é ¸Ş¼¼Áö¸¦ º¸³»Áö ¾Ê´Â´Ù.
+			// ìµœì¢… ë³´ìŠ¤ë¥¼ ì¡ìœ¼ë©´ ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì§€ ì•ŠëŠ”ë‹¤.
 			if (Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1018_BEFORE))
 				bSendMsg = false;
 
-			// µÎ ¹øÂ° ³×ÀÓµå¸¦ Àâ¾ÒÀ¸¸é lv3ÀÇ Äù½ºÆ®¸¸ º¸³»ÁØ´Ù.
+			// ë‘ ë²ˆì§¸ ë„¤ì„ë“œë¥¼ ì¡ì•˜ìœ¼ë©´ lv3ì˜ í€˜ìŠ¤íŠ¸ë§Œ ë³´ë‚´ì¤€ë‹¤.
 			else if (Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1003_BEFORE))
 			{
 				if(m_Trigger[i].m_nSaveLevel == TRIGGER_SAVE_ALTER_OF_DARK_1018)
 					bSendMsg = true;
 			}
 
-			// Ã¹ ¹øÂ° ³×ÀÓµå¸¦ Àâ¾ÒÀ¸¸é lv2ÀÇ Äù½ºÆ®¸¸ º¸³»ÁØ´Ù.
+			// ì²« ë²ˆì§¸ ë„¤ì„ë“œë¥¼ ì¡ì•˜ìœ¼ë©´ lv2ì˜ í€˜ìŠ¤íŠ¸ë§Œ ë³´ë‚´ì¤€ë‹¤.
 			else if (Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1002_BEFORE))
 			{
 				if(m_Trigger[i].m_nSaveLevel == TRIGGER_SAVE_ALTER_OF_DARK_1003)
 					bSendMsg = true;
 			}
 
-			// ³×ÀÓµå¸¦ ¸øÀâ¾ÒÀ¸¸é lv1ÀÇ Äù½ºÆ®¸¸ º¸³»ÁØ´Ù.
+			// ë„¤ì„ë“œë¥¼ ëª»ì¡ì•˜ìœ¼ë©´ lv1ì˜ í€˜ìŠ¤íŠ¸ë§Œ ë³´ë‚´ì¤€ë‹¤.
 			else
 			{
 				if(m_Trigger[i].m_nSaveLevel == TRIGGER_SAVE_ALTER_OF_DARK_1002)
@@ -777,11 +777,11 @@ bool CTrigger_List::SyncForClient_TriggerInfo(CPC* ch)
 			}
 		}
 
-		// Æ®¸®°Å°¡ ¹ßµ¿ÇÑ °ÍÀÌ ¾Æ´Ï¸é ½ºÅµ, ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ¾Æ´Ï¸é ½ºÅµ
+		// íŠ¸ë¦¬ê±°ê°€ ë°œë™í•œ ê²ƒì´ ì•„ë‹ˆë©´ ìŠ¤í‚µ, ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ ì•„ë‹ˆë©´ ìŠ¤í‚µ
 		if(!m_Trigger[i].m_bUsed || m_Trigger[i].m_trigger_playID <= 0)
 			continue;
 
-		// touch¿Í play°¡ ´Ù¸£¸é ¸Ş¼¼Áö¿¡ touchIDµµ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+		// touchì™€ playê°€ ë‹¤ë¥´ë©´ ë©”ì„¸ì§€ì— touchIDë„ ì¶”ê°€í•´ì•¼ í•œë‹¤.
 		if (m_Trigger[i].m_trigger_touchID != m_Trigger[i].m_trigger_playID)
 		{
 			usedCount++;
@@ -790,7 +790,7 @@ bool CTrigger_List::SyncForClient_TriggerInfo(CPC* ch)
 		usedCount++;
 	}
 
-	// È°¼ºÈ­µÈ Æ®¸®°Å°¡ ¾øÀ¸¸é ¸Ş¼¼Áö¸¦ º¸³»Áö ¾Ê´Â´Ù.
+	// í™œì„±í™”ëœ íŠ¸ë¦¬ê±°ê°€ ì—†ìœ¼ë©´ ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì§€ ì•ŠëŠ”ë‹¤.
 	if (usedCount == 0)
 		return false;
 
@@ -798,19 +798,19 @@ bool CTrigger_List::SyncForClient_TriggerInfo(CPC* ch)
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_TRIGGER_EXIST_AREA, 0, 0, 0);
 
-		// È°¼ºÈ­µÈ °³¼ö ¸Ş¼¼Áö¿¡ ³Ö±â
+		// í™œì„±í™”ëœ ê°œìˆ˜ ë©”ì„¸ì§€ì— ë„£ê¸°
 		RefMsg(rmsg) << usedCount;
 
-		// È°¼ºÈ­µÈ Æ®¸®°ÅÀÇ ID¸¦ ¸ğµÎ º¸³½´Ù.
+		// í™œì„±í™”ëœ íŠ¸ë¦¬ê±°ì˜ IDë¥¼ ëª¨ë‘ ë³´ë‚¸ë‹¤.
 		for (i=0; i < totalCount; i++)
 		{
-			// Æ®¸®°Å°¡ ¹ßµ¿ÇÑ °ÍÀÌ ¾Æ´Ï¸é ½ºÅµ, ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ¾Æ´Ï¸é ½ºÅµ
+			// íŠ¸ë¦¬ê±°ê°€ ë°œë™í•œ ê²ƒì´ ì•„ë‹ˆë©´ ìŠ¤í‚µ, ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ ì•„ë‹ˆë©´ ìŠ¤í‚µ
 			if(!m_Trigger[i].m_bUsed || m_Trigger[i].m_trigger_playID <= 0)
 				continue;
 
 			RefMsg(rmsg) << m_Trigger[i].m_trigger_playID;
 
-			// touch¿Í play°¡ ´Ù¸£¸é ¸Ş¼¼Áö¿¡ touchIDµµ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+			// touchì™€ playê°€ ë‹¤ë¥´ë©´ ë©”ì„¸ì§€ì— touchIDë„ ì¶”ê°€í•´ì•¼ í•œë‹¤.
 			if (m_Trigger[i].m_trigger_touchID != m_Trigger[i].m_trigger_playID)
 			{
 				RefMsg(rmsg) << m_Trigger[i].m_trigger_touchID;
@@ -834,35 +834,35 @@ void CTrigger_List::TriggerTimerCheck()
 
 	for(i=0; i < m_nCount; i++)
 	{
-		// 1. Å¸ÀÌ¸Ó¸¦ »ç¿ëÇÏ´Â Æ®¸®°ÅÀÌ¸é
+		// 1. íƒ€ì´ë¨¸ë¥¼ ì‚¬ìš©í•˜ëŠ” íŠ¸ë¦¬ê±°ì´ë©´
 		if(m_Trigger[i].GetTriggerTime() > 0)
 		{
-			// Ã³À½ Å¸ÀÌ¸Ó°¡ ½ÃÀÛµÈ ½Ã°£°ú Áö±İÀÇ ½Ã°£ÀÇ Â÷ÀÌ
+			// ì²˜ìŒ íƒ€ì´ë¨¸ê°€ ì‹œì‘ëœ ì‹œê°„ê³¼ ì§€ê¸ˆì˜ ì‹œê°„ì˜ ì°¨ì´
 			long delayTime = 0;
 			delayTime = curtime - m_Trigger[i].GetTriggerTime();
 
 			switch(m_Trigger[i].m_trigger_type)
 			{
 			case TRIGGER_TIME_LIMIT:
-				// ¿¹Á¤µÈ Æ®¸®°Å ¹ßµ¿½Ã°£À» ³Ñ¾î°¡¸é
+				// ì˜ˆì •ëœ íŠ¸ë¦¬ê±° ë°œë™ì‹œê°„ì„ ë„˜ì–´ê°€ë©´
 				if (delayTime >= m_Trigger[i].m_TimeLimitSec)
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_TIME_LIMIT, m_Trigger[i].m_trigger_touchID, m_Trigger[i].m_trigger_playID, m_Trigger[i].m_bContinue);
-					RefMsg(rmsg) << 0;		// 0À¸·Î º¸³»ÁÖ´Â °ÍÀº Á¦ÇÑ ½Ã°£ÀÌ ´Ù µÇ¾î ½ÇÆĞÂg´Ù´Â °ÍÀ» ¾Ë¸®´Â ¹æ¹ıÀÓ
+					RefMsg(rmsg) << 0;		// 0ìœ¼ë¡œ ë³´ë‚´ì£¼ëŠ” ê²ƒì€ ì œí•œ ì‹œê°„ì´ ë‹¤ ë˜ì–´ ì‹¤íŒ¨?ë‹¤ëŠ” ê²ƒì„ ì•Œë¦¬ëŠ” ë°©ë²•ì„
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 
-					ResetTriggerInfo(false);	// Æ®¸®°Å ¸®½ºÆ® ÃÊ±âÈ­
+					ResetTriggerInfo(false);	// íŠ¸ë¦¬ê±° ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 				}
 
-				// ½Ã°£ÀÌ ¾ÆÁ÷ ³²¾ÒÀ¸¸é
+				// ì‹œê°„ì´ ì•„ì§ ë‚¨ì•˜ìœ¼ë©´
 				else
 				{
-					// ³²Àº ½Ã°£À» º¸³»ÁØ´Ù.
+					// ë‚¨ì€ ì‹œê°„ì„ ë³´ë‚´ì¤€ë‹¤.
 					long remainTime = m_Trigger[i].m_TimeLimitSec - delayTime;
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_TIME_LIMIT, m_Trigger[i].m_trigger_touchID, m_Trigger[i].m_trigger_playID, m_Trigger[i].m_bContinue);
-					RefMsg(rmsg) << remainTime;		// ³²Àº ½Ã°£À» areaÀÇ ¸ğµç Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³»ÁØ´Ù.
+					RefMsg(rmsg) << remainTime;		// ë‚¨ì€ ì‹œê°„ì„ areaì˜ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ë‚´ì¤€ë‹¤.
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 				break;
@@ -872,38 +872,38 @@ void CTrigger_List::TriggerTimerCheck()
 			}
 		}
 
-		// 2. ÇÏµå ÄÚµù
+		// 2. í•˜ë“œ ì½”ë”©
 		switch( m_Trigger[i].m_triggerset_type )
 		{
 		case TRIGGERSET_ALTER_OF_DARK:
-			// 2-1. ÁöÁ¤ÇÑ ³×ÀÓµå Npc°¡ Á×¾ú´ÂÁö Ã¼Å©, ³×ÀÓµå°¡ ÀÌ¹Ì Á×¾úÀ¸¸é ½ºÅµ
-			// ¾ÏÈæÀÇ Á¦´Ü 1Â÷ ³×ÀÓµå
+			// 2-1. ì§€ì •í•œ ë„¤ì„ë“œ Npcê°€ ì£½ì—ˆëŠ”ì§€ ì²´í¬, ë„¤ì„ë“œê°€ ì´ë¯¸ ì£½ì—ˆìœ¼ë©´ ìŠ¤í‚µ
+			// ì•”í‘ì˜ ì œë‹¨ 1ì°¨ ë„¤ì„ë“œ
 			if (Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1)
 					&& m_Trigger[i].m_trigger_type == TRIGGER_TIME_LIMIT)
 			{
-				// ³×ÀÓµå Á×¾ú´Ù´Â °Í Ã¼Å©¸¦ ÇØÁ¦
+				// ë„¤ì„ë“œ ì£½ì—ˆë‹¤ëŠ” ê²ƒ ì²´í¬ë¥¼ í•´ì œ
 				Reset_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1);
 
-				// Å¸ÀÌ¸Ó ½Ã°£ÃÊ±âÈ­
+				// íƒ€ì´ë¨¸ ì‹œê°„ì´ˆê¸°í™”
 				if (m_Trigger[i].GetTriggerTime() > 0)
 					m_Trigger[i].SetTriggerTime(0);
 
 				{
-					// ÁöÁ¤µÈ ¹®À» ¿­¾îÁØ´Ù.
+					// ì§€ì •ëœ ë¬¸ì„ ì—´ì–´ì¤€ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_OPEN_THE_DOOR, 15219, 15219, 0);
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 
 				{
-					// ¹®ÀÇ ¿ÀºêÁ§Æ® È°¼ºÈ­¸¦ ¾ø¾Ø´Ù.
+					// ë¬¸ì˜ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ë¥¼ ì—†ì•¤ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT, 15219, 15703, 0);
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 
 				{
-					// ¸Ş½ÃÁö¸¦ ÇÁ¸°Æ® ÇÑ´Ù.
+					// ë©”ì‹œì§€ë¥¼ í”„ë¦°íŠ¸ í•œë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_MESSAGE_PRINT, 15219, 0, 0);
 					RefMsg(rmsg) << 325;
@@ -913,39 +913,39 @@ void CTrigger_List::TriggerTimerCheck()
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_TIME_LIMIT, 0, 0, 0);
-					RefMsg(rmsg) << -1;		// -1 ·Î º¸³»ÁÖ´Â °ÍÀº Á¦ÇÑ ½Ã°£À» ÇØÁ¦
+					RefMsg(rmsg) << -1;		// -1 ë¡œ ë³´ë‚´ì£¼ëŠ” ê²ƒì€ ì œí•œ ì‹œê°„ì„ í•´ì œ
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 
-				// ¹®À» ¿­¾îÁÖ°í µÚ´Ê°Ô µé¾î ¿Â Ä³¸¯ÅÍµµ ¹®À» Áö³ª°¡±â À§ÇØ °ü·Ã ÇÃ·¡±×¸¦ Ã¼Å©ÇÑ´Ù.
+				// ë¬¸ì„ ì—´ì–´ì£¼ê³  ë’¤ëŠ¦ê²Œ ë“¤ì–´ ì˜¨ ìºë¦­í„°ë„ ë¬¸ì„ ì§€ë‚˜ê°€ê¸° ìœ„í•´ ê´€ë ¨ í”Œë˜ê·¸ë¥¼ ì²´í¬í•œë‹¤.
 				Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1_DOOR_SAVE);
 			}
 
-			// 2-2. ¾ÏÈæÀÇ Àç´Ü 3Â÷ ³×ÀÓµå
+			// 2-2. ì•”í‘ì˜ ì¬ë‹¨ 3ì°¨ ë„¤ì„ë“œ
 			else if (Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH2))
 			{
-				// ³×ÀÓµå Á×¾ú´Ù´Â °Í Ã¼Å©¸¦ ÇØÁ¦
+				// ë„¤ì„ë“œ ì£½ì—ˆë‹¤ëŠ” ê²ƒ ì²´í¬ë¥¼ í•´ì œ
 				Reset_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH2);
 
 				{
-					// ÁöÁ¤µÈ ¹®À» ¿­¾îÁØ´Ù.
+					// ì§€ì •ëœ ë¬¸ì„ ì—´ì–´ì¤€ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_OPEN_THE_DOOR, 15224, 15224, 0);
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 
 				{
-					// ¹®ÀÇ ¿ÀºêÁ§Æ® È°¼ºÈ­¸¦ ¾ø¾Ø´Ù.
+					// ë¬¸ì˜ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ë¥¼ ì—†ì•¤ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT, 15219, 15710, 0);
 					m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 				}
 
-				// ¹®À» ¿­¾îÁÖ°í µÚ´Ê°Ô µé¾î ¿Â Ä³¸¯ÅÍµµ ¹®À» Áö³ª°¡±â À§ÇØ °ü·Ã ÇÃ·¡±×¸¦ Ã¼Å©ÇÑ´Ù.
+				// ë¬¸ì„ ì—´ì–´ì£¼ê³  ë’¤ëŠ¦ê²Œ ë“¤ì–´ ì˜¨ ìºë¦­í„°ë„ ë¬¸ì„ ì§€ë‚˜ê°€ê¸° ìœ„í•´ ê´€ë ¨ í”Œë˜ê·¸ë¥¼ ì²´í¬í•œë‹¤.
 				Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH2_DOOR_SAVE);
 			}
 
-			// 2-3. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå ¸ó½ºÅÍ ¼ÒÈ¯, Áß°£ ÀúÀåÀ¸·Î Àü¿¡ ¾ÈÁ×¾ú´ÂÁöµµ Ã¼Å©
+			// 2-3. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì†Œí™˜, ì¤‘ê°„ ì €ì¥ìœ¼ë¡œ ì „ì— ì•ˆì£½ì—ˆëŠ”ì§€ë„ ì²´í¬
 			if (!Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON1)
 					&& !Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1003_BEFORE))
 			{
@@ -959,7 +959,7 @@ void CTrigger_List::TriggerTimerCheck()
 					Set_TriggerFlag(TRIGGER_FLAG_ACTIVE_OBJECT4);
 			}
 
-			// 2-4. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå NPC ¼ÒÈ¯ ¿©ºÎ
+			// 2-4. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ NPC ì†Œí™˜ ì—¬ë¶€
 			if (!Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON1)
 					&& Check_TriggerFlag(TRIGGER_FLAG_ACTIVE_OBJECT1)
 					&& Check_TriggerFlag(TRIGGER_FLAG_ACTIVE_OBJECT2)
@@ -1000,17 +1000,17 @@ void CTrigger_List::TriggerTimerCheck()
 					pNPC->m_aipulse		= gserver->m_pulse;
 					pNPC->m_delay		= PULSE_REAL_SEC * 3;
 
-					// ¼ÒÈ¯ µÇ¾ú´Ù°í ÇÃ·¡±× Ã¼Å©
+					// ì†Œí™˜ ë˜ì—ˆë‹¤ê³  í”Œë˜ê·¸ ì²´í¬
 					Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON1);
 
 					{
-						// ¼ÒÈ¯µÇ´Â Á¦´ÜÀÇ Æ®¸®°Å È°¼ºÈ­
+						// ì†Œí™˜ë˜ëŠ” ì œë‹¨ì˜ íŠ¸ë¦¬ê±° í™œì„±í™”
 						CNetMsg::SP rmsg(new CNetMsg);
 						TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT, 15377, 15377, 0);
 						m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 					}
 
-					// µÚ´Ê°Ô µé¾î ¿Â Ä³¸¯ÅÍµµ ¼ÒÈ¯ÀÌ ÀÌ¹Ì µÇ¾ú´Ù´Â Á¤º¸¸¦ ÁÖ±â À§ÇØ °ü·Ã ÇÃ·¡±×¸¦ Ã¼Å©ÇÑ´Ù.
+					// ë’¤ëŠ¦ê²Œ ë“¤ì–´ ì˜¨ ìºë¦­í„°ë„ ì†Œí™˜ì´ ì´ë¯¸ ë˜ì—ˆë‹¤ëŠ” ì •ë³´ë¥¼ ì£¼ê¸° ìœ„í•´ ê´€ë ¨ í”Œë˜ê·¸ë¥¼ ì²´í¬í•œë‹¤.
 					Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON_1003);
 				}
 				else
@@ -1022,18 +1022,18 @@ void CTrigger_List::TriggerTimerCheck()
 				}
 			}
 
-			// 2-5. ÁöÁ¤ÇÑ ³×ÀÓµå Npc°¡ Á×¾úÀ¸¸é ÇÏµåÄÚµùÇÑ ¹®À» ´Ê°Ô µé¾î¿Â Ä³¸¯ÅÍµµ Áö³ª°¡±â À§ÇØ È°¼ºÈ­ ½ÃÄÑµĞ´Ù.
-			// 2-5-1. ¾ÏÈæÀÇ Á¦´Ü 1Â÷ ³×ÀÓµå npc Á×À¸¸é ¿­¸®´Â ¹® È°¼ºÈ­
+			// 2-5. ì§€ì •í•œ ë„¤ì„ë“œ Npcê°€ ì£½ì—ˆìœ¼ë©´ í•˜ë“œì½”ë”©í•œ ë¬¸ì„ ëŠ¦ê²Œ ë“¤ì–´ì˜¨ ìºë¦­í„°ë„ ì§€ë‚˜ê°€ê¸° ìœ„í•´ í™œì„±í™” ì‹œì¼œë‘”ë‹¤.
+			// 2-5-1. ì•”í‘ì˜ ì œë‹¨ 1ì°¨ ë„¤ì„ë“œ npc ì£½ìœ¼ë©´ ì—´ë¦¬ëŠ” ë¬¸ í™œì„±í™”
 			if (m_Trigger[i].m_trigger_touchID == 15219 && m_Trigger[i].m_bUsed == false && Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1_DOOR_SAVE))
 			{
 				m_Trigger[i].m_bUsed = true;
 			}
-			// 2-5-2. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå npc Á×À¸¸é ¿­¸®´Â ¹® È°¼ºÈ­
+			// 2-5-2. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ npc ì£½ìœ¼ë©´ ì—´ë¦¬ëŠ” ë¬¸ í™œì„±í™”
 			if (m_Trigger[i].m_trigger_touchID == 15224 && m_Trigger[i].m_bUsed == false && Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH2_DOOR_SAVE))
 			{
 				m_Trigger[i].m_bUsed = true;
 			}
-			// 2-5-3. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå npc ¼ÒÈ¯ÇÏ´Â Á¦´Ü È°¼ºÈ­
+			// 2-5-3. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ npc ì†Œí™˜í•˜ëŠ” ì œë‹¨ í™œì„±í™”
 			if (m_Trigger[i].m_trigger_touchID == 15377 && m_Trigger[i].m_bUsed == false && Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON_1003))
 			{
 				m_Trigger[i].m_bUsed = true;
@@ -1041,7 +1041,7 @@ void CTrigger_List::TriggerTimerCheck()
 			break;
 
 		case TRIGGERSET_CAPPELLA_1:
-			// 4-3. ¿¹¹è´ç 1Â÷ npc963 Á×Àº count°¡ 12¸¦ ³ÑÀ¸¸é
+			// 4-3. ì˜ˆë°°ë‹¹ 1ì°¨ npc963 ì£½ì€ countê°€ 12ë¥¼ ë„˜ìœ¼ë©´
 			if (m_nNPC963_KilledCount >= 12)
 			{
 				CNPC* pNPC = gserver->m_npcProtoList.Create(960, NULL);
@@ -1079,13 +1079,13 @@ void CTrigger_List::TriggerTimerCheck()
 					pNPC->m_delay		= PULSE_REAL_SEC * 3;
 
 					{
-						// ¼ÒÈ¯µÇ´Â Á¦´ÜÀÇ Æ®¸®°Å È°¼ºÈ­
+						// ì†Œí™˜ë˜ëŠ” ì œë‹¨ì˜ íŠ¸ë¦¬ê±° í™œì„±í™”
 						CNetMsg::SP rmsg(new CNetMsg);
 						TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT, 4114, 4114, 0);
 						m_pArea_UseTrigerEvent->SendToAllClient(rmsg);
 					}
 
-					// count ¼¾ °ÍÀº ÃÊ±âÈ­ ½ÃÅ²´Ù.
+					// count ì„¼ ê²ƒì€ ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
 					m_nNPC963_KilledCount = 0;
 				}
 				else
@@ -1100,14 +1100,14 @@ void CTrigger_List::TriggerTimerCheck()
 		} // switch
 	} // for
 
-	// ÃÊ´ç µÇµ¹·Á¾ß ÇÏ´Â Æ®¸®°Å´Â ÃÊ±âÈ­ ½ÃÅ²´Ù.
-	// 1. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå ¸ó½ºÅÍ ¼ÒÈ¯¸øÇÏ¸é ¿ÀºêÁ§Æ® È°¼ºÈ­¸¦ µÇµ¹¸°´Ù.
+	// ì´ˆë‹¹ ë˜ëŒë ¤ì•¼ í•˜ëŠ” íŠ¸ë¦¬ê±°ëŠ” ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
+	// 1. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì†Œí™˜ëª»í•˜ë©´ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ë¥¼ ë˜ëŒë¦°ë‹¤.
 	if (!Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_SUMMON1)
 			&& !Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1003_BEFORE))
 	{
 		for(i=0; i < m_nCount; i++)
 		{
-			// 1. ¾ÏÈæÀÇ Á¦´Ü 3Â÷ ³×ÀÓµå ¸ó½ºÅÍ ¼ÒÈ¯ ÃÊ±âÈ­
+			// 1. ì•”í‘ì˜ ì œë‹¨ 3ì°¨ ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì†Œí™˜ ì´ˆê¸°í™”
 			if(m_Trigger[i].m_trigger_touchID == 15379 && m_Trigger[i].m_bUsed == true)
 			{
 				m_Trigger[i].m_bUsed = false;
@@ -1155,8 +1155,8 @@ void CTrigger_List::InitTriggerList()
 	m_nNPC963_KilledCount = 0;
 }
 
-// CNpc_Regen_Raid Class  ½ÃÀÛ
-// ·¹ÀÌµå¿¡¼­ NPC ¸®Á¨À» ±¸¿ªº°·Î Á¦¾îÇÏ±â À§ÇÑ Å¬·¡½º
+// CNpc_Regen_Raid Class  ì‹œì‘
+// ë ˆì´ë“œì—ì„œ NPC ë¦¬ì  ì„ êµ¬ì—­ë³„ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤
 CNpc_Regen_Raid::CNpc_Regen_Raid()
 {
 	m_nCount_regen = 0;

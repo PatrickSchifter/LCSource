@@ -24,7 +24,7 @@ bool checkStashNpc(CPC* ch, int npcIndex);
 
 void do_Stash(CPC* ch, CNetMsg::SP& msg)
 {
-	// Á×Àº »óÅÂ, ÀüÅõÁß, ½ºÅ³ ½ÃÀüÁß, ¿öÇÁÁß, °³ÀÎ»óÁ¡, ±³È¯Áß¿¡¼­´Â ºÒ°¡´É
+	// ì£½ì€ ìƒíƒœ, ì „íˆ¬ì¤‘, ìŠ¤í‚¬ ì‹œì „ì¤‘, ì›Œí”„ì¤‘, ê°œì¸ìƒì , êµí™˜ì¤‘ì—ì„œëŠ” ë¶ˆê°€ëŠ¥
 	if (
 		DEAD(ch)
 		|| ch->IsCombatMode()
@@ -151,7 +151,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀüÃ¼ º¸°üÇÒ ¾ÆÀÌÅÛ Á¾·ù ¼ö °Ë»ç
+	// ì „ì²´ ë³´ê´€í•  ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ê²€ì‚¬
 	if (packet->keepCount < 0 || packet->keepCount > MAX_STASH_KEEP)
 	{
 		LOG_ERROR("HACKING? : invalid keepcount. char_index[%d] keepcount[%d]", ch->m_index, packet->keepCount);
@@ -171,7 +171,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 	CItem* item[MAX_STASH_KEEP];
 	LONGLONG needmoney = 0;
 
-	// º¸°üÇÒ ¾ÆÀÌÅÛ °Ë»ç
+	// ë³´ê´€í•  ì•„ì´í…œ ê²€ì‚¬
 	std::set<int> check_duplication;
 	for (int i = 0; i < packet->keepCount; ++i)
 	{
@@ -260,7 +260,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 		needmoney += (packet->list[i].count * 100);
 	}
 
-	// º¸°ü·á °Ë»ç ¹× º¸°ü ±İ¾× °Ë»ç
+	// ë³´ê´€ë£Œ ê²€ì‚¬ ë° ë³´ê´€ ê¸ˆì•¡ ê²€ì‚¬
 	needmoney += packet->keepMoney;
 	if (ch->m_inventory.getMoney() < needmoney)
 	{
@@ -270,7 +270,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¸ğµç ¾ÆÀÌÅÛÀ» Ã¢°í¿¡ ³ÖÀ» ¼ö ÀÖ´ÂÁö °Ë»ç
+	// ëª¨ë“  ì•„ì´í…œì„ ì°½ê³ ì— ë„£ì„ ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
 	std::vector<possible_search_t> search_vec;
 	for (int i = 0; i < packet->keepCount; ++i)
 	{
@@ -285,7 +285,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ³Ö°í »©°í
+	// ë„£ê³  ë¹¼ê³ 
 	GAMELOG << init("STASH KEEP", ch)
 			<< "NEED Money" << delim << needmoney << delim;
 
@@ -296,14 +296,14 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 				<< "ITEM" << delim
 				<< itemlog(item[i]) << delim;
 
-		// Ã¢°í¿¡ ³Ö±â
-		if (item[i]->Count() == packet->list[i].count)	// ¸ğµÎ ÀÌÀü
+		// ì°½ê³ ì— ë„£ê¸°
+		if (item[i]->Count() == packet->list[i].count)	// ëª¨ë‘ ì´ì „
 		{
 			ch->m_inventory.eraseNotFree(item[i]);
 
 			ch->m_inventory.addItemInStash(item[i]);
 		}
-		else // ºÎºĞ ÀÌÀü
+		else // ë¶€ë¶„ ì´ì „
 		{
 			CItem* titem = gserver->m_itemProtoList.CreateItem(item[i]->getDBIndex(), -1,
 						   item[i]->getPlus(), item[i]->getFlag(), packet->list[i].count);
@@ -316,10 +316,10 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 
 	GAMELOG << end;
 
-	// µ· ÁÙÀÌ°í
+	// ëˆ ì¤„ì´ê³ 
 	ch->m_inventory.decreaseMoney(needmoney);
 
-	if (packet->keepMoney > 0) // º¸°üÇÒ µ·ÀÌ ÀÖ´Ù¸é...
+	if (packet->keepMoney > 0) // ë³´ê´€í•  ëˆì´ ìˆë‹¤ë©´...
 	{
 		ch->m_inventory.increaseMoneyInStash(packet->keepMoney);
 
@@ -329,7 +329,7 @@ void do_StashKeep(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// °á°ú ¾Ë¸®±â
+		// ê²°ê³¼ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::StashErrorMsg(rmsg, MSG_STASH_ERROR_OK);
 		SEND_Q(rmsg, ch->m_desc);
@@ -410,7 +410,7 @@ void do_StashTake(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Ã£À» ¾ÆÀÌÅÛ °Ë»ç
+	// ì°¾ì„ ì•„ì´í…œ ê²€ì‚¬
 	std::vector<possible_search_t> possible_vec;
 	std::set<int> check_duplication;
 	CItem* item[MAX_STASH_TAKE] = { NULL, };
@@ -465,10 +465,10 @@ void do_StashTake(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ ³Ö°í »©±â
+	// ì•„ì´í…œ ë„£ê³  ë¹¼ê¸°
 	for (int i = 0; i < packet->takeCount; ++i)
 	{
-		if (item[i]->Count() == packet->list[i].count)	// ¸ğµÎ »©´Â °æ¿ì
+		if (item[i]->Count() == packet->list[i].count)	// ëª¨ë‘ ë¹¼ëŠ” ê²½ìš°
 		{
 			ch->m_inventory.eraseNotFreeByInvenIndex(INVENTORY_TAB_STASH, item[i]->getInvenIndex());
 			ch->m_inventory.addItem(item[i]);
@@ -480,7 +480,7 @@ void do_StashTake(CPC* ch, CNetMsg::SP& msg)
 					<< itemlog(item[i]) << delim
 					<< "REST COUNT" << delim << "take all" << end;
 		}
-		else // ºÎºĞÀ» »©´Â °æ¿ì
+		else // ë¶€ë¶„ì„ ë¹¼ëŠ” ê²½ìš°
 		{
 			CItem* titem = gserver->m_itemProtoList.CreateItem(item[i]->getDBIndex(), -1,
 						   item[i]->getPlus(), item[i]->getFlag(), packet->list[i].count);
@@ -498,7 +498,7 @@ void do_StashTake(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Ã£À» µ·ÀÌ ÀÖ´Ù¸é
+	// ì°¾ì„ ëˆì´ ìˆë‹¤ë©´
 	if (packet->takeMoney > 0)
 	{
 		ch->m_inventory.decreaseMoneyInStash(packet->takeMoney);

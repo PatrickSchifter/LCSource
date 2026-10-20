@@ -5,33 +5,33 @@
 
 #define CHECK_SUBSERVER(castle)		if (!castle->CheckSubServer()) return
 
-// °ø¼º »óÅÂ
-#define WCSF_NORMAL			0		// ÀÏ¹İ
-#define WCSF_WAR_FIELD		1		// ¾ßÀü
-#define WCSF_WAR_CASTLE		2		// °ø¼º
+// ê³µì„± ìƒíƒœ
+#define WCSF_NORMAL			0		// ì¼ë°˜
+#define WCSF_WAR_FIELD		1		// ì•¼ì „
+#define WCSF_WAR_CASTLE		2		// ê³µì„±
 
-// °ø¼º Âü¿© »óÅÂ
-#define WCJF_NONE			0		// ºñÂü¿©
-#define WCJF_OWNER			1		// ¼ºÁÖ ±æµå
-#define WCJF_DEFENSE_GUILD	2		// ¼ö¼º ±æµå
-#define WCJF_DEFENSE_CHAR	3		// ¼ö¼ºÃø ¿ëº´
-#define WCJF_ATTACK_GUILD	4		// °ø¼º ±æµå
-#define WCJF_ATTACK_CHAR	5		// °ø¼ºÃø ¿ëº´
+// ê³µì„± ì°¸ì—¬ ìƒíƒœ
+#define WCJF_NONE			0		// ë¹„ì°¸ì—¬
+#define WCJF_OWNER			1		// ì„±ì£¼ ê¸¸ë“œ
+#define WCJF_DEFENSE_GUILD	2		// ìˆ˜ì„± ê¸¸ë“œ
+#define WCJF_DEFENSE_CHAR	3		// ìˆ˜ì„±ì¸¡ ìš©ë³‘
+#define WCJF_ATTACK_GUILD	4		// ê³µì„± ê¸¸ë“œ
+#define WCJF_ATTACK_CHAR	5		// ê³µì„±ì¸¡ ìš©ë³‘
 
 #define IS_DEFENSE_TEAM(joinflag)		( (joinflag == WCJF_OWNER || joinflag == WCJF_DEFENSE_GUILD || joinflag == WCJF_DEFENSE_CHAR) ? true : false )
 #define IS_ATTACK_TEAM(joinflag)		( (joinflag == WCJF_ATTACK_GUILD || joinflag == WCJF_ATTACK_CHAR) ? true : false )
 
-// ¾ßÀü¿¡¼­ »ó´ë¹æÀ» ¹°¸®Ä¥ ¶§ Áõ°¡µÇ´Â Æ÷ÀÎÆ®
-#define WCFP_CASTLE_GUARD	5		// ¼öÈ£º´ ÀâÀ¸¸é Áõ°¡µÇ´Â Æ÷ÀÎÆ®
-#define WCFP_PLAYER			1		// ÇÃ·¹ÀÌ¾î ÀâÀ¸¸é Áõ°¡µÇ´Â Æ÷ÀÎÆ®
+// ì•¼ì „ì—ì„œ ìƒëŒ€ë°©ì„ ë¬¼ë¦¬ì¹  ë•Œ ì¦ê°€ë˜ëŠ” í¬ì¸íŠ¸
+#define WCFP_CASTLE_GUARD	5		// ìˆ˜í˜¸ë³‘ ì¡ìœ¼ë©´ ì¦ê°€ë˜ëŠ” í¬ì¸íŠ¸
+#define WCFP_PLAYER			1		// í”Œë ˆì´ì–´ ì¡ìœ¼ë©´ ì¦ê°€ë˜ëŠ” í¬ì¸íŠ¸
 
-// °ø¼º ÇÊµå ÀüÅõ ½Ã°£ : ÃÊ´ÜÀ§
-#define WCT_FIELD			(15 * 60)		// ÇÊµåÀü ÁøÇà ½Ã°£ : ÃÊ
-#define WCT_WAR				(60 * 60)		// ÇÊµåÀü Æ÷ÇÔ ÀüÃ¼ °ø¼º ½Ã°£ : ÃÊ
+// ê³µì„± í•„ë“œ ì „íˆ¬ ì‹œê°„ : ì´ˆë‹¨ìœ„
+#define WCT_FIELD			(15 * 60)		// í•„ë“œì „ ì§„í–‰ ì‹œê°„ : ì´ˆ
+#define WCT_WAR				(60 * 60)		// í•„ë“œì „ í¬í•¨ ì „ì²´ ê³µì„± ì‹œê°„ : ì´ˆ
 
-#define	APPLY_GUILD_GRADE_SKILL_TIME 10	// ±æµå Á÷À§ Æí¼º ¹öÇÁ ½Ã°£ (ÃÊ)
+#define	APPLY_GUILD_GRADE_SKILL_TIME 10	// ê¸¸ë“œ ì§ìœ„ í¸ì„± ë²„í”„ ì‹œê°„ (ì´ˆ)
 
-// °ø¼º °¡´É ±æµå Á¶°Ç
+// ê³µì„± ê°€ëŠ¥ ê¸¸ë“œ ì¡°ê±´
 #define WCGF_ATTACK_LEVEL	5
 #define WCGF_DEFENSE_LEVEL	4
 #define WCGF_CHAR_LEVEL		15
@@ -39,7 +39,7 @@
 #define WCGF_MEMBERCOUNT	20
 #define WCGF_MONEY			100000
 
-// °ø¼º ½ÅÃ»ÀÎ Å¬·¡½º
+// ê³µì„± ì‹ ì²­ì¸ í´ë˜ìŠ¤
 class CWarCastleJoin
 {
 	friend class CWarCastle;
@@ -96,46 +96,46 @@ public:
 	}
 };
 
-// °ø¼º Å¬·¡½º
+// ê³µì„± í´ë˜ìŠ¤
 class CWarCastle
 {
-	// °ø¼º »óÅÂ ¹İ¿µÀ» À§ÇØ Ãß°¡
+	// ê³µì„± ìƒíƒœ ë°˜ì˜ì„ ìœ„í•´ ì¶”ê°€
 	friend void ProcHelperWarNoticeStart(CNetMsg::SP& msg);
 	friend void ProcHelperWarNoticeStartAttackCastle(CNetMsg::SP& msg);
 	friend void ProcHelperWarNoticeEnd(CNetMsg::SP& msg);
 
 protected:
-	int					m_state;							// °ø¼º »óÅÂ
-	CNPC*				m_castleNPC;						// °ø¼º ½ÅÃ» NPC
-	CNPC*				m_lordSymbol;						// ±ÇÁÂ
-	bool				m_bRegenShop;						// »óÁ¡ ¸®Á¨ ¿©ºÎ
-	int					m_lastWarTime;						// ¸¶Áö¸· °ø¼º ½Ã°£
-	int					m_nextWarTime;						// ´ÙÀ½ °ø¼º ½Ã°£
-	int					m_ownerGuildIndex;					// ¼ºÁÖ ±æµå ÀÎµ¦½º
-	CLCString			m_ownerGuildName;					// ¼ºÁÖ ±æµå ÀÌ¸§
-	int					m_ownerCharIndex;					// ¼ºÁÖ Ä³¸¯ÅÍ ÀÎµ¦½º
-	CLCString			m_ownerCharName;					// ¼ºÁÖ Ä³¸¯ÅÍ ÀÌ¸§
-	bool				m_bNoticeWarTime;					// °ø¼º ½Ã°£À» ¾Ë·ÁÁá´ÂÁö ¿©ºÎ
-	int					m_noticeRemain;						// °ø¼º ½ÃÀÛ±îÁö ³²Àº ½Ã°£ ¾Ë¸² ¸Ş½ÃÁö ÇÃ·¡±×
-	int					m_defensePoint;						// ¼ö¼ºÃø Æ÷ÀÎÆ®
-	int					m_gateState;						// ¼º¹® Á¤º¸
-	bool				m_bGiveLordWeapon;					// ¼ºÁÖ Ä® Áö±Ş¿©ºÎ
-	bool				m_bMoveToRegen;						// 10ºĞÀü °­Á¦ ÀÌµ¿ ¿©ºÎ
-	bool				m_bWarCastleReady;					// °ø¼ºÀü ½ÃÀÛ 1ºĞÀü ÁØºñ»óÅÂ
+	int					m_state;							// ê³µì„± ìƒíƒœ
+	CNPC*				m_castleNPC;						// ê³µì„± ì‹ ì²­ NPC
+	CNPC*				m_lordSymbol;						// ê¶Œì¢Œ
+	bool				m_bRegenShop;						// ìƒì  ë¦¬ì   ì—¬ë¶€
+	int					m_lastWarTime;						// ë§ˆì§€ë§‰ ê³µì„± ì‹œê°„
+	int					m_nextWarTime;						// ë‹¤ìŒ ê³µì„± ì‹œê°„
+	int					m_ownerGuildIndex;					// ì„±ì£¼ ê¸¸ë“œ ì¸ë±ìŠ¤
+	CLCString			m_ownerGuildName;					// ì„±ì£¼ ê¸¸ë“œ ì´ë¦„
+	int					m_ownerCharIndex;					// ì„±ì£¼ ìºë¦­í„° ì¸ë±ìŠ¤
+	CLCString			m_ownerCharName;					// ì„±ì£¼ ìºë¦­í„° ì´ë¦„
+	bool				m_bNoticeWarTime;					// ê³µì„± ì‹œê°„ì„ ì•Œë ¤ì¤¬ëŠ”ì§€ ì—¬ë¶€
+	int					m_noticeRemain;						// ê³µì„± ì‹œì‘ê¹Œì§€ ë‚¨ì€ ì‹œê°„ ì•Œë¦¼ ë©”ì‹œì§€ í”Œë˜ê·¸
+	int					m_defensePoint;						// ìˆ˜ì„±ì¸¡ í¬ì¸íŠ¸
+	int					m_gateState;						// ì„±ë¬¸ ì •ë³´
+	bool				m_bGiveLordWeapon;					// ì„±ì£¼ ì¹¼ ì§€ê¸‰ì—¬ë¶€
+	bool				m_bMoveToRegen;						// 10ë¶„ì „ ê°•ì œ ì´ë™ ì—¬ë¶€
+	bool				m_bWarCastleReady;					// ê³µì„±ì „ ì‹œì‘ 1ë¶„ì „ ì¤€ë¹„ìƒíƒœ
 
-	int					m_countAttackGuild;					// °ø¼º ±æµå ¼ö
-	CWarCastleJoin*		m_defenseGuildList;					// ¼ö¼º ±æµå ¸®½ºÆ®
-	CWarCastleJoin*		m_attackGuildList;					// °ø¼º ±æµå ¸®½ºÆ®
-	CWarCastleJoin*		m_defenseCharList;					// ¼ö¼ºÃø ¿ëº´ ¸®½ºÆ®
-	CWarCastleJoin*		m_attackCharList;					// °ø¼ºÃø ¿ëº´ ¸®½ºÆ®
+	int					m_countAttackGuild;					// ê³µì„± ê¸¸ë“œ ìˆ˜
+	CWarCastleJoin*		m_defenseGuildList;					// ìˆ˜ì„± ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸
+	CWarCastleJoin*		m_attackGuildList;					// ê³µì„± ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸
+	CWarCastleJoin*		m_defenseCharList;					// ìˆ˜ì„±ì¸¡ ìš©ë³‘ ë¦¬ìŠ¤íŠ¸
+	CWarCastleJoin*		m_attackCharList;					// ê³µì„±ì¸¡ ìš©ë³‘ ë¦¬ìŠ¤íŠ¸
 
-	CWarCastleJoin*		m_top3guild[3];						// ÇÊµå ÀüÅõ ÃÖ»óÀ§ 3°³ ±æµå
-	int*				m_posRegenPoint;					// ÇØ´ç ¸®Á¨ Áö¿ª¿¡ ÇÒ´çµÈ °ø¼º ±æµå ÀÎµ¦½º
-	int					m_nRegenPoint;						// posRegenPointÀÇ °³¼ö
+	CWarCastleJoin*		m_top3guild[3];						// í•„ë“œ ì „íˆ¬ ìµœìƒìœ„ 3ê°œ ê¸¸ë“œ
+	int*				m_posRegenPoint;					// í•´ë‹¹ ë¦¬ì   ì§€ì—­ì— í• ë‹¹ëœ ê³µì„± ê¸¸ë“œ ì¸ë±ìŠ¤
+	int					m_nRegenPoint;						// posRegenPointì˜ ê°œìˆ˜
 
-	char				m_nSendInterval;					// ¸Ş¼¼Áö º¸³»´Â Ä«¿îÆ® : Hertbeat ·Î 1 ÃÊ¾¿ Ä«¿îÆ®
+	char				m_nSendInterval;					// ë©”ì„¸ì§€ ë³´ë‚´ëŠ” ì¹´ìš´íŠ¸ : Hertbeat ë¡œ 1 ì´ˆì”© ì¹´ìš´íŠ¸
 
-	int					m_oldOwnerCharIndex;				// °ø¼º ½ÃÀÛÇÏ¸é ¹Ù·Î ¼ö¼º ¼ºÁßÀÇ ÀÎµ¦½º ÀúÀåÇÑ´Ù.
+	int					m_oldOwnerCharIndex;				// ê³µì„± ì‹œì‘í•˜ë©´ ë°”ë¡œ ìˆ˜ì„± ì„±ì¤‘ì˜ ì¸ë±ìŠ¤ ì €ì¥í•œë‹¤.
 
 	int					m_guildGradeSkillTime;
 
@@ -145,8 +145,8 @@ public:
 	virtual ~CWarCastle();
 
 	////////////////////
-	// °ø¼º Á¤º¸
-	// ÇØ´ç Á¸ °ø¼º Á¤º¸¸¦ ÀĞÀ½
+	// ê³µì„± ì •ë³´
+	// í•´ë‹¹ ì¡´ ê³µì„± ì •ë³´ë¥¼ ì½ìŒ
 	void SetNoticeWarTime(bool value)
 	{
 		m_bNoticeWarTime = value;
@@ -158,97 +158,97 @@ public:
 
 	virtual bool CheckSubServer();
 
-	// »ó¼Ó ¹ŞÀº Å¬·¡½º¿¡¼­ ¿À¹ö¶óÀÌµù ÇÒ °æ¿ì¿¡µµ ¹İµå½Ã È£Ãâ ÇÊ¿äÇÔ
+	// ìƒì† ë°›ì€ í´ë˜ìŠ¤ì—ì„œ ì˜¤ë²„ë¼ì´ë”© í•  ê²½ìš°ì—ë„ ë°˜ë“œì‹œ í˜¸ì¶œ í•„ìš”í•¨
 	virtual bool LoadCastleData();
 
-	// »óÅÂ ¹İÈ¯
+	// ìƒíƒœ ë°˜í™˜
 	int GetState()
 	{
 		return m_state;
 	}
 
-	// °ø¼º »óÅÂ º¯°æ
+	// ê³µì„± ìƒíƒœ ë³€ê²½
 	void CheckWarCastle(bool forced_end_merac);
 
-	// ÇØ´ç Áö¿ªÀÇ ¸®Á¨ Àå¼Ò¸¦ ¹İÈ¯
-	// ch´Â NULL ÀÏ¼ö ÀÖÀ½
+	// í•´ë‹¹ ì§€ì—­ì˜ ë¦¬ì   ì¥ì†Œë¥¼ ë°˜í™˜
+	// chëŠ” NULL ì¼ìˆ˜ ìˆìŒ
 	virtual int GetRegenPoint(int joinflag, CPC* ch) = 0;
 
-	// ÇØ´ç Á¸ ¹øÈ£¸¦ ¹İÈ¯
+	// í•´ë‹¹ ì¡´ ë²ˆí˜¸ë¥¼ ë°˜í™˜
 	virtual int GetZoneIndex() = 0;
 
-	// ¼º¹® »óÅÂ Á¶»ç
+	// ì„±ë¬¸ ìƒíƒœ ì¡°ì‚¬
 	int GetGateState(int mask = 0xffffffff)
 	{
 		return m_gateState & mask;
 	}
 
-	// ¼öÈ£º´ »ç¸Á½Ã ¼º¹® ¿­¸² ¼³Á¤
+	// ìˆ˜í˜¸ë³‘ ì‚¬ë§ì‹œ ì„±ë¬¸ ì—´ë¦¼ ì„¤ì •
 	virtual void UpdateGateState(CNPC* npc) = 0;
 
-	// ±ÇÁÂ ¹İÈ¯
+	// ê¶Œì¢Œ ë°˜í™˜
 	CNPC* GetLordSymbol()
 	{
 		return m_lordSymbol;
 	}
 
-	// ¿­·ÁÀÖ´Â ¼º¹®ÀÌ ÀÖ´ÂÁö °Ë»ç
+	// ì—´ë ¤ìˆëŠ” ì„±ë¬¸ì´ ìˆëŠ”ì§€ ê²€ì‚¬
 	virtual bool IsOpenGate() = 0;
 
-	// ±ÇÁÂ HP °¨¼Ò
+	// ê¶Œì¢Œ HP ê°ì†Œ
 	int DecreaseLordSymbolHP();
 
-	// ¸®Á¨¿µ¿ª¾È¿¡ ÀÖ´ÂÁö °Ë»ç
+	// ë¦¬ì  ì˜ì—­ì•ˆì— ìˆëŠ”ì§€ ê²€ì‚¬
 	bool IsInRegenPoint(CCharacter* ch, bool bAttack);
 
-	// ¼º¾ÈÀ» ±¸ºĞÇÏ´Â »ç°¢Çü ÁÂÇ¥ ±¸ÇÏ±â
+	// ì„±ì•ˆì„ êµ¬ë¶„í•˜ëŠ” ì‚¬ê°í˜• ì¢Œí‘œ êµ¬í•˜ê¸°
 	virtual void GetInnerCastleRect(char* nYlayer, int* nX0x2, int* nZ0x2, int* nX1x2, int* nZ1x2) = 0;
 
-	// ¼º¾È¿¡ ÀÖ´ÂÁö °Ë»ç
+	// ì„±ì•ˆì— ìˆëŠ”ì§€ ê²€ì‚¬
 	bool IsInInnerCastle(CCharacter* pChar);
 
-	// ¼ö¼º ¿öÇÁ Áö¿ªÀÎÁö °Ë»ç
+	// ìˆ˜ì„± ì›Œí”„ ì§€ì—­ì¸ì§€ ê²€ì‚¬
 	virtual bool IsDefenseWarpPoint(int pos) = 0;
 
-	// ¼öÈ£Å¾ °³Ã¼¼ö
+	// ìˆ˜í˜¸íƒ‘ ê°œì²´ìˆ˜
 	virtual int GetGateNPCCount() = 0;
 
-	// ¼öÈ£Å¾ NPC ¹İÈ¯
+	// ìˆ˜í˜¸íƒ‘ NPC ë°˜í™˜
 	virtual CNPC* GetGateNPC(int idx) = 0;
 
-	// »óÁ¡ ¸®Á¨ ¿©ºÎ
+	// ìƒì  ë¦¬ì   ì—¬ë¶€
 	bool IsRegenShop()
 	{
 		return m_bRegenShop;
 	}
 
 	////////////////////
-	// °ø¼º ½Ã°£ °ü·Ã
+	// ê³µì„± ì‹œê°„ ê´€ë ¨
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ ¼³Á¤
+	// ê³µì„± ì‹œì‘ ì‹œê°„ ì„¤ì •
 	virtual void SetNextWarTime(int nextWarTime) = 0;
 	virtual bool SetNextWarTime(int wday, int hour) = 0;
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ ¾ò±â
+	// ê³µì„± ì‹œì‘ ì‹œê°„ ì–»ê¸°
 	void GetNextWarTime(struct tm* nextWarTime, bool bHumanable);
 	int GetNextWarTime()
 	{
 		return m_nextWarTime;
 	}
 
-	// °ø¼º/¼ö¼º ¿ëº´/±æµå ½ÅÃ» °¡´É ½Ã°£ °Ë»ç
+	// ê³µì„±/ìˆ˜ì„± ìš©ë³‘/ê¸¸ë“œ ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ ê²€ì‚¬
 	virtual bool IsJoinTime() = 0;
 
-	// ´ÙÀ½ °ø¼º ½ÅÃ» °¡´É ½Ã°£ ±¸ÇÏ±â
+	// ë‹¤ìŒ ê³µì„± ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ êµ¬í•˜ê¸°
 	virtual void GetJoinTime(struct tm* joinTime, bool bHumanable) = 0;
 
-	// ±æµåÀü Á¾·á±îÁö ³²Àº ½Ã°£ ±¸ÇÏ±â
+	// ê¸¸ë“œì „ ì¢…ë£Œê¹Œì§€ ë‚¨ì€ ì‹œê°„ êµ¬í•˜ê¸°
 	int GetRemainWarTime();
 
 	////////////////////
-	// Âü¿© À¯Àú °ü·Ã
+	// ì°¸ì—¬ ìœ ì € ê´€ë ¨
 
-	// ¼ºÁÖ Á¤º¸ ±¸ÇÏ±â
+	// ì„±ì£¼ ì •ë³´ êµ¬í•˜ê¸°
 	int GetOwnerGuildIndex()
 	{
 		return m_ownerGuildIndex;
@@ -266,52 +266,52 @@ public:
 		return (const char*)m_ownerCharName;
 	}
 
-	// ¼ö¼º ¿ëº´ Ãß°¡
+	// ìˆ˜ì„± ìš©ë³‘ ì¶”ê°€
 	bool AddDefenseChar(int index);
 
-	// ¼ö¼º ±æµå Ãß°¡
+	// ìˆ˜ì„± ê¸¸ë“œ ì¶”ê°€
 	bool AddDefenseGuild(int index);
 
-	// °ø¼º ¿ëº´ Ãß°¡
+	// ê³µì„± ìš©ë³‘ ì¶”ê°€
 	bool AddAttackChar(int index);
 
-	// °ø¼º ±æµå Ãß°¡
+	// ê³µì„± ê¸¸ë“œ ì¶”ê°€
 	bool AddAttackGuild(int index);
 
-	// ¼ö¼º ¿ëº´ Á¦°Å
+	// ìˆ˜ì„± ìš©ë³‘ ì œê±°
 	void RemoveDefenseChar(int index);
 
-	// ¼ö¼º ±æµå Á¦°Å
+	// ìˆ˜ì„± ê¸¸ë“œ ì œê±°
 	void RemoveDefenseGuild(int index);
 
-	// °ø¼º ¿ëº´ Á¦°Å
+	// ê³µì„± ìš©ë³‘ ì œê±°
 	void RemoveAttackChar(int index);
 
-	// °ø¼º ±æµå Á¦°Å
+	// ê³µì„± ê¸¸ë“œ ì œê±°
 	void RemoveAttackGuild(int index);
 
-	// °ø¼º ±æµåÀÎÁö °Ë»ç
+	// ê³µì„± ê¸¸ë“œì¸ì§€ ê²€ì‚¬
 	bool IsAttackGuild(int index);
 
-	// °ø¼º ¿ëº´ÀÎÁö °Ë»ç
+	// ê³µì„± ìš©ë³‘ì¸ì§€ ê²€ì‚¬
 	bool IsAttackChar(int index);
 
-	// ¼ö¼º ±æµåÀÎÁö °Ë»ç
+	// ìˆ˜ì„± ê¸¸ë“œì¸ì§€ ê²€ì‚¬
 	bool IsDefenseGuild(int index);
 
-	// ¼ö¼º ¿ëº´ÀÎÁö °Ë»ç
+	// ìˆ˜ì„± ìš©ë³‘ì¸ì§€ ê²€ì‚¬
 	bool IsDefenseChar(int index);
 
-	// °ø¼ºÃø ±æµå ¼ö
+	// ê³µì„±ì¸¡ ê¸¸ë“œ ìˆ˜
 	int GetCountAttackGuild()
 	{
 		return m_countAttackGuild;
 	}
 
-	// ÃÖ»óÀ§ °ø¼º±æµå Á¤º¸ ¾ò±â
+	// ìµœìƒìœ„ ê³µì„±ê¸¸ë“œ ì •ë³´ ì–»ê¸°
 	void GetTop3AttackGuild(int guildindex[3], char guildname[3][MAX_GUILD_NAME_LENGTH + 1], int guildpoint[3]);
 
-	// Top3 ±æµåÁß ÇÏ³ªÀÎÁö °Ë»ç
+	// Top3 ê¸¸ë“œì¤‘ í•˜ë‚˜ì¸ì§€ ê²€ì‚¬
 	bool IsTop3Guild(int guildindex);
 
 	bool IsWarCastleReady()
@@ -320,39 +320,39 @@ public:
 	}
 
 	////////////////////
-	// Æ÷ÀÎÆ® °ü·Ã
+	// í¬ì¸íŠ¸ ê´€ë ¨
 
-	// ÆÀ Á¡¼ö¸¦ ¾ò±â
-	// guildindex°¡ 0ÀÌ¸é ¼ö¼ºÃø, ±×¿Ü´Â °ø¼º ±æµå
+	// íŒ€ ì ìˆ˜ë¥¼ ì–»ê¸°
+	// guildindexê°€ 0ì´ë©´ ìˆ˜ì„±ì¸¡, ê·¸ì™¸ëŠ” ê³µì„± ê¸¸ë“œ
 	int GetTeamPoint(int guildindex);
 
-	// ÆÀ Á¡¼ö Áõ°¡
-	// guildindex°¡ 0ÀÌ¸é ¼ö¼ºÃø, ±×¿Ü´Â °ø¼º ±æµå
-	// ÃÖÁ¾ °ªÀ» ¹İÈ¯
+	// íŒ€ ì ìˆ˜ ì¦ê°€
+	// guildindexê°€ 0ì´ë©´ ìˆ˜ì„±ì¸¡, ê·¸ì™¸ëŠ” ê³µì„± ê¸¸ë“œ
+	// ìµœì¢… ê°’ì„ ë°˜í™˜
 	int IncreaseTeamPoint(int guildindex, int val);
 
-	// Æ¯Á¤ ±æµå Æ÷ÀÎÆ® ±¸ÇÏ±â
-	// ¾ßÀü¿¡¼­´Â Å³Æ÷ÀÎÆ®
-	// °ø¼º¿¡¼­´Â ±ÇÁÂ Æ÷ÀÎÆ®
-	// ±æµå Á¤º¸°¡ ¾ø°Å³ª, ¼ö¼ºÃø ±ÇÁÂ Æ÷ÀÎÆ® ¿äÃ»µî Àß¸øµÈ ¿äÃ»¿¡¼­´Â -1
+	// íŠ¹ì • ê¸¸ë“œ í¬ì¸íŠ¸ êµ¬í•˜ê¸°
+	// ì•¼ì „ì—ì„œëŠ” í‚¬í¬ì¸íŠ¸
+	// ê³µì„±ì—ì„œëŠ” ê¶Œì¢Œ í¬ì¸íŠ¸
+	// ê¸¸ë“œ ì •ë³´ê°€ ì—†ê±°ë‚˜, ìˆ˜ì„±ì¸¡ ê¶Œì¢Œ í¬ì¸íŠ¸ ìš”ì²­ë“± ì˜ëª»ëœ ìš”ì²­ì—ì„œëŠ” -1
 	int GetGuildPoint(int guildindex);
 
 	///////////////////
-	// ¼ºÁÖ ¾ÆÀÌÅÛ Á¤º¸
+	// ì„±ì£¼ ì•„ì´í…œ ì •ë³´
 
-	// ¼ºÁÖ ¾ÆÀÌÅÛ Áö±Ş
+	// ì„±ì£¼ ì•„ì´í…œ ì§€ê¸‰
 	virtual bool GiveLordItem(CPC* pc) = 0;
 
-	// ¼ºÁÖ ¾ÆÀÌÅÛ È¸¼ö
+	// ì„±ì£¼ ì•„ì´í…œ íšŒìˆ˜
 	virtual bool TakeLordItem(CPC* pc) = 0;
 
-	// ¼ºÁÖ ¾ÆÀÌÅÛ ÀÎµ¦½º ±¸ÇÏ±â
+	// ì„±ì£¼ ì•„ì´í…œ ì¸ë±ìŠ¤ êµ¬í•˜ê¸°
 	virtual int GetLordItemIndex(char job1, char job2) = 0;
 
-	// °ø¼º Áö¿ª Áß ¼ö¼º Áö¿ª¿¡¼­ ¼ö¼º Á¦¿Ü À¯Àú ¸ô¾Æ³»±â
+	// ê³µì„± ì§€ì—­ ì¤‘ ìˆ˜ì„± ì§€ì—­ì—ì„œ ìˆ˜ì„± ì œì™¸ ìœ ì € ëª°ì•„ë‚´ê¸°
 	void GetOutNonDefense();
 
-	void SendCastleState( int zoneindex );	// °ÔÀÌÆ® »óÅÂ Àü¼Û
+	void SendCastleState( int zoneindex );	// ê²Œì´íŠ¸ ìƒíƒœ ì „ì†¡
 
 	void GuildGradeSkillAll( bool bApply);
 	void ApplyGuildGradeSkillAll( )
@@ -374,134 +374,134 @@ public:
 protected:
 
 	////////////////////
-	// ÁøÇà »óÅÂ °ü·Ã
+	// ì§„í–‰ ìƒíƒœ ê´€ë ¨
 
-	// °ø¼º ½ÃÀÛ ¾Ë¸²
+	// ê³µì„± ì‹œì‘ ì•Œë¦¼
 	void CheckWarCastleNotice();
 
-	// ¾ßÀü ½ÃÀÛ
+	// ì•¼ì „ ì‹œì‘
 	void CheckWarCastleStartWar();
 
-	// °ø¼º ½ÃÀÛ
+	// ê³µì„± ì‹œì‘
 	void CheckWarCastleStartWarCastle();
 
-	// °ø¼º ³¡ Ã³¸®
+	// ê³µì„± ë ì²˜ë¦¬
 	void CheckWarCastleEnd(bool forced_end_merac);
 
-	// °ø¼º »óÅÂ º¯°æ
+	// ê³µì„± ìƒíƒœ ë³€ê²½
 	void SetState(int state)
 	{
 		m_state = state;
 	}
 
 	////////////////////
-	// Áö¿ª Á¤º¸ °ü·Ã
+	// ì§€ì—­ ì •ë³´ ê´€ë ¨
 
-	// °ø¼ºÀÌ ÀÌ·ç¾î Áö´Â Area¸¦ °¡Á®¿Â´Ù
+	// ê³µì„±ì´ ì´ë£¨ì–´ ì§€ëŠ” Areaë¥¼ ê°€ì ¸ì˜¨ë‹¤
 	CArea* GetArea();
 
-	// °ø¼º Áö¿ªÀ¸·Î °­Á¦ ¸®Á¨
+	// ê³µì„± ì§€ì—­ìœ¼ë¡œ ê°•ì œ ë¦¬ì  
 	void MoveToRegenPoint();
 
-	// ¸®Á¨ À§Ä¡ ÃÊ±âÈ­
+	// ë¦¬ì   ìœ„ì¹˜ ì´ˆê¸°í™”
 	virtual void InitRegenPosition() = 0;
 
 	////////////////////
-	// MPC °ü·Ã
+	// MPC ê´€ë ¨
 
-	// °ø¼º NPC¸¦ ¸®Á¨ ½ÃÅ²´Ù
+	// ê³µì„± NPCë¥¼ ë¦¬ì   ì‹œí‚¨ë‹¤
 	void RegenCastleNPC();
 
-	// ±ÙÀ§º´ ¸®Á¨
+	// ê·¼ìœ„ë³‘ ë¦¬ì  
 	void RegenGuardNPC();
 
-	// ¼öÈ£Å¾ ¸®Á¨
+	// ìˆ˜í˜¸íƒ‘ ë¦¬ì  
 	void RegenCastleTower();
 
-	// ±ÇÁÂ »ı¼º
+	// ê¶Œì¢Œ ìƒì„±
 	void RegenLordSymbol();
 
-	// ¿öÇÁ°ÔÀÌÆ® »ı¼º
+	// ì›Œí”„ê²Œì´íŠ¸ ìƒì„±
 	void RegenWarpNPC();
 
-	// »óÀÎ »ı¼º/Á¦°Å
+	// ìƒì¸ ìƒì„±/ì œê±°
 	void RegenShop();
 
-	// °ø¼º NPC¸¦ Á¦°ÅÇÑ´Ù
+	// ê³µì„± NPCë¥¼ ì œê±°í•œë‹¤
 	void RemoveCastleNPC();
 
-	// ¼öÈ£º´À» Á¦°ÅÇÑ´Ù
+	// ìˆ˜í˜¸ë³‘ì„ ì œê±°í•œë‹¤
 	void RemoveGuardNPC();
 
-	// ¼öÈ£Å¾ Á¦°Å
+	// ìˆ˜í˜¸íƒ‘ ì œê±°
 	void RemoveCastleTower();
 
-	// ±ÇÁÂ Á¦°Å
+	// ê¶Œì¢Œ ì œê±°
 	void RemoveLordSymbol();
 
-	// ¿öÇÁ°ÔÀÌÆ® Á¦°Å
+	// ì›Œí”„ê²Œì´íŠ¸ ì œê±°
 	void RemoveWarpNPC();
 
-	// ¼öÈ£Å¾À» ¼º¹®Áö±â·Î ¼³Á¤
+	// ìˆ˜í˜¸íƒ‘ì„ ì„±ë¬¸ì§€ê¸°ë¡œ ì„¤ì •
 	virtual void SetGateNPC(CNPC* npc) = 0;
 
-	// ¼º¹®Áö±â ÃÊ±âÈ­
+	// ì„±ë¬¸ì§€ê¸° ì´ˆê¸°í™”
 	virtual void InitGateNPC() = 0;
 
-	// m_state¿¡ µû¶ó °ø¼º NPC¸¦ ¸®Á¨ÇÏ°Å³ª ¾ø¾Ø´Ù
+	// m_stateì— ë”°ë¼ ê³µì„± NPCë¥¼ ë¦¬ì  í•˜ê±°ë‚˜ ì—†ì•¤ë‹¤
 	void CheckWarCastleNPC();
 
 	////////////////////
-	// Âü¿©ÀÚ °ü·Ã
+	// ì°¸ì—¬ì ê´€ë ¨
 
-	// ÇÊµå ÀüÅõ ÃÖ»óÀ§ 3°³ ±æµå ±¸ÇÏ±â
+	// í•„ë“œ ì „íˆ¬ ìµœìƒìœ„ 3ê°œ ê¸¸ë“œ êµ¬í•˜ê¸°
 	void GetTop3AttackGuild();
 
-	// Âü¿© Á¤º¸ Ã£±â
+	// ì°¸ì—¬ ì •ë³´ ì°¾ê¸°
 	CWarCastleJoin* FindAttackGuild(int index);
 	CWarCastleJoin* FindAttackChar(int index);
 	CWarCastleJoin* FindDefenseGuild(int index);
 	CWarCastleJoin* FindDefenseChar(int index);
 
-	// Âü¿©ÀÚ Á¤º¸ ÃÊ±âÈ­
+	// ì°¸ì—¬ì ì •ë³´ ì´ˆê¸°í™”
 	void ResetJoinFlag();
 
-	// Âü¿© ¸®½ºÆ® ÃÊ±âÈ­
+	// ì°¸ì—¬ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	void RemoveAllJoinList();
 
-	// ¼º ¼ÒÀ¯ÀÚ Á¤º¸ ÃÊ±âÈ­
+	// ì„± ì†Œìœ ì ì •ë³´ ì´ˆê¸°í™”
 	void ResetOwner();
 
 public:
 
-	// °ø¼º Âü¿©ÀÚ °Ë»ç, WCJF_XXX ¹İÈ¯
+	// ê³µì„± ì°¸ì—¬ì ê²€ì‚¬, WCJF_XXX ë°˜í™˜
 	int CheckJoin(CPC* ch);
 
-	// ¼º ¼ÒÀ¯ÀÚ ¼³Á¤
+	// ì„± ì†Œìœ ì ì„¤ì •
 	void SetOwner(CGuild* guild);
 
 	////////////////////
-	// static ÇÔ¼öµé
+	// static í•¨ìˆ˜ë“¤
 
-	// ÇØ´ç Á¸ÀÇ °ø¼º Á¤º¸¸¦ ¹İÈ¯
+	// í•´ë‹¹ ì¡´ì˜ ê³µì„± ì •ë³´ë¥¼ ë°˜í™˜
 	static CWarCastle* GetCastleObject(int zoneindex);
 
-	// ´ë»óÀÌ °ø¼º Âü¿©ÀÚÀÎÁö °Ë»ç
+	// ëŒ€ìƒì´ ê³µì„± ì°¸ì—¬ìì¸ì§€ ê²€ì‚¬
 	static void CheckJoinAll(CPC* ch);
 
-	// ¼ÒÀ¯ ¼º ¹İÈ¯
-	// È£ÃâÇÑ °÷¿¡¼­ delete [] ¸¦ ÇØ¾ßÇÔ
-	// ¼ÒÀ¯ ¼ºÀÌ ¾øÀ¸¸é NULL ¹İÈ¯
-	// ¼ÒÀ¯ ¼ºÀÌ ÀÖÀ¸¸é count¿¡ ¼º °³¼ö ÀúÀå
+	// ì†Œìœ  ì„± ë°˜í™˜
+	// í˜¸ì¶œí•œ ê³³ì—ì„œ delete [] ë¥¼ í•´ì•¼í•¨
+	// ì†Œìœ  ì„±ì´ ì—†ìœ¼ë©´ NULL ë°˜í™˜
+	// ì†Œìœ  ì„±ì´ ìˆìœ¼ë©´ countì— ì„± ê°œìˆ˜ ì €ì¥
 	static int* GetOwnCastle(int guildindex, int* count);
 
-	// ±æµå »èÁ¦½Ã ÇØ´ç Á¤º¸¸¦ °ø¼º Á¤º¸¿¡ ¹İ¿µ
+	// ê¸¸ë“œ ì‚­ì œì‹œ í•´ë‹¹ ì •ë³´ë¥¼ ê³µì„± ì •ë³´ì— ë°˜ì˜
 	static void DeleteGuild(int guildindex);
 
-	// ÇØ´ç PC°¡ ¼­¹ö °øÁö¸¦ »ç¿ëÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+	// í•´ë‹¹ PCê°€ ì„œë²„ ê³µì§€ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€
 	static bool CanLordChat(CPC* pc);
 
-	// ÇöÀç ¼­ºê¼­¹öÀÇ °ø¼ºÁö¿ª ÀÎµ¦½º ¾ò±â, ¾øÀ¸¸é -1
+	// í˜„ì¬ ì„œë¸Œì„œë²„ì˜ ê³µì„±ì§€ì—­ ì¸ë±ìŠ¤ ì–»ê¸°, ì—†ìœ¼ë©´ -1
 	static int GetCurSubServerCastleZoneIndex();
 	void SetOldOwnerChar(int ownerIndex)
 	{
@@ -531,20 +531,20 @@ public:
 	void EndWarRegenPoint();
 };
 
-// ¸Ş¶óÅ© °ø¼º Å¬·¡½º
+// ë©”ë¼í¬ ê³µì„± í´ë˜ìŠ¤
 class CMeracCastle : public CWarCastle
 {
 	enum { COUNT_MERAC_GATE_NPC = 6 };
 
-	CNPC*		m_gateNPC[COUNT_MERAC_GATE_NPC];		// ¼º¹® ÁöÅ°´Â ¼öÈ£»ó
+	CNPC*		m_gateNPC[COUNT_MERAC_GATE_NPC];		// ì„±ë¬¸ ì§€í‚¤ëŠ” ìˆ˜í˜¸ìƒ
 
 public:
 	CMeracCastle();
 #ifdef WARCASTLE_SUBNUMBER_MEMBER_VALUE
-	int					m_subNumber;						// °ø¼ºÀüÀ» ÇÏ´Â Ã¤³Î ³Ñ¹ö
+	int					m_subNumber;						// ê³µì„±ì „ì„ í•˜ëŠ” ì±„ë„ ë„˜ë²„
 #endif // WARCASTLE_SUBNUMBER_MEMBER_VALUE
 
-// virtual function ±¸Çö
+// virtual function êµ¬í˜„
 protected:
 	void SetGateNPC(CNPC* npc);
 	void InitGateNPC();
@@ -575,7 +575,7 @@ public:
 		return (idx < 0 || idx >= COUNT_MERAC_GATE_NPC) ? NULL : m_gateNPC[idx];
 	}
 	void GetInnerCastleRect(char* nYlayer, int* nX0x2, int* nZ0x2, int* nX1x2, int* nZ1x2);
-// --- virtual function ±¸Çö
+// --- virtual function êµ¬í˜„
 	int GetWarTime()
 	{
 		return WCT_WAR;

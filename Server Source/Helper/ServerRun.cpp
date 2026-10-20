@@ -18,8 +18,8 @@ struct tm rewardEndUpdateTime;
 void CServer::initTime()
 {
 	////////////////////
-	// Å×¼· »çÇ×
-	// ÀÌ¹øÁÖ¿¡ ÃÊ±âÈ­µÉ ½Ã°£ ¼¼ÆÃ : BW
+	// í…Œì„­ ì‚¬í•­
+	// ì´ë²ˆì£¼ì— ì´ˆê¸°í™”ë  ì‹œê°„ ì„¸íŒ… : BW
 	time_t now1;
 	time( &now1 );
 
@@ -61,11 +61,11 @@ void CServer::initTime()
 void CServer::HeartBeat()
 {
 	///////////////////////////////
-	// pd4 ·©Å· ÃÊ±âÈ­ : BW
-	// È­¿äÀÏ AM0:00 rankinit
-	// È­¿äÀÏ AM 11:00 rewardinit
-	// È­¿äÀÏ AM 09:00 rewardend
-	//Å×¼· ÄÚµå
+	// pd4 ëž­í‚¹ ì´ˆê¸°í™” : BW
+	// í™”ìš”ì¼ AM0:00 rankinit
+	// í™”ìš”ì¼ AM 11:00 rewardinit
+	// í™”ìš”ì¼ AM 09:00 rewardend
+	//í…Œì„­ ì½”ë“œ
 	struct tm when;
 	time_t now;
 	time( &now );
@@ -93,7 +93,7 @@ void CServer::HeartBeat()
 			if(rankInitUpdateTime.tm_wday == 2) break;
 		}
 
-		// º¸³¾ ¸Þ½ÃÁö ¾øÀ½
+		// ë³´ë‚¼ ë©”ì‹œì§€ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		do_CommandPD4RankInit(rmsg, (CDescriptor*) 0);
 
@@ -117,7 +117,7 @@ void CServer::HeartBeat()
 			if(rewardEndUpdateTime.tm_wday == 2) break;
 		}
 
-		// º¸³¾ ¸Þ½ÃÁö ¾øÀ½
+		// ë³´ë‚¼ ë©”ì‹œì§€ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		do_CommandPD4RewardEnd(rmsg, (CDescriptor*) 0);
 
@@ -139,7 +139,7 @@ void CServer::HeartBeat()
 			if(rewardInitUpdateTime.tm_wday == 2) break;
 		}
 
-		// º¸³¾ ¸Þ½ÃÁö ¾øÀ½
+		// ë³´ë‚¼ ë©”ì‹œì§€ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		do_CommandPD4RewardInit(rmsg, (CDescriptor*) 0);
 
@@ -172,7 +172,7 @@ void CServer::HeartBeat()
 
 void CServer::checkGuildProcess(time_t now)
 {
-	// ÀüÃ¼ ±æµå ·çÇÁ
+	// ì „ì²´ ê¸¸ë“œ ë£¨í”„
 	CGuild* p = NULL;
 	CGuild* pNext = NULL;
 	pNext = gserver.m_guildlist.head();
@@ -181,15 +181,15 @@ void CServer::checkGuildProcess(time_t now)
 	{
 		pNext = pNext->nextguild();
 
-		// ±æµå ¹èÆ² ½Ã°£ Ã¼Å©
+		// ê¸¸ë“œ ë°°í‹€ ì‹œê°„ ì²´í¬
 		checkGuildBattle(now, p);
 
 #if defined (DEV_GUILD_MARK)
-		// ±æµå ¸¶Å© ½Ã°£ Ã¼Å©
+		// ê¸¸ë“œ ë§ˆí¬ ì‹œê°„ ì²´í¬
 		checkGuildMarkTime(now, p);
 #endif // DEV_GUILD_MARK
 
-		// ±æµå ¸¶½ºÅÍ ÀÚµ¿ Å± Ã¼Å©
+		// ê¸¸ë“œ ë§ˆìŠ¤í„° ìžë™ í‚¥ ì²´í¬
 		checkGuildMasterAutoKick(now, p);
 	}
 }
@@ -202,11 +202,11 @@ void CServer::checkGuildMasterAutoKick(time_t now, CGuild* p)
 		return;
 	if (p->getGuildKick()->getKickRequestTime() < now - KICK_RESERVE_TIME)
 	{
-		// ÇØÀÓ ½ÅÃ» ÈÄ ÇÏ·ç°¡ Áö³µÀ¸¸é,
+		// í•´ìž„ ì‹ ì²­ í›„ í•˜ë£¨ê°€ ì§€ë‚¬ìœ¼ë©´,
 		int _newBoss = p->getNewBossByKick();
 		if ( do_GuildBossChange(p->index(), _newBoss) )
 		{
-			// ±æ¸¶ º¯°æ ¼º°ø ½Ã,
+			// ê¸¸ë§ˆ ë³€ê²½ ì„±ê³µ ì‹œ,
 			do_GuildStatusChange(p->index(), GMKS_NORMAL);
 		}
 		else
@@ -224,7 +224,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 	int diffPulse = m_pulse - g->battlePulse();
 	int battleTime = g->battleTime() - diffPulse;
 
-	// ±æµåÀü ÁßÀÏ¶§
+	// ê¸¸ë“œì „ ì¤‘ì¼ë•Œ
 	switch (g->battleState())
 	{
 	case GUILD_BATTLE_STATE_START_WAIT:
@@ -237,7 +237,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 		{
 			int settime = g->battleTime() - GUILD_BATTLE_WAIT_TIME;
 
-			// ±æµåÀü ½ÃÀÛ¿äÃ»
+			// ê¸¸ë“œì „ ì‹œìž‘ìš”ì²­
 			CGuild* guild = gserver.m_guildlist.findguild(g->battleIndex());
 			if (!guild)
 				return;
@@ -262,7 +262,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 				return;
 			}
 
-			// ¼¼ºÎ ¼ÂÆÃ
+			// ì„¸ë¶€ ì…‹íŒ…
 			g->BattleTime(settime);
 			g->BattleState(GUILD_BATTLE_STATE_ING);
 			g->BattlePulse(m_pulse);
@@ -277,7 +277,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 					<< "<==>" << delim
 					<< guild->index() << delim
 					<< guild->name() << delim
-					<< g->battlePrize() << delim
+					<< g->battlePrizeNas() << delim
 					<< g->battleZone() << delim
 					<< g->battleTime() << delim
 					<< end;
@@ -290,7 +290,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 
 	case GUILD_BATTLE_STATE_ING:
 
-		// ±æµåÀü ³¡
+		// ê¸¸ë“œì „ ë
 		if (battleTime < 1)
 		{
 			CGuild* guild = gserver.m_guildlist.findguild(g->battleIndex());
@@ -307,7 +307,7 @@ void CServer::checkGuildBattle(time_t, CGuild* g)
 			do_Command(rmsg, NULL);
 		}
 
-		// ±æµåÀü »óÈ² º¸°í 1ºÐ
+		// ê¸¸ë“œì „ ìƒí™© ë³´ê³  1ë¶„
 		if (diffPulse > 1200)
 		{
 			CGuild* guild = gserver.m_guildlist.findguild(g->battleIndex());
@@ -354,10 +354,10 @@ void CServer::checkGuildMarkTime(time_t now, CGuild* p)
 {
 	if(p->GetMarkTime() != -1)
 	{
-		// ½Ã°£À» now¿Í È®ÀÎÀ» ÇÑ´Ù.
+		// ì‹œê°„ì„ nowì™€ í™•ì¸ì„ í•œë‹¤.
 		if(p->GetMarkTime() <= (int)now)
 		{
-			// ±æµå¸¶Å©´Â ¿ª»ç¼ÓÀ¸·Î...¤Ð¤Ð
+			// ê¸¸ë“œë§ˆí¬ëŠ” ì—­ì‚¬ì†ìœ¼ë¡œ...ã… ã… 
 			CDBCmd cmd;
 			cmd.Init(&gserver.m_dbchar);
 			CLCString sql(1024);
@@ -365,13 +365,13 @@ void CServer::checkGuildMarkTime(time_t now, CGuild* p)
 			cmd.SetQuery(sql);
 			if(!cmd.Update())
 			{
-				// ¾÷µ¥ÀÌÆ® ¾ÈµÊ ½Ã½ºÅÛ ¿¡·¯ ¸Þ½ÃÁö ¹ß¼Û
+				// ì—…ë°ì´íŠ¸ ì•ˆë¨ ì‹œìŠ¤í…œ ì—ëŸ¬ ë©”ì‹œì§€ ë°œì†¡
 				GAMELOG << init("ERROR GUILD MARK EXPIRE UPDATE FAILED")
 						<< "GUILD INDEX" << delim << p->index() << end;
 			}
 			else
 			{
-				// Á¦´ë·Î ¾÷µ¥ÀÌÆ® µÊ ¼º°ø ¸Þ½ÃÁö ¹ß¼Û
+				// ì œëŒ€ë¡œ ì—…ë°ì´íŠ¸ ë¨ ì„±ê³µ ë©”ì‹œì§€ ë°œì†¡
 				p->SetGuildMark(-1, -1, -1, -1, -1);
 
 				CNetMsg::SP rmsg(new CNetMsg);

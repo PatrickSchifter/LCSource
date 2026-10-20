@@ -82,7 +82,7 @@ bool CTitleProtoList::Load()
 	m_nCount = dbTitle.m_nrecords;
 	m_proto = new CTitleProto[m_nCount];
 
-	// ½ºÅ³º° ¼³Á¤
+	// ìŠ¤í‚¬ë³„ ì„¤ì •
 
 	if(!dbTitle.MoveFirst())
 		return false;
@@ -222,6 +222,19 @@ CTitle* CTitleList::Find(int index)
 	return NULL;
 }
 
+CTitle* CTitleList::FindCustomTitle(int custom_title_index)
+{
+	CTitleNode* node = m_head;
+	while (node)
+	{
+		if (node->m_title->m_custom_title_index == custom_title_index)
+			return node->m_title;
+		else
+			node = node->m_next;
+	}
+	return NULL;
+}
+
 bool CTitleList::HaveTitle(int index)
 {
 	CTitleNode* node = m_head;
@@ -241,7 +254,7 @@ bool CTitleList::HaveTitle(int index)
 //DEL 	{
 //DEL 		if(tmp->m_title->m_endtime > gameTime)
 //DEL 		{
-//DEL 			//»èÁ¦
+//DEL 			//ì‚­ì œ
 //DEL 			tmp2 = tmp;
 //DEL 			tmp = tmp->m_next;
 //DEL 			Remove(tmp2->m_title);
@@ -270,4 +283,88 @@ bool CTitleList::CheckTitleTime(int CurrentTitle)
 	}
 	return false;
 }
-//
+//CTitleMakeData
+
+CTitleMakeData::CTitleMakeData()
+{
+	nOptionCount = 0;
+	nFrontCount = 0;
+	nBackCount = 0;
+	nEffectCount = 0;
+}
+
+CTitleMakeData::~CTitleMakeData()
+{
+	delete[] tempLoadData;
+}
+
+bool CTitleMakeData::load()
+{
+	FILE *fp = NULL;
+
+	CLCString strTemp(1024);
+
+	strTemp.Format("%s%s", gserver->m_serverpath, MAKE_TITLE_FILENAME);
+
+	if ((fp = fopen(strTemp, "rb")) == NULL) 
+	{
+		LOG_ERROR("MakeTitle Data Load Fail.....");
+		return false;
+	}
+	fflush(fp);
+
+	int iReadBytes	= 0;
+
+#define LOADINT(d)			iReadBytes = fread(&d, sizeof(int), 1, fp);
+#define LOADTITLEDATA(t, c) {t = new stCustomTitleString[c]; iReadBytes = fread(t, sizeof(stCustomTitleString) * c, 1, fp);}
+
+	// íƒ€ì´í‹€ ì˜µì…˜
+	LOADINT(nOptionCount);
+
+	if(nOptionCount > 0)
+	{
+		tempLoadData = new stCustomTitleOption[nOptionCount];
+		iReadBytes = fread(tempLoadData, sizeof(stCustomTitleOption) * nOptionCount, 1, fp);
+	}
+
+	stCustomTitleString* buf = NULL;
+
+	// Front Color
+	LOADINT(nFrontCount);
+
+	if(nFrontCount > 0)
+		LOADTITLEDATA(buf, nFrontCount);
+
+	// Back Color
+	LOADINT(nBackCount);	
+
+	if(nBackCount > 0)
+		LOADTITLEDATA(buf, nBackCount);
+
+	// Effect name
+	LOADINT(nEffectCount);
+
+	if(nEffectCount > 0)
+		LOADTITLEDATA(buf, nEffectCount);
+
+#undef LOADINT
+#undef LOADTITLEDATA
+
+	delete[] buf;
+	fclose(fp);
+
+	return true;
+}
+
+int CTitleMakeData::getIndex(int index)
+{
+	return this->tempLoadData[index].nIndex;
+}
+
+int CTitleMakeData::getRandomLevel(int index)
+{
+	int rand = GetRandom(0, 4);
+	return this->tempLoadData[index].nLevel[rand];
+}
+
+

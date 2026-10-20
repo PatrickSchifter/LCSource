@@ -72,7 +72,7 @@ void do_Guild(CPC* ch, CNetMsg::SP& msg)
 		do_GuildFireOfficer(ch, msg);
 		break;
 
-	// ±æµåÀü
+	// ê¸¸ë“œì „
 	case MSG_GUILD_BATTLE_REQ_REQ:
 		do_GuildBattleReqReq(ch, msg);
 		break;
@@ -97,7 +97,7 @@ void do_Guild(CPC* ch, CNetMsg::SP& msg)
 		do_GuildBattleStopAccept(ch, msg);
 		break;
 
-// °ø¼ºÀü
+// ê³µì„±ì „
 
 	case MSG_GUILD_WAR_SET_TIME_REQ:
 		do_GuildWarSetTimeReq(ch, msg);
@@ -224,6 +224,15 @@ void do_Guild(CPC* ch, CNetMsg::SP& msg)
 	case MSG_GUILD_ROOM_RECALL:
 		do_GuildRecall(ch, msg);
 		break;
+	case MSG_GUILD_CONTRIBUTE_DATA:
+		do_GuildContributeData(ch, msg);
+		break;
+	case MSG_GUILD_CONTRIBUTE_SET:
+		do_GuildContributeSet(ch, msg);
+		break;
+	case MSG_GUILD_CONTRIBUTE_SETALL:
+		do_GuildContributeSetAll(ch, msg);
+		break;
 	default:
 		break;
 	}
@@ -256,7 +265,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> name;
 #endif
 
-	// ÀÌ¸§ °Ë»ç
+	// ì´ë¦„ ê²€ì‚¬
 	int lenname = strlen(name);
 	if (lenname < 2 || lenname > 16)
 	{
@@ -274,7 +283,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-// [selo: 101115] ·¯½Ã¾Æ´Â ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ µé¾î°¡¸é ¾ÈµÈ´Ù.
+// [selo: 101115] ëŸ¬ì‹œì•„ëŠ” ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ì ë“¤ì–´ê°€ë©´ ì•ˆëœë‹¤.
 #ifdef LC_RUS
 	if( CheckNoRussianCharacter(name) )
 	{
@@ -285,7 +294,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 	}
 #endif // LC_RUS
 
-	// »ı¼º Á¶°Ç : ·¹º§ °Ë»ç
+	// ìƒì„± ì¡°ê±´ : ë ˆë²¨ ê²€ì‚¬
 	if (ch->m_level < GUILD_LEVEL1_NEED_LEVEL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -294,7 +303,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// »ı¼º Á¶°Ç : SP °Ë»ç
+	// ìƒì„± ì¡°ê±´ : SP ê²€ì‚¬
 	if (ch->m_skillPoint < GUILD_LEVEL1_NEED_SP * 10000)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -303,7 +312,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// »ı¼º Á¶°Ç : µ· °Ë»ç
+	// ìƒì„± ì¡°ê±´ : ëˆ ê²€ì‚¬
 	if (ch->m_inventory.getMoney() < GUILD_LEVEL1_NEED_MONEY)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -312,7 +321,7 @@ void do_GuildCreate(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÀÌÀü ±æµå °Ë»ç
+	// ì´ì „ ê¸¸ë“œ ê²€ì‚¬
 	if (ch->m_guildInfo)
 	{
 		if (ch->m_guildInfo->pos() == MSG_GUILD_POSITION_BOSS)
@@ -456,7 +465,7 @@ void do_GuildLevelUp(CPC* ch, CNetMsg::SP& msg)
 //		}
 	}
 
-	// »ı¼º Á¶°Ç
+	// ìƒì„± ì¡°ê±´
 	if( guild->level() >= GUILD_EXTEND_BASE_LEVEL  - 1 )
 	{
 		if( guild->GetGuildPoint() < needgp )
@@ -466,9 +475,17 @@ void do_GuildLevelUp(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
+
+		if( guild->m_isUseTheStashAndSkill == false )
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			GuildErrorMsg( rmsg, MSG_NEW_GUILD_ERRROR_GUILDPOINT );
+			SEND_Q( rmsg, ch->m_desc );
+			return;
+		}
 	}
 
-	// ·¹º§ °Ë»ç
+	// ë ˆë²¨ ê²€ì‚¬
 	if (ch->m_level < needlevel)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -477,7 +494,7 @@ void do_GuildLevelUp(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// »ı¼º Á¶°Ç : SP °Ë»ç
+	// ìƒì„± ì¡°ê±´ : SP ê²€ì‚¬
 	if (ch->m_skillPoint < needsp * 10000)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -486,7 +503,7 @@ void do_GuildLevelUp(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// »ı¼º Á¶°Ç : µ· °Ë»ç
+	// ìƒì„± ì¡°ê±´ : ëˆ ê²€ì‚¬
 	if (ch->m_inventory.getMoney() < needmoney)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -495,7 +512,7 @@ void do_GuildLevelUp(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// TODO : GUILD : Æ®¸®±¸Á¶½Ã »óÀ§ ±æµå¿ÍÀÇ °ü°è °í·Á
+	// TODO : GUILD : íŠ¸ë¦¬êµ¬ì¡°ì‹œ ìƒìœ„ ê¸¸ë“œì™€ì˜ ê´€ê³„ ê³ ë ¤
 	if (gserver->isRunHelper())
 	{
 		int guildmaxmember = 0;
@@ -602,6 +619,14 @@ void do_GuildBreakUp(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
+	if( ch->m_guildInfo->guild()->m_create_date + (GUILD_REG_DELAY * 60 * 60 * 24) >= gserver->m_nowseconds )
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_CANNOT_BREAK_10DAYS);
+		SEND_Q(rmsg, ch->m_desc);
+		return ;
+	}
+
 	int ownZoneCount = 0;
 	int* ownZone = CWarCastle::GetOwnCastle(ch->m_guildInfo->guild()->index(), &ownZoneCount);
 	if (ownZone)
@@ -654,18 +679,6 @@ void do_GuildRegistReq(CPC* ch, CNetMsg::SP& msg)
 		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_CANNOT_REGISTER_REQ_ZONE);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
-	}
-
-	if (ch->m_guildoutdate != 0)
-	{
-		time_t t;
-		if (time(&t) / 60 / 60 / 24 < ch->m_guildoutdate + GUILD_REG_DELAY)
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			GuildErrorMsg(rmsg, MSG_GUILD_ERROR_REGDELAY);
-			SEND_Q(rmsg, ch->m_desc);
-			return ;
-		}
 	}
 
 	if (bossindex == ch->m_index || requesterindex != ch->m_index)
@@ -792,7 +805,7 @@ void do_GuildRegistAllow(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// TODO : GUILD : ´ë»óÀÌ ÀÌ¹Ì ´Ù¸¥ ±æµå¿¡ ¼Ò¼ÓµÇ¾î ÀÖ´Ù¸é, Æ®¸® ±¸¼º½Ã ±æµå °£ÀÇ ·¹º§À» °Ë»ç
+	// TODO : GUILD : ëŒ€ìƒì´ ì´ë¯¸ ë‹¤ë¥¸ ê¸¸ë“œì— ì†Œì†ë˜ì–´ ìˆë‹¤ë©´, íŠ¸ë¦¬ êµ¬ì„±ì‹œ ê¸¸ë“œ ê°„ì˜ ë ˆë²¨ì„ ê²€ì‚¬
 
 	CGuildMember* member = guild->findmember(ch->m_index);
 	if (!member)
@@ -902,6 +915,19 @@ void do_GuildOutReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
+	//ê¸¸ë“œ íƒˆí‡´ íŒ¨ë„í‹° ì²´í¬
+	if (ch->m_guild_in_date != 0)
+	{
+		time_t t;
+		if (time(&t) / 60 / 60 / 24 < ch->m_guild_in_date + GUILD_REG_DELAY)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			GuildErrorMsg(rmsg, MSG_GUILD_ERROR_REGDELAY);
+			SEND_Q(rmsg, ch->m_desc);
+			return ;
+		}
+	}
+
 	if (gserver->isRunHelper())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -966,6 +992,19 @@ void do_GuildKick(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
+	////ê¸¸ë“œ íƒˆí‡´ íŒ¨ë„í‹° ì²´í¬
+	//if (ch->m_guild_in_date != 0)
+	//{
+	//	time_t t;
+	//	if (time(&t) / 60 / 60 / 24 < ch->m_guild_in_date + GUILD_REG_DELAY)
+	//	{
+	//		CNetMsg::SP rmsg(new CNetMsg);
+	//		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_REGDELAY);
+	//		SEND_Q(rmsg, ch->m_desc);
+	//		return ;
+	//	}
+	//}
+
 	CGuildMember* member = guild->findmember(charindex);
 	if (!member)
 	{
@@ -985,8 +1024,14 @@ void do_GuildKick(CPC* ch, CNetMsg::SP& msg)
 
 	if (gserver->isRunHelper())
 	{
+		int guild_out_date = 0;
+
+		if(member->GetPC() != NULL)
+		{
+			guild_out_date = member->GetPC()->m_guild_in_date;
+		}
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildKickReqMsg(rmsg, guildindex, ch->m_index, charindex);
+		HelperGuildKickReqMsg(rmsg, guildindex, ch->m_index, charindex, guild_out_date);
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 	else
@@ -1247,7 +1292,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 				>> prize
 				>> time;
 
-	// ±æµå ¾øÀ½
+	// ê¸¸ë“œ ì—†ìŒ
 	if (!ch->m_guildInfo)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1256,7 +1301,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1265,7 +1310,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// 10¸íÀÌ»ó ±æµå
+	// 10ëª…ì´ìƒ ê¸¸ë“œ
 	if (ch->m_guildInfo->guild()->membercount() < GUILD_BATTLE_MIN_MEMBER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1274,11 +1319,12 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀüÀÌ °¡´ÉÇÑ Á¸¿¡ ÀÖ¾î¾ß
+	// ê¸¸ë“œì „ì´ ê°€ëŠ¥í•œ ì¡´ì— ìˆì–´ì•¼
 	if (ch->m_pZone->m_index != ZONE_START && ch->m_pZone->m_index != ZONE_DRATAN
 			&& ch->m_pZone->m_index != ZONE_MERAC && ch->m_pZone->m_index != ZONE_EGEHA
 			&& ch->m_pZone->m_index != ZONE_STREIANA && ch->m_pZone->m_index != ZONE_MONDSHINE
-			&& ch->m_pZone->m_index != ZONE_TARIAN && ch->m_pZone->m_index != ZONE_BLOODYMIR)
+			&& ch->m_pZone->m_index != ZONE_TARIAN && ch->m_pZone->m_index != ZONE_BLOODYMIR
+			&& ch->m_pZone->m_index != ZONE_PK_TOURNAMENT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildBattleErrMsg(rmsg, MSG_GUILD_ERROR_BATTLE_ZONE);
@@ -1286,7 +1332,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌ¹Ì ±æµåÀü Áß
+	// ì´ë¯¸ ê¸¸ë“œì „ ì¤‘
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_PEACE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1295,7 +1341,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¹èÆÃ±İ¾× ¿À·ù
+	// ë°°íŒ…ê¸ˆì•¡ ì˜¤ë¥˜
 	if (prize * 10000 < GUILD_BATTLE_MIN_PRIZE || prize * 10000 > GUILD_BATTLE_MAX_PRIZE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1304,7 +1350,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¹èÆÃ¾× ¸ğÁú¶÷
+	// ë°°íŒ…ì•¡ ëª¨ì§ˆëŒ
 	if (ch->m_inventory.getMoney() < (LONGLONG)prize)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1313,7 +1359,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ½Ã°£ ÃÊ°ú °Ë»ç
+	// ì‹œê°„ ì´ˆê³¼ ê²€ì‚¬
 	if (time * 10 < GUILD_BATTLE_MIN_TIME || time * 10 > GUILD_BATTLE_MAX_TIME)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1322,7 +1368,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë°¡ ÀÌ»óÇÔ
+	// ìƒëŒ€ê°€ ì´ìƒí•¨
 	CPC* tch = PCManager::instance()->getPlayerByCharIndex(charindex);
 	if (!tch || !tch->m_guildInfo)
 	{
@@ -1332,7 +1378,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë°¡ ±æµåÀåÀÌ ¾Æ´Ô
+	// ìƒëŒ€ê°€ ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (tch->m_guildInfo->guild()->boss() && tch->m_guildInfo->guild()->boss()->charindex() != tch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1341,7 +1387,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë°¡ 10¸í ¹Ì¸¸ ±æµå
+	// ìƒëŒ€ê°€ 10ëª… ë¯¸ë§Œ ê¸¸ë“œ
 	if (tch->m_guildInfo->guild()->membercount() < GUILD_BATTLE_MIN_MEMBER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1350,7 +1396,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌ¹Ì ±æµåÀü Áß
+	// ì´ë¯¸ ê¸¸ë“œì „ ì¤‘
 	if (tch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_PEACE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1359,11 +1405,12 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀüÀÌ °¡´ÉÇÑ Á¸¿¡ ÀÖ¾î¾ß
+	// ê¸¸ë“œì „ì´ ê°€ëŠ¥í•œ ì¡´ì— ìˆì–´ì•¼
 	if (tch->m_pZone->m_index != ZONE_START && tch->m_pZone->m_index != ZONE_DRATAN
 			&& tch->m_pZone->m_index != ZONE_MERAC && tch->m_pZone->m_index != ZONE_EGEHA
 			&& tch->m_pZone->m_index != ZONE_STREIANA && tch->m_pZone->m_index != ZONE_MONDSHINE
-			&& tch->m_pZone->m_index != ZONE_TARIAN && tch->m_pZone->m_index != ZONE_BLOODYMIR)
+			&& tch->m_pZone->m_index != ZONE_TARIAN && tch->m_pZone->m_index != ZONE_BLOODYMIR
+			&& tch->m_pZone->m_index != ZONE_PK_TOURNAMENT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildBattleErrMsg(rmsg, MSG_GUILD_ERROR_BATTLE_ZONE);
@@ -1371,7 +1418,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ÂÆÃ
+	// ì…‹íŒ…
 	ch->m_guildInfo->guild()->BattleSet(tch->m_guildInfo->guild()->index(), prize * 10000, ch->m_pZone->m_index);
 	ch->m_guildInfo->guild()->BattleState(GUILD_BATTLE_STATE_START_WAIT);
 	ch->m_guildInfo->guild()->BattleTime(GUILD_BATTLE_WAIT_TIME + time * 10);
@@ -1381,7 +1428,7 @@ void do_GuildBattleReqReq(CPC* ch, CNetMsg::SP& msg)
 	tch->m_guildInfo->guild()->BattleTime(GUILD_BATTLE_WAIT_TIME + time * 10);
 
 	{
-		// ¿äÃ» msg
+		// ìš”ì²­ msg
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildBattleReqReqMsg(rmsg, ch->m_guildInfo->guild()->index(), ch->m_guildInfo->guild()->name(), prize, time);
 		SEND_Q(rmsg, tch->m_desc);
@@ -1398,7 +1445,7 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ½ÅÃ»¹ŞÀºÀû ¾øÀ½
+	// ì‹ ì²­ë°›ì€ì  ì—†ìŒ
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_START_WAIT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1407,7 +1454,7 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1416,10 +1463,10 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµå
+	// ìƒëŒ€ë°© ê¸¸ë“œ
 	CGuild* guild = gserver->m_guildlist.findguild(ch->m_guildInfo->guild()->battleIndex());
 
-	// ¾øÀ½
+	// ì—†ìŒ
 	if (!guild)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1428,7 +1475,7 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æÀÌ ½ÅÃ»ÇÑÀû ¾øÀ½
+	// ìƒëŒ€ë°©ì´ ì‹ ì²­í•œì  ì—†ìŒ
 	if (guild->battleState() != GUILD_BATTLE_STATE_START_WAIT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1437,10 +1484,10 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµåÀå
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥
 	CPC* tch = guild->boss()->GetPC();
 
-	// »ó´ë¹æ ±æµåÀåÀÌ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥ì´ ì—†ìŒ
 	if (!tch)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1449,7 +1496,7 @@ void do_GuildBattleReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ÂÆÃ ÇØÁ¦
+	// ì…‹íŒ… í•´ì œ
 	ch->m_guildInfo->guild()->BattleSet(-1, 0, -1);
 	ch->m_guildInfo->guild()->BattleState(GUILD_BATTLE_STATE_PEACE);
 	ch->m_guildInfo->guild()->BattleTime(0);
@@ -1476,7 +1523,7 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ½ÅÃ»¹ŞÀºÀû ¾øÀ½
+	// ì‹ ì²­ë°›ì€ì  ì—†ìŒ
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_START_WAIT)
 	{
 		{
@@ -1492,7 +1539,7 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		{
@@ -1508,10 +1555,10 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµå
+	// ìƒëŒ€ë°© ê¸¸ë“œ
 	CGuild* guild = gserver->m_guildlist.findguild(ch->m_guildInfo->guild()->battleIndex());
 
-	// »ó´ë¹æ ±æµå°¡ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œê°€ ì—†ìŒ
 	if (!guild)
 	{
 		{
@@ -1527,10 +1574,10 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµåÀå
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥
 	CPC* tch = guild->boss()->GetPC();
 
-	// »ó´ë¹æ ±æµåÀåÀÌ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥ì´ ì—†ìŒ
 	if (!tch)
 	{
 		{
@@ -1550,8 +1597,8 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¹èÆÃ¾×ÀÌ ¸ğÁú¶ó
-	if (ch->m_inventory.getMoney() < ch->m_guildInfo->guild()->battlePrize())
+	// ë°°íŒ…ì•¡ì´ ëª¨ì§ˆë¼
+	if (ch->m_inventory.getMoney() < ch->m_guildInfo->guild()->battlePrizeNas())
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1571,8 +1618,8 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¹èÆÃ±İ¾×ÀÌ ¾øÀ½
-	if (tch->m_inventory.getMoney() < guild->battlePrize())
+	// ë°°íŒ…ê¸ˆì•¡ì´ ì—†ìŒ
+	if (tch->m_inventory.getMoney() < guild->battlePrizeNas())
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1591,8 +1638,8 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ÂÆÃµÈ ±İ¾×ÀÌ Æ²¸²
-	if (ch->m_guildInfo->guild()->battlePrize() != guild->battlePrize())
+	// ì…‹íŒ…ëœ ê¸ˆì•¡ì´ í‹€ë¦¼
+	if (ch->m_guildInfo->guild()->battlePrizeNas() != guild->battlePrizeNas())
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1612,7 +1659,7 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ÂÆÃµÈ Á¸ÀÌ Æ²¸²
+	// ì…‹íŒ…ëœ ì¡´ì´ í‹€ë¦¼
 	if (ch->m_guildInfo->guild()->battleZone() != guild->battleZone())
 	{
 		{
@@ -1636,7 +1683,7 @@ void do_GuildBattleReqAccept(CPC* ch, CNetMsg::SP& msg)
 	if (gserver->isRunHelper())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildBattleReqMsg(rmsg, ch->m_guildInfo->guild()->index(), guild->index(), guild->battlePrize(), guild->battleZone(), guild->battleTime());
+		HelperGuildBattleReqMsg(rmsg, ch->m_guildInfo->guild()->index(), guild->index(), guild->battlePrizeNas(), 0, guild->battleZone(), guild->battleTime());
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 	else
@@ -1662,7 +1709,7 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀü Áß ¾Æ´Ô
+	// ê¸¸ë“œì „ ì¤‘ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_ING)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1671,7 +1718,7 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1680,7 +1727,7 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµå
+	// ìƒëŒ€ë°© ê¸¸ë“œ
 	CGuild* guild = gserver->m_guildlist.findguild(ch->m_guildInfo->guild()->battleIndex());
 
 	if (!guild)
@@ -1693,7 +1740,7 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 
 	CPC* tch = guild->boss()->GetPC();
 
-	// »ó´ë¹æ ±æµåÀåÀÌ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥ì´ ì—†ìŒ
 	if (!tch)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1702,7 +1749,7 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æÀÌ ±æÀåÀÌ ¾Æ´Ô
+	// ìƒëŒ€ë°©ì´ ê¸¸ì¥ì´ ì•„ë‹˜
 	if (charindex != tch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1711,12 +1758,12 @@ void do_GuildBattleStopReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Áß´Ü ½ÅÃ» »óÅÂ ¼ÂÆÃ
+	// ì¤‘ë‹¨ ì‹ ì²­ ìƒíƒœ ì…‹íŒ…
 	ch->m_guildInfo->guild()->BattleState(GUILD_BATTLE_STATE_STOP_WAIT);
 	guild->BattleState(GUILD_BATTLE_STATE_STOP_WAIT);
 
 	{
-		// »ó´ë¹æ¿¡°Ô ¿äÃ»
+		// ìƒëŒ€ë°©ì—ê²Œ ìš”ì²­
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildBattleStopReqMsg(rmsg, ch->m_guildInfo->guild()->index(), ch->m_guildInfo->guild()->name());
 		SEND_Q(rmsg, tch->m_desc);
@@ -1733,7 +1780,7 @@ void do_GuildBattleStopReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀü ÁßÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì „ ì¤‘ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_STOP_WAIT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1742,7 +1789,7 @@ void do_GuildBattleStopReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1751,7 +1798,7 @@ void do_GuildBattleStopReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµå
+	// ìƒëŒ€ë°© ê¸¸ë“œ
 	CGuild* guild = gserver->m_guildlist.findguild(ch->m_guildInfo->guild()->battleIndex());
 
 	if (!guild)
@@ -1764,7 +1811,7 @@ void do_GuildBattleStopReject(CPC* ch, CNetMsg::SP& msg)
 
 	CPC* tch = guild->boss()->GetPC();
 
-	// »ó´ë¹æ ±æµåÀåÀÌ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥ì´ ì—†ìŒ
 	if (!tch)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1773,7 +1820,7 @@ void do_GuildBattleStopReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀüÅõ »óÅÂ ¼ÂÆÃ
+	// ì „íˆ¬ ìƒíƒœ ì…‹íŒ…
 	ch->m_guildInfo->guild()->BattleState(GUILD_BATTLE_STATE_ING);
 	guild->BattleState(GUILD_BATTLE_STATE_ING);
 
@@ -1795,7 +1842,7 @@ void do_GuildBattleStopAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀü ÁßÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì „ ì¤‘ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->battleState() != GUILD_BATTLE_STATE_STOP_WAIT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1804,7 +1851,7 @@ void do_GuildBattleStopAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±æµåÀåÀÌ ¾Æ´Ô
+	// ê¸¸ë“œì¥ì´ ì•„ë‹˜
 	if (ch->m_guildInfo->guild()->boss() && ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1813,7 +1860,7 @@ void do_GuildBattleStopAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ó´ë¹æ ±æµå
+	// ìƒëŒ€ë°© ê¸¸ë“œ
 	CGuild* guild = gserver->m_guildlist.findguild(ch->m_guildInfo->guild()->battleIndex());
 
 	if (!guild)
@@ -1826,7 +1873,7 @@ void do_GuildBattleStopAccept(CPC* ch, CNetMsg::SP& msg)
 
 	CPC* tch = guild->boss()->GetPC();
 
-	// »ó´ë¹æ ±æµåÀåÀÌ ¾øÀ½
+	// ìƒëŒ€ë°© ê¸¸ë“œì¥ì´ ì—†ìŒ
 	if (!tch)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1838,7 +1885,7 @@ void do_GuildBattleStopAccept(CPC* ch, CNetMsg::SP& msg)
 	if (gserver->isRunHelper())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildBattleStopReqMsg(rmsg, ch->m_guildInfo->guild()->index(), guild->index());
+		HelperGuildBattleStopReqMsg(rmsg, ch->m_guildInfo->guild()->index(), guild->index(), true);
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 	else
@@ -1866,7 +1913,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 
 	CHECK_SUBSERVER(castle);
 
-	// ±æµå°¡ ÀÖ°í
+	// ê¸¸ë“œê°€ ìˆê³ 
 	if (!ch->m_guildInfo)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1875,7 +1922,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¼ºÁÖ ±æµåÀÌ°í
+	// ì„±ì£¼ ê¸¸ë“œì´ê³ 
 	CGuild* guild = ch->m_guildInfo->guild();
 	if (guild->index() != castle->GetOwnerGuildIndex())
 	{
@@ -1885,7 +1932,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµå ÀåÀÌ°í
+	// ê¸¸ë“œ ì¥ì´ê³ 
 	if (guild->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1894,7 +1941,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// °ø¼ºÁßÀÌ ¾Æ´Ï°í
+	// ê³µì„±ì¤‘ì´ ì•„ë‹ˆê³ 
 	if (castle->GetState() != WCSF_NORMAL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1903,7 +1950,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ½ÅÃ»½Ã°£ÀÌ ¾Æ´Ò¶§
+	// ì‹ ì²­ì‹œê°„ì´ ì•„ë‹ë•Œ
 	if (castle->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1920,7 +1967,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ½Ã°£ ¼³Á¤
+	// ì‹œê°„ ì„¤ì •
 	if (!castle->SetNextWarTime(wday, hour))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1929,7 +1976,7 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// DB ÃÊ±âÈ­
+	// DB ì´ˆê¸°í™”
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 
@@ -1957,15 +2004,15 @@ void do_GuildWarSetTimeReq(CPC* ch, CNetMsg::SP& msg)
 
 void do_GuildWarGetTime(CPC* ch, CNetMsg::SP& msg)
 {
-	// °ø¼º ½Ã°£ È®ÀÎ		: zoneindex(n) warerrorcode(n) guildindex(n:s) guildname(n:s) month(n:s) day(n:s) hour(n:s)
-	// ÇØ´ç Á¸ÀÌ °ø¼º Á¸ÀÎ°¡?
+	// ê³µì„± ì‹œê°„ í™•ì¸		: zoneindex(n) warerrorcode(n) guildindex(n:s) guildname(n:s) month(n:s) day(n:s) hour(n:s)
+	// í•´ë‹¹ ì¡´ì´ ê³µì„± ì¡´ì¸ê°€?
 	CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 	if (castle == NULL)
 		return ;
 
 	CHECK_SUBSERVER(castle);
 
-	// ÇØ´ç Á¸ÀÌ ÀÏ¹İ »óÅÂÀÎ°¡?
+	// í•´ë‹¹ ì¡´ì´ ì¼ë°˜ ìƒíƒœì¸ê°€?
 	if (castle->GetState() != WCSF_NORMAL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2007,7 +2054,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 
 	CHECK_SUBSERVER(castle);
 
-	// ±æµå°¡ ÀÖ°í
+	// ê¸¸ë“œê°€ ìˆê³ 
 	if (ch->m_guildInfo == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2016,7 +2063,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// º¸½º ÀÌ°í
+	// ë³´ìŠ¤ ì´ê³ 
 	if (ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2027,7 +2074,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 
 	CGuild* guild = ch->m_guildInfo->guild();
 
-	// ¼ºÁÖ ±æµå°¡ ¾Æ´Ï°í
+	// ì„±ì£¼ ê¸¸ë“œê°€ ì•„ë‹ˆê³ 
 	if (guild->index() == castle->GetOwnerGuildIndex())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2036,7 +2083,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±âÁ¸ ½ÅÃ» °Ë»çÇÏ°í
+	// ê¸°ì¡´ ì‹ ì²­ ê²€ì‚¬í•˜ê³ 
 	if (castle->IsAttackGuild(guild->index()))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2045,7 +2092,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// µå¶óÅº°ú ¸Ş¶óÅ© µ¿½Ã ½ÅÃ» ºÒ°¡
+	// ë“œë¼íƒ„ê³¼ ë©”ë¼í¬ ë™ì‹œ ì‹ ì²­ ë¶ˆê°€
 	switch(ch->m_pZone->m_index)
 	{
 	case ZONE_DRATAN:
@@ -2054,7 +2101,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			if(pCastle != NULL
 					&& pCastle->IsAttackGuild(guild->index()))
 			{
-				// ¸Ş¶óÅ© °ø¼º ½ÅÃ»ÇÑ ±æµå°¡ µå¶óÅº °ø¼º ½ÅÃ»ÇÒ °æ¿ì
+				// ë©”ë¼í¬ ê³µì„± ì‹ ì²­í•œ ê¸¸ë“œê°€ ë“œë¼íƒ„ ê³µì„± ì‹ ì²­í•  ê²½ìš°
 				CNetMsg::SP rmsg(new CNetMsg);
 				GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_JOIN_ALREADY, NULL);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2064,7 +2111,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			if(pCastle != NULL
 					&& guild->index() == pCastle->GetOwnerGuildIndex())
 			{
-				// ¸Ş¶óÅ© ¼ºÁÖ°¡ µå¶óÅº °ø¼º ½ÅÃ»ÇÒ °æ¿ì
+				// ë©”ë¼í¬ ì„±ì£¼ê°€ ë“œë¼íƒ„ ê³µì„± ì‹ ì²­í•  ê²½ìš°
 				CNetMsg::SP rmsg(new CNetMsg);
 				GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_JOIN_OWNER_GUILD, NULL);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2079,7 +2126,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			if(pCastle != NULL
 					&& pCastle->IsAttackGuild(guild->index()))
 			{
-				// µå¶óÅº °ø¼º ½ÅÃ»ÇÑ ±æµå°¡ ¸Ş¶óÅ© °ø¼º ½ÅÃ»ÇÒ °æ¿ì
+				// ë“œë¼íƒ„ ê³µì„± ì‹ ì²­í•œ ê¸¸ë“œê°€ ë©”ë¼í¬ ê³µì„± ì‹ ì²­í•  ê²½ìš°
 				CNetMsg::SP rmsg(new CNetMsg);
 				GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_JOIN_ALREADY, NULL);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2089,7 +2136,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			if (pCastle != NULL
 					&& guild->index() == pCastle->GetOwnerGuildIndex())
 			{
-				// µå¶óÅº ¼ºÁÖ°¡ ¸Ş¶óÅ© °ø¼º ½ÅÃ»ÇÒ °æ¿ì
+				// ë“œë¼íƒ„ ì„±ì£¼ê°€ ë©”ë¼í¬ ê³µì„± ì‹ ì²­í•  ê²½ìš°
 				CNetMsg::SP rmsg(new CNetMsg);
 				GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_JOIN_OWNER_GUILD, NULL);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2099,7 +2146,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 		break;
 	}
 
-	// Á¶°Ç °Ë»çÇÏ°í : ½ÅÃ» °¡´É ½Ã°£, ±æµå ·¹º§, ±æµå¿ø ¼ö, ¾ÆÀÌÅÛ, ³ª½º
+	// ì¡°ê±´ ê²€ì‚¬í•˜ê³  : ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„, ê¸¸ë“œ ë ˆë²¨, ê¸¸ë“œì› ìˆ˜, ì•„ì´í…œ, ë‚˜ìŠ¤
 	if (!castle->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2118,7 +2165,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_pZone->m_index == ZONE_MERAC && guild->membercount() < WCGF_MEMBERCOUNT)
 	{
-		// ¸Ş¶óÅ© °ø¼º¸¸ 20¸í Á¦ÇÑ
+		// ë©”ë¼í¬ ê³µì„±ë§Œ 20ëª… ì œí•œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_JOIN_GUILDMEMBER, NULL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2133,12 +2180,12 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// DB¿¡ ÀúÀå
-	// 1. Æ®·£Àè¼Ç ½ÃÀÛ
-	// 2. ÇöÀç Ä³¸¯ÅÍÀÇ ¿ëº´ ½ÅÃ» »èÁ¦
-	// 3. ÇöÀç Ä³¸¯ÅÍ ±æµåÀÇ ½ÅÃ» »èÁ¦
-	// 4. »õ·Î Ãß°¡
-	// 5. Æ®·£Àè¼Ç ³¡
+	// DBì— ì €ì¥
+	// 1. íŠ¸ëœì­ì…˜ ì‹œì‘
+	// 2. í˜„ì¬ ìºë¦­í„°ì˜ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
+	// 3. í˜„ì¬ ìºë¦­í„° ê¸¸ë“œì˜ ì‹ ì²­ ì‚­ì œ
+	// 4. ìƒˆë¡œ ì¶”ê°€
+	// 5. íŠ¸ëœì­ì…˜ ë
 	int i;
 	CDBCmd cmd;
 	int guildMaxmemberCount;
@@ -2146,7 +2193,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 	cmd.BeginTrans();
 	try
 	{
-		// °³ÀÎ ¿ëº´ ½ÅÃ» »èÁ¦
+		// ê°œì¸ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
 		if (ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)
 		{
 			std::string delete_castle_join_query = "";
@@ -2154,7 +2201,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			{
 			case WCJF_DEFENSE_GUILD:
 				{
-					// ±æ¿ø ¸ğµÎ »èÁ¦
+					// ê¸¸ì› ëª¨ë‘ ì‚­ì œ
 					std::string tmpString = "";
 					guildMaxmemberCount = guild->maxmember();
 					for (i = 0; i < guildMaxmemberCount; i++)
@@ -2188,7 +2235,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			if (!cmd.Update())
 				throw 0;
 
-			// ±æµå ½ÅÃ» »èÁ¦
+			// ê¸¸ë“œ ì‹ ì²­ ì‚­ì œ
 			std::string delete_castle_join_query1 = boost::str(boost::format("DELETE FROM t_castle_join WHERE a_zone_index=%d AND a_index=%d AND a_guild=1") % ch->m_pZone->m_index % guild->index());
 			cmd.SetQuery(delete_castle_join_query1);
 			if (!cmd.Update())
@@ -2217,8 +2264,8 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 			<< end;
 
 	{
-		// Helper·Î ¾Ë¸®±â
-		// Helper ¾øÀ¸¸é ±×³É ÇöÀç ¼­ºê Ã¤³Î¸¸
+		// Helperë¡œ ì•Œë¦¬ê¸°
+		// Helper ì—†ìœ¼ë©´ ê·¸ëƒ¥ í˜„ì¬ ì„œë¸Œ ì±„ë„ë§Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWarJoinAttackGuildMsg(rmsg, ch->m_pZone->m_index, guild->index());
 		if (gserver->isRunHelper())
@@ -2232,7 +2279,7 @@ void do_GuildWarJoinAttackGuild(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarJoinAttackGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_OK, castle);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2247,7 +2294,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 
 	CHECK_SUBSERVER(castle);
 
-	// ¼ºÁÖ°¡ ÀÖ´Â ¼ºÀÌ°í
+	// ì„±ì£¼ê°€ ìˆëŠ” ì„±ì´ê³ 
 	if (castle->GetOwnerGuildIndex() <= 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2256,7 +2303,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµå°¡ ÀÖ°í
+	// ê¸¸ë“œê°€ ìˆê³ 
 	if (ch->m_guildInfo == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2265,13 +2312,13 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// º¸½º ÀÌ°í
+	// ë³´ìŠ¤ ì´ê³ 
 	if (ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS)
 		return ;
 
 	CGuild* guild = ch->m_guildInfo->guild();
 
-	// ¼ºÁÖ ±æµå°¡ ¾Æ´Ï°í
+	// ì„±ì£¼ ê¸¸ë“œê°€ ì•„ë‹ˆê³ 
 	if (guild->index() == castle->GetOwnerGuildIndex())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2280,7 +2327,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±âÁ¸ ½ÅÃ» °Ë»çÇÏ°í
+	// ê¸°ì¡´ ì‹ ì²­ ê²€ì‚¬í•˜ê³ 
 	if (castle->IsAttackGuild(guild->index()) || castle->IsDefenseGuild(guild->index()))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2289,7 +2336,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¶°Ç °Ë»çÇÏ°í : ½ÅÃ» °¡´É ½Ã°£, ±æµå ·¹º§
+	// ì¡°ê±´ ê²€ì‚¬í•˜ê³  : ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„, ê¸¸ë“œ ë ˆë²¨
 	if (!castle->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2301,7 +2348,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 #ifdef MEREC_CASTLE_TEST_GUILD_LEVEL_GM_SETTING
 	int guildLevel = WCGF_DEFENSE_LEVEL;
 
-	// ¸Ş¶óÅ© Á¸ÀÏ¶§¸¸ ±æµå ·¹º§À» GMÀÌ ¼³Á¤ÇÑ °ÍÀ¸·Î °Ë»çÇÑ´Ù.
+	// ë©”ë¼í¬ ì¡´ì¼ë•Œë§Œ ê¸¸ë“œ ë ˆë²¨ì„ GMì´ ì„¤ì •í•œ ê²ƒìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
 	if( castle->GetCurSubServerCastleZoneIndex() == ZONE_MERAC &&  gserver->MeracCastleDebugGuildLevel > 0 )
 		guildLevel = gserver->MeracCastleDebugGuildLevel;
 
@@ -2316,18 +2363,18 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// DB¿¡ ÀúÀå
-	// 1. Æ®·£Àè¼Ç ½ÃÀÛ
-	// 2. ÇöÀç Ä³¸¯ÅÍÀÇ ¿ëº´ ½ÅÃ» »èÁ¦
-	// 3. ÇöÀç Ä³¸¯ÅÍ ±æµåÀÇ ½ÅÃ» »èÁ¦
-	// 4. »õ·Î Ãß°¡
-	// 5. Æ®·£Àè¼Ç ³¡
+	// DBì— ì €ì¥
+	// 1. íŠ¸ëœì­ì…˜ ì‹œì‘
+	// 2. í˜„ì¬ ìºë¦­í„°ì˜ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
+	// 3. í˜„ì¬ ìºë¦­í„° ê¸¸ë“œì˜ ì‹ ì²­ ì‚­ì œ
+	// 4. ìƒˆë¡œ ì¶”ê°€
+	// 5. íŠ¸ëœì­ì…˜ ë
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 	cmd.BeginTrans();
 	try
 	{
-		// °³ÀÎ ¿ëº´ ½ÅÃ» »èÁ¦
+		// ê°œì¸ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
 		if (ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)
 		{
 			std::string delete_castle_join_query = "";
@@ -2369,8 +2416,8 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 			<< end;
 
 	{
-		// Helper·Î ¾Ë¸®±â
-		// Helper ¾øÀ¸¸é ±×³É ÇöÀç ¼­ºê Ã¤³Î¸¸
+		// Helperë¡œ ì•Œë¦¬ê¸°
+		// Helper ì—†ìœ¼ë©´ ê·¸ëƒ¥ í˜„ì¬ ì„œë¸Œ ì±„ë„ë§Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWarJoinDefenseGuildMsg(rmsg, ch->m_pZone->m_index, guild->index());
 		if (gserver->isRunHelper())
@@ -2384,7 +2431,7 @@ void do_GuildWarJoinDefenseGuild(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarJoinDefenseGuildMsg(rmsg, MSG_GUILD_WAR_ERROR_OK, castle);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2419,7 +2466,7 @@ void do_GuildWarJoinAttackChar(CPC* ch, CNetMsg::SP& msg)
 
 	CHECK_SUBSERVER(castle);
 
-	// ±æµå ¹æÄ§À» ¸ÕÀú µû¸§
+	// ê¸¸ë“œ ë°©ì¹¨ì„ ë¨¼ì € ë”°ë¦„
 	switch (ch->GetJoinFlag(ch->m_pZone->m_index))
 	{
 	case WCJF_OWNER:
@@ -2455,7 +2502,7 @@ void do_GuildWarJoinAttackChar(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¶°Ç °Ë»çÇÏ°í : ½ÅÃ» °¡´É ½Ã°£, ·¹º§
+	// ì¡°ê±´ ê²€ì‚¬í•˜ê³  : ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„, ë ˆë²¨
 	if (!castle->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2472,18 +2519,18 @@ void do_GuildWarJoinAttackChar(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// DB¿¡ ÀúÀå
-	// 1. Æ®·£Àè¼Ç ½ÃÀÛ
-	// 2. ÇöÀç Ä³¸¯ÅÍÀÇ ¿ëº´ ½ÅÃ» »èÁ¦
-	// 3. ÇöÀç Ä³¸¯ÅÍ ±æµåÀÇ ½ÅÃ» »èÁ¦
-	// 4. »õ·Î Ãß°¡
-	// 5. Æ®·£Àè¼Ç ³¡
+	// DBì— ì €ì¥
+	// 1. íŠ¸ëœì­ì…˜ ì‹œì‘
+	// 2. í˜„ì¬ ìºë¦­í„°ì˜ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
+	// 3. í˜„ì¬ ìºë¦­í„° ê¸¸ë“œì˜ ì‹ ì²­ ì‚­ì œ
+	// 4. ìƒˆë¡œ ì¶”ê°€
+	// 5. íŠ¸ëœì­ì…˜ ë
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 	cmd.BeginTrans();
 	try
 	{
-		// °³ÀÎ ¿ëº´ ½ÅÃ» »èÁ¦
+		// ê°œì¸ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
 		if (ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)
 		{
 			std::string delete_castle_join_query = "";
@@ -2522,18 +2569,18 @@ void do_GuildWarJoinAttackChar(CPC* ch, CNetMsg::SP& msg)
 	GAMELOG << init("WAR CASTLE : JOIN ATTACK CHAR", ch)
 			<< end;
 
-	// Á¤º¸ º¯°æ
-	// ¼º Á¤º¸
+	// ì •ë³´ ë³€ê²½
+	// ì„± ì •ë³´
 	castle->RemoveAttackChar(ch->m_index);
 	castle->RemoveDefenseChar(ch->m_index);
 	castle->AddAttackChar(ch->m_index);
 
-	// Ä³¸¯Á¤º¸
+	// ìºë¦­ì •ë³´
 	ch->SetJoinFlag(ch->m_pZone->m_index, WCJF_ATTACK_CHAR);
 	ch->m_bChangeStatus = true;
 
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarJoinAttackCharMsg(rmsg, MSG_GUILD_WAR_ERROR_OK, castle);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2568,7 +2615,7 @@ void do_GuildWarJoinDefenseChar(CPC* ch, CNetMsg::SP& msg)
 
 	CHECK_SUBSERVER(castle);
 
-	// ¼ºÁÖ°¡ ÀÖ´Â ¼ºÀÌ°í
+	// ì„±ì£¼ê°€ ìˆëŠ” ì„±ì´ê³ 
 	if (castle->GetOwnerGuildIndex() <= 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2577,7 +2624,7 @@ void do_GuildWarJoinDefenseChar(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµå ¹æÄ§À» ¸ÕÀú µû¸§
+	// ê¸¸ë“œ ë°©ì¹¨ì„ ë¨¼ì € ë”°ë¦„
 	switch (ch->GetJoinFlag(ch->m_pZone->m_index))
 	{
 	case WCJF_OWNER:
@@ -2605,7 +2652,7 @@ void do_GuildWarJoinDefenseChar(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¶°Ç °Ë»çÇÏ°í : ½ÅÃ» °¡´É ½Ã°£, ·¹º§
+	// ì¡°ê±´ ê²€ì‚¬í•˜ê³  : ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„, ë ˆë²¨
 	if (!castle->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2622,18 +2669,18 @@ void do_GuildWarJoinDefenseChar(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// DB¿¡ ÀúÀå
-	// 1. Æ®·£Àè¼Ç ½ÃÀÛ
-	// 2. ÇöÀç Ä³¸¯ÅÍÀÇ ¿ëº´ ½ÅÃ» »èÁ¦
-	// 3. ÇöÀç Ä³¸¯ÅÍ ±æµåÀÇ ½ÅÃ» »èÁ¦
-	// 4. »õ·Î Ãß°¡
-	// 5. Æ®·£Àè¼Ç ³¡
+	// DBì— ì €ì¥
+	// 1. íŠ¸ëœì­ì…˜ ì‹œì‘
+	// 2. í˜„ì¬ ìºë¦­í„°ì˜ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
+	// 3. í˜„ì¬ ìºë¦­í„° ê¸¸ë“œì˜ ì‹ ì²­ ì‚­ì œ
+	// 4. ìƒˆë¡œ ì¶”ê°€
+	// 5. íŠ¸ëœì­ì…˜ ë
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 	cmd.BeginTrans();
 	try
 	{
-		// °³ÀÎ ¿ëº´ ½ÅÃ» »èÁ¦
+		// ê°œì¸ ìš©ë³‘ ì‹ ì²­ ì‚­ì œ
 		if (ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)
 		{
 			std::string delete_castle_join_query = "";
@@ -2672,18 +2719,18 @@ void do_GuildWarJoinDefenseChar(CPC* ch, CNetMsg::SP& msg)
 	GAMELOG << init("WAR CASTLE : JOIN DEFENSE CHAR", ch)
 			<< end;
 
-	// Á¤º¸ º¯°æ
-	// ¼º Á¤º¸
+	// ì •ë³´ ë³€ê²½
+	// ì„± ì •ë³´
 	castle->RemoveAttackChar(ch->m_index);
 	castle->RemoveDefenseChar(ch->m_index);
 	castle->AddDefenseChar(ch->m_index);
 
-	// Ä³¸¯Á¤º¸
+	// ìºë¦­ì •ë³´
 	ch->SetJoinFlag(ch->m_pZone->m_index, WCJF_DEFENSE_CHAR);
 	ch->m_bChangeStatus = true;
 
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarJoinDefenseCharMsg(rmsg, MSG_GUILD_WAR_ERROR_OK, castle);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2696,25 +2743,25 @@ void do_GuildWarAttackSymbol(CPC* ch, CNetMsg::SP& msg)
 	if (castle == NULL)
 		return ;
 
-	// ¼º¹®Áß ÇÏ³ª¶ó°í ¿­¸°°÷ÀÌ ÀÖÀ»¶§
+	// ì„±ë¬¸ì¤‘ í•˜ë‚˜ë¼ê³  ì—´ë¦°ê³³ì´ ìˆì„ë•Œ
 	if (!castle->IsOpenGate())
 		return ;
 
-	// ±ÇÁÂ°¡ ¾ÆÁ÷ ¾È ºÎ¼ÅÁ³À» ¶§
+	// ê¶Œì¢Œê°€ ì•„ì§ ì•ˆ ë¶€ì…”ì¡Œì„ ë•Œ
 	if (DEAD(castle->GetLordSymbol()))
 		return ;
 
-	// ±æµå°¡ ÀÖ°í
+	// ê¸¸ë“œê°€ ìˆê³ 
 	if (ch->m_guildInfo == NULL)
 		return ;
 	CGuild* guild = ch->m_guildInfo->guild();
 
-	// °ø¼ºÅ¾3 ±æµåÁß ÇÏ³ªÀÌ°í
+	// ê³µì„±íƒ‘3 ê¸¸ë“œì¤‘ í•˜ë‚˜ì´ê³ 
 	if (!castle->IsTop3Guild(guild->index()))
 		return ;
 
 	int point=0;
-	// ±æµåÀåÀÌ°í
+	// ê¸¸ë“œì¥ì´ê³ 
 	if (ch->m_guildInfo->pos() == MSG_GUILD_POSITION_BOSS )
 		point = 3;
 	else if(ch->m_guildInfo->pos() == MSG_GUILD_POSITION_OFFICER)
@@ -2722,11 +2769,11 @@ void do_GuildWarAttackSymbol(CPC* ch, CNetMsg::SP& msg)
 	else
 		return ;
 
-	// °Å¸®°¡ 3¹ÌÅÍ ÀÌ³»ÀÌ°í
+	// ê±°ë¦¬ê°€ 3ë¯¸í„° ì´ë‚´ì´ê³ 
 	if (GetDistance(ch, castle->GetLordSymbol()) > 3.0f)
 		return ;
 
-	// 1.2ÃÊ ¸¶´Ù ÇÑ¹ø
+	// 1.2ì´ˆ ë§ˆë‹¤ í•œë²ˆ
 	if (gserver->m_pulse - ch->m_lastAttackPulse + PULSE_HACK_ATTACK_THRESHOLD < 12)
 		return ;
 
@@ -2736,17 +2783,17 @@ void do_GuildWarAttackSymbol(CPC* ch, CNetMsg::SP& msg)
 	ch->m_pulseLastAttackSkill = gserver->m_pulse;
 
 	{
-		// °ø°İ ¸Ş½ÃÁö ¿¡ÄÚ
+		// ê³µê²© ë©”ì‹œì§€ ì—ì½”
 		CNetMsg::SP rmsg(new CNetMsg);
 		DamageMsg(rmsg, ch, castle->GetLordSymbol(), MSG_DAMAGE_MELEE, -1, 1, HITTYPE_NORMAL, -1);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
 	}
 
-	// ±ÇÁÂ HP °¨¼Ò
+	// ê¶Œì¢Œ HP ê°ì†Œ
 	castle->DecreaseLordSymbolHP();
 
 	{
-		// ±ÇÁÂ HP °¨¼Ò ¾Ë¸²
+		// ê¶Œì¢Œ HP ê°ì†Œ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		CharStatusMsg(rmsg, castle->GetLordSymbol(), 0);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -2754,7 +2801,7 @@ void do_GuildWarAttackSymbol(CPC* ch, CNetMsg::SP& msg)
 
 	castle->IncreaseTeamPoint(guild->index(), point);
 
-	// Æ÷ÀÎÆ® Áõ°¡ ¾Ë¸²
+	// í¬ì¸íŠ¸ ì¦ê°€ ì•Œë¦¼
 	PCManager::instance()->sendGuildWarPointMsg(castle, ch->m_pZone->m_index);
 }
 
@@ -2764,7 +2811,7 @@ void do_GuildStashHistoryReq(CPC* ch, CNetMsg::SP& msg)
 	int day[7] = {0, 0, 0, 0, 0, 0, 0};
 	LONGLONG money[7] = {0, 0, 0, 0, 0, 0, 0};
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷¸¸
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒë§Œ
 	if (!ch->m_guildInfo || !ch->m_guildInfo->guild())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2773,7 +2820,7 @@ void do_GuildStashHistoryReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇïÆÛ¿¡ ¿äÃ»
+	// í—¬í¼ì— ìš”ì²­
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashHistoryReqMsg(rmsg, ch->m_guildInfo->guild()->index(), ch->m_index);
@@ -2783,7 +2830,7 @@ void do_GuildStashHistoryReq(CPC* ch, CNetMsg::SP& msg)
 
 void do_GuildStashViewReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷¸¸
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒë§Œ
 	if (!ch->m_guildInfo || !ch->m_guildInfo->guild())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2792,7 +2839,7 @@ void do_GuildStashViewReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµåÀåÀÌ³ª ºÎ°ü¸¸
+	// ê¸¸ë“œì¥ì´ë‚˜ ë¶€ê´€ë§Œ
 	if (ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS && ch->m_guildInfo->pos() != MSG_GUILD_POSITION_OFFICER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2801,7 +2848,7 @@ void do_GuildStashViewReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇïÆÛ¿¡ ¿äÃ»
+	// í—¬í¼ì— ìš”ì²­
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashViewReqMsg(rmsg, ch->m_guildInfo->guild()->index(), ch->m_index);
@@ -2817,7 +2864,7 @@ void do_GuildStashTakeReq(CPC* ch, CNetMsg::SP& msg)
 	if (money < 1)
 		return ;
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷¸¸
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒë§Œ
 	if (!ch->m_guildInfo || !ch->m_guildInfo->guild())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2826,7 +2873,7 @@ void do_GuildStashTakeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµåÀåÀÌ³ª ºÎ°ü¸¸
+	// ê¸¸ë“œì¥ì´ë‚˜ ë¶€ê´€ë§Œ
 	if (ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS && ch->m_guildInfo->pos() != MSG_GUILD_POSITION_OFFICER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2835,7 +2882,7 @@ void do_GuildStashTakeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇïÆÛ¿¡ ¿äÃ»
+	// í—¬í¼ì— ìš”ì²­
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashTakeReqMsg(rmsg, ch->m_guildInfo->guild()->index(), ch->m_index, money);
@@ -2854,8 +2901,8 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 
 	RefMsg(msg) >> guildincline;
 
-	// Á¶°Ç °Ë»ç
-	// ±æµå°¡ ÀÖ´Â »ç¶÷
+	// ì¡°ê±´ ê²€ì‚¬
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒ
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2863,7 +2910,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
-	// ±æµåÀå¸¸
+	// ê¸¸ë“œì¥ë§Œ
 	if (ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2872,7 +2919,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// ±æµå ·¹º§ °Ë»ç
+	// ê¸¸ë“œ ë ˆë²¨ ê²€ì‚¬
 	if( ch->m_guildInfo->guild()->level() < 6 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2881,10 +2928,18 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	//ÇöÀç ±æµå ¼ºÇâ
-//#define GUILD_INCLINE_GENERAL		0		// ÀÏ¹İ ±æµå
-//#define GUILD_INCLINE_CHAO			1		// Ä«¿À ±æµå
-//#define GUILD_INCLINE_HUNTER		2		// ÇåÅÍ ±æµå
+	if( ch->m_guildInfo->guild()->m_isUseTheStashAndSkill == false )
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg(rmsg, MSG_NEW_GUILD_ERROR_CHANG_INCLINE);
+		SEND_Q(rmsg, ch->m_desc);
+		return ;
+	}
+
+	//í˜„ì¬ ê¸¸ë“œ ì„±í–¥
+//#define GUILD_INCLINE_GENERAL		0		// ì¼ë°˜ ê¸¸ë“œ
+//#define GUILD_INCLINE_CHAO			1		// ì¹´ì˜¤ ê¸¸ë“œ
+//#define GUILD_INCLINE_HUNTER		2		// í—Œí„° ê¸¸ë“œ
 	if( ch->m_guildInfo->guild()->GetIncline() == guildincline || guildincline == GUILD_INCLINE_GENERAL )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2897,7 +2952,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 
 	if( guildincline == GUILD_INCLINE_CHAO )
 	{
-		// ³ª½º °Ë»ç
+		// ë‚˜ìŠ¤ ê²€ì‚¬
 		if (ch->m_inventory.getMoney() < 2000000)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -2906,7 +2961,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 			return ;
 		}
 
-		// gp °Ë»ç
+		// gp ê²€ì‚¬
 		if( ch->m_guildInfo->guild()->GetGuildPoint() < 10000 )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -2919,7 +2974,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 	}
 	else if ( guildincline == GUILD_INCLINE_HUNTER )
 	{
-		// ³ª½º °Ë»ç
+		// ë‚˜ìŠ¤ ê²€ì‚¬
 		if (ch->m_inventory.getMoney() < 5000000 )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -2928,7 +2983,7 @@ void do_GuildInclineEstablist( CPC* ch, CNetMsg::SP& msg )
 			return ;
 		}
 
-		// gp °Ë»ç
+		// gp ê²€ì‚¬
 		if( ch->m_guildInfo->guild()->GetGuildPoint() < 5000 )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -2960,30 +3015,51 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 {
 	int			charindex;
 	CLCString	strPositionName(GUILD_POSITION_NAME+1);
-	unsigned int			contributeExp;
-	unsigned int			contributFame;
+	unsigned int			contributeExp_min, contributeExp_max;
+	unsigned int			contributeFame_min, contributeFame_max;
 	int			pos;
 #ifdef DEV_GUILD_STASH
-	char		cStashAuth;			// 0 :»ç¿ëºÒ°¡, 1:»ç¿ë°¡´É
+	char		cStashAuth;			// 0 :ì‚¬ìš©ë¶ˆê°€, 1:ì‚¬ìš©ê°€ëŠ¥
 #endif // DEV_GUILD_STASH
 
 	RefMsg(msg) >> charindex
 				>> strPositionName
-				>> contributeExp
-				>> contributFame;
+				>> contributeExp_min
+				>> contributeExp_max
+				>> contributeFame_min
+				>> contributeFame_max;
 	RefMsg(msg) >> pos;
 
 #ifdef DEV_GUILD_STASH
 	RefMsg(msg) >> cStashAuth;
 #endif //DEV_GUILD_STASH
 
-	if((contributeExp < 0 || contributeExp > 100) ||
-			(contributFame < 0 || contributFame > 100))
+	if( (contributeExp_min < 0 || contributeExp_max > 100) ||
+		(contributeFame_min < 0 || contributeFame_max > 100) )
 	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, ch->m_desc );
 		return ;
 	}
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷
+	if(contributeExp_min > contributeExp_max)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, ch->m_desc );
+		return;
+	}
+
+	if(contributeFame_min > contributeFame_max)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, ch->m_desc );
+		return;
+	}
+
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒ
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2992,7 +3068,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	//±æµåÀåÀÎÁö Ã¼Å©
+	//ê¸¸ë“œì¥ì¸ì§€ ì²´í¬
 	if( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3000,16 +3076,6 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-
-#ifdef GUILD_CONTRIBUTE_EXP_LIMIT // ±æµÎ ±âºÎ °æÇèÄ¡¸¦ max 50%±îÁö¸¸ °¡´ÉÇÏµµ·Ï ¼öÁ¤
-	if( contributeExp > GUILD_CONTRIBUTE_EXP_LIMIT )
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		GuildErrorMsg(rmsg, MSG_NEW_GUILD_ERROR_ADJUST_FAIL);
-		SEND_Q(rmsg, ch->m_desc);
-		return;
-	}
-#endif
 
 	if(findPercentChar(strPositionName.getBuffer()) != NULL)
 	{
@@ -3019,7 +3085,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// Á÷À§°ªÀÌ À¯È¿ÇÏÁö ¾ÊÀ» ¶§
+	// ì§ìœ„ê°’ì´ ìœ íš¨í•˜ì§€ ì•Šì„ ë•Œ
 	if( pos < 0 || pos > MSG_GUILD_POSITION_RECON_MEMBER )
 	{
 		GAMELOG << init("GUILD MEMBER POSITION UPDATE FAIL : POSITION VALUE INVALID")	<< delim
@@ -3035,7 +3101,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-	// ¸Ş¶óÅ© °ø¼º ÁßÀÌ°í Âü¿© ±æµåÀÌ¸é
+	// ë©”ë¼í¬ ê³µì„± ì¤‘ì´ê³  ì°¸ì—¬ ê¸¸ë“œì´ë©´
 	CWarCastle* castle = CWarCastle::GetCastleObject(ZONE_MERAC);
 	if( castle != NULL && castle->GetState() != WCSF_NORMAL
 			&& ( IS_ATTACK_TEAM(ch->GetJoinFlag(ZONE_MERAC)) || IS_DEFENSE_TEAM(ch->GetJoinFlag(ZONE_MERAC)) ) )
@@ -3046,7 +3112,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// µå¶óÅº °ø¼º ÁßÀÌ°í Âü¿© ±æµåÀÌ¸é
+	// ë“œë¼íƒ„ ê³µì„± ì¤‘ì´ê³  ì°¸ì—¬ ê¸¸ë“œì´ë©´
 	castle = CWarCastle::GetCastleObject(ZONE_DRATAN);
 	if( castle != NULL && castle->GetState() != WCSF_NORMAL
 			&& ( IS_ATTACK_TEAM(ch->GetJoinFlag(ZONE_DRATAN)) || IS_DEFENSE_TEAM(ch->GetJoinFlag(ZONE_DRATAN)) ) )
@@ -3076,7 +3142,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 	if (gserver->isRunHelper())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildMemberAdjust( rmsg, ch, charindex, strPositionName, contributeExp, contributFame, pos );
+		HelperGuildMemberAdjust( rmsg, ch, charindex, strPositionName, contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, pos );
 #ifdef DEV_GUILD_STASH
 		RefMsg(rmsg) << cStashAuth;
 #endif // DEV_GUILD_STASH
@@ -3093,7 +3159,7 @@ void do_GuildMemberAdjust( CPC* ch, CNetMsg::SP& msg )
 
 void do_NewGuildInfo( CPC* ch, CNetMsg::SP& msg )
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3117,7 +3183,7 @@ void do_NewGuildInfo( CPC* ch, CNetMsg::SP& msg )
 }
 void do_NewGuildMemberList( CPC* ch, CNetMsg::SP& msg )
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3144,7 +3210,7 @@ void do_NewGuildMemberList( CPC* ch, CNetMsg::SP& msg )
 
 void do_NewGuildManage( CPC* ch, CNetMsg::SP& msg )
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3152,7 +3218,7 @@ void do_NewGuildManage( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
-	//±æµåÀåÀÎÁö Ã¼Å©
+	//ê¸¸ë“œì¥ì¸ì§€ ì²´í¬
 	if( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS  && ch->m_guildInfo->pos() != MSG_GUILD_POSITION_OFFICER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3177,7 +3243,7 @@ void do_NewGuildManage( CPC* ch, CNetMsg::SP& msg )
 }
 void do_NewGuildNotice( CPC* ch, CNetMsg::SP& msg )
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	CGuild* guild;
 	if( !ch->m_guildInfo )
 	{
@@ -3196,7 +3262,7 @@ void do_NewGuildNotice( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// °øÁö ½ºÅ³À» ¹è¿î ±æµåÀÎÁö Ã¼Å©
+	// ê³µì§€ ìŠ¤í‚¬ì„ ë°°ìš´ ê¸¸ë“œì¸ì§€ ì²´í¬
 	if( !guild->m_passiveSkillList.Find( 443 ) )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3229,7 +3295,7 @@ void do_NewGuildNoticeUpdate( CPC* ch, CNetMsg::SP& msg )
 	if(findPercentChar(text.getBuffer()) != NULL)
 		return ;
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3238,7 +3304,7 @@ void do_NewGuildNoticeUpdate( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	//±æµåÀåÀÎÁö Ã¼Å©
+	//ê¸¸ë“œì¥ì¸ì§€ ì²´í¬
 	if( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3247,7 +3313,7 @@ void do_NewGuildNoticeUpdate( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// °øÁö ½ºÅ³À» ¹è¿î ±æµåÀÎÁö Ã¼Å©
+	// ê³µì§€ ìŠ¤í‚¬ì„ ë°°ìš´ ê¸¸ë“œì¸ì§€ ì²´í¬
 	CGuild* guild = ch->m_guildInfo->guild();
 	if( !guild->m_passiveSkillList.Find( 443 ) )
 	{
@@ -3278,7 +3344,7 @@ void do_NewGuildNoticeTrans( CPC* ch, CNetMsg::SP& msg )
 //	RefMsg(msg) >> title
 //		>> text;
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3287,7 +3353,7 @@ void do_NewGuildNoticeTrans( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	//±æµåÀåÀÎÁö Ã¼Å©
+	//ê¸¸ë“œì¥ì¸ì§€ ì²´í¬
 	if( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3312,7 +3378,7 @@ void do_NewGuildNoticeTrans( CPC* ch, CNetMsg::SP& msg )
 
 void do_NewGuildSkillList( CPC* ch, CNetMsg::SP& msg )
 {
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3341,7 +3407,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 	int skilltype;
 	RefMsg(msg) >> skillindex;
 
-	// ±æµå°¡ ÀÖ´Â »ç¶÷ÀÎÁö Ã¼Å©
+	// ê¸¸ë“œê°€ ìˆëŠ” ì‚¬ëŒì¸ì§€ ì²´í¬
 	if( !ch->m_guildInfo || !ch->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3350,7 +3416,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	//±æµåÀåÀÎÁö Ã¼Å©
+	//ê¸¸ë“œì¥ì¸ì§€ ì²´í¬
 	if( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3400,7 +3466,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// ½ºÅ³ °Ë»ç
+	// ìŠ¤í‚¬ ê²€ì‚¬
 	if( skillindex == 444 )
 	{
 		CSkill* pCompSkill = list->Find( 443 );
@@ -3413,7 +3479,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	//·¹º§ °Ë»ç
+	//ë ˆë²¨ ê²€ì‚¬
 	if( levelproto->m_learnLevel > ch->m_guildInfo->guild()->level() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3421,7 +3487,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-	// gp °Ë»ç
+	// gp ê²€ì‚¬
 	if( levelproto->m_learnGP > ch->m_guildInfo->guild()->GetGuildPoint() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3430,14 +3496,22 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ °Ë»ç
+	if(ch->m_guildInfo->guild()->m_isUseTheStashAndSkill == false)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_NEW_GUILD_ERRROR_GUILDPOINT );
+		SEND_Q(rmsg, ch->m_desc);
+		return ;
+	}
+
+	// ì•„ì´í…œ ê²€ì‚¬
 	item_search_t vec[MAX_SKILL_LEARN_ITEM];
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
 		if (levelproto->m_learnItemIndex[i] < 0)
 			continue ;
 
-		if (levelproto->m_learnItemIndex[i] == NAS_ITEM_DB_INDEX)		//±æµå½ºÅ³À» ¹è¿ì´Âµ¥ ÇÊ¿äÇÑ ¾ÆÀÌÅÛÀÌ µ·ÀÌ¶ó¸é
+		if (levelproto->m_learnItemIndex[i] == NAS_ITEM_DB_INDEX)		//ê¸¸ë“œìŠ¤í‚¬ì„ ë°°ìš°ëŠ”ë° í•„ìš”í•œ ì•„ì´í…œì´ ëˆì´ë¼ë©´
 		{
 			if (ch->m_inventory.getMoney() < levelproto->m_learnItemCount[i])
 			{
@@ -3460,13 +3534,13 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// GP ¼Ò¸ğ
+	// GP ì†Œëª¨
 	gserver->m_guildlist.findguild( guildindex )->AddGuildPoint( -levelproto->m_learnGP );
 
-	// ¾ÆÀÌÅÛ ¼Ò¸ğ
+	// ì•„ì´í…œ ì†Œëª¨
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
-		if (levelproto->m_learnItemIndex[i] == NAS_ITEM_DB_INDEX)		//±æµå½ºÅ³À» ¹è¿ì´Âµ¥ ÇÊ¿äÇÑ ¾ÆÀÌÅÛÀÌ µ·ÀÌ¶ó¸é
+		if (levelproto->m_learnItemIndex[i] == NAS_ITEM_DB_INDEX)		//ê¸¸ë“œìŠ¤í‚¬ì„ ë°°ìš°ëŠ”ë° í•„ìš”í•œ ì•„ì´í…œì´ ëˆì´ë¼ë©´
 		{
 			ch->m_inventory.decreaseMoney(levelproto->m_learnItemCount[i]);
 		}
@@ -3476,10 +3550,10 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// ½ºÅ³ Ãß°¡
+	// ìŠ¤í‚¬ ì¶”ê°€
 	if (skill == NULL)
 	{
-		// »õ·Î ¹è¿ò
+		// ìƒˆë¡œ ë°°ì›€
 		skill = gserver->m_skillProtoList.Create(skillindex);
 		if (!skill)
 		{
@@ -3496,9 +3570,9 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 			gserver->m_guildlist.findguild( guildindex )->m_etcSkillList.Add(skill);
 
 #ifdef DEV_GUILD_STASH
-		if ( skillindex == 1377/*'±æµåÃ¢°í½ºÅ³'*/ )
+		if ( skillindex == 1377/*'ê¸¸ë“œì°½ê³ ìŠ¤í‚¬'*/ )
 		{
-			// ÇÛÆÛ·Î ±æµå Ã¢°í ¸¸µé±â ¿äÃ»
+			// í•¼í¼ë¡œ ê¸¸ë“œ ì°½ê³  ë§Œë“¤ê¸° ìš”ì²­
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildStashCreateMsg( rmsg , ch->m_guildInfo->guild()->index(), ch->m_index );
 			SEND_Q( rmsg, gserver->m_helper )
@@ -3507,7 +3581,7 @@ void do_NewGuildSkillLearn( CPC* ch, CNetMsg::SP& msg )
 	}
 	else
 	{
-		// ÀÖ´Â ½ºÅ³ ·¹º§ ¾÷
+		// ìˆëŠ” ìŠ¤í‚¬ ë ˆë²¨ ì—…
 		if (skill->m_level >= proto->m_maxLevel)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -3565,7 +3639,7 @@ void do_GuildWarSetTimeMenuReq(CPC* ch, CNetMsg::SP& msg)
 	if(!merakcaslte || !dratancaslte)
 		return ;
 
-	// ±æµå°¡ ÀÖ°í
+	// ê¸¸ë“œê°€ ìˆê³ 
 	if (!ch->m_guildInfo)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3574,7 +3648,7 @@ void do_GuildWarSetTimeMenuReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¼ºÁÖ ±æµåÀÌ°í
+	// ì„±ì£¼ ê¸¸ë“œì´ê³ 
 	CGuild* guild = ch->m_guildInfo->guild();
 	if ((guild->index() != merakcaslte->GetOwnerGuildIndex()) &&
 			(guild->index() != dratancaslte->GetOwnerGuildIndex()) )
@@ -3585,7 +3659,7 @@ void do_GuildWarSetTimeMenuReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±æµå ÀåÀÌ°í
+	// ê¸¸ë“œ ì¥ì´ê³ 
 	if (guild->boss()->charindex() != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3594,7 +3668,7 @@ void do_GuildWarSetTimeMenuReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// °ø¼ºÁßÀÌ ¾Æ´Ï°í
+	// ê³µì„±ì¤‘ì´ ì•„ë‹ˆê³ 
 	if (merakcaslte->GetState() != WCSF_NORMAL || dratancaslte->GetState() != WCSF_NORMAL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3603,7 +3677,7 @@ void do_GuildWarSetTimeMenuReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ½ÅÃ»½Ã°£ÀÌ ¾Æ´Ò¶§
+	// ì‹ ì²­ì‹œê°„ì´ ì•„ë‹ë•Œ
 	if (merakcaslte->IsJoinTime() || dratancaslte->IsJoinTime())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3746,7 +3820,7 @@ bool CheckOverlapWarCastle(int wday, int hour, int zone)
 	if(nextWarTime.tm_wday != wday)
 		return true;
 
-	// ºñ±³ÇÒ °ø¼º ½Ã°£
+	// ë¹„êµí•  ê³µì„± ì‹œê°„
 	if( hour * 3600 + castle->GetWarTime() <= nextWarTime.tm_hour * 3600 )
 		return true;
 
@@ -3759,7 +3833,7 @@ bool CheckOverlapWarCastle(int wday, int hour, int zone)
 #ifdef DEV_GUILD_MARK
 void do_newGuildSkillMarkEdit(CPC* ch, CNetMsg::SP& msg)
 {
-	// ½ºÅ³ ÀÎµ¦½º ¼öÁ¤
+	// ìŠ¤í‚¬ ì¸ë±ìŠ¤ ìˆ˜ì •
 	if(ch == NULL || DEAD(ch))
 		return ;
 
@@ -3768,7 +3842,7 @@ void do_newGuildSkillMarkEdit(CPC* ch, CNetMsg::SP& msg)
 
 	CGuild* pGuild = NULL;
 	pGuild = ch->m_guildInfo->guild();
-	if(!pGuild)	// ±æµå°¡ ¾øÀ¸¸é..
+	if(!pGuild)	// ê¸¸ë“œê°€ ì—†ìœ¼ë©´..
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_NOGUILD);
@@ -3881,7 +3955,7 @@ void do_newGuildSkillMarkEditFinish(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		//¿©±â±îÁö Åë°ú ÇßÀ¸¸é MSG_HELPER_NEW_GUILD_MARK_REGIST¸¦ Helper·Î º¸³»¾ßÇÑ´Ù~!~!~!
+		//ì—¬ê¸°ê¹Œì§€ í†µê³¼ í–ˆìœ¼ë©´ MSG_HELPER_NEW_GUILD_MARK_REGISTë¥¼ Helperë¡œ ë³´ë‚´ì•¼í•œë‹¤~!~!~!
 		int time = (int)mktime(&gserver->m_tRealSystemTime);
 		int markTime = time + (pItem->m_itemProto->getItemNum0() * 24 * 60 * 60);
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3893,7 +3967,7 @@ void do_newGuildSkillMarkEditFinish(CPC* ch, CNetMsg::SP& msg)
 #endif
 
 #ifdef DEV_GUILD_STASH
-//XX ±æµåÃ¢°í - ¸®½ºÆ® (1)
+//XX ê¸¸ë“œì°½ê³  - ë¦¬ìŠ¤íŠ¸ (1)
 void do_newGuildStashList( CPC* ch, CNetMsg::SP& msg )
 {
 	int guildIndex = 0;
@@ -3907,14 +3981,14 @@ void do_newGuildStashList( CPC* ch, CNetMsg::SP& msg )
 		guildIndex = ch->m_guildInfo->guild()->index();
 	}
 
-	//  TODO :  ±æµå ±ÇÇÑ °°Àº°Å È®ÀÎ ÇÏ°í
+	//  TODO :  ê¸¸ë“œ ê¶Œí•œ ê°™ì€ê±° í™•ì¸ í•˜ê³ 
 	if( guildIndex > 0 )
 	{
-		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'±æµåÃ¢°í½ºÅ³'*/);
+		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'ê¸¸ë“œì°½ê³ ìŠ¤í‚¬'*/);
 		if( !pSkill )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ½ºÅ³À» ¹è¿ö¾ßÇÔ
+			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ìŠ¤í‚¬ì„ ë°°ì›Œì•¼í•¨
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -3929,13 +4003,13 @@ void do_newGuildStashList( CPC* ch, CNetMsg::SP& msg )
 	else
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 1 );	 // 1: ±æµå°¡ ¾ø½À´Ï´Ù.
+		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 1 );	 // 1: ê¸¸ë“œê°€ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
 }
 
-//XX ±æµåÃ¢°í - º¸°ü (1)
+//XX ê¸¸ë“œì°½ê³  - ë³´ê´€ (1)
 void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 {
 	int guildIndex = 0;
@@ -3943,24 +4017,33 @@ void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 	{
 		guildIndex = ch->m_guildInfo->guild()->index();
 	}
-	// TODO :  ±æµå ±ÇÇÑ °°Àº°Å È®ÀÎ ÇÏ°í
+	// TODO :  ê¸¸ë“œ ê¶Œí•œ ê°™ì€ê±° í™•ì¸ í•˜ê³ 
 
 	if( guildIndex > 0 )
 	{
-		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'±æµåÃ¢°í½ºÅ³'*/ );
+		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'ê¸¸ë“œì°½ê³ ìŠ¤í‚¬'*/ );
 		if( !pSkill )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ½ºÅ³À» ¹è¿ö¾ßÇÔ
+			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ìŠ¤í‚¬ì„ ë°°ì›Œì•¼í•¨
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
 	}
 	else
 	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 6 );	 // 6: ±æµå°¡ ¾ø½À´Ï´Ù.
-		SEND_Q( rmsg, ch->m_desc );
+// 		CNetMsg::SP rmsg(new CNetMsg);
+// 		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 6 );	 // 6: ê¸¸ë“œê°€ ì—†ìŠµë‹ˆë‹¤.
+// 		SEND_Q( rmsg, ch->m_desc );
+		LOG_ERROR("HACKING? : not found guild. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("not found guild");
+		return;
+	}
+
+	if (ch->m_guildStashLock == true)
+	{
+		LOG_ERROR("HACKING? : guild stash is locked. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("guild");
 		return;
 	}
 
@@ -3986,8 +4069,8 @@ void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 
 	if (packet->listCount < 0 || packet->listCount > 5)
 	{
-		LOG_ERROR("HACKING? : invalid itemCount[%d]. char_index[%d]", packet->listCount, ch->m_index);
-		ch->m_desc->Close("invalid itemCount");
+		LOG_ERROR("HACKING? : invalid listCount[%d]. char_index[%d]", packet->listCount, ch->m_index);
+		ch->m_desc->Close("invalid listCount");
 		return;
 	}
 
@@ -4065,16 +4148,16 @@ void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
-			// º¸°üÇÒ ¼ö ¾ø´Â ¾ÆÀÌÅÛ
-			if( pItem->CanKeepStash() == false 				// º¸È¯ÇÒ ¼ö ¾ø°Å³ª
+			// ë³´ê´€í•  ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
+			if( pItem->CanKeepStash() == false 				// ë³´í™˜í•  ìˆ˜ ì—†ê±°ë‚˜
 #ifdef ENABLE_SUBJOB
-					|| pItem->CanUseTrader( TRADE_STASH, ch->IsSubJob(JOB_SUB_TRADER) ) == false 	// »óÀÎÀÌ »ç¿ëÇÒ¼ö ¾ø°Å³ª
+					|| pItem->CanUseTrader( TRADE_STASH, ch->IsSubJob(JOB_SUB_TRADER) ) == false 	// ìƒì¸ì´ ì‚¬ìš©í• ìˆ˜ ì—†ê±°ë‚˜
 #endif //ENABLE_SUBJOB
-					|| pItem->getDBIndex() != packet->list[i].itemDBIndex 	// ¾ÆÀÌÅÛÀÌ ´Ù¸£°Å³ª
+					|| pItem->getDBIndex() != packet->list[i].itemDBIndex 	// ì•„ì´í…œì´ ë‹¤ë¥´ê±°ë‚˜
 			  )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_KEEP , 5 ); // 5: º¸°ü ÇÒ ¼ö ¾ø´Â ¾ÆÀÌÅÛÀÌ ÀÖ½À´Ï´Ù.
+				GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_KEEP , 5 ); // 5: ë³´ê´€ í•  ìˆ˜ ì—†ëŠ” ì•„ì´í…œì´ ìˆìŠµë‹ˆë‹¤.
 				SEND_Q( rmsg, ch->m_desc );
 				return;
 			}
@@ -4130,7 +4213,7 @@ void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 			char	socket[SOCKET_DB_LENGTH] = {0,};
 			pItem->m_socketList.GetSocketInfoString(socket);
 
-			// ³ª´©¾îÁö´Â °æ¿ì¶ó¸é serialÀ» µû·Î ¸¸µç´Ù.
+			// ë‚˜ëˆ„ì–´ì§€ëŠ” ê²½ìš°ë¼ë©´ serialì„ ë”°ë¡œ ë§Œë“ ë‹¤.
 			if (pItem->getItemCount() == packet->list[i].count)
 			{
 				RefMsg(rmsg) << pItem->m_serial.c_str();
@@ -4149,10 +4232,12 @@ void do_newGuildStashKeep( CPC* ch, CNetMsg::SP& msg )
 		}
 
 		SEND_Q( rmsg, gserver->m_helper );
+
+		ch->m_guildStashLock = true;
 	}
 }
 
-//XX ±æµåÃ¢°í - Ã£±â (1)
+//XX ê¸¸ë“œì°½ê³  - ì°¾ê¸° (1)
 void do_newGuildStashTake( CPC* ch, CNetMsg::SP& msg )
 {
 	RequestClient::doNewGuildStashTake* packet = reinterpret_cast<RequestClient::doNewGuildStashTake*>(msg->m_buf);
@@ -4177,6 +4262,13 @@ void do_newGuildStashTake( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
+	if (ch->m_guildStashLock == true)
+	{
+		LOG_ERROR("HACKING? : guild stash is locked. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("guild");
+		return;
+	}
+
 	if (packet->takeMoney == 0 && packet->listCount == 0)
 	{
 		std::string str = boost::str(boost::format(
@@ -4187,11 +4279,18 @@ void do_newGuildStashTake( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'±æµåÃ¢°í½ºÅ³'*/ );
+	if (packet->listCount > 5)
+	{
+		LOG_ERROR("HACKING? : invalid listCount[%d]. char_index[%d]", packet->listCount, ch->m_index);
+		ch->m_desc->Close("invalid listCount");
+		return;
+	}
+
+	CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'ê¸¸ë“œì°½ê³ ìŠ¤í‚¬'*/ );
 	if (pSkill == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 2 );	 // 2: ½ºÅ³À» ¹è¿ö¾ßÇÔ
+		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 2 );	 // 2: ìŠ¤í‚¬ì„ ë°°ì›Œì•¼í•¨
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -4209,10 +4308,20 @@ void do_newGuildStashTake( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
+			if (packet->list[i].itemCount <= 0)
+			{
+				LOG_ERROR("HACKING? : invalid itemCount[%d]. char_index[%d]", packet->list[i].itemCount, ch->m_index);
+				ch->m_desc->Close("invalid itemCount");
+				return;
+			}
+
 			RefMsg(rmsg) << packet->list[i].stashIndex
 						 << packet->list[i].itemCount;
 		}
+
 		SEND_Q( rmsg, gserver->m_helper );
+
+		ch->m_guildStashLock = true;
 	}
 }
 
@@ -4227,14 +4336,14 @@ void do_newGuildStashLog( CPC* ch, CNetMsg::SP& msg )
 		guildIndex = ch->m_guildInfo->guild()->index();
 	}
 
-	// TODO : ±æµå ±ÇÇÑ °°Àº°Å È®ÀÎ ÇÏ°í
+	// TODO : ê¸¸ë“œ ê¶Œí•œ ê°™ì€ê±° í™•ì¸ í•˜ê³ 
 	if( guildIndex > 0 )
 	{
-		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'±æµåÃ¢°í½ºÅ³'*/ );
+		CSkill* pSkill = ch->m_guildInfo->guild()->FindSkill( 1377/*'ê¸¸ë“œì°½ê³ ìŠ¤í‚¬'*/ );
 		if( !pSkill )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ½ºÅ³À» ¹è¿ö¾ßÇÔ
+			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 7 );	 // 7: ìŠ¤í‚¬ì„ ë°°ì›Œì•¼í•¨
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -4248,7 +4357,7 @@ void do_newGuildStashLog( CPC* ch, CNetMsg::SP& msg )
 	else
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 1 );	 // 1: ±æµå°¡ ¾ø½À´Ï´Ù.
+		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, 1 );	 // 1: ê¸¸ë“œê°€ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -4260,7 +4369,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 	int _guildIndex = -1;
 	RefMsg(msg) >> _guildIndex;
 
-	// TODO 1 :: ±æµå À¯È¿¼º °Ë»ç
+	// TODO 1 :: ê¸¸ë“œ ìœ íš¨ì„± ê²€ì‚¬
 	CGuild* _guild = gserver->m_guildlist.findguild(_guildIndex);
 	if ( !_guild )
 	{
@@ -4270,7 +4379,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ±æµå°¡ ÇØÀÓ ´ë±â »óÅÂÀÎÁö °Ë»ç
+	// ê¸¸ë“œê°€ í•´ì„ ëŒ€ê¸° ìƒíƒœì¸ì§€ ê²€ì‚¬
 	if ( _guild->getGuildKick()->getKickStatus() == GMKS_RESERVE )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4279,7 +4388,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 2 :: ½ÅÃ» Ä³¸¯ÅÍ À¯È¿¼º °Ë»ç
+	// TODO 2 :: ì‹ ì²­ ìºë¦­í„° ìœ íš¨ì„± ê²€ì‚¬
 	CGuildMember* _member = _guild->findmember(ch->m_index);
 	if ( !_member )
 	{
@@ -4289,7 +4398,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ½ÅÃ» Ä³¸¯ÅÍ°¡ ±æµå ºÎÀåÀÎÁö °Ë»ç
+	// ì‹ ì²­ ìºë¦­í„°ê°€ ê¸¸ë“œ ë¶€ì¥ì¸ì§€ ê²€ì‚¬
 	if ( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_OFFICER )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4298,7 +4407,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 3 :: ±æµå¸¶½ºÅÍ Á¢¼Ó ³¯Â¥ 7ÀÏ È®ÀÎ
+	// TODO 3 :: ê¸¸ë“œë§ˆìŠ¤í„° ì ‘ì† ë‚ ì§œ 7ì¼ í™•ì¸
 	if ( !_guild->isPossibleKickMaster() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4307,7 +4416,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 4 :: ±æµå¸¶½ºÅÍ°¡ º¯°æµÇ°í 7ÀÏÀÌ Áö³µ´ÂÁö È®ÀÎ
+	// TODO 4 :: ê¸¸ë“œë§ˆìŠ¤í„°ê°€ ë³€ê²½ë˜ê³  7ì¼ì´ ì§€ë‚¬ëŠ”ì§€ í™•ì¸
 	if ( !_guild->isPastLastChangeBoss() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4316,7 +4425,7 @@ void do_GuildMasterKickReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 5 :: º¸½º Ãß¹æ ¿äÃ»
+	// TODO 5 :: ë³´ìŠ¤ ì¶”ë°© ìš”ì²­
 	if ( gserver->isRunHelper() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4338,7 +4447,7 @@ void do_GuildMasterKickCancelReq( CPC* ch, CNetMsg::SP& msg )
 	int _guildIndex = -1;
 	RefMsg(msg) >> _guildIndex;
 
-	// TODO 1 :: ±æµå À¯È¿¼º °Ë»ç
+	// TODO 1 :: ê¸¸ë“œ ìœ íš¨ì„± ê²€ì‚¬
 	CGuild* _guild = gserver->m_guildlist.findguild(_guildIndex);
 	if ( !_guild )
 	{
@@ -4348,7 +4457,7 @@ void do_GuildMasterKickCancelReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 2 :: ±æµå°¡ ÇØÀÓ ´ë±â »óÅÂÀÎÁö °Ë»ç
+	// TODO 2 :: ê¸¸ë“œê°€ í•´ì„ ëŒ€ê¸° ìƒíƒœì¸ì§€ ê²€ì‚¬
 	if ( _guild->getGuildKick()->getKickStatus() != GMKS_RESERVE )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4357,7 +4466,7 @@ void do_GuildMasterKickCancelReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 3 :: Ä³¸¯ÅÍ°¡ À¯È¿¼º °Ë»ç
+	// TODO 3 :: ìºë¦­í„°ê°€ ìœ íš¨ì„± ê²€ì‚¬
 	CGuildMember* _member = _guild->findmember(ch->m_index);
 	if ( !_member )
 	{
@@ -4367,7 +4476,7 @@ void do_GuildMasterKickCancelReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 4 :: Ä³¸¯ÅÍ°¡ º¸½ºÀÎÁö °Ë»ç
+	// TODO 4 :: ìºë¦­í„°ê°€ ë³´ìŠ¤ì¸ì§€ ê²€ì‚¬
 	if ( ch->m_guildInfo->pos() != MSG_GUILD_POSITION_BOSS)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4376,7 +4485,7 @@ void do_GuildMasterKickCancelReq( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// TODO 5 :: ÇïÆÛ¿¡ Ãë¼Ò ¿äÃ»
+	// TODO 5 :: í—¬í¼ì— ì·¨ì†Œ ìš”ì²­
 	if ( gserver->isRunHelper() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4403,24 +4512,24 @@ void do_GuildRemoteJoinReq( CPC* ch, CNetMsg::SP& msg )
 				>> requestName
 				>> type;
 
-	CPC* bossPC = NULL;		// ±æ¸¶ PC
-	CPC* joinPC = NULL;		// °¡ÀÔ PC
+	CPC* bossPC = NULL;		// ê¸¸ë§ˆ PC
+	CPC* joinPC = NULL;		// ê°€ì… PC
 
 	if ( type == GRI_MASTER )
 	{
-		// ±æ¸¶°¡ °¡ÀÔ ±ÇÀ¯ÇßÀ» ¶§,
+		// ê¸¸ë§ˆê°€ ê°€ì… ê¶Œìœ í–ˆì„ ë•Œ,
 		bossPC = ch;
 		joinPC = PCManager::instance()->getPlayerByName(targetName, true);
 	}
 	else if ( type == GRI_JOINER )
 	{
-		// À¯Àú°¡ °¡ÀÔ ½ÅÃ»ÇßÀ» ¶§,
+		// ìœ ì €ê°€ ê°€ì… ì‹ ì²­í–ˆì„ ë•Œ,
 		bossPC = PCManager::instance()->getPlayerByName(targetName, true);
 		joinPC = ch;
 	}
 	else
 	{
-		// ±× ¿Ü´Â ¾ø´Ù.
+		// ê·¸ ì™¸ëŠ” ì—†ë‹¤.
 		return;
 	}
 
@@ -4436,14 +4545,14 @@ void do_GuildRemoteJoinReq( CPC* ch, CNetMsg::SP& msg )
 	int _checkResult = do_CheckGuildJoin(bossPC, joinPC);
 	if ( _checkResult != 0 )
 	{
-		// °Ë»ç Åë°ú¸¦ ¸øÇß´Ù¸é, ¿¡·¯¸¦ ±×´ë·Î º¸³½´Ù
+		// ê²€ì‚¬ í†µê³¼ë¥¼ ëª»í–ˆë‹¤ë©´, ì—ëŸ¬ë¥¼ ê·¸ëŒ€ë¡œ ë³´ë‚¸ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildErrorMsg(rmsg, (MSG_GUILD_ERROR_TYPE)_checkResult);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// °Ë»ç Åë°ú
+	// ê²€ì‚¬ í†µê³¼
 	bossPC->m_regGuild = joinPC->m_index;
 	joinPC->m_regGuild = bossPC->m_index;
 
@@ -4457,28 +4566,28 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 	RefMsg(msg) >> targetName
 				>> type;
 
-	CPC* bossPC = NULL;		// ±æ¸¶ PC
-	CPC* joinPC = NULL;		// °¡ÀÔ PC
+	CPC* bossPC = NULL;		// ê¸¸ë§ˆ PC
+	CPC* joinPC = NULL;		// ê°€ì… PC
 
 	if ( type == GRI_MASTER )
 	{
-		// ±æ¸¶°¡ °¡ÀÔ ±ÇÀ¯ÇßÀ» ¶§,
+		// ê¸¸ë§ˆê°€ ê°€ì… ê¶Œìœ í–ˆì„ ë•Œ,
 		bossPC = ch;
 		joinPC = PCManager::instance()->getPlayerByName(targetName, true);
 	}
 	else if ( type == GRI_JOINER )
 	{
-		// À¯Àú°¡ °¡ÀÔ ½ÅÃ»ÇßÀ» ¶§,
+		// ìœ ì €ê°€ ê°€ì… ì‹ ì²­í–ˆì„ ë•Œ,
 		bossPC = PCManager::instance()->getPlayerByName(targetName, true);
 		joinPC = ch;
 	}
 	else
 	{
-		// ±× ¿Ü´Â ¾ø´Ù.
+		// ê·¸ ì™¸ëŠ” ì—†ë‹¤.
 		return;
 	}
 
-	// µÑ Áß ÇÏ³ª¶óµµ ¾øÀ¸¸é, Ãë¼Ò
+	// ë‘˜ ì¤‘ í•˜ë‚˜ë¼ë„ ì—†ìœ¼ë©´, ì·¨ì†Œ
 	if (!bossPC && joinPC)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4496,7 +4605,7 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// ¼­·Î °¡ÀÔ Ã³¸®ÁßÀÎ ³»¿ëÀÌ ´Ù¸£¸é, Ãë¼Ò
+	// ì„œë¡œ ê°€ì… ì²˜ë¦¬ì¤‘ì¸ ë‚´ìš©ì´ ë‹¤ë¥´ë©´, ì·¨ì†Œ
 	if (bossPC->m_regGuild != joinPC->m_index || joinPC->m_regGuild != bossPC->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4509,7 +4618,7 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 	}
 
 	CGuild* guild = bossPC->m_guildInfo->guild();
-	// °¡ÀÔÇÏ°íÀÚ ÇÏ´Â ±æµå°¡ ¾øÀ¸¸é, Ãë¼Ò
+	// ê°€ì…í•˜ê³ ì í•˜ëŠ” ê¸¸ë“œê°€ ì—†ìœ¼ë©´, ì·¨ì†Œ
 	if (!guild)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4521,7 +4630,7 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// °¡ÀÔ¹ŞÀ» ÀÚ¸®°¡ ¾øÀ¸¸é, Ãë¼Ò
+	// ê°€ì…ë°›ì„ ìë¦¬ê°€ ì—†ìœ¼ë©´, ì·¨ì†Œ
 	if (guild->maxmember() <= guild->membercount())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4534,7 +4643,7 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 	}
 
 	CGuildMember* member = guild->findmember(bossPC->m_index);
-	// º¸½º Ä³¸¯ÅÍ °Ë»ç
+	// ë³´ìŠ¤ ìºë¦­í„° ê²€ì‚¬
 	if (!member)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4545,7 +4654,7 @@ void do_GuildRemoteJoinOK( CPC* ch, CNetMsg::SP& msg )
 		joinPC->m_regGuild = 0;
 		return ;
 	}
-	// º¸½º°¡ ¾Æ´Ï¸é, Ãë¼Ò
+	// ë³´ìŠ¤ê°€ ì•„ë‹ˆë©´, ì·¨ì†Œ
 	if (member->pos() != MSG_GUILD_POSITION_BOSS && member->pos() != MSG_GUILD_POSITION_OFFICER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4606,25 +4715,25 @@ void do_GuildRemoteJoinNO( CPC* ch, CNetMsg::SP& msg )
 
 int do_CheckGuildJoin(CPC* bossPC, CPC* joinPC)
 {
-	// °¡ÀÔ Ä³¸¯ÅÍ À¯È¿¼º °Ë»ç
+	// ê°€ì… ìºë¦­í„° ìœ íš¨ì„± ê²€ì‚¬
 	if ( !joinPC )
 	{
 		return MSG_NEW_GUILD_ERROR_NOT_EXIST_CHAR;
 	}
 
-	// ±æ¸¶ Ä³¸¯ÅÍ À¯È¿¼º °Ë»ç
+	// ê¸¸ë§ˆ ìºë¦­í„° ìœ íš¨ì„± ê²€ì‚¬
 	if ( !bossPC )
 	{
 		return MSG_NEW_GUILD_ERROR_NOT_EXIST_CHAR;
 	}
 
-	// ±æ¸¶ Ä³¸¯ÅÍ¿Í °¡ÀÔ Ä³¸¯ÅÍ°¡ °°ÀºÁö °Ë»ç
+	// ê¸¸ë§ˆ ìºë¦­í„°ì™€ ê°€ì… ìºë¦­í„°ê°€ ê°™ì€ì§€ ê²€ì‚¬
 	if ( bossPC->m_index == joinPC->m_index )
 	{
 		return MSG_NEW_GUILD_ERROR_NOT_EXIST_CHAR;
 	}
 
-	// ±æµå À¯È¿¼º °Ë»ç
+	// ê¸¸ë“œ ìœ íš¨ì„± ê²€ì‚¬
 	if ( !bossPC->m_guildInfo )
 	{
 		return MSG_GUILD_ERROR_NOTBOSS;
@@ -4635,25 +4744,15 @@ int do_CheckGuildJoin(CPC* bossPC, CPC* joinPC)
 		return MSG_GUILD_ERROR_NOTBOSS;
 	}
 
-	// °¡ÀÔ Ä³¸¯ÅÍ°¡ ÀÌ¹Ì ±æµå°¡ ÀÖ´ÂÁö °Ë»ç
+	// ê°€ì… ìºë¦­í„°ê°€ ì´ë¯¸ ê¸¸ë“œê°€ ìˆëŠ”ì§€ ê²€ì‚¬
 	if ( joinPC->m_guildInfo )
 	{
 		return MSG_NEW_GUILD_ERROR_EXIST_GUILD;
 	}
 
-	// °¡ÀÔÇÒ Ä³¸¯ÅÍÀÇ Àç°¡ÀÔ µô·¹ÀÌ °Ë»ç
-	if (joinPC->m_guildoutdate != 0)
-	{
-		time_t t;
-		if (time(&t) / 60 / 60 / 24 < joinPC->m_guildoutdate + GUILD_REG_DELAY)
-		{
-			return MSG_GUILD_ERROR_REGDELAY;
-		}
-	}
-
 	//int guildindex = guild->index();
 
-	// º¸½º °Ë»ç
+	// ë³´ìŠ¤ ê²€ì‚¬
 	CGuildMember* member = guild->findmember(bossPC->m_index);
 	if (member == NULL)
 	{
@@ -4664,19 +4763,19 @@ int do_CheckGuildJoin(CPC* bossPC, CPC* joinPC)
 		return MSG_GUILD_ERROR_NOTBOSS;
 	}
 
-	// °¡ÀÔ Ã³¸®ÁßÀÎ Ä³¸¯ÅÍ°¡ ÀÖ´ÂÁö °Ë»ç
+	// ê°€ì… ì²˜ë¦¬ì¤‘ì¸ ìºë¦­í„°ê°€ ìˆëŠ”ì§€ ê²€ì‚¬
 	if (bossPC->m_regGuild && bossPC->m_regGuild != joinPC->m_index)
 	{
 		return MSG_GUILD_ERROR_TARGET_BUSY;
 	}
 
-	// °¡ÀÔ ½ÅÃ» Ã³¸®ÁßÀÎÁö °Ë»ç
+	// ê°€ì… ì‹ ì²­ ì²˜ë¦¬ì¤‘ì¸ì§€ ê²€ì‚¬
 	if (joinPC->m_regGuild && joinPC->m_regGuild != member->charindex())
 	{
 		return MSG_GUILD_ERROR_SOURCE_BUSY;
 	}
 
-	// °ø¼º ÁßÀÎÁö °Ë»ç
+	// ê³µì„± ì¤‘ì¸ì§€ ê²€ì‚¬
 	if (guild->battleState() != GUILD_BATTLE_STATE_PEACE)
 	{
 		return MSG_GUILD_ERROR_CANNOT_REGIST_REQ_BATTLE;
@@ -4688,16 +4787,16 @@ int do_CheckGuildJoin(CPC* bossPC, CPC* joinPC)
 
 void do_GuildRecall(CPC* pc, CNetMsg::SP& rmsg)
 {
-	//¼ö¶ô ÇÏ¿´À» °æ¿ì¿¡¸¸ Àü´ŞµÇ´Â ¸Ş½ÃÁö·Î ±æµå¹æÀ¸·Î ÀÌµ¿½ÃÄÑÁÖ¸é µÈ´Ù.
+	//ìˆ˜ë½ í•˜ì˜€ì„ ê²½ìš°ì—ë§Œ ì „ë‹¬ë˜ëŠ” ë©”ì‹œì§€ë¡œ ê¸¸ë“œë°©ìœ¼ë¡œ ì´ë™ì‹œì¼œì£¼ë©´ ëœë‹¤.
 	CZone* pZone = gserver->FindZone(ZONE_GUILDROOM);
 	int area_count = 0;
 
 	if(pZone == NULL)
 		return;
 
-	// ÅÂ±¹ pvp Á¸ ÀÌµ¿ ¾ÆÀÌÅÛÀÌ
-	// ±ÍÈ¯ ½ºÅ©·ÑÀÇ num1À» Á¸¹øÈ£·Î ¾¹´Ï´ç.
-	// °í·Î ¿ä°Å Ãß°¡ÇÕ´Ï´ç : bw
+	// íƒœêµ­ pvp ì¡´ ì´ë™ ì•„ì´í…œì´
+	// ê·€í™˜ ìŠ¤í¬ë¡¤ì˜ num1ì„ ì¡´ë²ˆí˜¸ë¡œ ì”ë‹ˆë‹¹.
+	// ê³ ë¡œ ìš”ê±° ì¶”ê°€í•©ë‹ˆë‹¹ : bw
 
 	if (!pc->m_guildInfo || !(pc->m_guildInfo->guild()))
 	{
@@ -4723,7 +4822,7 @@ void do_GuildRecall(CPC* pc, CNetMsg::SP& rmsg)
 	if (idx == pZone->m_countArea)
 	{
 		area_count = pZone->SetEnableArea();
-		// ºó ¿µ¾ï ¾øÀ½
+		// ë¹ˆ ì˜ì–µ ì—†ìŒ
 		if (area_count == -1)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4736,11 +4835,132 @@ void do_GuildRecall(CPC* pc, CNetMsg::SP& rmsg)
 
 	if (pZone)
 	{
-		// 060109 : BS : BEGIN : Á¸ÀÌµ¿ ¸Ş½ÃÁö »ç¿ëÇÏÁö ¾Ê°í Á÷Á¢ È£Ãâ
+		// 060109 : BS : BEGIN : ì¡´ì´ë™ ë©”ì‹œì§€ ì‚¬ìš©í•˜ì§€ ì•Šê³  ì§ì ‘ í˜¸ì¶œ
 		GoZone(pc, ZONE_GUILDROOM,
 			pZone->m_zonePos[0][0],														// ylayer
 			GetRandom(pZone->m_zonePos[0][1], pZone->m_zonePos[0][3]) / 2.0f,		// x
 			GetRandom(pZone->m_zonePos[0][2], pZone->m_zonePos[0][4]) / 2.0f);	// z
+	}
+}
+
+void do_GuildContributeData(CPC* pc, CNetMsg::SP& rmsg)
+{
+	if(pc->m_guildInfo == NULL)
+		return;
+
+	if(pc->m_guildInfo->guild() == NULL)
+		return;
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildContributeDataMsg(rmsg, pc);
+		SEND_Q(rmsg, pc->m_desc);
+	}
+}
+void do_GuildContributeSet(CPC* pc, CNetMsg::SP& msg)
+{
+	if(pc->m_guildInfo == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(pc->m_guildInfo->guild() == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	int contribute_exp_data;
+	int contribute_fame_data;
+	RefMsg(msg) >> contribute_exp_data
+		>> contribute_fame_data;
+
+	if(pc->m_guildInfo->GetcontributeExp_min() > contribute_exp_data || pc->m_guildInfo->GetcontributeExp_max() < contribute_exp_data)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+	if(pc->m_guildInfo->GetcontributeFame_min() > contribute_fame_data || pc->m_guildInfo->GetcontributeFame_max() < contribute_fame_data)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(gserver->isRunHelper())
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSet(rmsg, pc->m_index, pc->m_guildInfo->guild()->index(), contribute_exp_data, contribute_fame_data);
+		SEND_Q(rmsg, gserver->m_helper);
+	}
+}
+void do_GuildContributeSetAll(CPC* pc, CNetMsg::SP& msg)
+{
+	if(pc->m_guildInfo == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(pc->m_guildInfo->guild() == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(pc->m_guildInfo->guild()->boss()->GetPC() != pc)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	int contribute_exp;
+	int contribute_fame;
+	int contribute_exp_min, contribute_exp_max;
+	int contribute_fame_min, contribute_fame_max;
+	
+	RefMsg(msg) >> contribute_exp
+		>> contribute_fame
+		>> contribute_exp_min
+		>> contribute_exp_max
+		>> contribute_fame_min
+		>> contribute_fame_max;
+
+	if(contribute_exp_min > contribute_exp_max)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(contribute_fame_min > contribute_fame_max)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_INVALID_VALUE );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	if(gserver->isRunHelper())
+	{
+		 CNetMsg::SP rmsg(new CNetMsg);
+		 HelperGuildContributeSetAll(rmsg, pc->m_index, pc->m_guildInfo->guild()->index(), contribute_exp, contribute_exp_min, contribute_exp_max, contribute_fame, contribute_fame_min, contribute_fame_max);
+		 SEND_Q(rmsg, gserver->m_helper);
 	}
 }
 //

@@ -5,7 +5,7 @@
 #include <time.h>
 #include "../ShareLib/LCString.h"
 
-// ³Î Å¸ÀÓ
+// ë„ íƒ€ì„
 extern struct timeval a_NullTime;
 
 char* __ltoa(int value, char *string);
@@ -34,21 +34,21 @@ int GetRandom(int from, int to);
 bool CheckIP(const char *u_IP);
 
 
-// [selo: 101115] ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ°¡ ÀÖ´ÂÁö È®ÀÎ
+// [selo: 101115] ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ìê°€ ìˆëŠ”ì§€ í™•ì¸
 bool CheckNoRussianCharacter(const CLCString& str);
 
 ///////////////////////////////////
-// ¸ÅÅ©·Î & ÀÎ¶óÀÎ ÇÔ¼öµé
+// ë§¤í¬ë¡œ & ì¸ë¼ì¸ í•¨ìˆ˜ë“¤
 
-#define MAX(a, b)	((a > b) ? a : b)										// ÃÖ´ë
-#define MIN(a, b)	((a < b) ? a : b)										// ÃÖ¼Ò
-#define LOWER(c)   (((c)>='A'  && (c) <= 'Z') ? ((c)+('a'-'A')) : (c))		// ¼Ò¹®ÀÚ·Î
-#define UPPER(c)   (((c)>='a'  && (c) <= 'z') ? ((c)+('A'-'a')) : (c) )		// ´ë¹®ÀÚ·Î
-#define ABS(c)		((c) < 0 ? -(c) : (c))									// Àı´ë°ª
-#define SIGN(i)		((i) < 0 ? (-1) : (1))									// ºÎÈ£
-#define ISNEWL(ch) ((ch) == '\n' || (ch) == '\r')							// °³Çà ¹®ÀÚ °Ë»ç
-#define is_space_in_util(c)		(c == 0x20 || (c >= 0x09 && c <= 0x0D))				// °ø¹é °Ë»ç
-#define is_special_in_util(c)	( !(c >=0x30 && c <= 0x39) && !(c >= 0x41 && c <= 0x5A) && !(c >= 0x61 && c <= 0x7A) ) // ¼ıÀÚ, ¿µ¹®ÀÚ¸¦ Á¦¿ÜÇÑ Æ¯¼ö¹®ÀÚ °Ë»ç
+#define MAX(a, b)	((a > b) ? a : b)										// ìµœëŒ€
+#define MIN(a, b)	((a < b) ? a : b)										// ìµœì†Œ
+#define LOWER(c)   (((c)>='A'  && (c) <= 'Z') ? ((c)+('a'-'A')) : (c))		// ì†Œë¬¸ìë¡œ
+#define UPPER(c)   (((c)>='a'  && (c) <= 'z') ? ((c)+('A'-'a')) : (c) )		// ëŒ€ë¬¸ìë¡œ
+#define ABS(c)		((c) < 0 ? -(c) : (c))									// ì ˆëŒ€ê°’
+#define SIGN(i)		((i) < 0 ? (-1) : (1))									// ë¶€í˜¸
+#define ISNEWL(ch) ((ch) == '\n' || (ch) == '\r')							// ê°œí–‰ ë¬¸ì ê²€ì‚¬
+#define is_space_in_util(c)		(c == 0x20 || (c >= 0x09 && c <= 0x0D))				// ê³µë°± ê²€ì‚¬
+#define is_special_in_util(c)	( !(c >=0x30 && c <= 0x39) && !(c >= 0x41 && c <= 0x5A) && !(c >= 0x61 && c <= 0x7A) ) // ìˆ«ì, ì˜ë¬¸ìë¥¼ ì œì™¸í•œ íŠ¹ìˆ˜ë¬¸ì ê²€ì‚¬
 
 // LINKED LIST MANAGEMENT
 
@@ -79,11 +79,11 @@ bool CheckNoRussianCharacter(const CLCString& str);
 
 ////////////////////
 // Function name	: Rad2Deg
-// Description	    : ¶óµğ¾ÈÀ» µµ ´ÜÀ§ °¢µµ·Î º¯È¯
+// Description	    : ë¼ë””ì•ˆì„ ë„ ë‹¨ìœ„ ê°ë„ë¡œ ë³€í™˜
 // Return type		: float
-//					: µµ ´ÜÀ§ °¢µµ
+//					: ë„ ë‹¨ìœ„ ê°ë„
 // Argument         : float rad
-//					: ¶óµğ¾È °¢µµ
+//					: ë¼ë””ì•ˆ ê°ë„
 inline float Rad2Deg(float rad)
 {
 	float deg = rad * 180 / PI;
@@ -96,11 +96,11 @@ inline float Rad2Deg(float rad)
 
 ////////////////////
 // Function name	: Deg2Rad
-// Description	    : µµ ´ÜÀ§ °¢µµ¸¦ ¶óµğ¾ÈÀ¸·Î º¯È¯
+// Description	    : ë„ ë‹¨ìœ„ ê°ë„ë¥¼ ë¼ë””ì•ˆìœ¼ë¡œ ë³€í™˜
 // Return type		: float
-//					: ¶óµğ¾È °¢µµ
+//					: ë¼ë””ì•ˆ ê°ë„
 // Argument         : float deg
-//					: µµ ´ÜÀ§ °¢µµ
+//					: ë„ ë‹¨ìœ„ ê°ë„
 inline float Deg2Rad(float deg)
 {
 	if (deg > 180)
@@ -120,7 +120,7 @@ inline struct tm NOW()
 	return ret;
 }
 
-// nSizeOfDest´Â NULLÀ» Æ÷ÇÔ
+// nSizeOfDestëŠ” NULLì„ í¬í•¨
 inline void BackSlash(char* dest, int nSizeOfDest, const char* src)
 {
 	if (nSizeOfDest < 1)

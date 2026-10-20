@@ -66,29 +66,29 @@ void do_FactoryLearn(CPC* ch, CNetMsg::SP& msg, bool GMCommand)
 		if (!pFactory)
 			throw MSG_FACTORY_ERROR_SYSTEM;
 
-		// ø¨«’ µÓ∑œ ø©∫Œ
+		// Ïó∞Ìï© Îì±Î°ù Ïó¨Î∂Ä
 		if (!ch->m_sealSkillList.Find(FACTORY_UNION_REG_SKILL))
 			throw MSG_FACTORY_ERROR_SYSTEM;
 
-		// Ω∫≈≥ √º≈©
+		// Ïä§ÌÇ¨ Ï≤¥ÌÅ¨
 		if (!ch->m_sealSkillList.Find(pFactory->GetSealType()))
 			throw MSG_FACTORY_ERROR_SYSTEM;
 
-		// ¿ÃπÃ πËø¸¿∏∏È ¥ı πËøÔ « ø‰æ¯¥Ÿ.
+		// Ïù¥ÎØ∏ Î∞∞Ïõ†ÏúºÎ©¥ Îçî Î∞∞Ïö∏ ÌïÑÏöîÏóÜÎã§.
 		if (ch->m_listFactory.Find(pFactory))
 			throw MSG_FACTORY_ERROR_ALREADY_REG;
 
-		// ≥™Ω∫
+		// ÎÇòÏä§
 		if ( ch->m_inventory.getMoney() < pFactory->GetNas())
 			throw MSG_FACTORY_ERROR_NAS;
 
-		// º˜∑√µµ
+		// ÏàôÎ†®ÎèÑ
 		if (ch->GetSealExp(pFactory->GetSealType()) < pFactory->GetNeedExp())
 			throw MSG_FACTORY_ERROR_EXP;
 
 		ch->m_inventory.decreaseMoney(pFactory->GetNas());
 
-		// √ﬂ∞°
+		// Ï∂îÍ∞Ä
 		ch->m_listFactory.Add(pFactory);
 		GAMELOG << init("FACTORY ITEM LEARN", ch) << pFactory->GetIndex() << end;
 
@@ -115,7 +115,7 @@ void do_FactoryList(CPC* ch, CNetMsg::SP& msg)
 	msg->MoveFirst();
 
 	RefMsg(msg) >> subtype
-				>> cUI              // ≈¨∂Û¿Ãæ∆Æø°º≠ UI±∏∫–¿ª ¿ß«ÿ
+				>> cUI              // ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ÏóêÏÑú UIÍµ¨Î∂ÑÏùÑ ÏúÑÌï¥
 				>> nSkillIdx;
 
 	{
@@ -125,7 +125,7 @@ void do_FactoryList(CPC* ch, CNetMsg::SP& msg)
 					 << cUI
 					 << nSkillIdx;
 
-		FactoryListMsg(rmsg, ch, nSkillIdx);	// ¿Ã «‘ºˆ æ»¬ ø°º≠ rmsg ∆–≈∂ø° ø©∑Ø ¡§∫∏∏¶ ¿‘∑¬«—¥Ÿ.
+		FactoryListMsg(rmsg, ch, nSkillIdx);	// Ïù¥ Ìï®Ïàò ÏïàÏ™ΩÏóêÏÑú rmsg Ìå®ÌÇ∑Ïóê Ïó¨Îü¨ Ï†ïÎ≥¥Î•º ÏûÖÎ†•ÌïúÎã§.
 		SEND_Q(rmsg, ch->m_desc);
 	}
 }
@@ -146,11 +146,11 @@ void do_FactoryMakeReq(CPC* ch, CNetMsg::SP& msg)
 		if (!pFactory)
 			throw MSG_FACTORY_ERROR_SYSTEM;
 
-		// Ω∫≈≥ √º≈©
+		// Ïä§ÌÇ¨ Ï≤¥ÌÅ¨
 		if (!ch->m_sealSkillList.Find(pFactory->GetSealType()))
 			throw MSG_FACTORY_ERROR_SKILL;
 
-		// ¿Á∑· √º≈©
+		// Ïû¨Î£å Ï≤¥ÌÅ¨
 		for (int i = 0; i < MAX_FACTORY_ITEM_STUFF; i++)
 		{
 			if (!pFactory->GetStuff(i))
@@ -164,11 +164,11 @@ void do_FactoryMakeReq(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_FACTORY_ERROR_ITEM;
 		}
 
-		// ¿Œ∫•≈‰∏Æø° ∫Ûƒ≠¿Ã ¿÷¥¬¡ˆ
+		// Ïù∏Î≤§ÌÜ†Î¶¨Ïóê ÎπàÏπ∏Ïù¥ ÏûàÎäîÏßÄ
 		if (ch->m_inventory.getEmptyCount() < 1)
 			throw MSG_FACTORY_ERROR_INVEN;
 
-// [110125: selo] ∫∏ªÛ æ∆¿Ã≈€ µÂ∑” ºˆ¡§
+// [110125: selo] Î≥¥ÏÉÅ ÏïÑÏù¥ÌÖú ÎìúÎ°≠ ÏàòÏ†ï
 		if( !ch->CheckInvenForPrize(pFactory->GetItemIdx(),0,0,1) )
 		{
 			return;
@@ -206,11 +206,11 @@ void do_FactoryMake(CPC* ch, CNetMsg::SP& msg)
 		if (!pFactory)
 			throw MSG_FACTORY_ERROR_SYSTEM;
 
-		// Ω∫≈≥ √º≈©
+		// Ïä§ÌÇ¨ Ï≤¥ÌÅ¨
 		if (!ch->m_sealSkillList.Find(pFactory->GetSealType()))
 			throw MSG_FACTORY_ERROR_SKILL;
 
-		// ¿Á∑· √º≈©
+		// Ïû¨Î£å Ï≤¥ÌÅ¨
 		item_search_t vec[MAX_FACTORY_ITEM_STUFF];
 		for (int i = 0; i < MAX_FACTORY_ITEM_STUFF; i++)
 		{
@@ -225,11 +225,11 @@ void do_FactoryMake(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_FACTORY_ERROR_ITEM;
 		}
 
-		// ¿Œ∫•≈‰∏Æø° ∫Ûƒ≠¿Ã ¿÷¥¬¡ˆ
+		// Ïù∏Î≤§ÌÜ†Î¶¨Ïóê ÎπàÏπ∏Ïù¥ ÏûàÎäîÏßÄ
 		if (ch->m_inventory.getEmptyCount() < 1)
 			throw MSG_FACTORY_ERROR_INVEN;
 
-		// ¡¶¿€ æ∆¿Ã≈€ √ﬂ∞°
+		// Ï†úÏûë ÏïÑÏù¥ÌÖú Ï∂îÍ∞Ä
 		CItem * pMakeItem = gserver->m_itemProtoList.CreateItem(pFactory->GetItemIdx(), WEARING_NONE, 0, 0, 1);
 		if (pMakeItem == NULL)
 			throw MSG_FACTORY_ERROR_SYSTEM;
@@ -240,7 +240,7 @@ void do_FactoryMake(CPC* ch, CNetMsg::SP& msg)
 			throw MSG_FACTORY_ERROR_SYSTEM;
 		}
 
-		// æ∆¿Ã≈€ º“∏
+		// ÏïÑÏù¥ÌÖú ÏÜåÎ™®
 		for (int i = 0; i < MAX_FACTORY_ITEM_STUFF; i++)
 		{
 			const FACTORY_STUFF * pStuff = pFactory->GetStuff(i);
@@ -250,7 +250,7 @@ void do_FactoryMake(CPC* ch, CNetMsg::SP& msg)
 			ch->m_inventory.deleteItem(vec[i], pStuff->nCount);
 		}
 
-		// º˜∑√µµ ¡ı∞°
+		// ÏàôÎ†®ÎèÑ Ï¶ùÍ∞Ä
 		LONGLONG llCharExp = ch->GetSealExp(pFactory->GetSealType());
 		LONGLONG llMakeExp = pFactory->GetMakeExp();
 		int	expProb = 0;

@@ -8,9 +8,9 @@
 #include <Engine/Contents/Base/Party.h>
 #include <Engine/Contents/Base/UIExpedition.h>
 #include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Interface/UIPersonalShop.h>
 #include <Engine/Object/ActorMgr.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Contents/Base/PersonalshopUI.h>
 
 #define	EXPEDITION_GROUP_BARWIDTH 132
 #define EXPEDITION_GROUP_WINDOW_WIDTH 152
@@ -93,6 +93,9 @@ private:
 
 CUIParty::CUIParty()
 	: m_pListParty(NULL)
+	, m_pDragArea(NULL)
+	, m_bDrag(false)
+	, m_nOriX(0), m_nOriY(0)
 {
 	for (int i = 0; i < EXPEDITION_GROUP_MAX; ++i)
 	{
@@ -115,6 +118,7 @@ CUIParty::CUIParty()
 void CUIParty::initialize()
 {
 	m_pListParty = (CUIList*)findUI("list_party");
+	m_pDragArea	= findUI("drag_area");
 
 	for (int i = 0; i < EXPEDITION_GROUP_MAX; ++i)
 	{
@@ -871,6 +875,13 @@ WMSG_RESULT CUIParty::OnLButtonDown( UINT16 x, UINT16 y )
 	if (IsInside(x, y) == FALSE)
 		return WMSG_FAIL;
 
+	if( m_pDragArea != NULL && m_pDragArea->IsInside(x, y))
+	{
+		m_bDrag = true;
+		m_nOriX = x;
+		m_nOriY = y;
+	}
+
 	if (m_pListParty != NULL && m_pListParty->IsInside(x, y) == TRUE)
 	{
 		int nCount = m_pListParty->getListItemCount();
@@ -960,6 +971,18 @@ WMSG_RESULT CUIParty::OnMouseMove( UINT16 x, UINT16 y, MSG* pMsg )
 	if (IsInside(x, y) == FALSE)
 		return WMSG_FAIL;
 	
+	if( m_bDrag )
+	{
+		int ndX = x - m_nOriX;
+		int ndY = y - m_nOriY;
+
+		m_nOriX = x;
+		m_nOriY = y;
+
+		Move( ndX, ndY );
+		return WMSG_SUCCESS;
+	}
+
 	WMSG_RESULT	wmsgResult;
 
 	if( m_bShowBuff && ( wmsgResult = _pUIBuff->MouseMessagePartyBuff( pMsg ) ) != WMSG_FAIL )
@@ -974,6 +997,8 @@ WMSG_RESULT CUIParty::OnLButtonUp( UINT16 x, UINT16 y )
 {
 	if (m_bHide)
 		return WMSG_FAIL;
+
+	m_bDrag = false;
 
 	return WMSG_FAIL;
 }

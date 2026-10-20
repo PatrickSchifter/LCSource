@@ -6,29 +6,29 @@
 enum
 {
 	//request
-	MSG_SUB_ITEM_COLLECTION_ITEM_UPDATE_REQ,	//¾ÆÀÌÅÛ µî·Ï ¿äÃ»
-	MSG_SUB_ITEM_COLLECTION_RESULT_REQ,			//º¸»ó¹Þ±â ¿äÃ»
+	MSG_SUB_ITEM_COLLECTION_ITEM_UPDATE_REQ,	//ì•„ì´í…œ ë“±ë¡ ìš”ì²­
+	MSG_SUB_ITEM_COLLECTION_RESULT_REQ,			//ë³´ìƒë°›ê¸° ìš”ì²­
 
 	//response
 	MSG_SUB_ITEM_COLLECTION_ERROR,
 
 	//update
-	MSG_SUB_ITEM_COLLECTION_DOING_LIST_UPD,		//ÁøÇàÁß ÀüÃ¼ ¸®½ºÆ® Á¤º¸(·Î±×ÀÎ)
-	MSG_SUB_ITEM_COLLECTION_END_LIST_UPD,		//¿Ï·áµÈ ÀüÃ¼ ¸®½ºÆ® Á¤º¸(·Î±×ÀÎ)
-	MSG_SUB_ITEM_COLLECTION_DOING_DATA_UPD,		//ÁøÇàÁß Å×¸¶ Á¤º¸ ¾÷µ¥ÀÌÆ®
-	MSG_SUB_ITEM_COLLECTION_END_DATA_UPD,		//¾÷Àû ¿Ï·á
+	MSG_SUB_ITEM_COLLECTION_DOING_LIST_UPD,		//ì§„í–‰ì¤‘ ì „ì²´ ë¦¬ìŠ¤íŠ¸ ì •ë³´(ë¡œê·¸ì¸)
+	MSG_SUB_ITEM_COLLECTION_END_LIST_UPD,		//ì™„ë£Œëœ ì „ì²´ ë¦¬ìŠ¤íŠ¸ ì •ë³´(ë¡œê·¸ì¸)
+	MSG_SUB_ITEM_COLLECTION_DOING_DATA_UPD,		//ì§„í–‰ì¤‘ í…Œë§ˆ ì •ë³´ ì—…ë°ì´íŠ¸
+	MSG_SUB_ITEM_COLLECTION_END_DATA_UPD,		//ì—…ì  ì™„ë£Œ
 };
 
 //error code
 enum
 {
-	ITEM_COLLECTION_ERROR_GIVE_SUCCESS,			//¾ÆÀÌÅÛ µî·Ï ¼º°ø
-	ITEM_COLLECTION_ERROR_RESULT_SUCCESS,		//¾ÆÀÌÅÛ º¸»ó ¼º°ø
+	ITEM_COLLECTION_ERROR_GIVE_SUCCESS,			//ì•„ì´í…œ ë“±ë¡ ì„±ê³µ
+	ITEM_COLLECTION_ERROR_RESULT_SUCCESS,		//ì•„ì´í…œ ë³´ìƒ ì„±ê³µ
 
-	ITEM_COLLECTION_ERROR_GIVE_FAIL,			//¾ÆÀÌÅÛ µî·Ï ½ÇÆÐ
-	ITEM_COLLECTION_ERROR_RESULT_FAIL,			//¾ÆÀÌÅÛ º¸»ó ½ÇÆÐ
+	ITEM_COLLECTION_ERROR_GIVE_FAIL,			//ì•„ì´í…œ ë“±ë¡ ì‹¤íŒ¨
+	ITEM_COLLECTION_ERROR_RESULT_FAIL,			//ì•„ì´í…œ ë³´ìƒ ì‹¤íŒ¨
 
-	ITEM_COLLECTION_NOT_ENOUGH_INVEN,			//ÀÎº¥Åä¸® °ø°£ ºÎÁ·
+	ITEM_COLLECTION_NOT_ENOUGH_INVEN,			//ì¸ë²¤í† ë¦¬ ê³µê°„ ë¶€ì¡±
 };
 
 #pragma pack(push, 1)

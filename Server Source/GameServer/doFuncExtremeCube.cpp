@@ -286,7 +286,7 @@ void do_ExExtremeCube(CPC* ch, CNetMsg::SP& msg)
 
 			if(!gserver->m_extremeCube.IsGuildCubeTime())
 			{
-				// ±ÊµÂ≈•∫Í≈∏¿”
+				// Í∏∏ÎìúÌÅêÎ∏åÌÉÄÏûÑ
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExtremeCubeErrorMsg(rmsg, MSG_EX_EXTREME_CUBE_ERROR_NOT_GUILD_CUBE_TIME);
 				SEND_Q(rmsg, ch->m_desc);
@@ -487,7 +487,7 @@ void do_ExExtremeCube(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 #ifdef EXTREME_CUBE_VER2
-	case MSG_EX_EXTREME_CUBE_REWARD_PERSONAL_REQ:	// ∞≥¿Œ ∫∏ªÛ πﬁ±‚
+	case MSG_EX_EXTREME_CUBE_REWARD_PERSONAL_REQ:	// Í∞úÏù∏ Î≥¥ÏÉÅ Î∞õÍ∏∞
 		{
 			{
 				CNetMsg::SP rmsg(new CNetMsg);

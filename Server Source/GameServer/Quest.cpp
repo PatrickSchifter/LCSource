@@ -24,7 +24,7 @@ CQuestProto::CQuestProto()
 	m_startData = 0;
 	m_prizeNPC = -1;
 
-	// ÇÊ¿ä Á¶°Ç
+	// í•„ìš” ì¡°ê±´
 	m_needMinLevel = 1;
 	m_needMaxLevel = 60;
 	m_needJob = -1;
@@ -34,18 +34,18 @@ CQuestProto::CQuestProto()
 	m_needRvRType = 0;
 	m_needRvRGrade = 0;
 
-	// ¼öÇà Á¶°Ç
+	// ìˆ˜í–‰ ì¡°ê±´
 	memset(m_conditionType, -1, sizeof(int) * QUEST_MAX_CONDITION);
 	memset(m_conditionIndex, 0, sizeof(int) * QUEST_MAX_CONDITION);
 	memset(m_conditionNum, 0, sizeof(int) * QUEST_MAX_CONDITION);
 	memset(m_conditionData, 0, sizeof(m_conditionData));
 
-	// º¸»ó Á¶°Ç
+	// ë³´ìƒ ì¡°ê±´
 	memset(m_prizeType, -1, sizeof(int) * QUEST_MAX_PRIZE);
 	memset(m_prizeIndex, 0, sizeof(int) * QUEST_MAX_PRIZE);
 	memset(m_prizeData, 0, sizeof(int) * QUEST_MAX_PRIZE);
 
-	// º¸»ó Á¶°Ç
+	// ë³´ìƒ ì¡°ê±´
 	memset(m_optPrizeType, -1, sizeof(int) * QUEST_MAX_OPTPRIZE);
 	memset(m_optPrizeIndex, 0, sizeof(int) * QUEST_MAX_OPTPRIZE);
 	memset(m_optPrizeData, 0, sizeof(int) * QUEST_MAX_OPTPRIZE);
@@ -290,23 +290,23 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 {
 	int i, j;
 
-	// È¥ÀÚ npc¸¦ ´ÙÀâ¾Ò¾î¾ß ÁøÇà!! ±¸Ãâ Äù½ºÆ®´Â Á¦¿Ü
-	// TODO : npc¸¦ È¥ÀÚ ´Ù ¾ÈÀâ¾Æµµ ¸·Å¸¸¸ Ä¡¸é µÇµµ·Ï ÇÑ´Ù!!!
+	// í˜¼ì npcë¥¼ ë‹¤ì¡ì•˜ì–´ì•¼ ì§„í–‰!! êµ¬ì¶œ í€˜ìŠ¤íŠ¸ëŠ” ì œì™¸
+	// TODO : npcë¥¼ í˜¼ì ë‹¤ ì•ˆì¡ì•„ë„ ë§‰íƒ€ë§Œ ì¹˜ë©´ ë˜ë„ë¡ í•œë‹¤!!!
 	//if (npc->m_attackList->m_damage < npc->m_totalDamage && this->m_proto->m_type[0] != QTYPE_KIND_SAVE)
 	//	return;
 
-	// ÀÌ¹Ì ¿Ï·áÇßÀ¸¸é return
+	// ì´ë¯¸ ì™„ë£Œí–ˆìœ¼ë©´ return
 	if (IsCompleted())
 		return ;
 
-	// CONDITION¿¡ µû¶ó °Ë»ç Ã³À½¿¡ ¸ğµÎ false·Î ¼ÂÆÃ
-	// Á¶°Ç °Ë»ç ÇÏ¸é¼­ ¸¸Á·ÇÏ´Â Á¶°Ç¸¸ true·Î ¼ÂÆÃ
+	// CONDITIONì— ë”°ë¼ ê²€ì‚¬ ì²˜ìŒì— ëª¨ë‘ falseë¡œ ì…‹íŒ…
+	// ì¡°ê±´ ê²€ì‚¬ í•˜ë©´ì„œ ë§Œì¡±í•˜ëŠ” ì¡°ê±´ë§Œ trueë¡œ ì…‹íŒ…
 	bool bComplete[QUEST_MAX_CONDITION];
 	memset(bComplete, 0, sizeof(bComplete));
 
 	switch (GetQuestType0())
 	{
-	// ¼öÁıÇü Äù½ºÆ®
+	// ìˆ˜ì§‘í˜• í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_COLLECTION:
 	case QTYPE_KIND_MINING_EXPERIENCE:
 	case QTYPE_KIND_GATHERING_EXPERIENCE:
@@ -328,7 +328,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 
 						if( pNPC )
 						{
-							// condition ºÎ°¡ µ¥ÀÌÅ¸ Áß¿¡ ¶§¸° pNPC°¡ ÀÖÀ¸¸é ÇØ´ç ¾ÆÀÌÅÛ ÀÎº¥À¸·Î
+							// condition ë¶€ê°€ ë°ì´íƒ€ ì¤‘ì— ë•Œë¦° pNPCê°€ ìˆìœ¼ë©´ í•´ë‹¹ ì•„ì´í…œ ì¸ë²¤ìœ¼ë¡œ
 							for (j = 0; j < QUEST_MAX_ITEM_DROP_MONSTER; j++)
 							{
 								if (m_pQuestProto->m_conditionData[i][j] == pNPC->m_proto->m_index)
@@ -339,11 +339,11 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 							}
 						}
 
-						// ¼öÇàÁ¶°Ç¿¡ ÇØ´çÇÏ´Â pNPC¸¦ ¶§¸°°ÍÀÌ ¾Æ´Ô ¸®ÅÏ!
+						// ìˆ˜í–‰ì¡°ê±´ì— í•´ë‹¹í•˜ëŠ” pNPCë¥¼ ë•Œë¦°ê²ƒì´ ì•„ë‹˜ ë¦¬í„´!
 						if ( pNPC && !bDropNpc)
 							continue;  //return;
 
-						// Á¶°Çº¸´Ù ÀÌ»óÀÌ¸é ´õÀÌ»ó ¾ÆÀÌÅÛ ¾ÈÁÜ
+						// ì¡°ê±´ë³´ë‹¤ ì´ìƒì´ë©´ ë”ì´ìƒ ì•„ì´í…œ ì•ˆì¤Œ
 						if (GetQuestValue(i) >= m_pQuestProto->m_conditionNum[i])
 						{
 							bComplete[i] = true;
@@ -368,7 +368,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 							return ;
 						}
 
-						// ÀÌ¹Ì ¿Ï·áÇßÀ¸¸é return
+						// ì´ë¯¸ ì™„ë£Œí–ˆìœ¼ë©´ return
 						if (IsCompleted())
 							break;
 
@@ -404,11 +404,11 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 		}
 		break;
 
-	// Àü´Ş Äù½ºÆ®
+	// ì „ë‹¬ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_DELIVERY:
 		break;
 
-	// ¹İº¹ Äù½ºÆ®
+	// ë°˜ë³µ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_REPEAT:
 		{
 			for (i=0; i < QUEST_MAX_CONDITION; i++)
@@ -435,7 +435,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 								SEND_Q(rmsg, pPC->m_desc);
 							}
 
-							// °°À¸¸é bComplete true ¼ÂÆÃ
+							// ê°™ìœ¼ë©´ bComplete true ì…‹íŒ…
 							if (GetQuestValue(i) == m_pQuestProto->m_conditionNum[i])
 							{
 								bComplete[i] = true;
@@ -458,7 +458,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 		}
 		break;
 
-	// ½Ì±Û´øÀü2 ±¸Ãâ Äù½ºÆ®
+	// ì‹±ê¸€ë˜ì „2 êµ¬ì¶œ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_SAVE:
 		{
 			for (i=0; i < QUEST_MAX_CONDITION; i++)
@@ -470,7 +470,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 				{
 				case QCONDITION_ITEM:
 					{
-						// °ø°İÇÑ ¸÷ÀÌ Á×¾ú°í ¾ÆÀÌÅÛ µå·Ó ¸ó½ºÅÍ(º¸½º)ÀÌ¸é ¾ÆÀÌÅÛ Áö±Ş
+						// ê³µê²©í•œ ëª¹ì´ ì£½ì—ˆê³  ì•„ì´í…œ ë“œë¡­ ëª¬ìŠ¤í„°(ë³´ìŠ¤)ì´ë©´ ì•„ì´í…œ ì§€ê¸‰
 						if (DEAD(pNPC) && pNPC->m_proto->m_index == m_pQuestProto->m_conditionData[i][0])
 						{
 							CItem * item = gserver->m_itemProtoList.CreateItem(m_pQuestProto->m_conditionIndex[i], -1, 0, 0, 1);
@@ -480,7 +480,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 
 							if (pPC->m_inventory.addItem(item) == false)
 							{
-								// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+								// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 								item = pNPC->m_pArea->DropItem(item, pNPC);
 								if (!item)
 									return;
@@ -500,8 +500,8 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 									<< itemlog(item)
 									<< end;
 
-							// ±¸Ãâ Äù½ºÆ®ÀÇ °æ¿ì ±×³É ¸®ÅÏ
-							//return; //¿Ö ±×³É ¸®ÅÏÀ» ÇÏÁö???
+							// êµ¬ì¶œ í€˜ìŠ¤íŠ¸ì˜ ê²½ìš° ê·¸ëƒ¥ ë¦¬í„´
+							//return; //ì™œ ê·¸ëƒ¥ ë¦¬í„´ì„ í•˜ì§€???
 						}
 					}
 					break;
@@ -510,11 +510,11 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 		}
 		break;
 
-	// ½Ì±Û´øÀü1 °İÆÄ Äù½ºÆ®
+	// ì‹±ê¸€ë˜ì „1 ê²©íŒŒ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_DEFEAT:
 		{
 			/////////////////////////////////////////
-			//½Ì±Û ´øÁ¯ 4 Ã³¸® : BW
+			//ì‹±ê¸€ ë˜ì ¼ 4 ì²˜ë¦¬ : BW
 			//
 			if(this->m_pQuestProto->m_index == 105)
 			{
@@ -525,7 +525,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 						|| pNPC->m_proto->m_index == 214 ) && DEAD(pNPC) )
 				{
 					IncreaseQuestValue(0);
-					// ·©Å· µğºñ ¸¶¸®¼ö ¾÷µ¥ÀÌÆ®
+					// ë­í‚¹ ë””ë¹„ ë§ˆë¦¬ìˆ˜ ì—…ë°ì´íŠ¸
 				}
 
 				if(m_pQuestProto->m_conditionNum[0] <= GetQuestValue(0))
@@ -533,7 +533,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 					for(i = 0; i < QUEST_MAX_CONDITION; i++)
 						bComplete[i] = true;
 
-					// ·©Å· µğºñ Å¬¸®¾î/ ½Ã°£ ¾÷µ¥ÀÌÆ®
+					// ë­í‚¹ ë””ë¹„ í´ë¦¬ì–´/ ì‹œê°„ ì—…ë°ì´íŠ¸
 				}
 
 				break;
@@ -551,7 +551,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 				{
 				case QCONDITION_NPC:
 					{
-						// °ø°İÇÏ´Â ¸÷ÀÌ ½Ì±Û´øÀü ¿Ï·áÁ¶°Ç ¸÷ÀÇ ÀÎµ¦½º¿Í °°°í Á×¾úÀ¸¸é
+						// ê³µê²©í•˜ëŠ” ëª¹ì´ ì‹±ê¸€ë˜ì „ ì™„ë£Œì¡°ê±´ ëª¹ì˜ ì¸ë±ìŠ¤ì™€ ê°™ê³  ì£½ì—ˆìœ¼ë©´
 						if (m_pQuestProto->m_conditionIndex[i] == pNPC->m_proto->m_index && DEAD(pNPC))
 						{
 							bComplete[i] = true;
@@ -584,7 +584,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 
 	CheckComplete(pPC);
 
-	// bComplete°¡ ¸ğµÎ true·Î ¼ÂÆÃ µÇÀÖ¾î¾ß ¤·¤»
+	// bCompleteê°€ ëª¨ë‘ trueë¡œ ì…‹íŒ… ë˜ìˆì–´ì•¼ ã…‡ã…‹
 	for (i=0; i < QUEST_MAX_CONDITION; i++)
 	{
 		if (!bComplete[i])
@@ -592,9 +592,9 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 	}
 
 	///////////////////////////////////
-	// pd4 Äù½ºÆ®ÀÌ¸é helper end : BW
-	// MSG_HELPER_PD4_RANK_END,			// pd4 Á¾·á			 : charIndex(n) deadmonNum(n) bclear(c)
-	// char index¸¦ º¸³¿
+	// pd4 í€˜ìŠ¤íŠ¸ì´ë©´ helper end : BW
+	// MSG_HELPER_PD4_RANK_END,			// pd4 ì¢…ë£Œ			 : charIndex(n) deadmonNum(n) bclear(c)
+	// char indexë¥¼ ë³´ëƒ„
 	if(this->m_pQuestProto->m_index == 105)
 	{
 		GAMELOG << init("PD4 END", pPC)
@@ -619,7 +619,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 		}
 	}
 
-	// Complete Msg ÃÖÃÊÀü¼ÛÀÎ°æ¿ì¿¡¸¸ Àü¼Û
+	// Complete Msg ìµœì´ˆì „ì†¡ì¸ê²½ìš°ì—ë§Œ ì „ì†¡
 	if (!IsCompleted())
 	{
 		if(GetComplete2())
@@ -644,7 +644,7 @@ void CQuest::QuestUpdateData(CPC* pPC, CNPC* pNPC)
 //					<< endGer;
 //			}
 //#endif //GER_LOG
-			// ¿Ï·á ¸Ş½ÃÁö
+			// ì™„ë£Œ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			QuestCompleteMsg(rmsg, this);
 			SEND_Q(rmsg, pPC->m_desc);
@@ -660,13 +660,13 @@ void CQuest::QuestUpdateData( CPC* pPC, CPC* tPC )
 	if (IsCompleted())
 		return ;
 
-	// Á¶°Ç °Ë»ç ÇÏ¸é¼­ ¸¸Á·ÇÏ´Â Á¶°Ç¸¸ true·Î ¼ÂÆÃ
+	// ì¡°ê±´ ê²€ì‚¬ í•˜ë©´ì„œ ë§Œì¡±í•˜ëŠ” ì¡°ê±´ë§Œ trueë¡œ ì…‹íŒ…
 	bool bComplete[QUEST_MAX_CONDITION];
 	memset(bComplete, 0, sizeof(bComplete));
 
 	switch (GetQuestType0())
 	{
-	// ¹İº¹ Äù½ºÆ®
+	// ë°˜ë³µ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_REPEAT:
 		{
 			for (i=0; i < QUEST_MAX_CONDITION; i++)
@@ -704,7 +704,7 @@ void CQuest::QuestUpdateData( CPC* pPC, CPC* tPC )
 							QuestStatusMsg(rmsg, this);
 							SEND_Q(rmsg, pPC->m_desc);
 						}
-						// °°À¸¸é bComplete true ¼ÂÆÃ
+						// ê°™ìœ¼ë©´ bComplete true ì…‹íŒ…
 						if (GetQuestValue(i) == m_pQuestProto->m_conditionNum[i])
 						{
 							bComplete[i] = true;
@@ -727,14 +727,14 @@ void CQuest::QuestUpdateData( CPC* pPC, CPC* tPC )
 
 	CheckComplete(pPC);
 
-	// bComplete°¡ ¸ğµÎ true·Î ¼ÂÆÃ µÇÀÖ¾î¾ß ¤·¤»
+	// bCompleteê°€ ëª¨ë‘ trueë¡œ ì…‹íŒ… ë˜ìˆì–´ì•¼ ã…‡ã…‹
 	for (i=0; i < QUEST_MAX_CONDITION; i++)
 	{
 		if (!bComplete[i])
 			return;
 	}
 
-	// Complete Msg ÃÖÃÊÀü¼ÛÀÎ°æ¿ì¿¡¸¸ Àü¼Û
+	// Complete Msg ìµœì´ˆì „ì†¡ì¸ê²½ìš°ì—ë§Œ ì „ì†¡
 	if (!IsCompleted())
 	{
 		if(GetComplete2())
@@ -755,7 +755,7 @@ void CQuest::RemoeQuestItem(CPC* pc)
 {
 	for (int k = 0; k < QUEST_MAX_CONDITION; k++)
 	{
-		// ¼öÇàÁ¶°Ç ¾ÆÀÌÅÛÀ» Ã£°í
+		// ìˆ˜í–‰ì¡°ê±´ ì•„ì´í…œì„ ì°¾ê³ 
 		if (m_pQuestProto->m_conditionType[k] != QCONDITION_ITEM)
 			continue;
 
@@ -942,7 +942,7 @@ CQuest* CQuestList::FindQuestByMob(int nMobIndex)
 }
 
 //  [2/23/2007 KwonYongDae]
-// Äù½ºÆ® Å¸ÀÔ 0 ÀÌ ÁøÇàÁß ÀÌ¸é true
+// í€˜ìŠ¤íŠ¸ íƒ€ì… 0 ì´ ì§„í–‰ì¤‘ ì´ë©´ true
 bool CQuestList::IsQuestType0( int qType0 )
 {
 	CQuest* pFindQuest;
@@ -1044,8 +1044,8 @@ bool CQuestList::isRvrQuest(CPC* pc, int questIndex)
 {
 	if (questIndex == 682)
 	{
-		// ÇØ´ç Äù½ºÆ®¸¦ °¡Áö°í ÀÖ°Å³ª ÇØ´ç Äù½ºÆ®¸¦ ¿Ï·áÇß°Å³ª
-		// 683 Äù½ºÆ®¸¦ ¿Ï·á Çß°Å³ª
+		// í•´ë‹¹ í€˜ìŠ¤íŠ¸ë¥¼ ê°€ì§€ê³  ìˆê±°ë‚˜ í•´ë‹¹ í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œí–ˆê±°ë‚˜
+		// 683 í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œ í–ˆê±°ë‚˜
 		if (FindQuest(questIndex, QUEST_STATE_DONE) || FindQuest(questIndex))
 			return true;
 		else if (FindQuest(683, QUEST_STATE_DONE) || FindQuest(683))
@@ -1053,8 +1053,8 @@ bool CQuestList::isRvrQuest(CPC* pc, int questIndex)
 	}
 	else if (questIndex == 683)
 	{
-		// ÇØ´ç Äù½ºÆ®¸¦ °¡Áö°í ÀÖ°Å³ª ÇØ´ç Äù½ºÆ®¸¦ ¿Ï·áÇß°Å³ª
-		// 682 Äù½ºÆ² ¿Ï·áÇß°Å³ª °¡Áö°í ÀÖ°Å³ª
+		// í•´ë‹¹ í€˜ìŠ¤íŠ¸ë¥¼ ê°€ì§€ê³  ìˆê±°ë‚˜ í•´ë‹¹ í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œí–ˆê±°ë‚˜
+		// 682 í€˜ìŠ¤í‹€ ì™„ë£Œí–ˆê±°ë‚˜ ê°€ì§€ê³  ìˆê±°ë‚˜
 		if (FindQuest(questIndex, QUEST_STATE_DONE) || FindQuest(questIndex))
 			return true;
 		else if (FindQuest(682, QUEST_STATE_DONE) || FindQuest(682))
@@ -1162,7 +1162,7 @@ bool CQuest::CheckComplete(CPC * pc)
 				break;
 			}
 
-//- ÀÌ°Í ¶§¹®¿¡ µÎ¹øÂ° Äù½ºÆ® Á¶°ÇÀÌ ¿Ï·á µÇÁö ¾Ê¾Æµµ Äù½ºÆ®°¡ ¿Ï·áµÈ Ã³¸®¸£ ÇÑ´Ù.
+//- ì´ê²ƒ ë•Œë¬¸ì— ë‘ë²ˆì§¸ í€˜ìŠ¤íŠ¸ ì¡°ê±´ì´ ì™„ë£Œ ë˜ì§€ ì•Šì•„ë„ í€˜ìŠ¤íŠ¸ê°€ ì™„ë£Œëœ ì²˜ë¦¬ë¥´ í•œë‹¤.
 			if(complete2)
 			{
 				SetComplete2(true);
@@ -1254,7 +1254,7 @@ bool CQuest::CheckComplete(CPC * pc)
 			if(complete)
 			{
 #ifdef QUEST_EXTEND_TH
-				SetComplete(0, true);			//½Ì±Û´øÀü Äù½ºÆ®ÀÌ¹Ç·Î..
+				SetComplete(0, true);			//ì‹±ê¸€ë˜ì „ í€˜ìŠ¤íŠ¸ì´ë¯€ë¡œ..
 				SetComplete(1, true);
 #else
 				SetComplete1(true);
@@ -1266,7 +1266,7 @@ bool CQuest::CheckComplete(CPC * pc)
 			}
 		}
 		break;
-	case QTYPE_KIND_SEARCH: // Å½»ö Äù½ºÆ® (Æ¯Á¤ À§Ä¡±îÁö °¬´Ù¿À´Â ...)
+	case QTYPE_KIND_SEARCH: // íƒìƒ‰ í€˜ìŠ¤íŠ¸ (íŠ¹ì • ìœ„ì¹˜ê¹Œì§€ ê°”ë‹¤ì˜¤ëŠ” ...)
 		{
 			bool complete = true;
 

@@ -9,7 +9,6 @@
 #include <Engine/Interface/UIGuild.h>
 #include <Engine/Interface/UISocketSystem.h>
 #include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIWareHouse.h>
 #include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
 
 #define	GUILDSTASH_TITLE_TEXT_OFFSETX		25
@@ -35,6 +34,7 @@
 #define SEL_VIEW	0
 #define SEL_TAKE	1
 
+#define WAREHOUSE_TRADEPRICE_POSX 177
 
 //2013/04/08 jeil 나스 아이탬 제거
 #define  GUILDSTASH_ITEM_NAS 19;
@@ -2786,17 +2786,6 @@ void		CUINewGuildStash::_copyItemToBasket()
 // 		}
 	}
 
-	if (m_enMode == GSMODE_TAKE && 
-		(m_pIconsTakeItem[iCol]->getItems()->Item_Sum >= m_vecGuildItemInfo[m_pIconsTakeItem[iCol]->getItems()->InvenIndex]->Item_Sum))
-	{
-//		m_vecGuildItemInfo[m_pIconsTakeItem[iCol].GetInvenIndex()].inTake = TRUE;
-		int idx = m_pIconsTakeItem[iCol]->getItems()->InvenIndex;
-		m_pIconsStashItem[idx / GSITEM_COL][idx % GSITEM_COL]->Hide(TRUE);
-		m_pIconsTakeItem[iCol]->getItems()->Item_Sum = m_vecGuildItemInfo[m_pIconsTakeItem[iCol]->getItems()->InvenIndex]->Item_Sum;
-	}
-
-	m_pItemsDummy = NULL;
-
 	if( iCol == GSITEM_COL )
 	{
 		CTString	strMessage;
@@ -2810,6 +2799,17 @@ void		CUINewGuildStash::_copyItemToBasket()
 		CUIManager::getSingleton()->GetChattingUI()->AddSysMessage( strMessage, SYSMSG_ERROR );
 		return;
 	}
+
+	if (m_enMode == GSMODE_TAKE && 
+		(m_pIconsTakeItem[iCol]->getItems()->Item_Sum >= m_vecGuildItemInfo[m_pIconsTakeItem[iCol]->getItems()->InvenIndex]->Item_Sum))
+	{
+//		m_vecGuildItemInfo[m_pIconsTakeItem[iCol].GetInvenIndex()].inTake = TRUE;
+		int idx = m_pIconsTakeItem[iCol]->getItems()->InvenIndex;
+		m_pIconsStashItem[idx / GSITEM_COL][idx % GSITEM_COL]->Hide(TRUE);
+		m_pIconsTakeItem[iCol]->getItems()->Item_Sum = m_vecGuildItemInfo[m_pIconsTakeItem[iCol]->getItems()->InvenIndex]->Item_Sum;
+	}
+
+	m_pItemsDummy = NULL;
 }
 
 const bool	CUINewGuildStash::_isVaildateData()

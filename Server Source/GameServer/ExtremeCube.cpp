@@ -67,7 +67,7 @@ bool CCubeMemList::JoinCube(CPC* pc, int extra)
 	}
 	else
 	{
-		// ¾ÆÀÌÅÛ ¾ø´ÙÇÑ´Ù.
+		// ì•„ì´í…œ ì—†ë‹¤í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExtremeCubeErrorMsg(rmsg, MSG_EX_EXTREME_CUBE_ERROR_NOITEM);
 		SEND_Q(rmsg, pc->m_desc);
@@ -98,9 +98,9 @@ void CPartyCubeMemList::DelPC(CPC* pc)
 					if(pc->m_pZone != NULL && DEAD(pc) && pc->m_pZone->IsExtremeCube())
 					{
 #if defined(LC_USA)
-						//ºÎÈ°Àº Å¬¶óÀÌ¾ğÆ®¿¡ ºÎÈ° ¿äÃ» ÆĞÅ¶À» Àü¼Û ÇÏ¿© ¼­¹ö¿¡¼­ Ã³¸® ÇÏ¹Ç·Î
-						//¼­¹ö¿¡¼­ ºÎÈ°À» Ã³¸® ÇÏ¸é ¿À·ù(¾ÆÀÌÅÛ 844,845,846 »ç¿ë ¾ÈµÊ)
-						//¹Ì±¹¸¸ ¾ÆÀÌÅÛ 844,845,846 »ç¿ë.
+						//ë¶€í™œì€ í´ë¼ì´ì–¸íŠ¸ì— ë¶€í™œ ìš”ì²­ íŒ¨í‚·ì„ ì „ì†¡ í•˜ì—¬ ì„œë²„ì—ì„œ ì²˜ë¦¬ í•˜ë¯€ë¡œ
+						//ì„œë²„ì—ì„œ ë¶€í™œì„ ì²˜ë¦¬ í•˜ë©´ ì˜¤ë¥˜(ì•„ì´í…œ 844,845,846 ì‚¬ìš© ì•ˆë¨)
+						//ë¯¸êµ­ë§Œ ì•„ì´í…œ 844,845,846 ì‚¬ìš©.
 #else
 						CNetMsg::SP rmsg(new CNetMsg);
 						rmsg->Init(MSG_PC_REBIRTH);
@@ -147,9 +147,9 @@ void CGuildCubeMemList::DelPC(CPC* pc)
 					if(DEAD(pc))
 					{
 #if defined(LC_USA)
-						//ºÎÈ°Àº Å¬¶óÀÌ¾ğÆ®¿¡ ºÎÈ° ¿äÃ» ÆĞÅ¶À» Àü¼Û ÇÏ¿© ¼­¹ö¿¡¼­ Ã³¸® ÇÏ¹Ç·Î
-						//¼­¹ö¿¡¼­ ºÎÈ°À» Ã³¸® ÇÏ¸é ¿À·ù(¾ÆÀÌÅÛ 844,845,846 »ç¿ë ¾ÈµÊ)
-						//¹Ì±¹¸¸ ¾ÆÀÌÅÛ 844,845,846 »ç¿ë.
+						//ë¶€í™œì€ í´ë¼ì´ì–¸íŠ¸ì— ë¶€í™œ ìš”ì²­ íŒ¨í‚·ì„ ì „ì†¡ í•˜ì—¬ ì„œë²„ì—ì„œ ì²˜ë¦¬ í•˜ë¯€ë¡œ
+						//ì„œë²„ì—ì„œ ë¶€í™œì„ ì²˜ë¦¬ í•˜ë©´ ì˜¤ë¥˜(ì•„ì´í…œ 844,845,846 ì‚¬ìš© ì•ˆë¨)
+						//ë¯¸êµ­ë§Œ ì•„ì´í…œ 844,845,846 ì‚¬ìš©.
 #else
 						if (gserver->m_hardcore_flag_in_gameserver == 0)
 						{
@@ -200,9 +200,9 @@ void CCubeMemList::DelPC(CPC* pc)
 						if(DEAD(pc))
 						{
 #if defined(LC_USA)
-							//ºÎÈ°Àº Å¬¶óÀÌ¾ğÆ®¿¡ ºÎÈ° ¿äÃ» ÆĞÅ¶À» Àü¼Û ÇÏ¿© ¼­¹ö¿¡¼­ Ã³¸® ÇÏ¹Ç·Î
-							//¼­¹ö¿¡¼­ ºÎÈ°À» Ã³¸® ÇÏ¸é ¿À·ù(¾ÆÀÌÅÛ 844,845,846 »ç¿ë ¾ÈµÊ)
-							//¹Ì±¹¸¸ ¾ÆÀÌÅÛ 844,845,846 »ç¿ë.
+							//ë¶€í™œì€ í´ë¼ì´ì–¸íŠ¸ì— ë¶€í™œ ìš”ì²­ íŒ¨í‚·ì„ ì „ì†¡ í•˜ì—¬ ì„œë²„ì—ì„œ ì²˜ë¦¬ í•˜ë¯€ë¡œ
+							//ì„œë²„ì—ì„œ ë¶€í™œì„ ì²˜ë¦¬ í•˜ë©´ ì˜¤ë¥˜(ì•„ì´í…œ 844,845,846 ì‚¬ìš© ì•ˆë¨)
+							//ë¯¸êµ­ë§Œ ì•„ì´í…œ 844,845,846 ì‚¬ìš©.
 #else
 							CNetMsg::SP rmsg(new CNetMsg);
 							rmsg->Init(MSG_PC_REBIRTH);
@@ -227,9 +227,9 @@ void CCubeMemList::DelPC(CPC* pc)
 						if(pc->m_pZone != NULL && DEAD(pc) && pc->m_pZone->IsExtremeCube())
 						{
 #if defined(LC_USA)
-							//ºÎÈ°Àº Å¬¶óÀÌ¾ğÆ®¿¡ ºÎÈ° ¿äÃ» ÆĞÅ¶À» Àü¼Û ÇÏ¿© ¼­¹ö¿¡¼­ Ã³¸® ÇÏ¹Ç·Î
-							//¼­¹ö¿¡¼­ ºÎÈ°À» Ã³¸® ÇÏ¸é ¿À·ù(¾ÆÀÌÅÛ 844,845,846 »ç¿ë ¾ÈµÊ)
-							//¹Ì±¹¸¸ ¾ÆÀÌÅÛ 844,845,846 »ç¿ë.
+							//ë¶€í™œì€ í´ë¼ì´ì–¸íŠ¸ì— ë¶€í™œ ìš”ì²­ íŒ¨í‚·ì„ ì „ì†¡ í•˜ì—¬ ì„œë²„ì—ì„œ ì²˜ë¦¬ í•˜ë¯€ë¡œ
+							//ì„œë²„ì—ì„œ ë¶€í™œì„ ì²˜ë¦¬ í•˜ë©´ ì˜¤ë¥˜(ì•„ì´í…œ 844,845,846 ì‚¬ìš© ì•ˆë¨)
+							//ë¯¸êµ­ë§Œ ì•„ì´í…œ 844,845,846 ì‚¬ìš©.
 #else
 							CNetMsg::SP rmsg(new CNetMsg);
 							rmsg->Init(MSG_PC_REBIRTH);
@@ -463,12 +463,18 @@ void CCubeMemList::GetOutAll()
 	{
 		pc = (CPC*)(m_pcList.GetData(pos));
 		pos = m_pcList.GetNext(pos);
-		if( pc )
-			pc->SummonNpcRemoveAll(true);
-		GoZone(pc, zone,
-			   pZone->m_zonePos[extra][0],
-			   GetRandom(pZone->m_zonePos[extra][1], pZone->m_zonePos[extra][3]) / 2.0f,		// x
-			   GetRandom(pZone->m_zonePos[extra][2], pZone->m_zonePos[extra][4]) / 2.0f);		// z
+		if( pc && pc->m_pZone )
+		{
+			if(pc->m_pZone->IsExtremeCube())
+			{
+				pc->SummonNpcRemoveAll(true);
+
+				GoZone(pc, zone,
+					pZone->m_zonePos[extra][0],
+					GetRandom(pZone->m_zonePos[extra][1], pZone->m_zonePos[extra][3]) / 2.0f,		// x
+					GetRandom(pZone->m_zonePos[extra][2], pZone->m_zonePos[extra][4]) / 2.0f);		// z
+			}
+		}
 	}
 
 	m_pcList.RemoveAll();
@@ -673,7 +679,7 @@ void CCubeSpace::ChageState(CUBESTATE state)
 		DelCrystal(true);
 	}
 
-	m_crystal = m_crystalkind[state];  // ¸¸µé¾î ³õÀº °ÍÀ» °¡Á®´Ù ¾¸
+	m_crystal = m_crystalkind[state];  // ë§Œë“¤ì–´ ë†“ì€ ê²ƒì„ ê°€ì ¸ë‹¤ ì”€
 	m_crystal->InitPointsToMax();
 	if(!m_crystal)
 		return ;
@@ -838,7 +844,7 @@ void CBattleSpace::CheckCubeState()
 					<< "AREAIDX" << delim
 					<< m_area->m_index << end;
 
-			if(WinList->GetWinCount() >= 25)		// ¼öÁ¤
+			if(WinList->GetWinCount() >= 25)		// ìˆ˜ì •
 			{
 				ChageState(CUBESTATE_PURPLE);
 
@@ -886,7 +892,7 @@ void CBattleSpace::CheckCubeState()
 					<< "AREAIDX" << delim
 					<< m_area->m_index << end;
 
-			if(WinList->GetWinCount() >= 25)		// ¼öÁ¤
+			if(WinList->GetWinCount() >= 25)		// ìˆ˜ì •
 			{
 				ChageState(CUBESTATE_PURPLE);
 
@@ -1256,7 +1262,7 @@ void CBattleSpace::RegenMob()
 	}
 }
 
-// º¸½º¹æ
+// ë³´ìŠ¤ë°©
 CBossSpace::CBossSpace()
 {
 	m_state = CUBESTATE_YELLOW;
@@ -2099,11 +2105,11 @@ void CExtremeCube::SetGuildCubeTime(long& unixtime)
 	{
 		if(nextcubetime.tm_hour > 21)
 		{
-			addmday = 5;  // ´ÙÀ½ÁÖ È­¿äÀÏ·Î
+			addmday = 5;  // ë‹¤ìŒì£¼ í™”ìš”ì¼ë¡œ
 		}
 		else
 		{
-			addmday = 0;  // ¸ñ¿äÀÏ 8½Ã·Î
+			addmday = 0;  // ëª©ìš”ì¼ 8ì‹œë¡œ
 		}
 	}
 	else
@@ -2239,7 +2245,7 @@ bool CExtremeCube::LoadCubeData()
 
 	if(m_regcount > 1)
 	{
-		// ¿¹¾à½Ã°£ À¯È¿¼º ÆÇº°
+		// ì˜ˆì•½ì‹œê°„ ìœ íš¨ì„± íŒë³„
 		int time1, time2;
 
 		int m;

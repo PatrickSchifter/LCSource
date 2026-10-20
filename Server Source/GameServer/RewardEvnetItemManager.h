@@ -20,7 +20,7 @@
 #include "Loaderable.h"
 
 /**
-* º¸»ó ¾ÆÀÌÅÛ ÄÁÅ×ÀÌ³Ê .
+* ë³´ìƒ ì•„ì´í…œ ì»¨í…Œì´ë„ˆ .
 * comment
 *
 * @author tingcobell
@@ -42,7 +42,7 @@ private:
 };
 
 /**
-* º¸»ó ¾ÆÀÌÅÛ Manager .
+* ë³´ìƒ ì•„ì´í…œ Manager .
 * comment
 *
 * @author tingcobell

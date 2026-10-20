@@ -13,7 +13,7 @@
 
 #include "DBManager.h"
 
-//XX Ä³¸¯ÅÍ»ı¼º 3
+//XX ìºë¦­í„°ìƒì„± 3
 void DBProcess::CreateChar( boost::any& argv )
 {
 	createchar_t data = boost::any_cast<createchar_t>(argv);
@@ -54,7 +54,7 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		if (char_db_.getrowcount() > 0)
 		{
-			// Ä³¸¯ÅÍ ÀÌ¸§ Áßº¹½Ã¿¡
+			// ìºë¦­í„° ì´ë¦„ ì¤‘ë³µì‹œì—
 			CNetMsg::SP rmsg(new CNetMsg);
 			FailMsg(rmsg, MSG_FAIL_DB_ALREADY_NAME);
 			SendMessageToClient(seq_index, user_index, rmsg);
@@ -71,7 +71,7 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		if (char_db_.getrowcount() > 0)
 		{
-			// Ä³¸¯ÅÍ º°¸í Áßº¹½Ã¿¡
+			// ìºë¦­í„° ë³„ëª… ì¤‘ë³µì‹œì—
 			CNetMsg::SP rmsg(new CNetMsg);
 			FailMsg(rmsg, MSG_FAIL_DB_ALREADY_NAME);
 			SendMessageToClient(seq_index, user_index, rmsg);
@@ -91,13 +91,13 @@ void DBProcess::CreateChar( boost::any& argv )
 										   % pChar->m_index % gserver->m_serverno);
 			BOOST_MYSQL_RES res = char_db_.select(query);
 
-			if (res == NULL)	// µ¥ÀÌÅÍº£ÀÌ½º ¿À·ù
+			if (res == NULL)	// ë°ì´í„°ë² ì´ìŠ¤ ì˜¤ë¥˜
 				throw MSG_FAIL_DB_NEW_CHAR;
 
-			if (char_db_.getrowcount() >= maxCharCount)	// Ä³¸¯ÅÍ °¡µæ Á¸Àç
+			if (char_db_.getrowcount() >= maxCharCount)	// ìºë¦­í„° ê°€ë“ ì¡´ì¬
 				throw MSG_FAIL_DB_FULL_CHAR;
 
-			// 100 ·¹º§ÀÌ»óÀÎ Ä³¸¯ÅÍ°¡ ÀÖ´Ù´Â °ÍÀ» Ç¥½Ã
+			// 100 ë ˆë²¨ì´ìƒì¸ ìºë¦­í„°ê°€ ìˆë‹¤ëŠ” ê²ƒì„ í‘œì‹œ
 			int row_count = char_db_.getrowcount();
 			for (int i = 0; i < row_count; ++i)
 			{
@@ -141,8 +141,8 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		query += "0.0000, 0.0000, 0.0000, 0.0000, -1, -1,";
 
-		// ±âº» ½ºÅ³ ÁÖ±â
-		// ±âº» Âø¿ë Á¤º¸ : Åõ±¸ »óÀÇ ¹«±â ÇÏÀÇ ¹æÆĞ Àå°© ½Å¹ß
+		// ê¸°ë³¸ ìŠ¤í‚¬ ì£¼ê¸°
+		// ê¸°ë³¸ ì°©ìš© ì •ë³´ : íˆ¬êµ¬ ìƒì˜ ë¬´ê¸° í•˜ì˜ ë°©íŒ¨ ì¥ê°‘ ì‹ ë°œ
 		switch (pChar->m_job)
 		{
 		case JOB_TITAN:
@@ -175,7 +175,7 @@ void DBProcess::CreateChar( boost::any& argv )
 			query += " ' 1040 1000 988 1010 -1 1020 1030', ";
 			break;
 
-		case JOB_NIGHTSHADOW:			// ±âº» ½ºÅ³ , Âø¿ëÀåºñ
+		case JOB_NIGHTSHADOW:			// ê¸°ë³¸ ìŠ¤í‚¬ , ì°©ìš©ì¥ë¹„
 			query += "' 661 664 673 676 677 ', '1 1 1 1 1', ' 743 744 745 901', ' 1 1 1 1', '', '',";
 			query += " ' 4539 4487 4474 4500 -1 4513 4526', ";
 			break;
@@ -232,12 +232,12 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		query += boost::str(boost::format("%1%,") % pChar->m_etcEvent);
 
-		// ÃÊ±â ½ºÅ³ Æ÷ÀÎÆ®
+		// ì´ˆê¸° ìŠ¤í‚¬ í¬ì¸íŠ¸
 		int bagicSkillPoint = 25 * 10000;
 
 #ifdef IMP_SPEED_SERVER
 		if( gserver->m_bSpeedServer )
-			bagicSkillPoint = 10000 * 10000;		//10,000,000 ( 1000 SP )
+			bagicSkillPoint = 1000 * 10000;		//10,000,000 ( 1000 SP )
 #endif
 
 		query += boost::str(boost::format("%1%,") % bagicSkillPoint);
@@ -278,7 +278,7 @@ void DBProcess::CreateChar( boost::any& argv )
 		}
 #endif
 
-		// ±âº» ¾ÆÀÌÅÛ ÁÖ±â
+		// ê¸°ë³¸ ì•„ì´í…œ ì£¼ê¸°
 #ifdef NPC_PORTAL_SCROLL_DRATAN
 		static const int titancount	   = 8;
 		static const int knightcount   = 9;
@@ -600,7 +600,7 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		for (int i = 0; i < defitemcount; i++)
 		{
-			if(itemidx[i] == 4790) // Áê³ë NPCÆ÷Å» ½ºÅ©·Ñ
+			if(itemidx[i] == 4790) // ì¥¬ë…¸ NPCí¬íƒˆ ìŠ¤í¬ë¡¤
 				continue;
 
 			CItemProto* itemproto = gserver->m_itemProtoList.FindIndex(itemidx[i]);
@@ -671,8 +671,8 @@ void DBProcess::CreateChar( boost::any& argv )
 
 			if (pChar->m_hanaroCode == "HF" || pChar->m_hanaroCode == "hf")
 			{
-				// ±âº» Áö±Ş : ºÎÈ°ÁÖ¹®¼­(ÃÊº¸ÀÚ¿ë), ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½º Ãàº¹, ÇÃ·¹Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-				// ÇÏ³ªÆ÷½º : ¼ö¹Ú, Âü¿Ü
+				// ê¸°ë³¸ ì§€ê¸‰ : ë¶€í™œì£¼ë¬¸ì„œ(ì´ˆë³´ììš©), í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ ì¶•ë³µ, í”Œë ˆí‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+				// í•˜ë‚˜í¬ìŠ¤ : ìˆ˜ë°•, ì°¸ì™¸
 				static const int nHFCount = 5;
 				static int nHFItem[2][nHFCount] =
 				{
@@ -686,8 +686,8 @@ void DBProcess::CreateChar( boost::any& argv )
 			} // HF
 			else if (pChar->m_hanaroCode == "SK"  || pChar->m_hanaroCode == "sk")
 			{
-				// ±âº» Áö±Ş : HP ½ºÆ¿ Æ÷¼Ç, ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½º Ãàº¹, ÇÃ·¹Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-				// SKºê·Îµå¹êµå : °áÇÕ ÁÖ¹®¼­, °¢ Å¬·¡½ºº° ±³º¹ ÄÚ½ºÆ¬ ¼¼Æ®
+				// ê¸°ë³¸ ì§€ê¸‰ : HP ìŠ¤í‹¸ í¬ì…˜, í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ ì¶•ë³µ, í”Œë ˆí‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+				// SKë¸Œë¡œë“œë°´ë“œ : ê²°í•© ì£¼ë¬¸ì„œ, ê° í´ë˜ìŠ¤ë³„ êµë³µ ì½”ìŠ¤íŠ¬ ì„¸íŠ¸
 				static const int nSKCount = 8;
 				static int nTitanItem[2][nSKCount] =
 				{
@@ -720,7 +720,7 @@ void DBProcess::CreateChar( boost::any& argv )
 					{   5,    5,    5,    5,    1,    1,    1,    1}
 				};
 				nItemCount = nSKCount;
-				nItemUsed  = gserver->getNowSecond() + 30 * 24 * 60 * 60;	// 1°³¿ù
+				nItemUsed  = gserver->getNowSecond() + 30 * 24 * 60 * 60;	// 1ê°œì›”
 				switch (pChar->m_job)
 				{
 				case JOB_TITAN:
@@ -759,8 +759,8 @@ void DBProcess::CreateChar( boost::any& argv )
 			} // SK
 			else
 			{
-#if defined(LC_BILA) || defined(LC_KOR)// ¸ß½ÃÄÚ ÇÏ³ª·Î ÀÌº¥Æ®
-				// ±âº» Áö±Ş : ºÎÈ° ÁÖ¹®¼­, ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½º Ãàº¹, ÇÃ·¹Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
+#if defined(LC_BILA) || defined(LC_KOR)// ë©•ì‹œì½” í•˜ë‚˜ë¡œ ì´ë²¤íŠ¸
+				// ê¸°ë³¸ ì§€ê¸‰ : ë¶€í™œ ì£¼ë¬¸ì„œ, í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ ì¶•ë³µ, í”Œë ˆí‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
 #ifdef EVENT_TREASUREBOX
 				static int nItemList[2][4] =
 				{
@@ -784,7 +784,7 @@ void DBProcess::CreateChar( boost::any& argv )
 				};
 				nItemCount = 5;
 #else // #if defined(LC_BILA)
-				// ±âº» Áö±Ş : HP ½ºÆ¿ Æ÷¼Ç, ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½º Ãàº¹, ÇÃ·¹Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
+				// ê¸°ë³¸ ì§€ê¸‰ : HP ìŠ¤í‹¸ í¬ì…˜, í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ ì¶•ë³µ, í”Œë ˆí‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
 				static int nItemList[2][4] =
 				{
 					{5958, 2658, 2659, 6085},
@@ -797,7 +797,7 @@ void DBProcess::CreateChar( boost::any& argv )
 			}
 
 			itab = icol = 0;
-			irow = 4;		// ³ªÀÌÆ® ½¦µµ¿ì ¾ÆÀÌÅÛÀÌ ¸¹¾Æ¼­ 4·Î ¼öÁ¤
+			irow = 4;		// ë‚˜ì´íŠ¸ ì‰ë„ìš° ì•„ì´í…œì´ ë§ì•„ì„œ 4ë¡œ ìˆ˜ì •
 
 			sql1 = boost::str(boost::format("INSERT INTO t_inven%02d(a_char_idx, a_tab_idx, a_row_idx") % table_no);
 			sql2 = boost::str(boost::format(") VALUES (%d, 0, %d ") % char_index % irow);
@@ -853,7 +853,7 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		if (pChar->m_job != JOB_NIGHTSHADOW)
 		{
-			irow = 3;			//3¹øºÎÅÍ ÃÊ¹İ Áö±Ş ¾ÆÀÌÅÛ È®Àå
+			irow = 3;			//3ë²ˆë¶€í„° ì´ˆë°˜ ì§€ê¸‰ ì•„ì´í…œ í™•ì¥
 			icol = 0;
 
 			static int nItemList[2][1] =
@@ -902,39 +902,39 @@ void DBProcess::CreateChar( boost::any& argv )
 
 		/////////////////////////
 
-		// µğÆúÆ® ½½·Ô ¼³Á¤
+		// ë””í´íŠ¸ ìŠ¬ë¡¯ ì„¤ì •
 		query = boost::str(boost::format(
 							   "INSERT INTO t_quickslot%02d(a_char_idx, a_page_idx, a_slot) VALUES (%d, 0, ") % table_no % char_index);
 
 		switch (pChar->m_job)
 		{
 		case JOB_TITAN:
-			query += "'0 1";			// ÆÄ¿ö¸Å±×³Ñ
+			query += "'0 1";			// íŒŒì›Œë§¤ê·¸ë„˜
 			break;
 
 		case JOB_KNIGHT:
-			query += "'0 14";		// ³ÊÅ¬½ºÇÇ¾î
+			query += "'0 14";		// ë„ˆí´ìŠ¤í”¼ì–´
 			break;
 
 		case JOB_HEALER:
-			query += "'0 27 0 31";	// »şÀÌ´×¾Ö·Î¿ì, ¼¿ÇÁÈú
+			query += "'0 27 0 31";	// ìƒ¤ì´ë‹ì• ë¡œìš°, ì…€í”„í
 			break;
 
 		case JOB_MAGE:
-			query += "'0 53";		// ¿¡³ÊÁö º¼Æ®
+			query += "'0 53";		// ì—ë„ˆì§€ ë³¼íŠ¸
 			break;
 
 		case JOB_ROGUE:
-			query += "'0 116";		// ¿¡³ÊÁö º¼Æ®
+			query += "'0 116";		// ì—ë„ˆì§€ ë³¼íŠ¸
 			break;
 
 		case JOB_SORCERER:
-			query += "'0 292";		// ÆÄÀÌ¾î ½ºÀ®
+			query += "'0 292";		// íŒŒì´ì–´ ìŠ¤ìœ™
 			break;
 
 #ifdef EX_ROGUE
 		case JOB_EX_ROGUE:
-			query += "'0 1528";				// EXROGUE : ½ºÅ³ ÀÎµ¦½º Ãß°¡
+			query += "'0 1528";				// EXROGUE : ìŠ¤í‚¬ ì¸ë±ìŠ¤ ì¶”ê°€
 			break;
 #endif // EX_ROGUE
 #ifdef EX_MAGE
@@ -978,7 +978,7 @@ void DBProcess::CreateChar( boost::any& argv )
 			throw MSG_FAIL_DB_UNKNOWN;
 		}
 
-		// ºó½½·Ô ÁÖ±â page 1 ~ 2
+		// ë¹ˆìŠ¬ë¡¯ ì£¼ê¸° page 1 ~ 2
 		for (int page = 1; page < QUICKSLOT_PAGE_NUM; page++)
 		{
 			query = boost::str(boost::format(

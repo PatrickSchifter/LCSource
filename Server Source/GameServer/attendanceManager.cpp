@@ -54,7 +54,7 @@ void CAttendanceManager::load(MYSQL* conn)
 	std::string query = boost::str(boost::format("select * from t_attendance_exp_system where a_char_index = %d and a_last_date = CURDATE()") % _owner->m_index);
 	cmd.SetQuery(query);
 
-	//Ãâ¼® Çß´Ù¸é
+	//ì¶œì„ í–ˆë‹¤ë©´
 	if(cmd.Open() == true && cmd.MoveNext() == true)
 	{
 		cmd.GetRec("a_acc_count", m_acc_count);
@@ -63,20 +63,20 @@ void CAttendanceManager::load(MYSQL* conn)
 
 		setAttendance(true);
 	}
-	//Ãâ¼®ÇÏÁö ¾Ê¾Ò´Ù¸é
+	//ì¶œì„í•˜ì§€ ì•Šì•˜ë‹¤ë©´
 	else
 	{
 		query = boost::str(boost::format("SELECT * FROM t_attendance_exp_system WHERE a_char_index = %d and a_last_date >=  CURDATE() - INTERVAL 1 DAY") % _owner->m_index);
 		cmd.SetQuery(query);
 
-		//Ãâ¼®ÇÏÁö ¾Ê¾Ò´Âµ¥ Àü³¯ Ãâ¼®À» Çß´Ù¸é
+		//ì¶œì„í•˜ì§€ ì•Šì•˜ëŠ”ë° ì „ë‚  ì¶œì„ì„ í–ˆë‹¤ë©´
 		if(cmd.Open() == true && cmd.MoveNext() == true)
 		{
 			cmd.GetRec("a_acc_count", m_acc_count);
 			cmd.GetRec("a_max_acc", m_max_acc);
 			cmd.GetRec("a_last_reward_point", m_last_reward_point);
 		}
-		//º¸Çè ¾ÆÀÌÅÛÀ» »ç¿ëÇÏ°í ÀÖ´Â ÁßÀÌ¶ó¸é
+		//ë³´í—˜ ì•„ì´í…œì„ ì‚¬ìš©í•˜ê³  ìˆëŠ” ì¤‘ì´ë¼ë©´
 		else if(m_isUseAssure == true)
 		{
 			query = boost::str(boost::format("SELECT * FROM t_attendance_exp_system where a_char_index = %d") % _owner->m_index);
@@ -88,7 +88,7 @@ void CAttendanceManager::load(MYSQL* conn)
 				cmd.GetRec("a_last_reward_point", m_last_reward_point);
 			}
 		}
-		//º¸Çè ¾ÆÀÌÅÛÀ» »ç¿ëÇÏÁö ¾ÊÀº »óÅÂ¿¡¼­ Ãâ¼®ÇÏÁö ¾Ê¾Ò´Âµ¥ Àü³¯ Ãâ¼®µµ ÇÏÁö ¾Ê¾Ò´Ù¸é ÇØ´ç À¯ÀúÀÇ Ãâ¼® ½Ã½ºÅÛÀ» ¸ğµÎ ÃÊ±âÈ­
+		//ë³´í—˜ ì•„ì´í…œì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ ì¶œì„í•˜ì§€ ì•Šì•˜ëŠ”ë° ì „ë‚  ì¶œì„ë„ í•˜ì§€ ì•Šì•˜ë‹¤ë©´ í•´ë‹¹ ìœ ì €ì˜ ì¶œì„ ì‹œìŠ¤í…œì„ ëª¨ë‘ ì´ˆê¸°í™”
 		else
 		{
 			query = boost::str(boost::format("SELECT a_acc_count, a_max_acc FROM t_attendance_exp_system WHERE a_char_index = %d") % _owner->m_index);
@@ -109,7 +109,7 @@ void CAttendanceManager::load(MYSQL* conn)
 
 void CAttendanceManager::checkAttendance()
 {
-	//Ãâ¼®ÀÌ µÇÁö ¾ÊÀº »óÅÂ¶ó¸é
+	//ì¶œì„ì´ ë˜ì§€ ì•Šì€ ìƒíƒœë¼ë©´
 	if(m_isAttendance == false && m_isUseAssure == false)
 	{
 		if( _owner->m_assist.FindBySkillIndex(1060) == 0)
@@ -149,7 +149,7 @@ void CAttendanceManager::finish()
 
 	if(m_acc_count > m_max_acc)
 		m_max_acc = m_acc_count;
-	//DB Thread¿¡ ´øÁö±â
+	//DB Threadì— ë˜ì§€ê¸°
 	if(m_isFirst == true)
 	{
 		std::string query = boost::str(boost::format("INSERT INTO t_attendance_exp_system ( a_char_index, a_last_date, a_acc_count, a_last_reward_point ) VALUES ( %d, NOW(), %d, 0 )") % _owner->m_index % m_acc_count);
@@ -172,7 +172,7 @@ void CAttendanceManager::finish()
 	
 	_owner->m_nAttendance_exp = reward_exp[reward_idx];
 
-	//Ãâ¼® ½Ã rvr Æ÷ÀÎÆ®µµ ÁØ´Ù.
+	//ì¶œì„ ì‹œ rvr í¬ì¸íŠ¸ë„ ì¤€ë‹¤.
 	int JewelPoint_K = SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_KAILUX);
 	int JewelPoint_D = SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_DEALERMOON);
 
@@ -268,7 +268,7 @@ void CAttendanceManager::reward()
 			RewardEventItem *rewardItem = items[0];
 			if(rewardItem->GetRewardDate() > m_last_reward_point && rewardItem->GetRewardDate() <= m_max_acc)
 			{
-				// ¾ÆÀÌÅÛ ÀÌº¥È®ÀÎ ¹× ¾ÆÀÌÅÛ ÁÖ±â
+				// ì•„ì´í…œ ì´ë²¤í™•ì¸ ë° ì•„ì´í…œ ì£¼ê¸°
 				CItem * pItem = gserver->m_itemProtoList.CreateItem(
 					rewardItem->GetIndex(),
 					-1,
@@ -285,7 +285,7 @@ void CAttendanceManager::reward()
 					bReward = true;
 					m_last_reward_point = rewardItem->GetRewardDate();
 				}
-				else // ½ÇÆĞ
+				else // ì‹¤íŒ¨
 				{
 					delete pItem;
 
@@ -299,7 +299,7 @@ void CAttendanceManager::reward()
 			}
 		}
 		/**
-		* ¹ö±× ¼öÁ¤ ( ±âÁ¸ÀÇ 365ÀÏÀÌ ³ÑÀº À¯ÀúÀÇ °æ¿ì ¸®¼ÂÀ» ½ÃÅ°Áö ¾Ê¾Ò´ø ¹®Á¦ ¼öÁ¤.)
+		* ë²„ê·¸ ìˆ˜ì • ( ê¸°ì¡´ì˜ 365ì¼ì´ ë„˜ì€ ìœ ì €ì˜ ê²½ìš° ë¦¬ì…‹ì„ ì‹œí‚¤ì§€ ì•Šì•˜ë˜ ë¬¸ì œ ìˆ˜ì •.)
 		* date : 2011.11.14
 		*/
 		if( m_max_acc >= 365 )
@@ -309,13 +309,13 @@ void CAttendanceManager::reward()
 
 		if( bReward )
 		{
-			// º¸»ó ¾ÆÀÌÅÛ Áö±ŞÀÏ ±âÁØ 365ÀÏ ÀÌ»óÀÏ °æ¿ì ¸®¼Â ½ÃÅ´.
+			// ë³´ìƒ ì•„ì´í…œ ì§€ê¸‰ì¼ ê¸°ì¤€ 365ì¼ ì´ìƒì¼ ê²½ìš° ë¦¬ì…‹ ì‹œí‚´.
 			int nResetType = 0;
 			if( 365 <= m_last_reward_point )
 			{
 				nResetType = 1;
 			}
-			//DB Thread¿¡ ´øÁü
+			//DB Threadì— ë˜ì§
 			std::string query;
 			if(nResetType == 1)
 			{
@@ -334,7 +334,7 @@ void CAttendanceManager::reward()
 			SEND_Q(rmsg, _owner->m_desc);
 		}
 	}
-	else  // ¹ŞÀ» º¸»óÀÌ ¾øÀ½ DB ÀÚÃ¼¿¡ ±â·ÏÀÌ ¾ø´Â°æ¿ì subtype 3 - nAccCount:1 ( ¹ŞÀ»º¸»óÀÌ ¾øÀ½ )
+	else  // ë°›ì„ ë³´ìƒì´ ì—†ìŒ DB ìì²´ì— ê¸°ë¡ì´ ì—†ëŠ”ê²½ìš° subtype 3 - nAccCount:1 ( ë°›ì„ë³´ìƒì´ ì—†ìŒ )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeAttendanceRewardMsg(rmsg, ATTENDANCE_ERROR_NO_REWARD);

@@ -81,6 +81,7 @@ private:
 	int		GetClassSex(int nJob);
 	int		GetActionAniidx(int ActionIdx);
 	
+	void	Update_BtnHighlight(float fDeltaTime);
 	//---------------------------
 	void	initializeCenterUI();
 	void	initializeLeftUI();
@@ -94,7 +95,9 @@ private:
 	CUIText*		m_pstrSelJob;
 	CUIButton*		m_pbtnSelJob_left;
 	CUIButton*		m_pbtnSelJob_right;
-
+	CUIImage*		m_pImgSelJob_Arrow_highlight_left;
+	CUIImage*		m_pImgSelJob_Arrow_highlight_right;
+	
 	// Center Bottom UI
 	CUIButton*		m_pbtnRot_left;
 	CUIButton*		m_pbtnRot_right;

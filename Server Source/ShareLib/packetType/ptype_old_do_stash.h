@@ -13,13 +13,13 @@
 enum
 {
 	MSG_STASH_ERROR,
-	MSG_STASH_LIST,							// Ã¢°í ¾ÆÀÌÅÛ ¸®½ºÆ® ¿äÃ»	: password(str)
-	MSG_STASH_KEEP,							// Ã¢°í¿¡ ¹°°Ç ¸Ã±â±â		: password(str) keepcount(n) [row(c) col(c) item_idx(n) count(ll)]:keepcount
-	MSG_STASH_TAKE,							// Ã£±â ¿äÃ»				: password(str) takecount(n) [item_idx(n) count(ll)]:takecount
+	MSG_STASH_LIST,							// ì°½ê³  ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ ìš”ì²­	: password(str)
+	MSG_STASH_KEEP,							// ì°½ê³ ì— ë¬¼ê±´ ë§¡ê¸°ê¸°		: password(str) keepcount(n) [row(c) col(c) item_idx(n) count(ll)]:keepcount
+	MSG_STASH_TAKE,							// ì°¾ê¸° ìš”ì²­				: password(str) takecount(n) [item_idx(n) count(ll)]:takecount
 
 #ifdef STASH_PASSWORD
-	MSG_STASH_CHANGE_PASSWORD = 100,		// Ã¢°í ÆĞ½º¿öµå º¯°æ
-	MSG_STASH_DELETE_PASSWORD,				// ¾ÏÈ£ »èÁ¦
+	MSG_STASH_CHANGE_PASSWORD = 100,		// ì°½ê³  íŒ¨ìŠ¤ì›Œë“œ ë³€ê²½
+	MSG_STASH_DELETE_PASSWORD,				// ì•”í˜¸ ì‚­ì œ
 #endif
 };
 
@@ -61,7 +61,7 @@ struct doStashTake : public pTypeBase
 	unsigned short			takeCount;
 	struct
 	{
-		unsigned short		invenIndex;		// tabÀº ¹«Á¶°Ç INVENTORY_TAB_STASHÀ¸·Î ¼ÂÆÃÇÑ´Ù.
+		unsigned short		invenIndex;		// tabì€ ë¬´ì¡°ê±´ INVENTORY_TAB_STASHìœ¼ë¡œ ì…‹íŒ…í•œë‹¤.
 		int					virtualIndex;
 		int					count;
 	} list[0];

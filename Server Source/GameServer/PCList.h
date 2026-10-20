@@ -7,7 +7,7 @@
 
 #include "Character.h"
 
-// ÇöÀç °ÔÀÓ Áß(zone¿¡ ¼Ò¼ÓÇØ ÀÖ´Â )ÀÎ User¿Í ¸ğµç GameServer¿¡ ¿¬°áµÈ User¸®½ºÆ®
+// í˜„ì¬ ê²Œì„ ì¤‘(zoneì— ì†Œì†í•´ ìˆëŠ” )ì¸ Userì™€ ëª¨ë“  GameServerì— ì—°ê²°ëœ Userë¦¬ìŠ¤íŠ¸
 class PCManager
 {
 	// boost::multi_index_container Definition
@@ -76,14 +76,14 @@ public:
 	void	deletePlayerByPC(CPC* pc);
 	void	sendToAll(CNetMsg::SP& msg);
 
-	// GuildWar ´Ù¸¥ ¸Å´ÏÀú·Î »¬°Í
+	// GuildWar ë‹¤ë¥¸ ë§¤ë‹ˆì €ë¡œ ëº„ê²ƒ
 	void	sendGuildWarPointMsg(CWarCastle* castle, int zoneindex);
-	// WarJoinUser ´Ù¸¥ ¸Å´ÏÀú·Î »¬°Í
+	// WarJoinUser ë‹¤ë¥¸ ë§¤ë‹ˆì €ë¡œ ëº„ê²ƒ
 	void	sendToWarJoinUser(CNetMsg::SP& msg, int zoneindex, bool bInZone);
-	// Teacher ´Ù¸¥ ¸Å´ÏÀú·Î »¬°Í -> »çÁ¦ ¸Å´ÏÀú Á¦ÀÛ ÈÄ
+	// Teacher ë‹¤ë¥¸ ë§¤ë‹ˆì €ë¡œ ëº„ê²ƒ -> ì‚¬ì œ ë§¤ë‹ˆì € ì œì‘ í›„
 	void	sendToAllTeacher(CNetMsg::SP& msg);
 
-	// zone ¸Å´ÏÀú »ı¼º ÈÄ ÀÌµ¿ ½ÃÅ³ °Í
+	// zone ë§¤ë‹ˆì € ìƒì„± í›„ ì´ë™ ì‹œí‚¬ ê²ƒ
 	void	sendToZone(CNetMsg::SP& msg, int zoneIndex);
 
 	void	changeNickName(const char* oldname, const char* newname);

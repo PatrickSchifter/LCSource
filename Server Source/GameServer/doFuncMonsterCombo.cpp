@@ -26,31 +26,31 @@ void do_MonsterCombo(CPC* ch, CNetMsg::SP& msg)
 
 	switch(pBase->thirdType)
 	{
-	case MSG_EX_MONSTERCOMBO_EDIT_COMPLETE:					// ÆíÁı¿Ï·á¹öÆ° ´­·¶À» °æ¿ì
+	case MSG_EX_MONSTERCOMBO_EDIT_COMPLETE:					// í¸ì§‘ì™„ë£Œë²„íŠ¼ ëˆŒë €ì„ ê²½ìš°
 		do_MonsterComboEditComplete(ch, msg);
 		break;
-	case MSG_EX_MONSTERCOMBO_EDIT_CANCEL:					// ÆíÁıÃë¼Ò¹öÆ°À» ´­·¶À» °æ¿ì
+	case MSG_EX_MONSTERCOMBO_EDIT_CANCEL:					// í¸ì§‘ì·¨ì†Œë²„íŠ¼ì„ ëˆŒë €ì„ ê²½ìš°
 		do_MonsterComboEditCancel(ch);
 		break;
-	case MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ:				// ÄŞº¸ ¹Ì¼ÇÄÉÀÌ½º ¸®½ºÆ® ¿äÃ»ÇÑ °æ¿ì(ÆÄÆ¼¿ë)
+	case MSG_EX_MONSTERCOMBO_EDIT_CONTEXT_REQ:				// ì½¤ë³´ ë¯¸ì…˜ì¼€ì´ìŠ¤ ë¦¬ìŠ¤íŠ¸ ìš”ì²­í•œ ê²½ìš°(íŒŒí‹°ìš©)
 		do_MonsterComboContextReq( ch );
 		break;
-	case MSG_EX_MONSTERCOMBO_GOTO_COMBO:					// ÆíÁı¿Ï·á ÈÄ ´ë±â¹æÀ¸·Î °¨
+	case MSG_EX_MONSTERCOMBO_GOTO_COMBO:					// í¸ì§‘ì™„ë£Œ í›„ ëŒ€ê¸°ë°©ìœ¼ë¡œ ê°
 		do_MonsterComboGotoCombo(ch, msg);
 		break;
-	case MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM:			// È®ÀÎ¸Ş½ÃÁö Å¬¸¯ÇßÀ» ¶§
+	case MSG_EX_MONSTERCOMBO_GOTO_COMBO_CONFIRM:			// í™•ì¸ë©”ì‹œì§€ í´ë¦­í–ˆì„ ë•Œ
 		do_MonsterComboConfirm(ch, msg);
 		break;
-	case MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO:				// npc¸¦ ÀÌ¿ëÇØ¼­ ÆÄÆ¼¸®Äİ Å¬¸¯ÇßÀ» ¶§
+	case MSG_EX_MONSTERCOMBO_RECALL_TO_COMBO:				// npcë¥¼ ì´ìš©í•´ì„œ íŒŒí‹°ë¦¬ì½œ í´ë¦­í–ˆì„ ë•Œ
 		do_MonsterComboRecallToCombo(ch);
 		break;
-	case MSG_EX_MONSTERCOMBO_GIVEUP:						// ¸ó½ºÅÍ ÄŞº¸ Æ÷±â
+	case MSG_EX_MONSTERCOMBO_GIVEUP:						// ëª¬ìŠ¤í„° ì½¤ë³´ í¬ê¸°
 		do_MonsterComboGiveUp(ch, msg);
 		break;
-	case MSG_EX_MONSTERCOMBO_GOTO_STAGE:					// ´ë±â¹æ¿¡¼­ ´ÙÀ½ ½ºÅ×ÀÌÁö·Î °¨ ¹Ì¼Ç ½ÃÀÛ
+	case MSG_EX_MONSTERCOMBO_GOTO_STAGE:					// ëŒ€ê¸°ë°©ì—ì„œ ë‹¤ìŒ ìŠ¤í…Œì´ì§€ë¡œ ê° ë¯¸ì…˜ ì‹œì‘
 		do_MonsterComboGotoStage(ch);
 		break;
-	case MSG_EX_MONSTERCOMBO_GOTO_WAITROOM:					// ½ºÅ×ÀÌÁö¿¡¼­ ´ë±â¹æÀ¸·Î °¨
+	case MSG_EX_MONSTERCOMBO_GOTO_WAITROOM:					// ìŠ¤í…Œì´ì§€ì—ì„œ ëŒ€ê¸°ë°©ìœ¼ë¡œ ê°
 		do_MonsterComboGotoWaitRoom( ch );
 		break;
 	default:
@@ -64,7 +64,7 @@ void do_MonsterCombo(CPC* ch, CNetMsg::SP& msg)
 
 void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 {
-	// ÆÄÆ¼ÀÏ ¶§ ÆÄÀå¸¸ ÇÒ ¼ö ÀÖÀ½
+	// íŒŒí‹°ì¼ ë•Œ íŒŒì¥ë§Œ í•  ìˆ˜ ìˆìŒ
 	if(ch->IsParty())
 	{
 		if(ch->m_index != ch->m_party->GetBossIndex())
@@ -73,7 +73,7 @@ void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ÄŞº¸ÁßÀÌ¸é
+		// ì½¤ë³´ì¤‘ì´ë©´
 		if(ch->m_party->m_comboAreaIndex != -1)
 			return ;
 	}
@@ -89,11 +89,11 @@ void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÆíÁı°³¼ö Ã¼Å©
+	// í¸ì§‘ê°œìˆ˜ ì²´í¬
 	if( packet->count < 1 || packet->count > 20 || (packet->count % 5 != 0 ))
 		return ;
 
-	// ±âÁ¸¿¡ ÀÖ´Â °Í Áö¿ò
+	// ê¸°ì¡´ì— ìˆëŠ” ê²ƒ ì§€ì›€
 	ch->m_listSaveComboData.clear();
 
 	MONSTER_COMBO_DATA data;
@@ -103,7 +103,7 @@ void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 		proto = gserver->m_missionCaseList.FindProto(packet->list[i]);
 		if(!proto)
 		{
-			// ¼¼ÆÃ ½ÇÆĞ
+			// ì„¸íŒ… ì‹¤íŒ¨
 			ch->m_listSaveComboData.clear();
 
 			{
@@ -112,7 +112,7 @@ void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// ½ÇÆĞ·Î±×
+			// ì‹¤íŒ¨ë¡œê·¸
 			GAMELOG << init("COMBO EDIT FAILED", ch)
 					<< "Party Index: ";
 
@@ -135,13 +135,13 @@ void do_MonsterComboEditComplete(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// ¼¼ÆÃ ¿Ï·áÇßÀ½À» ¾Ë¸°´Ù.
+		// ì„¸íŒ… ì™„ë£Œí–ˆìŒì„ ì•Œë¦°ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeMBErrorMsg(rmsg, MSG_EX_MONSTERCOMBO_ERROR_EDIT_COMPLETE_OK);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¼º°ø·Î±×
+	// ì„±ê³µë¡œê·¸
 	GAMELOG << init("COMBO EDIT OK", ch)
 			<< "Party Index: ";
 
@@ -177,7 +177,7 @@ void do_MonsterComboEditCancel(CPC* ch)
 
 void do_MonsterComboContextReq(CPC* ch)
 {
-	if(ch->IsParty())				// ÆÄÆ¼ÀÎ °æ¿ì
+	if(ch->IsParty())				// íŒŒí‹°ì¸ ê²½ìš°
 	{
 		int bossindex, count;
 		bossindex = ch->m_party->GetBossIndex();
@@ -186,7 +186,7 @@ void do_MonsterComboContextReq(CPC* ch)
 			return ;
 
 		count =  pc->m_listSaveComboData.size();
-		if(count > 0)			// ÆíÁı ÁßÀÓ
+		if(count > 0)			// í¸ì§‘ ì¤‘ì„
 		{
 			std::vector<int> vec;
 			BOOST_FOREACH(MONSTER_COMBO_DATA& data, pc->m_listSaveComboData)
@@ -197,9 +197,9 @@ void do_MonsterComboContextReq(CPC* ch)
 			ResponseClient::makeMBEditContext(rmsg, vec);
 			SEND_Q(rmsg, ch->m_desc);
 		}
-		else					// ÄŞº¸Á¸¿¡ ÀÖÀ½
+		else					// ì½¤ë³´ì¡´ì— ìˆìŒ
 		{
-			// ¹æÀ» °Ë»öÇÔ.
+			// ë°©ì„ ê²€ìƒ‰í•¨.
 			int i = gserver->m_comboZone->FindComboArea(ch->m_party->m_comboAreaIndex);
 			if(i == -1)
 				return;
@@ -222,7 +222,7 @@ void do_MonsterComboContextReq(CPC* ch)
 			SEND_Q(rmsg, ch->m_desc);
 		}
 	}
-	else			// °³ÀÎÀÎ °æ¿ì
+	else			// ê°œì¸ì¸ ê²½ìš°
 	{
 		int count;
 		count = ch->m_listSaveComboData.size();
@@ -262,7 +262,7 @@ void do_MonsterComboGotoCombo(CPC* ch, CNetMsg::SP& msg)
 {
 	if(ch->IsParty())
 	{
-		// ÆÄÀåÀÎÁö È®ÀÎ
+		// íŒŒì¥ì¸ì§€ í™•ì¸
 		if(ch->m_party->GetBossIndex() != ch->m_index)
 			return ;
 
@@ -283,7 +283,7 @@ void do_MonsterComboGotoCombo(CPC* ch, CNetMsg::SP& msg)
 
 	int count = ch->m_listSaveComboData.size();
 
-	// ÆíÁı ¿Ï·á¸¦ ´­·¶´ÂÁö È®ÀÎ
+	// í¸ì§‘ ì™„ë£Œë¥¼ ëˆŒë €ëŠ”ì§€ í™•ì¸
 	if(count < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -292,7 +292,7 @@ void do_MonsterComboGotoCombo(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ³ª½º °Ë»ç
+	// ë‚˜ìŠ¤ ê²€ì‚¬
 	LONGLONG totalnas = 0;
 	BOOST_FOREACH(MONSTER_COMBO_DATA& data, ch->m_listSaveComboData)
 	{
@@ -305,7 +305,7 @@ void do_MonsterComboGotoCombo(CPC* ch, CNetMsg::SP& msg)
 
 	if( ch->m_inventory.getMoney() < totalnas )
 	{
-		// ÇöÀç °¡Áö°í ÀÖ´Â ³ª½º ºÎÁ· ¿¡·¯¸Ş¼¼Áö Àü¼Û
+		// í˜„ì¬ ê°€ì§€ê³  ìˆëŠ” ë‚˜ìŠ¤ ë¶€ì¡± ì—ëŸ¬ë©”ì„¸ì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeMBErrorMsg(rmsg, MSG_EX_MONSTERCOMBO_ERROR_MONEY);
 		SEND_Q( rmsg, ch->m_desc );
@@ -335,7 +335,7 @@ void do_MonsterComboConfirm(CPC* ch, CNetMsg::SP& msg)
 	if(!party)
 		return ;
 
-	// ¸â¹öÈ®ÀÎ
+	// ë©¤ë²„í™•ì¸
 	int ret = party->FindMember(ch->m_index);
 	if(ret == -1)
 		return ;
@@ -369,7 +369,7 @@ void do_MonsterComboConfirm(CPC* ch, CNetMsg::SP& msg)
 
 	if( ch->m_inventory.getMoney() < nas )
 	{
-		// ÇöÀç °¡Áö°í ÀÖ´Â ³ª½º ºÎÁ· ¿¡·¯¸Ş¼¼Áö Àü¼Û
+		// í˜„ì¬ ê°€ì§€ê³  ìˆëŠ” ë‚˜ìŠ¤ ë¶€ì¡± ì—ëŸ¬ë©”ì„¸ì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeMBErrorMsg(rmsg, MSG_EX_MONSTERCOMBO_ERROR_MONEY);
 		SEND_Q( rmsg, ch->m_desc );
@@ -396,11 +396,11 @@ void do_MonsterComboConfirm(CPC* ch, CNetMsg::SP& msg)
 
 void do_MonsterComboRecallToCombo(CPC* ch)
 {
-	// ÄŞº¸´øÀüÀÎÁö
+	// ì½¤ë³´ë˜ì „ì¸ì§€
 	if(ch->m_pZone->m_index != ZONE_COMBO_DUNGEON)
 		return ;
 
-	// ÆÄÆ¼ÀÎÁö
+	// íŒŒí‹°ì¸ì§€
 	if(!ch->IsParty())
 		return ;
 
@@ -488,7 +488,7 @@ void do_MonsterComboGotoStage(CPC* ch)
 	combo = ch->m_pArea->m_monsterCombo;
 	if(combo->m_bIsBattle)
 	{
-		// ½ºÅ×ÀÌÁö ¿Ï·á¾ÈµÆÀ½
+		// ìŠ¤í…Œì´ì§€ ì™„ë£Œì•ˆëìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeMBErrorMsg(rmsg, MSG_EX_MONSTERCOMBO_ERROR_NOT_COMPLETE_STAGE);
 		SEND_Q(rmsg, ch->m_desc);
@@ -552,7 +552,7 @@ void do_MonsterComboGotoWaitRoom( CPC* ch )
 
 	float x, z;
 	char ylayer;
-	int extra = 0;   // ´ë±â¹æ
+	int extra = 0;   // ëŒ€ê¸°ë°©
 
 	x = GetRandom(gserver->m_comboZone->m_zonePos[extra][1], gserver->m_comboZone->m_zonePos[extra][3]) / 2.0f;
 	z = GetRandom(gserver->m_comboZone->m_zonePos[extra][2], gserver->m_comboZone->m_zonePos[extra][4]) / 2.0f;

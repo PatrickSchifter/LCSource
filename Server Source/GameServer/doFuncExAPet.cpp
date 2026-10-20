@@ -26,7 +26,7 @@ void do_ExApetMount( CPC* ch, CNetMsg::SP& msg );
 void do_ExApetExpInfo( CPC* ch, CNetMsg::SP& msg );
 void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg );
 
-// °ø°İÇü Æê °ü·Ã
+// ê³µê²©í˜• í« ê´€ë ¨
 void do_AttackPet(CPC* ch, CNetMsg::SP& msg )
 {
 	unsigned char subtype;
@@ -128,7 +128,7 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 	bool npc_check_flag = true;
 
 #ifdef PREMIUM_CHAR
-	//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¿ø°İÀ¸·Î Æê ºÎÈ°
+	//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ì›ê²©ìœ¼ë¡œ í« ë¶€í™œ
 	if (ch->m_premiumChar.isActive())
 	{
 		npc_check_flag = false;
@@ -145,7 +145,7 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 		if (pNpc == NULL)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_ERROR_NOT_EXIST_NPC, NULL , 1 );		// ÆêÀÌ ¾Æ´Õ´Ï´Ù.
+			ExAPetFuntionMsg( rmsg, MSG_SUB_ERROR_NOT_EXIST_NPC, NULL , 1 );		// í«ì´ ì•„ë‹™ë‹ˆë‹¤.
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -171,7 +171,7 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 	if (petItem->IsAPet() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 1 );		// ÆêÀÌ ¾Æ´Õ´Ï´Ù.
+		ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 1 );		// í«ì´ ì•„ë‹™ë‹ˆë‹¤.
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -180,23 +180,23 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 	CAPet* apet = ch->GetAPet(petIndex);
 	if( apet )
 	{
-		// ºÀÀÎ ¿©ºÎ
+		// ë´‰ì¸ ì—¬ë¶€
 		if( !(petItem->getFlag() & FLAG_ITEM_SEALED) )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 3 );		// ºÀÀÎµÇÁö ¾ÊÀº ¾ÆÀÌÅÛ
+			ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 3 );		// ë´‰ì¸ë˜ì§€ ì•Šì€ ì•„ì´í…œ
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
-		// ÇÊ¿ä ³ª½º Ã³¸®  //////////////////////////////////////////////////////
+		// í•„ìš” ë‚˜ìŠ¤ ì²˜ë¦¬  //////////////////////////////////////////////////////
 		int nNeedMoney = (apet->m_level-1)*((apet->m_level*apet->m_level*8)+20000);
-		if( nNeedMoney != 0 )		// ÇÊ¿ä ±İ¾×ÀÌ 0 ÀÌ¸é  ±×³ÉÇØÁÖ±â
+		if( nNeedMoney != 0 )		// í•„ìš” ê¸ˆì•¡ì´ 0 ì´ë©´  ê·¸ëƒ¥í•´ì£¼ê¸°
 		{
 			if( ch->m_inventory.getMoney() < nNeedMoney )
 			{
-				// µ·ÀÌ ºÎÁ·ÇÔ
+				// ëˆì´ ë¶€ì¡±í•¨
 				CNetMsg::SP rmsg(new CNetMsg);
-				ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 2 );		// µ·ÀÌ ºÎÁ·ÇÕ´Ï´Ù.
+				ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 2 );		// ëˆì´ ë¶€ì¡±í•©ë‹ˆë‹¤.
 				SEND_Q( rmsg, ch->m_desc );
 				return;
 			}
@@ -207,8 +207,8 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 		}
 		//////////////////////////////////////////////////////////////////////////
 
-		/// È¸º¹ /////////////////////////////////////////////////////////////////
-		apet->m_hp = apet->m_maxHP * 40 / 100;					// HP 40% È¸º¹
+		/// íšŒë³µ /////////////////////////////////////////////////////////////////
+		apet->m_hp = apet->m_maxHP * 40 / 100;					// HP 40% íšŒë³µ
 		petItem->setFlag(petItem->getFlag() & ~FLAG_ITEM_SEALED);
 
 		{
@@ -219,7 +219,7 @@ void do_ExApetRebirth( CPC* ch, CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 0 );		// ºÀÀÎ ÇØÁ¦ ¼º°ø
+			ExAPetFuntionMsg( rmsg, MSG_SUB_REBIRTH, NULL , 0 );		// ë´‰ì¸ í•´ì œ ì„±ê³µ
 			SEND_Q( rmsg, ch->m_desc );
 		}
 	}
@@ -282,7 +282,7 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 	if (skillProto == NULL)
 		return ;
 
-	// ÆêÀÌ ÇØ´ç ½ºÅ³À» °¡Áö°í ÀÖ´ÂÁö °Ë»ç
+	// í«ì´ í•´ë‹¹ ìŠ¤í‚¬ì„ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬
 	CSkill* curSkill = apet->FindSkill(skillindex);
 	int nextlevel = (curSkill == NULL) ? 1 : curSkill->m_level + 1;
 
@@ -292,7 +292,7 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 	if (skillProto->m_maxLevel < nextlevel)
 		return ;
 
-	// Á¶°Ç °Ë»ç : Á÷¾÷
+	// ì¡°ê±´ ê²€ì‚¬ : ì§ì—…
 	if ( ! skillProto->IsSameJob(apet) )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -301,25 +301,25 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// Á¶°Ç °Ë»ç : ·¹º§
+	// ì¡°ê±´ ê²€ì‚¬ : ë ˆë²¨
 	if (skillLevelProto->m_learnLevel > apet->m_level)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 2 );		// ·¹º§ÀÌ ¸ÂÁö ¾ÊÀ½
+		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 2 );		// ë ˆë²¨ì´ ë§ì§€ ì•ŠìŒ
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// Á¶°Ç °Ë»ç : Æ÷ÀÎÆ® : ±â¼ú Æ÷ÀÎÆ®´Â SP¿Í ´Ş¸® ´ÜÀ§°¡ 1·Î ÅëÀÏ
+	// ì¡°ê±´ ê²€ì‚¬ : í¬ì¸íŠ¸ : ê¸°ìˆ  í¬ì¸íŠ¸ëŠ” SPì™€ ë‹¬ë¦¬ ë‹¨ìœ„ê°€ 1ë¡œ í†µì¼
 	if (skillLevelProto->m_learnSP > apet->m_nSP )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 3 );		// ½ºÅ³Æ÷ÀÎÆ® ºÎÁ·
+		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 3 );		// ìŠ¤í‚¬í¬ì¸íŠ¸ ë¶€ì¡±
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+	// ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 	item_search_t vec[MAX_SKILL_LEARN_ITEM];
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
@@ -330,16 +330,16 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 		if (sc == 0 || sc < skillLevelProto->m_learnItemCount[i])
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 4 );		// ÇÊ¿äÇÑ ¾ÆÀÌÅÛ ¾øÀ½
+			ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 4 );		// í•„ìš”í•œ ì•„ì´í…œ ì—†ìŒ
 			SEND_Q(rmsg, ch->m_desc);
 			return ;
 		}
 	}
 
-	// ½ºÅ³ Ãß°¡
+	// ìŠ¤í‚¬ ì¶”ê°€
 	if (curSkill == NULL)
 	{
-		// ½Å±Ô Ãß°¡
+		// ì‹ ê·œ ì¶”ê°€
 		curSkill = gserver->m_skillProtoList.Create(skillindex);
 		if (!curSkill)
 			return ;
@@ -348,19 +348,19 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 	}
 	else
 	{
-		// ±âÁ¸ ½ºÅ³ ·¹º§ ¾÷
+		// ê¸°ì¡´ ìŠ¤í‚¬ ë ˆë²¨ ì—…
 		curSkill->m_level++;
 	}
 
 	{
-		// Æ÷ÀÎÆ® ¼Ò¸ğ
+		// í¬ì¸íŠ¸ ì†Œëª¨
 		apet->m_nSP -= skillLevelProto->m_learnSP;
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExAPetStatusMsg(rmsg, apet);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¾ÆÀÌÅÛ ¼Ò¸ğ
+	// ì•„ì´í…œ ì†Œëª¨
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
 		ch->m_inventory.deleteItem(vec[i], skillLevelProto->m_learnItemCount[i]);
@@ -368,21 +368,21 @@ void do_ExApetSkillLean( CPC* ch, CNetMsg::SP& msg )
 	apet->CalcStatus(true);
 
 	{
-		// °á°ú ¾Ë¸®±â
+		// ê²°ê³¼ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 0 );		// ¹è¿ì±â ¼º°ø
-		RefMsg(rmsg) << skillindex << (char)nextlevel;						// ¼º°ø½Ã¸¸ ½ºÅ³ÀÎµ¦½º , ½ºÅ³·¹º§ Ãß°¡
+		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLEAN, NULL , 0 );		// ë°°ìš°ê¸° ì„±ê³µ
+		RefMsg(rmsg) << skillindex << (char)nextlevel;						// ì„±ê³µì‹œë§Œ ìŠ¤í‚¬ì¸ë±ìŠ¤ , ìŠ¤í‚¬ë ˆë²¨ ì¶”ê°€
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
 	{
-		// ½ºÅ³ ¸®½ºÆ® °»½Å
+		// ìŠ¤í‚¬ ë¦¬ìŠ¤íŠ¸ ê°±ì‹ 
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLIST, apet , 0 );		// ¹è¿ì±â ¼º°ø
+		ExAPetFuntionMsg( rmsg, MSG_SUB_SKILLLIST, apet , 0 );		// ë°°ìš°ê¸° ì„±ê³µ
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// °ÔÀÓ ·Î±×
+	// ê²Œì„ ë¡œê·¸
 	// TODO : petlog
 	GAMELOG << init("ATTACK PET SKILL LEARN", ch)
 			<< "ATTACK_PET" << delim
@@ -399,7 +399,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 	CAPet* apet = ch->GetAPet();
 	if( apet == NULL )
 	{
-		// ÆêÀ» Âø¿ëÇÏ½Ã°í ¾ÆÀÌÅÛÀ» ÀÔÀ¸½Ã¿À
+		// í«ì„ ì°©ìš©í•˜ì‹œê³  ì•„ì´í…œì„ ì…ìœ¼ì‹œì˜¤
 		return;
 	}
 
@@ -415,7 +415,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 
 	CItem* item = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 
-	// ±×³É ¹ş±â
+	// ê·¸ëƒ¥ ë²—ê¸°
 	if (packet->tab == INVALID_TAB && packet->invenIndex == INVALID_INDEX)
 	{
 		packet->itemIdx = -1;
@@ -432,7 +432,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// Âø¿ë À§Ä¡°¡ ¿Ã¹Ù¸¥Áö °Ë»ç
+	// ì°©ìš© ìœ„ì¹˜ê°€ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬
 	if (item && item->m_itemProto->getItemWearing() != packet->wearPos)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -441,7 +441,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	// ÀÔ´Â ¾ÆÀÌÅÛÀÌ °áÇÕµÈ ¾ÆÀÌÅÛÀÌ¸é ºÒ°¡´É
+	// ì…ëŠ” ì•„ì´í…œì´ ê²°í•©ëœ ì•„ì´í…œì´ë©´ ë¶ˆê°€ëŠ¥
 	if (item && !item->CanWear())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -458,9 +458,9 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 		return ;
 	}
 
-	CItem * item2 = apet->m_wearing[(int)packet->wearPos];		// ¹ş´Â ¾ÆÀÌÅÛ
+	CItem * item2 = apet->m_wearing[(int)packet->wearPos];		// ë²—ëŠ” ì•„ì´í…œ
 
-	// µÑ´Ù NULL ÀÌ¸é ¹«½Ã
+	// ë‘˜ë‹¤ NULL ì´ë©´ ë¬´ì‹œ
 	if (!item && !item2)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -471,7 +471,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 
 	if (!item)
 	{
-		// ¹ş±âÀÌ¸é ¹«Á¶°Ç À§Ä¡°¡ ¿Ã¹Ù¸£°Ô Àü´ŞµÇ¾ß ÇÔ
+		// ë²—ê¸°ì´ë©´ ë¬´ì¡°ê±´ ìœ„ì¹˜ê°€ ì˜¬ë°”ë¥´ê²Œ ì „ë‹¬ë˜ì•¼ í•¨
 		if (item2 != NULL && item2->m_itemProto->getItemWearing() != packet->wearPos)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -483,19 +483,19 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 
 	if (packet->itemIdx == -1)
 	{
-		// ¹ş±â
+		// ë²—ê¸°
 		if (!item2)
 		{
-			// ºóÀÚ¸®¿¡ ºóÀÚ¸® ÀÔÈ÷±â´Â ¹«½Ã
+			// ë¹ˆìë¦¬ì— ë¹ˆìë¦¬ ì…íˆê¸°ëŠ” ë¬´ì‹œ
 			return ;
 		}
 
-		// ¹æ¾îÄÚµå : ¿ø·¡ ¹ş¾ú¾ú´Âµ¥ ¶Ç ¹şÀ»¶ó ÇÏ¹È ¸®ÅÏ
+		// ë°©ì–´ì½”ë“œ : ì›ë˜ ë²—ì—ˆì—ˆëŠ”ë° ë˜ ë²—ì„ë¼ í•˜ë¯„ ë¦¬í„´
 		if (item2->getWearPos() == WEARING_NONE)
 			return;
 
-		// ¹ş±â Æê ÀÎº¥ ÀÇ ¾ÆÀÌÅÛÀ» Ä³¸¯ÅÍ ÀÎº¥¿¡ Item ³Ö¾î ÁØ´Ù
-		// item2 ¸¦ ÀÎº¥¿¡ Ãß°¡
+		// ë²—ê¸° í« ì¸ë²¤ ì˜ ì•„ì´í…œì„ ìºë¦­í„° ì¸ë²¤ì— Item ë„£ì–´ ì¤€ë‹¤
+		// item2 ë¥¼ ì¸ë²¤ì— ì¶”ê°€
 		int oldWearPos = item2->getWearPos();
 		item2->unWearPos();
 		if (ch->m_inventory.addItem(item2))
@@ -504,7 +504,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 		}
 		else
 		{
-			// ÀÎº¥¿¡ °ø°£ ¾øÀ½
+			// ì¸ë²¤ì— ê³µê°„ ì—†ìŒ
 			item2->setWearPos(oldWearPos);
 
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -521,7 +521,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 	}
 	else
 	{
-		// ÀÔ±â
+		// ì…ê¸°
 		if (!item)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -538,14 +538,14 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 			return ;
 		}
 
-		// ¹æ¾îÄÚµå : ¿ø·¡ ¹ş°ÜÁ® ÀÖ´ø°Ô ¾Æ´Ï¸é ¸®ÅÏ
+		// ë°©ì–´ì½”ë“œ : ì›ë˜ ë²—ê²¨ì ¸ ìˆë˜ê²Œ ì•„ë‹ˆë©´ ë¦¬í„´
 		if (item->getWearPos() != WEARING_NONE)
 			return;
 
 		if (item2)
 		{
-			// ÇöÀç²¨ ¹ş±â±â
-			// Ä³¸¯ÅÍ ÀÎº¥¿¡ ³Ö±â
+			// í˜„ì¬êº¼ ë²—ê¸°ê¸°
+			// ìºë¦­í„° ì¸ë²¤ì— ë„£ê¸°
 			int oldWearPos = item2->getWearPos();
 			item2->unWearPos();
 			if (ch->m_inventory.addItem(item2))
@@ -554,7 +554,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 			}
 			else
 			{
-				// ÀÎº¥¿¡ °ø°£ ¾øÀ½
+				// ì¸ë²¤ì— ê³µê°„ ì—†ìŒ
 				item2->setWearPos(oldWearPos);
 
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -565,7 +565,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 		}
 
 		{
-			// ÀÎº¥¿¡¼­ »©°í ÆêÀÎº¥ ¿¡ ³Ö°í //////////////////////////////////////////
+			// ì¸ë²¤ì—ì„œ ë¹¼ê³  í«ì¸ë²¤ ì— ë„£ê³  //////////////////////////////////////////
 			apet->m_wearing[(int)packet->wearPos] = item;
 			item->setWearPos(packet->wearPos);
 
@@ -588,7 +588,7 @@ void do_ExApetItemWear( CPC* ch, CNetMsg::SP& msg )
 	apet->CalcStatus(false);
 
 	{
-		// ÁÖÀ§¿¡ ÀÔÀº Á¤º¸ ¾Ë¸²
+		// ì£¼ìœ„ì— ì…ì€ ì •ë³´ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemAPetWearingMsg( rmsg, apet );
 		ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -764,7 +764,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 	if(!npc)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_ERROR_NOT_EXIST_NPC, NULL , 2 );		// Âø¿ëÀº ºÒ°¡´É
+		ExAPetFuntionMsg( rmsg, MSG_SUB_ERROR_NOT_EXIST_NPC, NULL , 2 );		// ì°©ìš©ì€ ë¶ˆê°€ëŠ¥
 		SEND_Q( rmsg, ch->m_desc );
 		GAMELOG << init("ExApet Evolution FAIL: NOT EXIST NPC (Dangerous User)", ch) << end;
 		return ;
@@ -798,7 +798,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 	if (petItem->IsAPet() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// Æê ¾øÀ½
+		ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// í« ì—†ìŒ
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -810,7 +810,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 		if( petItem->getWearPos() > 0 )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 2 );		// Âø¿ëÀº ºÒ°¡´É
+			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 2 );		// ì°©ìš©ì€ ë¶ˆê°€ëŠ¥
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -867,7 +867,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 		if( DEAD(apet) || nEvPetIndex == 0 || ( petItem->getFlag() & FLAG_ITEM_SEALED ) )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// Æê ¾øÀ½
+			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// í« ì—†ìŒ
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -895,13 +895,13 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 0 );		// ¼º°ø
+					ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 0 );		// ì„±ê³µ
 					SEND_Q( rmsg, ch->m_desc );
 				}
 
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					pEvoPet->CalcStatus(false);									// Æê Á¤º¸ Àü´Ş
+					pEvoPet->CalcStatus(false);									// í« ì •ë³´ ì „ë‹¬
 					ExApetSellInfo( rmsg, pEvoPet );
 					SEND_Q( rmsg, ch->m_desc );
 				}
@@ -913,7 +913,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 				delete pEvoPet;
 
 				CNetMsg::SP rmsg(new CNetMsg);
-				ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 3 );		// ÀÎº¥ ¾øÀ½
+				ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 3 );		// ì¸ë²¤ ì—†ìŒ
 				SEND_Q( rmsg, ch->m_desc );
 				return;
 			}
@@ -921,7 +921,7 @@ void do_ExApetEvolution(CPC* ch, CNetMsg::SP& msg)
 		else
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// Æê ¾øÀ½
+			ExAPetFuntionMsg( rmsg, MSG_SUB_EVOLUTION, NULL , 4 );		// í« ì—†ìŒ
 			SEND_Q( rmsg, ch->m_desc );
 			return;
 		}
@@ -951,7 +951,7 @@ void do_ExApetMount(CPC *ch, CNetMsg::SP& msg )
 			return;
 		}
 
-		// Å»¼ö ¾ø´Â Áö¿ª
+		// íƒˆìˆ˜ ì—†ëŠ” ì§€ì—­
 		if (!ch->m_pZone->m_bCanMountPet)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -960,18 +960,18 @@ void do_ExApetMount(CPC *ch, CNetMsg::SP& msg )
 			return ;
 		}
 
-		// ¿©·¯¸í Å»°ÍÀ» ÁØºñ
+		// ì—¬ëŸ¬ëª… íƒˆê²ƒì„ ì¤€ë¹„
 		int nMountCount = pAPet->m_pProto->m_nMount[ (unsigned int)pAPet->m_cTransSate ];
 		if( nMountCount > 0 )
 		{
-			if( type == 1 )		// Å¸±â
+			if( type == 1 )		// íƒ€ê¸°
 			{
 				if( pAPet->IsMount() )
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					ExAPetFuntionMsg( rmsg, MSG_SUB_MOUNT_REP, pAPet , 1 );
 					SEND_Q( rmsg, ch->m_desc );
-					// ÀÌ¹Ì Å¸°íÀÖ´Ù
+					// ì´ë¯¸ íƒ€ê³ ìˆë‹¤
 					return;
 				}
 
@@ -984,7 +984,7 @@ void do_ExApetMount(CPC *ch, CNetMsg::SP& msg )
 					SEND_Q(rmsg, ch->m_desc);
 				}
 			}
-			else				// ³»¸®±â
+			else				// ë‚´ë¦¬ê¸°
 			{
 				pAPet->Mount( false );
 
@@ -1008,7 +1008,7 @@ void do_ExApetMount(CPC *ch, CNetMsg::SP& msg )
 		}
 		else
 		{
-			// ¸¶¿îÆ® ºÒ°¡´ÉÇÑ Æê or »óÅÂ
+			// ë§ˆìš´íŠ¸ ë¶ˆê°€ëŠ¥í•œ í« or ìƒíƒœ
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_PET_CANT_MOUNT_ETC);
 			SEND_Q(rmsg, ch->m_desc);
@@ -1042,12 +1042,12 @@ void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg )
 
 	switch ( type )
 	{
-	case MSG_CHAR_APET:		// Æê¿¡°Ô
+	case MSG_CHAR_APET:		// í«ì—ê²Œ
 		{
 			CAPet*	targetAPet = ch->GetAPet(index);
 			if( !targetAPet )
-				errorCode = 1 ;					// 1.´ë»óÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.
-			else if ( targetAPet == apet )		// Âø¿ëÁßÀÎ Æê¿£ »ç¿ëÇÒ¼ö ¾ø½À´Ï´Ù.
+				errorCode = 1 ;					// 1.ëŒ€ìƒì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.
+			else if ( targetAPet == apet )		// ì°©ìš©ì¤‘ì¸ í«ì—” ì‚¬ìš©í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 				errorCode = 2 ;
 			else
 			{
@@ -1058,7 +1058,7 @@ void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg )
 			}
 		}
 		break;
-	case MSG_CHAR_PC:		// PC¿¡°Ô
+	case MSG_CHAR_PC:		// PCì—ê²Œ
 		{
 			CPC* targetPC = PCManager::instance()->getPlayerByCharIndex(index);
 			if( !targetPC )
@@ -1080,7 +1080,7 @@ void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg )
 	}
 
 	{
-		// ¼º°ø?
+		// ì„±ê³µ?
 		CNetMsg::SP rmsg(new CNetMsg);
 		APetUseMsg( rmsg , errorCode );
 		SEND_Q( rmsg, ch->m_desc );
@@ -1116,7 +1116,7 @@ void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg )
 	}
 	GAMELOG << exp << end;
 
-	// errorCode°¡ ¼º°øÇÏ°í , EXP Æê¿¡°Ô ÄğÅ¸ÀÓ Àû¿ë
+	// errorCodeê°€ ì„±ê³µí•˜ê³  , EXP í«ì—ê²Œ ì¿¨íƒ€ì„ ì ìš©
 	if ( errorCode == 0 && ch->m_pApetlist )
 	{
 		CAPet* pAPet;
@@ -1124,13 +1124,13 @@ void do_ExApetExpUse( CPC* ch, CNetMsg::SP& msg )
 		while ((pAPet = pAPetNext))
 		{
 			pAPetNext = pAPetNext->m_pNextPet;
-			if( pAPet == apet )			// »ç¿ëÇÑ»ç¶÷¿¡°Õ ÀÚ½ÅÀÇ ÄğÅ¸ÀÓ Àû¿ë
+			if( pAPet == apet )			// ì‚¬ìš©í•œì‚¬ëŒì—ê² ìì‹ ì˜ ì¿¨íƒ€ì„ ì ìš©
 			{
 				pAPet->SetCooltime( myExpInfo->nCooltime );
 			}
 			else
 			{
-				// ´Ù¸¥ °æÇèÄ¡ Æê¿¡°Õ ÀÚ½ÅÀÇ ÄğÅ¸ÀÓ·üÀ» Àû¿ë
+				// ë‹¤ë¥¸ ê²½í—˜ì¹˜ í«ì—ê² ìì‹ ì˜ ì¿¨íƒ€ì„ë¥ ì„ ì ìš©
 				if( pAPet->IsProtoFlag( APET_FLAG_EXP ) )
 				{
 					const APET_EXP_INFO* expInfo = pAPet->m_pProto->GetExpInfo();

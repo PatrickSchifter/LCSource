@@ -33,43 +33,43 @@ public:
 	~CServer();
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	CDescriptor* m_desclist;		// ¿¬°áµÈ ¼ÒÄÏ ¸®½ºÆ®
+	// ì†Œì¼“ ê´€ë ¨
+	CDescriptor* m_desclist;		// ì—°ê²°ëœ ì†Œì¼“ ë¦¬ìŠ¤íŠ¸
 
 	////////////////////////////
-	// ¸Ş½ÃÁö ¸®½ºÆ®
+	// ë©”ì‹œì§€ ë¦¬ìŠ¤íŠ¸
 	CMsgList	m_msgList;
 	int			m_seqGen;
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
+	// ì„œë²„ ì„¤ì •
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
 
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_nameserverisslow; // ¿Ö ¾²´Â °ÍÀÏ±î?
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_nameserverisslow; // ì™œ ì“°ëŠ” ê²ƒì¼ê¹Œ?
 
-	int			m_nRecommendServer;	// ¼­¹ö ÃßÃµ ¼³Á¤
+	int			m_nRecommendServer;	// ì„œë²„ ì¶”ì²œ ì„¤ì •
 
-	GOLDEN_BALL_DATA	m_sGoldenBallData;	// °ñµçº¼ µ¥ÀÌÅÍ
+	GOLDEN_BALL_DATA	m_sGoldenBallData;	// ê³¨ë“ ë³¼ ë°ì´í„°
 
 	///////////////////
-	// ¸Ş½ÃÁö ¹øÈ£ °ü·Ã
+	// ë©”ì‹œì§€ ë²ˆí˜¸ ê´€ë ¨
 	int GetNextSeqNo()
 	{
 		return m_seqGen++;
 	}
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
 
 	/////////////////
-	// ¸í·É Ã³¸® °ü·Ã
+	// ëª…ë ¹ ì²˜ë¦¬ ê´€ë ¨
 	virtual void operate(rnSocketIOService* service);
-	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ¸í·· Ã³¸®
+	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ëª…ë  ì²˜ë¦¬
 	void ProcTimeout(CMsgListNode* msgNode);
 };
 

@@ -24,7 +24,7 @@ TimerItemManager::~TimerItemManager(void)
 	static_set_.erase(this);
 }
 
-// ÃÊ±â Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÏ¶§¸¸ »ç¿ëÇÔ
+// ì´ˆê¸° ìºë¦­í„° ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¼ë•Œë§Œ ì‚¬ìš©í•¨
 bool TimerItemManager::insert( int charIndex, int type, unsigned int time )
 {
 	if (type >= TIMERITEM_MAX)
@@ -58,18 +58,18 @@ unsigned int TimerItemManager::appendBySeccond(int type, int seconds)
 	map_t::iterator it = map_.find(type);
 	if (it != map_.end())
 	{
-		// ±âÁ¸¿¡ ÀÖÀ» °æ¿ì ½Ã°£À» Áõ°¡½ÃÅ²´Ù.
+		// ê¸°ì¡´ì— ìˆì„ ê²½ìš° ì‹œê°„ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
 		it->second += seconds;
 		ret = it->second;
 	}
 	else
 	{
-		// ¾øÀ» °æ¿ì ÇöÀç ½Ã°£ + ³¯Â¥¸¦ °è»êÇÏ¿© ¸¸·á½Ã°£À» ÃëÇÑ´Ù.
+		// ì—†ì„ ê²½ìš° í˜„ì¬ ì‹œê°„ + ë‚ ì§œë¥¼ ê³„ì‚°í•˜ì—¬ ë§Œë£Œì‹œê°„ì„ ì·¨í•œë‹¤.
 		seconds += time(0);
 		map_.insert(map_t::value_type(type, seconds));
 		ret = seconds;
 
-		// »õ·Î¿î ±â°£Á¦ ¾ÆÀÌÅÛÀÌ¹Ç·Î µğºñ¿¡ ÀúÀåÇÑ´Ù.
+		// ìƒˆë¡œìš´ ê¸°ê°„ì œ ì•„ì´í…œì´ë¯€ë¡œ ë””ë¹„ì— ì €ì¥í•œë‹¤.
 		std::string qry = boost::str(boost::format(
 										 "INSERT INTO t_timer_item VALUES(%1%,%2%,FROM_UNIXTIME(%3%))")
 									 % owner_->m_index % type % seconds);
@@ -94,7 +94,7 @@ void TimerItemManager::deleteDataInDB( int type )
 	ResponseClient::makeTiemrItemDelete(rmsg, type);
 	SEND_Q(rmsg, owner_->m_desc);
 
-	// db manger·Î º¸³»¾î DB table¿¡¼­ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
+	// db mangerë¡œ ë³´ë‚´ì–´ DB tableì—ì„œ ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
 	std::string query = boost::str(boost::format(
 									   "DELETE FROM t_timer_item WHERE a_char_index=%1% AND a_type_index=%2%")
 								   % owner_->m_index % type);
@@ -198,8 +198,8 @@ void TimerItemManager::AllcheckExpireTime( unsigned int nowtime )
 	}
 }
 
-// GM¸í·É¾î¿¡¼­¸¸ »ç¿ë
-// nowtime + secÀ¸·Î ½Ã°£À» °»½Å
+// GMëª…ë ¹ì–´ì—ì„œë§Œ ì‚¬ìš©
+// nowtime + secìœ¼ë¡œ ì‹œê°„ì„ ê°±ì‹ 
 void TimerItemManager::setTime( int type, int sec )
 {
 	if (type <= TIMERITEM_NON || type >= TIMERITEM_MAX)
@@ -211,7 +211,7 @@ void TimerItemManager::setTime( int type, int sec )
 	map_t::iterator it = map_.find(type);
 	if (it != map_.end())
 	{
-		// ±âÁ¸¿¡ ÀÖÀ» °æ¿ì¿¡´Â ÇöÀç ½Ã°£À» »õ·Î¿î ½Ã°£À¸·Î º¯°æÇÑ´Ù.
+		// ê¸°ì¡´ì— ìˆì„ ê²½ìš°ì—ëŠ” í˜„ì¬ ì‹œê°„ì„ ìƒˆë¡œìš´ ì‹œê°„ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
 		it->second = time(0) + sec;
 
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -220,7 +220,7 @@ void TimerItemManager::setTime( int type, int sec )
 	}
 	else
 	{
-		// ¾øÀ» °æ¿ì¿¡´Â »õ·Î ¸¸µé¾îÁØ´Ù.
+		// ì—†ì„ ê²½ìš°ì—ëŠ” ìƒˆë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
 		this->appendBySeccond(type, sec);
 	}
 }
@@ -228,7 +228,7 @@ void TimerItemManager::setTime( int type, int sec )
 bool TimerItemManager::isRemoteExpressSystem()
 {
 #ifdef PREMIUM_CHAR
-	//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¿ø°İ LCE
+	//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ì›ê²© LCE
 	return (owner_->m_premiumChar.isActive() || flag_[TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM]);
 #else
 	return flag_[TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM];
@@ -238,7 +238,7 @@ bool TimerItemManager::isRemoteExpressSystem()
 bool TimerItemManager::isCashInventory_1()
 {
 #ifdef PREMIUM_CHAR
-	//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : Ã¹¹øÂ° Ä³½¬ ÀÎº¥Åä¸®
+	//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ì²«ë²ˆì§¸ ìºì‰¬ ì¸ë²¤í† ë¦¬
 	return (owner_->m_premiumChar.isActive() || flag_[TIMERITEM_TYPE_CASH_INVENTORY_1]);
 #else
 	return flag_[TIMERITEM_TYPE_CASH_INVENTORY_1];

@@ -37,11 +37,11 @@ void do_ChangeJob(CPC* pc, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¼ÒÈ¯ Ãë¼Ò
+	// ì†Œí™˜ ì·¨ì†Œ
 	while (pc->m_elementalList)
 		pc->UnsummonElemental(pc->m_elementalList);
 
-	// °­½Å Ãë¼Ò
+	// ê°•ì‹  ì·¨ì†Œ
 	if (pc->m_evocationIndex != EVOCATION_NONE)
 		pc->Unevocation();
 }
@@ -76,7 +76,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 
 	RequestClient::changeJob* packet = reinterpret_cast<RequestClient::changeJob*>(msg->m_buf);
 
-	if (packet->npcIndex <= 0) // ÀüÁ÷ ¾ÆÀÌÅÛÀ» ¾´°æ¿ì
+	if (packet->npcIndex <= 0) // ì „ì§ ì•„ì´í…œì„ ì“´ê²½ìš°
 	{
 		if (pc->m_inventory.FindByDBIndex(2868) == NULL)
 		{
@@ -99,7 +99,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 	CSkill* skill = NULL;
 	int needskilllevel = 5;
 
-	// ½ºÅ³ ±¸ÇÏ±â : ÇÊ¿ä ½ºÅ³ ·¹º§ÀÌ 5°¡ ¾Æ´Ï¸é ¼öÁ¤ ÇÊ¿ä
+	// ìŠ¤í‚¬ êµ¬í•˜ê¸° : í•„ìš” ìŠ¤í‚¬ ë ˆë²¨ì´ 5ê°€ ì•„ë‹ˆë©´ ìˆ˜ì • í•„ìš”
 	switch (pc->m_job)
 	{
 	case JOB_TITAN:
@@ -229,7 +229,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 			{
 			case JOB_2ND_EX_ASSASSIN:
 			case JOB_2ND_EX_RANGER:
-				// EXROGUE : ÀüÁ÷ ½Ã, ¹İµå½Ã ¹è¿ö¾ßÇÒ ½ºÅ³ ÀÎµ¦½º ¼öÁ¤
+				// EXROGUE : ì „ì§ ì‹œ, ë°˜ë“œì‹œ ë°°ì›Œì•¼í•  ìŠ¤í‚¬ ì¸ë±ìŠ¤ ìˆ˜ì •
 				skill = pc->m_activeSkillList.Find(1536);
 				break;
 			default:
@@ -251,7 +251,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 			{
 			case JOB_2ND_WIZARD:
 			case JOB_2ND_WITCH:
-				// EXMAGE : ÀüÁ÷ ½Ã, ¹İµå½Ã ¹è¿ö¾ßÇÒ ½ºÅ³ ÀÎµ¦½º ¼öÁ¤
+				// EXMAGE : ì „ì§ ì‹œ, ë°˜ë“œì‹œ ë°°ì›Œì•¼í•  ìŠ¤í‚¬ ì¸ë±ìŠ¤ ìˆ˜ì •
 				skill = pc->m_activeSkillList.Find(1638);
 				break;
 
@@ -275,7 +275,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 		}
 	}
 
-	// --- ½ºÅ³ ±¸ÇÏ±â
+	// --- ìŠ¤í‚¬ êµ¬í•˜ê¸°
 	if (skill == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -318,8 +318,8 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 
 	pc->m_job2 = packet->job;
 
-	// ½ºÅÈ Àç°è»ê
-	// ½ºÅÈ Æ÷ÀÎÆ® ÃÊ±âÈ­
+	// ìŠ¤íƒ¯ ì¬ê³„ì‚°
+	// ìŠ¤íƒ¯ í¬ì¸íŠ¸ ì´ˆê¸°í™”
 	pc->m_statpt_str = 0;
 	pc->m_statpt_dex = 0;
 	pc->m_statpt_int = 0;
@@ -327,7 +327,7 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 	pc->m_statpt_remain = (pc->m_level - JOB_2ND_LEVEL) * 3 + (pc->m_level - JOB_2ND_LEVEL) / 2 + (JOB_2ND_LEVEL - 1);
 	if ( pc->m_bPhoenix_Char == 1 )
 	{
-		// ÇÇ´Ğ½º·Î ÀüÁ÷ÇÏ¸é¼­ Ãß°¡µÈ 30 ½ºÅİ Æ÷ÀÎÆ® ÀçÀû¸³
+		// í”¼ë‹‰ìŠ¤ë¡œ ì „ì§í•˜ë©´ì„œ ì¶”ê°€ëœ 30 ìŠ¤í…Ÿ í¬ì¸íŠ¸ ì¬ì ë¦½
 		pc->m_statpt_remain += 30;
 	}
 
@@ -364,10 +364,10 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 	}
 
 #ifdef GIVE_ITEM_IN_CHANGE_JOB
-	// SPÁö±Ş
-	// pc->AddExpSP(0, 10000000, false, false, true); Å©·£ÀÌ ³ª½º·Î Á÷¾÷Æ÷±â¸¦ ÇØÁÖ¾î¼­ ¼÷·Ãµµ ¹«ÇÑ ÀÛ¾÷ÀÌ °¡´ÉÇÏ¿© »­.
-	// ¾ÆÀÌÅÛ Áö±Ş
-	//0:Å¸ÀÌÅº, 1:³ªÀÌÆ®, 2:Èú·¯, 3:¸ŞÀÌÁö, 4:·Î±×, 5:¼Ò¼­·¯, 6:³ªÀÌÆ®½¦µµ¿ì(dummy), 7:EX ·Î±×, 8:EX ¸ŞÀÌÁö
+	// SPì§€ê¸‰
+	// pc->AddExpSP(0, 10000000, false, false, true); í¬ëœì´ ë‚˜ìŠ¤ë¡œ ì§ì—…í¬ê¸°ë¥¼ í•´ì£¼ì–´ì„œ ìˆ™ë ¨ë„ ë¬´í•œ ì‘ì—…ì´ ê°€ëŠ¥í•˜ì—¬ ëºŒ.
+	// ì•„ì´í…œ ì§€ê¸‰
+	//0:íƒ€ì´íƒ„, 1:ë‚˜ì´íŠ¸, 2:íëŸ¬, 3:ë©”ì´ì§€, 4:ë¡œê·¸, 5:ì†Œì„œëŸ¬, 6:ë‚˜ì´íŠ¸ì‰ë„ìš°(dummy), 7:EX ë¡œê·¸, 8:EX ë©”ì´ì§€
 #ifdef EX_ROGUE
 #ifdef EX_MAGE
 	const int nGiveItem[JOBCOUNT] = {6893, 6895, 6897, 6899, 6901, 6903, 0, 6901, 6899};
@@ -382,13 +382,13 @@ bool do_ChangeJobReq(CPC* pc, CNetMsg::SP& msg)
 	if(pItem == NULL)
 	{
 		GAMELOG << init("ITEM ERROR") << "ITEM IS NOT EXIST" << "ITEM INDEX" << delim << nGiveItem[pc->m_job] << end;
-		return true; // ¾ÆÀÌÅÛÀ» Áö±ŞÇÏÁö ¸øÇÑ»Ó ÀüÁ÷Àº ¼º°ø
+		return true; // ì•„ì´í…œì„ ì§€ê¸‰í•˜ì§€ ëª»í•œë¿ ì „ì§ì€ ì„±ê³µ
 	}
 
 	if (pc->m_inventory.addItem(pItem) == false)
 	{
 		delete pItem;
-		return true; // ¾ÆÀÌÅÛÀ» Áö±ŞÇÏÁö ¸øÇÑ»Ó ÀüÁ÷Àº ¼º°ø
+		return true; // ì•„ì´í…œì„ ì§€ê¸‰í•˜ì§€ ëª»í•œë¿ ì „ì§ì€ ì„±ê³µ
 	}
 #endif
 
@@ -441,17 +441,17 @@ bool do_ChangeJobResetReq(CPC* pc, CNetMsg::SP& msg)
 			<< pc->m_statpt_con << delim
 			<< pc->m_statpt_remain << end;
 
-	// ÃÊ±âÈ­
-	// Á÷¾÷
+	// ì´ˆê¸°í™”
+	// ì§ì—…
 	pc->m_job2 = 0;
 
-	// ½ºÅ³
+	// ìŠ¤í‚¬
 	int skillpoint = 0;
 	skillpoint += pc->m_activeSkillList.RemoveSkillFor2ndJob();
 	skillpoint += pc->m_passiveSkillList.RemoveSkillFor2ndJob();
 	skillpoint += pc->m_etcSkillList.RemoveSkillFor2ndJob();
 
-	// ½ºÅÈ Æ÷ÀÎÆ®
+	// ìŠ¤íƒ¯ í¬ì¸íŠ¸
 	pc->m_statpt_str = 0;
 	pc->m_statpt_dex = 0;
 	pc->m_statpt_int = 0;

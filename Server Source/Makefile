@@ -11,8 +11,7 @@ kor:
 	make -j32 -C ./Helper kor && \
 	make -j32 -C ./SubHelper kor && \
 	make -j32 -C ./Messenger kor && \
-	make -j32 -C ./LoginServer kor && \
-	make -j32 -C ./Billing kor
+	make -j32 -C ./LoginServer kor
 #	version_up sub
 	
 kortest:
@@ -22,8 +21,7 @@ kortest:
 	make -j32 -C ./Helper kortestdebug && \
 	make -j32 -C ./SubHelper kortestdebug && \
 	make -j32 -C ./Messenger kortestdebug && \
-	make -j32 -C ./LoginServer kortestdebug && \
-	make -j32 -C ./Billing kortestdebug
+	make -j32 -C ./LoginServer kortestdebug
 
 korqa:
 	make -j32 -C ./ShareLib kor && \
@@ -32,8 +30,7 @@ korqa:
 	make -j32 -C ./Helper korqa && \
 	make -j32 -C ./SubHelper korqa && \
 	make -j32 -C ./Messenger korqa && \
-	make -j32 -C ./LoginServer korqa && \
-	make -j32 -C ./Billing korqa
+	make -j32 -C ./LoginServer korqa
 
 kordep:
 	make -j32 -C ./ShareLib dep && \
@@ -42,8 +39,7 @@ kordep:
 	make -j32 -C ./Helper kordep && \
 	make -j32 -C ./SubHelper kordep && \
 	make -j32 -C ./Messenger kordep && \
-	make -j32 -C ./LoginServer kordep && \
-	make -j32 -C ./Billing kordep
+	make -j32 -C ./LoginServer kordep
 
 tld:
 	make -j32 -C ./ShareLib tld && \
@@ -52,8 +48,7 @@ tld:
 	make -j32 -C ./Helper tld && \
 	make -j32 -C ./SubHelper tld && \
 	make -j32 -C ./Messenger tld && \
-	make -j32 -C ./LoginServer tld && \
-	make -j32 -C ./Billing tld
+	make -j32 -C ./LoginServer tld
 
 tldqa:
 	make -j32 -C ./ShareLib tld && \
@@ -62,8 +57,7 @@ tldqa:
 	make -j32 -C ./Helper tldqa && \
 	make -j32 -C ./SubHelper tldqa && \
 	make -j32 -C ./Messenger tldqa && \
-	make -j32 -C ./LoginServer tldqa && \
-	make -j32 -C ./Billing tldqa
+	make -j32 -C ./LoginServer tldqa
 
 tlddep:
 	make -j32 -C ./ShareLib dep && \
@@ -72,8 +66,7 @@ tlddep:
 	make -j32 -C ./Helper tlddep && \
 	make -j32 -C ./SubHelper tlddep && \
 	make -j32 -C ./Messenger tlddep && \
-	make -j32 -C ./LoginServer tlddep && \
-	make -j32 -C ./Billing tlddep
+	make -j32 -C ./LoginServer tlddep
 
 usa:
 	make -j32 -C ./ShareLib usa && \
@@ -82,8 +75,7 @@ usa:
 	make -j32 -C ./Helper usa && \
 	make -j32 -C ./SubHelper usa && \
 	make -j32 -C ./Messenger usa && \
-	make -j32 -C ./LoginServer usa && \
-	make -j32 -C ./Billing usa
+	make -j32 -C ./LoginServer usa
 
 usaqa:
 	make -j32 -C ./ShareLib usa && \
@@ -92,8 +84,7 @@ usaqa:
 	make -j32 -C ./Helper usaqa && \
 	make -j32 -C ./SubHelper usaqa && \
 	make -j32 -C ./Messenger usaqa && \
-	make -j32 -C ./LoginServer usaqa && \
-	make -j32 -C ./Billing usaqa
+	make -j32 -C ./LoginServer usaqa
 
 usadep:
 	make -j32 -C ./ShareLib dep && \
@@ -102,8 +93,7 @@ usadep:
 	make -j32 -C ./Helper usadep && \
 	make -j32 -C ./SubHelper usadep && \
 	make -j32 -C ./Messenger usadep && \
-	make -j32 -C ./LoginServer usadep && \
-	make -j32 -C ./Billing usadep
+	make -j32 -C ./LoginServer usadep
 
 brz:
 	make -j32 -C ./ShareLib brz && \
@@ -112,8 +102,7 @@ brz:
 	make -j32 -C ./Helper brz && \
 	make -j32 -C ./SubHelper brz && \
 	make -j32 -C ./Messenger brz && \
-	make -j32 -C ./LoginServer brz && \
-	make -j32 -C ./Billing brz
+	make -j32 -C ./LoginServer brz
 
 brzdep:
 	make -j32 -C ./ShareLib dep && \
@@ -347,8 +336,7 @@ uk:
 	make -j32 -C ./Helper uk && \
 	make -j32 -C ./SubHelper uk && \
 	make -j32 -C ./Messenger uk && \
-	make -j32 -C ./LoginServer uk && \
-	make -j32 -C ./Billing uk
+	make -j32 -C ./LoginServer uk
 	
 clean:
 	make -j32 -C ./ShareLib clean && \
@@ -357,8 +345,7 @@ clean:
 	make -j32 -C ./Helper clean && \
 	make -j32 -C ./SubHelper clean && \
 	make -j32 -C ./Messenger clean && \
-	make -j32 -C ./LoginServer clean && \
-	make -j32 -C ./Billing clean
+	make -j32 -C ./LoginServer clean
 	
 cleanxtrap:
 	make -j32 -C ./ShareLib clean && \
@@ -367,8 +354,7 @@ cleanxtrap:
 	make -j32 -C ./Helper clean && \
 	make -j32 -C ./SubHelper clean && \
 	make -j32 -C ./Messenger clean && \
-	make -j32 -C ./LoginServer clean && \
-	make -j32 -C ./Billing clean
+	make -j32 -C ./LoginServer clean
 
 cleanall:
 	make -C ./ShareLib cleanall && \
@@ -377,8 +363,7 @@ cleanall:
 	make -C ./Helper cleanall && \
 	make -C ./SubHelper cleanall && \
 	make -C ./Messenger cleanall && \
-	make -C ./LoginServer cleanall && \
-	make -C ./Billing cleanall
+	make -C ./LoginServer cleanall
 
 cleaneur:
 	make -j32 -C ./ShareLib clean && \
@@ -387,6 +372,4 @@ cleaneur:
 	make -j32 -C ./Helper clean && \
 	make -j32 -C ./SubHelper clean && \
 	make -j32 -C ./Messenger clean && \
-	make -j32 -C ./LoginServer clean && \
-	make -j32 -C ./Billing clean
-
+	make -j32 -C ./LoginServer clean

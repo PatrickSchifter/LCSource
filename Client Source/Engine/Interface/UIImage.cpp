@@ -157,6 +157,14 @@ void CUIImage::SetAlpha( UINT8 cAlpha )
 	m_color |= cAlpha;
 }
 
+void CUIImage::Copy( CUIImage* pDest )
+{
+	pDest->setTexString(this->getTexString());
+
+	pDest->SetUV(this->GetAbsUV());
+	pDest->SetColor(this->GetColor());
+}
+
 
 
 

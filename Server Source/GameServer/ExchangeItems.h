@@ -6,42 +6,42 @@ class CPC;
 class CExchangeItemsData
 {
 public:
-	CPC*		m_ch;							// ÇÃ·¹ÀÌ¾î
-	int			m_regCount;						// µî·Ï ¾ÆÀÌÅÛ ¼ö
-	int			m_itemindex[MAX_EXCHANGE_ITEMS];// ¾ÆÀÌÅÛ Æ÷ÀÎÅÍ (ÀÎº¥Åä¸®ÀÇ ÀÏ¹İ ¾ÆÀÌÅÛ)
-	LONGLONG	m_count[MAX_EXCHANGE_ITEMS];	// ¾ÆÀÌÅÛ ±³È¯ °³¼ö
-	GoldType_t  m_nasCount;						// ±³È¯ÇÒ ³ª½º °ª
+	CPC*		m_ch;							// í”Œë ˆì´ì–´
+	int			m_regCount;						// ë“±ë¡ ì•„ì´í…œ ìˆ˜
+	int			m_itemindex[MAX_EXCHANGE_ITEMS];// ì•„ì´í…œ í¬ì¸í„° (ì¸ë²¤í† ë¦¬ì˜ ì¼ë°˜ ì•„ì´í…œ)
+	LONGLONG	m_count[MAX_EXCHANGE_ITEMS];	// ì•„ì´í…œ êµí™˜ ê°œìˆ˜
+	GoldType_t  m_nasCount;						// êµí™˜í•  ë‚˜ìŠ¤ ê°’
 
 	CExchangeItemsData();
 
-	void SetCharacter(CPC* pc);								// ÇÃ·¹ÀÌ¾î ¼³Á¤
-	int Add(int itemindex, LONGLONG count, bool* bUpdate);	// ¾ÆÀÌÅÛ Ãß°¡
-	int Del(int itemindex, LONGLONG count);					// ¾ÆÀÌÅÛ Á¦°Å
-	int Find(int item_idx);									// ¾ÆÀÌÅÛ Ã£±â
-	int FindEmpty();										// ºóÀÚ¸® Ã£±â
+	void SetCharacter(CPC* pc);								// í”Œë ˆì´ì–´ ì„¤ì •
+	int Add(int itemindex, LONGLONG count, bool* bUpdate);	// ì•„ì´í…œ ì¶”ê°€
+	int Del(int itemindex, LONGLONG count);					// ì•„ì´í…œ ì œê±°
+	int Find(int item_idx);									// ì•„ì´í…œ ì°¾ê¸°
+	int FindEmpty();										// ë¹ˆìë¦¬ ì°¾ê¸°
 };
 
 class CExchangeItems
 {
 public:
-	MSG_EXCHANGE_REQ_TYPE	m_status;					// ±³È¯ ÁøÇà »óÈ²
-	CExchangeItemsData		m_src;						// ±³È¯ ¿äÃ»ÇÑ »ç¶÷ µ¥ÀÌÅÍ
-	CExchangeItemsData		m_dest;						// ±³È¯ ¹ŞÀº »ç¶÷ µ¥ÀÌÅÍ
+	MSG_EXCHANGE_REQ_TYPE	m_status;					// êµí™˜ ì§„í–‰ ìƒí™©
+	CExchangeItemsData		m_src;						// êµí™˜ ìš”ì²­í•œ ì‚¬ëŒ ë°ì´í„°
+	CExchangeItemsData		m_dest;						// êµí™˜ ë°›ì€ ì‚¬ëŒ ë°ì´í„°
 
 	CExchangeItems();
 
-	void SetCharacter(CPC* src, CPC* dest);				// ÇÃ·¹ÀÌ¾î ¼³Á¤
-	int Add(CPC* ch, int item_idx, LONGLONG count, bool* bUpdate);	// ¾ÆÀÌÅÛ ±³È¯ ¸ñ·Ï¿¡ Ãß°¡
-	int Del(CPC* ch, int item_idx, LONGLONG count);		// ¾ÆÀÌÅÛ ±³È¯ ¸ñ·Ï¿¡ Á¦°Å
-	int Find(CPC* ch, int item_idx);					// Ã£±â
+	void SetCharacter(CPC* src, CPC* dest);				// í”Œë ˆì´ì–´ ì„¤ì •
+	int Add(CPC* ch, int item_idx, LONGLONG count, bool* bUpdate);	// ì•„ì´í…œ êµí™˜ ëª©ë¡ì— ì¶”ê°€
+	int Del(CPC* ch, int item_idx, LONGLONG count);		// ì•„ì´í…œ êµí™˜ ëª©ë¡ì— ì œê±°
+	int Find(CPC* ch, int item_idx);					// ì°¾ê¸°
 
 	/////////////////////
 	// Function name	: CanExchange
-	// Description	    : ±³È¯ °¡´É ¿©ºÎ ÆÇ´Ü
+	// Description	    : êµí™˜ ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
 	// Return type		: int
-	//            		: 0 - °¡´É
-	//            		: 1 - src ºÒ°¡´É
-	//            		: 2 - dest ºÒ°¡´É
+	//            		: 0 - ê°€ëŠ¥
+	//            		: 1 - src ë¶ˆê°€ëŠ¥
+	//            		: 2 - dest ë¶ˆê°€ëŠ¥
 	int CanExchange();
 
 	void DoExchange();

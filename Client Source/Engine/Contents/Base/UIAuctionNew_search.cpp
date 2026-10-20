@@ -24,7 +24,7 @@ void CUIAuctionNew::initSearch()
 	{
 		CmdChangeSearchTab* pCmd = new CmdChangeSearchTab;
 		pCmd->setData(this);
-		m_pSearchTab->SetCommand(pCmd);
+		m_pSearchTab->SetCommandChange(pCmd);
 	}
 
 	// List √ ±‚»≠

@@ -30,18 +30,18 @@ private:
 	CItem* wearSuitItem;
 	int dressCostumCount;
 
-	//wearItemInfo¹× ¾ÆÀÌÅÛ wearPos ¼¼ÆÃ
+	//wearItemInfoë° ì•„ì´í…œ wearPos ì„¸íŒ…
 	void DressNormal(CItem* item, int wearPos);
 	void DressCostum(CItem* item, int wearPos);
 	void DressCostumSuit(CItem* pSuit);
 
 	void UndressNormal(CItem* item, int wearPos);
 	void UndressCostum(CItem* item, int wearPos);
-	void UndressCostumeSuit();			//¼¼Æ® ÄÚ½ºÆ¬ ¹ş±â
-	void UndressCostumeAll();			//ÄÚ½ºÆ¬ ¸ğµÎ ¹ş±â
-	//wearItemInfo¹× ¾ÆÀÌÅÛ wearPos ¼¼ÆÃ
+	void UndressCostumeSuit();			//ì„¸íŠ¸ ì½”ìŠ¤íŠ¬ ë²—ê¸°
+	void UndressCostumeAll();			//ì½”ìŠ¤íŠ¬ ëª¨ë‘ ë²—ê¸°
+	//wearItemInfoë° ì•„ì´í…œ wearPos ì„¸íŒ…
 
-	//À¯È¿¼º °Ë»ç ÇÔ¼ö
+	//ìœ íš¨ì„± ê²€ì‚¬ í•¨ìˆ˜
 	bool CanDressNormal(CItem* item, int wearPos);
 	bool CanDressCostum(CItem* item, int wearPos);
 	bool CanDressCostumSuit(CItem* item);
@@ -49,9 +49,9 @@ private:
 	bool CanUndressNormal(CItem* item, int wearPos);
 	bool CanUndressCostum(CItem* item, int wearPos);
 	bool CanUndressCostumSuit(CItem* item);
-	//À¯È¿¼º °Ë»ç ÇÔ¼ö
+	//ìœ íš¨ì„± ê²€ì‚¬ í•¨ìˆ˜
 
-	//¾ÆÀÌÅÛ ¿É¼Ç Àû¿ë ÇÔ¼ö
+	//ì•„ì´í…œ ì˜µì…˜ ì ìš© í•¨ìˆ˜
 	void ApplyDeleteItem(CItem* item, int wearPos);
 
 
@@ -68,7 +68,7 @@ public:
 	bool DelCostumItem(int wearPos, short tab = -1, short invenIndex = -1);
 	bool DelCostumSuitItem(short tab = -1, short invenIndex = -1);
 
-	//±â°£¸¸·á, ³»±¸µµ 0 µî¿¡ »ç¿ëµÇ´Â ÇÔ¼öÀÔ´Ï´Ù.
+	//ê¸°ê°„ë§Œë£Œ, ë‚´êµ¬ë„ 0 ë“±ì— ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤.
 	bool RemoveItem(char wearPos);
 
 	void initCostumSuitItem(CItem* item);
@@ -105,7 +105,7 @@ public:
 	void sendOneItemInfo(int wearPos);
 	void checkItemTime();
 
-	//¹æ¾î±¸ °­È­ ¼öÄ¡
+	//ë°©ì–´êµ¬ ê°•í™” ìˆ˜ì¹˜
 	int getWearItemPlusSumCount();
 };
 #endif

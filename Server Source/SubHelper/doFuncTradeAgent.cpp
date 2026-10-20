@@ -66,7 +66,7 @@ void do_command_TradeAgent_List(CNetMsg::SP& msg, CDescriptor* desc)
 	sprintf(sql, "select t_tradeagent.*, t_tradeagent_iteminfo.*, UNIX_TIMESTAMP(a_regist_date) as regist_date, UNIX_TIMESTAMP(a_expire_date) as expire_date from t_tradeagent  LEFT JOIN t_tradeagent_iteminfo ON t_tradeagent.a_item_serial = t_tradeagent_iteminfo.a_index where ");
 	char buf[256];
 
-	//±âÅ¸ ¾ÆÀÌÅÛ °Ë»ö ÇÒ ¶§
+	//ê¸°íƒ€ ì•„ì´í…œ ê²€ìƒ‰ í•  ë•Œ
 	if( p->itemTypeTab == 0 || p->itemTypeTab == 1 )
 	{
 		sprintf(buf, "t_tradeagent_iteminfo.a_item_type = %d ", p->itemTypeTab);
@@ -462,7 +462,7 @@ void do_command_TradeAgent_RegCancel(CNetMsg::SP& msg, CDescriptor* desc)
 	TradeAgentItem item;
 	getRTradeAgentItem(cmd, item);
 
-	//°Å·¡´ëÇà ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÏ°í
+	//ê±°ë˜ëŒ€í–‰ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•˜ê³ 
 	sql = boost::str(boost::format(
 						 "delete from t_tradeagent where a_index = %d and a_sell_charindex = %d")
 					 % p->index % p->charIndex);
@@ -482,7 +482,7 @@ void do_command_TradeAgent_RegCancel(CNetMsg::SP& msg, CDescriptor* desc)
 		return;
 	}
 
-	//°ü½É¹°Ç° ¸®½ºÆ®µé¿¡¼­ »èÁ¦¸¦ ÇÏ°í
+	//ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ë“¤ì—ì„œ ì‚­ì œë¥¼ í•˜ê³ 
 	sql = boost::str(boost::format(
 						 "delete from t_tradeagent_like where a_tradeagent_index = %d")
 					 % p->index);
@@ -490,7 +490,7 @@ void do_command_TradeAgent_RegCancel(CNetMsg::SP& msg, CDescriptor* desc)
 	cmd.SetQuery(sql.c_str());
 	cmd.Update();
 
-	//¼º°ø
+	//ì„±ê³µ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::TradeAgentSystemRegCancelWithServer *packet = reinterpret_cast<ResponseClient::TradeAgentSystemRegCancelWithServer *>(rmsg->m_buf);
@@ -505,7 +505,7 @@ void do_command_TradeAgent_RegCancel(CNetMsg::SP& msg, CDescriptor* desc)
 		SEND_Q(rmsg, desc);
 	}
 
-	//lce ¿¡ ¾ÆÀÌÅÛÀ» ³Ö°í ÇØ´ç Å¬¶óÀÌ¾ğÆ®ÇÑÅ× ¸Ş½ÃÁö¸¦ ³¯·ÁÁØ´Ù.
+	//lce ì— ì•„ì´í…œì„ ë„£ê³  í•´ë‹¹ í´ë¼ì´ì–¸íŠ¸í•œí…Œ ë©”ì‹œì§€ë¥¼ ë‚ ë ¤ì¤€ë‹¤.
 	insertItemToLCE(item, p->charIndex, EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_CANCEL);
 }
 
@@ -520,7 +520,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 	{
 		if( *it == p->TradeAgentIndex )
 		{
-			// ´Ù¸¥ »ç¶÷ÀÌ ±¸¸ÅÁßÀÔ´Ï´Ù. ÆĞÅ¶ Àü¼Û
+			// ë‹¤ë¥¸ ì‚¬ëŒì´ êµ¬ë§¤ì¤‘ì…ë‹ˆë‹¤. íŒ¨í‚· ì „ì†¡
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				ResponseClient::TradeAgentSystemError *packet = reinterpret_cast<ResponseClient::TradeAgentSystemError*>(rmsg->m_buf);
@@ -543,7 +543,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 			return;
 		}
 	}
-	//±¸¸ÅÁß ¸®½ºÆ®¿¡ Ãß°¡.
+	//êµ¬ë§¤ì¤‘ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€.
 	gserver.m_tradeAgentBuyList.push_back(p->TradeAgentIndex);
 
 	std::string sql = boost::str(boost::format("select * from t_tradeagent where a_index = %d") % p->TradeAgentIndex);
@@ -577,7 +577,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 		LOG_INFO("TRADE_AGENT> BUY FAIL.. charIndex : %d, itemIndex : %d", charindex, tradeAgentIndex);
 		return;
 	}
-	// lce¿¡ ³ÖÀ» ¾ÆÀÌÅÛ ¸¸µé°í
+	// lceì— ë„£ì„ ì•„ì´í…œ ë§Œë“¤ê³ 
 	TradeAgentItem item;
 	getRTradeAgentItem(cmd, item);
 
@@ -591,7 +591,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 	GoldType_t totalPrice;
 	cmd.GetRec("a_totalmoney", totalPrice);
 
-	//°Å·¡´ëÇà ¸®½ºÆ®¿¡¼­ ¾ÆÀÌÅÛ »èÁ¦ÇÏ°í
+	//ê±°ë˜ëŒ€í–‰ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì•„ì´í…œ ì‚­ì œí•˜ê³ 
 	sql = boost::str(boost::format(
 						 "delete from t_tradeagent where a_index = %d LIMIT 1")
 					 % p->TradeAgentIndex);
@@ -599,7 +599,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 	cmd.SetQuery(sql.c_str());
 	cmd.Update();
 
-	//°ü½É¹°Ç° ¸®½ºÆ®µé¿¡¼­ »èÁ¦¸¦ ÇÏ°í
+	//ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ë“¤ì—ì„œ ì‚­ì œë¥¼ í•˜ê³ 
 	sql = boost::str(boost::format(
 						 "delete from t_tradeagent_like where a_tradeagent_index = %d")
 					 % p->TradeAgentIndex);
@@ -607,15 +607,15 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 	cmd.SetQuery(sql.c_str());
 	cmd.Update();
 
-	// LCE¿¡ ¾ÆÀÌÅÛ ³Ö±â
+	// LCEì— ì•„ì´í…œ ë„£ê¸°
 	insertItemToLCE(item, p->charIndex, EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_BUY, p->needNas);
 
-	//2.ÆÇ¸ÅÀÚ¿¡°Ô µ· ³Ö°í, ÆÇ¸Å ¸Ş½ÃÁö Àü¼Û
+	//2.íŒë§¤ìì—ê²Œ ëˆ ë„£ê³ , íŒë§¤ ë©”ì‹œì§€ ì „ì†¡
 	GoldType_t nas = (GoldType_t)(p->needNas - (p->needNas * gserver.m_tradeAgentFee / 100) + guaranty);
 
 #ifdef PREMIUM_CHAR
 	{
-//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¼ö¼ö·á 0
+//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ìˆ˜ìˆ˜ë£Œ 0
 		int expireTime = 0;
 		std::string query = boost::str(boost::format(
 			"SELECT a_expireTime FROM t_premiumchar WHERE a_charIndex = %1% LIMIT 1") % sell_charindex);
@@ -637,7 +637,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 	sendMessageToUserSellOrReturned(TRADEAGENT_DB_MSG_TYPE_SELL, sell_charindex,
 									item.item_index, item.quantity);
 
-	//°ÔÀÓ¼­¹ö·Î ÆĞÅ¶ Àü¼Û ÇÑ´Ù.
+	//ê²Œì„ì„œë²„ë¡œ íŒ¨í‚· ì „ì†¡ í•œë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::TradeAgentSystemBuyWithServer *packet = reinterpret_cast<ResponseClient::TradeAgentSystemBuyWithServer*>(rmsg->m_buf);
@@ -654,7 +654,7 @@ void do_command_TradeAgent_Buy(CNetMsg::SP& msg, CDescriptor* desc)
 		SEND_Q(rmsg, desc);
 	}
 
-	//³Ö¾úÀ¸¸é ±¸¸ÅÁß ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
+	//ë„£ì—ˆìœ¼ë©´ êµ¬ë§¤ì¤‘ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
 	gserver.m_tradeAgentBuyList.remove(p->TradeAgentIndex);
 
 	return;
@@ -918,7 +918,7 @@ void insertNasToLCE(GoldType_t nas, int charIndex, const char* sender, int sendT
 	MessengerInSubHelper::instance()->process_InputItemToExpress(charIndex, eItem);
 }
 
-// ¸Å ºĞ¸¶´Ù ÆÇ¸Å´ëÇàÁß ¹İÇ°ÀÌ ÀÖ´ÂÁö °Ë»çÇÔ, ÇÑ¹ø¿¡ °Ë»çÇÏ´Â °¹¼ö´Â ÇÑÁ¤ÇÔ
+// ë§¤ ë¶„ë§ˆë‹¤ íŒë§¤ëŒ€í–‰ì¤‘ ë°˜í’ˆì´ ìˆëŠ”ì§€ ê²€ì‚¬í•¨, í•œë²ˆì— ê²€ì‚¬í•˜ëŠ” ê°¯ìˆ˜ëŠ” í•œì •í•¨
 void checkExpireItemInTradeAgent()
 {
 	std::string qry;
@@ -944,7 +944,7 @@ void checkExpireItemInTradeAgent()
 		dbChar.GetRec("a_index", tradeagentIndex);
 		dbChar.GetRec("a_guaranty", guaranty);
 
-		//°Å·¡´ëÇà ¸®½ºÆ®¿¡¼­ ¾ÆÀÌÅÛ »èÁ¦ÇÏ°í
+		//ê±°ë˜ëŒ€í–‰ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì•„ì´í…œ ì‚­ì œí•˜ê³ 
 		qry = boost::str(boost::format(
 							 "delete from t_tradeagent where a_index = %d LIMIT 1")
 						 % tradeagentIndex);
@@ -952,7 +952,7 @@ void checkExpireItemInTradeAgent()
 		if(tdb.Update() == false)
 			continue;
 
-		//°ü½É¹°Ç° ¸®½ºÆ®µé¿¡¼­ »èÁ¦¸¦ ÇÏ°í
+		//ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ë“¤ì—ì„œ ì‚­ì œë¥¼ í•˜ê³ 
 		qry = boost::str(boost::format(
 							 "delete from t_tradeagent_like where a_tradeagent_index = %d")
 						 % tradeagentIndex);
@@ -960,13 +960,15 @@ void checkExpireItemInTradeAgent()
 		tdb.SetQuery(qry.c_str());
 		tdb.Update();
 
-		// lce¿¡ ³ÖÀ» ¾ÆÀÌÅÛ ¸¸µé°í
+		// lceì— ë„£ì„ ì•„ì´í…œ ë§Œë“¤ê³ 
 		getRTradeAgentItem(dbChar, item);
 
-		// LCE¿¡ ¾ÆÀÌÅÛ / µ· ³Ö±â
+		// LCEì— ì•„ì´í…œ / ëˆ ë„£ê¸°
 		insertItemToLCE(item, sell_charindex, EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_RETURN);
-		insertNasToLCE(guaranty, sell_charindex, dbChar.GetRec("a_sell_charname"), EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_RETURN);
-
+		if (guaranty > 0)
+		{
+			insertNasToLCE(guaranty, sell_charindex, dbChar.GetRec("a_sell_charname"), EXPRESS_SEND_TYPE_TRADE_AGENT_NPC_RETURN);
+		}
 		sendMessageToUserSellOrReturned(TRADEAGENT_DB_MSG_TYPE_RETURNED, sell_charindex,
 										item.item_index, item.quantity);
 	}
@@ -983,7 +985,7 @@ void sendMessageToUserSellOrReturned(int type, int charIndex, int itemIndex, int
 	}
 	else
 	{
-		// ÇöÀç Á¢¼ÓÁßÀÌ ¾Æ´Ï¶ó¸é DB¿¡ µ¥ÀÌÅÍ ÀúÀå
+		// í˜„ì¬ ì ‘ì†ì¤‘ì´ ì•„ë‹ˆë¼ë©´ DBì— ë°ì´í„° ì €ì¥
 		std::string qry = boost::str(boost::format(
 										 "INSERT INTO t_tradeagent_after_sell_returned VALUES(%1%,%2%,%3%,%4%,now())")
 									 % charIndex % type % itemIndex % itemCount);

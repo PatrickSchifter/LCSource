@@ -26,10 +26,14 @@ void do_CommandGuildFireOfficerReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest);
+void do_CommandGuildBattleGiveupReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildBattlePeaceReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildBattleKillReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandEventMoonStoneUpdateReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandEventMoonStoneJackPotReq(CNetMsg::SP& msg, CDescriptor* dest);
+
+void do_CommandGuildContributeSet(CNetMsg::SP& msg, CDescriptor* dest);
+void do_CommandGuildContributeSetAll(CNetMsg::SP& msg, CDescriptor* dest);
 
 void do_CommandFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandFriendMemberDelReq(CNetMsg::SP& msg, CDescriptor* dest);
@@ -48,29 +52,29 @@ void do_CommandPD4RewardInit(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandPD4RewardEnd(CNetMsg::SP& msg, CDescriptor* dest);
 
 void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest);
-// æ÷øœµøπ∞
+// Ïï†ÏôÑÎèôÎ¨º
 void do_CommandPetCreateReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandPetDeleteReq(CNetMsg::SP& msg, CDescriptor* dest);
 
-// ±ÊµÂ ≥™Ω∫ ∫∏∞¸«‘
+// Í∏∏Îìú ÎÇòÏä§ Î≥¥Í¥ÄÌï®
 void do_CommandGuildStashHistoryReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildStashViewReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildStashTakeReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildStashRollback(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandGuildStashSaveTaxReq(CNetMsg::SP& msg, CDescriptor* dest);
 
-// ∏Ìº∫ ∞¸∑√
+// Î™ÖÏÑ± Í¥ÄÎ†®
 void do_CommandFameUp(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandTeacherRegister(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandTeacherGiveup(CNetMsg::SP& msg, CDescriptor* dest);
 bool do_TeachCancel(CDBCmd cmd, int teacheridx, int studentidx, int cancelflag = CANCELTEACHER | CANCELSTUDENT, bool bTimeLimit = false);
-//º±ª˝ ∏ÆΩ∫∆Æ
+//ÏÑ†ÏÉù Î¶¨Ïä§Ìä∏
 void do_CommandTeacher(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandTeacherTimeover(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandTeacherSuperstoneRecieve(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandTeacherLoad(CNetMsg::SP& msg, CDescriptor* dest);
 
-//»ﬁ∏Èƒ…∏Ø
+//Ìú¥Î©¥ÏºÄÎ¶≠
 void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandEventSearchFriendMemberSelectAddReq(CNetMsg::SP& msg, CDescriptor* dest);
 void do_CommandEventSearchFriendMemberOneTimeCheckReq(CNetMsg::SP& msg, CDescriptor* dest);
@@ -154,7 +158,7 @@ void do_CommandCubeRewardPersonalReq(CNetMsg::SP& msg, CDescriptor* dest );
 
 void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest );
 
-#ifdef DISCONNECT_HACK_CHARACTER  // «Ÿ «¡∑Œ±◊∑• ¿Ø¿˙ πÊ√‚
+#ifdef DISCONNECT_HACK_CHARACTER  // Ìïµ ÌîÑÎ°úÍ∑∏Îû® Ïú†Ï†Ä Î∞©Ï∂ú
 void do_Command_DisconnectHackCharacter( CNetMsg::SP& msg, CDescriptor* dest );
 #endif // DISCONNECT_HACK_CHARACTER
 
@@ -185,7 +189,7 @@ void do_Command_RaidInfo( CNetMsg::SP& msg, CDescriptor* dest );
 
 void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest);
 
-void do_CommandPartyDataInit(CNetMsg::SP& msg, CDescriptor* dest);
+void do_CommandPartyAndExpedDataInit(CNetMsg::SP& msg, CDescriptor* dest);
 
 #if defined(EVENT_WORLDCUP_2010) || defined(EVENT_WORLDCUP_2010_TOTO) || defined(EVENT_WORLDCUP_2010_TOTO_STATUS)|| defined(EVENT_WORLDCUP_2010_TOTO_GIFT) || defined(EVENT_WORLDCUP_2010_ATTENDANCE)
 void do_Worldcup2010Event(CNetMsg::SP& msg, CDescriptor* dest);

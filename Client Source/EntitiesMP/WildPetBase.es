@@ -6,7 +6,7 @@
 #include "EntitiesMP/TacticsHolder.h"
 #include "EntitiesMP/PlayerWeapons.h"
 #include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 %}
 
 uses "EntitiesMP/Player";
@@ -1081,7 +1081,7 @@ procedures:
 				}
 
 				// AI 적용되어 있지 않을때
-				if (!SE_Get_UIManagerPtr()->GetWildPetInfo()->GetAIActive())
+				if (!SE_Get_UIManagerPtr()->GetWildPetInfoUI()->GetAIActive())
 				{
 					CEntity* pTmpEnt = ((CPlayer*)CEntity::GetPlayerEntity(0))->GetPlayerWeapons()->m_penRayHitTmp;
 					//CEntity* pTmpEnt = ((CPlayer*)CEntity::GetPlayerEntity(0))->GetPlayerWeapons()->m_penRayHitNow;

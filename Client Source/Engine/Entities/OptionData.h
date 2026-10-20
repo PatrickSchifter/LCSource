@@ -195,35 +195,6 @@ public:
 	}
 };
 
-class ENGINE_API CNickNameData : public stTitle, public LodLoader<CNickNameData>
-{
-public:
- 	static bool loadEx(const char* FileName);
-
-	inline const char* GetEffectFile() const
-	{	return a_effect;	}
-
-	inline const char* GetAttackEffectFile() const
-	{	return a_attack;	}
-
-	inline const char* GetDamageEffectFile() const
-	{	return a_damage;	}
-
-	inline COLOR GetColor() const
-	{	return a_icolor;	}
-
-	inline COLOR GetBGColor() const
-	{	return a_ibgcolor;	}
-
-	inline const int* GetOptionIndex() const
-	{	return a_option_index;	}
-
-	inline const BYTE* GetOptionLevel() const
-	{	return a_option_level;	}
-
-	inline int GetItemIndex() const
-	{	return a_item_index;	}
-};
 #endif
 
 

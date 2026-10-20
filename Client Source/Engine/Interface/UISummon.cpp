@@ -498,6 +498,14 @@ void CUISummon::AddSkill( int iSkillIndex )
 		{
 			m_pIconSkill->setSkill(iSkillIndex);
 			SlaveInfo().SetSkillIndex( m_nSummonType, iSkillIndex );
+
+			// 불의 정령 스킬의 경우 스킬 사용 시 UI가 닫히게 되면서 갱신이 안됨
+			// 쿨타임 계산 할 수 있도록 강제로 세팅해줌
+			// 나중에 MyInfo 에서 스킬 사용 시간 업데이트 할 수 있도록 할 것.
+			if (iSkillIndex == 324)
+			{
+				m_pIconSkill->setCooltime(true);
+			}
 		}
 	}
 }

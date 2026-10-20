@@ -225,7 +225,7 @@ bool CServer::LoadSettings()
 			<< "Load TradeAgent...."
 			<< end;
 
-	//dataDB ÀÇ item Á¤º¸¸¦ °Å·¡´ëÇà º¸Á¶ Å×ÀÌºí¿¡ º¹»ç...¾ÆÀÌÅÛÀÇ ¿É¼ÇÀÌ ¹Ù²î¾îµµ °Ë»öÀÌ ¿øÈ°ÇÏ°Ô µÇ±â À§ÇØ¼­
+	//dataDB ì˜ item ì •ë³´ë¥¼ ê±°ë˜ëŒ€í–‰ ë³´ì¡° í…Œì´ë¸”ì— ë³µì‚¬...ì•„ì´í…œì˜ ì˜µì…˜ì´ ë°”ë€Œì–´ë„ ê²€ìƒ‰ì´ ì›í™œí•˜ê²Œ ë˜ê¸° ìœ„í•´ì„œ
 	gserver.CopyToTradeAgentItemInfo();
 
 	return true;
@@ -246,7 +246,7 @@ void CServer::SendToAllGameServer(CNetMsg::SP& msg)
 
 void CServer::operate( rnSocketIOService* service )
 {
-	// ¼­¹öµéÀÌ accpet µÇ´Â°÷
+	// ì„œë²„ë“¤ì´ accpet ë˜ëŠ”ê³³
 	CDescriptor* newd = new CDescriptor(service, true);
 	service->SetUserData((void *)newd);
 
@@ -395,12 +395,12 @@ void CServerTimerPerMinute::operate( rnSocketIOService* service )
 
 	mysql_ping(&gserver.m_dbData);
 
-	// ¸Å ºĞ¸¶´Ù ÆÇ¸Å´ëÇàÁß ¹İÇ°ÀÌ ÀÖ´ÂÁö °Ë»çÇÔ, ÇÑ¹ø¿¡ °Ë»çÇÏ´Â °¹¼ö´Â ÇÑÁ¤ÇÔ
+	// ë§¤ ë¶„ë§ˆë‹¤ íŒë§¤ëŒ€í–‰ì¤‘ ë°˜í’ˆì´ ìˆëŠ”ì§€ ê²€ì‚¬í•¨, í•œë²ˆì— ê²€ì‚¬í•˜ëŠ” ê°¯ìˆ˜ëŠ” í•œì •í•¨
 	checkExpireItemInTradeAgent();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ÀÌ ÇÔ¼ö´Â ¸Å 1ÃÊ¸¶´Ù È£ÃâµÊ
+// ì´ í•¨ìˆ˜ëŠ” ë§¤ 1ì´ˆë§ˆë‹¤ í˜¸ì¶œë¨
 void ClearMessageListTimer::operate( rnSocketIOService* service )
 {
 	CMsgListNode* nowNode = NULL;
@@ -429,7 +429,7 @@ void ClearMessageListTimer::operate( rnSocketIOService* service )
 					<< "server" << delim << server << delim << "sub" << delim << subno << delim
 					<< "messege" << delim << msg->m_mtype << delim << subtype << end;
 
-			// ³ëµå Áö¿ì±â
+			// ë…¸ë“œ ì§€ìš°ê¸°
 			REMOVE_FROM_BILIST(nowNode, gserver.m_msgList.m_head, m_pPrev, m_pNext);
 			delete nowNode;
 		}

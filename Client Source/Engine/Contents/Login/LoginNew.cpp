@@ -13,12 +13,12 @@
 #include <Engine/Base/md5.h>
 #include <Engine/Contents/Login/UILoginNew.h>
 #include <Engine/Help/DefineHelp.h>
+#include <Engine/Base/InterfaceSymbol.h>
 
 // External variables
 extern INDEX g_iSaveID;
 extern int g_iLocalVersion;
 extern INDEX	g_iCountry;
-
 
 LoginNew::LoginNew(void)
 	:	m_bSave(FALSE)
@@ -27,6 +27,12 @@ LoginNew::LoginNew(void)
 {
 	m_bSave = g_iSaveID;
 	SetVersion();
+	m_nLogoType = ISYMBOL_MGR()->getLogoType();
+
+	if (m_nLogoType < 0 || m_nLogoType >= eLOGO_MAX)
+	{
+		m_nLogoType = eLOGO_NORMAL;
+	}
 }
 
 LoginNew::~LoginNew(void)
@@ -100,4 +106,17 @@ BOOL LoginNew::ConnectToLoginServer()
 #endif
 
 	return TRUE;
+}
+
+void LoginNew::SetLogoType( int nType )
+{
+	m_nLogoType = nType;
+
+	CInterfaceSymbol* pIsymbol = ISYMBOL_MGR();
+
+	if (pIsymbol != NULL)
+	{
+		pIsymbol->setLogoType(m_nLogoType);
+		pIsymbol->SaveInterfaceSymbol();
+	}
 }

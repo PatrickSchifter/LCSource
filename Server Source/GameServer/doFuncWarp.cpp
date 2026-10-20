@@ -39,16 +39,16 @@ void do_Warp(CPC* ch, CNetMsg::SP& msg)
 	case MSG_WARP_PROMPT:
 		do_WarpPrompt(ch, msg);
 		break;
-	case MSG_WARP_TO_REQ:			// ¼ø°£ÀÌµ¿ ¸¶¹ı¼­¸¦ »ç¿ëÇÒ¶§. toChar¿¡°Ô ½ÂÀÎ¹Ş±â Àü.
+	case MSG_WARP_TO_REQ:			// ìˆœê°„ì´ë™ ë§ˆë²•ì„œë¥¼ ì‚¬ìš©í• ë•Œ. toCharì—ê²Œ ìŠ¹ì¸ë°›ê¸° ì „.
 		do_WarpToReq(ch, msg);
 		break;
-	case MSG_WARP_TO:				// ¼ø°£ÀÌµ¿ ¸¶¹ı¼­¿¡ ´ëÇÑ ÀÀ´ä. toChar => fromChar
+	case MSG_WARP_TO:				// ìˆœê°„ì´ë™ ë§ˆë²•ì„œì— ëŒ€í•œ ì‘ë‹µ. toChar => fromChar
 		do_WarpTo(ch, msg);
 		break;
-	case MSG_WARP_TAKE_REQ:			// ¼ÒÈ¯ ¸¶¹ı¼­¸¦ »ç¿ëÇÒ ¶§ toChar¿¡°Ô ½ÂÀÎ ¹Ş±âÀü
+	case MSG_WARP_TAKE_REQ:			// ì†Œí™˜ ë§ˆë²•ì„œë¥¼ ì‚¬ìš©í•  ë•Œ toCharì—ê²Œ ìŠ¹ì¸ ë°›ê¸°ì „
 		do_WarpTakeReq(ch, msg);
 		break;
-	case MSG_WARP_TAKE:				// ¼ÒÈ¯ ¸¶¹ı¼­¿¡ ´ëÇÑ ÀÀ´ä toChar => fromChar
+	case MSG_WARP_TAKE:				// ì†Œí™˜ ë§ˆë²•ì„œì— ëŒ€í•œ ì‘ë‹µ toChar => fromChar
 		do_WarpTake(ch, msg);
 		break;
 	case MSG_WARP_TO_REQING:
@@ -80,7 +80,7 @@ void do_TelePortCancel(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-bool do_WarpFromTo(CPC* fromChar, CPC* toChar, bool recvMsg)	// fromChar °¡ toChar·Î °¥¶§ »ç¿ëµÇ´Â ÇÔ¼ö
+bool do_WarpFromTo(CPC* fromChar, CPC* toChar, bool recvMsg)	// fromChar ê°€ toCharë¡œ ê°ˆë•Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜
 {
 	if( toChar->m_pZone->IsPersonalDungeon()
 			|| toChar->m_pZone->IsOXQuizRoom()
@@ -145,7 +145,7 @@ bool do_WarpFromTo(CPC* fromChar, CPC* toChar, bool recvMsg)	// fromChar °¡ toCh
 		return false;
 	}
 
-	// °ø¼ºÁß¿¡ °ø¼º Áö¿ª(MAPATT_WARZONE) À¸·Î ÀÌµ¿ ºÒ°¡
+	// ê³µì„±ì¤‘ì— ê³µì„± ì§€ì—­(MAPATT_WARZONE) ìœ¼ë¡œ ì´ë™ ë¶ˆê°€
 	CWarCastle* castle = CWarCastle::GetCastleObject(toChar->m_pZone->m_index);
 	if (castle)
 	{
@@ -199,7 +199,7 @@ bool do_WarpFromTo(CPC* fromChar, CPC* toChar, bool recvMsg)	// fromChar °¡ toCh
 
 void do_WarpTake(CPC* ch, CNetMsg::SP& msg)
 {
-	// ch°¡ ¼ÒÈ¯µÉ ÄÉ¸¯
+	// chê°€ ì†Œí™˜ë  ì¼€ë¦­
 	CLCString scharName(MAX_CHAR_NAME_LENGTH + 1);
 	char ballow = false;
 
@@ -232,7 +232,7 @@ void do_WarpTake(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ °Ë»ç
+	// ì•„ì´í…œ ê²€ì‚¬
 	CItem* item = sPC->m_inventory.FindByDBIndex(858, 0, 0);
 	if (item == NULL)
 		return;
@@ -254,11 +254,11 @@ void do_WarpTake(CPC* ch, CNetMsg::SP& msg)
 
 void do_WarpTakeReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¾ÆÀÌÅÛ °Ë»ç
+	// ì•„ì´í…œ ê²€ì‚¬
 	if (ch->m_inventory.FindByDBIndex(858, 0, 0) == NULL)
 		return ;
 
-	//¼ÒÈ¯ ÇÏ·Á´Â »ç¶÷ÀÌ rvr Á¸¿¡ ÀÖ´Â °æ¿ì
+	//ì†Œí™˜ í•˜ë ¤ëŠ” ì‚¬ëŒì´ rvr ì¡´ì— ìˆëŠ” ê²½ìš°
 	if (ch->m_pZone->isRVRZone())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -267,7 +267,7 @@ void do_WarpTakeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ch°¡ »ç¿ëÇÑ ÄÉ¸¯
+	// chê°€ ì‚¬ìš©í•œ ì¼€ë¦­
 	CLCString tcharName(MAX_CHAR_NAME_LENGTH + 1);
 
 	RefMsg(msg) >> tcharName;
@@ -321,7 +321,7 @@ void do_WarpTakeReq(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q( rmsg, ch->m_desc);
 		return;
 	}
-	// °¢ ¸Ş¼¼Áö º¸³¿
+	// ê° ë©”ì„¸ì§€ ë³´ëƒ„
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpReqIngMsg(rmsg, MSG_WARP_TAKE_REQING);
@@ -337,7 +337,7 @@ void do_WarpTakeReq(CPC* ch, CNetMsg::SP& msg)
 
 void do_WarpTo(CPC* ch, CNetMsg::SP& msg)
 {
-	// ch°¡ °¡¸¸È÷ ÀÖ´Â ÄÉ¸¯
+	// chê°€ ê°€ë§Œíˆ ìˆëŠ” ì¼€ë¦­
 	CLCString scharName(MAX_CHAR_NAME_LENGTH + 1);
 	char ballow = false;
 
@@ -351,7 +351,7 @@ void do_WarpTo(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	if( !ballow )		// ¼ø°£ÀÌµ¿ ¸¶¹ı¼­ °ÅÀıÇÒ ¶§.
+	if( !ballow )		// ìˆœê°„ì´ë™ ë§ˆë²•ì„œ ê±°ì ˆí•  ë•Œ.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpErrorMsg(rmsg, MSG_WARP_ERROR_NOTALLOW, scharName);
@@ -359,12 +359,12 @@ void do_WarpTo(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ °Ë»ç
+	// ì•„ì´í…œ ê²€ì‚¬
 	CItem* item = sPC->m_inventory.FindByDBIndex(857, 0, 0);
 	if (item == NULL)
 		return ;
 
-	//ÀÌµ¿ÇÏ·Á´Â Å¸°ÙÀÌ rvr Á¸¿¡ ÀÖ´Â °æ¿ì
+	//ì´ë™í•˜ë ¤ëŠ” íƒ€ê²Ÿì´ rvr ì¡´ì— ìˆëŠ” ê²½ìš°
 	if (ch->m_pZone->isRVRZone())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -428,7 +428,7 @@ bool isPossibleWarp(CPC* fromChar, CPC* toChar)
 	}
 #endif
 
-	// °ø¼ºÁß¿¡ °ø¼º Áö¿ª(MAPATT_WARZONE) À¸·Î ÀÌµ¿ ºÒ°¡
+	// ê³µì„±ì¤‘ì— ê³µì„± ì§€ì—­(MAPATT_WARZONE) ìœ¼ë¡œ ì´ë™ ë¶ˆê°€
 	CWarCastle* castle = CWarCastle::GetCastleObject(toChar->m_pZone->m_index);
 	if (castle)
 	{
@@ -450,11 +450,11 @@ bool isPossibleWarp(CPC* fromChar, CPC* toChar)
 
 void do_WarpToReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¾ÆÀÌÅÛ °Ë»ç
+	// ì•„ì´í…œ ê²€ì‚¬
 	if (ch->m_inventory.FindByDBIndex(857, 0, 0) == NULL)
 		return ;
 
-	// ch°¡ »ç¿ëÇÑ ÄÉ¸¯
+	// chê°€ ì‚¬ìš©í•œ ì¼€ë¦­
 	CLCString tcharName(MAX_CHAR_NAME_LENGTH + 1);
 
 	RefMsg(msg) >> tcharName;
@@ -493,7 +493,7 @@ void do_WarpToReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 	
-	// °¢ ¸Ş¼¼Áö º¸³¿
+	// ê° ë©”ì„¸ì§€ ë³´ëƒ„
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpReqIngMsg(rmsg, MSG_WARP_TO_REQING);
@@ -524,13 +524,13 @@ void do_WarpTeleport(CPC* ch, CNetMsg::SP& msg)
 	int pos = -1;
 	RefMsg(msg) >> pos;
 
-	// ½Ì±Û´øÀü ÅÍÄ¡ÆĞµå ÀÎµ¦½º(999) : ¹ß·Ï bw
+	// ì‹±ê¸€ë˜ì „ í„°ì¹˜íŒ¨ë“œ ì¸ë±ìŠ¤(999) : ë°œë¡ bw
 	if ( (pos != 999 && (pos < 0 || pos >= ch->m_pZone->m_countZonePos))
 			&& (pos != 998 && (pos < 0 || pos >= ch->m_pZone->m_countZonePos)) )
 		return ;
 
 	bool bSendGoZoneEffect = false;
-	// ¸Ş¶óÅ© 4, 5, 6, 7Àº °ø¼º½Ã ¼ö¼ºÃø¸¸ °¡´É
+	// ë©”ë¼í¬ 4, 5, 6, 7ì€ ê³µì„±ì‹œ ìˆ˜ì„±ì¸¡ë§Œ ê°€ëŠ¥
 	if (ch->m_admin < 2 && ch->m_pZone->m_index == CWarCastle::GetCurSubServerCastleZoneIndex())
 	{
 		CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
@@ -545,7 +545,7 @@ void do_WarpTeleport(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// µå¶óÅº ¿öÇÁ Å¸¿ö 13 - 17 Àº °ø¼º½Ã ¼ºÁÖ ±æµå¸¸ °¡´É
+	// ë“œë¼íƒ„ ì›Œí”„ íƒ€ì›Œ 13 - 17 ì€ ê³µì„±ì‹œ ì„±ì£¼ ê¸¸ë“œë§Œ ê°€ëŠ¥
 	if (ch->m_admin < 2 && ch->m_pZone->m_index == ZONE_DRATAN)
 	{
 		CDratanCastle * pCastle = CDratanCastle::CreateInstance();
@@ -565,15 +565,15 @@ void do_WarpTeleport(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¼¿ ¾È »ç¶÷¿¡°Ô ³ª »ç¶óÁö°í, ´Ù¸¥ »ç¶÷µé »ç¶óÁü ¾Ë¸®°í
+	// ì…€ ì•ˆ ì‚¬ëŒì—ê²Œ ë‚˜ ì‚¬ë¼ì§€ê³ , ë‹¤ë¥¸ ì‚¬ëŒë“¤ ì‚¬ë¼ì§ ì•Œë¦¬ê³ 
 	ch->SendDisappearAllInCell(true);
 
-	// ¼¿¿¡¼­ Á¦°Å
+	// ì…€ì—ì„œ ì œê±°
 	ch->m_pArea->CharFromCell(ch, true);
 
 	if( ch->m_pZone->m_index == ZONE_SINGLE_DUNGEON1)
 	{
-		// ¹ß·Ï ¹æÀ¸·Î °­Á¦ ÀÌµ¿
+		// ë°œë¡ ë°©ìœ¼ë¡œ ê°•ì œ ì´ë™
 		if( pos == 999 )
 		{
 			GET_YLAYER(ch)	= 0;
@@ -597,7 +597,7 @@ void do_WarpTeleport(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 		
-		// Ä³¸¯ÅÍÀÇ À§Ä¡ ¼³Á¤
+		// ìºë¦­í„°ì˜ ìœ„ì¹˜ ì„¤ì •
 		GET_YLAYER(ch)	= ch->m_pZone->m_zonePos[pos][0];
 		GET_X(ch)		= GetRandom(ch->m_pZone->m_zonePos[pos][1], ch->m_pZone->m_zonePos[pos][3]) / 2.0f;
 		GET_Z(ch)		= GetRandom(ch->m_pZone->m_zonePos[pos][2], ch->m_pZone->m_zonePos[pos][4]) / 2.0f;
@@ -659,7 +659,7 @@ void do_WarpTeleport(CPC* ch, CNetMsg::SP& msg)
 
 	if (bSendGoZoneEffect)
 	{
-		// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+		// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_GOZONE);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -684,7 +684,7 @@ void do_WarpPrompt(CPC* ch, CNetMsg::SP& msg)
 
 		if( pZone->m_index == ZONE_SINGLE_DUNGEON1)
 		{
-			// ¹ß·Ï ¹æÀ¸·Î °­Á¦ ÀÌµ¿
+			// ë°œë¡ ë°©ìœ¼ë¡œ ê°•ì œ ì´ë™
 			GoZone(ch, pZone->m_index,
 				   GET_YLAYER(ch),
 				   80,
@@ -692,12 +692,12 @@ void do_WarpPrompt(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// °ø¼ºÁß ¼ºÁÖ ¼ö¼º ±æµå°¡ ¾Æ´Ï Ä³¸¯ÅÍ´Â ¼º¾È ÀÌµ¿ ±İÁö
+			// ê³µì„±ì¤‘ ì„±ì£¼ ìˆ˜ì„± ê¸¸ë“œê°€ ì•„ë‹ˆ ìºë¦­í„°ëŠ” ì„±ì•ˆ ì´ë™ ê¸ˆì§€
 			CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 			if(pZone->m_index == ZONE_DRATAN
 					&& pCastle->GetState() != WCSF_NORMAL
 					&& ch->GetJoinFlag(pZone->m_index) == WCJF_ATTACK_GUILD
-					&& pos == 25) // ¼ö¼º½ÃÀÛ À§Ä¡ 25
+					&& pos == 25) // ìˆ˜ì„±ì‹œì‘ ìœ„ì¹˜ 25
 				//			&& ch->m_admin < 2)
 			{
 				return;
@@ -709,25 +709,25 @@ void do_WarpPrompt(CPC* ch, CNetMsg::SP& msg)
 				   GetRandom(pZone->m_zonePos[pos][2], pZone->m_zonePos[pos][4]) / 2.0f);
 		}
 
-		// ÀÌµ¿ÈÄ 3ÃÊ°£ ¹«Àû
+		// ì´ë™í›„ 3ì´ˆê°„ ë¬´ì 
 		ch->SetDisableTime(3);
 	}
 	else
 	{
-		//ÅÚ·¹Æ÷Æ®
+		//í…”ë ˆí¬íŠ¸
 		WarpPrompttoTeleport(ch, pos);
 	}
 }
 
 void WarpPrompttoTeleport(CPC* ch, int pos)
 {
-	// ½Ì±Û´øÀü ÅÍÄ¡ÆĞµå ÀÎµ¦½º(999) : ¹ß·Ï bw
+	// ì‹±ê¸€ë˜ì „ í„°ì¹˜íŒ¨ë“œ ì¸ë±ìŠ¤(999) : ë°œë¡ bw
 	if ( (pos != 999 && (pos < 0 || pos >= ch->m_pZone->m_countZonePos))
 			&& (pos != 998 && (pos < 0 || pos >= ch->m_pZone->m_countZonePos)) )
 		return ;
 
 	bool bSendGoZoneEffect = false;
-	// ¸Ş¶óÅ© 4, 5, 6, 7Àº °ø¼º½Ã ¼ö¼ºÃø¸¸ °¡´É
+	// ë©”ë¼í¬ 4, 5, 6, 7ì€ ê³µì„±ì‹œ ìˆ˜ì„±ì¸¡ë§Œ ê°€ëŠ¥
 	if (ch->m_admin < 2 && ch->m_pZone->m_index == CWarCastle::GetCurSubServerCastleZoneIndex())
 	{
 		CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
@@ -742,7 +742,7 @@ void WarpPrompttoTeleport(CPC* ch, int pos)
 		}
 	}
 
-	// µå¶óÅº ¿öÇÁ Å¸¿ö 13 - 17 Àº °ø¼º½Ã ¼ºÁÖ ±æµå¸¸ °¡´É
+	// ë“œë¼íƒ„ ì›Œí”„ íƒ€ì›Œ 13 - 17 ì€ ê³µì„±ì‹œ ì„±ì£¼ ê¸¸ë“œë§Œ ê°€ëŠ¥
 	if (ch->m_admin < 2 && ch->m_pZone->m_index == ZONE_DRATAN)
 	{
 		CDratanCastle * pCastle = CDratanCastle::CreateInstance();
@@ -762,15 +762,15 @@ void WarpPrompttoTeleport(CPC* ch, int pos)
 		}
 	}
 
-	// ¼¿ ¾È »ç¶÷¿¡°Ô ³ª »ç¶óÁö°í, ´Ù¸¥ »ç¶÷µé »ç¶óÁü ¾Ë¸®°í
+	// ì…€ ì•ˆ ì‚¬ëŒì—ê²Œ ë‚˜ ì‚¬ë¼ì§€ê³ , ë‹¤ë¥¸ ì‚¬ëŒë“¤ ì‚¬ë¼ì§ ì•Œë¦¬ê³ 
 	ch->SendDisappearAllInCell(true);
 
-	// ¼¿¿¡¼­ Á¦°Å
+	// ì…€ì—ì„œ ì œê±°
 	ch->m_pArea->CharFromCell(ch, true);
 
 	if( ch->m_pZone->m_index == ZONE_SINGLE_DUNGEON1)
 	{
-		// ¹ß·Ï ¹æÀ¸·Î °­Á¦ ÀÌµ¿
+		// ë°œë¡ ë°©ìœ¼ë¡œ ê°•ì œ ì´ë™
 		if( pos == 999 )
 		{
 			GET_YLAYER(ch)	= 0;
@@ -787,7 +787,7 @@ void WarpPrompttoTeleport(CPC* ch, int pos)
 	}
 	else
 	{
-		// Ä³¸¯ÅÍÀÇ À§Ä¡ ¼³Á¤
+		// ìºë¦­í„°ì˜ ìœ„ì¹˜ ì„¤ì •
 		GET_YLAYER(ch)	= ch->m_pZone->m_zonePos[pos][0];
 		GET_X(ch)		= GetRandom(ch->m_pZone->m_zonePos[pos][1], ch->m_pZone->m_zonePos[pos][3]) / 2.0f;
 		GET_Z(ch)		= GetRandom(ch->m_pZone->m_zonePos[pos][2], ch->m_pZone->m_zonePos[pos][4]) / 2.0f;
@@ -850,7 +850,7 @@ void WarpPrompttoTeleport(CPC* ch, int pos)
 
 	if (bSendGoZoneEffect)
 	{
-		// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+		// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_GOZONE);
 		ch->m_pArea->SendToCell(rmsg, ch, true);

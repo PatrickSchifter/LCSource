@@ -43,7 +43,7 @@ void do_ItemCollection_ItemUpdate(CPC* pc, CNetMsg::SP& msg)
 {
 	RequestClient::ItemCollection_GiveItem* packet = reinterpret_cast<RequestClient::ItemCollection_GiveItem*>(msg->m_buf);
 	
-	//ÆĞÅ¶ À¯È¿¼º °Ë»ç
+	//íŒ¨í‚· ìœ íš¨ì„± ê²€ì‚¬
 	ST_COLLECTION_DATA* data = ItemCollectionData::instance()->findCollectionData(packet->category_index, packet->theme_index);
 	if(data == NULL)
 	{
@@ -60,7 +60,7 @@ void do_ItemCollection_ItemUpdate(CPC* pc, CNetMsg::SP& msg)
 		if(packet->data[i].need_index == -1)
 			continue;
 
-		//±âºÎ ¸ñ·ÏÀÇ ÇüÅÂ¸¦ À¯ÁöÇÏ±â À§ÇØ Ä«¿îÆ®¸¦ 0À¸·Î º¸³¾ ¼ö ÀÖÀ½.
+		//ê¸°ë¶€ ëª©ë¡ì˜ í˜•íƒœë¥¼ ìœ ì§€í•˜ê¸° ìœ„í•´ ì¹´ìš´íŠ¸ë¥¼ 0ìœ¼ë¡œ ë³´ë‚¼ ìˆ˜ ìˆìŒ.
 		if(packet->data[i].need_num == 0)
 			continue;
 		if(packet->data[i].need_num < 0)
@@ -73,7 +73,7 @@ void do_ItemCollection_ItemUpdate(CPC* pc, CNetMsg::SP& msg)
 		if(data->need_data[i].need_type != ITEM_COLLECTION_NEED_TYPE_ITEM)
 			continue;
 
-		//ÀÎº¥Åä¸®¿¡ ÇØ´ç ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+		//ì¸ë²¤í† ë¦¬ì— í•´ë‹¹ ì•„ì´í…œì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
 		int itemCount = pc->m_inventory.searchItemByDBIndex(packet->data[i].need_index, vec[i]);
 
 		if(itemCount == 0)
@@ -115,7 +115,7 @@ void do_ItemCollection_ItemUpdate(CPC* pc, CNetMsg::SP& msg)
 		need_data[i] = packet->data[i].need_num;
 	}
 
-	//¾ÆÀÌÅÛ Â÷°¨Àº ÀÏ°ı ÀÛ¾÷
+	//ì•„ì´í…œ ì°¨ê°ì€ ì¼ê´„ ì‘ì—…
 	for(int i = 0; i < ITEM_COLLECTION_MAX_NEED_VALUE; i++)
 	{
 		if( need_data[i] == 0 )
@@ -131,7 +131,7 @@ void do_ItemCollection_Result(CPC* pc, CNetMsg::SP& msg)
 {
 	RequestClient::ItemCollection_Result* packet = reinterpret_cast<RequestClient::ItemCollection_Result*>(msg->m_buf);
 	
-	//¿Ï·á°¡´É Ç×¸ñÀÎÁö °Ë»ç
+	//ì™„ë£Œê°€ëŠ¥ í•­ëª©ì¸ì§€ ê²€ì‚¬
 	bool check = pc->m_itemCollectionManager.checkCanComplete(packet->category_index, packet->theme_index);
 	if(check == false)
 	{
@@ -140,7 +140,7 @@ void do_ItemCollection_Result(CPC* pc, CNetMsg::SP& msg)
 		return;
 	}
 
-	//ÀÎº¥Åä¸® °ø°£ °Ë»ç
+	//ì¸ë²¤í† ë¦¬ ê³µê°„ ê²€ì‚¬
 	if(pc->m_inventory.getEmptyCount() <= 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -188,7 +188,7 @@ void do_ItemCollection_Result(CPC* pc, CNetMsg::SP& msg)
 		pc->m_bChangeStatus = true;
 
 		{
-			// Exp, SP ¸Ş½ÃÁö Àü¼Û
+			// Exp, SP ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			ExpSPMsg(rmsg, data->result_data.result_num, 0);
 			SEND_Q(rmsg, pc->m_desc);
@@ -200,7 +200,7 @@ void do_ItemCollection_Result(CPC* pc, CNetMsg::SP& msg)
 		pc->m_bChangeStatus = true;
 
 		{
-			// Exp, SP ¸Ş½ÃÁö Àü¼Û
+			// Exp, SP ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			ExpSPMsg(rmsg, 0, data->result_data.result_num);
 			SEND_Q(rmsg, pc->m_desc);

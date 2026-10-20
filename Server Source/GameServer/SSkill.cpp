@@ -99,7 +99,7 @@ bool CSSkillProtoList::Load()
 	m_nCount = dbSSkill.m_nrecords;
 	m_proto = new CSSkillProto[m_nCount];
 
-	// ½ºÅ³º° ¼³Á¤
+	// ìŠ¤í‚¬ë³„ ì„¤ì •
 	int i, j;
 
 	if(!dbSSkill.MoveFirst())

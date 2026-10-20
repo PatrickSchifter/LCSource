@@ -60,8 +60,8 @@
 #include	"HexaDump4XTrap.h"
 #endif //XTRAP_DUMP
 #include	"Xtrap_S_Interface.h"
-#define		CSFILE_NUM				2			// »ç¿ëÇÒ ¸ÊÆÄÀÏ °³¼ö
-#define		XTRAP_CS4_BUFSIZE_MAP	13000		// ¸ÊÆÄÀÏ »çÀÌÁî °íÁ¤
+#define		CSFILE_NUM				2			// ì‚¬ìš©í•  ë§µíŒŒì¼ ê°œìˆ˜
+#define		XTRAP_CS4_BUFSIZE_MAP	13000		// ë§µíŒŒì¼ ì‚¬ì´ì¦ˆ ê³ ì •
 #endif //XTRAP
 
 #include "WarGround.h"
@@ -84,8 +84,6 @@
 
 #include "SyndicateInfoDataManager.h"
 #include "GPSDataManager.h"
-
-#include "AutoBuffer.h"
 
 #define		RESET_RAID_SAVEFILE ".setraidinittime"
 
@@ -668,8 +666,8 @@ typedef struct _tagGMIPData
 
 class COXQuizData
 {
-	int				m_nIndex;			// ÄûÁî ¹øÈ£
-	CLCString		m_strQuiz;			// ÄûÁî ¹®Àå
+	int				m_nIndex;			// í€´ì¦ˆ ë²ˆí˜¸
+	CLCString		m_strQuiz;			// í€´ì¦ˆ ë¬¸ì¥
 	bool			m_bAnswerOX;		// true : O, false : X
 
 public:
@@ -697,21 +695,21 @@ public:
 
 class CGoldenBallEventData
 {
-	int			m_nStatus;			// ÇöÀç ÁøÇà »óÅÂ
+	int			m_nStatus;			// í˜„ì¬ ì§„í–‰ ìƒíƒœ
 
-	CLCString	m_strTeam1;			// AÆÀ ÀÌ¸§
-	CLCString	m_strTeam2;			// BÆÀ ÀÌ¸§
-	int			m_nTeam1Score;		// AÆÀ Á¡¼ö
-	int			m_nTeam2Score;		// BÆÀ Á¡¼ö
+	CLCString	m_strTeam1;			// AíŒ€ ì´ë¦„
+	CLCString	m_strTeam2;			// BíŒ€ ì´ë¦„
+	int			m_nTeam1Score;		// AíŒ€ ì ìˆ˜
+	int			m_nTeam2Score;		// BíŒ€ ì ìˆ˜
 
-	int			m_nEndYear;			// Á¾·á ½Ã±â : ³â
-	int			m_nEndMonth;		// Á¾·á ½Ã±â : ¿ù
-	int			m_nEndDay;			// Á¾·á ½Ã±â : ÀÏ
-	int			m_nEndHour;			// Á¾·á ½Ã±â : ½Ã
-	int			m_nEndMinute;		// Á¾·á ½Ã±â : ºĞ
+	int			m_nEndYear;			// ì¢…ë£Œ ì‹œê¸° : ë…„
+	int			m_nEndMonth;		// ì¢…ë£Œ ì‹œê¸° : ì›”
+	int			m_nEndDay;			// ì¢…ë£Œ ì‹œê¸° : ì¼
+	int			m_nEndHour;			// ì¢…ë£Œ ì‹œê¸° : ì‹œ
+	int			m_nEndMinute;		// ì¢…ë£Œ ì‹œê¸° : ë¶„
 
-	time_t		m_tEndTime;			// Á¾·á ½Ã±â : time_t
-	time_t		m_tVoteEndTime;		// ÀÀ¸ğ ¸¶°¨ ½Ã°¢ : time_t
+	time_t		m_tEndTime;			// ì¢…ë£Œ ì‹œê¸° : time_t
+	time_t		m_tVoteEndTime;		// ì‘ëª¨ ë§ˆê° ì‹œê° : time_t
 
 public:
 	CGoldenBallEventData()
@@ -936,48 +934,48 @@ public:
 	CServer();
 	~CServer();
 
-	bool barunsongames_flag;		// »ç³» ¼­¹öÀÌ¸é true
+	bool barunsongames_flag;		// ì‚¬ë‚´ ì„œë²„ì´ë©´ true
 
-	int m_hardcore_flag_in_gameserver;			// °¡¹Ì°í¿¡¼­ »ç¿ëÇÏ´Â hardcore server, 0 - no, 1 - yes
+	int m_hardcore_flag_in_gameserver;			// ê°€ë¯¸ê³ ì—ì„œ ì‚¬ìš©í•˜ëŠ” hardcore server, 0 - no, 1 - yes
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	MessengerInGame* m_messenger;		// ¸Ş½ÅÀú ¿¬°á
-	ConnectorInGame* m_connector;		// ºô¸µ ¼­¹ö ¿¬°á
-	HelperInGame* m_helper;			// ÇïÆÛ ¿¬°á
-	SubHelperInGame* m_subHelper;			// ÇïÆÛ ¿¬°á
+	// ì†Œì¼“ ê´€ë ¨
+	MessengerInGame* m_messenger;		// ë©”ì‹ ì € ì—°ê²°
+	ConnectorInGame* m_connector;		// ë¹Œë§ ì„œë²„ ì—°ê²°
+	HelperInGame* m_helper;			// í—¬í¼ ì—°ê²°
+	SubHelperInGame* m_subHelper;			// í—¬í¼ ì—°ê²°
 
 	int m_nGuildMarkTable[3];
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
+	// ì„œë²„ ì„¤ì •
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
 #ifdef DEV_EVENT_AUTO
 	CConfigFile m_eventConfig;		// Event Config
 	CEventKingsBirthday m_fathersDay;
 	CItemDropEvent m_DropEvent;
 #endif
 
-	int			m_national;			// ±¹°¡
-	int			m_serverno;			// ¼­¹ö ¹øÈ£
-	int			m_subno;			// ¼­ºê ¹øÈ£
+	int			m_national;			// êµ­ê°€
+	int			m_serverno;			// ì„œë²„ ë²ˆí˜¸
+	int			m_subno;			// ì„œë¸Œ ë²ˆí˜¸
 	CLCString	m_serverAddr;
 	int			m_serverPort;
 #ifdef GER_LOG
-	char*		m_hostname;			// hostname ÀúÀå.
+	char*		m_hostname;			// hostname ì €ì¥.
 #endif
 
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_nameserverisslow; // ¿Ö ¾²´Â °ÍÀÏ±î?
-	bool		m_bShutdown;			// ›Çµû¿î
-	int			m_pulseReboot;		// ¸®ºÎÆ®±îÁö ³²Àº ½Ã°£
-	int			m_pulseShutdown;	// ¼Ë´Ù¿î±îÁö ³²Àº ½Ã°£
-	int			m_pulseEndGame;		// ÀüÃ¼ ¼­¹ö ´Ù¿î±îÁö ³²Àº ½Ã°£
-	int			m_clientversionMin;	// Å¬¶óÀÌ¾ğÆ® ¹öÀü
-	int			m_clientversionMax;	// Å¬¶óÀÌ¾ğÆ® ¹öÀü
-	bool		m_bOnlyLocal;		// ¿ÜºÎ Á¢¼Ó Çã¿ë ¿©ºÎ
-	int			m_pulseProcHeartBeatPerSec;		// HeartBeat()¿¡¼­ ¸ÅÃÊ Ã³¸®¸¦ À§ÇÑ º¯¼ö
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_nameserverisslow; // ì™œ ì“°ëŠ” ê²ƒì¼ê¹Œ?
+	bool		m_bShutdown;			// Â›í’©å¥½?
+	int			m_pulseReboot;		// ë¦¬ë¶€íŠ¸ê¹Œì§€ ë‚¨ì€ ì‹œê°„
+	int			m_pulseShutdown;	// ì…§ë‹¤ìš´ê¹Œì§€ ë‚¨ì€ ì‹œê°„
+	int			m_pulseEndGame;		// ì „ì²´ ì„œë²„ ë‹¤ìš´ê¹Œì§€ ë‚¨ì€ ì‹œê°„
+	int			m_clientversionMin;	// í´ë¼ì´ì–¸íŠ¸ ë²„ì „
+	int			m_clientversionMax;	// í´ë¼ì´ì–¸íŠ¸ ë²„ì „
+	bool		m_bOnlyLocal;		// ì™¸ë¶€ ì ‘ì† í—ˆìš© ì—¬ë¶€
+	int			m_pulseProcHeartBeatPerSec;		// HeartBeat()ì—ì„œ ë§¤ì´ˆ ì²˜ë¦¬ë¥¼ ìœ„í•œ ë³€ìˆ˜
 
 	LONGLONG	m_statisticsItemBuy;
 	LONGLONG	m_statisticsItemSell;
@@ -998,44 +996,44 @@ public:
 	LONGLONG	m_statistics199;
 #define STATISTICS(x, v)		gserver->m_statistics##x += (v)
 
-	LONGLONG	m_taxItem;			// ¼ºÁÖ¿¡°Ô ÁÙ ¼¼±İ : »óÁ¡ ÆÇ¸Å,±¸¸Å
-	LONGLONG	m_taxProduceCastle;	// ¼ºÁÖ¿¡°Ô ÁÙ ¼¼±İ : »ı»ê
-	int			m_taxSavePulse;		// ¼¼±İ °»½Å ÁÖ±â : ¼º Á¤º¸ °»½Å
-	int			m_taxDivGuild;		// ±æµå¿¡ ¼¼±İ Àü´Ş Çß´ÂÁö ¿©ºÎ : Àü´Ş ÈÄ ÇØ´ç ¿äÀÏÀ» ¼³Á¤, -1ÀÌ¸é Àü´Ş ÇÑÀû ¾ø´Â »óÅÂ
+	LONGLONG	m_taxItem;			// ì„±ì£¼ì—ê²Œ ì¤„ ì„¸ê¸ˆ : ìƒì  íŒë§¤,êµ¬ë§¤
+	LONGLONG	m_taxProduceCastle;	// ì„±ì£¼ì—ê²Œ ì¤„ ì„¸ê¸ˆ : ìƒì‚°
+	int			m_taxSavePulse;		// ì„¸ê¸ˆ ê°±ì‹  ì£¼ê¸° : ì„± ì •ë³´ ê°±ì‹ 
+	int			m_taxDivGuild;		// ê¸¸ë“œì— ì„¸ê¸ˆ ì „ë‹¬ í–ˆëŠ”ì§€ ì—¬ë¶€ : ì „ë‹¬ í›„ í•´ë‹¹ ìš”ì¼ì„ ì„¤ì •, -1ì´ë©´ ì „ë‹¬ í•œì  ì—†ëŠ” ìƒíƒœ
 
-	LONGLONG	m_taxItemDratan;			// ¼ºÁÖ¿¡°Ô ÁÙ ¼¼±İ : »óÁ¡ ÆÇ¸Å,±¸¸Å, °ø¼º ÀÔÀå·á
-	LONGLONG	m_taxProduceCastleDratan;	// ¼ºÁÖ¿¡°Ô ÁÙ ¼¼±İ : »ı»ê
+	LONGLONG	m_taxItemDratan;			// ì„±ì£¼ì—ê²Œ ì¤„ ì„¸ê¸ˆ : ìƒì  íŒë§¤,êµ¬ë§¤, ê³µì„± ì…ì¥ë£Œ
+	LONGLONG	m_taxProduceCastleDratan;	// ì„±ì£¼ì—ê²Œ ì¤„ ì„¸ê¸ˆ : ìƒì‚°
 
-	bool		m_bLoadPartyInfo;	// ÇïÆÛ·ÎºÎÅÍ ÇöÀç ÆÄÆ¼ Á¤º¸¸¦ ¸ğµÎ ¹Ş¾Ò´ÂÁö ÀúÀå
+	bool		m_bLoadPartyInfo;	// í—¬í¼ë¡œë¶€í„° í˜„ì¬ íŒŒí‹° ì •ë³´ë¥¼ ëª¨ë‘ ë°›ì•˜ëŠ”ì§€ ì €ì¥
 
-	struct timeval	m_tvLoop;			// ·çÇÁ ½Ã°£ ÃøÁ¤¿ë
-	int				m_nLoop;			// ·çÇÁ Ä«¿îÆ®
-	int				m_bLoop;			// ÃøÁ¤ ½ÃÀÛ ¿©ºÎ
-	CDescriptor*	m_descLoop;			// ¿äÃ» µğ½ºÅ©¸³ÅÍ
-	CDescriptor*	m_observer;			// ¿ÉÀú¹ö
-	CDescriptor*	m_chatmonitor[20];	// Ã¤ÆÃ ¸ğ´ÏÅÍ
+	struct timeval	m_tvLoop;			// ë£¨í”„ ì‹œê°„ ì¸¡ì •ìš©
+	int				m_nLoop;			// ë£¨í”„ ì¹´ìš´íŠ¸
+	int				m_bLoop;			// ì¸¡ì • ì‹œì‘ ì—¬ë¶€
+	CDescriptor*	m_descLoop;			// ìš”ì²­ ë””ìŠ¤í¬ë¦½í„°
+	CDescriptor*	m_observer;			// ì˜µì €ë²„
+	CDescriptor*	m_chatmonitor[20];	// ì±„íŒ… ëª¨ë‹ˆí„°
 
 #ifdef GMTOOL
 	CDescriptor**	m_gmtool;
 	int				m_nGMToolCount;
-	void			GMToolCharPrePlay(CDescriptor* d);			// Áö¿¥Åø·Î Á¢¼ÓÇßÀ» ¶§
+	void			GMToolCharPrePlay(CDescriptor* d);			// ì§€ì— íˆ´ë¡œ ì ‘ì†í–ˆì„ ë•Œ
 #endif // GMTOOL
 
 	///////////////////
-	// ÀüÃ¼ ÆÄÆ¼ ¸®½ºÆ®
-	map_listparty_t			m_listParty;	// ¼­¹ö³» ÀüÃ¼ ÆÄÆ¼ ¸®½ºÆ®
+	// ì „ì²´ íŒŒí‹° ë¦¬ìŠ¤íŠ¸
+	map_listparty_t			m_listParty;	// ì„œë²„ë‚´ ì „ì²´ íŒŒí‹° ë¦¬ìŠ¤íŠ¸
 
-	// ÀüÃ¼ ¿øÁ¤´ë ¸®½ºÆ®
-	map_listexped_t			m_listExped;	// ¼­¹ö³» ÀüÃ¼ ¿øÁ¤´ë ¸®½ºÆ®
+	// ì „ì²´ ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸
+	map_listexped_t			m_listExped;	// ì„œë²„ë‚´ ì „ì²´ ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸
 
 	///////////////////
-	// ÆÄÆ¼ ¸ÅÄª Å×ÀÌºí
-	map_listPartyMatchMember_t		m_listPartyMatchMember;		// ÀÏ¹İ ¸ÅÄª
-	map_listPartyMatchParty_t		m_listPartyMatchParty;		// ÆÄÆ¼ ¸ÅÄª
+	// íŒŒí‹° ë§¤ì¹­ í…Œì´ë¸”
+	map_listPartyMatchMember_t		m_listPartyMatchMember;		// ì¼ë°˜ ë§¤ì¹­
+	map_listPartyMatchParty_t		m_listPartyMatchParty;		// íŒŒí‹° ë§¤ì¹­
 
-	// »õ·Î¿î ¸Ş½ÅÀú Ã¤ÆÃ¹æ
+	// ìƒˆë¡œìš´ ë©”ì‹ ì € ì±„íŒ…ë°©
 	map_chatList_t					m_chatList;
-	// 1 : ¸É¹ö¸¸ Ãß°¡ 0 : Ã¤ÆÃ¹æ »ı¼º -1 : ½ÇÆĞ
+	// 1 : ë§´ë²„ë§Œ ì¶”ê°€ 0 : ì±„íŒ…ë°© ìƒì„± -1 : ì‹¤íŒ¨
 	int		addChatGroup(int& m_makeCharIndex, int& chatIndex,  CLCString charName);
 	void	delChatGroup(int m_makeCharIndex, int chatIndex, CLCString charName);
 	void	SendChatGroup(MSG_EX_MESSENGER_TYPE subtype, int m_makeCharIndex, int chatIndex, int chatColor, CLCString charName, CLCString chat);
@@ -1043,87 +1041,87 @@ public:
 	void	discCharChatGroup(CLCString charName);
 	int		GetMaxChatIndexPerPC(int makeCharIndex);
 
-	// °ÔÀÓ½Ã°£
+	// ê²Œì„ì‹œê°„
 	int getNowSecond()
 	{
 		return (int)m_nowseconds;
 	}
 
 	///////////
-	// ¾ÆÀÌÅÛ °ü·Ã
-	CItemList			m_itemProtoList;		// ÀüÃ¼ ¾ÆÀÌÅÛ ¸®½ºÆ®
+	// ì•„ì´í…œ ê´€ë ¨
+	CItemList			m_itemProtoList;		// ì „ì²´ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 	CCatalogList		m_catalogList;
 
 	CJewelDataList				m_jewelDataList;
 
 	std::set<int>		m_limitCT;
 
-	CSetItemProtoList	m_setItemProtoList;		// ¼¼Æ® ¾ÆÀÌÅÛ ¸®½ºÆ®
+	CSetItemProtoList	m_setItemProtoList;		// ì„¸íŠ¸ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 
-	CFactoryProtoList	m_factoryItemProtoList;		// Á¦ÀÛ ¾ÆÀÌÅÛ ¸®½ºÆ®
+	CFactoryProtoList	m_factoryItemProtoList;		// ì œì‘ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 
-	RewardEvnetItemManager m_rewardItemList;	// Ãâ¼® ÀÌº¥Æ® º¸»ó ¾ÆÀÌÅÛ ¸®½ºÆ®
-
-	//////////
-	// Æ½ °ü·Ã
-	time_t		m_nowseconds;			// unix time (ServerTimerPerSecond::operate()¿¡¼­ °ª ¼ÂÆÃ)
-	int			m_pulse;			// Æ½ Ä«¿îÅÍ (1/10ÃÊ ¸¶´Ù 1¾¿ Áõ°¡ÇÔ : ServerTimerPerHundredMSecond::operate()¿¡¼­ °ª ¼ÂÆÃ)
-	int			m_resetWeather;		// ³¯¾¾ º¯È­ : ÇöÀç 30ºĞ
-	int			m_resetAdjustItem;	// Adjust Item ·Î±× Ãâ·Â : 1ºĞ
+	RewardEvnetItemManager m_rewardItemList;	// ì¶œì„ ì´ë²¤íŠ¸ ë³´ìƒ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 
 	//////////
-	// DB ¿¬°á
-	MYSQL		m_dbchar;			// Ä³¸¯ÅÍ µ¥ÀÌÅÍ
-	MYSQL		m_dbdata;			// °ÔÀÓ µ¥ÀÌÅÍ
-	MYSQL&		m_dbcastle;			// °ø¼º µ¥ÀÌÅÍ
-	MYSQL&		m_dbTrigger;		// Æ®¸®°Å µ¥ÀÌÅÍ
+	// í‹± ê´€ë ¨
+	time_t		m_nowseconds;			// unix time (ServerTimerPerSecond::operate()ì—ì„œ ê°’ ì…‹íŒ…)
+	int			m_pulse;			// í‹± ì¹´ìš´í„° (1/10ì´ˆ ë§ˆë‹¤ 1ì”© ì¦ê°€í•¨ : ServerTimerPerHundredMSecond::operate()ì—ì„œ ê°’ ì…‹íŒ…)
+	int			m_resetWeather;		// ë‚ ì”¨ ë³€í™” : í˜„ì¬ 30ë¶„
+	int			m_resetAdjustItem;	// Adjust Item ë¡œê·¸ ì¶œë ¥ : 1ë¶„
+
+	//////////
+	// DB ì—°ê²°
+	MYSQL		m_dbchar;			// ìºë¦­í„° ë°ì´í„°
+	MYSQL		m_dbdata;			// ê²Œì„ ë°ì´í„°
+	MYSQL&		m_dbcastle;			// ê³µì„± ë°ì´í„°
+	MYSQL&		m_dbTrigger;		// íŠ¸ë¦¬ê±° ë°ì´í„°
 
 #ifdef USE_TENTER_BILLING
-	MYSQL		m_dbcatal;			// °ÔÀÓ Ä«Å»·Î±× µğºñ
+	MYSQL		m_dbcatal;			// ê²Œì„ ì¹´íƒˆë¡œê·¸ ë””ë¹„
 #endif
 
-	MYSQL&		m_dbcharingame;		// °ÔÀÓ¿¡¼­ »ç¿ëÇÒ Ä³¸¯ÅÍ DB
+	MYSQL&		m_dbcharingame;		// ê²Œì„ì—ì„œ ì‚¬ìš©í•  ìºë¦­í„° DB
 
-	// ¸Ş½ÅÀú °ü·Ã
-	CNetMsg::SP	m_messengerConnMsg;	// ¸Ş½ÅÀú ¿¬°á ¸Ş½ÃÁö
+	// ë©”ì‹ ì € ê´€ë ¨
+	CNetMsg::SP	m_messengerConnMsg;	// ë©”ì‹ ì € ì—°ê²° ë©”ì‹œì§€
 
-	// ÄÁ³ØÅÍ °ü·Ã
-	CNetMsg::SP	m_connectorConnMsg;	// ÄÁ³ØÅÍ ¿¬°á ¸Ş½ÃÁö
+	// ì»¨ë„¥í„° ê´€ë ¨
+	CNetMsg::SP	m_connectorConnMsg;	// ì»¨ë„¥í„° ì—°ê²° ë©”ì‹œì§€
 
-	// ÇïÆÛ Á¢¼Ó ¸Ş½ÃÁö
+	// í—¬í¼ ì ‘ì† ë©”ì‹œì§€
 	CNetMsg::SP	m_helperConnMsg;
 
 	CNetMsg::SP	m_subHelperConnMsg;
 
 	//////////
-	// Á¸ °ü·Ã
-	int			m_numZone;			// Á¸ÀÇ °³¼ö
-	CZone*		m_zones;			// Á¸ ¹è¿­
+	// ì¡´ ê´€ë ¨
+	int			m_numZone;			// ì¡´ì˜ ê°œìˆ˜
+	CZone*		m_zones;			// ì¡´ ë°°ì—´
 	map_zone_t	m_zones_map;
 
 	//////////////
-	// NPC °ü·Ã
-	CNPCProtoList m_npcProtoList;	// NPC ±âº» ¸®½ºÆ®
+	// NPC ê´€ë ¨
+	CNPCProtoList m_npcProtoList;	// NPC ê¸°ë³¸ ë¦¬ìŠ¤íŠ¸
 
 	////////////
-	// ½ºÅ³ °ü·Ã
+	// ìŠ¤í‚¬ ê´€ë ¨
 	CMagicProtoList		m_magicProtoList;
 	CSkillProtoList		m_skillProtoList;
 
 	//////////////
-	// Quest °ü·Ã
+	// Quest ê´€ë ¨
 	CQuestProtoList m_questProtoList;	// Quest Proto List
 
 	//////////////
-	// Option °ü·Ã
+	// Option ê´€ë ¨
 	COptionProtoList m_optionProtoList;	// Option Proto List
-	CRareOptionProtoList m_rareOptionList; // ·¹¾î ¿É¼Ç
+	CRareOptionProtoList m_rareOptionList; // ë ˆì–´ ì˜µì…˜
 
 	/////////////////////
-	// Special Skill °ü·Ã
+	// Special Skill ê´€ë ¨
 	CSSkillProtoList m_sSkillProtoList;	// Special Skill Proto List
 	/////////////
-	// ±æµå¸®½ºÆ®
+	// ê¸¸ë“œë¦¬ìŠ¤íŠ¸
 	CGuildList		m_guildlist;
 
 	CAPetProtoList	m_pApetlist;
@@ -1132,8 +1130,8 @@ public:
 
 	CMonsterMercenary m_MonsterMercenary;
 	//////////////
-	// ÀÌº¥Æ®
-	// 050120 : °æÇèÄ¡, ³ª½º, SP, »ı»êÇ° 2¹è ÀÌº¥Æ®
+	// ì´ë²¤íŠ¸
+	// 050120 : ê²½í—˜ì¹˜, ë‚˜ìŠ¤, SP, ìƒì‚°í’ˆ 2ë°° ì´ë²¤íŠ¸
 	bool		m_bDoubleEvent;
 #ifdef NEW_DOUBLE_GM_ZONE
 	int		m_bDoubleEventZone;
@@ -1190,11 +1188,11 @@ public:
 	bool		m_bpSiteGive;
 	int			m_bpSiteCount;
 
-	// ¾ÆÀÌÅÛ, ³ª½º µå·ÓÀ² Á¶Á¤ º¯¼ö
+	// ì•„ì´í…œ, ë‚˜ìŠ¤ ë“œë¡­ìœ¨ ì¡°ì • ë³€ìˆ˜
 	int			m_itemDropProb;
 	int			m_moneyDropProb;
 //0704
-	int			m_aNotice[5]; //ÀÌº¥Æ®¿¡ °üÇÑ °øÁö.
+	int			m_aNotice[5]; //ì´ë²¤íŠ¸ì— ê´€í•œ ê³µì§€.
 	void		addNotice(int _pos, int _index);
 
 	int			m_nMoonStoneNas;
@@ -1204,18 +1202,18 @@ public:
 	int			m_nItemDropEventRateBackup;
 #endif
 
-	bool		m_bEventOX;					// OX ÄûÁî È°¼ºÈ­, start¿¡¼­ true°¡ µÇ°í, end¿¡¼­ false
-	time_t		m_timeEventOXStart;			// OX ÄûÁî ÀÌº¥Æ® ½ÃÀÛ ½Ã°£
-	// m_bEventOX°¡ trueÀÌ°í m_timeEventOXStart ÀÌÀüÀÌ¸é ÀÔÀå °¡´É
-	map_listOXQuiz_t	m_listOXQuiz;		// ÄûÁî ¸®½ºÆ®
-	int			m_nOXQuizSeqNo;				// ÄûÁî ¼øÂ÷ ¹øÈ£, start¿¡¼­ 1·Î µÇ°í ¸Å ¹®Á¦¸¶´Ù 1¾¿ Áõ°¡ÇÑ´Ù
-	bool		m_bOXQuizNoticeStart;		// ÄûÁî ½ÃÀÛ ¾Ë¸² ¿©ºÎ, start¿¡¼­ falseµÇ°í ½ÃÀÛ ¾Ë¸®°í ³ª¼­ true µÊ
-	time_t		m_timeOXQuizLimit;			// ÄûÁî Á¦ÇÑ ½Ã°£
-	int			m_nOXQuizRealNo;			// ÇöÀç ÁøÇàÁßÀÎ ÄûÁî ¹øÈ£, ¾øÀ¸¸é -1
-	int			m_nOXQuizGMCharIndex;		// ÇöÀç ÄûÁî¸¦ ³½ GM
+	bool		m_bEventOX;					// OX í€´ì¦ˆ í™œì„±í™”, startì—ì„œ trueê°€ ë˜ê³ , endì—ì„œ false
+	time_t		m_timeEventOXStart;			// OX í€´ì¦ˆ ì´ë²¤íŠ¸ ì‹œì‘ ì‹œê°„
+	// m_bEventOXê°€ trueì´ê³  m_timeEventOXStart ì´ì „ì´ë©´ ì…ì¥ ê°€ëŠ¥
+	map_listOXQuiz_t	m_listOXQuiz;		// í€´ì¦ˆ ë¦¬ìŠ¤íŠ¸
+	int			m_nOXQuizSeqNo;				// í€´ì¦ˆ ìˆœì°¨ ë²ˆí˜¸, startì—ì„œ 1ë¡œ ë˜ê³  ë§¤ ë¬¸ì œë§ˆë‹¤ 1ì”© ì¦ê°€í•œë‹¤
+	bool		m_bOXQuizNoticeStart;		// í€´ì¦ˆ ì‹œì‘ ì•Œë¦¼ ì—¬ë¶€, startì—ì„œ falseë˜ê³  ì‹œì‘ ì•Œë¦¬ê³  ë‚˜ì„œ true ë¨
+	time_t		m_timeOXQuizLimit;			// í€´ì¦ˆ ì œí•œ ì‹œê°„
+	int			m_nOXQuizRealNo;			// í˜„ì¬ ì§„í–‰ì¤‘ì¸ í€´ì¦ˆ ë²ˆí˜¸, ì—†ìœ¼ë©´ -1
+	int			m_nOXQuizGMCharIndex;		// í˜„ì¬ í€´ì¦ˆë¥¼ ë‚¸ GM
 
-	bool		m_bRecommend;				// ÃßÃµ ¼­¹ö ¼³Á¤ ¿©ºÎ
-	int			m_pulseRecommendMoonstone;	// ÃßÃµ ¼­¹ö ¹®½ºÅæ Áö±Ş ½Ã°£
+	bool		m_bRecommend;				// ì¶”ì²œ ì„œë²„ ì„¤ì • ì—¬ë¶€
+	int			m_pulseRecommendMoonstone;	// ì¶”ì²œ ì„œë²„ ë¬¸ìŠ¤í†¤ ì§€ê¸‰ ì‹œê°„
 
 	bool		m_bNonPK;
 
@@ -1227,7 +1225,7 @@ public:
 	bool		m_bDisablePKPaenalty;
 #endif // MAL_DISABLE_PKPENALTY
 
-	// ±æµå ·©Å·¿ë °æÇèÄ¡ ¾÷µ¥ÀÌÆ® ÁÖ±â
+	// ê¸¸ë“œ ë­í‚¹ìš© ê²½í—˜ì¹˜ ì—…ë°ì´íŠ¸ ì£¼ê¸°
 	int			m_nPulseSaveGuildPoint;
 
 #ifdef  DOUBLE_ITEM_DROP
@@ -1273,13 +1271,13 @@ public:
 
 	struct tm m_tRealSystemTime;
 
-	bool m_bTimeTable[24];			// ¸î½Ã¿¡ ½ÃÀÛÇÏ´ÂÁö ¼³Á¤ÇØÁÖ´Â time flag
-	int* m_iZoneExp;				// ¾î¶²Á¸¿¡ °æÇèÄ¡ % ¼³Á¤.
-	int m_iTimeInterval;			// ¸î½Ã°£µ¿¾È ´øÀüÅ¸ÀÓÀÎÁö ¼³Á¤.
-	int m_iStartTime;				// ÇöÀç½Ã°£À¸·ÎºÎÅÍ °¡Àå °¡±î¿î ½ÃÀÛ½Ã°£
-	int m_iEndTime;					// ÇöÀç½Ã°£À¸·ÎºÎÅÍ °¡Àå °¡±î¿î Á¾·á½Ã°£
-	bool m_bDungeonTimeToggle;		// ¿î¿µÀÚ ON/OFF TOGGLE
-	bool m_bIsTime;					// ÀÚµ¿À¸·Î ÁøÇàµÉ ¶§ ÇöÀç ´øÀüÅ¸ÀÓÀÎÁö È®ÀÎ.
+	bool m_bTimeTable[24];			// ëª‡ì‹œì— ì‹œì‘í•˜ëŠ”ì§€ ì„¤ì •í•´ì£¼ëŠ” time flag
+	int* m_iZoneExp;				// ì–´ë–¤ì¡´ì— ê²½í—˜ì¹˜ % ì„¤ì •.
+	int m_iTimeInterval;			// ëª‡ì‹œê°„ë™ì•ˆ ë˜ì „íƒ€ì„ì¸ì§€ ì„¤ì •.
+	int m_iStartTime;				// í˜„ì¬ì‹œê°„ìœ¼ë¡œë¶€í„° ê°€ì¥ ê°€ê¹Œìš´ ì‹œì‘ì‹œê°„
+	int m_iEndTime;					// í˜„ì¬ì‹œê°„ìœ¼ë¡œë¶€í„° ê°€ì¥ ê°€ê¹Œìš´ ì¢…ë£Œì‹œê°„
+	bool m_bDungeonTimeToggle;		// ìš´ì˜ì ON/OFF TOGGLE
+	bool m_bIsTime;					// ìë™ìœ¼ë¡œ ì§„í–‰ë  ë•Œ í˜„ì¬ ë˜ì „íƒ€ì„ì¸ì§€ í™•ì¸.
 	int m_iZoneCount;
 
 	CGrobalEcho		gecho;
@@ -1294,16 +1292,16 @@ public:
 	virtual void operate(rnSocketIOService* service);
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool LoadSettings();			// ¼³Á¤ ÀĞ±â
-	bool ConnectDB();				// DB ¿¬°á
-	void DisconnectDB(bool bchar);	// DB ¿¬°á ²÷±â, bchar°¡ falseÀÌ¸é user¿Í data, trueÀÌ¸é char
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
-	int GetMaxPlayers();			// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö ±¸ÇÏ±â
-	CZone* FindZone(int zone);			// Á¸ Ã£±â
-	// zoneÀÇ x, zÀÇ À§Ä¡¿¡¼­ °¡±î¿î ¸¶À» Ã£±â
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool LoadSettings();			// ì„¤ì • ì½ê¸°
+	bool ConnectDB();				// DB ì—°ê²°
+	void DisconnectDB(bool bchar);	// DB ì—°ê²° ëŠê¸°, bcharê°€ falseì´ë©´ userì™€ data, trueì´ë©´ char
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
+	int GetMaxPlayers();			// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜ êµ¬í•˜ê¸°
+	CZone* FindZone(int zone);			// ì¡´ ì°¾ê¸°
+	// zoneì˜ x, zì˜ ìœ„ì¹˜ì—ì„œ ê°€ê¹Œìš´ ë§ˆì„ ì°¾ê¸°
 	CZone* FindNearestZone(int zone, float x, float z, int* nearZone, int* nearZonePos, int syndicateType = 0);
 
 #ifdef XTRAP
@@ -1311,53 +1309,53 @@ public:
 	bool			InitXTrap();
 #endif //XTRAP
 
-	void SetHeaders();						// ºô¸µ/¸Ş½ÅÀú Çì´õ »ı¼º
+	void SetHeaders();						// ë¹Œë§/ë©”ì‹ ì € í—¤ë” ìƒì„±
 
 	////////////
-	// ºô¸µ °ü·Ã
-	void ProcessBilling(CNetMsg::SP& msg);		// ºô¸µ Ã³¸®
+	// ë¹Œë§ ê´€ë ¨
+	void ProcessBilling(CNetMsg::SP& msg);		// ë¹Œë§ ì²˜ë¦¬
 
 	//////////////
-	// ¸Ş½ÅÀú °ü·Ã
-	void ProcessMessengerMessage(CNetMsg::SP& msg);	// ¸Ş½ÅÀú ¸Ş½ÃÁö Ã³¸®
-	void ProcessEventMessage(CNetMsg::SP& msg);		// ÀÌº¥Æ® ¸Ş½ÃÁö Ã³¸®
+	// ë©”ì‹ ì € ê´€ë ¨
+	void ProcessMessengerMessage(CNetMsg::SP& msg);	// ë©”ì‹ ì € ë©”ì‹œì§€ ì²˜ë¦¬
+	void ProcessEventMessage(CNetMsg::SP& msg);		// ì´ë²¤íŠ¸ ë©”ì‹œì§€ ì²˜ë¦¬
 
 	//////////////
-	// ÇïÆÛ °ü·Ã
-	void ProcessHelperMessage(CNetMsg::SP& msg);	// ÇïÆÛ ¸Ş½ÃÁö Ã³¸®
+	// í—¬í¼ ê´€ë ¨
+	void ProcessHelperMessage(CNetMsg::SP& msg);	// í—¬í¼ ë©”ì‹œì§€ ì²˜ë¦¬
 
 	///////////////
-	// ¼­ºê ÇÛÆÛ ( °Å·¡´ëÇàµî )
+	// ì„œë¸Œ í•¼í¼ ( ê±°ë˜ëŒ€í–‰ë“± )
 	void ProcessSubHelperMessage( CNetMsg::SP& msg );
 
 	/////////////////
-	// ¼­¹ö ¼öÇà °ü·Ã
-	void HeartBeat();		// 1ÃÊ¸¶´Ù ¼öÇàµÇ´Â ÇÔ¼ö
+	// ì„œë²„ ìˆ˜í–‰ ê´€ë ¨
+	void HeartBeat();		// 1ì´ˆë§ˆë‹¤ ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜
 
-	void CloseSocket(CDescriptor* d);		// µğ½ºÅ©¸³ÅÍ Á¾·á, bForce: 15ÃÊ µô·¹ÀÌ ¹«½Ã ¿©ºÎ
+	void CloseSocket(CDescriptor* d);		// ë””ìŠ¤í¬ë¦½í„° ì¢…ë£Œ, bForce: 15ì´ˆ ë”œë ˆì´ ë¬´ì‹œ ì—¬ë¶€
 
 	/////////////////
-	// ¸í·É Ã³¸® °ü·Ã
-	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ¸í·· Ã³¸®
+	// ëª…ë ¹ ì²˜ë¦¬ ê´€ë ¨
+	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ëª…ë  ì²˜ë¦¬
 
 	//////////////
-	// Ä³¸¯ÅÍ °ü·Ã
-	void CharPrePlay(CDescriptor* d);			// Ä³¸¯ÅÍ ÁØºñ
-	void DecreaseTimeForPC(CPC* ch);			// Ä³¸¯ÅÍ °ü·Ã ½Ã°£ °¨¼Ò
+	// ìºë¦­í„° ê´€ë ¨
+	void CharPrePlay(CDescriptor* d);			// ìºë¦­í„° ì¤€ë¹„
+	void DecreaseTimeForPC(CPC* ch);			// ìºë¦­í„° ê´€ë ¨ ì‹œê°„ ê°ì†Œ
 
 	void MoonStoneEndProcess(CPC* ch);
 
-	// ¼¼¾× Áõ°¡ : ÆÇ¸Å/±¸¸Å
+	// ì„¸ì•¡ ì¦ê°€ : íŒë§¤/êµ¬ë§¤
 	void AddTaxItem(LONGLONG val)
 	{
 		if (val > 0 && m_taxItem + val > 0) m_taxItem += val;
 	}
-	// ¼¼¾× Áõ°¡ : »ı»ê
+	// ì„¸ì•¡ ì¦ê°€ : ìƒì‚°
 	void AddTaxProduceCastle(LONGLONG val)
 	{
 		if (val > 0 && m_taxProduceCastle + val > 0) m_taxProduceCastle += val;
 	}
-	// ¼¼¾× ÃÊ±âÈ­
+	// ì„¸ì•¡ ì´ˆê¸°í™”
 	void ResetTax()
 	{
 		m_taxItem = m_taxProduceCastle = 0;
@@ -1366,33 +1364,33 @@ public:
 	{
 		m_taxItemDratan = m_taxProduceCastleDratan = 0;
 	}
-	// ¼¼¾× Áõ°¡ : ÆÇ¸Å/±¸¸Å
+	// ì„¸ì•¡ ì¦ê°€ : íŒë§¤/êµ¬ë§¤
 	void AddTaxItemDratan(LONGLONG val)
 	{
 		if (val > 0 && m_taxItemDratan + val > 0) m_taxItemDratan += val;
 	}
-	// ¼¼¾× Áõ°¡ : »ı»ê
+	// ì„¸ì•¡ ì¦ê°€ : ìƒì‚°
 	void AddTaxProduceCastleDratan(LONGLONG val)
 	{
 		if (val > 0 && m_taxProduceCastleDratan + val > 0) m_taxProduceCastleDratan += val;
 	}
-	// ¼¼¾× -> ¼ºÁ¤º¸
+	// ì„¸ì•¡ -> ì„±ì •ë³´
 	void SaveTax();
-	// ¼¼±İ -> ±æµå
+	// ì„¸ê¸ˆ -> ê¸¸ë“œ
 	void DivideTax();
-	// ¼¼±İ ¹ŞÀ» ±æµå º¯°æ
+	// ì„¸ê¸ˆ ë°›ì„ ê¸¸ë“œ ë³€ê²½
 	void ChangeTaxGuild();
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : º¸½º ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë³´ìŠ¤ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CParty* FindPartyByBossIndex(int nBossIndex);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : ¸â¹ö ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë©¤ë²„ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CParty* FindPartyByMemberIndex(int nMemberIndex, bool bIncludeRequest);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : º¸½º ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë³´ìŠ¤ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CExpedition* FindExpedByBossIndex(int nBossIndex);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : ¸â¹ö ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë©¤ë²„ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CExpedition* FindExpedByMemberIndex(int nMemberIndex, bool bIncludeRequest);
 
 	CPartyMatchMember* FindPartyMatchMemberByCharIndex(int nCharIndex);
@@ -1403,30 +1401,30 @@ public:
 
 	CMoonStoneReward m_moonstoneReward;
 
-	// »óÁ¡ °Å·¡µî ¼¼±İ ÀÚ·á Åë°è
+	// ìƒì  ê±°ë˜ë“± ì„¸ê¸ˆ ìë£Œ í†µê³„
 	void ProcStatistics();
 
 private:
 
-	// ¼¼±İ Ã³¸®
+	// ì„¸ê¸ˆ ì²˜ë¦¬
 	void ProcTax();
 
-	// ¸÷, ¾ÆÀÌÅÛ ÄÁÆ®·Ñ
+	// ëª¹, ì•„ì´í…œ ì»¨íŠ¸ë¡¤
 	void ProcMobItemControl();
 
-	// ³¯¾¾ º¯È­
+	// ë‚ ì”¨ ë³€í™”
 	void ChangeWeather();
 
-	// loop count Ã³¸®
+	// loop count ì²˜ë¦¬
 	void ProcLoopCount();
 
-	// OX ÄûÁî Ã³¸®
+	// OX í€´ì¦ˆ ì²˜ë¦¬
 	void ProcOXQuiz();
 
-	// ÃßÃµ¼­¹ö ¹®½ºÅæ Ã³¸®
+	// ì¶”ì²œì„œë²„ ë¬¸ìŠ¤í†¤ ì²˜ë¦¬
 	void ProcRecommendServerMoonstone();
 
-	// °ñµçº¼ Á¾·á Ã³¸®
+	// ê³¨ë“ ë³¼ ì¢…ë£Œ ì²˜ë¦¬
 	void ProcGoldenBall();
 
 public:
@@ -1448,17 +1446,18 @@ public:
 	CExtremeCube m_extremeCube;
 #endif // EXTREME_CUBE
 
-	void ProcEndExped();		//¿øÁ¤´ë ÇØÁ¦ Ã³¸®
+	void ProcEndExped();		//ì›ì •ëŒ€ í•´ì œ ì²˜ë¦¬
 
-	void ProcEndParty();		//ÆÄÆ¼ ÇØÁ¦ Ã³¸®
+	void ProcEndParty();		//íŒŒí‹° í•´ì œ ì²˜ë¦¬
 
-	CTrigger_List	m_CTriggerDBInfo;						// DB¿¡¼­ ¹ŞÀº proto data
-	int		GetTriggerSetTypeToZoneIndex(int zoneIndex);	// zone index¿¡ µû¶ó Æ®¸®°Å¼¼Æ®¸¦ ±¸º°ÇÏ´Â ÇÔ¼ö
-	void	ProcTrigger();									// ¸ÅÃÊ ÇÊ¿äÇÑ Æ®¸®°Å Ã¼Å©
+	CTrigger_List	m_CTriggerDBInfo;						// DBì—ì„œ ë°›ì€ proto data
+	int		GetTriggerSetTypeToZoneIndex(int zoneIndex);	// zone indexì— ë”°ë¼ íŠ¸ë¦¬ê±°ì„¸íŠ¸ë¥¼ êµ¬ë³„í•˜ëŠ” í•¨ìˆ˜
+	void	ProcTrigger();									// ë§¤ì´ˆ í•„ìš”í•œ íŠ¸ë¦¬ê±° ì²´í¬
 
 	CAffinityProtoList	m_affinityProtoList;
 
 	CTitleProtoList m_titleProtoList;
+	CTitleMakeData m_titleMakedata;
 
 #ifdef LACARETTE_SYSTEM
 	CLacarette m_lacarette;
@@ -1511,7 +1510,7 @@ public:
 	void readTreasureMapSaveFile();
 #endif
 
-#ifdef REFORM_PK_PENALTY_201108 // Á¤½Ã¿¡ ÇÑ¹ø ¼ºÇâ ¼öÁö ÀåÄ¡ ¹öÇÁ°¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô pk ¼ºÇâ Æ÷ÀÎÆ® º¸»ó º¸»óÇØÁà¾ßÇÑ´Ù.
+#ifdef REFORM_PK_PENALTY_201108 // ì •ì‹œì— í•œë²ˆ ì„±í–¥ ìˆ˜ì§€ ì¥ì¹˜ ë²„í”„ê°€ ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ pk ì„±í–¥ í¬ì¸íŠ¸ ë³´ìƒ ë³´ìƒí•´ì¤˜ì•¼í•œë‹¤.
 	void CheckPkDisPosiotionPointReward();
 #endif
 
@@ -1614,9 +1613,12 @@ public:
 	bool	tld_event;
 	void	checkTldEvent();
 #endif
-	// My methods and objects
-public:
-	AutoBuffSystem m_buffSystem;
+
+	int m_battle_guild_index;	//ê¸¸ë“œ ì¸ë±ìŠ¤
+	int m_battle_guild_gm;		//gm ì¸ë±ìŠ¤
+
+	std::set<std::string> set_gmlist;
+	void gm_list_init();
 };
 
 extern CServer* gserver;

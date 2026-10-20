@@ -10,8 +10,12 @@
 #include <Engine/Entities/ItemEffect.h>
 #include <Engine/Network/ChatMsgBuffer.h>
 #include <Engine/Interface/UIGuildMark.h>
+#include <Engine/Contents/function/TitleData.h>
 
 #define WEAR_COSTUME	8
+
+#define		PLAYER_STATE_PKMODE			(1 << 3)	// PK 모드
+#define		PLAYER_STATE_PKMODEDELAY	(1 << 4)	// PK 모드 해제 딜레이
 
 class CUIGuildMarkIcon;
 
@@ -65,6 +69,7 @@ public:
 	INDEX			cha_iHitType;			// 
 	
 	CUIGuildMarkIcon* pGuildmark;
+	stCustomTitleStatForPc cha_CustomTitle;
 public:
 	
 	/* Default constructor. */

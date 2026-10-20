@@ -53,7 +53,7 @@ void CNPCRegenInfo::clean()
 
 	m_bRaidMoveRandom = false;
 
-	m_bRegen = true;			// npc ¸®Á¦ ¿©ºÎ °áÁ¤
+	m_bRegen = true;			// npc ë¦¬ì œ ì—¬ë¶€ ê²°ì •
 
 	m_npcProto = NULL;
 }
@@ -214,7 +214,7 @@ bool CNPCRegenList::Find(int idx, int zoneNo, bool pdZone, float x, int y, float
 
 				if( (ceil(m_infoList[i].m_regenX) > ceil(x-10)) && (ceil(m_infoList[i].m_regenX) < ceil(x+10)))
 					bCurrectX = true;
-				// ¿ì¼± Y´Â °Ë»ç ¾ÈÇÔ : bw 060513
+				// ìš°ì„  YëŠ” ê²€ì‚¬ ì•ˆí•¨ : bw 060513
 				//if( (ceil(m_infoList[i].m_regenY) > ceil(y-10)) && (ceil(m_infoList[i].m_regenY) < ceil(y+10)) )
 				//	bCurrectY = true;
 				if( (ceil(m_infoList[i].m_regenZ) > ceil(z-10)) && (ceil(m_infoList[i].m_regenZ) < ceil(z+10)) )
@@ -247,7 +247,7 @@ bool CNPCRegenList::DelRegenInfo(CNPCRegenInfo * p)
 		{
 			if(i+1 == m_wPos)
 			{
-				// ³¡ºÎºÐ
+				// ëë¶€ë¶„
 				p->clean();
 			}
 			else

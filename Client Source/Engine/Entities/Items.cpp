@@ -265,6 +265,23 @@ int CItems::CalculateRuneItemBonus( int itemtype, ULONG ulItemPlus )
 	return (ulItemPlus >= 15 ? 10 : ulItemPlus - 5) * nBonusBase;
 }
 
+int CItems::CalculatePlusItemPVPOptionBonus( int itemtype, ULONG ulItemPlus )
+{
+	if(ulItemPlus <= 14) // +14까진 보너스 없음
+		return 0;
+	if(itemtype != CItemData::ITEM_SHIELD) // 방어구가 아니면 보너스 없음
+		return 0;
+
+	if (ulItemPlus >= 30) // 30 이상
+		return 10;
+	else if (ulItemPlus >= 25) // 25 ~ 29
+		return 6;
+	else if (ulItemPlus >= 20) // 20 ~ 24
+		return 4;
+
+	return 2; // 15 ~ 19
+}
+
 //착용레벨 감소 옵션(Index: 49)이 붙은 장비를 입고 있을 경우 감소되는 레벨량을 구함. 
 int CItems::GetJewelLevelReduction()
 {

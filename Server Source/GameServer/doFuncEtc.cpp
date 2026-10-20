@@ -14,6 +14,9 @@
 #include "../ShareLib/packetType/ptype_old_do_sskill.h"
 #include "../ShareLib/packetType/ptype_attendance.h"
 #include "../ShareLib/packetType/ptype_notice.h"
+#include "../ShareLib/packetType/ptype_server_to_server.h"
+
+#include "GuildBattleManager.h"
 
 extern CCmdList gexcmdlist;
 
@@ -41,7 +44,7 @@ void do_StatPointUse(CPC* ch, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> type;
 
-	// ³²Àº Æ÷ÀÎÆ® ÀÖ³ª º¸±â
+	// ë‚¨ì€ í¬ì¸íŠ¸ ìˆë‚˜ ë³´ê¸°
 	if (ch->m_statpt_remain < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -142,7 +145,7 @@ void do_StatPointReset(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-	LONGLONG needmoney = 20000;		// 1 Æ÷ÀÎÆ®´ç ÇÊ¿ä ³ª½º
+	LONGLONG needmoney = 20000;		// 1 í¬ì¸íŠ¸ë‹¹ í•„ìš” ë‚˜ìŠ¤
 	needmoney *= reset_all;
 
 	if (ch->m_inventory.getMoney() < needmoney)
@@ -213,10 +216,10 @@ void do_Pulse(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> pulse
 				>> nation;
 
-#ifdef DISCONNECT_HACK_CHARACTER  // ÇÙ ÇÁ·Î±×·¥ À¯Àú ¹æÃâ
+#ifdef DISCONNECT_HACK_CHARACTER  // í•µ í”„ë¡œê·¸ë¨ ìœ ì € ë°©ì¶œ
 
 	float tickDelayTime;
-	// µô·¹ÀÌ°¡ 0.06 ÃÊ°úÀÌ¸é ÇÙ À¯Àú·Î Ã³¸®
+	// ë”œë ˆì´ê°€ 0.06 ì´ˆê³¼ì´ë©´ í•µ ìœ ì €ë¡œ ì²˜ë¦¬
 	RefMsg(msg) >> tickDelayTime;
 
 	if ( tickDelayTime > HACK_LIMIT )
@@ -241,7 +244,7 @@ void do_Pulse(CPC* ch, CNetMsg::SP& msg)
 	ch->m_desc->CheckHackPulse(pulse);
 }
 
-#ifdef DISCONNECT_HACK_CHARACTER  // ÇÙ ÇÁ·Î±×·¥ À¯Àú ¹æÃâ
+#ifdef DISCONNECT_HACK_CHARACTER  // í•µ í”„ë¡œê·¸ë¨ ìœ ì € ë°©ì¶œ
 void do_Disconnect_Hack_Character(CPC* ch, CNetMsg::SP& msg)
 {
 	float delay;
@@ -262,7 +265,7 @@ void do_Disconnect_Hack_Character(CPC* ch, CNetMsg::SP& msg)
 			<< HACK_TYPE_CLIENT << delim
 			<< delay << end;
 
-	// ÇØ´ç Ä³¸¯ÅÍ DIS
+	// í•´ë‹¹ ìºë¦­í„° DIS
 	LOG_ERROR("hack user is dis.");
 	ch->m_desc->Close("hack user is dis.");
 	return;
@@ -318,7 +321,7 @@ void do_Extend(CPC* ch, CNetMsg::SP& msg)
 
 	if (gexcmdlist.Find(subtype) == false)
 	{
-		// ¹ÙÀÌÆ® ½ºÆ®¸²¿¡¼­ ±¸Á¶Ã¼·Î º¯°æµÈ ÆĞÅ¶À» Ã³¸®ÇÏ±â À§ÇØ
+		// ë°”ì´íŠ¸ ìŠ¤íŠ¸ë¦¼ì—ì„œ êµ¬ì¡°ì²´ë¡œ ë³€ê²½ëœ íŒ¨í‚·ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
 		pTypeThirdBase* pThird = reinterpret_cast<pTypeThirdBase*>(msg->m_buf);
 		subtype = pThird->subType;
 		thirdtype = pThird->thirdType;
@@ -345,8 +348,8 @@ void do_Extend(CPC* ch, CNetMsg::SP& msg)
 
 void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 {
-	// TODO : BS : ±æµå¿Í Ä³¸¯¸íÀÇ ±æÀÌ°¡ ´Ş¶óÁú °æ¿ì ¼öÁ¤ÀÌ ÇÊ¿ä
-	// ÀÌ¸§ º¯°æ ¾ÆÀÌÅÛ	: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) name(str)
+	// TODO : BS : ê¸¸ë“œì™€ ìºë¦­ëª…ì˜ ê¸¸ì´ê°€ ë‹¬ë¼ì§ˆ ê²½ìš° ìˆ˜ì •ì´ í•„ìš”
+	// ì´ë¦„ ë³€ê²½ ì•„ì´í…œ	: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) name(str)
 
 	//msg->MoveFirst();
 
@@ -357,7 +360,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 				>> name;
 	int r, c;
 
-	// ÀÌ¸§ÀÌ 0 º¸´Ù ÀÛÀ¸¸é ¾ÈµÈ´Ù.
+	// ì´ë¦„ì´ 0 ë³´ë‹¤ ì‘ìœ¼ë©´ ì•ˆëœë‹¤.
 	if (strlen(name) < 4 || strlen(name) > 16)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -365,7 +368,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ÀÌ¸§¿¡ ' °¡ µé¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+	// ì´ë¦„ì— ' ê°€ ë“¤ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
 	if (strinc(name, "'") || strinc(name, " "))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -381,7 +384,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-// [selo: 101115] ·¯½Ã¾Æ´Â ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ µé¾î°¡¸é ¾ÈµÈ´Ù.
+// [selo: 101115] ëŸ¬ì‹œì•„ëŠ” ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ì ë“¤ì–´ê°€ë©´ ì•ˆëœë‹¤.
 #ifdef LC_RUS
 	if( CheckNoRussianCharacter(name) )
 	{
@@ -402,7 +405,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 
 	switch(itemindex)
 	{
-	// ÄÉ¸¯ ÀÌ¸§ º¯°æ
+	// ì¼€ë¦­ ì´ë¦„ ë³€ê²½
 	case 842:
 		{
 			if (ch->m_inventory.FindByDBIndex(842, 0, 0) || ch->m_inventory.FindByDBIndex(1120, 0, 0))
@@ -415,7 +418,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 				}
 				else
 				{
-					// ÀÌ¸§À» º¯°æÇÏÁö ¸øÇØ¿ä
+					// ì´ë¦„ì„ ë³€ê²½í•˜ì§€ ëª»í•´ìš”
 					CNetMsg::SP rmsg(new CNetMsg);
 					NameChangeRepMsg(rmsg, MSG_EX_NAMECHANGE_ERROR_HELPER, name, 0);
 					SEND_Q(rmsg, ch->m_desc);
@@ -423,7 +426,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	// ±æµå ÀÌ¸§ º¯°æ
+	// ê¸¸ë“œ ì´ë¦„ ë³€ê²½
 	case 843:
 		{
 			if (ch->m_inventory.FindByDBIndex(843, 0, 0) == NULL)
@@ -453,7 +456,7 @@ void do_Ex_NameChange(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ÀÌ¸§À» º¯°æÇÏÁö ¸øÇØ¿ä
+				// ì´ë¦„ì„ ë³€ê²½í•˜ì§€ ëª»í•´ìš”
 				CNetMsg::SP rmsg(new CNetMsg);
 				NameChangeRepMsg(rmsg, MSG_EX_NAMECHANGE_ERROR_HELPER, name, 1);
 				SEND_Q(rmsg, ch->m_desc);
@@ -497,7 +500,7 @@ void do_ExPartyRecall(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_pZone->IsPersonalDungeon() || ch->m_pZone->IsGuildRoom())
 			{
-				//ÀÌµ¿À» ¸øÇÏ´Â °æ¿ì ¸®Äİ ¸®½ºÆ®¿¡¼­ Á¦°Å¸¦ ÇØÁØ´Ù.
+				//ì´ë™ì„ ëª»í•˜ëŠ” ê²½ìš° ë¦¬ì½œ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ë¥¼ í•´ì¤€ë‹¤.
 				ch->m_party->deletePartyRecallMember(ch->m_index);
 				
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -516,7 +519,7 @@ void do_ExPartyRecall(CPC* ch, CNetMsg::SP& msg)
 
 			if(ch->m_nJoinInzone_ZoneNo >= 0 && ch->m_nJoinInzone_RoomNo >= 0)
 			{
-				//ÀÌµ¿À» ¸øÇÏ´Â °æ¿ì ¸®Äİ ¸®½ºÆ®¿¡¼­ Á¦°Å¸¦ ÇØÁØ´Ù.
+				//ì´ë™ì„ ëª»í•˜ëŠ” ê²½ìš° ë¦¬ì½œ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ë¥¼ í•´ì¤€ë‹¤.
 				ch->m_party->deletePartyRecallMember(ch->m_index);
 
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -533,7 +536,7 @@ void do_ExPartyRecall(CPC* ch, CNetMsg::SP& msg)
 
 			if(!yesno)
 			{
-				// °ÅºÎ
+				// ê±°ë¶€
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExPartyRecallCancelMsg(rmsg, reqcharindex, reqcharname, ch->m_index, ch->GetName());
 				SEND_Q(rmsg, ch->m_desc);
@@ -554,7 +557,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 
 	switch(subtype)
 	{
-	case MSG_EX_MESSENGER_ONE_VS_ONE:	// 1:1´ëÈ­ : sCharIndex(n) tCharIndex(x) chat(str)
+	case MSG_EX_MESSENGER_ONE_VS_ONE:	// 1:1ëŒ€í™” : sCharIndex(n) tCharIndex(x) chat(str)
 		{
 			int sCharIndex, tCharIndex;
 			CLCString chat(1000);
@@ -563,7 +566,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 						>> tCharIndex
 						>> chat;
 
-			// Ä£±¸ ¿Â¶óÀÎ ¿©ºÎ È®ÀÎ
+			// ì¹œêµ¬ ì˜¨ë¼ì¸ ì—¬ë¶€ í™•ì¸
 			CFriendMember * pMember = ch->m_Friend->FindFriendMember(tCharIndex);
 			if( pMember == NULL ||
 					pMember->GetCondition() == MSG_FRIEND_CONDITION_OFFLINE )
@@ -596,7 +599,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_INVITE:	// ÇØ´ç ÄÉ¸¯ÅÍ ÃÊ´ë : makeCharIndex(n) chatIndex(n) charindex(n)	// chatIndex °¡ -1ÀÌ¸é ´ëÈ­¹æ Ãß°¡
+	case MSG_EX_MESSENGER_INVITE:	// í•´ë‹¹ ì¼€ë¦­í„° ì´ˆëŒ€ : makeCharIndex(n) chatIndex(n) charindex(n)	// chatIndex ê°€ -1ì´ë©´ ëŒ€í™”ë°© ì¶”ê°€
 		{
 			int chatIndex, makeCharIndex, charIndex;
 			RefMsg(msg) >> makeCharIndex
@@ -611,8 +614,8 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 
 			if( chatIndex == -1 )
 			{
-				// ´ëÈ­¹æ »ı¼ºÀÏ °æ¿ì
-				// ´ëÈ­¹æ »ı¼º
+				// ëŒ€í™”ë°© ìƒì„±ì¼ ê²½ìš°
+				// ëŒ€í™”ë°© ìƒì„±
 				makeCharIndex = ch->m_index;
 				chatIndex = gserver->GetMaxChatIndexPerPC(makeCharIndex) + 1;
 				//if ( result != -1 )
@@ -624,16 +627,16 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// ÃÊ´ë ÄÉ¸¯ÅÍ Ãß°¡
+			// ì´ˆëŒ€ ì¼€ë¦­í„° ì¶”ê°€
 			{
-				// ¸Ş½ÅÀú·Î º¸³»¸é °Å½Ã±â°¡ ¾Ë¾Æ¼­ ÇÒ²¨¿©
+				// ë©”ì‹ ì €ë¡œ ë³´ë‚´ë©´ ê±°ì‹œê¸°ê°€ ì•Œì•„ì„œ í• êº¼ì—¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				MsgrMessengerChatMsg(rmsg, MSG_MSGR_MESSENGER_ADD_CONFIRM, makeCharIndex, chatIndex, 0, charIndex);
 				SEND_Q(rmsg, gserver->m_messenger);
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_OUT:		// ÇØ´ç ÄÉ¸¯ÅÍ ´ëÈ­¹æ¿¡¼­ ³ª°¨ : chatIndex(n) charName(str)
+	case MSG_EX_MESSENGER_OUT:		// í•´ë‹¹ ì¼€ë¦­í„° ëŒ€í™”ë°©ì—ì„œ ë‚˜ê° : chatIndex(n) charName(str)
 		{
 			int chatIndex, makeCharIndex;
 
@@ -641,14 +644,14 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 						>> chatIndex;
 
 			{
-				// ¸Ş½ÅÀú·Î º¸³»¸é °Å½Ã±â°¡ ¾Ë¾Æ¼­ ÇÒ²¨¿©
+				// ë©”ì‹ ì €ë¡œ ë³´ë‚´ë©´ ê±°ì‹œê¸°ê°€ ì•Œì•„ì„œ í• êº¼ì—¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				MsgrMessengerChatMsg(rmsg, MSG_MSGR_MESSENGER_DEL, makeCharIndex, chatIndex, 0, ch->GetName() );
 				SEND_Q(rmsg, gserver->m_messenger);
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_CHAT:		// ÇØ´ç ÄÉ¸¯ÅÍ ´ëÈ­¹æ¿¡¼­ ³ª°¨ : chatIndex(n) chat(str)
+	case MSG_EX_MESSENGER_CHAT:		// í•´ë‹¹ ì¼€ë¦­í„° ëŒ€í™”ë°©ì—ì„œ ë‚˜ê° : chatIndex(n) chat(str)
 		{
 			CLCString chat(1000);
 			int chatIndex, makeCharIndex;
@@ -667,7 +670,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_EX_MESSENGER_GROUP_ADD:	// Ä£±¸ ±×·ì Ãß°¡	: groupName(str)
+	case MSG_EX_MESSENGER_GROUP_ADD:	// ì¹œêµ¬ ê·¸ë£¹ ì¶”ê°€	: groupName(str)
 		{
 			CLCString groupName(MAX_GROUP_NAME_LENGTH+1);
 			RefMsg(msg) >> groupName;
@@ -686,7 +689,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_GROUP_DEL:	// Ä£±¸ ±×·ì »èÁ¦	: gIndex(n)
+	case MSG_EX_MESSENGER_GROUP_DEL:	// ì¹œêµ¬ ê·¸ë£¹ ì‚­ì œ	: gIndex(n)
 		{
 			int gIndex;
 			RefMsg(msg) >> gIndex;
@@ -709,7 +712,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_GROUP_CHANGE:	// Ä£±¸ ±×·ì ÀÌ¸§º¯°æ : gIndex(n) newName(str)
+	case MSG_EX_MESSENGER_GROUP_CHANGE:	// ì¹œêµ¬ ê·¸ë£¹ ì´ë¦„ë³€ê²½ : gIndex(n) newName(str)
 		{
 			int gIndex;
 			CLCString newName(MAX_GROUP_NAME_LENGTH+1);
@@ -729,7 +732,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_GROUP_MOVE:	// Ä£±¸ ±×·ì ÀÌµ¿	  : charName(str) gIndex(n)
+	case MSG_EX_MESSENGER_GROUP_MOVE:	// ì¹œêµ¬ ê·¸ë£¹ ì´ë™	  : charName(str) gIndex(n)
 		{
 			int gIndex, charIndex;
 
@@ -758,7 +761,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			ch->m_Friend->SetChatColor(color);
 		}
 		break;
-	case MSG_EX_MESSENGER_BLOCK:		// ÇØ´çÀ¯Àú Â÷´Ü	: name(str)
+	case MSG_EX_MESSENGER_BLOCK:		// í•´ë‹¹ìœ ì € ì°¨ë‹¨	: name(str)
 		// GS->C			: errcode(c) charIndex(n) name(str)
 		{
 			CLCString name(MAX_CHAR_NAME_LENGTH + 1);
@@ -772,7 +775,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ÃÖ´ë ºí·° ÀÎ¿ø¼ö 20¸í
+			// ìµœëŒ€ ë¸”ëŸ­ ì¸ì›ìˆ˜ 20ëª…
 			if( ch->m_listBlockPC.size() >= BLOCK_MAX_MEMBER )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -781,7 +784,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ÇïÆÛ·Î ºí·° ¿äÃ»ÇÏ°í ÇïÆÛ¿¡¼­ ÀÎµ¦½º¿Í ÀÌ¸§À» ¹Ş´Â´Ù
+			// í—¬í¼ë¡œ ë¸”ëŸ­ ìš”ì²­í•˜ê³  í—¬í¼ì—ì„œ ì¸ë±ìŠ¤ì™€ ì´ë¦„ì„ ë°›ëŠ”ë‹¤
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				rmsg->Init(MSG_HELPER_COMMAND);
@@ -793,7 +796,7 @@ void do_ExMessenger(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EX_MESSENGER_RELEASE_BLOCK:	// ÇØ´çÀ¯Àú ÇØÁ¦: charIndex(n)
+	case MSG_EX_MESSENGER_RELEASE_BLOCK:	// í•´ë‹¹ìœ ì € í•´ì œ: charIndex(n)
 		// GS->C			: errcode(c) charIndex(n) name(str)
 		{
 			int charIndex;
@@ -836,43 +839,43 @@ void do_ExCastleWar(CPC * ch, CNetMsg::SP& msg)
 
 	switch(subtype)
 	{
-	case MSG_CASTLE_CRISTAL_RESPOND_START:	// ±³°¨ ½ÃÀÛ
+	case MSG_CASTLE_CRISTAL_RESPOND_START:	// êµê° ì‹œì‘
 		do_ExCastleCristalRespondStart(ch, msg);
 		break;
 
-	case MSG_CASTLE_CRISTAL_RESPOND_END:	// ±³°¨ ¿Ï·á
+	case MSG_CASTLE_CRISTAL_RESPOND_END:	// êµê° ì™„ë£Œ
 		do_ExCastleCristalRespondEnd(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_CONTRAL_LIST:		// Å¸¿ö ¸®½ºÆ®
+	case MSG_CASTLE_TOWER_CONTRAL_LIST:		// íƒ€ì›Œ ë¦¬ìŠ¤íŠ¸
 		do_ExCastleTowerList(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_CONTRAL:			// Å¸¿ö ¸®½ºÆ® Ãß°¡
+	case MSG_CASTLE_TOWER_CONTRAL:			// íƒ€ì›Œ ë¦¬ìŠ¤íŠ¸ ì¶”ê°€
 		do_ExcastleTowerAdd(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_REINFORCE:			// ¸¶½ºÅÍ Å¸¿ö °­È­ ¼³Á¤		type(c), step(c)
+	case MSG_CASTLE_TOWER_REINFORCE:			// ë§ˆìŠ¤í„° íƒ€ì›Œ ê°•í™” ì„¤ì •		type(c), step(c)
 		do_ExCastleTowerReinforce(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_REINFORCE_LIST:	// ¸¶½ºÅÍ Å¸¿ö °­È­ ¸®½ºÆ®		(type(c), step(c))
+	case MSG_CASTLE_TOWER_REINFORCE_LIST:	// ë§ˆìŠ¤í„° íƒ€ì›Œ ê°•í™” ë¦¬ìŠ¤íŠ¸		(type(c), step(c))
 		do_ExCastleTowerReinforceList(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_REPAIRE:			// °ø¼º Å¸¿ö ¼ö¸®				cl->gs idx(n) | gs->cl	idx(n)
+	case MSG_CASTLE_TOWER_REPAIRE:			// ê³µì„± íƒ€ì›Œ ìˆ˜ë¦¬				cl->gs idx(n) | gs->cl	idx(n)
 		do_ExCastleTowerRepaire(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_REPAIRE_LIST:		// °ø¼º Å¸¿ö ¼ö¸® »óÅÂ			cl->gs idx(n) | gs->cl	money(n)
+	case MSG_CASTLE_TOWER_REPAIRE_LIST:		// ê³µì„± íƒ€ì›Œ ìˆ˜ë¦¬ ìƒíƒœ			cl->gs idx(n) | gs->cl	money(n)
 		do_ExCastleTowerRepaireList(ch, msg);
 		break;
 
-	case MSG_CASTLE_TOWER_WARP_LIST:		// ¿öÇÁ Å¸¿ö ¸®½ºÆ® ¿äÃ»
+	case MSG_CASTLE_TOWER_WARP_LIST:		// ì›Œí”„ íƒ€ì›Œ ë¦¬ìŠ¤íŠ¸ ìš”ì²­
 		do_ExCastleTowerWarpList(ch, msg);
 		break;
 
-	case MSG_CASTLE_QUARTERS_INSTALL:		// ºÎÈ°ÁøÁö ¼³Ä¡
+	case MSG_CASTLE_QUARTERS_INSTALL:		// ë¶€í™œì§„ì§€ ì„¤ì¹˜
 		do_ExCastleQuartersInstall(ch, msg);
 		break;
 	}
@@ -880,7 +883,7 @@ void do_ExCastleWar(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 {
-	// °ø¼ºÀü Âü°¡ È®ÀÎ
+	// ê³µì„±ì „ ì°¸ê°€ í™•ì¸
 	if (ch->GetJoinFlag(ZONE_DRATAN) == WCJF_NONE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -889,7 +892,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °ø¼ºÁß È®ÀÎ
+	// ê³µì„±ì¤‘ í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if( pCastle->GetState() == WCSF_NORMAL)
 	{
@@ -899,7 +902,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// À§Ä¡ È®ÀÎ
+	// ìœ„ì¹˜ í™•ì¸
 	if(ch->m_pZone->m_index != ZONE_DRATAN)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -908,7 +911,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÎ¿ø È®ÀÎ ÃÖ´ë 5¸í
+	// ì¸ì› í™•ì¸ ìµœëŒ€ 5ëª…
 #ifdef BUGFIX_DRATAN_CRISTAL_RESPOND
 	if(pCastle->GetRespondCount() >= 5)
 #else
@@ -921,7 +924,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ºÁÖ ±æµå È®ÀÎ
+	// ì„±ì£¼ ê¸¸ë“œ í™•ì¸
 	if(pCastle->GetOwnerGuildIndex() == ch->m_guildInfo->guild()->index())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -930,7 +933,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// NPC(¿Ü¼º¹® °á°èÀÇ ´«:388) ÆÄ±« Ã¼Å©
+	// NPC(ì™¸ì„±ë¬¸ ê²°ê³„ì˜ ëˆˆ:388) íŒŒê´´ ì²´í¬
 	if( pCastle->m_gateNPC[0] && !DEAD(pCastle->m_gateNPC[0])
 		&& pCastle->m_gateNPC[3] && !DEAD(pCastle->m_gateNPC[3])
 		&& pCastle->m_gateNPC[4] && !DEAD(pCastle->m_gateNPC[4]))
@@ -941,7 +944,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// NPC(³»¼º¹® °á°èÀÇ ´«:389,404) ÆÄ±« Ã¼Å©
+	// NPC(ë‚´ì„±ë¬¸ ê²°ê³„ì˜ ëˆˆ:389,404) íŒŒê´´ ì²´í¬
 	if( (pCastle->m_gateNPC[1] && !DEAD(pCastle->m_gateNPC[1]))
 			&& ( pCastle->m_gateNPC[2] && !DEAD(pCastle->m_gateNPC[2])) )
 	{
@@ -951,17 +954,17 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÎºñÀúºô¸®Æ¼ »óÅÂ¿¡¼­´Â Å©¸®½ºÅ» ±³°¨ ºÒ°¡´É
+	// ì¸ë¹„ì €ë¹Œë¦¬í‹° ìƒíƒœì—ì„œëŠ” í¬ë¦¬ìŠ¤íƒˆ êµê° ë¶ˆê°€ëŠ¥
 	if ( ch->IsInvisible() )
 	{
-		// ÀÎºñÀúºô¸®Æ¼ »óÅÂ¸¦ ¾ø¾Ö¼­ ´Ù±¼´çÇÏ°Ô ÇÔ..
+		// ì¸ë¹„ì €ë¹Œë¦¬í‹° ìƒíƒœë¥¼ ì—†ì• ì„œ ë‹¤êµ´ë‹¹í•˜ê²Œ í•¨..
 		ch->CancelInvisible();
 		/*ch->m_assist.CureAssist(MST_ASSIST_INVISIBLE, 99);*/
 
 		return;
 	}
 
-	// ·¹º§ÀÌ 15º¸´Ù ³·À¸¸é Å©¸®½ºÅ» ±³°¨ ºÒ°¡´É
+	// ë ˆë²¨ì´ 15ë³´ë‹¤ ë‚®ìœ¼ë©´ í¬ë¦¬ìŠ¤íƒˆ êµê° ë¶ˆê°€ëŠ¥
 	if ( ch->m_level <= PKMODE_LIMIT_LEVEL )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -970,7 +973,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Á×¾úÀ¸¸é Å©¸®½ºÅ» ±³°¨ ºÒ°¡´É
+	// ì£½ì—ˆìœ¼ë©´ í¬ë¦¬ìŠ¤íƒˆ êµê° ë¶ˆê°€ëŠ¥
 	if (DEAD(ch))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -979,20 +982,20 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ä³¸¯ÅÍ »óÅÂ º¯È­
+	// ìºë¦­í„° ìƒíƒœ ë³€í™”
 	ch->SetPlayerState(PLAYER_CRISTAL_RESPOND);
 
-	// ±³°¨ ½ÃÀÛ ½Ã°£ ÀúÀå
+	// êµê° ì‹œì‘ ì‹œê°„ ì €ì¥
 //	ch->SetRespondTime(gserver->m_pulse);
 	time_t curTime;
 	time(&curTime);
 	ch->SetRespondTime(curTime);
 
-	// °ø¼º ±³°¨ ÀÎ¿ø Ãß°¡
+	// ê³µì„± êµê° ì¸ì› ì¶”ê°€
 	pCastle->SetRespondMember(ch);
 
 	{
-		// ÁÖÀ§¿¡ Àü´Ş
+		// ì£¼ìœ„ì— ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleCristalRespondStartMsg(rmsg, ch);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -1001,7 +1004,7 @@ void do_ExCastleCristalRespondStart(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 {
-	// °ø¼ºÀü Âü°¡ È®ÀÎ
+	// ê³µì„±ì „ ì°¸ê°€ í™•ì¸
 	if (ch->GetJoinFlag(ZONE_DRATAN) == WCJF_NONE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1010,7 +1013,7 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °ø¼ºÁß È®ÀÎ
+	// ê³µì„±ì¤‘ í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if( pCastle->GetState() == WCSF_NORMAL)
 	{
@@ -1020,7 +1023,7 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// À§Ä¡ È®ÀÎ
+	// ìœ„ì¹˜ í™•ì¸
 	if(ch->m_pZone->m_index != ZONE_DRATAN)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1029,7 +1032,7 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ä³¸¯ÅÍ »óÅÂ È®ÀÎ
+	// ìºë¦­í„° ìƒíƒœ í™•ì¸
 	if(ch->IsSetPlayerState(PLAYER_CRISTAL_RESPOND) == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1038,20 +1041,20 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 ///===
-	// À¯Áö ½Ã°£ È®ÀÎ 3ºĞ
-//	if(ch->GetRespondTime() == 0  //±³°¨ ½ÃÀÛ ½Ã°£ÀÌ ¾ø°Å³ª
-//		|| gserver->m_pulse	- ch->GetRespondTime() < 3*PULSE_REAL_MIN) // 3ºĞÀÌ³»¸é
+	// ìœ ì§€ ì‹œê°„ í™•ì¸ 3ë¶„
+//	if(ch->GetRespondTime() == 0  //êµê° ì‹œì‘ ì‹œê°„ì´ ì—†ê±°ë‚˜
+//		|| gserver->m_pulse	- ch->GetRespondTime() < 3*PULSE_REAL_MIN) // 3ë¶„ì´ë‚´ë©´
 //	{
 //		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NOT_RESPOND_TIME);
 //		SEND_Q(rmsg, ch->m_desc);
 //		return;
 //	}
 
-	// À¯Áö ½Ã°£ È®ÀÎ 3ºĞ
+	// ìœ ì§€ ì‹œê°„ í™•ì¸ 3ë¶„
 	time_t curTime;
 	time(&curTime);
-	if(ch->GetRespondTime() == 0  //±³°¨ ½ÃÀÛ ½Ã°£ÀÌ ¾ø°Å³ª
-			|| curTime	- ch->GetRespondTime() < 175 ) // 2ºĞ 55ÃÊÀÌ³»¸é
+	if(ch->GetRespondTime() == 0  //êµê° ì‹œì‘ ì‹œê°„ì´ ì—†ê±°ë‚˜
+			|| curTime	- ch->GetRespondTime() < 175 ) // 2ë¶„ 55ì´ˆì´ë‚´ë©´
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NOT_RESPOND_TIME);
@@ -1059,18 +1062,18 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±³°¨ Á¤º¸ »èÁ¦
+	// êµê° ì •ë³´ ì‚­ì œ
 	pCastle->InitRespond();
 
 	{
-		// ÁÖÀ§¿¡ Àü´Ş
+		// ì£¼ìœ„ì— ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleCristalRespondEndMsg(rmsg, ch);
 		//	ch->m_pArea->SendToCell(rmsg, ch, true);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¼ºÁÖ ¹Ù²Ş
+	// ì„±ì£¼ ë°”ê¿ˆ
 	CGuildMember * pMember = ch->m_guildInfo;
 	if (pMember == NULL)
 	{
@@ -1086,11 +1089,11 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 			<< "before " << delim << pCastle->GetOwnerGuildIndex() << delim
 			<< "after " << delim  << pGuild->index() << delim << "char " << delim << ch->m_index << end;
 
-	// °ø¼º ¸®¼Â
-	// Á×Àº ºÎÈ°ÁøÁö ¸®Á¨  -071016 - whs25 Ãß°¡ ÀÛ¾÷
+	// ê³µì„± ë¦¬ì…‹
+	// ì£½ì€ ë¶€í™œì§„ì§€ ë¦¬ì    -071016 - whs25 ì¶”ê°€ ì‘ì—…
 	pCastle->RegenCastleControlNPC();
 
-	// ÇØ´ç ±æµå ºÎÈ° ÁøÁö Á¸Àç -> ºÎÈ° ÁøÁö »èÁ¦
+	// í•´ë‹¹ ê¸¸ë“œ ë¶€í™œ ì§„ì§€ ì¡´ì¬ -> ë¶€í™œ ì§„ì§€ ì‚­ì œ
 	for(int i=0; i<7; i++)
 	{
 		if (pCastle->m_nRebrithGuild[i] == pGuild->index())
@@ -1102,26 +1105,26 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// ºÎÈ° ÁøÁö Á¤º¸ Àü¼Û
+		// ë¶€í™œ ì§„ì§€ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastletowerQuartersListMsg(rmsg, pCastle);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¼ºÁÖ ±æµå ÇÃ·¡±× <=> °ø¼º ±æµå ÇÃ·¡±× º¯È¯
+	// ì„±ì£¼ ê¸¸ë“œ í”Œë˜ê·¸ <=> ê³µì„± ê¸¸ë“œ í”Œë˜ê·¸ ë³€í™˜
 	pCastle->ChangeSide(pGuild->index());
 
-	// ¼ºÁÖ ±æµå º¯È¯
+	// ì„±ì£¼ ê¸¸ë“œ ë³€í™˜
 	pCastle->SetOwner(pGuild);
 
-	//  NPC_CASTLE_TOWER hp 1/2ÈÄ ¸®Á¨
+	//  NPC_CASTLE_TOWER hp 1/2í›„ ë¦¬ì  
 	pCastle->RegenCastleTowerHalf();
 
-	//  ÇØ´ç ±æµå ÀÌ¿Ü Ä³¸¯ÅÍ ºÎÈ°ÁøÁö, °£ÀÌ¸¶À»·Î ÀÌµ¿
+	//  í•´ë‹¹ ê¸¸ë“œ ì´ì™¸ ìºë¦­í„° ë¶€í™œì§„ì§€, ê°„ì´ë§ˆì„ë¡œ ì´ë™
 	pCastle->GetOutNonDefense();
 
 	{
-		//	°ø¼º Á¤º¸ Àü¼Û
+		//	ê³µì„± ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildWarCastleStateMsg(rmsg, ZONE_DRATAN, ch, pCastle);
 		ch->m_pArea->SendToAllClient(rmsg);
@@ -1130,12 +1133,12 @@ void do_ExCastleCristalRespondEnd(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleTowerList(CPC * ch, CNetMsg::SP& msg)
 {
-	// ¸®½ºÆ® ¿äÃ»
-	// Ä³¸¯ÅÍ È®ÀÎ
+	// ë¦¬ìŠ¤íŠ¸ ìš”ì²­
+	// ìºë¦­í„° í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
-	if( pCastle->GetState() == WCSF_NORMAL				// °ø¼ºÁßÀÌ ¾Æ´Ò¶§
-			&& pCastle->GetOwnerCharIndex() == ch->m_index		// ¼ºÁÖ ÀÏ °æ¿ì
-			&& ch->m_pZone->m_index == ZONE_DRATAN)				// Ä³¸¯ÅÍ°¡ µå¶óÅº¿¡ ÀÖÀ»¶§
+	if( pCastle->GetState() == WCSF_NORMAL				// ê³µì„±ì¤‘ì´ ì•„ë‹ë•Œ
+			&& pCastle->GetOwnerCharIndex() == ch->m_index		// ì„±ì£¼ ì¼ ê²½ìš°
+			&& ch->m_pZone->m_index == ZONE_DRATAN)				// ìºë¦­í„°ê°€ ë“œë¼íƒ„ì— ìˆì„ë•Œ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleTowerListMsg(rmsg, pCastle);
@@ -1153,13 +1156,13 @@ void do_ExcastleTowerAdd(CPC * ch, CNetMsg::SP& msg)
 		RefMsg(msg) >> status[i];
 	}
 
-	// Ä³¸¯ÅÍ È®ÀÎ
+	// ìºë¦­í„° í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
-	if( pCastle->GetState() == WCSF_NORMAL				// °ø¼ºÁßÀÌ ¾Æ´Ò¶§
-			&& pCastle->GetOwnerCharIndex() == ch->m_index		// ¼ºÁÖ ÀÏ °æ¿ì
-			&& ch->m_pZone->m_index == ZONE_DRATAN)				// Ä³¸¯ÅÍ°¡ µå¶óÅº¿¡ ÀÖÀ»¶§
+	if( pCastle->GetState() == WCSF_NORMAL				// ê³µì„±ì¤‘ì´ ì•„ë‹ë•Œ
+			&& pCastle->GetOwnerCharIndex() == ch->m_index		// ì„±ì£¼ ì¼ ê²½ìš°
+			&& ch->m_pZone->m_index == ZONE_DRATAN)				// ìºë¦­í„°ê°€ ë“œë¼íƒ„ì— ìˆì„ë•Œ
 	{
-		// µ·È®ÀÎ
+		// ëˆí™•ì¸
 		int nMoney = 1000000;
 		int total_money = 0;
 
@@ -1169,7 +1172,7 @@ void do_ExcastleTowerAdd(CPC * ch, CNetMsg::SP& msg)
 			change_status = status[i] - pCastle->GetTowerStatus(i);
 			if (change_status > 0)
 			{
-				// º¯È­ Ã¼Å©
+				// ë³€í™” ì²´í¬
 				int count = status[i];
 				for(int j = pCastle->GetTowerStatus(i); j < count; j++)
 				{
@@ -1184,14 +1187,14 @@ void do_ExcastleTowerAdd(CPC * ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// µ·ºÎÁ· ¸Ş¼¼Áö Àü¼Û
+			// ëˆë¶€ì¡± ë©”ì„¸ì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_MONEY);
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
 
-		// Àû¿ë
+		// ì ìš©
 		for(int k = 0; k < 7; k++)
 		{
 			pCastle->SetTowerStatus(k, status[k]);
@@ -1213,8 +1216,8 @@ void do_ExcastleTowerAdd(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 {
-	// Å¸¿ö °­È­
-	// ¼ö¼º ±æµå¿øÀÎÁö È®ÀÎ
+	// íƒ€ì›Œ ê°•í™”
+	// ìˆ˜ì„± ê¸¸ë“œì›ì¸ì§€ í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (pCastle->GetOwnerGuildIndex() != ch->m_guildInfo->guild()->index())
 	{
@@ -1227,7 +1230,7 @@ void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 	char type = 0, step = 0;
 	RefMsg(msg) >> type >> step;
 
-	// type : 0. °ø°İÇü Å¸¿ö 1. °¡µåÇü Å¸¿ö 2. ¼º¹®
+	// type : 0. ê³µê²©í˜• íƒ€ì›Œ 1. ê°€ë“œí˜• íƒ€ì›Œ 2. ì„±ë¬¸
 	// step 1 - 3
 	if (type < 0 || type > 3 || step <= 0 || step > 3)
 	{
@@ -1237,7 +1240,7 @@ void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌÀü°ú ºñ±³
+	// ì´ì „ê³¼ ë¹„êµ
 	char before_step = pCastle->GetReinforceStep((int)type);
 	char diff = step - before_step;
 	if (diff <= 0 || step > 3)
@@ -1248,7 +1251,7 @@ void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °¡°İ ºñ±³
+	// ê°€ê²© ë¹„êµ
 	int total_money = 0;
 	int price[3][3] =
 	{
@@ -1268,18 +1271,18 @@ void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// µ·ºÎÁ· ¸Ş¼¼Áö Àü¼Û
+		// ëˆë¶€ì¡± ë©”ì„¸ì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_MONEY);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// Àû¿ë
+	// ì ìš©
 	pCastle->SetReinforceStep(type, step);
 
 	{
-		// ÀúÀå
+		// ì €ì¥
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperCastleReinforceMsg(rmsg, type, step, ZONE_DRATAN);
 		SEND_Q(rmsg, gserver->m_helper);
@@ -1291,12 +1294,12 @@ void do_ExCastleTowerReinforce(CPC * ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	///=== ¼º°ø ¸Ş¼¼Áö ÇÊ¿ä
+	///=== ì„±ê³µ ë©”ì„¸ì§€ í•„ìš”
 }
 
 void do_ExCastleTowerReinforceList(CPC * ch, CNetMsg::SP& msg)
 {
-	// ¸¶½ºÅÍ Å¸¿ö °­È­ ¸®½ºÆ®
+	// ë§ˆìŠ¤í„° íƒ€ì›Œ ê°•í™” ë¦¬ìŠ¤íŠ¸
 	char type = 0;
 	RefMsg(msg) >> type;
 	if( type < 0 || type > 2)
@@ -1318,11 +1321,11 @@ void do_ExCastleTowerReinforceList(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 {
-	// ¼ö¸® ¿äÃ»
+	// ìˆ˜ë¦¬ ìš”ì²­
 	int idx = 0;
 	RefMsg(msg) >> idx;
 
-	if (idx < 351 || idx > 381)	// ¸¶½ºÅÍ Å¸¿ö Æ÷ÇÔ
+	if (idx < 351 || idx > 381)	// ë§ˆìŠ¤í„° íƒ€ì›Œ í¬í•¨
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_DATA);
@@ -1330,7 +1333,7 @@ void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// npc¸®½ºÆ®¿¡¼­ °Ë»ö
+	// npcë¦¬ìŠ¤íŠ¸ì—ì„œ ê²€ìƒ‰
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (pCastle->CheckBuyTower(idx) == false)
 	{
@@ -1367,7 +1370,7 @@ void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ì¾Æ ÀÖ´ÂÁö °Ë»ö
+	// ì‚´ì•„ ìˆëŠ”ì§€ ê²€ìƒ‰
 	CNPC * pNpc = pArea->FindProtoNPCInCell( ch, idx, false, 9, true);
 	if (pNpc == NULL)
 	{
@@ -1402,11 +1405,11 @@ void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ö¸®ºñ¿ë °Ë»ö
+	// ìˆ˜ë¦¬ë¹„ìš© ê²€ìƒ‰
 	LONGLONG total_money = 0;
 	if (idx == 351)
 	{
-		// ¸¶½ºÅÍ Å¸¿ö
+		// ë§ˆìŠ¤í„° íƒ€ì›Œ
 		total_money = 10000000;
 	}
 	else
@@ -1422,19 +1425,19 @@ void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// µ·ºÎÁ· ¸Ş¼¼Áö Àü¼Û
+		// ëˆë¶€ì¡± ë©”ì„¸ì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_MONEY);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// Àû¿ë
+	// ì ìš©
 	pNpc->m_hp = pNpc->m_maxHP;
 	pNpc->m_mp = pNpc->m_maxMP;
 
 	{
-		// ÁÖº¯¿¡ Àü¼Û
+		// ì£¼ë³€ì— ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CharStatusMsg(rmsg, pNpc, 0);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -1449,11 +1452,11 @@ void do_ExCastleTowerRepaire(CPC * ch, CNetMsg::SP& msg)
 
 void do_ExCastleTowerRepaireList(CPC * ch, CNetMsg::SP& msg)
 {
-	// ¼ö¸® ºñ¿ë Àü¼Û
+	// ìˆ˜ë¦¬ ë¹„ìš© ì „ì†¡
 	int idx = 0;
 	RefMsg(msg) >> idx;
 
-	if (idx < 351 || idx > 381)	// ¸¶½ºÅÍ Å¸¿ö Æ÷ÇÔ
+	if (idx < 351 || idx > 381)	// ë§ˆìŠ¤í„° íƒ€ì›Œ í¬í•¨
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_DATA);
@@ -1461,7 +1464,7 @@ void do_ExCastleTowerRepaireList(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// npc¸®½ºÆ®¿¡¼­ °Ë»ö
+	// npcë¦¬ìŠ¤íŠ¸ì—ì„œ ê²€ìƒ‰
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (pCastle->CheckBuyTower(idx) == false)
 	{
@@ -1498,7 +1501,7 @@ void do_ExCastleTowerRepaireList(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ì¾Æ ÀÖ´ÂÁö °Ë»ö
+	// ì‚´ì•„ ìˆëŠ”ì§€ ê²€ìƒ‰
 	CNPC * pNpc = pArea->FindProtoNPCInCell(ch, idx, false, 9, true);
 	if (pNpc == NULL)
 	{
@@ -1516,11 +1519,11 @@ void do_ExCastleTowerRepaireList(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ö¸®ºñ¿ë °Ë»ö
+	// ìˆ˜ë¦¬ë¹„ìš© ê²€ìƒ‰
 	LONGLONG total_money = 0;
 	if (idx == 351)
 	{
-		// ¸¶½ºÅÍ Å¸¿ö
+		// ë§ˆìŠ¤í„° íƒ€ì›Œ
 		total_money = 10000000;
 	}
 	else
@@ -1542,7 +1545,7 @@ void do_ExCastleTowerWarpList(CPC * ch, CNetMsg::SP& msg)
 	int curindex = 0;
 	RefMsg(msg) >> curindex;
 
-	// ¿öÇÁÅ¸¿ö ¹øÈ£ È®ÀÎ
+	// ì›Œí”„íƒ€ì›Œ ë²ˆí˜¸ í™•ì¸
 	if (curindex < 382 || curindex > 386)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1552,7 +1555,7 @@ void do_ExCastleTowerWarpList(CPC * ch, CNetMsg::SP& msg)
 	}
 
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
-	// °¡µ¿ÁßÀÎ ¿öÇÁ Å¸¿ö È®ÀÎ
+	// ê°€ë™ì¤‘ì¸ ì›Œí”„ íƒ€ì›Œ í™•ì¸
 	unsigned char total = 0;
 	int aliveindex[5];
 	for(unsigned char i = 0; i < 5; i++)
@@ -1584,9 +1587,9 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> qindex;
 
-	// °ø¼ºÈ®ÀÎ
+	// ê³µì„±í™•ì¸
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
-	// ºÎÈ°ÁøÁö ¹øÈ£ È®ÀÎ
+	// ë¶€í™œì§„ì§€ ë²ˆí˜¸ í™•ì¸
 	if(qindex < 390 || qindex > 396)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1595,7 +1598,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ä³¸¯ÅÍÀÇ ±æµå È®ÀÎ
+	// ìºë¦­í„°ì˜ ê¸¸ë“œ í™•ì¸
 	CGuildMember * pMember = ch->m_guildInfo;
 	if (pMember == NULL)
 	{
@@ -1623,7 +1626,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °ø¼º±æµå È®ÀÎ
+	// ê³µì„±ê¸¸ë“œ í™•ì¸
 	if (ch->GetJoinFlag(ZONE_DRATAN) != WCJF_ATTACK_GUILD)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1632,7 +1635,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼±ÅÃÇÑ ºÎÈ°ÁøÁö »ì¾ÆÀÖ´ÂÁö È®ÀÎ
+	// ì„ íƒí•œ ë¶€í™œì§„ì§€ ì‚´ì•„ìˆëŠ”ì§€ í™•ì¸
 	int idx = qindex - 390;
 	if (pCastle->m_pRebrithNPC[idx] == NULL)
 	{
@@ -1650,7 +1653,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼±ÅÃÇÑ ºÎÈ° ÁøÁö »ç¿ëÁß È®ÀÎ
+	// ì„ íƒí•œ ë¶€í™œ ì§„ì§€ ì‚¬ìš©ì¤‘ í™•ì¸
 	if (pCastle->m_nRebrithGuild[idx] != -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1659,7 +1662,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ´Ù¸¥ ºÎÈ°ÁøÁö »ç¿ëÁß È®ÀÎ
+	// ë‹¤ë¥¸ ë¶€í™œì§„ì§€ ì‚¬ìš©ì¤‘ í™•ì¸
 	for(int i=0; i<7; i++)
 	{
 		if (pCastle->m_nRebrithGuild[i] == gindex)
@@ -1678,7 +1681,7 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 	if( ch->m_inventory.getMoney() < nNeedMoney[idx] )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_MONEY); 	// µ·ÀÌ ºÎÁ·ÇÕ´Ï´Ù. c
+		CastleErrorMsg(rmsg, MSG_EX_CASTLE_ERROR_NO_MONEY); 	// ëˆì´ ë¶€ì¡±í•©ë‹ˆë‹¤. c
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
@@ -1687,11 +1690,11 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 		ch->m_inventory.decreaseMoney(nNeedMoney[idx]);
 	}
 
-	// ¸÷ÀÇ ¸®½ºÆ® ÀÎµ¦½º
+	// ëª¹ì˜ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤
 	int list_index = 0;
 	list_index = pCastle->m_pRebrithNPC[idx]->m_index;
 
-	// ºÎÈ° ÁøÁö ¼³Ä¡
+	// ë¶€í™œ ì§„ì§€ ì„¤ì¹˜
 	pCastle->m_nRebrithGuild[idx] = gindex;
 	strncpy(pCastle->m_strRebrithGuild[idx], pGuild->name(), 51);
 
@@ -1702,13 +1705,13 @@ void do_ExCastleQuartersInstall(CPC * ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// 090106 yhj  ÇÔ¼ö ¼öÁ¤ÇÔ..¸Å°³º¯¼ö ÇÑ°³ Ãß°¡
+		// 090106 yhj  í•¨ìˆ˜ ìˆ˜ì •í•¨..ë§¤ê°œë³€ìˆ˜ í•œê°œ ì¶”ê°€
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleTowerRebrithInstallMsg(rmsg, qindex, gindex, pGuild->name(), list_index);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ºÎÈ° ÁøÁö »ç¿ë ·Î±×
+	// ë¶€í™œ ì§„ì§€ ì‚¬ìš© ë¡œê·¸
 	GAMELOG << init("WAR CASTLE : BUY QUARTERS") << delim << "QUARTER index" << delim << qindex
 			<< delim << "GUILD index" << delim << gindex << delim << "GUILD name" << delim << pGuild->name() << end;
 }
@@ -1718,7 +1721,7 @@ void do_DVD(CPC * ch, CNetMsg::SP& msg)
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (pCastle->m_dvd.GetZone() == 0)
 	{
-		// µå¶óÅº °ø¼º ´øÀü Áö¿ªÀÌ ¾øÀ»¶§
+		// ë“œë¼íƒ„ ê³µì„± ë˜ì „ ì§€ì—­ì´ ì—†ì„ë•Œ
 		return;
 	}
 
@@ -1777,7 +1780,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	//ÀÏ¹İ °ü¸® ¸Ş´º Ãß°¡
+	//ì¼ë°˜ ê´€ë¦¬ ë©”ë‰´ ì¶”ê°€
 	if( subType != MSG_MANAGEMENT_ENV_INFO 
 		&& subType != MSG_MANAGEMENT_STATE_INFO 
 		&& subType != MSG_MANAGEMENT_ENV_CHANGE 
@@ -1786,7 +1789,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 	{
 		if( ch->m_guildInfo == NULL)
 		{
-			// ERROR ±æµå ¾øÀ½
+			// ERROR ê¸¸ë“œ ì—†ìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			DVDManagementMsg( rmsg, MSG_MANAGEMENT_MANAGER_CONFIRM );
 			RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_CONFIRM;
@@ -1938,7 +1941,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 
 			if(	ch->m_inventory.getMoney() < needMoney)
 			{
-				// ERROR µ· ¾øÀ½
+				// ERROR ëˆ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				DVDManagementMsg( rmsg, MSG_MANAGEMENT_ENV_CHANGE );
 				RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_MONEY;
@@ -1953,14 +1956,14 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 			pCastle->m_dvd.ChangeEnvRate(nRate);
 
 			{
-				// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+				// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_ENV_CHANGE , pCastle->m_dvd.GetEnvRate(), pCastle->m_dvd.GetOwnerMode() );
 				SEND_Q(rmsg, gserver->m_helper);
 			}
 
 			{
-				// º¯°æ ¿Ï·á ¸Ş¼¼Áö
+				// ë³€ê²½ ì™„ë£Œ ë©”ì„¸ì§€
 				CNetMsg::SP rmsg(new CNetMsg);
 				DVDManagementMsg( rmsg, MSG_MANAGEMENT_ENV_CHANGE );
 				RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_OK;
@@ -1976,7 +1979,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 
 	case MSG_MANAGEMENT_STATE_CHANGE :
 		{
-			// µ·°Ë»ç 10%´ç 1000000
+			// ëˆê²€ì‚¬ 10%ë‹¹ 1000000
 			RefMsg(msg) >> nRate;
 			if (nRate <= 0)
 				return ;
@@ -2005,7 +2008,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 
 			if(	ch->m_inventory.getMoney() < needMoney)
 			{
-				// ERROR µ· ¾øÀ½
+				// ERROR ëˆ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				DVDManagementMsg( rmsg, MSG_MANAGEMENT_ENV_CHANGE );
 				RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_MONEY;
@@ -2018,7 +2021,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 			}
 
 			{
-				// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+				// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 				pCastle->m_dvd.ChangeMobRate(nRate);
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_STATE_CHANGE , pCastle->m_dvd.GetMobRate(), pCastle->m_dvd.GetOwnerMode() );
@@ -2047,7 +2050,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 			pCastle->m_dvd.ChangeFeeRate(nRate);
 
 			{
-				// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+				// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_TAX_CHANGE , pCastle->m_dvd.GetFeeRate(), pCastle->m_dvd.GetOwnerMode() );
 				SEND_Q(rmsg, gserver->m_helper);
@@ -2073,7 +2076,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 			pCastle->m_dvd.ChangeHuntRate(nRate);
 
 			{
-				// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+				// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_HUNTER_TAX_CHANGE , pCastle->m_dvd.GetHuntRate(), pCastle->m_dvd.GetOwnerMode() );
 				SEND_Q(rmsg, gserver->m_helper);
@@ -2161,7 +2164,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 
 			if(	ch->m_inventory.getMoney() < needNas)
 			{
-				// ERROR µ· ¾øÀ½
+				// ERROR ëˆ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				DVDManagementMsg( rmsg, MSG_NAMAGEMENT_CHANGE_OWNER_MODE );
 				RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_MONEY;
@@ -2185,7 +2188,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 		pCastle->m_dvd.setOwnerMode(true);
 		
 		{
-			// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+			// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 			pCastle->m_dvd.ChangeMobRate(100);
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_STATE_CHANGE , pCastle->m_dvd.GetMobRate(), pCastle->m_dvd.GetOwnerMode() );
@@ -2200,7 +2203,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+			// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 			pCastle->m_dvd.ChangeEnvRate(100);
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperDVDRateChangeMsg(rmsg, MSG_MANAGEMENT_ENV_CHANGE , pCastle->m_dvd.GetEnvRate(), pCastle->m_dvd.GetOwnerMode() );
@@ -2208,7 +2211,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// º¯°æ ¿Ï·á ¸Ş¼¼Áö
+			// ë³€ê²½ ì™„ë£Œ ë©”ì„¸ì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			DVDManagementMsg( rmsg, MSG_MANAGEMENT_ENV_CHANGE );
 			RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_OK;
@@ -2216,7 +2219,7 @@ void do_dvdManagement(CPC * ch, CNetMsg::SP& msg)
 		}
 
 		{
-			//¼ºÁÖ¸ğµå º¯°æ ¿Ï·á ¸Ş½ÃÁö
+			//ì„±ì£¼ëª¨ë“œ ë³€ê²½ ì™„ë£Œ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			DVDManagementMsg( rmsg, MSG_NAMAGEMENT_CHANGE_OWNER_MODE);
 			RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_OK;
@@ -2259,7 +2262,7 @@ void do_dvdDungenEnter( CPC *ch, CNetMsg::SP& msg )
 
 	if( ch->m_guildInfo != NULL )
 	{
-		// ¼ºÁÖ ±æµåÀÌ¸é 0¿ø
+		// ì„±ì£¼ ê¸¸ë“œì´ë©´ 0ì›
 		if( ch->m_guildInfo->guild()->index() == pCastle->GetOwnerGuildIndex() )
 		{
 			needMoney = 0;
@@ -2291,7 +2294,7 @@ void do_dvdDungenEnter( CPC *ch, CNetMsg::SP& msg )
 			{
 				if(	ch->m_inventory.getMoney() < needMoney)
 				{
-					// ERROR µ· ¾øÀ½
+					// ERROR ëˆ ì—†ìŒ
 					CNetMsg::SP rmsg(new CNetMsg);
 					DVDDungeonEnterMsg( rmsg, MSG_DUNGEON_GO );
 					RefMsg(rmsg) << (unsigned char) MSG_DVD_ERROR_MONEY;
@@ -2303,7 +2306,7 @@ void do_dvdDungenEnter( CPC *ch, CNetMsg::SP& msg )
 					ch->m_inventory.decreaseMoney(needMoney);
 				}
 
-				//¼¼±İ Áö±Ş
+				//ì„¸ê¸ˆ ì§€ê¸‰
 				LONGLONG nTax = needMoney - ( ch->m_level * 1000 );
 				if( nTax > 0 )
 					gserver->AddTaxItemDratan( needMoney - ( nTax ) );
@@ -2363,16 +2366,39 @@ void do_ClientRestart( CPC* ch, CNetMsg::SP& msg )
 	GAMELOG << init( "CLIENT_RESTART", ch ) << end;
 
 	{
-		// Å¬¶óÀÌ¾ğÆ®¿¡ restart MSG Àü¼Û
+		// í´ë¼ì´ì–¸íŠ¸ì— restart MSG ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeExRestart(rmsg, 0);
 		SEND_Q( rmsg, ch->m_desc );
 	}
 
-	//ÀÌº¸ÄÉÀÌ¼Ç »óÅÂ Ç®±â
+	//ì´ë³´ì¼€ì´ì…˜ ìƒíƒœ í’€ê¸°
 	if(ch->m_evocationIndex > EVOCATION_NONE)
 	{
 		ch->Unevocation();
+	}
+
+	if(ch->m_guildInfo != NULL && ch->m_guildInfo->guild())
+	{
+		CGuild* guild = ch->m_guildInfo->guild();
+		if(guild->boss()->GetPC() == ch)
+		{
+			GuildBattleManager::instance()->delete_banish(guild->index());
+			if( GuildBattleManager::instance()->cancel(guild->index()) == true)
+			{
+				guild->m_isUseTheStashAndSkill = true;
+
+				CNetMsg::SP rmsg(new CNetMsg);
+				ServerToServerPacket::makeGuildBattleStashLockOff(rmsg, guild->index());
+				SEND_Q(rmsg, gserver->m_helper);
+			}
+		}
+
+		if (guild->battleState() == GUILD_BATTLE_STATE_ING)
+		{
+			//ê¸¸ë“œì „ ì¢…ë£Œ ì²˜ë¦¬
+			GuildBattleManager::instance()->giveup(ch->m_index);
+		}
 	}
 
 	ch->m_desc->returnToCharacterSelectMode();
@@ -2469,7 +2495,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 		break;
 	}
 
-	// ÀÚ½Å ÁÖº¯¿¡¼­
+	// ìì‹  ì£¼ë³€ì—ì„œ
 	for (i = sx; i <= ex; i++)
 	{
 		if (i < 0 || i >= area->m_size[0])
@@ -2480,7 +2506,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 			if (j < 0 || j >= area->m_size[1])
 				continue ;
 
-			// NPC¸¦ Ã£±â
+			// NPCë¥¼ ì°¾ê¸°
 			p = area->m_cell[i][j].m_listChar;
 
 			while (p)
@@ -2490,7 +2516,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 					npc = TO_NPC(p);
 					if ((index != -1 && npc->m_idNum == index))
 					{
-						// °Å¸®¸¦ ºñ±³ÇØ¼­ °¡±î¿î ³ÑÀ¸·Î
+						// ê±°ë¦¬ë¥¼ ë¹„êµí•´ì„œ ê°€ê¹Œìš´ ë„˜ìœ¼ë¡œ
 						dist = GetDistance(ch, npc);
 						if (dist < retdist)
 						{
@@ -2506,7 +2532,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 
 	if (ret == NULL)
 	{
-		// ÇØ´ç ¸ó½ºÅÍ°¡ ÇÊµå¿¡ ¾øÀ»¶§ º¸³½´Ù.
+		// í•´ë‹¹ ëª¬ìŠ¤í„°ê°€ í•„ë“œì— ì—†ì„ë•Œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		NpcPortalListErrorMsg(rmsg, MSG_NPC_PORTAL_ERROR_MOB);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2516,7 +2542,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 	switch( msgType )
 	{
 	case MSG_NPC_PORTAL_GO:
-		// 10ÃÊÈÄ ÀÌµ¿ÇÏ°Ô ÇÏ±â
+		// 10ì´ˆí›„ ì´ë™í•˜ê²Œ í•˜ê¸°
 		ch->m_reqWarpType = IONCE_WARP_NPC_PORTAL_SCROLL;
 		ch->m_reqWarpData = -1;
 		ch->m_reqWarpTime = PULSE_WARPDELAY;
@@ -2527,7 +2553,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 		ch->m_Npc_Portal_y = GET_YLAYER(ret);
 
 		{
-			// »ç¿ëÇßÀ½À» ¾Ë¸®±â
+			// ì‚¬ìš©í–ˆìŒì„ ì•Œë¦¬ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			WarpStartMsg(rmsg, ch);
 			ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -2536,7 +2562,7 @@ void do_NpcportalScrollGoNPC(CPC* ch, int index, int msgType)
 		//GoTo(ch, GET_YLAYER(ret), GET_X(ret), GET_Z(ret)+1.0f, ch->m_pArea->GetHeight(GET_YLAYER(ret), GET_X(ret), GET_Z(ret)), GET_R(ch));
 
 		{
-			// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+			// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_GOZONE);
 			area->SendToCell(rmsg, ch, true);
@@ -2567,14 +2593,14 @@ void do_ExRaidInfo(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> subtype;
 
 	{
-		// ±Í¼ÓµÈ ·¹ÀÌµå Á¤º¸¸¦ °Ë»öÇÏ·¯ ÇïÆÛ·Î °£´Ù.
+		// ê·€ì†ëœ ë ˆì´ë“œ ì •ë³´ë¥¼ ê²€ìƒ‰í•˜ëŸ¬ í—¬í¼ë¡œ ê°„ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperRaidInfoMsg(rmsg, ch->m_index);
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 }
 
-// Äù½ºÆ® ¾ÆÀÌÅÛ ´Ù½Ã ¹Ş´Â ±â´É
+// í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ë‹¤ì‹œ ë°›ëŠ” ê¸°ëŠ¥
 void do_ExTakeAgainQuestItem(CPC* ch, CNetMsg::SP& msg)
 {
 	if (!ch || DEAD(ch))
@@ -2585,7 +2611,7 @@ void do_ExTakeAgainQuestItem(CPC* ch, CNetMsg::SP& msg)
 	msg->MoveFirst();
 	RefMsg(msg) >> subtype;
 
-	// ÀÎº¥Åä¸®¿¡ ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏ´Â Áö È®ÀÎ
+	// ì¸ë²¤í† ë¦¬ì— ì•„ì´í…œì´ ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸
 	if ( ch->m_inventory.FindByDBIndex(4659, 0, 0) )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2594,7 +2620,7 @@ void do_ExTakeAgainQuestItem(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÎº¥Åä¸® °¡´É °Ë»ç
+	// ì¸ë²¤í† ë¦¬ ê°€ëŠ¥ ê²€ì‚¬
 	else if ( ch->m_inventory.getEmptyCount() < 1 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2603,7 +2629,7 @@ void do_ExTakeAgainQuestItem(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Äù½ºÆ®°¡ ¿Ï·á°¡ ¾ÈµÇ¾î ÀÖÀ¸¸é ¾ÆÀÌÅÛ Áö±Ş ºÒ°¡
+	// í€˜ìŠ¤íŠ¸ê°€ ì™„ë£Œê°€ ì•ˆë˜ì–´ ìˆìœ¼ë©´ ì•„ì´í…œ ì§€ê¸‰ ë¶ˆê°€
 	bool questComplete = ch->m_questList.FindQuest(248, QUEST_STATE_DONE);
 	if(!questComplete)
 		return;
@@ -2620,133 +2646,10 @@ void do_ExTakeAgainQuestItem(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// ¼º°øÇß´Ù´Â ¸Ş¼¼Áö º¸³»±â
+		// ì„±ê³µí–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		TakeAgainQuestItemMsg(rmsg, MSG_EX_TAKE_AGAIN_QUEST_ITEM_SUCCESS);
 		SEND_Q(rmsg, ch->m_desc);
-	}
-}
-
-void do_ExTitleSytem(CPC* ch, CNetMsg::SP& msg)
-{
-	if(!ch || DEAD(ch))
-		return ;
-
-	int msgtype;
-	RefMsg(msg) >> msgtype;
-	switch(msgtype)
-	{
-	case MSG_EX_TITLE_SYSTEM_LIST_REQ:
-		do_ExTitleSystemListReq(ch);
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ:
-		do_ExTitleSystemTitleSelectReq(ch, msg);
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_REQ:
-		do_ExTitleSystemTitleCancelReq(ch, msg);
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_DELETE_REQ:
-		do_ExTitleSystemTitleDeleteReq(ch, msg);
-		break;
-	default:
-		break;
-	}
-}
-
-void do_ExTitleSystemListReq(CPC* ch)
-{
-	if( !ch )
-		return ;
-
-	if (ch->m_titleList.m_nCount == 0)
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSystemListRep(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_NO_LIST, ch->m_titleList.m_nCount);
-		SEND_Q(rmsg, ch->m_desc);
-	}
-	else
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		SubHelperTitleSystemCheckTimeReq(rmsg, ch->m_index, ch->m_titleList.m_head);
-		SEND_Q(rmsg, gserver->m_subHelper);
-	}
-}
-
-void do_ExTitleSystemTitleSelectReq(CPC* ch, CNetMsg::SP& msg)
-{
-	if(!ch)
-		return ;
-	int title_index;
-	RefMsg(msg) >> title_index;
-
-	if(!ch->m_titleList.HaveTitle(title_index))
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_NOT_HAVE_TITLE, title_index, ch->m_index);
-		SEND_Q(rmsg, ch->m_desc);
-		return ;
-	}
-	else
-	{
-		ch->m_nCurrentTitle = title_index;
-		ch->CalcStatus(true);
-
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_SELECT_SUCCESS, title_index, ch->m_index);
-			SEND_Q(rmsg, ch->m_desc);
-			ch->m_pArea->SendToCell(rmsg, ch);
-		}
-
-		GAMELOG << init("TITLE SELECT", ch) << delim
-				<< "TITLE INDEX" << delim << title_index << end;
-	}
-}
-
-void do_ExTitleSystemTitleCancelReq(CPC* ch, CNetMsg::SP& msg)
-{
-	if(!ch)
-		return ;
-	int title_index;
-	RefMsg(msg) >> title_index;
-
-	ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
-	ch->CalcStatus(true);
-
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_SUCCESS, title_index, ch->m_index);
-		SEND_Q(rmsg, ch->m_desc);
-		ch->m_pArea->SendToCell(rmsg, ch);
-	}
-
-	GAMELOG << init("TITLE CANCEL", ch) << delim
-			<< "TITLE INDEX" << delim << title_index << end;
-}
-
-void do_ExTitleSystemTitleDeleteReq(CPC* ch, CNetMsg::SP& msg)
-{
-	if(!ch)
-		return ;
-	int title_index;
-	RefMsg(msg) >> title_index;
-
-	if(!ch->m_titleList.HaveTitle(title_index))
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_NOT_HAVE_TITLE, title_index, ch->m_index);
-		SEND_Q(rmsg, ch->m_desc);
-	}
-	else
-	{
-		if(gserver->isRunSubHelper())
-		{
-			GAMELOG << init("TITLE DELETE REQ", ch) << delim
-					<< "TITLE INDEX" << delim << title_index << end;
-			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemDeleteReq(rmsg, ch->m_index, title_index);
-			SEND_Q(rmsg, gserver->m_subHelper);
-		}
 	}
 }
 
@@ -2800,9 +2703,9 @@ void do_ExLacaretteSystem(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_EX_LACARETTE_RESULT_REQ: // ¾ÆÀÌÅÛÀ» Áö±Ş ÇØÁÖÀå.
+	case MSG_EX_LACARETTE_RESULT_REQ: // ì•„ì´í…œì„ ì§€ê¸‰ í•´ì£¼ì¥.
 		{
-			// ¸ÕÀú DB¿¡ È½¼ö Áõ°¡ ½ÃÅ²´Ù.
+			// ë¨¼ì € DBì— íšŸìˆ˜ ì¦ê°€ ì‹œí‚¨ë‹¤.
 			int giveitemindex;
 			RefMsg(msg) >> giveitemindex;
 
@@ -2853,7 +2756,7 @@ void do_FuncAttendanceExp ( CPC* ch, CNetMsg::SP& msg )
 		break;
 	case MSG_SUB_ATTENDANCE_ASSURE_CANCEL_OK_REQ:
 		{
-			//Á¾·á ÇÏ°Ú´Ù.
+			//ì¢…ë£Œ í•˜ê² ë‹¤.
 			ch->m_attendanceManager.assureOk();
 		}
 		break;
@@ -3002,7 +2905,7 @@ void do_ExFaceOff(CPC* ch, CNetMsg::SP& msg)
 				CItem * pItem = NULL;
 
 #ifdef PREMIUM_CHAR
-				//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¿ÜÇü º¯°æ±Ç ¾ÆÀÌÅÛ ¾ø¾îµµ ¿ÜÇü º¯°æ °¡´É
+				//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ì™¸í˜• ë³€ê²½ê¶Œ ì•„ì´í…œ ì—†ì–´ë„ ì™¸í˜• ë³€ê²½ ê°€ëŠ¥
 				if (ch->m_premiumChar.isActive())
 				{
 					success_flag = true;
@@ -3013,7 +2916,7 @@ void do_ExFaceOff(CPC* ch, CNetMsg::SP& msg)
 				{
 					pItem = NULL;
 
-					static const int needItem[2] = {7055, 5969}; // ¼ºÇü Ä«µå
+					static const int needItem[2] = {7055, 5969}; // ì„±í˜• ì¹´ë“œ
 					for(int i = 0; i < 2; i++)
 					{
 						pItem = ch->m_inventory.FindByDBIndex(needItem[i], 0, 0);
@@ -3105,19 +3008,19 @@ void do_ExLCBall( CPC* ch, CNetMsg::SP& msg )
 
 	case MSG_EX_LCBALL_USE:
 		{
-			// ÀÎº¥°Ë»ç
-			if( ch->m_inventory.getEmptyCount() < 1 ) // ºó°ø°£ ¾øÀ½
+			// ì¸ë²¤ê²€ì‚¬
+			if( ch->m_inventory.getEmptyCount() < 1 ) // ë¹ˆê³µê°„ ì—†ìŒ
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				LCBallUseMsg( rmsg, 1, 0 );
 				SEND_Q(rmsg, ch->m_desc );
 				return;
 			}
-			// ÄÚÀÎ(ÅäÅ«)ÀÌ ÀÖ´ÂÁö
+			// ì½”ì¸(í† í°)ì´ ìˆëŠ”ì§€
 			if (ch->m_inventory.FindByDBIndex(coinIndex) == NULL)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				LCBallUseMsg( rmsg, 2 , coinIndex );	// ÄÚÀÎÀÌ ¾ø½À´Ï´Ù.
+				LCBallUseMsg( rmsg, 2 , coinIndex );	// ì½”ì¸ì´ ì—†ìŠµë‹ˆë‹¤.
 				SEND_Q(rmsg, ch->m_desc );
 				return ;
 			}
@@ -3146,11 +3049,11 @@ void do_ExMsgBox( CPC* ch, CNetMsg::SP& msg )
 			RefMsg(msg) >> selected;
 			ch->m_etcEvent &= ~ETC_EVENT_JUNO_RENEWAL_MESSAGEBOX_POPUP;
 
-			if(selected)		// È®ÀÎ
+			if(selected)		// í™•ì¸
 			{
 				if(ch->m_etcEvent & ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE)
 				{
-					// ³óÀåÀ¸·Î ÀÌµ¿
+					// ë†ì¥ìœ¼ë¡œ ì´ë™
 					CZone* pZone = gserver->FindZone(ZONE_START);
 					if (pZone == NULL)
 						return;
@@ -3183,7 +3086,7 @@ void do_ExRoyalRumble(CPC* ch, CNetMsg::SP& msg)
 	{
 	case MSG_EX_ROYAL_RUMBLE_PLAYER_REQ:
 		{
-			// ¼±¼öµî·Ï
+			// ì„ ìˆ˜ë“±ë¡
 			do_ExRoyalRumblePlayerReq(ch, msg);
 		}
 		break;
@@ -3225,19 +3128,19 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 	if(ch->m_level >= MIN_ROOKIE_LEVEL && ch->m_level <= MAX_ROOKIE_LEVEL)
 	{
 		leveltype = LEVEL_TYPE_ROOKIE;
-		neednas = ROOKIE_REGIST_NEED_PRICE;		// ¹é¸¸
+		neednas = ROOKIE_REGIST_NEED_PRICE;		// ë°±ë§Œ
 		finditem = ROOKIE_REGIST_ITEM;
 	}
 	else if(ch->m_level >= MIN_SENIOR_LEVEL && ch->m_level <= MAX_SENIOR_LEVEL)
 	{
 		leveltype = LEVEL_TYPE_SENIOR;
-		neednas = SENIOR_REGIST_NEED_PRICE;		// Ãµ¸¸
+		neednas = SENIOR_REGIST_NEED_PRICE;		// ì²œë§Œ
 		finditem = SENIOR_REGIST_ITEM;
 	}
 	else if(ch->m_level >= MIN_MASTER_LEVEL)
 	{
 		leveltype = LEVEL_TYPE_MASTER;
-		neednas = MASTER_REGIST_NEED_PRICE;	// ÀÏ¾ï
+		neednas = MASTER_REGIST_NEED_PRICE;	// ì¼ì–µ
 		finditem = MASTER_REGIST_ITEM;
 	}
 	else
@@ -3251,7 +3154,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛÀ» Ã£¾Æ¼­ ÀÖÀ¸¸é µ·°Ë»ç¿Í ÀÎº¥ °ø°£ °Ë»ç¸¦ ¾ÈÇÑ´Ù.
+	// ì•„ì´í…œì„ ì°¾ì•„ì„œ ìˆìœ¼ë©´ ëˆê²€ì‚¬ì™€ ì¸ë²¤ ê³µê°„ ê²€ì‚¬ë¥¼ ì•ˆí•œë‹¤.
 	if(ch->m_inventory.FindByDBIndex(finditem, 0, 0))
 	{
 		bInspection = false;
@@ -3259,14 +3162,14 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(bInspection && (ch->m_inventory.getMoney() < neednas))
 	{
-		// µ·ÀÌ ¾ø½À´Ï´Ù.
+		// ëˆì´ ì—†ìŠµë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleRegist(rmsg, 1);
 		SEND_Q(rmsg, ch->m_desc);
 		GAMELOG << init("ROYAL RUMBLE REGIST", ch) << "NO MONEY" << end;
 		return ;
 	}
-	if(bInspection && ch->m_inventory.getEmptyCount() < 1) // ÀÎº¥Åä¸®°¡ °¡µæ Â÷ ÀÖÀ¸¸é...
+	if(bInspection && ch->m_inventory.getEmptyCount() < 1) // ì¸ë²¤í† ë¦¬ê°€ ê°€ë“ ì°¨ ìˆìœ¼ë©´...
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysFullInventoryMsg(rmsg, 0);
@@ -3288,7 +3191,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(b)
 	{
-		// ÇöÀç leveltype¿¡¼­ °æ±âÁßÀÌ´Ï±î ½ÅÃ»ÀÌ ¾ÈµÊ.
+		// í˜„ì¬ leveltypeì—ì„œ ê²½ê¸°ì¤‘ì´ë‹ˆê¹Œ ì‹ ì²­ì´ ì•ˆë¨.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleRegist(rmsg, 2);
 		SEND_Q(rmsg, ch->m_desc);
@@ -3296,7 +3199,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÀÌ¹Ì½ÅÃ» ÇÏ¼Ì½À´Ï´Ù.
+	// ì´ë¯¸ì‹ ì²­ í•˜ì…¨ìŠµë‹ˆë‹¤.
 	if(gserver->m_RoyalRumble.m_WGPlayerList.FindNode(ch->m_index))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3317,7 +3220,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(bInspection)
 	{
-		// ¾ÆÀÌÅÛÀ» ³Ö¾îÁØ´Ù.
+		// ì•„ì´í…œì„ ë„£ì–´ì¤€ë‹¤.
 		CItem* pItem = gserver->m_itemProtoList.CreateItem(finditem, -1, 0, 0, 1);
 		if(pItem == NULL)
 			return ;
@@ -3326,7 +3229,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 		{
 			delete pItem;
 
-			// ÀÎº¥ÀÌ °¡µæÂ÷¼­ ¾ÆÀÌÅÛ ½Àµæ ºÒ°¡.
+			// ì¸ë²¤ì´ ê°€ë“ì°¨ì„œ ì•„ì´í…œ ìŠµë“ ë¶ˆê°€.
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysFullInventoryMsg(rmsg, 0);
 			SEND_Q(rmsg, ch->m_desc);
@@ -3334,7 +3237,7 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// ½ÅÃ»ºñ ¹Ş´Â ±¸°£ ½ÃÀÛ
+			// ì‹ ì²­ë¹„ ë°›ëŠ” êµ¬ê°„ ì‹œì‘
 			if(ch->m_inventory.getMoney() >= neednas)
 			{
 				ch->m_inventory.decreaseMoney(neednas);
@@ -3345,12 +3248,12 @@ void do_ExRoyalRumblePlayerReq(CPC* ch, CNetMsg::SP& msg)
 				SysMsg(rmsg, MSG_SYS_NOT_ENOUGH_MONEY);
 				SEND_Q(rmsg, ch->m_desc);
 			}
-			// ½ÅÃ»ºñ ¹Ş´Â ±¸°£ ³¡
+			// ì‹ ì²­ë¹„ ë°›ëŠ” êµ¬ê°„ ë
 		}
 	}
 
 	{
-		// µî·ÏÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.
+		// ë“±ë¡ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleRegist(rmsg, 0);
 		GAMELOG << init("ROYAL RUMBLE REGIST", ch) << "COMPLETE REGIST" << end;
@@ -3383,20 +3286,20 @@ void do_ExRoyalRumblePlayerUnRegReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 #endif
-	// Ãë¼Ò ½Ã°£ÀÎ°¡?
+	// ì·¨ì†Œ ì‹œê°„ì¸ê°€?
 	if(!gserver->m_RoyalRumble.GetRoyalRumbleNotice())
 	{
-		//Ãë¼ÒÇÒ ¼ö ÀÖ´Â ½Ã°£ÀÌ ¾Æ´Õ´Ï´Ù.
+		//ì·¨ì†Œí•  ìˆ˜ ìˆëŠ” ì‹œê°„ì´ ì•„ë‹™ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleUnRegist(rmsg, 1);
 		SEND_Q(rmsg, ch->m_desc);
 		GAMELOG << init("ROYAL RUMBLE UNREGIST", ch) << "CANNOT THIS TIME UNREGIST" << end;
 		return ;
 	}
-	// µî·ÏÀÚ ¸í´Ü¿¡ ÀÖ³ª?
+	// ë“±ë¡ì ëª…ë‹¨ì— ìˆë‚˜?
 	if(!gserver->m_RoyalRumble.m_WGPlayerList.FindNode(ch->m_index))
 	{
-		//µî·ÏÀÚ ¸í´Ü¿¡ ¾ø½À´Ï´Ù.
+		//ë“±ë¡ì ëª…ë‹¨ì— ì—†ìŠµë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleUnRegist(rmsg, 2);
 		SEND_Q(rmsg, ch->m_desc);
@@ -3407,7 +3310,7 @@ void do_ExRoyalRumblePlayerUnRegReq(CPC* ch, CNetMsg::SP& msg)
 	gserver->m_RoyalRumble.m_WGPlayerList.DelNode(ch->m_index);
 
 	{
-		// Ãë¼Ò°¡ ¿Ï·áµÇ¾ú½À´Ï´Ù.
+		// ì·¨ì†Œê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleUnRegist(rmsg, 0);
 		GAMELOG << init("ROYAL RUMBLE UNREGIST", ch) << "COMPLETE UNREGIST" << end;
@@ -3426,7 +3329,7 @@ void do_ExRoyalRumblePlayerUnRegReq(CPC* ch, CNetMsg::SP& msg)
 }
 void do_ExRoyalRumbleRewardReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// º¸»ó¿äÃ»
+	// ë³´ìƒìš”ì²­
 	if(!ch)
 		return ;
 #ifdef NPC_CHECK
@@ -3451,14 +3354,14 @@ void do_ExRoyalRumbleRewardReq(CPC* ch, CNetMsg::SP& msg)
 	{
 		if(gserver->m_RoyalRumble.GetRewarded(LEVEL_TYPE_ROOKIE))
 		{
-			// ÀÌ¹Ì ¹Ş¾Ò½À´Ï´Ù.
+			// ì´ë¯¸ ë°›ì•˜ìŠµë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleReward(rmsg, 1);
 			SEND_Q(rmsg, ch->m_desc);
 			GAMELOG << init("ROYAL RUMBLE REWARD", ch) << "ALREADY REWARD" << end;
 			return ;
 		}
-		// TODO: ¼öÁ¤ÇÊ¿ä
+		// TODO: ìˆ˜ì •í•„ìš”
 		nReward = 5974;
 		LevelType = LEVEL_TYPE_ROOKIE;
 	}
@@ -3466,14 +3369,14 @@ void do_ExRoyalRumbleRewardReq(CPC* ch, CNetMsg::SP& msg)
 	{
 		if(gserver->m_RoyalRumble.GetRewarded(LEVEL_TYPE_SENIOR))
 		{
-			// ÀÌ¹Ì ¹Ş¾Ò½À´Ï´Ù.
+			// ì´ë¯¸ ë°›ì•˜ìŠµë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleReward(rmsg, 1);
 			SEND_Q(rmsg, ch->m_desc);
 			GAMELOG << init("ROYAL RUMBLE REWARD", ch) << "ALREADY REWARD" << end;
 			return ;
 		}
-		// TODO: ¼öÁ¤ÇÊ¿ä
+		// TODO: ìˆ˜ì •í•„ìš”
 		nReward = 6997;
 		LevelType = LEVEL_TYPE_SENIOR;
 	}
@@ -3481,20 +3384,20 @@ void do_ExRoyalRumbleRewardReq(CPC* ch, CNetMsg::SP& msg)
 	{
 		if(gserver->m_RoyalRumble.GetRewarded(LEVEL_TYPE_MASTER))
 		{
-			// ÀÌ¹Ì ¹Ş¾Ò½À´Ï´Ù.
+			// ì´ë¯¸ ë°›ì•˜ìŠµë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleReward(rmsg, 1);
 			SEND_Q(rmsg, ch->m_desc);
 			GAMELOG << init("ROYAL RUMBLE REWARD", ch) << "ALREADY REWARD" << end;
 			return ;
 		}
-		// TODO: ¼öÁ¤ÇÊ¿ä
+		// TODO: ìˆ˜ì •í•„ìš”
 		nReward = 6998;
 		LevelType = LEVEL_TYPE_MASTER;
 	}
 	else
 	{
-		// ¿ì½ÂÀÚ ¾Æ´Ô
+		// ìš°ìŠ¹ì ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleReward(rmsg, 0);
 		SEND_Q(rmsg, ch->m_desc);
@@ -3502,7 +3405,7 @@ void do_ExRoyalRumbleRewardReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3604,8 +3507,8 @@ void do_ExRoyalRumbleTimeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 		if(nexttime == -1)
 			nexttime = gserver->m_RoyalRumble.m_RoyalRumbleTime[0];
-		// m_RoyalRumbleTime ¿¡¼­ ½Ã°£ °ü¸®¸¦ ÇÏ´Ù°¡ 22½Ã·Î °íÁ¤µÇ¾î ½ÃÀÛ½Ã°£Àº »ó¼öÃ³¸®
-		// ±×·¡¼­ ´ÙÀ½ ½Ã°£Àº ¹«Á¶°Ç 22½Ã·Î º¸³¿. ÃßÈÄ º¯°æÀÌ ÇÊ¿äÇÒ ¶§ ¼öÁ¤ÀÌ ÇÊ¿äÇÔ.
+		// m_RoyalRumbleTime ì—ì„œ ì‹œê°„ ê´€ë¦¬ë¥¼ í•˜ë‹¤ê°€ 22ì‹œë¡œ ê³ ì •ë˜ì–´ ì‹œì‘ì‹œê°„ì€ ìƒìˆ˜ì²˜ë¦¬
+		// ê·¸ë˜ì„œ ë‹¤ìŒ ì‹œê°„ì€ ë¬´ì¡°ê±´ 22ì‹œë¡œ ë³´ëƒ„. ì¶”í›„ ë³€ê²½ì´ í•„ìš”í•  ë•Œ ìˆ˜ì •ì´ í•„ìš”í•¨.
 		nexttime = gserver->m_RoyalRumble.getStartHour();
 
 		{
@@ -3620,12 +3523,12 @@ void do_ExRoyalRumbleGoZone(CPC* ch, CNetMsg::SP& msg)
 {
 	int finditem;
 	int r, c;
-	// Å¬¶óÀÌ¾ğÆ®¿¡¼­ °íÁ¸À» º¸³»¿Ô´Ù.
-	// ±×·¯¸é ¼­¹ö´Â ¾ÆÀÌÅÛ Ã¼Å© ÇÏ°í..¾ÆÀÌÅÛÀ» ¾ø¾Ö°í..°íÁ¸À» ÇØÁØ´Ù......
+	// í´ë¼ì´ì–¸íŠ¸ì—ì„œ ê³ ì¡´ì„ ë³´ë‚´ì™”ë‹¤.
+	// ê·¸ëŸ¬ë©´ ì„œë²„ëŠ” ì•„ì´í…œ ì²´í¬ í•˜ê³ ..ì•„ì´í…œì„ ì—†ì• ê³ ..ê³ ì¡´ì„ í•´ì¤€ë‹¤......
 	CWaitPlayer* wp = gserver->m_RoyalRumble.m_WaitPlayerList.GetNode(ch->m_index);
 	if(wp == NULL)
 	{
-		// ½ÅÃ»ÀÚ ¸ñ·Ï¿¡ ¾ø´Ù.
+		// ì‹ ì²­ì ëª©ë¡ì— ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleNotfoundItem(rmsg);
 		SEND_Q(rmsg, ch->m_desc);
@@ -3659,17 +3562,17 @@ void do_ExRoyalRumbleGoZone(CPC* ch, CNetMsg::SP& msg)
 	CItem* pItem = ch->m_inventory.FindByDBIndex(finditem, 0, 0);
 	if (pItem)
 	{
-		// ¾ÆÀÌÅÛÀ» Ã£¾ÒÀ¸´Ï »°ÀÚ.
+		// ì•„ì´í…œì„ ì°¾ì•˜ìœ¼ë‹ˆ ëºì.
 		ch->m_inventory.decreaseItemCount(pItem, 1);
 
-		// »èÁ¦¸¦ ÇØÁÖ¾úÀ¸´Ï °íÁ¸À» ½ÃÄÑÁØ´Ù.
+		// ì‚­ì œë¥¼ í•´ì£¼ì—ˆìœ¼ë‹ˆ ê³ ì¡´ì„ ì‹œì¼œì¤€ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RequestClient::makeGoZone(rmsg, ZONE_ROYAL_RUMBLE, 0, -1);
 		do_GoZone(ch, rmsg);
 	}
 	else
 	{
-		// ¾ÆÀÌÅÛÀÌ ¾øÀ¸´Ï ÀÌµ¿À» ¸øÇÑ´Ù.
+		// ì•„ì´í…œì´ ì—†ìœ¼ë‹ˆ ì´ë™ì„ ëª»í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		RoyalRumbleNotfoundItem(rmsg);
 		SEND_Q(rmsg, ch->m_desc);
@@ -3722,9 +3625,9 @@ void do_ExTreasureMapKeyExchange(CPC* ch, CNetMsg::SP& msg)
 	if( !ch )
 		return;
 
-	// ³ª¹«»óÀÚ ¿­¼è°¡ 100°³ ÀÖ´ÂÁö Ã¼Å©ÇÏÀÚ
+	// ë‚˜ë¬´ìƒì ì—´ì‡ ê°€ 100ê°œ ìˆëŠ”ì§€ ì²´í¬í•˜ì
 
-	// ÀÎº¥ ÀÚ¸®¸¦ È®ÀÎÇÏÀÚ.
+	// ì¸ë²¤ ìë¦¬ë¥¼ í™•ì¸í•˜ì.
 	if( ch->m_inventory.getEmptyCount() < 1 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3743,7 +3646,7 @@ void do_ExTreasureMapKeyExchange(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °³¼öÈ®ÀÎ
+	// ê°œìˆ˜í™•ì¸
 	int deleteCnt = 1000;
 	if (sc < deleteCnt)
 	{
@@ -3753,7 +3656,7 @@ void do_ExTreasureMapKeyExchange(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Áö±ŞÇÒ ¾ÆÀÌÅÛÀ» »ı¼ºÇÏÀÚ.
+	// ì§€ê¸‰í•  ì•„ì´í…œì„ ìƒì„±í•˜ì.
 	CItem * pAddItem = gserver->m_itemProtoList.CreateItem(TREASURE_KEY_ITEM_INDEX+1, -1, 0, 0, 1);
 	if (pAddItem == NULL)
 	{
@@ -3763,7 +3666,7 @@ void do_ExTreasureMapKeyExchange(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛÀ» ³Ö¾îÁÖÀÚ.
+	// ì•„ì´í…œì„ ë„£ì–´ì£¼ì.
 	if (ch->m_inventory.addItem(pAddItem))
 	{
 		ch->m_inventory.deleteItem(vec, deleteCnt);
@@ -3780,7 +3683,7 @@ void do_ExTreasureMapKeyExchange(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// ¼º°ø Çß´Ù ¼º°ø ¸Ş½ÃÁö¸¦ º¸³»ÁÖÀÚ.
+		// ì„±ê³µ í–ˆë‹¤ ì„±ê³µ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ì£¼ì.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgTreaserMapKeyExchangeError(rmsg, MSG_EX_TRS_MAP_KEY_EXCHANGE_ERROR_SUC);
 		SEND_Q(rmsg, ch->m_desc );
@@ -3823,7 +3726,7 @@ void do_rankingSystem(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ÆĞ³ÎÆ¼ ¸®Æû :: Å¬¶ó°¡ Áö±Ş ¿äÃ» Çß´Ù.
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼ :: í´ë¼ê°€ ì§€ê¸‰ ìš”ì²­ í–ˆë‹¤.
 void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 {
 	unsigned char subType;
@@ -3835,7 +3738,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 	if( subType != MSG_EX_PKPENALTY_REFORM_REWARD_REQ )
 		return;
 
-	// Å¬¶ó°¡ ¿äÃ»ÇÑ º¸»óÀÌ Á¤´çÇÑÁö °Ë»ç.
+	// í´ë¼ê°€ ìš”ì²­í•œ ë³´ìƒì´ ì •ë‹¹í•œì§€ ê²€ì‚¬.
 	if( ch->GetPKPenaltyRewardNum() != rewardNum )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3844,7 +3747,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Å¸ÀÌÆ² °³¼ö Á¦ÇÑ È®ÀÎ
+	// íƒ€ì´í‹€ ê°œìˆ˜ ì œí•œ í™•ì¸
 	if(ch->m_titleList.m_nCount >= MAX_TITLE_COUNT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3853,11 +3756,11 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// º¸»ó Å¸ÀÌÆ² ÀÎµ¦½º ±¸ÇÏÀÚ
+	// ë³´ìƒ íƒ€ì´í‹€ ì¸ë±ìŠ¤ êµ¬í•˜ì
 	int titleIndex = -1;
 	titleIndex = 85 + rewardNum;
 
-	// ÀÌ¹Ì º¸»óÀ» ¹Ş¾Ò³ª È®ÀÎ
+	// ì´ë¯¸ ë³´ìƒì„ ë°›ì•˜ë‚˜ í™•ì¸
 	if( ch->CheckPKPenaltyReward(rewardNum) || ch->m_titleList.Find(titleIndex) != NULL )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3866,7 +3769,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Å¸ÀÌÆ²dl Áö±Ş °¡´ÉÇÑÁö È®ÀÎ
+	// íƒ€ì´í‹€dl ì§€ê¸‰ ê°€ëŠ¥í•œì§€ í™•ì¸
 	CTitleProto * titleProto = gserver->m_titleProtoList.FindProto(titleIndex);
 	if( !titleProto )
 	{
@@ -3876,7 +3779,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// DB ±â·ÏÀ» À§ÇØ¼­...
+	// DB ê¸°ë¡ì„ ìœ„í•´ì„œ...
 	if( gserver->isRunSubHelper() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3886,7 +3789,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// subhelper°¡ ±¸µ¿ ¾ÊµÇ¾úÀ¸´Ï ¿¡·¯¸¦ º¸³½´Ù.
+		// subhelperê°€ êµ¬ë™ ì•Šë˜ì—ˆìœ¼ë‹ˆ ì—ëŸ¬ë¥¼ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgPKPenaltyRewardRep(rmsg, rewardNum, MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_FAIL );
 		SEND_Q(rmsg, ch->m_desc);
@@ -3894,7 +3797,7 @@ void do_ExPKPeneltyReform(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK ÆĞ³ÎÆ¼ ¸®Æû
+#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼
 
 #ifdef NOTICE_SYSTEM
 void do_UserNotice(CPC* ch, CNetMsg::SP& msg)
@@ -3917,7 +3820,7 @@ void do_UserNotice(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// TODO :: ¾ÆÀÌÅÛ °¡Áö°í ÀÖ´ÂÁö °Ë»ö
+			// TODO :: ì•„ì´í…œ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ìƒ‰
 			const int _noticeItem = 7736;
 			CItem* _item = ch->m_inventory.FindByDBIndex(_noticeItem, 0, 0);
 			if (_item)

@@ -91,7 +91,7 @@ void CDungeon::ChangeSetting()
 		return;
 	}
 
-	int nMobRate[10][4] =  	// °ø°İ·Â, ¹æ¾î·Â, ÃÖ´ëÃ¼·Â, ½Ã¾ß¹üÀ§
+	int nMobRate[10][4] =  	// ê³µê²©ë ¥, ë°©ì–´ë ¥, ìµœëŒ€ì²´ë ¥, ì‹œì•¼ë²”ìœ„
 	{
 		{20, 20, 30, 0},
 		{10, 10, 15, 0},
@@ -105,7 +105,7 @@ void CDungeon::ChangeSetting()
 		{-25, -25, -25, -80},
 	};
 
-	// ¸÷ Àû¿ë
+	// ëª¹ ì ìš©
 	CNPC * npc = m_pZone->m_area->m_npcList;
 
 	while(npc != 0)
@@ -116,7 +116,7 @@ void CDungeon::ChangeSetting()
 			midx = 9;
 		}
 
-		// °ø°İ·Â Àû¿ë
+		// ê³µê²©ë ¥ ì ìš©
 		if(npc->m_attackType == MSG_DAMAGE_MELEE)
 		{
 			npc->m_eqMelee = npc->m_proto->m_attack + npc->m_proto->m_attack * nMobRate[midx][0] / 100;
@@ -142,17 +142,17 @@ void CDungeon::ChangeSetting()
 			}
 		}
 
-		// ¹æ¾î·Â Àû¿ë
+		// ë°©ì–´ë ¥ ì ìš©
 		npc->m_eqDefense = npc->m_proto->m_defense + npc->m_proto->m_defense * nMobRate[midx][1] / 100;
 
-		// ÃÖ´ë Ã¼·Â Àû¿ë
+		// ìµœëŒ€ ì²´ë ¥ ì ìš©
 		npc->m_maxHP = npc->m_proto->m_hp + npc->m_proto->m_hp * nMobRate[midx][2] / 100;
 		if(npc->m_maxHP < 0)
 		{
 			npc->m_maxHP = 1;
 		}
 
-		// ½Ã¾ß °Å¸® Àû¿ë
+		// ì‹œì•¼ ê±°ë¦¬ ì ìš©
 		if(nMobRate[midx][3] != 0 && npc->m_attackRange != 0)
 		{
 			npc->m_attackRange = npc->m_proto->m_attackArea + npc->m_proto->m_attackArea * nMobRate[midx][3] / 100;
@@ -178,7 +178,7 @@ void CDungeon::setOwnerMode( bool ownerMode )
 	{
 		setChangeNormalTime(gserver->getNowSecond());
 
-		//ÇïÆÛ·Î º¯°æ ½Ã°£ ¾÷µ¥ÀÌÆ®
+		//í—¬í¼ë¡œ ë³€ê²½ ì‹œê°„ ì—…ë°ì´íŠ¸
 		if(gserver->m_helper->isRun())
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -432,7 +432,7 @@ void CDratanCastle::SetNextWarTime(int nextWarTime)
 	time_t curtime;
 	time(&curtime);
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ÀÌ ÇöÀç ½Ã°£ÀÌÈÄÀÌ¸é ±×´ë·Î Àû¿ë
+	// ê³µì„± ì‹œì‘ ì‹œê°„ì´ í˜„ì¬ ì‹œê°„ì´í›„ì´ë©´ ê·¸ëŒ€ë¡œ ì ìš©
 	if (GetState() == WCSF_NORMAL && nextWarTime != 0)
 	{
 		if (nextWarTime > curtime)
@@ -449,23 +449,23 @@ void CDratanCastle::SetNextWarTime(int nextWarTime)
 		}
 	}
 
-	// °ø¼º ½Ã°£À» ±âº» °ªÀ¸·Î ¼³Á¤
-	// ÇöÀç ¿äÀÏÀ» ±¸ÇÔ
+	// ê³µì„± ì‹œê°„ì„ ê¸°ë³¸ ê°’ìœ¼ë¡œ ì„¤ì •
+	// í˜„ì¬ ìš”ì¼ì„ êµ¬í•¨
 	struct tm curtm = NOW();
 
 #if defined (LC_KOR) || defined(LC_BILA) || defined (LC_GAMIGO)
-	// ´ÙÀ½ ÀÏ¿äÀÏÀ» ±¸ÇÔ
+	// ë‹¤ìŒ ì¼ìš”ì¼ì„ êµ¬í•¨
 	int next = 7 - curtm.tm_wday;
 	if (next < 7)
 		next += 7;
 #else
-	// ´ÙÀ½ Åä¿äÀÏÀ» ±¸ÇÔ
+	// ë‹¤ìŒ í† ìš”ì¼ì„ êµ¬í•¨
 	int next = 6 - curtm.tm_wday;
 	if (next <= 0)
 		next += 7;
 #endif
 
-	// ´ÙÀ½ Åä¿äÀÏ 20½Ã¿¡ ÇØ´çÇÏ´Â time_t °ªÀ» ±¸ÇÔ
+	// ë‹¤ìŒ í† ìš”ì¼ 20ì‹œì— í•´ë‹¹í•˜ëŠ” time_t ê°’ì„ êµ¬í•¨
 	struct tm nexttm = curtm;
 
 	nexttm.tm_hour = 20;
@@ -475,7 +475,7 @@ void CDratanCastle::SetNextWarTime(int nextWarTime)
 	nexttm.tm_isdst = -1;
 	time_t nexttime = mktime(&nexttm);
 
-	// ÇöÀç ½Ã°£º¸´Ù ÀÛÀ¸¸é ´ÙÀ½ÁÖ·Î
+	// í˜„ì¬ ì‹œê°„ë³´ë‹¤ ì‘ìœ¼ë©´ ë‹¤ìŒì£¼ë¡œ
 	if (nexttime < curtime)
 	{
 		nexttm.tm_mday += 7;
@@ -503,7 +503,7 @@ bool CDratanCastle::IsJoinTime()
 	tmJoinTime.tm_isdst = -1;
 	time_t jointime = mktime(&tmJoinTime);
 
-	// ¸¶Áö¸· °ø¼º½Ã°£°ú ºñ±³
+	// ë§ˆì§€ë§‰ ê³µì„±ì‹œê°„ê³¼ ë¹„êµ
 	time_t curtime;
 	time(&curtime);
 	if (m_lastWarTime < curtime && curtime < jointime)
@@ -514,18 +514,18 @@ bool CDratanCastle::IsJoinTime()
 
 void CDratanCastle::GetJoinTime(struct tm* joinTime, bool bHumanable)
 {
-	// ´ÙÀ½ °ø¼ºÀ» ±¸ÇÏ°í
+	// ë‹¤ìŒ ê³µì„±ì„ êµ¬í•˜ê³ 
 	struct tm tmNext;
 	GetNextWarTime(&tmNext, false);
 
-	// ¿ù¿äÀÏ ±¸ÇÏ±â
+	// ì›”ìš”ì¼ êµ¬í•˜ê¸°
 	int nDay = tmNext.tm_wday;
 	if (nDay == 0)
 		nDay = 7;
 	nDay -= 1;
 
-	// ´ÙÀ½ °ø¼º¿¡¼­ nDayÀÏÀ» »©°í
-	// ±× ³¯ 20½Ã·Î ¼³Á¤ : 7½Ã
+	// ë‹¤ìŒ ê³µì„±ì—ì„œ nDayì¼ì„ ë¹¼ê³ 
+	// ê·¸ ë‚  20ì‹œë¡œ ì„¤ì • : 7ì‹œ
 	tmNext.tm_hour = 20;
 	tmNext.tm_min = 0;
 	tmNext.tm_sec = 0;
@@ -604,13 +604,13 @@ void CDratanCastle::SetGateNPC(CNPC* npc)
 		{
 		case 388:
 			m_gateNPC[0] = npc;
-			return;		// ¿Ü¼º¹®
+			return;		// ì™¸ì„±ë¬¸
 		case 389:
 			m_gateNPC[1] = npc;
-			return;		// ³»¼º¹® 1
+			return;		// ë‚´ì„±ë¬¸ 1
 		case 404:
 			m_gateNPC[2] = npc;
-			return;		// ³»¼º¹® 2
+			return;		// ë‚´ì„±ë¬¸ 2
 		case 1625:
 			m_gateNPC[3] = npc;
 			return;
@@ -665,19 +665,19 @@ void CDratanCastle::UpdateGateState(CNPC* npc)
 
 bool CDratanCastle::IsOpenGate()
 {
-	// ¿Ü¼º¹®
+	// ì™¸ì„±ë¬¸
 	int outer1 = (1 << 6);
 
-	// ³»¼º¹® 1
+	// ë‚´ì„±ë¬¸ 1
 	int inner1 = (1 << 7);
 
-	// ³»¼º¹® 2
+	// ë‚´ì„±ë¬¸ 2
 	int inner2 = (1 << 8);
 
-	// ¿Ü¼º¹®2
+	// ì™¸ì„±ë¬¸2
 	int outer2 = (1 << 9);
 	
-	// ¿Ü¼º¹®3
+	// ì™¸ì„±ë¬¸3
 	int outer3 = (1 << 10);
 
 	if (GetGateState(outer1) == outer1)
@@ -704,8 +704,8 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 	int maxHour = -1;
 	switch (wday)
 	{
-	case 0:		// ÀÏ¿äÀÏ : 13 ~ 23
-#ifdef LC_USA	// ¹Ì±¹ : 11 ~ 20
+	case 0:		// ì¼ìš”ì¼ : 13 ~ 23
+#ifdef LC_USA	// ë¯¸êµ­ : 11 ~ 20
 		minHour = 11;
 		maxHour = 20;
 #else
@@ -718,8 +718,8 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 #endif // LC_USA
 		break;
 
-	case 6:		// Åä¿äÀÏ : 18 ~ 23
-#ifdef LC_USA	// ¹Ì±¹ : 11 ~ 23
+	case 6:		// í† ìš”ì¼ : 18 ~ 23
+#ifdef LC_USA	// ë¯¸êµ­ : 11 ~ 23
 		minHour = 11;
 		maxHour = 23;
 #else
@@ -742,14 +742,14 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 	time(&curtime);
 	struct tm curtm = NOW();
 
-	// ´ÙÀ½ ÇØ´ç ¿äÀÏ±îÁö Â÷ÀÌ¸¦ ±¸ÇÔ
+	// ë‹¤ìŒ í•´ë‹¹ ìš”ì¼ê¹Œì§€ ì°¨ì´ë¥¼ êµ¬í•¨
 	int next = wday - curtm.tm_wday;
 	if (next <= 0)
 		next += 7;
 	if (next <= 4)
 		next += 7;
 
-	// ±×³¯ ÇØ´ç ½Ã°£ÀÇ time_t °ªÀ» ±¸ÇÔ
+	// ê·¸ë‚  í•´ë‹¹ ì‹œê°„ì˜ time_t ê°’ì„ êµ¬í•¨
 	struct tm nexttm = curtm;
 	nexttm.tm_hour = hour;
 	nexttm.tm_min = 0;
@@ -758,7 +758,7 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 	nexttm.tm_isdst = -1;
 	time_t nexttime = mktime(&nexttm);
 
-	// ÇöÀç ½Ã°£º¸´Ù ÀÛÀ¸¸é
+	// í˜„ì¬ ì‹œê°„ë³´ë‹¤ ì‘ìœ¼ë©´
 	if (nexttime < curtime)
 		return false;
 
@@ -769,7 +769,7 @@ bool CDratanCastle::SetNextWarTime(int wday, int hour)
 
 bool CDratanCastle::GiveLordItem(CPC* pc)
 {
-	return false; // µå¶óÅºÀº ¹«±â Áö±Ş ¾ÈÇÔ
+	return false; // ë“œë¼íƒ„ì€ ë¬´ê¸° ì§€ê¸‰ ì•ˆí•¨
 }
 
 bool CDratanCastle::TakeLordItem(CPC* pc)
@@ -894,36 +894,36 @@ CDratanCastle * CDratanCastle::CreateInstance()
 
 void CDratanCastle::CheckWarCastle()
 {
-	///=== °ø¼º ¸·±â kjtest
-	// °ø¼º ´øÀü ³­ÀÌµµ Á¶Á¤
+	///=== ê³µì„± ë§‰ê¸° kjtest
+	// ê³µì„± ë˜ì „ ë‚œì´ë„ ì¡°ì •
 	CheckDVD();
 
 	SendCastleState( GetCurSubServerCastleZoneIndex() );
 
-	// °ø¼º NPC Ã³¸®
+	// ê³µì„± NPC ì²˜ë¦¬
 	CheckWarCastleNPC();
 
 	CHECK_SUBSERVER(this);
 
-	// ¸¶½ºÅÍ Å¸¿ö, ºÎÈ°ÁøÁö
+	// ë§ˆìŠ¤í„° íƒ€ì›Œ, ë¶€í™œì§„ì§€
 	CheckCastleControlNPC();
 
-	// °ø¼º ½ÃÀÛ ¾Ë¸²
+	// ê³µì„± ì‹œì‘ ì•Œë¦¼
 	CheckWarCastleNotice();
 
-	// °ø¼º ½ÃÀÛ
+	// ê³µì„± ì‹œì‘
 	CheckWarCastleStartWarCastle();
 
-	// °ø¼º ³¡
+	// ê³µì„± ë
 	CheckWarCastleEnd();
 	
-	// ±ÇÁÂ »ı¼º
+	// ê¶Œì¢Œ ìƒì„±
 	RegenLordSymbol();
 
-	// »óÀÎ »ı¼º
+	// ìƒì¸ ìƒì„±
 	RegenShop();
 
-	// ºÎÈ°ÁøÁö Àç»ı¼º
+	// ë¶€í™œì§„ì§€ ì¬ìƒì„±
 	//CheckRegenRebirthNPC();
 }
 
@@ -932,7 +932,7 @@ void CDratanCastle::CheckDVD()
 	if(m_isNotChange == true)
 		return;
 
-	if(gserver->m_pulse - m_dvd.GetChangeTime() >= PULSE_REAL_HOUR)		// ÇÑ½Ã°£ ¸¶´Ù 10% ÇÏ¶ô
+	if(gserver->m_pulse - m_dvd.GetChangeTime() >= PULSE_REAL_HOUR)		// í•œì‹œê°„ ë§ˆë‹¤ 10% í•˜ë½
 	{
 		if(m_dvd.GetMobRate() - 10 > 0)
 		{
@@ -952,8 +952,8 @@ void CDratanCastle::CheckDVD()
 			m_dvd.SetEnvRate(0);
 		}
 
-		//¼ºÁÖ,ÀÏ¹İ °ü¸® ¸ğµå Ãß°¡
-		//¼ºÁÖ °ü¸® ¸ğµåÀÎµ¥ 80ÀÌÇÏ·Î ÇÏ¶ô ÇÏ¿´À» °æ¿ì¿¡´Â ÀÏ¹İ ¸ğµå·Î ÀüÈ¯
+		//ì„±ì£¼,ì¼ë°˜ ê´€ë¦¬ ëª¨ë“œ ì¶”ê°€
+		//ì„±ì£¼ ê´€ë¦¬ ëª¨ë“œì¸ë° 80ì´í•˜ë¡œ í•˜ë½ í•˜ì˜€ì„ ê²½ìš°ì—ëŠ” ì¼ë°˜ ëª¨ë“œë¡œ ì „í™˜
 		if( m_dvd.GetOwnerMode() == true 
 			&& m_dvd.checkOwnerMode() == false )
 		{
@@ -1016,15 +1016,15 @@ int CDratanCastle::CheckJoin(CPC* ch)
 	if (ch->m_guildInfo)
 	{
 		CGuild * guild = ch->m_guildInfo->guild();
-		// ¼ºÁÖ ±æµå °Ë»ç
+		// ì„±ì£¼ ê¸¸ë“œ ê²€ì‚¬
 		if (guild->index() == GetOwnerGuildIndex())
 			return WCJF_OWNER;
 
-		// °ø¼º ±æµå °Ë»ç
+		// ê³µì„± ê¸¸ë“œ ê²€ì‚¬
 		if (IsAttackGuild(guild->index()))
 			return WCJF_ATTACK_GUILD;
 
-		// ¼ö¼º ±æµå °Ë»ç
+		// ìˆ˜ì„± ê¸¸ë“œ ê²€ì‚¬
 		if (IsDefenseGuild(guild->index()))
 			return WCJF_DEFENSE_GUILD;
 	}
@@ -1032,20 +1032,20 @@ int CDratanCastle::CheckJoin(CPC* ch)
 	return WCJF_NONE;
 }
 
-// °ø¼º ½ÃÀÛ ¾Ë¸²
+// ê³µì„± ì‹œì‘ ì•Œë¦¼
 void CDratanCastle::CheckWarCastleNotice()
 {
 	switch (GetState())
 	{
 	case WCSF_NORMAL:
-		// È®Á¤ ¾Ë¸®´Â °ÍÀÎÁö ¾Æ´Ï¸é ½ÃÀÛ 10ºĞÀü¿¡ ¾Ë¸®´Â °ÍÀÎÁö °Ë»ç
+		// í™•ì • ì•Œë¦¬ëŠ” ê²ƒì¸ì§€ ì•„ë‹ˆë©´ ì‹œì‘ 10ë¶„ì „ì— ì•Œë¦¬ëŠ” ê²ƒì¸ì§€ ê²€ì‚¬
 		if (!m_bNoticeWarTime)
 		{
-			// °ø¼º ½ÅÃ» °¡´É ½Ã°£´ëÀÌ°í
+			// ê³µì„± ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ëŒ€ì´ê³ 
 			if (!IsJoinTime())
 				return ;
 
-			// °ÔÀÓ³» ¸ğµç À¯Àú¿¡°Ô ¾Ë¸®±â
+			// ê²Œì„ë‚´ ëª¨ë“  ìœ ì €ì—ê²Œ ì•Œë¦¬ê¸°
 			{
 				struct tm nextWarTime;
 				GetNextWarTime(&nextWarTime, true);
@@ -1064,10 +1064,10 @@ void CDratanCastle::CheckWarCastleNotice()
 			time_t curtime;
 			time(&curtime);
 
-			// ½ÃÀÛ 10ºĞÀü¿¡ ¸ÅºĞ¸¶´Ù
+			// ì‹œì‘ 10ë¶„ì „ì— ë§¤ë¶„ë§ˆë‹¤
 			if (curtime + 10 * 60 >= nexttime)
 			{
-				// ³²Àº ½Ã°£ ±¸ÇÏ±â
+				// ë‚¨ì€ ì‹œê°„ êµ¬í•˜ê¸°
 				int remain = (nexttime - curtime) / 60;
 				int modnum = (nexttime - curtime) % 60;
 				if (modnum)
@@ -1082,11 +1082,11 @@ void CDratanCastle::CheckWarCastleNotice()
 
 					m_noticeRemain = remain;
 
-					// ±æµåÀü ÁßÁö ¿äÃ»
+					// ê¸¸ë“œì „ ì¤‘ì§€ ìš”ì²­
 					if (curtime + 60 >= nexttime)
 					{
-						// ¼­¹ö³»ÀÇ ±æµå ¸®½ºÆ®¸¦ µ¹¸é¼­
-						// ±æµåÀü ÁßÀÌ¸é ÇïÆÛ¿¡ ¿äÃ»
+						// ì„œë²„ë‚´ì˜ ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë©´ì„œ
+						// ê¸¸ë“œì „ ì¤‘ì´ë©´ í—¬í¼ì— ìš”ì²­
 						CGuild* p;
 						for (p = gserver->m_guildlist.head(); p; p = p->nextguild())
 						{
@@ -1110,18 +1110,18 @@ void CDratanCastle::CheckWarCastleNotice()
 				} // if (remain != 0 && m_noticeRemain > remain && gserver->isRunHelper())
 			} // if (curtime + 10 * 60 >= nexttime)
 
-			// ½ÃÀÛ 3ºĞÀü ÀÌµ¿
+			// ì‹œì‘ 3ë¶„ì „ ì´ë™
 			if (!m_bMoveToRegen && curtime + 3 * 60 >= nexttime)
 			{
-				// ¸®Á¨ Æ÷ÀÎÆ® ÇÒ´ç
+				// ë¦¬ì   í¬ì¸íŠ¸ í• ë‹¹
 				InitRegenPosition();
 
-				// °­Á¦ Á¸ÀÌµ¿ ½ÃÅ°±â
+				// ê°•ì œ ì¡´ì´ë™ ì‹œí‚¤ê¸°
 				m_bMoveToRegen = true;
 				MoveToRegenPoint();
 			}
 
-			// °ø¼ºÀü ½ÃÀÛ 1ºĞ ÀüºÎÅÍ´Â ¸Ş¸ğ¸® ½ºÅ©·ÑÀ» »ç¿ëÇÒ ¼ö ¾øµµ·Ï ÇÏ±â À§ÇØ..
+			// ê³µì„±ì „ ì‹œì‘ 1ë¶„ ì „ë¶€í„°ëŠ” ë©”ëª¨ë¦¬ ìŠ¤í¬ë¡¤ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë„ë¡ í•˜ê¸° ìœ„í•´..
 			if (!m_bWarCastleReady && (curtime + 1 * 60) >= nexttime)
 			{
 				m_bWarCastleReady = true;
@@ -1138,26 +1138,26 @@ void CDratanCastle::CheckWarCastleNotice()
 	}
 }
 
-// °ø¼º ½ÃÀÛ
+// ê³µì„± ì‹œì‘
 void CDratanCastle::CheckWarCastleStartWarCastle()
 {
-	// ¾ßÀü »óÅÂ °Ë»ç
+	// ì•¼ì „ ìƒíƒœ ê²€ì‚¬
 	if (GetState() != WCSF_NORMAL)
 		return;
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ÀÌ»óÀÌ¾î¾ß ÇÏ°í
+	// ê³µì„± ì‹œì‘ ì‹œê°„ì´ìƒì´ì–´ì•¼ í•˜ê³ 
 	time_t curTime;
 	time(&curTime);
 	int nextTime = GetNextWarTime();
 	if (nextTime > curTime)
 		return ;
 
-	// ¾Ë¸² ¸Ş½ÃÁö ½Ã°£ ÀúÀå º¯¼ö¸¦ ÃÊ±âÈ­
+	// ì•Œë¦¼ ë©”ì‹œì§€ ì‹œê°„ ì €ì¥ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
 	m_noticeRemain = 9999;
 
 	SetOldOwnerChar( GetOwnerCharIndex() );
 
-	// °ø¼º ½ÅÃ» ±æµå°¡ ¾øÀ¸¸é ´ÙÀ½À¸·Î ³Ñ¾î°¨
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ ì—†ìœ¼ë©´ ë‹¤ìŒìœ¼ë¡œ ë„˜ì–´ê°
 	if (m_attackGuildList == NULL)
 	{
 		SetState(WCSF_WAR_CASTLE);
@@ -1165,28 +1165,28 @@ void CDratanCastle::CheckWarCastleStartWarCastle()
 		return;
 	}
 
-	// ¸®Á¨ Æ÷ÀÎÆ® ÇÒ´ç
+	// ë¦¬ì   í¬ì¸íŠ¸ í• ë‹¹
 	InitRegenPosition();
 
-	// °­Á¦ Á¸ÀÌµ¿ ½ÃÅ°±â
+	// ê°•ì œ ì¡´ì´ë™ ì‹œí‚¤ê¸°
 	m_bMoveToRegen = true;
 
-	// »óÅÂ¸¦ ¹Ù²Ù°í
+	// ìƒíƒœë¥¼ ë°”ê¾¸ê³ 
 	SetState(WCSF_WAR_CASTLE);
 
-	// ¼ö¼ºÃø Á¦¿Ü ¼º¿¡¼­ ³»º¸³»±â
+	// ìˆ˜ì„±ì¸¡ ì œì™¸ ì„±ì—ì„œ ë‚´ë³´ë‚´ê¸°
 	GetOutNonDefense();
 
-	// ¿öÇÁ °ÔÀÌÆ® »ı¼º
-//	RegenWarpNPC();		// ¼öÈ£Å¾ »ı¼º ÇÒ¶§ °°ÀÌ »ı¼º
+	// ì›Œí”„ ê²Œì´íŠ¸ ìƒì„±
+//	RegenWarpNPC();		// ìˆ˜í˜¸íƒ‘ ìƒì„± í• ë•Œ ê°™ì´ ìƒì„±
 
-	// ¼öÈ£Å¾ »ı¼º
+	// ìˆ˜í˜¸íƒ‘ ìƒì„±
 	RegenCastleTower();
 
 	GAMELOG << init("WAR CASTLE : START WAR")
 			<< GetZoneIndex() << end;
 
-	// Âü¿© ±æµå Á¤º¸ ±â·Ï
+	// ì°¸ì—¬ ê¸¸ë“œ ì •ë³´ ê¸°ë¡
 	CWarCastleJoin * pJoin = m_attackGuildList;
 	while( pJoin != NULL )
 	{
@@ -1203,7 +1203,7 @@ void CDratanCastle::CheckWarCastleStartWarCastle()
 		pJoin = pJoin->GetNext();
 	}
 
-	// ¸¶½ºÅÍ Å¸¿ö ¼³Á¤ ·Î±×
+	// ë§ˆìŠ¤í„° íƒ€ì›Œ ì„¤ì • ë¡œê·¸
 	int i;
 	GAMELOG << init("WAR CASTLE : REINFORCE SETTING");
 	for( i = 0; i < 3; i++ )
@@ -1212,13 +1212,13 @@ void CDratanCastle::CheckWarCastleStartWarCastle()
 	}
 	GAMELOG << end;
 
-	// ¾Ë¸² ¸Ş½ÃÁö ½Ã°£ ÀúÀå º¯¼ö¸¦ ÃÊ±âÈ­
+	// ì•Œë¦¼ ë©”ì‹œì§€ ì‹œê°„ ì €ì¥ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
 	m_noticeRemain = 9999;
 
-	// ¿î¿µÀÚ ¸í·ÉÀ¸·Î ¸ØÃã ÃÊ±âÈ­
+	// ìš´ì˜ì ëª…ë ¹ìœ¼ë¡œ ë©ˆì¶¤ ì´ˆê¸°í™”
 	m_bLoop = true;
 
-	// °ø¼º ½ÃÀÛÀ» ÇïÆÛ¸¦ ÅëÇØ ¾Ë¸®±â
+	// ê³µì„± ì‹œì‘ì„ í—¬í¼ë¥¼ í†µí•´ ì•Œë¦¬ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWarNoticeStartAttackCastleMsg(rmsg, GetZoneIndex(), GetRemainWarTime(), 0, 0, 0);
@@ -1226,20 +1226,20 @@ void CDratanCastle::CheckWarCastleStartWarCastle()
 	}
 
 	{
-		// ºÎÈ° ÁøÁö Á¤º¸ Àü¼Û
+		// ë¶€í™œ ì§„ì§€ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastletowerQuartersListMsg(rmsg, this);
 		GetArea()->SendToAllClient(rmsg);
 	}
 
-	// °ø¼º º¸»ó ´øÀüÀÇ À¯Àú °­Á¦ ÀÌµ¿
+	// ê³µì„± ë³´ìƒ ë˜ì „ì˜ ìœ ì € ê°•ì œ ì´ë™
 	MoveingDVD();
 }
 
-// °ø¼º º¸»ó ´øÀüÀÇ À¯Àú °­Á¦ ÀÌµ¿
+// ê³µì„± ë³´ìƒ ë˜ì „ì˜ ìœ ì € ê°•ì œ ì´ë™
 void CDratanCastle::MoveingDVD()
 {
-	// °ø¼º ´ë±â °£ÀÌ ¸¶À»·Î ÀÌµ¿
+	// ê³µì„± ëŒ€ê¸° ê°„ì´ ë§ˆì„ë¡œ ì´ë™
 	if (m_dvd.GetZone() == 0)
 	{
 		return;
@@ -1259,13 +1259,13 @@ void CDratanCastle::CheckWarCastleEnd()
 		}
 	}
 
-	// ÁøÇà »óÅÂ °Ë»ç
+	// ì§„í–‰ ìƒíƒœ ê²€ì‚¬
 	if (GetState() != WCSF_WAR_CASTLE)
 		return;
 
 	bool bFinished = false;
 
-	// ½Ã°£ÀÌ Á¾·áµÇ¾ú³ª?
+	// ì‹œê°„ì´ ì¢…ë£Œë˜ì—ˆë‚˜?
 
 	int endWarTime = GetNextWarTime() + CDratanCastle::WAR_TIME;
 
@@ -1276,7 +1276,7 @@ void CDratanCastle::CheckWarCastleEnd()
 		bFinished = true;
 	}
 
-	// °ø¼º ½ÅÃ» ±æµå°¡ ¾øÀ¸¸é ´ÙÀ½À¸·Î ³Ñ¾î°¨
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ ì—†ìœ¼ë©´ ë‹¤ìŒìœ¼ë¡œ ë„˜ì–´ê°
 	if (m_attackGuildList == NULL)
 	{
 		bFinished = true;
@@ -1290,31 +1290,31 @@ void CDratanCastle::CheckWarCastleEnd()
 	if( oldOwnerCharIndex > 0)
 	{
 		CPC* pc = PCManager::instance()->getPlayerByCharIndex(oldOwnerCharIndex);
-		if( pc ) // Á¢¼ÓÇØ ÀÖÀ¸´Ï È¸¼ö ÇÑ´Ù.
+		if( pc ) // ì ‘ì†í•´ ìˆìœ¼ë‹ˆ íšŒìˆ˜ í•œë‹¤.
 		{
 			pc->CastllanTitleDelete(-1, true);
-			pc->m_inventory.CastllanItemRemove(-1, true, true); // »èÁ¦ÇÑ´Ù.
+			pc->m_inventory.CastllanItemRemove(-1, true, true); // ì‚­ì œí•œë‹¤.
 		}
 	}
-	///== ½Â¸®ÀÚ ±¸ÇÔ
+	///== ìŠ¹ë¦¬ì êµ¬í•¨
 
 	char bWinDefense = (oldOwnerCharIndex == GetOwnerGuildIndex());
 
 	ChangeGuildNameColor();
 
-	// ±ÇÁÂ/¼öÈ£Å¾/¿öÇÁ°ÔÀÌÆ®/°¡µğ¾ğ »èÁ¦
+	// ê¶Œì¢Œ/ìˆ˜í˜¸íƒ‘/ì›Œí”„ê²Œì´íŠ¸/ê°€ë””ì–¸ ì‚­ì œ
 	RemoveLordSymbol();
 	RemoveCastleTower();
 //	RemoveWarpNPC();
 	RemoveGuardNPC();
 
-	// ¼º °ü¸®ÀÎ  ¸®Á¨
+	// ì„± ê´€ë¦¬ì¸  ë¦¬ì  
 	RegenCastleNPC();
 
 	GAMELOG << init("WAR CASTLE : END WAR")
 			<< GetZoneIndex() << end;
 
-	// ¼º Á¤º¸ ÃÊ±âÈ­
+	// ì„± ì •ë³´ ì´ˆê¸°í™”
 	if(GetState() == WCSF_WAR_CASTLE)
 		m_bWarCastleReady = false;
 	SetState(WCSF_NORMAL);
@@ -1329,7 +1329,7 @@ void CDratanCastle::CheckWarCastleEnd()
 
 	m_countAttackGuild = 0;
 
-	// DB ÃÊ±âÈ­
+	// DB ì´ˆê¸°í™”
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 
@@ -1373,7 +1373,7 @@ void CDratanCastle::CheckWarCastleEnd()
 				<< end;
 	}
 
-	//  °¡µğ¾ğ ÃÊ±âÈ­
+	//  ê°€ë””ì–¸ ì´ˆê¸°í™”
 	m_GuardList.clean();
 	std::string delete_castle_guard_sql = boost::str(boost::format("DELETE FROM t_castle_guard WHERE a_zone_num = %d") % GetZoneIndex());
 	cmd.SetQuery(delete_castle_guard_sql);
@@ -1385,13 +1385,13 @@ void CDratanCastle::CheckWarCastleEnd()
 				<< end;
 	}
 
-	// Âü¿©Á¤º¸ ÃÊ±âÈ­
+	// ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 	ResetJoinFlag();
 
-	// Âü¿© ¸®½ºÆ® ÃÊ±âÈ­
+	// ì°¸ì—¬ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	RemoveAllJoinList();
 
-	// ¸¶½ºÅÍ Å¸¿ö ÃÊ±âÈ­
+	// ë§ˆìŠ¤í„° íƒ€ì›Œ ì´ˆê¸°í™”
 	InitMasterTower();
 	std::string delete_castle_tower_sql = boost::str(boost::format("DELETE FROM t_castle_tower WHERE a_zone_num = %d") % GetZoneIndex());
 	cmd.SetQuery(delete_castle_tower_sql);
@@ -1403,7 +1403,7 @@ void CDratanCastle::CheckWarCastleEnd()
 				<< end;
 	}
 
-	// ¼öÈ£Å¾ °­È­ ÃÊ±âÈ­
+	// ìˆ˜í˜¸íƒ‘ ê°•í™” ì´ˆê¸°í™”
 	InitReinforce();
 	std::string delete_castle_reinforce_sql = boost::str(boost::format("DELETE FROM t_castle_reinforce WHERE a_zone_num = %d") % GetZoneIndex());
 	cmd.SetQuery(delete_castle_reinforce_sql);
@@ -1415,7 +1415,7 @@ void CDratanCastle::CheckWarCastleEnd()
 				<< end;
 	}
 
-	// ºÎÈ° ÁøÁö ÃÊ±âÈ­
+	// ë¶€í™œ ì§„ì§€ ì´ˆê¸°í™”
 	ResetRebrithNPC();
 	std::string delete_castle_rebrith_sql = boost::str(boost::format("DELETE FROM t_castle_rebrith WHERE a_zone_num = %d") % GetZoneIndex());
 	cmd.SetQuery(delete_castle_rebrith_sql);
@@ -1427,11 +1427,11 @@ void CDratanCastle::CheckWarCastleEnd()
 				<< end;
 	}
 
-	// ¸¶½ºÅÍ Å¸¿ö¿Í ºÎÈ°ÁøÁö ´Ù½Ã »ı¼º
+	// ë§ˆìŠ¤í„° íƒ€ì›Œì™€ ë¶€í™œì§„ì§€ ë‹¤ì‹œ ìƒì„±
 	RemoveCastleControlNPC();
 	RegenCastleControlNPC();
 
-	// °ø¼º °á°ú ¾Ë¸®±â
+	// ê³µì„± ê²°ê³¼ ì•Œë¦¬ê¸°
 	struct tm tmJoin;
 	GetJoinTime(&tmJoin, true);
 	if (gserver->isRunHelper())
@@ -1460,7 +1460,7 @@ void CDratanCastle::CheckWarCastleEnd()
 			if (pc)
 			{
 				pc->CureGuildGradeSkill();
-				// ¹Ù·Î º¸³»±â
+				// ë°”ë¡œ ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				StatusMsg(rmsg, pc);
 				SEND_Q(rmsg, pc->m_desc );
@@ -1469,7 +1469,7 @@ void CDratanCastle::CheckWarCastleEnd()
 	}
 }
 
-// °ø¼ºÀü ±â°£ µ¿¾È ¼º °ü¸®ÀÎ »èÁ¦
+// ê³µì„±ì „ ê¸°ê°„ ë™ì•ˆ ì„± ê´€ë¦¬ì¸ ì‚­ì œ
 void CDratanCastle::CheckWarCastleNPC()
 {
 	switch (m_state)
@@ -1489,7 +1489,7 @@ void CDratanCastle::CheckWarCastleNPC()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ¸®Á¨ °ü·Ã
+// ë¦¬ì   ê´€ë ¨
 //////////////////////////////////////////////////////////////////////////
 
 void CDratanCastle::CheckCastleControlNPC()
@@ -1503,7 +1503,7 @@ void CDratanCastle::CheckCastleControlNPC()
 
 void CDratanCastle::RegenCastleControlNPC()
 {
-	// ¸¶½ºÅÍ Å¸¿ö¿Í ºÎÈ°ÁøÁö
+	// ë§ˆìŠ¤í„° íƒ€ì›Œì™€ ë¶€í™œì§„ì§€
 	CHECK_SUBSERVER(this);
 
 	CArea* area = GetArea();
@@ -1554,7 +1554,7 @@ void CDratanCastle::RegenCastleControlNPC()
 				area->SendToCell(rmsg, npc);
 			}
 
-			// ºÎÈ° ÁøÁö µî·Ï
+			// ë¶€í™œ ì§„ì§€ ë“±ë¡
 			SetRebrithNPC(npc);
 		}
 	}
@@ -1578,10 +1578,10 @@ void CDratanCastle::RemoveCastleControlNPC()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -1591,7 +1591,7 @@ void CDratanCastle::RemoveCastleControlNPC()
 	InitRebrithNPC();
 }
 
-// °ø¼º NPC ¸®Á¨
+// ê³µì„± NPC ë¦¬ì  
 void CDratanCastle::RegenCastleNPC()
 {
 	if (m_castleNPC != NULL || m_pDungeonNPC != NULL )
@@ -1713,7 +1713,7 @@ void CDratanCastle::RemoveDungeonNPC()
 	m_pDungeonNPC = NULL;
 }
 
-// °ø¼º Å¸¿ö ¸®Á¨
+// ê³µì„± íƒ€ì›Œ ë¦¬ì  
 void CDratanCastle::RegenCastleTower()
 {
 	CHECK_SUBSERVER(this);
@@ -1737,7 +1737,7 @@ void CDratanCastle::RegenCastleTower()
 		CNPCProto* proto = gserver->m_npcProtoList.FindProto(p->m_npcIdx);
 		if (proto && proto->CheckFlag(NPC_CASTLE_TOWER) && proto->CheckFlag(NPC_WARCASTLE) == 0)
 		{
-			// ¸¶½ºÅÍ Å¸¿ö ¼³Á¤ ¹İ¿µ
+			// ë§ˆìŠ¤í„° íƒ€ì›Œ ì„¤ì • ë°˜ì˜
 			if (CheckBuyTower(proto->m_index) == false)
 			{
 				continue;
@@ -1764,7 +1764,7 @@ void CDratanCastle::RegenCastleTower()
 			p->m_lastDieTime = 0;
 			npc->m_disableTime = 0;
 
-			// ¼öÈ£Å¾ °­È­ Àû¿ë
+			// ìˆ˜í˜¸íƒ‘ ê°•í™” ì ìš©
 			SetTowerReinforce(npc);
 
 			npc->InitPointsToMax();
@@ -1781,10 +1781,10 @@ void CDratanCastle::RegenCastleTower()
 				area->SendToCell(rmsg, npc);
 			}
 
-			// ¼º¹®Áö±â NPC ¼³Á¤
+			// ì„±ë¬¸ì§€ê¸° NPC ì„¤ì •
 			SetGateNPC(npc);
 
-			// ¿öÇÁ Å¸¿ö NPC ¼³Á¤
+			// ì›Œí”„ íƒ€ì›Œ NPC ì„¤ì •
 			SetWarpNPC(npc);
 
 			regencount++;
@@ -1802,7 +1802,7 @@ void CDratanCastle::RegenCastleTower()
 	}
 }
 
-// °ø¼º Å¸¿ö Ã¼·Â 1/2 ¸®Á¨
+// ê³µì„± íƒ€ì›Œ ì²´ë ¥ 1/2 ë¦¬ì  
 void CDratanCastle::RegenCastleTowerHalf()
 {
 	if (GetState() != WCSF_WAR_CASTLE)
@@ -1822,7 +1822,7 @@ void CDratanCastle::RegenCastleTowerHalf()
 
 		if (p->m_totalNum != 0
 				|| p->m_bAlive
-//			|| (gserver->m_pulse - p->m_lastDieTime < p->m_regenSec)		// Å¸¿öµéÀº ¸®Á¨ ½Ã°£¿¡ °ü°è ¾øÀÌ ¸®Á¨
+//			|| (gserver->m_pulse - p->m_lastDieTime < p->m_regenSec)		// íƒ€ì›Œë“¤ì€ ë¦¬ì   ì‹œê°„ì— ê´€ê³„ ì—†ì´ ë¦¬ì  
 		   )
 		{
 			continue ;
@@ -1831,7 +1831,7 @@ void CDratanCastle::RegenCastleTowerHalf()
 		CNPCProto* proto = gserver->m_npcProtoList.FindProto(p->m_npcIdx);
 		if (proto && proto->CheckFlag(NPC_CASTLE_TOWER) != 0 && proto->CheckFlag(NPC_WARCASTLE) == 0)
 		{
-			// ¸¶½ºÅÍ Å¸¿ö ¼³Á¤ ¹İ¿µ
+			// ë§ˆìŠ¤í„° íƒ€ì›Œ ì„¤ì • ë°˜ì˜
 			if (CheckBuyTower(proto->m_index) == false)
 			{
 				continue;
@@ -1858,7 +1858,7 @@ void CDratanCastle::RegenCastleTowerHalf()
 			p->m_lastDieTime = 0;
 			npc->m_disableTime = 0;
 
-			// ¼öÈ£Å¾ °­È­ Àû¿ë
+			// ìˆ˜í˜¸íƒ‘ ê°•í™” ì ìš©
 			SetTowerReinforce(npc);
 
 			npc->InitPointsToMax();
@@ -1869,7 +1869,7 @@ void CDratanCastle::RegenCastleTowerHalf()
 			area->PointToCellNum(GET_X(npc), GET_Z(npc), &cx, &cz);
 			area->CharToCell(npc, GET_YLAYER(npc), cx, cz);
 
-			// Ã¼·Â 1/2 Àû¿ë
+			// ì²´ë ¥ 1/2 ì ìš©
 			npc->m_hp = npc->m_proto->m_hp / 2;
 			npc->m_maxHP = npc->m_hp;
 
@@ -1879,10 +1879,10 @@ void CDratanCastle::RegenCastleTowerHalf()
 				area->SendToCell(rmsg, npc);
 			}
 
-			// ¼º¹®Áö±â NPC ¼³Á¤
+			// ì„±ë¬¸ì§€ê¸° NPC ì„¤ì •
 			SetGateNPC(npc);
 
-			// ¿öÇÁ Å¸¿ö NPC ¼³Á¤
+			// ì›Œí”„ íƒ€ì›Œ NPC ì„¤ì •
 			SetWarpNPC(npc);
 
 			regencount++;
@@ -1900,7 +1900,7 @@ void CDratanCastle::RegenCastleTowerHalf()
 	}
 }
 
-// °ø¼º Å¸¿ö Á¦°Å
+// ê³µì„± íƒ€ì›Œ ì œê±°
 void CDratanCastle::RemoveCastleTower()
 {
 	CHECK_SUBSERVER(this);
@@ -1919,10 +1919,10 @@ void CDratanCastle::RemoveCastleTower()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -1932,7 +1932,7 @@ void CDratanCastle::RemoveCastleTower()
 	InitWarpNPC();
 }
 
-// °ø¼º »óÀÎ ¸®Á¨
+// ê³µì„± ìƒì¸ ë¦¬ì  
 void CDratanCastle::RegenShop()
 {
 	CHECK_SUBSERVER(this);
@@ -2010,10 +2010,10 @@ void CDratanCastle::RegenShop()
 			{
 				p->SendDisappearAllInCell(true);
 
-				// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+				// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 				DelAttackList(p);
 
-				// npc »èÁ¦
+				// npc ì‚­ì œ
 				area->CharFromCell(p, true);
 				area->DelNPC(p);
 			}
@@ -2021,7 +2021,7 @@ void CDratanCastle::RegenShop()
 	}
 }
 
-//  °ø¼º Å©¸®½ºÅ» ¸®Á¨
+//  ê³µì„± í¬ë¦¬ìŠ¤íƒˆ ë¦¬ì  
 void CDratanCastle::RegenLordSymbol()
 {
 	CHECK_SUBSERVER(this);
@@ -2082,7 +2082,7 @@ void CDratanCastle::RegenLordSymbol()
 					<< GetZoneIndex()
 					<< end;
 
-			// TODO : ±ÇÁÂ¸¦ 2°³ÀÌ»ó ¼³Ä¡½Ã break Á¦°Å ¹× º¯¼ö ¼öÁ¤
+			// TODO : ê¶Œì¢Œë¥¼ 2ê°œì´ìƒ ì„¤ì¹˜ì‹œ break ì œê±° ë° ë³€ìˆ˜ ìˆ˜ì •
 			break;
 		}
 	}
@@ -2110,7 +2110,7 @@ void CDratanCastle::RemoveLordSymbol()
 	m_lordSymbol = NULL;
 }
 
-// °ø¼º °¡µğ¾ğ ¸®Á¨
+// ê³µì„± ê°€ë””ì–¸ ë¦¬ì  
 void CDratanCastle::RegenGuardNPC()
 {
 	CHECK_SUBSERVER(this);
@@ -2131,7 +2131,7 @@ void CDratanCastle::RegenGuardNPC()
 	{
 		CNPCRegenInfo * p = area->m_npcRegenList.m_infoList + i;
 //		if (gserver->m_pulse - p->m_lastDieTime < p->m_regenSec)
-//		{	// ¸®Á¨ ½Ã°£ Ã¼Å©
+//		{	// ë¦¬ì   ì‹œê°„ ì²´í¬
 //			continue;
 //		}
 
@@ -2209,10 +2209,10 @@ void CDratanCastle::RemoveGuardNPC()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -2231,16 +2231,16 @@ void CDratanCastle::RemoveGuardNPC()
 		{
 			if(area->m_npcRegenList.DelRegenInfo(p) == true)
 			{
-				i--;	// Áö¿üÀ¸¸é ±× À§Ä¡ºÎÅÍ ´Ù½Ã °Ë»ö
+				i--;	// ì§€ì› ìœ¼ë©´ ê·¸ ìœ„ì¹˜ë¶€í„° ë‹¤ì‹œ ê²€ìƒ‰
 			}
 		}
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ½Ã°£ °ü·Ã
+// ì‹œê°„ ê´€ë ¨
 //////////////////////////////////////////////////////////////////////////
-// ´ÙÀ½ °ø¼º ½Ã°£ °¡Á®¿À±â
+// ë‹¤ìŒ ê³µì„± ì‹œê°„ ê°€ì ¸ì˜¤ê¸°
 void CDratanCastle::GetNextWarTime(struct tm* nextWarTime, bool bHumanable)
 {
 	time_t tNext = (time_t)GetNextWarTime();
@@ -2253,14 +2253,14 @@ void CDratanCastle::GetNextWarTime(struct tm* nextWarTime, bool bHumanable)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ÃÊ±âÈ­
+// ì´ˆê¸°í™”
 //////////////////////////////////////////////////////////////////////////
 bool CDratanCastle::LoadCastleData()
 {
 	CWarCastle::LoadCastleData();
 
-	// À¯Àú°¡ ÁöÁ¤ÇÑ °¡µğ¾ğ Á¤º¸ ·Îµù
-	m_GuardList.init(3, 10); // 3Á¾·ù °¢°¢ 10°³¾¿
+	// ìœ ì €ê°€ ì§€ì •í•œ ê°€ë””ì–¸ ì •ë³´ ë¡œë”©
+	m_GuardList.init(3, 10); // 3ì¢…ë¥˜ ê°ê° 10ê°œì”©
 
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
@@ -2298,10 +2298,10 @@ bool CDratanCastle::LoadCastleData()
 		pArea[0].m_npcRegenList.AddRegenInfo(pArea->m_npcRegenList.m_wPos, mobindex, regensec, x, 0, z, r, 1, ZONE_DRATAN);
 	}
 
-	// ¼öÈ£º´ NPC Ã³¸®
+	// ìˆ˜í˜¸ë³‘ NPC ì²˜ë¦¬
 	RegenGuardNPC();
 
-	// ¸¶½ºÅÍ Å¸¿ö Á¤º¸ ·Îµù
+	// ë§ˆìŠ¤í„° íƒ€ì›Œ ì •ë³´ ë¡œë”©
 	std::string select_castle_tower_sql = boost::str(boost::format("SELECT * FROM t_castle_tower WHERE a_zone_num=%d") % ZONE_DRATAN);
 	cmd.SetQuery(select_castle_tower_sql);
 	if (cmd.Open() == false)
@@ -2316,7 +2316,7 @@ bool CDratanCastle::LoadCastleData()
 		SetTowerStatus(rowid, (char)colid);
 	}
 
-	// ¼öÈ£Å¾ °­È­ Á¤º¸ ·Îµù
+	// ìˆ˜í˜¸íƒ‘ ê°•í™” ì •ë³´ ë¡œë”©
 	std::string select_castle_reinforce_sql = boost::str(boost::format("SELECT * FROM t_castle_reinforce WHERE a_zone_num=%d") % ZONE_DRATAN);
 	cmd.SetQuery(select_castle_reinforce_sql);
 	if (cmd.Open() == false)
@@ -2331,7 +2331,7 @@ bool CDratanCastle::LoadCastleData()
 		SetReinforceStep(type, step);
 	}
 
-	// ºÎÈ° ÁøÁö Á¤º¸ ·Îµù
+	// ë¶€í™œ ì§„ì§€ ì •ë³´ ë¡œë”©
 	std::string select_castle_rebrith_sql = boost::str(boost::format("SELECT * FROM t_castle_rebrith WHERE a_zone_num=%d") % ZONE_DRATAN);
 	cmd.SetQuery(select_castle_rebrith_sql);
 	if (cmd.Open() == false)
@@ -2406,7 +2406,7 @@ void CDratanCastle::InitRegenPosition()
 			p = p->GetNext();
 		}
 
-		// ·£´ıÀ¸·Î ¼¯±â
+		// ëœë¤ìœ¼ë¡œ ì„ê¸°
 		for (i = 0; i < m_countAttackGuild; i++)
 		{
 			int j = GetRandom(0, m_countAttackGuild - 1);
@@ -2415,7 +2415,7 @@ void CDratanCastle::InitRegenPosition()
 			tmp[j] = s;
 		}
 
-		// ¸®Á¨ Áö¿ª ÃÖ´ë 8°³
+		// ë¦¬ì   ì§€ì—­ ìµœëŒ€ 8ê°œ
 		m_nRegenPoint = (m_countAttackGuild < 8) ? m_countAttackGuild : 8;
 		m_posRegenPoint = new int[m_nRegenPoint];
 
@@ -2451,7 +2451,7 @@ void CDratanCastle::SetOwner(CGuild* guild)
 
 void CDratanCastle::CheckRespond(CPC * ch)
 {
-	// ±³°¨ ÁßÀÌ¸é ±³°¨ Ãë¼Ò
+	// êµê° ì¤‘ì´ë©´ êµê° ì·¨ì†Œ
 	if(ch->IsSetPlayerState(PLAYER_CRISTAL_RESPOND) == true)
 	{
 		if (ch->m_pZone != NULL
@@ -2459,13 +2459,13 @@ void CDratanCastle::CheckRespond(CPC * ch)
 		{
 			if(GetState() == WCSF_WAR_CASTLE)
 			{
-				// °ø¼ºÁßÀÌ¸é ±³°¨ ÇØÁ¦ ÀÌÆåÆ® º¸ÀÌ±â
+				// ê³µì„±ì¤‘ì´ë©´ êµê° í•´ì œ ì´í™íŠ¸ ë³´ì´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastleCristalRespondFailMsg(rmsg, ch);
 				ch->m_pArea->SendToCell(rmsg, ch, true);
 			}
 		}
-		// ±³°¨ ÇØÁ¦
+		// êµê° í•´ì œ
 		ResetRespondMeber(ch);
 	}
 }
@@ -2492,7 +2492,7 @@ bool CDratanCastle::CheckBuyTower(int index)
 	if( index >= 352
 			&& index <= 386)
 	{
-		// ¼öÈ£Å¾
+		// ìˆ˜í˜¸íƒ‘
 		int rows = (index - 352)/5;
 		int limit_npc = (352 + rows*5 ) + (int)(GetTowerStatus(rows));
 		if(index >= limit_npc)
@@ -2557,14 +2557,14 @@ void CDratanCastle::SetTowerReinforce(CNPC * npc)
 
 void CDratanCastle::ChangeSide(int gindex)
 {
-	// ±æµå ¾ò¾î¼­ ±æµå ¸â¹ö Âü¿©Á¤º¸ ÃÊ±âÈ­
+	// ê¸¸ë“œ ì–»ì–´ì„œ ê¸¸ë“œ ë©¤ë²„ ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 	CGuild * pGuild = gserver->m_guildlist.findguild(gindex);
-	// °ø¼º ±æµå¿¡¼­ Á¦¿Ü
+	// ê³µì„± ê¸¸ë“œì—ì„œ ì œì™¸
 	RemoveAttackGuild(gindex);
 
 	if (pGuild)
 	{
-		// ±æµå¿ø °ø¼º Âü¿© Á¤º¸ º¯È¯
+		// ê¸¸ë“œì› ê³µì„± ì°¸ì—¬ ì •ë³´ ë³€í™˜
 		int j;
 		int guildMaxMember = pGuild->maxmember();
 		for (j = 0; j < guildMaxMember; j++)
@@ -2573,7 +2573,7 @@ void CDratanCastle::ChangeSide(int gindex)
 			{
 				pGuild->member(j)->GetPC()->SetJoinFlag(ZONE_DRATAN, WCJF_OWNER);
 //				pGuild->member(j)->GetPC()->m_bChangeStatus = true;
-				// ¹Ù·Î º¸³»±â
+				// ë°”ë¡œ ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				StatusMsg(rmsg, pGuild->member(j)->GetPC());
 				SEND_Q(rmsg, pGuild->member(j)->GetPC()->m_desc);
@@ -2581,17 +2581,17 @@ void CDratanCastle::ChangeSide(int gindex)
 		}
 	}
 
-	// Âü¿© Á¤º¸ DB¿¡ ÀúÀå
-	// a_index ±æµå ÀÎµ¦½º or Ä³¸¯ÅÍ ÀÎµ¦½º
-	// a_guild 1ÀÌ¸é ±æµå Âü°¡ 0ÀÌ¸é °³ÀÎ
-	// a_attack 1ÀÌ¸é °ø¼º 0 ÀÌ¸é ¼ö¼º
+	// ì°¸ì—¬ ì •ë³´ DBì— ì €ì¥
+	// a_index ê¸¸ë“œ ì¸ë±ìŠ¤ or ìºë¦­í„° ì¸ë±ìŠ¤
+	// a_guild 1ì´ë©´ ê¸¸ë“œ ì°¸ê°€ 0ì´ë©´ ê°œì¸
+	// a_attack 1ì´ë©´ ê³µì„± 0 ì´ë©´ ìˆ˜ì„±
 	std::string delete_castle_join_sql = boost::str(boost::format("DELETE FROM t_castle_join WHERE a_zone_index=%d AND a_index=%d AND a_guild=1") % ZONE_DRATAN % gindex);
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 	cmd.SetQuery(delete_castle_join_sql);
 	cmd.Update();
 
-	// ¼ö¼º ±æµå º¯°æ
+	// ìˆ˜ì„± ê¸¸ë“œ ë³€ê²½
 	if(m_defenseGuildList != NULL)
 	{
 		CWarCastleJoin * pJoin = m_defenseGuildList;
@@ -2606,7 +2606,7 @@ void CDratanCastle::ChangeSide(int gindex)
 		}
 	}
 
-	// ±âÁ¸ ¼ºÁÖ ±æµå Ã³¸®
+	// ê¸°ì¡´ ì„±ì£¼ ê¸¸ë“œ ì²˜ë¦¬
 	ChangeAttackGuild(GetOwnerGuildIndex());
 }
 
@@ -2617,7 +2617,7 @@ void CDratanCastle::ChangeAttackGuild(int gindex)
 
 	if (pGuild)
 	{
-		// ±æµå¿ø °ø¼º Âü¿© Á¤º¸ º¯È¯
+		// ê¸¸ë“œì› ê³µì„± ì°¸ì—¬ ì •ë³´ ë³€í™˜
 		int j;
 		int guildMaxMember = pGuild->maxmember();
 		for (j = 0; j < guildMaxMember; j++)
@@ -2626,7 +2626,7 @@ void CDratanCastle::ChangeAttackGuild(int gindex)
 			{
 				pGuild->member(j)->GetPC()->SetJoinFlag(ZONE_DRATAN, WCJF_ATTACK_GUILD);
 
-				// ¹Ù·Î º¸³»±â
+				// ë°”ë¡œ ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				StatusMsg(rmsg, pGuild->member(j)->GetPC());
 				SEND_Q(rmsg, pGuild->member(j)->GetPC()->m_desc);
@@ -2634,7 +2634,7 @@ void CDratanCastle::ChangeAttackGuild(int gindex)
 		}
 	}
 
-	// Âü¿© Á¤º¸ DB¿¡ ÀúÀå
+	// ì°¸ì—¬ ì •ë³´ DBì— ì €ì¥
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 
@@ -2679,7 +2679,7 @@ void CDratanCastle::GetOutNonDefense()
 	pArea->PointToCellNum(nX0x2 / 2.0f, nZ0x2 / 2.0f, &nCellX0, &nCellZ0);
 	pArea->PointToCellNum(nX1x2 / 2.0f, nZ1x2 / 2.0f, &nCellX1, &nCellZ1);
 
-	// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+	// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 
 	std::vector<CPC*> m_MovePCList;
 	int cx, cz;
@@ -2841,7 +2841,7 @@ void CDratanCastle::MoveToRegenPoint()
 					&& pc->m_pZone->InExtra( (int)GET_X(pc), (int)GET_Z(pc) ,extra)) )
 #endif
 			{
-				// È®ÀÎ ¸Ş½ÃÁö Àü¼Û
+				// í™•ì¸ ë©”ì‹œì§€ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				WarpPromptMsg(rmsg, pZone->m_index, extra);
 				SEND_Q(rmsg, pc->m_desc);
@@ -2869,12 +2869,12 @@ void CDratanCastle::StopCastleTower()
 				&& p->m_proto->m_index != 389
 				&& p->m_proto->m_index != 404 )
 		{
-			// ¸¶½ºÅÍ Å¸¿ö¿¡¼­ ¼³Á¤ÇÑ Å¸¿öµé Á¤Áö
+			// ë§ˆìŠ¤í„° íƒ€ì›Œì—ì„œ ì„¤ì •í•œ íƒ€ì›Œë“¤ ì •ì§€
 			p->m_hp = 0;
 		}
 	}
 
-	// ¿öÇÁ Å¸¿ö Á¤º¸ ÃÊ±âÈ­
+	// ì›Œí”„ íƒ€ì›Œ ì •ë³´ ì´ˆê¸°í™”
 	InitWarpNPC();
 }
 

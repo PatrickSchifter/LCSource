@@ -19,15 +19,25 @@
 #include <Engine/Help/Util_Help.h>
 #include <Engine/GameStageManager/StageMgr.h>
 
-#define HOLLOWEEN_EYE_RATIO (0.7f)
+#define DEF_HOLLOWEEN_RATIO (0.7f)
+#define DEF_XMAS_RATIO		(0.7f)
 
-#define CHRISTMAS_EFFECT_RATIO (0.7f)
-#define DEF_CHRIS_ALPHA_MAX (1.0f)
-#define DEF_CHRIS_ALPHA_MIN (0.0f)
+#define DEF_ALPHA_LV_HOLLOWEEN_MAX (1.0f)
+#define DEF_ALPHA_LV_HOLLOWEEN_MIN (0.3f)
 
-#ifdef EUROUPEAN_SERVER_LOGIN
+#define DEF_ALPHA_LV_XMAS_MAX (1.0f)
+#define DEF_ALPHA_LV_XMAS_MIN (0.0f)
+
+enum eXMAS_EFFECT_STEP
+{
+	eEFFECT_STEP_READY = 0, // 준비
+	eEFFECT_STEP_FINISH,	// 모든 스탭을 마침
+};
+
+//#ifdef EUROUPEAN_SERVER_LOGIN
+extern INDEX g_iCountry;
 extern INDEX g_iConnectEuroupean;
-#endif	//	EUROUPEAN_SERVER_LOGIN
+//#endif	//	EUROUPEAN_SERVER_LOGIN
 #define	DEF_BASIC_SERVER 0
 #define	DEF_EUROUPEAN_SERVER 1
 
@@ -44,15 +54,12 @@ CUILoginNew::CUILoginNew(void)
 	, m_pEbId(NULL)
 	, m_pEbPw(NULL)
 	, m_pImgLogo(NULL)
-#ifdef	HOLLOWEEN_EVENT_LOGIN
 	, m_pImgLogoHal(NULL)
 	, m_pImgHalEye(NULL)
-#endif	// HOLLOWEEN_EVENT_LOGIN
-#ifdef CHRISTMAS_LOGO
-	, m_pImgLogoChris(NULL)
-	, m_pImgChrisEffect1(NULL)
-	, m_pImgChrisEffect2(NULL)
-#endif	//	CHRISTMAS_LOGO
+	, m_pImgLogoXmas(NULL)
+	, m_pImgXmasEffect1(NULL)
+	, m_pImgXmasEffect2(NULL)
+	, m_nLogoType(eLOGO_NORMAL)
 {
 	setInherit(false);
 }
@@ -84,13 +91,16 @@ void CUILoginNew::PressLoginBtn()
 
 	BOOL bLogin = FALSE;
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-	if (m_pCbSelServer != NULL)
+//#ifdef EUROUPEAN_SERVER_LOGIN
+	if (IsGamigo(g_iCountry) == TRUE)
 	{
-		g_iConnectEuroupean = m_pCbSelServer->GetCurSel();		
-		CUIFocus::getSingleton()->setUI(NULL);
+		if (m_pCbSelServer != NULL)
+		{
+			g_iConnectEuroupean = m_pCbSelServer->GetCurSel();
+			CUIFocus::getSingleton()->killFocus(m_pCbSelServer);
+		}
 	}
-#endif	//	EUROUPEAN_SERVER_LOGIN
+//#endif	//	EUROUPEAN_SERVER_LOGIN
 
 	bLogin = TryToLogin();
 
@@ -118,6 +128,9 @@ void CUILoginNew::PressCloseBtn()
 
 	_pGameState->Running()		= FALSE;
 	_pGameState->QuitScreen()	= FALSE;
+
+	if (m_pCbSelServer != NULL)
+		CUIFocus::getSingleton()->killFocus(m_pCbSelServer);
 }
 
 void CUILoginNew::PressCheckSave()
@@ -203,6 +216,8 @@ void CUILoginNew::OpenUI()
 
 	SetVisible(TRUE);
 	Hide(FALSE);
+	// Logo Update
+	updateLogo();
 	SetLogin();
 	CUIManager::getSingleton()->RearrangeOrder(UI_LOGIN, TRUE);
 
@@ -236,10 +251,9 @@ void CUILoginNew::SetLogin()
 
 	if (pLoginData == NULL)
 		return;
-#if !defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO) 
-	if (m_pLogoFrame != NULL)
+
+	if (m_pLogoFrame != NULL && m_nLogoType == eLOGO_NORMAL)
 		m_pLogoFrame->PlayAni();
-#endif	//	!defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO)
 
 	if (m_pBtnSave != NULL)
 		m_pBtnSave->SetCheck( pLoginData->GetSaveID() );
@@ -262,13 +276,16 @@ void CUILoginNew::SetLogin()
 	{
 		m_pCbSelServer->SetCurSel(DEF_BASIC_SERVER);
 		m_pCbSelServer->SetEnable(FALSE);
-#ifdef EUROUPEAN_SERVER_LOGIN
-		m_pCbSelServer->SetEnable(TRUE);
-		if (g_iConnectEuroupean)
+//#ifdef EUROUPEAN_SERVER_LOGIN
+		if (IsGamigo(g_iCountry) == TRUE)
 		{
-			m_pCbSelServer->SetCurSel(DEF_EUROUPEAN_SERVER);
+			if (g_iCountry != ENGLAND)
+				m_pCbSelServer->SetEnable(TRUE);
+
+			if (g_iConnectEuroupean || g_iCountry == ENGLAND)
+				m_pCbSelServer->SetCurSel(DEF_EUROUPEAN_SERVER);
 		}
-#endif	//	EUROUPEAN_SERVER_LOGIN		
+//#endif	//	EUROUPEAN_SERVER_LOGIN		
 	}
 
 
@@ -283,10 +300,9 @@ void CUILoginNew::Reset()
 		m_pEbPw->ResetString();
 
 	ResetBtn();
-#if !defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO) 
+
 	if (m_pLogoFrame != NULL)
 		m_pLogoFrame->StopAni();
-#endif	//	!defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO) 	
 }
 
 void CUILoginNew::ResetBtn()
@@ -312,62 +328,105 @@ void CUILoginNew::Lock(BOOL bLock)
 	m_pBtnLogin->SetEnable(!bLock);
 }
 
+void CUILoginNew::updateLogo()
+{
+	GameDataManager* pGame = GameDataManager::getSingleton();
+
+	if (pGame == NULL)
+		return;
+
+	LoginNew* pLoginData = pGame->GetLoginData();
+
+	if (pLoginData == NULL)
+		return;
+
+	m_nLogoType = pLoginData->GetLogoType();
+
+	switch(m_nLogoType)
+	{
+	case eLOGO_NORMAL:
+		{
+			if (m_pLogoFrame != NULL)
+				m_pLogoFrame->Hide(FALSE);
+
+			if (m_pImgLogo != NULL)
+				m_pImgLogo->Hide(FALSE);
+		}
+		break;
+	case eLOGO_HOLLOWEEN:
+		{
+			if (m_pImgLogoHal != NULL)
+				m_pImgLogoHal->Hide(FALSE);
+
+			if (m_pImgHalEye != NULL)
+				m_pImgHalEye->Hide(FALSE);
+		}
+		break;
+	case eLOGO_XMAS:
+		{
+			if (m_pImgLogoXmas != NULL)
+				m_pImgLogoXmas->Hide(FALSE);
+
+			UtilHelp* pUtil = UtilHelp::getSingleton();
+			COLOR colAlpha = 0xFFFFFF00;
+
+			if (pUtil != NULL)
+			{
+				colAlpha = DEF_UI_COLOR_WHITE;
+				colAlpha = pUtil->GetColorAlpha(DEF_ALPHA_LV_XMAS_MIN, colAlpha);
+			}
+
+			if (m_pImgXmasEffect1 != NULL)
+			{
+				m_pImgXmasEffect1->Hide(FALSE);
+				m_pImgXmasEffect1->setPBT(PBT_ADDALPHA);
+				m_pImgXmasEffect1->SetAlpha(colAlpha);
+			}
+
+			if (m_pImgXmasEffect2 != NULL)
+			{
+				m_pImgXmasEffect2->Hide(FALSE);
+				m_pImgXmasEffect2->setPBT(PBT_ADDALPHA);
+				m_pImgXmasEffect2->SetAlpha(colAlpha);
+			}
+		}
+		break;
+	}
+}
+
 void CUILoginNew::initialize()
 {
-#ifdef HOLLOWEEN_EVENT_LOGIN
-	m_pImgLogoHal = (CUIImage*)findUI("img_frameHal");
-	m_pImgHalEye = (CUIImage*)findUI("img_halEye");
-
-	if (m_pImgLogoHal != NULL)
-		m_pImgLogoHal->Hide(FALSE);
-
-	if (m_pImgHalEye != NULL)
-		m_pImgHalEye->Hide(FALSE);
-#endif //	HOLLOWEEN_EVENT_LOGIN
-
-#ifdef CHRISTMAS_LOGO
-	m_pImgLogoChris = (CUIImage*)findUI("img_frameChris");
-	m_pImgChrisEffect1 = (CUIImage*)findUI("img_chrisEffect1");
-	m_pImgChrisEffect2 = (CUIImage*)findUI("img_chrisEffect2");
-
-	if (m_pImgLogoChris != NULL)
-		m_pImgLogoChris->Hide(FALSE);
-
-	UtilHelp* pUtil = UtilHelp::getSingleton();
-	COLOR colAlpha = 0xFFFFFF00;
-
-	if (pUtil != NULL)
-	{
-		colAlpha = DEF_UI_COLOR_WHITE;
-		colAlpha = pUtil->GetColorAlpha(DEF_CHRIS_ALPHA_MIN, colAlpha);
-	}
-
-	if (m_pImgChrisEffect1 != NULL)
-	{
-		m_pImgChrisEffect1->Hide(FALSE);
-		m_pImgChrisEffect1->setPBT(PBT_ADDALPHA);
-		m_pImgChrisEffect1->SetAlpha(colAlpha);
-	}
-
-	if (m_pImgChrisEffect2 != NULL)
-	{
-		m_pImgChrisEffect2->Hide(FALSE);
-		m_pImgChrisEffect2->setPBT(PBT_ADDALPHA);
-		m_pImgChrisEffect2->SetAlpha(colAlpha);
-	}
-#endif	//	CHRISTMAS_LOGO
-
-#if !defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO) 
 	m_pLogoFrame = (CUISpriteAni*)findUI("ani_frame");
 	m_pImgLogo = (CUIImage*)findUI("img_frame");
 
 	if (m_pLogoFrame != NULL)
-		m_pLogoFrame->Hide(FALSE);
+		m_pLogoFrame->Hide(TRUE);
 
 	if (m_pImgLogo != NULL)
-		m_pImgLogo->Hide(FALSE);
-#endif	//	!defined(HOLLOWEEN_EVENT_LOGIN) && !defined(CHRISTMAS_LOGO) 
-	
+		m_pImgLogo->Hide(TRUE);
+
+	m_pImgLogoHal = (CUIImage*)findUI("img_frameHal");
+	m_pImgHalEye = (CUIImage*)findUI("img_halEye");
+
+	if (m_pImgLogoHal != NULL)
+		m_pImgLogoHal->Hide(TRUE);
+
+	if (m_pImgHalEye != NULL)
+		m_pImgHalEye->Hide(TRUE);
+
+	m_pImgLogoXmas = (CUIImage*)findUI("img_frameChris");
+	m_pImgXmasEffect1 = (CUIImage*)findUI("img_chrisEffect1");
+	m_pImgXmasEffect2 = (CUIImage*)findUI("img_chrisEffect2");
+
+	if (m_pImgLogoXmas != NULL)
+		m_pImgLogoXmas->Hide(TRUE);
+
+	if (m_pImgXmasEffect1 != NULL)
+		m_pImgXmasEffect1->Hide(TRUE);
+
+	if (m_pImgXmasEffect2 != NULL)
+		m_pImgXmasEffect2->Hide(TRUE);
+		
 	m_pBtnLogin = (CUIButton*)findUI("btn_login");
 
 	if (m_pBtnLogin != NULL)
@@ -393,14 +452,21 @@ void CUILoginNew::initialize()
 		m_pCbSelServer->AddString( _S(6084, "가미고 서버로 접속"));
 		m_pCbSelServer->SetCurSel(DEF_BASIC_SERVER);
 		m_pCbSelServer->SetEnable(FALSE);
-#ifdef EUROUPEAN_SERVER_LOGIN
-		m_pCbSelServer->AddString( _S(5777, "유러피안 서버로 접속"));
-		m_pCbSelServer->SetEnable(TRUE);
-		if (g_iConnectEuroupean)
+
+//#ifdef EUROUPEAN_SERVER_LOGIN
+
+		if (IsGamigo(g_iCountry) == TRUE)
 		{
-			m_pCbSelServer->SetCurSel(DEF_EUROUPEAN_SERVER);
+			m_pCbSelServer->AddString( _S(5777, "유러피안 서버로 접속"));
+
+			if (g_iCountry != ENGLAND)
+				m_pCbSelServer->SetEnable(TRUE);
+
+			if (g_iConnectEuroupean || g_iCountry == ENGLAND)
+				m_pCbSelServer->SetCurSel(DEF_EUROUPEAN_SERVER);
 		}
-#endif	//	EUROUPEAN_SERVER_LOGIN		
+
+//#endif	//	EUROUPEAN_SERVER_LOGIN		
 	}
 
 	m_pEbId = (CUIEditBox*)findUI("eb_id");
@@ -631,148 +697,135 @@ void CUILoginNew::sendIP()
 
 void CUILoginNew::OnUpdate( float fDeltaTime, ULONG ElapsedTime )
 {
-#ifdef HOLLOWEEN_EVENT_LOGIN
-	if (m_pImgHalEye != NULL && STAGEMGR()->GetCurStage() == eSTAGE_LOGIN)
+	if (STAGEMGR()->GetCurStage() == eSTAGE_LOGIN)
 	{
-		static float falphaLv = 0.0f;
-		static bool	bUp = true;
-				
-		if (falphaLv <= 0.3f)
-			bUp = true;
-		else if (falphaLv >= 1.0f)
-			bUp = false;
-
-		if (bUp == true)
+		switch(m_nLogoType)
 		{
-			falphaLv += (fDeltaTime * HOLLOWEEN_EYE_RATIO);
-
-			if (falphaLv > 1.f)
-				falphaLv = 1.f;
-		}
-		else
-		{
-			falphaLv -= (fDeltaTime * HOLLOWEEN_EYE_RATIO);
-
-			if (falphaLv < 0.3f)
-				falphaLv = 0.3f;
-		}
-
-		UtilHelp* pUtil = UtilHelp::getSingleton();
-		COLOR colAlpha;
-
-		if (pUtil != NULL)
-		{
-			colAlpha = DEF_UI_COLOR_WHITE;
-			colAlpha = pUtil->GetColorAlpha(falphaLv, colAlpha);
-			m_pImgHalEye->SetAlpha(colAlpha);
+		case eLOGO_HOLLOWEEN:
+			updateLogoHal(fDeltaTime);
+			break;
+		case eLOGO_XMAS:
+			updateLogoXmas(fDeltaTime);
+			break;
 		}
 	}
-#endif	//	HOLLOWEEN_EVENT_LOGIN
-
-#ifdef CHRISTMAS_LOGO
-	if (m_pImgChrisEffect1 != NULL && m_pImgChrisEffect2 != NULL && STAGEMGR()->GetCurStage() == eSTAGE_LOGIN)
-	{
-		static float falphaLv1 = DEF_CHRIS_ALPHA_MIN;
-		static float falphaLv2 = DEF_CHRIS_ALPHA_MIN;
-		static bool	bUp = true;
-		static bool	bEffect1 = true;
-		static int noffset = 0;
-
-		if (bEffect1 == true)
-		{
-			if (falphaLv1 <= DEF_CHRIS_ALPHA_MIN)
-			{
-				bUp = true;
-
-				if (noffset == 1)
-				{
-					bEffect1 = false;
-					noffset = 0;
-				}
-			}
-			else if (falphaLv1 >= DEF_CHRIS_ALPHA_MAX)
-			{
-				bUp = false;
-
-				if (noffset == 0)
-				{
-					noffset = 1;
-				}
-			}
-		}
-		else
-		{
-			if (falphaLv2 <= DEF_CHRIS_ALPHA_MIN)
-			{
-				bUp = true;
-
-				if (noffset == 1)
-				{
-					bEffect1 = true;
-					noffset = 0;
-				}
-			}
-			else if (falphaLv2 >= DEF_CHRIS_ALPHA_MAX)
-			{
-				bUp = false;
-
-				if (noffset == 0)
-				{
-					noffset = 1;
-				}
-			}
-		}
-
-		if (bUp == true)
-		{
-			if (bEffect1 == true)
-			{
-				falphaLv1 += (fDeltaTime * CHRISTMAS_EFFECT_RATIO);
-
-				if (falphaLv1 > DEF_CHRIS_ALPHA_MAX)
-					falphaLv1 = DEF_CHRIS_ALPHA_MAX;
-			}
-			else
-			{
-				falphaLv2 += (fDeltaTime * CHRISTMAS_EFFECT_RATIO);
-
-				if (falphaLv2 > DEF_CHRIS_ALPHA_MAX)
-					falphaLv2 = DEF_CHRIS_ALPHA_MAX;
-			}
-		}
-		else
-		{
-			if (bEffect1 == true)
-			{
-				falphaLv1 -= (fDeltaTime * CHRISTMAS_EFFECT_RATIO);
-
-				if (falphaLv1 < DEF_CHRIS_ALPHA_MIN)
-					falphaLv1 = DEF_CHRIS_ALPHA_MIN;
-			}
-			else
-			{
-				falphaLv2 -= (fDeltaTime * CHRISTMAS_EFFECT_RATIO);
-
-				if (falphaLv2 < DEF_CHRIS_ALPHA_MIN)
-					falphaLv2 = DEF_CHRIS_ALPHA_MIN;
-			}
-		}
-
-					
-		UtilHelp* pUtil = UtilHelp::getSingleton();
-		COLOR colAlpha;
-
-		if (pUtil != NULL)
-		{
-			colAlpha = DEF_UI_COLOR_WHITE;
-			colAlpha = pUtil->GetColorAlpha(falphaLv1, colAlpha);
-			m_pImgChrisEffect1->SetAlpha(colAlpha);
-
-			colAlpha = DEF_UI_COLOR_WHITE;
-			colAlpha = pUtil->GetColorAlpha(falphaLv2, colAlpha);
-			m_pImgChrisEffect2->SetAlpha(colAlpha);
-		}
-	}
-#endif	//	CHRISTMAS_LOGO
 }
 
+void CUILoginNew::updateLogoHal( float fDelta )
+{
+	if (m_pImgHalEye == NULL)
+		return;
+
+	static float falphaLv = 0.0f;
+	static bool	bUp = true;
+
+	if (falphaLv <= DEF_ALPHA_LV_HOLLOWEEN_MIN)
+		bUp = true;
+	else if (falphaLv >= DEF_ALPHA_LV_HOLLOWEEN_MAX)
+		bUp = false;
+
+	falphaLv = calcLogoAlphaLv(eLOGO_HOLLOWEEN, falphaLv, bUp, fDelta);
+	updateLogoAlpha(m_pImgHalEye, falphaLv);
+}
+
+void CUILoginNew::updateLogoXmas( float fDelta )
+{
+	if (m_pImgXmasEffect1 == NULL || m_pImgXmasEffect2 == NULL)
+		return;
+
+	static float falphaLv1 = DEF_ALPHA_LV_XMAS_MIN;
+	static float falphaLv2 = DEF_ALPHA_LV_XMAS_MIN;
+	static bool	bUp = true; // 감소인지, 증가인지
+	static bool	bEffect1 = true; // 첫번째 인지 두번째 인지
+	static int nEffectStep = eEFFECT_STEP_READY; // 다음 이펙트로 넘어가기위한 스탭 
+		
+	float* pAlpha = NULL;
+	CUIImage* pImg = NULL;
+
+	if (bEffect1 == true)
+	{
+		pAlpha = &falphaLv1;
+		pImg = m_pImgXmasEffect1;
+	}
+	else
+	{
+		pAlpha = &falphaLv2;
+		pImg = m_pImgXmasEffect2;
+	}
+
+	if ( (*pAlpha) <= DEF_ALPHA_LV_XMAS_MIN)
+	{
+		bUp = true;
+		if (nEffectStep == eEFFECT_STEP_FINISH)
+		{
+			bEffect1 = !bEffect1;
+			nEffectStep = eEFFECT_STEP_READY;
+		}
+	}
+	else if ((*pAlpha) >= DEF_ALPHA_LV_XMAS_MAX)
+	{
+		bUp = false;
+		if (nEffectStep == eEFFECT_STEP_READY)
+			nEffectStep = eEFFECT_STEP_FINISH;
+	}
+
+	(*pAlpha) = calcLogoAlphaLv(eLOGO_XMAS, (*pAlpha), bUp, fDelta);
+
+	updateLogoAlpha(pImg, (*pAlpha));
+}
+
+float CUILoginNew::calcLogoAlphaLv(int iType, float fCurAlphaLv, bool bUp, float fDeltaTime)
+{
+	float fAlphaLv = fCurAlphaLv;
+	float fMin, fMax, fRatio;
+
+	switch(iType)
+	{
+	case eLOGO_HOLLOWEEN:
+		{
+			fRatio = DEF_HOLLOWEEN_RATIO;
+			fMin = DEF_ALPHA_LV_HOLLOWEEN_MIN;
+			fMax = DEF_ALPHA_LV_HOLLOWEEN_MAX;
+		}		
+		break;
+	case eLOGO_XMAS:
+		{
+			fRatio = DEF_XMAS_RATIO;
+			fMin = DEF_ALPHA_LV_XMAS_MIN;
+			fMax = DEF_ALPHA_LV_XMAS_MAX;
+		}
+		break;
+	default:
+		return fAlphaLv;
+	}
+
+	if (bUp == true)
+	{
+		fAlphaLv += (fDeltaTime * fRatio);
+
+		if (fAlphaLv > fMax)
+			fAlphaLv = fMax;
+	}
+	else
+	{
+		fAlphaLv -= (fDeltaTime * fRatio);
+
+		if (fAlphaLv < fMin)
+			fAlphaLv = fMin;
+	}
+
+	return fAlphaLv;
+}
+
+void CUILoginNew::updateLogoAlpha( CUIImage* pUpdateImage, float fAlphaLv )
+{
+	UtilHelp* pUtil = UtilHelp::getSingleton();
+
+	if (pUtil == NULL || pUpdateImage == NULL)
+		return;
+
+	COLOR colAlpha = DEF_UI_COLOR_WHITE;
+
+	colAlpha = pUtil->GetColorAlpha(fAlphaLv, colAlpha);
+	pUpdateImage->SetAlpha(colAlpha);
+}

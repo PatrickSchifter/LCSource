@@ -1,7 +1,7 @@
 #ifndef __DES3_H__
 #define __DES3_H__
 
-// LCDES3¿¡¼­´Â ¿À·ÎÁö single-length DES3¸¸ Áö¿øÇÏµµ·Ï ÇÔ
+// LCDES3ì—ì„œëŠ” ì˜¤ë¡œì§€ single-length DES3ë§Œ ì§€ì›í•˜ë„ë¡ í•¨
 
 inline void LCDES3_InitKey(LCDES3CONTEXT* pLCDES3Context, unsigned int nKeyHigh, unsigned int nKeyLow)
 {

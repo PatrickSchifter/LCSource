@@ -1,13 +1,13 @@
 #ifndef __DES3_RANDOM_KEY_H__
 #define __DES3_RANDOM_KEY_H__
 
-// #ifndef µîÀ¸·Î Áßº¹ include¸¦ ¹æÁöÇÒ ÇÊ¿ä ¾ø´Ù!!!!
-// ¶ÇÇÑ Àı´ë des3.cpp ÀÌ¿ÜÀÇ °÷¿¡ include ÇØ¼­´Â ¾ÈµÈ´Ù
+// #ifndef ë“±ìœ¼ë¡œ ì¤‘ë³µ includeë¥¼ ë°©ì§€í•  í•„ìš” ì—†ë‹¤!!!!
+// ë˜í•œ ì ˆëŒ€ des3.cpp ì´ì™¸ì˜ ê³³ì— include í•´ì„œëŠ” ì•ˆëœë‹¤
 
-// Key Gen¿ë Random ÇÔ¼ö ÀÓ
-// ¼­¹ö Å¬¶óÀÌ¾ğÆ® °øÅë ÇÔ¼ö·Î
-// ¸ğµÎ inlineÀÌ°í des3.cpp ÀÌ¿Ü¿¡¼­ include ÇÏ¸é ¾ÈµÊ
-// CircleMUD¿¡¼­ °¡Á®¿È
+// Key Genìš© Random í•¨ìˆ˜ ì„
+// ì„œë²„ í´ë¼ì´ì–¸íŠ¸ ê³µí†µ í•¨ìˆ˜ë¡œ
+// ëª¨ë‘ inlineì´ê³  des3.cpp ì´ì™¸ì—ì„œ include í•˜ë©´ ì•ˆë¨
+// CircleMUDì—ì„œ ê°€ì ¸ì˜´
 
 #define DES3_RANDOM_M			((unsigned int)0x7FFFFFFF)
 #define DES3_RANDOM_Q			((unsigned int)0x0001F31D)

@@ -8,9 +8,9 @@
 
 typedef struct
 {
-	int		index;			// Ä³¸¯ÅÍ ÀÎÅØ½º(Å°)
-	long	Sec;			// ÃÊ
-	long	MSec;			// ¹Ğ¸®ÃÊ
+	int		index;			// ìºë¦­í„° ì¸í…ìŠ¤(í‚¤)
+	long	Sec;			// ì´ˆ
+	long	MSec;			// ë°€ë¦¬ì´ˆ
 } S_PACKETTIME;
 
 class CPacketTime

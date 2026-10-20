@@ -1,6 +1,6 @@
 /************************************************************************/
-/* std::deque¿Í boost::recursive_mutex¸¦ ÀÌ¿ëÇÏ¿© thread safetyÇÏ°Ô ¸¸µë */
-/* deque ÀüÃ¼¸¦ lock ÇÒ°æ¿ì                                              */
+/* std::dequeì™€ boost::recursive_mutexë¥¼ ì´ìš©í•˜ì—¬ thread safetyí•˜ê²Œ ë§Œë“¬ */
+/* deque ì „ì²´ë¥¼ lock í• ê²½ìš°                                              */
 /* boost:;recursive_mutex &recursive_mutex = deque_ts<_Ty>::getmutex();            */
 /*	  {                                                                 */
 /*		  boost::recursive_mutex::scoped_lock lock(recursive_mutex);              */

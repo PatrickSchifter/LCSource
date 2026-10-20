@@ -115,9 +115,9 @@ void CPetStashManager::AddPetToStash( CItem* item )
 
 void CPetStashManager::DelPetToStash( CItem* petItem )
 {
-	//¾ÆÀÌÅÛ ÀÎº¥¿¡ ³Ö°í
+	//ì•„ì´í…œ ì¸ë²¤ì— ë„£ê³ 
 	_owner->m_inventory.addItem(petItem);
-	//Ã¢°í¿¡¼­ ¾ÆÀÌÅÛ Áö¿ì°í
+	//ì°½ê³ ì—ì„œ ì•„ì´í…œ ì§€ìš°ê³ 
 	this->DelPetItem(petItem);
 
 	LOG_INFO("PET_STASH : Take a pet Success. character index : %d, character name = %s", _owner->m_index, _owner->GetName());
@@ -233,7 +233,7 @@ void CPetStashManager::SendPetStashList()
 
 bool CPetStashManager::Insert(std::vector<CItem*> &vec)
 {
-	//Äõ¸® ³¯·Á¼­ Å×ÀÌºí¿¡¼­ µ¥ÀÌÅÍ ÀĞ¾î¿Â´ÙÀ½¿¡ ¸®½ºÆ®¿¡ ÀúÀåÇØÁØ´Ù.
+	//ì¿¼ë¦¬ ë‚ ë ¤ì„œ í…Œì´ë¸”ì—ì„œ ë°ì´í„° ì½ì–´ì˜¨ë‹¤ìŒì— ë¦¬ìŠ¤íŠ¸ì— ì €ì¥í•´ì¤€ë‹¤.
 	std::vector<CItem*>::iterator it = vec.begin();
 	std::vector<CItem*>::iterator it_end = vec.end();
 
@@ -330,7 +330,7 @@ CPet* CPetStashManager::getProxyPet()
 
 void CPetStashManager::CancelProxyPet( CItem* petItem )
 {
-	//¿äÃ» º¸³½ ¾ÆÀÌÅÛÀÌ ÇöÀç ´ë¸®À°¼º ÆêÀ¸·Î µî·ÏµÇ¾î ÀÖÁö ¾Ê´Ù
+	//ìš”ì²­ ë³´ë‚¸ ì•„ì´í…œì´ í˜„ì¬ ëŒ€ë¦¬ìœ¡ì„± í«ìœ¼ë¡œ ë“±ë¡ë˜ì–´ ìˆì§€ ì•Šë‹¤
 	CNetMsg::SP rmsg(new CNetMsg);
 	makePetStashProxyCancelUpdateMsg(rmsg, petItem->getPlus());
 	SEND_Q(rmsg, _owner->m_desc);
@@ -425,7 +425,7 @@ void CPetStashManager::UpdatePetData( int petIndex )
 
 	if(petItem->IsAPet())
 	{
-		//pet packet »ı¼º ÈÄ Àü´Ş
+		//pet packet ìƒì„± í›„ ì „ë‹¬
 		CAPet* apet = _owner->GetAPet(petItem->getPlus());
 
 		if(apet == NULL)
@@ -456,7 +456,7 @@ void CPetStashManager::UpdatePetData( int petIndex )
 	}
 	else if(petItem->IsPet())
 	{
-		//apet packet »ı¼º ÈÄ Àü´Ş
+		//apet packet ìƒì„± í›„ ì „ë‹¬
 		CPet* pet = _owner->GetPet(petItem->getPlus());
 
 		if(pet == NULL)

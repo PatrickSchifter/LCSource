@@ -1,11 +1,11 @@
 #include "BillMessage_KOR.h"
 //////////////
-// »ç¿ëÀÚ Å¸ÀÔ
-#define BILL_USER_FREE			0		// ¹«·á »ç¿ëÀÚ
+// ì‚¬ìš©ì íƒ€ì…
+#define BILL_USER_FREE			0		// ë¬´ë£Œ ì‚¬ìš©ì
 
 ////////////
-// ÁöºÒ Çü½Ä
-#define BILL_PAY_FREE			0		// ¹«·á ÀÌ¿ë
+// ì§€ë¶ˆ í˜•ì‹
+#define BILL_PAY_FREE			0		// ë¬´ë£Œ ì´ìš©
 
 #include "../ShareLib/rnsocketiohandler.h"
 #include "../ShareLib/rnsocketioservice.h"
@@ -23,7 +23,7 @@ public:
 };
 
 //////////////////
-// ºô¸µ Å¬¶óÀÌ¾ğÆ®
+// ë¹Œë§ í´ë¼ì´ì–¸íŠ¸
 class CBillingClient : public rnSocketIOHandler
 {
 public:

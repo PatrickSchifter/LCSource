@@ -8,6 +8,10 @@
 #include <Engine/Base/Timer.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Ska/Render.h>
+#include <Engine/Network/CNetwork.h>
+#include <Engine/Network/CharacterTarget.h>
+#include <Engine/Object/ActorMgr.h>
 
 extern UINT g_uiEngineVersion;
 
@@ -499,8 +503,44 @@ BOOL CItemEffect::AddPetStashEffect( int nEffectType, CTagManager *pTM )
 	if (nEffectType < 0)
 		return TRUE;
 
-	strcpy(m_PetStashEffectGroup.szEffectName, g_strPetStashEffectName[nEffectType]);
-	m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
+	CEntity* pOwner = pTM->GetOwner();
+
+	// 펫 창고 이펙트일 경우 __ROOT Tag에 붙여 줘야 하는데 펫을 타고 있을 경우에
+	// __ROOT Tag가 펫 에만 존재함. 따라서 내가 타고 있는 펫을 찾아서 해당 테그 매니저에 이펙트를 붙여준다.
+	
+	if (pOwner != NULL && pOwner->GetModelInstance() != NULL)
+	{
+		bool bRet = false;
+
+		if (pOwner->en_lNetworkID == _pNetwork->MyCharacterInfo.index)
+		{
+			if (_pNetwork->MyCharacterInfo.bPetRide == TRUE ||
+				_pNetwork->MyCharacterInfo.bWildPetRide == TRUE)
+			{
+				bRet = true;
+			}
+		}
+		else
+		{
+			ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, pOwner->en_lNetworkID);
+
+			if (pObject != NULL)
+			{
+				CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
+
+				if (pTarget->cha_bPetRide == TRUE)
+					bRet = true;
+			}
+		}
+
+		pTM = &pOwner->GetModelInstance()->m_tmSkaTagManager;
+	}
+
+	if (pTM != NULL)
+	{
+		strcpy(m_PetStashEffectGroup.szEffectName, g_strPetStashEffectName[nEffectType]);
+		m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick()); // add effect
+	}
 
 	return TRUE;
 }
@@ -593,13 +633,46 @@ void CItemEffect::DeleteRelicEffect()
 	m_nCurRelicEffectType = -1;
 }
 
-void CItemEffect::RefreshPetStashEffect( CTagManager *pTM )
+void CItemEffect::RefreshPetStashEffect(CTagManager *pTM)
 {
 	DestroyEffectGroupIfValid(m_PetStashEffectGroup.m_pEffectGroup);
 
 	if (m_PetStashEffectGroup.szEffectName[0] != 0 && pTM != NULL)
 	{
-		m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
+		CEntity* pOwner = pTM->GetOwner();
+		
+		// 펫 창고 이펙트일 경우 __ROOT Tag에 붙여 줘야 하는데 펫을 타고 있을 경우에
+		// __ROOT Tag가 펫 에만 존재함. 따라서 내가 타고 있는 펫을 찾아서 해당 테그 매니저에 이펙트를 붙여준다.
+		if (pOwner != NULL && pOwner->GetModelInstance() != NULL)
+		{
+			bool bRet = false;
+
+			if (pOwner->en_lNetworkID == _pNetwork->MyCharacterInfo.index)
+			{
+				if (_pNetwork->MyCharacterInfo.bPetRide == TRUE ||
+					_pNetwork->MyCharacterInfo.bWildPetRide == TRUE)
+				{
+					bRet = true;
+				}
+			}
+			else
+			{
+				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, pOwner->en_lNetworkID);
+
+				if (pObject != NULL)
+				{
+					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
+
+					if (pTarget->cha_bPetRide == TRUE)
+						bRet = true;
+				}
+			}
+
+			pTM = &pOwner->GetModelInstance()->m_tmSkaTagManager;
+		}
+
+		if (pTM != NULL)
+			m_PetStashEffectGroup.m_pEffectGroup = StartEffectGroup(m_PetStashEffectGroup.szEffectName, pTM, _pTimer->GetLerpedCurrentTick(), m_ItemERType, m_ItemERSubType);
 	}
 }
 

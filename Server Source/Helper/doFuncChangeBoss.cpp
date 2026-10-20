@@ -53,7 +53,7 @@ bool do_GuildBossChange(int _guildIndex, int _newBoss)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ¼ºÁÖ ±æµå´Â ¼ºÁÖ º¯°æ ºÒ°¡´É
+	// ì„±ì£¼ ê¸¸ë“œëŠ” ì„±ì£¼ ë³€ê²½ ë¶ˆê°€ëŠ¥
 	std::string select_castle_query = boost::str(boost::format("SELECT * FROM t_castle WHERE a_owner_guild_index = %d;") % _guildIndex);
 	cmd.SetQuery( select_castle_query );
 	if( cmd.Open() && cmd.m_nrecords > 0 )

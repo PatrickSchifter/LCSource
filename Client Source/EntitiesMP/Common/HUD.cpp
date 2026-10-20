@@ -13,6 +13,7 @@
 #include <Engine/Effect/CEffectManager.h>
 #include <Engine/Effect/CMdlEffect.h>
 #include <Engine/Effect/CSplinePathEffect.h>
+#include <Engine/Interface/UIManager.h>
 
 #define ENTITY_DEBUG
 
@@ -1932,66 +1933,6 @@ void HUD_ProcessEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr)
 	listDelete.clear();
 }
 
-/*void HUD_ProcessEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr)
-{
-	CEffectGroupManager::my_list listDelete;
-
-	hud_MLData->listProcess.clear();
-
-	CItemEffect *pProcItemEffect = &hud_MLData->hud_ItemEffect;
-	CItemEffect::ItemEffectGroup *pProcEffectGroup = NULL;
-
-	FLOAT fCurrentTime = _pTimer->GetLerpedCurrentTick();
-
-	pProcEffectGroup = pProcItemEffect->GetPlusEffectGroup();
-	if (pProcEffectGroup->m_pEffectGroup != NULL)
-	{
-		hud_MLData->listProcess.push_back(pProcEffectGroup->m_pEffectGroup);
-	}
-	
-	for (int ep=WEAR_HELMET; ep<WEAR_TOTAL; ++ep)
-	{
-		pProcEffectGroup = &pProcItemEffect->GetItemEffectGroup()[ep];
-
-		if (pProcEffectGroup->m_pEffectGroup != NULL)
-		{
-			hud_MLData->listProcess.push_back(pProcEffectGroup->m_pEffectGroup);
-		}
-	}
-
-	pProcEffectGroup = pProcItemEffect->GetNickEffectGroup();
-	if (pProcEffectGroup->m_pEffectGroup != NULL)
-	{
-		hud_MLData->listProcess.push_back(pProcEffectGroup->m_pEffectGroup);
-	}
-
-	if (pProcItemEffect->GetAccessoryEffect() != NULL)
-	{
-		hud_MLData->listProcess.push_back(pProcItemEffect->GetAccessoryEffect());
-	}
-	// 여기까지 Process()를 처리할 EffectGroup의 리스트를 구성하였다.
-
-	//Process()를 처리한다.
-	for (CEffectGroupManager::my_list::iterator itr=hud_MLData->listProcess.begin(); itr!=hud_MLData->listProcess.end(); ++itr)
-	{
-		CEffectGroup *pEG = (*itr);
-
-		pEG->SetProjection(ppr);
-
-		if (pEG->Active() && !pEG->Process(fCurrentTime))
-		{
-			listDelete.push_back(pEG);
-		}
-	}
-
-	for (CEffectGroupManager::my_list::iterator delItr=listDelete.begin(); delItr!=listDelete.end(); ++delItr)
-	{
-		CEffectGroupManager::Instance().Destroy(*delItr);
-	}
-
-	listDelete.clear();
-}*/
-
 class CRenderFunc
 {
 public:
@@ -2002,12 +1943,7 @@ public:
 	{
 		if (pEffect->Playing() && EffectType == pEffect->GetType())
 		{
-			/*if ((EffectType != ET_MDL) || 
-				(EffectType == ET_MDL && bOverDraw && ((CMdlEffect*)(pEffect))->GetOverDraw()) ||
-				(EffectType == ET_MDL && !bOverDraw && !((CMdlEffect*)(pEffect))->GetOverDraw()))
-			{*/
-				pEffect->Render();
-			//}
+			pEffect->Render();
 		}
 	}
 };
@@ -2031,7 +1967,7 @@ void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort*
 			{
 				for ( iter = listCreated.begin() ; iter != listCreated.end() ; ++iter)
 				{
-					if ( (*iter)->GetERSubType() == hud_MLData->hud_MI.GetModelInstance()->mi_ERType )
+					if ( (*iter)->GetERSubType() == ERS_MAKETITLE)
 					{
 						CEffect* pEffect = (*iter);
 						renderFunc((*iter));
@@ -2039,15 +1975,6 @@ void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort*
 				}
 				(*listCreated.begin())->EndRender(FALSE);
 			}
-			
-			/*if ( (*listCreated.begin())->GetERSubType() == hud_MLData->hud_MI.GetModelInstance()->mi_ERType )
-			{
-				if((*listCreated.begin())->BeginRender(ppr, pdp))
-				{
-					std::for_each(listCreated.begin(), listCreated.end(), renderFunc);
-					(*listCreated.begin())->EndRender(FALSE);
-				}
-			}*/
 		}
 		else
 		{
@@ -2056,9 +1983,9 @@ void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort*
 				CEffectManager::my_list::const_iterator iter;
 				for(iter=listCreated.begin(); iter!=listCreated.end(); ++iter)
 				{
-					if ((*iter)->GetERSubType() == hud_MLData->hud_MI.GetModelInstance()->mi_ERType)
+					if ((*iter)->GetERSubType() == ERS_MAKETITLE)
 					{
-						if((*iter)->GetERType() == ER_IN_UI && (*iter)->Playing() && !((CMdlEffect*)(*iter))->GetOverDraw())
+						if((*iter)->Playing() && !((CMdlEffect*)(*iter))->GetOverDraw())
 							(*iter)->Render();
 					}
 				}
@@ -2066,6 +1993,7 @@ void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort*
 			}
 		}
 	}
+
 	CEffectManager::my_list &listCreated = CEffectManager::Instance().GetCreatedList(ET_MDL);
 	renderFunc.EffectType = ET_MDL;
 	renderFunc.bOverDraw = TRUE;
@@ -2076,110 +2004,17 @@ void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort*
 		CEffectManager::my_list::const_iterator iter;
 		for(iter=listCreated.begin(); iter!=listCreated.end(); ++iter)
 		{
-			if ((*iter)->GetERSubType() == hud_MLData->hud_MI.GetModelInstance()->mi_ERType)
+			if ((*iter)->GetERSubType() == ERS_MAKETITLE)
 			{
-				if((*iter)->GetERType() == ER_IN_UI && (*iter)->Playing() && ((CMdlEffect*)(*iter))->GetOverDraw())
+				if((*iter)->Playing() && ((CMdlEffect*)(*iter))->GetOverDraw())
 					(*iter)->Render();
 			}
 		}
 		(*listCreated.begin())->EndRender(FALSE);
 	}
 }
-/*
-void HUD_RenderEffects(HUD_MLData *hud_MLData, CAnyProjection3D& ppr, CDrawPort* pdp)
-{
-	if (hud_MLData->listProcess.empty())
-	{
-		return;
-	}
-	
-	CEffectManager::my_list list_MDL;
-	CEffectManager::my_list list_Effect;
 
-	for (CEffectGroupManager::my_list::iterator itr=hud_MLData->listProcess.begin(); itr!=hud_MLData->listProcess.end(); ++itr)
-	{
-		CEffectGroup* pEG = (*itr);
-
-		for (CEffectGroup::vector_effect_key::const_iterator egItr=pEG->GetEffectKeyVector().begin(); 
-				egItr!=pEG->GetEffectKeyVector().end(); ++egItr)
-		{
-			CEffect* pEffect = (*egItr).m_pCreatedEffect;
-
-			if (pEffect->GetType() == ET_SPLINEPATH)
-			{
-				CSplinePathEffect* spEffect = ((CSplinePathEffect*)pEffect);
-
-				CSplinePathEffect::effect_vector& spEffectList = spEffect->GetvectorEffect();
-				CSplinePathEffect::effect_vector::iterator spItr;
-
-				for (spItr = spEffectList.begin(); spItr!=spEffectList.end(); ++spItr)
-				{
-					CEffect* spUsedEffect = (*spItr);
-					if (spUsedEffect->GetType() != ET_MDL)
-					{
-						list_Effect.push_back(spUsedEffect);
-					}
-					else
-					{
-						list_MDL.push_back(spUsedEffect);
-					}
-				}
-
-				continue;
-			}
-
-			if (pEffect->GetType() != ET_MDL)
-			{
-				list_Effect.push_back(pEffect);
-			}
-			else
-			{
-				list_MDL.push_back(pEffect);
-			}
-		}
-	}
-
-	CEffectManager::my_list::iterator eItr;
-	CRenderFunc renderFunc;
-
-	for (int ET_Count = ET_NOTHING; ET_Count< ET_COUNT; ++ET_Count)
-	{
-		renderFunc.EffectType = (EFFECT_TYPE)ET_Count;
-		renderFunc.bOverDraw = FALSE;
-
-		CEffectManager::my_list &listCreated = CEffectManager::Instance().GetCreatedList(ET_Count);
-		
-		if (listCreated.empty()) continue;
-	
-		if((*listCreated.begin())->BeginRender(ppr, pdp))
-		{
-			if (ET_Count != ET_MDL)
-			{
-				std::for_each(list_Effect.begin(), list_Effect.end(), renderFunc);
-			}
-			else
-			{
-				std::for_each(list_MDL.begin(), list_MDL.end(), renderFunc);
-			}
-
-			(*listCreated.begin())->EndRender(FALSE);
-		}
-	}
-
-	renderFunc.EffectType = ET_MDL;
-	renderFunc.bOverDraw = TRUE;
-
-	if (!list_MDL.empty())
-	{
-		if ((*list_MDL.begin())->BeginRender(ppr, pdp))
-		{
-			std::for_each(list_MDL.begin(), list_MDL.end(), renderFunc);
-			(*list_MDL.begin())->EndRender(FALSE);
-		}
-	}
-}
-*/
-void HUD_DrawSkaModel(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, FLOAT fDistance, FLOAT fHeight)
+void HUD_DrawSkaModel_Old(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, FLOAT fDistance, FLOAT fHeight)
 {
 	CModelInstance* Draw_MI = hud_MLData->hud_MI.GetModelInstance();
 	CDrawPort * pdpChar = NULL;
@@ -2200,19 +2035,19 @@ void HUD_DrawSkaModel(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMin
 	pr.FrontClipDistanceL() = 2.0f;
 	//pr.FarClipDistanceL() = 20.0f;
 	pr.ViewerPlacementL() = CPlacement3D(FLOAT3D(0,0,0.0f), ANGLE3D(0.0f, 0.0f, 0.0f));
-		
+
 	// initialize remdering
 	CAnyProjection3D apr;
 	apr = pr;
-	
+
 	// set model's position
 	CPlacement3D pl=CPlacement3D(FLOAT3D(0.0f,fHeight,fDist), ANGLE3D(180.0f,-10.0f,0));
-	
+
 	RM_BeginRenderingView(apr, pdpChar);
 	RM_SetObjectPlacement(pl);
 	RM_SetFlags(RM_GetFlags()|RMF_INSIDE|RMF_OVERDRAW);
 	RM_SetLightColor(LerpColor(C_BLACK, C_WHITE, 0.4f)|CT_OPAQUE, LerpColor(C_BLACK, C_WHITE, 0.2f)|CT_OPAQUE);
-	RM_SetLightDirection(FLOAT3D( -0.2f, -0.4f, -0.6f));  
+	RM_SetLightDirection(FLOAT3D( -0.2f, -0.4f, -0.6f));
 	RM_RenderSKA(*Draw_MI, TRUE);
 	RM_EndRenderingView();
 
@@ -2220,6 +2055,54 @@ void HUD_DrawSkaModel(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMin
 	HUD_RenderEffects(hud_MLData, apr, pdpChar);
 	pdpChar->Unlock();
 
+	delete pdpChar;
+}
+
+void HUD_DrawSkaModel(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, FLOAT fDistance, FLOAT fHeight)
+{
+	CModelInstance* Draw_MI = hud_MLData->hud_MI.GetModelInstance();
+	CModelInstance* Draw_BG = hud_MLData->hud_BG.GetModelInstance();
+
+	CDrawPort * pdpChar = NULL;
+	pdpChar = new CDrawPort(pdpCurrent, 
+		PIXaabbox2D(PIX2D(fMinX, fMinY), PIX2D(fMaxX, fMaxY)));
+
+	FLOAT fDist = fDistance;
+
+	pdpChar->Lock();
+	//pdpChar->Fill(C_BLUE|128);
+
+	// prepare projection
+	CPerspectiveProjection3D pr;
+	pr.FOVL() = AngleDeg(30.0f);
+	pr.ScreenBBoxL() = FLOATaabbox2D(FLOAT2D(0.0f, 0.0f),
+		FLOAT2D((float)pdpChar->GetWidth(),
+		(float)pdpChar->GetHeight()));
+	pr.AspectRatioL() = 1.0f;
+	pr.FrontClipDistanceL() = 1.0f;
+	pr.FarClipDistanceL() = 30.0f;
+	pr.ViewerPlacementL() = CPlacement3D(FLOAT3D(0.0f,fHeight,fDist), ANGLE3D(180.0f,-10.0f,0));;
+	pr.Prepare();
+	// initialize remdering
+	CAnyProjection3D apr;
+	apr = pr;
+
+	// set model's position
+	CPlacement3D pl = CPlacement3D(FLOAT3D(0.f, 0.0f, 0.0f), ANGLE3D(0.0f, -0.0f, 0.0f));
+
+	RM_BeginRenderingView(apr, pdpChar);
+	RM_SetObjectPlacement(pl);
+	RM_SetFlags(RM_GetFlags()|RMF_INSIDE|RMF_OVERDRAW);
+	RM_SetLightColor(LerpColor(C_BLACK, C_WHITE, 0.4f)|CT_OPAQUE, LerpColor(C_BLACK, C_WHITE, 0.2f)|CT_OPAQUE);
+	RM_SetLightDirection(FLOAT3D( -0.2f, -0.4f, -0.6f));
+	RM_RenderSKA(*Draw_BG, TRUE);
+	RM_RenderSKA(*Draw_MI, TRUE);
+	RM_EndRenderingView();
+
+	UIMGR()->RenderHUDObjectNamePopup(&hud_MLData->hud_MI, pdpChar, apr);
+	HUD_ProcessEffects(hud_MLData, apr);
+	HUD_RenderEffects(hud_MLData, apr, pdpChar);
+	pdpChar->Unlock();
 	delete pdpChar;
 }
 

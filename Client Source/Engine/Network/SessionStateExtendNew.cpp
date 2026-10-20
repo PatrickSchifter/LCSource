@@ -7,11 +7,13 @@
 #include "SessionState.h"
 #include <Common/Packet/ptype_old_extend.h>
 #include <Common/Packet/ptype_old_do_monstercombo.h>
+#include <Common/Packet/ptype_old_do_title.h>
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Contents/Login/CharacterSelect.h>
 #include <Engine/LoginJobInfo.h>
 #include <Engine/Contents/function/attendance.h>
 #include <Engine/Contents/function/News.h>
+#include <Engine/Contents/function/TitleData.h>
 
 bool CSessionState::RecvExtend(CNetworkMessage* istr)
 {
@@ -33,6 +35,9 @@ bool CSessionState::RecvExtend(CNetworkMessage* istr)
 		break;
 	case MSG_EX_NOTICE:
 		ReceiveNewsMessage(istr);
+		break;
+	case MSG_EX_TITLE_SYSTEM:
+		ReceiveNickNameMessage(istr);
 		break;
 	default:
 		bRet = false;
@@ -100,12 +105,15 @@ void CSessionState::recvExMonsterCombo( CNetworkMessage* istr )
 			ResponseClient::MCGotoWaitRoomPrompt* pPack = reinterpret_cast<ResponseClient::MCGotoWaitRoomPrompt*>(istr->GetBuffer());
 
 			CUIMsgBox_Info	MsgBoxInfo;
-			CTString tv_str;
+			CTString tv_str, strNas;
 
 			pUIManager->GetCombo()->SetBossIndex(pPack->boosIndex);
 			if(pUIManager->DoesMessageBoxExist(MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT)) return ;
 			MsgBoxInfo.SetMsgBoxInfo( _S(191, "확인" ), UMBS_YESNO, UI_NONE, MSGCMD_EX_MONSTERCOMBO_GOTO_COMBO_PROMPT );
-			tv_str.PrintF(_S(4049,"몬스터 콤보 %d Nas 입장료를 내고 입장하시겠습니까?"), pPack->nas);
+
+			strNas.PrintF("%I64d", pPack->nas);
+			pUIManager->InsertCommaToString(strNas);
+			tv_str.PrintF(_S(4049,"몬스터 콤보 %s Nas 입장료를 내고 입장하시겠습니까?"), strNas);
 			MsgBoxInfo.AddString(tv_str);
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 		}
@@ -145,4 +153,9 @@ void CSessionState::ReceiveAttendanceMessage( CNetworkMessage* istr )
 void CSessionState::ReceiveNewsMessage(CNetworkMessage* istr)
 {
 	GAMEDATAMGR()->GetNews()->RecvMsg(istr);
+}
+
+void CSessionState::ReceiveNickNameMessage(CNetworkMessage* istr)
+{
+	GAMEDATAMGR()->GetTitleNetwork()->RecvTitleMessage(istr);
 }

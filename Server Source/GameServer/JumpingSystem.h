@@ -7,33 +7,33 @@ public:
 	CJumpingSystem(CPC* _ch, int _itemIndex);
 	~CJumpingSystem(void);
 
-	// Á¡ÇÎÇÒ ¼ö ÀÖ´ÂÁö, ¾ÆÀÌÅÛÀ» Áö±Ş¹ŞÀ» ¼ö ÀÖ´ÂÁö Á¶°Ç °Ë»ç
+	// ì í•‘í•  ìˆ˜ ìˆëŠ”ì§€, ì•„ì´í…œì„ ì§€ê¸‰ë°›ì„ ìˆ˜ ìˆëŠ”ì§€ ì¡°ê±´ ê²€ì‚¬
 	bool check(void);
 
-	// Á¡ÇÎ
+	// ì í•‘
 	bool jump(void);
 
 private:
-	// Ä³¸¯ÅÍ ÃÊ±âÈ­
+	// ìºë¦­í„° ì´ˆê¸°í™”
 	bool initCharacter(void);
 
-	// Á÷¾÷ ÃÊ±âÈ­
+	// ì§ì—… ì´ˆê¸°í™”
 	bool initJob(void);
 
-	// ½ºÅ³ ÃÊ±âÈ­
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”
 	bool initSkill(void);
 
-	// ½ºÅÈ ÃÊ±âÈ­
+	// ìŠ¤íƒ¯ ì´ˆê¸°í™”
 	bool initStat(void);
 
-	// º¸»ó Áö±Ş
+	// ë³´ìƒ ì§€ê¸‰
 	bool giveReward(void);
 
 private:
-	CPC* m_pc;					// Á¡ÇÎ Ä³¸¯ÅÍ
-	const int m_itemIndex;		// Á¡ÇÎ¿¡ »ç¿ëÇÑ ¾ÆÀÌÅÛ ÀÎµ¦½º
-	int m_jumpingLevel;			// Á¡ÇÎ ·¹º§
-	int m_rewardIndex;			// º¸»ó Å×ÀÌºí ÀÎµ¦½º
+	CPC* m_pc;					// ì í•‘ ìºë¦­í„°
+	const int m_itemIndex;		// ì í•‘ì— ì‚¬ìš©í•œ ì•„ì´í…œ ì¸ë±ìŠ¤
+	int m_jumpingLevel;			// ì í•‘ ë ˆë²¨
+	int m_rewardIndex;			// ë³´ìƒ í…Œì´ë¸” ì¸ë±ìŠ¤
 };
 
 

@@ -170,6 +170,10 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 		do_CommandGuildBattleStopReq(msg, dest);
 		break;
 
+	case MSG_HELPER_GUILD_BATTLE_GIVE_UP:
+		do_CommandGuildBattleGiveupReq(msg, dest);
+		break;
+
 	case MSG_HELPER_GUILD_BATTLE_PEACE_REQ:
 		do_CommandGuildBattlePeaceReq(msg, dest);
 		break;
@@ -177,6 +181,15 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 	case MSG_HELPER_GUILD_BATTLE_KILL_REQ:
 		do_CommandGuildBattleKillReq(msg, dest);
 		break;
+	
+	case MSG_HELPER_GUILD_CONTRIBUTE_SET:
+		do_CommandGuildContributeSet(msg, dest);
+		break;
+
+	case MSG_HELPER_GUILD_CONTRIBUTE_SET_ALL:
+		do_CommandGuildContributeSetAll(msg, dest);
+		break;
+
 //0503 kwon
 	case MSG_HELPER_EVENT_MOONSTONE_UPDATE_REQ:
 		do_CommandEventMoonStoneUpdateReq(msg, dest);
@@ -218,7 +231,7 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 		do_CommandNameChange(msg, dest);
 		break;
 
-// ¾Ö¿Ïµ¿¹°
+// ì• ì™„ë™ë¬¼
 	case MSG_HELPER_PET_CREATE_REQ:
 		do_CommandPetCreateReq(msg, dest);
 		break;
@@ -228,7 +241,7 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 		do_CommandPetDeleteReq(msg, dest);
 		break;
 
-// ±æµå ³ª½º º¸°üÇÔ
+// ê¸¸ë“œ ë‚˜ìŠ¤ ë³´ê´€í•¨
 	case MSG_HELPER_GUILD_STASH_HISTORY_REQ:
 		do_CommandGuildStashHistoryReq(msg, dest);
 		break;
@@ -266,17 +279,17 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 	case MSG_HELPER_TEACHER_LOAD_REQ:
 		do_CommandTeacherLoad(msg, dest);
 		break;
-		//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ®
-	case MSG_HELPER_SEARCHFRIEND_ADD_REQ:			//ÈŞ¸éÄÉ¸¯ µî·ÏÇÏ´Â ºÎºĞ
+		//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸
+	case MSG_HELPER_SEARCHFRIEND_ADD_REQ:			//íœ´ë©´ì¼€ë¦­ ë“±ë¡í•˜ëŠ” ë¶€ë¶„
 		do_CommandEventSearchFriendMemberAddReq(msg, dest);
 		break;
-	case MSG_HELPER_SEARCHFRIEND_SELECT_ADD_REQ:			// ÄÉ¸¯ µî·Ï ¼±ÅÃ
+	case MSG_HELPER_SEARCHFRIEND_SELECT_ADD_REQ:			// ì¼€ë¦­ ë“±ë¡ ì„ íƒ
 		do_CommandEventSearchFriendMemberSelectAddReq(msg, dest);
 		break;
-	case MSG_HELPER_SEARCHFRIEND_ONETIME_ADD_REQ:			// ÇÑ½Ã°£ ´ÜÀ§ Ã¼Å©
+	case MSG_HELPER_SEARCHFRIEND_ONETIME_ADD_REQ:			// í•œì‹œê°„ ë‹¨ìœ„ ì²´í¬
 		do_CommandEventSearchFriendMemberOneTimeCheckReq(msg, dest);
 		break;
-	case MSG_HELPER_SEARCHFRIEND_LISTGOOD_REQ:			// µî·ÏµÈ Ä£±¸ º¸»ó°¡´É¿©ºÎ
+	case MSG_HELPER_SEARCHFRIEND_LISTGOOD_REQ:			// ë“±ë¡ëœ ì¹œêµ¬ ë³´ìƒê°€ëŠ¥ì—¬ë¶€
 		do_CommandEventSearchFriendMemberListGoodReq(msg, dest);
 		break;
 	case MSG_HELPER_SEARCHFRIEND_GOOD_REQ:
@@ -413,7 +426,7 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 		do_CommandEventPhoenix( msg, dest );
 		break;
 
-#ifdef DISCONNECT_HACK_CHARACTER  // ÇÙ ÇÁ·Î±×·¥ À¯Àú ¹æÃâ
+#ifdef DISCONNECT_HACK_CHARACTER  // í•µ í”„ë¡œê·¸ë¨ ìœ ì € ë°©ì¶œ
 	case MSG_HELPER_DISCONNECT_HACK_CHARACTER:
 		do_Command_DisconnectHackCharacter( msg, dest );
 		break;
@@ -493,8 +506,8 @@ void do_Command(CNetMsg::SP& msg, CDescriptor* dest)
 		do_CommandNSCreateCard(msg, dest);
 		break;
 
-	case MSG_HELPER_PARTY_INIT_REQ:
-		do_CommandPartyDataInit(msg, dest);
+	case MSG_HELPER_PARTY_EXPED_INIT_REQ:
+		do_CommandPartyAndExpedDataInit(msg, dest);
 		break;
 
 #if defined(EVENT_WORLDCUP_2010) || defined(EVENT_WORLDCUP_2010_TOTO) || defined(EVENT_WORLDCUP_2010_TOTO_STATUS) || defined(EVENT_WORLDCUP_2010_TOTO_GIFT) || defined(EVENT_WORLDCUP_2010_ATTENDANCE) || defined(EVENT_WORLDCUP_2010_KOREA)
@@ -824,7 +837,7 @@ void do_CommandTeacherGiveup(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ¿©±â¼­´Â ÇĞ»ıÀÇ teach_typeÀ» MSG_TEACH_NO_STUDENT_TYPE·Î ¼öÁ¤ÇÏ°í do_TeachCancel¸¦ È£ÃâÇÑ´Ù.
+	// ì—¬ê¸°ì„œëŠ” í•™ìƒì˜ teach_typeì„ MSG_TEACH_NO_STUDENT_TYPEë¡œ ìˆ˜ì •í•˜ê³  do_TeachCancelë¥¼ í˜¸ì¶œí•œë‹¤.
 	std::string update_characters_query = boost::str(boost::format("UPDATE t_characters SET a_teach_type = %d, a_teach_sec ='%d' WHERE a_index = %d") % teachType % GiveupCnt % studentidx);
 	cmd.SetQuery(update_characters_query);
 	if( !cmd.Update() )
@@ -865,8 +878,8 @@ void do_CommandTeacherRegister(CNetMsg::SP& msg, CDescriptor* dest)
 		>> bTeacher
 		>> studentidx;
 
-	// ÇĞ»ı µ¥ÀÌÅÍº£ÀÌ½º
-	// »çÁ¦ ¼º¸³½Ã°£À» °ß½À»ıÀº giveup Ä«¿îÆ®·Î »ç¿ëÇÑ´Ù.
+	// í•™ìƒ ë°ì´í„°ë² ì´ìŠ¤
+	// ì‚¬ì œ ì„±ë¦½ì‹œê°„ì„ ê²¬ìŠµìƒì€ giveup ì¹´ìš´íŠ¸ë¡œ ì‚¬ìš©í•œë‹¤.
 	std::string update_characters_query = boost::str(boost::format("UPDATE t_characters SET a_teach_idx =' %d -1 -1 -1 -1 -1 -1 -1 -1 -1', a_teach_type = %d WHERE a_index = %d ") 
 		% teachidx % MSG_TEACH_STUDENT_TYPE % studentidx);
 	CDBCmd cmd;
@@ -877,12 +890,12 @@ void do_CommandTeacherRegister(CNetMsg::SP& msg, CDescriptor* dest)
 	cmd.SetQuery(update_characters_query);
 	if( !cmd.Update() )
 	{
-		//µî·Ï ½ÇÆĞ
+		//ë“±ë¡ ì‹¤íŒ¨
 		cmd.Rollback();
 		return;
 	}
 
-	// ¼±»ı µ¥ÀÌÅÍº£ÀÌ½º
+	// ì„ ìƒ ë°ì´í„°ë² ì´ìŠ¤
 	std::string select_characters_query = boost::str(boost::format("SELECT a_teach_idx, a_teach_sec FROM t_characters WHERE a_index=%d ") % teachidx);
 	cmd.SetQuery(select_characters_query);
 	if( !cmd.Open() || !cmd.MoveFirst() )
@@ -932,7 +945,7 @@ void do_CommandTeacherRegister(CNetMsg::SP& msg, CDescriptor* dest)
 	cmd.SetQuery(update_characters_query_1);
 	if( !cmd.Update() )
 	{
-		//µî·Ï ½ÇÆĞ
+		//ë“±ë¡ ì‹¤íŒ¨
 		cmd.Rollback();
 		return;
 	}
@@ -955,7 +968,7 @@ bool do_TeachCancel(CDBCmd cmd, int teacheridx, int studentidx, int cancelflag, 
 
 	if(cancelflag & CANCELTEACHER)
 	{
-		// ¼±»ıºÎºĞ¾÷µ¥ÀÌÆ®-½ÃÀÛ
+		// ì„ ìƒë¶€ë¶„ì—…ë°ì´íŠ¸-ì‹œì‘
 		std::string select_characters_query = boost::str(boost::format("SELECT a_teach_idx, a_teach_sec FROM t_characters WHERE a_index = %d") % teacheridx);
 		cmd.SetQuery(select_characters_query);
 		if( !cmd.Open() || !cmd.MoveFirst() )
@@ -1006,7 +1019,7 @@ bool do_TeachCancel(CDBCmd cmd, int teacheridx, int studentidx, int cancelflag, 
 
 	if(cancelflag & CANCELSTUDENT)
 	{
-		// ÇĞ»ıÀÏ¶§´Â Á¦ÀÚ°¡ ¾øÀ¸¹Ç·Î ±×³É ¾÷µ¥ÀÌÆ®
+		// í•™ìƒì¼ë•ŒëŠ” ì œìê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ëƒ¥ ì—…ë°ì´íŠ¸
 		std::string select_characters_query = boost::str(boost::format("SELECT a_teach_idx, a_teach_sec FROM t_characters WHERE a_index = %d") % studentidx );
 
 		cmd.SetQuery(select_characters_query);
@@ -1057,7 +1070,7 @@ void do_CommandFameUp(CNetMsg::SP& msg, CDescriptor* dest)
 	cmd.Init(&gserver.m_dbchar);
 
 	cmd.BeginTrans();
-	// ¿©±â¼­´Â ¼±»ıÀÇ ¸í¼º¸¸ ¿Ã¶ó°£´Ù. °ß½À¼Ä ´Ş¼º½Ã ¸í¼ºÄ¡ ÁÖÁö ¾ÊÀ½.
+	// ì—¬ê¸°ì„œëŠ” ì„ ìƒì˜ ëª…ì„±ë§Œ ì˜¬ë¼ê°„ë‹¤. ê²¬ìŠµì… ë‹¬ì„±ì‹œ ëª…ì„±ì¹˜ ì£¼ì§€ ì•ŠìŒ.
 	std::string update_characters_query = boost::str(boost::format("UPDATE t_characters SET a_fame = a_fame + %d where a_index = %d ") % fame % teacheridx);
 	cmd.SetQuery(update_characters_query);
 
@@ -1068,7 +1081,7 @@ void do_CommandFameUp(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	cmd.Commit();
 
-	// Àü ¼­ºê¼­¹ö¿¡ °Å½Ã±â°¡ ¸í¼º ¾÷ Çß´Ù´Â °ÍÀ» º¸³¿
+	// ì „ ì„œë¸Œì„œë²„ì— ê±°ì‹œê¸°ê°€ ëª…ì„± ì—… í–ˆë‹¤ëŠ” ê²ƒì„ ë³´ëƒ„
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperFameupRepMsg(rmsg, teacheridx, -1, NULL, fame);
 	gserver.SendToAllGameServer(rmsg);
@@ -1107,9 +1120,9 @@ void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest)
 
 		CGuild *guild = gserver.m_guildlist.findguild(index);
 		guild->changeName(name);
-		// º¯°æµÇ¾ú´Ù´Â ¸Ş¼¼Áö º¸³¿
+		// ë³€ê²½ë˜ì—ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ëƒ„
 	}
-	// 3, 4´Â ·Ñ¹é
+	// 3, 4ëŠ” ë¡¤ë°±
 	else if(bguild == 3)
 	{
 		std::string update_guild_query = boost::str(boost::format("UPDATE t_guild SET a_name = '%s' WHERE a_index = %d") % (const char*)name % index);
@@ -1159,7 +1172,7 @@ void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else if(bguild == 5)
 	{
-		// ¸ğµç ¼­¹ö¿¡°Ô ±æµå ÀÌ¸§ÀÌ ¹Ù²î¾úÀ¸¹Ç·Î ¹Ù²Ù°í Àü ±æµå¿ø¿¡°Ô Åëº¸
+		// ëª¨ë“  ì„œë²„ì—ê²Œ ê¸¸ë“œ ì´ë¦„ì´ ë°”ë€Œì—ˆìœ¼ë¯€ë¡œ ë°”ê¾¸ê³  ì „ ê¸¸ë“œì›ì—ê²Œ í†µë³´
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperNameChangeRepMsg(rmsg, bguild, index, name, MSG_EX_NAMECHANGE_ERROR_SUCCESS);
 		gserver.SendToAllGameServer(rmsg);
@@ -1242,10 +1255,10 @@ void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest)
 
 		if( gMember )
 			gMember->name(name);
-			//member nickºÎºĞ »èÁ¦ : bw 060403
+			//member nickë¶€ë¶„ ì‚­ì œ : bw 060403
 			//gMember->nick(name);
 
-		// ÆÄÆ¼ ¸ÅÄª ¾÷µ¥ÀÌÆ®
+		// íŒŒí‹° ë§¤ì¹­ ì—…ë°ì´íŠ¸
 		CPartyMatchMember* pMatchMember = gserver.FindPartyMatchMemberByCharIndex(dest->m_subNo, index);
 		if (pMatchMember)		pMatchMember->SetName(name);
 		CPartyMatchParty* pMatchParty = gserver.FindPartyMatchPartyByBossIndex(dest->m_subNo, index);
@@ -1254,7 +1267,7 @@ void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest)
 		HelperPartyMatchMemberChangeInfoMsg(rmsg, index, MSG_HELPER_PARTY_MATCH_MEMBER_CHANGE_INFO_NAME, name, 0, 0);
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-		// º¯°æµÇ¾ú´Ù´Â ¸Ş¼¼Áö º¸³¿
+		// ë³€ê²½ë˜ì—ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ëƒ„
 	}
 
 	CNetMsg::SP tmsg(new CNetMsg);
@@ -1263,13 +1276,13 @@ void do_CommandNameChange(CNetMsg::SP& msg, CDescriptor* dest)
 }
 
 ///////////////////////////////////////////
-// Rank DB control in personal dungeon 4(Â÷¿øÀÇ ¹®) : bw
+// Rank DB control in personal dungeon 4(ì°¨ì›ì˜ ë¬¸) : bw
 //
 void do_CommandPD4RewardEnd(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	CDBCmd cmd;
 
-	// º¸»ó DBÀÇ ÀÏÁÖÀÏ Àü ·¹ÄÚµå¸¦ »èÁ¦ÇÑ´Ù.
+	// ë³´ìƒ DBì˜ ì¼ì£¼ì¼ ì „ ë ˆì½”ë“œë¥¼ ì‚­ì œí•œë‹¤.
 	cmd.Init(&gserver.m_dbchar);
 
 	std::string delete_pd4reward_query = "DELETE FROM t_pd4reward WHERE date_add(a_adddate, interval 6 day) < curdate();";
@@ -1581,7 +1594,7 @@ void do_CommandPD4RankInit(CNetMsg::SP& msg, CDescriptor* dest)
 	//MSG_HELPER_PD4_RANK_INIT,			// pd4 rank DB init
 
 	////////////////////////////////////////
-	// º¸»ó DB·Î ¹é¾÷ ºÎºĞ Ãß°¡
+	// ë³´ìƒ DBë¡œ ë°±ì—… ë¶€ë¶„ ì¶”ê°€
 	//
 	int charindex;
 	CLCString charname(MAX_CHAR_NAME_LENGTH + 1);
@@ -1657,10 +1670,10 @@ void do_CommandPD4RankInit(CNetMsg::SP& msg, CDescriptor* dest)
 void do_CommandPD4RankAdd(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	/////////////////////////////////////////////
-	// BANGWALL : 2005-06-23 ¿ÀÀü 11:41:59
+	// BANGWALL : 2005-06-23 ì˜¤ì „ 11:41:59
 	// Comment : Quest Start time
 
-	//MSG_HELPER_PD4_RANK_ADD,			// pd4 rank ½ÃÀÛ	 : charIndex(n)
+	//MSG_HELPER_PD4_RANK_ADD,			// pd4 rank ì‹œì‘	 : charIndex(n)
 	// index, name, exp, stime, job, level
 	int charindex;
 	CLCString charname(MAX_CHAR_NAME_LENGTH + 1);
@@ -1729,7 +1742,7 @@ void do_CommandPD4RankAdd(CNetMsg::SP& msg, CDescriptor* dest)
 	if( cmd.m_nrecords < 1)
 	{
 		/////////////////
-		// ÃÊ±âÈ­ ÈÄ¿¡ ÀÌ¹Ì µğºñ¿¡ ÀÖÀ¸¸é update
+		// ì´ˆê¸°í™” í›„ì— ì´ë¯¸ ë””ë¹„ì— ìˆìœ¼ë©´ update
 		//
 		std::string update_pd4randk = "";
 		if( strcmp(charnick, "") != 0)
@@ -1758,7 +1771,7 @@ void do_CommandPD4RankAdd(CNetMsg::SP& msg, CDescriptor* dest)
 
 void do_CommandPD4RankEnd(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	//MSG_HELPER_PD4_RANK_END,			// pd4 Á¾·á			 : charIndex(n) deadmonNum(n) bclear(c)
+	//MSG_HELPER_PD4_RANK_END,			// pd4 ì¢…ë£Œ			 : charIndex(n) deadmonNum(n) bclear(c)
 	//index, etime, deadmonNum, bclear
 
 	int charindex;
@@ -1766,7 +1779,7 @@ void do_CommandPD4RankEnd(CNetMsg::SP& msg, CDescriptor* dest)
 	char bclear=0, prebclear=0;
 	LONGLONG ctime=0, prectime=0;
 
-	// ÀÌÀü°ú ºñ±³ÇÏ¿© ÃÖ´ë ±â·ÏÀÌ¸é ¼öÁ¤ ±×·¸Áö ¾ÊÀ¸¸é return;
+	// ì´ì „ê³¼ ë¹„êµí•˜ì—¬ ìµœëŒ€ ê¸°ë¡ì´ë©´ ìˆ˜ì • ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ return;
 	// bclear, ctime(stime), deadmon
 	RefMsg(msg) >> charindex
 		>> deadmonNum
@@ -1858,13 +1871,13 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 	int zoneindex;
 	RefMsg(msg) >> guildmaxmember
 		>> zoneindex;
-	// ±âÁ¸ ±¸¼º¿¡¼­ °Ë»ç
+	// ê¸°ì¡´ êµ¬ì„±ì—ì„œ ê²€ì‚¬
 	CGuildMember* prev = gserver.m_guildlist.findmember(charindex);
 	if (prev == NULL)
 	{
-		// ÀÌÀü°Í ¾øÀ¸¸é »õ·Î µ¶¸³±æµå Ã¢¼³
+		// ì´ì „ê²ƒ ì—†ìœ¼ë©´ ìƒˆë¡œ ë…ë¦½ê¸¸ë“œ ì°½ì„¤
 
-		// DB ¿¡ ÀúÀå
+		// DB ì— ì €ì¥
 #ifdef LC_GAMIGO
 		std::string select_guild_query = boost::str(boost::format("SELECT a_name FROM t_guild WHERE a_name = '%s'") % (const char*)name);
 		CDBCmd checkcmd;
@@ -1894,6 +1907,17 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 		int guildindex = cmd.insertid();
+
+		std::string select = boost::str(boost::format(
+			"SELECT UNIX_TIMESTAMP(a_createdate) as a_createdate from t_guild where a_name = '%s'") % (const char*) name);
+		int create_date;
+
+		cmd.Init(&gserver.m_dbchar);
+		cmd.SetQuery(select);
+		cmd.Open();
+		cmd.MoveFirst();
+		cmd.GetRec("a_createdate", create_date);
+
 #ifdef LC_GAMIGO
 		std::string select_guild_member_query = boost::str(boost::format(
 			"SELECT a_guild_index, a_char_index FROM t_guildmember WHERE a_guild_index = %d AND a_char_index = %d") % guildindex % charindex);
@@ -1948,7 +1972,7 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-#ifdef DEV_GUILD_STASH		// ±æµå »ı¼º½Ã ±æµåÀåÀº Ã¢°íÀÌ¿ë°¡´É
+#ifdef DEV_GUILD_STASH		// ê¸¸ë“œ ìƒì„±ì‹œ ê¸¸ë“œì¥ì€ ì°½ê³ ì´ìš©ê°€ëŠ¥
 #ifdef LC_GAMIGO
 		std::string select_extend_guild_member_query = boost::str(boost::format(
 			"SELECT a_guild_index, a_char_index FROM t_extend_guildmember WHERE a_guild_index = %d AND a_char_index = %d")
@@ -1983,8 +2007,8 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ¸Ş¸ğ¸®¿¡ ¸¸µé±â
-		CGuild* nguild = gserver.m_guildlist.create(guildindex, name, charindex, charname);
+		// ë©”ëª¨ë¦¬ì— ë§Œë“¤ê¸°
+		CGuild* nguild = gserver.m_guildlist.create(guildindex, name, charindex, charname, create_date);
 
 		if (!nguild)
 		{
@@ -2008,20 +2032,20 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 				<< charname << delim
 				<< end;
 
-		// ¸®½ºÆ®¿¡ Ãß°¡
+		// ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 		gserver.m_guildlist.add(nguild);
-		// ¸â¹ö ¿Â¶óÀÎ
+		// ë©¤ë²„ ì˜¨ë¼ì¸
 		nguild->boss()->online(1);
 
 		{
-			// ¸®½ºÆ® Ãß°¡ °á°ú ¾Ë¸®±â
+			// ë¦¬ìŠ¤íŠ¸ ì¶”ê°€ ê²°ê³¼ ì•Œë¦¬ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildCreateNotifyMsg(rmsg, nguild);
 			gserver.SendToAllGameServer(rmsg);
 		}
 
 		{
-			// ¿Â¶óÀÎ ¾Ë¸®±â
+			// ì˜¨ë¼ì¸ ì•Œë¦¬ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildOnlineNotifyMsg(rmsg, nguild->boss());
 			RefMsg(rmsg) << zoneindex;
@@ -2029,7 +2053,7 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 
 		{
-			// ¼º°ø ÀÀ´ä
+			// ì„±ê³µ ì‘ë‹µ
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildCreateRepMsg(rmsg, charindex, MSG_GUILD_ERROR_OK);
 			SEND_Q(rmsg, dest);
@@ -2037,7 +2061,7 @@ void do_CommandGuildCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else
 	{
-		// TODO : GUILD : Æ®¸®±¸¼º½Ã
+		// TODO : GUILD : íŠ¸ë¦¬êµ¬ì„±ì‹œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildCreateRepMsg(rmsg, charindex, MSG_GUILD_ERROR_PACKET);
 		SEND_Q(rmsg, dest);
@@ -2187,7 +2211,7 @@ void do_CommandGuildLoadReq(CNetMsg::SP& msg, CDescriptor* dest)
 		gserver.SendExtendGuildMemberList(guild, dest);
 
 
-		// ±æµåÀü ÁßÀÎ ±æµåÀÌ¸é
+		// ê¸¸ë“œì „ ì¤‘ì¸ ê¸¸ë“œì´ë©´
 		if (guild->battleState() != GUILD_BATTLE_STATE_PEACE)
 		{
 			CGuild* g = gserver.m_guildlist.findguild(guild->battleIndex());
@@ -2492,6 +2516,12 @@ void do_CommandGuildMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest)
 		HelperGuildMemberAddNotifyMsg(rmsg, guildindex, charindex, name, member->pos());
 		member->zoneindex( zoneindex );
 
+		member->SetContributeExp_min(guild->m_guild_contribute_all_exp_min);
+		member->SetContributeExp_max(guild->m_guild_contribute_all_exp_max);
+		member->SetContributeFame_min(guild->m_guild_contribute_all_fame_min);
+		member->SetContributeFame_max(guild->m_guild_contribute_all_fame_max);
+
+
 	GAMELOG << init("do_CommandGuildMemberAddReq") << delim
 			<< guild->index() << delim
 			<< zoneindex 	<< end;
@@ -2522,10 +2552,12 @@ void do_CommandGuildMemberKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 	int guildindex;
 	int bossindex;
 	int charindex;
+	int guild_out_date;
 
 	RefMsg(msg) >> guildindex
 		>> bossindex
-		>> charindex;
+		>> charindex
+		>> guild_out_date;
 
 	CGuild* guild = gserver.m_guildlist.findguild(guildindex);
 	if (!guild)
@@ -2574,6 +2606,35 @@ void do_CommandGuildMemberKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 		SEND_Q(rmsg, dest);
 		return ;
 	}
+
+	{
+		int out_date = 0;
+		if(guild_out_date != 0)
+		{
+			out_date = guild_out_date;
+		}
+		else
+		{
+			std::string query = boost::str(boost::format("select a_guildindate from t_characters where a_index = %d") % charindex);
+			CDBCmd cmd;
+			cmd.Init(&gserver.m_dbchar);
+			cmd.SetQuery(query);
+			cmd.Open();
+			cmd.MoveFirst();
+			cmd.GetRec("a_guildindate", out_date);
+		}
+		
+		time_t t;
+		if(time(&t) / 60 / 60 / 24 < out_date + GUILD_REG_DELAY)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			HelperGuildMemberKickRepMsg(rmsg, guildindex, bossindex, charindex, MSG_GUILD_ERROR_REGDELAY);
+			SEND_Q(rmsg, dest);
+			return ;
+		}
+	}
+	
+
 
 	if (!gserver.DeleteGuildMember(guildindex, guild->name(), charindex, kick->GetName(), true))
 	{
@@ -2660,7 +2721,7 @@ void do_CommandGuildChangeBossReq(CNetMsg::SP& msg, CDescriptor* dest)
 	if( cmd.Open() && cmd.m_nrecords > 0 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildChangeBossRepMsg(rmsg, guildindex, current, change, MSG_GUILD_ERROR_NOTFOUNDMEMBER);  // ¼ºÁÖ´Â ¾ÈµÊ
+		HelperGuildChangeBossRepMsg(rmsg, guildindex, current, change, MSG_GUILD_ERROR_NOTFOUNDMEMBER);  // ì„±ì£¼ëŠ” ì•ˆë¨
 		SEND_Q(rmsg, dest);
 		return ;
 	}
@@ -2960,7 +3021,7 @@ void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest)
 	CGuild* guild = member->guild();
 	if (guild->membercount() < 2)
 	{
-		// 1ÀÎ ±æµå »èÁ¦ : ¸â¹ö¸¦ DB¿¡¼­¸¸ »èÁ¦
+		// 1ì¸ ê¸¸ë“œ ì‚­ì œ : ë©¤ë²„ë¥¼ DBì—ì„œë§Œ ì‚­ì œ
 		gserver.DeleteGuildMember(guild->index(), guild->name(), charindex, member->GetName(), false);
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildMemberOutNotifyMsg(rmsg, guild->index(), charindex, member->GetName());
@@ -2970,18 +3031,18 @@ void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else if (member->pos() == MSG_GUILD_POSITION_BOSS)
 	{
-		// ±æµåÀå ÀÌÀÓ
+		// ê¸¸ë“œì¥ ì´ì„
 		CGuildMember* newboss = NULL;
 
-		// ºÎ°ü1 °Ë»ç
+		// ë¶€ê´€1 ê²€ì‚¬
 		if (guild->officer(0) != NULL)
 			newboss = guild->officer(0);
 
-		// ºÎ°ü2 °Ë»ç
+		// ë¶€ê´€2 ê²€ì‚¬
 		else if (guild->officer(1) != NULL)
 			newboss = guild->officer(1);
 
-		// ÀÏ¹İ ±æ¿ø °Ë»ç
+		// ì¼ë°˜ ê¸¸ì› ê²€ì‚¬
 		else
 		{
 			int i;
@@ -2994,7 +3055,7 @@ void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest)
 			}
 		}
 
-		// ¾Æ¹«µµ ¾ÈµÇ¸é ±×³É »èÁ¦
+		// ì•„ë¬´ë„ ì•ˆë˜ë©´ ê·¸ëƒ¥ ì‚­ì œ
 		if (newboss == NULL)
 		{
 			gserver.DeleteGuildMember(guild->index(), guild->name(), charindex, member->GetName(), false);
@@ -3005,7 +3066,7 @@ void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ¼±ÅÃµÈ ±æ¿øÀ» º¸½º·Î : ¿À·ù ¹ß»ı½Ã ±æµå¸â¹ö¿¡¼­ »èÁ¦
+		// ì„ íƒëœ ê¸¸ì›ì„ ë³´ìŠ¤ë¡œ : ì˜¤ë¥˜ ë°œìƒì‹œ ê¸¸ë“œë©¤ë²„ì—ì„œ ì‚­ì œ
 
 		CDBCmd cmd;
 		cmd.Init(&gserver.m_dbchar);
@@ -3060,7 +3121,7 @@ void do_CommandCharacterDelete(CNetMsg::SP& msg, CDescriptor* dest)
 		HelperGuildChangeBossNotifyMsg(rmsg, guild->index(), member->charindex(), newboss->charindex());
 		gserver.SendToAllGameServer(rmsg);
 	}
-	// ±æµå Å»Åğ
+	// ê¸¸ë“œ íƒˆí‡´
 	do_CommandGuildMemberOutReq_real(dest, member->guild()->index(), member->charindex(), false);
 }
 
@@ -3083,7 +3144,7 @@ void do_CommandGuildBreakUpReq_real(CDescriptor* dest, int bossindex, int guildi
 		return ;
 	}
 
-	// ±æµåÀü Áß
+	// ê¸¸ë“œì „ ì¤‘
 	if (guild->battleState() != GUILD_BATTLE_STATE_PEACE)
 		return;
 
@@ -3101,7 +3162,7 @@ void do_CommandGuildBreakUpReq_real(CDescriptor* dest, int bossindex, int guildi
 			<< guild->name()
 			<< end;
 
-	// TODO : GUILD : ÇÏÀ§±æµå µ¶¸³
+	// TODO : GUILD : í•˜ìœ„ê¸¸ë“œ ë…ë¦½
 
 	gserver.m_guildlist.Remove(guild);
 
@@ -3196,17 +3257,19 @@ void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int guildindex1;
 	int guildindex2;
-	int prize;
+	int prize_nas;
+	int prize_gp;
 	int zone;
 	int time;
 
 	RefMsg(msg) >> guildindex1
 		>> guildindex2
-		>> prize
+		>> prize_nas
+		>> prize_gp
 		>> zone
 		>> time;
 
-	// ÇïÆÛ 2¹è
+	// í—¬í¼ 2ë°°
 	time *= 2;
 
 	CGuild* g1 = gserver.m_guildlist.findguild(guildindex1);
@@ -3218,7 +3281,7 @@ void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest)
 	// DB UPDATE
 	std::string update_guild_query = boost::str(boost::format(
 		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_state=%d WHERE a_index=%d")
-		% guildindex2 %( prize * 2 * 95 / 100) % zone % time % GUILD_BATTLE_STATE_WAIT % guildindex1);
+		% guildindex2 %( prize_nas * 95 / 100) % zone % time % GUILD_BATTLE_STATE_WAIT % guildindex1);
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(update_guild_query);
@@ -3229,7 +3292,7 @@ void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	std::string update_guild_query_1 = boost::str(boost::format(
 		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_state=%d WHERE a_index=%d")
-		% guildindex1 % (prize * 2 * 95 / 100) % zone % time % GUILD_BATTLE_STATE_WAIT % guildindex2);
+		% guildindex1 % (prize_nas * 95 / 100) % zone % time % GUILD_BATTLE_STATE_WAIT % guildindex2);
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(update_guild_query_1);
 	if (!cmd.Update())
@@ -3237,16 +3300,16 @@ void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ¼¼ºÎ ¼ÂÆÃ
-	g1->BattleSet(guildindex2, prize * 2 * 95 / 100, zone);
+	// ì„¸ë¶€ ì…‹íŒ…
+	g1->BattleSet(guildindex2, prize_nas * 95 / 100, zone, prize_gp * 90 / 100);
 	g1->BattleTime(time);
 	g1->BattleState(GUILD_BATTLE_STATE_WAIT);
 
-	g2->BattleSet(guildindex1, prize * 2 * 95 / 100, zone);
+	g2->BattleSet(guildindex1, prize_nas * 95 / 100, zone, prize_gp * 90 / 100);
 	g2->BattleTime(time);
 	g2->BattleState(GUILD_BATTLE_STATE_WAIT);
 
-	// ½ÃÀÛ ½Ã°£ ¼ÂÆÃ
+	// ì‹œì‘ ì‹œê°„ ì…‹íŒ…
 	g1->BattlePulse(gserver.m_pulse);
 	g2->BattlePulse(gserver.m_pulse);
 
@@ -3256,13 +3319,13 @@ void do_CommandGuildBattleReq(CNetMsg::SP& msg, CDescriptor* dest)
 			<< "<==>" << delim
 			<< g2->index() << delim
 			<< g2->name() << delim
-			<< g1->battlePrize() << delim
+			<< g1->battlePrizeNas() << delim
 			<< g1->battleZone() << delim
 			<< g1->battleTime()
 			<< end;
 
 	CNetMsg::SP rmsg(new CNetMsg);
-	HelperGuildBattleRepMsg(rmsg, g1, g2, prize);
+	HelperGuildBattleRepMsg(rmsg, g1, g2, prize_nas);
 	gserver.SendToAllGameServer(rmsg);
 }
 
@@ -3270,9 +3333,11 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int guildindex1;
 	int guildindex2;
+	int isAccept;
 
 	RefMsg(msg) >> guildindex1
-		>> guildindex2;
+		>> guildindex2
+		>> isAccept;
 
 	CGuild* g1 = gserver.m_guildlist.findguild(guildindex1);
 	CGuild* g2 = gserver.m_guildlist.findguild(guildindex2);
@@ -3294,13 +3359,14 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ½Â¸®±æµå
+	// ìŠ¹ë¦¬ê¸¸ë“œ
 	CGuild* winner;
 
-	int prize = g1->battlePrize();
+	int prize_nas = g1->battlePrizeNas();
+	int prize_gp = g1->battlePrizeGp();
 	int zone = g1->battleZone();
 
-	// killcount ºñ±³
+	// killcount ë¹„êµ
 	if (g1->killCount() > g2->killCount())
 	{
 		winner = g1;
@@ -3313,44 +3379,158 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 	{
 		winner = NULL;
 	}
-	// msg ºÎÅÍ ¸¸µç´Ù
+	// msg ë¶€í„° ë§Œë“ ë‹¤
 	CNetMsg::SP rmsg(new CNetMsg);
 	if (winner)
-		HelperGuildBattleStopRepMsg(rmsg, winner->index(), g1, g2);
+		HelperGuildBattleStopRepMsg(rmsg, winner->index(), g1, g2, isAccept);
 	else
-		HelperGuildBattleStopRepMsg(rmsg, -1, g1, g2);
+		HelperGuildBattleStopRepMsg(rmsg, -1, g1, g2, isAccept);
+
+	if(isAccept == true)
+	{
+		int origin_nas = prize_nas * 100 / 95;
+		int fee = origin_nas - prize_nas;
+
+		{
+			std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( g1->index() );
+			if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+			{
+				CGuildStash *ptmpGuildStash = itr->second ;
+				ptmpGuildStash->GetLock(g1->index());
+			}
+			else		// ì²˜ìŒ ë¡œë”©
+			{
+				CGuildStash* pGuildStash = new CGuildStash(g1->index());
+				gserver.m_guildstash.insert( std::make_pair( g1->index(), pGuildStash ) );
+				pGuildStash->GetLock(g1->index());
+				itr = gserver.m_guildstash.find( g1->index() );
+			}
+
+			itr->second->setMoney(fee);
+			itr->second->TakeFromDB(&gserver.m_dbchar);
+			itr->second->UnLock(g1->index());
+		}
+		{
+			std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( g2->index() );
+			if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+			{
+				CGuildStash *ptmpGuildStash = itr->second ;
+				ptmpGuildStash->GetLock(g2->index());
+			}
+			else		// ì²˜ìŒ ë¡œë”©
+			{
+				CGuildStash* pGuildStash = new CGuildStash(g2->index());
+				gserver.m_guildstash.insert( std::make_pair( g2->index(), pGuildStash ) );
+				pGuildStash->GetLock(g2->index());
+				itr = gserver.m_guildstash.find( g2->index() );
+			}
+
+			itr->second->setMoney(fee);
+			itr->second->TakeFromDB(&gserver.m_dbchar);
+			itr->second->UnLock(g2->index());
+		}
+	}
+	else
+	{
+		if(winner)
+		{
+			CGuild* win_guild;
+			CGuild* lose_guild;
+
+			if(winner == g1)
+			{
+				win_guild = g1;
+				lose_guild = g2;
+			}
+			else
+			{
+				win_guild = g2;
+				lose_guild = g1;
+			}
+
+			//ê¸¸ë“œì „íˆ¬ ë³´ìƒì²˜ë¦¬
+			{
+				{
+					std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( win_guild->index() );
+					if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+					{
+						CGuildStash *ptmpGuildStash = itr->second ;
+						ptmpGuildStash->GetLock(win_guild->index());
+					}
+					else		// ì²˜ìŒ ë¡œë”©
+					{
+						CGuildStash* pGuildStash = new CGuildStash(win_guild->index());
+						gserver.m_guildstash.insert( std::make_pair( win_guild->index(), pGuildStash ) );
+						pGuildStash->GetLock(win_guild->index());
+						itr = gserver.m_guildstash.find( win_guild->index() );
+					}
+
+					itr->second->setMoney(prize_nas);
+					itr->second->KeepToDB(&gserver.m_dbchar);
+					itr->second->UnLock(win_guild->index());
+				}
+
+				{
+					std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( lose_guild->index() );
+					if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+					{
+						CGuildStash *ptmpGuildStash = itr->second ;
+						ptmpGuildStash->GetLock(win_guild->index());
+					}
+					else		// ì²˜ìŒ ë¡œë”©
+					{
+						CGuildStash* pGuildStash = new CGuildStash(lose_guild->index());
+						gserver.m_guildstash.insert( std::make_pair( lose_guild->index(), pGuildStash ) );
+						pGuildStash->GetLock(win_guild->index());
+						itr = gserver.m_guildstash.find( lose_guild->index() );
+					}
+
+					itr->second->setMoney(prize_nas * 100 / 95);
+					itr->second->TakeFromDB(&gserver.m_dbchar);
+					itr->second->UnLock(win_guild->index());
+				}
+			}
+		}
+	}
 
 	if (winner)
 	{
 		if (winner == g1)
 		{
-			g2->BattleSet(-1, 0, -1);
+			g2->BattleSet(-1, 0, -1, 0);
 			g2->BattleTime(0);
 			g2->KillCount(0);
 			g2->BattleState(GUILD_BATTLE_STATE_PEACE);
+			g1->m_battle_win_count++;
+			g2->m_battle_lose_count++;
 		}
 		else if (winner == g2)
 		{
-			g1->BattleSet(-1, 0, -1);
+			g1->BattleSet(-1, 0, -1, 0);
 			g1->BattleTime(0);
 			g1->KillCount(0);
 			g1->BattleState(GUILD_BATTLE_STATE_PEACE);
+			g2->m_battle_win_count++;
+			g1->m_battle_lose_count++;
 		}
 
 		winner->BattleState(GUILD_BATTLE_STATE_PRIZE);
 	}
 	else
 	{
-		g1->BattleSet(-1, prize / 2, -1);
+		g1->BattleSet(-1, prize_nas / 2, -1, prize_gp / 2);
 		g1->BattleState(GUILD_BATTLE_STATE_PRIZE);
-		g2->BattleSet(-1, prize / 2, -1);
+		g2->BattleSet(-1, prize_nas / 2, -1, prize_gp / 2);
 		g2->BattleState(GUILD_BATTLE_STATE_PRIZE);
 	}
 
+	g1->m_battle_total_count++;
+	g2->m_battle_total_count++;
+
 	// DB UPDATE
 	std::string update_guild_query = boost::str(boost::format(
-		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d WHERE a_index=%d")
-		% g1->battleIndex() % g1->battlePrize() % g1->battleZone() % g1->battleTime() % g1->killCount() % (int)g1->battleState() % g1->index());
+		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d, a_battle_fight = %d, a_battle_win = %d, a_battle_lose = %d WHERE a_index=%d")
+		% g1->battleIndex() % g1->battlePrizeNas() % g1->battleZone() % g1->battleTime() % g1->killCount() % (int)g1->battleState() % g1->m_battle_total_count % g1->m_battle_win_count % g1->m_battle_lose_count % g1->index());
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(update_guild_query);
@@ -3360,8 +3540,8 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 
 	std::string update_guild_query_1 = boost::str(boost::format(
-		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d WHERE a_index=%d")
-		% g2->battleIndex() % g2->battlePrize() % g2->battleZone() % g2->battleTime() % g2->killCount() % (int)g2->battleState() % g2->index());
+		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d, a_battle_fight = %d, a_battle_win = %d, a_battle_lose = %d WHERE a_index=%d")
+		% g2->battleIndex() % g2->battlePrizeNas() % g2->battleZone() % g2->battleTime() % g2->killCount() % (int)g2->battleState() % g2->m_battle_total_count % g2->m_battle_win_count % g2->m_battle_lose_count % g2->index());
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(update_guild_query_1);
 	if (!cmd.Update())
@@ -3375,8 +3555,9 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 			<< "<==>" << delim
 			<< g2->index() << delim
 			<< g2->name() << delim
-			<< prize << delim
+			<< prize_nas << delim
 			<< zone << delim
+			<< prize_gp << delim
 			<< "WINNER" << delim;
 
 	if (winner)
@@ -3386,6 +3567,154 @@ void do_CommandGuildBattleStopReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	GAMELOG	<< end;
 	gserver.SendToAllGameServer(rmsg);
+
+	g1->m_isUseTheStashAndSkill = true;
+	g2->m_isUseTheStashAndSkill = true;
+
+
+	//DB LOG ì €ì¥
+	{
+		std::string query = boost::str(boost::format("INSERT INTO t_guildbattle_log values(0, %d, %d, %d, now() - INTERVAL %d MINUTE, now(), %d, %d, %d, %d )")
+			% g1->index() % g2->index() %zone % ((g1->battleTime() - 600 * 5) / 1000)  % prize_nas % prize_gp % g1->killCount() %g2->killCount());
+
+		CDBCmd cmd;
+		cmd.Init(&gserver.m_dbchar);
+		cmd.SetQuery(query);
+		if (!cmd.Update())
+		{
+			LOG_ERROR("query error. query[%s]", query.c_str());
+			return ;
+		}
+	}
+}
+
+void do_CommandGuildBattleGiveupReq(CNetMsg::SP& msg, CDescriptor* dest)
+{
+	int giveup_guild_index;
+	int win_guild_index;
+
+	RefMsg(msg) >> giveup_guild_index
+		>> win_guild_index;
+
+	CGuild* giveup_guild = gserver.m_guildlist.findguild(giveup_guild_index);
+	CGuild* win_guild = gserver.m_guildlist.findguild(win_guild_index);
+
+	if (!giveup_guild || !win_guild)
+		return;
+
+	if (giveup_guild->battleState() != GUILD_BATTLE_STATE_WAIT &&
+		giveup_guild->battleState() != GUILD_BATTLE_STATE_ING &&
+		giveup_guild->battleState() != GUILD_BATTLE_STATE_STOP_WAIT)
+	{
+		return ;
+	}
+
+	if (win_guild->battleState() != GUILD_BATTLE_STATE_WAIT &&
+		win_guild->battleState() != GUILD_BATTLE_STATE_ING &&
+		win_guild->battleState() != GUILD_BATTLE_STATE_STOP_WAIT)
+	{
+		return ;
+	}
+
+	int prize_nas = giveup_guild->battlePrizeNas();
+	int prize_gp = giveup_guild->battlePrizeGp();
+	int zone = giveup_guild->battleZone();
+
+	// msg ë¶€í„° ë§Œë“ ë‹¤
+	CNetMsg::SP rmsg(new CNetMsg);
+	HelperGuildBattleStopRepMsg(rmsg, win_guild->index(), giveup_guild, win_guild);
+	
+	//ê¸¸ë“œì „íˆ¬ ë³´ìƒì²˜ë¦¬
+	{
+		std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( win_guild->index() );
+		if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+		{
+			CGuildStash *ptmpGuildStash = itr->second ;
+			ptmpGuildStash->GetLock(win_guild->index());
+		}
+		else		// ì²˜ìŒ ë¡œë”©
+		{
+			CGuildStash* pGuildStash = new CGuildStash(win_guild->index());
+			gserver.m_guildstash.insert( std::make_pair( win_guild->index(), pGuildStash ) );
+			pGuildStash->GetLock(win_guild->index());
+			itr = gserver.m_guildstash.find( win_guild->index() );
+		}
+
+		itr->second->setMoney(prize_nas);
+		itr->second->KeepToDB(&gserver.m_dbchar);
+		itr->second->UnLock(win_guild->index());
+	}
+
+	{
+		std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( giveup_guild->index() );
+		if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
+		{
+			CGuildStash *ptmpGuildStash = itr->second ;
+			ptmpGuildStash->GetLock(win_guild->index());
+		}
+		else		// ì²˜ìŒ ë¡œë”©
+		{
+			CGuildStash* pGuildStash = new CGuildStash(giveup_guild->index());
+			gserver.m_guildstash.insert( std::make_pair( giveup_guild->index(), pGuildStash ) );
+			pGuildStash->GetLock(win_guild->index());
+			itr = gserver.m_guildstash.find( giveup_guild->index() );
+		}
+
+		itr->second->setMoney(prize_nas * 100 / 95);
+		itr->second->TakeFromDB(&gserver.m_dbchar);
+		itr->second->UnLock(win_guild->index());
+	}
+	
+	giveup_guild->BattleSet(-1, 0, -1, 0);
+	giveup_guild->BattleTime(0);
+	giveup_guild->KillCount(0);
+	giveup_guild->BattleState(GUILD_BATTLE_STATE_PEACE);
+	giveup_guild->m_battle_lose_count++;
+	win_guild->m_battle_win_count++;
+	win_guild->BattleState(GUILD_BATTLE_STATE_PRIZE);
+	giveup_guild->m_battle_total_count++;
+	win_guild->m_battle_total_count++;
+
+	// DB UPDATE
+	std::string update_guild_query = boost::str(boost::format(
+		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d, a_battle_fight = %d, a_battle_win = %d, a_battle_lose = %d WHERE a_index=%d")
+		% giveup_guild->battleIndex() % giveup_guild->battlePrizeNas() % giveup_guild->battleZone() % giveup_guild->battleTime() % giveup_guild->killCount() % (int)giveup_guild->battleState() % giveup_guild->m_battle_total_count % giveup_guild->m_battle_win_count % giveup_guild->m_battle_lose_count % giveup_guild->index());
+	CDBCmd cmd;
+	cmd.Init(&gserver.m_dbchar);
+	cmd.SetQuery(update_guild_query);
+	if (!cmd.Update())
+	{
+		return ;
+	}
+
+	std::string update_guild_query_1 = boost::str(boost::format(
+		"UPDATE t_guild SET a_battle_index=%d, a_battle_prize=%d, a_battle_zone=%d, a_battle_time=%d, a_battle_killcount=%d, a_battle_state=%d, a_battle_fight = %d, a_battle_win = %d, a_battle_lose = %d WHERE a_index=%d")
+		% win_guild->battleIndex() % win_guild->battlePrizeNas() % win_guild->battleZone() % win_guild->battleTime() % win_guild->killCount() % (int)win_guild->battleState() % win_guild->m_battle_total_count % win_guild->m_battle_win_count % win_guild->m_battle_lose_count % win_guild->index());
+	cmd.Init(&gserver.m_dbchar);
+	cmd.SetQuery(update_guild_query_1);
+	if (!cmd.Update())
+	{
+		return ;
+	}
+
+	GAMELOG << init("GUILD BATTLE END")
+		<< win_guild->index() << delim
+		<< win_guild->name() << delim
+		<< "<==>" << delim
+		<< giveup_guild->index() << delim
+		<< giveup_guild->name() << delim
+		<< prize_nas << delim
+		<< zone << delim
+		<< prize_gp << delim
+		<< "WINNER" << delim;
+
+	GAMELOG << win_guild->index();
+
+	GAMELOG	<< end;
+	gserver.SendToAllGameServer(rmsg);
+
+	win_guild->m_isUseTheStashAndSkill = true;
+	giveup_guild->m_isUseTheStashAndSkill = true;
 }
 
 void do_CommandGuildBattlePeaceReq(CNetMsg::SP& msg, CDescriptor* dest)
@@ -3402,7 +3731,7 @@ void do_CommandGuildBattlePeaceReq(CNetMsg::SP& msg, CDescriptor* dest)
 	if (g->battleState() != GUILD_BATTLE_STATE_PRIZE)
 		return;
 
-	g->BattleSet(-1, 0, -1);
+	g->BattleSet(-1, 0, -1, 0);
 	g->BattleTime(0);
 	g->KillCount(0);
 	g->BattleState(GUILD_BATTLE_STATE_PEACE);
@@ -3479,7 +3808,7 @@ void do_CommandEventMoonStoneUpdateReq(CNetMsg::SP& msg, CDescriptor* dest)
 	gserver.m_nMoonStoneNas += 200;
 
 	const static int maxNas = 10000000;
-	if(gserver.m_nMoonStoneNas > maxNas)//1000¸¸ ÀÌ»ó ¾È¸ğÀÌµµ·Ï ÇÑ´Ù.
+	if(gserver.m_nMoonStoneNas > maxNas)//1000ë§Œ ì´ìƒ ì•ˆëª¨ì´ë„ë¡ í•œë‹¤.
 		gserver.m_nMoonStoneNas = maxNas;
 
 	std::string select_event_dev_query = boost::str(boost::format(
@@ -3543,20 +3872,161 @@ void do_CommandEventMoonStoneJackPotReq(CNetMsg::SP& msg, CDescriptor* dest)
 	HelperEventMoonStoneJackPotRepMsg(rmsg, gserver.m_nMoonStoneNas, chaindex);
 	SEND_Q(rmsg, dest);
 
-	gserver.m_nMoonStoneNas = 0; //ÃÊ±âÈ­.
+	gserver.m_nMoonStoneNas = 0; //ì´ˆê¸°í™”.
 
 	CNetMsg::SP hmsg(new CNetMsg);
 	HelperEventMoonStoneUpdateRepMsg(hmsg, gserver.m_nMoonStoneNas);
 	gserver.SendToAllGameServer(hmsg);
 }
 
+void do_CommandGuildContributeSet(CNetMsg::SP& msg, CDescriptor* dest)
+{
+	int char_index;
+	int guild_index;
+	int exp, fame;
+	RefMsg(msg) >> char_index
+		>> guild_index
+		>> exp
+		>> fame;
+
+	CGuildMember* gMember = gserver.m_guildlist.findmember( char_index );
+	if(gMember == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetRep(rmsg, char_index, exp, fame, MSG_GUILD_ERROR_CONTRIBUTE_SET_FAIL);
+		SEND_Q(rmsg, dest);
+		return ;
+	}
+	
+	std::string query = boost::str(boost::format(
+		"UPDATE t_extend_guildmember SET a_contribute_exp = %d, a_contribute_fame = %d"
+		" WHERE a_guild_index = %d AND a_char_index = %d")
+		% exp % fame % guild_index % char_index );
+
+	CDBCmd cmd;
+	cmd.Init(&gserver.m_dbchar);
+	cmd.SetQuery(query);
+	if (!cmd.Update())
+	{
+		LOG_ERROR("Query error. query[%s]", query.c_str());
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetRep(rmsg, char_index, exp, fame, MSG_GUILD_ERROR_CONTRIBUTE_SET_FAIL);
+		SEND_Q(rmsg, dest);
+		return ;
+	}
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetRep(rmsg, char_index, exp, fame, 0);
+		SEND_Q(rmsg, dest);
+	}
+
+	gMember->contributeExp(exp);
+	gMember->contributeFame(fame);
+}
+
+void do_CommandGuildContributeSetAll(CNetMsg::SP& msg, CDescriptor* dest)
+{
+	int char_index;
+	int exp, fame;
+	int exp_min, exp_max;
+	int fame_min, fame_max;
+	int guild_index;
+	RefMsg(msg) >> char_index
+		>> guild_index
+		>> exp
+		>> fame
+		>> exp_min
+		>> exp_max
+		>> fame_min
+		>> fame_max;
+
+	CGuild* guild = gserver.m_guildlist.findguild(guild_index);
+
+	if(guild == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetAllRep(rmsg, char_index, guild_index, exp, fame, exp_min, exp_max, fame_min, fame_max, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL);
+		SEND_Q(rmsg, dest);
+		return ;
+	}
+
+	std::string query = boost::str(boost::format(
+		"UPDATE t_extend_guildmember SET a_contribute_exp = %d, a_contribute_fame = %d"
+		", a_contribute_exp_min = %d, a_contribute_exp_max = %d"
+		", a_contribute_fame_min = %d, a_contribute_fame_max = %d"
+		" WHERE a_guild_index = %d")
+		% exp % fame % exp_min % exp_max % fame_min % fame_max % guild_index);
+
+	CDBCmd cmd;
+	cmd.Init(&gserver.m_dbchar);
+	cmd.BeginTrans();
+
+	cmd.SetQuery(query);
+	if (!cmd.Update())
+	{
+		LOG_ERROR("Query error. query[%s]", query.c_str());
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetAllRep(rmsg, char_index, guild_index, exp, fame, exp_min, exp_max, fame_min, fame_max, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL);
+		SEND_Q(rmsg, dest);
+		return ;
+	}
+
+	std::string query_ = boost::str(boost::format(
+		"UPDATE t_extend_guild set a_contribute_exp_min = %d, a_contribute_exp_max = %d, a_contribute_fame_min = %d, a_contribute_fame_max = %d"
+		" WHERE a_guild_index = %d")
+		% exp_min % exp_max % fame_min % fame_max % guild_index);
+
+	cmd.SetQuery(query_);
+	if(!cmd.Update())
+	{
+		cmd.Rollback();
+
+		LOG_ERROR("Query error. query[%s]", query.c_str());
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetAllRep(rmsg, char_index, guild_index, exp, fame, exp_min, exp_max, fame_min, fame_max, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL);
+		SEND_Q(rmsg, dest);
+		return ;
+	}
+
+	cmd.Commit();
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildContributeSetAllRep(rmsg, char_index, guild_index, exp, fame, exp_min, exp_max, fame_min, fame_max, 0);
+		SEND_Q(rmsg, dest);
+	}
+
+	CGuildMember* member;
+	for( int i = 0 ; i < guild->membercount(); i++ )
+	{
+		member = guild->member(i);
+		if(member == NULL)
+			continue;
+
+		member->contributeExp(exp);
+		member->contributeFame(fame);
+		member->SetContributeExp_min(exp_min);
+		member->SetContributeExp_max(exp_max);
+		member->SetContributeFame_min(fame_min);
+		member->SetContributeFame_max(fame_max);
+	}
+
+	guild->m_guild_contribute_all_exp_min = exp_min;
+	guild->m_guild_contribute_all_exp_max = exp_max;
+	guild->m_guild_contribute_all_fame_min = fame_min;
+	guild->m_guild_contribute_all_fame_max = fame_max;
+}
+
+
 void do_CommandFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	UpdateServer::doFriendAddReqToHelper *packet = reinterpret_cast<UpdateServer::doFriendAddReqToHelper*>(msg->m_buf);
 	
-	//DB¿¡ Á¢¼ÓÇØ¼­ Ã³¸®..
+	//DBì— ì ‘ì†í•´ì„œ ì²˜ë¦¬..
 
-	//¸ÕÀú Ä£±¸µî·Ï ¿äÃ»ÇÑ Ä³¸¯¿¡ Ä£±¸µî·Ï
+	//ë¨¼ì € ì¹œêµ¬ë“±ë¡ ìš”ì²­í•œ ìºë¦­ì— ì¹œêµ¬ë“±ë¡
 	CLCString m_buf(1024);
 #ifdef LC_GAMIGO
 	std::string select_friend_query = boost::str(boost::format(
@@ -3586,7 +4056,7 @@ void do_CommandFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	//½ÂÀÎÇÑ Ä³¸¯¿¡µµ Ä£±¸µî·Ï
+	//ìŠ¹ì¸í•œ ìºë¦­ì—ë„ ì¹œêµ¬ë“±ë¡
 #ifdef LC_GAMIGO
 	std::string select_friend_query_1 = boost::str(boost::format(
 		"SELECT a_char_index, a_friend_index FROM t_friend%02d WHERE a_char_index = %d AND a_friend_index = %d") % (packet->approvalindex % 10) % packet->approvalindex % packet->requesterindex);
@@ -3629,7 +4099,7 @@ void do_CommandFriendMemberDelReq(CNetMsg::SP& msg, CDescriptor* dest)
 	table.Format("t_friend%02d", packet->approvalIndex % 10);
 	table2.Format("t_friend%02d", packet->requesterIndex % 10);
 
-	//»èÁ¦¿äÃ»ÀÚ DBÁö¿ì±â.
+	//ì‚­ì œìš”ì²­ì DBì§€ìš°ê¸°.
 	std::string delete_query = boost::str(boost::format("DELETE FROM %s WHERE a_char_index=%d AND a_friend_index=%d") % (const char*)table % packet->approvalIndex % packet->requesterIndex);
 
 	cmd.SetQuery(delete_query);
@@ -3642,7 +4112,7 @@ void do_CommandFriendMemberDelReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 
 	cmd.Init(&gserver.m_dbchar);
-	//»èÁ¦ ´çÇÑÀÚ DBÁö¿ì±â.
+	//ì‚­ì œ ë‹¹í•œì DBì§€ìš°ê¸°.
 	std::string delete_query_1 = boost::str(boost::format("DELETE FROM %s WHERE a_char_index=%d AND a_friend_index=%d") % (const char*)table2 % packet->requesterIndex % packet->approvalIndex);
 
 	cmd.SetQuery(delete_query_1);
@@ -3656,7 +4126,7 @@ void do_CommandFriendMemberDelReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateServer::HelperFriendDelRepMsg(rmsg, packet->approvalIndex, packet->requesterIndex, MSG_FRIEND_ERROR_OK);
-//0521 ÀüÃ¼¿¡ º¸³»Áà¾ß ÇÒµí..
+//0521 ì „ì²´ì— ë³´ë‚´ì¤˜ì•¼ í• ë“¯..
 //	SEND_Q(rmsg, dest);
 	gserver.SendToAllGameServer(rmsg);
 }
@@ -3692,7 +4162,7 @@ void do_CommandBlockCharReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 void do_CommandGiftCharReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	//MSG_HELPER_GIFT_RECVCHARNAME_REQ,			// ÇÛÆÛ¿¡ ÇØ´ç ÄÉ¸¯ÅÍ°¡ ÀÖ´Â : sendCharIndex(n) recvCharName(str) msg(str) count(n) idx(n) ctid(n)
+	//MSG_HELPER_GIFT_RECVCHARNAME_REQ,			// í•¼í¼ì— í•´ë‹¹ ì¼€ë¦­í„°ê°€ ìˆëŠ” : sendCharIndex(n) recvCharName(str) msg(str) count(n) idx(n) ctid(n)
 	//MSG_HELPER_GIFT_RECVCHARNAME_REP,			//							: sendCharIndex(n) recvCharIndex(n) revCharName(str) msg(str) count(n) idx(n) ctid(n)
 	int sendCharIdx, sendUserIdx;
 	CLCString recvCharName(MAX_CHAR_NAME_LENGTH + 1);
@@ -3772,7 +4242,7 @@ void do_CommandFriendSetConditionReq(CNetMsg::SP& msg, CDescriptor* dest)
 			RefMsg(msg) >> index[i];
 		}
 
-		//Á¢¼ÓÇÏ°í ÀÖ´Â Ä£±¸µé¿¡°Ô ¾Ë·Á¾ßÇÑ´Ù..
+		//ì ‘ì†í•˜ê³  ìˆëŠ” ì¹œêµ¬ë“¤ì—ê²Œ ì•Œë ¤ì•¼í•œë‹¤..
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperFriendSetConditionNotifyMsg(rmsg, chaindex, condition, -1, sum, index);
 		gserver.SendToAllGameServer(rmsg);
@@ -3793,7 +4263,7 @@ void do_CommandPetCreateReq(CNetMsg::SP& msg, CDescriptor* dest)
 	RefMsg(msg) >> owner
 		>> typegrade;
 
-	// ÀÌ¹Ì ÆêÀ» °¡Áö°í ÀÖÀ¸¸é »ı¼ºÇÏÁö ¾Ê°í ÆäÀÏ ¸Ş¼¼Áö º¸³½´å
+	// ì´ë¯¸ í«ì„ ê°€ì§€ê³  ìˆìœ¼ë©´ ìƒì„±í•˜ì§€ ì•Šê³  í˜ì¼ ë©”ì„¸ì§€ ë³´ë‚¸ë‹·
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 	std::string select_pet_query = boost::str(boost::format(" SELECT a_index FROM t_pet WHERE a_owner = %d AND a_enable = 1") % owner);
@@ -3863,13 +4333,13 @@ void do_CommandGuildStashHistoryReq(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// 7ÀÏº¸´Ù ¿À·¡µÈ ±â·Ï »èÁ¦
+	// 7ì¼ë³´ë‹¤ ì˜¤ë˜ëœ ê¸°ë¡ ì‚­ì œ
 	std::string delete_guild_tax_history = boost::str(boost::format(
 		"DELETE FROM t_guild_tax_history WHERE a_guild_index = %d AND a_indate <= CAST(DATE_ADD(NOW(), INTERVAL -7 DAY) AS DATE)") % guildindex);
 	cmd.SetQuery(delete_guild_tax_history);
 	cmd.Update();
 
-	// ½Ã°£¼øÀ¸·Î ³ª½º ÀÔ±İ¾× ¾ò±â
+	// ì‹œê°„ìˆœìœ¼ë¡œ ë‚˜ìŠ¤ ì…ê¸ˆì•¡ ì–»ê¸°
 	std::string selete_guild_tax_history = boost::str(boost::format(
 		"SELECT MONTH(a_indate) AS mm, DAYOFMONTH(a_indate) AS dd, a_money FROM t_guild_tax_history WHERE a_guild_index = %d ORDER BY a_indate") % guildindex);
 	cmd.SetQuery(selete_guild_tax_history);
@@ -3887,7 +4357,7 @@ void do_CommandGuildStashHistoryReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else
 	{
-		// ¾øÀ¸¸é ¾ø´Ù°í ¿À·ù
+		// ì—†ìœ¼ë©´ ì—†ë‹¤ê³  ì˜¤ë¥˜
 		HelperGuildStashHistoryRepMsg(rmsg, charindex, MSG_HELPER_GUILD_STASH_ERROR_NOHISTORY, month, day, money);
 	}
 	SEND_Q(rmsg, dest);
@@ -3905,7 +4375,7 @@ void do_CommandGuildStashViewReq(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ÀÜ¾× °¡Á®¿À±â
+	// ì”ì•¡ ê°€ì ¸ì˜¤ê¸°
 	char sql[1024] = {0,};
 	sprintf(sql, "SELECT a_balance FROM t_guild WHERE a_index = %d", guildindex);
 	cmd.SetQuery(sql);
@@ -3947,7 +4417,7 @@ void do_CommandGuildStashTakeReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ÀÜ¾× °¡Á®¿À±â
+	// ì”ì•¡ ê°€ì ¸ì˜¤ê¸°
 	char sql[1024] = {0,};
 	sprintf(sql, "SELECT a_balance FROM t_guild WHERE a_index = %d", guildindex);
 	cmd.SetQuery(sql);
@@ -3996,14 +4466,14 @@ void do_CommandGuildStashSaveTaxReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	if (guildindex < 1)
 	{
-		// ¼¼±İ ¹ŞÀ» ±æµå°¡ ¾øÀ¸¸é ¹«Á¶°Ç ¼º°ø
+		// ì„¸ê¸ˆ ë°›ì„ ê¸¸ë“œê°€ ì—†ìœ¼ë©´ ë¬´ì¡°ê±´ ì„±ê³µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashSaveTaxRepMsg(rmsg, MSG_HELPER_GUILD_STASH_ERROR_OK, guildindex, zoneindex, taxItem, taxProduce);
 		SEND_Q(rmsg, dest);
 		return ;
 	}
 
-	// ÃÖ¼Ò ±İ¾× ¼³Á¤
+	// ìµœì†Œ ê¸ˆì•¡ ì„¤ì •
 	LONGLONG realTaxItem = 1000000;
 	LONGLONG realTaxProduce = 500000;
 
@@ -4039,27 +4509,27 @@ void do_CommandGuildStashSaveTaxReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÀÔ±İ ³»¿ª °»½Å
+	// ì…ê¸ˆ ë‚´ì—­ ê°±ì‹ 
 	std::string update_guild_tax_history = boost::str(boost::format(
 		"UPDATE t_guild_tax_history SET a_money = a_money + %1% WHERE a_guild_index = %2% AND a_indate = CAST(NOW() AS DATE)") % totalTax % guildindex);
 
 	cmd.SetQuery(update_guild_tax_history);
 	if (!cmd.Update() || cmd.m_nrecords < 1)
 	{
-		// ¿À´Ã ³¯Â¥ ÀÔ±İ ³»¿ª °»½ÅÀÌ ¾ÈµÇ¸é Ãß°¡
+		// ì˜¤ëŠ˜ ë‚ ì§œ ì…ê¸ˆ ë‚´ì—­ ê°±ì‹ ì´ ì•ˆë˜ë©´ ì¶”ê°€
 		std::string insert_guild_tax_history = boost::str(boost::format(
 			"INSERT INTO t_guild_tax_history (a_guild_index, a_indate, a_money) VALUES (%1%, CAST(NOW() AS DATE), %2%)") % guildindex % totalTax);
 
 		cmd.SetQuery(insert_guild_tax_history);
 		cmd.Update();
 	}
-	// °á°ú
+	// ê²°ê³¼
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperGuildStashSaveTaxRepMsg(rmsg, MSG_HELPER_GUILD_STASH_ERROR_OK, guildindex, zoneindex, taxItem, taxProduce);
 	SEND_Q(rmsg, dest);
 }
 
-//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ® Ä£±¸ µî·ÏºÎºĞ : GameServer¿¡¼­ ³Ñ¾î¿Â ºÎºĞ.
+//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸ ì¹œêµ¬ ë“±ë¡ë¶€ë¶„ : GameServerì—ì„œ ë„˜ì–´ì˜¨ ë¶€ë¶„.
 void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int approval_index, approval_job, approval_user_index, approval_server_old;
@@ -4082,12 +4552,12 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 		"WHERE a_name = '%d%s'") % approval_server_old % request_nick);
 	cmd.SetQuery(select_characters_query);
 
-	//ÈŞ¸é ÄÉ¸¯ ´ë»ó ¼­¹ö±º ÄÉ¸¯¸¸ µî·Ï ÇÒ ¼ö ÀÖ´Ù.
-	//µî·ÏÇÑ ÄÉ¸¯¸í °Ë»ö ¿ì¼± ¼­¹ö±º ÄÉ¸¯ È®ÀÎ.
-	//¸¸¾à µ¿ÀÏ ÄÉ¸¯¸íÀÏ °æ¿ì (¼­¹ö±º ¸í°ú ºñ±³)
+	//íœ´ë©´ ì¼€ë¦­ ëŒ€ìƒ ì„œë²„êµ° ì¼€ë¦­ë§Œ ë“±ë¡ í•  ìˆ˜ ìˆë‹¤.
+	//ë“±ë¡í•œ ì¼€ë¦­ëª… ê²€ìƒ‰ ìš°ì„  ì„œë²„êµ° ì¼€ë¦­ í™•ì¸.
+	//ë§Œì•½ ë™ì¼ ì¼€ë¦­ëª…ì¼ ê²½ìš° (ì„œë²„êµ° ëª…ê³¼ ë¹„êµ)
 	if (!(cmd.Open() && cmd.MoveFirst()))
 	{
-		//±âÁ¸ ¼­¹ö±ºÀÌ ¾Æ´Ñ ÈŞ¸éÄÉ¸¯ÀÏ °æ¿ì
+		//ê¸°ì¡´ ì„œë²„êµ°ì´ ì•„ë‹Œ íœ´ë©´ì¼€ë¦­ì¼ ê²½ìš°
 		std::string select_characters_1 = boost::str(boost::format(
 			"SELECT a_index, a_user_index, a_nick, (UNIX_TIMESTAMP('2006-02-14 10:00:00') - UNIX_TIMESTAMP(a_datestamp)) as a_ctime FROM t_characters "
 			" WHERE a_nick ='%s'") % request_nick);
@@ -4095,7 +4565,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 
 		if (!(cmd.Open() && cmd.MoveFirst()))
 		{
-			// µî·Ï ½ÅÃ»ÇÑ Ä£±¸°¡ ¾ø½À´Ï´Ù.
+			// ë“±ë¡ ì‹ ì²­í•œ ì¹œêµ¬ê°€ ì—†ìŠµë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperEventSearchFriendMemberAddRepMsg(rmsg
 				, approval_index, request_nick, MSG_EVENT_SEARCHFRIEND_ERROR_NOT_EXIST);
@@ -4108,7 +4578,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 			return;
 		}
 	}
-	//µî·ÏÇÑ ÄÉ¸¯¸í °Ë»ö ÈŞ¸éÄÉ¸¯ ÀÚ·á
+	//ë“±ë¡í•œ ì¼€ë¦­ëª… ê²€ìƒ‰ íœ´ë©´ì¼€ë¦­ ìë£Œ
 	cmd.GetRec("a_user_index", request_user_index);
 	cmd.GetRec("a_index", request_index);
 	cmd.GetRec("a_nick", request_nick);
@@ -4120,7 +4590,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 	cmd.SetQuery(select_event_search_friend_date_query);
 	if (!(cmd.Open() && cmd.MoveFirst()))
 	{
-		//±İ¿äÀÏ 10ÀÏ°ú 14ÀÏ »çÀÌ¿¡ »ı¼­µÈ ÄÉ¸¯µéÀÏ °æ¿ì....
+		//ê¸ˆìš”ì¼ 10ì¼ê³¼ 14ì¼ ì‚¬ì´ì— ìƒì„œëœ ì¼€ë¦­ë“¤ì¼ ê²½ìš°....
 		if ( request_datestamp < 2678400)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4136,7 +4606,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 			return ;
 		}
 		else
-		{   //È¤½Ã¶óµµ t_event_searchfriend_date¿¡¼­ Àü ³¯Â¥¸¦ ºÒ·¯¿ÀÁö ¸øÇßÀ» °æ¿ì..¿¹¿Ü.
+		{   //í˜¹ì‹œë¼ë„ t_event_searchfriend_dateì—ì„œ ì „ ë‚ ì§œë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆì„ ê²½ìš°..ì˜ˆì™¸.
 			GAMELOG << init("EVENT SEARCH FRIEND ERROR_GAMESERVER ")
 					<< approval_nick << delim
 					<< request_nick << delim
@@ -4148,7 +4618,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 	else
 		cmd.GetRec("a_ctime", request_datestamp);
 
-	//ÈŞ¸é ÄÉ¸¯ÀÌ 1°³¿ù ¹Ì¸¸(31ÀÏ ¹Ì¸¸ÀÏ °æ¿ì) µî·Ï ºÒ°¡.
+	//íœ´ë©´ ì¼€ë¦­ì´ 1ê°œì›” ë¯¸ë§Œ(31ì¼ ë¯¸ë§Œì¼ ê²½ìš°) ë“±ë¡ ë¶ˆê°€.
 	if ( request_datestamp < 2678400)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4164,7 +4634,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 		return ;
 	}
 
-	//Á¢¼ÓÀÚ°¡ °°Àº IDÀÌ¸é ºÒ°¡´É ÇÔ.
+	//ì ‘ì†ìê°€ ê°™ì€ IDì´ë©´ ë¶ˆê°€ëŠ¥ í•¨.
 	if(request_user_index == approval_user_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4179,7 +4649,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 				<< end;
 		return;
 	}
-	//ÀÌ¹Ì µî·ÏÀÌ µÇ¾î ÀÖ´ÂÁö..
+	//ì´ë¯¸ ë“±ë¡ì´ ë˜ì–´ ìˆëŠ”ì§€..
 	std::string select_event_search_friend_query = boost::str(boost::format(
 		"SELECT count(a_char_index) AS nCount FROM t_event_searchfriend where a_dormant_index = %d and (a_char_index = %d or a_dormant_select = 1)")
 		% request_index % approval_index);
@@ -4211,7 +4681,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 		return;
 	}
 
-	//µî·Ï ÄÉ¸¯ 50¸í Á¦ÇÑ
+	//ë“±ë¡ ì¼€ë¦­ 50ëª… ì œí•œ
 	std::string select_event_search_friend_query_1 = boost::str(boost::format(
 		"SELECT count(a_char_index) AS nCount FROM t_event_searchfriend where a_char_index = %d") % approval_index);
 	cmd.SetQuery(select_event_search_friend_query_1);
@@ -4241,8 +4711,8 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 		return;
 	}
 
-	//DB¿¡ Á¢¼ÓÇØ¼­ Ã³¸®..
-	//¸ÕÀú Ä£±¸µî·Ï ¿äÃ»ÇÑ Ä³¸¯¿¡ Ä£±¸µî·Ï
+	//DBì— ì ‘ì†í•´ì„œ ì²˜ë¦¬..
+	//ë¨¼ì € ì¹œêµ¬ë“±ë¡ ìš”ì²­í•œ ìºë¦­ì— ì¹œêµ¬ë“±ë¡
 #ifdef LC_GAMIGO
 	std::string select_event_search_friend_query_2 = boost::str(boost::format(
 	"SELECT a_char_index, a_dormant_index FROM t_event_searchfriend WHERE a_char_index = %d AND a_dormant_index = %d") % approval_index % request_index);
@@ -4295,7 +4765,7 @@ void do_CommandEventSearchFriendMemberAddReq(CNetMsg::SP& msg, CDescriptor* dest
 			<< end;
 }
 
-//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ® µî·Ï ¼³Á¤
+//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸ ë“±ë¡ ì„¤ì •
 void do_CommandEventSearchFriendMemberSelectAddReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int approval_index;
@@ -4304,8 +4774,8 @@ void do_CommandEventSearchFriendMemberSelectAddReq(CNetMsg::SP& msg, CDescriptor
 	RefMsg(msg) >> approval_index
 		>> request_index;
 
-	//DB¿¡ Á¢¼ÓÇØ¼­ Ã³¸®..
-	//¸ÕÀú Ä£±¸µî·Ï ¿äÃ»ÇÑ Ä³¸¯¿¡ Ä£±¸µî·Ï
+	//DBì— ì ‘ì†í•´ì„œ ì²˜ë¦¬..
+	//ë¨¼ì € ì¹œêµ¬ë“±ë¡ ìš”ì²­í•œ ìºë¦­ì— ì¹œêµ¬ë“±ë¡
 	std::string update_event_search_friend_query = boost::str(boost::format(
 		"UPDATE t_event_searchfriend SET a_dormant_select = 1, a_char_good = 0, a_dormant_good = 0 "
 		"WHERE a_dormant_index= %d and a_char_index = %d")
@@ -4331,7 +4801,7 @@ void do_CommandEventSearchFriendMemberSelectAddReq(CNetMsg::SP& msg, CDescriptor
 		return ;
 	}
 
-	//ÈŞ¸é ÀÌº¥Æ® ½Ã°£
+	//íœ´ë©´ ì´ë²¤íŠ¸ ì‹œê°„
 	char	te_buf[1024];	// for temp string
 	struct tm ti = NOW();
 	te_buf[0] = '\0';
@@ -4393,7 +4863,7 @@ void do_CommandEventSearchFriendMemberSelectAddReq(CNetMsg::SP& msg, CDescriptor
 	SEND_Q(rmsg, dest);
 }
 
-//ÈŞ¸éÄÉ¸¯ »ç³É½Ã°£ ÇÑ½Ã°£ ´ÜÀ§·Î ¾÷µ¥ÀÌÅÍ ÇÏ´Â ºÎºĞ
+//íœ´ë©´ì¼€ë¦­ ì‚¬ëƒ¥ì‹œê°„ í•œì‹œê°„ ë‹¨ìœ„ë¡œ ì—…ë°ì´í„° í•˜ëŠ” ë¶€ë¶„
 void do_CommandEventSearchFriendMemberOneTimeCheckReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int	timesec, appDormantindex;
@@ -4401,12 +4871,12 @@ void do_CommandEventSearchFriendMemberOneTimeCheckReq(CNetMsg::SP& msg, CDescrip
 	RefMsg(msg) >> timesec
 		>> appDormantindex;
 
-	//DB¿¡ Á¢¼ÓÇØ¼­ Ã³¸®..
+	//DBì— ì ‘ì†í•´ì„œ ì²˜ë¦¬..
 
 	std::string update_event_search_friend_date_query = "";
-	if(timesec == (60 * 60 * 30)) //30½Ã°£ÀÏ¶§¸¸
+	if(timesec == (60 * 60 * 30)) //30ì‹œê°„ì¼ë•Œë§Œ
 	{
-		//30½Ã°£ Ã¤¿ï °æ¿ì ¾ÆÀÌÅÛ º¸»ó 1Á¡¾¿ ¿Ã·ÁÁÜ.
+		//30ì‹œê°„ ì±„ìš¸ ê²½ìš° ì•„ì´í…œ ë³´ìƒ 1ì ì”© ì˜¬ë ¤ì¤Œ.
 		update_event_search_friend_date_query = boost::str(boost::format(
 			"UPDATE t_event_searchfriend SET a_dormant_total_time=%d"
 			", a_char_good = 1, a_dormant_good = 2 WHERE a_dormant_index=%d and a_dormant_select = 1")
@@ -4414,7 +4884,7 @@ void do_CommandEventSearchFriendMemberOneTimeCheckReq(CNetMsg::SP& msg, CDescrip
 	}
 	else
 	{
-		//1½Ã°£´ç Ã¼Å© ¾÷µ¥ÀÌÅÍ
+		//1ì‹œê°„ë‹¹ ì²´í¬ ì—…ë°ì´í„°
 		update_event_search_friend_date_query = boost::str(boost::format(
 		"UPDATE t_event_searchfriend SET a_dormant_total_time=%d "
 		"WHERE a_dormant_index=%d and a_dormant_select = 1")
@@ -4445,7 +4915,7 @@ void do_CommandEventSearchFriendMemberOneTimeCheckReq(CNetMsg::SP& msg, CDescrip
 	SEND_Q(rmsg, dest);
 }
 
-//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ® µî·ÏµÈ Ä£±¸ º¸»ó°¡´É ¿©ºÎ
+//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸ ë“±ë¡ëœ ì¹œêµ¬ ë³´ìƒê°€ëŠ¥ ì—¬ë¶€
 void do_CommandEventSearchFriendMemberListGoodReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int approval_index;
@@ -4474,7 +4944,7 @@ void do_CommandEventSearchFriendMemberListGoodReq(CNetMsg::SP& msg, CDescriptor*
 			if(request_index[ntemp] == approval_index)
 				cmd.GetRec("a_dormant_good", item_good[ntemp]);
 			else
-				//ÀÌº¥Æ® »ç³É¿¡¼­ ¾òÀº ¾ÆÀÌÅÛ °³¼ö, º»ÀÎÄÉ¸¯°ú µî·ÏÇØÁØ ÄÉ¸¯ÀÇ ¾ÆÀÌÅÛ ¾òÀº ¾çÀ» ¾Ë¾Æ¾ßµÈ´Ù.
+				//ì´ë²¤íŠ¸ ì‚¬ëƒ¥ì—ì„œ ì–»ì€ ì•„ì´í…œ ê°œìˆ˜, ë³¸ì¸ì¼€ë¦­ê³¼ ë“±ë¡í•´ì¤€ ì¼€ë¦­ì˜ ì•„ì´í…œ ì–»ì€ ì–‘ì„ ì•Œì•„ì•¼ëœë‹¤.
 				cmd.GetRec("a_char_good", item_good[ntemp]);
 			ntemp++;
 		}while (cmd.MoveNext());
@@ -4513,7 +4983,7 @@ void do_CommandEventSearchFriendMemberListGoodReq(CNetMsg::SP& msg, CDescriptor*
 	}
 }
 
-//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ® µî·ÏµÈ Ä£±¸ º¸»ó °á°ú
+//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸ ë“±ë¡ëœ ì¹œêµ¬ ë³´ìƒ ê²°ê³¼
 void do_CommandEventSearchFriendMemberGoodReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int approval_index, ndormantindex, item_good;
@@ -4521,7 +4991,7 @@ void do_CommandEventSearchFriendMemberGoodReq(CNetMsg::SP& msg, CDescriptor* des
 		>> ndormantindex
 		>> item_good;
 
-	//DB¿¡ Á¢¼ÓÇØ¼­ Ã³¸®..
+	//DBì— ì ‘ì†í•´ì„œ ì²˜ë¦¬..
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 	cmd.BeginTrans();
@@ -4603,7 +5073,7 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 		CParty* pPartyBoss = gserver.FindPartyByMemberIndex(dest->m_subNo, nBossIndex, true);
 		CParty* pPartyTarget = gserver.FindPartyByMemberIndex(dest->m_subNo, nTargetIndex, true);
 
-		// nBossIndex°¡ ÆÄÆ¼ ÃÊ´ë°¡ °¡´ÉÇÑÁö : ÆÄÆ¼°¡ ¾ø°Å³ª º¸½º
+		// nBossIndexê°€ íŒŒí‹° ì´ˆëŒ€ê°€ ê°€ëŠ¥í•œì§€ : íŒŒí‹°ê°€ ì—†ê±°ë‚˜ ë³´ìŠ¤
 		if (pPartyBoss && pPartyBoss->GetBossIndex() != nBossIndex)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4612,7 +5082,7 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ÆÄÆ¼ Å¸ÀÔ °Ë»ç
+		// íŒŒí‹° íƒ€ì… ê²€ì‚¬
 		if (pPartyBoss && pPartyBoss->GetPartyType(MSG_DIVITYPE_SP) != nPartyType)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4621,7 +5091,7 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ´ë»ó ÆÄÆ¼ °Ë»ç
+		// ëŒ€ìƒ íŒŒí‹° ê²€ì‚¬
 		if (pPartyTarget)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4630,7 +5100,7 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ÆÄÆ¼ ÀÎ¿ø °Ë»ç
+		// íŒŒí‹° ì¸ì› ê²€ì‚¬
 		if (pPartyBoss && pPartyBoss->GetMemberCount() >= MAX_PARTY_MEMBER)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4639,7 +5109,7 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 
-		// ÇöÀç ¿äÃ»ÀÚ À¯¹« °Ë»ç
+		// í˜„ì¬ ìš”ì²­ì ìœ ë¬´ ê²€ì‚¬
 		if (pPartyBoss && pPartyBoss->GetRequestIndex() > 0)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4650,25 +5120,25 @@ void do_CommandPartyInviteRep(CNetMsg::SP& msg, CDescriptor* dest)
 
 		if (pPartyBoss)
 		{
-			// ±âÁ¸ ÆÄÆ¼¿¡ ¿äÃ»ÀÚ·Î ¼³Á¤
+			// ê¸°ì¡´ íŒŒí‹°ì— ìš”ì²­ìë¡œ ì„¤ì •
 			pPartyBoss->SetRequest(nTargetIndex, strTargetName);
 		}
 		else
 		{
-			// ½Å±Ô ÆÄÆ¼ »ı¼º
+			// ì‹ ê·œ íŒŒí‹° ìƒì„±
 			pPartyBoss = new CParty(dest->m_subNo, nPartyType, nBossIndex, strBossName, nTargetIndex, strTargetName , nBossLevel);
 			LONGLONG key = MAKE_LONGLONG_KEY(dest->m_subNo, nBossIndex);
 			gserver.m_listParty.insert(map_party_t::value_type(key, pPartyBoss));
 		}
 
-		// °á°ú Àü´Ş
+		// ê²°ê³¼ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperPartyInviteRepMsg(rmsg, nBossIndex, strBossName, nTargetIndex, strTargetName, pPartyBoss->GetPartyType(MSG_DIVITYPE_SP), pPartyBoss->GetPartyType(MSG_DIVITYPE_ITEM), pPartyBoss->GetPartyType(MSG_DIVITYPE_SPECIAL), MSG_HELPER_PARTY_ERROR_INVITE_OK);
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 	}
 	else
 	{
-		// ¿À·ù´Â ¿¡ÄÚ
+		// ì˜¤ë¥˜ëŠ” ì—ì½”
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperPartyInviteRepMsg(rmsg, nBossIndex, strBossName, nTargetIndex, strTargetName, nPartyType, nPartyType, nPartyType, (MSG_HELPER_PARTY_ERROR_TYPE)nErrorCode);
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
@@ -4705,7 +5175,7 @@ void do_CommandPartyAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼¿øÀ¸·Î µî·Ï
+	// íŒŒí‹°ì›ìœ¼ë¡œ ë“±ë¡
 	pParty->JoinRequest(strTargetName, nLevel );
 
 	{
@@ -4714,7 +5184,7 @@ void do_CommandPartyAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 	}
 
-	// ÆÄÆ¼¿¡ Âü°¡ÇÏ´Â À¯Àú´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+	// íŒŒí‹°ì— ì°¸ê°€í•˜ëŠ” ìœ ì €ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 	CPartyMatchMember* pMatchMember = gserver.FindPartyMatchMemberByCharIndex(dest->m_subNo, nTargetIndex);
 	if (pMatchMember)
 		do_CommandPartyMatchDelReq_real(dest->m_subNo, nTargetIndex);
@@ -4751,7 +5221,7 @@ void do_CommandPartyRejectReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ¿äÃ»ÀÚ°¡ º¸½ºÀÎÁö ÀÏ¹İÀÎÁö °Ë»ç
+	// ìš”ì²­ìê°€ ë³´ìŠ¤ì¸ì§€ ì¼ë°˜ì¸ì§€ ê²€ì‚¬
 	if (pParty->GetBossIndex() == nTargetIndex || pParty->GetRequestIndex() == nTargetIndex)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4761,7 +5231,7 @@ void do_CommandPartyRejectReq(CNetMsg::SP& msg, CDescriptor* dest)
 		pParty->SetRequest(-1, "");
 		if (pParty->GetMemberCountOnline() < 2)
 		{
-			// ÆÄÆ¼ Á¾·á
+			// íŒŒí‹° ì¢…ë£Œ
 			LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 			gserver.m_listParty.erase(key);
 			pParty->SetEndParty();
@@ -4788,21 +5258,19 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 	CParty* pParty = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pParty)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER QUIT: NOT_PARTY")
 				<< "BOSSINDEX" << delim << nBossIndex << delim
 				<< "TARGETINDEX" << delim << nTargetIndex << end;
 
 		gserver.PrintPartyMemberList(dest->m_subNo, nBossIndex);
 		gserver.PrintPartyMemberList(dest->m_subNo, nTargetIndex);
-#endif // PARTY_BUG_GER
 		return ;
 	}
 	pParty->DeleteMember(nTargetIndex);
 
 	if (pParty->GetMemberCountOnline() < 2)
 	{
-		// ÆÄÆ¼ ÇØÃ¼
+		// íŒŒí‹° í•´ì²´
 		LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 		gserver.m_listParty.erase(key);
 		pParty->SetEndParty();
@@ -4814,7 +5282,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 			gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 		}
 
-		// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+		// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 		do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 	}
 #ifdef BATTLE_PARTY_BOSS_CHANGE
@@ -4824,7 +5292,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 		pParty->GetPartyType(4) == MSG_PARTY_TYPE_BATTLE &&
 		nBossIndex == nTargetIndex)
 	{
-		// ÀüÅõÆÄÆ¼Àå ÈÄº¸ Ã£±â
+		// ì „íˆ¬íŒŒí‹°ì¥ í›„ë³´ ì°¾ê¸°
 		CPartyMember* member;
 		bool foundBossCandidate = false;
 		int min = -1;
@@ -4833,7 +5301,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 		for(i = 0; i < MAX_PARTY_MEMBER; i++)
 		{
 			member = pParty->m_listMember[i];
-			if(member) // ÆÄÆ¼¿¡¼­ ·¹º§ÀÌ °¡Àå ³·Àº »ç¶÷, °¡Àå ³ôÀº »ç¶÷ Ã£±â
+			if(member) // íŒŒí‹°ì—ì„œ ë ˆë²¨ì´ ê°€ì¥ ë‚®ì€ ì‚¬ëŒ, ê°€ì¥ ë†’ì€ ì‚¬ëŒ ì°¾ê¸°
 			{
 				if(min == -1 && member->m_nLevel > 0)
 					min = member->m_nLevel;
@@ -4845,7 +5313,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 					max = member->m_nLevel;
 			}
 		}
-		for(i = 0; i < MAX_PARTY_MEMBER; i++) // ÆÄÀå ÈÄº¸ Ã£±â
+		for(i = 0; i < MAX_PARTY_MEMBER; i++) // íŒŒì¥ í›„ë³´ ì°¾ê¸°
 		{
 			member = pParty->m_listMember[i];
 			if(member)
@@ -4860,19 +5328,19 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 				}
 			}
 		}
-		if(member == NULL) // member°¡ »õ·Î¿î ÆÄÆ¼ÀåÀÌ µÉ °ÅÀÓ.
+		if(member == NULL) // memberê°€ ìƒˆë¡œìš´ íŒŒí‹°ì¥ì´ ë  ê±°ì„.
 			foundBossCandidate = false;
 
 		if(foundBossCandidate == true)
 		{
-			// º¸½º º¯°æ
+			// ë³´ìŠ¤ ë³€ê²½
 			CLCString	strTargetName(MAX_CHAR_NAME_LENGTH + 1);
 			CLCString	strBossName(MAX_CHAR_NAME_LENGTH + 1);
 			strTargetName = member->GetCharName();
 			strBossName = pParty->GetMemberByListIndex(0)->GetCharName();
 			if (strTargetName == NULL)
 			{
-				// ÆÄÆ¼ÇØÃ¼
+				// íŒŒí‹°í•´ì²´
 				LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 				gserver.m_listParty.erase(key);
 				pParty->SetEndParty();
@@ -4883,7 +5351,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 					gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 				}
 
-					// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+					// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 				do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 			}
 			else
@@ -4913,7 +5381,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		else if(foundBossCandidate == false)
 		{
-			// ÆÄÆ¼ÇØÃ¼
+			// íŒŒí‹°í•´ì²´
 			LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 			gserver.m_listParty.erase(key);
 			pParty->SetEndParty();
@@ -4923,7 +5391,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 			HelperPartyQuitRepMsg(rmsg, nBossIndex, nTargetIndex, MSG_HELPER_PARTY_ERROR_QUIT_END, -1, "");
 			gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-			// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+			// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 			do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 		}
 	}
@@ -4932,7 +5400,7 @@ void do_CommandPartyQuitReq(CNetMsg::SP& msg, CDescriptor* dest)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 
-		// º¸½º º¯°æ °Ë»ç
+		// ë³´ìŠ¤ ë³€ê²½ ê²€ì‚¬
 		if (pParty->GetBossIndex() != nBossIndex)
 		{
 			CPartyMatchParty* pMatchParty = gserver.FindPartyMatchPartyByBossIndex(dest->m_subNo, nBossIndex);
@@ -4973,14 +5441,12 @@ void do_CommandPartyKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 	CParty* pParty = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pParty)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER KICK: NOT_PARTY")
 				<< "BOSSINDEX" << delim << nBossIndex << delim
 				<< "TARGETINDEX" << delim << nTargetIndex << end;
 
 		gserver.PrintPartyMemberList(dest->m_subNo, nBossIndex);
 		gserver.PrintPartyMemberList(dest->m_subNo, nTargetIndex);
-#endif // PARTY_BUG_GER
 		return ;
 	}
 
@@ -4988,7 +5454,7 @@ void do_CommandPartyKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	if (pParty->GetMemberCountOnline() < 2)
 	{
-		// ÆÄÆ¼ ÇØÃ¼
+		// íŒŒí‹° í•´ì²´
 		LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 		gserver.m_listParty.erase(key);
 		pParty->SetEndParty();
@@ -4998,7 +5464,7 @@ void do_CommandPartyKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 		HelperPartyKickRepMsg(rmsg, nBossIndex, nTargetIndex, MSG_HELPER_PARTY_ERROR_KICK_END);
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-		// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+		// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 		do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 	}
 	else
@@ -5021,7 +5487,6 @@ void do_CommandPartyChangeBossReq(CNetMsg::SP& msg, CDescriptor* dest)
 	CParty* pParty = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pParty)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER CHANGEBOSS: NOT_BOSS")
 				<< "BOSS INDEX" << delim << nBossIndex << delim
 				<< "TARGET NAME" << delim << strTargetName
@@ -5034,7 +5499,6 @@ void do_CommandPartyChangeBossReq(CNetMsg::SP& msg, CDescriptor* dest)
 					<< "REAL BOSS INDEX" << delim << party->GetBossIndex()
 					<< end;
 		}
-#endif // PARTY_BUG_GER
 		return ;
 	}
 
@@ -5058,7 +5522,6 @@ void do_CommandPartyChangeBossReq(CNetMsg::SP& msg, CDescriptor* dest)
 			gserver.m_listPartyMatchParty.insert(map_partymatchparty_t::value_type(key, pMatchParty));
 		}
 	}
-#ifdef PARTY_BUG_GER
 	else
 	{
 		GAMELOG << init("PARTY_BUG_GER CHANGEBOSS: FAILED")
@@ -5066,7 +5529,6 @@ void do_CommandPartyChangeBossReq(CNetMsg::SP& msg, CDescriptor* dest)
 				<< "TARGET NAME" << delim << strTargetName
 				<< end;
 	}
-#endif // PARTY_BUG_GER
 }
 
 void do_CommandPartyInviteCancel(CNetMsg::SP& msg, CDescriptor* dest)
@@ -5086,7 +5548,7 @@ void do_CommandPartyInviteCancel(CNetMsg::SP& msg, CDescriptor* dest)
 		pParty->SetRequest(-1, "");
 		if ( pParty->GetMemberCountOnline() < 2)
 		{
-			// ÆÄÆ¼ Á¾·á
+			// íŒŒí‹° ì¢…ë£Œ
 			LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 			gserver.m_listParty.erase(key);
 			pParty->SetEndParty();
@@ -5108,17 +5570,14 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 	RefMsg(msg) >> nBossIndex
 		>> nTargetIndex;
 
-#ifdef PARTY_BUG_GER
 	GAMELOG << init("PARTY_BUG_GER OFFLINE")
 			<< "BOSS INDEX" << delim << nBossIndex << delim
 			<< "TARGET INDEX" << delim << nTargetIndex
 			<< end;
-#endif // PARTY_BUG_GER
 
 	CParty* pParty = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pParty)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER OFFLINE: NOT_PARTY")
 				<< "BOSSINDEX" << delim << nBossIndex << delim
 				<< "TARGETINDEX" << delim << nTargetIndex
@@ -5126,7 +5585,6 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 
 		gserver.PrintPartyMemberList(dest->m_subNo, nBossIndex);
 		gserver.PrintPartyMemberList(dest->m_subNo, nTargetIndex);
-#endif // #ifdef PARTY_BUG_GER
 		return ;
 	}
 
@@ -5138,21 +5596,17 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER OFFLINE: TARGET MEMBER NOT FOUND")
 				<< "TARGET INDEX" << delim << nTargetIndex
 				<< end;
-#endif // PARTY_BUG_GER
 	}
 	if (pParty->GetMemberCountOnline() < 2)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER OFFLINE: PARTY END")
 				<< "BOSS INDEX" << delim << nBossIndex << end;
 		gserver.PrintPartyMemberList(dest->m_subNo, nBossIndex);
-#endif // PARTY_BUG_GER
 
-		// ÆÄÆ¼ ÇØÃ¼
+		// íŒŒí‹° í•´ì²´
 		LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 		gserver.m_listParty.erase(key);
 		pParty->SetEndParty();
@@ -5162,7 +5616,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 		HelperPartyQuitRepMsg(rmsg, nBossIndex, nTargetIndex, MSG_HELPER_PARTY_ERROR_QUIT_END, -1, "");
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-		// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+		// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 		do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 	}
 #ifdef BATTLE_PARTY_BOSS_CHANGE
@@ -5172,7 +5626,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 		pParty->GetPartyType(4) == MSG_PARTY_TYPE_BATTLE &&
 		nBossIndex == nTargetIndex)
 	{
-		// ÀüÅõÆÄÆ¼Àå ÈÄº¸ Ã£±â
+		// ì „íˆ¬íŒŒí‹°ì¥ í›„ë³´ ì°¾ê¸°
 		CPartyMember* member;
 		bool foundBossCandidate = false;
 		int min = -1;
@@ -5181,7 +5635,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 		for(i = 0; i < MAX_PARTY_MEMBER; i++)
 		{
 			member = pParty->m_listMember[i];
-			if(member) // ÆÄÆ¼¿¡¼­ ·¹º§ÀÌ °¡Àå ³·Àº »ç¶÷, °¡Àå ³ôÀº »ç¶÷ Ã£±â
+			if(member) // íŒŒí‹°ì—ì„œ ë ˆë²¨ì´ ê°€ì¥ ë‚®ì€ ì‚¬ëŒ, ê°€ì¥ ë†’ì€ ì‚¬ëŒ ì°¾ê¸°
 			{
 				if(min == -1 && member->m_nLevel > 0)
 					min = member->m_nLevel;
@@ -5193,7 +5647,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 					max = member->m_nLevel;
 			}
 		}
-		for(i = 0; i < MAX_PARTY_MEMBER; i++) // ÆÄÀå ÈÄº¸ Ã£±â
+		for(i = 0; i < MAX_PARTY_MEMBER; i++) // íŒŒì¥ í›„ë³´ ì°¾ê¸°
 		{
 			member = pParty->m_listMember[i];
 			if(member)
@@ -5208,19 +5662,19 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 				}
 			}
 		}
-		if(member == NULL) // member°¡ »õ·Î¿î ÆÄÆ¼ÀåÀÌ µÉ °ÅÀÓ.
+		if(member == NULL) // memberê°€ ìƒˆë¡œìš´ íŒŒí‹°ì¥ì´ ë  ê±°ì„.
 			foundBossCandidate = false;
 
 		if(foundBossCandidate == true)
 		{
-			// º¸½º º¯°æ
+			// ë³´ìŠ¤ ë³€ê²½
 			CLCString	strBossName(MAX_CHAR_NAME_LENGTH + 1);
 			CLCString	strTargetName(MAX_CHAR_NAME_LENGTH + 1);
 			strTargetName = member->GetCharName();
 			strBossName = pParty->GetMemberByListIndex(0)->GetCharName();
 			if (strTargetName == NULL)
 			{
-				// ÆÄÆ¼ÇØÃ¼
+				// íŒŒí‹°í•´ì²´
 				LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 				gserver.m_listParty.erase(key);
 				pParty->SetEndParty();
@@ -5230,7 +5684,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 				HelperPartyQuitRepMsg(rmsg, nBossIndex, nTargetIndex, MSG_HELPER_PARTY_ERROR_QUIT_END, -1, "");
 				gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-				// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+				// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 				do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 			}
 			else
@@ -5259,7 +5713,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		else if(foundBossCandidate == false)
 		{
-			// ÆÄÆ¼ÇØÃ¼
+			// íŒŒí‹°í•´ì²´
 			LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 			gserver.m_listParty.erase(key);
 			pParty->SetEndParty();
@@ -5269,25 +5723,23 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 			HelperPartyQuitRepMsg(rmsg, nBossIndex, nTargetIndex, MSG_HELPER_PARTY_ERROR_QUIT_END, -1, "");
 			gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-			// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+			// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 			do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 		}
 	}
 #endif // BATTLE_PARTY_BOSS_CHANGE
 	else
 	{
-		// º¸½º º¯°æ °Ë»ç
+		// ë³´ìŠ¤ ë³€ê²½ ê²€ì‚¬
 		if ( pParty->GetBossIndex() == nTargetIndex)
 		{
 			CLCString	strBossName(MAX_CHAR_NAME_LENGTH + 1);
 			CLCString	strTargetName(MAX_CHAR_NAME_LENGTH + 1);
 			CPartyMember *newBoss = NULL;
 
-#ifdef PARTY_BUG_GER
 			GAMELOG << init("PARTY_BUG_GER OFFLINE: CHANGEBOSS")
 					<< "BOSS INDEX" << delim << nBossIndex
 					<< end;
-#endif // PARTY_BUG_GER
 
 			for(int i=0; i<MAX_PARTY_MEMBER ; i++ )
 			{
@@ -5302,7 +5754,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 
 			if( strTargetName == NULL )
 			{
-				// ÆÄÆ¼ ÇØÃ¼
+				// íŒŒí‹° í•´ì²´
 				LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 				gserver.m_listParty.erase(key);
 				pParty->SetEndParty();
@@ -5313,7 +5765,7 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 				gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 				pParty = NULL;
 
-				// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+				// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 				do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 			}
 
@@ -5321,12 +5773,10 @@ void do_CommandPartyOffline( CNetMsg::SP& msg, CDescriptor* dest)
 			{
 				if (pParty->ChangeBoss(strTargetName))
 				{
-#ifdef PARTY_BUG_GER
 					GAMELOG << init("PARTY_BUG_GER OFFLINE: CHANGEBOSS")
 							<< "Prev" << delim << nBossIndex << delim
 							<< "After" << delim << pParty->GetBossIndex()
 							<< end;
-#endif // PARTY_BUG_GER
 
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperPartyChangeBossRepMsg(rmsg, nBossIndex, strBossName, pParty->GetBossIndex(), strTargetName);
@@ -5362,7 +5812,6 @@ void do_CommandPartyOnline( CNetMsg::SP& msg, CDescriptor* dest)
 	CParty* pParty = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pParty)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER ONLINE: NOT_PARTY")
 				<< "BOSSINDEX" << delim << nBossIndex << delim
 				<< "TARGETINDEX" << delim << nTargetIndex
@@ -5370,7 +5819,6 @@ void do_CommandPartyOnline( CNetMsg::SP& msg, CDescriptor* dest)
 		gserver.PrintPartyMemberList(dest->m_subNo, nBossIndex);
 		gserver.PrintPartyMemberList(dest->m_subNo, nTargetIndex);
 
-#endif // #ifdef PARTY_BUG_GER
 		return ;
 	}
 
@@ -5394,10 +5842,10 @@ void do_CommandPartyChangeTypeReq(CNetMsg::SP& msg, CDescriptor* dest)
 	if (!pParty)
 		return ;
 
-	if(cAllOneSet==MSG_PARTY_SETALLONE_ALL)	//´ëÇ¥ Å¸ÀÔ ¼³Á¤
+	if(cAllOneSet==MSG_PARTY_SETALLONE_ALL)	//ëŒ€í‘œ íƒ€ì… ì„¤ì •
 	{
 		pParty->SetPartyTypeAll(cPartyType);
-	}else if(cAllOneSet==MSG_PARTY_SETALLONE_ONE)	 //¼¼ºĞÈ­ 1°³ ¼³Á¤
+	}else if(cAllOneSet==MSG_PARTY_SETALLONE_ONE)	 //ì„¸ë¶„í™” 1ê°œ ì„¤ì •
 	{
 		pParty->SetPartyType(cDiviType,cPartyType);
 	}
@@ -5407,7 +5855,7 @@ void do_CommandPartyChangeTypeReq(CNetMsg::SP& msg, CDescriptor* dest)
 	gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 }
 
-//ÆÄÆ¼ ÇØÃ¼
+//íŒŒí‹° í•´ì²´
 void do_CommandPartyEndPartyReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int nBossIndex;
@@ -5417,7 +5865,7 @@ void do_CommandPartyEndPartyReq(CNetMsg::SP& msg, CDescriptor* dest)
 	if (!pParty)
 		return ;
 
-	// ÆÄÆ¼ ÇØÃ¼
+	// íŒŒí‹° í•´ì²´
 	LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 	gserver.m_listParty.erase(key);
 	pParty->SetEndParty();
@@ -5438,7 +5886,7 @@ void do_CommandPartyBreakReq(CNetMsg::SP& msg, CDescriptor* dest)
 	if (!pParty)
 		return ;
 
-	// ÆÄÆ¼ ÇØÃ¼
+	// íŒŒí‹° í•´ì²´
 	LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 	gserver.m_listParty.erase(key);
 	pParty->SetEndParty();
@@ -5550,7 +5998,7 @@ void do_CommandPartyMatchDelReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 void do_CommandPartyMatchDelReq_real(int nSubNo, int nCharIndex)
 {
-	// ¸â¹ö ¸®½ºÆ®¿¡¼­ Ã£±â
+	// ë©¤ë²„ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ê¸°
 	CPartyMatchMember* pMatchMember = gserver.FindPartyMatchMemberByCharIndex(nSubNo, nCharIndex);
 	if (pMatchMember)
 	{
@@ -5564,7 +6012,7 @@ void do_CommandPartyMatchDelReq_real(int nSubNo, int nCharIndex)
 		return ;
 	}
 
-	// ÆÄÆ¼ ¸®½ºÆ®¿¡¼­ Ã£±â
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ê¸°
 	CPartyMatchParty* pMatchParty = gserver.FindPartyMatchPartyByBossIndex(nSubNo, nCharIndex);
 	if (pMatchParty)
 	{
@@ -5590,7 +6038,7 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		>> nBossLevel
 		>> nCharIndex;
 
-	// ´ë»óÀÇ ÆÄÆ¼ ¸ÅÄª µî·ÏÀ» Ã£´Â´Ù
+	// ëŒ€ìƒì˜ íŒŒí‹° ë§¤ì¹­ ë“±ë¡ì„ ì°¾ëŠ”ë‹¤
 	CPartyMatchMember* pMatchMember = gserver.FindPartyMatchMemberByCharIndex(dest->m_subNo, nCharIndex);
 	if (!pMatchMember)
 	{
@@ -5600,11 +6048,11 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ´ë»óÀÚÀÇ Èñ¸Á ÆÄÆ¼ Å¸ÀÔÀ» ±¸ÇÑ´Ù
+	// ëŒ€ìƒìì˜ í¬ë§ íŒŒí‹° íƒ€ì…ì„ êµ¬í•œë‹¤
 	char		cPartyType = pMatchMember->GetPartyType();
 
-	// ÆÄÆ¼ Å¸ÀÔÀÌ PARTY_TYPE_BATTLEÀÌ¸é tch¿Í chÀÇ ·¹º§ Â÷ÀÌ¸¦ °Ë»ç
-	// Â÷ÀÌ°¡ +- 10ÀÌ»óÀÌ¸é ERROR;
+	// íŒŒí‹° íƒ€ì…ì´ PARTY_TYPE_BATTLEì´ë©´ tchì™€ chì˜ ë ˆë²¨ ì°¨ì´ë¥¼ ê²€ì‚¬
+	// ì°¨ì´ê°€ +- 10ì´ìƒì´ë©´ ERROR;
 	if (cPartyType == MSG_PARTY_TYPE_BATTLE)
 	{
 		if (ABS(pMatchMember->GetLevel() - nBossLevel) > 10)
@@ -5616,11 +6064,11 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ±âÁ¸ ÆÄÆ¼¸¦ Ã£´Â´Ù
+	// ê¸°ì¡´ íŒŒí‹°ë¥¼ ì°¾ëŠ”ë‹¤
 	CParty* pPartyBoss = gserver.FindPartyByMemberIndex(dest->m_subNo, nBossIndex, true);
 	CParty* pPartyTarget = gserver.FindPartyByMemberIndex(dest->m_subNo, nCharIndex, true);
 
-	// nBossIndex°¡ ÆÄÆ¼ ÃÊ´ë°¡ °¡´ÉÇÑÁö : ÆÄÆ¼°¡ ¾ø°Å³ª º¸½º
+	// nBossIndexê°€ íŒŒí‹° ì´ˆëŒ€ê°€ ê°€ëŠ¥í•œì§€ : íŒŒí‹°ê°€ ì—†ê±°ë‚˜ ë³´ìŠ¤
 	if (pPartyBoss && pPartyBoss->GetBossIndex() != nBossIndex)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5629,7 +6077,7 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼ Å¸ÀÔ °Ë»ç
+	// íŒŒí‹° íƒ€ì… ê²€ì‚¬
 	if (pPartyBoss && pPartyBoss->GetPartyType(MSG_DIVITYPE_EXP) != cPartyType)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5638,7 +6086,7 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ´ë»ó ÆÄÆ¼ °Ë»ç
+	// ëŒ€ìƒ íŒŒí‹° ê²€ì‚¬
 	if (pPartyTarget)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5647,7 +6095,7 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼ ÀÎ¿ø °Ë»ç
+	// íŒŒí‹° ì¸ì› ê²€ì‚¬
 	if (pPartyBoss && pPartyBoss->GetMemberCount() >= MAX_PARTY_MEMBER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5656,7 +6104,7 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÇöÀç ¿äÃ»ÀÚ À¯¹« °Ë»ç
+	// í˜„ì¬ ìš”ì²­ì ìœ ë¬´ ê²€ì‚¬
 	if (pPartyBoss && pPartyBoss->GetRequestIndex() > 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5667,18 +6115,18 @@ void do_CommandPartyMatchInviteReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	if (pPartyBoss)
 	{
-		// ±âÁ¸ ÆÄÆ¼¿¡ ¿äÃ»ÀÚ·Î ¼³Á¤
+		// ê¸°ì¡´ íŒŒí‹°ì— ìš”ì²­ìë¡œ ì„¤ì •
 		pPartyBoss->SetRequest(nCharIndex, pMatchMember->GetName());
 	}
 	else
 	{
-		// ½Å±Ô ÆÄÆ¼ »ı¼º
+		// ì‹ ê·œ íŒŒí‹° ìƒì„±
 		pPartyBoss = new CParty(dest->m_subNo, cPartyType, nBossIndex, strBossName, nCharIndex, pMatchMember->GetName(), nBossLevel );
 		LONGLONG key = MAKE_LONGLONG_KEY(pPartyBoss->GetSubNo(), pPartyBoss->GetBossIndex());
 		gserver.m_listParty.insert(map_party_t::value_type(key, pPartyBoss));
 	}
 
-	// °á°ú Àü´Ş
+	// ê²°ê³¼ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperPartyMatchInviteRepMsg(rmsg, MSG_HELPER_PARTY_MATCH_ERROR_INVITE_OK, nBossIndex, strBossName, nCharIndex, pMatchMember->GetName(), cPartyType);
 	gserver.SendToAllSubServer(rmsg, dest->m_subNo);
@@ -5698,7 +6146,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		>> nCharLevel
 		>> cCharJob;
 
-	// ÆÄÆ¼ ¸ÅÄª¿¡ µî·ÏµÈ °ÍÀ» Ã£°í
+	// íŒŒí‹° ë§¤ì¹­ì— ë“±ë¡ëœ ê²ƒì„ ì°¾ê³ 
 	CPartyMatchParty* pMatchParty = gserver.FindPartyMatchPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (pMatchParty == NULL)
 	{
@@ -5708,7 +6156,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼¸¦ Ã£°í
+	// íŒŒí‹°ë¥¼ ì°¾ê³ 
 	CParty*		pPartyBoss = gserver.FindPartyByBossIndex(dest->m_subNo, nBossIndex);
 	if (pPartyBoss == NULL)
 	{
@@ -5718,10 +6166,10 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼ Å¸ÀÔÀ» ±¸ÇÏ°í
+	// íŒŒí‹° íƒ€ì…ì„ êµ¬í•˜ê³ 
 	char cPartyType = pPartyBoss->GetPartyType(MSG_DIVITYPE_EXP);
 
-	// ÆÄÆ¼ Å¸ÀÔÀÌ PARTY_TYPE_BATTLEÀÌ¸é ·¹º§ °Ë»ç
+	// íŒŒí‹° íƒ€ì…ì´ PARTY_TYPE_BATTLEì´ë©´ ë ˆë²¨ ê²€ì‚¬
 	if (cPartyType == MSG_PARTY_TYPE_BATTLE)
 	{
 		if (ABS(pMatchParty->GetBossLevel() - nCharLevel) > 10)
@@ -5733,7 +6181,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ÆÄÆ¼ ¸ÅÄª¿¡ ·¹º§ Á¦ÇÑÀÌ ÀÖÀ¸¸é ·¹º§ °Ë»ç
+	// íŒŒí‹° ë§¤ì¹­ì— ë ˆë²¨ ì œí•œì´ ìˆìœ¼ë©´ ë ˆë²¨ ê²€ì‚¬
 	if (pMatchParty->IsLimitLevel() && ABS(pMatchParty->GetBossLevel() - nCharLevel) > PARTY_MATCHING_LIMIT_LEVEL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5742,7 +6190,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼ ¸ÅÄª¿¡ Á÷¾÷ Á¦ÇÑÀÌ ÀÖÀ¸¸é Á÷¾÷ °Ë»ç
+	// íŒŒí‹° ë§¤ì¹­ì— ì§ì—… ì œí•œì´ ìˆìœ¼ë©´ ì§ì—… ê²€ì‚¬
 	if ((pMatchParty->GetJobFlag() & (1 << cCharJob)) == 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5751,7 +6199,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÆÄÆ¼ ÀÎ¿ø °Ë»ç
+	// íŒŒí‹° ì¸ì› ê²€ì‚¬
 	if (pPartyBoss->GetMemberCount() >= MAX_PARTY_MEMBER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5760,7 +6208,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ÇöÀç ¿äÃ»ÀÚ °Ë»ç
+	// í˜„ì¬ ìš”ì²­ì ê²€ì‚¬
 	if (pPartyBoss->GetRequestIndex() > 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5769,7 +6217,7 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ¿äÃ»ÇÑ »ç¶÷ÀÇ ÆÄÆ¼ °Ë»ç
+	// ìš”ì²­í•œ ì‚¬ëŒì˜ íŒŒí‹° ê²€ì‚¬
 	CParty*		pPartyTarget = gserver.FindPartyByMemberIndex(dest->m_subNo, nCharIndex, true);
 	if (pPartyTarget)
 	{
@@ -5779,10 +6227,10 @@ void do_CommandPartyMatchJoinReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ±âÁ¸ ÆÄÆ¼¿¡ ¿äÃ»ÀÚ·Î ¼³Á¤
+	// ê¸°ì¡´ íŒŒí‹°ì— ìš”ì²­ìë¡œ ì„¤ì •
 	pPartyBoss->SetRequest(nCharIndex, strCharName);
 
-	// °á°ú Àü´Ş
+	// ê²°ê³¼ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperPartyMatchJoinRepMsg(rmsg, MSG_HELPER_PARTY_MATCH_ERROR_JOIN_OK, cPartyType, nBossIndex, pMatchParty->GetBossName(), nCharIndex, strCharName, cCharJob);
 	gserver.SendToAllSubServer(rmsg, dest->m_subNo);
@@ -5817,8 +6265,8 @@ void do_CommandPartyMatchJoinAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 		gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 		return ;
 	}
-///////////////////////////////////////////¿ÀÅä¸ÅÄªÁß ÀüÅõÆÄÆ¼·Î ÆÄÆ¼Å¸ÀÔ º¯È¯///////////////////////////////////////////
-//////±Ç»ó¿í 2010-01-27
+///////////////////////////////////////////ì˜¤í† ë§¤ì¹­ì¤‘ ì „íˆ¬íŒŒí‹°ë¡œ íŒŒí‹°íƒ€ì… ë³€í™˜///////////////////////////////////////////
+//////ê¶Œìƒìš± 2010-01-27
 /*
 	if(ABS(nLevel - nReqCharLevel) > 10)
 	{
@@ -5838,7 +6286,7 @@ void do_CommandPartyMatchJoinAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 
 	char cPartyType = pParty->GetPartyType(MSG_DIVITYPE_EXP);
 
-	// ÆÄÆ¼ Å¸ÀÔÀÌ PARTY_TYPE_BATTLEÀÌ¸é ·¹º§ °Ë»ç
+	// íŒŒí‹° íƒ€ì…ì´ PARTY_TYPE_BATTLEì´ë©´ ë ˆë²¨ ê²€ì‚¬
 	if (cPartyType == MSG_PARTY_TYPE_BATTLE)
 	{
 		if (ABS(pMatchParty->GetBossLevel() - nReqCharLevel) > 10)
@@ -5849,8 +6297,8 @@ void do_CommandPartyMatchJoinAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 			return ;
 		}
 	}
-///////////////////////////////////////////¿ÀÅä¸ÅÄªÁß ÀüÅõÆÄÆ¼·Î ÆÄÆ¼Å¸ÀÔ º¯È¯///////////////////////////////////////////
-	// ÆÄÆ¼¿øÀ¸·Î µî·Ï
+///////////////////////////////////////////ì˜¤í† ë§¤ì¹­ì¤‘ ì „íˆ¬íŒŒí‹°ë¡œ íŒŒí‹°íƒ€ì… ë³€í™˜///////////////////////////////////////////
+	// íŒŒí‹°ì›ìœ¼ë¡œ ë“±ë¡
 	CLCString strReqName(MAX_CHAR_NAME_LENGTH + 1);
 	strReqName = pParty->GetRequestName();
 	pParty->JoinRequest(strReqName, nLevel );
@@ -5859,7 +6307,7 @@ void do_CommandPartyMatchJoinAllowReq(CNetMsg::SP& msg, CDescriptor* dest)
 	HelperPartyMatchJoinAllowRepMsg(rmsg, MSG_HELPER_PARTY_MATCH_ERROR_JOIN_ALLOW_OK, nBossIndex, nReqCharIndex, strReqName);
 	gserver.SendToAllSubServer(rmsg, dest->m_subNo);
 
-	// ÆÄÆ¼¿¡ Âü°¡ÇÏ´Â À¯Àú´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+	// íŒŒí‹°ì— ì°¸ê°€í•˜ëŠ” ìœ ì €ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 	CPartyMatchMember* pMatchMember = gserver.FindPartyMatchMemberByCharIndex(dest->m_subNo, nReqCharIndex);
 	if (pMatchMember)
 		do_CommandPartyMatchDelReq_real(dest->m_subNo, nReqCharIndex);
@@ -5874,7 +6322,7 @@ void do_CommandPartyMatchJoinRejectReq(CNetMsg::SP& msg, CDescriptor* dest)
 	RefMsg(msg) >> nJoinCharIndex
 		>> nRejectCharIndex;
 
-	// nJoinCharIndex·Î ÆÄÆ¼ °Ë»ö
+	// nJoinCharIndexë¡œ íŒŒí‹° ê²€ìƒ‰
 	CParty* pParty = gserver.FindPartyByMemberIndex(dest->m_subNo, nJoinCharIndex, true);
 	if (!pParty)
 	{
@@ -5884,7 +6332,7 @@ void do_CommandPartyMatchJoinRejectReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ¿äÃ»ÀÚ°¡ º¸½ºÀÎÁö ÀÏ¹İÀÎÁö °Ë»ç
+	// ìš”ì²­ìê°€ ë³´ìŠ¤ì¸ì§€ ì¼ë°˜ì¸ì§€ ê²€ì‚¬
 	if (pParty->GetBossIndex() == nRejectCharIndex || pParty->GetRequestIndex() == nRejectCharIndex)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5894,10 +6342,10 @@ void do_CommandPartyMatchJoinRejectReq(CNetMsg::SP& msg, CDescriptor* dest)
 		pParty->SetRequest(-1, "");
 		if (pParty->GetMemberCount() < 2)
 		{
-			// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+			// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 			do_CommandPartyMatchDelReq_real(dest->m_subNo, pParty->GetBossIndex());
 
-			// ÆÄÆ¼ Á¾·á
+			// íŒŒí‹° ì¢…ë£Œ
 			LONGLONG key = MAKE_LONGLONG_KEY(pParty->GetSubNo(), pParty->GetBossIndex());
 			gserver.m_listParty.erase(key);
 			pParty->SetEndParty();
@@ -6052,8 +6500,8 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 	int ownerindex;
 	int charindex;
 	CLCString strPositionName(GUILD_POSITION_NAME+1);
-	int contributeExp;
-	int contributeFame;
+	int contributeExp_min, contributeExp_max;
+	int contributeFame_min, contributeFame_max;
 	int pos;
 #ifdef DEV_GUILD_STASH
 	char	cStashAuth = 0;
@@ -6063,14 +6511,37 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 		>> ownerindex
 		>> charindex
 		>> strPositionName
-		>> contributeExp
-		>> contributeFame;
+		>> contributeExp_min
+		>> contributeExp_max
+		>> contributeFame_min
+		>> contributeFame_max;
 	RefMsg(msg) >> pos;
 #ifdef DEV_GUILD_STASH
 	RefMsg(msg) >> cStashAuth;
 #endif //DEV_GUILD_STASH
 
 	CGuildMember* gMember = gserver.m_guildlist.findmember( charindex );
+
+	if(gMember == NULL)
+		return;
+
+	if(gMember->GetcontributeExp() > contributeExp_max)
+	{
+		gMember->contributeExp(contributeExp_max);
+	}
+	else if(gMember->GetcontributeExp() < contributeExp_min)
+	{
+		gMember->contributeExp(contributeExp_min);
+	}
+
+	if(gMember->GetcontributeFame() > contributeFame_max)
+	{
+		gMember->contributeFame(contributeFame_max);
+	}
+	else if(gMember->GetcontributeFame() < contributeFame_min)
+	{
+		gMember->contributeFame(contributeFame_min);
+	}
 
 	CDBCmd cmd;
 	cmd.Init( &gserver.m_dbchar );
@@ -6079,14 +6550,14 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 	std::string update_extend_guild_member_query = "";
 #ifdef DEV_GUILD_STASH
 	update_extend_guild_member_query = boost::str(boost::format(
-		"UPDATE t_extend_guildmember SET a_position_name = '%s', a_contribute_exp = %d, a_contribute_fame = %d, a_stash_auth = %d"
-		" WHERE a_guild_index = %d AND a_char_index = %d")
-		%(const char*)strPositionName % contributeExp % contributeFame % (int)cStashAuth % guildindex % charindex );
+		"UPDATE t_extend_guildmember SET a_position_name = '%s', a_contribute_exp = %d, a_contribute_fame = %d, a_contribute_exp_min = %d, a_contribute_exp_max = %d, a_contribute_fame_min = %d, a_contribute_fame_max = %d,"
+		"a_stash_auth = %d where a_guild_index = %d AND a_char_index= %d")
+		%(const char*)strPositionName % gMember->GetcontributeExp() % gMember->GetcontributeFame() % contributeExp_min % contributeExp_max % contributeFame_min % contributeFame_max % (int)cStashAuth % guildindex % charindex);
 #else
 	update_extend_guild_member_query = boost::str(boost::format(
-		"UPDATE t_extend_guildmember SET a_position_name = '%s', a_contribute_exp = %d, a_contribute_fame = %d "
+		"UPDATE t_extend_guildmember SET a_position_name = '%s', a_contribute_exp = %d, a_contribute_fame = %d, a_contribute_exp_min = %d, a_contribute_exp_max = %d, a_contribute_fame_min = %d, a_contribute_fame_max = %d"
 		" WHERE a_guild_index = %d AND a_char_index = %d ")
-		%(const char*)strPositionName % contributeExp % contributeFame % guildindex % charindex );
+		%(const char*)strPositionName % gMember->GetcontributeExp() % gMember->GetcontributeFame() % contributeExp_min % contributeExp_max % contributeFame_min % contributeFame_max % guildindex % charindex);
 #endif //DEV_GUILD_STASH
 
 	cmd.SetQuery( update_extend_guild_member_query );
@@ -6098,7 +6569,7 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 			<< mysql_error( &gserver.m_dbchar ) << end;
 
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, contributeExp, contributeFame, pos, MSG_NEW_GUILD_ERROR_ADJUST_FAIL );
+		HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, gMember->GetcontributeExp(), gMember->GetcontributeFame(), contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, pos, MSG_NEW_GUILD_ERROR_ADJUST_FAIL );
 		SEND_Q( rmsg, dest );
 		return;
 	}
@@ -6114,7 +6585,7 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 			<< mysql_error( &gserver.m_dbchar ) << end;
 
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, contributeExp, contributeFame, pos, MSG_NEW_GUILD_ERROR_ADJUST_FAIL );
+		HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, gMember->GetcontributeExp(), gMember->GetcontributeFame(), contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, pos, MSG_NEW_GUILD_ERROR_ADJUST_FAIL );
 		SEND_Q( rmsg, dest );
 		return;
 	}
@@ -6122,9 +6593,12 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if( gMember )
 	{
+		gMember->SetContributeExp_min(contributeExp_min);
+		gMember->SetContributeExp_max(contributeExp_max);
+		gMember->SetContributeFame_min(contributeFame_min);
+		gMember->SetContributeFame_max(contributeFame_max);
+
 		gMember->positionName( strPositionName );
-		gMember->contributeExp( contributeExp );
-		gMember->contributeFame( contributeFame );
 		gMember->guild()->ChangeGradeExPosCount(gMember->pos(), pos);
 		gMember->pos(pos);
 
@@ -6165,7 +6639,7 @@ void do_CommandGuildMemberAdjust( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 
 	CNetMsg::SP rmsg(new CNetMsg);
-	HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, contributeExp, contributeFame, pos, MSG_NEW_GUILD_ERROR_ADJUST_OK );
+	HelperGuildMemberAdjustRepMsg( rmsg, guildindex, ownerindex, charindex, strPositionName, gMember->GetcontributeExp(), gMember->GetcontributeFame(), contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, pos, MSG_NEW_GUILD_ERROR_ADJUST_OK );
 	gserver.SendToAllGameServer(rmsg);
 }
 
@@ -6251,7 +6725,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 	cmd.Init( &gserver.m_dbchar );
 
 	char select_guild_member_query[8192] = {0,};
-	sprintf( select_guild_member_query, "SELECT g.a_guild_index as a_guild_index, g.a_char_index as a_char_index, g.a_char_name as a_char_name, g.a_pos as a_pos, eg.a_position_name as a_position_name, eg.a_point as a_point, c.a_job as a_job, c.a_job2 as a_job2, c.a_level as a_level  "
+	sprintf( select_guild_member_query, "SELECT g.a_guild_index as a_guild_index, g.a_char_index as a_char_index, g.a_char_name as a_char_name, g.a_pos as a_pos, eg.a_position_name as a_position_name, eg.a_point as a_point, c.a_job as a_job, c.a_job2 as a_job2, c.a_level as a_level, c.a_lcdatestamp as a_logout_date"
 					" FROM t_guildmember as g LEFT JOIN t_extend_guildmember as eg ON g.a_guild_index = eg.a_guild_index "
 					" LEFT JOIN t_characters as c ON g.a_char_index = c.a_index "
 					" WHERE g.a_char_index = eg.a_char_index AND g.a_guild_index = %d AND c.a_enable = 1", guildindex );
@@ -6264,7 +6738,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 	if( !cmd.Open() || !cmd.MoveFirst() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperNewGuildMemberListRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_GUILD_ERROR_NOTBOSS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+		HelperNewGuildMemberListRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_GUILD_ERROR_NOTBOSS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 		SEND_Q( rmsg, dest );
 		return;
 	}
@@ -6277,6 +6751,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 	char job2[GUILD_MAX_MEMBER];
 	int level[GUILD_MAX_MEMBER];
 	int position[GUILD_MAX_MEMBER];
+	int logout_date[GUILD_MAX_MEMBER] = {0,};
 	CLCString strCharName( MAX_CHAR_NAME_LENGTH  + 1 );
 	CLCString strPositionName( GUILD_POSITION_NAME+1 );
 
@@ -6300,6 +6775,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 		cmd.GetRec( "a_job2", job2[i] );
 		cmd.GetRec( "a_level", level[i] );
 		cmd.GetRec( "a_pos", position[i] );
+		cmd.GetRec( "a_logout_date", logout_date[i] );
 		strcpy( charName[i], strCharName );
 		strcpy( positionName[i], strPositionName );
 		if( guild )
@@ -6315,7 +6791,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 		endcount = (i + 1) * 5;
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperNewGuildMemberListRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MEMBERLIST_ERROR_OK,
-				 membercharindex, cumulatePoint, charName, positionName, job, job2, level, position );
+				 membercharindex, cumulatePoint, charName, positionName, job, job2, level, position, logout_date );
 		SEND_Q( rmsg, dest );
 	}
 
@@ -6324,7 +6800,7 @@ void do_CommandNewGuildMemberList( CNetMsg::SP& msg, CDescriptor* dest )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperNewGuildMemberListRepMsg( rmsg, membercount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MEMBERLIST_ERROR_OK,
-				 membercharindex, cumulatePoint, charName, positionName, job, job2, level, position );
+			membercharindex, cumulatePoint, charName, positionName, job, job2, level, position, logout_date);
 		SEND_Q( rmsg, dest );
 	}
 
@@ -6343,11 +6819,7 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 	cmd.Init( &gserver.m_dbchar );
 
 	char select_guild_member_query[8192] = {0,};
-#ifdef DEV_GUILD_STASH
-	sprintf( select_guild_member_query, "SELECT g.a_guild_index as a_guild_index, g.a_char_index as a_char_index, g.a_char_name as a_char_name, g.a_pos as a_pos, eg.a_position_name as a_position_name, eg.a_contribute_exp as a_contribute_exp, eg.a_contribute_fame as a_contribute_fame, c.a_level as a_level, eg.a_stash_auth as a_stash_auth  "
-#else
-	sprintf( select_guild_member_query, "SELECT g.a_guild_index as a_guild_index, g.a_char_index as a_char_index, g.a_char_name as a_char_name, g.a_pos as a_pos, eg.a_position_name as a_position_name, eg.a_contribute_exp as a_contribute_exp, eg.a_contribute_fame as a_contribute_fame, c.a_level as a_level "
-#endif //DEV_GUILD_STASH
+	sprintf( select_guild_member_query, "SELECT g.a_guild_index as a_guild_index, g.a_char_index as a_char_index, g.a_char_name as a_char_name, g.a_pos as a_pos, eg.a_position_name as a_position_name, eg.a_contribute_exp as a_contribute_exp, eg.a_contribute_fame as a_contribute_fame, eg.a_contribute_exp_min as a_contribute_exp_min, eg.a_contribute_exp_max as a_contribute_exp_max, eg.a_contribute_fame_min as a_contribute_fame_min, eg.a_contribute_fame_max as a_contribute_fame_max, c.a_level as a_level, eg.a_stash_auth as a_stash_auth  "
 			" FROM t_guildmember as g LEFT JOIN  t_extend_guildmember as eg ON g.a_guild_index = eg.a_guild_index "
 			" LEFT JOIN t_characters as c ON g.a_char_index = c.a_index "
 			" WHERE g.a_char_index = eg.a_char_index AND g.a_guild_index = %d AND c.a_enable = 1", guildindex );
@@ -6360,16 +6832,18 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 	if( !cmd.Open() || !cmd.MoveFirst() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-#ifdef DEV_GUILD_STASH
-		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_GUILD_ERROR_NOTBOSS, NULL, NULL, NULL, NULL , NULL, NULL, NULL, NULL, 1);
-#else
-		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_GUILD_ERROR_NOTBOSS, NULL, NULL, NULL, NULL , NULL, NULL, NULL, 1);
-#endif //DEV_GUILD_STASH
+		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_GUILD_ERROR_NOTBOSS, NULL, NULL, NULL, NULL , NULL, NULL, NULL, NULL , NULL, NULL, NULL, NULL, 1);
 		SEND_Q( rmsg, dest );
 		return;
 	}
 	int membercount		= 0;
 	int membercharindex[GUILD_MAX_MEMBER];
+	
+	int contributeExp_min[GUILD_MAX_MEMBER];
+	int contributeExp_max[GUILD_MAX_MEMBER];
+	int contributeFame_min[GUILD_MAX_MEMBER];
+	int contributeFame_max[GUILD_MAX_MEMBER];
+
 	int contributeExp[GUILD_MAX_MEMBER];
 	int contributeFame[GUILD_MAX_MEMBER];
 	int level[GUILD_MAX_MEMBER];
@@ -6378,9 +6852,7 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 	CLCString strCharName( MAX_CHAR_NAME_LENGTH  + 1 );
 	CLCString strPositionName( GUILD_POSITION_NAME+1 );
 	int position[GUILD_MAX_MEMBER];
-#ifdef DEV_GUILD_STASH
 	char stashAuth[GUILD_MAX_MEMBER];
-#endif //DEV_GUILD_STASH
 
 	membercount = cmd.m_nrecords;
 	int i = 0;
@@ -6394,6 +6866,10 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 		cmd.GetRec( "a_char_index", membercharindex[i] );
 		cmd.GetRec( "a_contribute_exp", contributeExp[i] );
 		cmd.GetRec( "a_contribute_fame", contributeFame[i] );
+		cmd.GetRec( "a_contribute_exp_min", contributeExp_min[i]);
+		cmd.GetRec( "a_contribute_exp_max", contributeExp_max[i]);
+		cmd.GetRec( "a_contribute_fame_min", contributeFame_min[i] );
+		cmd.GetRec( "a_contribute_fame_max", contributeFame_max[i] );
 		cmd.GetRec( "a_char_name", strCharName );
 		if( !cmd.GetRec( "a_position_name",strPositionName ) )
 		{
@@ -6406,25 +6882,19 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 		if( guild )
 			guild->AddGradeExPosCount( position[i] );
 
-#ifdef DEV_GUILD_STASH
 		cmd.GetRec( "a_stash_auth", stashAuth[i] );
-#endif //DEV_GUILD_STASH
 	i++;
 	}while( cmd.MoveNext());
 
 	int loopcount = membercount / 5;
-	char first = 1;			// 1: Ã³À½º¸³¿, 2: ³ªÁß¿¡ º¸³¿
+	char first = 1;			// 1: ì²˜ìŒë³´ëƒ„, 2: ë‚˜ì¤‘ì— ë³´ëƒ„
 
 	for( i = 0; i < loopcount; i++ )
 	{
 		endcount = (i + 1) * 5;
 
 		CNetMsg::SP rmsg(new CNetMsg);
-#ifdef DEV_GUILD_STASH
-		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, charName, positionName, level, position, stashAuth, first );
-#else
-		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, charName, positionName, level, position, first );
-#endif //
+		HelperNewGuildManageRepMsg( rmsg, endcount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, charName, positionName, level, position, stashAuth, first );
 		SEND_Q( rmsg, dest );
 
 		first = 0;
@@ -6434,11 +6904,7 @@ void do_CommandNewGuildManage( CNetMsg::SP& msg, CDescriptor* dest )
 	if( remaincount > 0 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-#ifdef DEV_GUILD_STASH
-		HelperNewGuildManageRepMsg( rmsg, membercount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, charName, positionName, level, position, stashAuth, first );
-#else
-		HelperNewGuildManageRepMsg( rmsg, membercount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, charName, positionName, level, position, first );
-#endif //DEV_GUILD_STASH
+		HelperNewGuildManageRepMsg( rmsg, membercount, guildstart, charindex, guildindex, MSG_NEW_GUILD_MANAGE_ERROR_OK,  membercharindex, contributeExp, contributeFame, contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, charName, positionName, level, position, stashAuth, first );
 		SEND_Q( rmsg, dest );
 	}
 
@@ -6699,7 +7165,7 @@ void do_CommandNewGuildSkillList( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 
 	{
-		// ¿©±â¼­ ¸Ş¼¼Áö ±¸¼º ¹× ¹ß¼Û
+		// ì—¬ê¸°ì„œ ë©”ì„¸ì§€ êµ¬ì„± ë° ë°œì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperNewGuildSkillListRepMsg(rmsg, charindex, guildindex, MSG_NEW_GUILD_SKILL_ERROR_OK,
 			ActiveLoopCount, sActiveindex, sActiveLevel,
@@ -6959,6 +7425,19 @@ void do_CommandGuildSkillLearn( CNetMsg::SP& msg, CDescriptor* dest )
 							<< nGuildIndex << end;
 				}
 			}
+			else if (sindex[roopcount] == 1377)
+			{
+				size_t new_count = CGuildStash::DefaultStashCapacity + ((sLevel[roopcount] - 1) * 5);
+				sql.Format("UPDATE t_guild_stash_info SET a_capacity=%d WHERE a_guild_idx = %d", new_count, nGuildIndex);
+				cmd.SetQuery( sql );
+				if( !cmd.Update() )
+				{
+					GAMELOG << init( "GUILD STASH INC FAIL" )
+						<< "GUILD" << delim
+						<< nGuildIndex << end;
+				}
+			}
+
 			roopcount++;
 		}
 
@@ -7051,7 +7530,7 @@ void do_CastleTowerReinforce(CNetMsg::SP& msg, CDescriptor * dest)
 	char type = 0, step = 0;
 	RefMsg(msg) >> zoneidx >> type >> step;
 
-	// type : 0. °ø°İÇü Å¸¿ö 1. °¡µåÇü Å¸¿ö 2. ¼º¹®
+	// type : 0. ê³µê²©í˜• íƒ€ì›Œ 1. ê°€ë“œí˜• íƒ€ì›Œ 2. ì„±ë¬¸
 	// step 1 - 3
 	if (type <=0 || type > 3 || step <= 0 || step > 3)
 	{
@@ -7182,13 +7661,13 @@ void do_CommandHalloween2007( CNetMsg::SP& msg, CDescriptor* dest )
 
 void do_CommandDVDRateChange( CNetMsg::SP& msg, CDescriptor* dest )
 {
-	// ¸ğµç ¼­¹ö¿¡ º¯°æ subtype°ú nRate Àü´Ş
+	// ëª¨ë“  ì„œë²„ì— ë³€ê²½ subtypeê³¼ nRate ì „ë‹¬
 	CDBCmd	cmd;
 	unsigned char subtype;
 	int		nRate, mode;
 	RefMsg(msg) >> subtype >> nRate >> mode;
 
-	// DB ¿¡ ÀúÀå
+	// DB ì— ì €ì¥
 	int	nZoneIndex=0;
 	CLCString sql(1024), strRateName(1024);
 
@@ -7398,7 +7877,7 @@ void do_CommandCubeStateReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	RefMsg(msg) >> charindex;
 
-	// ±æµåÅ¥ºêÆ÷ÀÎÆ®
+	// ê¸¸ë“œíë¸Œí¬ì¸íŠ¸
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
@@ -7503,7 +7982,7 @@ void do_CommandCubeStatePersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 	RefMsg(msg) >> charindex;
 
 	// `a_week_date`, `a_char_idx`, `a_cubepoint`, `a_update_date`
-	// °³ÀÎ Å¥ºê Á¡¼ö Ã£±â
+	// ê°œì¸ íë¸Œ ì ìˆ˜ ì°¾ê¸°
 	sql.Format("SELECT cp.* FROM t_cubepoint_personal cp, t_characters c WHERE cp.a_week_date=%d and c.a_index=%d and cp.a_char_idx=c.a_index", gserver.m_CubePointUpdateTime, charindex);
 
 	CDBCmd cmd;
@@ -7517,7 +7996,7 @@ void do_CommandCubeStatePersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 		cmd.GetRec("a_cubepoint", selfpoint);
 	}
 
-	// ÇöÀç °³ÀÎ Å¥ºê ¼øÀ§ 1~3µî±îÁö Ã£±â
+	// í˜„ì¬ ê°œì¸ íë¸Œ ìˆœìœ„ 1~3ë“±ê¹Œì§€ ì°¾ê¸°
 	sql.Format("SELECT cp.*, c.a_nick as a_nick FROM t_cubepoint_personal cp, t_characters c "
 			   "WHERE cp.a_week_date=%d and cp.a_char_idx = c.a_index and c.a_enable = 1 ORDER BY cp.a_cubepoint DESC, cp.a_update_date ASC LIMIT 3", gserver.m_CubePointUpdateTime);
 	cmd.SetQuery(sql);
@@ -7561,7 +8040,7 @@ void do_CommandCubeStatePersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 			 << cubepoint;
 	}
 
-	// Áö³­ÁÖ °³ÀÎ Å¥ºê ¼øÀ§ 1~3µî±îÁö Ã£±â
+	// ì§€ë‚œì£¼ ê°œì¸ íë¸Œ ìˆœìœ„ 1~3ë“±ê¹Œì§€ ì°¾ê¸°
 	// a_insert_week, a_type, a_rank, a_typeidx, a_cubepoint
 	rank = 0;
 
@@ -7692,7 +8171,7 @@ void do_CommandAddCubePointPersonal( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 		else
 		{
-			// ½ÇÆĞÇÏ¸é ·Î±× Âï±â
+			// ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì°ê¸°
 			GAMELOG << init("Failed Increase CubePoint Personal")
 				<< "Week" << delim << gserver.m_CubePointUpdateTime << delim
 				<< "CharIdx" << delim << ofcharidx << delim
@@ -7728,7 +8207,7 @@ void do_CommandAddCubePointPersonal( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 		else
 		{
-			// ½ÇÆĞÇÏ¸é ·Î±× Âï±â
+			// ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì°ê¸°
 			GAMELOG << init("Failed Increase CubePoint Personal")
 					<< "Week" << delim << gserver.m_CubePointUpdateTime << delim
 					<< "CharIdx" << delim << ofcharidx << delim
@@ -7759,7 +8238,7 @@ void do_CommandCubeRewardPersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if(!cmd.MoveFirst())
 	{
-		// º¸»ó¹ŞÀ» ¼ö ÀÖ´Â Ä³¸¯ÅÍ°¡ ¾Æ´Ï´Ù.
+		// ë³´ìƒë°›ì„ ìˆ˜ ìˆëŠ” ìºë¦­í„°ê°€ ì•„ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExtremeCubeErrorMsg(rmsg, MSG_HELPER_EXTREME_CUBE_ERROR_REWARD_PERSONAL_CANNOT, charidx);
 		SEND_Q(rmsg, dest);
@@ -7770,7 +8249,7 @@ void do_CommandCubeRewardPersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 	cmd.GetRec("a_reward", breward);
 	if(breward == 1)
 	{
-		// ÀÌ¹Ì º¸»óÀ» ¹Ş¾ÒÀ½
+		// ì´ë¯¸ ë³´ìƒì„ ë°›ì•˜ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExtremeCubeErrorMsg(rmsg, MSG_HELPER_EXTREME_CUBE_ERROR_REWARD_PERSONAL_ALREADY, charidx);
 		SEND_Q(rmsg, dest);
@@ -7786,7 +8265,7 @@ void do_CommandCubeRewardPersonalReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 
 	GAMELOG << init("EXTREME_CUBE_PERSONAL_REWARD_OK") << "CharIndex" << delim << charidx << end;
-	// º¸»óÁøÇà
+	// ë³´ìƒì§„í–‰
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperCubeRewardPersonalRepMsg(rmsg, gserver.m_CubePointUpdateTime, charidx, rank);
 	SEND_Q(rmsg, dest);
@@ -7806,12 +8285,12 @@ void do_CommandCubeRewardPersonalRollBack(CNetMsg::SP& msg, CDescriptor* dest )
 	cmd.SetQuery(sql);
 	if(cmd.Update())
 	{
-		// ·Ñ¹éÇÑ Ä³¸¯ÅÍ ·Î±×³²±è
+		// ë¡¤ë°±í•œ ìºë¦­í„° ë¡œê·¸ë‚¨ê¹€
 		GAMELOG << init("EXTREME_CUBE_PERSONAL_REWARD_ROLLBACK") << "updatetime" << updatetime << "charindex" << charindex << end;
 	}
 	else
 	{
-		// ½ÇÆĞ
+		// ì‹¤íŒ¨
 		GAMELOG << init("EXTREME_CUBE_PERSONAL_REWARD_ROLLBACK_FAIL") << "updatetime" << updatetime << "charindex" << charindex << end;
 	}
 }
@@ -7856,7 +8335,7 @@ void do_CommandCubeStateReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if(!cmd.MoveFirst())
 	{
-		// count 0À» º¸³½´Ù
+		// count 0ì„ ë³´ë‚¸ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		RefMsg(rmsg).Init(MSG_HELPER_COMMAND);
 		RefMsg(rmsg) << MSG_HELPER_CUBESTATE_REP
@@ -8060,7 +8539,7 @@ void do_CommandAddCubePoint( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 		else
 		{
-			// ½ÇÆĞÇÏ¸é ·Î±× Âï±â
+			// ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì°ê¸°
 			GAMELOG << init("Failed Increase CubePoint")
 					<< "Guild Index" << delim
 					<< ofguildindex << delim
@@ -8107,7 +8586,7 @@ void do_CommandAddCubePointPersonal( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 		else
 		{
-			// ½ÇÆĞÇÏ¸é ·Î±× Âï±â
+			// ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì°ê¸°
 			GAMELOG << init("Failed Increase CubePoint Personal")
 					<< "CharIdx" << delim
 					<< ofcharidx << delim
@@ -8133,11 +8612,11 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 	DB_cmd2.Init(&gserver.m_dbchar);
 	DB_cmd3.Init(&gserver.m_dbchar);
 
-	// 100 ·¹º§ÀÌ»óÀÎ Ä³¸¯ÅÍ°¡ ÀÖ´Ù´Â °ÍÀ» Ç¥½Ã
+	// 100 ë ˆë²¨ì´ìƒì¸ ìºë¦­í„°ê°€ ìˆë‹¤ëŠ” ê²ƒì„ í‘œì‹œ
 	bool level_100_up = false;
 
 	char select_characters_query[1024] = {0,};
-	// ÀÚ½ÅÀÇ °èÁ¤ ³»¿¡ ¸ğµç ÄÉ¸¯ÅÍÀÇ ÀÎµ¦½º¸¦ °¡Á®¿Â´Ù.
+	// ìì‹ ì˜ ê³„ì • ë‚´ì— ëª¨ë“  ì¼€ë¦­í„°ì˜ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 	sprintf(select_characters_query, "SELECT a_index FROM t_characters WHERE a_user_index=%d ", nUserIdx );
 	DB_cmd1.SetQuery(select_characters_query);
 	if (!DB_cmd1.Open())
@@ -8153,7 +8632,7 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 
 			DB_cmd1.GetRec("a_index", index);
 
-			// °¢ Ä³¸¯ÅÍÀÇ ·¹º§À» ÇÏ³ª¾¿ °¡Á®¿Â´Ù.
+			// ê° ìºë¦­í„°ì˜ ë ˆë²¨ì„ í•˜ë‚˜ì”© ê°€ì ¸ì˜¨ë‹¤.
 			char select_characters_query_1[1024] = {0,};
 			sprintf(select_characters_query_1, "SELECT a_level FROM t_characters WHERE a_index=%d ", index );
 
@@ -8164,7 +8643,7 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 			DB_cmd2.MoveFirst();
 			DB_cmd2.GetRec("a_level", level);
 
-			// ÇÇ´Ğ½º ÀÌº¥Æ® ½Â¶ô, ·¹º§ÀÌ 100 ÀÌ»óÀÎ Ä³¸¯ÅÍ°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é
+			// í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ìŠ¹ë½, ë ˆë²¨ì´ 100 ì´ìƒì¸ ìºë¦­í„°ê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´
 			if( level >= 100 )
 			{
 				level_100_up = true;
@@ -8174,25 +8653,25 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 	else
 	{
-		// °èÁ¤ÀÇ Ä³¸¯ÅÍ¸¦ ºÒ·¯¿ÀÁö ¸øÇØ¼­ ÀÚ°İ ¹Ì´ŞÀÓ
+		// ê³„ì •ì˜ ìºë¦­í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í•´ì„œ ìê²© ë¯¸ë‹¬ì„
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperEventPhoenixMsg(rmsg, MSG_HELPER_EVENT_PHOENIX_ERROR_REQUIREMENT, nCharIdx);
 		SEND_Q(rmsg, dest);
 		return;
 	}
 
-	// 100 ·¹º§ Ä³¸¯ÅÍ°¡ ÇÏ³ª¶óµµ ÀÖ´Ù¸é
+	// 100 ë ˆë²¨ ìºë¦­í„°ê°€ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´
 	if ( level_100_up )
 	{
 		int phoenix;
 
-		// Ä³¸¯ÅÍ°¡ ÇÇ´Ğ½º ÀÌº¥Æ® ÀÌÈÄ »ı¼ºµÈ Ä³¸¯ÅÍ ÀÌ¶ó¸é ÇÇ´Ğ½º°¡ °¡´É
+		// ìºë¦­í„°ê°€ í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ì´í›„ ìƒì„±ëœ ìºë¦­í„° ì´ë¼ë©´ í”¼ë‹‰ìŠ¤ê°€ ê°€ëŠ¥
 		char select_characters_query_2[1024] = {0,};
 		sprintf(select_characters_query_2, "SELECT a_phoenix FROM t_characters WHERE a_index=%d ", nCharIdx );
 		DB_cmd3.SetQuery(select_characters_query_2);
 		if (!DB_cmd3.Open())
 		{
-			// µ¥ÀÌÅÍ¸¦ °¡Á®¿ÀÁö ¸øÇØ¼­ ÀÚ°İ ¹Ì´ŞÀÓ
+			// ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•´ì„œ ìê²© ë¯¸ë‹¬ì„
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperEventPhoenixMsg(rmsg, MSG_HELPER_EVENT_PHOENIX_ERROR_REQUIREMENT, nCharIdx);
 			SEND_Q(rmsg, dest);
@@ -8202,10 +8681,10 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 		DB_cmd3.MoveFirst();
 		DB_cmd3.GetRec("a_phoenix", phoenix);
 
-		// ÇÇ´Ğ½º ÀÌº¥Æ® ÀÌÈÄ »ı¼ºµÈ Ä³¸¯ÅÍ ÀÌ¶ó¸é
+		// í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ì´í›„ ìƒì„±ëœ ìºë¦­í„° ì´ë¼ë©´
 		if ( phoenix == 0 )
 		{
-			// ÀÚ°İÀÌ ÀÖÀ½
+			// ìê²©ì´ ìˆìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperEventPhoenixMsg(rmsg, MSG_HELPER_EVENT_PHOENIX_OK, nCharIdx);
 			SEND_Q(rmsg, dest);
@@ -8213,7 +8692,7 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 		else
 		{
-			// ±âÁ¸ÀÇ Ä³¸¯ÅÍ¶ó¼­ ÇÇ´Ğ½º ÀÚ°İÀÌ ¾øÀ½
+			// ê¸°ì¡´ì˜ ìºë¦­í„°ë¼ì„œ í”¼ë‹‰ìŠ¤ ìê²©ì´ ì—†ìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperEventPhoenixMsg(rmsg, MSG_HELPER_EVENT_PHOENIX_ERROR_REQUIREMENT, nCharIdx);
 			SEND_Q(rmsg, dest);
@@ -8222,7 +8701,7 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 	else
 	{
-		// ·¹º§ÀÌ 100 ÀÌ»óÀÎ Ä³¸¯ÅÍ°¡ ÇÏ³ªµµ ¾ø¾î¼­ ÀÚ°İ ¹Ì´ŞÀÓ
+		// ë ˆë²¨ì´ 100 ì´ìƒì¸ ìºë¦­í„°ê°€ í•˜ë‚˜ë„ ì—†ì–´ì„œ ìê²© ë¯¸ë‹¬ì„
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperEventPhoenixMsg(rmsg, MSG_HELPER_EVENT_PHOENIX_ERROR_REQUIREMENT, nCharIdx);
 		SEND_Q(rmsg, dest);
@@ -8230,7 +8709,7 @@ void do_CommandEventPhoenix( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-#ifdef DISCONNECT_HACK_CHARACTER  // ÇÙ ÇÁ·Î±×·¥ À¯Àú ¹æÃâ
+#ifdef DISCONNECT_HACK_CHARACTER  // í•µ í”„ë¡œê·¸ë¨ ìœ ì € ë°©ì¶œ
 void do_Command_DisconnectHackCharacter( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nCharIdx = 0, nUserIdx = 0;
@@ -8270,7 +8749,7 @@ void do_Command_DisconnectHackCharacter( CNetMsg::SP& msg, CDescriptor* dest )
 }
 #endif // DISCONNECT_HACK_CHARACTER
 
-//»ı¼º(ÆÄÆ¼ ÀüÈ¯)
+//ìƒì„±(íŒŒí‹° ì „í™˜)
 void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nBossIndex;
@@ -8297,7 +8776,7 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 		if(pPartyBoss->GetBossIndex() != nBossIndex)
 		{
-			// ¿¡·¯
+			// ì—ëŸ¬
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperExpedErrorMsg( rmsg, MSG_EXPED_ERROR_NORMAL, nBossIndex );
 			SEND_Q( rmsg, dest );
@@ -8306,14 +8785,14 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 		if (pPartyBoss->GetMemberCount() > MAX_PARTY_MEMBER)
 		{
-			// ¿¡·¯
+			// ì—ëŸ¬
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperExpedErrorMsg( rmsg, MSG_EXPED_ERROR_NORMAL, nBossIndex );
 			SEND_Q( rmsg, dest );
 			return;
 		}
 
-		// ½Å±Ô ¿øÁ¤´ë »ı¼º
+		// ì‹ ê·œ ì›ì •ëŒ€ ìƒì„±
 		CExpedition* pExped = NULL;
 		int bossidx = pPartyBoss->FindMember(pPartyBoss->GetBossIndex());
 		pPartyMember = pPartyBoss->GetMemberByListIndex( bossidx );
@@ -8336,7 +8815,7 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 				{
 					if(nBossIndex != pPartyMember->GetCharIndex())
 					{
-						//´ë¿ø Ãß°¡(ÀÏ¹İ)
+						//ëŒ€ì› ì¶”ê°€(ì¼ë°˜)
 						pExpedMember = (CExpedMember*)pExped->Join(pPartyMember->GetCharIndex(),(const char*)pPartyMember->GetCharName(),MSG_EXPED_MEMBERTYPE_NORMAL, pPartyMember->m_nLevel );
 						if(pExpedMember)
 							nJoinCnt++;
@@ -8346,14 +8825,14 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 			if((pPartyBoss->GetMemberCount() - 1) == nJoinCnt )
 			{
-				int nRealCount = pExped->GetMemberCount() - 1;	//¿øÁ¤´ëÀå Á¦¿Ü
+				int nRealCount = pExped->GetMemberCount() - 1;	//ì›ì •ëŒ€ì¥ ì œì™¸
 
-				int* pCharIndex		 = new int[nRealCount];			// Ä³¸¯ÅÍ ÀÎµ¦½º
-				CLCString* pCharName = new CLCString[nRealCount];	// Ä³¸¯ÅÍ ÀÌ¸§
-				int*  pGroupType	 = new int[nRealCount];			// ±×·ì Å¸ÀÔ
-				int*  pMemberType	 = new int[nRealCount];			// ¸â¹ö Å¸ÀÔ
-				int*  pSetLabelType	 = new int[nRealCount];			// Ç¥½Ä
-				int*  pQuitType		 = new int[nRealCount];			// Á¤»ó, ºñÁ¤»ó
+				int* pCharIndex		 = new int[nRealCount];			// ìºë¦­í„° ì¸ë±ìŠ¤
+				CLCString* pCharName = new CLCString[nRealCount];	// ìºë¦­í„° ì´ë¦„
+				int*  pGroupType	 = new int[nRealCount];			// ê·¸ë£¹ íƒ€ì…
+				int*  pMemberType	 = new int[nRealCount];			// ë©¤ë²„ íƒ€ì…
+				int*  pSetLabelType	 = new int[nRealCount];			// í‘œì‹
+				int*  pQuitType		 = new int[nRealCount];			// ì •ìƒ, ë¹„ì •ìƒ
 
 				int nCnt=0;
 				pExpedMember = NULL;
@@ -8375,12 +8854,12 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 					pExpedMember = NULL;
 				}
 
-				// °á°ú Àü´Ş
+				// ê²°ê³¼ ì „ë‹¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperExpedCreateRepMsg(rmsg,pExped->GetExpedType(MSG_DIVITYPE_EXP),pExped->GetExpedType(MSG_DIVITYPE_ITEM),pExped->GetExpedType(MSG_DIVITYPE_SPECIAL),pExped->GetExpedType(MSG_DIVITYPE_SP),pExped->GetExpedType(MSG_DIVITYPE_MONEY),pExped->GetBossIndex(),pExped->GetBossName(),nRealCount,pCharIndex,pCharName,pGroupType,pMemberType,pSetLabelType,pQuitType);
 				SEND_Q( rmsg, dest );
 
-				// ¼º°ø	(¸®½ºÆ® Ãß°¡)
+				// ì„±ê³µ	(ë¦¬ìŠ¤íŠ¸ ì¶”ê°€)
 				LONGLONG key = MAKE_LONGLONG_KEY(pExped->GetSubNo(), pExped->GetBossIndex());
 				gserver.m_listExped.insert(map_expedition_t::value_type(key, pExped));
 
@@ -8398,16 +8877,16 @@ void do_Command_Exped_CreateReq( CNetMsg::SP& msg, CDescriptor* dest )
 					pExped = NULL;
 				}
 
-				// ¿¡·¯
+				// ì—ëŸ¬
 			}
 		}else
 		{
-			// ¿¡·¯
+			// ì—ëŸ¬
 		}
 	}
 }
 
-//»ı¼º(ÆÄÆ¼ ÀüÈ¯ °á°ú)
+//ìƒì„±(íŒŒí‹° ì „í™˜ ê²°ê³¼)
 void do_Command_Exped_CreateResult( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	CNetMsg	rmsg;
@@ -8416,7 +8895,7 @@ void do_Command_Exped_CreateResult( CNetMsg::SP& msg, CDescriptor* dest )
 	RefMsg(msg) >> nResult
 		>> nBossIndex;
 
-	if(nResult == 1)  //¼º°ø
+	if(nResult == 1)  //ì„±ê³µ
 	{
 		LONGLONG key = MAKE_LONGLONG_KEY(dest->m_subNo, nBossIndex);
 		map_party_t::iterator it = gserver.m_listParty.find(key);
@@ -8428,16 +8907,16 @@ void do_Command_Exped_CreateResult( CNetMsg::SP& msg, CDescriptor* dest )
 			pParty->SetEndParty();
 			delete pParty;
 
-		// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
+		// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
 			do_CommandPartyMatchDelReq_real(dest->m_subNo, nBossIndex);
 		}
-	}else  //½ÇÆĞ
+	}else  //ì‹¤íŒ¨
 	{
 		LONGLONG key = MAKE_LONGLONG_KEY(dest->m_subNo, nBossIndex);
 		map_expedition_t::iterator it = gserver.m_listExped.find(key);
 		if(it != gserver.m_listExped.end())
 		{
-			// ¿øÁ¤´ë »èÁ¦
+			// ì›ì •ëŒ€ ì‚­ì œ
 			CExpedition* pExped = it->second;
 			gserver.m_listExped.erase(it);
 			pExped->SetEndExped();
@@ -8446,7 +8925,7 @@ void do_Command_Exped_CreateResult( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//ÃÊ´ë ¿äÃ»
+//ì´ˆëŒ€ ìš”ì²­
 void do_Command_Exped_InviteReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int			nBossIndex;
@@ -8462,7 +8941,7 @@ void do_Command_Exped_InviteReq( CNetMsg::SP& msg, CDescriptor* dest )
 	CExpedition* pExpedBoss = gserver.FindExpedByBossIndex(dest->m_subNo, nBossIndex);
 	CExpedition* pExpedTarget = gserver.FindExpedByBossIndex(dest->m_subNo, nTargetIndex);
 
-	// nBossIndex°¡ ¿øÁ¤´ë ÃÊ´ë°¡ °¡´ÉÇÑÁö : ¿øÁ¤´ë°¡ ¾ø°Å³ª º¸½º
+	// nBossIndexê°€ ì›ì •ëŒ€ ì´ˆëŒ€ê°€ ê°€ëŠ¥í•œì§€ : ì›ì •ëŒ€ê°€ ì—†ê±°ë‚˜ ë³´ìŠ¤
 	if (pExpedBoss == NULL)
 	{
 		return ;
@@ -8473,19 +8952,19 @@ void do_Command_Exped_InviteReq( CNetMsg::SP& msg, CDescriptor* dest )
 		return ;
 	}
 
-	// ´ë»ó ¿øÁ¤´ë °Ë»ç
+	// ëŒ€ìƒ ì›ì •ëŒ€ ê²€ì‚¬
 	if (pExpedTarget)
 	{
 		return ;
 	}
 
-	// ¿øÁ¤´ë ÀÎ¿ø °Ë»ç
+	// ì›ì •ëŒ€ ì¸ì› ê²€ì‚¬
 	if (pExpedBoss && pExpedBoss->GetMemberCount() >= MAX_EXPED_MEMBER)
 	{
 		return ;
 	}
 
-	// ÇöÀç ¿äÃ»ÀÚ À¯¹« °Ë»ç
+	// í˜„ì¬ ìš”ì²­ì ìœ ë¬´ ê²€ì‚¬
 	if (pExpedBoss && pExpedBoss->GetRequestIndex() > 0)
 	{
 		return ;
@@ -8493,17 +8972,17 @@ void do_Command_Exped_InviteReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if (pExpedBoss)
 	{
-		// ±âÁ¸ ¿øÁ¤´ë¿¡ ¿äÃ»ÀÚ·Î ¼³Á¤
+		// ê¸°ì¡´ ì›ì •ëŒ€ì— ìš”ì²­ìë¡œ ì„¤ì •
 		pExpedBoss->SetRequest(nTargetIndex, strTargetName);
 	}
 
-	// °á°ú Àü´Ş
+	// ê²°ê³¼ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperExpedInviteRepMsg(rmsg, nBossIndex, strBossName, nTargetIndex, strTargetName,pExpedBoss->GetExpedType(MSG_DIVITYPE_EXP),pExpedBoss->GetExpedType(MSG_DIVITYPE_ITEM),pExpedBoss->GetExpedType(MSG_DIVITYPE_SPECIAL));
 	SEND_Q( rmsg, dest );
 }
 
-//ÃÊ´ë ¼ö¶ô
+//ì´ˆëŒ€ ìˆ˜ë½
 void do_Command_Exped_AllowReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex;
@@ -8536,13 +9015,13 @@ void do_Command_Exped_AllowReq( CNetMsg::SP& msg, CDescriptor* dest )
 		return ;
 	}
 
-	//ºó½½·í Ã£±â(±×·ì °áÁ¤)
+	//ë¹ˆìŠ¬ë£» ì°¾ê¸°(ê·¸ë£¹ ê²°ì •)
 	nNewGroup = pExped->GetGroupBeEmptySlot();
 
 	if(nNewGroup >= 0)
 	{
 		CExpedMember* pMember=NULL;
-		// ÆÄÆ¼¿øÀ¸·Î µî·Ï(ÃßÈÄ ¼öÁ¤)
+		// íŒŒí‹°ì›ìœ¼ë¡œ ë“±ë¡(ì¶”í›„ ìˆ˜ì •)
 		pMember = (CExpedMember*)pExped->JoinRequest(strTargetName, MSG_EXPED_MEMBERTYPE_NORMAL, nLevel );
 
 		if(pMember)
@@ -8560,7 +9039,7 @@ void do_Command_Exped_AllowReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//ÃÊ´ë °ÅÀı
+//ì´ˆëŒ€ ê±°ì ˆ
 void do_Command_Exped_RejectReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex;
@@ -8586,7 +9065,7 @@ void do_Command_Exped_RejectReq( CNetMsg::SP& msg, CDescriptor* dest )
 		return ;
 	}
 
-	// ¿äÃ»ÀÚ°¡ º¸½ºÀÎÁö ÀÏ¹İÀÎÁö °Ë»ç
+	// ìš”ì²­ìê°€ ë³´ìŠ¤ì¸ì§€ ì¼ë°˜ì¸ì§€ ê²€ì‚¬
 	if (pExped->GetBossIndex() == nTargetIndex || pExped->GetRequestIndex() == nTargetIndex)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -8596,7 +9075,7 @@ void do_Command_Exped_RejectReq( CNetMsg::SP& msg, CDescriptor* dest )
 		pExped->SetRequest(-1, "");
 		if (pExped->GetMemberCountOnline() < 2)
 		{
-			// ¿øÁ¤´ë »èÁ¦
+			// ì›ì •ëŒ€ ì‚­ì œ
 			LONGLONG key = MAKE_LONGLONG_KEY(pExped->GetSubNo(), pExped->GetBossIndex());
 			gserver.m_listExped.erase(key);
 			pExped->SetEndExped();
@@ -8612,14 +9091,14 @@ void do_Command_Exped_RejectReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//Å»Åğ
+//íƒˆí‡´
 void do_Command_Exped_QuitReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex,	nTargetIndex;
-	int nQuitMode;						// Á¤»ó,ºñÁ¤¼º ±¸ºĞ
+	int nQuitMode;						// ì •ìƒ,ë¹„ì •ì„± êµ¬ë¶„
 
 	RefMsg(msg) >> nBossIndex
-		>> nTargetIndex					// ³ª°¡´Â Ä³¸¯ÅÍÀÎµ¦½º
+		>> nTargetIndex					// ë‚˜ê°€ëŠ” ìºë¦­í„°ì¸ë±ìŠ¤
 	    >> nQuitMode;
 
 	CExpedition* pExped = gserver.FindExpedByBossIndex(dest->m_subNo, nBossIndex);
@@ -8632,7 +9111,7 @@ void do_Command_Exped_QuitReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 	if (pExped->GetMemberCountOnline() < 2)
 	{
-		// ¿øÁ¤´ë »èÁ¦
+		// ì›ì •ëŒ€ ì‚­ì œ
 		int key_index;
 		if (nBossIndex == nTargetIndex)
 		{
@@ -8653,7 +9132,7 @@ void do_Command_Exped_QuitReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 	else
 	{
-		//³ª°¡´Â Ä³¸¯ÅÍ°¡ º¸½ºÀÌ¸é À§ÀÓÇÒ º¸½º¸¦ È¹µæ ÇÔ
+		//ë‚˜ê°€ëŠ” ìºë¦­í„°ê°€ ë³´ìŠ¤ì´ë©´ ìœ„ì„í•  ë³´ìŠ¤ë¥¼ íšë“ í•¨
 		if(nBossIndex == nTargetIndex)
 		{
 			CExpedMember* pNewBossMember = (CExpedMember*) pExped->FindNextBoss();
@@ -8673,7 +9152,7 @@ void do_Command_Exped_QuitReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//°­Åğ
+//ê°•í‡´
 void do_Command_Exped_KickReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex;
@@ -8690,7 +9169,7 @@ void do_Command_Exped_KickReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if (pExped->GetMemberCountOnline() < 2)
 	{
-		// ¿øÁ¤´ë »èÁ¦
+		// ì›ì •ëŒ€ ì‚­ì œ
 		int key_index;
 		if(nBossIndex == nTargetIndex)
 		{
@@ -8717,20 +9196,20 @@ void do_Command_Exped_KickReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//´ëÀå À§ÀÓ
+//ëŒ€ì¥ ìœ„ì„
 void do_Command_Exped_ChangeBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex, nChangeMode, nNewBossIndex;
 
 	RefMsg(msg) >> nBossIndex
-		>> nChangeMode				// ¼öµ¿,ÀÚµ¿
-		>> nNewBossIndex;           // ÀÚµ¿(-1)
+		>> nChangeMode				// ìˆ˜ë™,ìë™
+		>> nNewBossIndex;           // ìë™(-1)
 
 	CExpedition* pExped = gserver.FindExpedByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pExped)
 		return ;
 
-	// ÀÚµ¿À§ÀÓ ÀÌ¸é
+	// ìë™ìœ„ì„ ì´ë©´
 	if(nChangeMode == MSG_EXPED_CHANGEBOSS_AUTO)
 	{
 		CExpedMember* pNewBossMember = (CExpedMember*) pExped->FindNextBoss();
@@ -8754,7 +9233,7 @@ void do_Command_Exped_ChangeBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//Å¸ÀÔ º¯°æ
+//íƒ€ì… ë³€ê²½
 void do_Command_Exped_ChangeTypeReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nBossIndex;
@@ -8778,7 +9257,7 @@ void do_Command_Exped_ChangeTypeReq( CNetMsg::SP& msg, CDescriptor* dest )
 	SEND_Q( rmsg, dest );
 }
 
-//ºÎ´ëÀå ÀÓ¸í
+//ë¶€ëŒ€ì¥ ì„ëª…
 void do_Command_Exped_SetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nBossIndex, nNewMBossIndex;
@@ -8801,10 +9280,10 @@ void do_Command_Exped_SetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 	pMember =  (CExpedMember*)pExped->GetMemberByListIndex(nGroup, nListindex);
 	if(pMember)
 	{
-		//ºÎ´ëÀå ¼ö Ã¼Å©
+		//ë¶€ëŒ€ì¥ ìˆ˜ ì²´í¬
 		if(pExped->GetGroupMembertypeCount(pMember->GetGroupType(),MSG_EXPED_MEMBERTYPE_MBOSS) >= 1)
 		{
-			//¿¡·¯:ÇÑ ±×·ì¿¡ ºÎ´ëÀå ¼ö ÃÊ°ú
+			//ì—ëŸ¬:í•œ ê·¸ë£¹ì— ë¶€ëŒ€ì¥ ìˆ˜ ì´ˆê³¼
 			return;
 		}
 
@@ -8817,7 +9296,7 @@ void do_Command_Exped_SetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//ºÎ´ëÀå ÀÓ¸í ÇØÁ¦
+//ë¶€ëŒ€ì¥ ì„ëª… í•´ì œ
 void do_Command_Exped_ResetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nBossIndex, nNewMBossIndex;
@@ -8842,7 +9321,7 @@ void do_Command_Exped_ResetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 	{
 		if(pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_MBOSS)
 		{
-			//¿¡·¯: ºÎ´ëÀå¾Æ ¾Æ´Ô
+			//ì—ëŸ¬: ë¶€ëŒ€ì¥ì•„ ì•„ë‹˜
 			return;
 		}
 
@@ -8855,7 +9334,7 @@ void do_Command_Exped_ResetMBossReq( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 }
 
-//¿øÁ¤´ë ÇØÃ¼
+//ì›ì •ëŒ€ í•´ì²´
 void do_Command_Exped_EndExpedReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int	nBossIndex;
@@ -8866,7 +9345,7 @@ void do_Command_Exped_EndExpedReq( CNetMsg::SP& msg, CDescriptor* dest )
 	if (!pExped)
 		return ;
 
-	// ¿øÁ¤´ë »èÁ¦
+	// ì›ì •ëŒ€ ì‚­ì œ
 	LONGLONG key = MAKE_LONGLONG_KEY(pExped->GetSubNo(), nBossIndex);
 	gserver.m_listExped.erase(key);
 	pExped->SetEndExped();
@@ -8877,7 +9356,7 @@ void do_Command_Exped_EndExpedReq( CNetMsg::SP& msg, CDescriptor* dest )
 	SEND_Q( rmsg, dest );
 }
 
-//±×·ìÀÌµ¿
+//ê·¸ë£¹ì´ë™
 void do_Command_Exped_MoveGroupReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nBossIndex, nSourceGroup, nMoveCharIndex, nTargetGroup, nTargetListindex;
@@ -8894,13 +9373,13 @@ void do_Command_Exped_MoveGroupReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if(pExped->MoveGroup(nSourceGroup,nMoveCharIndex,nTargetGroup,nTargetListindex))
 	{
-		//¼º°ø
+		//ì„±ê³µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExpedMoveGroupRepMsg(rmsg, nBossIndex,nSourceGroup, nMoveCharIndex, nTargetGroup, nTargetListindex);
 		SEND_Q( rmsg, dest );
 	}else
 	{
-		//¿¡·¯
+		//ì—ëŸ¬
 	}
 }
 
@@ -8909,7 +9388,7 @@ void do_Command_Expend_OfflineSystem( CNetMsg::SP& msg, CDescriptor* dest )
 	int	nBossIndex,	nTargetIndex;
 
 	RefMsg(msg) >> nBossIndex
-		>> nTargetIndex	;				// ³ª°¡´Â Ä³¸¯ÅÍÀÎµ¦½º
+		>> nTargetIndex	;				// ë‚˜ê°€ëŠ” ìºë¦­í„°ì¸ë±ìŠ¤
 
 	CExpedition* pExped = gserver.FindExpedByBossIndex(dest->m_subNo, nBossIndex);
 	if (!pExped)
@@ -8920,7 +9399,7 @@ void do_Command_Expend_OfflineSystem( CNetMsg::SP& msg, CDescriptor* dest )
 
 	if (pExped->GetMemberCountOnline() < 2)
 	{
-		// ¿øÁ¤´ë »èÁ¦
+		// ì›ì •ëŒ€ ì‚­ì œ
 		LONGLONG key = MAKE_LONGLONG_KEY(pExped->GetSubNo(), nBossIndex);
 		gserver.m_listExped.erase(key);
 		pExped->SetEndExped();
@@ -8932,7 +9411,7 @@ void do_Command_Expend_OfflineSystem( CNetMsg::SP& msg, CDescriptor* dest )
 	}
 	else
 	{
-		//³ª°¡´Â Ä³¸¯ÅÍ°¡ º¸½ºÀÌ¸é À§ÀÓÇÒ º¸½º¸¦ È¹µæ ÇÔ
+		//ë‚˜ê°€ëŠ” ìºë¦­í„°ê°€ ë³´ìŠ¤ì´ë©´ ìœ„ì„í•  ë³´ìŠ¤ë¥¼ íšë“ í•¨
 		if(nBossIndex == nTargetIndex)
 		{
 			CExpedMember* pNewBossMember = (CExpedMember*) pExped->FindNextBoss();
@@ -8966,7 +9445,7 @@ void do_Command_Expend_OnlineSystem( CNetMsg::SP& msg, CDescriptor* dest )
 }
 
 
-//ÀÎÁ¸ µé¾î°¥ ·ë¹øÈ£ È¹µæ(ÆÄÆ¼Àå ¹× ¿øÁ¤´ëÀå ±âÁØ)
+//ì¸ì¡´ ë“¤ì–´ê°ˆ ë£¸ë²ˆí˜¸ íšë“(íŒŒí‹°ì¥ ë° ì›ì •ëŒ€ì¥ ê¸°ì¤€)
 #define MAX_INZONE_ROOM_COUNT 20
 void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
@@ -8993,10 +9472,10 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 	int nRoomNo=0,nBossRoomNo=0;
 	nRoomNo = -1, nBossRoomNo = -1;
 
-	// ¿øÁ¤´ë ·¹ÀÌµå¸¸ Ã³¸®
+	// ì›ì •ëŒ€ ë ˆì´ë“œë§Œ ì²˜ë¦¬
 	if(nJoinType == MSG_JOINTYPE_EXPED)
 	{
-		// ·¹ÀÌµå¿¡ µé¾î°¡´Â Ä³¸¯ÅÍ°¡ Àü¿¡ ¿øÁ¤´ë·Î ÇÃ·¹ÀÌ¸¦ Çß¾ú´ÂÁö È®ÀÎ, roomNum ¹Ş¾Æ¿È
+		// ë ˆì´ë“œì— ë“¤ì–´ê°€ëŠ” ìºë¦­í„°ê°€ ì „ì— ì›ì •ëŒ€ë¡œ í”Œë ˆì´ë¥¼ í–ˆì—ˆëŠ”ì§€ í™•ì¸, roomNum ë°›ì•„ì˜´
 		sql.Format("select a_roomno from t_inzonejoin where a_zoneno = %d and a_charindex = %d and a_difficulty = %d", nZoneNo, nCharIndex, nDifficulty);
 		cmd.SetQuery(sql);
 		if ( !cmd.Open() )
@@ -9023,7 +9502,7 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 			}
 		}
 
-		// ¿øÁ¤´ëÀÇ º¸½º Ä³¸¯ÅÍ°¡ Àü¿¡ ¿øÁ¤´ë·Î ÇÃ·¹ÀÌ¸¦ Çß¾ú´ÂÁö È®ÀÎ, roomNum ¹Ş¾Æ¿È
+		// ì›ì •ëŒ€ì˜ ë³´ìŠ¤ ìºë¦­í„°ê°€ ì „ì— ì›ì •ëŒ€ë¡œ í”Œë ˆì´ë¥¼ í–ˆì—ˆëŠ”ì§€ í™•ì¸, roomNum ë°›ì•„ì˜´
 		sql.Format("select a_roomno from t_inzonejoin where a_zoneno = %d and a_charindex = %d and a_difficulty = %d", nZoneNo, nBossIndex, nDifficulty);
 		cmd.SetQuery(sql);
 		if ( !cmd.Open() )
@@ -9050,11 +9529,11 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 			}
 		}
 
-		// ¿øÁ¤´ë º¸½ºÀÇ ·ë¹øÈ£°¡ 0ÀÌ¸é »ç¿ëµÇÁö ¾ÊÀº ·ë°Ë»ö
-		// ¿øÁ¤´ë ·¹ÀÌµå¸¸ Ã³¸®
+		// ì›ì •ëŒ€ ë³´ìŠ¤ì˜ ë£¸ë²ˆí˜¸ê°€ 0ì´ë©´ ì‚¬ìš©ë˜ì§€ ì•Šì€ ë£¸ê²€ìƒ‰
+		// ì›ì •ëŒ€ ë ˆì´ë“œë§Œ ì²˜ë¦¬
 		if(nRoomNo==-1 && nBossRoomNo==-1)
  		{
-			// À§¿¡¼­ °Ë»öÇÑ ÃÖ´ë ·ë³Ñ¹öÀÇ ´ÙÀ½ ¹øÈ£·Î ·ë³Ñ¹ö¸¦ ºÎ¿©ÇÑ´Ù.
+			// ìœ„ì—ì„œ ê²€ìƒ‰í•œ ìµœëŒ€ ë£¸ë„˜ë²„ì˜ ë‹¤ìŒ ë²ˆí˜¸ë¡œ ë£¸ë„˜ë²„ë¥¼ ë¶€ì—¬í•œë‹¤.
 			sql.Format("SELECT a_roomno FROM t_inzonejoin where a_zoneno = %d order by a_roomno desc LIMIT 1", nZoneNo);
 			cmd.SetQuery(sql);
 			if ( !cmd.Open() )
@@ -9100,7 +9579,7 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 #endif
 		}
 
-		// ¿øÁ¤´ëÀåÀº ·ë³Ñ¹ö°¡ ÀÖ°í Ä³¸¯ÅÍ¸¸ ¾øÀ¸¸é, ¿øÁ¤´ëÀåÀÇ ·ë³Ñ¹ö ºÎ¿©
+		// ì›ì •ëŒ€ì¥ì€ ë£¸ë„˜ë²„ê°€ ìˆê³  ìºë¦­í„°ë§Œ ì—†ìœ¼ë©´, ì›ì •ëŒ€ì¥ì˜ ë£¸ë„˜ë²„ ë¶€ì—¬
 		else if(nRoomNo == -1 && nBossRoomNo > -1)
 		{
 			nRoomNo = nBossRoomNo;
@@ -9122,11 +9601,11 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 		}
 	} // if
 
-	// ÆÄÆ¼ ·¹ÀÌµåÀÌ¸é ÀÏ°ıÀûÀ¸·Î ¹æ¹øÈ£¸¦ 1·Î Àâ´Â´Ù.
+	// íŒŒí‹° ë ˆì´ë“œì´ë©´ ì¼ê´„ì ìœ¼ë¡œ ë°©ë²ˆí˜¸ë¥¼ 1ë¡œ ì¡ëŠ”ë‹¤.
 	else if (nJoinType == MSG_JOINTYPE_PARTY)
 		nRoomNo = 1;
 
-	// °ÔÀÓ µ¥ÀÌÅ¸°¡ ¾øÀ¸¸é nRoomNo ´Â 0 À¸·Î °á°ú Àü´Ş
+	// ê²Œì„ ë°ì´íƒ€ê°€ ì—†ìœ¼ë©´ nRoomNo ëŠ” 0 ìœ¼ë¡œ ê²°ê³¼ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperRaidInzoneGetRoomNoRep(rmsg, nCharIndex, nZoneNo, nRoomNo, nBossIndex, nBossRoomNo);
 	RefMsg(rmsg) << nDifficulty;
@@ -9134,7 +9613,7 @@ void do_Command_Raid_InzoneGetRoomNoReq( CNetMsg::SP& msg, CDescriptor* dest )
 	return;
 }
 
-//ÀÎÁ¸ µ¥ÀÌÅ¸ ¸®¼Â(Á¸ ÀüÃ¼)
+//ì¸ì¡´ ë°ì´íƒ€ ë¦¬ì…‹(ì¡´ ì „ì²´)
 void do_Command_Raid_InzoneDataClearReq( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nZoneNo;
@@ -9144,10 +9623,10 @@ void do_Command_Raid_InzoneDataClearReq( CNetMsg::SP& msg, CDescriptor* dest )
 	CDBCmd cmd;
 	CLCString sql(1024);
 
-	//ÀÎÁ¸ °ÔÀÓ µ¥ÀÌÅ¸ »èÁ¦
+	//ì¸ì¡´ ê²Œì„ ë°ì´íƒ€ ì‚­ì œ
 	cmd.Init(&gserver.m_dbchar);
 
-	//ÀÎÁ¸ Á¶ÀÎ À¯Àú »èÁ¦
+	//ì¸ì¡´ ì¡°ì¸ ìœ ì € ì‚­ì œ
 	sql.Format("DELETE FROM t_inzonejoin WHERE a_zoneno = %d" , nZoneNo);
 	cmd.SetQuery(sql);
 	if( !cmd.Update() )
@@ -9221,7 +9700,7 @@ void do_CommandTriggerEvent( CNetMsg::SP& msg, CDescriptor* dest )
 	CLCString sql(256);
 	DB_cmd.Init(&gserver.m_dbchar);
 
-	// ¾ÏÈæÀÇ Á¦´Ü Áö¿ì´Â ¿äÃ»ÀÌ¸é
+	// ì•”í‘ì˜ ì œë‹¨ ì§€ìš°ëŠ” ìš”ì²­ì´ë©´
 	if(nSaveInfo == TRIGGER_SAVE_ALTER_OF_DARK_NONE)
 	{
 		sql.Format("delete from t_trigger_saveinfo where a_zone_index=%d", nZoneIdx);
@@ -9279,7 +9758,7 @@ void do_CommandTriggerEvent( CNetMsg::SP& msg, CDescriptor* dest )
 void do_Command_DeleteRaidCharacter( CNetMsg::SP& msg, CDescriptor* dest )
 {
 	int nCharIndex = 0;
-	int nSuccess = 0;		// 0:»èÁ¦ ½ÇÆĞ, 1:»èÁ¦ ¼º°ø
+	int nSuccess = 0;		// 0:ì‚­ì œ ì‹¤íŒ¨, 1:ì‚­ì œ ì„±ê³µ
 	int nResult = 0;
 	int i;
 	int* zone;
@@ -9403,14 +9882,14 @@ void do_Command_RaidInfo( CNetMsg::SP& msg, CDescriptor* dest )
 	int nCharIndex = 0;
 	RefMsg(msg) >> nCharIndex;
 
-	int nRaidCount = 0;		// ±Í¼ÓµÈ ·¹ÀÌµå °³¼ö
+	int nRaidCount = 0;		// ê·€ì†ëœ ë ˆì´ë“œ ê°œìˆ˜
 
 	CDBCmd DB_cmd;
 	CLCString sql(256);
 
 	DB_cmd.Init(&gserver.m_dbchar);
 
-	// ·¹ÀÌµå¿¡ ±Í¼ÓµÈ Ä³¸¯ÅÍ Á¤º¸¸¦ °¡Áö°í °ÔÀÓ ¼­¹ö·Î °£´Ù.
+	// ë ˆì´ë“œì— ê·€ì†ëœ ìºë¦­í„° ì •ë³´ë¥¼ ê°€ì§€ê³  ê²Œì„ ì„œë²„ë¡œ ê°„ë‹¤.
 	sql.Format("select a_zoneno, a_roomno from t_inzonejoin where a_charindex=%d", nCharIndex);
 	DB_cmd.SetQuery(sql);
 	if (!DB_cmd.Open())
@@ -9421,7 +9900,7 @@ void do_Command_RaidInfo( CNetMsg::SP& msg, CDescriptor* dest )
 		return;
 	}
 
-	// ÀúÀåµÈ ·¹ÀÌµåÀÇ Á¾·ù °³¼ö¸¦ ±¸ÇÑ´Ù.
+	// ì €ì¥ëœ ë ˆì´ë“œì˜ ì¢…ë¥˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 	nRaidCount = DB_cmd.m_nrecords;
 	int* nZoneNum = new int[nRaidCount];
 	int* nRoomNum = new int[nRaidCount];
@@ -9444,7 +9923,7 @@ void do_Command_RaidInfo( CNetMsg::SP& msg, CDescriptor* dest )
 		SEND_Q(rmsg, dest);
 	}
 
-	// ÀúÀåµÈ ·¹ÀÌµå°¡ ¾øÀ¸¸é ºñ¾ú´Ù´Â Á¤º¸¸¦ º¸³»ÁØ´Ù.
+	// ì €ì¥ëœ ë ˆì´ë“œê°€ ì—†ìœ¼ë©´ ë¹„ì—ˆë‹¤ëŠ” ì •ë³´ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 	else
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -9479,7 +9958,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.SetQuery(sql);
 			if(!cmd.Open())
 			{
-				// ¿¡·¯¸Ş½ÃÁö
+				// ì—ëŸ¬ë©”ì‹œì§€
 				GAMELOG << init("NS_CREATE_CARD t_characters_open_failed_ns")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9494,7 +9973,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 
 			if(cmd.MoveFirst())
 			{
-				// ³ªÀÌÆ® ½¦µµ¿ì ÀÌ¹Ì »ı¼ºÇß´Ù.
+				// ë‚˜ì´íŠ¸ ì‰ë„ìš° ì´ë¯¸ ìƒì„±í–ˆë‹¤.
 				GAMELOG << init("NS_CREATE_CARD ns_already_created")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9512,7 +9991,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.SetQuery(sql);
 			if(!cmd.Open() || !cmd.MoveFirst())
 			{
-				// ¿¡·¯¸Ş½ÃÁö
+				// ì—ëŸ¬ë©”ì‹œì§€
 				GAMELOG << init("NS_CREATE_CARD t_characters_open_failed_90lv")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9529,7 +10008,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.GetRec("char90lvCount", char90lvCount);
 			if(char90lvCount > 0)
 			{
-				// 90 ·¹º§ Ä³¸¯ÅÍ ÀÖ´Ù.
+				// 90 ë ˆë²¨ ìºë¦­í„° ìˆë‹¤.
 				GAMELOG << init("NS_CREATE_CARD 90lvChar_already_created")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9545,7 +10024,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.SetQuery(sql);
 			if(cmd.Update())
 			{
-				// ¾÷µ¥ÀÌÆ® ¼º°ø
+				// ì—…ë°ì´íŠ¸ ì„±ê³µ
 				GAMELOG << init("NS_CREATE_CARD itemuse_success")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9559,7 +10038,7 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 			}
 			else
 			{
-				// ÀÌ¹Ì »ç¿ëÇßÀ½
+				// ì´ë¯¸ ì‚¬ìš©í–ˆìŒ
 				GAMELOG << init("NS_CREATE_CARD already_itemuse")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9630,29 +10109,55 @@ void do_CommandNSCreateCard(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 }
 
-void do_CommandPartyDataInit(CNetMsg::SP& msg, CDescriptor* dest)
+void do_CommandPartyAndExpedDataInit(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	map_party_t::iterator it = gserver.m_listParty.begin();
-	map_party_t::iterator endit = gserver.m_listParty.end();
-	for( ; it != endit; )
 	{
-		CParty* pParty = it->second;
+		map_party_t::iterator it = gserver.m_listParty.begin();
+		map_party_t::iterator it_end = gserver.m_listParty.end();
+		for( ; it != it_end; )
+		{
+			CParty* pParty = it->second;
 
-		if(pParty->m_nSubNo == dest->m_subNo)
-		{
-			int bossIndex = pParty->GetBossIndex();
-			gserver.m_listParty.erase(it++);
-			pParty->SetEndParty();
-			delete pParty;
-			GAMELOG << init("PARTY DATA INIT")
-				<< "BOSS INDEX" << delim << bossIndex <<delim
-				<< "GAME SERVER CHANNEL" << delim << dest->m_subNo << end;
-			// Á¦°Å ÆÄÆ¼´Â ¸ÅÄª Å×ÀÌºí¿¡¼­ Á¦°Å
-			do_CommandPartyMatchDelReq_real(dest->m_subNo, bossIndex);
+			if(pParty->m_nSubNo == dest->m_subNo)
+			{
+				int bossIndex = pParty->GetBossIndex();
+				gserver.m_listParty.erase(it++);
+				pParty->SetEndParty();
+				delete pParty;
+				GAMELOG << init("PARTY DATA INIT")
+					<< "BOSS INDEX" << delim << bossIndex <<delim
+					<< "GAME SERVER CHANNEL" << delim << dest->m_subNo << end;
+				// ì œê±° íŒŒí‹°ëŠ” ë§¤ì¹­ í…Œì´ë¸”ì—ì„œ ì œê±°
+				do_CommandPartyMatchDelReq_real(dest->m_subNo, bossIndex);
+			}
+			else
+			{
+				++it;
+			}
 		}
-		else
+	}
+
+	{
+		map_expedition_t::iterator it = gserver.m_listExped.begin();
+		map_expedition_t::iterator it_end = gserver.m_listExped.end();
+
+		for(; it != it_end; )
 		{
-			++it;
+			CExpedition* exped = it->second;
+			
+			if(exped->GetSubNo() == dest->m_subNo)
+			{
+				int bossIndex = exped->GetBossIndex();
+				gserver.m_listExped.erase(it++);
+				exped->SetEndExped();
+				delete exped;
+
+				GAMELOG << init("EXPED DATA INIT")
+					<< "BOSS INDEX" << delim << bossIndex << delim
+					<< "GAME SERVER CHANNEL" << delim << dest->m_subNo << end;
+			}
+			else
+				++it;
 		}
 	}
 }
@@ -9665,7 +10170,7 @@ void do_Worldcup2010Event(CNetMsg::SP& msg, CDescriptor* dest)
 
 	switch( nSubType )
 	{
-	case MSG_HELPER_WORLDCUP2010_TOTO_REQ: // ÅäÅä ÀÀ¸ğ
+	case MSG_HELPER_WORLDCUP2010_TOTO_REQ: // í† í†  ì‘ëª¨
 		do_Worldcup2010EventToto(msg, dest);
 		break;
 
@@ -9709,7 +10214,7 @@ void do_Worldcup2010EventToto(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	if( !cmd.MoveFirst() ) // µî·ÏµÈ ³»¿ëÀÌ ¾ø´Ù.
+	if( !cmd.MoveFirst() ) // ë“±ë¡ëœ ë‚´ìš©ì´ ì—†ë‹¤.
 	{
 		sql.Format("Insert into t_event_worldcup_toto(a_char_idx, a_item_idx, a_date) values(%d, %d, NOW())", charIndex, itemIndex);
 	}
@@ -9745,7 +10250,7 @@ void do_Worldcup2010EventTotoStatus(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(sql);
-	if(!cmd.Open() || !cmd.MoveFirst() ) // ¾ø´Ù.
+	if(!cmd.Open() || !cmd.MoveFirst() ) // ì—†ë‹¤.
 	{
 		GAMELOG << init("EVENT_WORLDCUP_2010 : TOTOSTATUS DB OPEN FAIL") << charIndex << delim <<  resultType << end;
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -9794,7 +10299,7 @@ void do_Worldcup2010EventTotoGift(CNetMsg::SP& msg, CDescriptor* dest)
 
 	sql.Format("SELECT * FROM t_event_worldcup_toto WHERE a_char_idx=%d and a_result>0", charIndex);
 	cmd.SetQuery(sql);
-	if(!cmd.Open() || !cmd.MoveFirst() ) // ¾ø´Ù.
+	if(!cmd.Open() || !cmd.MoveFirst() ) // ì—†ë‹¤.
 	{
 		GAMELOG << init("EVENT_WORLDCUP_2010 : TOTO GIFT DB OPEN FAIL") << charIndex <<end;
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -9805,7 +10310,7 @@ void do_Worldcup2010EventTotoGift(CNetMsg::SP& msg, CDescriptor* dest)
 
 	int result;
 	cmd.GetRec("a_result", result);
-	if( result == 2) // ÀÌ¹Ì ¹ŞÀº »óÅÂ
+	if( result == 2) // ì´ë¯¸ ë°›ì€ ìƒíƒœ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWorldcup2010TOTOGiftErrorMsg(rmsg, MSG_HELPER_WORLDCUP2010_TOTO_GIFT_ERROR_AREADY, charIndex);
@@ -9813,8 +10318,8 @@ void do_Worldcup2010EventTotoGift(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	 // 0 ÀÀ¸ğÁß , 1 ´çÃ· ¾ÆÀÌÅÛ Áö±Ş, 2. ÀÌ¹Ì Áö±Ş µÈ »óÅÂ.
-	// Áö±ŞµÈ »óÅÂ·Î ¹Ù²Ù°í Áö±Ş °¡´ÉÀ¸·Î º¸³½´Ù.
+	 // 0 ì‘ëª¨ì¤‘ , 1 ë‹¹ì²¨ ì•„ì´í…œ ì§€ê¸‰, 2. ì´ë¯¸ ì§€ê¸‰ ëœ ìƒíƒœ.
+	// ì§€ê¸‰ëœ ìƒíƒœë¡œ ë°”ê¾¸ê³  ì§€ê¸‰ ê°€ëŠ¥ìœ¼ë¡œ ë³´ë‚¸ë‹¤.
 	CNetMsg::SP rmsg(new CNetMsg);
 	sql.Format("update t_event_worldcup_toto set a_result=2, a_date=NOW() where a_char_idx=%d", charIndex);
 	cmd.SetQuery(sql);
@@ -9852,7 +10357,7 @@ void do_Worldcup2010EventAttendance(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	if( !cmd.MoveFirst() )// ¾øÀ¸¸é ³Ö¾îÁØ´Ù.
+	if( !cmd.MoveFirst() )// ì—†ìœ¼ë©´ ë„£ì–´ì¤€ë‹¤.
 	{
 		sql.Format("Insert into t_event_worldcup_attendance(a_char_idx, a_date) values(%d, NOW())",	charIndex);
 		cmd.SetQuery(sql);
@@ -9864,11 +10369,11 @@ void do_Worldcup2010EventAttendance(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ÀÖÀ¸¸é ³¯Â¥¸¦ È®ÀÎÇÏÀÚ.
+	// ìˆìœ¼ë©´ ë‚ ì§œë¥¼ í™•ì¸í•˜ì.
 	sql.Format("SELECT * FROM t_event_worldcup_attendance WHERE a_char_idx = %d and a_date < NOW()", charIndex);
 
 	cmd.Open();
-	if( !cmd.MoveFirst() ) // ÀÌ¹Ì Áö±ŞµÈ »óÅÂ
+	if( !cmd.MoveFirst() ) // ì´ë¯¸ ì§€ê¸‰ëœ ìƒíƒœ
 		HelperWorldcup2010AttendanceErrorMsg(rmsg, MSG_HELPER_WORLDCUP2010_ATTENDANCE_ERROR_ALREADY, charIndex);
 	else
 	{
@@ -9890,7 +10395,7 @@ void do_Worldcup2010EventKorea(CNetMsg::SP& msg, CDescriptor* dest)
 	int type;
 
 	RefMsg(msg) >> charIndex;
-	RefMsg(msg) >> type;		// 0 : È®ÀÎ¿ë, 1 : Áö±Ş, 2 : Áö±Ş ·Ñ¹é
+	RefMsg(msg) >> type;		// 0 : í™•ì¸ìš©, 1 : ì§€ê¸‰, 2 : ì§€ê¸‰ ë¡¤ë°±
 
 	CLCString sql(1000);
 	sql.Format("SELECT * FROM t_event_worldcup_korea WHERE a_char_idx = %d", charIndex);
@@ -9907,7 +10412,7 @@ void do_Worldcup2010EventKorea(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	if( 0 == type )			// È®ÀÎ Ã³¸®
+	if( 0 == type )			// í™•ì¸ ì²˜ë¦¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		if( !cmd.MoveFirst() )
@@ -9920,7 +10425,7 @@ void do_Worldcup2010EventKorea(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		SEND_Q(rmsg, dest);
 	}
-	else if( 1 == type )	// Áö±Ş Ã³¸®
+	else if( 1 == type )	// ì§€ê¸‰ ì²˜ë¦¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		if( !cmd.MoveFirst() )
@@ -9945,7 +10450,7 @@ void do_Worldcup2010EventKorea(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		SEND_Q(rmsg, dest);
 	}
-	else if( 2 == type )	// ·Ñ¹é Ã³¸®
+	else if( 2 == type )	// ë¡¤ë°± ì²˜ë¦¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		if( !cmd.MoveFirst() )
@@ -9970,7 +10475,7 @@ void do_Worldcup2010EventKorea(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		SEND_Q(rmsg, dest);
 	}
-	else					// ÀÌ»óÇÑ °ªÀº ½ÇÆĞÃ³¸®
+	else					// ì´ìƒí•œ ê°’ì€ ì‹¤íŒ¨ì²˜ë¦¬
 	{
 		GAMELOG << init("EVENT_WORLDCUP_2010 : KOREA GIFT DB STRANGE TYPE") << charIndex <<end;
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -9994,7 +10499,7 @@ void do_CommandUseGuildPoint(CNetMsg::SP& msg, CDescriptor* dest)
 	CGuild* guild = gserver.m_guildlist.findguild(gindex);
 	if(!guild)
 	{
-		// ±æµå°¡ ¾øÀ¸¸é ¾î¶»°Ô ÇÒÁö °í¹ÎÁ» ÇÏÀÚ..
+		// ê¸¸ë“œê°€ ì—†ìœ¼ë©´ ì–´ë–»ê²Œ í• ì§€ ê³ ë¯¼ì¢€ í•˜ì..
 		return ;
 	}
 	gp = guild->GetGuildPoint();
@@ -10069,7 +10574,7 @@ void do_TeachRenewerLimitTime(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ¼±»ı µ¥ÀÌÅÍº£ÀÌ½º
+	// ì„ ìƒ ë°ì´í„°ë² ì´ìŠ¤
 	char select_characters_query[1024] = {0,};
 	sprintf(select_characters_query, "select a_teach_idx from t_characters where a_index=%d ", teacherIDX);
 	cmd.SetQuery(select_characters_query);
@@ -10104,7 +10609,7 @@ void do_TeachRenewerLimitTime(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 
 	int i, count=0;
-	for (i=0; i<cnt; i++) // µî·ÏµÈ ÈÄ°ßÀÎ Áß¿¡ ½Ã°£ÀÌ Áö³­³ÑÀ» Ã£´Â´Ù.
+	for (i=0; i<cnt; i++) // ë“±ë¡ëœ í›„ê²¬ì¸ ì¤‘ì— ì‹œê°„ì´ ì§€ë‚œë„˜ì„ ì°¾ëŠ”ë‹¤.
 	{
 		char select_characters_query_1[1024] = {0,};
 		sprintf(select_characters_query_1, "select a_teach_idx, a_teach_sec from t_characters where a_datestamp < (now() - interval %d day ) and a_index =%d"
@@ -10115,7 +10620,7 @@ void do_TeachRenewerLimitTime(CNetMsg::SP& msg, CDescriptor* dest)
 			return;
 
 		cmd.MoveFirst();
-		if( cmd.m_nrecords == 1 ) // 10ÀÏÀÌ Áö³µ´Ù¸é 1ÀÌ ³ª¿Ã ¼ö ¹Û¿¡ ¾ø´Ù.
+		if( cmd.m_nrecords == 1 ) // 10ì¼ì´ ì§€ë‚¬ë‹¤ë©´ 1ì´ ë‚˜ì˜¬ ìˆ˜ ë°–ì— ì—†ë‹¤.
 		{
 			CLCString buf(256);
 			int tIDX, gCnt;
@@ -10142,7 +10647,7 @@ void do_TeachRenewerLimitTime(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ¸ğµÎ Ã£¾Ò´Ù GameServer·Î º¸³»ÀÚ.
+	// ëª¨ë‘ ì°¾ì•˜ë‹¤ GameServerë¡œ ë³´ë‚´ì.
 	CNetMsg::SP rmsg(new CNetMsg);
 	rmsg->Init(MSG_HELPER_COMMAND);
 	RefMsg(rmsg) << MSG_HELPER_TEACHER_SYSTEM_RENEWER
@@ -10166,7 +10671,7 @@ void do_TeachRenewerTeacherGiftAdd(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ¼±»ı µ¥ÀÌÅÍº£ÀÌ½º
+	// ì„ ìƒ ë°ì´í„°ë² ì´ìŠ¤
 	char select_guardian_gift_query[1024] = {0,};
 	sprintf(select_guardian_gift_query, "select a_gift_count from t_guardian_gift where a_char_idx=%d ", teacherIdx);
 
@@ -10178,7 +10683,7 @@ void do_TeachRenewerTeacherGiftAdd(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	if( !cmd.MoveFirst() ) // DB¿¡ ±â·ÏµÈ°Ô ¾ø´Ù¸é »õ·Î ³Ö¾îÁÖÀÚ.
+	if( !cmd.MoveFirst() ) // DBì— ê¸°ë¡ëœê²Œ ì—†ë‹¤ë©´ ìƒˆë¡œ ë„£ì–´ì£¼ì.
 	{
 		char isnert_guardian_gift_query[1024] = {0,};
 
@@ -10193,7 +10698,7 @@ void do_TeachRenewerTeacherGiftAdd(CNetMsg::SP& msg, CDescriptor* dest)
 		cmd.SetQuery(isnert_guardian_gift_query);
 		if( !cmd.Update())
 		{
-			// ½ÇÆĞÇÏ¸é ·Î±× Âï±â
+			// ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì°ê¸°
 			GAMELOG << init("GUARDIAN TEACHER GIFT ADD DB ISNERT ERRER")
 				<< "teacherIdx" << delim << teacherIdx ;
 			if( count )
@@ -10238,7 +10743,7 @@ void do_TeachRenewerTeacherGift(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ¼±»ı µ¥ÀÌÅÍº£ÀÌ½º
+	// ì„ ìƒ ë°ì´í„°ë² ì´ìŠ¤
 	char select_guardian_gift_query[1024] = {0,};
 	sprintf(select_guardian_gift_query, "select a_gift_count from t_guardian_gift where a_char_idx=%d ", charindex);
 
@@ -10254,7 +10759,7 @@ void do_TeachRenewerTeacherGift(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	if( !cmd.MoveFirst() ) // ÁÙ°Ô ¾ø´Ù.
+	if( !cmd.MoveFirst() ) // ì¤„ê²Œ ì—†ë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperTeachGiftRepMsg(rmsg, MSG_HELPER_TEACH_RENEWER_GIFT_NOMORE, charindex);
@@ -10301,7 +10806,7 @@ void do_TeachRenewerStuedntSuc(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	// ÇĞ»ı  µ¥ÀÌÅÍº£ÀÌ½º´Â ±ú²ıÀÌ
+	// í•™ìƒ  ë°ì´í„°ë² ì´ìŠ¤ëŠ” ê¹¨ë—ì´
 	char udpate_characters_query[1024] = {0,};
 	sprintf(udpate_characters_query, "update t_characters set a_teach_type=-1, a_teach_idx= ' -1', a_teach_sec=' 0 0' where a_index=%d ", studentIdx);
 
@@ -10312,7 +10817,7 @@ void do_TeachRenewerStuedntSuc(CNetMsg::SP& msg, CDescriptor* dest)
 					<< "charindex" << delim << studentIdx <<  end;
 	}
 
-	//¼±»ı DB Á¤¸®
+	//ì„ ìƒ DB ì •ë¦¬
 	char select_characters_query[1024] = {0,};
 	sprintf(select_characters_query, "select a_teach_idx from t_characters where a_index=%d ", teacherIdx);
 	cmd.SetQuery(select_characters_query);
@@ -10415,7 +10920,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.SetQuery(select_characters_query);
 			if( !cmd.Open() || !cmd.MoveFirst() )
 			{
-				// Ä³¸¯ÅÍ¸¦ ¸øÃ£°Ú´Ù.
+				// ìºë¦­í„°ë¥¼ ëª»ì°¾ê² ë‹¤.
 				GAMELOG << init("EVENT_CHAR_BIRTHDAY :: DB FAIL") << charindex << delim << __LINE__  << end;
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL, charindex);
@@ -10458,7 +10963,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 				cmd.SetQuery(select_event_char_birthday);
 				if( !cmd.Open() )
 				{
-					// Å×ÀÌºíÀ» ¿­Áö ¸øÇÏ³ß...
+					// í…Œì´ë¸”ì„ ì—´ì§€ ëª»í•˜ë„¹...
 					GAMELOG << init("EVENT_CHAR_BIRTHDAY :: DB FAIL") << charindex << delim << __LINE__  << end;
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL, charindex);
@@ -10468,7 +10973,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 
 				if( !cmd.MoveFirst() )
 				{
-					// ³× Á¤º¸°¡ ¾øÀ¸´Ï º¸»ó ¾Ê¹ŞÀº °Å´Ù. Á¤º¸¸¦ ±â·ÏÇÏ°í º¸»óÀ» ÁÖ´Ù.
+					// ë„¤ ì •ë³´ê°€ ì—†ìœ¼ë‹ˆ ë³´ìƒ ì•Šë°›ì€ ê±°ë‹¤. ì •ë³´ë¥¼ ê¸°ë¡í•˜ê³  ë³´ìƒì„ ì£¼ë‹¤.
 					char insert_event_char_birthday[8192] = {0,};
 					sprintf(insert_event_char_birthday, "Insert into t_event_char_birthday select a_index, a_createdate, NOW(), %d from t_characters where a_index=%d"
 					,bGift 	,charindex );
@@ -10476,7 +10981,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 
 					if(!cmd.Update())
 					{
-						// ¾÷µ¥ÀÌÆ®°¡ ¾ÊµÇ´Ï º¸»óÀÌ°í ¹¹°í ¾ø´Ù.
+						// ì—…ë°ì´íŠ¸ê°€ ì•Šë˜ë‹ˆ ë³´ìƒì´ê³  ë­ê³  ì—†ë‹¤.
 						GAMELOG << init("EVENT_CHAR_BIRTHDAY :: DB FAIL") << charindex << delim << __LINE__  << end;
 						CNetMsg::SP rmsg(new CNetMsg);
 						HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL, charindex);
@@ -10484,7 +10989,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 						return;
 					}
 
-					// º¸»óÇØÁÖÀÚ.
+					// ë³´ìƒí•´ì£¼ì.
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_SUC, charindex, bGift);
 					SEND_Q(rmsg, dest);
@@ -10496,7 +11001,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 				cmd.GetRec("a_count",	giftCount);
 
 				if( bGift > giftCount )
-				{	// º¸»ó ¹ŞÀº ±â·ÏÀº ÀÖÁö¸¸ ¿À·¡ÀüÀÌ´Ù. º¸»óÀ» ÁÖÀÚ.
+				{	// ë³´ìƒ ë°›ì€ ê¸°ë¡ì€ ìˆì§€ë§Œ ì˜¤ë˜ì „ì´ë‹¤. ë³´ìƒì„ ì£¼ì.
 					char update_event_char_birthday[8192] = {0,};
 					sprintf(update_event_char_birthday, "update t_event_char_birthday set a_gift_date=now(), a_count=%d where a_char_idx=%d", bGift, charindex );
 					cmd.SetQuery(update_event_char_birthday);
@@ -10515,7 +11020,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 					return;
 				}
 				else
-				{	// ÀÌ¹Ì ¹Ş¾Ò´Ù ´ÙÀ½³âµµ¿¡ ¹ŞÀ¸»ï.
+				{	// ì´ë¯¸ ë°›ì•˜ë‹¤ ë‹¤ìŒë…„ë„ì— ë°›ìœ¼ì‚¼.
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL, charindex);
 					SEND_Q(rmsg, dest);
@@ -10524,7 +11029,7 @@ void do_commandEventCharBirthday(CNetMsg::SP& msg, CDescriptor* dest)
 			}
 			else
 			{
-				// Ä³¸¯ÅÍ »ı¼ºÇÑÁö 1³âÀÌ ¾Ê³Ñ¾ú³ß.
+				// ìºë¦­í„° ìƒì„±í•œì§€ 1ë…„ì´ ì•Šë„˜ì—ˆë„¹.
 				CNetMsg::SP rmsg(new CNetMsg);
 				HelperEventCharBirthdayGiftRepMsg(rmsg, MSG_EVENT_CHAR_BIRTHDAY_ERROR_FAIL, charindex);
 				SEND_Q(rmsg, dest);
@@ -10606,7 +11111,7 @@ void do_CommandGuildMarkRegist(CNetMsg::SP& msg, CDescriptor* dest)
 
 	if(gm_row == -1 && gm_col == -1 && bg_row == -1 && bg_col == -1 && tab == -1 && invenIndex == -1 && markTime == -1)
 	{
-		// rollbackºÎºĞ °ÔÀÓ¼­¹ö¿¡¼­ ·Ñ¹é¿äÃ»ÀÌ ¿ÔÀ½.
+		// rollbackë¶€ë¶„ ê²Œì„ì„œë²„ì—ì„œ ë¡¤ë°±ìš”ì²­ì´ ì™”ìŒ.
 		CGuild* pGuild = NULL;
 		pGuild = gserver.m_guildlist.findguild(GuildIndex);
 		if(pGuild)
@@ -10619,7 +11124,7 @@ void do_CommandGuildMarkRegist(CNetMsg::SP& msg, CDescriptor* dest)
 			cmd.SetQuery(sql);
 			if(!cmd.Update())
 			{
-				// ·Ñ¹é ½ÇÆĞ
+				// ë¡¤ë°± ì‹¤íŒ¨
 				GAMELOG << init("GUILD MARK ROLLBACK FAIL") << sql << end;
 				return ;
 			}
@@ -10690,7 +11195,7 @@ void do_CommandAutoResetRaid(CNetMsg::SP& msg, CDescriptor* dest)
 
 	//if(count == 0)
 	//{
-	//	// ´ÙÁö¿ö¹ö¸®ÀÚ
+	//	// ë‹¤ì§€ì›Œë²„ë¦¬ì
 	//	sql.Format("DELETE FROM t_inzonejoin WHERE a_zoneno = %d", zone);
 	//	cmd.SetQuery(sql);
 	//	if(!cmd.Update())
@@ -10723,17 +11228,17 @@ void do_CommandAutoResetRaid(CNetMsg::SP& msg, CDescriptor* dest)
 	//}
 	//else
 	//{
-	//	// 2Â÷ µ¿Àû¹è¿­ ÇÒ´ç
+	//	// 2ì°¨ ë™ì ë°°ì—´ í• ë‹¹
 	//	area = new int*[count];
 	//	for(i = 0; i < count; i++)
 	//		area[i] = new int[2];
 
 	//	for(i = 0; i < count; i++)
 	//	{
-	//		// 0¿¡´Â ¹æ¹øÈ£°¡, 1¿¡´Â difficultyÁ¤º¸°¡ ÀÖ´Ù.
+	//		// 0ì—ëŠ” ë°©ë²ˆí˜¸ê°€, 1ì—ëŠ” difficultyì •ë³´ê°€ ìˆë‹¤.
 	//		RefMsg(msg) >> area[i][0] >> area[i][1];
 	//	}
-	//	// Äõ¸®¹®À» ¸¸µéÀÚ!!
+	//	// ì¿¼ë¦¬ë¬¸ì„ ë§Œë“¤ì!!
 	//	sql.Format("DELETE FROM t_inzonejoin WHERE ");
 	//	for(i = 0; i < count; i++)
 	//	{
@@ -10747,7 +11252,7 @@ void do_CommandAutoResetRaid(CNetMsg::SP& msg, CDescriptor* dest)
 	//	}
 	//	tmp.Format(" AND a_zoneno = %d", zone);
 	//	sql += tmp;
-	//	// Äõ¸®¹® ¿Ï·á!!
+	//	// ì¿¼ë¦¬ë¬¸ ì™„ë£Œ!!
 	//	cmd.SetQuery(sql);
 	//	if(!cmd.Update())
 	//	{
@@ -10790,7 +11295,7 @@ void do_CommandAutoResetRaid(CNetMsg::SP& msg, CDescriptor* dest)
 	//				<< "DELETE" << delim
 	//				<< "Query" << delim
 	//				<< sql << end;
-	//	// 2Â÷ µ¿Àû¹è¿­ ÇØÁ¦
+	//	// 2ì°¨ ë™ì ë°°ì—´ í•´ì œ
 	//	for(i = 0; i < count; i++)
 	//		delete[] area[i];
 	//	delete[] area;
@@ -10845,7 +11350,7 @@ void do_CommandGuildStashCreate( CNetMsg::SP& msg, CDescriptor* dest)
 	return;
 }
 
-//XX ±æµåÃ¢°í - ¸®½ºÆ® (2)
+//XX ê¸¸ë“œì°½ê³  - ë¦¬ìŠ¤íŠ¸ (2)
 void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int guildindex	= 0;
@@ -10862,7 +11367,7 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd	cmd;
 	cmd.Init( &gserver.m_dbchar );
 
-	// charIndex¸¦ °Ë»ö
+	// charIndexë¥¼ ê²€ìƒ‰
 	std::string sql = boost::str(boost::format(
 		"SELECT gs.a_limitdate as a_limitdate, gs.a_capacity as a_capacity, gm.a_stash_auth as a_stash_auth FROM t_guild_stash_info as gs LEFT JOIN t_extend_guildmember as gm "
 		" ON gs.a_enable=1 AND gs.a_guild_idx=%d AND gs.a_guild_idx = gm.a_guild_index WHERE gm.a_char_index = %d LIMIT 1") % guildindex % charindex);
@@ -10879,7 +11384,7 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 	cmd.GetRec( "a_stash_auth", nEnable );
 	if( nEnable == 0 )
 	{
-		 // Ã¢°í¸¦ ÀÌ¿ëÇÒ ¼ö ¾øÀ½
+		 // ì°½ê³ ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
 		SEND_Q( rmsg, dest );
@@ -10891,7 +11396,7 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 	cmd.GetRec( "a_limitdate", timeStamp );
 	cmd.GetRec( "a_capacity", nCapacity );
 
-	// µ· °Ë»ö
+	// ëˆ ê²€ìƒ‰
 	GoldType_t moneyCount = 0;
 	sql = boost::str(boost::format("SELECT a_nas FROM t_guild_stash_info WHERE a_guild_idx = %d LIMIT 1") % guildindex);
 	cmd.SetQuery( sql.c_str() );
@@ -10900,14 +11405,14 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 		cmd.GetRec( "a_nas" , moneyCount );
 	}
 
-	// Àü¼ÛÇÒ ÆĞÅ¶ »ı¼º
+	// ì „ì†¡í•  íŒ¨í‚· ìƒì„±
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperGuildStashListMsg( rmsg , charindex );
 	RefMsg(rmsg) << timeStamp
 		<< nCapacity
 		<< moneyCount;
 
-	// µ·¾ÆÀÌÅÛÀ» Á¦¿ÜÇÑ ¾ÆÀÌÅÛ Á¤º¸
+	// ëˆì•„ì´í…œì„ ì œì™¸í•œ ì•„ì´í…œ ì •ë³´
 	sql = boost::str(boost::format("SELECT * FROM t_guild_stash WHERE a_guild_idx = %d LIMIT %d") % guildindex % nCapacity);
 	cmd.SetQuery( sql.c_str() );
 	if( cmd.Open() && cmd.MoveFirst() )
@@ -10916,7 +11421,7 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 
 		do
 		{
-			// ¾ÆÀÌÅÛ MSG ¸¸µé±â
+			// ì•„ì´í…œ MSG ë§Œë“¤ê¸°
 			int			stashIndex = 0;
 			int			index	= 0;
 			int			plus	= 0;
@@ -10984,10 +11489,10 @@ void do_CommandGuildStashList(CNetMsg::SP& msg, CDescriptor* dest)
 	SEND_Q( rmsg, dest );
 }
 
-//XX ±æµåÃ¢°í - º¸°ü (2)
+//XX ê¸¸ë“œì°½ê³  - ë³´ê´€ (2)
 void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	// 0: ¼º°ø , 1:±æµå ¾øÀ½ , 2:ÀÎº¥ºÎÁ·, 3:¹«°ÔÃÊ°ú 4: ´Ù¸¥ ±æµå¿øÀÌ »ç¿ëÁß
+	// 0: ì„±ê³µ , 1:ê¸¸ë“œ ì—†ìŒ , 2:ì¸ë²¤ë¶€ì¡±, 3:ë¬´ê²Œì´ˆê³¼ 4: ë‹¤ë¥¸ ê¸¸ë“œì›ì´ ì‚¬ìš©ì¤‘
 	int guildindex	= 0;
 	int charindex = 0;
 	LONGLONG keepMoney = 0;
@@ -11011,7 +11516,7 @@ void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 		cmd.GetRec( "a_stash_auth", nEnable );
 	}
 
-	if( nEnable == 0 ) // Ã¢°í¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
+	if( nEnable == 0 ) // ì°½ê³ ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
@@ -11020,33 +11525,33 @@ void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 
 	std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( guildindex );
-	if( itr != gserver.m_guildstash.end() )		// Ã£¾Ò´Ù
+	if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
 	{
 		CGuildStash *ptmpGuildStash = itr->second ;
 		if( ptmpGuildStash )
 		{
 			if( !ptmpGuildStash->GetLock(charindex) )
 			{
-				// ÀÌ¹Ì ¶ô°É¸²
+				// ì´ë¯¸ ë½ê±¸ë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
-				HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 3, 0, 0 );  // »ç¿ëÁßÀÔ´Ï´Ù.
+				HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 3, 0, 0 );  // ì‚¬ìš©ì¤‘ì…ë‹ˆë‹¤.
 				SEND_Q( rmsg, dest);
 				return;
 			}
 		}
 	}
-	else		// Ã³À½ ·Îµù
+	else		// ì²˜ìŒ ë¡œë”©
 	{
 		CGuildStash* pGuildStash = new CGuildStash(guildindex);
 		gserver.m_guildstash.insert( std::make_pair( guildindex, pGuildStash ) );
-		pGuildStash->GetLock(charindex);		// »õ·Î¸¸µé¾î¼­ 100% ¼º°ø
+		pGuildStash->GetLock(charindex);		// ìƒˆë¡œë§Œë“¤ì–´ì„œ 100% ì„±ê³µ
 		itr = gserver.m_guildstash.find( guildindex );
 	}
 
 	if( itr == gserver.m_guildstash.end() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ±×·±±æµå ¾ø½À´Ï´Ù.
+		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ê·¸ëŸ°ê¸¸ë“œ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, dest);
 
 		return;
@@ -11056,15 +11561,15 @@ void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 	if( !pGuildStash )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ±×·±±æµå ¾ø½À´Ï´Ù.
+		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ê·¸ëŸ°ê¸¸ë“œ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, dest);
-		return; // ±æµå»ı¼º ½ÇÆĞ
+		return; // ê¸¸ë“œìƒì„± ì‹¤íŒ¨
 	}
 
-	// µ·(NAS) Ã³¸®
+	// ëˆ(NAS) ì²˜ë¦¬
 	pGuildStash->setMoney(keepMoney);
 
-	// ¾ÆÀÌÅÛ Ã³¸®
+	// ì•„ì´í…œ ì²˜ë¦¬
 	for (int i = 0; i < itemCount; ++i)
 	{
 		int			index	= 0;
@@ -11106,19 +11611,19 @@ void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 		pGuildStash->SetItemProtoFlag( index , proto_flag );
 	}
 
-	if( !pGuildStash->CheckStashSpace(&gserver.m_dbchar) || !pGuildStash->KeepToDB(&gserver.m_dbchar) )		// °ø°£ÀÌ ¾ø°Å³ª ¾÷µ¥ÀÌÆ® ½ÇÆĞ
+	if( !pGuildStash->CheckStashSpace(&gserver.m_dbchar) || !pGuildStash->KeepToDB(&gserver.m_dbchar) )		// ê³µê°„ì´ ì—†ê±°ë‚˜ ì—…ë°ì´íŠ¸ ì‹¤íŒ¨
 	{
-		pGuildStash->RemoveItem();// ¾ÆÀÌÅÛ »èÁ¦
-		if( !pGuildStash->UnLock(charindex) ) // Unlock ½ÇÆĞ Log ¸¸Âï±â
+		pGuildStash->RemoveItem();// ì•„ì´í…œ ì‚­ì œ
+		if( !pGuildStash->UnLock(charindex) ) // Unlock ì‹¤íŒ¨ Log ë§Œì°ê¸°
 		{
 		}
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 9, 0, 0 ); // ±æµå Ã¢°í °ø°£ ¾øÀ½
+		HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 9, 0, 0 ); // ê¸¸ë“œ ì°½ê³  ê³µê°„ ì—†ìŒ
 		SEND_Q( rmsg, dest);
 		return;
 	}
 
-	// ÀúÀå ¿Ï·á GameServer ·Î Message Àü¼Û ( ItemList Æ÷ÇÔ ), ¾ÆÁ÷Àº Lock °É¸° »óÅÂ
+	// ì €ì¥ ì™„ë£Œ GameServer ë¡œ Message ì „ì†¡ ( ItemList í¬í•¨ ), ì•„ì§ì€ Lock ê±¸ë¦° ìƒíƒœ
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperGuildStashKeepMsg( rmsg, charindex, guildindex, 0, keepMoney, pGuildStash->m_listTempItem.size() );
 	std::list<CStashItem*>::iterator itemItr;
@@ -11140,7 +11645,7 @@ void do_CommandGuildStashKeep(CNetMsg::SP& msg, CDescriptor* dest)
 
 void do_CommandGuildStashKeepError(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	char error = -1;			// 0: ¼º°ø , 1:½ÇÆĞ
+	char error = -1;			// 0: ì„±ê³µ , 1:ì‹¤íŒ¨
 	int guildindex = 0;
 	int charindex = 0;
 	LONGLONG money = 0;
@@ -11150,34 +11655,34 @@ void do_CommandGuildStashKeepError(CNetMsg::SP& msg, CDescriptor* dest)
 		>> money;
 
 	std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( guildindex );
-	if( itr != gserver.m_guildstash.end() )		// Ã£¾Ò´Ù
+	if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
 	{
 		CGuildStash* pGuildStash = itr->second;
 		if( !pGuildStash )
-			return; // ±æµå»ı¼º ½ÇÆĞ
+			return; // ê¸¸ë“œìƒì„± ì‹¤íŒ¨
 
-		if( !pGuildStash->CanUnLock(charindex) )		// Lock °Ç»ç¶÷ÀÌ ¾Æ´Ï¸é
+		if( !pGuildStash->CanUnLock(charindex) )		// Lock ê±´ì‚¬ëŒì´ ì•„ë‹ˆë©´
 			return;
 
-		if( 0 != error )	// Ã¢°í¿¡ ÀúÀåÀº ÇßÀ¸³ª, ¾ÆÀÌÅÛ Áö±Ş¿£ ½ÇÆĞ
+		if( 0 != error )	// ì°½ê³ ì— ì €ì¥ì€ í–ˆìœ¼ë‚˜, ì•„ì´í…œ ì§€ê¸‰ì—” ì‹¤íŒ¨
 		{
-			pGuildStash->TakeFromDB(&gserver.m_dbchar);		// DB ¿¡ ¸Ã°Ü³ù´ø ¾ÆÀÌÅÛÀ» temp ¾ÆÀÌÅÛÀ» ±âÁØÀ¸·Î »«µû.
+			pGuildStash->TakeFromDB(&gserver.m_dbchar);		// DB ì— ë§¡ê²¨ë†¨ë˜ ì•„ì´í…œì„ temp ì•„ì´í…œì„ ê¸°ì¤€ìœ¼ë¡œ ëº€ë”°.
 		}
 		else
 		{
-			// ·Î±×ÇÑ¹ø ³²°Ü º¾½Ã´Ù.
+			// ë¡œê·¸í•œë²ˆ ë‚¨ê²¨ ë´…ì‹œë‹¤.
 			pGuildStash->SaveLog( &gserver.m_dbchar , CGuildStash::GUILD_STASH_KEEP, money );
 		}
-		// ¸Ş¸ğ¸®¿¡ ÀÖ´Â ¾ÆÀÌÅÛ Á¦°Å
-		pGuildStash->RemoveItem();// ¾ÆÀÌÅÛ »èÁ¦
+		// ë©”ëª¨ë¦¬ì— ìˆëŠ” ì•„ì´í…œ ì œê±°
+		pGuildStash->RemoveItem();// ì•„ì´í…œ ì‚­ì œ
 		pGuildStash->UnLock(charindex);		//  UnLock
 	}
 }
 
-//XX ±æµåÃ¢°í - Ã£±â (2)
+//XX ê¸¸ë“œì°½ê³  - ì°¾ê¸° (2)
 void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	// error 0: ¼º°ø , 1:±æµå ¾øÀ½ , 2:ÀÎº¥ºÎÁ·, 3:¹«°ÔÃÊ°ú 4: ´Ù¸¥ ±æµå¿øÀÌ »ç¿ëÁß
+	// error 0: ì„±ê³µ , 1:ê¸¸ë“œ ì—†ìŒ , 2:ì¸ë²¤ë¶€ì¡±, 3:ë¬´ê²Œì´ˆê³¼ 4: ë‹¤ë¥¸ ê¸¸ë“œì›ì´ ì‚¬ìš©ì¤‘
 	int			guildindex	= 0;
 	int			charindex = 0;
 	LONGLONG	takeMoney = 0;
@@ -11189,6 +11694,24 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		>> charindex
 		>> takeMoney
 		>> itemCount;
+
+	CGuild* guild = gserver.m_guildlist.findguild(guildindex);
+
+	if(guild == NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
+		SEND_Q( rmsg, dest );
+		return;
+	}
+
+	if(takeMoney > 0 && guild->m_isUseTheStashAndSkill == false)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
+		SEND_Q( rmsg, dest );
+		return;
+	}
 
 	CDBCmd	cmd;
 	cmd.Init( &gserver.m_dbchar );
@@ -11203,7 +11726,7 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		cmd.GetRec( "a_stash_auth", nEnable );
 	}
 
-	if( nEnable == 0 ) // Ã¢°í¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
+	if( nEnable == 0 ) // ì°½ê³ ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
@@ -11212,33 +11735,33 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 
 	std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( guildindex );
-	if( itr != gserver.m_guildstash.end() )		// Ã£¾Ò´Ù
+	if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
 	{
 		CGuildStash *ptmpGuildStash = itr->second ;
 		if( ptmpGuildStash )
 		{
 			if( !ptmpGuildStash->GetLock(charindex) )
 			{
-				// ÀÌ¹Ì ¶ô°É¸²
+				// ì´ë¯¸ ë½ê±¸ë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
-				HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 4, 0, 0 );  // 4: ´Ù¸¥±æµå¿øÀÌ »ç¿ëÁßÀÔ´Ï´Ù.
+				HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 4, 0, 0 );  // 4: ë‹¤ë¥¸ê¸¸ë“œì›ì´ ì‚¬ìš©ì¤‘ì…ë‹ˆë‹¤.
 				SEND_Q( rmsg, dest);
 				return;
 			}
 		}
 	}
-	else		// Ã³À½ ·Îµù
+	else		// ì²˜ìŒ ë¡œë”©
 	{
 		CGuildStash* pGuildStash = new CGuildStash(guildindex);
 		gserver.m_guildstash.insert( std::make_pair( guildindex, pGuildStash ) );
-		pGuildStash->GetLock(charindex);		// »õ·Î¸¸µé¾î¼­ 100% ¼º°ø
+		pGuildStash->GetLock(charindex);		// ìƒˆë¡œë§Œë“¤ì–´ì„œ 100% ì„±ê³µ
 		itr = gserver.m_guildstash.find( guildindex );
 	}
 
 	if( itr == gserver.m_guildstash.end() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ±×·±±æµå ¾ø½À´Ï´Ù.
+		HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // ê·¸ëŸ°ê¸¸ë“œ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, dest);
 		return;
 	}
@@ -11247,9 +11770,9 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 	if( !pGuildStash )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // 1: ±×·±±æµå ¾ø½À´Ï´Ù.
+		HelperGuildStashTakeMsg( rmsg, charindex, guildindex, 1, 0, 0 );  // 1: ê·¸ëŸ°ê¸¸ë“œ ì—†ìŠµë‹ˆë‹¤.
 		SEND_Q( rmsg, dest);
-		return; // ±æµå»ı¼º ½ÇÆĞ
+		return; // ê¸¸ë“œìƒì„± ì‹¤íŒ¨
 	}
 
 	bool		bCanTake = true;
@@ -11268,14 +11791,14 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 	std::vector<int>::const_iterator ciVerify;
 
 	{
-		// Ã¢°í¿¡¼­ µ·À» »¬¼ö ÀÖ´ÂÁö °Ë»ç
+		// ì°½ê³ ì—ì„œ ëˆì„ ëº„ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
 		std::string str = boost::str(boost::format(
 			"SELECT a_nas FROM t_guild_stash_info WHERE a_guild_idx = %1% LIMIT 1") % guildindex);
 		cmd.SetQuery(str);
 		if (cmd.Open() == false)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: Ã£À»¼ö ¾ø´Â ¾ÆÀÌÅÛ
+			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: ì°¾ì„ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 			SEND_Q( rmsg, dest );
 			return;
 		}
@@ -11283,7 +11806,7 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		if (cmd.MoveFirst() == false)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: Ã£À»¼ö ¾ø´Â ¾ÆÀÌÅÛ
+			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: ì°¾ì„ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 			SEND_Q( rmsg, dest );
 			return;
 		}
@@ -11293,7 +11816,7 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		if (curNas < takeMoney)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: Ã£À»¼ö ¾ø´Â ¾ÆÀÌÅÛ
+			HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: ì°¾ì„ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 			SEND_Q( rmsg, dest );
 			return;
 		}
@@ -11301,7 +11824,7 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		pGuildStash->setMoney(takeMoney);
 	}
 
-	// ¼ö·® È®ÀÎ °ú µ¿½Ã¿¡ temp ¿¡ ÀúÀå
+	// ìˆ˜ëŸ‰ í™•ì¸ ê³¼ ë™ì‹œì— temp ì— ì €ì¥
 	for( int i = 0; i < itemCount; ++i )
 	{
 		LONGLONG	dbCount = 0;
@@ -11320,7 +11843,7 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 			if( cmd.Open() && cmd.MoveFirst() )
 			{
 				cmd.GetRec( "a_count", dbCount );
-				if( dbCount < stashItemCount )		// ¾Æ¿À °¹¼ö°¡ ¸ğÀß¶ó
+				if( dbCount < stashItemCount )		// ì•„ì˜¤ ê°¯ìˆ˜ê°€ ëª¨ì˜ë¼
 				{
 					bCanTake = false;
 					break;
@@ -11349,10 +11872,10 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 					cmd.GetRec("a_max_dur", max_dur);
 					pGuildStash->AddItem( stashIndex, itemDBIndex, 0, plus, flag, used, used2, stashItemCount, option, serial, socket, itemOrigin, now_dur, max_dur );
 					if( dbCount > 1 || stashItemCount > 1 )
-						pGuildStash->SetItemProtoFlag( itemDBIndex , 1);			// CountÇÒ¼ö ÀÖµµ·Ï ÇÃ·¡±× ¼³Á¤
+						pGuildStash->SetItemProtoFlag( itemDBIndex , 1);			// Countí• ìˆ˜ ìˆë„ë¡ í”Œë˜ê·¸ ì„¤ì •
 				}
 			}
-			else	// ¾ø´Â ¾ÆÀÌÅÛÀÌ³×..
+			else	// ì—†ëŠ” ì•„ì´í…œì´ë„¤..
 			{
 				bCanTake = false;
 				break;
@@ -11364,20 +11887,20 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 	{
 		pGuildStash->RemoveItem();
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: Ã£À»¼ö ¾ø´Â ¾ÆÀÌÅÛ
+		HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 5, 0, 0 ); // 5: ì°¾ì„ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 		SEND_Q( rmsg, dest );
 		return;
 	}
 
 	if (pGuildStash->TakeFromDB(&gserver.m_dbchar) == false)
 	{
-		// DB Â÷°¨ÇÏ´Ù°¡ ¸ÁÇßÀ½
+		// DB ì°¨ê°í•˜ë‹¤ê°€ ë§í–ˆìŒ
 		pGuildStash->RemoveItem();
 		pGuildStash->UnLock(charindex);		//  UnLock
 		return;
 	}
 
-	// tempItem ¿¡ ÀÖ´Â Á¤º¸¸¦ Àü´ŞÇØ Áİ½Ã´Ù.
+	// tempItem ì— ìˆëŠ” ì •ë³´ë¥¼ ì „ë‹¬í•´ ì¤ì‹œë‹¤.
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperGuildStashTakeMsg( rmsg , charindex, guildindex, 0, takeMoney, pGuildStash->m_listTempItem.size() );
 	std::list<CStashItem*>::iterator it =  pGuildStash->m_listTempItem.begin();
@@ -11416,27 +11939,27 @@ void do_CommandGuildStashTake(CNetMsg::SP& msg, CDescriptor* dest)
 		else
 		{
 			bCanTake = false;
-			break; // ¶Ç ¹º°¡°¡ Àß¸ø µÇ¾úÀ½
+			break; // ë˜ ë­”ê°€ê°€ ì˜ëª» ë˜ì—ˆìŒ
 		}
 	}
 
 	if( !bCanTake )
 	{
-		// ¹º°¡ Àß¸øµÇ¾ú´Ù error !!
-		pGuildStash->KeepToDB(&gserver.m_dbchar); // dB º¹±¸
+		// ë­”ê°€ ì˜ëª»ë˜ì—ˆë‹¤ error !!
+		pGuildStash->KeepToDB(&gserver.m_dbchar); // dB ë³µêµ¬
 		pGuildStash->RemoveItem();
 		pGuildStash->UnLock(charindex);		//  UnLock
 		return;
 	}
-	SEND_Q( rmsg, dest);		// µåµğ¾î º¸³À´Ï´Ù.
+	SEND_Q( rmsg, dest);		// ë“œë””ì–´ ë³´ëƒ…ë‹ˆë‹¤.
 }
 
-//XX ±æµåÃ¢°í - Ã£±â (4)
+//XX ê¸¸ë“œì°½ê³  - ì°¾ê¸° (4)
 void do_CommandGuildStashTakeError(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	// ½ÇÆĞÇÏ¸é temp ¿¡ ÀÖ´Â ¾ÆÀÌÅÛ º¹¿ø
-	// ¾ğ¶ô
-	char error = -1;			// 0: ¼º°ø , 1:½ÇÆĞ
+	// ì‹¤íŒ¨í•˜ë©´ temp ì— ìˆëŠ” ì•„ì´í…œ ë³µì›
+	// ì–¸ë½
+	char error = -1;			// 0: ì„±ê³µ , 1:ì‹¤íŒ¨
 	int guildindex = 0;
 	int charindex = 0;
 	LONGLONG money = 0;
@@ -11446,32 +11969,32 @@ void do_CommandGuildStashTakeError(CNetMsg::SP& msg, CDescriptor* dest)
 		>> money;
 
 	std::map<int,CGuildStash*>::iterator itr = gserver.m_guildstash.find( guildindex );
-	if( itr != gserver.m_guildstash.end() )		// Ã£¾Ò´Ù
+	if( itr != gserver.m_guildstash.end() )		// ì°¾ì•˜ë‹¤
 	{
 		CGuildStash* pGuildStash = itr->second;
 		if( !pGuildStash )
-			return; // ±æµå»ı¼º ½ÇÆĞ
+			return; // ê¸¸ë“œìƒì„± ì‹¤íŒ¨
 
-		if( !pGuildStash->CanUnLock(charindex) )		// Lock °Ç»ç¶÷ÀÌ ¾Æ´Ï¸é
+		if( !pGuildStash->CanUnLock(charindex) )		// Lock ê±´ì‚¬ëŒì´ ì•„ë‹ˆë©´
 			return;
 
-		if( 0 != error )	// Ã¢°í¿¡ ÀúÀåÀº ÇßÀ¸³ª, ¾ÆÀÌÅÛ Áö±Ş¿£ ½ÇÆĞ
+		if( 0 != error )	// ì°½ê³ ì— ì €ì¥ì€ í–ˆìœ¼ë‚˜, ì•„ì´í…œ ì§€ê¸‰ì—” ì‹¤íŒ¨
 		{
-			pGuildStash->KeepToDB(&gserver.m_dbchar);	// temp ¿¡ ÀÖ´Â ¾ÆÀÌÅÛ DB ·Î ÀúÀå
+			pGuildStash->KeepToDB(&gserver.m_dbchar);	// temp ì— ìˆëŠ” ì•„ì´í…œ DB ë¡œ ì €ì¥
 		}
 		else
 		{
 			pGuildStash->SaveLog( &gserver.m_dbchar , CGuildStash::GUILD_STASH_TAKE, money );
 		}
-		// ¸Ş¸ğ¸®¿¡ ÀÖ´Â ¾ÆÀÌÅÛ Á¦°Å
-		pGuildStash->RemoveItem();// ¾ÆÀÌÅÛ »èÁ¦
+		// ë©”ëª¨ë¦¬ì— ìˆëŠ” ì•„ì´í…œ ì œê±°
+		pGuildStash->RemoveItem();// ì•„ì´í…œ ì‚­ì œ
 		pGuildStash->UnLock(charindex);		//  UnLock
 	}
 }
 
 void do_CommandGuildStashLog(CNetMsg::SP& msg, CDescriptor* dest)
 {
-	//10°³ ´ÜÀ§·Î ÂÉ°³¼­ º¸³À½Ã´Ù.
+	//10ê°œ ë‹¨ìœ„ë¡œ ìª¼ê°œì„œ ë³´ëƒ…ì‹œë‹¤.
 	enum { MAX_GS_LOGLIST_ATONCE = 10, };
 
 	int guildindex	= 0;
@@ -11495,7 +12018,7 @@ void do_CommandGuildStashLog(CNetMsg::SP& msg, CDescriptor* dest)
 		cmd.GetRec( "a_stash_auth", nEnable );
 	}
 
-	if( nEnable == 0 ) // Ã¢°í¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
+	if( nEnable == 0 ) // ì°½ê³ ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashErrorMsg( rmsg, charindex, 6 );
@@ -11566,7 +12089,7 @@ void do_CommandGuildMemberKickOutDateUpdate(CNetMsg::SP& msg, CDescriptor* dest)
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 
-	sql.Format("update t_characters set a_guildoutdate=%d where a_index=%d", outdate, charindex );
+	sql.Format("update t_characters set a_guildindate=%d where a_index=%d", outdate, charindex );
 	cmd.SetQuery(sql);
 	if( !cmd.Update() )
 	{
@@ -11635,7 +12158,7 @@ void do_CommandGuildMasterKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 	RefMsg(msg) >> _guildIndex
 		>> _requestChar;
 
-	// ¹ŞÀº µ¥ÀÌÅÍ °Ë»ç
+	// ë°›ì€ ë°ì´í„° ê²€ì‚¬
 	if ( _guildIndex <= 0 || _requestChar <= 0 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -11644,7 +12167,7 @@ void do_CommandGuildMasterKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå °Ë»ç
+	// ê¸¸ë“œ ê²€ì‚¬
 	CGuild* _guild = gserver.m_guildlist.findguild(_guildIndex);
 	if ( !_guild )
 	{
@@ -11654,7 +12177,7 @@ void do_CommandGuildMasterKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå »óÅÂ °Ë»ç
+	// ê¸¸ë“œ ìƒíƒœ ê²€ì‚¬
 	if ( _guild->getGuildKick()->getKickStatus() != GMKS_NORMAL )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -11682,10 +12205,10 @@ void do_CommandGuildMasterKickReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå »óÅÂ º¯°æ
+	// ê¸¸ë“œ ìƒíƒœ ë³€ê²½
 	do_GuildStatusChange(_guildIndex, GMKS_RESERVE);
 
-	// ±æµå¸¶½ºÅÍ Ãß¹æ °ü·Ã µ¥ÀÌÅÍ ¼³Á¤
+	// ê¸¸ë“œë§ˆìŠ¤í„° ì¶”ë°© ê´€ë ¨ ë°ì´í„° ì„¤ì •
 	_guild->getGuildKick()->setKickRequestTime(t);
 	_guild->getGuildKick()->setKickReuestChar(_requestChar);
 
@@ -11700,7 +12223,7 @@ void do_CommandGuildMasterKickCancelReq(CNetMsg::SP& msg, CDescriptor* dest)
 	RefMsg(msg) >> _guildIndex
 		>> _requestChar;
 
-	// ¹ŞÀº µ¥ÀÌÅÍ °Ë»ç
+	// ë°›ì€ ë°ì´í„° ê²€ì‚¬
 	if ( _guildIndex <= 0 || _requestChar <= 0 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -11709,7 +12232,7 @@ void do_CommandGuildMasterKickCancelReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå °Ë»ç
+	// ê¸¸ë“œ ê²€ì‚¬
 	CGuild* _guild = gserver.m_guildlist.findguild(_guildIndex);
 	if ( !_guild )
 	{
@@ -11719,7 +12242,7 @@ void do_CommandGuildMasterKickCancelReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå »óÅÂ °Ë»ç
+	// ê¸¸ë“œ ìƒíƒœ ê²€ì‚¬
 	if ( _guild->getGuildKick()->getKickStatus() != GMKS_RESERVE )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -11746,10 +12269,10 @@ void do_CommandGuildMasterKickCancelReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return;
 	}
 
-	// ±æµå »óÅÂ º¯°æ
+	// ê¸¸ë“œ ìƒíƒœ ë³€ê²½
 	do_GuildStatusChange(_guildIndex, GMKS_NORMAL);
 
-	// ±æµå¸¶½ºÅÍ Ãß¹æ °ü·Ã µ¥ÀÌÅÍ ¼³Á¤
+	// ê¸¸ë“œë§ˆìŠ¤í„° ì¶”ë°© ê´€ë ¨ ë°ì´í„° ì„¤ì •
 	_guild->getGuildKick()->setKickRequestTime(t);
 	_guild->getGuildKick()->setKickReuestChar(_requestChar);
 
@@ -11972,23 +12495,23 @@ void do_CommandRVRUpdate2ndGradeUser(CNetMsg::SP& msg)
 
 	for(; it_f != it_f_end; it_f++)
 	{
-		//Ä³¸¯ÅÍ¸¦ Ã£°í
+		//ìºë¦­í„°ë¥¼ ì°¾ê³ 
 		if(it_f->charIndex == p->charIndex)
 		{
-			//Ã£Àº Ä³¸¯ÅÍ°¡ ¿ÕÀÎ °æ¿ì
+			//ì°¾ì€ ìºë¦­í„°ê°€ ì™•ì¸ ê²½ìš°
 			if(it_f->isKing == true)
 			{
-				//±âÁ¸¿¡ °®°í ÀÖ´Â Æ÷ÀÎÆ®º¸´Ù Áõ°¡ÇÏ¿´À¸¸é
-				if(it_f->point < p->point)
+				//ê¸°ì¡´ì— ê°–ê³  ìˆëŠ” í¬ì¸íŠ¸ë³´ë‹¤ ì¦ê°€í•˜ì˜€ìœ¼ë©´
+				if((ULONGLONG)it_f->point < (ULONGLONG)p->point)
 				{
-					//Æ÷ÀÎÆ®¸¦ ¼¼ÆÃ
+					//í¬ì¸íŠ¸ë¥¼ ì„¸íŒ…
 					it_f->point = p->point;
 					gserver.m_syndicate.setKingPoint(p->syndicateType, it_f->point);
 				}
-				//°¨¼ÒÇÏ¿´À¸¸é
+				//ê°ì†Œí•˜ì˜€ìœ¼ë©´
 				else
 				{
-					//³ªº¸´Ù ¸¹Àº Æ÷ÀÎÆ®¸¦ °®°í ÀÖ´Â Ä³¸¯ÅÍ°¡ ÀÖ´ÂÁö °Ë»ç
+					//ë‚˜ë³´ë‹¤ ë§ì€ í¬ì¸íŠ¸ë¥¼ ê°–ê³  ìˆëŠ” ìºë¦­í„°ê°€ ìˆëŠ”ì§€ ê²€ì‚¬
 					std::vector<Syndicate2ndUser>::iterator it = vec_->begin();
 					std::vector<Syndicate2ndUser>::iterator it_end = vec_->end();
 
@@ -12002,28 +12525,28 @@ void do_CommandRVRUpdate2ndGradeUser(CNetMsg::SP& msg)
 							secound_it = it;
 					}
 
-					//ÀÖ´Â °æ¿ì
+					//ìˆëŠ” ê²½ìš°
 					if(secound_it->charIndex != it_f->charIndex)
 					{
-						//±âÁ¸ ¿ÕÀº µî±Ş ´Ù¿î ½ÃÄÑ¶ó¶ó´Â ÆĞÅ¶À» Àü´ŞÇÑ´Ù.
+						//ê¸°ì¡´ ì™•ì€ ë“±ê¸‰ ë‹¤ìš´ ì‹œì¼œë¼ë¼ëŠ” íŒ¨í‚·ì„ ì „ë‹¬í•œë‹¤.
 						it_f->isKing = false;
 						gserver.m_syndicate.sendDownGrade(p->syndicateType, it_f->charIndex, downGrade, it_f->point);
 
-						//¿Õ Á¤º¸ °»½Å
+						//ì™• ì •ë³´ ê°±ì‹ 
 						gserver.m_syndicate.setKingData(p->syndicateType, secound_it->charIndex, secound_it->point, secound_it->userName);
 						secound_it->isKing = true;
 						gserver.m_syndicate.sendKingInfo();
 					}
-					//¾ø´Â °æ¿ì
+					//ì—†ëŠ” ê²½ìš°
 					else
 					{
-						//µî±Ş ´Ù¿îÇÑ Ä³¸¯ÅÍÀÇ µî±ŞÀÌ °øÀÛÀÌ ¾Æ´Ñ°æ¿ì¿¡´Â Á¦°Å
+						//ë“±ê¸‰ ë‹¤ìš´í•œ ìºë¦­í„°ì˜ ë“±ê¸‰ì´ ê³µì‘ì´ ì•„ë‹Œê²½ìš°ì—ëŠ” ì œê±°
 						int grade = SYNDICATE::getSyndicateGrade(p->syndicateType, p->point);
 						if( (p->syndicateType == SYNDICATE::eSYNDICATE_DEALERMOON && grade < SYNDICATE::MAGUS) ||
 							(p->syndicateType == SYNDICATE::eSYNDICATE_KAILUX && grade < SYNDICATE::DUKA) )
 						{
 							gserver.m_syndicate.sendDownGrade(p->syndicateType, it_f->charIndex, grade, p->point);
-							//°øÀÛ ¸®½ºÆ®¿¡¼­ Á¦°Å
+							//ê³µì‘ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
 							vec_->erase(it_f);
 							gserver.m_syndicate.setKingData(p->syndicateType, 0, 0, NULL);
 							gserver.m_syndicate.sendKingInfo();
@@ -12031,17 +12554,17 @@ void do_CommandRVRUpdate2ndGradeUser(CNetMsg::SP& msg)
 						}
 						else
 						{
-							//Æ÷ÀÎÆ® ¾÷µ¥ÀÌÆ®
+							//í¬ì¸íŠ¸ ì—…ë°ì´íŠ¸
 							it_f->point = p->point;
 							gserver.m_syndicate.setKingPoint(p->syndicateType, it_f->point);
 						}						
 					}
 				}
 			}
-			//Ã£Àº Ä³¸¯ÅÍ°¡ ¿ÕÀÌ ¾Æ´Ñ °æ¿ì
+			//ì°¾ì€ ìºë¦­í„°ê°€ ì™•ì´ ì•„ë‹Œ ê²½ìš°
 			else
 			{
-				//³» Æ÷ÀÎÆ®°¡ ¿Õº¸´Ù ¸¹´Ù
+				//ë‚´ í¬ì¸íŠ¸ê°€ ì™•ë³´ë‹¤ ë§ë‹¤
 				if(gserver.m_syndicate.checkKing(p->syndicateType, p->point) == true)
 				{
 					std::vector<Syndicate2ndUser>::iterator it = vec_->begin();
@@ -12049,25 +12572,25 @@ void do_CommandRVRUpdate2ndGradeUser(CNetMsg::SP& msg)
 
 					for(; it != it_end; it++)
 					{
-						//¿ÕÀ» Ã£°í
+						//ì™•ì„ ì°¾ê³ 
 						if(it->charIndex == gserver.m_syndicate.getKingIndex(p->syndicateType))
 						{
-							//µî±Ş ´Ù¿î ½ÃÄÑ¶ó¶ó´Â ÆĞÅ¶À» Àü´ŞÇÑ´Ù.
+							//ë“±ê¸‰ ë‹¤ìš´ ì‹œì¼œë¼ë¼ëŠ” íŒ¨í‚·ì„ ì „ë‹¬í•œë‹¤.
 							it->isKing = false;
 							gserver.m_syndicate.sendDownGrade(p->syndicateType, it->charIndex, downGrade, it->point);
 							break;
 						}
 					}
 
-					//¿Õ Á¤º¸ °»½Å
+					//ì™• ì •ë³´ ê°±ì‹ 
 					gserver.m_syndicate.setKingData(p->syndicateType, p->charIndex, p->point, it_f->userName);				
 					it_f->isKing = true;
 					gserver.m_syndicate.sendKingInfo();
 				}
-				//Àû´Ù
+				//ì ë‹¤
 				else
 				{
-					//³» Æ÷ÀÎÆ® Á¤º¸¸¸ ¾÷µ¥ÀÌÆ® ½ÃÄÑÁØ´Ù.
+					//ë‚´ í¬ì¸íŠ¸ ì •ë³´ë§Œ ì—…ë°ì´íŠ¸ ì‹œì¼œì¤€ë‹¤.
 					it_f->point = p->point;
 				}
 			}

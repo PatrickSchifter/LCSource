@@ -19,7 +19,7 @@ void CMeracCastle::SetNextWarTime(int nextWarTime)
 	time_t curtime;
 	time(&curtime);
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ÀÌ ÇöÀç ½Ã°£ÀÌÈÄÀÌ¸é ±×´ë·Î Àû¿ë
+	// ê³µì„± ì‹œì‘ ì‹œê°„ì´ í˜„ì¬ ì‹œê°„ì´í›„ì´ë©´ ê·¸ëŒ€ë¡œ ì ìš©
 	if (GetState() == WCSF_NORMAL && nextWarTime != 0)
 	{
 		if (nextWarTime > curtime)
@@ -36,16 +36,16 @@ void CMeracCastle::SetNextWarTime(int nextWarTime)
 		}
 	}
 
-	// °ø¼º ½Ã°£À» ±âº» °ªÀ¸·Î ¼³Á¤
-	// ÇöÀç ¿äÀÏÀ» ±¸ÇÔ
+	// ê³µì„± ì‹œê°„ì„ ê¸°ë³¸ ê°’ìœ¼ë¡œ ì„¤ì •
+	// í˜„ì¬ ìš”ì¼ì„ êµ¬í•¨
 	struct tm curtm = NOW();
 
-	// ´ÙÀ½ Åä¿äÀÏÀ» ±¸ÇÔ
+	// ë‹¤ìŒ í† ìš”ì¼ì„ êµ¬í•¨
 	int next = 6 - curtm.tm_wday;
 	if (next <= 0)
 		next += 7;
 
-	// ´ÙÀ½ Åä¿äÀÏ 20½Ã¿¡ ÇØ´çÇÏ´Â time_t °ªÀ» ±¸ÇÔ
+	// ë‹¤ìŒ í† ìš”ì¼ 20ì‹œì— í•´ë‹¹í•˜ëŠ” time_t ê°’ì„ êµ¬í•¨
 	struct tm nexttm = curtm;
 #ifdef LC_TLD
 	nexttm.tm_hour = 19;
@@ -58,7 +58,7 @@ void CMeracCastle::SetNextWarTime(int nextWarTime)
 	nexttm.tm_isdst = -1;
 	time_t nexttime = mktime(&nexttm);
 
-	// ÇöÀç ½Ã°£º¸´Ù ÀÛÀ¸¸é ´ÙÀ½ÁÖ·Î
+	// í˜„ì¬ ì‹œê°„ë³´ë‹¤ ì‘ìœ¼ë©´ ë‹¤ìŒì£¼ë¡œ
 	if (nexttime < curtime)
 	{
 		nexttm.tm_mday += 7;
@@ -86,7 +86,7 @@ bool CMeracCastle::IsJoinTime()
 	tmJoinTime.tm_isdst = -1;
 	time_t jointime = mktime(&tmJoinTime);
 
-	// ¸¶Áö¸· °ø¼º½Ã°£°ú ºñ±³
+	// ë§ˆì§€ë§‰ ê³µì„±ì‹œê°„ê³¼ ë¹„êµ
 	time_t curtime;
 	time(&curtime);
 	if (m_lastWarTime < curtime && curtime < jointime)
@@ -97,18 +97,18 @@ bool CMeracCastle::IsJoinTime()
 
 void CMeracCastle::GetJoinTime(struct tm* joinTime, bool bHumanable)
 {
-	// ´ÙÀ½ °ø¼ºÀ» ±¸ÇÏ°í
+	// ë‹¤ìŒ ê³µì„±ì„ êµ¬í•˜ê³ 
 	struct tm tmNext;
 	GetNextWarTime(&tmNext, false);
 
-	// ¿ù¿äÀÏ ±¸ÇÏ±â
+	// ì›”ìš”ì¼ êµ¬í•˜ê¸°
 	int nDay = tmNext.tm_wday;
 	if (nDay == 0)
 		nDay = 7;
 	nDay -= 1;
 
-	// ´ÙÀ½ °ø¼º¿¡¼­ nDayÀÏÀ» »©°í
-	// ±× ³¯ 20½Ã·Î ¼³Á¤ : 7½Ã
+	// ë‹¤ìŒ ê³µì„±ì—ì„œ nDayì¼ì„ ë¹¼ê³ 
+	// ê·¸ ë‚  20ì‹œë¡œ ì„¤ì • : 7ì‹œ
 #ifdef LC_TLD
 	tmNext.tm_hour = 19;
 #else
@@ -187,22 +187,22 @@ void CMeracCastle::SetGateNPC(CNPC* npc)
 		{
 		case 222:
 			i = 0;
-			break;		// ÁÂÃø¼º¹®1
+			break;		// ì¢Œì¸¡ì„±ë¬¸1
 		case 223:
 			i = 1;
-			break;		// ÁÂÃø¼º¹®2
+			break;		// ì¢Œì¸¡ì„±ë¬¸2
 		case 227:
 			i = 2;
-			break;		// ¿ìÃø¼º¹®1
+			break;		// ìš°ì¸¡ì„±ë¬¸1
 		case 228:
 			i = 3;
-			break;		// ¿ìÃø¼º¹®2
+			break;		// ìš°ì¸¡ì„±ë¬¸2
 		case 229:
 			i = 4;
-			break;		// Áß¾Ó¼º¹®1
+			break;		// ì¤‘ì•™ì„±ë¬¸1
 		case 230:
 			i = 5;
-			break;		// Áß¾Ó¼º¹®2
+			break;		// ì¤‘ì•™ì„±ë¬¸2
 		default:
 			return ;
 		}
@@ -225,13 +225,13 @@ void CMeracCastle::UpdateGateState(CNPC* npc)
 
 bool CMeracCastle::IsOpenGate()
 {
-	// ¿ŞÂÊ
+	// ì™¼ìª½
 	int left = (1 << 0) | (1 << 1);
 
-	// ¿À¸¥ÂÊ
+	// ì˜¤ë¥¸ìª½
 	int right = (1 << 2) | (1 << 3);
 
-	// Áß¾Ó
+	// ì¤‘ì•™
 	int center = (1 << 4) | (1 << 5);
 
 	if (GetGateState(center) != center)
@@ -252,13 +252,13 @@ bool CMeracCastle::SetNextWarTime(int wday, int hour)
 	int maxHour = -1;
 	switch (wday)
 	{
-	case 0:		// ÀÏ¿äÀÏ : 13 ~ 23
+	case 0:		// ì¼ìš”ì¼ : 13 ~ 23
 		minHour = 13;
 		maxHour = 23;
 		break;
 
-	case 6:		// Åä¿äÀÏ : 18 ~ 23
-#ifdef LC_USA	// ¹Ì±¹ 08 ~ 16
+	case 6:		// í† ìš”ì¼ : 18 ~ 23
+#ifdef LC_USA	// ë¯¸êµ­ 08 ~ 16
 		minHour = 8;
 		maxHour = 16;
 		break;
@@ -277,14 +277,14 @@ bool CMeracCastle::SetNextWarTime(int wday, int hour)
 	time(&curtime);
 	struct tm curtm = NOW();
 
-	// ´ÙÀ½ ÇØ´ç ¿äÀÏ±îÁö Â÷ÀÌ¸¦ ±¸ÇÔ
+	// ë‹¤ìŒ í•´ë‹¹ ìš”ì¼ê¹Œì§€ ì°¨ì´ë¥¼ êµ¬í•¨
 	int next = wday - curtm.tm_wday;
 	if (next <= 0)
 		next += 7;
 	if (next <= 4)
 		next += 7;
 
-	// ±×³¯ ÇØ´ç ½Ã°£ÀÇ time_t °ªÀ» ±¸ÇÔ
+	// ê·¸ë‚  í•´ë‹¹ ì‹œê°„ì˜ time_t ê°’ì„ êµ¬í•¨
 	struct tm nexttm = curtm;
 	nexttm.tm_hour = hour;
 	nexttm.tm_min = 0;
@@ -293,7 +293,7 @@ bool CMeracCastle::SetNextWarTime(int wday, int hour)
 	nexttm.tm_isdst = -1;
 	time_t nexttime = mktime(&nexttm);
 
-	// ÇöÀç ½Ã°£º¸´Ù ÀÛÀ¸¸é
+	// í˜„ì¬ ì‹œê°„ë³´ë‹¤ ì‘ìœ¼ë©´
 	if (nexttime < curtime)
 		return false;
 
@@ -476,7 +476,7 @@ void CMeracCastle::InitRegenPosition()
 			p = p->GetNext();
 		}
 
-		// ·£´ıÀ¸·Î ¼¯±â
+		// ëœë¤ìœ¼ë¡œ ì„ê¸°
 		for (i = 0; i < m_countAttackGuild; i++)
 		{
 			int j = GetRandom(0, m_countAttackGuild - 1);
@@ -485,7 +485,7 @@ void CMeracCastle::InitRegenPosition()
 			tmp[j] = s;
 		}
 
-		// ¸®Á¨ Áö¿ª ÃÖ´ë 8°³
+		// ë¦¬ì   ì§€ì—­ ìµœëŒ€ 8ê°œ
 		m_nRegenPoint = (m_countAttackGuild < 8) ? m_countAttackGuild : 8;
 		m_posRegenPoint = new int[m_nRegenPoint];
 

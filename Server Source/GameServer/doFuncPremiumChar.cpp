@@ -21,7 +21,7 @@ void do_PremiumChar_Use_Item(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ Ã£±â
+	// ì•„ì´í…œ ì°¾ê¸°
 	CItem* pItem = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 	if (pItem == NULL)
 	{
@@ -39,7 +39,7 @@ void do_PremiumChar_Use_Item(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ½ÇÁ¦ »ç¿ë
+	// ì‹¤ì œ ì‚¬ìš©
 	if (ch->m_premiumChar.isActive())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -77,7 +77,7 @@ void do_PremiumChar_Use_Item(CPC* ch, CNetMsg::SP& msg)
 
 	ch->m_premiumChar.setActive();
 
-	// ¾ÆÀÌÅÛ Áö¿ì±â
+	// ì•„ì´í…œ ì§€ìš°ê¸°
 	ch->m_inventory.decreaseItemCount(pItem, 1);
 
 	ch->m_premiumChar.saveNow();
@@ -87,7 +87,7 @@ void do_PremiumChar_Use_Item(CPC* ch, CNetMsg::SP& msg)
 	ch->SendStatus();
 }
 
-//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : Ä£±¸ÇÑÅ× Á¡ÇÁ
+//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ì¹œêµ¬í•œí…Œ ì í”„
 extern bool isPossibleWarp(CPC* fromChar, CPC* toChar);		// doFuncWarp.cpp
 
 void do_PremiumChar_Jump(CPC* ch, CNetMsg::SP& msg)
@@ -130,7 +130,7 @@ void do_PremiumChar_Jump(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Á¡ÇÁÇÒ ´ë»óÀÌ Ä£±¸ÀÎ°¡?
+	// ì í”„í•  ëŒ€ìƒì´ ì¹œêµ¬ì¸ê°€?
 	CFriendMember* pFriend = ch->m_Friend->FindFriendMember(pToChar->m_index);
 	if (pFriend == NULL)
 	{
@@ -141,7 +141,7 @@ void do_PremiumChar_Jump(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ä£±¸ÀÇ »óÅÂ°¡ offlineÀÎ°¡?
+	// ì¹œêµ¬ì˜ ìƒíƒœê°€ offlineì¸ê°€?
 	if (pFriend->GetCondition() == MSG_FRIEND_CONDITION_OFFLINE)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -151,7 +151,7 @@ void do_PremiumChar_Jump(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ä£±¸ÇÑÅ× Á¡ÇÁÇÒ¼ö ÀÖ´Â°¡? item 857°ú µ¿ÀÏÇÑ Á¶°ÇÀ¸·Î °Ë»ç (ÆÐÅ¶ MSG_WARP)
+	// ì¹œêµ¬í•œí…Œ ì í”„í• ìˆ˜ ìžˆëŠ”ê°€? item 857ê³¼ ë™ì¼í•œ ì¡°ê±´ìœ¼ë¡œ ê²€ì‚¬ (íŒ¨í‚· MSG_WARP)
 	if (isPossibleWarp(ch, pToChar) == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -161,7 +161,7 @@ void do_PremiumChar_Jump(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ´ë»óÀ¸·Î Á¡ÇÎÇÏ±â
+	// ëŒ€ìƒìœ¼ë¡œ ì í•‘í•˜ê¸°
 	if(ch->m_pZone->m_index != pToChar->m_pZone->m_index)
 		ch->SetPlayerState(PLAYER_STATE_CASH_ZONE_MOVE);
 

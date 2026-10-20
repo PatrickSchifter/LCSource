@@ -12,6 +12,7 @@
 #include "../ShareLib/DBCmd.h"
 #include "DratanCastle.h"
 #include "Party_recall_manager.h"
+#include "GuildBattleManager.h"
 #include "../ShareLib/packetType/ptype_old_do_item.h"
 #include "../ShareLib/packetType/ptype_syndicate.h"
 #include "../ShareLib/packetType/ptype_old_do_changejob.h"
@@ -19,11 +20,13 @@
 #include "../ShareLib/packetType/ptype_server_to_server_kick.h"
 #include "../ShareLib/packetType/ptype_old_do_friend.h"
 #include "../ShareLib/packetType/ptype_old_do_guild.h"
+#include "../ShareLib/packetType/ptype_guild_battle.h"
 #include "DescManager.h"
 
 #ifdef PREMIUM_CHAR
 #include "../ShareLib/packetType/ptype_premium_char.h"
 #endif
+#include "../ShareLib/Config.h"
 
 void ProcHelperWhisperReq(CNetMsg::SP& msg, int seq, int server, int subno, int zone);
 void ProcHelperWhisperRep(CNetMsg::SP& msg, int seq, int server, int subno, int zone);
@@ -152,6 +155,9 @@ void ProcHelperNewGuildNotice( CNetMsg::SP& msg );
 void ProcHelperNewGuildMemberPointSaveMsg( CNetMsg::SP& msg );
 void ProcHelperNewGuildSkillLearnSendMember( CNetMsg::SP& msg );
 
+void ProcHelperGuildContributeSet(CNetMsg::SP& msg);
+void ProcHelperGuildContributeSetAll(CNetMsg::SP& msg);
+
 void ProcHelperHalloween2007( CNetMsg::SP& msg );
 
 void ProcHelperDVDRateChange(CNetMsg::SP& msg);
@@ -251,6 +257,9 @@ void ProcHelperKickUserAnswer(CNetMsg::SP& msg);
 void ProcHelperKickUserByCharIndexAnswer(CNetMsg::SP& msg);
 void ProcHelperKickUserByUserIndexAnswer(CNetMsg::SP& msg);
 void ProcHelperKickUserByUserIdAnswer(CNetMsg::SP& msg);
+
+void ProcHelperGuildBattleChallenge(CNetMsg::SP& msg);
+void ProcHelperGuildBattleReg(CNetMsg::SP& msg);
 
 
 void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
@@ -386,7 +395,7 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 				ProcHelperGuildBreakUpNotify(msg);
 				break;
 
-			case MSG_HELPER_GUILD_MEMBER_ADD_NTF:		// ±æµå ¸â¹ö Ãß°¡ ¾Ë¸²
+			case MSG_HELPER_GUILD_MEMBER_ADD_NTF:		// ê¸¸ë“œ ë©¤ë²„ ì¶”ê°€ ì•Œë¦¼
 				ProcHelperGuildMemberAddNotify(msg);
 				break;
 
@@ -478,7 +487,7 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 				break;
 
 ////////////////////////
-// pd4 ÇïÆÛ rep Ã³¸® : bw
+// pd4 í—¬í¼ rep ì²˜ë¦¬ : bw
 
 			case MSG_HELPER_PD4_RANK_VIEW_REP:
 				ProcHelperPD4RankViewRep(msg);
@@ -493,7 +502,7 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 				ProcHelperNameChange(msg);
 				break;
 
-// ¾Ö¿Ïµ¿¹°
+// ì• ì™„ë™ë¬¼
 			case MSG_HELPER_PET_CREATE_REP:
 				ProcHelperPetCreateRep(msg);
 				break;
@@ -580,6 +589,14 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 				break;
 			case MSG_HELPER_SAVE_GUILD_MEMBER_POINT:
 				ProcHelperNewGuildMemberPointSaveMsg( msg );
+				break;
+
+			case MSG_HELPER_GUILD_CONTRIBUTE_SET_REP:
+				ProcHelperGuildContributeSet(msg);
+				break;
+
+			case MSG_HELPER_GUILD_CONTRIBUTE_SETALL_REP:
+				ProcHelperGuildContributeSetAll(msg);
 				break;
 
 			case MSG_HELPER_GUILD_SKILL_LEARN_SEND_MEMBER:
@@ -970,6 +987,14 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 			case MSG_SUB_SERVERTOSERVER_KICK_BY_USER_ID_ANSER:
 				ProcHelperKickUserByUserIdAnswer(msg);
 				break;
+			
+			case MSG_SUB_GUILD_BATTLE_REG_TO_HELPER:
+				ProcHelperGuildBattleReg(msg);
+				break;
+
+			case MSG_SUB_GUILD_BATTLE_CHALLENGE_TO_HELPER:
+				ProcHelperGuildBattleChallenge(msg);
+				break;
 
 			default:
 				LOG_FATAL("not found subtype[%d]", pType->subType);
@@ -997,7 +1022,7 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 				{
 					PCManager::instance()->resetPremiumCharJumpCount();
 
-					// Helper·Î ºÎÅÍ µû·Î ¹ŞÁö ¾Ê°í, °ÔÀÓ¼­¹ö°¡ ¹Ù·Î Ã³¸®ÇÔ
+					// Helperë¡œ ë¶€í„° ë”°ë¡œ ë°›ì§€ ì•Šê³ , ê²Œì„ì„œë²„ê°€ ë°”ë¡œ ì²˜ë¦¬í•¨
 					PremiumChar::setResetJumpCountTime(gserver->getNowSecond());
 				}
 				break;
@@ -1016,7 +1041,7 @@ void CServer::ProcessHelperMessage(CNetMsg::SP& msg)
 
 void ProcHelperNameChange(CNetMsg::SP& msg)
 {
-	// TODO : BS : ±æµå¿Í Ä³¸¯ÅÍ¸íÀÇ ±æÀÌ°¡ ´Ş¶óÁö¸é ¹Ù²ã¾ßÇÔ
+	// TODO : BS : ê¸¸ë“œì™€ ìºë¦­í„°ëª…ì˜ ê¸¸ì´ê°€ ë‹¬ë¼ì§€ë©´ ë°”ê¿”ì•¼í•¨
 	char bguild;
 	char error;
 	CLCString name(MAX_CHAR_NAME_LENGTH + 1);
@@ -1043,9 +1068,9 @@ void ProcHelperNameChange(CNetMsg::SP& msg)
 
 		if(error == MSG_EX_NAMECHANGE_ERROR_SUCCESS)
 		{
-			// ¾ÆÀÌÅÛ »èÁ¦ / ¼­¹ö º¯¼ö º¯°æ // ±æµå °³¸íÄ«µå »èÁ¦
+			// ì•„ì´í…œ ì‚­ì œ / ì„œë²„ ë³€ìˆ˜ ë³€ê²½ // ê¸¸ë“œ ê°œëª…ì¹´ë“œ ì‚­ì œ
 
-			// ¾ÆÀÌÅÛ °Ë»ç
+			// ì•„ì´í…œ ê²€ì‚¬
 			CItem* item = pc->m_inventory.FindByDBIndex(843, 0, 0);
 			if (item == NULL)
 			{
@@ -1056,7 +1081,7 @@ void ProcHelperNameChange(CNetMsg::SP& msg)
 				}
 
 				{
-					//·Ñ¹é
+					//ë¡¤ë°±
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperNameChangeReqMsg(rmsg, 3, pc->m_guildInfo->guild()->index(), pc->m_guildInfo->guild()->name());
 					SEND_Q(rmsg, gserver->m_helper);
@@ -1119,12 +1144,12 @@ void ProcHelperNameChange(CNetMsg::SP& msg)
 					<< 842 << end;
 			return;
 		}
-		// ¿¡·¯ÄÚµå¿¡ µû¸¥ ¸Ş¼¼Áö ÀÛ¼º
+		// ì—ëŸ¬ì½”ë“œì— ë”°ë¥¸ ë©”ì„¸ì§€ ì‘ì„±
 
 		if(error == MSG_EX_NAMECHANGE_ERROR_SUCCESS)
 		{
-			// ¾ÆÀÌÅÛ »èÁ¦/ ¼­¹ö º¯¼ö º¯°æ // °³¸íÄ«µå »èÁ¦
-			// ¾ÆÀÌÅÛ °Ë»ç
+			// ì•„ì´í…œ ì‚­ì œ/ ì„œë²„ ë³€ìˆ˜ ë³€ê²½ // ê°œëª…ì¹´ë“œ ì‚­ì œ
+			// ì•„ì´í…œ ê²€ì‚¬
 			CItem* item = pc->m_inventory.FindByDBIndex(842, 0, 0);
 			if (item == NULL)
 			{
@@ -1140,7 +1165,7 @@ void ProcHelperNameChange(CNetMsg::SP& msg)
 				}
 
 				{
-					//·Ñ¹é
+					//ë¡¤ë°±
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperNameChangeReqMsg(rmsg, 4, pc->m_index, pc->GetName());
 					SEND_Q(rmsg, gserver->m_helper);
@@ -1180,7 +1205,7 @@ void ProcHelperNameChange(CNetMsg::SP& msg)
 void ProcHelperPD4RankViewRep(CNetMsg::SP& msg)
 {
 	//////////////////////////////////
-	// ¹ŞÀº µ¥ÀÌÅÍ¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³¿ : BW
+	// ë°›ì€ ë°ì´í„°ë¥¼ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ëƒ„ : BW
 	//MSG_HELPER_PD4_RANK_VIEW_REQ,		// : charindex(n) charjob(c)
 	//MSG_HELPER_PD4_RANK_VIEW_REP : charindex(n) multicount(c), charname(str), bclear(c), deadmon(n), ctime(ll);
 	int charindex;
@@ -1239,12 +1264,12 @@ void ProcHelperPD4RankViewRep(CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	//MSG_QUEST_PD4_RANK_VIEW_REP,			// ·©Å© ºäÀÀ´ä	: multicount(c) charname(str) bclear(c) deadmon(n) time(ll)
+	//MSG_QUEST_PD4_RANK_VIEW_REP,			// ë­í¬ ë·°ì‘ë‹µ	: multicount(c) charname(str) bclear(c) deadmon(n) time(ll)
 }
 void ProcHelperPD4RewardViewRep(CNetMsg::SP& msg)
 {
 	//////////////////////////////////
-	// ¹ŞÀº µ¥ÀÌÅÍ¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³¿
+	// ë°›ì€ ë°ì´í„°ë¥¼ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ëƒ„
 	//MSG_HELPER_PD4_REWARD_VIEW_REQ,		// : charindex(n) charjob(c)
 	//MSG_HELPER_PD4_REWARD_VIEW_REP : charindex(n) multicount(c), charname(str) breward(c)
 	int charindex;
@@ -1312,12 +1337,12 @@ void ProcHelperPD4RewardViewRep(CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	//MSG_QUEST_PD4_RANK_REWARD_RANK_REP,	// º¸»ó ºäÀÀ´ä	: multicount(c) charname(str) itemindex(n) itemnum(c) breward(c)
+	//MSG_QUEST_PD4_RANK_REWARD_RANK_REP,	// ë³´ìƒ ë·°ì‘ë‹µ	: multicount(c) charname(str) itemindex(n) itemnum(c) breward(c)
 }
 void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 {
 	//////////////////////////////////
-	// ¹ŞÀº µ¥ÀÌÅÍ¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³¿
+	// ë°›ì€ ë°ì´í„°ë¥¼ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ëƒ„
 	//MSG_HELPER_PD4_REWARD_REQ : charindex(n)
 	//MSG_HELPER_PD4_REWARD_REP : charindex(n) charrank(c) breward(c)
 	int itemindex[5] = { 85, 85, 85, 673, 673 };
@@ -1353,7 +1378,7 @@ void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 	if(!charrank)
 	{
 		//////////////////////////
-		// ·©Ä¿°¡ ¾Æ´Ï´Ù
+		// ë­ì»¤ê°€ ì•„ë‹ˆë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		QuestPD4ErrorMsg(rmsg, MSG_QUEST_ERR_REWARD_NOT_RANK);
 		GAMELOG << init("QuestPD4Error Reward Not Rank", ch)
@@ -1366,7 +1391,7 @@ void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 	if(breward)
 	{
 		////////////////////////////////////////////
-		// ÀÌ¹Ì º¸»ó ¹Ş¾ÒÀ¸
+		// ì´ë¯¸ ë³´ìƒ ë°›ì•˜ìœ¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		QuestPD4ErrorMsg(rmsg, MSG_QUEST_ERR_BREWARD);
 		GAMELOG << init("QuestPD4Error Reward Not Rank", ch)
@@ -1381,7 +1406,7 @@ void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 	if (!item)
 	{
 		//////////////////////////////
-		// item »ı¼º ½ÇÆĞ
+		// item ìƒì„± ì‹¤íŒ¨
 		return;
 	}
 
@@ -1392,19 +1417,19 @@ void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 
 	if (ch->m_inventory.addItem(item) == false)
 	{
-		// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+		// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 		// Quest Error Log
 		GAMELOG << init("QUEST ERROR", ch)
 				<< 105 << delim
 				<< (int)MSG_QUEST_ERR_PRIZE_FULL
 				<< end;
 
-		// ÀÎº¥Åä¸® °¡µæÂü
+		// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
 		item = ch->m_pArea->DropItem(item, ch);
 		if (!item)
 		{
 			/////////////////
-			// item drop ½ÇÆĞ
+			// item drop ì‹¤íŒ¨
 			return;
 		}
 
@@ -1445,7 +1470,7 @@ void ProcHelperPD4RewardRep(CNetMsg::SP& msg)
 			<< itemnum[charrank-1]
 			<< end;
 
-	//MSG_QUEST_PD4_REWARD_REP,					// º¸»ó ¿äÃ» : charindex(n)
+	//MSG_QUEST_PD4_REWARD_REP,					// ë³´ìƒ ìš”ì²­ : charindex(n)
 }
 
 void ProcHelperWhisperReq(CNetMsg::SP& msg, int seq, int server, int subno, int zone)
@@ -1461,7 +1486,7 @@ void ProcHelperWhisperReq(CNetMsg::SP& msg, int seq, int server, int subno, int 
 	CPC* receiver = PCManager::instance()->getPlayerByName(rname, true);
 	if (receiver == NULL)
 	{
-		// ¼ö½ÅÀÚ°¡ ¾øÀ» ¶§
+		// ìˆ˜ì‹ ìê°€ ì—†ì„ ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperRepWhisperNotFoundMsg(rmsg, seq, server, subno, zone, sidx, sname);
 		SEND_Q(rmsg, gserver->m_helper);
@@ -1469,14 +1494,14 @@ void ProcHelperWhisperReq(CNetMsg::SP& msg, int seq, int server, int subno, int 
 	else
 	{
 		{
-			// ¼ö½ÅÀÚ°¡ ÀÖÀ» ¶§
+			// ìˆ˜ì‹ ìê°€ ìˆì„ ë•Œ
 			CNetMsg::SP rmsg(new CNetMsg);
 			ChatWhisperMsg(rmsg, sidx, sname, receiver->GetName(), chat);
 			SEND_Q(rmsg, receiver->m_desc);
 		}
 
 		{
-			// ¸Ş½ÅÀú¿¡ ÀÀ´ä º¸³»±â
+			// ë©”ì‹ ì €ì— ì‘ë‹µ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperRepWhisperRepMsg(rmsg, seq, server, subno, zone, sidx, sname, receiver->GetName() , chat);
 			SEND_Q(rmsg, gserver->m_helper);
@@ -1497,7 +1522,7 @@ void ProcHelperWhisperRep(CNetMsg::SP& msg, int seq, int server, int subno, int 
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´
 		CNetMsg::SP rmsg(new CNetMsg);
 		ChatWhisperMsg(rmsg, sidx, sname, rname, chat);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1513,7 +1538,7 @@ void ProcHelperWhisperNotfound(CNetMsg::SP& msg, int seq, int server, int subno,
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é ¿À·ù ¾Ë¸²
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´ ì˜¤ë¥˜ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysWhisperNotFoundMsg(rmsg);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1569,7 +1594,7 @@ void ProcHelperGuildCreateNotify(CNetMsg::SP& msg)
 		>> bossindex
 		>> bossname;
 
-	CGuild* guild = gserver->m_guildlist.create(guildindex, guildname, bossindex, bossname);
+	CGuild* guild = gserver->m_guildlist.create(guildindex, guildname, bossindex, bossname, gserver->m_nowseconds, 0, 0, 0);
 	if (!guild)
 	{
 		return ;
@@ -1581,7 +1606,7 @@ void ProcHelperGuildCreateNotify(CNetMsg::SP& msg)
 	guild->guildPointRanking( 0 );
 	gserver->m_guildlist.add(guild);
 
-	// º¸½º°¡ ÀÖÀ¸¸é ¾Ë¸®±â
+	// ë³´ìŠ¤ê°€ ìˆìœ¼ë©´ ì•Œë¦¬ê¸°
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(bossindex);
 	if (pc)
 	{
@@ -1659,8 +1684,8 @@ void ProcHelperGuildOnlineNotify(CNetMsg::SP& msg)
 		}
 	}
 
-	// ±æµå¿ø¿¡°Ô ¾Ë·ÁÁÖ±â
-	// TODO : GUILD : Æ®¸® ±¸Á¶¿¡ Àü´ŞÇÏ°Ô µÉ °æ¿ì º¯°æ
+	// ê¸¸ë“œì›ì—ê²Œ ì•Œë ¤ì£¼ê¸°
+	// TODO : GUILD : íŠ¸ë¦¬ êµ¬ì¡°ì— ì „ë‹¬í•˜ê²Œ ë  ê²½ìš° ë³€ê²½
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildOnlineMsg(rmsg, member);
@@ -1713,13 +1738,13 @@ void ProcHelperGuildMemberList(CNetMsg::SP& msg)
 
 		switch( pos )
 		{
-		case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// µ¹°İÁ¶ ´ëÀå
-		case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// Áö¿øÁ¶ ´ëÀå
-		case MSG_GUILD_POSITION_RECON_CAPTAIN:			// Á¤ÂûÁ¶ ´ëÀå
-		case MSG_GUILD_POSITION_RUSH_MEMBER:				// µ¹°İÁ¶¿ø
-		case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// Áö¿øÁ¶¿ø
-		case MSG_GUILD_POSITION_RECON_MEMBER:			// Á¤ÂûÁ¶¿ø
-		case MSG_GUILD_POSITION_MEMBER:				// ÀÏ¹İ ±æµå¿ø
+		case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// ëŒê²©ì¡° ëŒ€ì¥
+		case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// ì§€ì›ì¡° ëŒ€ì¥
+		case MSG_GUILD_POSITION_RECON_CAPTAIN:			// ì •ì°°ì¡° ëŒ€ì¥
+		case MSG_GUILD_POSITION_RUSH_MEMBER:				// ëŒê²©ì¡°ì›
+		case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// ì§€ì›ì¡°ì›
+		case MSG_GUILD_POSITION_RECON_MEMBER:			// ì •ì°°ì¡°ì›
+		case MSG_GUILD_POSITION_MEMBER:				// ì¼ë°˜ ê¸¸ë“œì›
 			member->pos(pos);
 			break;
 		}
@@ -1820,7 +1845,7 @@ void ProcHelperGuildLevelUpRep(CNetMsg::SP& msg)
 			else
 				needlevel = GUILD_LEVEL7_NEED_LEVEL + 50;
 
-			int	gap = guild->level() - GUILD_EXTEND_BASE_LEVEL;  // ÀÌ¹Ì·¾¾÷ÇÑ »óÅÂ
+			int	gap = guild->level() - GUILD_EXTEND_BASE_LEVEL;  // ì´ë¯¸ë ™ì—…í•œ ìƒíƒœ
 			if( gap >= 0 )
 			{
 				needmoney	= (LONGLONG)( GUILD_LEVEL7_NEED_MONEY * pow(1.09, gap) );
@@ -1928,7 +1953,7 @@ void ProcHelperGuildLevelUpNotify(CNetMsg::SP& msg)
 	{
 		guild->level(guildlevel);
 
-		// TODO : GUILD : Æ®¸® ±¸¼º½Ã ÀüÃ¼¿¡ ¾Ë¸®±â
+		// TODO : GUILD : íŠ¸ë¦¬ êµ¬ì„±ì‹œ ì „ì²´ì— ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildLevelInfoMsg(rmsg, guildindex, guildlevel);
 		guild->SendToAll(rmsg);
@@ -1967,10 +1992,10 @@ void ProcHelperGuildBreakUpNotify(CNetMsg::SP& msg)
 	int guildindex;
 	RefMsg(msg) >> guildindex;
 
-	// ±æµå »èÁ¦½Ã ¼ÒÀ¯ ¼º Á¤º¸ ÃÊ±âÈ­ ¹× ¿ëº´½ÅÃ» ÃÊ±âÈ­
+	// ê¸¸ë“œ ì‚­ì œì‹œ ì†Œìœ  ì„± ì •ë³´ ì´ˆê¸°í™” ë° ìš©ë³‘ì‹ ì²­ ì´ˆê¸°í™”
 	CWarCastle::DeleteGuild(guildindex);
 
-	// TODO : GUILD : Æ®¸® ¾È¿¡ ¸ğµÎ ¾Ë¸®±â
+	// TODO : GUILD : íŠ¸ë¦¬ ì•ˆì— ëª¨ë‘ ì•Œë¦¬ê¸°
 
 	CGuild* guild = gserver->m_guildlist.findguild(guildindex);
 	if (!guild)
@@ -1997,8 +2022,8 @@ void ProcHelperGuildBreakUpNotify(CNetMsg::SP& msg)
 		if (guild->m_member[i] != NULL)
 		{
 			if (guild->m_member[i]->GetPC() != NULL
-				&& guild->m_member[i]->online() == 1				// ¿Â¶óÀÎ »óÅÂÀÎ °æ¿ì
-				&& guild->m_member[i]->GetPC()->m_desc != NULL)	// µğ½ºÅ©¸³ÅÍ°¡ Á¸Àç ÇÏ´Â °æ¿ì
+				&& guild->m_member[i]->online() == 1				// ì˜¨ë¼ì¸ ìƒíƒœì¸ ê²½ìš°
+				&& guild->m_member[i]->GetPC()->m_desc != NULL)	// ë””ìŠ¤í¬ë¦½í„°ê°€ ì¡´ì¬ í•˜ëŠ” ê²½ìš°
 			{
 				_vec.push_back(guild->m_member[i]->GetPC());
 			}
@@ -2064,8 +2089,13 @@ void ProcHelperGuildMemberAddNotify(CNetMsg::SP& msg)
 
 	member->zoneindex(zoneindex);
 
+	member->SetContributeExp_min(guild->m_guild_contribute_all_exp_min);
+	member->SetContributeExp_max(guild->m_guild_contribute_all_exp_max);
+	member->SetContributeFame_min(guild->m_guild_contribute_all_fame_min);
+	member->SetContributeFame_max(guild->m_guild_contribute_all_fame_max);
+
 	{
-		// ±æµå¿ø ÀüºÎ¿¡°Ô Ãß°¡ ¸Ş¼¼Áö   // 071210 kjban edit
+		// ê¸¸ë“œì› ì „ë¶€ì—ê²Œ ì¶”ê°€ ë©”ì„¸ì§€   // 071210 kjban edit
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildMemberAddMsg(rmsg, guildindex, charindex, charname);
 		guild->SendToAll(rmsg);
@@ -2073,14 +2103,15 @@ void ProcHelperGuildMemberAddNotify(CNetMsg::SP& msg)
 
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charindex);
 	if(!pc)
-	{	// ÇôÇØ´ç °ÔÀÓ Ã¤³Î¿¡ Ä³¸¯ÀÌ ¾ø´Â °æ¿ì ¾Æ·¡ °úÁ¤ »ı·«
+	{	// í˜€í•´ë‹¹ ê²Œì„ ì±„ë„ì— ìºë¦­ì´ ì—†ëŠ” ê²½ìš° ì•„ë˜ ê³¼ì • ìƒëµ
 		return;
 	}
 
 	member->online(1);
 	member->SetPC(pc);
 
-	pc->m_guildoutdate = 0;
+	time_t t;
+	member->GetPC()->m_guild_in_date = time(&t) / 60 / 60 / 24;
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2158,7 +2189,7 @@ void ProcHelperGuildMemberAddRep(CNetMsg::SP& msg)
 			SEND_Q( rmsg , pc->m_desc );
 		}
 
-		// °¡ÀÔÇÑ ±æµå¿¡ °ø¼ºÀü Á¤º¸°¡ ÀÖÀ»°æ¿ì Ä³¸¯ÅÍ¿¡ °ø¼ºÁ¤º¸ ÀúÀå
+		// ê°€ì…í•œ ê¸¸ë“œì— ê³µì„±ì „ ì •ë³´ê°€ ìˆì„ê²½ìš° ìºë¦­í„°ì— ê³µì„±ì •ë³´ ì €ì¥
 		CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 		if( pCastle->IsAttackGuild(guildindex) )
 		{
@@ -2211,8 +2242,6 @@ void ProcHelperGuildMemberOutNotify(CNetMsg::SP& msg)
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildInfoChangeMsg(rmsg, member->charindex(), -1, "", MSG_GUILD_POSITION_UNKNOWN, member->GetPC());
 		member->GetPC()->m_pArea->SendToCell(rmsg, member->GetPC(), false);
-		time_t t;
-		member->GetPC()->m_guildoutdate = time(&t) / 60 / 60 / 24;
 	}
 
 #ifdef GMTOOL
@@ -2229,7 +2258,7 @@ void ProcHelperGuildMemberOutNotify(CNetMsg::SP& msg)
 	if(member->GetPC())
 	{
 		member->GetPC()->CastllanTitleDelete( -1, true  );
-		member->GetPC()->m_inventory.CastllanItemRemove(-1, false, true); // ¿Ê¸¸ º¢±ä´Ù.
+		member->GetPC()->m_inventory.CastllanItemRemove(-1, false, true); // ì˜·ë§Œ ë²šê¸´ë‹¤.
 	}
 
 /*#ifdef EXTREME_CUBE
@@ -2303,9 +2332,9 @@ void ProcHelperGuildMemberOutRep(CNetMsg::SP& msg)
 			SEND_Q(rmsg, pc->m_desc);
 		}
 
-		// Ä³¸¯ÅÍ¿¡ °ø¼ºÁ¤º¸ »èÁ¦
+		// ìºë¦­í„°ì— ê³µì„±ì •ë³´ ì‚­ì œ
 		pc->SetJoinFlag(ZONE_DRATAN, WCJF_NONE);
-		///=== ¸Ş¶óÅ©?
+		///=== ë©”ë¼í¬?
 #ifdef EXTREME_CUBE
 		if(pc && pc->m_pZone != NULL && pc->m_pZone->IsExtremeCube())
 		{
@@ -2467,11 +2496,6 @@ void ProcHelperGuildMemberKickNotify(CNetMsg::SP& msg)
 			pc->m_pArea->SendToCell(rmsg, pc, false);
 		}
 
-#ifdef GUILD_MEMBER_KICK_JOIN_DELAY
-		time_t t;
-		pc->m_guildoutdate = time(&t) / 60 / 60 / 24;
-#endif
-
 #ifdef GMTOOL
 		if(pc->m_bGmMonitor)
 		{
@@ -2498,9 +2522,9 @@ void ProcHelperGuildMemberKickNotify(CNetMsg::SP& msg)
 			}
 		}
 
-		// Ä³¸¯ÅÍ¿¡ °ø¼ºÁ¤º¸ »èÁ¦
+		// ìºë¦­í„°ì— ê³µì„±ì •ë³´ ì‚­ì œ
 		pc->SetJoinFlag(ZONE_DRATAN, WCJF_NONE);
-		///=== ¸Ş¶óÅ©?
+		///=== ë©”ë¼í¬?
 
 #ifdef EXTREME_CUBE
 		if(pc->m_pZone != NULL && pc->m_pZone->IsExtremeCube())
@@ -2523,7 +2547,7 @@ void ProcHelperGuildMemberKickNotify(CNetMsg::SP& msg)
 #endif // EXTREME_CUBE
 	}
 #ifdef GUILD_MEMBER_KICK_JOIN_DELAY
-	// ÇÛÆÛ¸¦ ÅëÇØ¼­ ¾÷µ¥ÀÌÆ® ÇØÁÖÀÚ.
+	// í•¼í¼ë¥¼ í†µí•´ì„œ ì—…ë°ì´íŠ¸ í•´ì£¼ì.
 	else if(!pc)
 	{
 		time_t t;
@@ -2541,13 +2565,14 @@ void ProcHelperGuildMemberKickNotify(CNetMsg::SP& msg)
 	if(member->GetPC())
 	{
 		member->GetPC()->CastllanTitleDelete( -1, true );
-		member->GetPC()->m_inventory.CastllanItemRemove(-1, false, true); // ¿Ê¸¸ º¢±ä´Ù.
+		member->GetPC()->m_inventory.CastllanItemRemove(-1, false, true); // ì˜·ë§Œ ë²šê¸´ë‹¤.
 	}
 
 	guild->removemember(member);
 
 	if(pc != NULL)
 	{
+		pc->m_guild_in_date = 0;
 		pc->CalcStatus(true);
 	}
 }
@@ -2631,21 +2656,21 @@ void ProcHelperGuildChangeBossNotify(CNetMsg::SP& msg)
 		if( pc )
 		{
 			pc->CastllanTitleDelete(-1 , true);
-			pc->m_inventory.CastllanItemRemove(-1, false, true); // ¿Ê¸¸ º¢±ä´Ù.
+			pc->m_inventory.CastllanItemRemove(-1, false, true); // ì˜·ë§Œ ë²šê¸´ë‹¤.
 		}
 	}
 
-	// ¼ºÁÖ ±æµå¶ó¸é ¼ºÁÖº¯°æ
+	// ì„±ì£¼ ê¸¸ë“œë¼ë©´ ì„±ì£¼ë³€ê²½
 	CWarCastle * cast = CWarCastle::GetCastleObject( CWarCastle::GetCurSubServerCastleZoneIndex() );
 	if( cast && cast->GetOwnerGuildIndex() == guild->index() )
 	{
-		// ÀÌÀü º¸½º¿¡ ¹«±â »¯°í,
+		// ì´ì „ ë³´ìŠ¤ì— ë¬´ê¸° ëºê³ ,
 		CPC* preboss = PCManager::instance()->getPlayerByCharIndex(current);
 		if( preboss )
 		{
 			BOOST_FOREACH(CItemProto* flagload_item, gserver->m_itemProtoList.m_flagload)
 			{
-				// ÇØ´çÇÏ´Â ¸ğµç ¾ÆÀÌÅÛÀ» °Ë»öÇÑ´Ù.
+				// í•´ë‹¹í•˜ëŠ” ëª¨ë“  ì•„ì´í…œì„ ê²€ìƒ‰í•œë‹¤.
 				item_search_t vec;
 				int sc = preboss->m_inventory.searchItemByCondition(flagload_item->getItemIndex(), 0, 0, vec);
 				if (sc == 0)
@@ -2670,7 +2695,7 @@ void ProcHelperGuildChangeBossNotify(CNetMsg::SP& msg)
 				}				
 			}
 			preboss->CastllanTitleDelete(-1, true );
-			preboss->m_inventory.CastllanItemRemove(-1, false, true); // ¿Ê¸¸ º¢±ä´Ù.
+			preboss->m_inventory.CastllanItemRemove(-1, false, true); // ì˜·ë§Œ ë²šê¸´ë‹¤.
 		}
 
 		cast->SetOwner(guild);
@@ -2684,7 +2709,7 @@ void ProcHelperGuildChangeBossNotify(CNetMsg::SP& msg)
 				<< member->charindex() << delim
 				<< member->GetName() << end;
 
-		// ÇöÀç º¸½º¿¡ ¹«±â Áö±Ş
+		// í˜„ì¬ ë³´ìŠ¤ì— ë¬´ê¸° ì§€ê¸‰
 		CPC* boss = PCManager::instance()->getPlayerByCharIndex(change);
 		if (boss && boss->m_guildInfo && boss->m_guildInfo->guild())
 		{
@@ -2701,31 +2726,31 @@ void ProcHelperGuildChangeBossNotify(CNetMsg::SP& msg)
 					CWarCastle* castle = CWarCastle::GetCastleObject(ownZoneIndex[i]);
 					if (castle)
 					{
-						// 060116 : BS : BEGIN : °ø¼º ½ÃÀÛÇØµµ Ä® È¸¼ö ¾ÈÇÏ°Ô
+						// 060116 : BS : BEGIN : ê³µì„± ì‹œì‘í•´ë„ ì¹¼ íšŒìˆ˜ ì•ˆí•˜ê²Œ
 	//					int nexttime = castle->GetNextWarTime();
 
 						if (castle->GetOwnerCharIndex() == boss->m_index)
 						{
-							// 060116 : BS : BEGIN : °ø¼º ½ÃÀÛÇØµµ Ä® È¸¼ö ¾ÈÇÏ°Ô
-	//						// °ø¼º ½ÃÀÛ 5ºĞÀü¿¡¼­ °ø¼º ÁøÇàÁßÀÌ¸é È¸¼ö
+							// 060116 : BS : BEGIN : ê³µì„± ì‹œì‘í•´ë„ ì¹¼ íšŒìˆ˜ ì•ˆí•˜ê²Œ
+	//						// ê³µì„± ì‹œì‘ 5ë¶„ì „ì—ì„œ ê³µì„± ì§„í–‰ì¤‘ì´ë©´ íšŒìˆ˜
 	//						if (castle->GetState() != WCSF_NORMAL || curtime + 5 * 60 >= nexttime)
 	//						{
 	//							castle->TakeLordItem(d->m_pChar);
 	//						}
 	//
-	//						// ÀÏ¹İ »óÅÂ¿¡¼­ ¾øÀ¸¸é Áö±Ş
+	//						// ì¼ë°˜ ìƒíƒœì—ì„œ ì—†ìœ¼ë©´ ì§€ê¸‰
 	//						else
 	//						{
 								castle->GiveLordItem(boss);
 	//						}
-							// 060116 : BS : END : °ø¼º ½ÃÀÛÇØµµ Ä® È¸¼ö ¾ÈÇÏ°Ô
+							// 060116 : BS : END : ê³µì„± ì‹œì‘í•´ë„ ì¹¼ íšŒìˆ˜ ì•ˆí•˜ê²Œ
 						}
 					}
 				}
 				delete [] ownZoneIndex;
 			}
 			boss->CastllanTitleDelete(-1, true);
-			boss->m_inventory.CastllanItemRemove(-1, false, true); // ¿Ê¸¸ º¢±ä´Ù.
+			boss->m_inventory.CastllanItemRemove(-1, false, true); // ì˜·ë§Œ ë²šê¸´ë‹¤.
 		}
 	}
 
@@ -2771,8 +2796,8 @@ void ProcHelperGuildChangeBossNotify(CNetMsg::SP& msg)
 		}
 	}
 
-	// ±æ¸¶°¡ ¹Ù²î¾úÀ» ¶§, GPÁ¤º¸ ½÷ÁÖ±â
-	// current¿Í change PC·Î ¹ß¼Û.
+	// ê¸¸ë§ˆê°€ ë°”ë€Œì—ˆì„ ë•Œ, GPì •ë³´ ì´ì£¼ê¸°
+	// currentì™€ change PCë¡œ ë°œì†¡.
 	CGuildMember* pPrevBoss = NULL;
 	CGuildMember* pChangeBoss = NULL;
 	pPrevBoss = guild->findmember(current);
@@ -3048,6 +3073,7 @@ void ProcHelperGuildLoadNotify(CNetMsg::SP& msg)
 	int bossindex;
 	CLCString bossname(MAX_CHAR_NAME_LENGTH + 1);
 	int battleIndex;
+	int create_time;
 
 #ifdef DEV_GUILD_MARK
 	char gm_row;
@@ -3057,18 +3083,25 @@ void ProcHelperGuildLoadNotify(CNetMsg::SP& msg)
 	int markTime;
 #endif
 
+	int battle_win_count, battle_lose_count, battle_total_count;
+	int contribute_exp_min, contribute_exp_max, contribute_fame_min, contribute_fame_max;
+
 	RefMsg(msg) >> guildindex
 		>> guildlevel
 		>> guildname
 		>> bossindex
 		>> bossname
-		>> battleIndex;
+		>> battleIndex
+		>> create_time
+		>> battle_win_count
+		>> battle_lose_count
+		>> battle_total_count;
 
 	CGuild* guild = gserver->m_guildlist.findguild(guildindex);
 
 	if (!guild)
 	{
-		guild = gserver->m_guildlist.create(guildindex, guildname, bossindex, bossname);
+		guild = gserver->m_guildlist.create(guildindex, guildname, bossindex, bossname, create_time, battle_win_count, battle_lose_count, battle_total_count);
 		if (!guild)
 			return;
 
@@ -3103,14 +3136,24 @@ void ProcHelperGuildLoadNotify(CNetMsg::SP& msg)
 	RefMsg(msg) >> gm_row >> gm_col >> bg_row >> bg_col >> markTime;
 	guild->SetGuildMark(gm_row, gm_col, bg_row, bg_col, markTime);
 #endif
-	int _kickStatus = GMKS_NORMAL, _requestChar = 0, _requestTime = 0, _lastTimeBossChange = 0;
+	int _kickStatus = GMKS_NORMAL, _requestChar = 0, _requestTime = 0, create_date = 0;
 	RefMsg(msg) >> _kickStatus
 		>> _requestChar
 		>> _requestTime
-		>> _lastTimeBossChange;
+		>> contribute_exp_min
+		>> contribute_exp_max
+		>> contribute_fame_min
+		>> contribute_fame_max;
+
 	guild->getGuildKick()->setKickStatus(_kickStatus);
 	guild->getGuildKick()->setKickReuestChar(_requestChar);
 	guild->getGuildKick()->setKickRequestTime(_requestTime);
+	guild->m_create_date = create_time;
+
+	guild->m_guild_contribute_all_exp_min = contribute_exp_min;
+	guild->m_guild_contribute_all_exp_max = contribute_exp_max;
+	guild->m_guild_contribute_all_fame_min = contribute_fame_min;
+	guild->m_guild_contribute_all_fame_max = contribute_fame_max;
 
 	/*
 	CGuild* guild = gserver->m_guildlist.create(guildindex, guildname, bossindex, bossname);
@@ -3157,39 +3200,41 @@ void ProcHelperGuildBattleRep(CNetMsg::SP& msg)
 	if (!g1 || !g2 || !boss1 || !boss2)
 		return ;
 
-	if (boss1)
-	{
-		if (boss1->m_inventory.getMoney())
-		{
-			if (boss1->m_inventory.getMoney() >= (LONGLONG)prize)
-			{
-				boss1->m_inventory.decreaseMoney(prize);
-			}
-		}
-	}
+	//if (boss1)
+	//{
+	//	if (boss1->m_inventory.getMoney())
+	//	{
+	//		if (boss1->m_inventory.getMoney() >= (LONGLONG)prize)
+	//		{
+	//			//ê¸¸ë“œì°½ê³ ì—ì„œ ì°¨ê°í•˜ë„ë¡ ìˆ˜ì •
+	//			boss1->m_inventory.decreaseMoney(prize);
+	//		}
+	//	}
+	//}
 
-	if (boss2)
-	{
-		if (boss2->m_inventory.getMoney())
-		{
-			if (boss2->m_inventory.getMoney() >= (LONGLONG)prize)
-			{
-				boss2->m_inventory.decreaseMoney(prize);
-			}
-		}
-	}
+	//if (boss2)
+	//{
+	//	if (boss2->m_inventory.getMoney())
+	//	{
+	//		if (boss2->m_inventory.getMoney() >= (LONGLONG)prize)
+	//		{
+	//			//ê¸¸ë“œì°½ê³ ì—ì„œ ì°¨ê°í•˜ë„ë¡ ìˆ˜ì •
+	//			boss2->m_inventory.decreaseMoney(prize);
+	//		}
+	//	}
+	//}
 
-	// ¼¼ºÎ ¼ÂÆÃ
-	g1->BattleSet(g2->index(), prize * 2 * 95 / 100, g1->battleZone());
+	// ì„¸ë¶€ ì…‹íŒ…
+	g1->BattleSet(g2->index(), prize * 95 / 100, zone);
 	g1->BattleTime(time);
 	g1->BattleState(GUILD_BATTLE_STATE_WAIT);
 
-	g2->BattleSet(g1->index(), prize * 2 * 95 / 100, g1->battleZone());
+	g2->BattleSet(g1->index(), prize * 95 / 100, zone);
 	g2->BattleTime(time);
 	g2->BattleState(GUILD_BATTLE_STATE_WAIT);
 
 	{
-		// ±æÀüÀÌ ¼º¸³µÇ´Ù!
+		// ê¸¸ì „ì´ ì„±ë¦½ë˜ë‹¤!
 		CNetMsg::SP rmsg(new CNetMsg);
 		GuildBattleReqAccpetMsg(rmsg, guildindex1, guildname1, guildindex2, guildname2, prize * 2 * 95 / 100 / 10000, zone, time);
 		g1->SendToAll(rmsg);
@@ -3238,10 +3283,14 @@ void ProcHelperGuildBattleStopRep(CNetMsg::SP& msg)
 	CLCString guildname1(MAX_GUILD_NAME_LENGTH + 1);
 	int guildindex2;
 	CLCString guildname2(MAX_GUILD_NAME_LENGTH + 1);
-	int prize;
+	int prize_nas;
+	int prize_gp;
 	int zone;
 	int guildkill1;
 	int guildkill2;
+	int battle_win_count1, battle_lose_count1, battle_total_count1;
+	int battle_win_count2, battle_lose_count2, battle_total_count2;
+	int isAccept;
 
 	RefMsg(msg) >> winner_index
 		>> guildindex1
@@ -3250,8 +3299,16 @@ void ProcHelperGuildBattleStopRep(CNetMsg::SP& msg)
 		>> guildindex2
 		>> guildname2
 		>> guildkill2
-		>> prize
-		>> zone;
+		>> prize_nas
+		>> prize_gp
+		>> zone
+		>> battle_win_count1
+		>> battle_lose_count1
+		>> battle_total_count1
+		>> battle_win_count2
+		>> battle_lose_count2
+		>> battle_total_count2
+		>> isAccept;
 
 	CGuild* g1 = gserver->m_guildlist.findguild(guildindex1);
 	CGuild* g2 = gserver->m_guildlist.findguild(guildindex2);
@@ -3259,57 +3316,76 @@ void ProcHelperGuildBattleStopRep(CNetMsg::SP& msg)
 	CPC* boss = NULL;
 	bool bHaveMoney = false;
 
-	// µ¿Á¡ÀÌ¸é »ó±İÀÌ ¹İ
+	// ë™ì ì´ë©´ ìƒê¸ˆì´ ë°˜
 	if (winner_index == -1)
 	{
-		prize /= 2;
+		prize_nas /= 2;
+		prize_gp /= 2;
 
 		if (g1)
-			g1->BattleSet(guildindex2, prize, zone);
+			g1->BattleSet(guildindex2, prize_nas, zone);
 		if (g2)
-			g2->BattleSet(guildindex1, prize, zone);
+			g2->BattleSet(guildindex1, prize_nas, zone);
 	}
-
-	// ÀÖ´Â ±æµå ¿ì¼± ¼ÂÆÃ ÇØÁ¦
+	
+	// ìˆëŠ” ê¸¸ë“œ ìš°ì„  ì…‹íŒ… í•´ì œ
 	if (g1)
 	{
 		g1->BattleState(GUILD_BATTLE_STATE_PRIZE);
 
-		// µ¿Á¡ÀÌ°Å³ª ½Â¸®±æµåÀÏ¶§ ±æµåÀå Ã£±â
-		if (winner_index == -1 || winner_index == g1->index())
+		//ìŠ¹ë¦¬ê¸¸ë“œì¼ë•Œ ê¸¸ë“œì¥ ì°¾ê¸°
+		if(isAccept == true)
+		{
+			int origin_gp = prize_gp * 100 / 90;
+			int fee = origin_gp - prize_gp;
+			g1->AddGuildPoint(-fee);
+		}
+		else if (winner_index == g1->index())
 		{
 			boss = g1->boss()->GetPC();
 
-			// ±æµåÀåÀÌ ÀÖÀ¸¸é »ó±İ ÁÖ°í ±æµå »óÅÂ ÇØÁ¦ ¿äÃ»
+			// ê¸¸ë“œì¥ì´ ìˆìœ¼ë©´ ìƒê¸ˆ ì£¼ê³  ê¸¸ë“œ ìƒíƒœ í•´ì œ ìš”ì²­
 			if (boss)
 			{
-				boss->m_inventory.increaseMoney(prize);
-
-				// ±æµåÀü ÇØÁ¦ ¿äÃ»
-				if (gserver->isRunHelper())
-				{
-					CNetMsg::SP rmsg(new CNetMsg);
-					HelperGuildBattlePeaceReqMsg(rmsg, g1);
-					SEND_Q(rmsg, gserver->m_helper);
-				}
-				else
-				{
-					return ;
-				}
-
-				g1->BattleSet(-1, 0, -1);
-				g1->BattleTime(0);
-				g1->KillCount(0);
-				g1->BattleState(GUILD_BATTLE_STATE_PEACE);
+				g1->AddGuildPoint(prize_gp);
 			}
+		}
+		else if(winner_index == -1)
+		{
+			//ë¬´ìŠ¹ë¶€ì¼ë•ŒëŠ” ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		}
 		else
 		{
+			//ì¡Œì„ë•Œ ì²˜ë¦¬
 			g1->BattleSet(-1, 0, -1);
 			g1->BattleTime(0);
 			g1->KillCount(0);
 			g1->BattleState(GUILD_BATTLE_STATE_PEACE);
+
+			if(g2 != NULL)
+			{
+				g2->AddGuildPoint(-prize_gp * 100 / 90);
+			}
 		}
+
+		// ê¸¸ë“œì „ í•´ì œ ìš”ì²­
+		if (gserver->isRunHelper())
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			HelperGuildBattlePeaceReqMsg(rmsg, g1);
+			SEND_Q(rmsg, gserver->m_helper);
+		}
+
+		g1->BattleSet(-1, 0, -1);
+		g1->BattleTime(0);
+		g1->KillCount(0);
+		g1->BattleState(GUILD_BATTLE_STATE_PEACE);
+
+		g1->m_battle_win_count = battle_win_count1;
+		g1->m_battle_lose_count = battle_lose_count1;
+		g1->m_battle_total_count = battle_total_count1;
+
+		g1->m_isUseTheStashAndSkill = true;
 	}
 
 	boss = NULL;
@@ -3319,33 +3395,25 @@ void ProcHelperGuildBattleStopRep(CNetMsg::SP& msg)
 	{
 		g2->BattleState(GUILD_BATTLE_STATE_PRIZE);
 
-		// µ¿Á¡ÀÌ°Å³ª ½Â¸®±æµåÀÏ¶§ ±æµåÀå Ã£±â
-		if (winner_index == -1 || winner_index == g2->index())
+		// ë™ì ì´ê±°ë‚˜ ìŠ¹ë¦¬ê¸¸ë“œì¼ë•Œ ê¸¸ë“œì¥ ì°¾ê¸°
+		if(isAccept == true)
+		{
+			int origin_gp = prize_gp * 100 / 90;
+			int fee = origin_gp - prize_gp;
+			g2->AddGuildPoint(-fee);
+		}
+		else if (winner_index == g2->index())
 		{
 			boss = g2->boss()->GetPC();
 
-			// ±æµåÀåÀÌ ÀÖÀ¸¸é »ó±İ ÁÖ°í ±æµå »óÅÂ ÇØÁ¦ ¿äÃ»
+			// ê¸¸ë“œì¥ì´ ìˆìœ¼ë©´ ìƒê¸ˆ ì£¼ê³  ê¸¸ë“œ ìƒíƒœ í•´ì œ ìš”ì²­
 			if (boss)
 			{
-				boss->m_inventory.increaseMoney(prize);
-
-				// ±æµåÀü ÇØÁ¦ ¿äÃ»
-				if (gserver->isRunHelper())
-				{
-					CNetMsg::SP rmsg(new CNetMsg);
-					HelperGuildBattlePeaceReqMsg(rmsg, g2);
-					SEND_Q(rmsg, gserver->m_helper);
-				}
-				else
-				{
-					return ;
-				}
-
-				g2->BattleSet(-1, 0, -1);
-				g2->BattleTime(0);
-				g2->KillCount(0);
-				g2->BattleState(GUILD_BATTLE_STATE_PEACE);
+				g2->AddGuildPoint(prize_gp);
 			}
+		}
+		else if(winner_index == -1)
+		{
 		}
 		else
 		{
@@ -3353,17 +3421,62 @@ void ProcHelperGuildBattleStopRep(CNetMsg::SP& msg)
 			g2->BattleTime(0);
 			g2->KillCount(0);
 			g2->BattleState(GUILD_BATTLE_STATE_PEACE);
+
+			if(g2 != NULL)
+			{
+				g2->AddGuildPoint(-prize_gp * 100 / 90);
+			}
+		}
+
+		// ê¸¸ë“œì „ í•´ì œ ìš”ì²­
+		if (gserver->isRunHelper())
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			HelperGuildBattlePeaceReqMsg(rmsg, g2);
+			SEND_Q(rmsg, gserver->m_helper);
+		}
+
+		g2->BattleSet(-1, 0, -1);
+		g2->BattleTime(0);
+		g2->KillCount(0);
+		g2->BattleState(GUILD_BATTLE_STATE_PEACE);
+
+		g2->m_battle_win_count = battle_win_count2;
+		g2->m_battle_lose_count = battle_lose_count2;
+		g2->m_battle_total_count = battle_total_count2;
+
+		g2->m_isUseTheStashAndSkill = true;
+	}
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildBattleCoreInitMsg(rmsg);
+		CZone* _zone = gserver->FindZone(zone);
+
+		if(_zone == NULL)
+			return;
+
+		for(int i = 0 ; i < _zone->m_countArea; i++)
+		{
+			_zone->m_area[i].SendToAllClient(rmsg);
 		}
 	}
 
 	{
-		// ±æµåÀü Á¾·á ¸Ş½ÃÁö
+		// ê¸¸ë“œì „ ì¢…ë£Œ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
-		GuildBattleEndMsg(rmsg, winner_index, guildindex1, guildname1, guildindex2, guildname2, prize);
+		GuildBattleEndMsg(rmsg, winner_index, guildindex1, guildname1, guildindex2, guildname2, prize_nas);
 		if (g1)
 			g1->SendToAll(rmsg);
 		if (g2)
 			g2->SendToAll(rmsg);
+	}
+	
+	if( (g1 != NULL && gserver->m_battle_guild_index == g1->index()) || 
+		(g2 != NULL && gserver->m_battle_guild_index == g2->index()) )
+	{
+		gserver->m_battle_guild_index = -1;
+		gserver->m_battle_guild_gm = -1;
 	}
 }
 
@@ -3395,20 +3508,52 @@ void ProcHelperGuildBattleStatus(CNetMsg::SP& msg)
 		g1->KillCount(killCount1);
 		g1->BattleTime(battleTime);
 	}
+	else
+		return;
+	
 	if (g2)
 	{
 		g2->KillCount(killCount2);
 		g2->BattleTime(battleTime);
 	}
+	else
+		return;
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 
 		GuildBattleStatusMsg(rmsg, guildindex1, guildname1, killCount1, guildindex2, guildname2, killCount2, battleTime, battleZone);
-		if (g1)
+
+		if(g1)
 			g1->SendToAll(rmsg);
-		if (g2)
+
+		if(g2)
 			g2->SendToAll(rmsg);
+		
+		//ìš´ì˜ì ëª…ë ¹ì–´ì— ì˜í•´ì„œ ëª…ë ¹ì–´ê°€ ìˆëŠ” ê²½ìš° ì¡´ì— ìˆëŠ” ëª¨ë“  ìœ ì €ë“¤ì—ê²Œ ì „ì†¡ ì•„ë‹ê²½ìš° ê¸¸ë“œì›ì—ê²Œë§Œ ì „ì†¡
+		if( (g1 != NULL && gserver->m_battle_guild_index == g1->index()) || 
+			(g2 != NULL && gserver->m_battle_guild_index == g2->index()) )
+		{
+			//gmë° ì§„í–‰ ì¤‘ì¸ ìœ ì €ì—ê²Œ íŒ¨í‚· ì „ë‹¬
+			if(gserver->m_battle_guild_gm != -1)
+			{
+				//gmì—ê²Œë„ íŒ¨í‚· ì „ë‹¬
+				CPC* gm = PCManager::instance()->getPlayerByCharIndex(gserver->m_battle_guild_gm);
+				SEND_Q(rmsg, gm->m_desc);
+			}
+			//ëª¨ë“  ìœ ì €ì—ê²Œ ì „ë‹¬
+			else
+			{
+				CZone* zone = gserver->FindZone(battleZone);
+				if(zone == NULL)
+					return;
+
+				for(int i = 0 ; i < zone->m_countArea;  i++)
+				{
+					zone->m_area[i].SendToAllClient(rmsg);
+				}
+			}
+		}
 	}
 }
 
@@ -3483,18 +3628,18 @@ void ProcHelper_FriendAddRep(CNetMsg::SP& msg)
 	if((MSG_FRIEND_ERROR_TYPE)packet->errorCode == MSG_FRIEND_ERROR_GAMESERVER)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ResponseClient::FriendErrorMsg(rmsg, (MSG_FRIEND_ERROR_TYPE)packet->errorCode);//¿äÃ»ÀÚ¿¡°Ô ¼º°ø¿©ºÎ¸¦ ¾Ë¸°´Ù.
+		ResponseClient::FriendErrorMsg(rmsg, (MSG_FRIEND_ERROR_TYPE)packet->errorCode);//ìš”ì²­ìì—ê²Œ ì„±ê³µì—¬ë¶€ë¥¼ ì•Œë¦°ë‹¤.
 		SEND_Q(rmsg, reqPc->m_desc);
 		reqPc->m_nRegFriend = 0;
 		appPc->m_nRegFriend = 0;
 	}
 	else
 	{
-		if (reqPc)//µ¿½Ã¿¡ Á¢¼ÓÇØ ÀÖ¾î¾ß ÇÑ´Ù.
+		if (reqPc)//ë™ì‹œì— ì ‘ì†í•´ ìˆì–´ì•¼ í•œë‹¤.
 		{
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				ResponseClient::FriendErrorMsg(rmsg, (MSG_FRIEND_ERROR_TYPE)packet->errorCode);//¿äÃ»ÀÚ¿¡°Ô ¼º°ø¿©ºÎ¸¦ ¾Ë¸°´Ù.
+				ResponseClient::FriendErrorMsg(rmsg, (MSG_FRIEND_ERROR_TYPE)packet->errorCode);//ìš”ì²­ìì—ê²Œ ì„±ê³µì—¬ë¶€ë¥¼ ì•Œë¦°ë‹¤.
 				SEND_Q(rmsg, reqPc->m_desc);
 			}
 			reqPc->m_nRegFriend = 0;
@@ -3503,7 +3648,7 @@ void ProcHelper_FriendAddRep(CNetMsg::SP& msg)
 
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				ResponseClient::FriendAddNotify(rmsg, appPc->m_index, appPc->GetName(), appPc->m_job, appPc->m_nCondition); //½Â³«ÀÚ¿¡°Ô ¸â¹ö°¡ Ãß°¡µÊÀ» ¾Ë¸²
+				ResponseClient::FriendAddNotify(rmsg, appPc->m_index, appPc->GetName(), appPc->m_job, appPc->m_nCondition); //ìŠ¹ë‚™ìì—ê²Œ ë©¤ë²„ê°€ ì¶”ê°€ë¨ì„ ì•Œë¦¼
 				SEND_Q(rmsg, reqPc->m_desc);
 			}
 		}
@@ -3514,7 +3659,7 @@ void ProcHelper_FriendAddRep(CNetMsg::SP& msg)
 			appPc->m_nRegFriend = 0;
 
 			CNetMsg::SP rmsg(new CNetMsg);
-			ResponseClient::FriendAddNotify(rmsg, reqPc->m_index, reqPc->GetName(), reqPc->m_job, reqPc->m_nCondition); //¿äÃ»ÀÚ¿¡°Ô ¸â¹ö°¡ Ãß°¡µÊÀ» ¾Ë¸².
+			ResponseClient::FriendAddNotify(rmsg, reqPc->m_index, reqPc->GetName(), reqPc->m_job, reqPc->m_nCondition); //ìš”ì²­ìì—ê²Œ ë©¤ë²„ê°€ ì¶”ê°€ë¨ì„ ì•Œë¦¼.
 			SEND_Q(rmsg, appPc->m_desc);
 		}
 	}
@@ -3524,13 +3669,13 @@ void ProcHelper_FriendDelRep(CNetMsg::SP& msg)
 {
 	UpdateServer::doFriendDelMemberRepToGameServer *packet = reinterpret_cast<UpdateServer::doFriendDelMemberRepToGameServer*>(msg->m_buf);
 	
-	//»èÁ¦ ¿äÃ»ÀÚ...
+	//ì‚­ì œ ìš”ì²­ì...
 	CPC* pPc = PCManager::instance()->getPlayerByCharIndex(packet->removerIndex);
 
 	if(pPc)
 	{
 		pPc->m_Friend->RemoveFriend(packet->deleteIndex);
-
+		pPc->m_listBlockPC.erase(packet->deleteIndex);
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			ResponseClient::FriendErrorMsg(rmsg, (MSG_FRIEND_ERROR_TYPE)packet->errorCode);
@@ -3544,12 +3689,13 @@ void ProcHelper_FriendDelRep(CNetMsg::SP& msg)
 		}
 	}
 
-	//»èÁ¦ ´çÇÑÀÚ...
+	//ì‚­ì œ ë‹¹í•œì...
 	CPC* pPc2 = PCManager::instance()->getPlayerByCharIndex(packet->deleteIndex);
 
-	if(pPc2)//Á¢¼ÓÇØÀÖ´Ù¸é...
+	if(pPc2)//ì ‘ì†í•´ìˆë‹¤ë©´...
 	{
 		pPc2->m_Friend->RemoveFriend(packet->removerIndex);
+		pPc2->m_listBlockPC.erase(packet->removerIndex);
 
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::FriendDelNotify(rmsg, packet->removerIndex);
@@ -3567,7 +3713,7 @@ void ProcHelper_BlockPCRep(CNetMsg::SP& msg)
 		>> blockIndex
 		>> blockName;
 
-	//»èÁ¦ ¿äÃ»ÀÚ...
+	//ì‚­ì œ ìš”ì²­ì...
 	CPC* pPc = PCManager::instance()->getPlayerByCharIndex(reqindex);
 
 	if(pPc)
@@ -3584,7 +3730,7 @@ void ProcHelper_BlockPCRep(CNetMsg::SP& msg)
 			CNetMsg::SP rmsg(new CNetMsg);
 			if( pPc->AddBlockPC(blockIndex, blockName) )
 			{
-				// ºí·° ¿äÃ»ÀÌ ¼º°øÇÏ¿´´Ù´Â ¸Ş¼¼Áö : ÇÒÀÏ
+				// ë¸”ëŸ­ ìš”ì²­ì´ ì„±ê³µí•˜ì˜€ë‹¤ëŠ” ë©”ì„¸ì§€ : í• ì¼
 				// GS->C			: errcode(c) charIndex(n) name(str)
 				BlockPCRepMsg(rmsg, MSG_EX_MESSENGER_SUCCESS, blockIndex, blockName);
 			}
@@ -3597,7 +3743,7 @@ void ProcHelper_BlockPCRep(CNetMsg::SP& msg)
 
 	CPC* pPc2 = PCManager::instance()->getPlayerByCharIndex(blockIndex);
 
-	if(pPc2)//Á¢¼ÓÇØÀÖ´Ù¸é...
+	if(pPc2)//ì ‘ì†í•´ìˆë‹¤ë©´...
 	{
 		CFriendMember* fMember = pPc2->m_Friend->FindFriendMember(reqindex);
 		if( fMember )
@@ -3702,7 +3848,7 @@ void ProcHelper_GiftRecvChar(CNetMsg::SP& msg)
 }
 
 
-//»óÅÂ°¡ ¹Ù²ï°É ¸ğµç Ä£±¸¿¡°Ô º¸³½´Ù.
+//ìƒíƒœê°€ ë°”ë€ê±¸ ëª¨ë“  ì¹œêµ¬ì—ê²Œ ë³´ë‚¸ë‹¤.
 void ProcHelper_FriendSetConditionRep(CNetMsg::SP& msg)
 {
 	int chaindex;
@@ -3733,7 +3879,7 @@ void ProcHelper_FriendSetConditionRep(CNetMsg::SP& msg)
 					SEND_Q(rmsg, pPc->m_desc);
 				}
 
-				// Ä£±¸ ¸®½ºÆ® ¾÷µ¥ÀÌÆ®
+				// ì¹œêµ¬ ë¦¬ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
 				if (pPc->m_Friend)
 				{
 					pMember = pPc->m_Friend->FindFriendMember( chaindex );
@@ -3743,7 +3889,7 @@ void ProcHelper_FriendSetConditionRep(CNetMsg::SP& msg)
 					}
 
 					{
-						//Á¢¼ÓÇÑ »ç¶÷¿¡°Ô ³» ÀÚ½ÅÀÇ »óÅÂµµ º¸³»Áà¾ßÁö..
+						//ì ‘ì†í•œ ì‚¬ëŒì—ê²Œ ë‚´ ìì‹ ì˜ ìƒíƒœë„ ë³´ë‚´ì¤˜ì•¼ì§€..
 						CNetMsg::SP rmsg(new CNetMsg);
 						HelperFriendSetConditionMsg(rmsg, index, pPc->m_nCondition, chaindex, NULL);
 						SEND_Q(rmsg, gserver->m_helper);
@@ -3761,7 +3907,7 @@ void ProcHelper_FriendSetConditionRep(CNetMsg::SP& msg)
 			ResponseClient::FriendSetConditionMsg(rmsg, chaindex, condition);
 			SEND_Q(rmsg, pPc->m_desc);
 
-			// Ä£±¸ ¸®½ºÆ® ¾÷µ¥ÀÌÆ®
+			// ì¹œêµ¬ ë¦¬ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
 			pMember = pPc->m_Friend->FindFriendMember( chaindex );
 			if( pMember != NULL )
 			{
@@ -3813,7 +3959,7 @@ void ProcHelperWarNoticeStart(CNetMsg::SP& msg)
 	GuildWarNoticeStartMsg(rmsg, zoneindex, remainSec);
 	PCManager::instance()->sendToAll(rmsg);
 
-	// °ø¼º »óÅÂ °»½Å : ÁøÇàÁßÀÎ ¼­ºê ¼­¹ö´Â Á÷Á¢ ¹Ù²Ù¹Ç·Î ½ºÅµ
+	// ê³µì„± ìƒíƒœ ê°±ì‹  : ì§„í–‰ì¤‘ì¸ ì„œë¸Œ ì„œë²„ëŠ” ì§ì ‘ ë°”ê¾¸ë¯€ë¡œ ìŠ¤í‚µ
 	CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 	if (castle && !castle->CheckSubServer())
 	{
@@ -3941,14 +4087,14 @@ void ProcHelperWarNoticeStartAttackCastle(CNetMsg::SP& msg)
 		PCManager::instance()->sendToAll(rmsg);
 	}
 
-	// °ø¼º »óÅÂ °»½Å : ÁøÇàÁßÀÎ ¼­ºê ¼­¹ö´Â Á÷Á¢ ¹Ù²Ù¹Ç·Î ½ºÅµ
+	// ê³µì„± ìƒíƒœ ê°±ì‹  : ì§„í–‰ì¤‘ì¸ ì„œë¸Œ ì„œë²„ëŠ” ì§ì ‘ ë°”ê¾¸ë¯€ë¡œ ìŠ¤í‚µ
 	CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 	if (castle && !castle->CheckSubServer())
 	{
 		castle->SetState(WCSF_WAR_CASTLE);
 	}
 
-	// Æ÷ÀÎÆ® º¯°æ ¾Ë¸²
+	// í¬ì¸íŠ¸ ë³€ê²½ ì•Œë¦¼
 	if  (castle != NULL)
 	{
 		PCManager::instance()->sendGuildWarPointMsg(castle, zoneindex);
@@ -4008,13 +4154,13 @@ void ProcHelperWarNoticeEnd(CNetMsg::SP& msg)
 		CPC* pc = (*iter).pPlayer;
 		if (pc)
 		{
-			// ¹Ù·Î º¸³»±â
+			// ë°”ë¡œ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			StatusMsg(rmsg, pc);
 			SEND_Q(rmsg, pc->m_desc );
 		}
 	}
-	// °ø¼º »óÅÂ °»½Å : ÁøÇàÁßÀÎ ¼­ºê ¼­¹ö´Â Á÷Á¢ ¹Ù²Ù¹Ç·Î ½ºÅµ
+	// ê³µì„± ìƒíƒœ ê°±ì‹  : ì§„í–‰ì¤‘ì¸ ì„œë¸Œ ì„œë²„ëŠ” ì§ì ‘ ë°”ê¾¸ë¯€ë¡œ ìŠ¤í‚µ
 	CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 
 	if(castle != NULL)
@@ -4038,14 +4184,14 @@ void ProcHelperWarNoticeEnd(CNetMsg::SP& msg)
 		if (!castle->CheckSubServer()
 			&& zoneindex == ZONE_MERAC)
 		{
-			// »óÅÂ º¯°æ
+			// ìƒíƒœ ë³€ê²½
 			castle->SetState(WCSF_NORMAL);
 
-			// ½Ã°£ ¼³Á¤
+			// ì‹œê°„ ì„¤ì •
 			castle->m_lastWarTime = castle->GetNextWarTime() + WCT_WAR;
 			castle->SetNextWarTime(0);
 
-			// ¼ºÁÖ ¼³Á¤
+			// ì„±ì£¼ ì„¤ì •
 			if (!bWinDefense)
 			{
 				if (ownerguildindex > 0)
@@ -4059,34 +4205,34 @@ void ProcHelperWarNoticeEnd(CNetMsg::SP& msg)
 					castle->ResetOwner();
 			}
 
-			// ±âÅ¸
+			// ê¸°íƒ€
 			castle->SetNoticeWarTime(false);
 			castle->SetNoticeRemain(9999);
 			castle->m_defensePoint = 0;
 			castle->m_gateState = 0;
 
-			// Âü¿©Á¤º¸ ÃÊ±âÈ­
+			// ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 			castle->ResetJoinFlag();
 
-			// Âü¿© ¸®½ºÆ® ÃÊ±âÈ­
+			// ì°¸ì—¬ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 			castle->RemoveAllJoinList();
 		}
 
 		castle->EndWarRegenPoint();
 	}
 
-	// °ø¼º »óÅÂ °»½Å : ÁøÇàÁßÀÎ ¼­ºê ¼­¹ö´Â Á÷Á¢ ¹Ù²Ù¹Ç·Î ½ºÅµ
+	// ê³µì„± ìƒíƒœ ê°±ì‹  : ì§„í–‰ì¤‘ì¸ ì„œë¸Œ ì„œë²„ëŠ” ì§ì ‘ ë°”ê¾¸ë¯€ë¡œ ìŠ¤í‚µ
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (!pCastle->CheckSubServer() && zoneindex == ZONE_DRATAN)
 	{
-		// »óÅÂ º¯°æ
+		// ìƒíƒœ ë³€ê²½
 		pCastle->SetState(WCSF_NORMAL);
 
-		// ½Ã°£ ¼³Á¤
+		// ì‹œê°„ ì„¤ì •
 		pCastle->m_lastWarTime = pCastle->GetNextWarTime() + WCT_WAR;
 		pCastle->SetNextWarTime(0);
 
-		// ¼ºÁÖ ¼³Á¤
+		// ì„±ì£¼ ì„¤ì •
 		if (!bWinDefense)
 		{
 			int i;
@@ -4103,7 +4249,7 @@ void ProcHelperWarNoticeEnd(CNetMsg::SP& msg)
 			else
 				pCastle->ResetOwner();
 
-			// ¼ºÁÖ°¡ ¹Ù²ã¼­ ±æµå¸í»öÀ» ´Ù½Ã º¸³»ÁÜ
+			// ì„±ì£¼ê°€ ë°”ê¿”ì„œ ê¸¸ë“œëª…ìƒ‰ì„ ë‹¤ì‹œ ë³´ë‚´ì¤Œ
 			guild = gserver->m_guildlist.findguild(prevOwnerGuildIndex);
 			if(guild)
 			{
@@ -4132,15 +4278,15 @@ void ProcHelperWarNoticeEnd(CNetMsg::SP& msg)
 			}
 		}
 
-		// ±âÅ¸
+		// ê¸°íƒ€
 		pCastle->SetNoticeWarTime(false);
 		pCastle->SetNoticeRemain(9999);
 		pCastle->m_gateState = 0;
 
-		// Âü¿©Á¤º¸ ÃÊ±âÈ­
+		// ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 		pCastle->ResetJoinFlag();
 
-		// Âü¿© ¸®½ºÆ® ÃÊ±âÈ­
+		// ì°¸ì—¬ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 		pCastle->RemoveAllJoinList();
 	}
 }
@@ -4192,7 +4338,7 @@ void ProcHelperPetCreateRep(CNetMsg::SP& msg)
 			return ;
 		}
 
-		// HelperÀÇ Æê Áö±Ş ½ÇÆĞ½Ã Æê ¾ÆÀÌÅÛÀ» »èÁ¦ÇÏ°í ÇÇ¸®Áö±Ş
+		// Helperì˜ í« ì§€ê¸‰ ì‹¤íŒ¨ì‹œ í« ì•„ì´í…œì„ ì‚­ì œí•˜ê³  í”¼ë¦¬ì§€ê¸‰
 		if( index == -1 )
 		{
 			CItem* item = pc->m_inventory.FindByDBIndex(itemdbindex, 0, 0);
@@ -4231,7 +4377,7 @@ void ProcHelperPetCreateRep(CNetMsg::SP& msg)
 		CPet* pet = new CPet(pc, index, typeGrade, 1);
 		if (pet)
 		{
-			// ÆêÀÇ ÀÌ¹Ì Áö±ŞÇÑ ¾ÆÀÌÅÛÀÇ ¿É¼ÇÀ» º¯°æÇÑ´å
+			// í«ì˜ ì´ë¯¸ ì§€ê¸‰í•œ ì•„ì´í…œì˜ ì˜µì…˜ì„ ë³€ê²½í•œë‹·
 			CItem* item = pc->m_inventory.FindByDBIndex(itemdbindex, 0, 0);
 			if( item )
 			{
@@ -4362,18 +4508,18 @@ void ProcHelperGuildStashTakeRep(CNetMsg::SP& msg)
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charindex);
 	if (!pc)
 	{
-		// Ã£À¸·Á´ø »ç¶÷ÀÌ ¾ø¾î¼­ ·Ñ¹é
+		// ì°¾ìœ¼ë ¤ë˜ ì‚¬ëŒì´ ì—†ì–´ì„œ ë¡¤ë°±
 		bRollback = true;
 	}
 	else
 	{
 		if (errcode == MSG_HELPER_GUILD_STASH_ERROR_OK)
 		{
-			// µ·À» »ı¼º Áö±Ş
+			// ëˆì„ ìƒì„± ì§€ê¸‰
 			pc->m_inventory.increaseMoney(money);
 
 			{
-				// ¼º°ø ¸Ş½ÃÁö Àü´Ş
+				// ì„±ê³µ ë©”ì‹œì§€ ì „ë‹¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				GuildStashTakeRepMsg(rmsg, MSG_GUILD_STASH_ERROR_OK);
 				SEND_Q(rmsg, pc->m_desc);
@@ -4390,7 +4536,7 @@ void ProcHelperGuildStashTakeRep(CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ½ÇÆĞ ¾Ë¸²
+			// ì‹¤íŒ¨ ì•Œë¦¼
 			GAMELOG << init("GUILD STASH TAKE MONEY FAIL", pc)
 					<< "GUILD" << delim
 					<< guildindex << delim
@@ -4565,7 +4711,7 @@ void ProcHelperTeacherLoadRep(CNetMsg::SP& msg)
 						strcpy(d->m_pChar->m_teachName[i], student->GetName());
 
 						{
-							// Á¢¼ÓÇØ ÀÖÀ¸¸é ·Î±×ÀÎ Çß´Ù°í º¸³»ÁÖÀÚ.
+							// ì ‘ì†í•´ ìˆìœ¼ë©´ ë¡œê·¸ì¸ í–ˆë‹¤ê³  ë³´ë‚´ì£¼ì.
 							CNetMsg::SP rmsg(new CNetMsg);
 							TeachLoginMsg(rmsg, d->m_pChar);
 							SEND_Q(rmsg, student->m_desc);
@@ -4574,7 +4720,7 @@ void ProcHelperTeacherLoadRep(CNetMsg::SP& msg)
 				}
 			}
 		}
-		else if( d->m_pChar->m_teachType == MSG_TEACH_STUDENT_TYPE ) // ÇĞ»ı
+		else if( d->m_pChar->m_teachType == MSG_TEACH_STUDENT_TYPE ) // í•™ìƒ
 		{
 			CLCString teachName(MAX_CHAR_NAME_LENGTH + 1);
 			RefMsg(msg) >> d->m_pChar->m_teachIdx[0]
@@ -4585,7 +4731,7 @@ void ProcHelperTeacherLoadRep(CNetMsg::SP& msg)
 				>> d->m_pChar->m_teachTime[0];
 			strcpy(d->m_pChar->m_teachName[0], teachName);
 
-			// ÀÚ½ÅÀÌ ÇĞ»ıÀÌ¸é idx[1]À» ¼±»ıÀÇ ¸í¼º¼öÄ¡·Î, idx[2]¸¦ ¼±»ıÀÇ ¾ç¼ºÁßÀÌ ÃÊº¸·Î, time[1]À» ¿Ï·áÀÎ¿ø, time[2]À» ½ÇÆĞÀÎ¿øÀ¸·Î ¾´´Ù.
+			// ìì‹ ì´ í•™ìƒì´ë©´ idx[1]ì„ ì„ ìƒì˜ ëª…ì„±ìˆ˜ì¹˜ë¡œ, idx[2]ë¥¼ ì„ ìƒì˜ ì–‘ì„±ì¤‘ì´ ì´ˆë³´ë¡œ, time[1]ì„ ì™„ë£Œì¸ì›, time[2]ì„ ì‹¤íŒ¨ì¸ì›ìœ¼ë¡œ ì“´ë‹¤.
 			RefMsg(msg) >> d->m_pChar->m_teachIdx[1]
 				>> d->m_pChar->m_teachIdx[2]
 				>> d->m_pChar->m_teachTime[1]
@@ -4603,7 +4749,7 @@ void ProcHelperTeacherLoadRep(CNetMsg::SP& msg)
 					strcpy(d->m_pChar->m_teachName[0], teacher->GetName());
 
 					{
-						// Á¢¼ÓÇØ ÀÖÀ¸¸é ·Î±×ÀÎ Çß´Ù°í º¸³»ÁÖÀÚ.
+						// ì ‘ì†í•´ ìˆìœ¼ë©´ ë¡œê·¸ì¸ í–ˆë‹¤ê³  ë³´ë‚´ì£¼ì.
 						CNetMsg::SP rmsg(new CNetMsg);
 						TeachLoginMsg(rmsg, d->m_pChar);
 						SEND_Q(rmsg, teacher->m_desc);
@@ -4812,7 +4958,7 @@ void ProcHelperPartyRecallConfirm(CNetMsg::SP& msg)
 	CPartyMember* pPartyMember = pResPC->m_party->GetMemberByCharIndex(reqindex);
 	if (pPartyMember == NULL)
 	{
-		// Ãë¼Ò ¸í·É Àü´Ş
+		// ì·¨ì†Œ ëª…ë ¹ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpErrorMsg(rmsg, MSG_WARP_ERROR_NOTCHAR, strReqName);
 		SEND_Q(rmsg, pResPC->m_desc);
@@ -4857,7 +5003,7 @@ void ProcHelperPartyRecallConfirm(CNetMsg::SP& msg)
 		}
 		else
 		{
-			// Á¸À» ¸øÃ£¾Æ °ÅÀı·Î Àü¼Û
+			// ì¡´ì„ ëª»ì°¾ì•„ ê±°ì ˆë¡œ ì „ì†¡
 			if (pReqPC != NULL)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4878,7 +5024,7 @@ void ProcHelperPartyRecallConfirm(CNetMsg::SP& msg)
 	{
 		if (pReqPC != NULL)
 		{
-			// Á¸À» ¸øÃ£¾Æ °ÅÀı·Î Àü¼Û
+			// ì¡´ì„ ëª»ì°¾ì•„ ê±°ì ˆë¡œ ì „ì†¡
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExPartyRecallCancelMsg(rmsg, reqindex, strReqName, repindex, strRepName);
@@ -5004,7 +5150,7 @@ void ProcHelperPartyInviteReq(CNetMsg::SP& msg)
 	if (!pBossPC)
 		return ;
 
-	if (pTargetPC->m_Exped || pBossPC->m_Exped )	// ¿øÁ¤´ë »óÅÂ¿¡¼­ ÆÄÆ¼ÃÊ´ë ºÒ°¡
+	if (pTargetPC->m_Exped || pBossPC->m_Exped )	// ì›ì •ëŒ€ ìƒíƒœì—ì„œ íŒŒí‹°ì´ˆëŒ€ ë¶ˆê°€
 		return;
 
 #if defined (LC_USA)
@@ -5018,8 +5164,8 @@ void ProcHelperPartyInviteReq(CNetMsg::SP& msg)
 	}
 #endif	// #if defined (LC_USA)
 
-	// ÆÄÆ¼ Å¸ÀÔÀÌ 2ÀÌ¸é tch¿Í chÀÇ ·¹º§ Â÷ÀÌ¸¦ °Ë»ç
-	// Â÷ÀÌ°¡ +- 10ÀÌ»óÀÌ¸é ERROR;
+	// íŒŒí‹° íƒ€ì…ì´ 2ì´ë©´ tchì™€ chì˜ ë ˆë²¨ ì°¨ì´ë¥¼ ê²€ì‚¬
+	// ì°¨ì´ê°€ +- 10ì´ìƒì´ë©´ ERROR;
 	if (nPartyType == MSG_PARTY_TYPE_BATTLE)
 	{
 		if (ABS(pTargetPC->m_level - nBossLevel) > 10)
@@ -5069,7 +5215,7 @@ void ProcHelperPartyInviteRep(CNetMsg::SP& msg)
 	CPC* pTargetPC =  PCManager::instance()->getPlayerByCharIndex(nTargetIndex);
 	CParty* pParty = NULL;
 
-	// ÆÄÆ¼ °ü·Ã ¼­¹ö ´Ù¿îµÇ´Â Çö»ó ¹æÁö
+	// íŒŒí‹° ê´€ë ¨ ì„œë²„ ë‹¤ìš´ë˜ëŠ” í˜„ìƒ ë°©ì§€
 	if(!pBossPC || !pTargetPC)
 	{
 		GAMELOG << init("PARTY Error : NULL Check 1") << end;
@@ -5083,14 +5229,14 @@ void ProcHelperPartyInviteRep(CNetMsg::SP& msg)
 			pParty = gserver->FindPartyByBossIndex(nBossIndex);
 			if (pParty)
 			{
-				// ±âÁ¸ ÆÄÆ¼¿¡ ÃÊ´ë »óÅÂ·Î
+				// ê¸°ì¡´ íŒŒí‹°ì— ì´ˆëŒ€ ìƒíƒœë¡œ
 				pParty->SetRequest(nTargetIndex, strTargetName);
 				if (pTargetPC)
 					pTargetPC->m_party = pParty;
 			}
 			else
 			{
-				// ½Å±Ô ÆÄÆ¼
+				// ì‹ ê·œ íŒŒí‹°
 #ifdef PARTY_ONLINE
 				pParty = new CParty(cPartyType1, nBossIndex, strBossName, pBossPC, nTargetIndex, strTargetName, pBossPC->m_level );
 #else
@@ -5192,7 +5338,7 @@ void ProcHelperPartyAllowRep(CNetMsg::SP& msg)
 
 	CPC* pTargetPC = PCManager::instance()->getPlayerByCharIndex(nTargetIndex);
 
-	// ÆÄÆ¼ °ü·Ã ¼­¹ö ´Ù¿îµÇ´Â Çö»ó ¹æÁö
+	// íŒŒí‹° ê´€ë ¨ ì„œë²„ ë‹¤ìš´ë˜ëŠ” í˜„ìƒ ë°©ì§€
 	if(!pTargetPC)
 	{
 		GAMELOG << init("PARTY Error : NULL Check ALLOW REP 1") << end;
@@ -5213,7 +5359,7 @@ void ProcHelperPartyAllowRep(CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÆÄÆ¼¸ÅÄª¿¡µµ ÇöÀç ÀÎ¿øÀ» ¾÷µ¥ÀÌÆ® ÇØÁİ´Ï´Ù.
+	// íŒŒí‹°ë§¤ì¹­ì—ë„ í˜„ì¬ ì¸ì›ì„ ì—…ë°ì´íŠ¸ í•´ì¤ë‹ˆë‹¤.
 	CPartyMatchParty * pPartyMatch = gserver->FindPartyMatchPartyByBossIndex( pParty->GetBossIndex() );
 	if( pPartyMatch )
 	{
@@ -5221,7 +5367,7 @@ void ProcHelperPartyAllowRep(CNetMsg::SP& msg)
 	}
 
 	{
-		// ÆÄÆ¼¿øµé¿¡°Ô °á°ú ¾Ë¸®±â
+		// íŒŒí‹°ì›ë“¤ì—ê²Œ ê²°ê³¼ ì•Œë¦¬ê¸°
 		CNetMsg::SP addmsg(new CNetMsg);
 		PartyAddMsg(addmsg, nTargetIndex, strTargetName, pTargetPC, ((pParty->GetBossIndex() == nTargetIndex) ? 1 : 0));
 		for (int i = 0; i < MAX_PARTY_MEMBER; i++)
@@ -5229,11 +5375,11 @@ void ProcHelperPartyAllowRep(CNetMsg::SP& msg)
 			const CPartyMember* pMember = pParty->GetMemberByListIndex(i);
 			if (pMember && i != nListIndex)
 			{
-				// Å¸ÀÎ¿¡°Ô targetÀ» Ãß°¡ÇÏ°í
+				// íƒ€ì¸ì—ê²Œ targetì„ ì¶”ê°€í•˜ê³ 
 				if (pMember->GetMemberPCPtr())
 					SEND_Q(addmsg, pMember->GetMemberPCPtr()->m_desc)
 
-					// target¿¡°Ô´Â Å¸ÀÎÀ» Ãß°¡
+					// targetì—ê²ŒëŠ” íƒ€ì¸ì„ ì¶”ê°€
 					if (pTargetPC)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -5314,19 +5460,20 @@ void ProcHelperPartyRejectRep(CNetMsg::SP& msg)
 		pParty->SetRequest(-1, "");
 		if (pParty->GetMemberCount() < 2)
 		{
-			// ÆÄÆ¼ Á¾·á
+			// íŒŒí‹° ì¢…ë£Œ
 #ifdef EXTREME_CUBE
 			if(pParty->m_cubeUniqueIdx != -1)
 			{
 				CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
 				if(memlist && memlist->IsPartyCubeMemList())
 				{
+					memlist->GetOutAll();
 					((CPartyCubeMemList*)memlist)->SetParty(NULL);
 				}
 			}
 #endif // EXTREME_CUBE
 
-			// ÆÄÆ¼ Áö¿ì±â
+			// íŒŒí‹° ì§€ìš°ê¸°
 			gserver->m_listParty.erase(pParty->GetBossIndex());
 			pParty->SetEndParty();
 			delete pParty;
@@ -5370,7 +5517,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 	CPC* pTargetPC = PCManager::instance()->getPlayerByCharIndex(nTargetIndex);
 	if (pTargetPC)
 	{
-		// ÄŞº¸ area¿¡ ÀÖ´Â pc ÆÄÆ¼ Å»ÅğÇÏ¸é ÄŞº¸Á¸ ³ª°¨
+		// ì½¤ë³´ areaì— ìˆëŠ” pc íŒŒí‹° íƒˆí‡´í•˜ë©´ ì½¤ë³´ì¡´ ë‚˜ê°
 		if(pTargetPC->m_pZone->IsComboZone())
 		{
 			CZone* pZone = gserver->FindZone(ZONE_DRATAN);
@@ -5394,7 +5541,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 		}
 
 #ifdef EXTREME_CUBE
-		// Å¥ºêÁ¸¿¡ ÀÖ´Â PC ÆÄÆ¼ Å»ÅğÇÏ¸é Å¥ºêÁ¸ ³ª°¨
+		// íë¸Œì¡´ì— ìˆëŠ” PC íŒŒí‹° íƒˆí‡´í•˜ë©´ íë¸Œì¡´ ë‚˜ê°
 		if(pTargetPC->m_pZone)
 		{
 			if(pTargetPC->m_pZone->IsExtremeCube())
@@ -5429,7 +5576,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 		}
 #endif // EXTREME_CUBE
 
-		// ÀÎÁ¸¿¡ ÀÖ´Â PC ÆÄÆ¼ Å»ÅğÇÏ¸é ÀÎÁ¸À» ³ª°¨(¸â¹ö)
+		// ì¸ì¡´ì— ìˆëŠ” PC íŒŒí‹° íƒˆí‡´í•˜ë©´ ì¸ì¡´ì„ ë‚˜ê°(ë©¤ë²„)
 		if(pTargetPC->m_pZone !=NULL && (pTargetPC->m_pZone->IsExpedRaidZone() || pTargetPC->m_pZone->IsPartyRaidZone()) &&
 			pTargetPC->m_nJoinInzone_ZoneNo >=0 && pTargetPC->m_nJoinInzone_RoomNo >= 0)
 		{
@@ -5440,8 +5587,8 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 
 		if( pTargetPC->m_party && pTargetPC->m_party != pParty)
 		{
-			// °¡ÀÔµÇÀÖ´Â ÆÄÆ¼¿Í Å»ÅğÇÏ´Â ÆÄÆ¼°¡ ´Ù¸¥ °æ¿ì´Â
-			// ÆÄÆ¼ ÃÊ±âÈ­ Á¦¿Ü
+			// ê°€ì…ë˜ìˆëŠ” íŒŒí‹°ì™€ íƒˆí‡´í•˜ëŠ” íŒŒí‹°ê°€ ë‹¤ë¥¸ ê²½ìš°ëŠ”
+			// íŒŒí‹° ì´ˆê¸°í™” ì œì™¸
 		}
 		else
 		{
@@ -5467,7 +5614,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 	{
 		if (pTargetPC)
 		{
-			// ÆÄÆ¼ ÇØÃ¼ ¾Ë¸²
+			// íŒŒí‹° í•´ì²´ ì•Œë¦¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			PartyMsg(rmsg, MSG_PARTY_END);
 			SEND_Q(rmsg, pTargetPC->m_desc);
@@ -5498,12 +5645,13 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 			CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
 			if(memlist && memlist->IsPartyCubeMemList())
 			{
+				memlist->GetOutAll();
 				((CPartyCubeMemList*)memlist)->SetParty(NULL);
 			}
 		}
 #endif // EXTREME_CUBE
 
-		// ÆÄÆ¼ Áö¿ì±â
+		// íŒŒí‹° ì§€ìš°ê¸°
 		gserver->m_listParty.erase(pParty->GetBossIndex());
 		pParty->SetEndParty();
 		delete pParty;
@@ -5511,7 +5659,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 	else
 	{
 		{
-			// ÆÄÆ¼¿ø ³ª°¨
+			// íŒŒí‹°ì› ë‚˜ê°
 			CNetMsg::SP rmsg(new CNetMsg);
 			PartyDelMsg(rmsg, false, nTargetIndex);
 
@@ -5521,10 +5669,10 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 			pParty->SendToAllPC(rmsg, nTargetIndex);
 		}
 
-		// ÆÄÆ¼¸ÅÄª¿¡µµ ÇöÀç ÀÎ¿øÀ» ¾÷µ¥ÀÌÆ® ÇØÁİ´Ï´Ù.
+		// íŒŒí‹°ë§¤ì¹­ì—ë„ í˜„ì¬ ì¸ì›ì„ ì—…ë°ì´íŠ¸ í•´ì¤ë‹ˆë‹¤.
 		CPartyMatchParty * pMatchParty = gserver->FindPartyMatchPartyByBossIndex( nBossIndex );
 
-		// º¸½º º¯°æ ¾Ë¸²
+		// ë³´ìŠ¤ ë³€ê²½ ì•Œë¦¼
 		if (nBossIndex != nNewBossIndex)
 		{
 			if (pMatchParty)
@@ -5541,7 +5689,7 @@ void ProcHelperPartyQuitRep(CNetMsg::SP& msg)
 			}
 		}
 
-		// ÆÄÆ¼¸ÅÄª¿¡µµ ÇöÀç ÀÎ¿øÀ» ¾÷µ¥ÀÌÆ® ÇØÁİ´Ï´Ù.
+		// íŒŒí‹°ë§¤ì¹­ì—ë„ í˜„ì¬ ì¸ì›ì„ ì—…ë°ì´íŠ¸ í•´ì¤ë‹ˆë‹¤.
 		if( pMatchParty )
 		{
 			pMatchParty->SetMemberCount( pParty->GetMemberCount() );
@@ -5577,7 +5725,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 	CPC* pTargetPC =  PCManager::instance()->getPlayerByCharIndex(nTargetIndex);
 	if (pTargetPC && pTargetPC->m_party && pTargetPC->m_party == pParty)
 	{
-		// ÄŞº¸ area¿¡ ÀÖ´Â pc ÆÄÆ¼ Å»ÅğÇÏ¸é ÄŞº¸Á¸ ³ª°¨
+		// ì½¤ë³´ areaì— ìˆëŠ” pc íŒŒí‹° íƒˆí‡´í•˜ë©´ ì½¤ë³´ì¡´ ë‚˜ê°
 		if(pTargetPC->m_pZone->IsComboZone())
 		{
 			CZone* pZone = gserver->FindZone(ZONE_DRATAN);
@@ -5601,7 +5749,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 		}
 
 #ifdef EXTREME_CUBE
-		// Å¥ºêÁ¸¿¡ ÀÖ´Â PC ÆÄÆ¼ Å»ÅğÇÏ¸é Å¥ºêÁ¸ ³ª°¨
+		// íë¸Œì¡´ì— ìˆëŠ” PC íŒŒí‹° íƒˆí‡´í•˜ë©´ íë¸Œì¡´ ë‚˜ê°
 		if(pTargetPC->m_pZone)
 		{
 			if(pTargetPC->m_pZone->IsExtremeCube())
@@ -5636,7 +5784,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 		}
 #endif // EXTREME_CUBE
 
-		// ÀÎÁ¸¿¡ ÀÖ´Â PC ÆÄÆ¼ Å»ÅğÇÏ¸é ÀÎÁ¸À» ³ª°¨(¸â¹ö)
+		// ì¸ì¡´ì— ìˆëŠ” PC íŒŒí‹° íƒˆí‡´í•˜ë©´ ì¸ì¡´ì„ ë‚˜ê°(ë©¤ë²„)
 		if(pTargetPC->m_pZone !=NULL && (pTargetPC->m_pZone->IsExpedRaidZone() || pTargetPC->m_pZone->IsPartyRaidZone()) &&
 			pTargetPC->m_nJoinInzone_ZoneNo >=0 && pTargetPC->m_nJoinInzone_RoomNo >= 0)
 		{
@@ -5655,7 +5803,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 	if (nErrorCode == MSG_HELPER_PARTY_ERROR_KICK_END)
 	{
 		{
-			// ÆÄÆ¼ ÇØÃ¼ ¾Ë¸²
+			// íŒŒí‹° í•´ì²´ ì•Œë¦¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			PartyMsg(rmsg, MSG_PARTY_END);
 
@@ -5692,12 +5840,13 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 			CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
 			if(memlist && memlist->IsPartyCubeMemList())
 			{
+				memlist->GetOutAll();
 				((CPartyCubeMemList*)memlist)->SetParty(NULL);
 			}
 		}
 #endif // EXTREME_CUBE
 
-		// ÆÄÆ¼ Áö¿ì±â
+		// íŒŒí‹° ì§€ìš°ê¸°
 		gserver->m_listParty.erase(pParty->GetBossIndex());
 		pParty->SetEndParty();
 		delete pParty;
@@ -5705,7 +5854,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 	else
 	{
 		{
-			// ÆÄÆ¼¿ø ³ª°¨
+			// íŒŒí‹°ì› ë‚˜ê°
 			CNetMsg::SP rmsg(new CNetMsg);
 			PartyDelMsg(rmsg, false, nTargetIndex);
 
@@ -5715,7 +5864,7 @@ void ProcHelperPartyKickRep(CNetMsg::SP& msg)
 			pParty->SendToAllPC(rmsg, nTargetIndex);
 		}
 
-		// ÆÄÆ¼¸ÅÄª¿¡µµ ÇöÀç ÀÎ¿øÀ» ¾÷µ¥ÀÌÆ® ÇØÁİ´Ï´Ù.
+		// íŒŒí‹°ë§¤ì¹­ì—ë„ í˜„ì¬ ì¸ì›ì„ ì—…ë°ì´íŠ¸ í•´ì¤ë‹ˆë‹¤.
 		CPartyMatchParty * pPartyMatch = gserver->FindPartyMatchPartyByBossIndex( pParty->GetBossIndex() );
 		if( pPartyMatch )
 		{
@@ -5764,6 +5913,18 @@ void ProcHelperPartyChangeBossRep(CNetMsg::SP& msg)
 			HelperPartyBreakReqMsg(rmsg, nNewBossIndex);
 			SEND_Q(rmsg, gserver->m_helper);
 		}
+
+#ifdef EXTREME_CUBE
+		if(pParty->m_cubeUniqueIdx != -1)
+		{
+			CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
+			if(memlist && memlist->IsPartyCubeMemList())
+			{
+				memlist->GetOutAll();
+				((CPartyCubeMemList*)memlist)->SetParty(NULL);
+			}
+		}
+#endif // EXTREME_CUBE
 
 		gserver->m_listParty.erase(pParty->GetBossIndex());
 		pParty->SetEndParty();
@@ -5824,10 +5985,10 @@ void ProcHelperPartyChangeTypeRep(CNetMsg::SP& msg)
 		return ;
 	}
 
-	if(cAllOneSet==MSG_PARTY_SETALLONE_ALL)	//´ëÇ¥ Å¸ÀÔ ¼³Á¤
+	if(cAllOneSet==MSG_PARTY_SETALLONE_ALL)	//ëŒ€í‘œ íƒ€ì… ì„¤ì •
 	{
 		pParty->SetPartyTypeAll(cPartyType);
-	}else if(cAllOneSet==MSG_PARTY_SETALLONE_ONE)	 //¼¼ºĞÈ­ 1°³ ¼³Á¤
+	}else if(cAllOneSet==MSG_PARTY_SETALLONE_ONE)	 //ì„¸ë¶„í™” 1ê°œ ì„¤ì •
 	{
 		pParty->SetPartyType(cDiviType,cPartyType);
 	}
@@ -5839,7 +6000,7 @@ void ProcHelperPartyChangeTypeRep(CNetMsg::SP& msg)
 	}
 }
 
-//ÆÄÆ¼ ÇØÃ¼
+//íŒŒí‹° í•´ì²´
 void ProcHelperPartyEndPartyRep(CNetMsg::SP& msg)
 {
 	int nBossIndex;
@@ -5850,7 +6011,19 @@ void ProcHelperPartyEndPartyRep(CNetMsg::SP& msg)
 	if (!pParty)
 		return ;
 
-	// ÆÄÆ¼ ÇØÃ¼(¸®½ºÆ® »èÁ¦)
+#ifdef EXTREME_CUBE
+	if(pParty->m_cubeUniqueIdx != -1)
+	{
+		CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
+		if(memlist && memlist->IsPartyCubeMemList())
+		{
+			memlist->GetOutAll();
+			((CPartyCubeMemList*)memlist)->SetParty(NULL);
+		}
+	}
+#endif // EXTREME_CUBE
+
+	// íŒŒí‹° í•´ì²´(ë¦¬ìŠ¤íŠ¸ ì‚­ì œ)
 	gserver->m_listParty.erase(pParty->GetBossIndex());
 	pParty->SetEndParty();
 	delete pParty;
@@ -6176,14 +6349,14 @@ void ProcHelperPartyMatchInviteRep(CNetMsg::SP& msg)
 	CPC* pTargetPC = PCManager::instance()->getPlayerByCharIndex(nCharIndex);
 	CParty* pParty = NULL;
 
-	// ÆÄÆ¼ °ü·Ã ¼­¹ö ´Ù¿îµÇ´Â Çö»ó ¹æÁö
+	// íŒŒí‹° ê´€ë ¨ ì„œë²„ ë‹¤ìš´ë˜ëŠ” í˜„ìƒ ë°©ì§€
 	if(!pBossPC || !pTargetPC)
 	{
 		GAMELOG << init("PARTY Error : NULL Check 2") << end;
 		//return;
 	}
 /*
-	// ¿öÇÁ ÁßÀÌ¸é Ãë¼Ò
+	// ì›Œí”„ ì¤‘ì´ë©´ ì·¨ì†Œ
 	if (pBossPC->CanWarp() || pTargetPC->CanWarp())
 	{
 		GAMELOG << init("PARTY Error : NULL Check 4") << end;
@@ -6198,14 +6371,14 @@ void ProcHelperPartyMatchInviteRep(CNetMsg::SP& msg)
 			pParty = gserver->FindPartyByBossIndex(nBossIndex);
 			if (pParty)
 			{
-				// ±âÁ¸ ÆÄÆ¼¿¡ ÃÊ´ë »óÅÂ·Î
+				// ê¸°ì¡´ íŒŒí‹°ì— ì´ˆëŒ€ ìƒíƒœë¡œ
 				pParty->SetRequest(nCharIndex, strCharName);
 				if (pTargetPC)
 					pTargetPC->m_party = pParty;
 			}
 			else
 			{
-				// ½Å±Ô ÆÄÆ¼
+				// ì‹ ê·œ íŒŒí‹°
 				pParty = new CParty(cPartyType, nBossIndex, strBossName, pBossPC, nCharIndex, strCharName);
 
 				if (pBossPC)		pBossPC->m_party = pParty;
@@ -6389,7 +6562,7 @@ void ProcHelperPartyMatchJoinRep(CNetMsg::SP& msg)
 	CPC* pBossPC = PCManager::instance()->getPlayerByCharIndex(nBossIndex);
 	CPC* pReqPC = PCManager::instance()->getPlayerByCharIndex(nReqCharIndex);
 	CParty* pParty = NULL;
-///////////////ÆÄÆ¼¿ÀÅä¸ÅÄª ½Ã ÀüÅõÆÄÆ¼·Î ÆÄÆ¼Å¸ÀÔ ÀüÈ¯///////////////
+///////////////íŒŒí‹°ì˜¤í† ë§¤ì¹­ ì‹œ ì „íˆ¬íŒŒí‹°ë¡œ íŒŒí‹°íƒ€ì… ì „í™˜///////////////
 	if(strReqCharName == "" || cReqCharJob == -1)
 	{
 		if(pReqPC)
@@ -6397,13 +6570,13 @@ void ProcHelperPartyMatchJoinRep(CNetMsg::SP& msg)
 			strReqCharName = pReqPC->m_nick;
 			cReqCharJob = pReqPC->m_job;
 		}
-		else // ¿äÃ» ÇÃ·¹ÀÌ¾î¸¦ ¸øÃ£À» °æ¿ì (°ÔÀÓ¿¡¼­ ³ª°¬À»¶§³ª...)ÀÌ¸§°ú Á÷¾÷ÀÇ ·Î±×¸¦ ÂïÁö ¸øÇÏ±â¿¡ ÀÓ½Ã·Î stringÀ» ³ÖÀ½.
+		else // ìš”ì²­ í”Œë ˆì´ì–´ë¥¼ ëª»ì°¾ì„ ê²½ìš° (ê²Œì„ì—ì„œ ë‚˜ê°”ì„ë•Œë‚˜...)ì´ë¦„ê³¼ ì§ì—…ì˜ ë¡œê·¸ë¥¼ ì°ì§€ ëª»í•˜ê¸°ì— ì„ì‹œë¡œ stringì„ ë„£ìŒ.
 		{
 			strReqCharName = "Reference The Charindex(CANT FIND PC)";
 			cReqCharJob = -1;
 		}
 	}
-///////////////ÆÄÆ¼¿ÀÅä¸ÅÄª ½Ã ÀüÅõÆÄÆ¼·Î ÆÄÆ¼Å¸ÀÔ ÀüÈ¯///////////////
+///////////////íŒŒí‹°ì˜¤í† ë§¤ì¹­ ì‹œ ì „íˆ¬íŒŒí‹°ë¡œ íŒŒí‹°íƒ€ì… ì „í™˜///////////////
 	GAMELOG << init("PARTY DEBUG HELPER MATCH JOIN REP")
 			<< "nErrorCode" << delim << nErrorCode << delim
 			<< "cPartyType" << delim << cPartyType << delim
@@ -6414,14 +6587,14 @@ void ProcHelperPartyMatchJoinRep(CNetMsg::SP& msg)
 			<< "cReqCharJob" << delim << cReqCharJob
 			<< end;
 
-	// ÆÄÆ¼ °ü·Ã ¼­¹ö ´Ù¿îµÇ´Â Çö»ó ¹æÁö
+	// íŒŒí‹° ê´€ë ¨ ì„œë²„ ë‹¤ìš´ë˜ëŠ” í˜„ìƒ ë°©ì§€
 	if(!pBossPC || !pReqPC)
 	{
 		GAMELOG << init("PARTY Error : NULL Check MATCH JOIN REP 1") << end;
 		//return;
 	}
 /*
-	// ¿öÇÁ ÁßÀÌ¸é Ãë¼Ò
+	// ì›Œí”„ ì¤‘ì´ë©´ ì·¨ì†Œ
 	if (pBossPC->CanWarp() || pReqPC->CanWarp())
 	{
 		GAMELOG << init("PARTY Error : NULL Check MATCH JOIN REP 2") << end;
@@ -6436,7 +6609,7 @@ void ProcHelperPartyMatchJoinRep(CNetMsg::SP& msg)
 			pParty = gserver->FindPartyByBossIndex(nBossIndex);
 			if (pParty)
 			{
-				// ±âÁ¸ ÆÄÆ¼ÀÇ ÃÊ´ë »óÅÂ·Î
+				// ê¸°ì¡´ íŒŒí‹°ì˜ ì´ˆëŒ€ ìƒíƒœë¡œ
 				pParty->SetRequest(nReqCharIndex, strReqCharName);
 				if (pReqPC)
 					pReqPC->m_party = pParty;
@@ -6621,14 +6794,14 @@ void ProcHelperPartyMatchJoinAllowRep(CNetMsg::SP& msg)
 
 	CPC* pTargetPC = PCManager::instance()->getPlayerByCharIndex(nTargetIndex);
 
-	// ÆÄÆ¼ °ü·Ã ¼­¹ö ´Ù¿îµÇ´Â Çö»ó ¹æÁö
+	// íŒŒí‹° ê´€ë ¨ ì„œë²„ ë‹¤ìš´ë˜ëŠ” í˜„ìƒ ë°©ì§€
 	if(!pTargetPC)
 	{
 		GAMELOG << init("PARTY Error : NULL Check MATCH JOIN ALLOW REP 1") << end;
 		//return;
 	}
 /*
-	// ¿öÇÁ ÁßÀÌ¸é Ãë¼Ò
+	// ì›Œí”„ ì¤‘ì´ë©´ ì·¨ì†Œ
 	if (pTargetPC->CanWarp())
 	{
 		GAMELOG << init("PARTY Error : NULL Check MATCH JOIN ALLOW REP 2") << end;
@@ -6650,14 +6823,14 @@ void ProcHelperPartyMatchJoinAllowRep(CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÆÄÆ¼¸ÅÄª¿¡µµ ÇöÀç ÀÎ¿øÀ» ¾÷µ¥ÀÌÆ® ÇØÁİ´Ï´Ù.
+	// íŒŒí‹°ë§¤ì¹­ì—ë„ í˜„ì¬ ì¸ì›ì„ ì—…ë°ì´íŠ¸ í•´ì¤ë‹ˆë‹¤.
 	CPartyMatchParty * pPartyMatch = gserver->FindPartyMatchPartyByBossIndex( pParty->GetBossIndex() );
 	if( pPartyMatch )
 	{
 		pPartyMatch->SetMemberCount( pParty->GetMemberCount() );
 	}
 
-	// ÆÄÆ¼¿øµé¿¡°Ô °á°ú ¾Ë¸®±â
+	// íŒŒí‹°ì›ë“¤ì—ê²Œ ê²°ê³¼ ì•Œë¦¬ê¸°
 	{
 		CNetMsg::SP addmsg(new CNetMsg);
 		PartyAddMsg(addmsg, nTargetIndex, strTargetName, pTargetPC, ((pParty->GetBossIndex() == nTargetIndex) ? 1 : 0));
@@ -6666,11 +6839,11 @@ void ProcHelperPartyMatchJoinAllowRep(CNetMsg::SP& msg)
 			const CPartyMember* pMember = pParty->GetMemberByListIndex(i);
 			if (pMember && i != nListIndex)
 			{
-				// Å¸ÀÎ¿¡°Ô targetÀ» Ãß°¡ÇÏ°í
+				// íƒ€ì¸ì—ê²Œ targetì„ ì¶”ê°€í•˜ê³ 
 				if (pMember->GetMemberPCPtr())
 					SEND_Q(addmsg, pMember->GetMemberPCPtr()->m_desc)
 
-					// target¿¡°Ô´Â Å¸ÀÎÀ» Ãß°¡
+					// targetì—ê²ŒëŠ” íƒ€ì¸ì„ ì¶”ê°€
 					if (pTargetPC)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -6698,7 +6871,7 @@ void ProcHelperPartyMatchJoinRejectRep(CNetMsg::SP& msg)
 			<< "nRejectCharIndex" << delim << nRejectCharIndex
 			<< end;
 
-	// nJoinCharIndex·Î ÆÄÆ¼ °Ë»ö
+	// nJoinCharIndexë¡œ íŒŒí‹° ê²€ìƒ‰
 	CParty* pParty = gserver->FindPartyByMemberIndex(nJoinCharIndex, true);
 	if (!pParty)
 	{
@@ -6706,7 +6879,7 @@ void ProcHelperPartyMatchJoinRejectRep(CNetMsg::SP& msg)
 		return ;
 	}
 
-	// °¢°¢ÀÇ CPC ±¸ÇÏ±â
+	// ê°ê°ì˜ CPC êµ¬í•˜ê¸°
 	CPC* pBossPC = pParty->GetMemberByListIndex(0)->GetMemberPCPtr();
 	CPC* pRequestPC = PCManager::instance()->getPlayerByCharIndex(pParty->GetRequestIndex());
 
@@ -6738,19 +6911,20 @@ void ProcHelperPartyMatchJoinRejectRep(CNetMsg::SP& msg)
 		pParty->SetRequest(-1, "");
 		if (pParty->GetMemberCount() < 2)
 		{
-			// ÆÄÆ¼ Á¾·á
+			// íŒŒí‹° ì¢…ë£Œ
 #ifdef EXTREME_CUBE
 			if(pParty->m_cubeUniqueIdx != -1)
 			{
 				CCubeMemList* memlist = gserver->m_extremeCube.FindMemList(pParty);
 				if(memlist && memlist->IsPartyCubeMemList())
 				{
+					memlist->GetOutAll();
 					((CPartyCubeMemList*)memlist)->SetParty(NULL);
 				}
 			}
 #endif // EXTREME_CUBE
 
-			// ÆÄÆ¼ Áö¿ì±â
+			// íŒŒí‹° ì§€ìš°ê¸°
 			gserver->m_listParty.erase(pParty->GetBossIndex());
 			pParty->SetEndParty();
 			delete pParty;
@@ -6805,7 +6979,7 @@ void ProcHelperPartyMatchMemberChangeInfo(CNetMsg::SP& msg)
 
 void ProcHelperPartyInfoEnd(CNetMsg::SP& msg)
 {
-	// ÇïÆÛ·ÎºÎÅÍ ÆÄÆ¼, ÆÄÆ¼ ¸ÅÄª Á¤º¸¸¦ ¸ğµÎ ÀĞ¾î µéÀÌ¸é ¼­¹ö´Â Å¬¶óÀÌ¾ğÆ® Ã³¸®¸¦ ½ÃÀÛÇÑ´Ù.
+	// í—¬í¼ë¡œë¶€í„° íŒŒí‹°, íŒŒí‹° ë§¤ì¹­ ì •ë³´ë¥¼ ëª¨ë‘ ì½ì–´ ë“¤ì´ë©´ ì„œë²„ëŠ” í´ë¼ì´ì–¸íŠ¸ ì²˜ë¦¬ë¥¼ ì‹œì‘í•œë‹¤.
 	gserver->m_bLoadPartyInfo = true;
 }
 
@@ -6828,6 +7002,8 @@ void ProcHelperPartyInfoParty(CNetMsg::SP& msg)
 
 	CParty* pParty = new CParty(cPartyType, nBossIndex, strCharName, NULL, nRequestIndex, strRequestName);
 
+	LOG_INFO("PARTY CALL ProcHelperPartyInfoParty. boss_index[%d], boss_name[%s]", nBossIndex, (const char*)strCharName);
+
 	int i;
 	for (i = 1; i < nMemberCount; i++)
 	{
@@ -6840,7 +7016,7 @@ void ProcHelperPartyInfoParty(CNetMsg::SP& msg)
 
 	gserver->m_listParty.insert(map_listparty_t::value_type(pParty->GetBossIndex(), pParty));
 
-	// ÃÊ´ë ÁßÀÎ °ÍÀÌ ÀÖ¾úÀ¸¸é ÀÚµ¿À¸·Î °ÅÀı Ã³¸®ÇÏµµ·Ï ÇÔ
+	// ì´ˆëŒ€ ì¤‘ì¸ ê²ƒì´ ìˆì—ˆìœ¼ë©´ ìë™ìœ¼ë¡œ ê±°ì ˆ ì²˜ë¦¬í•˜ë„ë¡ í•¨
 	if (nRequestIndex > 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -6945,8 +7121,9 @@ void ProcHelperGuildMemberAdjust( CNetMsg::SP& msg )
 	int ownerindexindex;
 	int charindex;
 	CLCString strPositionName(GUILD_POSITION_NAME+1);
-	int contributeExp;
-	int contributeFame;
+	int contribute_exp, contribute_fame;
+	int contributeExp_min, contributeExp_max;
+	int contributeFame_min, contributeFame_max;
 	int errorcode;
 	int pos;
 
@@ -6954,8 +7131,12 @@ void ProcHelperGuildMemberAdjust( CNetMsg::SP& msg )
 		>> ownerindexindex
 		>> charindex
 		>> strPositionName
-		>> contributeExp
-		>> contributeFame
+		>> contribute_exp
+		>> contribute_fame
+		>> contributeExp_min
+		>> contributeExp_max
+		>> contributeFame_min
+		>> contributeFame_max
 		>> errorcode;
 	RefMsg(msg) >> pos;
 
@@ -6969,12 +7150,13 @@ void ProcHelperGuildMemberAdjust( CNetMsg::SP& msg )
 
 	if( errorcode == MSG_NEW_GUILD_ERROR_ADJUST_OK && guildMember )
 	{
-	//	guildMember->m_guildInfo->positionName( strPositionName );
-	//	guildMember->m_guildInfo->contributeExp( contributeExp );
-	//	guildMember->m_guildInfo->contributeFame( contributeFame );
 		guildMember->positionName( strPositionName );
-		guildMember->contributeExp( contributeExp );
-		guildMember->contributeFame( contributeFame );
+		guildMember->contributeExp(contribute_exp);
+		guildMember->contributeFame(contribute_fame);
+		guildMember->SetContributeExp_min(contributeExp_min);
+		guildMember->SetContributeExp_max(contributeExp_max);
+		guildMember->SetContributeFame_min(contributeFame_min);
+		guildMember->SetContributeFame_max(contributeFame_max);
 		guild->ChangeGradeExPosCount(guildMember->pos(), pos);
 		guildMember->pos(pos);
 		int needGP = guild->GetGradeExPosNeedGuilPoint( pos ) ;
@@ -7044,6 +7226,7 @@ void ProcHelperNewGuildMemberListRep( CNetMsg::SP& msg )
 	char job2[GUILD_MAX_MEMBER];
 	int level[GUILD_MAX_MEMBER];
 	int position[GUILD_MAX_MEMBER];
+	int logout_date[GUILD_MAX_MEMBER];
 
 	RefMsg(msg) >> charindex
 		>> guildindex
@@ -7065,7 +7248,8 @@ void ProcHelperNewGuildMemberListRep( CNetMsg::SP& msg )
 				>> job[i]
 				>> job2[i]
 				>> level[i]
-				>> position[i];
+				>> position[i]
+				>> logout_date[i];
 			strcpy( CharName[i], strCharName );
 			strcpy( PositionName[i], strPositionName );
 			guild->AddGradeExPosCount(position[i]);
@@ -7073,7 +7257,7 @@ void ProcHelperNewGuildMemberListRep( CNetMsg::SP& msg )
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildMemberListRep( rmsg, membercount, membercharindex, cumulatePoint, CharName, PositionName, job, job2, level, position, guild );
+			GuildMemberListRep( rmsg, membercount, membercharindex, cumulatePoint, CharName, PositionName, job, job2, level, position, guild, logout_date );
 			SEND_Q( rmsg, pc->m_desc );
 		}
 	}
@@ -7092,6 +7276,10 @@ void ProcHelperNewGuilManageRep( CNetMsg::SP& msg )
 	int errorcode;
 	int membercount;
 	int membercharindex[GUILD_MAX_MEMBER];
+	int contributeExp_min[GUILD_MAX_MEMBER];
+	int contributeExp_max[GUILD_MAX_MEMBER];
+	int contributeFame_min[GUILD_MAX_MEMBER];
+	int contributeFame_max[GUILD_MAX_MEMBER];
 	int contributeExp[GUILD_MAX_MEMBER];
 	int contributeFame[GUILD_MAX_MEMBER];
 
@@ -7122,15 +7310,17 @@ void ProcHelperNewGuilManageRep( CNetMsg::SP& msg )
 		for( int i = 0; i < membercount; i++ )
 		{
 			RefMsg(msg) >> membercharindex[i]
+				>> contributeExp_min[i]
+				>> contributeExp_max[i]
+				>> contributeFame_min[i]
+				>> contributeFame_max[i]
 				>> contributeExp[i]
 				>> contributeFame[i]
 				>> strCharName
 				>> strPositionName
 				>> level[i]
 				>> position[i];
-#ifdef DEV_GUILD_STASH
 			RefMsg(msg) >> cStashAuth[i];
-#endif //DEV_GUILD_STASH
 			strcpy( charName[i], strCharName );
 			strcpy( positionName[i], strPositionName );
 			guild->AddGradeExPosCount(position[i]);
@@ -7138,11 +7328,7 @@ void ProcHelperNewGuilManageRep( CNetMsg::SP& msg )
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-#ifdef DEV_GUILD_STASH
-			GuildNewManageRep( rmsg, membercount, membercharindex, contributeExp, contributeFame, charName, positionName, level, position, cStashAuth, guild, first );
-#else
-			GuildNewManageRep( rmsg, membercount, membercharindex, contributeExp, contributeFame, charName, positionName, level, position, guild, first );
-#endif //DEV_GUILD_STASH
+			GuildNewManageRep( rmsg, membercount, membercharindex, contributeExp, contributeFame, contributeExp_min, contributeExp_max, contributeFame_min, contributeFame_max, charName, positionName, level, position, cStashAuth, guild, first );
 			SEND_Q( rmsg, pc->m_desc );
 		}
 	}
@@ -7403,7 +7589,7 @@ void ProcHelperNewGuildSkillListRepMsg( CNetMsg::SP& msg )
 		if(checkflag == GUILD_ETC_SKILL_START)
 			endloop = false;
 	}
-	// ¸Ş¼¼Áö Àü¼Û ½ÃÀÛ
+	// ë©”ì„¸ì§€ ì „ì†¡ ì‹œì‘
 	if( error == MSG_NEW_GUILD_SKILL_ERROR_OK )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -7412,7 +7598,7 @@ void ProcHelperNewGuildSkillListRepMsg( CNetMsg::SP& msg )
 								etc_skillcount, etc_skill_index.get(), etc_skill_level.get());
 		SEND_Q(rmsg, pc->m_desc);
 	}
-	// ¸Ş¼¼Áö Àü¼Û ³¡
+	// ë©”ì„¸ì§€ ì „ì†¡ ë
 
 	return ;
 }
@@ -7500,6 +7686,8 @@ void ProcHelperNewGuildMemberList( CNetMsg::SP& msg )
 	int charindex;
 	int contributeExp;
 	int contributeFame;
+	int exp_min, exp_max;
+	int fame_min, fame_max;
 	int cumulatePoint;
 	int channel;
 	int zoneNum;
@@ -7518,6 +7706,10 @@ void ProcHelperNewGuildMemberList( CNetMsg::SP& msg )
 		RefMsg(msg) >> charindex
 			>> contributeExp
 			>> contributeFame
+			>> exp_min
+			>> exp_max
+			>> fame_min
+			>> fame_max
 			>> cumulatePoint
 			>> positionName
 			>> channel
@@ -7528,6 +7720,10 @@ void ProcHelperNewGuildMemberList( CNetMsg::SP& msg )
 
 			member->contributeExp( contributeExp );
 			member->contributeFame( contributeFame );
+			member->SetContributeExp_min(exp_min);
+			member->SetContributeExp_max(exp_max);
+			member->SetContributeFame_min(fame_min);
+			member->SetContributeFame_max(fame_max);
 			member->cumulatePoint( cumulatePoint );
 			member->positionName( positionName );
 			member->channel( channel );
@@ -7639,6 +7835,108 @@ void ProcHelperNewGuildSkillLearnSendMember(CNetMsg::SP& msg)
 	}
 }
 
+void ProcHelperGuildContributeSet(CNetMsg::SP& msg)
+{
+	int char_index;
+	int exp, fame;
+	int error_code;
+
+	RefMsg(msg) >> char_index
+		>> exp
+		>> fame
+		>> error_code;
+	
+	CPC* pc = PCManager::instance()->getPlayerByCharIndex(char_index);
+	if( pc == NULL )
+		return;
+	
+	if(error_code != 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_FAIL );
+		SEND_Q( rmsg, pc->m_desc );
+		return;
+	}
+
+	pc->m_guildInfo->contributeExp(exp);
+	pc->m_guildInfo->contributeFame(fame);
+
+	//ì„±ê³µ íŒ¨í‚· ì „ì†¡
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg( rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_SUCCESS );
+		SEND_Q( rmsg, pc->m_desc );
+	}
+}
+
+void ProcHelperGuildContributeSetAll(CNetMsg::SP& msg)
+{
+	int char_index, guild_index;
+	int exp, fame;
+	int exp_min, exp_max;
+	int fame_min, fame_max;
+	int error_code;
+	
+	RefMsg(msg) >> char_index
+		>> guild_index
+		>> exp
+		>> fame
+		>> exp_min
+		>> exp_max
+		>> fame_min
+		>> fame_max
+		>> error_code;
+
+	CPC* pc = PCManager::instance()->getPlayerByCharIndex(char_index);
+
+	if(pc == NULL)
+		return;
+
+	if(error_code != 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_FAIL);
+		SEND_Q(rmsg, pc->m_desc);
+		return;
+	}
+	else
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		GuildErrorMsg(rmsg, MSG_GUILD_ERROR_CONTRIBUTE_SET_ALL_SUCCESS);
+		SEND_Q(rmsg, pc->m_desc);
+	}
+
+	CGuild* guild = gserver->m_guildlist.findguild(guild_index);
+	
+	if(guild == NULL)
+		return;
+
+	CPC* ch;
+
+	for(int i = 0; i < GUILD_MAX_MEMBER; i++)
+	{
+		if(guild->m_member[i] != NULL)
+		{
+			ch = guild->m_member[i]->GetPC();
+
+			if(ch != NULL)
+			{
+				ch->m_guildInfo->SetContributeExp_min(exp_min);
+				ch->m_guildInfo->SetContributeExp_max(exp_max);
+				ch->m_guildInfo->SetContributeFame_min(fame_min);
+				ch->m_guildInfo->SetContributeFame_max(fame_max);
+				ch->m_guildInfo->contributeExp(exp);
+				ch->m_guildInfo->contributeFame(fame);
+			}
+		}
+	}
+
+	guild->m_guild_contribute_all_exp_min = exp_min;
+	guild->m_guild_contribute_all_exp_max = exp_max;
+	guild->m_guild_contribute_all_fame_min = fame_min;
+	guild->m_guild_contribute_all_fame_max = fame_max;
+}
+
 void ProcHelperPetChangeName( CNetMsg::SP& msg )
 {
 	int err;
@@ -7662,7 +7960,7 @@ void ProcHelperPetChangeName( CNetMsg::SP& msg )
 			GAMELOG << init( "CASH_ITEM_USE_ERROR-notPC" )
 					<< charidx << delim
 					<< 2360 << end;
-			// Helper·Î ·Ñ¹é Ã³¸®
+			// Helperë¡œ ë¡¤ë°± ì²˜ë¦¬
 			PetName = "";
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperPetNameChange( rmsg, charidx, petidx, PetName );
@@ -7683,7 +7981,7 @@ void ProcHelperPetChangeName( CNetMsg::SP& msg )
 						<< 2360 << end;
 
 				{
-					// Helper·Î ·Ñ¹é Ã³¸®
+					// Helperë¡œ ë¡¤ë°± ì²˜ë¦¬
 					PetName = "";
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperPetNameChange( rmsg, charidx, petidx, PetName );
@@ -7709,7 +8007,7 @@ void ProcHelperPetChangeName( CNetMsg::SP& msg )
 			}
 
 			{
-				//Pet ÀÌ¸§ º¯°æ
+				//Pet ì´ë¦„ ë³€ê²½
 				pet->m_name = PetName;
 				CNetMsg::SP rmsg(new CNetMsg);
 				PetNameChange( rmsg, (MSG_EX_PET_CHANGE_NAME_ERROR_TYPE)err, petidx, PetName );
@@ -7718,7 +8016,7 @@ void ProcHelperPetChangeName( CNetMsg::SP& msg )
 			}
 
 			{
-				// item ¼ö·® º¯°æ
+				// item ìˆ˜ëŸ‰ ë³€ê²½
 				CNetMsg::SP rmsg(new CNetMsg);
 				ResponseClient::ItemUseMsg( rmsg, pItem->tab(), pItem->getInvenIndex(), pItem->m_itemProto->getItemIndex(), 0 );
 				SEND_Q( rmsg, pc->m_desc );
@@ -7760,9 +8058,9 @@ void ProcHelperHalloween2007( CNetMsg::SP& msg )
 
 	CPC* ch = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( ch == NULL )
-		return; // ÇØ´çÀ¯Àú ¾øÀ½
+		return; // í•´ë‹¹ìœ ì € ì—†ìŒ
 
-	if( error == 0 ) // ¾ÆÀÌÅÛ Áö±Ş
+	if( error == 0 ) // ì•„ì´í…œ ì§€ê¸‰
 	{
 		int nRow, nCol;
 		CItem* pPriceItem = gserver->m_itemProtoList.CreateItem( nPriceItem[ch->m_job] , -1, 0, 0, 10 );
@@ -7774,7 +8072,7 @@ void ProcHelperHalloween2007( CNetMsg::SP& msg )
 			return;
 		}
 
-		// ¾ÆÀÌÅÛ Áö±Ş
+		// ì•„ì´í…œ ì§€ê¸‰
 		if (ch->m_inventory.addItem(pPriceItem) == false)
 		{
 			delete pPriceItem;
@@ -7791,7 +8089,7 @@ void ProcHelperHalloween2007( CNetMsg::SP& msg )
 			SEND_Q( rmsg, ch->m_desc );
 		}
 	}
-	else	// ÀÌ¹Ì ¹ŞÀºÀû ÀÖÀ½
+	else	// ì´ë¯¸ ë°›ì€ì  ìˆìŒ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventHalloween2007Msg( rmsg, MSG_EVENT_TAKE_DEVILHEAIR, 1 );
@@ -7859,7 +8157,7 @@ void ProcHelperDVDNormalChangeNotice (CNetMsg::SP& msg)
 	DVDDungeonNormalChangeNoticeMsg(rmsg);
 	PCManager::instance()->sendToAll(rmsg);
 
-	//µå¶óÅº ¼ºÁÖ¸¦ Ã£¾Æº¸°í ÀÖÀ¸¸é ÆĞÅ¶ Àü´Ş.
+	//ë“œë¼íƒ„ ì„±ì£¼ë¥¼ ì°¾ì•„ë³´ê³  ìˆìœ¼ë©´ íŒ¨í‚· ì „ë‹¬.
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	int char_index = pCastle->GetOwnerCharIndex();
 
@@ -7917,7 +8215,7 @@ void ProcHelperComboRecallToWaitRoomPrompt(CNetMsg::SP& msg)
 	CParty* party = gserver->FindPartyByBossIndex(bossindex);
 	if(party)
 	{
-		// ÆÄÆ¼°¡ ´øÀü¿¡ ÀÖ´ÂÁö
+		// íŒŒí‹°ê°€ ë˜ì „ì— ìˆëŠ”ì§€
 		int ret;
 		ret = gserver->m_comboZone->FindComboArea(party->m_comboAreaIndex);
 		if(ret == -1)
@@ -7965,16 +8263,16 @@ void ProcHelperAttackPet( CNetMsg::SP& msg )
 
 			if(pCh->m_inventory.getEmptyCount() < 1)
 			{
-				// ÃÖ¼Ò ÀÎº¥ 1Ä­
+				// ìµœì†Œ ì¸ë²¤ 1ì¹¸
 				return;
 			}
 
-			// Æê »ı¼º
+			// í« ìƒì„±
 			CAPet* apet = gserver->m_pApetlist.Create( pCh, pet_dbIndex , pet_protoIndex );
 			if( !apet )
 				return;
 			ADD_TO_BILIST(apet,pCh->m_pApetlist,m_pPrevPet,m_pNextPet);
-			// Æê ¾ÆÀÌÅÛ Áö±Ş
+			// í« ì•„ì´í…œ ì§€ê¸‰
 			CAPetProto* proto = gserver->m_pApetlist.FindProto( pet_protoIndex );
 			if( proto )
 			{
@@ -7996,7 +8294,7 @@ void ProcHelperAttackPet( CNetMsg::SP& msg )
 				{
 					delete petItem;
 
-					// ½ÇÆĞ
+					// ì‹¤íŒ¨
 					GAMELOG << init("CREATE APET FAIL", pCh) << delim
 							<< "APET : " <<  pet_dbIndex << delim << pet_protoIndex
 							<< end;
@@ -8006,20 +8304,20 @@ void ProcHelperAttackPet( CNetMsg::SP& msg )
 		break;
 	case MSG_HELPER_APET_CREATE_FAILED:
 		{
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 		}
 		break;
 
 	case MSG_HELPER_APET_ACCENPT_OK :
 		{
-			// Æê ¸¶Áö¸· Ã³¸® ¼º°ø
+			// í« ë§ˆì§€ë§‰ ì²˜ë¦¬ ì„±ê³µ
 		}
 		break;
 
 	case MSG_HELPER_APET_ACCENPT_FAILED :
 		{
-			// ¸Ş¸ğ¸®¿¡¼­ Æê Ã£°í »èÁ¦
-			// ÇïÆÛ ¿¡ dbindex »èÁ¦ ¿äÃ»
+			// ë©”ëª¨ë¦¬ì—ì„œ í« ì°¾ê³  ì‚­ì œ
+			// í—¬í¼ ì— dbindex ì‚­ì œ ìš”ì²­
 			int pet_dbIndex, item_index ;
 			RefMsg(msg) >> pet_dbIndex
 				>> item_index ;
@@ -8330,7 +8628,7 @@ void ProcHelperCubeStateRep(CNetMsg::SP& msg)
 
 	if(count == 0)
 	{
-		// ¼øÀ§ ¾øÀ½
+		// ìˆœìœ„ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		rmsg->Init(MSG_EXTEND);
 		RefMsg(rmsg) << MSG_EX_EXTREME_CUBE
@@ -8457,7 +8755,7 @@ void ProcHelperEventPhoenix( CNetMsg::SP& msg )
 		return;
 	}
 
-	// ÄÉ¸¯ÅÍ µğºñ¿¡¼­ °Ë»öÇßÀ» ¶§ ÇÇ´Ğ½º ÀÌº¥Æ®°¡ °¡´ÉÇÏ´Ù´Â ÀÀ´äÀÌ ¿ÔÀ» °æ¿ì
+	// ì¼€ë¦­í„° ë””ë¹„ì—ì„œ ê²€ìƒ‰í–ˆì„ ë•Œ í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ê°€ ê°€ëŠ¥í•˜ë‹¤ëŠ” ì‘ë‹µì´ ì™”ì„ ê²½ìš°
 	if ( (MSG_HELPER_EVENT_PHOENIX_ERROR_TYPE)type == MSG_HELPER_EVENT_PHOENIX_OK )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -8466,7 +8764,7 @@ void ProcHelperEventPhoenix( CNetMsg::SP& msg )
 		return;
 	}
 
-	// ÄÉ¸¯ÅÍ µğºñ¿¡¼­ °Ë»öÇßÀ» ¶§ ·¹º§ÀÌ 100À» ³Ñ´Â °ÍÀÌ ¾ø¾î¼­ ÇÇ´Ğ½º ÀÌº¥Æ® ÀÚ°İÀÌ ¾ÈµÈ´Ù´Â ÀÀ´ä
+	// ì¼€ë¦­í„° ë””ë¹„ì—ì„œ ê²€ìƒ‰í–ˆì„ ë•Œ ë ˆë²¨ì´ 100ì„ ë„˜ëŠ” ê²ƒì´ ì—†ì–´ì„œ í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ìê²©ì´ ì•ˆëœë‹¤ëŠ” ì‘ë‹µ
 	else if ( (MSG_HELPER_EVENT_PHOENIX_ERROR_TYPE)type == MSG_HELPER_EVENT_PHOENIX_ERROR_REQUIREMENT )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -8476,7 +8774,7 @@ void ProcHelperEventPhoenix( CNetMsg::SP& msg )
 	}
 }
 
-//¿¡·¯
+//ì—ëŸ¬
 void ProcHelperExpedErrorRep(CNetMsg::SP& msg)
 {
 	unsigned char errorType;
@@ -8495,12 +8793,12 @@ void ProcHelperExpedErrorRep(CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 }
-//»ı¼º (ÆÄÆ¼ ÀüÈ¯)
+//ìƒì„± (íŒŒí‹° ì „í™˜)
 void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 {
 	char cExpedType1,cExpedType2,cExpedType3, cExpedType4, cExpedType5;
 	int nMemberCount, nBossIndex;
-	int nResult=0;	//Ã³¸® °á°ú
+	int nResult=0;	//ì²˜ë¦¬ ê²°ê³¼
 	int i, j;
 
 	CLCString BossName(MAX_CHAR_NAME_LENGTH + 1);
@@ -8520,12 +8818,12 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 			<< "BossName" << delim << BossName
 			<< end;
 
-	int* pCharIndex		 = new int[nMemberCount];			// Ä³¸¯ÅÍ ÀÎµ¦½º
-	CLCString* pCharName = new CLCString[nMemberCount];		// Ä³¸¯ÅÍ ÀÌ¸§
-	int* pGroupType		 = new int[nMemberCount];			// ±×·ì Å¸ÀÔ
-	int* pMemberType	 = new int[nMemberCount];			// ¸â¹ö Å¸ÀÔ
-	int* pSetLabelType	 = new int[nMemberCount];			// Ç¥½Ä
-	int* pQuitType		 = new int[nMemberCount];			// Á¤»ó ,ºñÁ¤»ó
+	int* pCharIndex		 = new int[nMemberCount];			// ìºë¦­í„° ì¸ë±ìŠ¤
+	CLCString* pCharName = new CLCString[nMemberCount];		// ìºë¦­í„° ì´ë¦„
+	int* pGroupType		 = new int[nMemberCount];			// ê·¸ë£¹ íƒ€ì…
+	int* pMemberType	 = new int[nMemberCount];			// ë©¤ë²„ íƒ€ì…
+	int* pSetLabelType	 = new int[nMemberCount];			// í‘œì‹
+	int* pQuitType		 = new int[nMemberCount];			// ì •ìƒ ,ë¹„ì •ìƒ
 
 	for( i=0; i < nMemberCount; i++)
 	{
@@ -8555,24 +8853,24 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 	CParty* party = gserver->FindPartyByBossIndex(nBossIndex);
 	if(party && party->m_cubeUniqueIdx > 0)
 	{
-		nResult = 0;	//½ÇÆĞ
+		nResult = 0;	//ì‹¤íŒ¨
 		goto SKIP_EXPEDCREATEREP;
 	}
 #endif
 
 	if(!pBoss || pExped )
 	{
-		nResult = 0;	//½ÇÆĞ
+		nResult = 0;	//ì‹¤íŒ¨
 		goto SKIP_EXPEDCREATEREP;
 	}
 
-	// ½Å±Ô ¿øÁ¤´ë »ı¼º
+	// ì‹ ê·œ ì›ì •ëŒ€ ìƒì„±
 	pExped = new CExpedition(cExpedType1, cExpedType2, cExpedType3, cExpedType4, cExpedType5, nBossIndex,(const char*)BossName,MSG_EXPED_GROUP_1,MSG_EXPED_MEMBERTYPE_BOSS,pBoss);
 	if(pExped)
 	{
 		if(pBoss)
 		{
-			//¿øÁ¤´ë Æ÷ÀÎÅÍ ÁöÁ¤(º¸½º)
+			//ì›ì •ëŒ€ í¬ì¸í„° ì§€ì •(ë³´ìŠ¤)
 			pExped->SetMemberPCPtr(pBoss->m_index, pBoss);
 			pBoss->m_Exped = pExped;
 		}
@@ -8585,11 +8883,11 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 			{
 				if(nBossIndex != pCharIndex[i])
 				{
-					//´ë¿ø Ãß°¡
+					//ëŒ€ì› ì¶”ê°€
 					pExpMember = (CExpedMember*) pExped->Join(pCharIndex[i],pCharName[i],MSG_EXPED_MEMBERTYPE_NORMAL,pMember);
 					if(pExpMember)
 					{
-						//¿øÁ¤´ë Æ÷ÀÎÅÍ ÁöÁ¤(´ë¿ø)
+						//ì›ì •ëŒ€ í¬ì¸í„° ì§€ì •(ëŒ€ì›)
 						pExped->SetMemberPCPtr(pMember->m_index, pMember);
 						pMember->m_Exped = pExped;
 
@@ -8599,9 +8897,9 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 						nJoinCnt++;
 					}
 				}
-			}else  //·Î±×¾Æ¿ô Ä³¸¯ÅÍ Á¶ÀÎ Ã³¸®
+			}else  //ë¡œê·¸ì•„ì›ƒ ìºë¦­í„° ì¡°ì¸ ì²˜ë¦¬
 			{
-				//´ë¿ø Ãß°¡
+				//ëŒ€ì› ì¶”ê°€
 				pExpMember = (CExpedMember*) pExped->Join(pCharIndex[i],pCharName[i],MSG_EXPED_MEMBERTYPE_NORMAL,pMember);
 				if(pExpMember)
 				{
@@ -8615,24 +8913,24 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 
 		if((pExped->GetMemberCount() - 1) == nJoinCnt )
 		{
-			// ±âÁ¸ ÆÄÆ¼ ¸®½ºÆ® Á¦°Å
+			// ê¸°ì¡´ íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ì œê±°
 			CParty* pParty = gserver->FindPartyByBossIndex(nBossIndex);
 			if (pParty)
 			{
-				// ÆÄÆ¼ Áö¿ì±â
+				// íŒŒí‹° ì§€ìš°ê¸°
 				gserver->m_listParty.erase(pParty->GetBossIndex());
 				pParty->SetEndParty();
 				delete pParty;
 			}
 
 			{
-				//°á°ú Àü¼Û(¿øÁ¤´ë¿ø ¸ğµÎ)
+				//ê²°ê³¼ ì „ì†¡(ì›ì •ëŒ€ì› ëª¨ë‘)
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExpedCreateRepMsg(rmsg,cExpedType1,cExpedType2,cExpedType3,nBossIndex,BossName,nMemberCount,pCharIndex,pCharName,pGroupType,pMemberType,pSetLabelType,pQuitType);
 				pExped->SendToAllPC(rmsg);
 			}
 
-			// ¼º°ø	(¸®½ºÆ® Ãß°¡)
+			// ì„±ê³µ	(ë¦¬ìŠ¤íŠ¸ ì¶”ê°€)
 			gserver->m_listExped.insert(map_listexped_t::value_type(pExped->GetBossIndex(), pExped));
 
 			for( i = 0; i < MAX_EXPED_GROUP; i++)
@@ -8640,10 +8938,10 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 				for( j = 0; j < MAX_EXPED_GMEMBER; j++)
 				{
 					const CExpedMember* pMember = pExped->GetMemberByListIndex(i,j);
-					// ¸ğµÎ Àü¼Û
+					// ëª¨ë‘ ì „ì†¡
 					if (pMember)
 					{
-						//´ë¿øµé Á¤º¸ ==> ³ª¿¡°Ô Àü¼Û
+						//ëŒ€ì›ë“¤ ì •ë³´ ==> ë‚˜ì—ê²Œ ì „ì†¡
 						CNetMsg::SP rmsg(new CNetMsg);
 						ExpedAddMsg(rmsg, pMember->GetCharIndex(), pMember->GetCharName(), i, pMember->GetMemberType(), pMember->GetListIndex(), pMember->GetMemberPCPtr());
 						pExped->SendToAllPC( rmsg, -1 );
@@ -8658,19 +8956,19 @@ void ProcHelperExped_CreateRep(CNetMsg::SP& msg)
 
 			pExped->SetMemberRegister_AfterGoZone(pBoss);
 
-			nResult = 1;	//¼º°ø
+			nResult = 1;	//ì„±ê³µ
 		}else
 		{
-			nResult = 0;	//½ÇÆĞ
+			nResult = 0;	//ì‹¤íŒ¨
 		}
 	}else
 	{
-		nResult = 0;	//½ÇÆĞ
-		//¿¡·¯
+		nResult = 0;	//ì‹¤íŒ¨
+		//ì—ëŸ¬
 	}
 
 SKIP_EXPEDCREATEREP:
-	// ¼º°øÈÄ ¼­¹ö·Î ¿äÃ» °á°ú(ÆÄÆ¼ Á¦°Å Helper)(¹Ì±¸Çö)
+	// ì„±ê³µí›„ ì„œë²„ë¡œ ìš”ì²­ ê²°ê³¼(íŒŒí‹° ì œê±° Helper)(ë¯¸êµ¬í˜„)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExpedCreateResultMsg(rmsg, nResult, nBossIndex);
@@ -8685,7 +8983,7 @@ SKIP_EXPEDCREATEREP:
 	delete[] pQuitType;
 }
 
-//ÃÊ´ë
+//ì´ˆëŒ€
 void ProcHelperExped_InviteRep(CNetMsg::SP& msg)
 {
 	int			nBossIndex;
@@ -8728,14 +9026,14 @@ void ProcHelperExped_InviteRep(CNetMsg::SP& msg)
 	CExpedition* pExped = gserver->FindExpedByBossIndex(nBossIndex);
 	if (pExped)
 	{
-		// ±âÁ¸ ¿øÁ¤´ë ÃÊ´ë »óÅÂ·Î
+		// ê¸°ì¡´ ì›ì •ëŒ€ ì´ˆëŒ€ ìƒíƒœë¡œ
 		pExped->SetRequest(nTargetIndex, strTargetName);
 		if (pTargetPC)
 			pTargetPC->m_Exped = pExped;
 	}
 
 	{
-		//ÃÊ´ë ¸Ş¼¼Áö
+		//ì´ˆëŒ€ ë©”ì„¸ì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedInviteRepMsg(rmsg, cExpedType1, cExpedType2, cExpedType3, nBossIndex, strBossName);
 		if (pBossPC)		SEND_Q(rmsg, pBossPC->m_desc);
@@ -8743,7 +9041,7 @@ void ProcHelperExped_InviteRep(CNetMsg::SP& msg)
 	}
 }
 
-//ÃÊ´ë ¼ö¶ô
+//ì´ˆëŒ€ ìˆ˜ë½
 void ProcHelperExped_AllowRep(CNetMsg::SP& msg)
 {
 	int			nBossIndex;
@@ -8797,7 +9095,7 @@ void ProcHelperExped_AllowRep(CNetMsg::SP& msg)
 
 	if(nErrorCode == MSG_EXPED_ERROR_ALLOW_OK)
 	{
-		//»õ·Î¿î Å¸°Ù => ¿øÁ¤´ë¿ø
+		//ìƒˆë¡œìš´ íƒ€ê²Ÿ => ì›ì •ëŒ€ì›
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedAddMsg(rmsg, nTargetIndex, strTargetName, nTargetGroup, nTargetMember, nTargetListIndex, pTargetPC);
 		CNetMsg::SP addmsg(new CNetMsg);
@@ -8818,7 +9116,7 @@ void ProcHelperExped_AllowRep(CNetMsg::SP& msg)
 			}
 		}
 
-		//¿øÁ¤´ë¿ø Á¤º¸  => »õ·Î¿î Å¸°Ù
+		//ì›ì •ëŒ€ì› ì •ë³´  => ìƒˆë¡œìš´ íƒ€ê²Ÿ
 		for ( i = 0; i < MAX_EXPED_GROUP; i++)
 		{
 			for( j=0; j < MAX_EXPED_GMEMBER; j++)
@@ -8826,7 +9124,7 @@ void ProcHelperExped_AllowRep(CNetMsg::SP& msg)
 				const CExpedMember* pMember = pExped->GetMemberByListIndex(i,j);
 				if (pMember)
 				{
-					// target¿¡°Ô´Â Å¸ÀÎÀ» Ãß°¡
+					// targetì—ê²ŒëŠ” íƒ€ì¸ì„ ì¶”ê°€
 					CNetMsg::SP rmsg(new CNetMsg);
 					ExpedAddMsg(rmsg, pMember->GetCharIndex(), pMember->GetCharName(), pMember->GetGroupType(), pMember->GetMemberType(),pMember->GetListIndex(), pMember->GetMemberPCPtr());
 					SEND_Q(rmsg, pTargetPC->m_desc);
@@ -8853,7 +9151,7 @@ void ProcHelperExped_AllowRep(CNetMsg::SP& msg)
 	}
 }
 
-//ÃÊ´ë °ÅÀı
+//ì´ˆëŒ€ ê±°ì ˆ
 void ProcHelperExped_RejectRep(CNetMsg::SP& msg)
 {
 	int			nBossIndex;
@@ -8916,7 +9214,7 @@ void ProcHelperExped_RejectRep(CNetMsg::SP& msg)
 		pExped->SetRequest(-1, "");
 		if (pExped->GetMemberCount() < 2)
 		{
-			// ¿øÁ¤´ë Á¾·á
+			// ì›ì •ëŒ€ ì¢…ë£Œ
 			gserver->m_listExped.erase(pExped->GetBossIndex());
 			pExped->SetEndExped();
 			delete pExped;
@@ -8924,13 +9222,13 @@ void ProcHelperExped_RejectRep(CNetMsg::SP& msg)
 	}
 }
 
-//Å»Åğ(³ª°¨)
+//íƒˆí‡´(ë‚˜ê°)
 void ProcHelperExped_QuitRep(CNetMsg::SP& msg)
 {
 	int			nBossIndex;
 	int			nTargetIndex;
 	int			nErrorCode;
-	int			nQuitMode;			// Á¤»ó,ºñÁ¤»ó ±¸ºĞ
+	int			nQuitMode;			// ì •ìƒ,ë¹„ì •ìƒ êµ¬ë¶„
 	CLCString	strOldBossName(MAX_CHAR_NAME_LENGTH + 1);
 
 	RefMsg(msg) >> nBossIndex
@@ -8951,7 +9249,7 @@ void ProcHelperExped_QuitRep(CNetMsg::SP& msg)
 
 	if (nErrorCode == MSG_EXPED_ERROR_QUIT_END)
 	{
-		// ¿øÁ¤´ë Á¾·á
+		// ì›ì •ëŒ€ ì¢…ë£Œ
 		gserver->m_listExped.erase(pExped->GetBossIndex());
 		pExped->SetEndExped();
 		delete pExped;
@@ -8959,7 +9257,7 @@ void ProcHelperExped_QuitRep(CNetMsg::SP& msg)
 	else
 	{
 		{
-			// ¿øÁ¤´ë¿ø ³ª°¨
+			// ì›ì •ëŒ€ì› ë‚˜ê°
 			CNetMsg::SP rmsg(new CNetMsg);
 			ExpedQuitRepMsg(rmsg, nTargetIndex, nQuitMode);
 			pExped->SendToAllPC(rmsg);
@@ -8971,10 +9269,10 @@ void ProcHelperExped_QuitRep(CNetMsg::SP& msg)
 			pExped->DeleteMember(nTargetIndex);
 		}
 
-		// º¸½º º¯°æ ¾Ë¸²(º¸½º º¯°æ Ã³¸®:ÀÚµ¿ À§ÀÓ Ã³¸® ÇÊ¿ä)
+		// ë³´ìŠ¤ ë³€ê²½ ì•Œë¦¼(ë³´ìŠ¤ ë³€ê²½ ì²˜ë¦¬:ìë™ ìœ„ì„ ì²˜ë¦¬ í•„ìš”)
 		if (nBossIndex == nTargetIndex)
 		{
-			//³ª°¡´Â Ä³¸¯ÅÍ°¡ º¸½ºÀÌ¸é À§ÀÓÇÒ º¸½º¸¦ È¹µæ ÇÔ
+			//ë‚˜ê°€ëŠ” ìºë¦­í„°ê°€ ë³´ìŠ¤ì´ë©´ ìœ„ì„í•  ë³´ìŠ¤ë¥¼ íšë“ í•¨
 			CExpedMember* pNewBossMember = (CExpedMember*) pExped->FindNextBoss();
 
 			if(pNewBossMember)
@@ -9000,7 +9298,7 @@ void ProcHelperExped_QuitRep(CNetMsg::SP& msg)
 	}
 }
 
-//°­Åğ
+//ê°•í‡´
 void ProcHelperExped_KickRep(CNetMsg::SP& msg)
 {
 	int	nBossIndex;
@@ -9029,7 +9327,7 @@ void ProcHelperExped_KickRep(CNetMsg::SP& msg)
 		pTargetPC->CancelDamageLink();
 		pTargetPC->m_Exped = NULL;
 
-		// ÀÎÁ¸¿¡ ÀÖ´Â PC ÆÄÆ¼ Å»ÅğÇÏ¸é ÀÎÁ¸À» ³ª°¨(¸â¹ö)
+		// ì¸ì¡´ì— ìˆëŠ” PC íŒŒí‹° íƒˆí‡´í•˜ë©´ ì¸ì¡´ì„ ë‚˜ê°(ë©¤ë²„)
 		if(pTargetPC->m_nJoinInzone_ZoneNo >=0 && pTargetPC->m_nJoinInzone_RoomNo >= 0)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -9041,13 +9339,13 @@ void ProcHelperExped_KickRep(CNetMsg::SP& msg)
 	pExped->SetMemberPCPtr(nTargetIndex, NULL);
 	pExped->DeleteMember(nTargetIndex);
 	if(pTargetPC)
-		pTargetPC->SetExpedLabel(-1); // ¶óº§À» ÃÊ±âÈ­ ÇØÁØ´Ù.
+		pTargetPC->SetExpedLabel(-1); // ë¼ë²¨ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
 
 	bool bAllMsgSend= true;
 
 	if (nErrorCode == MSG_EXPED_ERROR_KICK_END)
 	{
-		// ¿øÁ¤´ë Á¾·á
+		// ì›ì •ëŒ€ ì¢…ë£Œ
 		gserver->m_listExped.erase(pExped->GetBossIndex());
 		pExped->SetEndExped();
 		delete pExped;
@@ -9055,7 +9353,7 @@ void ProcHelperExped_KickRep(CNetMsg::SP& msg)
 	}
 
 	{
-		// ÆÄÆ¼¿ø ³ª°¨
+		// íŒŒí‹°ì› ë‚˜ê°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedKickMsg(rmsg, nTargetIndex);
 
@@ -9067,7 +9365,7 @@ void ProcHelperExped_KickRep(CNetMsg::SP& msg)
 	}
 }
 
-//´ëÀå À§ÀÓ
+//ëŒ€ì¥ ìœ„ì„
 void ProcHelperExped_ChangeBossRep(CNetMsg::SP& msg)
 {
 	int	nBossIndex;
@@ -9105,7 +9403,7 @@ void ProcHelperExped_ChangeBossRep(CNetMsg::SP& msg)
 	}
 }
 
-//Å¸ÀÔº¯°æ
+//íƒ€ì…ë³€ê²½
 void ProcHelperExped_ChangeTypeRep(CNetMsg::SP& msg)
 {
 	int nBossIndex;
@@ -9136,7 +9434,7 @@ void ProcHelperExped_ChangeTypeRep(CNetMsg::SP& msg)
 	}
 }
 
-//ºÎ´ëÀå ÀÓ¸í
+//ë¶€ëŒ€ì¥ ì„ëª…
 void ProcHelperExped_SetMBossRep(CNetMsg::SP& msg)
 {
 	int	nBossIndex, nNewMBossIndex;
@@ -9164,10 +9462,10 @@ void ProcHelperExped_SetMBossRep(CNetMsg::SP& msg)
 	pMember =  (CExpedMember*)pExped->GetMemberByListIndex(nGroup, nListindex);
 	if(pMember)
 	{
-		//ºÎ´ëÀå ¼ö Ã¼Å©
+		//ë¶€ëŒ€ì¥ ìˆ˜ ì²´í¬
 		if(pExped->GetGroupMembertypeCount(pMember->GetGroupType(),MSG_EXPED_MEMBERTYPE_MBOSS) >= 1)
 		{
-			//¿¡·¯:ÇÑ ±×·ì¿¡ ºÎ´ëÀå ¼ö ÃÊ°ú
+			//ì—ëŸ¬:í•œ ê·¸ë£¹ì— ë¶€ëŒ€ì¥ ìˆ˜ ì´ˆê³¼
 			return;
 		}
 
@@ -9180,7 +9478,7 @@ void ProcHelperExped_SetMBossRep(CNetMsg::SP& msg)
 	}
 }
 
-//ºÎ´ëÀå ÇØÀÓ
+//ë¶€ëŒ€ì¥ í•´ì„
 void ProcHelperExped_ResetMBossRep(CNetMsg::SP& msg)
 {
 	int	nBossIndex, nNewMBossIndex;
@@ -9210,7 +9508,7 @@ void ProcHelperExped_ResetMBossRep(CNetMsg::SP& msg)
 	{
 		if(pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_MBOSS)
 		{
-			//¿¡·¯: ºÎ´ëÀå¾Æ ¾Æ´Ô
+			//ì—ëŸ¬: ë¶€ëŒ€ì¥ì•„ ì•„ë‹˜
 			return;
 		}
 
@@ -9223,7 +9521,7 @@ void ProcHelperExped_ResetMBossRep(CNetMsg::SP& msg)
 	}
 }
 
-//¿øÁ¤´ë ÇØÃ¼
+//ì›ì •ëŒ€ í•´ì²´
 void ProcHelperExped_EndExpedRep(CNetMsg::SP& msg)
 {
 	int	nBossIndex;
@@ -9238,13 +9536,13 @@ void ProcHelperExped_EndExpedRep(CNetMsg::SP& msg)
 	if (!pExped)
 		return;
 
-	//»èÁ¦
+	//ì‚­ì œ
 	gserver->m_listExped.erase(pExped->GetBossIndex());
 	pExped->SetEndExped();
 	delete pExped;
 }
 
-//±×·ì ÀÌµ¿
+//ê·¸ë£¹ ì´ë™
 void ProcHelperExped_MoveGroupRep(CNetMsg::SP& msg)
 {
 	int nBossIndex, nSourceGroup, nMoveCharIndex, nTargetGroup, nTargetListindex;
@@ -9269,7 +9567,7 @@ void ProcHelperExped_MoveGroupRep(CNetMsg::SP& msg)
 
 	if(pExped->MoveGroup(nSourceGroup,nMoveCharIndex,nTargetGroup,nTargetListindex))
 	{
-		//¼º°ø
+		//ì„±ê³µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedMoveGroupRepMsg(rmsg, nSourceGroup, nMoveCharIndex, nTargetGroup, nTargetListindex);
 		pExped->SendToAllPC(rmsg, -1);
@@ -9277,7 +9575,7 @@ void ProcHelperExped_MoveGroupRep(CNetMsg::SP& msg)
 }
 
 
-//¿¡·¯
+//ì—ëŸ¬
 void ProcHelperRaidErrorRep(CNetMsg::SP& msg)
 {
 	unsigned char errorType;
@@ -9301,7 +9599,7 @@ void ProcHelperRaidErrorRep(CNetMsg::SP& msg)
 	}
 }
 
-//·ë¹øÈ£ È¹µæ ÈÄ Ã³¸®(°³º°Àû Ã³¸®)
+//ë£¸ë²ˆí˜¸ íšë“ í›„ ì²˜ë¦¬(ê°œë³„ì  ì²˜ë¦¬)
 void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 {
 	int nCharIndex, nZoneNo, nRoomNo, nBossIndex, nBossRoomNo;
@@ -9309,7 +9607,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 	RefMsg(msg) >> nCharIndex
 		>> nZoneNo
 		>> nRoomNo
-		>> nBossIndex	  //ÆÄÆ¼ ¿øÁ¤´ë º¸½º ÀÎµ¦½º
+		>> nBossIndex	  //íŒŒí‹° ì›ì •ëŒ€ ë³´ìŠ¤ ì¸ë±ìŠ¤
 		>> nBossRoomNo;
 	int nDifficulty = -1;
 	RefMsg(msg) >> nDifficulty;
@@ -9329,14 +9627,14 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 		return;
 
 	CZone* pZone=NULL;
-	//int nCurrentZoneNo = ch->m_nJoinInzone_ZoneNo; 34¹øÁ¸¿¡¼­ 33¹øÁ¸À¸·Î ÀÌµ¿ ½Ã ÀÔ±¸·Î ÀÌµ¿½ÃÅ´.
+	//int nCurrentZoneNo = ch->m_nJoinInzone_ZoneNo; 34ë²ˆì¡´ì—ì„œ 33ë²ˆì¡´ìœ¼ë¡œ ì´ë™ ì‹œ ì…êµ¬ë¡œ ì´ë™ì‹œí‚´.
 	int nCurrentZoneNo = ch->m_pZone->m_index;
 
 	if((nZoneNo==ZONE_ALTER_OF_DARK || nZoneNo==ZONE_AKAN_TEMPLE
 			|| nZoneNo == ZONE_TARIAN_DUNGEON
 		) && nRoomNo != nBossRoomNo)
 	{
-		//¿¡·¯: ±Í¼ÓµÈ ÀÎÁ¸ Á¤º¸°¡ ¿øÁ¤´ëÀå ´Ş¶ó Á¢¼Ó ºÒ°¡
+		//ì—ëŸ¬: ê·€ì†ëœ ì¸ì¡´ ì •ë³´ê°€ ì›ì •ëŒ€ì¥ ë‹¬ë¼ ì ‘ì† ë¶ˆê°€
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_NOTSAMEBOSSROOMNO);
 		SEND_Q(rmsg, ch->m_desc);
@@ -9349,10 +9647,10 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 	{
 		CArea* area = NULL;
 
-		// ¿øÁ¤´ë¸¦ Ã£´Â´Ù.
+		// ì›ì •ëŒ€ë¥¼ ì°¾ëŠ”ë‹¤.
 		if (ch->IsExped())
 		{
-			// µé¾î°¡·Á´Â Á¸ÀÇ Á¤º¸°¡ ±âÁ¸ ·¹ÀÌµå Á¤º¸ÀÇ Á¸ÀÌ ¾Æ´Ï¸é ¿¡·¯¸Ş½ÃÁö¸¦ Ãâ·Â
+			// ë“¤ì–´ê°€ë ¤ëŠ” ì¡´ì˜ ì •ë³´ê°€ ê¸°ì¡´ ë ˆì´ë“œ ì •ë³´ì˜ ì¡´ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì¶œë ¥
 			if(ch->m_Exped->m_nRaidZoneNum != -1 && ch->m_Exped->m_nRaidZoneNum != nZoneNo)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -9361,7 +9659,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 				goto ERROR_RETURN;
 			}
 
-			// ´Ù¸¥ ¸É¹ö°¡ ÀÌ¹Ì µé¾î°¡ ÀÖÀ¸¸é µû¶ó °£´Ù.
+			// ë‹¤ë¥¸ ë§´ë²„ê°€ ì´ë¯¸ ë“¤ì–´ê°€ ìˆìœ¼ë©´ ë”°ë¼ ê°„ë‹¤.
 			if(ch->m_Exped->m_nRaidAreaNum != -1)
 			{
 				area = pZone->m_area + ch->m_Exped->m_nRaidAreaNum;
@@ -9375,15 +9673,15 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 			}
 		}
 
-		// ÆÄÆ¼ ·¹ÀÌµåÀÌ¸é ÆÄÆ¼¸¦ Ã£´Â´Ù.
+		// íŒŒí‹° ë ˆì´ë“œì´ë©´ íŒŒí‹°ë¥¼ ì°¾ëŠ”ë‹¤.
 		else if(ch->IsParty())
 		{
-			// ´Ù¸¥ ¸É¹ö°¡ ÀÌ¹Ì µé¾î°¡ ÀÖÀ¸¸é µû¶ó °£´Ù.
+			// ë‹¤ë¥¸ ë§´ë²„ê°€ ì´ë¯¸ ë“¤ì–´ê°€ ìˆìœ¼ë©´ ë”°ë¼ ê°„ë‹¤.
 			if(ch->m_party->m_nRaidAreaNum != -1)
 				area = pZone->m_area + ch->m_party->m_nRaidAreaNum;
 		}
 
-		// ÆÄÆ¼¿Í ·¹ÀÌµå Áß ¾Æ¹«°Íµµ ¾Æ´Ï¸é ¿¡·¯ ¸Ş¼¼Áö
+		// íŒŒí‹°ì™€ ë ˆì´ë“œ ì¤‘ ì•„ë¬´ê²ƒë„ ì•„ë‹ˆë©´ ì—ëŸ¬ ë©”ì„¸ì§€
 		else
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -9392,13 +9690,13 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 			goto ERROR_RETURN;
 		}
 
-		// area¿¡ °ªÀ» ¸ø ³Ö¾úÀ¸¸é, Ã³À½ ÀÔÀåÇÏ´Â °ÍÀÌ¹Ç·Î ºó area·Î °£´Ù.
+		// areaì— ê°’ì„ ëª» ë„£ì—ˆìœ¼ë©´, ì²˜ìŒ ì…ì¥í•˜ëŠ” ê²ƒì´ë¯€ë¡œ ë¹ˆ areaë¡œ ê°„ë‹¤.
 		if(!area)
 		{
 			int a = pZone->FindEmptyArea();
 			if(a == -1)
 			{
-				//¿¡·¯: ÇöÀç ÀÎ½ºÅÏ½º ³Ê¹« ¸¹¾Æ ´õÀÌ»ó »ı¼º ºÒ°¡
+				//ì—ëŸ¬: í˜„ì¬ ì¸ìŠ¤í„´ìŠ¤ ë„ˆë¬´ ë§ì•„ ë”ì´ìƒ ìƒì„± ë¶ˆê°€
 				CNetMsg::SP rmsg(new CNetMsg);
 				RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_ROOMCOUNT_FULL);
 				SEND_Q(rmsg, ch->m_desc);
@@ -9409,7 +9707,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 			if(!area)
 				goto ERROR_RETURN;
 
-			// ´Ù¸¥ ¸É¹öµéÀ» À§ÇØ area ³Ñ¹ö¸¦ ÀúÀåÇØµĞ´Ù.
+			// ë‹¤ë¥¸ ë§´ë²„ë“¤ì„ ìœ„í•´ area ë„˜ë²„ë¥¼ ì €ì¥í•´ë‘”ë‹¤.
 			if(ch->IsParty())
 			{
 				ch->m_party->m_nRaidZoneNum = nZoneNo;
@@ -9431,7 +9729,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 
 		if(ch->IsExped() && pZone->IsExpedRaidZone())
 		{
-			//ÇöÀç µé¾î¿Â Á¸, ·ë¹øÈ£ È¹µæ
+			//í˜„ì¬ ë“¤ì–´ì˜¨ ì¡´, ë£¸ë²ˆí˜¸ íšë“
 			ch->m_nJoinInzone_ZoneNo = nZoneNo;
 			ch->m_nJoinInzone_RoomNo = nRoomNo;
 			ch->m_nJoinInzone_AreaNo = area->m_index;
@@ -9458,7 +9756,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 					<< end;
 		}
 
-		// ¿øÁ¤´ë ·¹ÀÌµå Á¸ÀÌ ¾Æ´Ï¸é ÆÄÆ¼ ·¹ÀÌµåÀÌ´Ù.
+		// ì›ì •ëŒ€ ë ˆì´ë“œ ì¡´ì´ ì•„ë‹ˆë©´ íŒŒí‹° ë ˆì´ë“œì´ë‹¤.
 		else if(ch->IsParty() && pZone->IsPartyRaidZone())
 		{
 			if(nCurrentZoneNo == ZONE_CAPPELLA_2 && nZoneNo == ZONE_CAPPELLA_1)
@@ -9466,7 +9764,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 				extra = 2;
 			}
 
-			//ÇöÀç µé¾î¿Â Á¸, ·ë¹øÈ£ È¹µæ
+			//í˜„ì¬ ë“¤ì–´ì˜¨ ì¡´, ë£¸ë²ˆí˜¸ íšë“
 			ch->m_nJoinInzone_ZoneNo = nZoneNo;
 			ch->m_nJoinInzone_RoomNo = nRoomNo;
 			ch->m_nJoinInzone_AreaNo = area->m_index;
@@ -9484,7 +9782,7 @@ void ProcHelperInzoneGetRoomnoRep( CNetMsg::SP& msg)
 
 		else
 		{
-			//¿¡·¯
+			//ì—ëŸ¬
 			GAMELOG << init("RAID DEBUG HELPER GET INZONE ROOMNO REP  - STEP 2")
 					<< "JOIN INZONE FAIL"
 					<< end;
@@ -9508,21 +9806,21 @@ void ProcHelperDeleteRaidCharacterRep(CNetMsg::SP& msg)
 	if(!ch || !ch->m_desc)
 		return;
 
-	// DB »èÁ¦ ½ÇÆĞ ½Ã
+	// DB ì‚­ì œ ì‹¤íŒ¨ ì‹œ
 	if (nSuccess == 0)
 		return;
 
-	// DB »èÁ¦ ¼º°ø ½Ã
+	// DB ì‚­ì œ ì„±ê³µ ì‹œ
 	else if (nSuccess == 1)
 	{
 		{
-			// ±Í¼ÓµÈ ·¹ÀÌµå Á¸ Á¤º¸ Ã¢ ºñ¾îÀÖ´Â °ÍÀ¸·Î º¸¿©ÁØ´Ù.
+			// ê·€ì†ëœ ë ˆì´ë“œ ì¡´ ì •ë³´ ì°½ ë¹„ì–´ìˆëŠ” ê²ƒìœ¼ë¡œ ë³´ì—¬ì¤€ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidInfoMsg(rmsg, 0, NULL, NULL);
 			SEND_Q(rmsg, ch->m_desc);
 		}
 
-		// ·¹ÀÌµå ÃÊ±âÈ­ ¾ÆÀÌÅÛÀ» »èÁ¦ÇÑ´Ù.
+		// ë ˆì´ë“œ ì´ˆê¸°í™” ì•„ì´í…œì„ ì‚­ì œí•œë‹¤.
 		CItem* item = ch->m_inventory.FindByDBIndex(4911, 0, 0);
 		if( item )
 		{
@@ -9581,7 +9879,7 @@ void ProcHelperNSCreateCard(CNetMsg::SP& msg)
 	{
 		if(subtype == MSG_HELPER_NS_CARD_ERROR_USE_OK)
 		{
-			// ¾ÆÀÌÅÛ »ç¿ë Ãë¼Ò ¸Ş½ÃÁö º¸³»±â
+			// ì•„ì´í…œ ì‚¬ìš© ì·¨ì†Œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 			GAMELOG << init("NS_CREATE_CARD_ERROR DESC NOTFOUND")
 					<< "USERINDEX" << delim
 					<< userindex << delim
@@ -9609,7 +9907,7 @@ void ProcHelperNSCreateCard(CNetMsg::SP& msg)
 			CPC* pc = desc->m_pChar;
 			if(!pc)
 			{
-				// ¾ÆÀÌÅÛ »ç¿ë Ãë¼Ò ¸Ş½ÃÁö º¸³»±â
+				// ì•„ì´í…œ ì‚¬ìš© ì·¨ì†Œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 				GAMELOG << init("NS_CREATE_CARD_ERROR PC NOTFOUND")
 						<< "USERINDEX" << delim
 						<< userindex << delim
@@ -9625,7 +9923,7 @@ void ProcHelperNSCreateCard(CNetMsg::SP& msg)
 				return ;
 			}
 
-			// ÀÎº¥¿¡¼­ ¾ÆÀÌÅÛ ÇÏ³ª Á¦°Å½ÃÅ°±â
+			// ì¸ë²¤ì—ì„œ ì•„ì´í…œ í•˜ë‚˜ ì œê±°ì‹œí‚¤ê¸°
 			item = pc->m_inventory.FindByVirtualIndex(itemindex);
 			if (item == NULL)
 			{
@@ -9649,7 +9947,7 @@ void ProcHelperNSCreateCard(CNetMsg::SP& msg)
 			desc->m_bIsNSCreateCardUse = true;
 
 			{
-				// Å¬¶óÀÌ¾ğÆ®·Î ¸Ş½ÃÁö º¸³»±â
+				// í´ë¼ì´ì–¸íŠ¸ë¡œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_NS_CARD_USE_OK);
 				SEND_Q(rmsg, pc->m_desc);
@@ -9704,7 +10002,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 			break;
 		case MSG_HELPER_WORLDCUP2010_TOTO_ERROR_FAIL:
 			{
-				// DB ±â·ÏÀÌ ½ÇÆĞÇß´ç Áö¿î ±¹±â¸¦ ´Ù½Ã Áö±ŞÇÏÀÚ
+				// DB ê¸°ë¡ì´ ì‹¤íŒ¨í–ˆë‹¹ ì§€ìš´ êµ­ê¸°ë¥¼ ë‹¤ì‹œ ì§€ê¸‰í•˜ì
 				int Countryitemidx;
 				RefMsg(msg) >> Countryitemidx;
 
@@ -9713,8 +10011,8 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 				if( pItem )
 				{
 					if( ch->m_inventory.addItem(pItem) == false)
-					{	// ¾²¹Ù Áö¿ü´ø ±¹±â Áö±ŞÀÌ ¾ÈµÇ¾ú³ß. ÀÌ¸¦ ¾îÂ¾´Ù... ¤Ñ¤Ñ;;
-						// ·Î°í´Â Âï°í FAILÀ» ³¯¸°´Ù.
+					{	// ì“°ë°” ì§€ì› ë˜ êµ­ê¸° ì§€ê¸‰ì´ ì•ˆë˜ì—ˆë„¹. ì´ë¥¼ ì–´ì©ë‹¤... ã…¡ã…¡;;
+						// ë¡œê³ ëŠ” ì°ê³  FAILì„ ë‚ ë¦°ë‹¤.
 						GAMELOG << init("EVENT_WORLDCUP_2010 : TOTO ERROR", ch)
 							<< itemlog(pItem)
 							<< end;
@@ -9745,20 +10043,20 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 	case MSG_HELPER_WORLDCUP2010_TOTO_GIFT_REP:
 		switch(nErrType)
 		{
-		case MSG_HELPER_WORLDCUP2010_TOTO_GIFT_ERROR_SUC: // ¼±¹°¸¸ ÁÖ°í ³¡~
+		case MSG_HELPER_WORLDCUP2010_TOTO_GIFT_ERROR_SUC: // ì„ ë¬¼ë§Œ ì£¼ê³  ë~
 			{
 				int nTableCount = 7;
 				int giftTable[7][2]=
 				{	// item_idx,  count
-					{ 974, 1}, // 1. Çà¿îÀÇ Á¦·Ã¼®
-					{4968, 1}, // 2. (ÀÌº¥Æ®¿ë)¾Ç¸¶ÀÇ ·é ¾Æ¸£
-					{2849, 1}, // 3. Èû   »ó½Â ¹°¾à(¼Ò)
-					{2850, 1}, // 4. ¹ÎÃ¸ »ó½Â ¹°¾à(¼Ò)
-					{2851, 1}, // 5, Ã¼Áú »ó½Â ¹°¾à(¼Ò)
-					{2852, 1}, // 6, ÁöÇı »ó½Â ¹°¾à(¼Ò)
-					{2853, 1}  // 7, ¹ö¼­Ä¿ Æ÷¼Ç(¼Ò)
+					{ 974, 1}, // 1. í–‰ìš´ì˜ ì œë ¨ì„
+					{4968, 1}, // 2. (ì´ë²¤íŠ¸ìš©)ì•…ë§ˆì˜ ë£¬ ì•„ë¥´
+					{2849, 1}, // 3. í˜   ìƒìŠ¹ ë¬¼ì•½(ì†Œ)
+					{2850, 1}, // 4. ë¯¼ì²© ìƒìŠ¹ ë¬¼ì•½(ì†Œ)
+					{2851, 1}, // 5, ì²´ì§ˆ ìƒìŠ¹ ë¬¼ì•½(ì†Œ)
+					{2852, 1}, // 6, ì§€í˜œ ìƒìŠ¹ ë¬¼ì•½(ì†Œ)
+					{2853, 1}  // 7, ë²„ì„œì»¤ í¬ì…˜(ì†Œ)
 				};
-				if( ch->m_inventory.getEmptyCount() < nTableCount ) // ÀÎº¥ °Ë»ç
+				if( ch->m_inventory.getEmptyCount() < nTableCount ) // ì¸ë²¤ ê²€ì‚¬
 				{
 					HelperWorldcup2010TOTOGiftRepMsg(rmsg, ch->m_index, 1);
 					SEND_Q(rmsg, gserver->m_helper);
@@ -9770,7 +10068,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 				pItem = new CItem*[nTableCount];
 
 				int i=0;
-				for(i=0; i<nTableCount; i++) // Áö±ŞÇ× ¾ÆÀÌÅÛÀ» ´Ù »ı¼ºÇÏÀÚ.
+				for(i=0; i<nTableCount; i++) // ì§€ê¸‰í•­ ì•„ì´í…œì„ ë‹¤ ìƒì„±í•˜ì.
 				{
 					pItem[i] = NULL;
 					pItem[i] = gserver->m_itemProtoList.CreateItem( giftTable[i][0], -1, 0, 0, giftTable[i][1]);
@@ -9838,7 +10136,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 	case MSG_HELPER_WORLDCUP2010_ATTENDANCE_REP:
 		switch(nErrType)
 		{
-		case MSG_HELPER_WORLDCUP2010_ATTENDANCE_ERROR_SUC: // ÀÀ¿ø Ä«µå¸¦ Áö±ŞÇÏÀÚ
+		case MSG_HELPER_WORLDCUP2010_ATTENDANCE_ERROR_SUC: // ì‘ì› ì¹´ë“œë¥¼ ì§€ê¸‰í•˜ì
 			{
 				int supportIndex = 19;
 
@@ -9850,7 +10148,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 					break;
 				}
 
-				// ÀÎº¥ °Ë»ç
+				// ì¸ë²¤ ê²€ì‚¬
 				if ( ch->m_inventory.getEmptyCount() < 1 )
 				{
 					EventWorldcup2010ErrorMsg(rmsg, MSG_EVENT_WORLDCUP2010_TOTO_GIFT_REP, MSG_EVENT_WORLDCUP2010_TOTO_GIFT_ERROR_INVEN);
@@ -9876,13 +10174,13 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 	case MSG_HELPER_WORLDCUP2010_KOREA_REP:
 		{
 			int item[7][5] = {
-				{5819, 5820, 5821, 5822, 5823},		// Å¸ÀÌÅº
-				{5824, 5825, 5826, 5827, 5828},		// ³ªÀÌÆ®
-				{5804, 5805, 5806, 5807, 5808},		// Èú·¯
-				{5809, 5810, 5811, 5812, 5813},		// ¸ŞÀÌÁö
-				{5814, 5815, 5816, 5817, 5818},		// ·Î±×
-				{5829, 5830, 5831, 5832, 5833},		// ¼Ò¼­·¯
-				{5834, 5835, 5836, 5837, 5838}		// ³ªÀÌÆ®½¦µµ¿ì
+				{5819, 5820, 5821, 5822, 5823},		// íƒ€ì´íƒ„
+				{5824, 5825, 5826, 5827, 5828},		// ë‚˜ì´íŠ¸
+				{5804, 5805, 5806, 5807, 5808},		// íëŸ¬
+				{5809, 5810, 5811, 5812, 5813},		// ë©”ì´ì§€
+				{5814, 5815, 5816, 5817, 5818},		// ë¡œê·¸
+				{5829, 5830, 5831, 5832, 5833},		// ì†Œì„œëŸ¬
+				{5834, 5835, 5836, 5837, 5838}		// ë‚˜ì´íŠ¸ì‰ë„ìš°
 			};
 			int i, j;
 
@@ -9890,7 +10188,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 			{
 			case MSG_HELPER_WORLDCUP2010_KOREA_ERROR_EMPTY:
 				{
-					// ÀÏ¹İ ½½·Ô Ã¼Å©
+					// ì¼ë°˜ ìŠ¬ë¡¯ ì²´í¬
 					if( ch->m_inventory.getEmptyCount() < 5)
 					{
 						EventErrorMsg(rmsg, MSG_EVENT_ERROR_FULLINVENTORY);
@@ -9898,7 +10196,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 						return;
 					}
 
-					HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 1);	// Áö±Ş ¿Ï·á ¿äÃ»
+					HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 1);	// ì§€ê¸‰ ì™„ë£Œ ìš”ì²­
 					SEND_Q(rmsg, gserver->m_helper);
 					return;
 				}
@@ -9907,7 +10205,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 				{
 					CItem* pItem[5];
 
-					for( i = 0; i < 5; i++ ) // Áö±ŞÇÒ ¾ÆÀÌÅÛ ¸ğµÎ »ı¼º
+					for( i = 0; i < 5; i++ ) // ì§€ê¸‰í•  ì•„ì´í…œ ëª¨ë‘ ìƒì„±
 					{
 						pItem[i] = gserver->m_itemProtoList.CreateItem(item[ch->m_job][i], -1, 0, 0, 1);
 						if( pItem[i] == NULL )
@@ -9935,7 +10233,7 @@ void ProcHelperWorldcup2010(CNetMsg::SP& msg)
 								<< itemlog(pItem[i])
 								<< end;
 							
-							HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 2);	// Áö±Ş ½ÇÆĞ ¿äÃ»
+							HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 2);	// ì§€ê¸‰ ì‹¤íŒ¨ ìš”ì²­
 							SEND_Q(rmsg, gserver->m_helper);
 							return;
 						}
@@ -10036,7 +10334,7 @@ void ProcHelperTeachRenewerTimeLimit(CNetMsg::SP& msg)
 					<< ch->m_desc->m_idname << delim
 					<< ch->m_fame << end;
 
-			// È¥ÀÚ ¼ÂÆÃÇØÁ¦
+			// í˜¼ì ì…‹íŒ…í•´ì œ
 				ch->m_teachIdx[j] = -1;
 				ch->m_teachJob[j] = -1;
 				ch->m_teachJob2[j] = 0;
@@ -10047,7 +10345,7 @@ void ProcHelperTeachRenewerTimeLimit(CNetMsg::SP& msg)
 			}
 		}
 
-		// teachType °Ë»ç
+		// teachType ê²€ì‚¬
 		bool bTeacher = false;
 
 		int i;
@@ -10096,7 +10394,7 @@ void ProcHelperTeachRenewerGift(CNetMsg::SP& msg)
 		{
 			int nCount;
 			RefMsg(msg) >> nCount;
-			int itemIndex = 5952; // ÈÄ°ßÀÎÀÇ ÁõÇ¥
+			int itemIndex = 5952; // í›„ê²¬ì¸ì˜ ì¦í‘œ
 			if( false == ch->GiveItem(itemIndex, 0, 0, (LONGLONG)nCount, false, false) )
 			{
 				{
@@ -10178,10 +10476,10 @@ void ProcHelperCharBirthday(CNetMsg::SP& msg)
 						return;
 					}
 
-					if( years > 10 ) // 10³âÀÌ ³Ñ¾î°¡¸é 10³â Â¥¸® ¾ÆÀÌÅÛÀ¸·Î ÁØ´Ù.
+					if( years > 10 ) // 10ë…„ì´ ë„˜ì–´ê°€ë©´ 10ë…„ ì§œë¦¬ ì•„ì´í…œìœ¼ë¡œ ì¤€ë‹¤.
 						years = 10;
 
-					int giftindex= 6717 + years; // º¸»óÇ°Àº 6718 ~ 6727 (1ÁÖ³âºÎÅÍ 10ÁÖ³â±îÁö)
+					int giftindex= 6717 + years; // ë³´ìƒí’ˆì€ 6718 ~ 6727 (1ì£¼ë…„ë¶€í„° 10ì£¼ë…„ê¹Œì§€)
 					if( !pc->GiveItem(giftindex, 0, 0, 1) )
 					{
 						GAMELOG << init("EVENT_CHAR_BIRTHDAY : ITEM GIVE FAIL", pc) << giftindex << end;
@@ -10237,7 +10535,7 @@ void ProcHelperCharBirthday(CNetMsg::SP& msg)
 #ifdef DEV_GUILD_MARK
 void ProcHelperGuildMarkExpire(CNetMsg::SP& msg)
 {
-	// helper¿¡¼­ ±æµå¸¶Å© ½Ã°£À» °è»êÇÏ°í ¸¸·á°¡ µÇ¾úÀ¸¸é °ÔÀÓ¼­¹ö°¡ ¹Ş¾Æ¼­ Å¬¶óÀÌ¾ğÆ®¿¡°Ô »Ñ·ÁÁØ´Ù.
+	// helperì—ì„œ ê¸¸ë“œë§ˆí¬ ì‹œê°„ì„ ê³„ì‚°í•˜ê³  ë§Œë£Œê°€ ë˜ì—ˆìœ¼ë©´ ê²Œì„ì„œë²„ê°€ ë°›ì•„ì„œ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë¿Œë ¤ì¤€ë‹¤.
 	unsigned char command;
 	int GuildIndex = 0;
 	RefMsg(msg) >> command >> GuildIndex;
@@ -10301,7 +10599,7 @@ void ProcHelperGuildMarkRegist(CNetMsg::SP& msg)
 
 					else if(pItem->m_itemProto->getItemTypeIdx() == ITYPE_ETC && pItem->m_itemProto->getItemSubTypeIdx() == IETC_GUILD_MARK)
 					{
-						// ¾ÆÀÌÅÛÀÌ ÀÖ°í, Ã£¾ÒÀ¸´Ï±î..ÇÏ³ª¸¦ ÁÙ¾îµé°Ô ÇÑ´Ù.
+						// ì•„ì´í…œì´ ìˆê³ , ì°¾ì•˜ìœ¼ë‹ˆê¹Œ..í•˜ë‚˜ë¥¼ ì¤„ì–´ë“¤ê²Œ í•œë‹¤.
 						pc->m_inventory.decreaseItemCount(pItem, 1);
 					}
 				}
@@ -10314,7 +10612,7 @@ void ProcHelperGuildMarkRegist(CNetMsg::SP& msg)
 
 				if(bRollback == true)
 				{
-					// DB¿¡ ÀúÀåµÈ Á¤º¸¸¦ ·Ñ¹é ½ÃÅ²´Ù.
+					// DBì— ì €ì¥ëœ ì •ë³´ë¥¼ ë¡¤ë°± ì‹œí‚¨ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperGuildMarkRegistReqMsg(rmsg, GuildIndex, CharIndex, -1, -1, -1, -1, -1, -1, -1, NULL);
 					SEND_Q(rmsg, gserver->m_helper);
@@ -10346,7 +10644,7 @@ void ProcHelperGuildMarkRegist(CNetMsg::SP& msg)
 		break;
 	case 3:
 		{
-			// ·Ñ¹é µÇ¾úÀ¸´Ï ¸ğµç ¼­¹ö¿¡ ÀÖ´Â ±æµå¿øµé¿¡°Ô ¾Ë·ÁÁØ´Ù.
+			// ë¡¤ë°± ë˜ì—ˆìœ¼ë‹ˆ ëª¨ë“  ì„œë²„ì— ìˆëŠ” ê¸¸ë“œì›ë“¤ì—ê²Œ ì•Œë ¤ì¤€ë‹¤.
 			if(pGuild)
 			{
 				pGuild->SetGuildMark(-1, -1, -1, -1, -1);
@@ -10370,7 +10668,7 @@ void ProcHelperCastleStateCync(CNetMsg::SP& msg)
 	CWarCastle* pMercWar = CWarCastle::GetCastleObject(ZONE_MERAC);
 	if( pMercWar )
 	{
-		if( gserver->m_subno != WAR_CASTLE_SUBNUMBER_MERAC) // °ø¼º Ã¤³ÎÀº °»½ÅÇØÁÙ ÇÊ¿ä°¡ ¾ø´Ù.
+		if( gserver->m_subno != WAR_CASTLE_SUBNUMBER_MERAC) // ê³µì„± ì±„ë„ì€ ê°±ì‹ í•´ì¤„ í•„ìš”ê°€ ì—†ë‹¤.
 			pMercWar->SetStateChannelCync( mercState );
 	}
 
@@ -10379,7 +10677,7 @@ void ProcHelperCastleStateCync(CNetMsg::SP& msg)
 	CWarCastle * pDratanWar = CWarCastle::GetCastleObject(ZONE_DRATAN);
 	if( pDratanWar )
 	{
-		if( gserver->m_subno != WAR_CASTLE_SUBNUMBER_DRATAN) // °ø¼º Ã¤³ÎÀº °»½ÅÇØÁÙ ÇÊ¿ä°¡ ¾ø´Ù.
+		if( gserver->m_subno != WAR_CASTLE_SUBNUMBER_DRATAN) // ê³µì„± ì±„ë„ì€ ê°±ì‹ í•´ì¤„ í•„ìš”ê°€ ì—†ë‹¤.
 			pDratanWar->SetStateChannelCync(dratanState);
 	}
 }
@@ -10434,7 +10732,7 @@ void LogGuildStash(CItem* pItem, const LONGLONG count, const unsigned char type,
 	GAMELOG << end;
 }
 
-//XX ±æµåÃ¢°í - ¸®½ºÆ® (3)
+//XX ê¸¸ë“œì°½ê³  - ë¦¬ìŠ¤íŠ¸ (3)
 void ProcHelperGuildStashList(CNetMsg::SP& msg)
 {
 	int charIndex = 0;
@@ -10463,7 +10761,7 @@ void ProcHelperGuildStashList(CNetMsg::SP& msg)
 
 	CPC* pc = NULL;
 	pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
-	if( pc == NULL )	// ±×·±»ç¶÷ ¾ø½À´Ï´Ù.
+	if( pc == NULL )	// ê·¸ëŸ°ì‚¬ëŒ ì—†ìŠµë‹ˆë‹¤.
 	{
 		return;
 	}
@@ -10498,7 +10796,7 @@ void ProcHelperGuildStashList(CNetMsg::SP& msg)
 			RefMsg(msg) >> option[idx];
 		RefMsg(msg) >> socket ;
 		RefMsg(msg) >> itemOrigin[0] >> itemOrigin[1] >> itemOrigin[2] >> itemOrigin[3] >> itemOrigin[4] >> itemOrigin[5] ;
-		// ´õ¹Ì·Î ÇÏ³ª ¸¸µé°í MSG ¸¸µé¾î¼­ Áö¿ö?
+		// ë”ë¯¸ë¡œ í•˜ë‚˜ ë§Œë“¤ê³  MSG ë§Œë“¤ì–´ì„œ ì§€ì›Œ?
 		ppDummyItem[i] = gserver->m_itemProtoList.CreateDBItem_2( index, -1, plus, flag, used, used2, "DUMMY", count, option, socket, itemOrigin );
 		if( ppDummyItem[i] )
 		{
@@ -10533,62 +10831,64 @@ void ProcHelperGuildStashList(CNetMsg::SP& msg)
 	delete [] ppDummyItem;
 }
 
-//XX ±æµåÃ¢°í - º¸°ü (3)
+//XX ê¸¸ë“œì°½ê³  - ë³´ê´€ (3)
 void ProcHelperGuildStashKeep(CNetMsg::SP& msg)
 {
 	int		charIndex = 0;
 	int		guildIndex = 0;
-	char	error = 0;			// 0: ¼º°ø , 1:±æµå ¾øÀ½ , 2:ÀÎº¥ºÎÁ·, 3:¹«°ÔÃÊ°ú 4: ´Ù¸¥ ±æµå¿øÀÌ »ç¿ëÁß
+	char	error = 0;			// 0: ì„±ê³µ , 1:ê¸¸ë“œ ì—†ìŒ , 2:ì¸ë²¤ë¶€ì¡±, 3:ë¬´ê²Œì´ˆê³¼ 4: ë‹¤ë¥¸ ê¸¸ë“œì›ì´ ì‚¬ìš©ì¤‘
 
 	RefMsg(msg) >> charIndex
 		>> guildIndex
 		>> error;
 
-	// PC Ã£°í
+	// PC ì°¾ê³ 
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( !pc )
 	{
-		// Helper ·Î UnLock ¿äÃ»
+		// Helper ë¡œ UnLock ìš”ì²­
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );
 		SEND_Q( rmsg, gserver->m_helper );
 		return;
 	}
 
-	// Helper ¿¡¼­ ¿Â error Ã³¸®
-	// 1,2,3 ÀÎ°æ¿ì ¿¡¸¸ Helper ¿¡ Unlock ÇÏ°í, 4 ÀÎ°æ¿ì´Â º¸³»Áö ¾ÊÀ½ // error 1,2,3,4 ´Â Å¬¶ó¿¡ Àü´Ş
+	pc->m_guildStashLock = false;
+
+	// Helper ì—ì„œ ì˜¨ error ì²˜ë¦¬
+	// 1,2,3 ì¸ê²½ìš° ì—ë§Œ Helper ì— Unlock í•˜ê³ , 4 ì¸ê²½ìš°ëŠ” ë³´ë‚´ì§€ ì•ŠìŒ // error 1,2,3,4 ëŠ” í´ë¼ì— ì „ë‹¬
 	switch ( error )
 	{
-	case 0:		// ¼º°ø
+	case 0:		// ì„±ê³µ
 		break;
 	case 1: case 2: case 3:
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ½ÇÆĞ
+			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ì‹¤íŒ¨
 			SEND_Q( rmsg, gserver->m_helper );
 		}
-	case 4:		// ´Ù¸¥ ´©±º°¡ »ç¿ëÁß
-	case 9:		// ±æµå Ã¢°í °ø°£ ¾øÀ½
+	case 4:		// ë‹¤ë¥¸ ëˆ„êµ°ê°€ ì‚¬ìš©ì¤‘
+	case 9:		// ê¸¸ë“œ ì°½ê³  ê³µê°„ ì—†ìŒ
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_KEEP , error );
 			SEND_Q( rmsg, pc->m_desc );
 		}
 		break;
-	default :	// ¹«½¼ÀÏÀÌ »ı°å´Ù!!! Unlock ÇØÁÖÀÚ
+	default :	// ë¬´ìŠ¨ì¼ì´ ìƒê²¼ë‹¤!!! Unlock í•´ì£¼ì
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ½ÇÆĞ
+			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ì‹¤íŒ¨
 			SEND_Q( rmsg, gserver->m_helper );
 		}
 		break;
 	}
 
-	// Helper ¿¡¼­ ³Ñ¾î¿Â ¿¡·¯°¡ ÀÖÀ¸¸é ¿©±â±îÁö
+	// Helper ì—ì„œ ë„˜ì–´ì˜¨ ì—ëŸ¬ê°€ ìˆìœ¼ë©´ ì—¬ê¸°ê¹Œì§€
 	if( error > 0 )
 		return;
 
-	// È¤½Ã³ª ±æµå È®ÀÎ
+	// í˜¹ì‹œë‚˜ ê¸¸ë“œ í™•ì¸
 	if( !pc->m_guildInfo || !pc->m_guildInfo->guild() || pc->m_guildInfo->guild()->index() != guildIndex )
 	{
 		{
@@ -10606,7 +10906,7 @@ void ProcHelperGuildStashKeep(CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ ¹× µ· Â÷°¨
+	// ì•„ì´í…œ ë° ëˆ ì°¨ê°
 	bool	bCanKeep = true;
 	LONGLONG keepMoney = 0;
 	int		nItemCount = 0;
@@ -10633,13 +10933,13 @@ void ProcHelperGuildStashKeep(CNetMsg::SP& msg)
 			<< "AFTER NAS : " << pc->m_inventory.getMoney() << end;
 	}
 
-	// Memory ÇÒ´çÈÄ Delete ÇÏÁö ¾Ê°í Return µÇÁö ¾Êµµ·Ï ÁÖÀÇ
+	// Memory í• ë‹¹í›„ Delete í•˜ì§€ ì•Šê³  Return ë˜ì§€ ì•Šë„ë¡ ì£¼ì˜
 	CItem**		pKeepItem = new CItem*[nItemCount];
 	LONGLONG*	pKeepItemCount = new LONGLONG[nItemCount];
 	int dbIndex;
 	int vIndex;
 
-	// msg »ÌÀ¸¸é¼­ ¾ÆÀÌÅÛÀ» È®ÀÎ
+	// msg ë½‘ìœ¼ë©´ì„œ ì•„ì´í…œì„ í™•ì¸
 	for( int i = 0 ; i < nItemCount ; ++i )
 	{
 		RefMsg(msg) >> serial
@@ -10683,19 +10983,19 @@ void ProcHelperGuildStashKeep(CNetMsg::SP& msg)
 		}
 
 		{
-			// ¼º°ø
+			// ì„±ê³µ
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_KEEP , 0 );
 			SEND_Q( rmsg, pc->m_desc );
 		}
 
-		// ½Ç½Ã°£ ÀúÀå
+		// ì‹¤ì‹œê°„ ì €ì¥
 		DBManager::instance()->SaveCharacterInfo(pc->m_desc, false);
 	}
 	else
 	{
 		{
-			// ½ÇÆĞ
+			// ì‹¤íŒ¨
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );
 			SEND_Q( rmsg, gserver->m_helper );
@@ -10714,7 +11014,7 @@ void ProcHelperGuildStashKeep(CNetMsg::SP& msg)
 	return;
 }
 
-//XX ±æµåÃ¢°í - Ã£±â (3)
+//XX ê¸¸ë“œì°½ê³  - ì°¾ê¸° (3)
 void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 {
 	int		charIndex = 0;
@@ -10723,51 +11023,53 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 
 	RefMsg(msg) >> charIndex
 		>> guildIndex
-		>> error;			// 0: ¼º°ø , 1:±æµå ¾øÀ½ , 2:ÀÎº¥ºÎÁ·, 3:¹«°ÔÃÊ°ú 4: ´Ù¸¥ ±æµå¿øÀÌ »ç¿ëÁß 5: Ã£À»¼ö ¾ø´Â ¾ÆÀÌÅÛ
+		>> error;			// 0: ì„±ê³µ , 1:ê¸¸ë“œ ì—†ìŒ , 2:ì¸ë²¤ë¶€ì¡±, 3:ë¬´ê²Œì´ˆê³¼ 4: ë‹¤ë¥¸ ê¸¸ë“œì›ì´ ì‚¬ìš©ì¤‘ 5: ì°¾ì„ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 
-	// PC Ã£°í
+	// PC ì°¾ê³ 
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( !pc )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );				// Helper ·Î UnLock ¿äÃ»
+		HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );				// Helper ë¡œ UnLock ìš”ì²­
 		SEND_Q( rmsg, gserver->m_helper );
 		return;
 	}
 
-	// Helper ¿¡¼­ ¿Â error Ã³¸®
-	// 1,2,3,5 ÀÎ°æ¿ì ¿¡¸¸ Helper ¿¡ Unlock ÇÏ°í, 4 ÀÎ°æ¿ì´Â º¸³»Áö ¾ÊÀ½ // error 1,2,3,4 ´Â Å¬¶ó¿¡ Àü´Ş
+	pc->m_guildStashLock = false;
+
+	// Helper ì—ì„œ ì˜¨ error ì²˜ë¦¬
+	// 1,2,3,5 ì¸ê²½ìš° ì—ë§Œ Helper ì— Unlock í•˜ê³ , 4 ì¸ê²½ìš°ëŠ” ë³´ë‚´ì§€ ì•ŠìŒ // error 1,2,3,4 ëŠ” í´ë¼ì— ì „ë‹¬
 	switch ( error )
 	{
-	case 0:		// ¼º°ø
+	case 0:		// ì„±ê³µ
 		break;
 	case 1: case 2: case 3: case 5:
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ½ÇÆĞ
+			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ì‹¤íŒ¨
 			SEND_Q( rmsg, gserver->m_helper );
 		}
-	case 4:		// ´Ù¸¥ ´©±º°¡ »ç¿ëÁß
+	case 4:		// ë‹¤ë¥¸ ëˆ„êµ°ê°€ ì‚¬ìš©ì¤‘
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_TAKE , error );
 			SEND_Q( rmsg, pc->m_desc );
 		}
 		break;
-	default :	// ¹«½¼ÀÏÀÌ »ı°å´Ù!!! Unlock ÇØÁÖÀÚ
+	default :	// ë¬´ìŠ¨ì¼ì´ ìƒê²¼ë‹¤!!! Unlock í•´ì£¼ì
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ½ÇÆĞ
+			HelperGuildStashKeepErrorMsg( rmsg, charIndex, guildIndex, 1 );			// 1. ì‹¤íŒ¨
 			SEND_Q( rmsg, gserver->m_helper );
 		}
 		break;
 	}
 
-	// Helper ¿¡¼­ ³Ñ¾î¿Â ¿¡·¯°¡ ÀÖÀ¸¸é ¿©±â±îÁö
+	// Helper ì—ì„œ ë„˜ì–´ì˜¨ ì—ëŸ¬ê°€ ìˆìœ¼ë©´ ì—¬ê¸°ê¹Œì§€
 	if( error > 0 )
 		return;
 
-	// È¤½Ã³ª ±æµå È®ÀÎ
+	// í˜¹ì‹œë‚˜ ê¸¸ë“œ í™•ì¸
 	if( !pc->m_guildInfo || !pc->m_guildInfo->guild() || pc->m_guildInfo->guild()->index() != guildIndex )
 	{
 		{
@@ -10785,7 +11087,7 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¸Ş¼¼Áö »Ì°í
+	// ë©”ì„¸ì§€ ë½‘ê³ 
 	LONGLONG	takeMoney = 0;
 	int			itemCount  = 0;
 	int			index	= 0;
@@ -10800,7 +11102,7 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 	int			itemOrigin[MAX_VARIATION_COUNT] = {0,};
 	RefMsg(msg) >> takeMoney >> itemCount;
 
-	if( pc->m_inventory.getEmptyCount() < itemCount )	// 2: ÀÎº¥ ºÎÁ·
+	if( pc->m_inventory.getEmptyCount() < itemCount )	// 2: ì¸ë²¤ ë¶€ì¡±
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -10822,7 +11124,7 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 	int		now_dur = 0;
 	int		max_dur = 0;
 
-	// Memory ÇÒ´çÈÄ Delete ÇÏÁö ¾Ê°í Return µÇÁö ¾Êµµ·Ï ÁÖÀÇ
+	// Memory í• ë‹¹í›„ Delete í•˜ì§€ ì•Šê³  Return ë˜ì§€ ì•Šë„ë¡ ì£¼ì˜
 	CItem** ppGuildItem = new CItem*[itemCount];
 	for( int i=0 ; i<itemCount ; ++i )
 	{
@@ -10840,17 +11142,17 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 		ppGuildItem[i]->setNowDurability(now_dur);
 		ppGuildItem[i]->setMaxDurability(max_dur);
 
-		// ¾ÆÀÌÅÛ »ı¼º È®ÀÎ ¹× ¹«°³ °Ë»ç
+		// ì•„ì´í…œ ìƒì„± í™•ì¸ ë° ë¬´ê°œ ê²€ì‚¬
 		if( !ppGuildItem[i] )
 		{
-			// ÇÏ³ª¶óµµ ¾ÆÀÌÅÛ »ı¼º ½ÇÆĞ
+			// í•˜ë‚˜ë¼ë„ ì•„ì´í…œ ìƒì„± ì‹¤íŒ¨
 			bGiveGuildItem = false;
 			errorIndex = i;
 			break;
 		}
 	}
 
-	if( bGiveGuildItem )	// ÀÌÁ¤µµ °Ë»çÇß´Âµ¥ ´Ù µé¾î°¡°ÚÁö...
+	if( bGiveGuildItem )	// ì´ì •ë„ ê²€ì‚¬í–ˆëŠ”ë° ë‹¤ ë“¤ì–´ê°€ê² ì§€...
 	{
 		if (takeMoney > 0)
 		{
@@ -10875,30 +11177,30 @@ void ProcHelperGuildStashTake(CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashTakeErrorMsg( rmsg, charIndex, guildIndex, 0, takeMoney );			// 0: Á¤»óÃ³¸®
+			HelperGuildStashTakeErrorMsg( rmsg, charIndex, guildIndex, 0, takeMoney );			// 0: ì •ìƒì²˜ë¦¬
 			SEND_Q( rmsg , gserver->m_helper );
 		}
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_TAKE , 0 );	 // 0: Á¤»óÃ³¸®
+			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_TAKE , 0 );	 // 0: ì •ìƒì²˜ë¦¬
 			SEND_Q( rmsg, pc->m_desc );
 		}
 	}
-	else 	// Á¤¸® ÇÕ½Ã´Ù.
+	else 	// ì •ë¦¬ í•©ì‹œë‹¤.
 	{
 		for( int delIdx=0 ; delIdx<errorIndex ; ++delIdx )
-			delete ppGuildItem[delIdx];		// Create ÇÑ Item »èÁ¦
+			delete ppGuildItem[delIdx];		// Create í•œ Item ì‚­ì œ
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildStashTakeErrorMsg( rmsg, charIndex, guildIndex, 3 );			// 3: Áö±Ş ½ÇÆĞ ( ¹«°Ô ÃÊ°ú )
+			HelperGuildStashTakeErrorMsg( rmsg, charIndex, guildIndex, 3 );			// 3: ì§€ê¸‰ ì‹¤íŒ¨ ( ë¬´ê²Œ ì´ˆê³¼ )
 			SEND_Q( rmsg , gserver->m_helper );
 		}
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_TAKE , 3 );	 // 3: ÀÎº¥ ¹«°Ô ÃÊ°ú
+			GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_TAKE , 3 );	 // 3: ì¸ë²¤ ë¬´ê²Œ ì´ˆê³¼
 			SEND_Q( rmsg, pc->m_desc );
 		}
 	}
@@ -10919,7 +11221,7 @@ void ProcHelperGuildStashLog(CNetMsg::SP& msg)
 		>> guildIndex
 		>> logCount;
 
-	// PC Ã£°í
+	// PC ì°¾ê³ 
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( !pc )
 		return;
@@ -10948,7 +11250,7 @@ void ProcHelperGuildStashLog(CNetMsg::SP& msg)
 	}
 }
 
-// ±æµå Ã¢°í¿¡ ´ëÇÑ Àü¹İÀûÀÎ ¾Ë¸² ¿¡·¯ Ã³¸®
+// ê¸¸ë“œ ì°½ê³ ì— ëŒ€í•œ ì „ë°˜ì ì¸ ì•Œë¦¼ ì—ëŸ¬ ì²˜ë¦¬
 void ProcHelperGuildStashError(CNetMsg::SP& msg)
 {
 	int		charIndex = 0;
@@ -10962,7 +11264,7 @@ void ProcHelperGuildStashError(CNetMsg::SP& msg)
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, error );	 // ÇÛÆÛ¿¡¼­ ¹ŞÀº ±×´ë·Î º¸³»ÁÖÀÚ
+		GuildStashErrorMsg( rmsg, MSG_NEW_GUILD_STASH_ERROR, error );	 // í•¼í¼ì—ì„œ ë°›ì€ ê·¸ëŒ€ë¡œ ë³´ë‚´ì£¼ì
 		SEND_Q( rmsg, pc->m_desc );
 	}
 }
@@ -11066,24 +11368,24 @@ void ProcHelperGuildMasterKickRep(CNetMsg::SP& msg)
 
 	CPC* _pc = PCManager::instance()->getPlayerByCharIndex(_requestCharIndex);
 
-	// °á°ú Ã³¸®
+	// ê²°ê³¼ ì²˜ë¦¬
 	CGuild* _guild = gserver->m_guildlist.findguild(_guildIndex);
 	if ( _guild )
 	{
 		_currentBoss = _guild->boss()->GetName();
 
 		if ( _result == 0 )
-		{	// Ãß¹æ ¿¹¾à ¼º°ø : ±æµå¿ø ÀüÃ¼¿¡°Ô »Ñ¸°´Ù
+		{	// ì¶”ë°© ì˜ˆì•½ ì„±ê³µ : ê¸¸ë“œì› ì „ì²´ì—ê²Œ ë¿Œë¦°ë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildMasterKickRep(rmsg, _guildIndex, _currentBoss);
 			_guild->SendToAll(rmsg);
 
-			// Ãß¹æ °ü·Ã Á¤º¸ ¼³Á¤
+			// ì¶”ë°© ê´€ë ¨ ì •ë³´ ì„¤ì •
 			_guild->getGuildKick()->setKickReuestChar(_requestCharIndex);
 			_guild->getGuildKick()->setKickRequestTime(_requestTime);
 		}
 		else if ( _pc )
-		{	// Ãß¹æ ¿¹¾à ½ÇÆĞ : ½ÅÃ»ÀÚ¿¡°Ô¸¸ »Ñ¸°´Ù
+		{	// ì¶”ë°© ì˜ˆì•½ ì‹¤íŒ¨ : ì‹ ì²­ìì—ê²Œë§Œ ë¿Œë¦°ë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildErrorMsg(rmsg, (MSG_GUILD_ERROR_TYPE)_result);
 			SEND_Q(rmsg, _pc->m_desc);
@@ -11100,21 +11402,21 @@ void ProcHelperGuildMasterKickCancelRep(CNetMsg::SP& msg)
 
 	CPC* _pc = PCManager::instance()->getPlayerByCharIndex(_requestCharIndex);
 
-	// °á°ú Ã³¸®
+	// ê²°ê³¼ ì²˜ë¦¬
 	CGuild* _guild = gserver->m_guildlist.findguild(_guildIndex);
 	if ( _guild )
 	{
 		if ( _result == 0 )
-		{	// Ãß¹æ Ãë¼Ò ¼º°ø : ±æµå¿ø ÀüÃ¼¿¡ »Ñ¸°´Ù
+		{	// ì¶”ë°© ì·¨ì†Œ ì„±ê³µ : ê¸¸ë“œì› ì „ì²´ì— ë¿Œë¦°ë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildMasterKickCancelRep(rmsg, _guildIndex);
 			_guild->SendToAll(rmsg);
 
-			// Ãß¹æ °ü·Ã Á¤º¸ ¼³Á¤
+			// ì¶”ë°© ê´€ë ¨ ì •ë³´ ì„¤ì •
 			_guild->getGuildKick()->setKickReuestChar(_requestCharIndex);
 		}
 		else if ( _pc )
-		{	// Ãß¹æ Ãë¼Ò ½ÇÆĞ : ½ÅÃ»ÀÚ¿¡°Ô¸¸ »Ñ¸°´Ù
+		{	// ì¶”ë°© ì·¨ì†Œ ì‹¤íŒ¨ : ì‹ ì²­ìì—ê²Œë§Œ ë¿Œë¦°ë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildErrorMsg(rmsg, (MSG_GUILD_ERROR_TYPE)_result);
 			SEND_Q(rmsg, _pc->m_desc);
@@ -11176,7 +11478,7 @@ void ProcHelperRvRUpdateKingInfo( CNetMsg::SP& msg )
 {
 	UpdateServer::SyndicateUpdateKingInfoAll* p = reinterpret_cast<UpdateServer::SyndicateUpdateKingInfoAll*>(msg->m_buf);
 	
-	//¿ÕÀÌ ¹Ù²ï °æ¿ì
+	//ì™•ì´ ë°”ë€ ê²½ìš°
 	if(p->kingIndex_d != SyndicateInfoDataManager::instance()->getKingIndex(SYNDICATE::eSYNDICATE_DEALERMOON))
 	{
 		CPC* pChar = PCManager::instance()->getPlayerByCharIndex(p->kingIndex_d);
@@ -11195,7 +11497,7 @@ void ProcHelperRvRUpdateKingInfo( CNetMsg::SP& msg )
 	SyndicateInfoDataManager::instance()->setKingPoint(SYNDICATE::eSYNDICATE_DEALERMOON, p->kingPoint_d);
 	SyndicateInfoDataManager::instance()->setKingIndex(SYNDICATE::eSYNDICATE_DEALERMOON, p->kingIndex_d);
 	
-	//¿ÕÀÌ ¹Ù²ï °æ¿ì
+	//ì™•ì´ ë°”ë€ ê²½ìš°
 	if(p->kingIndex_k != SyndicateInfoDataManager::instance()->getKingIndex(SYNDICATE::eSYNDICATE_KAILUX))
 	{
 		CPC* pChar = PCManager::instance()->getPlayerByCharIndex(p->kingIndex_k);
@@ -11239,7 +11541,7 @@ void ProcHelperRvRKingDownGrade( CNetMsg::SP& msg )
 		else if(p->syndicateType == SYNDICATE::eSYNDICATE_DEALERMOON)
 			downgrade = SYNDICATE::MAGUS;
 
-		//Á¢¼ÓÇØ ÀÖÁö ¾ÊÀº °æ¿ì¿¡´Â Äõ¸®¹® ÀúÀå
+		//ì ‘ì†í•´ ìˆì§€ ì•Šì€ ê²½ìš°ì—ëŠ” ì¿¼ë¦¬ë¬¸ ì €ì¥
 		std::string insertStr = "INSERT INTO t_syndicate_history VALUES";
 		insertStr.reserve(1024);
 
@@ -11282,7 +11584,7 @@ void ProcHelperKickUserAnswer(CNetMsg::SP& msg)
 	CPC* reqUser = PCManager::instance()->getPlayerByCharIndex(packet->req_charIndex);
 	if (reqUser == NULL)
 	{
-		// ¿äÃ»ÀÚ(ÁÖ·Î GM)°¡ logoutÇÑ °æ¿ì
+		// ìš”ì²­ì(ì£¼ë¡œ GM)ê°€ logoutí•œ ê²½ìš°
 		return;
 	}
 
@@ -11311,7 +11613,7 @@ void ProcHelperKickUserByCharIndexAnswer(CNetMsg::SP& msg)
 	CPC* reqUser = PCManager::instance()->getPlayerByCharIndex(packet->req_charIndex);
 	if (reqUser == NULL)
 	{
-		// ¿äÃ»ÀÚ(ÁÖ·Î GM)°¡ logoutÇÑ °æ¿ì
+		// ìš”ì²­ì(ì£¼ë¡œ GM)ê°€ logoutí•œ ê²½ìš°
 		return;
 	}
 
@@ -11340,7 +11642,7 @@ void ProcHelperKickUserByUserIndexAnswer(CNetMsg::SP& msg)
 	CPC* reqUser = PCManager::instance()->getPlayerByCharIndex(packet->req_charIndex);
 	if (reqUser == NULL)
 	{
-		// ¿äÃ»ÀÚ(ÁÖ·Î GM)°¡ logoutÇÑ °æ¿ì
+		// ìš”ì²­ì(ì£¼ë¡œ GM)ê°€ logoutí•œ ê²½ìš°
 		return;
 	}
 
@@ -11370,7 +11672,7 @@ void ProcHelperKickUserByUserIdAnswer(CNetMsg::SP& msg)
 	std::string kickName = packet->kicked_userId;
 	if (reqUser == NULL)
 	{
-		// ¿äÃ»ÀÚ(ÁÖ·Î GM)°¡ logoutÇÑ °æ¿ì
+		// ìš”ì²­ì(ì£¼ë¡œ GM)ê°€ logoutí•œ ê²½ìš°
 		return;
 	}
 
@@ -11393,3 +11695,90 @@ void ProcHelperKickUserByUserIdAnswer(CNetMsg::SP& msg)
 	}
 }
 
+void ProcHelperGuildBattleReg(CNetMsg::SP& msg)
+{
+	ServerToServerPacket::GuildBattleRegToHelper* packet = reinterpret_cast<ServerToServerPacket::GuildBattleRegToHelper*>(msg->m_buf);
+
+	CGuild* guild = gserver->m_guildlist.findguild(packet->guild_index);
+	CPC* pc = PCManager::instance()->getPlayerByCharIndex(packet->char_index);
+	
+	if(pc == NULL || guild == NULL)
+	{
+		if(guild != NULL)
+			guild->m_isUseTheStashAndSkill = true;
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		ServerToServerPacket::makeGuildBattleStashLockOff(rmsg, packet->guild_index);
+		SEND_Q(rmsg, gserver->m_helper);
+		return;
+	}
+	
+	CNetMsg::SP rmsg(new CNetMsg);
+	makeGuildBattleErrorMsg(rmsg, packet->error_code);
+	SEND_Q(rmsg, pc->m_desc);
+
+	if(packet->error_code == GUILD_BATTLE_SUCCESS_REGIST)
+	{
+		GuildBattleManager::instance()->regist(guild, packet->stake_nas, packet->stake_gp, packet->guild_battle_time, packet->ave_level, packet->zone_index);
+	}
+
+	guild->m_isUseTheStashAndSkill = false;
+}
+
+void ProcHelperGuildBattleChallenge(CNetMsg::SP& msg)
+{
+	ServerToServerPacket::GuildBattleChallengeToHelper* packet = reinterpret_cast<ServerToServerPacket::GuildBattleChallengeToHelper*>(msg->m_buf);
+
+	CPC* pc = PCManager::instance()->getPlayerByCharIndex(packet->char_index);
+	CGuild* guild = gserver->m_guildlist.findguild(packet->guild_index);
+	
+	if(pc == NULL || guild == NULL)
+	{
+		if(guild != NULL)
+			guild->m_isUseTheStashAndSkill = true;
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		ServerToServerPacket::makeGuildBattleStashLockOff(rmsg, packet->guild_index);
+		SEND_Q(rmsg, gserver->m_helper);
+		return;
+	}
+
+	CPC* target = PCManager::instance()->getPlayerByCharIndex(packet->target_char_index);
+	CGuild* target_guild = gserver->m_guildlist.findguild(packet->target_guild_index);
+
+	if(target == NULL || target_guild == NULL)
+	{
+		guild->m_isUseTheStashAndSkill = true;
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		ServerToServerPacket::makeGuildBattleStashLockOff(rmsg, packet->guild_index);
+		SEND_Q(rmsg, gserver->m_helper);
+		return;
+	}
+	
+	if(packet->error_code == GUILD_BATTLE_SUCCESS_CHALLENGE)
+	{
+		st_multi_index* data = GuildBattleManager::instance()->find(packet->target_guild_index);
+		//ì‹ ì²­ ì„±ê³µ íŒ¨í‚· ì „ë‹¬
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			MakeGuildBattleChallengeMsg(rmsg, data->guild->name(), packet->error_code);
+			SEND_Q(rmsg, pc->m_desc);
+		}
+
+		pc->m_guildInfo->guild()->m_isUseTheStashAndSkill = false;
+
+		{
+			//íƒ€ê²Ÿ ê¸¸ë“œ ë§ˆìŠ¤í„°ì—ê²Œ íŒ¨í‚· ì „ë‹¬
+			CNetMsg::SP rmsg(new CNetMsg);
+			makeGuildBattleChallengeAgreeMsgUpdate(rmsg, target_guild->level(), target_guild->membercount(), data->ave_level, target_guild->m_battle_win_count, target_guild->m_battle_total_count, data->stake_nas, data->stake_gp, pc->m_index, target_guild->name());
+			SEND_Q(rmsg, target->m_desc);
+		}
+	}
+	else
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeGuildBattleErrorMsg(rmsg, packet->error_code);
+		SEND_Q(rmsg, pc->m_desc);
+	}
+}

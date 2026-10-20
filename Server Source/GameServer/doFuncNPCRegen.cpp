@@ -7,11 +7,11 @@
 #include "doFunc.h"
 
 ////////////////////////////
-// ½Ì±Û´øÀü NPC Regen ¿äÃ»
+// ì‹±ê¸€ë˜ì „ NPC Regen ìš”ì²­
 void do_NPCRegen(CPC* ch, CNetMsg::SP& msg)
 {
 	int index, dbIndex, yLayer;
-	int	entityIndex;	// Å¬¶óÀÌ¾ðÆ® Àü¿ë ÀÎµ¦½º
+	int	entityIndex;	// í´ë¼ì´ì–¸íŠ¸ ì „ìš© ì¸ë±ìŠ¤
 	float x, z, h, r;
 
 	msg->MoveFirst();
@@ -21,30 +21,30 @@ void do_NPCRegen(CPC* ch, CNetMsg::SP& msg)
 				>> x >> z >> h >> r >> yLayer
 				>> entityIndex;
 
-	// npc regen ¿äÃ»ÀÌ ¾Æ´Ï¸é
+	// npc regen ìš”ì²­ì´ ì•„ë‹ˆë©´
 	if (index != -1)
 		return;
 
-	// ½Ì±Û´øÀüÀÌ ¾Æ´Ï¸é
+	// ì‹±ê¸€ë˜ì „ì´ ì•„ë‹ˆë©´
 	if (!ch->m_pZone->IsPersonalDungeon())
 		return;
 
-	// ¸®Á¨ Å×ÀÌºí Á¤º¸ º¸´Ù Å¬¶óÀÌ¾ðÆ®¿¡¼­ º¸³»´Â Regen Msg°¡ ¸¹ÀÌ ¿Â´Ù¸é
-	// ½Ì±Û´øÀü¿¡¼­ ½ºÅ¸Æ® Á¸À¸·Î Æ¨±â´Ù
+	// ë¦¬ì   í…Œì´ë¸” ì •ë³´ ë³´ë‹¤ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ë³´ë‚´ëŠ” Regen Msgê°€ ë§Žì´ ì˜¨ë‹¤ë©´
+	// ì‹±ê¸€ë˜ì „ì—ì„œ ìŠ¤íƒ€íŠ¸ ì¡´ìœ¼ë¡œ íŠ•ê¸°ë‹¤
 	bool gohome = false;
 
 	if( !ch->m_pArea->m_npcRegenList.SetRegened(ch->m_pArea, dbIndex, ch->m_pZone->m_index, x, yLayer, z) )
 		gohome = true;
 
 	CNPC* npc;
-	// npc »ý¼º
+	// npc ìƒì„±
 	npc = gserver->m_npcProtoList.Create(dbIndex, NULL);
 
 	if (!npc)	return;
 
 	if( gohome)
 	{
-		// °¡±î¿î ¸¶À»·Î
+		// ê°€ê¹Œìš´ ë§ˆì„ë¡œ
 		int nearZone;
 		int nearZonePos;
 		CZone* pZone = gserver->FindNearestZone(ch->m_pZone->m_index, GET_X(ch), GET_Z(ch), &nearZone, &nearZonePos);
@@ -63,14 +63,14 @@ void do_NPCRegen(CPC* ch, CNetMsg::SP& msg)
 
 		return;
 	}
-	// TODO : ÃßÈÄ ÆÛ½º³Î ´øÀüÀÇ ¸÷ ³­ÀÌµµ Á¶Àý½Ã ¸®Á¨ Á¤º¸¸¦ ¾ò¾î¿Í ¸®Á¨ Á¤º¸¿¡ ÆÄ¶ó¹ÌÅÍ¸¦ ³Ö°í ¸®Á¨½ÃÅ²´Ù
+	// TODO : ì¶”í›„ í¼ìŠ¤ë„ ë˜ì „ì˜ ëª¹ ë‚œì´ë„ ì¡°ì ˆì‹œ ë¦¬ì   ì •ë³´ë¥¼ ì–»ì–´ì™€ ë¦¬ì   ì •ë³´ì— íŒŒë¼ë¯¸í„°ë¥¼ ë„£ê³  ë¦¬ì  ì‹œí‚¨ë‹¤
 
 	npc->m_regenX = GET_X(npc) = x;
 	npc->m_regenZ = GET_Z(npc) = z;
 	npc->m_regenY = GET_YLAYER(npc) = yLayer;
 	GET_R(npc) = r;
 
-	// TODO : ³ôÀÌ¸Ê¿¡ µû¸¥ height Á¶Á¤
+	// TODO : ë†’ì´ë§µì— ë”°ë¥¸ height ì¡°ì •
 	npc->m_pos.m_h = h;
 
 	int cx, cz;

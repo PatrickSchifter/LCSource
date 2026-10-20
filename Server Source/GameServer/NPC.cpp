@@ -40,9 +40,9 @@ CNPC::CNPC()
 
 	m_bMoveRun = false;
 
-	// 050221 : bs : NPC ½ºÅ³
+	// 050221 : bs : NPC ìŠ¤í‚¬
 	memset(m_skills, 0, sizeof(CSkill*) * MAX_NPC_SKILL);
-	// --- 050221 : bs : NPC ½ºÅ³
+	// --- 050221 : bs : NPC ìŠ¤í‚¬
 
 	memset(m_quest, 0, sizeof(int) * QUEST_MAX_NPC);
 	m_nQuestCount = 0;
@@ -155,7 +155,7 @@ void CNPC::ResetStat()
 	m_attrdef = m_proto->m_attrdef;
 	m_attratt = m_proto->m_attratt;
 
-	// ¸®Á¨µÇ´Â NPCÀÇ ÆÄ¶ó¹ÌÅÍ¸¦ ¸®Á¨ Á¤º¸¿¡¼­ °¡Á®¿Í Á¶Á¤
+	// ë¦¬ì  ë˜ëŠ” NPCì˜ íŒŒë¼ë¯¸í„°ë¥¼ ë¦¬ì   ì •ë³´ì—ì„œ ê°€ì ¸ì™€ ì¡°ì •
 	if (m_regenInfo)
 	{
 		m_maxHP += m_regenInfo->m_paramHP;
@@ -187,7 +187,7 @@ void CNPC::ResetStat()
 	if( (this->m_regenInfo != NULL) && (this->m_regenInfo->m_zoneNo == ZONE_DRATAN_CASTLE_DUNGEON) )
 	{
 		CDratanCastle* pCastle = CDratanCastle::CreateInstance();
-		int nMobRate[10][4] =  	// °ø°Ý·Â, ¹æ¾î·Â, ÃÖ´ëÃ¼·Â, ½Ã¾ß¹üÀ§
+		int nMobRate[10][4] =  	// ê³µê²©ë ¥, ë°©ì–´ë ¥, ìµœëŒ€ì²´ë ¥, ì‹œì•¼ë²”ìœ„
 		{
 			{20, 20, 30, 0},
 			{10, 10, 15, 0},
@@ -226,16 +226,16 @@ void CNPC::ResetStat()
 			}
 		}
 
-		// ¹æ¾î·Â Àû¿ë
+		// ë°©ì–´ë ¥ ì ìš©
 		m_eqDefense = m_proto->m_defense + m_proto->m_defense * nMobRate[midx][1] / 100;
-		// ÃÖ´ë Ã¼·Â Àû¿ë
+		// ìµœëŒ€ ì²´ë ¥ ì ìš©
 		m_maxHP = m_proto->m_hp + m_proto->m_hp * nMobRate[midx][2] / 100;
 		if(m_maxHP < 0)
 		{
 			m_maxHP = 1;
 		}
 
-		// ½Ã¾ß °Å¸® Àû¿ë
+		// ì‹œì•¼ ê±°ë¦¬ ì ìš©
 		if(nMobRate[midx][3] != 0 && m_attackRange != 0)
 		{
 			m_attackRange = m_proto->m_attackArea + m_proto->m_attackArea * nMobRate[midx][3] / 100;

@@ -6,7 +6,7 @@
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Interface/UIPetFree.h>
 #include <algorithm>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Interface/UIInventory.h>
 
 static int	_iMaxMsgStringChar = 0;
@@ -547,7 +547,7 @@ void CUIPetFree::SetFreePetItem()
 	{
 		m_nPettype = CItemData::ACCESSORY_WILDPET;
 		sPetItem_Info temPet;
-		pUIManager->GetWildPetInfo()->GetWildPetInfo(pItems->Item_Plus, temPet);
+		pUIManager->GetWildPetInfoUI()->GetWildPetInfo(pItems->Item_Plus, temPet);
 		m_slLevel = temPet.pet_level;
 		m_llPetFreeMoney = (m_slLevel-1)*((m_slLevel*m_slLevel*8)+20000);
 	}

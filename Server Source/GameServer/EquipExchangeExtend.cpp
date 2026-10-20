@@ -74,7 +74,7 @@ void CEquipExchangeExtend::load_()
 
 bool CEquipExchangeExtend::find_(CItem* item, int exchangeItemDBIndex, int itemType)
 {
-	//¾ÆÀÌÅÛ °Ë»ö
+	//ì•„ì´í…œ ê²€ìƒ‰
 	int _type;
 
 	if(item->m_itemProto->getItemTypeIdx() == ITYPE_WEAPON)
@@ -178,7 +178,7 @@ bool CEquipExchangeExtend::checkValid( CItem* oldItem, int changeType )
 	if (oldItem->getWearPos() != WEARING_NONE)
 		return false;
 
-	// ¹«±â ¹æ¾î±¸ ¸ðµÎ ±³È¯ °¡´ÉÇÏ°Ô ¼öÁ¤ : 051219 : bs
+	// ë¬´ê¸° ë°©ì–´êµ¬ ëª¨ë‘ êµí™˜ ê°€ëŠ¥í•˜ê²Œ ìˆ˜ì • : 051219 : bs
 	if (!oldItem->IsWeaponType() && (!oldItem->IsArmorType() || oldItem->m_itemProto->getItemSubTypeIdx() == IWEAR_SHIELD))
 		return false;
 
@@ -186,7 +186,7 @@ bool CEquipExchangeExtend::checkValid( CItem* oldItem, int changeType )
 		|| (oldItem->IsArmorType() && (oldItem->m_itemProto->getItemJobFlag() & (1 << changeType))))
 		return false;
 	
-	// ´ë¿© ¹«±â °Ë»ç
+	// ëŒ€ì—¬ ë¬´ê¸° ê²€ì‚¬
 	if (oldItem->IsLent())
 		return false;
 

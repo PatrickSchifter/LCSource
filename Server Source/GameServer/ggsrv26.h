@@ -4,7 +4,7 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <stdint.h>
 
-// 64ºñÆ® ¸®´ª½º¿¡¼­ »ç¿ëÇÒ µ¥ÀÌÅÍ Å¸ÀÔ ¼±¾ğ  - Coded By HS_Soul [2007.12.28]
+// 64ë¹„íŠ¸ ë¦¬ëˆ…ìŠ¤ì—ì„œ ì‚¬ìš©í•  ë°ì´í„° íƒ€ì… ì„ ì–¸  - Coded By HS_Soul [2007.12.28]
 typedef int32_t			INT32, *PINT32;
 typedef uint32_t		UINT32, *PUINT32;
 typedef int64_t			INT64, *PINT64;
@@ -24,57 +24,57 @@ typedef void			*LPVOID;
 #define __CDECL        __cdecl
 #else
 #define GGAUTHS_API extern "C"
-//#define GGAUTHS_API  <== ggsrv_cpp_c.h ¿¡¼­ È°¼ºÈ­. extern "C" ´Â c ÄÄÆÄÀÏ·¯°¡ ÀÎ½Ä¸øÇÔ.
+//#define GGAUTHS_API  <== ggsrv_cpp_c.h ì—ì„œ í™œì„±í™”. extern "C" ëŠ” c ì»´íŒŒì¼ëŸ¬ê°€ ì¸ì‹ëª»í•¨.
 #define GGAUTHS_EXPORT
 #define __CDECL
 #endif
 
 #ifndef ERROR_SUCCESS
-#define ERROR_SUCCESS								0		//	ÀÏ¹İÀûÀÎ ¼º°ø
+#define ERROR_SUCCESS								0		//	ì¼ë°˜ì ì¸ ì„±ê³µ
 #endif
 #define NPGG_INFO_SUCCESS								0		//	GetInfo() func success.
 
 #define NPGG_INFO_ERROR_NOTENOUGHFMEMORY			1		//	Need more memory
-#define ERROR_GGAUTH_FAIL_MEM_ALLOC					1		//	CSÀÎÁõ ¸ğµâ ·Îµù½Ã ¸Ş¸ğ¸® ºÎÁ·
-#define ERROR_GGAUTH_FAIL_LOAD_DLL					2		//	CSÀÎÁõ ¸ğµâ(*.dll, *.so) ·Îµù ½ÇÆĞ
-#define ERROR_GGAUTH_FAIL_GET_PROC					3		//	CSÀÎÁõ ¸ğµâÀÇ export ÇÔ¼ö ¼³Á¤ ½ÇÆĞ
-#define ERROR_GGAUTH_FAIL_BEFORE_INIT				4		//	ºñÁ¤»ó µ¿ÀÛ <- critical error
-#define ERROR_GGAUTH_FAIL_LOAD_CFG					5		//	¼­¹öÀÎÁõ ¸ğµâ ¼³Á¤ ÆÄÀÏ ·Îµù ½ÇÆĞ.
-#define ERROR_GGAUTH_INVALID_PARAM					10		// ÇÔ¼ö È£Ãâ½Ã Àß¸øµÈ ÀÎÀÚ°ªÀ» ³Ñ°åÀ» °æ¿ì
+#define ERROR_GGAUTH_FAIL_MEM_ALLOC					1		//	CSì¸ì¦ ëª¨ë“ˆ ë¡œë”©ì‹œ ë©”ëª¨ë¦¬ ë¶€ì¡±
+#define ERROR_GGAUTH_FAIL_LOAD_DLL					2		//	CSì¸ì¦ ëª¨ë“ˆ(*.dll, *.so) ë¡œë”© ì‹¤íŒ¨
+#define ERROR_GGAUTH_FAIL_GET_PROC					3		//	CSì¸ì¦ ëª¨ë“ˆì˜ export í•¨ìˆ˜ ì„¤ì • ì‹¤íŒ¨
+#define ERROR_GGAUTH_FAIL_BEFORE_INIT				4		//	ë¹„ì •ìƒ ë™ì‘ <- critical error
+#define ERROR_GGAUTH_FAIL_LOAD_CFG					5		//	ì„œë²„ì¸ì¦ ëª¨ë“ˆ ì„¤ì • íŒŒì¼ ë¡œë”© ì‹¤íŒ¨.
+#define ERROR_GGAUTH_INVALID_PARAM					10		// í•¨ìˆ˜ í˜¸ì¶œì‹œ ì˜ëª»ëœ ì¸ìê°’ì„ ë„˜ê²¼ì„ ê²½ìš°
 
-#define ERROR_GGAUTH_NO_REPLY							11		// ÀÀ´ä¾øÀ½. GetAuthQuery() °¡ CheckAuthAnswer()ÇÏ±âÀü¿¡ µÎ¹ø ºÒ·ÁÁö¸é °°Àº¿¡·¯ ¹ß»ı
-#define ERROR_GGAUTH_INVALID_PROTOCOL_VERSION	12		// CSÀÎÁõ ¸ğµâ ÇÁ·ÎÅäÄİ ¹øÈ£(ggauth##.dll) Æ²¸²
-#define ERROR_GGAUTH_INVALID_REPLY					13		// ¾Ë°í¸®Áò¿¡ ÀÇÇÑ ÀÀ´ä°ª Æ²¸².
-#define ERROR_GGAUTH_INVALID_GAMEGUARD_VER		14		//	°ÔÀÓ°¡µå ¹öÁ¯°Ë»ç. ¶óÀÌºê·¯¸® 2.5¿¡¼­ Ãß°¡µÊ(csÀÎÁõ¸ğµâ 50¹ø ÀÌ»ó)
+#define ERROR_GGAUTH_NO_REPLY							11		// ì‘ë‹µì—†ìŒ. GetAuthQuery() ê°€ CheckAuthAnswer()í•˜ê¸°ì „ì— ë‘ë²ˆ ë¶ˆë ¤ì§€ë©´ ê°™ì€ì—ëŸ¬ ë°œìƒ
+#define ERROR_GGAUTH_INVALID_PROTOCOL_VERSION	12		// CSì¸ì¦ ëª¨ë“ˆ í”„ë¡œí† ì½œ ë²ˆí˜¸(ggauth##.dll) í‹€ë¦¼
+#define ERROR_GGAUTH_INVALID_REPLY					13		// ì•Œê³ ë¦¬ì¦˜ì— ì˜í•œ ì‘ë‹µê°’ í‹€ë¦¼.
+#define ERROR_GGAUTH_INVALID_GAMEGUARD_VER		14		//	ê²Œì„ê°€ë“œ ë²„ì ¼ê²€ì‚¬. ë¼ì´ë¸ŒëŸ¬ë¦¬ 2.5ì—ì„œ ì¶”ê°€ë¨(csì¸ì¦ëª¨ë“ˆ 50ë²ˆ ì´ìƒ)
 
-// CS26 Ãß°¡ 15 ~ 19
-#define ERROR_GGAUTH_SAME_CLIENT_DETECTED			15		// µ¿ÀÏ °ÔÀÓ°¡µå »ç¿ëÀÚ °ËÃâ
-#define ERROR_GGAUTH_CLIENT_STOPPED					16		// °ÔÀÓ°¡µå°¡ µ¿ÀÛÇÏÁö ¾ÊÀ½
-#define ERROR_GGAUTH_CLIENT_AUTH_ERROR				17		// °ÔÀÓ°¡µå µ¿ÀÛ ÀÎÁõ¿¡ ½ÇÆĞÇÔ (µ¿ÀÏ °ÔÀÓ°¡µå or ÀÎÁõ º¯Á¶)
-#define ERROR_GGAUTH_INVALID_PACKET					18		// Çì´õ°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ½
-#define ERROR_GGAUTH_INVALID_CRC1					19		// ÀÀ´ä ÆĞÅ¶ÀÌ ¿Ã¹Ù¸£Áö ¾Ê°Å³ª º¯Á¶µÊ
-#define ERROR_GGAUTH_INVALID_CRC2					20		// ÀÀ´ä ÆĞÅ¶ÀÌ ¿Ã¹Ù¸£Áö ¾Ê°Å³ª º¯Á¶µÊ
-#define ERROR_GGAUTH_CLIENT_HACK_DETECTED			21		// °ÔÀÓ°¡µå¿¡¼­ Hack À» ¹ß°ßÇÏ¿© ¼­¹öÀÎÁõ °ªÀÌ º¯Á¶µÊ
+// CS26 ì¶”ê°€ 15 ~ 19
+#define ERROR_GGAUTH_SAME_CLIENT_DETECTED			15		// ë™ì¼ ê²Œì„ê°€ë“œ ì‚¬ìš©ì ê²€ì¶œ
+#define ERROR_GGAUTH_CLIENT_STOPPED					16		// ê²Œì„ê°€ë“œê°€ ë™ì‘í•˜ì§€ ì•ŠìŒ
+#define ERROR_GGAUTH_CLIENT_AUTH_ERROR				17		// ê²Œì„ê°€ë“œ ë™ì‘ ì¸ì¦ì— ì‹¤íŒ¨í•¨ (ë™ì¼ ê²Œì„ê°€ë“œ or ì¸ì¦ ë³€ì¡°)
+#define ERROR_GGAUTH_INVALID_PACKET					18		// í—¤ë”ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŒ
+#define ERROR_GGAUTH_INVALID_CRC1					19		// ì‘ë‹µ íŒ¨í‚·ì´ ì˜¬ë°”ë¥´ì§€ ì•Šê±°ë‚˜ ë³€ì¡°ë¨
+#define ERROR_GGAUTH_INVALID_CRC2					20		// ì‘ë‹µ íŒ¨í‚·ì´ ì˜¬ë°”ë¥´ì§€ ì•Šê±°ë‚˜ ë³€ì¡°ë¨
+#define ERROR_GGAUTH_CLIENT_HACK_DETECTED			21		// ê²Œì„ê°€ë“œì—ì„œ Hack ì„ ë°œê²¬í•˜ì—¬ ì„œë²„ì¸ì¦ ê°’ì´ ë³€ì¡°ë¨
 
 
-#define ERROR_GGAUTH_SETSTATE_ERROR					50		// SetCSAuthState() È£Ãâ ½Ã m_CSAuthState°¡ NULLÀÌ°Å³ª..
-// m_PrtcTemp°¡ NULL ÀÎ °æ¿ì (pProtocolHead ¸¦ Ã£À» ¼ö ¾ø´Â °æ¿ì...)
+#define ERROR_GGAUTH_SETSTATE_ERROR					50		// SetCSAuthState() í˜¸ì¶œ ì‹œ m_CSAuthStateê°€ NULLì´ê±°ë‚˜..
+// m_PrtcTempê°€ NULL ì¸ ê²½ìš° (pProtocolHead ë¥¼ ì°¾ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°...)
 
 #define ERROR_GGAUTH_INVALID_GAMEMON_VER			101	//
 #define ERROR_GGAUTH_INVALID_GAMEMON_VER_CODE	102	//
 
 #define ERROR_GGAUTH_RETRY_QUERY						200
 
-#define NPGG_CHECKUPDATED_VERIFIED			0 //csa.CheckUpdated() ÇÔ¼ö ¸®ÅÏ°ª. ÇöÀç ¹öÀü »ç¿ëÀÚ
-#define NPGG_CHECKUPDATED_NOTREADY			1 //csa.CheckUpdated() ÇÔ¼ö ¸®ÅÏ°ª. ¹öÀü°Ë»ç¸¦ ÇÏ±â Àü. ¹öÀü¿¡ ´ëÇÑ Á¤º¸°¡ ¾øÀ½.
-#define NPGG_CHECKUPDATED_HIGH				2 //csa.CheckUpdated() ÇÔ¼ö ¸®ÅÏ°ª. ÇöÀç ¹öÀüº¸´Ù ³ôÀº »ç¿ëÀÚ
-#define NPGG_CHECKUPDATED_LOW					3 //csa.CheckUpdated() ÇÔ¼ö ¸®ÅÏ°ª. ÇöÀç ¹öÀüº¸´Ù ³·Àº »ç¿ëÀÚ
+#define NPGG_CHECKUPDATED_VERIFIED			0 //csa.CheckUpdated() í•¨ìˆ˜ ë¦¬í„´ê°’. í˜„ì¬ ë²„ì „ ì‚¬ìš©ì
+#define NPGG_CHECKUPDATED_NOTREADY			1 //csa.CheckUpdated() í•¨ìˆ˜ ë¦¬í„´ê°’. ë²„ì „ê²€ì‚¬ë¥¼ í•˜ê¸° ì „. ë²„ì „ì— ëŒ€í•œ ì •ë³´ê°€ ì—†ìŒ.
+#define NPGG_CHECKUPDATED_HIGH				2 //csa.CheckUpdated() í•¨ìˆ˜ ë¦¬í„´ê°’. í˜„ì¬ ë²„ì „ë³´ë‹¤ ë†’ì€ ì‚¬ìš©ì
+#define NPGG_CHECKUPDATED_LOW					3 //csa.CheckUpdated() í•¨ìˆ˜ ë¦¬í„´ê°’. í˜„ì¬ ë²„ì „ë³´ë‹¤ ë‚®ì€ ì‚¬ìš©ì
 
-#define	NPLOG_DEBUG	0x00000001	// µğ¹ö±ë ¸Ş¼¼Áö 
-#define	NPLOG_ERROR	0x00000002  // ¿¡·¯ ¸Ş¼¼Áö 
+#define	NPLOG_DEBUG	0x00000001	// ë””ë²„ê¹… ë©”ì„¸ì§€ 
+#define	NPLOG_ERROR	0x00000002  // ì—ëŸ¬ ë©”ì„¸ì§€ 
 
-#define NPLOG_ENABLE_DEBUG 0x00000001 // µğ¹ö±ë ¸Ş¼¼Áö »ı¼ºÇÔ
-#define NPLOG_ENABLE_ERROR 0x00000002 // ¿¡·¯ ¸Ş¼¼Áö »ı¼ºÇÔ
+#define NPLOG_ENABLE_DEBUG 0x00000001 // ë””ë²„ê¹… ë©”ì„¸ì§€ ìƒì„±í•¨
+#define NPLOG_ENABLE_ERROR 0x00000002 // ì—ëŸ¬ ë©”ì„¸ì§€ ìƒì„±í•¨
 
 // gameguard auth data
 typedef struct _GG_AUTH_DATA
@@ -95,7 +95,7 @@ typedef struct _GG_VERSION
 	unsigned short	wNum;
 } GG_VERSION, *PGG_VERSION;
 
-// Data for Server <-> Server (ÇÁ·ÎÅäÄİ ¹öÀü, °ÔÀÓ°¡µå ³»ºÎ¹öÀü, Flag)
+// Data for Server <-> Server (í”„ë¡œí† ì½œ ë²„ì „, ê²Œì„ê°€ë“œ ë‚´ë¶€ë²„ì „, Flag)
 typedef struct _GG_CSAUTH_STATE
 {
 	UINT32	m_PrtcVersion;
@@ -107,11 +107,11 @@ typedef struct _GG_AUTH_PROTOCOL *PGG_AUTH_PROTOCOL;
 
 GGAUTHS_API UINT32 __CDECL InitGameguardAuth(char* sGGPath, UINT32 dwNumActive, int useTimer, int useLog);
 GGAUTHS_API void  __CDECL CleanupGameguardAuth();
-GGAUTHS_API UINT32 __CDECL GGAuthUpdateTimer(); //useTimer °¡ true ÀÏ °æ¿ì È£Ãâ.
+GGAUTHS_API UINT32 __CDECL GGAuthUpdateTimer(); //useTimer ê°€ true ì¼ ê²½ìš° í˜¸ì¶œ.
 GGAUTHS_API UINT32 __CDECL AddAuthProtocol(char* sDllName);
-GGAUTHS_API UINT32 __CDECL SetGGVerLimit(UINT32 nLimitVer);	//¹öÀü »óÇÑ¼±À» Á¦ÇÑÇÑ´Ù.
-GGAUTHS_API UINT32 __CDECL SetUpdateCondition(int nTimeLimit, int nCondition); //¾÷µ¥ÀÌÆ® Á¶°ÇÀ» ¼³Á¤ÇÑ´Ù.
-GGAUTHS_API UINT32 __CDECL CheckCSAuth(bool bCheck);	// Àü¿ª ÀÎÁõ ±â´É On/Off ¸¦ À§ÇÑ ÇÔ¼ö
+GGAUTHS_API UINT32 __CDECL SetGGVerLimit(UINT32 nLimitVer);	//ë²„ì „ ìƒí•œì„ ì„ ì œí•œí•œë‹¤.
+GGAUTHS_API UINT32 __CDECL SetUpdateCondition(int nTimeLimit, int nCondition); //ì—…ë°ì´íŠ¸ ì¡°ê±´ì„ ì„¤ì •í•œë‹¤.
+GGAUTHS_API UINT32 __CDECL CheckCSAuth(bool bCheck);	// ì „ì—­ ì¸ì¦ ê¸°ëŠ¥ On/Off ë¥¼ ìœ„í•œ í•¨ìˆ˜
 GGAUTHS_API int	 __CDECL DecryptHackData(char* lpszUserKey, LPVOID lpData, DWORD dwLength);
 GGAUTHS_API int ModuleInfo(char* dest, int length);
 GGAUTHS_API void NpLog(int mode, char* msg); // referenced by
@@ -166,8 +166,8 @@ protected:
 	PGG_AUTH_PROTOCOL m_pProtocol;
 	UINT32 m_bPrtcRef;
 	UINT32 m_dwUserFlag;
-	GG_VERSION m_GGVer;				//°ÔÀÓ°¡µå ¹öÁ¯
-	GG_AUTH_DATA m_AuthQueryTmp;	//m_AuthQuery °ªÀ» ¹é¾÷ÇØµĞ´Ù.
+	GG_VERSION m_GGVer;				//ê²Œì„ê°€ë“œ ë²„ì ¼
+	GG_AUTH_DATA m_AuthQueryTmp;	//m_AuthQuery ê°’ì„ ë°±ì—…í•´ë‘”ë‹¤.
 	bool m_bAllowOldVersion;		// 2009.05.14
 
 	int m_nSequenceNum;
@@ -193,20 +193,20 @@ public:
 	UINT32 SetSecretOrder();
 	void  Close();
 	int	  Info(char* dest, int length); // protocol information
-	int	  CheckUpdated(); //ÇöÀç »ç¿ëÀÚÀÇ ¾÷µ¥ÀÌÆ® ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+	int	  CheckUpdated(); //í˜„ì¬ ì‚¬ìš©ìì˜ ì—…ë°ì´íŠ¸ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
 
-	void	AllowOldVersion();	// 2009.05.14 - ¼­¹öÀÌµ¿ À¯Àú¿¡ ÇÑÇØ¼­ ±¸¹öÀüÀ» Çã¿ëÇÏ¿© Á¢¼Ó ²÷±èÀ» ¸·´Â´Ù.
+	void	AllowOldVersion();	// 2009.05.14 - ì„œë²„ì´ë™ ìœ ì €ì— í•œí•´ì„œ êµ¬ë²„ì „ì„ í—ˆìš©í•˜ì—¬ ì ‘ì† ëŠê¹€ì„ ë§‰ëŠ”ë‹¤.
 };
 
 
 
 // C type CSAuth2
-#define NPGG_USER_AUTH_QUERY	0x00000001 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× Query
-#define NPGG_USER_AUTH_ANSWER	0x00000002 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× Answer
-#define NPGG_USER_AUTH_INDEX	0x00000010 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× index
-#define NPGG_USER_AUTH_VALUE1	0x00000020 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× Value1
-#define NPGG_USER_AUTH_VALUE2	0x00000040 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× Value2
-#define NPGG_USER_AUTH_VALUE3	0x00000080 //GGAuthGetUserValue() ÀÇ Àü´Ş ÇÃ·¡±× Value3
+#define NPGG_USER_AUTH_QUERY	0x00000001 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ Query
+#define NPGG_USER_AUTH_ANSWER	0x00000002 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ Answer
+#define NPGG_USER_AUTH_INDEX	0x00000010 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ index
+#define NPGG_USER_AUTH_VALUE1	0x00000020 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ Value1
+#define NPGG_USER_AUTH_VALUE2	0x00000040 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ Value2
+#define NPGG_USER_AUTH_VALUE3	0x00000080 //GGAuthGetUserValue() ì˜ ì „ë‹¬ í”Œë˜ê·¸ Value3
 
 typedef void*          LPGGAUTH;
 

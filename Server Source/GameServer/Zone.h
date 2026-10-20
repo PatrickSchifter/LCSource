@@ -17,30 +17,30 @@ public:
 	CZone();
 	~CZone();
 
-	int				m_index;		// Á¸ ¹øÈ£
-	bool			m_bRemote;		// ¿ø°İ Á¸
-	CLCString		m_remoteIP;		// ¿ø°İÁö ÁÖ¼Ò
-	unsigned short	m_remotePort;	// ¿ø°İÁö Æ÷Æ®
-	int				m_countY;		// Ãş ¼ö
-	CMapAttr*		m_attrMap;		// ¼Ó¼º ¸Ê
+	int				m_index;		// ì¡´ ë²ˆí˜¸
+	bool			m_bRemote;		// ì›ê²© ì¡´
+	CLCString		m_remoteIP;		// ì›ê²©ì§€ ì£¼ì†Œ
+	unsigned short	m_remotePort;	// ì›ê²©ì§€ í¬íŠ¸
+	int				m_countY;		// ì¸µ ìˆ˜
+	CMapAttr*		m_attrMap;		// ì†ì„± ë§µ
 	CArea*			m_area;			// CArea
-	int				m_countArea;	// Area ·¹ÀÌ¾î ¼ö ( >= 0 )
-	unsigned char	m_weather;		// ³¯¾¾
-	bool			m_bCanMemPos;	// Àå¼Ò ±â¾ï ÀåÄ¡ »ç¿ë °¡´É ¿©ºÎ
-	bool			m_bCanSummonPet;// Æê ¼ÒÈ¯ °¡´É ¿©ºÎ
-	bool			m_bCanMountPet;	// Æê Å¸±â °¡´É ¿©ºÎ
+	int				m_countArea;	// Area ë ˆì´ì–´ ìˆ˜ ( >= 0 )
+	unsigned char	m_weather;		// ë‚ ì”¨
+	bool			m_bCanMemPos;	// ì¥ì†Œ ê¸°ì–µ ì¥ì¹˜ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+	bool			m_bCanSummonPet;// í« ì†Œí™˜ ê°€ëŠ¥ ì—¬ë¶€
+	bool			m_bCanMountPet;	// í« íƒ€ê¸° ê°€ëŠ¥ ì—¬ë¶€
 #ifdef CONTINENT_PARTY_RECALL
-	int				m_iContinent_no;//´ë·ú¹øÈ£ -1:º¯¼öINIT 0:¾ÆÀÌ¸®½º´ë·ú(Á¸0~31) 1:¾Æ½ºÄ«µğ¾Æ ´ë·ú(Á¸32~)
+	int				m_iContinent_no;//ëŒ€ë¥™ë²ˆí˜¸ -1:ë³€ìˆ˜INIT 0:ì•„ì´ë¦¬ìŠ¤ëŒ€ë¥™(ì¡´0~31) 1:ì•„ìŠ¤ì¹´ë””ì•„ ëŒ€ë¥™(ì¡´32~)
 #endif //CONTINENT_PARTY_RECALL
 
 	int				m_minLevel;
 	int				m_maxLevel;
 
-	int				m_countZonePos;	// ½ÃÀÛ Àå¼Ò ¼ö
-	int**			m_zonePos;		// ½ÃÀÛ Àå¼Ò À§Ä¡ : int [count][5]
-	// 0ºÎÅÍ y, left, top, right, bottom
-	// left, top, right, bottomÀº 0.5m ´ÜÀ§ÀÇ Á¤¼ö
-	// Shop °ü·Ã
+	int				m_countZonePos;	// ì‹œì‘ ì¥ì†Œ ìˆ˜
+	int**			m_zonePos;		// ì‹œì‘ ì¥ì†Œ ìœ„ì¹˜ : int [count][5]
+	// 0ë¶€í„° y, left, top, right, bottom
+	// left, top, right, bottomì€ 0.5m ë‹¨ìœ„ì˜ ì •ìˆ˜
+	// Shop ê´€ë ¨
 	typedef std::map<int, CShop*> map_t;
 	map_t			map_;
 	CShop*			m_shopList;		// Shop List
@@ -140,17 +140,17 @@ public:
 		return (m_index == ZONE_PK_TOURNAMENT);
 	}
 
-	bool IsWarGroundZone()									// ÀüÀå, ·Î¾â·³ºí
+	bool IsWarGroundZone()									// ì „ì¥, ë¡œì–„ëŸ¼ë¸”
 	{
 		return (m_index == ZONE_ROYAL_RUMBLE);
 	}
 
-	bool IsPersonalRaid()									// ¸Á°¢ÀÇ ½ÅÀü ¸®´º¾ó(ÆÛ½º³Î ·¹ÀÌµå)
+	bool IsPersonalRaid()									// ë§ê°ì˜ ì‹ ì „ ë¦¬ë‰´ì–¼(í¼ìŠ¤ë„ ë ˆì´ë“œ)
 	{
 		return (m_index == ZONE_DUNGEON4);
 	}
 
-	bool IsExpedRaidZone()		//¾ÏÈæÀÇ Àç´Ü
+	bool IsExpedRaidZone()		//ì•”í‘ì˜ ì¬ë‹¨
 	{
 		switch(m_index)
 		{
@@ -165,7 +165,7 @@ public:
 		}
 	}
 
-	bool IsPartyRaidZone()		//¿¹¹è´ç 1, 2
+	bool IsPartyRaidZone()		//ì˜ˆë°°ë‹¹ 1, 2
 	{
 		switch(m_index)
 		{
@@ -179,7 +179,7 @@ public:
 		return false;
 	}
 
-	// °ø¼ºÁö¿ªÀÌÁö¸¸ °è´ÜÀÌ³ª ÀÔ±¸´Â µû·Î Ã¼Å©
+	// ê³µì„±ì§€ì—­ì´ì§€ë§Œ ê³„ë‹¨ì´ë‚˜ ì…êµ¬ëŠ” ë”°ë¡œ ì²´í¬
 	bool IsWarZone(int x, int z)
 	{
 		int extra = GetExtra(x, z);
@@ -204,9 +204,9 @@ public:
 	bool InExtra(int x, int z, int extra);
 #endif
 
-	CNpc_Regen_Raid*	m_CNpcRegenRaidList;		// ·¹ÀÌµåÁ¸ÀÌ¶ó¸é »ç¿ëµÇ´Â ·¹ÀÌµå¿ë regen¸®½ºÆ®
-	int					m_MaxLevelNpcRegen;			// ·¹ÀÌµå ¿£ÇÇ¾¾ ¸®Á¨ÀÇ ÃÖ°í ·¹º§
-	bool				Load_NpcRegenRaidList();	// ÇØ´ç areaÀÇ ·¹ÀÌµå ¸®½ºÆ®¸¦ °¡Á®¿Â´Ù.
+	CNpc_Regen_Raid*	m_CNpcRegenRaidList;		// ë ˆì´ë“œì¡´ì´ë¼ë©´ ì‚¬ìš©ë˜ëŠ” ë ˆì´ë“œìš© regenë¦¬ìŠ¤íŠ¸
+	int					m_MaxLevelNpcRegen;			// ë ˆì´ë“œ ì—”í”¼ì”¨ ë¦¬ì  ì˜ ìµœê³  ë ˆë²¨
+	bool				Load_NpcRegenRaidList();	// í•´ë‹¹ areaì˜ ë ˆì´ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 
 	bool	IsFieldZone()
 	{
@@ -280,11 +280,11 @@ public:
 		return m_flag & ZONE_FLAG_TREASUREBOX;
 	}
 
-	int				m_treasureAreaRotate;  // ¸®Á¨ Áö¿ª ·ÎÅ×ÀÌÆ®
-	int				m_treasureAreaCnt;		// º¸¹°»óÀÚ NPC µå¶ø Áö¿ª °¹¼ö
-	int				m_treasureLinkZoneCnt;	// ¿¬°è Á¸ °³¼ö
-	int *			m_treasureLinkZoneIdx;	// ¿¬°è Á¸ÀÎµ¦½º
-	TREASUREBOXINFO * m_pTreasureBoxInfo;	// °¢ µå¶ø Áö¿ªº° º¸¹° »óÀÚ Á¤º¸.
+	int				m_treasureAreaRotate;  // ë¦¬ì   ì§€ì—­ ë¡œí…Œì´íŠ¸
+	int				m_treasureAreaCnt;		// ë³´ë¬¼ìƒì NPC ë“œë ì§€ì—­ ê°¯ìˆ˜
+	int				m_treasureLinkZoneCnt;	// ì—°ê³„ ì¡´ ê°œìˆ˜
+	int *			m_treasureLinkZoneIdx;	// ì—°ê³„ ì¡´ì¸ë±ìŠ¤
+	TREASUREBOXINFO * m_pTreasureBoxInfo;	// ê° ë“œë ì§€ì—­ë³„ ë³´ë¬¼ ìƒì ì •ë³´.
 	void	RemoveTreasureBoxNpc(CNPC * pNpc);
 	bool	SetTresaureMapInfo(CItem * pItem);
 	bool	SummonTreaseureBoxNpc(int& x, int& z, int& zonNum);
@@ -333,11 +333,11 @@ public:
 class TREASUREBOXINFO
 {
 public:
-	int				max;		// ¸®Á¨ max
-	RECTF			rect;		// ¸®Á¨ rect
+	int				max;		// ë¦¬ì   max
+	RECTF			rect;		// ë¦¬ì   rect
 
 	typedef std::vector<CNPC*> vec_t;
-	vec_t			listNpc;		// ¸®Á¨ÇÑ npc Æ÷ÀÎÅÍ
+	vec_t			listNpc;		// ë¦¬ì  í•œ npc í¬ì¸í„°
 
 	TREASUREBOXINFO();
 	~TREASUREBOXINFO();

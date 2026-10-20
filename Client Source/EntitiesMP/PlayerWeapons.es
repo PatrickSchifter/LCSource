@@ -1830,7 +1830,7 @@ CPlacement3D GetMouseHitInformation( POINT point, CAnyProjection3D  prProjection
 }
 //..
 */
-CPlacement3D GetMouseHitInformation( POINT point, CAnyProjection3D  prProjection , BOOL bClick)
+CPlacement3D GetMouseHitInformation( POINT point, CAnyProjection3D  prProjection, UINT& nStartTime, BOOL bClick)
 {
 	
  // CAnyProjection3D prProjection;
@@ -1909,6 +1909,8 @@ CPlacement3D GetMouseHitInformation( POINT point, CAnyProjection3D  prProjection
 						{
 							pl.m_vDesiredPosition  = FLOAT3D(crRay.cr_vHit(1),crRay.cr_vHit(2),crRay.cr_vHit(3));
 						}
+
+						nStartTime = 0;
 					}
 				}
 			}

@@ -1,14 +1,14 @@
 #ifndef __PARTY_H__
 #define __PARTY_H__
 
-#define		MAX_PARTY_DIVITYPE		5		// ºĞ¹è¹æ¹ı ¼ö(°æÇèÄ¡,¾ÆÀÌÅÛ,½ºÆä¼È ¾ÆÀÌÅÛ)
+#define		MAX_PARTY_DIVITYPE		5		// ë¶„ë°°ë°©ë²• ìˆ˜(ê²½í—˜ì¹˜,ì•„ì´í…œ,ìŠ¤í˜ì…œ ì•„ì´í…œ)
 
 class CNetMsg;
 class CMonsterCombo;
 
-#define PARTY_MATCHING_COMMENT			50		// ÆÄÆ¼ ¸ÅÄª ÆÄÆ¼ µî·Ï½Ã ¼³¸í¹®±¸ ±æÀÌ
-#define PARTY_MATCHING_DATA_PER_PAGE	10		// ÆÄÆ¼ ¸ÅÄª ¸®½ºÆ®¿¡¼­ ÆäÀÌÁö´ç Ç¥½ÃÇÒ µ¥ÀÌÅÍ ¼ö
-#define PARTY_MATCHING_LIMIT_LEVEL		2		// ÆÄÆ¼ ¸ÅÄª¿¡¼­ ·¹º§ Á¦ÇÑ ¹üÀ§
+#define PARTY_MATCHING_COMMENT			50		// íŒŒí‹° ë§¤ì¹­ íŒŒí‹° ë“±ë¡ì‹œ ì„¤ëª…ë¬¸êµ¬ ê¸¸ì´
+#define PARTY_MATCHING_DATA_PER_PAGE	10		// íŒŒí‹° ë§¤ì¹­ ë¦¬ìŠ¤íŠ¸ì—ì„œ í˜ì´ì§€ë‹¹ í‘œì‹œí•  ë°ì´í„° ìˆ˜
+#define PARTY_MATCHING_LIMIT_LEVEL		2		// íŒŒí‹° ë§¤ì¹­ì—ì„œ ë ˆë²¨ ì œí•œ ë²”ìœ„
 
 class CPartyMatchMember
 {
@@ -170,7 +170,7 @@ public:
 	}
 };
 
-// ÆÄÆ¼ ¸â¹ö
+// íŒŒí‹° ë©¤ë²„
 class CPartyMember
 {
 	int				m_nCharIndex;
@@ -195,7 +195,7 @@ public:
 class CParty
 {
 public:
-	char			m_nPartyType[MAX_PARTY_DIVITYPE];			// °æÇèÄ¡ ºĞ¹è Å¸ÀÔ	: 0 - ±Õµî, 1 - ÀÔ¼ö¿ì¼±, 2 - newÆÄÆ¼
+	char			m_nPartyType[MAX_PARTY_DIVITYPE];			// ê²½í—˜ì¹˜ ë¶„ë°° íƒ€ì…	: 0 - ê· ë“±, 1 - ì…ìˆ˜ìš°ì„ , 2 - newíŒŒí‹°
 	int				m_nCount;
 	CPartyMember*	m_listMember[MAX_PARTY_MEMBER];
 	int				m_nRequest;
@@ -205,7 +205,7 @@ public:
 
 	int				m_nRaidZoneNum;
 	int				m_nRaidAreaNum;
-	int				m_nSubNumber;								// ¿øÁ¤´ë Ã¤³ÎÀ» ¸É¹ö ÇÔ¼ö·Î °¡Áö°í ÀÖ´Â´Ù. ÇØ´ç Ã¤³Î¿¡¼­¸¸ ¿øÁ¤´ë ·¹ÀÌµå ÀÔÀå °¡´É
+	int				m_nSubNumber;								// ì›ì •ëŒ€ ì±„ë„ì„ ë§´ë²„ í•¨ìˆ˜ë¡œ ê°€ì§€ê³  ìˆëŠ”ë‹¤. í•´ë‹¹ ì±„ë„ì—ì„œë§Œ ì›ì •ëŒ€ ë ˆì´ë“œ ì…ì¥ ê°€ëŠ¥
 
 	CParty(int nSubNo, char nPartyType, int nBossIndex, const char* strBossName, int nRequest, const char* strRequest, int nBossLevel );
 
@@ -230,27 +230,27 @@ public:
 	}
 	int	GetMemberCountOnline();
 
-	// boss ÀÎµ¦½º ¹İÈ¯
+	// boss ì¸ë±ìŠ¤ ë°˜í™˜
 	int GetBossIndex() const
 	{
 		return (m_listMember[0]) ? m_listMember[0]->GetCharIndex() : -1;
 	}
 
-	// ÇØ´ç Ä³¸¯ÅÍ ÀÎµ¦½º¸¦ °®´Â ÆÄÆ¼¿øÀÇ ¸®½ºÆ® ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù
+	// í•´ë‹¹ ìºë¦­í„° ì¸ë±ìŠ¤ë¥¼ ê°–ëŠ” íŒŒí‹°ì›ì˜ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤
 	int FindMember(int nCharIndex);
 
-	// ÇØ´ç ¸®½ºÆ® ÀÎµ¦½ºÀÇ ¸â¹ö Char index¸¦ ±¸ÇÑ´Ù.
+	// í•´ë‹¹ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ì˜ ë©¤ë²„ Char indexë¥¼ êµ¬í•œë‹¤.
 	int GetMemberCharIndex(int nListIndex);
 
 	void SetRequest(int nRequest, const char* strRequest);
 
-	// request¸¦ ¸â¹ö·Î Âü¿©
+	// requestë¥¼ ë©¤ë²„ë¡œ ì°¸ì—¬
 	int JoinRequest(const char* strRequestName, int nLevel );
 
-	// ÇØ´ç Ä³¸¯ÅÍ¸¦ Á¦°Å, Á¦°ÅÇÏ°Å³ª ¾øÀ¸¸é true, Á¦°Å¿¡ ½ÇÆĞÇÏ¸é false
+	// í•´ë‹¹ ìºë¦­í„°ë¥¼ ì œê±°, ì œê±°í•˜ê±°ë‚˜ ì—†ìœ¼ë©´ true, ì œê±°ì— ì‹¤íŒ¨í•˜ë©´ false
 	void DeleteMember(int nCharIndex);
 
-	// list index·Î CPartyMember ¾ò±â
+	// list indexë¡œ CPartyMember ì–»ê¸°
 	CPartyMember* GetMemberByListIndex(int nListIndex) const;
 
 	bool ChangeBoss(const char* strNewBossName);
@@ -262,7 +262,7 @@ public:
 	}
 	void SetPartyTypeAll(char cPartyType);
 
-	// ÆÄÆ¼ Á¾·á½Ã ³»ºÎ Æ÷ÀÎÅÍ NULL Ã³¸® ÇÔ¼ö
+	// íŒŒí‹° ì¢…ë£Œì‹œ ë‚´ë¶€ í¬ì¸í„° NULL ì²˜ë¦¬ í•¨ìˆ˜
 	void SetEndParty();
 
 	int GetSubNo() const

@@ -223,6 +223,9 @@ void CGameState::ReceiveCharSlot(CNetworkMessage &nmMessage)
 			m_SlotInfo[m_ulExistChaNum].bExtension = _pNetwork->IsExtensionState( job, *ID );
 	}
 
+	if ( wear[WEAR_HELMET] == 6083) // 투명 투구일 경우
+		hairstyle = hairstyle % 10;
+
 	InitSelectModel(m_ulExistChaNum);
 	SetSelectUIModelSlot(m_ulExistChaNum, job, hairstyle, facestyle);
 

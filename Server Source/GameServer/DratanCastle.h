@@ -19,7 +19,7 @@ private:
 	CZone * m_pZone;
 	int m_nChangeTime;
 
-	bool m_owner_mode;		//true : ¼ºÁÖ °ü¸® ¸ğµå, false : ÀÏ¹İ °ü¸® ¸ğµå
+	bool m_owner_mode;		//true : ì„±ì£¼ ê´€ë¦¬ ëª¨ë“œ, false : ì¼ë°˜ ê´€ë¦¬ ëª¨ë“œ
 	int m_changeNormal_time;
 	GoldType_t m_changeNeedNas;
 
@@ -167,29 +167,29 @@ private:
 		REGEN_REBIRTH_NPC_TIME = 20 * 60
 	};
 
-	int m_respondCnt;			// Å©¸®½ºÅ»°ú ±³°¨ÇÏ°í ÀÖ´Â Ä³¸¯¼ö
-	int m_RespondMember[5];		// ±³°¨ Ä³¸¯ÅÍ ÀÎµ¦½º
+	int m_respondCnt;			// í¬ë¦¬ìŠ¤íƒˆê³¼ êµê°í•˜ê³  ìˆëŠ” ìºë¦­ìˆ˜
+	int m_RespondMember[5];		// êµê° ìºë¦­í„° ì¸ë±ìŠ¤
 	char m_nMasterTower[7];		//
-	// °ø°İÇü Å¸¿ö	±Ù°Å¸® °ø°İÇü, ¿ø°Å¸® °ø°İÇü, ¸¶¹ı °ø°İÇü, °¡µåÇü Å¸¿ö ¼Óµµ ÇÏ¶ôÇü, ´É·ÂÄ¡ ÇÏ¶ôÇü, µ¶ Áßµ¶Çü, ¿öÇÁ¿ë ¿öÇÁ ¿¬°á
+	// ê³µê²©í˜• íƒ€ì›Œ	ê·¼ê±°ë¦¬ ê³µê²©í˜•, ì›ê±°ë¦¬ ê³µê²©í˜•, ë§ˆë²• ê³µê²©í˜•, ê°€ë“œí˜• íƒ€ì›Œ ì†ë„ í•˜ë½í˜•, ëŠ¥ë ¥ì¹˜ í•˜ë½í˜•, ë… ì¤‘ë…í˜•, ì›Œí”„ìš© ì›Œí”„ ì—°ê²°
 
-	char m_reinforce[3];	// °­È­¼öÄ¡
+	char m_reinforce[3];	// ê°•í™”ìˆ˜ì¹˜
 	bool m_bMaster;
 
 public:
-	CNPC *  m_gateNPC[COUNT_DRATAN_GATE_NPC];		// ¼º¹® ÁöÅ°´Â ¼öÈ£»ó
-	CGuardList  m_GuardList;	// 3Á¾·ù, Á¾·ù´ç 10°³ÀÌ»ó ¹èÄ¡ ºÒ°¡
-	CNPC *		m_pWarpNPC[5];		// ¿öÇÁ NPC
-	CNPC *		m_pRebrithNPC[7];	// ºÎÈ° ÁøÁö NPC
-	int			m_nRebrithGuild[7];		// ºÎÈ° ÁøÁö Á¡·É ±æµå ÀÎµ¦½º
-	char *		m_strRebrithGuild[7];	// ºÎÈ° ÁøÁö Á¡·É ±æµå ÀÌ¸§
-	bool		m_bLoop;				// ¿î¿µÀÚ ¸í·ÉÀ¸·Î °ø¼º ¸ØÃã
-	CNPC*		m_pDungeonNPC;			// ÁöÇÏ´øÀü NPC
+	CNPC *  m_gateNPC[COUNT_DRATAN_GATE_NPC];		// ì„±ë¬¸ ì§€í‚¤ëŠ” ìˆ˜í˜¸ìƒ
+	CGuardList  m_GuardList;	// 3ì¢…ë¥˜, ì¢…ë¥˜ë‹¹ 10ê°œì´ìƒ ë°°ì¹˜ ë¶ˆê°€
+	CNPC *		m_pWarpNPC[5];		// ì›Œí”„ NPC
+	CNPC *		m_pRebrithNPC[7];	// ë¶€í™œ ì§„ì§€ NPC
+	int			m_nRebrithGuild[7];		// ë¶€í™œ ì§„ì§€ ì ë ¹ ê¸¸ë“œ ì¸ë±ìŠ¤
+	char *		m_strRebrithGuild[7];	// ë¶€í™œ ì§„ì§€ ì ë ¹ ê¸¸ë“œ ì´ë¦„
+	bool		m_bLoop;				// ìš´ì˜ì ëª…ë ¹ìœ¼ë¡œ ê³µì„± ë©ˆì¶¤
+	CNPC*		m_pDungeonNPC;			// ì§€í•˜ë˜ì „ NPC
 
-	bool		m_isNotChange;				//¿î¿µÀÚ ¸í·É¾î¸¦ À§ÇÑ º¯¼ö(true ¸é ½Ã°£º°·Î °¨¼ÒÇÏÁö ¾Ê´Â´Ù.)
+	bool		m_isNotChange;				//ìš´ì˜ì ëª…ë ¹ì–´ë¥¼ ìœ„í•œ ë³€ìˆ˜(true ë©´ ì‹œê°„ë³„ë¡œ ê°ì†Œí•˜ì§€ ì•ŠëŠ”ë‹¤.)
 
-	CDungeon	m_dvd;					// °ø¼º ´øÀü
+	CDungeon	m_dvd;					// ê³µì„± ë˜ì „
 
-// virtual function ±¸Çö
+// virtual function êµ¬í˜„
 protected:
 	void SetGateNPC(CNPC* npc);
 	void InitGateNPC();
@@ -220,7 +220,7 @@ public:
 		return (idx < 0 || idx >= COUNT_DRATAN_GATE_NPC) ? NULL : m_gateNPC[idx];
 	}
 	void GetInnerCastleRect(char* nYlayer, int* nX0x2, int* nZ0x2, int* nX1x2, int* nZ1x2);
-// --- virtual function ±¸Çö
+// --- virtual function êµ¬í˜„
 
 	void CheckWarCastle();
 	bool CheckSubServer();
@@ -310,10 +310,10 @@ public:
 
 	void StopCastleTower();
 
-	// °ø¼º ´øÀüÀÇ Ä³¸¯ ÀÌµ¿ ½ÃÅ°±â
+	// ê³µì„± ë˜ì „ì˜ ìºë¦­ ì´ë™ ì‹œí‚¤ê¸°
 	void MoveingDVD();
 
-	// °ø¼º ³­ÀÌµµ ÇÏ¶ô
+	// ê³µì„± ë‚œì´ë„ í•˜ë½
 	void CheckDVD();
 
 	void ChangeGuildNameColor();

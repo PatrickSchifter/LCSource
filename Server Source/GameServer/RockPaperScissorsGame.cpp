@@ -19,25 +19,25 @@ int CRockPaperScissorsGame::Play(CPC* user, const unsigned char userChoice, unsi
 	if (user == NULL || static_cast<int>(m_winProb.size()) <= 0)
 		return -1;
 
-	// °¡À§¹ÙÀ§º¸ °ÔÀÓÀ» ÁøÇàÇØ º¾½Ã´Ù. °á°ú°ªÀº Result º¯¼ö¿¡ ÀúÀåµË´Ï´Ù.
+	// ê°€ìœ„ë°”ìœ„ë³´ ê²Œì„ì„ ì§„í–‰í•´ ë´…ì‹œë‹¤. ê²°ê³¼ê°’ì€ Result ë³€ìˆ˜ì— ì €ì¥ë©ë‹ˆë‹¤.
 	eWINNER Resut;
 
-	// 1. ÇöÀç ÀÌ±ä È½¼ö¸¦ ±¸ÇÕ½Ã´Ù. ¿Ö³Ä¸é, ÀÌ±ä È½¼ö¿¡ µû¶ó¼­ ÀÌ±æ È®·üÀÌ ´Ş¶óÁö´Ï±î¿ä.
+	// 1. í˜„ì¬ ì´ê¸´ íšŸìˆ˜ë¥¼ êµ¬í•©ì‹œë‹¤. ì™œëƒë©´, ì´ê¸´ íšŸìˆ˜ì— ë”°ë¼ì„œ ì´ê¸¸ í™•ë¥ ì´ ë‹¬ë¼ì§€ë‹ˆê¹Œìš”.
 	int WinCount = static_cast<int>(user->m_RockPaperScissorsInfo.GetWinCount());
 	CRockPaperScissorsProb* probTable = m_winProb[WinCount+1];
 
 	if (probTable == NULL)
 		return -1;
 
-	// 2. ÀÌ¹ø¿£ ÀÌ±æ È®·üÀ» ±¸ÇØº¾½Ã´Ù.
+	// 2. ì´ë²ˆì—” ì´ê¸¸ í™•ë¥ ì„ êµ¬í•´ë´…ì‹œë‹¤.
 	int WinProb = probTable->GetUserWinProb();
 
-	// 3. Áú È®·üÀ» ±¸ÇØº¾½Ã´Ù.
+	// 3. ì§ˆ í™•ë¥ ì„ êµ¬í•´ë´…ì‹œë‹¤.
 	int LoseProb = probTable->GetServerWinProb();
 
-	// 4. ±× ¿Ü¿¡´Â ºñ±â´Â °æ¿ìÀÔ´Ï´Ù.
+	// 4. ê·¸ ì™¸ì—ëŠ” ë¹„ê¸°ëŠ” ê²½ìš°ì…ë‹ˆë‹¤.
 
-	// 5. ½ÂÆĞ¸¦ °áÁ¤ÇÒ °ªÀ» ·£´ıÀ¸·Î Á¤ÇØº¾½Ã´Ù.
+	// 5. ìŠ¹íŒ¨ë¥¼ ê²°ì •í•  ê°’ì„ ëœë¤ìœ¼ë¡œ ì •í•´ë´…ì‹œë‹¤.
 	int value = GetRandom(1, 100);
 
 	if (user->getRockPaperScissorsFlag() && user->m_admin == 10)
@@ -47,27 +47,27 @@ int CRockPaperScissorsGame::Play(CPC* user, const unsigned char userChoice, unsi
 		value = 1;
 	}
 
-	// 6. ½ÂÆĞ¸¦ È®ÀÎÇØ º¾½Ã´Ù.
+	// 6. ìŠ¹íŒ¨ë¥¼ í™•ì¸í•´ ë´…ì‹œë‹¤.
 	if (WinProb >= value)
 	{
-		// À¯Àú°¡ ÀÌ°å½À´Ï´Ù.
+		// ìœ ì €ê°€ ì´ê²¼ìŠµë‹ˆë‹¤.
 		user->m_RockPaperScissorsInfo.IncreaseWinCount();
 		Resut = RESULT_WIN_USER;
 	}
 	else if (LoseProb+WinProb <= value)
 	{
-		// ¼­¹ö°¡ ÀÌ°å½À´Ï´Ù.
+		// ì„œë²„ê°€ ì´ê²¼ìŠµë‹ˆë‹¤.
 		user->m_RockPaperScissorsInfo.SetStart(false);
 		Resut = RESULT_WIN_SERVER;
 	}
 	else
 	{
-		// ºñ°å½À´Ï´Ù.
+		// ë¹„ê²¼ìŠµë‹ˆë‹¤.
 		Resut = RESULT_DRAW;
 		serverChoice = userChoice;
 	}
 
-	// °á°ú ¸Ş½ÃÁö º¸³»ÀÚ.
+	// ê²°ê³¼ ë©”ì‹œì§€ ë³´ë‚´ì.
 	serverChoice = GetServerChoice(Resut, userChoice);
 	return static_cast<int>(Resut);
 }
@@ -88,11 +88,11 @@ bool CRockPaperScissorsGame::GiveReward(CPC* user)
 
 	if( !gserver->m_rewardMgr.setRewardData( user, m_rewardIdx, -1, winCount ) || !gserver->m_rewardMgr.doReward(user, m_rewardIdx) )
 	{
-		// ¾ÆÀÌÅÛ Áö±Ş ½ÇÆĞ
+		// ì•„ì´í…œ ì§€ê¸‰ ì‹¤íŒ¨
 		return false;
 	}
 
-	// ¾ÆÀÌÅÛ Áö±Ş ¼º°ø ¸Ş½ÃÁö
+	// ì•„ì´í…œ ì§€ê¸‰ ì„±ê³µ ë©”ì‹œì§€
 	return true;
 }
 
@@ -103,16 +103,16 @@ unsigned char CRockPaperScissorsGame::GetServerChoice(const eWINNER winner, cons
 	{
 	case RESULT_WIN_USER:
 		{
-			if (userChoice == 0)	// À¯Àú°¡ °¡À§¶ó¸é
-				serverChoice = 2;	// ¼­¹ö´Â º¸
+			if (userChoice == 0)	// ìœ ì €ê°€ ê°€ìœ„ë¼ë©´
+				serverChoice = 2;	// ì„œë²„ëŠ” ë³´
 			else
 				serverChoice = userChoice - 1;
 		}
 		break;
 	case RESULT_WIN_SERVER:
 		{
-			if (userChoice == 2)	// À¯Àú°¡ º¸¶ó¸é
-				serverChoice = 0;	// ¼­¹ö´Â °¡À§
+			if (userChoice == 2)	// ìœ ì €ê°€ ë³´ë¼ë©´
+				serverChoice = 0;	// ì„œë²„ëŠ” ê°€ìœ„
 			else
 				serverChoice = userChoice + 1;
 		}

@@ -11,16 +11,16 @@ namespace RequestClient
 struct doExSocketUpgradeJewel : public pTypeThirdBase
 {
 	int				npcIndex;
-	unsigned short	tab_1;			// º¸¼® ¾ÆÀÌÅÛ 1
+	unsigned short	tab_1;			// ë³´ì„ ì•„ì´í…œ 1
 	unsigned short	invenIndex_1;
 	int				virualIndex_1;
-	unsigned short	tab_2;			// º¸¼® ¾ÆÀÌÅÛ 2
+	unsigned short	tab_2;			// ë³´ì„ ì•„ì´í…œ 2
 	unsigned short	invenIndex_2;
 	int				virualIndex_2;
-	unsigned short	tab_3;			// º¸¼® ¾ÆÀÌÅÛ 3
+	unsigned short	tab_3;			// ë³´ì„ ì•„ì´í…œ 3
 	unsigned short	invenIndex_3;
 	int				virualIndex_3;
-	unsigned short	tab_4;			// ¾ÈÁ¤Á¦
+	unsigned short	tab_4;			// ì•ˆì •ì œ
 	unsigned short	invenIndex_4;
 	int				virualIndex_4;
 	int				itemCount;
@@ -30,16 +30,16 @@ struct doExSocketUpgradeJewel : public pTypeThirdBase
 struct doExSocketUpgradeChaosJewel : public pTypeThirdBase
 {
 	int				npcIndex;
-	unsigned short	tab_1;			// º¸¼® ¾ÆÀÌÅÛ 1
+	unsigned short	tab_1;			// ë³´ì„ ì•„ì´í…œ 1
 	unsigned short	invenIndex_1;
 	int				virualIndex_1;
-	unsigned short	tab_2;			// º¸¼® ¾ÆÀÌÅÛ 2
+	unsigned short	tab_2;			// ë³´ì„ ì•„ì´í…œ 2
 	unsigned short	invenIndex_2;
 	int				virualIndex_2;
-	unsigned short	tab_3;			// º¸¼® ¾ÆÀÌÅÛ 3
+	unsigned short	tab_3;			// ë³´ì„ ì•„ì´í…œ 3
 	unsigned short	invenIndex_3;
 	int				virualIndex_3;
-	unsigned short	tab_4;			// ¾ÈÁ¤Á¦
+	unsigned short	tab_4;			// ì•ˆì •ì œ
 	unsigned short	invenIndex_4;
 	int				virualIndex_4;
 	int				itemCount;
@@ -67,7 +67,7 @@ struct doExSocketCombineJewel : public pTypeThirdBase
 	unsigned short	tab_2;
 	unsigned short	invenIndex_2;
 	int				virualIndex_2;
-	unsigned short	tab_3;				// ÆÄ±« ¹æÁö º¸Á¶Á¦
+	unsigned short	tab_3;				// íŒŒê´´ ë°©ì§€ ë³´ì¡°ì œ
 	unsigned short	invenIndex_3;
 	int				virualIndex_3;
 	char			pos;

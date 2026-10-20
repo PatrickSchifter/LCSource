@@ -32,7 +32,7 @@ int main(int argc, char* argv[], char* envp[])
 
 	server_no = atoi(gserver.m_config.Find("Server", "Number"));
 
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	std::string tstr = boost::str(boost::format("SubHelper_%1%") % server_no);
 	LogSystem::setSubstitutedValue("logfile", tstr.c_str());
 	LogSystem::configureXml("../log.xml");
@@ -66,17 +66,17 @@ int main(int argc, char* argv[], char* envp[])
 	CServerTimerPerMinute::instance()->Init();
 	CServerTimerPerHour::instance()->Init();
 
-	// CServer¿¡¼­ HeartBeat()¸¦ ½ÇÇàÇÒ Å¸ÀÌ¸Ó
+	// CServerì—ì„œ HeartBeat()ë¥¼ ì‹¤í–‰í•  íƒ€ì´ë¨¸
 	bnf::instance()->CreateMSecTimer(1 * 1000, CServerTimer::instance());
 
-	// ¸Þ½ÃÁö¸¦ Áö¿ì±â À§ÇÑ Å¸ÀÌ¸Ó »ý¼º
+	// ë©”ì‹œì§€ë¥¼ ì§€ìš°ê¸° ìœ„í•œ íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(1 * 1000, ClearMessageListTimer::instance());
 
-	// ÀÌº¥Æ® ´Þ·Â
+	// ì´ë²¤íŠ¸ ë‹¬ë ¥
 	ReservedGmCommandManager::Instance()->Init();
 
 #if defined (NOTICE_SYSTEM)
-	// À¯Àú°¡ º¸³½ [ÀüÃ¼ ¸Þ½ÃÁö]¸¦ °ü¸®ÇÏ´Â Å¸ÀÌ¸Ó »ý¼º
+	// ìœ ì €ê°€ ë³´ë‚¸ [ì „ì²´ ë©”ì‹œì§€]ë¥¼ ê´€ë¦¬í•˜ëŠ” íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(11 * 1000, CNoticeSystemAgent::Instance());
 #endif
 

@@ -266,14 +266,14 @@ bool CZone::LoadZone(int seq)
 		return false;
 	m_bCanMountPet = (canmountpet) ? true : false;
 
-#ifdef CONTINENT_PARTY_RECALL // ´ë·úº° ÆÄÆ¼¸®Äİ¿¡ ÀÇÇÑ ´ë·ú¹øÈ£ Ãß°¡.
+#ifdef CONTINENT_PARTY_RECALL // ëŒ€ë¥™ë³„ íŒŒí‹°ë¦¬ì½œì— ì˜í•œ ëŒ€ë¥™ë²ˆí˜¸ ì¶”ê°€.
 	int continent_no;
 	if(!cmd.GetRec("a_continent_no", continent_no))
 		return false;
 	m_iContinent_no = continent_no;
 #endif //CONTINENT_PARTY_RECALL
 
-	// Á¸ÀÇ ¸¶À» À§Ä¡ ÀĞ±â
+	// ì¡´ì˜ ë§ˆì„ ìœ„ì¹˜ ì½ê¸°
 	char poscount;
 	CLCString posylayer(256);
 	CLCString posleft(256);
@@ -332,7 +332,7 @@ bool CZone::LoadZone(int seq)
 		m_zonePos[i][4] = (int)(atof(sb) * 2);
 	}
 
-	// ·¹ÀÌµå Á¸Àº npc ¸®Á¨ ¸®½ºÆ®°¡ µû·Î °ü¸®µÈ´Ù.
+	// ë ˆì´ë“œ ì¡´ì€ npc ë¦¬ì   ë¦¬ìŠ¤íŠ¸ê°€ ë”°ë¡œ ê´€ë¦¬ëœë‹¤.
 	if ( m_index == ZONE_CAPPELLA_1 || m_index == ZONE_ALTER_OF_DARK || m_index == ZONE_AKAN_TEMPLE
 			|| m_index == ZONE_DUNGEON4
 			|| m_index == ZONE_TARIAN_DUNGEON
@@ -374,7 +374,7 @@ bool CZone::LoadNPC()
 	std::vector<tag_npc_regen_info> vec;
 
 	{
-		// ¸ğµç Á¸ÀÇ NPC ÀÎµ¦½º¸¦ ÇÑ¹ø¿¡ ÀĞ¾îµé¿© Ã³¸®ÇÔ
+		// ëª¨ë“  ì¡´ì˜ NPC ì¸ë±ìŠ¤ë¥¼ í•œë²ˆì— ì½ì–´ë“¤ì—¬ ì²˜ë¦¬í•¨
 		CDBCmd dbNpcRegen;
 		dbNpcRegen.Init(&gserver->m_dbdata);
 		std::string qry = boost::str(boost::format(
@@ -414,7 +414,7 @@ bool CZone::LoadNPC()
 		}
 	}
 
-	// °¢ Á¸ÀÇ Area¸¶´Ù NPC ¸®Á¨ Á¤º¸ ÀĞ±â
+	// ê° ì¡´ì˜ Areaë§ˆë‹¤ NPC ë¦¬ì   ì •ë³´ ì½ê¸°
 	bool setenable_flag = false;
 
 #ifdef EXTREME_CUBE
@@ -458,7 +458,7 @@ bool CZone::LoadShop()
 			<< m_index
 			<< end;
 
-	// area°¡ ¼ÓÇÑ ÇØ´ç Á¸ ³Ñ¹öÀÇ ShopÁ¤º¸ READ
+	// areaê°€ ì†í•œ í•´ë‹¹ ì¡´ ë„˜ë²„ì˜ Shopì •ë³´ READ
 	CDBCmd dbShop;
 	dbShop.Init(&gserver->m_dbdata);
 	std::string select_shop_query = boost::str(boost::format("SELECT * FROM t_shop WHERE a_zone_num = %d ORDER BY a_keeper_idx") % m_index);
@@ -497,7 +497,7 @@ bool CZone::LoadShop()
 			"SELECT * FROM t_shopitem where a_keeper_idx = %d ORDER BY a_item_idx"
 			, m_shopList[idx].m_keeperIdx);
 #elif defined (LC_GAMIGO)
-		//°¡¹Ì°í´Â µ¶ÀÏ ¹öÀü ±âÁØÀ¸·Î shop ¾ÆÀÌÅÛÀ» ÅëÀÏÇÑ´Ù.
+		//ê°€ë¯¸ê³ ëŠ” ë…ì¼ ë²„ì „ ê¸°ì¤€ìœ¼ë¡œ shop ì•„ì´í…œì„ í†µì¼í•œë‹¤.
 		sql.Format(
 			"SELECT * FROM t_shopitem where a_keeper_idx = %d ORDER BY a_item_idx"
 			, m_shopList[idx].m_keeperIdx, 13);			//LC_GER = 13
@@ -509,7 +509,7 @@ bool CZone::LoadShop()
 		dbShopItem.SetQuery(sql);
 		dbShopItem.Open();
 
-		// »óÁ¡ º¸À¯ ¾ÆÀÌÅÛ
+		// ìƒì  ë³´ìœ  ì•„ì´í…œ
 		m_shopList[idx].m_itemCount = dbShopItem.m_nrecords;
 		m_shopList[idx].m_itemDBIdx = new int[m_shopList[idx].m_itemCount];
 
@@ -567,7 +567,7 @@ void CZone::SetDisableArea(int idx)
 	LOG_INFO("AREA_LOG. DISABLE_AREA : CountArea[%d], ZoneIndex[%d], AreaIndex[%d]", m_countArea, this->m_index, idx);
 }
 
-// npc index¿¡ µû¸¥ shop Ã£±â
+// npc indexì— ë”°ë¥¸ shop ì°¾ê¸°
 CShop* CZone::FindShop(int npcIdx)
 {
 	map_t::iterator it = map_.find(npcIdx);
@@ -581,30 +581,30 @@ void CZone::ChangeWeather()
 
 	switch (m_weather)
 	{
-	case 0:// ¸¼À½
+	case 0:// ë§‘ìŒ
 		if (!GetRandom(0, 5))
 			m_weather = 1;
 		break;
-	case 1: // Èå¸²
+	case 1: // íë¦¼
 		i = GetRandom(0, 2);
 		if (i == 0)
 			m_weather = 0;
 		else if (i == 1)
 			m_weather = 2;
 		break;
-	case 2: // ºñ Á¶±İ¿È...
+	case 2: // ë¹„ ì¡°ê¸ˆì˜´...
 		if (!GetRandom(0, 1))
 			m_weather = 1;
 		else
 			m_weather = 3;
 		break;
-	case 3: // ºñ ÂÉ±î ¿È...
+	case 3: // ë¹„ ìª¼ê¹Œ ì˜´...
 		if (!GetRandom(0, 1))
 			m_weather = 2;
 		else
 			m_weather = 4;
 		break;
-	case 4: //ºñ ¿ÕÃ¢ ¿È....
+	case 4: //ë¹„ ì™•ì°½ ì˜´....
 		if (!GetRandom(0, 1))
 			m_weather = 3;
 		break;
@@ -702,7 +702,7 @@ bool CZone::Load_NpcRegenRaidList()
 	CDBCmd dbcmd;
 	dbcmd.Init(&gserver->m_dbdata);
 
-	// 1. Á¸ÀÇ ¸®Á¨ ¸®½ºÆ®¿¡¼­ ·¹º§ÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
+	// 1. ì¡´ì˜ ë¦¬ì   ë¦¬ìŠ¤íŠ¸ì—ì„œ ë ˆë²¨ì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 	std::string select_npc_regen_raid_query = boost::str(boost::format("SELECT count(a_store_middle) as level FROM t_npc_regen_raid WHERE a_zone_num= %d GROUP BY a_store_middle") % m_index);
 	dbcmd.SetQuery(select_npc_regen_raid_query);
 	if (!dbcmd.Open())
@@ -721,7 +721,7 @@ bool CZone::Load_NpcRegenRaidList()
 	m_MaxLevelNpcRegen = dbcmd.m_nrecords;
 	m_CNpcRegenRaidList = new CNpc_Regen_Raid[m_MaxLevelNpcRegen];
 
-	// 2. ÀÌ zone¿¡ ÇØ´çÇÏ´Â regen Á¤º¸¸¦ ·¹º§ º°·Î ¹Ş¾Æ¼­ ÀúÀåÇÑ´Ù.
+	// 2. ì´ zoneì— í•´ë‹¹í•˜ëŠ” regen ì •ë³´ë¥¼ ë ˆë²¨ ë³„ë¡œ ë°›ì•„ì„œ ì €ì¥í•œë‹¤.
 	for (i=0; i < m_MaxLevelNpcRegen; i++)
 	{
 		std::string select_npc_regen_raid_queyr = boost::str(boost::format(
@@ -792,34 +792,34 @@ bool CZone::SummonTreaseureBoxNpc(int& x, int& z, int& zoneNum)
 
 	CZone * pZone = this;
 
-	// ÇöÀç Á¸ÀÇ ¿¡¾î¸®¾î ¼³Á¤ÀÌ ¾øÀ¸¸é ¿¬°è´øÀüÀ¸·Î ¶³±º´Ù.
-	// ¿¬°è Á¸ÀÌ ÀÖÀ¸¸é ¿¬°èÁ¸À¸·Î 10% È®·ü·Î ¶³±º´Ù.
+	// í˜„ì¬ ì¡´ì˜ ì—ì–´ë¦¬ì–´ ì„¤ì •ì´ ì—†ìœ¼ë©´ ì—°ê³„ë˜ì „ìœ¼ë¡œ ë–¨êµ°ë‹¤.
+	// ì—°ê³„ ì¡´ì´ ìˆìœ¼ë©´ ì—°ê³„ì¡´ìœ¼ë¡œ 10% í™•ë¥ ë¡œ ë–¨êµ°ë‹¤.
 	if( gserver->bTreasureMapLinkZoneDrop && m_treasureLinkZoneIdx
 			&& ( m_treasureAreaCnt == 0
 				 || ( m_treasureLinkZoneCnt > 0 && GetRandom(0, 10000) < 1000 ) ) )
 	{
 		int LinkZoneIndex = GetRandom(0, m_treasureLinkZoneCnt-1 );
 
-		// ¿¬°è Á¸ÀÇ ÀÎµ¦½º¸¦ °¡Á®¿Â´Ù.
+		// ì—°ê³„ ì¡´ì˜ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 		LinkZoneIndex = m_treasureLinkZoneIdx[LinkZoneIndex];
 		pZone = gserver->FindZone(LinkZoneIndex);
 		if (pZone == NULL)
 			return false;
 
-		// ¿¬°èÁ¸ÀÎµ¥ ¶³±¼ ¼ö ¾ø´Â Áö¿ªÀ¸·Î ¼³Á¤ÇÑ °æ¿ì ½ÇÆĞ Ã³¸®
+		// ì—°ê³„ì¡´ì¸ë° ë–¨êµ´ ìˆ˜ ì—†ëŠ” ì§€ì—­ìœ¼ë¡œ ì„¤ì •í•œ ê²½ìš° ì‹¤íŒ¨ ì²˜ë¦¬
 		if( !pZone->CheckTreasureDropFlag() )
 		{
-			//return false; // ½ÇÆĞÃ³¸®ÇÏ¸é ¶³±¼ È®·üÀÌ ³·¾ÆÁö´Ï±î. ÇöÀç ¸Ê¿¡¼­ ¶³±¸µµ·Ï Ã³¸®ÇØÁÖÀÚ.
+			//return false; // ì‹¤íŒ¨ì²˜ë¦¬í•˜ë©´ ë–¨êµ´ í™•ë¥ ì´ ë‚®ì•„ì§€ë‹ˆê¹Œ. í˜„ì¬ ë§µì—ì„œ ë–¨êµ¬ë„ë¡ ì²˜ë¦¬í•´ì£¼ì.
 			pZone = this;
 		}
 	}
 
-	// ÇöÁ¦ Á¸¿¡ ¶³±¼ Áö¿ªÀ» Ã£¾Æº»´Ù.
+	// í˜„ì œ ì¡´ì— ë–¨êµ´ ì§€ì—­ì„ ì°¾ì•„ë³¸ë‹¤.
 	int areaNum = pZone->NextAreaNum();
 	if( areaNum == -1 )
 		return false;
 
-	// ¸®Á¨ °³¼ö¸¸ Å­ ²Ë Ã£´Ù¸é ·£´ıÇÏ°Ô ÇÏ³ªÀÇ ÁÂÇ¥¸¦ ¹İ³³ ÇÏÀÚ.
+	// ë¦¬ì   ê°œìˆ˜ë§Œ í¼ ê½‰ ì°¾ë‹¤ë©´ ëœë¤í•˜ê²Œ í•˜ë‚˜ì˜ ì¢Œí‘œë¥¼ ë°˜ë‚© í•˜ì.
 	if( pZone->m_pTreasureBoxInfo && pZone->m_pTreasureBoxInfo[areaNum].GetEmptyRegenCount() <= 0 )
 	{
 		int rndNpcNum = GetRandom(0,pZone->m_pTreasureBoxInfo[areaNum].max -1 );
@@ -859,7 +859,7 @@ bool CZone::SummonTreaseureBoxNpc(int& x, int& z, int& zoneNum)
 			break;
 
 		repeat ++;
-		if( repeat > 1000 ) // È¤½Ã³ª.... Åø¿¡¼­ ÀÌ»óÇÑ Áö¿ªÀ» ¼¼ÆÃÇØ¼­ ¹«ÇÑ ·çÇÁ¸¦ µ¹Áö ¸ğ¸£´Ï... ¤Ñ¤Ñ;;
+		if( repeat > 1000 ) // í˜¹ì‹œë‚˜.... íˆ´ì—ì„œ ì´ìƒí•œ ì§€ì—­ì„ ì„¸íŒ…í•´ì„œ ë¬´í•œ ë£¨í”„ë¥¼ ëŒì§€ ëª¨ë¥´ë‹ˆ... ã…¡ã…¡;;
 		{
 			GAMELOG << init("TBNPC REGEN error" )
 					<< "zonenum : " << pZone->m_index << delim << "areanum : " << areaNum << end;

@@ -28,24 +28,28 @@ enum
 	DB_PROC_EXPRESS_EXIST,
 	DB_PROC_EXPRESS_LIST,
 	DB_PROC_EXPRESS_TAKE,
-	DB_PROC_EXPRESS_INPUT_ITEM,		// Ã¢°íNPC¿¡°Ô ¾ÆÀÌÅÛÀ» ÀÔ·Â
-	DB_PROC_EXPRESS_INPUT_NAS,		// Ã¢°íNPC¿¡°Ô ³ª½º(µ·)À» ÀÔ·Â
-	DB_PROC_EXPRESS_DELETE,			// ¾ÆÀÌÅÛ(¶Ç´Â µ·)À» À¯Àú°¡ ¼ö·ÉÇßÀ» °æ¿ì »èÁ¦ÇÔ
+	DB_PROC_EXPRESS_TAKE_ALL,
+	DB_PROC_EXPRESS_INPUT_ITEM,		// ì°½ê³ NPCì—ê²Œ ì•„ì´í…œì„ ì…ë ¥
+	DB_PROC_EXPRESS_INPUT_NAS,		// ì°½ê³ NPCì—ê²Œ ë‚˜ìŠ¤(ëˆ)ì„ ì…ë ¥
+	DB_PROC_EXPRESS_DELETE,			// ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ìœ ì €ê°€ ìˆ˜ë ¹í–ˆì„ ê²½ìš° ì‚­ì œí•¨
+	DB_PROC_EXPRESS_DELETE_ALL,			// ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ìœ ì €ê°€ ìˆ˜ë ¹í–ˆì„ ê²½ìš° ì‚­ì œí•¨
 
 	DB_PROC_QUERY,
 
 	DB_PROC_MYSQL_PING,
-	DB_PROC_SEND_ANY_INFO_AFTER_LOGIN,		// ·Î±×ÀÎ ÈÄ ÀÚµ¿À¸·Î Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³¾ Á¤º¸¸¦ Ã³¸®ÇÔ
+	DB_PROC_SEND_ANY_INFO_AFTER_LOGIN,		// ë¡œê·¸ì¸ í›„ ìë™ìœ¼ë¡œ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ë‚¼ ì •ë³´ë¥¼ ì²˜ë¦¬í•¨
 
-	DB_PROC_SEARCH_NICKNAME_FOR_EXPRESS,	// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
-	DB_PROC_SEND_ITEM_TO_NICKNAME,				// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
+	DB_PROC_SEARCH_NICKNAME_FOR_EXPRESS,	// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
+	DB_PROC_SEND_ITEM_TO_NICKNAME,				// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
 
-	DB_PROC_DEL_CHARACTER_FOR_GM,			// gm ¸í·É¾î·Î Ä³¸¯ÅÍ¸¦ Áö¿ï¶§ »ç¿ë
+	DB_PROC_DEL_CHARACTER_FOR_GM,			// gm ëª…ë ¹ì–´ë¡œ ìºë¦­í„°ë¥¼ ì§€ìš¸ë•Œ ì‚¬ìš©
 
 	DB_PROC_QUERY_FOR_AUTH_DB,
 	DB_PROC_QUERY_FOR_DATA_DB,
 
-	DB_PROC_GET_CHAR_INDEX_BY_GPS,			// ÀÌ¸§À» ÅëÇØ¼­ char index¸¦ ¾òÀ½
+	DB_PROC_GET_CHAR_INDEX_BY_GPS,			// ì´ë¦„ì„ í†µí•´ì„œ char indexë¥¼ ì–»ìŒ
+	
+	DB_PROC_INSERT_MAKETITLE_INFO,			// ì œì‘ íƒ€ì´ì„ ì •ë³´ë¥¼ ì €ì¥
 };
 
 enum
@@ -92,14 +96,13 @@ enum
 #ifdef PREMIUM_CHAR
 	CHAR_SAVE_TYPE_PREMIUM_CHAR_INFO,
 #endif
-
 	CHAR_SAVE_TYPE_TCHAR_MAX,
 };
 
 enum
 {
-	EXPRESS_SENDER_TYPE_MARBLE,				// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½
-	EXPRESS_SENDER_TYPE_WEAR_INVENTORY,		// ÀåÂø ÀÎº¥Åä¸®
+	EXPRESS_SENDER_TYPE_MARBLE,				// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬
+	EXPRESS_SENDER_TYPE_WEAR_INVENTORY,		// ì¥ì°© ì¸ë²¤í† ë¦¬
 };
 
 typedef std::vector<std::vector<std::string> > save_char_queryt_t;
@@ -162,11 +165,13 @@ public:
 	void PushExpressExist(CDescriptor* desc, int send_type);
 	void PushExpressList(CDescriptor* desc, int pageIndex);
 	void PushExpressTake(CDescriptor* desc, expressIndex_t expressIndex);
+	void PushExpressTakeAll(CDescriptor* desc, int pageIndex);
 	void PushExpressInputItem(CDescriptor* desc, ExpressSystemItemInfo* itemInfo, bool contentsFlag);
 	void PushExpressInputNas(CDescriptor* desc, unsigned int nas, int send_type, std::string sender, bool contentsFlag);
 	void PushExpressInputItemNotConnectUser(int charIndex, ExpressSystemItemInfo* itemInfo, bool contentsFlag);
 	void PushExpressInputNasNotConnectUser(int charIndex, unsigned int nas, int send_type, std::string sender, bool contentsFlag);
 	void PushExpressDelete(CDescriptor* desc, expressIndex_t expressIndex, bool send_flag = false);
+	void PushExpressDeleteAll(CDescriptor* desc, int pageIndex, bool send_flag = false);
 	void PushExpressSearchNickName(CDescriptor* desc, const char* nickName);
 	void PushExpressSendItemToNickName(CDescriptor* desc, ExpressSystemItemInfo* itemInfo, std::string receiver, int sender_type);
 
@@ -182,6 +187,8 @@ public:
 	void pushQueryForDataDB(int userIndex, std::string& query);
 
 	void pushGetCharIndexByGPS(CDescriptor* desc, std::string& name, int itemVindex);
+
+	void pushMakeTitleInfo(CDescriptor* desc, int char_index, int v_index, char color, char background_color, char effect, std::string name, int* option_index, int* option_level);
 
 private:
 	void _SaveCharaterQuery(std::vector<std::string> & vec, CPC* pChar, int table_no);
@@ -253,14 +260,17 @@ public:
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, int/*send_type*/> expressexist_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, int/*page index*/> expresslist_t;
 	typedef boost::tuple<LONGLONG, int/*m_index*/, int/*char_index*/, expressIndex_t> expresstake_t;
+	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, int/*page index*/> expresstakeall_t;
 	typedef boost::tuple<LONGLONG, int/*char_index*/, ExpressSystemItemInfo*, bool> expressinputitem_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, unsigned int/*nas*/, int/*send_type*/, std::string/*sender*/, bool> expressinputnas_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, expressIndex_t, bool/*send_flag*/> expressdelete_t;
+	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, int/*page index*/, bool/*send_flag*/> expressdeleteall_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/> sendanyinfoafterlogin_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, std::string/*nickName*/> expresssearchnickname_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*charIndex*/,ExpressSystemItemInfo*, std::string/*receiver*/, int/*sender_type*/> expresssenditemtonickname_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, std::string/*del_char_name*/> delcharforgm_t;
 	typedef boost::tuple<LONGLONG, int/*user_index*/, std::string/*search_char_name*/, int/*itemVIndex*/> getcharindexbyGPS_t;
+	typedef boost::tuple<LONGLONG, int/*user_index*/, int/*char_index*/, int/*virtual_index*/, char /*color*/, char /*background_color*/, char /*effect*/, std::string /*name*/, int*/*option_index*/, int*/*option_level*/> title_make_t;
 
 	typedef std::string query_t;
 
@@ -288,15 +298,17 @@ public:
 	void CreateChar(boost::any& argv);
 	void DeleteChar(boost::any& argv);
 	void CancelDeleteChar(boost::any& argv);
-	void SelectChar(boost::any& argv); // DBProcess_SelectChar.cpp ¿¡ À§Ä¡
-	void SaveChar(boost::any& argv); // DBProcess_SaveChar.cpp ¿¡ À§Ä¡
+	void SelectChar(boost::any& argv); // DBProcess_SelectChar.cpp ì— ìœ„ì¹˜
+	void SaveChar(boost::any& argv); // DBProcess_SaveChar.cpp ì— ìœ„ì¹˜
 
 	void ExpressExist(boost::any& argv);
 	void ExpressList(boost::any& argv);
 	void ExpressTake(boost::any& argv);
+	void ExpressTakeAll(boost::any& argv);
 	void ExpressInputItem(boost::any& argv);
 	void ExpressInputNas(boost::any& argv);
 	void ExpressDelete(boost::any& argv);
+	void ExpressDeleteAll(boost::any& argv);
 	void ExpressSearchNickName(boost::any& argv);
 	void ExpressSendItemToNickName(boost::any& argv);
 
@@ -310,13 +322,15 @@ public:
 
 	void getCharIndexByGPS(boost::any& argv);
 
+	void InsertMakeTitleInfo(boost::any& argv);
+
 private:
 	void SendMessageToClient(LONGLONG& seq_index, int userIndex, CNetMsg::SP& msg);
-	void excute_query(std::vector<std::string>& vec); // DBProcess_SaveChar.cpp ¿¡ À§Ä¡
-	void excute_query_commi_and_rollback(std::vector<std::string>& vec); // DBProcess_SaveChar.cpp ¿¡ À§Ä¡
+	void excute_query(std::vector<std::string>& vec); // DBProcess_SaveChar.cpp ì— ìœ„ì¹˜
+	void excute_query_commi_and_rollback(std::vector<std::string>& vec); // DBProcess_SaveChar.cpp ì— ìœ„ì¹˜
 	void PromotionGive(int m_index, CPC* pChar, int partner_id, bool lucky);
 	void getItemByExpress(ExpressSystemItemInfo* info, MYSQL_RES *result);
-	void select_rvr_info_query(CPC* pChar);		// ÀúÀåµÇ¾îÁø °á»ç´ë Á¤º¸ °¡Á®¿À±â
+	void select_rvr_info_query(CPC* pChar);		// ì €ì¥ë˜ì–´ì§„ ê²°ì‚¬ëŒ€ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 
 	void FixItemUsedTime(CItem* pItem);
 

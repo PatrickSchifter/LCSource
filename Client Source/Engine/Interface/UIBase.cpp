@@ -6,6 +6,8 @@
 
 #pragma warning(disable: 4172)
 
+stTooltipInfo CUIBase::temp_tooltip_data("", DEF_UI_COLOR_WHITE);
+
 CUIBase::CUIBase()
     : m_pParent(NULL)
     , m_pTexData(NULL)
@@ -20,10 +22,14 @@ CUIBase::CUIBase()
     , m_eAlign_h(eALIGN_H_LEFT)
     , m_eAlign_v(eALIGN_V_TOP)
     , m_nTooltipWidth(0)
+	, m_func(NULL)
+	, m_funcUp(NULL)
+	, m_dwWndState( UWS_ENABLE | UWS_VISIBLE )
+	, m_eChildItemState(eSTATE_IDLE)
+	, m_nWidth(0)
+	, m_nHeight(0)
 #ifdef	UI_TOOL
     , m_bSelect(false)
-    , m_nWidth(0)
-    , m_nHeight(0)
     , m_nTooltipIndex(-1)
 #endif	// UI_TOOL
 {
@@ -59,6 +65,7 @@ void CUIBase::Destroy()
     SAFE_DELETE(m_pCmdWheelDown);
 
     CmdErase();
+	clearTooltipCont();
 }
 
 CUIBase* CUIBase::Clone()
@@ -81,6 +88,22 @@ bool CUIBase::addChild(CUIBase* child)
     child->setParent(this);
 
     return true;
+}
+
+bool CUIBase::insertChild( CUIBase* child, int pos )
+{
+	if (child == NULL)
+		return false;
+
+	if (pos < 0 || pos >= m_VecChild.size())
+		return false;
+
+	vec_uinode_iter iter = m_VecChild.begin();
+
+	m_VecChild.insert(iter + pos, child);
+	child->setParent(this);
+
+	return true;
 }
 
 bool CUIBase::deleteChild(const char* child_name)
@@ -285,8 +308,8 @@ void CUIBase::updatePosition(bool bUpdateChild)
     if (pParent == NULL)
     {
         CUIManager* pUIMgr = CUIManager::getSingleton();
-        nPW = pUIMgr->GetWidth();
-        nPH = pUIMgr->GetHeight();
+		nPW = pUIMgr->GetWidth();
+		nPH = pUIMgr->GetHeight();
     }
     else
     {
@@ -321,6 +344,9 @@ void CUIBase::updatePosition(bool bUpdateChild)
     {
         m_nPosY = nPH - m_nHeight + m_nOrigY;
     }
+
+	// 위치 계산 후에 호출하는 함수
+	OnUpdatePositionPost();
 
     if (bUpdateChild == true)
         updatePositionChild(bUpdateChild);
@@ -481,6 +507,9 @@ WMSG_RESULT CUIBase::MouseMessage(MSG* pMsg)
 {
     WMSG_RESULT ret = WMSG_FAIL;
 
+	if (IsEnabled() == FALSE)
+		return ret;
+
     UINT16 x = LOWORD(pMsg->lParam);
     UINT16 y = HIWORD(pMsg->lParam);
 
@@ -577,7 +606,7 @@ WMSG_RESULT CUIBase::MouseMessage(MSG* pMsg)
 
 WMSG_RESULT CUIBase::LButtonDown(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -607,9 +636,9 @@ WMSG_RESULT CUIBase::LButtonDownChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->LButtonDown(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     // 상속이 꺼져있으면, 메세지 사용으로 간주 (다른곳에 전달 안함)
     if (m_bInherit == false)
@@ -620,7 +649,7 @@ WMSG_RESULT CUIBase::LButtonDownChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::LButtonUp(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -649,9 +678,9 @@ WMSG_RESULT CUIBase::LButtonUpChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->LButtonUp(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     if (m_bInherit == false)
         return WMSG_SUCCESS;
@@ -661,7 +690,7 @@ WMSG_RESULT CUIBase::LButtonUpChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::LButtonDBLClick(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -690,9 +719,9 @@ WMSG_RESULT CUIBase::LButtonDBLClickChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->LButtonDBLClick(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     if (m_bInherit == false)
         return WMSG_SUCCESS;
@@ -702,7 +731,7 @@ WMSG_RESULT CUIBase::LButtonDBLClickChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::RButtonDown(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -731,9 +760,9 @@ WMSG_RESULT CUIBase::RButtonDownChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->RButtonDown(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     if (m_bInherit == false)
         return WMSG_SUCCESS;
@@ -743,7 +772,7 @@ WMSG_RESULT CUIBase::RButtonDownChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::RButtonUp(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -772,9 +801,9 @@ WMSG_RESULT CUIBase::RButtonUpChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->RButtonUp(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     if (m_bInherit == false)
         return WMSG_SUCCESS;
@@ -784,7 +813,7 @@ WMSG_RESULT CUIBase::RButtonUpChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::RButtonDBLClick(UINT16 x, UINT16 y)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -813,9 +842,9 @@ WMSG_RESULT CUIBase::RButtonDBLClickChild(UINT16 x, UINT16 y)
         if ((*iter) != pUI)
             ret = (*iter)->RButtonDBLClick(x, y);
 
-        if (ret != WMSG_FAIL)
-            return ret;
-    }
+		if (ret != WMSG_FAIL && ret != WMSG_OB)
+			return ret;
+	}
 
     if (m_bInherit == false)
         return WMSG_SUCCESS;
@@ -825,7 +854,7 @@ WMSG_RESULT CUIBase::RButtonDBLClickChild(UINT16 x, UINT16 y)
 
 WMSG_RESULT CUIBase::MouseMove(UINT16 x, UINT16 y, MSG* pMsg)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
     {
         if (m_bEnter == true)
             OnLeave(x, y);
@@ -880,7 +909,7 @@ WMSG_RESULT CUIBase::MouseMoveChild(UINT16 x, UINT16 y, MSG* pMsg)
 
 WMSG_RESULT CUIBase::MouseWheel(UINT16 x, UINT16 y, int wheel)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     if (IsInside(x, y) == FALSE)
@@ -926,8 +955,8 @@ WMSG_RESULT CUIBase::MouseWheelChild(UINT16 x, UINT16 y, int wheel)
 
 WMSG_RESULT CUIBase::KeyMessageProc(MSG* pMsg)
 {
-    if (m_bHide)
-        return WMSG_FAIL;
+	if (m_bHide || IsEnabled() == FALSE)
+		return WMSG_FAIL;
 
     WMSG_RESULT ret = WMSG_FAIL;
 
@@ -959,7 +988,7 @@ WMSG_RESULT CUIBase::KeyMessageChild(MSG* pMsg)
 
 WMSG_RESULT CUIBase::CharMessageProc(MSG* pMsg)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     WMSG_RESULT ret = WMSG_FAIL;
@@ -992,7 +1021,7 @@ WMSG_RESULT CUIBase::CharMessageChild(MSG* pMsg)
 
 WMSG_RESULT CUIBase::IMEMessageProc(MSG* pMsg)
 {
-    if (m_bHide)
+    if (m_bHide || IsEnabled() == FALSE)
         return WMSG_FAIL;
 
     WMSG_RESULT ret = WMSG_FAIL;
@@ -1027,34 +1056,46 @@ void CUIBase::OnEnter(UINT16 x, UINT16 y)
 {
     m_bEnter = true;
 
-    if (m_strTooltip.empty() == false)
+	if (m_vec_tooltip.empty() == false || m_funcSetTooltip)
         CUITooltipMgr::getSingleton()->setData(this);
 
     if (m_pCmdOnEnter != NULL)
         m_pCmdOnEnter->execute();
+
+	if (m_funcOnEnter)
+		m_funcOnEnter(this);
 }
 
 void CUIBase::OnLeave(UINT16 x, UINT16 y)
 {
-    m_bEnter = false;
-
-    if (m_strTooltip.empty() == false)
-        CUITooltipMgr::getSingleton()->hideUI(this);
+	m_bEnter = false;
+	
+	if (m_vec_tooltip.empty() == false || m_funcSetTooltip)
+		CUITooltipMgr::getSingleton()->hideUI(this);
 
     if (m_pCmdOnLeave != NULL)
         m_pCmdOnLeave->execute();
+
+	if (m_funcOnLeave)
+		m_funcOnLeave(this);
 }
 
 void CUIBase::OnMouseWheelUp()
 {
     if (m_pCmdWheelUp != NULL)
         m_pCmdWheelUp->execute();
+
+	if (m_funcWheelUp)
+		m_funcWheelUp(this);
 }
 
 void CUIBase::OnMouseWheelDown()
 {
     if (m_pCmdWheelDown != NULL)
         m_pCmdWheelDown->execute();
+
+	if (m_funcWheelDown)
+		m_funcWheelDown(this);
 }
 
 
@@ -1134,5 +1175,188 @@ void CUIBase::CmdErase()
     m_pCmdDBL		= NULL;
     m_pCmdWheelUp	= NULL;
     m_pCmdWheelDown	= NULL;
+
+	m_func			= NULL;
+	m_funcOn		= NULL;
+	m_funcUp		= NULL;
+	m_funcR			= NULL;
+	m_funcRUp		= NULL;
+	m_funcOnEnter	= NULL;
+	m_funcOnLeave	= NULL;
+	m_funcDBL		= NULL;
+	m_funcWheelUp	= NULL;
+	m_funcWheelDown = NULL;
+
+	m_funcUpdateTooltipText = NULL;
 }
 
+WMSG_RESULT CUIBase::OnLButtonDown( UINT16 x, UINT16 y )
+{
+	if (m_bHide == TRUE)
+		return WMSG_OB;
+
+	if (IsInside(x, y) == FALSE)
+		return WMSG_OB;
+
+	if (m_pCmd)
+		m_pCmd->execute();
+
+	if (m_func)
+		m_func(this);
+
+	// Child 를 실행하기 위해 Fail 리턴.
+	return WMSG_FAIL;
+}
+
+WMSG_RESULT CUIBase::OnLButtonUp( UINT16 x, UINT16 y )
+{
+	if (m_bHide == TRUE)
+		return WMSG_OB;
+
+	if (IsInside(x, y) == FALSE)
+		return WMSG_OB;
+
+	if (m_pCmdUp)
+		m_pCmdUp->execute();
+
+	if (m_funcUp)
+		m_funcUp(this);
+
+	return WMSG_FAIL;
+}
+
+WMSG_RESULT CUIBase::OnLButtonDBLClick( UINT16 x, UINT16 y )
+{
+	if (m_bHide == TRUE)
+		return WMSG_OB;
+
+	if (IsInside(x, y) == FALSE)
+		return WMSG_OB;
+
+	if (m_pCmdDBL)
+		m_pCmdDBL->execute();
+
+	if (m_funcDBL)
+		m_funcDBL(this);
+
+	return WMSG_FAIL;
+}
+
+WMSG_RESULT CUIBase::OnRButtonDown( UINT16 x, UINT16 y )
+{
+	if (m_bHide == TRUE)
+		return WMSG_OB;
+
+	if (IsInside(x, y) == FALSE)
+		return WMSG_OB;
+
+	if (m_pCmdR)
+		m_pCmdR->execute();
+
+	if (m_funcR)
+		m_funcR(this);
+
+	return WMSG_FAIL;
+}
+
+WMSG_RESULT CUIBase::OnRButtonUp( UINT16 x, UINT16 y )
+{
+	if (m_bHide == TRUE)
+		return WMSG_OB;
+
+	if (IsInside(x, y) == FALSE)
+		return WMSG_OB;
+
+	if (m_pCmdRUp)
+		m_pCmdRUp->execute();
+
+	if (m_funcRUp)
+		m_funcRUp(this);
+
+	return WMSG_FAIL;
+}
+
+void CUIBase::setTooltip( const char* strTooltip, COLOR col /*= DEF_UI_COLOR_WHITE*/, bool bclear /*= true*/ )
+{
+	stTooltipInfo info((char*)strTooltip, col);
+	
+	if (bclear == true)
+		clearTooltipCont();
+
+	m_vec_tooltip.push_back(info);
+}
+
+stTooltipInfo CUIBase::getTooltip( int idx /*= 0*/ )
+{
+	if (idx < 0 || idx >= m_vec_tooltip.size())
+		return temp_tooltip_data;
+	return m_vec_tooltip[idx];
+}
+
+void CUIBase::ChildItemSelect()
+{
+	m_eChildItemState = eSTATE_SELECT;
+
+	vec_uinode_iter		iter = m_VecChild.begin();
+	vec_uinode_iter		eiter = m_VecChild.end();
+
+	for(; iter != eiter; ++iter )
+	{
+		if ((*iter) != NULL)
+			(*iter)->ChildItemSelect();
+	}
+}
+
+void CUIBase::ChildItemEnter()
+{
+	m_eChildItemState = eSTATE_ENTER;
+
+	vec_uinode_iter		iter = m_VecChild.begin();
+	vec_uinode_iter		eiter = m_VecChild.end();
+
+	for(; iter != eiter; ++iter )
+	{
+		if ((*iter) != NULL)
+			(*iter)->ChildItemEnter();
+	}
+}
+
+void CUIBase::ChildItemLeave()
+{
+	m_eChildItemState = eSTATE_IDLE;
+
+	vec_uinode_iter		iter = m_VecChild.begin();
+	vec_uinode_iter		eiter = m_VecChild.end();
+
+	for(; iter != eiter; ++iter )
+	{
+		if ((*iter) != NULL)
+			(*iter)->ChildItemLeave();
+	}
+}
+
+void CUIBase::ChildItemIdle()
+{
+	m_eChildItemState = eSTATE_IDLE;
+
+	vec_uinode_iter		iter = m_VecChild.begin();
+	vec_uinode_iter		eiter = m_VecChild.end();
+
+	for(; iter != eiter; ++iter )
+	{
+		if ((*iter) != NULL)
+			(*iter)->ChildItemIdle();
+	}
+}
+
+void CUIBase::procSetTooltipFunc()
+{
+	if (m_funcSetTooltip)
+		m_funcSetTooltip(this);
+}
+
+void CUIBase::updateTooltipTextF()
+{
+	if (m_funcUpdateTooltipText)
+		m_funcUpdateTooltipText(this);
+}

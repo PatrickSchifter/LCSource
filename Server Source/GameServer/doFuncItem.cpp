@@ -17,12 +17,13 @@
 #include "Artifact_Manager.h"
 #include "../ShareLib/packetType/ptype_old_do_item.h"
 #include "../ShareLib/packetType/ptype_old_do_skill.h"
+#include "../ShareLib/packetType/ptype_old_do_title.h"
 #include "itemExchangeProto.h"
 #include "EquipExchangeExtend.h"
 #include "DBManager.h"
 
 //////////////
-// ¾ÆÀÌÅÛ °ü·Ã
+// ì•„ì´í…œ ê´€ë ¨
 extern bool do_useCashItem(CPC* ch, CItem* item, bool bprolong, RequestClient::doItemUse* packet);
 
 #if defined (SAKURA_EVENT_2008_REWARD)
@@ -62,7 +63,7 @@ bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item);
 
 void do_ItemUseExchagneEquip( CPC* ch, CNetMsg::SP& msg );
 
-// ´ëÀü¿ë ¾ÆÀÌÅÛ
+// ëŒ€ì „ìš© ì•„ì´í…œ
 bool do_useCashItem_CompetitionItem( CPC* ch, CItem* pItem );
 
 bool do_useEventItem_HalloweenCandy( CPC* ch, CItem* pItem );
@@ -96,10 +97,6 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 
 bool do_ItemUse_WorldFestivalBox(CPC* ch, CItem* pItem);
 
-//#if defined(EVENT_WORLDCUP_2010) || defined(EVENT_WORLDCUP_2010_TOTO) || defined(EVENT_WORLDCUP_2010_TOTO_STATUS) || defined(EVENT_WORLDCUP_2010_TOTO_GIFT) || defined(EVENT_WORLDCUP_2010_ATTENDANCE)
-bool do_ItemUse_WorldFestivalBox(CPC* ch, CItem* pItem);
-//#endif
-
 bool do_ItemUse_5329(CPC* ch, const CItemProto* itemproto, int nExtar1);
 
 void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem);
@@ -117,6 +114,10 @@ void do_ItemExchange(CPC* ch, CNetMsg::SP& msg);
 
 void do_ItemCompose(CPC* ch, CNetMsg::SP& msg);
 
+void do_ItemUpgradePetReq(CPC* ch, CNetMsg::SP& msg);
+
+extern bool do_ItemUsePotion(CPC* ch, CItem* item, int extra1);
+
 typedef struct _GiftItemInfo
 {
 	int index;
@@ -128,7 +129,7 @@ void do_Item(CPC* ch, CNetMsg::SP& msg)
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	pCastle->CheckRespond(ch);
 
-	// Á×°Å³ª ±³È¯ÁßÀÌ¸é ¹«½Ã
+	// ì£½ê±°ë‚˜ êµí™˜ì¤‘ì´ë©´ ë¬´ì‹œ
 	if (DEAD(ch) || ch->m_exchange != NULL || ch->m_currentSkill != NULL || ch->m_personalshop != NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -267,7 +268,7 @@ void do_Item(CPC* ch, CNetMsg::SP& msg)
 		do_Itemwear_Costume_TakeOff(ch, msg);
 		break;
 
-// [110207:selo] ÇÑ ¹ú ÀÇ»ó
+// [110207:selo] í•œ ë²Œ ì˜ìƒ
 	case MSG_ITEM_WEAR_COSTUME_SUIT:
 		do_ItemWear_Costume_Suit(ch, msg);
 		break;
@@ -299,6 +300,10 @@ void do_Item(CPC* ch, CNetMsg::SP& msg)
 		do_ItemCompose(ch, msg);
 		break;
 
+	case MSG_ITEM_UPGRADE_PET:
+		do_ItemUpgradePetReq(ch, msg);
+		break;
+
 	default:
 		{
 			LOG_ERROR("invalid packet. charIndex[%d] / subType[%d]", ch->m_index, pBase->subType);
@@ -307,34 +312,34 @@ void do_Item(CPC* ch, CNetMsg::SP& msg)
 		break;
 	}
 
-	// ¾ÆÀÌÅÛ °ü·Ã ¸Ş½ÃÁö Ã³¸®ÈÄ Âø¿ë Á¤º¸¿¡ µû¶ó ¼ÒÈ¯/°­½Å Ãë¼Ò
+	// ì•„ì´í…œ ê´€ë ¨ ë©”ì‹œì§€ ì²˜ë¦¬í›„ ì°©ìš© ì •ë³´ì— ë”°ë¼ ì†Œí™˜/ê°•ì‹  ì·¨ì†Œ
 	CItem* pItemWeapon = ch->m_wearInventory.wearItemInfo[WEARING_WEAPON];
 	bool bCancelSummonEvocation = false;
 	if (!pItemWeapon || !pItemWeapon->IsWeaponType())
 	{
-		// ¹«±â ¹ÌÂø¿ë
+		// ë¬´ê¸° ë¯¸ì°©ìš©
 		bCancelSummonEvocation = true;
 	}
 	else
 	{
-		// ¹«±â Âø¿ë
-		// Á÷¾÷¿¡ µû¶ó
+		// ë¬´ê¸° ì°©ìš©
+		// ì§ì—…ì— ë”°ë¼
 		switch (ch->m_job2)
 		{
 		case JOB_2ND_ELEMENTALLIST:
-			// ¿¤¸®¸àÅ»¸®½ºÆ®´Â Æú¾Ï ¾Æ´Ï¸é ¼ÒÈ¯ Ãë¼Ò
+			// ì—˜ë¦¬ë©˜íƒˆë¦¬ìŠ¤íŠ¸ëŠ” í´ì•” ì•„ë‹ˆë©´ ì†Œí™˜ ì·¨ì†Œ
 			if (pItemWeapon->m_itemProto->getItemSubTypeIdx() != IWEAPON_POLEARM)
 				bCancelSummonEvocation = true;
 			break;
 
 		case JOB_2ND_SPECIALLIST:
-			// ½ºÆä¼È¸®½ºÆ®´Â »çÀÌµå ¾Æ´Ï¸é °­½Å Ãë¼Ò
+			// ìŠ¤í˜ì…œë¦¬ìŠ¤íŠ¸ëŠ” ì‚¬ì´ë“œ ì•„ë‹ˆë©´ ê°•ì‹  ì·¨ì†Œ
 			if (pItemWeapon->m_itemProto->getItemSubTypeIdx() != IWEAPON_SCYTHE)
 				bCancelSummonEvocation = true;
 			break;
 
 		default:
-			// ÀüÁ÷ Àü¿¡´Â Æú¾Ï »çÀÌµå µÑ´Ù µÊ
+			// ì „ì§ ì „ì—ëŠ” í´ì•” ì‚¬ì´ë“œ ë‘˜ë‹¤ ë¨
 			if (pItemWeapon->m_itemProto->getItemSubTypeIdx() != IWEAPON_POLEARM && pItemWeapon->m_itemProto->getItemSubTypeIdx() != IWEAPON_SCYTHE)
 				bCancelSummonEvocation = true;
 			break;
@@ -342,10 +347,10 @@ void do_Item(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (bCancelSummonEvocation)
 	{
-		// ¼ÒÈ¯ Ãë¼Ò
+		// ì†Œí™˜ ì·¨ì†Œ
 		while (ch->m_elementalList)
 			ch->UnsummonElemental(ch->m_elementalList);
-		// °­½Å Ãë¼Ò
+		// ê°•ì‹  ì·¨ì†Œ
 		if (ch->m_evocationIndex != EVOCATION_NONE)
 			ch->Unevocation();
 	}
@@ -363,7 +368,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ Ã£±â
+	// ì•„ì´í…œ ì°¾ê¸°
 	CItem* item = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 	if (item == NULL)
 	{
@@ -501,7 +506,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		}
 	}
 	
-	// ½ºÅæ °É·Áµµ ½ºÅæ Ä¡·á¹°¾àÀº µÇ°Ô
+	// ìŠ¤í†¤ ê±¸ë ¤ë„ ìŠ¤í†¤ ì¹˜ë£Œë¬¼ì•½ì€ ë˜ê²Œ
 	if (ch->m_assist.m_state & AST_STONE)
 	{
 		switch(item->m_itemProto->getItemIndex())
@@ -518,14 +523,14 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 
 	switch(item->m_itemProto->getItemIndex())
 	{
-	case 857:					// ¼ø°£ ÀÌµ¿ ¸¶¹ı¼­
-	case 858:					// ¼ÒÈ¯ ¸¶¹ı¼­
-	case 1298:					// ÆÄÆ¼ ¸®Äİ 1ÀÏ Á¤¾×
-	case 1299:					// ÆÄÆ¼ ¸®Äİ 7ÀÏ Á¤¾×
-	case 1300:					// ÆÄÆ¼ ¸®Äİ 30ÀÏ Á¤¾×
-	case 1413:					// ÆÄÆ¼ ¸®Äİ 3½Ã°£ Á¤¾×
-	case 1414:					// ÆÄÆ¼ ¸®Äİ 7½Ã°£ Á¤¾×
-	case 1415:					// ÆÄÆ¼ ¸®Äİ 1½Ã°£ Á¤¾×
+	case 857:					// ìˆœê°„ ì´ë™ ë§ˆë²•ì„œ
+	case 858:					// ì†Œí™˜ ë§ˆë²•ì„œ
+	case 1298:					// íŒŒí‹° ë¦¬ì½œ 1ì¼ ì •ì•¡
+	case 1299:					// íŒŒí‹° ë¦¬ì½œ 7ì¼ ì •ì•¡
+	case 1300:					// íŒŒí‹° ë¦¬ì½œ 30ì¼ ì •ì•¡
+	case 1413:					// íŒŒí‹° ë¦¬ì½œ 3ì‹œê°„ ì •ì•¡
+	case 1414:					// íŒŒí‹° ë¦¬ì½œ 7ì‹œê°„ ì •ì•¡
+	case 1415:					// íŒŒí‹° ë¦¬ì½œ 1ì‹œê°„ ì •ì•¡
 		if ((ch->m_nJoinInzone_ZoneNo >=0 && ch->m_nJoinInzone_RoomNo >= 0) || (ch->m_pZone->IsPersonalRaid()))
 			return;
 		break;
@@ -535,8 +540,8 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			return;
 		break;
 
-	case 4933:		// ºÎÈ°ÁÖ¹®¼­2 »ç¿ëÇÒ ¼ö ¾øÀ½
-	case 5958:		// ºÎÈ° ÁÖ¹®¼­2 ÃÊº¸ÀÚ¿ë »ç¿ëÇÒ ¼ö ¾øÀ½
+	case 4933:		// ë¶€í™œì£¼ë¬¸ì„œ2 ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
+	case 5958:		// ë¶€í™œ ì£¼ë¬¸ì„œ2 ì´ˆë³´ììš© ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
 		return;
 
 	case 6101:
@@ -555,7 +560,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// ItemFlag()¿¡ µû¸¦ Ã³¸® - ½ÃÀÛ
+	// ItemFlag()ì— ë”°ë¥¼ ì²˜ë¦¬ - ì‹œì‘
 	if(itemproto->getItemFlag() & ITEM_FLAG_CASTLLAN)
 	{
 		int zonenum;
@@ -563,11 +568,11 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		bool ret;
 		ret = ch->CheckCastellanType(zonenum, castellan);
 
-		if(itemproto->getItemNum3() & 0xffff0000)  // ¼ºÁÖ¸â¹ö¿ë ¾ÆÀÌÅÛ
+		if(itemproto->getItemNum3() & 0xffff0000)  // ì„±ì£¼ë©¤ë²„ìš© ì•„ì´í…œ
 		{
 			if(!ret || castellan)
 			{
-				// ¼ºÁÖ¸â¹ö°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ë©¤ë²„ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN_GUILD);
 				SEND_Q(rmsg, ch->m_desc);
@@ -575,15 +580,15 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			}
 			if(zonenum != (itemproto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				return ;
 			}
 		}
-		else		// ¼ºÁÖ¿ë ¾ÆÀÌÅÛ
+		else		// ì„±ì£¼ìš© ì•„ì´í…œ
 		{
 			if(!ret || !castellan)
 			{
-				// ¼ºÁÖ°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN);
 				SEND_Q(rmsg, ch->m_desc);
@@ -591,7 +596,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			}
 			if(zonenum != (itemproto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				return ;
 			}
 		}
@@ -602,10 +607,10 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 				GetDistance(itemproto->getItemQuestX(), GET_X(ch), itemproto->getItemQuestZ(), GET_Z(ch), 0, 0) >= itemproto->getItemQuestRange() )
 			return;
 	}
-	// ItemFlag()¿¡ µû¸¦ Ã³¸® - ³¡
+	// ItemFlag()ì— ë”°ë¥¼ ì²˜ë¦¬ - ë
 	//////////////////////////////////////////////////////////////////////////
 
-	// ºñÇàÁß¿£ Æ÷¼Ç ¸¸ »ç¿ë°¡´É
+	// ë¹„í–‰ì¤‘ì—” í¬ì…˜ ë§Œ ì‚¬ìš©ê°€ëŠ¥
 	if( ch->IsSetPlayerState(PLAYER_STATE_FLYING) && itemproto->getItemTypeIdx() != ITYPE_POTION )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -614,10 +619,10 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		return;
 	}
 
-	// Item È¿°ú Àû¿ë
+	// Item íš¨ê³¼ ì ìš©
 	switch (itemproto->getItemTypeIdx())
 	{
-	case ITYPE_ONCE:				// ÀÏÈ¸¿ë ¾ÆÀÌÅÛ
+	case ITYPE_ONCE:				// ì¼íšŒìš© ì•„ì´í…œ
 		if( itemproto->getItemFlag() & ITEM_FLAG_BOX  )
 		{
 			if( do_ItemUse_LuckyDrawBox(ch, itemproto) )
@@ -631,12 +636,12 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		case IONCE_WARP:
 			switch (itemproto->getItemNum0())
 			{
-			case IONCE_WARP_RETURN:			// ±ÍÈ¯ ½ºÅ©·Ñ
+			case IONCE_WARP_RETURN:			// ê·€í™˜ ìŠ¤í¬ë¡¤
 				if (!do_ItemUse_IONCE_WARP_RETURN(ch, itemproto))
 					return;
 				break;
 
-			// 060227 : bs : ÆÄÆ¼¸®Äİ : »ç¿ëÈÄ¿¡µµ ¼ö·® °¨¼Ò ¾øÀ½
+			// 060227 : bs : íŒŒí‹°ë¦¬ì½œ : ì‚¬ìš©í›„ì—ë„ ìˆ˜ëŸ‰ ê°ì†Œ ì—†ìŒ
 			case IONCE_WARP_PARTYRECALL:
 				do_ItemUsePartyRecall(ch, item);
 				return;
@@ -661,7 +666,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			{
 				if(ch->m_assist.FindBySkillIndex(1771))
 				{
-					//¾ÆÀÌÅÛÀ» »ç¿ë ÇÒ ¼ö ¾ø½À´Ï´Ù.
+					//ì•„ì´í…œì„ ì‚¬ìš© í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					SysMsg(rmsg, MSG_SYS_DO_NOT_USE_ITEM_STATE);
 					SEND_Q(rmsg, ch->m_desc);
@@ -684,7 +689,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			
 
 		case IONCE_SUMMON:
-			//°ø¼º ÁßÀÌ°í, °ø¼º Áö¿ª¿¡¼­´Â »ç¿ëÀÌ ºÒ°¡´É
+			//ê³µì„± ì¤‘ì´ê³ , ê³µì„± ì§€ì—­ì—ì„œëŠ” ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥
 			if( ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE && (item->getDBIndex() != 2380 && item->getDBIndex() != 2381) )
 				return;
 
@@ -739,7 +744,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			if( itemproto->getItemIndex() == EXPERIENCE_COMPETITION_ITEM
 					|| itemproto->getItemIndex() == PERIOD_COMPETITION_ITEM
 					|| itemproto->getItemIndex() == 2609
-					|| itemproto->getItemIndex() == 5018 || itemproto->getItemIndex() == 5019 // ±¤¼Ó2
+					|| itemproto->getItemIndex() == 5018 || itemproto->getItemIndex() == 5019 // ê´‘ì†2
 			  )
 			{
 				if(do_useCashItem_CompetitionItem( ch, item ))
@@ -755,24 +760,24 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 				return;
 				break;
 			}
-			if( itemproto->getItemIndex() == 3769 )			// µ¶ÀÏ º¸³Ê½º ÆĞÅ°Áö
+			if( itemproto->getItemIndex() == 3769 )			// ë…ì¼ ë³´ë„ˆìŠ¤ íŒ¨í‚¤ì§€
 			{
 				if( !do_ItemUse_3769( ch , itemproto ) )
 					return;
 				break;
 			}
-			// ·¹ÀÌµå ´øÀü ÃÊ±âÈ­ Ä«µå
+			// ë ˆì´ë“œ ë˜ì „ ì´ˆê¸°í™” ì¹´ë“œ
 			if (itemproto->getItemIndex() == 4911)
 			{
-				// ¿©±â¼± ¾ÆÀÌÅÛÀ» ¹«Á¶°Ç ³²°Ü³ö¾ß ÇÑ´Ù.
-				// ÇïÆÛ¸¦ °¬´Ù¿Í¼­ ¼º°øÇÏ¸é ¾ÆÀÌÅÛÀ» »èÁ¦ÇÑ´Ù.
+				// ì—¬ê¸°ì„  ì•„ì´í…œì„ ë¬´ì¡°ê±´ ë‚¨ê²¨ë†”ì•¼ í•œë‹¤.
+				// í—¬í¼ë¥¼ ê°”ë‹¤ì™€ì„œ ì„±ê³µí•˜ë©´ ì•„ì´í…œì„ ì‚­ì œí•œë‹¤.
 				do_ItemUse_DeleteRaidCharacter_4911(ch, itemproto);
 				return;
 				break;
 			}
 
 			//#if defined(EVENT_WORLDCUP_2010) || defined(EVENT_WORLDCUP_2010_TOTO_STATUS) || defined(EVENT_WORLDCUP_2010_TOTO_GIFT) || defined(EVENT_WORLDCUP_2010_ATTENDANCE)
-			if( itemproto->getItemIndex() == 5347 ) // ¿ùµå ÃàÁ¦ ¹Ú½º
+			if( itemproto->getItemIndex() == 5347 ) // ì›”ë“œ ì¶•ì œ ë°•ìŠ¤
 			{
 				do_ItemUse_WorldFestivalBox(ch, item);
 				return;
@@ -843,49 +848,73 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 				return;
 			break;
 
-		case IONCE_TITLE:    //  ¾ÆÀÌÅÛ Å×ÀÌºíÀÇ 'a_num_0' ÇÊµå¿¡¼­ È£Äª ¾ÆÀÌÅÛ ÀÎµ¦½º °¡Á® ¿À±â
-
-			if(ch->m_titleList.HaveTitle(itemproto->getItemNum0()))
+		case IONCE_TITLE:    //  ì•„ì´í…œ í…Œì´ë¸”ì˜ 'a_num_0' í•„ë“œì—ì„œ í˜¸ì¹­ ì•„ì´í…œ ì¸ë±ìŠ¤ ê°€ì ¸ ì˜¤ê¸°
 			{
-				CNetMsg::SP rmsg(new CNetMsg);
-				TitleItemCantUseMsg(rmsg, itemproto->getItemNum0());  // È£Äª Áßº¹(ÀÌ¹Ì º¸À¯ ÁßÀÎ È£Äª)
-				SEND_Q(rmsg, ch->m_desc);
-				return;
+				CTitleProto *proto;
+				int endtime;
+				int custom_title_index = -1;
+
+				if(item->getDBIndex() != CUSTOM_TITLE_ITEM_INDEX)
+				{
+					if(ch->m_titleList.HaveTitle(itemproto->getItemNum0()))
+					{
+						CNetMsg::SP rmsg(new CNetMsg);
+						TitleSystemCantUseMsg(rmsg, itemproto->getItemNum0());  // í˜¸ì¹­ ì¤‘ë³µ(ì´ë¯¸ ë³´ìœ  ì¤‘ì¸ í˜¸ì¹­)
+						SEND_Q(rmsg, ch->m_desc);
+						return;
+					}
+
+					if(ch->m_titleList.m_nCount >= MAX_TITLE_COUNT)
+					{
+						return;
+					}
+				}
+				else
+				{
+					if(ch->m_nCurrentTitle == CUSTOM_TITLE_DUMMY_INDEX)
+					{
+						CNetMsg::SP rmsg(new CNetMsg);
+						TitleSystemCantUseMsg(rmsg, -1);  // í˜¸ì¹­ ì¤‘ë³µ(ì´ë¯¸ ë³´ìœ  ì¤‘ì¸ í˜¸ì¹­)
+						SEND_Q(rmsg, ch->m_desc);
+						return;
+					}
+					else if(ch->m_titleList.HaveTitle(CUSTOM_TITLE_DUMMY_INDEX))
+					{
+						CNetMsg::SP rmsg(new CNetMsg);
+						TitleSystemCantUseMsg(rmsg, -1);  // í˜¸ì¹­ ì¤‘ë³µ(ì´ë¯¸ ë³´ìœ  ì¤‘ì¸ í˜¸ì¹­)
+						SEND_Q(rmsg, ch->m_desc);
+						return;
+					}
+					else
+						custom_title_index = item->getUsed_2();
+				}
+
+				proto = gserver->m_titleProtoList.FindProto(itemproto->getItemNum0());
+
+				if(proto == NULL)
+					return;
+
+				if (proto->m_time != -1)
+					endtime = gserver->getNowSecond() + (proto->m_time * 24 * 60 * 60);
+				else
+					endtime = proto->m_time;
+
+				if(gserver->isRunSubHelper())
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SubHelperTitleSystemInsertReq(rmsg, ch->m_index, itemproto->getItemNum0(), endtime, packet->tab, packet->invenIndex, item->m_serial.c_str(), custom_title_index);
+					SEND_Q(rmsg, gserver->m_subHelper);
+					return;
+				}
+				else
+					return;
 			}
 
-			if(ch->m_titleList.m_nCount >= MAX_TITLE_COUNT)
-			{
-				return;
-			}
-
-			CTitleProto *proto;
-			int endtime;
-
-			proto = gserver->m_titleProtoList.FindProto(itemproto->getItemNum0());
-
-			if(proto == NULL)
-				return;
-
-			if (proto->m_time != -1)
-				endtime = gserver->getNowSecond() + (proto->m_time * 24 * 60 * 60);
-			else
-				endtime = proto->m_time;
-
-			if(gserver->isRunSubHelper())
-			{
-				CNetMsg::SP rmsg(new CNetMsg);
-				SubHelperTitleSystemInsertReq(rmsg, ch->m_index, itemproto->getItemNum0(), endtime, packet->tab, packet->invenIndex, item->m_serial.c_str());
-				SEND_Q(rmsg, gserver->m_subHelper);
-				return;
-			}
-			else
-				return;
-//////////////////////////////////////////////////////////////////////////////////////////
 			break;
 
 		case IONCE_REWARD_PACKAGE:
 			{
-				// TODO 1 :: ¾ÆÀÌÅÛ Áö±Ş
+				// TODO 1 :: ì•„ì´í…œ ì§€ê¸‰
 				int _rewardIndex = itemproto->getItemNum0();
 				if ( _rewardIndex > 0 )
 				{
@@ -908,20 +937,20 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			break;
 		case IONCE_JUMPING_POTION:
 			{
-				// TODO 1 :: ¾ÆÀÌÅÛ ÇÁ·ÎÅä¿¡¼­ num0(Á¡ÇÎ ·¹º§)À» ÀĞ´Â´Ù.
+				// TODO 1 :: ì•„ì´í…œ í”„ë¡œí† ì—ì„œ num0(ì í•‘ ë ˆë²¨)ì„ ì½ëŠ”ë‹¤.
 				int _jumpingLevel = itemproto->getItemNum0();
 				if ( _jumpingLevel <= 0 )
 				{
 					return;
 				}
 
-				// TODO 2 :: Á¡ÇÎ °¡´ÉÇÑÁö Ã¼Å©
+				// TODO 2 :: ì í•‘ ê°€ëŠ¥í•œì§€ ì²´í¬
 				if ( !canJumping(ch, _jumpingLevel) )
 				{
 					return;
 				}
 
-				// TODO 3 :: Á¡ÇÎ
+				// TODO 3 :: ì í•‘
 				CJumpingSystem jp(ch, item->getDBIndex());
 				if ( !jp.check() || !jp.jump() )
 				{
@@ -956,7 +985,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 
 		case IONCE_JEWEL_POCKET:
 			{
-				//ºó °ø°£ °Ë»ö
+				//ë¹ˆ ê³µê°„ ê²€ìƒ‰
 				if(ch->m_inventory.getEmptyCount() < 1)
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -997,7 +1026,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 
 		case IONCE_CHAOS_JEWEL_POCKET:
 			{
-				//ºó °ø°£ °Ë»ö
+				//ë¹ˆ ê³µê°„ ê²€ìƒ‰
 				if(ch->m_inventory.getEmptyCount() < 1)
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -1055,7 +1084,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 
 		case IONCE_PET_STASH:
 			ch->m_TimerItem.appendByDay(TIMERITEM_TYPE_PET_STASH, itemproto->getItemNum4());
-			//ÀÌÆåÆ® ¸Ş½ÃÁö 0~5 ¸¸µé¾î¼­ º¸³»ÁÖ°í Ä³¸¯ÅÍ ÀÌÆåÆ® Á¤º¸¿¡ ÀúÀå ÇÑ´Ù.
+			//ì´í™íŠ¸ ë©”ì‹œì§€ 0~5 ë§Œë“¤ì–´ì„œ ë³´ë‚´ì£¼ê³  ìºë¦­í„° ì´í™íŠ¸ ì •ë³´ì— ì €ì¥ í•œë‹¤.
 			ch->m_petStashManager.ApplyEffect();
 			break;
 
@@ -1065,10 +1094,10 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			break;
 
 		case IONCE_HOLY_WATER:
-			//ÀÌ±×´Ï¼Ç »óÅÂÀÌ°Å³ª ÁõÆøÁ¦ ¹öÇÁ°¡ °É·ÁÀÖ´Â »óÅÂ¿¡¼­´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
+			//ì´ê·¸ë‹ˆì…˜ ìƒíƒœì´ê±°ë‚˜ ì¦í­ì œ ë²„í”„ê°€ ê±¸ë ¤ìˆëŠ” ìƒíƒœì—ì„œëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 			if(ch->m_assist.FindBySkillIndex(1062) || ch->m_assist.FindBySkillIndex(1063) || ch->m_assist.FindBySkillIndex(1064) || ch->m_assist.FindBySkillIndex(1065))
 			{
-				//»ç¿ëÇÒ ¼ö ¾øÀ½
+				//ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_DO_NOT_USE_ITEM_STATE);
 				SEND_Q(rmsg, ch->m_desc);
@@ -1076,14 +1105,14 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			}
 			if(ch->m_assist.FindByItemIndex(2875))
 			{
-				//»ç¿ëÇÒ ¼ö ¾øÀ½
+				//ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_DO_NOT_USE_ITEM_STATE);
 				SEND_Q(rmsg, ch->m_desc);
 				return;
 			}
 
-			//»ç¿ëÁßÀÎ ¼º¼ö ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏ°í ÀÖ´Ù¸é
+			//ì‚¬ìš©ì¤‘ì¸ ì„±ìˆ˜ ì•„ì´í…œì´ ì¡´ì¬í•˜ê³  ìˆë‹¤ë©´
 			if(ch->holy_water_item != NULL && item->getVIndex() != ch->holy_water_item->getVIndex())
 				ch->changeToggleState(ch->holy_water_item->getVIndex(), TOGGLE_ITEM);
 
@@ -1097,7 +1126,7 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 			}
 			break;
 		case IONCE_PROTECT_PVP:
-			//pvp º¸È£ ¾ÆÀÌÅÛ »ç¿ë½Ã¿¡ À¯¹° ¾ÆÀÌÅÛÀ» µé°í ÀÖ´Ù¸é »ç¿ë ºÒ°¡ ¸Ş½ÃÁö Àü¼Û
+			//pvp ë³´í˜¸ ì•„ì´í…œ ì‚¬ìš©ì‹œì— ìœ ë¬¼ ì•„ì´í…œì„ ë“¤ê³  ìˆë‹¤ë©´ ì‚¬ìš© ë¶ˆê°€ ë©”ì‹œì§€ ì „ì†¡
 			if(ArtifactManager::instance()->isOwnerPC(ch->m_index) == true)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1115,1147 +1144,36 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		break;
 
 	case ITYPE_POTION:
+		if( itemproto->getItemIndex() >= 2482 && itemproto->getItemIndex() <= 2487 )
 		{
-			switch( itemproto->getItemSubTypeIdx() )
+			if( do_useEventItem_HalloweenCandy( ch, item ) )
 			{
-			case IPOTION_NPC_PORTAL:
-				if( ch->m_pZone->m_index == itemproto->getItemNum0() ) // ÇöÀç ÀÖ´Â Á¸°ú »ç¿ëÇÑ ½ºÅ©·Ñ Á¸ÀÌ °°À¸¸é ¸®½ºÆ®¸¦ º¸³»ÁØ´Ù.
-				{
-					CNetMsg::SP rmsg(new CNetMsg);
-					NpcPortalListMsg(rmsg, itemproto->getItemNum0());
-					SEND_Q(rmsg, ch->m_desc);
-				}
-				else
-				{
-					CNetMsg::SP rmsg(new CNetMsg);
-					NpcPortalListErrorMsg(rmsg, MSG_NPC_PORTAL_ERROR_LIST);
-					SEND_Q(rmsg, ch->m_desc);
-				}
-				return;
-				break;
-			}
-
-			// ´«¹°
-			if (itemproto->getItemSubTypeIdx() == IPOTION_TEARS)
-			{
-				switch (itemproto->getItemNum0())
-				{
-				// ±¸¿øÀÇ ´«¹°
-				case IPOTION_TEARS_TYPE_SAFE:
-
-					if (ch->m_pkPenalty < -15)
-					{
-						ch->m_pkPenalty++;
-						ch->m_bChangeStatus = true;
-					}
-					else
-						return;
-
-					break;
-
-				// ¿ë¼­ÀÇ ´«¹°
-				case IPOTION_TEARS_TYPE_FORGIVE:
-
-					if (ch->m_exp < 0)
-					{
-						LONGLONG plusexp = GetLevelupExp(ch->m_level) * 5 / 100;
-						ch->m_exp += plusexp;
-
-						if (ch->m_exp > 0)
-							ch->m_exp = 0;
-
-						ch->m_bChangeStatus = true;
-					}
-					else
-						return;
-
-					break;
-
-				default:
-					return;
-				}
+				goto SKIP_SKILL;
 			}
 			else
-			{
-				switch (itemproto->getItemIndex())
-				{
-				case 844:		// °æÇèÄ¡º¹±¸ ÁÖ¹®¼­
-				case 845:		// ¼÷·Ãµµº¹±¸ ÁÖ¹®¼­
-				case 2035:		// ·°Å° °æÇèÄ¡º¹±¸ ÁÖ¹®¼­
-				case 2036:		// ·°Å° ¼÷·Ãµµº¹±¸ ÁÖ¹®¼­
-					// ºÎÈ°ÁÖ¹®¼­ÀÇ ÀÌÆåÆ® ÀÎµ¦½º / °¢·¹º§
-					if( ch->m_assist.Find(184, 2) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXP_SP);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if( ch->m_assist.Find(185, 2) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_SP_EXP);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				}
-
-				switch (itemproto->getItemIndex())
-				{
-				case 8165:											//½Å°æ ±³¶õ ÀåÄ¡(Äù½ºÆ® ÇÊ¿ä ¾ÆÀÌÅÛ)
-					if(ch->m_questList.FindQuest(636, QUEST_STATE_RUN) == false)
-					{
-						return;
-					}
-
-				case 2855:											// ÇÃ·¡Æ¼´½ µå¶ø ÁõÆøÁ¦
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					if(ch->m_assist.FindByItemIndex(884)
-							|| ch->m_assist.FindByItemIndex(838)
-							|| ch->m_assist.FindByItemIndex(972)
-							|| ch->m_assist.FindByItemIndex(1629)
-							|| ch->m_assist.FindByItemIndex(2856)
-							|| ch->m_assist.FindByItemIndex(6096)
-							|| ch->m_assist.FindByItemIndex(5080) //°­¿îÀÇ ½ºÅ©·Ñ
-							|| ch->m_assist.FindByItemIndex(5081) // º¹¿îÀÇ ½ºÅ©·Ñ
-					  )
-						return;
-					break;
-
-				case 2856:											// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ
-					if(ch->m_assist.FindByItemIndex(884)
-							|| ch->m_assist.FindByItemIndex(838)
-							|| ch->m_assist.FindByItemIndex(972)
-							|| ch->m_assist.FindByItemIndex(1629)
-							|| ch->m_assist.FindByItemIndex(2855)
-							|| ch->m_assist.FindByItemIndex(6096)
-							|| ch->m_assist.FindByItemIndex(5080) //°­¿îÀÇ ½ºÅ©·Ñ
-							|| ch->m_assist.FindByItemIndex(5081) // º¹¿îÀÇ ½ºÅ©·Ñ
-					  )
-						return;
-					break;
-
-#if defined (PLATINUM_SKILL_POTION_ITEM ) || defined (SKILL_POTION_ITEM)
-				case 2452:		// ¼÷·ÃÀÇ ¹¦¾à
-					if (ch->m_assist.FindByItemIndex(2453) || ch->m_assist.FindByItemIndex(7611))
-					{
-						// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2453);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 2453:		// ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-				case 2659:		// ÃÊº¸ÀÚ¿ë ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-				case 7611:		// [ÀÌº¥Æ®] ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-					if (ch->m_assist.FindByItemIndex(2452))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-#endif // defined (PLATINUM_SKILL_POTION_ITEM ) || defined (SKILL_POTION_ITEM)
-
-				case 2582:
-					if (ch->m_assist.FindByItemIndex(2583))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(M)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2139))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2140))
-					{
-						// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if (ch->m_assist.FindByItemIndex(4937))
-					{
-						// ÀÌº¥Æ®¿ë ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­ ¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 2583:
-					if (ch->m_assist.FindByItemIndex(2582))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(L)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2139))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2140))
-					{
-						// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if (ch->m_assist.FindByItemIndex(4937))
-					{
-						// ÀÌº¥Æ®¿ë ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­ ¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 2139:		// ÈÆ·Ã ÁÖ¹®¼­
-					if (ch->m_assist.FindByItemIndex(2582))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(L)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2583))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(M)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2140))
-					{
-						// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if (ch->m_assist.FindByItemIndex(4937))
-					{
-						// ÀÌº¥Æ®¿ë ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­ ¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 2140:		// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­
-					if (ch->m_assist.FindByItemIndex(2582))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(L)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2583))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(M)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2139))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if (ch->m_assist.FindByItemIndex(4937))
-					{
-						// ÀÌº¥Æ®¿ë ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­ ¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 4937:		// (ÀÌº¥Æ®¿ë) ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­
-					if (ch->m_assist.FindByItemIndex(2582))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(L)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2583))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­(M)¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(2139))
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					else if (ch->m_assist.FindByItemIndex(2140))
-					{
-						// ÇÃ·¡Æ¼´½ ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 836:		// ¼ö¹Ú
-					// °æÇèÄ¡ ÁõÆøÁ¦´Â ¼ö¹Ú°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(882))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 882);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// À¯·á °æÇèÄ¡ ÁõÆøÁ¦´Â ¼ö¹Ú°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(6094))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6094);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 837:		// Âü¿Ü
-					// SP ÁõÆøÁ¦´Â Âü¿Ü¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(883))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// À¯·á SP ÁõÆøÁ¦´Â Âü¿Ü¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(6095))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6095);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// ´ŞÄŞÇÑ Âü¿Ü
-					if (ch->m_assist.FindByItemIndex(5082))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5082);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 838:		// ÀÚµÎ
-					// ¾ÆÀÌÅÛ ÁõÆøÁ¦´Â ÀÚµÎ¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(884))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 884);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// À¯·á ¾ÆÀÌÅÛ ÁõÆøÁ¦´Â ÀÚµÎ¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(6096))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6096);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ µå·Ó ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2855))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2856))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					//°­¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5080))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					//º¹¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5081))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 882:		// °æÇèÄ¡
-				case 6094:
-					// ÁõÆøÁ¦´Â Áßº¹ º¹¿ë ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// °æÇèÄ¡ ÁõÆøÁ¦´Â ¼ö¹Ú°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// °æÇèÄ¡ ÁõÆøÁ¦´Â À¯·á °æÇèÄ¡ ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(6094))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6094);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// À¯·á °æÇèÄ¡ ÁõÆøÁ¦´Â °æÇèÄ¡ ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(882))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 882);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 883:		// SP
-				case 6095:
-					// ÁõÆøÁ¦´Â Áßº¹ º¹¿ë ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// SP ÁõÆøÁ¦´Â Âü¿Ü¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(837))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// SP ÁõÆøÁ¦´Â À¯·á SP ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(6095))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6095);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// À¯·á SP ÁõÆøÁ¦´Â SP ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(883))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// ´ŞÄŞÇÑ Âü¿Ü
-					if (ch->m_assist.FindByItemIndex(5082))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5082);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 884:		// ¾ÆÀÌÅÛ
-				case 6096:
-					// ÁõÆøÁ¦´Â Áßº¹ º¹¿ë ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					if (ch->m_assist.FindByItemIndex(838))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// À¯·á ÁõÆøÁ¦¿Í Áßº¹ º¹¿ë ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(884))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 884);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if (ch->m_assist.FindByItemIndex(6096))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6096);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ µå¶ø ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2855))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2856))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					//°­¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5080))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					//º¹¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5081))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 885:		// ³ª½º
-					// ÁõÆøÁ¦´Â Áßº¹ º¹¿ë ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 972:
-				case 1629:
-					// ÇÃ·¡Æ¼´½ µå¶ø ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2855))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2856))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 4939:		// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦
-					{
-						// ÁõÆøÁ¦´Â Áßº¹ º¹¿ë ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-						// ¼ö¹Ú°ú ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(836))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-						// Âü¿Ü¿Í ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(837))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-
-						//ÀÚµÎ¿Í ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(838))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-
-						// ÇÃ·¡Æ¼´½ µå¶ø ÁõÆøÁ¦¿Í ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(2855))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-
-						// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-						if (ch->m_assist.FindByItemIndex(2856))
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-					}
-					break;
-
-				case 1288:		// ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-				case 1416:		// ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-				case 2658:		// ÃÊº¸ÀÚ¿ë ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-				case 2032:		// ·°Å° ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-					if( ch->m_assist.FindBySkillIndex(348) )
-					{
-						if( !packet->extra_1 )
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, packet->tab, packet->invenIndex, packet->virtualIndex);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-					}
-					break;
-
-				case 3218:
-					if( ch->m_assist.FindByItemIndex(3218) )
-					{
-						return;
-					}
-					break;
-
-				case 4912:
-					if( ch->m_assist.GetAssistCurseCount() <= 0 )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						CashItemMoonstoneStartRepMsg(rmsg, MSG_EX_CASHITEM_MOONSTONE_ERROR_CANTUSE_CASHMOON, -1);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 5080:
-					// º¹¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5081))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					//ÀÚµÎ¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(838))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}	// ÇÃ·¡Æ¼´½ µå·Ó ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2855))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2856))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 5081: // º¹¿îÀÇ ½ºÅ©·Ñ
-					// °­¿îÀÇ ½ºÅ©·Ñ
-					if (ch->m_assist.FindByItemIndex(5080))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					//ÀÚµÎ¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(838))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// ÇÃ·¡Æ¼´½ µå·Ó ÁõÆøÁ¦¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2855))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ°ú ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(2856))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 5082: // ´ŞÄŞÇÑ Âü¿Ü
-
-					//ÀÚµÎ¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(837))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					// SP ÁõÆøÁ¦´Â Âü¿Ü¿Í ºÒ°¡
-					if (ch->m_assist.FindByItemIndex(883))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					// ·£´ı EXP&SP&µå·Ó·ü ÁõÆøÁ¦¿Í »ç¿ëºÒ°¡
-					if (ch->m_assist.FindByItemIndex(836))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 5085: // ÇÃ·¡Æ¼´½ ¾Æ¸®¸®½ºÀÇ Ãàº¹ lv1
-					if( ch->m_level <1 || ch->m_level > 30)
-						return;
-
-					if( ch->m_assist.FindBySkillIndex(348)
-//						|| ch->m_assist.FindBySkillIndex(5086)
-//						|| ch->m_assist.FindBySkillIndex(5087)
-					  )
-					{
-						if( !packet->extra_1 )
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, packet->tab, packet->invenIndex, packet->virtualIndex);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-					}
-					break;
-				case 5086: // ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹ lv31
-					if( ch->m_level <31 || ch->m_level > 60)
-						return;
-
-					if( ch->m_assist.FindBySkillIndex(348)
-//						|| ch->m_assist.FindBySkillIndex(5085)
-//						|| ch->m_assist.FindBySkillIndex(5087)
-					  )
-					{
-						if( !packet->extra_1 )
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, packet->tab, packet->invenIndex, packet->virtualIndex);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-					}
-					break;
-				case 5087: // ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹ lv61
-					if( ch->m_level <61 || ch->m_level > 90)
-						return;
-
-					if( ch->m_assist.FindBySkillIndex(348)
-//						|| ch->m_assist.FindBySkillIndex(5085)
-//						|| ch->m_assist.FindBySkillIndex(5086)
-					  )
-					{
-						if( !packet->extra_1 )
-						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, packet->tab, packet->invenIndex, packet->virtualIndex);
-							SEND_Q(rmsg, ch->m_desc);
-							return;
-						}
-					}
-					break;
-				case 5088: // ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à lv1
-					if( ch->m_level <1 || ch->m_level > 30)
-						return;
-
-					if (ch->m_assist.FindByItemIndex(2452)
-//						|| ch->m_assist.FindByItemIndex(5089)
-//						|| ch->m_assist.FindByItemIndex(5090)
-					   )
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				case 5089: // ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à lv31
-					if( ch->m_level <31 || ch->m_level > 60)
-						return;
-
-					if (ch->m_assist.FindByItemIndex(2452)
-//						|| ch->m_assist.FindByItemIndex(5088)
-//						|| ch->m_assist.FindByItemIndex(5090)
-					   )
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-
-					break;
-				case 5090: // ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à lv61
-					if( ch->m_level <61 || ch->m_level > 90)
-						return;
-
-					if (ch->m_assist.FindByItemIndex(2452)
-//						|| ch->m_assist.FindByItemIndex(5088)
-//						|| ch->m_assist.FindByItemIndex(5089)
-					   )
-					{
-						// ÈÆ·Ã ÁÖ¹®¼­¿Í Áßº¹ ºÒ°¡
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				}
-
-				// °æÇèÀÇ ¹¦¾àÀº ¾ÆÀÌ¸®½º¸¦ »ç¿ë ÁßÀÏ¶§ ºÒ°¡´É
-				if (itemproto->getItemNum0() == 348)
-				{
-					if (ch->m_assist.FindBySkillIndex(349))
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 1288);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-				}
-
-				if( itemproto->getItemIndex() >= 2482 && itemproto->getItemIndex() <= 2487 )
-				{
-					if( do_useEventItem_HalloweenCandy( ch, item ) )
-					{
-						goto SKIP_SKILL;
-					}
-					else
-						return;
-				}
-
-#ifdef REFORM_PK_PENALTY_201108
-				switch( itemproto->getItemIndex() )
-				{
-				case 7474:
-				case 7475:
-				case 7476:
-					if (ch->m_assist.FindByItemIndex(7474) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7474);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if(  ch->m_assist.FindByItemIndex(7475) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7475);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if ( ch->m_assist.FindByItemIndex(7476) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7476);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-
-				case 7477:
-				case 7478:
-				case 7479:
-					if (ch->m_assist.FindByItemIndex(7477) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7477);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if(  ch->m_assist.FindByItemIndex(7478) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7478);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					if ( ch->m_assist.FindByItemIndex(7479) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7479);
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					break;
-				}
-#endif
-
-				CSkill* skill = NULL;
-
-				// Æ÷¼ÇÁß¿¡ IPOTION_UP Àº ¾ÆÀÌÅÛ ÇÃ·¡±×¿¡¼­ ½ºÅ³·¹º§À» °¡Á®¿Â´Ù
-				if (itemproto->getItemSubTypeIdx() == IPOTION_UP)
-					skill = gserver->m_skillProtoList.Create(itemproto->getItemNum0(), item->getFlag());
-				else
-					skill = gserver->m_skillProtoList.Create(itemproto->getItemNum0(), itemproto->getItemNum1());
-
-				if (skill == NULL)
-					return;
-
-				// Æ®·ç½ÃÀ× ÄÚµ¦½º¿Í »ó±Ş Æ®·ç½ÃÀ× ÄÚµ¦½º
-				if (itemproto->getItemIndex() == 677 || itemproto->getItemIndex() == 3579)
-				{
-					if (ch->IsInPeaceZone(false) )
-					{
-						CNetMsg::SP rmsg(new CNetMsg);
-						delete skill;
-						rmsg->Init(MSG_EXTEND);
-						RefMsg(rmsg) << MSG_EX_STRING
-									 << (unsigned char) MSG_EX_STRING_OUTPUT_SYS
-									 << 393
-									 << 0;
-
-						SEND_Q(rmsg, ch->m_desc);
-						return;
-					}
-					ApplyItem677_or_3579(ch, skill, itemproto->getItemIndex());
-				}
-				else
-				{
-					// 060227 : bs : Áßº¹¾ÈµÇ´Â ½ºÅ³ÀÎÁö °Ë»ç
-					if ((skill->m_proto->m_flag & SF_NOTDUPLICATE) && ch->m_assist.FindBySkillIndex(skill->m_proto->m_index))
-					{
-						/*Áßº¹»ç¿ë ºÒ°¡ ¿¡·¯ ¸Ş½ÃÁö*/
-						CNetMsg::SP rmsg(new CNetMsg);
-						ResponseClient::makeSkillErrorMsg(rmsg, MSG_SKILL_ERROR_DUPLICATE, skill->m_proto->m_index, 0);
-						SEND_Q(rmsg, ch->m_desc);
-						delete skill;
-						return;
-					}
-					// È®Àå Æ÷¼Ç : µà¾ó »ç¿ëÁßÀÏ¶§ µû·Î µû·Î ¼öÇà ¸øÇÔ
-					if (( skill->m_proto->m_index == 350 || skill->m_proto->m_index == 351 ) && ch->m_assist.FindBySkillIndex(352) )
-					{
-						delete skill;
-						return;
-					}
-					bool bApply = false;
-					if( skill->m_proto->CheckSorcererFlag(SSF_APP_APET) )
-					{
-						if( ch->GetAPet() == NULL )
-						{
-							delete skill;
-							return;
-						}
-						ApplySkill(ch, ch->GetAPet() , skill, itemproto->getItemIndex(), bApply);
-					}
-					else
-					{
-						// ¿©±â¼­ ½ºÅ³ÀÇ Target TypeÀ» È®ÀÎÇÏ°í..ÆÄÆ¼³ª ¿øÁ¤´ë¿¡°Ôµµ ³Ö¾îÁØ´Ù.
-						if(skill->m_proto->m_targetType == STT_PARTY_ALL)
-						{
-							if (ch->IsExped())
-							{
-								ApplySkillExped(ch, skill, itemproto->getItemIndex(), bApply);
-							}
-							else if(ch->IsParty())
-							{
-								ApplySkillParty(ch, skill, itemproto->getItemIndex(), bApply);
-							}
-						}
-						else
-						{
-							ApplySkill(ch, ch, skill, itemproto->getItemIndex(), bApply);
-						}
-					}
-
-					if (!bApply)
-					{
-						delete skill;
-						return;
-					}
-
-					if( itemproto->getItemIndex() == 846 ||	// ºÎÈ° ÁÖ¹®¼­
-							itemproto->getItemIndex() == 7456 ||	// ÀÌº¥Æ® ºÎÈ° ÁÖ¹®¼­
-							itemproto->getItemIndex() == 2667      // ÃÊº¸ÀÚ¿ë ºÎÈ° ÁÖ¹®¼­
-					  )
-					{
-						// ¼÷·Ãµµ / °æÇèÄ¡ ÁÖ¹®¼­ ¹öÇÁ »èÁ¦
-						ch->m_assist.CureByItemIndex(844);
-						ch->m_assist.CureByItemIndex(845);
-						ch->m_assist.CureByItemIndex(2035);
-						ch->m_assist.CureByItemIndex(2036);
-					}
-				}
-				delete skill;
-			}
-
-			{
-				// Æ÷¼Ç »ç¿ë ÀÌÆåÆ® ¸Ş½ÃÁö
-				CNetMsg::SP rmsg(new CNetMsg);
-				EffectItemMsg(rmsg, ch, item);
-				ch->m_pArea->SendToCell(rmsg, ch, true);
-			}
+				return;
 		}
+
+		//í† ê¸€ ì•„ì´í…œì¸ ê²½ìš°ì—
+		if(item->m_itemProto->getItemFlag() & ITEM_FLAG_TOGGLE)
+		{
+			if(item->isToggle() == true)
+				break;
+		}
+
+		if(do_ItemUsePotion(ch, item, packet->extra_1) == false)
+			return;
+		
 		break;
 
 	case ITYPE_ETC:
-		// Æ®¸®°Å ¾ÆÀÌÅÛ »ç¿ë
+		// íŠ¸ë¦¬ê±° ì•„ì´í…œ ì‚¬ìš©
 		if ((itemproto->getItemFlag() & ITEM_FLAG_TRIGGER))
 		{
 			switch(itemproto->getItemIndex())
 			{
 			case 4567:
-				// °­È­ ¿¡½ºÆ®·²¶óÀÌÆ®´Â »ç¶óÁöÁö ¾Ê´Â´Ù.
+				// ê°•í™” ì—ìŠ¤íŠ¸ëŸ´ë¼ì´íŠ¸ëŠ” ì‚¬ë¼ì§€ì§€ ì•ŠëŠ”ë‹¤.
 				do_ItemUse_IETC_TriggerItem4567(ch);
 				return;
 				break;
@@ -2300,12 +1218,12 @@ void do_ItemUse(CPC* ch, CNetMsg::SP& msg, bool bprolong)
 		ItemPartyTypeUseMsg( rmsg, item->getDBIndex(), ch->m_nick );
 		if( ch->IsParty() )
 		{
-			// ÆÄÆ¼¿¡ ¸Ş¼¼Áö Àü¼Û
+			// íŒŒí‹°ì— ë©”ì„¸ì§€ ì „ì†¡
 			ch->m_party->SendToAllPC( rmsg );
 		}
 		else if ( ch->IsExped() )
 		{
-			// ¿øÁ¤´ë¿¡ ¸Ş¼¼Áö Àü¼Û
+			// ì›ì •ëŒ€ì— ë©”ì„¸ì§€ ì „ì†¡
 			ch->m_Exped->SendToAllPC( rmsg );
 		}
 		else
@@ -2324,13 +1242,13 @@ SKIP_SKILL:
 	}
 
 	{
-		// ¾ÆÀÌÅÛ »ç¿ëÇÏ°í
+		// ì•„ì´í…œ ì‚¬ìš©í•˜ê³ 
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::ItemUseMsg(rmsg, packet->tab, packet->invenIndex, packet->virtualIndex, packet->extra_1);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ÇÇ´Ğ½º ºÎÈ° ¾ÆÀÌÅÛÀº »èÁ¦ÇÏÁö ¾Ê´Â´Ù.
+	// í”¼ë‹‰ìŠ¤ ë¶€í™œ ì•„ì´í…œì€ ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
 	if ( itemproto->getItemIndex() == 3218 )
 	{
 		return;
@@ -2363,20 +1281,46 @@ SKIP_SKILL:
 		}
 	}
 
-	//Åä±Û ¾ÆÀÌÅÛÀº Åä±Û µ¿ÀÛ¸¸ ½ÃÅ°°í ¾ÆÀÌÅÛ ¼ö·® º¯°æÀ» ÇÏÁö ¾Ê´Â´Ù.
 	if(item->m_itemProto->getItemFlag() & ITEM_FLAG_TOGGLE)
 	{
 		ch->changeToggleState(item->getVIndex(), TOGGLE_ITEM);
-		return;
+
+		//í† ê¸€ì•„ì´í…œì´ê¸´ í•œë° ëª¬ìŠ¤í„°ê°€ ì£½ì€ í›„ ì‚¬ìš©ë˜ëŠ” ì•„ì´í…œì¸ê²½ìš° (íƒ€ì… : í¬ì…˜, ì„œë¸Œíƒ€ì… : ê¸°íƒ€ ì¸ ì•„ì´í…œë“¤)
+		if(item->m_itemProto->getItemTypeIdx() == ITYPE_POTION && item->m_itemProto->getItemSubTypeIdx() == IPOTION_ETC)
+		{
+			if(item->isToggle() == true)
+			{
+				if(item->getItemCount() > 1)
+					ch->m_deadnpc_toggle_item.push_back(item);
+			}
+			else
+			{
+				 std::vector<CItem*>::iterator it = ch->m_deadnpc_toggle_item.begin();
+				 std::vector<CItem*>::iterator it_end = ch->m_deadnpc_toggle_item.end();
+
+				 for(; it != it_end; it++)
+				 {
+					 if((*it) == item)
+					 {
+						 ch->m_deadnpc_toggle_item.erase(it);
+						 break;
+					 }
+				 }
+				 //í† ê¸€ì‚¬ìš©ì„ ì¤‘ì§€í•˜ëŠ” ê²½ìš°ì—ëŠ” ì•„ì´í…œ ì°¨ê°ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+				 return;
+			}
+		}
+		else
+			return;
 	}
 	
-	// Item ¼ö·® º¯°æ
+	// Item ìˆ˜ëŸ‰ ë³€ê²½
 	ch->m_inventory.decreaseItemCount(item, 1);
 }
 
 void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¾Èº¸ÀÌ¸é ¹«½Ã
+	// ì•ˆë³´ì´ë©´ ë¬´ì‹œ
 	if (!ch->m_bVisible)
 		return ;
 
@@ -2459,7 +1403,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 					if( gserver->isActiveEvent(A_EVENT_WHITE_DAY) )
 					{
 						bool bCantWDItem = false;
-						if( item->getDBIndex() == 2133 ) //ÇÏ´Ã»ö »çÅÁ Å¸ÀÌÅº ³ªÀÌÆ® ¼Ò¼­·¯¸¸ È¹µæ °¡´É
+						if( item->getDBIndex() == 2133 ) //í•˜ëŠ˜ìƒ‰ ì‚¬íƒ• íƒ€ì´íƒ„ ë‚˜ì´íŠ¸ ì†Œì„œëŸ¬ë§Œ íšë“ ê°€ëŠ¥
 						{
 							if( ch->m_job == JOB_TITAN || ch->m_job == JOB_KNIGHT || ch->m_job == JOB_SORCERER || ch->m_job == JOB_NIGHTSHADOW )
 							{
@@ -2467,7 +1411,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 							}
 						}
 
-						if( item->getDBIndex() == 2134 ) //ºĞÈ«»ö »çÅÁ Èú·¯ ¸ŞÀÌÁö ·Î±× È¹µæ °¡´É
+						if( item->getDBIndex() == 2134 ) //ë¶„í™ìƒ‰ ì‚¬íƒ• íëŸ¬ ë©”ì´ì§€ ë¡œê·¸ íšë“ ê°€ëŠ¥
 						{
 #ifdef EX_ROGUE
 #ifdef EX_MAGE
@@ -2520,7 +1464,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 
 					switch (item->getDBIndex())
 					{
-					// Å©¸®½º ¸¶½º ¼±¹° Áßº¹ ½Àµæ ºÒ°¡
+					// í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ ì„ ë¬¼ ì¤‘ë³µ ìŠµë“ ë¶ˆê°€
 					case 2590:
 					case 2591:
 					case 2592:
@@ -2534,28 +1478,28 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 								if (ch->m_inventory.FindByDBIndex(item->getDBIndex()))
 								{
 									CNetMsg::SP rmsg(new CNetMsg);
-									SysMsg(rmsg, MSG_SYS_CANNOT_HAVE_DUPLICATE);	// ¾ÆÀÌÅÛÀ» Áßº¹ÇØ¼­ °¡Áú ¼ö ¾ø½À´Ï´Ù.
+									SysMsg(rmsg, MSG_SYS_CANNOT_HAVE_DUPLICATE);	// ì•„ì´í…œì„ ì¤‘ë³µí•´ì„œ ê°€ì§ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 									SEND_Q(rmsg, ch->m_desc);
 									return;
 								}
 							}
 							else
 							{
-								// ÀÌº¥Æ® ÁßÀÌ¶ó¸é ÁıÁöµµ ¸øÇÏµµ·Ï ÇÏÀÚ
+								// ì´ë²¤íŠ¸ ì¤‘ì´ë¼ë©´ ì§‘ì§€ë„ ëª»í•˜ë„ë¡ í•˜ì
 								return;
 							}
 						}
 						break;
 					}
 
-					// ±ÕµîÆÄÆ¼ÀÌ°Å³ª »õÆÄÆ¼ÀÌ¸é ¾ÆÀÌÅÛ ·£´ı ¸Ô±â
+					// ê· ë“±íŒŒí‹°ì´ê±°ë‚˜ ìƒˆíŒŒí‹°ì´ë©´ ì•„ì´í…œ ëœë¤ ë¨¹ê¸°
 					if (ch->IsParty() && ( ch->m_party->GetPartyType(MSG_DIVITYPE_ITEM) == MSG_PARTY_TYPE_RANDOM || ch->m_party->GetPartyType(MSG_DIVITYPE_ITEM) == MSG_PARTY_TYPE_BATTLE) )
 					{
 						if (GetItemRandomParty(ch, item))
 							return;
 					}
 
-					// ÆÄÆ¼ ·¹ÀÌµå ½ºÆä¼È - »óÀÚ ¿­±â
+					// íŒŒí‹° ë ˆì´ë“œ ìŠ¤í˜ì…œ - ìƒì ì—´ê¸°
 					if(ch->IsParty() && ( ch->m_party->GetPartyType(MSG_DIVITYPE_SPECIAL) == MSG_PARTY_TYPE_OPENBOX ))
 					{
 						if(item->getDBIndex() == 4709)
@@ -2565,7 +1509,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						}
 					}
 
-					// ±Õµî ¿øÁ¤´ë ¾ÆÀÌÅÛ ·£´ı ¸Ô±â
+					// ê· ë“± ì›ì •ëŒ€ ì•„ì´í…œ ëœë¤ ë¨¹ê¸°
 
 					if(ch->IsExped() && ( ch->m_Exped->GetExpedType(MSG_DIVITYPE_ITEM) == MSG_EXPED_TYPE_RANDOM || ch->m_Exped->GetExpedType(MSG_DIVITYPE_ITEM) == MSG_EXPED_TYPE_BATTLE) )
 					{
@@ -2573,7 +1517,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						return;
 					}
 
-					// ¿øÁ¤´ë ·¹ÀÌµå ½ºÆä¼È - »óÀÚ ¿­±â
+					// ì›ì •ëŒ€ ë ˆì´ë“œ ìŠ¤í˜ì…œ - ìƒì ì—´ê¸°
 					if(ch->IsExped() && ( ch->m_Exped->GetExpedType(MSG_DIVITYPE_SPECIAL) == MSG_EXPED_TYPE_OPENBOX ))
 					{
 						if(item->getDBIndex() == 4709)
@@ -2583,10 +1527,10 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						}
 					}
 
-					// ¾ÆÀÌÅÛ ¼ÒÀ¯±Ç º¯°æ: 050413
+					// ì•„ì´í…œ ì†Œìœ ê¶Œ ë³€ê²½: 050413
 					if (item->m_preferenceIndex != -1 && item->m_preferenceIndex != ch->m_index)
 					{
-						// ÀÔ¼ö¿ì¼± ÆÄÆ¼
+						// ì…ìˆ˜ìš°ì„  íŒŒí‹°
 						if (ch->IsParty() && ch->m_party->GetPartyType(MSG_DIVITYPE_ITEM) == MSG_PARTY_TYPE_FIRSTGET)
 						{
 							CParty* party = ch->m_party;
@@ -2594,11 +1538,11 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 								return;
 
 							int i;
-							// ¼ÒÀ¯±ÇÀÚ°¡ ÆÄÆ¼¿¡ ¼ÓÇØÀÖ´Ù
+							// ì†Œìœ ê¶Œìê°€ íŒŒí‹°ì— ì†í•´ìˆë‹¤
 							bool bParty = false;
 							for (i=0; i < MAX_PARTY_MEMBER; i++)
 							{
-								if(item->m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH)					// ITEM_FLAG_NO_STASHÀÎ °æ¿ì ´Ù¸¥ ÆÄÆ¼¿øÀÌ È¹µæÇÏÁö ¸øÇÔ.
+								if(item->m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH)					// ITEM_FLAG_NO_STASHì¸ ê²½ìš° ë‹¤ë¥¸ íŒŒí‹°ì›ì´ íšë“í•˜ì§€ ëª»í•¨.
 									break;
 								int nMemberIndex = party->GetMemberCharIndex(i);
 								if (nMemberIndex != -1 && nMemberIndex == item->m_preferenceIndex)
@@ -2610,14 +1554,14 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 
 							if (!bParty)
 							{
-								// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+								// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 								CNetMsg::SP rmsg(new CNetMsg);
 								SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 								SEND_Q(rmsg, ch->m_desc);
 								return;
 							}
 						}
-						//ÀÓ¼ö¿ì¼± ¿øÁ¤´ë(¾ÆÀÌÅÛ)
+						//ì„ìˆ˜ìš°ì„  ì›ì •ëŒ€(ì•„ì´í…œ)
 						else if (ch->IsExped() && ch->m_Exped->GetExpedType(MSG_DIVITYPE_ITEM) == MSG_EXPED_TYPE_FIRSTGET)
 						{
 							CExpedition* Exped = ch->m_Exped;
@@ -2625,11 +1569,11 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 								return;
 
 							int i,j;
-							// ¼ÒÀ¯±ÇÀÚ°¡ ¿øÁ¤´ë¿¡ ¼ÓÇØÀÖ´Ù
+							// ì†Œìœ ê¶Œìê°€ ì›ì •ëŒ€ì— ì†í•´ìˆë‹¤
 							bool bExped = false;
 							for (i=0; i < MAX_EXPED_GROUP; i++)
 							{
-								if(item->m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH)					// ITEM_FLAG_NO_STASHÀÎ °æ¿ì ´Ù¸¥ ÆÄÆ¼¿øÀÌ È¹µæÇÏÁö ¸øÇÔ.
+								if(item->m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH)					// ITEM_FLAG_NO_STASHì¸ ê²½ìš° ë‹¤ë¥¸ íŒŒí‹°ì›ì´ íšë“í•˜ì§€ ëª»í•¨.
 									break;
 								for (j=0; j < MAX_EXPED_GMEMBER; j++)
 								{
@@ -2644,7 +1588,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 
 							if (!bExped)
 							{
-								// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+								// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 								CNetMsg::SP rmsg(new CNetMsg);
 								SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 								SEND_Q(rmsg, ch->m_desc);
@@ -2653,7 +1597,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						}
 						else
 						{
-							// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+							// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 							CNetMsg::SP rmsg(new CNetMsg);
 							SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 							SEND_Q(rmsg, ch->m_desc);
@@ -2674,12 +1618,12 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 					ItemDisappearMsg(disappmsg, deleteVIndex);
 
 #ifdef LACARETTE_SYSTEM
-					//if(item->m_idNum == 5123)	//ÀÏ¹İÅäÅ«
+					//if(item->m_idNum == 5123)	//ì¼ë°˜í† í°
 					//{
 					//	if(item->Count() > 100)
 					//	{
 					//		CNetMsg rmsg;
-					//		//¼ÒÁöÁ¦ÇÑ ¿À¹ö
+					//		//ì†Œì§€ì œí•œ ì˜¤ë²„
 					//		lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_TOKEN_OVER);
 					//		SEND_Q(rmsg, ch->m_desc);
 					//		return ;
@@ -2691,10 +1635,10 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 					//		pItem = inven->GetItem(r, c);
 					//		if(pItem != NULL)
 					//		{
-					//			if(pItem->Count() >= 100)	// 100°³ ¼ÒÁö Á¦ÇÑ.
+					//			if(pItem->Count() >= 100)	// 100ê°œ ì†Œì§€ ì œí•œ.
 					//			{
 					//				CNetMsg rmsg;
-					//				// ¼ÒÁöÁ¦ÇÑ ¿À¹ö.
+					//				// ì†Œì§€ì œí•œ ì˜¤ë²„.
 					//				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_TOKEN_OVER);
 					//				SEND_Q(rmsg, ch->m_desc);
 					//				return ;
@@ -2702,7 +1646,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 					//			if (pItem->Count() + item->Count() > 100)
 					//			{
 					//				CNetMsg rmsg;
-					//				// ¼ÒÁöÁ¦ÇÑ ¿À¹ö.
+					//				// ì†Œì§€ì œí•œ ì˜¤ë²„.
 					//				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_TOKEN_OVER);
 					//				SEND_Q(rmsg, ch->m_desc);
 					//				return ;
@@ -2712,12 +1656,12 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 					//}
 #endif
 
-#ifndef EVENT_EGGS_HUNT_BILA	// Bila ºÎÈ°Àı ¼³Á¤
+#ifndef EVENT_EGGS_HUNT_BILA	// Bila ë¶€í™œì ˆ ì„¤ì •
 					if( gserver->isActiveEvent( A_EVENT_EGGS_HUNT) && item->getDBIndex() == 2148)
 					{
 						if (ch->m_inventory.FindByDBIndex(item->getDBIndex()))
 						{
-							// EGG ¾ÆÀÌÅÛ ÀÌ¹Ì ¼ÒÀ¯ÇÏ°í ÀÖÀ½
+							// EGG ì•„ì´í…œ ì´ë¯¸ ì†Œìœ í•˜ê³  ìˆìŒ
 							CNetMsg::SP rmsg(new CNetMsg);
 							EventEggsHunt2007ErrorMsg(rmsg, MSG_EVENT_EGGS_HUNT_2007_ERROR_ALREADY_EXIST);
 							SEND_Q(rmsg, ch->m_desc);
@@ -2725,7 +1669,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						}
 					}
 #endif // EVENT_EGGS_HUNT_BILA
-					//¢CÀº ¾ÆÀÌÅÛÀÌ À¯¹° ¾ÆÀÌÅÛÀÌ¶ó°í ÇÏ¸é
+					//?ì€ ì•„ì´í…œì´ ìœ ë¬¼ ì•„ì´í…œì´ë¼ê³  í•˜ë©´
 					int bArtifact = false;
 
 					if(item->m_itemProto->getItemTypeIdx() == ITYPE_ACCESSORY && item->m_itemProto->getItemSubTypeIdx() == IACCESSORY_ARTIFACT)
@@ -2741,7 +1685,7 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						}
 					}
 
-					// ÀÎº¥¿¡ ³Ö±â
+					// ì¸ë²¤ì— ë„£ê¸°
 					if (ch->m_inventory.addItem(item) == false)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -2750,19 +1694,19 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 						return ;
 					}
 
-					//¢CÀº ¾ÆÀÌÅÛÀÌ À¯¹° ¾ÆÀÌÅÛÀÌ¶ó°í ÇÏ¸é
+					//?ì€ ì•„ì´í…œì´ ìœ ë¬¼ ì•„ì´í…œì´ë¼ê³  í•˜ë©´
 					if(bArtifact == true)
 					{
 						ArtifactManager::instance()->addOwner(ch, item, true);
 					}
 
-					// ¿ì¼±±Ç Á¦°Å
+					// ìš°ì„ ê¶Œ ì œê±°
 					item->m_preferenceIndex = -1;
 
-					// ¶¥¿¡¼­ Á¦°Å
+					// ë•…ì—ì„œ ì œê±°
 					takeChar->m_pArea->ItemFromCell(item);
 
-					// ¸Ş½ÃÁö º¸³»°í
+					// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 					takeChar->m_pArea->SendToCell(takemsg, takeChar, true);
 					SEND_Q(itemmsg, ch->m_desc);
 					takeChar->m_pArea->SendToCell(disappmsg, GET_YLAYER(takeChar), cx, cz);
@@ -2796,12 +1740,12 @@ void do_ItemTake(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//ÀÔ±â
+//ì…ê¸°
 void do_ItemWear(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemWear* packet = reinterpret_cast<RequestClient::doItemWear*>(msg->m_buf);
 
-	//°­½Å »óÅÂÀÏ¶§´Â ÆêÀ» Á¦¿ÜÇÑ ¸ğµç ¾ÆÀÌÅÛ ÀÔ±â ¹ş±â¸¦ ÇÒ ¼ö ¾ø´Ù.
+	//ê°•ì‹  ìƒíƒœì¼ë•ŒëŠ” í«ì„ ì œì™¸í•œ ëª¨ë“  ì•„ì´í…œ ì…ê¸° ë²—ê¸°ë¥¼ í•  ìˆ˜ ì—†ë‹¤.
 	if(ch->m_evocationIndex != EVOCATION_NONE && packet->wearPos != WEARING_PET)
 	{
 		LOG_ERROR("HACKING? player is none evocation state charIndex[%d]", ch->m_index);
@@ -2817,9 +1761,9 @@ void do_ItemWear(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	CItem* item = ch->m_inventory.getItem(packet->tab, packet->invenIndex);	// ÀÔ´Â ¾ÆÀÌÅÛ
+	CItem* item = ch->m_inventory.getItem(packet->tab, packet->invenIndex);	// ì…ëŠ” ì•„ì´í…œ
 
-	// ÀÔ±â
+	// ì…ê¸°
 	if( ch->m_wearInventory.AddNormalItem(item, packet->wearPos) == false )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2838,11 +1782,11 @@ void do_ItemWear(CPC* ch, CNetMsg::SP& msg)
 			{
 				switch (ch->m_wearInventory.wearItemInfo[WEARING_HELMET]->m_itemProto->getItemIndex())
 				{
-				case 1843:			// »¡°­ »êÅ¸ ¸ğÀÚ : HAIR_RED_CAP + n
+				case 1843:			// ë¹¨ê°• ì‚°íƒ€ ëª¨ì : HAIR_RED_CAP + n
 					ch->m_hairstyle += HAIR_RED_CAP;
 					break;
 
-				case 1844:			// ³ì»ö »êÅ¸ ¸ğÀÚ : HAIR_GREEN_CAP + n
+				case 1844:			// ë…¹ìƒ‰ ì‚°íƒ€ ëª¨ì : HAIR_GREEN_CAP + n
 					ch->m_hairstyle += HAIR_GREEN_CAP;
 					break;
 				}
@@ -2867,7 +1811,7 @@ void do_ItemWear(CPC* ch, CNetMsg::SP& msg)
 			{
 				if (ch->m_wearInventory.wearItemInfo[i])
 				{
-					// ¼­Æ÷ÅÍ ¾ÆÀÌÅÛ
+					// ì„œí¬í„° ì•„ì´í…œ
 					if (ch->m_wearInventory.wearItemInfo[i]->m_itemProto->getItemIndex() == 1912)
 						ch->SetPlayerState(PLAYER_STATE_SUPPORTER);
 				}
@@ -2885,7 +1829,7 @@ void do_ItemWear(CPC* ch, CNetMsg::SP& msg)
 
 void do_ItemWearTakeOff(CPC* ch, CNetMsg::SP& msg)
 {
-	//¹ş±â
+	//ë²—ê¸°
 	RequestClient::doItemWearTakeOff* packet = reinterpret_cast<RequestClient::doItemWearTakeOff*>(msg->m_buf);
 
 	if(ch->m_evocationIndex != EVOCATION_NONE && packet->wearPos != WEARING_PET)
@@ -2903,7 +1847,7 @@ void do_ItemWearTakeOff(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	CItem* item = ch->m_wearInventory.wearItemInfo[(int)packet->wearPos];		// ¹ş´Â ¾ÆÀÌÅÛ
+	CItem* item = ch->m_wearInventory.wearItemInfo[(int)packet->wearPos];		// ë²—ëŠ” ì•„ì´í…œ
 
 	if (ch->m_wearInventory.DelNormalItem(packet->wearPos, packet->tab, packet->invenIndex) == false)
 	{
@@ -2911,6 +1855,19 @@ void do_ItemWearTakeOff(CPC* ch, CNetMsg::SP& msg)
 		ResponseClient::ItemTakeoffMsg(rmsg, ch->m_wearInventory.GetLastError());
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
+	}
+
+	switch(item->getDBIndex())
+	{
+	case 1843:			// ë¹¨ê°• ì‚°íƒ€ ëª¨ì : HAIR_RED_CAP + n
+	case 1844:			// ë…¹ìƒ‰ ì‚°íƒ€ ëª¨ì : HAIR_GREEN_CAP + n
+		{
+			ch->m_hairstyle = ch->m_hairstyle % 10;
+			CNetMsg::SP rmsg(new CNetMsg);
+			ExHairChangeMsg( rmsg, ch );
+			ch->m_pArea->SendToCell(rmsg, ch, true);
+		}
+		break;
 	}
 }
 
@@ -2961,19 +1918,19 @@ void do_ItemSwap(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÛ¾÷ ½ÃÀÛ
-	if (tItem == NULL) // ¸ñÀûÁö°¡ ºñ¾îÀÖÀ»¶§´Â ¹«Á¶°Ç ±³È¯
+	// ì‘ì—… ì‹œì‘
+	if (tItem == NULL) // ëª©ì ì§€ê°€ ë¹„ì–´ìˆì„ë•ŒëŠ” ë¬´ì¡°ê±´ êµí™˜
 	{
 		ch->m_inventory.swapItem(packet->stab, packet->sinvenIndex, packet->ttab, packet->tinvenIndex);
 	}
 	else
 	{
-		// µÎ°³ÀÇ ¾ÆÀÌÅÛ(DB Index)ÀÌ ¼­·Î °°°í °ãÄ¡±â¸¦ ÇÒ¼ö ÀÖ´Â ³ğÀÌ¸é...
+		// ë‘ê°œì˜ ì•„ì´í…œ(DB Index)ì´ ì„œë¡œ ê°™ê³  ê²¹ì¹˜ê¸°ë¥¼ í• ìˆ˜ ìˆëŠ” ë†ˆì´ë©´...
 		if (sItem->getDBIndex() == tItem->getDBIndex() && (sItem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)
 				&& (sItem->getPlus() == tItem->getPlus()) && (sItem->getFlag() == tItem->getFlag()))
 		{
 			LONGLONG target_sum_count = sItem->getItemCount() + tItem->getItemCount();
-			if (target_sum_count <= sItem->m_itemProto->getStackCount()) // °ãÄ¥ ¼ö ÀÖ´Ù.
+			if (target_sum_count <= sItem->m_itemProto->getStackCount()) // ê²¹ì¹  ìˆ˜ ìˆë‹¤.
 			{
 				ch->m_inventory.decreaseItemCount(sItem, sItem->Count());
 
@@ -2983,7 +1940,7 @@ void do_ItemSwap(CPC* ch, CNetMsg::SP& msg)
 				UpdateClient::makeUpdateItemCountWithSwap(rmsg, tItem->tab(), tItem->getInvenIndex(), tItem->Count());
 				SEND_Q(rmsg, ch->m_desc);
 			}
-			else // °ãÄ¥ ¼ö ¾ø´Ù.
+			else // ê²¹ì¹  ìˆ˜ ì—†ë‹¤.
 			{
 				if (ch->m_inventory.isUsable(packet->stab) == false)
 				{
@@ -2996,7 +1953,7 @@ void do_ItemSwap(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ¼­·Î °°Áö ¾Ê°Å³ª, °ãÄ¡±â¸¦ ÇÒ ¼ö ¾ø´Ù¸é...
+			// ì„œë¡œ ê°™ì§€ ì•Šê±°ë‚˜, ê²¹ì¹˜ê¸°ë¥¼ í•  ìˆ˜ ì—†ë‹¤ë©´...
 			if (ch->m_inventory.isUsable(packet->stab) == false)
 			{
 				LOG_INFO("inventory is expire. char_index[%d] tab[%d]", ch->m_index, packet->stab);
@@ -3030,7 +1987,7 @@ void do_ItemDelete(CPC* ch, CNetMsg::SP& msg)
 	if (!item || item->getVIndex() != packet->virualIndex || item->getWearPos() != WEARING_NONE)
 		return ;
 
-	//°á»ç´ë °¡ÀÔ ÁÖ¹®¼­(³ªÁß¿¡ ÆÄ±«ºÒ°¡´ÉÇÑ ÇÃ·¡±× µµÀÔÀÌ ÇÊ¿ä. flag2 È®ÀåÇÒ¶§ Ã¼Å©ÇÒ °Í, flag : ÆÄ±« ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛ)
+	//ê²°ì‚¬ëŒ€ ê°€ì… ì£¼ë¬¸ì„œ(ë‚˜ì¤‘ì— íŒŒê´´ë¶ˆê°€ëŠ¥í•œ í”Œë˜ê·¸ ë„ì…ì´ í•„ìš”. flag2 í™•ì¥í• ë•Œ ì²´í¬í•  ê²ƒ, flag : íŒŒê´´ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œ)
 	if(item->getDBIndex() == 10027 || item->getDBIndex() == 10028)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -3041,7 +1998,7 @@ void do_ItemDelete(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_admin != 10)
 	{
-		// GMµéÀº ¸ğµç ¾ÆÀÌÅÛÀ» ´Ù »èÁ¦ÇÒ ¼ö ÀÖÀ½
+		// GMë“¤ì€ ëª¨ë“  ì•„ì´í…œì„ ë‹¤ ì‚­ì œí•  ìˆ˜ ìˆìŒ
 		if ((item->m_itemProto->getItemFlag() & ITEM_FLAG_QUEST) ||
 				(item->m_itemProto->getItemTypeIdx() == ITYPE_ETC && item->m_itemProto->getItemSubTypeIdx() == IETC_QUEST))
 			return;
@@ -3093,7 +2050,7 @@ void do_ItemDelete(CPC* ch, CNetMsg::SP& msg)
 
 void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¾Èº¸ÀÌ¸é ¹«½Ã
+	// ì•ˆë³´ì´ë©´ ë¬´ì‹œ
 	if (!ch->m_bVisible)
 		return ;
 
@@ -3154,7 +2111,7 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 	
-	if(item->CanDrop())
+	if(item->CanDrop() == false)
 	{
 		return;
 	}
@@ -3166,15 +2123,15 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 
 	CItem* dropitem = NULL;
 
-	// ¹ö¸®´Â °³¼ö¿Í ¼ÒÁö °³¼ö°¡ ´Ù¸£¸é
+	// ë²„ë¦¬ëŠ” ê°œìˆ˜ì™€ ì†Œì§€ ê°œìˆ˜ê°€ ë‹¤ë¥´ë©´
 	if (item->Count() != packet->count)
 	{
-		// º¹»çÇØ¼­ count ¼³Á¤
+		// ë³µì‚¬í•´ì„œ count ì„¤ì •
 		dropitem = ch->m_pArea->DropItem(item->getDBIndex(), ch, item->getPlus(), item->getFlag(), packet->count);
 		if (!dropitem)
 			return ;
 
-		// ¿É¼Ç º¹»ç
+		// ì˜µì…˜ ë³µì‚¬
 		if (!(item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT))
 		{
 			int i;
@@ -3191,10 +2148,14 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 	{
 		dropitem = item;
 
-		if(ch->holy_water_item == item)
+		if(item->isToggle() == true)
 		{
-			ch->changeToggleState(ch->holy_water_item->getVIndex(), TOGGLE_ITEM);
-			ch->SendHolyWaterStateMsg(NULL);
+			ch->changeToggleState(item->getVIndex(), TOGGLE_ITEM);
+
+			if(ch->holy_water_item == item)
+			{
+				ch->SendHolyWaterStateMsg(NULL);
+			}
 		}
 		
 		ch->m_inventory.eraseNotFree(item);
@@ -3203,7 +2164,7 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// µå·Ó º¸³»±â
+		// ë“œë¡­ ë³´ë‚´ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemDropMsg(rmsg, ch, dropitem);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -3222,8 +2183,8 @@ void do_ItemThrow(CPC* ch, CNetMsg::SP& msg)
 			<< end;
 }
 
-// Buy & Sell ¸ğµÎ PCÀ§ÁÖ·Î ±¸¼º
-// Player°¡ »ì¶§ Item Buy Msg, Buy Rate Àû¿ë
+// Buy & Sell ëª¨ë‘ PCìœ„ì£¼ë¡œ êµ¬ì„±
+// Playerê°€ ì‚´ë•Œ Item Buy Msg, Buy Rate ì ìš©
 void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemBuy* packet = reinterpret_cast<RequestClient::doItemBuy*>(msg->m_buf);
@@ -3232,7 +2193,7 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 
 	try
 	{
-		// ÃÖ´ë »ì¼ö ÀÖ´Â ¾ÆÀÌÅÛ Á¾·ùÀÇ ¼ö
+		// ìµœëŒ€ ì‚´ìˆ˜ ìˆëŠ” ì•„ì´í…œ ì¢…ë¥˜ì˜ ìˆ˜
 		if (packet->buyCount <= 0 || packet->buyCount > MAX_ITEM_BUY)
 		{
 			LOG_ERROR("HACKING? : invalid buy count[%d]. charIndex[%d]", packet->buyCount, ch->m_index);
@@ -3274,7 +2235,7 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		if(npcProto->CheckFlag1(NPC1_AFFINITY))	// »óÁ¡ÀÌ ÀÖ´Â npc ÀÌ°í, npc proto¿¡ ÀÖ°í, npc°¡ Ä£È­µµ npc ÀÌ¸é Ä³¸¯ÅÍ´Â Ä£È­µµ°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+		if(npcProto->CheckFlag1(NPC1_AFFINITY))	// ìƒì ì´ ìˆëŠ” npc ì´ê³ , npc protoì— ìˆê³ , npcê°€ ì¹œí™”ë„ npc ì´ë©´ ìºë¦­í„°ëŠ” ì¹œí™”ë„ê°€ ìˆì–´ì•¼ í•œë‹¤.
 		{
 			int affinityIndex = 0;
 			int affinityPoint = 0;
@@ -3341,10 +2302,10 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ¸¶¹ı»óÁ¡ÀÌ°í, ºù°í¹Ú½º¸¦ »ç·Á°í ÇÒ ¶§
+			// ë§ˆë²•ìƒì ì´ê³ , ë¹™ê³ ë°•ìŠ¤ë¥¼ ì‚¬ë ¤ê³  í•  ë•Œ
 			if ((packet->list[i].dbIndex == 2047 || packet->list[i].dbIndex == 2633) && gserver->isActiveEvent( A_EVENT_VALENTINE_DAY ))
 			{
-				if(ch->m_inventory.FindByDBIndex(packet->list[i].dbIndex))	// ÀÌ¹Ì ºù°í ¹Ú½º¸¦ °¡Áö°í ÀÖÀ¸¸é
+				if(ch->m_inventory.FindByDBIndex(packet->list[i].dbIndex))	// ì´ë¯¸ ë¹™ê³  ë°•ìŠ¤ë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´
 					throw 10;
 
 				if(bBingoBoxDup)
@@ -3353,12 +2314,12 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 				bBingoBoxDup = true;
 			}
 
-			// »óÁ¡¿¡ ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö °Ë»ç throw 6
+			// ìƒì ì— ì•„ì´í…œì´ ìˆëŠ”ì§€ ê²€ì‚¬ throw 6
 			if (!shop->ThersIsItem(packet->list[i].dbIndex))
-				throw 6;		// »óÁ¡¿¡ ¾ÆÀÌÅÛ ¾øÀ½
+				throw 6;		// ìƒì ì— ì•„ì´í…œ ì—†ìŒ
 		}
 
-		// ´©ÀûÇÕ°è
+		// ëˆ„ì í•©ê³„
 		LONGLONG serverPrice = 0;
 		item = new CItem*[packet->buyCount];
 		memset(item, 0, sizeof(CItem*) * packet->buyCount);
@@ -3376,15 +2337,15 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 
 			search_vec.push_back(possible_search_t(item[i], packet->list[i].count));
 
-			// ¾ÆÀÌÅÛ ¸í¼ºÄ¡ °Ë»ç
+			// ì•„ì´í…œ ëª…ì„±ì¹˜ ê²€ì‚¬
 			if (item[i]->m_itemProto->getItemFrame() != -1)
 			{
-				// ¸í¼ºÄ¡ µş¸°´Ù
+				// ëª…ì„±ì¹˜ ë”¸ë¦°ë‹¤
 				if (ch->m_fame < item[i]->m_itemProto->getItemFrame())
 					throw 9;
 			}
 
-#ifdef REFORM_PK_PENALTY_SHOP_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû :: Ä«¿À´Â Ä«¿À Á¡¼ö¸¸Å­ÀÇ ±¸ÀÔ ±İ¾×ÀÌ ºñ½ÎÁø´Ù.
+#ifdef REFORM_PK_PENALTY_SHOP_201108 // PK íŒ¨ë„í‹° ë¦¬í¼ :: ì¹´ì˜¤ëŠ” ì¹´ì˜¤ ì ìˆ˜ë§Œí¼ì˜ êµ¬ì… ê¸ˆì•¡ì´ ë¹„ì‹¸ì§„ë‹¤.
 			LONGLONG itemPrice;
 			if( ch->IsChaotic() )
 			{
@@ -3403,18 +2364,18 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 			serverPrice += itemPrice;
 		}
 
-		// ±¸¸ÅÇÑ ¸ğµç ¾ÆÀÌÅÛÀ» °¡¹æ¿¡ ³ÖÀ» ¼ö ÀÖ´ÂÁö °Ë»ç
+		// êµ¬ë§¤í•œ ëª¨ë“  ì•„ì´í…œì„ ê°€ë°©ì— ë„£ì„ ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
 		if (ch->m_inventory.isPossibleAdd(search_vec) == false)
 			throw 4;
 
-		// ÇÕ°è°¡ ´Ù¸£´Ù! -->
+		// í•©ê³„ê°€ ë‹¤ë¥´ë‹¤! -->
 		if (serverPrice != packet->clientPrice)
-			throw 5;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 5;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 
 		if (serverPrice <= 0)
 			throw 5;
 
-		//ÆĞ½Ãºê ½ºÅ³ Àû¿ë
+		//íŒ¨ì‹œë¸Œ ìŠ¤í‚¬ ì ìš©
 		if(ch->m_avPassiveAddition.money_buy)
 		{
 			serverPrice += ch->m_avPassiveAddition.money_buy;
@@ -3424,7 +2385,7 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 			serverPrice += serverPrice * (ch->m_avPassiveRate.money_buy - 100) / SKILL_RATE_UNIT;
 		}
 
-		// µ·°Ë»ç
+		// ëˆê²€ì‚¬
 		if ((ch->m_inventory.getMoney() < serverPrice))
 			throw 8;
 
@@ -3456,7 +2417,7 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 
 		STATISTICS(ItemBuy, serverPrice);
 
-		// ¼¼±İ Â¡¼ö : ±¸ÀÔ±İ¾×ÀÇ 10%
+		// ì„¸ê¸ˆ ì§•ìˆ˜ : êµ¬ì…ê¸ˆì•¡ì˜ 10%
 		if(ch->m_pZone->m_index == ZONE_MERAC || ch->m_pZone->m_index == ZONE_EGEHA)
 			gserver->AddTaxItem(serverPrice / 10);
 
@@ -3465,7 +2426,7 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 	}
 	catch (const int errCode)
 	{
-		// ¿À·ù ¹ß»ı½Ã ¸¸µé¾ú´ø ¾ÆÀÌÅÛ Á¦°Å
+		// ì˜¤ë¥˜ ë°œìƒì‹œ ë§Œë“¤ì—ˆë˜ ì•„ì´í…œ ì œê±°
 		if (item)
 		{
 			for (int i = 0; i < packet->buyCount; ++i)
@@ -3478,33 +2439,33 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+			// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 
 			switch (errCode)
 			{
-			case 0:			// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
-			case 1:			// »óÁ¡ÀÌ ¾øÀ½
-			case 2:			// DB¿¡ ¾ø´Â ¾ÆÀÌÅÛ
-			case 3:			// DB¿¡ Àß¸øµÈ °ª
+			case 0:			// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
+			case 1:			// ìƒì ì´ ì—†ìŒ
+			case 2:			// DBì— ì—†ëŠ” ì•„ì´í…œ
+			case 3:			// DBì— ì˜ëª»ëœ ê°’
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
 				break;
-			case 4:			// ÀÎº¥Åä¸® °¡µæ Âü
+			case 4:			// ì¸ë²¤í† ë¦¬ ê°€ë“ ì°¸
 				SysFullInventoryMsg(rmsg, 0);
 				break;
-			case 5:			// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
-			case 6:			// »óÁ¡¿¡ ¾ÆÀÌÅÛ ¾øÀ½
-			case 7:			// µ· »©±â ½ÇÆĞ
+			case 5:			// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
+			case 6:			// ìƒì ì— ì•„ì´í…œ ì—†ìŒ
+			case 7:			// ëˆ ë¹¼ê¸° ì‹¤íŒ¨
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
 				break;
-			case 8:			// µ· ¸ğÁú¶÷
+			case 8:			// ëˆ ëª¨ì§ˆëŒ
 				SysMsg(rmsg, MSG_SYS_SHORT_MONEY);
 				break;
 
-			case 9:			// ¸í¼º ºÎÁ·
+			case 9:			// ëª…ì„± ë¶€ì¡±
 				SysMsg(rmsg, MSG_SYS_SHORT_FAME);
 				break;
-			case 10:		// ºù°í¹Ú½º°¡ ÀÌ¹Ì ÀÖÀ½
+			case 10:		// ë¹™ê³ ë°•ìŠ¤ê°€ ì´ë¯¸ ìˆìŒ
 				SysMsg(rmsg, MSG_SYS_CANNOT_HAVE_DUPLICATE);
 				break;
 			}
@@ -3514,8 +2475,8 @@ void do_ItemBuy(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-// Buy & Sell ¸ğµÎ PCÀ§ÁÖ·Î ±¸¼º
-// Player°¡ ÆÈ¶§ Item Sell Msg, Sell Rate Àû¿ë
+// Buy & Sell ëª¨ë‘ PCìœ„ì£¼ë¡œ êµ¬ì„±
+// Playerê°€ íŒ”ë•Œ Item Sell Msg, Sell Rate ì ìš©
 void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemSell* packet = reinterpret_cast<RequestClient::doItemSell*>(msg->m_buf);
@@ -3571,7 +2532,9 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 		std::set<int> check_duplication;
 		LONGLONG serverPrice = 0;
 
-		// ÆÇ¸Å ¾ÆÀÌÅÛ ¸¸µé±â
+		int bonus = 0;
+
+		// íŒë§¤ ì•„ì´í…œ ë§Œë“¤ê¸°
 		for (int i = 0; i < packet->sellCount; ++i)
 		{
 			if (ch->m_inventory.isValidNormalInventory(packet->list[i].tab, packet->list[i].invenIndex) == false)
@@ -3589,7 +2552,7 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// Å¬¶óÀÌ¾ğÆ®°¡ º¸³»ÁØ ÆĞÅ¶ ³»¿ëÁß Áßº¹ °Ë»ç
+			// í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚´ì¤€ íŒ¨í‚· ë‚´ìš©ì¤‘ ì¤‘ë³µ ê²€ì‚¬
 			if (check_duplication.insert(packet->list[i].tab << 16 | packet->list[i].invenIndex).second == false)
 			{
 				LOG_ERROR("HACKING? : duplicate index. charIndex[%d]", ch->m_index);
@@ -3606,7 +2569,7 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ½ÇÁ¦ ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ Å¬¶óÀÌ¾ğÆ®¿¡¼­ ÆÈ·Á´ø °¹¼öº¸´Ù ÀÛ´Ù.
+			// ì‹¤ì œ ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ í´ë¼ì´ì–¸íŠ¸ì—ì„œ íŒ”ë ¤ë˜ ê°¯ìˆ˜ë³´ë‹¤ ì‘ë‹¤.
 			if (item[i]->Count() < packet->list[i].count)
 				throw 2;
 
@@ -3617,12 +2580,12 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 			}
 #endif //ENABLE_SUBJOB
 
-			// ÀÔ°í ÀÖ°Å³ª »óÁ¡ ºÒ°¡ ¾ÆÀÌÅÛÀÎ °æ¿ì
+			// ì…ê³  ìˆê±°ë‚˜ ìƒì  ë¶ˆê°€ ì•„ì´í…œì¸ ê²½ìš°
 			if (!item[i]->CanSellToShop())
 				throw 6;
 
 #ifdef LC_USA
-			// ¹Ì±¹Àº 97·¹º§ ÀÌ»óÀÇ ¾ÆÀÌÅÛÀº ¸Å°¢°¡°İÀÇ Àı¹İ¸¸ ÁØ´Ù.
+			// ë¯¸êµ­ì€ 97ë ˆë²¨ ì´ìƒì˜ ì•„ì´í…œì€ ë§¤ê°ê°€ê²©ì˜ ì ˆë°˜ë§Œ ì¤€ë‹¤.
 #ifdef	BUGFIX_ITEMSELL_HACKUSER
 
 			LONGLONG itemPrice = item[i]->m_itemProto->getItemPrice() * shop->m_sellRate;
@@ -3652,21 +2615,29 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 			serverPrice += (item[i]->m_itemProto->getItemPrice() * shop->m_sellRate / 100) * packet->list[i].count;
 #endif // BUGFIX_ITEMSELL_HACKUSER
 #endif // LC_USA
+
+			if(item[i]->m_itemProto->getItemIndex() != ROOKIE_REGIST_ITEM
+				&& item[i]->m_itemProto->getItemIndex() != SENIOR_REGIST_ITEM
+				&& item[i]->m_itemProto->getItemIndex() != MASTER_REGIST_ITEM
+				)
+			{
+				if(ch->m_avPassiveAddition.money_sell)
+				{
+					bonus += ch->m_avPassiveAddition.money_sell;
+				}
+				if(ch->m_avPassiveRate.money_sell)
+				{
+#ifdef	BUGFIX_ITEMSELL_HACKUSER
+					bonus += itemPrice * (ch->m_avPassiveRate.money_sell - 100) / SKILL_RATE_UNIT;
+#else
+					bonus += ((item[i]->m_itemProto->getItemPrice() * shop->m_sellRate / 100) * packet->list[i].count) * (ch->m_avPassiveRate.money_sell - 100) / SKILL_RATE_UNIT;
+#endif
+				}
+			}
 		}
 
-		//ÆĞ½Ãºê ½ºÅ³ Àû¿ë
-		int bonus = 0;
-		if(ch->m_avPassiveAddition.money_sell)
-		{
-			bonus += ch->m_avPassiveAddition.money_sell;
-		}
-		if(ch->m_avPassiveRate.money_sell)
-		{
-			bonus = serverPrice * (ch->m_avPassiveRate.money_sell - 100) / SKILL_RATE_UNIT;
-		}
-
-		// °¡°İÀÇ Â÷ÀÌ°¡ 10³ª½º ÀÌÇÏÀÌ¸é Å¬¶óÀÌ¾ğÆ® °¡°İ¿¡ ¸ÂÃá´Ù.
-		// ÆÇ¸ÅÇÒ ¶§ ÃÖ´ë 10°³ °¡´É, 2·Î ³ª´©¸é ³ª¸ÓÁö°¡ 1¾¿ ³ª¿À¹Ç·Î ¿ÀÂ÷´Â ÃÖ´ë 10... ±×·¯¹Ç·Î 10±îÁö¸¸ º¸Á¤À» ÇÔ
+		// ê°€ê²©ì˜ ì°¨ì´ê°€ 10ë‚˜ìŠ¤ ì´í•˜ì´ë©´ í´ë¼ì´ì–¸íŠ¸ ê°€ê²©ì— ë§ì¶˜ë‹¤.
+		// íŒë§¤í•  ë•Œ ìµœëŒ€ 10ê°œ ê°€ëŠ¥, 2ë¡œ ë‚˜ëˆ„ë©´ ë‚˜ë¨¸ì§€ê°€ 1ì”© ë‚˜ì˜¤ë¯€ë¡œ ì˜¤ì°¨ëŠ” ìµœëŒ€ 10... ê·¸ëŸ¬ë¯€ë¡œ 10ê¹Œì§€ë§Œ ë³´ì •ì„ í•¨
 #ifdef	BUGFIX_ITEMSELL_HACKUSER
 		LONGLONG gapPrice = (serverPrice > packet->clientPrice) ? (serverPrice - packet->clientPrice) : (packet->clientPrice - serverPrice);
 #else
@@ -3679,15 +2650,15 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 			serverPrice = packet->clientPrice;
 		}
 		else
-			throw 3;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 3;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 
-		// ÇÕ°è°¡ ´Ù¸£´Ù! -->
+		// í•©ê³„ê°€ ë‹¤ë¥´ë‹¤! -->
 		if (serverPrice != packet->clientPrice)
-			throw 3;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 3;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 		if (serverPrice < 0)
 			throw 3;
 
-		// ÀÎº¥¿¡¼­ ÆÄ´Â ¾ÆÀÌÅÛ ¿ÏÀü Á¦°Å
+		// ì¸ë²¤ì—ì„œ íŒŒëŠ” ì•„ì´í…œ ì™„ì „ ì œê±°
 		for (int i = 0; i < packet->sellCount; ++i)
 		{
 #ifdef GER_LOG
@@ -3714,7 +2685,7 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 		STATISTICS(ItemSell, serverPrice * 3 / 2);
 //#endif
 
-		// ¼¼±İ Â¡¼ö : ÆÇ¸Å ±İ¾×ÀÇ 40% ÀÇ 10% => ÀüÃ¼ ±İ¾×ÀÇ 4%
+		// ì„¸ê¸ˆ ì§•ìˆ˜ : íŒë§¤ ê¸ˆì•¡ì˜ 40% ì˜ 10% => ì „ì²´ ê¸ˆì•¡ì˜ 4%
 		if(ch->m_pZone->m_index == ZONE_MERAC || ch->m_pZone->m_index == ZONE_EGEHA)
 			gserver->AddTaxItem(serverPrice / 25);
 
@@ -3726,17 +2697,17 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 	}
 	catch (const int errCode)
 	{
-		// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+		// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		switch (errCode)
 		{
-		case 0:			// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
-		case 1:			// »óÁ¡ÀÌ ¾øÀ½
-		case 2:			// ÀÎº¥¿¡ ¾ø´Â ¹°°Ç
-		case 3:			// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
-		case 4:			// µ· ³Ö±â ½ÇÆĞ
-		case 5:			// ÀÎº¥¿¡¼­ Á¦°Å ½ÇÆĞ
-		case 6:			// ÆÈ¼ö ¾ø´Â ¾ÆÀÌÅÛ
-		case 7:			// ÆÈ·Á´Â ¾ÆÀÌÅÛÀÇ °³¼ö°¡ ³Ê¹« ¸¹À½
+		case 0:			// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
+		case 1:			// ìƒì ì´ ì—†ìŒ
+		case 2:			// ì¸ë²¤ì— ì—†ëŠ” ë¬¼ê±´
+		case 3:			// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
+		case 4:			// ëˆ ë„£ê¸° ì‹¤íŒ¨
+		case 5:			// ì¸ë²¤ì—ì„œ ì œê±° ì‹¤íŒ¨
+		case 6:			// íŒ”ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
+		case 7:			// íŒ”ë ¤ëŠ” ì•„ì´í…œì˜ ê°œìˆ˜ê°€ ë„ˆë¬´ ë§ìŒ
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
@@ -3747,8 +2718,8 @@ void do_ItemSell(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-// »õ·Î Á¤¸®ÇÑ do_ItemUpgradeReq()
-//  - È®ÀåÆÑ Àû¿ë ½Ã NewÀÎÃ¾Æ® ½Ã½ºÅÛ°ú ÇÔ²² Àû¿ëµÊ.
+// ìƒˆë¡œ ì •ë¦¬í•œ do_ItemUpgradeReq()
+//  - í™•ì¥íŒ© ì ìš© ì‹œ Newì¸ì²¸íŠ¸ ì‹œìŠ¤í…œê³¼ í•¨ê»˜ ì ìš©ë¨.
 void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemUpgrade* packet = reinterpret_cast<RequestClient::doItemUpgrade*>(msg->m_buf);
@@ -3830,7 +2801,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	char wearPos = upItem->getWearPos();
-	CItem* runeItem = NULL;								// Á¦·Ã º¸È£ ¾ÆÀÌÅÛ
+	CItem* runeItem = NULL;								// ì œë ¨ ë³´í˜¸ ì•„ì´í…œ
 	if (packet->runeItemDBIndex != -1)
 	{
 		runeItem = ch->m_inventory.getItem(packet->tab_3, packet->invenIndex_3);
@@ -3849,7 +2820,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ÃÖ»ó±ŞÁ¦·Ãº¸È£¼® °­È­ ·¹º§ Á¦ÇÑ Ã¼Å©
+		// ìµœìƒê¸‰ì œë ¨ë³´í˜¸ì„ ê°•í™” ë ˆë²¨ ì œí•œ ì²´í¬
 		if(runeItem->m_itemProto->getItemIndex() == SUPER_HIGH_RUNE_PROTECTION_ITEM)
 		{
 			if(!(upItem->getPlus() >= 20 && upItem->getPlus() <= 25))
@@ -3874,7 +2845,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Á¦·Ã¼® °Ë»ç
+	// ì œë ¨ì„ ê²€ì‚¬
 	if (	reItem->m_itemProto->getItemTypeIdx()		!= ITYPE_ETC
 			||	reItem->m_itemProto->getItemSubTypeIdx()	!= IETC_UPGRADE
 	   )
@@ -3883,7 +2854,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	CItem* pItemClothes = NULL;		// ½ÇÆĞ½Ã ÇÔ²² »ç¶óÁú ¾ÆÀÌÅÛ
+	CItem* pItemClothes = NULL;		// ì‹¤íŒ¨ì‹œ í•¨ê»˜ ì‚¬ë¼ì§ˆ ì•„ì´í…œ
 	if (upItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 	{
 		if ((upItem->getFlag() & FLAG_ITEM_COMPOSITION) == 0)
@@ -3912,21 +2883,21 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¾÷±×·¹ÀÌµå °¡´É °Ë»ç
+	// ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥ ê²€ì‚¬
 	if (upItem->CanUpgrade() == false)
 	{
 		LOG_ERROR("upItem is not upgrade item or lent item. char_index[%d]", ch->m_index);
 		return;
 	}
 
-	// ºÎ½ºÅÍ´Â ¾÷±×·¹ÀÌµå ¾Æ´Ô
+	// ë¶€ìŠ¤í„°ëŠ” ì—…ê·¸ë ˆì´ë“œ ì•„ë‹˜
 	if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_BOOSTER)
 	{
 		LOG_ERROR("reItem is IETC_UPGRADE_BOOSTER. char_index[%d]", ch->m_index);
 		return;
 	}
 
-	// ·é Á¦·Ã¼®ÀÏ °æ¿ì 146ÀÌ»óºÎÅÍ ¾÷±×·¹ÀÌµå °¡´É
+	// ë£¬ ì œë ¨ì„ì¼ ê²½ìš° 146ì´ìƒë¶€í„° ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 	if( reItem->IsUpgradeRune() )
 	{
 		if( upItem->m_itemProto->GetItemProtoLevel() < ITEM_UPGRADE_GENERAL_MAXLEVEL )
@@ -3938,10 +2909,10 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// 146 ÀÌ»óºÎÅÍ´Â ·éÀ¸·Î¸¸ °¡´É
+	// 146 ì´ìƒë¶€í„°ëŠ” ë£¬ìœ¼ë¡œë§Œ ê°€ëŠ¥
 	if ( upItem->m_itemProto->GetItemProtoLevel() >= ITEM_UPGRADE_GENERAL_MAXLEVEL )
 	{
-		if (!reItem->IsUpgradeRune() && reItem->m_itemProto->getItemNum0() != IETC_UPGRADE_PLATINUM )		// ÇÃ·¡Æ¼³Ñ Àç·Ã¼®
+		if (!reItem->IsUpgradeRune() && reItem->m_itemProto->getItemNum0() != IETC_UPGRADE_PLATINUM )		// í”Œë˜í‹°ë„˜ ì¬ë ¨ì„
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_UPGRADE_NOCONDITION);
@@ -3951,7 +2922,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ÀÏ¹İ Á¦·Ã¼®ÀÇ °æ¿ì 1 - 60 ·¹º§ÀÌ ¸Â´Â°¡
+		// ì¼ë°˜ ì œë ¨ì„ì˜ ê²½ìš° 1 - 60 ë ˆë²¨ì´ ë§ëŠ”ê°€
 		if (reItem->getFlag() != 0 && (reItem->getFlag() < ITEM_UPGRADE_GENERAL_MINLEVEL || reItem->getFlag() > ITEM_UPGRADE_GENERAL_MAXLEVEL))
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -3960,7 +2931,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ÀÏ¹İÁ¦·Ã¼®ÀÇ °æ¿ì Á¦·Ã¼®ÀÇ ·¹º§ ÀÌÇÏ¸¸ ¾÷±×·¹ÀÌµå °¡´É
+		// ì¼ë°˜ì œë ¨ì„ì˜ ê²½ìš° ì œë ¨ì„ì˜ ë ˆë²¨ ì´í•˜ë§Œ ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 		if (reItem->getFlag() != 0 && reItem->getFlag() < upItem->GetItemLevel())
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -3970,7 +2941,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	//½´ÆÛ°íÁ¦¸¦ ÀÌ¹Ì ½´ÆÛ°íÁ¦ ¹Ù¸¥ ¾ÆÀÌÅÛ¿¡ ¾÷±×·¹ÀÌµå ÇÏ·Á°í ÇÒ°æ¿ì
+	//ìŠˆí¼ê³ ì œë¥¼ ì´ë¯¸ ìŠˆí¼ê³ ì œ ë°”ë¥¸ ì•„ì´í…œì— ì—…ê·¸ë ˆì´ë“œ í•˜ë ¤ê³  í• ê²½ìš°
 	if(reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_SPECIAL_SUPER && upItem->getFlag() & FLAG_ITEM_SUPER_STONE_USED)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4003,7 +2974,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ÀÏ¹İ Á¦·Ã¼®
+		// ì¼ë°˜ ì œë ¨ì„
 		if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_GENERAL)
 		{
 			int upprob = 0;
@@ -4020,7 +2991,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 			if (upprob < 1)
 				upprob = 1;
 
-			// ¼º°ø/º¯È­ ¾øÀ½(+3¹Ì¸¸)/ÆÄ±«
+			// ì„±ê³µ/ë³€í™” ì—†ìŒ(+3ë¯¸ë§Œ)/íŒŒê´´
 			if (GetRandom(1, 100) <= upprob)
 			{
 				result = ITEM_UPGRADE_RESULT_PLUS;
@@ -4032,7 +3003,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 					result = ITEM_UPGRADE_RESULT_NOCHANGE;
 			}
 		}
-		// Çà¿îÀÇ Á¦·Ã¼®
+		// í–‰ìš´ì˜ ì œë ¨ì„
 		else if( reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_LUCKY)
 		{
 			if( upItem->getPlus() > 5)
@@ -4045,11 +3016,11 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 
 			result = ITEM_UPGRADE_RESULT_PLUS;
 		}
-		// °í±ŞÁ¦·Ã¼® - 0627
+		// ê³ ê¸‰ì œë ¨ì„ - 0627
 		else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_SPECIAL)
 		{
-			// Àá¼öÇÔ : °íÁ¦ È®·ü Á¶Á¤
-			// +14¿¡ °íÁ¦ »ç¿ë½Ã¿¡´Â È®·ü Á¶Á¤, ±×¿Ü´Â ±âÁ¸°ú µ¿ÀÏ
+			// ì ìˆ˜í•¨ : ê³ ì œ í™•ë¥  ì¡°ì •
+			// +14ì— ê³ ì œ ì‚¬ìš©ì‹œì—ëŠ” í™•ë¥  ì¡°ì •, ê·¸ì™¸ëŠ” ê¸°ì¡´ê³¼ ë™ì¼
 			if(upItem->getPlus() >= 18)
 			{
 				int prob = GetRandom(1, 100);
@@ -4061,7 +3032,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 				if(upprob < 0)
 					upprob = 1;
 
-				// ¼º°ø/º¯ÇÔ¾øÀ½(+3¹Ì¸¸)/½ÇÆĞ
+				// ì„±ê³µ/ë³€í•¨ì—†ìŒ(+3ë¯¸ë§Œ)/ì‹¤íŒ¨
 				if(prob > 0 && prob <= 10)
 				{
 					int rand = GetRandom(1, 2);
@@ -4114,13 +3085,13 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 					result = ITEM_UPGRADE_RESULT_NOCHANGE;
 			}
 		}
-		// ÇÃ·¡Æ¼´½ Á¦·Ã¼®
+		// í”Œë˜í‹°ëŠ„ ì œë ¨ì„
 		else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_PLATINUM)
 		{
 			if ( upItem->getPlus() > MAX_UPGRADE_PLUS || reItem->getPlus() >= PLATINUM_MAX_PLUS )
 			{
-				if( reItem->m_itemProto->getItemNum1() == 0	 ||							// ¸¶½ºÅÍ ½ºÅæÀÌ ¾Æ´Ï°Å³ª
-						( reItem->m_itemProto->getItemNum1() - upItem->getPlus() <= 0 )		// ÀÎÃ¾ ¼öÄ¡ º¸´Ù °°°Å³ª ³·Àº ¸¶½ºÅÍ ½ºÅæÀÏ¶§
+				if( reItem->m_itemProto->getItemNum1() == 0	 ||							// ë§ˆìŠ¤í„° ìŠ¤í†¤ì´ ì•„ë‹ˆê±°ë‚˜
+						( reItem->m_itemProto->getItemNum1() - upItem->getPlus() <= 0 )		// ì¸ì²¸ ìˆ˜ì¹˜ ë³´ë‹¤ ê°™ê±°ë‚˜ ë‚®ì€ ë§ˆìŠ¤í„° ìŠ¤í†¤ì¼ë•Œ
 				  )
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -4141,7 +3112,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 #endif
 				result = ITEM_UPGRADE_PLATINUM_RESULT_PLUS;
 		}
-		// Ä«¿À½º Á¦·Ã¼®
+		// ì¹´ì˜¤ìŠ¤ ì œë ¨ì„
 		else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_CHAOS)
 		{
 			if (upItem->getPlus() < 12)
@@ -4149,10 +3120,10 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 			else
 				result = ITEM_UPGRADE_RESULT_NOCHANGE;
 		}
-		//½´ÆÛ°íÁ¦ - 0627
+		//ìŠˆí¼ê³ ì œ - 0627
 		else if(reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_SPECIAL_SUPER)
 		{
-			//½´ÆÛ°íÁ¦´Â +14 ¾ÆÀÌÅÛ¿¡´Â »ç¿ëÇÒ¼ö ¾ø´Ù.
+			//ìŠˆí¼ê³ ì œëŠ” +14 ì•„ì´í…œì—ëŠ” ì‚¬ìš©í• ìˆ˜ ì—†ë‹¤.
 			if (upItem->getPlus() > 13)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4161,11 +3132,11 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			//100ÇÁ·Î ¼º°ø / ÇÑ¹ø¹Û¿¡ »ç¿ë ¸øÇÔ.
+			//100í”„ë¡œ ì„±ê³µ / í•œë²ˆë°–ì— ì‚¬ìš© ëª»í•¨.
 			result = ITEM_UPGRADE_RESULT_PLUS;
 			upItem->setFlag(upItem->getFlag() | FLAG_ITEM_SUPER_STONE_USED);
 		}
-		// ·é
+		// ë£¬
 		else if (reItem->IsUpgradeRune())
 		{
 			result = getUpgradeRuneResult(reItem, upItem, ch);
@@ -4173,7 +3144,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-// Á¦·Ã º¸È£¼®
+// ì œë ¨ ë³´í˜¸ì„
 	if ((result == ITEM_UPGRADE_RESULT_BROKEN || result == ITEM_UPGRADE_RESULT_MINUS) && runeItem)
 	{
 		int PlatinumPlus = 0;
@@ -4340,9 +3311,9 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 //#endif
 
-	// ¾÷±ÛÇÒ ¾ÆÀÌÅÛ update ¿©ºÎ
+	// ì—…ê¸€í•  ì•„ì´í…œ update ì—¬ë¶€
 	bool bUpdate = false;
-	int nPlusNum = 0;           // +,- ¼öÄ¡
+	int nPlusNum = 0;           // +,- ìˆ˜ì¹˜
 
 	CNetMsg::SP repMsg(new CNetMsg);
 
@@ -4558,7 +3529,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 				ch->m_wearInventory.RemoveItem(wearPos);
 			}
 
-			// ÀÇ»ó ¾ÆÀÌÅÛÀÇ °æ¿ì ½ÇÆĞ½Ã °áÇÕ ¾ÆÀÌÅÛ ÇÔ²² Á¦°Å(upItem : °áÇÕ ¾ÆÀÌÅÛ, pItemClothes : ÀÇ»ó ¾ÆÀÌÅÛ)
+			// ì˜ìƒ ì•„ì´í…œì˜ ê²½ìš° ì‹¤íŒ¨ì‹œ ê²°í•© ì•„ì´í…œ í•¨ê»˜ ì œê±°(upItem : ê²°í•© ì•„ì´í…œ, pItemClothes : ì˜ìƒ ì•„ì´í…œ)
 			if (pItemClothes)
 			{
 				GAMELOG << init("ITEM_UPGRADE", ch)
@@ -4577,11 +3548,11 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 			int platinumPlused;
 			FLAG_ITEM_PLATINUM_GET(upItem->getFlag(), platinumPlused);
 
-			if( reItem->m_itemProto->getItemNum1() > 0 )		// ÇÃ·¯½º °ªÀÌ Àû¿ëµÈ ÇÃ·¡Æ¼´½ Á¦·Ã¼®Àº ¹ã~¹ã¹Ù¹Ù¹ã¹Ù~~ ¹ß¶ó¹ö·Á
+			if( reItem->m_itemProto->getItemNum1() > 0 )		// í”ŒëŸ¬ìŠ¤ ê°’ì´ ì ìš©ëœ í”Œë˜í‹°ëŠ„ ì œë ¨ì„ì€ ë°¤~ë°¤ë°”ë°”ë°¤ë°”~~ ë°œë¼ë²„ë ¤
 			{
-				reItem->setPlus(reItem->m_itemProto->getItemNum1() - upItem->getPlus());		// DBÀÇ ¼³Á¤µÈ °ª°úÀÇ Â÷ÀÌ¸¦ +½ÃÄÑÁÜ
+				reItem->setPlus(reItem->m_itemProto->getItemNum1() - upItem->getPlus());		// DBì˜ ì„¤ì •ëœ ê°’ê³¼ì˜ ì°¨ì´ë¥¼ +ì‹œì¼œì¤Œ
 
-				if( reItem->getPlus() <= 0 )		// À§¿¡¼­ °Ë»çÇØ¼­ ¿©±â±îÁö À½¼ö°¡ µÉ °æ¿ì´Â ¾øÁö¸¸ ¸¸¾àÀ» ´ëºñÇÑ ¿¡·¯Ã³¸®
+				if( reItem->getPlus() <= 0 )		// ìœ„ì—ì„œ ê²€ì‚¬í•´ì„œ ì—¬ê¸°ê¹Œì§€ ìŒìˆ˜ê°€ ë  ê²½ìš°ëŠ” ì—†ì§€ë§Œ ë§Œì•½ì„ ëŒ€ë¹„í•œ ì—ëŸ¬ì²˜ë¦¬
 				{
 					reItem->setPlus(0);
 				}
@@ -4603,7 +3574,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 
 			upItem->setFlag(FLAG_ITEM_PLATINUM_SET(upItem->getFlag(), platinumPlused));
 
-			// ½Ã°£ ¼¼ÆÃ
+			// ì‹œê°„ ì„¸íŒ…
 			upItem->setUsed(gserver->getNowSecond() + reItem->m_itemProto->getItemNum3() * 60 * 60);
 			bUpdate = true;
 			ItemUpgradeRepMsg(repMsg, ITEM_UPGRADE_PLATINUM_RESULT_PLUS, false);
@@ -4615,7 +3586,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		break;
 	}
 
-	// upgrade µÈ °á°ú ¾Ë¸®±â
+	// upgrade ëœ ê²°ê³¼ ì•Œë¦¬ê¸°
 	if (bUpdate)
 	{
 		GAMELOG << itemlog(upItem);
@@ -4625,7 +3596,7 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 		else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_PLATINUM)		GAMELOG << delim << "USE PLATINUM-SPECIAL" << delim << reItem->getDBIndex() << delim << reItem->m_itemProto->getItemName() << end;
 		else GAMELOG << delim << "USE SPECIAL" << delim << reItem->getDBIndex() << delim << reItem->m_itemProto->getItemName() << end;
 
-		// ÀÇ»ó ¾ÆÀÌÅÛÀÇ °æ¿ì FLAG_ITEM_PLATINUM_SET
+		// ì˜ìƒ ì•„ì´í…œì˜ ê²½ìš° FLAG_ITEM_PLATINUM_SET
 		if (pItemClothes)
 		{
 			pItemClothes->setFlag(FLAG_ITEM_PLATINUM_SET(pItemClothes->getFlag(), upItem->getPlus()));
@@ -4642,13 +3613,13 @@ void do_ItemUpgradeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// Á¦·Ã¼® ÇÏ³ª °¨¼Ò
+		// ì œë ¨ì„ í•˜ë‚˜ ê°ì†Œ
 		ch->m_inventory.decreaseItemCount(reItem, 1);
 	}
 
 	SEND_Q(repMsg, ch->m_desc);
 
-	// Á¦·Ã º¸È£ ¾ÆÀÌÅÛ ÇÏ³ª °¨¼Ò
+	// ì œë ¨ ë³´í˜¸ ì•„ì´í…œ í•˜ë‚˜ ê°ì†Œ
 	if (runeItem)
 	{
 		ch->m_inventory.decreaseItemCount(runeItem, 1);
@@ -4678,7 +3649,7 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀüÈ¯ ¾ÆÀÌÅÛ
+	// ì „í™˜ ì•„ì´í…œ
 	CItem* cItem = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 	if (cItem == NULL)
 	{
@@ -4687,10 +3658,10 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀüÈ¯ ¾ÆÀÌÅÛÀÌ ¹«±â or ¹æ¾î±¸ ÀÎ°¡
+	// ì „í™˜ ì•„ì´í…œì´ ë¬´ê¸° or ë°©ì–´êµ¬ ì¸ê°€
 	if (!(cItem->IsWeaponType() || cItem->IsArmorType()))
 	{
-		// ¹«±â³ª ¹æ¾î±¸¸¸ °¡´ÉÇÏ´Ù
+		// ë¬´ê¸°ë‚˜ ë°©ì–´êµ¬ë§Œ ê°€ëŠ¥í•˜ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_MAKE_REFINE_KIND);
 		SEND_Q(rmsg, ch->m_desc);
@@ -4699,14 +3670,14 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (cItem->GetItemLevel() < 1 || cItem->GetItemLevel() > 145 )
 	{
-		// ·¹º§ÀÌ 1º¸´Ù ÀÛÀ¸¸é ºÒ°¡´É
+		// ë ˆë²¨ì´ 1ë³´ë‹¤ ì‘ìœ¼ë©´ ë¶ˆê°€ëŠ¥
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_MAKE_REFINE_CANNOT);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ÀüÈ¯¾ÆÀÌÅÛÀÇ plus°¡ 0ÀÌ ¾Æ´Ï¸é Á¦·Ã¼® º¯È¯ ºÒ°¡
+	// ì „í™˜ì•„ì´í…œì˜ plusê°€ 0ì´ ì•„ë‹ˆë©´ ì œë ¨ì„ ë³€í™˜ ë¶ˆê°€
 	if (cItem->getPlus() > 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4717,20 +3688,20 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (cItem->getWearPos() != WEARING_NONE)
 	{
-		// Âø¿ëÁßÀÎ ¾ÆÀÌÅÛÀº ¸ø¿Ã¸°´Ù ¹ş°íÇØ¶ó
+		// ì°©ìš©ì¤‘ì¸ ì•„ì´í…œì€ ëª»ì˜¬ë¦°ë‹¤ ë²—ê³ í•´ë¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_MAKE_REFINE_WEARING);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ ·¹º§¿¡ µû¸¥ ¼Ò¿ä ºñ¿ë
+	// ì•„ì´í…œ ë ˆë²¨ì— ë”°ë¥¸ ì†Œìš” ë¹„ìš©
 	int price = ((cItem->GetItemLevel() + 1) * (cItem->GetItemLevel() + 3) * (cItem->GetItemLevel() - 1) + 100) / 4;
 
-	// µ·°Ë»ç
+	// ëˆê²€ì‚¬
 	if (ch->m_inventory.getMoney() < price)
 	{
-		// µ·ÀÌ ¸ğÁú¶ó
+		// ëˆì´ ëª¨ì§ˆë¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_MAKE_REFINE_SHORT);
 		SEND_Q(rmsg, ch->m_desc);
@@ -4769,7 +3740,7 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 			result = ITEM_REFINE_RESULT_ONE;
 	}
 
-	// ¸»·¹ÀÌ½Ã¾Æ¿¡¼­´Â °íÁ¦°¡ ³ª¿ÀÁö ¾Ê´Â´Ù
+	// ë§ë ˆì´ì‹œì•„ì—ì„œëŠ” ê³ ì œê°€ ë‚˜ì˜¤ì§€ ì•ŠëŠ”ë‹¤
 #ifdef DISABLE_REFINE_SPECIAL_STONE
 #else
 	if (GetRandom(1, 10000) <= spb)
@@ -4806,7 +3777,7 @@ void do_ItemRefinReq(CPC* ch, CNetMsg::SP& msg)
 			<< itemlog(cItem) << delim
 			<< itemlog(reItem);
 
-	// ÀüÈ¯µÈ ¾ÆÀÌÅÛ ÀÎº¥¿¡¼­ Á¦°Å
+	// ì „í™˜ëœ ì•„ì´í…œ ì¸ë²¤ì—ì„œ ì œê±°
 	ch->m_inventory.decreaseItemCount(cItem, 1);
 
 	bool bDrop = false;
@@ -4840,7 +3811,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemAddOption* packet = reinterpret_cast<RequestClient::doItemAddOption*>(msg->m_buf);
 
-	if (packet->weapon_wearPos > WEARING_BOOTS)
+	if (packet->weapon_wearPos != WEARING_BACKWING && packet->weapon_wearPos > WEARING_BOOTS)
 	{
 		LOG_ERROR("HACKING : invalid wearPos[%d]. charIndex[%d]", packet->weapon_wearPos, ch->m_index);
 		ch->m_desc->Close("invalid wearPos");
@@ -4855,7 +3826,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿É¼Ç ºÙÀÏ ¾ÆÀÌÅÛ
+	// ì˜µì…˜ ë¶™ì¼ ì•„ì´í…œ
 	CItem* wearItem = ch->m_wearInventory.getWearItem(packet->weapon_wearPos);
 	if (wearItem == NULL)
 	{
@@ -4871,7 +3842,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	if (wearItem->getWearPos() != packet->weapon_wearPos) // ¾ÆÀÌÅÛÀÌ ¾ø°Å³ª wearpos°¡ ´Ù¸£°Å³ª
+	if (wearItem->getWearPos() != packet->weapon_wearPos) // ì•„ì´í…œì´ ì—†ê±°ë‚˜ wearposê°€ ë‹¤ë¥´ê±°ë‚˜
 	{
 		LOG_ERROR("HACKING : invalid wearPos. charIndex[%d]", ch->m_index);
 		ch->m_desc->Close("invalid wearPos");
@@ -4901,10 +3872,10 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿É¼Ç ºÙÀÏ ¾ÆÀÌÅÛÀÌ ¹«±â or ¹æ¾î±¸ ÀÎ°¡
+	// ì˜µì…˜ ë¶™ì¼ ì•„ì´í…œì´ ë¬´ê¸° or ë°©ì–´êµ¬ ì¸ê°€
 	if (!(wearItem->IsWeaponType() || wearItem->IsArmorType()))
 	{
-		// ¹«±â³ª ¹æ¾î±¸¸¸ °¡´ÉÇÏ´Ù
+		// ë¬´ê¸°ë‚˜ ë°©ì–´êµ¬ë§Œ ê°€ëŠ¥í•˜ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_KIND);
 		SEND_Q(rmsg, ch->m_desc);
@@ -4913,7 +3884,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (wearItem->IsWeaponType() && wearItem->m_nOption >= MAX_WEAPON_OPTION)
 	{
-		// ÃÖ´ë ¿É¼Ç ¼ö ÃÊ°ú
+		// ìµœëŒ€ ì˜µì…˜ ìˆ˜ ì´ˆê³¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_MAX);
 		SEND_Q(rmsg, ch->m_desc);
@@ -4921,7 +3892,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (wearItem->IsArmorType() && wearItem->m_nOption >= MAX_ARMOR_OPTION)
 	{
-		// ÃÖ´ë ¿É¼Ç ¼ö ÃÊ°ú
+		// ìµœëŒ€ ì˜µì…˜ ìˆ˜ ì´ˆê³¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_MAX);
 		SEND_Q(rmsg, ch->m_desc);
@@ -4932,7 +3903,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 	{
 		if (!(wearItem->getFlag() & FLAG_ITEM_OPTION_ENABLE))
 		{
-			// enable ¼ÂÆÃ µÇ¾î ÀÖÁö ¾Ê´Ù
+			// enable ì…‹íŒ… ë˜ì–´ ìˆì§€ ì•Šë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_ENABLE);
 			SEND_Q(rmsg, ch->m_desc);
@@ -4941,7 +3912,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		if( (wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_RARE ) || (wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) )
+		if( (wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_RARE ) || (wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) || (wearItem->m_itemProto->IsOriginItem()) )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_ENABLE);
@@ -4992,10 +3963,10 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		case 944 :
 		case 945 :
 		case 946 :
-		case 947: // À¯´ÏÅ© ¾ÆÀÌÅÛ ÇÇ¿Í¶¡ Àû¿ë ¾ÈµÇ°Ô Ã³¸®
+		case 947: // ìœ ë‹ˆí¬ ì•„ì´í…œ í”¼ì™€ë•€ ì ìš© ì•ˆë˜ê²Œ ì²˜ë¦¬
 
 		case 1843 :
-		case 1844 : // »êÅ¸ ¸ğÀÚ ÇÇ¿Í´ã Àû¿ë ¾ÈµÇ°Ô Ã³¸®
+		case 1844 : // ì‚°íƒ€ ëª¨ì í”¼ì™€ë‹´ ì ìš© ì•ˆë˜ê²Œ ì²˜ë¦¬
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				ItemOptionAddRepMsg(rmsg, NULL, MSG_OPTION_ADD_ERROR_ENABLE);
@@ -5005,7 +3976,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ºí·¯µå Áª È®ÀÎ
+	// ë¸”ëŸ¬ë“œ ì ¬ í™•ì¸
 
 	if( jamItem->m_itemProto->getItemIndex() != 2361 )
 	{
@@ -5018,8 +3989,8 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	const int maxnumoption = 24;	// TODO : ³ªÁß¿¡ MAX_NUM_OPTIONÀ¸·Î ´ëÃ¼
-	// ±âÁ¸ÀÇ ¿É¼Ç ºñÆ® ÇÊµå¿¡ ÀúÀå
+	const int maxnumoption = 24;	// TODO : ë‚˜ì¤‘ì— MAX_NUM_OPTIONìœ¼ë¡œ ëŒ€ì²´
+	// ê¸°ì¡´ì˜ ì˜µì…˜ ë¹„íŠ¸ í•„ë“œì— ì €ì¥
 	LONGLONG bitfield = 0;
 	int i;
 	for (i=0; i < wearItem->m_nOption; i++)
@@ -5029,7 +4000,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 	COptionProto* proto = NULL;
 	while (true)
 	{
-		// type °áÁ¤
+		// type ê²°ì •
 		type = GetRandom(0, maxnumoption - 1);
 		for (i = 0; i < maxnumoption; i++)
 		{
@@ -5037,7 +4008,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 				break ;
 		}
 
-		// ´õÀÌ»ó ¿É¼ÇÀ» ºÙÀÏ ¼ö ¾øÀ½
+		// ë”ì´ìƒ ì˜µì…˜ì„ ë¶™ì¼ ìˆ˜ ì—†ìŒ
 		if (i == maxnumoption)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -5050,7 +4021,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 
 		bitfield |= ((LONGLONG)1 << type);
 
-		// type °¡´É °Ë»ç
+		// type ê°€ëŠ¥ ê²€ì‚¬
 		proto = gserver->m_optionProtoList.FindProto(type);
 
 		if (!proto)
@@ -5061,16 +4032,16 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ºÙÀÏ ¼ö ÀÖ´Â ¿É¼ÇÀÎÁö °Ë»ç
+		// ë¶™ì¼ ìˆ˜ ìˆëŠ” ì˜µì…˜ì¸ì§€ ê²€ì‚¬
 
-		// ¹«±âÀÌ¸é
+		// ë¬´ê¸°ì´ë©´
 		if (wearItem->IsWeaponType())
 		{
 			if (!((1 << wearItem->m_itemProto->getItemSubTypeIdx()) & proto->m_weaponType))
 				continue ;
 		}
 
-		// ¹æ¾î±¸ÀÌ¸é
+		// ë°©ì–´êµ¬ì´ë©´
 		if (wearItem->IsArmorType())
 		{
 			if (!((1 << wearItem->m_itemProto->getItemSubTypeIdx()) & proto->m_wearType))
@@ -5083,7 +4054,7 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 	wearItem->m_option[wearItem->m_nOption].MakeOptionValue(proto, wearItem->GetItemLevel(), wearItem->m_nOption);
 	++wearItem->m_nOption;
 
-	// ¿É¼ÇÀ» ºÙÀÏ¼ö ¾ø´Â »óÅÂ·Î
+	// ì˜µì…˜ì„ ë¶™ì¼ìˆ˜ ì—†ëŠ” ìƒíƒœë¡œ
 	wearItem->setFlag(wearItem->getFlag() & ~(FLAG_ITEM_OPTION_ENABLE));
 
 	if( jamItem->m_itemProto->getItemIndex() != 2361 )
@@ -5107,14 +4078,14 @@ void do_ItemOptionAddReq(CPC* ch, CNetMsg::SP& msg)
 		else if( jamItem->getDBIndex() == 2361 )
 			ItemOptionAddRepMsg(rmsg, wearItem, MSG_OPTION_BLOOD_SWEAT_FRUIT_ADD_SUCCESS);
 
-		// °á°ú ¸Ş½ÃÁö
+		// ê²°ê³¼ ë©”ì‹œì§€
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ºí·¯µå Áª ¾ø¾Ö±â
+	// ë¸”ëŸ¬ë“œ ì ¬ ì—†ì• ê¸°
 	ch->m_inventory.decreaseItemCount(jamItem, 1);
 
-	// ¿É¼Ç ¾÷µ¥ÀÌÆ® ¸Ş½ÃÁö
+	// ì˜µì…˜ ì—…ë°ì´íŠ¸ ë©”ì‹œì§€
 	ch->m_wearInventory.sendOneItemInfo(wearItem->getWearPos());
 
 	ch->CalcStatus(true);
@@ -5124,8 +4095,8 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemDelOption* packet = reinterpret_cast<RequestClient::doItemDelOption*>(msg->m_buf);
 
-	// Âø¿ëÇÑ ¾ÆÀÌÅÛÀÌ¾î¾ßÁö
-	if (packet->weapon_wearPos > WEARING_BOOTS)
+	// ì°©ìš©í•œ ì•„ì´í…œì´ì–´ì•¼ì§€
+	if (packet->weapon_wearPos != WEARING_BACKWING && packet->weapon_wearPos > WEARING_BOOTS)
 	{
 		LOG_ERROR("HACKING : invalid wearPos[%d]. charIndex[%d]", packet->weapon_wearPos, ch->m_index);
 		ch->m_desc->Close("invalid wearPos");
@@ -5140,7 +4111,7 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿É¼Ç Áö¿ï ¾ÆÀÌÅÛ
+	// ì˜µì…˜ ì§€ìš¸ ì•„ì´í…œ
 	CItem* wearItem = ch->m_wearInventory.getWearItem(packet->weapon_wearPos);
 
 	if (wearItem == NULL)
@@ -5164,7 +4135,7 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Á¤È­¼® È®ÀÎ
+	// ì •í™”ì„ í™•ì¸
 	CItem* jamItem = ch->m_inventory.getItem(packet->jam_tab, packet->jam_invenIndex);
 	if (jamItem == NULL)
 	{
@@ -5204,10 +4175,10 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿É¼Ç Áö¿ï ¾ÆÀÌÅÛÀÌ ¹«±â or ¹æ¾î±¸ ÀÎ°¡
+	// ì˜µì…˜ ì§€ìš¸ ì•„ì´í…œì´ ë¬´ê¸° or ë°©ì–´êµ¬ ì¸ê°€
 	if (!(wearItem->IsWeaponType() || wearItem->IsArmorType()))
 	{
-		// ¹«±â³ª ¹æ¾î±¸¸¸ °¡´ÉÇÏ´Ù
+		// ë¬´ê¸°ë‚˜ ë°©ì–´êµ¬ë§Œ ê°€ëŠ¥í•˜ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionDelRepMsg(rmsg, NULL, MSG_OPTION_DEL_ERROR_KIND);
 		SEND_Q(rmsg, ch->m_desc);
@@ -5216,7 +4187,7 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (wearItem->m_nOption < MAX_ITEM_OPTION_DEL)
 	{
-		// ÃÖ´ë ¿É¼Ç ¼ö ÃÊ°ú
+		// ìµœëŒ€ ì˜µì…˜ ìˆ˜ ì´ˆê³¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionDelRepMsg(rmsg, NULL, MSG_OPTION_DEL_ERROR_NUM);
 		SEND_Q(rmsg, ch->m_desc);
@@ -5232,7 +4203,7 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// Á¤È­¼® ¾ø¾Ö±â
+		// ì •í™”ì„ ì—†ì• ê¸°
 		ch->m_inventory.decreaseItemCount(jamItem, 1);
 	}
 
@@ -5248,18 +4219,18 @@ void do_ItemOptionDelReq(CPC* ch, CNetMsg::SP& msg)
 
 	wearItem->m_nOption = 0;
 
-	// ¿É¼ÇÀ» ºÙÀÏ¼ö ¾ø´Â »óÅÂ·Î
+	// ì˜µì…˜ì„ ë¶™ì¼ìˆ˜ ì—†ëŠ” ìƒíƒœë¡œ
 	wearItem->setFlag(wearItem->getFlag() & ~(FLAG_ITEM_OPTION_ENABLE));
 
 	GAMELOG << init("ITEM_OPTION_DEL", ch)
 			<< itemlog(wearItem)
 			<< end;
 
-	// ¿É¼Ç ¾÷µ¥ÀÌÆ® ¸Ş½ÃÁö
+	// ì˜µì…˜ ì—…ë°ì´íŠ¸ ë©”ì‹œì§€
 	ch->m_wearInventory.sendOneItemInfo(wearItem->getWearPos());
 
 	{
-		// °á°ú ¸Ş½ÃÁö
+		// ê²°ê³¼ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemOptionDelRepMsg(rmsg, wearItem, MSG_OPTION_DEL_SUCCESS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -5282,7 +4253,7 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 
 	try
 	{
-		// »ç¿ëÇÑ °¡°ø¹®¼­ È®ÀÎ
+		// ì‚¬ìš©í•œ ê°€ê³µë¬¸ì„œ í™•ì¸
 		CItem* doc = ch->m_inventory.getItem(packet->useitem_tab, packet->useitem_invenIndex);
 		if (doc == NULL)
 		{
@@ -5296,7 +4267,7 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 			throw 0;
 		}
 
-		// ¸¸µå·Á´Â °¡°øÇ° È®ÀÎ
+		// ë§Œë“œë ¤ëŠ” ê°€ê³µí’ˆ í™•ì¸
 		CItemProto* proto = gserver->m_itemProtoList.FindIndex(packet->resultItemDBIndex);
 		if (proto == NULL)
 		{
@@ -5304,28 +4275,28 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 			throw 0;
 		}
 
-		// °¡°øÇ°ÀÌ ¾Æ´Ï¸é return
+		// ê°€ê³µí’ˆì´ ì•„ë‹ˆë©´ return
 		if (proto->getItemTypeIdx() != ITYPE_ETC || proto->getItemSubTypeIdx() != IETC_PROCESS)
 		{
 			LOG_ERROR("result item is not ITYPE_ETC or IETC_PROCESS. char_index[%d] item_db_index[%d]", ch->m_index, packet->resultItemDBIndex);
 			throw 0;
 		}
 
-		// ¸¸µé¼ö ÀÖÁö ¾ÊÀ¸¸é
+		// ë§Œë“¤ìˆ˜ ìˆì§€ ì•Šìœ¼ë©´
 		if (!(proto->getItemFlag() & ITEM_FLAG_MADE))
 		{
 			LOG_ERROR("result item flag is not ITEM_FLAG_MADE. char_index[%d] item_db_index[%d]", ch->m_index, packet->resultItemDBIndex);
 			throw 0;
 		}
 
-		// °¡°ø¹®¼­·Î ¸¸µé ¼ö ÀÖ´Â °¡°øÇ° ÀÎÁö È®ÀÎ
+		// ê°€ê³µë¬¸ì„œë¡œ ë§Œë“¤ ìˆ˜ ìˆëŠ” ê°€ê³µí’ˆ ì¸ì§€ í™•ì¸
 		if (doc->m_itemProto->getItemNum0() != proto->getItemNum0() || doc->m_itemProto->getItemNum1() != proto->getItemNum1())
 		{
 			LOG_ERROR("not equal result item by use item. char_index[%d] result_item[%d] use_item", ch->m_index, packet->resultItemDBIndex, doc->getDBIndex());
 			throw 0;
 		}
 
-		// ¿©±â¿¡¼­ NUMÇÏ°í ¾ÆÀÌÅÛ ÇÁ·ÎÅäÀÇ 10°³ ¼¼ÆÃ »óÅÂÇÏ°í °Ë»ç
+		// ì—¬ê¸°ì—ì„œ NUMí•˜ê³  ì•„ì´í…œ í”„ë¡œí† ì˜ 10ê°œ ì„¸íŒ… ìƒíƒœí•˜ê³  ê²€ì‚¬
 		if (packet->listCount <= 0 || packet->listCount > MAX_MAKE_ITEM_MATERIAL)
 		{
 			LOG_ERROR("list count is invalid. char_index[%d] list_count[%d]", ch->m_index, packet->listCount);
@@ -5347,14 +4318,14 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-// [101216: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101216: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 		if (ch->CheckInvenForProcessPrize(proto) == false)
 		{
 			LOG_ERROR("check is fail.");
 			return;
 		}
 
-		// Àç·á ÇÏ³ªÇÏ³ª ÇÁ·ÎÅäÀÇ Àç·á¿Í ºñ±³ (DB Index, Count)
+		// ì¬ë£Œ í•˜ë‚˜í•˜ë‚˜ í”„ë¡œí† ì˜ ì¬ë£Œì™€ ë¹„êµ (DB Index, Count)
 		for (int i = 0; i < packet->listCount; ++i)
 		{
 			if (ch->m_inventory.isValidNormalInventory(packet->list[i].tab, packet->list[i].invenIndex) == false)
@@ -5368,7 +4339,7 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 			CItem* material = ch->m_inventory.getItem(packet->list[i].tab, packet->list[i].invenIndex);
 			if (material == NULL)
 			{
-				// ÇØ´ç À§Ä¡¿¡ Àç·á ¾øÀ½
+				// í•´ë‹¹ ìœ„ì¹˜ì— ì¬ë£Œ ì—†ìŒ
 				LOG_ERROR("HACKING? : not found material item. char_index[%d] tab[%d] invenIndex[%d]", ch->m_index, packet->list[i].tab, packet->list[i].invenIndex);
 				throw 1;
 			}
@@ -5380,13 +4351,13 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 				if (proto->getItemMaterialIndex(j) == -1)
 					continue;
 
-				// Àç·áÀÇ ÀÎµ¦½º¿Í °¡°øÇ°ÀÇ Àç·á ÀÎµ¦½º°¡ °°À¸¸é
+				// ì¬ë£Œì˜ ì¸ë±ìŠ¤ì™€ ê°€ê³µí’ˆì˜ ì¬ë£Œ ì¸ë±ìŠ¤ê°€ ê°™ìœ¼ë©´
 				if (material->getDBIndex() == proto->getItemMaterialIndex(j))
 				{
-					// ¿øÇÏ´Â Àç·áÀÇ¼ö°¡ °°ÀºÁö
+					// ì›í•˜ëŠ” ì¬ë£Œì˜ìˆ˜ê°€ ê°™ì€ì§€
 					if (packet->list[i].count != proto->getItemMaterialCount(j))
 						throw 1;
-					// ¼ö·® È®ÀÎ
+					// ìˆ˜ëŸ‰ í™•ì¸
 					if (material->Count() >= proto->getItemMaterialCount(j))
 						bCondition = true;
 				}
@@ -5394,30 +4365,30 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 
 			if (!bCondition)
 			{
-				// ÇÁ·ÎÆ®ÀÇ Àç·á¿Í ´Ù¸£´Ù
+				// í”„ë¡œíŠ¸ì˜ ì¬ë£Œì™€ ë‹¤ë¥´ë‹¤
 				throw 1;
 			}
 		}
 
-		// ½Ã·á »ı¼º : 6%
+		// ì‹œë£Œ ìƒì„± : 6%
 		if (GetRandom(1, 10000) <= MAKE_SAMPLE_ON_PROCESS_PROB)
 		{
-			// ÇÏµåÄÚµù : ½Ã·á¸¦ ¸¸µé¾î ÀÎº¥À¸·Î
+			// í•˜ë“œì½”ë”© : ì‹œë£Œë¥¼ ë§Œë“¤ì–´ ì¸ë²¤ìœ¼ë¡œ
 			int makeIdx = -1;
 
 			switch (proto->getItemNum0())
 			{
-			// Ã¤±¤
+			// ì±„ê´‘
 			case IETC_PROCESS_STONE:
 				makeIdx = GetRandom(0, 1) ? 503 : 504;
 				break;
 
-			// Ã¤Áı
+			// ì±„ì§‘
 			case IETC_PROCESS_PLANT:
 				makeIdx = GetRandom(0, 1) ? 502 : 504;
 				break;
 
-			// Â÷Áö
+			// ì°¨ì§€
 			case IETC_PROCESS_ELEMENT:
 				makeIdx = GetRandom(0, 1) ? 496 : 502;
 				break;
@@ -5433,7 +4404,7 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_inventory.addItem(item) == false)
 			{
-				// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+				// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 				item = ch->m_pArea->DropItem(item, ch);
 				if (!item)
 					return;
@@ -5452,15 +4423,15 @@ void do_ItemProcessReq(CPC* ch, CNetMsg::SP& msg)
 
 SAMPLE_SKIP:
 
-		// ¹«°Ô ÃÖ´ëÄ¡ È®ÀÎ! Àç·á¹«°Ô ÃÑÇÕÀÌ ¸¸µå·Á´Â ¾ÆÀÌÅÛ ¹«°Ôº¸´Ù ÀÛ°í ¹«°Ô ¿À¹Ù½Ã
-		// bs ¼öÁ¤	: weight(Àç·á), proto(»ı¼º ¾ÆÀÌÅÛ)
-		//			: ch->m_weight - weight + proto->m_weight => ÃÖÁ¾ ¹«°Ô
-		//			: ch->m_maxWeight * 15 / 10 => ÃÖ´ë ¼ÒÁö ¹«°Ô
-		// °¡°ø¹®¼­ ¾ø¾Ö±â
-		// ¼ö·® º¯°æ
+		// ë¬´ê²Œ ìµœëŒ€ì¹˜ í™•ì¸! ì¬ë£Œë¬´ê²Œ ì´í•©ì´ ë§Œë“œë ¤ëŠ” ì•„ì´í…œ ë¬´ê²Œë³´ë‹¤ ì‘ê³  ë¬´ê²Œ ì˜¤ë°”ì‹œ
+		// bs ìˆ˜ì •	: weight(ì¬ë£Œ), proto(ìƒì„± ì•„ì´í…œ)
+		//			: ch->m_weight - weight + proto->m_weight => ìµœì¢… ë¬´ê²Œ
+		//			: ch->m_maxWeight * 15 / 10 => ìµœëŒ€ ì†Œì§€ ë¬´ê²Œ
+		// ê°€ê³µë¬¸ì„œ ì—†ì• ê¸°
+		// ìˆ˜ëŸ‰ ë³€ê²½
 		ch->m_inventory.decreaseItemCount(doc, 1);
 
-		// ¾ÆÀÌÅÛÀÇ ÇÊ¿ä ½ºÅ³ È®ÀÎ && SSkill ·Î È®·ü ±¼¸®±â
+		// ì•„ì´í…œì˜ í•„ìš” ìŠ¤í‚¬ í™•ì¸ && SSkill ë¡œ í™•ë¥  êµ´ë¦¬ê¸°
 		CSSkillProto* sskillProto  = gserver->m_sSkillProtoList.FindProto(proto->getItemNeedSSkillIndex());
 		if (!sskillProto)
 			throw 0;
@@ -5468,19 +4439,19 @@ SAMPLE_SKIP:
 		CSSkillNode* node = ch->m_sSkillList.m_head;
 		while (node)
 		{
-			// ÇÊ¿äÇÑ ½ºÅ³¿¡ ¿ì¼±¼øÀ§°¡ ÀÖ°í
+			// í•„ìš”í•œ ìŠ¤í‚¬ì— ìš°ì„ ìˆœìœ„ê°€ ìˆê³ 
 			if (sskillProto->m_preference != -1)
 			{
-				// Å¸ÀÔÀÌ °°°í ÇÊ¿ä ½ºÅ³º¸´Ù ¿ì¼±¼øÀ§°¡ °°°Å³ª ³ô°í ÇÊ¿ä·¹º§º¸´Ù ³ôÀ¸¸é ¼±ÅÃ
+				// íƒ€ì…ì´ ê°™ê³  í•„ìš” ìŠ¤í‚¬ë³´ë‹¤ ìš°ì„ ìˆœìœ„ê°€ ê°™ê±°ë‚˜ ë†’ê³  í•„ìš”ë ˆë²¨ë³´ë‹¤ ë†’ìœ¼ë©´ ì„ íƒ
 				if (node->m_sskill->m_proto->m_type == sskillProto->m_type &&
 						node->m_sskill->m_proto->m_preference >= sskillProto->m_preference &&
 						node->m_sskill->m_level >= proto->getItemNeedSSkillLevel())
 					break;
 			}
-			// ¿î¼±¼øÀ§°¡ ¾øÀ¸¸é
+			// ìš´ì„ ìˆœìœ„ê°€ ì—†ìœ¼ë©´
 			else
 			{
-				// ÀÎµ¦½º°¡ °°°í ÇÊ¿ä ·¹º§º¸´Ù ³ôÀ¸¸é ¼±ÅÃ
+				// ì¸ë±ìŠ¤ê°€ ê°™ê³  í•„ìš” ë ˆë²¨ë³´ë‹¤ ë†’ìœ¼ë©´ ì„ íƒ
 				if (node->m_sskill->m_proto->m_index == proto->getItemNeedSSkillIndex() &&
 						node->m_sskill->m_level >= proto->getItemNeedSSkillLevel())
 					break;
@@ -5489,23 +4460,23 @@ SAMPLE_SKIP:
 			node = node->m_next;
 		}
 
-		// ÇÊ¿ä °¡°ø ½ºÅ³ÀÌ ¾øÀ½
+		// í•„ìš” ê°€ê³µ ìŠ¤í‚¬ì´ ì—†ìŒ
 		if (!node)
 			throw 2;
-		// Àç·á ¾ø¾Ö±â
+		// ì¬ë£Œ ì—†ì• ê¸°
 		for (int i = 0; i < packet->listCount; ++i)
 		{
 			CItem* material = ch->m_inventory.getItem(packet->list[i].tab, packet->list[i].invenIndex);
 			if (!material)
 				throw 0;
 
-			// ¼ö·® º¯°æ
+			// ìˆ˜ëŸ‰ ë³€ê²½
 			ch->m_inventory.decreaseItemCount(material, packet->list[i].count);
 		}
 
 		int prob = GetRandom(1, 10000);
-		//  [2/23/2007 KwonYongDae] È®·ü 100%
-		// ½ÇÇàÁßÀÎ Äù½ºÆ®°¡ °¡°ø Äù½ºÆ®ÀÎ°æ¿ì
+		//  [2/23/2007 KwonYongDae] í™•ë¥  100%
+		// ì‹¤í–‰ì¤‘ì¸ í€˜ìŠ¤íŠ¸ê°€ ê°€ê³µ í€˜ìŠ¤íŠ¸ì¸ê²½ìš°
 		CQuest *pQuest = NULL;
 		if( ch->m_questList.IsQuestType0( QTYPE_KIND_PROCESS_EXPERIENCE ) )
 		{
@@ -5515,29 +4486,29 @@ SAMPLE_SKIP:
 			{
 			case 214 :
 				iQuestIndex = 150;
-				break;		// ±¸¸® - ½ºÅæÁ¤·Ã Ã¼Çè
+				break;		// êµ¬ë¦¬ - ìŠ¤í†¤ì •ë ¨ ì²´í—˜
 			case 239 :
 				iQuestIndex = 151;
-				break;		// Eµî±Ş ºÒÀÇ °áÁ¤ - ¿ø¼Ò Á¤Á¦ Ã¼Çè
+				break;		// Eë“±ê¸‰ ë¶ˆì˜ ê²°ì • - ì›ì†Œ ì •ì œ ì²´í—˜
 			case 251 :
 				iQuestIndex = 152;
-				break;		// Å©¶ô ÃßÃâ¾× E - ½Ä¹° °¡°ø Ã¼Çè
+				break;		// í¬ë½ ì¶”ì¶œì•¡ E - ì‹ë¬¼ ê°€ê³µ ì²´í—˜
 			}
 
 			pQuest = ch->m_questList.FindQuest(iQuestIndex);
 			if( pQuest != NULL && !pQuest->IsCompleted() )
 			{
-				prob = 0;	//100% ¼º°ø·ü
+				prob = 0;	//100% ì„±ê³µë¥ 
 			}
 		}
 
 		if (prob > node->m_sskill->m_proto->m_num0[node->m_sskill->m_level - 1])
 		{
-			// È®·ê ½ÇÆĞ
+			// í™•ë£° ì‹¤íŒ¨
 			throw 3;
 		}
 
-		// °¡°øÇ° ¸¸µé¾î ÀÎº¥À¸·Î
+		// ê°€ê³µí’ˆ ë§Œë“¤ì–´ ì¸ë²¤ìœ¼ë¡œ
 		CItem* item = gserver->m_itemProtoList.CreateItem(packet->resultItemDBIndex, -1, 0, 0, 1);
 		if (item == NULL)
 		{
@@ -5547,7 +4518,7 @@ SAMPLE_SKIP:
 
 		if (ch->m_inventory.addItem(item) == false)
 		{
-			// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+			// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 			item = ch->m_pArea->DropItem(item, ch);
 			if (!item)
 				return;
@@ -5564,14 +4535,14 @@ SAMPLE_SKIP:
 				<< end;
 
 		{
-			// ¼º°ø ¸Ş½ÃÁö º¸³»±â
-			CNetMsg::SP rMsg(new CNetMsg);	// °á°ú ¸Ş¼¼Áö
+			// ì„±ê³µ ë©”ì‹œì§€ ë³´ë‚´ê¸°
+			CNetMsg::SP rMsg(new CNetMsg);	// ê²°ê³¼ ë©”ì„¸ì§€
 			ItemProcessRepMsg(rMsg, MSG_PROCESS_SUCCESS);
 			SEND_Q(rMsg, ch->m_desc);
 		}
 
 		{
-			// °¡°ø ¼º°ø ÀÌÆåÆ® ¸Ş½ÃÁö
+			// ê°€ê³µ ì„±ê³µ ì´í™íŠ¸ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_ITEM_PROCESS);
 			ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -5584,22 +4555,22 @@ SAMPLE_SKIP:
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 
-		// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+		// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		switch (err)
 		{
-		case 0:			// ÀÖ¾î¼­´Â ¾ÈµÉ ¿À·ù
+		case 0:			// ìˆì–´ì„œëŠ” ì•ˆë  ì˜¤ë¥˜
 			ItemProcessRepMsg(rmsg, MSG_PROCESS_FAIL_SYSTEM);
 			break;
-		case 1:			// Àç·á Á¤º¸ Àß¸øµÊ
+		case 1:			// ì¬ë£Œ ì •ë³´ ì˜ëª»ë¨
 			ItemProcessRepMsg(rmsg, MSG_PROCESS_FAIL_MATERIAL);
 			break;
-		case 2:			// °¡°ø ½ºÅ³ÀÌ ¾øÀ½
+		case 2:			// ê°€ê³µ ìŠ¤í‚¬ì´ ì—†ìŒ
 			ItemProcessRepMsg(rmsg, MSG_PROCESS_FAIL_NO_SSKILL);
 			break;
-		case 3:			// È®·ü ½ÇÆĞ
+		case 3:			// í™•ë¥  ì‹¤íŒ¨
 			ItemProcessRepMsg(rmsg, MSG_PROCESS_FAIL_PROB);
 			break;
-		case 4:			// ¹«°ÔÃÊ°ú·Î ÀÎÇÑ ½ÇÆĞ
+		case 4:			// ë¬´ê²Œì´ˆê³¼ë¡œ ì¸í•œ ì‹¤íŒ¨
 			ItemProcessRepMsg(rmsg, MSG_PROCESS_FAIL_OVER_WEIGHT);
 
 		default:
@@ -5625,7 +4596,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 	try
 	{
-		// »ç¿ëÇÑ Á¦ÀÛ¹®¼­ È®ÀÎ
+		// ì‚¬ìš©í•œ ì œì‘ë¬¸ì„œ í™•ì¸
 		CItem* doc = ch->m_inventory.getItem(packet->useitem_tab, packet->useitem_invenIndex);
 		if (doc == NULL)
 		{
@@ -5641,7 +4612,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¹«±â¹æ¾î±¸ Á¦ÀÛ¹®¼­µµ Æ÷¼ÇÁ¦ÀÛ¹®¼­µµ ¾Æ´Ï¸é
+		// ë¬´ê¸°ë°©ì–´êµ¬ ì œì‘ë¬¸ì„œë„ í¬ì…˜ì œì‘ë¬¸ì„œë„ ì•„ë‹ˆë©´
 		if (doc->m_itemProto->getItemSubTypeIdx() != IONCE_MAKE_TYPE_DOC && doc->m_itemProto->getItemSubTypeIdx() != IONCE_MAKE_POTION_DOC)
 		{
 			LOG_ERROR("HACKING? : use item proto is not IONCE_MAKE_TYPE_DOC or IONCE_MAKE_POTION_DOC");
@@ -5649,7 +4620,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¸¸µå·Á´Â ¾ÆÀÌÅÛ È®ÀÎ
+		// ë§Œë“œë ¤ëŠ” ì•„ì´í…œ í™•ì¸
 		CItemProto* proto = gserver->m_itemProtoList.FindIndex(packet->resultItemDBIndex);
 		if (proto == NULL)
 		{
@@ -5658,28 +4629,28 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¹«±â³ª ¹æ¾î±¸ Æ÷¼Ç ¾Æ´Ï¸é return
+		// ë¬´ê¸°ë‚˜ ë°©ì–´êµ¬ í¬ì…˜ ì•„ë‹ˆë©´ return
 		if (proto->getItemTypeIdx() != ITYPE_WEAPON && proto->getItemTypeIdx() != ITYPE_WEAR && proto->getItemTypeIdx() != ITYPE_POTION)
 		{
 			LOG_ERROR("result item is not ITYPE_WEAPON or ITYPE_WEAR or ITYPE_POTION. char_index[%d] item_db_index[%d]", ch->m_index, packet->resultItemDBIndex);
 			throw 0;
 		}
 
-		// ¸¸µé¼ö ÀÖÁö ¾ÊÀ¸¸é
+		// ë§Œë“¤ìˆ˜ ìˆì§€ ì•Šìœ¼ë©´
 		if (!(proto->getItemFlag() & ITEM_FLAG_MADE))
 		{
 			LOG_ERROR("result item flag is not ITEM_FLAG_MADE. char_index[%d] item_db_index[%d]", ch->m_index, packet->resultItemDBIndex);
 			throw 0;
 		}
 
-		// Á¦ÀÛ¹®¼­·Î ¸¸µé ¼ö ÀÖ´Â ¾ÆÀÌÅÛ Å¸ÀÔ ÀÎÁö È®ÀÎ
+		// ì œì‘ë¬¸ì„œë¡œ ë§Œë“¤ ìˆ˜ ìˆëŠ” ì•„ì´í…œ íƒ€ì… ì¸ì§€ í™•ì¸
 		if (doc->m_itemProto->getItemNum0() != proto->getItemTypeIdx() || !(doc->m_itemProto->getItemNum1() & (1 << proto->getItemSubTypeIdx())))
 		{
 			LOG_ERROR("not equal result item by use item. char_index[%d] result_item[%d] use_item", ch->m_index, packet->resultItemDBIndex, doc->getDBIndex());
 			throw 0;
 		}
 
-		// Æ÷¼ÇÀÎ°æ¿ì ¸¸µé ¼ö ÀÖ´Â µî±ŞÀÎÁö È®ÀÎ
+		// í¬ì…˜ì¸ê²½ìš° ë§Œë“¤ ìˆ˜ ìˆëŠ” ë“±ê¸‰ì¸ì§€ í™•ì¸
 		if (proto->getItemTypeIdx() == ITYPE_POTION)
 		{
 			if (doc->m_itemProto->getItemNum2() != proto->getItemNum2())
@@ -5688,7 +4659,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 				throw 0;
 			}
 		}
-		// ¹«±â, ¹æ¾î±¸ Á¦ÀÛ¹®¼­·Î ¸¸µé ¼ö ÀÖ´Â ¾ÆÀÌÅÛ ·¹º§ ÀÎÁö È®ÀÎ
+		// ë¬´ê¸°, ë°©ì–´êµ¬ ì œì‘ë¬¸ì„œë¡œ ë§Œë“¤ ìˆ˜ ìˆëŠ” ì•„ì´í…œ ë ˆë²¨ ì¸ì§€ í™•ì¸
 		else
 		{
 			if (doc->GetItemLevel() != proto->GetItemProtoLevel())
@@ -5698,9 +4669,9 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-// [110125: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [110125: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 		int nItemCount = 1;
-		// Æ÷¼ÇÀÌ¸é °¹¼ö¸¸Å­
+		// í¬ì…˜ì´ë©´ ê°¯ìˆ˜ë§Œí¼
 		if (doc->m_itemProto->getItemSubTypeIdx() == IONCE_MAKE_POTION_DOC)
 			nItemCount = doc->m_itemProto->getItemNum3();
 		if( !ch->CheckInvenForPrize(proto, 0, 0, nItemCount) )
@@ -5716,7 +4687,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// Á¦ÀÛ ¾ÆÀÌÅÛ Àç·á¼ö¿Í ºñ±³
+			// ì œì‘ ì•„ì´í…œ ì¬ë£Œìˆ˜ì™€ ë¹„êµ
 			int count = 0;
 			for (int i = 0; i < MAX_MAKE_ITEM_MATERIAL; ++i)
 			{
@@ -5732,7 +4703,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// Àç·á ÇÏ³ªÇÏ³ª ÇÁ·ÎÅäÀÇ Àç·á¿Í ºñ±³ (DB Index, Count)
+		// ì¬ë£Œ í•˜ë‚˜í•˜ë‚˜ í”„ë¡œí† ì˜ ì¬ë£Œì™€ ë¹„êµ (DB Index, Count)
 		item_search_t vec[MAX_MAKE_ITEM_MATERIAL];
 		for (int i = 0; i < packet->listCount; ++i)
 		{
@@ -5749,11 +4720,11 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 				if (proto->getItemMaterialIndex(j) == -1)
 					continue;
 
-				// Àç·áÀÇ ÀÎµ¦½º¿Í ¾ÆÀÌÅÛ Àç·áÀÇ ÀÎµ¦½º°¡ °°Áö ¾ÊÀ¸¸é
+				// ì¬ë£Œì˜ ì¸ë±ìŠ¤ì™€ ì•„ì´í…œ ì¬ë£Œì˜ ì¸ë±ìŠ¤ê°€ ê°™ì§€ ì•Šìœ¼ë©´
 				if (vec[i][0].pItem->getDBIndex() != proto->getItemMaterialIndex(j))
 					continue;
 
-				// ¿øÇÏ´Â Àç·áÀÇ¼ö°¡ °°ÀºÁö
+				// ì›í•˜ëŠ” ì¬ë£Œì˜ìˆ˜ê°€ ê°™ì€ì§€
 				if (packet->list[i].count != proto->getItemMaterialCount(j))
 				{
 					LOG_ERROR("HACKING? : not equal count. charIndex[%d]", ch->m_index);
@@ -5761,7 +4732,7 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 					return;
 				}
 
-				// ¼ö·® È®ÀÎ
+				// ìˆ˜ëŸ‰ í™•ì¸
 				if (sc < proto->getItemMaterialCount(j))
 				{
 					LOG_ERROR("HACKING? : not enought item count. charIndex[%d]", ch->m_index);
@@ -5773,10 +4744,10 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ¾ÆÀÌÅÛÀÇ ÇÊ¿ä ½ºÅ³ È®ÀÎ && SSkill ·Î È®·ü ±¼¸®±â
+		// ì•„ì´í…œì˜ í•„ìš” ìŠ¤í‚¬ í™•ì¸ && SSkill ë¡œ í™•ë¥  êµ´ë¦¬ê¸°
 		CSSkillProto* sskillProto  = gserver->m_sSkillProtoList.FindProto(proto->getItemNeedSSkillIndex());
 
-		// ¾øÀ¸¸é
+		// ì—†ìœ¼ë©´
 		if (!sskillProto)
 			throw 0;
 
@@ -5786,18 +4757,18 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 		while (node)
 		{
-			// ÇÊ¿äÇÑ ½ºÅ³¿¡ ¿ì¼±¼øÀ§°¡ ÀÖ°í
+			// í•„ìš”í•œ ìŠ¤í‚¬ì— ìš°ì„ ìˆœìœ„ê°€ ìˆê³ 
 			if (sskillProto->m_preference != -1)
 			{
-				// Å¸ÀÔÀÌ °°°í ÇÊ¿ä ½ºÅ³º¸´Ù ¿ì¼±¼øÀ§°¡ °°°Å³ª ³ôÀ¸¸é ¼±ÅÃ
+				// íƒ€ì…ì´ ê°™ê³  í•„ìš” ìŠ¤í‚¬ë³´ë‹¤ ìš°ì„ ìˆœìœ„ê°€ ê°™ê±°ë‚˜ ë†’ìœ¼ë©´ ì„ íƒ
 				if (node->m_sskill->m_proto->m_type == sskillProto->m_type &&
 						node->m_sskill->m_proto->m_preference >= sskillProto->m_preference)
 					break;
 			}
-			// ¿î¼±¼øÀ§°¡ ¾øÀ¸¸é
+			// ìš´ì„ ìˆœìœ„ê°€ ì—†ìœ¼ë©´
 			else
 			{
-				// ÀÎµ¦½º°¡ °°°í ÇÊ¿ä ·¹º§º¸´Ù ³ôÀ¸¸é ¼±ÅÃ
+				// ì¸ë±ìŠ¤ê°€ ê°™ê³  í•„ìš” ë ˆë²¨ë³´ë‹¤ ë†’ìœ¼ë©´ ì„ íƒ
 				if (node->m_sskill->m_proto->m_index == proto->getItemNeedSSkillIndex() &&
 						node->m_sskill->m_level >= proto->getItemNeedSSkillLevel())
 					break;
@@ -5806,31 +4777,31 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			node = node->m_next;
 		}
 
-		// ÇÊ¿ä Á¦ÀÛ ½ºÅ³ÀÌ ¾øÀ½
+		// í•„ìš” ì œì‘ ìŠ¤í‚¬ì´ ì—†ìŒ
 		if (!node)
 			throw 2;
 
-		// Àç·á ¾ø¾Ö±â
+		// ì¬ë£Œ ì—†ì• ê¸°
 		for (int i = 0; i < packet->listCount; ++i)
 		{
 			ch->m_inventory.deleteItem(vec[i], packet->list[i].count);
 		}
 
 		int successProb;
-		// Æ÷¼Ç
+		// í¬ì…˜
 		if (doc->m_itemProto->getItemSubTypeIdx() == IONCE_MAKE_POTION_DOC)
 			successProb= GetMakeProb(node->m_sskill->m_proto->m_num0[node->m_sskill->m_level-1], proto->getItemNum2()) + node->m_sskill->m_proto->m_num1[node->m_sskill->m_level-1];
 		else
 			successProb= GetMakeProb(node->m_sskill->m_proto->m_num0[node->m_sskill->m_level-1], proto->GetItemProtoLevel()) + node->m_sskill->m_proto->m_num1[node->m_sskill->m_level-1];
 
-		// ÃÖ´ë ¼º°ø·ü 80%
+		// ìµœëŒ€ ì„±ê³µë¥  80%
 		if (successProb > MAX_ITEM_MAKE_SUCCESS_PROB)
 			successProb = MAX_ITEM_MAKE_SUCCESS_PROB;
 
 		int prob = GetRandom(1, 10000);
 
-		//  [2/23/2007 KwonYongDae] È®·ü 100%
-		// ½ÇÇàÁßÀÎ Äù½ºÆ®°¡ Á¦ÀÛ Äù½ºÆ®ÀÎ°æ¿ì
+		//  [2/23/2007 KwonYongDae] í™•ë¥  100%
+		// ì‹¤í–‰ì¤‘ì¸ í€˜ìŠ¤íŠ¸ê°€ ì œì‘ í€˜ìŠ¤íŠ¸ì¸ê²½ìš°
 		CQuest *pQuest = NULL;
 		if( ch->m_questList.IsQuestType0( QTYPE_KIND_MAKE_EXPERIENCE ) )
 		{
@@ -5840,23 +4811,23 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 			{
 			case 308 :
 				iQuestIndex = 154;
-				break;		// Å¸¹Ù¸£ - ¹«±âÁ¦ÀÛ Ã¼Çè
+				break;		// íƒ€ë°”ë¥´ - ë¬´ê¸°ì œì‘ ì²´í—˜
 			}
 
 			pQuest = ch->m_questList.FindQuest(iQuestIndex);
 			if( pQuest != NULL && !pQuest->IsCompleted() )
 			{
-				prob = 0;	//100% ¼º°ø·ü
+				prob = 0;	//100% ì„±ê³µë¥ 
 			}
 		}
-		// È®·ê ½ÇÆĞ
+		// í™•ë£° ì‹¤íŒ¨
 		if ( prob > successProb)
 			throw 3;
 
-		// ¾ÆÀÌÅÛ ¸¸µé¾î ÀÎº¥À¸·Î
+		// ì•„ì´í…œ ë§Œë“¤ì–´ ì¸ë²¤ìœ¼ë¡œ
 		CItem* item = NULL;
 
-		// Æ÷¼ÇÀÌ¸é °¹¼ö¸¸Å­
+		// í¬ì…˜ì´ë©´ ê°¯ìˆ˜ë§Œí¼
 		if (doc->m_itemProto->getItemSubTypeIdx() == IONCE_MAKE_POTION_DOC)
 			item = gserver->m_itemProtoList.CreateItem(packet->resultItemDBIndex, -1, 0, 0, doc->m_itemProto->getItemNum3());
 		else
@@ -5865,13 +4836,13 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 		if (!item)
 			throw 0;
 
-		// ¹æ¾î±¸ ¹«±â Á¦ÀÛ¹®¼­ÀÇ °æ¿ì È®·ü ½ÇÆĞÇØµµ Àç·á¸¸ »ç¶óÁø´Ù : Á¦ÀÛ¹®¼­ ¾ø¾Ö±â
-		// ¼ö·® º¯°æ
+		// ë°©ì–´êµ¬ ë¬´ê¸° ì œì‘ë¬¸ì„œì˜ ê²½ìš° í™•ë¥  ì‹¤íŒ¨í•´ë„ ì¬ë£Œë§Œ ì‚¬ë¼ì§„ë‹¤ : ì œì‘ë¬¸ì„œ ì—†ì• ê¸°
+		// ìˆ˜ëŸ‰ ë³€ê²½
 		ch->m_inventory.decreaseItemCount(doc, 1);
 
 		if (ch->m_inventory.addItem(item) == false)
 		{
-			// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+			// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 			item = ch->m_pArea->DropItem(item, ch);
 			if (!item)
 				return;
@@ -5888,45 +4859,45 @@ void do_ItemMakeReq(CPC* ch, CNetMsg::SP& msg)
 				<< end;
 
 		{
-			// ¼º°ø ¸Ş½ÃÁö
+			// ì„±ê³µ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			ItemMakeRepMsg(rmsg, MSG_MAKE_SUCCESS);
 			SEND_Q(rmsg, ch->m_desc);
 		}
 
 		{
-			// Á¦ÀÛ ¼º°ø ÀÌÆåÆ® ¸Ş½ÃÁö
+			// ì œì‘ ì„±ê³µ ì´í™íŠ¸ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_ITEM_MAKE);
 			ch->m_pArea->SendToCell(rmsg, ch, true);
 		}
 
-		ch->m_questList.CheckComplete( ch );		// Äù½ºÆ® ¿Ï·á Ã¼Å©
+		ch->m_questList.CheckComplete( ch );		// í€˜ìŠ¤íŠ¸ ì™„ë£Œ ì²´í¬
 	}
 
 	catch (const int err)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 
-		// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+		// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		switch (err)
 		{
-		case 0:			// ÀÖ¾î¼­´Â ¾ÈµÉ ¿À·ù
+		case 0:			// ìˆì–´ì„œëŠ” ì•ˆë  ì˜¤ë¥˜
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_SYSTEM);
 			break;
-		case 1:			// Àç·á Á¤º¸ Àß¸øµÊ
+		case 1:			// ì¬ë£Œ ì •ë³´ ì˜ëª»ë¨
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_MATERIAL);
 			break;
-		case 2:			// Á¦ÀÛ ½ºÅ³ÀÌ ¾øÀ½
+		case 2:			// ì œì‘ ìŠ¤í‚¬ì´ ì—†ìŒ
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_NO_SSKILL);
 			break;
-		case 3:			// È®·ü ½ÇÆĞ
+		case 3:			// í™•ë¥  ì‹¤íŒ¨
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_PROB);
 			break;
-		case 4:			// ÇöÀç ½ºÅ³·Î Á¦ÀÛ ºÒ°¡´É ¾ÆÀÌÅÛ
+		case 4:			// í˜„ì¬ ìŠ¤í‚¬ë¡œ ì œì‘ ë¶ˆê°€ëŠ¥ ì•„ì´í…œ
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_ITEM_LEVEL);
 			break;
-		case 5:			// ¹«°ÔÃÊ°ú
+		case 5:			// ë¬´ê²Œì´ˆê³¼
 			ItemMakeRepMsg(rmsg, MSG_MAKE_FAIL_OVER_WEIGHT);
 			break;
 
@@ -5952,7 +4923,7 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	CItem* use = ch->m_inventory.getItem(packet->useitem_tab, packet->useitem_invenIndex);
-	// ÀçÈ°ÀÇ »óÀÚÀÎ°¡
+	// ì¬í™œì˜ ìƒìì¸ê°€
 	if (use == NULL)
 	{
 		LOG_ERROR("HACKING? : not found item. char_index[%d] tab[%d] invenIndex[%d]", ch->m_index, packet->useitem_tab, packet->useitem_invenIndex);
@@ -5968,10 +4939,10 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾Ç¼¼»ç¸® È®ÀÎ ÀÛ¾÷
+	// ì•…ì„¸ì‚¬ë¦¬ í™•ì¸ ì‘ì—…
 	CItem* oItem[MAX_ACCESSORY_MIX] = { NULL, };
 
-	// ¿É¼Ç ÇÑ°³ ºÙÀº ¾Ç¼¼»ç¸®°¡ ÀÖ´Ù
+	// ì˜µì…˜ í•œê°œ ë¶™ì€ ì•…ì„¸ì‚¬ë¦¬ê°€ ìˆë‹¤
 	bool bOption = false;
 
 	for (int i = 0; i < MAX_ACCESSORY_MIX; ++i)
@@ -5992,7 +4963,7 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¾ÆÀÌÅÛÀÌ ¾ø°Å³ª ¾Ç¼¼»ç¸®°¡ ¾Æ´Ï°Å³ª Âø¿ëÇÏ°í ÀÖ°Å³ª
+		// ì•„ì´í…œì´ ì—†ê±°ë‚˜ ì•…ì„¸ì‚¬ë¦¬ê°€ ì•„ë‹ˆê±°ë‚˜ ì°©ìš©í•˜ê³  ìˆê±°ë‚˜
 		if (!(oItem[i]->IsAccessary()) || oItem[i]->getWearPos() != WEARING_NONE || oItem[i]->m_itemProto->getItemFlag() & ITEM_FLAG_CASH)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -6025,19 +4996,19 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¿É¼ÇÀÌ 1°³ÀÎ ¾ÆÀÌÅÛÀÌ ÀÖ´Ù
+		// ì˜µì…˜ì´ 1ê°œì¸ ì•„ì´í…œì´ ìˆë‹¤
 		if (oItem[i]->m_nOption == 1)
 			bOption = true;
 	}
 
-	// ÀçÈ°ÀÇ »óÀÚ ¾ø¾Ö±â
-	// ¼ö·® º¯°æ
+	// ì¬í™œì˜ ìƒì ì—†ì• ê¸°
+	// ìˆ˜ëŸ‰ ë³€ê²½
 	ch->m_inventory.decreaseItemCount(use, 1);
 
-	// MAX_ACCESSORY_MIX Áß ÇÏ³ª ¼±ÅÃ
+	// MAX_ACCESSORY_MIX ì¤‘ í•˜ë‚˜ ì„ íƒ
 	int idx = GetRandom(0, MAX_ACCESSORY_MIX - 1);
 
-	// »õ·Î »ı±â´Â ¾ÆÀÌÅÛ
+	// ìƒˆë¡œ ìƒê¸°ëŠ” ì•„ì´í…œ
 	CItem* item = gserver->m_itemProtoList.CreateItem(oItem[idx]->m_itemProto->getItemIndex(), -1, 0, 0, 1);
 
 	if (!item)
@@ -6048,7 +5019,7 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	int num = 0;	// ¿É¼Ç ºÙ´Â °¹¼ö
+	int num = 0;	// ì˜µì…˜ ë¶™ëŠ” ê°¯ìˆ˜
 
 	if (bOption)
 		num = GetRandom(2, 4);
@@ -6057,18 +5028,18 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 
 	boost::scoped_array<int> type(new int[num]);
 
-	LONGLONG bitfield = 0;		// TODO : ¿É¼ÇÀÌ 64°³ ³ÑÀ¸¸é °íÃÄ¾ß ÇÔ!
-	const int maxnumoption = 24;	// TODO : ³ªÁß¿¡ MAX_NUM_OPTIONÀ¸·Î ´ëÃ¼
+	LONGLONG bitfield = 0;		// TODO : ì˜µì…˜ì´ 64ê°œ ë„˜ìœ¼ë©´ ê³ ì³ì•¼ í•¨!
+	const int maxnumoption = 24;	// TODO : ë‚˜ì¤‘ì— MAX_NUM_OPTIONìœ¼ë¡œ ëŒ€ì²´
 
-	// ¿É¼Ç Å¸ÀÔ °áÁ¤
+	// ì˜µì…˜ íƒ€ì… ê²°ì •
 	int i = 0;
 	while (i < num)
 	{
-		// type[i] °áÁ¤
+		// type[i] ê²°ì •
 		type[i] = GetRandom(0, maxnumoption - 1);
 
-		// type[i]°¡ Áßº¹ÀÎ °Ë»ç
-		// Áßº¹ÀÌ¸é type[i]¸¦ 1¾¿ Áõ°¡ÇÏ¸é¼­ Áßº¹ °Ë»ç
+		// type[i]ê°€ ì¤‘ë³µì¸ ê²€ì‚¬
+		// ì¤‘ë³µì´ë©´ type[i]ë¥¼ 1ì”© ì¦ê°€í•˜ë©´ì„œ ì¤‘ë³µ ê²€ì‚¬
 		int j = 0;
 		for (j = 0; j < maxnumoption; j++)
 		{
@@ -6076,7 +5047,7 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 				break;
 		}
 
-		// ´õ ÀÌ»ó ¿É¼Ç ºÙÀÏ ¼ö ¾øÀ½
+		// ë” ì´ìƒ ì˜µì…˜ ë¶™ì¼ ìˆ˜ ì—†ìŒ
 		if (j == maxnumoption)
 			num = i;
 		else
@@ -6084,19 +5055,19 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 
 		bitfield |= ((LONGLONG)1 << type[i]);
 
-		// ¿É¼Ç¹øÈ£·Î ºÙÀ» ¼ö ÀÖ´Â ¿É¼ÇÀÎÁö °Ë»ç
+		// ì˜µì…˜ë²ˆí˜¸ë¡œ ë¶™ì„ ìˆ˜ ìˆëŠ” ì˜µì…˜ì¸ì§€ ê²€ì‚¬
 		COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
 		if (!proto)
 			continue;
 
-		// ¾Ç¼¼»ç¸®Áß¿¡¼­ ºÙÀ» ¼ö ¾øÀ¸¸é ´Ù½Ã
+		// ì•…ì„¸ì‚¬ë¦¬ì¤‘ì—ì„œ ë¶™ì„ ìˆ˜ ì—†ìœ¼ë©´ ë‹¤ì‹œ
 		if (!((1 << item->m_itemProto->getItemSubTypeIdx()) & proto->m_accessoryType))
 			continue;
 
 		i++;
 	}
 
-	// ¿É¼Ç ºÎ¿©
+	// ì˜µì…˜ ë¶€ì—¬
 	for (int i = 0; i < num; ++i)
 	{
 		COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
@@ -6109,21 +5080,21 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// Level, Value ¼ÂÆÃ
+		// Level, Value ì…‹íŒ…
 		item->m_option[item->m_nOption].MakeOptionValue(proto, ch->m_level, num);
 		++item->m_nOption;
 	}
 
-	// ¾Ç¼¼»ç¸® »èÁ¦ÇÏ±â
+	// ì•…ì„¸ì‚¬ë¦¬ ì‚­ì œí•˜ê¸°
 	for (int i = 0; i < MAX_ACCESSORY_MIX; ++i)
 	{
 		ch->m_inventory.decreaseItemCount(oItem[i], 1);
 	}
 
-	// »õ ¾Ç¼¼»ç¸® ÀÎº¥¿¡ ³Ö±â
+	// ìƒˆ ì•…ì„¸ì‚¬ë¦¬ ì¸ë²¤ì— ë„£ê¸°
 	if (ch->m_inventory.addItem(item) == false)
 	{
-		// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+		// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 		item = ch->m_pArea->DropItem(item, ch);
 		if (!item)
 			return;
@@ -6142,7 +5113,7 @@ void do_ItemMixReq(CPC* ch, CNetMsg::SP& msg)
 			<< end;
 
 	{
-		// ¼º°ø ¸Ş½ÃÁö
+		// ì„±ê³µ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemMixRepMsg(rmsg, MSG_MIX_SUCCESS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -6162,7 +5133,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	CItem* use = ch->m_inventory.getItem(packet->useitem_tab, packet->useitem_invenIndex);
-	// ºñ¹ĞÀÇ »óÀÚÀÎ°¡
+	// ë¹„ë°€ì˜ ìƒìì¸ê°€
 	if (use == NULL)
 	{
 		LOG_ERROR("HACKING? : not found item. char_index[%d] tab[%d] invenIndex[%d]", ch->m_index, packet->useitem_tab, packet->useitem_invenIndex);
@@ -6178,7 +5149,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Àç·á È®ÀÎ ÀÛ¾÷ : Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ ±×´ë·ÎÀÇ ¼ø¼­
+	// ì¬ë£Œ í™•ì¸ ì‘ì—… : í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ ê·¸ëŒ€ë¡œì˜ ìˆœì„œ
 	CItem* oItem[MAX_ARCANE_MIX] = { NULL, };
 
 	bool bMaterial[MAX_ARCANE_MIX];
@@ -6202,7 +5173,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¾ÆÀÌÅÛÀÌ ¾ø°Å³ª Âø¿ëÇÏ°í ÀÖ°Å³ª
+		// ì•„ì´í…œì´ ì—†ê±°ë‚˜ ì°©ìš©í•˜ê³  ìˆê±°ë‚˜
 		if (oItem[i]->getWearPos() != WEARING_NONE)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -6222,7 +5193,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 		switch (i)
 		{
 		case ITEM_ARCANE_MATERIAL_UPGRADE:
-			// Á¦·Ã¼®ÀÌ ¾Æ´Ï´Ù
+			// ì œë ¨ì„ì´ ì•„ë‹ˆë‹¤
 			if (oItem[i]->m_itemProto->getItemTypeIdx() != ITYPE_ETC || oItem[i]->m_itemProto->getItemSubTypeIdx() != IETC_UPGRADE || oItem[i]->m_itemProto->getItemNum0() != IETC_UPGRADE_GENERAL || oItem[i]->getFlag() == 0)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -6233,7 +5204,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 			break;
 
 		case ITEM_ARCANE_MATERIAL_ACCESSORY:
-			// ¾Ç¼¼»ç¸®°¡ ¾Æ´Ï´Ù
+			// ì•…ì„¸ì‚¬ë¦¬ê°€ ì•„ë‹ˆë‹¤
 			if (!oItem[i]->IsAccessary())
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -6244,7 +5215,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 			break;
 
 		case ITEM_ARCANE_MATERIAL_SAMPLE:
-			// ½Ã·á°¡ ¾Æ´Ï´Ù
+			// ì‹œë£Œê°€ ì•„ë‹ˆë‹¤
 			if (oItem[i]->m_itemProto->getItemTypeIdx() != ITYPE_ETC || oItem[i]->m_itemProto->getItemSubTypeIdx() != IETC_SAMPLE)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -6256,11 +5227,11 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ºñ¹ĞÀÇ »óÀÚ ¾ø¾Ö±â
-	// ¼ö·® º¯°æ
+	// ë¹„ë°€ì˜ ìƒì ì—†ì• ê¸°
+	// ìˆ˜ëŸ‰ ë³€ê²½
 	ch->m_inventory.decreaseItemCount(use, 1);
 
-	// »õ·Î »ı±â´Â ¾ÆÀÌÅÛ : Æ÷¼Ç
+	// ìƒˆë¡œ ìƒê¸°ëŠ” ì•„ì´í…œ : í¬ì…˜
 	CItem* item = gserver->m_itemProtoList.CreateItem(oItem[ITEM_ARCANE_MATERIAL_SAMPLE]->m_itemProto->getItemNum0(), -1, 0, 0, 1);
 
 	if (!item)
@@ -6271,17 +5242,17 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Æ÷¼ÇÀÇ ½ºÅ³·¹º§ ¼ÂÆÃ
+	// í¬ì…˜ì˜ ìŠ¤í‚¬ë ˆë²¨ ì…‹íŒ…
 	if (oItem[ITEM_ARCANE_MATERIAL_UPGRADE]->getFlag() % 5 == 0)
 		item->setFlag(oItem[ITEM_ARCANE_MATERIAL_UPGRADE]->getFlag() / 5);
 	else
 		item->setFlag(oItem[ITEM_ARCANE_MATERIAL_UPGRADE]->getFlag() / 5 + 1);
 
-	// 060111 : BS : ¾ÆÀÌÅÛ 60·¹º§ ÀÌ»óÀº 12·¹º§·Î °íÁ¤
+	// 060111 : BS : ì•„ì´í…œ 60ë ˆë²¨ ì´ìƒì€ 12ë ˆë²¨ë¡œ ê³ ì •
 	if (item->getFlag() > 12)
 		item->setFlag(12);
 
-	// Àç·á »èÁ¦ÇÏ±â
+	// ì¬ë£Œ ì‚­ì œí•˜ê¸°
 	for (int i = 0; i < MAX_ARCANE_MIX; ++i)
 	{
 		ch->m_inventory.decreaseItemCount(oItem[i], 1);
@@ -6289,7 +5260,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_inventory.addItem(item) == false)
 	{
-		// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+		// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 		item = ch->m_pArea->DropItem(item, ch);
 		if (!item)
 			return;
@@ -6306,7 +5277,7 @@ void do_ItemArcaneReq(CPC* ch, CNetMsg::SP& msg)
 			<< end;
 
 	{
-		// ¼º°ø ¸Ş½ÃÁö
+		// ì„±ê³µ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemArcaneRepMsg(rmsg, MSG_ARCANE_SUCCESS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -6338,6 +5309,14 @@ void do_ItemChangeWeaponReq(CPC* ch, CNetMsg::SP& msg)
 		LOG_ERROR("HACKING? : not equal vIndex. char_index[%d] itemVIndex[%d], packetVIndex[%d]", ch->m_index, olditem->getVIndex(), packet->virtualIndex);
 		ch->m_desc->Close("not equal vIndex");
 		return ;
+	}
+
+	if( olditem->getFlag() & FLAG_ITEM_COMPOSITION )
+	{
+		LOG_ERROR("HACKING? : item was composed. char_index[%d] item_index[%d]",
+			ch->m_index, olditem->getDBIndex());
+		ch->m_desc->Close("composed item");
+		return;
 	}
 	
 	if( CEquipExchangeExtend::instance()->checkValid(olditem, packet->changeType) == false)
@@ -6505,7 +5484,7 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// È®·ü ±¸ÇÏ±â : a_level1_num0¸¦ È®·ü·Î »ç¿ë (m_num0[1])
+	// í™•ë¥  êµ¬í•˜ê¸° : a_level1_num0ë¥¼ í™•ë¥ ë¡œ ì‚¬ìš© (m_num0[1])
 	int sskillindex = proto->getItemNeedSSkillIndex();
 	CSSkillProto* skillproto = gserver->m_sSkillProtoList.FindProto(sskillindex);
 	if (skillproto == NULL)
@@ -6523,7 +5502,7 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇÊ¿äÇÑ Àç·á ±¸ÇÏ±â : °¡°øÇ°Àº ÇÊ¿ä Àç·á¸¦ ¹«Á¶°Ç 0¹ø ÀÎµ¦½º¿¡ ÀúÀå
+	// í•„ìš”í•œ ì¬ë£Œ êµ¬í•˜ê¸° : ê°€ê³µí’ˆì€ í•„ìš” ì¬ë£Œë¥¼ ë¬´ì¡°ê±´ 0ë²ˆ ì¸ë±ìŠ¤ì— ì €ì¥
 	int needItemIndex = proto->getItemMaterialIndex(0);
 	int needItemCount = proto->getItemMaterialCount(0);
 	if (needItemIndex < 1 || needItemCount < 1)
@@ -6531,7 +5510,7 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 
 	LONGLONG totalCount = packet->count * needItemCount;
 
-	// Àç·á¸¦ °¡Áö°í ÀÖ´ÂÁö °Ë»ç
+	// ì¬ë£Œë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬
 	item_search_t vec;
 	int sc = ch->m_inventory.searchItemByCondition(needItemIndex, 0, 0, vec);
 	if (sc == 0 || sc < totalCount)
@@ -6542,23 +5521,23 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¾·ù ±¸ÇÏ±â : °¡°øÇ°ÀÇ Á¾·ù´Â a_num0¿¡ ÀúÀåµÇ°í ½ºÅæ, Å©¶ô, ¿ø¼Ò ¼øÀ¸·Î
+	// ì¢…ë¥˜ êµ¬í•˜ê¸° : ê°€ê³µí’ˆì˜ ì¢…ë¥˜ëŠ” a_num0ì— ì €ì¥ë˜ê³  ìŠ¤í†¤, í¬ë½, ì›ì†Œ ìˆœìœ¼ë¡œ
 	int type = proto->getItemNum0();
-	// µî±Ş ±¸ÇÏ±â : °¡°øÇ°ÀÇ µî±ŞÀº a_num1¿¡ ÀúÀåµÇ°í E µî±ŞÀÌ 0À¸·Î ½ÃÀÛÇØ¼­ A µî±ŞÀÌ 4·Î ³¡³²
+	// ë“±ê¸‰ êµ¬í•˜ê¸° : ê°€ê³µí’ˆì˜ ë“±ê¸‰ì€ a_num1ì— ì €ì¥ë˜ê³  E ë“±ê¸‰ì´ 0ìœ¼ë¡œ ì‹œì‘í•´ì„œ A ë“±ê¸‰ì´ 4ë¡œ ëë‚¨
 	int grade = proto->getItemNum1();
 
 	if (type < 0 || type >= 3 || grade < 0 || grade >=5)
 		return ;
 
-	// type°ú grade¿¡ ÇØ´çÇÏ´Â ¼ö¼ö·á Å×ÀÌºí
+	// typeê³¼ gradeì— í•´ë‹¹í•˜ëŠ” ìˆ˜ìˆ˜ë£Œ í…Œì´ë¸”
 	int pricetable[3][5] =
 	{
-		{10, 21, 40, 63, 94},		// ½ºÅæ
-		{10, 21, 40, 63, 94},		// Å©¶ô
-		{10, 21, 40, 63, 94}		// ¿ø¼Ò
+		{10, 21, 40, 63, 94},		// ìŠ¤í†¤
+		{10, 21, 40, 63, 94},		// í¬ë½
+		{10, 21, 40, 63, 94}		// ì›ì†Œ
 	};
 
-	// ¼ÒÀ¯±İ¾× °Ë»ç
+	// ì†Œìœ ê¸ˆì•¡ ê²€ì‚¬
 	LONGLONG needmoney = pricetable[type][grade] * totalCount;
 	//bool bDeleteMoney = false;
 
@@ -6570,13 +5549,13 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ °¨¼Ò
+	// ì•„ì´í…œ ê°ì†Œ
 	ch->m_inventory.deleteItem(vec, totalCount);
 
-	// È®·ü·Î ¼º°ø ÆÇ´Ü
+	// í™•ë¥ ë¡œ ì„±ê³µ íŒë‹¨
 	if (GetRandom(1, 10000) <= skillprob)
 	{
-		// item »ı¼º
+		// item ìƒì„±
 		CItem* item = gserver->m_itemProtoList.CreateItem(packet->itemDBIndex, -1, 0, 0, packet->count);
 		if (!item)
 		{
@@ -6596,7 +5575,7 @@ void do_ItemProcessNPC(CPC* ch, CNetMsg::SP& msg)
 
 		if (ch->m_inventory.addItem(item) == false)
 		{
-			// ¶¥¿¡ ¹ö¸®±â
+			// ë•…ì— ë²„ë¦¬ê¸°
 			ch->m_pArea->DropItem(item, ch);
 			item->m_preferenceIndex = ch->m_index;
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -6642,7 +5621,7 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemAddBooster* packet = reinterpret_cast<RequestClient::doItemAddBooster*>(msg->m_buf);
 
-	// ºÎ½ºÅÍ ¾ÆÀÌÅÛ Ã£±â
+	// ë¶€ìŠ¤í„° ì•„ì´í…œ ì°¾ê¸°
 	CItem* boost = ch->m_inventory.FindByVirtualIndex(packet->boostitem_vitualIndex);
 	if (boost == NULL)
 	{
@@ -6650,14 +5629,14 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ºÎ½ºÅÍ ¾ÆÀÌÅÛÀÌ ¸Â³ª? : a_num0°¡ IETC_UPGRADE_BOOSTER(3)ÀÌ¾î¾ß ºÎ½ºÅÍ
+	// ë¶€ìŠ¤í„° ì•„ì´í…œì´ ë§ë‚˜? : a_num0ê°€ IETC_UPGRADE_BOOSTER(3)ì´ì–´ì•¼ ë¶€ìŠ¤í„°
 	if (boost->m_itemProto->getItemTypeIdx() != ITYPE_ETC || boost->m_itemProto->getItemSubTypeIdx() != IETC_UPGRADE || boost->m_itemProto->getItemNum0() != IETC_UPGRADE_BOOSTER)
 	{
 		LOG_ERROR("boost item is not ITYPE_ETC or IETC_UPGRADE or IETC_UPGRADE_BOOSTER, char_index[%d] boost_item_virtual_index[%d]", ch->m_index, packet->boostitem_vitualIndex);
 		return ;
 	}
 
-	// Âø¿ëÁßÀÎ ¾ÆÀÌÅÛ °Ë»çÇÏ±â
+	// ì°©ìš©ì¤‘ì¸ ì•„ì´í…œ ê²€ì‚¬í•˜ê¸°
 	CItem* tool = ch->m_wearInventory.wearItemInfo[WEARING_WEAPON];
 	if (tool == NULL)
 	{
@@ -6665,21 +5644,21 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¹«±âÀÌ°í?
+	// ë¬´ê¸°ì´ê³ ?
 	if (tool->m_itemProto->getItemTypeIdx() != ITYPE_WEAPON)
 	{
 		LOG_ERROR("tool item is not ITYPE_WEAPON char_index[%d] boost_item_virtual_index[%d]", ch->m_index, packet->boostitem_vitualIndex);
 		return ;
 	}
 
-	// »ı»êµµ±¸ÀÌ°í?
+	// ìƒì‚°ë„êµ¬ì´ê³ ?
 	if (tool->m_itemProto->getItemSubTypeIdx() != IWEAPON_MINING && tool->m_itemProto->getItemSubTypeIdx() != IWEAPON_GATHERING && tool->m_itemProto->getItemSubTypeIdx() != IWEAPON_CHARGE)
 	{
 		LOG_ERROR("tool item is not IWEAPON_MINING or IWEAPON_GATHERING or IWEAPON_CHARGE. char_index[%d] boost_item_virtual_index[%d]", ch->m_index, packet->boostitem_vitualIndex);
 		return ;
 	}
 
-	// ºÎ½ºÅÍ ¾È ºÙ¿´³ª?
+	// ë¶€ìŠ¤í„° ì•ˆ ë¶™ì˜€ë‚˜?
 	if (tool->getFlag() & FLAG_ITEM_BOOSTER_ADDED
 			|| tool->getFlag() & FLAG_ITEM_SILVERBOOSTER_ADDED
 			|| tool->getFlag() & FLAG_ITEM_GOLDBOOSTER_ADDED
@@ -6691,7 +5670,7 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-	// ³»±¸µµ °Ë»ç
+	// ë‚´êµ¬ë„ ê²€ì‚¬
 	if (tool->getUsed() < 5)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -6700,7 +5679,7 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇÃ·¡±× º¯°æ : ÇÒÀÏ ºÎ½ºÅÍ ³ª¿À¸é °Å±â¿¡ µû¶ó ÄÚµù
+	// í”Œë˜ê·¸ ë³€ê²½ : í• ì¼ ë¶€ìŠ¤í„° ë‚˜ì˜¤ë©´ ê±°ê¸°ì— ë”°ë¼ ì½”ë”©
 	switch(boost->m_itemProto->getItemIndex())
 	{
 	case 786:
@@ -6730,11 +5709,11 @@ void do_ItemAddBooster(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ºÎ½ºÅÍ °¨¼Ò
+	// ë¶€ìŠ¤í„° ê°ì†Œ
 	ch->m_inventory.decreaseItemCount(boost, 1);
 
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ItemAddBoosterMsg(rmsg, MSG_ITEM_ADD_BOOSTER_ERROR_OK);
 		SEND_Q(rmsg, ch->m_desc);
@@ -6826,8 +5805,8 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °¢ ¾ÆÀÌÅÛ Å¸ÀÔ °Ë»ç
-	// ´ëºĞ·ù ±âÅ¸
+	// ê° ì•„ì´í…œ íƒ€ì… ê²€ì‚¬
+	// ëŒ€ë¶„ë¥˜ ê¸°íƒ€
 	if (itemType1->m_itemProto->getItemTypeIdx() != ITYPE_ETC
 			|| itemType1->m_itemProto->getItemTypeIdx() != itemType2->m_itemProto->getItemTypeIdx()
 			|| itemType1->m_itemProto->getItemTypeIdx() != itemType3->m_itemProto->getItemTypeIdx())
@@ -6848,9 +5827,9 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// »ı¼ºµÉ ¾ÆÀÌÅÛ °áÁ¤ : type3ÀÇ a_num1°¡ »ı¼ºµÉ ¾ÆÀÌÅÛ ÀÎµ¦½º
+	// ìƒì„±ë  ì•„ì´í…œ ê²°ì • : type3ì˜ a_num1ê°€ ìƒì„±ë  ì•„ì´í…œ ì¸ë±ìŠ¤
 	int itemindex = itemType3->m_itemProto->getItemNum1();
-	// »ı¼ºµÉ ¿É¼Ç °áÁ¤ : °¢ Àç·áÀÇ a_num0°¡ ¿É¼Ç index
+	// ìƒì„±ë  ì˜µì…˜ ê²°ì • : ê° ì¬ë£Œì˜ a_num0ê°€ ì˜µì…˜ index
 	int option1 = itemType1->m_itemProto->getItemNum0();
 	int option2 = itemType2->m_itemProto->getItemNum0();
 	int option3 = itemType3->m_itemProto->getItemNum0();
@@ -6858,7 +5837,7 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 	COptionProto* optionProto2 = gserver->m_optionProtoList.FindProto(option2);
 	COptionProto* optionProto3 = gserver->m_optionProtoList.FindProto(option3);
 
-	// »ı¼ºµÉ ¾ÆÀÌÅÛÀÌ Á¶ÇÕ ¾ÆÀÌÅÛÀÎÁö °Ë»ç
+	// ìƒì„±ë  ì•„ì´í…œì´ ì¡°í•© ì•„ì´í…œì¸ì§€ ê²€ì‚¬
 	CItemProto* itemproto = gserver->m_itemProtoList.FindIndex(itemindex);
 	if (!itemproto || itemproto->getItemTypeIdx() != ITYPE_ACCESSORY || itemproto->getItemSubTypeIdx() == IACCESSORY_PET || !(itemproto->getItemFlag() & ITEM_FLAG_MIX))
 	{
@@ -6867,7 +5846,7 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-	// »ı¼ºµÉ ¿É¼ÇÀÌ ÇÕ´çÇÑÁö °Ë»ç
+	// ìƒì„±ë  ì˜µì…˜ì´ í•©ë‹¹í•œì§€ ê²€ì‚¬
 	if (!optionProto1 || !optionProto2 || !optionProto3)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -6876,7 +5855,7 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ »ı¼º
+	// ì•„ì´í…œ ìƒì„±
 	CItem* mixItem = gserver->m_itemProtoList.CreateItem(itemindex, -1, 0, 0, 1);
 	if (!mixItem)
 	{
@@ -6909,7 +5888,7 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 	mixItem->m_option[1].SetDBValue();
 	mixItem->m_option[2].SetDBValue();
 
-	// GAMELOG ³²±â±â
+	// GAMELOG ë‚¨ê¸°ê¸°
 
 	GAMELOG << init("ITEM MIX WAR", ch)
 			<< "TYPE1" << delim
@@ -6921,14 +5900,14 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 			<< "MIX ITEM" << delim
 			<< itemlog(mixItem);
 
-	// ¾ÆÀÌÅÛ Ãß°¡ ¹× Á¦°Å
+	// ì•„ì´í…œ ì¶”ê°€ ë° ì œê±°
 	ch->m_inventory.decreaseItemCount(itemType1, 1);
 	ch->m_inventory.decreaseItemCount(itemType2, 1);
 	ch->m_inventory.decreaseItemCount(itemType3, 1);
 
 	if (ch->m_inventory.addItem(mixItem) == false)
 	{
-		// ¸ø ³Ö¾úÀ¸¸é ¹Ù´ÚÀ¸·Î
+		// ëª» ë„£ì—ˆìœ¼ë©´ ë°”ë‹¥ìœ¼ë¡œ
 		GAMELOG << delim << "DROP" << end;
 
 		ch->m_pArea->DropItem(mixItem, ch);
@@ -6948,7 +5927,7 @@ void do_ItemMixWarItem(CPC* ch, CNetMsg::SP& msg)
 }
 //#endif
 
-// 060227 : bs : ÆÄÆ¼¸®Äİ
+// 060227 : bs : íŒŒí‹°ë¦¬ì½œ
 void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 {
 	if (!ch->IsParty())
@@ -6967,7 +5946,7 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 		return ;
 	}
 
-	// ÆÄÆ¼ ¸®Äİ »ç¿ë½Ã ÁÂÇ¥ ÃÊ±âÈ­
+	// íŒŒí‹° ë¦¬ì½œ ì‚¬ìš©ì‹œ ì¢Œí‘œ ì´ˆê¸°í™”
 	ch->getPartyRecallInfo()->resetPartyRecallInfo();
 
 	bool bUseContinent = false;
@@ -6975,7 +5954,7 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 
 	if(pItem->getDBIndex() == 2945 || pItem->getDBIndex() == 2946)
 	{
-		if((ch->m_pZone->m_iContinent_no == 1 && pItem->getDBIndex() == 2945) || (ch->m_pZone->m_iContinent_no == 0 && pItem->getDBIndex() == 2946)) // ÇöÀç´ë·ú¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Â ¾ÆÀÌÅÛ ÀÏ¶§.
+		if((ch->m_pZone->m_iContinent_no == 1 && pItem->getDBIndex() == 2945) || (ch->m_pZone->m_iContinent_no == 0 && pItem->getDBIndex() == 2946)) // í˜„ì¬ëŒ€ë¥™ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ì•„ì´í…œ ì¼ë•Œ.
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			PartyRecallErrorMsg(rmsg, MSG_EX_PARTY_RECALL_ERROR_CANT_USE_THIS_CONTINENT);
@@ -6986,11 +5965,11 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 	}
 #endif // CONTINENT_PARTY_RECALL
 
-	// ¸®Äİ »ç¿ë °¡´É °Ë»ç
+	// ë¦¬ì½œ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 	if (pItem->getUsed() < gserver->getNowSecond())
 		return ;
 
-	// ¿øÁ¤´ë´Â »ç¿ë ºÒ°¡.
+	// ì›ì •ëŒ€ëŠ” ì‚¬ìš© ë¶ˆê°€.
 	if( ch->IsExped())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -7010,20 +5989,20 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 		return;
 	}
 
-	///yhj  081023  ÆÄÆ¼¸®Äİ pvp¾Æ·¹³ª Á¸¿¡¼­´Â ±İÁö
+	///yhj  081023  íŒŒí‹°ë¦¬ì½œ pvpì•„ë ˆë‚˜ ì¡´ì—ì„œëŠ” ê¸ˆì§€
 	if ( ch->m_pZone->m_index == ZONE_PK_TOURNAMENT )
 	{
-		// °æ°í ¸Ş½ÃÁö º¸³»°í
+		// ê²½ê³  ë©”ì‹œì§€ ë³´ë‚´ê³ 
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_WARN_PARTYRECALL);
 		SEND_Q(rmsg, ch->m_desc);
 
-		//pvp¾Æ·¹³ª¿¡¼­ PARTY_RECALL ÀÌµ¿ ·Î±×
+		//pvpì•„ë ˆë‚˜ì—ì„œ PARTY_RECALL ì´ë™ ë¡œê·¸
 		GAMELOG << init(" PARTY_RECALL IN PK_TOURNAMENT " , ch ) << end;
 		return;
 	}
 
-	// ÆÄÆ¼¿ø¿¡°Ô ¾Ë¸² ¸Ş½ÃÁö º¸³»±â
+	// íŒŒí‹°ì›ì—ê²Œ ì•Œë¦¼ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 	if (gserver->isRunHelper())
 	{
 		int nGuildIndex = 0;
@@ -7032,15 +6011,15 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 		CWarCastle* pCastle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 		if (pCastle && pCastle->GetState() != WCSF_NORMAL && pCastle->CheckSubServer())
 		{
-			// °ø¼º ÁøÇàÁßÀÎ ¼­ºê ¼­¹öÀÌ¸é
-			// ¼º¾È ¿µ¿ªÀÎ°¡ È®ÀÎÇÏ°í
+			// ê³µì„± ì§„í–‰ì¤‘ì¸ ì„œë¸Œ ì„œë²„ì´ë©´
+			// ì„±ì•ˆ ì˜ì—­ì¸ê°€ í™•ì¸í•˜ê³ 
 			if (pCastle->IsInInnerCastle(ch))
 			{
 				if(ch->m_pZone->m_index == ZONE_DRATAN || ch->m_pZone->m_index == ZONE_MERAC )
 				{
-					// µå¶óÅº °ø¼ºÀÌ³ª ¸Ş¶óÅ© °ø¼ºÀº ÆÄÆ¼ ¸®Äİ »ç¿ë ±İÁö
-					// °æ°í ¸Ş½ÃÁö º¸³»°í
-					// °æ°í ¸Ş½ÃÁö º¸³»°í
+					// ë“œë¼íƒ„ ê³µì„±ì´ë‚˜ ë©”ë¼í¬ ê³µì„±ì€ íŒŒí‹° ë¦¬ì½œ ì‚¬ìš© ê¸ˆì§€
+					// ê²½ê³  ë©”ì‹œì§€ ë³´ë‚´ê³ 
+					// ê²½ê³  ë©”ì‹œì§€ ë³´ë‚´ê³ 
 					if(pItem->getDBIndex() != 10803)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -7050,10 +6029,10 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 					}
 				}
 
-				//°ø¼º½Ã°£¿¡ PARTY_RECALL ÀÌµ¿ ·Î±×
+				//ê³µì„±ì‹œê°„ì— PARTY_RECALL ì´ë™ ë¡œê·¸
 				GAMELOG << init(" PARTY_RECALL IN WARTIME " , ch ) << end;
 
-				// ±æµå Á¤º¸¸¦ ±¸ÇØ¼­
+				// ê¸¸ë“œ ì •ë³´ë¥¼ êµ¬í•´ì„œ
 				if (ch->m_guildInfo && ch->m_guildInfo->guild())
 					nGuildIndex = ch->m_guildInfo->guild()->index();
 				cIsInCastle = 1;
@@ -7068,7 +6047,7 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 	}
 
 	{
-		// °á°ú º¸³»±â
+		// ê²°ê³¼ ë³´ë‚´ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPartyRecallNoticeMsg(rmsg);
 		SEND_Q(rmsg, ch->m_desc);
@@ -7081,20 +6060,20 @@ void do_ItemUsePartyRecall(CPC* ch, CItem* pItem)
 void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 {
 	bool bCanTake = false;
-	// 30·¹º§ ÀÌÇÏ
+	// 30ë ˆë²¨ ì´í•˜
 	if (ch->m_level <= RECOMMEND_SERVER_LEVEL)
 	{
-		// ¿ì¼±±Ç °Ë»ç
+		// ìš°ì„ ê¶Œ ê²€ì‚¬
 		if (pItem->m_preferenceIndex != -1)
 		{
-			// ¿ì¼±±ÇÀÌ ÀÖÀ» ¶§
+			// ìš°ì„ ê¶Œì´ ìˆì„ ë•Œ
 			if (pItem->m_preferenceIndex == ch->m_index)
 			{
 				bCanTake = true;
 			}
 			else if (ch->IsParty())
 			{
-				// ÆÄÆ¼¿ø ¿ì¼±±Ç °Ë»ç
+				// íŒŒí‹°ì› ìš°ì„ ê¶Œ ê²€ì‚¬
 				if (ch->m_party->FindMember(pItem->m_preferenceIndex) != -1)
 				{
 					bCanTake = true;
@@ -7103,14 +6082,14 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 		}
 		else
 		{
-			// ¿ì¼±±Ç ¾øÀ¸¸é ÁıÀ» ¼ö ÀÖÀ½
+			// ìš°ì„ ê¶Œ ì—†ìœ¼ë©´ ì§‘ì„ ìˆ˜ ìˆìŒ
 			bCanTake = true;
 		}
 	}
 
 	if (!bCanTake && ch->m_admin < 2)
 	{
-		// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+		// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 		SEND_Q(rmsg, ch->m_desc);
@@ -7118,7 +6097,7 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 	}
 	else
 	{
-		// È¿°ú ·£´ı °áÁ¤
+		// íš¨ê³¼ ëœë¤ ê²°ì •
 		const int nCountSkill = 6;
 		int nSkillIndex[nCountSkill] =
 		{
@@ -7133,18 +6112,18 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 
 		CSkill* skill = gserver->m_skillProtoList.Create(nSkillIndex[nIndex], 1);
 		bool bSkipApply = false;
-		// 060227 : bs : Áßº¹¾ÈµÇ´Â ½ºÅ³ÀÎÁö °Ë»ç
+		// 060227 : bs : ì¤‘ë³µì•ˆë˜ëŠ” ìŠ¤í‚¬ì¸ì§€ ê²€ì‚¬
 		if ((skill->m_proto->m_flag & SF_NOTDUPLICATE) && ch->m_assist.FindBySkillIndex(skill->m_proto->m_index))
 		{
 			{
-				/*Áßº¹»ç¿ë ºÒ°¡ ¿¡·¯ ¸Ş½ÃÁö*/
+				/*ì¤‘ë³µì‚¬ìš© ë¶ˆê°€ ì—ëŸ¬ ë©”ì‹œì§€*/
 				CNetMsg::SP rmsg(new CNetMsg);
 				ResponseClient::makeSkillErrorMsg(rmsg, MSG_SKILL_ERROR_DUPLICATE, skill->m_proto->m_index, 0);
 				SEND_Q(rmsg, ch->m_desc);
 			}
 			bSkipApply = true;
 		}
-		// È®Àå Æ÷¼Ç : µà¾ó »ç¿ëÁßÀÏ¶§ µû·Î µû·Î ¼öÇà ¸øÇÔ
+		// í™•ì¥ í¬ì…˜ : ë“€ì–¼ ì‚¬ìš©ì¤‘ì¼ë•Œ ë”°ë¡œ ë”°ë¡œ ìˆ˜í–‰ ëª»í•¨
 		if (( skill->m_proto->m_index == 350 || skill->m_proto->m_index == 351 ) && ch->m_assist.FindBySkillIndex(352) )
 			bSkipApply = true;
 
@@ -7162,7 +6141,7 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 		CArea* pArea = pItem->m_pArea;
 
 		{
-			// Æ÷¼Ç »ç¿ë ÀÌÆåÆ® ¸Ş½ÃÁö
+			// í¬ì…˜ ì‚¬ìš© ì´í™íŠ¸ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectItemMsg(rmsg, ch, pItem);
 			pArea->SendToCell(rmsg, ch, true);
@@ -7174,13 +6153,13 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 		ItemTakeMsg(takemsg, ch, pItem);
 		ItemDisappearMsg(disappmsg, pItem->getVIndex());
 
-		// ¿ì¼±±Ç Á¦°Å
+		// ìš°ì„ ê¶Œ ì œê±°
 		pItem->m_preferenceIndex = -1;
 
-		// ¶¥¿¡¼­ Á¦°Å
+		// ë•…ì—ì„œ ì œê±°
 		pArea->ItemFromCell(pItem);
 
-		// ¸Ş½ÃÁö º¸³»°í
+		// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 		pArea->SendToCell(takemsg, ch, true);
 		pArea->SendToCell(disappmsg, yLayer, cx, cz);
 
@@ -7196,21 +6175,21 @@ void do_ItemTake_RecommendPotion(CPC* ch, CItem* pItem)
 
 void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 {
-	const static int	nMinPrice			= 1;				// ´ë¿© °¡´É ¾ÆÀÌÅÛ ÃÖ¼Ò ±İ¾×
-	const static int	nMoneyFactorMul		= 3;				// ´ë¿© ±İ¾× »êÃâ½Ã ¾ÆÀÌÅÛ °¡°İ¿¡ °öÇØÁö´Â ¼ö
-	const static int	nMoneyFactorDiv		= 2;				// ´ë¿© ±İ¾× »êÃâ½Ã ¾ÆÀÌÅÛ °¡°İ¿¡ ³ª´©´Â ¼ö
-	const static int	nMoneyFactorAdd		= 50000;			// ´ë¿© ±İ¾× »êÃâ½Ã ±âº»À¸·Î ´õÇØÁö´Â ¼ö
+	const static int	nMinPrice			= 1;				// ëŒ€ì—¬ ê°€ëŠ¥ ì•„ì´í…œ ìµœì†Œ ê¸ˆì•¡
+	const static int	nMoneyFactorMul		= 3;				// ëŒ€ì—¬ ê¸ˆì•¡ ì‚°ì¶œì‹œ ì•„ì´í…œ ê°€ê²©ì— ê³±í•´ì§€ëŠ” ìˆ˜
+	const static int	nMoneyFactorDiv		= 2;				// ëŒ€ì—¬ ê¸ˆì•¡ ì‚°ì¶œì‹œ ì•„ì´í…œ ê°€ê²©ì— ë‚˜ëˆ„ëŠ” ìˆ˜
+	const static int	nMoneyFactorAdd		= 50000;			// ëŒ€ì—¬ ê¸ˆì•¡ ì‚°ì¶œì‹œ ê¸°ë³¸ìœ¼ë¡œ ë”í•´ì§€ëŠ” ìˆ˜
 #if defined (LC_KOR) || defined(LC_BILA) || defined(LC_RUS) || defined(LC_USA) || defined(LC_TLD)
-	const static int	nPlusLendItem		= 12;				// ´ë¿© ¾ÆÀÌÅÛ ±âº» Plus ¼öÄ¡
+	const static int	nPlusLendItem		= 12;				// ëŒ€ì—¬ ì•„ì´í…œ ê¸°ë³¸ Plus ìˆ˜ì¹˜
 #else
-	const static int	nPlusLendItem		= 6;				// ´ë¿© ¾ÆÀÌÅÛ ±âº» Plus ¼öÄ¡
+	const static int	nPlusLendItem		= 6;				// ëŒ€ì—¬ ì•„ì´í…œ ê¸°ë³¸ Plus ìˆ˜ì¹˜
 #endif
-	const static int	nFlagLendItem		= FLAG_ITEM_LENT;	// ´ë¿© ¾ÆÀÌÅÛ ±âº» Flag
+	const static int	nFlagLendItem		= FLAG_ITEM_LENT;	// ëŒ€ì—¬ ì•„ì´í…œ ê¸°ë³¸ Flag
 
-	void*			posLendItem		= NULL;		// ´ë¿© °¡´É ¸®½ºÆ® °Ë»ö¿ë
-	CItemProto*		pItemProto		= NULL;		// »ı¼ºÇÒ ¾ÆÀÌÅÛ ÇÁ·ÎÅä
-	LONGLONG		nNeedMoney		= 0;		// ÇÊ¿ä ±İ¾×
-	CItem*			pItem			= NULL;		// Áö±ŞÇÒ ¾ÆÀÌÅÛ
+	void*			posLendItem		= NULL;		// ëŒ€ì—¬ ê°€ëŠ¥ ë¦¬ìŠ¤íŠ¸ ê²€ìƒ‰ìš©
+	CItemProto*		pItemProto		= NULL;		// ìƒì„±í•  ì•„ì´í…œ í”„ë¡œí† 
+	LONGLONG		nNeedMoney		= 0;		// í•„ìš” ê¸ˆì•¡
+	CItem*			pItem			= NULL;		// ì§€ê¸‰í•  ì•„ì´í…œ
 
 #ifdef NPC_CHECK
 	int npcIndex;
@@ -7235,16 +6214,16 @@ void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 
 	RequestClient::doItemLendWeapon* packet = reinterpret_cast<RequestClient::doItemLendWeapon*>(msg->m_buf);
 
-	// 1. ´ë¿©°¡´É ¸®½ºÆ®¿¡¼­ Ã£´Â´Ù
-	// 2. ¼ÒÁö±İÀ» °è»êÇÑ´Ù
-	// 3. ¼ÒÁö±İ °Ë»ç
-	// 4. ¾ÆÀÌÅÛ »ı¼º
-	// 5. ¾ÆÀÌÅÛ Áö±Ş
-	// 6. ¼ÒÁö±İ °¨¼Ò
-	// 7. °ÔÀÓ ·Î±×
-	// 8. °á°ú ¾Ë¸²
+	// 1. ëŒ€ì—¬ê°€ëŠ¥ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ëŠ”ë‹¤
+	// 2. ì†Œì§€ê¸ˆì„ ê³„ì‚°í•œë‹¤
+	// 3. ì†Œì§€ê¸ˆ ê²€ì‚¬
+	// 4. ì•„ì´í…œ ìƒì„±
+	// 5. ì•„ì´í…œ ì§€ê¸‰
+	// 6. ì†Œì§€ê¸ˆ ê°ì†Œ
+	// 7. ê²Œì„ ë¡œê·¸
+	// 8. ê²°ê³¼ ì•Œë¦¼
 
-	// 1. ´ë¿©°¡´É ¸®½ºÆ®¿¡¼­ Ã£´Â´Ù
+	// 1. ëŒ€ì—¬ê°€ëŠ¥ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ëŠ”ë‹¤
 	std::set<int>::iterator it = gserver->m_itemProtoList.m_listLendItem.find(packet->itemDBIndex);
 	if ( (it == gserver->m_itemProtoList.m_listLendItem.end())
 			|| (pItemProto = gserver->m_itemProtoList.FindIndex(packet->itemDBIndex)) == NULL
@@ -7256,10 +6235,10 @@ void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// 2. ¼ÒÁö±İÀ» °è»êÇÑ´Ù
+	// 2. ì†Œì§€ê¸ˆì„ ê³„ì‚°í•œë‹¤
 	nNeedMoney = pItemProto->getItemPrice() * nMoneyFactorMul / nMoneyFactorDiv + nMoneyFactorAdd;
 
-	// 3. ¼ÒÁö±İ °Ë»ç
+	// 3. ì†Œì§€ê¸ˆ ê²€ì‚¬
 	if (ch->m_inventory.getMoney() < nNeedMoney)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -7268,7 +6247,7 @@ void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// 4. ¾ÆÀÌÅÛ »ı¼º
+	// 4. ì•„ì´í…œ ìƒì„±
 	pItem = gserver->m_itemProtoList.CreateItem(packet->itemDBIndex, -1, nPlusLendItem, nFlagLendItem, 1);
 	if (!pItem)
 	{
@@ -7278,13 +6257,13 @@ void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// 5. ¾ÆÀÌÅÛ Áö±Ş
+	// 5. ì•„ì´í…œ ì§€ê¸‰
 	if (ch->m_inventory.addItem(pItem))
 	{
-		// 6. ¼ÒÁö±İ °¨¼Ò
+		// 6. ì†Œì§€ê¸ˆ ê°ì†Œ
 		ch->m_inventory.decreaseMoney(nNeedMoney);
 
-		// 7. °ÔÀÓ ·Î±×
+		// 7. ê²Œì„ ë¡œê·¸
 		GAMELOG << init("LEND ITEM", ch)
 				<< "MONEY" << delim
 				<< nNeedMoney << delim
@@ -7293,7 +6272,7 @@ void do_ItemLendWeapon(CPC* ch, CNetMsg::SP& msg)
 				<< end;
 
 		{
-			// 8. °á°ú ¾Ë¸²
+			// 8. ê²°ê³¼ ì•Œë¦¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			ItemLendWeaponMsg(rmsg, packet->itemDBIndex, MSG_ITEM_LEND_WEAPON_ERROR_OK);
 			SEND_Q(rmsg, ch->m_desc);
@@ -7318,50 +6297,50 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 	if( !gserver->isActiveEvent( A_EVENT_COLLECT_BUG ) )
 		return false;
 
-	// °ïÃæ Å×ÀÌºí : ÀÎµ¦½º, Æ÷ÀÎÆ®(¹øÈ£)
+	// ê³¤ì¶© í…Œì´ë¸” : ì¸ë±ìŠ¤, í¬ì¸íŠ¸(ë²ˆí˜¸)
 	static const int tableBug[10][2] =
 	{
-		{1579,  1},		// ¹ú
-		{1580,  2},		// Èò³ªºñ
-		{1581,  3},		// È£¶û³ªºñ
-		{1582,  4},		// ÀáÀÚ¸®
-		{1583,  5},		// °íÃßÀáÀÚ¸®
-		{1584,  6},		// ¸Å¹Ì
-		{1585,  7},		// ¹«´ç¹ú·¹
-		{1586,  8},		// °³¶Ë¹ú·¹
-		{1587,  9},		// »ç½¿¹ú·¹
-		{1588, 10},		// Ç³µ­ÀÌ
+		{1579,  1},		// ë²Œ
+		{1580,  2},		// í°ë‚˜ë¹„
+		{1581,  3},		// í˜¸ë‘ë‚˜ë¹„
+		{1582,  4},		// ì ìë¦¬
+		{1583,  5},		// ê³ ì¶”ì ìë¦¬
+		{1584,  6},		// ë§¤ë¯¸
+		{1585,  7},		// ë¬´ë‹¹ë²Œë ˆ
+		{1586,  8},		// ê°œë˜¥ë²Œë ˆ
+		{1587,  9},		// ì‚¬ìŠ´ë²Œë ˆ
+		{1588, 10},		// í’ë…ì´
 	};
-	static const int	nNormalBoxIndex = 1577;		// ÀÏ¹İ »óÀÚ ÀÎµ¦½º
-	static const int	nGoldenBoxIndex = 1578;		// °ñµç »óÀÚ ÀÎµ¦½º
+	static const int	nNormalBoxIndex = 1577;		// ì¼ë°˜ ìƒì ì¸ë±ìŠ¤
+	static const int	nGoldenBoxIndex = 1578;		// ê³¨ë“  ìƒì ì¸ë±ìŠ¤
 
 	CNetMsg			rmsg;
-	bool			bCanTake = false;		// ÁıÀ» ¼ö ÀÖ´ÂÁö °Ë»ç
-	CItem*			pItemCollectBox = NULL;	// Ã¤Áı »óÀÚ ¾ÆÀÌÅÛ
-	unsigned char	ucBug[16];				// °ïÃæ µ¥ÀÌÅÍ
-	int				nSpace = 0;				// Ã¤Áı »óÀÚ ºóÄ­
+	bool			bCanTake = false;		// ì§‘ì„ ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
+	CItem*			pItemCollectBox = NULL;	// ì±„ì§‘ ìƒì ì•„ì´í…œ
+	unsigned char	ucBug[16];				// ê³¤ì¶© ë°ì´í„°
+	int				nSpace = 0;				// ì±„ì§‘ ìƒì ë¹ˆì¹¸
 	int				nRow, nCol;
 	int				i;
 
 	memset(ucBug, 0, sizeof(ucBug));
 
-	// 1. ¿ì¼±±Ç °Ë»ç
-	// 2. ºóÄ­ÀÖ´Â Ã¤Áı »óÀÚ Ã£±â
-	// 3. Ã¤Áı »óÀÚ¿¡ ³Ö±â : flag¿¡ Æ÷ÀÎÆ® Áõ°¡, plus, used ¼³Á¤
-	// 4. ¹Ù´Ú¿¡¼­ Á¦°Å
-	// 5. °ÔÀÓ ·Î±×
+	// 1. ìš°ì„ ê¶Œ ê²€ì‚¬
+	// 2. ë¹ˆì¹¸ìˆëŠ” ì±„ì§‘ ìƒì ì°¾ê¸°
+	// 3. ì±„ì§‘ ìƒìì— ë„£ê¸° : flagì— í¬ì¸íŠ¸ ì¦ê°€, plus, used ì„¤ì •
+	// 4. ë°”ë‹¥ì—ì„œ ì œê±°
+	// 5. ê²Œì„ ë¡œê·¸
 
-	// 1. ¿ì¼±±Ç °Ë»ç
+	// 1. ìš°ì„ ê¶Œ ê²€ì‚¬
 	if (pItem->m_preferenceIndex != -1)
 	{
-		// ¿ì¼±±ÇÀÌ ÀÖÀ» ¶§
+		// ìš°ì„ ê¶Œì´ ìˆì„ ë•Œ
 		if (pItem->m_preferenceIndex == ch->m_index)
 		{
 			bCanTake = true;
 		}
 		else if (ch->IsParty())
 		{
-			// ÆÄÆ¼¿ø ¿ì¼±±Ç °Ë»ç
+			// íŒŒí‹°ì› ìš°ì„ ê¶Œ ê²€ì‚¬
 			if (ch->m_party->FindMember(pItem->m_preferenceIndex) != -1)
 			{
 				bCanTake = true;
@@ -7370,19 +6349,19 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 	}
 	else
 	{
-		// ¿ì¼±±Ç ¾øÀ¸¸é ÁıÀ» ¼ö ÀÖÀ½
+		// ìš°ì„ ê¶Œ ì—†ìœ¼ë©´ ì§‘ì„ ìˆ˜ ìˆìŒ
 		bCanTake = true;
 	}
 	if (!bCanTake && ch->m_admin < 2)
 	{
-		// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+		// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 		SEND_Q(rmsg, ch->m_desc);
 		return false;
 	}
 
-	// 2. ºóÄ­ÀÖ´Â Ã¤Áı »óÀÚ Ã£±â
+	// 2. ë¹ˆì¹¸ìˆëŠ” ì±„ì§‘ ìƒì ì°¾ê¸°
 	pItemCollectBox = ch->m_inventory.FindByDBIndex(nGoldenBoxIndex);
 	if (pItemCollectBox)
 	{
@@ -7414,14 +6393,14 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 
 	if (!pItemCollectBox)
 	{
-		// Ã¤Áı »óÀÚ ¾øÀ½
+		// ì±„ì§‘ ìƒì ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventCollectBugMsg(rmsg, (nSpace == 16) ? MSG_EVENT_COLLECT_BUG_PICK_FULL : MSG_EVENT_COLLECT_BUG_PICK_NOITEM, 0);
 		SEND_Q(rmsg, ch->m_desc);
 		return false;
 	}
 
-	// 3. Ã¤Áı »óÀÚ¿¡ ³Ö±â
+	// 3. ì±„ì§‘ ìƒìì— ë„£ê¸°
 	for (i = 0; i < 10; i++)
 	{
 		if (tableBug[i][0] == pItem->getDBIndex())
@@ -7432,7 +6411,7 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 
 			ch->m_inventory.sendOneItemInfo(pItemCollectBox);
 
-			// 4. ¹Ù´Ú¿¡¼­ Á¦°Å
+			// 4. ë°”ë‹¥ì—ì„œ ì œê±°
 			CNetMsg		disappmsg;
 			CNetMsg		takemsg;
 			int			cx = pItem->m_cellX;
@@ -7461,7 +6440,7 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// 5. °ÔÀÓ ·Î±×
+			// 5. ê²Œì„ ë¡œê·¸
 			GAMELOG << init("EVENT COLLECT BUG PICK", ch)
 					<< "BUG" << delim
 					<< itemlog(pItem) << delim
@@ -7480,7 +6459,7 @@ bool do_ItemTake_EventCollectBug(CPC* ch, CItem* pItem)
 
 bool do_ItemUse_IONCE_WARP_RETURN(CPC* ch, const CItemProto* itemproto)
 {
-	// ÀÌµ¿ °¡´É °Ë»ç
+	// ì´ë™ ê°€ëŠ¥ ê²€ì‚¬
 	int canWarp = ch->CanWarp();
 	if (canWarp != 0)
 	{
@@ -7490,14 +6469,14 @@ bool do_ItemUse_IONCE_WARP_RETURN(CPC* ch, const CItemProto* itemproto)
 		return false;
 	}
 
-	// 10ÃÊÈÄ ÀÌµ¿ÇÏ°Ô ÇÏ±â
+	// 10ì´ˆí›„ ì´ë™í•˜ê²Œ í•˜ê¸°
 	ch->m_reqWarpType = IONCE_WARP_RETURN;
 	ch->m_reqWarpData = itemproto->getItemNum1();
 	ch->m_reqWarpTime = PULSE_WARPDELAY;
 	ch->SetPlayerState(PLAYER_STATE_WARP);
 
 	{
-		// »ç¿ëÇßÀ½À» ¾Ë¸®±â
+		// ì‚¬ìš©í–ˆìŒì„ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpStartMsg(rmsg, ch);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -7517,7 +6496,7 @@ bool do_ItemUse_IONCE_CHANGE_DOC(CPC* ch, const CItemProto* itemproto)
 		SEND_Q(rmsg, ch->m_desc);
 		return false;
 	}
-	// ·¹º§ °Ë»ç
+	// ë ˆë²¨ ê²€ì‚¬
 	if (ch->m_level < itemproto->getItemNum2())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -7526,7 +6505,7 @@ bool do_ItemUse_IONCE_CHANGE_DOC(CPC* ch, const CItemProto* itemproto)
 		return false;
 	}
 
-	// Á¸ °Ë»ç
+	// ì¡´ ê²€ì‚¬
 	if (ch->m_pZone->m_index != itemproto->getItemNum3())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -7570,14 +6549,14 @@ bool do_ItemUse_IONCE_QUEST_SCROLL(CPC* ch, const CItemProto* itemproto, int ext
 
 bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item)
 {
-	// °ø¼º Áö¿ªÀÎÁö È®ÀÎ
+	// ê³µì„± ì§€ì—­ì¸ì§€ í™•ì¸
 	if( !(ch->GetMapAttr() & MATT_WAR)
 			|| ch->m_pZone->m_index != ZONE_DRATAN)
 	{
 		return false;
 	}
 
-	// ÇÇ¶ó¹Ìµå »óÃşÀÌ¸é ºÒ°¡
+	// í”¼ë¼ë¯¸ë“œ ìƒì¸µì´ë©´ ë¶ˆê°€
 	if(ch->m_pos.m_yLayer != 0)
 	{
 		return false;
@@ -7585,13 +6564,13 @@ bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item)
 
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 
-	// ÇØ´ç ¼ºÀÇ ¼ºÁÖÀÎÁö È®ÀÎ
+	// í•´ë‹¹ ì„±ì˜ ì„±ì£¼ì¸ì§€ í™•ì¸
 	if(pCastle->GetOwnerCharIndex() != ch->m_index)
 	{
 		return false;
 	}
 
-	// Á¾·ùº° °³¼ö È®ÀÎ
+	// ì¢…ë¥˜ë³„ ê°œìˆ˜ í™•ì¸
 	int mobindex = 0;
 	switch(item->m_itemProto->getItemIndex())
 	{
@@ -7617,7 +6596,7 @@ bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item)
 		return false;
 	}
 
-	// »ç¿ë °¡´É ½Ã°£ È®ÀÎ(°ø¼ºÀüÁß¿¡´Â  »ç¿ëºÒ°¡)
+	// ì‚¬ìš© ê°€ëŠ¥ ì‹œê°„ í™•ì¸(ê³µì„±ì „ì¤‘ì—ëŠ”  ì‚¬ìš©ë¶ˆê°€)
 	if(pCastle->GetState() != WCSF_NORMAL)
 	{
 		return false;
@@ -7625,7 +6604,7 @@ bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item)
 
 	if(gserver->isRunHelper())
 	{
-		// °¡µğ¾ğ Ãß°¡
+		// ê°€ë””ì–¸ ì¶”ê°€
 		if( pCastle->m_GuardList.InsertGuard(mobindex, ch->m_pos.m_x, ch->m_pos.m_z, 0) == false)
 		{
 			return false;
@@ -7697,14 +6676,14 @@ bool do_ItemUse_Castle_Guard(CPC* ch, CItem* item)
 
 bool do_ItemUse_IONCE_SUMMON(CPC* ch, CItem* item)
 {
-	if(item->m_itemProto->getItemIndex() == 2381		// [¿ëº´]½ºÇÎÅ©½º Ã¢º´
-			|| item->m_itemProto->getItemIndex() == 2380)	// [¿ëº´]½ºÇÎÅ©½º ÆÄÀÌÅÍ
+	if(item->m_itemProto->getItemIndex() == 2381		// [ìš©ë³‘]ìŠ¤í•‘í¬ìŠ¤ ì°½ë³‘
+			|| item->m_itemProto->getItemIndex() == 2380)	// [ìš©ë³‘]ìŠ¤í•‘í¬ìŠ¤ íŒŒì´í„°
 	{
 		return do_ItemUse_Castle_Guard(ch, item);
 	}
 
-	// º¸½º ¸ó½ºÅÍ ¼ÒÈ¯¼­
-	// °ø¼ºÁß¿¡ °ø¼º Áö¿ª(MAPATT_WARZONE) À¸·Î ÀÌµ¿ ºÒ°¡
+	// ë³´ìŠ¤ ëª¬ìŠ¤í„° ì†Œí™˜ì„œ
+	// ê³µì„±ì¤‘ì— ê³µì„± ì§€ì—­(MAPATT_WARZONE) ìœ¼ë¡œ ì´ë™ ë¶ˆê°€
 	CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 	if (castle)
 	{
@@ -7722,7 +6701,7 @@ bool do_ItemUse_IONCE_SUMMON(CPC* ch, CItem* item)
 		}
 	}
 //#endif
-	// ox ÄûÁî·ë ±æµå·ë ÂÊµµ »ç¿ëÇÏÁö ¸øÇÏµµ·Ï º¯°æ
+	// ox í€´ì¦ˆë£¸ ê¸¸ë“œë£¸ ìª½ë„ ì‚¬ìš©í•˜ì§€ ëª»í•˜ë„ë¡ ë³€ê²½
 	if( ch->IsInPeaceZone(true)
 			|| ch->m_pZone->IsPersonalDungeon() ||  ch->GetMapAttr() & MATT_FREEPKZONE
 			|| ch->m_pZone->IsGuildRoom() || ch->m_pZone->IsOXQuizRoom() )
@@ -7764,7 +6743,7 @@ bool do_ItemUse_IONCE_SUMMON(CPC* ch, CItem* item)
 	if (item->m_itemProto->getItemIndex() == 2144
 			|| item->m_itemProto->getItemIndex() == 2145)
 	{
-		// ¸÷¿¡ ½ºÅ©·Ñ Á¤º¸ ÀúÀå
+		// ëª¹ì— ìŠ¤í¬ë¡¤ ì •ë³´ ì €ì¥
 		npc->m_MobScrollType = pattern_index;
 		npc->m_NextMobIndex = 0;
 		npc->m_UseCharIndex = ch->m_index;
@@ -7813,44 +6792,44 @@ bool do_ItemUse_IONCE_SUMMON(CPC* ch, CItem* item)
 
 bool do_ItemUse_IETC_PRODUCT(CPC* ch, const CItemProto* itemproto)
 {
-	// Æê »ç·á ¸ÔÀÌ±â
+	// í« ì‚¬ë£Œ ë¨¹ì´ê¸°
 	if (ch->m_wearInventory.wearItemInfo[WEARING_PET])
 	{
 		CPet* pet = ch->GetPet();
 		if (!pet)
 			return false;
 
-		// µî±Ş¿¡ µû¶ó ¼öÄ¡
+		// ë“±ê¸‰ì— ë”°ë¼ ìˆ˜ì¹˜
 		int upVal = 0;
 		switch (itemproto->getItemIndex())
 		{
-		case 157:		// Aµî±Ş ¿ø¼Ò
-		case 152:		// ½ºÅæ À£½º´ø
-		case 162:		// Å©¶ôÀÇ ²É
+		case 157:		// Aë“±ê¸‰ ì›ì†Œ
+		case 152:		// ìŠ¤í†¤ ì›°ìŠ¤ë˜
+		case 162:		// í¬ë½ì˜ ê½ƒ
 			upVal = 9;
 			break;
 
-		case 158:		// Bµî±Ş ¿ø¼Ò
-		case 153:		// ½ºÅæ ºñ½ºÆ®
-		case 163:		// Å©¶ôÀÇ °¡½Ã
+		case 158:		// Bë“±ê¸‰ ì›ì†Œ
+		case 153:		// ìŠ¤í†¤ ë¹„ìŠ¤íŠ¸
+		case 163:		// í¬ë½ì˜ ê°€ì‹œ
 			upVal = 7;
 			break;
 
-		case 159:		// Cµî±Ş ¿ø¼Ò
-		case 154:		// ½ºÅæ ¿ş¹ö
-		case 197:		// Å©¶ôÀÇ ÆÄ¶õÀÙ
+		case 159:		// Cë“±ê¸‰ ì›ì†Œ
+		case 154:		// ìŠ¤í†¤ ì›¨ë²„
+		case 197:		// í¬ë½ì˜ íŒŒë€ì
 			upVal = 5;
 			break;
 
-		case 160:		// Dµî±Ş ¿ø¼Ò
-		case 155:		// ½ºÅæ ¸®½º
-		case 198:		// Å©¶ôÀÇ ÁÙ±â
+		case 160:		// Dë“±ê¸‰ ì›ì†Œ
+		case 155:		// ìŠ¤í†¤ ë¦¬ìŠ¤
+		case 198:		// í¬ë½ì˜ ì¤„ê¸°
 			upVal = 3;
 			break;
 
-		case 161:		// Eµî±Ş ¿ø¼Ò
-		case 156:		// ½ºÅæ ¿Â
-		case 199:		// Å©¶ôÀÇ ³ë¶õÀÙ
+		case 161:		// Eë“±ê¸‰ ì›ì†Œ
+		case 156:		// ìŠ¤í†¤ ì˜¨
+		case 199:		// í¬ë½ì˜ ë…¸ë€ì
 			upVal = 1;
 			break;
 
@@ -7859,33 +6838,33 @@ bool do_ItemUse_IETC_PRODUCT(CPC* ch, const CItemProto* itemproto)
 		}
 
 		bool bUpdate = false;
-		// Á¾·ù¿¡ µû¶ó È¸º¹ µÇ´Â ÆÄ¸®¹ÌÅÍ ´Ù¸§
+		// ì¢…ë¥˜ì— ë”°ë¼ íšŒë³µ ë˜ëŠ” íŒŒë¦¬ë¯¸í„° ë‹¤ë¦„
 		switch (itemproto->getItemIndex())
 		{
-		case 157:		// Aµî±Ş ¿ø¼Ò
-		case 158:		// Bµî±Ş ¿ø¼Ò
-		case 159:		// Cµî±Ş ¿ø¼Ò
-		case 160:		// Dµî±Ş ¿ø¼Ò
-		case 161:		// Eµî±Ş ¿ø¼Ò
-			// ±³°¨µµ È¸º¹
+		case 157:		// Aë“±ê¸‰ ì›ì†Œ
+		case 158:		// Bë“±ê¸‰ ì›ì†Œ
+		case 159:		// Cë“±ê¸‰ ì›ì†Œ
+		case 160:		// Dë“±ê¸‰ ì›ì†Œ
+		case 161:		// Eë“±ê¸‰ ì›ì†Œ
+			// êµê°ë„ íšŒë³µ
 			bUpdate = pet->IncreaseSympathyPoint(upVal);
 			break;
 
-		case 152:		// ½ºÅæ À£½º´ø
-		case 153:		// ½ºÅæ ºñ½ºÆ®
-		case 154:		// ½ºÅæ ¿ş¹ö
-		case 155:		// ½ºÅæ ¸®½º
-		case 156:		// ½ºÅæ ¿Â
-			// ¹è°íÇÄ È¸º¹
+		case 152:		// ìŠ¤í†¤ ì›°ìŠ¤ë˜
+		case 153:		// ìŠ¤í†¤ ë¹„ìŠ¤íŠ¸
+		case 154:		// ìŠ¤í†¤ ì›¨ë²„
+		case 155:		// ìŠ¤í†¤ ë¦¬ìŠ¤
+		case 156:		// ìŠ¤í†¤ ì˜¨
+			// ë°°ê³ í”” íšŒë³µ
 			bUpdate = pet->IncreaseHungryPoint(upVal);
 			break;
 
-		case 162:		// Å©¶ôÀÇ ²É
-		case 163:		// Å©¶ôÀÇ °¡½Ã
-		case 197:		// Å©¶ôÀÇ ÆÄ¶õÀÙ
-		case 198:		// Å©¶ôÀÇ ÁÙ±â
-		case 199:		// Å©¶ôÀÇ ³ë¶õÀÙ
-			// HP È¸º¹
+		case 162:		// í¬ë½ì˜ ê½ƒ
+		case 163:		// í¬ë½ì˜ ê°€ì‹œ
+		case 197:		// í¬ë½ì˜ íŒŒë€ì
+		case 198:		// í¬ë½ì˜ ì¤„ê¸°
+		case 199:		// í¬ë½ì˜ ë…¸ë€ì
+			// HP íšŒë³µ
 			if (pet->m_hp < pet->m_maxHP)
 			{
 				pet->m_hp += upVal;
@@ -7933,7 +6912,7 @@ bool do_ItemUse_IETC_SKILLUP(CPC* ch, CItem* item)
 			if( !proto || pSrcItem->GetOriginLevel(i) < 1 )
 				continue;
 
-			//Level, Value ¼ÂÆÃ
+			//Level, Value ì…‹íŒ…
 			pDestItem->m_option[pDestItem->m_nOption].MakeOptionValue( proto, ch->m_level, 1 );
 			pDestItem->m_option[pDestItem->m_nOption].m_level = pSrcItem->GetOriginLevel(i);
 			pDestItem->m_option[pDestItem->m_nOption].m_value = proto->m_levelValue[pDestItem->m_option[i].m_level-1];
@@ -7966,13 +6945,13 @@ bool do_ItemUse_IONCE_ETC(CPC* ch, const CItemProto* itemproto, int nExtar1,CIte
 {
 	switch (itemproto->getItemIndex())
 	{
-	case 1838:		// µ¸º¸±â
-	case 1839:		// È²±İ µ¸º¸±â
-	case 2666:		// ÃÊº¸ÀÚ¿ë µ¸º¸±â
+	case 1838:		// ë‹ë³´ê¸°
+	case 1839:		// í™©ê¸ˆ ë‹ë³´ê¸°
+	case 2666:		// ì´ˆë³´ììš© ë‹ë³´ê¸°
 		return do_ItemUse_1838_1839(ch, itemproto, nExtar1);
 		break;
 
-	case 2037:		// ·°Å° µå·Î¿ì »óÀÚ
+	case 2037:		// ëŸ­í‚¤ ë“œë¡œìš° ìƒì
 		return do_ItemUse_2037(ch, itemproto);
 		break;
 
@@ -8016,7 +6995,7 @@ bool do_ItemUse_IONCE_ETC(CPC* ch, const CItemProto* itemproto, int nExtar1,CIte
 	case 2859:
 	case 2982:
 		{
-			// ½ºÆ®·¹ÀÌ¾Æ³ª ¹é½Å ¹°¾à
+			// ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë°±ì‹  ë¬¼ì•½
 			CSkill* pSkill = gserver->m_skillProtoList.Create(itemproto->getItemNum0(), itemproto->getItemNum1());
 			if(pSkill)
 			{
@@ -8035,7 +7014,7 @@ bool do_ItemUse_IONCE_ETC(CPC* ch, const CItemProto* itemproto, int nExtar1,CIte
 		}
 		break;
 
-	case 4709:	//·¹ÀÌµå ¹Ú½º ¾ÆÀÌÅÛ(¾ÆÀÌÅÛ ¹øÈ£ ¹ÌÁ¤)
+	case 4709:	//ë ˆì´ë“œ ë°•ìŠ¤ ì•„ì´í…œ(ì•„ì´í…œ ë²ˆí˜¸ ë¯¸ì •)
 		return do_ItemUse_4709(ch, itemproto,item);
 		break;
 
@@ -8062,7 +7041,7 @@ bool do_ItemUse_IONCE_ETC(CPC* ch, const CItemProto* itemproto, int nExtar1,CIte
 		return do_ItemUse_5329(ch, itemproto, nExtar1);
 		break;
 
-	case 5952: // ÈÄ°ßÀÎÀÇ ÁõÇ¥
+	case 5952: // í›„ê²¬ì¸ì˜ ì¦í‘œ
 		return do_ItemUse_5952(ch, itemproto);
 		break;
 
@@ -8089,7 +7068,7 @@ bool do_ItemUse_1838_1839(CPC* ch, const CItemProto* itemproto, int nExtar1)
 	int nProb = 0;
 	switch (itemproto->getItemIndex())
 	{
-	case 1838:	// µ¸º¸±â
+	case 1838:	// ë‹ë³´ê¸°
 #ifdef HOLY_WATER
 //		nProb = 40;
 		nProb = 30;		//  2007.05.02
@@ -8097,10 +7076,10 @@ bool do_ItemUse_1838_1839(CPC* ch, const CItemProto* itemproto, int nExtar1)
 		nProb = 50;
 #endif	// HOLY_WATER
 		break;
-	case 1839:	// È²±İ µ¸º¸±â
+	case 1839:	// í™©ê¸ˆ ë‹ë³´ê¸°
 		nProb = 100;
 		break;
-	case 2666:	// ÃÊº¸ÀÚ¿ë µ¸º¸±â
+	case 2666:	// ì´ˆë³´ììš© ë‹ë³´ê¸°
 		nProb = 100;
 		break;
 	default:
@@ -8160,10 +7139,10 @@ bool do_ItemUse_2146_2147( CPC* ch, const CItemProto* itemproto )
 	{
 	case 2146:
 		rewardIndex = 22;
-		break; // ±İ±×¸©
+		break; // ê¸ˆê·¸ë¦‡
 	case 2147:
 		rewardIndex = 23;
-		break; // Àº±×¸©
+		break; // ì€ê·¸ë¦‡
 	default:
 		return false;
 	}
@@ -8179,9 +7158,9 @@ bool do_ItemUse_2597(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -8189,16 +7168,16 @@ bool do_ItemUse_2597(CPC* ch, const CItemProto* itemproto)
 
 	int nTable[nTableSize][2]	=
 	{
-		{ 853, 2209, },		// ´ëÇü Äü Ã¼·Â È¸º¹ ¹°¾à
-		{ 854, 2200, },		// ´ëÇü Äü ¸¶³ª È¸º¹ ¹°¾à
-		{ 1315, 2000, },		// °ø°İ·Â Çâ»óÁ¦ (´ë)
-		{ 1314, 2000, },		// ¹æ¾î·Â Çâ»óÁ¦ (´ë)
-		{ 1418, 500, },		// ÇÃ·¡Æ¼´½ Á¦·Ã¼®
-		{ 974, 500, },		// Çà¿îÀÇ Á¦·Ã¼®
-		{ 1706, 290, },		// ÇÃ·¡Æ¼´½ Á¦·Ã¼®
-		{ 2394, 200, },		// ÇÃ·¡Æ¼´½ ÇÏ±Ş Á¦·Ã º¸È£¼®
-		{ 2395, 100, },		// ÇÃ·¡Æ¼´½ »ó±Ş Á¦·Ã º¸È£¼®
-		{ 1835, 1, },		// ±×¸²ÀÚÀÇ µ¹
+		{ 853, 2209, },		// ëŒ€í˜• í€µ ì²´ë ¥ íšŒë³µ ë¬¼ì•½
+		{ 854, 2200, },		// ëŒ€í˜• í€µ ë§ˆë‚˜ íšŒë³µ ë¬¼ì•½
+		{ 1315, 2000, },		// ê³µê²©ë ¥ í–¥ìƒì œ (ëŒ€)
+		{ 1314, 2000, },		// ë°©ì–´ë ¥ í–¥ìƒì œ (ëŒ€)
+		{ 1418, 500, },		// í”Œë˜í‹°ëŠ„ ì œë ¨ì„
+		{ 974, 500, },		// í–‰ìš´ì˜ ì œë ¨ì„
+		{ 1706, 290, },		// í”Œë˜í‹°ëŠ„ ì œë ¨ì„
+		{ 2394, 200, },		// í”Œë˜í‹°ëŠ„ í•˜ê¸‰ ì œë ¨ ë³´í˜¸ì„
+		{ 2395, 100, },		// í”Œë˜í‹°ëŠ„ ìƒê¸‰ ì œë ¨ ë³´í˜¸ì„
+		{ 1835, 1, },		// ê·¸ë¦¼ìì˜ ëŒ
 	};
 
 	int nRate = GetRandom(0, 10000);
@@ -8219,7 +7198,7 @@ bool do_ItemUse_2597(CPC* ch, const CItemProto* itemproto)
 		return false;
 	}
 
-// [101229: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101229: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 	if( !ch->CheckInvenForPrize(nTable[nIndex][0], 0, 0) )
 	{
 		return false;
@@ -8249,16 +7228,16 @@ bool do_ItemUse_2037(CPC* ch, const CItemProto* itemproto)
 	const int nTableSize	= 6;
 	int nTable[nTableSize]	=
 	{
-		2032,		// ·°Å° ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		1840,		// ¼ÒÇü °æÇèÄ¡ Æ÷¼Ç
-		2033,		// ·°Å° ¼Ò¿ï ´Ğ½º
-		2034,		// ·°Å° ´ÙÁö ÇÇ¾î
-		2035,		// ·°Å° °æÇèÄ¡º¹±¸ ÁÖ¹®¼­
-		2036,		// ·°Å° ¼÷·Ãµµº¹±¸ ÁÖ¹®¼­
+		2032,		// ëŸ­í‚¤ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		1840,		// ì†Œí˜• ê²½í—˜ì¹˜ í¬ì…˜
+		2033,		// ëŸ­í‚¤ ì†Œìš¸ ë‹‰ìŠ¤
+		2034,		// ëŸ­í‚¤ ë‹¤ì§€ í”¼ì–´
+		2035,		// ëŸ­í‚¤ ê²½í—˜ì¹˜ë³µêµ¬ ì£¼ë¬¸ì„œ
+		2036,		// ëŸ­í‚¤ ìˆ™ë ¨ë„ë³µêµ¬ ì£¼ë¬¸ì„œ
 	};
 	int nIndex = GetRandom(0, nTableSize - 1);
 
-// [101229: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101229: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 	if( !ch->CheckInvenForPrize(nTable[nIndex], 0, 0) )
 	{
 		return false;
@@ -8285,7 +7264,7 @@ bool do_ItemUse_2037(CPC* ch, const CItemProto* itemproto)
 
 bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 {
-	// Áö±Ş ¾ÆÀÌÅÛ Å×ÀÌºí
+	// ì§€ê¸‰ ì•„ì´í…œ í…Œì´ë¸”
 	const int nItems[5][5] =
 	{
 		{ 2715, 2716, 2717, 2718, 2719, },
@@ -8339,7 +7318,7 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 		return false;
 	}
 
-	// ÀÎº¥¿¡ ÇØ´ç ÄÚÀÎ È®ÀÎ
+	// ì¸ë²¤ì— í•´ë‹¹ ì½”ì¸ í™•ì¸
 	item_search_t vec;
 	int sc = pc->m_inventory.searchItemByCondition(coin_index, 0, 0, vec);
 	if (sc == 0 || sc < coin_count)
@@ -8347,7 +7326,7 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 		return false;
 	}
 
-	// ¾ÆÀÌÅÛ »ı¼º
+	// ì•„ì´í…œ ìƒì„±
 	int random_item = GetRandom(0, 4);
 	CItem * pChange = gserver->m_itemProtoList.CreateItem(nItems[item_index][random_item], -1, 0, 0, 1);
 	if(pChange == NULL)
@@ -8355,10 +7334,10 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 		return false;
 	}
 
-	// ¿É¼Ç ºÙ´Â °¹¼ö
+	// ì˜µì…˜ ë¶™ëŠ” ê°¯ìˆ˜
 	int num = GetRandom(1, 5);
 
-	// ¿É¼Ç Å×ÀÌºí
+	// ì˜µì…˜ í…Œì´ë¸”
 	int nOptions[5][8] =
 	{
 		{3, 6, 12, 19, 23, 52, 56, 59,},
@@ -8372,7 +7351,7 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 			<< nItems[item_index][random_item] << delim
 			<< "Option count: " << num;
 
-	// ¿É¼Ç ºÙÀÌ±â
+	// ì˜µì…˜ ë¶™ì´ê¸°
 	int coolTimeDecreaseOptionID = 0;
 	pChange->m_nOption	 = 0;
 	int rand;
@@ -8405,14 +7384,14 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 			coolTimeDecreaseOptionID = tmpOp;
 		}
 
-		// ¿É¼Ç¹øÈ£·Î ºÙÀ» ¼ö ÀÖ´Â ¿É¼ÇÀÎÁö °Ë»ç
+		// ì˜µì…˜ë²ˆí˜¸ë¡œ ë¶™ì„ ìˆ˜ ìˆëŠ” ì˜µì…˜ì¸ì§€ ê²€ì‚¬
 		COptionProto * proto = gserver->m_optionProtoList.FindProto(tmpOp - 1);
 		if(proto == NULL)
 		{
 			continue;
 		}
 
-		// Level, Value ¼ÂÆÃ
+		// Level, Value ì…‹íŒ…
 		pChange->m_option[pChange->m_nOption].m_proto = proto;
 		pChange->m_option[pChange->m_nOption].m_type = proto->m_type;
 		pChange->m_option[pChange->m_nOption].m_level = op_level;
@@ -8425,14 +7404,14 @@ bool do_ItemUse_Coin(CPC * pc, const CItemProto * pItemProto, int nExtra1)
 
 	GAMELOG << end;
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	if (pc->m_inventory.addItem(pChange) == false)
 	{
 		delete pChange;
 		return false;
 	}
 
-	// ÄÚÀÎ Á¦°Å
+	// ì½”ì¸ ì œê±°
 	pc->m_inventory.deleteItem(vec, coin_count);
 
 	return true;
@@ -8446,34 +7425,34 @@ bool do_ItemUse_2046(CPC* ch, const CItemProto* itemproto, int nExtar1)
 	CItem* pCacaoItem = ch->m_inventory.FindByVirtualIndex(nExtar1);
 	if(!pCacaoItem)
 	{
-		// ÀÎº¥¿¡¼­ ¾ÆÀÌÅÛ Ã£Áö ¸øÇßÀ½
+		// ì¸ë²¤ì—ì„œ ì•„ì´í…œ ì°¾ì§€ ëª»í–ˆìŒ
 		return false;
 	}
 
 	CItem* pPackagedItem;
 	switch(pCacaoItem->m_itemProto->getItemIndex())
 	{
-	case 2043: // Ä«Ä«¿À 30
+	case 2043: // ì¹´ì¹´ì˜¤ 30
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2048, -1, 0, 0, 1);
 		break;
-	case 2044: // Ä«Ä«¿À 60
+	case 2044: // ì¹´ì¹´ì˜¤ 60
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2049, -1, 0, 0, 1);
 		break;
-	case 2045: // Ä«Ä«¿À 60
+	case 2045: // ì¹´ì¹´ì˜¤ 60
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2050, -1, 0, 0, 1);
 		break;
 
-	case 2629: // ÆÄ¶û º¹ÁÖ¸Ó´Ï
+	case 2629: // íŒŒë‘ ë³µì£¼ë¨¸ë‹ˆ
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2634, -1, 0, 0, 1);
 		break;
-	case 2630: // ³ë¶û º¹ÁÖ¸Ó´Ï
+	case 2630: // ë…¸ë‘ ë³µì£¼ë¨¸ë‹ˆ
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2635, -1, 0, 0, 1);
 		break;
-	case 2631: // »¡°­ º¹ÁÖ¸Ó´Ï
+	case 2631: // ë¹¨ê°• ë³µì£¼ë¨¸ë‹ˆ
 		pPackagedItem = gserver->m_itemProtoList.CreateItem(2636, -1, 0, 0, 1);
 		break;
 
-	default:				// Ä«Ä«¿À 30, 60, 90 ÀÎ °Í¸¸ Æ÷ÀåÇÒ ¼ö ÀÖ´Ù	// º¹ÁÖ¸Ó´Ï ¼ÂÆ® Ãß°¡
+	default:				// ì¹´ì¹´ì˜¤ 30, 60, 90 ì¸ ê²ƒë§Œ í¬ì¥í•  ìˆ˜ ìˆë‹¤	// ë³µì£¼ë¨¸ë‹ˆ ì…‹íŠ¸ ì¶”ê°€
 		return false;
 	}
 
@@ -8491,7 +7470,7 @@ bool do_ItemUse_2046(CPC* ch, const CItemProto* itemproto, int nExtar1)
 		return false;
 	}
 
-	// Æ÷ÀåÇÑ Ä«Ä«¿À ¾ÆÀÌÅÛ Á¦°Å
+	// í¬ì¥í•œ ì¹´ì¹´ì˜¤ ì•„ì´í…œ ì œê±°
 	ch->m_inventory.decreaseItemCount(pCacaoItem, 1);
 
 	{
@@ -8510,18 +7489,18 @@ bool do_ItemUse_2148(CPC* ch, const CItemProto* itemproto)
 
 	int rewardIndex = 1;
 
-	// Áö±ŞÇÒ ¾ÆÀÌÅÛ ÃßÃâ ¹× Áö±Ş °¡´É ¿©ºÎ È®ÀÎ
+	// ì§€ê¸‰í•  ì•„ì´í…œ ì¶”ì¶œ ë° ì§€ê¸‰ ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸
 	if( !gserver->m_rewardMgr.setRewardData(ch, rewardIndex ) )
 	{
 		GAMELOG << init("EVENT EGGSHUNT REWARD ERROR", ch) 	<< end;
 		return false;
 	}
 
-	// ´Ş°¿ÀÌ ÀÎº¥¿¡ ÀÖÀ¸¸é Áö±Ş
+	// ë‹¬ê±€ì´ ì¸ë²¤ì— ìˆìœ¼ë©´ ì§€ê¸‰
 	CItem* pEggItem = ch->m_inventory.FindByDBIndex(2148);
 	if (pEggItem == NULL)
 	{
-		// ÀÎº¥¿¡¼­ Ã£Áö ¸øÇß´Ù.
+		// ì¸ë²¤ì—ì„œ ì°¾ì§€ ëª»í–ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventEggsHunt2007ErrorMsg(rmsg, MSG_EVENT_EGGS_HUNT_2007_ERROR_NOITEM);
 		SEND_Q(rmsg, ch->m_desc);
@@ -8610,6 +7589,19 @@ void do_ItemTarget(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
+	if(pSkill->m_proto->m_appRange > 0)
+	{
+		float _distance = GetDistance(ch, tch);
+
+		if(pSkill->m_proto->m_appRange < _distance)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_TOO_FAR_DISTANCE);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+	}
+
 	switch(itemproto->getItemIndex())
 	{
 	case 2374:
@@ -8629,8 +7621,7 @@ void do_ItemTarget(CPC* ch, CNetMsg::SP& msg)
 	delete pSkill;
 	pSkill = NULL;
 
-	if(bApply == false)
-		return ;
+	ch->m_inventory.decreaseItemCount(item, 1);
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -8638,9 +7629,10 @@ void do_ItemTarget(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	ch->m_inventory.decreaseItemCount(item, 1);
+	if(bApply == false)
+		return ;
 
-	//¼Ó¼º ¾ÆÀÌÅÛ »ç¿ë½Ã ½Ã½ºÅÛ ¸Ş½ÃÁö Àü´Ş
+	//ì†ì„± ì•„ì´í…œ ì‚¬ìš©ì‹œ ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì „ë‹¬
 	switch(itemproto->getItemIndex())
 	{
 	case 10848:
@@ -8686,12 +7678,12 @@ void do_ItemTarget(CPC* ch, CNetMsg::SP& msg)
 bool do_itemUse_MoonStoneBox(CPC* ch, const CItemProto* itemproto)
 {
 	const int nMoonStoneGradeCount = 4;
-	static const int MoonStoneGradeProb[nMoonStoneGradeCount][2] =     // ¾ÆÀÌÅÛÀÎµ¦½º, È®·ü
+	static const int MoonStoneGradeProb[nMoonStoneGradeCount][2] =     // ì•„ì´í…œì¸ë±ìŠ¤, í™•ë¥ 
 	{
-		{2545, 520},						// ÃÖÇÏ±Ş¹®½ºÅæ		52
-		{2546, 300},						// ÇÏ±Ş¹®½ºÅæ		30
-		{723, 150},						// ¹®½ºÅæ			15
-		{2547, 30},							// »ó±Ş¹®½ºÅæ		3
+		{2545, 520},						// ìµœí•˜ê¸‰ë¬¸ìŠ¤í†¤		52
+		{2546, 300},						// í•˜ê¸‰ë¬¸ìŠ¤í†¤		30
+		{723, 150},						// ë¬¸ìŠ¤í†¤			15
+		{2547, 30},							// ìƒê¸‰ë¬¸ìŠ¤í†¤		3
 	};
 
 	CItem* MoonStoneBox = ch->m_inventory.FindByDBIndex(2544);
@@ -8706,7 +7698,7 @@ bool do_itemUse_MoonStoneBox(CPC* ch, const CItemProto* itemproto)
 		prob += MoonStoneGradeProb[i][1];
 		if(rand <= prob)
 		{
-// [101229: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101229: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 			if( !ch->CheckInvenForPrize(MoonStoneGradeProb[i][0], 0, 0) )
 			{
 				return false;
@@ -8793,6 +7785,14 @@ void do_ItemUseExchagneEquip( CPC* ch, CNetMsg::SP& msg )
 		LOG_ERROR("HACKING? : not found item. char_index[%d] tab[%d] invenIndex[%d]",
 				  ch->m_index, packet->tab_2, packet->invenIndex_2);
 		ch->m_desc->Close("invalid packet");
+		return;
+	}
+	
+	if( item->getFlag() & FLAG_ITEM_COMPOSITION )
+	{
+		LOG_ERROR("HACKING? : item was composed. char_index[%d] item_index[%d]",
+			ch->m_index, item->getDBIndex());
+		ch->m_desc->Close("composed item");
 		return;
 	}
 
@@ -8899,12 +7899,12 @@ void do_ItemUseExchagneEquip( CPC* ch, CNetMsg::SP& msg )
 	}
 }
 
-// ´ëÀü¿ë ¾ÆÀÌÅÛ
+// ëŒ€ì „ìš© ì•„ì´í…œ
 bool do_useCashItem_CompetitionItem( CPC* ch, CItem* pItem )
 {
 	bool bUsed = false;
 
-// ±¤¼Ó2 µğ¹öÇÁ
+// ê´‘ì†2 ë””ë²„í”„
 	if( (pItem->getDBIndex() == 5018 || pItem->getDBIndex() == 5019 ) &&
 			(/*ch->m_cooltime_Competition > gserver->m_gameTime||*/ ch->m_assist.FindBySkillIndex(995) ) )
 	{
@@ -8989,7 +7989,7 @@ bool do_useCashItem_CompetitionItem( CPC* ch, CItem* pItem )
 	delete skill;
 
 	{
-		// Æ÷¼Ç »ç¿ë ÀÌÆåÆ® ¸Ş½ÃÁö
+		// í¬ì…˜ ì‚¬ìš© ì´í™íŠ¸ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		EffectItemMsg(rmsg, ch, pItem);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -9006,7 +8006,7 @@ bool do_useEventItem_HalloweenCandy( CPC* ch, CItem* pItem )
 	if( !gserver->m_rewardMgr.setRewardData(ch, 32) )
 		return false;
 
-	// º¸»óÀÌ ½ºÅ³ÀÌ ¾Æ´Ï¸é ¹®Á¦°¡ ÀÖ´Ù. ¿¡·¯ Ã³¸® ÇÑ´Ù.
+	// ë³´ìƒì´ ìŠ¤í‚¬ì´ ì•„ë‹ˆë©´ ë¬¸ì œê°€ ìˆë‹¤. ì—ëŸ¬ ì²˜ë¦¬ í•œë‹¤.
 	if( gserver->m_rewardMgr.getRewardDataType(0) != 5 )
 		return false;
 
@@ -9027,10 +8027,10 @@ bool do_useEventItem_HalloweenCandy( CPC* ch, CItem* pItem )
 	{
 	case 470 :
 		nPriceItemIndex=0;
-		break;// Äù½ºÆ® ¾ÆÀÌÅÛ Á¦°ø 2489 (ÃÖ¾ÇÀÇ¸À ÁõÇ¥)
+		break;// í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ì œê³µ 2489 (ìµœì•…ì˜ë§› ì¦í‘œ)
 	case 474 :
 		nPriceItemIndex=1;
-		break;// Äù½ºÆ® ¾ÆÀÌÅÛ Á¦°ø 2488 (ÃÖ°íÀÇ¸À ÁõÇ¥)
+		break;// í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ì œê³µ 2488 (ìµœê³ ì˜ë§› ì¦í‘œ)
 	default:
 		return true;
 	}
@@ -9050,9 +8050,9 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 
 	try
 	{
-		// ÃÖ´ë »ì¼ö ÀÖ´Â ¾ÆÀÌÅÛ Á¾·ùÀÇ ¼ö
+		// ìµœëŒ€ ì‚´ìˆ˜ ìˆëŠ” ì•„ì´í…œ ì¢…ë¥˜ì˜ ìˆ˜
 		if (packet->buyCount > MAX_ITEM_BUY || packet->buyCount <= 0 || packet->clientPrice <= 0)
-			throw 0;		// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
+			throw 0;		// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
 
 		// validation shop
 		CZone* pZone = gserver->FindZone( ZONE_DRATAN );
@@ -9061,19 +8061,19 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 
 		CShop* shop;
 		if (!(shop = pZone->FindShop(npcIdx)))
-			throw 1;		// »óÁ¡ÀÌ ¾øÀ½
+			throw 1;		// ìƒì ì´ ì—†ìŒ
 
 		for(int i = 0; i < packet->buyCount; ++i)
 		{
 			if (packet->list[i].count < 1)
 				throw 5;
 
-			// »óÁ¡¿¡ ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö °Ë»ç throw 6
+			// ìƒì ì— ì•„ì´í…œì´ ìˆëŠ”ì§€ ê²€ì‚¬ throw 6
 			if (shop->ThersIsItem(packet->list[i].itemDBIndex) == false)
-				throw 6;		// »óÁ¡¿¡ ¾ÆÀÌÅÛ ¾øÀ½
+				throw 6;		// ìƒì ì— ì•„ì´í…œ ì—†ìŒ
 		}
 
-		// ´©ÀûÇÕ°è
+		// ëˆ„ì í•©ê³„
 		LONGLONG serverPrice = 0;
 		item = new CItem * [packet->buyCount];
 		memset(item, 0, sizeof(CItem*) * packet->buyCount);
@@ -9083,12 +8083,12 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 			item[i] = gserver->m_itemProtoList.CreateItem(packet->list[i].itemDBIndex, WEARING_NONE, 0, 0, packet->list[i].count);
 
 			if (!item[i])
-				throw 2;		// DB¿¡ ¾ø´Â ¾ÆÀÌÅÛ
+				throw 2;		// DBì— ì—†ëŠ” ì•„ì´í…œ
 
-			// ¾ÆÀÌÅÛ ¸í¼ºÄ¡ °Ë»ç
+			// ì•„ì´í…œ ëª…ì„±ì¹˜ ê²€ì‚¬
 			if (item[i]->m_itemProto->getItemFrame() != -1)
 			{
-				// ¸í¼ºÄ¡ µş¸°´Ù
+				// ëª…ì„±ì¹˜ ë”¸ë¦°ë‹¤
 				if (ch->m_fame < item[i]->m_itemProto->getItemFrame())
 					throw 9;
 			}
@@ -9097,7 +8097,7 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 			{
 				delete item[i];
 				item[i] = NULL;
-				throw 4;		// ÀÎº¥Åä¸® °¡µæ Âü
+				throw 4;		// ì¸ë²¤í† ë¦¬ ê°€ë“ ì°¸
 			}
 
 			LONGLONG itemPrice = 0;
@@ -9120,20 +8120,30 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 			serverPrice += itemPrice;
 		}
 
-		// ÇÕ°è°¡ ´Ù¸£´Ù! -->
+		// í•©ê³„ê°€ ë‹¤ë¥´ë‹¤! -->
 		if (serverPrice != packet->clientPrice)
-			throw 5;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 5;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 
 		if (serverPrice <= 0)
 			throw 5;
 
-		// µ·°Ë»ç
+		//íŒ¨ì‹œë¸Œ ìŠ¤í‚¬ ì ìš©
+		if(ch->m_avPassiveAddition.money_buy)
+		{
+			serverPrice += ch->m_avPassiveAddition.money_buy;
+		}
+		if(ch->m_avPassiveRate.money_buy)
+		{
+			serverPrice += serverPrice * (ch->m_avPassiveRate.money_buy - 100) / SKILL_RATE_UNIT;
+		}
+
+		// ëˆê²€ì‚¬
 		if ((ch->m_inventory.getMoney() >= serverPrice))
 		{
 			ch->m_inventory.decreaseMoney(serverPrice);
 		}
 		else
-			throw 8;	// µ· ¸ğÁú¶÷
+			throw 8;	// ëˆ ëª¨ì§ˆëŒ
 
 		for (int i = 0; i < packet->buyCount; ++i)
 		{
@@ -9161,7 +8171,7 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 	}
 	catch (const int errCode)
 	{
-		// ¿À·ù ¹ß»ı½Ã ¸¸µé¾ú´ø ¾ÆÀÌÅÛ Á¦°Å
+		// ì˜¤ë¥˜ ë°œìƒì‹œ ë§Œë“¤ì—ˆë˜ ì•„ì´í…œ ì œê±°
 		if (item)
 		{
 			for (int i = 0; i < packet->buyCount; ++i)
@@ -9176,30 +8186,30 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 		}
 
 		{
-			// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+			// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 
 			switch (errCode)
 			{
-			case 0:			// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
-			case 1:			// »óÁ¡ÀÌ ¾øÀ½
-			case 2:			// DB¿¡ ¾ø´Â ¾ÆÀÌÅÛ
-			case 3:			// DB¿¡ Àß¸øµÈ °ª
+			case 0:			// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
+			case 1:			// ìƒì ì´ ì—†ìŒ
+			case 2:			// DBì— ì—†ëŠ” ì•„ì´í…œ
+			case 3:			// DBì— ì˜ëª»ëœ ê°’
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
 				break;
-			case 4:			// ÀÎº¥Åä¸® °¡µæ Âü
+			case 4:			// ì¸ë²¤í† ë¦¬ ê°€ë“ ì°¸
 				SysFullInventoryMsg(rmsg, 0);
 				break;
-			case 5:			// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
-			case 6:			// »óÁ¡¿¡ ¾ÆÀÌÅÛ ¾øÀ½
-			case 7:			// µ· »©±â ½ÇÆĞ
+			case 5:			// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
+			case 6:			// ìƒì ì— ì•„ì´í…œ ì—†ìŒ
+			case 7:			// ëˆ ë¹¼ê¸° ì‹¤íŒ¨
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
 				break;
-			case 8:			// µ· ¸ğÁú¶÷
+			case 8:			// ëˆ ëª¨ì§ˆëŒ
 				SysMsg(rmsg, MSG_SYS_SHORT_MONEY);
 				break;
 
-			case 9:			// ¸í¼º ºÎÁ·
+			case 9:			// ëª…ì„± ë¶€ì¡±
 				SysMsg(rmsg, MSG_SYS_SHORT_FAME);
 				break;
 			}
@@ -9212,8 +8222,8 @@ void do_GroceryItemBuy(CPC* ch, CNetMsg::SP& msg)
 		delete [] item;
 }
 
-// Buy & Sell ¸ğµÎ PCÀ§ÁÖ·Î ±¸¼º
-// Player°¡ ÆÈ¶§ Item Sell Msg, Sell Rate Àû¿ë
+// Buy & Sell ëª¨ë‘ PCìœ„ì£¼ë¡œ êµ¬ì„±
+// Playerê°€ íŒ”ë•Œ Item Sell Msg, Sell Rate ì ìš©
 void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doItemGroceryItemSell* packet = reinterpret_cast<RequestClient::doItemGroceryItemSell*>(msg->m_buf);
@@ -9229,9 +8239,9 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 			throw 0;
 		}
 
-		// ÃÖ´ë ÆÈ¼ö ÀÖ´Â ¾ÆÀÌÅÛ Á¾·ùÀÇ ¼ö
+		// ìµœëŒ€ íŒ”ìˆ˜ ìˆëŠ” ì•„ì´í…œ ì¢…ë¥˜ì˜ ìˆ˜
 		if (packet->sellCount > MAX_ITEM_SELL || packet->sellCount <= 0)
-			throw 0;		// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
+			throw 0;		// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
 
 		std::set<int> check_duplication;
 		for (int i = 0; i < packet->sellCount; ++i)
@@ -9260,20 +8270,22 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 
 		CShop* shop;
 		if (!(shop = pZone->FindShop(npcIdx)))
-			throw 1;		// »óÁ¡ÀÌ ¾øÀ½
+			throw 1;		// ìƒì ì´ ì—†ìŒ
 
 		LONGLONG serverPrice = 0;
 		item = new CItem * [packet->sellCount];
 		memset(item, 0, sizeof(CItem*) * packet->sellCount);
 
-		// ÆÇ¸Å ¾ÆÀÌÅÛ ¸¸µé±â
+		int bonus = 0;
+
+		// íŒë§¤ ì•„ì´í…œ ë§Œë“¤ê¸°
 		for (int i = 0; i < packet->sellCount; ++i)
 		{
 			item[i] = ch->m_inventory.getItem(packet->list[i].tab, packet->list[i].invenIndex);
 			if (item[i] == NULL)
-				throw 2;	// ÀÎº¥¿¡ ¾ø´Â ¾ÆÀÌÅÛ
+				throw 2;	// ì¸ë²¤ì— ì—†ëŠ” ì•„ì´í…œ
 
-			// ½ÇÁ¦ ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ Å¬¶óÀÌ¾ğÆ®¿¡¼­ ÆÈ·Á´ø °¹¼öº¸´Ù ÀÛ´Ù.
+			// ì‹¤ì œ ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ í´ë¼ì´ì–¸íŠ¸ì—ì„œ íŒ”ë ¤ë˜ ê°¯ìˆ˜ë³´ë‹¤ ì‘ë‹¤.
 			if (item[i]->Count() < packet->list[i].count)
 				throw 2;
 
@@ -9293,12 +8305,12 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ÀÔ°í ÀÖ°Å³ª »óÁ¡ ºÒ°¡ ¾ÆÀÌÅÛÀÎ °æ¿ì
+			// ì…ê³  ìˆê±°ë‚˜ ìƒì  ë¶ˆê°€ ì•„ì´í…œì¸ ê²½ìš°
 			if (!item[i]->CanSellToShop())
 				throw 6;
 
 #ifdef LC_USA
-			// ¹Ì±¹Àº 97·¹º§ ÀÌ»óÀÇ ¾ÆÀÌÅÛÀº ¸Å°¢°¡°İÀÇ Àı¹İ¸¸ ÁØ´Ù.
+			// ë¯¸êµ­ì€ 97ë ˆë²¨ ì´ìƒì˜ ì•„ì´í…œì€ ë§¤ê°ê°€ê²©ì˜ ì ˆë°˜ë§Œ ì¤€ë‹¤.
 #ifdef BUGFIX_ITEMSELL_HACKUSER
 			LONGLONG itemPrice = item[i]->m_itemProto->getItemPrice() * shop->m_sellRate;
 			if (item[i]->m_itemProto->GetItemProtoLevel() >= 97)
@@ -9327,11 +8339,29 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 			serverPrice += (item[i]->m_itemProto->getItemPrice() * shop->m_sellRate / 100) * packet->list[i].count;
 #endif // BUGFIX_ITEMSELL_HACKUSER
 #endif // LC_USA
+			if(item[i]->m_itemProto->getItemIndex() != ROOKIE_REGIST_ITEM
+				&& item[i]->m_itemProto->getItemIndex() != SENIOR_REGIST_ITEM
+				&& item[i]->m_itemProto->getItemIndex() != MASTER_REGIST_ITEM
+				)
+			{
+				if(ch->m_avPassiveAddition.money_sell)
+				{
+					bonus += ch->m_avPassiveAddition.money_sell;
+				}
+				if(ch->m_avPassiveRate.money_sell)
+				{
+#ifdef	BUGFIX_ITEMSELL_HACKUSER
+					bonus += itemPrice * (ch->m_avPassiveRate.money_sell - 100) / SKILL_RATE_UNIT;
+#else
+					bonus += ((item[i]->m_itemProto->getItemPrice() * shop->m_sellRate / 100) * packet->list[i].count) * (ch->m_avPassiveRate.money_sell - 100) / SKILL_RATE_UNIT;
+#endif
+				}
+			}
 		}
 
 //#ifdef LC_USA
-		// °¡°İÀÇ Â÷ÀÌ°¡ 10³ª½º ÀÌÇÏÀÌ¸é Å¬¶óÀÌ¾ğÆ® °¡°İ¿¡ ¸ÂÃá´Ù.
-		// ÆÇ¸ÅÇÒ ¶§ ÃÖ´ë 10°³ °¡´É, 2·Î ³ª´©¸é ³ª¸ÓÁö°¡ 1¾¿ ³ª¿À¹Ç·Î ¿ÀÂ÷´Â ÃÖ´ë 10... ±×·¯¹Ç·Î 10±îÁö¸¸ º¸Á¤À» ÇÔ
+		// ê°€ê²©ì˜ ì°¨ì´ê°€ 10ë‚˜ìŠ¤ ì´í•˜ì´ë©´ í´ë¼ì´ì–¸íŠ¸ ê°€ê²©ì— ë§ì¶˜ë‹¤.
+		// íŒë§¤í•  ë•Œ ìµœëŒ€ 10ê°œ ê°€ëŠ¥, 2ë¡œ ë‚˜ëˆ„ë©´ ë‚˜ë¨¸ì§€ê°€ 1ì”© ë‚˜ì˜¤ë¯€ë¡œ ì˜¤ì°¨ëŠ” ìµœëŒ€ 10... ê·¸ëŸ¬ë¯€ë¡œ 10ê¹Œì§€ë§Œ ë³´ì •ì„ í•¨
 #ifdef	BUGFIX_ITEMSELL_HACKUSER
 		LONGLONG gapPrice = (serverPrice > packet->clientPrice) ? (serverPrice - packet->clientPrice) : (packet->clientPrice - serverPrice);
 #else
@@ -9344,20 +8374,20 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 			serverPrice = packet->clientPrice;
 		}
 		else
-			throw 3;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 3;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 //#else
-		// ÇÕ°è°¡ ´Ù¸£´Ù! -->
+		// í•©ê³„ê°€ ë‹¤ë¥´ë‹¤! -->
 		if (serverPrice != packet->clientPrice)
-			throw 3;		// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
+			throw 3;		// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
 //#endif // LC_USA
 		if (serverPrice <= 0)
 			throw 3;
-		// µ· ´õÇÏ±â
+		// ëˆ ë”í•˜ê¸°
 		LONGLONG nowMoney = ch->m_inventory.getMoney();
-		if (ch->m_inventory.increaseMoney(serverPrice) == nowMoney)
-			throw 4;		// µ· ³Ö±â ½ÇÆĞ
+		if (ch->m_inventory.increaseMoney(serverPrice, bonus) == nowMoney)
+			throw 4;		// ëˆ ë„£ê¸° ì‹¤íŒ¨
 
-		// ÀÎº¥¿¡¼­ ÆÄ´Â ¾ÆÀÌÅÛ ¿ÏÀü Á¦°Å
+		// ì¸ë²¤ì—ì„œ íŒŒëŠ” ì•„ì´í…œ ì™„ì „ ì œê±°
 		for (int i = 0; i < packet->sellCount; ++i)
 		{
 #ifdef GER_LOG
@@ -9384,17 +8414,17 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 	}
 	catch (const int errCode)
 	{
-		// ¿À·ù ¸Ş½ÃÁö º¸³»±â
+		// ì˜¤ë¥˜ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		switch (errCode)
 		{
-		case 0:			// ¸Ş½ÃÁö ³»ÀÇ ¾ÆÀÌÅÛ Á¾·ù ¼ö ¿À·ù
-		case 1:			// »óÁ¡ÀÌ ¾øÀ½
-		case 2:			// ÀÎº¥¿¡ ¾ø´Â ¹°°Ç
-		case 3:			// Å¬¶óÀÌ¾ğÆ® µ¥ÀÌÅÍ ¿À·ù : °¡°İ Æ²¸²
-		case 4:			// µ· ³Ö±â ½ÇÆĞ
-		case 5:			// ÀÎº¥¿¡¼­ Á¦°Å ½ÇÆĞ
-		case 6:			// ÆÈ¼ö ¾ø´Â ¾ÆÀÌÅÛ
-		case 7:			// ÆÈ·Á´Â ¾ÆÀÌÅÛÀÇ °³¼ö°¡ ³Ê¹« ¸¹À½
+		case 0:			// ë©”ì‹œì§€ ë‚´ì˜ ì•„ì´í…œ ì¢…ë¥˜ ìˆ˜ ì˜¤ë¥˜
+		case 1:			// ìƒì ì´ ì—†ìŒ
+		case 2:			// ì¸ë²¤ì— ì—†ëŠ” ë¬¼ê±´
+		case 3:			// í´ë¼ì´ì–¸íŠ¸ ë°ì´í„° ì˜¤ë¥˜ : ê°€ê²© í‹€ë¦¼
+		case 4:			// ëˆ ë„£ê¸° ì‹¤íŒ¨
+		case 5:			// ì¸ë²¤ì—ì„œ ì œê±° ì‹¤íŒ¨
+		case 6:			// íŒ”ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
+		case 7:			// íŒ”ë ¤ëŠ” ì•„ì´í…œì˜ ê°œìˆ˜ê°€ ë„ˆë¬´ ë§ìŒ
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_SHOP_CANCEL);
@@ -9411,7 +8441,7 @@ void do_GroceryItemSell(CPC* ch, CNetMsg::SP& msg)
 #if defined (SAKURA_EVENT_2008_REWARD)
 bool do_ItemUse_SakuraBox( CPC * pc, const CItemProto * pItemProto, int nExtra1 )
 {
-	// º¸»ó¾ÆÀÌÅÛ Á¦°ø
+	// ë³´ìƒì•„ì´í…œ ì œê³µ
 	int nEventItem[10][3] =   // ItemIndex, Count, Percent
 	{
 		{ 85, 1, 5}, { 2548, 2, 15	}, { 2547, 5, 30}, { 884, 2, 50 }, { 786, 1, 50 }, { 1310, 1, 100 },
@@ -9451,7 +8481,7 @@ bool do_ItemUse_SakuraBox( CPC * pc, const CItemProto * pItemProto, int nExtra1 
 	if (pc->m_inventory.addItem(pEventItem))
 	{
 		GAMELOG << init( "USE SAKURA EVENT ITEM BOX", pc ) << itemlog(pEventItem) << end;
-		if( nEventItem[nProbIndex][0] == 85 || nEventItem[nProbIndex][0] == 2548 )	// °íÁ¦°Å³ª , ÃÖ»ó±Ş ¹®½ºÅæ ÀÌ¸é ¼­¹ö¿¡ ¾Ë¸²
+		if( nEventItem[nProbIndex][0] == 85 || nEventItem[nProbIndex][0] == 2548 )	// ê³ ì œê±°ë‚˜ , ìµœìƒê¸‰ ë¬¸ìŠ¤í†¤ ì´ë©´ ì„œë²„ì— ì•Œë¦¼
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventSakuraEvent2008Msg( rmsg, MSG_EVNET_SAKURAEVENT_2008_ITEMCHANGE );
@@ -9459,7 +8489,7 @@ bool do_ItemUse_SakuraBox( CPC * pc, const CItemProto * pItemProto, int nExtra1 
 			PCManager::instance()->sendToAll( rmsg );
 		}
 	}
-	else // ½ÇÆĞ
+	else // ì‹¤íŒ¨
 	{
 		delete pEventItem;
 
@@ -9487,26 +8517,37 @@ void do_itemUse_WarpDoc(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	CZone* pZone = gserver->FindZone(packet->zone);
+	switch(item->m_itemProto->getItemIndex())
+	{
+	case 2860:
+	case 2861:
+	case 2862:
+	case 2863:
+	case 2864:
+		break;
+	default:
+		{
+			LOG_ERROR("HACKING? : Invalid Item. char_index[%d], itemIndex[%d]", ch->m_index, item->m_itemProto->getItemIndex());
+			ch->m_desc->Close("Invalid Item");
+			return;
+		}
+	}
+
+	int zone_index = item->m_itemProto->getItemNum0();
+
+	CZone* pZone = gserver->FindZone(zone_index);
 	if (pZone == NULL)
 	{
-		LOG_ERROR("HACKING? : not found zone. char_index[%d] zone[%d]", ch->m_index, packet->zone);
+		LOG_ERROR("HACKING? : not found zone. char_index[%d], zone[%d], itemIndex[%d]", ch->m_index, zone_index, item->m_itemProto->getItemIndex());
 		ch->m_desc->Close("not found zone");
 		return;
 	}
 
-	if (packet->extra < 0 || packet->extra >= pZone->m_countZonePos)
-	{
-		LOG_ERROR("HACKING? : invalid extra. char_index[%d] extra[%d]", ch->m_index, packet->extra);
-		ch->m_desc->Close("invalid extra");
-		return;
-	}
+	GoZone(ch, zone_index, pZone->m_zonePos[0][0],
+		   GetRandom(pZone->m_zonePos[0][1], pZone->m_zonePos[0][3]) / 2.0f,
+		   GetRandom(pZone->m_zonePos[0][2], pZone->m_zonePos[0][4]) / 2.0f);
 
-	GoZone(ch, packet->zone, pZone->m_zonePos[packet->extra][0],
-		   GetRandom(pZone->m_zonePos[packet->extra][1], pZone->m_zonePos[packet->extra][3]) / 2.0f,
-		   GetRandom(pZone->m_zonePos[packet->extra][2], pZone->m_zonePos[packet->extra][4]) / 2.0f);
-
-	if(ch->m_pZone->m_index == packet->zone)
+	if(ch->m_pZone->m_index == zone_index)
 	{
 		GAMELOG << init("CASH_ITEM_USE", ch)
 				<< itemlog(item) << delim
@@ -9548,7 +8589,7 @@ void do_itemCheck_Composition(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// COMPOSITION ¾ÆÀÌÅÛ Ã£±â, NORMAL INVEN ÀÌ¶ó°í È®Á¤
+	// COMPOSITION ì•„ì´í…œ ì°¾ê¸°, NORMAL INVEN ì´ë¼ê³  í™•ì •
 	CItem* pCompotionItem = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 	if( pCompotionItem && pCompotionItem->getVIndex() == packet->virtualIndex && (pCompotionItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) )
 	{
@@ -9567,7 +8608,7 @@ void do_itemCheck_Composition(CPC* ch, CNetMsg::SP& msg)
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		ItemCheckCompotion( rmsg, -1, -1, -1 );			// °áÇÕµÈ ¾ÆÀÌÅÛÀ» Ã£À» ¼ö ¾øÀ½
+		ItemCheckCompotion( rmsg, -1, -1, -1 );			// ê²°í•©ëœ ì•„ì´í…œì„ ì°¾ì„ ìˆ˜ ì—†ìŒ
 		SEND_Q( rmsg, ch->m_desc );
 	}
 }
@@ -9576,9 +8617,9 @@ bool do_ItemUse_2887(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9636,9 +8677,9 @@ bool do_ItemUse_2888(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9697,9 +8738,9 @@ bool do_ItemUse_2889(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9760,9 +8801,9 @@ bool do_ItemUse_2890(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9818,9 +8859,9 @@ bool do_ItemUse_2891(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9877,9 +8918,9 @@ bool do_ItemUse_2892(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -9938,9 +8979,9 @@ bool do_ItemUse_2893(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10001,18 +9042,18 @@ bool do_ItemUse_2893(CPC* ch, const CItemProto* itemproto)
 
 bool do_ItemUse_2968(CPC* ch, const CItemProto* itemproto)
 {
-	// ·°Å°µå·Î¿ì·Î  DB ·Î º¯°æ ÀÌÇÔ¼ö´Â »ç¿ëÇÏÁö ¾ÊÀ½ // »èÁ¦¿¹Á¤
+	// ëŸ­í‚¤ë“œë¡œìš°ë¡œ  DB ë¡œ ë³€ê²½ ì´í•¨ìˆ˜ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ // ì‚­ì œì˜ˆì •
 
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
 	const int nTableSize	= 34;
-	int nTable[nTableSize][5]	=  		// ¾ÆÀÌÅÛÀÎµ¦½º, È®·ü, °³¼ö, plus, flag
+	int nTable[nTableSize][5]	=  		// ì•„ì´í…œì¸ë±ìŠ¤, í™•ë¥ , ê°œìˆ˜, plus, flag
 	{
 		{2844, 2, 1, 0, 0},
 		{19, 2, 1000000000, 0, 0},
@@ -10091,9 +9132,9 @@ bool do_ItemUse_GoldBox(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10200,14 +9241,14 @@ bool do_ItemUse_GoldBox(CPC* ch, const CItemProto* itemproto)
 
 bool do_ItemUse_3769 ( CPC* ch, const CItemProto* itemproto )
 {
-	if( ch->m_level > 5 )							// »ç¿ë ·¹º§ Á¦ÇÑ
+	if( ch->m_level > 5 )							// ì‚¬ìš© ë ˆë²¨ ì œí•œ
 		return false;
 
 	//if( ch->m_job < 0 || ch->m_job > 5)
-	if( ch->m_job > 5 )								// Á÷¾÷Á¦ÇÑ
+	if( ch->m_job > 5 )								// ì§ì—…ì œí•œ
 		return false;
 
-	if( ch->m_inventory.getEmptyCount() < 7 )			// Àåºñ 7 µ· 1
+	if( ch->m_inventory.getEmptyCount() < 7 )			// ì¥ë¹„ 7 ëˆ 1
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_FULL_INVENTORY);
@@ -10242,7 +9283,7 @@ bool do_ItemUse_3769 ( CPC* ch, const CItemProto* itemproto )
 				ch->m_inventory.decreaseItemCount(item[i], item[i]->Count());
 			}
 
-			// Áı¾î³ÖÁö ¸øÇÑ ¾ÆÀÌÅÛ »èÁ¦
+			// ì§‘ì–´ë„£ì§€ ëª»í•œ ì•„ì´í…œ ì‚­ì œ
 			for (; i < 7; ++i)
 			{
 				delete item[i];
@@ -10329,7 +9370,7 @@ bool do_ItemUse_1053(CPC* ch, const CItemProto* itemproto)
 			GAMELOG << init("PACKAGE_ITEM_GIVE_FAIL", ch->m_name, ch->m_desc->m_idname)
 					<< pItemIdx[i] << end;
 
-			// ·Ñ¹é
+			// ë¡¤ë°±
 			for(int j = i - 1; j >= 0; j--)
 			{
 				CItemProto* pItemProto = gserver->m_itemProtoList.FindIndex(pItemIdx[j]);
@@ -10349,16 +9390,16 @@ bool do_ItemUse_1053(CPC* ch, const CItemProto* itemproto)
 	return true;
 }
 
-// ·¹ÀÌµå ¹Ú½º ¾ÆÀÌÅÛ(ÀÏÈ¸¿ë)
-// ²Î Ã³¸®(º¸»ó ¾ÆÀÌÅÛ : -1)
+// ë ˆì´ë“œ ë°•ìŠ¤ ì•„ì´í…œ(ì¼íšŒìš©)
+// ê½ ì²˜ë¦¬(ë³´ìƒ ì•„ì´í…œ : -1)
 #ifndef BUGFIX_SPECIALBOX_DROPRATE
 bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 {
 	if(!item)
 		return false;
 
-	bool bEmpty = false;	// ²Î º¯¼ö
-	bool bInvenFull=false;	// ÀÎº¥ Ç®
+	bool bEmpty = false;	// ê½ ë³€ìˆ˜
+	bool bInvenFull=false;	// ì¸ë²¤ í’€
 	int				nProb;
 	CItem* pItem =NULL;
 	int nSelItemIndex = 0;
@@ -10380,7 +9421,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 	{
 		rdd = *(it);
 
-		// È®·ü Àû¿ë
+		// í™•ë¥  ì ìš©
 		nProb = GetRandom(1, 100);
 		if (nProb <= rdd.spec_prob)
 		{
@@ -10504,7 +9545,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 			if (pItem == NULL || !(pItem->m_itemProto))
 				continue;
 
-			// ÇöÀç ¹øÈ£ÀÇ ¾ÆÀÌÅÛÀÌ ³ª¿ÃÁö ¾Æ´Ï¸é ´ÙÀ½ ¾ÆÀÌÅÛÀÎÁö Àı¹İ È®·üÀÓ
+			// í˜„ì¬ ë²ˆí˜¸ì˜ ì•„ì´í…œì´ ë‚˜ì˜¬ì§€ ì•„ë‹ˆë©´ ë‹¤ìŒ ì•„ì´í…œì¸ì§€ ì ˆë°˜ í™•ë¥ ì„
 			int nItemProb = GetRandom(1, 2);
 			if(nItemProb < 2)
 				continue;
@@ -10513,7 +9554,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 			{
 				bInvenFull = true;
 
-				//ÀÎº¥Ç® ÀÌ¸é ¾ÆÀÌÅÛ µå¶ø
+				//ì¸ë²¤í’€ ì´ë©´ ì•„ì´í…œ ë“œë
 				if(nSelItemIndex > 0 && ch->m_pArea)
 				{
 					pItem = ch->m_pArea->DropItem(nSelItemIndex, ch, 0, 0, 1, true);
@@ -10536,10 +9577,10 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 		}
 	}
 
-	//²Î¿¡¸¸ º¸³¿
+	//ê½ì—ë§Œ ë³´ëƒ„
 	else
 	{
-		// º¯°æ ½Ã½ºÅÛ ¸Ş¼¼Áö(²Î)
+		// ë³€ê²½ ì‹œìŠ¤í…œ ë©”ì„¸ì§€(ê½)
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysChangeRaidBoxMsg(rmsg, -1, -1);
 		SEND_Q(rmsg, ch->m_desc);
@@ -10575,14 +9616,14 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 	{
 		RAIDDROPDATA& rdd = *(it);
 
-		// È®·ü Àû¿ë
+		// í™•ë¥  ì ìš©
 		nProb = GetRandom(1, 100);
 		if (nProb <= rdd.spec_prob)
 		{
-			// ¿©±â±îÁö ¿À¸é ¹«Á¶°Ç µå¶ø
+			// ì—¬ê¸°ê¹Œì§€ ì˜¤ë©´ ë¬´ì¡°ê±´ ë“œë
 			int		dropbit = 0;
 
-			// ¾ÆÀÌÅÛ µå¶ø ÇÃ·¡±× »ı¼º
+			// ì•„ì´í…œ ë“œë í”Œë˜ê·¸ ìƒì„±
 			int dropCount = GetRandom( rdd.spec_Min, rdd.spec_Max );
 			int itemCount = 0 , maxRandom = 30;
 			while (  itemCount < dropCount )
@@ -10593,7 +9634,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 					maxRandom--;
 					if( maxRandom < 0 )
 						break;
-					// ¾ÆÀÌÅÛÀÌ ¾ø´Â¸ñ·ÏÀÌ°Å³ª ÀÌ¹Ì ÇÃ·¡±× ÀÖÀ½
+					// ì•„ì´í…œì´ ì—†ëŠ”ëª©ë¡ì´ê±°ë‚˜ ì´ë¯¸ í”Œë˜ê·¸ ìˆìŒ
 				}
 				else
 				{
@@ -10608,18 +9649,18 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 				continue;
 			}
 
-			// ÇÃ·¡±×¿¡ µû¸¥ ¾ÆÀÌÅÛ µå¶ø
+			// í”Œë˜ê·¸ì— ë”°ë¥¸ ì•„ì´í…œ ë“œë
 			for( int dropidx = 0; dropidx < 14; dropidx++ )
 			{
 				if ( dropbit & (1<<dropidx ) )
 				{
-					// µå¶ø Bit °¡ °É·Á ÀÖÀ¸¸é µå¶ø
+					// ë“œë Bit ê°€ ê±¸ë ¤ ìˆìœ¼ë©´ ë“œë
 					int dropItemIndex = -1;
 
 					if( rdd.spec_itemindex[dropidx] > 0 )
 						dropItemIndex = rdd.spec_itemindex[dropidx];
 					else
-						continue;	// ¾ÆÀÌÅÛ ºñ¾úÀ½
+						continue;	// ì•„ì´í…œ ë¹„ì—ˆìŒ
 
 					CItem* pItem = gserver->m_itemProtoList.CreateItem( dropItemIndex , -1, 0, 0, 1);
 					if (pItem == NULL)
@@ -10633,7 +9674,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 						if(dropItemIndex > 0 && ch->m_pArea)
 						{
 							{
-								//ÀÎº¥ Ç®
+								//ì¸ë²¤ í’€
 								CNetMsg::SP rmsg(new CNetMsg);
 								SysFullInventoryMsg(rmsg, 0);
 								SEND_Q(rmsg, ch->m_desc);
@@ -10663,9 +9704,9 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 		}
 	}
 
-	if( !bSuccess )	// ²ÎÀÓ
+	if( !bSuccess )	// ê½ì„
 	{
-		// º¯°æ ½Ã½ºÅÛ ¸Ş¼¼Áö(²Î)
+		// ë³€ê²½ ì‹œìŠ¤í…œ ë©”ì„¸ì§€(ê½)
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysChangeRaidBoxMsg(rmsg, -1, -1);
 		SEND_Q(rmsg, ch->m_desc);
@@ -10683,7 +9724,7 @@ bool do_ItemUse_4709(CPC* ch, const CItemProto* itemproto, CItem* item)
 bool do_ItemUse_IETC_TriggerItem4567(CPC* ch)
 {
 	int i;
-	int debuffIndex[3] = {852, 853, 854};	// ¾ÏÈæÀÇ Á¦´Ü 1Â÷ ³×ÀÓµå npc°¡ ¹ŞÀ» µğ¹öÇÁ 3°¡Áö
+	int debuffIndex[3] = {852, 853, 854};	// ì•”í‘ì˜ ì œë‹¨ 1ì°¨ ë„¤ì„ë“œ npcê°€ ë°›ì„ ë””ë²„í”„ 3ê°€ì§€
 
 	if (ch->m_pArea == NULL || ch->m_pArea->m_npcList == NULL)
 		return false;
@@ -10694,12 +9735,12 @@ bool do_ItemUse_IETC_TriggerItem4567(CPC* ch)
 	if ( tnpc == NULL)
 		return false;
 
-	// npcList¸¦ °Ë»çÇÑ´Ù.
+	// npcListë¥¼ ê²€ì‚¬í•œë‹¤.
 	while ((npc = tnpc))
 	{
 		tnpc = npc->m_pNPCNext;
 
-		// ¾ÏÈæÀÇ Á¦´Ü 1Â÷ ³×ÀÓµå npc
+		// ì•”í‘ì˜ ì œë‹¨ 1ì°¨ ë„¤ì„ë“œ npc
 		if(npc->m_proto->m_index != 1002)
 			continue;
 
@@ -10716,7 +9757,7 @@ bool do_ItemUse_IETC_TriggerItem4567(CPC* ch)
 				return false;
 			}
 
-			// µğ¹öÇÁ°¡ °É¸°´Ù.
+			// ë””ë²„í”„ê°€ ê±¸ë¦°ë‹¤.
 			bool bDebuffApply = false;
 			ApplySkill( ch, npc, pDebuff, -1, bDebuffApply);
 
@@ -10741,7 +9782,7 @@ bool do_ItemUse_IETC_TriggerItem4567(CPC* ch)
 
 void do_ItemUse_DeleteRaidCharacter_4911(CPC* ch, const CItemProto* itemproto)
 {
-	// ÆÄÆ¼³ª ¿øÁ¤´ë »óÅÂÀÌ¸é »ç¿ëÇÒ ¼ö ¾ø´Ù.
+	// íŒŒí‹°ë‚˜ ì›ì •ëŒ€ ìƒíƒœì´ë©´ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 	if (ch->IsParty() || ch->IsExped())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -10750,7 +9791,7 @@ void do_ItemUse_DeleteRaidCharacter_4911(CPC* ch, const CItemProto* itemproto)
 		return;
 	}
 
-	// ¿øÁ¤´ë ·¹ÀÌµå Á¸ ¾È¿¡¼­´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
+	// ì›ì •ëŒ€ ë ˆì´ë“œ ì¡´ ì•ˆì—ì„œëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 	if (ch->m_pZone)
 	{
 		if (ch->m_pZone->m_index == ZONE_ALTER_OF_DARK || ch->m_pZone->m_index == ZONE_AKAN_TEMPLE)
@@ -10764,13 +9805,13 @@ void do_ItemUse_DeleteRaidCharacter_4911(CPC* ch, const CItemProto* itemproto)
 	else
 		return;
 
-	// ÀÎº¥Åä¸® ¾ÆÀÌÅÛ °Ë»ç
+	// ì¸ë²¤í† ë¦¬ ì•„ì´í…œ ê²€ì‚¬
 	if (ch->m_inventory.FindByDBIndex(itemproto->getItemIndex(), 0, 0) == NULL)
 		return;
 
 	{
-		// CharDB¿¡¼­ ·¹ÀÌµå ±Í¼Ó Á¤º¸¸¦ Áö¿ì±â À§ÇØ ¸Ş½ÃÁö¸¦ º¸³½´Ù.
-		// ÇØ´ç ¾ÆÀÌÅÛ »èÁ¦´Â ÇïÆÛ¿¡¼­ ¼º°øÇß´Ù´Â ¸Ş¼¼Áö¸¦ ¹ŞÀ¸¸é ÇÑ´Ù.
+		// CharDBì—ì„œ ë ˆì´ë“œ ê·€ì† ì •ë³´ë¥¼ ì§€ìš°ê¸° ìœ„í•´ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¤.
+		// í•´ë‹¹ ì•„ì´í…œ ì‚­ì œëŠ” í—¬í¼ì—ì„œ ì„±ê³µí–ˆë‹¤ëŠ” ë©”ì„¸ì§€ë¥¼ ë°›ìœ¼ë©´ í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperDeleteRaidCharacterMsg(rmsg, ch->m_index);
 		SEND_Q(rmsg, gserver->m_helper);
@@ -10783,9 +9824,9 @@ bool do_ItemUse_4664(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10828,9 +9869,9 @@ bool do_ItemUse_4786(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10873,9 +9914,9 @@ bool do_ItemUse_4787(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10918,9 +9959,9 @@ bool do_ItemUse_4788(CPC* ch, const CItemProto* itemproto)
 {
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
-		// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
-		// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-		// ¿ì³ÊÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+		// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+		// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+		// ìš°ë„ˆí•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 		return false;
 	}
 
@@ -10966,7 +10007,7 @@ bool do_ItemUse_LuckyDrawBox(CPC* ch, const CItemProto* itemproto)
 	if( pLucky == NULL)
 		return false;
 
-	// Random Type º°·Î ³ª´²¼­ Ã³¸® ÇÏÀÚ
+	// Random Type ë³„ë¡œ ë‚˜ëˆ ì„œ ì²˜ë¦¬ í•˜ì
 	switch( pLucky->random )
 	{
 	case 0: // prob
@@ -10999,7 +10040,7 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 	int nTotalRate = 0;
 	int nResultIdx = -1;
 
-	// Áö±Ş¾ÆÀÌÅÛ ÃàÃâ
+	// ì§€ê¸‰ì•„ì´í…œ ì¶•ì¶œ
 	switch( pLucky->random )
 	{
 	case 0: // prob
@@ -11029,7 +10070,7 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 		return false;
 	}
 
-	// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
+	// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
 	CItemProto * pProto = gserver->m_itemProtoList.FindIndex(pLucky->resultList[nResultIdx].item_idx);
 	if( pProto == NULL)
 	{
@@ -11039,8 +10080,8 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 		return false;
 	}
 
-	// ¸¸¾à °ãÄ¡´Â ¾ÆÀÌÅÛÀÎ °æ¿ì ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ ³Ö¾î ³õ°í ÀÎº¥À» ²Ë Ã¤¿ì¸é
-	// ¿øÇÏ´Â ¾ÆÀÌÅÛÀ» ¹ŞÀ» ¼ö ÀÖ±â ¶§¹®¿¡  ÀÌ¸¦ À§ÇÑ ¹æÁö ÄÚµå
+	// ë§Œì•½ ê²¹ì¹˜ëŠ” ì•„ì´í…œì¸ ê²½ìš° ì›í•˜ëŠ” ì•„ì´í…œì„ ì¸ë²¤ì— ë„£ì–´ ë†“ê³  ì¸ë²¤ì„ ê½‰ ì±„ìš°ë©´
+	// ì›í•˜ëŠ” ì•„ì´í…œì„ ë°›ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—  ì´ë¥¼ ìœ„í•œ ë°©ì§€ ì½”ë“œ
 	LONGLONG checkCount = pLucky->resultList[nResultIdx].count;
 	if( pProto->getItemFlag() & ITEM_FLAG_COUNT)
 		checkCount = 1;
@@ -11053,7 +10094,7 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 		return false;
 	}
 
-	// °á°ú ¾ÆÀÌÅÛ »ı¼º
+	// ê²°ê³¼ ì•„ì´í…œ ìƒì„±
 	CItem * pRItem = gserver->m_itemProtoList.CreateItem(pLucky->resultList[nResultIdx].item_idx, -1,
 					 pLucky->resultList[nResultIdx].upgrade,
 					 pLucky->resultList[nResultIdx].flag,
@@ -11066,7 +10107,7 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 			<< itemlog(pRItem)
 			<< end;
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	if (ch->m_inventory.addItem(pRItem) == false)
 	{
 		delete pRItem;
@@ -11078,7 +10119,7 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 		return false;
 	}
 
-	// ÇÊ¿ä ¾ÆÀÌÅÛ »èÁ¦
+	// í•„ìš” ì•„ì´í…œ ì‚­ì œ
 	for(int i = 0; i < pLucky->nNeedCount; i++)
 	{
 		ch->m_inventory.deleteItem(vec[i], pLucky->needList[i].count);
@@ -11088,10 +10129,10 @@ bool do_ItemUse_LuckyDrawBoxResult_Prob_Random(CPC* ch, const CItemProto* itempr
 
 }
 
-// °ÅÀÇ °°Àº ±â´É... ³ªÁß¿¡ À§ ¼Ò½º¸¦ ÇÏ³ª·ÎÇÕÄ¡ÀÚ... Á» ÁöÁ®ºĞ ÇØÁö°ÚÁö¸¸. ..¤Ñ¤Ñ;;
+// ê±°ì˜ ê°™ì€ ê¸°ëŠ¥... ë‚˜ì¤‘ì— ìœ„ ì†ŒìŠ¤ë¥¼ í•˜ë‚˜ë¡œí•©ì¹˜ì... ì¢€ ì§€ì ¸ë¶„ í•´ì§€ê² ì§€ë§Œ. ..ã…¡ã…¡;;
 bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, LuckyDrawBoxData * pLucky)
 {
-	// ÀÎº¥¿¡ need ¾ÆÀÌÅÛ È®ÀÎ
+	// ì¸ë²¤ì— need ì•„ì´í…œ í™•ì¸
 	boost::scoped_array<item_search_t> vec(new item_search_t[pLucky->nNeedCount]);
 	for (int i = 0; i < pLucky->nNeedCount; i++)
 	{
@@ -11148,7 +10189,7 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 		return false;
 	}
 
-	// ÀÎº¥¿¡ °ø°£ÀÌ ¾øÀ¸¸é ½ÇÆĞ
+	// ì¸ë²¤ì— ê³µê°„ì´ ì—†ìœ¼ë©´ ì‹¤íŒ¨
 	if (ch->m_inventory.getEmptyCount() < totalCount)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -11158,7 +10199,7 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 		return false;
 	}
 
-	// °á°ú ¾ÆÀÌÅÛ »ı¼º
+	// ê²°ê³¼ ì•„ì´í…œ ìƒì„±
 	CItem ** pRItem = new CItem*[totalCount];
 	memset(pRItem, 0x00, sizeof(pRItem));
 
@@ -11193,7 +10234,7 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 				<< itemlog(pRItem[n])
 				<< end;
 	}
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	for(int i = 0; i < totalCount; i++)
 	{
 		if (pRItem[i] == NULL)
@@ -11201,7 +10242,7 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 
 		if (ch->m_inventory.addItem(pRItem[i]) == false)
 		{
-			// Áö±Ş Çß´ø ¾ÆÀÌÅÛÀ» »èÁ¦ ÇÑ´Ù..
+			// ì§€ê¸‰ í–ˆë˜ ì•„ì´í…œì„ ì‚­ì œ í•œë‹¤..
 			for (int j = 0; j < i; j++)
 			{
 				item_search_t delvec;
@@ -11232,7 +10273,7 @@ bool do_ItemUse_LuckyDrawBoxResult_All(CPC* ch, const CItemProto* itemproto, Luc
 		}
 	}
 
-	// ÇÊ¿ä ¾ÆÀÌÅÛ »èÁ¦
+	// í•„ìš” ì•„ì´í…œ ì‚­ì œ
 	for (int i = 0; i < pLucky->nNeedCount; i++)
 	{
 		ch->m_inventory.deleteItem(vec[i], pLucky->needList[i].count);
@@ -11293,7 +10334,7 @@ void do_Itemwear_Costume_TakeOff(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	CItem* item = ch->m_wearInventory.wearItemInfo[(int)packet->wearPos];		// ¹ş´Â ¾ÆÀÌÅÛ
+	CItem* item = ch->m_wearInventory.wearItemInfo[(int)packet->wearPos];		// ë²—ëŠ” ì•„ì´í…œ
 
 	if (ch->m_wearInventory.DelCostumItem(packet->wearPos, packet->tab, packet->invenIndex) == false)
 	{
@@ -11327,7 +10368,7 @@ void do_ItemWear_Costume_Suit(CPC* ch, CNetMsg::SP& msg)
 
 	CItem* pSuit = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 
-	//Ä³¸¯ÅÍ ¾÷µ¥ÀÌÆ®
+	//ìºë¦­í„° ì—…ë°ì´íŠ¸
 	ch->m_wearInventory.AddCostumSuitItem(pSuit);
 
 	{
@@ -11403,77 +10444,69 @@ void do_Item_Make_Fortune(CPC* ch, CNetMsg::SP& msg)
 
 bool do_ItemUse_WorldFestivalBox(CPC* ch, CItem* pItem)
 {
-	// 1¹ø Ç×¸ñ ¿ùµåÄÅ 32°­ ±¹°¡ ±¹±â ¾ÆÀÌÅÛ
-	int giftTable1[32][3] =
+	int giftTable1[][3] =
 	{
-		{1485,  1, 100},	//ºê¶óÁú ±¹±â 
-		{1486,	1, 100},	//µ¶ÀÏ ±¹±â 
-		{1487,	1, 100},	//ÀÌÅ»¸®¾Æ ±¹±â 
-		{1488,	1, 100},	//¿µ±¹ ±¹±â 
-		{1489,	1, 100},	//¾Æ¸£ÇîÆ¼³ª ±¹±â 
-		{1491,	1, 100},	//³×´ú¶õµå ±¹±â 
-		{1492,	1, 100},	//½ºÆäÀÎ ±¹±â 
-		{1493,	1, 100},	//Æ÷¸£Åõ°¥ ±¹±â 
-		{5332,	1, 100},	//¿ì·ç°úÀÌ ±¹±â 
-		{1490,	1, 200},	//ÇÁ¶û½º ±¹±â 
-		{1496,	1, 200},	//¸ß½ÃÄÚ ±¹±â 
-		{1498,	1, 200},	//Å©·Î¾ÆÆ¼¾Æ
-		{1499,	1, 200},	//¹Ì±¹ ±¹±â 
-		{1501,	1, 200},	//ÄÚÆ®µğºÎ¾Æ¸£ ±¹±â 
-		{10297,	1, 200},	//º§±â¿¡
-		{10298,	1, 200},	//Äİ·Òºñ¾Æ
-		{10300,	1, 200},	//·¯½Ã¾Æ
-		{1500,	1, 500},	//½ºÀ§½º ±¹±â 
-		{1505,	1, 500},	//´ëÇÑ¹Î±¹ ±¹±â 
-		{1506,	1, 500},	//È£ÁÖ ±¹±â 
-		{1507,	1, 500},	//ÀÏº» ±¹±â 
-		{1508,	1, 500},	//°¡³ª ±¹±â 
-		{1510,	1, 500},	//¿¡Äâµµ¸£
-		{1513,	1, 500},	//ÀÌ¶õ
-		{1515,	1, 500},	//ÄÚ½ºÅ¸¸®Ä«
-		{5333,	1, 500},	//³ªÀÌÁö¸®¾Æ ±¹±â 
-		{5334,	1, 500},	//±×¸®½º ±¹±â 
-		{5338,	1, 500},	//Ä«¸Ş·é ±¹±â 
-		{5342,	1, 500},	//¿ÂµÎ¶ó½º ±¹±â 
-		{5343,	1, 500},	//Ä¥·¹ ±¹±â 
-		{5344,	1, 500},	//¾ËÁ¦¸® ±¹±â 
-		{10299,	1, 500},	//º¸½º´Ï¾Æ Çì¸£Ã¼°íºñ³ª
+		{1490,	1, 200},	//í”„ë‘ìŠ¤
+		{1486,	1, 200},	//ë…ì¼
+		{1487,	1, 200},	//ì´íƒˆë¦¬ì•„
+		{1488,	1, 200},	//ì˜êµ­
+		{1492,	1, 200},	//ìŠ¤í˜ì¸
+		{1493,	1, 200},	//í¬ë¥´íˆ¬ê°ˆ
+		{1503,	1, 200},	//í´ë€ë“œ
+		{11304,	1, 200},	//ì˜¤ìŠ¤íŠ¸ë¦¬ì•„
 
+		{10297,	1, 300},	//ë²¨ê¸°ì—
+		{5340,	1, 300},	//ìŠ¬ë¡œë°”í‚¤ì•„
+		{1494,	1, 300},	//ì²´ì½”
+		{1500,	1, 300},	//ìŠ¤ìœ„ìŠ¤
+		{11305,	1, 300},	//ë¶ì•„ì¼ëœë“œ
+		{11303,	1, 300},	//ì›¨ì¼ì¦ˆ
+		{10300,	1, 300},	//ëŸ¬ì‹œì•„
+
+		{1498,	1, 700},	//í¬ë¡œì•„í‹°ì•„
+		{11307,	1, 700},	//ì•„ì´ìŠ¤ë€ë“œ
+		{11308,	1, 700},	//ë£¨ë§ˆë‹ˆì•„
+		{1497,	1, 700},	//ìš°í¬ë¼ì´ë‚˜
+		{11309,	1, 700},	//ì•„ì¼ë€ë“œ
+		{1495,	1, 700},	//ìŠ¤ì›¨ë´
+		{11310,	1, 700},	//í„°í‚¤
+		{11311,	1, 700},	//ì•Œë°”ë‹ˆì•„
+		{11312,	1, 700},	//í—ê°€ë¦¬
 	};
 
-	// 2¹ø Ç×¸ñ
+	// 2ë²ˆ í•­ëª©
 	int giftTable2[8][3] =
 	{
-		// ¾ÆÀÌÅÛ ÀÎµ¦½º, °³¼ö, È®·ü
-		{3768,  1,  500}, //  1. (ÀÌº¥Æ®¿ë) °í±Ş Á¦·Ã¼®
-		{4968,  1,  500}, //  1. (ÀÌº¥Æ®¿ë) ¾Ç¸¶ÀÇ ·é ¾Æ¸£
-		{2664,  1,  500}, //  3. (ÀÌº¥Æ®¿ë) °áÇÕÁÖ¹®¼­
-		{2033,  1, 1000}, //  4. ·°Å° ¼Ò¿ï´Ğ½º Æ÷¼Ç
-		{1404,  1, 1000}, //  5. ¼ÒÇü HP,MPÈ®Àå Æ÷¼Ç
-		{1283, 10, 2000}, //  6. ½Ç¹ö ºÎ½ºÅÍ
-		{1315, 10, 2500}, //  7. °ø°İ·Â Çâ»óÁ¦(´ë)
-		{2875,  1, 2000}, //  8. µ¥¹ÌÁö ÁõÆøÁ¦
+		// ì•„ì´í…œ ì¸ë±ìŠ¤, ê°œìˆ˜, í™•ë¥ 
+		{3768,  1,  500}, //  1. (ì´ë²¤íŠ¸ìš©) ê³ ê¸‰ ì œë ¨ì„
+		{4968,  1,  500}, //  1. (ì´ë²¤íŠ¸ìš©) ì•…ë§ˆì˜ ë£¬ ì•„ë¥´
+		{2664,  1,  500}, //  3. (ì´ë²¤íŠ¸ìš©) ê²°í•©ì£¼ë¬¸ì„œ
+		{2033,  1, 1000}, //  4. ëŸ­í‚¤ ì†Œìš¸ë‹‰ìŠ¤ í¬ì…˜
+		{1404,  1, 1000}, //  5. ì†Œí˜• HP,MPí™•ì¥ í¬ì…˜
+		{1283, 10, 2000}, //  6. ì‹¤ë²„ ë¶€ìŠ¤í„°
+		{1315, 10, 2500}, //  7. ê³µê²©ë ¥ í–¥ìƒì œ(ëŒ€)
+		{2875,  1, 2000}, //  8. ë°ë¯¸ì§€ ì¦í­ì œ
 	};
 
-	// 3¹ø Ç×¸ñ
+	// 3ë²ˆ í•­ëª©
 	int giftTable3[7][3] =
 	{
-		// ¾ÆÀÌÅÛ ÀÎµ¦½º, °³¼ö, È®·ü
-		{4966, 1, 500},		//  1. ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		{4938, 1, 500},		//  2. (ÀÌº¥Æ®¿ë) ÁßÇü °æÇèÀÇ ¹¦¾à
-		{4937, 1, 500},		//  3. (ÀÌº¥Æ®¿ë) ÇÃ·¡Æ¼´½ ÈÆ·ÃÁÖ¹®¼­
-		{2034, 1, 1000},	//  4. ·°Å° ´ÙÁöÇÇ¾î Æ÷¼Ç
-		{4967, 5, 2000},	//  5. (ÀÌº¥Æ®¿ë) ÁßÇü Æ¯È¿¾à
-		{1314, 10, 2500},	//  6. ¹æ¾î·Â Çâ»óÁ¦ (´ë)
-		{2596, 20, 3500},	//  7. ¾Ë·Ï´Ş·Ï ¸·´ë»çÅÁ
+		// ì•„ì´í…œ ì¸ë±ìŠ¤, ê°œìˆ˜, í™•ë¥ 
+		{4966, 1, 500},		//  1. í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		{4938, 1, 500},		//  2. (ì´ë²¤íŠ¸ìš©) ì¤‘í˜• ê²½í—˜ì˜ ë¬˜ì•½
+		{4937, 1, 500},		//  3. (ì´ë²¤íŠ¸ìš©) í”Œë˜í‹°ëŠ„ í›ˆë ¨ì£¼ë¬¸ì„œ
+		{2034, 1, 1000},	//  4. ëŸ­í‚¤ ë‹¤ì§€í”¼ì–´ í¬ì…˜
+		{4967, 5, 2000},	//  5. (ì´ë²¤íŠ¸ìš©) ì¤‘í˜• íŠ¹íš¨ì•½
+		{1314, 10, 2500},	//  6. ë°©ì–´ë ¥ í–¥ìƒì œ (ëŒ€)
+		{2596, 20, 3500},	//  7. ì•Œë¡ë‹¬ë¡ ë§‰ëŒ€ì‚¬íƒ•
 	};
 
 	int giftCount = 3;
-	int giftItemCount[]= {32,8,7};
+	int giftItemCount[]= {24,8,7};
 	
 	boost::scoped_array< GIFTITEMINFO >	giftItemInfo(new GIFTITEMINFO[giftCount]);
 
-	// Áö±ŞÇÒ »óÇ° 3°³¸¦ »Ì¾Æº¸ÀÚ.
+	// ì§€ê¸‰í•  ìƒí’ˆ 3ê°œë¥¼ ë½‘ì•„ë³´ì.
 	int i,j;
 	for(i=0; i<giftCount; i++)
 	{
@@ -11505,7 +10538,7 @@ bool do_ItemUse_WorldFestivalBox(CPC* ch, CItem* pItem)
 		}
 	}
 
-	// ±³È¯ ¾ÆÀÌÅÛ »ı¼º
+	// êµí™˜ ì•„ì´í…œ ìƒì„±
 	boost::scoped_array< CItem* > pGItem(new CItem*[giftCount]);
 
 	for(i=0; i<giftCount; i++)
@@ -11547,12 +10580,12 @@ bool do_ItemUse_WorldFestivalBox(CPC* ch, CItem* pItem)
 		return false;
 	}
 
-	// ¿ä±â±îÁö ¸ğµç ¾ÆÀÌÅÛ Áö±Ş ÁØºñ ¿Ï·æ....
-	// »óÀÚ¸¦ »èÁ¦ÇÏ°í ¾ÆÀÌÅÛÀ» Áö±Ş ÇØº¾½Ã´ç.
-	// »óÀÚ ¾ÆÀÌÅÛÀº ÀÌÇÔ¼ö·Î ³Ñ¾î¿À±âÀü¿¡ °Ë»ç°¡ µÇ¾úÀ¸¹Ç·Î
-	// ¾÷µ¥ÀÌÆ®ÀÎÁö »èÁ¦ÀÎÁö¸¸ È®ÀÎ ÇÏÀå
+	// ìš”ê¸°ê¹Œì§€ ëª¨ë“  ì•„ì´í…œ ì§€ê¸‰ ì¤€ë¹„ ì™„ë£¡....
+	// ìƒìë¥¼ ì‚­ì œí•˜ê³  ì•„ì´í…œì„ ì§€ê¸‰ í•´ë´…ì‹œë‹¹.
+	// ìƒì ì•„ì´í…œì€ ì´í•¨ìˆ˜ë¡œ ë„˜ì–´ì˜¤ê¸°ì „ì— ê²€ì‚¬ê°€ ë˜ì—ˆìœ¼ë¯€ë¡œ
+	// ì—…ë°ì´íŠ¸ì¸ì§€ ì‚­ì œì¸ì§€ë§Œ í™•ì¸ í•˜ì¥
 
-	// ¿ùµå ÃàÁ¦ »óÀÚ »èÁ¦
+	// ì›”ë“œ ì¶•ì œ ìƒì ì‚­ì œ
 	if (pItem)
 	{
 		ch->m_inventory.decreaseItemCount(pItem, 1);
@@ -11581,11 +10614,11 @@ bool do_ItemUse_5329(CPC* ch, const CItemProto* itemproto, int nExtar1)
 		SEND_Q(rmsg, ch->m_desc);
 		return false;
 	}
-	// °áÇÕµÈ »óÅÂ¿¡¼­´Â ¾ÈµÊ
+	// ê²°í•©ëœ ìƒíƒœì—ì„œëŠ” ì•ˆë¨
 	if(pEquipItem->getFlag() & FLAG_ITEM_COMPOSITION)
 		return false;
 
-	// Âø¿ëÇÑ °æ¿ì´Â ¾ÈµÊ
+	// ì°©ìš©í•œ ê²½ìš°ëŠ” ì•ˆë¨
 	if(pEquipItem->getWearPos() != WEARING_NONE)
 		return false;
 
@@ -11632,9 +10665,9 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 		return;
 	}
 
-	if( pPc->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY) ) // È°¼ºÈ­ µÇ¾îÀÖ´Ù.
+	if( pPc->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY) ) // í™œì„±í™” ë˜ì–´ìˆë‹¤.
 	{
-		// »ç¿ëÇÑ Ä«µå°¡ ¾Æ´Ï°Å³ª ´Ù¸¥ Ä«µåÀÌ¸é ±×³É ¸®ÅÏ
+		// ì‚¬ìš©í•œ ì¹´ë“œê°€ ì•„ë‹ˆê±°ë‚˜ ë‹¤ë¥¸ ì¹´ë“œì´ë©´ ê·¸ëƒ¥ ë¦¬í„´
 		if( !(pItem->getUsed() != -1 && pItem->m_MercenaryIndex != -1
 				&& pItem->m_MercenaryIndex == pPc->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY)->m_index
 				&& pItem->getPlus() == pPc->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY)->m_idNum) )// index
@@ -11655,7 +10688,7 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 		}
 
 		{
-			// ¸ó½ºÅÍ ¿ëº´ ¼ÒÈ¯ ÇØÁö¸¦ ¾Ë¸®´Â ¸Ş½ÃÁö¸¦ º¸³»ÀÚ
+			// ëª¬ìŠ¤í„° ìš©ë³‘ ì†Œí™˜ í•´ì§€ë¥¼ ì•Œë¦¬ëŠ” ë©”ì‹œì§€ë¥¼ ë³´ë‚´ì
 			CNetMsg::SP rmsg(new CNetMsg);
 			MonsterMercenarySummonMsg(rmsg, pItem->getVIndex(), -1 );
 			SEND_Q(rmsg, pPc->m_desc);
@@ -11663,12 +10696,12 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 
 		return;
 	}
-	else // ¸ó½ºÅÍ¸¦ add ½ÃÅ°°í »óÅÂ¸¦ º¯°æÇÏÀÚ.
+	else // ëª¬ìŠ¤í„°ë¥¼ add ì‹œí‚¤ê³  ìƒíƒœë¥¼ ë³€ê²½í•˜ì.
 	{
-		if( pItem->getUsed() == -1) // ÇÑ¹øÀÌ¶óµµ »ç¿ëÇÏÁö ¾ÊÀº Ä«µå¶ó¸é ¹Ù·Î ½Ã°£ ¼¼ÆÃ
+		if( pItem->getUsed() == -1) // í•œë²ˆì´ë¼ë„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ì¹´ë“œë¼ë©´ ë°”ë¡œ ì‹œê°„ ì„¸íŒ…
 		{
 			pItem->setUsed(gserver->getNowSecond() + pItem->m_itemProto->getItemNum2()  * 60 * 60); // m_num2 = hour
-			pItem->setFlag(pItem->getFlag() | FLAG_ITEM_SEALED); // °Å·¡°¡ ¾ÊµÇµµ·Ï ºÀÀÎ ÇØ¹ö¸°´Ù.
+			pItem->setFlag(pItem->getFlag() | FLAG_ITEM_SEALED); // ê±°ë˜ê°€ ì•Šë˜ë„ë¡ ë´‰ì¸ í•´ë²„ë¦°ë‹¤.
 
 			pPc->m_inventory.sendOneItemInfo(pItem);
 		}
@@ -11697,7 +10730,7 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 			return;
 		}
 		pItem->m_MercenaryIndex = pMercenayNpc->m_index;
-		// ½ºÅ³À» ¸ÕÀú °ÉÀÚ
+		// ìŠ¤í‚¬ì„ ë¨¼ì € ê±¸ì
 		CSkill * pSkill = gserver->m_skillProtoList.Create( pItem->m_itemProto->getItemNum0(), pItem->m_itemProto->getItemNum1());
 		if( pSkill == NULL )
 		{
@@ -11714,7 +10747,7 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 		}
 
 		bool bApply;
-		// ½ºÅ³ »ç¿ë ³²Àº ½Ã°£À» ¿©±â¼­ °­Á¦ ¼¼ÆÃ ÇØº¸ÀÚ.
+		// ìŠ¤í‚¬ ì‚¬ìš© ë‚¨ì€ ì‹œê°„ì„ ì—¬ê¸°ì„œ ê°•ì œ ì„¸íŒ… í•´ë³´ì.
 		pSkill->m_usetime =( pItem->getUsed() - gserver->getNowSecond() ) * 10;
 		ApplySkill(pPc, pMercenayNpc, pSkill, -1, bApply);
 		delete pSkill;
@@ -11723,10 +10756,10 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 		if( bApply == false )
 			return;
 
-		// ¾ÆÀÌÅÛÀÌ °¡Áø Å¬·¹½º¹øÈ£·Î Á¤º¸¸¦ °¡Á®¿Â´Ù.
+		// ì•„ì´í…œì´ ê°€ì§„ í´ë ˆìŠ¤ë²ˆí˜¸ë¡œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 		MonsterMercenaryData * pMCData = NULL;
 #ifdef SYSTEM_MONSTER_MERCENARY_CARD_EX
-		if( pItem->getDBIndex() == 6805 ) // ÃÊº¸ ¾ÆÀÌÅÛÀÇ °æ¿ì
+		if( pItem->getDBIndex() == 6805 ) // ì´ˆë³´ ì•„ì´í…œì˜ ê²½ìš°
 			pMCData = gserver->m_MonsterMercenary.CreateClassData(pItem->getUsed_2());
 		else
 			pMCData = gserver->m_MonsterMercenary.CreateClassData(pItem->getUsed_2(), pItem->getPlus());
@@ -11747,7 +10780,7 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 
 		pMercenayNpc->SetMercenaryClassData( pMCData );
 
-		// ÇÊµå·Î ¿Ã¸®ÀÚ
+		// í•„ë“œë¡œ ì˜¬ë¦¬ì
 		GET_X(pMercenayNpc) = GET_X(pPc);
 		GET_Z(pMercenayNpc) = GET_Z(pPc);
 		GET_R(pMercenayNpc) = GET_R(pPc);
@@ -11786,7 +10819,7 @@ void do_ItemUse_IETC_MonsterMercearyToggle(CPC* pPc, CItem* pItem)
 		}
 
 		{
-			// ¸ó½ºÅÍ ¿ëº´ ¼ÒÈ¯ ¸Ş½ÃÁö¸¦ º¸³»ÀÚ.
+			// ëª¬ìŠ¤í„° ìš©ë³‘ ì†Œí™˜ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ì.
 			CNetMsg::SP rmsg(new CNetMsg);
 			MonsterMercenarySummonMsg(rmsg, pItem->getVIndex(), 1 );
 			SEND_Q(rmsg, pPc->m_desc);
@@ -11835,10 +10868,6 @@ bool do_ItemUse_6593(CPC* ch, const CItemProto* itemproto)
 
 void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 {
-	enum MasterStone { LOWER_MASTERSTONE=6111, LOW_MASTERSTONE=6112, NORMAL_MASTERSTONE=6113, HIGH_MASTERSTONE=6114, HIGHER_MASTERSTONE=6115, MASTERSTONE=6124, ARMOR_MASTERSTONE=6120 ,
-					   LOWER_MASTERTONE2=7730, LOW_MASTERSTONE2=7731, NORMAL_MASTERSTONE2=7732, HIGH_MASTERSTONE2=7733, MASTERSTONE2=7734, MASTERSTONE3=7735, MASTERSTONE4=10970, MASTERSTONE5=10971,
-					 };
-	
 	RequestClient::doItemUseMasterStoneUSA* packet = reinterpret_cast<RequestClient::doItemUseMasterStoneUSA*>(msg->m_buf);
 
 	{
@@ -11878,7 +10907,7 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ È®ÀÎ
+	// ì•„ì´í…œ í™•ì¸
 	CItem	*pMasterStone = ch->m_inventory.getItem(packet->tab_1, packet->invenIndex_1);
 	CItem	*pUpgradeItem = ch->m_inventory.getItem(packet->tab_2, packet->invenIndex_2);
 
@@ -11927,8 +10956,9 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 	
-	// Á¶°Ç È®ÀÎ
+	// ì¡°ê±´ í™•ì¸
 	char error = 0;
+	int gap = 0;
 	switch( packet->itemDBIndex_1 )
 	{
 	case LOWER_MASTERSTONE:
@@ -11936,115 +10966,161 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 16 )										error=2;
 		}
+		gap = 17 - pUpgradeItem->getPlus();
 		break;
 	case LOW_MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 18 )										error=2;
 		}
+		gap = 19 - pUpgradeItem->getPlus();
 		break;
 	case NORMAL_MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 20 )										error=2;
 		}
+		gap = 21 - pUpgradeItem->getPlus();
 		break;
 	case HIGH_MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 22 )										error=2;
 		}
+		gap = 23 - pUpgradeItem->getPlus();
 		break;
 	case HIGHER_MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 24 )										error=2;
 		}
+		gap = 25 - pUpgradeItem->getPlus();
 		break;
 	case MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 25 )										error=2;
 		}
+		gap = 26 - pUpgradeItem->getPlus();
 		break;
 	case ARMOR_MASTERSTONE:
 		{
 			if( !pUpgradeItem->IsArmorType() )											error=1;
 			else if ( pUpgradeItem->getPlus() > 24 )										error=2;
 		}
+		gap = 25 - pUpgradeItem->getPlus();
 		break;
 	case LOWER_MASTERTONE2:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 17 )										error=2;
 		}
+		gap = 18 - pUpgradeItem->getPlus();
 		break;
 	case LOW_MASTERSTONE2:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 19 )										error=2;
 		}
+		gap = 20 - pUpgradeItem->getPlus();
 		break;
 	case NORMAL_MASTERSTONE2:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 21 )										error=2;
 		}
+		gap = 22 - pUpgradeItem->getPlus();
 		break;
 	case HIGH_MASTERSTONE2:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 23 )										error=2;
 		}
+		gap = 24 - pUpgradeItem->getPlus();
 		break;
 	case MASTERSTONE2:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 26 )										error=2;
 		}
+		gap = 27 - pUpgradeItem->getPlus();
 		break;
 	case MASTERSTONE3:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 27 )										error=2;
 		}
+		gap = 28 - pUpgradeItem->getPlus();
 		break;
 	case MASTERSTONE4:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 28 )										error=2;
 		}
+		gap = 28 - pUpgradeItem->getPlus();
 		break;
 	case MASTERSTONE5:
 		{
 			if( !pUpgradeItem->IsWeaponType() && !pUpgradeItem->IsArmorType() )			error=1;
 			else if ( pUpgradeItem->getPlus() > 29 )										error=2;
 		}
+		gap = 29 - pUpgradeItem->getPlus();
 		break;
-	default:	// ¸¶½ºÅÍ ½ºÅæÀÌ ¾Æ´Ô
+	default:	// ë§ˆìŠ¤í„° ìŠ¤í†¤ì´ ì•„ë‹˜
 		{
 			error = 1;
 		}
 		break;
 	}
 
+	if(gap >= 12)
+		gap = 12;
+
 	int random_success = 0;
 
-	if( error == 0 )		// »ç¿ëÇÕ½Ã´Ù.
+	if( error == 0 )		// ì‚¬ìš©í•©ì‹œë‹¤.
 	{
-		// ·Î±× ºÎÅÍ ³²±â°í
+		// ë¡œê·¸ ë¶€í„° ë‚¨ê¸°ê³ 
 		GAMELOG << init("USE_MASTER_STONE", ch ) << delim
 				<< "USE :" << itemlog( pMasterStone, true ) << delim ;
+		
+		//gapì— ë”°ë¼ì„œ ì„±ê³µ í™•ë¥ ì„ ì¡°ì •í•œë‹¤.
 
-		// ¸¶½ºÅÍ ½ºÅæ È¸¼ö
+		int success_prob = MASTERSTONE_SUCCESS_START_PROB;
+		int no_change_prob = MASTERSTONE_SUCCESS_NOCHANGE_PROB;
+		int fail_prob = MASTERSTONE_SUCCESS_FAIL_PROB;
+
+		success_prob += (gap * 2 * 100);
+		no_change_prob -= (gap * 100);
+		fail_prob -= (gap * 100);
+
+		if(success_prob == 0 || no_change_prob == 0 || fail_prob == 0)
+		{
+			LOG_ERROR("MasterStone Upgrade Error. success_prob = %d, no_change_prob = %d, fail_prob = %d, gap = %d, plus = %d", success_prob, no_change_prob, fail_prob, gap, pUpgradeItem->getPlus());
+			return;
+		}
+
+		if(success_prob + no_change_prob + fail_prob != 10000)
+		{
+			LOG_ERROR("MasterStone Upgrade Error. success_prob = %d, no_change_prob = %d, fail_prob = %d, gap = %d, plus = %d", success_prob, no_change_prob, fail_prob, gap, pUpgradeItem->getPlus());
+			return;
+		}
+
+		int rand = GetRandom(1, 10000);
+		
+		if(rand <= success_prob)
+			random_success = MASTERSTONE_INCREASE;
+		else if(rand <= success_prob + no_change_prob)
+			random_success = MASTERSTONE_NOT_CHANGE;
+		else
+			random_success = MASTERSTONE_DECREASE;
+
+		// ë§ˆìŠ¤í„° ìŠ¤í†¤ íšŒìˆ˜
 		ch->m_inventory.decreaseItemCount(pMasterStone, 1);
 
 		GAMELOG << "[BEFORE] " << itemlog(pUpgradeItem) << delim ;
 
-		//¸¶½ºÅÍ ½ºÅæ È®·ü Ãß°¡ 1 : »ó½Â, 2 : À¯Áö, 3 : ÇÏ¶ô
-		random_success = GetRandom(MASTERSTONE_INCREASE, MASTERSTONE_DECREASE);
-
-		//16ÀÌÇÏ ¾ÆÀÌÅÛÀº ¹«Á¶°Ç »ó½Â
+		//16ì´í•˜ ì•„ì´í…œì€ ë¬´ì¡°ê±´ ìƒìŠ¹
 		if(pUpgradeItem->getPlus() <= 16)
 		{
 			random_success = MASTERSTONE_INCREASE;
@@ -12052,7 +11128,7 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 
 		switch(random_success)
 		{
-			//»ó½Â
+			//ìƒìŠ¹
 		case MASTERSTONE_INCREASE:
 			pUpgradeItem->setPlus(pUpgradeItem->getPlus() + 1);
 			if(compose_item != NULL)
@@ -12061,10 +11137,10 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 				compose_item->setPlus(compose_item->getPlus() + 1);
 			}
 			break;
-			//À¯Áö
+			//ìœ ì§€
 		case MASTERSTONE_NOT_CHANGE:
 			break;
-			//ÇÏ¶ô
+			//í•˜ë½
 		case MASTERSTONE_DECREASE:
 			pUpgradeItem->setPlus(pUpgradeItem->getPlus() - 1);
 			if(compose_item != NULL)
@@ -12075,7 +11151,7 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 			break;
 		}
 
-		//¾ÆÀÌÅÛ ±Í¼Ó.
+		//ì•„ì´í…œ ê·€ì†.
 		pUpgradeItem->setFlag(pUpgradeItem->getFlag() | FLAG_ITEM_BELONG);
 
 		{
@@ -12104,13 +11180,13 @@ void do_ItemUse_MasterStone_USA(CPC* ch, CNetMsg::SP& msg)
 
 bool canJumping(CPC* ch, int _jumpingLevel)
 {
-	// TODO 1 :: Á¡ÇÎ ·¹º§ Ã¼Å©
+	// TODO 1 :: ì í•‘ ë ˆë²¨ ì²´í¬
 	if ( _jumpingLevel <= 0 )
 	{
 		return false;
 	}
 
-	// TODO 2 :: ÇöÀç Ä³¸¯ÅÍ ·¹º§ < Á¡ÇÎ ·¹º§ °Ë»ç
+	// TODO 2 :: í˜„ì¬ ìºë¦­í„° ë ˆë²¨ < ì í•‘ ë ˆë²¨ ê²€ì‚¬
 	if ( ch->m_level >= _jumpingLevel )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -12119,7 +11195,7 @@ bool canJumping(CPC* ch, int _jumpingLevel)
 		return false;
 	}
 
-	// TODO 3 :: °°Àº °èÁ¤ ³» Ä³¸¯ÅÍµéÀÇ ·¹º§ ±¸ÇØ¼­ Á¡ÇÎ·¹º§°ú ºñ±³
+	// TODO 3 :: ê°™ì€ ê³„ì • ë‚´ ìºë¦­í„°ë“¤ì˜ ë ˆë²¨ êµ¬í•´ì„œ ì í•‘ë ˆë²¨ê³¼ ë¹„êµ
 	int userIndex = ch->m_desc->m_index;
 	CLCString compareQuery(512);
 	compareQuery.Format("SELECT a_level FROM t_characters WHERE a_index != %d AND a_user_index = %d AND a_enable = 1 ORDER BY a_level DESC LIMIT 1", ch->m_index, userIndex);
@@ -12208,8 +11284,8 @@ int getUpgradeRuneResult(CItem *reItem, CItem *upItem, CPC *ch)
 
 			int nLevelDiff = reItem->m_itemProto->GetItemProtoLevel() - upItem->GetItemLevel();
 
-			// ¼º°ø °ø½Ä
-			// //90 - (itemplus * 6) + (·é ·¹º§ - ¾ÆÀÌÅÛ ·¹º§)
+			// ì„±ê³µ ê³µì‹
+			// //90 - (itemplus * 6) + (ë£¬ ë ˆë²¨ - ì•„ì´í…œ ë ˆë²¨)
 			if (nLevelDiff > 9)
 				nLevelDiff = 9;
 			else if (nLevelDiff < -9)
@@ -12221,50 +11297,50 @@ int getUpgradeRuneResult(CItem *reItem, CItem *upItem, CPC *ch)
 			{
 				if(upItem->getPlus() >= 18)
 				{
-					nUpProb[0] = 70 - ((upItem->getPlus() + 102 ) / 2) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 70 - ((upItem->getPlus() + 102 ) / 2) + nLevelDiff;	// ì„±ê³µ
 					if(g_bUpgradeEvent)
 						nUpProb[0] = (nUpProb[0] * g_nUpgradeProb) / 100;
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = upItem->getPlus();							// ÇÏ¶ô
-					nUpProb[2] = 30 - upItem->getPlus();						// À¯Áö
-					nUpProb[3] = 70 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = upItem->getPlus();							// í•˜ë½
+					nUpProb[2] = 30 - upItem->getPlus();						// ìœ ì§€
+					nUpProb[3] = 70 - nUpProb[0];							// íŒŒê´´
 				}
 				else
 				{
-					nUpProb[0] = 75 - (upItem->getPlus() * 4 ) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 75 - (upItem->getPlus() * 4 ) + nLevelDiff;	// ì„±ê³µ
 					if(g_bUpgradeEvent)
 						nUpProb[0] = (nUpProb[0] * g_nUpgradeProb) / 100;
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = upItem->getPlus();							// ÇÏ¶ô
-					nUpProb[2] = 25 - upItem->getPlus();						// À¯Áö
-					nUpProb[3] = 75 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = upItem->getPlus();							// í•˜ë½
+					nUpProb[2] = 25 - upItem->getPlus();						// ìœ ì§€
+					nUpProb[3] = 75 - nUpProb[0];							// íŒŒê´´
 				}
 			}
 			else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_DEVIL_RUNE)
 			{
 				if(upItem->getPlus() >= 18)
 				{
-					nUpProb[0] = 100 - (upItem->getPlus() * 3.5 ) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 100 - (upItem->getPlus() * 3.5 ) + nLevelDiff;	// ì„±ê³µ
 					if(g_bUpgradeEvent)
 						nUpProb[0] = (nUpProb[0] * g_nUpgradeProb) / 100;
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = 0;											// ÇÏ¶ô
-					nUpProb[2] = 0;											// À¯Áö
-					nUpProb[3] = 100 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = 0;											// í•˜ë½
+					nUpProb[2] = 0;											// ìœ ì§€
+					nUpProb[3] = 100 - nUpProb[0];							// íŒŒê´´
 				}
 				else
 				{
-					nUpProb[0] = 95 - (upItem->getPlus() * 5 ) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 95 - (upItem->getPlus() * 5 ) + nLevelDiff;	// ì„±ê³µ
 					if(g_bUpgradeEvent)
 						nUpProb[0] = (nUpProb[0] * g_nUpgradeProb) / 100;
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = 0;											// ÇÏ¶ô
-					nUpProb[2] = 0;											// À¯Áö
-					nUpProb[3] = 100 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = 0;											// í•˜ë½
+					nUpProb[2] = 0;											// ìœ ì§€
+					nUpProb[3] = 100 - nUpProb[0];							// íŒŒê´´
 				}
 			}
 
@@ -12280,16 +11356,16 @@ int getUpgradeRuneResult(CItem *reItem, CItem *upItem, CPC *ch)
 			{
 			case 0:
 				ret = ITEM_UPGRADE_RESULT_PLUS;
-				break;		// ¼º°ø
+				break;		// ì„±ê³µ
 			case 1:
 				ret = ITEM_UPGRADE_RESULT_MINUS;
-				break;		// ÇÏ¶ô
+				break;		// í•˜ë½
 			case 2:
 				ret = ITEM_UPGRADE_RESULT_NOCHANGE;
-				break;		// À¯Áö
+				break;		// ìœ ì§€
 			case 3:
 				ret = ITEM_UPGRADE_RESULT_BROKEN;
-				break;		// ÆÄ±«
+				break;		// íŒŒê´´
 			default:
 				ret = ITEM_UPGRADE_RESULT_NOCHANGE;
 			}
@@ -12384,10 +11460,10 @@ void do_ItemDivide(CPC* ch, CNetMsg::SP& msg)
 	ch->m_inventory.divideItem(sItem, packet->ttab, packet->tinvenIndex, packet->divide_count);
 }
 
-//XX ¾ÆÀÌÅÛ ±³È¯
+//XX ì•„ì´í…œ êµí™˜
 void do_ItemExchange(CPC* ch, CNetMsg::SP& msg)
 {
-	// ÇöÀç´Â ¼ÛÅ©¶õ ÀÌº¥Æ®ÀÏ¶§¸¸ Ã³¸®ÇÔ
+	// í˜„ì¬ëŠ” ì†¡í¬ë€ ì´ë²¤íŠ¸ì¼ë•Œë§Œ ì²˜ë¦¬í•¨
 	if (gserver->isActiveEvent(A_EVENT_SONGKRAN) == false)
 	{
 		return;
@@ -12445,7 +11521,7 @@ void do_ItemExchange(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	// OK
-	// °á°ú ¾ÆÀÌÅÛ »ı¼º
+	// ê²°ê³¼ ì•„ì´í…œ ìƒì„±
 	CItem* result_item = gserver->m_itemProtoList.CreateItem(result.itemIndex, WEARING_NONE, 0, 0, result.itemCount);
 	if (result_item == NULL)
 	{
@@ -12457,7 +11533,7 @@ void do_ItemExchange(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_inventory.addItem(result_item))
 	{
-		// Àç·á ¾ÆÀÌÅÛ »èÁ¦
+		// ì¬ë£Œ ì•„ì´í…œ ì‚­ì œ
 		for (int i = 0; i < packet->listCount; ++i)
 		{
 			ch->m_inventory.deleteItem(search_vec[i], packet->list[i].itemCount);
@@ -12545,7 +11621,7 @@ bool do_UsePvPProtect( CItem* item, CPC* ch )
 	CSkill* skill = gserver->m_skillProtoList.Create(item->m_itemProto->getItemNum0(), item->m_itemProto->getItemNum1());
 	ApplySkill(ch, ch, skill, item->getDBIndex(), apply);
 
-	//Á¤´ç ¹æÀ§ ¸ğµå ÃÊ±âÈ­
+	//ì •ë‹¹ ë°©ìœ„ ëª¨ë“œ ì´ˆê¸°í™”
 	{
 		CRaChar* raList;
 		CRaChar* raListNext = ch->m_raList;
@@ -12572,7 +11648,7 @@ bool do_UsePvPProtect( CItem* item, CPC* ch )
 
 void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 {
-	//ÇÕ¼º ½Ã½ºÅÛ Ãß°¡ °³¹ß
+	//í•©ì„± ì‹œìŠ¤í…œ ì¶”ê°€ ê°œë°œ
 	RequestClient::doItemCompose* packet = reinterpret_cast<RequestClient::doItemCompose*>(msg->m_buf);
 
 	int count = 0;
@@ -12627,7 +11703,7 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 
 	}
 
-	//for¹® Ã¹¹øÂ° ·çÆ¾ÀÇ break¿¡ ÀÇÇÑ NULLÃ³¸® ÇØÅ· ½Ãµµ·Î ÆÇ´Ü
+	//forë¬¸ ì²«ë²ˆì§¸ ë£¨í‹´ì˜ breakì— ì˜í•œ NULLì²˜ë¦¬ í•´í‚¹ ì‹œë„ë¡œ íŒë‹¨
 	if(item == NULL)
 	{
 		LOG_ERROR("HACKING? : not found item. charIndex[%d] tab[%d] invenIndex[%d]", ch->m_index, packet->matInfo[count].tab, packet->matInfo[count].inven_index);
@@ -12639,7 +11715,7 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 
 	if(data == NULL)
 	{
-		//¿¡·¯ ¸Ş½ÃÁö Àü¼Û
+		//ì—ëŸ¬ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeItemCompose(rmsg, -1, MSG_ITEM_COMPOSE_ERROR_NOT_RESULT);
 		SEND_Q(rmsg, ch->m_desc);
@@ -12662,13 +11738,13 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 	
-	//È®·ü °è»ê
+	//í™•ë¥  ê³„ì‚°
 	int prob = 0;
 	if(data->prob >= GetRandom(1, 10000))
 	{
-		//¼º°ø
+		//ì„±ê³µ
 
-		//»õ·Î¿î ¾ÆÀÌÅÛ ³Ö¾îÁØ´Ù.
+		//ìƒˆë¡œìš´ ì•„ì´í…œ ë„£ì–´ì¤€ë‹¤.
 		CItem* result_item = gserver->m_itemProtoList.CreateItem(data->result_item_index, -1, 0, 0, 1);
 
 		if(result_item == NULL)
@@ -12679,7 +11755,7 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		//ÇÕ¼º ÇÏ´Â ¾ÆÀÌÅÛÀÌ À¯¹° ¾ÆÀÌÅÛÀÏ °æ¿ì Ã³¸®ÇÏ´ÂºÎºĞ
+		//í•©ì„± í•˜ëŠ” ì•„ì´í…œì´ ìœ ë¬¼ ì•„ì´í…œì¼ ê²½ìš° ì²˜ë¦¬í•˜ëŠ”ë¶€ë¶„
 		if(result_item->m_itemProto->getItemTypeIdx() == ITYPE_ACCESSORY && result_item->m_itemProto->getItemSubTypeIdx() == IACCESSORY_ARTIFACT)
 		{
 			CItem* item1 = ch->m_inventory.getItem(packet->matInfo[0].tab, packet->matInfo[0].inven_index);
@@ -12689,23 +11765,23 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 
 		ch->m_inventory.addItem(result_item);
 
-		//¼º°ø ¸Ş½ÃÁö Àü´Ş
+		//ì„±ê³µ ë©”ì‹œì§€ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeItemCompose(rmsg, result_item->getDBIndex(), MSG_ITEM_COMPOSE_ERROR_OK);
 		SEND_Q(rmsg, ch->m_desc);
 
-		//¾ÆÀÌÅÛ ÇÕ¼º ¼º°ø ·Î±× Ãß°¡
+		//ì•„ì´í…œ í•©ì„± ì„±ê³µ ë¡œê·¸ ì¶”ê°€
 		LOG_INFO("ARTIFACT. COMPOSE SUCCESS. ARTIFACT INDEX[%d], CHARACTER_INDEX[%d]", result_item->getDBIndex(), ch->m_index);
 	}
 	else
 	{
-		//½Ç	ÆĞ
+		//ì‹¤	íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeItemCompose(rmsg, -1, MSG_ITEM_COMPOSE_ERROR_FAIL);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	//Àç·á Â÷°¨
+	//ì¬ë£Œ ì°¨ê°
 	for(int i = 0; i < count; i++)
 	{
 		if(packet->matInfo[i].virtual_index == -1)
@@ -12716,4 +11792,1372 @@ void do_ItemCompose(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	ch->m_inventory.decreaseMoney(data->need_nas);
+}
+
+void do_ItemUpgradePetReq(CPC* ch, CNetMsg::SP& msg)
+{
+	//í«ì„ ì°©ìš©ì¤‘ì¸ì§€ ê²€ì‚¬
+	if(ch->m_wearInventory.getWearItem(WEARING_PET) == NULL)
+	{
+		LOG_ERROR("HACKING? : Not fount pet. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("Not fount pet.");
+		return ;
+	}
+
+	CAPet* apet = ch->GetAPet();
+	if(apet == NULL)
+	{
+		LOG_ERROR("HACKING? : Not fount pet. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("Not fount pet.");
+		return ;
+	}
+
+	//í« ì•„ì´í…œ ê°•í™”
+	RequestClient::doItemUpgradePet* packet = reinterpret_cast<RequestClient::doItemUpgradePet*>(msg->m_buf);
+
+	if(packet->wearPos < APET_WEAR_HEAD || packet->wearPos > APET_WEAR_WEAPON)
+	{
+		LOG_ERROR("HACKING? : Invalid wear info. char_index[%d] wearPos[%d]", ch->m_index, packet->wearPos);
+		ch->m_desc->Close("Invalid wear info.");
+		return;
+	}
+	
+	CItem* wearItem = apet->m_wearing[packet->wearPos];
+	if (wearItem == NULL)
+	{
+		LOG_ERROR("HACKING? : wearItem not found. char_index[%d] wearPos[%d]", ch->m_index, packet->wearPos);
+		ch->m_desc->Close("wearItem not found.");
+		return;
+	}
+
+	CItem* reItem = ch->m_inventory.getItem(packet->tab, packet->inven_index);
+	if (reItem == NULL)
+	{
+		LOG_ERROR("HACKING? : reitem not found. char_index[%d] tab[%d] invenIndex[%d]", ch->m_index, packet->tab, packet->inven_index);
+		ch->m_desc->Close("reitem item not found.");
+		return;
+	}
+	
+	if (wearItem->CanUpgrade() == false)
+	{
+		LOG_ERROR("wearItem is not upgrade item or lent item. char_index[%d]", ch->m_index);
+		return;
+	}
+
+	if (wearItem->getPlus() >= 15)
+	{
+			CNetMsg::SP rmsg(new CNetMsg);
+			SysMsg(rmsg, MSG_SYS_UPGRADE_NOCONDITION);
+			SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	int result = ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE;
+
+	//reItem(ì¬ë ¨ì„) ì•„ì´í…œì€ ê³ ê¸‰ ì œë ¨ì„, í–‰ìš´ì˜ ê³ ê¸‰ ì œë ¨ì„, ì´ˆê³ ê¸‰ ì œë ¨ì„, ì¹´ì˜¤ìŠ¤ ì œë ¨ì„ë§Œ ì‚¬ìš© ê°€ëŠ¥.
+
+	// í–‰ìš´ì˜ ì œë ¨ì„
+	if( reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_LUCKY)
+	{
+		if( wearItem->getPlus() > 5)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			SysMsg(rmsg, MSG_SYS_UPGRADE_CANT_6LEVEL_LUCKY);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		result = ResponseClient::PET_ITEM_UPGRADE_PLUS;
+	}
+	// ê³ ê¸‰ì œë ¨ì„ - 0627
+	else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_SPECIAL)
+	{
+		int prob = GetRandom(1, 100);
+		int upprob = 60 - (wearItem->getPlus() * 3);
+
+		if(g_bUpgradeEvent)
+			upprob = (upprob * g_nUpgradeProb) / 100;
+
+		if(prob > 0 && prob <= 7)
+		{
+			result = ResponseClient::PET_ITEM_UPGRADE_BROKE;
+
+			if (wearItem->getPlus() < 3)
+				result = ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE;
+		}
+		else if( prob > 7 && prob <= (7 + 13) )
+		{
+			result = ResponseClient::PET_ITEM_UPGRADE_MINUS;
+
+			if (wearItem->getPlus() < 3)
+				result = ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE;
+		}
+		else if( prob > 20 && prob <= (20 + upprob) )
+		{
+			result = ResponseClient::PET_ITEM_UPGRADE_PLUS;
+		}
+		else
+			result = ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE;
+	}
+	// ì¹´ì˜¤ìŠ¤ ì œë ¨ì„
+	else if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_CHAOS)
+	{
+		if (wearItem->getPlus() < 12)
+			result = ResponseClient::PET_ITEM_UPGRADE_PLUS;
+		else
+			result = ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE;
+	}
+	//ìŠˆí¼ê³ ì œ - 0627
+	else if(reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_SPECIAL_SUPER)
+	{
+		//ìŠˆí¼ê³ ì œëŠ” +14 ì•„ì´í…œì—ëŠ” ì‚¬ìš©í• ìˆ˜ ì—†ë‹¤.
+		if (wearItem->getPlus() > 13)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			SysMsg(rmsg, MSG_SYS_UPGRADE_CANT_14LEVEL);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		if(wearItem->getFlag() & FLAG_ITEM_SUPER_STONE_USED)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			SysMsg(rmsg, MSG_SYS_UPGRADE_CANT_SUPERSTONE);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		//100í”„ë¡œ ì„±ê³µ / í•œë²ˆë°–ì— ì‚¬ìš© ëª»í•¨.
+		result = ResponseClient::PET_ITEM_UPGRADE_PLUS;
+		wearItem->setFlag(wearItem->getFlag() | FLAG_ITEM_SUPER_STONE_USED);
+	}
+	else
+	{
+		return;
+	}
+
+
+	bool bUpdate = false;
+	int nPlusNum = 0;           // +,- ìˆ˜ì¹˜
+
+	switch (result)
+	{
+	case ResponseClient::PET_ITEM_UPGRADE_PLUS:
+		{
+			nPlusNum = 1;
+
+			if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_DEVIL_RUNE)
+			{
+				int nPlusProb = GetRandom(1, 100);
+				if (nPlusProb < 11)	nPlusNum = 3;
+				else if (nPlusProb < 41)	nPlusNum = 2;
+				else	nPlusNum = 1;
+			}
+
+			wearItem->setPlus(wearItem->getPlus() + nPlusNum);
+			bUpdate = true;
+
+			GAMELOG << init("ITEM_UPGRADE", ch) << "+" << nPlusNum << delim << end;
+		}
+		break;
+	case ResponseClient::PET_ITEM_UPGRADE_MINUS:
+		{
+			GAMELOG << init("ITEM_UPGRADE", ch);
+			
+			wearItem->setPlus(wearItem->getPlus() - 1);
+			bUpdate = true;
+			GAMELOG << "-1" << delim;
+		}
+		break;
+	case ResponseClient::PET_ITEM_UPGRADE_NO_CHANGE:
+		{
+			GAMELOG << init("ITEM_UPGRADE", ch)
+				<< "No change" << delim
+				<< itemlog(wearItem);
+
+			if (reItem->m_itemProto->getItemNum0() == IETC_UPGRADE_GENERAL)
+				GAMELOG << delim << "USE GENERAL" << end;
+			else
+				GAMELOG << delim << "USE SPECIAL" << end;
+
+			
+		}
+		break;
+	case ResponseClient::PET_ITEM_UPGRADE_BROKE:
+		{
+			GAMELOG << init("ITEM_UPGRADE", ch)
+				<< "Broken" << delim
+				<< itemlog(wearItem)
+				<< end;
+
+			if(packet->wearPos != WEARING_NONE)
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				ExAPetFuntionMsg( rmsg, MSG_SUB_DELETE_ITEM, apet, 0 );
+				RefMsg(rmsg) << packet->wearPos;
+				SEND_Q( rmsg, ch->m_desc );
+			}
+		}
+		break;
+	}
+	
+	ch->m_inventory.decreaseItemCount(reItem, 1);
+
+	if(result == ResponseClient::PET_ITEM_UPGRADE_BROKE)
+	{
+		delete wearItem;
+		apet->m_wearing[packet->wearPos] = NULL;
+	}
+	else
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		AddItemExAPetMsg(rmsg, wearItem);
+		SEND_Q(rmsg, ch->m_desc);
+	}
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::makePetItemUpgrade(rmsg, result);
+		SEND_Q(rmsg, ch->m_desc);
+	}
+	
+	apet->CalcStatus(true);
+}
+
+bool do_ItemUsePotion(CPC* ch, CItem* item, int extra1)
+{
+	if(item->m_itemProto->getItemFlag() & ITEM_FLAG_TOGGLE)
+	{
+		std::vector<CItem*>::iterator it = ch->m_deadnpc_toggle_item.begin();
+		std::vector<CItem*>::iterator it_end = ch->m_deadnpc_toggle_item.end();
+
+		for(; it != it_end; it++)
+		{
+			if((*it) != item && (*it)->getDBIndex() == item->getDBIndex())
+				return false;
+		}
+	}
+
+	CItemProto* itemproto = item->m_itemProto;
+	switch( itemproto->getItemSubTypeIdx() )
+	{
+	case IPOTION_NPC_PORTAL:
+		if( ch->m_pZone->m_index == itemproto->getItemNum0() ) // í˜„ì¬ ìˆëŠ” ì¡´ê³¼ ì‚¬ìš©í•œ ìŠ¤í¬ë¡¤ ì¡´ì´ ê°™ìœ¼ë©´ ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ë‚´ì¤€ë‹¤.
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			NpcPortalListMsg(rmsg, itemproto->getItemNum0());
+			SEND_Q(rmsg, ch->m_desc);
+		}
+		else
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			NpcPortalListErrorMsg(rmsg, MSG_NPC_PORTAL_ERROR_LIST);
+			SEND_Q(rmsg, ch->m_desc);
+		}
+		return false;
+		break;
+	}
+
+	// ëˆˆë¬¼
+	if (itemproto->getItemSubTypeIdx() == IPOTION_TEARS)
+	{
+		switch (itemproto->getItemNum0())
+		{
+			// êµ¬ì›ì˜ ëˆˆë¬¼
+		case IPOTION_TEARS_TYPE_SAFE:
+
+			if (ch->m_pkPenalty < -15)
+			{
+				ch->m_pkPenalty++;
+				ch->m_bChangeStatus = true;
+			}
+			else
+				return false;
+
+			break;
+
+			// ìš©ì„œì˜ ëˆˆë¬¼
+		case IPOTION_TEARS_TYPE_FORGIVE:
+
+			if (ch->m_exp < 0)
+			{
+				LONGLONG plusexp = GetLevelupExp(ch->m_level) * 5 / 100;
+				ch->m_exp += plusexp;
+
+				if (ch->m_exp > 0)
+					ch->m_exp = 0;
+
+				ch->m_bChangeStatus = true;
+			}
+			else
+				return false;
+
+			break;
+
+		default:
+			return false;
+		}
+	}
+	else
+	{
+		switch (itemproto->getItemIndex())
+		{
+		case 844:		// ê²½í—˜ì¹˜ë³µêµ¬ ì£¼ë¬¸ì„œ
+		case 845:		// ìˆ™ë ¨ë„ë³µêµ¬ ì£¼ë¬¸ì„œ
+		case 2035:		// ëŸ­í‚¤ ê²½í—˜ì¹˜ë³µêµ¬ ì£¼ë¬¸ì„œ
+		case 2036:		// ëŸ­í‚¤ ìˆ™ë ¨ë„ë³µêµ¬ ì£¼ë¬¸ì„œ
+			// ë¶€í™œì£¼ë¬¸ì„œì˜ ì´í™íŠ¸ ì¸ë±ìŠ¤ / ê°ë ˆë²¨
+			if( ch->m_assist.Find(184, 2) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXP_SP);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if( ch->m_assist.Find(185, 2) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_SP_EXP);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		}
+
+		switch (itemproto->getItemIndex())
+		{
+		case 8165:											//ì‹ ê²½ êµë€ ì¥ì¹˜(í€˜ìŠ¤íŠ¸ í•„ìš” ì•„ì´í…œ)
+			if(ch->m_questList.FindQuest(636, QUEST_STATE_RUN) == false)
+			{
+				return false;
+			}
+
+		case 2855:											// í”Œë˜í‹°ëŠ„ ë“œë ì¦í­ì œ
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			if(ch->m_assist.FindByItemIndex(884)
+				|| ch->m_assist.FindByItemIndex(838)
+				|| ch->m_assist.FindByItemIndex(972)
+				|| ch->m_assist.FindByItemIndex(1629)
+				|| ch->m_assist.FindByItemIndex(2856)
+				|| ch->m_assist.FindByItemIndex(6096)
+				|| ch->m_assist.FindByItemIndex(5080) //ê°•ìš´ì˜ ìŠ¤í¬ë¡¤
+				|| ch->m_assist.FindByItemIndex(5081) // ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+				)
+				return false;
+			break;
+
+		case 2856:											// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤
+			if(ch->m_assist.FindByItemIndex(884)
+				|| ch->m_assist.FindByItemIndex(838)
+				|| ch->m_assist.FindByItemIndex(972)
+				|| ch->m_assist.FindByItemIndex(1629)
+				|| ch->m_assist.FindByItemIndex(2855)
+				|| ch->m_assist.FindByItemIndex(6096)
+				|| ch->m_assist.FindByItemIndex(5080) //ê°•ìš´ì˜ ìŠ¤í¬ë¡¤
+				|| ch->m_assist.FindByItemIndex(5081) // ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+				)
+				return false;
+			break;
+
+#if defined (PLATINUM_SKILL_POTION_ITEM ) || defined (SKILL_POTION_ITEM)
+		case 2452:		// ìˆ™ë ¨ì˜ ë¬˜ì•½
+			if (ch->m_assist.FindByItemIndex(2453) || ch->m_assist.FindByItemIndex(7611))
+			{
+				// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2453);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 2453:		// í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+		case 2659:		// ì´ˆë³´ììš© í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+		case 7611:		// [ì´ë²¤íŠ¸] í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+			if (ch->m_assist.FindByItemIndex(2452))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+#endif // defined (PLATINUM_SKILL_POTION_ITEM ) || defined (SKILL_POTION_ITEM)
+
+		case 2582:
+			if (ch->m_assist.FindByItemIndex(2583))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(M)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2139))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2140))
+			{
+				// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if (ch->m_assist.FindByItemIndex(4937))
+			{
+				// ì´ë²¤íŠ¸ìš© í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 2583:
+			if (ch->m_assist.FindByItemIndex(2582))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(L)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2139))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2140))
+			{
+				// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if (ch->m_assist.FindByItemIndex(4937))
+			{
+				// ì´ë²¤íŠ¸ìš© í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 2139:		// í›ˆë ¨ ì£¼ë¬¸ì„œ
+			if (ch->m_assist.FindByItemIndex(2582))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(L)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2583))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(M)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2140))
+			{
+				// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if (ch->m_assist.FindByItemIndex(4937))
+			{
+				// ì´ë²¤íŠ¸ìš© í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 2140:		// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ
+			if (ch->m_assist.FindByItemIndex(2582))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(L)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2583))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(M)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2139))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if (ch->m_assist.FindByItemIndex(4937))
+			{
+				// ì´ë²¤íŠ¸ìš© í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4937);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 4937:		// (ì´ë²¤íŠ¸ìš©) í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œ
+			if (ch->m_assist.FindByItemIndex(2582))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(L)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2582);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2583))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œ(M)ì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2583);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(2139))
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2139);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			else if (ch->m_assist.FindByItemIndex(2140))
+			{
+				// í”Œë˜í‹°ëŠ„ í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2140);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 836:		// ìˆ˜ë°•
+			// ê²½í—˜ì¹˜ ì¦í­ì œëŠ” ìˆ˜ë°•ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(882))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 882);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ìœ ë£Œ ê²½í—˜ì¹˜ ì¦í­ì œëŠ” ìˆ˜ë°•ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(6094))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6094);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 837:		// ì°¸ì™¸
+			// SP ì¦í­ì œëŠ” ì°¸ì™¸ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(883))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ìœ ë£Œ SP ì¦í­ì œëŠ” ì°¸ì™¸ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(6095))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6095);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ë‹¬ì½¤í•œ ì°¸ì™¸
+			if (ch->m_assist.FindByItemIndex(5082))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5082);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 838:		// ìë‘
+			// ì•„ì´í…œ ì¦í­ì œëŠ” ìë‘ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(884))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 884);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ìœ ë£Œ ì•„ì´í…œ ì¦í­ì œëŠ” ìë‘ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(6096))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6096);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ ë“œë¡­ ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2855))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2856))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 4939);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			//ê°•ìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5080))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			//ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5081))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 882:		// ê²½í—˜ì¹˜
+		case 6094:
+			// ì¦í­ì œëŠ” ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ê²½í—˜ì¹˜ ì¦í­ì œëŠ” ìˆ˜ë°•ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ê²½í—˜ì¹˜ ì¦í­ì œëŠ” ìœ ë£Œ ê²½í—˜ì¹˜ ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(6094))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6094);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ìœ ë£Œ ê²½í—˜ì¹˜ ì¦í­ì œëŠ” ê²½í—˜ì¹˜ ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(882))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 882);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 883:		// SP
+		case 6095:
+			// ì¦í­ì œëŠ” ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// SP ì¦í­ì œëŠ” ì°¸ì™¸ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(837))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// SP ì¦í­ì œëŠ” ìœ ë£Œ SP ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(6095))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6095);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ìœ ë£Œ SP ì¦í­ì œëŠ” SP ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(883))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// ë‹¬ì½¤í•œ ì°¸ì™¸
+			if (ch->m_assist.FindByItemIndex(5082))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5082);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 884:		// ì•„ì´í…œ
+		case 6096:
+			// ì¦í­ì œëŠ” ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			if (ch->m_assist.FindByItemIndex(838))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ìœ ë£Œ ì¦í­ì œì™€ ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(884))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 884);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if (ch->m_assist.FindByItemIndex(6096))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 6096);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ ë“œë ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2855))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2856))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			//ê°•ìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5080))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			//ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5081))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 885:		// ë‚˜ìŠ¤
+			// ì¦í­ì œëŠ” ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 972:
+		case 1629:
+			// í”Œë˜í‹°ëŠ„ ë“œë ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2855))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2856))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 4939:		// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œ
+			{
+				// ì¦í­ì œëŠ” ì¤‘ë³µ ë³µìš© ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(itemproto->getItemIndex()))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), itemproto->getItemIndex());
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+				// ìˆ˜ë°•ê³¼ ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(836))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+				// ì°¸ì™¸ì™€ ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(837))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+
+				//ìë‘ì™€ ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(838))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+
+				// í”Œë˜í‹°ëŠ„ ë“œë ì¦í­ì œì™€ ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(2855))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+
+				// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+				if (ch->m_assist.FindByItemIndex(2856))
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+			}
+			break;
+
+		case 1288:		// ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		case 1416:		// í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		case 2658:		// ì´ˆë³´ììš© í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		case 2032:		// ëŸ­í‚¤ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+			if( ch->m_assist.FindBySkillIndex(348) )
+			{
+				if( !extra1 )
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, item->tab(), item->getInvenIndex(), item->getVIndex());
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+			}
+			break;
+
+		case 3218:
+			if( ch->m_assist.FindByItemIndex(3218) )
+			{
+				return false;
+			}
+			break;
+
+		case 4912:
+			if( ch->m_assist.GetAssistCurseCount() <= 0 )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				CashItemMoonstoneStartRepMsg(rmsg, MSG_EX_CASHITEM_MOONSTONE_ERROR_CANTUSE_CASHMOON, -1);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 5080:
+			// ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5081))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5081);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			//ìë‘ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(838))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}	// í”Œë˜í‹°ëŠ„ ë“œë¡­ ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2855))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2856))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 5081: // ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+			// ê°•ìš´ì˜ ìŠ¤í¬ë¡¤
+			if (ch->m_assist.FindByItemIndex(5080))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 5080);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			//ìë‘ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(838))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 838);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// í”Œë˜í‹°ëŠ„ ë“œë¡­ ì¦í­ì œì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2855))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2855);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(2856))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2856);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 5082: // ë‹¬ì½¤í•œ ì°¸ì™¸
+
+			//ìë‘ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(837))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 837);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			// SP ì¦í­ì œëŠ” ì°¸ì™¸ì™€ ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(883))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 883);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			// ëœë¤ EXP&SP&ë“œë¡­ë¥  ì¦í­ì œì™€ ì‚¬ìš©ë¶ˆê°€
+			if (ch->m_assist.FindByItemIndex(836))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 836);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 5085: // í”Œë˜í‹°ëŠ„ ì•„ë¦¬ë¦¬ìŠ¤ì˜ ì¶•ë³µ lv1
+			if( ch->m_level <1 || ch->m_level > 30)
+				return false;
+
+			if( ch->m_assist.FindBySkillIndex(348)
+				//						|| ch->m_assist.FindBySkillIndex(5086)
+				//						|| ch->m_assist.FindBySkillIndex(5087)
+				)
+			{
+				if( !extra1 )
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, item->tab(), item->getInvenIndex(), item->getVIndex());
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+			}
+			break;
+		case 5086: // í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ lv31
+			if( ch->m_level <31 || ch->m_level > 60)
+				return false;
+
+			if( ch->m_assist.FindBySkillIndex(348)
+				//						|| ch->m_assist.FindBySkillIndex(5085)
+				//						|| ch->m_assist.FindBySkillIndex(5087)
+				)
+			{
+				if( !extra1 )
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, item->tab(), item->getInvenIndex(), item->getVIndex());
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+			}
+			break;
+		case 5087: // í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ lv61
+			if( ch->m_level <61 || ch->m_level > 90)
+				return false;
+
+			if( ch->m_assist.FindBySkillIndex(348)
+				//						|| ch->m_assist.FindBySkillIndex(5085)
+				//						|| ch->m_assist.FindBySkillIndex(5086)
+				)
+			{
+				if( !extra1 )
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_EXPUP, item->tab(), item->getInvenIndex(), item->getVIndex());
+					SEND_Q(rmsg, ch->m_desc);
+					return false;
+				}
+			}
+			break;
+		case 5088: // í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ lv1
+			if( ch->m_level <1 || ch->m_level > 30)
+				return false;
+
+			if (ch->m_assist.FindByItemIndex(2452)
+				//						|| ch->m_assist.FindByItemIndex(5089)
+				//						|| ch->m_assist.FindByItemIndex(5090)
+				)
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		case 5089: // í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ lv31
+			if( ch->m_level <31 || ch->m_level > 60)
+				return false;
+
+			if (ch->m_assist.FindByItemIndex(2452)
+				//						|| ch->m_assist.FindByItemIndex(5088)
+				//						|| ch->m_assist.FindByItemIndex(5090)
+				)
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+
+			break;
+		case 5090: // í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ lv61
+			if( ch->m_level <61 || ch->m_level > 90)
+				return false;
+
+			if (ch->m_assist.FindByItemIndex(2452)
+				//						|| ch->m_assist.FindByItemIndex(5088)
+				//						|| ch->m_assist.FindByItemIndex(5089)
+				)
+			{
+				// í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ì¤‘ë³µ ë¶ˆê°€
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 2452);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		}
+
+		// ê²½í—˜ì˜ ë¬˜ì•½ì€ ì•„ì´ë¦¬ìŠ¤ë¥¼ ì‚¬ìš© ì¤‘ì¼ë•Œ ë¶ˆê°€ëŠ¥
+		if (itemproto->getItemNum0() == 348)
+		{
+			if (ch->m_assist.FindBySkillIndex(349))
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 1288);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+		}
+
+#ifdef REFORM_PK_PENALTY_201108
+		switch( itemproto->getItemIndex() )
+		{
+		case 7474:
+		case 7475:
+		case 7476:
+			if (ch->m_assist.FindByItemIndex(7474) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7474);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if(  ch->m_assist.FindByItemIndex(7475) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7475);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if ( ch->m_assist.FindByItemIndex(7476) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7476);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+
+		case 7477:
+		case 7478:
+		case 7479:
+			if (ch->m_assist.FindByItemIndex(7477) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7477);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if(  ch->m_assist.FindByItemIndex(7478) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7478);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			if ( ch->m_assist.FindByItemIndex(7479) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				SysCannotDuplcationMsg(rmsg, itemproto->getItemIndex(), 7479);
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			break;
+		}
+#endif
+
+		CSkill* skill = NULL;
+
+		// í¬ì…˜ì¤‘ì— IPOTION_UP ì€ ì•„ì´í…œ í”Œë˜ê·¸ì—ì„œ ìŠ¤í‚¬ë ˆë²¨ì„ ê°€ì ¸ì˜¨ë‹¤
+		if (itemproto->getItemSubTypeIdx() == IPOTION_UP)
+			skill = gserver->m_skillProtoList.Create(itemproto->getItemNum0(), item->getFlag());
+		else
+			skill = gserver->m_skillProtoList.Create(itemproto->getItemNum0(), itemproto->getItemNum1());
+
+		if (skill == NULL)
+			return false;
+
+		// íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤ì™€ ìƒê¸‰ íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤
+		if (itemproto->getItemIndex() == 677 || itemproto->getItemIndex() == 3579)
+		{
+			if (ch->IsInPeaceZone(false) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				delete skill;
+				rmsg->Init(MSG_EXTEND);
+				RefMsg(rmsg) << MSG_EX_STRING
+					<< (unsigned char) MSG_EX_STRING_OUTPUT_SYS
+					<< 393
+					<< 0;
+
+				SEND_Q(rmsg, ch->m_desc);
+				return false;
+			}
+			ApplyItem677_or_3579(ch, skill, itemproto->getItemIndex());
+		}
+		else
+		{
+			// 060227 : bs : ì¤‘ë³µì•ˆë˜ëŠ” ìŠ¤í‚¬ì¸ì§€ ê²€ì‚¬
+			if ((skill->m_proto->m_flag & SF_NOTDUPLICATE) && ch->m_assist.FindBySkillIndex(skill->m_proto->m_index))
+			{
+				/*ì¤‘ë³µì‚¬ìš© ë¶ˆê°€ ì—ëŸ¬ ë©”ì‹œì§€*/
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResponseClient::makeSkillErrorMsg(rmsg, MSG_SKILL_ERROR_DUPLICATE, skill->m_proto->m_index, 0);
+				SEND_Q(rmsg, ch->m_desc);
+				delete skill;
+				return false;
+			}
+			// í™•ì¥ í¬ì…˜ : ë“€ì–¼ ì‚¬ìš©ì¤‘ì¼ë•Œ ë”°ë¡œ ë”°ë¡œ ìˆ˜í–‰ ëª»í•¨
+			if (( skill->m_proto->m_index == 350 || skill->m_proto->m_index == 351 ) && ch->m_assist.FindBySkillIndex(352) )
+			{
+				delete skill;
+				return false;
+			}
+			bool bApply = false;
+			if( skill->m_proto->CheckSorcererFlag(SSF_APP_APET) )
+			{
+				if( ch->GetAPet() == NULL )
+				{
+					delete skill;
+					return false;
+				}
+				ApplySkill(ch, ch->GetAPet() , skill, itemproto->getItemIndex(), bApply);
+			}
+			else
+			{
+				// ì—¬ê¸°ì„œ ìŠ¤í‚¬ì˜ Target Typeì„ í™•ì¸í•˜ê³ ..íŒŒí‹°ë‚˜ ì›ì •ëŒ€ì—ê²Œë„ ë„£ì–´ì¤€ë‹¤.
+				if(skill->m_proto->m_targetType == STT_PARTY_ALL)
+				{
+					if (ch->IsExped())
+					{
+						ApplySkillExped(ch, skill, itemproto->getItemIndex(), bApply);
+					}
+					else if(ch->IsParty())
+					{
+						ApplySkillParty(ch, skill, itemproto->getItemIndex(), bApply);
+					}
+				}
+				else
+				{
+					ApplySkill(ch, ch, skill, itemproto->getItemIndex(), bApply);
+				}
+			}
+
+			if (!bApply)
+			{
+				delete skill;
+				return false;
+			}
+
+			if( itemproto->getItemIndex() == 846 ||	// ë¶€í™œ ì£¼ë¬¸ì„œ
+				itemproto->getItemIndex() == 7456 ||	// ì´ë²¤íŠ¸ ë¶€í™œ ì£¼ë¬¸ì„œ
+				itemproto->getItemIndex() == 2667      // ì´ˆë³´ììš© ë¶€í™œ ì£¼ë¬¸ì„œ
+				)
+			{
+				// ìˆ™ë ¨ë„ / ê²½í—˜ì¹˜ ì£¼ë¬¸ì„œ ë²„í”„ ì‚­ì œ
+				ch->m_assist.CureByItemIndex(844);
+				ch->m_assist.CureByItemIndex(845);
+				ch->m_assist.CureByItemIndex(2035);
+				ch->m_assist.CureByItemIndex(2036);
+			}
+		}
+		delete skill;
+	}
+
+	{
+		// í¬ì…˜ ì‚¬ìš© ì´í™íŠ¸ ë©”ì‹œì§€
+		CNetMsg::SP rmsg(new CNetMsg);
+		EffectItemMsg(rmsg, ch, item);
+		ch->m_pArea->SendToCell(rmsg, ch, true);
+	}
+
+	return true;
 }

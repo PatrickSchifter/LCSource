@@ -7,6 +7,7 @@
 #include "../ShareLib/gm_command.h"
 #include "dofuncAdmin.h"
 #include "GMCmdList.h"
+#include "CmdMsg.h"
 
 typedef boost::tokenizer<boost::char_separator<char> > stokenizer;
 static boost::char_separator<char> sep(" ", NULL, boost::drop_empty_tokens);
@@ -267,27 +268,33 @@ void CGMCmdList::load(void)
 	add(new CGMCmd(GM_CMD_RAID_CHANGE_MAX_AREA_COUNT, 10, do_raid_changeMaxAreaCount));
 	add(new CGMCmd(GM_CMD_POPUP_NOTICE, 9, do_popup_notice));
 	add(new CGMCmd(GM_CMD_POPUP_NOTICEOFF, 9, do_popup_noticeoff));
+	add(new CGMCmd(GM_CMG_MASTERSTONE_PROB, 9, do_masterstone_prob_test));
+	add(new CGMCmd(GM_CMD_GUILD_BATTLE_CORE, 9, do_guild_battle_score));
+	add(new CGMCmd(GM_CMD_GUILD_BATTLE_LIST, 9, do_guild_battle_list));
 
 	add(new CGMCmd(GM_CMD_TEST_COMMAND, 9, do_test));
+	
+	add(new CGMCmd(GM_CMD_GUILD_MEMBER_OUT_TIME, 9, do_GM_Guild_Memberout_Time));
+	add(new CGMCmd(GM_CMD_GUILD_CREATE_TIME, 9, do_GM_Guild_Create_time));
 
-	add(new CGMCmd(GM_CMD_TOGGLE_BUFF, GM_LEVEL_TOGGLE_BUFF, do_buff_system));
+	add(new CGMCmd(GM_CMD_RESERVED_GM_COMMAND, 9, do_GM_reserve_command));
 }
 
 void CGMCmdList::add(CGMCmd* gmcmd)
 {
-	// ¸í·É¾î ±æÀÌ°¡ 1º¸´Ù ÀÛÀ¸¸é ¸®ÅÏ
+	// ëª…ë ¹ì–´ ê¸¸ì´ê°€ 1ë³´ë‹¤ ìž‘ìœ¼ë©´ ë¦¬í„´
 	if ( gmcmd->getCommand().length() < 1 )
 		return;
 
-	// ¸í·É¾î ·¹º§ÀÌ 0º¸´Ù ÀÛÀ¸¸é ¸®ÅÏ
+	// ëª…ë ¹ì–´ ë ˆë²¨ì´ 0ë³´ë‹¤ ìž‘ìœ¼ë©´ ë¦¬í„´
 	if ( gmcmd->getLevel() < 0 )
 		return;
 
-	// ÇÔ¼ö Æ÷ÀÎÅÍ°¡ NULLÀÌ¸é ¸®ÅÏ
+	// í•¨ìˆ˜ í¬ì¸í„°ê°€ NULLì´ë©´ ë¦¬í„´
 	if ( gmcmd->getFunction() == NULL )
 		return;
 
-	// µî·Ï
+	// ë“±ë¡
 	m_GMCmdList.insert(map_t::value_type(gmcmd->getCommand(), gmcmd));
 }
 
@@ -301,29 +308,54 @@ void CGMCmdList::run(CPC* pc, const char* arg)
 	if (vec.empty())
 		return;
 
-	const char* p = arg;
+	std::string p = arg;
 	char command[512];
-	p = AnyOneArg(p, command, true);
+	p = AnyOneArg(p.c_str(), command, true);
 
-	// Á¸ÀçÇÏ´ÂÁö °Ë»ö
+	// ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ìƒ‰
 	CGMCmd* pGMCmd = find(vec[0]);
 	if ( pGMCmd == NULL )
+	{
+		//system msg
+		if(pc->m_admin > 0)
+		{
+			std::string message = boost::str(boost::format("Not found gm command"));
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+			SEND_Q(rmsg, pc->m_desc);
+		}
 		return;
+	}
 
-	// ½ÇÇàÇÒ ¼ö ÀÖ´ÂÁö °Ë»ö
+	// ì‹¤í–‰í•  ìˆ˜ ìžˆëŠ”ì§€ ê²€ìƒ‰
 	if ( !canRun( pGMCmd, pc ) )
+	{
+		if(pc->m_admin > 0)
+		{
+			//system msg
+			std::string message = boost::str(boost::format("Not enough gm level"));
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+			SEND_Q(rmsg, pc->m_desc);
+		}
 		return;
+	}
+	
 
-	GAMELOG << init("GM COMMAND")
-			<< command << delim << p << delim
-			<< pc->m_index << delim
-			<< pc->m_name << delim
-			<< pc->m_nick << delim
-			<< end;
+	if(p.empty() == true)
+	{
+		p = " ";
+	}
 
-	// ½ÇÇà
+	char* buf = (char*)p.c_str();
+	char* name = pc->m_name.getBuffer();
+	char* nick = pc->m_nick.getBuffer();
+	
+	LOG_INFO("GM COMMAND : %s : %s : %d : %s : %s ", command, buf, pc->m_index, name, nick);
+
+	// ì‹¤í–‰
 	vec.erase(vec.begin());
-	pGMCmd->run(pc, p, vec);
+	pGMCmd->run(pc, p.c_str(), vec);
 }
 
 CGMCmd* CGMCmdList::find(std::string& command)

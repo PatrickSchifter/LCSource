@@ -22,15 +22,24 @@ ReservedGmCommandManager* ReservedGmCommandManager::Instance()
 
 bool ReservedGmCommandManager::Init()
 {
+	//////////////////////////////////////////////////////////////////////////
+	// ë§¤ë¶„ë§ˆë‹¤ ê²€ì‚¬ë¥¼ ìœ„í•œ íƒ€ì´ë¨¸ë¥¼ ìƒì„±
+	time_t nowtime = time(0);
+	int remain_sec = 60 - ((int)nowtime % 60);
+
+	bnf::instance()->CreateSecTimerPeriod(remain_sec, 60, this);
+	//////////////////////////////////////////////////////////////////////////
+
+
 	CDBCmd dbChar;
 	dbChar.Init(&gserver.m_dbchar);
 
-	// ½Ã°£ÀÌ °æ°úµÈ µ¥ÀÌÅÍ´Â »èÁ¦ÇÑ´Ù.
+	// ì‹œê°„ì´ ê²½ê³¼ëœ ë°ì´í„°ëŠ” ì‚­ì œí•œë‹¤.
 	dbChar.SetQuery("DELETE FROM t_reserved_gm_command WHERE a_start_time <= now() AND a_end_time <= now()");
 	if (dbChar.Update() == false)
 		return false;
 
-	// DB¿¡ ±â·ÏµÇ¾îÀÖ´Â ±âÁ¸ µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÎ´Ù.
+	// DBì— ê¸°ë¡ë˜ì–´ìˆëŠ” ê¸°ì¡´ ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
 	std::string qry = boost::str(boost::format(
 									 "SELECT a_index, a_event_type, UNIX_TIMESTAMP(a_start_time) as a_start_time, a_start_string,"
 									 "UNIX_TIMESTAMP(a_end_time) as a_end_time, a_end_string, a_image_type, a_image_x, a_image_y, a_title, a_start_title, a_end_title, a_descr"
@@ -61,64 +70,109 @@ bool ReservedGmCommandManager::Init()
 		this->makeMap(ele);
 	}
 
+	std::string query = boost::str(boost::format(
+		"select * from t_gm where a_server = %d and a_start_time > UNIX_TIMESTAMP(now())") % gserver.m_serverno );
+	dbChar.SetQuery(query.c_str());
+	if(dbChar.Open() == false)
+		return false;
+
+	while(dbChar.MoveNext())
+	{
+		dataInfoToGmCommand data;
+
+		dbChar.GetRec("a_index", data.index);
+		dbChar.GetRec("a_sub_server", data.subno);
+		strncpy(data.command, dbChar.GetRec("a_command"), sizeof(data.command));
+		dbChar.GetRec("a_start_time", data.startTime);
+
+		this->makeMap_gm(data);
+	}
+
 	dbChar.Close();
-
-	//////////////////////////////////////////////////////////////////////////
-	// ¸ÅºĞ¸¶´Ù °Ë»ç¸¦ À§ÇÑ Å¸ÀÌ¸Ó¸¦ »ı¼º
-	time_t nowtime = time(0);
-	int remain_sec = 60 - ((int)nowtime % 60);
-
-	bnf::instance()->CreateSecTimerPeriod(remain_sec, 60, this);
 
 	return true;
 }
 
 void ReservedGmCommandManager::operate( rnSocketIOService* service )
 {
-	std::vector<int /*a_index*/> delete_a_index;
-	int nowtime = (int)time(0);
-	map_t::iterator it = map_.begin();
-	map_t::iterator endit = map_.end();
-	for (; it != endit; ++it)
 	{
-		dataInfo& d = it->second;
-
-		// start, end ½Ã°£ÀÌ ¸ğµÎ °æ°úµÈ °æ¿ì »èÁ¦ÇÏµµ·Ï ÇÔ
-		if (d.ele.a_startTime < nowtime && d.ele.a_endTime < nowtime)
+		std::vector<int /*a_index*/> delete_a_index;
+		int nowtime = (int)time(0);
+		map_t::iterator it = map_.begin();
+		map_t::iterator endit = map_.end();
+		for (; it != endit; ++it)
 		{
-			delete_a_index.push_back(d.ele.a_Index);
-			continue;
+			dataInfo& d = it->second;
+
+			// start, end ì‹œê°„ì´ ëª¨ë‘ ê²½ê³¼ëœ ê²½ìš° ì‚­ì œí•˜ë„ë¡ í•¨
+			if (d.ele.a_startTime < nowtime && d.ele.a_endTime < nowtime)
+			{
+				delete_a_index.push_back(d.ele.a_Index);
+				continue;
+			}
+
+			if (d.ele.a_evnetType == eEVENT_TYPE_INFO) // ë‹¨ìˆœ ì •ë³´ ì¶œë ¥ìš©ì´ë©´ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+				continue;
+
+			// ì‹œì‘ ì‹œê°„ ê²€ì‚¬
+			if ((d.start_active_flag_) && (d.ele.a_startTime <= nowtime))
+			{
+				d.start_active_flag_ = false;
+
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResposeGameServer::makeAddReservedGMCommand(rmsg, d.ele.a_startString);
+				gserver.SendToAllGameServer(rmsg);
+			}
+
+			// ë ì‹œê°„ ê²€ì‚¬
+			if ((d.end_active_flag_) && (d.ele.a_endTime <= nowtime))
+			{
+				d.end_active_flag_ = false;
+
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResposeGameServer::makeAddReservedGMCommand(rmsg, d.ele.a_endString);
+				gserver.SendToAllGameServer(rmsg);
+			}
 		}
 
-		if (d.ele.a_evnetType == eEVENT_TYPE_INFO) // ´Ü¼ø Á¤º¸ Ãâ·Â¿ëÀÌ¸é °Ë»çÇÏÁö ¾ÊÀ½
-			continue;
-
-		// ½ÃÀÛ ½Ã°£ °Ë»ç
-		if ((d.start_active_flag_) && (d.ele.a_startTime <= nowtime))
+		// ì‚­ë°ë  ë°ì´í„° ì²˜ë¦¬
+		BOOST_FOREACH(int a_index, delete_a_index)
 		{
-			d.start_active_flag_ = false;
-
-			CNetMsg::SP rmsg(new CNetMsg);
-			ResposeGameServer::makeAddReservedGMCommand(rmsg, d.ele.a_startString);
-			gserver.SendToAllGameServer(rmsg);
-		}
-
-		// ³¡ ½Ã°£ °Ë»ç
-		if ((d.end_active_flag_) && (d.ele.a_endTime <= nowtime))
-		{
-			d.end_active_flag_ = false;
-
-			CNetMsg::SP rmsg(new CNetMsg);
-			ResposeGameServer::makeAddReservedGMCommand(rmsg, d.ele.a_endString);
-			gserver.SendToAllGameServer(rmsg);
+			this->Delete(a_index);
 		}
 	}
 
-	// »èµ¥µÉ µ¥ÀÌÅÍ Ã³¸®
-	BOOST_FOREACH(int a_index, delete_a_index)
 	{
-		this->Delete(a_index);
+		std::vector<int /*a_index*/> delete_a_index;
+		int nowtime = (int)time(0);
+		map_gm_t::iterator it = map_gm_.begin();
+		map_gm_t::iterator it_end = map_gm_.end();
+
+		for (; it != it_end; ++it)
+		{
+			dataInfoToGmCommand& data = it->second;
+			
+			if( (data.startTime / 60) == (nowtime / 60) )
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				ResposeGameServer::makeAddReservedGMCommandByGmCommand(rmsg, data.command, data.subno);
+				gserver.SendToAllGameServer(rmsg);
+				delete_a_index.push_back(data.index);
+			}
+
+			if(data.startTime < nowtime)
+			{
+				delete_a_index.push_back(data.index);
+			}
+		}
+
+		// ì‚­ë°ë  ë°ì´í„° ì²˜ë¦¬
+		BOOST_FOREACH(int a_index, delete_a_index)
+		{
+			this->Delete_gm(a_index);
+		}
 	}
+	
 }
 
 void ReservedGmCommandManager::Delete(int a_index)
@@ -130,7 +184,7 @@ void ReservedGmCommandManager::Delete(int a_index)
 		return;
 	}
 
-	// DB¿¡¼­ Á¦°Å
+	// DBì—ì„œ ì œê±°
 	CDBCmd dbChar;
 	dbChar.Init(&gserver.m_dbchar);
 	std::string qry = boost::str(boost::format(
@@ -154,7 +208,7 @@ void ReservedGmCommandManager::sendListToClient( rnSocketIOService* service, int
 	packet->m_Index = m_Index;
 	packet->nowTime = (int)nowtime;
 
-	if (year == 0 && month == 0)	// Å¬¶óÀÌ¾ğÆ®°¡ Ã³À½ º¸³¾¶§
+	if (year == 0 && month == 0)	// í´ë¼ì´ì–¸íŠ¸ê°€ ì²˜ìŒ ë³´ë‚¼ë•Œ
 	{
 		packet->year = nowtm->tm_year + 1900;
 		packet->month = nowtm->tm_mon + 1;
@@ -176,7 +230,7 @@ void ReservedGmCommandManager::sendListToClient( rnSocketIOService* service, int
 		{
 			memcpy(&packet->ele[count], &d.ele, sizeof(d.ele));
 
-			// Å¬¶óÀÌ¾ğÆ®´Â ¾Æ·¡ÀÇ Á¤º¸¸¦ ¾Ë ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î °ø¹é Ã³¸®
+			// í´ë¼ì´ì–¸íŠ¸ëŠ” ì•„ë˜ì˜ ì •ë³´ë¥¼ ì•Œ í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ ê³µë°± ì²˜ë¦¬
 			memset(packet->ele[count].a_startString, 0x00, sizeof(packet->ele[count].a_startString));
 			memset(packet->ele[count].a_endString, 0x00, sizeof(packet->ele[count].a_endString));
 
@@ -213,7 +267,7 @@ void ReservedGmCommandManager::Add( reservedGMCommandElement& ele )
 	char a_descString[RESERVED_GM_COMMAND_DESC_MAX_STRING * 2];
 	mysql_escape_string(a_descString, ele.a_desc, strlen(ele.a_desc));
 
-	// DB¿¡ Ãß°¡
+	// DBì— ì¶”ê°€
 	CDBCmd dbChar;
 	dbChar.Init(&gserver.m_dbchar);
 	std::string qry = boost::str(boost::format(
@@ -280,4 +334,99 @@ void ReservedGmCommandManager::makeMap( reservedGMCommandElement& ele )
 	d.ele = ele;
 
 	map_.insert(map_t::value_type(ele.a_Index, d));
+}
+
+void ReservedGmCommandManager::Delete_gm( int a_index )
+{
+	map_gm_.erase(a_index);
+
+	//DB ìƒì—ì„œë„ ì‚­ì œ
+	CDBCmd dbChar;
+	dbChar.Init(&gserver.m_dbchar);
+	std::string query = boost::str(boost::format("delete from t_gm where a_index = %d") % a_index);
+
+	dbChar.SetQuery(query.c_str());
+	dbChar.Update();
+}
+
+void ReservedGmCommandManager::makeMap_gm( dataInfoToGmCommand& data )
+{
+	map_gm_.insert(map_gm_t::value_type(data.index, data));
+}
+
+void ReservedGmCommandManager::Add_gm( dataInfoToGmCommand& data )
+{
+	char a_startString[RESERVED_GM_COMMAND_MAX_STRING * 2];
+	mysql_escape_string(a_startString, data.command, strlen(data.command));
+
+	// DBì— ì¶”ê°€
+	CDBCmd dbChar;
+	dbChar.Init(&gserver.m_dbchar);
+	
+	std::string query = boost::str(boost::format(
+		"INSERT INTO t_gm (a_index, a_server, a_sub_server, a_start_time, a_command) "
+		"values "
+		"(0, %1%, %2%, %3%, '%4%')")
+		% gserver.m_serverno % data.subno % data.startTime % data.command);
+
+	dbChar.SetQuery(query.c_str());
+	if (dbChar.Update() == false)
+		return;
+
+	data.index = dbChar.insertid();
+
+	this->makeMap_gm(data);
+}
+
+void ReservedGmCommandManager::sendListToClinetByGm( rnSocketIOService* service, int char_index )
+{
+	if(map_gm_.size() == 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::reservedGMCommandListByGm* packet = reinterpret_cast<ResponseClient::reservedGMCommandListByGm*>(rmsg->m_buf);
+		rmsg->m_mtype = packet->type = MSG_RESERVED_GM_COMMAND;
+		packet->subType = MSG_SUB_LIST_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+		packet->char_index = char_index;
+		packet->count = 0;
+		rmsg->setSize(sizeof(ResponseClient::reservedGMCommandListByGm));
+		service->deliver(rmsg);
+		return;
+	}
+	int count = map_gm_.size();
+	
+	time_t nowtime = time(0);
+	struct tm* nowtm = localtime(&nowtime);
+
+	
+	map_gm_t::iterator it = map_gm_.begin();
+	map_gm_t::iterator it_end = map_gm_.end();
+	
+	for( int i = 0; i <= (count / 10); i++ )
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::reservedGMCommandListByGm* packet = reinterpret_cast<ResponseClient::reservedGMCommandListByGm*>(rmsg->m_buf);
+		rmsg->m_mtype = packet->type = MSG_RESERVED_GM_COMMAND;
+		packet->subType = MSG_SUB_LIST_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+		packet->char_index = char_index;
+
+		int j = 0;
+		for(; it != it_end; ++it)
+		{
+			packet->data[j].index = it->second.index;
+			packet->data[j].startTime = it->second.startTime;
+			packet->data[j].subno = it->second.subno;
+			strcpy(packet->data[j].command, it->second.command);
+			++j;
+
+			if(j == 10)
+			{
+				++it;
+				break;
+			}
+		}
+
+		packet->count = j;
+		rmsg->setSize(sizeof(ResponseClient::reservedGMCommandListByGm) + (j * sizeof(reservedGMCommandData)));
+		service->deliver(rmsg);
+	}
 }

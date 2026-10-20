@@ -127,7 +127,7 @@ void rnPacket::mallocBuffer( tINT size )
 	}
 	else
 	{
-		// TO DO : ©║╥╞ цЁ╦╝гр╟м
+		// TO DO : Л≈░К÷╛ Л╡≤К╕╛М∙═Й╡┐
 		LOG_ERROR("invalid packet size[%d]", size);
 		return;
 	}

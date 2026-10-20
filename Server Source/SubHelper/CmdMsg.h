@@ -26,10 +26,10 @@ typedef struct ItemOption
 
 void HelperTradeAgentReturnedMsg(CNetMsg::SP& msg, int nSellcharindex,CLCString stItemName,int nItemCount);
 
-void do_Command_TitleSystem_InsertTitleRep(CNetMsg::SP& msg, int char_index, int title_index, int endtime, int errortype, int tab, int invenIndex, CLCString serial);
+void do_Command_TitleSystem_InsertTitleRep(CNetMsg::SP& msg, int char_index, int title_index, int endtime, int errortype, int tab, int invenIndex, CLCString serial, int custom_title_index);
 void do_Command_TitleSystem_DisableRep(CNetMsg::SP& msg, int char_index, int count);
 void do_Command_TitleSystem_DeleteRep(CNetMsg::SP& msg, int char_index, int title_index, int errortype);
-// [selo: 101105] Á¾·á ½Ã°£ °­Á¦ º¯°æ
+// [selo: 101105] ì¢…ë£Œ ì‹œê°„ ê°•ì œ ë³€ê²½
 void do_Command_TitleSystem_ForceChangeTime(CNetMsg::SP& msg, int char_index, int title_index, int endtime);
 
 void SubHelperLCBallUseMsg( CNetMsg::SP& msg , int charIndex, int coinCount, char courseIndex, char nOrder, int itemIndex , unsigned int itemCount );

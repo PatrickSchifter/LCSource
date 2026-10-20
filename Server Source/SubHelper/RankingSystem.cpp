@@ -22,21 +22,21 @@ bool CRankingSystemEX::RankingEX_Refresh(void)
 	LOG_INFO("RankingEX_RefreshDate");
 	if ( !RankingEX_RefreshDate() )
 	{
-		// °»½Å ³¯Â¥ ¼³Á¤
+		// ê°±ì‹  ë‚ ì§œ ì„¤ì •
 		return false;
 	}
 
 	LOG_INFO("RankingEX_BackUp");
 	if ( !RankingEX_BackUp() )
 	{
-		// ¹é¾÷
+		// ë°±ì—…
 		return false;
 	}
 
 	LOG_INFO("RankingEX_ClearRankingTable");
 	if ( !RankingEX_ClearRankingTable() )
 	{
-		// ÃÊ±âÈ­
+		// ì´ˆê¸°í™”
 		return false;
 	}
 
@@ -49,14 +49,14 @@ bool CRankingSystemEX::RankingEX_Refresh(void)
 	LOG_INFO("RankingEX_RefreshRankByLevel");
 	if ( !RankingEX_RefreshRankByLevel() )
 	{
-		// ·©Å· »êÁ¤
+		// ë­í‚¹ ì‚°ì •
 		return false;
 	}
 
 	LOG_INFO("RankingEX_ClearCharTable");
 	if ( !RankingEX_ClearCharTable() )
 	{
-		// Ä³¸¯ÅÍ Å×ÀÌºíÀÇ ·©Å· °ü·Ã ÇÊµå(a_exp_weekly) ÃÊ±âÈ­
+		// ìºë¦­í„° í…Œì´ë¸”ì˜ ë­í‚¹ ê´€ë ¨ í•„ë“œ(a_exp_weekly) ì´ˆê¸°í™”
 		return false;
 	}
 
@@ -69,7 +69,7 @@ bool CRankingSystemEX::RankingEX_BackUp(void)
 	CDBCmd cmdchar;
 	cmdchar.Init(&m_dbrank);
 
-	// t_ranking_ex_backup µ¥ÀÌÅÍ »èÁ¦
+	// t_ranking_ex_backup ë°ì´í„° ì‚­ì œ
 	sql.Format("TRUNCATE  TABLE t_ranking_ex_backup");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -78,7 +78,7 @@ bool CRankingSystemEX::RankingEX_BackUp(void)
 		return false;
 	}
 
-	// t_ranking_ex -> t_ranking_ex_backupÀ¸·Î ÀÌµ¿
+	// t_ranking_ex -> t_ranking_ex_backupìœ¼ë¡œ ì´ë™
 	sql.Format("INSERT INTO t_ranking_ex_backup SELECT * FROM t_ranking_ex");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -87,7 +87,7 @@ bool CRankingSystemEX::RankingEX_BackUp(void)
 		return false;
 	}
 
-	// t_ranking_data_backup µ¥ÀÌÅÍ »èÁ¦
+	// t_ranking_data_backup ë°ì´í„° ì‚­ì œ
 	sql.Format("TRUNCATE TABLE t_ranking_data_backup");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -96,7 +96,7 @@ bool CRankingSystemEX::RankingEX_BackUp(void)
 		return false;
 	}
 
-	// t_ranking_data -> t_ranking_data_backupÀ¸·Î ÀÌµ¿
+	// t_ranking_data -> t_ranking_data_backupìœ¼ë¡œ ì´ë™
 	sql.Format("INSERT INTO t_ranking_data_backup SELECT * FROM t_ranking_data");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -114,7 +114,7 @@ bool CRankingSystemEX::RankingEX_ClearRankingTable(void)
 	CDBCmd cmdchar;
 	cmdchar.Init(&m_dbrank);
 
-	// t_ranking_ex ÃÊ±âÈ­
+	// t_ranking_ex ì´ˆê¸°í™”
 	sql.Format("TRUNCATE TABLE t_ranking_ex");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -123,7 +123,7 @@ bool CRankingSystemEX::RankingEX_ClearRankingTable(void)
 		return false;
 	}
 
-	// t_ranking_data ÃÊ±âÈ­
+	// t_ranking_data ì´ˆê¸°í™”
 	sql.Format("TRUNCATE TABLE t_ranking_data");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -140,7 +140,7 @@ bool CRankingSystemEX::RankingEX_ClearCharTable(void)
 	CDBCmd cmdchar;
 	cmdchar.Init(&m_dbrank);
 
-	// t_charactersÀÇ a_exp_weekly ÇÊµå ÃÊ±âÈ­
+	// t_charactersì˜ a_exp_weekly í•„ë“œ ì´ˆê¸°í™”
 	sql.Format("UPDATE t_characters SET a_exp_weekly = 0");
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -161,7 +161,7 @@ bool CRankingSystemEX::RankingEX_RefreshDate(void)
 	CDBCmd cmdchar;
 	cmdchar.Init(&m_dbrank);
 
-	// Refresh Date °»½Å
+	// Refresh Date ê°±ì‹ 
 	sql.Format("INSERT INTO t_ranking_date(a_date) VALUES('%s')", GetRefreshTime().c_str());
 	cmdchar.SetQuery(sql);
 	if ( !cmdchar.Update() )
@@ -179,7 +179,7 @@ bool CRankingSystemEX::RankingEX_RefreshData(void)
 	CDBCmd cmdchar;
 	cmdchar.Init(&m_dbrank);
 
-	// t_charactersÀÇ µ¥ÀÌÅÍ¸¦ t_ranking_data·Î
+	// t_charactersì˜ ë°ì´í„°ë¥¼ t_ranking_dataë¡œ
 #if defined(LC_KOR)
 	sql.Format("INSERT INTO t_ranking_data(a_char_index, a_job, a_level, a_exp, a_levelup_date, a_refresh_date) "
 			   "SELECT a_index, a_job, a_level, a_exp_weekly, a_levelup_date, '%s' "
@@ -314,12 +314,12 @@ void CRankingSystemEX::StartRefresh(void)
 	boost::thread th(RankingRefreshEx);
 }
 
-// ¸Å 1 ½Ã°£¸¶´Ù ºÒ¸®¿öÁü
+// ë§¤ 1 ì‹œê°„ë§ˆë‹¤ ë¶ˆë¦¬ì›Œì§
 void CRankingSystemEX::CheckRankingRefreshTime(void)
 {
 	struct tm ti = NOW();
 
-	// ¸ÅÁÖ ¿ù¿äÀÏ 06½Ã
+	// ë§¤ì£¼ ì›”ìš”ì¼ 06ì‹œ
 	if (IsLock() == false && ti.tm_wday == RANKING_REFRESH_DAY && ti.tm_hour == RANKING_REFRESH_HOUR)
 	{
 		LOG_INFO("Ranking system - refresh by timer");
@@ -341,7 +341,7 @@ int CRankingSystemEX::GetRankingByName(int type, int subtype, CLCString name)
 	char tname[128];
 	mysql_real_escape_string(&gserver.m_dbchar, tname, (const char *)name, name.Length());
 
-	// t_characters¿¡¼­ Ä³¸¯ÅÍ ÀÌ¸§À» Ã£´Â´Ù.
+	// t_charactersì—ì„œ ìºë¦­í„° ì´ë¦„ì„ ì°¾ëŠ”ë‹¤.
 	int charIndex = 0;
 	sql.Format("SELECT a_index FROM t_characters WHERE a_nick='%s' LIMIT 1", tname);
 	cmd.SetQuery(sql);
@@ -423,10 +423,10 @@ void CRankingSystemEX::RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, 
 	cmdchar.Init(&gserver.m_dbchar);
 	cmdrank.Init(&gserver.m_dbchar);
 
-	// ÀÌÀü ·©Å· °»½Å ³¯Â¥ °¡Á®¿À±â
+	// ì´ì „ ë­í‚¹ ê°±ì‹  ë‚ ì§œ ê°€ì ¸ì˜¤ê¸°
 	std::string refresh_date = GetPreviousRefreshDate();
 
-	// Å¸ÀÔ¿¡ µû¸¥ Äõ¸® Ãß°¡ Á¶°Ç, ranking ÇÊµå, value ÇÊµå ¼³Á¤
+	// íƒ€ì…ì— ë”°ë¥¸ ì¿¼ë¦¬ ì¶”ê°€ ì¡°ê±´, ranking í•„ë“œ, value í•„ë“œ ì„¤ì •
 	CLCString ranking_field(20), value_field(20), add_condition;
 	switch ( type )
 	{
@@ -456,7 +456,7 @@ void CRankingSystemEX::RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, 
 		return;
 	}
 
-	// ÃÑ ¸®½ºÆ® ¼ıÀÚ, ÀÌ¹ø¿¡ Àü´ŞÇÒ ¸®½ºÆ® ¼ıÀÚ(ÃÖ´ë 10)
+	// ì´ ë¦¬ìŠ¤íŠ¸ ìˆ«ì, ì´ë²ˆì— ì „ë‹¬í•  ë¦¬ìŠ¤íŠ¸ ìˆ«ì(ìµœëŒ€ 10)
 	const int nMaxCount = 10;
 	int total_count = cmdchar.m_nrecords;
 	int loop_count = total_count / nMaxCount;
@@ -470,7 +470,7 @@ void CRankingSystemEX::RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, 
 		SEND_Q(rmsg, dest);
 		return;
 	}
-	// ·çÇÁµ¹¸é¼­ µ¥ÀÌÅÍ Àü¼Û
+	// ë£¨í”„ëŒë©´ì„œ ë°ì´í„° ì „ì†¡
 	for ( int i = 0 ; i < loop_count ; ++i )
 	{
 		int start_count = 0;
@@ -505,7 +505,7 @@ void CRankingSystemEX::RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, 
 			{
 				rankerData.m_date = "";
 			}
-			// ÀüÁÖ µ¥ÀÌÅÍ ±¸ÇÏ±â (ranking, value)
+			// ì „ì£¼ ë°ì´í„° êµ¬í•˜ê¸° (ranking, value)
 			sql.Format("SELECT RANK.%s, DATA.%s FROM t_ranking_ex_backup AS RANK, t_ranking_data_backup AS DATA WHERE DATA.a_refresh_date = '%s' and RANK.a_refresh_date = '%s' and "
 					   "RANK.a_char_index = %d and DATA.a_char_index = %d", (const char *)ranking_field, (const char *)value_field, refresh_date.c_str(), refresh_date.c_str(), rankerData.m_char_index, rankerData.m_char_index);
 			cmdrank.SetQuery(sql);
@@ -548,10 +548,10 @@ void CRankingSystemEX::RankingEX_SearchList(CNetMsg::SP& msg, CDescriptor* dest,
 	cmdchar.Init(&gserver.m_dbchar);
 	cmdrank.Init(&gserver.m_dbchar);
 
-	// ÀÌÀü ·©Å· ³¯Â¥ ¾ò±â
+	// ì´ì „ ë­í‚¹ ë‚ ì§œ ì–»ê¸°
 	refresh_date = GetPreviousRefreshDate().c_str();
 
-	// Å¸ÀÔ¿¡ µû¸¥ Äõ¸® Ãß°¡ Á¶°Ç, ranking ÇÊµå, value ÇÊµå ¼³Á¤
+	// íƒ€ì…ì— ë”°ë¥¸ ì¿¼ë¦¬ ì¶”ê°€ ì¡°ê±´, ranking í•„ë“œ, value í•„ë“œ ì„¤ì •
 	CLCString ranking_field(20), value_field(20), add_condition;
 	switch ( type )
 	{
@@ -573,7 +573,7 @@ void CRankingSystemEX::RankingEX_SearchList(CNetMsg::SP& msg, CDescriptor* dest,
 		return;
 	}
 
-	// Ã£°íÀÚ ÇÏ´Â Ä³¸¯ÅÍÀÇ ·©Å· ±¸ÇÏ±â
+	// ì°¾ê³ ì í•˜ëŠ” ìºë¦­í„°ì˜ ë­í‚¹ êµ¬í•˜ê¸°
 	int user_rank = GetRankingByName(type, subtype, name);
 	if ( user_rank < 0 )
 	{
@@ -583,13 +583,13 @@ void CRankingSystemEX::RankingEX_SearchList(CNetMsg::SP& msg, CDescriptor* dest,
 		return;
 	}
 
-	// À§, ¾Æ·¡ 5¸í¾¿ ÃÑ 11¸í(ÀÚ½ÅÆ÷ÇÔ) Á¤º¸ ±¸ÇÏ±â
+	// ìœ„, ì•„ë˜ 5ëª…ì”© ì´ 11ëª…(ìì‹ í¬í•¨) ì •ë³´ êµ¬í•˜ê¸°
 	const int nMaxCount = 11;
 	int list_count = nMaxCount;
 	int start_rank = user_rank - 6;
 	if ( start_rank < 0 )
 	{
-		// start_rank°¡ ¸¶ÀÌ³Ê½ºÀÌ¸é º¸³»´Â ¸®½ºÆ® ¼ö°¡ Àû¾îÁø´Ù
+		// start_rankê°€ ë§ˆì´ë„ˆìŠ¤ì´ë©´ ë³´ë‚´ëŠ” ë¦¬ìŠ¤íŠ¸ ìˆ˜ê°€ ì ì–´ì§„ë‹¤
 		list_count -= abs(start_rank);
 		start_rank = 0;
 	}
@@ -692,14 +692,14 @@ void CRankingSystemEX::RankingEX_GiveRewardByType(int type, int subtype, int end
 	int char_index;
 	cmd.GetRec("a_char_index", char_index);
 
-	// Å¸ÀÌÆ² ¸®½ºÆ®¿¡ charIndex, titleIndex °¡ ÀÖ´ÂÁö È®ÀÎ
+	// íƒ€ì´í‹€ ë¦¬ìŠ¤íŠ¸ì— charIndex, titleIndex ê°€ ìˆëŠ”ì§€ í™•ì¸
 	sql.Format("SELECT a_char_index FROM t_titlelist WHERE a_char_index=%d AND a_title_index=%d LIMIT 1", char_index, title_index);
 	cmd.SetQuery(sql);
 	if( cmd.Open() )
 	{
 		if( cmd.MoveNext() )
 		{
-			// ÀÖÀ¸¸é ½Ã°£ º¯°æ
+			// ìˆìœ¼ë©´ ì‹œê°„ ë³€ê²½
 			sql.Format("UPDATE t_titlelist SET a_endtime=%d WHERE a_char_index=%d AND a_title_index=%d", endTime, char_index, title_index);
 			cmd.Init(&gserver.m_dbchar);
 			cmd.SetQuery(sql);
@@ -719,11 +719,11 @@ void CRankingSystemEX::RankingEX_GiveRewardByType(int type, int subtype, int end
 		else
 		{
 			int temp = 0;
-			// ¾øÀ¸¸é title ¿¡ Ãß°¡
+			// ì—†ìœ¼ë©´ title ì— ì¶”ê°€
 			CNetMsg::SP rmsg(new CNetMsg);
 			rmsg->Init(MSG_SUBHELPER_COMMAND);
 			RefMsg(rmsg) << MSG_SUBHELPER_TITLESYSTEM_INSERT_TITLE_REQ << char_index << title_index << endTime << -1 << -1;
-			// ¾Æ·¡ÀÇ ÇÔ¼ö¿¡¼­ SEND Ã³¸®±îÁö ´Ù ÇÑ´Ù.
+			// ì•„ë˜ì˜ í•¨ìˆ˜ì—ì„œ SEND ì²˜ë¦¬ê¹Œì§€ ë‹¤ í•œë‹¤.
 			RefMsg(rmsg).MoveFirst();
 			RefMsg(rmsg) >> temp;
 			do_Command_TitleSystem_InsertTitleReq(rmsg, NULL, true);
@@ -735,7 +735,7 @@ int CRankingSystemEX::RankingEX_GetRewardTitle(int type, int subtype)
 {
 	int RewardByLevel = 24;
 #ifdef EX_MAGE
-	int RewardByJob[JOBCOUNT] = {25, 26, 27, 28, 29, 30, 31, 97, 100};	//EX_MAGE ÃÊ±â µ¥ÀÌÅÍ ¼öÁ¤¿ä¸Á
+	int RewardByJob[JOBCOUNT] = {25, 26, 27, 28, 29, 30, 31, 97, 100};	//EX_MAGE ì´ˆê¸° ë°ì´í„° ìˆ˜ì •ìš”ë§
 #else
 #if defined (EX_ROGUE)
 	int RewardByJob[JOBCOUNT] = {25, 26, 27, 28, 29, 30, 31, 97};

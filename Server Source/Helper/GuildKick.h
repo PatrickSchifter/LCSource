@@ -8,9 +8,9 @@ public:
 	~CGuildKick(void);
 
 private:
-	int m_masterKickStauts;			// ±æ¸¶ Ãß¹æ °ü·Ã »óÅÂ°ª
-	int m_masterKickRequestChar;	// ±æ¸¶ Ãß¹æ ¿äÃ» Ä³¸¯ÅÍ
-	int m_masterKickRequestTime;	// ±æ¸¶ Ãß¹æ ¿äÃ» ½Ã°£
+	int m_masterKickStauts;			// ê¸¸ë§ˆ ì¶”ë°© ê´€ë ¨ ìƒíƒœê°’
+	int m_masterKickRequestChar;	// ê¸¸ë§ˆ ì¶”ë°© ìš”ì²­ ìºë¦­í„°
+	int m_masterKickRequestTime;	// ê¸¸ë§ˆ ì¶”ë°© ìš”ì²­ ì‹œê°„
 
 public:
 	void setKickStatus(int _status);

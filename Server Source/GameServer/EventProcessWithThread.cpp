@@ -13,6 +13,7 @@
 #include "DescManager.h"
 
 extern void getCharIndexByGPS_return_DBThread(boost::any& any);
+extern void do_ExTitleSystemMake_return_DBThread(boost::any& any);
 
 EventProcessForDB::EventProcessForDB( void )
 {
@@ -31,7 +32,7 @@ EventProcessForDB* EventProcessForDB::instance()
 	return &__instace;
 }
 
-//XX ·Î±×ÀÎ 5
+//XX ë¡œê·¸ì¸ 5
 void EventProcessForDB::pushCharList( charlist& list )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_CHAR_LIST, list);
@@ -39,7 +40,7 @@ void EventProcessForDB::pushCharList( charlist& list )
 	session_->push(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ»ı¼º 4
+//XX ìºë¦­í„°ìƒì„± 4
 void EventProcessForDB::pushCreateCharacter( returnCreateChar& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_CREATE_CHARACTER, data);
@@ -47,7 +48,7 @@ void EventProcessForDB::pushCreateCharacter( returnCreateChar& data )
 	session_->push(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ»èÁ¦ 4
+//XX ìºë¦­í„°ì‚­ì œ 4
 void EventProcessForDB::pushDeleteCharacter( deleteChar& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_DELETE_CHARACTER, data);
@@ -55,7 +56,7 @@ void EventProcessForDB::pushDeleteCharacter( deleteChar& data )
 	session_->push(pushdata);
 }
 
-//XX Ä³¸¯ÅÍº¹¿ø 4
+//XX ìºë¦­í„°ë³µì› 4
 void EventProcessForDB::pushCancelDeleteCharacter( cancleDeleteChar& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_CANCEL_DELETE_CHARACTER, data);
@@ -63,7 +64,7 @@ void EventProcessForDB::pushCancelDeleteCharacter( cancleDeleteChar& data )
 	session_->push(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ¼±ÅÃ 4
+//XX ìºë¦­í„°ì„ íƒ 4
 void EventProcessForDB::pushSelectCharacter( selectChar& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_SELECT_CHARACTER, data);
@@ -78,7 +79,7 @@ void EventProcessForDB::pushSelectCharacterOtherZone( moveOtherZone& data )
 	session_->push(pushdata);
 }
 
-//XX °Å·¡´ëÇà - Ã£±â 4
+//XX ê±°ë˜ëŒ€í–‰ - ì°¾ê¸° 4
 void EventProcessForDB::pushExpressTake( expressTake& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_EXPRESS_TAKE, data);
@@ -96,6 +97,12 @@ void EventProcessForDB::pushSendMessageToClient( sendMessageToClient& data )
 void EventProcessForDB::pushGetCharIndexByGPS( getCharIndexByGPS& data )
 {
 	EventSession::type_t pushdata(EVENT_TYPE_GET_CHAR_INDEX_BY_GPS, data);
+	session_->push(pushdata);
+}
+
+void EventProcessForDB::pushGetMakeTitleInfo(getMakeTitleInfo& data)
+{
+	EventSession::type_t pushdata(EVENT_TYPE_GET_MAKE_TITLE_INFO, data);
 	session_->push(pushdata);
 }
 
@@ -144,13 +151,17 @@ void EventProcessForDB::operate( rnSocketIOService* service )
 		getCharIndexByGPS_return_DBThread(r.second);
 		break;
 
+	case EVENT_TYPE_GET_MAKE_TITLE_INFO:
+		do_ExTitleSystemMake_return_DBThread(r.second);
+		break;
+
 	default:
 		break;
 	}
 	//LOG_INFO("DEBUG_FUNC : END : r.first : %d", r.first);
 }
 
-//XX ·Î±×ÀÎ 6 - end
+//XX ë¡œê·¸ì¸ 6 - end
 void EventProcessForDB::process_char_list( boost::any& any )
 {
 	charlist* data = boost::any_cast<charlist>(&any);
@@ -165,7 +176,7 @@ void EventProcessForDB::process_char_list( boost::any& any )
 	desc->m_bCreate90Lv = data->m_bCreate90Lv;
 	desc->m_bIsNSCreateCardUse = data->m_bIsNSCreateCardUse;
 
-#if defined(LC_TLD) && defined(GMTOOL)
+#if defined(GMTOOL)
 	if (desc->m_userFlag & IS_GM_CHAR)
 	{
 		desc->request_start_game_flag_ = false;
@@ -174,7 +185,7 @@ void EventProcessForDB::process_char_list( boost::any& any )
 #endif
 }
 
-//XX Ä³¸¯ÅÍ»ı¼º 5 - end
+//XX ìºë¦­í„°ìƒì„± 5 - end
 void EventProcessForDB::process_create_character( boost::any& any )
 {
 	returnCreateChar* data = boost::any_cast<returnCreateChar>(&any);
@@ -189,12 +200,12 @@ void EventProcessForDB::process_create_character( boost::any& any )
 	GAMELOG	<< init("CHAR_CREATE", data->name.c_str(), data->name.c_str(), desc->m_idname)
 			<< end;
 
-	// Å¬¶óÀÌ¾ğÆ®¿¡°Ô Ä³¸¯ÅÍ ¸®½ºÆ®¸¦ ´Ù½Ã ³»·ÁÁØ´Ù.
+	// í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ë¥¼ ë‹¤ì‹œ ë‚´ë ¤ì¤€ë‹¤.
 	DBManager::instance()->PushCharacterList(desc);
 
 	if (desc->m_bCreate90Lv && desc->m_bIsNSCreateCardUse && data->job == JOB_NIGHTSHADOW)
 	{
-		// NS »ı¼ºÄ«µå »ç¿ë Á¤º¸ Áö¿ì±â
+		// NS ìƒì„±ì¹´ë“œ ì‚¬ìš© ì •ë³´ ì§€ìš°ê¸°
 		desc->m_bIsNSCreateCardUse = false;
 		desc->m_bNotCreateNightShadow = true;
 
@@ -216,10 +227,10 @@ void EventProcessForDB::process_create_character( boost::any& any )
 #endif // GER_LOG
 }
 
-//XX Ä³¸¯ÅÍ»èÁ¦ 5 - end
+//XX ìºë¦­í„°ì‚­ì œ 5 - end
 void EventProcessForDB::process_delete_character( boost::any& any )
 {
-	// »èÁ¦, º¹¿øÀÇ °æ¿ì Å¬¶óÀÌ¾ğÆ®¿¡°Ô Ä³¸¯ÅÍ ¸®½ºÆ®¸¦ ´Ù½Ã ³»·ÁÁØ´Ù.
+	// ì‚­ì œ, ë³µì›ì˜ ê²½ìš° í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ë¥¼ ë‹¤ì‹œ ë‚´ë ¤ì¤€ë‹¤.
 	deleteChar* data = boost::any_cast<deleteChar>(&any);
 	CDescriptor* desc = DescManager::instance()->getDescByUserIndex(data->m_index);
 	if (desc == NULL || desc->m_seq_index != data->m_seq_index)
@@ -244,10 +255,10 @@ void EventProcessForDB::process_delete_character( boost::any& any )
 #endif // GER_LOG
 }
 
-//XX Ä³¸¯ÅÍº¹¿ø 5 - end
+//XX ìºë¦­í„°ë³µì› 5 - end
 void EventProcessForDB::process_cancel_delete_character( boost::any& any )
 {
-	// »èÁ¦, º¹¿øÀÇ °æ¿ì Å¬¶óÀÌ¾ğÆ®¿¡°Ô Ä³¸¯ÅÍ ¸®½ºÆ®¸¦ ´Ù½Ã ³»·ÁÁØ´Ù.
+	// ì‚­ì œ, ë³µì›ì˜ ê²½ìš° í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ë¥¼ ë‹¤ì‹œ ë‚´ë ¤ì¤€ë‹¤.
 	cancleDeleteChar* data = boost::any_cast<cancleDeleteChar>(&any);
 	CDescriptor* desc = DescManager::instance()->getDescByUserIndex(data->m_index);
 	if (desc == NULL || desc->m_seq_index != data->m_seq_index)
@@ -259,7 +270,7 @@ void EventProcessForDB::process_cancel_delete_character( boost::any& any )
 	DBManager::instance()->PushCharacterList(desc);
 }
 
-//XX Ä³¸¯ÅÍ¼±ÅÃ 5 - end
+//XX ìºë¦­í„°ì„ íƒ 5 - end
 void EventProcessForDB::process_select_character( boost::any& any )
 {
 	selectChar* data = boost::any_cast<selectChar>(&any);
@@ -288,7 +299,7 @@ void EventProcessForDB::process_select_character( boost::any& any )
 		return;
 	}
 
-	// CDescriptor¿Í CPC¸¦ ¼­·Î ¿¬°áÇØÁØ´Ù.
+	// CDescriptorì™€ CPCë¥¼ ì„œë¡œ ì—°ê²°í•´ì¤€ë‹¤.
 	desc->m_pChar = data->pChar;
 	desc->m_pChar->m_desc = desc;
 	desc->m_pChar->m_TimerItem.setOwner(desc->m_pChar);
@@ -307,6 +318,9 @@ void EventProcessForDB::process_select_character( boost::any& any )
 		desc->m_pChar->m_syndicateManager.applySyndicateSkill(SYNDICATE::eSYNDICATE_DEALERMOON);
 	}
 
+	//ê¸¸ë“œ ì •ë³´ ì„¸íŒ…
+	desc->m_pChar->m_guildInfo = gserver->m_guildlist.findmember(desc->m_pChar->m_index);
+
 	memcpy(desc->m_notice, data->m_notice, sizeof(desc->m_notice));
 
 	{
@@ -317,13 +331,13 @@ void EventProcessForDB::process_select_character( boost::any& any )
 
 	if (desc->request_start_game_flag_)
 	{
-		// DB¿¡¼­ Ä³¸¯ÅÍ Á¤º¸¸¦ ´Ù ÀĞ±âÀü¿¡ Å¬¶óÀÌ¾ğÆ®°¡ MSG_START_GAMEÆĞÅ¶À» º¸³»¸é
-		// ±â´Ù¸®Áö ¸»°í ¹Ù·Î µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÑ´Ù.
+		// DBì—ì„œ ìºë¦­í„° ì •ë³´ë¥¼ ë‹¤ ì½ê¸°ì „ì— í´ë¼ì´ì–¸íŠ¸ê°€ MSG_START_GAMEíŒ¨í‚·ì„ ë³´ë‚´ë©´
+		// ê¸°ë‹¤ë¦¬ì§€ ë§ê³  ë°”ë¡œ ë°ì´í„°ë¥¼ ì „ì†¡í•œë‹¤.
 		desc->sendData_StartAndMoveZone();
 	}
 
 	{
-		// Helper, SubHelper¿¡°Ô Á¢¼Ó Á¤º¸¸¦ Àü´Ş
+		// Helper, SubHelperì—ê²Œ ì ‘ì† ì •ë³´ë¥¼ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ServerToServerPacket::LoginUserInfo* packet = reinterpret_cast<ServerToServerPacket::LoginUserInfo*>(rmsg->m_buf);
 		rmsg->m_mtype = packet->type = MSG_SERVER_TO_SERVER;
@@ -342,7 +356,7 @@ void EventProcessForDB::process_select_character( boost::any& any )
 		SEND_Q(rmsg, gserver->m_subHelper);
 	}
 
-#if defined(LC_TLD) && defined(GMTOOL)
+#if defined(GMTOOL)
 	if (desc->m_userFlag & IS_GM_CHAR)
 	{
 		gserver->GMToolCharPrePlay(desc);
@@ -354,7 +368,7 @@ void EventProcessForDB::process_select_character( boost::any& any )
 #endif
 }
 
-//XX Ä³¸¯ÅÍ¼±ÅÃ 5 - end (´Ù¸¥ Á¸À¸·Î ÀÌµ¿À» Ã³¸®ÇÏ´Â°÷)
+//XX ìºë¦­í„°ì„ íƒ 5 - end (ë‹¤ë¥¸ ì¡´ìœ¼ë¡œ ì´ë™ì„ ì²˜ë¦¬í•˜ëŠ”ê³³)
 void EventProcessForDB::process_select_character_other_zone( boost::any& any )
 {
 	moveOtherZone* data = boost::any_cast<moveOtherZone>(&any);
@@ -369,10 +383,11 @@ void EventProcessForDB::process_select_character_other_zone( boost::any& any )
 	desc->Close("Move Other Zone");
 }
 
-//XX °Å·¡´ëÇà - Ã£±â 5 (end)
+//XX ê±°ë˜ëŒ€í–‰ - ì°¾ê¸° 5 (end)
 void EventProcessForDB::process_express_take( boost::any& any )
 {
 	expressTake* data = boost::any_cast<expressTake>(&any);
+	bool isSuccess = true;
 
 	CPC* ch = PCManager::instance()->getPlayerByUserIndex(data->m_index);
 	if (ch == NULL)
@@ -381,11 +396,11 @@ void EventProcessForDB::process_express_take( boost::any& any )
 	if (STATE(ch->m_desc) != CON_PLAYING)
 	{
 		LOG_ERROR("EXPRESS SYSTEM TAKE. not play user. user_index[%d]", ch->m_desc->m_index);
-		return;
+		isSuccess = false;
 	}
 
-	// ¾ÆÀÌÅÛ Á¤º¸¸¦ Ä³¸¯ÅÍ Á¤º¸¿¡ ÀúÀå
-	if (data->itemInfo.nas > 0) // ³ª½º(µ·)
+	// ì•„ì´í…œ ì •ë³´ë¥¼ ìºë¦­í„° ì •ë³´ì— ì €ì¥
+	if (data->itemInfo.nas > 0) // ë‚˜ìŠ¤(ëˆ)
 	{
 		ch->m_inventory.increaseMoney(data->itemInfo.nas);
 
@@ -394,9 +409,9 @@ void EventProcessForDB::process_express_take( boost::any& any )
 				<< "NAS : " << data->itemInfo.nas << delim
 				<< "SEND TYPE : " << data->itemInfo.send_type << end;
 	}
-	else if (data->itemInfo.item_index != -1) // ¾ÆÀÌÅÛ ¼ö·ÉÇÏ±â
+	else if (data->itemInfo.item_index != -1) // ì•„ì´í…œ ìˆ˜ë ¹í•˜ê¸°
 	{
-		// ¼ÒÄÏ °¹¼ö ±¸ÇÏ±â
+		// ì†Œì¼“ ê°¯ìˆ˜ êµ¬í•˜ê¸°
 		int socket_count = 0;
 		for (int i = 0; i < MAX_SOCKET_COUNT; ++i, ++socket_count)
 		{
@@ -404,7 +419,7 @@ void EventProcessForDB::process_express_take( boost::any& any )
 				break;
 		}
 
-		// DB item option -> optionÀ¸·Î º¯°æ
+		// DB item option -> optionìœ¼ë¡œ ë³€ê²½
 		short item_option[MAX_ITEM_OPTION] = {0,};
 		for (int i = 0; i < MAX_ITEM_OPTION; ++i)
 		{
@@ -453,12 +468,12 @@ void EventProcessForDB::process_express_take( boost::any& any )
 			ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_CAN_NOT_CREATE_ITEM);
 			SEND_Q(rmsg, ch->m_desc);
 
-			return;
+			isSuccess = false;
 		}
 
 		if (data->itemInfo.serial[0] == '\0' && !(pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT))
 		{
-			// serialÀÌ ¾ø°í, ½ºÅÃÀÌ ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛÀÌ¶ó¸é »õ·Î¿î ½Ã¸®¾óÀ» ¹ß±ŞÇÑ´Ù.
+			// serialì´ ì—†ê³ , ìŠ¤íƒì´ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œì´ë¼ë©´ ìƒˆë¡œìš´ ì‹œë¦¬ì–¼ì„ ë°œê¸‰í•œë‹¤.
 			pItem->m_serial = GetSerial();
 		}
 
@@ -480,7 +495,7 @@ void EventProcessForDB::process_express_take( boost::any& any )
 			SEND_Q(rmsg, ch->m_desc);
 
 			LOG_ERROR("EXPRESS SYSTEM TAKE. Inven is Full. charIndex : %d", ch->m_index);
-			return;
+			isSuccess = false;
 		}
 	}
 	else
@@ -491,17 +506,24 @@ void EventProcessForDB::process_express_take( boost::any& any )
 
 		LOG_FATAL("EXPRESS SYSTEM TAKE. item info is invalid. charIndex : %d : item_index : %d : nas : %lld", ch->m_index, data->itemInfo.item_index, data->itemInfo.nas);
 
-		return;
+		isSuccess = false;
 	}
 
-	CNetMsg::SP rmsg(new CNetMsg);
-	ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_NO_ERROR);
-	SEND_Q(rmsg, ch->m_desc);
+	if(data->isSend == true)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_NO_ERROR);
+		SEND_Q(rmsg, ch->m_desc);
+	}
 
-	LOG_INFO("EXPRESS SYSTEM TAKE. TAKE SUCCESS. charIndex : %d, itemIndex : %d", ch->m_index, data->itemInfo.item_index);
+	// ì •ìƒì ìœ¼ë¡œ ì €ì¥ë˜ì—ˆë‹¤ë©´ DBì—ì„œ ì‚­ì œ
+	if(isSuccess == true)
+	{
+		DBManager::instance()->PushExpressDelete(ch->m_desc, data->itemInfo.index);
+		LOG_INFO("EXPRESS SYSTEM TAKE. TAKE SUCCESS. charIndex : %d, itemIndex : %d", ch->m_index, data->itemInfo.item_index);
+	}
 
-	// Á¤»óÀûÀ¸·Î ÀúÀåµÇ¾ú´Ù¸é DB¿¡¼­ »èÁ¦
-	DBManager::instance()->PushExpressDelete(ch->m_desc, data->itemInfo.index);
+	ch->use_express_flag = false;
 }
 
 void EventProcessForDB::process_send_message_to_client( boost::any& any )
@@ -519,4 +541,10 @@ void EventProcessForDB::process_send_message_to_client( boost::any& any )
 		return;
 
 	SEND_Q(data->msg, desc);
+
+	if(data->msg->m_mtype == MSG_EXPRESS_SYSTEM)
+	{
+		if(desc->m_pChar != NULL)
+			desc->m_pChar->use_express_flag = false;
+	}
 }

@@ -50,12 +50,12 @@ private:
 	void			mallocBuffer( tINT size );
 
 private:
-	tBYTE*			buffer_;				// ¸Þ¸ð¸® º£ÀÌ½º Æ÷ÀÎÆ®
+	tBYTE*			buffer_;				// ë©”ëª¨ë¦¬ ë² ì´ìŠ¤ í¬ì¸íŠ¸
 	std::vector<std::string>	vec_;
-	tUINT			next_store_pos_;		// ´ÙÀ½¹ø ÀúÀåÇÒ°÷, ÃÖÁ¾ÀûÀ¸·Î ÆÐÅ¶ÀÇ ±æÀÌ¸¦ ³ªÅ¸³¿('\0' ¹ÌÆ÷ÇÔ)
+	tUINT			next_store_pos_;		// ë‹¤ìŒë²ˆ ì €ìž¥í• ê³³, ìµœì¢…ì ìœ¼ë¡œ íŒ¨í‚·ì˜ ê¸¸ì´ë¥¼ ë‚˜íƒ€ëƒ„('\0' ë¯¸í¬í•¨)
 
 	tINT			init_alloc_size_;
-	tINT			pool_index_;			// ¸Þ¸ð¸® Ç®¿¡¼­ÀÇ ÀÎµ¦½º
+	tINT			pool_index_;			// ë©”ëª¨ë¦¬ í’€ì—ì„œì˜ ì¸ë±ìŠ¤
 };
 
 #endif

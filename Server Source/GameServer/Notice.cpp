@@ -17,6 +17,7 @@ bool Compare(NoticeStr* a, NoticeStr* b);
 
 Notice::Notice()
 {
+	m_lastRev = 0;
 }
 
 Notice::~Notice()
@@ -146,10 +147,10 @@ void Notice::load()
 		dbcmd.GetRec("a_date", data->date);
 
 		_vec.push_back(data);
-	}
 
-	if(data != NULL)
-		m_lastRev = data->index;
+		if(m_lastRev < data->index)
+			m_lastRev = data->index;
+	}
 }
 
 Notice* Notice::instance()
@@ -226,7 +227,7 @@ void PopupNotice::_delete( int html_num )
 			delete *it;
 			_vec.erase(it);
 			
-			//DB¿¡¼­ ÇØ´ç µ¥ÀÌÅÍ »èÁ¦
+			//DBì—ì„œ í•´ë‹¹ ë°ì´í„° ì‚­ì œ
 			{
 				std::string query = boost::str(boost::format("delete from t_popup_notice where a_html_index = %d and a_server = %d and a_subserver = %d") % html_num % gserver->m_serverno % gserver->m_subno);
 				DBManager::instance()->pushQueryForDataDB(0, query);
@@ -251,7 +252,7 @@ void PopupNotice::SendDataForLoop()
 			&& ((*it)->start_time / 60) == (gserver->getNowSecond() /60)
 			&& (*it)->isSend == false)
 		{
-			//ÀüÃ¼ À¯Àú¿¡°Ô Àü¼Û
+			//ì „ì²´ ìœ ì €ì—ê²Œ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			CheckPopupNoticeMsg(rmsg, (*it)->html_num);
 			PCManager::instance()->sendToAll(rmsg);
@@ -287,7 +288,7 @@ void PopupNotice::SendDataForUser(CPC* pc)
 
 		if(expire_time > gserver->getNowSecond())
 		{
-			//Àü¼Û
+			//ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			CheckPopupNoticeMsg(rmsg, (*it)->html_num);
 			SEND_Q(rmsg, pc->m_desc);

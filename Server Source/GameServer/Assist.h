@@ -1,15 +1,15 @@
 /************************************
-  ¼öÁ¤»çÇ×
-  ¼öÁ¤ÇÑ »ç¶÷: bs
-  ¼öÁ¤ÀÏ: 2004-11-18 ¿ÀÀü 10:57:23
-  ¼³¸í: ½ºÅ³ÀÇ È¿°ú Àû¿ë¿¡¼­ ¹Ì¸® °è»êµÈ È®·ü °ª »ç¿ë
+  ìˆ˜ì •ì‚¬í•­
+  ìˆ˜ì •í•œ ì‚¬ëŒ: bs
+  ìˆ˜ì •ì¼: 2004-11-18 ì˜¤ì „ 10:57:23
+  ì„¤ëª…: ìŠ¤í‚¬ì˜ íš¨ê³¼ ì ìš©ì—ì„œ ë¯¸ë¦¬ ê³„ì‚°ëœ í™•ë¥  ê°’ ì‚¬ìš©
  ************************************/
 
 /************************************
-  ¼öÁ¤»çÇ×
-  ¼öÁ¤ÇÑ »ç¶÷: bs
-  ¼öÁ¤ÀÏ: 2004-11-17 ¿ÀÈÄ 3:22:34
-  ¼³¸í: CAssistList¿¡ Apply Ãß°¡ - °ª Àû¿ë ÇÔ¼ö
+  ìˆ˜ì •ì‚¬í•­
+  ìˆ˜ì •í•œ ì‚¬ëŒ: bs
+  ìˆ˜ì •ì¼: 2004-11-17 ì˜¤í›„ 3:22:34
+  ì„¤ëª…: CAssistListì— Apply ì¶”ê°€ - ê°’ ì ìš© í•¨ìˆ˜
  ************************************/
 
 #ifndef __ASSIST_H__
@@ -63,7 +63,7 @@ typedef struct _tagAssistValue
 	int maxhp450;
 	int	hard;
 	/////////////////////////////////////////////
-	// BANGWALL : 2005-07-18 ¿ÀÈÄ 2:24:26
+	// BANGWALL : 2005-07-18 ì˜¤í›„ 2:24:26
 	// Comment : skill spd
 	int skillspd;
 	int statpall;
@@ -85,65 +85,65 @@ typedef struct _tagAssistValue
 	int decreaseskillmp;
 #endif
 
-	int		npcAttack;					// NPC¿¡¸¸ ¹°¸®/¿ø°Å¸® °ø°İ·Â Áõ°¡	/ PC°ø°İ½Ã ¹ÌÀû¿ë
-	int		npcMagic;					// NPC¿¡¸¸ ¸¶¹ı °ø°İ·Â Áõ°¡		/ PC°ø°İ½Ã ¹ÌÀû¿ë
+	int		npcAttack;					// NPCì—ë§Œ ë¬¼ë¦¬/ì›ê±°ë¦¬ ê³µê²©ë ¥ ì¦ê°€	/ PCê³µê²©ì‹œ ë¯¸ì ìš©
+	int		npcMagic;					// NPCì—ë§Œ ë§ˆë²• ê³µê²©ë ¥ ì¦ê°€		/ PCê³µê²©ì‹œ ë¯¸ì ìš©
 	int		SkillCooltime;
 
-	// TODO : ÇÏµåÄÚµù¿ë
+	// TODO : í•˜ë“œì½”ë”©ìš©
 	bool hcExpPlus;
 	bool hcSPPlus;
 	int hcReflex;
-	int hcReflexProb;			// addition¿¡¼­¸¸
+	int hcReflexProb;			// additionì—ì„œë§Œ
 	int hcDeathExpPlus;
 	bool hcDeathSPPlus;
-	MSG_CHAR_TYPE hcFearType;	// ÇÇ¾î
+	MSG_CHAR_TYPE hcFearType;	// í”¼ì–´
 	int hcFearIndex;
-	bool hcAttackTower;			// ¼®»ó °ø°İ½Ã ´ë¹ÌÁö 2¹è
-	bool hcExpPlus_836;			// ¼ö¹Ú
-	bool hcSPPlus_837;			// Âü¿Ü
-	bool hcDropPlus_838;		// ÀÚµÎ
-	bool hcSepDrop;				// µå·Ó·ü »ó½Â
-	bool hcSepExp;				// °æÇèÄ¡ »ó½Â
-	bool hcSepSP;				// ½ºÅ³Æ÷ÀÎÆ® »ó½Â
-	bool hcSepNas;				// ³ª½º »ó½Â
-// >> [100823: selo] À¯·á ÁõÆøÁ¦
-	bool hcSepDrop_Cash;		// µå·Ó·ü »ó½Â
-	bool hcSepExp_Cash;			// °æÇèÄ¡ »ó½Â
-	bool hcSepSP_Cash;			// ½ºÅ³Æ÷ÀÎÆ® »ó½Â
-// << [100823: selo] À¯·á ÁõÆøÁ¦
-	bool hcScrollDrop;			// Çà¿îÀÇ½ºÅ©·Ñ : µå·Ó·ü »ó½Â // °­¿îÀÇ ½ºÅ©·Ñ°ú º¯¼ö¸¦ °°ÀÌ »ç¿ëÇÔ
-	bool hcScrollSP;			// ³ë·ÂÀÇ½ºÅ©·Ñ : SP »ó½Â
-	bool hcScrollExp;			// °æÇèÀÇ½ºÅ©·Ñ : °æÇèÄ¡ »ó½Â
-	bool hcExpPlus_S354;		// °æÇèÄ¡ Æ÷¼Ç
+	bool hcAttackTower;			// ì„ìƒ ê³µê²©ì‹œ ëŒ€ë¯¸ì§€ 2ë°°
+	bool hcExpPlus_836;			// ìˆ˜ë°•
+	bool hcSPPlus_837;			// ì°¸ì™¸
+	bool hcDropPlus_838;		// ìë‘
+	bool hcSepDrop;				// ë“œë¡­ë¥  ìƒìŠ¹
+	bool hcSepExp;				// ê²½í—˜ì¹˜ ìƒìŠ¹
+	bool hcSepSP;				// ìŠ¤í‚¬í¬ì¸íŠ¸ ìƒìŠ¹
+	bool hcSepNas;				// ë‚˜ìŠ¤ ìƒìŠ¹
+// >> [100823: selo] ìœ ë£Œ ì¦í­ì œ
+	bool hcSepDrop_Cash;		// ë“œë¡­ë¥  ìƒìŠ¹
+	bool hcSepExp_Cash;			// ê²½í—˜ì¹˜ ìƒìŠ¹
+	bool hcSepSP_Cash;			// ìŠ¤í‚¬í¬ì¸íŠ¸ ìƒìŠ¹
+// << [100823: selo] ìœ ë£Œ ì¦í­ì œ
+	bool hcScrollDrop;			// í–‰ìš´ì˜ìŠ¤í¬ë¡¤ : ë“œë¡­ë¥  ìƒìŠ¹ // ê°•ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë³€ìˆ˜ë¥¼ ê°™ì´ ì‚¬ìš©í•¨
+	bool hcScrollSP;			// ë…¸ë ¥ì˜ìŠ¤í¬ë¡¤ : SP ìƒìŠ¹
+	bool hcScrollExp;			// ê²½í—˜ì˜ìŠ¤í¬ë¡¤ : ê²½í—˜ì¹˜ ìƒìŠ¹
+	bool hcExpPlus_S354;		// ê²½í—˜ì¹˜ í¬ì…˜
 	bool hcScrollDrop_5081;
-	int	hcDropPlus_Xmas2007;	// Å©¸®½º ¸¶½º ÀÌº¥Æ® µå·Ó »ó½Â·ü
+	int	hcDropPlus_Xmas2007;	// í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ ì´ë²¤íŠ¸ ë“œë¡­ ìƒìŠ¹ë¥ 
 
-	bool hcDropPlus_2141;		// Çà¿î ÁÖ¹®¼­
-	int hcCashExpUp;			// 060227 : bs : À¯·á¾ÆÀÌÅÛ °æÇèÄ¡ »ó½Â
-	int hcCashMaxHPUp;			// 060227 : bs : À¯·á¾ÆÀÌÅÛ HP È®Àå
-	int hcCashMaxMPUp;			// 060227 : bs : À¯·á¾ÆÀÌÅÛ MP È®Àå
+	bool hcDropPlus_2141;		// í–‰ìš´ ì£¼ë¬¸ì„œ
+	int hcCashExpUp;			// 060227 : bs : ìœ ë£Œì•„ì´í…œ ê²½í—˜ì¹˜ ìƒìŠ¹
+	int hcCashMaxHPUp;			// 060227 : bs : ìœ ë£Œì•„ì´í…œ HP í™•ì¥
+	int hcCashMaxMPUp;			// 060227 : bs : ìœ ë£Œì•„ì´í…œ MP í™•ì¥
 
-	bool hcExpPlus_S355;		// ÃßÃµ¼­¹öÆ÷¼Ç °æÇèÄ¡ »ó½Â
-	bool hcSPPlus_S356;			// ÃßÃµ¼­¹öÆ÷¼Ç SP »ó½Â
-	bool hcDropPlus_S360;		// ÃßÃµ¼­¹öÆ÷¼Ç µå·ÓÀ² »ó½Â
+	bool hcExpPlus_S355;		// ì¶”ì²œì„œë²„í¬ì…˜ ê²½í—˜ì¹˜ ìƒìŠ¹
+	bool hcSPPlus_S356;			// ì¶”ì²œì„œë²„í¬ì…˜ SP ìƒìŠ¹
+	bool hcDropPlus_S360;		// ì¶”ì²œì„œë²„í¬ì…˜ ë“œë¡­ìœ¨ ìƒìŠ¹
 
-	int hcExpPlusPer100;		// °æÇèÄ¡ »ó½Â %´ÜÀ§ ´©Àû
-	int hcSPPlusPer100;			// ¼÷·Ãµµ »ó½Â %´ÜÀ§ ´©Àû
-	int hcDropPlusPer100;		// µå·ÓÀ² »ó½Â %´ÜÀ§ ´©Àû
+	int hcExpPlusPer100;		// ê²½í—˜ì¹˜ ìƒìŠ¹ %ë‹¨ìœ„ ëˆ„ì 
+	int hcSPPlusPer100;			// ìˆ™ë ¨ë„ ìƒìŠ¹ %ë‹¨ìœ„ ëˆ„ì 
+	int hcDropPlusPer100;		// ë“œë¡­ìœ¨ ìƒìŠ¹ %ë‹¨ìœ„ ëˆ„ì 
 
-	int hcExpPlus_398;			// ¸»·¹ÀÌ½Ã¾Æ °æÇèÄ¡ Æ÷¼Ç : À¯·á ¾ÆÀÌÅÛ : 1840, 1841, 1842 : ´ÜÀ§´Â %
-	int hcExpPlus_1975;			// ÄÉÀÌÅ© : 2006 Å©¸®½º¸¶½º
-	int hcExpPlus_1976;			// ´«»ç¶÷ : 2006 Å©¸®½º¸¶½º
-	int HitRate_2033;			// ·°Å° ¼Ò¿ï ´Ğ½º  - ¸íÁß·ü »ó½Â 20%
-	int	Avoid_2034;				// ·°Å° ´ÙÁö ÇÇ¾î - È¸ÇÇÀ² »ó½Â 10%
+	int hcExpPlus_398;			// ë§ë ˆì´ì‹œì•„ ê²½í—˜ì¹˜ í¬ì…˜ : ìœ ë£Œ ì•„ì´í…œ : 1840, 1841, 1842 : ë‹¨ìœ„ëŠ” %
+	int hcExpPlus_1975;			// ì¼€ì´í¬ : 2006 í¬ë¦¬ìŠ¤ë§ˆìŠ¤
+	int hcExpPlus_1976;			// ëˆˆì‚¬ëŒ : 2006 í¬ë¦¬ìŠ¤ë§ˆìŠ¤
+	int HitRate_2033;			// ëŸ­í‚¤ ì†Œìš¸ ë‹‰ìŠ¤  - ëª…ì¤‘ë¥  ìƒìŠ¹ 20%
+	int	Avoid_2034;				// ëŸ­í‚¤ ë‹¤ì§€ í”¼ì–´ - íšŒí”¼ìœ¨ ìƒìŠ¹ 10%
 
-	bool hcCashPetExpUp_2358;	// Æê °æÇèÀÇ ¹¦¾à - ÀüÅõ ½Ã°£ 3ÃÊ´ç 2Æ÷ÀÎÆ® Áõ°¡
-	bool hcCashPetExpUp_2359;	// ÇÃ·¡Æ¼´½ Æê °æÇèÀÇ ¹¦¾à - ÀüÅõ ½Ã°£ 3ÃÊ´ç 3Æ÷ÀÎÆ® Áõ°¡
+	bool hcCashPetExpUp_2358;	// í« ê²½í—˜ì˜ ë¬˜ì•½ - ì „íˆ¬ ì‹œê°„ 3ì´ˆë‹¹ 2í¬ì¸íŠ¸ ì¦ê°€
+	bool hcCashPetExpUp_2359;	// í”Œë˜í‹°ëŠ„ í« ê²½í—˜ì˜ ë¬˜ì•½ - ì „íˆ¬ ì‹œê°„ 3ì´ˆë‹¹ 3í¬ì¸íŠ¸ ì¦ê°€
 
-	bool bRorainOfLoveMagic;	// ·Î·¹ÀÎÀÇ ·¯ºê¸ÅÁ÷ :  ÀÏÁ¤ È®·ü·Î µ¥¹ÌÁö 10¹è
+	bool bRorainOfLoveMagic;	// ë¡œë ˆì¸ì˜ ëŸ¬ë¸Œë§¤ì§ :  ì¼ì • í™•ë¥ ë¡œ ë°ë¯¸ì§€ 10ë°°
 
-	bool hcMPSteelPotion;		// MP ½ºÆ¿ Æ÷¼Ç : ÀÏ¹İ °ø°İ½Ã 30% È®·ü·Î »ó´ë¹æÀÇ Max MP Áß 10% °¨¼Ò ³ªÀÇ MP°¡ Áõ°¡
-	bool hcHPSteelPotion;		// HP ½ºÆ¿ Æ÷¼Ç : ÀÏ¹İ °ø°İ½Ã 30% È®·ü·Î »ó´ë¹æÀÇ Max HP Áß 5% °¨¼Ò ³ªÀÇ HP°¡ Áõ°¡
+	bool hcMPSteelPotion;		// MP ìŠ¤í‹¸ í¬ì…˜ : ì¼ë°˜ ê³µê²©ì‹œ 30% í™•ë¥ ë¡œ ìƒëŒ€ë°©ì˜ Max MP ì¤‘ 10% ê°ì†Œ ë‚˜ì˜ MPê°€ ì¦ê°€
+	bool hcHPSteelPotion;		// HP ìŠ¤í‹¸ í¬ì…˜ : ì¼ë°˜ ê³µê²©ì‹œ 30% í™•ë¥ ë¡œ ìƒëŒ€ë°©ì˜ Max HP ì¤‘ 5% ê°ì†Œ ë‚˜ì˜ HPê°€ ì¦ê°€
 
 	bool hcExpSPPlus_2354;
 
@@ -159,33 +159,33 @@ typedef struct _tagAssistValue
 	int		charge_magic;
 	bool	hcAttackBerserker;
 	int		hcExplimitPlus;
-	bool	hcPlatinumDrop;				// µå·Ó·ü 20¹è »ó½Â
-	bool	hcPlatinumScroll;			// 10ºĞ µ¿¾È µå·Ó·ü 4¹è»ó½Â
+	bool	hcPlatinumDrop;				// ë“œë¡­ë¥  20ë°° ìƒìŠ¹
+	bool	hcPlatinumScroll;			// 10ë¶„ ë™ì•ˆ ë“œë¡­ë¥  4ë°°ìƒìŠ¹
 
-	int		hcLimitSP;					// ¼÷·Ãµµ °³ÀÎ Á¦ÇÑ
-	int		hcLimitEXP;					// °æÇèÄ¡ °³ÀÎ Á¦ÇÑ
-	int		hcRandomExpUp;				// ·»´ı °æÇèÄ¡ 4¹è È®·ü
-	int		hcRandomSpUp;				// ·»´ı ¼÷·Ãµµ 4¹è È®·ü
-	int		hcRandomDropUp;				// ·»´ı °æÇèÄ¡ 4¹è È®·ü
-	// --- TODO : ÇÏµåÄÚµù¿ë
-	bool	hcPetExpBoost;				// Æê °æÇèÄ¡ ÁõÆø
-	bool	hcIrisFervor;				// ¾ÆÀÌ¸®½ºÀÇ ¿­Á¤
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
-	int		pkDispositionPointValue;	// pk ¼ºÇâ ¼öÄ¡
+	int		hcLimitSP;					// ìˆ™ë ¨ë„ ê°œì¸ ì œí•œ
+	int		hcLimitEXP;					// ê²½í—˜ì¹˜ ê°œì¸ ì œí•œ
+	int		hcRandomExpUp;				// ë Œë¤ ê²½í—˜ì¹˜ 4ë°° í™•ë¥ 
+	int		hcRandomSpUp;				// ë Œë¤ ìˆ™ë ¨ë„ 4ë°° í™•ë¥ 
+	int		hcRandomDropUp;				// ë Œë¤ ê²½í—˜ì¹˜ 4ë°° í™•ë¥ 
+	// --- TODO : í•˜ë“œì½”ë”©ìš©
+	bool	hcPetExpBoost;				// í« ê²½í—˜ì¹˜ ì¦í­
+	bool	hcIrisFervor;				// ì•„ì´ë¦¬ìŠ¤ì˜ ì—´ì •
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
+	int		pkDispositionPointValue;	// pk ì„±í–¥ ìˆ˜ì¹˜
 #endif
 	int		tower_attack;
 
-	int		war_reduce_melee_prob;			//°ø¼ºÀü¿ë ±ÙÁ¢ µ¥¹ÌÁö Èí¼ö È®·ü
-	int		war_reduce_range_prob;			//°ø¼ºÀü¿ë ¿ø°Å¸® µ¥¹ÌÁö Èí¼ö È®·ü
-	int		war_reduce_magic_prob;			//°ø¼ºÀü¿ë ¸¶¹ı µ¥¹ÌÁö Èí¼ö È®·ü
+	int		war_reduce_melee_prob;			//ê³µì„±ì „ìš© ê·¼ì ‘ ë°ë¯¸ì§€ í¡ìˆ˜ í™•ë¥ 
+	int		war_reduce_range_prob;			//ê³µì„±ì „ìš© ì›ê±°ë¦¬ ë°ë¯¸ì§€ í¡ìˆ˜ í™•ë¥ 
+	int		war_reduce_magic_prob;			//ê³µì„±ì „ìš© ë§ˆë²• ë°ë¯¸ì§€ í¡ìˆ˜ í™•ë¥ 
 
-	int		war_reduce_melee;			//°ø¼ºÀü¿ë ±ÙÁ¢ µ¥¹ÌÁö Èí¼ö
-	int		war_reduce_range;			//°ø¼ºÀü¿ë ¿ø°Å¸® µ¥¹ÌÁö Èí¼ö
-	int		war_reduce_magic;			//°ø¼ºÀü¿ë ¸¶¹ı µ¥¹ÌÁö Èí¼ö
-	int		war_max_hp;					//°ø¼ºÀü¿ë ÃÖ´ë hp Áõ°¡
-	int		war_defence;				//°ø¼ºÀü¿ë ¹æ¾î·Â Áõ°¡
-	int		war_resist;					//°ø¼ºÀü¿ë ¸¶¹ı ¹æ¾î·Â Áõ°¡
-	int		war_tower_attack;			//°ø¼ºÀü¿ë °ø¼º Å¸¿ö °ø°İ·Â ÀÏ½ÃÁõ°¡
+	int		war_reduce_melee;			//ê³µì„±ì „ìš© ê·¼ì ‘ ë°ë¯¸ì§€ í¡ìˆ˜
+	int		war_reduce_range;			//ê³µì„±ì „ìš© ì›ê±°ë¦¬ ë°ë¯¸ì§€ í¡ìˆ˜
+	int		war_reduce_magic;			//ê³µì„±ì „ìš© ë§ˆë²• ë°ë¯¸ì§€ í¡ìˆ˜
+	int		war_max_hp;					//ê³µì„±ì „ìš© ìµœëŒ€ hp ì¦ê°€
+	int		war_defence;				//ê³µì„±ì „ìš© ë°©ì–´ë ¥ ì¦ê°€
+	int		war_resist;					//ê³µì„±ì „ìš© ë§ˆë²• ë°©ì–´ë ¥ ì¦ê°€
+	int		war_tower_attack;			//ê³µì„±ì „ìš© ê³µì„± íƒ€ì›Œ ê³µê²©ë ¥ ì¼ì‹œì¦ê°€
 
 	int		money_buy;
 	int		money_sell;
@@ -203,26 +203,26 @@ typedef struct _tagAssistValue
 
 /////////////////////
 // Class name	    : CAssistData
-// Description	    : º¸Á¶È¿°úµ¥ÀÌÅÍ
+// Description	    : ë³´ì¡°íš¨ê³¼ë°ì´í„°
 class CAssistData
 {
 public:
-	int						m_index;		// ¾ÆÀÌÅÛÀÇ °æ¿ì ¾ÆÀÌÅÛ ÀÎµ¦½º, ±×¿Ü´Â -1
-	const CSkillProto*		m_proto;		// ½ºÅ³
-	int						m_level;		// ·¹º§
-	int						m_remain;		// ³²Àº½Ã°£
+	int						m_index;		// ì•„ì´í…œì˜ ê²½ìš° ì•„ì´í…œ ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
+	const CSkillProto*		m_proto;		// ìŠ¤í‚¬
+	int						m_level;		// ë ˆë²¨
+	int						m_remain;		// ë‚¨ì€ì‹œê°„
 	int						m_remainCount;	// remain proc count
-	bool					m_bHit[MAX_SKILL_MAGIC];	// ½ºÅ³ÀÇ È¿°ú Àû¿ë ¿©ºÎ
+	bool					m_bHit[MAX_SKILL_MAGIC];	// ìŠ¤í‚¬ì˜ íš¨ê³¼ ì ìš© ì—¬ë¶€
 
-	MSG_CHAR_TYPE			m_spellerType;	// ½ºÅ³ °ÉÀº Ä³¸¯ÅÍ Å¸ÀÔ
-	int						m_spellerIndex;	// ½ºÅ³ °ÉÀº Ä³¸¯ÅÍ ÀÎµ¦½º
+	MSG_CHAR_TYPE			m_spellerType;	// ìŠ¤í‚¬ ê±¸ì€ ìºë¦­í„° íƒ€ì…
+	int						m_spellerIndex;	// ìŠ¤í‚¬ ê±¸ì€ ìºë¦­í„° ì¸ë±ìŠ¤
 
-	CAssistData*			m_prev;			// ¸µÅ©
-	CAssistData*			m_next;			// ¸µÅ©
+	CAssistData*			m_prev;			// ë§í¬
+	CAssistData*			m_next;			// ë§í¬
 #ifdef ASSIST_DECREASE_TIME_BUG_FIX
 	int						m_prevtime;
 #endif
-	//¼Ó¼º ½ºÅ³¿¡ ´ëÇÑ º¯¼ö µ¥ÀÌÅÍ
+	//ì†ì„± ìŠ¤í‚¬ì— ëŒ€í•œ ë³€ìˆ˜ ë°ì´í„°
 	int						attr_rand;
 
 	CAssistData(MSG_CHAR_TYPE spellertype, int spellerindex, int itemidx, const CSkillProto* proto, int level, int remain,
@@ -232,7 +232,7 @@ public:
 
 /////////////////////
 // Class name	    : CAssistList
-// Description	    : º¸Á¶È¿°ú¸®½ºÆ®
+// Description	    : ë³´ì¡°íš¨ê³¼ë¦¬ìŠ¤íŠ¸
 class CAssistList
 {
 	friend class CAssist;
@@ -248,32 +248,32 @@ public:
 	}
 
 private:
-	CAssistData*			m_head;			// Çì´õ
-	CAssistData*			m_tail;			// Å×ÀÏ
-	int						m_max;			// ÃÖ´ë ¼ö
-	int						m_count;		// °³¼ö
-	int						m_abscount;		// Àı´ë½Ã°£ ¹öÇÁ °³¼ö
+	CAssistData*			m_head;			// í—¤ë”
+	CAssistData*			m_tail;			// í…Œì¼
+	int						m_max;			// ìµœëŒ€ ìˆ˜
+	int						m_count;		// ê°œìˆ˜
+	int						m_abscount;		// ì ˆëŒ€ì‹œê°„ ë²„í”„ ê°œìˆ˜
 
 	/////////////////////
 	// Function name	: max
-	// Description	    : ÃÖ´ë ¼ö ¼³Á¤
+	// Description	    : ìµœëŒ€ ìˆ˜ ì„¤ì •
 	void Max(int n);
 
 	/////////////////////
 	// Function name	: Add
-	// Description	    : ¸®½ºÆ®¿¡ Ãß°¡
+	// Description	    : ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 	// Argument         : CCharacter* spellchar
-	//                  : ½ºÆçÇÑ Ä³¸¯ÅÍ
+	//                  : ìŠ¤í í•œ ìºë¦­í„°
 	// Argument         : int itemidx
-	//                  : ¾ÆÀÌÅÛÀÇ °æ¿ì ÀÎµ¦½º, ±×¿Ü´Â -1
+	//                  : ì•„ì´í…œì˜ ê²½ìš° ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
 	// Argument         : const CSkillProto* proto
-	//                  : Ãß°¡ÇÒ ½ºÅ³
+	//                  : ì¶”ê°€í•  ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : Ãß°¡ÇÒ ½ºÅ³ÀÇ ·¹º§
+	//                  : ì¶”ê°€í•  ìŠ¤í‚¬ì˜ ë ˆë²¨
 	// Argument         : bool bHit[MAX_SKILL_MAGIC]
-	//                  : È¿°ú Àû¿ë ¿©ºÎ
+	//                  : íš¨ê³¼ ì ìš© ì—¬ë¶€
 	// Argument         : int& remain
-	//                  : ³²Àº ½Ã°£, -1Àº ½ºÅ³ ÀÚÃ¼ ½Ã°£ »ç¿ë
+	//                  : ë‚¨ì€ ì‹œê°„, -1ì€ ìŠ¤í‚¬ ìì²´ ì‹œê°„ ì‚¬ìš©
 	// Argument         : int &remainCount
 	//                  : remain proc trigger count. -1 use skill own count
 	bool Add(CCharacter* spellchar, int itemidx, const CSkillProto* proto, int level, bool bHit[MAX_SKILL_MAGIC], int& remain,
@@ -282,81 +282,81 @@ private:
 
 	/////////////////////
 	// Function name	: CanApply
-	// Description	    : ½ºÅ³ Àû¿ë °¡´É¼º °Ë»ç
+	// Description	    : ìŠ¤í‚¬ ì ìš© ê°€ëŠ¥ì„± ê²€ì‚¬
 	// Argument         : const CSkillProto* proto
-	//                  : ½ºÅ³
+	//                  : ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : ·¹º§
+	//                  : ë ˆë²¨
 	bool CanApply(const CSkillProto* proto, int level);
 
 	/////////////////////
 	// Function name	: DelDuplicate
-	// Description	    : Áßº¹µÇ´Â È¿°ú Á¦°Å
+	// Description	    : ì¤‘ë³µë˜ëŠ” íš¨ê³¼ ì œê±°
 	// Argument         : const CSkillProto* proto
-	//                  : Áßº¹ °Ë»ç ´ë»ó ½ºÅ³
+	//                  : ì¤‘ë³µ ê²€ì‚¬ ëŒ€ìƒ ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : ·¹º§
+	//                  : ë ˆë²¨
 	// Argument         : bool bSend
-	//                  : »óÅÂ º¯°æÀ» ¸Ş½ÃÁö·Î º¸³¾°ÍÀÎÁö °áÁ¤
+	//                  : ìƒíƒœ ë³€ê²½ì„ ë©”ì‹œì§€ë¡œ ë³´ë‚¼ê²ƒì¸ì§€ ê²°ì •
 	// Argument         : bool bNoCancelType
-	// 060317 : bs      : SF_NOCANCEL °Ë»ç ¿©ºÎ
+	// 060317 : bs      : SF_NOCANCEL ê²€ì‚¬ ì—¬ë¶€
 	void DelDuplicate(const CSkillProto* proto, int level, bool bSend, CCharacter* ch, bool bNoCancelType);
 
 	/////////////////////
 	// Function name	: DecreaseTime
-	// Description	    : ½Ã°£ °¨¼Ò
+	// Description	    : ì‹œê°„ ê°ì†Œ
 	// Return type		: bool
-	//            		: »èÁ¦µÇ´Â ½ºÅ³ÀÌ ÀÖ´ÂÁö ¿©ºÎ
+	//            		: ì‚­ì œë˜ëŠ” ìŠ¤í‚¬ì´ ìˆëŠ”ì§€ ì—¬ë¶€
 	bool DecreaseTime(CCharacter* ch, LONGLONG* changestate);
 
 	////////////////////
 	// Function name	: Apply
-	// Description	    : È¿°ú Àû¿ë
+	// Description	    : íš¨ê³¼ ì ìš©
 	// Argument         : ASSISTVALUE* addition
-	//                  : µ«¼ÀÀ¸·Î Àû¿ëµÇ´Â ¼öÄ¡
+	//                  : ëƒì…ˆìœ¼ë¡œ ì ìš©ë˜ëŠ” ìˆ˜ì¹˜
 	// Argument         : ASSISTVALUE* rate
-	//                  : ºñÀ²·Î Àû¿ëµÇ´Â ¼öÄ¡
+	//                  : ë¹„ìœ¨ë¡œ ì ìš©ë˜ëŠ” ìˆ˜ì¹˜
 	// Argument         : int* state
-	//                  : »óÅÂ º¯È­
+	//                  : ìƒíƒœ ë³€í™”
 
 	void Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate, LONGLONG* state);
 
 	/////////////////////
 	// Function name	: DelAssist
-	// Description	    : º¸Á¶È¿°ú Á¦°Å
+	// Description	    : ë³´ì¡°íš¨ê³¼ ì œê±°
 	// Argument         : CAssistData* d
 	//                  :
 	// Argument         : bool bNoCancelType
-	// 060317 : bs      : SF_NOCANCEL °Ë»ç ¿©ºÎ
+	// 060317 : bs      : SF_NOCANCEL ê²€ì‚¬ ì—¬ë¶€
 	void DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNoCancelType, bool statusUpdate = true);
 
 	////////////////////
 	// Function name	: CheckApplyConditions
-	// Description	    : Àû¿ë Á¶°Ç ´Ù½Ã °Ë»ç
+	// Description	    : ì ìš© ì¡°ê±´ ë‹¤ì‹œ ê²€ì‚¬
 	void CheckApplyConditions(CCharacter* ch);
 };
 
 /////////////////////
 // Class name	    : CAssist
-// Description	    : º¸Á¶È¿°ú
+// Description	    : ë³´ì¡°íš¨ê³¼
 class CAssist : public MemoryPoolBaseWithMutex<CAssist>
 {
 public:
-	CCharacter*				m_ch;			// È¿°úÀû¿ëÇÏ´Â Ä³¸¯ÅÍ
-	CAssistList				m_help;			// ÀÌ·Î¿î °Å
-	CAssistList				m_curse;		// ÇØ·Î¿î °Å
-	int						m_delaycheck;	// °Ë»ç µô·¹ÀÌ
-	ASSISTVALUE				m_avAddition;	// µ¡¼ÀµÇ´Â È¿°ú ¼öÄ¡
-	ASSISTVALUE				m_avRate;		// ºñÀ²·Î Àû¿ëµÇ´Â È¿°ú ¼öÄ¡
+	CCharacter*				m_ch;			// íš¨ê³¼ì ìš©í•˜ëŠ” ìºë¦­í„°
+	CAssistList				m_help;			// ì´ë¡œìš´ ê±°
+	CAssistList				m_curse;		// í•´ë¡œìš´ ê±°
+	int						m_delaycheck;	// ê²€ì‚¬ ë”œë ˆì´
+	ASSISTVALUE				m_avAddition;	// ë§ì…ˆë˜ëŠ” íš¨ê³¼ ìˆ˜ì¹˜
+	ASSISTVALUE				m_avRate;		// ë¹„ìœ¨ë¡œ ì ìš©ë˜ëŠ” íš¨ê³¼ ìˆ˜ì¹˜
 
-// ¸÷ »óÅÂ ¸Ş½ÃÁö
-	LONGLONG				m_state;		// »óÅÂ º¯È­(½ºÅÏ µîµî)
+// ëª¹ ìƒíƒœ ë©”ì‹œì§€
+	LONGLONG				m_state;		// ìƒíƒœ ë³€í™”(ìŠ¤í„´ ë“±ë“±)
 
 	CAssist();
 
 	/////////////////////
 	// Function name	: Init
-	// Description	    : ÃÊ±âÈ­
+	// Description	    : ì´ˆê¸°í™”
 	void Init(CCharacter* ch);
 
 	int GetAssistCount()
@@ -380,21 +380,21 @@ public:
 
 	/////////////////////
 	// Function name	: Add
-	// Description	    : ½ºÅ³ È¿°ú Ãß°¡
+	// Description	    : ìŠ¤í‚¬ íš¨ê³¼ ì¶”ê°€
 	// Argument         : CCharacter* spellchar
-	//                  : ½ºÆçÇÑ Ä³¸¯ÅÍ
+	//                  : ìŠ¤í í•œ ìºë¦­í„°
 	// Argument         : int itemidx
-	//                  : ¾ÆÀÌÅÛÀÇ °æ¿ì ÀÎµ¦½º, ±×¿Ü´Â -1
+	//                  : ì•„ì´í…œì˜ ê²½ìš° ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
 	// Argument         : const CSkillProto* proto
-	//                  : ½ºÅ³
+	//                  : ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : ·¹º§
+	//                  : ë ˆë²¨
 	// Argument         : bool bHit[MAX_SKILL_MAGIC]
-	//                  : È¿°ú Àû¿ë ¿©ºÎ
+	//                  : íš¨ê³¼ ì ìš© ì—¬ë¶€
 	// Argument         : bool bSend
-	//                  : »óÅÂ º¯°æÀ» ¸Ş½ÃÁö·Î º¸³¾°ÍÀÎÁö °áÁ¤
+	//                  : ìƒíƒœ ë³€ê²½ì„ ë©”ì‹œì§€ë¡œ ë³´ë‚¼ê²ƒì¸ì§€ ê²°ì •
 	// Argument         : int remain
-	//                  : ³²Àº ½Ã°£, -1Àº ½ºÅ³ ÀÚÃ¼ ½Ã°£ »ç¿ë
+	//                  : ë‚¨ì€ ì‹œê°„, -1ì€ ìŠ¤í‚¬ ìì²´ ì‹œê°„ ì‚¬ìš©
 	// Argument         : int remainCount
 	//                  : remain proc trigger count. -1 use skill own count
 	bool Add(CCharacter* spellchar, int itemidx, const CSkillProto* proto, int level, bool bHit[MAX_SKILL_MAGIC], bool bSend, int remain,
@@ -403,24 +403,24 @@ public:
 
 	/////////////////////
 	// Function name	: DecreaseTime
-	// Description	    : ½Ã°£ °¨¼Ò
+	// Description	    : ì‹œê°„ ê°ì†Œ
 	bool DecreaseTime();
 
 	/////////////////////
 	// Function name	: Apply
-	// Description	    : È¿°ú Àû¿ë
+	// Description	    : íš¨ê³¼ ì ìš©
 	void Apply();
 
 	////////////////////
 	// Function name	: ClearAssist
-	// Description	    : È¿°ú ÇØÁ¦
+	// Description	    : íš¨ê³¼ í•´ì œ
 	// Argument         : bool bNoCancelType
-	// 060317 : bs      : SF_NOCANCEL °Ë»ç ¿©ºÎ
+	// 060317 : bs      : SF_NOCANCEL ê²€ì‚¬ ì—¬ë¶€
 	void ClearAssist(bool bSend, bool bByStone, bool bHelp, bool bCurse, bool bNoCancelType);
 
 	////////////////////
 	// Function name	: Find
-	// Description	    : Æ¯Á¤ È¿°ú°¡ Àû¿ëµÇ¾î ÀÖ´ÂÁö °Ë»ç
+	// Description	    : íŠ¹ì • íš¨ê³¼ê°€ ì ìš©ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬
 	bool Find(int magicindex, int magiclevel);
 
 	void GetListString(bool bHelp, char* item, char* index, char* level, char* remain,
@@ -434,98 +434,98 @@ public:
 	void AppendAssistToNetMsg(CNetMsg::SP& msg);
 	void AppendAssistToNetStructMsg(struct tag_assistinfo& info);
 
-	// 060227 : bs : Àı´ë½Ã°£ »ç¿ë ¸®½ºÆ®
+	// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ë¦¬ìŠ¤íŠ¸
 	////////////////////
 	// Function name	: GetABSTimeTypeList
-	// Description	    : Àı´ë ½Ã°£ Å¸ÀÔÀÇ ¹öÇÁ ¸®½ºÆ®¸¦ °¡Á®¿Â´Ù
+	// Description	    : ì ˆëŒ€ ì‹œê°„ íƒ€ì…ì˜ ë²„í”„ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤
 	// Return type		: int
-	//                  : ÃÑ °³¼ö
+	//                  : ì´ ê°œìˆ˜
 	// Argument         : int* nAssistABSItemIndex
-	//                  : ¾ÆÀÌÅÛ ÀÎµ¦½º ¹öÆÛ, NULLÀÌ¸é µ¥ÀÌÅÍ´Â ¾øÀÌ °³¼ö¸¸ ±¸ÇÑ´Ù
+	//                  : ì•„ì´í…œ ì¸ë±ìŠ¤ ë²„í¼, NULLì´ë©´ ë°ì´í„°ëŠ” ì—†ì´ ê°œìˆ˜ë§Œ êµ¬í•œë‹¤
 	// Argument         : int* nAssistABSSkillIndex = NULL
-	//                  : ½ºÅ³ ÀÎµ¦½º ¹öÆÛ
+	//                  : ìŠ¤í‚¬ ì¸ë±ìŠ¤ ë²„í¼
 	// Argument         : int* nAssistABSSkillLevel = NULL
-	//                  : ½ºÅ³ ·¹º§ ¹öÆÛ
+	//                  : ìŠ¤í‚¬ ë ˆë²¨ ë²„í¼
 	// Argument         : char* nAssistABSHit0 = NULL
-	//                  : ¸íÁß 0 ¹öÆÛ
+	//                  : ëª…ì¤‘ 0 ë²„í¼
 	// Argument         : char* nAssistABSHit1 = NULL
-	//                  : ¸íÁß 1 ¹öÆÛ
+	//                  : ëª…ì¤‘ 1 ë²„í¼
 	// Argument         : char* nAssistABSHit2 = NULL
-	//                  : ¸íÁß 2 ¹öÆÛ
+	//                  : ëª…ì¤‘ 2 ë²„í¼
 	// Argument         : int* nAssistABSEndTime = NULL
-	//                  : Á¾·á½Ã°£ ¹öÆÛ
+	//                  : ì¢…ë£Œì‹œê°„ ë²„í¼
 	int GetABSTimeTypeList(int* nAssistABSItemIndex, int* nAssistABSSkillIndex = NULL, int* nAssistABSSkillLevel = NULL, char* nAssistABSHit0 = NULL, char* nAssistABSHit1 = NULL, char* nAssistABSHit2 = NULL, int* nAssistABSEndTime = NULL);
 
 	////////////////////
 	// Function name	: CancelSleep
-	// Description	    : ½½¸³»óÅÂ Ãë¼Ò
+	// Description	    : ìŠ¬ë¦½ìƒíƒœ ì·¨ì†Œ
 	void CancelSleep();
 
 	////////////////////
 	// Function name	: CureAssist
-	// Description	    : levelÀÌÇÏÀÇ type¿¡ ÇØ´çÇÏ´Â ½ºÅ³ Ãë¼Ò
+	// Description	    : levelì´í•˜ì˜ typeì— í•´ë‹¹í•˜ëŠ” ìŠ¤í‚¬ ì·¨ì†Œ
 	void CureAssist(int type, int level);
 	void CureAssist(int flag);
-	void CureOtherAssist(int type, int subtype, int level);			// ASSIST¸»°í ´Ù¸¥ ¹öÇÁµµ »èÁ¦ °¡´É
+	void CureOtherAssist(int type, int subtype, int level);			// ASSISTë§ê³  ë‹¤ë¥¸ ë²„í”„ë„ ì‚­ì œ ê°€ëŠ¥
 
 	////////////////////
 	// Function name	: CancelInvisible
-	// Description	    : ÀÎºñ»óÅÂ Ç®±â
+	// Description	    : ì¸ë¹„ìƒíƒœ í’€ê¸°
 	void CancelInvisible();
 
 	////////////////////
 	// Function name	: CheckApplyConditions
-	// Description	    : Àû¿ë Á¶°Ç ´Ù½Ã °Ë»ç
+	// Description	    : ì ìš© ì¡°ê±´ ë‹¤ì‹œ ê²€ì‚¬
 	void CheckApplyConditions();
 
 	/////////////////////
 	// Function name	: CanApply
-	// Description	    : ½ºÅ³ Àû¿ë °¡´É¼º °Ë»ç
+	// Description	    : ìŠ¤í‚¬ ì ìš© ê°€ëŠ¥ì„± ê²€ì‚¬
 	// Argument         : const CSkillProto* proto
-	//                  : ½ºÅ³
+	//                  : ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : ·¹º§
+	//                  : ë ˆë²¨
 	bool CanApply(const CSkillProto* proto, int level);
 
 	////////////////////
 	// Function name	: FindByType
-	// Description	    : Æ¯Á¤ Å¸ÀÔÀÇ È¿°ú¸¦ Ã£À½
+	// Description	    : íŠ¹ì • íƒ€ì…ì˜ íš¨ê³¼ë¥¼ ì°¾ìŒ
 	// Return type		: int
-	//                  : Ã£Àº È¿°úÀÇ ·¹º§, ¸øÃ£À¸¸é 0
+	//                  : ì°¾ì€ íš¨ê³¼ì˜ ë ˆë²¨, ëª»ì°¾ìœ¼ë©´ 0
 	// Argument         : int type
-	//                  : È¿°ú Å¸ÀÔ
+	//                  : íš¨ê³¼ íƒ€ì…
 	// Argument         : int subtype
-	//                  : È¿°ú ¼­ºê Å¸ÀÔ
+	//                  : íš¨ê³¼ ì„œë¸Œ íƒ€ì…
 	// Argument         : bool* outHelp = NULL
-	//                  : help ¸®½ºÆ®¿¡¼­ Ã£¾ÆÁö¸é true, ¾Æ´Ï¸é false
+	//                  : help ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ì•„ì§€ë©´ true, ì•„ë‹ˆë©´ false
 	// Argument         : CAssistData** outData = NULL
-	//                  : Ã£Àº È¿°ú¿¡ ÇØ´çÇÏ´Â CAssistdata*¸¦ ÀúÀå
+	//                  : ì°¾ì€ íš¨ê³¼ì— í•´ë‹¹í•˜ëŠ” CAssistdata*ë¥¼ ì €ì¥
 	int FindByType(int type, int subtype, bool* outHelp = NULL, CAssistData** outData = NULL);
-	int GetSummonNpcIndex(); // °¢ ·¹º§º° Æ®·¾°ú Æä·¯»çÀÌÆ® ¼ÒÈ¯ npc index ¸¦ °¡Á®¿Â´Ù.
+	int GetSummonNpcIndex(); // ê° ë ˆë²¨ë³„ íŠ¸ë ™ê³¼ í˜ëŸ¬ì‚¬ì´íŠ¸ ì†Œí™˜ npc index ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 
 	////////////////////
 	// Function name	: CancelFear
-	// Description	    : MST_ASSIST_FEAR ÇØÁ¦
+	// Description	    : MST_ASSIST_FEAR í•´ì œ
 	void CancelFear();
 
 	////////////////////
 	// Function name	: CancelFakeDeath
-	// Description	    : MST_ASSIST_FAKEDEATH ÇØÁ¦
+	// Description	    : MST_ASSIST_FAKEDEATH í•´ì œ
 	void CancelFakeDeath();
 
-	// Æ¯Á¤ ¾ÆÀÌÅÛ ÀÎµ¦½º¿¡ ÀÇÇÑ ¹öÇÁ¸¦ Ãë¼Ò
+	// íŠ¹ì • ì•„ì´í…œ ì¸ë±ìŠ¤ì— ì˜í•œ ë²„í”„ë¥¼ ì·¨ì†Œ
 	void CureByItemIndex(int itemindex);
 
-	// Æ¯Á¤ ¾ÆÀÌÅÛ ÀÎµ¦½º¿¡ ÀÇÇÑ ¹öÇÁ°¡ ÀÖ´ÂÁö Ã£À½
+	// íŠ¹ì • ì•„ì´í…œ ì¸ë±ìŠ¤ì— ì˜í•œ ë²„í”„ê°€ ìˆëŠ”ì§€ ì°¾ìŒ
 	bool FindByItemIndex(int itemindex, CAssistData** outData = NULL);
 
-	// Æ¯Á¤ ½ºÅ³ÀÎµ¦½º·Î ¹öÇÁ Ã£±â, ½ºÅ³ÀÌ ¾øÀ¸¸é 0, ÀÖÀ¸¸é ½ºÅ³·¹º§ ¹İÈ¯
+	// íŠ¹ì • ìŠ¤í‚¬ì¸ë±ìŠ¤ë¡œ ë²„í”„ ì°¾ê¸°, ìŠ¤í‚¬ì´ ì—†ìœ¼ë©´ 0, ìˆìœ¼ë©´ ìŠ¤í‚¬ë ˆë²¨ ë°˜í™˜
 	int FindBySkillIndex(int skillindex);
 
-	// Æ¯Á¤ ½ºÅ³ ÀÎµ¦½º¿¡ ÀÇÇÑ ¹öÇÁ¸¦ Ãë¼Ò
+	// íŠ¹ì • ìŠ¤í‚¬ ì¸ë±ìŠ¤ì— ì˜í•œ ë²„í”„ë¥¼ ì·¨ì†Œ
 	void CureBySkillIndex(int nSkillIndex);
 
-	// pet, apet ¿¡ ÀÇÇÑ ¹öÇÁ¸¦ Ãë¼Ò
+	// pet, apet ì— ì˜í•œ ë²„í”„ë¥¼ ì·¨ì†Œ
 	void CureByPetSkill();
 
 	void CancelDespair();
@@ -541,15 +541,15 @@ private:
 
 	/////////////////////
 	// Function name	: DelDuplicate
-	// Description	    : Áßº¹µÇ´Â È¿°ú Á¦°Å
+	// Description	    : ì¤‘ë³µë˜ëŠ” íš¨ê³¼ ì œê±°
 	// Argument         : const CSkillProto* proto
-	//                  : Áßº¹ °Ë»ç ´ë»ó ½ºÅ³
+	//                  : ì¤‘ë³µ ê²€ì‚¬ ëŒ€ìƒ ìŠ¤í‚¬
 	// Argument         : int level
-	//                  : ·¹º§
+	//                  : ë ˆë²¨
 	// Argument         : bool bSend
-	//                  : »óÅÂ º¯°æÀ» ¸Ş½ÃÁö·Î º¸³¾°ÍÀÎÁö °áÁ¤
+	//                  : ìƒíƒœ ë³€ê²½ì„ ë©”ì‹œì§€ë¡œ ë³´ë‚¼ê²ƒì¸ì§€ ê²°ì •
 	// Argument         : bool bNoCancelType
-	// 060317 : bs      : SF_NOCANCEL °Ë»ç ¿©ºÎ
+	// 060317 : bs      : SF_NOCANCEL ê²€ì‚¬ ì—¬ë¶€
 	void DelDuplicate(const CSkillProto* proto, int level, bool bSend, bool bNoCancelType);
 };
 

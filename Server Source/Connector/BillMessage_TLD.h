@@ -3,52 +3,52 @@
 
 typedef enum __tagBillMessage
 {
-	MSG_BILL_UNKNOWN	= 0,						// Àß¸øµÈ ¸Þ¼¼Áö
+	MSG_BILL_UNKNOWN	= 0,						// ìž˜ëª»ëœ ë©”ì„¸ì§€
 
-	BM_CONNECT,								// Ä¿³ØÅÍ Á¢¼Ó ¿äÃ»: protocolversion(str:17) serverNum(uc) gameId(uc)
+	BM_CONNECT,								// ì»¤ë„¥í„° ì ‘ì† ìš”ì²­: protocolversion(str:17) serverNum(uc) gameId(uc)
 	// protocolversion = "TEnterBillV1.0"
 
-	MSG_BILLITEM_CASHBALANCE_REQ,			// »ç¿ëÀÚ ÀÜ¾×¿äÃ» : gameId(uc) userindex(n) userId(str:32) cpId(n)
-	MSG_BILLITEM_CASHBALANCE_REP,			// ÀÀ´ä	    	   : returnCode(uc) gameId(uc) userindex(n) cpId(n) cashBalance(int)
+	MSG_BILLITEM_CASHBALANCE_REQ,			// ì‚¬ìš©ìž ìž”ì•¡ìš”ì²­ : gameId(uc) userindex(n) userId(str:32) cpId(n)
+	MSG_BILLITEM_CASHBALANCE_REP,			// ì‘ë‹µ	    	   : returnCode(uc) gameId(uc) userindex(n) cpId(n) cashBalance(int)
 
-	MSG_BILLITEM_CANBUY_REQ,				// °ú±ÝÀÎÁõ¿äÃ»    : gameId(uc) userindex(n) userId(str:32) cpId(n) count(uc) itemId(n:count) requestCash(n)
-	MSG_BILLITEM_CANBUY_REP,				// ÀÀ´ä			   : returnCode(uc) gameId(uc) userindex(n) cpId(n) count(uc) itemId(n:count) cashBalance(int)
+	MSG_BILLITEM_CANBUY_REQ,				// ê³¼ê¸ˆì¸ì¦ìš”ì²­    : gameId(uc) userindex(n) userId(str:32) cpId(n) count(uc) itemId(n:count) requestCash(n)
+	MSG_BILLITEM_CANBUY_REP,				// ì‘ë‹µ			   : returnCode(uc) gameId(uc) userindex(n) cpId(n) count(uc) itemId(n:count) cashBalance(int)
 
-	MSG_BILLITEM_BUY_REQ,					// °ú±Ý ¿äÃ»	   : serial(n) gameId(uc) userindex(n) userId(str:32) cpId(n) ip(str:30) count(uc) itemId(n:count)
-	MSG_BILLITEM_BUY_REP,					// ÀÀ´ä			   : serial(n) returnCode(uc) gameId(uc) userindex(n) cpId(n) count(uc) itemId(n:count) cashBalance(int)
+	MSG_BILLITEM_BUY_REQ,					// ê³¼ê¸ˆ ìš”ì²­	   : serial(n) gameId(uc) userindex(n) userId(str:32) cpId(n) ip(str:30) count(uc) itemId(n:count)
+	MSG_BILLITEM_BUY_REP,					// ì‘ë‹µ			   : serial(n) returnCode(uc) gameId(uc) userindex(n) cpId(n) count(uc) itemId(n:count) cashBalance(int)
 
-	MSG_BILLITEM_SERVERLIVE,				// ¼­¹ö ¾ó¶óÀÌºê
+	MSG_BILLITEM_SERVERLIVE,				// ì„œë²„ ì–¼ë¼ì´ë¸Œ
 
-	// SOAPHelper ¿ë
-	MSG_SOAP_CONNECT_REQ,					// SOAPHelper¿¡ Á¢¼Ó ¿äÃ» : version(n) server_type(uc) server_no(n)
-	// server_type: 1-·Î±×ÀÎ¼­¹ö, 2-ÄÁ³ØÅÍ
-	MSG_SOAP_CONNECT_REP,					// SOAPHelper¿¡ Á¢¼Ó ¿äÃ» : errorcode(n)
+	// SOAPHelper ìš©
+	MSG_SOAP_CONNECT_REQ,					// SOAPHelperì— ì ‘ì† ìš”ì²­ : version(n) server_type(uc) server_no(n)
+	// server_type: 1-ë¡œê·¸ì¸ì„œë²„, 2-ì»¨ë„¥í„°
+	MSG_SOAP_CONNECT_REP,					// SOAPHelperì— ì ‘ì† ìš”ì²­ : errorcode(n)
 	// errorcode: MSG_SOAP_LOGIN_ERROR_TYPE
-	MSG_SOAP_USER_AUTH_CODE_REQ	, 			// LOGIN_SERVER->SOAP À¯Àú ÆÐ½º¿öµå ÇØ½¬ ¿äÃ»		: key(n) user_id(str)
-	MSG_SOAP_USER_AUTH_CODE_REP	, 			// SOAP->LOGIN_SERVER À¯Àú ÆÐ½º¿öµå ÇØ½¬ ÀÀ´ä		: key(n) password_hash(str)
+	MSG_SOAP_USER_AUTH_CODE_REQ	, 			// LOGIN_SERVER->SOAP ìœ ì € íŒ¨ìŠ¤ì›Œë“œ í•´ì‰¬ ìš”ì²­		: key(n) user_id(str)
+	MSG_SOAP_USER_AUTH_CODE_REP	, 			// SOAP->LOGIN_SERVER ìœ ì € íŒ¨ìŠ¤ì›Œë“œ í•´ì‰¬ ì‘ë‹µ		: key(n) password_hash(str)
 
-	MSG_BILLITEM_RELOAD_CASH,				// Ä³½¬¾ÆÀÌÅÛ °¡°Ý Á¤º¸ ¸®·Îµå
+	MSG_BILLITEM_RELOAD_CASH,				// ìºì‰¬ì•„ì´í…œ ê°€ê²© ì •ë³´ ë¦¬ë¡œë“œ
 } BILLMESSAGE_TYPE;
 
 typedef enum __tagBillErrorMessage
 {
-	MSG_BILLITEM_ERROR_SUCCESS,				// ¼º°ø
-	MSG_BILLITEM_ERROR_LACKCASH,			// ÀÜ¾×ºÎÁ·
-	MSG_BILLITEM_ERROR_NOTUSER,				// ÇØ´çÀ¯Àú ¾øÀ½
-	MSG_BILLITEM_ERROR_NOTITEM,				// ÇØ´ç¾ÆÀÌÅÛ ¾øÀ½
-	MSG_BILLITEM_ERROR_DATABASE,			// DB ¿À·ù
-	MSG_BILLITEM_ERROR_PACKET,				// ÆÐÅ¶ ¿À·ù
-	MSG_BILLITEM_ERROR_ETC,					// ±âÅ¸ ¿À·ù
-	MSG_BILLITEM_ERROR_NOTACCOUNT	= 12,	// °áÀç ±ÇÇÑ ¾øÀ½
+	MSG_BILLITEM_ERROR_SUCCESS,				// ì„±ê³µ
+	MSG_BILLITEM_ERROR_LACKCASH,			// ìž”ì•¡ë¶€ì¡±
+	MSG_BILLITEM_ERROR_NOTUSER,				// í•´ë‹¹ìœ ì € ì—†ìŒ
+	MSG_BILLITEM_ERROR_NOTITEM,				// í•´ë‹¹ì•„ì´í…œ ì—†ìŒ
+	MSG_BILLITEM_ERROR_DATABASE,			// DB ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_PACKET,				// íŒ¨í‚· ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_ETC,					// ê¸°íƒ€ ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_NOTACCOUNT	= 12,	// ê²°ìž¬ ê¶Œí•œ ì—†ìŒ
 } BILL_ERROR_MESSAGE_TYPE;
 
 typedef enum __tagMsgSOAPConnectErrorType
 {
-	MSG_SOAP_CONNECT_ERROR_OK				, // Á¤»ó
-	MSG_SOAP_CONNECT_ERROR_VERSION			, // ¹öÀü ¿À·ù
-	MSG_SOAP_CONNECT_ERROR_SERVER_TYPE		, // ¼­¹ö Å¸ÀÔ ¿À·ù
-	MSG_SOAP_CONNECT_ERROR_SERVER_NO		, // ¼­¹ö ¹øÈ£ ¿À·ù (Àß¸øµÈ °ª ¶Ç´Â Áßº¹)
-	MSG_SOAP_CONNECT_ERROR_ERROR			, // ±×¿Ü ¿À·ù
+	MSG_SOAP_CONNECT_ERROR_OK				, // ì •ìƒ
+	MSG_SOAP_CONNECT_ERROR_VERSION			, // ë²„ì „ ì˜¤ë¥˜
+	MSG_SOAP_CONNECT_ERROR_SERVER_TYPE		, // ì„œë²„ íƒ€ìž… ì˜¤ë¥˜
+	MSG_SOAP_CONNECT_ERROR_SERVER_NO		, // ì„œë²„ ë²ˆí˜¸ ì˜¤ë¥˜ (ìž˜ëª»ëœ ê°’ ë˜ëŠ” ì¤‘ë³µ)
+	MSG_SOAP_CONNECT_ERROR_ERROR			, // ê·¸ì™¸ ì˜¤ë¥˜
 } MSG_SOAP_CONNECT_ERROR_TYPE;
 
 #endif // __BILL_MESSAGE_H__

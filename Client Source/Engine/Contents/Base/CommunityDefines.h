@@ -11,6 +11,7 @@ enum PartyType
 	PT_PEACEEVER = 0,	// 균등 분배
 	PT_SURVIVAL = 1,	// 입수우선 
 	PT_ATTACK = 2,		// 공격자경험치 우선
+	PT_MAX
 };
 
 // 파티 인포

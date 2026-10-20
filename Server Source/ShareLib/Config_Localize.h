@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-// ±¹°¡º° ·ÎÄÃ¶óÀÌÁî ÆÄÀÏ·Î °ü¸®
+// êµ­ê°€ë³„ ë¡œì»¬ë¼ì´ì¦ˆ íŒŒì¼ë¡œ ê´€ë¦¬
 
 #if defined (LC_KOR)
 #include "Config_Localize_KOR.h"
@@ -24,24 +24,24 @@
 #include "Config_Localize_TLD.h"
 #endif
 
-// ÀÌº¥Æ®´Â ¿ä±â¼­ Ã£À¸»ï.
+// ì´ë²¤íŠ¸ëŠ” ìš”ê¸°ì„œ ì°¾ìœ¼ì‚¼.
 #include "Config_Localize_event.h"
 
 /////////////////////////////////////////////////////////////////////////////////
 
-// ---------------- ÀüÃ¼ °øÅë »ç¿ë ¾ÆÀÌÅÛ  ----------------- //
+// ---------------- ì „ì²´ ê³µí†µ ì‚¬ìš© ì•„ì´í…œ  ----------------- //
 
-#define USE_GROCERY_ITEM1               2458    // ÀâÈ­»ó ÀÌ¿ë ÁÖ¹®¼­ 1ÀÏ
-#define USE_GROCERY_ITEM2               2459    // ÀâÈ­»ó ÀÌ¿ë ÁÖ¹®¼­ 7ÀÏ
-#define USE_GROCERY_ITEM3               2460    // ÀâÈ­»ó ÀÌ¿ë ÁÖ¹®¼­ 30ÀÏ
+#define USE_GROCERY_ITEM1               2458    // ìž¡í™”ìƒ ì´ìš© ì£¼ë¬¸ì„œ 1ì¼
+#define USE_GROCERY_ITEM2               2459    // ìž¡í™”ìƒ ì´ìš© ì£¼ë¬¸ì„œ 7ì¼
+#define USE_GROCERY_ITEM3               2460    // ìž¡í™”ìƒ ì´ìš© ì£¼ë¬¸ì„œ 30ì¼
 
-#define USE_WAREHOUSE_ITEM1             2455    // Ã¢°í ÀÌ¿ë ÁÖ¹®¼­ 1ÀÏ
-#define USE_WAREHOUSE_ITEM2             2456    // Ã¢°í ÀÌ¿ë ÁÖ¹®¼­ 7ÀÏ
-#define USE_WAREHOUSE_ITEM3             2457    // Ã¢°í ÀÌ¿ë ÁÖ¹®¼­ 30ÀÏ
+#define USE_WAREHOUSE_ITEM1             2455    // ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ 1ì¼
+#define USE_WAREHOUSE_ITEM2             2456    // ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ 7ì¼
+#define USE_WAREHOUSE_ITEM3             2457    // ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ 30ì¼
 
-#define SHOW_HP_ITEM1                   2461    // ½áÄ¡ ¶óÀÌÇÁ ( Ä³¸¯ÅÍÀÇ HP¸¦ º¼  ÀÖÀ½ ) 1ÀÏ
-#define SHOW_HP_ITEM2                   2462    // ½áÄ¡ ¶óÀÌÇÁ ( Ä³¸¯ÅÍÀÇ HP¸¦ º¼  ÀÖÀ½ ) 7ÀÏ
-#define SHOW_HP_ITEM3                   2463    // ½áÄ¡ ¶óÀÌÇÁ ( Ä³¸¯ÅÍÀÇ HP¸¦ º¼  ÀÖÀ½ ) 30ÀÏ
+#define SHOW_HP_ITEM1                   2461    // ì¨ì¹˜ ë¼ì´í”„ ( ìºë¦­í„°ì˜ HPë¥¼ ë³¼  ìžˆìŒ ) 1ì¼
+#define SHOW_HP_ITEM2                   2462    // ì¨ì¹˜ ë¼ì´í”„ ( ìºë¦­í„°ì˜ HPë¥¼ ë³¼  ìžˆìŒ ) 7ì¼
+#define SHOW_HP_ITEM3                   2463    // ì¨ì¹˜ ë¼ì´í”„ ( ìºë¦­í„°ì˜ HPë¥¼ ë³¼  ìžˆìŒ ) 30ì¼
 
 #define ONE_PERIOD_ITEM                 2404
 #define SEVEN_PERIOD_ITEM               2405
@@ -51,10 +51,10 @@
 #define PERIOD_COMPETITION_ITEM         2408
 #define USE_COMPETITION_ITEM_NAS        1000
 
-#define SKILL_POTION_ITEM               2452    // ¼÷·ÃÀÇ ¹¦¾à
-#define PLATINUM_SKILL_POTION_ITEM      2453    // ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
-#define PET_HPRECOVER_ITEM              2454    // Æê HP È¸º¹ ¹°¾à
-#define FIRECRACKER_ITEM                2403    //ÆøÁ× ¾ÆÀÌÅÛ
+#define SKILL_POTION_ITEM               2452    // ìˆ™ë ¨ì˜ ë¬˜ì•½
+#define PLATINUM_SKILL_POTION_ITEM      2453    // í”Œëž˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
+#define PET_HPRECOVER_ITEM              2454    // íŽ« HP íšŒë³µ ë¬¼ì•½
+#define FIRECRACKER_ITEM                2403    //í­ì£½ ì•„ì´í…œ
 
 #define LOW_RUNE_PROTECTION_ITEM        2394
 #define HIGH_RUNE_PROTECTION_ITEM       2395
@@ -63,39 +63,39 @@
 #define SUPER_HIGH_RUNE_PROTECTION_ITEM	6218
 #define MIDDLE_HIGH_RUNE_PROTECTION_ITEM		11023
 
-#define PET_RED_COLOR_ITEM              2396    // »¡°£»ö
-#define PET_SCARLET_COLOR_ITEM          2397    // ÁÖÈ«
-#define PET_YELLOW_COLOR_ITEM           2398    // ³ë¶û
-#define PET_GREEN_COLOR_ITEM            2399    // ÃÊ·Ï
-#define PET_BLUE_COLOR_ITEM             2400    // ÆÄ¶û
-#define PET_DEEP_BLUE_COLOR_ITEM        2401    // ³²»ö
-#define PET_VIOLET_COLOR_ITEM           2402    // º¸¶ó
-#define PET_WHITE_COLOR_ITEM            2568    // Èò
-#define PET_BLACK_COLOR_ITEM            2569    // °ËÁ¤
-#define PET_NON_COLOR_ITEM              2869    // ±âº»»ö
-#define PET_BLACK_HEART_COLOR_ITEM      3548    // °ËÀº¸» ÇÏÆ®
-#define PET_WHITE_HEART_COLOR_ITEM      3549    // ÇÏ¾ç¸» ÇÏÆ®
-#define PET_YELLOW_HEART_COLOR_ITEM     3550    // ³ë¶û¸» ÇÏÆ®
-#define HORSE_COLOR_CHANGE_ITEM			740		// ¸» »ö»ó¹®¾ç º¯°æ
-#define DRAGON_COLOR_CHANGE_ITEM		741		// ¿ë »ö»ó¹®¾ç º¯°æ
-#define HORSE_WILLIAM_COLOR_ITEM		6728	// Å¸´Â¸» Àü¿ë ²®µ¥±â WILLIAM
-#define HORSE_ALBER_COLOR_ITEM			6729	// Å¸´Â¸» Àü¿ë ²®µ¥±â ALBER
-#define HORSE_REDEYE_COLOR_ITEM			6730	// Å¸´Â¸» Àü¿ë ²®µ¥±â REDEYE
-#define HORSE_ZEBRA_COLOR_ITEM			6731	// Å¸´Â¸» Àü¿ë ²®µ¥±â ZEBRA
-#define HORSE_HAROLD_COLOR_ITEM			6732	// Å¸´Â¸» Àü¿ë ²®µ¥±â HAROLD
-#define HORSE_VIOLET_COLOR_ITEM			6733	// Å¸´Â¸» Àü¿ë ²®µ¥±â VIOLET
+#define PET_RED_COLOR_ITEM              2396    // ë¹¨ê°„ìƒ‰
+#define PET_SCARLET_COLOR_ITEM          2397    // ì£¼í™
+#define PET_YELLOW_COLOR_ITEM           2398    // ë…¸ëž‘
+#define PET_GREEN_COLOR_ITEM            2399    // ì´ˆë¡
+#define PET_BLUE_COLOR_ITEM             2400    // íŒŒëž‘
+#define PET_DEEP_BLUE_COLOR_ITEM        2401    // ë‚¨ìƒ‰
+#define PET_VIOLET_COLOR_ITEM           2402    // ë³´ë¼
+#define PET_WHITE_COLOR_ITEM            2568    // í°
+#define PET_BLACK_COLOR_ITEM            2569    // ê²€ì •
+#define PET_NON_COLOR_ITEM              2869    // ê¸°ë³¸ìƒ‰
+#define PET_BLACK_HEART_COLOR_ITEM      3548    // ê²€ì€ë§ í•˜íŠ¸
+#define PET_WHITE_HEART_COLOR_ITEM      3549    // í•˜ì–‘ë§ í•˜íŠ¸
+#define PET_YELLOW_HEART_COLOR_ITEM     3550    // ë…¸ëž‘ë§ í•˜íŠ¸
+#define HORSE_COLOR_CHANGE_ITEM			740		// ë§ ìƒ‰ìƒë¬¸ì–‘ ë³€ê²½
+#define DRAGON_COLOR_CHANGE_ITEM		741		// ìš© ìƒ‰ìƒë¬¸ì–‘ ë³€ê²½
+#define HORSE_WILLIAM_COLOR_ITEM		6728	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° WILLIAM
+#define HORSE_ALBER_COLOR_ITEM			6729	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° ALBER
+#define HORSE_REDEYE_COLOR_ITEM			6730	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° REDEYE
+#define HORSE_ZEBRA_COLOR_ITEM			6731	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° ZEBRA
+#define HORSE_HAROLD_COLOR_ITEM			6732	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° HAROLD
+#define HORSE_VIOLET_COLOR_ITEM			6733	// íƒ€ëŠ”ë§ ì „ìš© ê»ë°ê¸° VIOLET
 
-// ---------------- Àü·ÎÄÃ Àû¿ë ½Ã½ºÅÛ --------------------- //
+// ---------------- ì „ë¡œì»¬ ì ìš© ì‹œìŠ¤í…œ --------------------- //
 
-// Áê³ë°³ÆíÀ¸·Î 5,6ÀÌº¥Æ® ºñÆ®ÇÊµå ¸ðµç ±¹°¡ °øÅëÀ¸·Î »ç¿ëÇÔ
-#define		ETC_EVENT_JUNO_RENEWAL_MESSAGEBOX_POPUP	(1 << 5)  // ÆË¾÷ Ã¼Å©
-#define		ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE	(1 << 6)  // Äù½ºÆ® ¿Ï·á Ã¼Å©
+// ì¥¬ë…¸ê°œíŽ¸ìœ¼ë¡œ 5,6ì´ë²¤íŠ¸ ë¹„íŠ¸í•„ë“œ ëª¨ë“  êµ­ê°€ ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•¨
+#define		ETC_EVENT_JUNO_RENEWAL_MESSAGEBOX_POPUP	(1 << 5)  // íŒì—… ì²´í¬
+#define		ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE	(1 << 6)  // í€˜ìŠ¤íŠ¸ ì™„ë£Œ ì²´í¬
 
-// ÀÌº¥Æ® ÀÚµ¿È­ ½Ã½ºÅÛ
+// ì´ë²¤íŠ¸ ìžë™í™” ì‹œìŠ¤í…œ
 
-// ----------------- °øÅë define ¼³Á¤ start -------------- //
+// ----------------- ê³µí†µ define ì„¤ì • start -------------- //
 
-// -------------------- ÀÌº¥Æ® ¼³Á¤ start -------------------- //
+// -------------------- ì´ë²¤íŠ¸ ì„¤ì • start -------------------- //
 
 #define     NOTADULTMIN                 6
 #define     NOTADULTMAX                 22

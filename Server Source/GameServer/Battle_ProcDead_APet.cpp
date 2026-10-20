@@ -130,7 +130,7 @@ void ProcDead(CAPet* df, CCharacter* of)
 
 	if (owner)
 	{
-		// Item ºÀÀÎ
+		// Item ÅŸÅ”Å”ÃŽ
 		CItem* apet_item = owner->m_wearInventory.wearItemInfo[WEARING_PET];
 		if( !apet_item )
 			return;
@@ -141,14 +141,14 @@ void ProcDead(CAPet* df, CCharacter* of)
 
 		df->m_bMount = false;
 
-		// Á×¾úÀ»¶§´Â Âø¿ëÇØÁ¦¿¡¼­ Disappear ¸¦ º¸³»Áö ¾Ê±â¶«¹®¿¡ ¿©±â¼­ ¼¿¿¡¼­ »©ÁØ´Ù.
+		// ÃÃ—Ä¾ÃºÅ”Â»Â¶Â§Â´Ã‚ Ã‚Å™Å¼Ã«Ã‡Å˜ÃÂ¦Å¼Ë‡Ä½Â­ Disappear Â¸Â¦ ÅŸÂ¸Å‚Â»ÃÃ¶ Ä¾Ä˜Â±Ã¢Â¶Â«Ä…Â®Å¼Ë‡ Å¼Â©Â±Ã¢Ä½Â­ Ä½Å¼Å¼Ë‡Ä½Â­ Â»Â©ÃÅ˜Â´Å®.
 		df->m_bSummon = false;
 		DelAttackList(df);
 		if( df->m_pZone && df->m_pArea )
 			df->m_pArea->CharFromCell(df, true);
 
 		{
-			// Æê »óÅÂ º¸³¿
+			// Ä†Ä™ Â»Ã³Ä¹Ã‚ ÅŸÂ¸Å‚Å¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			ExAPetStatusMsg(rmsg, df);
 			SEND_Q(rmsg, owner->m_desc);

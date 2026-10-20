@@ -440,17 +440,6 @@ void CUISpinButton::OnRender( CDrawPort* pDraw )
 #endif // UI_TOOL
 }
 
-WMSG_RESULT CUISpinButton::OnLButtonUp( UINT16 x, UINT16 y )
-{
-	if( m_bHide == TRUE )
-		return WMSG_FAIL;
-
-	if( IsInside(x, y) == FALSE )
-		return WMSG_FAIL;
-
-	return WMSG_FAIL;
-}
-
 WMSG_RESULT CUISpinButton::OnMouseWheel( UINT16 x, UINT16 y, int wheel )
 {
 	if (m_bHide)

@@ -1,8 +1,8 @@
 #ifndef __DES3_STATIC_H__
 #define __DES3_STATIC_H__
 
-// #ifndef µîÀ¸·Î Áßº¹ include¸¦ ¹æÁöÇÒ ÇÊ¿ä ¾ø´Ù!!!!
-// ¶ÇÇÑ Àı´ë des3.cpp ÀÌ¿ÜÀÇ °÷¿¡ include ÇØ¼­´Â ¾ÈµÈ´Ù
+// #ifndef ë“±ìœ¼ë¡œ ì¤‘ë³µ includeë¥¼ ë°©ì§€í•  í•„ìš” ì—†ë‹¤!!!!
+// ë˜í•œ ì ˆëŒ€ des3.cpp ì´ì™¸ì˜ ê³³ì— include í•´ì„œëŠ” ì•ˆëœë‹¤
 
 /* Use the key schedule specified in the Standard (ANSI X3.92-1981). */
 static unsigned char pc1[56] =

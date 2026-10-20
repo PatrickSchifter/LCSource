@@ -6,52 +6,54 @@
 // MAIN TYPE = MSG_DURABILITY
 enum // SUB TYPE
 {
-	MSG_SUB_DURABILITY_NORMAL_REPAIR,		// Àåºñ ³»±¸µµ ÀÏ¹İ ¼ö¸®
-	MSG_SUB_DURABILITY_SPECIAL_REPAIR,		// Àåºñ ³»±¸µµ Æ¯¼ö ¼ö¸®
-	MSG_SUB_DURABILITY_RECOVERY,			// Àåºñ ³»±¸µµ º¹±¸
+	MSG_SUB_DURABILITY_NORMAL_REPAIR,		// ì¥ë¹„ ë‚´êµ¬ë„ ì¼ë°˜ ìˆ˜ë¦¬
+	MSG_SUB_DURABILITY_SPECIAL_REPAIR,		// ì¥ë¹„ ë‚´êµ¬ë„ íŠ¹ìˆ˜ ìˆ˜ë¦¬
+	MSG_SUB_DURABILITY_RECOVERY,			// ì¥ë¹„ ë‚´êµ¬ë„ ë³µêµ¬
 };
 
 enum
 {
-	ERR_NO_DURABILITY_OK,				// ¼º°ø
-	ERR_NO_DURABILITY_NOT_ENOUGH_MONEY,	// ³ª½º ºÎÁ·
-	ERR_NO_DURABILITY_NOT_ENOUGH_ITEM_COUNT,	// ½ÅºñÇÑ ¸ÁÄ¡ °¹¼ö°¡ ºÎÁ·ÇÔ
-	ERR_NO_DURABILITY_TOO_MUSH_ITEM_COUNT,	// ½ÅºñÇÑ ¸ÁÄ¡ °¹¼ö°¡ ³Ê¹« ¸¹½À´Ï´Ù.
-	ERR_NO_DURABILITY_DO_NOT_REPAIR,		// ¼ö¸®ÇÒ ÇÊ¿ä°¡ ¾øÀ½
-	ERR_NO_DURABILITY_DO_NOT_RECOVERY,		// º¹±¸ÇÒ ÇÊ¿ä°¡ ¾øÀ½
+	ERR_NO_DURABILITY_OK,				// ì„±ê³µ
+	ERR_NO_DURABILITY_NOT_ENOUGH_MONEY,	// ë‚˜ìŠ¤ ë¶€ì¡±
+	ERR_NO_DURABILITY_NOT_ENOUGH_ITEM_COUNT,	// ì‹ ë¹„í•œ ë§ì¹˜ ê°¯ìˆ˜ê°€ ë¶€ì¡±í•¨
+	ERR_NO_DURABILITY_TOO_MUSH_ITEM_COUNT,	// ì‹ ë¹„í•œ ë§ì¹˜ ê°¯ìˆ˜ê°€ ë„ˆë¬´ ë§ìŠµë‹ˆë‹¤.
+	ERR_NO_DURABILITY_DO_NOT_REPAIR,		// ìˆ˜ë¦¬í•  í•„ìš”ê°€ ì—†ìŒ
+	ERR_NO_DURABILITY_DO_NOT_RECOVERY,		// ë³µêµ¬í•  í•„ìš”ê°€ ì—†ìŒ
 };
 
 #pragma pack(push, 1)
 //////////////////////////////////////////////////////////////////////////
 namespace RequestClient
 {
-struct repairDurability : public pTypeBase	// Àåºñ ³»±¸µµ ÀÏ¹İ ¼ö¸®
+struct repairDurability : public pTypeBase	// ì¥ë¹„ ë‚´êµ¬ë„ ì¼ë°˜ ìˆ˜ë¦¬
 {
 	unsigned short		tab_no;
 	unsigned short		invenIndex;
 	int					virualIndex;
 	LONGLONG			fee;
+	int					npcIndex;
 };
 
-struct specialRepairDurability : public pTypeBase // Àåºñ ³»±¸µµ Æ¯¼ö ¼ö¸®
+struct specialRepairDurability : public pTypeBase // ì¥ë¹„ ë‚´êµ¬ë„ íŠ¹ìˆ˜ ìˆ˜ë¦¬
 {
 	unsigned short		tab_no;
 	unsigned short		invenIndex;
 	int					virualIndex;
 
-	// Æ¯¼ö Àç·á
+	// íŠ¹ìˆ˜ ì¬ë£Œ
 	unsigned short		material_tab_no;
 	unsigned short		material_invenIndex;
 	int					material_virtualIndex;
+	int					npcIndex;
 };
 
-struct recoveryDurability : public pTypeBase // Àåºñ ³»±¸µµ º¹±¸
+struct recoveryDurability : public pTypeBase // ì¥ë¹„ ë‚´êµ¬ë„ ë³µêµ¬
 {
 	unsigned short		tab_no;
 	unsigned short		invenIndex;
 	int					virualIndex;
 
-	// Æ¯¼ö Àç·á
+	// íŠ¹ìˆ˜ ì¬ë£Œ
 	unsigned short		material_tab_no;
 	unsigned short		material_invenIndex;
 	int					material_virtualIndex;
@@ -61,17 +63,17 @@ struct recoveryDurability : public pTypeBase // Àåºñ ³»±¸µµ º¹±¸
 
 namespace ResponseClient
 {
-struct repairDurability : public pTypeBase	// Àåºñ ³»±¸µµ ÀÏ¹İ ¼ö¸®
+struct repairDurability : public pTypeBase	// ì¥ë¹„ ë‚´êµ¬ë„ ì¼ë°˜ ìˆ˜ë¦¬
 {
 	unsigned char		result;
 };
 
-struct specialRepairDurability : public pTypeBase // Àåºñ ³»±¸µµ Æ¯¼ö ¼ö¸®
+struct specialRepairDurability : public pTypeBase // ì¥ë¹„ ë‚´êµ¬ë„ íŠ¹ìˆ˜ ìˆ˜ë¦¬
 {
 	unsigned char		result;
 };
 
-struct recoveryDurability : public pTypeBase // Àåºñ ³»±¸µµ º¹±¸
+struct recoveryDurability : public pTypeBase // ì¥ë¹„ ë‚´êµ¬ë„ ë³µêµ¬
 {
 	unsigned char		result;
 };
@@ -113,15 +115,15 @@ struct itemDurabilityForInventory : public pTypeBase
 	unsigned short		tab;
 	unsigned short		invenIndex;
 
-	unsigned short		now_durability; // ÇöÀç Àåºñ ³»±¸µµ
-	unsigned short		max_durability; // ÃÖ´ë Àåºñ ³»±¸µµ
+	unsigned short		now_durability; // í˜„ì¬ ì¥ë¹„ ë‚´êµ¬ë„
+	unsigned short		max_durability; // ìµœëŒ€ ì¥ë¹„ ë‚´êµ¬ë„
 };
 
 struct itemDurabilityForWear: public pTypeBase
 {
 	unsigned short		wearPos;
 
-	unsigned short		now_durability; // ÇöÀç Àåºñ ³»±¸µµ
+	unsigned short		now_durability; // í˜„ì¬ ì¥ë¹„ ë‚´êµ¬ë„
 };
 
 #ifndef _CLIENT_

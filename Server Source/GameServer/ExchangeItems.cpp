@@ -39,15 +39,15 @@ int CExchangeItemsData::Add(int itemindex, LONGLONG count, bool* bUpdate)
 	int i = Find(itemindex);
 	if (i == -1)
 	{
-		// Ãß°¡
+		// ì¶”ê°€
 		if (pitem->Count() < count)
 			return -1;
 
-		// °³¼ö Á¦ÇÑ¿¡ °É¸®¸é ¸®ÅÏ
+		// ê°œìˆ˜ ì œí•œì— ê±¸ë¦¬ë©´ ë¦¬í„´
 		i = FindEmpty();
 		if (i < 0)		return -1;
 
-		// Ãß°¡
+		// ì¶”ê°€
 		m_regCount++;
 		m_itemindex[i] = itemindex;
 		m_count[i] = count;
@@ -60,7 +60,7 @@ int CExchangeItemsData::Add(int itemindex, LONGLONG count, bool* bUpdate)
 	}
 	else
 	{
-		// °»½Å
+		// ê°±ì‹ 
 		if (pitem->Count() < m_count[i] + count)
 			return -1;
 		m_count[i] += count;
@@ -81,27 +81,27 @@ int CExchangeItemsData::Del(int itemindex, LONGLONG count)
 	int i = Find(itemindex);
 	if (i == -1)
 	{
-		// ¾ø´Â°É ¾îÂ¼¶õ ¸»ÀÌ³Ä!!!
+		// ì—†ëŠ”ê±¸ ì–´ì©Œë€ ë§ì´ëƒ!!!
 		return -1;
 	}
 	else if (count < 0)
 	{
-		// ÀÌ°Ç »©´Â ÇÔ¼ö¶õ ¸»ÀÌ´å!!!!!
+		// ì´ê±´ ë¹¼ëŠ” í•¨ìˆ˜ë€ ë§ì´ë‹·!!!!!
 		return -1;
 	}
 	else if (m_count[i] < count)
 	{
-		// ³ÖÀº °Íº¸´Ù ¸¹ÀÌ »©·Á´Â ½Éº¸!
+		// ë„£ì€ ê²ƒë³´ë‹¤ ë§ì´ ë¹¼ë ¤ëŠ” ì‹¬ë³´!
 		return -1;
 	}
 	else
 	{
-		// °»½Å
+		// ê°±ì‹ 
 		m_count[i] -= count;
 
 		if (m_count[i] == 0)
 		{
-			// ´Ù »«°Å¸é
+			// ë‹¤ ëº€ê±°ë©´
 			m_itemindex[i] = -1;
 			m_regCount--;
 		}
@@ -156,11 +156,11 @@ int CExchangeItems::Add(CPC* ch, int item_idx, LONGLONG count, bool* bUpdate)
 	if (item_idx == -1)
 		return -1;
 
-	// ÀÎº¥¿¡ ÀÖ³ª º¸°í
+	// ì¸ë²¤ì— ìˆë‚˜ ë³´ê³ 
 	if (ch->m_inventory.FindByVirtualIndex(item_idx) == NULL)
 		return -1;
 
-	// ´ë»ó °Ë»ç
+	// ëŒ€ìƒ ê²€ì‚¬
 	CExchangeItemsData* data;
 	if (ch == m_src.m_ch)
 		data  = &m_src;
@@ -169,7 +169,7 @@ int CExchangeItems::Add(CPC* ch, int item_idx, LONGLONG count, bool* bUpdate)
 	else
 		return -1;
 
-	// Ãß°¡
+	// ì¶”ê°€
 	return data->Add(item_idx, count, bUpdate);
 }
 
@@ -178,12 +178,12 @@ int CExchangeItems::Del(CPC* ch, int item_idx, LONGLONG count)
 	if (item_idx == -1)
 		return -1;
 
-	// ÀÎº¥¿¡ ÀÖ³ª º¸°í
-	// ÀÎº¥¿¡ ÀÖ³ª º¸°í
+	// ì¸ë²¤ì— ìˆë‚˜ ë³´ê³ 
+	// ì¸ë²¤ì— ìˆë‚˜ ë³´ê³ 
 	if (ch->m_inventory.FindByVirtualIndex(item_idx) == NULL)
 		return -1;
 
-	// ´ë»ó °Ë»ç
+	// ëŒ€ìƒ ê²€ì‚¬
 	CExchangeItemsData* data;
 	if (ch == m_src.m_ch)
 		data  = &m_src;
@@ -192,13 +192,13 @@ int CExchangeItems::Del(CPC* ch, int item_idx, LONGLONG count)
 	else
 		return -1;
 
-	// Á¦°Å
+	// ì œê±°
 	return data->Del(item_idx, count);
 }
 
 int CExchangeItems::Find(CPC* ch, int item_idx)
 {
-	// ´ë»ó °Ë»ç
+	// ëŒ€ìƒ ê²€ì‚¬
 	CExchangeItemsData* data;
 	if (ch == m_src.m_ch)
 		data  = &m_src;
@@ -207,23 +207,23 @@ int CExchangeItems::Find(CPC* ch, int item_idx)
 	else
 		return -1;
 
-	// Ã£±â
+	// ì°¾ê¸°
 	return data->Find(item_idx);
 }
 
 int CExchangeItems::CanExchange()
 {
-	int srcDel	= 0,			// srcÀÇ ¾ÆÀÌÅÛ Á¦°Å ¼ö
-		 srcAdd	= 0,			// srcÀÇ ¾ÆÀÌÅÛ Ãß°¡ ¼ö
-		  destDel = 0,			// destÀÇ ¾ÆÀÌÅÛ Á¦°Å ¼ö
-		  destAdd = 0;			// destÀÇ ¾ÆÀÌÅÛ Ãß°¡ ¼ö
+	int srcDel	= 0,			// srcì˜ ì•„ì´í…œ ì œê±° ìˆ˜
+		 srcAdd	= 0,			// srcì˜ ì•„ì´í…œ ì¶”ê°€ ìˆ˜
+		  destDel = 0,			// destì˜ ì•„ì´í…œ ì œê±° ìˆ˜
+		  destAdd = 0;			// destì˜ ì•„ì´í…œ ì¶”ê°€ ìˆ˜
 	int srcAddPet = 0,
 		srcDelPet = 0,
 		destAddPet = 0,
 		destDelPet = 0;
 
 	//////////////////////////////////////////////////////////////////////////
-	// ³ª½º¸¦ ´Ù½Ã ÇÑ¹ø °Ë»ç
+	// ë‚˜ìŠ¤ë¥¼ ë‹¤ì‹œ í•œë²ˆ ê²€ì‚¬
 	if (m_src.m_ch->m_inventory.getMoney() < m_src.m_nasCount)
 	{
 		return 1;
@@ -235,7 +235,7 @@ int CExchangeItems::CanExchange()
 	}
 
 	{
-		// ¼­·Î°£¿¡ ¾ÆÀÌÅÛÀ» ¿Å±æ ¼ö ÀÖ´ÂÁö °Ë»çÇÏ±â
+		// ì„œë¡œê°„ì— ì•„ì´í…œì„ ì˜®ê¸¸ ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸°
 		std::vector<possible_search_t> source_vec;
 		std::vector<possible_search_t> target_vec;
 
@@ -385,14 +385,14 @@ void CExchangeItems::DoExchange()
 	CAPet* apetListToDest = NULL;
 	CAPet* apet = NULL;
 
-	// ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡¼­ Á¦°Å
+	// ì•„ì´í…œì„ ì¸ë²¤ì—ì„œ ì œê±°
 	for (i = 0; i < MAX_EXCHANGE_ITEMS; i++)
 	{
 		// src -> dest
 		item = m_src.m_ch->m_inventory.FindByVirtualIndex(m_src.m_itemindex[i]);
 		if (item)
 		{
-			// Æê ¾ÆÀÌÅÛÀÌ¸é
+			// í« ì•„ì´í…œì´ë©´
 			if (item->IsPet())
 			{
 				pet = m_src.m_ch->GetPet(item->getPlus());
@@ -423,7 +423,7 @@ void CExchangeItems::DoExchange()
 				}
 			}
 
-			// °ãÄ¡°í ¾ÆÀÌÅÛ ³²Àº ¼ö·®ÀÌ »ı±æ ¶§
+			// ê²¹ì¹˜ê³  ì•„ì´í…œ ë‚¨ì€ ìˆ˜ëŸ‰ì´ ìƒê¸¸ ë•Œ
 			if ((item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT) && (item->Count() > m_src.m_count[i]))
 			{
 				m_src.m_ch->m_inventory.decreaseItemCount(item, m_src.m_count[i]);
@@ -440,7 +440,7 @@ void CExchangeItems::DoExchange()
 		item = m_dest.m_ch->m_inventory.FindByVirtualIndex(m_dest.m_itemindex[i]);
 		if (item)
 		{
-			// Æê ¾ÆÀÌÅÛÀÌ¸é
+			// í« ì•„ì´í…œì´ë©´
 			if (item->IsPet())
 			{
 				pet = m_dest.m_ch->GetPet(item->getPlus());
@@ -471,7 +471,7 @@ void CExchangeItems::DoExchange()
 				}
 			}
 
-			// °ãÄ¡°í ¾ÆÀÌÅÛ ³²Àº ¼ö·®ÀÌ »ı±æ ¶§
+			// ê²¹ì¹˜ê³  ì•„ì´í…œ ë‚¨ì€ ìˆ˜ëŸ‰ì´ ìƒê¸¸ ë•Œ
 			if ((item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT) && (item->Count() > m_dest.m_count[i]))
 			{
 				m_dest.m_ch->m_inventory.decreaseItemCount(item, m_dest.m_count[i]);
@@ -485,7 +485,7 @@ void CExchangeItems::DoExchange()
 		}
 	}
 
-	// Æê ÀÌµ¿
+	// í« ì´ë™
 	while (petListToSrc)
 	{
 		pet = petListToSrc;
@@ -521,7 +521,7 @@ void CExchangeItems::DoExchange()
 		}
 	}
 
-	// Æê ÀÌµ¿
+	// í« ì´ë™
 	while (apetListToSrc)
 	{
 		apet = apetListToSrc;
@@ -539,10 +539,10 @@ void CExchangeItems::DoExchange()
 		ADD_TO_BILIST(apet, m_dest.m_ch->m_pApetlist, m_pPrevPet, m_pNextPet);
 	}
 
-	// ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡ Ãß°¡
+	// ì•„ì´í…œì„ ì¸ë²¤ì— ì¶”ê°€
 	for (i = 0; i < MAX_EXCHANGE_ITEMS; i++)
 	{
-		// ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡¼­ Á¦°Å
+		// ì•„ì´í…œì„ ì¸ë²¤ì—ì„œ ì œê±°
 		// src -> dest
 		item = s2ditem[i];
 		if (item)
@@ -564,7 +564,7 @@ void CExchangeItems::DoExchange()
 			{
 				if(item->m_itemProto->getItemTypeIdx() == ITYPE_ACCESSORY && item->m_itemProto->getItemSubTypeIdx() == IACCESSORY_ARTIFACT)
 				{
-					//À¯¹° ¾ÆÀÌÅÛÀÌ ¿Å°ÜÁø °ÍÀÌ¹Ç·Î ¾ÆÀÌÅÛ ÀÌµ¿ ½Ã½ºÅÛ ¸Ş½ÃÁö Àü´Ş
+					//ìœ ë¬¼ ì•„ì´í…œì´ ì˜®ê²¨ì§„ ê²ƒì´ë¯€ë¡œ ì•„ì´í…œ ì´ë™ ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì „ë‹¬
 					ArtifactManager::instance()->changeOnwer(m_src.m_ch, item);
 				}
 			}

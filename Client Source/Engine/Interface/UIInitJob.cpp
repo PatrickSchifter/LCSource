@@ -12,6 +12,7 @@
 #include <Engine/Entities/Entity.h>
 #include <Engine/Classes/PlayerEntity.h>
 #include <Engine/GameState.h>
+#include <Engine/Contents/function/CustomTitleUI.h>
 #define DEL_SSKILL_INIT
 #define CAMERA_DISATANCE_DECOMODE	1.8f
 #define CAMERA_HEIGHT_DECOMODE		1.5f
@@ -24,6 +25,7 @@ enum eSelection
 	INITJOB_SSKILL,	// 스페셜 스킬 초기화
 	INITJOB_RESETQUEST, // [100208: selo] 퀘스트 복구 
 	INITJOB_CHANGEFACE,	// [11/23/2010 kiny8216] 외형 변경
+	INITJOB_MAKETITLE, // 나만의 호칭 제작
 };
 
 static int	_iMaxMsgStringChar = 0;
@@ -253,6 +255,11 @@ void CUIInitJob::OpenInitJob(int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOA
 	if( pUIManager->DoesMessageBoxLExist( MSGLCMD_INITJOB_REQ ) || IsVisible() )
 		return;
 
+	CCustomTitleUI* pTitle = pUIManager->GetCustomTitle();
+
+	if (pTitle != NULL && pTitle->IsVisible() != FALSE)
+		return;
+
 	// Set position of target npc
 	m_fNpcX = fX;
 	m_fNpcZ = fZ;
@@ -272,10 +279,14 @@ void CUIInitJob::OpenInitJob(int iMobIndex, int iMobVirIdx, BOOL bHasQuest, FLOA
 	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, strNpcName, -1, 0xE18600FF );
 
 	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, _S( 1172,  "잘못된 훈련으로 올바르게 성장하지 못한 사람들에게 다시 새로운 생명을 주는 것이 제가 맡고 있는 일입니다.\n"  ), -1, 0xA3A1A3FF );	
-	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, _S( 1173,  "캐릭터를 잘못 키웠거나 당신이 현재 가지고 있는 직업이 마음에 들지 않으신다면 제가 도와 드리지요."  ), -1, 0xA3A1A3FF );		
+	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, _S( 1173,  "캐릭터를 잘못 키웠거나 당신이 현재 가지고 있는 직업이 마음에 들지 않으신다면 제가 도와 드리지요."  ), -1, 0xA3A1A3FF );
+	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, _S( 7077,  "혹시 누구나 가지고 있어서, 그저 그런 평범한 호칭이 지겨우시죠?"  ), -1, 0xA3A1A3FF );
+	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, TRUE, _S( 7078,  "자신만의 독특한 호칭을 만들고 싶다면 제가 도와 드리겠습니다."  ), -1, 0xA3A1A3FF );
 
 	CTString strMessage;
 	//int i = 1;
+	strMessage.PrintF( _S( 7079, "나만의 호칭 제작" ) );		
+	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, FALSE, strMessage, INITJOB_MAKETITLE );
 
 	strMessage.PrintF( _S( 1174, "스탯환원" ) );		
 	pUIManager->AddMessageBoxLString( MSGLCMD_INITJOB_REQ, FALSE, strMessage, INITJOB_OK );
@@ -1215,6 +1226,14 @@ void CUIInitJob::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 				if ( CheckFaceDecoMode() )
 				{
 					CUIManager* pUIManager = CUIManager::getSingleton();
+										
+					// If inventory is already locked
+					if (pUIManager->GetInventory()->IsLocked() == TRUE ||
+						pUIManager->GetInventory()->IsLockedArrange() == TRUE)
+					{
+						pUIManager->GetInventory()->ShowLockErrorMessage();
+						return;
+					}
 
 					if (_pNetwork->MyWearCostItem[WEAR_COSTUME_HELMET].IsEmptyItem() == FALSE ||
 						_pNetwork->MyCharacterInfo.bOneSuit == TRUE ||
@@ -1285,6 +1304,7 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 	case MSGLCMD_INITJOB_REQ:
 		{
 			CUIManager* pUIManager = CUIManager::getSingleton();
+			CTString strTemp;
 
 			if( nResult == INITJOB_OK )					// 스탯 환원
 			{
@@ -1320,7 +1340,9 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 
 				SQUAD need = iTotalStat * (SQUAD)(25000 * _pNetwork->MyCharacterInfo.level / CRITERION_LEVEL) + WEIGHT_MONEY;
 
-				m_strGivePrice.PrintF( "%I64d", need );
+				strTemp.PrintF( "%I64d", need );
+				pUIManager->InsertCommaToString(strTemp);
+				m_strGivePrice.PrintF( "%s", strTemp );
 
 				// [100208: selo] 포기 퀘스트 복구와 같이 사용하기 위해 String 리셋 부분 추가
 				ResetString();
@@ -1334,7 +1356,10 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 			else if( nResult == INITJOB_RESETQUEST )	// [100208: selo] 포기 퀘스트 복구
 			{
 				SQUAD llPrice = CalculateResetQuestPrice( _pNetwork->MyCharacterInfo.level );
-				m_strResetQuestPrice.PrintF( "%I64d", llPrice );
+
+				strTemp.PrintF( "%I64d", llPrice );
+				pUIManager->InsertCommaToString(strTemp);
+				m_strResetQuestPrice.PrintF( "%s", strTemp );
 
 				ResetString();
 				AddString( _S(4814, "포기 상태의 모든 퀘스트가 원상태로 복구 됩니다. 포기 퀘스트를 복구 하기 위해서는 일정 금액의 나스가 필요합니다. 원하시면 확인 버튼을 아니면 취소 버튼을 누르세요." ) );
@@ -1371,6 +1396,13 @@ void CUIInitJob::MsgBoxLCommand( int nCommandCode, int nResult )
 				strMessage.PrintF(_S(4246, "스페셜 스킬을 초기화 하시겠습니까?" ));
 				MsgBoxInfo.AddString( strMessage );
 				pUIManager->CreateMessageBox( MsgBoxInfo );
+			}
+			else if (nResult == INITJOB_MAKETITLE)
+			{
+				CCustomTitleUI* pTitle = pUIManager->GetCustomTitle();
+
+				if(pTitle != NULL && pTitle->IsVisible() == FALSE)
+					pUIManager->GetCustomTitle()->openUI(m_fNpcX, m_fNpcZ);
 			}
 			// [090527: selo] 확장팩 퀘스트 수정
 			else if( ciQuestClassifier < nResult )	
@@ -1431,7 +1463,12 @@ void CUIInitJob::RestoreStatPoint( SBYTE sbStatType )
 	m_strRestoreStatPoint.PrintF( "%d", m_iRestoreStatPoint );
 
 	m_llInitJobMoney = CalculateStatPrice( m_iRestoreStatPoint );		// 필요 나스
-	m_strInitJobMoney.PrintF( "%I64d", m_llInitJobMoney );
+
+	CTString strTemp;
+	strTemp.PrintF("%I64d", m_llInitJobMoney);
+	UIMGR()->InsertCommaToString(strTemp);
+
+	m_strInitJobMoney.PrintF( "%s", strTemp );
 }
 
 // ----------------------------------------------------------------------------

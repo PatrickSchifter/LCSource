@@ -75,7 +75,6 @@ protected:
  	void			_calcCmdTimer(); // 프로그레스 바 추가 [9/12/2012 Ranma]
  	void			CommandTimer( pReq req, UINT _second = 1 );
 	void			SendReformReq();
-	void			InteractionMsgBoxReject(); // 활성화중 상호작용 거부
 	void			BtnSetItemCheckforPos(); // 세트아이템인지 아닌지에 따른 위치를 잡아주는 함수
  	WMSG_RESULT		MouseMessage(MSG *pMsg);
 

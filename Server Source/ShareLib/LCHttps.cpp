@@ -68,7 +68,7 @@ int CLCHttps::Connect( const char* _url, const char* fingerprint )
 			fclose(pFingerFile);
 			unlink(FINGERPRINT_FILENAME);
 
-			if( strncmp( strFinger, fingerprint, strlen(fingerprint)) == 0 ) // fingerprint ¿Í °°À¸¸é
+			if( strncmp( strFinger, fingerprint, strlen(fingerprint)) == 0 ) // fingerprint Å¼Ã Â°Â°Å”Â¸Â¸Ã©
 			{
 				result = E_MATCH_FINGERPRINT;
 			}

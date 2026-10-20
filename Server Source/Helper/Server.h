@@ -82,37 +82,37 @@ public:
 #endif
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	CDescriptor* m_desclist;		// ¿¬°áµÈ ¼ÒÄÏ ¸®½ºÆ®
-	int			m_nDesc;			// ¸®½ºÆ®ÀÇ ¼ÒÄÏ °³¼ö
+	// ì†Œì¼“ ê´€ë ¨
+	CDescriptor* m_desclist;		// ì—°ê²°ëœ ì†Œì¼“ ë¦¬ìŠ¤íŠ¸
+	int			m_nDesc;			// ë¦¬ìŠ¤íŠ¸ì˜ ì†Œì¼“ ê°œìˆ˜
 
 	////////////////////////////
-	// ¸Ş½ÃÁö ¸®½ºÆ®
+	// ë©”ì‹œì§€ ë¦¬ìŠ¤íŠ¸
 	CMsgList	m_msgList;
 	int			m_seqGen;
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
+	// ì„œë²„ ì„¤ì •
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
 	MYSQL		m_dbchar;
 	int			m_serverno;
 
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_bshutdown;		// ¼­¹ö Á¾·á
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_bshutdown;		// ì„œë²„ ì¢…ë£Œ
 
-	unsigned int m_pulse;			// Æ½ Ä«¿îÅÍ
+	unsigned int m_pulse;			// í‹± ì¹´ìš´í„°
 
 	CGuildList	m_guildlist;
 
 	int			m_nMoonStoneNas;
 	int			m_nGuildMarkTable[3];
 	///////////////////
-	// ÀüÃ¼ ÆÄÆ¼ ¸®½ºÆ®
-	map_party_t					m_listParty;	// ¼­¹ö³» ÀüÃ¼ ÆÄÆ¼ ¸®½ºÆ®
+	// ì „ì²´ íŒŒí‹° ë¦¬ìŠ¤íŠ¸
+	map_party_t					m_listParty;	// ì„œë²„ë‚´ ì „ì²´ íŒŒí‹° ë¦¬ìŠ¤íŠ¸
 
-	// ÀüÃ¼ ¿øÁ¤´ë ¸®½ºÆ®
-	map_expedition_t			m_listExped;	// ¼­¹ö³» ÀüÃ¼ ¿øÁ¤´ë ¸®½ºÆ®
+	// ì „ì²´ ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸
+	map_expedition_t			m_listExped;	// ì„œë²„ë‚´ ì „ì²´ ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸
 
 	map_partymatchmember_t		m_listPartyMatchMember;
 	map_partymatchparty_t		m_listPartyMatchParty;
@@ -123,14 +123,14 @@ public:
 
 	Syndicate					m_syndicate;
 
-	//ÇïÆÛ Å×¿À½º ¹«´ı °ü¸® º¯¼ö
+	//í—¬í¼ í…Œì˜¤ìŠ¤ ë¬´ë¤ ê´€ë¦¬ ë³€ìˆ˜
 	int							m_castle_env_rate;
 	int							m_castle_mob_rate;
 	int							m_castle_tax_rate;
 	int							m_castle_hunt_rate;
 
 	///////////////////
-	// ¸Ş½ÃÁö ¹øÈ£ °ü·Ã
+	// ë©”ì‹œì§€ ë²ˆí˜¸ ê´€ë ¨
 	int GetNextSeqNo()
 	{
 		return m_seqGen++;
@@ -139,16 +139,16 @@ public:
 	virtual void operate(rnSocketIOService* service);
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
-	void initTime();				// Server::Run()¿¡¼­ ÃÊ±âÈ­ ÇÏ´ø ºÎºĞ
-	int GetMaxPlayers();			// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö ±¸ÇÏ±â
-	void SetServerTime();			// ¼­¹ö ½Ã°£ ¼³Á¤ -> serverTime
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
+	void initTime();				// Server::Run()ì—ì„œ ì´ˆê¸°í™” í•˜ë˜ ë¶€ë¶„
+	int GetMaxPlayers();			// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜ êµ¬í•˜ê¸°
+	void SetServerTime();			// ì„œë²„ ì‹œê°„ ì„¤ì • -> serverTime
 
 	/////////////////
-	// ¼ÒÄÏ ¼³Á¤ °ü·Ã
+	// ì†Œì¼“ ì„¤ì • ê´€ë ¨
 	bool ConnectDB();
 	void DisconnectDB();
 	bool LoadSettings();
@@ -165,24 +165,24 @@ public:
 	void SendToAllSubServer(CNetMsg::SP msg, int nSubNo);
 
 	/////////////////
-	// ¸í·É Ã³¸® °ü·Ã
-	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ¸í·· Ã³¸®
+	// ëª…ë ¹ ì²˜ë¦¬ ê´€ë ¨
+	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ëª…ë  ì²˜ë¦¬
 
 	void HeartBeat();
 
 	bool DeleteGuild(int guildindex);
 	bool DeleteGuildMember(int guildindex, const char* guildname, int charindex, const char* charname, bool bKick);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : º¸½º ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë³´ìŠ¤ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CParty* FindPartyByBossIndex(int nSubNo, int nBossIndex);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : ¸â¹ö ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë©¤ë²„ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CParty* FindPartyByMemberIndex(int nSubNo, int nMemberIndex, bool bIncludeRequest);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : º¸½º ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë³´ìŠ¤ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CExpedition* FindExpedByBossIndex(int nSubNo, int nBossIndex);
 
-	// ÆÄÆ¼ ¸®½ºÆ® ³ëµå Ã£±â : ¸â¹ö ÀÎµ¦½º »ç¿ë
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ ì°¾ê¸° : ë©¤ë²„ ì¸ë±ìŠ¤ ì‚¬ìš©
 	CExpedition* FindExpedByMemberIndex(int nSubNo, int nMemberIndex, bool bIncludeRequest);
 
 	CPartyMatchMember* FindPartyMatchMemberByCharIndex(int nSubNo, int nCharIndex);
@@ -191,9 +191,7 @@ public:
 	void SendGuildMemberList(CGuild* guild, CDescriptor* desc);
 	void SendExtendGuildMemberList(CGuild* guild, CDescriptor* desc);
 
-#ifdef PARTY_BUG_GER
 	void PrintPartyMemberList(int nSubNo, int nFindCharIdx);
-#endif // PARTY_BUG_GER
 
 #ifdef EXTREME_CUBE_VER2
 	int m_CubePointUpdateTime;
@@ -203,12 +201,12 @@ public:
 #endif // EXTREME_CUBE_VER2
 #ifdef DEV_GUILD_MARK
 #endif // DEV_GUILD_MARK
-	void checkGuildProcess(time_t now);			// ÀüÃ¼ ±æµå¸¦ µ¹¸é¼­ Ã¼Å©ÇØ¾ß ÇÏ´Â °ÍµéÀ» ¸ğ¾ÆµĞ ÇÔ¼ö : ·çÇÁ ÇÑ¹øµ¹¸é¼­ ´Ù Ã¼Å©ÇÏµµ·Ï
-	void checkGuildBattle(time_t, CGuild* p);	// ±æµåÀü °ü·Ã Ã¼Å©
+	void checkGuildProcess(time_t now);			// ì „ì²´ ê¸¸ë“œë¥¼ ëŒë©´ì„œ ì²´í¬í•´ì•¼ í•˜ëŠ” ê²ƒë“¤ì„ ëª¨ì•„ë‘” í•¨ìˆ˜ : ë£¨í”„ í•œë²ˆëŒë©´ì„œ ë‹¤ ì²´í¬í•˜ë„ë¡
+	void checkGuildBattle(time_t, CGuild* p);	// ê¸¸ë“œì „ ê´€ë ¨ ì²´í¬
 #ifdef DEV_GUILD_MARK
-	void checkGuildMarkTime(time_t now, CGuild* p);			// ±æµå ¸¶Å© °ü·Ã Ã¼Å©
+	void checkGuildMarkTime(time_t now, CGuild* p);			// ê¸¸ë“œ ë§ˆí¬ ê´€ë ¨ ì²´í¬
 #endif // DEV_GUILD_MARK
-	void checkGuildMasterAutoKick(time_t now, CGuild* p);	// ±æµå ¸¶½ºÅÍ ÀÚµ¿ Ãß¹æ °ü·Ã Ã¼Å©
+	void checkGuildMasterAutoKick(time_t now, CGuild* p);	// ê¸¸ë“œ ë§ˆìŠ¤í„° ìë™ ì¶”ë°© ê´€ë ¨ ì²´í¬
 
 	void saveCastleDungeonInfo();
 };

@@ -19,11 +19,12 @@ enum
 	EVENT_TYPE_SELECT_CHARACTER_OTHER_ZONE,
 	EVENT_TYPE_EXPRESS_TAKE,
 
-	EVENT_TYPE_SEND_MESSAGE_TO_CLIENT,			// db thread¿¡¼­ Àü´ŞµÈ ÆĞÅ¶À» Å¬¶óÀÌ¾ğÆ®¿¡°Ô Àü´Ş
+	EVENT_TYPE_SEND_MESSAGE_TO_CLIENT,			// db threadì—ì„œ ì „ë‹¬ëœ íŒ¨í‚·ì„ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì „ë‹¬
 	EVENT_TYPE_GET_CHAR_INDEX_BY_GPS,
+	EVENT_TYPE_GET_MAKE_TITLE_INFO,
 };
 
-// DBManger thread¿¡¼­ ÀÏ¾î³­ °á°ú¸¦ ¸®ÅÏ¹Ş¾Æ ÃÖÁ¾ °á°ú¸¦ Ã³¸®ÇÏ´Â Å¬·¡½º
+// DBManger threadì—ì„œ ì¼ì–´ë‚œ ê²°ê³¼ë¥¼ ë¦¬í„´ë°›ì•„ ìµœì¢… ê²°ê³¼ë¥¼ ì²˜ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 class EventProcessForDB : public rnSocketIOHandler
 {
 public:
@@ -80,6 +81,9 @@ public:
 	{
 		int		m_index;
 		ExpressSystemItemInfo itemInfo;
+		bool	isSend;
+
+		expressTake(){ isSend = false; }
 	};
 
 	struct sendMessageToClient
@@ -104,6 +108,21 @@ public:
 		std::string char_name;
 	};
 
+	struct getMakeTitleInfo
+	{
+		LONGLONG	seq_index;
+		int			user_index;
+		int			char_index;
+		int			v_index;
+		int			title_index;
+		char		color;
+		char		background_color;
+		char		effect;
+		std::string	name;
+		int*		option_index;
+		int*		option_level;
+	};
+
 public:
 	EventProcessForDB(void);
 	~EventProcessForDB(void);
@@ -121,6 +140,7 @@ public:
 	void pushExpressTake(expressTake& data);
 	void pushSendMessageToClient(sendMessageToClient& data);
 	void pushGetCharIndexByGPS(getCharIndexByGPS& data);
+	void pushGetMakeTitleInfo(getMakeTitleInfo& data);
 
 private:
 	void process_char_list(boost::any& any);

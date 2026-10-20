@@ -7,8 +7,8 @@
 
 enum
 {
-	CLIENT_TYPE_CLIENT,		// À¯Àú¿ë
-	CLIENT_TYPE_CONNECTOR,	// Connector server Á¢¼Ó¿ë
+	CLIENT_TYPE_CLIENT,		// ìœ ì €ìš©
+	CLIENT_TYPE_CONNECTOR,	// Connector server ì ‘ì†ìš©
 };
 
 class CDescriptor;
@@ -39,38 +39,38 @@ public:
 	int	client_type_;
 
 	////////////
-	// °èÁ¤ °ü·Ã
-	CLCString	m_idname;			// À¯Àú ¾ÆÀÌµğ
-	CLCString	m_passwd;			// ¾ÏÈ£
+	// ê³„ì • ê´€ë ¨
+	CLCString	m_idname;			// ìœ ì € ì•„ì´ë””
+	CLCString	m_passwd;			// ì•”í˜¸
 
 	//////////////////////////////////////////////////////////////////////////
-	// ¼­¹ö±º °ü·Ã (¾Æ·¡ÀÇ º¯¼ö´Â Connector server¿Í ¿¬°áµÇ´Â ¼¼¼Ç¿¡¼­¸¸ »ç¿ëµÊ)
-	int			m_hardcore_flag;	// °¡¹Ì°í¿¡¼­ »ç¿ëÇÏ´Â hardcore server, 0 - no, 1 - yes
-	int			m_serverNo;			// ¼­¹ö±º ¹øÈ£
-	int			m_nMaxServer;		// ¼­¹ö±º º° ÃÖ´ë ¼­ºê ¼­¹ö ¼ö
-	int*		m_serverSubNo;		// ¼­ºê ¹øÈ£
-	int*		m_playerNum;		// ¼­¹ö±ºº° »ç¿ëÀÚ ¼ö
-	char**		m_ipAddr;			// ¼­¹öÀÇ ÁÖ¼Ò
-	int*		m_portNumber;		// ¼­¹öÀÇ Æ÷Æ® ¹øÈ£
+	// ì„œë²„êµ° ê´€ë ¨ (ì•„ë˜ì˜ ë³€ìˆ˜ëŠ” Connector serverì™€ ì—°ê²°ë˜ëŠ” ì„¸ì…˜ì—ì„œë§Œ ì‚¬ìš©ë¨)
+	int			m_hardcore_flag;	// ê°€ë¯¸ê³ ì—ì„œ ì‚¬ìš©í•˜ëŠ” hardcore server, 0 - no, 1 - yes
+	int			m_serverNo;			// ì„œë²„êµ° ë²ˆí˜¸
+	int			m_nMaxServer;		// ì„œë²„êµ° ë³„ ìµœëŒ€ ì„œë¸Œ ì„œë²„ ìˆ˜
+	int*		m_serverSubNo;		// ì„œë¸Œ ë²ˆí˜¸
+	int*		m_playerNum;		// ì„œë²„êµ°ë³„ ì‚¬ìš©ì ìˆ˜
+	char**		m_ipAddr;			// ì„œë²„ì˜ ì£¼ì†Œ
+	int*		m_portNumber;		// ì„œë²„ì˜ í¬íŠ¸ ë²ˆí˜¸
 
-	std::string	connect_host_;			// Á¢¼ÓÇÒ Connector serverÀÇ Á¤º¸
+	std::string	connect_host_;			// ì ‘ì†í•  Connector serverì˜ ì •ë³´
 	int			connect_port_;
 	CDescriptorReconnectTimer reconnect_timer_;
 	//////////////////////////////////////////////////////////////////////////
 
 	////////////
-	// »óÅÂ °ü·Ã
-	int			m_connected;				// CON_ »ó¼ö °ªÀ» ÀúÀå : Á¢¼Ó »óÅÂ
+	// ìƒíƒœ ê´€ë ¨
+	int			m_connected;				// CON_ ìƒìˆ˜ ê°’ì„ ì €ì¥ : ì ‘ì† ìƒíƒœ
 	bool		m_bclosed;
 
 	////////////
-	// ¸µÅ© °ü·Ã
-	CDescriptor* m_pPrev;					// ¸®½ºÆ® ¸µÅ©
+	// ë§í¬ ê´€ë ¨
+	CDescriptor* m_pPrev;					// ë¦¬ìŠ¤íŠ¸ ë§í¬
 	CDescriptor* m_pNext;
 
-	void WriteToOutput(CNetMsg::SP& msg);	// ¾²±â
+	void WriteToOutput(CNetMsg::SP& msg);	// ì“°ê¸°
 
-	bool GetLogin(CNetMsg::SP& msg);		// ¹öÀü ¾ÆÀÌµğ ºñ¹ø °Ë»ç
+	bool GetLogin(CNetMsg::SP& msg);		// ë²„ì „ ì•„ì´ë”” ë¹„ë²ˆ ê²€ì‚¬
 
 #ifdef INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_SPN
 	bool IPBlockSouthAmerica(const char *u_IP);
@@ -86,7 +86,7 @@ public:
 	virtual void onClose(rnSocketIOService* service);
 
 	//////////////////////////////////////////////////////////////////////////
-	// ¾Æ·¡ÀÇ ÇÔ¼ö´Â Connector server¿Í ¿¬°áµÇ´Â ¼¼¼Ç¿¡¼­¸¸ »ç¿ëµÊ
+	// ì•„ë˜ì˜ í•¨ìˆ˜ëŠ” Connector serverì™€ ì—°ê²°ë˜ëŠ” ì„¸ì…˜ì—ì„œë§Œ ì‚¬ìš©ë¨
 	void setConnectInfo(std::string connect_host, int connect_port);
 	void Connect();
 	virtual void onConnect(rnSocketIOService* service);

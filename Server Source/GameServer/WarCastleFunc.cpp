@@ -15,18 +15,18 @@ void CheckWarCastle()
 
 bool LoadCastleData()
 {
-	// ¸Ş¶óÅ©
+	// ë©”ë¼í¬
 	if (!meracCastle.LoadCastleData())
 		return false;
 
 #ifdef WARCASTLE_SUBNUMBER_MEMBER_VALUE
-	// yhj... ·¯½Ã¾Æ¿¡¼­ ¿Ã¶ó ¿Â ¸Ş¶óÅ© °ø¼ºÀü¶§ ´À·ÁÁø´Ù´Â °Í ¶§¹®¿¡ ÆĞÄ¡
-	// ±Û·Î¹ú º¯¼ö¸¦ ¸É¹ö º¯¼ö·Î ÀúÀå
+	// yhj... ëŸ¬ì‹œì•„ì—ì„œ ì˜¬ë¼ ì˜¨ ë©”ë¼í¬ ê³µì„±ì „ë•Œ ëŠë ¤ì§„ë‹¤ëŠ” ê²ƒ ë•Œë¬¸ì— íŒ¨ì¹˜
+	// ê¸€ë¡œë²Œ ë³€ìˆ˜ë¥¼ ë§´ë²„ ë³€ìˆ˜ë¡œ ì €ì¥
 	else
 		meracCastle.m_subNumber = gserver->m_subno;
 #endif // WARCASTLE_SUBNUMBER_MEMBER_VALUE
 
-	// µå¶óÅº(¼ºÀÎ ¼­¹ö¸¸ µå¶óÅº °ø¼ºÀÌ ÀÖ´Ù)
+	// ë“œë¼íƒ„(ì„±ì¸ ì„œë²„ë§Œ ë“œë¼íƒ„ ê³µì„±ì´ ìˆë‹¤)
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	if (pCastle->LoadCastleData() == false)
 	{
@@ -38,7 +38,7 @@ bool LoadCastleData()
 
 bool IsValidGuildCommandWithWarCastle(CPC* ch, unsigned char subtype)
 {
-	// °ø¼º Âü¿© À¯Àú´Â ±æµå °ü·Ã Ä¿¸Çµå Áß ÀÏºÎ¸¦ ÇÒ ¼ö ¾øÀ½
+	// ê³µì„± ì°¸ì—¬ ìœ ì €ëŠ” ê¸¸ë“œ ê´€ë ¨ ì»¤ë§¨ë“œ ì¤‘ ì¼ë¶€ë¥¼ í•  ìˆ˜ ì—†ìŒ
 	int warZoneCount = 2;
 	int warZoneIndex[] = { ZONE_MERAC, ZONE_DRATAN };
 

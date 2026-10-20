@@ -6,14 +6,14 @@
 
 class Friend;
 
-//Ä£±¸ÀÇ »óÅÂÇ¥½Ã
+//ì¹œêµ¬ì˜ ìƒíƒœí‘œì‹œ
 typedef enum _tagFriendConditionType
 {
-	MSG_FRIEND_CONDITION_OFFLINE, //¿ÀÇÁ¶óÀÎ
-	MSG_FRIEND_CONDITION_NORMAL,  //ÀÏ¹İ»óÅÂ
-//		MSG_FRIEND_CONDITION_HUNTING, //»ç³ÉÁß
-//		MSG_FRIEND_CONDITION_SELLING, //»óÁ¡
-	MSG_FRIEND_CONDITION_EMPTY,   //ÀÚ¸®ºñ¿ò
+	MSG_FRIEND_CONDITION_OFFLINE, //ì˜¤í”„ë¼ì¸
+	MSG_FRIEND_CONDITION_NORMAL,  //ì¼ë°˜ìƒíƒœ
+//		MSG_FRIEND_CONDITION_HUNTING, //ì‚¬ëƒ¥ì¤‘
+//		MSG_FRIEND_CONDITION_SELLING, //ìƒì 
+	MSG_FRIEND_CONDITION_EMPTY,   //ìë¦¬ë¹„ì›€
 } MSG_FRIEND_CONDITION_TYPE;
 
 class CFriendGroup
@@ -51,11 +51,11 @@ class CFriendMember
 
 	int   m_nChaIndex;
 	CLCString m_strFriendName;
-//	int   m_nLastConnectDate; //ÃÖ±ÙÁ¢¼ÓÀÏÀÚ
-	char  m_nJobType; //Á¾Á·
-	int   m_nCondition; //»óÅÂ
+//	int   m_nLastConnectDate; //ìµœê·¼ì ‘ì†ì¼ì
+	char  m_nJobType; //ì¢…ì¡±
+	int   m_nCondition; //ìƒíƒœ
 //	int   m_nListIndex;
-	int		m_groupIndex;  // 0Àº ±âÅ¸
+	int		m_groupIndex;  // 0ì€ ê¸°íƒ€
 
 //	bool  m_bChatOn;
 
@@ -109,16 +109,16 @@ public:
 	}
 };
 
-//Ä³¸¯ÅÍÂÊ¿¡ »ı¼ºÇØ¾ß°ÚÁö...
+//ìºë¦­í„°ìª½ì— ìƒì„±í•´ì•¼ê² ì§€...
 class CFriend : public MemoryPoolBaseWithMutex<CFriend>
 {
-	//int m_nMyChaIndex; //ÇÊ¿ä¾øÀ»Áöµµ..
+	//int m_nMyChaIndex; //í•„ìš”ì—†ì„ì§€ë„..
 	CFriendMember* m_pFriendMember[FRIEND_MAX_MEMBER];
 	//int m_aFriendMeChaIndex[FRIEND_MAX_MEMBER];
 	//int m_nFriendMe;
 	int	m_nFriendCnt;
-	//int  m_aGroupChat[10]; //±×·ìÃ¤ÆÃÁßÀÎ Ä³¸¯ÅÍ ÀÎµ¦½º
-	//int  m_nGroupChatMemberSum; //0ÀÏ¶§´Â No±×·ìÃ¤ÆÃ. 1ÀÌ»óÀº ±×·ìÃ¤ÆÃ ÀÎ¿ø.
+	//int  m_aGroupChat[10]; //ê·¸ë£¹ì±„íŒ…ì¤‘ì¸ ìºë¦­í„° ì¸ë±ìŠ¤
+	//int  m_nGroupChatMemberSum; //0ì¼ë•ŒëŠ” Noê·¸ë£¹ì±„íŒ…. 1ì´ìƒì€ ê·¸ë£¹ì±„íŒ… ì¸ì›.
 	typedef std::map<int, CFriendGroup*> map_t;
 	map_t	m_groupList;
 	int		m_chatColor;
@@ -159,13 +159,13 @@ public:
 		return m_chatColor;
 	}
 
-	// -1 ÀÌ¸é ¿¡·¯ ³ª¸ÓÁö´Â gIndex¸¦ ¸®ÅÏ
+	// -1 ì´ë©´ ì—ëŸ¬ ë‚˜ë¨¸ì§€ëŠ” gIndexë¥¼ ë¦¬í„´
 	int		addGroup(const char* gName, int gIndex = -1 );
-	// -1 ÀÌ¸é ¿¡·¯ ³ª¸ÓÁö´Â gIndex¸¦ ¸®ÅÏ
+	// -1 ì´ë©´ ì—ëŸ¬ ë‚˜ë¨¸ì§€ëŠ” gIndexë¥¼ ë¦¬í„´
 	int	delGroup(int gIndex);
-	// -1 ÀÌ¸é ¿¡·¯ ³ª¸ÓÁö´Â gIndex¸¦ ¸®ÅÏ
+	// -1 ì´ë©´ ì—ëŸ¬ ë‚˜ë¨¸ì§€ëŠ” gIndexë¥¼ ë¦¬í„´
 	int	changeGroupName(int gIndex, const char* newName);
-	// -1 ÀÌ¸é ¿¡·¯ ³ª¸ÓÁö´Â gIndex¸¦ ¸®ÅÏ
+	// -1 ì´ë©´ ì—ëŸ¬ ë‚˜ë¨¸ì§€ëŠ” gIndexë¥¼ ë¦¬í„´
 	int	moveGroupFriend(int gIndex, int charIndex);
 	void	GetGroupIndexString(CLCString& gIndexList, CLCString& gNameList);
 	int		GetGroupCount()

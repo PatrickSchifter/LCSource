@@ -33,7 +33,7 @@ void HelperGuildLoadNotifyMsg(CNetMsg::SP& msg, CGuild* guild);
 
 void HelperGuildBattleRepMsg(CNetMsg::SP& msg, CGuild* g1, CGuild* g2, int prize);
 void HelperGuildBattleStartMsg(CNetMsg::SP& msg, CGuild* g1, CGuild* g2);
-void HelperGuildBattleStopRepMsg(CNetMsg::SP& msg, int winner_index, CGuild* g1, CGuild* g2);
+void HelperGuildBattleStopRepMsg(CNetMsg::SP& msg, int winner_index, CGuild* g1, CGuild* g2, int isAccept = false);
 void HelperGuildBattleStatusMsg(CNetMsg::SP& msg, CGuild* g1, CGuild* g2);
 void HelperGuildBattlePeaceRepMsg(CNetMsg::SP& msg, CGuild* g);
 
@@ -48,18 +48,18 @@ void HelperEventMoonStoneUpdateRepMsg(CNetMsg::SP& msg, int moonstone);
 void HelperEventMoonStoneJackPotRepMsg(CNetMsg::SP& msg, int moonstone, int chaindex);
 
 void HelperFriendSetConditionNotifyMsg(CNetMsg::SP& msg, int chaindex, int condition, int reply, int sum, const int* index);
-//MSG_HELPER_NAME_CHANGE_REP,	// ÀÌ¸§ º¯°æÄ«µå »ç¿ë : bguild(c) charindex(n) nickname(str) errorcode(c)
+//MSG_HELPER_NAME_CHANGE_REP,	// ì´ë¦„ ë³€ê²½ì¹´ë“œ ì‚¬ìš© : bguild(c) charindex(n) nickname(str) errorcode(c)
 void HelperNameChangeRepMsg(CNetMsg::SP& msg, char bguild, int charindex, const char* name, MSG_EX_NAMECHANGE_ERROR_TYPE error);
 void HelperBlockCharRepMsg(CNetMsg::SP& msg, int reqindex, int blockIndex, const char* blockName );
 
 //MSG_HELPER_GIFT_RECVCHARNAME_REP,	//: sendCharIndex(n) recvUserIdx(n) recvCharIndex(n) revCharName(str) msg(str) count(n) idx(n) ctid(n)
 void HelperGiftCharRepMsg(CNetMsg::SP& msg, int sendUserIdx, int sendCharIdx, int recvUserIdx, int recvCharIdx, const char* recvCharName, const char* sendMsg, int count, int idx[], int ctid[] );
 
-// ¾Ö¿Ïµ¿¹°
+// ì• ì™„ë™ë¬¼
 void HelperPetCreateRepMsg(CNetMsg::SP& msg, int index, int owner, char typegrade);
 void HelperPetDeleteRepMsg(CNetMsg::SP& msg, int index, int owner);
 
-// ±æµå ³ª½º º¸°üÇÔ
+// ê¸¸ë“œ ë‚˜ìŠ¤ ë³´ê´€í•¨
 void HelperGuildStashHistoryRepMsg(CNetMsg::SP& msg, int charindex, MSG_HELPER_GUILD_STASH_ERROR_TYPE errcode, int month[7], int day[7], LONGLONG money[7]);
 void HelperGuildStashViewRepMsg(CNetMsg::SP& msg, int charindex, MSG_HELPER_GUILD_STASH_ERROR_TYPE errcode, LONGLONG money);
 void HelperGuildStashTakeRepMsg(CNetMsg::SP& msg, int guildindex, int charindex, MSG_HELPER_GUILD_STASH_ERROR_TYPE errcode, LONGLONG money, LONGLONG balance);
@@ -71,15 +71,15 @@ void HelperTeacherInfo(CNetMsg::SP& msg, const char* idname, int charindex, char
 
 void HelperTeachGiftRepMsg( CNetMsg::SP& msg, MSG_HELPER_TEACH_RENEWER_GIFT_ERROR_TYPE type, int charindex, int count = -1 );
 
-//µî·ÏÇÑ ÄÉ¸¯À» »óÅÂ¸¦ GameServer·Î º¸³¿.
+//ë“±ë¡í•œ ì¼€ë¦­ì„ ìƒíƒœë¥¼ GameServerë¡œ ë³´ëƒ„.
 void HelperEventSearchFriendMemberAddRepMsg(CNetMsg::SP& msg, int approvalindex, const char reqnick[MAX_CHAR_NAME_LENGTH + 1],  MSG_EVENT_SEARCHFRIEND_ERROR_TYPE errcode);
-//ÈŞ¸éÄÉ¸¯ÀÌ ¸®½ºÆ®¿¡¼­ ¼±ÅÃÇÑ °á°ú »óÅÂ¸¦ GameServer·Î º¸³¿.
+//íœ´ë©´ì¼€ë¦­ì´ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì„ íƒí•œ ê²°ê³¼ ìƒíƒœë¥¼ GameServerë¡œ ë³´ëƒ„.
 void HelperEventSearchFriendMemberSelectAddRepMsg(CNetMsg::SP& msg, int approvalindex,MSG_EVENT_SEARCHFRIEND_ERROR_TYPE errcode);
-//ÈŞ¸éÄÉ¸¯ÀÌ ÇÑ½Ã°£ ´ÜÀ§·Î »ç³ÉÇÑ ½Ã°£À» ÀúÀåÇÏ°í »óÅÂ¸¦ GameServer·Î º¸³¿.
+//íœ´ë©´ì¼€ë¦­ì´ í•œì‹œê°„ ë‹¨ìœ„ë¡œ ì‚¬ëƒ¥í•œ ì‹œê°„ì„ ì €ì¥í•˜ê³  ìƒíƒœë¥¼ GameServerë¡œ ë³´ëƒ„.
 void HelperEventSearchFriendMemberOneTimeCheckRepMsg(CNetMsg::SP& msg, int timesec, int appDormantindex, MSG_EVENT_SEARCHFRIEND_ERROR_TYPE errcode);
-//ÈŞ¸éÄÉ¸¯ ÀÌº¥Æ® µî·ÏµÈ Ä£±¸ º¸»ó°¡´É ¿©ºÎ µ¥ÀÌÅÍ¸¦ GameServer·Î º¸³¿.
+//íœ´ë©´ì¼€ë¦­ ì´ë²¤íŠ¸ ë“±ë¡ëœ ì¹œêµ¬ ë³´ìƒê°€ëŠ¥ ì—¬ë¶€ ë°ì´í„°ë¥¼ GameServerë¡œ ë³´ëƒ„.
 void HelperEventSearchFriendMemberListGoodRepMsg(CNetMsg::SP& msg, int approvalindex, int* requestindex, const char requestnick[][MAX_CHAR_NAME_LENGTH + 1], int* itemgood, int request_listmember, int startindex, int nTotal);
-//ÈŞ¸éÄÉ¸¯ º¸»óÁö±Ş ÈÄ °á°ú¸¦ GameServer·Î º¸³¿.
+//íœ´ë©´ì¼€ë¦­ ë³´ìƒì§€ê¸‰ í›„ ê²°ê³¼ë¥¼ GameServerë¡œ ë³´ëƒ„.
 void HelperEventSearchFriendMemberGoodRepMsg(CNetMsg::SP& msg, int approvalindex, MSG_EVENT_SEARCHFRIEND_GOODS_ERROR_TYPE errcode);
 
 void HelperPartyInviteReqMsg(CNetMsg::SP& msg, int nBossIndex, const char* strBossName, int nBossLevel, int nTargetIndex, char nPartyType);
@@ -107,15 +107,11 @@ void HelperPartyMatchMemberChangeInfoMsg(CNetMsg::SP& msg, int nCharIndex, MSG_H
 void HelperPartyInfoEndMsg(CNetMsg::SP& msg);
 
 void HelperGuildInclineEstablishRepMsg( CNetMsg::SP& msg, int guildindex, int charindex, char guildincline, MSG_GUILD_ERROR_TYPE errcode );
-void HelperGuildMemberAdjustRepMsg( CNetMsg::SP& msg, int guildindex, int ownerindex, int charindex, const char* strPositionName, int contributeExp, int contributeFame, int pos, MSG_GUILD_ERROR_TYPE errcode );
+void HelperGuildMemberAdjustRepMsg( CNetMsg::SP& msg, int guildindex, int ownerindex, int charindex, const char* strPositionName, int contribute_exp, int contribute_fame, int contributeExp_min, int contributeExp_max, int contributeFame_min, int contributeFame_max, int pos, MSG_GUILD_ERROR_TYPE errcode );
 void HelperNewGuildInfoRepMsg( CNetMsg::SP& msg, int charindex, MSG_GUILD_ERROR_TYPE errorcode );
 void HelperNewGuildInfoNotifyMsg( CNetMsg::SP& msg, int charindex, int guildindex, int avelevel, int usepoint, MSG_GUILD_ERROR_TYPE errorcode  );
-void HelperNewGuildMemberListRepMsg( CNetMsg::SP& msg, int endcount, int & guildstart, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode,  int* membercharindex, int* cumulatePoint, const char CharName[][MAX_CHAR_NAME_LENGTH  + 1], const char positionName[][GUILD_POSITION_NAME+1], char* job, char* job2, int* level, int* position );
-#ifdef DEV_GUILD_STASH
-void HelperNewGuildManageRepMsg( CNetMsg::SP& msg, int endcount, int & guildstart, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode,  int* membercharindex, int* contributeExp, int* contributeFame, const char CharName[][MAX_CHAR_NAME_LENGTH + 1], const char positionName[][GUILD_POSITION_NAME+1], int* level, int* position, char* stashAuth, char first);
-#else
-void HelperNewGuildManageRepMsg( CNetMsg::SP& msg, int endcount, int & guildstart, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode,  int* membercharindex, int* contributeExp, int* contributeFame, const char CharName[][MAX_CHAR_NAME_LENGTH  + 1], const char positionName[][GUILD_POSITION_NAME+1], int* level, int* position, char first );
-#endif //DEV_GUILD_STASH
+void HelperNewGuildMemberListRepMsg( CNetMsg::SP& msg, int endcount, int & guildstart, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode,  int* membercharindex, int* cumulatePoint, const char CharName[][MAX_CHAR_NAME_LENGTH  + 1], const char positionName[][GUILD_POSITION_NAME+1], char* job, char* job2, int* level, int* position, int* logout_date );
+void HelperNewGuildManageRepMsg( CNetMsg::SP& msg, int endcount, int & guildstart, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode,  int* membercharindex, int* contributeExp, int* contributeFame, int* contributeExp_min, int* contributeExp_max, int * contributeFame_min, int* contributeFame_max, const char CharName[][MAX_CHAR_NAME_LENGTH + 1], const char positionName[][GUILD_POSITION_NAME+1], int* level, int* position, char* stashAuth, char first);
 
 void HelperNewGuildNoticeRepMsg( CNetMsg::SP& msg, int charindex, int guildindex, const char* title, const char* text);
 void HelperNewGuildNoticeUpdateRepMsg( CNetMsg::SP& msg, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode );
@@ -126,6 +122,9 @@ void HelperExtendGuildLoadNotifyMsg( CNetMsg::SP& msg, CGuild* guild, int skillc
 void HelperNewGuildSkillListRepMsg( CNetMsg::SP& msg, int charindex, int guildindex, MSG_GUILD_ERROR_TYPE errcode, int Activeskillcount, int* Activeskillindex, int* ActiveskillLevel, int Passiveskillcount, int* Passiveskillindex, int* PassiveskillLevel, int Etcskillcount, int* Etcskillindex, int* EtcskillLevel );
 void HelperNewGuildPointUpdateMsg( CNetMsg::SP& msg, int charindex, int guildindex, int guildpoint );
 void HelperNewGuildMemberPointSaveMsg(CNetMsg::SP& msg, int charindex, int guildindex, int memberpoint);
+
+void HelperGuildContributeSetRep(CNetMsg::SP& msg, int char_index, int exp, int fame, int error_code);
+void HelperGuildContributeSetAllRep(CNetMsg::SP& msg, int char_index, int guild_index, int exp, int fame, int exp_min, int exp_max, int fame_min, int fame_max, int error_code);
 
 void HelperPetNameChange( CNetMsg::SP& msg, MSG_EX_PET_CHANGE_NAME_ERROR_TYPE err,int charidx, int petidx = 0, const char* strPetName = NULL );
 void HelperGuildMarkTableMsg(CNetMsg::SP& msg);

@@ -15,8 +15,8 @@ public:
 
 	int				m_cmdType;
 	int				m_minLevel;
-	bool			m_bCanDoWhileWarp;		// ¿öÇÁÁß »ç¿ëÇÒ ¼ö ÀÖ´Â ¸Ş½ÃÁöÀÎ°¡?
-	bool			m_bCanDoWhileDisable;	// disable »óÅÂ¿¡¼­µµ »ç¿ëÇÒ ¼ö ÀÖ´Â ¸Ş½ÃÁö ÀÎ°¡?
+	bool			m_bCanDoWhileWarp;		// ì›Œí”„ì¤‘ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ë©”ì‹œì§€ì¸ê°€?
+	bool			m_bCanDoWhileDisable;	// disable ìƒíƒœì—ì„œë„ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ë©”ì‹œì§€ ì¸ê°€?
 	LCCMDPROC		m_cmdFunc;
 };
 

@@ -47,151 +47,151 @@ public:
 	int m_nDelayOpenGate;
 	int m_nRaidRoomNo;
 
-	bool		m_bEnable;			// È°¼ºÈ­ ¿©ºÎ
-	CZone*		m_zone;				// ¼Ò¼Ó Á¸
-	int			m_index;			// ¿µ¿ª ¹øÈ£
+	bool		m_bEnable;			// í™œì„±í™” ì—¬ë¶€
+	CZone*		m_zone;				// ì†Œì† ì¡´
+	int			m_index;			// ì˜ì—­ ë²ˆí˜¸
 
-	int			m_size[2];			// ¹è¿­ Å©±â: 0: width, 1: height: ¼¿ ´ÜÀ§
+	int			m_size[2];			// ë°°ì—´ í¬ê¸°: 0: width, 1: height: ì…€ ë‹¨ìœ„
 	int			m_ycnt;
-	CEnv***		m_env;				// È¯°æ ¹è¿­
-	CCell**		m_cell;				// ¼¿ ¹è¿­
+	CEnv***		m_env;				// í™˜ê²½ ë°°ì—´
+	CCell**		m_cell;				// ì…€ ë°°ì—´
 
-	CNPCRegenList m_npcRegenList;	// NPC ¸®Á¨ Á¤º¸ ¸®½ºÆ®
-	vec_raidnpcrregenlist_t m_raidNPCRegenList;		// RAID MONSTER ¸®Á¨ Á¤º¸ ¸®½ºÆ®
+	CNPCRegenList m_npcRegenList;	// NPC ë¦¬ì   ì •ë³´ ë¦¬ìŠ¤íŠ¸
+	vec_raidnpcrregenlist_t m_raidNPCRegenList;		// RAID MONSTER ë¦¬ì   ì •ë³´ ë¦¬ìŠ¤íŠ¸
 
-	set_int_t m_NpcPortal_NpcList;	// mob Åø ÀÎµ¦½º
-	set_int_t m_NpcPortal_MobList;	// mob Åø ÀÎµ¦½º
+	set_int_t m_NpcPortal_NpcList;	// mob íˆ´ ì¸ë±ìŠ¤
+	set_int_t m_NpcPortal_MobList;	// mob íˆ´ ì¸ë±ìŠ¤
 	bool IsNpcPortalList_Npc(int index);
 	bool IsNpcPortalList_Mob(int index);
 
-	CNPC*		m_npcList;			// NPC ¸®½ºÆ®
-	int			m_nCountNPC;		// NPC ¼ö
+	CNPC*		m_npcList;			// NPC ë¦¬ìŠ¤íŠ¸
+	int			m_nCountNPC;		// NPC ìˆ˜
 	int			m_pulseNPCAI;		// NPC AI pulse
 	int			m_pulseNPCRegen;	// NPC regen pulse
-	// int			m_nMaxCountNPC;		// NPC ÃÖ´ë ¼ö
+	// int			m_nMaxCountNPC;		// NPC ìµœëŒ€ ìˆ˜
 
-	int			m_nJunkItems;		// »ç¶óÁø ¾ÆÀÌÅÛ ¼ö
+	int			m_nJunkItems;		// ì‚¬ë¼ì§„ ì•„ì´í…œ ìˆ˜
 
-	int			m_nMakeNPC;		// ½Ì±Û´øÀü¿¡¼­ ¸¸µç ¸÷ ¼ö
-	bool		m_bBoss;		//  ¹ß·Ï¹æ ÇÑ¹ø ÅÍÄ¡ÆĞµå Åë°úÇß´Â°¡? : 2¹øÂ° Åë°ú½Ã ¹ß·Ï¹æ, Ã¹¹øÂ°´Â 2Ãş
-	int*		m_regenList;	// ½Ì±Û´øÀü¿¡¼­ ¸®Á¨µÇ¾ú´ø ¸®½ºÆ®(regenÀÇ a_index)
+	int			m_nMakeNPC;		// ì‹±ê¸€ë˜ì „ì—ì„œ ë§Œë“  ëª¹ ìˆ˜
+	bool		m_bBoss;		//  ë°œë¡ë°© í•œë²ˆ í„°ì¹˜íŒ¨ë“œ í†µê³¼í–ˆëŠ”ê°€? : 2ë²ˆì§¸ í†µê³¼ì‹œ ë°œë¡ë°©, ì²«ë²ˆì§¸ëŠ” 2ì¸µ
+	int*		m_regenList;	// ì‹±ê¸€ë˜ì „ì—ì„œ ë¦¬ì  ë˜ì—ˆë˜ ë¦¬ìŠ¤íŠ¸(regenì˜ a_index)
 
-	int			m_guildIndex;		// ±æµå·ëÀÇ °æ¿ì ±æµå ÀÎµ¦½º
+	int			m_guildIndex;		// ê¸¸ë“œë£¸ì˜ ê²½ìš° ê¸¸ë“œ ì¸ë±ìŠ¤
 
 	int			m_nNPC_Killed_NPC;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	void Init(CZone* z, int index, int w, int h, int ycnt);
 
-	// x, z¿¡¼­ ¼¿ ¹øÈ£ ¾òÀ½
+	// x, zì—ì„œ ì…€ ë²ˆí˜¸ ì–»ìŒ
 	void PointToCellNum(float x, float z, int* cx, int* cz);
 
-	// Ä³¸¯À» ¼¿¿¡ ³Ö±â
+	// ìºë¦­ì„ ì…€ì— ë„£ê¸°
 	void CharToCell(CCharacter* ch, char cy, int cx, int cz);
 	void CharToCellForSummonNpc(CCharacter* owner, CCharacter* ch, char cy, int cx, int cz);
 
-	// ¼¿¿¡¼­ Ä³¸¯ »©±â
+	// ì…€ì—ì„œ ìºë¦­ ë¹¼ê¸°
 	void CharFromCell(CCharacter* ch, bool bDeleteAttackList);
 
-	// Ä³¸¯ ÀÌµ¿
+	// ìºë¦­ ì´ë™
 	bool MoveChar(CCharacter* ch, char y, float x, float z, float h, float r, MSG_MOVE_TYPE movekind, CCharacter* target = NULL);
 
-	// Ä³¸¯ ÀÌµ¿ ½Ã¿¡ ºí·°µÇ´ÂÁö °Ë»ç
+	// ìºë¦­ ì´ë™ ì‹œì— ë¸”ëŸ­ë˜ëŠ”ì§€ ê²€ì‚¬
 private:
-	bool IsNotBlocked(char sy, float sx, float sz, float tx, float tz, bool bCastleNPC, char& ty);		// s¿¡¼­ t·Î ÀÌµ¿ °¡´É ¿©ºÎ °Ë»ç : ¹ØÀÇ Ä³¸¯ÅÍ¿ë InNotBlocked()¿¡¼­ »ç¿ë
+	bool IsNotBlocked(char sy, float sx, float sz, float tx, float tz, bool bCastleNPC, char& ty);		// sì—ì„œ të¡œ ì´ë™ ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬ : ë°‘ì˜ ìºë¦­í„°ìš© InNotBlocked()ì—ì„œ ì‚¬ìš©
 
 public:
 	bool IsNotBlocked(CCharacter* ch, CCharacter* tch, bool battack, char& outYlayer);
 	bool IsNotBlocked(CCharacter* ch, char y, float x, float z, bool battack, char& outYlayer);
 
-	// Æ¯Á¤ À§Ä¡ÀÇ Attribute¸¦ ¾òÀ½
+	// íŠ¹ì • ìœ„ì¹˜ì˜ Attributeë¥¼ ì–»ìŒ
 	unsigned short GetAttr(char y, float x, float z);
-	// ³ôÀÌ °ª ¾ò±â
+	// ë†’ì´ ê°’ ì–»ê¸°
 	float GetHeight(char y, float x, float z);
 
-	// ch ±ÙÃ³¿¡¼­ tch_type Á¾·ùÀÇ idx Ä³¸¯À» ¹İÈ¯
+	// ch ê·¼ì²˜ì—ì„œ tch_type ì¢…ë¥˜ì˜ idx ìºë¦­ì„ ë°˜í™˜
 	CCharacter* FindCharInCell(CCharacter* ch, int idx, MSG_CHAR_TYPE tchType, bool bIncludeDead = false);
 	CNPC* FindProtoNPCInCell(float x, float z, int nData, bool bIsFlagMask, int findNumCell, bool bIncludeDead = false);
 	CNPC* FindProtoNPCInCell(CCharacter* ch, int nData, bool bIsFlagMask, int findNumCell = 2, bool bIncludeDead = false);
 
-	// areaÀÇ tch¸¦ Ã£À½
+	// areaì˜ tchë¥¼ ì°¾ìŒ
 	CCharacter* FindChar(int idx, MSG_CHAR_TYPE tchType);
 
-	// ¼¿¿¡ ¸Ş½ÃÁö Àü´Ş : ¼¿¿¡¼­ CELL_EXT ¹İ°æ¾ÈÀÇ ¸ğµç PC¿¡°Ô Àü´ŞÇÑ´Ù
+	// ì…€ì— ë©”ì‹œì§€ ì „ë‹¬ : ì…€ì—ì„œ CELL_EXT ë°˜ê²½ì•ˆì˜ ëª¨ë“  PCì—ê²Œ ì „ë‹¬í•œë‹¤
 	bool SendToCell(CNetMsg::SP& msg, CCharacter* ch, bool withme = false, int cellext = CELL_EXT);
 	bool SendToCell(CNetMsg::SP& msg, char y, int cx, int cz, int cellext = CELL_EXT);
-	// ÇØ´ç areaÀÇ ¸ğµç PC¿¡°Ô msg Àü´Ş
+	// í•´ë‹¹ areaì˜ ëª¨ë“  PCì—ê²Œ msg ì „ë‹¬
 	void SendToAllClient(CNetMsg::SP& msg);
 
-	// ¼¿ÀÇ Á¤º¸¸¦ ch¿¡°Ô Àü´Ş
-	// bool bExcludeOwnPetElemental : chÀÇ ¼ÒÀ¯ÀÎ Æê°ú ¼ÒÈ¯¼ö¸¦ Á¦¿Ü
+	// ì…€ì˜ ì •ë³´ë¥¼ chì—ê²Œ ì „ë‹¬
+	// bool bExcludeOwnPetElemental : chì˜ ì†Œìœ ì¸ í«ê³¼ ì†Œí™˜ìˆ˜ë¥¼ ì œì™¸
 	void SendCellInfo(CPC* ch, bool bExcludeOwnPetElemental);
 
-	// Æ¯Á¤ ¼¿ÀÇ ÀÎÁ¢ Áö¿ªÀÇ PC ¼ö¸¦ ¹İÈ¯
+	// íŠ¹ì • ì…€ì˜ ì¸ì ‘ ì§€ì—­ì˜ PC ìˆ˜ë¥¼ ë°˜í™˜
 	int GetPCCount(CCharacter* ch, int findArea = CELL_EXT);
 	int GetPCCount(int cx, int cz, int findArea = CELL_EXT);
 	int	GetPCCount();
 
-	// ¸®Á¨ Á¤º¸ ¼³Á¤
+	// ë¦¬ì   ì •ë³´ ì„¤ì •
 	void LoadNPC(std::vector<tag_npc_regen_info>& vec);
 
-	// NPC¸¦ Ãß°¡ÇÑ´Ù
+	// NPCë¥¼ ì¶”ê°€í•œë‹¤
 	void AddNPC(CNPC* npc);
 
-	// NPC¸¦ Á¦°Å
+	// NPCë¥¼ ì œê±°
 	void DelNPC(CNPC* npc);
 
-	// MobÀÇ »óÅÂ ÀÌ»ó µîÀ» Àû¿ë
+	// Mobì˜ ìƒíƒœ ì´ìƒ ë“±ì„ ì ìš©
 	CNPC* MobTimeCheck(CNPC* npc);
 
-	// ¿µ¿ª È°¼ºÈ­
+	// ì˜ì—­ í™œì„±í™”
 	void SetEnable(int nRaidRoomNum=-1, int nDifficulty = -1);
 
-	// ¿µ¿ª ºñÈ°¼ºÈ­
+	// ì˜ì—­ ë¹„í™œì„±í™”
 	void SetDisable();
 
-	// ¸÷ Çàµ¿
+	// ëª¹ í–‰ë™
 	void MobActivity();
 
-	// ¸÷ ¸®Á¨
+	// ëª¹ ë¦¬ì  
 	void MobRegen();
-	// ·¹ÀÌµå ¸ó½ºÅÍ ¸®Á¨, ÇÏ³ª¶óµµ ¸®Á¨µÇ¸é true, ¾Æ´Ï¸é false
+	// ë ˆì´ë“œ ëª¬ìŠ¤í„° ë¦¬ì  , í•˜ë‚˜ë¼ë„ ë¦¬ì  ë˜ë©´ true, ì•„ë‹ˆë©´ false
 	bool RaidMobRegen(float x, float z, float r, char y);
 
-	// npc¿Í °¡±î¿î °ø°İ´ë»óÀ» Ã£±â
+	// npcì™€ ê°€ê¹Œìš´ ê³µê²©ëŒ€ìƒì„ ì°¾ê¸°
 	CCharacter* FindNearestTarget(CNPC* npc, float* dist);
 
-	// Å×ÀÌ¹ÖµÈ npc°¡ °¡±î¿î npc¸¦ Ã£±â
+	// í…Œì´ë°ëœ npcê°€ ê°€ê¹Œìš´ npcë¥¼ ì°¾ê¸°
 	CCharacter*	FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist);
 
-	// ¸÷ÀÇ Çàµ¿ ·çÆ¾ µ¶¸³ÀûÀ¸·Î ¼öÇà
+	// ëª¹ì˜ í–‰ë™ ë£¨í‹´ ë…ë¦½ì ìœ¼ë¡œ ìˆ˜í–‰
 	void	MobActivity_Taming(CNPC* npc);
 	void	MobActivity_Confused(CNPC* npc);
 
-	// m_npcList°¡ ²¿ÀÌ´Â °ÍÀ» À§ÇÑ µ¿±âÈ­
+	// m_npcListê°€ ê¼¬ì´ëŠ” ê²ƒì„ ìœ„í•œ ë™ê¸°í™”
 	void	Monster_synchronization( int nCount );
 	void MobActivity_Mercenary(CNPC* npc);
 	void MobActivity_Totem(CNPC *npc);
 	void MobActivity_Suicide(CNPC *npc);
 	void MobActivity_Item_Totem(CNPC* npc);
 
-	// ¾ÆÀÌÅÛÀ» ¼¿¿¡ ³Ö±â
+	// ì•„ì´í…œì„ ì…€ì— ë„£ê¸°
 	void ItemToCell(CItem* item, char cy, int cx, int cz);
 
-	// ¾ÆÀÌÅÛ¿¡¼­ Ä³¸¯ »©±â
+	// ì•„ì´í…œì—ì„œ ìºë¦­ ë¹¼ê¸°
 	void ItemFromCell(CItem* item);
 
-	// ¾ÆÀÌÅÛ ¶¥¿¡ ¶³±¸±â
+	// ì•„ì´í…œ ë•…ì— ë–¨êµ¬ê¸°
 	CItem* DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONGLONG count, bool bOption = false);
 	CItem* DropItem(CItem* item, CCharacter* ch);
 
-	// ¶³¾îÁø ¾ÆÀÌÅÛ Á¤¸®
+	// ë–¨ì–´ì§„ ì•„ì´í…œ ì •ë¦¬
 	void GroundItemControl();
 
-	// aitype¿¡ ÇØ´çÇÏ´Â µ¿Á· Ã£±â, aitypeÀÌ -1ÀÌ¸é ¹«½Ã, hpParam¹Ì¸¸ÀÇ Ã¼·ÂÀÌ ³²Àº ´ë»ó(´ÜÀ§´Â%)
+	// aitypeì— í•´ë‹¹í•˜ëŠ” ë™ì¡± ì°¾ê¸°, aitypeì´ -1ì´ë©´ ë¬´ì‹œ, hpParamë¯¸ë§Œì˜ ì²´ë ¥ì´ ë‚¨ì€ ëŒ€ìƒ(ë‹¨ìœ„ëŠ”%)
 	CNPC* FindNearestFamily(CNPC* npc, int aitype = -1, int hpParam = 100);
 
-	// ¿µ¿ª¾È¿¡ ÀÖ´Â Ä³¸¯ÅÍ ¸ğµÎ ÀÌµ¿ ½ÃÅ°±â
+	// ì˜ì—­ì•ˆì— ìˆëŠ” ìºë¦­í„° ëª¨ë‘ ì´ë™ ì‹œí‚¤ê¸°
 	void MoveAllChar(int nIndex, int nExtra);
 
 	CMonsterCombo* m_monsterCombo;
@@ -200,14 +200,14 @@ public:
 	int	 CountMobInCombo();
 	void CloseComboZone();
 
-	bool			m_bUseTriggerEvent;		// Æ®¸®°Å¸¦ »ç¿ëÇÕ´Ï±î?
-	CTrigger_List	m_CTriggerList;			// ÇØ´ç area¿¡ »ç¿ëµÇ´Â Æ®¸®°Å ¸®½ºÆ®
-	int				m_pulseProcTrigger;		// ÃÊ´ç °ü¸®ÇØ¾ß ÇÏ´Â Æ®¸®°Å¸¦ À§ÇÑ ÆŞ½º
+	bool			m_bUseTriggerEvent;		// íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•©ë‹ˆê¹Œ?
+	CTrigger_List	m_CTriggerList;			// í•´ë‹¹ areaì— ì‚¬ìš©ë˜ëŠ” íŠ¸ë¦¬ê±° ë¦¬ìŠ¤íŠ¸
+	int				m_pulseProcTrigger;		// ì´ˆë‹¹ ê´€ë¦¬í•´ì•¼ í•˜ëŠ” íŠ¸ë¦¬ê±°ë¥¼ ìœ„í•œ í„ìŠ¤
 
-	void Change_NpcRegenRaid(int level, int exceptingNpcIndex = 0);	// ·¹ÀÌµå npc regen ·¹º§ °è»êÇÏ¿© È°¼ºÈ­, regen saveµµ °°ÀÌ ÇÔ
-	int	 GetAllClientCount_Area();									// Area¿¡ Á¸ÀçÇÏ´Â ¸ğµç pcÀÇ ¼ıÀÚ¸¦ ¼¾´Ù.
-	void GotoAllClient_StartPoint();							// areaÀÇ ¸ğµç À¯Àú¸¦ ½ÃÀÛ ÁöÁ¡À¸·Î º¸³¿(¸óÆ®»şÀÎ)
-	void ApplySkillToAllClient(CSkill* skill, bool &bApply);	// areaÀÇ ¸ğµç À¯Àú¿¡°Ô µğ¹öÇÁ¸¦ ½ÃÀüÇÑ´Ù.
+	void Change_NpcRegenRaid(int level, int exceptingNpcIndex = 0);	// ë ˆì´ë“œ npc regen ë ˆë²¨ ê³„ì‚°í•˜ì—¬ í™œì„±í™”, regen saveë„ ê°™ì´ í•¨
+	int	 GetAllClientCount_Area();									// Areaì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  pcì˜ ìˆ«ìë¥¼ ì„¼ë‹¤.
+	void GotoAllClient_StartPoint();							// areaì˜ ëª¨ë“  ìœ ì €ë¥¼ ì‹œì‘ ì§€ì ìœ¼ë¡œ ë³´ëƒ„(ëª¬íŠ¸ìƒ¤ì¸)
+	void ApplySkillToAllClient(CSkill* skill, bool &bApply);	// areaì˜ ëª¨ë“  ìœ ì €ì—ê²Œ ë””ë²„í”„ë¥¼ ì‹œì „í•œë‹¤.
 
 	CAreaRaidInfoList m_RaidInfoList[LEVEL_COUNT];
 	int m_RaidDifficulty;

@@ -1,99 +1,99 @@
 #ifndef __TRIGER_SET_H__
 #define __TRIGER_SET_H__
 
-// ÇÏ³ªÀÇ Æ®¸®°Å µ¿ÀÛ ´ãÀå
+// í•˜ë‚˜ì˜ íŠ¸ë¦¬ê±° ë™ì‘ ë‹´ì¥
 class CTrigger
 {
 public:
 
-/////////////////////// °øÅë º¯¼ö
-	/////////DB Á¤º¸////¹Ù²î¸é ¾ÈµÊ
+/////////////////////// ê³µí†µ ë³€ìˆ˜
+	/////////DB ì •ë³´////ë°”ë€Œë©´ ì•ˆë¨
 	int			m_index;								// DB Index
-	int			m_triggerset_type;						// Æ®¸®°Å ¼Ó¼º
-	int			m_trigger_touchID;						// ÀÌ°ÍÀ» ½Äº°ÀÚ·Î »ç¿ë
+	int			m_triggerset_type;						// íŠ¸ë¦¬ê±° ì†ì„±
+	int			m_trigger_touchID;						// ì´ê²ƒì„ ì‹ë³„ìë¡œ ì‚¬ìš©
 	int			m_trigger_playID;
 	int			m_trigger_type;
 	CLCString	m_trigger_data;
-	int			m_nSaveLevel;							// Áß°£ ÀúÀåÀ» À§ÇÑ Á¤º¸
+	int			m_nSaveLevel;							// ì¤‘ê°„ ì €ì¥ì„ ìœ„í•œ ì •ë³´
 	int			m_group_index;
-	int			m_nType_sub;							// ¼­ºê Å¸ÀÔÀÌ ÀÖ´Ù¸é ÀÌ°ÍÀ» »ç¿ë
-	int			m_bContinue;							// Æ®¸®°Å°¡ À¯ÁöµÇ´Â °ÍÀÎÁö ¿©ºÎ
-	int			m_bDomino;								// µµ¹Ì³ë Çü½Ä Æ®¸®°Å ¹ßµ¿ÀÎÁö ¿©ºÎ
-	int			m_bPlayOnePC;							// ÀÏ¹İ ÇÊµå¿¡¼­ ÇÑ ¸í¿¡°Ô¸¸ º¸¿©¾ß ÇÑ´Ù.
+	int			m_nType_sub;							// ì„œë¸Œ íƒ€ì…ì´ ìˆë‹¤ë©´ ì´ê²ƒì„ ì‚¬ìš©
+	int			m_bContinue;							// íŠ¸ë¦¬ê±°ê°€ ìœ ì§€ë˜ëŠ” ê²ƒì¸ì§€ ì—¬ë¶€
+	int			m_bDomino;								// ë„ë¯¸ë…¸ í˜•ì‹ íŠ¸ë¦¬ê±° ë°œë™ì¸ì§€ ì—¬ë¶€
+	int			m_bPlayOnePC;							// ì¼ë°˜ í•„ë“œì—ì„œ í•œ ëª…ì—ê²Œë§Œ ë³´ì—¬ì•¼ í•œë‹¤.
 
-	////////¸Ş¸ğ¸® Á¤º¸////ÃÊ±âÈ­ ´ë»ó
-	bool		m_bUsed;								// ÀÌ¹Ì Æ®¸®°Å°¡ ¹ßµ¿ÇÏ¿´´ÂÁö ¿©ºÎ
-	long		m_TriggerTime;							// Æ®¸®°Å Á¦¾î¸¦ À§ÇÑ ½Ã°£º¯¼ö
+	////////ë©”ëª¨ë¦¬ ì •ë³´////ì´ˆê¸°í™” ëŒ€ìƒ
+	bool		m_bUsed;								// ì´ë¯¸ íŠ¸ë¦¬ê±°ê°€ ë°œë™í•˜ì˜€ëŠ”ì§€ ì—¬ë¶€
+	long		m_TriggerTime;							// íŠ¸ë¦¬ê±° ì œì–´ë¥¼ ìœ„í•œ ì‹œê°„ë³€ìˆ˜
 
-////////////////// °¢ Æ®¸®°Åº° º¯¼ö
+////////////////// ê° íŠ¸ë¦¬ê±°ë³„ ë³€ìˆ˜
 
 	/////// ITEM_COMPOSITION
-	int		m_nItem_index_ItemComposition;				// ÇÕ¼ºµÈ ¾ÆÀÌÅÛ ÀÎµ¦½º
-	int		m_nMeterial_IndexCount;						// »ç¿ë ¾ÆÀÌÅÛ Á¾·ù
-	int		m_nMeterial_index[TRIGGER_MAX_ARRAYCOUNT];	// »ç¿ë ¾ÆÀÌÅÛ ÀÎµ¦½º
-	int		m_nMeterial_count[TRIGGER_MAX_ARRAYCOUNT];	// »ç¿ë ¾ÆÀÌÅÛ °³¼ö
+	int		m_nItem_index_ItemComposition;				// í•©ì„±ëœ ì•„ì´í…œ ì¸ë±ìŠ¤
+	int		m_nMeterial_IndexCount;						// ì‚¬ìš© ì•„ì´í…œ ì¢…ë¥˜
+	int		m_nMeterial_index[TRIGGER_MAX_ARRAYCOUNT];	// ì‚¬ìš© ì•„ì´í…œ ì¸ë±ìŠ¤
+	int		m_nMeterial_count[TRIGGER_MAX_ARRAYCOUNT];	// ì‚¬ìš© ì•„ì´í…œ ê°œìˆ˜
 
 	/////// ITEM_DROP
-	int		m_ItemDrop_index;							// µå¶øµÇ´Â ¾ÆÀÌÅÛ ÀÎµ¦½º
-	int		m_ItemDrop_percent;							// µå¶øµÇ´Â È®·ü, 1 ~ 100%
+	int		m_ItemDrop_index;							// ë“œëë˜ëŠ” ì•„ì´í…œ ì¸ë±ìŠ¤
+	int		m_ItemDrop_percent;							// ë“œëë˜ëŠ” í™•ë¥ , 1 ~ 100%
 
-	/////// OPEN_THE_DOOR	- ¼­ºê Å¸ÀÔ »ç¿ë
-	int		m_Killed_Npc_Index;							// ¹®À» ¿­±â À§ÇØ Á×¿©¾ß ÇÏ´Â npc Á¾·ù
-	int		m_Killed_Npc_Count;							// ¹®À» ¿­±â À§ÇØ Á×¿©¾ß ÇÏ´Â npc ¼ıÀÚ
-	int		m_NeedItem_IndexCount;						// ¹®À» ¿­±â À§ÇØ ¾ò¾î¾ß ÇÏ´Â item Á¾·ù ¼ö
-	int		m_NeedItem_Index[TRIGGER_MAX_ARRAYCOUNT];	// ¹®À» ¿­±â À§ÇØ ¾ò¾î¾ß ÇÏ´Â item ÀÎµ¦½º
-	int		m_NeedItem_Count[TRIGGER_MAX_ARRAYCOUNT];	// ¹®À» ¿­±â À§ÇØ ¾ò¾î¾ß ÇÏ´Â item ¼ıÀÚ
+	/////// OPEN_THE_DOOR	- ì„œë¸Œ íƒ€ì… ì‚¬ìš©
+	int		m_Killed_Npc_Index;							// ë¬¸ì„ ì—´ê¸° ìœ„í•´ ì£½ì—¬ì•¼ í•˜ëŠ” npc ì¢…ë¥˜
+	int		m_Killed_Npc_Count;							// ë¬¸ì„ ì—´ê¸° ìœ„í•´ ì£½ì—¬ì•¼ í•˜ëŠ” npc ìˆ«ì
+	int		m_NeedItem_IndexCount;						// ë¬¸ì„ ì—´ê¸° ìœ„í•´ ì–»ì–´ì•¼ í•˜ëŠ” item ì¢…ë¥˜ ìˆ˜
+	int		m_NeedItem_Index[TRIGGER_MAX_ARRAYCOUNT];	// ë¬¸ì„ ì—´ê¸° ìœ„í•´ ì–»ì–´ì•¼ í•˜ëŠ” item ì¸ë±ìŠ¤
+	int		m_NeedItem_Count[TRIGGER_MAX_ARRAYCOUNT];	// ë¬¸ì„ ì—´ê¸° ìœ„í•´ ì–»ì–´ì•¼ í•˜ëŠ” item ìˆ«ì
 
 	/////// START_RAID
 
 	/////// MESSAGE_PRINT
-	int		m_nStringIndex;								// t_string_index ¸¦ ÁöÁ¤
+	int		m_nStringIndex;								// t_string_index ë¥¼ ì§€ì •
 
 	/////// SUMMON_NPC
-	int		m_nSummonNpc_indexCount;					// ¼ÒÈ¯µÇ´Â npc Á¾·ù ¼ö
-	int		m_nSummonNpc_index[TRIGGER_MAX_ARRAYCOUNT];	// ¼ÒÈ¯µÇ´Â npc ÀÎµ¦½º
-	int		m_nSummonNpc_count[TRIGGER_MAX_ARRAYCOUNT];	// ¼ÒÈ¯µÇ´Â npc ¼ıÀÚ
+	int		m_nSummonNpc_indexCount;					// ì†Œí™˜ë˜ëŠ” npc ì¢…ë¥˜ ìˆ˜
+	int		m_nSummonNpc_index[TRIGGER_MAX_ARRAYCOUNT];	// ì†Œí™˜ë˜ëŠ” npc ì¸ë±ìŠ¤
+	int		m_nSummonNpc_count[TRIGGER_MAX_ARRAYCOUNT];	// ì†Œí™˜ë˜ëŠ” npc ìˆ«ì
 
 	/////// USE_DEBUF
-	int		m_nUseDebuf_indexCount;						// µğ¹öÇÁ °É¸®´Â Á¾·ù ¼ö
-	int		m_nUseDebuf_index[TRIGGER_MAX_ARRAYCOUNT];	// µğ¹öÇÁ °É¸®´Â ÀÎµ¦½º
+	int		m_nUseDebuf_indexCount;						// ë””ë²„í”„ ê±¸ë¦¬ëŠ” ì¢…ë¥˜ ìˆ˜
+	int		m_nUseDebuf_index[TRIGGER_MAX_ARRAYCOUNT];	// ë””ë²„í”„ ê±¸ë¦¬ëŠ” ì¸ë±ìŠ¤
 
 	/////// ACTIVE_OBJECT
 
-	/////// REMOVE_NPC	- ¼­ºê Å¸ÀÔ »ç¿ë
-	int		m_Item_Index_removeNPC;						// Á×ÀÌ´Âµ¥ »ç¿ëµÇ´Â item index
-	int		m_KilledNpc_Index_ForRemoveNpc;				// Á×´Â npc index
-	int		m_KillCount;								// item ´ç Á×´Â npc ¼ö
+	/////// REMOVE_NPC	- ì„œë¸Œ íƒ€ì… ì‚¬ìš©
+	int		m_Item_Index_removeNPC;						// ì£½ì´ëŠ”ë° ì‚¬ìš©ë˜ëŠ” item index
+	int		m_KilledNpc_Index_ForRemoveNpc;				// ì£½ëŠ” npc index
+	int		m_KillCount;								// item ë‹¹ ì£½ëŠ” npc ìˆ˜
 
 	/////// TIME_LIMIT
-	long	m_TimeLimitSec;								// Á¦ÇÑ ½Ã°£ (sec)
+	long	m_TimeLimitSec;								// ì œí•œ ì‹œê°„ (sec)
 
 	/////// QUEST_COMPLETE
-	int		m_nQuestIndex;								// ¿Ï·áÇÒ Äù½ºÆ® ÀÎµ¦½º
+	int		m_nQuestIndex;								// ì™„ë£Œí•  í€˜ìŠ¤íŠ¸ ì¸ë±ìŠ¤
 
 	/////// ITEM_GET_INVEN
-	int		m_nGetItem_TotalCount;						// ÀÎº¥¿¡ µé¾î°¡´Â ¾ÆÀÌÅÛ ÃÑ Á¾·ù
-	int		m_nGetItem_Index[TRIGGER_MAX_ARRAYCOUNT];	// ÀÎº¥¿¡ µé¾î°¡´Â ¾ÆÀÌÅÛ ÀÎµ¦½º
-	int		m_nGetItem_Count[TRIGGER_MAX_ARRAYCOUNT];	// ÀÎº¥¿¡ µé¾î°¡´Â ¾ÆÀÌÅÛ °³¼ö
-	int		m_nGetItem_Prob[TRIGGER_MAX_ARRAYCOUNT];	// ÀÎº¥¿¡ µé¾î°¡´Â È¹µæ È®·ü
+	int		m_nGetItem_TotalCount;						// ì¸ë²¤ì— ë“¤ì–´ê°€ëŠ” ì•„ì´í…œ ì´ ì¢…ë¥˜
+	int		m_nGetItem_Index[TRIGGER_MAX_ARRAYCOUNT];	// ì¸ë²¤ì— ë“¤ì–´ê°€ëŠ” ì•„ì´í…œ ì¸ë±ìŠ¤
+	int		m_nGetItem_Count[TRIGGER_MAX_ARRAYCOUNT];	// ì¸ë²¤ì— ë“¤ì–´ê°€ëŠ” ì•„ì´í…œ ê°œìˆ˜
+	int		m_nGetItem_Prob[TRIGGER_MAX_ARRAYCOUNT];	// ì¸ë²¤ì— ë“¤ì–´ê°€ëŠ” íšë“ í™•ë¥ 
 
 	/////// CONSECUTIVE_DIALOGUE
-	int		m_nMainDialogueString;						// ¿¬¼Ó ´ëÈ­ Ã³À½ Ã¢
-	int		m_nNextDialogueString1;						// ¿¬¼Ó ´ëÈ­ ½ºÆ®¸µ ÀÎµ¦½º
-	int		m_nNextDialogueString2;						// ¿¬¼Ó ´ëÈ­ ½ºÆ®¸µ ÀÎµ¦½º
-	int		m_nNextDialogueString3;						// ¿¬¼Ó ´ëÈ­ ½ºÆ®¸µ ÀÎµ¦½º
-	int		m_nNextDialogueString4;						// ¿¬¼Ó ´ëÈ­ ½ºÆ®¸µ ÀÎµ¦½º
-	int		m_nNextDialogueString5;						// ¿¬¼Ó ´ëÈ­ ½ºÆ®¸µ ÀÎµ¦½º
-	int		m_nNextDialogueTriggerID1;					// ¿¬¼Ó ´ëÈ­ Æ®¸®°Å ¾ÆÀÌµğ
+	int		m_nMainDialogueString;						// ì—°ì† ëŒ€í™” ì²˜ìŒ ì°½
+	int		m_nNextDialogueString1;						// ì—°ì† ëŒ€í™” ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤
+	int		m_nNextDialogueString2;						// ì—°ì† ëŒ€í™” ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤
+	int		m_nNextDialogueString3;						// ì—°ì† ëŒ€í™” ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤
+	int		m_nNextDialogueString4;						// ì—°ì† ëŒ€í™” ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤
+	int		m_nNextDialogueString5;						// ì—°ì† ëŒ€í™” ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤
+	int		m_nNextDialogueTriggerID1;					// ì—°ì† ëŒ€í™” íŠ¸ë¦¬ê±° ì•„ì´ë””
 	int		m_nNextDialogueTriggerID2;
 	int		m_nNextDialogueTriggerID3;
 	int		m_nNextDialogueTriggerID4;
 	int		m_nNextDialogueTriggerID5;
 
 	/////// ACTIVE_EFFECT
-	CLCString	m_strEffectName;						// ÀÌÆåÆ® ÀÌ¸§
-	int			m_nTargetType;							// ÀÚ½ÅÀÎÁö ´Ù¸¥ npc ÀÎÁö
-	int			m_nEffectNPCIndex;						// ´Ù¸¥ npcÀÌ¸é npc ÀÎµ¦½º
+	CLCString	m_strEffectName;						// ì´í™íŠ¸ ì´ë¦„
+	int			m_nTargetType;							// ìì‹ ì¸ì§€ ë‹¤ë¥¸ npc ì¸ì§€
+	int			m_nEffectNPCIndex;						// ë‹¤ë¥¸ npcì´ë©´ npc ì¸ë±ìŠ¤
 
 	CTrigger();
 	~CTrigger();
@@ -110,7 +110,7 @@ public:
 	void		CopyTriggerDate(CTrigger* trigger);
 };
 
-// Æ®¸®°ÅµéÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â °ü¸®¿ë ¸®½ºÆ®
+// íŠ¸ë¦¬ê±°ë“¤ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” ê´€ë¦¬ìš© ë¦¬ìŠ¤íŠ¸
 class CTrigger_List
 {
 public:
@@ -120,9 +120,9 @@ public:
 	int			m_nCount;
 	CArea*		m_pArea_UseTrigerEvent;
 
-	// ¿¹¹è´ç 1Â÷ npc 963 ¸î¸¶¸® Á×¾ú´ÂÁö Ã¼Å©(ÇÏµåÄÚµù¿¡¼­ »ç¿ë)
+	// ì˜ˆë°°ë‹¹ 1ì°¨ npc 963 ëª‡ë§ˆë¦¬ ì£½ì—ˆëŠ”ì§€ ì²´í¬(í•˜ë“œì½”ë”©ì—ì„œ ì‚¬ìš©)
 	int			m_nNPC963_KilledCount;
-	int			m_flagTriggerEvent;				// Æ®¸®°Å ÀÌº¥Æ® »ç¿ë ÇÃ·¡±× Ã¹¹øÂ°
+	int			m_flagTriggerEvent;				// íŠ¸ë¦¬ê±° ì´ë²¤íŠ¸ ì‚¬ìš© í”Œë˜ê·¸ ì²«ë²ˆì§¸
 
 	int     Check_TriggerFlag(int mask)
 	{
@@ -143,13 +143,13 @@ public:
 	CTrigger_List();
 	~CTrigger_List();
 
-	bool	ResetTriggerInfo(bool bDelete);			//	Æ®¸®°Å ÃÊ±âÈ­, ·¹ÀÌµå¿¡¸¸ »ç¿ëÇÒ °Í, bSave´Â DB¼¼ÀÌºêµµ ÃÊ±âÈ­ ÇÒÁö ¿©ºÎ
-	bool	SaveTriggerInfo(int saveInfo, int roomNumber=0);	//	Æ®¸®°Å Á¤º¸¸¦ ÀúÀåÀ» ÇÔ
-	void	LoadTriggerSaveInfo(int roomNumber);	//  ¼­¹ö ºÎÆÃ ½Ã Æ®¸®°ÅÀÇ Áß°£ Á¤º¸¸¦ ºÒ·¯ ¿È
-	bool	LoadTriggerInfo(int triggerSetType);	//  ¼­¹ö ºÎÆÃ ½Ã Æ®¸®°Å Á¤º¸¸¦ ºÒ·¯ ¿È
+	bool	ResetTriggerInfo(bool bDelete);			//	íŠ¸ë¦¬ê±° ì´ˆê¸°í™”, ë ˆì´ë“œì—ë§Œ ì‚¬ìš©í•  ê²ƒ, bSaveëŠ” DBì„¸ì´ë¸Œë„ ì´ˆê¸°í™” í• ì§€ ì—¬ë¶€
+	bool	SaveTriggerInfo(int saveInfo, int roomNumber=0);	//	íŠ¸ë¦¬ê±° ì •ë³´ë¥¼ ì €ì¥ì„ í•¨
+	void	LoadTriggerSaveInfo(int roomNumber);	//  ì„œë²„ ë¶€íŒ… ì‹œ íŠ¸ë¦¬ê±°ì˜ ì¤‘ê°„ ì •ë³´ë¥¼ ë¶ˆëŸ¬ ì˜´
+	bool	LoadTriggerInfo(int triggerSetType);	//  ì„œë²„ ë¶€íŒ… ì‹œ íŠ¸ë¦¬ê±° ì •ë³´ë¥¼ ë¶ˆëŸ¬ ì˜´
 
-	bool	SyncForClient_TriggerInfo(CPC* ch);		//  Å¬¶óÀÌ¾ğÆ® ÀÔÀå½Ã ÇöÀç Æ®¸®°Å Á¤º¸¸¦ ¹ŞÀ½
-	void	TriggerTimerCheck();					//	Å¸ÀÌ¸Ó¸¦ »ç¿ëÇÏ´Â Æ®¸®°Å Ã¼Å©, ÇÏµåÄÚµù Ã³¸®
+	bool	SyncForClient_TriggerInfo(CPC* ch);		//  í´ë¼ì´ì–¸íŠ¸ ì…ì¥ì‹œ í˜„ì¬ íŠ¸ë¦¬ê±° ì •ë³´ë¥¼ ë°›ìŒ
+	void	TriggerTimerCheck();					//	íƒ€ì´ë¨¸ë¥¼ ì‚¬ìš©í•˜ëŠ” íŠ¸ë¦¬ê±° ì²´í¬, í•˜ë“œì½”ë”© ì²˜ë¦¬
 
 	void	SetArea(CArea* pArea)
 	{
@@ -172,12 +172,12 @@ typedef struct NPC_REGEN_FOR_RAID
 	float	m_pos_h;
 	float	m_pos_r;
 	int		m_y_layer;
-	int		m_storeMiddle;				//Áß°£ ÀúÀå µî±Ş - µî±Ş¿¡ µû¸¥ npc ¸®Á¨ Ã³¸®
+	int		m_storeMiddle;				//ì¤‘ê°„ ì €ì¥ ë“±ê¸‰ - ë“±ê¸‰ì— ë”°ë¥¸ npc ë¦¬ì   ì²˜ë¦¬
 } NPC_REGEN_FOR_RAID;
 
-// ÀÎ½ºÅÏÆ® ´øÀüÀÇ ¸®Á¨ Á¤º¸¸¦ ´ãÀ½
-// ¼±Çà Å½»öÀÌ¶ó ¾Ë°í¸®Áò ÇÊ¿ä ¾øÀ½
-// ÀÌ Á¤º¸´Â DB Á¤º¸ÀÌ¹Ç·Î ÇÑ °³¸¸ ÇÊ¿äÇÔ
+// ì¸ìŠ¤í„´íŠ¸ ë˜ì „ì˜ ë¦¬ì   ì •ë³´ë¥¼ ë‹´ìŒ
+// ì„ í–‰ íƒìƒ‰ì´ë¼ ì•Œê³ ë¦¬ì¦˜ í•„ìš” ì—†ìŒ
+// ì´ ì •ë³´ëŠ” DB ì •ë³´ì´ë¯€ë¡œ í•œ ê°œë§Œ í•„ìš”í•¨
 class CNpc_Regen_Raid
 {
 public:

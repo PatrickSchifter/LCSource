@@ -7,8 +7,8 @@
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Object/ActorMgr.h>
 #include <Engine/Interface/UIPlayerInfo.h>
-#include <Engine/Interface/UIPersonalShop.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Contents/Base/PersonalshopUI.h>
 
 // [7/13/2009 rumist] reject invite party.
 extern INDEX g_iRejectParty;

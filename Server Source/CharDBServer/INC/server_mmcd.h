@@ -221,13 +221,13 @@ typedef struct _st_DisPrcResp
 #define MAX_ROW_CNT             15
 #define MAX_TOT_RECORD          2000
 #define MAX_RECORD_SIZE         100
-#define MAX_HELP_STRING    		2500    /* ½ÇÁ¦º¸´Ù 10ÀÛÀº °ªÀ¸·Î ¼³Á¤ */
+#define MAX_HELP_STRING    		2500    /* ì‹¤ì œë³´ë‹¤ 10ì‘ì€ ê°’ìœ¼ë¡œ ì„¤ì • */
 #define MAX_HELP_ALINE     		60
 #define ERROR_PRINT_HANDLE      "MH_ErrMess"
 
 
-/* Variable Type : º¯°æ½Ã ÁÖÀÇ¹Ù¶÷
- cmd_load.c¿¡ »óÀÀÇÏ´Â stringÀÖÀ½ */
+/* Variable Type : ë³€ê²½ì‹œ ì£¼ì˜ë°”ëŒ
+ cmd_load.cì— ìƒì‘í•˜ëŠ” stringìˆìŒ */
 
 #define VT_DECSTR   0
 #define VT_DECIMAL  1
@@ -414,24 +414,24 @@ typedef struct ixpc
 	short      src_func;
 	short      dst_proc;
 	short      dst_func;
-	short      msg_id; /* dbm_msg_t.head.msg_id = mml_msg.mag_id, mml_msgÀÇ msg_id °ªÀ» ´ëÀÔ */
-	short      cmd_id; /* dbm_msg_t.head.cmd_id = mml_msg.cmd_id, mml_msgÀÇ cmd_id °ªÀ» ´ëÀÔ */
+	short      msg_id; /* dbm_msg_t.head.msg_id = mml_msg.mag_id, mml_msgì˜ msg_id ê°’ì„ ëŒ€ì… */
+	short      cmd_id; /* dbm_msg_t.head.cmd_id = mml_msg.cmd_id, mml_msgì˜ cmd_id ê°’ì„ ëŒ€ì… */
 	short      msg_len; /* size of dbm_msg_t.data */
 	short      dummy;
 } IXPC_HEAD;
 
 typedef struct
 {
-	short   mml_err;    /* ¸í·É¾î ½ÇÇà½Ã error code¸¦ ³ªÅ¸³»´Â ÇÊµå ,  ¼º°øÀÇ °æ¿ì DBM_SUCCESS »ş¿ë */
-	/* ½ÇÆĞÀÇ °æ¿ì error_code.h ¿¡ »ç¿ë°ª Á¤ÀÇ */
-	short   cont_flag;  /* 1 : continue, 0 : end ¿©ºÎ  »ç¿ë°ª : CONTINUE, END*/
-	short   curr_cnt;   /* ÇöÀç returnµÇ´Â Åë°è¼öÁı È½¼ö */
-	/* ÇöÀç RECORDÀÇ °³¼ö */
-	short   total_cnt;  /* Åë°è¼öÁı ÃÑ È½¼ö */
-	/* ÀüÃ¼ RECORDÀÇ °³¼ö */
+	short   mml_err;    /* ëª…ë ¹ì–´ ì‹¤í–‰ì‹œ error codeë¥¼ ë‚˜íƒ€ë‚´ëŠ” í•„ë“œ ,  ì„±ê³µì˜ ê²½ìš° DBM_SUCCESS ìƒ¤ìš© */
+	/* ì‹¤íŒ¨ì˜ ê²½ìš° error_code.h ì— ì‚¬ìš©ê°’ ì •ì˜ */
+	short   cont_flag;  /* 1 : continue, 0 : end ì—¬ë¶€  ì‚¬ìš©ê°’ : CONTINUE, END*/
+	short   curr_cnt;   /* í˜„ì¬ returnë˜ëŠ” í†µê³„ìˆ˜ì§‘ íšŸìˆ˜ */
+	/* í˜„ì¬ RECORDì˜ ê°œìˆ˜ */
+	short   total_cnt;  /* í†µê³„ìˆ˜ì§‘ ì´ íšŸìˆ˜ */
+	/* ì „ì²´ RECORDì˜ ê°œìˆ˜ */
 	short   time_out;
-	short   TotPage;    /* PAGE´ÜÀ§ÀÇ ÀüÃ¼ PAGE : ÇÏ³ªÀÇ Åë°è DATA¿¡ ´ëÇÑ */
-	short   CurPage;    /* PAGE´ÜÀ§ÀÇ ÇöÀç PAGE : ÇÏ³ªÀÇ Åë°è DATA¿¡ ´ëÇÑ */
+	short   TotPage;    /* PAGEë‹¨ìœ„ì˜ ì „ì²´ PAGE : í•˜ë‚˜ì˜ í†µê³„ DATAì— ëŒ€í•œ */
+	short   CurPage;    /* PAGEë‹¨ìœ„ì˜ í˜„ì¬ PAGE : í•˜ë‚˜ì˜ í†µê³„ DATAì— ëŒ€í•œ */
 	short   StatFlag;
 } MML_COMMON;
 
@@ -498,17 +498,17 @@ typedef struct
 	char            time_stamp[MAX_TMR_REC][40];
 	char            user_name[MAX_TMR_REC][24];
 	short           inv_proc[MAX_TMR_REC];
-	short           time[MAX_TMR_REC];          /*** 0ÀÌ»óÀÌ¸é ÇöÀç ½ÇÇàÁßÀÎ ¸í>·É ***/
+	short           time[MAX_TMR_REC];          /*** 0ì´ìƒì´ë©´ í˜„ì¬ ì‹¤í–‰ì¤‘ì¸ ëª…>ë ¹ ***/
 	char            type[MAX_TMR_REC][12];
 	short           period[MAX_TMR_REC];
-	short           stat_TOTAL[MAX_TMR_REC];    /*** Åë°è °á°úÀÇ ÀüÃ¼ ÀÚ·áÀÇ °³>¼ö ***/
-	short           stat_TOT_NUM[MAX_TMR_REC];  /*** Åë°è °á°úÀÇ º¯ÇÏÁö ¾Ê´Â Àü>Ã¼ °³¼ö ***/
-	short           stat_tot_cnt[MAX_TMR_REC];  /*** ÇÏ³ªÀÇ Åë°è ÀÚ·á¿¡ ´ëÇÑ Àü>Ã¼ RECORD ¼ö ***/
-	short           stat_cur_cnt[MAX_TMR_REC];  /*** ÇÏ³ªÀÇ Åë°è ÀÚ·á¿¡ ´ëÇÑ Çö>Àç RECORD ¼ö ***/
-	short           stat_tot_page[MAX_TMR_REC]; /*** ÇÏ³ªÀÇ Åë°è ÀÚ·á¿¡ ´ëÇÑ Àü>Ã¼ PAGE ¼ö ***/
-	short           stat_cur_page[MAX_TMR_REC]; /*** ÇÏ³ªÀÇ Åë°è ÀÚ·á¿¡ ´ëÇÑ Çö>Àç PAGE ¼ö ***/
+	short           stat_TOTAL[MAX_TMR_REC];    /*** í†µê³„ ê²°ê³¼ì˜ ì „ì²´ ìë£Œì˜ ê°œ>ìˆ˜ ***/
+	short           stat_TOT_NUM[MAX_TMR_REC];  /*** í†µê³„ ê²°ê³¼ì˜ ë³€í•˜ì§€ ì•ŠëŠ” ì „>ì²´ ê°œìˆ˜ ***/
+	short           stat_tot_cnt[MAX_TMR_REC];  /*** í•˜ë‚˜ì˜ í†µê³„ ìë£Œì— ëŒ€í•œ ì „>ì²´ RECORD ìˆ˜ ***/
+	short           stat_cur_cnt[MAX_TMR_REC];  /*** í•˜ë‚˜ì˜ í†µê³„ ìë£Œì— ëŒ€í•œ í˜„>ì¬ RECORD ìˆ˜ ***/
+	short           stat_tot_page[MAX_TMR_REC]; /*** í•˜ë‚˜ì˜ í†µê³„ ìë£Œì— ëŒ€í•œ ì „>ì²´ PAGE ìˆ˜ ***/
+	short           stat_cur_page[MAX_TMR_REC]; /*** í•˜ë‚˜ì˜ í†µê³„ ìë£Œì— ëŒ€í•œ í˜„>ì¬ PAGE ìˆ˜ ***/
 	unsigned short  usmmlid[MAX_TMR_REC];
-	short           blockcode[MAX_TMR_REC];     /*** ÇØ´ç ÇÁ·Î¼¼½ºÀÇ Message Queue ID ***/
+	short           blockcode[MAX_TMR_REC];     /*** í•´ë‹¹ í”„ë¡œì„¸ìŠ¤ì˜ Message Queue ID ***/
 	unsigned char   ucbinflag[MAX_TMR_REC];
 	time_t          stat_check_time[MAX_TMR_REC];   /*** STAT CHECK TIME ***/
 	mml_msg         stMML_MSG[MAX_TMR_REC];
@@ -556,7 +556,7 @@ typedef struct
 	int  mcode;
 	int  block;
 	void (*mmc_res) (char *, void *, short *, short * );
-	char *msg_header;   /* MMC  RESULTÀÇ HEAD PRINT¿ë */
+	char *msg_header;   /* MMC  RESULTì˜ HEAD PRINTìš© */
 	char *com_name;
 } LIB_TBL;
 
@@ -588,10 +588,10 @@ typedef struct
 	char    *help[3];       /* HELP string */
 	int     code;           /* Command index */
 	int     dest;           /* Block Name */
-	char    access;         /* Á¢±Ù ÄÚµå : »ç¿ëÀÚ µî±Ş */
-	char    p_man;          /* ÇÊ¼ö ÆÄ¶ó¸ŞÅÍ °¹¼ö */
-	char    p_opt;          /* »ç¿ëÇÏÁö ¾ÊÀ½; num_para - p_man */
-	char    num_para;       /* ÆÄ¶ó¸ŞÅÍ ÀüÃ¼ °¹¼ö */
+	char    access;         /* ì ‘ê·¼ ì½”ë“œ : ì‚¬ìš©ì ë“±ê¸‰ */
+	char    p_man;          /* í•„ìˆ˜ íŒŒë¼ë©”í„° ê°¯ìˆ˜ */
+	char    p_opt;          /* ì‚¬ìš©í•˜ì§€ ì•ŠìŒ; num_para - p_man */
+	char    num_para;       /* íŒŒë¼ë©”í„° ì „ì²´ ê°¯ìˆ˜ */
 	PARA_CONT para[MAX_PAR_IN_COM];
 } COM_TBL;
 
@@ -599,7 +599,7 @@ typedef struct
 typedef struct
 {
 	char        *para_name;
-	char        *para_help;     /* Parameter¿¡ ´ëÇÑ »ó¼¼ ¼³¸í */
+	char        *para_help;     /* Parameterì— ëŒ€í•œ ìƒì„¸ ì„¤ëª… */
 	long        code;
 } PARA_TBL;
 

@@ -125,7 +125,7 @@ void CServer::CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg)
 
 void CServer::operate( rnSocketIOService* service )
 {
-	// »õ·Î¿î Å¬¶óÀÌ¾ğÆ®°¡ acceptµÇ¾úÀ»¶§ Ã³¸®ÇÏ´Â ºÎºĞ
+	// ìƒˆë¡œìš´ í´ë¼ì´ì–¸íŠ¸ê°€ acceptë˜ì—ˆì„ë•Œ ì²˜ë¦¬í•˜ëŠ” ë¶€ë¶„
 	CDescriptor* newd = CDescriptor::create(service);
 	service->SetUserData((void *)newd);
 
@@ -150,7 +150,7 @@ void CServer::ProcTimeout(CMsgListNode* msgNode)
 	LOG_INFO("TIMEOUT server : %d : sub : %d : messege : %d : subtype %d",
 			 server, subno, msg->m_mtype, subtype);
 
-	// ¿äÃ»Çß´ø ¼­¹ö Ã£±â
+	// ìš”ì²­í–ˆë˜ ì„œë²„ ì°¾ê¸°
 	CDescriptor* d;
 	CDescriptor* dNext = m_desclist;
 
@@ -164,7 +164,7 @@ void CServer::ProcTimeout(CMsgListNode* msgNode)
 
 	if (d)
 	{
-		// ¸Ş½ÃÁö¿¡ µû¶ó ´Ù¸¥ Ã³¸®
+		// ë©”ì‹œì§€ì— ë”°ë¼ ë‹¤ë¥¸ ì²˜ë¦¬
 		switch (subtype)
 		{
 		case MSG_MSGR_WHISPER_REQ:
@@ -192,13 +192,13 @@ void CServer::ProcTimeout(CMsgListNode* msgNode)
 		}
 	}
 
-	// ³ëµå Áö¿ì±â
+	// ë…¸ë“œ ì§€ìš°ê¸°
 	REMOVE_FROM_BILIST(msgNode, m_msgList.m_head, m_pPrev, m_pNext);
 	delete msgNode;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ÀÌ ÇÔ¼ö´Â ¸Å 1ÃÊ¸¶´Ù È£ÃâµÊ
+// ì´ í•¨ìˆ˜ëŠ” ë§¤ 1ì´ˆë§ˆë‹¤ í˜¸ì¶œë¨
 void ClearMessageListTimer::operate( rnSocketIOService* service )
 {
 	CMsgListNode* nowNode = NULL;

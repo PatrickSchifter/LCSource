@@ -5,7 +5,7 @@
 #include "WarCastle.h"
 #include "CmdMsg.h"
 
-// ProcAttack¿¡¼­ ¹Ì½º¸¦ Á¦¿ÜÇÑ °ø°İ µ¥¹ÌÁö Àû¿ë ÀÌÈÄ Ã³¸®µÇ´Â ³»¿ë
+// ProcAttackì—ì„œ ë¯¸ìŠ¤ë¥¼ ì œì™¸í•œ ê³µê²© ë°ë¯¸ì§€ ì ìš© ì´í›„ ì²˜ë¦¬ë˜ëŠ” ë‚´ìš©
 void ProcAfterHit(CCharacter* of, CCharacter* df)
 {
 	CPC*		opc				= NULL;
@@ -91,20 +91,20 @@ void ProcAfterHit(CCharacter* of, CCharacter* df)
 		return ;
 	}
 
-	// NPC°¡ °ø°İÀ» ÇØµµ ÀüÅõ »óÅÂ¸¦ ÀúÀå
+	// NPCê°€ ê³µê²©ì„ í•´ë„ ì „íˆ¬ ìƒíƒœë¥¼ ì €ì¥
 	if (onpc)
 		onpc->m_nRaidMoveTime = gserver->m_pulse + GetRandom(PULSE_MONSTER_RAID_MOVE * 9 / 10, PULSE_MONSTER_RAID_MOVE * 11 / 10);
 
-	// NPC°¡ ¸Â¾Æµµ ÀúÀå
+	// NPCê°€ ë§ì•„ë„ ì €ì¥
 	if (dnpc)
 	{
 		dnpc->m_nRaidMoveTime = gserver->m_pulse + GetRandom(PULSE_MONSTER_RAID_MOVE * 9 / 10, PULSE_MONSTER_RAID_MOVE * 11 / 10);
 
-		// Ã¼·ÂÀÌ 20% ÀÌÇÏ·Î ¶³¾îÁö¸é ¼ÒÈ¯
-		if ( dnpc->m_proto->m_aileader_idx > 0		// ¼ÒÈ¯ ¼³Á¤ÀÌ ÀÔ·Â µÇ¾î ÀÖ°í
+		// ì²´ë ¥ì´ 20% ì´í•˜ë¡œ ë–¨ì–´ì§€ë©´ ì†Œí™˜
+		if ( dnpc->m_proto->m_aileader_idx > 0		// ì†Œí™˜ ì„¤ì •ì´ ì…ë ¥ ë˜ì–´ ìˆê³ 
 				&& dnpc->m_proto->m_aileader_count > 0
 				&& dnpc->m_hp <= ( dnpc->m_maxHP / 100 * dnpc->m_proto->m_ai_summonHp )
-				&& !dnpc->m_bRaidNPCSummon)					// ÇöÀç ¼ÒÈ¯ÇÏÁö ¾ÊÀº »óÅÂ
+				&& !dnpc->m_bRaidNPCSummon)					// í˜„ì¬ ì†Œí™˜í•˜ì§€ ì•Šì€ ìƒíƒœ
 		{
 			for(int i = 0; i < dnpc->m_proto->m_aileader_count; i++)
 			{
@@ -167,7 +167,7 @@ void ProcAfterHit(CCharacter* of, CCharacter* df)
 		}
 	}
 
-	// ºí·¯µå Æ÷ÀÎÆ® Àû¿ë °Ë»ç, ¾×¼¼¼­¸® ³»±¸ °¨¼Ò °Ë»ç
+	// ë¸”ëŸ¬ë“œ í¬ì¸íŠ¸ ì ìš© ê²€ì‚¬, ì•¡ì„¸ì„œë¦¬ ë‚´êµ¬ ê°ì†Œ ê²€ì‚¬
 	int nBloodPoint = 0;
 	bool bApplyAccessory = false;
 	if (IS_PC(of) && IS_NPC(df))
@@ -185,7 +185,7 @@ void ProcAfterHit(CCharacter* of, CCharacter* df)
 			nBloodPoint = DEFENSE_BLOOD_POINT;
 	}
 
-	// ºí·¯µå Æ÷ÀÎÆ® Àû¿ë
+	// ë¸”ëŸ¬ë“œ í¬ì¸íŠ¸ ì ìš©
 	if (nBloodPoint)
 	{
 		tpc->m_bloodPoint -= nBloodPoint;
@@ -196,7 +196,7 @@ void ProcAfterHit(CCharacter* of, CCharacter* df)
 		}
 	}
 
-	// NPC ¸®Á¨ ÀÌÈÄ °æÁ÷ »óÅÂ ÇØÁ¦
+	// NPC ë¦¬ì   ì´í›„ ê²½ì§ ìƒíƒœ í•´ì œ
 	if (dnpc && dnpc->m_postregendelay)
 	{
 		dnpc->m_postregendelay = 0;

@@ -171,12 +171,12 @@ void CPacketTime::ChkPackTime(int index,char *pLogTitle)
 			starttime.tv_sec = startSec;
 			starttime.tv_usec = startSec;
 
-			//½Ã°£ Â÷ÀÌ °è»ê(¼Ò¿ä½Ã°£)
+			//ì‹œê°„ ì°¨ì´ ê³„ì‚°(ì†Œìš”ì‹œê°„)
 			struct timeval  process_time;
 
 			TimeDiff(&process_time, &starttime, &endtime);
 
-			//·Î±× ±â·Ï
+			//ë¡œê·¸ ê¸°ë¡
 			LogFile(index,pLogTitle,&process_time);
 
 			//Del(index);

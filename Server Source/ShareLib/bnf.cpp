@@ -243,13 +243,13 @@ void bnf::Run( int worker_thread_count )
 
 	io_service_.stop();
 
-	// session process Á¾·áRun
+	// session process ì¢…ë£ŒRun
 	PutSessionEvent( SessionEvent::ON_EXIT, NULL );
 	session_process.join();
 
 	LOG_INFO( "bnf - session process thread end." );
 
-	// remove session Á¾·á
+	// remove session ì¢…ë£Œ
 	remove_session_queue_.push_signal(SessionBase::INVALID_SESSION_HANDLE);
 	remove_session.join();
 
@@ -337,7 +337,7 @@ void bnf::Stop()
 
 	PutSessionEvent( SessionEvent::ON_EXIT, NULL );
 
-	// listen Á¾·á
+	// listen ì¢…ë£Œ
 	{
 		boost::recursive_mutex::scoped_lock lock1( tcp_listen_session_list_.getmutex() );
 		BOOST_FOREACH(map_session_list_t::value_type& p, tcp_listen_session_list_)
@@ -381,7 +381,7 @@ void bnf::Stop()
 		}
 	}
 
-	// io service thread Á¾·á
+	// io service thread ì¢…ë£Œ
 //	io_service_work_.reset();
 	io_service_.stop();
 }

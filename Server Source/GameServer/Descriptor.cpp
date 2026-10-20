@@ -14,6 +14,7 @@
 #include "../ShareLib/packetType/ptype_attendance.h"
 #include "../ShareLib/packetType/ptype_old_login.h"
 #include "../ShareLib/packetType/ptype_notice.h"
+#include "../ShareLib/packetType/ptype_old_do_title.h"
 #include "DescManager.h"
 #include "Artifact_Manager.h"
 #include "Notice.h"
@@ -113,10 +114,10 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 	try
 	{
 		if (msg->m_mtype != MSG_LOGIN)
-			throw MSG_FAIL_CONNECT_SERVER;		// Àß¸øµÈ ÀÔ·Â
+			throw MSG_FAIL_CONNECT_SERVER;		// ì˜ëª»ëœ ì…ë ¥
 
 		if (PCManager::instance()->getPlayerCount() > MAX_PLAYER_LIST)
-			throw MSG_FAIL_MANY_CONNECT;		// Á¢¼Ó ¿äÃ» ÃÊ°ú
+			throw MSG_FAIL_MANY_CONNECT;		// ì ‘ì† ìš”ì²­ ì´ˆê³¼
 
 		RequestClient::LoginFromClient* packet = reinterpret_cast<RequestClient::LoginFromClient*>(msg->m_buf);
 		packet->id[MAX_ID_NAME_LENGTH] = '\0';
@@ -124,10 +125,10 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 #ifdef HANARO_EVENT
 
-#if defined (LC_USA) || defined (LC_RUS) || defined (LC_GAMIGO)// ¹Ì±¹,·¯½Ã¾Æ,°¡¹Ì°í Á¦¿Ü
+#if defined (LC_USA) || defined (LC_RUS) || defined (LC_GAMIGO)// ë¯¸êµ­,ëŸ¬ì‹œì•„,ê°€ë¯¸ê³  ì œì™¸
 		m_hanaroCode = "";
 #else // LC_USA
-		// ÇÏ³ª·ÎÆ÷½º-HF, ºê·Îµå¹êµå-SK
+		// í•˜ë‚˜ë¡œí¬ìŠ¤-HF, ë¸Œë¡œë“œë°´ë“œ-SK
 		CLCString proSite(4);
 		RefMsg(msg) >> proSite;
 		m_hanaroCode = proSite;
@@ -145,14 +146,14 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 #endif
 				<< end;
 
-		// ÀÚÃ¼(GameServer) Áßº¹ ·Î±×ÀÎ °Ë»ç
+		// ìì²´(GameServer) ì¤‘ë³µ ë¡œê·¸ì¸ ê²€ì‚¬
 		if (DescManager::instance()->getDescById((const char *)packet->id))
 		{
 			LOG_ERROR("duplicate login. id[%s] ip[%s]", (const char *)packet->id, this->service_->ip().c_str());
 			throw MSG_FAIL_ALREADY_CONNECT;
 		}
 
-		// IP °Ë»ç¿ë
+		// IP ê²€ì‚¬ìš©
 		CLCString temp(50);
 		CLCString blockBand(50);
 
@@ -169,7 +170,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 			for(int j = 0; j < blockCount; j++)
 			{
-				// Å¬¶óÀÌ¾ğÆ® ip¿Í ºñ±³
+				// í´ë¼ì´ì–¸íŠ¸ ipì™€ ë¹„êµ
 
 				temp.Format("IP%d", j);
 
@@ -193,7 +194,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 			for(int j = 0; j < blockCount; j++)
 			{
-				// Å¬¶óÀÌ¾ğÆ® ip¿Í ºñ±³
+				// í´ë¼ì´ì–¸íŠ¸ ipì™€ ë¹„êµ
 
 				temp.Format("Band%d", j);
 				blockBand = gserver->m_config.Find("Block Band", temp);
@@ -286,7 +287,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 			this->m_playmode = MSG_LOGIN_RE;
 
 		if (strinc(packet->id, "'"))
-			throw MSG_FAIL_WRONG_CHAR;			// ¾ÆÀÌµğ¿¡ ' µé¾î°¨
+			throw MSG_FAIL_WRONG_CHAR;			// ì•„ì´ë””ì— ' ë“¤ì–´ê°
 
 		int len = strlen(packet->id);
 		if (len < 3 || len > MAX_ID_NAME_LENGTH)
@@ -295,7 +296,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		m_idname = packet->id;
 
 		if (strinc(packet->pw, "'"))
-			throw MSG_FAIL_WRONG_PASSWORD;		// ¾ÏÈ£¿¡ ' µé¾î°¨
+			throw MSG_FAIL_WRONG_PASSWORD;		// ì•”í˜¸ì— ' ë“¤ì–´ê°
 
 		len = strlen(packet->pw);
 		if (len < 4 || len > MAX_PWD_LENGTH)
@@ -303,7 +304,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 		m_passwd = packet->pw;
 
-// 050226 : bs : ÀÏ´Ü ±¹³»¿Í Áß±¹¸¸ ¾ÆÀÌÇÇ °Ë»ç
+// 050226 : bs : ì¼ë‹¨ êµ­ë‚´ì™€ ì¤‘êµ­ë§Œ ì•„ì´í”¼ ê²€ì‚¬
 #if defined(LC_KOR)
 		if (!CheckIP(getHostString()))
 		{
@@ -314,7 +315,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 			throw MSG_FAIL_LOGINSERV_NO_SERVICE;
 		}
 #endif
-// --- 050226 : bs : ÀÏ´Ü ±¹³»¿Í Áß±¹¸¸ ¾ÆÀÌÇÇ °Ë»ç
+// --- 050226 : bs : ì¼ë‹¨ êµ­ë‚´ì™€ ì¤‘êµ­ë§Œ ì•„ì´í”¼ ê²€ì‚¬
 
 #ifdef GER_LOG
 		GAMELOGGEM << init( 0, "ACCOUNT_LOGIN_SUCCESS")
@@ -337,7 +338,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 	}
 }
 
-//XX Ä³¸¯ÅÍ¼±ÅÃ 1
+//XX ìºë¦­í„°ì„ íƒ 1
 bool CDescriptor::StartGame(CNetMsg::SP& msg)
 {
 	if (this->m_pChar != NULL)
@@ -358,17 +359,17 @@ bool CDescriptor::StartGame(CNetMsg::SP& msg)
 	CGuildMember* member = gserver->m_guildlist.findmember(char_index);
 	if (member != NULL && member->guild() != NULL)
 	{
-		// ÇöÀç ÀÌ gamesever°¡ charindex¿¡ ÇØ´çÇÏ´Â Á¤º¸¸¦ °¡Áö°í ÀÖÀ¸¸é ¹Ù·Î ÁøÇà...
+		// í˜„ì¬ ì´ gameseverê°€ charindexì— í•´ë‹¹í•˜ëŠ” ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´ ë°”ë¡œ ì§„í–‰...
 		this->request_start_game_flag_ = false;
 		DBManager::instance()->PushSelectCharacter(this, char_index, member);
 	}
 	else
 	{
-		// ÇöÀç ÀÌ gameserver°¡ charindex¿¡ ÇØ´çÇÏ´Â Á¤º¸°¡ ¾ø´Ù¸é ´ÙÀ½ÀÇ µÎ°¡Áö °æ¿ìÀÓ
-		// 1. ±æµå¿øÀÌ³ª ¾ÆÁ÷ gameserver°¡ guild info¸¦ ÃëµæÇÏÁö ¸øÇÑ °æ¿ì
-		// 2. ±æµå¿øÀÌ ¾Æ´Ñ°æ¿ì
-		// ±×·¯¹Ç·Î ¸ÕÀú helper server¿¡°Ô ±æµå Á¤º¸¸¦ ¿äÃ»ÇÏ°í, µÚµû¶ó Ã³¸® ÆĞÅ¶À» º¸³»¾î
-		// ·ÎÁ÷ÀÇ ¼ø¼­¸¦ ¸ÂÃã
+		// í˜„ì¬ ì´ gameserverê°€ charindexì— í•´ë‹¹í•˜ëŠ” ì •ë³´ê°€ ì—†ë‹¤ë©´ ë‹¤ìŒì˜ ë‘ê°€ì§€ ê²½ìš°ì„
+		// 1. ê¸¸ë“œì›ì´ë‚˜ ì•„ì§ gameserverê°€ guild infoë¥¼ ì·¨ë“í•˜ì§€ ëª»í•œ ê²½ìš°
+		// 2. ê¸¸ë“œì›ì´ ì•„ë‹Œê²½ìš°
+		// ê·¸ëŸ¬ë¯€ë¡œ ë¨¼ì € helper serverì—ê²Œ ê¸¸ë“œ ì •ë³´ë¥¼ ìš”ì²­í•˜ê³ , ë’¤ë”°ë¼ ì²˜ë¦¬ íŒ¨í‚·ì„ ë³´ë‚´ì–´
+		// ë¡œì§ì˜ ìˆœì„œë¥¼ ë§ì¶¤
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildLoadReq(rmsg, this->m_idname, char_index, gserver->m_subno, 0);
@@ -389,7 +390,7 @@ bool CDescriptor::StartGame(CNetMsg::SP& msg)
 	return true;
 }
 
-//XX Ä³¸¯ÅÍ»ı¼º 1
+//XX ìºë¦­í„°ìƒì„± 1
 bool CDescriptor::CharNew(CNetMsg::SP& msg)
 {
 	msg->MoveFirst();
@@ -408,7 +409,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 
 	if( job == JOB_NIGHTSHADOW)
 	{
-		// ³ªÀÌÆ® ½¦µµ¿ì°¡ ÀÌ¹Ì ÀÖÀ» ¶§
+		// ë‚˜ì´íŠ¸ ì‰ë„ìš°ê°€ ì´ë¯¸ ìˆì„ ë•Œ
 		if( m_bNotCreateNightShadow )
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -416,7 +417,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 			SEND_Q(rmsg, this);
 			return false;
 		}
-		// 100lv Ä³¸¯ÅÍ°¡ ¾ø°í NSCard »ç¿ë ¾ÈÇßÀ» ¶§
+		// 100lv ìºë¦­í„°ê°€ ì—†ê³  NSCard ì‚¬ìš© ì•ˆí–ˆì„ ë•Œ
 		if(!m_bCreate90Lv && !m_bIsNSCreateCardUse)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -426,7 +427,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 		}
 	}
 
-	// ÀÌ¸§ÀÌ 0 º¸´Ù ÀÛÀ¸¸é ¾ÈµÈ´Ù.
+	// ì´ë¦„ì´ 0 ë³´ë‹¤ ì‘ìœ¼ë©´ ì•ˆëœë‹¤.
 	if (strlen(name) < 4 || strlen(name) > 16)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -434,7 +435,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 		SEND_Q(rmsg, this);
 		return false;
 	}
-	// ÀÌ¸§¿¡ ' °¡ µé¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+	// ì´ë¦„ì— ' ê°€ ë“¤ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
 	if (strinc(name, "'") || strinc(name, " "))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -452,7 +453,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 	}
 
 #ifdef LC_RUS
-	// [selo: 101115] ·¯½Ã¾Æ´Â ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ µé¾î°¡¸é ¾ÈµÈ´Ù.
+	// [selo: 101115] ëŸ¬ì‹œì•„ëŠ” ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ì ë“¤ì–´ê°€ë©´ ì•ˆëœë‹¤.
 	if( CheckNoRussianCharacter(name) )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -462,8 +463,8 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 	}
 #endif // LC_RUS
 
-	// ÀÓ½ÃÀûÀ¸·Î Ä³¸¯ÅÍ¸¦ »ı¼ºÇÑ´Ù.
-	// ¾Æ·¡ ±¸¹®Áß¿¡ LevelUp()ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ±â À§ÇÔ
+	// ì„ì‹œì ìœ¼ë¡œ ìºë¦­í„°ë¥¼ ìƒì„±í•œë‹¤.
+	// ì•„ë˜ êµ¬ë¬¸ì¤‘ì— LevelUp()í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ê¸° ìœ„í•¨
 	boost::scoped_ptr<CPC> t_pChar(new CPC);
 
 	t_pChar->m_name = name;
@@ -471,7 +472,7 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 	t_pChar->m_nick = name;
 #endif
 
-	// À¯È¿¼º °Ë»ç
+	// ìœ íš¨ì„± ê²€ì‚¬
 	int haircount = 0;
 	int facecount = 0;
 	switch (job)
@@ -547,8 +548,8 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 	t_pChar->LevelUp(false);
 
 	//////////////////////////////////////////////////////////////////////////
-	// DBProcess·Î Àü´ŞÇÏ±â À§ÇÑ Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
-	// cinfoÀÇ ¼Ò¸êÀº class DBProcess¿¡¼­ Ã³¸®ÇÔ (boost::scoped_ptr<>)
+	// DBProcessë¡œ ì „ë‹¬í•˜ê¸° ìœ„í•œ ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+	// cinfoì˜ ì†Œë©¸ì€ class DBProcessì—ì„œ ì²˜ë¦¬í•¨ (boost::scoped_ptr<>)
 	CreateCharacterInfo* cinfo = new CreateCharacterInfo;
 	cinfo->m_index = this->m_index;
 	cinfo->m_tExtendCharacterSlotTime = this->getExtendCharacterSlotTime();
@@ -578,8 +579,8 @@ bool CDescriptor::CharNew(CNetMsg::SP& msg)
 	return true;
 }
 
-//XX Ä³¸¯ÅÍ»èÁ¦ 1
-//XX Ä³¸¯ÅÍº¹¿ø 1
+//XX ìºë¦­í„°ì‚­ì œ 1
+//XX ìºë¦­í„°ë³µì› 1
 bool CDescriptor::CharDel(CNetMsg::SP& msg)
 {
 	msg->MoveFirst();
@@ -650,12 +651,12 @@ void CDescriptor::SetHackCheckPulse()
 
 bool CDescriptor::CheckHackPulse(int clientPulse)
 {
-	// ¼­¹ö Â÷ÀÌ¿Í Å¬¶óÀÌ¾ğÆ® Â÷ÀÌ°¡ 15ÃÊ ÀÌ»óÀÌ°Å³ª
-	// Å¬¶óÀÌ¾ğÆ®ÀÇ Â÷ÀÌ°¡ ÀÌÀü Å¬¶óÀÌ¾ğÆ®ÀÇ Â÷ÀÌ¿Í 30ÃÊ°¡ °æ°ú ¾ÈµÇ¸é(ÆŞ½º¸¦ ÀÚÁÖ º¸³½°æ¿ì)
+	// ì„œë²„ ì°¨ì´ì™€ í´ë¼ì´ì–¸íŠ¸ ì°¨ì´ê°€ 15ì´ˆ ì´ìƒì´ê±°ë‚˜
+	// í´ë¼ì´ì–¸íŠ¸ì˜ ì°¨ì´ê°€ ì´ì „ í´ë¼ì´ì–¸íŠ¸ì˜ ì°¨ì´ì™€ 30ì´ˆê°€ ê²½ê³¼ ì•ˆë˜ë©´(í„ìŠ¤ë¥¼ ìì£¼ ë³´ë‚¸ê²½ìš°)
 
 	m_hackCheckPulse = gserver->m_pulse;
 
-	// Ã³À½ ¼öÇàµÇ°Å³ª, 1½Ã°£ °æ°ú½Ã °ª °»½Å
+	// ì²˜ìŒ ìˆ˜í–‰ë˜ê±°ë‚˜, 1ì‹œê°„ ê²½ê³¼ì‹œ ê°’ ê°±ì‹ 
 	if (m_hackServerPulse < 1 || gserver->m_pulse - m_hackServerPulse > PULSE_HACK_PULSE_REFRESH)
 	{
 		m_hackServerPulse = gserver->m_pulse;
@@ -669,7 +670,7 @@ bool CDescriptor::CheckHackPulse(int clientPulse)
 
 	bool bHack = false;
 
-	// ÇÙ°Ë»ç : ¼­¹ö-Å¬¶óÀÌ¾ğÆ® ½Ã°£ Â÷ÀÌ °Ë»ç
+	// í•µê²€ì‚¬ : ì„œë²„-í´ë¼ì´ì–¸íŠ¸ ì‹œê°„ ì°¨ì´ ê²€ì‚¬
 	if (csdiff > PULSE_HACK_PULSE_THRESHOLD)
 	{
 		if (m_pChar)
@@ -769,9 +770,21 @@ void CDescriptor::setExtendCharacterSlotTime(const time_t _time)
 
 void CDescriptor::operate( rnSocketIOService* service )
 {
-	if (static_cast<rnSocketIOServiceTcp*>(service)->isCallCloseFunction())
+	rnSocketIOServiceTcp* pServiceTcp =  dynamic_cast<rnSocketIOServiceTcp*>(service);
+
 	{
-		return;
+		if (pServiceTcp->isCallCloseFunction())
+		{
+			return;
+		}
+
+		if (pServiceTcp->get_rqueue_size() > 100)
+		{
+			LOG_ERROR("HACKING? Too many read queue userIndex[%d] ", this->m_index);
+			this->Close("Too many read queue.");
+
+			return;
+		}
 	}
 
 	CNetMsg::SP msg(service->GetMessage());
@@ -800,12 +813,12 @@ void CDescriptor::operate( rnSocketIOService* service )
 		}
 		break;
 
-	//XX ·Î±×ÀÎ 1
-	case CON_GET_LOGIN: // Á¢¼Ó ÈÄ ÃÖÃÊ »óÅÂ
+	//XX ë¡œê·¸ì¸ 1
+	case CON_GET_LOGIN: // ì ‘ì† í›„ ìµœì´ˆ ìƒíƒœ
 		{
 			if (gserver->isRunConnector() == false)
 			{
-				// Connect Server¿Í ¿¬µ¿µÇÁö ¸øÇÑ »óÅÂ¿¡¼­´Â ¾î¶°ÇÑ ·Î±×ÀÎµµ Çã¿ëÇÏÁö ¾ÊÀ½
+				// Connect Serverì™€ ì—°ë™ë˜ì§€ ëª»í•œ ìƒíƒœì—ì„œëŠ” ì–´ë– í•œ ë¡œê·¸ì¸ë„ í—ˆìš©í•˜ì§€ ì•ŠìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				FailMsg(rmsg, MSG_FAIL_CONNECT_SERVER);
 				SEND_Q(rmsg, this);
@@ -821,12 +834,12 @@ void CDescriptor::operate( rnSocketIOService* service )
 				ConnLoginMsg(rmsg, this);
 				SEND_Q(rmsg, gserver->m_connector);
 
-				STATE(this) = CON_WAIT_IDEN_MSG; // Á¢¼Ó ¿äÃ» ´ë±â ¸ğµå·Î ÀüÈ¯
+				STATE(this) = CON_WAIT_IDEN_MSG; // ì ‘ì† ìš”ì²­ ëŒ€ê¸° ëª¨ë“œë¡œ ì „í™˜
 				DescManager::instance()->insert(this);
 			}
 			else
 			{
-				this->Close("login error"); // ·Î±×ÀÎ ½Ã ¿¡·¯°¡ ¹ß»ıÇÏ¿© Á¾·á Ã³¸®¸¦ ÇÑ´Ù.
+				this->Close("login error"); // ë¡œê·¸ì¸ ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì—¬ ì¢…ë£Œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
 				return;
 			}
 		}
@@ -852,7 +865,7 @@ void CDescriptor::operate( rnSocketIOService* service )
 		}
 		break;
 
-	case CON_WAIT_IDEN_MSG: // Connect server¿¡°Ô Á¢¼Ó ¿äÃ»À» ÇÑ »óÅÂÀÌ¹Ç·Î Å¬¶óÀÌ¾ğÆ®´Â ¾î¶°ÇÑ ÆĞÅ¶µµ º¸³»¸é ¾ÈµÊ
+	case CON_WAIT_IDEN_MSG: // Connect serverì—ê²Œ ì ‘ì† ìš”ì²­ì„ í•œ ìƒíƒœì´ë¯€ë¡œ í´ë¼ì´ì–¸íŠ¸ëŠ” ì–´ë– í•œ íŒ¨í‚·ë„ ë³´ë‚´ë©´ ì•ˆë¨
 		{
 			LOG_ERROR("Invalid packet. type[%d] / now is waiting login. user_index[%d]", msg->m_mtype, this->m_index);
 			this->Close("Invalid packet. now is waiting login");
@@ -860,10 +873,10 @@ void CDescriptor::operate( rnSocketIOService* service )
 		}
 		break;
 
-	case CON_GET_IDEN_MSG: // Connect server·Î ºÎÅÍ ÀÎÁõÀÌ µÈ »óÅÂ
+	case CON_GET_IDEN_MSG: // Connect serverë¡œ ë¶€í„° ì¸ì¦ì´ ëœ ìƒíƒœ
 		{
-			// Å¬¶óÀÌ¾ğÆ®´Â Ä³¸¯ÅÍ ¼±ÅÃÃ¢
-			// ÀÌ°÷¿¡¼­ Ä³¸¯ÅÍ »ı¼º/»èÁ¦/º¹¿øµîÀÇ Ã³¸®¸¦ ÁøÇàÇÔ
+			// í´ë¼ì´ì–¸íŠ¸ëŠ” ìºë¦­í„° ì„ íƒì°½
+			// ì´ê³³ì—ì„œ ìºë¦­í„° ìƒì„±/ì‚­ì œ/ë³µì›ë“±ì˜ ì²˜ë¦¬ë¥¼ ì§„í–‰í•¨
 			msg->MoveFirst();
 			unsigned char subtype = 0;
 			RefMsg(msg) >> subtype;
@@ -911,7 +924,7 @@ void CDescriptor::operate( rnSocketIOService* service )
 
 			case MSG_START_GAME:
 				{
-					// DB thread¿¡¼­ µ¥ÀÌÅÍ¸¦ ´Ù ÀĞÁö ¾ÊÀº »óÅÂ¿¡¼­ Å¬¶óÀÌ¾ğÆ®°¡ ÆĞÅ¶À» º¸³¾¶§¸¦ ´ëºñÇÔ
+					// DB threadì—ì„œ ë°ì´í„°ë¥¼ ë‹¤ ì½ì§€ ì•Šì€ ìƒíƒœì—ì„œ í´ë¼ì´ì–¸íŠ¸ê°€ íŒ¨í‚·ì„ ë³´ë‚¼ë•Œë¥¼ ëŒ€ë¹„í•¨
 					this->request_start_game_flag_ = true;
 
 					if (this->m_pChar != NULL)
@@ -936,9 +949,9 @@ void CDescriptor::operate( rnSocketIOService* service )
 
 	case CON_GET_DUMMY:
 		{
-			// ÀÌ »óÅÂ´Â Å¬¶óÀÌ¾ğÆ®°¡ Ä³¸¯ÅÍ ¼±ÅÃÃ¢À¸·Î µ¹¾Æ°¥¶§ ¹ß»ıÇÔ
-			// ÀÌÀ¯´Â ¹öÆÛ¸µ µÇ¾îÀÖ´Â ÀÏ¹İ ÆĞÅ¶À» Ã³¸®ÇÏ±â À§ÇÔ
-			// ÀÌ ÀÛ¾÷À» ÇÏÁö ¾ÊÀ¸¸é ¼­¹ö´Â Àß¸øµÈ ÆĞÅ¶À¸·Î ÆÇÁ¤ÇÏ¿© Å¬¶óÀÌ¾ğÆ®¸¦ Á¾·áÇÏ°ÔµÊ
+			// ì´ ìƒíƒœëŠ” í´ë¼ì´ì–¸íŠ¸ê°€ ìºë¦­í„° ì„ íƒì°½ìœ¼ë¡œ ëŒì•„ê°ˆë•Œ ë°œìƒí•¨
+			// ì´ìœ ëŠ” ë²„í¼ë§ ë˜ì–´ìˆëŠ” ì¼ë°˜ íŒ¨í‚·ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•¨
+			// ì´ ì‘ì—…ì„ í•˜ì§€ ì•Šìœ¼ë©´ ì„œë²„ëŠ” ì˜ëª»ëœ íŒ¨í‚·ìœ¼ë¡œ íŒì •í•˜ì—¬ í´ë¼ì´ì–¸íŠ¸ë¥¼ ì¢…ë£Œí•˜ê²Œë¨
 
 			msg->MoveFirst();
 
@@ -978,7 +991,7 @@ void CDescriptor::onClose( rnSocketIOService* service )
 
 void CDescriptor::Close( std::string errmsg )
 {
-	STATE(this) = CON_DISCONNECT;		// descÀÇ »óÅÂ¸¦ º¯°æÇÏ¿© ServerTimerPerSecond::operate()¿¡¼­ÀÇ ÀÛµ¿À» ÇÏÁö ¸øÇÏµµ·Ï ÇÔ
+	STATE(this) = CON_DISCONNECT;		// descì˜ ìƒíƒœë¥¼ ë³€ê²½í•˜ì—¬ ServerTimerPerSecond::operate()ì—ì„œì˜ ì‘ë™ì„ í•˜ì§€ ëª»í•˜ë„ë¡ í•¨
 	this->service_->Close(errmsg);
 }
 
@@ -1000,7 +1013,7 @@ void CDescriptor::sendData_StartAndMoveZone()
 
 	this->m_pChar->m_TimerItem.sendListToClient();
 	this->m_pChar->m_petStashManager.SendPetStashList();
-	DBManager::instance()->PushExpressExist(this, EXPRESS_SEND_TYPE_LOGIN);	// Ã¢°íNPC¿¡°Ô ¾ÆÀÌÅÛ(¶Ç´Â µ·)ÀÌ ÀÖ´ÂÁö È®ÀÎÇÔ
+	DBManager::instance()->PushExpressExist(this, EXPRESS_SEND_TYPE_LOGIN);	// ì°½ê³ NPCì—ê²Œ ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì´ ìˆëŠ”ì§€ í™•ì¸í•¨
 	DBManager::instance()->pushSendAnyInfoAfterLogin(this);
 
 	GAMELOG << init("CHAR_LOAD", this->m_idname)
@@ -1019,14 +1032,14 @@ void CDescriptor::sendData_StartAndMoveZone()
 			<< end;
 
 	{
-		// ¼ºÁÖ Á¤º¸ Àü¼Û
+		// ì„±ì£¼ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleOwnerInfoMsg(rmsg);
 		SEND_Q(rmsg, this);
 	}
 
 	{
-		// ÄÁ³ØÅÍ¿¡ Á¤È®ÇÑ Á¸ ¹øÈ£¸¦ ¼³Á¤ÇÏ°í ÇÃ·¹ÀÌ »óÅÂ¸¦ playingÀ¸·Î ¼³Á¤ÇÑ´Ù
+		// ì»¨ë„¥í„°ì— ì •í™•í•œ ì¡´ ë²ˆí˜¸ë¥¼ ì„¤ì •í•˜ê³  í”Œë ˆì´ ìƒíƒœë¥¼ playingìœ¼ë¡œ ì„¤ì •í•œë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnPlayingMsg(rmsg, this, MSG_LOGIN_NEW);
 		SEND_Q(rmsg, gserver->m_connector);
@@ -1034,7 +1047,7 @@ void CDescriptor::sendData_StartAndMoveZone()
 
 #ifdef STASH_PASSWORD
 	{
-		// Ã¢°í ÆĞ½º¿öµå À¯¹« Àü´Ş
+		// ì°½ê³  íŒ¨ìŠ¤ì›Œë“œ ìœ ë¬´ ì „ë‹¬
 		unsigned char flag = (this->m_pChar->m_stash_password.empty()) ? 0 : 1;
 		CNetMsg::SP rmsg(new CNetMsg);
 		UpdateClient::makeStashPasswordFlag(rmsg, flag);
@@ -1062,21 +1075,21 @@ void CDescriptor::sendData_StartAndMoveZone()
 		CSkill* skill = gserver->m_skillProtoList.Create(IMMOTAL_BUF);
 		ApplySkill(m_pChar, m_pChar, skill, -1, bapply);
 
-		//¹«ºùÇÏ±âÀü »óÅÂ false·Î
+		//ë¬´ë¹™í•˜ê¸°ì „ ìƒíƒœ falseë¡œ
 		m_pChar->m_bFirstDoIt = false;
-		//*¹«Àû ¹öÇÁ
+		//*ë¬´ì  ë²„í”„
 	}
 
 	if(m_pChar->getSyndicateType() != 0)
 	{
-		//°á»ç´ë Á¤º¸¸¦ º¸³»ÁØ´Ù.
+		//ê²°ì‚¬ëŒ€ ì •ë³´ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 		m_pChar->m_syndicateManager.send();
 	}
 
-	//Å»Åğ½Ã ÇÊ¿äÇÑ µ· Á¤º¸ Àü´Ş(´Ş¶ó³×...)
+	//íƒˆí‡´ì‹œ í•„ìš”í•œ ëˆ ì •ë³´ ì „ë‹¬(ë‹¬ë¼ë„¤...)
 	sendSyndicateOutNeedNasInfo();
 
-	//gps Á¤º¸ ¾÷µ¥ÀÌÆ®
+	//gps ì •ë³´ ì—…ë°ì´íŠ¸
 	CGPSDataManager::instance()->_update(m_pChar);
 
 	if(m_pChar->m_gpsManager.isGps() == true)
@@ -1088,9 +1101,9 @@ void CDescriptor::sendData_StartAndMoveZone()
 		|| m_pChar->m_pArea->m_zone->m_index == ZONE_TARIAN_DUNGEON
 		)
 	{
-		//·ÎµùÀÌ ³¡³ª°í ¸ÊÀÎ ÇÏ¸é ÀÌµ¿Áß Ä«¿îÆ®¸¦ 1°¨¼Ò½ÃÄÑÁØ´Ù.
+		//ë¡œë”©ì´ ëë‚˜ê³  ë§µì¸ í•˜ë©´ ì´ë™ì¤‘ ì¹´ìš´íŠ¸ë¥¼ 1ê°ì†Œì‹œì¼œì¤€ë‹¤.
 		m_pChar->m_pArea->m_inCount--;
-		//¿ÏÀüÈ÷ ÀÌµ¿ÀÌ ³¡³µÀ½
+		//ì™„ì „íˆ ì´ë™ì´ ëë‚¬ìŒ
 		m_pChar->bMoveInsDunFinish = true;
 	}
 
@@ -1099,7 +1112,7 @@ void CDescriptor::sendData_StartAndMoveZone()
 	m_pChar->m_attendanceManager.checkAttendance();
 	m_pChar->m_arti_gpsManager.sendGpsOwnerCountInfo();
 
-	//À¯¹° ¼ÒÀ¯ÀÚ°¡ ÀÌµ¿ÇÏ´Â °æ¿ì Ã¼Å©
+	//ìœ ë¬¼ ì†Œìœ ìê°€ ì´ë™í•˜ëŠ” ê²½ìš° ì²´í¬
 	if(ArtifactManager::instance()->isOwnerPC(m_pChar->m_index))
 	{
 		m_pChar->CalcStatus(true);
@@ -1125,12 +1138,22 @@ void CDescriptor::sendData_StartAndMoveZone()
 		}
 	}
 
+	{
+		std::map<int, MAKE_TITLE*>::iterator it = m_pChar->_map_title.find(m_pChar->m_custom_title_index);
+		if(it != m_pChar->_map_title.end())
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			TitleUserInfoMsg(rmsg, m_pChar->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+			m_pChar->m_pArea->SendToCell(rmsg, m_pChar, true);
+		}
+	}
+
 	if(m_pChar->m_firstSendData == true)
 	{
 		{
 			m_pChar->m_desc->sendStartData();
 		}
-		
+
 		{
 			if ( m_pChar->GetMapAttr() & MATT_WAR || m_pChar->GetMapAttr() & MATT_UNWALKABLE)
 			{
@@ -1161,7 +1184,60 @@ void CDescriptor::sendData_StartAndMoveZone()
 		{
 			PopupNotice::instance()->SendDataForUser(m_pChar);
 		}
-		
+
+		if(m_pChar->_map_title.empty() == false)
+		{
+			std::map<int, MAKE_TITLE*>::iterator it = m_pChar->_map_title.begin();
+			std::map<int, MAKE_TITLE*>::iterator it_end = m_pChar->_map_title.end();
+
+			int _a = m_pChar->_map_title.size() / 10;
+
+			for( int i = 0; i <= _a;  i++)
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				UpdateClient::TitleSystemMakeList* packet = reinterpret_cast<UpdateClient::TitleSystemMakeList*>(rmsg->m_buf);
+				packet->type = MSG_EXTEND;
+				packet->subType = MSG_EX_TITLE_SYSTEM;
+				packet->thirdType = MSG_EX_TITLE_SYSTEM_TITLE_MAKE_INFO_LIST;
+				int count = 0;
+
+				for(; it != it_end;)
+				{
+					packet->info[count].custom_title_index = it->second->title_index;
+					strncpy(packet->info[count].name, it->second->name, CUSTOM_TITLE_NAME_LENGTH);
+					packet->info[count].color = (int)it->second->color;
+					packet->info[count].background = (int)it->second->background_color;
+					packet->info[count].effect = (int)it->second->effect;
+
+					for(int i = 0 ; i < MAX_TITLE_OPTION; i++)
+					{
+						packet->info[count].option_index[i] = it->second->option_index[i];
+						packet->info[count].option_level[i] = it->second->option_level[i];
+					}
+
+					count++;
+					it++;
+
+					if(count != 0 && count % 10 == 0)
+						break;
+				}
+				
+				if (count == 0)
+					break;
+
+				packet->count = count;
+				rmsg->setSize(sizeof(UpdateClient::TitleSystemMakeList) + sizeof(TitleSystemMakeInfo) * count);
+				SEND_Q(rmsg, m_pChar->m_desc);
+			}
+		}
+
+		if(m_pChar->m_ep > 0)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			UpdateClient::EPInitMsg(rmsg, false);
+			SEND_Q(rmsg, m_pChar->m_desc);
+		}
+
 		m_pChar->m_firstSendData = false;
 	}
 }
@@ -1169,7 +1245,7 @@ void CDescriptor::sendData_StartAndMoveZone()
 void CDescriptor::returnToCharacterSelectMode()
 {
 	{
-		// Helper, SubHelper¿¡°Ô Á¢¼Ó Á¤º¸¸¦ Àü´Ş
+		// Helper, SubHelperì—ê²Œ ì ‘ì† ì •ë³´ë¥¼ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ServerToServerPacket::makeLogoutUserInfo(rmsg, this->m_index);
 		SEND_Q(rmsg, gserver->m_helper);
@@ -1180,7 +1256,7 @@ void CDescriptor::returnToCharacterSelectMode()
 	DBManager::instance()->SaveCharacterInfo(this, false);
 
 	{
-		// ¸Ş¸ğ¸®¿¡¼­ Ä³¸¯ÅÍ »èÁ¦
+		// ë©”ëª¨ë¦¬ì—ì„œ ìºë¦­í„° ì‚­ì œ
 		auto_set[m_autoSaveSeq].erase(this);
 		PCManager::instance()->deletePlayerByPC(this->m_pChar);
 
@@ -1189,9 +1265,9 @@ void CDescriptor::returnToCharacterSelectMode()
 	}
 
 	{
-		// ÇöÀç »óÅÂ¸¦ ÆĞÅ¶ ¹«½Ã »óÅÂ·Î º¯°æ
+		// í˜„ì¬ ìƒíƒœë¥¼ íŒ¨í‚· ë¬´ì‹œ ìƒíƒœë¡œ ë³€ê²½
 		STATE(this) = CON_GET_DUMMY;
-		DBManager::instance()->PushCharacterList(this); // DBManager·Î Ä³¸¯ÅÍ ¸®½ºÆ®Á¤º¸¸¦ ¿äÃ»ÇÔ
+		DBManager::instance()->PushCharacterList(this); // DBManagerë¡œ ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ì •ë³´ë¥¼ ìš”ì²­í•¨
 	}
 }
 
@@ -1200,16 +1276,16 @@ void CDescriptor::Make_1_Level()
 {
 	CPC* ch = this->m_pChar;
 
-	// Á¤´ç¹æÀ§ÀÏ¶§´Â 1·¹º§·Î µ¹¾Æ°¡Áö ¾ÊÀ½
+	// ì •ë‹¹ë°©ìœ„ì¼ë•ŒëŠ” 1ë ˆë²¨ë¡œ ëŒì•„ê°€ì§€ ì•ŠìŒ
 	if (ch->IsSetPlayerState(PLAYER_STATE_RAMODE))
 		return;
 
 	GAMELOG << init("HARDCORE : char is die.", ch) << "Level : " << ch->m_level << end;
 
-	// ÀåÂø¾ÆÀÌÅÛÀ» LCE·Î Àü¼Û
+	// ì¥ì°©ì•„ì´í…œì„ LCEë¡œ ì „ì†¡
 	ch->m_wearInventory.sendToLCE_Only_hardcore();
 
-	// ·¹º§ ÃÊ±âÈ­
+	// ë ˆë²¨ ì´ˆê¸°í™”
 	boost::scoped_ptr<CPC> t_pChar(new CPC);
 	t_pChar->m_job = ch->m_job;
 	t_pChar->m_level = ch->m_level = 1;
@@ -1250,12 +1326,12 @@ void CDescriptor::Make_1_Level()
 	ch->m_pkRecoverNPCCount = 0;
 	ch->CalcStatus(false);
 
-	// ¸í¼ºÄ¡ ÃÊ±âÈ­
+	// ëª…ì„±ì¹˜ ì´ˆê¸°í™”
 	ch->m_fame = 0;
 	ch->m_GuildFame = 0;
 	ch->m_GuildExp = 0;
 
-	// ½ºÅ³ ÃÊ±âÈ­
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”
 	ch->m_activeSkillList.Clear();
 	ch->m_passiveSkillList.Clear();
 	ch->m_etcSkillList.Clear();
@@ -1264,13 +1340,13 @@ void CDescriptor::Make_1_Level()
 	if( ch->m_job != JOB_NIGHTSHADOW )
 		ch->m_job2 = 0;
 
-	// Äü½½·Ô ÃÊ±âÈ­
+	// í€µìŠ¬ë¡¯ ì´ˆê¸°í™”
 	for (int i = 0; i < QUICKSLOT_PAGE_NUM; ++i)
 	{
 		ch->m_quickSlot[i].clear();
 	}
 
-	// PK »óÅÂ ÃÊ±âÈ­
+	// PK ìƒíƒœ ì´ˆê¸°í™”
 	ch->m_pkPenalty = 0;
 	ch->m_pkCount = 0;
 	ch->m_pkRecoverPulse = 0;
@@ -1279,7 +1355,7 @@ void CDescriptor::Make_1_Level()
 
 	ch->CalcStatus(false);
 
-	// Á¦ÀÛ ÃÊ±âÈ­
+	// ì œì‘ ì´ˆê¸°í™”
 	ch->m_sealSkillList.Clear();
 	for (int i = 0; i < MAX_SEAL_TYPE_SKILL; ++i)
 	{
@@ -1288,27 +1364,46 @@ void CDescriptor::Make_1_Level()
 	}
 	ch->m_listFactory.clear();
 
-	// Ä£È­µµ ÃÊ±âÈ­
+	// ì¹œí™”ë„ ì´ˆê¸°í™”
 	ch->m_affinityList.clear();
 
-	// Äù½ºÆ® ÃÊ±âÈ­
+	// í€˜ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	ch->m_inventory.deleteAllQuestItem();
 	ch->m_questList.clear();
 
-	// ´øÀü ÀçÀÔÀå ÃÊ±âÈ­
+	// ë˜ì „ ì¬ì…ì¥ ì´ˆê¸°í™”
 	ch->m_pd3Count = 0;
 	ch->m_pd3Time = 0;
 	ch->m_pd4Count = 0;
 	ch->m_pd4Time = 0;
 
-	// È£Äª ÃÊ±âÈ­
+	// í˜¸ì¹­ ì´ˆê¸°í™”
+	ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
 	if (ch->m_titleList.m_head != NULL)
 	{
 		std::string tstr = boost::str(boost::format("DELETE FROM t_titlelist WHERE a_char_index = %d") % ch->m_index);
 		DBManager::instance()->pushQuery(ch->m_desc->m_index, tstr);
 	}
+	
+	if (ch->_map_title.empty() == false)
+	{
+		std::string tstr = boost::str(boost::format("DELETE FROM t_title_make WHERE a_char_index = %d") % ch->m_index);
+		DBManager::instance()->pushQuery(ch->m_desc->m_index, tstr);
 
-	// ¿øÁ¤´ë Ã³¸®
+		std::map<int, MAKE_TITLE*>::iterator it = ch->_map_title.begin();
+		std::map<int, MAKE_TITLE*>::iterator it_end = ch->_map_title.end();
+
+		for(; it != it_end; it++)
+		{
+			delete[] it->second->option_index;
+			delete[] it->second->option_level;
+			delete it->second;
+		}
+
+		ch->_map_title.clear();
+	}
+
+	// ì›ì •ëŒ€ ì²˜ë¦¬
 	if (ch->m_Exped != NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1318,7 +1413,7 @@ void CDescriptor::Make_1_Level()
 		ch->m_Exped = NULL;
 	}
 
-	// ÆÄÆ¼ Ã³¸®
+	// íŒŒí‹° ì²˜ë¦¬
 	if (ch->m_party != NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1327,7 +1422,7 @@ void CDescriptor::Make_1_Level()
 	}
 
 	{
-		// Å¬¶óÀÌ¾ğÆ®¿¡ restart MSG Àü¼Û
+		// í´ë¼ì´ì–¸íŠ¸ì— restart MSG ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeExRestart(rmsg, 1);
 		SEND_Q( rmsg, ch->m_desc );
@@ -1346,11 +1441,11 @@ void CDescriptor::sendSyndicateOutNeedNasInfo()
 
 void CDescriptor::sendStartData()
 {
-	//Ãâ¼® È®ÀÎ
-	//º¸Çè ¾ÆÀÌÅÛ »ç¿ëÁßÀÎ °æ¿ì
+	//ì¶œì„ í™•ì¸
+	//ë³´í—˜ ì•„ì´í…œ ì‚¬ìš©ì¤‘ì¸ ê²½ìš°
 	if(m_pChar->m_assist.FindBySkillIndex(1771) != 0)
 	{
-		//Á¾·á ¿©ºÎ ÆĞÅ¶
+		//ì¢…ë£Œ ì—¬ë¶€ íŒ¨í‚·
 		CNetMsg::SP rmsg(new CNetMsg);
 		UpdateClient::makeAttendanceAssureCancelOkMsg(rmsg);
 		SEND_Q(rmsg, m_pChar->m_desc);

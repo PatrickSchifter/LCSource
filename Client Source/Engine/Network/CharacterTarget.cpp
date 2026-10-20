@@ -13,8 +13,6 @@
 #include <Engine/Info/MyInfo.h>
 
 
-#define		PLAYER_STATE_PKMODE			(1 << 3)	// PK 모드
-#define		PLAYER_STATE_PKMODEDELAY	(1 << 4)	// PK 모드 해제 딜레이
 /*
 *  Constructor.
 */
@@ -76,6 +74,8 @@ CCharacterTarget::CCharacterTarget(void)
 	cha_iSyndicateType = 0;
 	cha_iSyndicateGrade = 0;
 	cha_iHitType = 0;
+
+	cha_CustomTitle.Init();
 }
 
 /*
@@ -183,6 +183,7 @@ CCharacterTarget::CCharacterTarget(const CCharacterTarget &other)
 	
 	SetSyndicate( other.cha_iSyndicateType, other.cha_iSyndicateGrade );
 	cha_iHitType = other.cha_iHitType;
+	cha_CustomTitle.Init();
 }
 
 CCharacterTarget &CCharacterTarget::operator=(const CCharacterTarget &other)
@@ -250,6 +251,8 @@ CCharacterTarget &CCharacterTarget::operator=(const CCharacterTarget &other)
 
 	SetSyndicate( other.cha_iSyndicateType, other.cha_iSyndicateGrade );
 	cha_iHitType = other.cha_iHitType;
+
+	memcpy(&cha_CustomTitle, &other.cha_CustomTitle, sizeof(stCustomTitleStatForPc));
 	return *this;
 }
 

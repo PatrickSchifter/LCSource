@@ -13,15 +13,15 @@
 #include "../ShareLib/packetType/ptype_old_do_item.h"
 
 ///////////////////
-// °ø°İ °ü·Ã ÇÔ¼öµé
+// ê³µê²© ê´€ë ¨ í•¨ìˆ˜ë“¤
 
 int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkill* skill, int magicindex, int damage)
 {
-	// ¹æ¾îÀÚ°¡ °ø°İ ´çÇÒ ¼ö ÀÖ´Â »óÅÂÀÎÁö °Ë»ç
+	// ë°©ì–´ìê°€ ê³µê²© ë‹¹í•  ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ ê²€ì‚¬
 	if (!IsAvailableAttack(of, df))
 		return 0;
 
-	// °ø°İ Á¾·ù ±¸ºĞ
+	// ê³µê²© ì¢…ë¥˜ êµ¬ë¶„
 	if (damageType == MSG_DAMAGE_UNKNOWN)
 		return 0;
 
@@ -37,7 +37,7 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 			return 0;
 	}
 
-	// ¹æ¾îÀÚ °ø°İ¿¡ µû¸¥ ¹öÇÁ Ãë¼Ò
+	// ë°©ì–´ì ê³µê²©ì— ë”°ë¥¸ ë²„í”„ ì·¨ì†Œ
 	df->m_assist.CancelSleep();
 	df->m_assist.CancelFear();
 	df->CancelInvisible();
@@ -55,7 +55,7 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 		}
 	}
 
-	// °ø°İÀÚ °ø°İ¿¡ µû¸¥ ¹öÇÁ Ãë¼Ò
+	// ê³µê²©ì ê³µê²©ì— ë”°ë¥¸ ë²„í”„ ì·¨ì†Œ
 	of->CancelInvisible();
 	if ( IS_APET(of) )
 	{
@@ -75,46 +75,46 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 		break;
 
 	default:
-		// ¸íÁß/È¸ÇÇ/Å©¸®Æ¼ÄÃ ±¸ºĞ ÇÃ·¡±×
+		// ëª…ì¤‘/íšŒí”¼/í¬ë¦¬í‹°ì»¬ êµ¬ë¶„ í”Œë˜ê·¸
 		flag = GetHitType(of, df, damageType);
-		// ¸íÁß/È¸ÇÇ/Å©¸®Æ¼ÄÃ °Ë»ç
+		// ëª…ì¤‘/íšŒí”¼/í¬ë¦¬í‹°ì»¬ ê²€ì‚¬
 		if (flag != HITTYPE_MISS)
 			flag = SelectHitType(of, df, damageType, flag, magic, magiclevel, true);
-		// µ¥¹ÌÁö °è»ê		
+		// ë°ë¯¸ì§€ ê³„ì‚°		
 		damage = GetDamage(of, df, damageType, flag, magic, magiclevel, isCharge);
 		break;
 	}
 
-	// ÀÚ»ì °ø°İÀº NPC¸¦ Á¦¿ÍÇÏ°í´Â µ¥¹ÌÁö¸¦ 10%¸¸ Àû¿ë
+	// ìì‚´ ê³µê²©ì€ NPCë¥¼ ì œì™€í•˜ê³ ëŠ” ë°ë¯¸ì§€ë¥¼ 10%ë§Œ ì ìš©
 	if( proto && proto->m_index == 1110 && !IS_NPC(df) )
 		damage = (int)(damage * 0.1f);
 
 	ApplyHateByDamage(of, df, flag, damage);
 	ApplyDamage(of, df, damageType, proto, magic, damage, flag, isCharge);
 
-	//º¸¼® ¿É¼Ç Ã¼Å©ÇÏ¿© ½ºÅ³ ¹ßµ¿ Ã³¸®
-	//¿É¼Ç ½ºÅ³ ¹ßµ¿
+	//ë³´ì„ ì˜µì…˜ ì²´í¬í•˜ì—¬ ìŠ¤í‚¬ ë°œë™ ì²˜ë¦¬
+	//ì˜µì…˜ ìŠ¤í‚¬ ë°œë™
 	if(IS_PC(of))
 	{
 		CPC* pc = TO_PC(of);
 		if(pc->m_optionAttSkillList.count() > 0)
 		{
-			int optionCount  = pc->m_optionAttSkillList.count() > 0;
+			int optionCount  = pc->m_optionAttSkillList.count();
 			void* pos = pc->m_optionAttSkillList.GetHeadPosition();
 			bool bApply;
 			for(int i=0; i<optionCount; i++)
 			{
 				int rand = GetRandom(1, 10000);
-				CSkill *skill = pc->m_optionAttSkillList.GetNext(pos);
-				if(rand < skill->m_optionSkillProb)
+				CSkill *pAttskill = pc->m_optionAttSkillList.GetNext(pos);
+				if(rand < pAttskill->m_optionSkillProb)
 				{
-					ApplySkill(of, df, skill,-1, bApply);
+					ApplySkill(of, df, pAttskill,-1, bApply);
 				}
 			}
 		}
 
 #ifdef DURABILITY
-		// ¹«±â Àåºñ ³»±¸µµ °¨¼Ò (°ø°İÀÚ ÀÌ¹Ç·Î)
+		// ë¬´ê¸° ì¥ë¹„ ë‚´êµ¬ë„ ê°ì†Œ (ê³µê²©ì ì´ë¯€ë¡œ)
 		pc->calcDurability_for_weapon();
 #endif
 	}
@@ -130,21 +130,21 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 			bool bHits[] = {true, true, true};
 			for(int i=0; i<optionCount; i++)
 			{
-				CSkill *skill = pc->m_optionDefSkillList.GetNext(pos);
+				CSkill *pDefskill = pc->m_optionDefSkillList.GetNext(pos);
 				int rand = GetRandom(1, 10000);
-				if(rand < skill->m_optionSkillProb)
+				if(rand < pDefskill->m_optionSkillProb)
 				{
-					if (df->m_assist.Add(df, -1, skill->m_proto, skill->m_level, bHits, true, -1,
+					if (df->m_assist.Add(df, -1, pDefskill->m_proto, pDefskill->m_level, bHits, true, -1,
 										 -1,
 										 0, 0, 0))
 						bRet = true;
-					ApplySkill(df, df, skill,-1, bApply);
+					ApplySkill(df, df, pDefskill,-1, bApply);
 				}
 			}
 		}
 
 #ifdef DURABILITY
-		// ¹æ¾î±¸(¾×¼¼¼­¸®) Àåºñ ³»±¸µµ °¨¼Ò (¹æ¾îÀÚ ÀÌ¹Ç·Î)
+		// ë°©ì–´êµ¬(ì•¡ì„¸ì„œë¦¬) ì¥ë¹„ ë‚´êµ¬ë„ ê°ì†Œ (ë°©ì–´ì ì´ë¯€ë¡œ)
 		pc->calcDurability_for_armor();
 #endif
 	}
@@ -175,15 +175,15 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 			break;
 		}
 
-		// ¿©±â ¿À¸é df°¡ ¸Ş¸ğ¸®¿¡¼­ ÇØÀç µÉ ¼ö ÀÖ´Ù
-		// ±×·¡¼­ ¾Æ¿¹ NULL·Î ¹Ù²ã¹ö¸°´Ù
+		// ì—¬ê¸° ì˜¤ë©´ dfê°€ ë©”ëª¨ë¦¬ì—ì„œ í•´ì¬ ë  ìˆ˜ ìˆë‹¤
+		// ê·¸ë˜ì„œ ì•„ì˜ˆ NULLë¡œ ë°”ê¿”ë²„ë¦°ë‹¤
 		df = NULL;
 
 		return 1;
 	}
 	else
 	{
-		// »ì¾Æ ³²À¸¸é µ¥¹ÌÁö ¹İ»ç¸¦ °Ë»ç
+		// ì‚´ì•„ ë‚¨ìœ¼ë©´ ë°ë¯¸ì§€ ë°˜ì‚¬ë¥¼ ê²€ì‚¬
 		if (damageType != MSG_DAMAGE_REFLEX && GetDistance(of, df) <= 25)
 		{
 			int reflexdam = 0;
@@ -206,8 +206,8 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 
 		if ( IS_PC(of) && IS_NPC(df) )
 		{
-			// Å×ÀÌ¹Ö ¸ó½ºÅÍ´Â ÁÖÀÎÀÌ ¶§¸®´Â Å¸°Ù¸¸ ¶§·Á¾ß ÇÔ
-			// ¿©±â¼­ pc°¡ ¶§¸®´Â npc ÀúÀå
+			// í…Œì´ë° ëª¬ìŠ¤í„°ëŠ” ì£¼ì¸ì´ ë•Œë¦¬ëŠ” íƒ€ê²Ÿë§Œ ë•Œë ¤ì•¼ í•¨
+			// ì—¬ê¸°ì„œ pcê°€ ë•Œë¦¬ëŠ” npc ì €ì¥
 			CPC* temp = TO_PC(of);
 			if(temp)
 				temp->SetOwners_target(df);
@@ -234,7 +234,7 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 					if(pPcDf && pPcDf->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY) )
 						pPcDf->SetSummonOwners_target(of);
 				}
-				// PVP »óÅÂ¿¡¼­ ¿ëº´À» ¶§¸®¸é ¸ÂÀº ¿ëº´ÀÇ ¿À³Ê¿¡°Ô Á¤´ç ¹æÀ§¸¦ ¼º¸³ ½ÃÅ²´Ù.
+				// PVP ìƒíƒœì—ì„œ ìš©ë³‘ì„ ë•Œë¦¬ë©´ ë§ì€ ìš©ë³‘ì˜ ì˜¤ë„ˆì—ê²Œ ì •ë‹¹ ë°©ìœ„ë¥¼ ì„±ë¦½ ì‹œí‚¨ë‹¤.
 				else if( IS_NPC(df) && TO_NPC(df)->GetOwner() && TO_NPC(df) == TO_NPC(df)->GetOwner()->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY) )
 				{
 					CPC* pPcDf = TO_NPC(df)->GetOwner();
@@ -248,10 +248,10 @@ int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkil
 	return 0;
 }
 
-// ch, tch°¡ CELL_EXT ¹üÀ§ ¾È¿¡ ÀÖ´Â°¡ ÀÖÀ¸¸é true
+// ch, tchê°€ CELL_EXT ë²”ìœ„ ì•ˆì— ìˆëŠ”ê°€ ìˆìœ¼ë©´ true
 bool CheckInNearCellExt(CCharacter* ch, CCharacter* tch)
 {
-	// µğ¹ö±ë¿ë
+	// ë””ë²„ê¹…ìš©
 	int chType = ch->m_type;
 	int tchType = tch->m_type;
 	chType = chType;
@@ -282,13 +282,13 @@ bool CheckInNearCellExt(CCharacter* ch, CCharacter* tch)
 	return false;
 }
 
-// ¿ì¼±±Ç PC Ã£±â
-// target listµéÀÇ Æò±Õ ·¹º§ ±¸ÇÏ±â
-// Ã£À»¶§ »ç¿ëÇÒ µ¥ÀÌÅÍ
+// ìš°ì„ ê¶Œ PC ì°¾ê¸°
+// target listë“¤ì˜ í‰ê·  ë ˆë²¨ êµ¬í•˜ê¸°
+// ì°¾ì„ë•Œ ì‚¬ìš©í•  ë°ì´í„°
 typedef struct __tagPreferencePCData
 {
-	CPC*		m_pc;		// PC Æ÷ÀÎÅÍ
-	int			m_damage;	// ÇØ´ç PCÀÇ µ¥¹ÌÁö
+	CPC*		m_pc;		// PC í¬ì¸í„°
+	int			m_damage;	// í•´ë‹¹ PCì˜ ë°ë¯¸ì§€
 } PPDATA;
 
 CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
@@ -298,16 +298,16 @@ CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
 
 	int dam = 0;
 	*pnTotalDamage = npc->GetTotalDamage();
-	LONGLONG nPreferDamage = *pnTotalDamage + npc->m_maxHP * 2 / 10;		// ÃÖ´ë ´ë¹ÌÁö¿Í NPCÀÇ ÃÖ´ëHP 20%¸¦ ÇÕÇÑ °ªÀ» ¾ÆÀÌÅÛ ¿ì¼±±Ç¿¡ »ç¿ë
+	LONGLONG nPreferDamage = *pnTotalDamage + npc->m_maxHP * 2 / 10;		// ìµœëŒ€ ëŒ€ë¯¸ì§€ì™€ NPCì˜ ìµœëŒ€HP 20%ë¥¼ í•©í•œ ê°’ì„ ì•„ì´í…œ ìš°ì„ ê¶Œì— ì‚¬ìš©
 	int totLevel = 0;
 	int	count = 0;
 
-	std::map<CPC*, PPDATA> listAttackPC;	// NPC °ø°İ¿¡ °¡´ãÇÑ PC ¸®½ºÆ®
+	std::map<CPC*, PPDATA> listAttackPC;	// NPC ê³µê²©ì— ê°€ë‹´í•œ PC ë¦¬ìŠ¤íŠ¸
 	while (target)
 	{
 		if (target->ch)
 		{
-			// µğ¹ö±ë¿ë
+			// ë””ë²„ê¹…ìš©
 			int npcType = npc->m_type;
 			int tchType = target->ch->m_type;
 			npcType = npcType;
@@ -324,7 +324,7 @@ CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
 				break;
 			if (npc->m_pZone == NULL)
 				break;
-			// °°Àº zone¿¡ ¾ø°Å³ª °°Àº area¿¡ ¾ø°Å³ª CELL_EXT(+-5) ¹üÀ§ ¾È¿¡ ¾ø°Å³ª
+			// ê°™ì€ zoneì— ì—†ê±°ë‚˜ ê°™ì€ areaì— ì—†ê±°ë‚˜ CELL_EXT(+-5) ë²”ìœ„ ì•ˆì— ì—†ê±°ë‚˜
 			if ((npc->m_pZone->m_index != target->ch->m_pZone->m_index) ||
 					(npc->m_pArea->m_index != target->ch->m_pArea->m_index) ||
 					!CheckInNearCellExt(npc, target->ch))
@@ -332,7 +332,7 @@ CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
 
 			dam = target->m_damage;
 
-			// ¼±°ø pc´Â NPC ÃÖ´ë HPÀÇ  20% º¸³Ê½º!!
+			// ì„ ê³µ pcëŠ” NPC ìµœëŒ€ HPì˜  20% ë³´ë„ˆìŠ¤!!
 			if (target->m_next == NULL)
 				dam += npc->m_maxHP * 2 / 10;
 
@@ -403,7 +403,7 @@ CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
 	{
 		PPDATA& ppdata = it->second;
 
-		// 50% ÀÌ»ó µ¥¹ÌÁö ÁØ PC ¹İÈ¯
+		// 50% ì´ìƒ ë°ë¯¸ì§€ ì¤€ PC ë°˜í™˜
 		if (ppdata.m_damage > nPreferDamage / 2)
 			ret = ppdata.m_pc;
 	}
@@ -422,7 +422,7 @@ CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage)
 	return ret;
 }
 
-// ±Õµî ÆÄÆ¼ ½Ã µ· °¥¶ó¸Ô±â
+// ê· ë“± íŒŒí‹° ì‹œ ëˆ ê°ˆë¼ë¨¹ê¸°
 void DivisionPartyMoney(CPC* pc, LONGLONG count)
 {
 	// validation
@@ -431,7 +431,7 @@ void DivisionPartyMoney(CPC* pc, LONGLONG count)
 
 	int i;
 	CParty* party = pc->m_party;
-	int divCount = 0;				// µ· °¥¶ó¸ÔÀ» ÆÄÆ¼ ¸â¹ö ¼ö
+	int divCount = 0;				// ëˆ ê°ˆë¼ë¨¹ì„ íŒŒí‹° ë©¤ë²„ ìˆ˜
 
 	for (i=0; i < MAX_PARTY_MEMBER; i++)
 	{
@@ -445,8 +445,8 @@ void DivisionPartyMoney(CPC* pc, LONGLONG count)
 	if (divCount < 1)
 		return;
 
-	// µ· °¥¶ó³»±â
-	//bool bTake = false;		// µ·À» ¹ŞÀº »ç¶÷ÀÌ ÀÖ³ª?: ¾øÀ¸¸é ¾ÆÀÌÅÛÀº ¹Ù´Ú¿¡ ±×´ë·Î
+	// ëˆ ê°ˆë¼ë‚´ê¸°
+	//bool bTake = false;		// ëˆì„ ë°›ì€ ì‚¬ëŒì´ ìˆë‚˜?: ì—†ìœ¼ë©´ ì•„ì´í…œì€ ë°”ë‹¥ì— ê·¸ëŒ€ë¡œ
 	count = count / divCount;
 
 	if (count < 1)
@@ -454,7 +454,7 @@ void DivisionPartyMoney(CPC* pc, LONGLONG count)
 
 	GoldType_t Artimoney = 0;
 
-	// ÆÄÆ¼¿ø¿¡°Ô ºĞ¹è
+	// íŒŒí‹°ì›ì—ê²Œ ë¶„ë°°
 	for (i = MAX_PARTY_MEMBER - 1; i >= 0; i--)
 	{
 		Artimoney = 0;
@@ -463,7 +463,7 @@ void DivisionPartyMoney(CPC* pc, LONGLONG count)
 		if (!pMemberPC)
 			continue;
 
-		// °¥¸¥ µ· ¸¸µé±â
+		// ê°ˆë¥¸ ëˆ ë§Œë“¤ê¸°
 		int bonus = 0;
 		if(pMemberPC->m_avPassiveAddition.money_nas > 0)
 		{
@@ -480,7 +480,7 @@ void DivisionPartyMoney(CPC* pc, LONGLONG count)
 	}
 }
 
-// ±ÕµîÆÄÆ¼ÀÏ¶§ ¾ÆÀÌÅÛ ·£´ıÀ¸·Î °¡Á®°¡Áö
+// ê· ë“±íŒŒí‹°ì¼ë•Œ ì•„ì´í…œ ëœë¤ìœ¼ë¡œ ê°€ì ¸ê°€ì§€
 bool GetItemRandomParty(CPC* pc, CItem* item)
 {
 	// validation
@@ -489,8 +489,8 @@ bool GetItemRandomParty(CPC* pc, CItem* item)
 
 	int i;
 	CParty* party = pc->m_party;
-	bool bPreference = false;		// ÀÌ ÆÄÆ¼°¡ ÀÚ°İÀÌ ÀÖ´Â°¡
-	int partyCount = 0;				// ¹ŞÀ» ¼ö ÀÖ´Â ÀÚ°İÀÌ ÀÖ´Â ÆÄÆ¼¿ø ¼ö
+	bool bPreference = false;		// ì´ íŒŒí‹°ê°€ ìê²©ì´ ìˆëŠ”ê°€
+	int partyCount = 0;				// ë°›ì„ ìˆ˜ ìˆëŠ” ìê²©ì´ ìˆëŠ” íŒŒí‹°ì› ìˆ˜
 
 	for (i=0; i < MAX_PARTY_MEMBER; i++)
 	{
@@ -504,20 +504,20 @@ bool GetItemRandomParty(CPC* pc, CItem* item)
 		partyCount++;
 	}
 
-	// ¿ì¼±±ÇÀÌ ÀÖ´Âµ¥ ÆÄÆ¼°¡ ÀÚ°İ¾øÀ¸¸é return;
+	// ìš°ì„ ê¶Œì´ ìˆëŠ”ë° íŒŒí‹°ê°€ ìê²©ì—†ìœ¼ë©´ return;
 	if (item->m_preferenceIndex != -1 && !bPreference)
 	{
 		return false;
 	}
 
-	// ¹ŞÀ» »ç¶÷ÀÌ ¾ø´Ù.
+	// ë°›ì„ ì‚¬ëŒì´ ì—†ë‹¤.
 	if (partyCount < 1)
 		return false;
 
-	bool bGiveItem = false;		// ¾ÆÀÌÅÛ °¡Á® °¬´Ù!
-	int idx;					// °áÁ¤µÈ ÆÄÆ¼¿ø ÀÎµ¦½º
+	bool bGiveItem = false;		// ì•„ì´í…œ ê°€ì ¸ ê°”ë‹¤!
+	int idx;					// ê²°ì •ëœ íŒŒí‹°ì› ì¸ë±ìŠ¤
 
-	int bitfield = 0;			// °áÁ¤‰çÀ¸³ª ½ÇÆĞÇÑ ÆÄÆ¼¿ø ÀÎµ¦½º ÀúÀå
+	int bitfield = 0;			// ê²°ì •Â‰ç‘›ë¦½?ì‹¤íŒ¨í•œ íŒŒí‹°ì› ì¸ë±ìŠ¤ ì €ì¥
 	bool bAll = false;
 
 	int deleteVIndex = item->getVIndex();
@@ -584,7 +584,7 @@ bool GetItemRandomParty(CPC* pc, CItem* item)
 	// LOG
 	itemPickGameLog(_user[idx], item);
 
-	// ¿ø·¡ ¾ÆÀÌÅÛ Ã³¸®
+	// ì›ë˜ ì•„ì´í…œ ì²˜ë¦¬
 	CNetMsg::SP disappmsg(new CNetMsg);
 	CNetMsg::SP takemsg(new CNetMsg);
 	CNetMsg::SP getmsg(new CNetMsg);
@@ -598,13 +598,13 @@ bool GetItemRandomParty(CPC* pc, CItem* item)
 	ItemDisappearMsg(disappmsg, deleteVIndex);
 	ItemGetMsg(getmsg, _user[idx], item);
 
-	// ¿ì¼±±Ç Á¦°Å
+	// ìš°ì„ ê¶Œ ì œê±°
 	item->m_preferenceIndex = -1;
 
-	// ¶¥¿¡¼­ Á¦°Å
+	// ë•…ì—ì„œ ì œê±°
 	pc->m_pArea->ItemFromCell(item);
 
-	// ¸Ş½ÃÁö º¸³»°í
+	// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 	pc->m_pArea->SendToCell(takemsg, pc, true);
 	pc->m_pArea->SendToCell(disappmsg, GET_YLAYER(pc), cx, cz);
 	pc->m_party->SendToPCInSameZone(pc->m_pZone->m_index, pc->m_pArea->m_index, getmsg);
@@ -612,7 +612,7 @@ bool GetItemRandomParty(CPC* pc, CItem* item)
 	return true;
 }
 
-//ÆÄÆ¼, ¿øÁ¤´ë Box ¾ÆÀÌÅÛ È¹µæ
+//íŒŒí‹°, ì›ì •ëŒ€ Box ì•„ì´í…œ íšë“
 bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 {
 	// validation
@@ -620,30 +620,30 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 		return false;
 
 	time_t t_now;
-	bool bGiveItem = false;		// ¾ÆÀÌÅÛ °¡Á® °¬´Ù!
-	int BoxitemIndex = 4709;	// »óÀÚ¾ÆÀÌÅÛ ÀÎµ¦½º
+	bool bGiveItem = false;		// ì•„ì´í…œ ê°€ì ¸ ê°”ë‹¤!
+	int BoxitemIndex = 4709;	// ìƒìì•„ì´í…œ ì¸ë±ìŠ¤
 
 	int deleteVIndex = item->getVIndex();
 
 	if(item->getDBIndex() != BoxitemIndex)
 		return false;
 
-	// È¹µæ ½Ã°£ Ã¼Å©
+	// íšë“ ì‹œê°„ ì²´í¬
 	t_now = time(NULL);
 	int nBoxItemTime = 0;
 
 	nBoxItemTime = pc->GetRaidBoxItemTime();
 	if(nBoxItemTime == 0)
 	{
-		// ¹Ú½º¾ÆÀÌÅÛ È¹µæ ½Ã°£ ¼³Á¤
+		// ë°•ìŠ¤ì•„ì´í…œ íšë“ ì‹œê°„ ì„¤ì •
 		pc->SetRaidBoxItemTime(t_now);
 	}
 	else if(nBoxItemTime > 0 && pc->m_isNotCoolBoxItem == false)
 	{
-		// 5ºĞ Ã¼Å©
+		// 5ë¶„ ì²´í¬
 		if( (t_now - pc->GetRaidBoxItemTime()) <= (5 * 60))
 		{
-			// ´õ ÀÌ»ó »óÀÚ ÁÖ¿ï ¼ö ¾øÀ½(È¹µæ ½Ã°£ 5ºĞ)
+			// ë” ì´ìƒ ìƒì ì£¼ìš¸ ìˆ˜ ì—†ìŒ(íšë“ ì‹œê°„ 5ë¶„)
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_NOT_5MIN_GETBOX);
 			SEND_Q(rmsg, pc->m_desc);
@@ -651,12 +651,12 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 		}
 	}
 
-	//Box ¾ÆÀÌÅÛÀÌ ÀÌ¹Ì ÀÖ´ÂÁö Ã¼Å© (¹Ú½º ¾ÆÀÌÅÛ ÀÎµ¦½º Á¶Á¤ ÇÊ¿ä)
+	//Box ì•„ì´í…œì´ ì´ë¯¸ ìˆëŠ”ì§€ ì²´í¬ (ë°•ìŠ¤ ì•„ì´í…œ ì¸ë±ìŠ¤ ì¡°ì • í•„ìš”)
 	if(item->getDBIndex() == BoxitemIndex && pc->m_isNotCoolBoxItem == false)
 	{
 		if (pc->m_inventory.FindByDBIndex(item->getDBIndex()))
 		{
-			// ·¹ÀÌµå ¹Ú½º ¾ÆÀÌÅÛ ÀÌ¹Ì ¼ÒÀ¯ÇÏ°í ÀÖÀ½
+			// ë ˆì´ë“œ ë°•ìŠ¤ ì•„ì´í…œ ì´ë¯¸ ì†Œìœ í•˜ê³  ìˆìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_ALREADY_GETBOX);
 			SEND_Q(rmsg, pc->m_desc);
@@ -664,12 +664,12 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 		}
 	}
 
-	// ÀÎº¥¿¡ ³Ö±â
+	// ì¸ë²¤ì— ë„£ê¸°
 	if (pc->m_inventory.addItem(item))
 	{
 		bGiveItem = true;
 
-		// ¹Ú½º¾ÆÀÌÅÛ È¹µæ ½Ã°£ ¼³Á¤
+		// ë°•ìŠ¤ì•„ì´í…œ íšë“ ì‹œê°„ ì„¤ì •
 		pc->SetRaidBoxItemTime(t_now);
 
 #ifdef GER_LOG
@@ -691,7 +691,7 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 		SEND_Q(rmsg, pc->m_desc);
 		return false;
 	}
-	// ¿ø·¡ ¾ÆÀÌÅÛ Ã³¸®
+	// ì›ë˜ ì•„ì´í…œ ì²˜ë¦¬
 	CNetMsg::SP disappmsg(new CNetMsg);
 	CNetMsg::SP takemsg(new CNetMsg);
 	CNetMsg::SP getmsg(new CNetMsg);
@@ -705,16 +705,16 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 	ItemDisappearMsg(disappmsg, deleteVIndex);
 	ItemGetMsg(getmsg, pc, item);
 
-	// ¿ì¼±±Ç Á¦°Å
+	// ìš°ì„ ê¶Œ ì œê±°
 	item->m_preferenceIndex = -1;
 
-	// ¶¥¿¡¼­ Á¦°Å
+	// ë•…ì—ì„œ ì œê±°
 	pc->m_pArea->ItemFromCell(item);
 
-	// ¹Ş¾Ò´Ù°í ¼ÂÆÃ
+	// ë°›ì•˜ë‹¤ê³  ì…‹íŒ…
 	pc->m_bGiveItem = true;
 
-	// ¸Ş½ÃÁö º¸³»°í
+	// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 	pc->m_pArea->SendToCell(takemsg, pc, true);
 	pc->m_pArea->SendToCell(disappmsg, GET_YLAYER(pc), cx, cz);
 
@@ -730,7 +730,7 @@ bool GetItemRaidOpenBox(CPC* pc, CItem* item)
 	return true;
 }
 
-// ±Õµî ÆÄÆ¼ ½Ã µ· °¥¶ó¸Ô±â(¿øÁ¤´ë)
+// ê· ë“± íŒŒí‹° ì‹œ ëˆ ê°ˆë¼ë¨¹ê¸°(ì›ì •ëŒ€)
 void DivisionExpedMoney(CPC* pc, LONGLONG count)
 {
 	// validation
@@ -739,7 +739,7 @@ void DivisionExpedMoney(CPC* pc, LONGLONG count)
 
 	int i,j;
 	CExpedition* Exped = pc->m_Exped;
-	int divCount = 0;				// µ· °¥¶ó¸ÔÀ» ÆÄÆ¼ ¸â¹ö ¼ö
+	int divCount = 0;				// ëˆ ê°ˆë¼ë¨¹ì„ íŒŒí‹° ë©¤ë²„ ìˆ˜
 
 	for (i=0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -756,8 +756,8 @@ void DivisionExpedMoney(CPC* pc, LONGLONG count)
 	if (divCount < 1)
 		return;
 
-	// µ· °¥¶ó³»±â
-	//bool bTake = false;		// µ·À» ¹ŞÀº »ç¶÷ÀÌ ÀÖ³ª?: ¾øÀ¸¸é ¾ÆÀÌÅÛÀº ¹Ù´Ú¿¡ ±×´ë·Î
+	// ëˆ ê°ˆë¼ë‚´ê¸°
+	//bool bTake = false;		// ëˆì„ ë°›ì€ ì‚¬ëŒì´ ìˆë‚˜?: ì—†ìœ¼ë©´ ì•„ì´í…œì€ ë°”ë‹¥ì— ê·¸ëŒ€ë¡œ
 	count = count / divCount;
 
 	if (count < 1)
@@ -765,7 +765,7 @@ void DivisionExpedMoney(CPC* pc, LONGLONG count)
 
 	GoldType_t Artimoney = 0;
 
-	// ÆÄÆ¼¿ø¿¡°Ô ºĞ¹è
+	// íŒŒí‹°ì›ì—ê²Œ ë¶„ë°°
 	for (i = MAX_EXPED_GROUP - 1; i >= 0; i--)
 	{
 		for (j = MAX_EXPED_GMEMBER - 1; j >= 0; j--)
@@ -776,7 +776,7 @@ void DivisionExpedMoney(CPC* pc, LONGLONG count)
 			if (!pMemberPC)
 				continue;
 
-			// °¥¸¥ µ· ¸¸µé±â
+			// ê°ˆë¥¸ ëˆ ë§Œë“¤ê¸°
 			int bonus = 0;
 
 			if(pMemberPC->m_avPassiveAddition.money_nas > 0)
@@ -795,7 +795,7 @@ void DivisionExpedMoney(CPC* pc, LONGLONG count)
 	}
 }
 
-// ±Õµî¿øÁ¤´ë ¾ÆÀÌÅÛ ·£´ıÀ¸·Î °¡Á®°¡Áö(¿øÁ¤´ë)
+// ê· ë“±ì›ì •ëŒ€ ì•„ì´í…œ ëœë¤ìœ¼ë¡œ ê°€ì ¸ê°€ì§€(ì›ì •ëŒ€)
 bool GetItemRandomExped(CPC* pc, CItem* item)
 {
 	// validation
@@ -804,8 +804,8 @@ bool GetItemRandomExped(CPC* pc, CItem* item)
 
 	int i,j;
 	CExpedition* Exped = pc->m_Exped;
-	bool bPreference = false;		// ÀÌ ¿øÁ¤´ë°¡ ÀÚ°İÀÌ ÀÖ´Â°¡
-	int ExpedCount = 0;				// ¹ŞÀ» ¼ö ÀÖ´Â ÀÚ°İÀÌ ÀÖ´Â ¿øÁ¤´ë¿ø ¼ö
+	bool bPreference = false;		// ì´ ì›ì •ëŒ€ê°€ ìê²©ì´ ìˆëŠ”ê°€
+	int ExpedCount = 0;				// ë°›ì„ ìˆ˜ ìˆëŠ” ìê²©ì´ ìˆëŠ” ì›ì •ëŒ€ì› ìˆ˜
 
 	for (i=0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -822,32 +822,32 @@ bool GetItemRandomExped(CPC* pc, CItem* item)
 		}
 	}
 
-	// ¿ì¼±±ÇÀÌ ÀÖ´Âµ¥ ¿øÁ¤´ë°¡ ÀÚ°İ¾øÀ¸¸é return;
+	// ìš°ì„ ê¶Œì´ ìˆëŠ”ë° ì›ì •ëŒ€ê°€ ìê²©ì—†ìœ¼ë©´ return;
 	if (item->m_preferenceIndex != -1 && !bPreference)
 	{
-		// ¿ì¼±±ÇÀÌ ¾ø½À´Ï´Ù ¸Ş½ÃÁö Àü¼Û
+		// ìš°ì„ ê¶Œì´ ì—†ìŠµë‹ˆë‹¤ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_NOT_OWNER_ITEM);
 		SEND_Q(rmsg, pc->m_desc);
 		return false;
 	}
 
-	// ¹ŞÀ» »ç¶÷ÀÌ ¾ø´Ù.
+	// ë°›ì„ ì‚¬ëŒì´ ì—†ë‹¤.
 	if (ExpedCount < 1)
 		return false;
 
-	bool bGiveItem = false;		// ¾ÆÀÌÅÛ °¡Á® °¬´Ù!
-	int idx,idx2;				// °áÁ¤µÈ ÆÄÆ¼¿ø ÀÎµ¦½º
+	bool bGiveItem = false;		// ì•„ì´í…œ ê°€ì ¸ ê°”ë‹¤!
+	int idx,idx2;				// ê²°ì •ëœ íŒŒí‹°ì› ì¸ë±ìŠ¤
 
-	int bitfield = 0;			// °áÁ¤‰çÀ¸³ª ½ÇÆĞÇÑ ¿øÁ¤´ë¿ø ÀÎµ¦½º ÀúÀå
+	int bitfield = 0;			// ê²°ì •Â‰ç‘›ë¦½?ì‹¤íŒ¨í•œ ì›ì •ëŒ€ì› ì¸ë±ìŠ¤ ì €ì¥
 	bool bAll = false;
 
 	int deleteVIndex = item->getVIndex();
 
 	//TODO
 	/*
-	1. ÀÎº¥Åä¸®°¡ ºó À¯Àú¸¦ ¸ÕÀú Ã£¾Æ µ¥ÀÌÅÍ¸¦ ÀúÀåÇØ ³õ°í
-	2. ·£´ıÀ¸·Î ¾ÆÀÌÅÛÀ» ³Ö¾îÁØ´Ù.
+	1. ì¸ë²¤í† ë¦¬ê°€ ë¹ˆ ìœ ì €ë¥¼ ë¨¼ì € ì°¾ì•„ ë°ì´í„°ë¥¼ ì €ì¥í•´ ë†“ê³ 
+	2. ëœë¤ìœ¼ë¡œ ì•„ì´í…œì„ ë„£ì–´ì¤€ë‹¤.
 	*/
 
 	std::vector<CPC*> _user;
@@ -911,7 +911,7 @@ bool GetItemRandomExped(CPC* pc, CItem* item)
 #endif // GER_LOG
 	itemPickGameLog(_user[idx], item);
 		
-	// ¿ø·¡ ¾ÆÀÌÅÛ Ã³¸®
+	// ì›ë˜ ì•„ì´í…œ ì²˜ë¦¬
 	CNetMsg::SP disappmsg(new CNetMsg);
 	CNetMsg::SP takemsg(new CNetMsg);
 	CNetMsg::SP getmsg(new CNetMsg);
@@ -925,13 +925,13 @@ bool GetItemRandomExped(CPC* pc, CItem* item)
 	ItemDisappearMsg(disappmsg, deleteVIndex);
 	ItemGetMsg(getmsg, _user[idx], item);
 
-	// ¿ì¼±±Ç Á¦°Å
+	// ìš°ì„ ê¶Œ ì œê±°
 	item->m_preferenceIndex = -1;
 
-	// ¶¥¿¡¼­ Á¦°Å
+	// ë•…ì—ì„œ ì œê±°
 	pc->m_pArea->ItemFromCell(item);
 
-	// ¸Ş½ÃÁö º¸³»°í
+	// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 	pc->m_pArea->SendToCell(takemsg, pc, true);
 	pc->m_pArea->SendToCell(disappmsg, GET_YLAYER(pc), cx, cz);
 	pc->m_Exped->SendToPCInSameZone(pc->m_pZone->m_index, pc->m_pArea->m_index, getmsg);
@@ -962,7 +962,7 @@ bool GetItemGiveToBoss(CPC* pc, CItem* item)
 		return false;
 	}
 
-	// ¿ø·¡ ¾ÆÀÌÅÛ Ã³¸®
+	// ì›ë˜ ì•„ì´í…œ ì²˜ë¦¬
 	CNetMsg::SP disappmsg(new CNetMsg);
 	CNetMsg::SP takemsg(new CNetMsg);
 	CNetMsg::SP getmsg(new CNetMsg);
@@ -986,8 +986,8 @@ bool GetItemGiveToBoss(CPC* pc, CItem* item)
 	return true;
 }
 
-// tch ÀÇ ¾îÅÃ¸®½ºÆ®¿¡ ch Á¤º¸ Ãß°¡
-// ch°¡ tch¸¦ °ø°İ ;;;;
+// tch ì˜ ì–´íƒë¦¬ìŠ¤íŠ¸ì— ch ì •ë³´ ì¶”ê°€
+// chê°€ tchë¥¼ ê³µê²© ;;;;
 CAttackChar* AddAttackList(CCharacter* ch, CCharacter* tch, int hate)
 {
 	if (ch == tch)
@@ -1000,9 +1000,9 @@ CAttackChar* AddAttackList(CCharacter* ch, CCharacter* tch, int hate)
 	CAttackChar* tchAttackList = tch->m_attackList;
 	CAttackChar* ret = NULL;
 
-	// ÀÌ¹Ì ¾îÅÃ¸®½º¿¡ ÀÖÁö¸¸ ´Ù½Ã ¾îÅÃ¸®½ºÅ©°¡ µÈ °æ¿ì
-	// TargetHate °¡ 0ÀÎ ³ÑÀÌ ÀÖ´Ù¸é µµ¸Á°¬´Ù°¡ ´Ù½Ã ¿Â °æ¿ì
-	// TargetHate¸¦ ÃÊ±â°ªÀ¸·Î ¼ÂÆÃ
+	// ì´ë¯¸ ì–´íƒë¦¬ìŠ¤ì— ìˆì§€ë§Œ ë‹¤ì‹œ ì–´íƒë¦¬ìŠ¤í¬ê°€ ëœ ê²½ìš°
+	// TargetHate ê°€ 0ì¸ ë„˜ì´ ìˆë‹¤ë©´ ë„ë§ê°”ë‹¤ê°€ ë‹¤ì‹œ ì˜¨ ê²½ìš°
+	// TargetHateë¥¼ ì´ˆê¸°ê°’ìœ¼ë¡œ ì…‹íŒ…
 	while (chAttackList)
 	{
 		if (chAttackList->ch == tch)
@@ -1057,7 +1057,7 @@ CAttackChar* AddAttackList(CCharacter* ch, CCharacter* tch, int hate)
 	return ret;
 }
 
-// ch ¾îÅÃ¸®½ºÆ®¿¡¼­ Á¦°Å
+// ch ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
 void DelAttackList(CCharacter* ch)
 {
 	if (ch == NULL
@@ -1094,7 +1094,7 @@ void DelAttackList(CCharacter* ch)
 	}
 }
 
-// ch ¾îÅÃ¸®½ºÆ®¿¡¼­ tch¸¸ Á¦°Å
+// ch ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ tchë§Œ ì œê±°
 void DelTargetFromAttackList(CCharacter* ch, CCharacter* tch)
 {
 	CAttackChar* attCh;
@@ -1129,10 +1129,10 @@ void DelTargetFromAttackList(CCharacter* ch, CCharacter* tch)
 	}
 }
 
-// Á¤´ç¹æÀ§ ¸®½ºÆ®¿¡ Ãß°¡
+// ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 void AddRaList(CPC* of, CPC* df)
 {
-	// ÇÇÇØÀÚ Á¤¹æ ¸®½ºÆ®¿¡ °¡ÇØÀÚ Ãß°¡
+	// í”¼í•´ì ì •ë°© ë¦¬ìŠ¤íŠ¸ì— ê°€í•´ì ì¶”ê°€
 	CRaChar* raOf = new CRaChar;
 	raOf->m_raTarget = of;
 	raOf->m_raPulse = RAMODE_USE_PULSE;
@@ -1140,7 +1140,7 @@ void AddRaList(CPC* of, CPC* df)
 	ADD_TO_BILIST(raOf, df->m_raList, m_prev, m_next);
 	df->SetPlayerState(PLAYER_STATE_RAMODE);
 
-	// °¡ÇØÀÚ Á¤¹æ ¸®½ºÆ®¿¡ ÇÇÇØÀÚ Ãß°¡
+	// ê°€í•´ì ì •ë°© ë¦¬ìŠ¤íŠ¸ì— í”¼í•´ì ì¶”ê°€
 	CRaChar* raDf = new CRaChar;
 	raDf->m_raTarget = df;
 	raDf->m_bAttacker = false;
@@ -1152,7 +1152,7 @@ void AddRaList(CPC* of, CPC* df)
 	SEND_Q(rmsg, df->m_desc);
 }
 
-// Á¤´ç¹æÀ§ ¸®½ºÆ®¿¡¼­ Á¦°Å
+// ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
 void DelRaList(CPC* pc, bool bForce)
 {
 	CRaChar* raPC;
@@ -1196,7 +1196,7 @@ void DelRaList(CPC* pc, bool bForce)
 	}
 }
 
-// pc Á¤´ç¹æÀ§ ¸®½ºÆ®¿¡ tpc°¡ ÀÖ´Â°¡
+// pc ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ì— tpcê°€ ìˆëŠ”ê°€
 bool IsRaList(CPC* pc, CPC* tpc)
 {
 	CPC* findPC = PCManager::instance()->getPlayerByCharIndex(pc->m_index);
@@ -1231,10 +1231,10 @@ bool IsFirstAttackInAttackList(CPC* of, CPC* df)
 	return false;
 }
 
-// °ø°İ ´çÇÏ´Â npcÀÇ µ¿Á·Ã£±â : ÀÖÀ¸¸é °°ÀÌ °ø°İ
+// ê³µê²© ë‹¹í•˜ëŠ” npcì˜ ë™ì¡±ì°¾ê¸° : ìˆìœ¼ë©´ ê°™ì´ ê³µê²©
 void FindFamilyInNear(CCharacter* of, CNPC* npc)
 {
-	// Cell 2°³ Á¤µµ¿¡¼­
+	// Cell 2ê°œ ì •ë„ì—ì„œ
 	int sx = npc->m_cellX - 2;
 	int ex = npc->m_cellX + 2;
 	int sz = npc->m_cellZ - 2;
@@ -1259,8 +1259,8 @@ void FindFamilyInNear(CCharacter* of, CNPC* npc)
 				{
 					CNPC* tnpc = TO_NPC(ch);
 
-					// µ¿Á·ÀÌ°í ½Ã¾ß 2¹è ÀÌ³» °Å¸®ÀÌ°í disableTimeÀÌ ¼ÂÆÃ µÇ¾î ÀÖÁö ¾ÊÀ»¶§
-					// attacklist°¡ ºñ¾î ÀÖÀ» ¶§
+					// ë™ì¡±ì´ê³  ì‹œì•¼ 2ë°° ì´ë‚´ ê±°ë¦¬ì´ê³  disableTimeì´ ì…‹íŒ… ë˜ì–´ ìˆì§€ ì•Šì„ë•Œ
+					// attacklistê°€ ë¹„ì–´ ìˆì„ ë•Œ
 					if (npc->m_proto->m_family != -1 &&
 							tnpc->m_proto->m_family == npc->m_proto->m_family &&
 							GetDistance(npc, tnpc) < npc->m_proto->m_sight * 2 &&
@@ -1276,9 +1276,9 @@ void FindFamilyInNear(CCharacter* of, CNPC* npc)
 
 ////////////////////
 // Function name	: GetSkillPrototypes
-// Description	    : proto, level, magicindex·Î °¢°¢ÀÇ ÇÁ·ÎÅäÅ¸ÀÔÀ» ¾ò´Â´Ù
+// Description	    : proto, level, magicindexë¡œ ê°ê°ì˜ í”„ë¡œí† íƒ€ì…ì„ ì–»ëŠ”ë‹¤
 // Return type		: bool
-//                  : Á¤»óÀÏ¶§ true
+//                  : ì •ìƒì¼ë•Œ true
 bool GetSkillPrototypes(const CSkillProto* proto, int level, int magicindex, const CSkillLevelProto** levelproto, const CMagicProto** magic, const CMagicLevelProto** magiclevel)
 {
 	*levelproto = NULL;
@@ -1306,23 +1306,23 @@ bool GetSkillPrototypes(const CSkillProto* proto, int level, int magicindex, con
 	return true;
 }
 
-// of -> df¿¡°Ô hate¸¸Å­ HATE ¼öÄ¡ Áõ°¡
+// of -> dfì—ê²Œ hateë§Œí¼ HATE ìˆ˜ì¹˜ ì¦ê°€
 CAttackChar* ApplyHate(CCharacter* of, CCharacter* df, int hate, bool bApplyFamily)
 {
-	// ¼±°ø °Ë»ç
+	// ì„ ê³µ ê²€ì‚¬
 	bool bFirstAttack = false;
 
-	// dfÀÇ ¸®½ºÆ®°¡ ºñ¾úÀ» ¶§¿¡¸¸ ¼±°ø
+	// dfì˜ ë¦¬ìŠ¤íŠ¸ê°€ ë¹„ì—ˆì„ ë•Œì—ë§Œ ì„ ê³µ
 	if (df->m_attackList == NULL)
 	{
 		bFirstAttack = true;
 		hate += HATE_FIRST_ATTACK;
 	}
 
-	// ¸®½ºÆ®¿¡ Ãß°¡
+	// ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 	CAttackChar* ret = AddAttackList(of, df, hate);
 
-	// µ¿Á·¿¡°Ô Àû¿ë : df == NPCÀÏ °æ¿ì
+	// ë™ì¡±ì—ê²Œ ì ìš© : df == NPCì¼ ê²½ìš°
 	if (bApplyFamily && IS_NPC(df))
 		FindFamilyInNear(of, TO_NPC(df));
 
@@ -1331,15 +1331,15 @@ CAttackChar* ApplyHate(CCharacter* of, CCharacter* df, int hate, bool bApplyFami
 
 ////////////////////
 // Function name	: ApplyHateByDamage
-// Description	    : of°¡ df¸¦ damage¸¸Å­ °ø°İ½Ã ÇØ´çÇÏ´Â hate ¼öÄ¡¸¦ Àû¿ë
+// Description	    : ofê°€ dfë¥¼ damageë§Œí¼ ê³µê²©ì‹œ í•´ë‹¹í•˜ëŠ” hate ìˆ˜ì¹˜ë¥¼ ì ìš©
 void ApplyHateByDamage(CCharacter* of, CCharacter* df, char hittype, int damage)
 {
 	if (hittype != HITTYPE_MISS)
 	{
 		int hate = 0;
 
-		// of°¡ NPCÀÏ °æ¿ì hate Áõ°¡ ¾ÈÇÔ
-		// damage¿¡ µû¸¥ hate ¼öÄ¡ °è»ê
+		// ofê°€ NPCì¼ ê²½ìš° hate ì¦ê°€ ì•ˆí•¨
+		// damageì— ë”°ë¥¸ hate ìˆ˜ì¹˜ ê³„ì‚°
 		if (!IS_NPC(of))
 		{
 			hate += 10000 * damage / df->m_maxHP;
@@ -1358,13 +1358,13 @@ void ApplyHateByDamage(CCharacter* of, CCharacter* df, char hittype, int damage)
 
 ////////////////////
 // Function name	: ApplyDamage
-// Description	    : of°¡ df¸¦ damageTypeÇüÅÂÀÇ proto¸¦ °¡Áö°í flagÇüÅÂ·Î damage¸¸Å­ °ø°İ
-//                  : ÇØ´çÇÏ´Â damage¸Ş½ÃÁö¿Í proto¿¡ ´Ù¸¥ effect¸Ş½ÃÁö¸¦ Àü´Ş
+// Description	    : ofê°€ dfë¥¼ damageTypeí˜•íƒœì˜ protoë¥¼ ê°€ì§€ê³  flagí˜•íƒœë¡œ damageë§Œí¼ ê³µê²©
+//                  : í•´ë‹¹í•˜ëŠ” damageë©”ì‹œì§€ì™€ protoì— ë‹¤ë¥¸ effectë©”ì‹œì§€ë¥¼ ì „ë‹¬
 void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, const CSkillProto* proto, const CMagicProto* magic, int damage, char flag, bool isCharge)
 {
 	int realdamage = 0;
 
-	// PvP¿¡¼­´Â µ¥¹ÌÁö 25%¸¸
+	// PvPì—ì„œëŠ” ë°ë¯¸ì§€ 25%ë§Œ
 	bool bIsPCof = (IS_PC(of) || IS_PET(of) || IS_ELEMENTAL(of) || IS_APET(of) );
 	bool bIsPCdf = (IS_PC(df) || IS_PET(df) || IS_ELEMENTAL(df) || IS_APET(df) );
 	if (bIsPCof && bIsPCdf)
@@ -1378,7 +1378,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 		if (IS_PET(df))
 		{
 			damage = 1;
-			// 050309: bw ¹è°íÇÄ 20ÇÁ·Î ¹Ì¸¸ÀÏ¶§ µ¥¹ÌÁö 2¾¿ °¨¼Ò
+			// 050309: bw ë°°ê³ í”” 20í”„ë¡œ ë¯¸ë§Œì¼ë•Œ ë°ë¯¸ì§€ 2ì”© ê°ì†Œ
 			CPet* p = TO_PET(df);
 			if( p )
 			{
@@ -1392,7 +1392,16 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 
 	if (damage > 0)
 	{
-		// Àı¸Á Ã³¸®
+		//íŠ¸ë©ìŠ¤í‚¬ pvp ë°ë¯¸ì§€ ì²˜ë¦¬
+		if(proto != NULL && proto->m_index == 1753)
+		{
+			if(IS_PC(df) && IS_NPC(of) && TO_NPC(of)->m_owner != NULL)
+			{
+				damage /= 4;
+			}
+		}
+
+		// ì ˆë§ ì²˜ë¦¬
 		if (df->m_assist.m_state & AST_DESPAIR)
 		{
 			damage += df->m_assist.m_avAddition.despair
@@ -1459,7 +1468,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 		if (damage < 0)
 			damage = 0;
 
-		// HP °¨¼Ò
+		// HP ê°ì†Œ
 		if (damage > df->m_hp)
 			realdamage = df->m_hp;
 		else
@@ -1467,7 +1476,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 
 		bool bSendOFStatusMsg = false;
 
-		// HP/MP ½ºÆ¿
+		// HP/MP ìŠ¤í‹¸
 		if (IS_PC(of) && realdamage > 0)
 		{
 			CPC* pPCOffense = TO_PC(of);
@@ -1585,7 +1594,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 					}
 					break;
 				case MST_ATTACK_ONESHOTKILL:
-					// 15% ¹Ì¸¸ÀÌ¸é Áï»ç°¡ Àû¿ëµÊ
+					// 15% ë¯¸ë§Œì´ë©´ ì¦‰ì‚¬ê°€ ì ìš©ë¨
 					if ( IS_NPC(df) && df->m_hp <= df->m_maxHP * 15 / 100 )
 					{
 						damage = df->m_hp;
@@ -1614,7 +1623,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 			df->m_pArea->SendToCell(rmsg, of, true);
 		}
 
-		// npc°¡ ¸®ÇÃ·º¼Ç µ¥¹ÌÁö¸¦ ¹Ş°í Á×À¸¸é npc=null µÇ¾î ¼­¹ö ´Ù¿î ¹ö±× ¼öÁ¤
+		// npcê°€ ë¦¬í”Œë ‰ì…˜ ë°ë¯¸ì§€ë¥¼ ë°›ê³  ì£½ìœ¼ë©´ npc=null ë˜ì–´ ì„œë²„ ë‹¤ìš´ ë²„ê·¸ ìˆ˜ì •
 		switch( damageType )
 		{
 		case MSG_DAMAGE_REFLEX:
@@ -1644,7 +1653,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 
 		if ( of->m_assist.m_state & AST_INVERSE_DAMAGE && damageType != MSG_DAMAGE_COMBO )
 		{
-			// ¿ª µ¥¹ÌÁö µğ¹öÇÁ¿¡ °É¸° ¸ó½ºÅÍÀÌ¸é ¸ó½ºÅÍ ÄŞº¸ ÀÌÆåÆ® µ¥¹ÌÁö¸¦ Á¦¿ÜÇÑ ¸ğµç µ¥¹ÌÁö¸¦ È¸º¹À¸·Î ¹Ù²Û´Ù.
+			// ì—­ ë°ë¯¸ì§€ ë””ë²„í”„ì— ê±¸ë¦° ëª¬ìŠ¤í„°ì´ë©´ ëª¬ìŠ¤í„° ì½¤ë³´ ì´í™íŠ¸ ë°ë¯¸ì§€ë¥¼ ì œì™¸í•œ ëª¨ë“  ë°ë¯¸ì§€ë¥¼ íšŒë³µìœ¼ë¡œ ë°”ê¾¼ë‹¤.
 			df->m_hp += damage * 2;
 		}
 
@@ -1659,13 +1668,20 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 			df->m_hp = df->m_maxHP;
 		if (df->m_hp <= 0)
 			df->m_hp = 0;
-	}
-	//¾ÆÀÌÅÛ¿¡ ¿É¼Ç(ÆĞ½Ãºê, °ø°İÇü, ¹æ¾îÇü) ÀÌ ÀÖ´Â °æ¿ì Àû¿ë.
-	//TODO	1´Ü°è : Ä³¸¯ÅÍ°¡ ÀÔ°í ÀÖ´Â ¾ÆÀÌÅÛÀ» °Ë»çÇÑ´Ù.
-	//		2´Ü°è : ¾ÆÀÌÅÛ¿¡ ÀÖ´Â ¿É¼ÇÁß¿¡ ÆĞ½ÃºêÀÌ¸é Ç×»ó Àû¿ë, °ø°İÇüÀÌ¸é °ø°İ½Ã Àû¿ë, ¹æ¾îÇüÀÌ¸é ÇÇÇØ¸¦ ÀÔ¾úÀ» ¶§ Àû¿ë½ÃÅ²´Ù.
-	//		3´Ü°è : ½ºÅ³ ¸Ş½ÃÁö¸¦ º¸³½´Ù.
 
-	//¼º¼ö ¾ÆÀÌÅÛ µ¥¹ÌÁö ÃÖÁ¾ µ¥¹ÌÁö¿¡¼­ +@·Î µé¾î°¨.
+		if(IS_PC(df))
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			UpdateClient::CharStatusHPMP(rmsg, df->m_maxHP, df->m_hp, df->m_maxMP, df->m_mp);
+			SEND_Q(rmsg, TO_PC(df)->m_desc);
+		}
+	}
+	//ì•„ì´í…œì— ì˜µì…˜(íŒ¨ì‹œë¸Œ, ê³µê²©í˜•, ë°©ì–´í˜•) ì´ ìˆëŠ” ê²½ìš° ì ìš©.
+	//TODO	1ë‹¨ê³„ : ìºë¦­í„°ê°€ ì…ê³  ìˆëŠ” ì•„ì´í…œì„ ê²€ì‚¬í•œë‹¤.
+	//		2ë‹¨ê³„ : ì•„ì´í…œì— ìˆëŠ” ì˜µì…˜ì¤‘ì— íŒ¨ì‹œë¸Œì´ë©´ í•­ìƒ ì ìš©, ê³µê²©í˜•ì´ë©´ ê³µê²©ì‹œ ì ìš©, ë°©ì–´í˜•ì´ë©´ í”¼í•´ë¥¼ ì…ì—ˆì„ ë•Œ ì ìš©ì‹œí‚¨ë‹¤.
+	//		3ë‹¨ê³„ : ìŠ¤í‚¬ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¤.
+
+	//ì„±ìˆ˜ ì•„ì´í…œ ë°ë¯¸ì§€ ìµœì¢… ë°ë¯¸ì§€ì—ì„œ +@ë¡œ ë“¤ì–´ê°.
 
 	int holyItemIndex = -1;
 
@@ -1679,13 +1695,13 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 		}
 	}
 
-	// °á°ú ¸Ş½ÃÁö
+	// ê²°ê³¼ ë©”ì‹œì§€
 	if (proto)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		DamageMsg(rmsg, of, df, damageType, proto->m_index, damage, flag, holyItemIndex);
-#if defined (LC_GAMIGO) || defined (LC_USA) || defined (LC_RUS)					//º¸½º¸ó½ºÅÍ ·Î±× °Ô´õ¸µ
-		if(IS_NPC(df)) 															//º¸½ºNPC¿¡°Ô °ø°İÇÏ´Â °æ¿ì ·Î±×
+#if defined (LC_GAMIGO) || defined (LC_USA) || defined (LC_RUS)					//ë³´ìŠ¤ëª¬ìŠ¤í„° ë¡œê·¸ ê²Œë”ë§
+		if(IS_NPC(df)) 															//ë³´ìŠ¤NPCì—ê²Œ ê³µê²©í•˜ëŠ” ê²½ìš° ë¡œê·¸
 		{
 			CNPC *npc = TO_NPC(df);
 			if(npc->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS))
@@ -1703,7 +1719,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 				GAMELOG << end;
 			}
 		}
-		if(IS_NPC(of)) 															//º¸½ºNPC¿¡°Ô °ø°İ´çÇÒ °æ¿ì ·Î±×
+		if(IS_NPC(of)) 															//ë³´ìŠ¤NPCì—ê²Œ ê³µê²©ë‹¹í•  ê²½ìš° ë¡œê·¸
 		{
 			CNPC *npc = TO_NPC(of);
 			if(npc->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS))
@@ -1726,11 +1742,11 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 	}
 	else
 	{
-		//ÀÏ¹İ °ø°İÀÏ¶§
+		//ì¼ë°˜ ê³µê²©ì¼ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		DamageMsg(rmsg, of, df, damageType, -1, damage, flag, holyItemIndex);
-#if defined (LC_GAMIGO) || defined (LC_USA) || defined (LC_RUS)					//º¸½º¸ó½ºÅÍ ·Î±× °Ô´õ¸µ
-		if(IS_NPC(df)) 															//º¸½ºNPC¿¡°Ô °ø°İÇÒ °æ¿ì ·Î±×
+#if defined (LC_GAMIGO) || defined (LC_USA) || defined (LC_RUS)					//ë³´ìŠ¤ëª¬ìŠ¤í„° ë¡œê·¸ ê²Œë”ë§
+		if(IS_NPC(df)) 															//ë³´ìŠ¤NPCì—ê²Œ ê³µê²©í•  ê²½ìš° ë¡œê·¸
 		{
 			CNPC *npc = TO_NPC(df);
 			if(npc->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS))
@@ -1748,7 +1764,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 				GAMELOG << end;
 			}
 		}
-		if(IS_NPC(of)) 															//º¸½ºNPC¿¡°Ô °ø°İ´çÇÒ °æ¿ì ·Î±×
+		if(IS_NPC(of)) 															//ë³´ìŠ¤NPCì—ê²Œ ê³µê²©ë‹¹í•  ê²½ìš° ë¡œê·¸
 		{
 			CNPC *npc = TO_NPC(of);
 			if(npc->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS))
@@ -1770,7 +1786,7 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 		df->m_pArea->SendToCell(rmsg, df, true);
 	}
 
-	//¹«Àû ¹öÇÁ°¡ ÀÖ´Â °æ¿ì¿¡(°ø°İ°¡´É¸ğµå)´Â ÇØ´ç ¹öÇÁ¸¦ Áö¿öÁØ´Ù.
+	//ë¬´ì  ë²„í”„ê°€ ìˆëŠ” ê²½ìš°ì—(ê³µê²©ê°€ëŠ¥ëª¨ë“œ)ëŠ” í•´ë‹¹ ë²„í”„ë¥¼ ì§€ì›Œì¤€ë‹¤.
 	if (of->m_assist.FindBySkillIndex(IMMOTAL_BUF) && of->m_bFirstDoIt == true)
 	{
 		of->m_assist.CureBySkillIndex(IMMOTAL_BUF);
@@ -1779,15 +1795,15 @@ void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, con
 
 ////////////////////
 // Function name	: CalcPKPoint
-// Description	    : of¿¡ ÀÇÇØ df°¡ »ç¸Á½Ã of, dfÀÇ ¼ºÇâ ¼öÄ¡ °è»ê
-//                  : bDeadPet°¡ trueÀÌ¸é Pet »ç¸Á¿¡ ÀÇÇÑ Ã³¸®
+// Description	    : ofì— ì˜í•´ dfê°€ ì‚¬ë§ì‹œ of, dfì˜ ì„±í–¥ ìˆ˜ì¹˜ ê³„ì‚°
+//                  : bDeadPetê°€ trueì´ë©´ Pet ì‚¬ë§ì— ì˜í•œ ì²˜ë¦¬
 void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 {
-	//°ø°İÀÚ°¡ ¹«¼Ò¼ÓÀÌ ¾Æ´Ï¶ó¸é return;
+	//ê³µê²©ìê°€ ë¬´ì†Œì†ì´ ì•„ë‹ˆë¼ë©´ return;
 	if (of->m_pZone->isRVRZone() && of->getSyndicateType() != 0)
 		return;
 	
-	// ÀÌÀü¿¡ Ä«¿ÀÀÎÁö °Ë»ç
+	// ì´ì „ì— ì¹´ì˜¤ì¸ì§€ ê²€ì‚¬
 
 #ifdef FREE_PK_SYSTEM
 	if( !gserver->m_bFreePk )
@@ -1803,9 +1819,9 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 
 			if (!df->IsChaotic() || bDeadPet)
 			{
-				// ¸ÖÂÄÇÑ »ç¶÷ Á×ÀÓ ¶Ç´Â Æê Á×ÀÓ
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû :: ¸ÖÂÄÇÑ »ç¶÷À» Á×¿´À¸´Ï Ä«¿À¼ºÇâÀ¸·Î Áõ°¡
-				if( of->IsChaotic() ) // Ä«¿À°¡ ÀÏ¹İÀÌ³ª ÇåÅÍ¸¦ Á×¿´À» °æ¿ì
+				// ë©€ì©¡í•œ ì‚¬ëŒ ì£½ì„ ë˜ëŠ” í« ì£½ì„
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼ :: ë©€ì©¡í•œ ì‚¬ëŒì„ ì£½ì˜€ìœ¼ë‹ˆ ì¹´ì˜¤ì„±í–¥ìœ¼ë¡œ ì¦ê°€
+				if( of->IsChaotic() ) // ì¹´ì˜¤ê°€ ì¼ë°˜ì´ë‚˜ í—Œí„°ë¥¼ ì£½ì˜€ì„ ê²½ìš°
 				{
 					int penalty = 0;
 					if( of->m_pkPenalty >= PK_CHAOTIC_POINT_1 )
@@ -1817,7 +1833,7 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 
 					of->AddPkPenalty( penalty );
 				}
-				else // ÀÏ¹İÀÌ³ª ÇåÅÍ°¡ ÀÏ¹İ È¤Àº ÇåÅÍ¸¦ Á×¿´À» °æ¿ì ¹«Á¶°Ç Ä«¿À·Î ¸¸µç´Ù.
+				else // ì¼ë°˜ì´ë‚˜ í—Œí„°ê°€ ì¼ë°˜ í˜¹ì€ í—Œí„°ë¥¼ ì£½ì˜€ì„ ê²½ìš° ë¬´ì¡°ê±´ ì¹´ì˜¤ë¡œ ë§Œë“ ë‹¤.
 					of->m_pkPenalty = PK_CHAOTIC_POINT_1;
 #else
 				of->m_pkPenalty -= 10;
@@ -1825,16 +1841,16 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 					of->m_pkPenalty -= 10;
 				if (of->m_pkPenalty < -155)
 					of->m_pkPenalty = -155;
-#endif // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#endif // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 				of->m_pkCount -= 1;
 				if (of->m_pkCount < -110)
 					of->m_pkCount = -110;
 			}
 			else
 			{
-				// ³ª»Û³Ñ Á×ÀÓ
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû :: Ä«¿À¸¦ Á×¿´´Ù¸é
-				if( of->m_pkPenalty >= 0 && of->m_pkPenalty < PK_HUNTER_POINT_1 ) // Æ¯Á¤ ¼ºÇâ ¹üÀ§¿¡¼­¸¸ Ä«¿À¸¦ Á×ÀÏ¶§ ¼ºÇâ ¼öÄ¡¸¦ ÁØ´Ù.
+				// ë‚˜ìœë„˜ ì£½ì„
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼ :: ì¹´ì˜¤ë¥¼ ì£½ì˜€ë‹¤ë©´
+				if( of->m_pkPenalty >= 0 && of->m_pkPenalty < PK_HUNTER_POINT_1 ) // íŠ¹ì • ì„±í–¥ ë²”ìœ„ì—ì„œë§Œ ì¹´ì˜¤ë¥¼ ì£½ì¼ë•Œ ì„±í–¥ ìˆ˜ì¹˜ë¥¼ ì¤€ë‹¤.
 				{
 					int nlevel = df->m_level - of->m_level;
 					int pkPenalty = 0;
@@ -1848,9 +1864,9 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 					if( of->m_assist.m_avRate.pkDispositionPointValue > 0 )
 					{
 						pkPenalty = pkPenalty * of->m_assist.m_avRate.pkDispositionPointValue;
-						of->m_assist.CureByItemIndex(7474);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-						of->m_assist.CureByItemIndex(7475);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-						of->m_assist.CureByItemIndex(7476);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
+						of->m_assist.CureByItemIndex(7474);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+						of->m_assist.CureByItemIndex(7475);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+						of->m_assist.CureByItemIndex(7476);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
 					}
 
 					of->AddPkPenalty( pkPenalty );
@@ -1862,8 +1878,8 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 					if (of->m_pkCount > 110)
 						of->m_pkCount = 110;
 				}
-#else // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû :: Ä«¿À¸¦ Á×¿´´Ù¸é
-				// µ¿·¾ ÀÌ»óÀÌ¸é
+#else // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼ :: ì¹´ì˜¤ë¥¼ ì£½ì˜€ë‹¤ë©´
+				// ë™ë ™ ì´ìƒì´ë©´
 				if (df->m_level >= of->m_level)
 				{
 					if( !gserver->m_bNonPK )
@@ -1877,14 +1893,14 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 					if (of->m_pkCount > 110)
 						of->m_pkCount = 110;
 				}
-#endif // REFORM_PK_PENALTY_201108  PK ÆĞ³ÎÆ¼ ¸®Æû :: Ä«¿À¸¦ Á×¿´´Ù¸é
+#endif // REFORM_PK_PENALTY_201108  PK íŒ¨ë„í‹° ë¦¬í¼ :: ì¹´ì˜¤ë¥¼ ì£½ì˜€ë‹¤ë©´
 			}
 
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 			if (of->m_pkPenalty < 0 )
-#else // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#else // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 			if (of->m_pkPenalty < -9)
-#endif // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#endif // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 			{
 				if (!isPKChar || of->m_pkRecoverPulse <= 0)
 					of->m_pkRecoverPulse = TIME_ONE_HOUR;
@@ -1901,7 +1917,7 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 
 
 	{
-		// Æä³ÎÆ¼ ¼öÄ¡ º¯°æ ¾Ë¸®±â
+		// í˜ë„í‹° ìˆ˜ì¹˜ ë³€ê²½ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		CharStatusMsg(rmsg, of, 0);
 		of->m_pArea->SendToCell(rmsg, of, false);
@@ -1912,13 +1928,13 @@ void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet)
 
 void CalcWarPoint(CCharacter* of, CCharacter* df)
 {
-	// °ø¼ºÀÌ ÀÌ·ç¾îÁö°í ÀÖ´Â Á¸¿¡¼­
+	// ê³µì„±ì´ ì´ë£¨ì–´ì§€ê³  ìˆëŠ” ì¡´ì—ì„œ
 	int zoneindex = of->m_pZone->m_index;
 	CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 	if (castle == NULL)
 		return ;
 
-	// °ø¼ºÁß¿¡ ±æµåÀå »ç¸Á½Ã Æ÷ÀÎÆ® °¨¼Ò : 10 %
+	// ê³µì„±ì¤‘ì— ê¸¸ë“œì¥ ì‚¬ë§ì‹œ í¬ì¸íŠ¸ ê°ì†Œ : 10 %
 	if (IS_PC(df))
 	{
 		CPC* dpc = TO_PC(df);
@@ -1945,21 +1961,21 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 				}
 			}
 		}
-	} // °ø¼ºÁß¿¡ ±æµåÀå »ç¸Á½Ã Æ÷ÀÎÆ® °¨¼Ò : 10 %
+	} // ê³µì„±ì¤‘ì— ê¸¸ë“œì¥ ì‚¬ë§ì‹œ í¬ì¸íŠ¸ ê°ì†Œ : 10 %
 
 	if (castle->GetState() != WCSF_WAR_FIELD)
 		return ;
 
-	int mode = 0;			// Æ÷ÀÎÆ® °è»ê ¹æ¹ı, ¾øÀ½(0), ¼ö¼º1Æ÷ÀÎÆ®(1), °ø¼º1Æ÷ÀÎÆ®(2), °ø¼º20Æ÷ÀÎÆ®(3)
+	int mode = 0;			// í¬ì¸íŠ¸ ê³„ì‚° ë°©ë²•, ì—†ìŒ(0), ìˆ˜ì„±1í¬ì¸íŠ¸(1), ê³µì„±1í¬ì¸íŠ¸(2), ê³µì„±20í¬ì¸íŠ¸(3)
 
-	// Á×ÀÎ »ç¶÷ÀÌ PCÀÎ°¡?
+	// ì£½ì¸ ì‚¬ëŒì´ PCì¸ê°€?
 	if (IS_PC(of))
 	{
 		CPC* opc = TO_PC(of);
 
 		if (IS_DEFENSE_TEAM(opc->GetJoinFlag(zoneindex)))
 		{
-			// ¼ö¼ºÃøÀÌ Á×ÀÎ °Å¶ó¸é, Á×Àº »ç¶÷ÀÌ °ø¼º ÃøÀÎ°¡?
+			// ìˆ˜ì„±ì¸¡ì´ ì£½ì¸ ê±°ë¼ë©´, ì£½ì€ ì‚¬ëŒì´ ê³µì„± ì¸¡ì¸ê°€?
 			if (IS_PC(df))
 			{
 				CPC* dpc = TO_PC(df);
@@ -1971,8 +1987,8 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 		}
 		else if (opc->GetJoinFlag(zoneindex) == WCJF_ATTACK_GUILD)
 		{
-			// °ø¼º±æµå¿øÀÌ Á×ÀÎ °Å¶ó¸é
-			// PCÀÎ°¡? ¼öÈ£º´ÀÎ°¡
+			// ê³µì„±ê¸¸ë“œì›ì´ ì£½ì¸ ê±°ë¼ë©´
+			// PCì¸ê°€? ìˆ˜í˜¸ë³‘ì¸ê°€
 			if (IS_PC(df))
 			{
 				CPC* dpc = TO_PC(df);
@@ -1993,11 +2009,11 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 	}
 	else if (IS_NPC(of))
 	{
-		// ¼öÈ£º´ÀÌ Á×¿´´Ù¸é
+		// ìˆ˜í˜¸ë³‘ì´ ì£½ì˜€ë‹¤ë©´
 		CNPC* onpc = TO_NPC(of);
 		if (onpc->m_proto->CheckFlag(NPC_CASTLE_GUARD))
 		{
-			// Á×Àº°Ô °ø¼ºÃø
+			// ì£½ì€ê²Œ ê³µì„±ì¸¡
 			if (IS_PC(df))
 			{
 				CPC* dpc = TO_PC(df);
@@ -2021,7 +2037,7 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 			CPC* dpc = TO_PC(df);
 			int joinflag = dpc->GetJoinFlag(zoneindex);
 
-			if(joinflag == WCJF_OWNER							// ±æµåÂü¿©ÀÏ ¶§
+			if(joinflag == WCJF_OWNER							// ê¸¸ë“œì°¸ì—¬ì¼ ë•Œ
 					|| joinflag == WCJF_DEFENSE_GUILD
 					|| joinflag == WCJF_ATTACK_GUILD)
 			{
@@ -2033,15 +2049,15 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 					else if(postype != MSG_GUILD_POSITION_UNKNOWN)	increasePoint=5;
 				}
 			}
-			else if(joinflag == WCJF_DEFENSE_CHAR				// ¿ëº´Âü¿©ÀÏ ¶§
+			else if(joinflag == WCJF_DEFENSE_CHAR				// ìš©ë³‘ì°¸ì—¬ì¼ ë•Œ
 					|| joinflag == WCJF_ATTACK_CHAR)
 			{
-				// ¿ëº´Àº 5Á¡
+				// ìš©ë³‘ì€ 5ì 
 				increasePoint=5;
 			}
 		}
 		break;
-	case 3:														// ¼öÈ£º´ NPC ÀÏ ¶§
+	case 3:														// ìˆ˜í˜¸ë³‘ NPC ì¼ ë•Œ
 		increasePoint=3;
 		break;
 	default:
@@ -2050,12 +2066,12 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 
 	switch (mode)
 	{
-	case 1:			// ¼ö¼ºÃø 1Æ÷ÀÎÆ®
+	case 1:			// ìˆ˜ì„±ì¸¡ 1í¬ì¸íŠ¸
 		{
 			int totalDamage = 0;
-			int damage = 0;	// ¼ö¼ºÃøÀÌ ÁØ ´ë¹ÌÁö ÃÑÇÕ
+			int damage = 0;	// ìˆ˜ì„±ì¸¡ì´ ì¤€ ëŒ€ë¯¸ì§€ ì´í•©
 
-			// PC¸¦ °ø°İÇß´ø Ä³¸¯ÅÍ ·çÇÁ¸¦ µ¹¸é¼­ ¼ö¼ºÃøÀÌ ÁØ ´ë¹ÌÁö ÃÑÇÕÀ» ±¸ÇÑ´Ù
+			// PCë¥¼ ê³µê²©í–ˆë˜ ìºë¦­í„° ë£¨í”„ë¥¼ ëŒë©´ì„œ ìˆ˜ì„±ì¸¡ì´ ì¤€ ëŒ€ë¯¸ì§€ ì´í•©ì„ êµ¬í•œë‹¤
 			CAttackChar* p = df->m_attackList;
 			while (p)
 			{
@@ -2066,12 +2082,12 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 					switch (p->ch->m_type)
 					{
 					case MSG_CHAR_PC:
-						// ÇØ´ç Á¸ ¼ö¼ºÃø À¯Àú¶ó¸é
+						// í•´ë‹¹ ì¡´ ìˆ˜ì„±ì¸¡ ìœ ì €ë¼ë©´
 						if (IS_DEFENSE_TEAM(p->pc->GetJoinFlag(zoneindex)))
 							damage += p->m_damage;
 						break;
 					case MSG_CHAR_NPC:
-						// ¼öÈ£º´ÀÌ¶ó¸é
+						// ìˆ˜í˜¸ë³‘ì´ë¼ë©´
 						if (p->npc->m_proto->CheckFlag(NPC_CASTLE_GUARD))
 							damage += p->m_damage;
 						break;
@@ -2083,7 +2099,7 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 				p = p->m_next;
 			}	// while (p)
 
-			// Ã¼·ÂÀÇ Àı¹İ ÀÌ»ó ´ë¹ÌÁö¸¦ ÁØ°æ¿ì Æ÷ÀÎÆ® Áõ°¡
+			// ì²´ë ¥ì˜ ì ˆë°˜ ì´ìƒ ëŒ€ë¯¸ì§€ë¥¼ ì¤€ê²½ìš° í¬ì¸íŠ¸ ì¦ê°€
 			if (totalDamage / 2 <= damage && damage > 0)
 			{
 				castle->IncreaseTeamPoint(0, increasePoint);
@@ -2091,21 +2107,21 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 		}
 		break;
 
-	case 2:			// °ø¼ºÃø 1Æ÷ÀÎÆ®
-	case 3:			// °ø¼ºÃø 5Æ÷ÀÎÆ®
+	case 2:			// ê³µì„±ì¸¡ 1í¬ì¸íŠ¸
+	case 3:			// ê³µì„±ì¸¡ 5í¬ì¸íŠ¸
 		{
 			int totalDamage = 0;
-			int countAttackGuild = castle->GetCountAttackGuild();		// °ø¼º ±æµå ¼ö
-			int* indexAttackGuild = new int[countAttackGuild];			// °ø¼º ±æµå ÀÎµ¦½º
-			int* damagePerAttackGuild = new int[countAttackGuild];		// °ø¼º ±æµåº° ´ë¹ÌÁö
-			int maxDamageGuild = 0;										// ´ë¹ÌÁö¸¦ °¡Àå ¸¹ÀÌ ÁØ ±æµå ¹è¿­ ÀÎµ¦½º
-			int damageAttackTeam = 0;									// °ø¼ºÃø(±æµå, ¿ëº´)ÀÌ ÁØ ´ë¹ÌÁö ÃÑÇÕ
+			int countAttackGuild = castle->GetCountAttackGuild();		// ê³µì„± ê¸¸ë“œ ìˆ˜
+			int* indexAttackGuild = new int[countAttackGuild];			// ê³µì„± ê¸¸ë“œ ì¸ë±ìŠ¤
+			int* damagePerAttackGuild = new int[countAttackGuild];		// ê³µì„± ê¸¸ë“œë³„ ëŒ€ë¯¸ì§€
+			int maxDamageGuild = 0;										// ëŒ€ë¯¸ì§€ë¥¼ ê°€ì¥ ë§ì´ ì¤€ ê¸¸ë“œ ë°°ì—´ ì¸ë±ìŠ¤
+			int damageAttackTeam = 0;									// ê³µì„±ì¸¡(ê¸¸ë“œ, ìš©ë³‘)ì´ ì¤€ ëŒ€ë¯¸ì§€ ì´í•©
 
-			// ¹è¿­ ÃÊ±âÈ­
+			// ë°°ì—´ ì´ˆê¸°í™”
 			memset(indexAttackGuild, 0, sizeof(int) * countAttackGuild);
 			memset(damagePerAttackGuild, 0, sizeof(int) * countAttackGuild);
 
-			// df °ø°İÇß´ø Ä³¸¯ÅÍ ·çÇÁ¸¦ µ¹¸é¼­
+			// df ê³µê²©í–ˆë˜ ìºë¦­í„° ë£¨í”„ë¥¼ ëŒë©´ì„œ
 			CAttackChar* p = df->m_attackList;
 			while (p)
 			{
@@ -2115,7 +2131,7 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 
 					if (IS_PC(p->ch))
 					{
-						// ÇØ´ç Á¸ °ø¼ºÃø À¯Àú Áß¿¡, ±æµå Á¤º¸°¡ ÀÖ´Â À¯ÀúÀÌ¸é
+						// í•´ë‹¹ ì¡´ ê³µì„±ì¸¡ ìœ ì € ì¤‘ì—, ê¸¸ë“œ ì •ë³´ê°€ ìˆëŠ” ìœ ì €ì´ë©´
 						if (p->pc->GetJoinFlag(zoneindex) == WCJF_ATTACK_GUILD && p->pc->m_guildInfo && p->pc->m_guildInfo->guild())
 						{
 							int i;
@@ -2123,11 +2139,11 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 							{
 								if (indexAttackGuild[i] == p->pc->m_guildInfo->guild()->index() || indexAttackGuild[i] == 0)
 								{
-									// ÇØ´ç ±æµå ´ë¹ÌÁö ÇÕ°è¿¡ ´õÇÏ°í
+									// í•´ë‹¹ ê¸¸ë“œ ëŒ€ë¯¸ì§€ í•©ê³„ì— ë”í•˜ê³ 
 									indexAttackGuild[i] = p->pc->m_guildInfo->guild()->index();
 									damagePerAttackGuild[i] += p->m_damage;
 
-									// °ø°İÃø ±æµå Áß¿¡ °¡Àå ´ë¹ÌÁö¸¦ ¸¹ÀÌ ÁØ ±æµå¸¦ °è»ê
+									// ê³µê²©ì¸¡ ê¸¸ë“œ ì¤‘ì— ê°€ì¥ ëŒ€ë¯¸ì§€ë¥¼ ë§ì´ ì¤€ ê¸¸ë“œë¥¼ ê³„ì‚°
 									if (i != 0 && damagePerAttackGuild[i] >= damagePerAttackGuild[maxDamageGuild])
 										maxDamageGuild = i;
 
@@ -2143,7 +2159,7 @@ void CalcWarPoint(CCharacter* of, CCharacter* df)
 				p = p->m_next;
 			}	// while (p)
 
-			// ´©Àû ´ë¹ÌÁö(¶Ç´Â ÃÖ´ë Ã¼·Â)¿Í °ø°İÆÀÀÇ ÀüÃ¼ ´ë¹ÌÁö¸¦ ºñ±³ÇØ¼­ °ø°İÆÀÀÌ 50% ÀÌ»óÀ» Â÷ÁöÇØ¾ß Æ÷ÀÎÆ®°¡ Áõ°¡
+			// ëˆ„ì  ëŒ€ë¯¸ì§€(ë˜ëŠ” ìµœëŒ€ ì²´ë ¥)ì™€ ê³µê²©íŒ€ì˜ ì „ì²´ ëŒ€ë¯¸ì§€ë¥¼ ë¹„êµí•´ì„œ ê³µê²©íŒ€ì´ 50% ì´ìƒì„ ì°¨ì§€í•´ì•¼ í¬ì¸íŠ¸ê°€ ì¦ê°€
 			if (totalDamage / 2 <= damageAttackTeam && indexAttackGuild[maxDamageGuild] != 0)
 			{
 				castle->IncreaseTeamPoint(indexAttackGuild[maxDamageGuild], increasePoint);
@@ -2180,7 +2196,7 @@ void DropWarCastleTokenDeadPC(CCharacter* df)
 	if ( !castle->IsInInnerCastle(dpc) )
 		return ;
 
-	// È®·ü °è»ê
+	// í™•ë¥  ê³„ì‚°
 	if(GetRandom(1, 100) > 5)
 		return ;
 
@@ -2226,7 +2242,7 @@ void DropWarCastleTokenDeadPC(CCharacter* df)
 		pItem->m_pArea->SendToCell(rmsg, dpc, true);
 	}
 
-	// 7. °ÔÀÓ ·Î±×
+	// 7. ê²Œì„ ë¡œê·¸
 	GAMELOG << init("WARCASTLE_TOKEN_DROP_DEAD_PC", dpc)
 			<< "ITEM" << delim
 			<< itemlog(pItem)
@@ -2250,7 +2266,7 @@ void DropWarCastleToken(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 	if(tpc->GetJoinFlag(castle->GetZoneIndex()) != WCJF_NONE)
 	{
-		// È®·ü ¼öÁ¤
+		// í™•ë¥  ìˆ˜ì •
 		if(GetRandom(1, 100) <= 5)
 		{
 			CItem* pItem = gserver->m_itemProtoList.CreateItem(6653, -1, 0, 0, 1);
@@ -2265,7 +2281,7 @@ void DropWarCastleToken(CNPC* npc, CPC* pc, CPC* tpc, int level)
 				pItem->m_pArea->SendToCell(rmsg, GET_YLAYER(pItem), pItem->m_cellX, pItem->m_cellZ);
 			}
 
-			// 7. °ÔÀÓ ·Î±×
+			// 7. ê²Œì„ ë¡œê·¸
 			GAMELOG << init("WARCASTLE_TOKEN_DROP", tpc)
 					<< "NPC" << delim
 					<< npc->m_idNum << delim
@@ -2283,10 +2299,10 @@ void DropWarCastleToken(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 void ProcFollowNPC(CNPC* npc)
 {
-	// ¸®´õ ÇÃ·¡±× 0
+	// ë¦¬ë” í”Œë˜ê·¸ 0
 	if (npc->m_proto->CheckLeaderBit(0) && npc->m_proto->m_family != -1)
 	{
-		// ÁÖÀ§¿¡¼­ ÅÊÄ¿ ¿ì¼±À¸·Î ÃÖ´ë 5ÀÎ HP/MP È¸º¹
+		// ì£¼ìœ„ì—ì„œ íƒ±ì»¤ ìš°ì„ ìœ¼ë¡œ ìµœëŒ€ 5ì¸ HP/MP íšŒë³µ
 		int sx = npc->m_cellX - CELL_EXT;
 		int ex = npc->m_cellX + CELL_EXT;
 		int sz = npc->m_cellZ - CELL_EXT;
@@ -2297,7 +2313,7 @@ void ProcFollowNPC(CNPC* npc)
 		CNPC* ret[5] = {NULL, NULL, NULL, NULL, NULL};
 
 		int i = 0;
-		// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+		// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 		for (x = sx; x <= ex; x++)
 		{
 			if (x < 0 || x >= npc->m_pArea->m_size[0]) continue;
@@ -2307,18 +2323,18 @@ void ProcFollowNPC(CNPC* npc)
 				CCharacter *pChar;
 				for (pChar = npc->m_pArea->m_cell[x][z].m_listChar; pChar; pChar = pChar->m_pCellNext)
 				{
-					// NPC¸¸, ÀÚ½ÅÀº Á¦¿Ü, Á×Àº³Ñ Á¦¿Ü, ´Ù¸¥Ãş Á¦¿Ü
+					// NPCë§Œ, ìì‹ ì€ ì œì™¸, ì£½ì€ë„˜ ì œì™¸, ë‹¤ë¥¸ì¸µ ì œì™¸
 					if (!IS_NPC(pChar) || pChar == npc || DEAD(pChar) || ABS(GET_YLAYER(npc) - GET_YLAYER(pChar)) >= 2)
 						continue ;
 
 					CNPC* tnpc = TO_NPC(pChar);
 
-					// µ¿Á·ÀÌ°í
+					// ë™ì¡±ì´ê³ 
 					if (tnpc->m_proto->m_family != npc->m_proto->m_family)
 						continue ;
 
-					// ±âÁ¸°ú Å¸ÀÔ°Ë»ç : ÅÊÄ¿, ÀÚ½ÅÀÇÅ¸ÀÔ, ±×¿Ü, ¾øÀ½
-					// Å¸ÀÔÀÌ °°À¸¸é °Å¸®·Î ºñ±³
+					// ê¸°ì¡´ê³¼ íƒ€ì…ê²€ì‚¬ : íƒ±ì»¤, ìì‹ ì˜íƒ€ì…, ê·¸ì™¸, ì—†ìŒ
+					// íƒ€ì…ì´ ê°™ìœ¼ë©´ ê±°ë¦¬ë¡œ ë¹„êµ
 					bool bReqSort = false;
 					if (i < 5)
 					{
@@ -2343,7 +2359,7 @@ void ProcFollowNPC(CNPC* npc)
 						}
 					}
 
-					// °Å¸® Á¦ÀÏ ¸Õ ³à¼®ÀÌ ¾Õ¿¡¿À°Ô Á¤·Ä
+					// ê±°ë¦¬ ì œì¼ ë¨¼ ë…€ì„ì´ ì•ì—ì˜¤ê²Œ ì •ë ¬
 					if (bReqSort)
 					{
 						int k;
@@ -2380,7 +2396,7 @@ void ProcFollowNPC(CNPC* npc)
 				ret[i]->m_pArea->SendToCell(rmsg, ret[i]);
 			}
 		}
-	} // --- ¸®´õ ÇÃ·¡±× 0
+	} // --- ë¦¬ë” í”Œë˜ê·¸ 0
 }
 
 int AIComp(CNPC* base, CNPC* n1, CNPC* n2)
@@ -2399,23 +2415,23 @@ int AIComp(CNPC* base, CNPC* n1, CNPC* n2)
 	if (type1 == type2)
 		return 0;
 
-	// ÀÏ¹İ ¸÷Àº ÃÖÇÏ ¿ì¼±¼øÀ§
+	// ì¼ë°˜ ëª¹ì€ ìµœí•˜ ìš°ì„ ìˆœìœ„
 	if (type1 != NPC_AI_NORMAL && type2 == NPC_AI_NORMAL)
 		return -1;
 	if (type1 == NPC_AI_NORMAL && type2 != NPC_AI_NORMAL)
 		return 1;
 
-	// ÅÊÄ¿ 1¼øÀ§
+	// íƒ±ì»¤ 1ìˆœìœ„
 	if (type1 == NPC_AI_TANKER)			return -1;
 	if (type2 == NPC_AI_TANKER)			return 1;
-	// µ¿ÀÏÅ¸ÀÔ 2¼øÀ§
+	// ë™ì¼íƒ€ì… 2ìˆœìœ„
 	if (type1 == typeb)					return -1;
 	if (type2 == typeb)					return 1;
-	// ±×¿Ü Å¸ÀÔÀº µ¿ÀÏ ¼øÀ§
+	// ê·¸ì™¸ íƒ€ì…ì€ ë™ì¼ ìˆœìœ„
 	return 0;
 }
 
-// of°¡ df¸¦ Á×ÀÌ¸é PKÀÎÁö °Ë»ç
+// ofê°€ dfë¥¼ ì£½ì´ë©´ PKì¸ì§€ ê²€ì‚¬
 bool IsPK(CPC* of, CCharacter* df)
 {
 #ifdef MAL_DISABLE_PKPENALTY
@@ -2455,20 +2471,20 @@ bool IsPK(CPC* of, CCharacter* df)
 	if (dpc == NULL)
 		return false;
 
-	// ±âº»ÀûÀ¸·Î Á×´Â°Ç ÆĞ³ÎÆ¼°¡ Æú½º°í, Æä³ÎÆ¼ ÁÖ´Â°Ç Æ®·ç
-	// µØÁø³ÑÀÌ pk¸ğµå ÀÌ°Å³ª Ä«¿À¸é µÑ´Ù Æ®·ç
-	// µØÁø³ÑÀÌ Á¤¹æ ¸®½ºÆ®¿¡ ÀÖ°í Ä«¿À°¡ ¾Æ´Ï°í °ø°İÀÚµµ Ä«¿À°¡ ¾Æ´Ï¸é Ä«¿À¼ºÇâ ¼öÄ¡¸¦ °è»êÇÏÁö ¾Ê´Â´Ù
-	// pk ÆĞ³ÎÆ¼¸¦ ÁÖ´Â°Í »Ó¸¸ ¾Æ´Ï¶ó ¼ºÇâÈ¸º¹¿¡µµ °ü°èµÇ¹Ç·Î ¼ºÇâ È¸º¹ÀÌ³ª ÆĞ³ÎÆ¼µî ¾î´À°Í¿¡¶óµµ °É¸®¸é true
+	// ê¸°ë³¸ì ìœ¼ë¡œ ì£½ëŠ”ê±´ íŒ¨ë„í‹°ê°€ í´ìŠ¤ê³ , í˜ë„í‹° ì£¼ëŠ”ê±´ íŠ¸ë£¨
+	// ë’ˆì§„ë„˜ì´ pkëª¨ë“œ ì´ê±°ë‚˜ ì¹´ì˜¤ë©´ ë‘˜ë‹¤ íŠ¸ë£¨
+	// ë’ˆì§„ë„˜ì´ ì •ë°© ë¦¬ìŠ¤íŠ¸ì— ìˆê³  ì¹´ì˜¤ê°€ ì•„ë‹ˆê³  ê³µê²©ìë„ ì¹´ì˜¤ê°€ ì•„ë‹ˆë©´ ì¹´ì˜¤ì„±í–¥ ìˆ˜ì¹˜ë¥¼ ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤
+	// pk íŒ¨ë„í‹°ë¥¼ ì£¼ëŠ”ê²ƒ ë¿ë§Œ ì•„ë‹ˆë¼ ì„±í–¥íšŒë³µì—ë„ ê´€ê³„ë˜ë¯€ë¡œ ì„±í–¥ íšŒë³µì´ë‚˜ íŒ¨ë„í‹°ë“± ì–´ëŠê²ƒì—ë¼ë„ ê±¸ë¦¬ë©´ true
 
-	// ofÀÇ Á¤´ç¹æÀ§ ¸®½ºÆ®¿¡ dpc°¡ ÀÖ´Â°¡ : Á¤´ç¹æÀ§ - ¸®½ºÆ®¿¡¼­ »èÁ¦ÈÄ Point Æä³ÎÆ¼ ¾øÀ½
+	// ofì˜ ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ì— dpcê°€ ìˆëŠ”ê°€ : ì •ë‹¹ë°©ìœ„ - ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí›„ Point í˜ë„í‹° ì—†ìŒ
 	CRaChar* raList = of->m_raList;
 	while (raList)
 	{
 		if (raList->m_raTarget == dpc)
 		{
-			// Ä«¿À°¡ ÀÏ¹İÀ» Á¤´ç¹æÀ§·Î Á×ÀÏ¶§ ÆĞ³ÎÆ¼¸¦ À§ÇÑ of
-			// ÀÏ¹İÀÌ Ä«¿À¸¦ Á¤´ç¹æÀ§·Î Á×ÀÏ¶§ ÆĞ³ÎÆ¼ ¹× ¼ºÇâ »ó½ÂÀ» À§ÇÑ dpc
-			// µÑ´Ù ÀÏ¹İÀÌ°í Á×Àº³ÑÀÌ °ø°İÇßÀ»¶§ m_bAttacker
+			// ì¹´ì˜¤ê°€ ì¼ë°˜ì„ ì •ë‹¹ë°©ìœ„ë¡œ ì£½ì¼ë•Œ íŒ¨ë„í‹°ë¥¼ ìœ„í•œ of
+			// ì¼ë°˜ì´ ì¹´ì˜¤ë¥¼ ì •ë‹¹ë°©ìœ„ë¡œ ì£½ì¼ë•Œ íŒ¨ë„í‹° ë° ì„±í–¥ ìƒìŠ¹ì„ ìœ„í•œ dpc
+			// ë‘˜ë‹¤ ì¼ë°˜ì´ê³  ì£½ì€ë„˜ì´ ê³µê²©í–ˆì„ë•Œ m_bAttacker
 			if (raList->m_bAttacker && !dpc->IsChaotic())
 				return false;
 
@@ -2478,12 +2494,12 @@ bool IsPK(CPC* of, CCharacter* df)
 	}
 
 #ifdef LC_TLD
-	// µÑ´Ù Ä«¿À°¡ ¾Æ´Ï°í Ä®Å°°í ÀÖÀ¸¸é ÅÂ±¹Àº ¼ºÇâ ¼öÄ¡ º¯È­¾øÀ½
+	// ë‘˜ë‹¤ ì¹´ì˜¤ê°€ ì•„ë‹ˆê³  ì¹¼í‚¤ê³  ìˆìœ¼ë©´ íƒœêµ­ì€ ì„±í–¥ ìˆ˜ì¹˜ ë³€í™”ì—†ìŒ
 	if( dpc->IsSetPlayerState(PLAYER_STATE_PKMODE) && of->IsSetPlayerState(PLAYER_STATE_PKMODE) && !of->IsChaotic() && !dpc->IsChaotic() )
 		return false;
 #endif
 
-	// ±æµåÀü
+	// ê¸¸ë“œì „
 	if (of->m_guildInfo && (of->m_guildInfo->guild()->battleState() == GUILD_BATTLE_STATE_ING) &&
 			dpc->m_guildInfo && (dpc->m_guildInfo->guild()->battleState() == GUILD_BATTLE_STATE_ING))
 	{
@@ -2492,76 +2508,31 @@ bool IsPK(CPC* of, CCharacter* df)
 			return false;
 	}
 
-#ifdef CHANGE_WARCASTLE_SETTING
-	// ¼­·Î Àû´ë °ü°è(°ø¼º, ¼ö¼º)ÀÌ¸é Æä³ÎÆ¼°¡ ¾ø´Ù.
-	CPC* pDf = TO_PC(df);
-	int nZoneIdx = -1;
-	CWarCastle* castle = CWarCastle::GetCastleObject(ZONE_DRATAN);
-	if (castle && castle->GetState() != WCSF_NORMAL)
-	{
-		nZoneIdx = ZONE_DRATAN;
-	}
-	else
-	{
-		castle = CWarCastle::GetCastleObject(ZONE_MERAC);
-		if (castle && castle->GetState() != WCSF_NORMAL)
-		{
-			nZoneIdx = ZONE_MERAC;
-		}
-	}
-	if ( pDf && nZoneIdx > 0 )
-	{
-		if ( (IS_DEFENSE_TEAM(of->GetJoinFlag(nZoneIdx)) && IS_ATTACK_TEAM(pDf->GetJoinFlag(nZoneIdx))) ||					// ¼ö¼º vs °ø¼º
-				(IS_ATTACK_TEAM(of->GetJoinFlag(nZoneIdx)) && pDf->GetJoinFlag(nZoneIdx) != WCJF_NONE) )						// °ø¼º vs ¼ö¼º or °ø¼º
-		{
-			return false;
-		}
-#ifdef CHECK_CASTLE_AREA
-		if ((of->m_pZone->m_index == nZoneIdx && pDf->m_pZone->m_index == nZoneIdx ) &&										// °ø¼ºÁ¸ÀÌ°í,°ø¼ºÁö¿ª³»¿¡ ÀÖ°í, °ø,¼ö¼º(of) vs 3¼¼·Â(df)
-				(of->GetMapAttr() & MATT_WAR || of->m_pZone->IsWarZone((int)of->m_pos.m_x, (int)of->m_pos.m_z)) &&
-				(df->GetMapAttr() & MATT_WAR || df->m_pZone->IsWarZone((int)df->m_pos.m_x, (int)df->m_pos.m_z)) &&
-				of->GetJoinFlag(nZoneIdx) != WCJF_NONE && pDf->GetJoinFlag(nZoneIdx) == WCJF_NONE)
-#else // CHECK_CASTLE_AREA
-		if ((of->m_pZone->m_index == nZoneIdx && pDf->m_pZone->m_index == nZoneIdx ) &&
-				(of->GetMapAttr() == pDf->GetMapAttr() && of->GetMapAttr() & MATT_WAR && of->GetJoinFlag(nZoneIdx) != WCJF_NONE && pDf->GetJoinFlag(nZoneIdx) == WCJF_NONE) )
-#endif // CHECK_CASTLE_AREA
-		{
-			return false;
-		}
-	}
-#else // CHANGE_WARCASTLE_SETTING
-	// °ø¼º µµÁß »ç¸ÁÀº ÆĞ³ÎÆ¼ ¾øÀ½
+	// ê³µì„± ë„ì¤‘ ì‚¬ë§ì€ íŒ¨ë„í‹° ì—†ìŒ
 	CWarCastle* castle = CWarCastle::GetCastleObject(of->m_pZone->m_index);
 	if (castle)
 	{
 		if (castle->GetState() != WCSF_NORMAL)
 		{
-#ifdef CHECK_CASTLE_AREA
 			if ( (of->GetMapAttr() & MATT_WAR || of->m_pZone->IsWarZone((int)of->m_pos.m_x, (int)of->m_pos.m_z)) &&
 					(df->GetMapAttr() & MATT_WAR || df->m_pZone->IsWarZone((int)df->m_pos.m_x, (int)df->m_pos.m_z)) &&
 					(of->GetJoinFlag(of->m_pZone->m_index) != WCJF_NONE ))
 				return false;
-#else
-			if (of->GetMapAttr() & MATT_WAR &&
-					df->GetMapAttr() & MATT_WAR)
-				return false;
-#endif // CHECK_CASTLE_AREA
 		}
 	}
-#endif // CHANGE_WARCASTLE_SETTING
 //#endif
 
 	/////////////////////////////////////////////
-	// BANGWALL : 2005-07-18 ¿ÀÀü 11:27:24
-	// Comment : freepkzone ÆĞ³ÎÆ¼ ¾øÀ½
-	// °ø°İÀÚ¿Í ¹æ¾îÀÚ°¡ ¸ğµÎ freepkzone¿¡ ÀÖÀ¸¸é pkpenalty ¾øÀ½
+	// BANGWALL : 2005-07-18 ì˜¤ì „ 11:27:24
+	// Comment : freepkzone íŒ¨ë„í‹° ì—†ìŒ
+	// ê³µê²©ìì™€ ë°©ì–´ìê°€ ëª¨ë‘ freepkzoneì— ìˆìœ¼ë©´ pkpenalty ì—†ìŒ
 	if( of->GetMapAttr() == df->GetMapAttr() && of->GetMapAttr() & MATT_FREEPKZONE)
 		return false;
 
 	return true;
 }
-// npc attackListÁß ¾îÅÃ Á¦ÇÑ Pulse ÃÊ°úÇÑ °æ¿ì ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
-// hate ¼öÄ¡ °¡Àå ³ôÀº pc ¹İÈ¯
+// npc attackListì¤‘ ì–´íƒ ì œí•œ Pulse ì´ˆê³¼í•œ ê²½ìš° ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
+// hate ìˆ˜ì¹˜ ê°€ì¥ ë†’ì€ pc ë°˜í™˜
 //
 CCharacter* CheckAttackPulse(CNPC* npc)
 {
@@ -2580,17 +2551,17 @@ CCharacter* CheckAttackPulse(CNPC* npc)
 	{
 		targetNext = targetNext->m_next;
 
-		// ¹Ì³×¶ö, ³óÀÛ¹°, ¿¡³ÊÁö
+		// ë¯¸ë„¤ë„, ë†ì‘ë¬¼, ì—ë„ˆì§€
 		if (npc->m_proto->CheckFlag(NPC_MINERAL | NPC_CROPS | NPC_ENERGY))
 			checkPulse = NPC_PRODUCE_DELETE_PULSE;
-		// ±×¿Ü ±âÅ¸ NPC
+		// ê·¸ì™¸ ê¸°íƒ€ NPC
 		else
 			checkPulse = NPC_ATTACK_DELETE_PULSE;
 
-		// Å¸°ÙÀÌ ¶§¸° µ¥¹ÌÁö°¡ ÀÖ°í Pulse°¡ ÃÊ°úÇÑ °æ¿ì ¸®½ºÆ®¿¡¼­ »èÁ¦
+		// íƒ€ê²Ÿì´ ë•Œë¦° ë°ë¯¸ì§€ê°€ ìˆê³  Pulseê°€ ì´ˆê³¼í•œ ê²½ìš° ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 		if (target->m_damage > 0 && gserver->m_pulse - target->m_targetPulse > checkPulse)
 		{
-			// targetÀÇ attackList¿¡¼­ npc »èÁ¦
+			// targetì˜ attackListì—ì„œ npc ì‚­ì œ
 			CAttackChar* tmp;
 			CAttackChar* tmpNext = target->ch->m_attackList;
 			while ((tmp = tmpNext))
@@ -2611,7 +2582,7 @@ CCharacter* CheckAttackPulse(CNPC* npc)
 			continue;
 		}
 
-		// 050315 : bs : Å¸°Ù º¼¼ö ¾øÀ¸¸é ½ºÅµ
+		// 050315 : bs : íƒ€ê²Ÿ ë³¼ìˆ˜ ì—†ìœ¼ë©´ ìŠ¤í‚µ
 		if (!target)
 			continue ;
 		if (!npc->CanVisible(target->ch))
@@ -2620,15 +2591,15 @@ CCharacter* CheckAttackPulse(CNPC* npc)
 		if ((target->ch->m_assist.m_state & AST_FAKEDEATH))
 			continue ;
 
-		// ½Ã¾ß¹üÀ§¾È¿¡ ¾øÀ¸¸é Å¸°ÙÀÌ µÉ ¼ö ¾ø´Ù.
+		// ì‹œì•¼ë²”ìœ„ì•ˆì— ì—†ìœ¼ë©´ íƒ€ê²Ÿì´ ë  ìˆ˜ ì—†ë‹¤.
 		if (!CheckInNearCellExt(npc, target->ch))
 			continue ;
 
-		// ÃşÀÌ ´Ù¸£°í ³ôÀÌ°¡ 5¹ÌÅÍ ÀÌ»óÀÌ¸é ¹«½Ã
+		// ì¸µì´ ë‹¤ë¥´ê³  ë†’ì´ê°€ 5ë¯¸í„° ì´ìƒì´ë©´ ë¬´ì‹œ
 		if (ABS(GET_YLAYER(npc) - GET_YLAYER(target->ch)) > 1 && ABS(GET_H(npc) - GET_H(target->ch)) > 5.0f)
 			continue ;
 
-		// ÇÇ½ºÁ¸ ¾È¿¡¼­´Â Å¸°ÙÀÌ µÉ ¼ö ¾ø´Ù
+		// í”¼ìŠ¤ì¡´ ì•ˆì—ì„œëŠ” íƒ€ê²Ÿì´ ë  ìˆ˜ ì—†ë‹¤
 		if (target->ch->IsInPeaceZone(false))
 			continue ;
 
@@ -2648,18 +2619,18 @@ CCharacter* CheckAttackPulse(CNPC* npc)
 	switch (npc->m_proto->m_aitype)
 	{
 	case NPC_AI_TANKER:
-		// ÀÚ½ÅÀÇ Ã¼·ÂÀÌ 20% ¹Ì¸¸ÀÌ¸é hate ³ôÀº ´ë»óÀ¸·ÎºÎÅÍ µµ¸Á : flag 2
+		// ìì‹ ì˜ ì²´ë ¥ì´ 20% ë¯¸ë§Œì´ë©´ hate ë†’ì€ ëŒ€ìƒìœ¼ë¡œë¶€í„° ë„ë§ : flag 2
 		if ( npc->m_proto->CheckAIBit(2) && npc->m_hp < npc->m_maxHP * 20 / 100 )
 			return retHate;
 
-		// ÇÇ°¡ Á¦ÀÏ ÀûÀº ´ë»óÀÌ ÃÖ´ë hate¸¦ °®´Â ´ë»óÀÇ hate Àı¹İ ÀÌ»óÀÌ¸é ÇÇ ÀûÀº ³à¼®À» °ø°İ : flag 0
+		// í”¼ê°€ ì œì¼ ì ì€ ëŒ€ìƒì´ ìµœëŒ€ hateë¥¼ ê°–ëŠ” ëŒ€ìƒì˜ hate ì ˆë°˜ ì´ìƒì´ë©´ í”¼ ì ì€ ë…€ì„ì„ ê³µê²© : flag 0
 		if ( npc->m_proto->CheckAIBit(0) && hate  / 2 < lowhp_hate )
 		{
-			// Ã¼·ÂÀÌ ÀûÀº ´ë»ó°ú °Å¸®°¡ 10¹ÌÅÍ ÀÌ»ó Â÷ÀÌ³ª¸é hate ³ôÀº ´ë»óÀ» °ø°İ : flag 1
+			// ì²´ë ¥ì´ ì ì€ ëŒ€ìƒê³¼ ê±°ë¦¬ê°€ 10ë¯¸í„° ì´ìƒ ì°¨ì´ë‚˜ë©´ hate ë†’ì€ ëŒ€ìƒì„ ê³µê²© : flag 1
 			if ( npc->m_proto->CheckAIBit(1) && GetDistance(retLowHP, npc) >= 10.0f )
 				return retHate;
 
-			// Ã¼·Â ³·Àº Àû°ú hate ³ôÀº ÀûÀÌ HP°¡ °°À¸¸é hate ³ôÀº Àû
+			// ì²´ë ¥ ë‚®ì€ ì ê³¼ hate ë†’ì€ ì ì´ HPê°€ ê°™ìœ¼ë©´ hate ë†’ì€ ì 
 			if (retHate && retLowHP && retHate->m_hp == retLowHP->m_hp)
 				return retHate;
 
@@ -2685,7 +2656,7 @@ int CalcNewDamage(CCharacter* of, CCharacter* df, int damage)
 
 		if(of_pc->IsChaotic() || df_pc->IsChaotic())
 		{
-			//°ø°İÀÚ Ã³¸®
+			//ê³µê²©ì ì²˜ë¦¬
 			if(of_pc->IsChaotic() == true)
 			{
 				damage = damage - (damage * of_pc->m_pkPenalty / 1000 / 100 * (-1.5));
@@ -2696,7 +2667,7 @@ int CalcNewDamage(CCharacter* of, CCharacter* df, int damage)
 			}
 		}
 
-		//¹æ¾î±¸°­È­¿¡ µû¸¥ ¼öÁ¤
+		//ë°©ì–´êµ¬ê°•í™”ì— ë”°ë¥¸ ìˆ˜ì •
 		{
 			damage = damage - (df_pc->m_wearInventory.getWearItemPlusSumCount() * damage / (df_pc->m_wearInventory.getWearItemPlusSumCount() + 310));
 		}
@@ -2712,14 +2683,14 @@ void CalcNewHitProb(CCharacter* of, CCharacter* df, float& hit, float& avoid)
 		CPC* of_pc = TO_PC(of);
 		CPC* df_pc = TO_PC(df);
 
-		//¹«±â¿¡ µû¸¥ ¸íÁß·ü °è»ê
+		//ë¬´ê¸°ì— ë”°ë¥¸ ëª…ì¤‘ë¥  ê³„ì‚°
 		CItem* item_weapon = of_pc->m_wearInventory.getWearItem(WEARING_WEAPON);
 		if(item_weapon != NULL)
 		{
 			hit = hit + ( item_weapon->getPlus() * ( (of_pc->m_level + 900) / df_pc->m_level ) );
 		}
 
-		//Ä«¿À ¸ğµå ÀÏ °æ¿ìÀÇ PVP È¸ÇÇ °¨¼Ò
+		//ì¹´ì˜¤ ëª¨ë“œ ì¼ ê²½ìš°ì˜ PVP íšŒí”¼ ê°ì†Œ
 		if(df_pc->IsChaotic() == true)
 		{
 			avoid = avoid + ((df_pc->m_pkPenalty / (of_pc->m_level + df_pc->m_level)) - of_pc->m_level * 3);
@@ -2748,7 +2719,7 @@ bool checkPvPProtect( CPC* pc, CCharacter* tch )
 
 	if(tpc->m_assist.FindBySkillIndex(PVP_PROTECT_SKILL_INDEX) != 0)
 	{
-		//°ø¼ºÁßÀÎ °æ¿ì¿¡
+		//ê³µì„±ì¤‘ì¸ ê²½ìš°ì—
 		if(tpc->GetJoinFlag(tpc->m_pZone->m_index) != 0)
 		{
 			if ( tpc->GetMapAttr() & MATT_WAR || tpc->m_pZone->IsWarZone(GET_X(tpc), GET_Z(tpc)) == true ) 
@@ -2757,7 +2728,7 @@ bool checkPvPProtect( CPC* pc, CCharacter* tch )
 			}
 			else
 			{
-				//ÀÌ¿Ü¿¡´Â °ø°İ ºÒ°¡
+				//ì´ì™¸ì—ëŠ” ê³µê²© ë¶ˆê°€
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_DO_NOT_ATTACK_PROTECT_PVP);
 				SEND_Q(rmsg, pc->m_desc);
@@ -2776,10 +2747,10 @@ bool checkPvPProtect( CPC* pc, CCharacter* tch )
 			case ZONE_RVR:
 				break;
 			default:
-				// °ø°İ ºÒ°¡
+				// ê³µê²© ë¶ˆê°€
 				if ( !(tpc->GetMapAttr() & MATT_FREEPKZONE) )
 				{
-					//¾Æ·¹³ªµî Áö¿ª¿¡¼­´Â °ø°İ ºÒ°¡
+					//ì•„ë ˆë‚˜ë“± ì§€ì—­ì—ì„œëŠ” ê³µê²© ë¶ˆê°€
 					CNetMsg::SP rmsg(new CNetMsg);
 					SysMsg(rmsg, MSG_SYS_DO_NOT_ATTACK_PROTECT_PVP);
 					SEND_Q(rmsg, pc->m_desc);

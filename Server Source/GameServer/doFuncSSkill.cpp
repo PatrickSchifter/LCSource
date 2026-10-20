@@ -31,7 +31,7 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// index°¡ 0ÀÌÇÏ¸é ¸®ÅÏ
+	// indexê°€ 0ì´í•˜ë©´ ë¦¬í„´
 	if (packet->sskillIndex <= 0)
 	{
 		LOG_ERROR("HACKING : invalid sskill index[%d]. charIndex[%d]", packet->sskillIndex, ch->m_index);
@@ -47,14 +47,14 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿ì¼±¼øÀ§ Validation °Ë»ç
+	// ìš°ì„ ìˆœìœ„ Validation ê²€ì‚¬
 	CSSkillNode* node = ch->m_sSkillList.m_head;
 	while (node)
 	{
-		// Å¸ÀÔÀÌ °°Àº ½ºÅ³ÀÌ ÀÖ°í
+		// íƒ€ìž…ì´ ê°™ì€ ìŠ¤í‚¬ì´ ìžˆê³ 
 		if (node->m_sskill->m_proto->m_type == proto->m_type)
 		{
-			// ÀÖ´Â ½ºÅ³º¸´Ù ³·Àº ¿ì¼±¼øÀ§ÀÇ ½ºÅ³À» ¹è¿ì·Á ÇÏ¸é Error
+			// ìžˆëŠ” ìŠ¤í‚¬ë³´ë‹¤ ë‚®ì€ ìš°ì„ ìˆœìœ„ì˜ ìŠ¤í‚¬ì„ ë°°ìš°ë ¤ í•˜ë©´ Error
 			if (node->m_sskill->m_proto->m_preference != -1 && node->m_sskill->m_proto->m_preference > proto->m_preference)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -77,7 +77,7 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		level = sskill->m_level + 1;
 	}
 
-	// ÇÊ¿ä Level °Ë»ç
+	// í•„ìš” Level ê²€ì‚¬
 	if (proto->m_needLevel[level - 1] > ch->m_level)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -86,7 +86,7 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÇÊ¿ä SP °Ë»ç
+	// í•„ìš” SP ê²€ì‚¬
 	if (proto->m_needSP[level - 1] * 10000 > ch->m_skillPoint)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -95,12 +95,12 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÇÊ¿ä SSkill °Ë»ç
+	// í•„ìš” SSkill ê²€ì‚¬
 	if (proto->m_needSSkill != -1 && !sskill)
 	{
 		CSSkill* check = ch->m_sSkillList.Find(proto->m_needSSkill);
 
-		// ÇÊ¿ä sskillÀÌ ¾Æ¿¹ ¾ø´Ù
+		// í•„ìš” sskillì´ ì•„ì˜ˆ ì—†ë‹¤
 		if (!check)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -108,7 +108,7 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
-		//  ÇÊ¿ä sskill levelÀÌ ¾ÈµÈ´Ù
+		//  í•„ìš” sskill levelì´ ì•ˆëœë‹¤
 		else if (proto->m_needSSkillLevel > check->m_level)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -118,10 +118,10 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ±âÁ¸¿¡ ½ºÅ³ÀÌ ÀÖ¾ú´Ù¸é Level Up
+	// ê¸°ì¡´ì— ìŠ¤í‚¬ì´ ìžˆì—ˆë‹¤ë©´ Level Up
 	if (sskill)
 	{
-		// ÃÖ°í·¾ ÃÊ°ú
+		// ìµœê³ ë ™ ì´ˆê³¼
 		if (sskill->m_level >= sskill->m_proto->m_maxLevel)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -152,11 +152,11 @@ void do_SSkill(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// SP ¼Ò¸ð
+	// SP ì†Œëª¨
 	ch->m_skillPoint -= proto->m_needSP[level - 1] * 10000;
 
 	{
-		// Learn Msg Àü¼Û
+		// Learn Msg ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeSSkillLearn(rmsg, sskill);
 		SEND_Q(rmsg, ch->m_desc);

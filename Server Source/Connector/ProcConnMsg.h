@@ -10,35 +10,35 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 
 /////////////////////
 // Function name	: WriteDB
-// Description	    : À¯Àú Å×ÀÌºí¿¡ µ¥ÀÌÅÍ ÀúÀå
-//                  : nameÀÌ³ª ip°¡ NULL ÀÏ °æ¿ì t_connect_log´Â ÀúÀåÇÏÁö ¾Ê´Â´Ù
+// Description	    : ìœ ì € í…Œì´ë¸”ì— ë°ì´í„° ì €ì¥
+//                  : nameì´ë‚˜ ipê°€ NULL ì¼ ê²½ìš° t_connect_logëŠ” ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤
 // Return type		: MSG_CONN_ERRORCODE
-//            		: ¿¡·¯ÄÚµå
+//            		: ì—ëŸ¬ì½”ë“œ
 // Argument         : int index
-//                  : Æ÷ÅĞ ÀÎµ¦½º
+//                  : í¬í„¸ ì¸ë±ìŠ¤
 // Argument         : int server
-//                  : ¼­¹ö±º ¹øÈ£
+//                  : ì„œë²„êµ° ë²ˆí˜¸
 // Argument         : int subno
-//                  : ¼­ºê ¹øÈ£
+//                  : ì„œë¸Œ ë²ˆí˜¸
 // Argument         : int zone
-//                  : Á¸ ¹øÈ£
+//                  : ì¡´ ë²ˆí˜¸
 // Argument         : int timestamp
-//                  : ÇÃ·¹ÀÌ½Ã°£
+//                  : í”Œë ˆì´ì‹œê°„
 // Argument         : const char* ip
-//                  : Á¢¼Ó ¾ÆÀÌÇÇ
+//                  : ì ‘ì† ì•„ì´í”¼
 // Argument         : const char* name
-//                  : ¾ÆÀÌµğ
+//                  : ì•„ì´ë””
 // Argument         : bool bLogin
-//                  : ·Î±×ÀÎ½Ã ¼³Á¤
+//                  : ë¡œê·¸ì¸ì‹œ ì„¤ì •
 MSG_CONN_ERRORCODE WriteDB(int index, int server, int subno, int zone, int playtime, const char* name, const char* ip, bool bLogin, int pcbangTime = 0);
 
 /////////////////////
 // Function name	: WriteDB
-// Description	    : À¯Àú Å×ÀÌºí¿¡ µ¥ÀÌÅÍ ÀúÀå (·Î±×¾Æ¿ôÃ³¸®)
+// Description	    : ìœ ì € í…Œì´ë¸”ì— ë°ì´í„° ì €ì¥ (ë¡œê·¸ì•„ì›ƒì²˜ë¦¬)
 // Return type		: bool
-//            		: ¼º°ø ½ÇÆĞ ¿©ºÎ
+//            		: ì„±ê³µ ì‹¤íŒ¨ ì—¬ë¶€
 // Argument         : const char* name
-//                  : Á¢¼Ó ¾ÆÀÌµğ
+//                  : ì ‘ì† ì•„ì´ë””
 bool WriteDB(const char* name);
 
 void ConnPreopenGift(CDescriptor* d, CNetMsg::SP& msg);

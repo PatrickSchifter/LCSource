@@ -29,7 +29,7 @@ public:
 	static SubHelperInMessenger* instance();
 
 private:
-	map_t		subhelper_map_;			// SubHelperÀÇ sessionÁ¤º¸¸¦ °ü¸®
+	map_t		subhelper_map_;			// SubHelperì˜ sessionì •ë³´ë¥¼ ê´€ë¦¬
 };
 
 //////////////////////////////////////////////////////////////////////////

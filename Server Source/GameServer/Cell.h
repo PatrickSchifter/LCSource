@@ -10,11 +10,11 @@ public:
 	CCell();
 	~CCell();
 
-	CCharacter*		m_listChar;		// ¼¿ ¾ÈÀÇ ÄÉ¸¯ÅÍ ¸®½ºÆ® Çì´õ
-	CItem*			m_listItem;		// ¼¿ ¾ÈÀÇ ¾ÆÀÌÅÛ ¸®½ºÆ® Çì´õ
-	int				m_nCountNPC;	// npc ¼ö
-	int				m_nCountPC;		// PC ¼ö
-	int				m_nTotalRegen;	// ÇØ´ç ¼¿¿¡¼­ ¸®Á¨µÇ´Â NPC ¼ö
+	CCharacter*		m_listChar;		// ì…€ ì•ˆì˜ ì¼€ë¦­í„° ë¦¬ìŠ¤íŠ¸ í—¤ë”
+	CItem*			m_listItem;		// ì…€ ì•ˆì˜ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ í—¤ë”
+	int				m_nCountNPC;	// npc ìˆ˜
+	int				m_nCountPC;		// PC ìˆ˜
+	int				m_nTotalRegen;	// í•´ë‹¹ ì…€ì—ì„œ ë¦¬ì  ë˜ëŠ” NPC ìˆ˜
 
 	void CharToCell(CCharacter* ch);
 	void CharToCellForSummonNpc(CCharacter* owner, CCharacter* ch);

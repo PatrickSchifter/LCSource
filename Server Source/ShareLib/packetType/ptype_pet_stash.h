@@ -36,7 +36,7 @@ namespace RequestClient
 struct PetStashTake : public pTypeBase
 {
 	int charIndex;
-	int petItemVIndex;								//Æê ¾ÆÀÌÅÛ °¡»ó ÀÎµ¦½º
+	int petItemVIndex;								//í« ì•„ì´í…œ ê°€ìƒ ì¸ë±ìŠ¤
 };
 
 struct PetStashKeep : public pTypeBase
@@ -66,25 +66,25 @@ namespace ResponseClient
 {
 enum
 {
-	ERROR_PET_STASH_KEEP_SUCCESS,					//¸Ã±â±â ¼º°ø
-	ERROR_PET_STASH_TAKE_SUCCESS,					//Ã£±â ¼º°ø
-	ERROR_PET_STASH_PROXY_SUCCESS,					//´ë¸®À°¼º µî·Ï ¼º°ø
-	ERROR_PET_STASH_PROXY_CANCEL_SUCCESS,			//´ë¸®À°¼º µî·Ï Ãë¼Ò ¼º°ø
+	ERROR_PET_STASH_KEEP_SUCCESS,					//ë§¡ê¸°ê¸° ì„±ê³µ
+	ERROR_PET_STASH_TAKE_SUCCESS,					//ì°¾ê¸° ì„±ê³µ
+	ERROR_PET_STASH_PROXY_SUCCESS,					//ëŒ€ë¦¬ìœ¡ì„± ë“±ë¡ ì„±ê³µ
+	ERROR_PET_STASH_PROXY_CANCEL_SUCCESS,			//ëŒ€ë¦¬ìœ¡ì„± ë“±ë¡ ì·¨ì†Œ ì„±ê³µ
 
-	ERROR_PET_STASH_KEEP_FAIL_NOT_EXIST_PET,		//ÆêÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½
-	ERROR_PET_STASH_KEEP_FAIL_TERMINATION_ITEM,		//Æê µî·Ï ¾ÆÀÌÅÛ »ç¿ë±â°£ ¸¸·á
-	ERROR_PET_STASH_KEEP_FAIL_ALREADY_EQ_PET,		//ÆêÀ» Âø¿ëÁßÀÌ´Ù.
-	ERROR_PET_STASH_KEEP_FAIL_PET_SEAL,				//ÆêÀÌ ºÀÀÎ»óÅÂÀÌ´Ù.
-	ERROR_PET_STASH_KEEP_FAIL_FULL,					//Æê Ã¢°í°¡ °¡µæ Âü.
+	ERROR_PET_STASH_KEEP_FAIL_NOT_EXIST_PET,		//í«ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
+	ERROR_PET_STASH_KEEP_FAIL_TERMINATION_ITEM,		//í« ë“±ë¡ ì•„ì´í…œ ì‚¬ìš©ê¸°ê°„ ë§Œë£Œ
+	ERROR_PET_STASH_KEEP_FAIL_ALREADY_EQ_PET,		//í«ì„ ì°©ìš©ì¤‘ì´ë‹¤.
+	ERROR_PET_STASH_KEEP_FAIL_PET_SEAL,				//í«ì´ ë´‰ì¸ìƒíƒœì´ë‹¤.
+	ERROR_PET_STASH_KEEP_FAIL_FULL,					//í« ì°½ê³ ê°€ ê°€ë“ ì°¸.
 
-	ERROR_PET_STASH_TAKE_FAIL_NOT_EXIST_PET,		//ÆêÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½
-	ERROR_PET_STASH_TAKE_FAIL,						//Æê Ã£±â ½ÇÆĞ
+	ERROR_PET_STASH_TAKE_FAIL_NOT_EXIST_PET,		//í«ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
+	ERROR_PET_STASH_TAKE_FAIL,						//í« ì°¾ê¸° ì‹¤íŒ¨
 
-	ERROR_PET_STASH_PROXY_CANCEL_NOT_EXIST,			//´ë¸®À°¼ºÀ¸·Î µî·ÏµÈ ÆêÀÌ ¾Æ´Ï´Ù.
+	ERROR_PET_STASH_PROXY_CANCEL_NOT_EXIST,			//ëŒ€ë¦¬ìœ¡ì„±ìœ¼ë¡œ ë“±ë¡ëœ í«ì´ ì•„ë‹ˆë‹¤.
 
-	ERROR_PET_STASH_ERROR_NOT_USE_SYSTEM,			//Æê Ã¢°í ½Ã½ºÅÛÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
+	ERROR_PET_STASH_ERROR_NOT_USE_SYSTEM,			//í« ì°½ê³  ì‹œìŠ¤í…œì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 
-	ERROR_PET_STASH_FAIL_ETC,						//¾Ë¼ö ¾ø´Â ¿À·ù
+	ERROR_PET_STASH_FAIL_ETC,						//ì•Œìˆ˜ ì—†ëŠ” ì˜¤ë¥˜
 };
 
 struct PetStashTake : public pTypeBase
@@ -117,9 +117,9 @@ namespace UpdateClient
 {
 struct PetStashData
 {
-	int			virtualIndex;		// ¼­¹ö°¡ ¹ßÇàÇÑ °¡»ó index
-	int			dbIndex;			// DB»óÀÇ Index
-	int			isPetOrApet;		// 0 : Æê1, 1 : Æê2
+	int			virtualIndex;		// ì„œë²„ê°€ ë°œí–‰í•œ ê°€ìƒ index
+	int			dbIndex;			// DBìƒì˜ Index
+	int			isPetOrApet;		// 0 : í«1, 1 : í«2
 	int			plus;
 	int			petLevel;
 	int			petHungryMax;
@@ -128,12 +128,12 @@ struct PetStashData
 	LONGLONG	petExp;
 	int			petFaithMax;
 	int			petFaith;
-	//Æê¸¸ »ç¿ë
+	//í«ë§Œ ì‚¬ìš©
 	int			hp;
 	int			maxHp;
 	int			abilityPoint;
 	char		grade;
-	//°ø°İÆê¸¸ »ç¿ë
+	//ê³µê²©í«ë§Œ ì‚¬ìš©
 	int			petStr;
 	int			petInt;
 	int			petDex;
@@ -150,14 +150,14 @@ struct PetStashData
 
 struct PetStashList : public pTypeBase
 {
-	int			proxyPetItemVIndex;	//´ë¸®À°¼º µî·Ï Æê ¾ÆÀÌÅÛ °¡»ó ÀÎµ¦½º
+	int			proxyPetItemVIndex;	//ëŒ€ë¦¬ìœ¡ì„± ë“±ë¡ í« ì•„ì´í…œ ê°€ìƒ ì¸ë±ìŠ¤
 	short		count;
 	PetStashData petStashData[0];
 };
 
 struct PetStashTake : public pTypeBase
 {
-	int petItemVIndex;								//Æê ¾ÆÀÌÅÛ °¡»ó ÀÎµ¦½º
+	int petItemVIndex;								//í« ì•„ì´í…œ ê°€ìƒ ì¸ë±ìŠ¤
 };
 
 struct PetStashKeep : public pTypeBase
@@ -180,12 +180,12 @@ struct PetStashProxyCancel : public pTypeBase
 	int virtualIndex;
 };
 
-struct PetStashEffect : public pTypeBase // Å¬¶ó°¡ ¾ÆÀÌÅÛÀ» ½èÀ»¶§
+struct PetStashEffect : public pTypeBase // í´ë¼ê°€ ì•„ì´í…œì„ ì¼ì„ë•Œ
 {
 	int effectNo;
 };
 
-struct PetStashEffectByInMap : public pTypeBase // ÀÎ¸Ê or ÆêÃ¢°í ±â°£ ¸¸·áÀÏ¶§
+struct PetStashEffectByInMap : public pTypeBase // ì¸ë§µ or í«ì°½ê³  ê¸°ê°„ ë§Œë£Œì¼ë•Œ
 {
 	int effectNo;
 };

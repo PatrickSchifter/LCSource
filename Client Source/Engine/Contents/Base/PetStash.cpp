@@ -11,7 +11,7 @@
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Ska/Render.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Object/ActorMgr.h>
 
 PetStash::PetStash(void)
@@ -20,17 +20,25 @@ PetStash::PetStash(void)
 	, m_nProxyPetIndex(0)
 	, m_nEffectModelNo(-1)
 {
-	m_vecPetStashList.clear();
 }
 
 PetStash::~PetStash(void)
 {
-	m_vecPetStashList.clear();
+	ClearPetList();
 }
 
 ////////////////// interface ////////////////////////////////////////
 void PetStash::ClearPetList()
 {
+	std::vector<PetStashData*>::iterator iter = m_vecPetStashList.begin();
+	std::vector<PetStashData*>::iterator iter_end = m_vecPetStashList.end();
+
+	PetStashData* ptrTemp = NULL;
+	for (; iter != iter_end; ++iter)
+	{
+		ptrTemp = (*iter);
+		SAFE_DELETE(ptrTemp);
+	}
 	m_vecPetStashList.clear();
 	m_nPetCount = 0;
 }
@@ -141,12 +149,13 @@ void PetStash::RecvPetStashMessage(CNetworkMessage* istr)
 			}
 			else
 			{
-				PetStashData* pPetStashList = new PetStashData[m_nPetCount];
-				memcpy( pPetStashList, &pRecv->petStashData[0], sizeof(PetStashData) * m_nPetCount );
-
+				PetStashData* pPetStashList = NULL;
 				for (int i = 0; i < pRecv->count; i++)
 				{
-					m_vecPetStashList.push_back(&pPetStashList[i]);
+					pPetStashList = new PetStashData;
+					memcpy( pPetStashList, &pRecv->petStashData[i], sizeof(PetStashData));
+					m_vecPetStashList.push_back(pPetStashList);
+					pPetStashList = NULL;
 				}
 				UpdatePetInfo();
 			}
@@ -262,7 +271,7 @@ void PetStash::RecvPetStashMessage(CNetworkMessage* istr)
 			if (pObject != NULL)
 			{
 				CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
+				
 				pTarget->cha_itemEffect.AddPetStashEffect( EffectNo, &(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager) );
 			}
 		}
@@ -311,9 +320,24 @@ void PetStash::SetEffectModelNo( int nEffectNo )
 	penPlEntity = CEntity::GetPlayerEntity(0);		// 캐릭터 자기 자신
 	penPlayerEntity = static_cast<CPlayerEntity *>(penPlEntity);
 	CModelInstance *pMI			= NULL;
-	pMI	= penPlayerEntity->GetModelInstance();
 	
-	_pNetwork->MyCharacterInfo.itemEffect.AddPetStashEffect( m_nEffectModelNo, &pMI->m_tmSkaTagManager);
+	if( _pNetwork->MyCharacterInfo.bPetRide || _pNetwork->MyCharacterInfo.bWildPetRide)
+	{
+		CModelInstance *pMITemp = penPlayerEntity->GetModelInstance();
+
+		INDEX ctmi = pMITemp->mi_cmiChildren.Count();
+		if( ctmi > 0 )
+			pMI = &pMITemp->mi_cmiChildren[0];
+		else
+			pMI	= penPlayerEntity->GetModelInstance();
+	}
+	else
+	{
+		pMI	= penPlayerEntity->GetModelInstance();
+	}			
+
+	if (pMI != NULL)
+		_pNetwork->MyCharacterInfo.itemEffect.AddPetStashEffect( m_nEffectModelNo, &pMI->m_tmSkaTagManager);
 }
 
 void PetStash::AddPet( PetStashData* pPetInfo )
@@ -336,10 +360,12 @@ void PetStash::DeletePet( int nPetVirIndex )
 	{
 		if ( (*iter)->virtualIndex == nPetVirIndex )
 		{
+			PetStashData* ptrTemp = *iter;
 			m_vecPetStashList.erase( iter );
 			m_nPetCount = m_vecPetStashList.size();
 			if (nPetVirIndex == m_nProxyPetIndex)
 				m_nProxyPetIndex = 0;
+			SAFE_DELETE(ptrTemp);
 			return;
 		}
 	}
@@ -436,7 +462,7 @@ void PetStash::_P2PetAdd( PetStashData* pPetInfo )
 		temPetInfo.pet_cooltime = 0;
 	}
 
-	pUImanager->GetWildPetInfo()->AddWildPetInfo(temPetInfo);
+	pUImanager->GetWildPetInfoUI()->AddWildPetInfo(temPetInfo);
 }
 
 void PetStash::_UpdatePet( PetStashData* pPetInfo )

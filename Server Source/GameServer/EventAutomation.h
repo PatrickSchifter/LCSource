@@ -128,13 +128,13 @@ private:
 	int m_index;
 	bool m_enable;
 	bool m_notice;
-	// º¸»ó ÀÎµ¦½º ¸®½ºÆ®
+	// ë³´ìƒ ì¸ë±ìŠ¤ ë¦¬ìŠ¤íŠ¸
 	std::vector<int> m_rewardList;
-	// ¸®Á¨ NPC ÀÎµ¦½º ¸®½ºÆ®
+	// ë¦¬ì   NPC ì¸ë±ìŠ¤ ë¦¬ìŠ¤íŠ¸
 	std::vector<int> m_npcList;
-	// µå¶ø ÀÎµ¦½º ¸®½ºÆ®
+	// ë“œë ì¸ë±ìŠ¤ ë¦¬ìŠ¤íŠ¸
 	std::vector<int> m_dropList;
-	// ¸®Á¨ Á¤º¸ ¸®½ºÆ®
+	// ë¦¬ì   ì •ë³´ ë¦¬ìŠ¤íŠ¸
 	std::vector<CNPCRegenInfo*> m_npcRegenList;
 };
 
@@ -152,27 +152,27 @@ public:
 
 	bool loadEvent();
 
-	// ÀÌº¥Æ® Ã£±â
+	// ì´ë²¤íŠ¸ ì°¾ê¸°
 	CEventInfo* getEventInfo(int _eventIndex);
-	// ÁøÇàÁßÀÎ ÀÌº¥Æ® Ã£¾Æ¿À±â
+	// ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ ì°¾ì•„ì˜¤ê¸°
 	CEventInfo* getActiveEventInfo(int _eventIndex);
 
-	// ÁøÇàÁßÀÎ ÀÌº¥Æ®·Î µî·ÏÇÏ±â
+	// ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ë¡œ ë“±ë¡í•˜ê¸°
 	bool addActiveEvent(int _eventIndex, bool _dbUpdate=false);
 
-	// ÁøÇàÁßÀÎ ¸ñ·Ï¿¡¼­ ÀÌº¥Æ® »èÁ¦
+	// ì§„í–‰ì¤‘ì¸ ëª©ë¡ì—ì„œ ì´ë²¤íŠ¸ ì‚­ì œ
 	bool removeActiveEvent(int _eventIndex, bool _dbUpdate=false);
 
-	// ÁøÇàÁßÀÎ ÀÌº¥Æ® ÀÎÁö È®ÀÎ
+	// ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ ì¸ì§€ í™•ì¸
 	bool isActiveEvent(int _eventIndex);
 
-	// ÀÌº¥Æ® ¸®Á¨ npc È®ÀÎ
+	// ì´ë²¤íŠ¸ ë¦¬ì   npc í™•ì¸
 	bool isEventNpc(int _npcDBIndex, int & _eventIndex, bool & _bEnabel );
 
-	// ÁøÇàÁßÀÎ ÀÌº¥Æ® npcÀÎÁö È®ÀÎ
+	// ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ npcì¸ì§€ í™•ì¸
 	bool isActiveEventNpc(int _npcDBIndex, int & eventIndex );
 
-	// npc¸®Àü Á¤º¸ ³Ö±â
+	// npcë¦¬ì „ ì •ë³´ ë„£ê¸°
 	void addNpcRegenInfo(CNPCRegenInfo* _pNpcRegenInfo);
 
 	std::map<int, CEventInfo*> * getActiveEvenList();
@@ -185,9 +185,9 @@ public:
 private:
 	bool dbUpdate(int _eventIndex, bool _enable);
 
-	// ÀÌº¥Æ® ÀüÃ¼ ¸®½ºÆ® // first : eventIndex
+	// ì´ë²¤íŠ¸ ì „ì²´ ë¦¬ìŠ¤íŠ¸ // first : eventIndex
 	std::map<int, CEventInfo> m_eventList;
-	// ÁøÇàÁßÀÎ ÀÌº¥Æ® ¸®½ºÆ® // first : eventIndex
+	// ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ ë¦¬ìŠ¤íŠ¸ // first : eventIndex
 	std::map<int, CEventInfo*> m_activeList;
 };
 

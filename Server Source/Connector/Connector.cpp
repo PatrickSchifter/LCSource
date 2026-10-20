@@ -25,7 +25,7 @@ int main(int argc, char* argv[], char* envp[])
 		exit(0);
 	}
 
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	std::string tstr = boost::str(boost::format("Connector_%1%") % gserver.m_config.Find("Server", "Number"));
 	LogSystem::setSubstitutedValue("logfile", tstr.c_str());
 	LogSystem::configureXml("../log.xml");
@@ -48,7 +48,7 @@ int main(int argc, char* argv[], char* envp[])
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// GameServer¿ë listen
+	// GameServerìš© listen
 	std::string bind_host = gserver.m_config.Find("Server", "IP");
 	if (bind_host == "ALL")
 		bind_host = "0.0.0.0";
@@ -59,7 +59,7 @@ int main(int argc, char* argv[], char* envp[])
 		return 1;
 	}
 
-	// ºô¸µ ¼­¹ö¿¡ ¿¬°á
+	// ë¹Œë§ ì„œë²„ì— ì—°ê²°
 	gserver.m_billing.connect();
 
 	// HeartBeat timer

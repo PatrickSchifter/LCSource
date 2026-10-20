@@ -7,14 +7,14 @@ typedef struct _st_AlmStat
 {
 	UCHAR	ucLocType;      /* INDEX */
 	UCHAR	ucLocIdx;       /* Process Seq Num or Device seq num */
-	UCHAR	ucStatus;       /* DEAD, ALIVEµîÀÇ »óÅÂ, LOADÀÎ°æ¿ì ±×³É NORMAL */
-	UCHAR	ucAlmLevel;     /* NTAF/NTAM ¿¬µ¿¿¡ »ç¿ë FSTATD¸¸ »ç¿ë */
-	CHAR	Info[124];      /* load °ü·Ã percentage, ¿À·ù ¸Þ½ÃÁö Ãâ·Â¿¡ ÇÊ¿äÇÑ ±âÅ¸ Á¤º¸¸¦ ¿ëµµ¿¡ µû¶ó ÇÒ´ç */
-	UCHAR	ucOldAlmLevel;  /* NTAF/NTAM ¿¬µ¿¿¡ »ç¿ë FSTATD¸¸ »ç¿ë */
+	UCHAR	ucStatus;       /* DEAD, ALIVEë“±ì˜ ìƒíƒœ, LOADì¸ê²½ìš° ê·¸ëƒ¥ NORMAL */
+	UCHAR	ucAlmLevel;     /* NTAF/NTAM ì—°ë™ì— ì‚¬ìš© FSTATDë§Œ ì‚¬ìš© */
+	CHAR	Info[124];      /* load ê´€ë ¨ percentage, ì˜¤ë¥˜ ë©”ì‹œì§€ ì¶œë ¥ì— í•„ìš”í•œ ê¸°íƒ€ ì •ë³´ë¥¼ ìš©ë„ì— ë”°ë¼ í• ë‹¹ */
+	UCHAR	ucOldAlmLevel;  /* NTAF/NTAM ì—°ë™ì— ì‚¬ìš© FSTATDë§Œ ì‚¬ìš© */
 	UCHAR	ucTafno;
 	UCHAR	ucTamno;
 	UCHAR	ucReserved;
-	INT		tWhen;          /* ¹ß»ý ½Ã°£ */
+	INT		tWhen;          /* ë°œìƒ ì‹œê°„ */
 } st_AlmStat, *pst_AlmStat;
 
 #define MAXTEMS_PER_SRV     5

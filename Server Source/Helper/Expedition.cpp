@@ -86,8 +86,8 @@ CExpedition::CExpedition(int nSubNo, char nExpeType1, char nExpeType2, char nExp
 	m_nRequestIndex = -1;
 	m_strRequestName = "";
 
-	m_nTotCount = 1;		// ÀüÃ¼ ÀÎ¿ø¼ö
-	m_nGTotCount[0] = 1;	// ±×·ì1 ÀÎ¿ø¼ö
+	m_nTotCount = 1;		// ì „ì²´ ì¸ì›ìˆ˜
+	m_nGTotCount[0] = 1;	// ê·¸ë£¹1 ì¸ì›ìˆ˜
 }
 
 CExpedition::~CExpedition()
@@ -218,7 +218,7 @@ CExpedMember* CExpedition::JoinRequest(const char* strRequestName, int nMemberTy
 	if (GetRequestIndex() < 1)
 		return NULL;
 
-	// ºóÀÚ¸®¸¦ Ã£°í
+	// ë¹ˆìë¦¬ë¥¼ ì°¾ê³ 
 	int i,j;
 	for (i = 0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -239,22 +239,22 @@ SKIP_JOINREQ:
 		return NULL;
 	}
 
-	// ºóÀÚ¸®¿¡ ¼³Á¤ÇÏ°í
+	// ë¹ˆìë¦¬ì— ì„¤ì •í•˜ê³ 
 	m_listMember[i][j] = new CExpedMember(m_nRequestIndex, strRequestName, i, nMemberType, j, nLevel );
 
 	m_nTotCount++;
 	m_nGTotCount[i]++;
 
-	// request ÃÊ±âÈ­ ÇÏ°í
+	// request ì´ˆê¸°í™” í•˜ê³ 
 	m_nRequestIndex = -1;
 
 	return m_listMember[i][j];
 }
 
-// ¸â¹ö Âü¿©
+// ë©¤ë²„ ì°¸ì—¬
 CExpedMember* CExpedition::Join(int nCharIndex, const char* strCharName, int nMemberType, int nLevel )
 {
-	// ºóÀÚ¸®¸¦ Ã£°í
+	// ë¹ˆìë¦¬ë¥¼ ì°¾ê³ 
 	int i,j;
 	for (i = 0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -274,7 +274,7 @@ SKIP_JOIN:
 		return NULL;
 	}
 
-	// ºóÀÚ¸®¿¡ ¼³Á¤ÇÏ°í
+	// ë¹ˆìë¦¬ì— ì„¤ì •í•˜ê³ 
 	m_listMember[i][j] = new CExpedMember(nCharIndex, strCharName, i, nMemberType, j, nLevel);
 
 	m_nTotCount++;
@@ -353,7 +353,7 @@ int CExpedition::GetGroupBeEmptySlot(void)
 	return -1;
 }
 
-// ±×·ì ¸â¹ö Å¸ÀÓ ¼ö È¹µæ
+// ê·¸ë£¹ ë©¤ë²„ íƒ€ì„ ìˆ˜ íšë“
 int CExpedition::GetGroupMembertypeCount(int nGroupType, int nMemberType)
 {
 	int nMemberCount = 0;
@@ -421,14 +421,14 @@ bool CExpedition::MoveGroup(int nSourceGroup, int nMoveCharIndex, int nTargetGro
 
 	if(nSourceListindex >= 0)
 	{
-		// ÀÌµ¿
+		// ì´ë™
 		m_listMember[nTargetGroup][nTargetListindex] = m_listMember[nSourceGroup][nSourceListindex];
 		m_nGTotCount[nTargetGroup]++;
 
 		m_listMember[nTargetGroup][nTargetListindex]->SetGroupType(nTargetGroup);
 		m_listMember[nTargetGroup][nTargetListindex]->SetListIndex(nTargetListindex);
 
-		// ¼Ò½º ÃÊ±âÈ­
+		// ì†ŒìŠ¤ ì´ˆê¸°í™”
 		m_listMember[nSourceGroup][nSourceListindex] = NULL;
 		m_nGTotCount[nSourceGroup]--;
 
@@ -438,7 +438,7 @@ bool CExpedition::MoveGroup(int nSourceGroup, int nMoveCharIndex, int nTargetGro
 	return false;
 }
 
-//À§ÀÓÇÒ º¸½º Ã£±â
+//ìœ„ì„í•  ë³´ìŠ¤ ì°¾ê¸°
 const CExpedMember* CExpedition::FindNextBoss(void)
 {
 	for (int i = 0; i < MAX_EXPED_GROUP; i++)
@@ -488,7 +488,7 @@ int	CExpedition::GetMemberCountOnline()
 	return ret;
 }
 
-// boss ÀÎµ¦½º ¹İÈ¯
+// boss ì¸ë±ìŠ¤ ë°˜í™˜
 int CExpedition::GetBossIndex()
 {
 	for (int i = 0; i < MAX_EXPED_GROUP; i++)

@@ -40,7 +40,7 @@ bool CMemPos::Write(int slot, int zone, float x, float z, char ylayer, const cha
 
 	if (m_data[slot])
 	{
-		// °»½Å
+		// Â°Â»ËÄ¹
 		m_data[slot]->m_zone = zone;
 		m_data[slot]->m_x = (int)x;
 		m_data[slot]->m_z = (int)z;

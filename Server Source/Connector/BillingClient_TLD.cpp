@@ -72,17 +72,12 @@ void CBillingClient::OnCashBalance(CNetMsg::SP& msg)
 				>> cashBalance;
 
 	CUser * user = NULL;
-	for(int i = 0; i < gserver.m_maxSubServer; i++)
-	{
-		user = gserver.m_userList[i].FindByUserIndex(userindex);
-		if( user )
-			break;
-	}
+	user = gserver.m_user_list->findByUserIndex(userindex);
 
 	if( !user )
 	{
 		GAMELOG << init("CASH_BALANCE_ERROR")
-				<< userindex;
+				<< userindex << end;
 		return;
 	}
 
@@ -93,8 +88,8 @@ void CBillingClient::OnCashBalance(CNetMsg::SP& msg)
 }
 void CBillingClient::OnCanBuy(CNetMsg::SP& msg)
 {
-	//MSG_BILLITEM_CANBUY_REP,	// ÀÀ´ä	  : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
-	// returnCode¿¡ µû¸¥ Çàµ¿À» ÇÏ½Ã¿À
+	//MSG_BILLITEM_CANBUY_REP,	// ì‘ë‹µ	  : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
+	// returnCodeì— ë”°ë¥¸ í–‰ë™ì„ í•˜ì‹œì˜¤
 	unsigned char returnCode, gameId;
 	int userindex;
 	int cpId, cashBalance, ctId[MAX_PURCHASEITEM], i;
@@ -114,11 +109,7 @@ void CBillingClient::OnCanBuy(CNetMsg::SP& msg)
 	RefMsg(msg) >> cashBalance;
 
 	CUser* user = NULL;
-	for(i = 0; i < gserver.m_maxSubServer; i++)
-	{
-		user = gserver.m_userList[i].FindByUserIndex(userindex);
-		if(user) break;
-	}
+	user = gserver.m_user_list->findByUserIndex(userindex);
 
 	if(!user)
 	{
@@ -129,8 +120,8 @@ void CBillingClient::OnCanBuy(CNetMsg::SP& msg)
 
 	if( returnCode == MSG_BILLITEM_ERROR_SUCCESS)
 	{
-		// Â÷°¨ ¿äÃ»À» ÇÔ
-		// DBÀÇ ±¸¸ÅÇÊµå¸¦ Ãß°¡, ½Ã¸®¾ó ¹øÈ£ ¼³Á¤ÈÄ °Å½Ã±â ÇØ¼­ °Å½Ã±â ÇÏ½Ã¿À
+		// ì°¨ê° ìš”ì²­ì„ í•¨
+		// DBì˜ êµ¬ë§¤í•„ë“œë¥¼ ì¶”ê°€, ì‹œë¦¬ì–¼ ë²ˆí˜¸ ì„¤ì •í›„ ê±°ì‹œê¸° í•´ì„œ ê±°ì‹œê¸° í•˜ì‹œì˜¤
 
 		CDBCmd cmd(&gserver.m_dbuser);
 
@@ -206,7 +197,7 @@ void CBillingClient::OnCanBuy(CNetMsg::SP& msg)
 						<< userindex << end;
 			}
 
-			// ºô¸µ ¼­¹ö°¡ µ¹Áö ¾Ê°í ÀÖÀ¸¹Ç·Î  ·Ñ¹é : ÇØ´ç ½Ã¸®¾óÀ» °¡Áø ¾ÆÀÌÅÛ »èÁ¦
+			// ë¹Œë§ ì„œë²„ê°€ ëŒì§€ ì•Šê³  ìˆìœ¼ë¯€ë¡œ  ë¡¤ë°± : í•´ë‹¹ ì‹œë¦¬ì–¼ì„ ê°€ì§„ ì•„ì´í…œ ì‚­ì œ
 
 			std::string deleteQuery = boost::str(boost::format("DELETE FROM t_purchase0%d WHERE a_serial = %d")	% (userindex % 10) % serial);
 			cmd.SetQuery(deleteQuery);
@@ -228,14 +219,14 @@ void CBillingClient::OnCanBuy(CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¿¡·¯ ¸Ş¼¼Áö¿¡ ÇØ´çÇÏ´Â ¸®ÇÃ¶óÀÌ
+	// ì—ëŸ¬ ë©”ì„¸ì§€ì— í•´ë‹¹í•˜ëŠ” ë¦¬í”Œë¼ì´
 	CNetMsg::SP rmsg(new CNetMsg);
 	ConnCashItemPurchaseRep(rmsg, userindex, (MSG_EX_CASHITEM_ERROR_TYPE) returnCode, cashBalance);
 	SEND_Q(rmsg, user->m_descserver);
 }
 void CBillingClient::OnBuy(CNetMsg::SP& msg)
 {
-	//MSG_BILLITEM_BUY_REP,		// ÀÀ´ä	  : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
+	//MSG_BILLITEM_BUY_REP,		// ì‘ë‹µ	  : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
 	unsigned char returnCode, gameId;
 	int userindex;
 	int cpId, cashBalance, ctId[MAX_PURCHASEITEM], i, serial;
@@ -252,8 +243,8 @@ void CBillingClient::OnBuy(CNetMsg::SP& msg)
 	{
 		RefMsg(msg) >> ctId[i];
 
-		// ÇöÀç ±¸ÀÔ ¼º°øÇÑ »óÇ° ÀÎµ¦½º·Î Ä¿³ØÅÍ°¡ °¡Áö°í ÀÖ´Â ÇÑÁ¤ÆÇ¸Å ¸®½ºÆ®¸¦ Ã£¾Æ¼­
-		// ÀÖÀ¸¸é ÆÈ¸° °¹¼ö¸¦ Áõ°¡ ½ÃÅ°°í ¸ğµç °ÔÀÓ¼­¹ö·Î ¸Ş¼¼Áö¸¦ º¸³½´Ù.
+		// í˜„ì¬ êµ¬ì… ì„±ê³µí•œ ìƒí’ˆ ì¸ë±ìŠ¤ë¡œ ì»¤ë„¥í„°ê°€ ê°€ì§€ê³  ìˆëŠ” í•œì •íŒë§¤ ë¦¬ìŠ¤íŠ¸ë¥¼ ì°¾ì•„ì„œ
+		// ìˆìœ¼ë©´ íŒ”ë¦° ê°¯ìˆ˜ë¥¼ ì¦ê°€ ì‹œí‚¤ê³  ëª¨ë“  ê²Œì„ì„œë²„ë¡œ ë©”ì„¸ì§€ë¥¼ ë³´ë‚¸ë‹¤.
 		CServer::map_limitsell_t::iterator it = gserver.m_limitSell.find(ctId[i]);
 		if( it != gserver.m_limitSell.end() )
 		{
@@ -269,11 +260,7 @@ void CBillingClient::OnBuy(CNetMsg::SP& msg)
 	RefMsg(msg) >> cashBalance;
 
 	CUser* user = NULL;
-	for(i = 0; i < gserver.m_maxSubServer; i++)
-	{
-		user = gserver.m_userList[i].FindByUserIndex(userindex);
-		if(user) break;
-	}
+	user = gserver.m_user_list->findByUserIndex(userindex);
 
 	if(!user)
 	{
@@ -288,7 +275,7 @@ void CBillingClient::OnBuy(CNetMsg::SP& msg)
 
 	if( returnCode == MSG_BILLITEM_ERROR_SUCCESS)
 	{
-		// ÇØ´ç ½Ã¸®¾óÀ» °¡Áø ·¹ÄÚµå¸¦ ÄÁÆßÇÑ´Ù.
+		// í•´ë‹¹ ì‹œë¦¬ì–¼ì„ ê°€ì§„ ë ˆì½”ë“œë¥¼ ì»¨íŒí•œë‹¤.
 		std::string updateQuery = boost::str(boost::format("UPDATE t_purchase0%d SET a_confirm = 1 WHERE a_serial = %d ") % (userindex % 10) % serial);
 		cmd.SetQuery(updateQuery);
 
@@ -299,7 +286,7 @@ void CBillingClient::OnBuy(CNetMsg::SP& msg)
 					<< end;
 		}
 
-		//±¸¸Å ·Î±×¸¦ ³²±ä´Ù.
+		//êµ¬ë§¤ ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
 		{
 			GAMELOG << init("BUY_CASH_ITEM_END") << userindex << delim;
 			for(i = 0; i < count && i < MAX_PURCHASEITEM; i++)
@@ -317,8 +304,8 @@ void CBillingClient::OnBuy(CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ½Ã¸®¾ó °ªÀ» °¡Áø t_purchase¸¦ ¸ğµÎ ·Ñ¹éÇÏ°í
-		// ¿¡·¯ÄÚµå¿¡ µû¸¥ °ªÀ» À¯Àú¿¡°Ô Àü´ŞÇÑ´Ù
+		// ì‹œë¦¬ì–¼ ê°’ì„ ê°€ì§„ t_purchaseë¥¼ ëª¨ë‘ ë¡¤ë°±í•˜ê³ 
+		// ì—ëŸ¬ì½”ë“œì— ë”°ë¥¸ ê°’ì„ ìœ ì €ì—ê²Œ ì „ë‹¬í•œë‹¤
 
 		std::string deleteQuery = boost::str(boost::format("DELETE FROM t_purchase0%d WHERE a_serial = %d ") % (userindex % 10) % serial);
 		cmd.SetQuery(deleteQuery);
@@ -359,7 +346,7 @@ void CBillingClient::onClose(rnSocketIOService* service)
 	bnf::instance()->RemoveSession(service);
 	service_ = NULL;
 
-	// ÀçÁ¢¼Ó Å¸ÀÌ¸Ó »ı¼º
+	// ì¬ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	session_handle handle = bnf::instance()->CreateMSecTimer(2 * 1000, (void *)CBillingClientConnectTimer::instance());
 }
 
@@ -383,7 +370,7 @@ void CBillingClient::onConnectFail(rnSocketIOService* service)
 
 void CBillingClient::connect()
 {
-	// ºô¸µ ¼­¹ö¿¡ Á¢¼Ó ½Ãµµ
+	// ë¹Œë§ ì„œë²„ì— ì ‘ì† ì‹œë„
 	std::string billing_host = gserver.m_config.Find("Billing Server", "IP");
 	int billing_port = atoi(gserver.m_config.Find("Billing Server", "Port"));
 	bnf::instance()->CreateAsyncConnect(billing_host, billing_port, &(gserver.m_billing), CONNECT_TYPE_FOR_TLD_BILLING);
@@ -398,10 +385,10 @@ CBillingClientConnectTimer* CBillingClientConnectTimer::instance()
 
 void CBillingClientConnectTimer::operate(rnSocketIOService* service)
 {
-	// Çö Å¸ÀÌ¸Ó »èÁ¦
+	// í˜„ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ºô¸µ ¼­¹ö¿¡ Àç Á¢¼Ó
+	// ë¹Œë§ ì„œë²„ì— ì¬ ì ‘ì†
 	gserver.m_billing.connect();
 }
 

@@ -7,10 +7,10 @@
 #include "WarCastle.h"
 
 /////////////////
-// Ã¤ÆÃ °ü·Ã ÇÔ¼ö
+// ì±„íŒ… ê´€ë ¨ í•¨ìˆ˜
 void do_Chat(CPC* ch, CNetMsg::SP& msg)
 {
-	// ch°¡ ¼¿¿¡ ¼ÓÇØ ÀÖÀ» ¶§, º¸ÀÏ¶§
+	// chê°€ ì…€ì— ì†í•´ ìˆì„ ë•Œ, ë³´ì¼ë•Œ
 	if (!IS_IN_CELL(ch))
 		return ;
 
@@ -21,7 +21,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 	CLCString sender_name(MAX_CHAR_NAME_LENGTH + 1);
 	CLCString receiver_name(MAX_CHAR_NAME_LENGTH + 1);
 	CLCString chat(1000);
-	int	nGroupTyp=-1;  	//¿øÁ¤´ë ±×·ì1(0), ±×·ì 2(1),  ±×·ì 3(2), ±×·ì 4(3) , ÀüÃ¼(-1)
+	int	nGroupTyp=-1;  	//ì›ì •ëŒ€ ê·¸ë£¹1(0), ê·¸ë£¹ 2(1),  ê·¸ë£¹ 3(2), ê·¸ë£¹ 4(3) , ì „ì²´(-1)
 
 	RefMsg(msg) >> chatType
 				>> sender_index
@@ -36,11 +36,18 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	CLCString tmp(1000);
 
-	// ³»¿ë ¾ø´Â Ã¤ÆÃÀº ¹«½Ã
+	// ë‚´ìš© ì—†ëŠ” ì±„íŒ…ì€ ë¬´ì‹œ
 	if (chat.Length() < 1)
 		return ;
 
-	// Ã¤ÆÃ ±İÁö Check
+	if (chat.Length() > CHAT_MESSAGE_MAX)
+	{
+		LOG_ERROR("chat message is too long. max size is %d", CHAT_MESSAGE_MAX);
+		ch->m_desc->Close("chat message is too long.");
+		return;
+	}
+
+	// ì±„íŒ… ê¸ˆì§€ Check
 	if (gserver->m_pulse - ch->m_silencePulse <= 0)
 		return;
 
@@ -48,54 +55,54 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	switch (chatType)
 	{
-	case MSG_CHAT_SAY:		// ÀÏ¹İ
+	case MSG_CHAT_SAY:		// ì¼ë°˜
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_SAY) return;
 			tmp.Format("SAY: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_SHOUT:	// ¿ÜÄ¡±â
+	case MSG_CHAT_SHOUT:	// ì™¸ì¹˜ê¸°
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_SHOUT) return;
 			tmp.Format("SHOUT: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_TRADE:	// ¸Å¸Å
+	case MSG_CHAT_TRADE:	// ë§¤ë§¤
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_TRADE) return;
 			tmp.Format("TRADE: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_WHISPER:	// ±Ó¸»
+	case MSG_CHAT_WHISPER:	// ê·“ë§
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_WHISPER) return;
 			tmp.Format("WHISPER: %s ==> %s: %s", ch->GetName(), (const char*)receiver_name, (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_PARTY:	// ÆÄÆ¼
+	case MSG_CHAT_PARTY:	// íŒŒí‹°
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_PARTY) return;
 			tmp.Format("PARTYCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_EXPEDITION:	// ¿øÁ¤´ë
+	case MSG_CHAT_EXPEDITION:	// ì›ì •ëŒ€
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_EXPED) return;
 			tmp.Format("EXPEDCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_GUILD:	// ±æµå
+	case MSG_CHAT_GUILD:	// ê¸¸ë“œ
 		{
 			if (ch->m_nflag & CHAT_FLAG_NO_GUILD) return;
 			tmp.Format("GUILDCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_GM:		// GM ÀÏ¹İÃ¤ÆÃ
+	case MSG_CHAT_GM:		// GM ì¼ë°˜ì±„íŒ…
 		{
 			tmp.Format("GM SAY: %s: %s", ch->GetName(), (const char*)chat);
 		}
 		break;
-	case MSG_CHAT_LORD:		// ¼ºÁÖ °øÁö
+	case MSG_CHAT_LORD:		// ì„±ì£¼ ê³µì§€
 		{
 			tmp.Format("LORD SAY: %s: %s", ch->GetName(), (const char*)chat);
 		}
@@ -103,13 +110,13 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_CHAT_CHANNEL_LEVEL:
 		{
-			if( ch->m_level < 30 ) return;		// 50·¹º§ ÀÌÇÏ Ã¤ÆÃ ºÒ°¡
+			if( ch->m_level < 50 ) return;		// 50ë ˆë²¨ ì´í•˜ ì±„íŒ… ë¶ˆê°€
 			tmp.Format("CH_LEVEL SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
 		break;
 	case MSG_CHAT_CHANNEL_TRADE:
 		{
-			if( ch->m_level < 10 )				return;		// 10·¹º§ ÀÌÇÏ Ã¤ÆÃ ºÒ°¡
+			if( ch->m_level < 10 )				return;		// 10ë ˆë²¨ ì´í•˜ ì±„íŒ… ë¶ˆê°€
 
 			LONGLONG needMoney = chat.Length() * 10 ;
 
@@ -119,7 +126,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				return;		// ³ª½º°¡ ºÎÁ·ÇÏ¿© Ã¤ÆÃ ÇÒ ¼ö ¾øÀ½
+				return;		// ë‚˜ìŠ¤ê°€ ë¶€ì¡±í•˜ì—¬ ì±„íŒ… í•  ìˆ˜ ì—†ìŒ
 			}
 			tmp.Format("CH_TRADE SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
@@ -139,6 +146,9 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 			if (gserver->m_chatmonitor[i])
 				SEND_Q(rmsg, gserver->m_chatmonitor[i]);
 		}
+
+		tmp.Replace("%", "%%");
+
 		GAMELOG << init("CHAT MONITOR", ch)
 				<< tmp
 				<< end;
@@ -148,48 +158,48 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	switch (chatType)
 	{
-	case MSG_CHAT_SAY:			// ÀÏ¹İ
+	case MSG_CHAT_SAY:			// ì¼ë°˜
 		tmp.Format("SAY: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 
-	case MSG_CHAT_SHOUT:		// ¿ÜÄ¡±â
+	case MSG_CHAT_SHOUT:		// ì™¸ì¹˜ê¸°
 		tmp.Format("SHOUT: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 
-	case MSG_CHAT_TRADE:		// ¸Å¸Å
+	case MSG_CHAT_TRADE:		// ë§¤ë§¤
 		tmp.Format("TRADE: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 
-	case MSG_CHAT_WHISPER:		// ±Ó¸»
+	case MSG_CHAT_WHISPER:		// ê·“ë§
 		tmp.Format("WHISPER: %s ==> %s: %s", ch->GetName(), (const char*)receiver_name, (const char*)chat);
 		break;
 
-	case MSG_CHAT_PARTY:		// ÆÄÆ¼
+	case MSG_CHAT_PARTY:		// íŒŒí‹°
 		tmp.Format("PARTYCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		break;
-	case MSG_CHAT_EXPEDITION:	// ¿øÁ¤´ë
+	case MSG_CHAT_EXPEDITION:	// ì›ì •ëŒ€
 		tmp.Format("EXPEDCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		break;
-	case MSG_CHAT_GUILD:		// ±æµå
+	case MSG_CHAT_GUILD:		// ê¸¸ë“œ
 		tmp.Format("GUILDCHAT: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 
-	case MSG_CHAT_GM:			// GM ÀÏ¹İÃ¤ÆÃ
+	case MSG_CHAT_GM:			// GM ì¼ë°˜ì±„íŒ…
 		tmp.Format("GM SAY: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 
-	case MSG_CHAT_LORD:			// ¼ºÁÖ °øÁö
+	case MSG_CHAT_LORD:			// ì„±ì£¼ ê³µì§€
 		tmp.Format("LORD SAY: %s: %s", ch->GetName(), (const char*)chat);
 		break;
 	case MSG_CHAT_CHANNEL_LEVEL:
 		{
-			if( ch->m_level < 30 ) return;		// 50·¹º§ ÀÌÇÏ Ã¤ÆÃ ºÒ°¡
+			if( ch->m_level < 50 ) return;		// 50ë ˆë²¨ ì´í•˜ ì±„íŒ… ë¶ˆê°€
 			tmp.Format("CH_LEVEL SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
 		break;
 	case MSG_CHAT_CHANNEL_TRADE:
 		{
-			if( ch->m_level < 10 )				return;		// 10·¹º§ ÀÌÇÏ Ã¤ÆÃ ºÒ°¡
+			if( ch->m_level < 10 )				return;		// 10ë ˆë²¨ ì´í•˜ ì±„íŒ… ë¶ˆê°€
 
 			LONGLONG needMoney = chat.Length() * 10 ;
 
@@ -199,7 +209,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				return;		// ³ª½º°¡ ºÎÁ·ÇÏ¿© Ã¤ÆÃ ÇÒ ¼ö ¾øÀ½
+				return;		// ë‚˜ìŠ¤ê°€ ë¶€ì¡±í•˜ì—¬ ì±„íŒ… í•  ìˆ˜ ì—†ìŒ
 			}
 			tmp.Format("CH_TRADE SAY: %s: %s", ch->GetName(), (const char*)chat );
 		}
@@ -223,6 +233,8 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 			}
 
 #ifndef LC_GAMIGO
+			tmp.Replace("%", "%%");
+
 			GAMELOG << init("CHAT MONITOR", ch)
 					<< tmp
 					<< end;
@@ -236,12 +248,12 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 	{
 		switch (chatType)
 		{
-		case MSG_CHAT_SAY:			// ÀÏ¹İ
-		case MSG_CHAT_SHOUT:		// ¿ÜÄ¡±â
-		case MSG_CHAT_TRADE:		// ¸Å¸Å
-		case MSG_CHAT_WHISPER:		// ±Ó¸»
-		case MSG_CHAT_GM:			// GM ÀÏ¹İÃ¤ÆÃ
-		case MSG_CHAT_LORD:			// ¼ºÁÖ °øÁö
+		case MSG_CHAT_SAY:			// ì¼ë°˜
+		case MSG_CHAT_SHOUT:		// ì™¸ì¹˜ê¸°
+		case MSG_CHAT_TRADE:		// ë§¤ë§¤
+		case MSG_CHAT_WHISPER:		// ê·“ë§
+		case MSG_CHAT_GM:			// GM ì¼ë°˜ì±„íŒ…
+		case MSG_CHAT_LORD:			// ì„±ì£¼ ê³µì§€
 		case MSG_CHAT_GMTOOL:
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -263,7 +275,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 
 	switch (chatType)
 	{
-	case MSG_CHAT_SAY:			// ÀÏ¹İ
+	case MSG_CHAT_SAY:			// ì¼ë°˜
 		if (ch->IsInvisible())
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -286,8 +298,8 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_SHOUT:		// ¿ÜÄ¡±â
-	case MSG_CHAT_TRADE:		// ¸Å¸Å
+	case MSG_CHAT_SHOUT:		// ì™¸ì¹˜ê¸°
+	case MSG_CHAT_TRADE:		// ë§¤ë§¤
 		{
 #ifdef CHAT_BLOCK_USA
 			if (gserver->m_pulse - ch->m_shoutPulse <= 0)
@@ -306,7 +318,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_WHISPER:		// ±Ó¸»
+	case MSG_CHAT_WHISPER:		// ê·“ë§
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrWhisperReqMsg(rmsg,
@@ -321,7 +333,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_MESSENGER:		// ¸Ş½ÅÀú.
+	case MSG_CHAT_MESSENGER:		// ë©”ì‹ ì €.
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrFriendChatReqMsg(rmsg,
@@ -336,7 +348,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_PARTY:		// ÆÄÆ¼
+	case MSG_CHAT_PARTY:		// íŒŒí‹°
 		{
 			if (ch->IsParty())
 			{
@@ -347,18 +359,18 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_EXPEDITION:		// ¿øÁ¤´ë
+	case MSG_CHAT_EXPEDITION:		// ì›ì •ëŒ€
 		{
 			if (ch->IsExped())
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				SayMsg(rmsg, MSG_CHAT_EXPEDITION, ch->m_index, ch->GetName(), "", chat, nGroupTyp);
 
-				if(nGroupTyp == -1)	 //ÀüÃ¼
+				if(nGroupTyp == -1)	 //ì „ì²´
 				{
 					ch->m_Exped->SendToAllPC(rmsg,-1);
 				}
-				else				  //±×·ì
+				else				  //ê·¸ë£¹
 				{
 					ch->m_Exped->SendToPCInSameGroup(nGroupTyp,rmsg);
 				}
@@ -366,7 +378,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_GUILD:		// ±æµå
+	case MSG_CHAT_GUILD:		// ê¸¸ë“œ
 		{
 			if (ch->m_guildInfo)
 			{
@@ -382,7 +394,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_GM:			// GM ÀÏ¹İ Ã¤ÆÃ
+	case MSG_CHAT_GM:			// GM ì¼ë°˜ ì±„íŒ…
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			SayMsg(rmsg, (MSG_CHAT_TYPE)chatType, ch->m_index, ch->GetName(), "", chat);
@@ -390,7 +402,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CHAT_LORD:			// ¼ºÁÖ °øÁö
+	case MSG_CHAT_LORD:			// ì„±ì£¼ ê³µì§€
 		if (CWarCastle::CanLordChat(ch))
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -410,6 +422,8 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 							ch->GetName(),
 							chat);
 
+			chat.Replace("%", "%%");
+
 			GAMELOG << init("CHATLOAD CHATMSG SEND TO MESSENGER:",ch)
 					<< " chat"  << delim <<  chat
 					<< end;
@@ -419,7 +433,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 		break;
 
 #ifdef GMTOOL
-	case MSG_CHAT_GM_WHISPER:	// Åø¿¡¼­ ³¯¸° ±Ó¸»
+	case MSG_CHAT_GM_WHISPER:	// íˆ´ì—ì„œ ë‚ ë¦° ê·“ë§
 		{
 			int server, sub;
 			RefMsg(msg) >> server
@@ -437,7 +451,7 @@ void do_Chat(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, gserver->m_messenger);
 		}
 		break;
-	case MSG_CHAT_GMTOOL:		// À¯Àú°¡ Áö¿¥¿¡°Ô ³¯¸° ±Ó¸»
+	case MSG_CHAT_GMTOOL:		// ìœ ì €ê°€ ì§€ì— ì—ê²Œ ë‚ ë¦° ê·“ë§
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrGMWhisperReqMsg(rmsg, 0, 1, 1, chat, ch->m_index, ch->m_name, gserver->m_serverno, gserver->m_subno, receiver_name);

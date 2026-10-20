@@ -1,14 +1,14 @@
 #ifndef __PARTY_H__
 #define __PARTY_H__
 
-#define		MAX_PARTY_DIVITYPE		5		// ºĞ¹è¹æ¹ı ¼ö(°æÇèÄ¡,¾ÆÀÌÅÛ,½ºÆä¼È ¾ÆÀÌÅÛ)
+#define		MAX_PARTY_DIVITYPE		5		// ë¶„ë°°ë°©ë²• ìˆ˜(ê²½í—˜ì¹˜,ì•„ì´í…œ,ìŠ¤í˜ì…œ ì•„ì´í…œ)
 
 class CNetMsg;
 class CMonsterCombo;
 
-#define PARTY_MATCHING_COMMENT			50		// ÆÄÆ¼ ¸ÅÄª ÆÄÆ¼ µî·Ï½Ã ¼³¸í¹®±¸ ±æÀÌ
-#define PARTY_MATCHING_DATA_PER_PAGE	10		// ÆÄÆ¼ ¸ÅÄª ¸®½ºÆ®¿¡¼­ ÆäÀÌÁö´ç Ç¥½ÃÇÒ µ¥ÀÌÅÍ ¼ö
-#define PARTY_MATCHING_LIMIT_LEVEL		2		// ÆÄÆ¼ ¸ÅÄª¿¡¼­ ·¹º§ Á¦ÇÑ ¹üÀ§
+#define PARTY_MATCHING_COMMENT			50		// íŒŒí‹° ë§¤ì¹­ íŒŒí‹° ë“±ë¡ì‹œ ì„¤ëª…ë¬¸êµ¬ ê¸¸ì´
+#define PARTY_MATCHING_DATA_PER_PAGE	10		// íŒŒí‹° ë§¤ì¹­ ë¦¬ìŠ¤íŠ¸ì—ì„œ í˜ì´ì§€ë‹¹ í‘œì‹œí•  ë°ì´í„° ìˆ˜
+#define PARTY_MATCHING_LIMIT_LEVEL		2		// íŒŒí‹° ë§¤ì¹­ì—ì„œ ë ˆë²¨ ì œí•œ ë²”ìœ„
 
 class CPartyMatchMember
 {
@@ -158,7 +158,7 @@ public:
 	}
 };
 
-// ÆÄÆ¼ ¸â¹ö
+// íŒŒí‹° ë©¤ë²„
 class CPartyMember
 {
 	int				m_nCharIndex;
@@ -208,17 +208,17 @@ struct AftifactItemData
 class CParty
 {
 public:
-	char			m_nPartyType[MAX_PARTY_DIVITYPE];			// °æÇèÄ¡ ºĞ¹è Å¸ÀÔ	: 0 - ±Õµî, 1 - ÀÔ¼ö¿ì¼±, 2 - newÆÄÆ¼
+	char			m_nPartyType[MAX_PARTY_DIVITYPE];			// ê²½í—˜ì¹˜ ë¶„ë°° íƒ€ì…	: 0 - ê· ë“±, 1 - ì…ìˆ˜ìš°ì„ , 2 - newíŒŒí‹°
 	int				m_nCount;
 	CPartyMember*	m_listMember[MAX_PARTY_MEMBER];
 	int				m_nRequest;
 	CLCString		m_strRequest;
 
-	int				m_nEndPartyTime;							// ÆÄÆ¼ ÇØÃ¼ ½Ã°£
+	int				m_nEndPartyTime;							// íŒŒí‹° í•´ì²´ ì‹œê°„
 
 	int				m_nRaidZoneNum;
 	int				m_nRaidAreaNum;
-	int				m_nSubNumber;								// ¿øÁ¤´ë Ã¤³ÎÀ» ¸É¹ö ÇÔ¼ö·Î °¡Áö°í ÀÖ´Â´Ù. ÇØ´ç Ã¤³Î¿¡¼­¸¸ ¿øÁ¤´ë ·¹ÀÌµå ÀÔÀå °¡´É
+	int				m_nSubNumber;								// ì›ì •ëŒ€ ì±„ë„ì„ ë§´ë²„ í•¨ìˆ˜ë¡œ ê°€ì§€ê³  ìˆëŠ”ë‹¤. í•´ë‹¹ ì±„ë„ì—ì„œë§Œ ì›ì •ëŒ€ ë ˆì´ë“œ ì…ì¥ ê°€ëŠ¥
 
 	typedef std::map<int/*guild_index*/, int/*exp*/> GUILD_SKILL_EXP;
 	GUILD_SKILL_EXP	m_guild_skill_exp;
@@ -250,27 +250,32 @@ public:
 	}
 	int	GetMemberCountOnline();
 
-	// boss ÀÎµ¦½º ¹İÈ¯
+	// boss ì¸ë±ìŠ¤ ë°˜í™˜
 	int GetBossIndex() const
 	{
 		return (m_listMember[0]) ? m_listMember[0]->GetCharIndex() : -1;
 	}
 
-	// ÇØ´ç Ä³¸¯ÅÍ ÀÎµ¦½º¸¦ °®´Â ÆÄÆ¼¿øÀÇ ¸®½ºÆ® ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù
+	const char* GetBossName()
+	{
+		return (m_listMember[0]) ? m_listMember[0]->GetCharName() : "";
+	}
+
+	// í•´ë‹¹ ìºë¦­í„° ì¸ë±ìŠ¤ë¥¼ ê°–ëŠ” íŒŒí‹°ì›ì˜ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤
 	int FindMember(int nCharIndex);
 
-	// ÇØ´ç ¸®½ºÆ® ÀÎµ¦½ºÀÇ ¸â¹ö Char index¸¦ ±¸ÇÑ´Ù.
+	// í•´ë‹¹ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ì˜ ë©¤ë²„ Char indexë¥¼ êµ¬í•œë‹¤.
 	int GetMemberCharIndex(int nListIndex);
 
 	void SetRequest(int nRequest, const char* strRequest);
 
-	// request¸¦ ¸â¹ö·Î Âü¿©
+	// requestë¥¼ ë©¤ë²„ë¡œ ì°¸ì—¬
 	int JoinRequest(const char* strRequestName, CPC* pRequest);
 
-	// ÇØ´ç Ä³¸¯ÅÍ¸¦ Á¦°Å, Á¦°ÅÇÏ°Å³ª ¾øÀ¸¸é true, Á¦°Å¿¡ ½ÇÆĞÇÏ¸é false
+	// í•´ë‹¹ ìºë¦­í„°ë¥¼ ì œê±°, ì œê±°í•˜ê±°ë‚˜ ì—†ìœ¼ë©´ true, ì œê±°ì— ì‹¤íŒ¨í•˜ë©´ false
 	void DeleteMember(int nCharIndex);
 
-	// list index·Î CPartyMember ¾ò±â
+	// list indexë¡œ CPartyMember ì–»ê¸°
 	CPartyMember* GetMemberByListIndex(int nListIndex) const;
 	CPartyMember* GetMemberByCharIndex(int charIndex) const;
 
@@ -283,18 +288,18 @@ public:
 	}
 	void SetPartyTypeAll(char cPartyType);
 
-	// ÆÄÆ¼ Á¾·á½Ã ³»ºÎ Æ÷ÀÎÅÍ NULL Ã³¸® ÇÔ¼ö
+	// íŒŒí‹° ì¢…ë£Œì‹œ ë‚´ë¶€ í¬ì¸í„° NULL ì²˜ë¦¬ í•¨ìˆ˜
 	void SetEndParty();
 
 	int GetNearPartyMemberCount(CCharacter* pCenter);
 
-	// pPC °¡±î¿î °÷¿¡ ÀÖ´Â nListIndex¹øÂ° ÆÄÆ¼¿øÀ» ±¸ÇÑ´Ù
+	// pPC ê°€ê¹Œìš´ ê³³ì— ìˆëŠ” nListIndexë²ˆì§¸ íŒŒí‹°ì›ì„ êµ¬í•œë‹¤
 	CPC* GetNearMember(CCharacter* pPC, int nListIndex);
 
-	// ÇØ´ç Ä³¸¯ÅÍÀÎµ¦½ºÀÇ ¸â¹öÀÇ PC Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÑ´Ù
+	// í•´ë‹¹ ìºë¦­í„°ì¸ë±ìŠ¤ì˜ ë©¤ë²„ì˜ PC í¬ì¸í„°ë¥¼ ì„¤ì •í•œë‹¤
 	void SetMemberPCPtr(int nCharIndex, CPC* pPC);
 
-	// ÇöÀç PC°¡ ¼³Á¤µÇ¾î ÀÖ´Â ¸ğµç ÆÄÆ¼¿ø¿¡°Ô ¸Ş½ÃÁö¸¦ Àü´Ş, nExcludeCharIndex Á¦¿Ü
+	// í˜„ì¬ PCê°€ ì„¤ì •ë˜ì–´ ìˆëŠ” ëª¨ë“  íŒŒí‹°ì›ì—ê²Œ ë©”ì‹œì§€ë¥¼ ì „ë‹¬, nExcludeCharIndex ì œì™¸
 	void SendToAllPC(CNetMsg::SP& msg, int nExcludeCharIndex = -1);
 #ifdef CONTINENT_PARTY_RECALL
 	void SendToSameContinentPC(CNetMsg::SP& msg, int nExcludeCharIndex = -1);
@@ -302,22 +307,22 @@ public:
 
 	void SendToPartyRecallPC(CNetMsg::SP& msg, int nReqIndex);
 
-	// °°Àº Á¸¿¡ ÀÖ´Â PC¿¡°Ô¸¸ ¸Ş½ÃÁö Àü´Ş
+	// ê°™ì€ ì¡´ì— ìˆëŠ” PCì—ê²Œë§Œ ë©”ì‹œì§€ ì „ë‹¬
 	void SendToPCInSameZone(int nZone, int nArea, CNetMsg::SP& msg);
 
-	// ÆÄÆ¼ ÇØÃ¼ ½Ã°£ ¼³Á¤
+	// íŒŒí‹° í•´ì²´ ì‹œê°„ ì„¤ì •
 	void SetEndPartyTime(int nNow);
 
-	// ÆÄÆ¼ ÇØÃ¼ ½Ã°£ È¹µæ
+	// íŒŒí‹° í•´ì²´ ì‹œê°„ íšë“
 	int  GetEndPartyTime();
 
-	// Á¸ÀÌµ¿À» ÇÏ¸é ÆÄÆ¼¿¡¼­ Á¦¿Ü½ÃÅ°´Âµ¥ Á¸ÀÌµ¿ ½ÇÆĞ½Ã ´Ù½Ã ÆÄÆ¼·Î º¹±Í ½ÃÄÑÁÖ´Â ÇÔ¼ö
+	// ì¡´ì´ë™ì„ í•˜ë©´ íŒŒí‹°ì—ì„œ ì œì™¸ì‹œí‚¤ëŠ”ë° ì¡´ì´ë™ ì‹¤íŒ¨ì‹œ ë‹¤ì‹œ íŒŒí‹°ë¡œ ë³µê·€ ì‹œì¼œì£¼ëŠ” í•¨ìˆ˜
 	bool SetMemberRegister_AfterGoZone(CPC* pPC);
 
-	// ÆÄÆ¼ ¸®Äİ »ç¿ë À§Ä¡ ¼³Á¤
+	// íŒŒí‹° ë¦¬ì½œ ì‚¬ìš© ìœ„ì¹˜ ì„¤ì •
 	void SetPartyRecallUseInfo(int zoneID, CPos& pos, int guildIndex, char cIsInCastle, int nExcludeCharIndex);
 
-	// °ÔÀÓ¼­¹ö FRIEND ÇÔ¼ö
+	// ê²Œì„ì„œë²„ FRIEND í•¨ìˆ˜
 	friend void ProcHelperPartyInfoParty(CNetMsg::SP& msg);
 
 	int getGuildMemberCountInParty(CPC* pc);

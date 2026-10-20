@@ -19,17 +19,17 @@ MessengerInSubHelperConnectTimer* MessengerInSubHelperConnectTimer::instance()
 
 void MessengerInSubHelperConnectTimer::operate( rnSocketIOService* service )
 {
-	// Çö Å¸ÀÌ¸Ó »èÁ¦
+	// í˜„ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ¸Þ½ÅÁ® ¼­¹ö¿¡ Á¢¼Ó
+	// ë©”ì‹ ì ¸ ì„œë²„ì— ì ‘ì†
 	MessengerInSubHelper::instance()->connect();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void MessengerInSubHelper::connect()
 {
-	// ¸Þ½ÃÁ¯ ¼­¹ö¿¡ Á¢¼Ó ½Ãµµ
+	// ë©”ì‹œì ¼ ì„œë²„ì— ì ‘ì† ì‹œë„
 	bnf::instance()->CreateAsyncConnect(
 		host_, port_, this, CONNECT_TYPE_FOR_CNETMSG);
 }
@@ -78,7 +78,7 @@ void MessengerInSubHelper::onClose( rnSocketIOService* service )
 	bnf::instance()->RemoveSession(service);
 	service_ = NULL;
 
-	// ÀçÁ¢¼Ó Å¸ÀÌ¸Ó »ý¼º
+	// ìž¬ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	session_handle handle = bnf::instance()->CreateMSecTimer(RECONNECT_TIMER_FOR_MESSENGER,
 							(void *)MessengerInSubHelperConnectTimer::instance());
 
@@ -123,7 +123,7 @@ void MessengerInSubHelper::process_ExpressSystem( CNetMsg::SP& msg )
 			CDBCmd cmd;
 			cmd.Init(&gserver.m_dbchar);
 
-			// À¯È¿ÇÑ À¯ÀúÀÎÁö °Ë»ç
+			// ìœ íš¨í•œ ìœ ì €ì¸ì§€ ê²€ì‚¬
 			std::string qry = boost::str(boost::format(
 											 "SELECT a_index FROM t_characters WHERE a_index=%1% LIMIT 1") % packet->char_index);
 			cmd.SetQuery(qry.c_str());
@@ -154,7 +154,7 @@ void MessengerInSubHelper::process_InputItemToExpress( int charIndex, ExpressSys
 	if (item.nas > 0)
 		item.item_index = -1;
 
-	// t_express_system table¿¡ µ¥ÀÌÅÍ ±â·Ï
+	// t_express_system tableì— ë°ì´í„° ê¸°ë¡
 #ifdef DURABILITY
 	std::string sql_q =
 		boost::str(boost::format(
@@ -228,7 +228,7 @@ void MessengerInSubHelper::process_InputItemToExpress( int charIndex, ExpressSys
 		return;
 	}
 
-	// Á¢¼ÓÇÑ À¯Àú¿¡¼­ charIndex¸¦ °Ë»öÇÏ¿© ÀÌ ÆÐÅ¶À» Àü´ÞÇÏ¿© ½Ç½Ã°£À¸·Î Ã¢°íNPC¿¡ ³»¿ëÀÌ ÀÖÀ½À» ¾Ë¸°´Ù.
+	// ì ‘ì†í•œ ìœ ì €ì—ì„œ charIndexë¥¼ ê²€ìƒ‰í•˜ì—¬ ì´ íŒ¨í‚·ì„ ì „ë‹¬í•˜ì—¬ ì‹¤ì‹œê°„ìœ¼ë¡œ ì°½ê³ NPCì— ë‚´ìš©ì´ ìžˆìŒì„ ì•Œë¦°ë‹¤.
 	rnSocketIOService* pService = LogInOutManager::Instance()->getSocketIOByCharIndex(charIndex);
 	if (pService)
 	{

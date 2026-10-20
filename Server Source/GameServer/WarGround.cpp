@@ -19,7 +19,7 @@ CWGPlayer::CWGPlayer(int wartype, int charindex, int leveltype, int select)
 	m_nWarType = wartype;
 	m_nCharIndex = charindex;
 	m_nLevelType = leveltype;
-	m_nSelected = select;		//0:¹ÌºĞ·ù, 1:¼±ÅÃ, 2:Å»¶ô, 3:°æ±âÃë¼Ò
+	m_nSelected = select;		//0:ë¯¸ë¶„ë¥˜, 1:ì„ íƒ, 2:íƒˆë½, 3:ê²½ê¸°ì·¨ì†Œ
 	m_next = NULL;
 }
 CWGPlayer::~CWGPlayer()
@@ -284,7 +284,7 @@ CWGPlayer* CWGPlayerList::GetHead()
 bool CWGPlayerList::Select()
 {
 	CWGPlayer* temp = GetHead();
-	int allselect[3] = {PLAYER_GREATER_THEN_MAX, }; // 0: 40¸íº¸´Ù Å©´Ù, 1: 10¸íº¸´Ù ÀÛ´Ù, 2: 41¸í º¸´Ù ÀÛ´Ù
+	int allselect[3] = {PLAYER_GREATER_THEN_MAX, }; // 0: 40ëª…ë³´ë‹¤ í¬ë‹¤, 1: 10ëª…ë³´ë‹¤ ì‘ë‹¤, 2: 41ëª… ë³´ë‹¤ ì‘ë‹¤
 	if(GetRookieCount() < gserver->m_RoyalRumble.getMinPlayerCount())
 	{
 		allselect[LEVEL_TYPE_ROOKIE] = PLAYER_SMALLER_THEN_MIN;
@@ -311,14 +311,14 @@ bool CWGPlayerList::Select()
 	}
 	while(temp)
 	{
-		if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_SMALLER_THEN_MIN && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)				// 10¸íº¸´Ù ÀÛÀ¸¸é
+		if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_SMALLER_THEN_MIN && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)				// 10ëª…ë³´ë‹¤ ì‘ìœ¼ë©´
 			temp->SetSelected(PLAYER_DRAW);																					// select = draw
 
-		else if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_BETWEEN_MIN_AND_MAX && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)		// 10~40¸íÀÌ¸é
-			temp->SetSelected(PLAYER_SELECTED);																				// select = ¼±¹ß
+		else if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_BETWEEN_MIN_AND_MAX && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)		// 10~40ëª…ì´ë©´
+			temp->SetSelected(PLAYER_SELECTED);																				// select = ì„ ë°œ
 
-		else if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_GREATER_THEN_MAX && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)		// 40¸íº¸´Ù Å©¸é
-			temp->SetSelected(PLAYER_DROP);																					// select = ÀÏ´Ü Å»¶ô
+		else if(allselect[LEVEL_TYPE_ROOKIE] == PLAYER_GREATER_THEN_MAX && temp->GetLevelType() == LEVEL_TYPE_ROOKIE)		// 40ëª…ë³´ë‹¤ í¬ë©´
+			temp->SetSelected(PLAYER_DROP);																					// select = ì¼ë‹¨ íƒˆë½
 
 		if(allselect[LEVEL_TYPE_SENIOR] == PLAYER_SMALLER_THEN_MIN && temp->GetLevelType() == LEVEL_TYPE_SENIOR)
 			temp->SetSelected(PLAYER_DRAW);
@@ -345,8 +345,8 @@ bool CWGPlayerList::Select()
 			&& allselect[LEVEL_TYPE_SENIOR] == PLAYER_SMALLER_THEN_MIN
 			&& allselect[LEVEL_TYPE_MASTER] == PLAYER_SMALLER_THEN_MIN )
 	{
-		//¸ğµç ·¹º§ÀÌ 10¸íº¸´Ù ÀÛ´Ù. ¸ğµç °æ±â Ãë¼Ò(draw)
-		return false; //°æ±â Ãë¼Ò
+		//ëª¨ë“  ë ˆë²¨ì´ 10ëª…ë³´ë‹¤ ì‘ë‹¤. ëª¨ë“  ê²½ê¸° ì·¨ì†Œ(draw)
+		return false; //ê²½ê¸° ì·¨ì†Œ
 	}
 
 	int loop = 0;
@@ -885,7 +885,7 @@ void CRoyalRumble::CheckRoyalRumble()
 			m_WaitPlayerList.ClearList();
 
 			{
-				// ¸Ş½ÅÀú ¼­¹ö¸¦ ÅëÇØ ÀüÃ¤³Î °øÁö
+				// ë©”ì‹ ì € ì„œë²„ë¥¼ í†µí•´ ì „ì±„ë„ ê³µì§€
 				CNetMsg::SP rmsg(new CNetMsg);
 				MsgrRoyalRumbleStart(rmsg, -1, gserver->m_serverno, -1, -1, MSG_MSGR_WARGROUND_NOTICE, 0);
 				SEND_Q(rmsg, gserver->m_messenger);
@@ -914,7 +914,7 @@ void CRoyalRumble::CheckRoyalRumble()
 			{
 			case 1:
 				{
-					// 15ºĞ ³²¾ÒÀ½.
+					// 15ë¶„ ë‚¨ì•˜ìŒ.
 					SetRoyalRumbleTime(mktime(&gserver->m_tRealSystemTime) + (5 * 60));
 					SetRoyalRumbleNextProcess();
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -924,7 +924,7 @@ void CRoyalRumble::CheckRoyalRumble()
 				break;
 			case 2:
 				{
-					// 10ºĞ ³²¾ÒÀ½.
+					// 10ë¶„ ë‚¨ì•˜ìŒ.
 					SetRoyalRumbleTime(mktime(&gserver->m_tRealSystemTime) + (5 * 60));
 					SetRoyalRumbleNextProcess();
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -935,13 +935,13 @@ void CRoyalRumble::CheckRoyalRumble()
 			case 3:
 				{
 					{
-						// ½ÅÃ»½Ã°£ 5ºĞ ³²¾Ò½À´Ï´Ù.
-						// ÀüÃ¼³Î¿¡ ½ÅÃ»½Ã°£ 5ºĞ ³²¾Ò´Ù°í º¸³»±â
+						// ì‹ ì²­ì‹œê°„ 5ë¶„ ë‚¨ì•˜ìŠµë‹ˆë‹¤.
+						// ì „ì²´ë„ì— ì‹ ì²­ì‹œê°„ 5ë¶„ ë‚¨ì•˜ë‹¤ê³  ë³´ë‚´ê¸°
 						CNetMsg::SP rmsg(new CNetMsg);
 						MsgrRoyalRumbleStart(rmsg, -1, gserver->m_serverno, -1, -1, MSG_MSGR_WARGROUND_NOTICE, 1);
 						SEND_Q(rmsg, gserver->m_messenger);
 					}
-					//5ºĞ ³²¾ÒÀ½
+					//5ë¶„ ë‚¨ì•˜ìŒ
 					AddRoyalRumbleTime((5*60));
 					SetRoyalRumbleNextProcess();
 					GAMELOG << init("ROYAL RUMBLE NOTICE") << "Player regist remain 5 minutes."<< end;
@@ -954,8 +954,8 @@ void CRoyalRumble::CheckRoyalRumble()
 				break;
 			case 4:
 				{
-					// ½ÅÃ» ³¡. °æ±â ½ÃÀÛ 10ºĞ Àü
-					// ÀüÃ¼³Î ¸¶°¨ °øÁö
+					// ì‹ ì²­ ë. ê²½ê¸° ì‹œì‘ 10ë¶„ ì „
+					// ì „ì²´ë„ ë§ˆê° ê³µì§€
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
 						MsgrRoyalRumbleStart(rmsg, -1, gserver->m_serverno, -1, -1, MSG_MSGR_WARGROUND_NOTICE, 2);
@@ -964,17 +964,17 @@ void CRoyalRumble::CheckRoyalRumble()
 					SetRoyalRumbleNotice(false);
 					GAMELOG << init("ROYAL RUMBLE NOTICE") << "Player regist end."<< end;
 
-					// ¼±¹ßµÉ ¼±¼ö ¼±ÅÃ
+					// ì„ ë°œë  ì„ ìˆ˜ ì„ íƒ
 					GAMELOG << init("ROYAL RUMBLE Player Select Start") << end;
 					m_WGPlayerList.ShuffleWGPlayer(m_WGPlayerList.GetTotalCount());
 					bool bRoyalRumbleCanStart = true;
 					bRoyalRumbleCanStart = m_WGPlayerList.Select();
 					GAMELOG << init("ROYAL RUMBLE Player Select End") << end;
 
-					// Àü ¼±¼ö¿¡°Ô Å»¶ô, ÇÕ°İ, °æ±â draw¸Ş½ÃÁö º¸³»±â
+					// ì „ ì„ ìˆ˜ì—ê²Œ íƒˆë½, í•©ê²©, ê²½ê¸° drawë©”ì‹œì§€ ë³´ë‚´ê¸°
 					m_WGPlayerList.SendResult();
 
-					// ½ÅÃ»ÀÚÇ¥¿¡¼­ ¼±¹ß ¼±¼öÇ¥·Î ÀÌµ¿
+					// ì‹ ì²­ìí‘œì—ì„œ ì„ ë°œ ì„ ìˆ˜í‘œë¡œ ì´ë™
 					MakeWaitPlayer();
 					m_WaitPlayerList.ShuffleWaitPlayer(m_WaitPlayerList.GetPlayerCount());
 					AddRoyalRumbleTime((9*60));
@@ -1002,9 +1002,9 @@ void CRoyalRumble::CheckRoyalRumble()
 					SetRoyalRumbleNextProcess();
 					if(bRoyalRumbleCanStart == false)
 					{
-						// rookie, senior, master ¸ğµç °æ±â°¡ drawµÇ¾ú´Ù. ´ÙÀ½´Ü°è¸¦ ½ÃÇàÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-						// ·Î¾â·³ºí ÁøÇà ½Ã°£À» ÃÊ±âÈ­ ÇÏ°í, ´Ü°è¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-						// ÇÁ·Î¼¼½º´Â ¿©±â¼­ ³¡³­´Ù.
+						// rookie, senior, master ëª¨ë“  ê²½ê¸°ê°€ drawë˜ì—ˆë‹¤. ë‹¤ìŒë‹¨ê³„ë¥¼ ì‹œí–‰í•  í•„ìš”ê°€ ì—†ë‹¤.
+						// ë¡œì–„ëŸ¼ë¸” ì§„í–‰ ì‹œê°„ì„ ì´ˆê¸°í™” í•˜ê³ , ë‹¨ê³„ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+						// í”„ë¡œì„¸ìŠ¤ëŠ” ì—¬ê¸°ì„œ ëë‚œë‹¤.
 						SetRoyalRumbleTime(0);
 						SetInitRoyalRumbleProcess();
 					}
@@ -1012,7 +1012,7 @@ void CRoyalRumble::CheckRoyalRumble()
 				break;
 			case 5:
 				{
-					// ¼±¹ß¼±¼öµé¿¡°Ô Á¸ÀÌµ¿ ¸Ş½ÃÁö º¸³»±â.
+					// ì„ ë°œì„ ìˆ˜ë“¤ì—ê²Œ ì¡´ì´ë™ ë©”ì‹œì§€ ë³´ë‚´ê¸°.
 					CNetMsg::SP rmsg(new CNetMsg);
 					RoyalRumbleGoZone(rmsg);
 					m_WaitPlayerList.SendAllWaitPlayer(rmsg);
@@ -1030,11 +1030,11 @@ void CRoyalRumble::CheckRoyalRumble()
 				{
 					/*SetTimeNoticeType(0);*/
 					/*SetTimeNotice(0);*/
-					// È¦µåµÈ »ç¶÷ È¦µå Ç®±â
+					// í™€ë“œëœ ì‚¬ëŒ í™€ë“œ í’€ê¸°
 					/*UnHold();*/
 
-					// °æ±â ½ÃÀÛ
-					// CheckIn µÈ »ç¶÷ 4¸íÀ» »Ì¾Æ¼­ ÀüÀå¿¡ ÅõÀÔ ½ÃÅ°±â
+					// ê²½ê¸° ì‹œì‘
+					// CheckIn ëœ ì‚¬ëŒ 4ëª…ì„ ë½‘ì•„ì„œ ì „ì¥ì— íˆ¬ì… ì‹œí‚¤ê¸°
 					int nLoop = 0;
 					for(nLoop = 0; nLoop < 4; nLoop++)
 					{
@@ -1203,7 +1203,7 @@ bool CRoyalRumble::GetMasterPlaying()
 
 void CRoyalRumble::MakeWaitPlayer()
 {
-	// m_WGPlayerList¿¡¼­ ¼±¹ßµÈ ¼±¼ö¸¦ m_WaitPlayerListÀÌµ¿ ½ÃÅ²´Ù.
+	// m_WGPlayerListì—ì„œ ì„ ë°œëœ ì„ ìˆ˜ë¥¼ m_WaitPlayerListì´ë™ ì‹œí‚¨ë‹¤.
 
 	CWGPlayer* pTemp = NULL;
 	CWGPlayer* pTempNext = m_WGPlayerList.GetHead();
@@ -1281,11 +1281,11 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 	time_t tGap = 0;
 	if(GetRookiePlaying())
 	{
-		// Area¿¡°Ô ¸Ş½ÃÁö º¸³»±â
+		// Areaì—ê²Œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		tGap = (GetRookieTime() - mktime(&gserver->m_tRealSystemTime));
 		if((tGap >= 0) && !GetRookieLastEnter())
 		{
-			//  tGapÃÊ µÚ ´ÙÀ½ ¼±¼ö°¡ ÀÔÀåÇÕ´Ï´Ù.
+			//  tGapì´ˆ ë’¤ ë‹¤ìŒ ì„ ìˆ˜ê°€ ì…ì¥í•©ë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleEnterNextPlayer(rmsg, (int)tGap);
 			m_pRookieArea->SendToAllClient(rmsg);
@@ -1294,9 +1294,9 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 		{
 			if(!GetRookieLastEnter())
 			{
-				// ¼±¼öÀÔÀå, ¼±¼ö°¡ ¾øÀ¸¸é WaitPlayerList¿¡¼­ »èÁ¦
+				// ì„ ìˆ˜ì…ì¥, ì„ ìˆ˜ê°€ ì—†ìœ¼ë©´ WaitPlayerListì—ì„œ ì‚­ì œ
 				int i;
-				for(i = 0; i < 2; i++)				// 2¸íÀÔÀå ½ÃÅ°±â
+				for(i = 0; i < 2; i++)				// 2ëª…ì…ì¥ ì‹œí‚¤ê¸°
 				{
 					EnterTheWarGround(LEVEL_TYPE_ROOKIE);
 				}
@@ -1309,23 +1309,23 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					SetRookieLastEnter(true);
 				}
 			}
-			else if(GetRookiePlaying())	// ´Ùµé¾î°¬´Ù. 20ºĞµµ Áö³µ´Ù. °æ±â¸¦ ÁøÇàÁßÀÌ´Ù. µğ¹öÇÁ¸¦ ÁÖÀÚ
+			else if(GetRookiePlaying())	// ë‹¤ë“¤ì–´ê°”ë‹¤. 20ë¶„ë„ ì§€ë‚¬ë‹¤. ê²½ê¸°ë¥¼ ì§„í–‰ì¤‘ì´ë‹¤. ë””ë²„í”„ë¥¼ ì£¼ì
 			{
-				//µğ¹öÇÁ
+				//ë””ë²„í”„
 				SetDebuff(DEBUFF_TYPE_20MINUTE, LEVEL_TYPE_ROOKIE);
 			}
 		}
-		// °ÔÀÓ ÀÎ¿ø¼ö°¡ ¸¹¾ÆÁö¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// ê²Œì„ ì¸ì›ìˆ˜ê°€ ë§ì•„ì§€ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		if(GetEnteredPlayer(LEVEL_TYPE_ROOKIE) > 7)
 		{
-			// µğ¹öÇÁ
+			// ë””ë²„í”„
 			SetDebuff(DEBUFF_TYPE_8PLAYER, LEVEL_TYPE_ROOKIE);
 		}
 
-		// ÆòÈ­Áö¿ª¿¡ °¬À¸¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// í‰í™”ì§€ì—­ì— ê°”ìœ¼ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		// SetDebuff(DEBUFF_TYPE_PEACEZONE, LEVEL_TYPE_ROOKIE);
 
-		// 1¸í ³²¾Ò´ÂÁö?
+		// 1ëª… ë‚¨ì•˜ëŠ”ì§€?
 		if( GetRookieLastEnter() )
 		{
 			int nCount = 0;
@@ -1350,7 +1350,7 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					pn = pn->GetNext();
 					if(p->GetCheckIn() && p->GetIsEntered() && p->GetLevelType() == LEVEL_TYPE_ROOKIE)
 					{
-						// p°¡ rookie ¿ì½ÂÀÚ
+						// pê°€ rookie ìš°ìŠ¹ì
 						break;
 					}
 				}
@@ -1364,12 +1364,12 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 						{
 							pPC->m_assist.CureBySkillIndex(ROYAL_RUMBLE_DEBUFF_SKILL);
 						}
-						// ÀüÀå Æ÷ÀÎÆ® 100Æ÷ÀÎÆ® Áö±Ş
+						// ì „ì¥ í¬ì¸íŠ¸ 100í¬ì¸íŠ¸ ì§€ê¸‰
 						pPC->AddWarGroundPoint(100);
 						SetWinner(LEVEL_TYPE_ROOKIE, pPC);
 
 						{
-							// ¼­¹ö±º¿¡ ¿ì½ÂÀÚ ¸Ş½ÃÁö Àü¼Û
+							// ì„œë²„êµ°ì— ìš°ìŠ¹ì ë©”ì‹œì§€ ì „ì†¡
 							CNetMsg::SP rmsg(new CNetMsg);
 							MsgrRoyalRumbleWinner(rmsg, -1, gserver->m_serverno, -1, -1, p->GetLevelType(), p->GetCharIndex(), pPC->GetName());
 							SEND_Q(rmsg, gserver->m_messenger);
@@ -1387,11 +1387,11 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 
 	if(GetSeniorPlaying())
 	{
-		// Area¿¡°Ô ¸Ş½ÃÁö º¸³»±â
+		// Areaì—ê²Œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		tGap = (GetSeniorTime() - mktime(&gserver->m_tRealSystemTime));
 		if(tGap >= 0  && !GetSeniorLastEnter())
 		{
-			// tGapÃÊ µÚ ´ÙÀ½ ¼±¼ö°¡ ÀÔÀåÇÕ´Ï´Ù.
+			// tGapì´ˆ ë’¤ ë‹¤ìŒ ì„ ìˆ˜ê°€ ì…ì¥í•©ë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleEnterNextPlayer(rmsg, (int)tGap);
 			m_pSeniorArea->SendToAllClient(rmsg);
@@ -1400,9 +1400,9 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 		{
 			if(!GetSeniorLastEnter())
 			{
-				// ¼±¼öÀÔÀå, ¼±¼ö°¡ ¾øÀ¸¸é WaitPlayerList¿¡¼­ »èÁ¦
+				// ì„ ìˆ˜ì…ì¥, ì„ ìˆ˜ê°€ ì—†ìœ¼ë©´ WaitPlayerListì—ì„œ ì‚­ì œ
 				int i;
-				for(i = 0; i < 2; i++)				// 2¸íÀÔÀå ½ÃÅ°±â
+				for(i = 0; i < 2; i++)				// 2ëª…ì…ì¥ ì‹œí‚¤ê¸°
 				{
 					EnterTheWarGround(LEVEL_TYPE_SENIOR);
 				}
@@ -1415,22 +1415,22 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					SetSeniorLastEnter(true);
 				}
 			}
-			else if(GetSeniorPlaying())	// ´Ùµé¾î°¬´Ù. 20ºĞµµ Áö³µ´Ù. µğ¹öÇÁ¸¦ ÁÖÀÚ
+			else if(GetSeniorPlaying())	// ë‹¤ë“¤ì–´ê°”ë‹¤. 20ë¶„ë„ ì§€ë‚¬ë‹¤. ë””ë²„í”„ë¥¼ ì£¼ì
 			{
-				// µğ¹öÇÁ
+				// ë””ë²„í”„
 				SetDebuff(DEBUFF_TYPE_20MINUTE, LEVEL_TYPE_SENIOR);
 			}
 		}
-		// °ÔÀÓ ÀÎ¿ø¼ö°¡ ¸¹¾ÆÁö¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// ê²Œì„ ì¸ì›ìˆ˜ê°€ ë§ì•„ì§€ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		if(GetEnteredPlayer(LEVEL_TYPE_SENIOR) > 7)
 		{
-			// µğ¹öÇÁ
+			// ë””ë²„í”„
 			SetDebuff(DEBUFF_TYPE_8PLAYER, LEVEL_TYPE_SENIOR);
 		}
-		// ÆòÈ­Áö¿ª¿¡ °¬À¸¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// í‰í™”ì§€ì—­ì— ê°”ìœ¼ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		// SetDebuff(DEBUFF_TYPE_PEACEZONE, LEVEL_TYPE_SENIOR);
 
-		// 1¸í ³²¾Ò´ÂÁö?
+		// 1ëª… ë‚¨ì•˜ëŠ”ì§€?
 		if( GetSeniorLastEnter() )
 		{
 			int nCount = 0;
@@ -1455,7 +1455,7 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					pn = pn->GetNext();
 					if(p->GetCheckIn() && p->GetIsEntered() && p->GetLevelType() == LEVEL_TYPE_SENIOR)
 					{
-						// p°¡ rookie ¿ì½ÂÀÚ
+						// pê°€ rookie ìš°ìŠ¹ì
 						break;
 					}
 				}
@@ -1469,12 +1469,12 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 						{
 							pPC->m_assist.CureBySkillIndex(ROYAL_RUMBLE_DEBUFF_SKILL);
 						}
-						// ÀüÀå Æ÷ÀÎÆ® 100Æ÷ÀÎÆ® Áö±Ş
+						// ì „ì¥ í¬ì¸íŠ¸ 100í¬ì¸íŠ¸ ì§€ê¸‰
 						pPC->AddWarGroundPoint(100);
 						SetWinner(LEVEL_TYPE_SENIOR, pPC);
 
 						{
-							// ¼­¹ö±º¿¡ ¿ì½ÂÀÚ ¸Ş½ÃÁö Àü¼Û
+							// ì„œë²„êµ°ì— ìš°ìŠ¹ì ë©”ì‹œì§€ ì „ì†¡
 							CNetMsg::SP rmsg(new CNetMsg);
 							MsgrRoyalRumbleWinner(rmsg, -1, gserver->m_serverno, -1, -1, p->GetLevelType(), p->GetCharIndex(), pPC->GetName());
 							SEND_Q(rmsg, gserver->m_messenger);
@@ -1492,11 +1492,11 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 
 	if(GetMasterPlaying())
 	{
-		// Area¿¡°Ô ¸Ş½ÃÁö º¸³»±â
+		// Areaì—ê²Œ ë©”ì‹œì§€ ë³´ë‚´ê¸°
 		tGap = (GetMasterTime() - mktime(&gserver->m_tRealSystemTime));
 		if(tGap >= 0  && !GetMasterLastEnter())
 		{
-			// tGapÃÊ µÚ ´ÙÀ½ ¼±¼ö°¡ ÀÔÀåÇÕ´Ï´Ù.
+			// tGapì´ˆ ë’¤ ë‹¤ìŒ ì„ ìˆ˜ê°€ ì…ì¥í•©ë‹ˆë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleEnterNextPlayer(rmsg, (int)tGap);
 			m_pMasterArea->SendToAllClient(rmsg);
@@ -1505,9 +1505,9 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 		{
 			if(!GetMasterLastEnter())
 			{
-				// ¼±¼öÀÔÀå, ¼±¼ö°¡ ¾øÀ¸¸é WaitPlayerList¿¡¼­ »èÁ¦
+				// ì„ ìˆ˜ì…ì¥, ì„ ìˆ˜ê°€ ì—†ìœ¼ë©´ WaitPlayerListì—ì„œ ì‚­ì œ
 				int i;
-				for(i = 0; i < 2; i++)				// 2¸íÀÔÀå ½ÃÅ°±â
+				for(i = 0; i < 2; i++)				// 2ëª…ì…ì¥ ì‹œí‚¤ê¸°
 				{
 					EnterTheWarGround(LEVEL_TYPE_MASTER);
 				}
@@ -1520,22 +1520,22 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					SetMasterLastEnter(true);
 				}
 			}
-			else if(GetMasterPlaying())	// ´Ùµé¾î°¬´Ù. 20ºĞµµ Áö³µ´Ù. µğ¹öÇÁ¸¦ ÁÖÀÚ
+			else if(GetMasterPlaying())	// ë‹¤ë“¤ì–´ê°”ë‹¤. 20ë¶„ë„ ì§€ë‚¬ë‹¤. ë””ë²„í”„ë¥¼ ì£¼ì
 			{
-				// µğ¹öÇÁ
+				// ë””ë²„í”„
 				SetDebuff(DEBUFF_TYPE_20MINUTE, LEVEL_TYPE_MASTER);
 			}
 		}
-		// °ÔÀÓ ÀÎ¿ø¼ö°¡ ¸¹¾ÆÁö¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// ê²Œì„ ì¸ì›ìˆ˜ê°€ ë§ì•„ì§€ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		if(GetEnteredPlayer(LEVEL_TYPE_MASTER) > 7)
 		{
-			// µğ¹öÇÁ
+			// ë””ë²„í”„
 			SetDebuff(DEBUFF_TYPE_8PLAYER, LEVEL_TYPE_MASTER);
 		}
-		// ÆòÈ­Áö¿ª¿¡ °¬À¸¸é µğ¹öÇÁ¸¦ ÁØ´Ù.
+		// í‰í™”ì§€ì—­ì— ê°”ìœ¼ë©´ ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 		// SetDebuff(DEBUFF_TYPE_PEACEZONE, LEVEL_TYPE_MASTER);
 
-		// 1¸í ³²¾Ò´ÂÁö?
+		// 1ëª… ë‚¨ì•˜ëŠ”ì§€?
 		if( GetMasterLastEnter() )
 		{
 			int nCount = 0;
@@ -1560,7 +1560,7 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 					pn = pn->GetNext();
 					if(p->GetCheckIn() && p->GetIsEntered() && p->GetLevelType() == LEVEL_TYPE_MASTER)
 					{
-						// p°¡ rookie ¿ì½ÂÀÚ
+						// pê°€ rookie ìš°ìŠ¹ì
 						break;
 					}
 				}
@@ -1574,12 +1574,12 @@ void CRoyalRumble::CheckRoyalRumbleArea()
 						{
 							pPC->m_assist.CureBySkillIndex(ROYAL_RUMBLE_DEBUFF_SKILL);
 						}
-						// ÀüÀå Æ÷ÀÎÆ® 100Æ÷ÀÎÆ® Áö±Ş
+						// ì „ì¥ í¬ì¸íŠ¸ 100í¬ì¸íŠ¸ ì§€ê¸‰
 						pPC->AddWarGroundPoint(100);
 						SetWinner(LEVEL_TYPE_MASTER, pPC);
 
 						{
-							// ¼­¹ö±º¿¡ ¿ì½ÂÀÚ ¸Ş½ÃÁö Àü¼Û
+							// ì„œë²„êµ°ì— ìš°ìŠ¹ì ë©”ì‹œì§€ ì „ì†¡
 							CNetMsg::SP rmsg(new CNetMsg);
 							MsgrRoyalRumbleWinner(rmsg, -1, gserver->m_serverno, -1, -1, p->GetLevelType(), p->GetCharIndex(), pPC->GetName());
 							SEND_Q(rmsg, gserver->m_messenger);
@@ -1789,7 +1789,7 @@ int CRoyalRumble::GetRemainPlayer(int leveltype)
 	default:
 		break;
 	}
-	return -1; // -1ÀÌ ¸®ÅÏ µÇ¸é ¿¡·¯
+	return -1; // -1ì´ ë¦¬í„´ ë˜ë©´ ì—ëŸ¬
 }
 
 int CRoyalRumble::GetEnteredPlayer(int leveltype)
@@ -1847,7 +1847,7 @@ int CRoyalRumble::GetEnteredPlayer(int leveltype)
 	default:
 		break;
 	}
-	return -1; // -1ÀÌ ¸®ÅÏ µÇ¸é ¿¡·¯
+	return -1; // -1ì´ ë¦¬í„´ ë˜ë©´ ì—ëŸ¬
 }
 
 void CRoyalRumble::SetDebuff(int debufftype, int leveltype)
@@ -2199,7 +2199,7 @@ void CWGPlayerList::ShuffleWGPlayer(int nShuffleCount)
 					if(p->GetNext() == move)
 						break;
 				}
-				// p°¡ moveÀÇ prev
+				// pê°€ moveì˜ prev
 				p->SetNext(move->GetNext());
 				move->SetNext(NULL);
 				if(tail != NULL)
@@ -2283,7 +2283,7 @@ void CWaitPlayerList::ShuffleWaitPlayer(int nShuffleCount)
 					if(p->GetNext() == move)
 						break;
 				}
-				// p°¡ moveÀÇ prev
+				// pê°€ moveì˜ prev
 				p->SetNext(move->GetNext());
 				move->SetNext(NULL);
 				if(tail != NULL)
@@ -2389,9 +2389,9 @@ void CRoyalRumble::loadRoyalRumbleSetting()
 int CRoyalRumble::checkSettingValue(const int &min, const int &max, const int &startHour)
 {
 	/*
-	* Á¶°Ç 1. minÀº 10º¸´Ù Å©°í 50ÀÌÇÏÀÎ ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
-	* Á¶°Ç 2. max´Â min º¸´Ù Å©°Å³ª °°°í 50ÀÌÇÏÀÎ ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
-	* Á¶°Ç 3. startHour´Â 0 ~ 23ÀÎ ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
+	* ì¡°ê±´ 1. minì€ 10ë³´ë‹¤ í¬ê³  50ì´í•˜ì¸ ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	* ì¡°ê±´ 2. maxëŠ” min ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ê³  50ì´í•˜ì¸ ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	* ì¡°ê±´ 3. startHourëŠ” 0 ~ 23ì¸ ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
 	*/
 	if (gserver->barunsongames_flag)
 	{

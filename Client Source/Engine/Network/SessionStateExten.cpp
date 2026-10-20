@@ -11,9 +11,9 @@
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Interface/UIAutoHelp.h>
 #include <Engine/Interface/UISiegeWarfareDoc.h>
-#include <Engine/Interface/UIPetTraining.h>
+#include <Engine/Contents/function/PetTrainingUI.h>
 #include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Interface/UISummon.h>
+#include <Engine/Contents/function/SummonUI.h>
 #include <Engine/Interface/UIShop.h>
 #include <Engine/Contents/Base/UINoticeNew.h>
 #include <Engine/Templates/DynamicContainer.cpp>
@@ -27,6 +27,8 @@
 #include <Engine/Contents/Base/UIPartyNew.h>
 #include <Engine/Interface/UIMap.h>
 #include <Engine/Interface/UIPartyAuto.h>
+#include <Engine/Contents/Base/PartyAutoUIInviteList.h>
+#include <Engine/Contents/Base/PartyAutoUIPartyList.h>
 #include <Engine/Interface/UISiegeWarfareNew.h>
 #include <Engine/Interface/UIPlayerInfo.h>
 #include <Engine/Interface/UIGuildWarPortal.h>
@@ -35,15 +37,18 @@
 #include <Engine/Interface/UIHelp.h>
 #include <Engine/Interface/UIRanking.h>
 #include <Engine/Interface/UIOption.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Interface/UIReformSystem.h>
 #include <Engine/Interface/UINickName.h>
 #include <Engine/Interface/UINpcScroll.h>
-#include <Engine/Interface/UIPetFree.h>
+#include <Engine/Contents/function/PetFreeUI.h>
 #include <Engine/Interface/UISocketSystem.h>
-#include <Engine/Interface/UIPetItemMix.h>
-#include <Engine/Interface/UIAffinity.h>
-#include <Engine/Interface/UIAffinityInfo.h>
+#include <Engine/Contents/function/SocketCreateUI.h>
+#include <Engine/Contents/function/SocketCombineUI.h>
+#include <Engine/Contents/function/JewelComposUI.h>
+#include <Engine/Contents/function/PetItemMixUI.h>
+#include <Engine/Contents/function/AffinityUI.h>
+#include <Engine/Contents/function/AffinityInfoUI.h>
 #include <Engine/Interface/UIMonsterMercenary.h>
 #include <Engine/Interface/UIInitJob.h>
 #include <Engine/Interface/UIQuickSlot.h>
@@ -61,6 +66,10 @@
 #include <Engine/Info/ServerInfo.h>
 #include <Engine/Contents/Base/ChattingUI.h>
 #include <Common/Packet/ptype_old_do_item.h>
+#include <Engine/Contents/Login/LoginNew.h>
+#include <Engine/Contents/function/PetTargetUI.h>
+#include <Engine/Contents/function/CubeRankingUI.h>
+#include <Engine/Contents/function/RoyalrumbleUI.h>
 
 // socket system. [5/11/2010 rumist]
 //#include <Engine/Interface/UISocketSystem.h>
@@ -298,6 +307,19 @@ void CheckTimerEvent()
 				((CPlayerEntity*)CEntity::GetPlayerEntity(0))->SetFlagOff(ENF_SHOWHIDDEN);
 			}
 		}
+	}
+
+
+	LoginNew* pInfo = GAMEDATAMGR()->GetLoginData();
+
+	if (pInfo != NULL)
+	{
+		if (IS_EVENT_ON(A_EVENT_HOLLOWEEN))
+			pInfo->SetLogoType(eLOGO_HOLLOWEEN);
+		else if (IS_EVENT_ON(TEVENT_XMAS_2007))
+			pInfo->SetLogoType(eLOGO_XMAS);
+		else
+			pInfo->SetLogoType(eLOGO_NORMAL);
 	}
 }
 
@@ -879,12 +901,12 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 					break;
 				case MSG_EX_PARTY_MATCH_MEMBER_LIST_REP:
 					{
-						pUIManager->GetPartyAuto()->ReceiveMemberData( istr );
+						pUIManager->GetPartyAutoInvite()->ReceiveMemberData(istr);						
 					}
 					break;
 				case MSG_EX_PARTY_MATCH_PARTY_LIST_REP:
 					{
-						pUIManager->GetPartyAuto()->ReceivePartyData( istr );
+						pUIManager->GetPartyAutoParty()->ReceivePartyData(istr);
 					}
 					break;
 				case MSG_EX_PARTY_MATCH_DEL_REP:
@@ -899,14 +921,14 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 					{
 						(*istr) >> ErrorType;
 
-						pUIManager->GetPartyAuto()->ReceivePartyInviteMessage( ErrorType, istr );
+						pUIManager->GetPartyAutoInvite()->ReceivePartyInviteMessage(ErrorType, istr);
 					}
 					break;
 				case MSG_EX_PARTY_MATCH_JOIN_REP:
 					{
 						(*istr) >> ErrorType;
 
-						pUIManager->GetPartyAuto()->ReceivePartyJoinMessage( ErrorType, istr );
+						pUIManager->GetPartyAutoParty()->ReceivePartyJoinMessage(ErrorType, istr);
 					}
 					break;
 				}
@@ -1412,7 +1434,11 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 								LONGLONG llNas = 0;
 								(*istr) >> llNas;
 								CTString strString;
-								strString.PrintF(_S(7065, "죄송하지만 성주님 지금은 일반 관리 모드 입니다. %I64d 나스를 저에게"), llNas);
+								CTString strTemp;
+								strTemp.PrintF("%I64d", llNas);
+								pUIManager->InsertCommaToString(strTemp);
+
+								strString.PrintF(_S(7065, "죄송하지만 성주님 지금은 일반 관리 모드 입니다. %s 나스를 저에게"), strTemp);
 								pUIManager->CreateMessageBoxL( _S(3908, "던전 관리"),UI_PORTAL, MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL);
 								pUIManager->AddMessageBoxLString(MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL,TRUE, strString, -1, 0xa3a1a3ff);
 								pUIManager->AddMessageBoxLString( MSGLCMD_DRATAN_SIEGE_DUNGEON_CONTROL, FALSE, _S(191, "확인" ), DRATAN_SIEGE_DUNGEON_CHANGE_LORDMODE);
@@ -1587,7 +1613,11 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 							
 							strMessage.PrintF( _S( 191, "확인" ) );
 							MsgBoxInfo.SetMsgBoxInfo(strMessage,UMBS_YESNO,UI_PORTAL,MSGCMD_SIEGE_DUNGEON_ENTER);
-							strMessage.PrintF( _S(3945, "던전으로 이동하기 위해서는 %d나스가 필요합니다. 이동 하시겠습니까?" ), ulNeedNas );
+
+							CTString strNas;
+							strNas.PrintF("%I64d", ulNeedNas);
+							pUIManager->InsertCommaToString(strNas);
+							strMessage.PrintF( _S(3945, "던전으로 이동하기 위해서는 %s나스가 필요합니다. 이동 하시겠습니까?" ), strNas );
 							MsgBoxInfo.AddString(strMessage);
 
 							pUIManager->CreateMessageBox(MsgBoxInfo);
@@ -2034,12 +2064,6 @@ void CSessionState::ReceiveExtendMessage( CNetworkMessage *istr )
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 		}
 		break;	
-
-	case MSG_EX_TITLE_SYSTEM:	// 호칭
-		{
-			ReceiveNickNameMessage( istr );
-		}
-		break;
 		
 	case MSG_EX_TAKE_AGAIN_QUEST_ITEM:
 		{
@@ -2606,8 +2630,8 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			if (pTarget->GetEntity() != NULL)
 				_pGameState->WearingArmorTest(pTarget->GetEntity()->GetModelInstance(), wear_item);
 			
-			pUIManager->GetWildPetInfo()->PetWearItemReSet();
-
+			pUIManager->GetWildPetInfoUI()->PetWearItemReSet();
+			pUIManager->GetWildPetInfoUI()->updateBaseTab();
 		}
 		break;
 	case MSG_SUB_ITEM_WEARING:
@@ -2647,7 +2671,8 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 				if (pTarget->m_nOwnerIndex == _pNetwork->MyCharacterInfo.index)
 				{
 					pInfo->SetMyApet(pTarget);
-					pUIManager->GetWildPetInfo()->PetWearItemReSet();
+					pUIManager->GetWildPetInfoUI()->PetWearItemReSet();
+					pUIManager->GetWildPetInfoUI()->updateBaseTab();
 				}
 			}
 		}
@@ -2668,7 +2693,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 					(*istr) >> nSkillIndex;
 					(*istr) >> nSkillLevel;
 					
-					pUIManager->GetPetTraining()->LearnSkill( 0, nSkillIndex, nSkillLevel );
+					pUIManager->GetPetTrainingUI()->LearnSkill( 0, nSkillIndex, nSkillLevel );
 
 					CSkill		&rSkill = _pNetwork->GetSkillData( nSkillIndex );
 					strMessage.PrintF( _S( 277, "%s 스킬을 습득하였습니다" ), rSkill.GetName() );
@@ -2708,7 +2733,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 		// Create message box of skill learn
 		CUIMsgBox_Info	MsgBoxInfo;
 		MsgBoxInfo.SetMsgBoxInfo( _S( 270, "스킬" ), UMBS_OK,
-									UI_PETTRAINING, MSGCMD_PETTRAINING_NOTIFY );
+									UI_PET_TRAINING, MSGCMD_PETTRAINING_NOTIFY );
 		MsgBoxInfo.AddString( strMessage );
 		pUIManager->CreateMessageBox( MsgBoxInfo );
 
@@ -2719,16 +2744,29 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			INDEX nSkillCont;
 			INDEX nSkillIndex;
 			UBYTE nSkillLevel;
+			int nSkillTime;
 			(*istr) >> nSkillCont;
 			
-			pUIManager->GetWildPetInfo()->SkillClear();
-
+			pUIManager->GetWildPetInfoUI()->SkillClear();
+			
 			for(int con = 0; con < nSkillCont; con++)
 			{
 				(*istr) >> nSkillIndex;
 				(*istr) >> nSkillLevel;
+				(*istr) >> nSkillTime;
 
-				pUIManager->GetPetTraining()->LearnSkill(0, nSkillIndex, nSkillLevel, FALSE, false);
+				pUIManager->GetPetTrainingUI()->LearnSkill(0, nSkillIndex, nSkillLevel, FALSE, false);
+
+				CSkill& rSkill = _pNetwork->GetSkillData(nSkillIndex);
+				if ( nSkillTime <= 0 )
+				{
+					rSkill.ResetStartTime();
+					continue;
+				}
+				SLONG slRemainTime = ((SLONG)time(NULL) - _pNetwork->slServerTimeGap) - nSkillTime; 
+
+				if ( slRemainTime > 0 )
+					rSkill.SetStartTime(slRemainTime);
 			}
 
 		}break;
@@ -2742,7 +2780,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			{
 			case 0:
 				{
-					pUIManager->GetPetFree()->ClosePetFree(); //성공
+					pUIManager->GetPetFree()->closeUI(); //성공
 					MsgBoxInfo.SetMsgBoxInfo( _S(191,"확인"), UMBS_OK, UI_PETFREE, UI_NONE );
 					strMessage.PrintF( _S( 2450, "펫의 봉인을 해제하는데 성공하였습니다.") );
 					MsgBoxInfo.AddString( strMessage );
@@ -2753,6 +2791,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 					//알맞지 않은 아이템
 					pUIManager->GetChattingUI()->AddSysMessage( 
 						_S( 2452, "봉인을 해제할 펫이 존재하지 않습니다." ), SYSMSG_ERROR );
+					pUIManager->GetPetFree()->ResetUI();
 				}break;
 			case 2:
 				{
@@ -2765,6 +2804,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 					//봉인되지 않은 아이템
 					pUIManager->GetChattingUI()->AddSysMessage( 
 						_S( 2452, "봉인을 해제할 펫이 존재하지 않습니다." ), SYSMSG_ERROR );
+					pUIManager->GetPetFree()->ResetUI();
 				}break;
 			}
 		}break;
@@ -2779,42 +2819,12 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 		}break;
 	case MSG_SUB_DELETE_EQUIP:
 		{
-			CTString strPetname,strmassage;
-			INDEX nItem_Index;
-			SBYTE wear_pos;
-
-			(*istr) >> strPetname;
-			(*istr) >> nItem_Index;
-			(*istr) >> wear_pos;
-	
-			strmassage.PrintF(_S(4213, "%s 의 %s 아이템이 기간 만료로 사라집니다." ),strPetname,_pNetwork->GetItemName(nItem_Index));
-			pUIManager->GetChattingUI()->AddSysMessage( strmassage, SYSMSG_NORMAL );
-
-			if (pInfo->GetMyApetInfo() != NULL)
-			{
-				if (pInfo->GetMyApetInfo()->bIsActive == FALSE)
-				{
-					break;
-				}
-				if (pInfo->GetMyApetInfo()->GetEntity() != NULL)
-					_pGameState->TakeOffArmorTest(pInfo->GetMyApetInfo()->GetEntity()->GetModelInstance(),nItem_Index);
-				pInfo->GetMyApetInfo()->m_nPetWearIndex[wear_pos] = -1;
-			
-				// _WildPetInfo는 실제 와일드 펫정보가 아니다.(_pNetwork->ga_srvServer.srv_actWildPet의 펫정보를 직접 바꾸어야 한다.)
-				// _WildPetInfo변수가 포인터 변수가 아니다. &_WildPetInfo != &_pNetwork->ga_srvServer.srv_actWildPet
-				if (pInfo->GetMyApetInfo()->GetEntity() != NULL)
-					pInfo->GetMyApetInfo()->GetEntity()->en_pWildPetTarget->m_nPetWearIndex[wear_pos] = -1;
-			}
-			//////////////////////////////////////////////////////////////////////////
-			pUIManager->GetWildPetInfo()->PetWearItemReSet();
-
-			
-
+			pUIManager->GetWildPetInfoUI()->ReceiveDeleteEquip(istr);
 		}break;
 
 	case MSG_SUB_ADDITEM_MSG: // 이것 또한 실제 펫 정보의 갱신을 통해서 UI Update가 되어야 한다.
 		{
-			pUIManager->GetWildPetInfo()->ReceiveWearItemData(istr);	
+			pUIManager->GetWildPetInfoUI()->ReceiveWearItemData(istr);	
 		}break;
 
 	case MSG_SUB_AI_LIST_NTF:
@@ -2825,11 +2835,11 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			UBYTE bActive;
 			sWildPet_AI_Slot temAI;
 
-			pUIManager->GetWildPetInfo()->AIClear();
+			pUIManager->GetWildPetInfoUI()->AIClear();
 
 			(*istr) >> nAIMaxCount;
 
-			pUIManager->GetWildPetInfo()->SetPetAISlotCount(nAIMaxCount);
+			pUIManager->GetWildPetInfoUI()->SetPetAISlotCount(nAIMaxCount);
 
 			(*istr) >> nPetAICount;
 
@@ -2843,13 +2853,12 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 
 				temAI.m_bActive = bActive;
 
-				pUIManager->GetWildPetInfo()->AddAIData(nSlotnum, temAI);
+				pUIManager->GetWildPetInfoUI()->AddAIData(nSlotnum, temAI);
 
 			}
 
-			pUIManager->GetWildPetInfo()->PetAIReSet();
-			pUIManager->GetWildPetInfo()->AIPopupClose();
-
+			pUIManager->GetWildPetInfoUI()->PetAIReSet();
+			pUIManager->GetWildPetInfoUI()->CloseAISetUI();
 
 		}break;
 	case MSG_SUB_AI_UPDATE_REP:
@@ -2857,7 +2866,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			UBYTE ubErrorcode;
 			(*istr) >> ubErrorcode;
 
-			pUIManager->GetWildPetInfo()->ErrorMassage(ubErrorcode);
+			pUIManager->GetWildPetInfoUI()->ErrorMessage(ubErrorcode);
 
 		}break;
 	case MSG_SUB_AI_ONOFF_REP:
@@ -2868,8 +2877,8 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			(*istr) >> bActive;
 			(*istr) >> ubErrorCode;
 
-			pUIManager->GetWildPetInfo()->SetPetAIActive(bActive);
-			pUIManager->GetWildPetInfo()->ErrorMassage(ubErrorCode);			
+			pUIManager->GetWildPetInfoUI()->SetPetAIActive(bActive);
+			pUIManager->GetWildPetInfoUI()->ErrorMessage(ubErrorCode);			
 
 		}break;
 	case MSG_SUB_EVOLUTION: // 단지 에러 및 성공 메세지 처리
@@ -2878,7 +2887,7 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 
 			(*istr) >> ubErrorCode;
 
-			pUIManager->GetPetTraining()->EvolutionError(ubErrorCode);
+			pUIManager->GetPetTrainingUI()->EvolutionError(ubErrorCode);
 		}break;
 	case MSG_SUB_MOUNT_REP:
 		{
@@ -2982,6 +2991,16 @@ void CSessionState::ReceiveExWildPetMessage(UBYTE index, CNetworkMessage *istr)
 			}
 
 			pUIManager->CreateMessageBox(MsgBoxInfo);
+		}
+		break;
+	case MSG_SUB_DELETE_ITEM:
+		{
+			UBYTE	error;
+			ULONG	wearpos;
+			(*istr) >> error;
+			(*istr) >> wearpos;
+
+			pUIManager->GetWildPetInfoUI()->DeleteEquip(wearpos);
 		}
 		break;
 	}
@@ -3162,7 +3181,9 @@ void CSessionState::ReceivePetMountMessage( CNetworkMessage *istr )
 					// 펫 타겟 제거. [11/18/2010 rumist]
 					pPetInfo->pen_pEntity	= NULL;
 					
-					CUIManager::getSingleton()->GetPetInfo()->GetPetDesc();
+					CUIManager* pUIMgr = CUIManager::getSingleton();
+					pUIMgr->GetPetInfo()->GetPetDesc();
+					pUIMgr->GetPetTargetUI()->openUI();
 				}
 			}
 
@@ -3227,15 +3248,15 @@ void CSessionState::ReceivePetLearnMessage( CNetworkMessage *istr )
 
 	if( nErrorcode == MSG_EX_PET_LEARN_ERROR_OK || nErrorcode == MSG_EX_PET_LEARN_ERROR_AUTO  )
 	{	
-		pUIManager->GetPetTraining()->LearnSkill( pPetInfo->lIndex, nSkillIndex, nSkillLevel );
+		pUIManager->GetPetTrainingUI()->LearnSkill( pPetInfo->lIndex, nSkillIndex, nSkillLevel );
 	}
 	else if( nErrorcode == MSG_EX_PET_LEARN_ERROR_AUTO ) // 다종 스킬 습득 
 	{
-		pUIManager->GetPetTraining()->LearnSkill( pPetInfo->lIndex, nSkillIndex, nSkillLevel, TRUE );
+		pUIManager->GetPetTrainingUI()->LearnSkill( pPetInfo->lIndex, nSkillIndex, nSkillLevel, TRUE );
 	}
 	else 
 	{
-		pUIManager->GetPetTraining()->LearnSkillError( nErrorcode );
+		pUIManager->GetPetTrainingUI()->LearnSkillError( nErrorcode );
 	}
 
 }
@@ -3249,6 +3270,7 @@ void CSessionState::ReceivePetSkillListMessage( CNetworkMessage *istr )
 	LONG nPetIndex, nCount;
 	LONG nSkillIndex;
 	BYTE nSkillLevel;
+	int nSkillTime;
 
 	(*istr) >> nPetIndex;
 	(*istr) >> nCount;
@@ -3261,15 +3283,28 @@ void CSessionState::ReceivePetSkillListMessage( CNetworkMessage *istr )
 	{
 		(*istr) >> nSkillIndex;
 		(*istr) >> nSkillLevel;
-	
+		(*istr) >> nSkillTime;
+
 		if (MY_PET_INFO()->lIndex < 0)
 		{
 			MY_INFO()->SetPetSkill(nPetIndex, nSkillIndex, nSkillLevel);
 			pUIManager->GetPetInfo()->AddSkill(nPetIndex, nSkillIndex, nSkillLevel);
+
+			CSkill& rSkill = _pNetwork->GetSkillData(nSkillIndex);
+			if ( nSkillTime <= 0 )
+			{
+				rSkill.ResetStartTime();
+				continue;
+			}
+			SLONG slRemainTime = ((SLONG)time(NULL) - _pNetwork->slServerTimeGap) - nSkillTime; 
+
+			if ( slRemainTime > 0 )
+				rSkill.SetStartTime(slRemainTime);
+
 		}
 		else
 		{
-			pUIManager->GetPetTraining()->LearnSkill(nPetIndex, nSkillIndex, nSkillLevel, FALSE, false);
+			pUIManager->GetPetTrainingUI()->LearnSkill(nPetIndex, nSkillIndex, nSkillLevel, FALSE, false);
 		}
 	}
 }
@@ -3414,7 +3449,7 @@ void CSessionState::ReceviePetItemMixMessage( CNetworkMessage *istr )
 {
 	LONG	lResult;
 	(*istr) >> lResult;
-	CUIManager::getSingleton()->GetPetItemMix()->PetItemMixRep( lResult );	
+	CUIManager::getSingleton()->GetPetItemMixUI()->PetItemMixRep( lResult );	
 }
 
 // ----------------------------------------------------------------------------
@@ -3425,7 +3460,7 @@ void CSessionState::ReceviePetItemChangeMessage( CNetworkMessage *istr )
 {
 	LONG	lResult;
 	(*istr) >> lResult;
-	CUIManager::getSingleton()->GetPetTraining()->PetChangeItemError( lResult );
+	CUIManager::getSingleton()->GetPetTrainingUI()->PetChangeItemError( lResult );
 }
 
 // ----------------------------------------------------------------------------
@@ -3575,11 +3610,11 @@ void CSessionState::ReceiveElementalDeleteMessage( CNetworkMessage *istr )
 		{
 			for (int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i)
 			{
-				CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
-				
-				if( pUISummon->GetSummonEntity() && pUISummon->GetSummonIndex() == lIndex )
+				CSummonUI* pSummonUI = (CSummonUI*)pUIManager->GetUI(i);
+
+				if( pSummonUI->GetSummonEntity() && pSummonUI->GetSummonIndex() == lIndex )
 				{
-					pUISummon->ResetSummon();						
+					pSummonUI->ResetSummon();
 					break;
 				}
 			}			
@@ -3762,8 +3797,12 @@ void CSessionState::ReceiveAffinityMessage( CNetworkMessage *istr )
 			(*istr) >> gift_item_index;
 			(*istr) >> gift_item_count;
 
-			MsgTemp.PrintF( _S( 5302, "%s 세력을 위해 많은 노력을 해주셔서 친화도가 %d점이 되어 작은 선물을 준비했습니다. \n%s  %d개를 받으시겠습니까?" ),
-				_pNetwork->GetAffinityData()->GetAffinityName( pUIManager->GetAffinity()->GetNPCIndex() ), gift_point, _pNetwork->GetItemData( gift_item_index )->GetName(), gift_item_count );
+			CTString strTemp;
+			strTemp.PrintF("%d", gift_point);
+			pUIManager->InsertCommaToString(strTemp);
+
+			MsgTemp.PrintF( _S( 5302, "%s 세력을 위해 많은 노력을 해주셔서 친화도가 %s점이 되어 작은 선물을 준비했습니다. \n%s  %d개를 받으시겠습니까?" ),
+				_pNetwork->GetAffinityData()->GetAffinityName( pUIManager->GetAffinity()->GetNPCIndex() ), strTemp, _pNetwork->GetItemData( gift_item_index )->GetName(), gift_item_count );
 			
 			Msg_Info.SetMsgBoxInfo( _S(4680, "선물 받기"), UMBS_OKCANCEL, UI_NPC_AFFINITY, MSGCMD_AFFINITY_TAKEPRESENT );
 			Msg_Info.AddString( MsgTemp );
@@ -3787,15 +3826,29 @@ void CSessionState::ReceiveAffinityMessage( CNetworkMessage *istr )
 			{
 				CTString MsgTemp;
 				int ndelta = affinity_point - (*iter).second.current; // 기존 친화도에서 증가값 얻기
+				
+				CTString strAp;
+				
 				// [2010/12/07 : Sora] 친화도 개선 2차
 				if (affinity_point_bonus > 0)
 				{
-					MsgTemp.PrintF( _S(6445, "%d(+%d)만큼 %s친화도가 상승되었습니다."), ndelta - affinity_point_bonus, affinity_point_bonus,
+					CTString strBonus;
+
+					strAp.PrintF("%d", ndelta - affinity_point_bonus);
+					pUIManager->InsertCommaToString(strAp);
+
+					strBonus.PrintF("%d", affinity_point_bonus);
+					pUIManager->InsertCommaToString(strBonus);
+
+					MsgTemp.PrintF( _S(6445, "%s(+%s)만큼 %s친화도가 상승되었습니다."), strAp, strBonus,
 						_pNetwork->GetAffinityData()->GetAffinityNameByIndex(affinity_index) );
 				}
 				else
 				{
-					MsgTemp.PrintF( _S(4681, "%d만큼 %s친화도가 상승되었습니다."), ndelta,
+					strAp.PrintF("%d", ndelta);
+					pUIManager->InsertCommaToString(strAp);
+
+					MsgTemp.PrintF( _S(4681, "%s만큼 %s친화도가 상승되었습니다."), strAp,
 						_pNetwork->GetAffinityData()->GetAffinityNameByIndex(affinity_index) );
 				}				
 
@@ -3930,191 +3983,6 @@ void CSessionState::ReceiveExLoadingEndMessage(CNetworkMessage* istr)
 }
 
 // ----------------------------------------------------------------------------
-//  Name 	: ReceiveNickNameMessage()
-//  Desc 	: 
-// ----------------------------------------------------------------------------
-void CSessionState::ReceiveNickNameMessage(CNetworkMessage* istr)
-{
-	SLONG	slType;
-	INDEX	iCount, iNickIndex, iDate, iCharIndex, iItemIndex;
-	CTString strSysMessage, strTitle;
-	CUIMsgBox_Info	MsgBoxInfo;
-	
-	strTitle = _S(4826, "호칭");
-
-	(*istr) >> slType;
-
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	switch( slType )
-	{
-	case MSG_EX_TITLE_SYSTEM_LIST_REP_NO_LIST:	// 호칭 리스트 없음
-		{
-			pUIManager->GetNickName()->Open();	
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST:	// 호칭 리스트 전송
-		{
-			(*istr) >> iCount;
-			
-			pUIManager->GetNickName()->Open();	
-			
-			for (int i = 0 ; i < iCount ; ++i)
-			{
-				(*istr) >> iNickIndex;
-				(*istr) >> iDate;
-
-				pUIManager->GetNickName()->AddNickNameList( iNickIndex, iDate);
-			}
-
-			pUIManager->GetNickName()->SortNickNameData();
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_ALREADY_HAVE_TITLE:	// 아이템 사용 시 이미 가지고 있는 호칭
-		{
-			(*istr) >> iNickIndex;
-
-			strSysMessage	=_S(4827, "이미 등록되어 있는 호칭입니다.");
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_INSERT_SUCCESS:		// 아이템 사용 시 호칭 목록에 추가 성공
-		{
-			(*istr) >> iNickIndex;
-			(*istr) >> iDate;
-
-			pUIManager->GetNickName()->AddNickNameList( iNickIndex, iDate);
-			pUIManager->GetNickName()->SortNickNameData();
-			//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-			iItemIndex = CNickNameData::getData(iNickIndex)->GetItemIndex();
-#if !(defined (G_GERMAN) || defined (G_EUROPE2) || defined (G_EUROPE3) || defined (G_NETHERLANDS))
-		if( pUIManager->GetHelp()->IsBeginner() )
-		{
-			_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ, iNickIndex );	
-		}
-		else
-#endif
-				strSysMessage.PrintF(_S(4828, "%s 호칭을 추가하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_NOT_HAVE_TITLE:		// 호칭 선택 요청하였으나 서버에 목록이 없을 때
-		{
-			strSysMessage	=_S(4829, "존재하지 않는 호칭 입니다.");
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_SELECT_SUCCESS:	// 타이틀 선택 성공
-		{
-			(*istr) >> iNickIndex;
-			(*istr) >> iCharIndex;
-			
-			if ( iCharIndex == _pNetwork->MyCharacterInfo.index )
-			{
-				_pNetwork->MyCharacterInfo.iNickType = iNickIndex;
-				_pNetwork->MyCharacterInfo.itemEffect.DeleteNickEffect();
-				((CPlayerEntity*)CEntity::GetPlayerEntity(0))->SetNickNameDamageEffect(_pNetwork->MyCharacterInfo.iNickType, CEntity::NICKNAME_ATTACH_EFFECT);
-				//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-				iItemIndex = CNickNameData::getData(iNickIndex)->GetItemIndex();
-		
-				if( !pUIManager->GetHelp()->IsBeginner() )
-					strSysMessage.PrintF(_S(4830,"%s 호칭으로 설정 완료하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));
-				else
-					pUIManager->GetHelp()->SetBeginner( FALSE );
-				
-				pUIManager->GetNickName()->SetCancelButtonState( TRUE );
-			}
-			else
-			{
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, iCharIndex);
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-					pTarget->cha_NickType = iNickIndex;
-					pTarget->cha_itemEffect.DeleteNickEffect();
-					pTarget->m_pEntity->SetNickNameDamageEffect(pTarget->cha_NickType, CEntity::NICKNAME_ATTACH_EFFECT);
-				}
-			}		
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_SUCCESS:	// 타이틀 취소 성공
-		{
-			(*istr) >> iNickIndex;
-			(*istr) >> iCharIndex;
-			
-			if ( iCharIndex == _pNetwork->MyCharacterInfo.index )
-			{
-				_pNetwork->MyCharacterInfo.iNickType = 0;
-				_pNetwork->MyCharacterInfo.itemEffect.DeleteNickEffect();
-
-				strSysMessage = _S(4831, "호칭이 정상적으로 취소되었습니다.");
-				pUIManager->GetNickName()->SetCancelButtonState( FALSE );
-			}
-			else
-			{
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, iCharIndex);
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-					pTarget->cha_NickType = 0;
-					pTarget->cha_itemEffect.DeleteNickEffect();
-				}
-			}
-			break;
-		}
-	case MSG_EX_TITLE_SYSTEM_TITLE_DELETE_SUCCESS:	// 타이틀 삭제 성공
-		{
-			(*istr) >> iNickIndex;
-			
-			pUIManager->GetNickName()->DelNickNameList( iNickIndex );
-			//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-			iItemIndex = CNickNameData::getData(iNickIndex)->GetItemIndex();
-			strSysMessage.PrintF(_S(4832, "정상적으로 %s 호칭을 삭제하였습니다."), pUIManager->GetNickName()->GetName(iItemIndex));
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED:			// 타이틀 기간 만료
-		{
-			(*istr) >> iNickIndex;
-			(*istr) >> iCharIndex;
-			if ( iCharIndex == _pNetwork->MyCharacterInfo.index )
-			{
-				_pNetwork->MyCharacterInfo.iNickType = 0;
-				_pNetwork->MyCharacterInfo.itemEffect.DeleteNickEffect();
-				pUIManager->GetNickName()->DelNickNameList( iNickIndex );
-			}
-			else
-			{
-				ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, iCharIndex);
-
-				if (pObject != NULL)
-				{
-					CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-					pTarget->cha_NickType = 0;
-					pTarget->cha_itemEffect.DeleteNickEffect();
-				}
-			}
-		}
-		break;
-	case MSG_EX_TITLE_SYSTEM_TITLE_CHANGE_TIME:
-		{
-			(*istr) >> iNickIndex;
-			(*istr) >> iDate;
-			
-			pUIManager->GetNickName()->ChangeTitleTime( iNickIndex, iDate );
-			break;
-		}
-	}
-	if (strSysMessage != CTString(""))
-	{
-		MsgBoxInfo.SetMsgBoxInfo(strTitle,UMBS_OK,UI_NONE,MSGCMD_NULL);
-		MsgBoxInfo.AddString(strSysMessage);
-		pUIManager->CreateMessageBox(MsgBoxInfo);
-	}
-}
-
-// ----------------------------------------------------------------------------
 // [100208: selo] 
 //  Name 	: ReceiveTakeAgainQuestItem()
 //  Desc 	: 퀘스트 아이템 다시 받기 ( 그림자 문의 열쇠 )
@@ -4214,18 +4082,14 @@ void CSessionState::RecieveSocketSystemMessage(CNetworkMessage* istr )
 
 				// 성공시 ui 업데이트가 필요함.
 				// 무결성 유지를 위해서 서버로부터 idx를 받는다.
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->UpdateUI( 2, idx );
-				//pUIManager->GetSocketSystem()->UpdateCreateUI();
+				pUIManager->GetSocketCreate()->ShowResultSuccess(idx);
 			}
 			break;
 		case MSG_EX_SOCKET_COMBINE_JEWEL_REP:
 			{
 				SLONG idx;
 				(*istr) >> idx;
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->UpdateUI( 0, idx );
-				pUIManager->GetSocketSystem()->UpdateCombineUI(TRUE, true);
+				pUIManager->GetSocketCombine()->ShowResultSuccess(idx);
 			}
 			break;
 
@@ -4234,8 +4098,7 @@ void CSessionState::RecieveSocketSystemMessage(CNetworkMessage* istr )
 			{
 				SLONG jewelIdx;
 				(*istr) >> jewelIdx;
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->UpdateJewelComposUI(CUISocketSystem::GENARAL_JEWEL_COMPOS, jewelIdx);
+				pUIManager->GetSocketJewelCompos()->SetResultJewelUI(jewelIdx);
 			}
 			break;
 
@@ -4276,56 +4139,40 @@ void CheckSocketSystemError(UBYTE errcode)
 	{
 		case MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH:    // 올바른 아이템이 아닙니다.
 				tStr = _S( 4981, "올바른 아이템이 아닙니다. 확인 후 다시 시도해 주시기 바랍니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_FAILED_MAKE:		// 소켓 생성 실패
 				tStr = _S( 5001, "소켓 생성 실패." );
 				// 실패시에도 스크롤이 제거되어야 하므로 update가 필요.
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->UpdateCreateUI(FALSE);
+				pUIManager->GetSocketCreate()->ShowResultFail();
 				break;
 		case MSG_EX_SOCKET_ERROR_NOMONEY:			// 돈 없음	
 				tStr = _S( 306, "나스가 부족합니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_MAX_SOCKET:		// 보석 결합시 소켓 개수 초과
 				tStr = _S( 5002, "소켓 개수가 부족합니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_INVEN_NOSPACE:		// 인벤공간 부족
 				tStr = _S( 265, "인벤토리 공간이 부족합니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_NOWEARITEM:		// 무기 방어구만할 수 있는 작업입니다.
 				tStr = _S( 520, "무기나 방어구만 가능합니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_NOSPACE:			// 소켓이 없는 아이템으로는 작업을 진행할 수 없습니다
 				tStr = _S( 4998, "소켓이 생성되지 않은 아이템입니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 		case MSG_EX_SOCKET_ERROR_NOJEWEL:			// 소켓이 비워있는 아이템은 작업을 진행할 수 없습니다
 				tStr = _S( 5003, "이미 보석이 결합되어 있는 아이템입니다." );
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->ClearProcessing();
 				pUIManager->GetSocketSystem()->CloseSocketSystem();
 				break;
 
 		case MSG_EX_SOCKET_ERROR_FAILED_COMBINE: // 보석 장착 실패
-				pUIManager->GetSocketSystem()->CompleteProgress();
-				pUIManager->GetSocketSystem()->UpdateCombineUI(FALSE);
+				pUIManager->GetSocketCombine()->ShowResultFail();
 				break;
 	}
 	

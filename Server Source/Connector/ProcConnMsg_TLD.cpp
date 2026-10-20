@@ -16,7 +16,7 @@
 #include "LCSha256.h"
 #endif // PASSWORD_ENCRYPT_SHA256
 
-//XX ·Î±×ÀÎ 1-A
+//XX ë¡œê·¸ì¸ 1-A
 void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 {
 	unsigned char subtype;
@@ -44,12 +44,13 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// À¯Àú Ã£±â
-	CUser* user = gserver.m_userList[subno - 1].Find(id);
+	// ìœ ì € ì°¾ê¸°
+	CUser* user = gserver.m_user_list->findByUserName(id.getBuffer());
+	
 	if (user == NULL)
 	{
-		// À¯Àú ¾øÀ» ¶§
-		// µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ Ã£±â
+		// ìœ ì € ì—†ì„ ë•Œ
+		// ë°ì´í„°ë² ì´ìŠ¤ì—ì„œ ì°¾ê¸°
 		MSG_CONN_ERRORCODE errcode = ReadDB(id, pw, serverno, subno, ip, &user, playmode);
 		if (errcode != MSG_CONN_ERROR_SUCCESS)
 		{
@@ -63,9 +64,22 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 			return ;
 		}
 
+		CUser* user_dummy = gserver.m_user_list->findByUserIndex(user->m_index);
+		if(user_dummy != NULL)
+		{
+			GAMELOG << init("LOGIN_FAIL", id)
+				<< "From" << delim << d->m_subno << delim
+				<< errcode
+				<< end;
+			CNetMsg::SP rmsg(new CNetMsg);
+			LoginRepMsg(rmsg, errcode, id, NULL);
+			SEND_Q(rmsg, d);
+			return ;
+		}
+
 		user->m_descserver = d;
 
-		// µ¥ÀÌÅÍº£ÀÌ½º ¾÷µ¥ÀÌÆ®
+		// ë°ì´í„°ë² ì´ìŠ¤ ì—…ë°ì´íŠ¸
 		errcode = WriteDB(user->m_index, serverno, subno, 0, 0, user->m_name, ip, true);
 		if (errcode != MSG_CONN_ERROR_SUCCESS)
 		{
@@ -79,21 +93,34 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 			return ;
 		}
 
-		// ÇÃ·¹ÀÌ¾î ¸®½ºÆ®¿¡ Ãß°¡
-		if (gserver.m_userList[subno - 1].Add(user) == NULL)
+		// í”Œë ˆì´ì–´ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
+
+		if( gserver.m_user_list->getUserCountInChannel(user->m_subnum) > MAX_PLAYING )
 		{
 			GAMELOG << init("LOGIN_FAIL", id)
-					<< "From" << delim << d->m_subno << delim
-					<< MSG_CONN_ERROR_FULLUSER
-					<< end;
+				<< "From" << delim << d->m_subno << delim
+				<< MSG_CONN_ERROR_FULLUSER
+				<< end;
 			CNetMsg::SP rmsg(new CNetMsg);
 			LoginRepMsg(rmsg, MSG_CONN_ERROR_FULLUSER, id, NULL);
 			SEND_Q(rmsg, d);
 			return ;
 		}
 
-		// Á¸º° »ç¿ëÀÚ ¼ö Ä«¿îÆ®
-		gserver.m_userList[subno - 1].m_playersPerZone[user->m_zone]++;
+		if( gserver.m_user_list->insert_(user) == false )
+		{
+			GAMELOG << init("LOGIN_FAIL", id)
+				<< "From" << delim << d->m_subno << delim
+				<< MSG_CONN_ERROR_ALREADY
+				<< end;
+			CNetMsg::SP rmsg(new CNetMsg);
+			LoginRepMsg(rmsg, MSG_CONN_ERROR_ALREADY, id, NULL);
+			SEND_Q(rmsg, d);
+			return ;
+		}
+
+		// ì¡´ë³„ ì‚¬ìš©ì ìˆ˜ ì¹´ìš´íŠ¸
+		gserver.m_user_list->increasePlayerZoneCount(user->m_subnum, user->m_zone);
 
 		/*
 		if (!gserver.m_billing.IsRunning())
@@ -117,7 +144,7 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 		}
 		else
 		{
-		// ºô¸µ¿¡ ¾Ë¸®±â
+		// ë¹Œë§ì— ì•Œë¦¬ê¸°
 		gserver.m_billing.Login(user->m_name, pw, ip);
 		}
 		*/
@@ -126,13 +153,13 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// À¯Àú ÀÖÀ» ¶§
-		// ÇÃ·¹ÀÌ¸ğµå °Ë»ç
+		// ìœ ì € ìˆì„ ë•Œ
+		// í”Œë ˆì´ëª¨ë“œ ê²€ì‚¬
 		if (playmode == MSG_LOGIN_RE && user->m_state == CONN_CHANGE_SERVER)
 		{
-			// ¼­¹ö ÀÌµ¿ÀÏ ¶§
+			// ì„œë²„ ì´ë™ì¼ ë•Œ
 
-			// À¯Àú »óÅÂ ÀÏ¹İÀ¸·Î º¯°æ
+			// ìœ ì € ìƒíƒœ ì¼ë°˜ìœ¼ë¡œ ë³€ê²½
 			user->m_state = CONN_PLAYING;
 
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -141,14 +168,14 @@ void ConnLogin(CDescriptor* d, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ¼­¹ö ÀÌµ¿ ¾Æ´Ò ¶§
+			// ì„œë²„ ì´ë™ ì•„ë‹ ë•Œ
 
 			GAMELOG << init("LOGIN_FAIL", id)
 					<< "From" << delim << d->m_subno << delim
 					<< MSG_CONN_ERROR_ALREADY
 					<< end;
 
-			// ¿À·ù Ã³¸® : Áßº¹ Á¢¼Ó
+			// ì˜¤ë¥˜ ì²˜ë¦¬ : ì¤‘ë³µ ì ‘ì†
 			CNetMsg::SP rmsg(new CNetMsg);
 			LoginRepMsg(rmsg, MSG_CONN_ERROR_ALREADY, id, NULL);
 			SEND_Q(rmsg, d);
@@ -165,132 +192,19 @@ void ConnLogout(CDescriptor* d, CNetMsg::SP& msg)
 	CLCString id(MAX_ID_NAME_LENGTH + 1);
 	RefMsg(msg) >> id;
 
-	// À¯Àú¸¦ Ã£°í
+	// ìœ ì €ë¥¼ ì°¾ê³ 
 	CUser* user = NULL;
-	if (d->m_bLoginServer)
-	{
-		int i;
-		for (i = 0; i < gserver.m_maxSubServer; i++)
-		{
-			user = gserver.m_userList[i].Find(id);
-			if (user != NULL)
-				break;
-		}
-	}
-	else
-	{
-		user = gserver.m_userList[d->m_subno - 1].Find(id);
-	}
+	user = gserver.m_user_list->findByUserName(id.getBuffer());
 
 	if (user == NULL)
 	{
 		GAMELOG << init("SYS_ERR", id)
 				<< "From" << delim << d->m_subno << delim
 				<< "Not Found User" << end;
-
-// TODO : DELETE 		// ºô¸µ¿¡ ·Î±×¾Æ¿ô ¾Ë¸®±â
-// TODO : DELETE 		if (gserver.m_billing.IsRunning())
-// TODO : DELETE 			gserver.m_billing.Logout(user->m_name);
-
-//		// DB¿¡ ÀúÀå
-//		if (!WriteDB(id))
-//			GAMELOG << init("SYS_ERR", id)
-//					<< "From" << delim << d->m_subno << delim
-//					<< "Cannot Update DB for Logout" << end;
 		return ;
 	}
 
 	gserver.ProcessLogout(user);
-}
-
-void ConnBLogin(CDescriptor* d, CNetMsg::SP& msg)
-{
-	unsigned char subtype;
-	msg->MoveFirst();
-	RefMsg(msg) >> subtype;
-
-	CLCString id(MAX_ID_NAME_LENGTH + 1);
-	CLCString ip(HOST_LENGTH + 1);
-
-	RefMsg(msg) >> id >> ip;
-
-	CUser* user = NULL;
-	if (d->m_bLoginServer)
-	{
-		int i;
-		for (i = 0; i < gserver.m_maxSubServer; i++)
-		{
-			user = gserver.m_userList[i].Find(id);
-			if (user != NULL)
-				break;
-		}
-	}
-	else
-	{
-		user = gserver.m_userList[d->m_subno - 1].Find(id);
-	}
-
-	if (user == NULL)
-	{
-		GAMELOG << init("SYS_ERR", id)
-				<< "From" << delim << d->m_subno << delim
-				<< "BLogin" << delim << "Not Found User" << end;
-		user = NULL;
-		delete user;
-		return ;
-	}
-
-	if (gserver.m_billing.IsRunning())
-	{
-		gserver.m_billing.Login(user->m_name, user->m_name, ip);
-	}
-	user = NULL;
-	delete user;
-}
-
-void ConnBLogout(CDescriptor* d, CNetMsg::SP& msg)
-{
-	unsigned char subtype;
-	msg->MoveFirst();
-	RefMsg(msg) >> subtype;
-
-	CLCString id(MAX_ID_NAME_LENGTH + 1);
-
-	RefMsg(msg) >> id;
-
-	CUser* user = NULL;
-	if (d->m_bLoginServer)
-	{
-		int i;
-		for (i = 0; i < gserver.m_maxSubServer; i++)
-		{
-			user = gserver.m_userList[i].Find(id);
-			if (user != NULL)
-				break;
-		}
-	}
-	else
-	{
-		user = gserver.m_userList[d->m_subno - 1].Find(id);
-	}
-
-	if (user == NULL)
-	{
-		GAMELOG << init("SYS_ERR", id)
-				<< "From" << delim << d->m_subno << delim
-				<< "BLogout" << delim << "Not Found User" << end;
-
-		user = NULL;
-		delete user;
-		return ;
-	}
-
-	if (gserver.m_billing.IsRunning())
-	{
-		gserver.m_billing.Logout(user->m_name);
-	}
-	user = NULL;
-	delete user;
 }
 
 void ConnCashItemPurchaseHistoryReq(CDescriptor* d, CNetMsg::SP& msg)
@@ -310,8 +224,8 @@ void ConnCashItemPurchaseHistoryReq(CDescriptor* d, CNetMsg::SP& msg)
 }
 void ConnCashItemPurchaselistReq(CDescriptor* d, CNetMsg::SP& msg)
 {
-	//MSG_CONN_CASHITEM_PURCHASELIST_REQ, // ±¸ÀÔ¸ñ·Ï     : userindex(n) charindex(n)
-	//MSG_CONN_CASHITEM_PURCHASELIST_REP, // ÀÀ´ä			: charindex(n) errorCode(uc) count(n) idx(n) ctid(n)
+	//MSG_CONN_CASHITEM_PURCHASELIST_REQ, // êµ¬ì…ëª©ë¡     : userindex(n) charindex(n)
+	//MSG_CONN_CASHITEM_PURCHASELIST_REP, // ì‘ë‹µ			: charindex(n) errorCode(uc) count(n) idx(n) ctid(n)
 	int userindex, charindex;
 	int count = 0;
 	int ctid[25];
@@ -335,7 +249,7 @@ void ConnCashItemPurchaselistReq(CDescriptor* d, CNetMsg::SP& msg)
 
 	if( !cmd.Open() )
 	{
-		// ½ÇÆĞ ÀÀ´ä
+		// ì‹¤íŒ¨ ì‘ë‹µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnCashItemPurchaselistRep(rmsg, charindex, MSG_EX_CASHITEM_ERROR_SUCCESS, count, 0, 0);
 		SEND_Q(rmsg, d);
@@ -344,7 +258,7 @@ void ConnCashItemPurchaselistReq(CDescriptor* d, CNetMsg::SP& msg)
 
 	if( !cmd.MoveFirst() )
 	{
-		// ½ÇÆĞ ÀÀ´ä
+		// ì‹¤íŒ¨ ì‘ë‹µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnCashItemPurchaselistRep(rmsg, charindex, MSG_EX_CASHITEM_ERROR_SUCCESS, count, 0, 0);
 		SEND_Q(rmsg, d);
@@ -371,7 +285,7 @@ void ConnCashItemBringReq(CDescriptor* d, CNetMsg::SP& msg)
 
 void ConnCashItemBringProcess(CDescriptor* d, CNetMsg::SP& msg, bool bPresent)
 {
-	//MSG_CONN_CASHITEM_BRING_REQ, À¯·á¾ÆÀÌÅÛ °¡Á®¿À±â: userindex(n) charindex(n) count(n) idx(n)
+	//MSG_CONN_CASHITEM_BRING_REQ, ìœ ë£Œì•„ì´í…œ ê°€ì ¸ì˜¤ê¸°: userindex(n) charindex(n) count(n) idx(n)
 	int userindex, charindex, count, i;
 	int idx[MAX_PURCHASEITEM];
 	int ctid[MAX_PURCHASEITEM];
@@ -410,8 +324,8 @@ void ConnCashItemBringProcess(CDescriptor* d, CNetMsg::SP& msg, bool bPresent)
 		cmd.SetQuery(sql);
 		if( !cmd.Update() )
 		{
-			// Ä¿³ØÅÍ ¿¡·¯¸Ş¼¼Áö
-			// ·Ñ¹é
+			// ì»¤ë„¥í„° ì—ëŸ¬ë©”ì„¸ì§€
+			// ë¡¤ë°±
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnCashItemBringRep(rmsg, charindex, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent, count, ctid);
 			SEND_Q(rmsg, d);
@@ -434,8 +348,8 @@ void ConnCashItemBringProcess(CDescriptor* d, CNetMsg::SP& msg, bool bPresent)
 
 		if( cmd.m_nrecords < 1 )
 		{
-			// Ä¿³ØÅÍ ¿¡·¯¸Ş¼¼Áö
-			// ·Ñ¹é
+			// ì»¤ë„¥í„° ì—ëŸ¬ë©”ì„¸ì§€
+			// ë¡¤ë°±
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnCashItemBringRep(rmsg, charindex, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent, count, ctid);
 			SEND_Q(rmsg, d);
@@ -464,7 +378,7 @@ void ConnCashItemBringProcess(CDescriptor* d, CNetMsg::SP& msg, bool bPresent)
 		ConnCashItemBringRep(rmsg, charindex, MSG_EX_CASHITEM_ERROR_SUCCESS, bPresent, count, ctid);
 	SEND_Q(rmsg, d);
 	cmd.Commit();
-	// ¼¼ÆÃ ¼º°ø
+	// ì„¸íŒ… ì„±ê³µ
 }
 
 void ConnCashItemBalanceReq(CDescriptor* d, CNetMsg::SP& msg)
@@ -483,7 +397,7 @@ void ConnCashItemBalanceReq(CDescriptor* d, CNetMsg::SP& msg)
 	}
 	else
 	{
-		//ºô¸µ¼­¹ö ¿¡·¯
+		//ë¹Œë§ì„œë²„ ì—ëŸ¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnCashItemBalanceRep(rmsg, userindex, MSG_EX_CASHITEM_ERROR_BILL, -1);
 		SEND_Q(rmsg, d);
@@ -519,8 +433,8 @@ void ConnCashItemPurchaseReq(CDescriptor* d, CNetMsg::SP& msg)
 		RefMsg(msg) >> ctid[i];
 	}
 
-	// ±¸ÀÔ ¿äÃ»½Ã °ÔÀÓ¼­¹ö°¡ ÇÑÁ¤ÆÇ¸Å ¾ÆÀÌÅÛÀº µÚÂÊÀ¸·Î Àü´ŞÇÏ¹Ç·Î ¹Ş¾Æ¼­ ÇöÀç Ä¿³ØÅÍ°¡ °¡Áö°í ÀÖ´Â ¸®½ºÆ®¿¡ ÀÖ´Â ¹°Ç°ÀÌ¸é
-	// ºô¸µ¼­¹ö·Î ±¸ÀÔ ¿äÃ»ÇÏ°í ¾ø´Â ¹°Ç°ÀÌ¸é Ä¿³ØÅÍÀÇ ÇÑÁ¤ÆÇ¸Å ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+	// êµ¬ì… ìš”ì²­ì‹œ ê²Œì„ì„œë²„ê°€ í•œì •íŒë§¤ ì•„ì´í…œì€ ë’¤ìª½ìœ¼ë¡œ ì „ë‹¬í•˜ë¯€ë¡œ ë°›ì•„ì„œ í˜„ì¬ ì»¤ë„¥í„°ê°€ ê°€ì§€ê³  ìˆëŠ” ë¦¬ìŠ¤íŠ¸ì— ìˆëŠ” ë¬¼í’ˆì´ë©´
+	// ë¹Œë§ì„œë²„ë¡œ êµ¬ì… ìš”ì²­í•˜ê³  ì—†ëŠ” ë¬¼í’ˆì´ë©´ ì»¤ë„¥í„°ì˜ í•œì •íŒë§¤ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
 	int lcount;
 	RefMsg(msg) >> lcount;
 
@@ -589,7 +503,7 @@ void ConnCashItemPurchaseReq(CDescriptor* d, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Â÷°¨ÀÎÁõ ¿äÃ»À» ºô¸µ¼­¹ö¿¡ ÇÑ´Ù
+	// ì°¨ê°ì¸ì¦ ìš”ì²­ì„ ë¹Œë§ì„œë²„ì— í•œë‹¤
 	if( gserver.m_billing.IsRunning() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -650,7 +564,7 @@ void ConnCashItemGift(CDescriptor* d, CNetMsg::SP& msg)
 		cmd.SetQuery(sql);
 		if( !cmd.Update() )
 		{
-			// ¿¡·¯ ¸Ş¼¼Áö ( ÇöÀç ¿äÃ»ÇÑ »óÇ°ÀÌ ¾øÀ½ )
+			// ì—ëŸ¬ ë©”ì„¸ì§€ ( í˜„ì¬ ìš”ì²­í•œ ìƒí’ˆì´ ì—†ìŒ )
 
 			cmd.Rollback();
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -666,7 +580,7 @@ void ConnCashItemGift(CDescriptor* d, CNetMsg::SP& msg)
 
 		if( cmd.m_nrecords < 1 )
 		{
-			// ¿¡·¯ ¸Ş¼¼Áö ( ÇöÀç ¿äÃ»ÇÑ »óÇ°ÀÌ ¾øÀ½ )
+			// ì—ëŸ¬ ë©”ì„¸ì§€ ( í˜„ì¬ ìš”ì²­í•œ ìƒí’ˆì´ ì—†ìŒ )
 			cmd.Rollback();
 			CNetMsg::SP rmsg(new CNetMsg);
 			rmsg->Init(MSG_CONN_REP);
@@ -763,7 +677,7 @@ void ConnCashItemRecvList(CDescriptor* d, CNetMsg::SP& msg)
 			   "where a_server = %d and a_recv_user_idx = %d and a_use_char_idx = 0 ", userIndex % 10, gserver.m_serverno, userIndex );
 
 	cmd.SetQuery(sql);
-	// 5°³¸¶´Ù ÇÑ°³¾¿ º¸³¿
+	// 5ê°œë§ˆë‹¤ í•œê°œì”© ë³´ëƒ„
 	if( cmd.Open() && cmd.m_nrecords > 0 && cmd.MoveFirst() )
 	{
 		int i = 0;
@@ -791,7 +705,7 @@ void ConnCashItemRecvList(CDescriptor* d, CNetMsg::SP& msg)
 
 			if( i % 5 == 0 )
 			{
-				// ÀÀ´ä				: listflag(c) count(n) idx(n) ctid(n) date(un) sendcharName(str) msg(str)
+				// ì‘ë‹µ				: listflag(c) count(n) idx(n) ctid(n) date(un) sendcharName(str) msg(str)
 				if( count == i )
 					listflag |= ( 1 << 1);
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -802,17 +716,17 @@ void ConnCashItemRecvList(CDescriptor* d, CNetMsg::SP& msg)
 							 << (int) 5
 							 << temp;
 
-				// ¸Ş¼¼Áö º¸³»°í,
+				// ë©”ì„¸ì§€ ë³´ë‚´ê³ ,
 				SEND_Q(rmsg, d);
 
-				temp.Init();						// »óÇ° ¸Ş¼¼Áö¸¦ ÃÊ±âÈ­ ÇÏ°í,
-				listflag = listflag &~ ( 1 << 0 );// ½ºÅ¸Æ® ÇÃ·¡±×¸¦ »©°í,
+				temp.Init();						// ìƒí’ˆ ë©”ì„¸ì§€ë¥¼ ì´ˆê¸°í™” í•˜ê³ ,
+				listflag = listflag &~ ( 1 << 0 );// ìŠ¤íƒ€íŠ¸ í”Œë˜ê·¸ë¥¼ ë¹¼ê³ ,
 			}
 		}
 		while( cmd.MoveNext() );
 
-		// ÀÀ´ä				: listflag(c) count(n) idx(n) ctid(n) date(un) sendcharName(str) msg(str)
-		// end ¸®½ºÆ® ÇÃ·¡±× ¼¼ÆÃÇÏ°í,
+		// ì‘ë‹µ				: listflag(c) count(n) idx(n) ctid(n) date(un) sendcharName(str) msg(str)
+		// end ë¦¬ìŠ¤íŠ¸ í”Œë˜ê·¸ ì„¸íŒ…í•˜ê³ ,
 		if( i % 5 )
 		{
 			listflag |= ( 1 << 1 );
@@ -824,13 +738,13 @@ void ConnCashItemRecvList(CDescriptor* d, CNetMsg::SP& msg)
 						 << (int) ( i% 5)
 						 << temp;
 
-			// ¸Ş¼¼Áö º¸³»°í,
+			// ë©”ì„¸ì§€ ë³´ë‚´ê³ ,
 			SEND_Q(rmsg, d);
 		}
 	}
 	else
 	{
-		// empty ¸®½ºÆ® ÇÃ·¡±× º¸³¿
+		// empty ë¦¬ìŠ¤íŠ¸ í”Œë˜ê·¸ ë³´ëƒ„
 		CNetMsg::SP rmsg(new CNetMsg);
 		rmsg->Init(MSG_CONN_REP);
 		RefMsg(rmsg) << (unsigned char) MSG_CONN_CASHITEM_GIFT_RECVLIST

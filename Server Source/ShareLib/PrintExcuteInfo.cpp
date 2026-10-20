@@ -45,11 +45,11 @@ void PrintExcuteInfo::PrintStart( const std::string server_name, const std::stri
 	LOG_INFO("svn info : %s", last_svn_revision);
 	LOG_INFO("compile time : %d", compile_time ^ 0x12345678);
 
-	// ÀÌ ÇÁ·Î¼¼¼­°¡ ¿­¼ö ÀÖ´Â ÃÖ´ë ÆÄÀÏ¼ö
+	// ì´ í”„ë¡œì„¸ì„œê°€ ì—´ìˆ˜ ìˆëŠ” ìµœëŒ€ íŒŒì¼ìˆ˜
 	LOG_INFO("openfiles = getdtablesize[%d]", getdtablesize());
 
 	{
-		// OS Name Ãâ·ÂÇÏ±â
+		// OS Name ì¶œë ¥í•˜ê¸°
 		struct utsname uts;
 		uname(&uts);
 		LOG_INFO("OS = sysname : %s, release : %s, version : %s, machine : %s",
@@ -57,7 +57,7 @@ void PrintExcuteInfo::PrintStart( const std::string server_name, const std::stri
 	}
 
 	{
-		// CPU Á¤º¸ Ãâ·ÂÇÏ±â
+		// CPU ì •ë³´ ì¶œë ¥í•˜ê¸°
 		std::string outstr = "\n-- CPU INFORMATION --\n";
 		outstr.reserve(10240);
 		std::string line;
@@ -77,7 +77,7 @@ void PrintExcuteInfo::PrintStart( const std::string server_name, const std::stri
 	}
 
 	{
-		// MEMORY Á¤º¸ Ãâ·ÂÇÏ±â
+		// MEMORY ì •ë³´ ì¶œë ¥í•˜ê¸°
 		std::string outstr = "\n-- MEMORY INFORMATION --\n";
 		outstr.reserve(10240);
 		std::string line;

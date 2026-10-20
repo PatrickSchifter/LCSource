@@ -1,7 +1,7 @@
 #ifndef __GM_COMMAND_H__
 #define __GM_COMMAND_H__
 
-// ¿î¿µÀÚ ¸í·É¾î ¼³Á¤
+// ìš´ì˜ì ëª…ë ¹ì–´ ì„¤ì •
 #define		GM_CMD_HPMP				"hpmp"
 #define		GM_CMD_HP				"hp"
 #define		GM_CMD_MP				"mp"
@@ -51,124 +51,124 @@
 #define		GM_CMD_CASHPURCHASEHISTORY	"cashpurchasehistory"
 
 // echo <zone | server | all / subserver> <chat>
-#define     GM_CMD_ECHO             "echo"          // ¿î¿µÀÚ ¾Ë¸² ¸Ş½ÃÁö
-#define     GM_CMD_ECHO_ZONE        "zone"          // Á¸ ¾Ë¸² ¸Ş½ÃÁö
-#define     GM_CMD_ECHO_SERVER      "server"        // ¼­¹ö±º ¾Ë¸² ¸Ş½ÃÁö
-#define     GM_CMD_ECHO_ALL         "all"           // ¸ğµç ¼­¹ö ¾Ë¸² ¸Ş½ÃÁö
-#define     GM_CMD_ECHO_SUBSERVER   "subserver"     // ¼­¹ö±º ¼­ºê¼­¹ö ¾Ë¸² ¸Ş½ÃÁö
-#define     GM_CMD_ECHO_ALLZONE     "allzone"       // ¸ğµç ¼­¹ö±ºÀÇ Á¸¿¡ ¾Ë¸²
+#define     GM_CMD_ECHO             "echo"          // ìš´ì˜ì ì•Œë¦¼ ë©”ì‹œì§€
+#define     GM_CMD_ECHO_ZONE        "zone"          // ì¡´ ì•Œë¦¼ ë©”ì‹œì§€
+#define     GM_CMD_ECHO_SERVER      "server"        // ì„œë²„êµ° ì•Œë¦¼ ë©”ì‹œì§€
+#define     GM_CMD_ECHO_ALL         "all"           // ëª¨ë“  ì„œë²„ ì•Œë¦¼ ë©”ì‹œì§€
+#define     GM_CMD_ECHO_SUBSERVER   "subserver"     // ì„œë²„êµ° ì„œë¸Œì„œë²„ ì•Œë¦¼ ë©”ì‹œì§€
+#define     GM_CMD_ECHO_ALLZONE     "allzone"       // ëª¨ë“  ì„œë²„êµ°ì˜ ì¡´ì— ì•Œë¦¼
 // go_zone <zone> <extra>
-#define     GM_CMD_GO_ZONE          "go_zone"       // Á¸ ÀÌµ¿
+#define     GM_CMD_GO_ZONE          "go_zone"       // ì¡´ ì´ë™
 // goto <x> <z> <y>
-#define     GM_CMD_GOTO             "goto"          // Àå¼Ò ÀÌµ¿
+#define     GM_CMD_GOTO             "goto"          // ì¥ì†Œ ì´ë™
 // itemdrop <index> <plus> <flag> <count> <option_count> <option_type> <option_level>
-#define     GM_CMD_ITEMDROP         "itemdrop"      // ¾ÆÀÌÅÛ °­Á¦ µå·Ó
+#define     GM_CMD_ITEMDROP         "itemdrop"      // ì•„ì´í…œ ê°•ì œ ë“œë¡­
 // count_pc
-#define     GM_CMD_COUNT_PC         "count_pcc"     // »ç¿ëÀÚ ¼ö Á¶»ç
+#define     GM_CMD_COUNT_PC         "count_pcc"     // ì‚¬ìš©ì ìˆ˜ ì¡°ì‚¬
 // loopcount
-#define     GM_CMD_LOOPCOUNT        "loopcount"     // ·çÇÁ Ä«¿îÆ® Á¶»ç
+#define     GM_CMD_LOOPCOUNT        "loopcount"     // ë£¨í”„ ì¹´ìš´íŠ¸ ì¡°ì‚¬
 // immortal
-#define     GM_CMD_IMMORTAL         "immortal"      // ¸÷¿¡°Ô °ø°İ ´çÇÏÁö ¾ÊÀ½: Åä±Û
+#define     GM_CMD_IMMORTAL         "immortal"      // ëª¹ì—ê²Œ ê³µê²© ë‹¹í•˜ì§€ ì•ŠìŒ: í† ê¸€
 // shutdown <time:sec> <msg>
-#define     GM_CMD_SHUTDOWN         "shutdown"      // ¼Ë´Ù¿î: ÀÚµ¿ Àç½ÇÇà ¾øÀ½(¼­¹ö±º ´Ù¿î)
+#define     GM_CMD_SHUTDOWN         "shutdown"      // ì…§ë‹¤ìš´: ìë™ ì¬ì‹¤í–‰ ì—†ìŒ(ì„œë²„êµ° ë‹¤ìš´)
 // reboot <all | server | subserver> <time:sec> <msg>
-#define     GM_CMD_REBOOT           "reboot"        // ¸®ºÎÆ®: ÀÚµ¿ Àç½ÇÇà ÇÔ
+#define     GM_CMD_REBOOT           "reboot"        // ë¦¬ë¶€íŠ¸: ìë™ ì¬ì‹¤í–‰ í•¨
 // count_npc
-#define     GM_CMD_COUNT_NPC        "count_npc"     // npc ¼ö Á¶»ç
+#define     GM_CMD_COUNT_NPC        "count_npc"     // npc ìˆ˜ ì¡°ì‚¬
 // visible
-#define     GM_CMD_VISIBLE          "visible"       // Åõ¸í/ºÒÅõ¸í ¼³Á¤
+#define     GM_CMD_VISIBLE          "visible"       // íˆ¬ëª…/ë¶ˆíˆ¬ëª… ì„¤ì •
 // go_pc <char name>
-#define     GM_CMD_GO_PC            "go_pc"         // ÁöÁ¤ÇÑ Ä³¸¯ÅÍ ¿·À¸·Î ÀÌµ¿
+#define     GM_CMD_GO_PC            "go_pc"         // ì§€ì •í•œ ìºë¦­í„° ì˜†ìœ¼ë¡œ ì´ë™
 // go_npc <name or index>
-#define     GM_CMD_GO_NPC           "go_npc"        // ÁöÁ¤ÇÑ ¸÷ ¿·À¸·Î ÀÌµ¿
+#define     GM_CMD_GO_NPC           "go_npc"        // ì§€ì •í•œ ëª¹ ì˜†ìœ¼ë¡œ ì´ë™
 // levelup <level>
-#define     GM_CMD_LEVELUP          "levelup"       // ÁöÁ¤ÇÑ ·¹º§·Î º¯°æ
+#define     GM_CMD_LEVELUP          "levelup"       // ì§€ì •í•œ ë ˆë²¨ë¡œ ë³€ê²½
 // kick <char name>
-#define     GM_CMD_KICK             "kick"          // Ä³¸¯ÅÍ¸¦ ¼­¹ö·ÎºÎÅÍ Æ¨°Ü³¿
+#define     GM_CMD_KICK             "kick"          // ìºë¦­í„°ë¥¼ ì„œë²„ë¡œë¶€í„° íŠ•ê²¨ëƒ„
 // comon <char name>
-#define     GM_CMD_COMON            "common"        // Ä³¸¯ÅÍ¸¦ ¿î¿µÀÚ Ä³¸¯ÅÍ ¾ÕÀ¸·Î
+#define     GM_CMD_COMON            "common"        // ìºë¦­í„°ë¥¼ ìš´ì˜ì ìºë¦­í„° ì•ìœ¼ë¡œ
 // summon <name or index>
-#define     GM_CMD_SUMMON           "summon"        // ÁöÁ¤ÇÑ ¸÷ ¿î¿µÀÚ Ä³¸¯ÅÍ ¾ÕÀ¸·Î ¼ÒÈ¯
+#define     GM_CMD_SUMMON           "summon"        // ì§€ì •í•œ ëª¹ ìš´ì˜ì ìºë¦­í„° ì•ìœ¼ë¡œ ì†Œí™˜
 // silence <char name> <time:sec>
-#define     GM_CMD_SILENCE          "silence"       // Ä³¸¯ÅÍ¿¡°Ô ½Ã°£µ¿¾È Ã¤ÆÃ ±İÁö
+#define     GM_CMD_SILENCE          "silence"       // ìºë¦­í„°ì—ê²Œ ì‹œê°„ë™ì•ˆ ì±„íŒ… ê¸ˆì§€
 // whereami
-#define     GM_CMD_WHERE_AM_I       "whereami"      // Ä³¸¯ÅÍÀÇ zone, area ¹øÈ£
+#define     GM_CMD_WHERE_AM_I       "whereami"      // ìºë¦­í„°ì˜ zone, area ë²ˆí˜¸
 // QuestComplete <QuestTypeNum>
-#define     GM_CMD_QUEST_COMPLETE   "questcomplete" // Äù½ºÆ® °­Á¦ ¿Ï·á
+#define     GM_CMD_QUEST_COMPLETE   "questcomplete" // í€˜ìŠ¤íŠ¸ ê°•ì œ ì™„ë£Œ
 // statpoint <remain> [<str> <dex> <int> <con>]
-#define     GM_CMD_STATPOINT        "statpoint"     // ½ºÅÈ Æ÷ÀÎÆ® °­Á¦ ¼³Á¤
+#define     GM_CMD_STATPOINT        "statpoint"     // ìŠ¤íƒ¯ í¬ì¸íŠ¸ ê°•ì œ ì„¤ì •
 // skillpoint <count>
-#define     GM_CMD_SKILLPOINT       "skillpoint"    // ½ºÅ³ Æ÷ÀÎÆ® °­Á¦ ¼³Á¤
+#define     GM_CMD_SKILLPOINT       "skillpoint"    // ìŠ¤í‚¬ í¬ì¸íŠ¸ ê°•ì œ ì„¤ì •
 // set_regensec <index> <time:1/10sec>
-#define     GM_CMD_SET_REGENSEC     "set_regensec"  // ÇØ´ç npc regensec Á¶Á¤
+#define     GM_CMD_SET_REGENSEC     "set_regensec"  // í•´ë‹¹ npc regensec ì¡°ì •
 // npc_regen <index>
-#define     GM_CMD_NPC_REGEN        "npc_regen"     // ÇØ´ç npc Áß ¸®Á¨ µÇ¾ß ÇÏ´Â°Íµé ¸ğµÎ °­Á¦ ¸®Á¨
+#define     GM_CMD_NPC_REGEN        "npc_regen"     // í•´ë‹¹ npc ì¤‘ ë¦¬ì   ë˜ì•¼ í•˜ëŠ”ê²ƒë“¤ ëª¨ë‘ ê°•ì œ ë¦¬ì  
 // kill_npc <meter :m>
-#define     GM_CMD_KILL_NPC         "kill_npc"      // ¿î¿µÀÚ¿Í °Å¸®¾È¿¡ ÀÖ´Â npcµé ¸ğµÎ °­Á¦ Á×ÀÓ
+#define     GM_CMD_KILL_NPC         "kill_npc"      // ìš´ì˜ìì™€ ê±°ë¦¬ì•ˆì— ìˆëŠ” npcë“¤ ëª¨ë‘ ê°•ì œ ì£½ì„
 // expup <exp%>
-#define     GM_CMD_EXPUP            "expup"         // Ä³¸¯ÅÍ °æÇèÄ¡ º¯°æ
+#define     GM_CMD_EXPUP            "expup"         // ìºë¦­í„° ê²½í—˜ì¹˜ ë³€ê²½
 // bloodpoint <bloodpoint>
-#define     GM_CMD_BLOODPOINT       "bloodpoint"    // Ä³¸¯ÅÍ ÇöÀç Blood Point º¯°æ
+#define     GM_CMD_BLOODPOINT       "bloodpoint"    // ìºë¦­í„° í˜„ì¬ Blood Point ë³€ê²½
 // endgame <time:sec> <msg>
-#define     GM_CMD_ENDGAME          "endgame"       // ¸Ş½ÅÀú¸¦ Á¦¿ÜÇÑ ¸ğµç ¼­¹ö ´Ù¿î
+#define     GM_CMD_ENDGAME          "endgame"       // ë©”ì‹ ì €ë¥¼ ì œì™¸í•œ ëª¨ë“  ì„œë²„ ë‹¤ìš´
 // observe
-#define     GM_CMD_OBSERVE          "observe"       // °üÂûÀÚ ¼³Á¤
+#define     GM_CMD_OBSERVE          "observe"       // ê´€ì°°ì ì„¤ì •
 // chatmonitor <character name>
-#define     GM_CMD_CHATMONITOR      "chatmonitor"   // Ã¤ÆÃ °¨½Ã
+#define     GM_CMD_CHATMONITOR      "chatmonitor"   // ì±„íŒ… ê°ì‹œ
 // double_event <"start" or "stop" or "ing">
-#define     GM_CMD_DOUBLE_EVENT     "double_event"  // °æÇèÄ¡, ³ª½º, SP, »ı»êÇ° 2¹è ÀÌº¥Æ®
+#define     GM_CMD_DOUBLE_EVENT     "double_event"  // ê²½í—˜ì¹˜, ë‚˜ìŠ¤, SP, ìƒì‚°í’ˆ 2ë°° ì´ë²¤íŠ¸
 // latto_event <"start" or "stop" or "ing">
-#define     GM_CMD_LATTO_EVENT      "latto_event"   // ¶ó¶Ç ÀÌº¥Æ®
+#define     GM_CMD_LATTO_EVENT      "latto_event"   // ë¼ë˜ ì´ë²¤íŠ¸
 // doubleexp_event <serverno | all | cur> <start | stop | ing> <0~200%>
-#define     GM_CMD_DOUBLE_EXP_EVENT     "doubleexp_event"   // °æÇèÄ¡ 2¹è ÀÌº¥Æ®(ÆÛ¼¾Æ¼Áö¿¡ µû¶ó ¹Ù²Ù´Â °ÍÀ¸·Î ¼öÁ¤)
+#define     GM_CMD_DOUBLE_EXP_EVENT     "doubleexp_event"   // ê²½í—˜ì¹˜ 2ë°° ì´ë²¤íŠ¸(í¼ì„¼í‹°ì§€ì— ë”°ë¼ ë°”ê¾¸ëŠ” ê²ƒìœ¼ë¡œ ìˆ˜ì •)
 // newyear_event <"start" or "stop" or "ing">
-#define     GM_CMD_NEWYEAR_EVENT        "newyear_event" // ¼³³¯ ÀÌº¥Æ®
+#define     GM_CMD_NEWYEAR_EVENT        "newyear_event" // ì„¤ë‚  ì´ë²¤íŠ¸
 // valentine_event <"start" or "stop" or "ing">
-#define     GM_CMD_VALENTINE_EVENT      "valentine_event"   // ¹ß·»Å¸ÀÎµ¥ÀÌ ÀÌº¥Æ®
+#define     GM_CMD_VALENTINE_EVENT      "valentine_event"   // ë°œë Œíƒ€ì¸ë°ì´ ì´ë²¤íŠ¸
 // whiteday_event <"start" or "stop" or "ing">
-#define     GM_CMD_WHITEDAY_EVENT       "whiteday_event"    // È­ÀÌÆ®µ¥ÀÌ ÀÌº¥Æ®
+#define     GM_CMD_WHITEDAY_EVENT       "whiteday_event"    // í™”ì´íŠ¸ë°ì´ ì´ë²¤íŠ¸
 // letter_event <"start" or "stop" or "ing">
-#define     GM_CMD_LETTER_EVENT     "letter_event"  // ³¹¸» ¸ÂÃß±â ÀÌº¥Æ®
+#define     GM_CMD_LETTER_EVENT     "letter_event"  // ë‚±ë§ ë§ì¶”ê¸° ì´ë²¤íŠ¸
 // reloadgmip
-#define     GM_CMD_RELOAD_GMIP      "reloadgmip"    // GM IP ¼³Á¤ Å×ÀÌºí ´Ù½Ã ÀĞ±â
+#define     GM_CMD_RELOAD_GMIP      "reloadgmip"    // GM IP ì„¤ì • í…Œì´ë¸” ë‹¤ì‹œ ì½ê¸°
 // speedup
-#define     GM_CMD_SPEEDUP          "speedup"       // »¡¸® ´Ş¸®±â
+#define     GM_CMD_SPEEDUP          "speedup"       // ë¹¨ë¦¬ ë‹¬ë¦¬ê¸°
 // fameup
-#define     GM_CMD_FAMEUP           "fameup"        // ¸í¼ºÄ¡ Á¶Á¤
+#define     GM_CMD_FAMEUP           "fameup"        // ëª…ì„±ì¹˜ ì¡°ì •
 // event <name> <start | stop | ing>
-#define     GM_CMD_EVENT            "event"         // ÀÌº¥Æ® ÅëÇÕ
+#define     GM_CMD_EVENT            "event"         // ì´ë²¤íŠ¸ í†µí•©
 // pd4 <rankinit | rewardinit | rewardend>
-#define     GM_CMD_PD4              "pd4"           // Â÷¿øÀÇ¹® ·©Å©
+#define     GM_CMD_PD4              "pd4"           // ì°¨ì›ì˜ë¬¸ ë­í¬
 // kickid <id>
-#define     GM_CMD_KICK_ID          "kickid"        // id·Î °­Á¦ Á¢¼Ó ÇØÁ¦
+#define     GM_CMD_KICK_ID          "kickid"        // idë¡œ ê°•ì œ ì ‘ì† í•´ì œ
 // resurrection <name>
-#define     GM_CMD_RESURRECTION     "resurrection"  // ÇØ´ç ÄÉ¸¯ÅÍ ºÎÈ°
+#define     GM_CMD_RESURRECTION     "resurrection"  // í•´ë‹¹ ì¼€ë¦­í„° ë¶€í™œ
 // recommend <server no>
-#define     GM_CMD_RECOMMEND        "recommend"     // ÇØ´ç ¼­¹ö±º ÃßÃµ ¼³Á¤, -1ÀÌ¸é ¸ğµÎ ÃßÃµ ¾Æ´Ñ °ÍÀ¸·Î
+#define     GM_CMD_RECOMMEND        "recommend"     // í•´ë‹¹ ì„œë²„êµ° ì¶”ì²œ ì„¤ì •, -1ì´ë©´ ëª¨ë‘ ì¶”ì²œ ì•„ë‹Œ ê²ƒìœ¼ë¡œ
 // setlimit  <ctid> <sellNo>
-#define     GM_CMD_SETLIMIT         "setlimit"      // ÇØ´ç ¼­¹ö±ºÀÇ ÆÇ¸Å»óÇ° ¼³Á¤, sellNo ´õ ÆÇ¸ÅÇÒ ¼ıÀÚ. Ä³½¬Åø¿¡ ¼³Á¤µÈ ¸®¹ÌÆ®º¸´Ù ¸¹À»¼ö´Â ¾øÀ½
+#define     GM_CMD_SETLIMIT         "setlimit"      // í•´ë‹¹ ì„œë²„êµ°ì˜ íŒë§¤ìƒí’ˆ ì„¤ì •, sellNo ë” íŒë§¤í•  ìˆ«ì. ìºì‰¬íˆ´ì— ì„¤ì •ëœ ë¦¬ë¯¸íŠ¸ë³´ë‹¤ ë§ì„ìˆ˜ëŠ” ì—†ìŒ
 // disguise
-#define     GM_CMD_DISGUISE         "disguise"      // ÇØ´ç ¼­¹ö±ºÀÇ ÆÇ¸Å»óÇ° ¼³Á¤, sellNo ´õ ÆÇ¸ÅÇÒ ¼ıÀÚ. Ä³½¬Åø¿¡ ¼³Á¤µÈ ¸®¹ÌÆ®º¸´Ù ¸¹À»¼ö´Â ¾øÀ½
+#define     GM_CMD_DISGUISE         "disguise"      // í•´ë‹¹ ì„œë²„êµ°ì˜ íŒë§¤ìƒí’ˆ ì„¤ì •, sellNo ë” íŒë§¤í•  ìˆ«ì. ìºì‰¬íˆ´ì— ì„¤ì •ëœ ë¦¬ë¯¸íŠ¸ë³´ë‹¤ ë§ì„ìˆ˜ëŠ” ì—†ìŒ
 // loginserver <open | close | reboot>
-#define     GM_CMD_LOGINSERVER      "loginserver"   // ·Î±×ÀÎ ¼­¹ö Á¦¾î
+#define     GM_CMD_LOGINSERVER      "loginserver"   // ë¡œê·¸ì¸ ì„œë²„ ì œì–´
 // caltime
-#define     GM_CMD_CALTIME          "caltime"       // ·çÇÁ ½Ã°£ Á¶»ç
+#define     GM_CMD_CALTIME          "caltime"       // ë£¨í”„ ì‹œê°„ ì¡°ì‚¬
 // kickchar <charindex>
-#define     GM_CMD_KICK_CHAR_INDEX          "kickcharidx"       // id·Î °­Á¦ Á¢¼Ó ÇØÁ¦
+#define     GM_CMD_KICK_CHAR_INDEX          "kickcharidx"       // idë¡œ ê°•ì œ ì ‘ì† í•´ì œ
 
-#define     GM_GMD_EVENTSHOW                "eventshow"         // ±¸¶ó ÀÌº¥Æ® °øÁö ÀÌ¸§, ¾ÆÀÌÅÛÀÎµ¦½º
+#define     GM_GMD_EVENTSHOW                "eventshow"         // êµ¬ë¼ ì´ë²¤íŠ¸ ê³µì§€ ì´ë¦„, ì•„ì´í…œì¸ë±ìŠ¤
 
-#define     GM_CMD_EVENTSETTING     "eventsetting"  // ÀÌº¥Æ® ¼¼ÆÃ
-#define     GM_CMD_CHANCE_EVENT     "chance_event"  // ÀÏÁ¤·¹º§ À¯ÀúÀÇ ¼ºÀå ÃËÁø
+#define     GM_CMD_EVENTSETTING     "eventsetting"  // ì´ë²¤íŠ¸ ì„¸íŒ…
+#define     GM_CMD_CHANCE_EVENT     "chance_event"  // ì¼ì •ë ˆë²¨ ìœ ì €ì˜ ì„±ì¥ ì´‰ì§„
 #define     GM_CMD_GMCHATMONITOR    "gmchatmonitor"
 
 // doubleitem_event <zone | server | all / subserver> <chat>
-#define     GM_CMD_DOUBLE_ITEM_DROP             "doubleitem_event"          // ¿î¿µÀÚ ¾Ë¸² ¸Ş½ÃÁö
+#define     GM_CMD_DOUBLE_ITEM_DROP             "doubleitem_event"          // ìš´ì˜ì ì•Œë¦¼ ë©”ì‹œì§€
 
 // doublepetexp_event <serverno | all | cur> <start | stop | ing> <0~200%>
-#define     GM_CMD_DOUBLE_PET_EXP   "doublepetexp_event"    // Æê °æÇèÄ¡ 2¹è
+#define     GM_CMD_DOUBLE_PET_EXP   "doublepetexp_event"    // í« ê²½í—˜ì¹˜ 2ë°°
 // doubleattack_event <serverno | all | cur> <start | stop | ing> <0~200%>
-#define     GM_CMD_DOUBLE_ATTACK    "doubleattack_event"    // ¹°¸®, ¸¶¹ı °ø°İ·Â 2¹è
+#define     GM_CMD_DOUBLE_ATTACK    "doubleattack_event"    // ë¬¼ë¦¬, ë§ˆë²• ê³µê²©ë ¥ 2ë°°
 
 // event_dropitem <serverno | all | cur> <start | stop | ing> <npcidx> <itemidx> <prob>
 #define     GM_CMD_EVENT_DROPITEM   "event_dropitem"
@@ -214,7 +214,7 @@
 // setsealexp <level>
 #define		GM_CMD_SET_SEAL_EXP	"setsealexp"
 
-// endsubhelper // ¼­ºêÇïÆÛ¸¸ Á¾·á
+// endsubhelper // ì„œë¸Œí—¬í¼ë§Œ ì¢…ë£Œ
 #define		GM_CMD_END_SUBHELPER "endsubhelper"
 
 // date
@@ -237,7 +237,7 @@
 #define		GM_CMD_ATTEVENT_2011	"attevent"
 #define		GM_CMD_FUNC				"func"
 #define		GM_CMD_ECHONPC			"echo_npc"
-#define		GM_CMD_CASTLE_STATE_CYNC	"warcastlestatecync" // °ø¼º»óÅÂÁ¤º¸¸¦ ´Ù¸¥ Ã¤³Î ½ÌÅ©ÇÏ´Â ¸í·É¾î
+#define		GM_CMD_CASTLE_STATE_CYNC	"warcastlestatecync" // ê³µì„±ìƒíƒœì •ë³´ë¥¼ ë‹¤ë¥¸ ì±„ë„ ì‹±í¬í•˜ëŠ” ëª…ë ¹ì–´
 #define		GM_CMD_TREASURE_MAP_DROP	"treasuremapdrop"
 #define		GM_CMD_DEATH_EVENT		"deathevent"
 #define		GM_CMD_ATTENDANCE_CHANGE "attendance_change"
@@ -254,70 +254,77 @@
 #define		GM_CMD_JOBRESET			"jobreset"
 // jobchange <jobtype> <2ndjobtype>
 #define		GM_CMD_JOBCHANGE		"jobchange"
-#define     GM_CMD_ITEMGET			"itemget"      // ¾ÆÀÌÅÛ °­Á¦ ÀÎº¥ »ı¼º
+#define     GM_CMD_ITEMGET			"itemget"      // ì•„ì´í…œ ê°•ì œ ì¸ë²¤ ìƒì„±
 // itemget <indexfrom> <indexto> <plus> <flag> <count> <option_count> <option_type> <option_level>
-#define		GM_CMD_ITEMGETRANGE		"itemgetrange"	// ÀÎµ¦½º ¹üÀ§ ¾ÆÀÌÅÛ °­Á¦ ÀÎº¥ »ı¼º
-#define		GM_CMD_SERVER_TRANS_BLOCK "trans_block" // ¼­¹ö ÀÌÀü ºÒ°¡´É ¼­¹ö ÁöÁ¤
+#define		GM_CMD_ITEMGETRANGE		"itemgetrange"	// ì¸ë±ìŠ¤ ë²”ìœ„ ì•„ì´í…œ ê°•ì œ ì¸ë²¤ ìƒì„±
+#define		GM_CMD_SERVER_TRANS_BLOCK "trans_block" // ì„œë²„ ì´ì „ ë¶ˆê°€ëŠ¥ ì„œë²„ ì§€ì •
 #define		GM_CMD_XMAS_PUZZLE		"xmaspuzzle"
 #define		GM_CMD_ROYAL_RUMBLE_SETTING "royalrumble"
-#define		GM_CMD_AFFINITY_SET				"affinity_set"			//Ä£È­µµ Ä«¿îÆ® ¼öÁ¤
-#define		GM_CMD_AFFINITY_REWARD_INIT		"affinity_reward_init"	//Ä£È­µµ º¸»ó ÃÊ±âÈ­z
-#define		GM_CMD_NAS_SET					"nas_set"				//³ª½º ¼¼ÆÃ
-#define		GM_CMD_JEWELRYE					"jewelrye"				//º¸¼® °ü·Ã ÀÌº¥Æ®°ª Á¶Á¤
-#define		GM_CMD_CRASH					"scrash"				// Å×½ºÆ®¸¦ À§ÇØ ¼­¹ö¸¦ °­Á¦·Î Å©·¡½¬½ÃÅ´
-#define		GM_CMD_NOT_GM					"notgm"					// ¼ø°£ÀûÀ¸·Î GMÀÌ ¾Æ´Ñ »óÅÂ·Î ¸¸µç´Ù. ´Ù½Ã GMÀÌ µÇ·Á¸é Àç Á¢¼Ó
-#define		GM_CMD_TRADEAGENT_FEE			"fee"					// °Å·¡´ëÇà ¼ö¼ö·á
-#define		GM_CMD_TRADEAGENT_DEPOSIT		"deposit"				// °Å·¡´ëÇà º¸Áõ±İ
-#define		GM_CMD_GO_ZONE_FINDNPC			"go_zone_npc"			// npc°¡ Á¸ÀçÇÏ´Â Á¸À¸·Î ÀÌµ¿
-#define		GM_CMD_STASHGETRANGE			"stashgetrange"			// Ã¢°í Ã¤¿ì±â
-#define		GM_CMD_STASHDEL					"stashdel"				// Ã¢°í ºñ¿ì±â
-#define		GM_CMD_TIMERITEM_SET			"timeritem_set"			// ±â°£Á¦ ¾ÆÀÌÅÛÀÇ ½Ã°£À» º¯°æ
-#define		GM_CMD_PICKUP_ITEM				"pickupitem"			// Ä³¸¯ÅÍ ÁÖº¯ÀÇ ¾ÆÀÌÅÛÀ» ÀÚµ¿À¸·Î Áİ±â
+#define		GM_CMD_AFFINITY_SET				"affinity_set"			//ì¹œí™”ë„ ì¹´ìš´íŠ¸ ìˆ˜ì •
+#define		GM_CMD_AFFINITY_REWARD_INIT		"affinity_reward_init"	//ì¹œí™”ë„ ë³´ìƒ ì´ˆê¸°í™”z
+#define		GM_CMD_NAS_SET					"nas_set"				//ë‚˜ìŠ¤ ì„¸íŒ…
+#define		GM_CMD_JEWELRYE					"jewelrye"				//ë³´ì„ ê´€ë ¨ ì´ë²¤íŠ¸ê°’ ì¡°ì •
+#define		GM_CMD_CRASH					"scrash"				// í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì„œë²„ë¥¼ ê°•ì œë¡œ í¬ë˜ì‰¬ì‹œí‚´
+#define		GM_CMD_NOT_GM					"notgm"					// ìˆœê°„ì ìœ¼ë¡œ GMì´ ì•„ë‹Œ ìƒíƒœë¡œ ë§Œë“ ë‹¤. ë‹¤ì‹œ GMì´ ë˜ë ¤ë©´ ì¬ ì ‘ì†
+#define		GM_CMD_TRADEAGENT_FEE			"fee"					// ê±°ë˜ëŒ€í–‰ ìˆ˜ìˆ˜ë£Œ
+#define		GM_CMD_TRADEAGENT_DEPOSIT		"deposit"				// ê±°ë˜ëŒ€í–‰ ë³´ì¦ê¸ˆ
+#define		GM_CMD_GO_ZONE_FINDNPC			"go_zone_npc"			// npcê°€ ì¡´ì¬í•˜ëŠ” ì¡´ìœ¼ë¡œ ì´ë™
+#define		GM_CMD_STASHGETRANGE			"stashgetrange"			// ì°½ê³  ì±„ìš°ê¸°
+#define		GM_CMD_STASHDEL					"stashdel"				// ì°½ê³  ë¹„ìš°ê¸°
+#define		GM_CMD_TIMERITEM_SET			"timeritem_set"			// ê¸°ê°„ì œ ì•„ì´í…œì˜ ì‹œê°„ì„ ë³€ê²½
+#define		GM_CMD_PICKUP_ITEM				"pickupitem"			// ìºë¦­í„° ì£¼ë³€ì˜ ì•„ì´í…œì„ ìë™ìœ¼ë¡œ ì¤ê¸°
 #define		GM_CMD_MONSTER_MERCEARY			"monstercard"
-#define		GM_CMD_VIEW_ALL_SHOP_LIST		"sshoplist"				// NPC°¡ µé°íÀÖ´Â ÆÇ¸Å ¸ñ·ÏÀ» º¸¿©ÁÜ
-#define		GM_CMD_DEL_CHARACTER			"delchar"				// ÀÚ½Å °èÁ¤ÀÇ ´Ù¸¥ Ä³¸¯ÅÍ¸¦ ¹Ù·Î Áö¿öÁØ´Ù.
-#define		GM_CMD_LOGOUT					"logout"				// Ä³¸¯ÅÍ ¼±ÅÃÃ¢À¸·Î ÀÌµ¿
-#define		GM_CMD_EXP						"exp"					// ÇöÀç exp¸¦ º¯°æÇÑ´Ù.
-#define		GM_CMD_GO_NEXT_PC				"go_nextpc"				// °°Àº Á¸¿¡ Á¸ÀçÇÏ´Â ´Ù¸¥ Ä³¸¯ÅÍ¿¡°Ô ·£´ıÇÏ°Ô ÀÌµ¿ (°¡¹Ì°í ¿äÃ»)
-#define		GM_CMD_VIRTUAL_REFORM			"vreform"				// °¡»óÀ¸·Î ¸®ÆûÀ» ÁøÇàÇÔ
-#define		GM_CMD_ROCK_PAPER_SCISSORS_WIN	"rpswin"				// °¡À§¹ÙÀ§º¸ °ÔÀÓ¿¡¼­ ¹«Á¶°Ç ÀÌ±â°Ô ÇÔ
+#define		GM_CMD_VIEW_ALL_SHOP_LIST		"sshoplist"				// NPCê°€ ë“¤ê³ ìˆëŠ” íŒë§¤ ëª©ë¡ì„ ë³´ì—¬ì¤Œ
+#define		GM_CMD_DEL_CHARACTER			"delchar"				// ìì‹  ê³„ì •ì˜ ë‹¤ë¥¸ ìºë¦­í„°ë¥¼ ë°”ë¡œ ì§€ì›Œì¤€ë‹¤.
+#define		GM_CMD_LOGOUT					"logout"				// ìºë¦­í„° ì„ íƒì°½ìœ¼ë¡œ ì´ë™
+#define		GM_CMD_EXP						"exp"					// í˜„ì¬ expë¥¼ ë³€ê²½í•œë‹¤.
+#define		GM_CMD_GO_NEXT_PC				"go_nextpc"				// ê°™ì€ ì¡´ì— ì¡´ì¬í•˜ëŠ” ë‹¤ë¥¸ ìºë¦­í„°ì—ê²Œ ëœë¤í•˜ê²Œ ì´ë™ (ê°€ë¯¸ê³  ìš”ì²­)
+#define		GM_CMD_VIRTUAL_REFORM			"vreform"				// ê°€ìƒìœ¼ë¡œ ë¦¬í¼ì„ ì§„í–‰í•¨
+#define		GM_CMD_ROCK_PAPER_SCISSORS_WIN	"rpswin"				// ê°€ìœ„ë°”ìœ„ë³´ ê²Œì„ì—ì„œ ë¬´ì¡°ê±´ ì´ê¸°ê²Œ í•¨
 
-#define		GM_CMD_RVR_INCREASE_POINT		"rvr_inc"				// ±â¿©µµ Áõ°¡
-#define		GM_CMD_RVR_DECREASE_POINT		"rvr_dec"				// ±â¿©µµ °¨¼Ò
+#define		GM_CMD_RVR_INCREASE_POINT		"rvr_inc"				// ê¸°ì—¬ë„ ì¦ê°€
+#define		GM_CMD_RVR_DECREASE_POINT		"rvr_dec"				// ê¸°ì—¬ë„ ê°ì†Œ
 
-#define		GM_CMD_THEOS_CHECK_REWARD_ITEM	"timeset_theos"			// º¸»ó Ã¼Å© ½Ã°£ ¼³Á¤(´ÜÀ§ ½Ã°£)
-#define		GM_CMD_THEOS_CHECK_POLLUTION	"theos_pollution"		// ¹«´ı ÄèÀûÇÔ »óÅÂ º¯°æ
-#define		GM_CMD_THEOS_CHECK_DIFFICULTY	"theos_difficulty"		// ¹«´ı ¿Â¼øÇÔ »óÅÂ º¯°æ
+#define		GM_CMD_THEOS_CHECK_REWARD_ITEM	"timeset_theos"			// ë³´ìƒ ì²´í¬ ì‹œê°„ ì„¤ì •(ë‹¨ìœ„ ì‹œê°„)
+#define		GM_CMD_THEOS_CHECK_POLLUTION	"theos_pollution"		// ë¬´ë¤ ì¾Œì í•¨ ìƒíƒœ ë³€ê²½
+#define		GM_CMD_THEOS_CHECK_DIFFICULTY	"theos_difficulty"		// ë¬´ë¤ ì˜¨ìˆœí•¨ ìƒíƒœ ë³€ê²½
 
 #ifdef DURABILITY
-#define		GM_CMD_DURABILITY				"dur"					// Àåºñ ³»±¸µµ : tab_no, invenIndex, now_dur, max_dur
+#define		GM_CMD_DURABILITY				"dur"					// ì¥ë¹„ ë‚´êµ¬ë„ : tab_no, invenIndex, now_dur, max_dur
 #endif
 
-#define		GM_CMD_RVR_APPLYSKILL			"rvr_applyskill"		// 1½Ã°£¸¶´Ù °É¸®´Â ¹öÇÁ ¹Ù·Î ÁÖ±â
-#define		GM_CMD_RVR_SHOWJEWELPOINT		"rvr_show"				// 1½Ã°£¸¶´Ù °É¸®´Â ¹öÇÁ ¹Ù·Î ÁÖ±â
-#define		GM_CMD_RVR_SET_USERCOUNT		"rvr_setuser"			// ¼¼·Â °¡ÀÔÀÚ¼ö °­Á¦·Î ¼¼ÆÃ
-#define		GM_CMD_RVR_SHOW_USERCOUNT		"rvr_showuser"			// À¯ÀúÄ«¿îÆ® Á¶È¸
+#define		GM_CMD_RVR_APPLYSKILL			"rvr_applyskill"		// 1ì‹œê°„ë§ˆë‹¤ ê±¸ë¦¬ëŠ” ë²„í”„ ë°”ë¡œ ì£¼ê¸°
+#define		GM_CMD_RVR_SHOWJEWELPOINT		"rvr_show"				// 1ì‹œê°„ë§ˆë‹¤ ê±¸ë¦¬ëŠ” ë²„í”„ ë°”ë¡œ ì£¼ê¸°
+#define		GM_CMD_RVR_SET_USERCOUNT		"rvr_setuser"			// ì„¸ë ¥ ê°€ì…ììˆ˜ ê°•ì œë¡œ ì„¸íŒ…
+#define		GM_CMD_RVR_SHOW_USERCOUNT		"rvr_showuser"			// ìœ ì €ì¹´ìš´íŠ¸ ì¡°íšŒ
 
-#define		GM_CMD_ALL_ITEM_TIME_SET		"itemused_set"			// ÀÎº¥Åä¸®¿¡ ÀÖ´Â ¸ğµç ¾ÆÀÌÅÛÀÇ used °ªÀ» ¹Ù²Ù¾î ÁØ´Ù.
-#define		GM_CMD_GET_EXCHANGE_ITEM		"exchangeitem"			// ±³È¯¿¡ ÇÊ¿äÇÑ ¾ÆÀÌÅÛÀ» ÇÑ¹ø¿¡ ¾ò±â
-#define		GM_CMD_NO_SPECIAL_BOX_COOLTIME	"nocoolbox"				// ½ºÆä¼È ¹Ú½º ¾ÆÀÌÅÛ Áİ±â ÄğÅ¸ÀÓ Á¦°Å
+#define		GM_CMD_ALL_ITEM_TIME_SET		"itemused_set"			// ì¸ë²¤í† ë¦¬ì— ìˆëŠ” ëª¨ë“  ì•„ì´í…œì˜ used ê°’ì„ ë°”ê¾¸ì–´ ì¤€ë‹¤.
+#define		GM_CMD_GET_EXCHANGE_ITEM		"exchangeitem"			// êµí™˜ì— í•„ìš”í•œ ì•„ì´í…œì„ í•œë²ˆì— ì–»ê¸°
+#define		GM_CMD_NO_SPECIAL_BOX_COOLTIME	"nocoolbox"				// ìŠ¤í˜ì…œ ë°•ìŠ¤ ì•„ì´í…œ ì¤ê¸° ì¿¨íƒ€ì„ ì œê±°
 
 #ifdef PREMIUM_CHAR
-#define		GM_CMD_PRIMIUM_CHAR_RESET				"pc_reset"				// ÇÁ¸®¹Ì¾ö Ä³¸¯ÅÍ ÃÊ±âÈ­
-#define		GM_CMD_PRIMIUM_CHAR_SET_EXPIRE_TIME		"pc_expiretime"			// ÇÁ¸®¹Ì¾ö Ä³¸¯ÅÍ À¯È¿ ½Ã°£ Á¶Á¤
-#define		GM_CMD_PRIMIUM_CHAR_SET_JUMP_COUNT		"pc_jumpcount"			// Ä³¸¯ÅÍÀÇ Á¡ÇÎ ¼ö¸¦ Á¶Á¤
-#define		GM_CMD_PRIMIUM_CHAR_SET_TYPE			"pc_type"				// ÇÁ¸®¹Ì¾ö Å¸ÀÔ º¯°æ
+#define		GM_CMD_PRIMIUM_CHAR_RESET				"pc_reset"				// í”„ë¦¬ë¯¸ì—„ ìºë¦­í„° ì´ˆê¸°í™”
+#define		GM_CMD_PRIMIUM_CHAR_SET_EXPIRE_TIME		"pc_expiretime"			// í”„ë¦¬ë¯¸ì—„ ìºë¦­í„° ìœ íš¨ ì‹œê°„ ì¡°ì •
+#define		GM_CMD_PRIMIUM_CHAR_SET_JUMP_COUNT		"pc_jumpcount"			// ìºë¦­í„°ì˜ ì í•‘ ìˆ˜ë¥¼ ì¡°ì •
+#define		GM_CMD_PRIMIUM_CHAR_SET_TYPE			"pc_type"				// í”„ë¦¬ë¯¸ì—„ íƒ€ì… ë³€ê²½
 #endif
 
-#define		GM_CMD_ATTENDANCE_ASSURE_EXPIRE_TIME	"at_expiretime"			// Ãâ¼® À¯Áöº¸Çè ³²Àº ½Ã°£ Á¶Á¤
-#define		GM_CMD_RAID_CHANGE_MAX_AREA_COUNT		"change_area_max"		// area MaxCount Á¶Á¤
+#define		GM_CMD_ATTENDANCE_ASSURE_EXPIRE_TIME	"at_expiretime"			// ì¶œì„ ìœ ì§€ë³´í—˜ ë‚¨ì€ ì‹œê°„ ì¡°ì •
+#define		GM_CMD_RAID_CHANGE_MAX_AREA_COUNT		"change_area_max"		// area MaxCount ì¡°ì •
 #define		GM_CMD_POPUP_NOTICE						"popup"
 #define		GM_CMD_POPUP_NOTICEOFF					"popupoff"
+#define		GM_CMG_MASTERSTONE_PROB					"masterstoneprob"
+#define		GM_CMD_GUILD_BATTLE_CORE				"g_battle_score"
+#define		GM_CMD_GUILD_BATTLE_LIST				"g_battle_ing"
 
 
-#define		GM_CMD_TEST_COMMAND						"test"					// Å×½ºÆ® ¸í·É¾î
+#define		GM_CMD_TEST_COMMAND						"test"					// í…ŒìŠ¤íŠ¸ ëª…ë ¹ì–´
 
-// Àü ·ÎÄÃ °øÅë ¿î¿µÀÚ ¸í·É Á¦ÇÑ ·¹º§
+#define		GM_CMD_GUILD_MEMBER_OUT_TIME			"g_m_out_time"
+#define		GM_CMD_GUILD_CREATE_TIME				"g_c_time"
+#define		GM_CMD_RESERVED_GM_COMMAND				"reserve_gm"
+
+// ì „ ë¡œì»¬ ê³µí†µ ìš´ì˜ì ëª…ë ¹ ì œí•œ ë ˆë²¨
 #define		GM_LEVEL_MY_ADMIN			1
 #define		GM_LEVEL_DT_TIMESET			10
 #define		GM_LEVEL_DT_TIMEINTERVAL	10
@@ -325,7 +332,7 @@
 #define     GM_LEVEL_RELOAD_CATALOG     10
 //#define		GM_LEVEL_RAID_TODO			10
 #define		GM_LEVEL_NPC_DROP			10
-#define     GM_LEVEL_GODBLESS           10
+#define     GM_LEVEL_GODBLESS           5
 #define		GM_LEVEL_ENCHANT			10
 #define		GM_LEVEL_MODIFY_CASHSHOP	10
 #define		GM_LEVEL_RAIDINZONE			10
@@ -355,15 +362,10 @@
 #define		GM_LEVEL_NOT_GM					10
 #define		GM_LEVEL_TRADEAGENT_FEE					10
 #define		GM_LEVEL_TRADEAGENT_DEPOSIT				10
-#define		GM_LEVEL_TOGGLE_BUFF			10
 
 
-//ÆË¾÷ °øÁö ¼­ºê ¸í·É
+//íŒì—… ê³µì§€ ì„œë¸Œ ëª…ë ¹
 #define		GM_POPUP_NOTICE_ALL			"all"
 #define		GM_POPUP_NOTICE_SERVER		"servernumber"
 #define		GM_POPUP_NOTICE_SUB_SERVER	"subserver"
-
-// Some serious shit going on here
-// autobuffs <switch>
-#define GM_CMD_TOGGLE_BUFF "autobuffs"
 #endif

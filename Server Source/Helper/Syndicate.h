@@ -75,5 +75,5 @@ public:
 	std::vector<Syndicate2ndUser> userList2nd_d;
 
 private:
-	info	info_[SYNDICATE::eSYNDICATE_MAX];	// [1], [2]¸¸ »ç¿ëÇÔ
+	info	info_[SYNDICATE::eSYNDICATE_MAX];	// [1], [2]Â¸Â¸ Â»Ã§Å¼Ã«Ã‡Ã”
 };

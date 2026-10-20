@@ -18,7 +18,7 @@ class CLogBufferForBnf;
 class LogSystem
 {
 public:
-	// ¼³Á¤ ÆÄÀÏÀ» ÀĞ±âÀü¿¡ substituted value¸¦ ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
+	// ì„¤ì • íŒŒì¼ì„ ì½ê¸°ì „ì— substituted valueë¥¼ ì„¸íŒ…í•´ì•¼ í•œë‹¤.
 	static void setSubstitutedValue(const std::string variable, const std::string value);
 
 	static void configureBasic();

@@ -8,10 +8,10 @@ public:
 	~CMapAttr();
 
 	///////////////
-	// ¸Ê ¼Ó¼º º¯¼ö
-	int					m_size[2];		// ¸Ê Å©±â: 0 - width, 1 - height
-	unsigned short**	m_attr;			// ¼Ó¼º ¹è¿­
-	float**				m_height;		// ³ôÀÌ ¸Ê
+	// ë§µ ì†ì„± ë³€ìˆ˜
+	int					m_size[2];		// ë§µ í¬ê¸°: 0 - width, 1 - height
+	unsigned short**	m_attr;			// ì†ì„± ë°°ì—´
+	float**				m_height;		// ë†’ì´ ë§µ
 
 	bool Load(int zone, int ylayer, int w, int h, const char* attrmap, const char* heightmap);
 };

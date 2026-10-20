@@ -23,7 +23,7 @@
 //	int m_idx;
 //};
 
-// TODO :: ÇØ´ç Å¬·¡½º »ı¼º
+// TODO :: í•´ë‹¹ í´ë˜ìŠ¤ ìƒì„±
 //class PreUserAttachment1 : public PreUserAttachmentBase
 //{
 //	PreUserAttachment1()

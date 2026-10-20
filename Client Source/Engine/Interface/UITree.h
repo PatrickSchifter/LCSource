@@ -22,9 +22,11 @@ public:
 
 	WMSG_RESULT OnLButtonUp(UINT16 x, UINT16 y);
 	WMSG_RESULT	OnLButtonDown(UINT16 x, UINT16 y);
-	void	OnEnter(UINT16 x, UINT16 y);
-	void	OnLeave(UINT16 x, UINT16 y);
 };
+
+// ----------------------------------------------------------------
+// UITree 의 경우, 하위에 UITree 를 붙일 수 있는 구조이기 때문에
+// 보통 UITool 에서 만든 UITree 는 템플릿 개념으로 사용해야 한다.
 
 class ENGINE_API CUITree : public CUIBase
 {
@@ -85,6 +87,8 @@ public:
 	WMSG_RESULT		KeyMessageProc(MSG* pMsg);		// 같은 이름 이미 존재 Proc 붙임
 	WMSG_RESULT		CharMessageProc(MSG* pMsg);
 	WMSG_RESULT		IMEMessageProc(MSG* pMsg);
+
+	WMSG_RESULT		OnLButtonUp(UINT16 x, UINT16 y);
 
 protected:	
 	void onUpdateTree(CUIScrollBar* pScroll);

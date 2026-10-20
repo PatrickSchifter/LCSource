@@ -40,7 +40,7 @@ CExpedMember::~CExpedMember()
 void CExpedMember::SetMemberPCPtr(CPC* pc)
 {
 	if (m_pChar != NULL && pc == NULL)
-		m_pChar->m_Exped = NULL;						//CPC Å¬·¡½º¿¡ ¿øÁ¤´ë Ãß°¡ ÇÊ¿ä
+		m_pChar->m_Exped = NULL;						//CPC í´ë˜ìŠ¤ì— ì›ì •ëŒ€ ì¶”ê°€ í•„ìš”
 	m_pChar = pc;
 	if( pc )
 		m_nLevel = pc->m_level;
@@ -101,10 +101,10 @@ CExpedition::CExpedition(char nExpeType1, char nExpeType2, char nExpeType3, char
 	m_nRequestIndex = -1;
 	m_strRequestName = "";
 
-	m_nTotCount = 1;		// ÀüÃ¼ ÀÎ¿ø¼ö
-	m_nGTotCount[0] = 1;	// ±×·ì1 ÀÎ¿ø¼ö
+	m_nTotCount = 1;		// ì „ì²´ ì¸ì›ìˆ˜
+	m_nGTotCount[0] = 1;	// ê·¸ë£¹1 ì¸ì›ìˆ˜
 
-	m_nEndExpedTime = 0;	// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£
+	m_nEndExpedTime = 0;	// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„
 	m_nRaidZoneNum = -1;
 	m_nRaidAreaNum = -1;
 	m_nSubNumber = gserver->m_subno;
@@ -144,11 +144,11 @@ CExpedition::~CExpedition()
 	m_nRequestIndex = -1;
 	m_strRequestName = "";
 
-	m_nEndExpedTime = 0;	// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£
+	m_nEndExpedTime = 0;	// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„
 }
 
 //////////////////////////////////////////////////////////////////////
-// °ÔÀÓ ¼­¹ö Àü¿ë ÇÔ¼öµé
+// ê²Œì„ ì„œë²„ ì „ìš© í•¨ìˆ˜ë“¤
 int CExpedition::GetNearExpeditionMemberCount(CCharacter* pCenter)
 {
 	int i;
@@ -280,13 +280,13 @@ void CExpedition::SetMemberPCPtr(int nCharIndex, CPC* pPC)
 	return ;
 }
 
-// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£ ¼³Á¤ (20ÃÊ °æ°ú ÈÄ ÇØÃ¼)
+// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„ ì„¤ì • (20ì´ˆ ê²½ê³¼ í›„ í•´ì²´)
 void CExpedition::SetEndExpedTime(int nNow)
 {
 	m_nEndExpedTime = nNow;
 }
 
-// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£ È¹µæ (20ÃÊ °æ°ú ÈÄ ÇØÃ¼)
+// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„ íšë“ (20ì´ˆ ê²½ê³¼ í›„ í•´ì²´)
 int CExpedition::GetEndExpedTime()
 {
 	return m_nEndExpedTime;
@@ -300,23 +300,23 @@ bool CExpedition::SetMemberRegister_AfterGoZone( CPC* pPC )
 	SetMemberPCPtr(pPC->m_index, pPC);
 
 	{
-		//¿øÁ¤´ë Å¸ÀÔ Á¤º¸
+		//ì›ì •ëŒ€ íƒ€ì… ì •ë³´
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedTypeinfo(rmsg, GetExpedType(MSG_DIVITYPE_EXP), GetExpedType(MSG_DIVITYPE_ITEM), GetExpedType(MSG_DIVITYPE_SPECIAL));
 		SEND_Q(rmsg, pPC->m_desc);
 	}
 
-	// Ã³À½ Á¢¼Ó¿¡ ¿øÁ¤´ë°¡ ÀÖÀ¸¸é
+	// ì²˜ìŒ ì ‘ì†ì— ì›ì •ëŒ€ê°€ ìˆìœ¼ë©´
 	for(int i = 0; i < MAX_EXPED_GROUP; i++)
 	{
 		for(int j = 0; j < MAX_EXPED_GMEMBER; j++)
 		{
 			const CExpedMember* pMember = GetMemberByListIndex(i,j);
 
-			// ¸ğµÎ Àü¼Û
+			// ëª¨ë‘ ì „ì†¡
 			if (pMember)
 			{
-				//´ë¿øµé Á¤º¸ ==> ³ª¿¡°Ô Àü¼Û
+				//ëŒ€ì›ë“¤ ì •ë³´ ==> ë‚˜ì—ê²Œ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExpedAddMsg(rmsg, pMember->GetCharIndex(), pMember->GetCharName(), i, pMember->GetMemberType(), pMember->GetListIndex(), pMember->GetMemberPCPtr());
 				SEND_Q(rmsg, pPC->m_desc);
@@ -324,7 +324,7 @@ bool CExpedition::SetMemberRegister_AfterGoZone( CPC* pPC )
 		}
 	}
 
-	//³» Á¤º¸ ==> ´Ù¸¥ ´ë¿ø¿¡°Ô Àü¼Û
+	//ë‚´ ì •ë³´ ==> ë‹¤ë¥¸ ëŒ€ì›ì—ê²Œ ì „ì†¡
 	const CExpedMember* pMember = GetMemberByCharIndex(pPC->m_index);
 	if(pMember)
 	{
@@ -342,7 +342,7 @@ bool CExpedition::SetMemberRegister_AfterGoZone( CPC* pPC )
 	return true;
 }
 
-// °ÔÀÓ ¼­¹ö Àü¿ë ÇÔ¼öµé
+// ê²Œì„ ì„œë²„ ì „ìš© í•¨ìˆ˜ë“¤
 //////////////////////////////////////////////////////////////////////
 
 CExpedMember* CExpedition::GetMemberByCharIndex(int nCharIndex) const
@@ -434,7 +434,7 @@ int CExpedition::GetMemberCharIndex(int nGroup, int nListIndex)
 
 void CExpedition::SetRequest(int nRequest, const char* strRequest)
 {
-	// °ÔÀÓ ¼­¹ö¿¡¼­´Â ¿äÃ»ÀÚ¸¦ Ã£¾Æ ÆÄÆ¼ Á¤º¸¸¦ ¸®¼ÂÇÑ´Ù.
+	// ê²Œì„ ì„œë²„ì—ì„œëŠ” ìš”ì²­ìë¥¼ ì°¾ì•„ íŒŒí‹° ì •ë³´ë¥¼ ë¦¬ì…‹í•œë‹¤.
 	if (m_nRequestIndex != -1)
 	{
 		CPC* pPC = PCManager::instance()->getPlayerByCharIndex(m_nRequestIndex);
@@ -450,7 +450,7 @@ CExpedMember* CExpedition::JoinRequest(const char* strRequestName, int nMemberTy
 	if (GetRequestIndex() < 1)
 		return NULL;
 
-	// ºóÀÚ¸®¸¦ Ã£°í
+	// ë¹ˆìë¦¬ë¥¼ ì°¾ê³ 
 	int i,j;
 	for (i = 0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -471,22 +471,22 @@ SKIP_JOINREQ:
 		return NULL;
 	}
 
-	// ºóÀÚ¸®¿¡ ¼³Á¤ÇÏ°í
+	// ë¹ˆìë¦¬ì— ì„¤ì •í•˜ê³ 
 	m_listMember[i][j] = new CExpedMember(m_nRequestIndex, strRequestName, i, nMemberType, j, pRequest);
 
 	m_nTotCount++;
 	m_nGTotCount[i]++;
 
-	// request ÃÊ±âÈ­ ÇÏ°í
+	// request ì´ˆê¸°í™” í•˜ê³ 
 	m_nRequestIndex = -1;
 
 	return m_listMember[i][j];
 }
 
-// ¸â¹ö Âü¿©
+// ë©¤ë²„ ì°¸ì—¬
 CExpedMember* CExpedition::Join(int nCharIndex, const char* strCharName, int nMemberType, CPC* pRequest)
 {
-	// ºóÀÚ¸®¸¦ Ã£°í
+	// ë¹ˆìë¦¬ë¥¼ ì°¾ê³ 
 	int i,j;
 	for (i = 0; i < MAX_EXPED_GROUP; i++)
 	{
@@ -506,7 +506,7 @@ SKIP_JOIN:
 		return NULL;
 	}
 
-	// ºóÀÚ¸®¿¡ ¼³Á¤ÇÏ°í
+	// ë¹ˆìë¦¬ì— ì„¤ì •í•˜ê³ 
 	m_listMember[i][j] = new CExpedMember(nCharIndex, strCharName, i, nMemberType, j, pRequest);
 
 	m_nTotCount++;
@@ -583,7 +583,7 @@ int CExpedition::GetGroupBeEmptySlot(void)
 	return -1;
 }
 
-// ±×·ì ¸â¹ö Å¸ÀÓ ¼ö È¹µæ
+// ê·¸ë£¹ ë©¤ë²„ íƒ€ì„ ìˆ˜ íšë“
 int CExpedition::GetGroupMembertypeCount(int nGroupType, int nMemberType)
 {
 	int nMemberCount = 0;
@@ -651,14 +651,14 @@ bool CExpedition::MoveGroup(int nSourceGroup, int nMoveCharIndex, int nTargetGro
 
 	if(nSourceListindex >= 0)
 	{
-		// ÀÌµ¿
+		// ì´ë™
 		m_listMember[nTargetGroup][nTargetListindex] = m_listMember[nSourceGroup][nSourceListindex];
 		m_nGTotCount[nTargetGroup]++;
 
 		m_listMember[nTargetGroup][nTargetListindex]->SetGroupType(nTargetGroup);
 		m_listMember[nTargetGroup][nTargetListindex]->SetListIndex(nTargetListindex);
 
-		// ¼Ò½º ÃÊ±âÈ­
+		// ì†ŒìŠ¤ ì´ˆê¸°í™”
 		m_listMember[nSourceGroup][nSourceListindex] = NULL;
 		m_nGTotCount[nSourceGroup]--;
 
@@ -668,7 +668,7 @@ bool CExpedition::MoveGroup(int nSourceGroup, int nMoveCharIndex, int nTargetGro
 	return false;
 }
 
-//À§ÀÓÇÒ º¸½º Ã£±â
+//ìœ„ì„í•  ë³´ìŠ¤ ì°¾ê¸°
 const CExpedMember* CExpedition::FindNextBoss(void)
 {
 	for (int i = 0; i < MAX_EXPED_GROUP; i++)
@@ -718,7 +718,7 @@ int	CExpedition::GetMemberCountOnline()
 	return ret;
 }
 
-// boss ÀÎµ¦½º ¹İÈ¯
+// boss ì¸ë±ìŠ¤ ë°˜í™˜
 int CExpedition::GetBossIndex()
 {
 	for (int i = 0; i < MAX_EXPED_GROUP; i++)
@@ -759,14 +759,14 @@ const char* CExpedition::GetBossName()
 	return  NULL;
 }
 
-// ¿øÁ¤´ë Á¾·á ÇÔ¼ö,  °ÔÀÓ ¼­¹ö Àü¿ë°ú ÇïÆÛ Àü¿ë ÇÔ¼ö°¡ ´Ù¸£´Ù.
+// ì›ì •ëŒ€ ì¢…ë£Œ í•¨ìˆ˜,  ê²Œì„ ì„œë²„ ì „ìš©ê³¼ í—¬í¼ ì „ìš© í•¨ìˆ˜ê°€ ë‹¤ë¥´ë‹¤.
 void CExpedition::SetEndExped()
 {
 	CExpedMember* pMember=NULL;
 	CPC* pc=NULL;
 	int i,j;
 
-	// ·¹ÀÌµå ¾ÈÀÌ¸é ÀÎÁ¸ ¹Ù±ù¿¡ ½ÃÀÛ ÁöÁ¡¿¡ À§Ä¡ ÇÏ°Ô Ã³¸®
+	// ë ˆì´ë“œ ì•ˆì´ë©´ ì¸ì¡´ ë°”ê¹¥ì— ì‹œì‘ ì§€ì ì— ìœ„ì¹˜ í•˜ê²Œ ì²˜ë¦¬
 	for(i=0; i < MAX_EXPED_GROUP; i++)
 	{
 		for(j=0; j < MAX_EXPED_GMEMBER; j++)
@@ -778,7 +778,7 @@ void CExpedition::SetEndExped()
 				if( pc && pc->m_index == -1 ) pc = NULL;
 				if(pc && pc->m_nJoinInzone_ZoneNo >=0 && pc->m_nJoinInzone_RoomNo >= 0)
 				{
-					// ·¹ÀÌµåÁ¸À» ³ª°¡¾ß µÇ´Âµ¥ ¾É¾ÆÀÖ¾î¼­ ¸ø³ª°¡´Â ¹ö±× ¼öÁ¤
+					// ë ˆì´ë“œì¡´ì„ ë‚˜ê°€ì•¼ ë˜ëŠ”ë° ì•‰ì•„ìˆì–´ì„œ ëª»ë‚˜ê°€ëŠ” ë²„ê·¸ ìˆ˜ì •
 					if(pc->IsSetPlayerState(PLAYER_STATE_SITDOWN))
 					{
 						pc->TogglePlayerState(PLAYER_STATE_SITDOWN);
@@ -795,13 +795,13 @@ void CExpedition::SetEndExped()
 	}
 
 	{
-		// ¿øÁ¤´ë ÇØÃ¼ ¾Ë¸²
+		// ì›ì •ëŒ€ í•´ì²´ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedMsg(rmsg, MSG_ENDEXPED_REP);
 		SendToAllPC(rmsg);
 	}
 
-	// ÃÊ´ë °ÅÀı
+	// ì´ˆëŒ€ ê±°ì ˆ
 	if (GetRequestIndex() > 0)
 	{
 		CPC* pRequestPC = PCManager::instance()->getPlayerByCharIndex(GetRequestIndex());
@@ -814,7 +814,7 @@ void CExpedition::SetEndExped()
 		SetRequest(-1, "");
 	}
 
-	// ¸ğµç ¸É¹öÀÇ ¸Ş¸ğ¸®´Â NULL·Î ¹Ù²Ù¾îÁØ´Ù.
+	// ëª¨ë“  ë§´ë²„ì˜ ë©”ëª¨ë¦¬ëŠ” NULLë¡œ ë°”ê¾¸ì–´ì¤€ë‹¤.
 	for(i=0; i < MAX_EXPED_GROUP; i++)
 	{
 		for(j=0; j < MAX_EXPED_GMEMBER; j++)

@@ -55,7 +55,7 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 	if (skillProto->m_type != ST_PET_COMMAND && skillProto->m_type != ST_PET_SKILL_PASSIVE && skillProto->m_type != ST_PET_SKILL_ACTIVE)
 		return ;
 
-	// ÆêÀÌ ÇØ´ç ½ºÅ³À» °¡Áö°í ÀÖ´ÂÁö °Ë»ç
+	// í«ì´ í•´ë‹¹ ìŠ¤í‚¬ì„ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬
 	CSkill* curSkill = pet->FindSkill(skillindex);
 	int nextlevel = (curSkill == NULL) ? 1 : curSkill->m_level + 1;
 
@@ -65,11 +65,11 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 	if (skillProto->m_maxLevel < nextlevel)
 		return ;
 
-	// Á¶°Ç °Ë»ç : Á÷¾÷
+	// ì¡°ê±´ ê²€ì‚¬ : ì§ì—…
 	if (!skillProto->IsSameJob(pet))
 		return ;
 
-	// Á¶°Ç °Ë»ç : ·¹º§
+	// ì¡°ê±´ ê²€ì‚¬ : ë ˆë²¨
 	if (skillLevelProto->m_learnLevel > pet->m_level)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -78,7 +78,7 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¶°Ç °Ë»ç : Æ÷ÀÎÆ® : ±â¼ú Æ÷ÀÎÆ®´Â SP¿Í ´Ş¸® ´Ü±Í°¡ 1·Î ÅëÀÏ
+	// ì¡°ê±´ ê²€ì‚¬ : í¬ì¸íŠ¸ : ê¸°ìˆ  í¬ì¸íŠ¸ëŠ” SPì™€ ë‹¬ë¦¬ ë‹¨ê·€ê°€ 1ë¡œ í†µì¼
 	if (skillLevelProto->m_learnSP > pet->GetAbilityPoint())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -87,7 +87,7 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+	// ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 	item_search_t vec[MAX_SKILL_LEARN_ITEM];
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
@@ -104,10 +104,10 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ½ºÅ³ Ãß°¡
+	// ìŠ¤í‚¬ ì¶”ê°€
 	if (curSkill == NULL)
 	{
-		// ½Å±Ô Ãß°¡
+		// ì‹ ê·œ ì¶”ê°€
 		curSkill = gserver->m_skillProtoList.Create(skillindex);
 		if (!curSkill)
 			return ;
@@ -115,35 +115,35 @@ void do_ExPetLearn(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ±âÁ¸ ½ºÅ³ ·¹º§ ¾÷
+		// ê¸°ì¡´ ìŠ¤í‚¬ ë ˆë²¨ ì—…
 		curSkill->m_level++;
 	}
 
 	{
-		// Æ÷ÀÎÆ® ¼Ò¸ğ
+		// í¬ì¸íŠ¸ ì†Œëª¨
 		pet->DecreaseAbilityPoint(skillLevelProto->m_learnSP);
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetStatusMsg(rmsg, pet);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¾ÆÀÌÅÛ ¼Ò¸ğ
+	// ì•„ì´í…œ ì†Œëª¨
 	for (int i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 	{
 		ch->m_inventory.deleteItem(vec[i], skillLevelProto->m_learnItemCount[i]);
 	}
 
 	{
-		// °á°ú ¾Ë¸®±â
+		// ê²°ê³¼ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetLearnMsg(rmsg, curSkill->m_proto->m_index, curSkill->m_level, MSG_EX_PET_LEARN_ERROR_OK);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ½ºÅ³ È¿°ú Àû¿ë
+	// ìŠ¤í‚¬ íš¨ê³¼ ì ìš©
 	ch->CalcStatus(true);
 
-	// °ÔÀÓ ·Î±×
+	// ê²Œì„ ë¡œê·¸
 	// TODO : petlog
 	GAMELOG << init("PET SKILL LEARN", ch)
 			<< "PET" << delim
@@ -176,7 +176,7 @@ void do_ExPetResetSkill(CPC* ch, CNetMsg::SP& msg)
 	if (ch->m_wearInventory.wearItemInfo[WEARING_PET] == NULL)
 		return ;
 
-	if (ch->m_currentSkill)		// 080408 ¼öÁ¤
+	if (ch->m_currentSkill)		// 080408 ìˆ˜ì •
 		return ;
 
 	CPet* pet = ch->GetPet();
@@ -204,7 +204,7 @@ void do_ExPetResetSkill(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// °ÔÀÓ ·Î±×
+	// ê²Œì„ ë¡œê·¸
 	// TODO : petlog
 	GAMELOG << init("PET SKILL RESET", ch)
 			<< "PET" << delim
@@ -227,7 +227,7 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 	}
 //#endif // BUGFIX_CANT_EVOCATION
 
-	// Âø¿ëÁßÀÎ ÆêÀÌ ÀÖ³ª?
+	// ì°©ìš©ì¤‘ì¸ í«ì´ ìˆë‚˜?
 	CPet* pet = ch->GetPet();
 	if (!pet )
 	{
@@ -265,7 +265,7 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 	}
 #endif
 
-	// Âø¿ëÁßÀÎ ÆêÀÇ ·¹º§ÀÌ PET_MOUNT_LEVELÀÌ»óÀÎ°¡?
+	// ì°©ìš©ì¤‘ì¸ í«ì˜ ë ˆë²¨ì´ PET_MOUNT_LEVELì´ìƒì¸ê°€?
 	if (pet->m_level < PET_MOUNT_LEVEL )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -274,7 +274,7 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇöÀç ¼ºÀÎ »óÅÂÀÎ°¡
+	// í˜„ì¬ ì„±ì¸ ìƒíƒœì¸ê°€
 	if (pet->GetPetGrade() != PET_GRADE_ADULT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -291,26 +291,26 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, gserver->m_helper );
 	}
 
-	// Æê Disappear º¸³»±â
+	// í« Disappear ë³´ë‚´ê¸°
 	pet->Disappear();
 
-	// Æê Å¸ÀÔ º¯°æ
+	// í« íƒ€ì… ë³€ê²½
 	pet->ChangeToMount();
 
-	// Æê ½ºÅ³ ÃÊ±âÈ­ : Æ÷ÀÎÆ® È¯¿ø
+	// í« ìŠ¤í‚¬ ì´ˆê¸°í™” : í¬ì¸íŠ¸ í™˜ì›
 	pet->ResetSkill();
 
 	pet->Mount(true);
 
 	{
-		// °á°ú Àü´Ş
+		// ê²°ê³¼ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetChangeMountMsg(rmsg, MSG_EX_PET_CHANGE_MOUNT_ERROR_OK);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
 	{
-		// Æê Á¤º¸ Àü´Ş
+		// í« ì •ë³´ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetStatusMsg(rmsg, pet);
 		SEND_Q(rmsg, ch->m_desc);
@@ -323,7 +323,7 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// PC ¸¶¿îÆ® Àü´Ş
+		// PC ë§ˆìš´íŠ¸ ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetMountMsg(rmsg, ch->m_index, pet->GetPetTypeGrade());
 		RefMsg(rmsg) << pet->GetPetColor();
@@ -333,7 +333,7 @@ void do_ExPetChangeMount(CPC* ch, CNetMsg::SP& msg)
 
 	ch->m_bChangeStatus = true;
 
-	// °ÔÀÓ ·Î±×
+	// ê²Œì„ ë¡œê·¸
 	// TODO : petlog
 	GAMELOG << init("PET CHANGE MOUNT", ch)
 			<< "PET" << delim
@@ -373,97 +373,97 @@ void do_ExPetMixItem(CPC* ch, CNetMsg::SP& msg)
 {
 	typedef struct __tagMixData
 	{
-		int needitem[3];		// Àç·á 3Á¾
-		int prob;				// È®·ü
-		int itemindex;			// »ı¼º ¾ÆÀÌÅÛ
-		int method;				// »ı¼º ¹æ¹ı
+		int needitem[3];		// ì¬ë£Œ 3ì¢…
+		int prob;				// í™•ë¥ 
+		int itemindex;			// ìƒì„± ì•„ì´í…œ
+		int method;				// ìƒì„± ë°©ë²•
 	} PET_MIX_DATA;
 
 	static const int nSizeMixTable = 74;
 
 	static const PET_MIX_DATA mixTable[nSizeMixTable] =
 	{
-		{{895, 896, 897}, 70, 887,  0},				// ÇÑ¼Õ°Ë
-		{{896, 897, 898}, 70, 907,  0},				// ÀÌµµ·ù
-		{{897, 898, 899}, 70, 908,  0},				// ´ë°Ë
-		{{898, 899, 901}, 70, 909,  0},				// µµ³¢
-		{{899, 901, 902}, 70, 910,  0},				// Èú·¯ ¿Ïµå
-		{{901, 902, 903}, 70, 911,  0},				// È°
-		{{902, 903, 904}, 70, 912,  0},				// ¼ô½ºÅ×ÇÁ
-		{{903, 904, 905}, 70, 913,  0},				// ½ºÅ×ÇÁ
-		{{904, 905, 900}, 70, 914,  0},				// ´Ü°Ë
-		{{905, 900, 906}, 70, 915,  0},				// ¼®±Ã
-		{{900, 906, 895}, 70, 916,  0},				// »çÀÌµå
-		{{906, 895, 896}, 70, 917,  0},				// Æú¾Ï
-		{{886, 889, 894}, 25, 918,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 918,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 919,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 919,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 920,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 920,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 921,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 921,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 922,  0},				// Àå°©
-		{{888, 886, 894}, 75, 922,  1},				// Àå°©
-		{{886, 889, 894}, 25, 923,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 923,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 924,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 924,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 925,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 925,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 926,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 926,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 927,  0},				// Àå°©
-		{{888, 886, 894}, 75, 927,  1},				// Àå°©
-		{{886, 892, 894}, 25, 1280, 0},				// ¹æÆĞ
-		{{893, 891, 894}, 75, 1280, 1},				// ¹æÆĞ
-		{{886, 889, 894}, 25, 928,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 928,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 929,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 929,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 930,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 930,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 931,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 931,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 932,  0},				// Àå°©
-		{{888, 886, 894}, 75, 932,  1},				// Àå°©
-		{{886, 889, 894}, 25, 933,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 933,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 934,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 934,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 935,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 935,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 936,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 936,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 937,  0},				// Àå°©
-		{{888, 886, 894}, 75, 937,  1},				// Àå°©
-		{{886, 889, 894}, 25, 938,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 938,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 939,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 939,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 940,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 940,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 941,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 941,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 942,  0},				// Àå°©
-		{{888, 886, 894}, 75, 942,  1},				// Àå°©
-		{{886, 889, 894}, 25, 943,  0},				// Åõ±¸
-		{{888, 891, 894}, 75, 943,  1},				// Åõ±¸
-		{{891, 892, 894}, 25, 944,  0},				// »óÀÇ
-		{{893, 889, 894}, 75, 944,  1},				// »óÀÇ
-		{{886, 891, 894}, 25, 945,  0},				// ÇÏÀÇ
-		{{890, 892, 894}, 75, 945,  1},				// ÇÏÀÇ
-		{{889, 892, 894}, 25, 946,  0},				// ºÎÃ÷
-		{{890, 886, 894}, 75, 946,  1},				// ºÎÃ÷
-		{{889, 892, 894}, 25, 947,  0},				// Àå°©
-		{{888, 886, 894}, 75, 947,  1},				// Àå°©
+		{{895, 896, 897}, 85, 887,  0},				// í•œì†ê²€
+		{{896, 897, 898}, 85, 907,  0},				// ì´ë„ë¥˜
+		{{897, 898, 899}, 85, 908,  0},				// ëŒ€ê²€
+		{{898, 899, 901}, 85, 909,  0},				// ë„ë¼
+		{{899, 901, 902}, 85, 910,  0},				// íëŸ¬ ì™„ë“œ
+		{{901, 902, 903}, 85, 911,  0},				// í™œ
+		{{902, 903, 904}, 85, 912,  0},				// ìˆìŠ¤í…Œí”„
+		{{903, 904, 905}, 85, 913,  0},				// ìŠ¤í…Œí”„
+		{{904, 905, 900}, 85, 914,  0},				// ë‹¨ê²€
+		{{905, 900, 906}, 85, 915,  0},				// ì„ê¶
+		{{900, 906, 895}, 85, 916,  0},				// ì‚¬ì´ë“œ
+		{{906, 895, 896}, 85, 917,  0},				// í´ì•”
+		{{886, 889, 894}, 55, 918,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 918,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 919,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 919,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 920,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 920,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 921,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 921,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 922,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 922,  1},				// ì¥ê°‘
+		{{886, 889, 894}, 55, 923,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 923,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 924,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 924,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 925,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 925,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 926,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 926,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 927,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 927,  1},				// ì¥ê°‘
+		{{886, 892, 894}, 55, 1280, 0},				// ë°©íŒ¨
+		{{893, 891, 894}, 85, 1280, 1},				// ë°©íŒ¨
+		{{886, 889, 894}, 55, 928,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 928,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 929,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 929,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 930,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 930,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 931,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 931,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 932,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 932,  1},				// ì¥ê°‘
+		{{886, 889, 894}, 55, 933,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 933,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 934,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 934,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 935,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 935,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 936,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 936,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 937,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 937,  1},				// ì¥ê°‘
+		{{886, 889, 894}, 55, 938,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 938,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 939,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 939,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 940,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 940,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 941,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 941,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 942,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 942,  1},				// ì¥ê°‘
+		{{886, 889, 894}, 55, 943,  0},				// íˆ¬êµ¬
+		{{888, 891, 894}, 85, 943,  1},				// íˆ¬êµ¬
+		{{891, 892, 894}, 55, 944,  0},				// ìƒì˜
+		{{893, 889, 894}, 85, 944,  1},				// ìƒì˜
+		{{886, 891, 894}, 55, 945,  0},				// í•˜ì˜
+		{{890, 892, 894}, 85, 945,  1},				// í•˜ì˜
+		{{889, 892, 894}, 55, 946,  0},				// ë¶€ì¸ 
+		{{890, 886, 894}, 85, 946,  1},				// ë¶€ì¸ 
+		{{889, 892, 894}, 55, 947,  0},				// ì¥ê°‘
+		{{888, 886, 894}, 85, 947,  1},				// ì¥ê°‘
 	};
 
-	int		nWantItemIndex = 0;		// ¸¸µé°íÀÚ ÇÏ´Â ¾ÆÀÌÅÛ
-	int		nMethod = 0;			// ¸¸µå´Â ¹æ¹ı
-	int		nIndexTable = 0;		// ÇØ´ç Á¦ÀÛ ¹æ¹ı ÀÎµ¦½º
-	int		i;				// Àç·á ¾ÆÀÌÅÛ ·çÇÁ¿ë
-	CItem*	pItem[3] = { NULL, };				// Àç·á ¾ÆÀÌÅÛ
+	int		nWantItemIndex = 0;		// ë§Œë“¤ê³ ì í•˜ëŠ” ì•„ì´í…œ
+	int		nMethod = 0;			// ë§Œë“œëŠ” ë°©ë²•
+	int		nIndexTable = 0;		// í•´ë‹¹ ì œì‘ ë°©ë²• ì¸ë±ìŠ¤
+	int		i;				// ì¬ë£Œ ì•„ì´í…œ ë£¨í”„ìš©
+	CItem*	pItem[3] = { NULL, };				// ì¬ë£Œ ì•„ì´í…œ
 
 #ifdef NPC_CHECK
 	int npcIndex;
@@ -489,15 +489,15 @@ void do_ExPetMixItem(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> nWantItemIndex
 				>> nMethod;
 #endif
-	// Å×ÀÌºí¿¡¼­ °Ë»ö
+	// í…Œì´ë¸”ì—ì„œ ê²€ìƒ‰
 	for (nIndexTable = 0; nIndexTable < nSizeMixTable; nIndexTable++)
 	{
-		// ¸¸µé°íÀÚ ÇÏ´Â ¾ÆÀÌÅÛ°ú ¹æ¹ıÀ¸·Î °Ë»ö
+		// ë§Œë“¤ê³ ì í•˜ëŠ” ì•„ì´í…œê³¼ ë°©ë²•ìœ¼ë¡œ ê²€ìƒ‰
 		if (mixTable[nIndexTable].itemindex == nWantItemIndex && mixTable[nIndexTable].method == nMethod)
 			break;
 	}
 
-	// Ã£´Â °ÍÀÌ ¾øÀ¸¸é
+	// ì°¾ëŠ” ê²ƒì´ ì—†ìœ¼ë©´
 	if (nIndexTable == nSizeMixTable)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -506,7 +506,7 @@ void do_ExPetMixItem(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÇØ´ç Àç·á¸¦ Ã£À½
+	// í•´ë‹¹ ì¬ë£Œë¥¼ ì°¾ìŒ
 	for (i = 0; i < 3; i++)
 	{
 		pItem[i] = ch->m_inventory.FindByDBIndex(mixTable[nIndexTable].needitem[i], 0, 0);
@@ -519,16 +519,16 @@ void do_ExPetMixItem(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Àç·á °¨¼Ò
+	// ì¬ë£Œ ê°ì†Œ
 	for (i = 0; i < 3; i++)
 	{
 		ch->m_inventory.decreaseItemCount(pItem[i], 1);
 	}
 
-	// È®·ü Àû¿ë
+	// í™•ë¥  ì ìš©
 	if (GetRandom(1, 100) <= mixTable[nIndexTable].prob)
 	{
-		// ¾ÆÀÌÅÛ »ı¼º
+		// ì•„ì´í…œ ìƒì„±
 		CItem* pMixItem = gserver->m_itemProtoList.CreateItem(nWantItemIndex, -1, 0, 0, 1);
 		if (pMixItem)
 		{
@@ -576,7 +576,7 @@ void do_ExPetMixItem(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ½ÇÆĞ ¾Ë¸²
+		// ì‹¤íŒ¨ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetMixItemMsg(rmsg, MSG_EX_PET_MIX_ITEM_ERROR_FAIL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -593,7 +593,7 @@ void do_ExPetWarpTown(CPC* ch, CNetMsg::SP& msg)
 	if (pZone == NULL)
 		return ;
 
-	// µ¿ÀÏ ½Ì±Û ´øÀüÀ¸·Î´Â ÀÌµ¿ ºÒ°¡
+	// ë™ì¼ ì‹±ê¸€ ë˜ì „ìœ¼ë¡œëŠ” ì´ë™ ë¶ˆê°€
 	if ((ch->m_pZone->IsPersonalDungeon() || ch->m_pZone->IsGuildRoom()) && ch->m_pZone->m_index == zone)
 		return ;
 
@@ -628,7 +628,7 @@ void do_ExPetChangeItem(CPC* ch, CNetMsg::SP& msg)
 	}
 #endif
 
-	// ÆêÀ» Âø¿ëÇÏ°í ÀÖ´Â°¡?
+	// í«ì„ ì°©ìš©í•˜ê³  ìˆëŠ”ê°€?
 	CPet* pet = ch->GetPet();
 	if (!pet)
 	{
@@ -638,7 +638,7 @@ void do_ExPetChangeItem(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÆêÀ» ¾ÆÀÌÅÛÀ¸·Î ±³È¯
+	// í«ì„ ì•„ì´í…œìœ¼ë¡œ êµí™˜
 	bool bSuccess = DropPetItem(pet);
 
 	// TODO : petlog
@@ -668,7 +668,7 @@ void do_ExPetChangeItem(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 
-	// Æê Á¦°Å
+	// í« ì œê±°
 	ch->DelPet(pet->m_index);
 }
 
@@ -684,17 +684,17 @@ void do_ExPetRebirth(CPC* ch, CNetMsg::SP& msg)
 
 	if (pet == NULL)
 	{
-		// Æê ¾øÀ¸¸é ¿À·ù
+		// í« ì—†ìœ¼ë©´ ì˜¤ë¥˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExPetRebirthMsg(rmsg, nPetIndex, MSG_EX_PET_REBIRTH_ERROR_NOPET);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 	else
 	{
-		// ÆêÀÌ ÀÖÀ¸¸é
+		// í«ì´ ìˆìœ¼ë©´
 		if (pet->GetRemainRebirthTime() < 1)
 		{
-			// »ì¾Æ ÀÖÀ¸¸é ¿À·ù
+			// ì‚´ì•„ ìˆìœ¼ë©´ ì˜¤ë¥˜
 			CNetMsg::SP rmsg(new CNetMsg);
 			ExPetRebirthMsg(rmsg, nPetIndex, MSG_EX_PET_REBIRTH_ERROR_NODEAD);
 			SEND_Q(rmsg, ch->m_desc);
@@ -703,15 +703,15 @@ void do_ExPetRebirth(CPC* ch, CNetMsg::SP& msg)
 		{
 			bool bRebirth = true;
 
-			// ÇÊ¿ä³ª½º ±¸ÇÔ
+			// í•„ìš”ë‚˜ìŠ¤ êµ¬í•¨
 			nNeedNas = (pet->m_level - 1) * pet->m_level * pet->m_level * 7;
 
 			if (nNeedNas > 0)
 			{
-				// ³ª½º°¡ ÇÊ¿äÇÏ¸é ¼ÒÁö±İ°ú ºñ±³
+				// ë‚˜ìŠ¤ê°€ í•„ìš”í•˜ë©´ ì†Œì§€ê¸ˆê³¼ ë¹„êµ
 				if (ch->m_inventory.getMoney() < nNeedNas)
 				{
-					// ¼ÒÁö±İ ºÎÁ·ÇÏ¸é ¿À·ù
+					// ì†Œì§€ê¸ˆ ë¶€ì¡±í•˜ë©´ ì˜¤ë¥˜
 					CNetMsg::SP rmsg(new CNetMsg);
 					ExPetRebirthMsg(rmsg, nPetIndex, MSG_EX_PET_REBIRTH_ERROR_NOMONEY);
 					SEND_Q(rmsg, ch->m_desc);
@@ -720,13 +720,13 @@ void do_ExPetRebirth(CPC* ch, CNetMsg::SP& msg)
 				else
 				{
 					ch->m_inventory.decreaseMoney(nNeedNas);
-					// ¼ÒÁö±İ ÃæºĞÇÏ¸é ºñ¿ë Àû¿ë
+					// ì†Œì§€ê¸ˆ ì¶©ë¶„í•˜ë©´ ë¹„ìš© ì ìš©
 				}
-			} // ÇÊ¿ä ³ª½º °Ë»ç
+			} // í•„ìš” ë‚˜ìŠ¤ ê²€ì‚¬
 
 			if (bRebirth)
 			{
-				// ºñ¿ë Àû¿ëÈÄ Æê ºÎÈ°
+				// ë¹„ìš© ì ìš©í›„ í« ë¶€í™œ
 				pet->SetRemainRebirthTime(0);
 				pet->m_hp = 30;
 
@@ -754,8 +754,8 @@ void do_ExPetRebirth(CPC* ch, CNetMsg::SP& msg)
 					SEND_Q(rmsg, ch->m_desc);
 				}
 			}
-		} // Æê »ç¸Á °Ë»ç
-	} // Æê Á¸Àç °Ë»ç
+		} // í« ì‚¬ë§ ê²€ì‚¬
+	} // í« ì¡´ì¬ ê²€ì‚¬
 }
 
 void do_PetNameChange(CPC* ch, CNetMsg::SP& msg)
@@ -793,7 +793,7 @@ void do_PetNameChange(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-// [selo: 101229] ·¯½Ã¾Æ´Â ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ µé¾î°¡¸é ¾ÈµÈ´Ù.
+// [selo: 101229] ëŸ¬ì‹œì•„ëŠ” ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ì ë“¤ì–´ê°€ë©´ ì•ˆëœë‹¤.
 #ifdef LC_RUS
 	if( CheckNoRussianCharacter(strPetName) )
 	{

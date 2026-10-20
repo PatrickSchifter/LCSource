@@ -8,30 +8,30 @@ public:
 	~CNPCRegenInfo();
 
 	////////////////////////////////////////
-	// NPC_REGEN_INFO ¿¡¼­ ÀĞ±â
+	// NPC_REGEN_INFO ì—ì„œ ì½ê¸°
 
-	// DB ÇÊµå
-	int		m_index;			// µğºñ ·¹ÄÚµå ÀÎµ¦½º
-	int		m_npcIdx;			// ¸÷ ÀÎµ¦½º
-	int		m_zoneNo;			// Á¸¹øÈ£
-	float	m_regenX;			// ¸®Á¨ À§Ä¡ : x
-	int		m_regenY;			// ¸®Á¨ À§Ä¡ : yLayer
-	float	m_regenZ;			// ¸®Á¨ À§Ä¡ : z
-	float	m_regenR;			// ¸®Á¨ À§Ä¡ : r
-	int		m_regenSec;			// ¸®Á¨ µô·¹ÀÌ : ÃÊ
-	int		m_totalNum;			// ÃÖ´ë »ı¼º ¼ö : ÃÖ´ë ¸®Á¨ µÇ´Â ¼ö
+	// DB í•„ë“œ
+	int		m_index;			// ë””ë¹„ ë ˆì½”ë“œ ì¸ë±ìŠ¤
+	int		m_npcIdx;			// ëª¹ ì¸ë±ìŠ¤
+	int		m_zoneNo;			// ì¡´ë²ˆí˜¸
+	float	m_regenX;			// ë¦¬ì   ìœ„ì¹˜ : x
+	int		m_regenY;			// ë¦¬ì   ìœ„ì¹˜ : yLayer
+	float	m_regenZ;			// ë¦¬ì   ìœ„ì¹˜ : z
+	float	m_regenR;			// ë¦¬ì   ìœ„ì¹˜ : r
+	int		m_regenSec;			// ë¦¬ì   ë”œë ˆì´ : ì´ˆ
+	int		m_totalNum;			// ìµœëŒ€ ìƒì„± ìˆ˜ : ìµœëŒ€ ë¦¬ì   ë˜ëŠ” ìˆ˜
 
-	// ¼­¹ö³»¿¡¼­ °ü¸®¸¦ À§ÇÑ ¸â¹ö
-	bool	m_bAlive;			// ¸®Á¨ ÀÌÈÄ »ì¾Æ ÀÖ´ÂÁö Á×¾ú´ÂÁö
-	int		m_lastDieTime;		// ÃÖ±Ù Á×Àº ½Ã°£
-	int		m_numRegen;			// ´©Àû »ı¼º ¼ö
+	// ì„œë²„ë‚´ì—ì„œ ê´€ë¦¬ë¥¼ ìœ„í•œ ë©¤ë²„
+	bool	m_bAlive;			// ë¦¬ì   ì´í›„ ì‚´ì•„ ìˆëŠ”ì§€ ì£½ì—ˆëŠ”ì§€
+	int		m_lastDieTime;		// ìµœê·¼ ì£½ì€ ì‹œê°„
+	int		m_numRegen;			// ëˆ„ì  ìƒì„± ìˆ˜
 
-	// ¸®Á¨µÇ´Â NPCÀÇ ÆÄ¶ó¹ÌÅÍ
-	int		m_paramHP;			// HP¸¦ Áõ°¡
+	// ë¦¬ì  ë˜ëŠ” NPCì˜ íŒŒë¼ë¯¸í„°
+	int		m_paramHP;			// HPë¥¼ ì¦ê°€
 
-	bool	m_bRaidMoveRandom;	// RAID ¸÷ ºñÀüÅõ ÀÌµ¿ ¿©ºÎ
+	bool	m_bRaidMoveRandom;	// RAID ëª¹ ë¹„ì „íˆ¬ ì´ë™ ì—¬ë¶€
 
-	bool		m_bRegen;			// npc ¸®Á¦ ¿©ºÎ °áÁ¤
+	bool		m_bRegen;			// npc ë¦¬ì œ ì—¬ë¶€ ê²°ì •
 
 	CNPCProto*	m_npcProto;
 
@@ -50,10 +50,10 @@ public:
 	CNPCRegenList();
 	~CNPCRegenList();
 
-	int				m_type;		// Á¾·ù
-	CNPCRegenInfo*	m_infoList;	// ¸ñ·Ï
-	int				m_nCount;	// ¼ö
-	int				m_wPos;		// ´ÙÀ½ ¾²´Â À§Ä¡
+	int				m_type;		// ì¢…ë¥˜
+	CNPCRegenInfo*	m_infoList;	// ëª©ë¡
+	int				m_nCount;	// ìˆ˜
+	int				m_wPos;		// ë‹¤ìŒ ì“°ëŠ” ìœ„ì¹˜
 
 	void Init();
 	void SetCount(int n);
@@ -64,7 +64,7 @@ public:
 
 	bool DelRegenInfo(CNPCRegenInfo * p);
 
-	// ÆÛ´ø¿ë : bw
+	// í¼ë˜ìš© : bw
 	bool SetRegened(CArea* pArea, int protoindex, int zoneNo, float x = 0, int y = 0, float z = 0);
 	/*
 	{
@@ -125,7 +125,7 @@ public:
 	}
 	*/
 
-	CNPCRegenInfo * GetNpcRegenInfo(int idx);	// ¸®½ºÆ®¿¡ ÀúÀåµÈ ÀÎµ¦½º·Î CNPCRegenInfo °¡Á®¿À±â
+	CNPCRegenInfo * GetNpcRegenInfo(int idx);	// ë¦¬ìŠ¤íŠ¸ì— ì €ì¥ëœ ì¸ë±ìŠ¤ë¡œ CNPCRegenInfo ê°€ì ¸ì˜¤ê¸°
 };
 
 #endif

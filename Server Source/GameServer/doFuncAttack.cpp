@@ -8,7 +8,7 @@
 #include "DratanCastle.h"
 #include "../ShareLib/packetType/ptype_old_do_attack.h"
 
-// ¹É¸® ¾îÅÃ
+// ë¯ˆë¦¬ ì–´íƒ
 void do_pd_Attack(CPC* pc, CNetMsg::SP& msg)
 {
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
@@ -23,7 +23,7 @@ void do_pd_Attack(CPC* pc, CNetMsg::SP& msg)
 		return;
 	}
 
-	// multi targetÀÇ Áßº¹ °Ë»ç
+	// multi targetì˜ ì¤‘ë³µ ê²€ì‚¬
 	if (packet->multicount > 1)
 	{
 		std::set<int> tset;
@@ -38,7 +38,7 @@ void do_pd_Attack(CPC* pc, CNetMsg::SP& msg)
 		}
 	}
 
-	// ´ë»ó °Ë»ö : ÀÎÁ¢ ¼¿¿¡¼­¸¸
+	// ëŒ€ìƒ ê²€ìƒ‰ : ì¸ì ‘ ì…€ì—ì„œë§Œ
 	CArea* area = pc->m_pArea;
 	if (area == NULL)
 	{
@@ -56,7 +56,7 @@ void do_pd_Attack(CPC* pc, CNetMsg::SP& msg)
 	{
 		if(preIndex == packet->list[i].index)
 		{
-			// °¡±î¿î ¸¶À»·Î
+			// ê°€ê¹Œìš´ ë§ˆì„ë¡œ
 			int nearZone;
 			int nearZonePos;
 			CZone* pZone = gserver->FindNearestZone(pc->m_pZone->m_index, GET_X(pc), GET_Z(pc), &nearZone, &nearZonePos);
@@ -99,7 +99,7 @@ void do_pd_Attack(CPC* pc, CNetMsg::SP& msg)
 			if( !bugPC )
 				return;
 
-			// °¡±î¿î ¸¶À»·Î
+			// ê°€ê¹Œìš´ ë§ˆì„ë¡œ
 			int nearZone;
 			int nearZonePos;
 			CZone* pZone = gserver->FindNearestZone(bugPC->m_pZone->m_index, GET_X(bugPC), GET_Z(bugPC), &nearZone, &nearZonePos);
@@ -129,7 +129,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 
 	RequestClient::doAttack* packet = reinterpret_cast<RequestClient::doAttack*>(msg->m_buf);
 
-	// µ¿½Ã °ø°İÀº ÃÖ´ë 5
+	// ë™ì‹œ ê³µê²©ì€ ìµœëŒ€ 5
 	if (packet->multicount > 5)
 	{
 		LOG_ERROR("HACKING : invalid multi count[%d]. charIndex[%d]", packet->multicount, pc->m_index);
@@ -137,7 +137,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 		return;
 	}
 
-	// multi targetÀÇ Áßº¹ °Ë»ç
+	// multi targetì˜ ì¤‘ë³µ ê²€ì‚¬
 	if (packet->multicount > 1)
 	{
 		std::set<int> tset;
@@ -152,7 +152,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 		}
 	}
 
-	// ´ë»ó °Ë»ö : ÀÎÁ¢ ¼¿¿¡¼­¸¸
+	// ëŒ€ìƒ ê²€ìƒ‰ : ì¸ì ‘ ì…€ì—ì„œë§Œ
 	CArea* area = pc->m_pArea;
 	if (area == NULL)
 		return;
@@ -165,7 +165,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 	if (tch == NULL)
 		return;
 
-	// °ø°İÀÚ°¡ PCÀÌ¸é ÀÚ½ÅÀÇ Ä³¸¯¸¸ Á¶Á¤
+	// ê³µê²©ìê°€ PCì´ë©´ ìì‹ ì˜ ìºë¦­ë§Œ ì¡°ì •
 	if (IS_PC(ch) && ch != pc)
 		return ;
 
@@ -181,23 +181,23 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 					return;
 			}
 
-			//pvpº¸È£ ¾ÆÀÌÅÛ Ã¼Å©
+			//pvpë³´í˜¸ ì•„ì´í…œ ì²´í¬
 			if (checkPvPProtect(pc, tch) == false)
 				return;
 
-			// °ø°İ °Å¸® °Ë»ç
+			// ê³µê²© ê±°ë¦¬ ê²€ì‚¬
 			if (GetDistance(ch, tch) > ch->m_attackRange * 2)
 				return ;
 
-			// °ø¼Ó °Ë»ç
+			// ê³µì† ê²€ì‚¬
 			if ( ch->ChekAttackType() && ch->CheckHackAttack(pc))
 				return ;
 
-			// Æê Å¸°í ÀÖÀ¸¸é ºÒ°¡´É
+			// í« íƒ€ê³  ìˆìœ¼ë©´ ë¶ˆê°€ëŠ¥
 			if (pc->GetPet() && pc->GetPet()->IsMount())
 				return ;
 
-			// °ø¼º ¾ÆÀÌÅÛ Âø¿ë½Ã ÇØ´ç ½ºÅ³ ¹ßµ¿
+			// ê³µì„± ì•„ì´í…œ ì°©ìš©ì‹œ í•´ë‹¹ ìŠ¤í‚¬ ë°œë™
 			int mixSkillIndex[] = { pc->m_opSturnIndex, pc->m_opBloodIndex, pc->m_opPoisonIndex, pc->m_opSlowIndex, pc->m_opMoveIndex };
 			int mixSkillLevel[] = { pc->m_opSturnLevel, pc->m_opBloodLevel, pc->m_opPoisonLevel, pc->m_opSlowLevel, pc->m_opMoveLevel };
 			CSkill* skillMixItem = NULL;
@@ -225,7 +225,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 				CPC* pPCAttacker = TO_PC(ch);
 				CItem* weaponItem = pPCAttacker->m_wearInventory.wearItemInfo[WEARING_WEAPON];
 
-				// ¾ÏÈæ °ø°İ
+				// ì•”í‘ ê³µê²©
 				if (pPCAttacker->m_opAttackBlind > 0)
 				{
 					CSkill* pSkillBlind = gserver->m_skillProtoList.Create(415, pPCAttacker->m_opAttackBlind);
@@ -241,7 +241,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 						return ;
 				}
 
-				// µ¶ °ø°İ
+				// ë… ê³µê²©
 				if (pPCAttacker->m_opAttackPoison > 0)
 				{
 					CSkill* pSkillPoison = gserver->m_skillProtoList.Create(414, pPCAttacker->m_opAttackPoison);
@@ -257,18 +257,18 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 						return ;
 				}
 			}
-		} // PC °Ë»ç
+		} // PC ê²€ì‚¬
 
 		break;
 
 	case MSG_CHAR_PET:
 	case MSG_CHAR_ELEMENTAL:
-		// TODO : ¼ÒÈ¯¼ö °ø¼Ó °Ë»ç
-		// °ø°İ °Å¸® °Ë»ç
+		// TODO : ì†Œí™˜ìˆ˜ ê³µì† ê²€ì‚¬
+		// ê³µê²© ê±°ë¦¬ ê²€ì‚¬
 		if (GetDistance(ch, tch) > ch->m_attackRange * 2)
 			return ;
 
-		// °ø¼Ó °Ë»ç
+		// ê³µì† ê²€ì‚¬
 		if (ch->CheckHackAttack(pc))
 			return ;
 
@@ -285,9 +285,9 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 	}
 
 	if (DEAD(ch) || !ch->CanAttack() || pc->IsDisable())	return ;
-	// °á°è°É¸° ´ë»óÀº °ø°İ ¸øÇÑ´Ù.
+	// ê²°ê³„ê±¸ë¦° ëŒ€ìƒì€ ê³µê²© ëª»í•œë‹¤.
 	if ( tch->m_assist.m_state & AST_FREEZE )	return;
-	//¹«Àû ¹öÇÁ ´ë»óÀº °ø°İÇÒ ¼ö ¾ø´Ù.
+	//ë¬´ì  ë²„í”„ ëŒ€ìƒì€ ê³µê²©í•  ìˆ˜ ì—†ë‹¤.
 	if ( tch->m_assist.m_state & AST_SAFEGUARD )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -297,22 +297,22 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 	}
 
 
-	// ´ë»óÀÌ NPCÀÏ¶§¸¸ ¸ÖÆ¼ °ø°İ
+	// ëŒ€ìƒì´ NPCì¼ë•Œë§Œ ë©€í‹° ê³µê²©
 	if (!IS_NPC(tch))
 		packet->multicount = 0;
 
-	// ÃÖ¼ÒÇÑ °ø°İ 1È¸ ÀÌ»ó
+	// ìµœì†Œí•œ ê³µê²© 1íšŒ ì´ìƒ
 	bool bAttacked = false;
-	bool bAttackedPet = false;		// ¾Ö¿Ïµ¿¹°Àº NPC»ó´ë½Ã ·¹º§ °Ë»ç
+	bool bAttackedPet = false;		// ì• ì™„ë™ë¬¼ì€ NPCìƒëŒ€ì‹œ ë ˆë²¨ ê²€ì‚¬
 
-	// ¸ÖÆ¼ °ø°İ °Ë»ç¿ë
+	// ë©€í‹° ê³µê²© ê²€ì‚¬ìš©
 	std::set<int> listMultiTarget;
 
 	while (tch)
 	{
 		bool bBlocked = false;
 
-		// NPC¸¦ °ø°İÇÒ ¶§¿¡¸¸ ¼Ó¼º¸Ê °Ë»ç (ÇÁ¸®PK Áö¿ªÀÌ ¾Æ´Ò¶§¸¸)
+		// NPCë¥¼ ê³µê²©í•  ë•Œì—ë§Œ ì†ì„±ë§µ ê²€ì‚¬ (í”„ë¦¬PK ì§€ì—­ì´ ì•„ë‹ë•Œë§Œ)
 		if ( IS_NPC(tch) && !(tch->GetMapAttr() & MATT_FREEPKZONE) )
 		{
 			char tempy = GET_YLAYER(ch);
@@ -331,7 +331,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 					CNPC * pTemp = TO_NPC(tch);
 					if (pTemp != NULL)
 					{
-						if (ch->m_level - tch->m_level <= 5 && pTemp->m_proto->m_index != 303 /*¾Ç¸¶ÀÇ ¹¦Áö*/)
+						if (ch->m_level - tch->m_level <= 5 && pTemp->m_proto->m_index != 303 /*ì•…ë§ˆì˜ ë¬˜ì§€*/)
 						{
 							bAttackedPet = true;
 						}
@@ -349,7 +349,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 				if (tch != NULL	&& IS_NPC(tch) && ch->m_level - tch->m_level <= 5)
 				{
 					CNPC * pTemp = TO_NPC(tch);
-					if (pTemp != NULL && pTemp->m_proto->m_index != 303 /*¾Ç¸¶ÀÇ ¹¦Áö*/)
+					if (pTemp != NULL && pTemp->m_proto->m_index != 303 /*ì•…ë§ˆì˜ ë¬˜ì§€*/)
 					{
 						bAttackedPet = true;
 					}
@@ -361,16 +361,16 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 			ret = ProcAttack(ch, tch, ch->GetAttackType(NULL), NULL, 0);
 		}
 
-		if (ret == -1 || tch->m_index == -1) // ProcAttack()¾È¿¡¼­ Character °´Ã¼°¡ ¼Ò¸êµÈ °æ¿ìµµ Æ÷ÇÔ
+		if (ret == -1 || tch->m_index == -1) // ProcAttack()ì•ˆì—ì„œ Character ê°ì²´ê°€ ì†Œë©¸ëœ ê²½ìš°ë„ í¬í•¨
 		{
 			tch = NULL;
 			continue ;
 		}
 
-		//°ø°İ ¹ßµ¿Çü ½ºÅ³ Ãß°¡
+		//ê³µê²© ë°œë™í˜• ìŠ¤í‚¬ ì¶”ê°€
 		if( pc->m_optionAttSkillList.count() > 0 )
 		{
-			//°ø°İ ÇÒ ½Ã¿¡ Àû¿¡°Ô ½ºÅ³ Àû¿ë
+			//ê³µê²© í•  ì‹œì— ì ì—ê²Œ ìŠ¤í‚¬ ì ìš©
 			void* pos = pc->m_optionAttSkillList.GetHeadPosition();
 			bool bApply = false;
 			while (pos)
@@ -384,7 +384,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 						ApplySkill(ch, tch, skill, -1, bApply);
 						if(bApply == false)
 						{
-							GAMELOG << init("EVENT_PCBANG_2NDS SKILL FAILED (LOGIN) ", pc ) << end;// ½ºÅ³ Àû¿ë ½ÇÆĞ
+							GAMELOG << init("EVENT_PCBANG_2NDS SKILL FAILED (LOGIN) ", pc ) << end;// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 						}
 					}
 				}
@@ -448,7 +448,7 @@ void do_Attack(CPC* pc, CNetMsg::SP& msg)
 		pc->m_pulseLastAttackSkill = gserver->m_pulse;
 
 #ifdef EVENT_SEARCHFRIEND_TIME
-	// °ø°İ½Ã ÀÌº¥Æ® ½Ã°£ °»½Å °Ë»ç
+	// ê³µê²©ì‹œ ì´ë²¤íŠ¸ ì‹œê°„ ê°±ì‹  ê²€ì‚¬
 	if (gserver->m_bSearchFriendEvent && (pc->m_nEventSearchFriendListCount >= 1)
 			&& (pc->m_bEventSearchFriendSelect == true) && (pc->m_nTimeEventSearchFriend <= 216000)
 			&& bAttacked && !ch->IsInPeaceZone(true))

@@ -9,6 +9,8 @@
 #include "User.h"
 #include "BillingClient.h"
 #include "WaitPlayerList.h"
+#include "UserList.h"
+
 
 /*
 typedef struct __tagLimitCtSell
@@ -93,79 +95,80 @@ public:
 	~CServer();
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	CDescriptor* m_desclist;		// ¿¬°áµÈ ¼ÒÄÏ ¸®½ºÆ®
+	// ì†Œì¼“ ê´€ë ¨
+	CDescriptor* m_desclist;		// ì—°ê²°ëœ ì†Œì¼“ ë¦¬ìŠ¤íŠ¸
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	int			m_hardcore_flag_in_connector;	// °¡¹Ì°í¿¡¼­ »ç¿ëÇÏ´Â hardcore server, 0 - no, 1 - yes
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
-	CBillingClient m_billing;		// ºô¸µ Å¬¶óÀÌ¾ğÆ®
-	int			m_serverno;			// ¼­¹ö ¹øÈ£
-	int			m_maxSubServer;		// ÇÏÀ§ ¼­¹ö ÃÖ´ë °³¼ö
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_bshutdown;		// ¼­¹ö Á¤»ó Á¾·á ¿©ºÎ
+	// ì„œë²„ ì„¤ì •
+	int			m_hardcore_flag_in_connector;	// ê°€ë¯¸ê³ ì—ì„œ ì‚¬ìš©í•˜ëŠ” hardcore server, 0 - no, 1 - yes
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
+	CBillingClient m_billing;		// ë¹Œë§ í´ë¼ì´ì–¸íŠ¸
+	int			m_serverno;			// ì„œë²„ ë²ˆí˜¸
+	int			m_maxSubServer;		// í•˜ìœ„ ì„œë²„ ìµœëŒ€ ê°œìˆ˜
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_bshutdown;		// ì„œë²„ ì •ìƒ ì¢…ë£Œ ì—¬ë¶€
 
 	typedef std::map<int, CLimitSell*> map_limitsell_t;
 	map_limitsell_t m_limitSell;
-	bool		m_changeLimit;		// ÇÑÁ¤ÆÇ¸Å¸¦ 5ºĞ¸¶´Ù µğºñ¿¡ ÀúÀåÇÒ°ÍÀÎ°¡.
+	bool		m_changeLimit;		// í•œì •íŒë§¤ë¥¼ 5ë¶„ë§ˆë‹¤ ë””ë¹„ì— ì €ì¥í• ê²ƒì¸ê°€.
 
 	CWaitPlayerList	m_waitplayer;
 
-	int			m_nEventGomdori2007LastUpdate;		// ¸¶Áö¸· ¾÷µ¥ÀÌÆ® ½Ã°£ : ´ÜÀ§ ºĞ
-	int			m_nEventGomdori2007LastRead;		// ¸¶Áö¸· ÀĞÀº ½Ã°£ : ´ÜÀ§ ºĞ
-	int			m_nEventGomdori2007Count;			// ¸®½ºÆ® ¼ö
-	int*		m_nEventGomdori2007Status;			// µ¥ÀÌÅÍ
-	int			m_nEventGomdori2007StatusCurServer;	// ÇöÀç ¼­¹ö±ºÀÇ ´©Àû ¼ö
+	int			m_nEventGomdori2007LastUpdate;		// ë§ˆì§€ë§‰ ì—…ë°ì´íŠ¸ ì‹œê°„ : ë‹¨ìœ„ ë¶„
+	int			m_nEventGomdori2007LastRead;		// ë§ˆì§€ë§‰ ì½ì€ ì‹œê°„ : ë‹¨ìœ„ ë¶„
+	int			m_nEventGomdori2007Count;			// ë¦¬ìŠ¤íŠ¸ ìˆ˜
+	int*		m_nEventGomdori2007Status;			// ë°ì´í„°
+	int			m_nEventGomdori2007StatusCurServer;	// í˜„ì¬ ì„œë²„êµ°ì˜ ëˆ„ì  ìˆ˜
 
-	bool			m_bEventXmasTimerStart;				// Å¸ÀÌ¸Ó ÀÛµ¿ ¿©ºÎ
-	int				m_nEventXmasTreeOldTime;			// ½Ã°£ Â÷ÀÌ¸¦ ±¸ÇÏ±â À§ÇÑ º¯¼ö
-	int				m_nEventXmasTreeNoticeTime;			// Æ®¸® ¾ÆÀÌÅÛ µå¶ø °øÁö ½Ã°£ : ´ÜÀ§ ºĞ
-	int				m_nEventXmasTreeLastUpdate;			// ¸¶Áö¸· ¾÷µ¥ÀÌÆ® ½Ã°£ : ´ÜÀ§ ºĞ
-	int				m_nEventXmasTreeLastRead;			// ¸¶Áö¸· ÀĞÀº ½Ã°£ : ´ÜÀ§ ºĞ
-	unsigned int	m_unEventXmasTreePoint;				// ÇöÀç ¼­¹öÀÇ ³ª¹« Æ÷ÀÎÆ®
+	bool			m_bEventXmasTimerStart;				// íƒ€ì´ë¨¸ ì‘ë™ ì—¬ë¶€
+	int				m_nEventXmasTreeOldTime;			// ì‹œê°„ ì°¨ì´ë¥¼ êµ¬í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+	int				m_nEventXmasTreeNoticeTime;			// íŠ¸ë¦¬ ì•„ì´í…œ ë“œë ê³µì§€ ì‹œê°„ : ë‹¨ìœ„ ë¶„
+	int				m_nEventXmasTreeLastUpdate;			// ë§ˆì§€ë§‰ ì—…ë°ì´íŠ¸ ì‹œê°„ : ë‹¨ìœ„ ë¶„
+	int				m_nEventXmasTreeLastRead;			// ë§ˆì§€ë§‰ ì½ì€ ì‹œê°„ : ë‹¨ìœ„ ë¶„
+	unsigned int	m_unEventXmasTreePoint;				// í˜„ì¬ ì„œë²„ì˜ ë‚˜ë¬´ í¬ì¸íŠ¸
 
 	/////////////////
-	// Åë°è ÁÖ±â °ü·Ã
-	time_t		m_pulseSaveCount;	// t_connect_count °»½Å ½Ã°£
-	time_t		m_pulseSaveMax;		// t_connect_max °»½Å ½Ã°£
+	// í†µê³„ ì£¼ê¸° ê´€ë ¨
+	time_t		m_pulseSaveCount;	// t_connect_count ê°±ì‹  ì‹œê°„
+	time_t		m_pulseSaveMax;		// t_connect_max ê°±ì‹  ì‹œê°„
 
 	//////////
-	// DB ¿¬°á
-	MYSQL		m_dbuser;			// »ç¿ëÀÚ µ¥ÀÌÅÍ
-	MYSQL		m_dbauth;			// »ç¿ëÀÚ ÀÎÁõ µ¥ÀÌÅÍ
+	// DB ì—°ê²°
+	MYSQL		m_dbuser;			// ì‚¬ìš©ì ë°ì´í„°
+	MYSQL		m_dbauth;			// ì‚¬ìš©ì ì¸ì¦ ë°ì´í„°
 
 	//////////////
-	// User ¸®½ºÆ®
-	CUserList*	m_userList;			// À¯Àú ¸®½ºÆ®
+	// User ë¦¬ìŠ¤íŠ¸
+	UserList* m_user_list;
+	
 
 	virtual void operate(rnSocketIOService* service);
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool ConnectDB();				// DB ¿¬°á
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
-	int GetMaxPlayers();			// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö ±¸ÇÏ±â
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool ConnectDB();				// DB ì—°ê²°
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
+	int GetMaxPlayers();			// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜ êµ¬í•˜ê¸°
 
-	void Close();										// ¼öÇà Á¾·á
-	void HeartBeat();									// 1ÃÊ¿¡ 10¹ø¾¿ ¸Å¹ø Æ½¸¶´Ù ¼öÇàµÇ´Â ÇÔ¼ö
-	void SavePlayersCount();							// ÇÃ·¹ÀÌ¾î ¼ö¸¦ µ¥ÀÌÅÍº£ÀÌ½º¿¡ ÀúÀå
+	void Close();										// ìˆ˜í–‰ ì¢…ë£Œ
+	void HeartBeat();									// 1ì´ˆì— 10ë²ˆì”© ë§¤ë²ˆ í‹±ë§ˆë‹¤ ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜
+	void SavePlayersCount();							// í”Œë ˆì´ì–´ ìˆ˜ë¥¼ ë°ì´í„°ë² ì´ìŠ¤ì— ì €ì¥
 
-	void CloseSocket(CDescriptor* d);			// µğ½ºÅ©¸³ÅÍ Á¾·á
+	void CloseSocket(CDescriptor* d);			// ë””ìŠ¤í¬ë¦½í„° ì¢…ë£Œ
 	void SendAllGameServer(CNetMsg::SP& msg);
 
 	///////////////////////
-	// °ÔÀÓ¼­¹ö ¿ÍÀÇ ÁÖ±âÀû Åë½Å
+	// ê²Œì„ì„œë²„ ì™€ì˜ ì£¼ê¸°ì  í†µì‹ 
 	void TimerToGameServer();
 
 	/////////////////
-	// ¸í·É Ã³¸® °ü·Ã
-	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ¸í·· Ã³¸®
+	// ëª…ë ¹ ì²˜ë¦¬ ê´€ë ¨
+	void CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg); // ëª…ë  ì²˜ë¦¬
 
-	void ProcessLogout(CUser* user);					// ·Î±×¾Æ¿ô Ã³¸®
+	void ProcessLogout(CUser* user);					// ë¡œê·¸ì•„ì›ƒ ì²˜ë¦¬
 	void InitUserData();
 
 #ifdef PASSWORD_ENCRYPT_SHA256

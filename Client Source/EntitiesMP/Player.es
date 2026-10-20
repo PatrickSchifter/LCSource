@@ -60,25 +60,24 @@
 #include <Engine/Contents/Base/UICharacterInfoNew.h>
 #include <Engine/Interface/UIReformSystem.h>
 #include <Engine/Interface/UISelectResource.h>
-#include <Engine/Interface/UIPersonalShop.h>
 #include <Engine/Interface/UIGuildWarPortal.h>
-#include <Engine/Interface/UIGuildStash.h>
+#include <Engine/Contents/function/GuildStashUI.h>
 #include <Engine/Interface/UIBilling.h>
 #include <Engine/Contents/function/UIPortalNew.h>
 #include <Engine/Interface/UIGuild.h>
 #include <Engine/Contents/Base/UIQuestNew.h>
 #include <Engine/Contents/Base/UIChangeWeaponNew.h>
 #include <Engine/Interface/UIResurrection.h>
-#include <Engine/Interface/UIAffinity.h>
+#include <Engine/Contents/function/AffinityUI.h>
 #include <Engine/Interface/UIRadar.h>
 #include <Engine/Interface/UIInitJob.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Interface/UIGamble.h>
 #include <Engine/Interface/UIMonsterMercenary.h>
-#include <Engine/Interface/UISystemMenu.h>
+#include <engine/Contents/function/SystemMenuUI.h>
 
 #include <Engine/TransformInfo.h>
-#include <Engine/Interface/UISummon.h>
+#include <Engine/Contents/function/SummonUI.h>
 #include <Engine/Interface/UIPetInfo.h>
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/Contents/Base/ExpressSystem.h>
@@ -94,6 +93,7 @@
 #include <algorithm>
 #include <Engine/GameStageManager/StageMgr.h>
 #include <Engine/Object/ActorMgr.h>
+#include <Engine/Contents/Base/PersonalshopUI.h>
 
 #include <Common/Packet/ptype_old_do_action.h>
 #include <Common/Packet/ptype_old_do_skill.h>
@@ -102,6 +102,8 @@
 #include <Common/Packet/ptype_appear.h>
 #include <Engine/Info/MyInfo.h>
 #include <Engine/Contents/function/SimplePlayerInfoUI.h>
+#include <Engine/Contents/function/TitleData.h>
+#include <Engine/Contents/function/PetTargetUI.h>
 
 // Date : 2005-09-23(오전 9:27:43), By Lee Ki-hwan
 // 버튼 액션시 보내던 MOVE메세지에 대한 제한을 두기위한 플래그 
@@ -185,11 +187,6 @@
 #define ENF_EX2_WAR_OURFORCE	(1L<<5)
 #define ENF_EX2_WAR_ENEMY		(1L<<6)
 
-#ifdef SIGEWAR_ATTACKRULE
-	const BOOL bSigewar_Attackrule = TRUE;
-#else
-	const BOOL bSigewar_Attackrule = FALSE;
-#endif
 #ifdef CHAR_EX_ROGUE	// [2012/08/27 : Sora] EX로그 추가
 	const BOOL charEXRogue = TRUE;
 #else
@@ -367,6 +364,7 @@ INDEX	m_timeCnt = 0; // 락체크(3초후 락을 풀어줌) wooss 060515
 UBYTE	m_checkLock =0;
 // ----------------------------------------------------------------->>
 extern void HUD_DrawSkaModel(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, FLOAT fDistance, FLOAT fHeight);
+extern void HUD_DrawSkaModel_Old(CDrawPort *pdpCurrent, HUD_MLData *hud_MLData,  FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, FLOAT fDistance, FLOAT fHeight);
 extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOOL bSnooping, const CPlayer *penPlayerOwner);
 extern void InitHUD(void);
 extern void EndHUD(void);
@@ -2280,7 +2278,7 @@ functions:
 			
 			for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 			{
-				CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
+				CSummonUI* pUISummon = (CSummonUI*)pUIManager->GetUI(i);
 				if( pUISummon->GetSummonEntity() && pUISummon->GetSummonIndex() == iTargetID )
 				{
 					pInfo->GetMySlaveInfo(i - UI_SUMMON_START)->fHealth	= lTargetHP;											
@@ -2294,11 +2292,19 @@ functions:
 	{
 		if ( iType == HUD_CHARACTER_TYPE )
 		{
-			HUD_DrawSkaModel(pdp, &m_HUDMLData, fMinX, fMinY, fMaxX, fMaxY, fDistance, fHeight);
+			if (m_HUDMLData.iRenderType == eRENDER_UI_TYPE_MAKETITLE)
+			{
+				HUD_DrawSkaModel(pdp, &m_HUDMLData, fMinX, fMinY, fMaxX, fMaxY, fDistance, fHeight);
+			}
+			else
+			{
+				HUD_DrawSkaModel_Old(pdp, &m_HUDMLData, fMinX, fMinY, fMaxX, fMaxY, fDistance, fHeight);
+			}
+			
 		}
 		else if ( iType == HUD_ITEM_TYPE )
 		{
-			HUD_DrawSkaModel(pdp, &m_HUDItemData, fMinX, fMinY, fMaxX, fMaxY, -2.5f, -0.35f );
+			HUD_DrawSkaModel_Old(pdp, &m_HUDItemData, fMinX, fMinY, fMaxX, fMaxY, -2.5f, -0.35f );
 		}
 	}
 
@@ -2362,30 +2368,48 @@ functions:
 		m_HUDMLData.hud_MI.SetModelColor(ModelColor);
 	}
 
-	virtual void HUD_SetModelData( INDEX iType, INDEX iIndex )
+	virtual void HUD_SetModelData( INDEX iType, INDEX iIndex, INDEX iUIType)
 	{
 		if ( iType == HUD_CHARACTER_TYPE )
 		{
 			if (m_HUDMLData.bEnable)
 			{
 				m_HUDMLData.HUD_DeleteMI();
+				m_HUDMLData.HUD_DeleteBG();
 				m_HUDMLData.Init();
 			}
 			
 			m_HUDMLData.hud_MI.SetSkaModel(CJobInfo::getSingleton()->GetFileName(_pNetwork->MyCharacterInfo.job));
+			m_HUDMLData.hud_BG.SetSkaModel(CTString("Data\\Interface\\title_bg\\Title_BG.smc"));
 			
 			//	김영환
 			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeFaceMesh(m_HUDMLData.hud_MI.GetModelInstance(), _pNetwork->Get_MyChar_Job(), _pNetwork->Get_MyChar_faceStyle() - 1);
 			((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeHairMesh(m_HUDMLData.hud_MI.GetModelInstance(), _pNetwork->Get_MyChar_Job(), _pNetwork->Get_MyChar_hairStyle() - 1);
-			//((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeFaceMesh(m_HUDMLData.hud_MI.GetModelInstance(), _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.faceStyle - 1);
-			//((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeHairMesh(m_HUDMLData.hud_MI.GetModelInstance(), _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.hairStyle - 1);
-			m_HUDMLData.hud_MI.GetModelInstance()->mi_ERType = ERS_CASHSHOP;
-			m_HUDMLData.hud_ItemEffect.SetItemERSubType(ERS_CASHSHOP);
+			
+			EFF_RENDER_SUB_TYPE subType = ERS_NORMAL;
+			
+			switch(iUIType )
+			{
+			case eRENDER_UI_TYPE_CASHSHOP:
+				{
+					subType = ERS_CASHSHOP;
+				}
+				break;
+			case eRENDER_UI_TYPE_MAKETITLE:
+				{
+					subType = ERS_MAKETITLE;
+				}
+				break;
+			}
+			m_HUDMLData.hud_MI.GetModelInstance()->mi_ERType = subType;
+			m_HUDMLData.hud_BG.GetModelInstance()->mi_ERType = ERS_MAKETITLE;
+			m_HUDMLData.hud_ItemEffect.SetItemERSubType(subType);
 			m_HUDMLData.hud_MI.AddAnimation(ska_GetIDFromStringTable(CJobInfo::getSingleton()->GetAnimationName(_pNetwork->MyCharacterInfo.job, ANIM_IDLE)),
 				AN_LOOPING|AN_CLEAR, 1.0f, 0x03, ESKA_MASTER_MODEL_INSTANCE);
 
-			m_HUDMLData.HUD_CopyItemEffect(&_pNetwork->MyCharacterInfo.itemEffect);
+			//m_HUDMLData.HUD_CopyItemEffect(&_pNetwork->MyCharacterInfo.itemEffect);
 			m_HUDMLData.bEnable = TRUE;
+			m_HUDMLData.iRenderType = iUIType;
 		}
 		else if ( iType == HUD_ITEM_TYPE )
 		{
@@ -2446,6 +2470,8 @@ functions:
 			iRef = 5;
 		}else if (iType == WEAR_SHIELD){
 			iRef = 6;
+		}else if (iType == WEAR_BACKWING){
+			iRef = 7;
 		}else {
 			return;
 		}
@@ -2458,6 +2484,28 @@ functions:
 		{
 			m_HUDMLData.SetWearingItems(iRef, iType, iJob, iItem);
 		}		
+	}
+
+	virtual void HUD_SetTitleEffect(CTString strEffectName)
+	{
+		if (strEffectName.IsEmpty() == TRUE)
+		{
+			m_HUDMLData.HUD_DeleteTitleEffect();
+		}
+		else
+		{
+			m_HUDMLData.HUD_SetTitleEffect(strEffectName.str_String);
+		}		
+	}
+
+	virtual BOOL IsHudModel_Used()
+	{
+		return m_HUDMLData.IsHudModelUsed();
+	}
+
+	virtual void SetHudModel_Use(BOOL bUse)
+	{
+		m_HUDMLData.SetHUDModelUse(bUse);
 	}
 
 	virtual CModelInstance* GetPlayerModelInstance( CEntity* pEntity )
@@ -2599,16 +2647,15 @@ functions:
 			return;
 		}
 
-		SLONG chaID = _pNetwork->SearchClientChaIndex(lIndex);
-		if(chaID != -1)
+		ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, lIndex);
+		if (pObject != NULL)
 		{
-			CEntity* penEntity;
-			if (_pNetwork->ga_World.EntityExists(chaID, penEntity)) 
-			{	
-				((CCharacter*)penEntity)->m_bIsTransform	= FALSE;
-				((CCharacter*)penEntity)->m_iTransformType	= type;				
-				((CCharacter*)penEntity)->EvocateNow();
-			}
+			CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
+			pTarget->cha_nTransformIndex = nSkillIndex;
+
+			((CCharacter*)pTarget->GetEntity())->m_bIsTransform	= FALSE;
+			((CCharacter*)pTarget->GetEntity())->m_iTransformType	= type;				
+			((CCharacter*)pTarget->GetEntity())->EvocateNow();
 		}
 	}
 
@@ -2629,22 +2676,31 @@ functions:
 
 			CModelInstance* pMI = penPlEntity->en_pmiModelInstance;
 
-			_pNetwork->MyCharacterInfo.itemEffect.AddHolyWaterEffect(_pNetwork->MyCharacterInfo.iHitEffectType,
-				&(pMI->m_tmSkaTagManager));
-			_pNetwork->MyCharacterInfo.itemEffect.RefreshPetStashEffect(&(pMI->m_tmSkaTagManager));
-			_pNetwork->MyCharacterInfo.itemEffect.RefreshRelicEffect(&(pMI->m_tmSkaTagManager));
+			_pNetwork->MyCharacterInfo.itemEffect.Refresh(&(pMI->m_tmSkaTagManager), 1);
+
+			if (_pNetwork->MyCharacterInfo.iNickType > 0)
+			{
+				int t_index = _pNetwork->MyCharacterInfo.stCustomTitle.nEffectIdx;
+
+				if (t_index < 0)
+				{
+					penPlEntity->SetNickNameDamageEffect(_pNetwork->MyCharacterInfo.iNickType, CEntity::NICKNAME_ATTACH_EFFECT);
+				}
+				else
+				{
+					penPlEntity->SetCustomTitleEffect(CustomTitleData::m_vecCustomTitleEffect[t_index].c_str());
+				}
+			}
 			return;		
 		}
 
-		SLONG chaID = _pNetwork->SearchClientChaIndex(lIndex);
-		if(chaID != -1)
+		ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, lIndex);
+		if (pObject != NULL)
 		{
-			CEntity* penEntity;
-			if (_pNetwork->ga_World.EntityExists(chaID, penEntity)) 
-			{	
-				((CCharacter*)penEntity)->m_iTransformType	= 0;
-				((CCharacter*)penEntity)->EvocateNow();				
-			}
+			CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
+			pTarget->cha_nTransformIndex = 0;
+			((CCharacter*)pTarget->GetEntity())->m_iTransformType	= 0;
+			((CCharacter*)pTarget->GetEntity())->EvocateNow();			
 		}
 	}
 
@@ -3343,7 +3399,7 @@ functions:
 
 		// EP2 적용시 각 국가 더할 것.
 		BOOL bMercenaryDataRead = FALSE;
-		if( g_iCountry != TURKEY && g_iCountry != ITALY)
+		if (g_iCountry != ITALY)
 		{
 			// 몬스터 용병 카드
 			bMercenaryDataRead = pUIManager->GetMonsterMercenary()->ReceiveMercenaryMessage(istr, pPack->hp, pPack->maxHp, pPack->mp, pPack->maxMp);
@@ -3434,6 +3490,8 @@ functions:
 	virtual void Read_net_StatusPet(CNetworkMessage *istr)
 	{
 		UpdateClient::charStatusPet* pPack = reinterpret_cast<UpdateClient::charStatusPet*>(istr->GetBuffer());
+
+		//UIMGR()->GetPetTargetUI()->updateUI();
 	}
 	
 	virtual void Read_net_StatusElemental(CNetworkMessage *istr)
@@ -4334,8 +4392,7 @@ functions:
 							pTarget->slave_sbAttributePos = pPack->mapAttr;
 						}
 						
-						if (g_iCountry == GERMANY || g_iCountry == SPAIN || g_iCountry == FRANCE || g_iCountry == POLAND
-							|| g_iCountry == ITALY || g_iCountry == TURKEY || g_iCountry == NETHERLANDS)
+						if (IsGamigo(g_iCountry) == TRUE)
 						{
 							//if ((g_iCountry == GERMANY) && (sbAttributePos == ATTC_PEACE))
 							if (pPack->mapAttr & MATT_PEACE)
@@ -4907,220 +4964,151 @@ functions:
 			return FALSE;
 		}
 		
-		//SIGEWAR_ATTACKRULE
-		if (bSigewar_Attackrule)
+		////////////////////////////////////////////////////////////////
+		// FIXME : 아래 코드 너무함...ㅠ.ㅠ 수정하자!!!
+		////////////////////////////////////////////////////////////////
+		// 내가 공성 지역에 있고, 타 캐릭터도 공성 지역내에 있다면...
+		
+		if ((sbAttributePos & MATT_WAR && sbCharAttributePos & MATT_WAR) || 
+			 CheckDratanWarInside(pTarget))
 		{
-			// 내가 진행 중인 공성전에 참여한 상태인가?
-			if (bIsDartanWar && sbJoinFlagDratan != WCJF_NONE)
-			{
-				if (sbCharacterJoinFlagDratan != WCJF_NONE)
-				{
-					if (WarTypeAttackGroup(sbJoinFlagDratan) != WarTypeAttackGroup(sbCharacterJoinFlagDratan))
-					{
-						return TRUE;
-					}
-				}
-				else // 타겟 캐릭터가 공성에 참여 안한 친구일 경우, 공성지역에 있으면 무조건 공격 대상
-				{
-					if (bIsCharacterInsideDratan)
-					{
-						return TRUE;
-					}
-				}
-			}
-			else if (bIsMeracWar && sbJoinFlagMerac != WCJF_NONE)
-			{
-				if (sbCharacterJoinFlagMerac != WCJF_NONE)
-				{
-					if (WarTypeAttackGroup(sbJoinFlagMerac) != WarTypeAttackGroup(sbCharacterJoinFlagMerac))
-					{
-						return TRUE;
-					}
-					else if (!_pUISWDoc->IsSelectBattle()) // 내성 전투의 경우
-					{
-						if ((WarTypeAttackGroup(sbJoinFlagMerac) && IsPvp()) || IsLegitTarget(penEnt)) // 공성측 끼리 pvp모드를 키면 공격이 가능
-						{
-							return TRUE;
-						}
-					}
-				}
-				else // 타겟 캐릭터가 공성에 참여 안한 친구일 경우, 공성지역에 있으면 무조건 공격 대상
-				{
-					if (sbAttributePos & MATT_WAR && sbCharAttributePos & MATT_WAR) // 메라크는 메라크 공성지역을 판단할 조건이 현재 없음
-					{
-						return TRUE;
-					}
-				}
-			}
-			// 일반적인 PVP룰 PVP모드 ON 정당방위 성립 혹은 길드전쟁의 적
-			else if( IsPvp() || IsLegitTarget(penEnt) || pUIManager->GetGuildBattle()->IsEnemy( penEnt->en_ulID ) )
-			{
-				return TRUE;
-			}
-		}
-		//else SIGEWAR_ATTACKRULE
-		else
-		{
-			
 			////////////////////////////////////////////////////////////////
-			// FIXME : 아래 코드 너무함...ㅠ.ㅠ 수정하자!!!
-			////////////////////////////////////////////////////////////////
-			// 내가 공성 지역에 있고, 타 캐릭터도 공성 지역내에 있다면...
+			// 공성전 중이라면...
 			
-			if ((sbAttributePos & MATT_WAR && sbCharAttributePos & MATT_WAR) || 
-				 CheckDratanWarInside(pTarget))
+			// WSS_DRATAN_SEIGEWARFARE 2007/08/30 --------------------------------------------<<
+			// 드라탄
+			if ( pUIManager->GetSiegeWarfareNew()->GetWarState() ) // WSS_DRATAN_SEIGEWARFARE 2007/08/30 드라탄 공성중...
 			{
-				////////////////////////////////////////////////////////////////
-				// 공성전 중이라면...
-				
-				// WSS_DRATAN_SEIGEWARFARE 2007/08/30 --------------------------------------------<<
-				// 드라탄
-				if ( pUIManager->GetSiegeWarfareNew()->GetWarState() ) // WSS_DRATAN_SEIGEWARFARE 2007/08/30 드라탄 공성중...
-				{
-					// 공성에 참여하지 않음...
-					if(sbJoinFlagDratan == WCJF_NONE )
-					{	
-						return TRUE;
-					}
-					// 내가 수성측일때.
-					// WSS_DRATAN_SEIGEWARFARE 2007/10/1
-					else if(sbJoinFlagDratan == WCJF_OWNER ||
-						sbJoinFlagDratan == WCJF_DEFENSE_GUILD)				
-					{
-						// 수성 길드 공격 불가.
-						if( sbCharacterJoinFlagDratan == WCJF_OWNER ||
-							sbCharacterJoinFlagDratan == WCJF_DEFENSE_GUILD )
-						{
-							return FALSE;
-						}
-						else
-						{						
-							return TRUE;					
-						}
-					}				
-					// 내가 공성 길드일때...
-					else if( sbJoinFlagDratan == WCJF_ATTACK_GUILD )
-					{
-						// 타겟이 공성 길드일때...
-						if( sbCharacterJoinFlagDratan == WCJF_ATTACK_GUILD )
-						{
-							return TRUE;
-						}
-						else
-						{							
-							return TRUE;					
-						}
-					}
-					
+				// 공성에 참여하지 않음...
+				if(sbJoinFlagDratan == WCJF_NONE )
+				{	
+					return TRUE;
 				}
-				// -------------------------------------------------------------------------------<<
-				
-				// 메라크
-				else if( _pUISWDoc->IsWar() && !_pUISWDoc->IsSelectBattle() ) 				
+				// 내가 수성측일때.
+				// WSS_DRATAN_SEIGEWARFARE 2007/10/1
+				else if(sbJoinFlagDratan == WCJF_OWNER ||
+					sbJoinFlagDratan == WCJF_DEFENSE_GUILD)				
 				{
-					// 공성에 참여하지 않음...
-					if(sbJoinFlagMerac == WCJF_NONE )
-					{					
-						return TRUE;				
+					// 수성 길드 공격 불가.
+					if( sbCharacterJoinFlagDratan == WCJF_OWNER ||
+						sbCharacterJoinFlagDratan == WCJF_DEFENSE_GUILD )
+					{
+						return FALSE;
 					}
-					// 내가 수성측일때.
-					else if( sbJoinFlagMerac == WCJF_DEFENSE_CHAR || sbJoinFlagMerac == WCJF_OWNER || sbJoinFlagMerac == WCJF_DEFENSE_GUILD )				
-					{
-						// 수성 길드나 수성 용병은 공격 불가.
-						if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
-						{
-							return FALSE;
-						}
-						else
-						{						
-							return TRUE;					
-						}
-					}				
-					// 내가 공성용병이나 공성 길드일때...
-					else if( sbJoinFlagMerac == WCJF_ATTACK_GUILD || 
-						sbJoinFlagMerac == WCJF_ATTACK_CHAR )
-					{
-						// 타겟이 공성용병이나 공성 길드일때...
-						if( sbCharacterJoinFlagMerac == WCJF_ATTACK_GUILD || 
-							sbCharacterJoinFlagMerac == WCJF_ATTACK_CHAR )											
-						{
-							if( IsPvp() || IsLegitTarget(penEnt))
-							{
-								return TRUE;
-							}
-							return FALSE;
-						}
-						else
-						{							
-							return TRUE;					
-						}
-					}
-				}
-				////////////////////////////////////////////////////////////////
-				// 야전전투!!!
-				else if(_pUISWDoc->IsSelectBattle() )
-				{
-					// 공성에 참여하지 않음...
-					if(sbJoinFlagMerac == WCJF_NONE )
-					{
+					else
+					{						
 						return TRUE;					
 					}
-					// 내가 수성용병일때...
-					else if( sbJoinFlagMerac == WCJF_DEFENSE_CHAR || sbJoinFlagMerac == WCJF_OWNER || sbJoinFlagMerac == WCJF_DEFENSE_GUILD )
-					{
-						// 수성 길드나 수성 용병은 공격 불가.
-						if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
-						{
-							return FALSE;
-						}
-						else
-						{						
-							return TRUE;					
-						}
-					}
-					// 내가 수성길드일때...
-					else if( sbJoinFlagMerac == WCJF_OWNER || 
-						sbJoinFlagMerac == WCJF_DEFENSE_GUILD )											
-					{
-						// 수성 길드나 수성 용병은 공격 불가.
-						if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
-							sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
-						{
-							return FALSE;
-						}										
-						else
-						{					
-							return TRUE;					
-						}
-					}
-					// 내가 공성용병이나 공성 길드일때...
-					else if( sbJoinFlagMerac == WCJF_ATTACK_GUILD || 
-						sbJoinFlagMerac == WCJF_ATTACK_CHAR )
-					{					
-						return TRUE;				
-					}
-				}
-				else
+				}				
+				// 내가 공성 길드일때...
+				else if( sbJoinFlagDratan == WCJF_ATTACK_GUILD )
 				{
-					// 같은 파티나 길드 멤버가 아니고...
-					if( IsPvp() || IsLegitTarget(penEnt) || pUIManager->GetGuildBattle()->IsEnemy( penEnt->en_ulID ) )
+					// 타겟이 공성 길드일때...
+					if( sbCharacterJoinFlagDratan == WCJF_ATTACK_GUILD )
 					{
 						return TRUE;
 					}
 					else
+					{							
+						return TRUE;					
+					}
+				}
+				
+			}
+			// -------------------------------------------------------------------------------<<
+			
+			// 메라크
+			else if( _pUISWDoc->IsWar() && !_pUISWDoc->IsSelectBattle() ) 				
+			{
+				// 공성에 참여하지 않음...
+				if(sbJoinFlagMerac == WCJF_NONE )
+				{					
+					return TRUE;				
+				}
+				// 내가 수성측일때.
+				else if( sbJoinFlagMerac == WCJF_DEFENSE_CHAR || sbJoinFlagMerac == WCJF_OWNER || sbJoinFlagMerac == WCJF_DEFENSE_GUILD )				
+				{
+					// 수성 길드나 수성 용병은 공격 불가.
+					if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
 					{
 						return FALSE;
 					}
+					else
+					{						
+						return TRUE;					
+					}
+				}				
+				// 내가 공성용병이나 공성 길드일때...
+				else if( sbJoinFlagMerac == WCJF_ATTACK_GUILD || 
+					sbJoinFlagMerac == WCJF_ATTACK_CHAR )
+				{
+					// 타겟이 공성용병이나 공성 길드일때...
+					if( sbCharacterJoinFlagMerac == WCJF_ATTACK_GUILD || 
+						sbCharacterJoinFlagMerac == WCJF_ATTACK_CHAR )											
+					{
+						if( IsPvp() || IsLegitTarget(penEnt))
+						{
+							return TRUE;
+						}
+						return FALSE;
+					}
+					else
+					{							
+						return TRUE;					
+					}
+				}
+			}
+			////////////////////////////////////////////////////////////////
+			// 야전전투!!!
+			else if(_pUISWDoc->IsSelectBattle() )
+			{
+				// 공성에 참여하지 않음...
+				if(sbJoinFlagMerac == WCJF_NONE )
+				{
+					return TRUE;					
+				}
+				// 내가 수성용병일때...
+				else if( sbJoinFlagMerac == WCJF_DEFENSE_CHAR || sbJoinFlagMerac == WCJF_OWNER || sbJoinFlagMerac == WCJF_DEFENSE_GUILD )
+				{
+					// 수성 길드나 수성 용병은 공격 불가.
+					if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
+					{
+						return FALSE;
+					}
+					else
+					{						
+						return TRUE;					
+					}
+				}
+				// 내가 수성길드일때...
+				else if( sbJoinFlagMerac == WCJF_OWNER || 
+					sbJoinFlagMerac == WCJF_DEFENSE_GUILD )											
+				{
+					// 수성 길드나 수성 용병은 공격 불가.
+					if( sbCharacterJoinFlagMerac == WCJF_OWNER || 
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_CHAR ||
+						sbCharacterJoinFlagMerac == WCJF_DEFENSE_GUILD )
+					{
+						return FALSE;
+					}										
+					else
+					{					
+						return TRUE;					
+					}
+				}
+				// 내가 공성용병이나 공성 길드일때...
+				else if( sbJoinFlagMerac == WCJF_ATTACK_GUILD || 
+					sbJoinFlagMerac == WCJF_ATTACK_CHAR )
+				{					
+					return TRUE;				
 				}
 			}
 			else
 			{
-				
 				// 같은 파티나 길드 멤버가 아니고...
 				if( IsPvp() || IsLegitTarget(penEnt) || pUIManager->GetGuildBattle()->IsEnemy( penEnt->en_ulID ) )
 				{
@@ -5131,7 +5119,21 @@ functions:
 					return FALSE;
 				}
 			}
-		}	//End SIGEWAR_ATTACKRULE
+		}
+		else
+		{
+			
+			// 같은 파티나 길드 멤버가 아니고...
+			if( IsPvp() || IsLegitTarget(penEnt) || pUIManager->GetGuildBattle()->IsEnemy( penEnt->en_ulID ) )
+			{
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+
 		return FALSE;
 	}
 
@@ -5538,37 +5540,67 @@ functions:
 
 	void SetCharacterHairChange(INDEX nSIdx, SBYTE sbType, BOOL IsMe)
 	{
-		int nJob;
+		int nJob, nCurCosIndex = 0;
+		SBYTE sbHairIndex = sbType - 1;
+		CModelInstance *pMI = NULL;
+		CCharacterTarget* pTarget = NULL;
 
-		ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, nSIdx);
-
-		if (pObject == NULL)
-		{
-			return;		
-		}
-
-		CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
-
-		CModelInstance *pMI = ((CCharacter*)pTarget->GetEntity())->GetCurrentPlayerModelInstance();
-	
 		if ( IsMe )
 		{ // 자기 캐릭터
 			nJob = _pNetwork->MyCharacterInfo.job;
+			CEntity			*penPlEntity;
+			penPlEntity = CEntity::GetPlayerEntity( 0 );
+			pMI = penPlEntity->en_pmiModelInstance;
+
+			nCurCosIndex = _pNetwork->MyWearCostItem[WEAR_COSTUME_HELMET].Item_Index;
 		}
 		else
 		{ // 타 캐릭터
+			ObjectBase* pObject = ACTORMGR()->GetObject(eOBJ_CHARACTER, nSIdx);
+
+			if (pObject == NULL)
+			{
+				return;		
+			}
+			
+			pTarget = static_cast< CCharacterTarget* >(pObject);
+
+			CEntity* pTargetEntity = pTarget->GetEntity();
+			((CCharacter*)pTargetEntity)->m_nHairStyle = sbType;				
 			nJob = pTarget->m_nType;
+			nCurCosIndex = ((CCharacter*)pTargetEntity)->IsThereCostumeWearing(WEAR_COSTUME_HELMET);
+			pMI = ((CCharacter*)pTargetEntity)->GetCurrentPlayerModelInstance();
 		}
 
-		ChangeHairMesh(pMI, nJob, sbType-1);
+		if (nCurCosIndex > 0)
+		{
+			CItemData* pCurCosItem = _pNetwork->GetItemData(nCurCosIndex);
 
-		if ( IsMe ) 
-		{ 
+			if (pCurCosItem != NULL)
+			{
+				if (pCurCosItem->IsFlag(ITEM_FLAG_INVISIBLE_COSTUME) == true || pCurCosItem->GetItemSmcFileName() == MODEL_TREASURE)
+				{
+					if (nCurCosIndex == ITEM_TREASURE_HELMET)
+					{
+						sbHairIndex = sbHairIndex % 10;
+					}
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+
+		ChangeHairMesh(pMI, nJob, sbHairIndex);
+
+		if (IsMe)
+		{
 			_pNetwork->MyCharacterInfo.itemEffect.Refresh(&pMI->m_tmSkaTagManager, 1);
 			_pNetwork->MyCharacterInfo.statusEffect.Refresh(&pMI->m_tmSkaTagManager, CStatusEffect::R_NONE);
 		}
 		else
-		{ 
+		{
 			pTarget->cha_itemEffect.Refresh(&pMI->m_tmSkaTagManager, 1);
 			pTarget->cha_statusEffect.Refresh(&pMI->m_tmSkaTagManager, CStatusEffect::R_NONE);
 		}
@@ -5753,11 +5785,20 @@ functions:
 
 				if (_pNetwork->GetItemData(cos_index)->IsFlag(ITEM_FLAG_INVISIBLE_COSTUME) == false)
 				{
-					if ( !( i == WEAR_HELMET && (CTString)_pNetwork->GetItemData(cos_index)->GetItemSmcFileName() == MODEL_TREASURE ) )
+					CItemData* pItemCos = _pNetwork->GetItemData(cos_index);
+
+					if ( (CTString)pItemCos->GetItemSmcFileName() != MODEL_TREASURE )
 					{
 						((CCharacter*)penEntity)->DeleteDefaultArmor(i);
 						_pGameState->DeleteDefaultArmor( pMI, i, ((CCharacter*)penEntity)->m_ChaList );
 						_pGameState->WearingArmor( pMI, *_pNetwork->GetItemData(cos_index) );
+					}
+					else
+					{
+						if (cos_index == ITEM_TREASURE_HELMET)
+						{
+							_pGameState->ModelChangeHair(penEntity, pPack->job, pPack->hairStyle % 10);	
+						}
 					}
 				}
 				else if (wear_index > 0)
@@ -5803,7 +5844,7 @@ functions:
 			}
 		}
 
-		for (i = WEAR_ACCESSORY_1; i <= WEAR_ACCESSORY_MAX; i++)
+		for (i = WEAR_ACCESSORY_1; i < WEAR_ACCESSORY_MAX; i++)
 		{
 			if ( pPack->accessory[i] > -1 )
 			{
@@ -5930,10 +5971,22 @@ functions:
 
 			if (item_index > 0) // 입기(코스튬)
 			{
-				if (_pNetwork->GetItemData(item_index)->IsFlag(ITEM_FLAG_INVISIBLE_COSTUME) == false)
+				CItemData* pItemCos = _pNetwork->GetItemData(item_index);
+
+				if (pItemCos->IsFlag(ITEM_FLAG_INVISIBLE_COSTUME) == false && (CTString)pItemCos->GetItemSmcFileName() != MODEL_TREASURE)
 				{
 					((CCharacter*)penEntity)->WearingArmor(item_index, wear_pos);
 					realWearIndex = item_index;
+				}
+				else
+				{
+					if (item_index == ITEM_TREASURE_HELMET)
+					{
+						SBYTE sbHair = ((CCharacter*)penEntity)->m_nHairStyle - 1;
+						sbHair = sbHair % 10;
+						ChangeHairMesh(pMI,pTarget->m_nType, sbHair);
+						realWearIndex = item_index;
+					}
 				}
 				((CCharacter*)penEntity)->SetCostumeWearing(wear_pos, item_index);
 			}
@@ -6191,26 +6244,34 @@ functions:
 		
 		if(iNickIndex > 0 && iType == NICKNAME_ATTACK_EFFECT)	// 호칭이 있으면
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetAttackEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetAttackEffectFile();
 		}
 		else if(iNickIndex > 0 && iType == NICKNAME_DAMAGE_EFFECT)
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetDamageEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetDamageEffectFile();
 		}
 		else if(iNickIndex > 0 && iType == NICKNAME_ATTACH_EFFECT)
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetEffectFile();
 		}
 
 		if( strNickDamageFile != CTString("") && iType != NICKNAME_ATTACH_EFFECT)
 		{
 			StartEffectGroup(strNickDamageFile
-						, &this->en_pmiModelInstance->m_tmSkaTagManager
+						, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager
 						, _pTimer->GetLerpedCurrentTick());
 		}
 		else if(strNickDamageFile != CTString("") && iType == NICKNAME_ATTACH_EFFECT)
 		{
-			_pNetwork->MyCharacterInfo.itemEffect.AddNickEffect(strNickDamageFile, &CEntity::GetPlayerEntity(0)->en_pmiModelInstance->m_tmSkaTagManager);
+			_pNetwork->MyCharacterInfo.itemEffect.AddNickEffect(strNickDamageFile, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager);
+		}
+	}
+
+	void SetCustomTitleEffect(CTString effectName)
+	{
+		if(effectName != CTString(""))
+		{
+			_pNetwork->MyCharacterInfo.itemEffect.AddNickEffect(effectName, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager);
 		}
 	}
 
@@ -7194,22 +7255,21 @@ functions:
 				(*istr) >> item_index;
 				(*istr) >> slCount;
 
-				CTString strMessage;
+				CTString strMessage, strCount;
 				const char* szItemName = _pNetwork->GetItemName(item_index);
 				// <FIX ME> 
 				// 이 스택 안에서 getSingleton()호출시 singleton 객체가 NULL로 정의되어, 새로 생성하게 된다.
 				// 그로인해, UIManager 객체를 정상적으로 사용할 수 없었다.
 				// _SMgr, _S2Mgr
-
+				strCount = pUIManager->IntegerToCommaString(slCount);
+				
 				if(pUIManager->IsCSFlagOn(CSF_EXPEDITION)) // [sora] 원정대 아이템 획득 추가
 				{
-					//strMessage.PrintF( _S(4682, "[원정대] %s님이 %s를 %ld개 획득하였습니다." ), strName, szItemName, slCount);
-					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %ld개 획득하였습니다." ), strName, szItemName, slCount);
+					strMessage.PrintF( _SMgr( pUIManager, 4682, "[원정대] %s님이 %s를 %s개 획득하였습니다." ), strName, szItemName, strCount);
 				}
 				else
 				{
-					//strMessage.PrintF( _S2( 707, CTString(szItemName), "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), strName, szItemName, slCount);
-					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %ld개 획득하였습니다." ), strName, szItemName, slCount);
+					strMessage.PrintF( _S2Mgr( pUIManager, 707, szItemName, "[파티원] %s님이 %s<를> %s개 획득하였습니다." ), strName, szItemName, strCount);
 				}
 				_pNetwork->ClientSystemMessage(strMessage);					
 			}
@@ -7451,10 +7511,11 @@ functions:
 
 		case MSG_SKILL_CANCEL://1013
 			{
-				ResponseClient::skillCancel* pPack = reinterpret_cast<ResponseClient::skillCancel*>(istr->GetBuffer());
+				ResponseClient::skillCancelMsg* pPack = reinterpret_cast<ResponseClient::skillCancelMsg*>(istr->GetBuffer());
 
 				pUIManager->SetCSFlagOff(CSF_SKILLREADY);
-				
+				m_bWaitForSkillResponse = FALSE;
+
 				if(pPack->charType == MSG_CHAR_PC)
 				{					
 					if(pPack->charIndex == _pNetwork->MyCharacterInfo.index)
@@ -9021,7 +9082,7 @@ functions:
 		CPlacement3D plRay;	
 		if(m_apr && !_pInput->IsRMouseButtonPressed() && !_pInput->inp_bFreeMode)//0807
 		{
-			plRay = GetPlayerWeapons()->GetMouseHitInformation( _pInput->inp_ptMousePos, m_apr, FALSE);					
+			plRay = GetPlayerWeapons()->GetMouseHitInformation(_pInput->inp_ptMousePos, m_apr, tmStartTime, FALSE);
 			CEntity *penTarget = GetPlayerWeapons()->m_penRayHitTmp;
 			CEntity *penCurrent = GetPlayerWeapons()->m_penRayHitNow;
 
@@ -12826,8 +12887,13 @@ functions:
             
 			if( !m_bReserveMove )
 			{
+				// 마우스 좌클릭 할 경우 무브 메시지를 서버에 새로 보내주기 위한 처리.
+				// 무브 메시지가 1초에 한번씩 가기 때문에 동기화가 제대로 이루어 지지 않아 추가함.
+				// 땅을 찍었을 경우에만 초기화 한다.  (몬스터 공격 시 문제 됨.)
+				// GetMouseHitInformation 함수 내부에서 처리함.
+
 				CPlacement3D plRay;				
-				plRay = GetPlayerWeapons()->GetMouseHitInformation( _pInput->inp_ptMousePos ,m_apr, TRUE);				
+				plRay = GetPlayerWeapons()->GetMouseHitInformation(_pInput->inp_ptMousePos, m_apr, tmStartTime, TRUE);				
 			}
 			else
 			{
@@ -12921,12 +12987,7 @@ functions:
 					}
 					else
 					{
-						INFO()->TargetClear(eTARGET);
-						
-						// 마우스 좌클릭 할 경우 무브 메시지를 서버에 새로 보내주기 위한 처리.
-						// 무브 메시지가 1초에 한번씩 가기 때문에 동기화가 제대로 이루어 지지 않아 추가함.
-						// 땅을 찍었을 경우에만 초기화 한다.  (몬스터 공격 시 문제 됨.)
-						tmStartTime = 0;
+						INFO()->TargetClear(eTARGET);						
 					}
 				}
 
@@ -14812,7 +14873,7 @@ functions:
 						// 내가 뭔가를 공격하는 경우에, 소환수도 협공 하도록...
 						for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 						{
-							CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
+							CSummonUI* pUISummon = (CSummonUI*)pUIManager->GetUI(i);
 							CEntity* pSummonEntity = pUISummon->GetSummonEntity();
 							if( pSummonEntity )
 							{									
@@ -15367,7 +15428,7 @@ functions:
 				// 내가 뭔가를 공격하는 경우에, 소환수도 협공 하도록...
 				for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 				{
-					CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
+					CSummonUI* pUISummon = (CSummonUI*)pUIManager->GetUI(i);
 					CEntity* pSummonEntity = pUISummon->GetSummonEntity();
 					if( pSummonEntity )
 					{									
@@ -17580,7 +17641,7 @@ functions:
 					if(m_bForward )
 					{
 						StopMove();
-						pUIManager->GetQuestAccept()->RequestQuest( iMobIndex, iVirIdx, UI_WAREHOUSE, vNpcPos(1), vNpcPos(3) );
+						pUIManager->GetQuestAccept()->RequestQuest( iMobIndex, iVirIdx, UI_WARE_HOUSE, vNpcPos(1), vNpcPos(3) );
 						return FALSE;
 					}
 				}
@@ -17780,7 +17841,7 @@ functions:
 					if( m_bForward )
 					{				
 						StopMove();
-						pUIManager->GetQuestAccept()->RequestQuest( iMobIndex, iVirIdx, UI_PETTRAINING, vNpcPos(1), vNpcPos(3) );
+						pUIManager->GetQuestAccept()->RequestQuest( iMobIndex, iVirIdx, UI_PET_TRAINING, vNpcPos(1), vNpcPos(3) );
 						return FALSE;
 					}
 				}
@@ -19331,7 +19392,7 @@ virtual BOOL CheckSkill(void)
 						// 내가 뭔가를 공격하는 경우에, 소환수도 협공 하도록...
 						for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 						{
-							CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
+							CSummonUI* pUISummon = (CSummonUI*)pUIManager->GetUI(i);
 							CEntity* pSummonEntity = pUISummon->GetSummonEntity();
 							if( pSummonEntity )
 							{									
@@ -20865,7 +20926,7 @@ virtual void SetElementalData(CEntity* penEntity, SLONG hp, SLONG maxHP )
 
 		for( int i = UI_SUMMON_START; i <= UI_SUMMON_END; ++i )
 		{
-			CUISummon* pUISummon = (CUISummon*)pUIManager->GetUI(i);
+			CSummonUI* pUISummon = (CSummonUI*)pUIManager->GetUI(i);
 			pSlaveInfo = pInfo->GetMySlaveInfo(i - UI_SUMMON_START);
 
 			if (pUISummon->GetSummonEntity() && pUISummon->GetSummonIndex() == penEntity->GetNetworkID() && pSlaveInfo != NULL)
@@ -22378,7 +22439,7 @@ virtual void RidingPet(CEntity *pCharacter, INDEX iPetType )
 		m_pRideCharModelInstance = CreateModelInstance( "" );
 		m_pRideCharModelInstance->Copy( *pCharacter->GetModelInstance() );
 		m_pRiderModelInstance->AddChild( m_pRideCharModelInstance, tmp_iParentBoneID );
-
+		
 		pCharacter->GetModelInstance()->Copy(*m_pRiderModelInstance);
 
 		INDEX ctmi = pCharacter->GetModelInstance()->mi_cmiChildren.Count();

@@ -106,8 +106,8 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ 1,2,3 Å¸ÀÔ °Ë»ç
-	// 1. ¿É¼Ç ·£´ı, 2. ¿É¼Ç ·¹º§, 3. º¸¼® °áÁ¤
+	// ì•„ì´í…œ 1,2,3 íƒ€ì… ê²€ì‚¬
+	// 1. ì˜µì…˜ ëœë¤, 2. ì˜µì…˜ ë ˆë²¨, 3. ë³´ì„ ê²°ì •
 	CItem* item1 = ch->m_inventory.getItem(packet->tab_1, packet->invenIndex_1);
 	if (item1 == NULL)
 	{
@@ -119,7 +119,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 	CItem* item3 = ch->m_inventory.getItem(packet->tab_3, packet->invenIndex_3);
 	CItem* item4 = NULL;
 
-	//¾ÈÁ¤Á¦ ¾ÆÀÌÅÛ °Ë»ç
+	//ì•ˆì •ì œ ì•„ì´í…œ ê²€ì‚¬
 	if (packet->itemCount > 0)
 	{
 		if (ch->m_inventory.isValidNormalInventory(packet->tab_4, packet->invenIndex_4) == false)
@@ -154,12 +154,12 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	//º¸¼® ¾ÆÀÌÅÛ °Ë»ç
+	//ë³´ì„ ì•„ì´í…œ ê²€ì‚¬
 	if(!item1 || !item2 || !item3 ||
 			item1->getVIndex() != packet->virualIndex_1 || item2->getVIndex() != packet->virualIndex_2 || item3->getVIndex() != packet->virualIndex_3 ||
 			!item1->IsJewelType() || !item2->IsJewelType() || !item3->IsJewelType()  )
 	{
-		// ¿Ã¹Ù¸¥ ¾ÆÀÌÅÛÀÌ ¾Æ´Õ´Ï´Ù.
+		// ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ì•„ë‹™ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH);
 		SEND_Q(rmsg, ch->m_desc);
@@ -172,8 +172,8 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	//º¸¼® °³¼ö Ã¼Å© (Áßº¹µÈ º¸¼®ÀÌ ¿Ã¶ó¿ÔÀ» °æ¿ìÀÇ ´ëÇÑ Ã³¸®)
-	if(item1 == item2 && item1 == item3) 	//º¸¼® 3°³°¡ ¸ğµÎ °°Àº °æ¿ì
+	//ë³´ì„ ê°œìˆ˜ ì²´í¬ (ì¤‘ë³µëœ ë³´ì„ì´ ì˜¬ë¼ì™”ì„ ê²½ìš°ì˜ ëŒ€í•œ ì²˜ë¦¬)
+	if(item1 == item2 && item1 == item3) 	//ë³´ì„ 3ê°œê°€ ëª¨ë‘ ê°™ì€ ê²½ìš°
 	{
 		if(item1->Count() < 3)
 		{
@@ -182,7 +182,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item1 == item2 || item1 == item3) //2°³°¡ °°Àº º¸¼®ÀÎ °æ¿ì1
+	else if(item1 == item2 || item1 == item3) //2ê°œê°€ ê°™ì€ ë³´ì„ì¸ ê²½ìš°1
 	{
 		if(item1->Count() < 2)
 		{
@@ -191,7 +191,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item2 == item3) //2°³°¡ °°Àº º¸¼®ÀÎ °æ¿ì2
+	else if(item2 == item3) //2ê°œê°€ ê°™ì€ ë³´ì„ì¸ ê²½ìš°2
 	{
 		if(item2->Count() < 2)
 		{
@@ -200,15 +200,15 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item1->Count() < 0 && item2->Count() < 0 && item3->Count() < 0) //3°³°¡ ¸ğµÎ ´Ù¸¥ º¸¼®ÀÎ °æ¿ì
+	else if(item1->Count() < 0 && item2->Count() < 0 && item3->Count() < 0) //3ê°œê°€ ëª¨ë‘ ë‹¤ë¥¸ ë³´ì„ì¸ ê²½ìš°
 	{
 		LOG_ERROR("HACKING? : invalid count. charIndex[%d]", ch->m_index);
 		ch->m_desc->Close("invalid count");
 		return;
 	}
 
-	//µ· Ã¼Å©
-	int jewelGrade = (item1->m_itemProto->getItemNum0() + item2->m_itemProto->getItemNum0() + item3->m_itemProto->getItemNum0()) / 3 ;	//º¸¼® 3°³ÀÇ Æò±Õ µî±Ş
+	//ëˆ ì²´í¬
+	int jewelGrade = (item1->m_itemProto->getItemNum0() + item2->m_itemProto->getItemNum0() + item3->m_itemProto->getItemNum0()) / 3 ;	//ë³´ì„ 3ê°œì˜ í‰ê·  ë“±ê¸‰
 	CJewelData* jewelData = gserver->m_jewelDataList.FindGrade(jewelGrade);
 	if (jewelData == NULL)
 	{
@@ -221,14 +221,14 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_inventory.getMoney() < needNas)
 	{
-		//µ· ºÎÁ·
+		//ëˆ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOMONEY);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// ºó°ø°£ °Ë»ö
+	// ë¹ˆê³µê°„ ê²€ìƒ‰
 	if(ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -261,7 +261,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		int makeChaosRand = jewelData->getComposeNormalToChaosProb() * gserver->m_jewelDataList.m_jewelData->getEventCreateChaosProb() / 100;
 		int rand = GetRandom(1, 10000);
 		if(rand < makeChaosRand)
-			isChaos = true;		//Ä«¿À½º º¸¼® »ı¼ºµÊ
+			isChaos = true;		//ì¹´ì˜¤ìŠ¤ ë³´ì„ ìƒì„±ë¨
 	}
 
 	{
@@ -270,51 +270,51 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		if (packet->itemCount > 0)
 		{
 			if(isChaos)
-				maxrand = jewelData->getChaosComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getChaosComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 			else
-				maxrand = jewelData->getNormalComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getNormalComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		else
 		{
 			if(isChaos)
-				maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 			else
-				maxrand = jewelData->getNormalComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+				maxrand = jewelData->getNormalComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		//isChaos = true;
-		if(rand < maxrand)		//º¸¼® ÇÕ¼º ¼º°ø ½Ã
+		if(rand < maxrand)		//ë³´ì„ í•©ì„± ì„±ê³µ ì‹œ
 		{
-			//º¸¼® ÇÕ¼ºÀ» ¼º°øÇÏ¸é + µî±Ş °ªÀ» Àû¿ëÇÑ´Ù.
+			//ë³´ì„ í•©ì„±ì„ ì„±ê³µí•˜ë©´ + ë“±ê¸‰ ê°’ì„ ì ìš©í•œë‹¤.
 			int plus2, plus3;
 			if(isChaos)
 			{
 				if (packet->itemCount > 0)
 				{
-					plus2 = jewelData->getChaosPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getChaosPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getChaosPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getChaosPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 				else
 				{
-					plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 			}
 			else
 			{
 				if (packet->itemCount > 0)
 				{
-					plus2 = jewelData->getNormalPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getNormalPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getNormalPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getNormalPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 				else
 				{
-					plus2 = jewelData->getNormalPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-					plus3 = jewelData->getNormalPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+					plus2 = jewelData->getNormalPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+					plus3 = jewelData->getNormalPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 				}
 			}
 
-			if(plus3 > 10000)	plus3 = 10000;
-			if(plus2 > 40000)	plus2 = 40000;
+			if(plus3 > 1000)	plus3 = 1000;
+			if(plus2 > 4000)	plus2 = 4000;
 
 			rand = GetRandom(1, 10000);
 
@@ -322,29 +322,29 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 			if (rand < plus3)
 			{
-				//3 »ó½Â
+				//3 ìƒìŠ¹
 				jewelGrade += 3;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 			else if(rand < plus2)
 			{
-				//2 »ó½Â
+				//2 ìƒìŠ¹
 				jewelGrade += 2;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 			else
 			{
-				//1 »ó½Â
+				//1 ìƒìŠ¹
 				jewelGrade += 1;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 		}
-		else					//º¸¼® ÇÕ¼º ½ÇÆĞ ½Ã
+		else					//ë³´ì„ í•©ì„± ì‹¤íŒ¨ ì‹œ
 		{
-			//º¸¼® ÇÕ¼ºÀ» ½ÇÆĞÇÏ¸é - µî±Ş °ªÀ» Àû¿ëÇÑ´Ù.
+			//ë³´ì„ í•©ì„±ì„ ì‹¤íŒ¨í•˜ë©´ - ë“±ê¸‰ ê°’ì„ ì ìš©í•œë‹¤.
 			int minus0, minus1, minus2, minus3;
 			if(isChaos)
 			{
@@ -365,7 +365,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 			if(rand < minus3)
 			{
-				//3 °¨¼Ò
+				//3 ê°ì†Œ
 				jewelGrade -= 3;
 				if(jewelGrade < 1)
 					jewelGrade = 1;
@@ -378,7 +378,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if(rand < minus0)
 			{
-				//À¯Áö
+				//ìœ ì§€
 			}
 			else
 			{
@@ -403,7 +403,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// »õ·Î¿î º¸¼® »ı¼º
+	// ìƒˆë¡œìš´ ë³´ì„ ìƒì„±
 	CItem* pJewel = gserver->m_itemProtoList.CreateItem(jewelindex, -1, 0, 0, 1);
 	if(!pJewel)
 	{
@@ -430,7 +430,7 @@ void do_ExSocketUpgradeJewelReq(CPC* ch, CNetMsg::SP& msg)
 		ch->m_inventory.decreaseItemCount(item2, 1);
 		ch->m_inventory.decreaseItemCount(item3, 1);
 
-		// ¾ÈÁ¤Á¦ Áö¿ì±â
+		// ì•ˆì •ì œ ì§€ìš°ê¸°
 		if (packet->itemCount > 0)
 		{
 			ch->m_inventory.decreaseItemCount(item4, packet->itemCount);
@@ -534,15 +534,15 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ 1,2,3 Å¸ÀÔ °Ë»ç
-	// 1. ¿É¼Ç ·£´ı, 2. ¿É¼Ç ·¹º§, 3. º¸¼® °áÁ¤
+	// ì•„ì´í…œ 1,2,3 íƒ€ì… ê²€ì‚¬
+	// 1. ì˜µì…˜ ëœë¤, 2. ì˜µì…˜ ë ˆë²¨, 3. ë³´ì„ ê²°ì •
 
 	CItem* item1 = ch->m_inventory.getItem(packet->tab_1, packet->invenIndex_1);
 	CItem* item2 = ch->m_inventory.getItem(packet->tab_2, packet->invenIndex_2);
 	CItem* item3 = ch->m_inventory.getItem(packet->tab_3, packet->invenIndex_3);
 	CItem* item4 = NULL;
 
-	//¾ÈÁ¤Á¦ ¾ÆÀÌÅÛ °Ë»ç
+	//ì•ˆì •ì œ ì•„ì´í…œ ê²€ì‚¬
 	if (packet->itemCount > 0)
 	{
 		if (ch->m_inventory.isValidNormalInventory(packet->tab_4, packet->invenIndex_4) == false)
@@ -577,12 +577,12 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	//º¸¼® ¾ÆÀÌÅÛ °Ë»ç
+	//ë³´ì„ ì•„ì´í…œ ê²€ì‚¬
 	if(!item1 || !item2 || !item3 ||
 			item1->getVIndex() != packet->virualIndex_1 || item2->getVIndex() != packet->virualIndex_2 || item3->getVIndex() != packet->virualIndex_3 ||
 			!item1->IsChaosJewelType() || !item2->IsChaosJewelType() || !item3->IsChaosJewelType()  )
 	{
-		// ¿Ã¹Ù¸¥ ¾ÆÀÌÅÛÀÌ ¾Æ´Õ´Ï´Ù.
+		// ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ì•„ë‹™ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH);
 		SEND_Q(rmsg, ch->m_desc);
@@ -595,8 +595,8 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	//º¸¼® °³¼ö Ã¼Å© (Áßº¹µÈ º¸¼®ÀÌ ¿Ã¶ó¿ÔÀ» °æ¿ìÀÇ ´ëÇÑ Ã³¸®)
-	if(item1 == item2 && item1 == item3) 	//º¸¼® 3°³°¡ ¸ğµÎ °°Àº °æ¿ì
+	//ë³´ì„ ê°œìˆ˜ ì²´í¬ (ì¤‘ë³µëœ ë³´ì„ì´ ì˜¬ë¼ì™”ì„ ê²½ìš°ì˜ ëŒ€í•œ ì²˜ë¦¬)
+	if(item1 == item2 && item1 == item3) 	//ë³´ì„ 3ê°œê°€ ëª¨ë‘ ê°™ì€ ê²½ìš°
 	{
 		if(item1->Count() < 3)
 		{
@@ -605,7 +605,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item1 == item2 || item1 == item3) //2°³°¡ °°Àº º¸¼®ÀÎ °æ¿ì1
+	else if(item1 == item2 || item1 == item3) //2ê°œê°€ ê°™ì€ ë³´ì„ì¸ ê²½ìš°1
 	{
 		if(item1->Count() < 2)
 		{
@@ -614,7 +614,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item2 == item3) //2°³°¡ °°Àº º¸¼®ÀÎ °æ¿ì2
+	else if(item2 == item3) //2ê°œê°€ ê°™ì€ ë³´ì„ì¸ ê²½ìš°2
 	{
 		if(item2->Count() < 2)
 		{
@@ -623,14 +623,14 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	else if(item1->Count() < 0 && item2->Count() < 0 && item3->Count() < 0) //3°³°¡ ¸ğµÎ ´Ù¸¥ º¸¼®ÀÎ °æ¿ì
+	else if(item1->Count() < 0 && item2->Count() < 0 && item3->Count() < 0) //3ê°œê°€ ëª¨ë‘ ë‹¤ë¥¸ ë³´ì„ì¸ ê²½ìš°
 	{
 		LOG_ERROR("HACKING? : invalid count. charIndex[%d]", ch->m_index);
 		ch->m_desc->Close("invalid count");
 		return;
 	}
 
-	// ºó°ø°£ °Ë»ö
+	// ë¹ˆê³µê°„ ê²€ìƒ‰
 	if (ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -655,8 +655,8 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	//µ· Ã¼Å©
-	int jewelGrade = (item1->m_itemProto->getItemNum0() + item2->m_itemProto->getItemNum0() + item3->m_itemProto->getItemNum0()) / 3 ;	//º¸¼® 3°³ÀÇ Æò±Õ µî±Ş
+	//ëˆ ì²´í¬
+	int jewelGrade = (item1->m_itemProto->getItemNum0() + item2->m_itemProto->getItemNum0() + item3->m_itemProto->getItemNum0()) / 3 ;	//ë³´ì„ 3ê°œì˜ í‰ê·  ë“±ê¸‰
 	CJewelData* jewelData = gserver->m_jewelDataList.FindGrade(jewelGrade);
 	if (jewelData == NULL)
 	{
@@ -669,7 +669,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_inventory.getMoney() < needNas)
 	{
-		//µ· ºÎÁ·
+		//ëˆ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOMONEY);
 		SEND_Q(rmsg, ch->m_desc);
@@ -678,68 +678,68 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 	ch->m_inventory.decreaseMoney(needNas);
 
-	//È®·ü Àû¿ë
-	//TODO	: 1´Ü°è º¸¼® »ı¼º ¼º°ø ¿©ºÎ Ã¼Å©
-	//		: 2´Ü°è ¼º°ø, ½ÇÆĞ½Ã µî±Ş Áõ°¡,°¨¼Ò ¿©ºÎ °áÁ¤
-	//		: 3´Ü°è º¸¼® Á¾·ù °áÁ¤
+	//í™•ë¥  ì ìš©
+	//TODO	: 1ë‹¨ê³„ ë³´ì„ ìƒì„± ì„±ê³µ ì—¬ë¶€ ì²´í¬
+	//		: 2ë‹¨ê³„ ì„±ê³µ, ì‹¤íŒ¨ì‹œ ë“±ê¸‰ ì¦ê°€,ê°ì†Œ ì—¬ë¶€ ê²°ì •
+	//		: 3ë‹¨ê³„ ë³´ì„ ì¢…ë¥˜ ê²°ì •
 
 	{
 		int rand = GetRandom(1, 10000);
 		int maxrand;
 		if (packet->itemCount > 0)
 		{
-			maxrand = jewelData->getChaosComposeProb() * (10000 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+			maxrand = jewelData->getChaosComposeProb() * (100 + item4->m_itemProto->getItemNum3() * packet->itemCount) / 100 * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 		}
 		else
-			maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 10000;
+			maxrand = jewelData->getChaosComposeProb() * gserver->m_jewelDataList.m_jewelData->getEventComposeProb() / 100;
 
-		if(rand < maxrand)		//º¸¼® ÇÕ¼º ¼º°ø ½Ã
+		if(rand < maxrand)		//ë³´ì„ í•©ì„± ì„±ê³µ ì‹œ
 		{
-			//º¸¼® ÇÕ¼ºÀ» ¼º°øÇÏ¸é + µî±Ş °ªÀ» Àû¿ëÇÑ´Ù.
+			//ë³´ì„ í•©ì„±ì„ ì„±ê³µí•˜ë©´ + ë“±ê¸‰ ê°’ì„ ì ìš©í•œë‹¤.
 			int plus2;
 			int plus3;
 
 			if (packet->itemCount > 0)
 			{
-				plus2 = jewelData->getChaosPlus2Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-				plus3 = jewelData->getChaosPlus3Prob() * (10000 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 10000 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+				plus2 = jewelData->getChaosPlus2Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+				plus3 = jewelData->getChaosPlus3Prob() * (100 + (item4->m_itemProto->getItemNum3() * packet->itemCount)) / 100 * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 			}
 			else
 			{
-				plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
-				plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 10000;
+				plus2 = jewelData->getChaosPlus2Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
+				plus3 = jewelData->getChaosPlus3Prob() * gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb() / 100;
 			}
 
-			if(plus3 > 10000)	plus3 = 10000;
-			if(plus2 > 40000)	plus2 = 40000;
+			if(plus3 > 1000)	plus3 = 1000;
+			if(plus2 > 4000)	plus2 = 4000;
 
 			rand = GetRandom(1, 10000);
 
 			if(rand < plus3)
 			{
-				//3 »ó½Â
+				//3 ìƒìŠ¹
 				jewelGrade += 3;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 			else if(rand < plus2)
 			{
-				//2 »ó½Â
+				//2 ìƒìŠ¹
 				jewelGrade += 2;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 			else
 			{
-				//1 »ó½Â
+				//1 ìƒìŠ¹
 				jewelGrade += 1;
 				if(jewelGrade > JEWEL_MAX_LEVEL)
 					jewelGrade = JEWEL_MAX_LEVEL;
 			}
 		}
-		else					//º¸¼® ÇÕ¼º ½ÇÆĞ ½Ã
+		else					//ë³´ì„ í•©ì„± ì‹¤íŒ¨ ì‹œ
 		{
-			//º¸¼® ÇÕ¼ºÀ» ½ÇÆĞÇÏ¸é - µî±Ş °ªÀ» Àû¿ëÇÑ´Ù.
+			//ë³´ì„ í•©ì„±ì„ ì‹¤íŒ¨í•˜ë©´ - ë“±ê¸‰ ê°’ì„ ì ìš©í•œë‹¤.
 			int minus1 = jewelData->getChaosMinus1Prob();
 			int minus2 = jewelData->getChaosMinus2Prob();
 			int minus3 = jewelData->getChaosMinus3Prob();
@@ -749,14 +749,14 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 			if(rand < minus3)
 			{
-				//3 °¨¼Ò
+				//3 ê°ì†Œ
 				jewelGrade -= 3;
 				if(jewelGrade < 1)
 					jewelGrade = 1;
 			}
 			else if(rand < minus2)
 			{
-				//2 °¨¼Ò
+				//2 ê°ì†Œ
 				jewelGrade -= 2;
 				if(jewelGrade < 1)
 					jewelGrade = 1;
@@ -766,7 +766,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				//1 °¨¼Ò
+				//1 ê°ì†Œ
 				jewelGrade -= 1;
 				if(jewelGrade < 1)
 					jewelGrade = 1;
@@ -783,7 +783,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// »õ·Î¿î º¸¼® »ı¼º
+	// ìƒˆë¡œìš´ ë³´ì„ ìƒì„±
 	CItem* pJewel = gserver->m_itemProtoList.CreateItem(jewelindex, -1, 0, 0, 1);
 	if(!pJewel)
 	{
@@ -808,7 +808,7 @@ void do_ExSocketUpgradeChaosJewelReq(CPC* ch, CNetMsg::SP& msg)
 		ch->m_inventory.decreaseItemCount(item2, 1);
 		ch->m_inventory.decreaseItemCount(item3, 1);
 
-		// ¾ÈÁ¤Á¦ Áö¿ì±â
+		// ì•ˆì •ì œ ì§€ìš°ê¸°
 		if (packet->itemCount > 0)
 		{
 			ch->m_inventory.decreaseItemCount(item4, packet->itemCount);
@@ -898,7 +898,7 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Àåºñ ¾ÆÀÌÅÛÀÎÁö È®ÀÎ
+	// ì¥ë¹„ ì•„ì´í…œì¸ì§€ í™•ì¸
 	CItem* equipitem = ch->m_inventory.getItem(packet->tab_1, packet->invenIndex_1);
 	if (equipitem == NULL)
 	{
@@ -910,14 +910,14 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (equipitem->getVIndex() != packet->virualIndex_1)
 	{
-		// ¿Ã¹Ù¸¥ ¾ÆÀÌÅÛÀÌ ¾Æ´Õ´Ï´Ù
+		// ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ì•„ë‹™ë‹ˆë‹¤
 		LOG_ERROR("HACKING? : invalid virtual index. char_index[%d] tab[%d] invenIndex[%d]",
 				  ch->m_index, packet->tab_1, packet->invenIndex_1);
 		ch->m_desc->Close("invalid virtual index");
 		return ;
 	}
 
-	// ½ºÅ©·Ñ ¾ÆÀÌÅÛÀÎÁö
+	// ìŠ¤í¬ë¡¤ ì•„ì´í…œì¸ì§€
 	CItem* scroll = ch->m_inventory.getItem(packet->tab_2, packet->invenIndex_2);
 	if (scroll == NULL)
 	{
@@ -929,7 +929,7 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (scroll->getVIndex() != packet->virualIndex_2)
 	{
-		// ¿Ã¹Ù¸¥ ¾ÆÀÌÅÛÀÌ ¾Æ´Õ´Ï´Ù.
+		// ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ì•„ë‹™ë‹ˆë‹¤.
 		LOG_ERROR("HACKING? : invalid virtual index. char_index[%d] tab[%d] invenIndex[%d]",
 				  ch->m_index, packet->tab_2, packet->invenIndex_2);
 		ch->m_desc->Close("invalid virtual index");
@@ -952,11 +952,11 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// °áÇÕµÈ »óÅÂ¿¡¼­´Â ¾ÈµÊ
+	// ê²°í•©ëœ ìƒíƒœì—ì„œëŠ” ì•ˆë¨
 	if(equipitem->getFlag() & FLAG_ITEM_COMPOSITION)
 		return ;
 
-	// Âø¿ëÁßÀÎ °æ¿ì ºÒ°¡
+	// ì°©ìš©ì¤‘ì¸ ê²½ìš° ë¶ˆê°€
 	if(equipitem->getWearPos() != WEARING_NONE)
 		return ;
 
@@ -964,7 +964,7 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_inventory.getMoney() < nNeedMoney)
 	{
-		// µ·ºÎÁ·
+		// ëˆë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOMONEY);
 		SEND_Q(rmsg, ch->m_desc);
@@ -985,8 +985,8 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 
 			ch->m_inventory.sendOneItemInfo(equipitem);
 		}
-		// ¼ÒÄÏ »ı¼º ¼º°ø ¸Ş½ÃÁö
-		// ¼ÒÄÏ »ı¼º °³¼ö ¸Ş½ÃÁö
+		// ì†Œì¼“ ìƒì„± ì„±ê³µ ë©”ì‹œì§€
+		// ì†Œì¼“ ìƒì„± ê°œìˆ˜ ë©”ì‹œì§€
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			SocketMsg(rmsg, MSG_EX_SOCKET_MAKE_REP);
@@ -998,7 +998,7 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ¼ÒÄÏ »ı¼º ½ÇÆĞ ¿¡·¯¸Ş½ÃÁö
+		// ì†Œì¼“ ìƒì„± ì‹¤íŒ¨ ì—ëŸ¬ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_FAILED_MAKE);
 		SEND_Q(rmsg, ch->m_desc);
@@ -1008,10 +1008,10 @@ void do_ExSocketMakeReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÎº¥¿¡ ½ºÅ©·Ñ ¾ÆÀÌÅÛ Áö¿ì±â
+	// ì¸ë²¤ì— ìŠ¤í¬ë¡¤ ì•„ì´í…œ ì§€ìš°ê¸°
 	ch->m_inventory.decreaseItemCount(scroll, 1);
 
-	// ³ª½º ÁÙÀÌ±â
+	// ë‚˜ìŠ¤ ì¤„ì´ê¸°
 	if (nNeedMoney > 0)
 	{
 		ch->m_inventory.decreaseMoney(nNeedMoney);
@@ -1168,7 +1168,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	if (pJewel_item->m_itemProto->getItemSet0() != JEWEL_COMPOSITE_POSITION_ALL)		//¾ÆÀÌÅÛÀÌ º¸¼®ÀÏ °æ¿ì a_set_0 ÀÌ °áÇÕ À§Ä¡¸¦ ³ªÅ¸³½´Ù.
+	if (pJewel_item->m_itemProto->getItemSet0() != JEWEL_COMPOSITE_POSITION_ALL)		//ì•„ì´í…œì´ ë³´ì„ì¼ ê²½ìš° a_set_0 ì´ ê²°í•© ìœ„ì¹˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
 	{
 		bool bFailed = false;
 		if (pEq_item->m_itemProto->getItemTypeIdx() == ITYPE_WEAPON)
@@ -1217,7 +1217,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	if( ch->m_inventory.getEmptyCount() < 1)										//°áÇÕ ½ÇÆĞ½Ã¿¡ ÀÎº¥Åä¸®¿¡ »õ·Î¿î ¾ÆÀÌÅÛÀ» ³Ö¾îÁà¾ß ÇÒ ¼öµµ ÀÖÀ¸¹Ç·Î
+	if( ch->m_inventory.getEmptyCount() < 1)										//ê²°í•© ì‹¤íŒ¨ì‹œì— ì¸ë²¤í† ë¦¬ì— ìƒˆë¡œìš´ ì•„ì´í…œì„ ë„£ì–´ì¤˜ì•¼ í•  ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysFullInventoryMsg(rmsg, 0);
@@ -1226,7 +1226,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	if (packet->pos == 0 && !pJewel_item->IsChaosJewelType())							//0ÀÚ¸®¿¡´Â Ä«¿À½º º¸¼®¸¸ °áÇÕÇÒ ¼ö ÀÖ´Ù.
+	if (packet->pos == 0 && !pJewel_item->IsChaosJewelType())							//0ìë¦¬ì—ëŠ” ì¹´ì˜¤ìŠ¤ ë³´ì„ë§Œ ê²°í•©í•  ìˆ˜ ìˆë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH);
@@ -1235,7 +1235,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	if (packet->pos > 0 && packet->pos <= MAX_SOCKET_COUNT && !pJewel_item->IsJewelType())		//1ºÎÅÍÀÇ ÀÚ¸®¿¡´Â ÀÏ¹İ º¸¼®À» °áÇÕÇÒ ¼ö ÀÖ´Ù.
+	if (packet->pos > 0 && packet->pos <= MAX_SOCKET_COUNT && !pJewel_item->IsJewelType())		//1ë¶€í„°ì˜ ìë¦¬ì—ëŠ” ì¼ë°˜ ë³´ì„ì„ ê²°í•©í•  ìˆ˜ ìˆë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_ITEM_MISSMATCH);
@@ -1244,10 +1244,10 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	if (pEq_item->m_socketList.GetJewelAt(packet->pos) != 0)							//°áÇÕ À§Ä¡¿¡ ÀÌ¹Ì º¸¼®ÀÌ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+	if (pEq_item->m_socketList.GetJewelAt(packet->pos) != 0)							//ê²°í•© ìœ„ì¹˜ì— ì´ë¯¸ ë³´ì„ì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
 		return ;
 
-	for (int i = 0; i < MAX_SOCKET_COUNT; i++)									//º¸¼® ¿É¼Ç Áßº¹ Ã¼Å© (Áßº¹µÇ¸é ¾ÈµÈ´Ù)
+	for (int i = 0; i < MAX_SOCKET_COUNT; i++)									//ë³´ì„ ì˜µì…˜ ì¤‘ë³µ ì²´í¬ (ì¤‘ë³µë˜ë©´ ì•ˆëœë‹¤)
 	{
 		COption *option = pEq_item->m_socketList.GetJewelOptionAt(i);
 		if (option)
@@ -1275,7 +1275,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 	// TODO:NAS DECREASE
 	if(ch->m_inventory.getMoney() < need_nas)
 	{
-		// µ·ºÎÁ·
+		// ëˆë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOMONEY);
 		SEND_Q(rmsg, ch->m_desc);
@@ -1293,13 +1293,13 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 	LONGLONG pJewel_item_for_log_count = pJewel_item->Count();
 
 
-	if (prob > pJewel_item->m_itemProto->getItemNum1() * eventValue / 10000)		//º¸¼® °áÇÕ È®·ü (½ÇÆĞ½Ã)
+	if (prob > pJewel_item->m_itemProto->getItemNum1() * eventValue / 100)		//ë³´ì„ ê²°í•© í™•ë¥  (ì‹¤íŒ¨ì‹œ)
 	{
-		// TODO:º¸¼® ¾ÆÀÌÅÛ °áÇÕ ½ÇÆĞ½Ã
+		// TODO:ë³´ì„ ì•„ì´í…œ ê²°í•© ì‹¤íŒ¨ì‹œ
 		if(pProtect_item == NULL)
 		{
-			//º¸Á¶ ¾ÆÀÌÅÛÀÌ ¾ø´Â °æ¿ì¿¡´Â ¾ÆÀÌÅÛÀ» Â÷°¨ÇÏ°í ÇØ´ç µî±Ş ¾Æ·¡ÀÇ º¸¼®ÁÖ¸Ó´Ï ¾ÆÀÌÅÛÀ» ¹ß±ŞÇÑ´Ù.
-			//ÇØ´ç º¸¼® ¾ÆÀÌÅÛÀÇ ÇÑ´Ü°è ¾Æ·¡ÀÎ ¾ÆÀÌÅÛÀ» ¸¸µé¾î ÀÎº¥¿¡ ³Ö¾îÁØ´Ù.
+			//ë³´ì¡° ì•„ì´í…œì´ ì—†ëŠ” ê²½ìš°ì—ëŠ” ì•„ì´í…œì„ ì°¨ê°í•˜ê³  í•´ë‹¹ ë“±ê¸‰ ì•„ë˜ì˜ ë³´ì„ì£¼ë¨¸ë‹ˆ ì•„ì´í…œì„ ë°œê¸‰í•œë‹¤.
+			//í•´ë‹¹ ë³´ì„ ì•„ì´í…œì˜ í•œë‹¨ê³„ ì•„ë˜ì¸ ì•„ì´í…œì„ ë§Œë“¤ì–´ ì¸ë²¤ì— ë„£ì–´ì¤€ë‹¤.
 			protectItem = false;
 			int grade = pJewel_item->m_itemProto->getItemNum0();
 			int jewelIndex = 0;
@@ -1312,7 +1312,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 			int rand = GetRandom(1, gserver->m_jewelDataList.m_nJewelItemKindCount);
 			if(pJewel_item->IsChaosJewelType())
 			{
-				//Ä«¿À½º º¸¼® ÁÖ¸Ó´Ï¸¦ Áö±Ş
+				//ì¹´ì˜¤ìŠ¤ ë³´ì„ ì£¼ë¨¸ë‹ˆë¥¼ ì§€ê¸‰
 				int chaosJewelPocket = gserver->m_jewelDataList.FindChaosJewelPocketIndex(grade);
 
 				CItem *chaosPocketItem = gserver->m_itemProtoList.CreateItem(chaosJewelPocket, WEARING_NONE, 0, 0, 1);
@@ -1336,7 +1336,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if(pJewel_item->IsJewelType())
 			{
-				//ÀÏ¹İ º¸¼® ÁÖ¸Ó´Ï¸¦ Áö±Ş
+				//ì¼ë°˜ ë³´ì„ ì£¼ë¨¸ë‹ˆë¥¼ ì§€ê¸‰
 				int pocketIndex = gserver->m_jewelDataList.FindJewelPocketIndex(grade);
 				CItem *pocketItem = gserver->m_itemProtoList.CreateItem(pocketIndex, WEARING_NONE, 0, 0, 1);
 				if (pocketItem == NULL)
@@ -1362,7 +1362,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			//º¸È£ ½ºÅ©·Ñ ¾ÆÀÌÅÛ Â÷°¨
+			//ë³´í˜¸ ìŠ¤í¬ë¡¤ ì•„ì´í…œ ì°¨ê°
 			ch->m_inventory.decreaseItemCount(pProtect_item, 1);
 		}
 
@@ -1376,7 +1376,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	if (!pEq_item->m_socketList.SetJewelAt(packet->pos, pJewel_item->getDBIndex()))	//º¸¼®À» °áÇÕ.
+	if (!pEq_item->m_socketList.SetJewelAt(packet->pos, pJewel_item->getDBIndex()))	//ë³´ì„ì„ ê²°í•©.
 	{
 		GAMELOG << init("SOCKET COMBINE", ch) << "FAIL:SET" << delim << packet->pos << delim << "JEWEL" << pJewel_item->getDBIndex() << end;
 		LOG_INFO("SOCKET COMBINE FAIL> charIndex : %d, jewelIndex : %d, jewelCount : %d", ch->m_index, pJewel_item->m_itemProto->getItemIndex(), pJewel_item->Count());
@@ -1385,7 +1385,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 
 	pEq_item->setFlag(pEq_item->getFlag() | FLAG_ITEM_SOCKET);
 
-	if(pJewel_item->m_itemProto->getItemSet0() == 0 && pJewel_item->m_itemProto->getItemRareIndex(0) == OPTION_DOWN_LIMITLEVEL)		//Á¶ÇÕ¿¡ ¼º°øÇÏ¿´À»¶§ ¿É¼ÇÀÌ 49¹ø¿É¼ÇÀÌ¸é
+	if(pJewel_item->m_itemProto->getItemSet0() == 0 && pJewel_item->m_itemProto->getItemRareIndex(0) == OPTION_DOWN_LIMITLEVEL)		//ì¡°í•©ì— ì„±ê³µí•˜ì˜€ì„ë•Œ ì˜µì…˜ì´ 49ë²ˆì˜µì…˜ì´ë©´
 	{
 		pEq_item->setFlag(pEq_item->getFlag() | FLAG_ITEM_LEVELDOWN);
 	}
@@ -1393,7 +1393,7 @@ void do_ExSocketCombineJewelReq(CPC* ch, CNetMsg::SP& msg)
 	ch->m_inventory.decreaseItemCount(pJewel_item, 1);
 	ch->m_inventory.sendOneItemInfo(pEq_item);
 
-	//º¸È£ ½ºÅ©·Ñ ¾ÆÀÌÅÛ Â÷°¨
+	//ë³´í˜¸ ìŠ¤í¬ë¡¤ ì•„ì´í…œ ì°¨ê°
 	if( pProtect_item != NULL)
 	{
 		ch->m_inventory.decreaseItemCount(pProtect_item, 1);
@@ -1465,18 +1465,18 @@ void do_ExSocketCleanJewel(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// °áÇÕµÈ »óÅÂ¿¡¼­´Â ¾ÈµÊ
+	// ê²°í•©ëœ ìƒíƒœì—ì„œëŠ” ì•ˆë¨
 	if(pEquipItem->getFlag() & FLAG_ITEM_COMPOSITION)
 		return ;
 
-	// Âø¿ëÇÑ °æ¿ì´Â ¾ÈµÊ
+	// ì°©ìš©í•œ ê²½ìš°ëŠ” ì•ˆë¨
 	if(pEquipItem->getWearPos() != WEARING_NONE)
 		return ;
 
 	char socketcount = pEquipItem->m_socketList.GetSocketCount();
 	if(socketcount < 1)
 	{
-		// »ı¼ºµÈ ¼ÒÄÏÀÌ ¾ø´Ù.
+		// ìƒì„±ëœ ì†Œì¼“ì´ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOSPACE);
 		SEND_Q(rmsg, ch->m_desc);
@@ -1487,7 +1487,7 @@ void do_ExSocketCleanJewel(CPC* ch, CNetMsg::SP& msg)
 
 	if(!pEquipItem->m_socketList.IsCombinedJewel())
 	{
-		// º¸¼®°áÇÕµÈ °ÍÀÌ ¾ø´Ù.
+		// ë³´ì„ê²°í•©ëœ ê²ƒì´ ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOJEWEL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -1501,14 +1501,14 @@ void do_ExSocketCleanJewel(CPC* ch, CNetMsg::SP& msg)
 		GAMELOG << init("ERROR : socket_config is NULL") << "do_ExSocketCleanJewel" << end;
 		return ;
 	}
-	// µ· °Ë»ç
+	// ëˆ ê²€ì‚¬
 	int needMoney = pEquipItem->m_socketList.GetCombinedCount() * pEquipItem->m_socketList.GetSocketCount() * instance->Get_jewel_clean_factor();
 	if (pEquipItem->m_socketList.GetJewelAt(0) > 0)
 		needMoney += instance->Get_chaos_jewel_clean_factor();
 
 	if(ch->m_inventory.getMoney() < needMoney)
 	{
-		// µ·ºÎÁ·
+		// ëˆë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		SocketErrorMsg(rmsg, MSG_EX_SOCKET_ERROR_NOMONEY);
 		SEND_Q(rmsg, ch->m_desc);

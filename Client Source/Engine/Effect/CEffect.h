@@ -28,7 +28,7 @@ enum EFF_RENDER_SUB_TYPE
 	ERS_NORMAL		= 0,
 	ERS_CASHSHOP,
 	ERS_MATRYOSHKA,
-	ERS_CHAR_CREATE,
+	ERS_MAKETITLE,
 };
 enum EFFECT_TYPE
 {
@@ -99,6 +99,7 @@ public:
 	inline EFFECT_STATE GetState()		{ return m_eState;					}
 	inline EFFECT_TYPE GetType()		{ return m_eType;					}
 	inline FLOAT GetLastProcessedTime()	{ return m_fLastProcessTime;		}
+	inline void SetLastProcessedTime(FLOAT time)	{ m_fLastProcessTime = time; }
 
 	inline FLOAT GetLeftTime()			{ return m_fLeftTime; }
 
@@ -144,6 +145,9 @@ public:
 
 	inline void SetERSubType(EFF_RENDER_SUB_TYPE ersType )		{ m_ERSubType = ersType; }
 	inline EFF_RENDER_SUB_TYPE GetERSubType(void)				{ return m_ERSubType; }
+
+	// 이펙트가 컬링 되더라도 이펙트 타임은 업데이트 되어야 한다.
+	BOOL UpdateETime(FLOAT tm);
 
 protected:
 	CEffect( CEffect &other ) {}

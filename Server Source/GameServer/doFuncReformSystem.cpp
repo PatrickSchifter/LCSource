@@ -94,7 +94,7 @@ void do_Reform(CPC *ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¸®Æ÷¸Ó ¾ÆÀÌÅÛ ±¸ÇÏ±â, È²±Ýµ¸º¸±â ¾ÆÀÌÅÛ ±¸ÇÏ±â, ¸®ÆûÇÒ ¾ÆÀÌÅÛ ±¸ÇÏ±â
+	// ë¦¬í¬ë¨¸ ì•„ì´í…œ êµ¬í•˜ê¸°, í™©ê¸ˆë‹ë³´ê¸° ì•„ì´í…œ êµ¬í•˜ê¸°, ë¦¬í¼í•  ì•„ì´í…œ êµ¬í•˜ê¸°
 	CItem *pReformerItem = ch->m_inventory.getItem(packet->reformer_tab, packet->reformer_invenIndex);
 	CItem *pMagnifierItem = ch->m_inventory.getItem(packet->magnifire_tab, packet->magnifire_invenIndex);
 	CItem *pReformItem = ch->m_inventory.getItem(packet->reform_tab, packet->reform_invenIndex);
@@ -124,7 +124,7 @@ void do_Reform(CPC *ch, CNetMsg::SP& msg)
 			return ;
 		}
 	}
-	// ¿©±â±îÁö ¿ÔÀ¸¸é ÀÛ¾÷ ¿Ï·á. ¾Æ·¡ ¾ÆÀÌÅÛµéÀº »ç¿ë¿Ï·á·Î »èÁ¦ µÇ¾úÀ» ¼öµµ ÀÖ¾î NULLÃ³¸® ÇÔ. ±×·¸´Ù°í À§¿¡¼­ ¾ÆÀÌÅÛÀ» °®°í ÀÛ¾÷ÇÏÁö ¸»°Í.
+	// ì—¬ê¸°ê¹Œì§€ ì™”ìœ¼ë©´ ìž‘ì—… ì™„ë£Œ. ì•„ëž˜ ì•„ì´í…œë“¤ì€ ì‚¬ìš©ì™„ë£Œë¡œ ì‚­ì œ ë˜ì—ˆì„ ìˆ˜ë„ ìžˆì–´ NULLì²˜ë¦¬ í•¨. ê·¸ë ‡ë‹¤ê³  ìœ„ì—ì„œ ì•„ì´í…œì„ ê°–ê³  ìž‘ì—…í•˜ì§€ ë§ê²ƒ.
 	pReformerItem = NULL;
 	pMagnifierItem = NULL;
 
@@ -139,25 +139,25 @@ void do_MidReform(CPC *ch_, CItem *reformerItem_, CItem *magnifierItem_, CItem *
 {
 	const int needReformerItem = 1;
 
-	// ¸®Æ÷¸Ó ÇÑ°³ »èÁ¦
+	// ë¦¬í¬ë¨¸ í•œê°œ ì‚­ì œ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		useItemFromInventory(ch_, rmsg, reformerItem_, needReformerItem);
 		SEND_Q(rmsg, ch_->m_desc);
 	}
 
-	// È²±Ý µ¸º¸±â count_ ¸¸Å­ »èÁ¦
+	// í™©ê¸ˆ ë‹ë³´ê¸° count_ ë§Œí¼ ì‚­ì œ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		useItemFromInventory(ch_, rmsg, magnifierItem_, count_);
 		SEND_Q(rmsg, ch_->m_desc);
 	}
 
-	// ¿©±â±îÁö ¿ÔÀ¸¸é ÀÛ¾÷ ¿Ï·á. ¾Æ·¡ ¾ÆÀÌÅÛµéÀº »ç¿ë¿Ï·á·Î »èÁ¦ µÇ¾úÀ» ¼öµµ ÀÖ¾î NULLÃ³¸® ÇÔ. ±×·¸´Ù°í À§¿¡¼­ ¾ÆÀÌÅÛÀ» °®°í ÀÛ¾÷ÇÏÁö ¸»°Í.
+	// ì—¬ê¸°ê¹Œì§€ ì™”ìœ¼ë©´ ìž‘ì—… ì™„ë£Œ. ì•„ëž˜ ì•„ì´í…œë“¤ì€ ì‚¬ìš©ì™„ë£Œë¡œ ì‚­ì œ ë˜ì—ˆì„ ìˆ˜ë„ ìžˆì–´ NULLì²˜ë¦¬ í•¨. ê·¸ë ‡ë‹¤ê³  ìœ„ì—ì„œ ì•„ì´í…œì„ ê°–ê³  ìž‘ì—…í•˜ì§€ ë§ê²ƒ.
 	reformerItem_ = NULL;
 	magnifierItem_ = NULL;
 
-	// ¾ÆÀÌÅÛ ¸®Æû
+	// ì•„ì´í…œ ë¦¬í¼
 	reformItem_->IdentifyRareOption(true, count_);
 
 	ch_->m_inventory.sendOneItemInfo(reformItem_);
@@ -210,13 +210,13 @@ void do_HighReform(CPC *ch_, CItem *reformerItem_, CItem *magnifierItem_, CItem 
 
 int canProgress(CNetMsg::SP& msg, CPC *ch_, CItem *pReformerItem_, CItem *pMagnifierItem_, CItem *pReformItem_, unsigned int count_, unsigned char reformerGrade_)
 {
-	// ¾ÆÀÌÅÛ ¼¼°³Áß ÇÏ³ª°¡ ¾ø´Ù.
+	// ì•„ì´í…œ ì„¸ê°œì¤‘ í•˜ë‚˜ê°€ ì—†ë‹¤.
 	if (!pReformerItem_ || !pMagnifierItem_ || !pReformItem_)
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_EXCEPTION_ERROR_REP);
 		return (-1);
 	}
-	// Å¬¶óÀÌ¾ðÆ®¿¡¼­ ¸®Æ÷¸Ó ¾ÆÀÌÅÛÀÌ¶ó°í ÁØ°Ô ¸®Æ÷¸Ó ¾ÆÀÌÅÛÀÌ ¾Æ´Ï´Ù.
+	// í´ë¼ì´ì–¸íŠ¸ì—ì„œ ë¦¬í¬ë¨¸ ì•„ì´í…œì´ë¼ê³  ì¤€ê²Œ ë¦¬í¬ë¨¸ ì•„ì´í…œì´ ì•„ë‹ˆë‹¤.
 	if (!pReformerItem_->IsReformerItem())
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_NOT_GRADE_REP);
@@ -229,7 +229,7 @@ int canProgress(CNetMsg::SP& msg, CPC *ch_, CItem *pReformerItem_, CItem *pMagni
 		return (-1);
 	}
 
-	// È²±Ý µ¸º¸±â ¾ÆÀÌÅÛÀÌ ¾Æ´Ï¸é ¸®ÅÏ, Å¬¶óÀÌ¾ðÆ®·Î ºÎÅÍ »ç¿ë °³¼ö°¡ º¸À¯°³¼öº¸´Ù ÀÛÀ¸¸é ¸®ÅÏ
+	// í™©ê¸ˆ ë‹ë³´ê¸° ì•„ì´í…œì´ ì•„ë‹ˆë©´ ë¦¬í„´, í´ë¼ì´ì–¸íŠ¸ë¡œ ë¶€í„° ì‚¬ìš© ê°œìˆ˜ê°€ ë³´ìœ ê°œìˆ˜ë³´ë‹¤ ìž‘ìœ¼ë©´ ë¦¬í„´
 	if (pMagnifierItem_->getDBIndex() != GOLD_MAGNIFIER)
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_NOT_GOLD_MAGNIFIER_REP);
@@ -241,14 +241,14 @@ int canProgress(CNetMsg::SP& msg, CPC *ch_, CItem *pReformerItem_, CItem *pMagni
 		return (-1);
 	}
 
-	// ¸®ÆûÇÒ ¾ÆÀÌÅÛÀÌ Âø¿ë ÁßÀÏ ¶§
+	// ë¦¬í¼í•  ì•„ì´í…œì´ ì°©ìš© ì¤‘ì¼ ë•Œ
 	if (pReformItem_->getWearPos() != WEARING_NONE)
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_EXCEPTION_ERROR_REP);
 		return (-1);
 	}
 
-	// ¸®Æ÷¸Ó ¾ÆÀÌÅÛÀÌ Áß±ÞÀÎµ¥ ¸®ÆûÇÒ ¾ÆÀÌÅÛÀÌ ·¹¾î¾ÆÀÌÅÛÀÌ ¾Æ´Ï¸é ¸®ÅÏ, ¸®ÆûÇÒ ¾ÆÀÌÅÛÀÌ °¨Á¤ÀÌ ¾ÈµÈ ¾ÆÀÌÅÛÀÌ¶ó¸é ¸®ÅÏ, ¸®ÆûÇÒ ¾ÆÀÌÅÛÀÌ ¸®ÆûºÒ°¡ ÇÃ·¡±×°¡ Ã¼Å©µÇ¾î ÀÖÀ¸¸é ¸®ÅÏ,
+	// ë¦¬í¬ë¨¸ ì•„ì´í…œì´ ì¤‘ê¸‰ì¸ë° ë¦¬í¼í•  ì•„ì´í…œì´ ë ˆì–´ì•„ì´í…œì´ ì•„ë‹ˆë©´ ë¦¬í„´, ë¦¬í¼í•  ì•„ì´í…œì´ ê°ì •ì´ ì•ˆëœ ì•„ì´í…œì´ë¼ë©´ ë¦¬í„´, ë¦¬í¼í•  ì•„ì´í…œì´ ë¦¬í¼ë¶ˆê°€ í”Œëž˜ê·¸ê°€ ì²´í¬ë˜ì–´ ìžˆìœ¼ë©´ ë¦¬í„´,
 	if (pReformerItem_->m_itemProto->getItemNum0() == IETC_REFORMER_MID_GRADE && !pReformItem_->IsRareItem())
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_NOT_MID_ITEM_REP);
@@ -269,7 +269,7 @@ int canProgress(CNetMsg::SP& msg, CPC *ch_, CItem *pReformerItem_, CItem *pMagni
 		return IETC_REFORMER_MID_GRADE;
 	}
 
-	// ¸®Æ÷¸Ó ¾ÆÀÌÅÛÀÌ »ó±ÞÀÎµ¥ ¸®ÆûÇÒ ¾ÆÀÌÅÛÀÌ ¿À¸®Áø ¾ÆÀÌÅÛÀÌ ¾Æ´Ï¸é ¸®ÅÏ
+	// ë¦¬í¬ë¨¸ ì•„ì´í…œì´ ìƒê¸‰ì¸ë° ë¦¬í¼í•  ì•„ì´í…œì´ ì˜¤ë¦¬ì§„ ì•„ì´í…œì´ ì•„ë‹ˆë©´ ë¦¬í„´
 	if (pReformerItem_->m_itemProto->getItemNum0() == IETC_REFORMER_HIGH_GRADE && !pReformItem_->IsOriginItem())
 	{
 		ReformerSystemRep(msg, MSG_EX_REFORMER_SYSTEM_NOT_HIGH_ITEM_REP);

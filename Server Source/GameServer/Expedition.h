@@ -1,23 +1,23 @@
 #ifndef __EXPEDITION_H__
 #define __EXPEDITION_H__
 
-#define MAX_EXPED_MEMBER			32		// ¿øÁ¤´ë ÃÖ´ë ÀÎ¿ø¼ö
-#define MAX_EXPED_GMEMBER			8		// ¿øÁ¤´ë 1°³ ±×·ì ÃÖ´ë ÀÎ¿ø¼ö
-#define MAX_EXPED_GROUP				4		// ¿øÁ¤´ë³» ±×·ì ¼ö
-#define MAX_EXPED_DIVITYPE			5		// ºĞ¹è¹æ¹ı ¼ö
+#define MAX_EXPED_MEMBER			32		// ì›ì •ëŒ€ ìµœëŒ€ ì¸ì›ìˆ˜
+#define MAX_EXPED_GMEMBER			8		// ì›ì •ëŒ€ 1ê°œ ê·¸ë£¹ ìµœëŒ€ ì¸ì›ìˆ˜
+#define MAX_EXPED_GROUP				4		// ì›ì •ëŒ€ë‚´ ê·¸ë£¹ ìˆ˜
+#define MAX_EXPED_DIVITYPE			5		// ë¶„ë°°ë°©ë²• ìˆ˜
 
 class CNetMsg;
 
-// ¿øÁ¤´ë ¸â¹ö Å¬·¡½º
+// ì›ì •ëŒ€ ë©¤ë²„ í´ë˜ìŠ¤
 class CExpedMember
 {
-	int				m_nCharIndex;			// Ä³¸¯ÅÍ ÀÎµ¦½º
-	CLCString		m_strCharName;			// Ä³¸¯ÅÍ ÀÌ¸§
-	int				m_nGroupType;			// ±×·ì Å¸ÀÔ
-	int				m_nMemberType;			// ¸â¹ö Å¸ÀÔ
-	int				m_nLabelType;			// Ç¥½Ä
-	int				m_nListIndex;			// ±×·ì³» ¹è¿­ ÀÎµ¦½º
-	int				m_nQuitType;			// Á¤»ó,ºñÁ¤»ó ±¸ºĞ
+	int				m_nCharIndex;			// ìºë¦­í„° ì¸ë±ìŠ¤
+	CLCString		m_strCharName;			// ìºë¦­í„° ì´ë¦„
+	int				m_nGroupType;			// ê·¸ë£¹ íƒ€ì…
+	int				m_nMemberType;			// ë©¤ë²„ íƒ€ì…
+	int				m_nLabelType;			// í‘œì‹
+	int				m_nListIndex;			// ê·¸ë£¹ë‚´ ë°°ì—´ ì¸ë±ìŠ¤
+	int				m_nQuitType;			// ì •ìƒ,ë¹„ì •ìƒ êµ¬ë¶„
 	CPC*			m_pChar;
 
 public:
@@ -68,23 +68,23 @@ public:
 	void SetMemberPCPtr(CPC* pc);
 };
 
-//¿øÁ¤´ë Å¬·¡½º
+//ì›ì •ëŒ€ í´ë˜ìŠ¤
 class CExpedition
 {
-	char			m_nExpedType[MAX_EXPED_DIVITYPE];					// ºĞ¹è ¹æ¹ı(°æÇèÄ¡,ÀÏ¹İ ¾ÆÀÌÅÛ,½ºÆó¼È ¾ÆÀÌÅÛ)
-	int				m_nTotCount;										// ¿øÁ¤´ë ÀÎ¿ø¼ö
-	int				m_nGTotCount[MAX_EXPED_GROUP];						// ±×·ì ÀÎ¿ø¼ö
-	CExpedMember*	m_listMember[MAX_EXPED_GROUP][MAX_EXPED_GMEMBER];	// 4°³ ±×·ì, 8¸í
-	int				m_nRequestIndex;									// ¿äÃ»ÀÚ Ä³¸¯ÅÍ ÀÎµ¦½º
-	CLCString		m_strRequestName;									// ÇöÀç ¿äÃ»ÀÚ Ä³¸¯ÅÍ ÀÌ¸§
+	char			m_nExpedType[MAX_EXPED_DIVITYPE];					// ë¶„ë°° ë°©ë²•(ê²½í—˜ì¹˜,ì¼ë°˜ ì•„ì´í…œ,ìŠ¤íì…œ ì•„ì´í…œ)
+	int				m_nTotCount;										// ì›ì •ëŒ€ ì¸ì›ìˆ˜
+	int				m_nGTotCount[MAX_EXPED_GROUP];						// ê·¸ë£¹ ì¸ì›ìˆ˜
+	CExpedMember*	m_listMember[MAX_EXPED_GROUP][MAX_EXPED_GMEMBER];	// 4ê°œ ê·¸ë£¹, 8ëª…
+	int				m_nRequestIndex;									// ìš”ì²­ì ìºë¦­í„° ì¸ë±ìŠ¤
+	CLCString		m_strRequestName;									// í˜„ì¬ ìš”ì²­ì ìºë¦­í„° ì´ë¦„
 
-	int				m_nEndExpedTime;									// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£
+	int				m_nEndExpedTime;									// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„
 
 public:
 
 	int				m_nRaidZoneNum;
 	int				m_nRaidAreaNum;
-	int				m_nSubNumber;										// ¿øÁ¤´ë Ã¤³ÎÀ» ¸É¹ö ÇÔ¼ö·Î °¡Áö°í ÀÖ´Â´Ù. ÇØ´ç Ã¤³Î¿¡¼­¸¸ ¿øÁ¤´ë ·¹ÀÌµå ÀÔÀå °¡´É
+	int				m_nSubNumber;										// ì›ì •ëŒ€ ì±„ë„ì„ ë§´ë²„ í•¨ìˆ˜ë¡œ ê°€ì§€ê³  ìˆëŠ”ë‹¤. í•´ë‹¹ ì±„ë„ì—ì„œë§Œ ì›ì •ëŒ€ ë ˆì´ë“œ ì…ì¥ ê°€ëŠ¥
 	int				m_nDifficulty;
 
 	CExpedition(char nExpeType1, char nExpeType2, char nExpeType3, char nExpeType4, char nExpeType5, int nBossIndex, const char* strBossName, int nGroupType, int nMemberType, CPC* pBoss);
@@ -107,32 +107,32 @@ public:
 
 	int GetMemberCountOnline();
 
-	// boss ÀÎµ¦½º ¹İÈ¯
+	// boss ì¸ë±ìŠ¤ ë°˜í™˜
 	int GetBossIndex();
 	const char* GetBossName();
 
-	// ÇØ´ç Ä³¸¯ÅÍ ÀÎµ¦½º¸¦ °®´Â ÆÄÆ¼¿øÀÇ ¸®½ºÆ® ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù
+	// í•´ë‹¹ ìºë¦­í„° ì¸ë±ìŠ¤ë¥¼ ê°–ëŠ” íŒŒí‹°ì›ì˜ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤
 	int FindMemberListIndex(int nCharIndex);
 	int FindMemberGroupIndex(int nCharIndex);
 
-	// ÇØ´ç ¸®½ºÆ® ÀÎµ¦½ºÀÇ ¸â¹ö Char index¸¦ ±¸ÇÑ´Ù.
+	// í•´ë‹¹ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤ì˜ ë©¤ë²„ Char indexë¥¼ êµ¬í•œë‹¤.
 	int GetMemberCharIndex(int nGroup, int nListIndex);
 
 	void SetRequest(int nRequest, const char* strRequest);
 
-	// request¸¦ ¸â¹ö·Î Âü¿©
+	// requestë¥¼ ë©¤ë²„ë¡œ ì°¸ì—¬
 	CExpedMember* JoinRequest(const char* strRequestName, int nMemberType, CPC* pRequest);
 
-	// ¸â¹ö Âü¿©
+	// ë©¤ë²„ ì°¸ì—¬
 	CExpedMember* Join(int nCharIndex, const char* strCharName, int nMemberType, CPC* pRequest);
 
-	// ÇØ´ç Ä³¸¯ÅÍ¸¦ Á¦°Å, Á¦°ÅÇÏ°Å³ª ¾øÀ¸¸é true, Á¦°Å¿¡ ½ÇÆĞÇÏ¸é false
+	// í•´ë‹¹ ìºë¦­í„°ë¥¼ ì œê±°, ì œê±°í•˜ê±°ë‚˜ ì—†ìœ¼ë©´ true, ì œê±°ì— ì‹¤íŒ¨í•˜ë©´ false
 	void DeleteMember(int nCharIndex);
 
-	// char index·Î CExpeditionMember ¾ò±â
+	// char indexë¡œ CExpeditionMember ì–»ê¸°
 	CExpedMember* GetMemberByCharIndex(int nCharIndex) const;
 
-	// list index·Î CExpeditionMember ¾ò±â
+	// list indexë¡œ CExpeditionMember ì–»ê¸°
 	CExpedMember* GetMemberByListIndex(int nGroup, int nListIndex) const;
 
 	CExpedMember* GetMemberByListIndex(int nGroup, int nListIndex, int nMemberType) const;
@@ -155,34 +155,34 @@ public:
 	bool MoveGroup(int nSourceGroup, int nMoveCharIndex, int nTargetGroup, int nTargetListindex);
 	const CExpedMember* FindNextBoss(void);
 
-	// ¿øÁ¤´ë Á¾·á ÇÔ¼ö
+	// ì›ì •ëŒ€ ì¢…ë£Œ í•¨ìˆ˜
 	void SetEndExped();
 
 
 	int GetNearExpeditionMemberCount(CCharacter* pCenter);
 
-	// pPC °¡±î¿î °÷¿¡ ÀÖ´Â nListIndex¹øÂ° ÆÄÆ¼¿øÀ» ±¸ÇÑ´Ù
+	// pPC ê°€ê¹Œìš´ ê³³ì— ìˆëŠ” nListIndexë²ˆì§¸ íŒŒí‹°ì›ì„ êµ¬í•œë‹¤
 	CPC* GetNearMember(CCharacter* pPC,int nGroup, int nListIndex);
 
-	// ÇØ´ç Ä³¸¯ÅÍÀÎµ¦½ºÀÇ ¸â¹öÀÇ PC Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÑ´Ù
+	// í•´ë‹¹ ìºë¦­í„°ì¸ë±ìŠ¤ì˜ ë©¤ë²„ì˜ PC í¬ì¸í„°ë¥¼ ì„¤ì •í•œë‹¤
 	void SetMemberPCPtr(int nCharIndex, CPC* pPC);
 
-	// ÇöÀç PC°¡ ¼³Á¤µÇ¾î ÀÖ´Â ¸ğµç ¿øÁ¤´ë¿ø¿¡°Ô ¸Ş½ÃÁö¸¦ Àü´Ş, nExcludeCharIndex Á¦¿Ü
+	// í˜„ì¬ PCê°€ ì„¤ì •ë˜ì–´ ìˆëŠ” ëª¨ë“  ì›ì •ëŒ€ì›ì—ê²Œ ë©”ì‹œì§€ë¥¼ ì „ë‹¬, nExcludeCharIndex ì œì™¸
 	void SendToAllPC(CNetMsg::SP& msg, int nExcludeCharIndex = -1);
 
-	// °°Àº Á¸¿¡ ÀÖ´Â PC¿¡°Ô¸¸ ¸Ş½ÃÁö Àü´Ş
+	// ê°™ì€ ì¡´ì— ìˆëŠ” PCì—ê²Œë§Œ ë©”ì‹œì§€ ì „ë‹¬
 	void SendToPCInSameZone(int nZone, int nArea, CNetMsg::SP& msg);
 
-	// °°Àº ±×·ì¿¡ ÀÖ´Â PC¿¡°Ô¸¸ ¸Ş½ÃÁö Àü´Ş
+	// ê°™ì€ ê·¸ë£¹ì— ìˆëŠ” PCì—ê²Œë§Œ ë©”ì‹œì§€ ì „ë‹¬
 	void SendToPCInSameGroup(int nGroup, CNetMsg::SP& msg);
 
-	// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£ ¼³Á¤
+	// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„ ì„¤ì •
 	void SetEndExpedTime(int nNow);
 
-	// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£ È¹µæ
+	// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„ íšë“
 	int  GetEndExpedTime();
 
-	// Á¸ÀÌµ¿À» ÇÏ¸é ÆÄÆ¼¿¡¼­ Á¦¿Ü½ÃÅ°´Âµ¥ Á¸ÀÌµ¿ ½ÇÆĞ½Ã ´Ù½Ã ÆÄÆ¼·Î º¹±Í ½ÃÄÑÁÖ´Â ÇÔ¼ö
+	// ì¡´ì´ë™ì„ í•˜ë©´ íŒŒí‹°ì—ì„œ ì œì™¸ì‹œí‚¤ëŠ”ë° ì¡´ì´ë™ ì‹¤íŒ¨ì‹œ ë‹¤ì‹œ íŒŒí‹°ë¡œ ë³µê·€ ì‹œì¼œì£¼ëŠ” í•¨ìˆ˜
 	bool SetMemberRegister_AfterGoZone(CPC* pPC);
 
 	CPC* GetMemberPCPtr(int nGroup, int nListIndex);

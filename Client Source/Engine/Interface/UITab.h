@@ -22,12 +22,14 @@ class ENGINE_API CUITab : public CUIBase
 {
 public:
 	CUITab();
+	~CUITab();
 
 	CUIBase* Clone();
 	void deleteChildList();
 
 	void initialize();
 
+	void SetCommandChange(Command* pCmd) { SAFE_DELETE(m_pCmdChange); m_pCmdChange = pCmd; }
 	int getCurSelTab()	{ return m_nCurSel; }
 	CUICheckButton* getCheckBtn(int nIdx);
 	void ResetTabPos()	{ OnChangeTab(0);   }
@@ -37,7 +39,11 @@ public:
 
 	void OnChangeTab(int idx);
 
-	void OnRender(CDrawPort* pDraw);	
+	void OnRender(CDrawPort* pDraw);
+
+	void SetCommandFChange(_ui_func func)	{ m_func_change = func; }
+
+	void CmdErase();
 
 protected:
 	typedef std::vector< CUICheckButton* >	vec_Button;
@@ -50,6 +56,8 @@ protected:
 	CUITabPage*			m_pCurTabPage;
 	vec_Button			m_vecTabBt;
 	vec_Page			m_vecTabPage;
+	Command*			m_pCmdChange; // tab이 변경시 실행될 커맨드
+	_ui_func			m_func_change;
 };
 
 //----------------------------------------------------------------

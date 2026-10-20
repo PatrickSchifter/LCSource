@@ -41,7 +41,7 @@ public:
 	}
 private:
 	CRaidObjectDataProto* m_proto;
-	int m_nState;						// state´Â ¸¹Àº Á¤º¸¸¦ ´ã°Ô µÈ´Ù.
+	int m_nState;						// stateëŠ” ë§ì€ ì •ë³´ë¥¼ ë‹´ê²Œ ëœë‹¤.
 };
 
 class CRaidDataProto
@@ -400,9 +400,9 @@ private:
 	CRaidDataProto* m_proto;
 	CRaidObjectData* m_Todo;
 	CRaidObjectData* m_Output[5];
-	int m_nState;							// SceneState¿¡´Â ¸¹Àº ÇöÀç Scene¿¡ ´ëÇÑ Á¤º¸¸¦ ³²°ÜÁÖ°Ô µÈ´Ù.
-	// 0 : ÇöÀç Todo ¹× OutputÀº ´ë±â »óÅÂÀÌ´Ù.
-	// 1 : ÇöÀç Todo ¹× OutputÀº ¿Ï·á »óÅÂÀÌ´Ù.
+	int m_nState;							// SceneStateì—ëŠ” ë§ì€ í˜„ì¬ Sceneì— ëŒ€í•œ ì •ë³´ë¥¼ ë‚¨ê²¨ì£¼ê²Œ ëœë‹¤.
+	// 0 : í˜„ì¬ Todo ë° Outputì€ ëŒ€ê¸° ìƒíƒœì´ë‹¤.
+	// 1 : í˜„ì¬ Todo ë° Outputì€ ì™„ë£Œ ìƒíƒœì´ë‹¤.
 };
 
 class CRaidObjectList
@@ -458,7 +458,7 @@ public:
 private:
 
 	CRaidData* m_RaidData;
-	int m_nCount;							// RaidData ÃÖ¼Ò ´ÜÀ§ÀÇ °³¼ö.
+	int m_nCount;							// RaidData ìµœì†Œ ë‹¨ìœ„ì˜ ê°œìˆ˜.
 	int m_nSavePoint;
 };
 

@@ -19,8 +19,8 @@ CDescriptor::CDescriptor(rnSocketIOService* service)
 	m_bLoginServer = false;
 	m_subno = 0;
 
-	m_waitbill = 0;					// ºô¸µ¿¡ ¿äÃ» °á°ú ±â´Ù¸²
-	m_billtimeout = 0;				// ºô¸µ ´ë±â½Ã°£
+	m_waitbill = 0;					// ë¹Œë§ì— ìš”ì²­ ê²°ê³¼ ê¸°ë‹¤ë¦¼
+	m_billtimeout = 0;				// ë¹Œë§ ëŒ€ê¸°ì‹œê°„
 
 	m_nCountZone = 0;
 	m_nZoneIndex = NULL;
@@ -91,7 +91,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		}
 	}
 
-	// ¹öÀüÀÌ ¸Â´ÂÁö, ¼­¹ö ±ºÀÌ ¸Â´ÂÁö, È¤Àº ¿äÃ»ÇÑ ³à¼®ÀÌ ·Î±×ÀÎ,¸Ş½ÅÀú ¼­¹öÀÎÁö °Ë»ç
+	// ë²„ì „ì´ ë§ëŠ”ì§€, ì„œë²„ êµ°ì´ ë§ëŠ”ì§€, í˜¹ì€ ìš”ì²­í•œ ë…€ì„ì´ ë¡œê·¸ì¸,ë©”ì‹ ì € ì„œë²„ì¸ì§€ ê²€ì‚¬
 	if (version < SERVER_MIN_VERSION
 			|| version > SERVER_MAX_VERSION
 			|| ((serverno != gserver.m_serverno || subnum < 1 || subnum > gserver.m_maxSubServer) && serverno != LOGIN_SERVER_NUM && serverno != MESSENGER_SERVER_NUM && serverno != PLAYER_COUNT_NUM))
@@ -130,7 +130,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		if (count_zone < 1)
 			return false;
 
-		// ÆÈ¸° »óÇ° °¹¼ö¸¦ °¢ °ÔÀÓ¼­¹ö·Î º¸³¿
+		// íŒ”ë¦° ìƒí’ˆ ê°¯ìˆ˜ë¥¼ ê° ê²Œì„ì„œë²„ë¡œ ë³´ëƒ„
 		CNetMsg::SP rmsg(new CNetMsg);
 		LimitCatalogMsg(rmsg);
 		SEND_Q(rmsg, this);
@@ -144,14 +144,14 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		{
 			RefMsg(msg) >> zone_num;
 			m_nZoneIndex[i] = zone_num;
-			gserver.m_userList[subnum - 1].m_playersPerZone[zone_num] = 0;
+			gserver.m_user_list->setPlayerZoneCount(subnum, zone_num, 0);
 			if (zone_num == ZONE_START)
 				m_bStartServer = true;
 		}
 
 		m_subno = subnum;
 
-		// ÀÌÀü¿¡ °°Àº ¼­¹ö °°Àº Á¸À¸·Î µî·ÏÇÑ°Å ÀÖÀ¸¸é Á¢¼Ó ºÒ´É
+		// ì´ì „ì— ê°™ì€ ì„œë²„ ê°™ì€ ì¡´ìœ¼ë¡œ ë“±ë¡í•œê±° ìˆìœ¼ë©´ ì ‘ì† ë¶ˆëŠ¥
 		CDescriptor* p;
 		CDescriptor* pNext = gserver.m_desclist;
 		bool bDuplicationZone = false;

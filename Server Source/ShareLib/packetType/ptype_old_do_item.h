@@ -95,11 +95,11 @@ struct doItemSell : public pTypeBase
 // MSG_ITEM : MSG_ITEM_UPGRADE_REQ
 struct doItemUpgrade : public pTypeBase
 {
-	unsigned int		wearPos;			// ¾÷±×·¹ÀÌµå ¾ÆÀÌÅÛ / Âø¿ëÁßÀÎ ¾ÆÀÌÅÛ
+	unsigned int		wearPos;			// ì—…ê·¸ë ˆì´ë“œ ì•„ì´í…œ / ì°©ìš©ì¤‘ì¸ ì•„ì´í…œ
 	unsigned int		vIndex;
-	unsigned short		tab_2;			// Á¦·Ã¼® ¾ÆÀÌÅÛ
+	unsigned short		tab_2;			// ì œë ¨ì„ ì•„ì´í…œ
 	unsigned short		invenIndex_2;
-	unsigned short		tab_3;			// Á¦·Ã º¸È£ ¾ÆÀÌÅÛ
+	unsigned short		tab_3;			// ì œë ¨ ë³´í˜¸ ì•„ì´í…œ
 	unsigned short		invenIndex_3;
 	int					plus;
 	int					level;
@@ -289,8 +289,6 @@ struct doItemGroceryItemSell : public pTypeBase
 struct doItemUseWarpDoc : public pTypeBase
 {
 	int					virtualIndex;
-	int					zone;
-	int					extra;
 };
 
 // MSG_ITEM : MSG_ITEM_USE_PRESSCORPS
@@ -347,10 +345,10 @@ struct doItemMakeFortune : public pTypeBase
 // MSG_ITEM : MSG_ITEM_MASTERSTONE_USE
 struct doItemUseMasterStoneUSA : public pTypeBase
 {
-	unsigned short		tab_1;			// ¸¶½ºÅÍ ½ºÅæ
+	unsigned short		tab_1;			// ë§ˆìŠ¤í„° ìŠ¤í†¤
 	unsigned short		invenIndex_1;
 	int					itemDBIndex_1;
-	unsigned short		tab_2;			// ¾÷±×·¹ÀÌµåÇÒ Àåºñ
+	unsigned short		tab_2;			// ì—…ê·¸ë ˆì´ë“œí•  ì¥ë¹„
 	unsigned short		invenIndex_2;
 	int					itemDBIndex_2;
 };
@@ -391,8 +389,15 @@ struct slotItemInfo
 
 struct doItemCompose : public pTypeBase
 {
-	int matItem_Index;			//	Àç·á ÀÎµ¦½º
-	slotItemInfo matInfo[MAX_COMPOSE_SLOT_COUNT];	//	Àç·á ¾ÆÀÌÅÛ ÀÎÆ÷
+	int matItem_Index;			//	ì¬ë£Œ ì¸ë±ìŠ¤
+	slotItemInfo matInfo[MAX_COMPOSE_SLOT_COUNT];	//	ì¬ë£Œ ì•„ì´í…œ ì¸í¬
+};
+
+struct doItemUpgradePet : public pTypeBase
+{
+	unsigned int		wearPos;			// ì°©ìš©ì¤‘ì¸ í« ì¥ë¹„ ì¥ì°©ìœ„ì¹˜ ì •ë³´
+	unsigned short		tab;				// ì œë ¨ì„ ì•„ì´í…œ tab
+	unsigned short		inven_index;		// ì œë ¨ì„ ì•„ì´í…œ inven_index
 };
 
 }
@@ -404,18 +409,24 @@ namespace ResponseClient
 enum
 {
 	WEAR_ERR_OK,
-	WEAR_ERR_INVALID_POS,		//Âø¿ëÀ§Ä¡°¡ Àß¸ø µÇ¾ú½À´Ï´Ù.
-	WEAR_ERR_CANNOT_TAKEOFF,	//¾ÆÀÌÅÛÀ» ¹şÀ» ¼ö ¾ø½À´Ï´Ù.
-	WEAR_ERR_CANNOT_WEAR,		//¾ÆÀÌÅÛÀ» Âø¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
-	WEAR_ERR_NOT_ENOUGH_INVEN,	//ÀÎº¥ °ø°£ ºÎÁ·
-	WEAR_ERR_INVALID_ITEM_INFO, //¿Ã¹Ù¸¥ ¾ÆÀÌÅÛÀÌ ¾Æ´Õ´Ï´Ù.
-	WEAR_ERR_ITEM_SEAL,			//ºÀÀÎµÈ ¾ÆÀÌÅÛ ÀÔ´Ï´Ù.
-	WEAR_ERR_CANNOT_SWAP_ITEM_CASH_INVEN,	//Ä³½¬ ÀÎº¥Åä¸®ÀÇ ±â°£ÀÌ ¸¸·áµÇ¾î ¹şÀº ¾ÆÀÌÅÛÀ» ³ÖÀ» ¼ö ¾ø½À´Ï´Ù.
-	//¾ÆÀÌÅÛ ±³È¯
-	EXCHANGE_ERR_WRONG_ITEM_INFO,	//Àß¸øµÈ ¾ÆÀÌÅÛ Á¤º¸
-	EXCHANGE_ERR_NOT_ENOUGH_MONEY,	//µ· ºÎÁ·
-	EXCHANGE_ERR_INVENTORY_FULL,	//ÀÎº¥Åä¸® °ø°£ ºÎÁ·
-	EXCHANGE_ERR_OK,				//±³È¯ ¼º°ø
+	WEAR_ERR_INVALID_POS,		//ì°©ìš©ìœ„ì¹˜ê°€ ì˜ëª» ë˜ì—ˆìŠµë‹ˆë‹¤.
+	WEAR_ERR_CANNOT_TAKEOFF,	//ì•„ì´í…œì„ ë²—ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+	WEAR_ERR_CANNOT_WEAR,		//ì•„ì´í…œì„ ì°©ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+	WEAR_ERR_NOT_ENOUGH_INVEN,	//ì¸ë²¤ ê³µê°„ ë¶€ì¡±
+	WEAR_ERR_INVALID_ITEM_INFO, //ì˜¬ë°”ë¥¸ ì•„ì´í…œì´ ì•„ë‹™ë‹ˆë‹¤.
+	WEAR_ERR_ITEM_SEAL,			//ë´‰ì¸ëœ ì•„ì´í…œ ì…ë‹ˆë‹¤.
+	WEAR_ERR_CANNOT_SWAP_ITEM_CASH_INVEN,	//ìºì‰¬ ì¸ë²¤í† ë¦¬ì˜ ê¸°ê°„ì´ ë§Œë£Œë˜ì–´ ë²—ì€ ì•„ì´í…œì„ ë„£ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+	//ì•„ì´í…œ êµí™˜
+	EXCHANGE_ERR_WRONG_ITEM_INFO,	//ì˜ëª»ëœ ì•„ì´í…œ ì •ë³´
+	EXCHANGE_ERR_NOT_ENOUGH_MONEY,	//ëˆ ë¶€ì¡±
+	EXCHANGE_ERR_INVENTORY_FULL,	//ì¸ë²¤í† ë¦¬ ê³µê°„ ë¶€ì¡±
+	EXCHANGE_ERR_OK,				//êµí™˜ ì„±ê³µ
+
+	//í« ì¥ë¹„ ê°•í™”
+	PET_ITEM_UPGRADE_PLUS,			//ê°•í™” ì„±ê³µ
+	PET_ITEM_UPGRADE_MINUS,			//ê°•í™” ì‹¤íŒ¨ 1ë§ˆì´ë„ˆìŠ¤
+	PET_ITEM_UPGRADE_NO_CHANGE,		//ê°•í™” ì‹¤íŒ¨ ë³€í™” ì—†ìŒ
+	PET_ITEM_UPGRADE_BROKE,			//ê°•í™” ì‹¤íŒ¨ ì¥ë¹„ íŒŒê´´
 };
 struct doItemUse : public pTypeBase
 {
@@ -460,6 +471,11 @@ struct doItemUseMasterStoneUSA : public pTypeBase
 {
 	int success_type;
 	int error;
+};
+
+struct doItemUpgradePet : public pTypeBase
+{
+	unsigned int		error;
 };
 
 #ifndef _CLIENT_
@@ -581,22 +597,30 @@ inline void makeMasterStone(CNetMsg::SP& msg, int random_success, int error)
 	msg->setSize(sizeof(ResponseClient::doItemUseMasterStoneUSA));
 }
 
+inline void makePetItemUpgrade(CNetMsg::SP& msg, int error_code)
+{
+	doItemUpgradePet* packet = reinterpret_cast<doItemUpgradePet*>(msg->m_buf);
+	packet->type = MSG_ITEM;
+	packet->subType = MSG_ITEM_UPGRADE_PET;
+	packet->error = error_code;
+	msg->setSize(sizeof(doItemUpgradePet));
+}
 #endif
 }
 
 namespace UpdateClient
 {
-struct doItemWear : public pTypeBase	// ¾ÕÂÊÀº RequestClient::doItemWear¿Í ¸ğ¾çÀÌ °°¾Æ¾ßÇÔ
+struct doItemWear : public pTypeBase	// ì•ìª½ì€ RequestClient::doItemWearì™€ ëª¨ì–‘ì´ ê°™ì•„ì•¼í•¨
 {
 	itemInfo	info;
 };
 
-struct doItemWearChangeInfo : public pTypeBase	// ¾ÕÂÊÀº RequestClient::doItemWear¿Í ¸ğ¾çÀÌ °°¾Æ¾ßÇÔ
+struct doItemWearChangeInfo : public pTypeBase	// ì•ìª½ì€ RequestClient::doItemWearì™€ ëª¨ì–‘ì´ ê°™ì•„ì•¼í•¨
 {
 	itemInfo	info;
 };
 
-struct doItemWearTakeOff : public pTypeBase	// ¾ÕÂÊÀº RequestClient::doItemWear¿Í ¸ğ¾çÀÌ °°¾Æ¾ßÇÔ
+struct doItemWearTakeOff : public pTypeBase	// ì•ìª½ì€ RequestClient::doItemWearì™€ ëª¨ì–‘ì´ ê°™ì•„ì•¼í•¨
 {
 	char		wearPos;
 };
@@ -688,8 +712,8 @@ inline void ItemWearCostumeSuitMsg(CNetMsg::SP& msg, CItem* item)
 
 #ifndef _CLIENT_
 //////////////////////////////////////////////////////////////////////////
-// ¾Æ·¡ ÇÔ¼öµéÀº ¼­¹ö ³»ºÎ¿¡¼­ do_Item()À» »ç¿ëÇÏ±â À§ÇØ¼­¸¸ ÀÌ¿ëÇØ¾ßÇÔ
-// ¿ø¸®´Â Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ ÆĞÅ¶Ã³·³ ¸ğ¾çÀ» ¸¸µé¾î do_Item()¸¦ »ç¿ëÇÏ·Á°í ÇßÀ½ (¹ÌÃÆÁö)
+// ì•„ë˜ í•¨ìˆ˜ë“¤ì€ ì„œë²„ ë‚´ë¶€ì—ì„œ do_Item()ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œë§Œ ì´ìš©í•´ì•¼í•¨
+// ì›ë¦¬ëŠ” í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ íŒ¨í‚·ì²˜ëŸ¼ ëª¨ì–‘ì„ ë§Œë“¤ì–´ do_Item()ë¥¼ ì‚¬ìš©í•˜ë ¤ê³  í–ˆìŒ (ë¯¸ì³¤ì§€)
 inline void insideServer_do_ItemDelete(CNetMsg::SP& msg, CItem* pItem)
 {
 	RequestClient::doItemDelete* packet = reinterpret_cast<RequestClient::doItemDelete*>(msg->m_buf);

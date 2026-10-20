@@ -32,11 +32,11 @@ public:
 public:
 	/*
 	param:
-	*	url : ÀÎÁõ¼­¹ö ÁÖ¼Ò
-	*	fingerprint : CAÀÎÁõ¼­¸¦ X509·Î º¯È¯ÇÏ¿© base64·Î µğÄÚµùÇÑÈÄ sha1 À¸·Î ¾ÏÈ£È­ÇÑ °ª ( µ¶ÀÏ¿¡¼­ ³Ñ°ÜÁØ °ª )
+	*	url : ì¸ì¦ì„œë²„ ì£¼ì†Œ
+	*	fingerprint : CAì¸ì¦ì„œë¥¼ X509ë¡œ ë³€í™˜í•˜ì—¬ base64ë¡œ ë””ì½”ë”©í•œí›„ sha1 ìœ¼ë¡œ ì•”í˜¸í™”í•œ ê°’ ( ë…ì¼ì—ì„œ ë„˜ê²¨ì¤€ ê°’ )
 	return:
-	*	E_CONNECT_URL - ¿¬°áÀºµÊ
-	*	E_MATCH_FINGERPRINT - ¾ÏÈ£±îÁö ÀÏÄ¡ÇÔ
+	*	E_CONNECT_URL - ì—°ê²°ì€ë¨
+	*	E_MATCH_FINGERPRINT - ì•”í˜¸ê¹Œì§€ ì¼ì¹˜í•¨
 	*/
 	int Connect( const char* url, const char* fingerprint );
 

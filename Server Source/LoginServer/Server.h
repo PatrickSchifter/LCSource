@@ -52,67 +52,67 @@ public:
 	CServer();
 	~CServer();
 
-	// ÄÁ³ØÅÍ °ü·Ã
-	CDescriptor** m_connector;		// ÄÁ³ØÅÍ ¼­¹ö
-	int			m_nConnector;		// ÄÁ³ØÅÍ ¼­¹ö ¼ö
+	// ì»¨ë„¥í„° ê´€ë ¨
+	CDescriptor** m_connector;		// ì»¨ë„¥í„° ì„œë²„
+	int			m_nConnector;		// ì»¨ë„¥í„° ì„œë²„ ìˆ˜
 
 	////////////
-	// ¼­¹ö ¼³Á¤
-	char*		m_serverpath;		// ¸ğµâ °æ·Î
-	CConfigFile	m_config;			// ¼­¹ö ¼³Á¤
-	int			m_subno;			// ·Î±×ÀÎ ¼­¹ö ¼­ºê ¹øÈ£
-	int			m_clientversionMin;	// Å¬¶óÀÌ¾ğÆ® ¹öÀü
-	int			m_clientversionMax;	// Å¬¶óÀÌ¾ğÆ® ¹öÀü
-	bool		m_bOnlyLocal;		// ¿ÜºÎ Á¢¼Ó Çã¿ë ¿©ºÎ
-	unsigned int m_nInternalIPFilter;	// ³»ºÎ Á¢¼Ó¿ë IP ÇÊÅÍ
-	unsigned int m_nInternalSubnetMask;	// ³»ºÎ Á¢¼Ó¿ë ¼­ºê³İ ¸¶½ºÅ©
-	int			m_national;			// ±¹°¡
+	// ì„œë²„ ì„¤ì •
+	char*		m_serverpath;		// ëª¨ë“ˆ ê²½ë¡œ
+	CConfigFile	m_config;			// ì„œë²„ ì„¤ì •
+	int			m_subno;			// ë¡œê·¸ì¸ ì„œë²„ ì„œë¸Œ ë²ˆí˜¸
+	int			m_clientversionMin;	// í´ë¼ì´ì–¸íŠ¸ ë²„ì „
+	int			m_clientversionMax;	// í´ë¼ì´ì–¸íŠ¸ ë²„ì „
+	bool		m_bOnlyLocal;		// ì™¸ë¶€ ì ‘ì† í—ˆìš© ì—¬ë¶€
+	unsigned int m_nInternalIPFilter;	// ë‚´ë¶€ ì ‘ì†ìš© IP í•„í„°
+	unsigned int m_nInternalSubnetMask;	// ë‚´ë¶€ ì ‘ì†ìš© ì„œë¸Œë„· ë§ˆìŠ¤í¬
+	int			m_national;			// êµ­ê°€
 
-	int			m_maxplayers;		// Çã¿ë °¡´É ÃÖ´ë ÇÃ·¹ÀÌ¾î ¼ö
-	bool		m_bshutdown;			// ¸®ºÎÆ®
+	int			m_maxplayers;		// í—ˆìš© ê°€ëŠ¥ ìµœëŒ€ í”Œë ˆì´ì–´ ìˆ˜
+	bool		m_bshutdown;			// ë¦¬ë¶€íŠ¸
 
 #ifdef IP_BLOCK_AUTO
 	/////////////////
-	// ÀÚµ¿ ºí·° °ü·Ã
-	AUTO_BLOCK_INFO*	m_autoBlockTable;	// ºí·° Å×ÀÌºí
-	int					m_autoBlockPulse;	// ÃÖ±Ù ¸®¼ÂÇÑ ½Ã°£
+	// ìë™ ë¸”ëŸ­ ê´€ë ¨
+	AUTO_BLOCK_INFO*	m_autoBlockTable;	// ë¸”ëŸ­ í…Œì´ë¸”
+	int					m_autoBlockPulse;	// ìµœê·¼ ë¦¬ì…‹í•œ ì‹œê°„
 #endif
 
 	int					m_nRecommendServer;
 
 	//////////
-	// Æ½ °ü·Ã
-	int			m_pulse;			// Æ½ Ä«¿îÅÍ
+	// í‹± ê´€ë ¨
+	int			m_pulse;			// í‹± ì¹´ìš´í„°
 
 #if defined (LC_USA)
 	int			m_pulseSaveTableCount;
 #endif
 
 	//////////
-	// DB ¿¬°á
-	MYSQL		m_dbuser;			// »ç¿ëÀÚ µ¥ÀÌÅÍ
-	MYSQL		m_dbdata;			// µ¥ÀÌÅÍ
-	MYSQL		m_dbAuth;			// 2ÆÇ4ÆÇ ÀÎÁõ À¯Àú DB
+	// DB ì—°ê²°
+	MYSQL		m_dbuser;			// ì‚¬ìš©ì ë°ì´í„°
+	MYSQL		m_dbdata;			// ë°ì´í„°
+	MYSQL		m_dbAuth;			// 2íŒ4íŒ ì¸ì¦ ìœ ì € DB
 
 #ifdef LOCAL_LOGIN_LOG
-	MYSQL		m_dbLocalLog;		// ·Î±×ÀÎ DB·Î±×
+	MYSQL		m_dbLocalLog;		// ë¡œê·¸ì¸ DBë¡œê·¸
 #endif //LOCAL_LOGIN_LOG
 
 	bool		ConnectDB();
 	void		DisconnectDB();
 
 	/////////////////
-	// ¼­¹ö È¯°æ °ü·Ã
-	char* GetServerPath();			// °æ·Î ¾ò±â
-	bool LoadSettingFile();			// ¼³Á¤ ÆÄÀÏ ÀĞ±â
-	bool InitGame();				// °ÔÀÓ ÃÊ±âÈ­
-	void CheckInternalIP(const char* strData);			// ¼­¹ö ³»ºÎ¿ÀÇÂ IP ÆÄ½Ì
+	// ì„œë²„ í™˜ê²½ ê´€ë ¨
+	char* GetServerPath();			// ê²½ë¡œ ì–»ê¸°
+	bool LoadSettingFile();			// ì„¤ì • íŒŒì¼ ì½ê¸°
+	bool InitGame();				// ê²Œì„ ì´ˆê¸°í™”
+	void CheckInternalIP(const char* strData);			// ì„œë²„ ë‚´ë¶€ì˜¤í”ˆ IP íŒŒì‹±
 
 	////////////
-	// ÄÁ³ØÅÍ °ü·Ã
-	void ProcConnector(CNetMsg::SP& msg);				// ÄÁ³ØÅÍ ¸Ş½ÃÁö Ã³¸®
+	// ì»¨ë„¥í„° ê´€ë ¨
+	void ProcConnector(CNetMsg::SP& msg);				// ì»¨ë„¥í„° ë©”ì‹œì§€ ì²˜ë¦¬
 
-	void ProcMessenger(CNetMsg::SP& msg);				// ¸Ş½ÅÀú ¸Ş½ÃÁö Ã³¸®
+	void ProcMessenger(CNetMsg::SP& msg);				// ë©”ì‹ ì € ë©”ì‹œì§€ ì²˜ë¦¬
 
 #if defined (LC_USA)
 	void WriteDBPlayerCount();
@@ -132,7 +132,7 @@ public:
 //	bool m_bBcrypted;
 //#endif
 private:
-	bool m_bHttps_Auth;	// °¡¹Ì°í https ÀÎÁõÀ» ÇÒ °ÍÀÎÁö¿¡ ´ëÇÑ º¯¼ö. newStobm.bin ÆÄÀÏ¿¡ HttpsAuth=FALSE¸¦ ÀÔ·ÂÇÏ¸é ÀÎÁõ ÀıÂ÷¸¦ »ı·«ÇÑ´Ù.(QA¼­¹ö¿¡ Àû¿ë)
+	bool m_bHttps_Auth;	// ê°€ë¯¸ê³  https ì¸ì¦ì„ í•  ê²ƒì¸ì§€ì— ëŒ€í•œ ë³€ìˆ˜. newStobm.bin íŒŒì¼ì— HttpsAuth=FALSEë¥¼ ì…ë ¥í•˜ë©´ ì¸ì¦ ì ˆì°¨ë¥¼ ìƒëµí•œë‹¤.(QAì„œë²„ì— ì ìš©)
 public:
 	bool DoHttpsAuth()
 	{

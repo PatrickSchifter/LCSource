@@ -133,19 +133,19 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 		if (!levelproto)
 			throw MSG_SKILL_LEARN_ERROR_SYSTEM;
 
-		// Á÷¾÷ °Ë»ç : TODO : ÀüÁ÷ ÀÌÈÄ Ã³¸® : ÇÔ¼ö·Î ¸¸µé±â
+		// ì§ì—… ê²€ì‚¬ : TODO : ì „ì§ ì´í›„ ì²˜ë¦¬ : í•¨ìˆ˜ë¡œ ë§Œë“¤ê¸°
 		if (!proto->IsSameJob(ch))
 			return ;
 
-		// ·¹º§ °Ë»ç
+		// ë ˆë²¨ ê²€ì‚¬
 		if (levelproto->m_learnLevel > ch->m_level)
 			throw MSG_SKILL_LEARN_ERROR_LEVEL;
 
-		// SP °Ë»ç
+		// SP ê²€ì‚¬
 		if (levelproto->m_learnSP * 10000 > ch->m_skillPoint)
 			throw MSG_SKILL_LEARN_ERROR_SP;
 
-		// ¾ÆÀÌÅÛ °Ë»ç
+		// ì•„ì´í…œ ê²€ì‚¬
 		LONGLONG needMoney = 0;
 
 		int i;
@@ -172,18 +172,18 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ½ºÅ³ °Ë»ç
+		// ìŠ¤í‚¬ ê²€ì‚¬
 		for (i = 0; i < MAX_SKILL_LEARN_SKILL; i++)
 		{
 			if (levelproto->m_learnSkillIndex[i] < 0)
 				continue ;
-			//½ºÆó¼È ¸®½ºÆ®ÀÇ ÀüÁ÷½Ã ¿¬°è ½ºÅ³ Á¶°ÇÀ» ¹«½ÃÇÏ°Ô µÇ´Â ½ºÅ³¸®½ºÆ®
+			//ìŠ¤íì…œ ë¦¬ìŠ¤íŠ¸ì˜ ì „ì§ì‹œ ì—°ê³„ ìŠ¤í‚¬ ì¡°ê±´ì„ ë¬´ì‹œí•˜ê²Œ ë˜ëŠ” ìŠ¤í‚¬ë¦¬ìŠ¤íŠ¸
 			if (ch->m_job == JOB_SORCERER && ch->m_job2 == JOB_2ND_SPECIALLIST)
 			{
-				if(levelproto->m_learnSkillIndex[i] == 293 /*¶¥ÀÇ Á¤·É ¼ÒÈ¯*/
-						|| levelproto->m_learnSkillIndex[i] == 294 /*ºÒÀÇ Á¤·É ¼ÒÈ¯*/
-						|| levelproto->m_learnSkillIndex[i] == 300 /*¹°ÀÇ Á¤·É ¼ÒÈ¯*/
-						|| levelproto->m_learnSkillIndex[i] == 301 /*¹Ù¶÷ÀÇ Á¤·É ¼ÒÈ¯*/)
+				if(levelproto->m_learnSkillIndex[i] == 293 /*ë•…ì˜ ì •ë ¹ ì†Œí™˜*/
+						|| levelproto->m_learnSkillIndex[i] == 294 /*ë¶ˆì˜ ì •ë ¹ ì†Œí™˜*/
+						|| levelproto->m_learnSkillIndex[i] == 300 /*ë¬¼ì˜ ì •ë ¹ ì†Œí™˜*/
+						|| levelproto->m_learnSkillIndex[i] == 301 /*ë°”ëŒì˜ ì •ë ¹ ì†Œí™˜*/)
 				{
 					continue;
 				}
@@ -200,7 +200,7 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_SKILL_LEARN_ERROR_SKILL;
 		}
 
-// 050401 : bs : Ãß°¡ Á¶°Ç : ½ºÅÈ 4Á¾
+// 050401 : bs : ì¶”ê°€ ì¡°ê±´ : ìŠ¤íƒ¯ 4ì¢…
 		if (ch->m_statpt_str < levelproto->m_learnstr)
 			throw MSG_SKILL_LEARN_ERROR_STR;
 		if (ch->m_statpt_dex < levelproto->m_learndex)
@@ -209,12 +209,12 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 			throw MSG_SKILL_LEARN_ERROR_INT;
 		if (ch->m_statpt_con < levelproto->m_learncon)
 			throw MSG_SKILL_LEARN_ERROR_CON;
-// --- 050401 : bs : Ãß°¡ Á¶°Ç : ½ºÅÈ 4Á¾
+// --- 050401 : bs : ì¶”ê°€ ì¡°ê±´ : ìŠ¤íƒ¯ 4ì¢…
 
-		// SP ¼Ò¸ğ
+		// SP ì†Œëª¨
 		ch->m_skillPoint -= levelproto->m_learnSP * 10000;
 
-		// ¾ÆÀÌÅÛ ¹× µ·(Nas) ¼Ò¸ğ
+		// ì•„ì´í…œ ë° ëˆ(Nas) ì†Œëª¨
 		for (i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 		{
 			if (levelproto->m_learnItemIndex[i] < 0)
@@ -228,10 +228,10 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 			ch->m_inventory.decreaseMoney(needMoney);
 		}
 
-		// ½ºÅ³ Ãß°¡
+		// ìŠ¤í‚¬ ì¶”ê°€
 		if (skill == NULL)
 		{
-			// »õ·Î ¹è¿ò
+			// ìƒˆë¡œ ë°°ì›€
 			skill = gserver->m_skillProtoList.Create(packet->skillIndex);
 			if (!skill)
 				throw MSG_SKILL_LEARN_ERROR_SYSTEM;
@@ -244,13 +244,13 @@ void do_SkillLearn(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ÀÖ´Â ½ºÅ³ ·¹º§ ¾÷
+			// ìˆëŠ” ìŠ¤í‚¬ ë ˆë²¨ ì—…
 			if (skill->m_level >= proto->m_maxLevel)
 				return ;
 			skill->m_level++;
 		}
 
-		// ¼ÒÈ¯¼ö ½ºÅ³Àº ¼ÒÈ¯¼ö¿¡°Ôµµ Ãß°¡ : ¾×Æ¼ºê¸¸
+		// ì†Œí™˜ìˆ˜ ìŠ¤í‚¬ì€ ì†Œí™˜ìˆ˜ì—ê²Œë„ ì¶”ê°€ : ì•¡í‹°ë¸Œë§Œ
 		if ((proto->m_type == ST_MELEE || proto->m_type == ST_RANGE || proto->m_type == ST_MAGIC) && proto->CheckSorcererFlag(SSF_USE_ALL))
 		{
 			int needFlag = 0;
@@ -387,7 +387,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 		if (!pPet || !pPet->IsMount() || pPet->m_index != packet->charIndex)
 			return ;
 
-		//Á×Àº ÆêÀ¸·Î ½ºÅ³À» »ç¿ëÇÏ·Á°í ÇÏ¸é
+		//ì£½ì€ í«ìœ¼ë¡œ ìŠ¤í‚¬ì„ ì‚¬ìš©í•˜ë ¤ê³  í•˜ë©´
 		if(pPet->m_hp <= 0)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -395,7 +395,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return ;
 		}
-		// ÆêÀÇ ½ºÅ³À» PC°¡ »ç¿ë
+		// í«ì˜ ìŠ¤í‚¬ì„ PCê°€ ì‚¬ìš©
 		charSkill = pPet;
 		break;
 
@@ -448,7 +448,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 	try
 	{
-// °ø¼ºÁß¿¡ ÅÚ·¹Å°³×½Ã½º ½ºÅ³ »ç¿ë¸øÇÏ°Ô ¸·À½
+// ê³µì„±ì¤‘ì— í…”ë ˆí‚¤ë„¤ì‹œìŠ¤ ìŠ¤í‚¬ ì‚¬ìš©ëª»í•˜ê²Œ ë§‰ìŒ
 #ifndef	BUGFIX_USE_SKILL_TO_NPC
 #ifdef TIME_IN_WARCASTLE_BUG_FIX
 		if(packet->skillIndex == 169)
@@ -458,13 +458,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			{
 				if(packet->charType == MSG_CHAR_PC)
 				{
-					// °ø¼ºÁßÀÌ°Å³ª ½ÃÀÛ 1ºĞ Àü¿¡´Â °ø¼ºÁö¿ªÀ¸·Î ÀÌµ¿ ºÒ°¡
+					// ê³µì„±ì¤‘ì´ê±°ë‚˜ ì‹œì‘ 1ë¶„ ì „ì—ëŠ” ê³µì„±ì§€ì—­ìœ¼ë¡œ ì´ë™ ë¶ˆê°€
 					if (castle->GetState() != WCSF_NORMAL || castle->IsWarCastleReady())
 					{
 						if (ch->m_pArea->GetAttr(GET_YLAYER(ch), GET_X(ch), GET_Z(ch)) & MATT_WAR ||
 								ch->m_pZone->IsWarZone((int)GET_X(ch), (int)GET_Z(ch)) == true)
 						{
-							// ½ºÅ³ »ç¿ë ¸øÇÏ´Â ¿¡·¯¸Ş¼¼Áö ¹ß¼Û
+							// ìŠ¤í‚¬ ì‚¬ìš© ëª»í•˜ëŠ” ì—ëŸ¬ë©”ì„¸ì§€ ë°œì†¡
 							throw MSG_SKILL_ERROR_CANNOT_SPELL;
 						}
 					}
@@ -479,7 +479,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			throw MSG_SKILL_ERROR_CANNOT_SPELL;
 		}
 
-		//±æµå·ë¿¡¼­ ¼­¸ÕÅ¸ÀÔ ½ºÅ³ ¹æÁö
+		//ê¸¸ë“œë£¸ì—ì„œ ì„œë¨¼íƒ€ì… ìŠ¤í‚¬ ë°©ì§€
 		if(ch->m_pZone->m_index == ZONE_GUILDROOM)
 		{
 			const CSkillProto* proto = gserver->m_skillProtoList.Find(packet->skillIndex);
@@ -505,13 +505,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_SKILL_ERROR_CANNOT_SPELL;
 			}
 		}
-		// ¸¶¿îÆ® °¡´É Áö¿ª¿¡¼­¸¸ ºñÇà °¡´É
+		// ë§ˆìš´íŠ¸ ê°€ëŠ¥ ì§€ì—­ì—ì„œë§Œ ë¹„í–‰ ê°€ëŠ¥
 		if( packet->skillIndex == FLY_SKILL && ch->m_pZone->m_bCanMountPet == false )
 		{
 			throw MSG_SKILL_ERROR_CANNOT_SPELL;
 		}
 
-		// ½ºÅ³ Ã£±â
+		// ìŠ¤í‚¬ ì°¾ê¸°
 		skillproto = gserver->m_skillProtoList.Find(packet->skillIndex);
 
 		if(skillproto == NULL)
@@ -532,6 +532,12 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				ch->m_desc->Close("invalid GuildSkill");
 				return ;
 			}
+
+			if(ch->m_guildInfo->guild()->m_isUseTheStashAndSkill == false)
+			{
+				throw MSG_SKILL_ERROR_CANNOT_SPELL;
+			}
+
 			bIsGuildSkill = true;
 			skill = ch->m_guildInfo->guild()->FindSkill(packet->skillIndex);
 		}
@@ -574,10 +580,10 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 		if (IS_PC(charSkill) && charSkill == ch)
 		{
-			// ÀÎºñÀúºô¸®Æ¼
+			// ì¸ë¹„ì €ë¹Œë¦¬í‹°
 			if (skill->m_proto->m_index == 131)
 			{
-				// ¾ÏÁ¦¿¡¼± ÀÎºñÀúºô¸®Æ¼ »ç¿ë ¸øÇÑ´Ù.
+				// ì•”ì œì—ì„  ì¸ë¹„ì €ë¹Œë¦¬í‹° ì‚¬ìš© ëª»í•œë‹¤.
 				if (ch->m_pZone && ch->m_pZone->m_index == ZONE_ALTER_OF_DARK)
 					throw MSG_SKILL_ERROR_CANNOT_SPELL;
 			}
@@ -626,13 +632,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 #ifdef RESTRICT_PVP_SKILL
 		if (IS_PC(charSkill) && charSkill == ch)
 		{
-			// ÀÎºñÀúºô¸®Æ¼
+			// ì¸ë¹„ì €ë¹Œë¦¬í‹°
 			if (skill->m_proto->m_index == 131)
 			{
 				if (ch->m_nRestrictPvPSkillDelaySec > 0)
 					throw MSG_SKILL_ERROR_CANNOT_INVISIBLE;
 			}
-			// µ¥½º ¸ğ¼Ç
+			// ë°ìŠ¤ ëª¨ì…˜
 			else if (skill->m_proto->m_index == 191)
 			{
 				if (!IS_IN_CELL(ch))
@@ -677,13 +683,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 		if(ch->m_pZone->isRVRZone() && skill->m_proto->isRVRNotUse())
 		{
-			// rvr Á¸¿¡¼­´Â »ç¿ëÇÒ ¼ö ¾ø´Â ½ºÅ³
+			// rvr ì¡´ì—ì„œëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ìŠ¤í‚¬
 			throw MSG_SKILL_ERROR_CANNOT_ZONE;
 		}
 
 		if ( IS_PC(charSkill) && bCheck == true)
 		{
-			// Á¸°Ë»ç Ãß°¡ //  [2/20/2009 KwonYongDae]
+			// ì¡´ê²€ì‚¬ ì¶”ê°€ //  [2/20/2009 KwonYongDae]
 #if defined(LC_BILA)
 			if( charSkill->m_pZone && charSkill->m_pZone->IsOXQuizRoom() )
 				throw MSG_SKILL_ERROR_CANNOT_SPELL;
@@ -701,7 +707,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			}
 
 #ifdef EXTREME_CUBE_VER2
-			// ½ºÅ³ Çã¿ë Á¸ °Ë»ç
+			// ìŠ¤í‚¬ í—ˆìš© ì¡´ ê²€ì‚¬
 			if(skill->m_proto->IsActive())
 			{
 				if(!skill->m_proto->CheckAllowZone((char)(charSkill->m_pZone->m_index)))
@@ -709,7 +715,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			}
 #endif // EXTREME_CUBE_VER2
 
-			// ½ºÅÈ Á¶°Ç °Ë»ç
+			// ìŠ¤íƒ¯ ì¡°ê±´ ê²€ì‚¬
 			const CSkillLevelProto* level1 = skill->m_proto->Level(1);
 			if (!level1)
 				throw MSG_SKILL_ERROR_NOTFOUND;
@@ -722,28 +728,28 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			if (ch->m_statpt_con < level1->m_learncon)
 				throw MSG_SKILL_ERROR_STATPOINT_CON;
 
-			// ÆÛÆåÆ® ¹Ùµğ
+			// í¼í™íŠ¸ ë°”ë””
 			if (packet->skillIndex == 152 && ch->m_hp > ch->m_maxHP * 0.7f)
 				throw MSG_SKILL_ERROR_CANNOT_SPELL;
-			// ÇÁ·»Áö
+			// í”„ë Œì§€
 			if (packet->skillIndex == 153 && ch->m_hp > ch->m_maxHP * 0.7f)
 				throw MSG_SKILL_ERROR_CANNOT_SPELL;
-			// ¹ö¼­Å©
+			// ë²„ì„œí¬
 			if (packet->skillIndex == 228 && ch->m_hp > ch->m_maxHP * 0.7f)
 				throw MSG_SKILL_ERROR_CANNOT_SPELL;
 
-			// ¼ÒÈ¯, °­½Å, Å×ÀÌ¹Ö °Ë»ç
+			// ì†Œí™˜, ê°•ì‹ , í…Œì´ë° ê²€ì‚¬
 			if (levelproto->m_magic[0] && levelproto->m_magic[0]->m_levelproto[0])
 			{
 				if (levelproto->m_magic[0]->m_type == MT_OTHER)
 				{
 					if (levelproto->m_magic[0]->m_subtype == MST_OTHER_SUMMON)
 					{
-						// ½ºÆä¼È¸®½ºÆ®´Â ¼ÒÈ¯ ºÒ´É
+						// ìŠ¤í˜ì…œë¦¬ìŠ¤íŠ¸ëŠ” ì†Œí™˜ ë¶ˆëŠ¥
 						if (ch->m_job == JOB_SORCERER && ch->m_job2 == JOB_2ND_SPECIALLIST)
 							throw MSG_SKILL_ERROR_NOTFOUND;
 
-						// ÀüÁ÷ ÀÌÈÄ¿¡´Â Æú¾Ï Âø¿ë½Ã¿¡¸¸ °¡´É
+						// ì „ì§ ì´í›„ì—ëŠ” í´ì•” ì°©ìš©ì‹œì—ë§Œ ê°€ëŠ¥
 						if (ch->m_job == JOB_SORCERER && ch->m_job2 == JOB_2ND_ELEMENTALLIST)
 						{
 							if (!ch->m_wearInventory.wearItemInfo[WEARING_WEAPON])
@@ -754,7 +760,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 								throw MSG_SKILL_ERROR_INVAL_STATE_WEAPON;
 						}
 
-						// ¼ÒÈ¯±îÁö ³²Àº ½Ã°£ÀÌ ÀÖÀ¸¸é ¿À·ù Á¤º¸¿¡ ³²Àº ½Ã°£À» º¸³¿
+						// ì†Œí™˜ê¹Œì§€ ë‚¨ì€ ì‹œê°„ì´ ìˆìœ¼ë©´ ì˜¤ë¥˜ ì •ë³´ì— ë‚¨ì€ ì‹œê°„ì„ ë³´ëƒ„
 						bool bCheckType;
 						char nCheckDuplication;
 						if (!ch->CanSummonElemental(levelproto->m_magic[0]->m_levelproto[0]->m_nPowerValue, &nCheckDuplication, &nFailExtraInfo, &bCheckType))
@@ -769,7 +775,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 					else if (levelproto->m_magic[0]->m_subtype == MST_OTHER_EVOCATION)
 					{
-						// ¸¶¿îÆ® ÈÄ °­½Å MSG°¡ ¼­¹ö·Î µé¾î¿ÔÀ» ¶§ ¸·¾Æ¹ö¸°´Ù.
+						// ë§ˆìš´íŠ¸ í›„ ê°•ì‹  MSGê°€ ì„œë²„ë¡œ ë“¤ì–´ì™”ì„ ë•Œ ë§‰ì•„ë²„ë¦°ë‹¤.
 						if(ch->m_wearInventory.wearItemInfo[WEARING_PET] != NULL)
 						{
 							CItem* pItem = NULL;
@@ -801,7 +807,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 			for (i = 0; i < MAX_SKILL_MAGIC; i++)
 			{
-				// ³ªÀÌÆ® ½¦µµ¿ì ½ºÅ³ Á¶°Ç °Ë»ç
+				// ë‚˜ì´íŠ¸ ì‰ë„ìš° ìŠ¤í‚¬ ì¡°ê±´ ê²€ì‚¬
 				if (levelproto->m_magic[i] && levelproto->m_magic[i]->m_levelproto[i])
 				{
 					if (levelproto->m_magic[i]->m_type == MT_OTHER)
@@ -813,7 +819,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 								throw MSG_SKILL_ERROR_CANNOT_SPELL;
 						}
 
-						// ¿µÈ¥ ¼ÒÀ¯ °³¼ö°¡ 10°³ÀÌ¸é ´õÀÌ»ó Èí¼ö¸¦ ¸øÇÑ´Ù.
+						// ì˜í˜¼ ì†Œìœ  ê°œìˆ˜ê°€ 10ê°œì´ë©´ ë”ì´ìƒ í¡ìˆ˜ë¥¼ ëª»í•œë‹¤.
 						if (levelproto->m_magic[i]->m_subtype == MST_OTHER_SOUL_DRAIN)
 						{
 							CPC* pPC = TO_PC(charSkill);
@@ -821,7 +827,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 								throw MSG_SKILL_ERROR_SOUL_COUNT_ALREADY_FULL;
 						}
 					}
-					// Áõº¹ »ç¿ë ±İÁö
+					// ì¦ë³µ ì‚¬ìš© ê¸ˆì§€
 					if ( levelproto->m_magic[i]->m_type == MT_ASSIST
 							&& levelproto->m_magic[i]->m_subtype == MST_ASSIST_MERCENARY )
 					{
@@ -852,13 +858,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			}
 #endif // LC_GAMIGO
 
-			// »ç¿ë Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 			for (i = 0; i < MAX_SKILL_NEED_ITEM; i++)
 			{
 				if (levelproto->m_needItemIndex[i] < 0)
 					continue ;
 
-				//³ª½º ¼Ò¸ğ½ºÅ³ »ç¿ëÁ¶°Ç °Ë»ç( ³ª½º ÀÎº¥Åä¸® Á¦°Å ÆĞÄ¡)
+				//ë‚˜ìŠ¤ ì†Œëª¨ìŠ¤í‚¬ ì‚¬ìš©ì¡°ê±´ ê²€ì‚¬( ë‚˜ìŠ¤ ì¸ë²¤í† ë¦¬ ì œê±° íŒ¨ì¹˜)
 				if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() < levelproto->m_needItemCount[i])
 					throw MSG_SKILL_ERROR_INSUFF_ITEM;
 				else if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() >= levelproto->m_needItemCount[i])
@@ -870,12 +876,12 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 					throw MSG_SKILL_ERROR_INSUFF_ITEM;
 			}
 
-			//death ÇÃ·¡±×°¡ ¾ø´Â ½ºÅ³ÀÏ °æ¿ì hp°¡ 0ÀÎ À¯Àú¸¦ Å¸°ÙÀ» Àâ°í »ç¿ëÇÏÁö ¸øÇÑ´Ù.
+			//death í”Œë˜ê·¸ê°€ ì—†ëŠ” ìŠ¤í‚¬ì¼ ê²½ìš° hpê°€ 0ì¸ ìœ ì €ë¥¼ íƒ€ê²Ÿì„ ì¡ê³  ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤.
 			tch = charSkill->m_pArea->FindCharInCell(charSkill, packet->targetIndex, (MSG_CHAR_TYPE)packet->targetType, true);
 			if(tch == NULL)
 				throw MSG_SKILL_ERROR_INVAL_TARGET;
 
-			//pvpº¸È£ ¾ÆÀÌÅÛ Ã¼Å©
+			//pvpë³´í˜¸ ì•„ì´í…œ ì²´í¬
 			if( (skill->m_proto->m_flag & SF_HELP) == false )
 			{
 				if (checkPvPProtect(ch, tch) == false)
@@ -899,23 +905,23 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			//Åä±Û¿µÇâ (´Ş¸®´Â Áß »ç¿ëÇÒ ½Ã Å¸°ÙÀÇ Á¤º¸°¡ .....)
+			//í† ê¸€ì˜í–¥ (ë‹¬ë¦¬ëŠ” ì¤‘ ì‚¬ìš©í•  ì‹œ íƒ€ê²Ÿì˜ ì •ë³´ê°€ .....)
 			if (ch->IsInPeaceZone(true) && !tch->IsInPeaceZone(false)
 				&& skill->m_proto->m_index == 688)
 			{
 				throw MSG_SKILL_ERROR_INVAL_STATE_STAND;
 			}
-		} // PCÀÇ Á¶°Ç °Ë»ç
+		} // PCì˜ ì¡°ê±´ ê²€ì‚¬
 
 		if( IS_APET(charSkill) && bCheck == true )
 		{
-			// »ç¿ë Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 			for (i = 0; i < MAX_SKILL_NEED_ITEM; i++)
 			{
 				if (levelproto->m_needItemIndex[i] < 0)
 					continue ;
 
-				//³ª½º ¼Ò¸ğ½ºÅ³ »ç¿ëÁ¶°Ç °Ë»ç( ³ª½º ÀÎº¥Åä¸® Á¦°Å ÆĞÄ¡)
+				//ë‚˜ìŠ¤ ì†Œëª¨ìŠ¤í‚¬ ì‚¬ìš©ì¡°ê±´ ê²€ì‚¬( ë‚˜ìŠ¤ ì¸ë²¤í† ë¦¬ ì œê±° íŒ¨ì¹˜)
 				if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() < levelproto->m_needItemCount[i])
 					throw MSG_SKILL_ERROR_INSUFF_ITEM;
 				else if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() >= levelproto->m_needItemCount[i])
@@ -931,27 +937,27 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// º¯½ÅÁß ½ºÅ³ »ç¿ë ºÒ°¡
+			// ë³€ì‹ ì¤‘ ìŠ¤í‚¬ ì‚¬ìš© ë¶ˆê°€
 			CAPet *apet = TO_APET(charSkill);
 			if( apet && apet->m_cTransSate > 0 )
 			{
-				if( packet->skillIndex != apet->m_pProto->m_nSummonSkill[(unsigned int)apet->m_cTransSate] )		// ¼ÒÈ¯½ºÅ³ÀÌ ¾Æ´Ò°æ¿ì
+				if( packet->skillIndex != apet->m_pProto->m_nSummonSkill[(unsigned int)apet->m_cTransSate] )		// ì†Œí™˜ìŠ¤í‚¬ì´ ì•„ë‹ê²½ìš°
 					throw MSG_SKILL_ERROR_CANNOT_SPELL;
 			}
 		}
 
-		// Æê ½ºÅ³Àº Ã£°í ³ª¼­ ½ºÅ³ »ç¿ëÀÚ¸¦ PC·Î º¯°æ
+		// í« ìŠ¤í‚¬ì€ ì°¾ê³  ë‚˜ì„œ ìŠ¤í‚¬ ì‚¬ìš©ìë¥¼ PCë¡œ ë³€ê²½
 		if (IS_PET(charSkill))
 			charSkill = ch;
 
 		if (charSkill == NULL || charSkill->m_pArea == NULL)
 			throw MSG_SKILL_ERROR_NOTREADY;
 
-		// ½ºÅ³ »ç¿ë °¡´É »óÅÂ °Ë»ç
+		// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ìƒíƒœ ê²€ì‚¬
 		if (!charSkill->CanSpell())
 			throw MSG_SKILL_ERROR_CANNOT_SPELL;
 
-		// ÇöÀç ½ºÅ³ »ç¿ë ÁßÀÎÁö °Ë»ç
+		// í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš© ì¤‘ì¸ì§€ ê²€ì‚¬
 		if (charSkill->m_currentSkill)
 		{
 			if (gserver->m_pulse - charSkill->m_currentSkill->m_usetime >= charSkill->m_currentSkill->m_proto->m_readyTime + charSkill->m_currentSkill->m_proto->m_stillTime + charSkill->m_currentSkill->m_proto->m_fireTime - 15)
@@ -963,20 +969,20 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_SKILL_ERROR_ALREADY_USE;
 		}
 
-		// ½ºÅ³ »óÅÂ º¸±â : Àç»ç¿ë ´ë±â ÁßÀÎÁö
+		// ìŠ¤í‚¬ ìƒíƒœ ë³´ê¸° : ì¬ì‚¬ìš© ëŒ€ê¸° ì¤‘ì¸ì§€
 		if (!skill->IsReady(charSkill))
 			throw MSG_SKILL_ERROR_NOTREADY;
 
-		// ¼ÒÈ¯¼ö´Â MP °øÀ¯
+		// ì†Œí™˜ìˆ˜ëŠ” MP ê³µìœ 
 		chMP = (IS_ELEMENTAL(charSkill)) ? ch : charSkill;
 
 		if(bCheck == true)
 		{
-			// »ç¿ë Á¶°Ç °Ë»ç : hp
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : hp
 			if ( levelproto->m_needHP != 0 && charSkill->m_hp <= levelproto->m_needHP)
 				throw MSG_SKILL_ERROR_INSUFF_HP;
 
-			// »ç¿ë Á¶°Ç °Ë»ç : mp
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : mp
 			nNeedMP = levelproto->m_needMP;
 			if (charSkill == ch)
 			{
@@ -995,7 +1001,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			}
 			if (chMP->m_mp <= nNeedMP)
 				throw MSG_SKILL_ERROR_INSUFF_MP;
-			// »ç¿ë Á¶°Ç °Ë»ç : gp
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : gp
 			if(bIsGuildSkill)
 			{
 				nNeedGP = levelproto->m_needGP;
@@ -1004,13 +1010,13 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 					if(ch->m_guildInfo->guild()->GetGuildPoint() <= nNeedGP)
 						throw MSG_SKILL_ERROR_INSUFF_GP;
 				}
-				// »ç¿ë Á¶°Ç °Ë»ç : »ç¿ëÀÚ°¡ ±æµå¸¶½ºÅÍÀÎÁö È®ÀÎ.
+				// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : ì‚¬ìš©ìê°€ ê¸¸ë“œë§ˆìŠ¤í„°ì¸ì§€ í™•ì¸.
 				if(skill->m_proto->m_targetType != STT_GUILD_MEMBER_SELF &&
 					ch->m_guildInfo->guild()->boss()->charindex() != ch->m_index)
 					throw MSG_SKILL_ERROR_NOT_GUILD_MASTER;
 			}
 
-			// »ç¿ë Á¶°Ç °Ë»ç : use state
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : use state
 			switch (skill->m_proto->CheckUseState(charSkill))
 			{
 			case 0:
@@ -1094,8 +1100,8 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// Å¸°Ù °Ë»ç
-			// °Å¸® °Ë»ç
+			// íƒ€ê²Ÿ ê²€ì‚¬
+			// ê±°ë¦¬ ê²€ì‚¬
 			switch (skill->m_proto->m_targetType)
 			{
 			case STT_GUILD_ONE:
@@ -1117,7 +1123,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 					if( (pNPC != NULL) &&
 						(pNPC->m_flag & (NPC_PEACEFUL | NPC_WARCASTLE | NPC_LORD_SYMBOL | NPC_CASTLE_TOWER)) )
 					{
-						// ´ë½¬¿Í ÅÚ·¹Å°³×½Ã½º ½ºÅ³Àº °ø¼º°ü·Ã NPC¿Í ÆòÈ­NPCµé¿¡°Ô »ç¿ëÇÒ ¼ö ¾ø´Ù.
+						// ëŒ€ì‰¬ì™€ í…”ë ˆí‚¤ë„¤ì‹œìŠ¤ ìŠ¤í‚¬ì€ ê³µì„±ê´€ë ¨ NPCì™€ í‰í™”NPCë“¤ì—ê²Œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 						if( packet->skillIndex == 169 ||
 							packet->skillIndex == 401 )
 						{
@@ -1134,8 +1140,8 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 						{
 							CNPC* pNPC = TO_NPC(tch);
 
-							// npc°¡ ÀÌ¹Ì ¿µÈ¥À» »©¾Ñ°åÀ¸¸é ´õÀÌ»ó »¯Áö ¸øÇÑ´Ù.
-							// ÀÌ °Ë»ç°¡ ¿ì¼± µÇ¾î¾ß ÇÑ´Ù. ±×·¡¼­ for¹®À» ¸ÕÀú µ¹¸é¼­ °Ë»çÇÑ´Ù. ¾Æ·¡¿Í ¹­¿©ÀÖÀ¸¸é ¿¡·¯³­´Ù.
+							// npcê°€ ì´ë¯¸ ì˜í˜¼ì„ ë¹¼ì•—ê²¼ìœ¼ë©´ ë”ì´ìƒ ëºì§€ ëª»í•œë‹¤.
+							// ì´ ê²€ì‚¬ê°€ ìš°ì„  ë˜ì–´ì•¼ í•œë‹¤. ê·¸ë˜ì„œ forë¬¸ì„ ë¨¼ì € ëŒë©´ì„œ ê²€ì‚¬í•œë‹¤. ì•„ë˜ì™€ ë¬¶ì—¬ìˆìœ¼ë©´ ì—ëŸ¬ë‚œë‹¤.
 							if (pNPC->Check_MobFlag(STATE_MONSTER_NO_SOUL) && levelproto->m_magic[i]->m_type == MT_OTHER)
 							{
 								if (levelproto->m_magic[i]->m_subtype == MST_OTHER_SOUL_DRAIN)
@@ -1153,7 +1159,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 						{
 							CNPC* pNPC = TO_NPC(tch);
 
-							// Å×ÀÌ¹ÖÀÌ µÇ¾ú°Å³ª È¥¶õ(È¥µ·,½ºÅÏ) ÁßÀÎ ¸ó½ºÅÍ¿¡°Ô´Â ¾î¶² ½ºÅ³µµ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+							// í…Œì´ë°ì´ ë˜ì—ˆê±°ë‚˜ í˜¼ë€(í˜¼ëˆ,ìŠ¤í„´) ì¤‘ì¸ ëª¬ìŠ¤í„°ì—ê²ŒëŠ” ì–´ë–¤ ìŠ¤í‚¬ë„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 							if ( !pNPC
 								|| pNPC->Check_MobFlag(STATE_MONSTER_TAMING)
 								|| pNPC->Check_MobFlag(STATE_MONSTER_CONFUSION)
@@ -1161,7 +1167,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 								|| pNPC->Check_MobFlag(STATE_MONSTER_TOTEM_ATTK) )
 								throw MSG_SKILL_ERROR_INVAL_TARGET;
 
-							// ÄÚÇÁ ¿Àºê ³ªÀÌÆ® °É¸®¸é ´Ù¸¥ ½ºÅ³ÀÌ µé¾î°¥ ¼ö ¾ø´Ù.
+							// ì½”í”„ ì˜¤ë¸Œ ë‚˜ì´íŠ¸ ê±¸ë¦¬ë©´ ë‹¤ë¥¸ ìŠ¤í‚¬ì´ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ë‹¤.
 							if (pNPC->m_assist.FindByType(MT_ASSIST, MST_ASSIST_FREEZE))
 								throw MSG_SKILL_ERROR_INVAL_TARGET;
 
@@ -1169,7 +1175,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 							{
 								if (levelproto->m_magic[i]->m_subtype == MST_ASSIST_TAMING)
 								{
-									// npc°¡ º¸½º±ŞÀÌ¸é Å×ÀÌ¹ÖÀ» ¸øÇÑ´Ù.
+									// npcê°€ ë³´ìŠ¤ê¸‰ì´ë©´ í…Œì´ë°ì„ ëª»í•œë‹¤.
 #ifdef BUGFIX_USE_SKILL_TO_NPC
 									if(pNPC->m_flag & (NPC_BOSS | NPC_MBOSS | NPC_RAID | NPC_PEACEFUL | NPC_WARCASTLE | NPC_LORD_SYMBOL | NPC_CASTLE_TOWER))
 #else
@@ -1177,13 +1183,18 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 #endif
 										throw MSG_SKILL_ERROR_INVAL_TARGET;
 								}
-								// ¼Ò¿ï µå·¹ÀÎÀº ready¿¡¼­ ºÎÅÍ dot µ¥¹ÌÁö°¡ µé¾î°£´Ù.
+								// ì†Œìš¸ ë“œë ˆì¸ì€ readyì—ì„œ ë¶€í„° dot ë°ë¯¸ì§€ê°€ ë“¤ì–´ê°„ë‹¤.
 								if (skill->m_proto->m_index == 661 && levelproto->m_magic[i]->m_subtype == MST_ASSIST_HP_DOT)
 								{
 									bool bApply = false;
-									// [110216:selo] ½ºÅ³·Î ÀÎÇØ Å¸°ÙÀÌ Á×À¸¸é ¸®ÅÏ
+									// [110216:selo] ìŠ¤í‚¬ë¡œ ì¸í•´ íƒ€ê²Ÿì´ ì£½ìœ¼ë©´ ë¦¬í„´
 									if(0 != ApplySkill(ch, pNPC, skill, -1, bApply) )
+									{
+										CNetMsg::SP rmsg(new CNetMsg);
+										ResponseClient::makeSkillCancelMsg(rmsg, ch);
+										ch->m_pArea->SendToCell(rmsg, ch, true);
 										return;
+									}
 								}
 							}
 #ifdef BUGFIX_USE_SKILL_TO_NPC
@@ -1200,11 +1211,11 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 
 						if (IS_PC(tch))
 						{
-							// ¼Ò¿ï µå·¹ÀÎÀº PC¿¡°Ô »ç¿ë ¸øÇÑ´Ù.
+							// ì†Œìš¸ ë“œë ˆì¸ì€ PCì—ê²Œ ì‚¬ìš© ëª»í•œë‹¤.
 							if (levelproto->m_magic[i]->m_type == MT_OTHER && levelproto->m_magic[i]->m_subtype == MST_OTHER_SOUL_DRAIN)
 								throw MSG_SKILL_ERROR_CANNOT_TO_PC;
 
-							// Å×ÀÌ¹Ö°ú È¥µ·Àº PC¿¡°Ô »ç¿ë ¸øÇÑ´Ù.
+							// í…Œì´ë°ê³¼ í˜¼ëˆì€ PCì—ê²Œ ì‚¬ìš© ëª»í•œë‹¤.
 							if(levelproto->m_magic[i]->m_type == MT_ASSIST)
 							{
 								if (levelproto->m_magic[i]->m_subtype == MST_ASSIST_TAMING
@@ -1249,18 +1260,18 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 							throw MSG_SKILL_ERROR_INVAL_TARGET;
 					}
 
-					// ¼ÒÈ¯¼ö Àü¿ë ½ºÅ³ Å¸ÀÔÀÌ¸é
+					// ì†Œí™˜ìˆ˜ ì „ìš© ìŠ¤í‚¬ íƒ€ì…ì´ë©´
 					else if (skill->m_proto->m_targetType == STT_ELEMENTAL_ONE)
 					{
-						// ´ë»óÀÌ ¼ÒÈ¯¼ö¿©¾ß ÇÏ°í
+						// ëŒ€ìƒì´ ì†Œí™˜ìˆ˜ì—¬ì•¼ í•˜ê³ 
 						if (!IS_ELEMENTAL(tch))
 							throw MSG_SKILL_ERROR_INVAL_TARGET;
 						CElemental* pElemental = TO_ELEMENTAL(tch);
-						// ´ë»óÀÇ ÁÖÀÎPC°¡ ÀÖ¾î¾ß ÇÏ°í
+						// ëŒ€ìƒì˜ ì£¼ì¸PCê°€ ìˆì–´ì•¼ í•˜ê³ 
 						CPC* pTargetPC = pElemental->GetOwner();
 						if (pTargetPC == NULL)
 							throw MSG_SKILL_ERROR_INVAL_TARGET;
-						// ´ë»óÀÇ ÁÖÀÎ°ú ½ºÅ³ ½ÃÀüÀÚ°¡ µ¿ÀÏ
+						// ëŒ€ìƒì˜ ì£¼ì¸ê³¼ ìŠ¤í‚¬ ì‹œì „ìê°€ ë™ì¼
 						if (pTargetPC != ch/* && (!pTargetPC->IsParty() || !ch->IsParty() || pTargetPC->m_party != ch->m_party*/)
 							throw MSG_SKILL_ERROR_INVAL_TARGET;
 					}
@@ -1290,10 +1301,10 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 			}
 		}		
 
-		// ¿öÇÁ ½ºÅ³À» À§ÇÑ Ä³¸¯ÅÍ ÁÂÇ¥ µ¥ÀÌÅÍ ¼³Á¤
+		// ì›Œí”„ ìŠ¤í‚¬ì„ ìœ„í•œ ìºë¦­í„° ì¢Œí‘œ ë°ì´í„° ì„¤ì •
 		char outY = 0;
 
-		// Å¬¶óÀÌ¾ğÆ®°¡ º¸³»ÁáÀ¸¸é, ¿öÇÁ ½ºÅ³ÀÌ ¸Â´Ù¸é
+		// í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚´ì¤¬ìœ¼ë©´, ì›Œí”„ ìŠ¤í‚¬ì´ ë§ë‹¤ë©´
 		if (packet->cMoveChar && levelproto->m_magic[0] && levelproto->m_magic[0]->m_type == MT_OTHER
 				&& levelproto->m_magic[0]->m_subtype == MST_OTHER_WARP)
 		{
@@ -1303,7 +1314,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 						>> packet->fr
 						>> packet->cYlayer;
 
-			// Á¶°Ç °Ë»ç ÇÏ°í ÁÂÇ¥¸¦ ÀúÀå.. skill fire ¿¡¼­ ÀúÀåÇÑ ÁÂÇ¥·Î ¿öÇÁ
+			// ì¡°ê±´ ê²€ì‚¬ í•˜ê³  ì¢Œí‘œë¥¼ ì €ì¥.. skill fire ì—ì„œ ì €ì¥í•œ ì¢Œí‘œë¡œ ì›Œí”„
 			if (ch->m_pArea && ch->m_pArea->IsNotBlocked(ch, packet->cYlayer, packet->fx, packet->fz, true, outY))
 			{
 				ch->m_pos.m_x = packet->fx;
@@ -1316,7 +1327,7 @@ void do_SkillReady(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_SKILL_ERROR_WARP_CAN_NOT_GO_THERE;
 		}
 
-		// ½ºÅ³ ½ÃÀü »óÅÂ·Î
+		// ìŠ¤í‚¬ ì‹œì „ ìƒíƒœë¡œ
 		charSkill->CancelInvisible();
 		skill->Ready(tch);
 		charSkill->m_currentSkill = skill;
@@ -1358,7 +1369,7 @@ void do_SkillCancel(CPC* ch, CNetMsg::SP& msg)
 		break;
 
 	case MSG_CHAR_PET:
-		// ÆêÀÇ ½ºÅ³À» PC°¡ »ç¿ë
+		// í«ì˜ ìŠ¤í‚¬ì„ PCê°€ ì‚¬ìš©
 		charSkill = ch;
 		break;
 
@@ -1388,11 +1399,11 @@ void do_SkillCancel(CPC* ch, CNetMsg::SP& msg)
 
 	LOG_INFO("SKILL_CANCEL_2. charType : %d, charIndex : %d", charSkill->m_type, charSkill->m_index);
 
-	// ½ºÅ³ »ç¿ë ÁßÀÎ°¡? »ç¿ëÁßÀÌ¶ó¸é ½ÃÀü»óÅÂÀÎ°¡?
+	// ìŠ¤í‚¬ ì‚¬ìš© ì¤‘ì¸ê°€? ì‚¬ìš©ì¤‘ì´ë¼ë©´ ì‹œì „ìƒíƒœì¸ê°€?
 	if (charSkill->m_currentSkill == NULL || charSkill->m_currentSkill->m_state != SKILL_CON_READY)
 		return ;
 
-	// ½ÃÀü Ãë¼Ò
+	// ì‹œì „ ì·¨ì†Œ
 	charSkill->m_currentSkill->Cancel(charSkill);
 	charSkill->m_currentSkill = NULL;
 
@@ -1422,7 +1433,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 
 	if (packet->listCount > 0)
 	{
-		// multi target Áßº¹ °Ë»ç
+		// multi target ì¤‘ë³µ ê²€ì‚¬
 		std::set<LONGLONG> tset;
 		for (int i = 0; i < packet->listCount; ++i)
 		{
@@ -1522,7 +1533,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 	if (!charSkill)
 		return ;
 
-	// ½ºÅ³ ½ÃÀüÁß °Ë»ç
+	// ìŠ¤í‚¬ ì‹œì „ì¤‘ ê²€ì‚¬
 	if (charSkill->m_currentSkill == NULL
 			|| charSkill->m_currentSkill->m_proto->m_index != packet->skillIndex
 			|| charSkill->m_currentSkill->m_state != SKILL_CON_READY)
@@ -1549,7 +1560,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 
 	if( gserver->m_pulse < (skill->m_usetime + ((skill->m_proto->m_readyTime * (100 - ch->m_skillSpeed) / 100))) )
 	{
-		//ÇØÅ· ½Ãµµ Å¬¶óÀÌ¾ğÆ® Á¢¼Ó Á¾·á½ÃÄÑ¹ö¸°´Ù.
+		//í•´í‚¹ ì‹œë„ í´ë¼ì´ì–¸íŠ¸ ì ‘ì† ì¢…ë£Œì‹œì¼œë²„ë¦°ë‹¤.
 		ch->m_desc->IncreaseHackCount(1);
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1574,7 +1585,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 	{
 		if (IS_PC(charSkill))
 		{
-			// »ç¿ë Á¶°Ç : ½ºÅÈ : ½ºÅ³ ·¹º§ ¼³Á¤¿¡¼­ 1·¹º§ ±âÁØ
+			// ì‚¬ìš© ì¡°ê±´ : ìŠ¤íƒ¯ : ìŠ¤í‚¬ ë ˆë²¨ ì„¤ì •ì—ì„œ 1ë ˆë²¨ ê¸°ì¤€
 			level1 = skill->m_proto->Level(1);
 			if (!level1)
 				goto INSUFF;
@@ -1587,13 +1598,13 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 			if (ch->m_statpt_con < level1->m_learncon)
 				goto INSUFF;
 
-			// »ç¿ë Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 			for (i = 0; i < MAX_SKILL_NEED_ITEM; i++)
 			{
 				if (levelproto->m_needItemIndex[i] < 0)
 					continue ;
 
-				//³ª½º ¼Ò¸ğ½ºÅ³ »ç¿ëÁ¶°Ç °Ë»ç( ³ª½º ÀÎº¥Åä¸® Á¦°Å ÆĞÄ¡)
+				//ë‚˜ìŠ¤ ì†Œëª¨ìŠ¤í‚¬ ì‚¬ìš©ì¡°ê±´ ê²€ì‚¬( ë‚˜ìŠ¤ ì¸ë²¤í† ë¦¬ ì œê±° íŒ¨ì¹˜)
 				if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() < levelproto->m_needItemCount[i])
 					goto INSUFF;
 				else if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() >= levelproto->m_needItemCount[i])
@@ -1609,13 +1620,13 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 		}
 		else if ( IS_APET(charSkill) )
 		{
-			// »ç¿ë Á¶°Ç °Ë»ç : ¾ÆÀÌÅÛ
+			// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : ì•„ì´í…œ
 			for (i = 0; i < MAX_SKILL_NEED_ITEM; i++)
 			{
 				if (levelproto->m_needItemIndex[i] < 0)
 					continue ;
 
-				//³ª½º ¼Ò¸ğ½ºÅ³ »ç¿ëÁ¶°Ç °Ë»ç( ³ª½º ÀÎº¥Åä¸® Á¦°Å ÆĞÄ¡)
+				//ë‚˜ìŠ¤ ì†Œëª¨ìŠ¤í‚¬ ì‚¬ìš©ì¡°ê±´ ê²€ì‚¬( ë‚˜ìŠ¤ ì¸ë²¤í† ë¦¬ ì œê±° íŒ¨ì¹˜)
 				if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() < levelproto->m_needItemCount[i])
 					goto INSUFF;
 				else if (levelproto->m_needItemIndex[i] == NAS_ITEM_DB_INDEX && ch->m_inventory.getMoney() >= levelproto->m_needItemCount[i])
@@ -1635,25 +1646,25 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 		}
 
 
-		// Å¸°Ù °Ë»ç
-		// ÀÌÀü Å¸°ÙÀÌ ÀÖ°í
+		// íƒ€ê²Ÿ ê²€ì‚¬
+		// ì´ì „ íƒ€ê²Ÿì´ ìˆê³ 
 		if (skill->m_targetIndex != -1)
 		{
-			// ÇöÀç Å¸°ÙÀ» ±¸ÇØ¼­
+			// í˜„ì¬ íƒ€ê²Ÿì„ êµ¬í•´ì„œ
 			tch = charSkill->m_pArea->FindCharInCell(charSkill, packet->targetIndex, (MSG_CHAR_TYPE)packet->targetType, true);
-			// Å¸°ÙÀÌ ¾ø°Å³ª ÀÌÀü°ú ´Ù¸£¸é
+			// íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ì´ì „ê³¼ ë‹¤ë¥´ë©´
 			if (tch == NULL || skill->m_targetIndex != packet->targetIndex || skill->m_targetType != packet->targetType)
 				goto INSUFF;
 		}
 
-		// ¼ÒÈ¯¼ö´Â MP °øÀ¯
+		// ì†Œí™˜ìˆ˜ëŠ” MP ê³µìœ 
 		chMP = (IS_ELEMENTAL(charSkill)) ? ch : charSkill;
 
-		// »ç¿ë Á¶°Ç °Ë»ç : hp
+		// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : hp
 		if ( levelproto->m_needHP !=0 && charSkill->m_hp <= levelproto->m_needHP)
 			goto INSUFF;
 
-		// »ç¿ë Á¶°Ç °Ë»ç : mp
+		// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : mp
 		nNeedMP = levelproto->m_needMP;
 		if (charSkill == ch)
 		{
@@ -1673,7 +1684,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 		if (chMP->m_mp <= nNeedMP)
 			goto INSUFF;
 
-		// ½ºÅ³fire GP°¨¼Ò
+		// ìŠ¤í‚¬fire GPê°ì†Œ
 		if(proto->m_flag & SF_GUILD)
 		{
 			nNeedGP = levelproto->m_needGP;
@@ -1693,8 +1704,8 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 				bGuildSkill = true;
 		}
 
-		// »ç¿ë Á¶°Ç °Ë»ç : use state
-		// ÇÏÀÌµå´Â ÆÄÀÌ¾î Çàµ¿½Ã °Ë»çÇÏÁö ¾ÊÀ½
+		// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : use state
+		// í•˜ì´ë“œëŠ” íŒŒì´ì–´ í–‰ë™ì‹œ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
 		if( skill->m_proto->m_index == 237
 			|| skill->m_proto->m_index == 236
 			|| skill->m_proto->m_index == 1542
@@ -1710,23 +1721,23 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// »ç¿ë Á¶°Ç °Ë»ç : Soul »ç¿ë ¿©ºÎ
+		// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : Soul ì‚¬ìš© ì—¬ë¶€
 		if (IS_PC(charSkill))
 		{
 			CPC* pPC = TO_PC(charSkill);
 
-			// ¿µÈ¥ÀÌ ¼Ò¸ğµÇ´Â ½ºÅ³ÀÌ¶ó¸é
+			// ì˜í˜¼ì´ ì†Œëª¨ë˜ëŠ” ìŠ¤í‚¬ì´ë¼ë©´
 			if (pPC && pPC->m_desc)
 			{
 				if(proto->m_soul_consum > 0)
 				{
-					int soul_count = 0;		// ¿µÈ¥ÀÇ ¼ÒÀ¯ °³¼ö
-					int remain_soul = 0;	// ¿µÈ¥ÀÇ ³²Àº °³¼ö
+					int soul_count = 0;		// ì˜í˜¼ì˜ ì†Œìœ  ê°œìˆ˜
+					int remain_soul = 0;	// ì˜í˜¼ì˜ ë‚¨ì€ ê°œìˆ˜
 
 					soul_count = pPC->GetSoul_Count();
 					remain_soul = soul_count - proto->m_soul_consum;
 
-					// ¿µÈ¥ÀÇ °³¼ö°¡ ¸¶ÀÌ³Ê½º°¡ µÇ¸é ½ºÅ³ Ãë¼Ò
+					// ì˜í˜¼ì˜ ê°œìˆ˜ê°€ ë§ˆì´ë„ˆìŠ¤ê°€ ë˜ë©´ ìŠ¤í‚¬ ì·¨ì†Œ
 					if ( remain_soul >= 0 )
 						pPC->SetSoul_Count(remain_soul);
 					else
@@ -1740,14 +1751,14 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 					}
 
 					{
-						// ¿µÈ¥ °³¼ö ¸Å¼¼Áö º¸³»±â
+						// ì˜í˜¼ ê°œìˆ˜ ë§¤ì„¸ì§€ ë³´ë‚´ê¸°
 						CNetMsg::SP rmsg(new CNetMsg);
 						ResponseClient::makeSkillSoulCountMsg(rmsg, pPC->GetSoul_Count());
 						SEND_Q(rmsg, pPC->m_desc);
 					}
 				}
 
-				// Áö¼Ó ½ºÅ³À» À§ÇØ ½ºÅ³ Å¸°Ù Á¤º¸¸¦ Ä³¸¯ÅÍ¿¡ ÀúÀåÇÑ´Ù.
+				// ì§€ì† ìŠ¤í‚¬ì„ ìœ„í•´ ìŠ¤í‚¬ íƒ€ê²Ÿ ì •ë³´ë¥¼ ìºë¦­í„°ì— ì €ì¥í•œë‹¤.
 				if (packet->listCount > 0)
 				{
 					pPC->m_skillTargetCount = packet->listCount;
@@ -1765,7 +1776,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ½ºÅ³ ÆÄÀÌ¾î
+	// ìŠ¤í‚¬ íŒŒì´ì–´
 	skill->Fire();
 
 	if (packet->cMoveChar && tch)
@@ -1792,14 +1803,19 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 
 	if(bCheck == true)
 	{
-		// HP ¼Ò¸ğ, MP ¼Ò¸ğ
+		// HP ì†Œëª¨, MP ì†Œëª¨
 		charSkill->m_hp -= levelproto->m_needHP;
 		chMP->m_mp -= nNeedMP;
 		if(bGuildSkill)
 		{
+			if(ch->m_guildInfo->guild()->m_isUseTheStashAndSkill == false)
+			{
+				goto INSUFF;
+			}
+
 			ch->m_guildInfo->guild()->AddGuildPoint(-nNeedGP);
 
-			// ÇïÆÛ·Î Guild Point ¾÷µ¥ÀÌÆ® ¹ß¼Û....
+			// í—¬í¼ë¡œ Guild Point ì—…ë°ì´íŠ¸ ë°œì†¡....
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperNewGuildPointUpdate(rmsg, ch->m_index, ch->m_guildInfo->guild()->index(), -nNeedGP);
 			SEND_Q(rmsg, gserver->m_helper);
@@ -1827,7 +1843,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 			break;
 		}
 
-		// ITEM ¼Ò¸ğ
+		// ITEM ì†Œëª¨
 		if (IS_PC(charSkill))
 		{
 			for (i = 0; i < MAX_SKILL_NEED_ITEM; i++)
@@ -1866,8 +1882,8 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ½ºÅ³ Àû¿ë
-	// Å¸°ÔÆÃ¿¡ µû¶ó
+	// ìŠ¤í‚¬ ì ìš©
+	// íƒ€ê²ŒíŒ…ì— ë”°ë¼
 	bool bApply;
 	switch (proto->m_targetType)
 	{
@@ -1895,13 +1911,13 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 				if (GetDistance(charSkill, tch) <= proto->m_appRange + 1.0f)
 				{
 #if defined (LC_GAMIGO)
-					// 081216 PVPÁ¸¿¡¼­ °üÁß¼®¿¡ ¹üÀ§¸¶¹ı µ¥¹ÌÁö µé¾î°¡´Â °Í ¼öÁ¤  yhj
+					// 081216 PVPì¡´ì—ì„œ ê´€ì¤‘ì„ì— ë²”ìœ„ë§ˆë²• ë°ë¯¸ì§€ ë“¤ì–´ê°€ëŠ” ê²ƒ ìˆ˜ì •  yhj
 					if( tch->m_pZone->m_index == ZONE_PK_TOURNAMENT && !(tch->GetMapAttr() & MATT_FREEPKZONE) )
 						continue;
 #endif // LC_GAMIGO
 					if(skill->m_proto->m_flag & (1 << 1))
 					{
-						// HELP°í tch°¡ ³ª¿Í °°Àº ±æµå¸é applyº¸³»±â.
+						// HELPê³  tchê°€ ë‚˜ì™€ ê°™ì€ ê¸¸ë“œë©´ applyë³´ë‚´ê¸°.
 						CPC* pc = TO_PC(charSkill);
 						CPC* tpc = TO_PC(tch);
 
@@ -1938,7 +1954,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 				if (GetDistance(charSkill, tch) <= proto->m_appRange + 1.0f)
 				{
 #if defined (LC_GAMIGO)
-					// 081216 PVPÁ¸¿¡¼­ °üÁß¼®¿¡ ¹üÀ§¸¶¹ı µ¥¹ÌÁö µé¾î°¡´Â °Í ¼öÁ¤  yhj
+					// 081216 PVPì¡´ì—ì„œ ê´€ì¤‘ì„ì— ë²”ìœ„ë§ˆë²• ë°ë¯¸ì§€ ë“¤ì–´ê°€ëŠ” ê²ƒ ìˆ˜ì •  yhj
 					if( tch->m_pZone->m_index == ZONE_PK_TOURNAMENT && !(tch->GetMapAttr() & MATT_FREEPKZONE) )
 						continue;
 #endif // LC_GAMIGO
@@ -1976,7 +1992,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 					if (GetDistance(tx, tz, th, tch) <= proto->m_appRange + 1.0f)
 					{
 #if defined (LC_GAMIGO)
-						// 081216 PVPÁ¸¿¡¼­ °üÁß¼®¿¡ ¹üÀ§¸¶¹ı µ¥¹ÌÁö µé¾î°¡´Â °Í ¼öÁ¤  yhj
+						// 081216 PVPì¡´ì—ì„œ ê´€ì¤‘ì„ì— ë²”ìœ„ë§ˆë²• ë°ë¯¸ì§€ ë“¤ì–´ê°€ëŠ” ê²ƒ ìˆ˜ì •  yhj
 						if( tch->m_pZone->m_index == ZONE_PK_TOURNAMENT && !(tch->GetMapAttr() & MATT_FREEPKZONE) )
 							continue;
 #endif // LC_GAMIGO
@@ -2012,7 +2028,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 					if (GetDistance(charSkill, tch) <= proto->m_appRange + 1.0f)
 					{
 #if defined (LC_GAMIGO)
-						// 081216 PVPÁ¸¿¡¼­ °üÁß¼®¿¡ ¹üÀ§¸¶¹ı µ¥¹ÌÁö µé¾î°¡´Â °Í ¼öÁ¤  yhj
+						// 081216 PVPì¡´ì—ì„œ ê´€ì¤‘ì„ì— ë²”ìœ„ë§ˆë²• ë°ë¯¸ì§€ ë“¤ì–´ê°€ëŠ” ê²ƒ ìˆ˜ì •  yhj
 						if( tch->m_pZone->m_index == ZONE_PK_TOURNAMENT && !(tch->GetMapAttr() & MATT_FREEPKZONE) )
 							continue;
 #endif // LC_GAMIGO
@@ -2085,7 +2101,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 				}
 				if (tpc)
 				{
-					if(skill->m_proto->m_index == 50)						// Èú·¯ ¸®Àú·º¼Ç ½ºÅ³ÀÏ ¶§ ·Î±× ³²±â±â.
+					if(skill->m_proto->m_index == 50)						// íëŸ¬ ë¦¬ì €ë ‰ì…˜ ìŠ¤í‚¬ì¼ ë•Œ ë¡œê·¸ ë‚¨ê¸°ê¸°.
 					{
 						GAMELOG << init("USE SKILL RESURRECTION")
 								<< "USE CHARACTER" << delim
@@ -2100,7 +2116,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 					if (ch->IsParty() && tpc->IsParty() && ch->m_party == tpc->m_party)
 						ApplySkill(charSkill, tch, skill, -1, bApply);
 
-					//¿øÁ¤´ë Ãß°¡
+					//ì›ì •ëŒ€ ì¶”ê°€
 					if (ch->IsExped() && tpc->IsExped() && ch->m_Exped == tpc->m_Exped)
 						ApplySkill(charSkill, tch, skill, -1, bApply);
 				}
@@ -2197,7 +2213,7 @@ void do_SkillFire(CPC* ch, CNetMsg::SP& msg)
 	goto EXITFUNC;
 
 INSUFF:
-	// ½ÃÀü Ãë¼Ò
+	// ì‹œì „ ì·¨ì†Œ
 	if (charSkill->m_currentSkill)
 	{
 		charSkill->m_currentSkill->Cancel(charSkill);
@@ -2211,7 +2227,7 @@ INSUFF:
 	}
 
 EXITFUNC:
-	// ºÒÀÇÁ¤·ÉÀÌ Soul of Fire ½ÃÀüÇÏ¸é ºÒÀÇ Á¤·É »ç¸Á
+	// ë¶ˆì˜ì •ë ¹ì´ Soul of Fire ì‹œì „í•˜ë©´ ë¶ˆì˜ ì •ë ¹ ì‚¬ë§
 	if (packet->skillIndex == 324)
 	{
 		if (IS_ELEMENTAL(charSkill))
@@ -2225,7 +2241,7 @@ EXITFUNC:
 	{
 		if(!bApply)
 		{
-			// ·Î±× ¿ÍÀÏµå ¶ó½î ½ºÅ³ ½ÇÆĞ
+			// ë¡œê·¸ ì™€ì¼ë“œ ë¼ì˜ ìŠ¤í‚¬ ì‹¤íŒ¨
 			CNetMsg::SP rmsg(new CNetMsg);
 			ResponseClient::makeSkillErrorMsg(rmsg, MSG_SKILL_ERROR_MISS_ROGUE_SKILL, packet->skillIndex, 0);
 			SEND_Q(rmsg, ch->m_desc);
@@ -2238,19 +2254,19 @@ EXITFUNC:
 void do_SkillHanaroEvent(CPC * ch, CNetMsg::SP& msg)
 {
 #if defined (LC_RUS)
-	{} // ·¯½Ã¾Æ´Â Àü Ã¤³Î
+	{} // ëŸ¬ì‹œì•„ëŠ” ì „ ì±„ë„
 #elif defined(LC_KOR)
-	if( gserver->m_subno != 1)		// ÃÊº¸Áö¿ø NPC 1Ã¤³Î¸¸
+	if( gserver->m_subno != 1)		// ì´ˆë³´ì§€ì› NPC 1ì±„ë„ë§Œ
 	{
 		return;
 	}
 #elif defined (LC_USA) || defined (LC_BILA) || defined (LC_GAMIGO) || defined (LC_RUS)
-	if( gserver->m_subno != 2)		// ÃÊº¸Áö¿ø NPC 2Ã¤³Î¸¸
+	if( gserver->m_subno != 2)		// ì´ˆë³´ì§€ì› NPC 2ì±„ë„ë§Œ
 	{
 		return;
 	}
 #else
-	if( gserver->m_subno != 3)		// ÃÊº¸Áö¿ø NPC 3Ã¤³Î¸¸
+	if( gserver->m_subno != 3)		// ì´ˆë³´ì§€ì› NPC 3ì±„ë„ë§Œ
 	{
 		return;
 	}
@@ -2275,7 +2291,7 @@ void do_SkillHanaroEvent(CPC * ch, CNetMsg::SP& msg)
 
 	if (ch->m_level > 60)
 	{
-		// ·¹º§Á¦ÇÑÀ¸·Î ÀÎÇÑ ¹öÇÁ¸¦ ¹ŞÁö ¸øÇÔ.
+		// ë ˆë²¨ì œí•œìœ¼ë¡œ ì¸í•œ ë²„í”„ë¥¼ ë°›ì§€ ëª»í•¨.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeSkillSupportMsg(rmsg, MSG_SKILL_MIDLEVEL_SUPPORT, 0);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2323,7 +2339,7 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 		if (ch->m_sealSkillList.count() >= MAX_SEAL_TYPE_SKILL)
 			throw MSG_SKILL_LEARN_ERROR_SYSTEM;
 
-		// ÀÌ¹Ì ¹è¿üÀ¸¸é ´õ ¹è¿ï ÇÊ¿ä¾ø´Ù.
+		// ì´ë¯¸ ë°°ì› ìœ¼ë©´ ë” ë°°ìš¸ í•„ìš”ì—†ë‹¤.
 		CSkill* skill = ch->m_sealSkillList.Find(packet->skillIndex);
 		if (skill)
 			throw MSG_SKILL_LEARN_ERROR_SYSTEM;
@@ -2333,11 +2349,11 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 		if (!levelproto)
 			throw MSG_SKILL_LEARN_ERROR_SYSTEM;
 
-		// ·¹º§
+		// ë ˆë²¨
 		if (levelproto->m_learnLevel > ch->m_level)
 			throw MSG_SKILL_LEARN_ERROR_LEVEL;
 
-		// ¾ÆÀÌÅÛ °Ë»ç
+		// ì•„ì´í…œ ê²€ì‚¬
 		int i;
 		item_search_t vec[MAX_SKILL_LEARN_ITEM];
 		for (i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
@@ -2358,7 +2374,7 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ½ºÅ³ °Ë»ç
+		// ìŠ¤í‚¬ ê²€ì‚¬
 		for (i = 0; i < MAX_SKILL_LEARN_SKILL; i++)
 		{
 			if (levelproto->m_learnSkillIndex[i] < 0)
@@ -2371,7 +2387,7 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 				throw MSG_SKILL_LEARN_ERROR_SKILL;
 		}
 
-		// ½ºÅ³ Ãß°¡
+		// ìŠ¤í‚¬ ì¶”ê°€
 		if (skill == NULL)
 		{
 			skill = gserver->m_skillProtoList.Create(packet->skillIndex);
@@ -2384,7 +2400,7 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ¾ÆÀÌÅÛ ¼Ò¸ğ
+		// ì•„ì´í…œ ì†Œëª¨
 		for (i = 0; i < MAX_SKILL_LEARN_ITEM; i++)
 		{
 			if(levelproto->m_learnItemIndex[i] == NAS_ITEM_DB_INDEX)
@@ -2409,7 +2425,7 @@ void do_SealSkillLearn(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 		}
 
-		// ¿¬ÇÕ µî·Ï ÁõÇ¥ ÀÌ¸é Action Ãß°¡
+		// ì—°í•© ë“±ë¡ ì¦í‘œ ì´ë©´ Action ì¶”ê°€
 		if (skill->m_proto->m_index == FACTORY_UNION_REG_SKILL)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -2431,7 +2447,7 @@ void do_SkillMidLevelSupport(CPC* ch, CNetMsg::SP& msg)
 {
 	if(ch->m_level < 61 || ch->m_level > 90)
 	{
-		// ·¹º§Á¦ÇÑÀ¸·Î ÀÎÇÑ ¹öÇÁ¸¦ ¹ŞÁö ¸øÇÔ.
+		// ë ˆë²¨ì œí•œìœ¼ë¡œ ì¸í•œ ë²„í”„ë¥¼ ë°›ì§€ ëª»í•¨.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeSkillSupportMsg(rmsg, MSG_SKILL_MIDLEVEL_SUPPORT, 0);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2449,7 +2465,7 @@ void do_SkillMidLevelSupport(CPC* ch, CNetMsg::SP& msg)
 	{
 		bool bApply = false;
 		ApplySkill(ch, ch, pSkill, -1 , bApply);
-		// ¹öÇÁ ¹ŞÀ½.
+		// ë²„í”„ ë°›ìŒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeSkillSupportMsg(rmsg, MSG_SKILL_MIDLEVEL_SUPPORT, 1);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2468,7 +2484,7 @@ void do_Skill_UseEP ( CPC* ch, CNetMsg::SP& msg )
 
 	if(ch->holy_water_item != NULL)
 	{
-		//EP ½ºÅ³À» »ç¿ëÇÏ¸é ¼º¼ö¾ÆÀÌÅÛÀ» ÇØÁ¦ ÇÑ´Ù.
+		//EP ìŠ¤í‚¬ì„ ì‚¬ìš©í•˜ë©´ ì„±ìˆ˜ì•„ì´í…œì„ í•´ì œ í•œë‹¤.
 		ch->changeToggleState(ch->holy_water_item->getVIndex(), TOGGLE_ITEM);
 		ch->SendHolyWaterStateMsg(NULL);
 	}
@@ -2478,7 +2494,7 @@ void do_Skill_UseEP ( CPC* ch, CNetMsg::SP& msg )
 	static const int useSkill[ARRAY_DATA_SIZE][2] = { {0,0}, {1062,1}, {1062,2}, {1063,1}, {1064,1}, {1065,1} };
 	int useLevel = 0;
 
-	// »ç¿ëÇÒ ½ºÅ³, ·¹º§À» È®ÀÎ
+	// ì‚¬ìš©í•  ìŠ¤í‚¬, ë ˆë²¨ì„ í™•ì¸
 	while ( useLevel < ARRAY_DATA_SIZE )
 	{
 		useLevel++;
@@ -2494,7 +2510,7 @@ void do_Skill_UseEP ( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ½ºÅ³ »ç¿ë
+	// ìŠ¤í‚¬ ì‚¬ìš©
 	bool bApply;
 	CSkill * pSkill = gserver->m_skillProtoList.Create( useSkill[useLevel][0], useSkill[useLevel][1] );
 	{
@@ -2506,7 +2522,7 @@ void do_Skill_UseEP ( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// ³²Àº AP Update
+	// ë‚¨ì€ AP Update
 	if( bApply )
 	{
 		ch->AddEP( -useLevelPoint[useLevel] );

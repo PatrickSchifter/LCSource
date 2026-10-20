@@ -17,6 +17,7 @@
 #include <Engine/Contents/Base/ChangeWeapon.h>
 #include <Engine/Help/DefineHelp.h>
 #include <Engine/Contents/function/ItemCompose.h>
+#include <Engine/Contents/function/TitleData.h>
 
 extern BOOL		_bWorldEditorApp;
 extern BOOL		_bInTestGame;
@@ -601,10 +602,7 @@ void CWorld::loadEvent()
 				break;		
 			case RUSSIA:
 				tEventLoc = CTString("rus.lod");
-				break;	
-			case TURKEY:
-				tEventLoc = CTString("tur.lod");
-				break;	
+				break;
 			case MEXICO:
 				tEventLoc = CTString("mex.lod");
 				break;	
@@ -855,13 +853,25 @@ void CWorld::loadTitleData()
 	if (m_bLoad == FALSE && !_bWorldEditorApp && bTitledata)
 	{
 		CallProgressHook_t( 0.0f );
+
 		fnTemp = strFullPath + CTString( "data\\titletool.lod" );
-		if(CNickNameData::loadEx(fnTemp) == false)
+
+		if(TitleStaticData::loadEx(fnTemp) == false)
 		{
 			MessageBox(NULL, "title file is not correct", "Error!", MB_OK);
 			_pGameState->Running() = FALSE;
 			_pGameState->QuitScreen() = FALSE;
 		}
+
+		fnTemp = strFullPath + CTString( "data\\customtitle.bin" );
+
+		if (CustomTitleData::LoadCustomTitleDataFromFile(fnTemp) == false)
+		{
+			MessageBox(NULL, "custom title file is not correct", "Error!", MB_OK);
+			_pGameState->Running() = FALSE;
+			_pGameState->QuitScreen() = FALSE;
+		}
+
 		CallProgressHook_t(1.0f);
 		bTitledata = FALSE;
 	}

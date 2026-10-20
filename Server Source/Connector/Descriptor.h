@@ -12,23 +12,23 @@ public:
 	~CDescriptor();
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
+	// ì†Œì¼“ ê´€ë ¨
 	rnSocketIOService*	service_;
 
 	////////////
-	// »óÅÂ °ü·Ã
-	int			m_connected;				// CON_ »ó¼ö °ªÀ» ÀúÀå : Á¢¼Ó »óÅÂ
-	int			m_connectreq;				// Á¢¼Ó ¿äÃ» Æ½ Ä«¿îÆ®
+	// ìƒíƒœ ê´€ë ¨
+	int			m_connected;				// CON_ ìƒìˆ˜ ê°’ì„ ì €ì¥ : ì ‘ì† ìƒíƒœ
+	int			m_connectreq;				// ì ‘ì† ìš”ì²­ í‹± ì¹´ìš´íŠ¸
 	int			m_descnum;					// unique num assigned to desc
 	int			m_playmode;					// login mode or play mode
 	bool		m_bclosed;
-	bool		m_bStartServer;				// ÃÊ±â Á¢¼Ó¿ë ¼­¹ö ¿©ºÎ(Á¸0À» °¡Áö°í ÀÖÀ»¶§)
-	CLCString	m_ipAddr;					// ¼­¹öÀÇ ÁÖ¼Ò
-	int			m_portNumber;				// ¼­¹öÀÇ Æ÷Æ® ¹øÈ£
-	bool		m_bLoginServer;				// ·Î±×ÀÎ ¼­¹öÀÎÁö ÆÇº°
-	int			m_subno;					// ¼­ºê ¹øÈ£
-	int			m_waitbill;					// ºô¸µ¿¡ ¿äÃ» °á°ú ±â´Ù¸²
-	int			m_billtimeout;				// ºô¸µ ´ë±â½Ã°£
+	bool		m_bStartServer;				// ì´ˆê¸° ì ‘ì†ìš© ì„œë²„ ì—¬ë¶€(ì¡´0ì„ ê°€ì§€ê³  ìˆì„ë•Œ)
+	CLCString	m_ipAddr;					// ì„œë²„ì˜ ì£¼ì†Œ
+	int			m_portNumber;				// ì„œë²„ì˜ í¬íŠ¸ ë²ˆí˜¸
+	bool		m_bLoginServer;				// ë¡œê·¸ì¸ ì„œë²„ì¸ì§€ íŒë³„
+	int			m_subno;					// ì„œë¸Œ ë²ˆí˜¸
+	int			m_waitbill;					// ë¹Œë§ì— ìš”ì²­ ê²°ê³¼ ê¸°ë‹¤ë¦¼
+	int			m_billtimeout;				// ë¹Œë§ ëŒ€ê¸°ì‹œê°„
 
 	void WaitBillReply(int serial)
 	{
@@ -43,17 +43,17 @@ public:
 		}
 	}
 
-	// Á¸ °ü·Ã
-	int			m_nCountZone;				// ÇØ´ç ¼­¹ö¿¡ Á¸ÀçÇÏ´Â Á¸ ¼ö
-	int*		m_nZoneIndex;				// ÇØ´ç ¼­¹ö¿¡ Á¸ÀçÇÏ´Â Á¸
+	// ì¡´ ê´€ë ¨
+	int			m_nCountZone;				// í•´ë‹¹ ì„œë²„ì— ì¡´ì¬í•˜ëŠ” ì¡´ ìˆ˜
+	int*		m_nZoneIndex;				// í•´ë‹¹ ì„œë²„ì— ì¡´ì¬í•˜ëŠ” ì¡´
 
 	////////////
-	// ¸µÅ© °ü·Ã
-	CDescriptor* m_pPrev;					// ¸®½ºÆ® ¸µÅ©
+	// ë§í¬ ê´€ë ¨
+	CDescriptor* m_pPrev;					// ë¦¬ìŠ¤íŠ¸ ë§í¬
 	CDescriptor* m_pNext;
 
-	void WriteToOutput(CNetMsg::SP& msg);	// ¾²±â
-	bool GetLogin(CNetMsg::SP& msg);			// ¹öÀü ¾ÆÀÌµğ ºñ¹ø °Ë»ç
+	void WriteToOutput(CNetMsg::SP& msg);	// ì“°ê¸°
+	bool GetLogin(CNetMsg::SP& msg);			// ë²„ì „ ì•„ì´ë”” ë¹„ë²ˆ ê²€ì‚¬
 
 	virtual void operate(rnSocketIOService* service);
 	virtual void onClose(rnSocketIOService* service);

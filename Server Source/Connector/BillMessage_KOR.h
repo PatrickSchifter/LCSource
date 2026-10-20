@@ -3,38 +3,38 @@
 
 typedef enum __tagBillMessage
 {
-	MSG_BILL_UNKNOWN	= 0,						// Àß¸øµÈ ¸Þ¼¼Áö
+	MSG_BILL_UNKNOWN	= 0,						// ìž˜ëª»ëœ ë©”ì„¸ì§€
 
 	BM_CONNECT = 1100,
 
-	MSG_BILLITEM_CASHBALANCE_REQ = 1700,	// »ç¿ëÀÚ ÀÜ¾×¿äÃ» : gameId(uc) userId(str:32) cpId(n)
-	MSG_BILLITEM_CASHBALANCE_REP = 2700,			// ÀÀ´ä	    	   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) cashBalance(int)
+	MSG_BILLITEM_CASHBALANCE_REQ = 1700,	// ì‚¬ìš©ìž ìž”ì•¡ìš”ì²­ : gameId(uc) userId(str:32) cpId(n)
+	MSG_BILLITEM_CASHBALANCE_REP = 2700,			// ì‘ë‹µ	    	   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) cashBalance(int)
 
-	MSG_BILLITEM_CANBUY_REQ = 1720,			// °ú±ÝÀÎÁõ¿äÃ»    : gmaeId(uc) userId(str:32) cpId(n) itemId(n)
-	MSG_BILLITEM_CANBUY_REP = 2720,				// ÀÀ´ä			   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
+	MSG_BILLITEM_CANBUY_REQ = 1720,			// ê³¼ê¸ˆì¸ì¦ìš”ì²­    : gmaeId(uc) userId(str:32) cpId(n) itemId(n)
+	MSG_BILLITEM_CANBUY_REP = 2720,				// ì‘ë‹µ			   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
 
-	MSG_BILLITEM_BUY_REQ = 1740,			// °ú±Ý ¿äÃ»	   : gmaeId(uc) userId(str:32) cpId(n) itemId(n)
-	MSG_BILLITEM_BUY_REP = 2740,					// ÀÀ´ä			   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
+	MSG_BILLITEM_BUY_REQ = 1740,			// ê³¼ê¸ˆ ìš”ì²­	   : gmaeId(uc) userId(str:32) cpId(n) itemId(n)
+	MSG_BILLITEM_BUY_REP = 2740,					// ì‘ë‹µ			   : returnCode(uc) gameId(uc) userId(str:32) cpId(n) itemId(n) cashBalance(int)
 
-	MSG_BILLITEM_COUPON_LIST_REQ = 1800,	// ÄíÆù ¸®½ºÆ® ¿äÃ» : gameId(uc) userId(str:50) cpId(c) userIndex(n)
-	MSG_BILLITEM_COUPON_LIST_REP = 2800,		// ÀÀ´ä
+	MSG_BILLITEM_COUPON_LIST_REQ = 1800,	// ì¿ í° ë¦¬ìŠ¤íŠ¸ ìš”ì²­ : gameId(uc) userId(str:50) cpId(c) userIndex(n)
+	MSG_BILLITEM_COUPON_LIST_REP = 2800,		// ì‘ë‹µ
 
-	MSG_BILLITEM_BUYBYCOUPON_REQ = 1810,	// ÄíÆù »ç¿ë °ú±Ý ¿äÃ» :
-	MSG_BILLITEM_BUYBYCOUPON_REP = 2810,		// ÀÀ´ä
+	MSG_BILLITEM_BUYBYCOUPON_REQ = 1810,	// ì¿ í° ì‚¬ìš© ê³¼ê¸ˆ ìš”ì²­ :
+	MSG_BILLITEM_BUYBYCOUPON_REP = 2810,		// ì‘ë‹µ
 
-	MSG_BILLITEM_SERVERLIVE = 4400,				// ¼­¹ö ¾ó¶óÀÌºê
+	MSG_BILLITEM_SERVERLIVE = 4400,				// ì„œë²„ ì–¼ë¼ì´ë¸Œ
 } BILLMESSAGE_TYPE;
 
 typedef enum __tagBillErrorMessage
 {
-	MSG_BILLITEM_ERROR_SUCCESS,				// ¼º°ø
-	MSG_BILLITEM_ERROR_LACKCASH,			// ÀÜ¾×ºÎÁ·
-	MSG_BILLITEM_ERROR_NOTUSER,				// ÇØ´çÀ¯Àú ¾øÀ½
-	MSG_BILLITEM_ERROR_NOTITEM,				// ÇØ´ç¾ÆÀÌÅÛ ¾øÀ½
-	MSG_BILLITEM_ERROR_DATABASE,			// DB ¿À·ù
-	MSG_BILLITEM_ERROR_PACKET,				// ÆÐÅ¶ ¿À·ù
-	MSG_BILLITEM_ERROR_ETC,					// ±âÅ¸ ¿À·ù
-	MSG_BILLITEM_ERROR_NOTACCOUNT	= 12,			// °áÀç ±ÇÇÑ ¾øÀ½
+	MSG_BILLITEM_ERROR_SUCCESS,				// ì„±ê³µ
+	MSG_BILLITEM_ERROR_LACKCASH,			// ìž”ì•¡ë¶€ì¡±
+	MSG_BILLITEM_ERROR_NOTUSER,				// í•´ë‹¹ìœ ì € ì—†ìŒ
+	MSG_BILLITEM_ERROR_NOTITEM,				// í•´ë‹¹ì•„ì´í…œ ì—†ìŒ
+	MSG_BILLITEM_ERROR_DATABASE,			// DB ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_PACKET,				// íŒ¨í‚· ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_ETC,					// ê¸°íƒ€ ì˜¤ë¥˜
+	MSG_BILLITEM_ERROR_NOTACCOUNT	= 12,			// ê²°ìž¬ ê¶Œí•œ ì—†ìŒ
 } BILL_ERROR_MESSAGE_TYPE;
 
 #endif // __BILL_MESSAGE_H__

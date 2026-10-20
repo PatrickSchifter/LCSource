@@ -1,9 +1,9 @@
 #ifndef __CONFIG_PACKET_H_
 #define __CONFIG_PACKET_H_
 
-#define MAX_PACKET_SIZE			(4096)
+#define MAX_PACKET_SIZE			(6000)
 
-// ¹öÆÛ°ü·Ã ±æÀÌ »ó¼ö
+// ë²„í¼ê´€ë ¨ ê¸¸ì´ ìƒìˆ˜
 #define MAX_MESSAGE_TYPE		((int)(sizeof(unsigned char)))
 #define MAX_MESSAGE_SIZE		MAX_PACKET_SIZE
 #define MAX_MESSAGE_DATA		(MAX_MESSAGE_SIZE - MAX_MESSAGE_TYPE)

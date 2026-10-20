@@ -64,8 +64,8 @@ void HolyWaterData::load()
 
 int HolyWaterData::getDamage(CPC* opc, CCharacter* df, const CMagicProto* magic, int damage)
 {
-	//»óÈ²º° µ¥¹ÌÁö °è»ê
-	//1. PC°ø°İ°ú NPC°ø°İ 2°³·Î ºĞ·ù
+	//ìƒí™©ë³„ ë°ë¯¸ì§€ ê³„ì‚°
+	//1. PCê³µê²©ê³¼ NPCê³µê²© 2ê°œë¡œ ë¶„ë¥˜
 	int damageType;	
 	
 	if(IS_PC(df) == true)
@@ -80,7 +80,7 @@ int HolyWaterData::getDamage(CPC* opc, CCharacter* df, const CMagicProto* magic,
 	if(damageType <= -1)
 		return damage;
 
-	//µ¥¹ÌÁö °è»ê
+	//ë°ë¯¸ì§€ ê³„ì‚°
 	HOLY_WATER_DATA _data;
 	HOLY_WATER_MAP::iterator it;
 	it = _map.find(opc->holy_water_item->m_itemProto->getItemIndex());
@@ -88,11 +88,11 @@ int HolyWaterData::getDamage(CPC* opc, CCharacter* df, const CMagicProto* magic,
 	if(it == _map.end())
 		return damage;
 
-	//type == 0ÀÌ¸é rate
+	//type == 0ì´ë©´ rate
 	if(it->second.type == 0)
 		damage += (float)damage * (float)it->second._data[damageType] / 100;
 	
-	//type == 1ÀÌ¸é addtion
+	//type == 1ì´ë©´ addtion
 	else if(it->second.type == 1)
 		damage += it->second._data[damageType];
 
@@ -103,8 +103,8 @@ int HolyWaterData::getDamage(CPC* opc, CCharacter* df, const CMagicProto* magic,
 
 int HolyWaterData::getToPcDamageType(CPC* opc, const CMagicProto* magic)
 {
-	//2. ¹°¸® ¿ø°Å¸®, ¸¶¹ı, ½ºÅ³ °ø°İ¿¡ µû¸¥ ºĞ·ù		
-	//getDamage ÇÔ¼ö Äİ ÇÏ±âÀü¿¡ °ø°İÀÛÀÇ ¼º¼ö ¾ÆÀÌÅÛÀÇ À¯¹«¸¦ ÆÇ´Ü ÇÑ ÈÄ È£ÃâÇÏµµ·Ï ÇÑ´Ù.
+	//2. ë¬¼ë¦¬ ì›ê±°ë¦¬, ë§ˆë²•, ìŠ¤í‚¬ ê³µê²©ì— ë”°ë¥¸ ë¶„ë¥˜		
+	//getDamage í•¨ìˆ˜ ì½œ í•˜ê¸°ì „ì— ê³µê²©ì‘ì˜ ì„±ìˆ˜ ì•„ì´í…œì˜ ìœ ë¬´ë¥¼ íŒë‹¨ í•œ í›„ í˜¸ì¶œí•˜ë„ë¡ í•œë‹¤.
 	int damageType = -1;
 
 	if(magic != NULL)
@@ -119,7 +119,7 @@ int HolyWaterData::getToPcDamageType(CPC* opc, const CMagicProto* magic)
 
 		switch(pItem->m_itemProto->getItemSubTypeIdx())
 		{
-			//±ÙÁ¢
+			//ê·¼ì ‘
 		case IWEAPON_NIGHT:
 		case IWEAPON_BIGSWORD:
 		case IWEAPON_AXE:
@@ -127,12 +127,12 @@ int HolyWaterData::getToPcDamageType(CPC* opc, const CMagicProto* magic)
 		case IWEAPON_TWOSWORD:
 			damageType = PHYSICAL_PC;
 			break;
-			// ¿ø°Å¸®
+			// ì›ê±°ë¦¬
 		case IWEAPON_CROSSBOW:
 		case IWEAPON_BOW:
 			damageType = RANGE_PC;
 			break;
-			// ¸¶¹ı
+			// ë§ˆë²•
 		case IWEAPON_STAFF:
 		case IWEAPON_SHORTSTAFF:
 		case IWEAPON_WAND:
@@ -169,7 +169,7 @@ int HolyWaterData::getToNpcDamageType(CPC* opc, const CMagicProto* magic)
 
 		switch(item->m_itemProto->getItemSubTypeIdx())
 		{
-			//±ÙÁ¢
+			//ê·¼ì ‘
 		case IWEAPON_NIGHT:
 		case IWEAPON_BIGSWORD:
 		case IWEAPON_AXE:
@@ -177,12 +177,12 @@ int HolyWaterData::getToNpcDamageType(CPC* opc, const CMagicProto* magic)
 		case IWEAPON_TWOSWORD:
 			damageType = PHYSICAL_NPC;
 			break;
-			// ¿ø°Å¸®
+			// ì›ê±°ë¦¬
 		case IWEAPON_CROSSBOW:
 		case IWEAPON_BOW:
 			damageType = RANGE_NPC;
 			break;
-			// ¸¶¹ı
+			// ë§ˆë²•
 		case IWEAPON_STAFF:
 		case IWEAPON_SHORTSTAFF:
 		case IWEAPON_WAND:

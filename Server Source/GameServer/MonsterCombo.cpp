@@ -75,7 +75,7 @@ bool CMissionCaseProto::LoadProto()
 		m_npcRegen[i].mobtype = new MOBTYPE[cmd2.m_nrecords];
 		memset(m_npcRegen[i].mobtype, 0, sizeof(m_npcRegen[i].mobtype));
 
-		// ¸÷Á¾·ù
+		// ëª¹ì¢…ë¥˜
 		int k = 0;
 		while(cmd2.MoveNext())
 		{
@@ -84,7 +84,7 @@ bool CMissionCaseProto::LoadProto()
 			k++;
 		}
 
-		// ÆĞ³ÎÆ¼
+		// íŒ¨ë„í‹°
 		PENALTY penalty;
 
 		sql2.Format("SELECT * FROM t_penalty WHERE a_missioncase_idx = %d", m_nIndex);
@@ -262,23 +262,23 @@ char CMonsterCombo::Run()
 
 	if(m_bIsBattle)
 	{
-		// ¸ğµÎ Á×¾úÀ» °æ¿ì
+		// ëª¨ë‘ ì£½ì—ˆì„ ê²½ìš°
 		if(m_area->CountPCInExtra(extra, true) < 1)
 		{
-			// º¯¼ö ¿ø·¡´ë·Î º¯°æ
+			// ë³€ìˆ˜ ì›ë˜ëŒ€ë¡œ ë³€ê²½
 			InitStageVar();
 
-			// npc ¸ğµÎ Á¦°Å
+			// npc ëª¨ë‘ ì œê±°
 			DeleteAllMob();
 
 			{
-				// ¹Ì¼Ç½ÇÆĞÇßÀ½À» ¾Ë¸²
+				// ë¯¸ì…˜ì‹¤íŒ¨í–ˆìŒì„ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				ResponseClient::makeMCMissionComplete(rmsg, 0, m_nStage);
 				m_area->SendToAllClient(rmsg);
 			}
 
-			// ·Î±×Âï±â
+			// ë¡œê·¸ì°ê¸°
 			GAMELOG << init("COMBO MISSION FAILED")
 					<< "AREA INDEX: "
 					<< m_area->m_index
@@ -293,44 +293,44 @@ char CMonsterCombo::Run()
 		{
 			if(m_area->CountMobInCombo() < 1)
 			{
-				// return 2:¿À·ù, 1: ¸®Á¨ 0: ¸®Á¨ ¾øÀ½
+				// return 2:ì˜¤ë¥˜, 1: ë¦¬ì   0: ë¦¬ì   ì—†ìŒ
 				error = NextNPCRegen();
 
 				switch(error)
 				{
 				case 0:
 					{
-						char Success = 1;		// ¹Ì¼ÇÄÉÀÌ½º ¿Ï·á ¿©ºÎ : 1 ´ÙÀ½½ºÅ×ÀÌÁö·Î, 2 ¸ğµÎ ¿Ï·á
-						int  Stage;				// ´ÙÀ½½ºÅ×ÀÌÁö ³Ñ¹ö, ¸ğµÎ ¿Ï·áÇßÀ» °æ¿ì 0À» ³Ñ°ÜÁÜ
+						char Success = 1;		// ë¯¸ì…˜ì¼€ì´ìŠ¤ ì™„ë£Œ ì—¬ë¶€ : 1 ë‹¤ìŒìŠ¤í…Œì´ì§€ë¡œ, 2 ëª¨ë‘ ì™„ë£Œ
+						int  Stage;				// ë‹¤ìŒìŠ¤í…Œì´ì§€ ë„˜ë²„, ëª¨ë‘ ì™„ë£Œí–ˆì„ ê²½ìš° 0ì„ ë„˜ê²¨ì¤Œ
 
-						// ÀÌÆåÆ® npc ¸ğµÎ Á¦°Å
+						// ì´í™íŠ¸ npc ëª¨ë‘ ì œê±°
 						DeleteAllMob();
 
-						// ¼±¹°»óÀÚ npc ¸®Á¨
+						// ì„ ë¬¼ìƒì npc ë¦¬ì  
 						GiftMobRegen();
 
-						// ÆĞ³ÎÆ¼ »óÅÂ ÃÊ±âÈ­
+						// íŒ¨ë„í‹° ìƒíƒœ ì´ˆê¸°í™”
 						ClearPenalty();
 
-						// ´ÙÀ½ ¹Ì¼ÇÀÌ ÀÖ´Â°¡?
+						// ë‹¤ìŒ ë¯¸ì…˜ì´ ìˆëŠ”ê°€?
 						if(!FindMission(m_nStage + 1))
 						{
 							ret = 0;
-							Success = 2;			// ¿Ï·á ¿©ºÎ
-							Stage = 0;				// ´ÙÀ½½ºÅ×ÀÌÁö
+							Success = 2;			// ì™„ë£Œ ì—¬ë¶€
+							Stage = 0;				// ë‹¤ìŒìŠ¤í…Œì´ì§€
 						}
 						Stage = m_nStage + 1;
 
 						ComboNPCRegen();
 
 						{
-							// ¹Ì¼Ç ¼º°øÇßÀ½À» ¾Ë¸²
+							// ë¯¸ì…˜ ì„±ê³µí–ˆìŒì„ ì•Œë¦¼
 							CNetMsg::SP rmsg(new CNetMsg);
 							ResponseClient::makeMCMissionComplete(rmsg, Success, Stage);
 							m_area->SendToAllClient(rmsg);
 						}
 
-						// ·Î±×
+						// ë¡œê·¸
 						if(Success == 1)
 						{
 							GAMELOG << init("COMBO MISSION COMPLETE");
@@ -362,9 +362,9 @@ char CMonsterCombo::Run()
 								<< " COMBO INDEX: "
 								<< m_area->m_monsterCombo->m_nIndex
 								<< " STAGE: " << m_nStage
-								<< " NPC REGEN STEP: " << m_nRegenStep		// ¸î¹øÂ° ¸®Á¨ÀÎÁö
-								<< " TOTAL REGEN COUNT: " << m_cPlayerNum		// ¸®Á¨ ÃÑ ¹İº¹ È½¼ö
-								<< " REGEN REPEAT: " << m_cPlayerCount;		// ¸®Á¨¹İº¹ È½¼ö
+								<< " NPC REGEN STEP: " << m_nRegenStep		// ëª‡ë²ˆì§¸ ë¦¬ì  ì¸ì§€
+								<< " TOTAL REGEN COUNT: " << m_cPlayerNum		// ë¦¬ì   ì´ ë°˜ë³µ íšŸìˆ˜
+								<< " REGEN REPEAT: " << m_cPlayerCount;		// ë¦¬ì  ë°˜ë³µ íšŸìˆ˜
 
 						if(mission)
 						{
@@ -385,7 +385,7 @@ char CMonsterCombo::Run()
 			}
 			else
 			{
-				// ºÒ±âµÕ ¹ßµ¿
+				// ë¶ˆê¸°ë‘¥ ë°œë™
 				if(gserver->m_pulse > m_pulseFirst)
 				{
 					m_pulseFirst = gserver->m_pulse + PULSE_REAL_SEC * 10;
@@ -430,7 +430,7 @@ void CMonsterCombo::DeleteAllMob()
 	m_listEffect.clear();
 }
 
-// return 2:¿À·ù, 1: ¸®Á¨ 0: ¸®Á¨ ¾øÀ½
+// return 2:ì˜¤ë¥˜, 1: ë¦¬ì   0: ë¦¬ì   ì—†ìŒ
 char CMonsterCombo::NextNPCRegen()
 {
 	const MISSION* mission = FindMission(m_nStage);
@@ -510,7 +510,7 @@ char CMonsterCombo::NextNPCRegen()
 		m_nRegenStep++;
 		if(m_nRegenStep <= proto->m_nRegenCount)
 		{
-			// npc ¸®Á¨
+			// npc ë¦¬ì  
 			//	m_nRegenStep = 1;
 			const MOBREGEN* mobregen = proto->FindMobRegen(m_nRegenStep);
 			if(!mobregen)
@@ -685,7 +685,7 @@ bool CMonsterCombo::StartStage()
 
 	m_listEffect.clear();
 
-	// npc ÃÊ±âÈ­
+	// npc ì´ˆê¸°í™”
 	pNext = m_area->m_npcList;
 	while((p = pNext))
 	{
@@ -709,7 +709,7 @@ bool CMonsterCombo::StartStage()
 		}
 	}
 
-	// ¸÷ ¸®Á¨
+	// ëª¹ ë¦¬ì  
 
 	centerX = (m_area->m_zone->m_zonePos[m_nExtra][1] + m_area->m_zone->m_zonePos[m_nExtra][3])/2/2;
 	centerZ = (m_area->m_zone->m_zonePos[m_nExtra][2] + m_area->m_zone->m_zonePos[m_nExtra][4])/2/2;
@@ -760,7 +760,7 @@ bool CMonsterCombo::StartStage()
 		}
 	}
 
-	// ÀÌÆåÆ® npc
+	// ì´í™íŠ¸ npc
 	for(i = 0 ; i < MAXEFFECT; ++i)
 	{
 		npc = gserver->m_npcProtoList.Create(491, NULL);
@@ -790,9 +790,9 @@ bool CMonsterCombo::StartStage()
 		m_effectNPC[i] = npc;
 	}
 
-	// ÆĞ³ÎÆ¼ Àû¿ë
+	// íŒ¨ë„í‹° ì ìš©
 	{
-		// goto ±¸¹® »ç¿ëÀ¸·Î C2362 ¿¡·¯°¡ ¹ß»ıµÇ¾î {} ¾ÈÀ¸·Î ÀÌµ¿ÇÔ
+		// goto êµ¬ë¬¸ ì‚¬ìš©ìœ¼ë¡œ C2362 ì—ëŸ¬ê°€ ë°œìƒë˜ì–´ {} ì•ˆìœ¼ë¡œ ì´ë™í•¨
 		std::vector<PENALTY>::iterator pit = mission->proto->m_listPanalty.begin();
 		std::vector<PENALTY>::iterator pendit = mission->proto->m_listPanalty.end();
 		for(; pit != pendit; ++pit)
@@ -804,7 +804,7 @@ bool CMonsterCombo::StartStage()
 
 	m_nRegenStep = 1;
 
-	// ÇÃ·¹ÀÌ¾î °­Á¦¼ÒÈ¯
+	// í”Œë ˆì´ì–´ ê°•ì œì†Œí™˜
 	RecallToStage();
 
 	m_cPlayerCount = 1;
@@ -954,7 +954,7 @@ void CMonsterCombo::ClearPenalty()
 				pCharNext = pChar->m_pCellNext;
 
 				if(IS_PC(pChar))
-					pChar->m_assist.CureAssist(SF_COMBO); // ÄŞº¸Á¸°ú °ü·ÃµÈ assist ¸ğµÎ »èÁ¦
+					pChar->m_assist.CureAssist(SF_COMBO); // ì½¤ë³´ì¡´ê³¼ ê´€ë ¨ëœ assist ëª¨ë‘ ì‚­ì œ
 			}
 		}
 	}
@@ -1125,7 +1125,7 @@ void CMonsterCombo::FireEffectReady2()
 				pCharNext = pChar->m_pCellNext;
 				if (IS_PC(pChar) && !DEAD(pChar))
 				{
-					// Immortal È¤Àº Visible ÀÌ¸é µ¥¹ÌÁö ¾È¸ÔÀ½
+					// Immortal í˜¹ì€ Visible ì´ë©´ ë°ë¯¸ì§€ ì•ˆë¨¹ìŒ
 					if(TO_PC(pChar)->m_bVisible == false || TO_PC(pChar)->m_bImmortal)
 						continue;
 
@@ -1237,11 +1237,11 @@ void CMonsterCombo::FireEffectAct()
 							|| (IS_NPC(tch) && TO_NPC(tch)->GetOwner() )
 					   )
 					{
-						// Immortal È¤Àº Visible ÀÌ¸é µ¥¹ÌÁö ¾È¸ÔÀ½
+						// Immortal í˜¹ì€ Visible ì´ë©´ ë°ë¯¸ì§€ ì•ˆë¨¹ìŒ
 						if( IS_PC(tch) && (TO_PC(tch)->m_bVisible == false || TO_PC(tch)->m_bImmortal) )
 							continue;
 
-						// tch µ¥¹ÌÁö Àû¿ë
+						// tch ë°ë¯¸ì§€ ì ìš©
 						if(GetDistance(effect.x, effect.z, effect.h, tch) < 4.0f)
 						{
 							int damage;
@@ -1423,15 +1423,15 @@ bool CMonsterCombo::SetMonsterCombo(CPC* pc)
 	if(!m_area->m_zone->IsComboZone())
 		return false;
 
-	// ¼³Á¤ÇÒ ¹Ì¼ÇÄÉÀÌ½º °³¼ö °Ë»ç
+	// ì„¤ì •í•  ë¯¸ì…˜ì¼€ì´ìŠ¤ ê°œìˆ˜ ê²€ì‚¬
 	count = pc->m_listSaveComboData.size();
 	if(count < 1 || count > 20)
 		return false;
 
-	// ¸ğµç º¯¼ö ÃÊ±âÈ­
+	// ëª¨ë“  ë³€ìˆ˜ ì´ˆê¸°í™”
 	InitAllVar();
 
-	// ¹Ì¼ÇÄÉÀÌ½º ¼³Á¤
+	// ë¯¸ì…˜ì¼€ì´ìŠ¤ ì„¤ì •
 	if(!this->Init(count))
 	{
 		InitAllVar();
@@ -1450,7 +1450,7 @@ bool CMonsterCombo::SetMonsterCombo(CPC* pc)
 		}
 	}
 
-	// ÄŞº¸ ÀÎµ¦½º ¼³Á¤
+	// ì½¤ë³´ ì¸ë±ìŠ¤ ì„¤ì •
 	SetVirtualIndex();
 	return true;
 }
@@ -1521,7 +1521,7 @@ bool CGroundEffect2::Init(int zone, CArea* area)
 	m_zonenum = zone;
 	m_area = area;
 
-	// ÀÌÆåÆ® npc
+	// ì´í™íŠ¸ npc
 	CNPC* npc;
 	for(i = 0 ; i < MAX_GROUND_EFFECT2_NPC_NUM; ++i)
 	{
@@ -1582,8 +1582,8 @@ bool CGroundEffect2::Init(int zone, CArea* area)
 
 void CGroundEffect2::Start()
 {
-	// º¯¼ö ÃÊ±âÈ­
-	// ÀÌÆåÆ® Å¸ÀÓ¼¼ÆÃ
+	// ë³€ìˆ˜ ì´ˆê¸°í™”
+	// ì´í™íŠ¸ íƒ€ì„ì„¸íŒ…
 //	CGuild *guild1, *guild2;
 //	guild1 = gserver->m_guildlist.findguild(gindex1);
 //	if(!guild1)
@@ -1680,11 +1680,11 @@ bool CGroundEffect2::EffectReady()
 	int effectCount;
 	int effectKind;
 
-	m_listEffect.clear();					// ÀÌÆåÆ® ÃÊ±âÈ­
-	effectKind = GetRandom(1, 5);				// ÀÌÆåÆ® Á¾·ù
+	m_listEffect.clear();					// ì´í™íŠ¸ ì´ˆê¸°í™”
+	effectKind = GetRandom(1, 5);				// ì´í™íŠ¸ ì¢…ë¥˜
 	if(m_zonenum == ZONE_AKAN_TEMPLE)
 	{
-		effectCount = GetRandom(5, MAX_GROUND_EFFECT2_NPC_NUM);				// ÀÌÆåÆ® °³¼ö
+		effectCount = GetRandom(5, MAX_GROUND_EFFECT2_NPC_NUM);				// ì´í™íŠ¸ ê°œìˆ˜
 	}
 	else if(m_zonenum == ZONE_DUNGEON4)
 	{
@@ -1693,7 +1693,7 @@ bool CGroundEffect2::EffectReady()
 	}
 	else
 	{
-		effectCount = GetRandom(5, MAX_GROUND_EFFECT2_NPC_NUM);				// ÀÌÆåÆ® °³¼ö
+		effectCount = GetRandom(5, MAX_GROUND_EFFECT2_NPC_NUM);				// ì´í™íŠ¸ ê°œìˆ˜
 	}
 
 	EFFECTPOS effectpos;
@@ -1724,7 +1724,7 @@ bool CGroundEffect2::EffectReady()
 			if(pArea)
 			{
 				int cx = 0 , cz = 0;
-				// ±ÙÃ³ ¼¿(Appear ¹Ş´Â ¼¿¸¸Å­)¸¸ Ä³¸¯ÅÍ °Ë»ö
+				// ê·¼ì²˜ ì…€(Appear ë°›ëŠ” ì…€ë§Œí¼)ë§Œ ìºë¦­í„° ê²€ìƒ‰
 				int startx	= MAX( m_effectNPC[i]->m_cellX - CELL_EXT , 0 );
 				int endx	= MIN( m_effectNPC[i]->m_cellX + CELL_EXT , pArea->m_size[0] );
 				int startz  = MAX( m_effectNPC[i]->m_cellZ - CELL_EXT , 0 );
@@ -1743,7 +1743,7 @@ bool CGroundEffect2::EffectReady()
 
 							if ( IS_PC(pChar) )
 							{
-								// ¾îÄ¡ÇÇ ZONE_DUNGEON4Àº ÇÃ·¹ÀÌ¾î È¥ÀÚ µé¾î°¡´Â °÷ÀÌ¶ó ÇÑ¸í¸¸ Ã£À¸¸é µÈ´Ù.
+								// ì–´ì¹˜í”¼ ZONE_DUNGEON4ì€ í”Œë ˆì´ì–´ í˜¼ì ë“¤ì–´ê°€ëŠ” ê³³ì´ë¼ í•œëª…ë§Œ ì°¾ìœ¼ë©´ ëœë‹¤.
 								FindPC = TO_PC(pChar);
 								break;
 							}

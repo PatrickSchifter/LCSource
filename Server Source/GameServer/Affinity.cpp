@@ -391,12 +391,12 @@ CAffinity::~CAffinity()
 
 REWARDITEM* CAffinity::GetNextReward(int npcidx)
 {
-	// ∫∏ªÛπﬁ¿∫ ¥‹∞Ë√£±‚
+	// Î≥¥ÏÉÅÎ∞õÏùÄ Îã®Í≥ÑÏ∞æÍ∏∞
 	REWARDSTEP* step = FindRewardInfo(npcidx);
 	if(!step)
 		return NULL;
 
-	// ƒ£»≠µµ NPC √£±‚
+	// ÏπúÌôîÎèÑ NPC Ï∞æÍ∏∞
 	CAffinityNPC* npc = m_proto->FindAffinityNPC(npcidx);
 	if(!npc)
 		return NULL;
@@ -449,8 +449,8 @@ int CAffinity::AddPoint(int point, CPC* pc, int bonus)
 
 	m_point = (int)sumdata;
 
-	// 1. ∆˜¿Œ∆Æ æ˜µ•¿Ã∆Æ ∏ﬁΩ√¡ˆ ∫∏≥ª±‚
-	// 2. º±π∞πﬁ¿ª ∞Õ¿Ã ¿÷¿∏∏È ∏ﬁΩ√¡ˆ ¿¸º€
+	// 1. Ìè¨Ïù∏Ìä∏ ÏóÖÎç∞Ïù¥Ìä∏ Î©îÏãúÏßÄ Î≥¥ÎÇ¥Í∏∞
+	// 2. ÏÑ†Î¨ºÎ∞õÏùÑ Í≤ÉÏù¥ ÏûàÏúºÎ©¥ Î©îÏãúÏßÄ Ï†ÑÏÜ°
 	int i, k;
 	char msgSendCount=0;
 	int* checkRewardNPC = NULL;
@@ -458,7 +458,7 @@ int CAffinity::AddPoint(int point, CPC* pc, int bonus)
 	memset(checkRewardNPC, 0, sizeof(int) * m_proto->m_affinityNPCCount);
 	for(i = 0; i < m_proto->m_affinityNPCCount; ++i)		// NPC Count
 	{
-		for(k = 0; k < m_proto->m_affinityNPC[i].m_totalreward; ++k)	// ∫∏ªÛ Count
+		for(k = 0; k < m_proto->m_affinityNPC[i].m_totalreward; ++k)	// Î≥¥ÏÉÅ Count
 		{
 			if( prevPoint < m_proto->m_affinityNPC[i].m_reward[k].allowpoint  &&
 					m_proto->m_affinityNPC[i].m_reward[k].allowpoint <= m_point)
@@ -518,17 +518,17 @@ void CAffinityList::SendRewardNotice(CPC* pc)
 
 		for(int i = 0; i < affinity->m_proto->m_affinityNPCCount; ++i)
 		{
-			// nextreward: æ’¿∏∑Œ πﬁ¿ª ∫∏ªÛ¥‹∞Ë (∆˜¿Œ∆Æ ∞Ì∑¡«œ¡ˆ æ ∞Ì)
+			// nextreward: ÏïûÏúºÎ°ú Î∞õÏùÑ Î≥¥ÏÉÅÎã®Í≥Ñ (Ìè¨Ïù∏Ìä∏ Í≥†Î†§ÌïòÏßÄ ÏïäÍ≥†)
 			REWARDITEM* nextreward = affinity->GetNextReward(affinity->m_proto->m_affinityNPC[i].m_npcidx);
 			if(!nextreward)
 			{
-				// πﬁ¿ª ∫∏ªÛæ∆¿Ã≈€¿Ã æ¯¥Ÿ. »§¿∫ ø¿∑˘
+				// Î∞õÏùÑ Î≥¥ÏÉÅÏïÑÏù¥ÌÖúÏù¥ ÏóÜÎã§. ÌòπÏùÄ Ïò§Î•ò
 				continue;
 			}
 
 			if(nextreward->needPCLevel > pc->m_level)
 			{
-				// ∑π∫ß¿Ã ∫Œ¡∑«œø© πﬁ¡ˆ ∏¯«—¥Ÿ.
+				// Î†àÎ≤®Ïù¥ Î∂ÄÏ°±ÌïòÏó¨ Î∞õÏßÄ Î™ªÌïúÎã§.
 				continue;
 			}
 
@@ -542,10 +542,10 @@ void CAffinityList::SendRewardNotice(CPC* pc)
 				}
 			}
 
-			// «ˆ¿Á ƒ£»≠µµ ¡°ºˆ∞° æ’¿∏∑Œ πﬁ¿ª ∫∏ªÛ¥‹∞Ë∏¶ ∏∏¡∑«œ¥¬¡ˆ
+			// ÌòÑÏû¨ ÏπúÌôîÎèÑ Ï†êÏàòÍ∞Ä ÏïûÏúºÎ°ú Î∞õÏùÑ Î≥¥ÏÉÅÎã®Í≥ÑÎ•º ÎßåÏ°±ÌïòÎäîÏßÄ
 			if(nextreward->allowpoint > affinity->m_point)
 			{
-				// ∆˜¿Œ∆Æ∞° ∫Œ¡∑«œø© πﬁ¡ˆ ∏¯«—¥Ÿ.
+				// Ìè¨Ïù∏Ìä∏Í∞Ä Î∂ÄÏ°±ÌïòÏó¨ Î∞õÏßÄ Î™ªÌïúÎã§.
 				continue;
 			}
 
@@ -553,7 +553,7 @@ void CAffinityList::SendRewardNotice(CPC* pc)
 		}
 	}
 
-	// ∏ﬁΩ√¡ˆ ¿¸º€
+	// Î©îÏãúÏßÄ Ï†ÑÏÜ°
 	int rewardcount = listAffinReward.size();
 	if(rewardcount > 0)
 	{

@@ -1,15 +1,15 @@
 #ifndef __LCLIST_H__
 #define __LCLIST_H__
 
-// DATATYPEÀ» LINKED LIST·Î °ü¸®
+// DATATYPEì„ LINKED LISTë¡œ ê´€ë¦¬
 template <class DATATYPE>
 class CLCListNode
 {
 protected:
-	int				m_nID;		// µ¥ÀÌÅÍ ID
-	DATATYPE		m_data;		// µ¥ÀÌÅÍ ³»¿ë
-	CLCListNode*	m_prev;		// ÀÌÀü Æ÷ÀÎÅÍ
-	CLCListNode*	m_next;		// ´ÙÀ½ Æ÷ÀÎÅÍ
+	int				m_nID;		// ë°ì´í„° ID
+	DATATYPE		m_data;		// ë°ì´í„° ë‚´ìš©
+	CLCListNode*	m_prev;		// ì´ì „ í¬ì¸í„°
+	CLCListNode*	m_next;		// ë‹¤ìŒ í¬ì¸í„°
 
 public:
 	CLCListNode(int nID, DATATYPE data)
@@ -60,11 +60,11 @@ template <class DATATYPE>
 class CLCList
 {
 protected:
-	int						m_nID;		// µ¥ÀÌÅÍ ID
-	CLCListNode<DATATYPE>*	m_head;		// Çì´õ Æ÷ÀÎÅÍ
-	CLCListNode<DATATYPE>*	m_tail;		// Å×ÀÏ Æ÷ÀÎÅÍ
-	int						m_nCount;	// µ¥ÀÌÅÍ ¼ö
-	int (*m_fnComp)(DATATYPE, DATATYPE);	// ºñ±³ÇÔ¼ö Æ÷ÀÎÅÍ, strcmp¿Í °°Àº ¸®ÅÏ°ª(°°À¸¸é 0, ´Ù¸¦°æ¿ì ¼ø¼­¿¡ µû¶ó -, ¶Ç´Â +)
+	int						m_nID;		// ë°ì´í„° ID
+	CLCListNode<DATATYPE>*	m_head;		// í—¤ë” í¬ì¸í„°
+	CLCListNode<DATATYPE>*	m_tail;		// í…Œì¼ í¬ì¸í„°
+	int						m_nCount;	// ë°ì´í„° ìˆ˜
+	int (*m_fnComp)(DATATYPE, DATATYPE);	// ë¹„êµí•¨ìˆ˜ í¬ì¸í„°, strcmpì™€ ê°™ì€ ë¦¬í„´ê°’(ê°™ìœ¼ë©´ 0, ë‹¤ë¥¼ê²½ìš° ìˆœì„œì— ë”°ë¼ -, ë˜ëŠ” +)
 
 public:
 	CLCList(int (*fnComp)(DATATYPE, DATATYPE))
@@ -84,7 +84,7 @@ public:
 
 	////////////////////
 	// Function name	: AddToHead
-	// Description	    : data¸¦ Ã³À½¿¡ Ãß°¡
+	// Description	    : dataë¥¼ ì²˜ìŒì— ì¶”ê°€
 	void AddToHead(DATATYPE data)
 	{
 		if (m_head == NULL)
@@ -105,7 +105,7 @@ public:
 
 	////////////////////
 	// Function name	: AddToTail
-	// Description	    : data¸¦ ¸¶Áö¸·¿¡ Ãß°¡
+	// Description	    : dataë¥¼ ë§ˆì§€ë§‰ì— ì¶”ê°€
 	void AddToTail(DATATYPE data)
 	{
 		if (m_tail == NULL)
@@ -126,7 +126,7 @@ public:
 
 	////////////////////
 	// Function name	: RemoveData
-	// Description	    : ¸®½ºÆ®¿¡¼­ data »èÁ¦, == ¿¬»êÀÚ »ç¿ë
+	// Description	    : ë¦¬ìŠ¤íŠ¸ì—ì„œ data ì‚­ì œ, == ì—°ì‚°ì ì‚¬ìš©
 	void RemoveData(DATATYPE data)
 	{
 		CLCListNode<DATATYPE>* p = NULL;
@@ -154,7 +154,7 @@ public:
 
 	////////////////////
 	// Function name	: Remove
-	// Description	    : ¸®½ºÆ®¿¡¼­ p ³ëµå¸¦ »èÁ¦
+	// Description	    : ë¦¬ìŠ¤íŠ¸ì—ì„œ p ë…¸ë“œë¥¼ ì‚­ì œ
 	void Remove(void* p)
 	{
 		CLCListNode<DATATYPE>* pNode = (CLCListNode<DATATYPE>*)p;
@@ -169,7 +169,7 @@ public:
 
 	////////////////////
 	// Function name	: RemoveAll
-	// Description	    : ¸®½ºÆ® ÃÊ±âÈ­
+	// Description	    : ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	void RemoveAll()
 	{
 		while (m_head)
@@ -185,7 +185,7 @@ public:
 
 	////////////////////
 	// Function name	: GetHead
-	// Description	    : Çì´õ Æ÷ÀÎÅÍ ¹İÈ¯
+	// Description	    : í—¤ë” í¬ì¸í„° ë°˜í™˜
 	void* GetHead()
 	{
 		return (void*)m_head;
@@ -193,7 +193,7 @@ public:
 
 	////////////////////
 	// Function name	: GetTail
-	// Description	    : Å×ÀÏ Æ÷ÀÎÅÍ ¹İÈ¯
+	// Description	    : í…Œì¼ í¬ì¸í„° ë°˜í™˜
 	void* GetTail()
 	{
 		return (void*)m_tail;
@@ -201,7 +201,7 @@ public:
 
 	////////////////////
 	// Function name	: GetPrev
-	// Description	    : pos ÀÌÀü ³ëµå Æ÷ÀÎÅÍ ¹İÈ¯
+	// Description	    : pos ì´ì „ ë…¸ë“œ í¬ì¸í„° ë°˜í™˜
 	void* GetPrev(void* pos)
 	{
 		CLCListNode<DATATYPE>* p = (CLCListNode<DATATYPE>*)pos;
@@ -210,7 +210,7 @@ public:
 
 	////////////////////
 	// Function name	: GetNext
-	// Description	    : pos ´ÙÀ½ ³ëµå Æ÷ÀÎÅÍ ¹İÈ¯
+	// Description	    : pos ë‹¤ìŒ ë…¸ë“œ í¬ì¸í„° ë°˜í™˜
 	void* GetNext(void* pos)
 	{
 		CLCListNode<DATATYPE>* p = (CLCListNode<DATATYPE>*)pos;
@@ -219,7 +219,7 @@ public:
 
 	////////////////////
 	// Function name	: GetData
-	// Description	    : pos ³ëµåÀÇ µ¥ÀÌÅÍ¸¦ ¹İÈ¯
+	// Description	    : pos ë…¸ë“œì˜ ë°ì´í„°ë¥¼ ë°˜í™˜
 	DATATYPE GetData(void* pos)
 	{
 		CLCListNode<DATATYPE>* p = (CLCListNode<DATATYPE>*)pos;
@@ -235,7 +235,7 @@ public:
 
 	////////////////////
 	// Function name	: GetCount
-	// Description	    : ¸®½ºÆ®ÀÇ µ¥ÀÌÅÍ ¼ö¸¦ ¹İÈ¯
+	// Description	    : ë¦¬ìŠ¤íŠ¸ì˜ ë°ì´í„° ìˆ˜ë¥¼ ë°˜í™˜
 	int GetCount()
 	{
 		return m_nCount;
@@ -244,13 +244,13 @@ public:
 
 	////////////////////
 	// Function name	: FindDataWithCompareFunction
-	// Description	    : µ¥ÀÌÅÍ ³ëµå Ã£±â
+	// Description	    : ë°ì´í„° ë…¸ë“œ ì°¾ê¸°
 	// Return type		: void*
-	//                  : Ã£Àº ³ëµå Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULL
+	//                  : ì°¾ì€ ë…¸ë“œ í¬ì¸í„°, ì—†ìœ¼ë©´ NULL
 	// Argument         : DATATYPE data
-	//                  : Ã£À» µ¥ÀÌÅÍ
+	//                  : ì°¾ì„ ë°ì´í„°
 	// Argument         : int (*m_fnComp)(DATATYPE, DATATYPE)
-	//                  : Ã£±â¿¡ »ç¿ëÇÒ ÇÔ¼ö, NULLÀÌ¸é == ¿¬»êÀÚ »ç¿ë
+	//                  : ì°¾ê¸°ì— ì‚¬ìš©í•  í•¨ìˆ˜, NULLì´ë©´ == ì—°ì‚°ì ì‚¬ìš©
 	void* FindDataWithCompareFunction(DATATYPE data, int (*fnComp)(DATATYPE, DATATYPE))
 	{
 		CLCListNode<DATATYPE>* p = NULL;
@@ -279,11 +279,11 @@ public:
 
 	////////////////////
 	// Function name	: FindData
-	// Description	    : µ¥ÀÌÅÍ ³ëµå Ã£±â
+	// Description	    : ë°ì´í„° ë…¸ë“œ ì°¾ê¸°
 	// Return type		: void*
-	//                  : Ã£Àº ³ëµå Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULL
+	//                  : ì°¾ì€ ë…¸ë“œ í¬ì¸í„°, ì—†ìœ¼ë©´ NULL
 	// Argument         : DATATYPE data
-	//                  : Ã£À» µ¥ÀÌÅÍ
+	//                  : ì°¾ì„ ë°ì´í„°
 	void* FindData(DATATYPE data)
 	{
 		return FindDataWithCompareFunction(data, m_fnComp);
@@ -292,11 +292,11 @@ public:
 
 	////////////////////
 	// Function name	: GetPosition
-	// Description	    : nIndex¹øÂ°¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ ¹İÈ¯, 0 base
+	// Description	    : nIndexë²ˆì§¸ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ ë°˜í™˜, 0 base
 	// Return type		: void*
-	//                  : ÇØ´ç ³ëµå Æ÷ÀÎÅÍ
+	//                  : í•´ë‹¹ ë…¸ë“œ í¬ì¸í„°
 	// Argument         : int nIndex
-	//                  : Ã£°íÀÚ ÇÏ´Â ³ëµåÀÇ À§Ä¡
+	//                  : ì°¾ê³ ì í•˜ëŠ” ë…¸ë“œì˜ ìœ„ì¹˜
 	void* GetPosition(int nIndex)
 	{
 		if (nIndex < 0)

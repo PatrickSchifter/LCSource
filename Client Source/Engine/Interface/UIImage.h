@@ -17,6 +17,9 @@ public:
 	void	Create( CUIBase *pParent, int nX, int nY, int nWidth, int nHeight );
 	virtual CUIBase* Clone();
 
+	// 좌표를 제외한 내용을 복사한다.
+	void	Copy(CUIImage* pDest);
+
 	void	SetUV( UIRectUV uv );
 	void	SetUV( float u0, float v0, float u1, float v1 );
 	void	SetColor( COLOR color ) { m_color = color; }

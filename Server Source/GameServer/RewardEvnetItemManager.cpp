@@ -40,7 +40,7 @@ bool RewardEvnetItemManager::init()
 {
 	if( !loadRewardItem() )
 	{
-		// error ·Î±× Ãâ·Â
+		// error ë¡œê·¸ ì¶œë ¥
 		return false;
 	}
 	return true;
@@ -54,7 +54,7 @@ bool RewardEvnetItemManager::loadRewardItem()
 	const int bufsize = 1024;
 	char* buf = new char[bufsize];
 
-	//º¸»óÀÏ,ÀÎµ¦½º,ÇÃ·¯½º,ÇÃ·¡±×,°¹¼ö
+	//ë³´ìƒì¼,ì¸ë±ìŠ¤,í”ŒëŸ¬ìŠ¤,í”Œë˜ê·¸,ê°¯ìˆ˜
 	int rewardDate = 0;
 	int index = 0;
 	int plus = 0;

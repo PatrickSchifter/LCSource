@@ -15,25 +15,25 @@ typedef unsigned int tradeAgentIndex_t;
 //Packet SubType Client <-> Server
 enum
 {
-	MSG_TRADEAGENT_LIST,					// »óÇ° Á¶È¸ ¸®½ºÆ®
-	MSG_TRADEAGENT_REG_LIST,				// »óÇ° µî·Ï ¸®½ºÆ®
-	MSG_TRADEAGENT_REG,						// »óÇ° µî·Ï
-	MSG_TRADEAGENT_REG_CANCEL,				// »óÇ° µî·Ï Ãë¼Ò
-	MSG_TRADEAGENT_BUY,						// »óÇ° ±¸¸Å
-	MSG_TRADEAGENT_LIKE_LIST,				// °ü½É ¹°Ç° ¸®½ºÆ®
-	MSG_TRADEAGENT_LIKE_REG,				// °ü½É ¹°Ç° µî·Ï
-	MSG_TRADEAGENT_LIKE_CANCEL,				// °ü½É ¹°Ç° Ãë¼Ò
-	MSG_TRADEAGENT_ERROR,					// °Å·¡´ëÇà ¿¡·¯
+	MSG_TRADEAGENT_LIST,					// ìƒí’ˆ ì¡°íšŒ ë¦¬ìŠ¤íŠ¸
+	MSG_TRADEAGENT_REG_LIST,				// ìƒí’ˆ ë“±ë¡ ë¦¬ìŠ¤íŠ¸
+	MSG_TRADEAGENT_REG,						// ìƒí’ˆ ë“±ë¡
+	MSG_TRADEAGENT_REG_CANCEL,				// ìƒí’ˆ ë“±ë¡ ì·¨ì†Œ
+	MSG_TRADEAGENT_BUY,						// ìƒí’ˆ êµ¬ë§¤
+	MSG_TRADEAGENT_LIKE_LIST,				// ê´€ì‹¬ ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸
+	MSG_TRADEAGENT_LIKE_REG,				// ê´€ì‹¬ ë¬¼í’ˆ ë“±ë¡
+	MSG_TRADEAGENT_LIKE_CANCEL,				// ê´€ì‹¬ ë¬¼í’ˆ ì·¨ì†Œ
+	MSG_TRADEAGENT_ERROR,					// ê±°ë˜ëŒ€í–‰ ì—ëŸ¬
 
-	MSG_TRADEAGENT_AFTER_SELL,				// ÆÇ¸ÅÈÄ ÆÇ¸ÅÀÚ¿¡°Ô ¸Ş½ÃÁö Àü¼Û
-	MSG_TRADEAGENT_AFTER_RETURNED,			// ¹İÇ° ÈÄ ÆÇ¸ÅÀÚ¿¡°Ô ¸Ş½ÃÁö Àü¼Û
+	MSG_TRADEAGENT_AFTER_SELL,				// íŒë§¤í›„ íŒë§¤ìì—ê²Œ ë©”ì‹œì§€ ì „ì†¡
+	MSG_TRADEAGENT_AFTER_RETURNED,			// ë°˜í’ˆ í›„ íŒë§¤ìì—ê²Œ ë©”ì‹œì§€ ì „ì†¡
 
-	MSG_TRADEAGENT_CHANGE_FEE,				// ¼ö¼ö·á º¯°æ
-	MSG_TRADEAGENT_CHANGE_DEPOSIT,			// º¸Áõ±İ º¯°æ
+	MSG_TRADEAGENT_CHANGE_FEE,				// ìˆ˜ìˆ˜ë£Œ ë³€ê²½
+	MSG_TRADEAGENT_CHANGE_DEPOSIT,			// ë³´ì¦ê¸ˆ ë³€ê²½
 	MSG_TRADEAGENT_RETURN_NAS,				//
 };
 
-// ¼­¹ö¸¸ »ç¿ëÇÔ
+// ì„œë²„ë§Œ ì‚¬ìš©í•¨
 enum
 {
 	TRADEAGENT_DB_MSG_TYPE_SELL,
@@ -44,10 +44,10 @@ enum
 
 struct TradeAgentItem
 {
-	tradeAgentIndex_t		index;			// °íÀ¯ ¹øÈ£
+	tradeAgentIndex_t		index;			// ê³ ìœ  ë²ˆí˜¸
 	int						item_index;
-	unsigned char			plus;			// °­È­ ¼öÄ¡
-	unsigned char			plus2;			// Ãß°¡ ¼öÄ¡
+	unsigned char			plus;			// ê°•í™” ìˆ˜ì¹˜
+	unsigned char			plus2;			// ì¶”ê°€ ìˆ˜ì¹˜
 	int						flag;
 	char					serial[MAX_SERIAL_LENGTH + 1];
 	int						item_jobclass;
@@ -61,8 +61,8 @@ struct TradeAgentItem
 	GoldType_t				nas;
 	int						regist_date;
 	int						expire_date;
-	int						item_num0;				//¾ÆÀÌÅÛ ¹°¸®°ø°İ·Â
-	int						item_num1;				//¾ÆÀÌÅÛ ¸¶¹ı°ø°İ·Â
+	int						item_num0;				//ì•„ì´í…œ ë¬¼ë¦¬ê³µê²©ë ¥
+	int						item_num1;				//ì•„ì´í…œ ë§ˆë²•ê³µê²©ë ¥
 	int						item_level;
 	int						rareGrade;
 	char					sell_charName[MAX_ID_NAME_LENGTH];  //MAX_ID_NAME_LENGTH = 64
@@ -86,13 +86,13 @@ struct TradeAgentItem
 
 namespace RequestClient
 {
-//°Å·¡´ëÇà ¸®½ºÆ® Á¶È¸ ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ë¦¬ìŠ¤íŠ¸ ì¡°íšŒ ìš”ì²­
 struct TradeAgentSystemListBase : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	int pageNo;						// 1~
 	char itemName[20];
-	int itemTypeTab;				// 0~
+	int itemTypeTab;				// 0(ë¬´ê¸°), 1(ë°©ì–´êµ¬), 2(ê¸°íƒ€) ë§Œ ì·¨í•¨
 	GoldType_t minPrice;
 	GoldType_t maxPrice;
 };
@@ -100,7 +100,7 @@ struct TradeAgentSystemList : public TradeAgentSystemListBase
 {
 	int JobClass;
 	int itemSubType;
-	int itemGrade;
+	int itemGrade; // í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚´ì¤€ ë°ì´í„°ë¥¼ ì„œë²„ì—ì„œ ìˆœì„œ ë³€ê²½
 	int minItemPlus;
 	int maxItemPlus;
 	int minAttackValue;
@@ -113,65 +113,65 @@ struct TradeAgentSystemList : public TradeAgentSystemListBase
 	int maxLevel;
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ ±¸¸Å ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ êµ¬ë§¤ ìš”ì²­
 struct TradeAgentSystemBuy : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	int TradeAgentIndex;
-	GoldType_t needNas;					//¼­¹ö¸¸ »ç¿ë
+	GoldType_t needNas;					//ì„œë²„ë§Œ ì‚¬ìš©
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï ¸®½ºÆ® ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ë¦¬ìŠ¤íŠ¸ ìš”ì²­
 struct TradeAgentSystemRegList : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ìš”ì²­
 struct TradeAgentSystemReg : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	unsigned short tab;
 	unsigned short invenIndex;
 	int itemIndex;
-	int itemSerial;					//¼­¹ö¿¡¼­¸¸ »ç¿ë
+	int itemSerial;					//ì„œë²„ì—ì„œë§Œ ì‚¬ìš©
 	GoldType_t TotalMoney;
 	int quantity;
 };
 
-struct TradeAgentSystemRegServer : public TradeAgentSystemReg		//¼­¹ö°£ Åë½Å¿¡ »ç¿ë
+struct TradeAgentSystemRegServer : public TradeAgentSystemReg		//ì„œë²„ê°„ í†µì‹ ì— ì‚¬ìš©
 {
 	int charIndex;
 	char charName[MAX_CHAR_NAME_LENGTH +1];
-	GoldType_t Guarantee;				//¼­¹ö¿¡¼­ °è»êÇÏ¿© »ç¿ë
+	GoldType_t Guarantee;				//ì„œë²„ì—ì„œ ê³„ì‚°í•˜ì—¬ ì‚¬ìš©
 	TradeAgentItem item;
 	int itemCount;
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï Ãë¼Ò ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ì·¨ì†Œ ìš”ì²­
 struct TradeAgentSystemRegCancel : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	tradeAgentIndex_t index;
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° ¸®½ºÆ® ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ ìš”ì²­
 struct TradeAgentSystemLikeList : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° µî·Ï ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ë“±ë¡ ìš”ì²­
 struct TradeAgentSystemLikeReg : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	tradeAgentIndex_t index;
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° Ãë¼Ò ¿äÃ»
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ì·¨ì†Œ ìš”ì²­
 struct TradeAgentSystemLikeCancel : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¿¡¼­ Ã£¾Æ¼­ ¸¸µé¾î »ç¿ë client default = 0
+	int charIndex;					//ì„œë²„ì—ì„œ ì°¾ì•„ì„œ ë§Œë“¤ì–´ ì‚¬ìš© client default = 0
 	tradeAgentIndex_t index;
 };
 }
@@ -181,26 +181,26 @@ namespace ResponseClient
 //Error code
 enum
 {
-	TRADEAGENT_ERROR_NOT_EXIST_ITEM,			// ÇØ´ç ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.
-	TRADEAGENT_ERROR_NOT_ENOUGH_MONEY,			// µ·ÀÌ ºÎÁ·ÇÕ´Ï´Ù.
-	TRADEAGENT_ERROR_SEARCH_ERROR,				// Á¶È¸ ºÒ°¡.
-	TRADEAGENT_ERROR_INCORRECT_MONEY,			// ³ª½º µ¥ÀÌÅÍ°¡ ºÎÁ¤È® ÇÕ´Ï´Ù.
-	TRADEAGENT_ERROR_NOT_TRADEITEM,				// °Å·¡ ºÒ°¡ ¾ÆÀÌÅÛÀÔ´Ï´Ù.
-	TRADEAGENT_ERROR_ITEM_REG_FAIL,				// ¾ÆÀÌÅÛ µî·Ï¿¡ ½ÇÆĞÇÏ¿´½À´Ï´Ù.
-	TRADEAGENT_ERROR_ITEM_REG_FULL,				// µî·ÏÇÒ ¼ö ÀÖ´Â ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ ²Ë Ã£½À´Ï´Ù.
-	TRADEAGENT_ERROR_ITEM_LIKE_REG_FULL,		// °ü½É¹°Ç°À¸·Î µî·Ï ÇÒ ¼ö ÀÖ´Â ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ ²Ë Ã£½À´Ï´Ù.
-	TRADEAGENT_ERROR_ITEM_REG_CANCEL_FAIL,		// ÆÇ¸Å ¿Ï·áµÈ ¾ÆÀÌÅÛ
-	TRADEAGENT_ERROR_ITEM_BUY_FAIL,				// ¾ÆÀÌÅÛ ±¸¸Å ½ÇÆĞ
-	TRADEAGENT_ERROR_ITEM_BUY_ING,				// ¾ÆÀÌÅÛÀÌ ÆÇ¸Å ÁøÇàÁßÀÔ´Ï´Ù.
-	TRADEAGENT_ERROR_ITEM_LIKE_LIST_FAIL,		// ¾ÆÀÌÅÛ °ü½É¹°Ç° ¸®½ºÆ® Á¶È¸ ½ÇÆĞ(°ü½É ¹°Ç°ÀÌ ¾øÀ½)
-	TRADEAGENT_ERROR_ITEM_LIKE_REG_FAIL,		// ¾ÆÀÌÅÛ °ü½É¹°Ç° Ãß°¡ ½ÇÆĞ
-	TRADEAGENT_ERROR_ITEM_LIKE_CANCEL_FAIL,		// ¾ÆÀÌÅÛ °ü½É¹°Ç° »èÁ¦ ½ÇÆĞ
+	TRADEAGENT_ERROR_NOT_EXIST_ITEM,			// í•´ë‹¹ ì•„ì´í…œì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+	TRADEAGENT_ERROR_NOT_ENOUGH_MONEY,			// ëˆì´ ë¶€ì¡±í•©ë‹ˆë‹¤.
+	TRADEAGENT_ERROR_SEARCH_ERROR,				// ì¡°íšŒ ë¶ˆê°€.
+	TRADEAGENT_ERROR_INCORRECT_MONEY,			// ë‚˜ìŠ¤ ë°ì´í„°ê°€ ë¶€ì •í™• í•©ë‹ˆë‹¤.
+	TRADEAGENT_ERROR_NOT_TRADEITEM,				// ê±°ë˜ ë¶ˆê°€ ì•„ì´í…œì…ë‹ˆë‹¤.
+	TRADEAGENT_ERROR_ITEM_REG_FAIL,				// ì•„ì´í…œ ë“±ë¡ì— ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.
+	TRADEAGENT_ERROR_ITEM_REG_FULL,				// ë“±ë¡í•  ìˆ˜ ìˆëŠ” ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ ê½‰ ì°¾ìŠµë‹ˆë‹¤.
+	TRADEAGENT_ERROR_ITEM_LIKE_REG_FULL,		// ê´€ì‹¬ë¬¼í’ˆìœ¼ë¡œ ë“±ë¡ í•  ìˆ˜ ìˆëŠ” ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ ê½‰ ì°¾ìŠµë‹ˆë‹¤.
+	TRADEAGENT_ERROR_ITEM_REG_CANCEL_FAIL,		// íŒë§¤ ì™„ë£Œëœ ì•„ì´í…œ
+	TRADEAGENT_ERROR_ITEM_BUY_FAIL,				// ì•„ì´í…œ êµ¬ë§¤ ì‹¤íŒ¨
+	TRADEAGENT_ERROR_ITEM_BUY_ING,				// ì•„ì´í…œì´ íŒë§¤ ì§„í–‰ì¤‘ì…ë‹ˆë‹¤.
+	TRADEAGENT_ERROR_ITEM_LIKE_LIST_FAIL,		// ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ ì¡°íšŒ ì‹¤íŒ¨(ê´€ì‹¬ ë¬¼í’ˆì´ ì—†ìŒ)
+	TRADEAGENT_ERROR_ITEM_LIKE_REG_FAIL,		// ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ì¶”ê°€ ì‹¤íŒ¨
+	TRADEAGENT_ERROR_ITEM_LIKE_CANCEL_FAIL,		// ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ì‚­ì œ ì‹¤íŒ¨
 };
 
-//°Å·¡´ëÇà ¸®½ºÆ® Á¶È¸ ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ë¦¬ìŠ¤íŠ¸ ì¡°íšŒ ì‘ë‹µ
 struct TradeAgentSystemList : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 	short pageNo;
 	unsigned char nextPage;
 	int count;
@@ -208,10 +208,10 @@ struct TradeAgentSystemList : public pTypeBase
 	TradeAgentItem list[0];
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ ±¸¸Å ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ êµ¬ë§¤ ì‘ë‹µ
 struct TradeAgentSystemBuy : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 	GoldType_t needNas;
 };
 
@@ -224,26 +224,26 @@ struct TradeAgentSystemBuyWithServer : public TradeAgentSystemBuy
 	char sellerName[MAX_CHAR_NAME_LENGTH +1];
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï ¸®½ºÆ® ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ë¦¬ìŠ¤íŠ¸ ì‘ë‹µ
 struct TradeAgentSystemRegList : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
-	GoldType_t Guarantee;			//´ÙÀ½ µî·Ï½Ã ÇÊ¿äÇÑ ¼ö¼ö·á °ª.
-	float tradeAgentFee;				//¼ö¼ö·á %
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
+	GoldType_t Guarantee;			//ë‹¤ìŒ ë“±ë¡ì‹œ í•„ìš”í•œ ìˆ˜ìˆ˜ë£Œ ê°’.
+	float tradeAgentFee;				//ìˆ˜ìˆ˜ë£Œ %
 	int count;
 	int	curServerTime;
 	TradeAgentItem list[0];
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ì‘ë‹µ
 struct TradeAgentSystemReg : public pTypeBase
 {
-	int charIndex;					// ¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
-	int itemIndex;					// µî·ÏÇÑ ¾ÆÀÌÅÛ
-	int quantity;				// µî·ÏÇÑ ¾ÆÀÌÅÛ °¹¼ö (¼­¹ö¿¡¼­¸¸ »ç¿ë)
-	GoldType_t Guarantee;			// ÁöºÒÇÑ °Ô·±Æ¼ (¼­¹ö¿¡¼­¸¸ »ç¿ë)
-	int itemCount;					// °¨¼Ò ¸Ş½ÃÁö¸¦ ³¯¸®±â À§ÇÑ ¾ÆÀÌÅÛ Ä«¿îÆ® (¼­¹ö¿¡¼­¸¸ »ç¿ë)
-	unsigned short tab;						// °¨¼Ò ½ÃÅ³ ¾ÆÀÌÅÛÀÇ ÀÎº¥ À§Ä¡ (¼­¹ö¿¡¼­¸¸ »ç¿ë)
+	int charIndex;					// ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
+	int itemIndex;					// ë“±ë¡í•œ ì•„ì´í…œ
+	int quantity;				// ë“±ë¡í•œ ì•„ì´í…œ ê°¯ìˆ˜ (ì„œë²„ì—ì„œë§Œ ì‚¬ìš©)
+	GoldType_t Guarantee;			// ì§€ë¶ˆí•œ ê²ŒëŸ°í‹° (ì„œë²„ì—ì„œë§Œ ì‚¬ìš©)
+	int itemCount;					// ê°ì†Œ ë©”ì‹œì§€ë¥¼ ë‚ ë¦¬ê¸° ìœ„í•œ ì•„ì´í…œ ì¹´ìš´íŠ¸ (ì„œë²„ì—ì„œë§Œ ì‚¬ìš©)
+	unsigned short tab;						// ê°ì†Œ ì‹œí‚¬ ì•„ì´í…œì˜ ì¸ë²¤ ìœ„ì¹˜ (ì„œë²„ì—ì„œë§Œ ì‚¬ìš©)
 	unsigned short invenIndex;
 };
 
@@ -253,10 +253,10 @@ struct TradeAgentSystemRegWithServer : public TradeAgentSystemReg
 	GoldType_t TotalMoney;
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ µî·Ï Ãë¼Ò ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ë“±ë¡ ì·¨ì†Œ ì‘ë‹µ
 struct TradeAgentSystemRegCancel : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 };
 
 struct TradeAgentSystemRegCancelWithServer : public TradeAgentSystemRegCancel
@@ -266,31 +266,31 @@ struct TradeAgentSystemRegCancelWithServer : public TradeAgentSystemRegCancel
 	char serial[MAX_SERIAL_LENGTH + 1];
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° ¸®½ºÆ® ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ë¦¬ìŠ¤íŠ¸ ì‘ë‹µ
 struct TradeAgentSystemLikeList : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 	int count;
 	int	curServerTime;
 	TradeAgentItem list[0];
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° µî·Ï ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ë“±ë¡ ì‘ë‹µ
 struct TradeAgentSystemLikeReg : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 };
 
-//°Å·¡´ëÇà ¾ÆÀÌÅÛ °ü½É¹°Ç° Ãë¼Ò ÀÀ´ä
+//ê±°ë˜ëŒ€í–‰ ì•„ì´í…œ ê´€ì‹¬ë¬¼í’ˆ ì·¨ì†Œ ì‘ë‹µ
 struct TradeAgentSystemLikeCancel : public pTypeBase
 {
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 };
 
 struct TradeAgentSystemError : public pTypeBase
 {
 	int errorCode;
-	int charIndex;					//¼­¹ö¸¸ »ç¿ëÇß´ø °ª, client ¹«½ÃÇØ¾ß ÇÏ´Â µ¥ÀÌÅÍ
+	int charIndex;					//ì„œë²„ë§Œ ì‚¬ìš©í–ˆë˜ ê°’, client ë¬´ì‹œí•´ì•¼ í•˜ëŠ” ë°ì´í„°
 };
 
 struct TradeAgentReturnMoney : public pTypeBase

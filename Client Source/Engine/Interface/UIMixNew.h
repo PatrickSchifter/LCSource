@@ -74,6 +74,10 @@ protected:
 	BOOL					m_bIsMix;
 	BOOL					m_bIsMixMasterStone;
 
+	bool				m_bMasterstoneAutoProb;
+	int					m_nOldUpgradeLevel;
+	int					m_nMasProb[3];		// success, nochange, fail
+
 	// Internal functions
 	void	AddString( CTString &strDesc );
 
@@ -117,9 +121,15 @@ public:
 	void	SetMixEnable(BOOL bMix) { m_bIsMix = bMix; }
 	BOOL	GetMixEnable() { return m_bIsMix; }
 
+	// 확률 자동 테스트
+	bool	MasterStoneAutoTestProb();
+	void	WriteEnd();
+
 private:
 	bool CheckMasterStone(CItems* pTargetItem, int nMasterStoneIndex);
 	void UpdateExplication(int nPlus = -1);
+
+	bool	WriteMasterStone();
 };
 
 

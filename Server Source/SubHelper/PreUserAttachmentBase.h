@@ -2,7 +2,7 @@
 * PreUserAttachment.h
 *
 *  Created on: 2011. 10. 31.
-*      Author: À±ÀÏ
+*      Author: Å”Â±Å”ÄŽ
 */
 
 #ifndef PREUSERATTACHMENTBASE_H_

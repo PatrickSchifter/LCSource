@@ -8,6 +8,8 @@
 #include <Engine/Help/ItemHelp.h>
 //#include <Engine/Interface/UIGuildMark.h>
 
+extern INDEX	g_iCountry;
+
 #define DEF_HIGHLIGHT_TIME 500
 #define DEF_DISABLE_SKILL_OFFSET	3
 #define	COMBO_BTN_SIZE	52
@@ -38,6 +40,8 @@ CUIIcon::CUIIcon()
 	, m_nCashIndex(-1)
 	, m_bSuit(false)
 	, m_nPetKind(-1)
+	, m_bDrag(false)
+	, m_bDisable(false)
 {
 #ifdef UI_TOOL
 	m_TexID	   = 0;
@@ -235,12 +239,13 @@ void CUIIcon::setData( CItems* pItems, bool bRef )
 
 void CUIIcon::setDataEtc( eUIBTN_ETC_TYPE type, int nIndex, SQUAD llCount )
 {
+	m_BtnEtctype = type;
+
 	m_TexID = 0;
 	int nTexRow = 0;
 	int nTexCol = 0;
 
 	m_BtnType = UBET_ITEM;
-	m_BtnEtctype = type;
 
 	if (m_bRef == false)
 	{
@@ -271,15 +276,18 @@ void CUIIcon::setDataEtc( eUIBTN_ETC_TYPE type, int nIndex, SQUAD llCount )
 		break;
 	case eETC_TYPE_SP:
 		{
-#if defined (G_RUSSIA)
-			m_TexID = 12;
-			nTexRow = 0;
-			nTexCol = 2;
-#else
-			m_TexID = 9;
-			nTexRow = 12;
-			nTexCol = 11;
-#endif			
+			if (g_iCountry == RUSSIA)
+			{
+				m_TexID = 12;
+				nTexRow = 0;
+				nTexCol = 2;
+			}			
+			else
+			{
+				m_TexID = 9;
+				nTexRow = 12;
+				nTexCol = 11;
+			}	
 		}
 		break;
 	case eETC_TYPE_THEME:
@@ -517,7 +525,7 @@ void CUIIcon::clearIconData()
 #ifdef DURABILITY
 	m_bDurItem = false;
 #endif	//	DURABILITY
-
+	m_bDisable = false;
 	m_TexID = -1;
 	m_nSkillDisable = 0;
 	
@@ -649,6 +657,9 @@ void CUIIcon::OnRender( CDrawPort* pDraw )
 
 void CUIIcon::renderDefault( int x, int y, CDrawPort* pDraw, COLOR color, float delta, const ULONG ulPBT )
 {
+	if (m_bDisable == true)
+		color = DEF_UI_COLOR_COOL_BG;
+
 	pDraw->AddBtnTexture( m_TexID + m_nSkillDisable, x - delta, y - delta, 
 		x + m_nWidth + delta, y + m_nHeight + delta,
 		m_uv, color );
@@ -671,7 +682,7 @@ void CUIIcon::renderCooltime( int x, int y, CDrawPort* pDraw )
 	}
 	else if (m_BtnType == UBET_ITEM)
 	{
-		if (m_pItems != NULL)
+		if (m_pItems != NULL && m_pItems->ItemData != NULL)
 			dStartTime = m_pItems->ItemData->StartTime;
 
 		dReUseTime = MY_INFO()->GetReuseItem(m_nIndex);
@@ -884,6 +895,9 @@ void CUIIcon::OnEnter( UINT16 x, UINT16 y )
 
 	if (m_pCmdOnEnter != NULL)
 		m_pCmdOnEnter->execute();
+
+	if (m_funcOnEnter)
+		m_funcOnEnter(this);
 }
 
 void CUIIcon::OnLeave( UINT16 x, UINT16 y )
@@ -904,10 +918,14 @@ WMSG_RESULT CUIIcon::OnMouseMove( UINT16 x, UINT16 y, MSG* pMsg )
 	if (IsInside(x, y) == FALSE)
 		return WMSG_FAIL;
 
-	if (pMsg->wParam & MK_LBUTTON && CUIManager::getSingleton()->GetDragIcon() == NULL)
+	if (m_bDrag == true && CUIManager::getSingleton()->GetDragIcon() == NULL)
 	{
+		// 드래그가 시작 되면 m_bDrag = false로 바꿈.
 		if (m_pCmdDrag)
+		{
 			m_pCmdDrag->execute();
+			m_bDrag = false;
+		}
 	}
 
 	return WMSG_FAIL;
@@ -932,24 +950,21 @@ WMSG_RESULT CUIIcon::OnLButtonDown( UINT16 x, UINT16 y )
 		m_pImage[eIMG_TYPE_SELECT]->Hide(FALSE);
 	}
 
-	if (m_pCmd)
-		m_pCmd->execute();
-
-	return WMSG_FAIL;
+	m_bDrag = true;
+	return CUIBase::OnLButtonDown(x, y);
 }
 
 WMSG_RESULT CUIIcon::OnLButtonUp( UINT16 x, UINT16 y )
 {
+	m_bDrag = false;
+
 	if (m_bHide)
 		return WMSG_FAIL;
 
 	if (IsInside(x, y) == FALSE)
 		return WMSG_FAIL;
 
-	if (m_pCmdUp)
-		m_pCmdUp->execute();
-
-	return WMSG_FAIL;
+	return CUIBase::OnLButtonUp(x, y);
 }
 
 WMSG_RESULT CUIIcon::OnLButtonDBLClick( UINT16 x, UINT16 y )
@@ -970,9 +985,7 @@ WMSG_RESULT CUIIcon::OnLButtonDBLClick( UINT16 x, UINT16 y )
 		}
 	}
 
-	if (m_pCmdDBL)
-		m_pCmdDBL->execute();
-
+	CUIBase::OnLButtonDBLClick(x, y);
 	return WMSG_COMMAND;
 }
 
@@ -1137,6 +1150,68 @@ void CUIIcon::setAffinity( int nIndex )
 	setIconUV(nRow, nCol);
 }
 
+void CUIIcon::setAffinity( eUIBTN_ETC_TYPE eType, int nIndex, int nPoint, int nTexItemIndex)
+{
+	if (m_bRef == false)
+	{
+		SAFE_DELETE(m_pItemEtc);
+	}
+
+	// 아이콘 표시용 인덱스와 툴팁 표시에 사용할 인덱스가 다름.
+	int nTmpTexIdx = nTexItemIndex;
+
+	if (nTmpTexIdx < 0)
+		nTmpTexIdx = nIndex;
+
+	CItemData* pItemData = _pNetwork->GetItemData(nTmpTexIdx);
+
+	if (pItemData == NULL)
+		return;
+
+	m_bRef = false;
+	m_BtnType = UBET_ITEM;
+	m_BtnEtctype = eType;
+
+	m_pItemEtc = new stItemEtc;
+	m_pItemEtc->nIndex = nIndex;
+	m_pItemEtc->llEtc = nPoint;
+
+	m_TexID = pItemData->GetIconTexID();
+
+	int nRow = pItemData->GetIconTexRow();
+	int nCol = pItemData->GetIconTexCol();
+
+	setIconUV(nRow, nCol);
+}
+
+void CUIIcon::setAffinityM( int nIndex , int nPoint , SBYTE cTexID , int row , int col )
+{
+	if (m_bRef == false)
+	{
+		SAFE_DELETE(m_pItemEtc);
+	}
+
+	m_bRef = false;
+	m_pItemEtc = new stItemEtc;
+	m_pItemEtc->nIndex = nIndex;
+	m_pItemEtc->llEtc = nPoint;
+	
+	m_BtnType = UBET_COMBO;
+	m_BtnEtctype = eETC_TYPE_AFFINITY_MONSTER;
+
+	m_TexID = cTexID;
+
+	int nUVSX = COMBO_BTN_SIZE - 2;
+	int nUVSY = COMBO_BTN_SIZE - 2;
+
+	nUVSX *= col;
+	nUVSY *= row;
+
+	FLOAT	fTexWidth = _pUIBtnTexMgr->GetTexWidth(m_BtnType, cTexID);
+	FLOAT	fTexHeight = _pUIBtnTexMgr->GetTexHeight(m_BtnType, cTexID);
+	m_uv.SetUV(nUVSX, nUVSY, nUVSX + COMBO_BTN_SIZE - 2, nUVSY + COMBO_BTN_SIZE - 2, fTexWidth, fTexHeight);
+}
+
 void CUIIcon::setMCombo( int nIndex )
 {
     m_nIndex = nIndex;
@@ -1153,21 +1228,21 @@ void CUIIcon::setMCombo( int nIndex )
     CMissionCase* MC = CMissionCase::getDataSeq(nIndex);
 
 	m_TexID = MC->texture_id;
-    int nRow = MC->texture_row;
-    int nCol = MC->texture_col;
+	int nRow = MC->texture_row;
+	int nCol = MC->texture_col;
 
-    int nUVSX = COMBO_BTN_SIZE - 2;
-    int nUVSY = COMBO_BTN_SIZE - 2;
+	int nUVSX = COMBO_BTN_SIZE - 2;
+	int nUVSY = COMBO_BTN_SIZE - 2;
 
-    int	nTexRow = nRow;
-    int	nTexCol = nCol;
+	int	nTexRow = nRow;
+	int	nTexCol = nCol;
 
-    nUVSX *= nTexCol;
-    nUVSY *= nTexRow;
+	nUVSX *= nTexCol;
+	nUVSY *= nTexRow;
 
-    FLOAT	fTexWidth = _pUIBtnTexMgr->GetTexWidth(UBET_COMBO, MC->texture_id);
-    FLOAT	fTexHeight = _pUIBtnTexMgr->GetTexHeight(UBET_COMBO, MC->texture_id);
-    m_uv.SetUV(nUVSX, nUVSY, nUVSX + COMBO_BTN_SIZE - 2, nUVSY + COMBO_BTN_SIZE - 2, fTexWidth, fTexHeight);
+	FLOAT	fTexWidth = _pUIBtnTexMgr->GetTexWidth(UBET_COMBO, MC->texture_id);
+	FLOAT	fTexHeight = _pUIBtnTexMgr->GetTexHeight(UBET_COMBO, MC->texture_id);
+	m_uv.SetUV(nUVSX, nUVSY, nUVSX + COMBO_BTN_SIZE - 2, nUVSY + COMBO_BTN_SIZE - 2, fTexWidth, fTexHeight);
 }
 
 void CUIIcon::setStack()
@@ -1204,7 +1279,6 @@ void CUIIcon::setStack()
 
 				CTString strTmp;
 				strTmp.PrintF("%I64d", m_pItems->Item_Sum);
-
 				m_pStack->setString(strTmp);
 				m_pStack->Hide(FALSE);
 			}

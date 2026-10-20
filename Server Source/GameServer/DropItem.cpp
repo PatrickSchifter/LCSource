@@ -144,11 +144,11 @@ bool CDropManager::doDrop(CPC* _pPC, CNPC * _pNPC, const int _dropIndex, const i
 
 	switch( pDrop->getDropType() )
 	{
-	case 0: // Multi È®·ü¸¸ ¸Â´Â ¾ÆÀÌÅÛÀº ´Ù ¶³¾î ¶ß¸°´Ù.
+	case 0: // Multi í™•ë¥ ë§Œ ë§žëŠ” ì•„ì´í…œì€ ë‹¤ ë–¨ì–´ ëœ¨ë¦°ë‹¤.
 		return doDropRandom(_pPC, _pNPC, pDrop, _bPreferenceIndex);
-	case 1: // Once-Random ¸®½ºÆ®Áß¿¡ È®·ü¿¡ µû¶ó ÇÏ³ª¸¸ ¶³±¸³ª.
+	case 1: // Once-Random ë¦¬ìŠ¤íŠ¸ì¤‘ì— í™•ë¥ ì— ë”°ë¼ í•˜ë‚˜ë§Œ ë–¨êµ¬ë‚˜.
 		return doDropOnceRandom(_pPC, _pNPC, pDrop, _prob, _bPreferenceIndex);
-	case 2: // Once-Select ¸®½ºÆ®Áß¿¡ ÇÏ³ª¸¦ ¼±ÅÃÇØ µå¶ø // ¿ÜºÎ ¼±ÅÃÀ¸·Î µ¹¸±±î³ª? ¤Ñ¤Ñ;
+	case 2: // Once-Select ë¦¬ìŠ¤íŠ¸ì¤‘ì— í•˜ë‚˜ë¥¼ ì„ íƒí•´ ë“œëž // ì™¸ë¶€ ì„ íƒìœ¼ë¡œ ëŒë¦´ê¹Œë‚˜? ã…¡ã…¡;
 		return doDropOnceSelect(_pPC, _pNPC, pDrop, _pos, _bPreferenceIndex);
 	default:
 		return false;
@@ -396,7 +396,7 @@ bool CDropManager::dropItem(CPC* _pPC, CNPC* _pNPC, CDropItemData * _pDropItem, 
 
 	if( _pDropItem && _pDropItem->getIndex() == NAS_ITEM_DB_INDEX)
 	{
-		//µ·ÀÏ °æ¿ì µ· ¸Þ½ÃÁö Àü¼Û
+		//ëˆì¼ ê²½ìš° ëˆ ë©”ì‹œì§€ ì „ì†¡
 		GoldType_t moneyCount = _pDropItem->getCount();
 
 		_pPC->m_inventory.increaseMoney(moneyCount);

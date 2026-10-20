@@ -29,15 +29,15 @@ public:
 
 private:
 	//////////////////
-	// DB Á¤º¸ º¯¼ö
-	int			m_index;		// ¾ÆÀÌÅÛ¹øÈ£
-	int			m_typeIdx;		// Å¸ÀÔÁ¾·ù
-	int			m_subtypeIdx;	// ¼­ºêÅ¸ÀÔÁ¾·ù
-	CLCString	m_name;			// ¾ÆÀÌÅÛÀÌ¸§
-	int			m_jobFlag;		// »ç¿ëÁ¾Á·
-	LONGLONG	m_flag;			// ¼Ó¼º
-	int			m_maxUse;		// ³»±¸µµ
-	int			m_fame;			// ¸í¼ºÄ¡
+	// DB ì •ë³´ ë³€ìˆ˜
+	int			m_index;		// ì•„ì´í…œë²ˆí˜¸
+	int			m_typeIdx;		// íƒ€ì…ì¢…ë¥˜
+	int			m_subtypeIdx;	// ì„œë¸Œíƒ€ì…ì¢…ë¥˜
+	CLCString	m_name;			// ì•„ì´í…œì´ë¦„
+	int			m_jobFlag;		// ì‚¬ìš©ì¢…ì¡±
+	LONGLONG	m_flag;			// ì†ì„±
+	int			m_maxUse;		// ë‚´êµ¬ë„
+	int			m_fame;			// ëª…ì„±ì¹˜
 
 	int m_num0;
 	int	m_num1;
@@ -57,16 +57,16 @@ private:
 	int m_set3;
 	//int m_questY;
 
-	int m_set4;			// ¼¼Æ® ¾ÆÀÌÅÛ Index
-	//int m_questRange ;	// Äù½ºÆ® ¾ÆÀÌÅÛ ¹İ°æ
+	int m_set4;			// ì„¸íŠ¸ ì•„ì´í…œ Index
+	//int m_questRange ;	// í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ë°˜ê²½
 
-	int			m_grade;			// °ø°İÇü Æê¹«±âÅ¸ÀÔÀ¸·Î »ç¿ë
-	int			m_stackcount;		// °ú°Å ¹«°Ô¸¦ ÇöÀç´Â ½ºÅÃ °¹¼ö·Î »ç¿ëÇÔ
-	LONGLONG	m_price;			// °¡°İ
+	int			m_grade;			// ê³µê²©í˜• í«ë¬´ê¸°íƒ€ì…ìœ¼ë¡œ ì‚¬ìš©
+	int			m_stackcount;		// ê³¼ê±° ë¬´ê²Œë¥¼ í˜„ì¬ëŠ” ìŠ¤íƒ ê°¯ìˆ˜ë¡œ ì‚¬ìš©í•¨
+	LONGLONG	m_price;			// ê°€ê²©
 
-	int			m_wearing;			// Âø¿ë À§Ä¡
+	int			m_wearing;			// ì°©ìš© ìœ„ì¹˜
 
-	// ¾ÆÀÌÅÛ Àç·á
+	// ì•„ì´í…œ ì¬ë£Œ
 	int		m_materialIndex[MAX_MAKE_ITEM_MATERIAL];
 	int		m_materialCount[MAX_MAKE_ITEM_MATERIAL];
 
@@ -76,19 +76,19 @@ private:
 	int		m_needSSkillIndex2;
 	int		m_needSSkillLevel2;
 
-	int		m_nRareIndex[MAX_RARE_OPTION_ITEM];				// ·¹¾î Index, ¿É¼Ç/½ºÅ³ Index(0 : ±Í¼Ó ¼³Á¤, 1~6 : ¿É¼Ç, 7~9 : ½ºÅ³)
-	int		m_nRareProb[MAX_RARE_OPTION_ITEM];				// ·¹¾î È®·ü,  ¿É¼Ç/½ºÅ³ Level(1~6 : ¿É¼Ç, 7~9 : ½ºÅ³)
+	int		m_nRareIndex[MAX_RARE_OPTION_ITEM];				// ë ˆì–´ Index, ì˜µì…˜/ìŠ¤í‚¬ Index(0 : ê·€ì† ì„¤ì •, 1~6 : ì˜µì…˜, 7~9 : ìŠ¤í‚¬)
+	int		m_nRareProb[MAX_RARE_OPTION_ITEM];				// ë ˆì–´ í™•ë¥ ,  ì˜µì…˜/ìŠ¤í‚¬ Level(1~6 : ì˜µì…˜, 7~9 : ìŠ¤í‚¬)
 
-	int		m_level;			// ·¹º§
+	int		m_level;			// ë ˆë²¨
 
-	int		m_level2;			// ¾ÆÀÌÅÛ ·¹º§2
+	int		m_level2;			// ì•„ì´í…œ ë ˆë²¨2
 	int m_MaxOriginVariation[MAX_VARIATION_COUNT];
 
 	int		m_rvr_type;
 	int		m_rvr_grade;
 
 #ifdef DURABILITY
-	int		m_durability;		// Àåºñ ³»±¸µµ
+	int		m_durability;		// ì¥ë¹„ ë‚´êµ¬ë„
 #endif
 	int		m_castle_war;
 // ---------------------------------------------
@@ -129,12 +129,12 @@ public:
 
 	int getItemMaxUse() const
 	{
-		return m_maxUse; // ³»±¸µµ
+		return m_maxUse; // ë‚´êµ¬ë„
 	}
 
 	int getItemFrame() const
 	{
-		return m_fame;	// ¸í¼ºÄ¡.
+		return m_fame;	// ëª…ì„±ì¹˜.
 	}
 
 	int getItemNum0() const
@@ -287,7 +287,7 @@ public:
 	{
 		return m_rvr_grade;
 	}
-	// DBº¯¼ö ¿©±â±îÁö
+	// DBë³€ìˆ˜ ì—¬ê¸°ê¹Œì§€
 
 #ifdef DURABILITY
 	int getDurability() const
@@ -315,7 +315,7 @@ public:
 		return (m_flag & ITEM_FLAG_COMPOSE) ? true : false;
 	}
 
-	// ºí·¯µåÁª »ç¿ë °¡´É ¿©ºÎ : ITEM_FLAG_UPGRADE && !ITEM_FLAG_COMPOSITE
+	// ë¸”ëŸ¬ë“œì ¬ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ : ITEM_FLAG_UPGRADE && !ITEM_FLAG_COMPOSITE
 	bool CanBloodGem() const
 	{
 		if ((m_flag & ITEM_FLAG_UPGRADE) == 0)
@@ -510,7 +510,7 @@ private:
 	bool		is_monster_card_;
 	bool		is_rvr_not_use_;
 	bool		is_syndicate_;
-	bool		is_useinwarzone_;		// ÀüÀå¿¡¼­ »ç¿ë°¡´ÉÇÑ°¡?
+	bool		is_useinwarzone_;		// ì „ì¥ì—ì„œ ì‚¬ìš©ê°€ëŠ¥í•œê°€?
 	bool		is_timer_;
 	bool		is_rvr_jewel_;
 	bool		is_gps_;
@@ -530,45 +530,45 @@ public:
 
 private:
 	/////////////////////
-	// ÀÎº¥Åä¸® À§Ä¡ °ü·Ã
-	int			m_tab_idx;			// ÅÇ
-	int			m_invenIndex;		// ÀÎº¥Åä¸®³»¿¡¼­ÀÇ À§Ä¡
+	// ì¸ë²¤í† ë¦¬ ìœ„ì¹˜ ê´€ë ¨
+	int			m_tab_idx;			// íƒ­
+	int			m_invenIndex;		// ì¸ë²¤í† ë¦¬ë‚´ì—ì„œì˜ ìœ„ì¹˜
 
-	LONGLONG	m_count;			// °³¼ö
+	LONGLONG	m_count;			// ê°œìˆ˜
 
-	int			m_virualIndex;		// °¡»ó ÀÎµ¦½º
-	int			m_dbIndex;			// DB ÀÎµ¦½º
+	int			m_virualIndex;		// ê°€ìƒ ì¸ë±ìŠ¤
+	int			m_dbIndex;			// DB ì¸ë±ìŠ¤
 
-	// ¾ÆÀÌÅÛ ¼Ó¼º
-	char		m_wearPos;			// Âø¿ëÀ§Ä¡/ÅÇ
-	// 0 ~ 11	: Åõ±¸ »óÀÇ Æ¯¼ö ¹«±â ÇÏÀÇ ¹æÆĞ Àå°© ½Å¹ß ¾×¼­¼­¸®1, 2, 3
-	// -1		: Âø¿ë ¾ÈÇÔ
+	// ì•„ì´í…œ ì†ì„±
+	char		m_wearPos;			// ì°©ìš©ìœ„ì¹˜/íƒ­
+	// 0 ~ 11	: íˆ¬êµ¬ ìƒì˜ íŠ¹ìˆ˜ ë¬´ê¸° í•˜ì˜ ë°©íŒ¨ ì¥ê°‘ ì‹ ë°œ ì•¡ì„œì„œë¦¬1, 2, 3
+	// -1		: ì°©ìš© ì•ˆí•¨
 
-	int			m_plus;				// + ¼öÄ¡, ¾Ö¿Ïµ¿¹° ¾ÆÀÌÅÛÀÇ °æ¿ì ÇØ´ç ¾Ö¿Ïµ¿¹° INDEX
-	// °ïÃæ Ã¤Áı »óÀÚ : Ã¤Áı °ïÃæ µ¥ÀÌÅÍ 1 (4ºñÆ® * 8¸¶¸®)
-	// ¸ó½ºÅÍ ¿ëº´ Ä«µå : npcIndex
-	// º¸¹°Áöµµ ¾ÆÀÌÅÛ : zoneIndex
+	int			m_plus;				// + ìˆ˜ì¹˜, ì• ì™„ë™ë¬¼ ì•„ì´í…œì˜ ê²½ìš° í•´ë‹¹ ì• ì™„ë™ë¬¼ INDEX
+	// ê³¤ì¶© ì±„ì§‘ ìƒì : ì±„ì§‘ ê³¤ì¶© ë°ì´í„° 1 (4ë¹„íŠ¸ * 8ë§ˆë¦¬)
+	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ : npcIndex
+	// ë³´ë¬¼ì§€ë„ ì•„ì´í…œ : zoneIndex
 
-	int			m_plus2;			// ¼¼Æ® ¾ÆÀÌÅÛ : "¹°¸®/¸¶¹ı&¹æ¾î/°ø°İ" ¼öÄ¡ ÀúÀå
-	// ¸ó½ºÅÍ ¿ëº´ Ä«µå : °ø°İ·Â°ú ¹æ¾î·Â ¼öÄ¡¸¦ ³Ö¾îÁØ´Ù.
-	// º¸¹°Áöµµ ¾ÆÀÌÅÛ : x, y ÁÂÇ¥ (ºñÆ®¸¦ ¹İÀ¸·Î ³ª´²¼­ ³Ö¾îÁØ´Ù.
+	int			m_plus2;			// ì„¸íŠ¸ ì•„ì´í…œ : "ë¬¼ë¦¬/ë§ˆë²•&ë°©ì–´/ê³µê²©" ìˆ˜ì¹˜ ì €ì¥
+	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ : ê³µê²©ë ¥ê³¼ ë°©ì–´ë ¥ ìˆ˜ì¹˜ë¥¼ ë„£ì–´ì¤€ë‹¤.
+	// ë³´ë¬¼ì§€ë„ ì•„ì´í…œ : x, y ì¢Œí‘œ (ë¹„íŠ¸ë¥¼ ë°˜ìœ¼ë¡œ ë‚˜ëˆ ì„œ ë„£ì–´ì¤€ë‹¤.
 
-	int			m_flag;				// ¼Ó¼º
+	int			m_flag;				// ì†ì„±
 
-	int			m_used;				// ³»±¸µµ
-	// »ı»êµµ±¸ ³»±¸µµ
-	// ÇÃ·¡Æ¼´½ Àç·Ã¼® ±â°£
-	// ÀÇ»ó ±â°£
-	// ÀÇ»ó °áÇÕ ±â°£
-	// °ïÃæ Ã¤Áı »óÀÚ : Ã¤Áı °ïÃæ µ¥ÀÌÅÍ 2 (4ºñÆ® * 8¸¶¸®)
+	int			m_used;				// ë‚´êµ¬ë„
+	// ìƒì‚°ë„êµ¬ ë‚´êµ¬ë„
+	// í”Œë˜í‹°ëŠ„ ì¬ë ¨ì„ ê¸°ê°„
+	// ì˜ìƒ ê¸°ê°„
+	// ì˜ìƒ ê²°í•© ê¸°ê°„
+	// ê³¤ì¶© ì±„ì§‘ ìƒì : ì±„ì§‘ ê³¤ì¶© ë°ì´í„° 2 (4ë¹„íŠ¸ * 8ë§ˆë¦¬)
 
-	int			m_used_2;			// °áÇÕ¿ëÀÇ»ó:	°áÇÕ ÁÖ¹®¼­ »ç¿ë ±â°£, ±â°£Á¦ ¾ÆÀÌÅÛ ³²Àº ½Ã°£
-	// ¹«±â, Àåºñ:	·¹º§ ´Ù¿î ÁÖ¹®¼­ »ç¿ë ±â°£,
-	// ¸ó½ºÅÍ ¿ëº´ Ä«µå : classInx
+	int			m_used_2;			// ê²°í•©ìš©ì˜ìƒ:	ê²°í•© ì£¼ë¬¸ì„œ ì‚¬ìš© ê¸°ê°„, ê¸°ê°„ì œ ì•„ì´í…œ ë‚¨ì€ ì‹œê°„
+	// ë¬´ê¸°, ì¥ë¹„:	ë ˆë²¨ ë‹¤ìš´ ì£¼ë¬¸ì„œ ì‚¬ìš© ê¸°ê°„,
+	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ : classInx
 
 #ifdef DURABILITY
-	int			now_durability;		// ÇöÀç Àåºñ ³»±¸µµ
-	int			max_durability;		// ÃÖ´ë Àåºñ ³»±¸µµ
+	int			now_durability;		// í˜„ì¬ ì¥ë¹„ ë‚´êµ¬ë„
+	int			max_durability;		// ìµœëŒ€ ì¥ë¹„ ë‚´êµ¬ë„
 #endif
 
 public:
@@ -576,7 +576,7 @@ public:
 	~CItem();
 
 	//////////////////
-	// DB Á¤º¸ º¯¼ö
+	// DB ì •ë³´ ë³€ìˆ˜
 	CItemProto*	m_itemProto;
 
 	LONGLONG getItemCount()
@@ -665,35 +665,35 @@ public:
 		m_used_2 = used;
 	}
 
-	int			m_MercenaryIndex;	// ¼­È¯ÇÑ ¸ó½ºÅÍ ¿ëº´ÀÇ °íÀ¯ index;
+	int			m_MercenaryIndex;	// ì„œí™˜í•œ ëª¬ìŠ¤í„° ìš©ë³‘ì˜ ê³ ìœ  index;
 
-	COption		m_option[MAX_ITEM_OPTION];	// ¾ÆÀÌÅÛ ¿É¼Ç, ·¹¾î ¾ÆÀÌÅÛÀÇ °æ¿ì 0Àº ·¹¾î ÀÎµ¦½º 2¹ÙÀÌÆ®, 1Àº ·¹¾î ºñÆ® ÇÊµå 2¹ÙÀÌÆ®
-	int			m_nOption;					// ¾ÆÀÌÅÛ ¿É¼Ç ¼ö
+	COption		m_option[MAX_ITEM_OPTION];	// ì•„ì´í…œ ì˜µì…˜, ë ˆì–´ ì•„ì´í…œì˜ ê²½ìš° 0ì€ ë ˆì–´ ì¸ë±ìŠ¤ 2ë°”ì´íŠ¸, 1ì€ ë ˆì–´ ë¹„íŠ¸ í•„ë“œ 2ë°”ì´íŠ¸
+	int			m_nOption;					// ì•„ì´í…œ ì˜µì…˜ ìˆ˜
 
-	const CRareOptionProto* m_pRareOptionProto; // ·¹¾î¿É¼Ç ÇÁ·ÎÅä
-	int			m_nRareOptionIndex;	// ·¹¾î ¿É¼Ç ÀÎµ¦½º
-	int			m_nRareOptionBit;	// ·¹¾î ¿É¼Ç ºñÆ® ÇÊµå
+	const CRareOptionProto* m_pRareOptionProto; // ë ˆì–´ì˜µì…˜ í”„ë¡œí† 
+	int			m_nRareOptionIndex;	// ë ˆì–´ ì˜µì…˜ ì¸ë±ìŠ¤
+	int			m_nRareOptionBit;	// ë ˆì–´ ì˜µì…˜ ë¹„íŠ¸ í•„ë“œ
 
-	// ÇÕ¼ºµÈ ¾ÆÀÌÅÛ : ±â°£À» °¡Áø ¾ÆÀÌÅÛÀÌ ¿øº» ¾ÆÀÌÅÛ ¼­¹öÀÎµ¦½º¸¦ °¡Áü, ¾øÀ¸¸é -1
-	// DB ÀúÀå½Ã¿¡´Â tab, invenindex·Î ±¸ºĞÇÏ¿© ÀúÀå
-	// °áÇÕµÈ ÀÇ»ó : db flag / flag is set
-	// °áÇÕ´çÇÑ ÀÇ»ó : flag is set
+	// í•©ì„±ëœ ì•„ì´í…œ : ê¸°ê°„ì„ ê°€ì§„ ì•„ì´í…œì´ ì›ë³¸ ì•„ì´í…œ ì„œë²„ì¸ë±ìŠ¤ë¥¼ ê°€ì§, ì—†ìœ¼ë©´ -1
+	// DB ì €ì¥ì‹œì—ëŠ” tab, invenindexë¡œ êµ¬ë¶„í•˜ì—¬ ì €ì¥
+	// ê²°í•©ëœ ì˜ìƒ : db flag / flag is set
+	// ê²°í•©ë‹¹í•œ ì˜ìƒ : flag is set
 	int			m_nCompositeItem;
 
 	const CSetItemProto* m_pSetItemProto;
-	int			m_nSetWearCnt;		// ¼¼Æ® ¾ÆÀÌÅÛ Âø¿ë °³¼ö
-	int			m_nSetOption;		// ¼¼Æ® ¿É¼Ç Àû¿ë ¿©ºÎ - 1: ¿É¼Ç¸¸ Àû¿ë, 2: ½ºÅ³±îÁö Àû¿ë
+	int			m_nSetWearCnt;		// ì„¸íŠ¸ ì•„ì´í…œ ì°©ìš© ê°œìˆ˜
+	int			m_nSetOption;		// ì„¸íŠ¸ ì˜µì…˜ ì ìš© ì—¬ë¶€ - 1: ì˜µì…˜ë§Œ ì ìš©, 2: ìŠ¤í‚¬ê¹Œì§€ ì ìš©
 	////////////
-	// ±âÅ¸ ¼Ó¼º
+	// ê¸°íƒ€ ì†ì„±
 	CArea*		m_pArea;			// Area
-	CPos		m_pos;				// ÁÂÇ¥
-	int			m_cellX;			// ¼¿ À§Ä¡
+	CPos		m_pos;				// ì¢Œí‘œ
+	int			m_cellX;			// ì…€ ìœ„ì¹˜
 	int			m_cellZ;
-	CItem*		m_pCellPrev;		// ¼¿ ¸µÅ©µå ¸®½ºÆ®
+	CItem*		m_pCellPrev;		// ì…€ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸
 	CItem*		m_pCellNext;
 
-	int			m_groundPulse;		// ¾ÆÀÌÅÛÀÌ ¶³¾îÁø ½Ã°£ ÀúÀå
-	int			m_preferenceIndex;	// ¾ÆÀÌÅÛ Áİ´Â ¿ì¼±±ÇÀ» °¡Áø pcÀÇ ÀÎµ¦½º
+	int			m_groundPulse;		// ì•„ì´í…œì´ ë–¨ì–´ì§„ ì‹œê°„ ì €ì¥
+	int			m_preferenceIndex;	// ì•„ì´í…œ ì¤ëŠ” ìš°ì„ ê¶Œì„ ê°€ì§„ pcì˜ ì¸ë±ìŠ¤
 
 	int tab()
 	{
@@ -723,13 +723,13 @@ public:
 		return m_itemProto->IsMagicWeapon();
 	}
 
-// 050311 : bs : ¹«±â°¡ ¾î¶² ½ºÅÈÀ» »ç¿ëÇÏ´ÂÁö °Ë»ç
+// 050311 : bs : ë¬´ê¸°ê°€ ì–´ë–¤ ìŠ¤íƒ¯ì„ ì‚¬ìš©í•˜ëŠ”ì§€ ê²€ì‚¬
 	int GetUsingStat()
 	{
 		return m_itemProto->GetUsingStat();
 	}
 
-// --- 050311 : bs : ¹«±â°¡ ¾î¶² ½ºÅÈÀ» »ç¿ëÇÏ´ÂÁö °Ë»ç
+// --- 050311 : bs : ë¬´ê¸°ê°€ ì–´ë–¤ ìŠ¤íƒ¯ì„ ì‚¬ìš©í•˜ëŠ”ì§€ ê²€ì‚¬
 	bool IsWeaponType() const
 	{
 		return m_itemProto->IsWeaponType();
@@ -765,77 +765,77 @@ public:
 		return m_itemProto->IsUpgradeRune();
 	}
 
-	// ±³È¯ °¡´ÉÇÑ ¾ÆÀÌÅÛÀÎ°¡?
+	// êµí™˜ ê°€ëŠ¥í•œ ì•„ì´í…œì¸ê°€?
 	bool CanExchange()
 	{
 #ifdef ENABLE_SUBJOB
 		if( !(m_itemProto->getItemFlag()&ITEM_FLAG_SELLER) &&
-				!(m_itemProto->getItemFlag()&ITEM_FLAG_EXCHANGE) )		// Æ®·¹ÀÌ´õ Ã¼Å©µÇ¾îÀÖ´Â ±³È¯ ÇÃ·¡±× °Ë»ç ¹«½Ã
+				!(m_itemProto->getItemFlag()&ITEM_FLAG_EXCHANGE) )		// íŠ¸ë ˆì´ë” ì²´í¬ë˜ì–´ìˆëŠ” êµí™˜ í”Œë˜ê·¸ ê²€ì‚¬ ë¬´ì‹œ
 			return false;
 #else
-		// ÇÁ·ÎÅä °Ë»ç
+		// í”„ë¡œí†  ê²€ì‚¬
 		if (!(m_itemProto->getItemFlag() & ITEM_FLAG_EXCHANGE))
 			return false;
 #endif //ENABLE_SUBJOB
 
-		// Âø¿ë ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì°©ìš© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_wearPos != WEARING_NONE)
 			return false;
 
-		// ºÀÀÎ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ë´‰ì¸ ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (getFlag() & FLAG_ITEM_SEALED)
 			return false;
 
-		// °áÇÕ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê²°í•© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (getFlag() & FLAG_ITEM_COMPOSITION)
 			return false;
 
-		// ´ë¿© ¾ÆÀÌÅÛ ºÒ´É
+		// ëŒ€ì—¬ ì•„ì´í…œ ë¶ˆëŠ¥
 		if (IsLent())
 			return false;
 
 		if (IsUsedPlatinumSpecial())
 			return false;
 
-		// ±Í¼Ó ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê·€ì† ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (IsBelong())
 			return false;
 
 		return true;
 	}
 
-	// µå·Ó(À¯Àú°¡ ¹ö¸²) °¡´ÉÇÑ ¾ÆÀÌÅÛÀÎ°¡
+	// ë“œë¡­(ìœ ì €ê°€ ë²„ë¦¼) ê°€ëŠ¥í•œ ì•„ì´í…œì¸ê°€
 	bool CanDrop()
 	{
 #ifdef ENABLE_SUBJOB
 		if( !(m_itemProto->getItemFlag()&ITEM_FLAG_SELLER) &&
-				!(m_itemProto->getItemFlag()&ITEM_FLAG_DROP) )		// Æ®·¹ÀÌ´õ Ã¼Å©µÇ¾îÀÖ´Â µå¶ø ÇÃ·¡±× °Ë»ç ¹«½Ã
+				!(m_itemProto->getItemFlag()&ITEM_FLAG_DROP) )		// íŠ¸ë ˆì´ë” ì²´í¬ë˜ì–´ìˆëŠ” ë“œë í”Œë˜ê·¸ ê²€ì‚¬ ë¬´ì‹œ
 			return false;
 #else
 		if (!(m_itemProto->getItemFlag() & ITEM_FLAG_DROP))
 			return false;
 #endif //ENABLE_SUBJOB
 
-		// Âø¿ë ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì°©ìš© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_wearPos != WEARING_NONE)
 			return false;
 
-		// °áÇÕ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê²°í•© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_flag & FLAG_ITEM_COMPOSITION)
 			return false;
 
-		// ´ë¿© ¾ÆÀÌÅÛ ºÒ´É
+		// ëŒ€ì—¬ ì•„ì´í…œ ë¶ˆëŠ¥
 		if (IsLent())
 			return false;
 
 		if (IsUsedPlatinumSpecial())
 			return false;
 
-		// ±Í¼Ó ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê·€ì† ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (IsBelong())
 			return false;
 
-		// Äù½ºÆ® ¾ÆÀÌÅÛ ºÒ°¡´É
+		// í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_itemProto->getItemFlag() & ITEM_FLAG_QUEST)
 			return false;
 
@@ -845,27 +845,27 @@ public:
 		return true;
 	}
 
-	// »óÁ¡¿¡ ÆÇ¸Å °¡´É ¿©ºÎ
+	// ìƒì ì— íŒë§¤ ê°€ëŠ¥ ì—¬ë¶€
 	bool CanSellToShop()
 	{
 #ifdef ENABLE_SUBJOB
 		if( !(m_itemProto->getItemFlag()&ITEM_FLAG_SELLER) &&
-				!(m_itemProto->getItemFlag()&ITEM_FLAG_TRADE) )		// Æ®·¹ÀÌ´õ Ã¼Å©µÇ¾îÀÖ´Â »óÁ¡ÆÇ¸Å ÇÃ·¡±× °Ë»ç ¹«½Ã
+				!(m_itemProto->getItemFlag()&ITEM_FLAG_TRADE) )		// íŠ¸ë ˆì´ë” ì²´í¬ë˜ì–´ìˆëŠ” ìƒì íŒë§¤ í”Œë˜ê·¸ ê²€ì‚¬ ë¬´ì‹œ
 			return false;
 #else
 		if (!(m_itemProto->getItemFlag() & ITEM_FLAG_TRADE))
 			return false;
 #endif //ENABLE_SUBJOB
 
-		// Âø¿ë ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì°©ìš© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_wearPos != WEARING_NONE)
 			return false;
 
-		// °áÇÕ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê²°í•© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (getFlag() & FLAG_ITEM_COMPOSITION)
 			return false;
 
-		// ´ë¿© ¾ÆÀÌÅÛ ºÒ´É
+		// ëŒ€ì—¬ ì•„ì´í…œ ë¶ˆëŠ¥
 		if (IsLent())
 			return false;
 
@@ -875,27 +875,27 @@ public:
 		return true;
 	}
 
-	// Ã¢°í º¸°ü °¡´É ¿©ºÎ
+	// ì°½ê³  ë³´ê´€ ê°€ëŠ¥ ì—¬ë¶€
 	bool CanKeepStash()
 	{
 #ifdef ENABLE_SUBJOB
 		if( !(m_itemProto->getItemFlag()&ITEM_FLAG_SELLER) &&
-				m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH )		// Æ®·¹ÀÌ´õ Ã¼Å©µÇ¾îÀÖ´Â Ã¢°í ÇÃ·¡±× °Ë»ç ¹«½Ã
+				m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH )		// íŠ¸ë ˆì´ë” ì²´í¬ë˜ì–´ìˆëŠ” ì°½ê³  í”Œë˜ê·¸ ê²€ì‚¬ ë¬´ì‹œ
 			return false;
 #else
 		if (m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH)
 			return false;
 #endif //ENABLE_SUBJOB
 
-		// Âø¿ë ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì°©ìš© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_wearPos != WEARING_NONE)
 			return false;
 
-		// °áÇÕ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê²°í•© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (getFlag() & FLAG_ITEM_COMPOSITION)
 			return false;
 
-		// ½Ã°£Á¦ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì‹œê°„ì œ ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_itemProto->getItemFlag() & ITEM_FLAG_ABS)
 		{
 			return false;
@@ -905,7 +905,7 @@ public:
 			return false;
 
 
-		// ±Í¼Ó ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê·€ì† ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (IsBelong())
 			return false;
 
@@ -969,7 +969,7 @@ public:
 	}
 #endif //ENABLE_SUBJOB
 
-	// Á¦·Ã¼® ºÙÀÌ±â °¡´É ¿©ºÎ
+	// ì œë ¨ì„ ë¶™ì´ê¸° ê°€ëŠ¥ ì—¬ë¶€
 	bool CanUpgrade()
 	{
 		if ((m_itemProto->getItemFlag() & ITEM_FLAG_UPGRADE) == 0)
@@ -979,7 +979,7 @@ public:
 		return true;
 	}
 
-	// ºí·¯µåÁª »ç¿ë °¡´É ¿©ºÎ : ITEM_FLAG_UPGRADE && !ITEM_FLAG_COMPOSITE
+	// ë¸”ëŸ¬ë“œì ¬ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ : ITEM_FLAG_UPGRADE && !ITEM_FLAG_COMPOSITE
 	bool CanBloodGem()
 	{
 		if (!m_itemProto->CanBloodGem())
@@ -987,21 +987,21 @@ public:
 		return true;
 	}
 
-	// Âø¿ë °¡´É °Ë»ç
+	// ì°©ìš© ê°€ëŠ¥ ê²€ì‚¬
 	bool CanWear()
 	{
 		if (m_itemProto->getItemWearing() == -1)
 			return false;
 
-		// Âø¿ë ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ì°©ìš© ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if (m_wearPos != WEARING_NONE)
 			return false;
 
-		// °áÇÕµÈ ÀÏ¹İ ¾ÆÀÌÅÛ ºÒ°¡´É
+		// ê²°í•©ëœ ì¼ë°˜ ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 		if ((getFlag() & FLAG_ITEM_COMPOSITION) && !(m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE))
 			return false;
 
-		// ºÀÀÎµÈ ¾ÆÀÌÅÛ ÀÛ¿ë ºÒ°¡´É
+		// ë´‰ì¸ëœ ì•„ì´í…œ ì‘ìš© ë¶ˆê°€ëŠ¥
 		if( getFlag() & FLAG_ITEM_SEALED )
 			return false;
 
@@ -1083,7 +1083,7 @@ public:
 		}
 	}
 
-	// ÀÇ»ó°ú °áÇÕ °¡´ÉÇÑ ÀåºñÀÎ°¡?
+	// ì˜ìƒê³¼ ê²°í•© ê°€ëŠ¥í•œ ì¥ë¹„ì¸ê°€?
 	bool CanCompositeEquipItem()
 	{
 		if (!IsWeaponType() && !IsArmorType())
@@ -1145,7 +1145,7 @@ public:
 
 public:
 	/**
-	* FortuneÀ» ¹Ş¾Ò´ÂÁö ¾È¹Ş¾Ò´ÂÁö °Ë»ç
+	* Fortuneì„ ë°›ì•˜ëŠ”ì§€ ì•ˆë°›ì•˜ëŠ”ì§€ ê²€ì‚¬
 	*/
 	bool Aleady_got_fortune()
 	{
@@ -1155,7 +1155,7 @@ public:
 	}
 
 	/**
-	* ÇÑ¹úÀÇ»ó¸¸ fortuneÀ» ¹ŞÀ» ¼ö ÀÖ´Ù.
+	* í•œë²Œì˜ìƒë§Œ fortuneì„ ë°›ì„ ìˆ˜ ìˆë‹¤.
 	*/
 	bool Is_fortune_item() const
 	{
@@ -1201,8 +1201,8 @@ public:
 	bool	m_toggle;
 	bool	isToggle(){ return m_toggle ? true : false;}
 
-	// memcpy ¿¡¼­ Á¦¿ÜÇÏ°í º¹»çÇØ¾ß ÇÏ±â¿¡ Á¦ÀÏ ¾Æ·¡¿¡ À§Ä¡ ½ÃÅ²´Ù.
-	std::string m_serial;			// ½Ã¸®¾ó ¹øÈ£
+	// memcpy ì—ì„œ ì œì™¸í•˜ê³  ë³µì‚¬í•´ì•¼ í•˜ê¸°ì— ì œì¼ ì•„ë˜ì— ìœ„ì¹˜ ì‹œí‚¨ë‹¤.
+	std::string m_serial;			// ì‹œë¦¬ì–¼ ë²ˆí˜¸
 };
 
 class CItemList
@@ -1214,7 +1214,7 @@ private:
 	std::string a_rare_prob_str[MAX_RARE_OPTION_ITEM];
 	std::string a_origin_variation_str[MAX_VARIATION_COUNT];
 
-	// ¾ê³Ù ´ëÀÔµµ º¹»çµµ ÇÏ¸é ¾ÈµÊ. (°®´Ù ¾²Áö ¸øÇÏµµ·Ï ¼±¾ğ¸¸ ÇÏ°í, Á¤ÀÇ´Â ÇÏÁö ¾Ê¾ÒÀ½)
+	// ì–˜ë„¨ ëŒ€ì…ë„ ë³µì‚¬ë„ í•˜ë©´ ì•ˆë¨. (ê°–ë‹¤ ì“°ì§€ ëª»í•˜ë„ë¡ ì„ ì–¸ë§Œ í•˜ê³ , ì •ì˜ëŠ” í•˜ì§€ ì•Šì•˜ìŒ)
 	CItemList(const CItemList&);
 	CItemList& operator=(const CItemList&);
 
@@ -1226,15 +1226,15 @@ public:
 	CItemList();
 	virtual ~CItemList();
 
-	// ¾ÆÀÌÅÛ ¸®½ºÆ® ÀĞ±â
+	// ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ ì½ê¸°
 	bool Load();
 
 	LONGLONG calcItemCount(CItemProto* proto, LONGLONG count);
 
-	// ¾ÆÀÌÅÛ ÀÎµ¦½º·Î ¾ÆÀÌÅÛ ÇÁ·ÎÅäÅ¸ÀÔ ¾ò±â
+	// ì•„ì´í…œ ì¸ë±ìŠ¤ë¡œ ì•„ì´í…œ í”„ë¡œí† íƒ€ì… ì–»ê¸°
 	CItemProto* FindIndex(int idx);
 
-	// DB ÀÇ ÀÎº¥ µî ¾ÆÀÌÅÛÀ» º¹¿ø
+	// DB ì˜ ì¸ë²¤ ë“± ì•„ì´í…œì„ ë³µì›
 #ifdef DURABILITY
 	CItem* CreateDBItem(int idx, char wearPos, int plus, int flag, int used,
 						int used_2, const char* serial, LONGLONG count, short* option
@@ -1254,30 +1254,30 @@ public:
 								, char socketcount, int* jewel
 							   );
 
-	// »õ·Î¿î ¾ÆÀÌÅÛ »ı¼º
+	// ìƒˆë¡œìš´ ì•„ì´í…œ ìƒì„±
 	CItem* CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG count);
 
 //#ifdef DEV_GUILD_STASH
 	CItem* CreateDBItem_2( int idx, char wearPos, int plus, int flag, int used, int used_2, const char* serial, LONGLONG count, short* option , const char* socket, int* itemOrigin );
 //#endif //DEV_GUILD_STASH
 
-	int				m_nCount;		// °³¼ö
-	int				m_virtualIndex;	// °¡»ó
-	CItemProto*		m_protoItems;	// ±âº»¾ÆÀÌÅÛ
+	int				m_nCount;		// ê°œìˆ˜
+	int				m_virtualIndex;	// ê°€ìƒ
+	CItemProto*		m_protoItems;	// ê¸°ë³¸ì•„ì´í…œ
 
-	// Æ¯Á¤ ¾ÆÀÌÅÛ ÇÁ·ÎÅäÅ¸ÀÔµé
-	CItemProto*		m_normalRefineItem;		// ÀÏ¹İ Á¦·Ã¼®
-	CItemProto*		m_specialRefineItem;	// °í±Ş Á¦·Ã¼®
-	CItemProto*		m_sTicketItem1;			// ½Ì±Û´øÀü1 ÀÔÀå±Ç
-	CItemProto*		m_sTicketItem2;			// ½Ì±Û´øÀü2 ÀÔÀå±Ç
+	// íŠ¹ì • ì•„ì´í…œ í”„ë¡œí† íƒ€ì…ë“¤
+	CItemProto*		m_normalRefineItem;		// ì¼ë°˜ ì œë ¨ì„
+	CItemProto*		m_specialRefineItem;	// ê³ ê¸‰ ì œë ¨ì„
+	CItemProto*		m_sTicketItem1;			// ì‹±ê¸€ë˜ì „1 ì…ì¥ê¶Œ
+	CItemProto*		m_sTicketItem2;			// ì‹±ê¸€ë˜ì „2 ì…ì¥ê¶Œ
 
-	// ¹«±â ´ë¿©¿ë ¾ÆÀÌÅÛ ¸®½ºÆ®
+	// ë¬´ê¸° ëŒ€ì—¬ìš© ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 	std::set<int>	m_listLendItem;
 
-	// ¼ºÁÖ¿ë ¾ÆÀÌÅÛ
+	// ì„±ì£¼ìš© ì•„ì´í…œ
 	std::vector<CItemProto*>	m_flagload;
 
-	// ±³È¯¿ë ¾ÆÀÌÅÛ
+	// êµí™˜ìš© ì•„ì´í…œ
 	std::vector<CItemProto*>	m_flagchange;
 
 	std::vector<CItemProto*>	m_flagGuildWar;
@@ -1341,7 +1341,7 @@ public:
 		m_enable = false;
 	}
 
-	CCatalog(int index)		// ¹ÙÀÌ³Ê¸® ¼­Ä¡¿ë
+	CCatalog(int index)		// ë°”ì´ë„ˆë¦¬ ì„œì¹˜ìš©
 		: m_name(MAX_ITEM_NAME_LENGTH + 1)
 	{
 		m_index = index;
@@ -1452,14 +1452,14 @@ public:
 private:
 	CCtItemList* m_ctItemList;
 
-	int		m_index;		// Ä«Å»·Î±× ÀÎµ¦½º
+	int		m_index;		// ì¹´íƒˆë¡œê·¸ ì¸ë±ìŠ¤
 	CLCString m_name;
-	int		m_type;			// Å¸ÀÔ
+	int		m_type;			// íƒ€ì…
 	int		m_category;
 	int		m_subtype;
-	int		m_cash;			// °¡°İ
-	int		m_mileage;		// ¸¶ÀÏ¸®Áö
-	int		m_toSell;			// ÆÇ¸Å ³²Àº °¹¼ö
+	int		m_cash;			// ê°€ê²©
+	int		m_mileage;		// ë§ˆì¼ë¦¬ì§€
+	int		m_toSell;			// íŒë§¤ ë‚¨ì€ ê°¯ìˆ˜
 	int		m_flag;
 	bool	m_enable;
 };
@@ -1515,7 +1515,7 @@ public:
 		return &catalog[index] ? &catalog[index] : NULL;
 	}
 
-	// ´ëÇü Äü Ã¼·Â È¸º¹¹°¾à
+	// ëŒ€í˜• í€µ ì²´ë ¥ íšŒë³µë¬¼ì•½
 	int m_recoveryCtid;
 private:
 	CCatalog* catalog;

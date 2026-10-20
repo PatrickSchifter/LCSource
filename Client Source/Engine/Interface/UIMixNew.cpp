@@ -16,6 +16,7 @@ static int	_iMaxMsgStringChar = 0;
 // Desc : Constructor
 // ----------------------------------------------------------------------------
 CUIMixNew::CUIMixNew()
+	: m_bMasterstoneAutoProb(false)
 {
 	m_nStringCount		= 0;
 	m_bWaitMixResult	= TRUE;
@@ -154,6 +155,8 @@ void CUIMixNew::OpenMixNew ( BOOL bMix)
 	m_btnOK.SetEnable ( FALSE );
 
 	m_bIsMix = bMix;
+	m_bIsMixMasterStone = FALSE;
+
 	if(m_bIsMix) 
 	{
 		// Add string
@@ -228,6 +231,7 @@ void CUIMixNew::OpenMixNewMasterStone()
 	}
 
 	m_bIsMixMasterStone		= TRUE;
+	m_bIsMix = FALSE;
 
 	if( !pUIManager->GetInventory()->IsVisible() )
 		pUIManager->GetInventory()->ToggleVisible();
@@ -827,7 +831,7 @@ WMSG_RESULT CUIMixNew::MouseMessage( MSG *pMsg )
 						pUIManager->GetDragIcon()->GetWhichUI() == UI_MIXNEW)
 					{
 						// 결합 아이템
-						if(m_bIsMix)
+						if(m_bIsMix || m_bIsMixMasterStone)
 						{
 							bool bChkRgn = FALSE;
 							for( int iRow = 0; iRow < MIXNEW_ITEM_SLOT_COUNT; iRow++ )
@@ -1414,6 +1418,22 @@ void CUIMixNew::MixNewMasterStoneRep( int err_type, int success_type )
 	{
 	case 0:
 		{
+			if (m_bMasterstoneAutoProb == true)
+			{
+				m_nMasProb[success_type - 1]++;
+
+				if (m_nOldUpgradeLevel < m_pIconsSlot[1]->getItems()->GetItemPlus())
+				{
+					WriteMasterStone();
+					m_nMasProb[0] = 
+					m_nMasProb[1] = 
+					m_nMasProb[2] = 0;
+				}
+				
+				MasterStoneAutoTestProb();
+				return;
+			}
+
 			// success
 			CUIMsgBox_Info	MsgBoxInfo;
 			MsgBoxInfo.SetMsgBoxInfo( _S( 191, "확인" ), UMBS_OK, UI_NONE, MSGCMD_NULL );
@@ -1421,7 +1441,7 @@ void CUIMixNew::MixNewMasterStoneRep( int err_type, int success_type )
 			switch(success_type)
 			{
 			case MASTERSTONE_INCREASE:
-				MsgBoxInfo.AddString( _S( 5446, "업그레이드가 성공하였습니다." ) );
+				MsgBoxInfo.AddString( _S( 5446, "업그레이드가 성공하였습니다." ) );				
 				break;
 			case MASTERSTONE_NOT_CHANGE:
 				MsgBoxInfo.AddString( _S( 178, "업그레이드를 실패하였습니다. 아이템에 변화가 없습니다." ) );
@@ -1429,7 +1449,7 @@ void CUIMixNew::MixNewMasterStoneRep( int err_type, int success_type )
 			case MASTERSTONE_DECREASE:
 				MsgBoxInfo.AddString( _S( 177, "업그레이드를 실패하였습니다. -1 하강하였습니다." ) );
 				break;
-			}
+			}			
 
 			pUIManager->CreateMessageBox( MsgBoxInfo );
 
@@ -1558,4 +1578,96 @@ void CUIMixNew::UpdateExplication( int nPlus /*= -1*/ )
 	{
 		AddString( _S( 5436, "마스터 스톤을 사용해서 장비를 업그레이드를 하면 제한 수치 이상으로 최대 +30까지 업그레이드가 가능합니다." ) );
 	}
+}
+
+bool CUIMixNew::MasterStoneAutoTestProb()
+{
+	if (IsVisible() == FALSE || m_bIsMixMasterStone == FALSE)
+	{
+		UICHAT()->AddSysMessage("Masterstone is not use.");
+		return false;
+	}
+
+	if (m_bMasterstoneAutoProb == false)
+	{
+		m_bMasterstoneAutoProb = true;
+
+		m_nMasProb[0] =
+		m_nMasProb[1] =
+		m_nMasProb[2] = 0;
+		m_nOldUpgradeLevel = 0;
+	}
+
+	if (m_pIconsSlot[0]->IsEmpty() == true ||
+		m_pIconsSlot[1]->IsEmpty() == true ||
+		m_pIconsSlot[0]->getItems() == NULL ||
+		CheckMasterStone(m_pIconsSlot[1]->getItems(), m_pIconsSlot[0]->getItems()->Item_Index) == false)
+	{		
+		m_bMasterstoneAutoProb = false;
+
+		if (m_pIconsSlot[0]->getItems()->Item_Sum == 0)
+			m_pIconsSlot[0]->clearIconData();
+		else
+			m_pIconsSlot[0]->setCount(m_pIconsSlot[0]->getItems()->Item_Sum);
+
+		WriteEnd();
+		
+		return true;
+	}
+
+	if (m_nOldUpgradeLevel < m_pIconsSlot[1]->getItems()->GetItemPlus())
+		m_nOldUpgradeLevel = m_pIconsSlot[1]->getItems()->GetItemPlus();
+
+	SendMixNewMasterStroneReq();	
+
+	return true;
+}
+
+bool CUIMixNew::WriteMasterStone()
+{
+#ifndef		WORLD_EDITOR
+	CTString strFullPath = _fnmApplicationPath.FileDir();
+
+	strFullPath += "\\ProbMasterStone.txt";
+
+	FILE*	pfile;
+
+	pfile = fopen(strFullPath.str_String, "a+");
+
+	if (pfile == NULL)
+		return false;
+
+	std::string str = boost::str( boost::format("Upgrade(%d) : %d\t%d\t%d\t%d\n") % m_pIconsSlot[1]->getItems()->GetItemPlus()
+						% (m_nMasProb[0] + m_nMasProb[1] + m_nMasProb[2])
+						% m_nMasProb[0] % m_nMasProb[1] % m_nMasProb[2] );
+
+	fwrite(str.c_str(), str.size(), 1, pfile);
+
+	fclose(pfile);
+#endif		// WORLD_EDITOR	
+	return true;
+}
+
+void CUIMixNew::WriteEnd()
+{
+#ifndef		WORLD_EDITOR
+	CTString strFullPath = _fnmApplicationPath.FileDir();
+
+	strFullPath += "\\ProbMasterStone.txt";
+
+	FILE*	pfile;
+
+	pfile = fopen(strFullPath.str_String, "a+");
+
+	if (pfile == NULL)
+		return;
+
+	std::string str = boost::str( boost::format("-------------------------------------------------------------------\n\n") );
+	
+	fwrite(str.c_str(), str.size(), 1, pfile);
+
+	fclose(pfile);
+
+	UICHAT()->AddSysMessage("Write Masterstone Prob...");
+#endif		// WORLD_EDITOR
 }

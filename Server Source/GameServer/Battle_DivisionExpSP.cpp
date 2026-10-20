@@ -9,29 +9,31 @@
 
 LONGLONG GetTeachSPBonus(CPC *ch, LONGLONG sp);
 
-// °æÇèÄ¡ Áö±Ş ¹ŞÀ» ´ë»ó ¸®½ºÆ®¿ë
+// ê²½í—˜ì¹˜ ì§€ê¸‰ ë°›ì„ ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ìš©
 typedef struct __tagExpList
 {
-	CPC*					pc;		// Áö±Ş¹ŞÀ» ´ë»ó
-	struct __tagExpList*	next;	// ´ÙÀ½ ´ë»ó Æ÷ÀÎÅÍ
+	CPC*					pc;		// ì§€ê¸‰ë°›ì„ ëŒ€ìƒ
+	struct __tagExpList*	next;	// ë‹¤ìŒ ëŒ€ìƒ í¬ì¸í„°
 } EXP_LIST;
 
-// °æÇèÄ¡ ÆĞ³ÎÆ¼ Å×ÀÌºí [%] : 1·¹º§ ºÎÅÍ ÃÖ´ë 6·¹º§
+// ê²½í—˜ì¹˜ íŒ¨ë„í‹° í…Œì´ë¸” [%] : 1ë ˆë²¨ ë¶€í„° ìµœëŒ€ 6ë ˆë²¨
 static const int levelPenalty[6] = {95, 90, 75, 60, 45, 10};
 
-// ÆÄÆ¼ °æÇèÄ¡ ¹èºĞ
+// íŒŒí‹° ê²½í—˜ì¹˜ ë°°ë¶„
 void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage);
 
-// ¿øÁ¤´ë °æÇèÄ¡ ¹èºĞ
+// ì›ì •ëŒ€ ê²½í—˜ì¹˜ ë°°ë¶„
 void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage);
 
-// °æÇèÄ¡ ·¹º§ Æä³ÎÆ¼ ºñÀ² ±¸ÇÔ
+// ê²½í—˜ì¹˜ ë ˆë²¨ í˜ë„í‹° ë¹„ìœ¨ êµ¬í•¨
 int GetExpLevelPenalty(int nLevelDiff);
-// SP ·¹º§ ÆĞ³ÎÆ¼ ºñÀ² ±¸ÇÔ
+// SP ë ˆë²¨ íŒ¨ë„í‹° ë¹„ìœ¨ êµ¬í•¨
 int GetSPLevelPenalty(int nLevelDiff);
 
-// npc »ç¸Á½Ã °æÇèÄ¡ ¹èºĞ
-// ÆÛ½º³Î ´øÀü¿¡¼­ ·¹º§¾÷¿¡ ÀÇÇÑ Á¸ ÀÌµ¿ ¹ß»ı½Ã¿¡´Â true¸¦ ¸®ÅÏ
+int GetExpSPLevelPenaltyNew(int nLevelDiff);
+
+// npc ì‚¬ë§ì‹œ ê²½í—˜ì¹˜ ë°°ë¶„
+// í¼ìŠ¤ë„ ë˜ì „ì—ì„œ ë ˆë²¨ì—…ì— ì˜í•œ ì¡´ ì´ë™ ë°œìƒì‹œì—ëŠ” trueë¥¼ ë¦¬í„´
 bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 {
 #ifdef PREMIUM_CHAR
@@ -39,29 +41,29 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 	LONGLONG		nSPNPC;
 	if(pPreferencePC != NULL)
 	{
-		nExpNPC = npc->m_proto->getExpForPremiumChar(pPreferencePC->m_premiumChar.getPremiumType());			// Áö±ŞµÉ °æÇèÄ¡
-		nSPNPC = npc->m_proto->getSkillPointForPremiumChar(pPreferencePC->m_premiumChar.getPremiumType());	// Áö±ŞµÉ SP
+		nExpNPC = npc->m_proto->getExpForPremiumChar(pPreferencePC->m_premiumChar.getPremiumType());			// ì§€ê¸‰ë  ê²½í—˜ì¹˜
+		nSPNPC = npc->m_proto->getSkillPointForPremiumChar(pPreferencePC->m_premiumChar.getPremiumType());	// ì§€ê¸‰ë  SP
 	}
 	else
 	{
-		nExpNPC = npc->m_proto->getExp();			// Áö±ŞµÉ °æÇèÄ¡
-		nSPNPC = npc->m_proto->getSkillPoint();	// Áö±ŞµÉ SP
+		nExpNPC = npc->m_proto->getExp();			// ì§€ê¸‰ë  ê²½í—˜ì¹˜
+		nSPNPC = npc->m_proto->getSkillPoint();	// ì§€ê¸‰ë  SP
 	}
 #else
-	LONGLONG		nExpNPC = npc->m_proto->getExp();			// Áö±ŞµÉ °æÇèÄ¡
-	LONGLONG		nSPNPC = npc->m_proto->getSkillPoint();	// Áö±ŞµÉ SP
+	LONGLONG		nExpNPC = npc->m_proto->getExp();			// ì§€ê¸‰ë  ê²½í—˜ì¹˜
+	LONGLONG		nSPNPC = npc->m_proto->getSkillPoint();	// ì§€ê¸‰ë  SP
 #endif
 
-	EXP_LIST*		expList = NULL;							// °æÇèÄ¡ ¹ŞÀ» ´ë»ó ¸®½ºÆ®
-	EXP_LIST*		expNode = NULL;							// ´ë»ó ¸®½ºÆ® ³ëµå
-	CAttackChar*	pAttackChar = NULL;						// °ø°İÀÚ ¸®½ºÆ® ·çÇÁ¿ë
-	CAttackChar*	pAttackCharNext = npc->m_attackList;	// °ø°İÀÚ ¸®½ºÆ® ·çÇÁ¿ë
-	CPC*			pExpPC = NULL;							// Áö±Ş¹ŞÀ» ´ë»ó
+	EXP_LIST*		expList = NULL;							// ê²½í—˜ì¹˜ ë°›ì„ ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸
+	EXP_LIST*		expNode = NULL;							// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë…¸ë“œ
+	CAttackChar*	pAttackChar = NULL;						// ê³µê²©ì ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
+	CAttackChar*	pAttackCharNext = npc->m_attackList;	// ê³µê²©ì ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
+	CPC*			pExpPC = NULL;							// ì§€ê¸‰ë°›ì„ ëŒ€ìƒ
 
 	if (nTotalDamage < 1)
 		return false;
 
-	// °ø°İÀÚ ·çÇÁ¿¡¼­ °¢ PCÀÇ ´ë¹ÌÁö¸¦ ±¸ÇÔ
+	// ê³µê²©ì ë£¨í”„ì—ì„œ ê° PCì˜ ëŒ€ë¯¸ì§€ë¥¼ êµ¬í•¨
 	while ((pAttackChar = pAttackCharNext))
 	{
 		pAttackCharNext = pAttackCharNext->m_next;
@@ -69,15 +71,15 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 		if (!pAttackChar->ch)
 			continue ;
 
-		// ±ÙÃ³¿¡ ÀÖ¾î¾ß ´ë»ó¿¡ Æ÷ÇÔ
+		// ê·¼ì²˜ì— ìˆì–´ì•¼ ëŒ€ìƒì— í¬í•¨
 		if (!CheckInNearCellExt(npc, pAttackChar->ch))
 			continue ;
 
-		// ´ë¹ÌÁö°¡ ÀÖ¾î¾ß ÇÔ
+		// ëŒ€ë¯¸ì§€ê°€ ìˆì–´ì•¼ í•¨
 		if (pAttackChar->m_damage < 1)
 			continue ;
 
-		// ¹ŞÀ» ´ë»ó PC¸¦ ¼±Á¤
+		// ë°›ì„ ëŒ€ìƒ PCë¥¼ ì„ ì •
 		switch (pAttackChar->ch->m_type)
 		{
 		case MSG_CHAR_PC:
@@ -100,33 +102,33 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 			break;
 		}
 
-		// ¹ŞÀ» ´ë»óÀÌ ÀÖ¾î¾ß ÇÔ
+		// ë°›ì„ ëŒ€ìƒì´ ìˆì–´ì•¼ í•¨
 		if (pExpPC == NULL)
 			continue ;
 
-		// ´©Àû ´ë¹ÌÁö Àû¿ë : Æê/¼ÒÈ¯¼öµî¿¡ ÀÇÇÑ ´ë¹ÌÁöµµ PC¿¡ ´©Àû
+		// ëˆ„ì  ëŒ€ë¯¸ì§€ ì ìš© : í«/ì†Œí™˜ìˆ˜ë“±ì— ì˜í•œ ëŒ€ë¯¸ì§€ë„ PCì— ëˆ„ì 
 		if (pExpPC->m_nExpDamage + pAttackChar->m_damage > 1)
 			pExpPC->m_nExpDamage += pAttackChar->m_damage;
 
-		// ´ë»ó ¸®½ºÆ®¿¡ Ãß°¡
+		// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 		expNode = new EXP_LIST;
 		expNode->pc = pExpPC;
 		expNode->next = expList;
 		expList = expNode;
 	}
-	// -- °ø°İÀÚ ·çÇÁ¿¡¼­ ´ë»ó ¸®½ºÆ® ÀÛ¼º ³¡
+	// -- ê³µê²©ì ë£¨í”„ì—ì„œ ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ì‘ì„± ë
 
-	// ´ë»ó ¸®½ºÆ®¸¦ µ¹¸é¼­ ÇØ´ç ´ë»óÀÚÀÇ °æÇèÄ¡ Áö±Ş
+	// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë©´ì„œ í•´ë‹¹ ëŒ€ìƒìì˜ ê²½í—˜ì¹˜ ì§€ê¸‰
 	expNode = expList;
 	while (expNode)
 	{
-		// Áö±Ş ´ë»óÀÇ ´©Àû ´ë¹ÌÁö °Ë»ç
+		// ì§€ê¸‰ ëŒ€ìƒì˜ ëˆ„ì  ëŒ€ë¯¸ì§€ ê²€ì‚¬
 		if (expNode->pc->m_nExpDamage > 0)
 		{
-			// ÆÄÆ¼ ¿©ºÎ¿¡ µû¸¥ Ã³¸® ±¸ºĞ
+			// íŒŒí‹° ì—¬ë¶€ì— ë”°ë¥¸ ì²˜ë¦¬ êµ¬ë¶„
 			if (expNode->pc->IsParty())
 			{
-				// ÆÄÆ¼ÀÇ °æ¿ì µû·Î Ã³¸® : expNode ÀÌÈÄ ³ëµå¸¸ Ã³¸®
+				// íŒŒí‹°ì˜ ê²½ìš° ë”°ë¡œ ì²˜ë¦¬ : expNode ì´í›„ ë…¸ë“œë§Œ ì²˜ë¦¬
 				DivisionExpSPParty(expNode->pc->m_party, npc, pPreferencePC, nTotalDamage);
 			}
 			else if(expNode->pc->IsExped())
@@ -136,30 +138,30 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 
 			else
 			{
-				// ÆÄÆ¼°¡ ¾Æ´Ï¸é ´ë¹ÌÁö ºñÀ²¿¡ ¸Â°Ô Áö±Ş
+				// íŒŒí‹°ê°€ ì•„ë‹ˆë©´ ëŒ€ë¯¸ì§€ ë¹„ìœ¨ì— ë§ê²Œ ì§€ê¸‰
 
-				// ¸÷°úÀÇ ·¹º§ Â÷ÀÌ ±¸ÇÔ
+				// ëª¹ê³¼ì˜ ë ˆë²¨ ì°¨ì´ êµ¬í•¨
 				int nLevelDiff = expNode->pc->m_level - npc->m_level;
 
-				// °æÇèÄ¡/SP ÆĞ³ÎÆ¼ ±¸ÇÔ
+				// ê²½í—˜ì¹˜/SP íŒ¨ë„í‹° êµ¬í•¨
 				LONGLONG nExpPenalty = GetExpLevelPenalty(nLevelDiff);
 				LONGLONG nSPPenalty  = GetSPLevelPenalty(nLevelDiff);
 
-				// ¾òÀ» °æÇèÄ¡ ±¸ÇÔ : (NPC°ª * ÆĞ³ÎÆ¼ * ´ë¹ÌÁö) / (100 * ÀüÃ¼ ´ë¹ÌÁö)
+				// ì–»ì„ ê²½í—˜ì¹˜ êµ¬í•¨ : (NPCê°’ * íŒ¨ë„í‹° * ëŒ€ë¯¸ì§€) / (100 * ì „ì²´ ëŒ€ë¯¸ì§€)
 				LONGLONG nGiveExp	= (nExpNPC	* nExpPenalty	* expNode->pc->m_nExpDamage) / (100 * nTotalDamage);
 				LONGLONG nGiveSP	= (nSPNPC	* nSPPenalty	* expNode->pc->m_nExpDamage) / (100 * nTotalDamage);
 
-				// ·£´ı +- 10% Àû¿ë
+				// ëœë¤ +- 10% ì ìš©
 				nGiveExp = nGiveExp + (nGiveExp * GetRandom(-10, 10) / 100);
 				nGiveSP  = nGiveSP  + (nGiveSP  * GetRandom(-10, 10) / 100);
 
 				nGiveSP += GetTeachSPBonus(expNode->pc, nGiveSP );
 
-				// EP = ( NPC·¹º§  * ¸·Å¸(1) ) + ( NPC¼÷·Ã * µ¥¹ÌÁö / NPC HP ) / 2
+				// EP = ( NPCë ˆë²¨  * ë§‰íƒ€(1) ) + ( NPCìˆ™ë ¨ * ë°ë¯¸ì§€ / NPC HP ) / 2
 				char lastAttack = 0;
 				if( pPreferencePC==expNode->pc )
 					lastAttack = 1;
-				// µ¥¹ÌÁö º¸Á¤
+				// ë°ë¯¸ì§€ ë³´ì •
 				int	recalcDamage  = (int) expNode->pc->m_nExpDamage ;
 				if( recalcDamage > npc->m_maxHP )
 					recalcDamage = npc->m_maxHP;
@@ -196,7 +198,7 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 					{
 						GuildExp = nGiveExp * expNode->pc->m_guildInfo->GetcontributeExp() / 100;
 						expNode->pc->m_GuildExp += GuildExp;
-						nGiveExp = nGiveExp - GuildExp;  // ±æµå ±â¿©µµ¿¡ µû¸¥ °æÇèÄ¡ ¹İÈ¯
+						nGiveExp = nGiveExp - GuildExp;  // ê¸¸ë“œ ê¸°ì—¬ë„ì— ë”°ë¥¸ ê²½í—˜ì¹˜ ë°˜í™˜
 						int GP = 0;
 						if( expNode->pc->m_GuildExp >= 10000 )
 						{
@@ -220,39 +222,39 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 					}
 				}
 
-				// º¸Á¤
+				// ë³´ì •
 				if (nGiveExp < 1)	nGiveExp = 1;
 				if (nGiveSP  < 1)	nGiveSP  = 1;
 
-				// SP´Â MAX_SKILLPOINT¸¦ ³ÑÀ» ¼ö ¾ø´Ù
+				// SPëŠ” MAX_SKILLPOINTë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤
 				if (nGiveSP > MAX_SKILLPOINT) nGiveSP = MAX_SKILLPOINT;
 
-				// 9¿ù ÀÌº¥Æ® : ´ë»óÀÚ°¡ ¿ì¼±±ÇÀÚÀÌ¸é
+				// 9ì›” ì´ë²¤íŠ¸ : ëŒ€ìƒìê°€ ìš°ì„ ê¶Œìì´ë©´
 				bool bArtifact = false;
 				if (expNode->pc == pPreferencePC)
 				{
-					// °æÇèÄ¡ 4¹è
+					// ê²½í—˜ì¹˜ 4ë°°
 					if (expNode->pc->m_assist.m_avAddition.hcSepExp)
 					{
-						expNode->pc->m_assist.CureByItemIndex(882);	// °æÇèÄ¡
+						expNode->pc->m_assist.CureByItemIndex(882);	// ê²½í—˜ì¹˜
 						nGiveExp = nGiveExp * 4;
 						CNetMsg::SP rmsg(new CNetMsg);
 						EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
 						SEND_Q(rmsg, expNode->pc->m_desc);
 
-						//À¯¹° ¾ÆÀÌÅÛ Àû¿ëÇÏÁö ¾Êµµ·Ï Ã³¸®
+						//ìœ ë¬¼ ì•„ì´í…œ ì ìš©í•˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬
 						bArtifact = true;
 					}
-					// À¯·á °æÇèÄ¡ 4¹è
+					// ìœ ë£Œ ê²½í—˜ì¹˜ 4ë°°
 					else if (expNode->pc->m_assist.m_avAddition.hcSepExp_Cash)
 					{
-						expNode->pc->m_assist.CureByItemIndex(6094);	// °æÇèÄ¡
+						expNode->pc->m_assist.CureByItemIndex(6094);	// ê²½í—˜ì¹˜
 						nGiveExp = nGiveExp * 4;
 						CNetMsg::SP rmsg(new CNetMsg);
 						EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
 						SEND_Q(rmsg, expNode->pc->m_desc);
 
-						//À¯¹° ¾ÆÀÌÅÛ Àû¿ëÇÏÁö ¾Êµµ·Ï Ã³¸®
+						//ìœ ë¬¼ ì•„ì´í…œ ì ìš©í•˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬
 						bArtifact = true;
 					}
 					else if( expNode->pc->m_assist.m_avAddition.hcRandomExpUp > 0  && GetRandom(0,100) <= expNode->pc->m_assist.m_avAddition.hcRandomExpUp )
@@ -266,19 +268,19 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 						bArtifact = true;
 					}
 
-					// 9¿ù ÀÌº¥Æ® : SP 4¹è
+					// 9ì›” ì´ë²¤íŠ¸ : SP 4ë°°
 					if (expNode->pc->m_assist.m_avAddition.hcSepSP)
 					{
-						expNode->pc->m_assist.CureByItemIndex(883);	// ¼÷·Ãµµ
+						expNode->pc->m_assist.CureByItemIndex(883);	// ìˆ™ë ¨ë„
 						nGiveSP = nGiveSP * 4;
 						CNetMsg::SP rmsg(new CNetMsg);
 						EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
 						SEND_Q(rmsg, expNode->pc->m_desc);
 					}
-					// À¯·á SP 4¹è
+					// ìœ ë£Œ SP 4ë°°
 					else if (expNode->pc->m_assist.m_avAddition.hcSepSP_Cash)
 					{
-						expNode->pc->m_assist.CureByItemIndex(6095);	// ¼÷·Ãµµ
+						expNode->pc->m_assist.CureByItemIndex(6095);	// ìˆ™ë ¨ë„
 						nGiveSP = nGiveSP * 4;
 						CNetMsg::SP rmsg(new CNetMsg);
 						EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
@@ -303,12 +305,12 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 #endif //NEW_ACCERY_ADD
 
 				CAPet* apet = expNode->pc->GetAPet();
-				if( apet )
+				if( apet && apet->m_bSummon == true)
 				{
 					LONGLONG petexp = (npc->m_level) / 5 * ( npc->m_proto->CheckFlag(NPC_MBOSS|NPC_BOSS)? 4:1 );
 					apet->AddExpSP( petexp , 0 );
 
-					//À¯·á ¾ÆÀÌÅÛÀ» »ç¿ë ÁßÀÌ°í, ´ë¸®À°¼º ÆêÀÌ µî·ÏµÇ¾î ÀÖÀ» °æ¿ì
+					//ìœ ë£Œ ì•„ì´í…œì„ ì‚¬ìš© ì¤‘ì´ê³ , ëŒ€ë¦¬ìœ¡ì„± í«ì´ ë“±ë¡ë˜ì–´ ìˆì„ ê²½ìš°
 					if( expNode->pc->m_petStashManager.getProxyPetItemvIndex() > -1 )
 					{
 						int petVIndex = expNode->pc->m_petStashManager.getProxyPetItemvIndex();
@@ -346,10 +348,10 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 					}
 				}
 
-				// °æÇèÄ¡ Áö±Ş : ·¹º§¾÷¿¡ ÀÇÇÑ Á¸ÀÌµ¿½Ã¿¡ true°¡ ¹İÈ¯µÈ´Ù
+				// ê²½í—˜ì¹˜ ì§€ê¸‰ : ë ˆë²¨ì—…ì— ì˜í•œ ì¡´ì´ë™ì‹œì— trueê°€ ë°˜í™˜ëœë‹¤
 				if (expNode->pc->AddExpSP(nGiveExp, (int)nGiveSP, true, false, false, bArtifact))
 				{
-					// ´ë»ó ¸®½ºÆ® ¸Ş¸ğ¸® ÇØÁ¦
+					// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë©”ëª¨ë¦¬ í•´ì œ
 					while (expList)
 					{
 						expNode = expList;
@@ -360,15 +362,15 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 					return true;
 				}
 
-				// Áö±Ş ¹ŞÀº PC ÃÊ±âÈ­
+				// ì§€ê¸‰ ë°›ì€ PC ì´ˆê¸°í™”
 				expNode->pc->m_nExpDamage = 0;
-			} // --- ÆÄÆ¼ ¾Æ´Ñ °æ¿ì Ã³¸® ³¡
-		} // --- Áö±Ş ´ë»ó Ã³¸® ³¡
+			} // --- íŒŒí‹° ì•„ë‹Œ ê²½ìš° ì²˜ë¦¬ ë
+		} // --- ì§€ê¸‰ ëŒ€ìƒ ì²˜ë¦¬ ë
 
 		expNode = expNode->next;
 	}
 
-	// ´ë»ó ¸®½ºÆ® ¸Ş¸ğ¸® ÇØÁ¦
+	// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë©”ëª¨ë¦¬ í•´ì œ
 	while (expList)
 	{
 		expNode = expList;
@@ -380,32 +382,29 @@ bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 	return false;
 }
 
-// ÆÄÆ¼¿ø µé¿¡°Ô °æÇèÄ¡ SP ºĞ¹è	(ÆÄÆ¼, NPC, ¿ì¼±±Ç, ÀüÃ¼ µ¥¹ÌÁö)
+// íŒŒí‹°ì› ë“¤ì—ê²Œ ê²½í—˜ì¹˜ SP ë¶„ë°°	(íŒŒí‹°, NPC, ìš°ì„ ê¶Œ, ì „ì²´ ë°ë¯¸ì§€)
 void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 {
-	// ÆÄÆ¼ º¸³Ê½º Å×ÀÌºí [%] : 1ÀÎºÎÅÍ ½ÃÀÛ
-#if defined (LC_USA) || defined(LC_BILA)
-	static const int countBonus[MAX_PARTY_MEMBER] = { 0, 30, 40, 50, 60, 70, 75, 80};
-#else
-	static const int countBonus[MAX_PARTY_MEMBER] = { 15, 30, 40, 50, 60, 70, 70, 70};
-#endif // #if defined (LC_USA) || defined (LC_BILA)
+	// íŒŒí‹° ë³´ë„ˆìŠ¤ í…Œì´ë¸” [%] : 1ì¸ë¶€í„° ì‹œì‘
+	static const int countBonus[MAX_PARTY_MEMBER] = { 20, 35, 50, 65, 80, 95, 105, 115 };
 
-	EXP_LIST*			expParty = NULL;		// ÆÄÆ¼¿øÁß °æÇèÄ¡ ¹ŞÀ» ¸®½ºÆ®
-	EXP_LIST*			expPartyNode = NULL;	// ÆÄÆ¼¿ø ³ëµå
-	EXP_LIST*			expNode = NULL;			// ´ë»ó ¸®½ºÆ® ·çÇÁ¿ë
-	EXP_LIST*			expNodeNext = NULL;		// ´ë»ó ¸®½ºÆ® ·çÇÁ¿ë
+	EXP_LIST*			expParty = NULL;		// íŒŒí‹°ì›ì¤‘ ê²½í—˜ì¹˜ ë°›ì„ ë¦¬ìŠ¤íŠ¸
+	EXP_LIST*			expPartyNode = NULL;	// íŒŒí‹°ì› ë…¸ë“œ
+	EXP_LIST*			expNode = NULL;			// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
+	EXP_LIST*			expNodeNext = NULL;		// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
 
-	LONGLONG			nPartyDamage = 0;		// ÆÄÆ¼ ÃÑ ´ë¹ÌÁö
-	int					nParty = 0;				// ´ë»ó ÆÄÆ¼¿ø ¼ö
-	int					nPartyLevelTotal = 0;	// ÆÄÆ¼¿ø ·¹º§ ÇÕ
-	int					nPartyLevelMax = 0;		// ÆÄÆ¼¿ø ÃÖ´ë ·¹º§
-	int					nPartyLevel = 0;		// ÆÄÆ¼ Æò±Õ ·¹º§
-	LONGLONG			nExpParty = 0;			// ÆÄÆ¼ °æÇèÄ¡
-	LONGLONG			nSPParty = 0;			// ÆÄÆ¼ SP
-	LONGLONG			nExpPenalty;			// °æÇèÄ¡ ÆĞ³ÎÆ¼
-	LONGLONG			nSPPenalty;				// SP ÆĞ³ÎÆ¼
-	int					i;						// ÆÄÆ¼ ·çÇÁ¿ë
-	int					nHavePetCount=0;			// ÆÄÆ¼¿øÀÌ °¡Áö°í ÀÖ´Â °ø°İÇü Æê ¼ö
+	LONGLONG			nPartyDamage = 0;		// íŒŒí‹° ì´ ëŒ€ë¯¸ì§€
+	int					nParty = 0;				// ëŒ€ìƒ íŒŒí‹°ì› ìˆ˜
+	int					nPartyLevelTotal = 0;	// íŒŒí‹°ì› ë ˆë²¨ í•©
+	int					nPartyLevelMax = 0;		// íŒŒí‹°ì› ìµœëŒ€ ë ˆë²¨
+	int					nPartyLevel = 0;		// íŒŒí‹° í‰ê·  ë ˆë²¨
+	int					nPartyLevelNew = 0;		// íŒŒí‹° í‰ê·  ë ˆë²¨ new
+	LONGLONG			nExpParty = 0;			// íŒŒí‹° ê²½í—˜ì¹˜
+	LONGLONG			nSPParty = 0;			// íŒŒí‹° SP
+	LONGLONG			nExpPenalty;			// ê²½í—˜ì¹˜ íŒ¨ë„í‹°
+	LONGLONG			nSPPenalty;				// SP íŒ¨ë„í‹°
+	int					i;						// íŒŒí‹° ë£¨í”„ìš©
+	int					nHavePetCount=0;			// íŒŒí‹°ì›ì´ ê°€ì§€ê³  ìˆëŠ” ê³µê²©í˜• í« ìˆ˜
 
 	if (nTotalDamage < 1)
 		return ;
@@ -416,9 +415,9 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 	if (npc == NULL)
 		return ;
 
-	// ÆÄÆ¼ ÃÑ ´ë¹ÌÁö ±¸ÇÏ±â
-	// ÆÄÆ¼¿ø ¼ö ±¸ÇÏ±â
-	// ÆÄÆ¼¿ø Áß ÇØ´çÀÚ ¸®½ºÆ® ¸¸µé±â
+	// íŒŒí‹° ì´ ëŒ€ë¯¸ì§€ êµ¬í•˜ê¸°
+	// íŒŒí‹°ì› ìˆ˜ êµ¬í•˜ê¸°
+	// íŒŒí‹°ì› ì¤‘ í•´ë‹¹ì ë¦¬ìŠ¤íŠ¸ ë§Œë“¤ê¸°
 	for (i = 0; i < MAX_PARTY_MEMBER; i++)
 	{
 		CPC* pMember = party->GetNearMember(npc, i);
@@ -426,35 +425,35 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			continue;
 		if ( DEAD(pMember) )
 			continue;
-		// ÀüÃ¼ ´ë¹ÌÁö¿¡ Ãß°¡
+		// ì „ì²´ ëŒ€ë¯¸ì§€ì— ì¶”ê°€
 		nPartyDamage += pMember->m_nExpDamage;
-		// ´ë»ó ¸®½ºÆ®¿¡ Ãß°¡
+		// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 		expPartyNode = new EXP_LIST;
 		expPartyNode->pc = pMember;
 		expPartyNode->next = expParty;
 		expParty = expPartyNode;
 		nParty++;
-		// ÆÄÆ¼¿ø ·¹º§ÇÕ
+		// íŒŒí‹°ì› ë ˆë²¨í•©
 		nPartyLevelTotal += pMember->m_level;
-		// ÆÄÆ¼¿ø ÃÖ´ë ·¹º§
+		// íŒŒí‹°ì› ìµœëŒ€ ë ˆë²¨
 		if (nPartyLevelMax < pMember->m_level)
 			nPartyLevelMax = pMember->m_level;
 
-		// ÇöÀç Âø¿ëÇÑ ÆêÀÌ ÀÖÀ¸¸é Ä«¿îÆ® Áõ°¡
+		// í˜„ì¬ ì°©ìš©í•œ í«ì´ ìˆìœ¼ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
 		if( pMember->GetAPet() )
 			nHavePetCount++;
 	}
 
-	// ÆÄÆ¼ °æÇèÄ¡ ºĞ¹è Á¶°Ç
-	// ÆÄÆ¼ ´ë¹ÌÁö Á¸Àç
-	// ´ë»ó ÆÄÆ¼¿øÀÌ 1ÀÎ ÀÌ»ó
-	// ÆÄÆ¼ ·¹º§ÇÕÀÌ 1 ÀÌ»ó
+	// íŒŒí‹° ê²½í—˜ì¹˜ ë¶„ë°° ì¡°ê±´
+	// íŒŒí‹° ëŒ€ë¯¸ì§€ ì¡´ì¬
+	// ëŒ€ìƒ íŒŒí‹°ì›ì´ 1ì¸ ì´ìƒ
+	// íŒŒí‹° ë ˆë²¨í•©ì´ 1 ì´ìƒ
 	if (nPartyDamage > 0 && nParty > 0 && nPartyLevelTotal > 0)
 	{
 		int basic_party_plus_exp;
 		int basic_party_plus_sp;
 
-		// bw : 060817 : ÆÄÆ¼ ½Ã½ºÅÛ ¹ö±× ºÎºĞ, ÀÎ¿ø¼ö º¸³Ê½ºµµ ÇÑ¸íÀÏ¶§ 0ÀÌµµ·Ï ¼öÁ¤¿äÇÔ
+		// bw : 060817 : íŒŒí‹° ì‹œìŠ¤í…œ ë²„ê·¸ ë¶€ë¶„, ì¸ì›ìˆ˜ ë³´ë„ˆìŠ¤ë„ í•œëª…ì¼ë•Œ 0ì´ë„ë¡ ìˆ˜ì •ìš”í•¨
 		/*
 		if( nParty == 1 )
 		{
@@ -468,21 +467,29 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			basic_party_plus_sp = PARTY_PLUS_SP;
 		}
 
-		// ÆÄÆ¼ Æò±Õ ·¹º§
+		// íŒŒí‹° í‰ê·  ë ˆë²¨
 		nPartyLevel = (nPartyLevelMax - (nPartyLevelTotal / nParty) > 5) ? (nPartyLevelMax - 5) : (nPartyLevelTotal / nParty);
 
-		// ·¹º§Â÷ÀÌ ±¸ÇÏ±â
+		nPartyLevelNew = nPartyLevelTotal / nParty;
+
+		// ë ˆë²¨ì°¨ì´ êµ¬í•˜ê¸°
 		int nLevelDiff = nPartyLevel - npc->m_level;
 
-		// ÆÄÆ¼ ·¹º§ ÆĞ³ÎÆ¼ ±¸ÇÏ±â
+		// íŒŒí‹° ë ˆë²¨ íŒ¨ë„í‹° êµ¬í•˜ê¸°
 		nExpPenalty = GetExpLevelPenalty(nLevelDiff);
 		nSPPenalty  = GetSPLevelPenalty(nLevelDiff);
 
-		// ÆÄÆ¼	º¸³Ê½º ±¸ÇÏ±â
-		LONGLONG nExpBonus	= 100 + basic_party_plus_exp + countBonus[nParty - 1];
-		LONGLONG nSPBonus	= 100 + basic_party_plus_sp + 5 * (nParty - 1);
+		// íŒŒí‹°	ë³´ë„ˆìŠ¤ êµ¬í•˜ê¸°
+		LONGLONG nExpBonus = 100;
+		LONGLONG nSPBonus = 100;
 
-		// ÆÄÆ¼°¡ ¹ŞÀ» °æÇèÄ¡/SP ±¸ÇÏ±â
+		if(nParty > 1)
+		{
+			nExpBonus = 100 + basic_party_plus_exp + countBonus[nParty - 1];
+			nSPBonus = 100 + basic_party_plus_sp + 6 * (nParty - 1);
+		}
+
+		// íŒŒí‹°ê°€ ë°›ì„ ê²½í—˜ì¹˜/SP êµ¬í•˜ê¸°
 #ifdef PREMIUM_CHAR
 		LONGLONG nExpNPC;
 		if(pPreferencePC != NULL)
@@ -502,6 +509,8 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 		if (nExpNPC >= 0 && nExpParty <= 0)
 			nExpParty	= nExpNPC * nExpBonus / 100 * nExpPenalty / 100 * nPartyDamage / nTotalDamage;
 
+		nExpParty = nExpParty * GetExpSPLevelPenaltyNew(nLevelDiff) / 100;
+
 #ifdef PREMIUM_CHAR
 		int tSkillPoint;
 		if(pPreferencePC != NULL)
@@ -519,21 +528,15 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 		if (tSkillPoint > 0 && nSPParty <= 0)
 			nSPParty	= tSkillPoint  * nSPBonus  / 100 * nSPPenalty  / 100 * nPartyDamage / nTotalDamage;
 
-		// ·£´ı Àû¿ë
-#if defined (LC_USA) || defined(LC_BILA)
-		if (nParty >= 2 )
-		{
-			nExpParty = nExpParty + (nExpParty * GetRandom(-10, 10) / 100);
-			nSPParty  = nSPParty  + (nSPParty *  GetRandom(-10, 10) / 100);
-		}
-#else
+		nSPParty = nSPParty * GetExpSPLevelPenaltyNew(nLevelDiff) / 100;
+
+		// ëœë¤ ì ìš©
 		nExpParty = nExpParty + (nExpParty * GetRandom(-10, 10) / 100);
 		nSPParty  = nSPParty  + (nSPParty *  GetRandom(-10, 10) / 100);
-#endif // #if defined (LC_USA) || defined (LC_BILA)
 	}
 	else
 	{
-		// ´ë»óÀÚ ¸®½ºÆ® ÃÊ±âÈ­
+		// ëŒ€ìƒì ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 		while (expParty)
 		{
 			expPartyNode = expParty;
@@ -544,10 +547,10 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 		return;
 	}
 
-	// ÆÄÆ¼¿ø¿¡°Ô °æÇèÄ¡/SP Áö±Ş
-	LONGLONG nGiveExp = 0;		// Áö±ŞµÉ °æÇèÄ¡
-	LONGLONG nGiveSP  = 0;		// Áö±ŞµÉ SP
-	LONGLONG nExpPartyForGive = 0;			// Áö±Ş¿¡ »ç¿ëÇÒ ÆÄÆ¼ °æÇèÄ¡ : nExpParty or nExpParty_CA
+	// íŒŒí‹°ì›ì—ê²Œ ê²½í—˜ì¹˜/SP ì§€ê¸‰
+	LONGLONG nGiveExp = 0;		// ì§€ê¸‰ë  ê²½í—˜ì¹˜
+	LONGLONG nGiveSP  = 0;		// ì§€ê¸‰ë  SP
+	LONGLONG nExpPartyForGive = 0;			// ì§€ê¸‰ì— ì‚¬ìš©í•  íŒŒí‹° ê²½í—˜ì¹˜ : nExpParty or nExpParty_CA
 	expNodeNext = expParty;
 	while ((expNode = expNodeNext))
 	{
@@ -555,16 +558,16 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 
 		nExpPartyForGive = nExpParty;
 
-		// ÆÄÆ¼ Å¸ÀÔ¿¡ µû¶ó °æÇèÄ¡
+		// íŒŒí‹° íƒ€ì…ì— ë”°ë¼ ê²½í—˜ì¹˜
 		switch (party->GetPartyType(MSG_DIVITYPE_EXP))
 		{
-		case MSG_PARTY_TYPE_RANDOM:			// ±Õµî
-		case MSG_PARTY_TYPE_FIRSTGET:		// ÀÔ¼ö ¿ì¼±
-			//   ( (ÆÄÆ¼°æÇèÄ¡ 75%) * (´ë»óÀÚ ·¹º§) / (ÆÄÆ¼ÃÑ·¹º§) )
-			// + ( (ÆÄÆ¼°æÇèÄ¡ 25%) / (ÆÄÆ¼¿ø¼ö) )
+		case MSG_PARTY_TYPE_RANDOM:			// ê· ë“±
+		case MSG_PARTY_TYPE_FIRSTGET:		// ì…ìˆ˜ ìš°ì„ 
+			//   ( (íŒŒí‹°ê²½í—˜ì¹˜ 75%) * (ëŒ€ìƒì ë ˆë²¨) / (íŒŒí‹°ì´ë ˆë²¨) )
+			// + ( (íŒŒí‹°ê²½í—˜ì¹˜ 25%) / (íŒŒí‹°ì›ìˆ˜) )
 			nGiveExp = (nExpPartyForGive * 75 * expNode->pc->m_level / nPartyLevelTotal)
 					   + (nExpPartyForGive * 25 / nParty);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%
 			nGiveExp /= 100;
 			if (nExpPartyForGive > 0 && nGiveExp <= 0)
 			{
@@ -574,12 +577,12 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			break;
 
 		default:
-		case MSG_PARTY_TYPE_BATTLE:			// ÀüÅõÇü
-			//   ( (ÆÄÆ¼ °æÇèÄ¡ 70%) * (´ë»óÀÚ ´ë¹ÌÁö) / (ÆÄÆ¼ ´ë¹ÌÁö) )
-			// + ( (ÆÄÆ¼ °æÇèÄ¡ 30%) * (´ë»óÀÚ ·¹º§) / (ÆÄÆ¼ ÀüÃ¼·¹º§) )
+		case MSG_PARTY_TYPE_BATTLE:			// ì „íˆ¬í˜•
+			//   ( (íŒŒí‹° ê²½í—˜ì¹˜ 70%) * (ëŒ€ìƒì ëŒ€ë¯¸ì§€) / (íŒŒí‹° ëŒ€ë¯¸ì§€) )
+			// + ( (íŒŒí‹° ê²½í—˜ì¹˜ 30%) * (ëŒ€ìƒì ë ˆë²¨) / (íŒŒí‹° ì „ì²´ë ˆë²¨) )
 			nGiveExp = (nExpPartyForGive * 70 * expNode->pc->m_nExpDamage / nPartyDamage)
 					   + (nExpPartyForGive * 30 * expNode->pc->m_level / nPartyLevelTotal);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%
 			nGiveExp /= 100;
 			if (nExpPartyForGive > 0 && nGiveExp <= 0)
 			{
@@ -589,27 +592,27 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			break;
 		}
 
-		// ÆÄÆ¼ Å¸ÀÔ¿¡ µû¶ó SP
+		// íŒŒí‹° íƒ€ì…ì— ë”°ë¼ SP
 		switch (party->GetPartyType(MSG_DIVITYPE_SP))
 		{
-		case MSG_PARTY_TYPE_RANDOM:			// ±Õµî
-		case MSG_PARTY_TYPE_BATTLE:			// ÀüÅõÇü
-			// (ÆÄÆ¼ SP) / (ÆÄÆ¼¿ø¼ö)
+		case MSG_PARTY_TYPE_RANDOM:			// ê· ë“±
+		case MSG_PARTY_TYPE_BATTLE:			// ì „íˆ¬í˜•
+			// (íŒŒí‹° SP) / (íŒŒí‹°ì›ìˆ˜)
 			nGiveSP = nSPParty / nParty;
 			break;
 
 		default:
-		case MSG_PARTY_TYPE_FIRSTGET:		// ÀÔ¼ö¿ì¼±
-			// Ä³¸¯ÅÍ ·¹º§ ÆĞ³ÎÆ¼
+		case MSG_PARTY_TYPE_FIRSTGET:		// ì…ìˆ˜ìš°ì„ 
+			// ìºë¦­í„° ë ˆë²¨ íŒ¨ë„í‹°
 			nSPPenalty = GetSPLevelPenalty(expNode->pc->m_level - npc->m_level);
 
-			//   ( (ÆÄÆ¼SP 20%) / (ÆÄÆ¼¿ø¼ö) )
-			// + ( (ÆÄÆ¼SP 60%) * (´ë»óÀÚ´ë¹ÌÁö) / (ÆÄÆ¼´ë¹ÌÁö) )
-			// + ( (ÆÄÆ¼SP 20%) * (´ë»óÀÚ·¹º§) / (ÆÄÆ¼ÃÑ·¹º§) )
+			//   ( (íŒŒí‹°SP 20%) / (íŒŒí‹°ì›ìˆ˜) )
+			// + ( (íŒŒí‹°SP 60%) * (ëŒ€ìƒìëŒ€ë¯¸ì§€) / (íŒŒí‹°ëŒ€ë¯¸ì§€) )
+			// + ( (íŒŒí‹°SP 20%) * (ëŒ€ìƒìë ˆë²¨) / (íŒŒí‹°ì´ë ˆë²¨) )
 			nGiveSP = (nSPParty * 20 * nSPPenalty / nParty)
 					  + (nSPParty * 60 * nSPPenalty * expNode->pc->m_nExpDamage / nPartyDamage)
 					  + (nSPParty * 20 * nSPPenalty * expNode->pc->m_level / nPartyLevelTotal);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%, ÆĞ³ÎÆ¼
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%, íŒ¨ë„í‹°
 			nGiveSP /= 10000;
 			if (nSPParty > 0 && nGiveSP <= 0)
 			{
@@ -622,29 +625,29 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 
 		nGiveSP += GetTeachSPBonus(expNode->pc, nGiveSP );
 
-		// ÆÄÆ¼ ·¹º§ Á¦ÇÑ ÆĞ³ÎÆ¼ : ÃÖ°í·¹º§º¸´Ù 15·¾ ´õ ÀÛÀ¸¸é 5%¸¸ ¾òÀ½
+		// íŒŒí‹° ë ˆë²¨ ì œí•œ íŒ¨ë„í‹° : ìµœê³ ë ˆë²¨ë³´ë‹¤ 15ë ™ ë” ì‘ìœ¼ë©´ 5%ë§Œ ì–»ìŒ
 		if (nPartyLevelMax - 15 > expNode->pc->m_level)
 		{
 			nGiveExp /= 20;
 			nGiveSP  /= 20;
 		}
 
-		// º¸Á¤
+		// ë³´ì •
 		if (nGiveExp < 1)	nGiveExp = 1;
 		if (nGiveSP  < 1)	nGiveSP  = 1;
 
-		// SP´Â MAX_SKILLPOINT¸¦ ³ÑÀ» ¼ö ¾ø´Ù
+		// SPëŠ” MAX_SKILLPOINTë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤
 		if (nGiveSP > MAX_SKILLPOINT) nGiveSP = MAX_SKILLPOINT;
 
-		// 9¿ù ÀÌº¥Æ® : ´ë»óÀÚ°¡ ¿ì¼±±ÇÀÚÀÌ¸é
+		// 9ì›” ì´ë²¤íŠ¸ : ëŒ€ìƒìê°€ ìš°ì„ ê¶Œìì´ë©´
 		bool bArtifact = false;
 
 		if (expNode->pc == pPreferencePC)
 		{
-			// °æÇèÄ¡ 4¹è
+			// ê²½í—˜ì¹˜ 4ë°°
 			if (expNode->pc->m_assist.m_avAddition.hcSepExp)
 			{
-				expNode->pc->m_assist.CureByItemIndex(882);	// °æÇèÄ¡
+				expNode->pc->m_assist.CureByItemIndex(882);	// ê²½í—˜ì¹˜
 				nGiveExp = nGiveExp * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
@@ -652,9 +655,9 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 
 				bArtifact = true;
 			}
-			else if (expNode->pc->m_assist.m_avAddition.hcSepExp_Cash)	// °æÇèÄ¡ 4¹è
+			else if (expNode->pc->m_assist.m_avAddition.hcSepExp_Cash)	// ê²½í—˜ì¹˜ 4ë°°
 			{
-				expNode->pc->m_assist.CureByItemIndex(6094);	// °æÇèÄ¡
+				expNode->pc->m_assist.CureByItemIndex(6094);	// ê²½í—˜ì¹˜
 				nGiveExp = nGiveExp * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
@@ -673,19 +676,19 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 				bArtifact = true;
 			}
 
-			// 9¿ù ÀÌº¥Æ® : SP 4¹è
+			// 9ì›” ì´ë²¤íŠ¸ : SP 4ë°°
 			if (expNode->pc->m_assist.m_avAddition.hcSepSP)
 			{
-				expNode->pc->m_assist.CureByItemIndex(883);	// ¼÷·Ãµµ
+				expNode->pc->m_assist.CureByItemIndex(883);	// ìˆ™ë ¨ë„
 				nGiveSP = nGiveSP * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
 				SEND_Q(rmsg, expNode->pc->m_desc);
 			}
-			// À¯·á SP 4¹è
+			// ìœ ë£Œ SP 4ë°°
 			else if (expNode->pc->m_assist.m_avAddition.hcSepSP_Cash)
 			{
-				expNode->pc->m_assist.CureByItemIndex(6095);	// ¼÷·Ãµµ
+				expNode->pc->m_assist.CureByItemIndex(6095);	// ìˆ™ë ¨ë„
 				nGiveSP = nGiveSP * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
@@ -743,8 +746,8 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			}
 		}
 
-		// EP = ( NPC·¹º§  * ÆÄÆ¼¿ø¼ö ) + ( NPC¼÷·Ã * µ¥¹ÌÁö / NPC HP ) / 2
-		// µ¥¹ÌÁö º¸Á¤
+		// EP = ( NPCë ˆë²¨  * íŒŒí‹°ì›ìˆ˜ ) + ( NPCìˆ™ë ¨ * ë°ë¯¸ì§€ / NPC HP ) / 2
+		// ë°ë¯¸ì§€ ë³´ì •
 
 		int	recalcDamage  = (int) expNode->pc->m_nExpDamage ;
 		if( recalcDamage > npc->m_maxHP )
@@ -771,7 +774,7 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 		}
 		expNode->pc->CalcStatus(true);
 
-		//±æµåÆÄÆ¼ ÆĞ½Ãºê Àû¿ë
+		//ê¸¸ë“œíŒŒí‹° íŒ¨ì‹œë¸Œ ì ìš©
 		int member_count = party->getGuildMemberCountInParty(expNode->pc);
 		if(member_count >= 2)
 		{
@@ -794,8 +797,15 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			}
 		}
 
+
+		//ìƒˆë¡œìš´ í˜ë„í‹° ê³µì‹ ì ìš©
+		if(expNode->pc->m_level <nPartyLevelNew)
+		{
+			nGiveExp = nGiveExp * GetExpSPLevelPenaltyNew(nPartyLevelNew - expNode->pc->m_level) / 100;
+			nGiveSP = nGiveSP * GetExpSPLevelPenaltyNew(nPartyLevelNew - expNode->pc->m_level) / 100;
+		}
 		
-		// °æÇèÄ¡ Áö±Ş
+		// ê²½í—˜ì¹˜ ì§€ê¸‰
 		expNode->pc->AddExpSP(nGiveExp, (int)nGiveSP, true, false, false, bArtifact);
 		if(expNode->pc->m_party != NULL)
 			expNode->pc->m_party->calcGuildSkillExp(expNode->pc, nGiveExp);
@@ -845,11 +855,11 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			}
 		}
 
-		// Áö±Ş ¹ŞÀº PC ÃÊ±âÈ­
+		// ì§€ê¸‰ ë°›ì€ PC ì´ˆê¸°í™”
 		expNode->pc->m_nExpDamage = 0;
-	} // -- ÆÄÆ¼¿ø ºĞ¹è ·çÆ¾ ³¡
+	} // -- íŒŒí‹°ì› ë¶„ë°° ë£¨í‹´ ë
 
-	// ´ë»óÀÚ ¸®½ºÆ® ÃÊ±âÈ­
+	// ëŒ€ìƒì ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	while (expParty)
 	{
 		expPartyNode = expParty;
@@ -865,7 +875,7 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 			expPartyNode->pc->AddExpSP_Direct(guild_skill_exp, 0);
 
 			{
-				// Exp, SP ¸Ş½ÃÁö Àü¼Û
+				// Exp, SP ë©”ì‹œì§€ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExpSPMsg(rmsg, guild_skill_exp, 0);
 				SEND_Q(rmsg, expParty->pc->m_desc);
@@ -880,33 +890,29 @@ void DivisionExpSPParty(CParty* party, CNPC* npc, CPC* pPreferencePC, LONGLONG n
 	party->m_guild_skill_exp.clear();
 }
 
-// ¿øÁ¤´ë¿ø µé¿¡°Ô °æÇèÄ¡ SP ºĞ¹è	(ÆÄÆ¼, NPC, ¿ì¼±±Ç, ÀüÃ¼ µ¥¹ÌÁö)
+// ì›ì •ëŒ€ì› ë“¤ì—ê²Œ ê²½í—˜ì¹˜ SP ë¶„ë°°	(íŒŒí‹°, NPC, ìš°ì„ ê¶Œ, ì „ì²´ ë°ë¯¸ì§€)
 void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage)
 {
-	// ÆÄÆ¼ º¸³Ê½º Å×ÀÌºí [%] : 1ÀÎºÎÅÍ ½ÃÀÛ
-#if defined (LC_USA) || defined(LC_BILA)
-	static const int countBonus[MAX_PARTY_MEMBER] = { 0, 30, 40, 50, 60, 70, 75, 80};
-#else
-	static const int countBonus[MAX_PARTY_MEMBER] = { 15, 30, 40, 50, 60, 70, 70, 70};
-#endif
+	// íŒŒí‹° ë³´ë„ˆìŠ¤ í…Œì´ë¸” [%] : 1ì¸ë¶€í„° ì‹œì‘
+	static const int countBonus[MAX_PARTY_MEMBER] = { 20, 35, 50, 65, 80, 95, 105, 115 };
 
-	EXP_LIST*			expExped = NULL;		// ¿øÁ¤´ëÁß °æÇèÄ¡ ¹ŞÀ» ¸®½ºÆ®
-	EXP_LIST*			expExpedNode = NULL;	// ¿øÁ¤´ë¿ø ³ëµå
-	EXP_LIST*			expNode = NULL;			// ´ë»ó ¸®½ºÆ® ·çÇÁ¿ë
-	EXP_LIST*			expNodeNext = NULL;		// ´ë»ó ¸®½ºÆ® ·çÇÁ¿ë
+	EXP_LIST*			expExped = NULL;		// ì›ì •ëŒ€ì¤‘ ê²½í—˜ì¹˜ ë°›ì„ ë¦¬ìŠ¤íŠ¸
+	EXP_LIST*			expExpedNode = NULL;	// ì›ì •ëŒ€ì› ë…¸ë“œ
+	EXP_LIST*			expNode = NULL;			// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
+	EXP_LIST*			expNodeNext = NULL;		// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ ë£¨í”„ìš©
 
-	LONGLONG			nExpedDamage = 0;		// ¿øÁ¤´ë ÃÑ ´ë¹ÌÁö
-	int					nExped = 0;				// ´ë»ó ¿øÁ¤´ë¿ø ¼ö
-	int					nExpedLevelTotal = 0;	// ¿øÁ¤´ë¿ø ·¹º§ ÇÕ
-	int					nExpedLevelMax = 0;		// ¿øÁ¤´ë¿ø ÃÖ´ë ·¹º§
-	int					nExpedLevel = 0;		// ¿øÁ¤´ë Æò±Õ ·¹º§
-	LONGLONG			nExpExped = 0;			// ¿øÁ¤´ë °æÇèÄ¡
-	LONGLONG			nSPExped = 0;			// ¿øÁ¤´ë SP
-	LONGLONG			nExpPenalty;			// °æÇèÄ¡ ÆĞ³ÎÆ¼
-	LONGLONG			nSPPenalty;				// SP ÆĞ³ÎÆ¼
-	int					i;						// ¿øÁ¤´ë ·çÇÁ¿ë
-	int					j;						// ¿øÁ¤´ë ·çÇÁ¿ë
-	int					nHavePetCount=0;			// ¿øÁ¤´ë¿øÀÌ °¡Áö°í ÀÖ´Â °ø°İÇü Æê ¼ö
+	LONGLONG			nExpedDamage = 0;		// ì›ì •ëŒ€ ì´ ëŒ€ë¯¸ì§€
+	int					nExped = 0;				// ëŒ€ìƒ ì›ì •ëŒ€ì› ìˆ˜
+	int					nExpedLevelTotal = 0;	// ì›ì •ëŒ€ì› ë ˆë²¨ í•©
+	int					nExpedLevelMax = 0;		// ì›ì •ëŒ€ì› ìµœëŒ€ ë ˆë²¨
+	int					nExpedLevel = 0;		// ì›ì •ëŒ€ í‰ê·  ë ˆë²¨
+	LONGLONG			nExpExped = 0;			// ì›ì •ëŒ€ ê²½í—˜ì¹˜
+	LONGLONG			nSPExped = 0;			// ì›ì •ëŒ€ SP
+	LONGLONG			nExpPenalty;			// ê²½í—˜ì¹˜ íŒ¨ë„í‹°
+	LONGLONG			nSPPenalty;				// SP íŒ¨ë„í‹°
+	int					i;						// ì›ì •ëŒ€ ë£¨í”„ìš©
+	int					j;						// ì›ì •ëŒ€ ë£¨í”„ìš©
+	int					nHavePetCount=0;			// ì›ì •ëŒ€ì›ì´ ê°€ì§€ê³  ìˆëŠ” ê³µê²©í˜• í« ìˆ˜
 
 	if (nTotalDamage < 1)
 		return ;
@@ -917,9 +923,9 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 	if (npc == NULL)
 		return ;
 
-	// ¿øÁ¤´ë ÃÑ ´ë¹ÌÁö ±¸ÇÏ±â
-	// ¿øÁ¤´ë¿ø ¼ö ±¸ÇÏ±â
-	// ¿øÁ¤´ë¿ø Áß ÇØ´çÀÚ ¸®½ºÆ® ¸¸µé±â
+	// ì›ì •ëŒ€ ì´ ëŒ€ë¯¸ì§€ êµ¬í•˜ê¸°
+	// ì›ì •ëŒ€ì› ìˆ˜ êµ¬í•˜ê¸°
+	// ì›ì •ëŒ€ì› ì¤‘ í•´ë‹¹ì ë¦¬ìŠ¤íŠ¸ ë§Œë“¤ê¸°
 	for (i = 0; i < MAX_EXPED_GROUP; i++)
 	{
 		for (j = 0; j < MAX_EXPED_GMEMBER; j++)
@@ -929,36 +935,36 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 				continue;
 			if ( DEAD(pMember) )
 				continue;
-			// ÀüÃ¼ ´ë¹ÌÁö¿¡ Ãß°¡
+			// ì „ì²´ ëŒ€ë¯¸ì§€ì— ì¶”ê°€
 			nExpedDamage += pMember->m_nExpDamage;
-			// ´ë»ó ¸®½ºÆ®¿¡ Ãß°¡
+			// ëŒ€ìƒ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 			expExpedNode = new EXP_LIST;
 			expExpedNode->pc = pMember;
 			expExpedNode->next = expExped;
 			expExped = expExpedNode;
 			nExped++;
-			// ¿øÁ¤´ë¿ø ·¹º§ÇÕ
+			// ì›ì •ëŒ€ì› ë ˆë²¨í•©
 			nExpedLevelTotal += pMember->m_level;
-			// ¿øÁ¤´ë¿ø ÃÖ´ë ·¹º§
+			// ì›ì •ëŒ€ì› ìµœëŒ€ ë ˆë²¨
 			if (nExpedLevelMax < pMember->m_level)
 				nExpedLevelMax = pMember->m_level;
 
-			// ÇöÀç Âø¿ëÇÑ ÆêÀÌ ÀÖÀ¸¸é Ä«¿îÆ® Áõ°¡
+			// í˜„ì¬ ì°©ìš©í•œ í«ì´ ìˆìœ¼ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
 			if( pMember->GetAPet() )
 				nHavePetCount++;
 		}
 	}
 
-	// ¿øÁ¤´ë °æÇèÄ¡ ºĞ¹è Á¶°Ç
-	// ¿øÁ¤´ë ´ë¹ÌÁö Á¸Àç
-	// ¿øÁ¤´ë ÆÄÆ¼¿øÀÌ 1ÀÎ ÀÌ»ó
-	// ¿øÁ¤´ë ·¹º§ÇÕÀÌ 1 ÀÌ»ó
+	// ì›ì •ëŒ€ ê²½í—˜ì¹˜ ë¶„ë°° ì¡°ê±´
+	// ì›ì •ëŒ€ ëŒ€ë¯¸ì§€ ì¡´ì¬
+	// ì›ì •ëŒ€ íŒŒí‹°ì›ì´ 1ì¸ ì´ìƒ
+	// ì›ì •ëŒ€ ë ˆë²¨í•©ì´ 1 ì´ìƒ
 	if (nExpedDamage > 0 && nExped > 0 && nExpedLevelTotal > 0)
 	{
 		int basic_Exped_plus_exp;
 		int basic_Exped_plus_sp;
 
-		// bw : 060817 : ¿øÁ¤´ë ½Ã½ºÅÛ ¹ö±× ºÎºĞ, ÀÎ¿ø¼ö º¸³Ê½ºµµ ÇÑ¸íÀÏ¶§ 0ÀÌµµ·Ï ¼öÁ¤¿äÇÔ
+		// bw : 060817 : ì›ì •ëŒ€ ì‹œìŠ¤í…œ ë²„ê·¸ ë¶€ë¶„, ì¸ì›ìˆ˜ ë³´ë„ˆìŠ¤ë„ í•œëª…ì¼ë•Œ 0ì´ë„ë¡ ìˆ˜ì •ìš”í•¨
 		/*
 		if( nParty == 1 )
 		{
@@ -972,18 +978,18 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 			basic_Exped_plus_sp = PARTY_PLUS_SP;
 		}
 
-		// ¿øÁ¤´ë Æò±Õ ·¹º§
+		// ì›ì •ëŒ€ í‰ê·  ë ˆë²¨
 		nExpedLevel = (nExpedLevelMax - (nExpedLevelTotal / nExped) > 5) ? (nExpedLevelMax - 5) : (nExpedLevelTotal / nExped);
 
-		// ·¹º§Â÷ÀÌ ±¸ÇÏ±â
+		// ë ˆë²¨ì°¨ì´ êµ¬í•˜ê¸°
 		int nLevelDiff = nExpedLevel - npc->m_level;
 
-		// ¿øÁ¤´ë ·¹º§ ÆĞ³ÎÆ¼ ±¸ÇÏ±â
+		// ì›ì •ëŒ€ ë ˆë²¨ íŒ¨ë„í‹° êµ¬í•˜ê¸°
 		nExpPenalty = GetExpLevelPenalty(nLevelDiff);
 		nSPPenalty  = GetSPLevelPenalty(nLevelDiff);
 
-		// ¿øÁ¤´ë º¸³Ê½º ±¸ÇÏ±â
-		// 8¸í ±îÁö´Â ÆÄÆ¼¿Í º¸³Ê½º °°°í ±× ÀÌ»óÀÌ¸é 8¸í°ú µ¿ÀÏ
+		// ì›ì •ëŒ€ ë³´ë„ˆìŠ¤ êµ¬í•˜ê¸°
+		// 8ëª… ê¹Œì§€ëŠ” íŒŒí‹°ì™€ ë³´ë„ˆìŠ¤ ê°™ê³  ê·¸ ì´ìƒì´ë©´ 8ëª…ê³¼ ë™ì¼
 		int tempExpBonus = 0;
 		if(nExped > 8)
 			tempExpBonus = countBonus[7];
@@ -996,11 +1002,11 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		if(nExped > 8)
 			tempSPBonus = 35;
 		else
-			tempSPBonus = 5 * (nExped - 1);
+			tempSPBonus = 6 * (nExped - 1);
 
 		LONGLONG nSPBonus	= 100 + basic_Exped_plus_sp + tempSPBonus;
 
-		// ¿øÁ¤´ë°¡ ¹ŞÀ» °æÇèÄ¡/SP ±¸ÇÏ±â
+		// ì›ì •ëŒ€ê°€ ë°›ì„ ê²½í—˜ì¹˜/SP êµ¬í•˜ê¸°
 #ifdef PREMIUM_CHAR
 		LONGLONG nExpNPC;
 		if(pPreferencePC != NULL)
@@ -1020,9 +1026,9 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		if (nExpNPC >= 0 && nExpExped <= 0)
 			nExpExped	= nExpNPC * nSPBonus * nExpPenalty / 100 * nExpedDamage / nTotalDamage;
 
-// [2010-10-18 derek] ¾ÆÄ­ »ç¿ø¿¡¼­ ¸ó½ºÅÍ °æÇèÄ¡°¡ 1¸¸ µé¾î¿Í¼­ È®ÀÎ °á°ú
-// ¹Ø¿¡ µğÆÄÀÎÀÌ ¾ó·Á ÀÖ¾î¼­ »ı±ä ¹®Á¦. ¿Ö °É¾úÀ»±î? ³»°¡ÇÑ°Í±îÁö´Â ±â¾ïÀÌ³ª´Âµ¥ ¿Ö Çß´ÂÁö ±â¾ï ¾Ê³².
-// ·ÎÄÃ ¿äÃ»ÀÌ¿´À»±î?
+// [2010-10-18 derek] ì•„ì¹¸ ì‚¬ì›ì—ì„œ ëª¬ìŠ¤í„° ê²½í—˜ì¹˜ê°€ 1ë§Œ ë“¤ì–´ì™€ì„œ í™•ì¸ ê²°ê³¼
+// ë°‘ì— ë””íŒŒì¸ì´ ì–¼ë ¤ ìˆì–´ì„œ ìƒê¸´ ë¬¸ì œ. ì™œ ê±¸ì—ˆì„ê¹Œ? ë‚´ê°€í•œê²ƒê¹Œì§€ëŠ” ê¸°ì–µì´ë‚˜ëŠ”ë° ì™œ í–ˆëŠ”ì§€ ê¸°ì–µ ì•Šë‚¨.
+// ë¡œì»¬ ìš”ì²­ì´ì˜€ì„ê¹Œ?
 #ifdef PREMIUM_CHAR
 		int tSkillPoint;
 		if(pPreferencePC != NULL)
@@ -1040,7 +1046,7 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		if (tSkillPoint > 0 && nSPExped <= 0)
 			nSPExped	= tSkillPoint * nSPBonus  * nSPPenalty  / 100 * nExpedDamage / nTotalDamage;
 
-		// ·£´ı Àû¿ë
+		// ëœë¤ ì ìš©
 #if defined (LC_USA) || defined(LC_BILA)
 		if (nExped >= 2 )
 		{
@@ -1054,7 +1060,7 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 	}
 	else
 	{
-		// ´ë»óÀÚ ¸®½ºÆ® ÃÊ±âÈ­
+		// ëŒ€ìƒì ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 		while (expExped)
 		{
 			expExpedNode = expExped;
@@ -1065,26 +1071,26 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		return;
 	}
 
-	// ¿øÁ¤´ë¿¡°Ô °æÇèÄ¡/SP Áö±Ş
-	LONGLONG nGiveExp = 0;		// Áö±ŞµÉ °æÇèÄ¡
-	LONGLONG nGiveSP  = 0;		// Áö±ŞµÉ SP
-	LONGLONG nExpExpedForGive = 0;			// Áö±Ş¿¡ »ç¿ëÇÒ ÆÄÆ¼ °æÇèÄ¡ : nExpParty or nExpParty_CA
+	// ì›ì •ëŒ€ì—ê²Œ ê²½í—˜ì¹˜/SP ì§€ê¸‰
+	LONGLONG nGiveExp = 0;		// ì§€ê¸‰ë  ê²½í—˜ì¹˜
+	LONGLONG nGiveSP  = 0;		// ì§€ê¸‰ë  SP
+	LONGLONG nExpExpedForGive = 0;			// ì§€ê¸‰ì— ì‚¬ìš©í•  íŒŒí‹° ê²½í—˜ì¹˜ : nExpParty or nExpParty_CA
 	expNodeNext = expExped;
 	while ((expNode = expNodeNext))
 	{
 		expNodeNext = expNodeNext->next;
 		nExpExpedForGive = nExpExped;
 
-		// ¿øÁ¤´ë Å¸ÀÔ¿¡ µû¶ó °æÇèÄ¡
+		// ì›ì •ëŒ€ íƒ€ì…ì— ë”°ë¼ ê²½í—˜ì¹˜
 		switch (Exped->GetExpedType(MSG_DIVITYPE_EXP))
 		{
-		case MSG_EXPED_TYPE_RANDOM:			// ±Õµî
-		case MSG_EXPED_TYPE_FIRSTGET:		// ÀÔ¼ö ¿ì¼±
-			//   ( (¿øÁ¤´ë°æÇèÄ¡ 75%) * (´ë»óÀÚ ·¹º§) / (ÆÄÆ¼ÃÑ·¹º§) )
-			// + ( (¿øÁ¤´ë°æÇèÄ¡ 25%) / (¿øÁ¤´ë¿ø¼ö) )
+		case MSG_EXPED_TYPE_RANDOM:			// ê· ë“±
+		case MSG_EXPED_TYPE_FIRSTGET:		// ì…ìˆ˜ ìš°ì„ 
+			//   ( (ì›ì •ëŒ€ê²½í—˜ì¹˜ 75%) * (ëŒ€ìƒì ë ˆë²¨) / (íŒŒí‹°ì´ë ˆë²¨) )
+			// + ( (ì›ì •ëŒ€ê²½í—˜ì¹˜ 25%) / (ì›ì •ëŒ€ì›ìˆ˜) )
 			nGiveExp = (nExpExpedForGive * 75 * expNode->pc->m_level / nExpedLevelTotal)
 					   + (nExpExpedForGive * 25 / nExped);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%
 			nGiveExp /= 100;
 			if (nExpExpedForGive > 0 && nGiveExp <= 0)
 			{
@@ -1094,12 +1100,12 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 			break;
 
 		default:
-		case MSG_EXPED_TYPE_BATTLE:			// ÀüÅõÇü
-			//   ( (¿øÁ¤´ë °æÇèÄ¡ 70%) * (´ë»óÀÚ ´ë¹ÌÁö) / (¿øÁ¤´ë ´ë¹ÌÁö) )
-			// + ( (¿øÁ¤´ë °æÇèÄ¡ 30%) * (´ë»óÀÚ ·¹º§) / (¿øÁ¤´ë ÀüÃ¼·¹º§) )
+		case MSG_EXPED_TYPE_BATTLE:			// ì „íˆ¬í˜•
+			//   ( (ì›ì •ëŒ€ ê²½í—˜ì¹˜ 70%) * (ëŒ€ìƒì ëŒ€ë¯¸ì§€) / (ì›ì •ëŒ€ ëŒ€ë¯¸ì§€) )
+			// + ( (ì›ì •ëŒ€ ê²½í—˜ì¹˜ 30%) * (ëŒ€ìƒì ë ˆë²¨) / (ì›ì •ëŒ€ ì „ì²´ë ˆë²¨) )
 			nGiveExp = (nExpExpedForGive * 70 * expNode->pc->m_nExpDamage / nExpedDamage)
 					   + (nExpExpedForGive * 30 * expNode->pc->m_level / nExpedLevelTotal);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%
 			nGiveExp /= 100;
 			if (nExpExpedForGive > 0 && nGiveExp <= 0)
 			{
@@ -1109,27 +1115,27 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 			break;
 		}
 
-		// ¿øÁ¤´ë Å¸ÀÔ¿¡ µû¶ó SP
+		// ì›ì •ëŒ€ íƒ€ì…ì— ë”°ë¼ SP
 		switch (Exped->GetExpedType(MSG_DIVITYPE_SP))
 		{
-		case MSG_EXPED_TYPE_RANDOM:			// ±Õµî
-		case MSG_EXPED_TYPE_BATTLE:			// ÀüÅõÇü
-			// (¿øÁ¤´ë SP) / (¿øÁ¤´ë¿ø¼ö)
+		case MSG_EXPED_TYPE_RANDOM:			// ê· ë“±
+		case MSG_EXPED_TYPE_BATTLE:			// ì „íˆ¬í˜•
+			// (ì›ì •ëŒ€ SP) / (ì›ì •ëŒ€ì›ìˆ˜)
 			nGiveSP = nSPExped / nExped;
 			break;
 
 		default:
-		case MSG_EXPED_TYPE_FIRSTGET:		// ÀÔ¼ö¿ì¼±
-			// Ä³¸¯ÅÍ ·¹º§ ÆĞ³ÎÆ¼
+		case MSG_EXPED_TYPE_FIRSTGET:		// ì…ìˆ˜ìš°ì„ 
+			// ìºë¦­í„° ë ˆë²¨ íŒ¨ë„í‹°
 			nSPPenalty = GetSPLevelPenalty(expNode->pc->m_level - npc->m_level);
 
-			//   ( (¿øÁ¤´ëSP 20%) / (¿øÁ¤´ë¿ø¼ö) )
-			// + ( (¿øÁ¤´ëSP 60%) * (´ë»óÀÚ´ë¹ÌÁö) / (¿øÁ¤´ë´ë¹ÌÁö) )
-			// + ( (¿øÁ¤´ëSP 20%) * (´ë»óÀÚ·¹º§) / (¿øÁ¤´ëÃÑ·¹º§) )
+			//   ( (ì›ì •ëŒ€SP 20%) / (ì›ì •ëŒ€ì›ìˆ˜) )
+			// + ( (ì›ì •ëŒ€SP 60%) * (ëŒ€ìƒìëŒ€ë¯¸ì§€) / (ì›ì •ëŒ€ëŒ€ë¯¸ì§€) )
+			// + ( (ì›ì •ëŒ€SP 20%) * (ëŒ€ìƒìë ˆë²¨) / (ì›ì •ëŒ€ì´ë ˆë²¨) )
 			nGiveSP = (nSPExped * 20 * nSPPenalty / nExped)
 					  + (nSPExped * 60 * nSPPenalty * expNode->pc->m_nExpDamage / nExpedDamage)
 					  + (nSPExped * 20 * nSPPenalty * expNode->pc->m_level / nExpedLevelTotal);
-			// ºñÀ² ´ÜÀ§ Á¶Á¤ : ºĞ¹è%, ÆĞ³ÎÆ¼
+			// ë¹„ìœ¨ ë‹¨ìœ„ ì¡°ì • : ë¶„ë°°%, íŒ¨ë„í‹°
 			nGiveSP /= 10000;
 			if (nSPExped > 0 && nGiveSP <= 0)
 			{
@@ -1141,28 +1147,28 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		}
 		nGiveSP += GetTeachSPBonus(expNode->pc, nGiveSP );
 
-		// ¿øÁ¤´ë ·¹º§ Á¦ÇÑ ÆĞ³ÎÆ¼ : ÃÖ°í·¹º§º¸´Ù 15·¾ ´õ ÀÛÀ¸¸é 5%¸¸ ¾òÀ½
+		// ì›ì •ëŒ€ ë ˆë²¨ ì œí•œ íŒ¨ë„í‹° : ìµœê³ ë ˆë²¨ë³´ë‹¤ 15ë ™ ë” ì‘ìœ¼ë©´ 5%ë§Œ ì–»ìŒ
 		if (nExpedLevelMax - 15 > expNode->pc->m_level)
 		{
 			nGiveExp /= 20;
 			nGiveSP  /= 20;
 		}
 
-		// º¸Á¤
+		// ë³´ì •
 		if (nGiveExp < 1)	nGiveExp = 1;
 		if (nGiveSP  < 1)	nGiveSP  = 1;
 
-		// SP´Â MAX_SKILLPOINT¸¦ ³ÑÀ» ¼ö ¾ø´Ù
+		// SPëŠ” MAX_SKILLPOINTë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤
 		if (nGiveSP > MAX_SKILLPOINT) nGiveSP = MAX_SKILLPOINT;
 
-		// 9¿ù ÀÌº¥Æ® : ´ë»óÀÚ°¡ ¿ì¼±±ÇÀÚÀÌ¸é
+		// 9ì›” ì´ë²¤íŠ¸ : ëŒ€ìƒìê°€ ìš°ì„ ê¶Œìì´ë©´
 		bool bArtifact = false;
 		if (expNode->pc == pPreferencePC)
 		{
-			// °æÇèÄ¡ 4¹è
+			// ê²½í—˜ì¹˜ 4ë°°
 			if (expNode->pc->m_assist.m_avAddition.hcSepExp)
 			{
-				expNode->pc->m_assist.CureByItemIndex(882);	// °æÇèÄ¡
+				expNode->pc->m_assist.CureByItemIndex(882);	// ê²½í—˜ì¹˜
 				nGiveExp = nGiveExp * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
@@ -1170,10 +1176,10 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 
 				bArtifact = true;
 			}
-			// À¯·á °æÇèÄ¡ 4¹è
+			// ìœ ë£Œ ê²½í—˜ì¹˜ 4ë°°
 			else if (expNode->pc->m_assist.m_avAddition.hcSepExp_Cash)
 			{
-				expNode->pc->m_assist.CureByItemIndex(6094);	// °æÇèÄ¡
+				expNode->pc->m_assist.CureByItemIndex(6094);	// ê²½í—˜ì¹˜
 				nGiveExp = nGiveExp * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_EXP);
@@ -1192,19 +1198,19 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 				bArtifact = true;
 			}
 
-			// 9¿ù ÀÌº¥Æ® : SP 4¹è
+			// 9ì›” ì´ë²¤íŠ¸ : SP 4ë°°
 			if (expNode->pc->m_assist.m_avAddition.hcSepSP)
 			{
-				expNode->pc->m_assist.CureByItemIndex(883);	// ¼÷·Ãµµ
+				expNode->pc->m_assist.CureByItemIndex(883);	// ìˆ™ë ¨ë„
 				nGiveSP = nGiveSP * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
 				SEND_Q(rmsg, expNode->pc->m_desc);
 			}
-			// À¯·á SP 4¹è
+			// ìœ ë£Œ SP 4ë°°
 			else if (expNode->pc->m_assist.m_avAddition.hcSepSP_Cash)
 			{
-				expNode->pc->m_assist.CureByItemIndex(6095);	// ¼÷·Ãµµ
+				expNode->pc->m_assist.CureByItemIndex(6095);	// ìˆ™ë ¨ë„
 				nGiveSP = nGiveSP * 4;
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_SP);
@@ -1261,8 +1267,8 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 			}
 		}
 
-		// EP = ( NPC·¹º§  * ¿øÁ¤´ëÀÎ¿ø ) + ( NPC¼÷·Ã * µ¥¹ÌÁö / NPC HP ) / 2
-		// µ¥¹ÌÁö º¸Á¤
+		// EP = ( NPCë ˆë²¨  * ì›ì •ëŒ€ì¸ì› ) + ( NPCìˆ™ë ¨ * ë°ë¯¸ì§€ / NPC HP ) / 2
+		// ë°ë¯¸ì§€ ë³´ì •
 		int	recalcDamage  = (int) expNode->pc->m_nExpDamage ;
 		if( recalcDamage > npc->m_maxHP )
 			recalcDamage = npc->m_maxHP;
@@ -1287,7 +1293,7 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 		}
 		expNode->pc->CalcStatus(true);
 
-		// °æÇèÄ¡ Áö±Ş
+		// ê²½í—˜ì¹˜ ì§€ê¸‰
 		expNode->pc->AddExpSP(nGiveExp, (int)nGiveSP, true, false, false, bArtifact);
 
 		CAPet* apet = expNode->pc->GetAPet();
@@ -1335,11 +1341,11 @@ void DivisionExpSPExped(CExpedition* Exped, CNPC* npc, CPC* pPreferencePC, LONGL
 			}
 		}
 
-		// Áö±Ş ¹ŞÀº PC ÃÊ±âÈ­
+		// ì§€ê¸‰ ë°›ì€ PC ì´ˆê¸°í™”
 		expNode->pc->m_nExpDamage = 0;
-	} // -- ¿øÁ¤´ë¿ø ºĞ¹è ·çÆ¾ ³¡
+	} // -- ì›ì •ëŒ€ì› ë¶„ë°° ë£¨í‹´ ë
 
-	// ´ë»óÀÚ ¸®½ºÆ® ÃÊ±âÈ­
+	// ëŒ€ìƒì ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	while (expExped)
 	{
 		expExpedNode = expExped;
@@ -1354,7 +1360,7 @@ int GetExpLevelPenalty(int nLevelDiff)
 	int nExpPenalty = 100;
 	if (nLevelDiff > 0)
 	{
-		// °æÇèÄ¡ ÆĞ³ÎÆ¼ Ã³¸® : ÃÖ´ë 6·¹º§
+		// ê²½í—˜ì¹˜ íŒ¨ë„í‹° ì²˜ë¦¬ : ìµœëŒ€ 6ë ˆë²¨
 		if (nLevelDiff > 6)
 			nExpPenalty = levelPenalty[5];
 		else
@@ -1368,7 +1374,7 @@ int GetSPLevelPenalty(int nLevelDiff)
 	int nSPPenalty = 100;
 	if (nLevelDiff > 0)
 	{
-		// SP ÆĞ³ÎÆ¼ Ã³¸® : MAX_PENALTY_SP_LEVELº¸´Ù ¸¹À¸¸é ¹«Á¶°Ç 1
+		// SP íŒ¨ë„í‹° ì²˜ë¦¬ : MAX_PENALTY_SP_LEVELë³´ë‹¤ ë§ìœ¼ë©´ ë¬´ì¡°ê±´ 1
 		if (nLevelDiff > MAX_PENALTY_SP_LEVEL)
 			nSPPenalty = 0;
 		else
@@ -1382,19 +1388,43 @@ LONGLONG GetTeachSPBonus(CPC *ch, LONGLONG sp)
 {
 	if( ch->m_teachType == MSG_TEACH_STUDENT_TYPE )
 	{
-		if(ch->m_teachIdx[0] != -1 ) // ÈÄ°ßÀÎÀÌ Á¢¼ÓÇØ ÀÖ¾î¾ß µÑ´Ù º¸³Ê½º Á¢¼ö¸¦ ¹ŞÀ» ¼ö ÀÖ¶¥.
+		if(ch->m_teachIdx[0] != -1 ) // í›„ê²¬ì¸ì´ ì ‘ì†í•´ ìˆì–´ì•¼ ë‘˜ë‹¤ ë³´ë„ˆìŠ¤ ì ‘ìˆ˜ë¥¼ ë°›ì„ ìˆ˜ ìˆë•….
 		{
 			CPC * tpc = PCManager::instance()->getPlayerByCharIndex(ch->m_teachIdx[0]);
 			if( tpc != NULL)
 			{
-				// ÈÄ°ßÀÎ¿¡°Ô º¸³Ê½º SP 2% Áö±Ş
+				// í›„ê²¬ì¸ì—ê²Œ ë³´ë„ˆìŠ¤ SP 2% ì§€ê¸‰
 				LONGLONG tpcGiveSP = sp * TEACH_SP_TEACHER / 100;
 				tpc->AddExpSP(0, (int)tpcGiveSP, false);
 
-				// °ß½À»ı¿¡°Ô º¸³Ê½º sp 5% Áö±Ş
+				// ê²¬ìŠµìƒì—ê²Œ ë³´ë„ˆìŠ¤ sp 5% ì§€ê¸‰
 				return (sp * TEACH_SP_STUDENT / 100);
 			}
 		}
 	}
 	return 0;
+}
+
+int GetExpSPLevelPenaltyNew( int nLevelDiff )
+{
+	int value = 100;
+
+	if(nLevelDiff >= 150)
+	{
+		value = 30;
+	}
+	else if(nLevelDiff >= 100)
+	{
+		value = 50;
+	}
+	else if(nLevelDiff >= 50)
+	{
+		value = 80;
+	}
+	else if(nLevelDiff >= 30)
+	{
+		value = 90;
+	}
+
+	return value;
 }

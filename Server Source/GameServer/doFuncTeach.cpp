@@ -83,7 +83,7 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 	{
 	case MSG_TEACH_TEACHER_LIST_UP:
 
-		// ·¹º§ Á¶°Ç ¹Ì´Ş
+		// ë ˆë²¨ ì¡°ê±´ ë¯¸ë‹¬
 		if (ch->m_level < TEACH_LEVEL_TEACHER)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -92,7 +92,7 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ÀÌ¹Ì ¼±»ı¸®½ºÆ®¿¡ ÀÖÀ½
+		// ì´ë¯¸ ì„ ìƒë¦¬ìŠ¤íŠ¸ì— ìˆìŒ
 		if (ch->m_bTeacher)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -125,11 +125,11 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_TEACH_TEACHER_LIST_DN:
 
-		// ·¹º§ Á¶°Ç ¹Ì´Ş
+		// ë ˆë²¨ ì¡°ê±´ ë¯¸ë‹¬
 		if (ch->m_level < TEACH_LEVEL_TEACHER)
 			return;
 
-		// ¼±»ı¸®½ºÆ®¿¡ ÀÖÁö ¾ÊÀ½
+		// ì„ ìƒë¦¬ìŠ¤íŠ¸ì— ìˆì§€ ì•ŠìŒ
 		if (!ch->m_bTeacher)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -156,7 +156,7 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_TEACH_TEACHER_LIST_SHOW:
 		{
-			// ÀÌ¹Ì ½ÅÃ»ÁßÀÌ´Ù
+			// ì´ë¯¸ ì‹ ì²­ì¤‘ì´ë‹¤
 			if (ch->m_teachWait != -1)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -165,11 +165,11 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ¼±»ıÀÌ ÀÖÀ¸¸é ÀÌ msg¸¦ º¸³¾ ¼ö ¾ø´Ù
+			// ì„ ìƒì´ ìˆìœ¼ë©´ ì´ msgë¥¼ ë³´ë‚¼ ìˆ˜ ì—†ë‹¤
 			if (ch->m_teachIdx[0] != -1)
 				return;
 
-			// ¼±»ıÀÌ ÀÖÀ¸¸é ÀÌ msg¸¦ º¸³¾ ¼ö ¾ø´Ù
+			// ì„ ìƒì´ ìˆìœ¼ë©´ ì´ msgë¥¼ ë³´ë‚¼ ìˆ˜ ì—†ë‹¤
 			if (ch->m_teachType == MSG_TEACH_STUDENT_TYPE)
 				return;
 
@@ -181,7 +181,7 @@ void do_TeachTeacherList(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// Á¦ÀÚ °¡´É ·¹º§ÀÌ ¾Æ´Ô
+			// ì œì ê°€ëŠ¥ ë ˆë²¨ì´ ì•„ë‹˜
 			if (ch->m_level > TEACH_LEVEL_STUDENT)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -254,7 +254,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> charindex;
 
-	// ·¹º§ ÃÊ°ú
+	// ë ˆë²¨ ì´ˆê³¼
 	if (ch->m_level > TEACH_LEVEL_STUDENT)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -263,7 +263,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌ¹Ì ¼±»ı ÀÖÀ½
+	// ì´ë¯¸ ì„ ìƒ ìˆìŒ
 	if (ch->m_teachIdx[0] != -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -272,7 +272,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌ¹Ì ½ÅÃ»´ë±âÁßÀÎ ¼±»ıÀÌ ÀÖÀ½
+	// ì´ë¯¸ ì‹ ì²­ëŒ€ê¸°ì¤‘ì¸ ì„ ìƒì´ ìˆìŒ
 	if (ch->m_teachWait != -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -281,7 +281,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	if (ch->m_teachType == MSG_TEACH_NO_STUDENT_TYPE) // »çÁ¦ °ü°è ¸Î¾ú´Ù°¡ ½ÇÆĞÇÑ °æ¿ì
+	if (ch->m_teachType == MSG_TEACH_NO_STUDENT_TYPE) // ì‚¬ì œ ê´€ê³„ ë§ºì—ˆë‹¤ê°€ ì‹¤íŒ¨í•œ ê²½ìš°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		TeachErrMsg(rmsg, MSG_TEACH_ERR_NOMORE_STUDENT);
@@ -289,7 +289,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼±»ıÀÌ ¾øÀ½
+	// ì„ ìƒì´ ì—†ìŒ
 	CPC* tch = PCManager::instance()->getPlayerByCharIndex(charindex);
 
 	if (!tch)
@@ -300,7 +300,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼±»ıÀÌ ¼±»ı¸®½ºÆ®¿¡ ¾øÀ½
+	// ì„ ìƒì´ ì„ ìƒë¦¬ìŠ¤íŠ¸ì— ì—†ìŒ
 	if (!tch->m_bTeacher)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -309,7 +309,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ÀÌ¹Ì ´ë±âÁßÀÎ ÇĞ»ıÀÌ ÀÖÀ½
+	// ì´ë¯¸ ëŒ€ê¸°ì¤‘ì¸ í•™ìƒì´ ìˆìŒ
 	if (tch->m_teachWait != -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -330,7 +330,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¼±»ıÀÌ Á¦ÀÚ°¡ ²Ë Â÷ ÀÖÀ½
+	// ì„ ìƒì´ ì œìê°€ ê½‰ ì°¨ ìˆìŒ
 	if (!bTeacher)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -339,12 +339,12 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ´ë±âÀÚ ¼ÂÆÃ
+	// ëŒ€ê¸°ì ì…‹íŒ…
 	tch->m_teachWait = ch->m_index;
 	ch->m_teachWait = tch->m_index;
 
 	{
-		// ¼±»ı¿¡°Ô ¿äÃ»
+		// ì„ ìƒì—ê²Œ ìš”ì²­
 		CNetMsg::SP rmsg(new CNetMsg);
 		TeachTeacherReqReqMsg(rmsg, ch);
 		SEND_Q(rmsg, tch->m_desc);
@@ -353,7 +353,7 @@ void do_TeachTeacherReqReq(CPC* ch, CNetMsg::SP& msg)
 
 void do_TeachTeacherReqReject(CPC* ch, CNetMsg::SP& msg)
 {
-	// ´ë±â¸í´ÜÀÌ ¾øÀ½
+	// ëŒ€ê¸°ëª…ë‹¨ì´ ì—†ìŒ
 	if (ch->m_teachWait == -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -372,7 +372,7 @@ void do_TeachTeacherReqReject(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ´ë±â ¸í´ÜÀÌ ¾ø°Å³ª °°Áö ¾Ê°Å³ª
+	// ëŒ€ê¸° ëª…ë‹¨ì´ ì—†ê±°ë‚˜ ê°™ì§€ ì•Šê±°ë‚˜
 	if (tch->m_teachWait == -1 || tch->m_teachWait != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -393,7 +393,7 @@ void do_TeachTeacherReqReject(CPC* ch, CNetMsg::SP& msg)
 
 void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 {
-	// ´ë±â ÇĞ»ıÀÌ ¾øÀ½
+	// ëŒ€ê¸° í•™ìƒì´ ì—†ìŒ
 	if (ch->m_teachWait == -1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -402,7 +402,7 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼±»ı¸®½ºÆ®¿¡ µî·ÏµÇ¾î ÀÖÁö ¾ÊÀ½
+	// ì„ ìƒë¦¬ìŠ¤íŠ¸ì— ë“±ë¡ë˜ì–´ ìˆì§€ ì•ŠìŒ
 	if (!ch->m_bTeacher)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -422,7 +422,7 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ´ë±â ¼±»ıÀÌ ¾ø°Å³ª °°Áö ¾Ê°Å³ª
+	// ëŒ€ê¸° ì„ ìƒì´ ì—†ê±°ë‚˜ ê°™ì§€ ì•Šê±°ë‚˜
 	if (tch->m_teachWait == -1 || tch->m_teachWait != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -454,7 +454,7 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¼±»ıÀÌ Á¦ÀÚ°¡ ²Ë Â÷ ÀÖÀ½
+	// ì„ ìƒì´ ì œìê°€ ê½‰ ì°¨ ìˆìŒ
 	if (!bTeacher)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -477,14 +477,14 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 	tch->m_teachLevel[0] = ch->m_level;
 	strcpy(tch->m_teachName[0], ch->GetName());
 
-	// ¼±»ı ¸®½ºÆ® °Ë»çÇØ¼­ ²Ë Ã£À¸¸é ÈÄº¸¿¡¼­ ³»¸²
+	// ì„ ìƒ ë¦¬ìŠ¤íŠ¸ ê²€ì‚¬í•´ì„œ ê½‰ ì°¾ìœ¼ë©´ í›„ë³´ì—ì„œ ë‚´ë¦¼
 	for (i=0; i < TEACH_MAX_STUDENTS; i++)
 	{
 		if (ch->m_teachIdx[i] == -1)
 			break;
 	}
 
-	// ÈÄº¸¿¡¼­ Á¦¿Ü
+	// í›„ë³´ì—ì„œ ì œì™¸
 	if (i == TEACH_MAX_STUDENTS)
 	{
 		ch->m_bTeacher = false;
@@ -517,7 +517,7 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, tch->m_desc);
 	}
 
-	// ÇïÆÛ¿¡ µî·Ï ¿äÃ»
+	// í—¬í¼ì— ë“±ë¡ ìš”ì²­
 	// teachidx bteacher studentidx
 	if(gserver->isRunHelper())
 	{
@@ -541,10 +541,10 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 			<< ch->m_desc->m_idname << delim
 			<< ch->m_fame << end;
 
-	// µÑÁß¿¡ ÇÑ¸íÀÌ¶óµµ Ä£±¸ ¸®½ºÆ®°¡ ²ËÃ¡´Ù¸é Ä£±¸ µî·ÏÇÏÁö ¸»ÀÚ.
+	// ë‘˜ì¤‘ì— í•œëª…ì´ë¼ë„ ì¹œêµ¬ ë¦¬ìŠ¤íŠ¸ê°€ ê½‰ì°¼ë‹¤ë©´ ì¹œêµ¬ ë“±ë¡í•˜ì§€ ë§ì.
 	if(ch->m_Friend->GetFriendSum() < FRIEND_MAX_MEMBER && tch->m_Friend->GetFriendSum() < FRIEND_MAX_MEMBER )
 	{
-		// ¸Ş½ÅÀú¿¡ ¼­·Î µî·ÏÀÌ µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+		// ë©”ì‹ ì €ì— ì„œë¡œ ë“±ë¡ì´ ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 		CFriendMember* pFriendMem = ch->m_Friend->FindFriendMember(tch->m_index);
 		if(pFriendMem == NULL)
 		{
@@ -554,13 +554,13 @@ void do_TeachTeacherReqAccept(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¿©±â¼­ ¶óÄ«ÀÔ¹®4 Äù½ºÆ® ¿Ï·á ÇØÁÖÀÚ (ÈÄ°ßÀÎ°ú °ü°è(´Ï°¡ ¸»ÇÑ °ü°è°¡ ºÒ·û°ü°è´Â ¾Æ´Ï°ÚÁö?)¸¦ ¸Î¾ú´Ù)
+	// ì—¬ê¸°ì„œ ë¼ì¹´ì…ë¬¸4 í€˜ìŠ¤íŠ¸ ì™„ë£Œ í•´ì£¼ì (í›„ê²¬ì¸ê³¼ ê´€ê³„(ë‹ˆê°€ ë§í•œ ê´€ê³„ê°€ ë¶ˆë¥œê´€ê³„ëŠ” ì•„ë‹ˆê² ì§€?)ë¥¼ ë§ºì—ˆë‹¤)
 	CQuest* pQuest = NULL;
 	CQuest* pQuestNext = tch->m_questList.GetNextQuest(NULL, QUEST_STATE_RUN);
 	while(( pQuest = pQuestNext))
 	{
 		pQuestNext = tch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-		if( pQuest->GetQuestProto()->m_index == 370 ) // ¶óÄ« ÀÔ¹®4 Äù½ºÆ®
+		if( pQuest->GetQuestProto()->m_index == 370 ) // ë¼ì¹´ ì…ë¬¸4 í€˜ìŠ¤íŠ¸
 		{
 			pQuest->SetComplete1(true);
 			pQuest->SetComplete2(true);
@@ -613,9 +613,9 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 		}
 		return;
 
-	case MSG_TEACH_TEACHER_TYPE: // ÈÄ°ßÀÎÀÌ¸é
+	case MSG_TEACH_TEACHER_TYPE: // í›„ê²¬ì¸ì´ë©´
 		{
-			// ¸í¼ºÄ¡ 5ÀÌ»ó ÀÖ¾î¾ß ±¦°è¸¦ ²÷À» ¼ö ÀÖ´Â ´õ·¯¿î ¼¼»ó
+			// ëª…ì„±ì¹˜ 5ì´ìƒ ìˆì–´ì•¼ ê´œê³„ë¥¼ ëŠì„ ìˆ˜ ìˆëŠ” ë”ëŸ¬ìš´ ì„¸ìƒ
 			if( ch->m_fame < 5 )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -624,7 +624,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ÀÌ ÇĞ»ıÀÌ ³»ÇĞ»ı ¸Â³Ä?
+			// ì´ í•™ìƒì´ ë‚´í•™ìƒ ë§ëƒ?
 			bool blist = false;
 			int i=0;
 			for(i=0; i<TEACH_MAX_STUDENTS; i++)
@@ -633,7 +633,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 					blist = true;
 			}
 
-			// ³» °ß½À»ıÀÌ ¾Æ´Ï´ç.
+			// ë‚´ ê²¬ìŠµìƒì´ ì•„ë‹ˆë‹¹.
 			if( !blist )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -644,7 +644,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 
 			CPC* tch = PCManager::instance()->getPlayerByCharIndex(charindex);
 
-			// °ß½À»ıÀÌ Á¢¼ÓÁßÀÌÁö ¾ÊÀ½
+			// ê²¬ìŠµìƒì´ ì ‘ì†ì¤‘ì´ì§€ ì•ŠìŒ
 			if (!tch || tch->m_bPlaying == false)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -657,7 +657,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 			ch->m_fame -= 5;
 
 			{
-				// ÈÄ°ßÀÎ°ú °ß½À»ı ¸ğµÎ¿¡°Ô ¸Ş½ÃÁö¸¦ º¸³½´ç.
+				// í›„ê²¬ì¸ê³¼ ê²¬ìŠµìƒ ëª¨ë‘ì—ê²Œ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¹.
 				CNetMsg::SP rmsg(new CNetMsg);
 				TeachTeacherGiveUPMsg(rmsg, ch, tch, -1, ch->m_fame );
 				SEND_Q(rmsg, ch->m_desc);
@@ -670,7 +670,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			//ÇĞ»ı ¸®½ºÆ®¿¡¼­ »èÁ¦
+			//í•™ìƒ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			do_TeachSetCancel(ch, tch);
 
 			if(gserver->isRunHelper())
@@ -689,7 +689,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 						<< tch->m_name << delim
 						<< tch->m_nick << delim
 						<< tch->m_desc->m_idname << delim
-						<< tch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+						<< tch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 						<< end;
 				return;
 			}
@@ -702,13 +702,13 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 					<< tch->m_name << delim
 					<< tch->m_nick << delim
 					<< tch->m_desc->m_idname << delim
-					<< tch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+					<< tch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 					<< end;
 		}
 		break;
-	case MSG_TEACH_STUDENT_TYPE: // °ß½À»ıÀÌ¸é
+	case MSG_TEACH_STUDENT_TYPE: // ê²¬ìŠµìƒì´ë©´
 		{
-			// ÈÄ°ßÀÎÀÌ ¾ø´Ù.
+			// í›„ê²¬ì¸ì´ ì—†ë‹¤.
 			if (ch->m_teachIdx[0] == -1)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -717,10 +717,10 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// ÈÄ°ßÀÎÀ» Ã£ÀÚ
+			// í›„ê²¬ì¸ì„ ì°¾ì
 			CPC* tch = PCManager::instance()->getPlayerByCharIndex(charindex);
 
-			// ÈÄ°ßÀÎÀÌ Á¢¼ÓÁßÀÌ ¾Æ´Ô
+			// í›„ê²¬ì¸ì´ ì ‘ì†ì¤‘ì´ ì•„ë‹˜
 //			if (!tch)
 //			{
 //				TeachErrMsg(rmsg, MSG_TEACH_ERR_TEACHER_NOT_CONNECT);
@@ -737,12 +737,12 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			int oldteachIndex = ch->m_teachIdx[0];
-			// ¼ÂÆÃÇØÁ¦
+			// ì…‹íŒ…í•´ì œ
 			do_TeachSetCancel(tch, ch);
 			ch->m_teachIdx[0] = -1;
-			ch->m_teachTime[0] ++;	// ÈÄ°ßÀÎ °ü°è¸¦ 3È¸±îÁö Çã¿ë.
+			ch->m_teachTime[0] ++;	// í›„ê²¬ì¸ ê´€ê³„ë¥¼ 3íšŒê¹Œì§€ í—ˆìš©.
 			if(ch->m_teachTime[0] >= TEACH_STUDENT_MAX_GIVEUP )
-				ch->m_teachType = MSG_TEACH_NO_STUDENT_TYPE; // ´õÀÌ»ó °ß½À»ı ¸øÇÔ
+				ch->m_teachType = MSG_TEACH_NO_STUDENT_TYPE; // ë”ì´ìƒ ê²¬ìŠµìƒ ëª»í•¨
 			else
 				ch->m_teachType = MSG_TEACH_NO_TYPE;
 
@@ -774,7 +774,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 				if( !tch )
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					HelperStuentListRefresh( rmsg, charindex ); // ¸®½ºÆ®¸¦ °»½ÅÇÏµµ·Ï ¸Ş½ÃÁö¸¦ º¸³½´Ù
+					HelperStuentListRefresh( rmsg, charindex ); // ë¦¬ìŠ¤íŠ¸ë¥¼ ê°±ì‹ í•˜ë„ë¡ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¤
 					SEND_Q(rmsg, gserver->m_helper);
 				}
 			}
@@ -787,7 +787,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 							<< ch->m_name << delim
 							<< ch->m_nick << delim
 							<< ch->m_desc->m_idname << delim
-							<< ch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+							<< ch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 							<< end;
 				}
 				else
@@ -800,7 +800,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 							<< ch->m_name << delim
 							<< ch->m_nick << delim
 							<< ch->m_desc->m_idname << delim
-							<< ch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+							<< ch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 							<< end;
 				}
 				return;
@@ -813,7 +813,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 						<< ch->m_name << delim
 						<< ch->m_nick << delim
 						<< ch->m_desc->m_idname << delim
-						<< ch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+						<< ch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 						<< end;
 			}
 			else
@@ -826,7 +826,7 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 						<< ch->m_name << delim
 						<< ch->m_nick << delim
 						<< ch->m_desc->m_idname << delim
-						<< ch->m_teachTime[0] << delim // Æ÷±â È½¼ö
+						<< ch->m_teachTime[0] << delim // í¬ê¸° íšŸìˆ˜
 						<< end;
 			}
 		}
@@ -834,13 +834,13 @@ void do_TeachTeacherGiveUP(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-// ¼ÂÆÃ ÇØÁ¦
+// ì…‹íŒ… í•´ì œ
 void do_TeachSetCancel(CPC* teacher, CPC* student)
 {
 	if (!teacher || !student)
 		return;
 
-	// ÇĞ»ıÀÌ ÀÖ´Â°¡
+	// í•™ìƒì´ ìˆëŠ”ê°€
 	bool bStudent = false;
 	int i;
 	for (i=0; i < TEACH_MAX_STUDENTS; i++)
@@ -855,17 +855,17 @@ void do_TeachSetCancel(CPC* teacher, CPC* student)
 		}
 	}
 
-	// ÇĞ»ı ¸ñ·Ï¿¡ ÀÖÀ»¶§
+	// í•™ìƒ ëª©ë¡ì— ìˆì„ë•Œ
 	if (bStudent)
 	{
-		// ¼ÂÆÃÇØÁ¦
+		// ì…‹íŒ…í•´ì œ
 		teacher->m_teachIdx[i] = -1;
 		teacher->m_teachJob[i] = -1;
 		teacher->m_teachJob2[i] = 0;
 		teacher->m_teachLevel[i] = 0;
 		teacher->m_teachName[i][0] = '\0';
 
-		// ³²Àº ÇĞ»ı Ã¼Å© ¿©ºÎ
+		// ë‚¨ì€ í•™ìƒ ì²´í¬ ì—¬ë¶€
 		bool bTeacher = true;
 		for (i=0; i < TEACH_MAX_STUDENTS; i++)
 		{
@@ -873,7 +873,7 @@ void do_TeachSetCancel(CPC* teacher, CPC* student)
 				bTeacher = false;
 		}
 
-		// ¼±»ı¹ÚÅ»
+		// ì„ ìƒë°•íƒˆ
 		if (bTeacher)
 			teacher->m_teachType = MSG_TEACH_NO_TYPE;
 	}
@@ -892,7 +892,7 @@ void do_TeachSetCancel(CPC* teacher, int studentidx)
 	if (!teacher || !studentidx)
 		return;
 
-	// ÇĞ»ıÀÌ ÀÖ´Â°¡
+	// í•™ìƒì´ ìˆëŠ”ê°€
 	bool bStudent = false;
 	int i;
 	for (i=0; i < TEACH_MAX_STUDENTS; i++)
@@ -907,10 +907,10 @@ void do_TeachSetCancel(CPC* teacher, int studentidx)
 		}
 	}
 
-	// ÇĞ»ı ¸ñ·Ï¿¡ ÀÖÀ»¶§
+	// í•™ìƒ ëª©ë¡ì— ìˆì„ë•Œ
 	if (bStudent)
 	{
-		// ¼ÂÆÃÇØÁ¦
+		// ì…‹íŒ…í•´ì œ
 		teacher->m_teachIdx[i] = -1;
 		teacher->m_teachJob[i] = -1;
 		teacher->m_teachJob2[i] = 0;
@@ -918,7 +918,7 @@ void do_TeachSetCancel(CPC* teacher, int studentidx)
 		teacher->m_teachName[i][0] = '\0';
 		teacher->m_teachTime[i] = 0;
 
-		// ³²Àº ÇĞ»ı Ã¼Å© ¿©ºÎ
+		// ë‚¨ì€ í•™ìƒ ì²´í¬ ì—¬ë¶€
 		bool bTeacher = true;
 		for (i=0; i < TEACH_MAX_STUDENTS; i++)
 		{
@@ -926,7 +926,7 @@ void do_TeachSetCancel(CPC* teacher, int studentidx)
 				bTeacher = false;
 		}
 
-		// ¼±»ı¹ÚÅ»
+		// ì„ ìƒë°•íƒˆ
 		if (bTeacher)
 			teacher->m_teachType = MSG_TEACH_NO_TYPE;
 	}

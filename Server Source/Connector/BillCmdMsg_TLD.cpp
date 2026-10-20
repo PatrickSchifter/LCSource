@@ -10,7 +10,7 @@ void BillConnectMsg(CNetMsg::SP& msg)
 {
 	msg->Init(BM_CONNECT);
 
-	//BM_CONNECT,								// д©Ёьем а╒╪с ©Дц╩: protocolversion(str:17) serverNum(uc) gameId(uc)
+	//BM_CONNECT,								// Л╩╓К└╔М└╟ Л═▒Л├█ Л ■Л╡╜: protocolversion(str:17) serverNum(uc) gameId(uc)
 	RefMsg(msg) << BILL_SERVER_VERSION
 				<< (unsigned char) gserver.m_serverno
 				<< (unsigned char) GAMEID;

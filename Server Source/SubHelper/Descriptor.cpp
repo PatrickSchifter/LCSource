@@ -116,7 +116,7 @@ void CDescriptor::onClose( rnSocketIOService* service )
 {
 	bnf::instance()->RemoveSession(service);
 
-	// ÀÌ ¼¼¼Ç¿¡°Ô º¸³½ ¸Ş½ÃÁö »èÁ¦
+	// ì´ ì„¸ì…˜ì—ê²Œ ë³´ë‚¸ ë©”ì‹œì§€ ì‚­ì œ
 	gserver.m_msgList.RemoveServer(this);
 
 	if (client_type_) // game server

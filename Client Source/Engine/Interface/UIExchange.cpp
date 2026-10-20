@@ -3,13 +3,13 @@
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIExchange.h>
 #include <Engine/Interface/UIPetInfo.h>
-#include <Engine/Interface/UIWareHouse.h>
+#include <Engine/Contents/function/WareHouseUI.h>
 #include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UIRadar.h>
-#include <Engine/Interface/UIWildPetInfo.h>
-#include <Engine/Interface/UIPersonalShop.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Object/ActorMgr.h>
 #include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
+#include <Engine/Contents/Base/PersonalshopUI.h>
 
 extern INDEX g_iCountry;
 extern INDEX g_iRejectExchange;	// [7/13/2009 rumist] reject request of exchange message.
@@ -242,7 +242,7 @@ void CUIExchange::PrepareExchange()
 	if(pUIManager->IsCSFlagOn(CSF_WAREHOUSE))
 	{
 		pUIManager->GetChattingUI()->AddSysMessage( _S(1890 ,"창고 사용중에는 교환을 할수 없습니다." ) );	
-		pUIManager->GetWareHouse()->ResetWareHouse();
+		pUIManager->GetWareHouseUI()->closeUI();
 	}
 
 	// Close message box of inventory

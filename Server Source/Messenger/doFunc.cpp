@@ -46,14 +46,14 @@ void do_Request(CNetMsg::SP& msg, CDescriptor* dest)
 		if (STATE(pDesc) != CON_PLAYING)
 			continue ;
 
-		// serverno°¡ -1(¸ðµÎ)ÀÌ°Å³ª
-		// ÇØ´ç ¼­¹ö±º ÀÌ°í
-		// ±× ¼­¹ö¿¡ Á¸ÀçÇÏ´Â Á¸ÀÌ°Å³ª
-		// ¸ðµç Á¸ÀÌ¸é Ãß°¡
-		if (((serverno == -1/* && pDesc->m_serverNo != LOGIN_SERVER_NUM && pDesc->m_serverNo != CONNECTOR_SERVER_NUM*/)	// ÄÁ³ØÅÍ, ·Î±×ÀÎ¼­¹ö Á¦¿ÜÇÑ
+		// servernoê°€ -1(ëª¨ë‘)ì´ê±°ë‚˜
+		// í•´ë‹¹ ì„œë²„êµ° ì´ê³ 
+		// ê·¸ ì„œë²„ì— ì¡´ìž¬í•˜ëŠ” ì¡´ì´ê±°ë‚˜
+		// ëª¨ë“  ì¡´ì´ë©´ ì¶”ê°€
+		if (((serverno == -1/* && pDesc->m_serverNo != LOGIN_SERVER_NUM && pDesc->m_serverNo != CONNECTOR_SERVER_NUM*/)	// ì»¨ë„¥í„°, ë¡œê·¸ì¸ì„œë²„ ì œì™¸í•œ
 				|| pDesc->m_serverNo == serverno) && (subno == -1 || pDesc->m_subNo == subno) && (zone == -1 || pDesc->FindZone(zone) != -1))
 		{
-			// ¼¼¼Ç¿¡°Ô ¸Þ½ÃÁö Àü¼Û, Ã³¸®´Â °¢ GameServer°¡ ´ã´ç
+			// ì„¸ì…˜ì—ê²Œ ë©”ì‹œì§€ ì „ì†¡, ì²˜ë¦¬ëŠ” ê° GameServerê°€ ë‹´ë‹¹
 			SEND_Q(msg, pDesc);
 
 			if (node->m_bReq)
@@ -63,7 +63,7 @@ void do_Request(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ÀÀ´äÀÌ ÇÊ¿ä¾ø´Â ¸Þ½ÃÁöÀÇ °æ¿ì ÀúÀåÇÏÁö ¾Ê°í ¹Ù·Î Áö¿ò
+	// ì‘ë‹µì´ í•„ìš”ì—†ëŠ” ë©”ì‹œì§€ì˜ ê²½ìš° ì €ìž¥í•˜ì§€ ì•Šê³  ë°”ë¡œ ì§€ì›€
 	if (node->m_bReq == false)
 	{
 		gserver.m_msgList.Remove(node);
@@ -85,7 +85,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 				>> zoneno
 				>> subtype;
 
-	// seq¸¦ Ã£°í
+	// seqë¥¼ ì°¾ê³ 
 	CMsgListNode* node;
 	CMsgListNode* nodeNext = gserver.m_msgList.m_head;
 	CDescriptor* pServer = NULL;
@@ -96,7 +96,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 		if (node->m_seq == seq)
 		{
 			bool bAllReceived = true;
-			// ¼­¹ö¸¦ Ã£°í
+			// ì„œë²„ë¥¼ ì°¾ê³ 
 			CMsgListNodeServerNode* snode;
 			CMsgListNodeServerNode* snodeNext = node->m_head;
 			while ((snode = snodeNext))
@@ -104,18 +104,18 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 				snodeNext = snode->m_pNext;
 				if (snode->m_server->m_serverNo == dest->m_serverNo && snode->m_server->m_subNo == dest->m_subNo)
 				{
-					// ¼­¹ö ÀÀ´ä ¹ÞÀ½À¸·Î °»½Å
+					// ì„œë²„ ì‘ë‹µ ë°›ìŒìœ¼ë¡œ ê°±ì‹ 
 					snode->m_recieved = true;
 					pServer = snode->m_server;
 					continue ;
 				}
 
-				// ¸ðµÎ ÀÀ´ä ¹Þ¾Ò´ÂÁö °Ë»ç
+				// ëª¨ë‘ ì‘ë‹µ ë°›ì•˜ëŠ”ì§€ ê²€ì‚¬
 				if (!snode->m_recieved)
 					bAllReceived = false;
 			}
 
-			// ¿äÃ»ÇÑ ¼­¹ö°¡ ¾øÀ¸¸é
+			// ìš”ì²­í•œ ì„œë²„ê°€ ì—†ìœ¼ë©´
 			if (!pServer)
 				continue ;
 
@@ -123,7 +123,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 			{
 			case MSG_MSGR_WHISPER_REP:
 				{
-					// ¼ö½ÅÀÚ°¡ ÀÖ¾î¼­ Á¦´ë·Î ¹Þ¾Ò´Ù
+					// ìˆ˜ì‹ ìžê°€ ìžˆì–´ì„œ ì œëŒ€ë¡œ ë°›ì•˜ë‹¤
 					int sidx;
 					CLCString sname(MAX_CHAR_NAME_LENGTH + 1);
 					CLCString rname(MAX_CHAR_NAME_LENGTH + 1);
@@ -137,7 +137,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 					MsgrWhisperRep(rmsg, seq, serverno, subno, zoneno, sidx, sname, rname, chat);
 					SEND_Q(rmsg, node->m_reqServer);
 
-					// Á¦´ë·Î ¹Þ¾ÒÀ¸´Ï Áö¿ö¹ö¸®ÀÚ
+					// ì œëŒ€ë¡œ ë°›ì•˜ìœ¼ë‹ˆ ì§€ì›Œë²„ë¦¬ìž
 					bAllReceived = true;
 				}
 				break ;
@@ -145,7 +145,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 			case MSG_MSGR_WHISPER_NOTFOUND:
 				if (bAllReceived)
 				{
-					// ´Ù ¹Þ¾Ò´Âµ¥ ±Ó¸» ´ë»óÀÌ ¾ø¾ú´Ù
+					// ë‹¤ ë°›ì•˜ëŠ”ë° ê·“ë§ ëŒ€ìƒì´ ì—†ì—ˆë‹¤
 					int sidx;
 					CLCString sname(MAX_CHAR_NAME_LENGTH + 1);
 					RefMsg(msg) >> sidx
@@ -159,7 +159,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 
 			case MSG_MSGR_PLAYER_COUNT_REP:
 				{
-					// ¹ÞÀº °Å ±×´ë·Î ¿¡ÄÚ
+					// ë°›ì€ ê±° ê·¸ëŒ€ë¡œ ì—ì½”
 					SEND_Q(msg, node->m_reqServer);
 				}
 				break;
@@ -172,7 +172,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 
 					if (success)
 					{
-						// ·Î±×¾Æ¿ô ÇÑ ¼­¹ö°¡ ÀÖ´Ù¸é ¼º°øÇÑ °Í
+						// ë¡œê·¸ì•„ì›ƒ í•œ ì„œë²„ê°€ ìžˆë‹¤ë©´ ì„±ê³µí•œ ê²ƒ
 						CNetMsg::SP rmsg(new CNetMsg);
 						bAllReceived = true;
 						MsgrLogoutRepMsg(rmsg, seq, serverno, subno, zoneno, (char)1, id);
@@ -180,7 +180,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 					}
 					else if (bAllReceived)
 					{
-						// ´Ù ¹Þ¾Æµµ ¾ø´Ù...
+						// ë‹¤ ë°›ì•„ë„ ì—†ë‹¤...
 						CNetMsg::SP rmsg(new CNetMsg);
 						MsgrLogoutRepMsg(rmsg, seq, serverno, subno, zoneno, (char)0, id);
 						SEND_Q(rmsg, node->m_reqServer);
@@ -307,7 +307,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 					SEND_Q(rmsg, node->m_reqServer);
 				}
 				break;
-// ÅÂ±¹ ¿ÀÇÂº£Å¸ ¸Þ¼¼Áö
+// íƒœêµ­ ì˜¤í”ˆë² íƒ€ ë©”ì„¸ì§€
 			case MSG_MSGR_OPEN_BETA_EVENT_REP:
 			case MSG_MSGR_FLOWER_EVENT_REP:
 			case MSG_MSGR_MARGADUM_PVP_REP:
@@ -327,7 +327,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 
 			case MSG_MSGR_MESSENGERCHAT_REP:
 				{
-					// ¼ö½ÅÀÚ°¡ ÀÖ¾î¼­ Á¦´ë·Î ¹Þ¾Ò´Ù
+					// ìˆ˜ì‹ ìžê°€ ìžˆì–´ì„œ ì œëŒ€ë¡œ ë°›ì•˜ë‹¤
 					int sidx;
 					CLCString sname(MAX_CHAR_NAME_LENGTH + 1);
 					CLCString rname(MAX_CHAR_NAME_LENGTH + 1);
@@ -341,7 +341,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 					MsgrFriendChatRep(rmsg, seq, serverno, subno, zoneno, sidx, sname, rname, chat);
 					SEND_Q(rmsg, node->m_reqServer);
 
-					// Á¦´ë·Î ¹Þ¾ÒÀ¸´Ï Áö¿ö¹ö¸®ÀÚ
+					// ì œëŒ€ë¡œ ë°›ì•˜ìœ¼ë‹ˆ ì§€ì›Œë²„ë¦¬ìž
 					bAllReceived = true;
 				}
 				break ;
@@ -349,7 +349,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 			case MSG_MSGR_MESSENGERCHAT_NOTFOUND:
 				if (bAllReceived)
 				{
-					// ´Ù ¹Þ¾Ò´Âµ¥ ±Ó¸» ´ë»óÀÌ ¾ø¾ú´Ù
+					// ë‹¤ ë°›ì•˜ëŠ”ë° ê·“ë§ ëŒ€ìƒì´ ì—†ì—ˆë‹¤
 					int sidx;
 					CLCString sname(MAX_CHAR_NAME_LENGTH + 1);
 					RefMsg(msg) >> sidx
@@ -368,7 +368,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 					CLCString id(MAX_ID_NAME_LENGTH + 1);
 					RefMsg(msg) >> success >> charindex >> id;
 
-					// ·Î±×¾Æ¿ô ÇÑ ¼­¹ö°¡ ÀÖ´Ù¸é ¼º°øÇÑ °Í
+					// ë¡œê·¸ì•„ì›ƒ í•œ ì„œë²„ê°€ ìžˆë‹¤ë©´ ì„±ê³µí•œ ê²ƒ
 					bAllReceived = true;
 					CNetMsg::SP rmsg(new CNetMsg);
 					MsgrGmToolKickIDRepMsg(rmsg, seq, serverno, subno, zoneno, success, charindex, id);
@@ -567,7 +567,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 #endif // EVENT_DROPITEM
 			}
 
-			// ´Ù ¹Þ¾ÒÀ¸¸é ³ëµå¿¡¼­ Á¦°Å
+			// ë‹¤ ë°›ì•˜ìœ¼ë©´ ë…¸ë“œì—ì„œ ì œê±°
 			if (bAllReceived)
 			{
 				gserver.m_msgList.Remove(node);
@@ -618,7 +618,7 @@ void do_Request_EventGoldenball(CNetMsg::SP& msg)
 	{
 	case MSG_MSGR_EVENT_GOLDENBALL_VOTE:
 		{
-			// °ñµçº¼ ÀÌº¥Æ® ÀÀ¸ð ¼³Á¤	: gmcharindex(n) team1(str) team2(str) year(n) month(n) day(n) hour(n) minute(n)
+			// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸ ì‘ëª¨ ì„¤ì •	: gmcharindex(n) team1(str) team2(str) year(n) month(n) day(n) hour(n) minute(n)
 			RefMsg(msg) >> nGMCharIndex
 						>> strTeam1
 						>> strTeam2
@@ -651,7 +651,7 @@ void do_Request_EventGoldenball(CNetMsg::SP& msg)
 
 	case MSG_MSGR_EVENT_GOLDENBALL_GIFT:
 		{
-			// °ñµçº¼ ÀÌº¥Æ® º¸»ó ¼³Á¤	: gmcharindex(n) team1(str) team1score(n) team2(str) team2score(n) year(n) month(n) day(n) hour(n) minute(n) endVoteTime(n)
+			// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸ ë³´ìƒ ì„¤ì •	: gmcharindex(n) team1(str) team1score(n) team2(str) team2score(n) year(n) month(n) day(n) hour(n) minute(n) endVoteTime(n)
 			RefMsg(msg) >> nGMCharIndex
 						>> strTeam1
 						>> nTeam1Score
@@ -678,7 +678,7 @@ void do_Request_EventGoldenball(CNetMsg::SP& msg)
 
 	case MSG_MSGR_EVENT_GOLDENBALL_END:
 		{
-			// °ñµçº¼ ÀÌº¥Æ® Á¾·á		: gmcharindex(n)
+			// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸ ì¢…ë£Œ		: gmcharindex(n)
 			RefMsg(msg) >> nGMCharIndex;
 			memset(&gserver.m_sGoldenBallData, 0, sizeof(gserver.m_sGoldenBallData));
 			gserver.m_sGoldenBallData.nStatus = GOLDENBALL_STATUS_NOTHING;

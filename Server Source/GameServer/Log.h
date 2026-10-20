@@ -10,19 +10,19 @@
 
 typedef enum _tagLogHeaderType
 {
-	LHT_MSG,			// �α� �޽����� ����
-	LHT_MSG_ID,			// �α� �޽��� + ����� ���̵�
-	LHT_MSG_ID_NAME,	// �α� �޽��� + ����� ���̵� + ĳ���� �̸�
-	LHT_MSG_ID_NICK,	// �α� �޽��� + ����� ���̵� + �ɸ��� �̸� + �ɸ��� ����
+	LHT_MSG,			// 로그 메시지만 있음
+	LHT_MSG_ID,			// 로그 메시지 + 사용자 아이디
+	LHT_MSG_ID_NAME,	// 로그 메시지 + 사용자 아이디 + 캐릭터 이름
+	LHT_MSG_ID_NICK,	// 로그 메시지 + 사용자 아이디 + 케릭터 이름 + 케릭터 별명
 
-	LHT_TIME_CLASSTYPE_MSG, // �α��νð� + Ŭ���� Ÿ�� + �α� �޽���
+	LHT_TIME_CLASSTYPE_MSG, // 로그인시간 + 클래스 타입 + 로그 메시지
 } LOG_HEADER_TYPE;
 
 typedef struct __tagItemLogMani
 {
 	CItem*				m_pItem;
-	bool				m_bSimple;			// Simple�� index, name, wear, plus, flag, used, count, serial
-	// �Ϲ��� simple�� �ɼ� �߰�
+	bool				m_bSimple;			// Simple은 index, name, wear, plus, flag, used, count, serial
+	// 일반은 simple에 옵션 추가
 } ITEMLOGMANI;
 
 class CLogHeader

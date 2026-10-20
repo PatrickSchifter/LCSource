@@ -50,6 +50,7 @@ private:
 	void	SetCashItemInfo();
 	void	SetCashPackageItemInfo();
 	void	SetAmendInfo(eUIBTN_ETC_TYPE type);		// 보상으로 얻을수 있는 가치에 대한 정보. (ex. 경험치, 나스, sp)
+	void	SetAffinity(eUIBTN_ETC_TYPE type);		// 친화도 정보.
 	void	SetWearInfo();
     void	SetName();
 	void	SetCompositionInfo();	// 능력치 결합 정보.
@@ -169,6 +170,8 @@ private:
 
 	void AddText(CTString str, COLOR col = 0xFFFFFFFF, eALIGN_H alingn = eALIGN_H_LEFT, eLIST_TYPE eType = eLIST_FIRST, int nMaxChar = 0);
     void UpdateTooltip(CUIImageSplit* pBackGround);
+
+	int calc_pet_item_plus(int orig_value, ULONG plus);
 };
 
 #endif // __UI_TOOLTIP_H__

@@ -19,7 +19,7 @@ void CServer::Close()
 	cmd.SetQuery(replaceQuery);
 	cmd.Update();
 
-	// ±âÁ¸¿¡ ¸®½ºÆ®¸¦ ¸ğµÎ Áö¿ì°í
+	// ê¸°ì¡´ì— ë¦¬ìŠ¤íŠ¸ë¥¼ ëª¨ë‘ ì§€ìš°ê³ 
 	cmd.BeginTrans();
 
 	std::string deleteQuery = boost::str(boost::format(
@@ -28,7 +28,7 @@ void CServer::Close()
 	cmd.SetQuery(deleteQuery);
 	cmd.Update();
 
-	// ÇÑÁ¤ »óÇ°ÀÌ ÆÈ¸° °¹¼ö¸¦ µğºñ¿¡ ÀúÀå
+	// í•œì • ìƒí’ˆì´ íŒ”ë¦° ê°¯ìˆ˜ë¥¼ ë””ë¹„ì— ì €ì¥
 	bool bSuccess = true;
 	CServer::map_limitsell_t::iterator it = gserver.m_limitSell.begin();
 	CServer::map_limitsell_t::iterator endit = gserver.m_limitSell.end();
@@ -82,7 +82,7 @@ void CServer::Close()
 	LOG_INFO("Normal termination of game.");
 }
 
-// ÀÌ ÇÔ¼ö´Â ¸Å 1ÃÊ¸¶´Ù ºÒ¸®¿öÁü
+// ì´ í•¨ìˆ˜ëŠ” ë§¤ 1ì´ˆë§ˆë‹¤ ë¶ˆë¦¬ì›Œì§
 void CServer::HeartBeat()
 {
 	static int _time_to_db_ping = 0;

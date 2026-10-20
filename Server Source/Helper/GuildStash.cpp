@@ -47,9 +47,9 @@ bool CGuildStash::CheckStashSpace(MYSQL* mysql)
 	cmd.Init(mysql);
 	CLCString sql(1024);
 
-	// ¸¸·á½Ã°£ È®ÀÎ
+	// ë§Œë£Œì‹œê°„ í™•ì¸
 	int nowStashCapacity = DefaultStashCapacity;
-	sql.Format("SELECT a_capacity, a_enable FROM t_guild_stash_info WHERE a_guild_idx = %d and a_limitdate > NOW() ",m_guildIndex );
+	sql.Format("SELECT a_capacity, a_enable FROM t_guild_stash_info WHERE a_guild_idx = %d",m_guildIndex );
 	cmd.SetQuery(sql);
 	if (cmd.Open() == false)
 		return false;
@@ -79,7 +79,7 @@ bool CGuildStash::CheckStashSpace(MYSQL* mysql)
 	return true;
 }
 
-// Á¤È®È÷´Â ¸®½ºÆ®¿¡ÀÖ´Â ¾ÆÀÌÅÛÀ» DB ·Î ÀúÀåÇÑ´Ù.
+// ì •í™•íˆëŠ” ë¦¬ìŠ¤íŠ¸ì—ìˆëŠ” ì•„ì´í…œì„ DB ë¡œ ì €ì¥í•œë‹¤.
 bool CGuildStash::KeepToDB(MYSQL* mysql)
 {
 	if( !m_bLock )
@@ -97,7 +97,7 @@ bool CGuildStash::KeepToDB(MYSQL* mysql)
 	updateCmd.BeginTrans();
 	bool	m_bSave = true;
 
-	// µ·(NAS)¸¦ Ã³¸®ÇÔ
+	// ëˆ(NAS)ë¥¼ ì²˜ë¦¬í•¨
 	if (m_keepAndTakeMoney > 0)
 	{
 		std::string str = boost::str(boost::format(
@@ -134,7 +134,7 @@ bool CGuildStash::KeepToDB(MYSQL* mysql)
 		}
 	}
 
-	if( m_bSave == false ) // ÀúÀå ½ÇÆĞ
+	if( m_bSave == false ) // ì €ì¥ ì‹¤íŒ¨
 	{
 		updateCmd.Rollback();
 		return false;
@@ -148,7 +148,7 @@ bool CGuildStash::KeepToDB(MYSQL* mysql)
 	return true;
 }
 
-// Á¤È®È÷´Â ¾ÆÀÌÅÛ ¸®½ºÆ®¿¡ ÀÖ´Â ³»¿ëÀ» DB ¿¡¼­ Â÷°¨ÇÑ´Ù.
+// ì •í™•íˆëŠ” ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ì— ìˆëŠ” ë‚´ìš©ì„ DB ì—ì„œ ì°¨ê°í•œë‹¤.
 bool CGuildStash::TakeFromDB(MYSQL* mysql)
 {
 	if( !m_bLock )
@@ -166,7 +166,7 @@ bool CGuildStash::TakeFromDB(MYSQL* mysql)
 	updateCmd.BeginTrans();
 	bool	m_bSave = true;
 
-	// µ·(NAS)¸¦ Ã³¸®ÇÔ
+	// ëˆ(NAS)ë¥¼ ì²˜ë¦¬í•¨
 	if (m_keepAndTakeMoney > 0)
 	{
 		std::string str = boost::str(boost::format(
@@ -187,7 +187,7 @@ bool CGuildStash::TakeFromDB(MYSQL* mysql)
 			break;
 		}
 
-		// °ãÄ¡´Â ¾ÆÀÌÅÛÀº Update
+		// ê²¹ì¹˜ëŠ” ì•„ì´í…œì€ Update
 		if( pItem->CanCount() )
 		{
 			sql.Format("SELECT a_index, a_count FROM t_guild_stash WHERE a_index=%d and a_guild_idx = %d and a_item_idx=%d and a_plus = %d and a_flag = %d",
@@ -216,7 +216,7 @@ bool CGuildStash::TakeFromDB(MYSQL* mysql)
 					}
 					continue;
 				}
-				else if( count < pItem->m_count )		// °¹¼ö°¡ ¸ğÀÚ´Ù¶ó!! ¸ÓÁö?
+				else if( count < pItem->m_count )		// ê°¯ìˆ˜ê°€ ëª¨ìë‹¤ë¼!! ë¨¸ì§€?
 				{
 					m_bSave=false;
 					break;
@@ -234,7 +234,7 @@ bool CGuildStash::TakeFromDB(MYSQL* mysql)
 		}
 	}
 
-	if( m_bSave == false ) // ÀúÀå ½ÇÆĞ
+	if( m_bSave == false ) // ì €ì¥ ì‹¤íŒ¨
 	{
 		updateCmd.Rollback();
 		return false;
@@ -274,7 +274,7 @@ void CGuildStash::SaveLog( MYSQL* mysql , char cState, LONGLONG money )
 			cmd.SetQuery(sql);
 			if( !cmd.Update() )
 			{
-				// °ÔÀÓ·Î±×(File) ·Î ³²°Üº¾½Ã´Ù.
+				// ê²Œì„ë¡œê·¸(File) ë¡œ ë‚¨ê²¨ë´…ì‹œë‹¤.
 				//	GAMELOG << init("??") << (const char*) sql << end;
 			}
 		}

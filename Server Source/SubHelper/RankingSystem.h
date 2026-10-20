@@ -6,27 +6,27 @@
 class CRankingData
 {
 public:
-	// Ä³¸¯ÅÍ Á¤º¸
+	// ìºë¦­í„° ì •ë³´
 	int m_index;		// char index
 	CLCString m_name;	// char name
 	int m_level;		// char level
 	int m_job;			// char job
 
-	// ·©Å· Á¤º¸
-	int m_rank;			// ÇöÀç ·©Å·
-	int m_rank_pre;		// ÀÌÀü ·©Å·
+	// ë­í‚¹ ì •ë³´
+	int m_rank;			// í˜„ì¬ ë­í‚¹
+	int m_rank_pre;		// ì´ì „ ë­í‚¹
 
-	// ´Ş¼º°ª
-	int m_value;				// ÇöÀç ´Ş¼º°ª
-	int m_value_pre;			// ÀÌÀü ´Ş¼º°ª
-	CLCString m_achieve_date;	// ´Ş¼º ³¯Â¥
+	// ë‹¬ì„±ê°’
+	int m_value;				// í˜„ì¬ ë‹¬ì„±ê°’
+	int m_value_pre;			// ì´ì „ ë‹¬ì„±ê°’
+	CLCString m_achieve_date;	// ë‹¬ì„± ë‚ ì§œ
 };
 
 class CRankingSystemEX
 {
 	class CRankerData
 	{
-		// ·©Ä¿ ¸ñ·Ï º¸³¾ ¶§ »ç¿ëµÇ´Â µ¥ÀÌÅÍ
+		// ë­ì»¤ ëª©ë¡ ë³´ë‚¼ ë•Œ ì‚¬ìš©ë˜ëŠ” ë°ì´í„°
 	public:
 		CRankerData()
 			: m_char_index(0), m_rank(0), m_rank_pre(0), m_value(0), m_value_pre(0), m_level(0), m_job(0)
@@ -58,9 +58,9 @@ class CRankingSystemEX
 		int m_job;
 	};
 private:
-	std::string		m_refreshDate;			/* ·©Å· °»½Å ½Ã°£ */
+	std::string		m_refreshDate;			/* ë­í‚¹ ê°±ì‹  ì‹œê°„ */
 	bool m_lock;
-	bool m_reward;	// º¸»óÁÙ°Ô ÀÖ´ÂÁö? ( true : º¸»óÀ» Áà¾ßÇÒ°Ô ÀÖÀ½, false : º¸»óÀ» Áà¾ßÇÒ°Ô ¾øÀ½ )
+	bool m_reward;	// ë³´ìƒì¤„ê²Œ ìˆëŠ”ì§€? ( true : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ìˆìŒ, false : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ì—†ìŒ )
 
 public:
 	CRankingSystemEX();
@@ -70,52 +70,52 @@ public:
 	bool TestConnectDB();
 	bool ConnectDB();
 
-	// °»½Å °ü·Ã
-	void StartRefresh(void);					// ·©Å· °»½Å ½ÃÀÛ
-	bool RankingEX_Refresh(void);				// °»½Å
-	// º¸»ó °ü·Ã
-	void RankingEX_GiveReward(int endTime);		// º¸»ó Áö±Ş
-	// ½Ã°£ °ü·Ã
-	void CheckRankingRefreshTime(void);			// ·©Å· °»½Å ½Ã°£ È®ÀÎ
-	// ¶ô °ü·Ã
+	// ê°±ì‹  ê´€ë ¨
+	void StartRefresh(void);					// ë­í‚¹ ê°±ì‹  ì‹œì‘
+	bool RankingEX_Refresh(void);				// ê°±ì‹ 
+	// ë³´ìƒ ê´€ë ¨
+	void RankingEX_GiveReward(int endTime);		// ë³´ìƒ ì§€ê¸‰
+	// ì‹œê°„ ê´€ë ¨
+	void CheckRankingRefreshTime(void);			// ë­í‚¹ ê°±ì‹  ì‹œê°„ í™•ì¸
+	// ë½ ê´€ë ¨
 	bool IsLock(void)
 	{
-		return m_lock;	   // ·©Å· ½Ã½ºÅÛ ¶ô
+		return m_lock;	   // ë­í‚¹ ì‹œìŠ¤í…œ ë½
 	}
 	void SetLock(bool b)
 	{
-		m_lock = b;		   // ·©Å· ½Ã½ºÅÛ ¶ô
+		m_lock = b;		   // ë­í‚¹ ì‹œìŠ¤í…œ ë½
 	}
-	// º¸»ó ¿©ºÎ °ü·Ã
+	// ë³´ìƒ ì—¬ë¶€ ê´€ë ¨
 	bool IsExistReward(void)
 	{
-		return m_reward;	   // º¸»ó ¿©ºÎ ( true : º¸»óÀ» Áà¾ßÇÒ°Ô ÀÖÀ½, false : º¸»óÀ» Áà¾ßÇÒ°Ô ¾øÀ½ )
+		return m_reward;	   // ë³´ìƒ ì—¬ë¶€ ( true : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ìˆìŒ, false : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ì—†ìŒ )
 	}
 	void SetExistReward(bool b)
 	{
-		m_reward = b;		   // º¸»ó ¿©ºÎ ( true : º¸»óÀ» Áà¾ßÇÒ°Ô ÀÖÀ½, false : º¸»óÀ» Áà¾ßÇÒ°Ô ¾øÀ½ )
+		m_reward = b;		   // ë³´ìƒ ì—¬ë¶€ ( true : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ìˆìŒ, false : ë³´ìƒì„ ì¤˜ì•¼í• ê²Œ ì—†ìŒ )
 	}
-	// ¸®½ºÆ® °ü·Ã
-	void RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, int type, int subtype);	// Top50 ·©Ä¿ ¸®½ºÆ® ¾ò±â
-	void RankingEX_SearchList(CNetMsg::SP& msg, CDescriptor* dest, int type, int subtype);	// Search ·©Ä¿ ¸®½ºÆ® ¾ò±â (·©Ä¿¸¦ °Ë»öÇÏ¸é ÇØ´ç ·©Ä¿ ¾Æ·¡,À§ 5¸í¾¿ ÃÑ 11¸íÀÇ ¸®½ºÆ®¸¦ º¸³»ÁØ´Ù)
+	// ë¦¬ìŠ¤íŠ¸ ê´€ë ¨
+	void RankingEX_TOP50List(CNetMsg::SP& msg, CDescriptor* dest, int type, int subtype);	// Top50 ë­ì»¤ ë¦¬ìŠ¤íŠ¸ ì–»ê¸°
+	void RankingEX_SearchList(CNetMsg::SP& msg, CDescriptor* dest, int type, int subtype);	// Search ë­ì»¤ ë¦¬ìŠ¤íŠ¸ ì–»ê¸° (ë­ì»¤ë¥¼ ê²€ìƒ‰í•˜ë©´ í•´ë‹¹ ë­ì»¤ ì•„ë˜,ìœ„ 5ëª…ì”© ì´ 11ëª…ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ë‚´ì¤€ë‹¤)
 private:
-	// Refresh °ü·Ã
-	bool RankingEX_BackUp(void);				// ¹é¾÷
-	bool RankingEX_ClearRankingTable(void);		// ·©Å· Å×ÀÌºí ÃÊ±âÈ­
-	bool RankingEX_ClearCharTable(void);		// Ä³¸¯ÅÍ Å×ÀÌºí ·©Å· °ü·Ã ÇÊµå ÃÊ±âÈ­
+	// Refresh ê´€ë ¨
+	bool RankingEX_BackUp(void);				// ë°±ì—…
+	bool RankingEX_ClearRankingTable(void);		// ë­í‚¹ í…Œì´ë¸” ì´ˆê¸°í™”
+	bool RankingEX_ClearCharTable(void);		// ìºë¦­í„° í…Œì´ë¸” ë­í‚¹ ê´€ë ¨ í•„ë“œ ì´ˆê¸°í™”
 	bool RankingEX_RefreshData(void);			// t_characters -> t_ranking_data
-	bool RankingEX_RefreshRankByLevel(void);	// ·©Å· »êÁ¤
-	bool RankingEX_RefreshDate(void);			// °»½Å ³¯Â¥ ±â·Ï
-	std::string GetRefreshTime(void);				// °»½Å ½Ã°£ È®ÀÎ
+	bool RankingEX_RefreshRankByLevel(void);	// ë­í‚¹ ì‚°ì •
+	bool RankingEX_RefreshDate(void);			// ê°±ì‹  ë‚ ì§œ ê¸°ë¡
+	std::string GetRefreshTime(void);				// ê°±ì‹  ì‹œê°„ í™•ì¸
 
-	// º¸»ó °ü·Ã
-	void RankingEX_GiveRewardByType(int type, int subtype, int endTime);	// ·©Ä¿ Å¸ÀÔ¿¡ µû¶ó º¸»ó Áö±ŞÇÏ±â
-	int RankingEX_GetRewardTitle(int type, int subtype);					// º¸»ó ¾ÆÀÌÅÛ(È£Äª) ÀÎµ¦½º ¾ò±â
+	// ë³´ìƒ ê´€ë ¨
+	void RankingEX_GiveRewardByType(int type, int subtype, int endTime);	// ë­ì»¤ íƒ€ì…ì— ë”°ë¼ ë³´ìƒ ì§€ê¸‰í•˜ê¸°
+	int RankingEX_GetRewardTitle(int type, int subtype);					// ë³´ìƒ ì•„ì´í…œ(í˜¸ì¹­) ì¸ë±ìŠ¤ ì–»ê¸°
 
-	// ±âÅ¸
-	std::string GetPreviousRefreshDate(void);						// ÀÌÀü ·©Å· °»½Å ³¯Â¥ ¾ò±â
-	int GetRankerCount(int type, int subtype);						// ·©Ä¿ÀÇ ÃÑ ¼ö ¾ò±â
-	int GetRankingByName(int type, int subtype, CLCString name);	// Ä³¸¯ÅÍ ÀÌ¸§À¸·Î ·©Å· ¾ò±â
+	// ê¸°íƒ€
+	std::string GetPreviousRefreshDate(void);						// ì´ì „ ë­í‚¹ ê°±ì‹  ë‚ ì§œ ì–»ê¸°
+	int GetRankerCount(int type, int subtype);						// ë­ì»¤ì˜ ì´ ìˆ˜ ì–»ê¸°
+	int GetRankingByName(int type, int subtype, CLCString name);	// ìºë¦­í„° ì´ë¦„ìœ¼ë¡œ ë­í‚¹ ì–»ê¸°
 };
 
 #endif // __RANKINGSYSTEM_H__

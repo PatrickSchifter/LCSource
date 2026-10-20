@@ -8,10 +8,10 @@
 #include "WarCastle.h"
 
 ////////////////
-// Á×¾úÀ»¶§ ºÎÈ°
+// ì£½ì—ˆì„ë•Œ ë¶€í™œ
 void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 {
-	// ÁÖ¹®¼­ ÀÎµ¦½º ÁÖ¹®¼­ »ç¿ë¿©ºÎ, Á¦ÀÚ¸® ºÎÈ°
+	// ì£¼ë¬¸ì„œ ì¸ë±ìŠ¤ ì£¼ë¬¸ì„œ ì‚¬ìš©ì—¬ë¶€, ì œìë¦¬ ë¶€í™œ
 	int itemindex = 0;
 	char buse = 0;
 	char bhere = 0;
@@ -23,7 +23,7 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 					>> buse
 					>> bhere;
 	}
-	// Á×Àº »ç¶÷Àº ºÎÈ° ¸Ş½ÃÁö¸¦ º¸³»¸é ±× »ç¶÷ÀÇ ÀÔ·Â¹öÆÛ¸¦ ºñ¿î´Ù
+	// ì£½ì€ ì‚¬ëŒì€ ë¶€í™œ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ë©´ ê·¸ ì‚¬ëŒì˜ ì…ë ¥ë²„í¼ë¥¼ ë¹„ìš´ë‹¤
 	if(ch->m_assist.FindBySkillIndex(ROYAL_RUMBLE_DEBUFF_SKILL))
 	{
 		ch->m_assist.CureBySkillIndex(ROYAL_RUMBLE_DEBUFF_SKILL);
@@ -39,7 +39,7 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 		GAMELOG << init("REBIRTH PC", ch) << end;
 	}
 
-	// ÇöÀç Á¸¿¡ µû¶ó ¼³Á¤
+	// í˜„ì¬ ì¡´ì— ë”°ë¼ ì„¤ì •
 	if (ch->m_pZone == NULL)
 		return ;
 
@@ -78,9 +78,9 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 	case ZONE_TARIAN_DUNGEON:
 		zone = ch->m_pZone->m_index;
 		extra = 0;
-// °ø¼ºÁøÇàÁß Ã³¸®
+// ê³µì„±ì§„í–‰ì¤‘ ì²˜ë¦¬
 #ifdef JUNO_RENEWAL_MESSAGEBOX
-		if((zone == ZONE_START) && (ch->m_etcEvent & ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE)) // ¾ÆÁ÷ Äù½ºÆ®¸¦ ¿Ï·áÇÏÁö ¸øÇÏ¿´´Ù¸é
+		if((zone == ZONE_START) && (ch->m_etcEvent & ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE)) // ì•„ì§ í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œí•˜ì§€ ëª»í•˜ì˜€ë‹¤ë©´
 		{
 			extra = 6;
 			if(ch->m_questList.FindQuest(386, QUEST_STATE_DONE))
@@ -112,12 +112,12 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 				zone = pCastle->GetZoneIndex();
 				if (zone == ZONE_DRATAN && itemindex == 0 && buse == 1)
 				{
-					// °£ÀÌ ¸¶À»
+					// ê°„ì´ ë§ˆì„
 					extra = 27;
 				}
 				else
 				{
-					// ºÎÈ° ÁøÁö
+					// ë¶€í™œ ì§„ì§€
 					extra = pCastle->GetRegenPoint(ch->GetJoinFlag(pCastle->GetZoneIndex()), ch);
 				}
 				if( zone == ZONE_DRATAN && extra != 27 )
@@ -172,12 +172,12 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 			if (bPDQuest)
 			{
 				////////////////////////////////////////
-				// helper ½ÇÆĞ º¸³»±â
+				// helper ì‹¤íŒ¨ ë³´ë‚´ê¸°
 
 				///////////////////////////////////
-				// pd4 Äù½ºÆ®ÀÌ¸é helper ·©Å·¿¡ µî·Ï : BW
+				// pd4 í€˜ìŠ¤íŠ¸ì´ë©´ helper ë­í‚¹ì— ë“±ë¡ : BW
 				//
-				// char index¸¦ º¸³¿
+				// char indexë¥¼ ë³´ëƒ„
 				if (pQuestProto != NULL)
 				{
 					if( pQuestProto->m_index == 105)
@@ -204,7 +204,7 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 					}
 					else if (pQuestProto->m_type[0] == QTYPE_KIND_SAVE)
 					{
-						// ¾ÆÀÌÅÛ »èÁ¦
+						// ì•„ì´í…œ ì‚­ì œ
 						pQuest->RemoeQuestItem(ch);
 					}
 
@@ -235,9 +235,9 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 		zone = ZONE_START;
 		extra = 0;
 
-		// ÀüÀåÆ÷ÀÎÆ® 1Æ÷ÀÎÆ® Áö±Ş
+		// ì „ì¥í¬ì¸íŠ¸ 1í¬ì¸íŠ¸ ì§€ê¸‰
 		ch->AddWarGroundPoint(1);
-		// ÀüÀå death ¼ö 1 Áõ°¡
+		// ì „ì¥ death ìˆ˜ 1 ì¦ê°€
 		ch->AddDeathCount(1);
 		break;
 
@@ -261,19 +261,19 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 	LONGLONG	nRecoverExp = 0;
 	LONGLONG	nRecoverSP  = 0;
 
-	// ÁÖ¹®¼­¿¡ µû¶ó »ç¸Á °æÇèÄ¡/ sp º¹±¸
+	// ì£¼ë¬¸ì„œì— ë”°ë¼ ì‚¬ë§ ê²½í—˜ì¹˜/ sp ë³µêµ¬
 
-	if( buse && itemindex && ( itemindex == 4933 || ( itemindex == 5958 && ch->m_level < 36)) )	// ºÎÈ° ÁÖ¹®¼­ 2, ÃÊº¸ÀÚ¿ë ºÎÈ° ÁÖ¹®¼­ 2
+	if( buse && itemindex && ( itemindex == 4933 || ( itemindex == 5958 && ch->m_level < 36)) )	// ë¶€í™œ ì£¼ë¬¸ì„œ 2, ì´ˆë³´ììš© ë¶€í™œ ì£¼ë¬¸ì„œ 2
 	{
-		// »ç¸ÁÈÄ ¾ÆÀÌÅÛ »ç¿ëÇÏ´Â ºÎºĞ
-		// ¾ÆÀÌÅÛ Ã£±â
+		// ì‚¬ë§í›„ ì•„ì´í…œ ì‚¬ìš©í•˜ëŠ” ë¶€ë¶„
+		// ì•„ì´í…œ ì°¾ê¸°
 		CItem* pItem = ch->m_inventory.FindByDBIndex(itemindex, 0, 0);
 		if( pItem )
 		{
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 			ch->m_inventory.decreaseItemCount(pItem, 1);
 
-			// °æÇèÄ¡ º¹±¸
+			// ê²½í—˜ì¹˜ ë³µêµ¬
 			ch->m_exp += ch->m_loseexp;
 			ch->m_skillPoint += ch->m_losesp;
 			nRecoverExp = ch->m_loseexp;
@@ -310,15 +310,15 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 			ch->m_loseexp = 0;
 			ch->m_losesp = 0;
 		}
-		else if(itemindex == 845  // ¼÷·Ãµµº¹±¸ ÁÖ¹®¼­
-				|| itemindex == 2036) // ·°Å° ¼÷·Ãµµº¹±¸ ÁÖ¹®¼­
+		else if(itemindex == 845  // ìˆ™ë ¨ë„ë³µêµ¬ ì£¼ë¬¸ì„œ
+				|| itemindex == 2036) // ëŸ­í‚¤ ìˆ™ë ¨ë„ë³µêµ¬ ì£¼ë¬¸ì„œ
 		{
 			ch->m_skillPoint += ch->m_losesp;
 			nRecoverSP = ch->m_losesp;
 			ch->m_losesp = 0;
 		}
-		else if(itemindex == 844  // °æÇèÄ¡º¹±¸ ÁÖ¹®¼­
-				|| itemindex == 2035) // ·°Å° °æÇèÄ¡º¹±¸ ÁÖ¹®¼­
+		else if(itemindex == 844  // ê²½í—˜ì¹˜ë³µêµ¬ ì£¼ë¬¸ì„œ
+				|| itemindex == 2035) // ëŸ­í‚¤ ê²½í—˜ì¹˜ë³µêµ¬ ì£¼ë¬¸ì„œ
 		{
 			ch->m_exp += ch->m_loseexp;
 			nRecoverExp = ch->m_loseexp;
@@ -340,15 +340,15 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 		bhere = false;
 	}
 
-	// HP, MP È¸º¹ ÇÏ°í
-	// ´ë·« ¹İ¸¸ È¸º¹
+	// HP, MP íšŒë³µ í•˜ê³ 
+	// ëŒ€ëµ ë°˜ë§Œ íšŒë³µ
 	ch->m_hp = ch->m_maxHP / 2;
 
-	// MP´Â ¹İÀÌ»ó ÀÖÀ¸¸é ±×´ë·Î..
+	// MPëŠ” ë°˜ì´ìƒ ìˆìœ¼ë©´ ê·¸ëŒ€ë¡œ..
 	if (ch->m_mp < ch->m_maxMP / 2)
 		ch->m_mp = ch->m_maxMP / 2;
 
-	// rebirth MSG ¿¡ÄÚ ÇÏ°í
+	// rebirth MSG ì—ì½” í•˜ê³ 
 	if (ch->m_pArea)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -358,7 +358,7 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 
 	ch->ResetPlayerState(PLAYER_STATE_SITDOWN | PLAYER_STATE_MOVING | PLAYER_STATE_WARP | PLAYER_STATE_PKMODE);
 
-// [110630: selo] ITS 3058 »çµµ¸ğµå(´ÙÅ©´Ï½º)ÀÏ ¶§ Á×À¸¸é Å¬¶ó·Î »çµµ¸ğµå ÇØÁ¦µÇ´Â°Å ¾Èº¸³»Á®¼­ »óÅÂ º¸³»±â·Î ¼öÁ¤
+// [110630: selo] ITS 3058 ì‚¬ë„ëª¨ë“œ(ë‹¤í¬ë‹ˆìŠ¤)ì¼ ë•Œ ì£½ìœ¼ë©´ í´ë¼ë¡œ ì‚¬ë„ëª¨ë“œ í•´ì œë˜ëŠ”ê±° ì•ˆë³´ë‚´ì ¸ì„œ ìƒíƒœ ë³´ë‚´ê¸°ë¡œ ìˆ˜ì •
 	if (ch->m_pArea)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -433,7 +433,7 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 			   GetRandom(pZone->m_zonePos[extra][1], pZone->m_zonePos[extra][3]) / 2.0f,
 			   GetRandom(pZone->m_zonePos[extra][2], pZone->m_zonePos[extra][4]) / 2.0f);
 
-		//¹«Àû ¹öÇÁ (Á¸ ÀÌµ¿½Ã¿¡ °É¾îÁÖ´Â ¹öÇÁ)
+		//ë¬´ì  ë²„í”„ (ì¡´ ì´ë™ì‹œì— ê±¸ì–´ì£¼ëŠ” ë²„í”„)
 		if(ch->IsInRaidZone() == false &&
 				pZone->IsPartyRaidZone() == false &&
 				pZone->IsPersonalDungeon() == false &&
@@ -443,9 +443,9 @@ void do_Rebirth(CPC* ch, CNetMsg::SP& msg)
 			CSkill* skill = gserver->m_skillProtoList.Create(IMMOTAL_BUF);
 			ApplySkill(ch, ch, skill, -1, bapply);
 
-			//¹«ºùÇÏ±âÀü »óÅÂ false·Î
+			//ë¬´ë¹™í•˜ê¸°ì „ ìƒíƒœ falseë¡œ
 			ch->m_bFirstDoIt = false;
-			//*¹«Àû ¹öÇÁ
+			//*ë¬´ì  ë²„í”„
 		}
 
 #ifdef BUGFIX_DEAD_AGAIN_DEAD

@@ -16,7 +16,7 @@ public:
 	int		m_maxLevel;			// Max Level
 	int		m_preference;		// Preference
 
-	// ÇÊ¿äÁ¶°Ç
+	// í•„ìš”ì¡°ê±´
 	int		m_needLevel[SSKILL_MAX_LEVEL];	// Level
 	int		m_needSP[SSKILL_MAX_LEVEL];		// SP
 	int		m_needSSkill;					// SSkill index
@@ -50,15 +50,15 @@ class CSSkillProtoList
 public:
 	typedef std::map<int, CSSkillProto*> map_t;
 	map_t			map_;
-	CSSkillProto*	m_proto;		// SSkill ÇÁ·ÎÅä ¸®½ºÆ®
-	int				m_nCount;		// SSkill ¼ö
+	CSSkillProto*	m_proto;		// SSkill í”„ë¡œí†  ë¦¬ìŠ¤íŠ¸
+	int				m_nCount;		// SSkill ìˆ˜
 
 	CSSkillProtoList();
 	~CSSkillProtoList();
 
-	bool Load();							// DB ÀĞ±â
-	CSSkillProto* FindProto(int index);		// SSkill proto Ã£±â
-	CSSkill* Create(int index, int level = 1);	// SSKill »ı¼º
+	bool Load();							// DB ì½ê¸°
+	CSSkillProto* FindProto(int index);		// SSkill proto ì°¾ê¸°
+	CSSkill* Create(int index, int level = 1);	// SSKill ìƒì„±
 
 private:
 	std::vector<std::string>	a_level_need_level_str;
@@ -102,11 +102,11 @@ public:
 
 	void Init();
 
-	bool Add(CSSkill* sskill);		// SSkill Ãß°¡
-	bool Remove(CSSkill* sskill);	// SSkill »èÁ¦
-	CSSkill* Find(int index);		// SSkillList¿¡¼­ ÇØ´ç ÀÎµ¦½º SSkill Ã£±â
+	bool Add(CSSkill* sskill);		// SSkill ì¶”ê°€
+	bool Remove(CSSkill* sskill);	// SSkill ì‚­ì œ
+	CSSkill* Find(int index);		// SSkillListì—ì„œ í•´ë‹¹ ì¸ë±ìŠ¤ SSkill ì°¾ê¸°
 
-	char* GetString(char* buf);		// DB ÀúÀå String ¸¸µé±â
+	char* GetString(char* buf);		// DB ì €ì¥ String ë§Œë“¤ê¸°
 	void GetString(std::string& buf);
 };
 

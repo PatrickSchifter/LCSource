@@ -18,23 +18,24 @@
 #include <Engine/Interface/UIManager.h>
 #include <Engine/Contents/Base/UINoticeNew.h>
 #include <Engine/Interface/UIShop.h>
-#include <Engine/Interface/UIPetTraining.h>
+#include <Engine/Contents/function/ShopUI.h>
+#include <Engine/Contents/function/PetTrainingUI.h>
 #include <Engine/Interface/UIPetInfo.h>
 #include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UIChildInvenSlot.h>
-#include <Engine/Interface/UITeleport.h>
+#include <Engine/Contents/function/TeleportUI.h>
 #include <Engine/Interface/UIInvenCashBagBox.h>
 #include <Engine/Contents/Base/UISkillNew.h>
-#include <Engine/Interface/UIWareHouse.h>
+#include <Engine/Contents/function/WareHouseUI.h>
 #include <Engine/Interface/UIProcess.h>
 #include <Engine/Interface/UISocketSystem.h>
 #include <Engine/Interface/UIProduct.h>
 #include <Engine/Contents/Base/UIChangeWeaponNew.h>
 #include <Engine/Interface/UISkillLearn.h>
+#include <Engine/Contents/function/SSkillLearnUI.h>
 #include <Engine/Interface/UIQuickSlot.h>
-#include <Engine/Interface/UIPersonalShop.h>
 #include <Engine/Interface/UIMixNew.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Object/ActorMgr.h>
 #include <Common/Packet/ptype_durability.h>
 #include <Engine/Contents/Base/UIDurability.h>
@@ -43,8 +44,12 @@
 #include <Engine/Contents/Base/UITrade.h>
 #include <Engine/Contents/Base/InvenData.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Contents/Base/PersonalshopUI.h>
+#include <Engine/Contents/function/PetTargetUI.h>
+#include <Common/Packet/ptype_old_do_item.h>
 
 DECLARE_PACKET(MoneyStash);
+DECLARE_PACKET(PetItemUpgrade);
 
 void CSessionState::reg_packet()
 {
@@ -85,7 +90,8 @@ void CSessionState::reg_packet()
 #ifdef DURABILITY
 	REG_PACKET_R(MSG_UPDATE_DATA_FOR_CLIENT, MSG_SUB_UPDATE_ITEM_DURABILITY_FOR_INVENTORY, updateDurabilityForInventory);
 	REG_PACKET_R(MSG_UPDATE_DATA_FOR_CLIENT, MSG_SUB_UPDATE_ITEM_DURABILITY_FOR_WEAR, updateDurabilityForWear);
-#endif	//	DURABILITY	
+#endif	//	DURABILITY
+	REG_PACKET(MSG_ITEM, MSG_ITEM_UPGRADE_PET, PetItemUpgrade);
 }
 
 //------------------------------------------------------------------------
@@ -147,7 +153,7 @@ void CSessionState::updateMoney( CNetworkMessage* istr )
 		CUIManager* pUIMgr = CUIManager::getSingleton();
 
 		if (pUIMgr->GetInventory()->getLocked() == LOCK_WAREHOUSE)
-			pUIMgr->GetWareHouse()->ResetWareHouse();
+			pUIMgr->GetWareHouseUI()->closeUI();
 
 		pUIMgr->GetSkillNew()->UpdateSPointAndMoney();
 	}
@@ -155,7 +161,7 @@ void CSessionState::updateMoney( CNetworkMessage* istr )
 
 IMPLEMENT_PACKET(MoneyStash)
 {
-	UIMGR()->GetWareHouse()->ReceiveNas( istr );
+	UIMGR()->GetWareHouseUI()->ReceiveNas( istr );
 }
 
 void CSessionState::setWearItemInfo( UpdateClient::itemInfo* pInfo )
@@ -221,6 +227,8 @@ void CSessionState::setWearItemInfo( UpdateClient::itemInfo* pInfo )
 				else			
 					CUIManager::getSingleton()->SetCSFlagOff( CSF_MOUNT_HUNGRY );
 			}
+
+			pUIMgr->GetPetTargetUI()->openUI();
 		}
 	}	
 
@@ -437,6 +445,8 @@ void CSessionState::setItemInfo( int tabId, UpdateClient::itemInfo* pInfo )
 			pPetInfo->iType			= iPetType;
 			pPetInfo->iAge			= iPetAge;
 		}
+
+		pUIMgr->GetPetTargetUI()->openUI();
 	}	
 
 	_pNetwork->MySlotItem[tabId][invenidx].InitOptionData();
@@ -556,7 +566,7 @@ void CSessionState::updateInvenList(CNetworkMessage* istr)
 	else if (pPack->tab_no == INVENTORY_TAB_STASH)
 	{
 		// 창고
-		pUIMgr->GetWareHouse()->ReceiveList( istr );
+		pUIMgr->GetWareHouseUI()->ReceiveList( istr );
 	}
 }
 
@@ -643,7 +653,12 @@ void CSessionState::updateItemAdd( CNetworkMessage* istr )
 		CTString	strSysMessage;
 
 		if( pPack->info.itemCount > 0 )
-			strSysMessage.PrintF( _S( 417, "%s %d개를 얻었습니다." ), szItemName, pPack->info.itemCount );
+		{
+			CTString strCount;
+			strCount.PrintF("%I64d", pPack->info.itemCount);
+			pUIManager->InsertCommaToString(strCount);
+			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
+		}
 		else
 			strSysMessage.PrintF( _S2( 303, szItemName, "%s<를> 얻었습니다." ),
 			szItemName );
@@ -678,9 +693,9 @@ void CSessionState::updateItemAdd( CNetworkMessage* istr )
 		}
 
 		// [091216: selo] 스킬 배우기 UI 갱신
-		if(pUIManager->DoesUIExist(UI_SKILLLEARN))
+		if(pUIManager->DoesUIExist(UI_SSKILLLEARN))
 		{
-			pUIManager->GetSkillLearn()->UpdateSkillLearn();
+			pUIManager->GetSSkillLearn()->updateList();
 		}
 
 		if (pItemData->GetType() == CItemData::ITEM_WEAPON ||
@@ -699,20 +714,25 @@ void CSessionState::updateItemAdd( CNetworkMessage* istr )
 		CTString strMessage;
 		const char* szName = _pNetwork->GetItemName( pPack->info.dbIndex );
 		CItemData* pItemData = _pNetwork->GetItemData( pPack->info.dbIndex );
+
+		CTString strCount;
+		strCount.PrintF("%I64d", pPack->info.itemCount);
+		pUIManager->InsertCommaToString(strCount);
+
 		if( pItemData->GetType() == CItemData::ITEM_ETC &&
 			pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
 		{
-			strMessage.PrintF( _S( 1346, "나스를 %I64d개 보관하였습니다." ), pPack->info.itemCount);		
+			strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount);		
 		}
 		else
 		{
-			strMessage.PrintF(_S( 808, "%s를 %I64d개 보관하였습니다." ), szName, pPack->info.itemCount);
+			strMessage.PrintF(_S( 808, "%s를 %s개 보관하였습니다." ), szName, strCount);
 		}
 		_pNetwork->ClientSystemMessage( strMessage );
 
 		// 창고 UI가 열려 있다면, 닫는다
 		if (pUIManager->GetInventory()->getLocked() == LOCK_WAREHOUSE)
-			pUIManager->GetWareHouse()->ResetWareHouse();
+			pUIManager->GetWareHouseUI()->closeUI();
 	}
 }
 
@@ -752,9 +772,9 @@ void CSessionState::updateItemDelete( CNetworkMessage* istr )
 		setNewItemEffect(pPack->tab_no, pPack->invenIndex, FALSE);
 
 		// [091216: selo] 스킬 배우기 UI 갱신
-		if(pUIManager->DoesUIExist(UI_SKILLLEARN))
+		if(pUIManager->DoesUIExist(UI_SSKILLLEARN))
 		{
-			pUIManager->GetSkillLearn()->UpdateSkillLearn();
+			pUIManager->GetSSkillLearn()->updateList();
 		}
 
 		if (pItemData->GetType() == CItemData::ITEM_WEAPON ||
@@ -767,7 +787,7 @@ void CSessionState::updateItemDelete( CNetworkMessage* istr )
 	else if (pPack->tab_no == INVENTORY_TAB_STASH)
 	{
 		if (pUIManager->GetInventory()->getLocked() == LOCK_WAREHOUSE)
-			pUIManager->GetWareHouse()->ResetWareHouse();
+			pUIManager->GetWareHouseUI()->closeUI();
 	}
 }
 
@@ -794,7 +814,11 @@ void CSessionState::updateItemCount(CNetworkMessage* istr)
 			CTString	strSysMessage;
 			const char* szItemName	= _pNetwork->GetItemName(pItems->Item_Index);
 
-			strSysMessage.PrintF( _S( 417, "%s %d개를 얻었습니다." ), szItemName, delta );
+			CTString strCount;
+			strCount.PrintF("%d", delta);
+			pUIManager->InsertCommaToString(strCount);
+
+			strSysMessage.PrintF( _S( 417, "%s %s개를 얻었습니다." ), szItemName, strCount );
 			_pNetwork->ClientSystemMessage( strSysMessage );
 
 			setNewItemEffect(pPack->tab_no, pPack->invenIndex, TRUE);
@@ -804,31 +828,35 @@ void CSessionState::updateItemCount(CNetworkMessage* istr)
 	}
 	else if (pPack->tab_no == INVENTORY_TAB_STASH)
 	{
-		LONGLONG llItemSum = pUIManager->GetWareHouse()->GetWareHouseItemCount( pPack->invenIndex );
+		LONGLONG llItemSum = pUIManager->GetWareHouseUI()->GetWareHouseItemCount( pPack->invenIndex );
 
 		if ( llItemSum < pPack->count )
 		{
-			int nDbIndex = pUIManager->GetWareHouse()->GetWareHouseItemIndex( pPack->invenIndex );
+			int nDbIndex = pUIManager->GetWareHouseUI()->GetWareHouseItemIndex( pPack->invenIndex );
 			LONGLONG llAddCount = pPack->count - llItemSum;
 			CTString strMessage;
 			const char* szName = _pNetwork->GetItemName( nDbIndex );
 			CItemData* pItemData = _pNetwork->GetItemData( nDbIndex );
 
+			CTString strCount;
+			strCount.PrintF("%I64d", llAddCount);
+			pUIManager->InsertCommaToString(strCount);
+
 			if( pItemData->GetType() == CItemData::ITEM_ETC &&
 				pItemData->GetSubType() == CItemData::ITEM_ETC_MONEY )
 			{
-				strMessage.PrintF( _S( 1346, "나스를 %I64d개 보관하였습니다." ), llAddCount );		
+				strMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount );		
 			}
 			else
 			{
-				strMessage.PrintF( _S( 808, "%s를 %I64d개 보관하였습니다." ), szName, llAddCount );
+				strMessage.PrintF( _S( 808, "%s를 %s개 보관하였습니다." ), szName, strCount );
 			}
 			_pNetwork->ClientSystemMessage( strMessage );
 		}	
 
 		// 창고 UI가 열려 있다면, 닫는다
 		if (pUIManager->GetInventory()->getLocked() == LOCK_WAREHOUSE)
-			pUIManager->GetWareHouse()->ResetWareHouse();
+			pUIManager->GetWareHouseUI()->closeUI();
 
 		// 교환 UI가 떠있는 상태라면 아이템 카운트 갱신.
 		if (pUIManager->DoesUIExist(UI_TRADE))
@@ -858,7 +886,7 @@ void CSessionState::updateItemCountSwap(CNetworkMessage* istr)
 	else if (pPack->tab_no == INVENTORY_TAB_STASH)
 	{
 		if (pUIManager->GetInventory()->getLocked() == LOCK_WAREHOUSE)
-			pUIManager->GetWareHouse()->ResetWareHouse();
+			pUIManager->GetWareHouseUI()->closeUI();
 	}	
 }
 
@@ -1149,13 +1177,13 @@ void CSessionState::updateItemUse( CNetworkMessage* istr )
 	if(db_ItemIndex == 2455 || db_ItemIndex == 2456 || db_ItemIndex == 2457 || db_ItemIndex == 2607)	//창고 이용 주문서
 	{
 		_pNetwork->MyCharacterInfo.bOtherZone = FALSE;
-		pUIManager->GetWareHouse()->OpenWareHouse(0, true);
+		pUIManager->GetWareHouseUI()->OpenWareHouse(0, true);
 		return;
 	}
 
 	if(db_ItemIndex == 2458 || db_ItemIndex == 2459 || db_ItemIndex == 2460 || db_ItemIndex == 2608)	//잡화상 이용 주문서
 	{
-		pUIManager->GetShop()->SetFieldShopChack(TRUE);
+		pUIManager->GetShopUI()->SetFieldShopChack(TRUE);
 		pUIManager->GetShop()->OpenShop(130, -1, FALSE,_pNetwork->MyCharacterInfo.x,_pNetwork->MyCharacterInfo.z);
 		return;
 	}
@@ -1169,7 +1197,7 @@ void CSessionState::updateItemUse( CNetworkMessage* istr )
 
 	if (db_ItemIndex == 2867) // 애완동물 조련사 NPC 이용 카드
 	{
-		pUIManager->GetPetTraining()->OpenPetTraining(pItemData->GetNum0(), FALSE, _pNetwork->MyCharacterInfo.x,_pNetwork->MyCharacterInfo.z);
+		pUIManager->GetPetTrainingUI()->OpenPetTraining(pItemData->GetNum0(), FALSE, _pNetwork->MyCharacterInfo.x,_pNetwork->MyCharacterInfo.z);
 		return;
 	}
 
@@ -1432,6 +1460,12 @@ void CSessionState::updateItemUseError( CNetworkMessage* istr )
 			pUIManager->GetChattingUI()->AddSysMessage( _S( 6348, "PVP보호 상태가 되어 PVP를 할 수 없고 PVP공격을 받지 않게 되었습니다.") );
 		}
 		break;
+
+	case MSG_ITEM_USE_TOO_FAR_DISTANCE:
+		{
+			pUIManager->GetChattingUI()->AddSysMessage( _S( 322, "거리가 멀어서 사용할 수 없습니다.") );
+		}
+		break;
 	}
 
 }
@@ -1447,7 +1481,10 @@ void CSessionState::updateMoneyReason( CNetworkMessage* istr )
 	case NAS_DESC_REASON_GUILD_KEEP:
 	case NAS_DESC_REASON_STASH_KEEP:
 		{
-			strSysMessage.PrintF( _S( 1346, "나스를 %I64d개 보관하였습니다." ), pPack->nas ); // 번역 수정
+			CTString strCount;
+			strCount.PrintF("%I64d", pPack->nas);
+			UIMGR()->InsertCommaToString(strCount);
+			strSysMessage.PrintF( _S( 1346, "나스를 %s개 보관하였습니다." ), strCount ); // 번역 수정
 			_pNetwork->ClientSystemMessage( strSysMessage );	
 		}
 		break;
@@ -1464,7 +1501,7 @@ void CSessionState::updateOldTimerItem( CNetworkMessage* istr )
 		pUIMgr->GetTeleport()->SetUseTime( pPack->memposTime );
 
 	if ( pPack->stashextTime > 0)
-		pUIMgr->GetWareHouse()->SetUseTime( pPack->stashextTime );
+		pUIMgr->GetWareHouseUI()->SetUseTime( pPack->stashextTime );
 }
 
 void CSessionState::updateEraseAllItem( CNetworkMessage* istr )
@@ -1577,7 +1614,12 @@ void CSessionState::ReceiveItemWearError( CNetworkMessage* istr )
 			}
 			return;
 		case WEAR_ERR_CANNOT_WEAR:
-			strError.PrintF( _S( 305, "장비를 착용할 수 없습니다." ) );
+			{
+				strError.PrintF( _S( 305, "장비를 착용할 수 없습니다." ) );
+
+				// 애완동물 비인가 채널에서 애완동물 탑승 시 락해제 필요.
+				pUIManager->SetCSFlagOff(CSF_PETRIDING);
+			}
 			break;
 		case WEAR_ERR_CANNOT_SWAP_ITEM_CASH_INVEN:
 			strError.PrintF( _S( 6276, "아이리스 가방의 기간이 만료되어, 선택 하신 장비를 교체 할 수 없습니다. 현재 착용 중인 장비를 먼저 해제 하신 후 착용해 주시기 바랍니다.") );
@@ -1699,16 +1741,14 @@ void CSessionState::updateItemTakeOff( CNetworkMessage* istr )
 		pOffItemData->GetSubType() == CItemData::ACCESSORY_PET )
 	{					
 		// 펫을 타고 있으면, 펫에서 내리도록 처리.
-		_pNetwork->LeavePet( (CPlayerEntity*)CEntity::GetPlayerEntity(0) );
+		if (_pNetwork->MyCharacterInfo.bPetRide == TRUE)
+		{
+			_pNetwork->LeavePet( (CPlayerEntity*)CEntity::GetPlayerEntity(0) );
+			MY_PET_INFO()->Init();		
+			pUIManager->GetPetTargetUI()->closeUI();
+		}
 		pMI	= penPlayerEntity->GetModelInstance();
-		MY_PET_INFO()->Init();
 		pUIManager->GetPetInfo()->ClosePetInfo();
-	}
-	else if(pOffItemData->GetType() == CItemData::ITEM_ACCESSORY && 
-		pOffItemData->GetSubType() == CItemData::ACCESSORY_WILDPET)
-	{
-		INFO()->SetMyApet(NULL);
-		pUIManager->GetWildPetInfo()->CloseWildPetInfo();					
 	}
 	// 강신중이고, 무기를 벗으려고 한다면...
 	else if( _pNetwork->MyCharacterInfo.nEvocationIndex > 0 && 
@@ -2035,7 +2075,7 @@ void CSessionState::updateItemWear( CNetworkMessage* istr )
 			return;
 		}
 
-		_pNetwork->MyCharacterInfo.itemEffect.AddRelicEffect(nRelicType, &penPlayerEntity->GetModelInstance()->m_tmSkaTagManager);
+		_pNetwork->MyCharacterInfo.itemEffect.AddRelicEffect(nRelicType, &pMI->m_tmSkaTagManager);
 	}
 }
 
@@ -2157,7 +2197,12 @@ void CSessionState::updateCostWear( CNetworkMessage* istr )
 		}
 		else if ((CTString)pItems->GetItemSmcFileName() == MODEL_TREASURE && pPack->info.wearPos == WEAR_HELMET)
 		{
-			penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.hairStyle - 1);
+			SBYTE hairStyle = _pNetwork->MyCharacterInfo.hairStyle - 1;
+
+			if (pPack->info.dbIndex == ITEM_TREASURE_HELMET)
+				hairStyle = hairStyle % 10;
+
+			penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, hairStyle);
 		}
 	}
 
@@ -2363,7 +2408,12 @@ void CSessionState::updateWearCostList( CNetworkMessage* istr )
 			}
 			else if ((CTString)pItems->GetItemSmcFileName() == MODEL_TREASURE && pInfo->wearPos == WEAR_HELMET)
 			{
-				penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.hairStyle - 1);
+				SBYTE hairStyle = _pNetwork->MyCharacterInfo.hairStyle - 1;
+
+				if (pInfo->dbIndex == ITEM_TREASURE_HELMET)
+					hairStyle = hairStyle % 10;
+
+				penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, hairStyle);
 			}
 	
 			if ( CurWear->ItemData != NULL )
@@ -2481,7 +2531,12 @@ void CSessionState::updateCostSuitWear( CNetworkMessage* istr )
 			}
 			else if ((CTString)pItems->GetItemSmcFileName() == MODEL_TREASURE && pInfo->wearPos == WEAR_HELMET)
 			{
-				penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, _pNetwork->MyCharacterInfo.hairStyle - 1);
+				SBYTE hairStyle = _pNetwork->MyCharacterInfo.hairStyle - 1;
+
+				if (pInfo->dbIndex == ITEM_TREASURE_HELMET)
+					hairStyle = hairStyle % 10;
+
+				penPlayerEntity->ChangeHairMesh(pMI, _pNetwork->MyCharacterInfo.job, hairStyle);
 			}
 		}
 
@@ -2640,7 +2695,7 @@ void CSessionState::updateStashPasswordFlag( CNetworkMessage* istr )
 {
 	UpdateClient::stashPasswordFlag* pPack = reinterpret_cast<UpdateClient::stashPasswordFlag*>(istr->GetBuffer());
 
-	CUIManager::getSingleton()->GetWareHouse()->SetHasPassword( pPack->flag == 1 ? true : false);
+	CUIManager::getSingleton()->GetWareHouseUI()->SetHasPassword( pPack->flag == 1 ? true : false);
 }
 
 void CSessionState::updateDurabilityForInventory( CNetworkMessage* istr )
@@ -2701,4 +2756,34 @@ void CSessionState::ReceiveItemExchange( CNetworkMessage* istr )
 	// UpdateAmendconditionCount()에 들어가는 인자가 -1이면 현재 선택된 아이템을 얻어와서 갱신함.
 	if (pRecv->result == 0)
 		UIMGR()->GetTrade()->UpdateAmendConditionCount(-1);
+}
+
+IMPLEMENT_PACKET(PetItemUpgrade)
+{
+	CTString strMsg;
+	ResponseClient::doItemUpgradePet* pPack = reinterpret_cast<ResponseClient::doItemUpgradePet*>(istr->GetBuffer());
+
+	CUIManager* pUIMgr = UIMGR();
+
+	pUIMgr->GetInventory()->Lock(FALSE, FALSE, LOCK_PET_ITEM_UPGRADE);
+
+	switch (pPack->error)
+	{
+	case PET_ITEM_UPGRADE_PLUS:			//강화 성공
+		strMsg = _S(176, "업그레이드를 성공하였습니다. +1 상승하였습니다.");
+		break;
+	case PET_ITEM_UPGRADE_MINUS:		//강화 실패 1마이너스
+		strMsg = _S(177, "업그레이드를 실패하였습니다. -1 하강하였습니다.");
+		break;
+	case PET_ITEM_UPGRADE_NO_CHANGE:	//강화 실패 변화 없음
+		strMsg = _S(178, "업그레이드를 실패하였습니다. 아이템에 변화가 없습니다.");
+		break;
+	case PET_ITEM_UPGRADE_BROKE:		//강화 실패 장비 파괴
+		strMsg = _S(179, "업그레이드를 실패하였습니다. 아이템이 파괴되었습니다.");
+		break;
+	default:
+		return;
+	}
+
+	pUIMgr->GetChattingUI()->AddSysMessage(strMsg);
 }

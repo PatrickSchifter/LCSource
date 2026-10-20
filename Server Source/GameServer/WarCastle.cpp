@@ -59,23 +59,23 @@ void CWarCastle::CheckWarCastle( bool forced_end_merac )
 {
 	CHECK_SUBSERVER(this);
 
-//	SendCastleState();	// ¸Ş¶óÅ©¸¸Á¦°Å
+//	SendCastleState();	// ë©”ë¼í¬ë§Œì œê±°
 
-	// °ø¼º ½ÃÀÛ ¾Ë¸²
+	// ê³µì„± ì‹œì‘ ì•Œë¦¼
 	CheckWarCastleNotice();
-	// ¾ßÀü ½ÃÀÛ
+	// ì•¼ì „ ì‹œì‘
 	CheckWarCastleStartWar();
-	// °ø¼º ½ÃÀÛ
+	// ê³µì„± ì‹œì‘
 	CheckWarCastleStartWarCastle();
-	// °ø¼º ³¡
+	// ê³µì„± ë
 	CheckWarCastleEnd(forced_end_merac);
-	// °ø¼º NPC Ã³¸®
+	// ê³µì„± NPC ì²˜ë¦¬
 	CheckWarCastleNPC();
-	// ¼öÈ£º´ NPC Ã³¸®
+	// ìˆ˜í˜¸ë³‘ NPC ì²˜ë¦¬
 	RegenGuardNPC();
-	// ±ÇÁÂ »ı¼º
+	// ê¶Œì¢Œ ìƒì„±
 	RegenLordSymbol();
-	// »óÀÎ »ı¼º
+	// ìƒì¸ ìƒì„±
 	RegenShop();
 }
 
@@ -83,7 +83,7 @@ void CWarCastle::SendCastleState( int zoneindex )
 {
 	if ( GetState() != WCSF_NORMAL)
 	{
-		// TODO: ·çÇÁ ½Ã°£ Ã¼Å©
+		// TODO: ë£¨í”„ ì‹œê°„ ì²´í¬
 		m_nSendInterval++;
 		if( m_nSendInterval > 20 )
 		{
@@ -222,7 +222,7 @@ bool CWarCastle::LoadCastleData()
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 
-	// ¼º Á¤º¸ ÀĞ±â
+	// ì„± ì •ë³´ ì½ê¸°
 	std::string select_castle = boost::str(boost::format("SELECT * FROM t_castle WHERE a_zone_index=%d") % GetZoneIndex());
 	cmd.SetQuery(select_castle);
 
@@ -266,7 +266,7 @@ bool CWarCastle::LoadCastleData()
 			<< "TIME"	<< delim	<< tmNextWarTime.tm_year << delim << tmNextWarTime.tm_mon << delim << tmNextWarTime.tm_mday << delim << tmNextWarTime.tm_hour
 			<< end;
 
-	// °ø¼º ½ÅÃ»ÀÎ Á¤º¸ ÀĞ±â
+	// ê³µì„± ì‹ ì²­ì¸ ì •ë³´ ì½ê¸°
 	std::string select_castle_join_query = boost::str(boost::format("SELECT * FROM t_castle_join WHERE a_zone_index=%d") % GetZoneIndex());
 	cmd.SetQuery(select_castle_join_query);
 
@@ -286,14 +286,14 @@ bool CWarCastle::LoadCastleData()
 		{
 			if (guild)
 				AddAttackGuild(index);
-			else if (GetZoneIndex() == ZONE_MERAC)			// ¸Ş¶óÅ©¸¸ ¿ëº´ÀÌ ÀÖ´Ù.
+			else if (GetZoneIndex() == ZONE_MERAC)			// ë©”ë¼í¬ë§Œ ìš©ë³‘ì´ ìˆë‹¤.
 				AddAttackChar(index);
 		}
 		else
 		{
 			if (guild)
 				AddDefenseGuild(index);
-			else if (GetZoneIndex() == ZONE_MERAC)			// ¸Ş¶óÅ©¸¸ ¿ëº´ÀÌ ÀÖ´Ù.
+			else if (GetZoneIndex() == ZONE_MERAC)			// ë©”ë¼í¬ë§Œ ìš©ë³‘ì´ ìˆë‹¤.
 				AddDefenseChar(index);
 		}
 	}
@@ -316,7 +316,7 @@ CWarCastle* CWarCastle::GetCastleObject(int zoneindex)
 {
 	if (gserver->FindZone(zoneindex) == NULL)
 	{
-		// ÇØ´ç Á¸ÀÌ ¾øÀ¸¸é
+		// í•´ë‹¹ ì¡´ì´ ì—†ìœ¼ë©´
 		return NULL;
 	}
 
@@ -424,14 +424,14 @@ void CWarCastle::CheckWarCastleNotice()
 	switch (GetState())
 	{
 	case WCSF_NORMAL:
-		// È®Á¤ ¾Ë¸®´Â °ÍÀÎÁö ¾Æ´Ï¸é ½ÃÀÛ 10ºĞÀü¿¡ ¾Ë¸®´Â °ÍÀÎÁö °Ë»ç
+		// í™•ì • ì•Œë¦¬ëŠ” ê²ƒì¸ì§€ ì•„ë‹ˆë©´ ì‹œì‘ 10ë¶„ì „ì— ì•Œë¦¬ëŠ” ê²ƒì¸ì§€ ê²€ì‚¬
 		if (!m_bNoticeWarTime)
 		{
-			// °ø¼º ½ÅÃ» °¡´É ½Ã°£´ëÀÌ°í
+			// ê³µì„± ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ëŒ€ì´ê³ 
 			if (!IsJoinTime())
 				return ;
 
-			// °ÔÀÓ³» ¸ğµç À¯Àú¿¡°Ô ¾Ë¸®±â
+			// ê²Œì„ë‚´ ëª¨ë“  ìœ ì €ì—ê²Œ ì•Œë¦¬ê¸°
 			{
 				struct tm nextWarTime;
 				GetNextWarTime(&nextWarTime, true);
@@ -450,10 +450,10 @@ void CWarCastle::CheckWarCastleNotice()
 			time_t curtime;
 			time(&curtime);
 
-			// ½ÃÀÛ 10ºĞÀü¿¡ ¸ÅºĞ¸¶´Ù
+			// ì‹œì‘ 10ë¶„ì „ì— ë§¤ë¶„ë§ˆë‹¤
 			if (curtime + 10 * 60 >= nexttime)
 			{
-				// ³²Àº ½Ã°£ ±¸ÇÏ±â
+				// ë‚¨ì€ ì‹œê°„ êµ¬í•˜ê¸°
 				int remain = (nexttime - curtime) / 60;
 				int modnum = (nexttime - curtime) % 60;
 				if (modnum)
@@ -468,11 +468,11 @@ void CWarCastle::CheckWarCastleNotice()
 
 					m_noticeRemain = remain;
 
-					// ±æµåÀü ÁßÁö ¿äÃ»
+					// ê¸¸ë“œì „ ì¤‘ì§€ ìš”ì²­
 					if (curtime + 60 >= nexttime)
 					{
-						// ¼­¹ö³»ÀÇ ±æµå ¸®½ºÆ®¸¦ µ¹¸é¼­
-						// ±æµåÀü ÁßÀÌ¸é ÇïÆÛ¿¡ ¿äÃ»
+						// ì„œë²„ë‚´ì˜ ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë©´ì„œ
+						// ê¸¸ë“œì „ ì¤‘ì´ë©´ í—¬í¼ì— ìš”ì²­
 						CGuild* p;
 						for (p = gserver->m_guildlist.head(); p; p = p->nextguild())
 						{
@@ -496,18 +496,18 @@ void CWarCastle::CheckWarCastleNotice()
 				} // if (remain != 0 && m_noticeRemain > remain && gserver->isRunHelper())
 			} // if (curtime + 10 * 60 >= nexttime)
 
-			// ½ÃÀÛ 3ºĞÀü ÀÌµ¿
+			// ì‹œì‘ 3ë¶„ì „ ì´ë™
 			if (!m_bMoveToRegen && curtime + 3 * 60 >= nexttime)
 			{
-				// ¸®Á¨ Æ÷ÀÎÆ® ÇÒ´ç
+				// ë¦¬ì   í¬ì¸íŠ¸ í• ë‹¹
 				InitRegenPosition();
 
-				// °­Á¦ Á¸ÀÌµ¿ ½ÃÅ°±â
+				// ê°•ì œ ì¡´ì´ë™ ì‹œí‚¤ê¸°
 				m_bMoveToRegen = true;
 				MoveToRegenPoint();
 			}
 
-			// °ø¼ºÀü ½ÃÀÛ 1ºĞ ÀüºÎÅÍ´Â ¸Ş¸ğ¸® ½ºÅ©·ÑÀ» »ç¿ëÇÒ ¼ö ¾øµµ·Ï ÇÏ±â À§ÇØ..
+			// ê³µì„±ì „ ì‹œì‘ 1ë¶„ ì „ë¶€í„°ëŠ” ë©”ëª¨ë¦¬ ìŠ¤í¬ë¡¤ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë„ë¡ í•˜ê¸° ìœ„í•´..
 			if (!m_bWarCastleReady && (curtime + 1 * 60) >= nexttime)
 			{
 				m_bWarCastleReady = true;
@@ -523,7 +523,7 @@ void CWarCastle::CheckWarCastleNotice()
 			time_t curtime;
 			time(&curtime);
 
-			// ½ÃÀÛ½Ã°£ + ÇÊµå ÀüÅõ ½Ã°£ - 5ºĞºÎÅÍ 1ºĞ¿¡ ÇÑ¹ø¾¿ ¸Ş½ÃÁö ¾Ë¸²
+			// ì‹œì‘ì‹œê°„ + í•„ë“œ ì „íˆ¬ ì‹œê°„ - 5ë¶„ë¶€í„° 1ë¶„ì— í•œë²ˆì”© ë©”ì‹œì§€ ì•Œë¦¼
 			int remainSec = WCT_FIELD - (curtime - nexttime);
 			int remainMin = remainSec / 60;
 			int modnum = (remainSec) % 60;
@@ -553,21 +553,21 @@ void CWarCastle::CheckWarCastleNotice()
 
 void CWarCastle::CheckWarCastleStartWar()
 {
-	// ÀÏ¹İ »óÅÂÀÌ¿©¾ß ÇÏ°í
+	// ì¼ë°˜ ìƒíƒœì´ì—¬ì•¼ í•˜ê³ 
 	if (GetState() != WCSF_NORMAL)
 		return ;
 
-	// °ø¼º ½ÃÀÛ ½Ã°£ÀÌ»óÀÌ¾î¾ß ÇÏ°í
+	// ê³µì„± ì‹œì‘ ì‹œê°„ì´ìƒì´ì–´ì•¼ í•˜ê³ 
 	time_t curTime;
 	time(&curTime);
 	int nextTime = GetNextWarTime();
 	if (nextTime > curTime)
 		return ;
 
-	// ¾Ë¸² ¸Ş½ÃÁö ½Ã°£ ÀúÀå º¯¼ö¸¦ ÃÊ±âÈ­
+	// ì•Œë¦¼ ë©”ì‹œì§€ ì‹œê°„ ì €ì¥ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
 	m_noticeRemain = 9999;
 
-	// °ø¼º ½ÅÃ» ±æµå°¡ ¾øÀ¸¸é ´ÙÀ½À¸·Î ³Ñ¾î°¨
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ ì—†ìœ¼ë©´ ë‹¤ìŒìœ¼ë¡œ ë„˜ì–´ê°
 	if (m_attackGuildList == NULL)
 	{
 		SetState(WCSF_WAR_CASTLE);
@@ -575,15 +575,15 @@ void CWarCastle::CheckWarCastleStartWar()
 		return ;
 	}
 
-	// ¼ö¼ºÃøÁ¦¿Ü ¼º¿¡¼­ ³»º¸³»±â
+	// ìˆ˜ì„±ì¸¡ì œì™¸ ì„±ì—ì„œ ë‚´ë³´ë‚´ê¸°
 	GetOutNonDefense();
 
-	// »óÅÂ¸¦ ¹Ù²Ù°í
+	// ìƒíƒœë¥¼ ë°”ê¾¸ê³ 
 	SetState(WCSF_WAR_FIELD);
 
 	RegenWarpNPC();
 
-	// °ø¼º ½ÅÃ» ±æµå°¡ 3°³ ÀÌÇÏÀÌ¸é ¾ßÀü ½ºÅµ
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ 3ê°œ ì´í•˜ì´ë©´ ì•¼ì „ ìŠ¤í‚µ
 	if (GetCountAttackGuild() < 4)
 	{
 		GAMELOG << init("WAR CASTLE : SKIP FIELD") << GetZoneIndex() << end;
@@ -592,7 +592,7 @@ void CWarCastle::CheckWarCastleStartWar()
 
 	GAMELOG << init("WAR CASTLE : START FIELD") << GetZoneIndex() << end;
 
-	// ¾ßÀü ½ÃÀÛÀ» ÇïÆÛ¸¦ ÅëÇØ ¾Ë¸®±â
+	// ì•¼ì „ ì‹œì‘ì„ í—¬í¼ë¥¼ í†µí•´ ì•Œë¦¬ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWarNoticeStartMsg(rmsg, GetZoneIndex(), GetRemainWarTime());
@@ -602,19 +602,19 @@ void CWarCastle::CheckWarCastleStartWar()
 
 void CWarCastle::CheckWarCastleStartWarCastle()
 {
-	// ¾ßÀü »óÅÂ °Ë»ç
+	// ì•¼ì „ ìƒíƒœ ê²€ì‚¬
 	if (GetState() != WCSF_WAR_FIELD)
 		return ;
 
-	// °ø¼º ±æµå°¡ 4°³ ÀÌ»óµÇ¾ú°Å³ª
+	// ê³µì„± ê¸¸ë“œê°€ 4ê°œ ì´ìƒë˜ì—ˆê±°ë‚˜
 	bool bFinishField = false;
-	// °ø¼º ½ÅÃ» ±æµå°¡ 3°³ ÀÌÇÏÀÌ¸é ¾ßÀü ½ºÅµ
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ 3ê°œ ì´í•˜ì´ë©´ ì•¼ì „ ìŠ¤í‚µ
 	if (GetCountAttackGuild() < 4)
 		bFinishField = true;
 
 	if (!bFinishField)
 	{
-		// ½Ã°£ÀÌ 15ºĞ ÀÌ»ó Áö³ª¸é
+		// ì‹œê°„ì´ 15ë¶„ ì´ìƒ ì§€ë‚˜ë©´
 		time_t curTime;
 		time(&curTime);
 		int nextTime = GetNextWarTime();
@@ -625,10 +625,10 @@ void CWarCastle::CheckWarCastleStartWarCastle()
 	if (!bFinishField)
 		return ;
 
-	// »óÅÂ º¯°æ
+	// ìƒíƒœ ë³€ê²½
 	SetState(WCSF_WAR_CASTLE);
 
-	// ÃÖ»óÀ§ 3°³ ±æµå ±¸ÇÔ
+	// ìµœìƒìœ„ 3ê°œ ê¸¸ë“œ êµ¬í•¨
 	GetTop3AttackGuild();
 
 	GAMELOG << init("WAR CASTLE : START WAR")
@@ -647,7 +647,7 @@ void CWarCastle::CheckWarCastleStartWarCastle()
 	}
 	GAMELOG << end;
 
-	// °ø¼º ±æµå Æ÷ÀÎÆ® ÃÊ±âÈ­
+	// ê³µì„± ê¸¸ë“œ í¬ì¸íŠ¸ ì´ˆê¸°í™”
 	CWarCastleJoin* p = m_attackGuildList;
 	while (p)
 	{
@@ -664,15 +664,15 @@ void CWarCastle::CheckWarCastleStartWarCastle()
 		p = p->m_next;
 	}
 
-	// ¾Ë¸² ¸Ş½ÃÁö ½Ã°£ ÀúÀå º¯¼ö¸¦ ÃÊ±âÈ­
+	// ì•Œë¦¼ ë©”ì‹œì§€ ì‹œê°„ ì €ì¥ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
 	m_noticeRemain = 9999;
 
-	// ±ÙÀ§º´ ÇØÁ¦
+	// ê·¼ìœ„ë³‘ í•´ì œ
 	RemoveGuardNPC();
 
 	ApplyGuildGradeSkillAll();
 
-	// °ø¼º ½ÃÀÛÀ» ÇïÆÛ¸¦ ÅëÇØ ¾Ë¸®±â
+	// ê³µì„± ì‹œì‘ì„ í—¬í¼ë¥¼ í†µí•´ ì•Œë¦¬ê¸°
 	if (gserver->isRunHelper())
 	{
 		CGuild* guild[3] = { NULL, NULL, NULL };
@@ -689,10 +689,10 @@ void CWarCastle::CheckWarCastleStartWarCastle()
 		}
 	}
 
-	// ¼öÈ£Å¾ »ı¼º
+	// ìˆ˜í˜¸íƒ‘ ìƒì„±
 	RegenCastleTower();
 
-	// °­Á¦ Á¸ÀÌµ¿ ½ÃÅ°±â
+	// ê°•ì œ ì¡´ì´ë™ ì‹œí‚¤ê¸°
 	MoveToRegenPoint();
 }
 
@@ -707,21 +707,21 @@ int CWarCastle::CheckJoin(CPC* ch)
 	if (ch->m_guildInfo)
 	{
 		CGuild* guild = ch->m_guildInfo->guild();
-		// ¼ºÁÖ ±æµå °Ë»ç
+		// ì„±ì£¼ ê¸¸ë“œ ê²€ì‚¬
 		if (guild->index() == GetOwnerGuildIndex())
 			return WCJF_OWNER;
-		// ¼ö¼º ±æµå °Ë»ç
+		// ìˆ˜ì„± ê¸¸ë“œ ê²€ì‚¬
 		if (IsDefenseGuild(guild->index()))
 			return WCJF_DEFENSE_GUILD;
-		// °ø¼º ±æµå °Ë»ç
+		// ê³µì„± ê¸¸ë“œ ê²€ì‚¬
 		if (IsAttackGuild(guild->index()))
 			return WCJF_ATTACK_GUILD;
 	}
 
-	// ¼ö¼º ¿ëº´ °Ë»ç
+	// ìˆ˜ì„± ìš©ë³‘ ê²€ì‚¬
 	if (IsDefenseChar(ch->m_index))
 		return WCJF_DEFENSE_CHAR;
-	// °ø¼º ¿ëº´ °Ë»ç
+	// ê³µì„± ìš©ë³‘ ê²€ì‚¬
 	if (IsAttackChar(ch->m_index))
 		return WCJF_ATTACK_CHAR;
 
@@ -755,7 +755,7 @@ void CWarCastle::MoveToRegenPoint()
 				&& pc->m_pZone->InExtra( (int)GET_X(pc), (int)GET_Z(pc) ,extra)  )  )
 #endif
 		{
-			// È®ÀÎ ¸Ş½ÃÁö Àü¼Û
+			// í™•ì¸ ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			WarpPromptMsg(rmsg, pZone->m_index, extra);
 			SEND_Q(rmsg, pc->m_desc);
@@ -785,7 +785,7 @@ void CWarCastle::GetOutNonDefense()
 	pArea->PointToCellNum(nX0x2 / 2.0f, nZ0x2 / 2.0f, &nCellX0, &nCellZ0);
 	pArea->PointToCellNum(nX1x2 / 2.0f, nZ1x2 / 2.0f, &nCellX1, &nCellZ1);
 
-	// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+	// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 
 	std::vector<CPC*> m_MovePCList;
 
@@ -1042,7 +1042,7 @@ void CWarCastle::RegenCastleTower()
 		CNPCProto* proto = gserver->m_npcProtoList.FindProto(p->m_npcIdx);
 		if (proto && proto->CheckFlag(NPC_CASTLE_TOWER))
 		{
-			// ¸®Á¨ Á¤º¸¿¡ ¼ö¼ºÃø Æ÷ÀÎÆ® ¼³Á¤
+			// ë¦¬ì   ì •ë³´ì— ìˆ˜ì„±ì¸¡ í¬ì¸íŠ¸ ì„¤ì •
 			if (m_defensePoint > 0)
 				p->SetHPParam(m_defensePoint * 100);
 			else
@@ -1082,7 +1082,7 @@ void CWarCastle::RegenCastleTower()
 				area->SendToCell(rmsg, npc);
 			}
 
-			// ¼º¹®Áö±â NPC ¼³Á¤
+			// ì„±ë¬¸ì§€ê¸° NPC ì„¤ì •
 			SetGateNPC(npc);
 
 			regencount++;
@@ -1160,7 +1160,7 @@ void CWarCastle::RegenLordSymbol()
 					<< GetZoneIndex()
 					<< end;
 
-			// TODO : ±ÇÁÂ¸¦ 2°³ÀÌ»ó ¼³Ä¡½Ã break Á¦°Å ¹× º¯¼ö ¼öÁ¤
+			// TODO : ê¶Œì¢Œë¥¼ 2ê°œì´ìƒ ì„¤ì¹˜ì‹œ break ì œê±° ë° ë³€ìˆ˜ ìˆ˜ì •
 			break;
 		}
 	}
@@ -1174,7 +1174,7 @@ void CWarCastle::RegenShop()
 	time(&curtime);
 	int nexttime = GetNextWarTime();
 
-	// ½ÃÀÛ 10ºĞÀü¿¡ »ı¼º
+	// ì‹œì‘ 10ë¶„ì „ì— ìƒì„±
 	if (!m_bRegenShop && curtime + 10 * 60 >= nexttime)
 	{
 		m_bRegenShop = true;
@@ -1248,10 +1248,10 @@ void CWarCastle::RegenShop()
 			{
 				p->SendDisappearAllInCell(true);
 
-				// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+				// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 				DelAttackList(p);
 
-				// npc »èÁ¦
+				// npc ì‚­ì œ
 				area->CharFromCell(p, true);
 				area->DelNPC(p);
 			}
@@ -1344,12 +1344,12 @@ int CWarCastle::GetGuildPoint(int guildindex)
 {
 	if (GetState() == WCSF_WAR_FIELD)
 	{
-		// ¼ö¼ºÃøÀº ¼ö¼º Æ÷ÀÎÆ®
+		// ìˆ˜ì„±ì¸¡ì€ ìˆ˜ì„± í¬ì¸íŠ¸
 		if (guildindex == GetOwnerGuildIndex() || IsDefenseGuild(guildindex))
 			return m_defensePoint;
 		else
 		{
-			// °ø¼ºÃøÀÎÁö °Ë»çÇÏ¿© °ø¼ºÃøÀº ±æµå Æ÷ÀÎÆ®
+			// ê³µì„±ì¸¡ì¸ì§€ ê²€ì‚¬í•˜ì—¬ ê³µì„±ì¸¡ì€ ê¸¸ë“œ í¬ì¸íŠ¸
 			CWarCastleJoin* p = FindAttackGuild(guildindex);
 			if (p)
 				return p->GetPoint();
@@ -1359,12 +1359,12 @@ int CWarCastle::GetGuildPoint(int guildindex)
 	}
 	else if (GetState() == WCSF_WAR_CASTLE)
 	{
-		// ¼ö¼ºÃøÀº ¾øÀ½
+		// ìˆ˜ì„±ì¸¡ì€ ì—†ìŒ
 		if (guildindex == GetOwnerGuildIndex() || IsDefenseGuild(guildindex))
 			return -1;
 		else
 		{
-			// °ø¼ºÃøÀÎÁö °Ë»çÇÏ¿© °ø¼ºÃøÀº ±æµå Æ÷ÀÎÆ®
+			// ê³µì„±ì¸¡ì¸ì§€ ê²€ì‚¬í•˜ì—¬ ê³µì„±ì¸¡ì€ ê¸¸ë“œ í¬ì¸íŠ¸
 			CWarCastleJoin* p = FindAttackGuild(guildindex);
 			if (p)
 				return p->GetPoint();
@@ -1445,10 +1445,10 @@ void CWarCastle::RemoveGuardNPC()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -1472,10 +1472,10 @@ void CWarCastle::RemoveCastleTower()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -1592,7 +1592,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 		}
 	}
 
-	// ÁøÇà »óÅÂ °Ë»ç
+	// ì§„í–‰ ìƒíƒœ ê²€ì‚¬
 	if (GetState() != WCSF_WAR_CASTLE)
 		return ;
 
@@ -1601,14 +1601,14 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 	if(forced_end_merac == true)
 		bFinished = true;
 
-	// ½Ã°£ÀÌ Á¾·áµÇ¾ú³ª?
+	// ì‹œê°„ì´ ì¢…ë£Œë˜ì—ˆë‚˜?
 	int nextWarTime = GetNextWarTime();
 	time_t curTime;
 	time(&curTime);
 	if (nextWarTime + WCT_WAR <= curTime)
 		bFinished = true;
 
-	// ±ÇÁÂ°¡ ºÎ¼­Á³³ª?
+	// ê¶Œì¢Œê°€ ë¶€ì„œì¡Œë‚˜?
 	bool bDestroySymbol = false;
 	if (GetLordSymbol() && DEAD(GetLordSymbol()))
 	{
@@ -1616,20 +1616,20 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 		bFinished = true;
 	}
 
-	// °ø¼º ½ÅÃ» ±æµå°¡ ÀÖ´ÂÁö °Ë»ç
+	// ê³µì„± ì‹ ì²­ ê¸¸ë“œê°€ ìˆëŠ”ì§€ ê²€ì‚¬
 	if (m_attackGuildList == NULL)
 		bFinished = true;
 
 	if (!bFinished)
 		return ;
 
-	// ½Â¸®ÀÚ ±¸ÇÔ
+	// ìŠ¹ë¦¬ì êµ¬í•¨
 	bool bWinDefense = true;
 	CGuild* topguild = NULL;
 	if (bDestroySymbol)
 	{
-		// °ø¼ºÃø ½Â¸®
-		// °¡Àå Æ÷ÀÎÆ®°¡ ¸¹Àº ±æµå ±¸ÇÏ±â
+		// ê³µì„±ì¸¡ ìŠ¹ë¦¬
+		// ê°€ì¥ í¬ì¸íŠ¸ê°€ ë§ì€ ê¸¸ë“œ êµ¬í•˜ê¸°
 		GetTop3AttackGuild();
 
 		if (m_top3guild[0])
@@ -1640,7 +1640,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 		}
 	}
 
-	// ±ÇÁÂ/¼öÈ£Å¾/¿öÇÁ°ÔÀÌÆ® »èÁ¦
+	// ê¶Œì¢Œ/ìˆ˜í˜¸íƒ‘/ì›Œí”„ê²Œì´íŠ¸ ì‚­ì œ
 	RemoveLordSymbol();
 	RemoveCastleTower();
 	RemoveWarpNPC();
@@ -1669,19 +1669,19 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 	}
 	GAMELOG << end;
 
-	// ¼º Á¤º¸ ÃÊ±âÈ­
+	// ì„± ì •ë³´ ì´ˆê¸°í™”
 	SetState(WCSF_NORMAL);
 	m_lastWarTime = GetNextWarTime() + WCT_WAR;
 	SetNextWarTime(0);
 	if (!bWinDefense)
 	{
-		// 060116 : BS : BEGIN : °ø¼º ³¡³ª°í Ä® È¸¼ö
+		// 060116 : BS : BEGIN : ê³µì„± ëë‚˜ê³  ì¹¼ íšŒìˆ˜
 		CPC* ownerPC = PCManager::instance()->getPlayerByCharIndex(GetOwnerCharIndex());
 		if (ownerPC)
 		{
 			TakeLordItem(ownerPC);
 		}
-		// 060116 : BS : END : °ø¼º ³¡³ª°í Ä® È¸¼ö
+		// 060116 : BS : END : ê³µì„± ëë‚˜ê³  ì¹¼ íšŒìˆ˜
 		CGuild * oldGuild =  gserver->m_guildlist.findguild( GetOwnerGuildIndex() );
 		SetOwner(topguild);
 
@@ -1720,7 +1720,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 	m_countAttackGuild = 0;
 	memset(m_top3guild, 0, sizeof(CGuild*) * 3);
 
-	// Ä® Áö±Ş
+	// ì¹¼ ì§€ê¸‰
 	if (GetOwnerCharIndex())
 	{
 		CPC* ownerPC = PCManager::instance()->getPlayerByCharIndex(GetOwnerCharIndex());
@@ -1728,7 +1728,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 		{
 			GiveLordItem(ownerPC);
 
-			// ¸Ş¶óÅ© °ø¼º Á¤º¸ °ø¼º Á¤º¸ °»½Å
+			// ë©”ë¼í¬ ê³µì„± ì •ë³´ ê³µì„± ì •ë³´ ê°±ì‹ 
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildNameColorStateMsg(rmsg, ownerPC);
 			ownerPC->m_pArea->SendToCell( rmsg, ownerPC, true);
@@ -1755,7 +1755,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 		}
 	}
 
-	// DB ÃÊ±âÈ­
+	// DB ì´ˆê¸°í™”
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
 
@@ -1803,13 +1803,13 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 				<< end;
 	}
 
-	// Âü¿©Á¤º¸ ÃÊ±âÈ­
+	// ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 	ResetJoinFlag();
 
-	// Âü¿© ¸®½ºÆ® ÃÊ±âÈ­
+	// ì°¸ì—¬ ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 	RemoveAllJoinList();
 
-	// °ø¼º °á°ú ¾Ë¸®±â
+	// ê³µì„± ê²°ê³¼ ì•Œë¦¬ê¸°
 	struct tm tmJoin;
 	GetJoinTime(&tmJoin, true);
 	if (gserver->isRunHelper())
@@ -1826,7 +1826,7 @@ void CWarCastle::CheckWarCastleEnd(bool forced_end_merac)
 	}
 
 	{
-		// ¼ºÁÖ Á¤º¸ Àü¼Û
+		// ì„±ì£¼ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastleOwnerInfoMsg(rmsg);
 		PCManager::instance()->sendToAll(rmsg);
@@ -1883,7 +1883,7 @@ void CWarCastle::ResetJoinFlag()
 		}
 
 		if( pc->m_guildInfo )
-			pc->m_guildInfo->guild()->SetRerithPos( false );   // 071016 - whs25 Ãß°¡ ±æµåÀÇ ºÎÈ°ÁøÁö Á¤º¸ ÃÊ±âÈ­
+			pc->m_guildInfo->guild()->SetRerithPos( false );   // 071016 - whs25 ì¶”ê°€ ê¸¸ë“œì˜ ë¶€í™œì§„ì§€ ì •ë³´ ì´ˆê¸°í™”
 
 		if (pc->m_guildInfo && pc->m_guildInfo->guild()->index() == GetOwnerGuildIndex())
 			pc->SetJoinFlag(GetZoneIndex(), WCJF_OWNER);
@@ -1931,11 +1931,11 @@ int* CWarCastle::GetOwnCastle(int guildindex, int* count)
 
 void CWarCastle::DeleteGuild(int guildindex)
 {
-	// °Ë»çÇÒ Á¸ ¸®½ºÆ®
+	// ê²€ì‚¬í•  ì¡´ ë¦¬ìŠ¤íŠ¸
 	int count = 1;
 	int zoneindex[] = { ZONE_MERAC };
 
-	// ±æµå ¾ò¾î¼­ ±æµå ¸â¹ö Âü¿©Á¤º¸ ÃÊ±âÈ­
+	// ê¸¸ë“œ ì–»ì–´ì„œ ê¸¸ë“œ ë©¤ë²„ ì°¸ì—¬ì •ë³´ ì´ˆê¸°í™”
 	CGuild* guild = gserver->m_guildlist.findguild(guildindex);
 
 	int i;
@@ -1945,19 +1945,19 @@ void CWarCastle::DeleteGuild(int guildindex)
 		if (!castle)
 			continue ;
 
-		// °ø¼º µµÁß¿¡´Â ¹İ¿µ ¾ÈÇÔ
+		// ê³µì„± ë„ì¤‘ì—ëŠ” ë°˜ì˜ ì•ˆí•¨
 		if (castle->GetState() != WCSF_NORMAL)
 			return ;
 
-		// ¼ºÁÖ ±æµå °Ë»ç
+		// ì„±ì£¼ ê¸¸ë“œ ê²€ì‚¬
 		if (castle->GetOwnerGuildIndex() == guildindex)
 			castle->ResetOwner();
 		else
 		{
-			// ¼ö¼º ±æµå °Ë»ç
+			// ìˆ˜ì„± ê¸¸ë“œ ê²€ì‚¬
 			castle->RemoveDefenseGuild(guildindex);
 
-			// °ø¼º ±æµå °Ë»ç
+			// ê³µì„± ê¸¸ë“œ ê²€ì‚¬
 			castle->RemoveAttackGuild(guildindex);
 		}
 
@@ -1976,7 +1976,7 @@ void CWarCastle::DeleteGuild(int guildindex)
 		}
 	}
 
-	// Âü¿© Á¤º¸ DB¿¡ ÀúÀå
+	// ì°¸ì—¬ ì •ë³´ DBì— ì €ì¥
 	std::string delete_castle_join_query = boost::str(boost::format("DELETE FROM t_castle_join WHERE a_index=%d AND a_guild=0") % guildindex);
 	CDBCmd cmd;
 	cmd.Init(&gserver->m_dbcastle);
@@ -2095,10 +2095,10 @@ void CWarCastle::RemoveWarpNPC()
 		{
 			p->SendDisappearAllInCell(true);
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(p);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			area->CharFromCell(p, true);
 			area->DelNPC(p);
 		}
@@ -2260,7 +2260,7 @@ void CWarCastle::EndWarRegenPoint()
 	pArea->PointToCellNum(nX0x2 / 2.0f, nZ0x2 / 2.0f, &nCellX0, &nCellZ0);
 	pArea->PointToCellNum(nX1x2 / 2.0f, nZ1x2 / 2.0f, &nCellX1, &nCellZ1);
 
-	// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+	// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 	std::vector<CPC*> m_MovePCList;
 
 	int cx, cz;
@@ -2293,7 +2293,7 @@ void CWarCastle::EndWarRegenPoint()
 		}
 	}
 
-	// ¸®½ºÆ®¿¡ ÀÖ´Â PC ¸¦ ÀÌµ¿.
+	// ë¦¬ìŠ¤íŠ¸ì— ìˆëŠ” PC ë¥¼ ì´ë™.
 	std::vector<CPC*>::iterator it = m_MovePCList.begin();
 	std::vector<CPC*>::iterator endit = m_MovePCList.end();
 	for(; it != endit; ++it)

@@ -153,7 +153,7 @@ void do_Event(CPC* ch, CNetMsg::SP& msg)
 	case MSG_EVENT_PREOPEN_GIFT:
 		break;
 
-	// ÇÏµå ÄÚµù
+	// í•˜ë“œ ì½”ë”©
 	case MSG_EVENT_LATTO:
 		do_EventLatto(ch, msg);
 		break;
@@ -310,13 +310,13 @@ void do_EventSuperstone(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		CItem* item = gserver->m_itemProtoList.CreateItem(779, -1, 0, 0, 1);//¿ì¼±Àº °í±ŞÁ¦·Ã¼®.
+		CItem* item = gserver->m_itemProtoList.CreateItem(779, -1, 0, 0, 1);//ìš°ì„ ì€ ê³ ê¸‰ì œë ¨ì„.
 		if (!item)
 			return;
 
 		if (ch->m_inventory.addItem(item) == false)
 		{
-			// ÀÎº¥Åä¸® °¡µæÂü
+			// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_INVEN_NOT_ENOUGH);
 			SEND_Q(rmsg, ch->m_desc);
@@ -386,7 +386,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 	if(type == MSG_EVENT_TREASUREBOX_TRY_REQ)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		if (ch->m_inventory.FindByDBIndex(760/*º¸¹°»óÀÚ */, 0, 0))//10·¹º§
+		if (ch->m_inventory.FindByDBIndex(760/*ë³´ë¬¼ìƒì */, 0, 0))//10ë ˆë²¨
 		{
 			level = 10;
 			if(ch->m_level >= level)
@@ -394,7 +394,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else if(ch->m_inventory.FindByDBIndex(761/*º¸¹°»óÀÚ */, 0, 0))//14·¹º§
+		else if(ch->m_inventory.FindByDBIndex(761/*ë³´ë¬¼ìƒì */, 0, 0))//14ë ˆë²¨
 		{
 			level = 14;
 			if(ch->m_level >= level)
@@ -402,7 +402,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else if(ch->m_inventory.FindByDBIndex(762/*º¸¹°»óÀÚ */, 0, 0))//18·¹º§
+		else if(ch->m_inventory.FindByDBIndex(762/*ë³´ë¬¼ìƒì */, 0, 0))//18ë ˆë²¨
 		{
 			level = 18;
 			if(ch->m_level >= level)
@@ -410,7 +410,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else if(ch->m_inventory.FindByDBIndex(763/*º¸¹°»óÀÚ */, 0, 0))//22·¹º§
+		else if(ch->m_inventory.FindByDBIndex(763/*ë³´ë¬¼ìƒì */, 0, 0))//22ë ˆë²¨
 		{
 			level = 22;
 			if(ch->m_level >= level)
@@ -418,7 +418,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else if(ch->m_inventory.FindByDBIndex(764/*º¸¹°»óÀÚ */, 0, 0))//26·¹º§
+		else if(ch->m_inventory.FindByDBIndex(764/*ë³´ë¬¼ìƒì */, 0, 0))//26ë ˆë²¨
 		{
 			level = 26;
 			if(ch->m_level >= level)
@@ -426,7 +426,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else if(ch->m_inventory.FindByDBIndex(765/*º¸¹°»óÀÚ */, 0, 0))//30·¹º§
+		else if(ch->m_inventory.FindByDBIndex(765/*ë³´ë¬¼ìƒì */, 0, 0))//30ë ˆë²¨
 		{
 			level = 30;
 			if(ch->m_level >= level)
@@ -434,7 +434,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 				EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NOT_LEVEL);
 		}
-		else//º¸¹°»óÀÚ°¡ ¾ø´Ù.
+		else//ë³´ë¬¼ìƒìê°€ ì—†ë‹¤.
 		{
 			level = 0;
 			EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_TRY_REP, (int)MSG_EVENT_TREASUREBOX_ERROR_NO_BOX);
@@ -453,33 +453,33 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 		CItem* item = NULL;
 		CItem* gift = NULL;
 
-		if ((item = ch->m_inventory.FindByDBIndex(760/*º¸¹°»óÀÚ */, 0, 0)))//10·¹º§
+		if ((item = ch->m_inventory.FindByDBIndex(760/*ë³´ë¬¼ìƒì */, 0, 0)))//10ë ˆë²¨
 		{
 			treasurelevel = 10;
 			if (prob <= 2000)
 			{
-				// +4 13·¹º§ ¹«±â.
+				// +4 13ë ˆë²¨ ë¬´ê¸°.
 
 				switch (ch->m_job)
 				{
 				case JOB_TITAN:
 					if(prob <= 1000)
-						itemidx = 105;// ±â°£Æ½ºí·¹ÀÌµå
+						itemidx = 105;// ê¸°ê°„í‹±ë¸”ë ˆì´ë“œ
 					else
-						itemidx = 603;// ·¯Ä¿¹ö ¾×½º
+						itemidx = 603;// ëŸ¬ì»¤ë²„ ì•¡ìŠ¤
 					break;
 				case JOB_KNIGHT:
 					if(prob <= 1000)
-						itemidx = 107;// ¼¼ÆÛ¼Òµå
+						itemidx = 107;// ì„¸í¼ì†Œë“œ
 					else
-						itemidx = 612;// ¼¼ÆÛ µà¾ó¼Òµå
+						itemidx = 612;// ì„¸í¼ ë“€ì–¼ì†Œë“œ
 					break;
 
 				case JOB_HEALER:
 					if(prob <= 1000)
-						itemidx = 106;// Å×ÀÏº¸¿ì
+						itemidx = 106;// í…Œì¼ë³´ìš°
 					else
-						itemidx = 621;// ±×À£¸®¿Â ¿Ïµå
+						itemidx = 621;// ê·¸ì›°ë¦¬ì˜¨ ì™„ë“œ
 					break;
 
 				case JOB_MAGE:
@@ -487,9 +487,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_MAGE:
 #endif // EX_MAGE
 					if(prob <= 1000)
-						itemidx = 359;// ¾¾´ö¼Ç¿Ïµå
+						itemidx = 359;// ì”¨ë•ì…˜ì™„ë“œ
 					else
-						itemidx = 630;// ÀÏ·¹½º ½ºÅ×ÇÁ
+						itemidx = 630;// ì¼ë ˆìŠ¤ ìŠ¤í…Œí”„
 					break;
 
 				case JOB_ROGUE:
@@ -497,16 +497,16 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_ROGUE:
 #endif // EX_ROGUE
 					if(prob <= 1000)
-						itemidx = 533;// Çª±â¿À
+						itemidx = 533;// í‘¸ê¸°ì˜¤
 					else
-						itemidx = 638;// ½ÃÁîº¸¿ì ¼®±Ã
+						itemidx = 638;// ì‹œì¦ˆë³´ìš° ì„ê¶
 					break;
 
 				case JOB_SORCERER:
 					if(prob <= 1000)
-						itemidx = 979;// ½Ã¿ÂÆ÷ÀÏ »çÀÌµå
+						itemidx = 979;// ì‹œì˜¨í¬ì¼ ì‚¬ì´ë“œ
 					else
-						itemidx = 991;// ÆÄ½ºÅäÀÌ·± Æú¾Ï
+						itemidx = 991;// íŒŒìŠ¤í† ì´ëŸ° í´ì•”
 					break;
 				}
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 4, 0, 1);
@@ -515,9 +515,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_13LEVEL_WEAPON);
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 30000);
 				if (!gift)
 					return;
@@ -526,7 +526,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 5);
 				if (!gift)
 					return;
@@ -534,22 +534,22 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_CANDY);
 			}
 		}
-		else if((item = ch->m_inventory.FindByDBIndex(761/*º¸¹°»óÀÚ */, 0, 0)))//14·¹º§
+		else if((item = ch->m_inventory.FindByDBIndex(761/*ë³´ë¬¼ìƒì */, 0, 0)))//14ë ˆë²¨
 		{
 			treasurelevel = 14;
 
 			if (prob <= 2000)
 			{
-				itemidx = 510; //°ø°İ·ÂÇâ»óÁ¦
-				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 10);//10°³
+				itemidx = 510; //ê³µê²©ë ¥í–¥ìƒì œ
+				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 10);//10ê°œ
 				if (!gift)
 					return;
 
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_ATTACK_POTION);
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 50000);
 				if (!gift)
 					return;
@@ -558,7 +558,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 10);
 				if (!gift)
 					return;
@@ -566,34 +566,34 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_CANDY);
 			}
 		}
-		else if((item = ch->m_inventory.FindByDBIndex(762/*º¸¹°»óÀÚ */, 0, 0)))//18·¹º§
+		else if((item = ch->m_inventory.FindByDBIndex(762/*ë³´ë¬¼ìƒì */, 0, 0)))//18ë ˆë²¨
 		{
 			treasurelevel = 18;
 
 			if (prob <= 2000)
 			{
-				// +4 21·¹º§ ¹«±â.
+				// +4 21ë ˆë²¨ ë¬´ê¸°.
 
 				switch (ch->m_job)
 				{
 				case JOB_TITAN:
 					if(prob <= 1000)
-						itemidx = 307;// ¸ŞÅ×¿Àºí·¹ÀÌµå ´ë°Ë
+						itemidx = 307;// ë©”í…Œì˜¤ë¸”ë ˆì´ë“œ ëŒ€ê²€
 					else
-						itemidx = 605;// ºê·Î¹Ù ¾×½º
+						itemidx = 605;// ë¸Œë¡œë°” ì•¡ìŠ¤
 					break;
 				case JOB_KNIGHT:
 					if(prob <= 1000)
-						itemidx = 322;// ³ë¹Ù¼Òµå
+						itemidx = 322;// ë…¸ë°”ì†Œë“œ
 					else
-						itemidx = 614;// ³ë¹Ù µà¾ó¼Òµå
+						itemidx = 614;// ë…¸ë°” ë“€ì–¼ì†Œë“œ
 					break;
 
 				case JOB_HEALER:
 					if(prob <= 1000)
-						itemidx = 341;// Å©·Î½ºº¸¿ì
+						itemidx = 341;// í¬ë¡œìŠ¤ë³´ìš°
 					else
-						itemidx = 623;// »çÀÏ·±Æ® ¿Ïµå
+						itemidx = 623;// ì‚¬ì¼ëŸ°íŠ¸ ì™„ë“œ
 					break;
 
 				case JOB_MAGE:
@@ -601,9 +601,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_MAGE:
 #endif // EX_MAGE
 					if(prob <= 1000)
-						itemidx = 361;// ¾ÆÅ©¿Ïµå
+						itemidx = 361;// ì•„í¬ì™„ë“œ
 					else
-						itemidx = 632;// ¼¼ÀÌ¶ó ½ºÅ×ÇÁ
+						itemidx = 632;// ì„¸ì´ë¼ ìŠ¤í…Œí”„
 					break;
 
 				case JOB_ROGUE:
@@ -611,16 +611,16 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_ROGUE:
 #endif // EX_ROGUE
 					if(prob <= 1000)
-						itemidx = 535;// º¸À§³ªÀÌÇÁ ´Ü°Ë
+						itemidx = 535;// ë³´ìœ„ë‚˜ì´í”„ ë‹¨ê²€
 					else
-						itemidx = 640;// ÀÓÆÛÅ×½º º¸¿ì
+						itemidx = 640;// ì„í¼í…ŒìŠ¤ ë³´ìš°
 					break;
 
 				case JOB_SORCERER:
 					if(prob <= 1000)
-						itemidx = 981;// Å×³ÊÀÏ·¯ »çÀÌµå
+						itemidx = 981;// í…Œë„ˆì¼ëŸ¬ ì‚¬ì´ë“œ
 					else
-						itemidx = 993;// ºí·ç¸¶±×¸¶ Æú¾Ï
+						itemidx = 993;// ë¸”ë£¨ë§ˆê·¸ë§ˆ í´ì•”
 					break;
 				}
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 4, 0, 1);
@@ -629,9 +629,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_21LEVEL_WEAPON);
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 80000);
 				if (!gift)
 					return;
@@ -640,7 +640,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 15);
 				if (!gift)
 					return;
@@ -648,22 +648,22 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_CANDY);
 			}
 		}
-		else if((item = ch->m_inventory.FindByDBIndex(763/*º¸¹°»óÀÚ */, 0, 0)))//22·¹º§
+		else if((item = ch->m_inventory.FindByDBIndex(763/*ë³´ë¬¼ìƒì */, 0, 0)))//22ë ˆë²¨
 		{
 			treasurelevel = 22;
 
 			if (prob <= 2000)
 			{
-				itemidx = 511; //¹æ¾î·ÂÇâ»óÁ¦
-				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 15);//15°³
+				itemidx = 511; //ë°©ì–´ë ¥í–¥ìƒì œ
+				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 15);//15ê°œ
 				if (!gift)
 					return;
 
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_DEFENSE_POTION);
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 100000);
 				if (!gift)
 					return;
@@ -672,7 +672,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 20);
 				if (!gift)
 					return;
@@ -680,34 +680,34 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_CANDY);
 			}
 		}
-		else if((item = ch->m_inventory.FindByDBIndex(764/*º¸¹°»óÀÚ */, 0, 0)))//26·¹º§
+		else if((item = ch->m_inventory.FindByDBIndex(764/*ë³´ë¬¼ìƒì */, 0, 0)))//26ë ˆë²¨
 		{
 			treasurelevel = 26;
 
 			if (prob <= 2000)
 			{
-				// +4 29·¹º§ ¹«±â.
+				// +4 29ë ˆë²¨ ë¬´ê¸°.
 
 				switch (ch->m_job)
 				{
 				case JOB_TITAN:
 					if(prob <= 1000)
-						itemidx = 309;// Æúºê·¹ÀÌÅ© ´ë°Ë
+						itemidx = 309;// í´ë¸Œë ˆì´í¬ ëŒ€ê²€
 					else
-						itemidx = 607;// Å©·¹¼¾Æ® ¾×½º
+						itemidx = 607;// í¬ë ˆì„¼íŠ¸ ì•¡ìŠ¤
 					break;
 				case JOB_KNIGHT:
 					if(prob <= 1000)
-						itemidx = 324;// ¼Ò¿ïÅ©·¡¼Å
+						itemidx = 324;// ì†Œìš¸í¬ë˜ì…”
 					else
-						itemidx = 616;// ´õºí ¼Ò¿ïÅ©·¡¼Å
+						itemidx = 616;// ë”ë¸” ì†Œìš¸í¬ë˜ì…”
 					break;
 
 				case JOB_HEALER:
 					if(prob <= 1000)
-						itemidx = 343;// ±Û·Î¿ìº¸¿ì
+						itemidx = 343;// ê¸€ë¡œìš°ë³´ìš°
 					else
-						itemidx = 625;// ÆäÀÌ½º ¿Ïµå
+						itemidx = 625;// í˜ì´ìŠ¤ ì™„ë“œ
 					break;
 
 				case JOB_MAGE:
@@ -715,9 +715,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_MAGE:
 #endif
 					if(prob <= 1000)
-						itemidx = 363;// Ä¿¹Ì¼Å¿Ïµå
+						itemidx = 363;// ì»¤ë¯¸ì…”ì™„ë“œ
 					else
-						itemidx = 634;// ÀÌÅÍ³Î ½ºÅ×ÇÁ
+						itemidx = 634;// ì´í„°ë„ ìŠ¤í…Œí”„
 					break;
 
 				case JOB_ROGUE:
@@ -725,16 +725,16 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				case JOB_EX_ROGUE:
 #endif // EX_ROGUE
 					if(prob <= 1000)
-						itemidx = 537;// Çª¾Æ³Ä¸£ ´Ü°Ë
+						itemidx = 537;// í‘¸ì•„ëƒë¥´ ë‹¨ê²€
 					else
-						itemidx = 642;// µå¹ÌÆ®¸® º¸¿ì
+						itemidx = 642;// ë“œë¯¸íŠ¸ë¦¬ ë³´ìš°
 					break;
 
 				case JOB_SORCERER:
 					if(prob <= 1000)
-						itemidx = 983;// ÆÄÀÌ¾ğ½ºÅè »çÀÌµå
+						itemidx = 983;// íŒŒì´ì–¸ìŠ¤í†° ì‚¬ì´ë“œ
 					else
-						itemidx = 995;// Æ÷¼¼ÀÌ´øÆ® Æú¾Ï
+						itemidx = 995;// í¬ì„¸ì´ë˜íŠ¸ í´ì•”
 					break;
 				}
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 4, 0, 1);
@@ -743,9 +743,9 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_29LEVEL_WEAPON);
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 150000);
 				if (!gift)
 					return;
@@ -754,7 +754,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 30);
 				if (!gift)
 					return;
@@ -762,28 +762,28 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_CANDY);
 			}
 		}
-		else if((item = ch->m_inventory.FindByDBIndex(765/*º¸¹°»óÀÚ */, 0, 0)))//30·¹º§
+		else if((item = ch->m_inventory.FindByDBIndex(765/*ë³´ë¬¼ìƒì */, 0, 0)))//30ë ˆë²¨
 		{
 			treasurelevel = 30;
 			if (prob <= 2000)
 			{
 #ifdef LC_TLD
-				itemidx = PET_BLUE_HORSE_EGG_INDEX; //¹É·ç ÆÇÀÇ ÇÇ¸®
-				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 1);//1°³
+				itemidx = PET_BLUE_HORSE_EGG_INDEX; //ë¯ˆë£¨ íŒì˜ í”¼ë¦¬
+				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 1);//1ê°œ
 				if (!gift)
 					return;
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_BLUE_HORSE);
 #else
-				itemidx = 510; //°ø°İ·ÂÇâ»óÁ¦
-				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 20);//20°³
+				itemidx = 510; //ê³µê²©ë ¥í–¥ìƒì œ
+				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 20);//20ê°œ
 				if (!gift)
 					return;
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_ATTACK_POTION);
 #endif // LC_TLD
 			}
-			else if(prob <= 5000)//³ª½º
+			else if(prob <= 5000)//ë‚˜ìŠ¤
 			{
-				itemidx = NAS_ITEM_DB_INDEX; //³ª½º
+				itemidx = NAS_ITEM_DB_INDEX; //ë‚˜ìŠ¤
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 200000);
 				if (!gift)
 					return;
@@ -793,13 +793,13 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			else
 			{
 #ifdef LC_TLD
-				itemidx = PET_PINK_DRAGON_EGG_INDEX; //ÇÎÅ© µå·¹ÀÌÅ©¾Ë
-				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 1);//1°³
+				itemidx = PET_PINK_DRAGON_EGG_INDEX; //í•‘í¬ ë“œë ˆì´í¬ì•Œ
+				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 1);//1ê°œ
 				if (!gift)
 					return;
 				EventTreasureBoxMsg(rMsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_PINK_DRAGON);
 #else
-				itemidx = 556; //»çÅÁ
+				itemidx = 556; //ì‚¬íƒ•
 				gift = gserver->m_itemProtoList.CreateItem(itemidx, -1, 0, 0, 40);
 				if (!gift)
 					return;
@@ -807,7 +807,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 #endif // LC_TLD
 			}
 		}
-		else//º¸¹°»óÀÚ°¡ ¾ø´Ù.
+		else//ë³´ë¬¼ìƒìê°€ ì—†ë‹¤.
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventTreasureBoxMsg(rmsg, MSG_EVENT_TREASUREBOX_OPEN_REP, (int)MSG_EVENT_CHANGE_NO_TREASUREBOX);
@@ -815,11 +815,11 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		//º¸¹°»óÀÚ¸¦ Áö¿î´Ù.
+		//ë³´ë¬¼ìƒìë¥¼ ì§€ìš´ë‹¤.
 		if(treasurelevel == 0)
 			return;
 
-// [101229: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101229: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 		if( !ch->CheckInvenForTresureBoxPrize(gift) )
 		{
 			return;
@@ -833,15 +833,15 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// º¸¹°»óÀÚ¸¦ »èÁ¦.
+		// ë³´ë¬¼ìƒìë¥¼ ì‚­ì œ.
 		ch->m_inventory.decreaseItemCount(item, 1);
 
 		bool nasFlag = (gift->getDBIndex() == NAS_ITEM_DB_INDEX) ? true : false;
 
-		// ÀÎº¥¿¡ ³Ö±â
+		// ì¸ë²¤ì— ë„£ê¸°
 		if (ch->m_inventory.addItem(gift) == false)
 		{
-			// ÀÎº¥Åä¸® °¡µæÂü
+			// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
 			gift = ch->m_pArea->DropItem(gift, ch);
 
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -851,7 +851,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
-		// ¸Ş½ÃÁö º¸³»°í
+		// ë©”ì‹œì§€ ë³´ë‚´ê³ 
 		SEND_Q(rMsg, ch->m_desc);
 
 		if (nasFlag == false)
@@ -862,7 +862,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 					<< end;
 		}
 
-// ´ÙÀ½ ·¹º§ º¸¹°»óÀÚ¸¦ ÁØ´Ù.
+// ë‹¤ìŒ ë ˆë²¨ ë³´ë¬¼ìƒìë¥¼ ì¤€ë‹¤.
 		switch(treasurelevel)
 		{
 		case 10:
@@ -890,7 +890,7 @@ void do_EventTreasurebox(CPC* ch, CNetMsg::SP& msg)
 
 		if (ch->m_inventory.addItem(gift) == false)
 		{
-			// ÀÎº¥Åä¸® °¡µæÂü
+			// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
 			gift = ch->m_pArea->DropItem(gift, ch);
 			if (!gift)
 			{
@@ -1040,7 +1040,7 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 	}
 	newitem->setUsed(olditem->getUsed());
 
-	// ¿É¼Ç ¿Å±â±â
+	// ì˜µì…˜ ì˜®ê¸°ê¸°
 	switch (olditem->m_itemProto->getItemSubTypeIdx())
 	{
 	case IWEAPON_NIGHT:
@@ -1052,7 +1052,7 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 	case IWEAPON_GATHERING:
 	case IWEAPON_CHARGE:
 	case IWEAPON_TWOSWORD:
-	case IWEAPON_SCYTHE: // ÇÒÀÏ : ¼Ò¼­·¯ : »çÀÌµå Æú¾ÏÀÇ ¿É¼Ç º¯°æ
+	case IWEAPON_SCYTHE: // í• ì¼ : ì†Œì„œëŸ¬ : ì‚¬ì´ë“œ í´ì•”ì˜ ì˜µì…˜ ë³€ê²½
 	case IWEAPON_POLEARM:
 		newitem->m_nOption = 0;
 		for (i = 0; i < olditem->m_nOption; i++)
@@ -1077,15 +1077,15 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 
 			switch (olditem->m_option[i].m_proto->m_type)
 			{
-			case 6:		// ¹°¸® °ø°İ -> ÁöÇı
+			case 6:		// ë¬¼ë¦¬ ê³µê²© -> ì§€í˜œ
 				tempProto	= gserver->m_optionProtoList.FindProto(2);
 				break;
 
-			case 8:		// ¿ø°Å¸® °ø°İ -> ¸¶¹ı °ø°İ
+			case 8:		// ì›ê±°ë¦¬ ê³µê²© -> ë§ˆë²• ê³µê²©
 				tempProto	= gserver->m_optionProtoList.FindProto(16);
 				break;
 
-			case 10:	// ¿ø°Å¸® ¸íÁß -> ¸¶¹ı ¸íÁß
+			case 10:	// ì›ê±°ë¦¬ ëª…ì¤‘ -> ë§ˆë²• ëª…ì¤‘
 				tempProto	= gserver->m_optionProtoList.FindProto(17);
 				break;
 
@@ -1114,15 +1114,15 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 
 			switch (olditem->m_option[i].m_proto->m_type)
 			{
-			case 2:		// ÁöÇı -> ¹°¸® °ø°İ
+			case 2:		// ì§€í˜œ -> ë¬¼ë¦¬ ê³µê²©
 				tempProto	= gserver->m_optionProtoList.FindProto(6);
 				break;
 
-			case 16:	// ¸¶¹ı °ø°İ -> ¿ø°Å¸® °ø°İ
+			case 16:	// ë§ˆë²• ê³µê²© -> ì›ê±°ë¦¬ ê³µê²©
 				tempProto	= gserver->m_optionProtoList.FindProto(8);
 				break;
 
-			case 17:	// ¸¶¹ı ¸íÁß -> ¿ø°Å¸® ¸íÁß
+			case 17:	// ë§ˆë²• ëª…ì¤‘ -> ì›ê±°ë¦¬ ëª…ì¤‘
 				tempProto	= gserver->m_optionProtoList.FindProto(10);
 				break;
 
@@ -1152,11 +1152,11 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 
 			switch (olditem->m_option[i].m_proto->m_type)
 			{
-			case 8:		// ¿ø°Å¸® °ø°İ -> ±ÙÁ¢ °ø°İ
+			case 8:		// ì›ê±°ë¦¬ ê³µê²© -> ê·¼ì ‘ ê³µê²©
 				tempProto	= gserver->m_optionProtoList.FindProto(7);
 				break;
 
-			case 10:	// ¿ø°Å¸® ¸íÁß -> ±ÙÁ¢ ¸íÁß
+			case 10:	// ì›ê±°ë¦¬ ëª…ì¤‘ -> ê·¼ì ‘ ëª…ì¤‘
 				tempProto	= gserver->m_optionProtoList.FindProto(9);
 				break;
 
@@ -1186,11 +1186,11 @@ void do_EventChangeWeapon(CPC* ch, CNetMsg::SP& msg)
 
 			switch (olditem->m_option[i].m_proto->m_type)
 			{
-			case 7:		// ±ÙÁ¢ °ø°İ -> ¿ø°Å¸® °ø°İ
+			case 7:		// ê·¼ì ‘ ê³µê²© -> ì›ê±°ë¦¬ ê³µê²©
 				tempProto	= gserver->m_optionProtoList.FindProto(8);
 				break;
 
-			case 9:		// ±ÙÁ¢ ¸íÁß -> ¿ø°Å¸® ¸íÁß
+			case 9:		// ê·¼ì ‘ ëª…ì¤‘ -> ì›ê±°ë¦¬ ëª…ì¤‘
 				tempProto	= gserver->m_optionProtoList.FindProto(10);
 				break;
 
@@ -1260,15 +1260,15 @@ ch->CalcStatus(true);
 void do_EventChuseokUpgrade(CPC* ch, CNetMsg::SP& msg)
 {
 #ifndef LC_TLD
-	// ÀÌº¥Æ® ÀÎº¥¿¡ ÀÛ¹° ÀÖ³ª? : ¿­¸Å Á¦¿Ü
+	// ì´ë²¤íŠ¸ ì¸ë²¤ì— ì‘ë¬¼ ìˆë‚˜? : ì—´ë§¤ ì œì™¸
 	CItem* crop = NULL;
 	int grade = -1;
 
-	if ((crop = ch->m_inventory.FindByDBIndex(876, 0, 0)))			grade = 0;	// ¾¾¾Ñ
-	else if ((crop = ch->m_inventory.FindByDBIndex(877, 0, 0)))		grade = 1;	// ¹¦¸ñ
-	else if ((crop = ch->m_inventory.FindByDBIndex(878, 0, 0)))		grade = 2;	// ºĞÀç
-	else if ((crop = ch->m_inventory.FindByDBIndex(879, 0, 0)))		grade = 3;	// ³ª¹«
-	else if ((crop = ch->m_inventory.FindByDBIndex(880, 0, 0)))		grade = 4;	// ¿­¸Å
+	if ((crop = ch->m_inventory.FindByDBIndex(876, 0, 0)))			grade = 0;	// ì”¨ì•—
+	else if ((crop = ch->m_inventory.FindByDBIndex(877, 0, 0)))		grade = 1;	// ë¬˜ëª©
+	else if ((crop = ch->m_inventory.FindByDBIndex(878, 0, 0)))		grade = 2;	// ë¶„ì¬
+	else if ((crop = ch->m_inventory.FindByDBIndex(879, 0, 0)))		grade = 3;	// ë‚˜ë¬´
+	else if ((crop = ch->m_inventory.FindByDBIndex(880, 0, 0)))		grade = 4;	// ì—´ë§¤
 
 	int prob = 0;
 	int newCropIndex = 0;
@@ -1306,7 +1306,7 @@ void do_EventChuseokUpgrade(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¹è¾çÅä °Ë»ö
+	// ë°°ì–‘í†  ê²€ìƒ‰
 	CItem* soil = ch->m_inventory.FindByDBIndex(881, 0, 0);
 	if (soil == NULL)
 	{
@@ -1326,16 +1326,16 @@ void do_EventChuseokUpgrade(CPC* ch, CNetMsg::SP& msg)
 		return ;
 
 	{
-		// ¹è¾çÅä °¨¼Ò
+		// ë°°ì–‘í†  ê°ì†Œ
 		ch->m_inventory.decreaseItemCount(soil, 1);
 	}
 
-	// È®·ü Àû¿ë
+	// í™•ë¥  ì ìš©
 	if (GetRandom(1, 100) <= prob)
 	{
 		ch->m_inventory.decreaseItemCount(crop, 1);
 
-		// »õ ÀÛ¹° Ãß°¡
+		// ìƒˆ ì‘ë¬¼ ì¶”ê°€
 		bool bDrop = false;
 		if (ch->m_inventory.addItem(newCrop) == false)
 		{
@@ -1379,24 +1379,24 @@ void do_EventChuseokUpgrade(CPC* ch, CNetMsg::SP& msg)
 void do_EventChuseokExchange(CPC* ch, CNetMsg::SP& msg)
 {
 #ifndef LC_TLD
-	// È®·ü Å×ÀÌºí : ´©ÀûÈ®·ü%
+	// í™•ë¥  í…Œì´ë¸” : ëˆ„ì í™•ë¥ %
 	const int probTable[5][5] =
 	{
-		{ 70,  85,  95, 100, 100},		// ¾¾¾Ñ : 70 15 10 5 0
-		{ 35,  65,  85,  95, 100},		// ¹¦¸ñ : 35 30 20 10 5
-		{ 20,  45,  75,  90, 100},		// ºĞÀç : 20 25 30 15 10
-		{ 10,  25,  50,  80, 100},		// ³ª¹« : 10 15 25 30 20
-		{  0,  10,  40,  70, 100}		// ¿­¸Å : 0 10 30 30 30
+		{ 70,  85,  95, 100, 100},		// ì”¨ì•— : 70 15 10 5 0
+		{ 35,  65,  85,  95, 100},		// ë¬˜ëª© : 35 30 20 10 5
+		{ 20,  45,  75,  90, 100},		// ë¶„ì¬ : 20 25 30 15 10
+		{ 10,  25,  50,  80, 100},		// ë‚˜ë¬´ : 10 15 25 30 20
+		{  0,  10,  40,  70, 100}		// ì—´ë§¤ : 0 10 30 30 30
 	};
 
-	// ÀÛ¹° Ã£±â
+	// ì‘ë¬¼ ì°¾ê¸°
 	CItem* crop = NULL;
 	int grade = -1;
-	if ((crop = ch->m_inventory.FindByDBIndex(876, 0, 0)))			grade = 0;	// ¾¾¾Ñ
-	else if ((crop = ch->m_inventory.FindByDBIndex(877, 0, 0)))		grade = 1;	// ¹¦¸ñ
-	else if ((crop = ch->m_inventory.FindByDBIndex(878, 0, 0)))		grade = 2;	// ºĞÀç
-	else if ((crop = ch->m_inventory.FindByDBIndex(879, 0, 0)))		grade = 3;	// ³ª¹«
-	else if ((crop = ch->m_inventory.FindByDBIndex(880, 0, 0)))		grade = 4;	// ¿­¸Å
+	if ((crop = ch->m_inventory.FindByDBIndex(876, 0, 0)))			grade = 0;	// ì”¨ì•—
+	else if ((crop = ch->m_inventory.FindByDBIndex(877, 0, 0)))		grade = 1;	// ë¬˜ëª©
+	else if ((crop = ch->m_inventory.FindByDBIndex(878, 0, 0)))		grade = 2;	// ë¶„ì¬
+	else if ((crop = ch->m_inventory.FindByDBIndex(879, 0, 0)))		grade = 3;	// ë‚˜ë¬´
+	else if ((crop = ch->m_inventory.FindByDBIndex(880, 0, 0)))		grade = 4;	// ì—´ë§¤
 	else
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1408,7 +1408,7 @@ void do_EventChuseokExchange(CPC* ch, CNetMsg::SP& msg)
 	if (crop == NULL)
 		return ;
 
-	// È®·ü Àû¿ë
+	// í™•ë¥  ì ìš©
 	int prob = GetRandom(1, 100);
 	int i = 0;
 	for (i = 0; i < 5; i++)
@@ -1422,23 +1422,23 @@ void do_EventChuseokExchange(CPC* ch, CNetMsg::SP& msg)
 
 	switch (i)
 	{
-	case 0:		// 10000 ³ª½º
+	case 0:		// 10000 ë‚˜ìŠ¤
 		itemindex = NAS_ITEM_DB_INDEX;
 		itemcount = 10000;
 		break;
-	case 1:		// 50000 ³ª½º
+	case 1:		// 50000 ë‚˜ìŠ¤
 		itemindex = NAS_ITEM_DB_INDEX;
 		itemcount = 50000;
 		break;
-	case 2:		// 200000 ³ª½º
+	case 2:		// 200000 ë‚˜ìŠ¤
 		itemindex = NAS_ITEM_DB_INDEX;
 		itemcount = 200000;
 		break;
-	case 3:		// 500000 ³ª½º
+	case 3:		// 500000 ë‚˜ìŠ¤
 		itemindex = NAS_ITEM_DB_INDEX;
 		itemcount = 500000;
 		break;
-	case 4:		// °íÁ¦ 2 °³
+	case 4:		// ê³ ì œ 2 ê°œ
 		itemindex = gserver->m_itemProtoList.m_specialRefineItem->getItemIndex();
 		itemcount = 2;
 		break;
@@ -1450,10 +1450,10 @@ void do_EventChuseokExchange(CPC* ch, CNetMsg::SP& msg)
 	if (item == NULL)
 		return ;
 
-	// ÀÛ¹° ¼ö°Å
+	// ì‘ë¬¼ ìˆ˜ê±°
 	ch->m_inventory.decreaseItemCount(crop, 1);
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	bool bDrop = false;
 	if (ch->m_inventory.addItem(item) == false)
 	{
@@ -1508,10 +1508,10 @@ void do_EventPackageItemGive(CPC* ch, CNetMsg::SP& msg)
 
 void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 {
-	// FIFA ÄÅ ¾ÆÀÌÅÛ ÀÎµ¦½º
+	// FIFA ì»µ ì•„ì´í…œ ì¸ë±ìŠ¤
 	static const int nFIFACupIndex = 1484;
 
-	// ±¹°¡ Å×ÀÌºí : ±¹°¡ ¹øÈ£, FIFAÄÅ °³¼ö, ±¹±â Index, ¼øÀ§(1, 2, 3, 4)
+	// êµ­ê°€ í…Œì´ë¸” : êµ­ê°€ ë²ˆí˜¸, FIFAì»µ ê°œìˆ˜, êµ­ê¸° Index, ìˆœìœ„(1, 2, 3, 4)
 #define TABLE_REF_COUNTRY		0
 #define TABLE_REF_FIFACUP		1
 #define TABLE_REF_FLAG			2
@@ -1519,61 +1519,61 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 	static const int nCountOfCountry = 32;
 	static const int tableCountry[nCountOfCountry][4] =
 	{
-		{ 0,	100,	1485,		4},		// ºê¶óÁú
-		{ 1,	100,	1486,		3},		// µ¶ÀÏ
-		{ 2,	100,	1487,		1},		// ÀÌÅ»¸®¾Æ
-		{ 3,	100,	1488,		4},		// ¿µ±¹
-		{ 4,	100,	1489,		4},		// ¾Æ¸£ÇîÆ¼³ª
-		{ 5,	 75,	1490,		2},		// ÇÁ¶û½º
-		{ 6,	 75,	1491,		4},		// ³×´ú¶õµå
-		{ 7,	 75,	1492,		4},		// ½ºÆäÀÎ
-		{ 8,	 75,	1493,		4},		// Æ÷¸£Åõ°¥
-		{ 9,	 75,	1494,		4},		// Ã¼ÄÚ
-		{10,	 75,	1495,		4},		// ½º¿şµ§
-		{11,	 75,	1496,		4},		// ¸ß½ÃÄÚ
-		{12,	 75,	1497,		4},		// ¿ìÅ©¶óÀÌ³ª
-		{13,	 75,	1498,		4},		// Å©·Î¾ÆÆ¼¾Æ
-		{14,	 50,	1499,		4},		// ¹Ì±¹
-		{15,	 50,	1500,		4},		// ½ºÀ§½º
-		{16,	 50,	1501,		4},		// ÄÚÆ®µğºÎ¾Æ¸£
-		{17,	 50,	1502,		4},		// ¼¼¸£ºñ¾Æ-¸óÅ×³×±×·Î
-		{18,	 50,	1503,		4},		// Æú¶õµå
-		{19,	 50,	1504,		4},		// ÆÄ¶ó°úÀÌ
-		{20,	 50,	1505,		4},		// ´ëÇÑ¹Î±¹
-		{21,	 50,	1506,		4},		// È£ÁÖ
-		{22,	 50,	1507,		4},		// ÀÏº»
-		{23,	 30,	1508,		4},		// °¡³ª
-		{24,	 30,	1509,		4},		// Æ¢´ÏÁö
-		{25,	 30,	1510,		4},		// ¿¡Äâµµ¸£
-		{26,	 30,	1511,		4},		// Åä°í
-		{27,	 30,	1512,		4},		// ¾Ó°ñ¶ó
-		{28,	 30,	1513,		4},		// ÀÌ¶õ
-		{29,	 30,	1514,		4},		// »ç¿ìµğ¾Æ¶óºñ¾Æ
-		{30,	 30,	1515,		4},		// ÄÚ½ºÅ¸¸®Ä«
-		{31,	 30,	1516,		4},		// Æ®¸®´Ï´Ùµå Åä¹Ù°í
+		{ 0,	100,	1485,		4},		// ë¸Œë¼ì§ˆ
+		{ 1,	100,	1486,		3},		// ë…ì¼
+		{ 2,	100,	1487,		1},		// ì´íƒˆë¦¬ì•„
+		{ 3,	100,	1488,		4},		// ì˜êµ­
+		{ 4,	100,	1489,		4},		// ì•„ë¥´í—¨í‹°ë‚˜
+		{ 5,	 75,	1490,		2},		// í”„ë‘ìŠ¤
+		{ 6,	 75,	1491,		4},		// ë„¤ëœë€ë“œ
+		{ 7,	 75,	1492,		4},		// ìŠ¤í˜ì¸
+		{ 8,	 75,	1493,		4},		// í¬ë¥´íˆ¬ê°ˆ
+		{ 9,	 75,	1494,		4},		// ì²´ì½”
+		{10,	 75,	1495,		4},		// ìŠ¤ì›¨ë´
+		{11,	 75,	1496,		4},		// ë©•ì‹œì½”
+		{12,	 75,	1497,		4},		// ìš°í¬ë¼ì´ë‚˜
+		{13,	 75,	1498,		4},		// í¬ë¡œì•„í‹°ì•„
+		{14,	 50,	1499,		4},		// ë¯¸êµ­
+		{15,	 50,	1500,		4},		// ìŠ¤ìœ„ìŠ¤
+		{16,	 50,	1501,		4},		// ì½”íŠ¸ë””ë¶€ì•„ë¥´
+		{17,	 50,	1502,		4},		// ì„¸ë¥´ë¹„ì•„-ëª¬í…Œë„¤ê·¸ë¡œ
+		{18,	 50,	1503,		4},		// í´ë€ë“œ
+		{19,	 50,	1504,		4},		// íŒŒë¼ê³¼ì´
+		{20,	 50,	1505,		4},		// ëŒ€í•œë¯¼êµ­
+		{21,	 50,	1506,		4},		// í˜¸ì£¼
+		{22,	 50,	1507,		4},		// ì¼ë³¸
+		{23,	 30,	1508,		4},		// ê°€ë‚˜
+		{24,	 30,	1509,		4},		// íŠ€ë‹ˆì§€
+		{25,	 30,	1510,		4},		// ì—ì½°ë„ë¥´
+		{26,	 30,	1511,		4},		// í† ê³ 
+		{27,	 30,	1512,		4},		// ì•™ê³¨ë¼
+		{28,	 30,	1513,		4},		// ì´ë€
+		{29,	 30,	1514,		4},		// ì‚¬ìš°ë””ì•„ë¼ë¹„ì•„
+		{30,	 30,	1515,		4},		// ì½”ìŠ¤íƒ€ë¦¬ì¹´
+		{31,	 30,	1516,		4},		// íŠ¸ë¦¬ë‹ˆë‹¤ë“œ í† ë°”ê³ 
 	};
 
-	// º¸»ó Å×ÀÌºí : º¸»ó ¾ÆÀÌÅÛ ¹øÈ£, º¸»ó ¾ÆÀÌÅÛ ¼ö·®
+	// ë³´ìƒ í…Œì´ë¸” : ë³´ìƒ ì•„ì´í…œ ë²ˆí˜¸, ë³´ìƒ ì•„ì´í…œ ìˆ˜ëŸ‰
 	static const int tableGift[4][4] =
 	{
-		{ 85,	5},			// 1 À§		°íÁ¦ 5°³
-		{ 85,	2},			// 2 À§		°íÁ¦ 2°³
-		{ 19,	300000},	// 3 À§		³ª½º 300,000
-		{723,	5},			// ±×¿Ü		¹®½ºÅæ 5°³
+		{ 85,	5},			// 1 ìœ„		ê³ ì œ 5ê°œ
+		{ 85,	2},			// 2 ìœ„		ê³ ì œ 2ê°œ
+		{ 19,	300000},	// 3 ìœ„		ë‚˜ìŠ¤ 300,000
+		{723,	5},			// ê·¸ì™¸		ë¬¸ìŠ¤í†¤ 5ê°œ
 	};
 
 	int nSubType = -1;
 	RefMsg(msg) >> nSubType;
 
-	// °ø¿ë º¯¼ö
+	// ê³µìš© ë³€ìˆ˜
 	int nCountryIndex = -1;
 
-	// VOTE¿ë
+	// VOTEìš©
 	int nCountry = 0;
 	CItem* pItemCountry = NULL;
 	CItem* pItemFIFACup = NULL;
 
-	// GIFT¿ë
+	// GIFTìš©
 	int nRank = 0;
 	int nRowFlagItem, nColFlagItem;
 	std::vector<int> listFlagItemIndex;
@@ -1584,23 +1584,23 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 
 	switch (nSubType)
 	{
-	// ÀÀ¸ğ Ã³¸®
+	// ì‘ëª¨ ì²˜ë¦¬
 	case MSG_EVENT_WORLDCUP_VOTE:
 		{
 
 			RefMsg(msg) >> nCountry;
 
-			// 1. ÀÀ¸ğ ±â°£ °Ë»ç
-			// 2. Å×ÀÌºí¿¡¼­ ÇØ´ç ±¹°¡ Ã£±â
-			// 3. ÇØ´ç ±¹°¡ ÀÀ¸ğ °Ë»ç : Àı´ë °°Àº ±¹±â¸¦ ¼ÒÀ¯ÇØ¼± ¾ÈµÊ
-			// 4. FIFA ÄÅ ¼ö·® °Ë»ç
-			// 5. ±¹±â »ı¼º
-			// 6. ±¹±â Áö±Ş
-			// 7. FIFA ÄÅ È¸¼ö
-			// 8. °á°ú ¾Ë¸²
-			// 9. °ÔÀÓ ·Î±×
+			// 1. ì‘ëª¨ ê¸°ê°„ ê²€ì‚¬
+			// 2. í…Œì´ë¸”ì—ì„œ í•´ë‹¹ êµ­ê°€ ì°¾ê¸°
+			// 3. í•´ë‹¹ êµ­ê°€ ì‘ëª¨ ê²€ì‚¬ : ì ˆëŒ€ ê°™ì€ êµ­ê¸°ë¥¼ ì†Œìœ í•´ì„  ì•ˆë¨
+			// 4. FIFA ì»µ ìˆ˜ëŸ‰ ê²€ì‚¬
+			// 5. êµ­ê¸° ìƒì„±
+			// 6. êµ­ê¸° ì§€ê¸‰
+			// 7. FIFA ì»µ íšŒìˆ˜
+			// 8. ê²°ê³¼ ì•Œë¦¼
+			// 9. ê²Œì„ ë¡œê·¸
 
-			// 1. ÀÀ¸ğ ±â°£ °Ë»ç
+			// 1. ì‘ëª¨ ê¸°ê°„ ê²€ì‚¬
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventWorldcupVoteMsg(rmsg, -1, MSG_EVENT_WORLDCUP_ERROR_VOTE_NOTCHANGE);
@@ -1608,7 +1608,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 			}
 			return ;
 
-			// 2. Å×ÀÌºí¿¡¼­ ÇØ´ç ±¹°¡ Ã£±â
+			// 2. í…Œì´ë¸”ì—ì„œ í•´ë‹¹ êµ­ê°€ ì°¾ê¸°
 			for (nCountryIndex = 0; nCountryIndex < nCountOfCountry; nCountryIndex++)
 			{
 				if (tableCountry[nCountryIndex][TABLE_REF_COUNTRY] == nCountry)
@@ -1617,7 +1617,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 			if (nCountryIndex == nCountOfCountry)
 				return ;
 
-			// 3. ÇØ´ç ±¹°¡ ÀÀ¸ğ °Ë»ç : Àı´ë °°Àº ±¹±â¸¦ ¼ÒÀ¯ÇØ¼± ¾ÈµÊ
+			// 3. í•´ë‹¹ êµ­ê°€ ì‘ëª¨ ê²€ì‚¬ : ì ˆëŒ€ ê°™ì€ êµ­ê¸°ë¥¼ ì†Œìœ í•´ì„  ì•ˆë¨
 			if (ch->m_inventory.FindByDBIndex(tableCountry[nCountryIndex][TABLE_REF_FLAG], 0, 0))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1626,7 +1626,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 4. FIFA ÄÅ ¼ö·® °Ë»ç
+			// 4. FIFA ì»µ ìˆ˜ëŸ‰ ê²€ì‚¬
 			item_search_t vec;
 			int sc = ch->m_inventory.searchItemByCondition(nFIFACupIndex, 0, 0, vec);
 			if (sc == 0 || sc < tableCountry[nCountryIndex][TABLE_REF_FIFACUP])
@@ -1637,7 +1637,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 5. ±¹±â »ı¼º
+			// 5. êµ­ê¸° ìƒì„±
 			pItemCountry = gserver->m_itemProtoList.CreateItem(tableCountry[nCountryIndex][TABLE_REF_FLAG], -1, 0, 0, 1);
 			if (!pItemCountry)
 			{
@@ -1647,7 +1647,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 6. ±¹±â Áö±Ş
+			// 6. êµ­ê¸° ì§€ê¸‰
 			if (ch->m_inventory.addItem(pItemCountry) == false)
 			{
 				delete pItemCountry;
@@ -1658,17 +1658,17 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 7. FIFA ÄÅ È¸¼ö
+			// 7. FIFA ì»µ íšŒìˆ˜
 			ch->m_inventory.deleteItem(vec, sc);
 
 			{
-				// 8. °á°ú ¾Ë¸²
+				// 8. ê²°ê³¼ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventWorldcupVoteMsg(rmsg, tableCountry[nCountryIndex][TABLE_REF_COUNTRY], MSG_EVENT_WORLDCUP_ERROR_VOTE_OK);
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// 9. °ÔÀÓ ·Î±×
+			// 9. ê²Œì„ ë¡œê·¸
 			GAMELOG << init("EVENT WORLDCUP 2006 VOTE", ch)
 					<< "COUNTRY" << delim
 					<< tableCountry[nCountryIndex][TABLE_REF_COUNTRY] << delim
@@ -1683,25 +1683,25 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	// º¸»ó Ã³¸®
+	// ë³´ìƒ ì²˜ë¦¬
 	case MSG_EVENT_WORLDCUP_GIFT:
 		{
 			RefMsg(msg) >> nRank;
 
-			// 1. º¸»ó ±â°£ °Ë»ç
-			// 2. ¼øÀ§±Ç ±¹°¡ °Ë»ç
-			// 2.1.1. ¼øÀ§±Ç ±¹±â ¼ÒÀ¯ °Ë»ç
-			// 2.1.2. º¸»óÇ° °áÁ¤
-			// 2.2.1. ºñ ¼øÀ§±Ç ±¹±â ¼ÒÀ¯ ¸®½ºÆ® ÀÛ¼º
-			// 2.2.2. º¸»óÇ° ¹× ¼ö·® °áÁ¤
-			// 3. º¸»óÇ° »ı¼º
-			// 4. º¸»óÇ° Áö±Ş
-			// 5. °ÔÀÓ ·Î±× 1
-			// 6. ±¹±â È¸¼ö
-			// 7. °á°ú ¾Ë¸²
-			// 8. °ÔÀÓ ·Î±× 2
+			// 1. ë³´ìƒ ê¸°ê°„ ê²€ì‚¬
+			// 2. ìˆœìœ„ê¶Œ êµ­ê°€ ê²€ì‚¬
+			// 2.1.1. ìˆœìœ„ê¶Œ êµ­ê¸° ì†Œìœ  ê²€ì‚¬
+			// 2.1.2. ë³´ìƒí’ˆ ê²°ì •
+			// 2.2.1. ë¹„ ìˆœìœ„ê¶Œ êµ­ê¸° ì†Œìœ  ë¦¬ìŠ¤íŠ¸ ì‘ì„±
+			// 2.2.2. ë³´ìƒí’ˆ ë° ìˆ˜ëŸ‰ ê²°ì •
+			// 3. ë³´ìƒí’ˆ ìƒì„±
+			// 4. ë³´ìƒí’ˆ ì§€ê¸‰
+			// 5. ê²Œì„ ë¡œê·¸ 1
+			// 6. êµ­ê¸° íšŒìˆ˜
+			// 7. ê²°ê³¼ ì•Œë¦¼
+			// 8. ê²Œì„ ë¡œê·¸ 2
 
-			// 1. º¸»ó ±â°£ °Ë»ç
+			// 1. ë³´ìƒ ê¸°ê°„ ê²€ì‚¬
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventWorldcupGiftMsg(rmsg, nRank, MSG_EVENT_WORLDCUP_ERROR_GIFT_NOTCHANGE);
@@ -1709,10 +1709,10 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 			}
 			return ;
 
-			// 2. ¼øÀ§±Ç ±¹°¡ °Ë»ç
+			// 2. ìˆœìœ„ê¶Œ êµ­ê°€ ê²€ì‚¬
 			if (1 <= nRank && nRank <= 3)
 			{
-				// 2.1.1. ¼øÀ§±Ç ±¹±â ¼ÒÀ¯ °Ë»ç
+				// 2.1.1. ìˆœìœ„ê¶Œ êµ­ê¸° ì†Œìœ  ê²€ì‚¬
 				for (nCountryIndex = 0; nCountryIndex < nCountOfCountry; nCountryIndex++)
 				{
 					if (tableCountry[nCountryIndex][TABLE_REF_RANK] == nRank)
@@ -1733,7 +1733,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				listFlagItemIndex.push_back(pItemFlag->getVIndex());
 				pItemFlag = NULL;
 
-				// 2.1.2. º¸»óÇ° °áÁ¤
+				// 2.1.2. ë³´ìƒí’ˆ ê²°ì •
 				nGiftItemIndex = tableGift[nRank - 1][0];
 				nGiftItemCount = tableGift[nRank - 1][1];
 			}
@@ -1741,16 +1741,16 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 			{
 				nRank = 4;
 
-				// 2.2.1. ºñ ¼øÀ§±Ç ±¹±â ¼ÒÀ¯ ¸®½ºÆ® ÀÛ¼º
-				// 32°³±¹ ±¹±â ¾ÆÀÌÅÛ ÀÎµ¦½º¿Í ºñ±³ÇÏ¿©
+				// 2.2.1. ë¹„ ìˆœìœ„ê¶Œ êµ­ê¸° ì†Œìœ  ë¦¬ìŠ¤íŠ¸ ì‘ì„±
+				// 32ê°œêµ­ êµ­ê¸° ì•„ì´í…œ ì¸ë±ìŠ¤ì™€ ë¹„êµí•˜ì—¬
 				for (nCountryIndex = 0; nCountryIndex < nCountOfCountry; nCountryIndex++)
 				{
 					CItem* pItemFlag = ch->m_inventory.FindByDBIndex(tableCountry[nCountryIndex][TABLE_REF_FLAG], 0, 0);
 					if (pItemFlag == NULL)
 						continue;
 
-					// 32°³±¹ ±¹±â Áß ÇÏ³ª¸é
-					// ¼øÀ§±Ç ±¹°¡°¡ ¾Æ´ÑÁö °Ë»ç
+					// 32ê°œêµ­ êµ­ê¸° ì¤‘ í•˜ë‚˜ë©´
+					// ìˆœìœ„ê¶Œ êµ­ê°€ê°€ ì•„ë‹Œì§€ ê²€ì‚¬
 					if (tableCountry[nCountryIndex][TABLE_REF_RANK] <= 3)
 						continue;
 
@@ -1765,12 +1765,12 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 					return ;
 				}
 
-				// 2.2.2. º¸»óÇ° ¹× ¼ö·® °áÁ¤
+				// 2.2.2. ë³´ìƒí’ˆ ë° ìˆ˜ëŸ‰ ê²°ì •
 				nGiftItemIndex = tableGift[nRank - 1][0];
 				nGiftItemCount = tableGift[nRank - 1][1] * listFlagItemIndex.size();
 			}
 
-			// 3. º¸»óÇ° »ı¼º
+			// 3. ë³´ìƒí’ˆ ìƒì„±
 			pItemGift = gserver->m_itemProtoList.CreateItem(nGiftItemIndex, -1, 0, 0, nGiftItemCount);
 			if (!pItemGift)
 			{
@@ -1780,7 +1780,7 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 4. º¸»óÇ° Áö±Ş
+			// 4. ë³´ìƒí’ˆ ì§€ê¸‰
 			if (ch->m_inventory.addItem(pItemGift) == false)
 			{
 				delete pItemGift;
@@ -1791,13 +1791,13 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 5. °ÔÀÓ ·Î±× 1
+			// 5. ê²Œì„ ë¡œê·¸ 1
 			GAMELOG << init("EVENT WORLDCUP 2006 GIFT", ch)
 					<< "RANK" << delim
 					<< nRank << delim
 					<< "FLAG" << delim;
 
-			// 6. ±¹±â È¸¼ö
+			// 6. êµ­ê¸° íšŒìˆ˜
 			{
 				std::vector<int>::iterator it = listFlagItemIndex.begin();
 				std::vector<int>::iterator endit = listFlagItemIndex.end();
@@ -1816,13 +1816,13 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			{
-				// 7. °á°ú ¾Ë¸²
+				// 7. ê²°ê³¼ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventWorldcupGiftMsg(rmsg, nRank, MSG_EVENT_WORLDCUP_ERROR_GIFT_OK);
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// 8. °ÔÀÓ ·Î±× 2
+			// 8. ê²Œì„ ë¡œê·¸ 2
 			GAMELOG << "GIFT" << delim
 					<< nGiftItemIndex << delim
 					<< "COUNT" << delim
@@ -1845,15 +1845,15 @@ void do_EventWorldcup(CPC* ch, CNetMsg::SP& msg)
 
 void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 {
-	// ÇÊ¿ä °ø ¼ö
+	// í•„ìš” ê³µ ìˆ˜
 	static const int nNeedBallCount = 10;
 
-	// »óÇ° Å×ÀÌºí : index, flag, count
+	// ìƒí’ˆ í…Œì´ë¸” : index, flag, count
 	static const int tableGift[3][4] =
 	{
-		{ 85,   0,  5},			// ½Â¸®±¹/Á¡¼ö ÀûÁß			°íÁ¦ 5°³
-		{ 85,   0,  1},			// ½Â¸®±¹ ÀûÁß				°íÁ¦ 1°³
-		{723,   0,  5},			// ²Î						¹®½ºÅæ 5°³
+		{ 85,   0,  5},			// ìŠ¹ë¦¬êµ­/ì ìˆ˜ ì ì¤‘			ê³ ì œ 5ê°œ
+		{ 85,   0,  1},			// ìŠ¹ë¦¬êµ­ ì ì¤‘				ê³ ì œ 1ê°œ
+		{723,   0,  5},			// ê½						ë¬¸ìŠ¤í†¤ 5ê°œ
 	};
 
 	int				nSubType;
@@ -1866,7 +1866,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 	CItem*			pItemCard;
 	CItem*			pItemGift;
 	int				nCardScore;
-	int				nGiftType;		// 0 - ¸ğµÎ ÀûÁß, 1 - ½Â¸®±¹ ÀûÁß, 2 - ²Î
+	int				nGiftType;		// 0 - ëª¨ë‘ ì ì¤‘, 1 - ìŠ¹ë¦¬êµ­ ì ì¤‘, 2 - ê½
 
 	RefMsg(msg) >> nSubType;
 
@@ -1877,19 +1877,19 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 			RefMsg(msg) >> nTeam1Score
 						>> nTeam2Score;
 
-			// 1. ½ºÄÚ¾î °Ë»ç
-			// 2. ÀÀ¸ğ ±â°£ °Ë»ç
-			// 3. ÀÀ¸ğ ¿©ºÎ °Ë»ç
-			// 4. °ø ¾ÆÀÌÅÛ °Ë»ç
-			// 5. Ä«µå Áö±Ş
-			// 6. °á°ú ¾Ë¸²
-			// 7. °ÔÀÓ·Î±×
+			// 1. ìŠ¤ì½”ì–´ ê²€ì‚¬
+			// 2. ì‘ëª¨ ê¸°ê°„ ê²€ì‚¬
+			// 3. ì‘ëª¨ ì—¬ë¶€ ê²€ì‚¬
+			// 4. ê³µ ì•„ì´í…œ ê²€ì‚¬
+			// 5. ì¹´ë“œ ì§€ê¸‰
+			// 6. ê²°ê³¼ ì•Œë¦¼
+			// 7. ê²Œì„ë¡œê·¸
 
-			// 1. ½ºÄÚ¾î °Ë»ç
+			// 1. ìŠ¤ì½”ì–´ ê²€ì‚¬
 			if (nTeam1Score < 0 || nTeam1Score > 10000 || nTeam2Score < 0 || nTeam2Score > 10000)
 				return ;
 
-			// 2. ÀÀ¸ğ ±â°£ °Ë»ç
+			// 2. ì‘ëª¨ ê¸°ê°„ ê²€ì‚¬
 			if (gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_VOTE)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1898,7 +1898,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 3. ÀÀ¸ğ ¿©ºÎ °Ë»ç
+			// 3. ì‘ëª¨ ì—¬ë¶€ ê²€ì‚¬
 			if (ch->m_inventory.FindByDBIndex(GOLDENBALL_CARD_INDEX))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1907,7 +1907,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 4. °ø ¾ÆÀÌÅÛ °Ë»ç
+			// 4. ê³µ ì•„ì´í…œ ê²€ì‚¬
 			item_search_t vec;
 			int sc = ch->m_inventory.searchItemByCondition(GOLDENBALL_BALL_INDEX, 0, 0, vec);
 			if (sc == 0 || sc < pItemBall->Count() < nNeedBallCount)
@@ -1918,7 +1918,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 5. Ä«µå Áö±Ş ¹× °ø È¸¼ö : plus¿¡ Á¡¼ö ¼³Á¤
+			// 5. ì¹´ë“œ ì§€ê¸‰ ë° ê³µ íšŒìˆ˜ : plusì— ì ìˆ˜ ì„¤ì •
 			nCardScore = ((nTeam1Score << 16) & 0xffff0000) | (nTeam2Score & 0x0000ffff);
 			pItemCard = gserver->m_itemProtoList.CreateItem(GOLDENBALL_CARD_INDEX, -1, nCardScore, 0, 1);
 			if (!pItemCard)
@@ -1942,13 +1942,13 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 			ch->m_inventory.deleteItem(vec, sc);
 
 			{
-				// 6. °á°ú ¾Ë¸²
+				// 6. ê²°ê³¼ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventGoldenballVoteMsg(rmsg, nTeam1Score, nTeam2Score, MSG_EVENT_GOLDENBALL_ERROR_VOTE_OK);
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// 7. °ÔÀÓ·Î±×
+			// 7. ê²Œì„ë¡œê·¸
 			GAMELOG << init("EVENT GOLDEN BALL VOTE", ch)
 					<< "SCORE" << delim
 					<< gserver->m_clGoldenBall.GetTeam1Name() << delim
@@ -1969,19 +1969,19 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_EVENT_GOLDENBALL_GIFT:
 		{
-			// 1. º¸»ó ±â°£ °Ë»ç
-			// 2. Ä«µå Ã£±â
-			// 3. Á¡¼ö »Ì±â
-			// 4. ÀûÁß ÆÇ´Ü
-			// 4.1. Á¡¼ö°¡ Á¤È®È÷ ¸ÂÀ¸¸é 0
-			// 4.2. ¹«½ÂºÎ°¡ ¾Æ´Ï¸é ½Â¸®±¹¸¸ ÀûÁßÇÏ´Â °æ¿ì °Ë»ç
-			// 5. ¾ÆÀÌÅÛ »ı¼º
-			// 6. ¾ÆÀÌÅÛ Áö±Ş
-			// 7. °ÔÀÓ·Î±×
-			// 8. Ä«µå È¸¼ö
-			// 9. °á°ú ¾Ë¸²
+			// 1. ë³´ìƒ ê¸°ê°„ ê²€ì‚¬
+			// 2. ì¹´ë“œ ì°¾ê¸°
+			// 3. ì ìˆ˜ ë½‘ê¸°
+			// 4. ì ì¤‘ íŒë‹¨
+			// 4.1. ì ìˆ˜ê°€ ì •í™•íˆ ë§ìœ¼ë©´ 0
+			// 4.2. ë¬´ìŠ¹ë¶€ê°€ ì•„ë‹ˆë©´ ìŠ¹ë¦¬êµ­ë§Œ ì ì¤‘í•˜ëŠ” ê²½ìš° ê²€ì‚¬
+			// 5. ì•„ì´í…œ ìƒì„±
+			// 6. ì•„ì´í…œ ì§€ê¸‰
+			// 7. ê²Œì„ë¡œê·¸
+			// 8. ì¹´ë“œ íšŒìˆ˜
+			// 9. ê²°ê³¼ ì•Œë¦¼
 
-			// 1. º¸»ó ±â°£ °Ë»ç
+			// 1. ë³´ìƒ ê¸°ê°„ ê²€ì‚¬
 			if (gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_GIFT)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1990,7 +1990,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 2. Ä«µå Ã£±â
+			// 2. ì¹´ë“œ ì°¾ê¸°
 			pItemCard = ch->m_inventory.FindByDBIndex(GOLDENBALL_CARD_INDEX);
 			if (pItemCard == NULL)
 			{
@@ -2000,24 +2000,24 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 3. Á¡¼ö »Ì±â
+			// 3. ì ìˆ˜ ë½‘ê¸°
 			nCardScore = pItemCard->getPlus();
 			nTeam1Score = (nCardScore >> 16) & 0x0000ffff;
 			nTeam2Score =  nCardScore        & 0x0000ffff;
 
-			// 4. ÀûÁß ÆÇ´Ü
+			// 4. ì ì¤‘ íŒë‹¨
 			nGiftType = 2;
-			// 4.1. Á¡¼ö°¡ Á¤È®È÷ ¸ÂÀ¸¸é 0
+			// 4.1. ì ìˆ˜ê°€ ì •í™•íˆ ë§ìœ¼ë©´ 0
 			if (nTeam1Score == gserver->m_clGoldenBall.GetTeam1Score() && nTeam2Score == gserver->m_clGoldenBall.GetTeam2Score())
 				nGiftType = 0;
-			// 4.2. ¹«½ÂºÎ°¡ ¾Æ´Ï¸é ½Â¸®±¹¸¸ ÀûÁßÇÏ´Â °æ¿ì °Ë»ç
+			// 4.2. ë¬´ìŠ¹ë¶€ê°€ ì•„ë‹ˆë©´ ìŠ¹ë¦¬êµ­ë§Œ ì ì¤‘í•˜ëŠ” ê²½ìš° ê²€ì‚¬
 			else if ( (nTeam1Score != nTeam2Score) && (gserver->m_clGoldenBall.GetTeam1Score() != gserver->m_clGoldenBall.GetTeam2Score()) )
 			{
 				if ((nTeam1Score > nTeam2Score) == (gserver->m_clGoldenBall.GetTeam1Score() > gserver->m_clGoldenBall.GetTeam2Score()))
 					nGiftType = 1;
 			}
 
-			// 5. ¾ÆÀÌÅÛ »ı¼º
+			// 5. ì•„ì´í…œ ìƒì„±
 			pItemGift = gserver->m_itemProtoList.CreateItem(tableGift[nGiftType][0], -1, 0, tableGift[nGiftType][1], tableGift[nGiftType][2]);
 			if (!pItemGift)
 			{
@@ -2037,7 +2037,7 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 7. °ÔÀÓ·Î±×
+			// 7. ê²Œì„ë¡œê·¸
 			GAMELOG << init("EVENT GOLDEN BALL GIFT", ch)
 					<< "GIFT TYPE" << delim
 					<< nGiftType << delim
@@ -2051,11 +2051,11 @@ void do_EventGoldenball(CPC* ch, CNetMsg::SP& msg)
 					<< itemlog(pItemCard)
 					<< end;
 
-			// 8. Ä«µå È¸¼ö
+			// 8. ì¹´ë“œ íšŒìˆ˜
 			ch->m_inventory.decreaseItemCount(pItemCard, 1);
 
 			{
-				// 9. °á°ú ¾Ë¸²
+				// 9. ê²°ê³¼ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				switch (nGiftType)
 				{
@@ -2083,9 +2083,9 @@ void do_EventRain2006(CPC* ch, CNetMsg::SP& msg)
 {
 	if( !gserver->isActiveEvent( A_EVENT_RAIN_DROP ) )
 		return ;
-	// ¾ÆÀÌÅÛ ÀÎµ¦½º
+	// ì•„ì´í…œ ì¸ë±ìŠ¤
 #ifdef LC_TLD
-	// ÅÂ±¹ ¾î¸Ó´Ï³¯ ÀÌº¥Æ®·Î º¯°æ
+	// íƒœêµ­ ì–´ë¨¸ë‹ˆë‚  ì´ë²¤íŠ¸ë¡œ ë³€ê²½
 	static const int nRaindrop = 1705;
 	static const int nRainBottle = 1704;
 #else
@@ -2093,29 +2093,29 @@ void do_EventRain2006(CPC* ch, CNetMsg::SP& msg)
 	static const int nRainBottle = 1517;
 #endif
 
-	// ±³È¯ ÇÊ¿ä ¹æ¿ï ¼ö
+	// êµí™˜ í•„ìš” ë°©ìš¸ ìˆ˜
 	//static const int nNeedDrops = 10;
 
-	// ¹°º´´ç ¹æ¿ï ¼ö : nNeedDrops % nDropsPerBottle == 0 ÀÌ¾î¾ß ÇÑ´Ù
+	// ë¬¼ë³‘ë‹¹ ë°©ìš¸ ìˆ˜ : nNeedDrops % nDropsPerBottle == 0 ì´ì–´ì•¼ í•œë‹¤
 	//static const int nDropsPerBottle = 5;
 
-	// º¸»ó Å×ÀÌºí : È®·ü[1/10000], index1, flag1, count1, index2, flag2, count2
+	// ë³´ìƒ í…Œì´ë¸” : í™•ë¥ [1/10000], index1, flag1, count1, index2, flag2, count2
 
 	int				nRow;
 	int				nCol;
 	CItem*			pItemRaindrop = NULL;
 	CItem*			pItemRainBottle = NULL;
-	int				nRainCount = 0;		// ºø¹æ¿ï 1, ºø¹°º´ 5 ¾¿ Áõ°¡
+	int				nRainCount = 0;		// ë¹—ë°©ìš¸ 1, ë¹—ë¬¼ë³‘ 5 ì”© ì¦ê°€
 	int				i = 0;
 	bool			bGiveItem = false;
 
-	// º´ºÎÅÍ ±³È¯.
+	// ë³‘ë¶€í„° êµí™˜.
 	{
 		item_search_t vec;
 		int sc = ch->m_inventory.searchItemByCondition(nRainBottle, 0, 0, vec);
 		if (sc > 0)
 		{
-			nRainCount = sc / 2 ; // º´Àº ¹°¹æÀ» 5°³ Áï 2°³´ç ÇÑ¹ø Áö±Ş
+			nRainCount = sc / 2 ; // ë³‘ì€ ë¬¼ë°©ì„ 5ê°œ ì¦‰ 2ê°œë‹¹ í•œë²ˆ ì§€ê¸‰
 
 			if( nRainCount > 0 )
 			{
@@ -2140,7 +2140,7 @@ void do_EventRain2006(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¹°¹æ¿ï ±³È¯
+	// ë¬¼ë°©ìš¸ êµí™˜
 	{
 		item_search_t vec;
 		int sc = ch->m_inventory.searchItemByCondition(nRaindrop, 0, 0, vec);
@@ -2244,17 +2244,20 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 	if(!gserver->isActiveEvent( A_EVENT_COLLECT_BUG) )
 		return;
 
-	static const int	nNormalBoxIndex = 1577;		// ÀÏ¹İ »óÀÚ ÀÎµ¦½º
-	static const int	nGoldenBoxIndex = 1578;		// °ñµç »óÀÚ ÀÎµ¦½º
-	static const int	nGoldenPoint = 30;			// °ñµç »óÀÚ º¸³Ê½º Æ÷ÀÎÆ®
+	static const int	nNormalBoxIndex = 1577;		// ì¼ë°˜ ìƒì ì¸ë±ìŠ¤
+	static const int	nGoldenBoxIndex = 1578;		// ê³¨ë“  ìƒì ì¸ë±ìŠ¤
+	static const int	nGoldenPoint = 30;			// ê³¨ë“  ìƒì ë³´ë„ˆìŠ¤ í¬ì¸íŠ¸
 
-	static const int	nNeedMoney = 100;			// »óÀÚ ±¸¸Å ±İ¾×
-	static const int	nProbGoldenBox = 1;			// °ñµç »óÀÚ È®·ü
+	static const int	nNeedMoney = 100;			// ìƒì êµ¬ë§¤ ê¸ˆì•¡
+	static const int	nProbGoldenBox = 1;			// ê³¨ë“  ìƒì í™•ë¥ 
 
 	int				nSubType = 0;
 	CItem*			pItemBox = NULL;
-	int				nRow, nCol;
+
 	int				nSelectedBoxIndex = 0;
+	bool			isGolden = false;
+	int				vIndex;
+
 	int				nSelectedBoxPoint = 0;
 	bool			bIsFull = true;
 	int				nGift = 0;
@@ -2272,78 +2275,73 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 	{
 	case MSG_EVENT_COLLECT_BUG_DROP:
 		{
-			RefMsg(msg) >> nSelectedBoxIndex;
+			RefMsg(msg) >> nSelectedBoxIndex
+				>>vIndex;
 			if (nSelectedBoxIndex < 0 || nSelectedBoxIndex >= 16)
 				return ;
 
-			// 1. ÀÏ¹İ »óÀÚ °Ë»ö
-			// 2. °ñµç »óÀÚ °Ë»ö
-			// 3. °ÔÀÓ ·Î±× 1
-			// 4. »óÀÚ ³»¿ë º¯°æ
-			// 5. °ÔÀÓ ·Î±× 2
-			// 6. °á°ú ¾Ë¸²
+			pItemBox = ch->m_inventory.FindByVirtualIndex(vIndex);
 
-			// 1. ÀÏ¹İ »óÀÚ °Ë»ö
-			pItemBox = ch->m_inventory.FindByDBIndex(nNormalBoxIndex);
-			if (pItemBox)
+			if(pItemBox)
 			{
-				TO_BUGDATA(pItemBox, ucBug);
-			}
-
-			// 2. °ñµç »óÀÚ °Ë»ö
-			pItemBox = ch->m_inventory.FindByDBIndex(nGoldenBoxIndex);
-			if (pItemBox)
-			{
-				TO_BUGDATA(pItemBox, ucBug);
-			}
-
-			if (pItemBox)
-			{
-				// 3. °ÔÀÓ ·Î±× 1
-				GAMELOG << init("EVENT COLLECT BUG DEL", ch)
-						<< "POSITION" << delim
-						<< nSelectedBoxIndex << delim
-						<< "PREV" << delim
-						<< itemlog(pItemBox) << delim
-						<< "NEXT" << delim;
-
-				// 4. »óÀÚ ³»¿ë º¯°æ
-				pItemBox->setFlag(pItemBox->getFlag() - ucBug[nSelectedBoxIndex]);
-				ucBug[nSelectedBoxIndex] = 0;
-				FROM_BUGDATA(ucBug, pItemBox);
-
+				if(pItemBox->getDBIndex() == nNormalBoxIndex || pItemBox->getDBIndex() == nGoldenBoxIndex)
 				{
-					CNetMsg::SP rmsg(new CNetMsg);
-					UpdateClient::makeUpdateItemFlag(rmsg, pItemBox->tab(), pItemBox->getInvenIndex(), pItemBox->getFlag());
-					SEND_Q(rmsg, ch->m_desc);
+					TO_BUGDATA(pItemBox, ucBug);
 				}
-
-				// 5. °ÔÀÓ ·Î±× 2
-				GAMELOG << itemlog(pItemBox)
-						<< end;
-
+				else
 				{
-					// 6. °á°ú ¾Ë¸²
-					CNetMsg::SP rmsg(new CNetMsg);
-					EventCollectBugMsg(rmsg, MSG_EVENT_COLLECT_BUG_DROP, nSelectedBoxIndex);
-					SEND_Q(rmsg, ch->m_desc);
+					LOG_ERROR("HACKING? Invalid BugCollectionItem. charIndex[%d], itemDBIndex[%d]", ch->m_index, pItemBox->getDBIndex());
+					ch->m_desc->Close("Invalid BugCollectionItem");
+					return;
 				}
+			}
+			else
+			{
+				LOG_ERROR("HACKING? Not found item. charIndex[%d]", ch->m_index);
+				ch->m_desc->Close("Not found item");
+				return;
+			}
+						
+			// 3. ê²Œì„ ë¡œê·¸ 1
+			GAMELOG << init("EVENT COLLECT BUG DEL", ch)
+				<< "POSITION" << delim
+				<< nSelectedBoxIndex << delim
+				<< "PREV" << delim
+				<< itemlog(pItemBox) << delim
+				<< "NEXT" << delim;
+
+			// 4. ìƒì ë‚´ìš© ë³€ê²½
+			pItemBox->setFlag(pItemBox->getFlag() - ucBug[nSelectedBoxIndex]);
+			ucBug[nSelectedBoxIndex] = 0;
+			FROM_BUGDATA(ucBug, pItemBox);
+
+			ch->m_inventory.sendOneItemInfo(pItemBox);
+
+			// 5. ê²Œì„ ë¡œê·¸ 2
+			GAMELOG << itemlog(pItemBox)
+				<< end;
+
+			{
+				// 6. ê²°ê³¼ ì•Œë¦¼
+				CNetMsg::SP rmsg(new CNetMsg);
+				EventCollectBugMsg(rmsg, MSG_EVENT_COLLECT_BUG_DROP, nSelectedBoxIndex);
+				SEND_Q(rmsg, ch->m_desc);
 			}
 		}
 		break;
 
 	case MSG_EVENT_COLLECT_BUG_GIFT_REQ:
 		{
-			// 1. ÀÏ¹İ »óÀÚ °Ë»ö
-			// 2. °ñµç »óÀÚ °Ë»ö
-			// 3. Æ÷ÀÎÆ®¿¡ µû¸¥ º¸»ó ¼±ÅÃ
-			// 4. º¸»ó Áö±Ş
-			// 5. °ÔÀÓ ·Î±× 1
-			// 6. °ÔÀÓ ·Î±× 2
-			// 7. »óÀÚ È¸¼ö
-			// 8. °á°ú ¾Ë¸²
+			// 1. ì¼ë°˜ ìƒì ê²€ìƒ‰
+			// 2. ê³¨ë“  ìƒì ê²€ìƒ‰
+			// 3. í¬ì¸íŠ¸ì— ë”°ë¥¸ ë³´ìƒ ì„ íƒ
+			// 4. ë³´ìƒ ì§€ê¸‰
+			// 5. ê²Œì„ ë¡œê·¸ 1
+			// 6. ê²Œì„ ë¡œê·¸ 2
+			// 7. ìƒì íšŒìˆ˜
+			// 8. ê²°ê³¼ ì•Œë¦¼
 
-			// 1. ¼ÒÀ¯ »óÀÚ °Ë»ö
+			// 1. ì†Œìœ  ìƒì ê²€ìƒ‰
 			pItemBox = ch->m_inventory.FindByDBIndex(nNormalBoxIndex);
 			if (pItemBox)
 			{
@@ -2362,7 +2360,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// 2. °ñµç »óÀÚ °Ë»ö (ÀÏ¹İ »óÀÚ¿¡¼­ Ã£Áö ¸øÇß´Ù¸é...)
+			// 2. ê³¨ë“  ìƒì ê²€ìƒ‰ (ì¼ë°˜ ìƒìì—ì„œ ì°¾ì§€ ëª»í–ˆë‹¤ë©´...)
 			if (pItemBox == NULL)
 			{
 				pItemBox = ch->m_inventory.FindByDBIndex(nGoldenBoxIndex);
@@ -2383,7 +2381,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 						pItemBox = NULL;
 					}
 
-					// °ñµç »óÀÚ Ãß°¡ Æ÷ÀÎÆ®
+					// ê³¨ë“  ìƒì ì¶”ê°€ í¬ì¸íŠ¸
 					nSelectedBoxPoint += nGoldenPoint;
 				}
 			}
@@ -2399,7 +2397,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 3. Æ÷ÀÎÆ®¿¡ µû¸¥ º¸»ó ¼±ÅÃ
+			// 3. í¬ì¸íŠ¸ì— ë”°ë¥¸ ë³´ìƒ ì„ íƒ
 			if      (nSelectedBoxPoint <  26)			nGift = 0;
 			else if (nSelectedBoxPoint <  41)			nGift = 1;
 			else if (nSelectedBoxPoint <  56)			nGift = 2;
@@ -2425,11 +2423,11 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// 7. »óÀÚ È¸¼ö
+			// 7. ìƒì íšŒìˆ˜
 			ch->m_inventory.decreaseItemCount(pItemBox, 1);
 
 			{
-				// 8. °á°ú ¾Ë¸²
+				// 8. ê²°ê³¼ ì•Œë¦¼
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventCollectBugMsg(rmsg, MSG_EVENT_COLLECT_BUG_GIFT_REP_OK, nGift);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2439,15 +2437,15 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 
 	case MSG_EVENT_COLLECT_BUG_BUY_BOX_REQ:
 		{
-			// 1. ¼ÒÁö ±İ¾× °Ë»ç
-			// 2. ¼ÒÀ¯ ¾ÆÀÌÅÛ °Ë»ç
-			// 3. È®·ü Àû¿ë : 1% °ñµç »óÀÚ
-			// 4. »óÀÚ Áö±Ş
-			// 5. µ· È¸¼ö
-			// 6. °á°ú ¾Ë¸²
-			// 7. °ÔÀÓ ·Î±×
+			// 1. ì†Œì§€ ê¸ˆì•¡ ê²€ì‚¬
+			// 2. ì†Œìœ  ì•„ì´í…œ ê²€ì‚¬
+			// 3. í™•ë¥  ì ìš© : 1% ê³¨ë“  ìƒì
+			// 4. ìƒì ì§€ê¸‰
+			// 5. ëˆ íšŒìˆ˜
+			// 6. ê²°ê³¼ ì•Œë¦¼
+			// 7. ê²Œì„ ë¡œê·¸
 
-			// 1. ¼ÒÁö ±İ¾× °Ë»ç
+			// 1. ì†Œì§€ ê¸ˆì•¡ ê²€ì‚¬
 			if (ch->m_inventory.getMoney() < nNeedMoney)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -2456,7 +2454,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 2. ¼ÒÀ¯ ¾ÆÀÌÅÛ °Ë»ç
+			// 2. ì†Œìœ  ì•„ì´í…œ ê²€ì‚¬
 			if (ch->m_inventory.FindByDBIndex(nNormalBoxIndex) || ch->m_inventory.FindByDBIndex(nGoldenBoxIndex))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -2465,7 +2463,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// 3. È®·ü Àû¿ë : 1% °ñµç »óÀÚ
+			// 3. í™•ë¥  ì ìš© : 1% ê³¨ë“  ìƒì
 			nProb = GetRandom(1, 100);
 			if (nProb == nProbGoldenBox)
 			{
@@ -2478,7 +2476,7 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 				nSelectedBoxPoint = 0;
 			}
 
-			// 4. »óÀÚ Áö±Ş
+			// 4. ìƒì ì§€ê¸‰
 			pItemBox = gserver->m_itemProtoList.CreateItem(nSelectedBoxIndex, -1, 0, nSelectedBoxPoint, 1);
 			if (pItemBox == NULL)
 			{
@@ -2491,17 +2489,17 @@ void do_EventCollectBug(CPC* ch, CNetMsg::SP& msg)
 			pItemBox->setUsed(0);
 			if (ch->m_inventory.addItem(pItemBox))
 			{
-				// 5. µ· È¸¼ö
+				// 5. ëˆ íšŒìˆ˜
 				ch->m_inventory.decreaseMoney(nNeedMoney);
 
 				{
-					// 6. °á°ú ¾Ë¸²
+					// 6. ê²°ê³¼ ì•Œë¦¼
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventCollectBugMsg(rmsg, MSG_EVENT_COLLECT_BUG_BUY_BOX_REP_OK, (nSelectedBoxIndex == nGoldenBoxIndex) ? 1 : 0);
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
-				// 7. °ÔÀÓ ·Î±×
+				// 7. ê²Œì„ ë¡œê·¸
 				GAMELOG << init("EVENT COLLECT BUG BUY", ch)
 						<< "BOX" << delim
 						<< itemlog(pItemBox)
@@ -2526,11 +2524,11 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 	if( !gserver->isActiveEvent( A_EVENT_CHUSUK ) )
 		return;
 
-	static const int		nIndexRice		= 1814;	// ½Ò°¡·ç
-	static const int		nIndexHoney		= 1815;	// ²Ü
-	static const int		nIndexPine		= 1816;	// ¼ÖÀÙ
-	static const int		nIndexCake		= 1817;	// ¼ÛÆí
-	static const int		nIndexRainbow	= 1818;	// ¿À»ö ¼ÛÆí
+	static const int		nIndexRice		= 1814;	// ìŒ€ê°€ë£¨
+	static const int		nIndexHoney		= 1815;	// ê¿€
+	static const int		nIndexPine		= 1816;	// ì†”ì
+	static const int		nIndexCake		= 1817;	// ì†¡í¸
+	static const int		nIndexRainbow	= 1818;	// ì˜¤ìƒ‰ ì†¡í¸
 
 	int				nSubtype;
 	int				nRow, nCol;
@@ -2544,9 +2542,9 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 
 	switch (nSubtype)
 	{
-	case MSG_EVENT_CHUSEOK_2006_MAKE_RICECAKE:			// ¼ÛÆí Á¦ÀÛ
+	case MSG_EVENT_CHUSEOK_2006_MAKE_RICECAKE:			// ì†¡í¸ ì œì‘
 		{
-			// Àç·á 1 : ½Ò°¡·ç
+			// ì¬ë£Œ 1 : ìŒ€ê°€ë£¨
 			pItemNeed1 = ch->m_inventory.FindByDBIndex(nIndexRice, 0, 0);
 			if (pItemNeed1 == NULL)
 			{
@@ -2556,7 +2554,7 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// Àç·á 2 : ²Ü
+			// ì¬ë£Œ 2 : ê¿€
 			pItemNeed2 = ch->m_inventory.FindByDBIndex(nIndexHoney, 0, 0);
 			if (pItemNeed2 == NULL)
 			{
@@ -2566,7 +2564,7 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// Àç·á 3 : ¼ÖÀÙ
+			// ì¬ë£Œ 3 : ì†”ì
 			pItemNeed3 = ch->m_inventory.FindByDBIndex(nIndexPine, 0, 0);
 			if (pItemNeed3 == NULL)
 			{
@@ -2606,7 +2604,7 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_EVENT_CHUSEOK_2006_MAKE_RAINBOW_CAKE:		// ¿À»ö ¼ÛÆí Á¦ÀÛ
+	case MSG_EVENT_CHUSEOK_2006_MAKE_RAINBOW_CAKE:		// ì˜¤ìƒ‰ ì†¡í¸ ì œì‘
 		{
 			item_search_t vec;
 			int sc = ch->m_inventory.searchItemByCondition(nIndexCake, 0, 0, vec);
@@ -2647,9 +2645,9 @@ void do_EventChuseok2006(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_EVENT_CHUSEOK_2006_GIFT:	// ¿À»ö ¼ÛÆí ±³È¯ ¿äÃ»
+	case MSG_EVENT_CHUSEOK_2006_GIFT:	// ì˜¤ìƒ‰ ì†¡í¸ êµí™˜ ìš”ì²­
 		{
-			// Àç·á : ¿À»ö ¼ÛÆí
+			// ì¬ë£Œ : ì˜¤ìƒ‰ ì†¡í¸
 			pItemNeed1 = ch->m_inventory.FindByDBIndex(nIndexRainbow, 0, 0);
 			if (pItemNeed1 == NULL)
 			{
@@ -2719,7 +2717,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 
 	switch(nSubType)
 	{
-	case MSG_EVENT_VALENTINE_2007_BINGO_ITEM_ARRANGE:		// ºù°í¾ÆÀÌÅÛ ÀúÀå ¿äÃ»
+	case MSG_EVENT_VALENTINE_2007_BINGO_ITEM_ARRANGE:		// ë¹™ê³ ì•„ì´í…œ ì €ì¥ ìš”ì²­
 		{
 			unsigned char itempos;
 			int itemindex, bingoitemindex, row, col;
@@ -2746,17 +2744,17 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			int const itemcount = 3;
-			static int const itemtable[itemcount][2] =  		// {Æ÷ÀåµÈ ¾ÆÀÌÅÛ, ¾ÆÀÌÅÛ ºñÆ®°ª}
+			static int const itemtable[itemcount][2] =  		// {í¬ì¥ëœ ì•„ì´í…œ, ì•„ì´í…œ ë¹„íŠ¸ê°’}
 			{
-				{ 2048, 1 },		// Ä«Ä«¿À 30
-				{ 2049, 2 },		// Ä«Ä«¿À 60
-				{ 2050, 4 },		// Ä«Ä«¿À 90
+				{ 2048, 1 },		// ì¹´ì¹´ì˜¤ 30
+				{ 2049, 2 },		// ì¹´ì¹´ì˜¤ 60
+				{ 2050, 4 },		// ì¹´ì¹´ì˜¤ 90
 			};
 
 			CItem* pBingoBox = ch->m_inventory.FindByDBIndex(bingoitemindex);
 			if (pBingoBox == NULL)
 			{
-				// ºù°í»óÀÚ ¾ÆÀÌÅÛÀÌ ¾ø´Ù.
+				// ë¹™ê³ ìƒì ì•„ì´í…œì´ ì—†ë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventValentine2007ErrorMsg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_ITEM_NOTFOUND);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2766,7 +2764,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 			CItem* pPackagedItem = ch->m_inventory.FindByDBIndex(itemindex);
 			if (pPackagedItem == NULL)
 			{
-				// ºù°í»óÀÚ¿¡ ÀúÀåÇÒ ¾ÆÀÌÅÛÀÌ ¾ø´Ù.
+				// ë¹™ê³ ìƒìì— ì €ì¥í•  ì•„ì´í…œì´ ì—†ë‹¤.
 				LOG_ERROR("not found item. charIndex[%d] itemDbIndex[%d]", ch->m_index, itemindex);
 				return;
 			}
@@ -2781,7 +2779,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 
 					if(( flag << movebit ) & pBingoBox->getPlus())
 					{
-						// ÀÌ¹Ì ¹è¿­ µÇ¾îÀÖ´Â °÷ÀÌ´Ù.
+						// ì´ë¯¸ ë°°ì—´ ë˜ì–´ìˆëŠ” ê³³ì´ë‹¤.
 						CNetMsg::SP rmsg(new CNetMsg);
 						EventValentine2007ErrorMsg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_ITEM_ARRANGE_ALREADY);
 						SEND_Q(rmsg, ch->m_desc);
@@ -2794,7 +2792,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 					int bingocount = 0;
 					int addscore = 0;
 
-					if(!BINGO(pBingoBox->getPlus(), &score, &bingocount))	// ºù°í ½ÇÆĞÇÏ¸é ¿ø·¡´ë·Î µÇµ¹¸°´Ù.
+					if(!BINGO(pBingoBox->getPlus(), &score, &bingocount))	// ë¹™ê³  ì‹¤íŒ¨í•˜ë©´ ì›ë˜ëŒ€ë¡œ ë˜ëŒë¦°ë‹¤.
 					{
 						pBingoBox->setPlus(pBingoBox->getPlus() & ~nArrangeItem);
 						return ;
@@ -2812,7 +2810,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 
 					ch->m_inventory.sendOneItemInfo(pBingoBox);
 
-					// ÀúÀåµÈ ¾ÆÀÌÅÛÀ» ÀÎº¥¿¡¼­ Áö¿î´Ù.
+					// ì €ì¥ëœ ì•„ì´í…œì„ ì¸ë²¤ì—ì„œ ì§€ìš´ë‹¤.
 					ch->m_inventory.decreaseItemCount(pPackagedItem, 1);
 
 					{
@@ -2826,7 +2824,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 
 			if(i == itemcount)
 			{
-				// Æ÷ÀåµÈ ÃÊÄÚ·¿ÀÌ ¾Æ´Ñ °ÍÀº ¹è¿­ÇÒ ¼ö ¾ø´Ù.
+				// í¬ì¥ëœ ì´ˆì½”ë ›ì´ ì•„ë‹Œ ê²ƒì€ ë°°ì—´í•  ìˆ˜ ì—†ë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventValentine2007ErrorMsg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_ITEM_ARRANGE_NOTPACKAGE);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2834,7 +2832,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case MSG_EVENT_VALENTINE_2007_BINGO_GIFT:				// º¸»ó¿äÃ»
+	case MSG_EVENT_VALENTINE_2007_BINGO_GIFT:				// ë³´ìƒìš”ì²­
 		{
 			int bingoitemindex, row, col;
 
@@ -2849,10 +2847,10 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 				if(!BINGO(pBingoBox->getPlus(), &score, &bingocount))
 					return;
 
-				// ºù°í°¡ ¾øÀ¸¸é
+				// ë¹™ê³ ê°€ ì—†ìœ¼ë©´
 				if(score == 0)
 				{
-					// »óÇ°À» ÁÙ ¼ö ¾ø´Ù°í ÇÑ´Ù.
+					// ìƒí’ˆì„ ì¤„ ìˆ˜ ì—†ë‹¤ê³  í•œë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventValentine2007ErrorMsg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_GIFT_NOITEM);
 					SEND_Q(rmsg, ch->m_desc);
@@ -2881,11 +2879,11 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 
 				GAMELOG << init("EVENT VALENTINE REWARD END", ch) 	<< end;
 
-				// ºù°í¹Ú½º ¾ÆÀÌÅÛÀ» Á¦°ÅÇÑ´Ù.
+				// ë¹™ê³ ë°•ìŠ¤ ì•„ì´í…œì„ ì œê±°í•œë‹¤.
 				ch->m_inventory.decreaseItemCount(pBingoBox, 1);
 
 				{
-					// ºù°í°³¼öµµ °°ÀÌ ÀüÇØÁØ´Ù.
+					// ë¹™ê³ ê°œìˆ˜ë„ ê°™ì´ ì „í•´ì¤€ë‹¤.
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventValentine2007Msg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_GIFT_OK, bingocount);
 					SEND_Q(rmsg, ch->m_desc);
@@ -2893,7 +2891,7 @@ void do_EventValentine2007(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ºù°íÆÇ ¾ÆÀÌÅÛ ¾øÀ½
+				// ë¹™ê³ íŒ ì•„ì´í…œ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventValentine2007ErrorMsg(rmsg, MSG_EVENT_VALENTINE_2007_BINGO_ITEM_NOTFOUND);
 				SEND_Q(rmsg, ch->m_desc);
@@ -2987,8 +2985,8 @@ void do_EventWhiteday2007(CPC* ch, CNetMsg::SP& msg)
 	{
 	case MSG_EVENT_WHITEDAY_2007_EXCHANGE_REQ : //
 		{
-			int nNeedItemCountSky =0;			// ±³È¯¿¡ ÇÊ¿äÇÑ ÇÏ´Ã»ö Äµµğ °³¼ö
-			int nNeedItemCountPink=0;			// ±³È¯¿¡ ÇÊ¿äÇÑ ºĞÈ«»ö Äµµğ °³¼ö
+			int nNeedItemCountSky =0;			// êµí™˜ì— í•„ìš”í•œ í•˜ëŠ˜ìƒ‰ ìº”ë”” ê°œìˆ˜
+			int nNeedItemCountPink=0;			// êµí™˜ì— í•„ìš”í•œ ë¶„í™ìƒ‰ ìº”ë”” ê°œìˆ˜
 			//int nRepaySkillIndex = 0;
 			int rewardIndex = 0;
 			int rewardSelectPos = -1;
@@ -2997,18 +2995,18 @@ void do_EventWhiteday2007(CPC* ch, CNetMsg::SP& msg)
 			//////////////////////////////////////////////////////////////////////////
 			switch( exchangeType )
 			{
-			case 0 :	// ÇÏ´Ã »ö 5°³  ºĞÈ«»ö 5°³ (º¸»ó : ½ºÅ³ )
+			case 0 :	// í•˜ëŠ˜ ìƒ‰ 5ê°œ  ë¶„í™ìƒ‰ 5ê°œ (ë³´ìƒ : ìŠ¤í‚¬ )
 				nNeedItemCountSky	= 5;
 				nNeedItemCountPink	= 5;
 				rewardIndex = 12;
 				break;
-			case 1:		// ÇÏ´Ã»ö 20°³ (º¸»ó : ÇÏ´Ã»ö ÆíÁöÁö )
+			case 1:		// í•˜ëŠ˜ìƒ‰ 20ê°œ (ë³´ìƒ : í•˜ëŠ˜ìƒ‰ í¸ì§€ì§€ )
 				nNeedItemCountSky	= 20;
 				nNeedItemCountPink	= 0;
 				rewardIndex = 13;
 				rewardSelectPos = 0;
 				break;
-			case 2:		// ºĞÈ«»ö 20°³ (º¸»ó : ºĞÈ«»ö ÆíÁöÁö  )
+			case 2:		// ë¶„í™ìƒ‰ 20ê°œ (ë³´ìƒ : ë¶„í™ìƒ‰ í¸ì§€ì§€  )
 				nNeedItemCountSky	= 0;
 				nNeedItemCountPink	= 20;
 				rewardIndex = 13;
@@ -3021,16 +3019,16 @@ void do_EventWhiteday2007(CPC* ch, CNetMsg::SP& msg)
 				item_search_t vec_pItemSkyCandy;
 				item_search_t vec_pItemPinkCandy;
 
-				if (nNeedItemCountSky > 0 )		// ÇÏ´Ã»ö »çÅÁ °¹¼ö °Ë»ç
+				if (nNeedItemCountSky > 0 )		// í•˜ëŠ˜ìƒ‰ ì‚¬íƒ• ê°¯ìˆ˜ ê²€ì‚¬
 				{
-					int sc = ch->m_inventory.searchItemByCondition(2133 , 0, 0, vec_pItemSkyCandy); // ÇÏ´Ã»ö »çÅÁ Ã£±â
+					int sc = ch->m_inventory.searchItemByCondition(2133 , 0, 0, vec_pItemSkyCandy); // í•˜ëŠ˜ìƒ‰ ì‚¬íƒ• ì°¾ê¸°
 					if (sc == 0 || sc < nNeedItemCountSky)
-						throw MSG_EVENT_WHITEDAY_2007_EXCHANGE_NOITEM;	// ¾ÆÀÌÅÛ ¾øÀ½
+						throw MSG_EVENT_WHITEDAY_2007_EXCHANGE_NOITEM;	// ì•„ì´í…œ ì—†ìŒ
 				}
 
-				if ( nNeedItemCountPink > 0 )	// ºĞÈ«»ö »çÅÁ °³¼ö °Ë»ç
+				if ( nNeedItemCountPink > 0 )	// ë¶„í™ìƒ‰ ì‚¬íƒ• ê°œìˆ˜ ê²€ì‚¬
 				{
-					int sc = ch->m_inventory.searchItemByCondition(2134 , 0, 0, vec_pItemPinkCandy); // ºĞÈ«»ö »çÅÁ Ã£±â
+					int sc = ch->m_inventory.searchItemByCondition(2134 , 0, 0, vec_pItemPinkCandy); // ë¶„í™ìƒ‰ ì‚¬íƒ• ì°¾ê¸°
 					if (sc == 0 || sc < nNeedItemCountPink)
 						throw MSG_EVENT_WHITEDAY_2007_EXCHANGE_NOITEM;
 				}
@@ -3041,24 +3039,24 @@ void do_EventWhiteday2007(CPC* ch, CNetMsg::SP& msg)
 
 				//////////////////////////////////////////////////////////////////////////
 				{
-					// ¼º°ø ¸Ş¼¼Áö¤©
+					// ì„±ê³µ ë©”ì„¸ì§€ã„¹
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventWhiteday2007Msg(rmsg, MSG_EVENT_WHITEDAY_2007_EXCHANGE_OK );
 
-					RefMsg(rmsg) << exchangeType;		// 0-½ºÅ³ º¸»ó, 1-ÇÏ´Ã»ö ÆíÁöÁö º¸»ó , 2- ºĞÈ«»ö ÆíÁöÁö º¸»ó
+					RefMsg(rmsg) << exchangeType;		// 0-ìŠ¤í‚¬ ë³´ìƒ, 1-í•˜ëŠ˜ìƒ‰ í¸ì§€ì§€ ë³´ìƒ , 2- ë¶„í™ìƒ‰ í¸ì§€ì§€ ë³´ìƒ
 					//				if( exchangeType == 0 )
-					//				{	RefMsg(rmsg) << nRepaySkill[nRepaySkillIndex][0];	}	// ½ºÅ³ º¸»óÀÏ°æ¿ì ½ºÅ³ ÀÎµ¦½º
+					//				{	RefMsg(rmsg) << nRepaySkill[nRepaySkillIndex][0];	}	// ìŠ¤í‚¬ ë³´ìƒì¼ê²½ìš° ìŠ¤í‚¬ ì¸ë±ìŠ¤
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				// ÀÎº¥¿¡¼­ ¾ÆÀÌÅÛ Á¦°Å
-				if (nNeedItemCountSky > 0) // ÇÏ´Ã »ö »çÅÁ
+				// ì¸ë²¤ì—ì„œ ì•„ì´í…œ ì œê±°
+				if (nNeedItemCountSky > 0) // í•˜ëŠ˜ ìƒ‰ ì‚¬íƒ•
 				{
 					ch->m_inventory.deleteItem(vec_pItemSkyCandy, nNeedItemCountSky);
 				}
 
-				if (nNeedItemCountPink > 0) // ºĞÈ«»ö »çÅÁ
+				if (nNeedItemCountPink > 0) // ë¶„í™ìƒ‰ ì‚¬íƒ•
 				{
 					ch->m_inventory.deleteItem(vec_pItemPinkCandy, nNeedItemCountPink);
 				}
@@ -3080,13 +3078,13 @@ void do_EventWhiteday2007(CPC* ch, CNetMsg::SP& msg)
 			int nItemIndex =0 ;
 			CItem* pNeedItem = NULL;
 
-			CLCString	msgStr(256);		//Å¬¶óÀÌ¾ğÆ® 50ÀÚ
+			CLCString	msgStr(256);		//í´ë¼ì´ì–¸íŠ¸ 50ì
 			CLCString	rmsgStr(256);
 			RefMsg(msg) >> nItemIndex;
 			RefMsg(msg) >> color;
 			RefMsg(msg) >> msgStr;
 
-			pNeedItem = ch->m_inventory.FindByDBIndex(nItemIndex , 0, 0); // ÇÏ´Ã»ö »çÅÁ Ã£±â
+			pNeedItem = ch->m_inventory.FindByDBIndex(nItemIndex , 0, 0); // í•˜ëŠ˜ìƒ‰ ì‚¬íƒ• ì°¾ê¸°
 			if( pNeedItem != NULL )
 			{
 				{
@@ -3114,17 +3112,17 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 	if( !gserver->isActiveEvent( A_EVENT_BEAR_DOLL) )
 		return;
 
-	// ½ÂÆĞ È®·ü ±×¿Ü´Â ºñ±è, ½Â¸®-0, ÆĞ¹è-1
+	// ìŠ¹íŒ¨ í™•ë¥  ê·¸ì™¸ëŠ” ë¹„ê¹€, ìŠ¹ë¦¬-0, íŒ¨ë°°-1
 	const static int nTableWinProb[8][2] =
 	{
-		{34, 67},		// 0½Â -> 1½Â
-		{34, 67},		// 1½Â -> 2½Â
-		{34, 67},		// 2½Â -> 3½Â
-		{30, 70},		// 3½Â -> 4½Â
-		{30, 70},		// 4½Â -> 5½Â
-		{30, 70},		// 5½Â -> 6½Â
-		{30, 65},		// 6½Â -> 7½Â
-		{30, 65},		// 7½Â -> 8½Â
+		{34, 67},		// 0ìŠ¹ -> 1ìŠ¹
+		{34, 67},		// 1ìŠ¹ -> 2ìŠ¹
+		{34, 67},		// 2ìŠ¹ -> 3ìŠ¹
+		{30, 70},		// 3ìŠ¹ -> 4ìŠ¹
+		{30, 70},		// 4ìŠ¹ -> 5ìŠ¹
+		{30, 70},		// 5ìŠ¹ -> 6ìŠ¹
+		{30, 65},		// 6ìŠ¹ -> 7ìŠ¹
+		{30, 65},		// 7ìŠ¹ -> 8ìŠ¹
 	};
 
 	const static int nTableGomdoriItem[9] =
@@ -3229,15 +3227,15 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 			case 0:
 				cNPCSelWin  = 1;
 				cNPCSelLose = 2;
-				break;		// °¡À§
+				break;		// ê°€ìœ„
 			case 1:
 				cNPCSelWin  = 2;
 				cNPCSelLose = 0;
-				break;		// ¹ÙÀ§
+				break;		// ë°”ìœ„
 			case 2:
 				cNPCSelWin  = 0;
 				cNPCSelLose = 1;
-				break;		// º¸
+				break;		// ë³´
 			default:
 				return ;
 			}
@@ -3248,13 +3246,13 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 			{
 			case 0:
 				nWinProb = 20;
-				break;		// °¡À§
+				break;		// ê°€ìœ„
 			case 1:
 				nWinProb = 60;
-				break;		// ¹ÙÀ§
+				break;		// ë°”ìœ„
 			case 2:
 				nWinProb = 80;
-				break;		// º¸
+				break;		// ë³´
 			}
 #endif // _DEBUG
 			if (ch->getRockPaperScissorsFlag() && ch->m_admin == 10)
@@ -3264,7 +3262,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 
 			if (nTableWinProb[(int)ch->m_nEventGomdori2007Win][0] >= nWinProb)
 			{
-				// À¯Àú ½Â¸®
+				// ìœ ì € ìŠ¹ë¦¬
 				ch->m_nEventGomdori2007Win++;
 				GAMELOG << init("EVENT GOMDORI GAME RESULT WIN", ch)
 						<< "USER SEL" << delim
@@ -3278,7 +3276,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if (nTableWinProb[(int)ch->m_nEventGomdori2007Win][1] >= nWinProb)
 			{
-				// NPC ½Â¸®
+				// NPC ìŠ¹ë¦¬
 				ch->m_bEventGomdori2007Start = false;
 				GAMELOG << init("EVENT GOMDORI GAME RESULT LOSE", ch)
 						<< "USER SEL" << delim
@@ -3292,7 +3290,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ºñ±è
+				// ë¹„ê¹€
 				GAMELOG << init("EVENT GOMDORI GAME RESULT DRAW", ch)
 						<< "USER SEL" << delim
 						<< cUserSel << delim
@@ -3338,7 +3336,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if (ch->m_nEventGomdori2007Win == 1 && ch->m_nEventGomdori2007FirstWin == 1)
 			{
-				// ¿±±â ¹«±â º¸»ó ¹¯±â
+				// ì—½ê¸° ë¬´ê¸° ë³´ìƒ ë¬»ê¸°
 				const std::vector<REWAD_DATA_INFO> * rewardDataList = NULL;
 
 				gserver->m_rewardMgr.setRewardData(ch, 25);
@@ -3376,7 +3374,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 						EventGomdori2007EndMsg(rmsg, ch->m_nEventGomdori2007Win, 0, nGiftIndex, nGiftCount);
 						SEND_Q(rmsg, ch->m_desc);
 
-						// ÃÊ±âÈ­
+						// ì´ˆê¸°í™”
 						ch->m_nEventGomdori2007Win = 0;
 						ch->m_nEventGomdori2007Game = 0;
 						ch->m_bEventGomdori2007Start = false;
@@ -3428,7 +3426,7 @@ void do_EventGomdori2007(CPC* ch, CNetMsg::SP& msg)
 				EventGomdori2007SelectGiftMsg(rmsg, nSelItem);
 				SEND_Q(rmsg, ch->m_desc);
 
-				// ÃÊ±âÈ­
+				// ì´ˆê¸°í™”
 				ch->m_nEventGomdori2007Win = 0;
 				ch->m_nEventGomdori2007Game = 0;
 				ch->m_nEventGomdori2007FirstWin = 0;
@@ -3509,7 +3507,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 
 			int MixSheet[10][5] =
 			{
-				// °ñµå, ½Ç¹ö, ·¹µå, ±×¸°, ÇÇ±Ô¾î
+				// ê³¨ë“œ, ì‹¤ë²„, ë ˆë“œ, ê·¸ë¦°, í”¼ê·œì–´
 				{0, 0, 0, 3, 1 },
 				{0, 0, 1, 2, 2 },
 				{0, 0, 2, 1, 3 },
@@ -3649,7 +3647,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 				}
 
 				{
-					// ³ª½º Á¦°Å
+					// ë‚˜ìŠ¤ ì œê±°
 					ch->m_inventory.decreaseMoney(100);
 				}
 
@@ -3706,7 +3704,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 			{
 				if( nProb < RedPaperInchenProb )
 				{
-					// ¼º°ø ¸Ş¼¼Áö Àü¼Û
+					// ì„±ê³µ ë©”ì„¸ì§€ ì „ì†¡
 					CItem* giveitem = gserver->m_itemProtoList.CreateItem( RED_PAPER_ITEM, -1, 0, 0, 1 );
 
 					if( giveitem )
@@ -3717,7 +3715,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 							EventSummerVacationInchenMsg( rmsg, MSG_EVENT_SUMMER_VACATION_2007_ERROR_INCHEN_OK, RED_PAPER_ITEM );
 							SEND_Q(rmsg, ch->m_desc);
 
-							// ÀÎÃ¾ µÈ ¾ÆÀÌÅÛ »èÁ¦ - 5°³
+							// ì¸ì²¸ ëœ ì•„ì´í…œ ì‚­ì œ - 5ê°œ
 							ch->m_inventory.deleteItem(vec, 5);
 
 							return;
@@ -3740,8 +3738,8 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
-				// ½ÇÆĞÀü¼Û
-				// ÀÎÃ¾ µÈ ¾ÆÀÌÅÛ »èÁ¦ - 4°³
+				// ì‹¤íŒ¨ì „ì†¡
+				// ì¸ì²¸ ëœ ì•„ì´í…œ ì‚­ì œ - 4ê°œ
 				ch->m_inventory.deleteItem(vec, 4);
 
 				return;
@@ -3750,7 +3748,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 			{
 				if( nProb < SilverPaperIncheProb )
 				{
-					// ¼º°ø ¸Ş¼¼Áö Àü¼Û
+					// ì„±ê³µ ë©”ì„¸ì§€ ì „ì†¡
 					CItem* giveitem = gserver->m_itemProtoList.CreateItem( SILVER_PAPER_ITEM, -1, 0, 0, 1 );
 
 					if( giveitem )
@@ -3784,8 +3782,8 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
-				// ½ÇÆĞÀü¼Û
-				// ÀÎÃ¾ µÈ ¾ÆÀÌÅÛ »èÁ¦ - 4°³
+				// ì‹¤íŒ¨ì „ì†¡
+				// ì¸ì²¸ ëœ ì•„ì´í…œ ì‚­ì œ - 4ê°œ
 				ch->m_inventory.deleteItem(vec, 4);
 
 				return;
@@ -3794,7 +3792,7 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 			{
 				if( nProb < GoldPaperInchenProb )
 				{
-					// ¼º°ø ¸Ş¼¼Áö Àü¼Û
+					// ì„±ê³µ ë©”ì„¸ì§€ ì „ì†¡
 					CItem* giveitem = gserver->m_itemProtoList.CreateItem( GOLD_PAPER_ITEM, -1, 0, 0, 1 );
 
 					if( giveitem )
@@ -3828,8 +3826,8 @@ void do_EventSummerVacation2007( CPC* ch, CNetMsg::SP& msg )
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
-				// ½ÇÆĞÀü¼Û
-				// ÀÎÃ¾ µÈ ¾ÆÀÌÅÛ »èÁ¦ - 4°³
+				// ì‹¤íŒ¨ì „ì†¡
+				// ì¸ì²¸ ëœ ì•„ì´í…œ ì‚­ì œ - 4ê°œ
 				ch->m_inventory.deleteItem(vec, 4);
 
 				return;
@@ -3861,27 +3859,27 @@ void do_EventOpenAdultServer(CPC* ch, CNetMsg::SP& msg)
 		{
 		case MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_REQ:
 			{
-				int nNeedItemCountSpade = 1;			// ±³È¯¿¡ ÇÊ¿äÇÑ ½ºÆäÀÌµå °³¼ö
-				int nNeedItemCountHeart = 1;			// ±³È¯¿¡ ÇÊ¿äÇÑ ÇÏÆ® °³¼ö
+				int nNeedItemCountSpade = 1;			// êµí™˜ì— í•„ìš”í•œ ìŠ¤í˜ì´ë“œ ê°œìˆ˜
+				int nNeedItemCountHeart = 1;			// êµí™˜ì— í•„ìš”í•œ í•˜íŠ¸ ê°œìˆ˜
 
 				item_search_t vec_pItemSpade;
 				item_search_t vec_pItemHeart;
 
 				if(nNeedItemCountSpade > 0)
 				{
-					int sc = ch->m_inventory.searchItemByCondition(2383 , 0, 0, vec_pItemSpade); // ½ºÆäÀÌµå AÄ«µå
+					int sc = ch->m_inventory.searchItemByCondition(2383 , 0, 0, vec_pItemSpade); // ìŠ¤í˜ì´ë“œ Aì¹´ë“œ
 					if (sc == 0 || sc < nNeedItemCountSpade)
 					{
-						throw MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_NOITEM;	// ¾ÆÀÌÅÛ ¾øÀ½
+						throw MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_NOITEM;	// ì•„ì´í…œ ì—†ìŒ
 					}
 				}
 
 				if(nNeedItemCountHeart > 0)
 				{
-					int sc = ch->m_inventory.searchItemByCondition(2384 , 0, 0, vec_pItemHeart); // ½ºÆäÀÌµå AÄ«µå
+					int sc = ch->m_inventory.searchItemByCondition(2384 , 0, 0, vec_pItemHeart); // ìŠ¤í˜ì´ë“œ Aì¹´ë“œ
 					if (sc == 0 || sc < nNeedItemCountHeart)
 					{
-						throw MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_NOITEM;	// ¾ÆÀÌÅÛ ¾øÀ½
+						throw MSG_EVENT_OPEN_ADULT_SERVER_MAGIC_NOITEM;	// ì•„ì´í…œ ì—†ìŒ
 					}
 				}
 
@@ -3893,7 +3891,7 @@ void do_EventOpenAdultServer(CPC* ch, CNetMsg::SP& msg)
 
 				GAMELOG << init("EVENT MAGIC_CARD", ch) << "MAGIC CARD REWARD END" << end;
 
-				// Àç·á Áö¿ì±â
+				// ì¬ë£Œ ì§€ìš°ê¸°
 				ch->m_inventory.deleteItem(vec_pItemSpade, nNeedItemCountSpade);
 
 				ch->m_inventory.deleteItem(vec_pItemHeart, nNeedItemCountHeart);
@@ -3948,7 +3946,7 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 
 	switch( ucSubType )
 	{
-	case MSG_EVENT_TAKE_DEVILHEAIR :		// Helper ¿¡ È®ÀÎ ¿äÃ»
+	case MSG_EVENT_TAKE_DEVILHEAIR :		// Helper ì— í™•ì¸ ìš”ì²­
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperHalloween2007Msg( rmsg, ch->m_index );
@@ -3956,18 +3954,18 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 		}
 		break;
 
-	case MSG_EVENT_CHANGE_CANDYBASKET :		// »çÅÁ¹Ù±¸´Ï È®ÀÎÇÏ°í ·»´ıÀ¸·Î »çÅÁÁÖ±â
+	case MSG_EVENT_CHANGE_CANDYBASKET :		// ì‚¬íƒ•ë°”êµ¬ë‹ˆ í™•ì¸í•˜ê³  ë Œë¤ìœ¼ë¡œ ì‚¬íƒ•ì£¼ê¸°
 		{
-			CItem* pCandyBasket = ch->m_inventory.FindByDBIndex(2490/*»çÅÁ¹Ù±¸´Ï*/, 0, 0);
+			CItem* pCandyBasket = ch->m_inventory.FindByDBIndex(2490/*ì‚¬íƒ•ë°”êµ¬ë‹ˆ*/, 0, 0);
 			if (pCandyBasket == NULL)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_CANDYBASKET, 1 );		// »çÅÁ ¹Ù±¸´Ï ¾øÀ½
+				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_CANDYBASKET, 1 );		// ì‚¬íƒ• ë°”êµ¬ë‹ˆ ì—†ìŒ
 				SEND_Q( rmsg, ch->m_desc );
 				return;
 			}
 
-			// »çÅÁ Áö±Ş
+			// ì‚¬íƒ• ì§€ê¸‰
 			if( !gserver->m_rewardMgr.setRewardData(ch, 11 )
 					||!gserver->m_rewardMgr.doReward( ch, 11 ) )
 			{
@@ -3977,28 +3975,28 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 			ch->m_inventory.decreaseItemCount(pCandyBasket, 1);
 
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_CANDYBASKET, 0 ); //¼º°ø
+				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_CANDYBASKET, 0 ); //ì„±ê³µ
 				SEND_Q( rmsg, ch->m_desc );
 			}
 		}
 		break;
 
-	case MSG_EVENT_CHANGE_PUMKINHEAD :		// »çÅÁ 6°³·Î ±³È¯ ¹Ş±â
+	case MSG_EVENT_CHANGE_PUMKINHEAD :		// ì‚¬íƒ• 6ê°œë¡œ êµí™˜ ë°›ê¸°
 		{
 			CItem* pCandy[6] = { NULL, };
 
 			for (int i = 0; i < 6 ; i++ )
 			{
-				pCandy[i] = ch->m_inventory.FindByDBIndex(nCandyIndex[i]/*»çÅÁ*/, 0, 0);
+				pCandy[i] = ch->m_inventory.FindByDBIndex(nCandyIndex[i]/*ì‚¬íƒ•*/, 0, 0);
 				if (pCandy[i] == NULL)
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKINHEAD, 1 );		// »çÅÁ ¾øÀ½
+					EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKINHEAD, 1 );		// ì‚¬íƒ• ì—†ìŒ
 					SEND_Q( rmsg, ch->m_desc );
 					return;
 				}
@@ -4013,7 +4011,7 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 			for (int i = 0; i < 6 ; i++ )
 			{
 				ch->m_inventory.decreaseItemCount(pCandy[i], 1);
@@ -4021,28 +4019,28 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKINHEAD, 0 ); //¼º°ø
+				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKINHEAD, 0 ); //ì„±ê³µ
 				SEND_Q( rmsg, ch->m_desc );
 			}
 		}
 		break;
 
-	case MSG_EVENT_CHANGE_WITCHHAT :		// ÁõÇ¥ 2°³(ÀÌº¥Æ®ÀÎº¥) È®ÀÎ ÈÄ ±³È¯
+	case MSG_EVENT_CHANGE_WITCHHAT :		// ì¦í‘œ 2ê°œ(ì´ë²¤íŠ¸ì¸ë²¤) í™•ì¸ í›„ êµí™˜
 		{
 			CItem* pTasteSeal[2] = { NULL, };
 
 			for(int i = 0; i < 2 ; i++ )
 			{
-				if ((pTasteSeal[i] = ch->m_inventory.FindByDBIndex(nTasteSealIndex[i]/*¸ÀÁõÇ¥*/, 0, 0 )) == NULL)
+				if ((pTasteSeal[i] = ch->m_inventory.FindByDBIndex(nTasteSealIndex[i]/*ë§›ì¦í‘œ*/, 0, 0 )) == NULL)
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_WITCHHAT, 1 );		// »çÅÁ ¹Ù±¸´Ï ¾øÀ½
+					EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_WITCHHAT, 1 );		// ì‚¬íƒ• ë°”êµ¬ë‹ˆ ì—†ìŒ
 					SEND_Q( rmsg, ch->m_desc );
 					return;
 				}
 			}
 
-			// ¸¶³à ¸ğÀÚ Áö±Ş
+			// ë§ˆë…€ ëª¨ì ì§€ê¸‰
 			if( !gserver->m_rewardMgr.setRewardData(ch,9)
 					||!gserver->m_rewardMgr.doReward( ch, 9 ) )
 			{
@@ -4052,7 +4050,7 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 			for(int i = 0; i < 2 ; i++ )
 			{
 				ch->m_inventory.decreaseItemCount(pTasteSeal[i], 1);
@@ -4060,24 +4058,24 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_WITCHHAT, 0 ); //¼º°ø
+				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_WITCHHAT, 0 ); //ì„±ê³µ
 				SEND_Q( rmsg, ch->m_desc );
 			}
 		}
 		break;
 
-	case MSG_EVENT_CHANGE_PUMKIN :			// È£¹ÚÀ» ¾ÆÀÌÅÛÀ¸·Î
+	case MSG_EVENT_CHANGE_PUMKIN :			// í˜¸ë°•ì„ ì•„ì´í…œìœ¼ë¡œ
 		{
-			CItem* pPumkin = ch->m_inventory.FindByDBIndex(2491/*È£¹Ú*/, 0, 0 );
+			CItem* pPumkin = ch->m_inventory.FindByDBIndex(2491/*í˜¸ë°•*/, 0, 0 );
 			if (pPumkin == NULL)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKIN, 1 );		// »çÅÁ ¹Ù±¸´Ï ¾øÀ½
+				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKIN, 1 );		// ì‚¬íƒ• ë°”êµ¬ë‹ˆ ì—†ìŒ
 				SEND_Q( rmsg, ch->m_desc );
 				return;
 			}
 
-			// ¸¶³à ¸ğÀÚ Áö±Ş
+			// ë§ˆë…€ ëª¨ì ì§€ê¸‰
 			if( !gserver->m_rewardMgr.setRewardData(ch, 10)
 					|| !gserver->m_rewardMgr.doReward( ch, 10 ) )
 			{
@@ -4087,13 +4085,13 @@ void do_EventHalloween2007( CPC* ch, CNetMsg::SP& msg )
 				return;
 			}
 
-			// ¾ÆÀÌÅÛ Á¦°Å
+			// ì•„ì´í…œ ì œê±°
 			ch->m_inventory.decreaseItemCount(pPumkin, 1);
 
 			{
 				addItemResult& invenResult = ch->m_inventory.getLastAddItemResult();
 
-				//¼º°ø
+				//ì„±ê³µ
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventHalloween2007Msg( rmsg, MSG_EVENT_CHANGE_PUMKIN, 0 );
 				RefMsg(rmsg) << invenResult.pItem->getDBIndex();
@@ -4110,7 +4108,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 	unsigned char subtype;
 	RefMsg(msg) >> subtype;
 
-	// ÀÎº¥ Ã¼Å©
+	// ì¸ë²¤ ì²´í¬
 	if (ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4218,7 +4216,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// ¹®½ºÅæ È®ÀÎ
+			// ë¬¸ìŠ¤í†¤ í™•ì¸
 			CItem* moonstone = ch->m_inventory.FindByDBIndex(ch->m_nMSIndex);
 			if (moonstone == NULL)
 			{
@@ -4232,7 +4230,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// º¸»óÇ° È®ÀÎ
+			// ë³´ìƒí’ˆ í™•ì¸
 			CMoonStoneRewardData* reward = gserver->m_moonstoneReward.Find(ch->m_nMSIndex);
 			if(!reward)
 			{
@@ -4250,7 +4248,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			}
 			CMoonStoneRewardData::REWARD* rdata = it->second;
 
-			// ¹®½ºÅæ ¾ÆÀÌÅÛ °¨¼Ò
+			// ë¬¸ìŠ¤í†¤ ì•„ì´í…œ ê°ì†Œ
 			ch->m_inventory.decreaseItemCount(moonstone, 1);
 
 			{
@@ -4259,7 +4257,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 				SEND_Q(rmsg, gserver->m_helper);
 			}
 
-			if(rdata->rewardindex == NAS_ITEM_DB_INDEX)		// ÀèÆÌ
+			if(rdata->rewardindex == NAS_ITEM_DB_INDEX)		// ì­íŒŸ
 			{
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -4287,7 +4285,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			int plus = 0;
-			if(itemproto->getItemTypeIdx() == ITYPE_WEAPON) // ¹«±â´Â plus 0 ~ 4;
+			if(itemproto->getItemTypeIdx() == ITYPE_WEAPON) // ë¬´ê¸°ëŠ” plus 0 ~ 4;
 			{
 				plus = GetRandom(0, 4);
 			}
@@ -4334,7 +4332,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			const int MixGradeCount = 4;
 			static const int MoonStoneMixGrade[MixGradeCount][3] =
 			{
-				{2545, 2546, 90},   // ¹®½ºÅæ Á¾·ù, Á¶ÇÕµÇ´Â ¹®½ºÅæ, È®·ü
+				{2545, 2546, 90},   // ë¬¸ìŠ¤í†¤ ì¢…ë¥˜, ì¡°í•©ë˜ëŠ” ë¬¸ìŠ¤í†¤, í™•ë¥ 
 				{2546, 723, 60},
 				{723, 2547, 30},
 				{2547, 2548, 10},
@@ -4343,7 +4341,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			const int MixBoxCount = 5;
 			const int MixBoxes[MixBoxCount][4] =
 			{
-				{2552, 100, 100,	1},			// Á¶ÇÕ»óÀÚÁ¾·ù, Áõ°¡È®·ü, ¼ÒºñµÇ´Â ³ª½º, ½ÇÆĞ½Ã ¹®½ºÅæ»ç¶óÁü
+				{2552, 100, 100,	1},			// ì¡°í•©ìƒìì¢…ë¥˜, ì¦ê°€í™•ë¥ , ì†Œë¹„ë˜ëŠ” ë‚˜ìŠ¤, ì‹¤íŒ¨ì‹œ ë¬¸ìŠ¤í†¤ì‚¬ë¼ì§
 				{2553, 200, 1000,	1},
 				{2554, 300, 10000,	1},
 				{2555, 400, 0,		1},
@@ -4401,7 +4399,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// ¹®½ºÅæ ÀÖ´ÂÁö È®ÀÎ
+			// ë¬¸ìŠ¤í†¤ ìˆëŠ”ì§€ í™•ì¸
 			item_search_t vec_moonstone;
 			int sc = ch->m_inventory.searchItemByCondition(nMoonStoneIndex, 0, 0, vec_moonstone);
 			if (sc == 0 || sc < 3)
@@ -4413,12 +4411,12 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// ¹®½ºÅæ »óÀÚ ÀÖ´ÂÁö È®ÀÎ
+			// ë¬¸ìŠ¤í†¤ ìƒì ìˆëŠ”ì§€ í™•ì¸
 			CItem* moonstonebox = ch->m_inventory.FindByDBIndex(nMoonStoneMixBox);
 			if (moonstonebox == NULL)
 				return ;
 
-			// ³ª½º°Ë»ç
+			// ë‚˜ìŠ¤ê²€ì‚¬
 			if(MixBoxes[cSelMoonStoneBox][2] > 0)
 			{
 				if(ch->m_inventory.getMoney() < MixBoxes[cSelMoonStoneBox][2])
@@ -4433,7 +4431,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			int rand = GetRandom(1, 100);
 			if(rand <= MoonStoneMixGrade[cSelMoonStone][2] * MixBoxes[cSelMoonStoneBox][1]/100)
 			{
-				// Á¶ÇÕ¼º°ø
+				// ì¡°í•©ì„±ê³µ
 				CItem* upgradeitem = gserver->m_itemProtoList.CreateItem(MoonStoneMixGrade[cSelMoonStone][1], -1, 0, 0, 1);
 				if (upgradeitem == NULL)
 					return ;
@@ -4450,7 +4448,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 					ch->m_pArea->SendToCell(rmsg, ch, true);
 				}
 
-				// ¹®½ºÅæ, ¹®½ºÅæ ¹Ú½º »èÁ¦
+				// ë¬¸ìŠ¤í†¤, ë¬¸ìŠ¤í†¤ ë°•ìŠ¤ ì‚­ì œ
 				ch->m_inventory.deleteItem(vec_moonstone, 3);
 
 				ch->m_inventory.decreaseItemCount(moonstonebox, 1);
@@ -4469,10 +4467,10 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// Á¶ÇÕ½ÇÆĞ
+				// ì¡°í•©ì‹¤íŒ¨
 				if(MixBoxes[cSelMoonStoneBox][3])
 				{
-					// ¹®½ºÅæ °¨¼Ò
+					// ë¬¸ìŠ¤í†¤ ê°ì†Œ
 					ch->m_inventory.deleteItem(vec_moonstone, 2);
 				}
 
@@ -4488,7 +4486,7 @@ void do_EventNewMoonstone(CPC* ch, CNetMsg::SP& msg)
 						<< end;
 			}
 
-			// Â÷°¨
+			// ì°¨ê°
 			if(MixBoxes[cSelMoonStoneBox][2] > 0)
 			{
 				ch->m_inventory.decreaseMoney(MixBoxes[cSelMoonStoneBox][2]);
@@ -4529,14 +4527,14 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 	// KYD TO DO
 	switch(subtype)
 	{
-	case MSG_EVENT_XMASTREE_ADD_POINT :		// Æ÷ÀÎÆ® Àû¸³ Ä¿³ØÅÍ·Î
+	case MSG_EVENT_XMASTREE_ADD_POINT :		// í¬ì¸íŠ¸ ì ë¦½ ì»¤ë„¥í„°ë¡œ
 		{
-			// Àå½Ä ¾ÆÀÌÅÛ
+			// ì¥ì‹ ì•„ì´í…œ
 			const int ItemCount = 6;
-			int nXmasItem[ItemCount] = { 2584, 2585, 2586, 2587, 2588, 2589 }; //¾ç¸»,¸·´ë»çÅÁ , Á¾, ¸®º», ±¸½½, º°
+			int nXmasItem[ItemCount] = { 2584, 2585, 2586, 2587, 2588, 2589 }; //ì–‘ë§,ë§‰ëŒ€ì‚¬íƒ• , ì¢…, ë¦¬ë³¸, êµ¬ìŠ¬, ë³„
 
 			unsigned int unPoint = 0;
-			// ¾ÆÀÌÅÛ È®ÀÎ
+			// ì•„ì´í…œ í™•ì¸
 			for( int i = 0; i < ItemCount; i++ )
 			{
 				item_search_t vec;
@@ -4550,7 +4548,7 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			{
-				// unPoint°¡ 0º¸´Ù Å©¸é ¼º°ø, ÀÛÀ¸¸é ¾ÆÀÌÅÛ ¾øÀ½
+				// unPointê°€ 0ë³´ë‹¤ í¬ë©´ ì„±ê³µ, ì‘ìœ¼ë©´ ì•„ì´í…œ ì—†ìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventXmas2007Msg( rmsg, MSG_EVENT_XMASTREE_ADD_POINT );
 				if( unPoint > 0 )
@@ -4570,14 +4568,14 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_EVENT_XMASTREE_GET_BLESS :		// Ãàº¹ ¹Ş±â
+	case MSG_EVENT_XMASTREE_GET_BLESS :		// ì¶•ë³µ ë°›ê¸°
 		{
-			if( ch->m_assist.FindBySkillIndex( 489 ) == 0 )	// if( ÇöÀç Å©¸®½º ¸¶½º µğ¹öÇÁ°¡ ¾ø´Ù. )
+			if( ch->m_assist.FindBySkillIndex( 489 ) == 0 )	// if( í˜„ì¬ í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ ë””ë²„í”„ê°€ ì—†ë‹¤. )
 			{
 				unsigned int unLevel = gserver->m_unEventXmasTreePoint/1000;
 				int	nSkillIndex=0;
 
-				// nSkillIndex ½ºÅ³ ÁÖ±â
+				// nSkillIndex ìŠ¤í‚¬ ì£¼ê¸°
 				CSkill* pSkill = NULL;
 				bool bApply;
 
@@ -4610,27 +4608,27 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 					if( pSkill )
 					{
 						ApplySkill( ch, ch, pSkill, -1 , bApply );
-						if( bApply ) // ½ºÅ³ ¼º°ø
+						if( bApply ) // ìŠ¤í‚¬ ì„±ê³µ
 						{
 							delete pSkill;
 							pSkill = NULL;
-							nSkillIndex = 489;	// Å©¸®½º ¸¶½º µğ¹öÇÁ ½ºÅ³·Î º¯°æ;
+							nSkillIndex = 489;	// í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ ë””ë²„í”„ ìŠ¤í‚¬ë¡œ ë³€ê²½;
 						}
-						else // ½ºÅ³ ½ÇÆĞ
+						else // ìŠ¤í‚¬ ì‹¤íŒ¨
 							break;
 					}
-					else	// ½ºÅ³ ½ÇÆĞ
+					else	// ìŠ¤í‚¬ ì‹¤íŒ¨
 						break;
 				}
 
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventXmas2007Msg( rmsg, MSG_EVENT_XMASTREE_GET_BLESS );
-					if(bApply)		// ½ºÅ³ 2°³ ¼º°ø
+					if(bApply)		// ìŠ¤í‚¬ 2ê°œ ì„±ê³µ
 					{
 						RefMsg(rmsg) << (char) 0;
 					}
-					else			// ½ºÅ³ 2°³ ¸ğµÎ´Â ¼º°ø ¸øÇß´Ù.
+					else			// ìŠ¤í‚¬ 2ê°œ ëª¨ë‘ëŠ” ì„±ê³µ ëª»í–ˆë‹¤.
 					{
 						RefMsg(rmsg) << (char) 1;
 					}
@@ -4639,7 +4637,7 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ÇöÀç ÀÌ¹Ì °°Àº ½ºÅ³ÀÌ ÀÖÀ½
+				// í˜„ì¬ ì´ë¯¸ ê°™ì€ ìŠ¤í‚¬ì´ ìˆìŒ
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventXmas2007Msg( rmsg, MSG_EVENT_XMASTREE_GET_BLESS );
 				RefMsg(rmsg) << (char) 1;
@@ -4663,7 +4661,7 @@ void do_EventXmas2007(CPC* ch, CNetMsg::SP& msg)
 
 void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 {
-	// Å©¸®½º¸¶½º ÆÛÁñ ÀÌº¥Æ®
+	// í¬ë¦¬ìŠ¤ë§ˆìŠ¤ í¼ì¦ ì´ë²¤íŠ¸
 	switch (type)
 	{
 	case MSG_EVENT_XMAS_PUZZLE_CHECKITEM_REQ:
@@ -4672,12 +4670,12 @@ void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 			bool bCanPlay = gserver->m_XmasPuzzleGame->CanPlay(ch);
 			if (bCanPlay)
 			{
-				// ¼º°ø ¸Ş½ÃÁö
+				// ì„±ê³µ ë©”ì‹œì§€
 				EventXmasPuzzleMsg(rmsg, MSG_EVENT_XMAS_PUZZLE_CHECKITEM_REP, MSG_EVENT_XMAS_PUZZLE_SUCCESS);
 			}
 			else
 			{
-				// ½ÇÆĞ ¸Ş½ÃÁö
+				// ì‹¤íŒ¨ ë©”ì‹œì§€
 				EventXmasPuzzleMsg(rmsg, MSG_EVENT_XMAS_PUZZLE_CHECKITEM_REP, MSG_EVENT_XMAS_PUZZLE_FAIL);
 				GAMELOG << init("XMAS_EVENT_PUZZLE_GAME") << "CHECK ITEM ERROR : HAVE NOT PUZZLE ITEM" << end;
 			}
@@ -4693,12 +4691,12 @@ void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 			{
 				ch->StartRockPaperScissors();
 
-				// ½ºÅ¸Æ® ¸Ş½ÃÁö
+				// ìŠ¤íƒ€íŠ¸ ë©”ì‹œì§€
 				EventXmasPuzzleMsg(rmsg, MSG_EVENT_XMAS_PUZZLE_START_REP, MSG_EVENT_XMAS_PUZZLE_SUCCESS);
 			}
 			else
 			{
-				// ½ÇÆĞ ¸Ş½ÃÁö
+				// ì‹¤íŒ¨ ë©”ì‹œì§€
 				EventXmasPuzzleMsg(rmsg, MSG_EVENT_XMAS_PUZZLE_START_REP, MSG_EVENT_XMAS_PUZZLE_FAIL);
 				GAMELOG << init("XMAS_EVENT_PUZZLE_GAME") << "START GAME ERROR : HAVE NOT PUZZLE ITEM" << end;
 			}
@@ -4710,8 +4708,8 @@ void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 		{
 			if (ch->CanRockPaperScissors())
 			{
-				// °¡À§¹ÙÀ§º¸¸¦ ÇÒ ¼ö ÀÖ´Â »óÅÂÀÌ´Ï,
-				// °¡À§¹ÙÀ§º¸¸¦ ÇØº¾½Ã´Ù. result 0:À¯Àú ½Â¸®, 1:¼­¹ö ½Â¸®, 2:ºñ±è
+				// ê°€ìœ„ë°”ìœ„ë³´ë¥¼ í•  ìˆ˜ ìˆëŠ” ìƒíƒœì´ë‹ˆ,
+				// ê°€ìœ„ë°”ìœ„ë³´ë¥¼ í•´ë´…ì‹œë‹¤. result 0:ìœ ì € ìŠ¹ë¦¬, 1:ì„œë²„ ìŠ¹ë¦¬, 2:ë¹„ê¹€
 				unsigned char userChoice, serverChoice;
 				RefMsg(msg) >> userChoice;
 				int result = gserver->m_XmasRockPaperScissorsGame->Play(ch, userChoice, serverChoice);
@@ -4729,7 +4727,7 @@ void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 			}
 			else
 			{
-				// °¡À§¹ÙÀ§º¸¸¦ ÇÒ ¼ö ¾ø´Â »óÅÂ
+				// ê°€ìœ„ë°”ìœ„ë³´ë¥¼ í•  ìˆ˜ ì—†ëŠ” ìƒíƒœ
 				GAMELOG << init("XMAS_EVENT_PUZZLE_GAME") << "SELECT ERROR" << end;
 			}
 		}
@@ -4739,12 +4737,12 @@ void do_EventXmasPuzzle( CPC* ch, CNetMsg::SP& msg, unsigned char type )
 			if ( !ch->m_RockPaperScissorsInfo.IsStart() )
 				return;
 
-			// °ÔÀÓ ÆÇ¼ö Áõ°¡½ÃÅ°°í, ¼±ÅÃ °¡´ÉÇÏ°Ô ÇØÁÖÀÚ.
+			// ê²Œì„ íŒìˆ˜ ì¦ê°€ì‹œí‚¤ê³ , ì„ íƒ ê°€ëŠ¥í•˜ê²Œ í•´ì£¼ì.
 			ch->m_RockPaperScissorsInfo.IncreaseGameCount();
 			ch->m_RockPaperScissorsInfo.SetCanPlay(true);
 
 			{
-				// continue ¸Ş½ÃÁö ÀÀ´äÇØÁÖÀÚ.
+				// continue ë©”ì‹œì§€ ì‘ë‹µí•´ì£¼ì.
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventXmasPuzzleMsg(rmsg, MSG_EVENT_XMAS_PUZZLE_CONTINUE_REP);
 				SEND_Q(rmsg, ch->m_desc);
@@ -4795,11 +4793,11 @@ void do_EventSakura2008( CPC* ch, CNetMsg::SP& msg )
 	// KYD TO DO
 	switch(subtype)
 	{
-	case MSG_EVNET_SAKURAEVENT_2008 :			// Åğºñ(2345)¸¦ È¸¼öÇÏ°í »óÀÚ(2747)¸¦ Á¦°øÇÑ´Ù.
+	case MSG_EVNET_SAKURAEVENT_2008 :			// í‡´ë¹„(2345)ë¥¼ íšŒìˆ˜í•˜ê³  ìƒì(2747)ë¥¼ ì œê³µí•œë‹¤.
 		{
 			//////////////////////////////////////////////////////////////////////////
 			item_search_t vec;
-			int nSeedCount = ch->m_inventory.searchItemByCondition(2345/*Åğºñ*/, 0, 0, vec); // Åğºñ
+			int nSeedCount = ch->m_inventory.searchItemByCondition(2345/*í‡´ë¹„*/, 0, 0, vec); // í‡´ë¹„
 			if (nSeedCount == 0)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4810,8 +4808,8 @@ void do_EventSakura2008( CPC* ch, CNetMsg::SP& msg )
 			}
 
 
-			// º¢²É¼±¹°»óÀÚ Áö±Ş
-			CItem* pSakuraBox =  gserver->m_itemProtoList.CreateItem( 2747/*º¢²É¼±¹°»óÀÚ*/ , -1, 0, 0, nSeedCount );
+			// ë²šê½ƒì„ ë¬¼ìƒì ì§€ê¸‰
+			CItem* pSakuraBox =  gserver->m_itemProtoList.CreateItem( 2747/*ë²šê½ƒì„ ë¬¼ìƒì*/ , -1, 0, 0, nSeedCount );
 			if( !pSakuraBox )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4825,7 +4823,7 @@ void do_EventSakura2008( CPC* ch, CNetMsg::SP& msg )
 			{
 				ch->m_inventory.deleteItem(vec, nSeedCount);
 			}
-			else //¾ÆÀÌÅÛ Áö±Ş ½ÇÆĞ
+			else //ì•„ì´í…œ ì§€ê¸‰ ì‹¤íŒ¨
 			{
 				delete pSakuraBox;
 
@@ -4860,7 +4858,7 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// 0. ÀÎº¥Åä¸®¿¡ ºó °ø°£ÀÌ 3°³ ³²¾Æ¾ß ÇÑ´Ù.
+	// 0. ì¸ë²¤í† ë¦¬ì— ë¹ˆ ê³µê°„ì´ 3ê°œ ë‚¨ì•„ì•¼ í•œë‹¤.
 	if(ch->m_inventory.getEmptyCount() < 3)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4869,7 +4867,7 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// 1. ¾ÆÀÌÅÛ À§Ä¡ ¹Ş±â
+	// 1. ì•„ì´í…œ ìœ„ì¹˜ ë°›ê¸°
 #ifdef NPC_CHECK
 	int npcIndex;
 	CNPC *npc;
@@ -4901,7 +4899,7 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// 2. ¾ÆÀÌÅÛ °¡Á®¿À±â
+	// 2. ì•„ì´í…œ ê°€ì ¸ì˜¤ê¸°
 	CItem * pItem = ch->m_inventory.getItem(packet->tab, packet->invenIndex);
 	if (pItem == NULL)
 	{
@@ -4927,43 +4925,43 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// º¸»ó Å×ÀÌºí
+	// ë³´ìƒ í…Œì´ë¸”
 #if defined (LC_GAMIGO)
 	const int item_count = 14;
 	int reqord_item[item_count][7] =
 	{
-		{ 2844,  1,   0, 0,   0, 0,  20,  },	// Æ¯±Ş Á¦·Ã¼®
-		{ 974,   1,   0, 0,   0, 0,  50,  },	// Çà¿îÀÇ Á¦·Ã¼®
-		{ 1416,  1,   0, 0,   0, 0,  290, },	// ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		{ 1288,  1,   0, 0,   0, 0,  290, },	// ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		{   85,  1,   0, 0,   0, 0,  500, },	// °í±Ş Á¦·Ã¼®
-		{  971,  1, 973, 1, 972, 1,  700, },	// °æÇèÀÇ ½ºÅ©·Ñ, ³ë·ÂÀÇ ½ºÅ©·Ñ, Çà¿îÀÇ ½ºÅ©·Ñ
-		{  882,  1, 883, 1, 884, 1,  800, },	// °æÇèÄ¡ ÁõÆøÁ¦, ¼÷·Ãµµ ÁõÆøÁ¦, µå·ÓÀ² ÁõÆøÁ¦
-		{   45, 10,   0, 0,   0, 0, 1150, },	// ´ëÇü Ã¼·ÂÈ¸º¹ ¹°¾à
-		{  724, 10,   0, 0,   0, 0, 1000, },	// ´ëÇü ¸¶³ªÈ¸º¹ ¹°¾à
-		{  498,  5, 500, 5,   0, 0,  900, },	// 12·¹º§ ºÓÀºÄÉ¸£, 12·¹º§ Çª¸¥ÄÉ¸£
-		{  499,  5, 501, 5,   0, 0,  900, },	// 12·¹º§ ºÓÀº ³Ù, 12·¹º§ Çª¸¥ ³Ù
-		{  786,  3,   0, 0,   0, 0,  900, },	// ºÎ½ºÅÍ
-		{  556, 10,   0, 0,   0, 0,  900, },	// »çÅÁ
-		{   19, 10000,0, 0,   0, 0, 1600, },	// 10,000³ª½º
+		{ 2844,  1,   0, 0,   0, 0,  20,  },	// íŠ¹ê¸‰ ì œë ¨ì„
+		{ 974,   1,   0, 0,   0, 0,  50,  },	// í–‰ìš´ì˜ ì œë ¨ì„
+		{ 1416,  1,   0, 0,   0, 0,  290, },	// í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		{ 1288,  1,   0, 0,   0, 0,  290, },	// ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		{   85,  1,   0, 0,   0, 0,  500, },	// ê³ ê¸‰ ì œë ¨ì„
+		{  971,  1, 973, 1, 972, 1,  700, },	// ê²½í—˜ì˜ ìŠ¤í¬ë¡¤, ë…¸ë ¥ì˜ ìŠ¤í¬ë¡¤, í–‰ìš´ì˜ ìŠ¤í¬ë¡¤
+		{  882,  1, 883, 1, 884, 1,  800, },	// ê²½í—˜ì¹˜ ì¦í­ì œ, ìˆ™ë ¨ë„ ì¦í­ì œ, ë“œë¡­ìœ¨ ì¦í­ì œ
+		{   45, 10,   0, 0,   0, 0, 1150, },	// ëŒ€í˜• ì²´ë ¥íšŒë³µ ë¬¼ì•½
+		{  724, 10,   0, 0,   0, 0, 1000, },	// ëŒ€í˜• ë§ˆë‚˜íšŒë³µ ë¬¼ì•½
+		{  498,  5, 500, 5,   0, 0,  900, },	// 12ë ˆë²¨ ë¶‰ì€ì¼€ë¥´, 12ë ˆë²¨ í‘¸ë¥¸ì¼€ë¥´
+		{  499,  5, 501, 5,   0, 0,  900, },	// 12ë ˆë²¨ ë¶‰ì€ ë„¨, 12ë ˆë²¨ í‘¸ë¥¸ ë„¨
+		{  786,  3,   0, 0,   0, 0,  900, },	// ë¶€ìŠ¤í„°
+		{  556, 10,   0, 0,   0, 0,  900, },	// ì‚¬íƒ•
+		{   19, 10000,0, 0,   0, 0, 1600, },	// 10,000ë‚˜ìŠ¤
 	};
 #else
 	const int item_count = 13;
 	int reqord_item[item_count][7] =
 	{
-		{ 2844,  1,   0, 0,   0, 0,  50,  },	// Æ¯±Ş Á¦·Ã¼®
-		{ 1416,  1,   0, 0,   0, 0,  300, },	// ÇÃ·¡Æ¼´½ ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		{ 1288,  1,   0, 0,   0, 0,  300, },	// ¾ÆÀÌ¸®½ºÀÇ Ãàº¹
-		{   85,  1,   0, 0,   0, 0,  500, },	// °í±Ş Á¦·Ã¼®
-		{  971,  1, 973, 1, 972, 1,  700, },	// °æÇèÀÇ ½ºÅ©·Ñ, ³ë·ÂÀÇ ½ºÅ©·Ñ, Çà¿îÀÇ ½ºÅ©·Ñ
-		{  882,  1, 883, 1, 884, 1,  800, },	// °æÇèÄ¡ ÁõÆøÁ¦, ¼÷·Ãµµ ÁõÆøÁ¦, µå·ÓÀ² ÁõÆøÁ¦
-		{   45, 10,   0, 0,   0, 0, 1150, },	// ´ëÇü Ã¼·ÂÈ¸º¹ ¹°¾à
-		{  724, 10,   0, 0,   0, 0, 1000, },	// ´ëÇü ¸¶³ªÈ¸º¹ ¹°¾à
-		{  498,  5, 500, 5,   0, 0,  900, },	// 12·¹º§ ºÓÀºÄÉ¸£, 12·¹º§ Çª¸¥ÄÉ¸£
-		{  499,  5, 501, 5,   0, 0,  900, },	// 12·¹º§ ºÓÀº ³Ù, 12·¹º§ Çª¸¥ ³Ù
-		{  786,  3,   0, 0,   0, 0,  900, },	// ºÎ½ºÅÍ
-		{  556, 10,   0, 0,   0, 0,  900, },	// »çÅÁ
-		{   19, 10000,0, 0,   0, 0, 1600, },	// 10,000³ª½º
+		{ 2844,  1,   0, 0,   0, 0,  50,  },	// íŠ¹ê¸‰ ì œë ¨ì„
+		{ 1416,  1,   0, 0,   0, 0,  300, },	// í”Œë˜í‹°ëŠ„ ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		{ 1288,  1,   0, 0,   0, 0,  300, },	// ì•„ì´ë¦¬ìŠ¤ì˜ ì¶•ë³µ
+		{   85,  1,   0, 0,   0, 0,  500, },	// ê³ ê¸‰ ì œë ¨ì„
+		{  971,  1, 973, 1, 972, 1,  700, },	// ê²½í—˜ì˜ ìŠ¤í¬ë¡¤, ë…¸ë ¥ì˜ ìŠ¤í¬ë¡¤, í–‰ìš´ì˜ ìŠ¤í¬ë¡¤
+		{  882,  1, 883, 1, 884, 1,  800, },	// ê²½í—˜ì¹˜ ì¦í­ì œ, ìˆ™ë ¨ë„ ì¦í­ì œ, ë“œë¡­ìœ¨ ì¦í­ì œ
+		{   45, 10,   0, 0,   0, 0, 1150, },	// ëŒ€í˜• ì²´ë ¥íšŒë³µ ë¬¼ì•½
+		{  724, 10,   0, 0,   0, 0, 1000, },	// ëŒ€í˜• ë§ˆë‚˜íšŒë³µ ë¬¼ì•½
+		{  498,  5, 500, 5,   0, 0,  900, },	// 12ë ˆë²¨ ë¶‰ì€ì¼€ë¥´, 12ë ˆë²¨ í‘¸ë¥¸ì¼€ë¥´
+		{  499,  5, 501, 5,   0, 0,  900, },	// 12ë ˆë²¨ ë¶‰ì€ ë„¨, 12ë ˆë²¨ í‘¸ë¥¸ ë„¨
+		{  786,  3,   0, 0,   0, 0,  900, },	// ë¶€ìŠ¤í„°
+		{  556, 10,   0, 0,   0, 0,  900, },	// ì‚¬íƒ•
+		{   19, 10000,0, 0,   0, 0, 1600, },	// 10,000ë‚˜ìŠ¤
 	};
 #endif // LC_GAMIGO
 
@@ -4993,18 +4991,18 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 #if defined (LC_GAMIGO)
 	if(i == 9 || i == 10)
 	{
-		// ºÓÀº ÄÉ¸£¿Í Çª¸¥ ³Ù ÀÎ °æ¿ì
+		// ë¶‰ì€ ì¼€ë¥´ì™€ í‘¸ë¥¸ ë„¨ ì¸ ê²½ìš°
 		flag = 12;
 	}
 #else
 	if(i == 8 || i == 9)
 	{
-		// ºÓÀº ÄÉ¸£¿Í Çª¸¥ ³Ù ÀÎ °æ¿ì
+		// ë¶‰ì€ ì¼€ë¥´ì™€ í‘¸ë¥¸ ë„¨ ì¸ ê²½ìš°
 		flag = 12;
 	}
 #endif // LC_GAMIGO
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	for(int j = 0; j < 6; j+=2)
 	{
 		if(reqord_item[itemIdx][j+1] != 0)
@@ -5017,7 +5015,7 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 					SEND_Q(rmsg, ch->m_desc);
 				}
 
-				// ·Ñ¹é
+				// ë¡¤ë°±
 				for( ; j > 0; j-=2)
 				{
 					CItem* item = ch->m_inventory.FindByVirtualIndex(reqord_item[i][j]);
@@ -5034,11 +5032,11 @@ void do_ChaosBall(CPC * ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// Ä«¿À½º º¼ Á¦°Å
+	// ì¹´ì˜¤ìŠ¤ ë³¼ ì œê±°
 	ch->m_inventory.decreaseItemCount(pItem, 1);
 
 	{
-		// Ä«¿À½º º¼ ±³È¯ ¼º°ø Àü¼Û
+		// ì¹´ì˜¤ìŠ¤ ë³¼ êµí™˜ ì„±ê³µ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ChaosBallMsg(rmsg, ERROR_CHAOSBALL_SUCCESS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -5077,7 +5075,7 @@ void do_EventPhoenix( CPC* ch, CNetMsg::SP& msg )
 	}
 #endif
 
-	// ÀÌ¹Ì ÇÇ´Ğ½º·Î µî·ÏÀÌ µÇ¾î ÀÖ´Ù.
+	// ì´ë¯¸ í”¼ë‹‰ìŠ¤ë¡œ ë“±ë¡ì´ ë˜ì–´ ìˆë‹¤.
 	if ( ch->m_bPhoenix_Char == 1 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5086,7 +5084,7 @@ void do_EventPhoenix( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ÇöÀç Ä³¸¯ÅÍÀÇ ·¹º§ÀÌ 31À» ÃÊ°úÇÏ¿© ÇÇ´Ğ½º ÀÌº¥Æ® ÀÚ°İÀÌ ¾ÈµÈ´Ù.
+	// í˜„ì¬ ìºë¦­í„°ì˜ ë ˆë²¨ì´ 31ì„ ì´ˆê³¼í•˜ì—¬ í”¼ë‹‰ìŠ¤ ì´ë²¤íŠ¸ ìê²©ì´ ì•ˆëœë‹¤.
 	else if ( ch->m_level >= 31 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5095,7 +5093,7 @@ void do_EventPhoenix( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ÀÎº¥Åä¸® °¡´É °Ë»ç
+	// ì¸ë²¤í† ë¦¬ ê°€ëŠ¥ ê²€ì‚¬
 	else if ( ch->m_inventory.getEmptyCount() < 12 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5103,7 +5101,7 @@ void do_EventPhoenix( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ÀÎº¥Åä¸®¿¡ ÇÇ´Ğ½º Å¬·´ °¡ÀÔ±ÇÀÌ Á¸ÀçÇÏ´Â Áö È®ÀÎ
+	// ì¸ë²¤í† ë¦¬ì— í”¼ë‹‰ìŠ¤ í´ëŸ½ ê°€ì…ê¶Œì´ ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸
 	else if (ch->m_inventory.FindByDBIndex(3217, 0, 0) == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5112,7 +5110,7 @@ void do_EventPhoenix( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	// ¸ğµç »óÈ²À» Åë°úÇÏ¿´´Ù¸é Ä³¸¯ÅÍ DB·Î °Ë»öÇØ º¸±â À§ÇØ HELPER SERVER·Î ÆĞÅ¶À» º¸³½´Ù.
+	// ëª¨ë“  ìƒí™©ì„ í†µê³¼í•˜ì˜€ë‹¤ë©´ ìºë¦­í„° DBë¡œ ê²€ìƒ‰í•´ ë³´ê¸° ìœ„í•´ HELPER SERVERë¡œ íŒ¨í‚·ì„ ë³´ë‚¸ë‹¤.
 	else
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5126,13 +5124,13 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 {
 	const static int phoenixItem_table[6][10] =
 	{
-		{ 3218, 3262, 3006, 3221, 3222, 3231, 3232, 3233, 3234, 3235 },		// Å¸ÀÌÅº
-		{ 3218, 3262, 3007, 3219, 3220, 3236, 3237, 3238, 3239, 3240 },		// ³ªÀÌÆ®
-		{ 3218, 3262, 3008, 3223, 3224, 3242, 3243, 3244, 3245, 3246 },		// Èú·¯
-		{ 3218, 3262, 3009, 3225, 3226, 3247, 3248, 3249, 3250, 3251 },		// ¸ŞÀÌÁö
-		{ 3218, 3262, 3010, 3227, 3228, 3252, 3253, 3254, 3255, 3256 },		// ·Î±×
+		{ 3218, 3262, 3006, 3221, 3222, 3231, 3232, 3233, 3234, 3235 },		// íƒ€ì´íƒ„
+		{ 3218, 3262, 3007, 3219, 3220, 3236, 3237, 3238, 3239, 3240 },		// ë‚˜ì´íŠ¸
+		{ 3218, 3262, 3008, 3223, 3224, 3242, 3243, 3244, 3245, 3246 },		// íëŸ¬
+		{ 3218, 3262, 3009, 3225, 3226, 3247, 3248, 3249, 3250, 3251 },		// ë©”ì´ì§€
+		{ 3218, 3262, 3010, 3227, 3228, 3252, 3253, 3254, 3255, 3256 },		// ë¡œê·¸
 		{ 3218, 3262, 3011, 3229, 3230, 3257, 3258, 3259, 3260, 3261 }
-	};	// ¼Ò¼­·¯
+	};	// ì†Œì„œëŸ¬
 
 	if ( ch == NULL )
 		return;
@@ -5143,7 +5141,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 
 	CItem* pitem3217 = NULL;
 
-	// ÀÎº¥Åä¸® °¡´É °Ë»ç
+	// ì¸ë²¤í† ë¦¬ ê°€ëŠ¥ ê²€ì‚¬
 	if ( ch->m_inventory.getEmptyCount() < 12 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5151,7 +5149,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ÀÎº¥Åä¸®¿¡ ÇÇ´Ğ½º Å¬·´ °¡ÀÔ±ÇÀÌ Á¸ÀçÇÏ´Â Áö È®ÀÎ
+	// ì¸ë²¤í† ë¦¬ì— í”¼ë‹‰ìŠ¤ í´ëŸ½ ê°€ì…ê¶Œì´ ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸
 	else if ((pitem3217 = ch->m_inventory.FindByDBIndex(3217, 0, 0)) == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5160,7 +5158,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		return;
 	}
 
-	//À¯ÀúÀÇ Á÷¾÷À» Ã£À½, ÇÇ´Ğ½º ³¯°³¸¦ ÁÖ°í ÇÇ´Ğ½º ¹«±â¿Í Âø¿ë¾ÆÀÌÅÛÀ» ÁÖ±â À§ÇØ¼­
+	//ìœ ì €ì˜ ì§ì—…ì„ ì°¾ìŒ, í”¼ë‹‰ìŠ¤ ë‚ ê°œë¥¼ ì£¼ê³  í”¼ë‹‰ìŠ¤ ë¬´ê¸°ì™€ ì°©ìš©ì•„ì´í…œì„ ì£¼ê¸° ìœ„í•´ì„œ
 	int job_index = 0;
 
 	switch( ch->m_job )
@@ -5200,7 +5198,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		break;
 	}
 
-	// ÇÇ´Ğ½º ¾ÆÀÌÅÛ Áö±Ş
+	// í”¼ë‹‰ìŠ¤ ì•„ì´í…œ ì§€ê¸‰
 	for ( int i = 0; i < 10; i++ )
 	{
 		CItem* pItem;
@@ -5225,10 +5223,10 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// Á÷¾÷ÀÌ ±â»çÀÌ¸é ¹æÆĞµµ Áö±Ş
+	// ì§ì—…ì´ ê¸°ì‚¬ì´ë©´ ë°©íŒ¨ë„ ì§€ê¸‰
 	if ( ch->m_job == JOB_KNIGHT )
 	{
-		// ÇÇ´Ğ½º ¹æÆĞ
+		// í”¼ë‹‰ìŠ¤ ë°©íŒ¨
 		CItem* pItem_shield = gserver->m_itemProtoList.CreateItem(3241, -1, 4, 0, 1);
 
 		if ( pItem_shield == NULL )
@@ -5242,7 +5240,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// ¹öÇÁ È¿°ú º¸ÀÌ±â
+	// ë²„í”„ íš¨ê³¼ ë³´ì´ê¸°
 	CSkill* pSkill1;
 	pSkill1 = gserver->m_skillProtoList.Create( 516, 1 );
 	if(pSkill1 != NULL)
@@ -5251,15 +5249,15 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		ApplySkill(ch, ch, pSkill1, -1 , bApply);
 		if(bApply == false)
 		{
-			GAMELOG << init("EVENT_PHOENIX SKILL FAILED ") << ch->m_name << end;// ½ºÅ³ Àû¿ë ½ÇÆĞ
+			GAMELOG << init("EVENT_PHOENIX SKILL FAILED ") << ch->m_name << end;// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 		}
 	}
 
-	//·¹º§ ¾÷
+	//ë ˆë²¨ ì—…
 	int remain_level;
 	remain_level = 35 - ch->m_level;
 
-	// 35±îÁö ³²Àº ·¹º§ Áö±Ş,  °æÇèÄ¡´Â 0À¸·Î Á¶Á¤
+	// 35ê¹Œì§€ ë‚¨ì€ ë ˆë²¨ ì§€ê¸‰,  ê²½í—˜ì¹˜ëŠ” 0ìœ¼ë¡œ ì¡°ì •
 	ch->m_exp = 0;
 	int remain;
 	remain = remain_level;
@@ -5295,7 +5293,7 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// statpoint +30 Áö±Ş¿¡ 35 ±îÁö ³²Àº ·¹º§¿¡ ´ëÇÑ statpoint Áö±Ş
+	// statpoint +30 ì§€ê¸‰ì— 35 ê¹Œì§€ ë‚¨ì€ ë ˆë²¨ì— ëŒ€í•œ statpoint ì§€ê¸‰
 	ch->m_statpt_remain = ch->m_statpt_remain + 30 + remain_level;
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5303,25 +5301,25 @@ void do_EventPhoenix_Success( CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¼÷·Ãµµ´Â 4000¿¡¼­ ·¹º§¿¡ µû¶ó Â÷µî Áö±Ş
+	// ìˆ™ë ¨ë„ëŠ” 4000ì—ì„œ ë ˆë²¨ì— ë”°ë¼ ì°¨ë“± ì§€ê¸‰
 	ch->m_skillPoint += 6000000 + (1000000 * remain_level);
 
-	// ÄÉ¸¯ÅÍ ½ºÅİ ¸®ÇÁ·¹½¬
+	// ì¼€ë¦­í„° ìŠ¤í…Ÿ ë¦¬í”„ë ˆì‰¬
 	ch->InitStat();
 	ch->CalcStatus(true);
 	ch->Restore();
 
-	// °°Àº ÆÄÆ¼ ¿ø¿¡°Ôµµ ·¹º§¾÷ º¸¿©ÁÖ±â
+	// ê°™ì€ íŒŒí‹° ì›ì—ê²Œë„ ë ˆë²¨ì—… ë³´ì—¬ì£¼ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperPartyMatchMemberChangeInfoMsg(rmsg, ch->m_index, MSG_HELPER_PARTY_MATCH_MEMBER_CHANGE_INFO_LEVEL, "", ch->m_level, 0);
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 
-	// ÇÇ´Ğ½º Å¬·´ °¡ÀÔ±ÇÀ» »èÁ¦ÇÑ´Ù.
+	// í”¼ë‹‰ìŠ¤ í´ëŸ½ ê°€ì…ê¶Œì„ ì‚­ì œí•œë‹¤.
 	ch->m_inventory.decreaseItemCount(pitem3217, 1);
 
-	// Ä³¸¯ÅÍ¸¦ ÇÇ´Ğ½º·Î ¾÷µ¥ÀÌÆ®
+	// ìºë¦­í„°ë¥¼ í”¼ë‹‰ìŠ¤ë¡œ ì—…ë°ì´íŠ¸
 	ch->m_bPhoenix_Char = 1;
 
 	{
@@ -5363,31 +5361,31 @@ void do_EventWorldcup2010(CPC* ch, CNetMsg::SP& msg)
 	switch( nSubType )
 	{
 #ifdef EVENT_WORLDCUP_2010
-	case MSG_EVENT_WORLDCUP2010_TRADE_REQ: // Ãà±¸°ø ±³È¯
+	case MSG_EVENT_WORLDCUP2010_TRADE_REQ: // ì¶•êµ¬ê³µ êµí™˜
 		EventWordlcup2010Trade(ch, msg);
 		break;
 #endif
 #if defined(EVENT_WORLDCUP_2010_TOTO)
-	case MSG_EVENT_WORLDCUP2010_TOTO_REQ: // ½Â¸®±¹°¡ ¸ÂÃß±â TOTO ÀÀ¸ğ
+	case MSG_EVENT_WORLDCUP2010_TOTO_REQ: // ìŠ¹ë¦¬êµ­ê°€ ë§ì¶”ê¸° TOTO ì‘ëª¨
 		EventWordlcup2010TOTO(ch, msg);
 		break;
 #endif
 #if defined(EVENT_WORLDCUP_2010_TOTO_STATUS) || defined(EVENT_WORLDCUP_2010_TOTO) || defined(EVENT_WORLDCUP_2010_TOTO_GIFT)
-	case MSG_EVENT_WORLDCUP2010_TOTO_STATUS_REQ: // TOTO ÀÀ¸ğ ÇöÈ²
+	case MSG_EVENT_WORLDCUP2010_TOTO_STATUS_REQ: // TOTO ì‘ëª¨ í˜„í™©
 		EventWordlcup2010TOTOStatus(ch, msg);
 		break;
 #endif
 #if defined(EVENT_WORLDCUP_2010_TOTO_GIFT)
-	case MSG_EVENT_WORLDCUP2010_TOTO_GIFT_REQ: // TOTO »óÇ° ¿äÃ»
+	case MSG_EVENT_WORLDCUP2010_TOTO_GIFT_REQ: // TOTO ìƒí’ˆ ìš”ì²­
 		EventWordlcup2010TOTOGift(ch);
 		break;
 #endif
 #if defined(EVENT_WORLDCUP_2010_ATTENDANCE)
-	case MSG_EVENT_WORLDCUP2010_ATTENDANCE_REQ: // Ãâ¼® Ã¼Å©
+	case MSG_EVENT_WORLDCUP2010_ATTENDANCE_REQ: // ì¶œì„ ì²´í¬
 		EventWordlcup2010Attendance(ch);
 		break;
 
-	case MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REQ: // ¿õ¿ø Ä«µå ±³È¯
+	case MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REQ: // ì›…ì› ì¹´ë“œ êµí™˜
 		EventWordlcup2010Supportcard(ch, msg);
 		break;
 #endif
@@ -5404,23 +5402,23 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 	int nTradeType = -1;
 	RefMsg(msg) >> nTradeType;
 
-	int ballindex = -1; // ±³È¯ÇÒ Ãà±¸°ø item index
-	int needCount = -1; // ±³È¯¿¡ ÇÊ¿äÇÑ Ãà±¸°ø °³¼ö
-	int giftIndex = -1; // ±³È¯ ÇØÁÙ item index
+	int ballindex = -1; // êµí™˜í•  ì¶•êµ¬ê³µ item index
+	int needCount = -1; // êµí™˜ì— í•„ìš”í•œ ì¶•êµ¬ê³µ ê°œìˆ˜
+	int giftIndex = -1; // êµí™˜ í•´ì¤„ item index
 
-	if( nTradeType == 1)		// Ãà±¸°ø 10°³ -> È²±İ Ãà±¸°ø
+	if( nTradeType == 1)		// ì¶•êµ¬ê³µ 10ê°œ -> í™©ê¸ˆ ì¶•êµ¬ê³µ
 	{
 		ballindex = 5345;
 		needCount = 10;
 		giftIndex = 5346;
 	}
-	else if( nTradeType == 2 )       // È²±İ Ãà±¸°ø 20°³ -> ¿ùµå ÃàÁ¦ »óÀÚ
+	else if( nTradeType == 2 )       // í™©ê¸ˆ ì¶•êµ¬ê³µ 20ê°œ -> ì›”ë“œ ì¶•ì œ ìƒì
 	{
 		ballindex = 5346;
 		needCount = 50;
 		giftIndex = 5347;
 	}
-	else // ¾²·¹±â °ªÀÌ µé¾î¿ÔÀ¸¸é ±³È¯ ¹«È¿ Ã³¸®
+	else // ì“°ë ˆê¸° ê°’ì´ ë“¤ì–´ì™”ìœ¼ë©´ êµí™˜ ë¬´íš¨ ì²˜ë¦¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventWorldcup2010ErrorMsg(rmsg, MSG_EVENT_WORLDCUP2010_TRADE_REP, MSG_EVENT_WORLDCUP2010_TRADE_ERROR_FAIL);
@@ -5432,10 +5430,10 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 	CItem * pBallItem = NULL;
 	int r, c;
 
-	// Ãà±¸°øÀÌ ÀÎº¥¿¡ ÀÖ´ÂÁö È®ÀÎ
+	// ì¶•êµ¬ê³µì´ ì¸ë²¤ì— ìˆëŠ”ì§€ í™•ì¸
 	item_search_t vec;
 	int sc = ch->m_inventory.searchItemByDBIndex(ballindex, vec);
-	if( sc == 0 || sc < needCount ) // °³¼ö ºÎÁ·
+	if( sc == 0 || sc < needCount ) // ê°œìˆ˜ ë¶€ì¡±
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventWorldcup2010TradeErrorMsg(rmsg, MSG_EVENT_WORLDCUP2010_TRADE_ERROR_BALL, nTradeType);
@@ -5443,7 +5441,7 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±³È¯ ¾ÆÀÌÅÛ »ı¼º
+	// êµí™˜ ì•„ì´í…œ ìƒì„±
 	pGiftItem = gserver->m_itemProtoList.CreateItem( giftIndex, -1, 0, 0, 1);
 	if( pGiftItem == NULL )
 	{
@@ -5452,7 +5450,7 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ÀÏ¹İ ½½·Ô Ã¼Å©
+	// ì¼ë°˜ ìŠ¬ë¡¯ ì²´í¬
 	if( ch->m_inventory.getEmptyCount() < 1)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -5461,7 +5459,7 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Ãà±¸°øÀ» »èÁ¦ÇÏÀÚ.
+	// ì¶•êµ¬ê³µì„ ì‚­ì œí•˜ì.
 	ch->m_inventory.deleteItem(vec, needCount);
 	ch->m_inventory.addItem(pGiftItem);
 	
@@ -5476,13 +5474,39 @@ void EventWordlcup2010Trade(CPC *ch, CNetMsg::SP& msg)
 
 void EventWordlcup2010TOTO(CPC *ch, CNetMsg::SP& msg)
 {
-	static int national_flag[32] = {1485,1486,1487,1488,1489,1490,1491,1492,1493,1496,1498,1499,1500,1501,1505,1506,1507,1508,1510,1513,1515,5332,5333,5334,5338,5342,5343,5344,10297,10298,10299,10300};
+	static int national_flag[] = 
+	{
+		1490,
+		1486,
+		1487,
+		1488,
+		1492,
+		1493,
+		1503,
+		11304,
+		10297,
+		5340,
+		1494,
+		1500,
+		11305,
+		11303,
+		10300,
+		1498,
+		11307,
+		11308,
+		1497,
+		11309,
+		1495,
+		11310,
+		11311,
+		11312
+	};
 
 	int Countryitemindex;
 	RefMsg(msg) >> Countryitemindex;
 
-	// ±¹±â°¡ ¾Æ´Ï¸é
-	for(int i = 0; i < 32; i++)
+	// êµ­ê¸°ê°€ ì•„ë‹ˆë©´
+	for(int i = 0; i < (sizeof(national_flag) / sizeof(national_flag[0])); i++)
 	{
 		if (national_flag[i] == Countryitemindex)
 			break;
@@ -5510,10 +5534,10 @@ void EventWordlcup2010TOTO(CPC *ch, CNetMsg::SP& msg)
 	ch->m_inventory.decreaseItemCount(pItem, 1);
 
 	{
-		// »èÁ¦°¡ µÇ¾ú´Ù¸é
-		// DB¿¡ ±â·Ï ÇÏÀÚ.
-		// ÀÌº¥Æ® ±â°£¿£ ¹«Á¶°Ç °»½ÅµÈ´Ù. ¹Ş´Âµ¥·Î ±â·ÏÇÏ°í ¼º°ø ¸Ş½ÃÁö¸¦ ³¯¸®Àå.
-		// ÀÌÁ¦ ÇïÆÛ¶û ³î¾Æ¾ß ÇÏ³ª ¤Ñ¤Ñ;;
+		// ì‚­ì œê°€ ë˜ì—ˆë‹¤ë©´
+		// DBì— ê¸°ë¡ í•˜ì.
+		// ì´ë²¤íŠ¸ ê¸°ê°„ì—” ë¬´ì¡°ê±´ ê°±ì‹ ëœë‹¤. ë°›ëŠ”ë°ë¡œ ê¸°ë¡í•˜ê³  ì„±ê³µ ë©”ì‹œì§€ë¥¼ ë‚ ë¦¬ì¥.
+		// ì´ì œ í—¬í¼ë‘ ë†€ì•„ì•¼ í•˜ë‚˜ ã…¡ã…¡;;
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperWorldcup2010TOTORepMsg(rmsg, ch->m_index, Countryitemindex );
 		SEND_Q(rmsg, gserver->m_helper);
@@ -5522,7 +5546,7 @@ void EventWordlcup2010TOTO(CPC *ch, CNetMsg::SP& msg)
 
 void EventWordlcup2010TOTOStatus(CPC *ch, CNetMsg::SP& msg)
 {
-	// ÇïÆÛ¶û ³î¾Æº¸ÀÚ.
+	// í—¬í¼ë‘ ë†€ì•„ë³´ì.
 	int resultType = -1;
 	RefMsg(msg) >> resultType;
 	CNetMsg::SP rmsg(new CNetMsg);
@@ -5532,7 +5556,7 @@ void EventWordlcup2010TOTOStatus(CPC *ch, CNetMsg::SP& msg)
 
 void EventWordlcup2010TOTOGift(CPC *ch)
 {
-	// ÇïÆÛ°¡ ¹«Áö ¹Ù»Ú°Ú´Ù.
+	// í—¬í¼ê°€ ë¬´ì§€ ë°”ì˜ê² ë‹¤.
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperWorldcup2010TOTOGiftRepMsg(rmsg, ch->m_index);
 	SEND_Q(rmsg, gserver->m_helper);
@@ -5540,7 +5564,7 @@ void EventWordlcup2010TOTOGift(CPC *ch)
 
 void EventWordlcup2010Attendance(CPC *ch)
 {
-	// ÇïÆÛ¾ß ¹Ì¾ÈÇØ.
+	// í—¬í¼ì•¼ ë¯¸ì•ˆí•´.
 	CNetMsg::SP rmsg(new CNetMsg);
 	HelperWorldcup2010TOTOGiftRepMsg(rmsg, ch->m_index);
 	SEND_Q(rmsg, gserver->m_helper);
@@ -5563,23 +5587,23 @@ void EventWordlcup2010Supportcard(CPC *ch, CNetMsg::SP& msg)
 
 	// giftItemIndex, needCount
 	int supportInfo[4][2] ={
-		{ 43,  7},	// 16°­ ±â¿ø
-		{ 44, 14},	// 8°­ ±â¿ø
-		{ 45, 21},	// 4°­ ±â¿ø
-		{491, 28}	// ¶óÄ«ÄÅ
+		{ 43,  7},	// 16ê°• ê¸°ì›
+		{ 44, 14},	// 8ê°• ê¸°ì›
+		{ 45, 21},	// 4ê°• ê¸°ì›
+		{491, 28}	// ë¼ì¹´ì»µ
 	};
 
-	int cardIndex = 19; // ÀÀ¿øÄ«µå ÀÎµ¦½º
+	int cardIndex = 19; // ì‘ì›ì¹´ë“œ ì¸ë±ìŠ¤
 
 	CItem * pGiftItem = NULL;
 	CItem * pCardItem = NULL;
 	int r, c;
 
-	// Ä«µå°¡ ÀÎº¥¿¡ ÀÖ´ÂÁö È®ÀÎ
+	// ì¹´ë“œê°€ ì¸ë²¤ì— ìˆëŠ”ì§€ í™•ì¸
 	pCardItem = ch->m_inventory.FindByDBIndex(cardIndex);
 	if(pCardItem != NULL)
 	{
-		if( pCardItem->Count() < supportInfo[nTradeType][1] ) // Ä«µå´Â ÀÖÁö¸¸ °¹¼ö°¡ ºÎÁ·ÇÏ´Ù.
+		if( pCardItem->Count() < supportInfo[nTradeType][1] ) // ì¹´ë“œëŠ” ìˆì§€ë§Œ ê°¯ìˆ˜ê°€ ë¶€ì¡±í•˜ë‹¤.
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventWorldcup2010ErrorMsg(rmsg, MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REP, MSG_EVENT_WORLDCUP2010_SUPPORTCARD_ERROR_CARD);
@@ -5587,7 +5611,7 @@ void EventWordlcup2010Supportcard(CPC *ch, CNetMsg::SP& msg)
 			return ;
 		}
 	}
-	else // Ä«µå°¡ ¾ø´Ù.
+	else // ì¹´ë“œê°€ ì—†ë‹¤.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventWorldcup2010ErrorMsg(rmsg, MSG_EVENT_WORLDCUP2010_SUPPORTCARD_REP, MSG_EVENT_WORLDCUP2010_SUPPORTCARD_ERROR_CARD);
@@ -5595,7 +5619,7 @@ void EventWordlcup2010Supportcard(CPC *ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ±³È¯ ¾ÆÀÌÅÛ »ı¼º
+	// êµí™˜ ì•„ì´í…œ ìƒì„±
 	pGiftItem = gserver->m_itemProtoList.CreateItem( supportInfo[nTradeType][0], -1, 0, 0, 1);
 	if( pGiftItem == NULL )
 	{
@@ -5618,7 +5642,7 @@ void EventWordlcup2010Supportcard(CPC *ch, CNetMsg::SP& msg)
 void EventWorldcup2010Korea(CPC *ch)
 {
 	CNetMsg::SP rmsg(new CNetMsg);
-	HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 0);	// ¹ŞÀº°Å È®ÀÎ
+	HelperWorldcup2010KoreaRepMsg(rmsg, ch->m_index, 0);	// ë°›ì€ê±° í™•ì¸
 	SEND_Q(rmsg, gserver->m_helper);
 }
 #endif // #if defined(EVENT_WORLDCUP_2010) || defined(EVENT_WORLDCUP_2010_TOTO_STATUS) || defined(EVENT_WORLDCUP_2010_TOTO_GIFT) || defined(EVENT_WORLDCUP_2010_ATTENDANCE) || defined(EVENT_WORLDCUP_2010_KOREA)
@@ -5805,7 +5829,7 @@ void do_EventEUR2Promotion(CPC* ch, CNetMsg::SP& msg)
 	CLCString key(21);
 	unsigned char bInvenSpace = 1;	// true
 	RefMsg(msg) >> key;
-	// À§ÀÇ key°ªÀ» Connector·Î º¸³½´Ù. ±Ùµ¥ ¿©±â¼­ ÇÑ¹æ¿¡ ³¡³»ÀÚ.
+	// ìœ„ì˜ keyê°’ì„ Connectorë¡œ ë³´ë‚¸ë‹¤. ê·¼ë° ì—¬ê¸°ì„œ í•œë°©ì— ëë‚´ì.
 
 	if(key.Length() != 20)
 	{
@@ -5817,11 +5841,11 @@ void do_EventEUR2Promotion(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_inventory.getEmptyCount() < 5)
 	{
-		bInvenSpace = 0;		// false ÀÎº¥ ²ËÂ÷¼­ ÁÙ ¼ö ¾øÀ½.ÀÏ´Ü ±¸ÇØ³õ±â.
+		bInvenSpace = 0;		// false ì¸ë²¤ ê½‰ì°¨ì„œ ì¤„ ìˆ˜ ì—†ìŒ.ì¼ë‹¨ êµ¬í•´ë†“ê¸°.
 	}
 
 	{
-		// ÀÌÁ¦ key °ª°ú, charindex, userindex, inven°ø°£À» ¸Ş½ÃÂ¡ ÇØ¼­ º¸³½´Ù.
+		// ì´ì œ key ê°’ê³¼, charindex, userindex, invenê³µê°„ì„ ë©”ì‹œì§• í•´ì„œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionMsg(rmsg, ch->m_index, ch->m_desc->m_index, key, bInvenSpace, 1);
 		SEND_Q(rmsg, gserver->m_connector);
@@ -5843,7 +5867,7 @@ void do_EventKBReward(CPC* ch, CNetMsg::SP& msg)
 	CEventKingsBirthdayFlagReward& flagRewardItem = gserver->m_fathersDay.getFlagRewardItem();
 	switch((int)command)
 	{
-	case 0:	// heart ±³È¯ ¿äÃ»
+	case 0:	// heart êµí™˜ ìš”ì²­
 		{
 			if(ch->m_inventory.getEmptyCount() < 1)
 			{
@@ -5856,7 +5880,7 @@ void do_EventKBReward(CPC* ch, CNetMsg::SP& msg)
 			int allPoint = itemManager.calcPoint(ch);
 			if(allPoint == 0)
 			{
-				// TODO : ÇÏÆ®°¡ ¾ø½À´Ï´Ù. È®ÀÎ ÈÄ ´Ù½Ã ½ÃµµÇÏ¿© ÁÖ½Ê½Ã¿À.
+				// TODO : í•˜íŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤. í™•ì¸ í›„ ë‹¤ì‹œ ì‹œë„í•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				rmsg->Init(MSG_EVENT);
 				RefMsg(rmsg) << (unsigned char)MSG_EVENT_ERROR
@@ -5869,7 +5893,7 @@ void do_EventKBReward(CPC* ch, CNetMsg::SP& msg)
 			rewardItem.giveRewardItem(ch, allPoint);
 		}
 		break;
-	case 1: // flag ±³È¯ ¿äÃ»
+	case 1: // flag êµí™˜ ìš”ì²­
 		{
 			if(ch->m_inventory.getEmptyCount() < 1)
 			{
@@ -5896,7 +5920,7 @@ void do_EventKBReward(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_inventory.FindByDBIndex(itemManager.getDropItem(i)->getDropItemIndex(), 0, 0) == NULL)
 			{
-				// TODO : Father Flag ¾ÆÀÌÅÛÀÌ ¾ø½À´Ï´Ù. È®ÀÎ ÈÄ ´Ù½Ã ½ÃµµÇÏ¿© ÁÖ½Ê½Ã¿À.
+				// TODO : Father Flag ì•„ì´í…œì´ ì—†ìŠµë‹ˆë‹¤. í™•ì¸ í›„ ë‹¤ì‹œ ì‹œë„í•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				rmsg->Init(MSG_EVENT);
 				RefMsg(rmsg) << (unsigned char)MSG_EVENT_ERROR

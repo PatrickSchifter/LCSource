@@ -12,11 +12,11 @@
 class CPC;
 typedef struct __tagSyndicateHistory
 {
-	int syndicateType;			// °á»ç´ë Å¸ÀÔ
-	int time;					// ÀÚ½ÅÀÇ È°µ¿ ½Ã°£
-	int grade;					// Á÷À§
-	int type;					// È°µ¿ Å¸ÀÔ enumÀ¸·Î Á¤¸® - ½Â±Ş, °­µî, °¡ÀÔ, Å»Åğ, ½Â¸®, ÆĞ¹è
-	int targetSyndicateType;	// ÀüÅõ½Ã ´ë»ó °á»ç´ë Å¸ÀÔ
+	int syndicateType;			// ê²°ì‚¬ëŒ€ íƒ€ì…
+	int time;					// ìì‹ ì˜ í™œë™ ì‹œê°„
+	int grade;					// ì§ìœ„
+	int type;					// í™œë™ íƒ€ì… enumìœ¼ë¡œ ì •ë¦¬ - ìŠ¹ê¸‰, ê°•ë“±, ê°€ì…, íƒˆí‡´, ìŠ¹ë¦¬, íŒ¨ë°°
+	int targetSyndicateType;	// ì „íˆ¬ì‹œ ëŒ€ìƒ ê²°ì‚¬ëŒ€ íƒ€ì…
 	std::string targetName;
 } SYNDICATE_HISTORY;
 
@@ -27,7 +27,7 @@ public:
 	~SyndicateHistoryManager();
 
 	void	initDBLoading(int syndicateType, SYNDICATE_HISTORY& historys);
-	// È÷½ºÅä¸® ·Î±×
+	// íˆìŠ¤í† ë¦¬ ë¡œê·¸
 	void	joinHistory(int syndicateType);
 	void	removeHistory(int syndicateType);
 	void	degradeHistory(int syndicateType, int grade);
@@ -51,7 +51,7 @@ private:
 
 typedef struct __tagSyndicateData
 {
-	int				syndicateType;			// Å¸ÀÔ
+	int				syndicateType;			// íƒ€ì…
 	LONGLONG		syndicate_point_k;
 	LONGLONG		syndicate_point_d;
 	int				syndicate_join_bit;
@@ -79,19 +79,19 @@ public:
 	void	setSyndicateType(int syndicateType);
 	void	setSyndicateGrade(int syndicateType, int syndicateGrade);
 
-	//±â¿©µµ
+	//ê¸°ì—¬ë„
 	void		setSyndicatePoint(LONGLONG point);
 	LONGLONG	getSyndicatePoint(int syndicateType);
 
-	//±â¿©µµ
+	//ê¸°ì—¬ë„
 	void	increaseSyndicatePoint(LONGLONG point);
 	void	decreaseSyndicatePoint(LONGLONG point);
 	void	resetSyndicatePoint();
 
-	//µî±Ş ¼³Á¤
+	//ë“±ê¸‰ ì„¤ì •
 	int		getSyndicateGrade(int syndicateType);
 
-	//º¸¼® ±âºÎ
+	//ë³´ì„ ê¸°ë¶€
 	void	syndicateAddJewel(int vItemIndex);
 	void	syndicateDelJewel(int count);
 

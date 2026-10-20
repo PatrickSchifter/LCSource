@@ -7,13 +7,13 @@ public:
 	explicit CPetStashManager(CPC* pc);
 	~CPetStashManager(void);
 
-	bool	Insert(std::vector<CItem*> &vec);						//Æê Ã¢°í µ¥ÀÌÅÍ ·Îµù
-	void	AddPetToStash(CItem* petItem);							//Æê Ã¢°í¿¡ Ãß°¡
-	void	DelPetToStash(CItem* petItem);							//Æê Ã¢°í¿¡¼­ Á¦°Å
-	void	SendPetStashList();									//Æê ¸®½ºÆ®
-	void	SelProxyPet(CItem* petItem);							//´ë¸®À°¼º Æê ¼³Á¤
-	void	CancelProxyPet(CItem* petItem);							//´ë¸®À°¼º Æê Ãë¼Ò
-	void	ExpireTime();							//´ë¸®À°¼º Æê Ãë¼Ò	(Å¸ÀÌ¸Ó¿¡ ÀÇÇÑ ÀÛµ¿)
+	bool	Insert(std::vector<CItem*> &vec);						//í« ì°½ê³  ë°ì´í„° ë¡œë”©
+	void	AddPetToStash(CItem* petItem);							//í« ì°½ê³ ì— ì¶”ê°€
+	void	DelPetToStash(CItem* petItem);							//í« ì°½ê³ ì—ì„œ ì œê±°
+	void	SendPetStashList();									//í« ë¦¬ìŠ¤íŠ¸
+	void	SelProxyPet(CItem* petItem);							//ëŒ€ë¦¬ìœ¡ì„± í« ì„¤ì •
+	void	CancelProxyPet(CItem* petItem);							//ëŒ€ë¦¬ìœ¡ì„± í« ì·¨ì†Œ
+	void	ExpireTime();							//ëŒ€ë¦¬ìœ¡ì„± í« ì·¨ì†Œ	(íƒ€ì´ë¨¸ì— ì˜í•œ ì‘ë™)
 	void	DelPetItem(CItem* petItem);
 	void	GetDataToQuery( std::vector<std::string>& vec );
 	CItem*	GetPetItemByVIndex(int index);

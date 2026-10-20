@@ -110,7 +110,7 @@ inline void makeGoZone(CNetMsg::SP& msg, int zone, int extra, const char* ip, in
 
 inline void makeMoveMsg(CNetMsg::SP& msg, MSG_MOVE_TYPE movetype, CCharacter* ch)
 {
-	// ¾È º¸ÀÌ¸é ¹«½Ã
+	// ì•ˆ ë³´ì´ë©´ ë¬´ì‹œ
 	if (!ch->m_bVisible)
 	{
 		msg->Init();

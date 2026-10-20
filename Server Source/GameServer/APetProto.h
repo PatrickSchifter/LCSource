@@ -72,14 +72,14 @@ public:
 	int		m_nNormal;
 	int		m_nWeek;
 
-	int		m_nDelay;			// Àç¼ÒÈ¯ ½Ã°£
-	int		m_nBagicSkill1;		// Æê »ı¼º½Ã Á¦°øµÇ´Â ±âº» ½ºÅ³ 1
-	int		m_nBagicSkill2;		// Æê »ı¼º½Ã Á¦°øµÇ´Â ±âº» ½ºÅ³ 2
-	int		m_TansType;			// º¯½ÅµÉ¶§ »ç¿ëÇÏ´Â Å¸ÀÔAPET_TRANS_TYPE
-	int		m_nTransStart;		// º¯½Å ¹üÀ§ º¯¼ö 1
-	int		m_nTransEnd;		// º¯½Å ¹üÀ§ º¯¼ö 2
-	int		m_nMount[2];		// ÅÂ¿ï¼ö ÀÖ´Â ÃÖ´ë ÀÎ¿ø¼ö
-	int		m_nSummonSkill[2];		// ¼ÒÈ¯µÉ¶§ »ç¿ëµÇ´Â ½ºÅ³
+	int		m_nDelay;			// ì¬ì†Œí™˜ ì‹œê°„
+	int		m_nBagicSkill1;		// í« ìƒì„±ì‹œ ì œê³µë˜ëŠ” ê¸°ë³¸ ìŠ¤í‚¬ 1
+	int		m_nBagicSkill2;		// í« ìƒì„±ì‹œ ì œê³µë˜ëŠ” ê¸°ë³¸ ìŠ¤í‚¬ 2
+	int		m_TansType;			// ë³€ì‹ ë ë•Œ ì‚¬ìš©í•˜ëŠ” íƒ€ì…APET_TRANS_TYPE
+	int		m_nTransStart;		// ë³€ì‹  ë²”ìœ„ ë³€ìˆ˜ 1
+	int		m_nTransEnd;		// ë³€ì‹  ë²”ìœ„ ë³€ìˆ˜ 2
+	int		m_nMount[2];		// íƒœìš¸ìˆ˜ ìˆëŠ” ìµœëŒ€ ì¸ì›ìˆ˜
+	int		m_nSummonSkill[2];		// ì†Œí™˜ë ë•Œ ì‚¬ìš©ë˜ëŠ” ìŠ¤í‚¬
 	int		m_nSpeed[2];
 
 	std::vector<APET_EV_INFO>		m_listEvInfo;
@@ -94,7 +94,7 @@ public:
 	}
 	void	Index( int idx )
 	{
-		if(m_nIndex<0) m_nIndex = idx;    // Index °¡ ÀÖÀ»¶§´Â º¯°æ ±İÁö
+		if(m_nIndex<0) m_nIndex = idx;    // Index ê°€ ìˆì„ë•ŒëŠ” ë³€ê²½ ê¸ˆì§€
 	}
 
 	void	InitValue();
@@ -121,10 +121,10 @@ public:
 
 	CAPetProto*	m_pApetProtoList;		// Apet List [Arrary]
 
-	bool		Load();						// APet ±âº» Á¤º¸(Proto) ÀĞ±â
+	bool		Load();						// APet ê¸°ë³¸ ì •ë³´(Proto) ì½ê¸°
 
-	CAPet*		Create(CPC* pOwner, int dbpet_idx, int proto_idx );			// ÇØ´ç idxÀÇ PET »ı¼ºÇÏ±â ( new °¡ ÀÖÀ½À¸·Î Delete ÇØÁÙ²¯ )
-	CAPetProto*	FindProto(int apet_idx);		// ÇØ´ç idxÀÇ Á¤º¸ ¹İÈ¯
+	CAPet*		Create(CPC* pOwner, int dbpet_idx, int proto_idx );			// í•´ë‹¹ idxì˜ PET ìƒì„±í•˜ê¸° ( new ê°€ ìˆìŒìœ¼ë¡œ Delete í•´ì¤„ê» )
+	CAPetProto*	FindProto(int apet_idx);		// í•´ë‹¹ idxì˜ ì •ë³´ ë°˜í™˜
 
 private:
 	map_t		map_;

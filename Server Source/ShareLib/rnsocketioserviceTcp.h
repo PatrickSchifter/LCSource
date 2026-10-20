@@ -124,6 +124,8 @@ public:
 		return is_call_close_function_;
 	}
 
+	int								get_rqueue_size()	{ return read_queue_.size(); }
+
 protected:
 	virtual void							_getIp();
 
@@ -133,15 +135,13 @@ protected:
 	}
 
 	void							Init();
-	void							SetReadWaitTimer();
-	void							SetWriteWaitTimer();
 
 	void							HandleAsyncConnect( const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator );
 	void							HandleReadHeader(const boost::system::error_code& error);
 	void							HandleReadBody(const boost::system::error_code& error);
 	void							HandleWrite(const boost::system::error_code& error, std::size_t bytes_transferred);
-	void							ReadWaitTimerClose(const boost::system::error_code& error);
-	void							WriteWaitTimerClose(const boost::system::error_code& error);
+	void							ReadWaitTimerClose();
+	void							WriteWaitTimerClose();
 	void							__close();
 	void							__deliver(CNetMsg::SP packet);
 	void							__deliver_for_cbpacket(CBPacket::SP packet);
@@ -194,13 +194,13 @@ private:
 	bool							close_flag_;
 	bool							close_completed_;
 
-	bool							is_call_close_function_;		// close °è¿­ÀÇ ÇÔ¼ö¸¦ È£ÃâÇÏ¸é true
+	bool							is_call_close_function_;		// close ê³„ì—´ì˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ true
 
 	unsigned int					seq_; // only lastchaos
 	bool							check_seq_flag_;
 	int								packet_type_; // only lastchaos-connect, 0 - in game, 1 - billing
 
-	int								unique_id_;			// °¢ ¼¼¼ÇÀÌ ¿¬°áµÉ¶§¸¶´Ù ºÎ¿©¹Ş´Â °íÀ¯ ¹øÈ£
+	int								unique_id_;			// ê° ì„¸ì…˜ì´ ì—°ê²°ë ë•Œë§ˆë‹¤ ë¶€ì—¬ë°›ëŠ” ê³ ìœ  ë²ˆí˜¸
 
 	boost::asio::strand				boost_strand_;
 };

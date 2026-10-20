@@ -24,7 +24,7 @@ int main(int argc, char* argv[], char* envp[])
 		return 1;
 	}
 
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	std::string tstr = boost::str(boost::format("Helper_%1%") % gserver.m_config.Find("Server", "Number"));
 	LogSystem::setSubstitutedValue("logfile", tstr.c_str());
 	LogSystem::configureXml("../log.xml");
@@ -60,11 +60,11 @@ int main(int argc, char* argv[], char* envp[])
 	timerPerMinute::instance()->Init();
 	timerPerHour::instance()->Init();
 
-	// ¸Þ½ÃÁö¸¦ Áö¿ì±â À§ÇÑ Å¸ÀÌ¸Ó »ý¼º
+	// ë©”ì‹œì§€ë¥¼ ì§€ìš°ê¸° ìœ„í•œ íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(1 * 1000, ClearMessageListTimer::instance());
 
 	//////////////////////////////////////////////////////////////////////////
-	// °ÔÀÓ¿¡¼­ »ç¿ëÇÒ 1ÃÊÂ¥¸® Å¸ÀÌ¸Ó »ý¼º
+	// ê²Œìž„ì—ì„œ ì‚¬ìš©í•  1ì´ˆì§œë¦¬ íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(1 * 1000, timerPerSecond::instance());
 
 #ifdef SERVER_AUTHENTICATION
@@ -77,7 +77,7 @@ int main(int argc, char* argv[], char* envp[])
 	puts("Helper server started...");
 	bnf::instance()->Run();
 	//////////////////////////////////////////////////////////////////////////
-	//°á»ç´ë Á¤º¸ ÀúÀå
+	//ê²°ì‚¬ëŒ€ ì •ë³´ ì €ìž¥
 	gserver.m_syndicate.save();
 	gserver.saveCastleDungeonInfo();
 

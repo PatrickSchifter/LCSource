@@ -14,33 +14,33 @@ int GetGradeProductItem(int itemdbindex)
 	int grade = -1;
 	switch (itemdbindex)
 	{
-	case 156:	// ½ºÅæ ¿Â			E
-	case 161:	// Eµî±Ş ¿ø¼Ò		E
-	case 199:	// Å©¶ôÀÇ ³ë¶õÀÙ	E
+	case 156:	// ìŠ¤í†¤ ì˜¨			E
+	case 161:	// Eë“±ê¸‰ ì›ì†Œ		E
+	case 199:	// í¬ë½ì˜ ë…¸ë€ì	E
 		grade = 0;
 		break;
 
-	case 160:	// Dµî±Ş ¿ø¼Ò		D
-	case 155:	// ½ºÅæ ¸®½º		D
-	case 198:	// Å©¶ôÀÇ ÁÙ±â		D
+	case 160:	// Dë“±ê¸‰ ì›ì†Œ		D
+	case 155:	// ìŠ¤í†¤ ë¦¬ìŠ¤		D
+	case 198:	// í¬ë½ì˜ ì¤„ê¸°		D
 		grade = 1;
 		break;
 
-	case 159:	// Cµî±Ş ¿ø¼Ò		C
-	case 154:	// ½ºÅæ ¿ş¹ö		C
-	case 197:	// Å©¶ôÀÇ ÆÄ¶õÀÙ	C
+	case 159:	// Cë“±ê¸‰ ì›ì†Œ		C
+	case 154:	// ìŠ¤í†¤ ì›¨ë²„		C
+	case 197:	// í¬ë½ì˜ íŒŒë€ì	C
 		grade = 2;
 		break;
 
-	case 158:	// Bµî±Ş ¿ø¼Ò		B
-	case 153:	// ½ºÅæ ºñ½ºÆ®		B
-	case 163:	// Å©¶ôÀÇ °¡½Ã		B
+	case 158:	// Bë“±ê¸‰ ì›ì†Œ		B
+	case 153:	// ìŠ¤í†¤ ë¹„ìŠ¤íŠ¸		B
+	case 163:	// í¬ë½ì˜ ê°€ì‹œ		B
 		grade = 3;
 		break;
 
-	case 152:	// ½ºÅæ À£½º´ø		A
-	case 157:	// Aµî±Ş ¿ø¼Ò		A
-	case 162:	// Å©¶ôÀÇ ²É		A
+	case 152:	// ìŠ¤í†¤ ì›°ìŠ¤ë˜		A
+	case 157:	// Aë“±ê¸‰ ì›ì†Œ		A
+	case 162:	// í¬ë½ì˜ ê½ƒ		A
 		grade = 4;
 		break;
 	}
@@ -49,7 +49,7 @@ int GetGradeProductItem(int itemdbindex)
 }
 
 //////////////////////////////
-// ¼±ÅÃ »ı»ê
+// ì„ íƒ ìƒì‚°
 void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 {
 	if (DEAD(ch))
@@ -66,12 +66,12 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> npcindex
 				>> itemdbindex;
 
-	// ±ÙÃ³ÀÇ NPC Ã£±â
+	// ê·¼ì²˜ì˜ NPC ì°¾ê¸°
 	CNPC* npc = TO_NPC(ch->m_pArea->FindCharInCell(ch, npcindex, MSG_CHAR_NPC, false));
 	if (!npc)
 		return ;
 
-	// NPCÀÇ a_product0 ~ 4¿¡¼­ Ã£±â
+	// NPCì˜ a_product0 ~ 4ì—ì„œ ì°¾ê¸°
 	int i;
 	for (i = 0; i < MAX_PRODUCTS_FROM_NPC; i++)
 	{
@@ -82,7 +82,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 	if (i == MAX_PRODUCTS_FROM_NPC)
 		return ;
 
-	// ¼Óµµ °Ë»ç
+	// ì†ë„ ê²€ì‚¬
 	ch->m_hackProduceCount--;
 	ch->m_ProduceClientTime += gserver->m_pulse - ch->m_lastProducePulse + PULSE_HACK_ATTACK_THRESHOLD;
 
@@ -96,13 +96,13 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 			ch->m_desc->IncreaseHackCount(0);
 			return;
 		}
-		ch->m_hackProduceCount = PULSE_HACK_ATTACK_COUNT;	// »÷»ó¸Ş¼¼Áö ¿Â ¼ö ÀúÀå
-		ch->m_ProduceClientTime = 0; // Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ »ı»ê½Ã°£
+		ch->m_hackProduceCount = PULSE_HACK_ATTACK_COUNT;	// ìƒŒìƒë©”ì„¸ì§€ ì˜¨ ìˆ˜ ì €ì¥
+		ch->m_ProduceClientTime = 0; // í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ ìƒì‚°ì‹œê°„
 	}
 
 	ch->m_lastProducePulse = gserver->m_pulse;
 
-	// °Å¸® °Ë»ç
+	// ê±°ë¦¬ ê²€ì‚¬
 	if (GetDistance(ch, npc) > npc->m_proto->m_attackArea + 0.5)
 	{
 		GAMELOG << init("HACK PRODUCE DIST", ch)
@@ -112,17 +112,17 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ DB ÀÎµ¦½º °Ë»ç
-	int npcflag = -1;			// NPC Á¾·ù
-	int needitemtype = -1;		// µµ±¸ Á¾·ù
-	int needskilltype = -1;		// ½ºÅ³ Á¾·ù
+	// ì•„ì´í…œ DB ì¸ë±ìŠ¤ ê²€ì‚¬
+	int npcflag = -1;			// NPC ì¢…ë¥˜
+	int needitemtype = -1;		// ë„êµ¬ ì¢…ë¥˜
+	int needskilltype = -1;		// ìŠ¤í‚¬ ì¢…ë¥˜
 	switch (itemdbindex)
 	{
-	case 152:	// ½ºÅæ À£½º´ø
-	case 153:	// ½ºÅæ ºñ½ºÆ®
-	case 154:	// ½ºÅæ ¿ş¹ö
-	case 155:	// ½ºÅæ ¸®½º
-	case 156:	// ½ºÅæ ¿Â
+	case 152:	// ìŠ¤í†¤ ì›°ìŠ¤ë˜
+	case 153:	// ìŠ¤í†¤ ë¹„ìŠ¤íŠ¸
+	case 154:	// ìŠ¤í†¤ ì›¨ë²„
+	case 155:	// ìŠ¤í†¤ ë¦¬ìŠ¤
+	case 156:	// ìŠ¤í†¤ ì˜¨
 		if (!npc->m_proto->CheckFlag(NPC_MINERAL))
 			return ;
 		npcflag = NPC_MINERAL;
@@ -130,11 +130,11 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		needskilltype = SSKILL_MINING;
 		break;
 
-	case 157:	// Aµî±Ş ¿ø¼Ò
-	case 158:	// Bµî±Ş ¿ø¼Ò
-	case 159:	// Cµî±Ş ¿ø¼Ò
-	case 160:	// Dµî±Ş ¿ø¼Ò
-	case 161:	// Eµî±Ş ¿ø¼Ò
+	case 157:	// Aë“±ê¸‰ ì›ì†Œ
+	case 158:	// Bë“±ê¸‰ ì›ì†Œ
+	case 159:	// Cë“±ê¸‰ ì›ì†Œ
+	case 160:	// Dë“±ê¸‰ ì›ì†Œ
+	case 161:	// Eë“±ê¸‰ ì›ì†Œ
 		if (!npc->m_proto->CheckFlag(NPC_ENERGY))
 			return ;
 		npcflag = NPC_ENERGY;
@@ -142,11 +142,11 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		needskilltype = SSKILL_CHARGE;
 		break;
 
-	case 162:	// Å©¶ôÀÇ ²É
-	case 163:	// Å©¶ôÀÇ °¡½Ã
-	case 197:	// Å©¶ôÀÇ ÆÄ¶õÀÙ
-	case 198:	// Å©¶ôÀÇ ÁÙ±â
-	case 199:	// Å©¶ôÀÇ ³ë¶õÀÙ
+	case 162:	// í¬ë½ì˜ ê½ƒ
+	case 163:	// í¬ë½ì˜ ê°€ì‹œ
+	case 197:	// í¬ë½ì˜ íŒŒë€ì
+	case 198:	// í¬ë½ì˜ ì¤„ê¸°
+	case 199:	// í¬ë½ì˜ ë…¸ë€ì
 		if (!npc->m_proto->CheckFlag(NPC_CROPS))
 			return ;
 		npcflag = NPC_CROPS;
@@ -158,15 +158,15 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// µî±Ş ±¸ÇÏ±â
+	// ë“±ê¸‰ êµ¬í•˜ê¸°
 	int grade = GetGradeProductItem(itemdbindex);
 	if (grade == -1)
 		return ;
 
-	// µµ±¸ °Ë»ç
+	// ë„êµ¬ ê²€ì‚¬
 	if (!ch->m_wearInventory.wearItemInfo[WEARING_WEAPON])
 	{
-		// ¾Æ¿¹ ¹«±âÀ§Ä¡¿¡ ¾Ï°ÍµÎ ¾øÀ½
+		// ì•„ì˜ˆ ë¬´ê¸°ìœ„ì¹˜ì— ì•”ê²ƒë‘ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_NOTOOL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -175,7 +175,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 
 	CItem* tool = ch->m_wearInventory.wearItemInfo[WEARING_WEAPON];
 
-	// »ı»ê µµ±¸ Å¸ÀÔ °Ë»ç
+	// ìƒì‚° ë„êµ¬ íƒ€ì… ê²€ì‚¬
 	bool bProduceTool = false;
 	switch (tool->m_itemProto->getItemTypeIdx())
 	{
@@ -197,7 +197,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (!bProduceTool)
 	{
-		// »ı»ê µµ±¸°¡ ¾Æ´Ô
+		// ìƒì‚° ë„êµ¬ê°€ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_WEAR_TOOL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -205,14 +205,14 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (tool->m_itemProto->getItemSubTypeIdx() != needitemtype)
 	{
-		// ÇØ´ç »ı»ê µµ±¸°¡ ¾Æ´Ô
+		// í•´ë‹¹ ìƒì‚° ë„êµ¬ê°€ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_MATCH_TOOL);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ºÎ½ºÅÍ ¿É¼Ç Ã¼Å©
+	// ë¶€ìŠ¤í„° ì˜µì…˜ ì²´í¬
 	int bBoost  = 0;
 	if(tool->getFlag() & FLAG_ITEM_BOOSTER_ADDED)
 		bBoost = 100;
@@ -223,14 +223,14 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 	else if(tool->getFlag() & FLAG_ITEM_PLATINUMBOOSTER_ADDED)
 		bBoost = 300;
 
-	const int produceTax = 30;		// »ı»ê´ç ÇÊ¿ä ³ª½º
+	const int produceTax = 30;		// ìƒì‚°ë‹¹ í•„ìš” ë‚˜ìŠ¤
 
-	// ºÎ½ºÅÍ´Â ±İ¾× °Ë»ç ¾ÈÇÔ, »çÀ¯Áö¿¡¼­¸¸
+	// ë¶€ìŠ¤í„°ëŠ” ê¸ˆì•¡ ê²€ì‚¬ ì•ˆí•¨, ì‚¬ìœ ì§€ì—ì„œë§Œ
 	if (!bBoost && npc->GetMapAttr() & MATT_PRODUCT_PRIVATE)
 	{
 		if (ch->m_inventory.getMoney() < produceTax)
 		{
-			// µ· ¾ø¾î¼­ ºÒ°¡´É
+			// ëˆ ì—†ì–´ì„œ ë¶ˆê°€ëŠ¥
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_PRODUCE_NO_MONEY);
 			SEND_Q(rmsg, ch->m_desc);
@@ -238,21 +238,21 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-// [101216: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101216: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 	if( !ch->CheckInvenForProduceNoramlPrize(itemdbindex, grade, bBoost) )
 	{
 		return;
 	}
 
-	// ºÎ½ºÅÍ µµ±¸´Â ³»±¸µµµµ ¾È ¶³¾îÁø´Ù
-	// »ı»ê µµ±¸ ³»±¸µµ °Ë»ç
+	// ë¶€ìŠ¤í„° ë„êµ¬ëŠ” ë‚´êµ¬ë„ë„ ì•ˆ ë–¨ì–´ì§„ë‹¤
+	// ìƒì‚° ë„êµ¬ ë‚´êµ¬ë„ ê²€ì‚¬
 	if (!bBoost && tool->m_itemProto->getItemMaxUse() != -1 &&  tool->getUsed() <= 0)
 	{
-		// ³»±¸ ´Ù µÇ¾úÀ» ¶§
+		// ë‚´êµ¬ ë‹¤ ë˜ì—ˆì„ ë•Œ
 		ch->m_wearInventory.RemoveItem((int)tool->getWearPos());
 
 		{
-			// ³²µéÇÑÅ× ¹ş±â±â
+			// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			WearingMsg(rmsg, ch, WEARING_WEAPON, -1, 0);
 			ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -266,10 +266,10 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ı»ê °¡´É ÀÎ¿ø Ã¼Å©
+	// ìƒì‚° ê°€ëŠ¥ ì¸ì› ì²´í¬
 	int nTarget = 0;
 	CAttackChar* target = npc->m_attackList;
-	bool bProduce = false;		// ÀÌ¹ø¿¡ »ı»ê ¸Ş½ÃÁöº¸³½ À¯Àú´Â »ı»êÁßÀÌ´Ù
+	bool bProduce = false;		// ì´ë²ˆì— ìƒì‚° ë©”ì‹œì§€ë³´ë‚¸ ìœ ì €ëŠ” ìƒì‚°ì¤‘ì´ë‹¤
 
 	while (target)
 	{
@@ -281,10 +281,10 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		target = target->m_next;
 	}
 
-	// »ı»ê¸Ş½ÃÁö º¸³½À¯Àú°¡ ÀÌ¹Ì »ı»êÁßÀÌ¶ó¸é ÀÎ¿øÃ¼Å© ¾ÈÇÑ´Ù.
+	// ìƒì‚°ë©”ì‹œì§€ ë³´ë‚¸ìœ ì €ê°€ ì´ë¯¸ ìƒì‚°ì¤‘ì´ë¼ë©´ ì¸ì›ì²´í¬ ì•ˆí•œë‹¤.
 	if (!bProduce)
 	{
-		// »ı»ê °¡´É ÀÎ¿ø ÃÊ°ú
+		// ìƒì‚° ê°€ëŠ¥ ì¸ì› ì´ˆê³¼
 		if (nTarget >= MAX_ACCEPTABLE)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -294,13 +294,13 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ÁøÇàÁßÀÎ Quest Áß Á×Àº npc·Î ÁøÇàÁßÀÌ¸é UpdateData
+	// ì§„í–‰ì¤‘ì¸ Quest ì¤‘ ì£½ì€ npcë¡œ ì§„í–‰ì¤‘ì´ë©´ UpdateData
 	CQuest* pQuest;
 	CQuest* pQuestNext = ch->m_questList.GetNextQuest(NULL, QUEST_STATE_RUN);
 	while ((pQuest = pQuestNext))
 	{
 		pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-		// ¼öÁı Äù½ºÆ®
+		// ìˆ˜ì§‘ í€˜ìŠ¤íŠ¸
 		switch (pQuest->GetQuestType0())
 		{
 		case QTYPE_KIND_COLLECTION:
@@ -314,13 +314,13 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ½ºÅ³ °Ë»ç
-	// ÀÎµ¦½º Å« °ÍÀÌ ´õ ³ôÀº µî±ŞÀ¸·Î ÇÏ¿© »óÀ§ ·¹º§À» ¼±ÅÃ
+	// ìŠ¤í‚¬ ê²€ì‚¬
+	// ì¸ë±ìŠ¤ í° ê²ƒì´ ë” ë†’ì€ ë“±ê¸‰ìœ¼ë¡œ í•˜ì—¬ ìƒìœ„ ë ˆë²¨ì„ ì„ íƒ
 	CSSkillNode* node = ch->m_sSkillList.m_head;
 	CSSkill* sskill = NULL;
 
-	// ºÎ½ºÅÍ µµ±¸´Â ½ºÅ³ °Ë»ç ¾ÈÇÑ´Ù
-	// ºÎ½ºÅÍ µµ±¸´Â ³»±¸µµµµ ¾È ¶³¾îÁø´Ù
+	// ë¶€ìŠ¤í„° ë„êµ¬ëŠ” ìŠ¤í‚¬ ê²€ì‚¬ ì•ˆí•œë‹¤
+	// ë¶€ìŠ¤í„° ë„êµ¬ëŠ” ë‚´êµ¬ë„ë„ ì•ˆ ë–¨ì–´ì§„ë‹¤
 	if (!bBoost)
 	{
 		while (node)
@@ -340,7 +340,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		// ¾ÆÀÌÅÛ ÀÌ¿ë È½¼ö °¨¼Ò
+		// ì•„ì´í…œ ì´ìš© íšŸìˆ˜ ê°ì†Œ
 		if (tool->m_itemProto->getItemMaxUse() > 0)
 		{
 			tool->setUsed(tool->getUsed() - 1);
@@ -351,11 +351,11 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ³»±¸ ´Ù µÇ¾úÀ» ¶§
-			// ¹ş±â±â
+			// ë‚´êµ¬ ë‹¤ ë˜ì—ˆì„ ë•Œ
+			// ë²—ê¸°ê¸°
 			ch->m_wearInventory.RemoveItem((int)tool->getWearPos());
 			{
-				// ³²µéÇÑÅ× ¹ş±â±â
+				// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				WearingMsg(rmsg, ch, WEARING_WEAPON, -1, 0);
 				ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -371,16 +371,16 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// npc Ã¼·Â °¨¼Ò
+	// npc ì²´ë ¥ ê°ì†Œ
 	npc->m_hp -= tool->m_itemProto->getItemNum0();
 
 	if (npc->m_hp <= 0)
 		npc->m_hp = 0;
 
-	// ¾îÅÃ¸®½ºÆ®¿¡ Ãß°¡
+	// ì–´íƒë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 	AddAttackList(ch, npc, 0);
 
-	// °ø°İ ¸®½ºÆ®¿¡¼­ µ¥¹ÌÁö °»½Å
+	// ê³µê²© ë¦¬ìŠ¤íŠ¸ì—ì„œ ë°ë¯¸ì§€ ê°±ì‹ 
 	target = npc->m_attackList;
 
 	while (target)
@@ -388,39 +388,39 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		if (target->ch == ch)
 		{
 			target->m_damage += tool->m_itemProto->getItemNum0();
-			// »ı»êÀÇ °æ¿ì´Â ÆŞ½º°ªÀ» ¸Å¹ø ¼ÂÆÃÇØÁØ´Ù.
+			// ìƒì‚°ì˜ ê²½ìš°ëŠ” í„ìŠ¤ê°’ì„ ë§¤ë²ˆ ì…‹íŒ…í•´ì¤€ë‹¤.
 			target->m_targetPulse = gserver->m_pulse;
 			break;
 		}
 		target = target->m_next;
 	}
 
-	// 5 ¶§¸± ¶§ ¸¶´Ù
+	// 5 ë•Œë¦´ ë•Œ ë§ˆë‹¤
 	if (target->m_damage >= 5)
 	{
 		CItem* item = NULL;
 
-		// ºÎ½ºÅÍÀÎ°¡?
+		// ë¶€ìŠ¤í„°ì¸ê°€?
 		if (bBoost)
 		{
-			// ºÎ½ºÅÍ ¾ÆÀÌÅÛ
-			// ºÎ½ºÅÍ µµ±¸´Â ÆĞ³ÎÆ¼ ¾ø°í ÀÌº¥Æ®¿Í ¹«°ü
+			// ë¶€ìŠ¤í„° ì•„ì´í…œ
+			// ë¶€ìŠ¤í„° ë„êµ¬ëŠ” íŒ¨ë„í‹° ì—†ê³  ì´ë²¤íŠ¸ì™€ ë¬´ê´€
 
-			// ´ë¹ÌÁö ¸®¼Â
+			// ëŒ€ë¯¸ì§€ ë¦¬ì…‹
 			target->m_damage = 0;
 
-			// µî±Şº° È¹µæ °³¼ö
+			// ë“±ê¸‰ë³„ íšë“ ê°œìˆ˜
 			LONGLONG countOfGrade[5] = {150, 86, 55, 38, 30};
 
-			// TODO : ÀÓ½Ã Á¶Á¤
+			// TODO : ì„ì‹œ ì¡°ì •
 			item = gserver->m_itemProtoList.CreateItem(itemdbindex, -1, 0, 0, countOfGrade[grade] / 2 * bBoost / 100 );
 			if (item)
 			{
-				// ³»±¸ ´Ù µÇ¾úÀ» ¶§
-				// ¹ş±â±â
+				// ë‚´êµ¬ ë‹¤ ë˜ì—ˆì„ ë•Œ
+				// ë²—ê¸°ê¸°
 				ch->m_wearInventory.RemoveItem((int)tool->getWearPos());
 				{
-					// ³²µéÇÑÅ× ¹ş±â±â
+					// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 					CNetMsg::SP rmsg(new CNetMsg);
 					WearingMsg(rmsg, ch, WEARING_WEAPON, -1, 0);
 					ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -432,12 +432,12 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ÀÏ¹İ ¾ÆÀÌÅÛ
+			// ì¼ë°˜ ì•„ì´í…œ
 
-			// ´ë¹ÌÁö ÁÙÀÌ±â
+			// ëŒ€ë¯¸ì§€ ì¤„ì´ê¸°
 			target->m_damage -= 5;
 
-			// ÇöÀç sskill¿¡¼­ Æ¯Á¤ µî±ŞÀ» ¾òÀ» È®·ü ±¸ÇÔ
+			// í˜„ì¬ sskillì—ì„œ íŠ¹ì • ë“±ê¸‰ì„ ì–»ì„ í™•ë¥  êµ¬í•¨
 			int prob = 0;
 			switch (grade)
 			{
@@ -458,23 +458,23 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 				break;	// A
 			}
 
-			// ¹«Á¦ÇÑ »ı»ê Æä³ÎÆ¼
+			// ë¬´ì œí•œ ìƒì‚° í˜ë„í‹°
 			if (npc->m_proto->CheckFlag(NPC_ETERNAL))
-				prob = prob * ETERNAL_PENALTY_PROB / 10000;
+				prob = prob * ETERNAL_PENALTY_PROB / 100;
 
 			if (npc->GetMapAttr() & MATT_PRODUCT_PUBLIC)
 			{
-				// °øÀ¯Áö Æä³Îµğ
-				prob = prob * PUBLIC_PENALTY_PROB / 10000;
+				// ê³µìœ ì§€ í˜ë„ë””
+				prob = prob * PUBLIC_PENALTY_PROB / 100;
 			}
 
-			prob = prob * gserver->m_bDoubleProducePercent / 10000;
+			prob = prob * gserver->m_bDoubleProducePercent / 100;
 
-			// ¼º°ø °áÁ¤
+			// ì„±ê³µ ê²°ì •
 			if (GetRandom(1, 10000) <= prob)
 			{
 				LONGLONG count = 1;
-				// ´õºí ÀÌº¥Æ®
+				// ë”ë¸” ì´ë²¤íŠ¸
 				if (gserver->m_bDoubleEvent)
 					count = gserver->m_bDoubleProduceNum;
 
@@ -551,7 +551,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+				// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 				item = npc->m_pArea->DropItem(item, npc);
 				if (!item)
 					return;
@@ -565,7 +565,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			{
-				// »ı»ê ¼º°ø½Ã ÇØ´çÇÏ´Â Á¾·ù¿¡ µû¶ó ÀÌÆåÆ® ¸Ş¼¼Áö Àü¼Û
+				// ìƒì‚° ì„±ê³µì‹œ í•´ë‹¹í•˜ëŠ” ì¢…ë¥˜ì— ë”°ë¼ ì´í™íŠ¸ ë©”ì„¸ì§€ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				switch (npcflag)
 				{
@@ -584,14 +584,14 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Áö¼Ó
+	// ì§€ì†
 	if (npc->m_proto->CheckFlag(NPC_ETERNAL))
 	{
 		npc->m_hp = ch->m_maxHP;
 	}
 
 	{
-		// ÀÌÆåÆ® ¸Ş½ÃÁö Àü¼Û
+		// ì´í™íŠ¸ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		switch (npcflag)
 		{
@@ -608,24 +608,24 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 		ch->m_pArea->SendToCell(rmsg, ch, true);
 	}
 
-	// Á×¾úÀ»¶§
+	// ì£½ì—ˆì„ë•Œ
 	if (DEAD(npc))
 	{
-		// Áö¼Ó
+		// ì§€ì†
 		if (npc->m_proto->CheckFlag(NPC_ETERNAL))
 		{
 			npc->m_hp = ch->m_maxHP;
 		}
 
-		// ºñÁö¼Ó
+		// ë¹„ì§€ì†
 		else
 		{
-			// ¾ÆÀÌÅÛ µå·Ó
+			// ì•„ì´í…œ ë“œë¡­
 			for (int loopcount = 0; loopcount < MAX_NPC_DROPITEM_LOOP; loopcount++)
 			{
-				// 1. µå·ÓÇÒ ¼ö ÀÖ´Â ¼ö ¹üÀ§¿¡¼­ ¾ÆÀÌÅÛ ¼±Á¤
-				// 2. ±× ¾ÆÀÌÆÀÀÇ µå·ÓÈ®·ü·Î µå·Ó¿©ºÎ °áÁ¤
-				// 3. µå·Ó
+				// 1. ë“œë¡­í•  ìˆ˜ ìˆëŠ” ìˆ˜ ë²”ìœ„ì—ì„œ ì•„ì´í…œ ì„ ì •
+				// 2. ê·¸ ì•„ì´íŒ€ì˜ ë“œë¡­í™•ë¥ ë¡œ ë“œë¡­ì—¬ë¶€ ê²°ì •
+				// 3. ë“œë¡­
 				if (npc->m_proto->m_itemCount > 0)
 				{
 					CItem* dropItem = NULL;
@@ -636,7 +636,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 
 					if (dropItem)
 					{
-						// Drop Msg º¸³»±â
+						// Drop Msg ë³´ë‚´ê¸°
 						dropItem->m_preferenceIndex = -1;
 						CNetMsg::SP rmsg(new CNetMsg);
 						ItemDropMsg(rmsg, npc, dropItem);
@@ -645,10 +645,10 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(npc);
 			
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			npc->SendDisappearAllInCell( false );
 			ch->m_pArea->CharFromCell(npc, true);
 			ch->m_pArea->DelNPC(npc);
@@ -657,7 +657,7 @@ void do_SelectProduce(CPC* ch, CNetMsg::SP& msg)
 }
 
 //////////////
-// ¹«ÀÛÀ§ »ı»ê
+// ë¬´ì‘ìœ„ ìƒì‚°
 void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 {
 	if (DEAD(ch))
@@ -672,12 +672,12 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> npcindex;
 
-	// ±ÙÃ³ÀÇ NPC Ã£±â
+	// ê·¼ì²˜ì˜ NPC ì°¾ê¸°
 	CNPC* npc = TO_NPC(ch->m_pArea->FindCharInCell(ch, npcindex, MSG_CHAR_NPC, false));
 	if (!npc)
 		return ;
 
-	// ¼Óµµ °Ë»ç
+	// ì†ë„ ê²€ì‚¬
 	ch->m_hackProduceCount--;
 	ch->m_ProduceClientTime += gserver->m_pulse - ch->m_lastProducePulse + PULSE_HACK_ATTACK_THRESHOLD;
 
@@ -692,13 +692,13 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 			ch->m_desc->IncreaseHackCount(0);
 			return;
 		}
-		ch->m_hackProduceCount = PULSE_HACK_ATTACK_COUNT;	// »÷»ó¸Ş¼¼Áö ¿Â ¼ö ÀúÀå
-		ch->m_ProduceClientTime = 0; // Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ »ı»ê½Ã°£
+		ch->m_hackProduceCount = PULSE_HACK_ATTACK_COUNT;	// ìƒŒìƒë©”ì„¸ì§€ ì˜¨ ìˆ˜ ì €ì¥
+		ch->m_ProduceClientTime = 0; // í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ ìƒì‚°ì‹œê°„
 	}
 
 	ch->m_lastProducePulse = gserver->m_pulse;
 
-	// °Å¸® °Ë»ç
+	// ê±°ë¦¬ ê²€ì‚¬
 	if (GetDistance(ch, npc) > npc->m_proto->m_attackArea + 0.5)
 	{
 		GAMELOG << init("HACK PRODUCE DIST", ch)
@@ -708,10 +708,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ¾ÆÀÌÅÛ DB ÀÎµ¦½º °Ë»ç
-	int npcflag = -1;			// NPC Á¾·ù
-	int needitemtype = -1;		// µµ±¸ Á¾·ù
-	int needskilltype = -1;		// ½ºÅ³ Á¾·ù
+	// ì•„ì´í…œ DB ì¸ë±ìŠ¤ ê²€ì‚¬
+	int npcflag = -1;			// NPC ì¢…ë¥˜
+	int needitemtype = -1;		// ë„êµ¬ ì¢…ë¥˜
+	int needskilltype = -1;		// ìŠ¤í‚¬ ì¢…ë¥˜
 
 	if (npc->m_proto->CheckFlag(NPC_MINERAL))
 	{
@@ -734,10 +734,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 	else
 		return ;
 
-	// µµ±¸ °Ë»ç
+	// ë„êµ¬ ê²€ì‚¬
 	if (!ch->m_wearInventory.wearItemInfo[WEARING_WEAPON])
 	{
-		// ¾Æ¿¹ ¹«±âÀ§Ä¡¿¡ ¾Ï°ÍµÎ ¾øÀ½
+		// ì•„ì˜ˆ ë¬´ê¸°ìœ„ì¹˜ì— ì•”ê²ƒë‘ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_NOTOOL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -746,7 +746,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 
 	CItem* tool = ch->m_wearInventory.wearItemInfo[WEARING_WEAPON];
 
-	// »ı»ê µµ±¸ Å¸ÀÔ °Ë»ç
+	// ìƒì‚° ë„êµ¬ íƒ€ì… ê²€ì‚¬
 	bool bProduceTool = false;
 	switch (tool->m_itemProto->getItemTypeIdx())
 	{
@@ -768,7 +768,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (!bProduceTool)
 	{
-		// »ı»ê µµ±¸°¡ ¾Æ´Ô
+		// ìƒì‚° ë„êµ¬ê°€ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_WEAR_TOOL);
 		SEND_Q(rmsg, ch->m_desc);
@@ -776,14 +776,14 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 	}
 	if (tool->m_itemProto->getItemSubTypeIdx() != needitemtype)
 	{
-		// ÇØ´ç »ı»ê µµ±¸°¡ ¾Æ´Ô
+		// í•´ë‹¹ ìƒì‚° ë„êµ¬ê°€ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_PRODUCE_MATCH_TOOL);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ºÎ½ºÅÍ ¾ÆÀÌÅÛ »ç¿ë ºÒ°¡
+	// ë¶€ìŠ¤í„° ì•„ì´í…œ ì‚¬ìš© ë¶ˆê°€
 	if (tool->getFlag() & FLAG_ITEM_BOOSTER_ADDED
 			|| tool->getFlag() & FLAG_ITEM_SILVERBOOSTER_ADDED
 			|| tool->getFlag() & FLAG_ITEM_GOLDBOOSTER_ADDED
@@ -796,14 +796,14 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	const int produceTax = 30;		// »ı»ê´ç ÇÊ¿ä ³ª½º
+	const int produceTax = 30;		// ìƒì‚°ë‹¹ í•„ìš” ë‚˜ìŠ¤
 
-	// ºÎ½ºÅÍ´Â ±İ¾× °Ë»ç ¾ÈÇÔ, »çÀ¯Áö¿¡¼­¸¸
+	// ë¶€ìŠ¤í„°ëŠ” ê¸ˆì•¡ ê²€ì‚¬ ì•ˆí•¨, ì‚¬ìœ ì§€ì—ì„œë§Œ
 	if (npc->GetMapAttr() & MATT_PRODUCT_PRIVATE)
 	{
 		if (ch->m_inventory.getMoney() < produceTax)
 		{
-			// µ· ¾ø¾î¼­ ºÒ°¡´É
+			// ëˆ ì—†ì–´ì„œ ë¶ˆê°€ëŠ¥
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_PRODUCE_NO_MONEY);
 			SEND_Q(rmsg, ch->m_desc);
@@ -811,21 +811,21 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-// [101216: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+// [101216: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 	if( !ch->CheckInvenForProduceRandomPrize() )
 	{
 		return;
 	}
 
-	// »ı»ê µµ±¸ ³»±¸µµ °Ë»ç
+	// ìƒì‚° ë„êµ¬ ë‚´êµ¬ë„ ê²€ì‚¬
 	if (tool->m_itemProto->getItemMaxUse() != -1 &&  tool->getUsed() <= 0)
 	{
-		// ³»±¸ ´Ù µÇ¾úÀ» ¶§
-		// ¹ş±â±â
+		// ë‚´êµ¬ ë‹¤ ë˜ì—ˆì„ ë•Œ
+		// ë²—ê¸°ê¸°
 		ch->m_wearInventory.RemoveItem((int)tool->getWearPos());
 
 		{
-			// ³²µéÇÑÅ× ¹ş±â±â
+			// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			WearingMsg(rmsg, ch, WEARING_WEAPON, -1, 0);
 			ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -840,10 +840,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// »ı»ê °¡´É ÀÎ¿ø Ã¼Å©
+	// ìƒì‚° ê°€ëŠ¥ ì¸ì› ì²´í¬
 	int nTarget = 0;
 	CAttackChar* target = npc->m_attackList;
-	bool bProduce = false;		// ÀÌ¹ø¿¡ »ı»ê ¸Ş½ÃÁöº¸³½ À¯Àú´Â »ı»êÁßÀÌ´Ù
+	bool bProduce = false;		// ì´ë²ˆì— ìƒì‚° ë©”ì‹œì§€ë³´ë‚¸ ìœ ì €ëŠ” ìƒì‚°ì¤‘ì´ë‹¤
 
 	while (target)
 	{
@@ -855,10 +855,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		target = target->m_next;
 	}
 
-	// »ı»ê¸Ş½ÃÁö º¸³½À¯Àú°¡ ÀÌ¹Ì »ı»êÁßÀÌ¶ó¸é ÀÎ¿øÃ¼Å© ¾ÈÇÑ´Ù.
+	// ìƒì‚°ë©”ì‹œì§€ ë³´ë‚¸ìœ ì €ê°€ ì´ë¯¸ ìƒì‚°ì¤‘ì´ë¼ë©´ ì¸ì›ì²´í¬ ì•ˆí•œë‹¤.
 	if (!bProduce)
 	{
-		// »ı»ê °¡´É ÀÎ¿ø ÃÊ°ú
+		// ìƒì‚° ê°€ëŠ¥ ì¸ì› ì´ˆê³¼
 		if (nTarget >= MAX_ACCEPTABLE)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -868,13 +868,13 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ÁøÇàÁßÀÎ Quest Áß Á×Àº npc·Î ÁøÇàÁßÀÌ¸é UpdateData
+	// ì§„í–‰ì¤‘ì¸ Quest ì¤‘ ì£½ì€ npcë¡œ ì§„í–‰ì¤‘ì´ë©´ UpdateData
 	CQuest* pQuest;
 	CQuest* pQuestNext = ch->m_questList.GetNextQuest(NULL, QUEST_STATE_RUN);
 	while ((pQuest = pQuestNext))
 	{
 		pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-		// ¼öÁı Äù½ºÆ®
+		// ìˆ˜ì§‘ í€˜ìŠ¤íŠ¸
 		switch (pQuest->GetQuestType0())
 		{
 		case QTYPE_KIND_COLLECTION:
@@ -888,8 +888,8 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ½ºÅ³ °Ë»ç
-	// ÀÎµ¦½º Å« °ÍÀÌ ´õ ³ôÀº µî±ŞÀ¸·Î ÇÏ¿© »óÀ§ ·¹º§À» ¼±ÅÃ
+	// ìŠ¤í‚¬ ê²€ì‚¬
+	// ì¸ë±ìŠ¤ í° ê²ƒì´ ë” ë†’ì€ ë“±ê¸‰ìœ¼ë¡œ í•˜ì—¬ ìƒìœ„ ë ˆë²¨ì„ ì„ íƒ
 	CSSkillNode* node = ch->m_sSkillList.m_head;
 	CSSkill* sskill = NULL;
 
@@ -910,7 +910,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ ÀÌ¿ë È½¼ö °¨¼Ò
+	// ì•„ì´í…œ ì´ìš© íšŸìˆ˜ ê°ì†Œ
 	if (tool->m_itemProto->getItemMaxUse() > 0)
 	{
 		tool->setUsed(tool->getUsed() - 1);
@@ -921,10 +921,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// ³»±¸ ´Ù µÇ¾úÀ» ¶§
+		// ë‚´êµ¬ ë‹¤ ë˜ì—ˆì„ ë•Œ
 		ch->m_wearInventory.RemoveItem((int)tool->getWearPos());
 		{
-			// ³²µéÇÑÅ× ¹ş±â±â
+			// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			WearingMsg(rmsg, ch, WEARING_WEAPON, -1, 0);
 			ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -939,15 +939,15 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// npc Ã¼·Â °¨¼Ò
+	// npc ì²´ë ¥ ê°ì†Œ
 	npc->m_hp -= tool->m_itemProto->getItemNum0();
 	if (npc->m_hp <= 0)
 		npc->m_hp = 0;
 
-	// ¾îÅÃ¸®½ºÆ®¿¡ Ãß°¡
+	// ì–´íƒë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 	AddAttackList(ch, npc, 0);
 
-	// °ø°İ ¸®½ºÆ®¿¡¼­ µ¥¹ÌÁö °»½Å
+	// ê³µê²© ë¦¬ìŠ¤íŠ¸ì—ì„œ ë°ë¯¸ì§€ ê°±ì‹ 
 	target = npc->m_attackList;
 
 	while (target)
@@ -955,22 +955,22 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		if (target->ch == ch)
 		{
 			target->m_damage += tool->m_itemProto->getItemNum0();
-			// »ı»êÀÇ °æ¿ì´Â ÆŞ½º°ªÀ» ¸Å¹ø ¼ÂÆÃÇØÁØ´Ù.
+			// ìƒì‚°ì˜ ê²½ìš°ëŠ” í„ìŠ¤ê°’ì„ ë§¤ë²ˆ ì…‹íŒ…í•´ì¤€ë‹¤.
 			target->m_targetPulse = gserver->m_pulse;
 			break;
 		}
 		target = target->m_next;
 	}
 
-	// 5 ¶§¸± ¶§ ¸¶´Ù
+	// 5 ë•Œë¦´ ë•Œ ë§ˆë‹¤
 	if (target->m_damage >= 5)
 	{
 		CItem* item = NULL;
 
-		// ´ë¹ÌÁö ÁÙÀÌ±â
+		// ëŒ€ë¯¸ì§€ ì¤„ì´ê¸°
 		target->m_damage -= 5;
 
-		// µî±Şº° È®·ü ±¸ÇÏ±â
+		// ë“±ê¸‰ë³„ í™•ë¥  êµ¬í•˜ê¸°
 		int probProduct[MAX_PRODUCTS_FROM_NPC];
 		int itemIndexProduct[MAX_PRODUCTS_FROM_NPC];
 		memset(probProduct, 0, sizeof(int) * MAX_PRODUCTS_FROM_NPC);
@@ -981,11 +981,11 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 			{
 				itemIndexProduct[i] = npc->m_proto->m_product[i];
 
-				// µî±Ş ±¸ÇÏ±â
+				// ë“±ê¸‰ êµ¬í•˜ê¸°
 				int grade = GetGradeProductItem(itemIndexProduct[i]);
 				if (grade != -1)
 				{
-					// ½ºÅ³¿¡¼­ È®·ü ±¸ÇÏ±â
+					// ìŠ¤í‚¬ì—ì„œ í™•ë¥  êµ¬í•˜ê¸°
 					switch (grade)
 					{
 					case 0:
@@ -1005,24 +1005,24 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 						break;	// A
 					}
 
-					// ÆĞ³ÎÆ¼ Àû¿ë : ¹«Á¦ÇÑ »ı»ê
+					// íŒ¨ë„í‹° ì ìš© : ë¬´ì œí•œ ìƒì‚°
 					if (npc->m_proto->CheckFlag(NPC_ETERNAL))
-						probProduct[i] = probProduct[i] * ETERNAL_PENALTY_PROB / 10000;
+						probProduct[i] = probProduct[i] * ETERNAL_PENALTY_PROB / 100;
 
-					// ÆĞ³ÎÆ¼ Àû¿ë : °øÀ¯Áö
+					// íŒ¨ë„í‹° ì ìš© : ê³µìœ ì§€
 					if (npc->GetMapAttr() & MATT_PRODUCT_PUBLIC)
-						probProduct[i] = probProduct[i] * PUBLIC_PENALTY_PROB / 10000;
+						probProduct[i] = probProduct[i] * PUBLIC_PENALTY_PROB / 100;
 				}
 			}
 		}
 
-		// ´©Àû È®·ü ±¸ÇÏ±â
+		// ëˆ„ì  í™•ë¥  êµ¬í•˜ê¸°
 		for (int i = 1; i < MAX_PRODUCTS_FROM_NPC; i++)
 		{
 			probProduct[i] += probProduct[i - 1];
 		}
 
-		// ¼º°ø °áÁ¤
+		// ì„±ê³µ ê²°ì •
 		int prob = GetRandom(1, 10000);
 		prob = prob * gserver->m_bDoubleProducePercent / 100;
 
@@ -1032,7 +1032,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 			{
 				LONGLONG count = 1;
 
-				// ´õºí ÀÌº¥Æ®
+				// ë”ë¸” ì´ë²¤íŠ¸
 				if (gserver->m_bDoubleEvent)
 					count = gserver->m_bDoubleProduceNum;
 
@@ -1110,7 +1110,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+				// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
 				item = npc->m_pArea->DropItem(item, npc);
 				if (!item)
 					return;
@@ -1125,7 +1125,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 			}
 
 			{
-				// »ı»ê ¼º°ø½Ã ÇØ´çÇÏ´Â Á¾·ù¿¡ µû¶ó ÀÌÆåÆ® ¸Ş¼¼Áö Àü¼Û
+				// ìƒì‚° ì„±ê³µì‹œ í•´ë‹¹í•˜ëŠ” ì¢…ë¥˜ì— ë”°ë¼ ì´í™íŠ¸ ë©”ì„¸ì§€ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				switch (npcflag)
 				{
@@ -1149,14 +1149,14 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Áö¼Ó
+	// ì§€ì†
 	if (npc->m_proto->CheckFlag(NPC_ETERNAL))
 	{
 		npc->m_hp = ch->m_maxHP;
 	}
 
 	{
-		// ÀÌÆåÆ® ¸Ş½ÃÁö Àü¼Û
+		// ì´í™íŠ¸ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		switch (npcflag)
 		{
@@ -1173,21 +1173,21 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 		ch->m_pArea->SendToCell(rmsg, ch, true);
 	}
 
-	// Á×¾úÀ»¶§
+	// ì£½ì—ˆì„ë•Œ
 	if (DEAD(npc))
 	{
-		if (npc->m_proto->CheckFlag(NPC_ETERNAL)) // Áö¼Ó
+		if (npc->m_proto->CheckFlag(NPC_ETERNAL)) // ì§€ì†
 		{
 			npc->m_hp = ch->m_maxHP;
 		}
-		else // ºñÁö¼Ó
+		else // ë¹„ì§€ì†
 		{
-			// ¾ÆÀÌÅÛ µå·Ó
+			// ì•„ì´í…œ ë“œë¡­
 			for (int loopcount = 0; loopcount < MAX_NPC_DROPITEM_LOOP; loopcount++)
 			{
-				// 1. µå·ÓÇÒ ¼ö ÀÖ´Â ¼ö ¹üÀ§¿¡¼­ ¾ÆÀÌÅÛ ¼±Á¤
-				// 2. ±× ¾ÆÀÌÆÀÀÇ µå·ÓÈ®·ü·Î µå·Ó¿©ºÎ °áÁ¤
-				// 3. µå·Ó
+				// 1. ë“œë¡­í•  ìˆ˜ ìˆëŠ” ìˆ˜ ë²”ìœ„ì—ì„œ ì•„ì´í…œ ì„ ì •
+				// 2. ê·¸ ì•„ì´íŒ€ì˜ ë“œë¡­í™•ë¥ ë¡œ ë“œë¡­ì—¬ë¶€ ê²°ì •
+				// 3. ë“œë¡­
 				if (npc->m_proto->m_itemCount > 0)
 				{
 					CItem* dropItem = NULL;
@@ -1198,7 +1198,7 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 
 					if (dropItem)
 					{
-						// Drop Msg º¸³»±â
+						// Drop Msg ë³´ë‚´ê¸°
 						dropItem->m_preferenceIndex = -1;
 						CNetMsg::SP rmsg(new CNetMsg);
 						ItemDropMsg(rmsg, npc, dropItem);
@@ -1207,10 +1207,10 @@ void do_RandomProduce(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+			// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 			DelAttackList(npc);
 
-			// npc »èÁ¦
+			// npc ì‚­ì œ
 			ch->m_pArea->CharFromCell(npc, true);
 			ch->m_pArea->DelNPC(npc);
 		}

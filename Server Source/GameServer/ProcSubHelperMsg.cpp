@@ -13,6 +13,7 @@
 #include "../ShareLib/packetType/ptype_tradeAgent_system.h"
 #include "../ShareLib/packetType/ptype_old_do_item.h"
 #include "../ShareLib/packetType/ptype_server_to_server.h"
+#include "../ShareLib/packetType/ptype_old_do_title.h"
 
 // Definietion
 void ProcSubHelperTradeAgentErrorRep( CNetMsg::SP& msg );
@@ -27,7 +28,7 @@ void ProcSubHelperTradeAgentLikeCancelRep( CNetMsg::SP& msg);
 void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg);
 void ProcSubHelperTitleSystemDisableRep(CNetMsg::SP& msg);
 void ProcSubHelperTitleSystemDeleteRep(CNetMsg::SP& msg);
-// [selo: 101105] ¡æ∑· Ω√∞£ ∞≠¡¶ ∫Ø∞Ê
+// [selo: 101105] Ï¢ÖÎ£å ÏãúÍ∞Ñ Í∞ïÏ†ú Î≥ÄÍ≤Ω
 void ProcSubHelperTitleSystemForceChangeTime(CNetMsg::SP& msg);
 
 void ProcSubHelperLCBallinfo( CNetMsg::SP& msg);
@@ -39,7 +40,7 @@ void ProcSubHelperRankingSearch(CNetMsg::SP& msg);
 void ProcSubHelperRankingRefresh(CNetMsg::SP& msg);
 void ProcSubHelperRankingError(CNetMsg::SP& msg);
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ∆–≥Œ∆º ∏Æ∆˚
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK Ìå®ÎÑêÌã∞ Î¶¨Ìèº
 void ProcSubHelperPKPenaltyReformRep(CNetMsg::SP& msg);
 void ProcSubHelperPKPenaltyReformRewardInfoRep(CPC* pc, CNetMsg::SP& msg);
 void ProcSubHelperPKPenaltyReformRewardRep(CPC* pc, CNetMsg::SP& msg);
@@ -206,13 +207,13 @@ void CServer::ProcessSubHelperMessage(CNetMsg::SP& msg)
 				ProcSubHelperTitleSystemInsertTitleRep(msg);
 				break;
 			case MSG_SUBHELPER_TITLESYSTEM_CHECK_EXPIRE_TITLE_REP:
-				ProcSubHelperTitleSystemDisableRep(msg); // »£ƒ™ ∏ÆΩ∫∆Æ ø≠∂ß Ω√∞£ »Æ¿Œ »ƒ disable«‘.
+				ProcSubHelperTitleSystemDisableRep(msg); // Ìò∏Ïπ≠ Î¶¨Ïä§Ìä∏ Ïó¥Îïå ÏãúÍ∞Ñ ÌôïÏù∏ ÌõÑ disableÌï®.
 				break;
 			case MSG_SUBHELPER_TITLE_SYSTEM_TITLE_DELETE_REP:
-				ProcSubHelperTitleSystemDeleteRep(msg); // ªÁøÎ¿⁄∞° ºˆµøªË¡¶∏¶ «“∂ß disable«‘.
+				ProcSubHelperTitleSystemDeleteRep(msg); // ÏÇ¨Ïö©ÏûêÍ∞Ä ÏàòÎèôÏÇ≠Ï†úÎ•º Ìï†Îïå disableÌï®.
 				break;
 			case MSG_SUBHELPER_TITLE_SYSTEM_FORCE_CHANGE_TIME:
-				ProcSubHelperTitleSystemForceChangeTime(msg);	// [selo: 101105] ¡æ∑· Ω√∞£ ∞≠¡¶ ∫Ø∞Ê
+				ProcSubHelperTitleSystemForceChangeTime(msg);	// [selo: 101105] Ï¢ÖÎ£å ÏãúÍ∞Ñ Í∞ïÏ†ú Î≥ÄÍ≤Ω
 				break;
 			case MSG_SUBHELPER_LCBALL_INFO:
 				ProcSubHelperLCBallinfo( msg );
@@ -235,7 +236,7 @@ void CServer::ProcessSubHelperMessage(CNetMsg::SP& msg)
 			case MSG_SUBHELPER_RANKING_EX_ERROR:
 				ProcSubHelperRankingError(msg);
 				break;
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ∆–≥Œ∆º ∏Æ∆˚
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK Ìå®ÎÑêÌã∞ Î¶¨Ìèº
 			case MSG_SUBHELPER_PKPENALTY_REFORM:
 				ProcSubHelperPKPenaltyReformRep(msg);
 				break;
@@ -265,7 +266,7 @@ void CServer::ProcessSubHelperMessage(CNetMsg::SP& msg)
 }
 
 // Description
-//ø°∑Ø ∏ﬁºº¡ˆ
+//ÏóêÎü¨ Î©îÏÑ∏ÏßÄ
 void ProcSubHelperTradeAgentErrorRep( CNetMsg::SP& msg )
 {
 	ResponseClient::TradeAgentSystemError *p = reinterpret_cast<ResponseClient::TradeAgentSystemError*>(msg->m_buf);
@@ -284,12 +285,12 @@ void ProcSubHelperTradeAgentRegListRep( CNetMsg::SP& msg )
 	if(pChar == NULL)
 		return;
 
-	pChar->m_tradeAgentRegCount = p->count;	//«ˆ¿Á µÓ∑œ«— ∞≥ºˆ∏¶ ¿˙¿Â«ÿ ≥ı∞Ì π∞∞«¿ª ∏√±ÊΩ√ø° º± √≥∏Æ ∞ÀªÁ«œ±‚ ¿ß«ÿº≠
+	pChar->m_tradeAgentRegCount = p->count;	//ÌòÑÏû¨ Îì±Î°ùÌïú Í∞úÏàòÎ•º Ï†ÄÏû•Ìï¥ ÎÜìÍ≥† Î¨ºÍ±¥ÏùÑ Îß°Í∏∏ÏãúÏóê ÏÑ† Ï≤òÎ¶¨ Í≤ÄÏÇ¨ÌïòÍ∏∞ ÏúÑÌï¥ÏÑú
 
 	SEND_Q(msg, pChar->m_desc);
 }
 
-//µÓ∑œ
+//Îì±Î°ù
 void ProcSubHelperTradeAgentRegRep( CNetMsg::SP& msg )
 {
 	ResponseClient::TradeAgentSystemRegWithServer *sp = reinterpret_cast<ResponseClient::TradeAgentSystemRegWithServer*>(msg->m_buf);
@@ -313,12 +314,12 @@ void ProcSubHelperTradeAgentRegRep( CNetMsg::SP& msg )
 
 	pChar->m_bTradeAgentRegIng = false;
 
-	//∞≈∑°¥Î«‡ ∆–≈∂ ¿¸º€
+	//Í±∞ÎûòÎåÄÌñâ Ìå®ÌÇ∑ Ï†ÑÏÜ°
 	msg->setSize(sizeof(ResponseClient::TradeAgentSystemReg));
 	SEND_Q(msg, pChar->m_desc);
 }
 
-//µÓ∑œ √Îº“
+//Îì±Î°ù Ï∑®ÏÜå
 void ProcSubHelperTradeAgentRegCancelRep( CNetMsg::SP& msg )
 {
 	ResponseClient::TradeAgentSystemRegCancelWithServer *sp = reinterpret_cast<ResponseClient::TradeAgentSystemRegCancelWithServer*>(msg->m_buf);
@@ -343,7 +344,7 @@ void ProcSubHelperTradeAgentRegCancelRep( CNetMsg::SP& msg )
 	SEND_Q(msg, pChar->m_desc);
 }
 
-//¡∂»∏
+//Ï°∞Ìöå
 void ProcSubHelperTradeAgentSearchRep( CNetMsg::SP& msg )
 {
 	ResponseClient::TradeAgentSystemList* packet = reinterpret_cast<ResponseClient::TradeAgentSystemList*>(msg->m_buf);
@@ -351,18 +352,18 @@ void ProcSubHelperTradeAgentSearchRep( CNetMsg::SP& msg )
 	if (pChar == NULL)
 		return;
 
-	//ƒ≥∏Ø≈Õ¿« ∏  ∏ÆΩ∫∆Æø° ¿˙¿Â«œ±‚.
+	//Ï∫êÎ¶≠ÌÑ∞Ïùò Îßµ Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû•ÌïòÍ∏∞.
 	pChar->m_tradeAgentViewMap.clear();
 	for( int i = 0; i< packet->count; i++)
 	{
 		pChar->m_tradeAgentViewMap.insert(std::pair<int, GoldType_t>(packet->list[i].index, packet->list[i].nas));
 	}
 
-	//¡§∫∏ ¿˙¿Â ¥Ÿ «œ∞Ì≥™º≠ πﬁæ∆ø¬ ∆–≈∂ ±◊¥Î∑Œ ¿¸º€
+	//Ï†ïÎ≥¥ Ï†ÄÏû• Îã§ ÌïòÍ≥†ÎÇòÏÑú Î∞õÏïÑÏò® Ìå®ÌÇ∑ Í∑∏ÎåÄÎ°ú Ï†ÑÏÜ°
 	SEND_Q(msg, pChar->m_desc);
 }
 
-//±∏∏≈
+//Íµ¨Îß§
 void ProcSubHelperTradeAgentBuyRep( CNetMsg::SP& msg )
 {
 	ResponseClient::TradeAgentSystemBuyWithServer* sp = reinterpret_cast<ResponseClient::TradeAgentSystemBuyWithServer*>(msg->m_buf);
@@ -404,7 +405,7 @@ void ProcSubHelperTradeAgentLikeListRep( CNetMsg::SP& msg)
 	if(pChar == NULL)
 		return;
 
-	//ƒ≥∏Ø≈Õ¿« ∏  ∏ÆΩ∫∆Æø° ¿˙¿Â«œ±‚.
+	//Ï∫êÎ¶≠ÌÑ∞Ïùò Îßµ Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû•ÌïòÍ∏∞.
 	pChar->m_tradeAgentViewMap2.clear();
 	for( int i = 0; i< p->count; i++)
 	{
@@ -445,8 +446,9 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 	CTitle* title;
 	CItem* item;
 	CLCString serial;
+	int custom_title_index;
 
-	RefMsg(msg) >> char_index >> title_index >> endtime >> errortype >> tab >> invenIndex >> serial;
+	RefMsg(msg) >> char_index >> title_index >> endtime >> errortype >> tab >> invenIndex >> serial >> custom_title_index;
 
 	if( errortype == 0 ) // DB insert error
 		return ;
@@ -457,7 +459,7 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 		if(ch == NULL)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
@@ -467,16 +469,20 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 		if(title == NULL)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
 		}
+		
+		title->m_custom_title_index = custom_title_index;
+		
 		item = ch->m_inventory.getItem(tab, invenIndex);
+
 		if(item == NULL)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
@@ -485,7 +491,7 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 		if(item->Count() < 1)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
@@ -494,7 +500,7 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 		if (item->m_serial != (const char *)serial)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
@@ -503,10 +509,16 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 		if(ch->m_titleList.m_nCount >= MAX_TITLE_COUNT)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index);
+			SubHelperTitleSystemTitleDelReq(rmsg, char_index, title_index, custom_title_index);
 			SEND_Q(rmsg, gserver->m_subHelper);
 
 			return ;
+		}
+
+		if(custom_title_index > 0)
+		{
+			CTitle* delete_title = ch->m_titleList.Find(CUSTOM_TITLE_DUMMY_INDEX);
+			ch->m_titleList.Remove(delete_title);
 		}
 
 		if(ch->m_titleList.Add(title))
@@ -515,7 +527,7 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				TitleItemUseMsg(rmsg, title->m_proto->m_index, title->m_endtime);
+				TitleUseMsg(rmsg, title->m_proto->m_index, title->m_endtime, title->m_custom_title_index);
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
@@ -524,21 +536,28 @@ void ProcSubHelperTitleSystemInsertTitleRep(CNetMsg::SP& msg)
 					<< item->getDBIndex() << end;
 		}
 	}
-	// [selo: 101109] º≠πˆø°º≠ ∞≠¡¶ √ﬂ∞°
+	// [selo: 101109] ÏÑúÎ≤ÑÏóêÏÑú Í∞ïÏ†ú Ï∂îÍ∞Ä
 	else if( errortype == 2 )
 	{
 		ch = PCManager::instance()->getPlayerByCharIndex(char_index);
 		if(ch == NULL)
 			return ;
 		title = gserver->m_titleProtoList.Create(title_index, endtime);
+		title->m_custom_title_index = custom_title_index;
 
 		if(title == NULL)
 			return ;
 
+		if(custom_title_index > 0)
+		{
+			CTitle* delete_title = ch->m_titleList.Find(CUSTOM_TITLE_DUMMY_INDEX);
+			ch->m_titleList.Remove(delete_title);
+		}
+
 		if(ch->m_titleList.Add(title))
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			TitleItemUseMsg(rmsg, title->m_proto->m_index, title->m_endtime);
+			TitleUseMsg(rmsg, title->m_proto->m_index, title->m_endtime, title->m_custom_title_index);
 			SEND_Q(rmsg, ch->m_desc);
 			GAMELOG << init("TITLE FORCE INSERT", ch)
 					<< "TITLE INDEX" << delim
@@ -561,7 +580,7 @@ void ProcSubHelperTitleSystemDisableRep(CNetMsg::SP& msg)
 
 	if( disable_count == 0 )
 	{
-		// LIST ¿¸º€
+		// LIST Ï†ÑÏÜ°
 		CTitleNode* temp;
 		temp = ch->m_titleList.m_head;
 		if(!temp)
@@ -569,13 +588,22 @@ void ProcSubHelperTitleSystemDisableRep(CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			TitleSystemListRep(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST, ch->m_titleList.m_nCount);
+			TitleSystemListMsg(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST, ch->m_titleList.m_nCount);
+			ResponseClient::TitleSystemList* packet = reinterpret_cast<ResponseClient::TitleSystemList*>(rmsg->m_buf);
+
+			int count = 0;
+
 			while(temp)
 			{
-				RefMsg(rmsg) << temp->m_title->m_proto->m_index
-							 << temp->m_title->m_endtime;
+				packet->data[count].index = temp->m_title->m_proto->m_index;
+				packet->data[count].end_time = temp->m_title->m_endtime;
+				packet->data[count].custom_title_index = temp->m_title->m_custom_title_index;
+				count ++;
 				temp = temp->m_next;
 			}
+			packet->title_count = count;
+			rmsg->setSize(sizeof(ResponseClient::TitleSystemList) + sizeof(ResponseClient::TitleSystemData) * count);
+
 			SEND_Q(rmsg, ch->m_desc);
 		}
 	}
@@ -599,7 +627,7 @@ void ProcSubHelperTitleSystemDisableRep(CNetMsg::SP& msg)
 		if(ch->m_titleList.m_nCount == 0)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			TitleSystemListRep(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_NO_LIST, ch->m_titleList.m_nCount);
+			TitleSystemListMsg(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_NO_LIST, ch->m_titleList.m_nCount);
 			SEND_Q(rmsg, ch->m_desc);
 		}
 		else
@@ -610,14 +638,23 @@ void ProcSubHelperTitleSystemDisableRep(CNetMsg::SP& msg)
 				return ;
 
 			{
+				int count = 0;
 				CNetMsg::SP rmsg(new CNetMsg);
-				TitleSystemListRep(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST, ch->m_titleList.m_nCount);
+				TitleSystemListMsg(rmsg, MSG_EX_TITLE_SYSTEM_LIST_REP_EXIST_LIST, ch->m_titleList.m_nCount);
+
+				ResponseClient::TitleSystemList* packet = reinterpret_cast<ResponseClient::TitleSystemList*>(rmsg->m_buf);
 				while(temp)
 				{
-					RefMsg(rmsg) << temp->m_title->m_proto->m_index
-								 << temp->m_title->m_endtime;
+					
+					packet->data[count].index = temp->m_title->m_proto->m_index;
+					packet->data[count].end_time = temp->m_title->m_endtime;
+					packet->data[count].custom_title_index = temp->m_title->m_custom_title_index;
+					count++;					
 					temp = temp->m_next;
 				}
+				packet->title_count = count;
+				rmsg->setSize(sizeof(ResponseClient::TitleSystemList) + sizeof(ResponseClient:: TitleSystemData) * count);
+
 				SEND_Q(rmsg, ch->m_desc);
 			}
 		}
@@ -642,6 +679,7 @@ void ProcSubHelperTitleSystemDeleteRep(CNetMsg::SP& msg)
 	if((ch->m_nCurrentTitle == title_index) && errortype)
 	{
 		ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
+		ch->m_custom_title_index = -1;
 		bAppear = true;
 	}
 
@@ -654,15 +692,43 @@ void ProcSubHelperTitleSystemDeleteRep(CNetMsg::SP& msg)
 		GAMELOG << init("TITLE REMOVE TO LIST", ch) << delim
 				<< "TITLE LIST" << delim << title_index << end;
 		ch->CalcStatus(true);
-
+		
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_DELETE_SUCCESS, title_index, ch->m_index);
+			TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_DELETE_SUCCESS, title_index, ch->m_index, title->m_custom_title_index);
 			if(bAppear)
 			{
 				ch->m_pArea->SendToCell(rmsg, ch);
 			}
 			SEND_Q(rmsg, ch->m_desc);
+		}
+
+		if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+		{
+			std::map<int, MAKE_TITLE*>::iterator it = ch->_map_title.find(title->m_custom_title_index);
+			if( it != ch->_map_title.end() )
+			{
+				std::string query = boost::str(boost::format("DELETE FROM t_title_make where a_index = %d") % it->second->title_index);
+				DBManager::instance()->pushQuery(0, query);
+
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					TitleDeleteInfoMsg(rmsg, it->second->title_index);
+					SEND_Q(rmsg, ch->m_desc);
+				}
+
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					TitleUserInfoMsg(rmsg, ch->m_index, -1, -1, -1, "");
+					ch->m_pArea->SendToCell(rmsg, ch, true);
+				}
+
+				delete[] it->second->option_index;
+				delete[] it->second->option_level;
+				delete it->second;
+
+				ch->_map_title.erase(title->m_custom_title_index);
+			}
 		}
 
 		GAMELOG << init("TITLE DELETE SUCCESS(user delete)", ch) << delim
@@ -675,7 +741,7 @@ void ProcSubHelperTitleSystemDeleteRep(CNetMsg::SP& msg)
 	}
 }
 
-// [selo: 101105] ¡æ∑· Ω√∞£ ∞≠¡¶ ∫Ø∞Ê
+// [selo: 101105] Ï¢ÖÎ£å ÏãúÍ∞Ñ Í∞ïÏ†ú Î≥ÄÍ≤Ω
 void ProcSubHelperTitleSystemForceChangeTime(CNetMsg::SP& msg)
 {
 	int char_index;
@@ -698,7 +764,7 @@ void ProcSubHelperTitleSystemForceChangeTime(CNetMsg::SP& msg)
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSysstemForceChangeTimeMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_CHANGE_TIME, title_index, endtime);
+		TitleSystemForceChangeTimeMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_CHANGE_TIME, title_index, endtime);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
@@ -709,13 +775,13 @@ void ProcSubHelperTitleSystemForceChangeTime(CNetMsg::SP& msg)
 
 void ProcSubHelperLCBallinfo( CNetMsg::SP& msg)
 {
-	// ≈¨∂Û ∏ﬁºº¡ˆ ∏∏µÈæÓº≠ ∫∏≥ª±‚
+	// ÌÅ¥Îùº Î©îÏÑ∏ÏßÄ ÎßåÎì§Ïñ¥ÏÑú Î≥¥ÎÇ¥Í∏∞
 	int charIndex=0 , curCoinInex = 0;
 	char coinCount=0, courseCount=0, itemCount=0, curCourseIndex = 0;
 
 	RefMsg(msg) >> charIndex ;
 
-	// PC √£±‚
+	// PC Ï∞æÍ∏∞
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( !pc )
 		return;
@@ -726,7 +792,7 @@ void ProcSubHelperLCBallinfo( CNetMsg::SP& msg)
 				 << (char)MSG_EX_LCBALL_INFO;
 
 	int idx=0;
-	// ≈‰≈´ ∏µÁ ¡§∫∏
+	// ÌÜ†ÌÅ∞ Î™®Îì† Ï†ïÎ≥¥
 	RefMsg(msg) >> coinCount;
 	RefMsg(rmsg) << coinCount;
 	for( idx=0; idx < coinCount; idx++ )
@@ -735,7 +801,7 @@ void ProcSubHelperLCBallinfo( CNetMsg::SP& msg)
 		RefMsg(msg) >> coinIndex;
 		RefMsg(rmsg) << coinIndex;
 	}
-	// ƒ⁄Ω∫ ¿¸√º ªı∫Œ ¡§∫∏
+	// ÏΩîÏä§ Ï†ÑÏ≤¥ ÏÉàÎ∂Ä Ï†ïÎ≥¥
 	int nItem=0, nRemain = 0 , nMax =0;
 	unsigned int nItemCount = 0;
 
@@ -746,11 +812,11 @@ void ProcSubHelperLCBallinfo( CNetMsg::SP& msg)
 		RefMsg(msg) >> nItem >> nItemCount >> nMax >> nRemain;
 		RefMsg(rmsg) << nItem << nItemCount << nMax << nRemain;
 	}
-	// «ˆ¿Á ≈‰≈´¿Œµ¶Ω∫ , ƒ⁄Ω∫ ¿Œµ¶Ω∫
+	// ÌòÑÏû¨ ÌÜ†ÌÅ∞Ïù∏Îç±Ïä§ , ÏΩîÏä§ Ïù∏Îç±Ïä§
 	RefMsg(msg) >> curCoinInex >> curCourseIndex;
 	RefMsg(rmsg) << curCoinInex << curCourseIndex;
 
-	// «ˆ¿Á æ∆¿Ã≈€ ªı∫Œ¡§∫∏
+	// ÌòÑÏû¨ ÏïÑÏù¥ÌÖú ÏÉàÎ∂ÄÏ†ïÎ≥¥
 	RefMsg(msg) >> itemCount;
 	RefMsg(rmsg) << itemCount;
 	for( idx=0; idx < itemCount; idx++ )
@@ -758,28 +824,28 @@ void ProcSubHelperLCBallinfo( CNetMsg::SP& msg)
 		RefMsg(msg) >> nItem >> nItemCount >> nMax >> nRemain;
 		RefMsg(rmsg) << nItem << nItemCount << nMax << nRemain;
 	}
-	// ø‰√ª¿⁄ø°∞‘ ∫∏≥ª±‚
+	// ÏöîÏ≤≠ÏûêÏóêÍ≤å Î≥¥ÎÇ¥Í∏∞
 	SEND_Q( rmsg , pc->m_desc );
 }
 
 void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 {
-	// π›µÂΩ√ º≠∫Í«€∆€∑Œ ¿¿¥‰ ∫∏≥ªæﬂ«‘ ( «ˆ¿Á BeginTrans ªÛ≈¬ )
-	// ¿Œ∫• ∞ÀªÁ«œø© æ∆¿Ã≈€ ¡ˆ±ﬁ
+	// Î∞òÎìúÏãú ÏÑúÎ∏åÌïºÌçºÎ°ú ÏùëÎãµ Î≥¥ÎÇ¥ÏïºÌï® ( ÌòÑÏû¨ BeginTrans ÏÉÅÌÉú )
+	// Ïù∏Î≤§ Í≤ÄÏÇ¨ÌïòÏó¨ ÏïÑÏù¥ÌÖú ÏßÄÍ∏â
 	int			charIndex=0, coinIndex=0, itemIndex=0;
 	unsigned int itemCount=0;
 	char		courseIndex=0 , cOrder = 0;
 
 	RefMsg(msg) >> charIndex >> coinIndex >> courseIndex >> cOrder >> itemIndex >> itemCount;
 
-	// PC √£±‚
+	// PC Ï∞æÍ∏∞
 	CPC* pc = PCManager::instance()->getPlayerByCharIndex(charIndex);
 	if( !pc )
 	{
 		CLCString	strVNick(20);
 		strVNick.Format("dummy");
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubHelperLCBalluse_successMsg( rmsg, 1, strVNick, coinIndex, courseIndex, cOrder, itemIndex ); // ∑—πÈ
+		SubHelperLCBalluse_successMsg( rmsg, 1, strVNick, coinIndex, courseIndex, cOrder, itemIndex ); // Î°§Î∞±
 		SEND_Q( rmsg, gserver->m_subHelper );
 		return;
 	}
@@ -789,7 +855,7 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // ∑—πÈ
+			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // Î°§Î∞±
 			SEND_Q( rmsg, gserver->m_subHelper )
 		}
 
@@ -802,11 +868,11 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 		return;
 	}
 
-	// ∫Û∞¯∞£ »Æ¿Œ ƒ⁄¿Œ»Æ¿Œ
+	// ÎπàÍ≥µÍ∞Ñ ÌôïÏù∏ ÏΩîÏù∏ÌôïÏù∏
 	if( pc->m_inventory.getEmptyCount() < 1 )
 	{
 		{
-			// ∫Û∞¯∞£ æ¯¿Ω
+			// ÎπàÍ≥µÍ∞Ñ ÏóÜÏùå
 			CNetMsg::SP rmsg(new CNetMsg);
 			LCBallUseMsg( rmsg, 1 , itemIndex );
 			SEND_Q(rmsg, pc->m_desc );
@@ -814,7 +880,7 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // ∑—πÈ
+			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // Î°§Î∞±
 			SEND_Q( rmsg, gserver->m_subHelper );
 		}
 
@@ -826,20 +892,20 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			LCBallUseMsg( rmsg, 2 , itemIndex );	// ƒ⁄¿Œ¿Ã æ¯Ω¿¥œ¥Ÿ.
+			LCBallUseMsg( rmsg, 2 , itemIndex );	// ÏΩîÏù∏Ïù¥ ÏóÜÏäµÎãàÎã§.
 			SEND_Q(rmsg, pc->m_desc );
 		}
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_name, coinIndex, courseIndex, cOrder, itemIndex ); // ∑—πÈ
+			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_name, coinIndex, courseIndex, cOrder, itemIndex ); // Î°§Î∞±
 			SEND_Q( rmsg, gserver->m_subHelper );
 		}
 
 		return;
 	}
 
-	// æ∆¿Ã≈€(itemIndex) ¡ˆ±ﬁ
+	// ÏïÑÏù¥ÌÖú(itemIndex) ÏßÄÍ∏â
 	CItem * pItem = gserver->m_itemProtoList.CreateItem( itemIndex, -1 , 0, 0, itemCount );
 	if (pItem == NULL)
 	{
@@ -855,12 +921,12 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 		pc->m_inventory.decreaseItemCount(pCoinItem, 1);
 
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubHelperLCBalluse_successMsg( rmsg, 0, pc->m_nick,  coinIndex , courseIndex, cOrder, itemIndex ); // º≠∫Í «€«¡∑Œ º∫∞¯ ∏ﬁºº¡ˆ ∫∏≥ª±‚
+		SubHelperLCBalluse_successMsg( rmsg, 0, pc->m_nick,  coinIndex , courseIndex, cOrder, itemIndex ); // ÏÑúÎ∏å ÌïºÌîÑÎ°ú ÏÑ±Í≥µ Î©îÏÑ∏ÏßÄ Î≥¥ÎÇ¥Í∏∞
 		SEND_Q( rmsg , gserver->m_subHelper );
 
 		if(cOrder == 0)
 		{
-			//ƒ≥∏Ø≈Õ ¡§∫∏, æ∆¿Ã≈€ ¡§∫∏ ∑Œ±◊ ≥≤±‚±‚
+			//Ï∫êÎ¶≠ÌÑ∞ Ï†ïÎ≥¥, ÏïÑÏù¥ÌÖú Ï†ïÎ≥¥ Î°úÍ∑∏ ÎÇ®Í∏∞Í∏∞
 			if(pc && pItem)
 				GAMELOG << init("LacaBall First Place", pc) << itemlog(pItem) << end;
 		}
@@ -877,7 +943,7 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // ∑—πÈ
+			SubHelperLCBalluse_successMsg( rmsg, 1, pc->m_nick, coinIndex, courseIndex, cOrder, itemIndex ); // Î°§Î∞±
 			SEND_Q( rmsg, gserver->m_subHelper );
 		}
 
@@ -889,7 +955,7 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 	}
 
 	{
-		// ¡§∫∏∞ªΩ≈ ø‰√ª
+		// Ï†ïÎ≥¥Í∞±Ïã† ÏöîÏ≤≠
 		CNetMsg::SP rmsg(new CNetMsg);
 		SubHelperLCBallinfoMsg( rmsg, pc->m_index, coinIndex, courseIndex );
 		SEND_Q( rmsg, gserver->m_subHelper );
@@ -898,17 +964,17 @@ void ProcSubHelperLCBalluse( CNetMsg::SP& msg)
 
 void ProcSubHelperLCBall_sucess( CNetMsg::SP& msg)
 {
-	// ∏µÁªÁ∂˜ø°∞‘ ¥Á√∑∏ﬁºº¡ˆ ª—∏Æ±‚
+	// Î™®Îì†ÏÇ¨ÎûåÏóêÍ≤å ÎãπÏ≤®Î©îÏÑ∏ÏßÄ ÎøåÎ¶¨Í∏∞
 	CLCString name(MAX_CHAR_NAME_LENGTH + 1);
 	int	itemIndex=0;
 
 	RefMsg(msg) >> name >> itemIndex ;
 
 	CNetMsg::SP rmsg(new CNetMsg);
-	// ∏ﬁºº¡ˆ ∏∏µÈæÓº≠
+	// Î©îÏÑ∏ÏßÄ ÎßåÎì§Ïñ¥ÏÑú
 	LCBallSuccessMsg( rmsg, name, itemIndex );
 	PCManager::instance()->sendToAll(rmsg);
-	// ∏µÁ ƒ≥∏Ø≈Õø° ¿¸¥ﬁ
+	// Î™®Îì† Ï∫êÎ¶≠ÌÑ∞Ïóê Ï†ÑÎã¨
 }
 
 void ProcSubHelperRakingList(CNetMsg::SP& msg)
@@ -1000,8 +1066,8 @@ void ProcSubHelperRankingSearch(CNetMsg::SP& msg)
 }
 void ProcSubHelperRankingRefresh(CNetMsg::SP& msg)
 {
-	// «ˆ¿Á ∞‘¿”ø° ¡¢º”«— ∏µÁ ¿Ø¿˙¿« m_exp_weekly∞™¿ª √ ±‚»≠«—¥Ÿ.
-	// ¿Ã ∑Á∆æ¿Ã æ¯¿∏∏È, ∞‘¿”«œ∞Ì ¿÷¥¬ ¿Ø¿˙µÈ¿« m_exp_weekly∞™¿Ã ¿Ø¡ˆµ«æÓ ¿ﬂ∏¯µ» ∑©≈∑¿ª ªÍ¡§«œ∞‘µ»¥Ÿ.
+	// ÌòÑÏû¨ Í≤åÏûÑÏóê Ï†ëÏÜçÌïú Î™®Îì† Ïú†Ï†ÄÏùò m_exp_weeklyÍ∞íÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+	// Ïù¥ Î£®Ìã¥Ïù¥ ÏóÜÏúºÎ©¥, Í≤åÏûÑÌïòÍ≥† ÏûàÎäî Ïú†Ï†ÄÎì§Ïùò m_exp_weeklyÍ∞íÏù¥ Ïú†ÏßÄÎêòÏñ¥ ÏûòÎ™ªÎêú Îû≠ÌÇπÏùÑ ÏÇ∞Ï†ïÌïòÍ≤åÎêúÎã§.
 	PCManager::map_t& playerMap			= PCManager::instance()->getPlayerMap();
 	PCManager::map_t::iterator it		= playerMap.begin();
 	PCManager::map_t::iterator endit	= playerMap.end();
@@ -1040,7 +1106,7 @@ void ProcSubHelperRankingError(CNetMsg::SP& msg)
 	}
 }
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ∆–≥Œ∆º ∏Æ∆˚
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK Ìå®ÎÑêÌã∞ Î¶¨Ìèº
 void ProcSubHelperPKPenaltyReformRep(CNetMsg::SP& msg)
 {
 	unsigned char subType;
@@ -1129,7 +1195,7 @@ void ProcSubHelperPKPenaltyReformRewardRep(CPC* pc, CNetMsg::SP& msg)
 
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
-			TitleItemUseMsg(rmsg, title->m_proto->m_index, title->m_endtime);
+			TitleUseMsg(rmsg, title->m_proto->m_index, title->m_endtime, -1);
 			SEND_Q(rmsg, pc->m_desc);
 		}
 
@@ -1137,7 +1203,7 @@ void ProcSubHelperPKPenaltyReformRewardRep(CPC* pc, CNetMsg::SP& msg)
 				<< "REWARD NUM" << delim << rewardNum
 				<< "TITLE INDEX" << delim << title->m_proto->m_index << end;
 
-		// ∫∏ªÛ ¡§∫∏ ∞ªΩ≈
+		// Î≥¥ÏÉÅ Ï†ïÎ≥¥ Í∞±Ïã†
 		pc->SetPKPenaltyReward( rewardNum );
 
 		{
@@ -1148,13 +1214,13 @@ void ProcSubHelperPKPenaltyReformRewardRep(CPC* pc, CNetMsg::SP& msg)
 	}
 
 	{
-		// ∞·∞˙ ∏ﬁΩ√¡ˆ
+		// Í≤∞Í≥º Î©îÏãúÏßÄ
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgPKPenaltyRewardRep(rmsg, rewardNum, errorType);
 		SEND_Q(rmsg, pc->m_desc);
 	}
 }
-#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK ∆–≥Œ∆º ∏Æ∆˚
+#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK Ìå®ÎÑêÌã∞ Î¶¨Ìèº
 
 #ifdef NOTICE_SYSTEM
 void ProcSubHelperNoticeSystem(CNetMsg::SP& msg)
@@ -1259,7 +1325,7 @@ void ProcSubHelperExtCharSlotItemUseRep(CNetMsg::SP& msg)
 			{
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					ItemUseCharSlotExt(rmsg, 0); /* ø©±‚±Ó¡ˆ ø‘¿∏∏È æ∆¿Ã≈€¿Ã ¿÷æÓæﬂ «œ¥¬µ• æ¯æÓ¡≥¥Ÿ! ø°∑Ø √≥∏Æ */
+					ItemUseCharSlotExt(rmsg, 0); /* Ïó¨Í∏∞ÍπåÏßÄ ÏôîÏúºÎ©¥ ÏïÑÏù¥ÌÖúÏù¥ ÏûàÏñ¥Ïïº ÌïòÎäîÎç∞ ÏóÜÏñ¥Ï°åÎã§! ÏóêÎü¨ Ï≤òÎ¶¨ */
 					SEND_Q(rmsg, ch->m_desc);
 				}
 

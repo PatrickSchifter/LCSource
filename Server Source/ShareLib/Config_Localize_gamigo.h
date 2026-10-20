@@ -4,15 +4,15 @@
 #define LC_GAMIGO
 
 #if defined(LC_GER)
-#define GER_LOG											// µ¶ÀÏ ·Î±× Ãß°¡
+#define GER_LOG											// ë…ì¼ ë¡œê·¸ ì¶”ê°€
 #define VERSIONKEY "1106"
 #define INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS
-#define DEV_GAMIGO_HTTPS								// °¡¹Ì°í Https ÀÎÁõ ¹æ½Ä ( linux ¸¸ Àû¿ë )
+#define DEV_GAMIGO_HTTPS								// ê°€ë¯¸ê³  Https ì¸ì¦ ë°©ì‹ ( linux ë§Œ ì ìš© )
 #endif
 
 #if defined (LC_SPN)
-#define INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_SPN			// ÇØ¿Ü ·ÎÄÃ Á¢±Ù Á¦ÇÑ - new ¹öÁ¯
-#define INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_NEW_USER	// ½Å±ÔÀ¯Àú´Â À¯·´±¹°¡¸¸ Çã¿ë
+#define INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_SPN			// í•´ì™¸ ë¡œì»¬ ì ‘ê·¼ ì œí•œ - new ë²„ì ¼
+#define INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_NEW_USER	// ì‹ ê·œìœ ì €ëŠ” ìœ ëŸ½êµ­ê°€ë§Œ í—ˆìš©
 #define IP_NATION_CHECK
 #endif
 
@@ -26,7 +26,7 @@
 #define EVENT_EUR2_PROMOTION
 #endif
 
-////// ±¹°¡ ÇÊµå ¼³Á¤ //////////////////////////////////////////////////////////////////////////
+////// êµ­ê°€ í•„ë“œ ì„¤ì • //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 #define		HARDCORE_SERVER
 
@@ -77,7 +77,7 @@
 #define EVENT_EXTRA_FILED       "a_extra_uk"
 #endif
 
-////// OX QUIZ ±¹°¡ ÄÚµå ///////////////////////////////////////////////////////////////////////
+////// OX QUIZ êµ­ê°€ ì½”ë“œ ///////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined (LC_GER)
@@ -96,7 +96,7 @@
 #define OX_QUIZ_COUNTRY_CODE    24
 #endif
 
-////// »ó½Ã ÀÌº¥Æ® /////////////////////////////////////////////////////////////////////////////
+////// ìƒì‹œ ì´ë²¤íŠ¸ /////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 #define DOUBLE_PET_EXP
 #ifdef DOUBLE_PET_EXP
@@ -104,15 +104,15 @@
 #define DOUBLE_PET_EXP_SAVEFILE	".doublepetexp"
 #endif
 
-////// IP ÀÚµ¿ Á¦ÇÑ ¼³Á¤ ///////////////////////////////////////////////////////////////////////
+////// IP ìžë™ ì œí•œ ì„¤ì • ///////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IP_BLOCK_AUTO
 #if defined (IP_BLOCK_AUTO )
-#define IP_BLOCKNOKICK_AUTO     // ¾ÆÀÌÇÇ ºí·°¸ðµå ÀÏ¶§ Å±ÇÏÁö ¾Ê°í ·Î±×¸¸ ³²±è
+#define IP_BLOCKNOKICK_AUTO     // ì•„ì´í”¼ ë¸”ëŸ­ëª¨ë“œ ì¼ë•Œ í‚¥í•˜ì§€ ì•Šê³  ë¡œê·¸ë§Œ ë‚¨ê¹€
 #endif // #if defined (IP_BLOCK_AUTO )
 
-////// ¿î¿µÀÚ ·¹º§ Á¦ÇÑ //////////////////////////////////////////////////////////////////////////
+////// ìš´ì˜ìž ë ˆë²¨ ì œí•œ //////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define     GM_LEVEL_ECHO               5
@@ -196,9 +196,9 @@
 #define		GM_LEVEL_JOBRESET			10
 #define		GM_LEVEL_JOBCHANGE			10
 
-////// °¡¹Ì°í °øÅë µðÆÄÀÎ /////////////////////////////////////////////////////////////////////////
+////// ê°€ë¯¸ê³  ê³µí†µ ë””íŒŒì¸ /////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#define SERVER_AUTHENTICATION		// ¼­¹ö ±âµ¿ Á¦ÇÑ ½Ã½ºÅÛ
+#define SERVER_AUTHENTICATION		// ì„œë²„ ê¸°ë™ ì œí•œ ì‹œìŠ¤í…œ
 
 #define DURABILITY
 #define PREMIUM_CHAR
@@ -214,51 +214,49 @@
 #define INTERGRATION_UK  24
 #endif
 
-#define DROP_MAKE_DOCUMENT                              // Á¦ÀÛ¼­ µå·Ó
-#define MAX_UPGRADE_PLUS                    25          // ¾ÆÀÌÅÛ ¾÷±×·¹ÀÌµå ÃÖ´ë ÇÃ·¯½º ¼öÄ¡
+#define DROP_MAKE_DOCUMENT                              // ì œìž‘ì„œ ë“œë¡­
+#define MAX_UPGRADE_PLUS                    25          // ì•„ì´í…œ ì—…ê·¸ë ˆì´ë“œ ìµœëŒ€ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
 #define RECOMMEND_SERVER_POTION_INDEX       1393
-#define PULSE_GUILD_POINT_UPDATE            (5 * 60)    // ±æµå ·©Å³¿ë °æÇèÄ¡ ÀúÀå °£°Ý
+#define PULSE_GUILD_POINT_UPDATE            (5 * 60)    // ê¸¸ë“œ ëž­í‚¬ìš© ê²½í—˜ì¹˜ ì €ìž¥ ê°„ê²©
 #define DEFAULT_LIMIT_EXP               250
-#define RANDOM_ZUNO                                     // ÁÖ³ë Áö¿ª ¸®½ºÆù À§Ä¡ Ãß°¡
-#define NEW_DOUBLE_GM_SAVEFILE  ".doubleevent"      // DOUBLE EVENT ¸í·É¾î ÀúÀå
-#define DEFAULT_NAS_GET_PERCENT         100             // ³ª½º ½Àµæ·® Á¶Àý
-#define DEFAULT_EXP_PERCENT             100             // °æÇèÄ¡ È¹µæ·® Á¶Àý
-#define DEFAULT_SP_PERCENT              100             // sp È¹µæ·® Á¶Àý
-#define DEFAULT_PRO_GET_NUMBER          1               // »ý»ê ½Àµæ °¹¼ö
+#define RANDOM_ZUNO                                     // ì£¼ë…¸ ì§€ì—­ ë¦¬ìŠ¤í° ìœ„ì¹˜ ì¶”ê°€
+#define NEW_DOUBLE_GM_SAVEFILE  ".doubleevent"      // DOUBLE EVENT ëª…ë ¹ì–´ ì €ìž¥
+#define DEFAULT_NAS_GET_PERCENT         100             // ë‚˜ìŠ¤ ìŠµë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_EXP_PERCENT             100             // ê²½í—˜ì¹˜ íšë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_SP_PERCENT              100             // sp íšë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_PRO_GET_NUMBER          1               // ìƒì‚° ìŠµë“ ê°¯ìˆ˜
 #define GER_SERIAL_PROMOTION            "FP"
 
-#define CHAT_BLOCK_USA                                  // ¿ÜÄ¡±â
-#define CHAT_BLOCK_USA_NEXT_TIME	30 // ´ÙÀ½ ¿ÜÄ¥¼ö ÀÖ´Â ½Ã°£
-#define CHAT_BLOCK_USA_LEVEL		15 // ¿ÜÄ¡±â °¡´ÉÇÑ ·¹º§
+#define CHAT_BLOCK_USA                                  // ì™¸ì¹˜ê¸°
+#define CHAT_BLOCK_USA_NEXT_TIME	30 // ë‹¤ìŒ ì™¸ì¹ ìˆ˜ ìžˆëŠ” ì‹œê°„
+#define CHAT_BLOCK_USA_LEVEL		15 // ì™¸ì¹˜ê¸° ê°€ëŠ¥í•œ ë ˆë²¨
 
-#define EVENT_PACKAGE_ITEM                              // ÆÐÅ°Áö ½Ã¸®¾óÀ» ÀÌ¿ëÇÑ ¾ÆÀÌÅÛ Áö±Þ
+#define EVENT_PACKAGE_ITEM                              // íŒ¨í‚¤ì§€ ì‹œë¦¬ì–¼ì„ ì´ìš©í•œ ì•„ì´í…œ ì§€ê¸‰
 #define EVENT_PACKAGE_ITEM_DBLOG
-#define EGEHA_ZONE_PAYMENT              500000          // ¿¡°ÔÇÏ ÀÔÀå·á
-#define RAID_NPC_RAGE_SKILL             394             // ·¹ÀÌµå ¸÷ ºÐ³ë ½ºÅ³ ÀÎµ¦½º
-#define RAID_NPC_RAGE_SKILL_LEVEL       2               // ·¹ÀÌµå ¸÷ ºÐ³ë ½ºÅ³ ·¹º§
+#define EGEHA_ZONE_PAYMENT              500000          // ì—ê²Œí•˜ ìž…ìž¥ë£Œ
+#define RAID_NPC_RAGE_SKILL             394             // ë ˆì´ë“œ ëª¹ ë¶„ë…¸ ìŠ¤í‚¬ ì¸ë±ìŠ¤
+#define RAID_NPC_RAGE_SKILL_LEVEL       2               // ë ˆì´ë“œ ëª¹ ë¶„ë…¸ ìŠ¤í‚¬ ë ˆë²¨
 #define RAID_NPC_NOTICE_CELL_EXT        5
-#define MAX_RARE_OPTION_SETTING         10              // ·¹¾î ¿É¼Ç´ç ¿É¼Ç ¼¼ÆÃ ¼ö
-#define MAX_RARE_OPTION_ITEM            10              // ¾ÆÀÌÅÛ´ç ·¹¾î ¿É¼Ç ¼ö
-#define PULSE_MONSTER_RAID_MOVE         (14 * PULSE_REAL_MIN)   // ¸ó½ºÅÍ ·¹ÀÌµå ÀÌµ¿ ½Ã°£
-#define EXTREME_CUBE                                    // ÀÍ½ºÆ®¸² Å¥ºê
-#define HANARO_EVENT					//ÃÊº¸Áö¿øÀÌº¥Æ® Ãß°¡(2014-5-28)
-#define PARTY_BUG_GER
+#define MAX_RARE_OPTION_SETTING         10              // ë ˆì–´ ì˜µì…˜ë‹¹ ì˜µì…˜ ì„¸íŒ… ìˆ˜
+#define MAX_RARE_OPTION_ITEM            10              // ì•„ì´í…œë‹¹ ë ˆì–´ ì˜µì…˜ ìˆ˜
+#define PULSE_MONSTER_RAID_MOVE         (14 * PULSE_REAL_MIN)   // ëª¬ìŠ¤í„° ë ˆì´ë“œ ì´ë™ ì‹œê°„
+#define EXTREME_CUBE                                    // ìµìŠ¤íŠ¸ë¦¼ íë¸Œ
+#define HANARO_EVENT					//ì´ˆë³´ì§€ì›ì´ë²¤íŠ¸ ì¶”ê°€(2014-5-28)
 #define MONSTER_COMBO_FIX
 #define LOGIN_TIME_CHECK
-#define BATTLE_PARTY_BOSS_CHANGE		// ÀüÅõÆÄÆ¼ ½Ã ÆÄÆ¼Àå º¯°æ¿¡ ´ëÇÑ Á¶°Ç °Ë»ç
+#define BATTLE_PARTY_BOSS_CHANGE		// ì „íˆ¬íŒŒí‹° ì‹œ íŒŒí‹°ìž¥ ë³€ê²½ì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬
 #define CASHITEM_EXPSP_LIMIT_BUG
 #define LACARETTE_SYSTEM
-#define DUNGEON_TIME_SAVEFILE	".dungeontime"	// ´øÀüÅ¸ÀÓ ¼¼ÆÃ ÀúÀå ÆÄÀÏ.
+#define DUNGEON_TIME_SAVEFILE	".dungeontime"	// ë˜ì „íƒ€ìž„ ì„¸íŒ… ì €ìž¥ íŒŒì¼.
 
 #define XTRAP
 #define	_COMPOSITE_ITEM_UPGRADE_BUG_FIX
-#define CHECK_CASTLE_AREA						// °ø¼ºÁö¿ª Ã¼Å© ¾ÈµÇ´Â ¹ö±× ¼öÁ¤
-#define BUGFIX_WARP_TO_WARZONE								// ¼ÒÈ¯¸¶¹ý¼­ ¾ÆÀÌÅÛÀ» ÀÌ¿ëÇÏ¿© °ø¼ºÁö¿ª ÀÌµ¿ºÒ°¡
-#define TIME_IN_WARCASTLE_BUG_FIX				// °ø¼ºÁß ÅÚ·¹Å°³×½Ã½º ½ºÅ³ ¸ø¾²µµ·Ï ¸·À½
+#define BUGFIX_WARP_TO_WARZONE								// ì†Œí™˜ë§ˆë²•ì„œ ì•„ì´í…œì„ ì´ìš©í•˜ì—¬ ê³µì„±ì§€ì—­ ì´ë™ë¶ˆê°€
+#define TIME_IN_WARCASTLE_BUG_FIX				// ê³µì„±ì¤‘ í…”ë ˆí‚¤ë„¤ì‹œìŠ¤ ìŠ¤í‚¬ ëª»ì“°ë„ë¡ ë§‰ìŒ
 #define NEW_DOUBLE_GM_AUTO
-#define QA_RANGESKILL_APET_DAMAGE				// PC ¹üÀ§½ºÅ³»ç¿ë½Ã APET µ¥¹ÌÁö ¸·À½
+#define QA_RANGESKILL_APET_DAMAGE				// PC ë²”ìœ„ìŠ¤í‚¬ì‚¬ìš©ì‹œ APET ë°ë¯¸ì§€ ë§‰ìŒ
 #define TRADE_AGENT_LOG_SPEED_CHECK
-#define ENABLE_SUBJOB							// »óÀÎ
+#define ENABLE_SUBJOB							// ìƒì¸
 #define BUGFIX_DROPITEM_LEVEL_CHECK				//
 #define MEREC_CASTLE_TEST_GUILD_LEVEL_GM_SETTING
 #define PASSWORD_ENCRYPT_SHA256
@@ -270,56 +268,55 @@
 #define UPDATE_CHAOS_TIME_ALWAYS
 #define BUGFIX_CASHSHOP_PURCHASE_CONFIRM
 #define DISABLE_TRADEAGENT_CHECKCALC
-#define BUGFIX_GUILD_SKILL_COOLTIME			// ±æµå½ºÅ³ ÄðÅ¸ÀÓ °¨¼Ò¿É¼Ç Àû¿ë¾ÈµÇ°Ô ¼öÁ¤
-#define WARCASTLE_STATE_CHANNEL_CYNC	// °ø¼º »óÅÂ¸¦ Å¸ Ã¤³Î°ú cync ÇÏ´Â ¸í·ÉÀÌ Ãß°¡.
-#define	WARCASTLE_MOVE_MESSAGE_LIMIT	// °ø¼ºÀü ÀÌµ¿ ¸Þ½ÃÁö ÆË¾÷Ã¢ Á¦ÇÑ.
-#define GAMIGO_CASH_AUTHENTICATION_CODE_USE // authentication code¸¦ »ç¿ëÇÑ Ä³½¬ °áÁ¦ À¥ÆäÀÌÁö ¿¬µ¿ (°¡¹Ì°í ¿äÃ»)
-#define SYSTEM_TREASURE_MAP                                 // º¸¹° Ã£±â ½Ã½ºÅÛ
+#define BUGFIX_GUILD_SKILL_COOLTIME			// ê¸¸ë“œìŠ¤í‚¬ ì¿¨íƒ€ìž„ ê°ì†Œì˜µì…˜ ì ìš©ì•ˆë˜ê²Œ ìˆ˜ì •
+#define WARCASTLE_STATE_CHANNEL_CYNC	// ê³µì„± ìƒíƒœë¥¼ íƒ€ ì±„ë„ê³¼ cync í•˜ëŠ” ëª…ë ¹ì´ ì¶”ê°€.
+#define	WARCASTLE_MOVE_MESSAGE_LIMIT	// ê³µì„±ì „ ì´ë™ ë©”ì‹œì§€ íŒì—…ì°½ ì œí•œ.
+#define GAMIGO_CASH_AUTHENTICATION_CODE_USE // authentication codeë¥¼ ì‚¬ìš©í•œ ìºì‰¬ ê²°ì œ ì›¹íŽ˜ì´ì§€ ì—°ë™ (ê°€ë¯¸ê³  ìš”ì²­)
+#define SYSTEM_TREASURE_MAP                                 // ë³´ë¬¼ ì°¾ê¸° ì‹œìŠ¤í…œ
 #define GM_TREASURE_MAP_SAVE_FILE ".treasuremapsave"
-#define SYSTEM_TREASURE_MAP_LINKZONE_DROP                    // ´øÀü º¸¹° Áöµµ µå¶ø
-#define DEV_LETS_PARTYTIME									// ÆÄÆ¼Çü ¾ÆÀÌÅÛ
-#define JUNO_RENEWAL_MESSAGEBOX								// µ¶ÀÏ¿ë, ½Å±ÔÄ³¸¯ÅÍ ÀÌµ¿ ½Ã Áê³ë·Î °¬´Ù°¡ ¹ö¹ðÅ©·Î °£´Ù.
-#define GUILD_CONTRIBUTE_EXP_LIMIT		50			// ±æµÎ ±âºÎ °æÇèÄ¡¸¦ max 50% ±îÁö¸¸ °¡´ÉÇÏµµ·Ï ¼öÁ¤
-#define BUGFIX_WARCASTLE_REGEN						// ºÎÈ°ÁøÁö ¸®Á¨½Ã°£ ¼öÁ¤
-#define BUGFIX_ITEMSELL_HACKUSER					// ¾ÆÀÌÅÛÆÇ¸Å½Ã ¾ÆÀÌÅÛ Ä«¿îÆ® °Ë»ç Ãß°¡
-#define BUGFIX_REFINE_SPECIAL_ITEM					// 128·¹º§ ¾ÆÀÌÅÛ º¯È¯½Ã 100% °í±ÞÁ¦·Ã¼®À¸·Î ÁÖ´Â ¹ö±× ¼öÁ¤. ¹æ¾î±¸¿Í ¶È°°ÀÌ Ã³¸®ÇÏµµ·Ï ¼öÁ¤.
-#define UPGRADE_EVENT_AUTO			// ¾÷±×·¹ÀÌµå ÀÌº¥Æ® ÀÚµ¿È­
+#define SYSTEM_TREASURE_MAP_LINKZONE_DROP                    // ë˜ì „ ë³´ë¬¼ ì§€ë„ ë“œëž
+#define DEV_LETS_PARTYTIME									// íŒŒí‹°í˜• ì•„ì´í…œ
+#define JUNO_RENEWAL_MESSAGEBOX								// ë…ì¼ìš©, ì‹ ê·œìºë¦­í„° ì´ë™ ì‹œ ì¥¬ë…¸ë¡œ ê°”ë‹¤ê°€ ë²„ë±…í¬ë¡œ ê°„ë‹¤.
+#define BUGFIX_WARCASTLE_REGEN						// ë¶€í™œì§„ì§€ ë¦¬ì  ì‹œê°„ ìˆ˜ì •
+#define BUGFIX_ITEMSELL_HACKUSER					// ì•„ì´í…œíŒë§¤ì‹œ ì•„ì´í…œ ì¹´ìš´íŠ¸ ê²€ì‚¬ ì¶”ê°€
+#define BUGFIX_REFINE_SPECIAL_ITEM					// 128ë ˆë²¨ ì•„ì´í…œ ë³€í™˜ì‹œ 100% ê³ ê¸‰ì œë ¨ì„ìœ¼ë¡œ ì£¼ëŠ” ë²„ê·¸ ìˆ˜ì •. ë°©ì–´êµ¬ì™€ ë˜‘ê°™ì´ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •.
+#define UPGRADE_EVENT_AUTO			// ì—…ê·¸ë ˆì´ë“œ ì´ë²¤íŠ¸ ìžë™í™”
 #define UPGRADE_EVENT_AUTO_SAVEFILE		".upgradeevent"
 #ifdef EXTREME_CUBE
-#define EXTREME_CUBE_VER2								// ÀÍ½ºÆ®¸² Å¥ºê °³Æí (½ÃÁð2)
+#define EXTREME_CUBE_VER2								// ìµìŠ¤íŠ¸ë¦¼ íë¸Œ ê°œíŽ¸ (ì‹œì¦Œ2)
 #endif
-#define SYSTEM_MONSTER_MERCENARY_CARD_EX						// ¸ó½ºÅÍ ¿ëº´ÀÇ »çÀÌÁî º¯°æ ±â´É Ãß°¡
-#define SYSTEM_TREASURE_MAP_GAMIGO							// °¡¹Ì°í¿äÃ» : º¸¹°Áöµµ¸¦ ÀÎº¥¿¡ °¡Áö°í ÀÖ¾î¾ß º¸¹°»óÀÚ°¡ µå¶ø. 1000°³ÀÇ ³ª¹«¿­¼è·Î 1°³ÀÇ È²±Ý¿­¼è ±³È¯.
-#define BUGFIX_DONT_USE_GET_FIRST_PARTY			// ÀÔ¼ö¿ì¼± ÆÄÆ¼¸¦ Äü½½·Ô¿¡¼­ Á¦°Å
+#define SYSTEM_MONSTER_MERCENARY_CARD_EX						// ëª¬ìŠ¤í„° ìš©ë³‘ì˜ ì‚¬ì´ì¦ˆ ë³€ê²½ ê¸°ëŠ¥ ì¶”ê°€
+#define SYSTEM_TREASURE_MAP_GAMIGO							// ê°€ë¯¸ê³ ìš”ì²­ : ë³´ë¬¼ì§€ë„ë¥¼ ì¸ë²¤ì— ê°€ì§€ê³  ìžˆì–´ì•¼ ë³´ë¬¼ìƒìžê°€ ë“œëž. 1000ê°œì˜ ë‚˜ë¬´ì—´ì‡ ë¡œ 1ê°œì˜ í™©ê¸ˆì—´ì‡  êµí™˜.
+#define BUGFIX_DONT_USE_GET_FIRST_PARTY			// ìž…ìˆ˜ìš°ì„  íŒŒí‹°ë¥¼ í€µìŠ¬ë¡¯ì—ì„œ ì œê±°
 #define REFORM_PK_PENALTY_201108
-#define DEV_GUILD_MARK		// ±æµå ¸¶Å©
-#define DEV_GUILD_STASH		// ±æµå Ã¢°í
-#define NOTICE_SYSTEM		// °øÁö ½Ã½ºÅÛ
-#define GUILD_REMOTE_INVITE		// ±æµå ¿ø°Ý °¡ÀÔ ½Ã½ºÅÛ
+#define DEV_GUILD_MARK		// ê¸¸ë“œ ë§ˆí¬
+#define DEV_GUILD_STASH		// ê¸¸ë“œ ì°½ê³ 
+#define NOTICE_SYSTEM		// ê³µì§€ ì‹œìŠ¤í…œ
+#define GUILD_REMOTE_INVITE		// ê¸¸ë“œ ì›ê²© ê°€ìž… ì‹œìŠ¤í…œ
 #define BUGFIX_REMOVE_SPACE
 #define NO_PERIOD_COMPOSITE
-#define GUILD_MEMBER_KICK_JOIN_DELAY						// ±æµå¿øÀ» Å±ÇÏ¸é 3ÀÏµ¿¾È ´Ù¸¥ ±æµå¿¡ °¡ÀÔÇÏÁö ¸øÇÏµµ·Ï ¼öÁ¤.
+#define GUILD_MEMBER_KICK_JOIN_DELAY						// ê¸¸ë“œì›ì„ í‚¥í•˜ë©´ 3ì¼ë™ì•ˆ ë‹¤ë¥¸ ê¸¸ë“œì— ê°€ìž…í•˜ì§€ ëª»í•˜ë„ë¡ ìˆ˜ì •.
 #define IP_NATION_CHECK
 #define RECOMMEND_SERVER_LEVEL          30
-#define DEFAULT_NAS_PERCENT             100             // ³ª½º µå·ÓÈ®·ü Á¶Àý
-#define DEFAULT_PRO_PERCENT             100             // »ý»ê ½Àµæ È®·ü Á¶Àý
-#define GAMIGO_ITEM_COUNT_HACK_DELETE					// ¾ÆÀÌÅÛ Ä«¿îÆ®¸¦ Áõ°¡½ÃÅ°´Â ÇØÅ·À» ¹æÁö. 10·¹º§ ÀÌÇÏÀÇ Ä³¸¯ÅÍ°¡ ·Î±× ¾Æ¿ô ÇÒ¶§ Ä«¿îÆ®°¡ µÇ´Â ¾ÆÀÌÅÛÀÌ ÇÏ³ª¸¸ ÀÎº¥¿¡ ÀÖÀ¸¸é ¹«Á¶°Ç »èÁ¦ Ã³¸®.
-#define IMP_SPEED_SERVER						// ½ºÇÇµå ¼­¹ö
-#define EX_ROGUE	// EX ·Î±× Ä³¸¯ÅÍ
+#define DEFAULT_NAS_PERCENT             100             // ë‚˜ìŠ¤ ë“œë¡­í™•ë¥  ì¡°ì ˆ
+#define DEFAULT_PRO_PERCENT             100             // ìƒì‚° ìŠµë“ í™•ë¥  ì¡°ì ˆ
+#define GAMIGO_ITEM_COUNT_HACK_DELETE					// ì•„ì´í…œ ì¹´ìš´íŠ¸ë¥¼ ì¦ê°€ì‹œí‚¤ëŠ” í•´í‚¹ì„ ë°©ì§€. 10ë ˆë²¨ ì´í•˜ì˜ ìºë¦­í„°ê°€ ë¡œê·¸ ì•„ì›ƒ í• ë•Œ ì¹´ìš´íŠ¸ê°€ ë˜ëŠ” ì•„ì´í…œì´ í•˜ë‚˜ë§Œ ì¸ë²¤ì— ìžˆìœ¼ë©´ ë¬´ì¡°ê±´ ì‚­ì œ ì²˜ë¦¬.
+#define IMP_SPEED_SERVER						// ìŠ¤í”¼ë“œ ì„œë²„
+#define EX_ROGUE	// EX ë¡œê·¸ ìºë¦­í„°
 #define ASSIST_DECREASE_SKILL_MP
 #define ASSIST_REDUCE_SKILL
 #define SKILL_TYPE_NO_COOL_TIME
 #define EX_MAGE
 
-#define PARTY_QUEST_ITEM_BUG_			// ÆÄÆ¼ Äù½ºÆ® ¾ÆÀÌÅÛ Áö±ÞÀÌ µÇÁö ¾Ê´ø ¹®Á¦
-#define HUNT_QUEST_COMPLETE_FOR_OTHER_PARTYMEMBER	//ÆÄÆ¼¿øÀÌ ³» Äù½ºÆ® ÇØÁÖ±â(¸÷ Àâ¾ÆÁÖ¸é Ä«¿îÆ® µÇ°Ô ÇÔ. ±âÁ¸¿£ ÆÄÆ¼¿øµµ µ¿ÀÏÇÑ Äù°¡ ÀÖ¾î¾ß °°ÀÌ µÇ¾úÀ½)
+#define PARTY_QUEST_ITEM_BUG_			// íŒŒí‹° í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ì§€ê¸‰ì´ ë˜ì§€ ì•Šë˜ ë¬¸ì œ
+#define HUNT_QUEST_COMPLETE_FOR_OTHER_PARTYMEMBER	//íŒŒí‹°ì›ì´ ë‚´ í€˜ìŠ¤íŠ¸ í•´ì£¼ê¸°(ëª¹ ìž¡ì•„ì£¼ë©´ ì¹´ìš´íŠ¸ ë˜ê²Œ í•¨. ê¸°ì¡´ì—” íŒŒí‹°ì›ë„ ë™ì¼í•œ í€˜ê°€ ìžˆì–´ì•¼ ê°™ì´ ë˜ì—ˆìŒ)
 #define GIVE_ITEM_IN_CHANGE_JOB
 
 
-////// °¡¹Ì°í Ä³½¬ ÀÎÁõ ÄÚµå µðÆÄÀÎ ////////////////////////////////////////////////////////////////
+////// ê°€ë¯¸ê³  ìºì‰¬ ì¸ì¦ ì½”ë“œ ë””íŒŒì¸ ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef GAMIGO_CASH_AUTHENTICATION_CODE_USE // authentication code¸¦ »ç¿ëÇÑ Ä³½¬ °áÁ¦ À¥ÆäÀÌÁö ¿¬µ¿ (°¡¹Ì°í ¿äÃ»)
+#ifdef GAMIGO_CASH_AUTHENTICATION_CODE_USE // authentication codeë¥¼ ì‚¬ìš©í•œ ìºì‰¬ ê²°ì œ ì›¹íŽ˜ì´ì§€ ì—°ë™ (ê°€ë¯¸ê³  ìš”ì²­)
 
 #if defined(LC_GER)
 #define LCOAL_GAMIGO_GROUP_ID			19

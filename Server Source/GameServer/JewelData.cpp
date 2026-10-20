@@ -8,11 +8,11 @@
 
 CJewelData::CJewelData()
 {
-	m_eventComposeProb = 10000;
-	m_eventChaosCreateProb = 10000;
-	m_eventUpgradeProb = 10000;
-	m_eventCombineProb = 10000;					//º¸¼® °áÇÕ ÀÌº¥Æ® È®·ü °ª
-	m_eventCollectProb = 10000;					//º¸¼® °áÇÕ ½ÇÆĞ½Ã ÀÌº¥Æ® È¸¼ö È®·ü Áõ°¡ °ª
+	m_eventComposeProb = 100;
+	m_eventChaosCreateProb = 100;
+	m_eventUpgradeProb = 100;
+	m_eventCombineProb = 100;					//ë³´ì„ ê²°í•© ì´ë²¤íŠ¸ í™•ë¥  ê°’
+	m_eventCollectProb = 100;					//ë³´ì„ ê²°í•© ì‹¤íŒ¨ì‹œ ì´ë²¤íŠ¸ íšŒìˆ˜ í™•ë¥  ì¦ê°€ ê°’
 }
 CJewelData::~CJewelData()
 {
@@ -107,7 +107,7 @@ bool CJewelDataList::Load()
 		ridx ++;
 	}
 
-	//ÇÕ¼º ·¹º§ÀÌ 1ÀÎ º¸¼®µéÀÇ °³¼ö¸¦ ±¸ÇÔ (º¸¼® Á¾·ù¸¦ ±¸ÇÏ±â À§ÇØ¼­)
+	//í•©ì„± ë ˆë²¨ì´ 1ì¸ ë³´ì„ë“¤ì˜ ê°œìˆ˜ë¥¼ êµ¬í•¨ (ë³´ì„ ì¢…ë¥˜ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ì„œ)
 	CLCString query(1024);
 
 	query.Format("select DISTINCT a_rare_index_0 from t_item where a_type_idx = 4 and a_subtype_idx = 16 and a_rare_index_0 >= 0 and a_num_3 > 0 and a_enable = 1 or a_index = 5259");
@@ -189,7 +189,7 @@ bool CJewelDataList::Load()
 	}
 
 	{
-		//ÀÏ¹İ º¸¼®ÁÖ¸Ó´Ï
+		//ì¼ë°˜ ë³´ì„ì£¼ë¨¸ë‹ˆ
 		query.Format("select a_index, a_num_0 from t_item where a_type_idx = 2 and a_subtype_idx = 17 order by a_num_0");
 		DBJewel.SetQuery(query);
 		if (!DBJewel.Open())
@@ -211,7 +211,7 @@ bool CJewelDataList::Load()
 	}
 
 	{
-		//Ä«¿À½º º¸¼®ÁÖ¸Ó´Ï
+		//ì¹´ì˜¤ìŠ¤ ë³´ì„ì£¼ë¨¸ë‹ˆ
 		query.Format("select a_index, a_num_0 from t_item where a_type_idx = 2 and a_subtype_idx = 18 order by a_num_0");
 		DBJewel.SetQuery(query);
 		if (!DBJewel.Open())

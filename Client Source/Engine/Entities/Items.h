@@ -112,6 +112,7 @@ public:
 
 	static	int CalculatePlusDamage( int iAttack, ULONG ulItemPlus, BOOL bRune = FALSE );
 	static	int	CalculateRuneItemBonus( int itemtype,  ULONG ulItemPlus );
+	static	int	CalculatePlusItemPVPOptionBonus( int itemtype, ULONG ulItemPlus );
 	// [ldy1978220 2011/9/15] 1106 Update 인첸트 공식 변경 
 	static  int ItemUpgradeFuckingFunction( int iAttack, ULONG ulItemPlus, BOOL bRune = FALSE );
 

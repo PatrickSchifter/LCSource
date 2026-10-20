@@ -136,11 +136,11 @@ public:
 
 	void RemoveItem();
 	void SetItemProtoFlag( int itemIndex, LONGLONG flag ) ;
-	bool CheckStashSpace(MYSQL* mysql) ;		// º¸°üÇÒ °ø°£ÀÌ ÀÖ´ÂÁö È®ÀÎ
+	bool CheckStashSpace(MYSQL* mysql) ;		// ë³´ê´€í•  ê³µê°„ì´ ìˆëŠ”ì§€ í™•ì¸
 
 	bool KeepToDB(MYSQL* mysql);
 	bool TakeFromDB(MYSQL* mysql);
-	void SaveLog( MYSQL* mysql , char cState, LONGLONG money );		// cState 0: ¸Ã±â±â, 1: Ã£±â
+	void SaveLog( MYSQL* mysql , char cState, LONGLONG money );		// cState 0: ë§¡ê¸°ê¸°, 1: ì°¾ê¸°
 };
 #endif // __GUILD_STASH_H__
 //

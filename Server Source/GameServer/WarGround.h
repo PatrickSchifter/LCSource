@@ -13,7 +13,7 @@ private:
 	int				m_nWarType;						// 38: Royal Rumble
 	int				m_nCharIndex;
 	int				m_nLevelType;
-	int				m_nSelected;					// 0: ¾Æ¹«°Íµµ ¾Æ´Ñ »óÅÂ, 1: ¼±ÅÃ, 2: Å»¶ô, 3: °æ±â draw
+	int				m_nSelected;					// 0: ì•„ë¬´ê²ƒë„ ì•„ë‹Œ ìƒíƒœ, 1: ì„ íƒ, 2: íƒˆë½, 3: ê²½ê¸° draw
 	CWGPlayer*		m_next;
 public:
 	CWGPlayer();
@@ -160,7 +160,7 @@ private:
 	int				m_nRookieWinnerCharIndex;
 	int				m_nSeniorWinnerCharIndex;
 	int				m_nMasterWinnerCharIndex;
-	int				m_nWinnerIsRewarded;		// (1+2+4) 1:rookieº¸»ó¹ŞÀ½, 2:senior º¸»ó¹ŞÀ½, 4:master º¸»ó¹ŞÀ½, 3:rookie senior º¸»ó¹ŞÀ½, 6:senior master º¸»ó¹ŞÀ½
+	int				m_nWinnerIsRewarded;		// (1+2+4) 1:rookieë³´ìƒë°›ìŒ, 2:senior ë³´ìƒë°›ìŒ, 4:master ë³´ìƒë°›ìŒ, 3:rookie senior ë³´ìƒë°›ìŒ, 6:senior master ë³´ìƒë°›ìŒ
 	/*int				m_nTimeNoticeType;*/
 	int				m_nMinPlayerCount;
 	int				m_nMaxPlayerCount;
@@ -184,8 +184,8 @@ public:
 	virtual ~CRoyalRumble();
 
 	void			Init();
-	void			CheckRoyalRumble();				// °æ±â½ÃÀÛ Àü Å¸ÀÓ¶óÀÎ ÄÜÆ®·Ñ
-	void			CheckRoyalRumbleArea();			// °æ±â½ÃÀÛ ÈÄ Å¸ÀÓ¶óÀÎ ÄÜÆ®·Ñ
+	void			CheckRoyalRumble();				// ê²½ê¸°ì‹œì‘ ì „ íƒ€ì„ë¼ì¸ ì½˜íŠ¸ë¡¤
+	void			CheckRoyalRumbleArea();			// ê²½ê¸°ì‹œì‘ í›„ íƒ€ì„ë¼ì¸ ì½˜íŠ¸ë¡¤
 	void			SetRoyalRumbleTime(time_t time);
 	void			AddRoyalRumbleTime(time_t time);
 	time_t			GetRoyalRumbleTime();

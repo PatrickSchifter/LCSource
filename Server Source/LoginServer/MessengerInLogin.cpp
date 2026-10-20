@@ -9,10 +9,10 @@
 
 void MessengerInLoginTimer::operate( rnSocketIOService* service )
 {
-	// ÀÚ½ÅÀÇ Å¸ÀÌ¸Ó »èÁ¦
+	// ìžì‹ ì˜ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ÀçÁ¢¼Ó ½Ãµµ
+	// ìž¬ì ‘ì† ì‹œë„
 	MessengerInLogin::instance()->Connect();
 }
 
@@ -55,7 +55,7 @@ void MessengerInLogin::onClose( rnSocketIOService* service )
 
 	bnf::instance()->RemoveSession(service);
 
-	// Á¢¼Ó Å¸ÀÌ¸Ó »ý¼º
+	// ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(RECONNECT_TO_MESSENGER_TIME, MessengerInLoginTimer::instance());
 
 	LOG_FATAL("********************* Disconnect from Messenger server (%s : %d) *********************",
@@ -69,9 +69,9 @@ void MessengerInLogin::onConnect( rnSocketIOService* service )
 	CNetMsg::SP rmsg(new CNetMsg);
 	rmsg->Init(MSG_MSGR_CONNECT);
 	RefMsg(rmsg)	<< SERVER_VERSION
-					<< (int)LOGIN_SERVER_NUM	// ¼­¹ö±º¹øÈ£
-					<< (int)0					// ¼­ºê ³Ñ¹ö
-					<< 0;						// Ä«¿îÆ®Á¸
+					<< (int)LOGIN_SERVER_NUM	// ì„œë²„êµ°ë²ˆí˜¸
+					<< (int)0					// ì„œë¸Œ ë„˜ë²„
+					<< 0;						// ì¹´ìš´íŠ¸ì¡´
 
 	this->WriteToOutput(rmsg);
 

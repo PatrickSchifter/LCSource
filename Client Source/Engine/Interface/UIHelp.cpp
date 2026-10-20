@@ -4,6 +4,8 @@
 #include <Engine/Interface/UIInternalClasses.h>
 #include <Engine/Interface/UIHelp.h>
 #include <Engine/Entities/InternalClasses.h>
+#include <Engine/GameDataManager/GameDataManager.h>
+#include <Engine/Contents/function/TitleData.h>
 
 extern INDEX  cli_iCurrentFPS;
 
@@ -641,11 +643,7 @@ int CUIHelp::SetListArrange(int iStart)
 	{
 		// Add Mark
 		// 해외로컬 확인 요!!
-#if defined (G_KOR)
-			strTemp+=CTString("◆");
-#else
-			strTemp+=CTString("+ ");
-#endif
+		strTemp+=CTString("+ ");
 	}
 
 	for(int j=0;j<tCnt3;j++)
@@ -982,7 +980,11 @@ void		CUIHelp::RepBeginnerTitle( CNetworkMessage *istr )
 
 void		CUIHelp::ReqActiveTitle( INDEX index )
 {
-	_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ, index );	
+	TitleNetwork* pTitle = GAMEDATAMGR()->GetTitleNetwork();
+	if (pTitle != NULL)
+	{
+		pTitle->SendTitleSelectReq(index);
+	}
 }
 
 void		CUIHelp::OpenTutorial()

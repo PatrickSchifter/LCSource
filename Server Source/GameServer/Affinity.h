@@ -17,8 +17,8 @@
 
 typedef struct __tagAffinityWork
 {
-	int		dataidx;		// ÀÎµ¦½º
-	int		value;			// ±â¿©µµ °ª
+	int		dataidx;		// ì¸ë±ìŠ¤
+	int		value;			// ê¸°ì—¬ë„ ê°’
 } AFFINITYWORK;
 
 typedef struct __tagRewardItem
@@ -119,7 +119,7 @@ public:
 	map_t		map_;
 };
 
-// ÇöÀç º¸À¯ÁßÀÎ º¸»óÁ¤º¸
+// í˜„ì¬ ë³´ìœ ì¤‘ì¸ ë³´ìƒì •ë³´
 typedef struct __tagRewardStep
 {
 	int				affinitynpc;
@@ -128,7 +128,7 @@ typedef struct __tagRewardStep
 
 typedef std::set<REWARDSTEP *> set_rewardstep_t;
 
-// Ä³¸¯ÅÍÁ¤º¸
+// ìºë¦­í„°ì •ë³´
 class CAffinity
 {
 public:
@@ -136,13 +136,13 @@ public:
 	virtual ~CAffinity();
 
 	CAffinityProto*				m_proto;
-	int							m_affinityidx;		// º¸À¯Ä£È­µµindex
+	int							m_affinityidx;		// ë³´ìœ ì¹œí™”ë„index
 	int							m_point;			// point
 
-	// º¸»ó¾ÆÀÌÅÛ °ü·Ã
+	// ë³´ìƒì•„ì´í…œ ê´€ë ¨
 	set_rewardstep_t			m_rewardstep;
 
-	// npc¿¡°Ô ´ÙÀ½ º¸»ó¹Ş´Â ´Ü°è
+	// npcì—ê²Œ ë‹¤ìŒ ë³´ìƒë°›ëŠ” ë‹¨ê³„
 	REWARDITEM*					GetNextReward(int npcidx);
 
 	REWARDSTEP*					FindRewardInfo(int npcidx);

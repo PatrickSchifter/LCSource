@@ -10,28 +10,28 @@ static float	a_cos[360];
 struct timeval	a_NullTime;
 
 /////////////////////////////////////////
-// ¼öÄ¡ µ¥ÀÌÅÍ¿¡¼­ ¹®ÀÚ¿­·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+// ìˆ˜ì¹˜ ë°ì´í„°ì—ì„œ ë¬¸ìì—´ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 
 ////////////////////
 // Function name	: __Itoa
-// Description	    : 32ºñÆ® Á¤¼ö¸¦ ¹®ÀÚ¿­·Î
+// Description	    : 32ë¹„íŠ¸ ì •ìˆ˜ë¥¼ ë¬¸ìì—´ë¡œ
 // Return type		: char*
-//					: º¯È¯ ¿Ï·áµÈ ¹®ÀÚ¿­ Æ÷ÀÎÅÍ
+//					: ë³€í™˜ ì™„ë£Œëœ ë¬¸ìì—´ í¬ì¸í„°
 // Argument         : int value
-//					: º¯È¯ ÇÏ°íÀÚ ÇÏ´Â Á¤¼ö
+//					: ë³€í™˜ í•˜ê³ ì í•˜ëŠ” ì •ìˆ˜
 // Argument         : char *string
-//					: º¯È¯µÈ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¹®ÀÚ¿­ Æ÷ÀÎÅÍ
+//					: ë³€í™˜ëœ ë°ì´í„°ë¥¼ ì €ì¥í•  ë¬¸ìì—´ í¬ì¸í„°
 char* __ltoa(int value, char *string)
 {
 	char p_buf[128];
 	int idx, i;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	*string = '\0';
 	idx = 0;
 	i = 0;
 
-	// À½¼ö¸é -ºÎÈ£¸¦ ºÙÀÌ°í value´Â ¾ç¼ö·Î ¹«Á¶°Ç
+	// ìŒìˆ˜ë©´ -ë¶€í˜¸ë¥¼ ë¶™ì´ê³  valueëŠ” ì–‘ìˆ˜ë¡œ ë¬´ì¡°ê±´
 	if (value < 0)
 	{
 		strcpy(string, "-");
@@ -44,7 +44,7 @@ char* __ltoa(int value, char *string)
 		return string;
 	}
 
-	// µŞÀÚ¸®ºÎÅÍ ¹®ÀÚ¿­·Î º¯°æ
+	// ë’·ìë¦¬ë¶€í„° ë¬¸ìì—´ë¡œ ë³€ê²½
 	while (value)
 	{
 		switch (value % 10)
@@ -80,24 +80,24 @@ char* __ltoa(int value, char *string)
 
 ////////////////////
 // Function name	: lltoa
-// Description	    : 64ºñÆ® Á¤¼ö¸¦ ¹®ÀÚ¿­·Î º¯È¯
+// Description	    : 64ë¹„íŠ¸ ì •ìˆ˜ë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜
 // Return type		: char*
-//					: º¯È¯µÈ ¹®ÀÚ¿­
+//					: ë³€í™˜ëœ ë¬¸ìì—´
 // Argument         : LONGLONG value
-//					: 64ºñÆ® Á¤¼ö
+//					: 64ë¹„íŠ¸ ì •ìˆ˜
 // Argument         : char *string
-//					: º¯È¯¿¡ »ç¿ëÇÏ´Â ¹öÆÛ
+//					: ë³€í™˜ì— ì‚¬ìš©í•˜ëŠ” ë²„í¼
 char* __ltoa(LONGLONG value, char *string)
 {
 	char p_buf[128];
 	int idx, i;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	*string = '\0';
 	idx = 0;
 	i = 0;
 
-	// À½¼ö¸é -ºÎÈ£¸¦ ºÙÀÌ°í value´Â ¾ç¼ö·Î ¹«Á¶°Ç
+	// ìŒìˆ˜ë©´ -ë¶€í˜¸ë¥¼ ë¶™ì´ê³  valueëŠ” ì–‘ìˆ˜ë¡œ ë¬´ì¡°ê±´
 	if (value < 0)
 	{
 		strcpy(string, "-");
@@ -110,7 +110,7 @@ char* __ltoa(LONGLONG value, char *string)
 		return string;
 	}
 
-	// µŞÀÚ¸®ºÎÅÍ ¹®ÀÚ¿­·Î º¯°æ
+	// ë’·ìë¦¬ë¶€í„° ë¬¸ìì—´ë¡œ ë³€ê²½
 	while (value)
 	{
 		switch (value % 10)
@@ -146,29 +146,29 @@ char* __ltoa(LONGLONG value, char *string)
 
 ////////////////////
 // Function name	: __ftoa
-// Description	    : float µ¥ÀÌÅÍ¸¦ ¹®ÀÚ¿­·Î º¯È¯
+// Description	    : float ë°ì´í„°ë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜
 // Return type		: char*
-//					: º¯È¯µÈ ¹®ÀÚ¿­
+//					: ë³€í™˜ëœ ë¬¸ìì—´
 // Argument         : float f
-//					: ÀÔ·Â ½Ç¼ö
+//					: ì…ë ¥ ì‹¤ìˆ˜
 // Argument         : char *buf
-//					: Ãâ·Â Æ÷ÀÎÅÍ
+//					: ì¶œë ¥ í¬ì¸í„°
 // Argument         : int place
-//					: ÀÚ¸®¼ö
+//					: ìë¦¬ìˆ˜
 char* __ftoa(float f, char *buf, int place)
 {
 	char p_buf[128];
 
 	*buf = '\0';
 
-	// ¼Ò¼öÁ¡ ¾ÕÀÚ¸® ¹®ÀÚ¿­·Î
-	// ¾ç¼ö À½¼ö °¡·Á¼­
+	// ì†Œìˆ˜ì  ì•ìë¦¬ ë¬¸ìì—´ë¡œ
+	// ì–‘ìˆ˜ ìŒìˆ˜ ê°€ë ¤ì„œ
 	if (f < 0)
 	{
-		// À½¼ö¸é ¾ç¼ö·Î ¸¸µé°í
+		// ìŒìˆ˜ë©´ ì–‘ìˆ˜ë¡œ ë§Œë“¤ê³ 
 		f = -f;
 		__ltoa((int)f, p_buf);
-		// ¹®ÀÚ¿­ ¾Õ¿¡ -¸¦ ºÙÀÌ°í
+		// ë¬¸ìì—´ ì•ì— -ë¥¼ ë¶™ì´ê³ 
 		strcpy(buf, "-");
 		strcat(buf, p_buf);
 	}
@@ -177,27 +177,27 @@ char* __ftoa(float f, char *buf, int place)
 		__ltoa((int)f, buf);
 	}
 
-	// ¼Ò¼öÁ¡ ¸îÀÚ¸® ±îÁö?
+	// ì†Œìˆ˜ì  ëª‡ìë¦¬ ê¹Œì§€?
 	if (place <= 0)
 	{
 		return buf;
 	}
 
-	// ¼Ò¼öÁ¡ 8ÀÚ¸®±îÁö¸¸
+	// ì†Œìˆ˜ì  8ìë¦¬ê¹Œì§€ë§Œ
 	if (place > 8)
 		place = 8;
 
-	// ¼Ò¼öÁ¡ µÚºÎºĞ¸¸ ³²±â°í
+	// ì†Œìˆ˜ì  ë’¤ë¶€ë¶„ë§Œ ë‚¨ê¸°ê³ 
 	f -= (int)f;
 
-	// ¿øÇÏ´Â ¼Ò¼ö ÀÚ¸®±îÁö °öÇØ¼­
+	// ì›í•˜ëŠ” ì†Œìˆ˜ ìë¦¬ê¹Œì§€ ê³±í•´ì„œ
 	while (place > 0)
 	{
 		f *= 10;
 		place--;
 	}
 
-	// Á¤¼ö ºÎºĞ¸¸ ´Ù½Ã º¯È¯
+	// ì •ìˆ˜ ë¶€ë¶„ë§Œ ë‹¤ì‹œ ë³€í™˜
 	__ltoa((int)f, p_buf);
 	strcat(buf, ".");
 	strcat(buf, p_buf);
@@ -206,11 +206,11 @@ char* __ftoa(float f, char *buf, int place)
 }
 
 /////////////////////////////////////////////
-// ¼öÇĞ °ü·Ã
+// ìˆ˜í•™ ê´€ë ¨
 
 ////////////////////
 // Function name	: MakeMath
-// Description	    : ÄÚ»çÀÎ, »çÀÎ °ªÀ» 1µµ ´ÜÀ§·Î ¹Ì¸® °è»êÇØ µÒ
+// Description	    : ì½”ì‚¬ì¸, ì‚¬ì¸ ê°’ì„ 1ë„ ë‹¨ìœ„ë¡œ ë¯¸ë¦¬ ê³„ì‚°í•´ ë‘ 
 // Return type		: void
 //					:
 void MakeMath()
@@ -224,11 +224,11 @@ void MakeMath()
 
 ////////////////////
 // Function name	: get_sin
-// Description	    : ¹Ì¸® ±¸ÇØµĞ »çÀÎ °ªÀ» ¾òÀ½
+// Description	    : ë¯¸ë¦¬ êµ¬í•´ë‘” ì‚¬ì¸ ê°’ì„ ì–»ìŒ
 // Return type		: float
-//					: »çÀÎ°ª
+//					: ì‚¬ì¸ê°’
 // Argument         : float radian
-//					: °¢µµ, ´ÜÀ§´Â µµ, ¹üÀ§´Â -180 ~ +180
+//					: ê°ë„, ë‹¨ìœ„ëŠ” ë„, ë²”ìœ„ëŠ” -180 ~ +180
 float get_sin(float radian)
 {
 	int i = (int)(radian / PI_2 * 360);
@@ -255,11 +255,11 @@ float get_sin(float radian)
 
 ////////////////////
 // Function name	: get_cos
-// Description	    : ¹Ì¸® ±¸ÇØµĞ ÄÚ»çÀÎ °ªÀ» ¾òÀ½
+// Description	    : ë¯¸ë¦¬ êµ¬í•´ë‘” ì½”ì‚¬ì¸ ê°’ì„ ì–»ìŒ
 // Return type		: float
-//					: »çÀÎ°ª
+//					: ì‚¬ì¸ê°’
 // Argument         : float radian
-//					: °¢µµ, ´ÜÀ§´Â µµ, ¹üÀ§´Â -180 ~ +180
+//					: ê°ë„, ë‹¨ìœ„ëŠ” ë„, ë²”ìœ„ëŠ” -180 ~ +180
 float get_cos(float radian)
 {
 	int i = (int)(radian / PI_2 * 360);
@@ -285,17 +285,17 @@ float get_cos(float radian)
 }
 
 ///////////////////////////////////////////
-// ½Ã°£ °ü·Ã
+// ì‹œê°„ ê´€ë ¨
 
 ////////////////////
 // Function name	: GetTimeofDay
-// Description	    : ÇöÀç ½Ã°£À» ¼öÇÔ
+// Description	    : í˜„ì¬ ì‹œê°„ì„ ìˆ˜í•¨
 // Return type		: void
 //					:
 // Argument         : struct timeval *t
-//					: ±¸ÇÑ ½Ã°£À» ¼³Á¤
+//					: êµ¬í•œ ì‹œê°„ì„ ì„¤ì •
 // Argument         : struct timezone *dummy
-//					: »ç¿ëÇÏÁö ¾ÊÀ½
+//					: ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 void GetTimeofDay(struct timeval *t, struct timezone* dummy)
 {
 #ifdef CIRCLE_WINDOWS
@@ -309,31 +309,31 @@ void GetTimeofDay(struct timeval *t, struct timezone* dummy)
 
 ////////////////////
 // Function name	: TimeDiff
-// Description	    : ½Ã°£ Â÷ÀÌ¸¦ ±¸ÇÑ´Ù, a - b = rslt
+// Description	    : ì‹œê°„ ì°¨ì´ë¥¼ êµ¬í•œë‹¤, a - b = rslt
 // Return type		: void
 //					:
 // Argument         : struct timeval *rslt
-//					: °á°ú¸¦ ÀúÀåÇÒ º¯¼ö
+//					: ê²°ê³¼ë¥¼ ì €ì¥í•  ë³€ìˆ˜
 // Argument         : struct timeval *a
-//					: ½Ã°£ °ª, ±âÁØ °ª
+//					: ì‹œê°„ ê°’, ê¸°ì¤€ ê°’
 // Argument         : struct timeval *b
-//					: ½Ã°£ °ª, »©´Â °ª
+//					: ì‹œê°„ ê°’, ë¹¼ëŠ” ê°’
 void TimeDiff(struct timeval *rslt, struct timeval *a, struct timeval *b)
 {
-	// a°¡ ÀÛÀ¸¸é 0
+	// aê°€ ì‘ìœ¼ë©´ 0
 	if (a->tv_sec < b->tv_sec)
 		*rslt = a_NullTime;
 
-	// a¿Í bÀÇ ÃÊ´ÜÀ§ ºñ±³
+	// aì™€ bì˜ ì´ˆë‹¨ìœ„ ë¹„êµ
 	else if (a->tv_sec == b->tv_sec)
 	{
-		// ÃÊ´ÜÀ§ °°À»¶§
-		// a°¡ ÀÛÀ¸¸é 0
+		// ì´ˆë‹¨ìœ„ ê°™ì„ë•Œ
+		// aê°€ ì‘ìœ¼ë©´ 0
 		if (a->tv_usec < b->tv_usec)
 			*rslt = a_NullTime;
 		else
 		{
-			// Â÷ÀÌ¸¦ ±¸ÇÔ
+			// ì°¨ì´ë¥¼ êµ¬í•¨
 			rslt->tv_sec = 0;
 			rslt->tv_usec = a->tv_usec - b->tv_usec;
 		}
@@ -341,15 +341,15 @@ void TimeDiff(struct timeval *rslt, struct timeval *a, struct timeval *b)
 
 	else
 	{
-		// ÃÊ´ÜÀ§ ´Ù¸¦¶§
-		// ÃÊ´ÜÀ§ Â÷ÀÌ ±¸ÇÔ
+		// ì´ˆë‹¨ìœ„ ë‹¤ë¥¼ë•Œ
+		// ì´ˆë‹¨ìœ„ ì°¨ì´ êµ¬í•¨
 		rslt->tv_sec = a->tv_sec - b->tv_sec;
-		// a°¡ ¸¶ÀÌÅ©·ÎÃÊ ´ÜÀ§´Â ÀÛ´Ù¸é
+		// aê°€ ë§ˆì´í¬ë¡œì´ˆ ë‹¨ìœ„ëŠ” ì‘ë‹¤ë©´
 		if (a->tv_usec < b->tv_usec)
 		{
-			// ¸¶ÀÌÅ©·ÎÃÊ ´ÜÀ§¿¡¼­ ¿¬»êÇÏ°í
+			// ë§ˆì´í¬ë¡œì´ˆ ë‹¨ìœ„ì—ì„œ ì—°ì‚°í•˜ê³ 
 			rslt->tv_usec = a->tv_usec + 1000000 - b->tv_usec;
-			// ÃÊ´ÜÀ§´Â ÀÚ¸®³»¸²À¸·Î °¨¼Ò
+			// ì´ˆë‹¨ìœ„ëŠ” ìë¦¬ë‚´ë¦¼ìœ¼ë¡œ ê°ì†Œ
 			rslt->tv_sec--;
 		}
 		else
@@ -358,25 +358,25 @@ void TimeDiff(struct timeval *rslt, struct timeval *a, struct timeval *b)
 }
 
 /////////////////////////////////////////
-// °Å¸® °è»ê ÇÔ¼ö
+// ê±°ë¦¬ ê³„ì‚° í•¨ìˆ˜
 
 ////////////////////
 // Function name	: GetDistance
-// Description	    : °Å¸® °è»ê
+// Description	    : ê±°ë¦¬ ê³„ì‚°
 // Return type		: float
-//					: °Å¸® ¹İÈ¯
+//					: ê±°ë¦¬ ë°˜í™˜
 // Argument         : float x1
-//					: ½ÃÀÛ x ÁÂÇ¥
+//					: ì‹œì‘ x ì¢Œí‘œ
 // Argument         : float x2
-//					: ³¡ x ÁÂÇ¥
+//					: ë x ì¢Œí‘œ
 // Argument         : float z1
-//					: ½ÃÀÛ z ÁÂÇ¥
+//					: ì‹œì‘ z ì¢Œí‘œ
 // Argument         : float z2
-//					: ³¡ z ÁÂÇ¥
+//					: ë z ì¢Œí‘œ
 // Argument         : float h1
-//					: ½ÃÀÛ ³ôÀÌ
+//					: ì‹œì‘ ë†’ì´
 // Argument         : float h2
-//					: ³¡ ³ôÀÌ
+//					: ë ë†’ì´
 float GetDistance(float x1, float x2, float z1, float z2, float h1, float h2)
 {
 	float dx = ABS(x1 - x2);
@@ -388,21 +388,21 @@ float GetDistance(float x1, float x2, float z1, float z2, float h1, float h2)
 }
 
 /////////////////////////////////
-// ¹®ÀÚ¿­ °ü·Ã
+// ë¬¸ìì—´ ê´€ë ¨
 
 ////////////////////
 // Function name	: SkipSpaces
-// Description	    : ¾ÕºÎºĞ °ø¹é ³Ñ±è, ¿øº»¿¡ º¯Çü ¾øÀ½
+// Description	    : ì•ë¶€ë¶„ ê³µë°± ë„˜ê¹€, ì›ë³¸ì— ë³€í˜• ì—†ìŒ
 // Return type		: char*
-//					: Ã³À½ ³ª¿À´Â ºñ°ø¹é ¹®ÀÚÀ§ À§Ä¡¸¦ ¹İÈ¯
+//					: ì²˜ìŒ ë‚˜ì˜¤ëŠ” ë¹„ê³µë°± ë¬¸ììœ„ ìœ„ì¹˜ë¥¼ ë°˜í™˜
 // Argument         : char* string
-//					: °ø¹éÀ» ³Ñ±â°íÀÚ ÇÏ´Â ¹®ÀÚ¿­
+//					: ê³µë°±ì„ ë„˜ê¸°ê³ ì í•˜ëŠ” ë¬¸ìì—´
 const char* SkipSpaces(const char* string)
 {
-	// °ø¹éÀÌ¸é ´ÙÀ½À¸·Î ³Ñ±â±â
+	// ê³µë°±ì´ë©´ ë‹¤ìŒìœ¼ë¡œ ë„˜ê¸°ê¸°
 	for (; string && *string && is_space_in_util(*string); (string)++)
 		;
-	// Æ÷ÀÎÅÍ ¹İÈ¯
+	// í¬ì¸í„° ë°˜í™˜
 	return string;
 }
 
@@ -415,11 +415,11 @@ const char* SkipSpecialCharacter(const char* string)
 
 ////////////////////
 // Function name	: TrimString
-// Description	    : ¾ÕµÚ °ø¹éÀ» Á¦°Å, ¿øº»ÀÌ ¼öÁ¤µÊ
+// Description	    : ì•ë’¤ ê³µë°±ì„ ì œê±°, ì›ë³¸ì´ ìˆ˜ì •ë¨
 // Return type		: char*
-//					: ÀÔ·Â ¹®ÀÚ¿­
+//					: ì…ë ¥ ë¬¸ìì—´
 // Argument         : char* string
-//					: °ø¹éÀ» Á¦°ÅÇÏ°íÀÚ ÇÏ´Â ¹®ÀÚ¿­
+//					: ê³µë°±ì„ ì œê±°í•˜ê³ ì í•˜ëŠ” ë¬¸ìì—´
 char* TrimString(char* string)
 {
 	if(string == NULL) return NULL;
@@ -427,11 +427,11 @@ char* TrimString(char* string)
 	int len = strlen(string);
 	int index = 0, i;
 
-	// °ø¹éÀÌ ¾Æ´Ñ Ã³À½ ¹®ÀÚ ±¸ÇÔ
+	// ê³µë°±ì´ ì•„ë‹Œ ì²˜ìŒ ë¬¸ì êµ¬í•¨
 	while (string[index] == ' ')
 		index ++;
 
-	// °ø¹é¸¸Å­ ´ç±â±â
+	// ê³µë°±ë§Œí¼ ë‹¹ê¸°ê¸°
 	if (index > 0)
 	{
 		int count = len - index;
@@ -441,7 +441,7 @@ char* TrimString(char* string)
 		string[i] = '\0';
 	}
 
-	// µÚÀÇ °ø¹é Á¦°Å
+	// ë’¤ì˜ ê³µë°± ì œê±°
 	for (i = strlen(string) - 1; i > 0; i--)
 	{
 		if (string[i] != ' ')
@@ -455,15 +455,15 @@ char* TrimString(char* string)
 
 ////////////////////
 // Function name	: AnyOneArg
-// Description	    : °ø¹é ´ÜÀ§·Î ¹®ÀÚ¿­ ÅäÅ«È­
+// Description	    : ê³µë°± ë‹¨ìœ„ë¡œ ë¬¸ìì—´ í† í°í™”
 // Return type		: char*
-//					: ´ÙÀ½ ÅäÅ« À§Ä¡
+//					: ë‹¤ìŒ í† í° ìœ„ì¹˜
 // Argument         : char* argument
-//					: ¿øº» ¹®ÀÚ¿­
+//					: ì›ë³¸ ë¬¸ìì—´
 // Argument         : char* first_arg
-//					: ÅäÅ«È­µÈ ¹®ÀÚ¿­À» ´ãÀ» °÷
+//					: í† í°í™”ëœ ë¬¸ìì—´ì„ ë‹´ì„ ê³³
 // Argument         : bool toLower
-//					: ¼Ò¹®ÀÚ·Î °­Á¦ º¯È¯ÇÒÁö ¿©ºÎ
+//					: ì†Œë¬¸ìë¡œ ê°•ì œ ë³€í™˜í• ì§€ ì—¬ë¶€
 const char* AnyOneArg(const char* argument, char* first_arg, bool toLower)
 {
 	argument = SkipSpaces(argument);
@@ -487,13 +487,13 @@ const char* AnyOneArg(const char* argument, char* first_arg, bool toLower)
 }
 ////////////////////
 // Function name	: GetToken
-// Description	    : Æ¯¼ö¹®ÀÚ ´ÜÀ§·Î ¹®ÀÚ¿­ ÅäÅ«È­(¼ıÀÚ³ª ¿µ¹®ÀÚ¸¸ ÀĞÀ½, ±×¿Ü ¹®ÀÚ´Â Æ¯¼ö¹®ÀÚ·Î ºĞ·ùÇÔ.)
+// Description	    : íŠ¹ìˆ˜ë¬¸ì ë‹¨ìœ„ë¡œ ë¬¸ìì—´ í† í°í™”(ìˆ«ìë‚˜ ì˜ë¬¸ìë§Œ ì½ìŒ, ê·¸ì™¸ ë¬¸ìëŠ” íŠ¹ìˆ˜ë¬¸ìë¡œ ë¶„ë¥˜í•¨.)
 // Return type		: char*
-//					: ´ÙÀ½ ÅäÅ« À§Ä¡
+//					: ë‹¤ìŒ í† í° ìœ„ì¹˜
 // Argument         : char* arg1
-//					: ¿øº» ¹®ÀÚ¿­
+//					: ì›ë³¸ ë¬¸ìì—´
 // Argument         : char* arg2
-//					: ÅäÅ«È­µÈ ¹®ÀÚ¿­À» ´ãÀ» °÷
+//					: í† í°í™”ëœ ë¬¸ìì—´ì„ ë‹´ì„ ê³³
 const char* GetToken(const char* arg1, char* arg2, bool toLower)
 {
 	arg1 = SkipSpecialCharacter(arg1);
@@ -518,13 +518,13 @@ const char* GetToken(const char* arg1, char* arg2, bool toLower)
 
 ////////////////////
 // Function name	: IntCat
-// Description	    : ¹®ÀÚ¿­¿¡ Á¤¼ö ºÙÀÌ±â
+// Description	    : ë¬¸ìì—´ì— ì •ìˆ˜ ë¶™ì´ê¸°
 // Return type		: char*
-//					: ºÙ¿©Áø ¹®ÀÚ¿­
+//					: ë¶™ì—¬ì§„ ë¬¸ìì—´
 // Argument         : char *dest
-//					: ´ë»ó ¹®ÀÚ¿­
+//					: ëŒ€ìƒ ë¬¸ìì—´
 // Argument         : int i
-//					: ºÙ¿©Áú Á¤¼ö
+//					: ë¶™ì—¬ì§ˆ ì •ìˆ˜
 char* IntCat(char *dest, int i, bool bInsertSpace)
 {
 	char i_buf[128];
@@ -536,13 +536,13 @@ char* IntCat(char *dest, int i, bool bInsertSpace)
 
 ////////////////////
 // Function name	: IntCat
-// Description	    : ¹®ÀÚ¿­¿¡ Á¤¼ö ºÙÀÌ±â
+// Description	    : ë¬¸ìì—´ì— ì •ìˆ˜ ë¶™ì´ê¸°
 // Return type		: char*
-//					: ºÙ¿©Áø ¹®ÀÚ¿­
+//					: ë¶™ì—¬ì§„ ë¬¸ìì—´
 // Argument         : char *dest
-//					: ´ë»ó ¹®ÀÚ¿­
+//					: ëŒ€ìƒ ë¬¸ìì—´
 // Argument         : LONGLONG ll
-//					: ºÙ¿©Áú Á¤¼ö
+//					: ë¶™ì—¬ì§ˆ ì •ìˆ˜
 char* IntCat(char *dest, LONGLONG ll, bool bInsertSpace)
 {
 	char i_buf[128];
@@ -554,15 +554,15 @@ char* IntCat(char *dest, LONGLONG ll, bool bInsertSpace)
 
 ////////////////////
 // Function name	: IntCat0
-// Description	    : Á¤¼ö¸¦ ¹®ÀÚ¿­¿¡ ºÙÀÌ±â, ÁöÁ¤ Æø¸¸Å­ 0À¸·Î Ã¤¿ò
+// Description	    : ì •ìˆ˜ë¥¼ ë¬¸ìì—´ì— ë¶™ì´ê¸°, ì§€ì • í­ë§Œí¼ 0ìœ¼ë¡œ ì±„ì›€
 // Return type		: char*
-//					: °á°ú ¹®ÀÚ¿­
+//					: ê²°ê³¼ ë¬¸ìì—´
 // Argument         : char* dest
-//					: ÀúÀåÇÒ °ø°£
+//					: ì €ì¥í•  ê³µê°„
 // Argument         : int n
-//					: ºÙÀÏ Á¤¼ö
+//					: ë¶™ì¼ ì •ìˆ˜
 // Argument         : int width
-//					: Æø
+//					: í­
 char* IntCat0(char* dest, int n, int width, bool bInsertSpace)
 {
 	if(dest == NULL) return NULL;
@@ -588,15 +588,15 @@ char* IntCat0(char* dest, int n, int width, bool bInsertSpace)
 
 ////////////////////
 // Function name	: IntCat0
-// Description	    : Á¤¼ö¸¦ ¹®ÀÚ¿­¿¡ ºÙÀÌ±â, ÁöÁ¤ Æø¸¸Å­ 0À¸·Î Ã¤¿ò
+// Description	    : ì •ìˆ˜ë¥¼ ë¬¸ìì—´ì— ë¶™ì´ê¸°, ì§€ì • í­ë§Œí¼ 0ìœ¼ë¡œ ì±„ì›€
 // Return type		: char*
-//					: °á°ú ¹®ÀÚ¿­
+//					: ê²°ê³¼ ë¬¸ìì—´
 // Argument         : char* dest
-//					: ÀúÀåÇÒ °ø°£
+//					: ì €ì¥í•  ê³µê°„
 // Argument         : LONGLONG n
-//					: ºÙÀÏ Á¤¼ö
+//					: ë¶™ì¼ ì •ìˆ˜
 // Argument         : int width
-//					: Æø
+//					: í­
 char* IntCat0(char* dest, LONGLONG n, int width, bool bInsertSpace)
 {
 	if(dest == NULL) return NULL;
@@ -622,13 +622,13 @@ char* IntCat0(char* dest, LONGLONG n, int width, bool bInsertSpace)
 
 ////////////////////
 // Function name	: strinc
-// Description	    : Æ¯Á¤ ¹®ÀÚ¿­À» Æ÷ÇÔÇÏ´ÂÁö °Ë»ç
+// Description	    : íŠ¹ì • ë¬¸ìì—´ì„ í¬í•¨í•˜ëŠ”ì§€ ê²€ì‚¬
 // Return type		: bool
-//					: Æ÷ÇÔÇÏ¸é true, ¾Æ´Ï¸é return
+//					: í¬í•¨í•˜ë©´ true, ì•„ë‹ˆë©´ return
 // Argument         : const char *str
-//					: ±âÁØ ¹®ÀÚ¿­
+//					: ê¸°ì¤€ ë¬¸ìì—´
 // Argument         : const char *inc
-//					: ºñ±³ ¹®ÀÚ¿­
+//					: ë¹„êµ ë¬¸ìì—´
 bool strinc(const char *str, const char *inc)
 {
 	if(str == NULL || inc == NULL) return false;
@@ -676,8 +676,8 @@ void IPtoi(const char *org_IP,int *i_one, int *i_two, int *i_thr, int *i_for)
 	*i_for = atoi(p_IP);
 }
 
-// [selo: 101115] ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ°¡ ÀÖ´ÂÁö È®ÀÎ
-// ·¯½Ã¾Æ¾î ÀÌ¿ÜÀÇ ±ÛÀÚ°¡ ÀÖÀ¸¸é true ¹İÈ¯, ¾øÀ¸¸é false ¹İÈ¯
+// [selo: 101115] ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ìê°€ ìˆëŠ”ì§€ í™•ì¸
+// ëŸ¬ì‹œì•„ì–´ ì´ì™¸ì˜ ê¸€ìê°€ ìˆìœ¼ë©´ true ë°˜í™˜, ì—†ìœ¼ë©´ false ë°˜í™˜
 bool CheckNoRussianCharacter(const CLCString& str)
 {
 	int len = str.Length();

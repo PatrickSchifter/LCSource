@@ -8,7 +8,7 @@
 #include <Common/Packet/ptype_old_do_item.h>
 #include <Engine/Contents/Base/UISkillNew.h>
 #include <Engine/Contents/Base/InvenData.h>
-#include <Engine/Interface/UIExchange.h>
+#include <Engine/Contents/function/ExChangeUI.h>
 #include <Engine/Contents/Base/UIPartyNew.h>
 #include <Engine/Contents/Base/Party.h>
 
@@ -18,6 +18,7 @@
 #include <Engine/Contents/function/ItemCollectionData.h>
 #include <GameMP/Game.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Interface/UIMixNew.h>
 
 #include <Engine/Help/GMCommand_Decl.h>
 
@@ -37,6 +38,8 @@ void CChattingUI::reg_gm_cmd()
 	REG_GM_CMD(go_zone, go_zone);
 	REG_GM_CMD(logout, logout);
 	REG_GM_CMD(ic_checkitem, ic_checkitem);
+	REG_GM_CMD(probmas, autoprobMasterstone);
+	REG_GM_CMD(attr, show_attr);
 
 #ifdef	VER_TEST
 	REG_GM_CMD(æ∆¿Ã≈€, FindItem);
@@ -50,7 +53,6 @@ void CChattingUI::reg_gm_cmd()
 	REG_GM_CMD(fps, fps);
 	REG_GM_CMD(log, log);
 	REG_GM_CMD(read_ini, read_ini);
-	REG_GM_CMD(attr, show_attr);
 #endif	// VER_TEST
 }
 

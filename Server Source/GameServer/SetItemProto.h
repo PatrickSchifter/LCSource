@@ -3,19 +3,19 @@
 
 typedef struct __tagSetItemOption
 {
-	int		nWearCnt;									// Âø¿ë °³¼ö
-	int		nType;										// ¿É¼Ç Å¸ÀÔ (¿É¼Ç/½ºÅ³)
-	int		nIndex;										// ¿É¼Ç/½ºÅ³ index
-	int		nLevel;										// ¿É¼Ç/½ºÅ³ ·¹º§
+	int		nWearCnt;									// ì°©ìš© ê°œìˆ˜
+	int		nType;										// ì˜µì…˜ íƒ€ì… (ì˜µì…˜/ìŠ¤í‚¬)
+	int		nIndex;										// ì˜µì…˜/ìŠ¤í‚¬ index
+	int		nLevel;										// ì˜µì…˜/ìŠ¤í‚¬ ë ˆë²¨
 } SETITEMOPTION;
 
 class CSetItemProto
 {
 	int				m_nIndex;
 	int				m_nJob;
-	int				m_nOptionCnt;						// ¿É¼Ç °³¼ö
-	int				m_nItemIdx[MAX_WEARING];			// Âø¿ë ¾ÆÀÌÅÛ
-	SETITEMOPTION	m_option[MAX_SET_ITEM_OPTION];		// ¿É¼Ç/½ºÅ³
+	int				m_nOptionCnt;						// ì˜µì…˜ ê°œìˆ˜
+	int				m_nItemIdx[MAX_WEARING];			// ì°©ìš© ì•„ì´í…œ
+	SETITEMOPTION	m_option[MAX_SET_ITEM_OPTION];		// ì˜µì…˜/ìŠ¤í‚¬
 
 public:
 	CSetItemProto();

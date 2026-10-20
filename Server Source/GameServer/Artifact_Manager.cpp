@@ -99,7 +99,7 @@ bool ArtifactManager::isOwnerPC( int char_index )
 	return false;
 }
 
-//PVP »ç³É ´çÇÒ ½Ã
+//PVP ì‚¬ëƒ¥ ë‹¹í•  ì‹œ
 void ArtifactManager::hunt( CPC* owner, CPC* target )
 {
 	if(owner == NULL || target == NULL)
@@ -115,7 +115,7 @@ void ArtifactManager::hunt( CPC* owner, CPC* target )
 		if((*it)->pc == owner)
 		{
 			int item_db_index = (*it)->item->getDBIndex();
-			//owner¿¡¼­ Áö¿ì°í
+			//ownerì—ì„œ ì§€ìš°ê³ 
 			{
 				if(owner->m_inventory.FindByVirtualIndex((*it)->item->getVIndex()) != NULL)
 					owner->m_inventory.deleteItemByItem((*it)->item);
@@ -125,19 +125,19 @@ void ArtifactManager::hunt( CPC* owner, CPC* target )
 
 				else
 				{
-					//µ¥ÀÌÅÍ ¿À·ù ¼ÒÀ¯ÀÚÀÇ µ¥ÀÌÅÍ °¡ Àß¸øµÇ¾î ÀÖÀ½
-					//·Î±× ³²±â°í
+					//ë°ì´í„° ì˜¤ë¥˜ ì†Œìœ ìì˜ ë°ì´í„° ê°€ ì˜ëª»ë˜ì–´ ìˆìŒ
+					//ë¡œê·¸ ë‚¨ê¸°ê³ 
 					return ;
 				}
 
 			}
 
-			//target¿¡ ÁØ´Ù.
+			//targetì— ì¤€ë‹¤.
 			{
 				CItem* item = gserver->m_itemProtoList.CreateItem(item_db_index, -1, 0, 0, -1);
 				if(target->m_assist.FindBySkillIndex(PVP_PROTECT_SKILL_INDEX) != 0 || target->m_inventory.addItem(item) == false)
 				{
-					//¾ÆÀÌÅÛÀ» ¶³¾î¶ß¸®¸é ÄÁÅ×ÀÌ³Ê¿¡¼­ »èÁ¦ ÇÏ°í it¼³Á¤ÇØÁØ´Ù.
+					//ì•„ì´í…œì„ ë–¨ì–´ëœ¨ë¦¬ë©´ ì»¨í…Œì´ë„ˆì—ì„œ ì‚­ì œ í•˜ê³  itì„¤ì •í•´ì¤€ë‹¤.
 					owner->m_pArea->DropItem(item, target);
 
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -237,7 +237,7 @@ void ArtifactManager::sendOwnerGPSData( CPC* ch )
 	{
 		if((*it)->pc == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù. ·Î±×³²°Ü¾ß ÇÏÁö¸¸ ÀÚÁÖµé¾î¿À´Â ·çÆ¾ÀÌ¹Ç·Î ÀÏ´Ü »ı·«ÇÑ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤. ë¡œê·¸ë‚¨ê²¨ì•¼ í•˜ì§€ë§Œ ìì£¼ë“¤ì–´ì˜¤ëŠ” ë£¨í‹´ì´ë¯€ë¡œ ì¼ë‹¨ ìƒëµí•œë‹¤.
 			//LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -268,7 +268,7 @@ CItem* ArtifactManager::FindWearItem( CPC* pc )
 	{
 		if((*it)->pc == NULL || (*it)->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -294,7 +294,7 @@ void ArtifactManager::disconnect( CPC* pc )
 	{
 		if((*it)->pc == NULL || (*it)->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -331,7 +331,7 @@ void ArtifactManager::dead( CPC* owner )
 	{
 		if((*it)->pc == NULL || (*it)->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -368,7 +368,7 @@ void ArtifactManager::move_zone( CPC* pc, int zone_index )
 	std::vector<ArtifactItemData*>::iterator it = _vec.begin();
 	std::vector<ArtifactItemData*>::iterator it_end = _vec.end();
 
-	//Àü¼Û À¯¹« set
+	//ì „ì†¡ ìœ ë¬´ set
 	std::set<int> _set;
 
 	for(; it != it_end; it++)
@@ -451,7 +451,7 @@ void ArtifactManager::ApplyArtifact( CPC* pc )
 	{
 		if(_vec[i]->pc == NULL || _vec[i]->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -478,7 +478,7 @@ void ArtifactManager::ApplyArtifact( CPC* pc )
 	{
 		if(_vec[i]->pc == NULL || _vec[i]->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d] - ApplyArtifact", this->drop_count);
 			continue;
 		}
@@ -542,7 +542,7 @@ int ArtifactManager::getSameZoneCount(CPC* pc)
 	std::vector<ArtifactItemData*>::iterator it = _vec.begin();
 	std::vector<ArtifactItemData*>::iterator it_end = _vec.end();
 
-	//Àü¼Û À¯¹« set
+	//ì „ì†¡ ìœ ë¬´ set
 	std::set<int> _set;
 
 	int count = 0;
@@ -550,7 +550,7 @@ int ArtifactManager::getSameZoneCount(CPC* pc)
 	{
 		if((*it)->pc == NULL || (*it)->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}
@@ -591,12 +591,12 @@ void ArtifactManager::calcDropCount( CItem* item, bool isTake )
 			itemLevel = ARTIFACT_ITEM_LEVEL_3;
 			break;
 		}
-		//¾ÆÀÌÅÛÀ» ÁÖ¿üÀ»¶§
+		//ì•„ì´í…œì„ ì£¼ì› ì„ë•Œ
 		if(isTake == true)
 		{
 			drop_count -= itemLevel;
 		}
-		//¾ÆÀÌÅÛÀ» ¶³¾î¶ß¸±¶§
+		//ì•„ì´í…œì„ ë–¨ì–´ëœ¨ë¦´ë•Œ
 		else
 		{
 			drop_count += itemLevel;
@@ -606,7 +606,7 @@ void ArtifactManager::calcDropCount( CItem* item, bool isTake )
 
 void ArtifactManager::eventOff()
 {
-	//ÀÌº¥Æ®°¡ Á¾·áµÇ¸é ½Ã½ºÅÛ ¸Ş½ÃÁö¿Í ÇÔ²² ¾ÆÀÌÅÛÀ» ÀÎº¥Åä¸®¿¡¼­ Á¦°ÅÇØÁØ´Ù.
+	//ì´ë²¤íŠ¸ê°€ ì¢…ë£Œë˜ë©´ ì‹œìŠ¤í…œ ë©”ì‹œì§€ì™€ í•¨ê»˜ ì•„ì´í…œì„ ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°í•´ì¤€ë‹¤.
 	std::vector<ArtifactItemData*>::iterator it = _vec.begin();
 	std::vector<ArtifactItemData*>::iterator it_end = _vec.end();
 
@@ -614,7 +614,7 @@ void ArtifactManager::eventOff()
 	{
 		if((*it)->pc == NULL || (*it)->item == NULL)
 		{
-			//artifact manager¿¡ Á¢¼ÓÁßÀÌÁö ¾ÊÀº È¤Àº ¾ø´Â Ä³¸¯ÅÍÀÇ Á¤º¸°¡ ÀÖ´Ù.
+			//artifact managerì— ì ‘ì†ì¤‘ì´ì§€ ì•Šì€ í˜¹ì€ ì—†ëŠ” ìºë¦­í„°ì˜ ì •ë³´ê°€ ìˆë‹¤.
 			LOG_ERROR("INVALID ARTIFACT USER INFO. WARNING... ARTIFACT COUNT IS [%d]", this->drop_count);
 			continue;
 		}

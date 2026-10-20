@@ -7,21 +7,21 @@
 
 enum MsgExNoticeThirdType
 {
-	MSG_EX_NOTICE_LIST,								// °øÁö ¸®½ºÆ® ¿äÃ»
+	MSG_EX_NOTICE_LIST,								// ê³µì§€ ë¦¬ìŠ¤íŠ¸ ìš”ì²­
 };
 
 
 #pragma pack(push, 1)
 struct NoticeData
 {
-	int noticeRev;				//¸®ºñÀü ¹øÈ£
-	char noticeString[107];		//°øÁö ½ºÆ®¸µ
-	int date;					//½Ã°£
+	int noticeRev;				//ë¦¬ë¹„ì „ ë²ˆí˜¸
+	char noticeString[107];		//ê³µì§€ ìŠ¤íŠ¸ë§
+	int date;					//ì‹œê°„
 };
 
 namespace RequestClient
 {
-	//°øÁö µ¥ÀÌÅÍ ¿äÃ»
+	//ê³µì§€ ë°ì´í„° ìš”ì²­
 	struct NoticeList : public pTypeThirdBase
 	{
 		int pageNum;
@@ -30,7 +30,7 @@ namespace RequestClient
 
 namespace ResponseClient
 {
-	//°øÁö µ¥ÀÌÅÍ ÀÀ´ä
+	//ê³µì§€ ë°ì´í„° ì‘ë‹µ
 	struct NoticeList : public pTypeThirdBase
 	{
 		bool isNextPage;
@@ -41,7 +41,7 @@ namespace ResponseClient
 
 namespace UpdateClient
 {
-	//°øÁö ¸®ºñÀü µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® (Å¬¶óÀÌ¾ğÆ®°¡ ¹Ş¾Æ¼­ Ã¼Å© ÈÄ ±ôºıÀÓ À¯¹« ÆÇ´Ü)
+	//ê³µì§€ ë¦¬ë¹„ì „ ë°ì´í„° ì—…ë°ì´íŠ¸ (í´ë¼ì´ì–¸íŠ¸ê°€ ë°›ì•„ì„œ ì²´í¬ í›„ ê¹œë¹¡ì„ ìœ ë¬´ íŒë‹¨)
 	struct checkNotice : public pTypeThirdBase
 	{
 		int revNum;

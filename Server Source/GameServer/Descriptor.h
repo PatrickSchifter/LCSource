@@ -17,22 +17,22 @@ public:
 	~CDescriptor();
 
 	////////////
-	// °èÁ¤ °ü·Ã
-	time_t		m_connect_time;					// ¼¼¼ÇÀÌ ¿¬°áµÈ ½Ã°£
+	// ê³„ì • ê´€ë ¨
+	time_t		m_connect_time;					// ì„¸ì…˜ì´ ì—°ê²°ëœ ì‹œê°„
 
 	LONGLONG	m_seq_index;
-	bool		request_start_game_flag_;		// Å¬¶ó¸®¾ğÆ®°¡ START_GAME ÆĞÅ¶À» º¸³»
-	int			m_index;						// À¯Àú ÀÎµ¦½º
-	CLCString	m_idname;						// À¯Àú ¾ÆÀÌµğ
-	CLCString	m_passwd;						// ¾ÏÈ£
-	CLCString	m_ident;						// ÁÖ¹Î¹øÈ£ µŞÀÚ¸®
-//	bool		m_bNovice;						//64½Ã°£ ÀÌ³» ÃÊº¸ÀÚ.//0627
+	bool		request_start_game_flag_;		// í´ë¼ë¦¬ì–¸íŠ¸ê°€ START_GAME íŒ¨í‚·ì„ ë³´ë‚´
+	int			m_index;						// ìœ ì € ì¸ë±ìŠ¤
+	CLCString	m_idname;						// ìœ ì € ì•„ì´ë””
+	CLCString	m_passwd;						// ì•”í˜¸
+	CLCString	m_ident;						// ì£¼ë¯¼ë²ˆí˜¸ ë’·ìë¦¬
+//	bool		m_bNovice;						//64ì‹œê°„ ì´ë‚´ ì´ˆë³´ì.//0627
 	int			m_userFlag;
 //0704
-	int			m_notice[MAX_NOTICE];			//ÀÌº¥Æ® °øÁö (ÃÖ´ë 5°³)
+	int			m_notice[MAX_NOTICE];			//ì´ë²¤íŠ¸ ê³µì§€ (ìµœëŒ€ 5ê°œ)
 
-	bool		m_bCreate90Lv;					// 90Lv ÀÌ»ó -> 100Lv ·Î ¼öÁ¤
-	bool		m_bNotCreateNightShadow;			// NS »ı¼º ¿©ºÎ
+	bool		m_bCreate90Lv;					// 90Lv ì´ìƒ -> 100Lv ë¡œ ìˆ˜ì •
+	bool		m_bNotCreateNightShadow;			// NS ìƒì„± ì—¬ë¶€
 	bool		m_bIsNSCreateCardUse;
 
 	CLCString		m_proSite;
@@ -42,58 +42,58 @@ public:
 #endif
 
 	////////////
-	// ¼ÒÄÏ °ü·Ã
-	unsigned int m_nPrepareSeed;			// Ã³À½ Å°¸¦ »ı¼ºÇÏ±â À§ÇÑ Seed
+	// ì†Œì¼“ ê´€ë ¨
+	unsigned int m_nPrepareSeed;			// ì²˜ìŒ í‚¤ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ Seed
 
 	//////////
-	// ÇÙ °ü·Ã
-	int			m_hackCheckPulse;			// ÃÖ±Ù ÇÙ °Ë»ç ¼öÇàÇÑ Å¸ÀÓ
-	int			m_hackServerPulse;			// ¼­¹ö ÆŞ½º		: ÃÖÃÊ Ä³¸¯ÅÍ ¼±ÅÃ¿¡¼­ ¼³Á¤µÇ°í, ÀÌÈÄ ÇÑ½Ã°£¿¡ ÇÑ¹ø °»½Å
-	int			m_hackClientPulse;			// Å¬¶óÀÌ¾ğÆ® ÆŞ½º	:
-	int			m_hackLastClientDiff;		// ÃÖ±Ù Å¬¶óÀÌ¾ğÆ®ÀÇ ÆŞ½º °£°İ
-	int			m_hackCount;				// ÇÙ ½Ãµµ È¸¼ö
+	// í•µ ê´€ë ¨
+	int			m_hackCheckPulse;			// ìµœê·¼ í•µ ê²€ì‚¬ ìˆ˜í–‰í•œ íƒ€ì„
+	int			m_hackServerPulse;			// ì„œë²„ í„ìŠ¤		: ìµœì´ˆ ìºë¦­í„° ì„ íƒì—ì„œ ì„¤ì •ë˜ê³ , ì´í›„ í•œì‹œê°„ì— í•œë²ˆ ê°±ì‹ 
+	int			m_hackClientPulse;			// í´ë¼ì´ì–¸íŠ¸ í„ìŠ¤	:
+	int			m_hackLastClientDiff;		// ìµœê·¼ í´ë¼ì´ì–¸íŠ¸ì˜ í„ìŠ¤ ê°„ê²©
+	int			m_hackCount;				// í•µ ì‹œë„ íšŒìˆ˜
 
 	//////////
-	// Æ½ °ü·Ã
-	int			m_idletics;					// ÀÔ·Â¾øÀÌ Áö³ª°£ Æ½ ¼ö
-	int			m_checktics;				// 1ÃÊ´ç ¸í·É ÀÔ·ÂµÈ ¼ö¸¦ ¸®¼ÂÇÏ±â À§ÇØ »ç¿ëµÊ
-	short int	m_commandcount;				// 1ÃÊ´ç ¸í·É ÀÔ·ÂµÈ °³¼ö
+	// í‹± ê´€ë ¨
+	int			m_idletics;					// ì…ë ¥ì—†ì´ ì§€ë‚˜ê°„ í‹± ìˆ˜
+	int			m_checktics;				// 1ì´ˆë‹¹ ëª…ë ¹ ì…ë ¥ëœ ìˆ˜ë¥¼ ë¦¬ì…‹í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨
+	short int	m_commandcount;				// 1ì´ˆë‹¹ ëª…ë ¹ ì…ë ¥ëœ ê°œìˆ˜
 
 	////////////
-	// »óÅÂ °ü·Ã
-	int			m_connected;				// CON_ »ó¼ö °ªÀ» ÀúÀå : Á¢¼Ó »óÅÂ
-	int			m_logined;					// ·Î±×ÀÎ °á°ú
+	// ìƒíƒœ ê´€ë ¨
+	int			m_connected;				// CON_ ìƒìˆ˜ ê°’ì„ ì €ì¥ : ì ‘ì† ìƒíƒœ
+	int			m_logined;					// ë¡œê·¸ì¸ ê²°ê³¼
 	MSG_LOGIN_TYPE m_playmode;				// login mode or play mode
 	bool		m_bclosed;
-	bool		m_bGoZone;					// Á¸ ÀÌµ¿½Ã¿¡ true·Î ¼³Á¤
-	bool		m_bGoZoneSent;				// Á¸ ÀÌµ¿ ¸Ş½ÃÁö Àü´Ş ¿©ºÎ
-	CNetMsg::SP		m_msgGoZone;				// Á¸ ÀÌµ¿ ¸Ş½ÃÁö, m_bGoZoneSent¸¦ false·Î ¼³Á¤ÇÒ ¶§ ¼³Á¤
+	bool		m_bGoZone;					// ì¡´ ì´ë™ì‹œì— trueë¡œ ì„¤ì •
+	bool		m_bGoZoneSent;				// ì¡´ ì´ë™ ë©”ì‹œì§€ ì „ë‹¬ ì—¬ë¶€
+	CNetMsg::SP		m_msgGoZone;				// ì¡´ ì´ë™ ë©”ì‹œì§€, m_bGoZoneSentë¥¼ falseë¡œ ì„¤ì •í•  ë•Œ ì„¤ì •
 
 	////////////
-	// ¸µÅ© °ü·Ã
+	// ë§í¬ ê´€ë ¨
 	CPC*		m_pChar;					// linked to char
-	CDescriptor* m_pPrev;					// ¸®½ºÆ® ¸µÅ©
+	CDescriptor* m_pPrev;					// ë¦¬ìŠ¤íŠ¸ ë§í¬
 	CDescriptor* m_pNext;
 
 	//////////////
-	// ÀÌº¥Æ® °ü·Ã
+	// ì´ë²¤íŠ¸ ê´€ë ¨
 #ifdef HANARO_EVENT
 	CLCString m_hanaroCode;
 #endif
 
-	void WriteToOutput(CNetMsg::SP& msg);	// ¾²±â
+	void WriteToOutput(CNetMsg::SP& msg);	// ì“°ê¸°
 
-	bool GetLogin(CNetMsg::SP& msg);			// ¹öÀü ¾ÆÀÌµğ ºñ¹ø °Ë»ç
+	bool GetLogin(CNetMsg::SP& msg);			// ë²„ì „ ì•„ì´ë”” ë¹„ë²ˆ ê²€ì‚¬
 
-	bool StartGame(CNetMsg::SP& msg);		// °ÔÀÓ ½ÃÀÛ
-	bool CharNew(CNetMsg::SP& msg);			// Ä³¸¯ÅÍ »ı¼º
-	bool CharDel(CNetMsg::SP& msg);			// Ä³¸¯ÅÍ »èÁ¦
+	bool StartGame(CNetMsg::SP& msg);		// ê²Œì„ ì‹œì‘
+	bool CharNew(CNetMsg::SP& msg);			// ìºë¦­í„° ìƒì„±
+	bool CharDel(CNetMsg::SP& msg);			// ìºë¦­í„° ì‚­ì œ
 
 	//////////
-	// ÇÙ °ü·Ã
-	void SetHackCheckPulse();			// ÇÙ °Ë»ç ÆŞ½º °ªÀ» ÇöÀç ÆŞ½º °ªÀ¸·Î ¼³Á¤
-	bool CheckHackPulse(int clientPulse);	// Å¬¶óÀÌ¾ğÆ®ÀÇ ÆŞ½º °ªÀ¸·Î ÇÙÆŞ½º °Ë»ç
-	bool IncreaseHackCount(int n);			// ÇÙ Ä«¿îÆ® Áõ°¡, ÀæÀº ÇÙ ½Ãµµ½Ã Á¢¼Ó Á¾·á Ã³¸®
+	// í•µ ê´€ë ¨
+	void SetHackCheckPulse();			// í•µ ê²€ì‚¬ í„ìŠ¤ ê°’ì„ í˜„ì¬ í„ìŠ¤ ê°’ìœ¼ë¡œ ì„¤ì •
+	bool CheckHackPulse(int clientPulse);	// í´ë¼ì´ì–¸íŠ¸ì˜ í„ìŠ¤ ê°’ìœ¼ë¡œ í•µí„ìŠ¤ ê²€ì‚¬
+	bool IncreaseHackCount(int n);			// í•µ ì¹´ìš´íŠ¸ ì¦ê°€, ì¦ì€ í•µ ì‹œë„ì‹œ ì ‘ì† ì¢…ë£Œ ì²˜ë¦¬
 
 private:
 	time_t m_tExtendCharacterSlotTime;
@@ -115,7 +115,7 @@ public:
 public:
 	void sendData_StartAndMoveZone();
 	void returnToCharacterSelectMode();
-	void sendStartData();					//Á¢¼Ó½Ã ÃÖÃÊ ÇÑ¹ø¸¸ Àü´ŞÇÏ´Â µ¥ÀÌÅÍ
+	void sendStartData();					//ì ‘ì†ì‹œ ìµœì´ˆ í•œë²ˆë§Œ ì „ë‹¬í•˜ëŠ” ë°ì´í„°
 
 #ifdef HARDCORE_SERVER
 	void Make_1_Level();
@@ -123,7 +123,7 @@ public:
 
 	void sendSyndicateOutNeedNasInfo();
 
-	// ÀÚµ¿ ÀúÀå½Ã »ç¿ëÇÏ´Â º¯¼ö
+	// ìë™ ì €ì¥ì‹œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜
 public:
 	unsigned int m_autoSaveSeq;
 

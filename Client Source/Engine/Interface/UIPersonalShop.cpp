@@ -10,7 +10,7 @@
 #include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UIRadar.h>
 #include <Engine/Interface/UISocketSystem.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 
 #include <Engine/Contents/Base/UIMsgBoxNumeric_only.h>
 #include <Engine/Info/MyInfo.h>

@@ -18,7 +18,7 @@ CElemental::CElemental(CPC* owner, char elementalType)
 
 	m_elementalType = elementalType;
 
-	// ±âº» ½ºÅÈ
+	// ê¸°ë³¸ ìŠ¤íƒ¯
 	m_defStr = m_owner->m_str;
 	m_defDex = m_owner->m_dex;
 	m_defInt = m_owner->m_int;
@@ -48,8 +48,8 @@ CElemental::CElemental(CPC* owner, char elementalType)
 
 	m_pulseRemain = SUMMON_DURATION;
 
-	// CCharacterÀÇ ¸â¹ö ÃÊ±âÈ­
-	int skillflag = 0;			// ¿¤¸®¸àÅ»¿¡ µû¸¥ SSF_USE_ ÇÃ·¡±×
+	// CCharacterì˜ ë©¤ë²„ ì´ˆê¸°í™”
+	int skillflag = 0;			// ì—˜ë¦¬ë©˜íƒˆì— ë”°ë¥¸ SSF_USE_ í”Œë˜ê·¸
 	m_type = MSG_CHAR_ELEMENTAL;
 
 	m_index = GetVirtualIndex();
@@ -110,8 +110,8 @@ CElemental::CElemental(CPC* owner, char elementalType)
 		break;
 	}
 
-	// ¼Ò¼­·¯ÀÇ ½ºÅ³Áß Á¤·ÉÀÌ »ç¿ëÇÒ ½ºÅ³À» °¡Á®¿Â´Ù
-	// ¾×Æ¼ºê ½ºÅ³
+	// ì†Œì„œëŸ¬ì˜ ìŠ¤í‚¬ì¤‘ ì •ë ¹ì´ ì‚¬ìš©í•  ìŠ¤í‚¬ì„ ê°€ì ¸ì˜¨ë‹¤
+	// ì•¡í‹°ë¸Œ ìŠ¤í‚¬
 	void* pos = owner->m_activeSkillList.GetHeadPosition();
 	while (pos)
 	{
@@ -125,7 +125,7 @@ CElemental::CElemental(CPC* owner, char elementalType)
 			}
 		}
 	}
-	// ÆĞ½Ãºê ½ºÅ³
+	// íŒ¨ì‹œë¸Œ ìŠ¤í‚¬
 	pos = owner->m_passiveSkillList.GetHeadPosition();
 	while (pos)
 	{
@@ -163,11 +163,11 @@ void CElemental::ApplyPassive()
 	if (!pc)
 		return ;
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	memset(&m_avPassiveAddition, 0, sizeof(m_avPassiveAddition));
 	memset(&m_avPassiveRate, 0, sizeof(m_avPassiveRate));
 
-	// ÁÖÀÎÀÇ ÆĞ½Ãºê ¸®½ºÆ®¿¡¼­ Àû¿ë
+	// ì£¼ì¸ì˜ íŒ¨ì‹œë¸Œ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì ìš©
 	CSkill* pSkill;
 	void* pos = pc->m_passiveSkillList.GetHeadPosition();
 	while (pos)
@@ -177,7 +177,7 @@ void CElemental::ApplyPassive()
 		if (pSkill && pSkill->m_proto)
 		{
 			bool bApply = true;
-			// ¼ÒÈ¯¼ö´Â ¹«Á¶°Ç ÇÃ·¡±×°¡ ÀÖ¾î¾ß ÇÔ
+			// ì†Œí™˜ìˆ˜ëŠ” ë¬´ì¡°ê±´ í”Œë˜ê·¸ê°€ ìˆì–´ì•¼ í•¨
 			switch (GetElementalType())
 			{
 			case ELEMENTAL_FIRE:
@@ -231,7 +231,7 @@ void CElemental::AddSkill(int skillindex, int level)
 
 void CElemental::ResetStat()
 {
-	// CCharacterÀÇ ¸â¹ö ÃÊ±âÈ­
+	// CCharacterì˜ ë©¤ë²„ ì´ˆê¸°í™”
 	m_maxHP = m_defHP;
 
 	m_str = m_defStr;
@@ -266,10 +266,10 @@ void CElemental::ResetStat()
 
 void CElemental::CalcStatus(bool bSend)
 {
-	// ¿ø»óÅÂ·Î
+	// ì›ìƒíƒœë¡œ
 	ResetStat();
 
-	// ÆĞ½Ãºê ½ºÅ³ Àû¿ë
+	// íŒ¨ì‹œë¸Œ ìŠ¤í‚¬ ì ìš©
 	ApplyPassive();
 
 	m_assist.Apply();

@@ -6,6 +6,8 @@
 #include "CmdMsg.h"
 #include "doFunc.h"
 #include "../ShareLib/DBCmd.h"
+#include "../ShareLib/ptype_cashshop.h"
+#include "../ShareLib/format.h"
 
 void doCashItemPurchaseHistory(CPC* ch, CNetMsg::SP& msg)
 {
@@ -24,7 +26,7 @@ void doCashItemPurchaseHistory(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemPurchaseList(CPC* ch, CNetMsg::SP& msg)
 {
-	//MSG_CONN_CASHITEM_PURCHASELIST_REQ, // ±∏¿‘∏Ò∑œ     : userindex(n) charindex(n)
+	//MSG_CONN_CASHITEM_PURCHASELIST_REQ, // Íµ¨ÏûÖÎ™©Î°ù     : userindex(n) charindex(n)
 
 	if(gserver->isRunConnector())
 	{
@@ -42,170 +44,133 @@ void doCashItemPurchaseList(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-void CashItemBringProcess(CPC* ch, CNetMsg::SP& msg, bool bPresent)
+void doCashItemBring(CPC* ch, CNetMsg::SP& msg)
 {
-	// ƒ…∏Ø≈Õ éÙ ∞…∞Ì «ˆ¿Á ¿Œ∫•ƒ≠/ º“¡ˆ∑Æ ¡§∫∏∏¶ »Æ¿Œ»ƒ ∞·∞˙ø°µ˚∂Û ø°∑Ø ∏ﬁºº¡ˆ∏¶ ∫∏≥ª∞≈≥™ æ∆¿Ã≈€¿ª ¡ˆ±ﬁ»ƒ ƒø≥ÿ≈Õø° ºº∆√ ø‰√ª¿ª «—¥Ÿ
-	// ƒø≥ÿ≈Õ∞° ¡¶¥Î∑Œ ºº∆√ ∏¯«ﬂ¿ª ∞ÊøÏ ∑—πÈ«—¥Ÿ.
-	//MSG_EX_CASHITEM_BRING_REQ,			// ∞°¡Æø¿±‚			: count(n) idx(n) ctid(n)
-	int count = 0;
-	int ctid[10], idx[10], i;
-	int invenSpace = 0;
-	int sumItem = 0;
-	memset(idx, -1, sizeof(idx) );
-	memset(ctid, -1, sizeof(ctid) );
-
-	RefMsg(msg) >> count;
-
-	if(count == 0)
+	if(gserver->isRunConnector() == false)
 	{
-		// ø≈±Ê π∞«∞¿Ã æ¯æÓø‰
-		ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
-		ch->m_billReqTime = 0;
 		CNetMsg::SP rmsg(new CNetMsg);
-		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
+		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_CONN, false);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
+	RequestClient::cash_purchase_bring* pmsg = reinterpret_cast<RequestClient::cash_purchase_bring*>(msg->m_buf);
+
+	if (pmsg->count_ <= 0 || pmsg->count_ > 10)
+	{
+		std::string error_msg = fmt::format("invalid count : {}", (int)pmsg->count_);
+		LOG_INFO(error_msg.c_str());
+		ch->m_desc->Close(error_msg);
+		return;
+	}
+
+	int sumItem = 0;
 	ch->SetPlayerState(PLAYER_STATE_CASHITEM);
 	ch->m_billReqTime = PULSE_BILLITEMREQ;
-	invenSpace = ch->m_inventory.getEmptyCount();
-	CCtItemList* ctItemList = NULL;
-	for(i = 0; i < count; i++)
+
+	for(int i = 0; i < pmsg->count_; i++)
 	{
-		RefMsg(msg) >> idx[i]
-					>> ctid[i];
+		{
+			// ÏûêÏã†Ïù¥ Íµ¨Îß§Ìïú Ïù¥Î†•Ïù¥ ÏûàÎäîÏßÄ Í≤ÄÏÇ¨
+			if (ch->is_valid_cash_purchase_list(pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_) == false)
+			{
+				std::string error_msg = fmt::format("invalid purchase index:{}:ctid:{}",
+					pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_);
+				LOG_INFO(error_msg.c_str());
+				ch->m_desc->Close(error_msg);
+				return;
+			}
+		}
 
-		int j = 0;
-		CCatalog* m_catalog = gserver->m_catalogList.Find(ctid[i]);
+		CCatalog* m_catalog = gserver->m_catalogList.Find(pmsg->data_[i].ct_item_index_);
+		if (m_catalog == NULL)
+		{
+			std::string error_msg = fmt::format("invalid catalog list: {}", pmsg->data_[i].ct_item_index_);
+			LOG_INFO(error_msg.c_str());
+			ch->m_desc->Close(error_msg);
+			return;
+		}
 
-		if( !m_catalog )
+		CCtItemList* ctItemList = m_catalog->GetCtItemList();
+		if (ctItemList == NULL || ctItemList->GetCount() <= 0)
 		{
 			ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
-			ch->m_billReqTime = 0;
 			CNetMsg::SP rmsg(new CNetMsg);
-			CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
+			CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, false);
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
 
-		ctItemList = m_catalog->GetCtItemList();
-		while(ctItemList && j < ctItemList->GetCount())
+		int itemcount = ctItemList->GetCount();
+		for (int j = 0; j < itemcount; ++j)
 		{
 			CItem* item = ctItemList->GetItem(j);
-			if( !item )
+			if (item == NULL)
 			{
 				ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
 				CNetMsg::SP rmsg(new CNetMsg);
-				CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
+				CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, false);
 				SEND_Q(rmsg, ch->m_desc);
 				return;
 			}
-			sumItem++;
-			j++;
+
+			++sumItem;
 		}
 	}
 
-	if (sumItem > invenSpace)
+	if (sumItem > ch->m_inventory.getEmptyCount())
 	{
-		// ƒ…∏Ø≈Õ ∂Ù«ÿ¡¶
+		// ÏºÄÎ¶≠ÌÑ∞ ÎùΩÌï¥Ï†ú
 		ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
 		ch->m_billReqTime = 0;
 		CNetMsg::SP rmsg(new CNetMsg);
-		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_LACKINVEN, bPresent);
+		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_LACKINVEN, false);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	if(gserver->isRunConnector())
+	GAMELOG << init("CASH_ITEM_BRING_REQ", ch )
+		<< "NOT_PRESENT" << delim
+		<< pmsg->count_ << delim;
+
+	int ctid[10] = {0,};
+	int purchase_index[10] = {0,};
+
+	for(int i = 0; i < pmsg->count_; i++)
 	{
-		GAMELOG << init("CASH_ITEM_BRING_REQ", ch )
-				<< (bPresent ? "PRESENT" : "NOT_PRESENT") << delim
-				<< count << delim;
-		CCtItemList* ctItemList = NULL;
-		for(i = 0; i < count; i++)
+		// m_catalogÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï®
+		CCatalog* m_catalog = gserver->m_catalogList.Find(pmsg->data_[i].ct_item_index_);
+		GAMELOG << m_catalog->GetIndex() << delim << m_catalog->GetName()  << delim;
+
+		// ctItemListÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï®
+		CCtItemList* ctItemList = m_catalog->GetCtItemList();
+		int itemcount = ctItemList->GetCount();
+
+		GAMELOG << itemcount << delim;
+
+		for(int j = 0; j < itemcount; j++)
 		{
-			int j = 0;
-			CCatalog* m_catalog = gserver->m_catalogList.Find(ctid[i]);
+			// pitemÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï® 
+			CItem* pitem = ctItemList->GetItem(j);
+			ch->GiveItem(pitem->m_itemProto->getItemIndex(),
+				pitem->getPlus(),
+				pitem->getFlag(),
+				pitem->Count() );
 
-			if( !m_catalog )
-			{
-				// ƒ…∏Ø≈Õ ∂Ù«ÿ¡¶
-				ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
-				ch->m_billReqTime = 0;
-				CNetMsg::SP rmsg(new CNetMsg);
-				CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
-				SEND_Q(rmsg, ch->m_desc);
-				return;
-			}
-
-			GAMELOG << m_catalog->GetIndex() << delim
-					<< m_catalog->GetName()  << delim;
-
-			ctItemList = m_catalog->GetCtItemList();
-
-			if( !ctItemList )
-			{
-				// ƒ…∏Ø≈Õ ∂Ù«ÿ¡¶
-				ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
-				ch->m_billReqTime = 0;
-				CNetMsg::SP rmsg(new CNetMsg);
-				CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
-				SEND_Q(rmsg, ch->m_desc);
-				return;
-			}
-
-			int itemcount = ctItemList->GetCount();
-
-			GAMELOG << itemcount << delim;
-
-			CItem* item;
-			for(j = 0; j < itemcount; j++)
-			{
-				item = ctItemList->GetItem(j);
-
-				if( !item )
-				{
-					// ƒ…∏Ø≈Õ ∂Ù«ÿ¡¶
-					ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
-					ch->m_billReqTime = 0;
-					CNetMsg::SP rmsg(new CNetMsg);
-					CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, bPresent);
-					SEND_Q(rmsg, ch->m_desc);
-					return;
-				}
-
-				ch->GiveItem(item->m_itemProto->getItemIndex(),
-							 item->getPlus(),
-							 item->getFlag(),
-							 item->Count() );
-
-//				GAMELOG << itemlog(item);		ª˝º∫µ«¥¬ æ∆¿Ã≈€ ∑Œ±◊∑Œ ¥Î√º
-			}
+			ch->erase_cash_purchase_list(pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_);
 		}
 
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			ConnCashItemBringReq(rmsg, bPresent, ch->m_desc->m_index, ch->m_index, count, idx, ctid);
-			SEND_Q(rmsg, gserver->m_connector);
-		}
-
-		GAMELOG << end;
+		ctid[i] = pmsg->data_[i].ct_item_index_;
+		purchase_index[i] = pmsg->data_[i].purchase_index_;
 	}
-	else
+
+	GAMELOG << end;
+
 	{
-		// ƒ‹≥ÿ≈Õ ø°∂Û ∏ﬁºº¡ˆ
-		// ƒ…∏Ø≈Õ ∂Ù«ÿ¡¶
-		ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
 		CNetMsg::SP rmsg(new CNetMsg);
-		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_CONN, bPresent);
-		SEND_Q(rmsg, ch->m_desc);
+		ConnCashItemBringReq(rmsg, false, ch->m_desc->m_index, ch->m_index, pmsg->count_, purchase_index, ctid);
+		SEND_Q(rmsg, gserver->m_connector);
 	}
-}
-
-void doCashItemBring(CPC* ch, CNetMsg::SP& msg)
-{
-	CashItemBringProcess(ch, msg, false);
 }
 
 void doCashItemBalanceReq(CPC* ch, CNetMsg::SP& msg)
@@ -226,7 +191,7 @@ void doCashItemPuchase(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> cash
 				>> count;
 
-	// ƒ…∏Ø≈Õ ∂Ù
+	// ÏºÄÎ¶≠ÌÑ∞ ÎùΩ
 	ch->SetPlayerState(PLAYER_STATE_CASHITEM);
 	ch->m_billReqTime = PULSE_BILLITEMREQ;
 
@@ -262,7 +227,7 @@ void doCashItemPuchase(CPC* ch, CNetMsg::SP& msg)
 				<< catal->GetCash() << delim
 				<< catal->GetMileage() << delim;
 
-		// ±∏¿‘ø‰√ª«— π∞«∞¿Ã «—¡§ ∆«∏≈ π∞«∞¿œ ∞ÊøÏ ∏ÆπÃ∆Æ∞° ≥≤æ∆¿÷¡ˆ æ ¿∏∏È ø°∑Ø ∏ﬁºº¡ˆ∏¶ ∫∏≥ø
+		// Íµ¨ÏûÖÏöîÏ≤≠Ìïú Î¨ºÌíàÏù¥ ÌïúÏ†ï ÌåêÎß§ Î¨ºÌíàÏùº Í≤ΩÏö∞ Î¶¨ÎØ∏Ìä∏Í∞Ä ÎÇ®ÏïÑÏûàÏßÄ ÏïäÏúºÎ©¥ ÏóêÎü¨ Î©îÏÑ∏ÏßÄÎ•º Î≥¥ÎÉÑ
 		std::set<int>::iterator it = gserver->m_limitCT.find(ctid[i]);
 		if( it != gserver->m_limitCT.end() )
 		{
@@ -320,10 +285,10 @@ void doCashItemPuchase(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemGift(CPC* ch, CNetMsg::SP& msg)
 {
-	// ∫∏≥ª¥¬ ƒ…∏Ø≈Õ lock ∞…∞Ì,
-	// t_characterø°º≠ ƒ…∏Ø≈Õ∞° ¿÷¥¬¡ˆ »Æ¿Œ,
-	// ∞°¡Æø¿±‚ «¡∑ŒººΩ∫∏¶ ¿ÃøÎ«œø© º±π∞ µ∫Òø° ºº∆√
-	// ºº∆√ º∫∞¯ø©∫Œø° µ˚∂Û rep ∏ﬁºº¡ˆ ∫∏≥ª±‚
+	// Î≥¥ÎÇ¥Îäî ÏºÄÎ¶≠ÌÑ∞ lock Í±∏Í≥†,
+	// t_characterÏóêÏÑú ÏºÄÎ¶≠ÌÑ∞Í∞Ä ÏûàÎäîÏßÄ ÌôïÏù∏,
+	// Í∞ÄÏ†∏Ïò§Í∏∞ ÌîÑÎ°úÏÑ∏Ïä§Î•º Ïù¥Ïö©ÌïòÏó¨ ÏÑ†Î¨º ÎîîÎπÑÏóê ÏÑ∏ÌåÖ
+	// ÏÑ∏ÌåÖ ÏÑ±Í≥µÏó¨Î∂ÄÏóê Îî∞Îùº rep Î©îÏÑ∏ÏßÄ Î≥¥ÎÇ¥Í∏∞
 
 	int count = 0;
 	int idx[10], ctid[10], i;
@@ -338,7 +303,7 @@ void doCashItemGift(CPC* ch, CNetMsg::SP& msg)
 	if(count > 10)
 		return ;
 
-	// ∂Ù∞…±‚
+	// ÎùΩÍ±∏Í∏∞
 	ch->SetPlayerState(PLAYER_STATE_CASHITEM);
 	ch->m_billReqTime = PULSE_BILLITEMREQ;
 
@@ -385,7 +350,7 @@ void doCashItemGift(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	// <<< kjban 2008.04.21
-	// º±π∞ πﬁ¿ª ¥ÎªÛ¿« ƒ≥∏Ø∏Ì ±Ê¿Ã √º≈©
+	// ÏÑ†Î¨º Î∞õÏùÑ ÎåÄÏÉÅÏùò Ï∫êÎ¶≠Î™Ö Í∏∏Ïù¥ Ï≤¥ÌÅ¨
 	if(recvcharName.Length() == 0)
 	{
 		ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
@@ -458,8 +423,8 @@ void doCashItemGiftRecvHistory(CPC* ch, CNetMsg::SP& msg)
 void doCashItemGiftRecvList(CPC* ch, CNetMsg::SP& msg)
 {
 	//// listflag					: (1 << 0): start, (1 << 1): end, (1 << 2): empty
-	// πﬁ¥¬ ƒ…∏Ø≈Õ ∂Ù∞…∞Ì, º±π∞ πﬁ¿∫ ∏ÆΩ∫∆Æ∏¶ ƒø≥ÿ≈Õø° ø‰√ª
-	// ∏ÆΩ∫∆Æ∏¶ πﬁæ∆ ∫∏≥ø
+	// Î∞õÎäî ÏºÄÎ¶≠ÌÑ∞ ÎùΩÍ±∏Í≥†, ÏÑ†Î¨º Î∞õÏùÄ Î¶¨Ïä§Ìä∏Î•º Ïª§ÎÑ•ÌÑ∞Ïóê ÏöîÏ≤≠
+	// Î¶¨Ïä§Ìä∏Î•º Î∞õÏïÑ Î≥¥ÎÉÑ
 	CNetMsg::SP rmsg(new CNetMsg);
 	ConnCashItemGiftRecvListReqMsg(rmsg, ch->m_desc->m_index, ch->m_index);
 	SEND_Q(rmsg, gserver->m_connector);
@@ -467,30 +432,153 @@ void doCashItemGiftRecvList(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemGiftRecv(CPC* ch, CNetMsg::SP& msg)
 {
-	// πﬁ¥¬ ƒ…∏Ø≈Õ ∂Ù∞…∞Ì ∞°¡Æø¿±‚ «¡∑ŒººΩ∫ µπ∏Æ±‚
-	CashItemBringProcess(ch, msg, true);
+	if(gserver->isRunConnector() == false)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_CONN, true);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	RequestClient::cash_gift_bring* pmsg = reinterpret_cast<RequestClient::cash_gift_bring*>(msg->m_buf);
+
+	if (pmsg->count_ <= 0 || pmsg->count_ > 10)
+	{
+		std::string error_msg = fmt::format("invalid count : {}", (int)pmsg->count_);
+		LOG_INFO(error_msg.c_str());
+		ch->m_desc->Close(error_msg);
+		return;
+	}
+
+	int sumItem = 0;
+	ch->SetPlayerState(PLAYER_STATE_CASHITEM);
+	ch->m_billReqTime = PULSE_BILLITEMREQ;
+
+	for(int i = 0; i < pmsg->count_; i++)
+	{
+		{
+			// ÏûêÏã†Ïù¥ Íµ¨Îß§Ìïú Ïù¥Î†•Ïù¥ ÏûàÎäîÏßÄ Í≤ÄÏÇ¨
+			if (ch->is_valid_cash_gift_list(pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_) == false)
+			{
+				std::string error_msg = fmt::format("invalid purchase index:{}:ctid:{}",
+					pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_);
+				LOG_INFO(error_msg.c_str());
+				ch->m_desc->Close(error_msg);
+				return;
+			}
+		}
+
+		CCatalog* m_catalog = gserver->m_catalogList.Find(pmsg->data_[i].ct_item_index_);
+		if (m_catalog == NULL)
+		{
+			std::string error_msg = fmt::format("invalid catalog list: {}", pmsg->data_[i].ct_item_index_);
+			LOG_INFO(error_msg.c_str());
+			ch->m_desc->Close(error_msg);
+			return;
+		}
+
+		CCtItemList* ctItemList = m_catalog->GetCtItemList();
+		if (ctItemList == NULL || ctItemList->GetCount() <= 0)
+		{
+			ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
+			CNetMsg::SP rmsg(new CNetMsg);
+			CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, true);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		int itemcount = ctItemList->GetCount();
+		for (int j = 0; j < itemcount; ++j)
+		{
+			CItem* item = ctItemList->GetItem(j);
+			if (item == NULL)
+			{
+				ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
+				CNetMsg::SP rmsg(new CNetMsg);
+				CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_NOTITEM, true);
+				SEND_Q(rmsg, ch->m_desc);
+				return;
+			}
+
+			++sumItem;
+		}
+	}
+
+	if (sumItem > ch->m_inventory.getEmptyCount())
+	{
+		// ÏºÄÎ¶≠ÌÑ∞ ÎùΩÌï¥Ï†ú
+		ch->ResetPlayerState(PLAYER_STATE_CASHITEM);
+		ch->m_billReqTime = 0;
+		CNetMsg::SP rmsg(new CNetMsg);
+		CashItemBringRepMsg(rmsg, MSG_EX_CASHITEM_ERROR_LACKINVEN, true);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	GAMELOG << init("CASH_ITEM_BRING_REQ", ch )
+		<< "PRESENT" << delim
+		<< pmsg->count_ << delim;
+
+	int ctid[10] = {0,};
+	int purchase_index[10] = {0,};
+
+	for(int i = 0; i < pmsg->count_; i++)
+	{
+		// m_catalogÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï®
+		CCatalog* m_catalog = gserver->m_catalogList.Find(pmsg->data_[i].ct_item_index_);
+		GAMELOG << m_catalog->GetIndex() << delim << m_catalog->GetName()  << delim;
+
+		// ctItemListÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï®
+		CCtItemList* ctItemList = m_catalog->GetCtItemList();
+		int itemcount = ctItemList->GetCount();
+
+		GAMELOG << itemcount << delim;
+
+		for(int j = 0; j < itemcount; j++)
+		{
+			// pitemÏùò Ïú†Ìö®ÏÑ±ÏùÄ ÏúóÏ™Ω for loopÏóêÏÑú Í≤ÄÏÇ¨Ìï® 
+			CItem* pitem = ctItemList->GetItem(j);
+			ch->GiveItem(pitem->m_itemProto->getItemIndex(),
+				pitem->getPlus(),
+				pitem->getFlag(),
+				pitem->Count() );
+
+			ch->erase_cash_gift_list(pmsg->data_[i].purchase_index_, pmsg->data_[i].ct_item_index_);
+		}
+
+		ctid[i] = pmsg->data_[i].ct_item_index_;
+		purchase_index[i] = pmsg->data_[i].purchase_index_;
+	}
+
+	GAMELOG << end;
+
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ConnCashItemBringReq(rmsg, true, ch->m_desc->m_index, ch->m_index, pmsg->count_, purchase_index, ctid);
+		SEND_Q(rmsg, gserver->m_connector);
+	}
 }
 
 void doCashItemShopOpenReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// πﬁ¥¬ µ•¿Ã≈Õ æ¯¿Ω.
-	// √≥¿Ω ø≠æ˙¿ª∂ß.. π´æ˘¿ª «“±Ó....
-	// ≈∏¿‘ ∏ÆΩ∫∆ÆµÈ¿ª ∫∏≥ªæﬂ ∞⁄¡ˆ
-	// ƒ≥Ω¨ ¿‹∞Ìµµ ∫∏≥ªæﬂ µ«¥¬µ• ¿‹∞Ì ø‰√ª¿Ã ø¿≥™? »Æ¿Œ «ÿ∫º∞Õ
+	// Î∞õÎäî Îç∞Ïù¥ÌÑ∞ ÏóÜÏùå.
+	// Ï≤òÏùå Ïó¥ÏóàÏùÑÎïå.. Î¨¥ÏóáÏùÑ Ìï†Íπå....
+	// ÌÉÄÏûÖ Î¶¨Ïä§Ìä∏Îì§ÏùÑ Î≥¥ÎÇ¥Ïïº Í≤†ÏßÄ
+	// Ï∫êÏâ¨ ÏûîÍ≥†ÎèÑ Î≥¥ÎÇ¥Ïïº ÎêòÎäîÎç∞ ÏûîÍ≥† ÏöîÏ≤≠Ïù¥ Ïò§ÎÇò? ÌôïÏù∏ Ìï¥Î≥ºÍ≤É
 	if(!ch)
 		return ;
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		// ≈∏¿‘∏ÆΩ∫∆Æ ∫∏≥ª±‚
+		// ÌÉÄÏûÖÎ¶¨Ïä§Ìä∏ Î≥¥ÎÇ¥Í∏∞
 		MsgCashshopTypeListRep(rmsg, gserver->m_catalogList.m_typeCount, gserver->m_catalogList.m_typelist, gserver->m_catalogList.m_subtypeCount, gserver->m_catalogList.m_subtypelist);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// √π∆‰¿Ã¡ˆ ∏ÆΩ∫∆Æ ∫∏≥ª±‚ doCashItemListReq ∑Á∆æ¿ª µπ∞Ì...∫∏≥ª¡Ææﬂ«‘...
+	// Ï≤´ÌéòÏù¥ÏßÄ Î¶¨Ïä§Ìä∏ Î≥¥ÎÇ¥Í∏∞ doCashItemListReq Î£®Ìã¥ÏùÑ ÎèåÍ≥†...Î≥¥ÎÇ¥Ï†∏ÏïºÌï®...
 	CashItemListProcess(ch, CATEGORY_HOTNNEW, 1);
 
-	// ¿‹∞Ì ∫∏≥ª±‚
+	// ÏûîÍ≥† Î≥¥ÎÇ¥Í∏∞
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnCashItemBalanceReq(rmsg, ch->m_desc->m_index, ch->m_desc->m_idname);
@@ -523,7 +611,7 @@ void doCashItemRecommandReq(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemWishListReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// º“∏¡ªÛ¿⁄ ø‰√ª
+	// ÏÜåÎßùÏÉÅÏûê ÏöîÏ≤≠
 	if(!ch)
 		return ;
 
@@ -534,7 +622,7 @@ void doCashItemWishListReq(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemWishListSaveReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// º“∏¡ªÛ¿⁄ ¿˙¿Â ø‰√ª
+	// ÏÜåÎßùÏÉÅÏûê Ï†ÄÏû• ÏöîÏ≤≠
 	if(!ch)
 		return ;
 	int ctid;
@@ -547,7 +635,7 @@ void doCashItemWishListSaveReq(CPC* ch, CNetMsg::SP& msg)
 
 void doCashItemWishListDelReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// º“∏¡ªÛ¿⁄ ªË¡¶ ø‰√ª
+	// ÏÜåÎßùÏÉÅÏûê ÏÇ≠Ï†ú ÏöîÏ≤≠
 	if(!ch)
 		return ;
 
@@ -561,9 +649,9 @@ void doCashItemWishListDelReq(CPC* ch, CNetMsg::SP& msg)
 
 void CashItemListProcess(CPC* ch, int SearchKey, int ReqPage)
 {
-	// ∏ÆΩ∫∆Æ ø‰√ª
+	// Î¶¨Ïä§Ìä∏ ÏöîÏ≤≠
 	int i;
-	int depth_level = 0;	// ∞Àªˆ ∑π∫ß (1:ƒ´≈◊∞Ì∏Æ, 2:≈∏¿‘, 3:º≠∫Í≈∏¿‘)
+	int depth_level = 0;	// Í≤ÄÏÉâ Î†àÎ≤® (1:Ïπ¥ÌÖåÍ≥†Î¶¨, 2:ÌÉÄÏûÖ, 3:ÏÑúÎ∏åÌÉÄÏûÖ)
 	int ct_count = 0;
 	int find_count = 0;
 	int* ctid = NULL;
@@ -576,9 +664,9 @@ void CashItemListProcess(CPC* ch, int SearchKey, int ReqPage)
 	int enable = 0;
 	CCatalog* pCatalog;
 
-	// 10¿∏∑Œ ≥™¥©æÓº≠ ≥™∏”¡ˆ∞° 0¿Ã æ∆¥œ∏È ∞Àªˆ∑π∫ß 3
-	// 1000¿∏∑Œ ≥™¥©æÓº≠ ≥™∏”¡ˆ∞° 0¿Ã æ∆¥œ∏È ∞Àªˆ∑π∫ß 2
-	// ±◊ø‹¥¬ ∞Àªˆ∑π∫ß 1
+	// 10ÏúºÎ°ú ÎÇòÎàÑÏñ¥ÏÑú ÎÇòÎ®∏ÏßÄÍ∞Ä 0Ïù¥ ÏïÑÎãàÎ©¥ Í≤ÄÏÉâÎ†àÎ≤® 3
+	// 1000ÏúºÎ°ú ÎÇòÎàÑÏñ¥ÏÑú ÎÇòÎ®∏ÏßÄÍ∞Ä 0Ïù¥ ÏïÑÎãàÎ©¥ Í≤ÄÏÉâÎ†àÎ≤® 2
+	// Í∑∏Ïô∏Îäî Í≤ÄÏÉâÎ†àÎ≤® 1
 
 	if(SearchKey % 10 != 0)				depth_level = 3;
 	else if(SearchKey % 1000 != 0)		depth_level = 2;
@@ -683,7 +771,7 @@ void CashItemListProcess(CPC* ch, int SearchKey, int ReqPage)
 			}
 		}
 	}
-	// «ÿ¥Á µ«¥¬ æ∆¿Ã≈€¿ª ¿¸∫Œ√£æ“¿∏¥œ..¿Ã¡¶ ∆‰¿Ã¡ˆ∏¶ ≥™¥©æÓ ∫æ¥œ¥Ÿ.
+	// Ìï¥Îãπ ÎêòÎäî ÏïÑÏù¥ÌÖúÏùÑ Ï†ÑÎ∂ÄÏ∞æÏïòÏúºÎãà..Ïù¥Ï†ú ÌéòÏù¥ÏßÄÎ•º ÎÇòÎàÑÏñ¥ Î¥ÖÎãàÎã§.
 	total_page = find_count / 8;
 
 	if((find_count % 8) != 0)
@@ -748,13 +836,13 @@ void CashItemListProcess(CPC* ch, int SearchKey, int ReqPage)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// «‘ºˆ ¡æ∑· Ω√..
+	// Ìï®Ïàò Ï¢ÖÎ£å Ïãú..
 	if(ctid)
 	{
 		delete[] ctid;
 		ctid = NULL;
 	}
-	// √ﬂ√µæ∆¿Ã≈€ ∏ÆΩ∫∆Æ ∫∏≥ª±‚
+	// Ï∂îÏ≤úÏïÑÏù¥ÌÖú Î¶¨Ïä§Ìä∏ Î≥¥ÎÇ¥Í∏∞
 	if(SearchKey % 10000 == 0)
 	{
 		CashItemRecommandProcess(ch, SearchKey);
@@ -762,7 +850,7 @@ void CashItemListProcess(CPC* ch, int SearchKey, int ReqPage)
 }
 void CashItemRecommandProcess(CPC* ch, int category)
 {
-	// √ﬂ√µ ∏ÆΩ∫∆Æ ø‰√ª
+	// Ï∂îÏ≤ú Î¶¨Ïä§Ìä∏ ÏöîÏ≤≠
 //	int category = 0;
 	int temp;
 	int recommand_ctid[5];
@@ -914,19 +1002,19 @@ void do_Ex_CashItem(CPC* ch, CNetMsg::SP& msg)
 	case MSG_EX_CASHITEM_PURCHASEHISTORY_REQ:
 		doCashItemPurchaseHistory(ch, msg);
 		break;
-	case MSG_EX_CASHITEM_GIFT_REQ:			// º±π∞ ∫∏≥ª±‚ ø‰√ª	: charName(str) Msg(str) count(n) idx(n) ctid(n)
+	case MSG_EX_CASHITEM_GIFT_REQ:			// ÏÑ†Î¨º Î≥¥ÎÇ¥Í∏∞ ÏöîÏ≤≠	: charName(str) Msg(str) count(n) idx(n) ctid(n)
 		doCashItemGift(ch, msg);
 		break;
-	case MSG_EX_CASHITEM_GIFT_SENDHISTORY_REQ:  // º±π∞ ≥ªø™ ∏ÆΩ∫∆Æ ø‰√ª : y(n) m(c) d(c)
+	case MSG_EX_CASHITEM_GIFT_SENDHISTORY_REQ:  // ÏÑ†Î¨º ÎÇ¥Ïó≠ Î¶¨Ïä§Ìä∏ ÏöîÏ≤≠ : y(n) m(c) d(c)
 		doCashItemGiftSendHistory(ch, msg);
 		break;
-	case MSG_EX_CASHITEM_GIFT_RECVHISTORY_REQ:  // º±π∞ ≥ªø™ ∏ÆΩ∫∆Æ ø‰√ª : y(n) m(c) d(c)
+	case MSG_EX_CASHITEM_GIFT_RECVHISTORY_REQ:  // ÏÑ†Î¨º ÎÇ¥Ïó≠ Î¶¨Ïä§Ìä∏ ÏöîÏ≤≠ : y(n) m(c) d(c)
 		doCashItemGiftRecvHistory(ch, msg);
 		break;
-	case MSG_EX_CASHITEM_GIFT_RECVLIST_REQ:	   // º±π∞ πﬁ¿∫ ∏ÆΩ∫∆Æ ø‰√ª
+	case MSG_EX_CASHITEM_GIFT_RECVLIST_REQ:	   // ÏÑ†Î¨º Î∞õÏùÄ Î¶¨Ïä§Ìä∏ ÏöîÏ≤≠
 		doCashItemGiftRecvList(ch, msg);
 		break;
-	case MSG_EX_CASHITEM_GIFT_RECV_REQ:			// º±π∞ πﬁ±‚		: count(n) idx(n) ctid(n)
+	case MSG_EX_CASHITEM_GIFT_RECV_REQ:			// ÏÑ†Î¨º Î∞õÍ∏∞		: count(n) idx(n) ctid(n)
 		doCashItemGiftRecv(ch, msg);
 		break;
 

@@ -5,6 +5,7 @@
 #include <Engine/Templates/StaticStackArray.h>
 #include <Engine/Graphics/DrawPort.h>
 #include <Engine/Base/Timer.h>
+#include "UIDefine.h"
 
 // Rectangle region of UI
 typedef struct _UIRect
@@ -331,6 +332,7 @@ public:
 // Message result of UI window
 enum WMSG_RESULT
 {
+	WMSG_OB			= -1,
 	WMSG_FAIL		= 0,		// Message is not processed
 	WMSG_SUCCESS	= 1,		// Message is processed, and that's all
 	WMSG_COMMAND	= 2,		// Message is processed, but needs another process
@@ -362,6 +364,18 @@ enum TEXT_ALIGN
 
 // Define position of button text
 #define	BTN_TEXT_OFFSETY		5
+
+class CUIBase;
+
+#ifndef		WORLD_EDITOR
+
+typedef boost::function< void(CUIBase* pUI) >	_ui_func;
+
+#else 
+
+typedef	void(*_ui_func)(CUIBase* pUI);
+
+#endif		// WORLD_EDITOR
 
 
 #endif		// _UI_COMMON_H_

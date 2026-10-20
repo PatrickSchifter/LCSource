@@ -14,10 +14,10 @@ SubHelperInGameConnectTimer* SubHelperInGameConnectTimer::instance()
 
 void SubHelperInGameConnectTimer::operate( rnSocketIOService* service )
 {
-	// Çö Å¸ÀÌ¸Ó »èÁ¦
+	// í˜„ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ¸Þ½ÅÁ® ¼­¹ö¿¡ Á¢¼Ó
+	// ë©”ì‹ ì ¸ ì„œë²„ì— ì ‘ì†
 	SubHelperInGame::instance()->connect();
 }
 
@@ -25,7 +25,7 @@ void SubHelperInGameConnectTimer::operate( rnSocketIOService* service )
 
 void SubHelperInGame::connect()
 {
-	// ¸Þ½ÃÁ¯ ¼­¹ö¿¡ Á¢¼Ó ½Ãµµ
+	// ë©”ì‹œì ¼ ì„œë²„ì— ì ‘ì† ì‹œë„
 	host_ = gserver->m_config.Find("SubHelper Server", "IP");
 	port_ = atoi(gserver->m_config.Find("SubHelper Server", "Port"));
 	bnf::instance()->CreateAsyncConnect(host_, port_, this, CONNECT_TYPE_FOR_CNETMSG);
@@ -57,7 +57,7 @@ void SubHelperInGame::onClose( rnSocketIOService* service )
 	bnf::instance()->RemoveSession(service);
 	service_ = NULL;
 
-	// ÀçÁ¢¼Ó Å¸ÀÌ¸Ó »ý¼º
+	// ìž¬ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	session_handle handle = bnf::instance()->CreateMSecTimer(RECONNECT_TIMER_FOR_MESSENGER,
 							(void *)SubHelperInGameConnectTimer::instance());
 }
@@ -66,7 +66,7 @@ void SubHelperInGame::onConnect( rnSocketIOService* service )
 {
 	service_ = service;
 
-	// Á¢¼Ó ÈÄ ÃÖÃÊ ¸Þ½ÃÁö Àü´Þ
+	// ì ‘ì† í›„ ìµœì´ˆ ë©”ì‹œì§€ ì „ë‹¬
 	this->WriteToOutput(gserver->m_subHelperConnMsg);
 
 	LOG_INFO("connected to SubHelper server (%s : %d)", host_.c_str(), port_);

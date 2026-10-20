@@ -7,8 +7,7 @@
 #include <Engine/Help/Util_Help.h>
 
 CUIText::CUIText()
-	: m_color(DEF_UI_FONT_COLOR)
-	, m_bShadow(FALSE)
+	: m_bShadow(FALSE)
 	, m_fZ(0.f)
 	, m_colShadow(DEF_UI_FONT_SHADOW_COLOR)
 	, m_bEdge(FALSE)
@@ -19,8 +18,12 @@ CUIText::CUIText()
 #endif // UI_TOOL
 	, m_strView("")
 	, m_strEllipsis("")
+	, m_bVerticality(FALSE)
 {
 	setType(eUI_CONTROL_TEXT);
+
+	for (int i = 0; i < eSTATE_MAX; ++i)
+		m_color[i] = DEF_UI_FONT_COLOR;
 }
 
 CUIText::~CUIText()
@@ -69,52 +72,148 @@ void CUIText::OnRender( CDrawPort* pDraw )
 	}
 
 	int		outX = nX;
+	CTString temStr;
+
+	extern INDEX g_iCountry;
+	int countryFontGapOffset = 12;
+	int countryYPosOffset = 6;
+
+	if (m_bVerticality == TRUE)
+	{
+		if( IsDBCSLeadByte(m_strView[0]) /*m_strView[con] & 0x80*/ )
+		{
+			char chatext[3];
+
+			chatext[0] = m_strView[0];
+			chatext[1] = m_strView[1];
+			chatext[2] = '\0';
+			temStr.PrintF("%s",chatext);
+		}
+		else
+			temStr.PrintF("%c",m_strView[0]);
+
+		if (g_iCountry == RUSSIA)
+		{
+			nY = nY - countryYPosOffset;
+		}
+	}
+	else
+		temStr = m_strView;
 
 	if (m_eAlignText_h == eALIGN_H_CENTER)
 	{
-		int str_width = pDraw->GetTextWidth2(m_strView);
+		int str_width = pDraw->GetTextWidth2(temStr);
 		outX += (m_nWidth - str_width) / 2;
 	}
 	else if (m_eAlignText_h == eALIGN_H_RIGHT)
 	{
-		int str_width = pDraw->GetTextWidth2(m_strView);
+		int str_width = pDraw->GetTextWidth2(temStr);
 		outX = outX + m_nWidth - str_width;
 	}
 
 	if (m_vecData.size() <= 0)
 	{
-		if (m_bShadow == FALSE && m_bEdge == TRUE)
+		if (m_bVerticality == TRUE)
 		{
-			pDraw->PutTextEx( m_strView, outX-1, nY-1, m_colShadow, m_fZ );
-			pDraw->PutTextEx( m_strView, outX+1, nY-1, m_colShadow, m_fZ );
-			pDraw->PutTextEx( m_strView, outX+1, nY+1, m_colShadow, m_fZ );
-			pDraw->PutTextEx( m_strView, outX-1, nY+1, m_colShadow, m_fZ );
+			int nFontGapCnt = 0;
+			int nLength = m_strView.Length();
+			CTString temStr;
+			char chatext[3];
+			for(int con = 0; con < nLength; con++)
+			{
+				if( IsDBCSLeadByte(m_strView[con]) /*m_strView[con] & 0x80*/ )
+				{
+					chatext[0] = m_strView[con];
+					chatext[1] = m_strView[con+1];
+					chatext[2] = '\0';
+					temStr.PrintF("%s",chatext);
+					con++;
+				}
+				else
+					temStr.PrintF("%c",m_strView[con]);
+
+				if (m_bShadow == FALSE && m_bEdge == TRUE)
+				{
+					pDraw->PutTextEx( temStr, outX-1, nY + (nFontGapCnt * countryFontGapOffset) - 1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( temStr, outX+1, nY + (nFontGapCnt * countryFontGapOffset) - 1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( temStr, outX+1, nY + (nFontGapCnt * countryFontGapOffset) + 1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( temStr, outX-1, nY + (nFontGapCnt * countryFontGapOffset) + 1, m_colShadow, m_fZ );
+				}
+
+				pDraw->PutTextEx( temStr, outX, nY + (nFontGapCnt * countryFontGapOffset), m_color[m_eChildItemState], m_fZ, m_bShadow, m_colShadow );
+				nFontGapCnt++;
+			}
 		}
-			
-		pDraw->PutTextEx( m_strView, outX, nY, m_color, m_fZ, m_bShadow, m_colShadow );
+		else
+		{
+			if (m_bShadow == FALSE && m_bEdge == TRUE)
+			{
+				pDraw->PutTextEx( m_strView, outX-1, nY-1, m_colShadow, m_fZ );
+				pDraw->PutTextEx( m_strView, outX+1, nY-1, m_colShadow, m_fZ );
+				pDraw->PutTextEx( m_strView, outX+1, nY+1, m_colShadow, m_fZ );
+				pDraw->PutTextEx( m_strView, outX-1, nY+1, m_colShadow, m_fZ );
+			}
+
+			pDraw->PutTextEx( m_strView, outX, nY, m_color[m_eChildItemState], m_fZ, m_bShadow, m_colShadow );
+		}		
 	}
 	else
 	{
 		CTString str;
 		COLOR col;
+		int nFontGapCnt = 0;
 
 		for (int i = 0; i < m_vecData.size(); ++i)
 		{
 			str = m_vecData[i].str.c_str();
 			col = m_vecData[i].col;
-
-			if (i > 0)
-				outX += pDraw->GetTextWidth2(m_vecData[i - 1].str.c_str());
-
-			if (m_bShadow == FALSE && m_bEdge == TRUE)
+			int nLength = str.Length();
+			
+			if (m_bVerticality == TRUE)
 			{
-				pDraw->PutTextEx( str, outX-1, nY-1, m_colShadow, m_fZ );
-				pDraw->PutTextEx( str, outX+1, nY-1, m_colShadow, m_fZ );
-				pDraw->PutTextEx( str, outX+1, nY+1, m_colShadow, m_fZ );
-				pDraw->PutTextEx( str, outX-1, nY+1, m_colShadow, m_fZ );
-			}
+				CTString temStr;
+				char chatext[3];
 
-			pDraw->PutTextEx( str, outX, nY, col, m_fZ, m_bShadow, m_colShadow );
+				for(int con = 0; con < nLength; con++)
+				{
+					if( IsDBCSLeadByte(str[con]) )
+					{
+						chatext[0] = str[con];
+						chatext[1] = str[con+1];
+						chatext[2] = '\0';
+						temStr.PrintF("%s",chatext);
+						con++;
+					}
+					else
+						temStr.PrintF("%c",str[con]);
+
+					if (m_bShadow == FALSE && m_bEdge == TRUE)
+					{
+						pDraw->PutTextEx( temStr, outX-1, nY + (nFontGapCnt * countryFontGapOffset) - 1, m_colShadow, m_fZ );
+						pDraw->PutTextEx( temStr, outX+1, nY + (nFontGapCnt * countryFontGapOffset) - 1, m_colShadow, m_fZ );
+						pDraw->PutTextEx( temStr, outX+1, nY + (nFontGapCnt * countryFontGapOffset) + 1, m_colShadow, m_fZ );
+						pDraw->PutTextEx( temStr, outX-1, nY + (nFontGapCnt * countryFontGapOffset) + 1, m_colShadow, m_fZ );
+					}
+
+					pDraw->PutTextEx( temStr, outX, nY + (nFontGapCnt * countryFontGapOffset), col, m_fZ, m_bShadow, m_colShadow );
+					nFontGapCnt++;
+				}
+			}
+			else
+			{
+				if (i > 0)
+					outX += pDraw->GetTextWidth2(m_vecData[i - 1].str.c_str());
+
+				if (m_bShadow == FALSE && m_bEdge == TRUE)
+				{
+					pDraw->PutTextEx( str, outX-1, nY-1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( str, outX+1, nY-1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( str, outX+1, nY+1, m_colShadow, m_fZ );
+					pDraw->PutTextEx( str, outX-1, nY+1, m_colShadow, m_fZ );
+				}
+
+				pDraw->PutTextEx( str, outX, nY, col, m_fZ, m_bShadow, m_colShadow );
+			}
 		}
 	}
 
@@ -139,36 +238,22 @@ void CUIText::setBackGround( UIRect rect, UIRectUV uv )
 
 WMSG_RESULT CUIText::OnLButtonUp( UINT16 x, UINT16 y )
 {
-	if (m_bHide)
-		return WMSG_FAIL;
+	WMSG_RESULT ret = CUIBase::OnLButtonUp(x, y);
 
-	if (IsInside(x, y) == FALSE)
-		return WMSG_FAIL;
-
-	if (m_pCmdUp)
-	{
-		m_pCmdUp->execute();
+	if (m_pCmdUp || m_funcUp)
 		return WMSG_SUCCESS; // Text의 커맨드가 실행되는 경우 메시지 중단
-	}
 
 	return WMSG_FAIL;
 }
 
 WMSG_RESULT CUIText::OnLButtonDown( UINT16 x, UINT16 y )
 {
-	if (m_bHide)
-		return WMSG_FAIL;
+	WMSG_RESULT ret = CUIBase::OnLButtonDown(x, y);
 
-	if (IsInside(x, y) == FALSE)
-		return WMSG_FAIL;
-
-	if (m_pCmd)
-	{
-		m_pCmd->execute();
+	if (m_pCmd || m_func)
 		return WMSG_SUCCESS; // Text의 커맨드가 실행되는 경우 캐릭터 이동 막기
-	}
 
-	return WMSG_FAIL;
+	return ret;
 }
 
 void CUIText::SetText( CTString& str, CTString strEllipsis /*= ""*/ )
@@ -234,7 +319,7 @@ void CUIText::SetPointColor( char* str, COLOR col )
 			if (strTemp.empty() == false)
 			{
 				_cont[nPos].str = strTemp;
-				_cont[nPos].col = m_color;
+				_cont[nPos].col = m_color[eSTATE_IDLE];
 				m_vecData.push_back(_cont[nPos++]);
 			}
 		}
@@ -251,8 +336,31 @@ void CUIText::SetPointColor( char* str, COLOR col )
 		if (strTemp.empty() == false)
 		{
 			_cont[nPos].str = strTemp;
-			_cont[nPos].col = m_color;
+			_cont[nPos].col = m_color[eSTATE_IDLE];
 			m_vecData.push_back(_cont[nPos]);
 		}
 	}
+}
+
+void CUIText::setFontColor( COLOR col )
+{
+	m_color[eSTATE_IDLE] = col;
+	m_color[eSTATE_ENTER] = col;
+	m_color[eSTATE_SELECT] = col;
+}
+
+void CUIText::ChildItemEnter()
+{
+	if (m_eChildItemState == eSTATE_SELECT)
+		return;
+
+	m_eChildItemState = eSTATE_ENTER;
+}
+
+void CUIText::ChildItemLeave()
+{
+	if (m_eChildItemState == eSTATE_SELECT)
+		return;
+
+	m_eChildItemState = eSTATE_IDLE;
 }

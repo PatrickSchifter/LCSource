@@ -87,29 +87,29 @@ bool CRewardManager::loadReward(MYSQL* _dataDB)
 
 bool CRewardManager::doReward(CPC * _pCh,  int _rewardIndex )
 {
-	// º¸»ó ´ë»óÀÚ°¡ ¾ø´Ù.
+	// ë³´ìƒ ëŒ€ìƒìê°€ ì—†ë‹¤.
 	if( !_pCh )
 		return false;
 
-	// º¸»ó ÀÎµ¥½º°¡ À¯È¿ÇÏÁö ¾ÊÀ½
+	// ë³´ìƒ ì¸ë°ìŠ¤ê°€ ìœ íš¨í•˜ì§€ ì•ŠìŒ
 	if( _rewardIndex < 1 )
 		return false;
 
-	// º¸»ó ¸®½ºÆ®°¡ ¾ø´Ù.
+	// ë³´ìƒ ë¦¬ìŠ¤íŠ¸ê°€ ì—†ë‹¤.
 	if( m_dataList.size() == 0 )
 		return false;
 
-	// º¸»ó µ¥ÀÌÅÍ Ã£±â
+	// ë³´ìƒ ë°ì´í„° ì°¾ê¸°
 	std::map<int, CReward>::iterator itr = m_dataList.find( _rewardIndex);
 
-	// º¸»ó ÀÎµ¦½ºÀÇ º¸»ó µ¥ÀÌÅÍ°¡ ¾ø´Ù.
+	// ë³´ìƒ ì¸ë±ìŠ¤ì˜ ë³´ìƒ ë°ì´í„°ê°€ ì—†ë‹¤.
 	if( itr == m_dataList.end() )
 		return false;
 
-	// º¸»ó µ¥ÀÌÅ¸¸¦ ±âÁö°í ³îÀÚ.
+	// ë³´ìƒ ë°ì´íƒ€ë¥¼ ê¸°ì§€ê³  ë†€ì.
 	CReward rData = itr->second;
 
-	// ¾ÆÀÌÅÛ Áö±Ş
+	// ì•„ì´í…œ ì§€ê¸‰
 	GAMELOG << init("REWARD-START", _pCh ) 	<< "reward index : " <<itr->second.getRewardIndex() << end;
 	if( !reward2Pc(_pCh) )
 	{
@@ -122,15 +122,15 @@ bool CRewardManager::doReward(CPC * _pCh,  int _rewardIndex )
 
 bool CRewardManager::checkRewardCondition(CPC * _pCh, CRewardData * _rData, int _prob, bool _checkRandom)
 {
-	// Áö±Ş °¡´ÉÇÑ Àâ È®ÀÎ
+	// ì§€ê¸‰ ê°€ëŠ¥í•œ ì¡ í™•ì¸
 	if( !_rData->checkJob(_pCh->m_job ) )
 		return false;
 
-	// ·¹º§ È®ÀÎ
+	// ë ˆë²¨ í™•ì¸
 	if(_rData->getLevelMini() > _pCh->m_level || _rData->getLevelMaxi() < _pCh->m_level )
 		return false;
 
-	// È®·ü
+	// í™•ë¥ 
 	if( _checkRandom )
 	{
 		int prob = GetRandom(0,10000);
@@ -178,17 +178,17 @@ bool CRewardManager::checkProto( CRewardData * _rData )
 
 bool CRewardManager::setRewardData(CPC * _pCh, int _rewardIndex,int _prob, int _pos)
 {
-	// º¸»ó ¾ÆÀÌÅÛÀ» ´ãÀ» ¸Ş¸ğ¸® ÃÊ±âÈ­
+	// ë³´ìƒ ì•„ì´í…œì„ ë‹´ì„ ë©”ëª¨ë¦¬ ì´ˆê¸°í™”
 	initRewardDataInfo();
 
-	// º¸»ó µ¥ÀÌÅÍ Ã£±â
+	// ë³´ìƒ ë°ì´í„° ì°¾ê¸°
 	std::map<int, CReward>::iterator itr = m_dataList.find( _rewardIndex);
 
-	// º¸»ó ÀÎµ¦½ºÀÇ º¸»ó µ¥ÀÌÅÍ°¡ ¾ø´Ù.
+	// ë³´ìƒ ì¸ë±ìŠ¤ì˜ ë³´ìƒ ë°ì´í„°ê°€ ì—†ë‹¤.
 	if( itr == m_dataList.end() )
 		return false;
 
-	// º¸»ó µ¥ÀÌÅ¸¸¦ ±âÁö°í ³îÀÚ.
+	// ë³´ìƒ ë°ì´íƒ€ë¥¼ ê¸°ì§€ê³  ë†€ì.
 	CReward rData = itr->second;
 
 	switch( rData.getProbType() )
@@ -197,11 +197,11 @@ bool CRewardManager::setRewardData(CPC * _pCh, int _rewardIndex,int _prob, int _
 		if( !setRewardDataMulti( _pCh, &rData, _prob) )
 			return false;
 		break;
-	case 1: // once ¾ÆÀÌÅÛÁß¿¡ ÇÏ³ª¸¸ °ñ¶ó Áö±Ş ÇÑ´Ù.
+	case 1: // once ì•„ì´í…œì¤‘ì— í•˜ë‚˜ë§Œ ê³¨ë¼ ì§€ê¸‰ í•œë‹¤.
 		if( !setRewardDataOnceRandom( _pCh, &rData, _prob) )
 			return false;
 		break;
-	case 2: // once(selected) ¼±ÅÃµÈ ÇÏ³ª¸¸ Áö±Ş.
+	case 2: // once(selected) ì„ íƒëœ í•˜ë‚˜ë§Œ ì§€ê¸‰.
 		if( !setRewardDataOnceSelect( _pCh, &rData, _pos) )
 			return false;
 		break;
@@ -215,7 +215,7 @@ bool CRewardManager::setRewardData(CPC * _pCh, int _rewardIndex,int _prob, int _
 		return false;
 	}
 
-	// ÀÎº¥ ºó ½½·Ô°ú ¹«°Ô È®ÀÎ
+	// ì¸ë²¤ ë¹ˆ ìŠ¬ë¡¯ê³¼ ë¬´ê²Œ í™•ì¸
 	if( _pCh->m_inventory.getEmptyCount() < m_invenSlot )
 	{
 		initRewardDataInfo();
@@ -345,7 +345,7 @@ bool CRewardManager::pushRewardDataItem( CRewardData * _rData)
 		return false;
 
 	if(  pItemProto->getItemFlag() & ITEM_FLAG_COUNT )
-		m_invenSlot++; // Ä«¿îÆ®°¡ µÇ´Â ¾ÆÀÌÅÛÀº ½½·Ô ÇÏ³ª·Î °è»ê
+		m_invenSlot++; // ì¹´ìš´íŠ¸ê°€ ë˜ëŠ” ì•„ì´í…œì€ ìŠ¬ë¡¯ í•˜ë‚˜ë¡œ ê³„ì‚°
 	else
 		m_invenSlot += _rData->getItemCount();
 
@@ -362,7 +362,7 @@ bool CRewardManager::pushRewardDataItem( CRewardData * _rData)
 	}
 	else
 	{
-		// Ä«¿îÆ®°¡ ¾ÊµÇ´Â ¾ÆÀÌÅÛÀº ÇÏ³ª¾¿ ³Ö¾î³õ°í Áö±ŞÇÑ´Ù.
+		// ì¹´ìš´íŠ¸ê°€ ì•Šë˜ëŠ” ì•„ì´í…œì€ í•˜ë‚˜ì”© ë„£ì–´ë†“ê³  ì§€ê¸‰í•œë‹¤.
 		rdInfo.value3 = 1;
 
 		int j=0;

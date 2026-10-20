@@ -56,20 +56,20 @@ int CNM_Crypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsign
 
 	*pOut++ = (unsigned char)1;
 
-	// ÀÓ½Ã ¹öÆÛ¿¡ ¿øº» ±æÀÌ¸¦ ÀúÀå
+	// ì„ì‹œ ë²„í¼ì— ì›ë³¸ ê¸¸ì´ë¥¼ ì €ì¥
 	*pOut++ = (unsigned char)((nLenSrc >> 24) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc >> 16) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc >>  8) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc      ) & 0xff);
 
-	// ÀÓ½Ã ¹öÆÛ¿¡ ¿øº» µ¥ÀÌÅÍ º¹»ç
+	// ì„ì‹œ ë²„í¼ì— ì›ë³¸ ë°ì´í„° ë³µì‚¬
 	if (nLenSrc > 0)
 	{
 		memcpy(pOut, pSrc, nLenSrc);
 		pOut += nLenSrc;
 	}
 
-	// 8 byte·Î align
+	// 8 byteë¡œ align
 	int nLenBuf = pOut - pTmpBuf - 1;
 	int nPad = 0;
 	if (nLenBuf % 8 != 0)
@@ -81,7 +81,7 @@ int CNM_Crypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsign
 	}
 	nLenBuf = pOut - pTmpBuf;
 
-	// ¾ÏÈ£È­
+	// ì•”í˜¸í™”
 	if (!LCDES3_Crypt(pKey, pTmpBuf + 1, pDest + 1, nLenBuf - 1, true))
 		return -1;
 	*pDest = *pTmpBuf;
@@ -93,22 +93,22 @@ int CNM_Decrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsi
 {
 	unsigned char* pOut = pTmpBuf;
 
-	// º¹È£È­ : ´õ¹Ì Á¦¿Ü
+	// ë³µí˜¸í™” : ë”ë¯¸ ì œì™¸
 	if (!LCDES3_Crypt(pKey, pSrc + 1, pTmpBuf, nLenSrc - 1, false))
 		return -1;
 
-	// ´õ¹Ì
+	// ë”ë¯¸
 	if (*pSrc != 1)
 		return -1;
 
-	// ±æÀÌ¸¦ °¡Á®¿È
+	// ê¸¸ì´ë¥¼ ê°€ì ¸ì˜´
 	int nLenBuf = ((((int)(pOut[0])) << 24) & 0xff000000)
 				  | ((((int)(pOut[1])) << 16) & 0x00ff0000)
 				  | ((((int)(pOut[2])) <<  8) & 0x0000ff00)
 				  | ((((int)(pOut[3]))      ) & 0x000000ff);
 	pOut += 4;
 
-	// Æò¹® µ¥ÀÌÅÍ º¹»ç
+	// í‰ë¬¸ ë°ì´í„° ë³µì‚¬
 	if (nLenBuf < 0 || nLenBuf >= nLenSrc)
 		return -1;
 	if (nLenBuf > 0)
@@ -129,20 +129,20 @@ int CNM_OldCrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, uns
 
 	*pOut++ = (unsigned char)1;
 
-	// ÀÓ½Ã ¹öÆÛ¿¡ ¿øº» ±æÀÌ¸¦ ÀúÀå
+	// ì„ì‹œ ë²„í¼ì— ì›ë³¸ ê¸¸ì´ë¥¼ ì €ì¥
 	*pOut++ = (unsigned char)((nLenSrc >> 24) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc >> 16) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc >>  8) & 0xff);
 	*pOut++ = (unsigned char)((nLenSrc      ) & 0xff);
 
-	// ÀÓ½Ã ¹öÆÛ¿¡ ¿øº» µ¥ÀÌÅÍ º¹»ç
+	// ì„ì‹œ ë²„í¼ì— ì›ë³¸ ë°ì´í„° ë³µì‚¬
 	if (nLenSrc > 0)
 	{
 		memcpy(pOut, pSrc, nLenSrc);
 		pOut += nLenSrc;
 	}
 
-	// 8 byte·Î align
+	// 8 byteë¡œ align
 	int nLenBuf = pOut - pTmpBuf - 1;
 	int nPad = 0;
 	if (nLenBuf % 8 != 0)
@@ -154,7 +154,7 @@ int CNM_OldCrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, uns
 	}
 	nLenBuf = pOut - pTmpBuf;
 
-	// ¾ÏÈ£È­
+	// ì•”í˜¸í™”
 	if (!OLDDES3_Crypt(pKey, pTmpBuf + 1, pDest + 1, nLenBuf - 1, true))
 		return -1;
 	*pDest = *pTmpBuf;
@@ -166,22 +166,22 @@ int CNM_OldDecrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, u
 {
 	unsigned char* pOut = pTmpBuf;
 
-	// º¹È£È­ : ´õ¹Ì Á¦¿Ü
+	// ë³µí˜¸í™” : ë”ë¯¸ ì œì™¸
 	if (!OLDDES3_Crypt(pKey, pSrc + 1, pTmpBuf, nLenSrc - 1, false))
 		return -1;
 
-	// ´õ¹Ì
+	// ë”ë¯¸
 	if (*pSrc != 1)
 		return -1;
 
-	// ±æÀÌ¸¦ °¡Á®¿È
+	// ê¸¸ì´ë¥¼ ê°€ì ¸ì˜´
 	int nLenBuf = ((((int)(pOut[0])) << 24) & 0xff000000)
 				  | ((((int)(pOut[1])) << 16) & 0x00ff0000)
 				  | ((((int)(pOut[2])) <<  8) & 0x0000ff00)
 				  | ((((int)(pOut[3]))      ) & 0x000000ff);
 	pOut += 4;
 
-	// Æò¹® µ¥ÀÌÅÍ º¹»ç
+	// í‰ë¬¸ ë°ì´í„° ë³µì‚¬
 	if (nLenBuf < 0 || nLenBuf >= nLenSrc)
 		return -1;
 	if (nLenBuf > 0)

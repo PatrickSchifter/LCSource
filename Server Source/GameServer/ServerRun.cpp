@@ -10,7 +10,7 @@
 #include "../ShareLib/CryptMem.h"
 #include "DBManager.h"
 
-// 1ÃÊ¸¶´Ù
+// 1ì´ˆë§ˆë‹¤
 void CServer::HeartBeat()
 {
 	CheckEventTime();
@@ -20,10 +20,10 @@ void CServer::HeartBeat()
 
 	CheckRaidReset();
 
-	// °ø¼º NPC °Ë»ç
+	// ê³µì„± NPC ê²€ì‚¬
 	CheckWarCastle();
 
-	// ¼¼±İ Â¡¼ö ¹× ºĞ¹è
+	// ì„¸ê¸ˆ ì§•ìˆ˜ ë° ë¶„ë°°
 	ProcTax();
 
 	ProcOXQuiz();
@@ -42,9 +42,9 @@ void CServer::HeartBeat()
 	m_extremeCube.CheckCubeSpace();
 #endif // EXTREME_CUBE
 
-	ProcEndExped();			//¿øÁ¤´ë ÇØÃ¼ Ã³¸®
+	ProcEndExped();			//ì›ì •ëŒ€ í•´ì²´ ì²˜ë¦¬
 
-	ProcEndParty();			//ÆĞÆ¼ ÇØÃ¼ Ã³¸®
+	ProcEndParty();			//íŒ¨í‹° í•´ì²´ ì²˜ë¦¬
 
 	ProcTrigger();
 
@@ -57,9 +57,9 @@ void CServer::HeartBeat()
 
 void CServer::ProcTax()
 {
-	// 1ºĞ ´ÜÀ§·Î castle¿¡ ÀúÀåÀ» ÇÏ´Ù°¡
-	// ¸ÅÀÏ ¿ÀÀü 8½Ã¿¡ helper·Î ¿äÃ»ÇÏ°í
-	// ÇïÆÛÀÇ ÀÀ´äÀÌ ¿À¸é castle¿¡¼­ Á¦°Å, Á¦°ÅÈÄ ¹ŞÀ» ´ë»óÀ» °»½Å
+	// 1ë¶„ ë‹¨ìœ„ë¡œ castleì— ì €ì¥ì„ í•˜ë‹¤ê°€
+	// ë§¤ì¼ ì˜¤ì „ 8ì‹œì— helperë¡œ ìš”ì²­í•˜ê³ 
+	// í—¬í¼ì˜ ì‘ë‹µì´ ì˜¤ë©´ castleì—ì„œ ì œê±°, ì œê±°í›„ ë°›ì„ ëŒ€ìƒì„ ê°±ì‹ 
 	if (m_taxSavePulse + PULSE_REAL_MIN <= m_pulse)
 	{
 		mysql_ping(&m_dbcastle);
@@ -70,14 +70,14 @@ void CServer::ProcTax()
 		if (gserver->isRunHelper())
 		{
 			struct tm tmCur = NOW();
-			// ¿äÀÏ °Ë»ç
+			// ìš”ì¼ ê²€ì‚¬
 			if (m_taxDivGuild == -1 || m_taxDivGuild != tmCur.tm_wday)
 			{
-				// ¿ù¿äÀÏ 0½Ã¿¡ ¼¼±İ ¹ŞÀ» ±æµå º¯°æ
+				// ì›”ìš”ì¼ 0ì‹œì— ì„¸ê¸ˆ ë°›ì„ ê¸¸ë“œ ë³€ê²½
 				if (tmCur.tm_wday == 1 && tmCur.tm_hour >= 0)
 					ChangeTaxGuild();
 
-				// 8½Ã °Ë»ç
+				// 8ì‹œ ê²€ì‚¬
 				if (tmCur.tm_hour >= 8)
 				{
 					m_taxDivGuild = tmCur.tm_wday;
@@ -113,7 +113,7 @@ void CServer::ProcMobItemControl()
 			break;
 	}
 
-	// ¸÷ ÄÁÆ®·Ñ, ¹Ù´Ú ¾ÆÀÌÅÛ Á¶Á¤
+	// ëª¹ ì»¨íŠ¸ë¡¤, ë°”ë‹¥ ì•„ì´í…œ ì¡°ì •
 	for (i=0; i < this->m_numZone; i++)
 	{
 		if (m_zones[i].m_bRemote)
@@ -129,7 +129,7 @@ void CServer::ProcMobItemControl()
 
 			if (m_zones[i].m_area[j].m_bEnable)
 			{
-				// ½Ì±Û ´øÀüÀÌ ¾Æ´Ò°æ¿ì¸¸ ¿É Çàµ¿ ·çÆ¾
+				// ì‹±ê¸€ ë˜ì „ì´ ì•„ë‹ê²½ìš°ë§Œ ì˜µ í–‰ë™ ë£¨í‹´
 				if (!(m_zones[i].IsPersonalDungeon() || m_zones[i].IsGuildRoom()))
 				{
 					if (m_pulse - m_zones[i].m_area[j].m_pulseNPCAI >= PULSE_NPC_AI)
@@ -138,28 +138,28 @@ void CServer::ProcMobItemControl()
 						//GAMELOG << init("_DEBUG") << "pulse" << delim << m_pulse << delim << "zones" << delim << i << delim << "area" << delim << j << end;
 						CheckMobActivityAndAkanProc(m_zones[i], m_zones[i].m_area[j]);
 
-						m_zones[i].m_area[j].Monster_synchronization( m_zones[i].m_area[j].m_nNPC_Killed_NPC );	// ¸÷ ¸®½ºÆ® µ¿±âÈ­
+						m_zones[i].m_area[j].Monster_synchronization( m_zones[i].m_area[j].m_nNPC_Killed_NPC );	// ëª¹ ë¦¬ìŠ¤íŠ¸ ë™ê¸°í™”
 					}
 
-					//¾ÏÈæÀÇ Àç´Ü, ¿¹¹è´çÀº ¸÷ Á×À¸¸é ¸®Á¨ ÇÏÁö ¾ÈÀ½
+					//ì•”í‘ì˜ ì¬ë‹¨, ì˜ˆë°°ë‹¹ì€ ëª¹ ì£½ìœ¼ë©´ ë¦¬ì   í•˜ì§€ ì•ˆìŒ
 					if(m_zones[i].m_index != ZONE_CAPPELLA_1
 							&& m_zones[i].m_index != ZONE_CAPPELLA_1)
 					{
 						if (m_pulse - m_zones[i].m_area[j].m_pulseNPCRegen >= PULSE_NPC_REGEN)
 						{
 							m_zones[i].m_area[j].m_pulseNPCRegen = m_pulse;
-							m_zones[i].m_area[j].MobRegen();			// ¸÷ ¸®Á¨
+							m_zones[i].m_area[j].MobRegen();			// ëª¹ ë¦¬ì  
 						}
 					}
 				}
-				m_zones[i].m_area[j].GroundItemControl();	// ¶³¾îÁø ¾ÆÀÌÅÛ Á¤¸®
+				m_zones[i].m_area[j].GroundItemControl();	// ë–¨ì–´ì§„ ì•„ì´í…œ ì •ë¦¬
 			}
 		}
 	}
 
 	m_mobAISeq = m_pulse - m_pulseProcHeartBeatPerSec;
 
-	// »ç¶óÁø ¾ÆÀÌÅÛ ¼ıÀÚ ·Î±× Ãâ·Â : 1ºĞ¿¡ ÇÑ¹ø
+	// ì‚¬ë¼ì§„ ì•„ì´í…œ ìˆ«ì ë¡œê·¸ ì¶œë ¥ : 1ë¶„ì— í•œë²ˆ
 	if (m_pulse - m_resetAdjustItem >= PULSE_REAL_MIN)
 	{
 		for (i=0; i < m_numZone; i++)
@@ -187,7 +187,7 @@ void CServer::ChangeWeather()
 {
 	int i;
 
-	// ³¯¾¾ º¯È­ : 30ºĞ¿¡ ÇÑ¹ø ¾¿
+	// ë‚ ì”¨ ë³€í™” : 30ë¶„ì— í•œë²ˆ ì”©
 	if (m_pulse - m_resetWeather >= PULSE_REAL_HALF)
 	{
 		for (i=0; i < this->m_numZone; i++)
@@ -272,13 +272,13 @@ void CServer::ProcStatistics()
 
 void CServer::ProcOXQuiz()
 {
-	// OX ÄûÁî
+	// OX í€´ì¦ˆ
 	if (m_bEventOX)
 	{
 		time_t timeCurrent;
 		time(&timeCurrent);
 
-		// OX ÄûÁî ½ÃÀÛ ¾Ë¸²
+		// OX í€´ì¦ˆ ì‹œì‘ ì•Œë¦¼
 		if (!m_bOXQuizNoticeStart)
 		{
 			if (timeCurrent >= m_timeEventOXStart)
@@ -300,7 +300,7 @@ void CServer::ProcOXQuiz()
 			}
 		}
 
-		// OX ÄûÁî Á¤´ä ¾Ë¸²
+		// OX í€´ì¦ˆ ì •ë‹µ ì•Œë¦¼
 		if (m_nOXQuizRealNo != -1)
 		{
 			if (timeCurrent >= m_timeOXQuizLimit)
@@ -323,7 +323,7 @@ void CServer::ProcOXQuiz()
 							pZone->m_area[0].SendToAllClient(rmsg);
 						}
 
-						// »óÇ° Áö±Ş °áÁ¤
+						// ìƒí’ˆ ì§€ê¸‰ ê²°ì •
 						int nItemIndex = -1;
 						LONGLONG nItemCount = 0;
 						switch (m_nOXQuizSeqNo)
@@ -356,11 +356,11 @@ void CServer::ProcOXQuiz()
 							nItemCount = 1;
 							break;
 #elif defined(LC_KOR)
-						// 2010³â 04¿ù 30ÀÏ º¸»ó º¯°æ
-						//	1´Ü°è - 10¹®Á¦±îÁö ¸ÂÃß¸é °æÇèÄ¡ ÁõÆøÁ¦ 5°³
-						//	2´Ü°è - 15¹®Á¦±îÁö ¸ÂÃß¸é °í±ŞÁ¦·Ã¼® 3°³
-						//	3´Ü°è - 18¹®Á¦±îÁö ¸ÂÃß¸é »ó±ŞÀÚ¿ë ¾ÆÀÌ¸®½ºÀÇ »óÀÚ 2°³
-						//	ÃÖÁ¾´Ü°è - 20¹®Á¦±îÁö ¸ğµÎ ¸ÂÃß¸é ³ªÀÌÆ®¼Îµµ¿ì »ı¼ºÄ«µå 1°³
+						// 2010ë…„ 04ì›” 30ì¼ ë³´ìƒ ë³€ê²½
+						//	1ë‹¨ê³„ - 10ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ê²½í—˜ì¹˜ ì¦í­ì œ 5ê°œ
+						//	2ë‹¨ê³„ - 15ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ê³ ê¸‰ì œë ¨ì„ 3ê°œ
+						//	3ë‹¨ê³„ - 18ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ìƒê¸‰ììš© ì•„ì´ë¦¬ìŠ¤ì˜ ìƒì 2ê°œ
+						//	ìµœì¢…ë‹¨ê³„ - 20ë¬¸ì œê¹Œì§€ ëª¨ë‘ ë§ì¶”ë©´ ë‚˜ì´íŠ¸ì…°ë„ìš° ìƒì„±ì¹´ë“œ 1ê°œ
 						case 10:
 							nItemIndex = 6094;
 							nItemCount = 10;
@@ -377,20 +377,20 @@ void CServer::ProcOXQuiz()
 							nItemIndex = 7209;
 							nItemCount = 1;
 							break;
-							// 2010³â 04¿ù 30ÀÏ º¸»ó º¯°æ
-							//	1´Ü°è - 10¹®Á¦±îÁö ¸ÂÃß¸é °æÇèÄ¡ ÁõÆøÁ¦ 5°³
-							//	2´Ü°è - 15¹®Á¦±îÁö ¸ÂÃß¸é °í±ŞÁ¦·Ã¼® 3°³
-							//	3´Ü°è - 18¹®Á¦±îÁö ¸ÂÃß¸é »ó±ŞÀÚ¿ë ¾ÆÀÌ¸®½ºÀÇ »óÀÚ 2°³
-							//	ÃÖÁ¾´Ü°è - 20¹®Á¦±îÁö ¸ğµÎ ¸ÂÃß¸é ³ªÀÌÆ®¼Îµµ¿ì »ı¼ºÄ«µå 1°³
+							// 2010ë…„ 04ì›” 30ì¼ ë³´ìƒ ë³€ê²½
+							//	1ë‹¨ê³„ - 10ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ê²½í—˜ì¹˜ ì¦í­ì œ 5ê°œ
+							//	2ë‹¨ê³„ - 15ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ê³ ê¸‰ì œë ¨ì„ 3ê°œ
+							//	3ë‹¨ê³„ - 18ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ìƒê¸‰ììš© ì•„ì´ë¦¬ìŠ¤ì˜ ìƒì 2ê°œ
+							//	ìµœì¢…ë‹¨ê³„ - 20ë¬¸ì œê¹Œì§€ ëª¨ë‘ ë§ì¶”ë©´ ë‚˜ì´íŠ¸ì…°ë„ìš° ìƒì„±ì¹´ë“œ 1ê°œ
 // 						case 10:	nItemIndex = 882;	nItemCount = 5;		break;
 //						case 15:	nItemIndex = 85;	nItemCount = 3;		break;
 //						case 18:	nItemIndex = 5078;	nItemCount = 2;		break;
 //						case 20:	nItemIndex = 4914;	nItemCount = 1;		break;
-							// 2007³â 12¿ù 4ÀÏ º¯°æ
-							//	1´Ü°è - 10¹®Á¦±îÁö ¸ÂÃß¸é ÃÖÇÏ±Ş ¹®½ºÅæ 6°³
-							//	2´Ü°è - 15¹®Á¦±îÁö ¸ÂÃß¸é ÇÏ±Ş ¹®½ºÅæ 4°³
-							//	3´Ü°è - 18¹®Á¦±îÁö ¸ÂÃß¸é ¹®½ºÅæ 3°³
-							//	ÃÖÁ¾´Ü°è - 20¹®Á¦±îÁö ¸ğµÎ ¸ÂÃß¸é »ó±Ş ¹®½ºÅæ 2°³
+							// 2007ë…„ 12ì›” 4ì¼ ë³€ê²½
+							//	1ë‹¨ê³„ - 10ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ìµœí•˜ê¸‰ ë¬¸ìŠ¤í†¤ 6ê°œ
+							//	2ë‹¨ê³„ - 15ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ í•˜ê¸‰ ë¬¸ìŠ¤í†¤ 4ê°œ
+							//	3ë‹¨ê³„ - 18ë¬¸ì œê¹Œì§€ ë§ì¶”ë©´ ë¬¸ìŠ¤í†¤ 3ê°œ
+							//	ìµœì¢…ë‹¨ê³„ - 20ë¬¸ì œê¹Œì§€ ëª¨ë‘ ë§ì¶”ë©´ ìƒê¸‰ ë¬¸ìŠ¤í†¤ 2ê°œ
 //						case 10:	nItemIndex = 2545;	nItemCount = 6;		break;
 //						case 15:	nItemIndex = 2546;	nItemCount = 4;		break;
 //						case 18:	nItemIndex = 723;	nItemCount = 3;		break;
@@ -416,19 +416,19 @@ void CServer::ProcOXQuiz()
 						case 10:
 							nItemIndex = 723;
 							nItemCount = 10;
-							break;  // ¹®½ºÅæ
+							break;  // ë¬¸ìŠ¤í†¤
 						case 15:
 							nItemIndex = 2843;
 							nItemCount = 10;
-							break;  // Ä«¿À½ºº¼
+							break;  // ì¹´ì˜¤ìŠ¤ë³¼
 						case 18:
 							nItemIndex = 85;
 							nItemCount = 5;
-							break;  // °íÁ¦
+							break;  // ê³ ì œ
 						case 20:
 							nItemIndex = 85;
 							nItemCount = 10;
-							break;	// °íÁ¦
+							break;	// ê³ ì œ
 #else
 						case 10:
 							nItemIndex = 786;
@@ -449,7 +449,7 @@ void CServer::ProcOXQuiz()
 #endif // LC_TLD
 						}
 
-						// ¿À´äÀÚ ³»º¸³»±â
+						// ì˜¤ë‹µì ë‚´ë³´ë‚´ê¸°
 						int nExtra = (qdFind->GetAnswer()) ? 1 : 2;
 						float left		= pZone->m_zonePos[nExtra][1] / 2.0;
 						float top		= pZone->m_zonePos[nExtra][2] / 2.0;
@@ -459,7 +459,7 @@ void CServer::ProcOXQuiz()
 						if (pStartZone == NULL)
 							return;
 
-// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 						std::vector<CPC*> m_MovePCList;
 
 						int cx, cz;
@@ -477,13 +477,13 @@ void CServer::ProcOXQuiz()
 										CPC* pPC = TO_PC(p);
 										if (pPC->m_admin < 2)
 										{
-											// ¾É¾ÆÀÖÀ¸¸é ÀÏÀ¸ÄÑ »õ¿ó½Ã´Ù.
+											// ì•‰ì•„ìˆìœ¼ë©´ ì¼ìœ¼ì¼œ ìƒˆì›ì‹œë‹¤.
 											pPC->ResetPlayerState(PLAYER_STATE_SITDOWN);
 											pPC->CalcStatus(true);
 
 											if (!(left < GET_X(pPC) && GET_X(pPC) < right && top < GET_Z(pPC) && GET_Z(pPC) < bottom))
 											{
-												m_MovePCList.push_back( pPC );		// ³ª°¡¾ß ÇÒ»ç¶÷ ¼±º°
+												m_MovePCList.push_back( pPC );		// ë‚˜ê°€ì•¼ í• ì‚¬ëŒ ì„ ë³„
 											}
 											else
 											{
@@ -523,7 +523,7 @@ void CServer::ProcOXQuiz()
 						for(; it != endit; ++it)
 						{
 							CPC* movePc = *(it);
-							// ³»º¸³»¾ßÇÒ »ç¶÷ ³»º¸³»±â
+							// ë‚´ë³´ë‚´ì•¼í•  ì‚¬ëŒ ë‚´ë³´ë‚´ê¸°
 							GAMELOG << init("EVENT OX QUIZ INCORRECT", movePc)
 									<< "COUNT" << delim
 									<< m_nOXQuizSeqNo << delim
@@ -551,14 +551,14 @@ void CServer::ProcOXQuiz()
 
 void CServer::ProcRecommendServerMoonstone()
 {
-	// ÃßÃµ¼­¹ö¿¡¼­¸¸
+	// ì¶”ì²œì„œë²„ì—ì„œë§Œ
 	if (!m_bRecommend)
 	{
 		m_pulseRecommendMoonstone = m_pulse;
 		return ;
 	}
 
-	// ÇÑ½Ã°£¿¡ ÇÑ¹ø
+	// í•œì‹œê°„ì— í•œë²ˆ
 	if (m_pulse - m_pulseRecommendMoonstone >= PULSE_REAL_HOUR)
 	{
 		std::vector<int> listTargetPC;
@@ -573,10 +573,10 @@ void CServer::ProcRecommendServerMoonstone()
 				continue;
 			}
 
-			// 31·¹º§ ÀÌ»ó ºñÇÇ½ºÁ¸ À¯Àú´ë»ó
+			// 31ë ˆë²¨ ì´ìƒ ë¹„í”¼ìŠ¤ì¡´ ìœ ì €ëŒ€ìƒ
 
 			if ( pc->m_level > RECOMMEND_SERVER_LEVEL && !pc->IsInPeaceZone(true)
-					&& pc->m_admin < 2							// ¿î¿µÀÚ Á¦¿Ü
+					&& pc->m_admin < 2							// ìš´ì˜ì ì œì™¸
 			   )
 			{
 				listTargetPC.push_back(pc->m_index);
@@ -590,11 +590,11 @@ void CServer::ProcRecommendServerMoonstone()
 #if !defined (BILA_RECOMMEND_SERVER_REWARD_CHANGE)
 			CItem* pItem = gserver->m_itemProtoList.CreateItem(723, -1, 0, 0, 10);
 #else
-			CItem* pItem = gserver->m_itemProtoList.CreateItem(2843, -1, 0, 0, 10);	// BILA´Â ÃßÃµ ¼­¹ö º¸»ó ¾ÆÀÌÅÛÀÌ Ä«¿À½º º¼
+			CItem* pItem = gserver->m_itemProtoList.CreateItem(2843, -1, 0, 0, 10);	// BILAëŠ” ì¶”ì²œ ì„œë²„ ë³´ìƒ ì•„ì´í…œì´ ì¹´ì˜¤ìŠ¤ ë³¼
 #endif // BILA_RECOMMEND_SERVER_REWARD_CHANGE
 			if (pItem)
 			{
-				// pos¿¡¼­ ¼øÂ÷ÀûÀ¸·Î ¹®½ºÅæ 10°³¸¦ Áö±ŞÇÒ ¼ö ÀÖ´Â À¯Àú¸¦ Ã£¾Æ ÁÖ°í ¾Ë¸°´Ù
+				// posì—ì„œ ìˆœì°¨ì ìœ¼ë¡œ ë¬¸ìŠ¤í†¤ 10ê°œë¥¼ ì§€ê¸‰í•  ìˆ˜ ìˆëŠ” ìœ ì €ë¥¼ ì°¾ì•„ ì£¼ê³  ì•Œë¦°ë‹¤
 				while(1)
 				{
 					if(pItem == NULL)
@@ -646,7 +646,7 @@ void CServer::ProcRecommendServerMoonstone()
 	}
 }
 
-// °ñµçº¼ Á¾·á Ã³¸®
+// ê³¨ë“ ë³¼ ì¢…ë£Œ ì²˜ë¦¬
 void CServer::ProcGoldenBall()
 {
 	if (m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_NOTHING)
@@ -734,7 +734,7 @@ void CServer::NewDoubleEventAuto()
 		bAuto = false;
 	}
 #else
-	switch(time.tm_hour)		// 21½Ã ~ 24½Ã ÄŞº¸Á¸ ´õºíÀÌº¥Æ®
+	switch(time.tm_hour)		// 21ì‹œ ~ 24ì‹œ ì½¤ë³´ì¡´ ë”ë¸”ì´ë²¤íŠ¸
 	{
 	case 21:
 	case 22:
@@ -774,7 +774,7 @@ void CServer::CheckMobActivityAndAkanProc(CZone& Zone, CArea& Area)
 	{
 		if(Area.m_nPauseMobActivity < gserver->getNowSecond())
 		{
-			Area.MobActivity();			// ¸÷ Çàµ¿
+			Area.MobActivity();			// ëª¹ í–‰ë™
 			if(Zone.m_index == ZONE_AKAN_TEMPLE)
 			{
 				if(Area.m_nCountDown > 0 )

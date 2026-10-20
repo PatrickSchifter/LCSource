@@ -48,18 +48,7 @@ WMSG_RESULT CUITreeItem::OnLButtonUp( UINT16 x, UINT16 y )
 	if (CheckChildProc() == false)
 		return WMSG_FAIL;
 
-	if (m_bHide == TRUE)
-		return WMSG_FAIL;
-
-	if (IsInside(x, y) == FALSE)
-	{		
-		return WMSG_FAIL;
-	}
-
-	if (m_pCmdUp)
-		m_pCmdUp->execute();
-
-	return WMSG_FAIL;
+	return CUIBase::OnLButtonUp(x, y);
 }
 
 WMSG_RESULT CUITreeItem::OnLButtonDown( UINT16 x, UINT16 y )
@@ -67,18 +56,7 @@ WMSG_RESULT CUITreeItem::OnLButtonDown( UINT16 x, UINT16 y )
 	if (CheckChildProc() == false)
 		return WMSG_FAIL;
 
-	if (m_bHide == TRUE)
-		return WMSG_FAIL;
-
-	if (IsInside(x, y) == FALSE)
-	{		
-		return WMSG_FAIL;
-	}
-
-	if (m_pCmd)
-		m_pCmd->execute();
-
-	return WMSG_FAIL;
+	return CUIBase::OnLButtonDown(x, y);
 }
 
 bool CUITreeItem::CheckChildProc()
@@ -101,22 +79,6 @@ bool CUITreeItem::CheckChildProc()
 	}
 
 	return true;
-}
-
-void CUITreeItem::OnEnter( UINT16 x, UINT16 y )
-{
-	m_bEnter = true;
-
-	if (m_pCmdOnEnter != NULL)
-		m_pCmdOnEnter->execute();
-}
-
-void CUITreeItem::OnLeave( UINT16 x, UINT16 y )
-{
-	m_bEnter = false;
-
-	if (m_pCmdOnLeave != NULL)
-		m_pCmdOnLeave->execute();
 }
 
 // --------------------------------------------------------------
@@ -792,6 +754,16 @@ WMSG_RESULT CUITree::IMEMessageProc( MSG* pMsg )
 		ret = IMEMessageChild(pMsg);
 
 	return ret;
+}
+
+// UIProductNPC 처럼 퀘스트 형식 메뉴가 나오고 실행시키면, 선택이 되어 버리는 경우가 있기 때문에
+// Enter 상태 체크 추가함.
+WMSG_RESULT CUITree::OnLButtonUp( UINT16 x, UINT16 y )
+{
+	if (m_bEnter == true)
+		CUIBase::OnLButtonUp(x, y);
+
+	return WMSG_FAIL;
 }
 
 void CUITree::SetScrollPos( int nPos )

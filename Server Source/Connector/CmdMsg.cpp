@@ -140,7 +140,7 @@ void ConnCashItemPurchaseHistoryRep(CNetMsg::SP& msg, int userindex, int charind
 
 void ConnCashItemPresentHistoryRep(CNetMsg::SP& msg, int userindex, int charindex, int y, int m, int d, bool bSend)
 {
-	// ÀÀ´ä				: errorcode(uc) count(n) ctid(n) sendcharName(str)
+	// ì‘ë‹µ				: errorcode(uc) count(n) ctid(n) sendcharName(str)
 	std::string sql = "";
 	sql.reserve(10240);
 
@@ -248,7 +248,7 @@ void PlayerRepMsg(CNetMsg::SP& msg)
 				<< gserver.m_maxSubServer
 				<< gserver.m_hardcore_flag_in_connector;
 
-	// zone 0¹øÀ» °¡Áö°í ÀÖ´Â ³ÑÀ» Ã£´Â´Ù
+	// zone 0ë²ˆì„ ê°€ì§€ê³  ìˆëŠ” ë„˜ì„ ì°¾ëŠ”ë‹¤
 	CDescriptor* d = gserver.m_desclist;
 	CDescriptor** result = new CDescriptor*[gserver.m_maxSubServer];
 	memset(result, 0, sizeof(CDescriptor*) * gserver.m_maxSubServer);
@@ -269,9 +269,9 @@ void PlayerRepMsg(CNetMsg::SP& msg)
 		RefMsg(msg) << i;
 		if (result[i - 1])
 		{
-			RefMsg(msg) << gserver.m_userList[result[i - 1]->m_subno - 1].m_count;
+			RefMsg(msg) << gserver.m_user_list->getUserCountInChannel( result[i - 1]->m_subno );
 
-#ifdef SETTING_IF_INNER_IP_NEW // ¿ÜºÎ ¾ÆÀÌÇÇ¿Í ³»ºÎ ¾ÆÀÌÇÇ°¡ ³ª´µ¸é »ç¿ë, »õ·Î¿î ¹öÁ¯ ...yhj
+#ifdef SETTING_IF_INNER_IP_NEW // ì™¸ë¶€ ì•„ì´í”¼ì™€ ë‚´ë¶€ ì•„ì´í”¼ê°€ ë‚˜ë‰˜ë©´ ì‚¬ìš©, ìƒˆë¡œìš´ ë²„ì ¼ ...yhj
 			CLCString ex_ip(100);
 			ex_ip.Format("EX_IP_%d", i);
 			if(  strcmp(gserver.m_config.Find("GameServer", (const char*)ex_ip),"") != 0 )

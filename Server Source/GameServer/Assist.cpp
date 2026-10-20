@@ -1,8 +1,8 @@
 /************************************
-  ¼öÁ¤»çÇ×
-  ¼öÁ¤ÇÑ »ç¶÷: bs
-  ¼öÁ¤ÀÏ: 2004-11-18 ¿ÀÈÄ 3:37:20
-  ¼³¸í: ½ºÅÈ º¯È­ Àû¿ë
+  ìˆ˜ì •ì‚¬í•­
+  ìˆ˜ì •í•œ ì‚¬ëŒ: bs
+  ìˆ˜ì •ì¼: 2004-11-18 ì˜¤í›„ 3:37:20
+  ì„¤ëª…: ìŠ¤íƒ¯ ë³€í™” ì ìš©
  ************************************/
 #include <boost/format.hpp>
 #include "stdhdrs.h"
@@ -159,7 +159,7 @@ bool CAssistList::Add(CCharacter* spellchar, int itemidx, const CSkillProto* pro
 
 	if (m_head == NULL)
 	{
-		// ÇÏ³ªµµ ¾øÀ¸¸é
+		// í•˜ë‚˜ë„ ì—†ìœ¼ë©´
 		m_head = m_tail = p;
 	}
 	else
@@ -189,28 +189,28 @@ bool CAssistList::CanApply(const CSkillProto* proto, int level)
 	const CMagicProto* listmagic;
 	int i, j;
 
-	// ¸®½ºÆ® ·çÇÁ
+	// ë¦¬ìŠ¤íŠ¸ ë£¨í”„
 	for (data = m_head; data; data = data->m_next)
 	{
 		listlevelproto = data->m_proto->Level(data->m_level);
 		if (listlevelproto == NULL)
 			continue ;
 
-		// ¸®½ºÆ®ÀÇ ½ºÅ³ ·çÇÁ
+		// ë¦¬ìŠ¤íŠ¸ì˜ ìŠ¤í‚¬ ë£¨í”„
 		for (i = 0; i < MAX_SKILL_MAGIC; i++)
 		{
 			listmagic = listlevelproto->m_magic[i];
 			if (listmagic == NULL)
 				continue ;
 
-			// ÀÔ·Â ½ºÅ³ ·çÇÁ
+			// ì…ë ¥ ìŠ¤í‚¬ ë£¨í”„
 			for (j = 0; j < MAX_SKILL_MAGIC; j++)
 			{
 				inmagic = inlevelproto->m_magic[j];
 				if (inmagic == NULL)
 					continue ;
 
-				// ºñ±³
+				// ë¹„êµ
 				if (inmagic->m_index != listmagic->m_index)
 					continue ;
 				if( (inmagic->m_index == 518 || inmagic->m_index == 519 ) && gserver->isActiveEvent(A_EVENT_HALLOWEEN))
@@ -228,7 +228,7 @@ bool CAssistList::CanApply(const CSkillProto* proto, int level)
 	return true;
 }
 
-// 060227 : bs : Àı´ë½Ã°£ ¹öÇÁ Ãß°¡
+// 060227 : bs : ì ˆëŒ€ì‹œê°„ ë²„í”„ ì¶”ê°€
 void CAssistList::DelDuplicate(const CSkillProto* proto, int level, bool bSend, CCharacter* ch, bool bNoCancelType)
 {
 	const CSkillLevelProto* inlevelproto = proto->Level(level);
@@ -244,7 +244,7 @@ void CAssistList::DelDuplicate(const CSkillProto* proto, int level, bool bSend, 
 	bool bDelete;
 	bool statusUpdate = true;
 
-	// ¸®½ºÆ® ·çÇÁ
+	// ë¦¬ìŠ¤íŠ¸ ë£¨í”„
 	dataNext = m_head;
 	while ((data = dataNext))
 	{
@@ -256,21 +256,21 @@ void CAssistList::DelDuplicate(const CSkillProto* proto, int level, bool bSend, 
 
 		bDelete = false;
 
-		// ¸®½ºÆ®ÀÇ ½ºÅ³ ·çÇÁ
+		// ë¦¬ìŠ¤íŠ¸ì˜ ìŠ¤í‚¬ ë£¨í”„
 		for (i = 0; i < MAX_SKILL_MAGIC && !bDelete; i++)
 		{
 			listmagic = listlevelproto->m_magic[i];
 			if (listmagic == NULL)
 				continue ;
 
-			// ÀÔ·Â ½ºÅ³ ·çÇÁ
+			// ì…ë ¥ ìŠ¤í‚¬ ë£¨í”„
 			for (j = 0; j < MAX_SKILL_MAGIC; j++)
 			{
 				inmagic = inlevelproto->m_magic[j];
 				if (inmagic == NULL)
 					continue ;
 
-				// ºñ±³
+				// ë¹„êµ
 				if (inmagic->m_index != listmagic->m_index)
 					continue ;
 
@@ -319,7 +319,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 		dataNext = data->m_next;
 
 		bool bSkip = false;
-		// ÁõÆøÁ¦´Â ½Ã°£ °¨¼Ò ¾øÀ½
+		// ì¦í­ì œëŠ” ì‹œê°„ ê°ì†Œ ì—†ìŒ
 		switch (data->m_index)
 		{
 		case 882:
@@ -328,17 +328,17 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 		case 885:
 		case 2875:
 		case 2855:
-		//[100823: selo] À¯·á ÁõÆøÁ¦
+		//[100823: selo] ìœ ë£Œ ì¦í­ì œ
 		case 6094:
 		case 6095:
 		case 6096:
-		case 7344:		// Æê °æÇèÄ¡ ÁõÆøÁ¦
+		case 7344:		// í« ê²½í—˜ì¹˜ ì¦í­ì œ
 		case 7345:
-		case 7346:		// ¾ÆÀÌ¸®½ºÀÇ ¿­Á¤
-#ifdef REFORM_PK_PENALTY_201108 // ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦´Â ½Ã°£ °¨¼Ò ¾ø´Ù.
-		case 7474:	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-		case 7475:	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-		case 7476:	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
+		case 7346:		// ì•„ì´ë¦¬ìŠ¤ì˜ ì—´ì •
+#ifdef REFORM_PK_PENALTY_201108 // ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œëŠ” ì‹œê°„ ê°ì†Œ ì—†ë‹¤.
+		case 7474:	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+		case 7475:	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+		case 7476:	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
 #endif
 		case 10804:
 			bSkip = true;
@@ -353,13 +353,13 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 			break;
 		}
 
-		if(data->m_proto->m_flag & SF_COMBO)		// ½Ã°£°¨¼Ò¾ø´Â½ºÅ³
+		if(data->m_proto->m_flag & SF_COMBO)		// ì‹œê°„ê°ì†Œì—†ëŠ”ìŠ¤í‚¬
 			continue;
 
-		// ÇÇ´Ğ½º ¹öÇÁÀÏ °æ¿ì
+		// í”¼ë‹‰ìŠ¤ ë²„í”„ì¼ ê²½ìš°
 		if ( data->m_proto->m_index == 516 )
 		{
-			// ·¹º§ 100 ±îÁö¸¸ »ç¿ë
+			// ë ˆë²¨ 100 ê¹Œì§€ë§Œ ì‚¬ìš©
 			if( ch->m_level < 100 )
 				bSkip = true;
 		}
@@ -367,7 +367,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 		if (bSkip)
 			continue ;
 
-		// ¸Å¹ø Àû¿ëµÇ´Â »óÅÂ °Ë»ç
+		// ë§¤ë²ˆ ì ìš©ë˜ëŠ” ìƒíƒœ ê²€ì‚¬
 		sp = data->m_proto;
 		if (!sp)
 			continue;
@@ -392,7 +392,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 						{
 							switch (slp->m_magic[i]->m_subtype)
 							{
-							// FREEZE »óÅÂ¿¡ °É¸®¸é ±³°¨ ÁßÁö
+							// FREEZE ìƒíƒœì— ê±¸ë¦¬ë©´ êµê° ì¤‘ì§€
 							case MST_ASSIST_FREEZE:
 								{
 									CDratanCastle * pCastle = CDratanCastle::CreateInstance();
@@ -402,7 +402,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 									}
 								}
 								break;
-							// Dot Damage Á×Áö´Â ¾Ê´Â ½Ã°£´ç µ¥¹ÌÁö
+							// Dot Damage ì£½ì§€ëŠ” ì•ŠëŠ” ì‹œê°„ë‹¹ ë°ë¯¸ì§€
 							case MST_ASSIST_POISON:
 							case MST_ASSIST_BLOOD:
 							case MST_ASSIST_DISEASE:
@@ -415,14 +415,14 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 										{
 										case MDT_RATE:
 											{
-												// yhj  090305   À¯Àú°¡ µğ¹öÇÁ¸¦ °É¾úÀ» °æ¿ì ½Ã°£´ç µ¥¹ÌÁö¸¦ 1/5 ·Î..
+												// yhj  090305   ìœ ì €ê°€ ë””ë²„í”„ë¥¼ ê±¸ì—ˆì„ ê²½ìš° ì‹œê°„ë‹¹ ë°ë¯¸ì§€ë¥¼ 1/5 ë¡œ..
 												switch( ch->m_type )
 												{
 												case MSG_CHAR_PC:
 													ch->m_hp -= (int)ch->m_maxHP * ( (nPowerValue / SKILL_RATE_UNIT / 20) ) ;
 													break;
 
-												// yhj  090305   À¯Àú¸¦ Á¦¿ÜÇÑ °ÍÀº µğ¹öÇÁ¸¦ °É¾úÀ» °æ¿ì ÃÊ´ç µ¥¹ÌÁö ±×´ë·ÎÀÓ..
+												// yhj  090305   ìœ ì €ë¥¼ ì œì™¸í•œ ê²ƒì€ ë””ë²„í”„ë¥¼ ê±¸ì—ˆì„ ê²½ìš° ì´ˆë‹¹ ë°ë¯¸ì§€ ê·¸ëŒ€ë¡œì„..
 												case MSG_CHAR_NPC:
 												case MSG_CHAR_PET:
 												case MSG_CHAR_ELEMENTAL:
@@ -459,7 +459,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 													ch->m_hp -=  (int)( nPowerValue/20 );
 													break;
 
-												// yhj  090305   À¯Àú¸¦ Á¦¿ÜÇÑ °ÍÀº µğ¹öÇÁ¸¦ °É¾úÀ» °æ¿ì ÃÊ´ç µ¥¹ÌÁö ±×´ë·ÎÀÓ..
+												// yhj  090305   ìœ ì €ë¥¼ ì œì™¸í•œ ê²ƒì€ ë””ë²„í”„ë¥¼ ê±¸ì—ˆì„ ê²½ìš° ì´ˆë‹¹ ë°ë¯¸ì§€ ê·¸ëŒ€ë¡œì„..
 												case MSG_CHAR_NPC:
 												case MSG_CHAR_PET:
 												case MSG_CHAR_ELEMENTAL:
@@ -503,7 +503,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 													{
 														if(evoPC->m_evocationIndex != EVOCATION_NONE)
 															evoPC->Unevocation();
-														// °­½Å ½Ã°£ ÃÊ±âÈ­
+														// ê°•ì‹  ì‹œê°„ ì´ˆê¸°í™”
 														evoPC->m_pulseEvocation[0] = 0;
 														evoPC->m_pulseEvocation[1] = 0;
 													}
@@ -741,12 +741,12 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 				|| (slp->m_useCount > 0 && data->m_remainCount <= 0)
 		   )
 		{
-			// °æÇèÄ¡ ºÎÈ° ¼÷·Ãµµ ÁÖ¹®¼­ÀÏ °æ¿ì ¹öÇÁ¸¦ »èÁ¦ÇÏÁö ¾Ê´Â´Ù.
+			// ê²½í—˜ì¹˜ ë¶€í™œ ìˆ™ë ¨ë„ ì£¼ë¬¸ì„œì¼ ê²½ìš° ë²„í”„ë¥¼ ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
 			if( data->m_index == 844
 					|| data->m_index == 845
-					|| data->m_index == 846		// ºÎÈ° ÁÖ¹®¼­
-					|| data->m_index == 7056	// ÀÌº¥Æ® ºÎÈ° ÁÖ¹®¼­
-					|| data->m_index == 2667	// ÃÊº¸ÀÚ¿ë ºÎÈ° ÁÖ¹®¼­
+					|| data->m_index == 846		// ë¶€í™œ ì£¼ë¬¸ì„œ
+					|| data->m_index == 7056	// ì´ë²¤íŠ¸ ë¶€í™œ ì£¼ë¬¸ì„œ
+					|| data->m_index == 2667	// ì´ˆë³´ììš© ë¶€í™œ ì£¼ë¬¸ì„œ
 					|| data->m_index == 2371
 					|| data->m_index == ONE_PERIOD_ITEM
 					|| data->m_index == SEVEN_PERIOD_ITEM
@@ -763,8 +763,8 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 			else
 			{
 				int old_skillIndex;
-				// ½Ã°£¿¡ ÀÇÇÑ Å©¸®½º¸¶½º ½ºÅ³ Á¦°Å ( SkillIndex : 490 )
-				// NPC¸¦ ¼ÒÈ¯ ÇÑ´Ù
+				// ì‹œê°„ì— ì˜í•œ í¬ë¦¬ìŠ¤ë§ˆìŠ¤ ìŠ¤í‚¬ ì œê±° ( SkillIndex : 490 )
+				// NPCë¥¼ ì†Œí™˜ í•œë‹¤
 				old_skillIndex = data->m_proto->m_index;
 				if( old_skillIndex == 490 )
 				{
@@ -774,7 +774,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 							&& !(ch->GetMapAttr() & MATT_FREEPKZONE) && !(ch->GetMapAttr() & MATT_PEACE)
 							&& !ch->m_pZone->IsGuildRoom() && !ch->m_pZone->IsOXQuizRoom() )
 						{
-							CNPC* pBoxNpc = gserver->m_npcProtoList.Create( 483/*Å©¸®½º¸¶½º ¼±¹° »óÀÚ*/, NULL );
+							CNPC* pBoxNpc = gserver->m_npcProtoList.Create( 483/*í¬ë¦¬ìŠ¤ë§ˆìŠ¤ ì„ ë¬¼ ìƒì*/, NULL );
 							if ( pBoxNpc )
 							{
 								GET_X(pBoxNpc) = GET_X(ch) + (GetRandom(0, 1) ? -1 : 1) * GetRandom(20, 50) / 10.0f;
@@ -801,7 +801,7 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 										ch->m_pArea->SendToCell(rmsg, GET_YLAYER(pBoxNpc), cx, cz);
 									}
 
-									GAMELOG << init(" EVENT XMAS XMAS BOX REGEN " ) << ch->m_name << end;	// ½ºÅ³ Àû¿ë ½ÇÆĞ
+									GAMELOG << init(" EVENT XMAS XMAS BOX REGEN " ) << ch->m_name << end;	// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 								}
 							}
 						}
@@ -810,9 +810,9 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 
 				old_skillIndex = data->m_proto->m_index;
 
-				if( old_skillIndex == 1060 )		// Ãâ¼®´ë±â »èÁ¦½Ã Ãâ¼® Ã¼Å© subtype 2
+				if( old_skillIndex == 1060 )		// ì¶œì„ëŒ€ê¸° ì‚­ì œì‹œ ì¶œì„ ì²´í¬ subtype 2
 				{
-					//Ãâ¼®¹öÇÁ°¡ ³¡³µ´Ù¸é Ãâ¼® ÀÎÁ¤ÇØÁÖ±â
+					//ì¶œì„ë²„í”„ê°€ ëë‚¬ë‹¤ë©´ ì¶œì„ ì¸ì •í•´ì£¼ê¸°
 					CPC* pc = TO_PC(ch);
 					pc->m_attendanceManager.finish();
 				}
@@ -867,16 +867,16 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 									{
 										pdropItem->m_pos = CPos(GET_X(ch), GET_Z(ch), ch->m_pos.m_h, GET_R(ch), GET_YLAYER(ch));
 
-										// ÁÂÇ¥ º¸Á¤
+										// ì¢Œí‘œ ë³´ì •
 										if (GET_X(pdropItem) < 0)		GET_X(pdropItem) = 0;
 										if (GET_Z(pdropItem) < 0)		GET_Z(pdropItem) = 0;
-										// 050207 - bs : Ãş¿¡ °ü°è¾øÀÌ »çÀÌÁî´Â 0¹ø Ãş¿¡¼­ ÂüÁ¶
+										// 050207 - bs : ì¸µì— ê´€ê³„ì—†ì´ ì‚¬ì´ì¦ˆëŠ” 0ë²ˆ ì¸µì—ì„œ ì°¸ì¡°
 										if (GET_X(pdropItem) >= ch->m_pArea->m_zone->m_attrMap[0].m_size[0])
 											GET_X(pdropItem) = ch->m_pArea->m_zone->m_attrMap[0].m_size[0];
 										if (GET_Z(pdropItem) >= ch->m_pArea->m_zone->m_attrMap[0].m_size[1])
 											GET_Z(pdropItem) = ch->m_pArea->m_zone->m_attrMap[0].m_size[1];
 
-										// ¼¿¿¡ ³Ö±â
+										// ì…€ì— ë„£ê¸°
 										pdropItem->m_pArea = ch->m_pArea;
 										pdropItem->m_groundPulse = gserver->m_pulse;
 
@@ -899,7 +899,8 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 								if( pSkill )
 								{
 									bool bApply = false ;
-									if( 0 != ApplySkill( ch, ch, pSkill, -1 , bApply ) )
+									ApplySkill( ch, ch, pSkill, -1 , bApply );
+									if(bApply == true)
 										return ret;
 								}
 							}
@@ -993,7 +994,8 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 					if( pSkill )
 					{
 						bool bApply = false ;
-						if( 0 != ApplySkill( ch, ch, pSkill, old_itemIndex , bApply ) )
+						ApplySkill( ch, ch, pSkill, old_itemIndex , bApply );
+						if(bApply == true)
 							return ret;
 					}
 				}
@@ -1007,12 +1009,12 @@ bool CAssistList::DecreaseTime(CCharacter* ch, LONGLONG* changestate)
 						ApplySkill( ch, ch, pSkill, -1 , bApply );
 						if( !bApply )
 						{
-							GAMELOG << init(" EVENT XMAS SKILL FAILED " ) << ch->m_name << end;	// ½ºÅ³ Àû¿ë ½ÇÆĞ
+							GAMELOG << init(" EVENT XMAS SKILL FAILED " ) << ch->m_name << end;	// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 						}
 					}
 				}				
 			}
-			//½Ã°£ÀÌ ³¡³µ°í ¾îµğ¿¡ ÀÖÀ¸¸é
+			//ì‹œê°„ì´ ëë‚¬ê³  ì–´ë””ì— ìˆìœ¼ë©´
 			if( sp->m_index == 1751 )
 			{
 				if(IS_NPC(ch))
@@ -1053,11 +1055,11 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 		if (slp == NULL)
 			continue;
 
-		// TODO : ÇÏµåÄÚµù¿ë
+		// TODO : í•˜ë“œì½”ë”©ìš©
 
 		bool bSkip = false;
 
-		// ¾ÆÀÌÅÛ ÀÎµ¦½º ÇÏµå ÄÚµù
+		// ì•„ì´í…œ ì¸ë±ìŠ¤ í•˜ë“œ ì½”ë”©
 		switch (p->m_index)
 		{
 		case 2388:
@@ -1080,42 +1082,42 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 		case 7271:
 			addition->hcDeathExpPlus = 1;
 			bSkip = true;
-			break ;		// ÇÏ±Ş °æÇèÀÇ °áÁ¤
+			break ;		// í•˜ê¸‰ ê²½í—˜ì˜ ê²°ì •
 		case 672:
 		case 7272:
 			addition->hcDeathExpPlus = 2;
 			bSkip = true;
-			break ;		// Áß±Ş °æÇèÀÇ °áÁ¤
+			break ;		// ì¤‘ê¸‰ ê²½í—˜ì˜ ê²°ì •
 		case 673:
 		case 7273:
 			addition->hcDeathExpPlus = 3;
 			bSkip = true;
-			break ;		// »ó±Ş °æÇèÀÇ °áÁ¤
+			break ;		// ìƒê¸‰ ê²½í—˜ì˜ ê²°ì •
 		case 674:
 			addition->hcDeathSPPlus = true;
 			bSkip = true;
-			break ;		// ³ë·ÂÀÇ °áÁ¤
+			break ;		// ë…¸ë ¥ì˜ ê²°ì •
 		case 508:
 			addition->hcExpPlus = true;
 			bSkip = true;
-			break ;		// ¶±±¹
+			break ;		// ë–¡êµ­
 		case 509:
 			addition->hcSPPlus = true;
 			bSkip = true;
-			break ;		// ¶±¸¸µÎ±¹
+			break ;		// ë–¡ë§Œë‘êµ­
 		case 836:
 			addition->hcExpPlus_836 = true;
 			bSkip = true;
-			break ;		// ¼ö¹Ú
+			break ;		// ìˆ˜ë°•
 		case 5082:
 		case 837:
 			addition->hcSPPlus_837 = true;
 			bSkip = true;
-			break ;		// Âü¿Ü
+			break ;		// ì°¸ì™¸
 		case 838:
 			addition->hcDropPlus_838 = true;
 			bSkip = true;
-			break ;		// ÀÚµÎ
+			break ;		// ìë‘
 		case 884:
 			addition->hcSepDrop = true;
 			bSkip = true;
@@ -1132,7 +1134,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			addition->hcSepNas = true;
 			bSkip = true;
 			break ;
-		// >> [100823: selo] À¯·á ÁõÆøÁ¦
+		// >> [100823: selo] ìœ ë£Œ ì¦í­ì œ
 		case 6094:
 			addition->hcSepExp_Cash = true;
 			bSkip = true;
@@ -1145,150 +1147,150 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			addition->hcSepDrop_Cash = true;
 			bSkip = true;
 			break ;
-		// << [100823: selo] À¯·á ÁõÆøÁ¦
-		case 971:		// °æÇèÀÇ½ºÅ©·Ñ
-		case 2499:		// ÀÏº» °æÇèÀÇ½ºÅ©·Ñ º¹»çº»
+		// << [100823: selo] ìœ ë£Œ ì¦í­ì œ
+		case 971:		// ê²½í—˜ì˜ìŠ¤í¬ë¡¤
+		case 2499:		// ì¼ë³¸ ê²½í—˜ì˜ìŠ¤í¬ë¡¤ ë³µì‚¬ë³¸
 			addition->hcScrollExp = true;
 			bSkip = true;
 			break ;
 		case 5081:
 			addition->hcScrollDrop_5081 = true;
 			bSkip = true;
-			break ;	// º¹¿îÀÇ ½ºÅ©·Ñ
-		case 5080: // 5080°­¿îÀÇ ½ºÅ©·Ñ°ú º¯¼ö¸¦ °°ÀÌ »ç¿ëÇÑ´Ù.
+			break ;	// ë³µìš´ì˜ ìŠ¤í¬ë¡¤
+		case 5080: // 5080ê°•ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë³€ìˆ˜ë¥¼ ê°™ì´ ì‚¬ìš©í•œë‹¤.
 		case 972:
 			addition->hcScrollDrop = true;
 			bSkip = true;
-			break ;		// Çà¿îÀÇ½ºÅ©·Ñ
+			break ;		// í–‰ìš´ì˜ìŠ¤í¬ë¡¤
 
 		case 973:
 			addition->hcScrollSP = true;
 			bSkip = true;
-			break ;		// ³ë·ÂÀÇ½ºÅ©·Ñ
+			break ;		// ë…¸ë ¥ì˜ìŠ¤í¬ë¡¤
 
 		case 792:
 			addition->hcAttackTower = true;
 			bSkip = true;
-			break ;		// ¼®»ó °ø°İ½Ã ´ë¹ÌÁö 2¹è
+			break ;		// ì„ìƒ ê³µê²©ì‹œ ëŒ€ë¯¸ì§€ 2ë°°
 
 		case 1628:
 			addition->hcSPPlusPer100 += 50;
 			bSkip = true;
-			break ;		// ´ŞÄŞÇÑ Âü¿Ü
+			break ;		// ë‹¬ì½¤í•œ ì°¸ì™¸
 		case 1629:
 			addition->hcDropPlusPer100 += 100;
 			bSkip = true;
-			break ;		// »õÄŞÇÑ ÀÚµÎ
+			break ;		// ìƒˆì½¤í•œ ìë‘
 		case 1627:
-		case 2494:		// ÀÏº» ÀßÀÍÀº ¼ö¹Ú º¹»çº»
+		case 2494:		// ì¼ë³¸ ì˜ìµì€ ìˆ˜ë°• ë³µì‚¬ë³¸
 			addition->hcExpPlusPer100 += 20;
 			bSkip = true;
-			break ;		// ÀßÀÍÀº ¼ö¹Ú
+			break ;		// ì˜ìµì€ ìˆ˜ë°•
 		case 1630:
 			addition->hcExpPlusPer100 += 20;
 			bSkip = true;
-			break ;		// Ãàº¹ÀÇ ¹°º´
-		case 1975:		// ÄÉÀÌÅ©
-		case 2495:		// ÀÏº» ÄÉÀÌÅ© º¹»çº»
+			break ;		// ì¶•ë³µì˜ ë¬¼ë³‘
+		case 1975:		// ì¼€ì´í¬
+		case 2495:		// ì¼ë³¸ ì¼€ì´í¬ ë³µì‚¬ë³¸
 		case 5084:
 			addition->hcExpPlus_1975 = 30;
 			bSkip = true;
-			break ;		// ÄÉÀÌÅ© : 2006 Å©¸®½º¸¶½º
-		case 1976:		// ´«»ç¶÷
-		case 2498:		// ÀÏº» ´«»ç¶÷ º¹»çº»
+			break ;		// ì¼€ì´í¬ : 2006 í¬ë¦¬ìŠ¤ë§ˆìŠ¤
+		case 1976:		// ëˆˆì‚¬ëŒ
+		case 2498:		// ì¼ë³¸ ëˆˆì‚¬ëŒ ë³µì‚¬ë³¸
 		case 5083:
 			addition->hcExpPlus_1976 = 100;
 			bSkip = true;
-			break ;		// ´«»ç¶÷ : 2006 Å©¸®½º¸¶½º
+			break ;		// ëˆˆì‚¬ëŒ : 2006 í¬ë¦¬ìŠ¤ë§ˆìŠ¤
 
 		case 2582:
-		case 2583: // ÈÆ·Ã ÁÖ¹®¼­¿Í µ¿ÀÏÇÑ 15% »ó½Â.
+		case 2583: // í›ˆë ¨ ì£¼ë¬¸ì„œì™€ ë™ì¼í•œ 15% ìƒìŠ¹.
 		case 2139:
 			addition->hcSPPlusPer100 += 15;
 			bSkip = true;
-			break ;		// ÈÆ·ÃÁÖ¹®¼­
+			break ;		// í›ˆë ¨ì£¼ë¬¸ì„œ
 		case 2140:
 			addition->hcSPPlusPer100 += 50;
 			bSkip = true;
-			break ;		// ÇÃ·¡Æ¼³Ñ ÈÆ·ÃÁÖ¹®¼­
+			break ;		// í”Œë˜í‹°ë„˜ í›ˆë ¨ì£¼ë¬¸ì„œ
 		case 4937:
 			addition->hcSPPlusPer100 += 50;
 			bSkip = true;
-			break ;		// (ÀÌº¥Æ®¿ë)ÇÃ·¡Æ¼³Ñ ÈÆ·ÃÁÖ¹®¼­
+			break ;		// (ì´ë²¤íŠ¸ìš©)í”Œë˜í‹°ë„˜ í›ˆë ¨ì£¼ë¬¸ì„œ
 		case 2141:
 			addition->hcDropPlus_2141 = true;
 			bSkip = true;
-			break ;		// Çà¿î ÁÖ¹®¼­
+			break ;		// í–‰ìš´ ì£¼ë¬¸ì„œ
 
 #ifdef PLATINUM_SKILL_POTION_ITEM
 		case 2453:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// ÇÃ·¡Æ¼´½ ¼÷·Ã ¹¦¾à
+			break;		// í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ ë¬˜ì•½
 #endif // PLATINUM_SKILL_POTION_ITEM
 		case 2659:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// ÃÊº¸ÀÚ¿ë ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
+			break;		// ì´ˆë³´ììš© í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
 		case 5088:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à (LV1)
+			break;		// í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ (LV1)
 		case 5089:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à (LV31)
+			break;		// í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ (LV31)
 		case 5090:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à (LV61)
+			break;		// í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½ (LV61)
 		case 7611:
 			addition->hcSPPlusPer100 += 200;
 			bSkip = true;
-			break;		// [ÀÌº¥Æ®]ÇÃ·¡Æ¼´½ ¼÷·ÃÀÇ ¹¦¾à
+			break;		// [ì´ë²¤íŠ¸]í”Œë˜í‹°ëŠ„ ìˆ™ë ¨ì˜ ë¬˜ì•½
 #ifdef SKILL_POTION_ITEM
 		case 2452:
 			addition->hcSPPlusPer100 += 100;
 			bSkip = true;
-			break;		// ¼÷·ÃÀÇ ¹¦¾à
+			break;		// ìˆ™ë ¨ì˜ ë¬˜ì•½
 #endif // SKILL_POTION_ITEM
 		case 2358:
 			addition->hcCashPetExpUp_2358 = true;
 			bSkip = true;
-			break;		// Æê °æÇèÀÇ ¹¦¾à
+			break;		// í« ê²½í—˜ì˜ ë¬˜ì•½
 		case 2359:
 			addition->hcCashPetExpUp_2359 = true;
 			bSkip = true;
-			break;		// ÇÃ·¡Æ¼´½ Æê °æÇèÀÇ ¹¦¾à
+			break;		// í”Œë˜í‹°ëŠ„ í« ê²½í—˜ì˜ ë¬˜ì•½
 		case 2356:
 		case 2841:
 		case 6596:
 			addition->hcMPSteelPotion = true;
 			bSkip = true;
-			break;			// ÀÏ¹İ °ø°İ½Ã 30%ÀÇ Max MP Áß 10% °¨¼Ò µÇ°í ³ªÀÇ MP Áõ°¡
+			break;			// ì¼ë°˜ ê³µê²©ì‹œ 30%ì˜ Max MP ì¤‘ 10% ê°ì†Œ ë˜ê³  ë‚˜ì˜ MP ì¦ê°€
 		case 2357:
 		case 2842:
 		case 6597:
 			addition->hcHPSteelPotion = true;
 			bSkip = true;
-			break;			// ÀÏ¹İ °ø°İ½Ã 30%ÀÇ Max HP Áß 5% °¨¼Ò µÇ°í ³ªÀÇ HP Áõ°¡
+			break;			// ì¼ë°˜ ê³µê²©ì‹œ 30%ì˜ Max HP ì¤‘ 5% ê°ì†Œ ë˜ê³  ë‚˜ì˜ HP ì¦ê°€
 		case 2410:
 		case 2354:
 			addition->hcExpSPPlus_2354	= true;
 			bSkip = true;
-			break;		// ÁÙ¹«´Ì ¼ºÁ¶±â(ºê¶óÁú ±¹±â): 50% EXP + 50% SP
+			break;		// ì¤„ë¬´ëŠ¬ ì„±ì¡°ê¸°(ë¸Œë¼ì§ˆ êµ­ê¸°): 50% EXP + 50% SP
 		case 2853:
 			addition->hcAttackBerserker = true;
 			bSkip = true;
-			break;		// 10% È®·ü·Î 2¹è µ¥¹ÌÁö
+			break;		// 10% í™•ë¥ ë¡œ 2ë°° ë°ë¯¸ì§€
 		case 2870:
 			addition->hcExplimitPlus	= 50;
 			bSkip = true;
-			break;		// 50% °æÇèÄ¡ Á¦ÇÑ 50% ÇØÁ¦
+			break;		// 50% ê²½í—˜ì¹˜ ì œí•œ 50% í•´ì œ
 		case 2855:
 			addition->hcPlatinumDrop	= true;
 			bSkip = true;
-			break;		// µå·ÓÀ² 20¹è Áõ°¡
+			break;		// ë“œë¡­ìœ¨ 20ë°° ì¦ê°€
 		case 2856:
 			addition->hcPlatinumScroll	= true;
 			bSkip = true;
@@ -1296,24 +1298,24 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 		case 7054:
 			addition->hcCashPetExpUp_2359 = true;
 			bSkip = true;
-			break;	// [ÀÌº¥Æ®] ÇÃ·¡Æ¼´½ Æê °æÇèÀÇ ¹¦¾à
+			break;	// [ì´ë²¤íŠ¸] í”Œë˜í‹°ëŠ„ í« ê²½í—˜ì˜ ë¬˜ì•½
 		case 7344:
 			addition->hcPetExpBoost = true;
 			bSkip = true;
-			break;	// Æê °æÇèÄ¡ ÁõÆøÁ¦
+			break;	// í« ê²½í—˜ì¹˜ ì¦í­ì œ
 		case 7345:
 		case 7346:
 			addition->hcIrisFervor = true;
 			bSkip = true;
-			break;	// ¾ÆÀÌ¸®½ºÀÇ ¿­Á¤
+			break;	// ì•„ì´ë¦¬ìŠ¤ì˜ ì—´ì •
 		}
 
-		// 060227 : bs : ½ºÅ³ ÀÎµ¦½º ÇÏµå ÄÚµù
+		// 060227 : bs : ìŠ¤í‚¬ ì¸ë±ìŠ¤ í•˜ë“œ ì½”ë”©
 		switch (p->m_proto->m_index)
 		{
 		case 348:
 		case 349:
-			mp = slp->m_magic[0];											// 060227 : bs : À¯·á¾ÆÀÌÅÛ °æÇèÄ¡ »ó½Â
+			mp = slp->m_magic[0];											// 060227 : bs : ìœ ë£Œì•„ì´í…œ ê²½í—˜ì¹˜ ìƒìŠ¹
 			if (mp)
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1327,7 +1329,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 
 		case 350:
-			mp = slp->m_magic[0];											// 060227 : bs : À¯·á¾ÆÀÌÅÛ HP È®Àå
+			mp = slp->m_magic[0];											// 060227 : bs : ìœ ë£Œì•„ì´í…œ HP í™•ì¥
 			if (mp)
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1341,7 +1343,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 
 		case 351:
-			mp = slp->m_magic[0];											// 060227 : bs : À¯·á¾ÆÀÌÅÛ MP È®Àå
+			mp = slp->m_magic[0];											// 060227 : bs : ìœ ë£Œì•„ì´í…œ MP í™•ì¥
 			if (mp)
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1355,7 +1357,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 
 		case 352:
-			for (i = 0; i < 2; i++)											// 060227 : bs : À¯·á¾ÆÀÌÅÛ HP/MP È®Àå
+			for (i = 0; i < 2; i++)											// 060227 : bs : ìœ ë£Œì•„ì´í…œ HP/MP í™•ì¥
 			{
 				mp = slp->m_magic[i];
 				if (mp)
@@ -1383,40 +1385,40 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 
 		case 354:
-			addition->hcExpPlus_S354 = true;								// °æÇèÄ¡ Æ÷¼Ç : ½ºÅ³ 354, 1.5¹è »ó½Â
+			addition->hcExpPlus_S354 = true;								// ê²½í—˜ì¹˜ í¬ì…˜ : ìŠ¤í‚¬ 354, 1.5ë°° ìƒìŠ¹
 			bSkip = true;
 			break;
 
 		case 355:
-			addition->hcExpPlus_S355 = true;								// ÃßÃµ ¼­¹ö Æ÷¼Ç °æÇèÄ¡ »ó½Â
+			addition->hcExpPlus_S355 = true;								// ì¶”ì²œ ì„œë²„ í¬ì…˜ ê²½í—˜ì¹˜ ìƒìŠ¹
 			bSkip = true;
 			break;
 
 		case 356:
-			addition->hcSPPlus_S356 = true;									// ÃßÃµ ¼­¹ö Æ÷¼Ç SP »ó½Â
+			addition->hcSPPlus_S356 = true;									// ì¶”ì²œ ì„œë²„ í¬ì…˜ SP ìƒìŠ¹
 			bSkip = true;
 			break;
 
 		case 360:
-			addition->hcDropPlus_S360 = true;								// ÃßÃµ ¼­¹ö Æ÷¼Ç µå·ÓÀ² »ó½Â
+			addition->hcDropPlus_S360 = true;								// ì¶”ì²œ ì„œë²„ í¬ì…˜ ë“œë¡­ìœ¨ ìƒìŠ¹
 			bSkip = true;
 			break;
 
 		case 379:
-			mp = slp->m_magic[0];											// ÅÂ±¹ °æÇèÄ¡ »ó½Â Æ÷¼Ç
+			mp = slp->m_magic[0];											// íƒœêµ­ ê²½í—˜ì¹˜ ìƒìŠ¹ í¬ì…˜
 			if (mp)
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
 				if (mlp)
 				{
-					addition->hcExpPlusPer100 += mlp->m_nPowerValue;				// ÅÂ±¹ °æÇèÄ¡ »ó½Â Æ÷¼Ç
+					addition->hcExpPlusPer100 += mlp->m_nPowerValue;				// íƒœêµ­ ê²½í—˜ì¹˜ ìƒìŠ¹ í¬ì…˜
 				}
 			}
 			bSkip = true;
 			break;
 
 		case 398:
-			mp = slp->m_magic[0];											// (À¯·á)°æÇèÄ¡ Æ÷¼Ç : 1840, 1841, 1842
+			mp = slp->m_magic[0];											// (ìœ ë£Œ)ê²½í—˜ì¹˜ í¬ì…˜ : 1840, 1841, 1842
 			if (mp)
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1429,7 +1431,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 
 		case 418:
-			mp = slp->m_magic[0];							// ·°Å° ¼Ò¿ï ´Ğ½º
+			mp = slp->m_magic[0];							// ëŸ­í‚¤ ì†Œìš¸ ë‹‰ìŠ¤
 			if( mp )
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1441,7 +1443,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			bSkip = true;
 			break;
 		case 419:
-			mp = slp->m_magic[0];		//·°Å° ´ÙÁö ÇÇ¾î
+			mp = slp->m_magic[0];		//ëŸ­í‚¤ ë‹¤ì§€ í”¼ì–´
 			if( mp )
 			{
 				mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1452,22 +1454,22 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			}
 			bSkip = true;
 			break;
-		case 424 :		//ÈûÀÇ ·¯ºê¸ÅÁ÷
+		case 424 :		//í˜ì˜ ëŸ¬ë¸Œë§¤ì§
 			if( gserver->isActiveEvent(A_EVENT_WHITE_DAY) || gserver->isActiveEvent(A_EVENT_MAGIC_CARD) )
 				COption::ApplyOptionValue( (CPC*)ch, OPTION_STR_UP, 20, NULL);
 			bSkip = true;
 			break;
-		case 425 :		//¹ÎÃ¸ÀÇ ·¯ºê¸ÅÁ÷
+		case 425 :		//ë¯¼ì²©ì˜ ëŸ¬ë¸Œë§¤ì§
 			if( gserver->isActiveEvent(A_EVENT_WHITE_DAY) || gserver->isActiveEvent(A_EVENT_MAGIC_CARD) )
 				COption::ApplyOptionValue( (CPC*)ch, OPTION_DEX_UP, 20, NULL);
 			bSkip = true;
 			break;
-		case 426 :		//ÁöÇØÀÇ ·¯ºê¸ÅÁ÷
+		case 426 :		//ì§€í•´ì˜ ëŸ¬ë¸Œë§¤ì§
 			if( gserver->isActiveEvent(A_EVENT_WHITE_DAY) || gserver->isActiveEvent(A_EVENT_MAGIC_CARD) )
 				COption::ApplyOptionValue( (CPC*)ch, OPTION_INT_UP, 20, NULL);
 			bSkip = true;
 			break;
-		case 427 :		//Ã¼ÁúÀÇ ·¯ºê¸ÅÁ÷
+		case 427 :		//ì²´ì§ˆì˜ ëŸ¬ë¸Œë§¤ì§
 			if( gserver->isActiveEvent(A_EVENT_WHITE_DAY) || gserver->isActiveEvent(A_EVENT_MAGIC_CARD) )
 				COption::ApplyOptionValue( (CPC*)ch, OPTION_CON_UP, 50, NULL);
 			bSkip = true;
@@ -1478,19 +1480,19 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			bSkip = true;
 			break;
 
-		case 433:	// °Ç°­ÀÇ ¹°¾à
+		case 433:	// ê±´ê°•ì˜ ë¬¼ì•½
 			ch->cooltime_2142 = gserver->getNowSecond() + 2*60*60;
 			break;
-		case 434:	// Áö·ÂÀÇ ¹°¾à
+		case 434:	// ì§€ë ¥ì˜ ë¬¼ì•½
 			ch->cooltime_2143 = gserver->getNowSecond() + 2*60*60;
 			break;
 		case 465:
 			ch->m_cooltime_Competition = gserver->getNowSecond() + 30 * 60;
 			break;
-		case 470:	// ÇÒ·ÎÀ© ÀÌº¥Æ® ÃÖ´ë HP º¯È­
+		case 470:	// í• ë¡œìœˆ ì´ë²¤íŠ¸ ìµœëŒ€ HP ë³€í™”
 			if( gserver->isActiveEvent(A_EVENT_HALLOWEEN) )
 			{
-				mp = slp->m_magic[0]; // ÃÖ´ë HP °¨¼Ò
+				mp = slp->m_magic[0]; // ìµœëŒ€ HP ê°ì†Œ
 				if (mp)
 				{
 					mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1500,7 +1502,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 					}
 				}
 
-				mp = slp->m_magic[1]; // ÀÌµ¿¼Óµµ °¨¼Ò
+				mp = slp->m_magic[1]; // ì´ë™ì†ë„ ê°ì†Œ
 				if (mp)
 				{
 					mlp = mp->Level(slp->m_magicLevel[1]);
@@ -1515,7 +1517,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 		case 471:
 			if( gserver->isActiveEvent(A_EVENT_HALLOWEEN) )
 			{
-				mp = slp->m_magic[0]; // ÀÌµ¿¼Óµµ °¨¼Ò
+				mp = slp->m_magic[0]; // ì´ë™ì†ë„ ê°ì†Œ
 				if (mp)
 				{
 					mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1538,7 +1540,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 					mlp = mp->Level(slp->m_magicLevel[0]);
 					if (mlp)
 					{
-						// µå¶ø·ü Áõ°¡
+						// ë“œëë¥  ì¦ê°€
 						addition->hcDropPlus_Xmas2007 = mlp->m_nPowerValue / 100;
 					}
 				}
@@ -1547,7 +1549,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			break;
 		case 550:
 			{
-				mp = slp->m_magic[0];											// 060227 : bs : À¯·á¾ÆÀÌÅÛ °æÇèÄ¡ »ó½Â
+				mp = slp->m_magic[0];											// 060227 : bs : ìœ ë£Œì•„ì´í…œ ê²½í—˜ì¹˜ ìƒìŠ¹
 				if (mp)
 				{
 					mlp = mp->Level(slp->m_magicLevel[0]);
@@ -1566,7 +1568,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 		if (bSkip == true)
 			continue ;
 
-		// --- TODO : ÇÏµåÄÚµù¿ë
+		// --- TODO : í•˜ë“œì½”ë”©ìš©
 
 		for (i = 0; i < MAX_SKILL_MAGIC; i++)
 		{
@@ -1580,7 +1582,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 			if (mlp == NULL)
 				continue ;
 
-			// --- TODO : ASSIST ÇÏµå ÄÚµù
+			// --- TODO : ASSIST í•˜ë“œ ì½”ë”©
 			switch( mp->m_index )
 			{
 			case 841:
@@ -1851,7 +1853,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 					*state |= AST_CONFUSION;
 					break;
 				case MST_ASSIST_STONE:
-#ifdef RAID_MONSTER_SKIP_STONE		// ·¹ÀÌµå ¸÷ ½ºÅæ Á¦¿Ü
+#ifdef RAID_MONSTER_SKIP_STONE		// ë ˆì´ë“œ ëª¹ ìŠ¤í†¤ ì œì™¸
 					if( IS_NPC(ch) )
 					{
 						CNPC * pNpc = TO_NPC(ch);
@@ -1877,7 +1879,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 					*state |= AST_BLIND;
 					break;
 				case MST_ASSIST_STURN:
-#ifdef RAID_MONSTER_SKIP_STURN		// ·¹ÀÌµå ¸÷ ½ºÅÏ Á¦¿Ü
+#ifdef RAID_MONSTER_SKIP_STURN		// ë ˆì´ë“œ ëª¹ ìŠ¤í„´ ì œì™¸
 					if( IS_NPC(ch) )
 					{
 						CNPC * pNpc = TO_NPC(ch);
@@ -1966,30 +1968,30 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 					*state |= AST_GUARD;
 					break;
 				case MST_ASSIST_CHARGEATC:
-					//¼º¼ö ¾ÆÀÌÅÛÀÌ »ç¿ëÁßÀÌ¶ó¸é 
+					//ì„±ìˆ˜ ì•„ì´í…œì´ ì‚¬ìš©ì¤‘ì´ë¼ë©´ 
 					if(IS_PC(ch))
 					{
 						CPC* pc = TO_PC(ch);
 						if(pc->holy_water_item != NULL)
 						{
-							//Åä±Û ÇØÁ¦
+							//í† ê¸€ í•´ì œ
 							pc->changeToggleState(pc->holy_water_item->getVIndex(), TOGGLE_ITEM);
-							//¼º¼ö ¾ÆÀÌÅÛ ÇØÁ¦
+							//ì„±ìˆ˜ ì•„ì´í…œ í•´ì œ
 							pc->SendHolyWaterStateMsg(NULL);
 						}
 					}
 					APPVAL(charge_attack);
 					break;
 				case MST_ASSIST_CHARGEMGC:
-					//¼º¼ö ¾ÆÀÌÅÛÀÌ »ç¿ëÁßÀÌ¶ó¸é Åä±Û ÇØÁ¦
+					//ì„±ìˆ˜ ì•„ì´í…œì´ ì‚¬ìš©ì¤‘ì´ë¼ë©´ í† ê¸€ í•´ì œ
 					if(IS_PC(ch))
 					{
 						CPC* pc = TO_PC(ch);
 						if(pc->holy_water_item != NULL)
 						{
-							//Åä±Û ÇØÁ¦
+							//í† ê¸€ í•´ì œ
 							pc->changeToggleState(pc->holy_water_item->getVIndex(), TOGGLE_ITEM);
-							//¼º¼ö ¾ÆÀÌÅÛ ÇØÁ¦
+							//ì„±ìˆ˜ ì•„ì´í…œ í•´ì œ
 							pc->SendHolyWaterStateMsg(NULL);
 						}
 					}
@@ -2120,7 +2122,7 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 						break;
 					}
 					break;
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 				case MST_OTHER_PK_DISPOSITION:
 					switch (mp->m_damagetype)
 					{
@@ -2207,24 +2209,24 @@ void CAssistList::Apply(CCharacter* ch, ASSISTVALUE* addition, ASSISTVALUE* rate
 	}
 }
 
-// 060227 : bs : Àı´ë½Ã°£ ¹öÇÁ Ãß°¡
+// 060227 : bs : ì ˆëŒ€ì‹œê°„ ë²„í”„ ì¶”ê°€
 void CAssistList::DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNoCancelType, bool statusUpdate)
 {
-	// 060317 : bs : SF_NOCANCEL °Ë»ç
-	// bNoCancelType ÀÌ false
+	// 060317 : bs : SF_NOCANCEL ê²€ì‚¬
+	// bNoCancelType ì´ false
 	if (!bNoCancelType && (d->m_proto->m_flag & SF_NOCANCEL))
 		return ;
 
-	// data Á¦°Å
-	// Çì´õÆ÷ÀÎÅÍ ¼³Á¤
+	// data ì œê±°
+	// í—¤ë”í¬ì¸í„° ì„¤ì •
 	if (m_head == d)		m_head = m_head->m_next;
-	// Å×ÀÏÆ÷ÀÎÅÍ ¼³Á¤
+	// í…Œì¼í¬ì¸í„° ì„¤ì •
 	if (m_tail == d)		m_tail = m_tail->m_prev;
-	// prev ¸µÅ© ¿¬°á
+	// prev ë§í¬ ì—°ê²°
 	if (d->m_prev)			d->m_prev->m_next = d->m_next;
-	// next ¸µÅ© ¿¬°á
+	// next ë§í¬ ì—°ê²°
 	if (d->m_next)			d->m_next->m_prev = d->m_prev;
-	// ¸µÅ© Á¦°Å
+	// ë§í¬ ì œê±°
 	d->m_prev = NULL;
 	d->m_next = NULL;
 
@@ -2303,7 +2305,7 @@ void CAssistList::DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNo
 						pc->setSearchLife(false);
 					}
 				}
-				// È¥¶õÀÌ³ª Å×ÀÌ¹Ö ÁßÀÎ ¸ó½ºÅÍÀÌ¸é ½Ã°£ÀÌ Áö³ª¸é Ç®¾îÁØ´Ù.
+				// í˜¼ë€ì´ë‚˜ í…Œì´ë° ì¤‘ì¸ ëª¬ìŠ¤í„°ì´ë©´ ì‹œê°„ì´ ì§€ë‚˜ë©´ í’€ì–´ì¤€ë‹¤.
 				if (pSkillLevelProto->m_magic[i]->m_type == MT_ASSIST
 						&& pSkillLevelProto->m_magic[i]->m_subtype == MST_ASSIST_CONFUSED)
 				{
@@ -2328,12 +2330,12 @@ void CAssistList::DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNo
 							pNPC->reSet_MobFlag( STATE_MONSTER_TAMING );
 							DelAttackList(pNPC);
 
-							// ÁÖÀÎÀ» Ã£´Â´Ù.
+							// ì£¼ì¸ì„ ì°¾ëŠ”ë‹¤.
 							CPC* owner = pNPC->GetOwner();
 							if(owner != NULL)
 							{
 								owner->DeleteSlave( pNPC );
-								// npcÀÇ ÁÖÀÎµµ Áö¿ö ÁÜ
+								// npcì˜ ì£¼ì¸ë„ ì§€ì›Œ ì¤Œ
 								pNPC->SetOwner(NULL);
 							}
 						}
@@ -2349,7 +2351,7 @@ void CAssistList::DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNo
 					case MST_ASSIST_TRAP:
 					case MST_ASSIST_SUICIDE:
 						{
-							// ¹öÇÁ°¡ »ı¸í·ÉÀ» ´ÙÇÏ¸é NPC¸¦ ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÑ´Ù.
+							// ë²„í”„ê°€ ìƒëª…ë ¹ì„ ë‹¤í•˜ë©´ NPCë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•œë‹¤.
 							if( TO_NPC(ch)->GetOwner() )
 								TO_NPC(ch)->GetOwner()->SummonNpcRemove(TO_NPC(ch));
 						}
@@ -2434,7 +2436,7 @@ void CAssistList::DelAssist(CAssistData* d, bool bSend, CCharacter* ch, bool bNo
 			ch->m_pArea->SendToCell(rmsg, ch, true);
 		}
 
-		// ÆÖ½ºÅ³ ÇØÁ¦ ½Ã ½ºÅ×ÀÌÅÍ½º¸¦ ³¯¸°´Ù.
+		// íŒ»ìŠ¤í‚¬ í•´ì œ ì‹œ ìŠ¤í…Œì´í„°ìŠ¤ë¥¼ ë‚ ë¦°ë‹¤.
 		if( IS_APET(ch) )
 		{
 			CAPet * pApet = TO_APET(ch);
@@ -2520,11 +2522,11 @@ bool CAssist::Add(CCharacter* spellchar, int itemidx, const CSkillProto* proto, 
 					if( IS_NPC(m_ch) )
 					{
 						CNPC* pNpc = TO_NPC(m_ch);
-						//È¦µå¿¡ ´ëÇÑ ¸é¿ª ½ºÅ³ ¹ßµ¿ ÇÃ·¡±×°¡ ÀÖÀ» °æ¿ì
+						//í™€ë“œì— ëŒ€í•œ ë©´ì—­ ìŠ¤í‚¬ ë°œë™ í”Œë˜ê·¸ê°€ ìˆì„ ê²½ìš°
 						if(pNpc->m_proto->CheckStateFlag( (1 << proto->Level(level)->m_magic[i]->m_subtype)) )
 						{
-							//npc ¿¡°Ô ÇöÁ¦ È¦µå ¸é¿ª ¹öÇÁ°¡ °É·ÁÀÖ´Â °æ¿ì
-							if(pNpc->m_assist.FindBySkillIndex(1751))		//1751 : ¾ÆÀÌ¾ğ ¿ù (NPC ¸é¿ª ½ºÅ³ ÀÎµ¦½º)
+							//npc ì—ê²Œ í˜„ì œ í™€ë“œ ë©´ì—­ ë²„í”„ê°€ ê±¸ë ¤ìˆëŠ” ê²½ìš°
+							if(pNpc->m_assist.FindBySkillIndex(1751))		//1751 : ì•„ì´ì–¸ ì›” (NPC ë©´ì—­ ìŠ¤í‚¬ ì¸ë±ìŠ¤)
 							{
 								return false;
 							}
@@ -2564,7 +2566,7 @@ bool CAssist::Add(CCharacter* spellchar, int itemidx, const CSkillProto* proto, 
 //	else if (m_state & AST_STONE)
 //		return false;
 
-	// ¼Ò¼­·¯ÀÇ ¼Ò³ë¹Ù ºê·¹ÀÌÅ© ÀÌ¸é¼­ ¼®È­°¡ ½ÇÆĞÇß´Ù¸é µğ¹öÇÁ ¸Ş¼¼Áö¸¦ ÁÖÁö ¾Ê´Â´Ù.   yhj
+	// ì†Œì„œëŸ¬ì˜ ì†Œë…¸ë°” ë¸Œë ˆì´í¬ ì´ë©´ì„œ ì„í™”ê°€ ì‹¤íŒ¨í–ˆë‹¤ë©´ ë””ë²„í”„ ë©”ì„¸ì§€ë¥¼ ì£¼ì§€ ì•ŠëŠ”ë‹¤.   yhj
 	if ( proto->m_index == 311 && !isStone )
 	{
 		return false;
@@ -2625,7 +2627,7 @@ bool CAssist::Add(CCharacter* spellchar, int itemidx, const CSkillProto* proto, 
 			m_ch->m_pArea->SendToCell(rmsg, m_ch, true);
 		}
 
-		// ÆÖ½ºÅ³ ÇØÁ¦ ½Ã ½ºÅ×ÀÌÅÍ½º¸¦ ³¯¸°´Ù.
+		// íŒ»ìŠ¤í‚¬ í•´ì œ ì‹œ ìŠ¤í…Œì´í„°ìŠ¤ë¥¼ ë‚ ë¦°ë‹¤.
 		if( IS_APET(m_ch) )
 		{
 			CAPet * pApet = TO_APET(m_ch);
@@ -2657,16 +2659,19 @@ bool CAssist::CanApply(const CSkillProto* proto, int level)
 				switch (levelproto->m_magic[i]->m_subtype)
 				{
 				case MST_ASSIST_BLIND:
-					if (FindByType(MT_IMMUNE, MST_IMMUNE_BLIND))
-						return false;
-					if (m_ch->m_avPassiveAddition.immune_blind)
-						return false;
+					if (FindByType(MT_IMMUNE, MST_IMMUNE_BLIND) || m_ch->m_avPassiveAddition.immune_blind)
+					{
+						//100% ì ìš© ì œê±° its : 18842 -> 80%í™•ë¥ ë¡œ ì ìš©í•˜ë„ë¡ ìˆ˜ì •
+						int rand = GetRandom(1, 10000);
+						if(rand > 8000)
+							return false;
+					}
 					break;
 				case MST_ASSIST_AURA_DARKNESS:
 				case MST_ASSIST_AURA_WEAKNESS:
 				case MST_ASSIST_AURA_ILLUSION:
-					// AURA´Â ÇÑ°¡Áö¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
-					// ¿À¿À¶ó¸¦ »ç¿ëÇÏ°í ÀÖ´ÂÁö È®ÀÎ
+					// AURAëŠ” í•œê°€ì§€ë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+					// ì˜¤ì˜¤ë¼ë¥¼ ì‚¬ìš©í•˜ê³  ìˆëŠ”ì§€ í™•ì¸
 					if(FindByType(MT_ASSIST, MST_ASSIST_AURA_DARKNESS)
 							||FindByType(MT_ASSIST, MST_ASSIST_AURA_WEAKNESS)
 							||FindByType(MT_ASSIST, MST_ASSIST_AURA_ILLUSION))
@@ -2681,16 +2686,16 @@ bool CAssist::CanApply(const CSkillProto* proto, int level)
 	return (m_help.CanApply(proto, level) && m_curse.CanApply(proto, level));
 }
 
-// 060227 : bs : Àı´ë½Ã°£ ¹öÇÁ Ãß°¡
+// 060227 : bs : ì ˆëŒ€ì‹œê°„ ë²„í”„ ì¶”ê°€
 void CAssist::DelDuplicate(const CSkillProto* proto, int level, bool bSend, bool bNoCancelType)
 {
 	m_help.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 	m_curse.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 
-	// ÀÌ¼Ó¹°¾à°ú Â÷Å©¶ó½Çµå´Â ´õºí¹«ºê¸ÕÆ®¿Í µ¿½Ã Àû¿ë ¾ÈµÈ´Ù
+	// ì´ì†ë¬¼ì•½ê³¼ ì°¨í¬ë¼ì‹¤ë“œëŠ” ë”ë¸”ë¬´ë¸Œë¨¼íŠ¸ì™€ ë™ì‹œ ì ìš© ì•ˆëœë‹¤
 	switch (proto->m_index)
 	{
-	case 155:		// ´õºí¹«ºê¸ÕÆ®
+	case 155:		// ë”ë¸”ë¬´ë¸Œë¨¼íŠ¸
 		proto = gserver->m_skillProtoList.Find(70);
 		m_help.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 		m_curse.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
@@ -2699,8 +2704,8 @@ void CAssist::DelDuplicate(const CSkillProto* proto, int level, bool bSend, bool
 		m_help.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 		m_curse.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 		break;
-	case 70:		// ÀÌ¼Ó¹°¾à
-	case 62:		// Ã­Å©¶ó
+	case 70:		// ì´ì†ë¬¼ì•½
+	case 62:		// ì± í¬ë¼
 		proto = gserver->m_skillProtoList.Find(155);
 		m_help.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
 		m_curse.DelDuplicate(proto, level, bSend, m_ch, bNoCancelType);
@@ -2820,7 +2825,7 @@ void CAssist::Apply()
 	m_ch->ApplyAssistData(&m_avAddition, &m_avRate);
 }
 
-// 060317 : bs : SF_NOCANCEL °Ë»ç Ãß°¡
+// 060317 : bs : SF_NOCANCEL ê²€ì‚¬ ì¶”ê°€
 void CAssist::ClearAssist(bool bSend, bool bByStone, bool bHelp, bool bCurse, bool bNoCancelType)
 {
 	CAssistData* pAssist;
@@ -2832,7 +2837,7 @@ void CAssist::ClearAssist(bool bSend, bool bByStone, bool bHelp, bool bCurse, bo
 		while ((pAssist = pAssistNext))
 		{
 			pAssistNext = pAssistNext->m_next;
-			// 060317 : bs : SF_NOCANCEL °Ë»ç
+			// 060317 : bs : SF_NOCANCEL ê²€ì‚¬
 			if (!bNoCancelType && (pAssist->m_proto->m_flag & SF_NOCANCEL))
 				continue ;
 
@@ -2840,10 +2845,10 @@ void CAssist::ClearAssist(bool bSend, bool bByStone, bool bHelp, bool bCurse, bo
 			{
 				switch (pAssist->m_index)
 				{
-				case 671:		// ÇÏ±Ş °æÇèÀÇ °áÁ¤
-				case 672:		// Áß±Ş °æÇèÀÇ °áÁ¤
-				case 673:		// »ó±Ş °æÇèÀÇ °áÁ¤
-				case 674:		// ³ë·ÂÀÇ °áÁ¤
+				case 671:		// í•˜ê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 672:		// ì¤‘ê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 673:		// ìƒê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 674:		// ë…¸ë ¥ì˜ ê²°ì •
 					break;
 				default:
 					m_help.DelAssist(pAssist, bSend, m_ch, bNoCancelType);
@@ -2864,10 +2869,10 @@ void CAssist::ClearAssist(bool bSend, bool bByStone, bool bHelp, bool bCurse, bo
 			{
 				switch (pAssist->m_index)
 				{
-				case 671:		// ÇÏ±Ş °æÇèÀÇ °áÁ¤
-				case 672:		// Áß±Ş °æÇèÀÇ °áÁ¤
-				case 673:		// »ó±Ş °æÇèÀÇ °áÁ¤
-				case 674:		// ³ë·ÂÀÇ °áÁ¤
+				case 671:		// í•˜ê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 672:		// ì¤‘ê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 673:		// ìƒê¸‰ ê²½í—˜ì˜ ê²°ì •
+				case 674:		// ë…¸ë ¥ì˜ ê²°ì •
 					break;
 				default:
 					m_curse.DelAssist(pAssist, bSend, m_ch, bNoCancelType);
@@ -2908,10 +2913,10 @@ void  CAssist::GetListString(bool bHelp, char* item, char* index, char* level, c
 	{
 		bool bSkip = false;
 
-		// 060227 : bs : Àı´ë½Ã°£ »ç¿ë ½ºÅ³Àº t_assist¿¡ ÀúÀå ¾ÈÇÔ
+		// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ìŠ¤í‚¬ì€ t_assistì— ì €ì¥ ì•ˆí•¨
 		if (p->m_proto->m_flag & SF_ABSTIME)
 			bSkip = true;
-		// 060227 : bs : Àı´ë½Ã°£ »ç¿ë ½ºÅ³Àº t_assist¿¡ ÀúÀå ¾ÈÇÔ
+		// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ìŠ¤í‚¬ì€ t_assistì— ì €ì¥ ì•ˆí•¨
 
 		if(p->m_proto->m_flag & SF_COMBO)
 			bSkip = true;
@@ -2919,18 +2924,18 @@ void  CAssist::GetListString(bool bHelp, char* item, char* index, char* level, c
 #ifdef EVENT_PCBANG_2ND
 		if(p->m_proto->m_index == 493 )
 		{
-			// PC¹æ ¹öÇÁ ÀúÀå ¾ÈÇÔ
+			// PCë°© ë²„í”„ ì €ì¥ ì•ˆí•¨
 			bSkip = true;
 		}
 #endif // EVENT_PCBAG_2ND
 
 		if( p->m_proto->m_index == 516 )
 		{
-			// ÇÇ´Ğ½º ¹öÇÁ ÀúÀå ¾ÈÇÔ
+			// í”¼ë‹‰ìŠ¤ ë²„í”„ ì €ì¥ ì•ˆí•¨
 			bSkip = true;
 		}
 
-		// ´ÙÅ©´Ï½º ¸ğµå ½ºÅ³(682)Àº ÀúÀå ¾ÈÇÔ
+		// ë‹¤í¬ë‹ˆìŠ¤ ëª¨ë“œ ìŠ¤í‚¬(682)ì€ ì €ì¥ ì•ˆí•¨
 		if( p->m_proto->m_index == 682 )
 		{
 			bSkip = true;
@@ -2977,10 +2982,10 @@ void  CAssist::GetListString(bool bHelp, std::string& item, std::string& index, 
 	{
 		bool bSkip = false;
 
-		// 060227 : bs : Àı´ë½Ã°£ »ç¿ë ½ºÅ³Àº t_assist¿¡ ÀúÀå ¾ÈÇÔ
+		// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ìŠ¤í‚¬ì€ t_assistì— ì €ì¥ ì•ˆí•¨
 		if (pAssist->m_proto->m_flag & SF_ABSTIME)
 			bSkip = true;
-		// 060227 : bs : Àı´ë½Ã°£ »ç¿ë ½ºÅ³Àº t_assist¿¡ ÀúÀå ¾ÈÇÔ
+		// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ìŠ¤í‚¬ì€ t_assistì— ì €ì¥ ì•ˆí•¨
 
 		if(pAssist->m_proto->m_flag & SF_COMBO)
 			bSkip = true;
@@ -2988,18 +2993,18 @@ void  CAssist::GetListString(bool bHelp, std::string& item, std::string& index, 
 #ifdef EVENT_PCBANG_2ND
 		if(pAssist->m_proto->m_index == 493 )
 		{
-			// PC¹æ ¹öÇÁ ÀúÀå ¾ÈÇÔ
+			// PCë°© ë²„í”„ ì €ì¥ ì•ˆí•¨
 			bSkip = true;
 		}
 #endif // EVENT_PCBAG_2ND
 
 		if( pAssist->m_proto->m_index == 516 )
 		{
-			// ÇÇ´Ğ½º ¹öÇÁ ÀúÀå ¾ÈÇÔ
+			// í”¼ë‹‰ìŠ¤ ë²„í”„ ì €ì¥ ì•ˆí•¨
 			bSkip = true;
 		}
 
-		// ´ÙÅ©´Ï½º ¸ğµå ½ºÅ³(682)Àº ÀúÀå ¾ÈÇÔ
+		// ë‹¤í¬ë‹ˆìŠ¤ ëª¨ë“œ ìŠ¤í‚¬(682)ì€ ì €ì¥ ì•ˆí•¨
 		if( pAssist->m_proto->m_index == 682 )
 		{
 			bSkip = true;
@@ -3523,7 +3528,7 @@ int CAssist::FindBySkillIndex(int skillindex)
 	return 0;
 }
 
-// 060227 : bs : Àı´ë½Ã°£ »ç¿ë º¸Á¶È¿°ú ¸®½ºÆ®
+// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ë³´ì¡°íš¨ê³¼ ë¦¬ìŠ¤íŠ¸
 int CAssist::GetABSTimeTypeList(int* nAssistABSItemIndex, int* nAssistABSSkillIndex, int* nAssistABSSkillLevel, char* nAssistABSHit0, char* nAssistABSHit1, char* nAssistABSHit2, int* nAssistABSEndTime)
 {
 	int ret = 0;
@@ -3540,12 +3545,12 @@ int CAssist::GetABSTimeTypeList(int* nAssistABSItemIndex, int* nAssistABSSkillIn
 #ifdef EVENT_PCBANG_2ND
 				if(p->m_proto->m_index != 493)
 				{
-					// PC¹æ ¹öÇÁ ÀúÀå ¾ÈÇÔ
+					// PCë°© ë²„í”„ ì €ì¥ ì•ˆí•¨
 #endif // EVENT_PCBANG_2ND
 
 					if( p->m_proto->m_index != 516 )
 					{
-						// ÇÇ´Ğ½º ¹öÇÁ ÀúÀå ¾ÈÇÔ
+						// í”¼ë‹‰ìŠ¤ ë²„í”„ ì €ì¥ ì•ˆí•¨
 
 						nAssistABSItemIndex[ret] = p->m_index;
 						nAssistABSSkillIndex[ret] = p->m_proto->m_index;
@@ -3576,11 +3581,11 @@ int CAssist::GetABSTimeTypeList(int* nAssistABSItemIndex, int* nAssistABSSkillIn
 #ifdef EVENT_PCBAG_2ND
 				if(p->m_proto->m_index != 493)
 				{
-					// PC¹æ ¹öÇÁ ÀúÀå ¾ÈÇÔ
+					// PCë°© ë²„í”„ ì €ì¥ ì•ˆí•¨
 #endif // EVENT_PCBAG_2ND
 
 					//			if( p->m_proto->m_index != 516 )
-					//			{	// ÇÇ´Ğ½º ¹öÇÁ ÀúÀå ¾ÈÇÔ
+					//			{	// í”¼ë‹‰ìŠ¤ ë²„í”„ ì €ì¥ ì•ˆí•¨
 
 					nAssistABSItemIndex[ret] = p->m_index;
 					nAssistABSSkillIndex[ret] = p->m_proto->m_index;
@@ -3601,7 +3606,7 @@ int CAssist::GetABSTimeTypeList(int* nAssistABSItemIndex, int* nAssistABSSkillIn
 
 	return ret;
 }
-// 060227 : bs : Àı´ë½Ã°£ »ç¿ë º¸Á¶È¿°ú ¸®½ºÆ®
+// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš© ë³´ì¡°íš¨ê³¼ ë¦¬ìŠ¤íŠ¸
 
 void CAssist::CancelDespair()
 {

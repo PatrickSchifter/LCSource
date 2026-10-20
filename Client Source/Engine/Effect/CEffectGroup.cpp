@@ -294,8 +294,10 @@ void CEffectGroup::Stop(FLOAT leftTime)
 			m_vectorEffectKey[i].m_pCreatedEffect->SetRepeatCount(0);
 			if(m_vectorEffectKey[i].m_pCreatedEffect->Playing())
 			{
-				if(leftTime < 0) m_vectorEffectKey[i].m_pCreatedEffect->Stop( m_vectorEffectKey[i].m_pCreatedEffect->GetFadeOutTime() );
-				else m_vectorEffectKey[i].m_pCreatedEffect->Stop(leftTime);
+				if(leftTime < 0)
+					m_vectorEffectKey[i].m_pCreatedEffect->Stop( m_vectorEffectKey[i].m_pCreatedEffect->GetFadeOutTime() );
+				else
+					m_vectorEffectKey[i].m_pCreatedEffect->Stop(leftTime);
 			}
 			else
 			{
@@ -349,9 +351,10 @@ BOOL CEffectGroup::Process(FLOAT time)
 			&& time >= effectKey.m_fStartTime * m_fSpeedMul + m_fStartTime)
 		{
 			effectKey.m_pCreatedEffect->Start( m_fStartTime + effectKey.m_fStartTime * m_fSpeedMul );
-			if(effectKey.m_pCreatedEffect->GetTag().NotNull()
-			&& !effectKey.m_pCreatedEffect->GetTag()->Active()
-			&& effectKey.m_pCreatedEffect->Playing())
+
+			if(effectKey.m_pCreatedEffect->GetTag().NotNull() &&
+			!effectKey.m_pCreatedEffect->GetTag()->Active() &&
+			effectKey.m_pCreatedEffect->Playing())
 				effectKey.m_pCreatedEffect->SetNotRenderAtThisFrame();
 		}
 
@@ -416,20 +419,27 @@ BOOL CEffectGroup::Process(FLOAT time)
 			if(bNoPassTest)
 			{
 				effectKey.m_pCreatedEffect->SetNotRenderAtThisFrame();
-				if(effectKey.m_pCreatedEffect->GetType() == ET_SPLINEBILLBOARD
-				|| effectKey.m_pCreatedEffect->GetType() == ET_ORBIT)
-				{
-					effectKey.m_pCreatedEffect->Stop(0);
-				}
+
+				// 랜더링은 안하더라도 타이머는 돌아야 하기 때문에 추가.
+				return effectKey.m_pCreatedEffect->UpdateETime(time);
 			}
 		}
+
 		if(!effectKey.m_pCreatedEffect->IsNotRenderAtThisFrame())
 		{
+			if (time - effectKey.m_pCreatedEffect->GetLastProcessedTime() > 0.3f)
+				effectKey.m_pCreatedEffect->SetLastProcessedTime(time);
 			//Processing, 내부적으로 상태가 변할 수 있음.
 			BOOL processRet = effectKey.m_pCreatedEffect->Process(time);
 			ret = ret || processRet;
 		}
-		else ret = TRUE;
+		else
+		{
+ 			if (effectKey.m_pCreatedEffect->GetType() == ET_PARTICLE)
+ 				effectKey.m_pCreatedEffect->SetLastProcessedTime(time);
+
+			ret = TRUE;
+		}
 	}
 	return ret;
 }

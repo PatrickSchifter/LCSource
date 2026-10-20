@@ -5,7 +5,7 @@
 #include "WarCastle.h"
 #include "DratanCastle.h"
 
-// of°¡ df¸¦ °ø°ÝÇÒ ¶§, °ø°Ý ¸øÇÏ´Â ¿¹¿Ü Ã³¸®
+// ofê°€ dfë¥¼ ê³µê²©í•  ë•Œ, ê³µê²© ëª»í•˜ëŠ” ì˜ˆì™¸ ì²˜ë¦¬
 bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 {
 	CPC*		opc				= NULL;
@@ -19,26 +19,26 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 	CAPet*		oapet			= NULL;
 	CAPet*		dapet			= NULL;
 #ifdef BUGFIX_DEAD_AGAIN_DEAD
-	// Á×ÀºÁö 3ÃÊ³»¿¡ ÀÖÀ» ¶§´Â °ø°ÝÀÌ ºÒ°¡ÇÑ´Ù.
+	// ì£½ì€ì§€ 3ì´ˆë‚´ì— ìžˆì„ ë•ŒëŠ” ê³µê²©ì´ ë¶ˆê°€í•œë‹¤.
 	if(IS_PC(df) && (mktime(&gserver->m_tRealSystemTime) - df->m_deadTime < 3))
 	{
 		GAMELOG << init("DEAD AGAIN DEAD") << (LONGLONG)mktime(&gserver->m_tRealSystemTime) << delim << (LONGLONG)df->m_deadTime << end;
 		return false;
 	}
 #endif
-	// Á×Àº »ç¶÷Àº ´õÀÌ»ó °ø°Ý ºÒ°¡
+	// ì£½ì€ ì‚¬ëžŒì€ ë”ì´ìƒ ê³µê²© ë¶ˆê°€
 	if (DEAD(df))
 		return false;
 
-	// ÇÇ½ºÁ¸¿¡¼­´Â °ø°Ý ºÒ°¡
+	// í”¼ìŠ¤ì¡´ì—ì„œëŠ” ê³µê²© ë¶ˆê°€
 	if (of->IsInPeaceZone(true) || df->IsInPeaceZone(true))
 		return false;
 
-	// ¹æ¾îÀÚ ¾Èº¸ÀÌ¸é °ø°Ý ºÒ°¡
+	// ë°©ì–´ìž ì•ˆë³´ì´ë©´ ê³µê²© ë¶ˆê°€
 	if (!of->CanVisible(df))
 		return false;
 
-	// °ø°ÝÀÚ¿Í ¹æ¾îÀÚ°¡ rvrÁ¸¿¡ ÀÖ°í °á»ç´ë ÀÎµ¦½º °°À¸¸é °ø°Ý ºÒ°¡
+	// ê³µê²©ìžì™€ ë°©ì–´ìžê°€ rvrì¡´ì— ìžˆê³  ê²°ì‚¬ëŒ€ ì¸ë±ìŠ¤ ê°™ìœ¼ë©´ ê³µê²© ë¶ˆê°€
 	if (of->m_pZone->isRVRZone() &&	df->m_pZone->isRVRZone() &&	of->getSyndicateType() == df->getSyndicateType())
 	{
 		return false;
@@ -88,7 +88,7 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 
 	case MSG_CHAR_NPC:
 		dnpc = TO_NPC(df);
-		if( dnpc->m_proto->CheckFlag1(NPC1_DONT_ATTACK) ) // °ø°Ý ÇÏÁö ¸øÇÏ´Â ÇÃ·¡±×°¡ ÂïÇôÀÖÀ¸¸é °ø°ÝÇÒ ¼ö ¾ø´Ù.
+		if( dnpc->m_proto->CheckFlag1(NPC1_DONT_ATTACK) ) // ê³µê²© í•˜ì§€ ëª»í•˜ëŠ” í”Œëž˜ê·¸ê°€ ì°í˜€ìžˆìœ¼ë©´ ê³µê²©í•  ìˆ˜ ì—†ë‹¤.
 			return false;
 		break;
 
@@ -117,33 +117,33 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 	default:
 		return false;
 	}
-	// opcÀÇ immortal °Ë»ç
+	// opcì˜ immortal ê²€ì‚¬
 	if (opc && opc->m_bImmortal && opc->m_bFirstDoIt == false)
 	{
 		DelAttackList(of);
 		return false;
 	}
 
-	// dpcÀÇ immortal °Ë»ç
+	// dpcì˜ immortal ê²€ì‚¬
 	if (dpc && dpc->m_bImmortal)
 	{
 		DelAttackList(df);
 		return false;
 	}
 
-	// PCÀÇ disable °Ë»ç
+	// PCì˜ disable ê²€ì‚¬
 	if ((opc && opc->IsDisable()) || (dpc && dpc->IsDisable()))
 		return false;
 
 	if(opc && opc->m_assist.FindByType(MT_OTHER, MST_OTHER_PEACE) && dpc)
 		return false;
 
-	// ¹æ¾îÀÚ Å¸ÀÔ¿¡ µû¸¥ Ã³¸®
+	// ë°©ì–´ìž íƒ€ìž…ì— ë”°ë¥¸ ì²˜ë¦¬
 	switch (df->m_type)
 	{
 	case MSG_CHAR_NPC:
 
-		// °ø°Ý ¾È´çÇÏ´Â NPC µé °Ë»ç
+		// ê³µê²© ì•ˆë‹¹í•˜ëŠ” NPC ë“¤ ê²€ì‚¬
 		if (!(IS_NPC(of) && of->m_pZone->IsPersonalDungeon()) && dnpc->m_proto->CheckFlag(NPC_SHOPPER | NPC_ZONEMOVER | NPC_REFINER | NPC_QUEST | NPC_PEACEFUL | NPC_MINERAL | NPC_CROPS | NPC_ENERGY | NPC_REMISSION))
 		{
 			if (of->m_pZone->m_index == ZONE_DRATAN)
@@ -161,7 +161,7 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 			}
 		}
 
-		// È£¹Ú¸Ó¸®(2470~2475)¸¦ Âø¿ëÇÏÁö ¾Ê¾ÒÀ¸¸é
+		// í˜¸ë°•ë¨¸ë¦¬(2470~2475)ë¥¼ ì°©ìš©í•˜ì§€ ì•Šì•˜ìœ¼ë©´
 		if( IS_PC(of) && dnpc->m_proto->m_index == 454 && gserver->isActiveEvent(A_EVENT_HALLOWEEN))
 		{
 			CItem * pHelmet = TO_PC(of)->m_wearInventory.wearItemInfo[WEARING_HELMET] ;
@@ -172,18 +172,18 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 				return false;
 		}
 
-		// ±ÇÁÂ´Â °ø°Ý´çÇÏÁö ¾ÊÀ½
+		// ê¶Œì¢ŒëŠ” ê³µê²©ë‹¹í•˜ì§€ ì•ŠìŒ
 		if (dnpc->m_proto->CheckFlag(NPC_LORD_SYMBOL))
 			return false;
 
-		// ¼öÈ£º´Àº °ø¼ºÃø¸¸ °ø¼ºÁö¿ª¿¡¼­ °ø°Ý °¡´É
+		// ìˆ˜í˜¸ë³‘ì€ ê³µì„±ì¸¡ë§Œ ê³µì„±ì§€ì—­ì—ì„œ ê³µê²© ê°€ëŠ¥
 		if (dnpc->m_proto->CheckFlag(NPC_CASTLE_GUARD | NPC_CASTLE_TOWER))
 		{
-			// °ø¼º Áö¿ª °Ë»ç
+			// ê³µì„± ì§€ì—­ ê²€ì‚¬
 			if ( !(of->GetMapAttr() & MATT_WAR) )
 				return false;
 
-			// °ø¼ºÁßÀÎÁö °Ë»ç
+			// ê³µì„±ì¤‘ì¸ì§€ ê²€ì‚¬
 
 			if(of->m_pZone->m_index == ZONE_MERAC)
 			{
@@ -207,7 +207,7 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 				}
 			}
 
-			// °ø¼º Âü¿© Á¤º¸ °Ë»ç
+			// ê³µì„± ì°¸ì—¬ ì •ë³´ ê²€ì‚¬
 			if (dpc)
 			{
 				switch (dpc->GetJoinFlag(df->m_pZone->m_index))
@@ -224,12 +224,12 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 		}
 
 #ifdef EXTREME_CUBE
-		// º¸¶ó»ö ¼öÁ¤
+		// ë³´ë¼ìƒ‰ ìˆ˜ì •
 		if(dnpc->m_proto->m_index == 529)
 		{
 			if(opc)
 			{
-				if(gserver->m_extremeCube.IsGuildCubeTime())		// ±æµå Å¥ºêÅ¸ÀÓÀÏ ¶§
+				if(gserver->m_extremeCube.IsGuildCubeTime())		// ê¸¸ë“œ íë¸Œíƒ€ìž„ì¼ ë•Œ
 				{
 					if(opc->m_guildInfo
 							&& opc->m_guildInfo->guild()
@@ -305,15 +305,15 @@ bool IsAvailableAttack(CCharacter* of, CCharacter* df)
 	case MSG_CHAR_ELEMENTAL:
 	case MSG_CHAR_APET:
 
-		// °ø°ÝÀÚ¿¡ µû¸¥ Ã³¸®
+		// ê³µê²©ìžì— ë”°ë¥¸ ì²˜ë¦¬
 		switch (of->m_type)
 		{
 		case MSG_CHAR_PC:
-		case MSG_CHAR_ELEMENTAL:		// kj : ¼ÒÈ¯¼ö°¡ °ø°Ý½Ã¿¡µµ PVP °¡´É °Ë»ç
+		case MSG_CHAR_ELEMENTAL:		// kj : ì†Œí™˜ìˆ˜ê°€ ê³µê²©ì‹œì—ë„ PVP ê°€ëŠ¥ ê²€ì‚¬
 		case MSG_CHAR_APET:
 			{
-				// PvP °¡´É °Ë»ç
-				// Å¸°ÙÀÌ ÆêÀÏ ¶§´Â ÀÎºñÀúºí »ó°ü¾øÀÌ ¹«Á¶°Ç °ø°Ý °¡´ÉÇÏµµ·Ï º¯°æ.
+				// PvP ê°€ëŠ¥ ê²€ì‚¬
+				// íƒ€ê²Ÿì´ íŽ«ì¼ ë•ŒëŠ” ì¸ë¹„ì €ë¸” ìƒê´€ì—†ì´ ë¬´ì¡°ê±´ ê³µê²© ê°€ëŠ¥í•˜ë„ë¡ ë³€ê²½.
 				bool bIgnoreInvisible = false;
 				if ( IS_APET(df) )
 					bIgnoreInvisible = true;

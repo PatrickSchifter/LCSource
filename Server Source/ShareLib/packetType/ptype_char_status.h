@@ -13,17 +13,17 @@ enum
 
 enum
 {
-	MSG_SUB_UPDATE_FIRST_MONENY,			// µ·(³ª½º) º¯È­
-	MSG_SUB_UPDATE_FIRST_MONENY_IN_STASH,	// Ã¢°í µ·(³ª½º) º¯È­
-	MSG_SUB_UPDATE_MONENY,				// µ·(³ª½º) º¯È­
-	MSG_SUB_UPDATE_MONENY_IN_STASH,		// Ã¢°í µ·(³ª½º) º¯È­
+	MSG_SUB_UPDATE_FIRST_MONENY,			// ëˆ(ë‚˜ìŠ¤) ë³€í™”
+	MSG_SUB_UPDATE_FIRST_MONENY_IN_STASH,	// ì°½ê³  ëˆ(ë‚˜ìŠ¤) ë³€í™”
+	MSG_SUB_UPDATE_MONENY,				// ëˆ(ë‚˜ìŠ¤) ë³€í™”
+	MSG_SUB_UPDATE_MONENY_IN_STASH,		// ì°½ê³  ëˆ(ë‚˜ìŠ¤) ë³€í™”
 
-	MSG_SUB_UPDATE_INVEN_LIST,			// °¡¹æ ¾ÆÀÌÅÛ ¸®½ºÆ® (Å¬¶ó¿¡¼­´Â ±âÁ¸ µ¥ÀÌÅÍ¸¦ Áö¿ì°í ¹«Á¶°Ç ÀÌ °ªÀ¸·Î º¯°æ)
+	MSG_SUB_UPDATE_INVEN_LIST,			// ê°€ë°© ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ (í´ë¼ì—ì„œëŠ” ê¸°ì¡´ ë°ì´í„°ë¥¼ ì§€ìš°ê³  ë¬´ì¡°ê±´ ì´ ê°’ìœ¼ë¡œ ë³€ê²½)
 
-	MSG_SUB_UPDATE_ADD_ITEM,			// 1°³ÀÇ ¾ÆÀÌÅÛÀÌ ½Å±Ô·Î Ãß°¡µÊ
-	MSG_SUB_UPDATE_DELETE_ITEM,			// 1°³ÀÇ ¾ÆÀÌÅÛ »èÁ¦
-	MSG_SUB_UPDATE_CHANGE_ITEM_COUNT,	// 1°³ÀÇ ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ º¯È­µÊ
-	MSG_SUB_UPDATE_CHANGE_ITEM_COUNT_WITH_SWAP,	// 1°³ÀÇ ¾ÆÀÌÅÛÀÇ °¹¼ö°¡ º¯È­µÊ
+	MSG_SUB_UPDATE_ADD_ITEM,			// 1ê°œì˜ ì•„ì´í…œì´ ì‹ ê·œë¡œ ì¶”ê°€ë¨
+	MSG_SUB_UPDATE_DELETE_ITEM,			// 1ê°œì˜ ì•„ì´í…œ ì‚­ì œ
+	MSG_SUB_UPDATE_CHANGE_ITEM_COUNT,	// 1ê°œì˜ ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ ë³€í™”ë¨
+	MSG_SUB_UPDATE_CHANGE_ITEM_COUNT_WITH_SWAP,	// 1ê°œì˜ ì•„ì´í…œì˜ ê°¯ìˆ˜ê°€ ë³€í™”ë¨
 
 	MSG_SUB_UPDATE_CHANGE_ITEM_PLUS,
 	MSG_SUB_UPDATE_CHANGE_ITEM_PLUS_2,
@@ -36,34 +36,34 @@ enum
 	MSG_SUB_UPDATE_CHANGE_ITEM_ORIGIN_VAR,
 	MSG_SUB_UPDATE_CHANGE_ITEM_COMPOSITE_ITEM,
 
-	MSG_SUB_UPDATE_NAS_DESC_REASON,			// µ· °¨¼Ò »çÀ¯
+	MSG_SUB_UPDATE_NAS_DESC_REASON,			// ëˆ ê°ì†Œ ì‚¬ìœ 
 
 	MSG_SUB_UPDATE_OLD_TIMER_ITEM,
 	MSG_SUB_UPDATE_ERASE_ALL_ITEM,
 
-	MSG_SUB_UPDATE_WEAR,					// Àåºñ ÀåÂø
-	MSG_SUB_UPDATE_WEAR_TAKEOFF,			// Àåºñ Å»Âø
-	MSG_SUB_UPDATE_WEAR_LIST,				// Àåºñ ¸®½ºÆ®
-	MSG_SUB_UPDATE_WEAR_CHANGE_INFO,		// Àåºñ Á¤º¸ º¯°æ
+	MSG_SUB_UPDATE_WEAR,					// ìž¥ë¹„ ìž¥ì°©
+	MSG_SUB_UPDATE_WEAR_TAKEOFF,			// ìž¥ë¹„ íƒˆì°©
+	MSG_SUB_UPDATE_WEAR_LIST,				// ìž¥ë¹„ ë¦¬ìŠ¤íŠ¸
+	MSG_SUB_UPDATE_WEAR_CHANGE_INFO,		// ìž¥ë¹„ ì •ë³´ ë³€ê²½
 
-	MSG_SUB_UPDATE_COST_WEAR,				// ÄÚ½ºÆ¬ ÀåÂø
-	MSG_SUB_UPDATE_COST_WEAR_TAKEOFF,		// ÄÚ½ºÆ¬ Å»Âø
-	MSG_SUB_UPDATE_COST_WEAR_LIST,			// ÄÚ½ºÆ¬ Àåºñ ¸®½ºÆ®
+	MSG_SUB_UPDATE_COST_WEAR,				// ì½”ìŠ¤íŠ¬ ìž¥ì°©
+	MSG_SUB_UPDATE_COST_WEAR_TAKEOFF,		// ì½”ìŠ¤íŠ¬ íƒˆì°©
+	MSG_SUB_UPDATE_COST_WEAR_LIST,			// ì½”ìŠ¤íŠ¬ ìž¥ë¹„ ë¦¬ìŠ¤íŠ¸
 
-	MSG_SUB_UPDATE_COST_WEAR_SUIT,			// ÄÚ½ºÆ¬ ÇÑ¹úÀÇ»ó ÀåÂø
+	MSG_SUB_UPDATE_COST_WEAR_SUIT,			// ì½”ìŠ¤íŠ¬ í•œë²Œì˜ìƒ ìž¥ì°©
 
-	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_USED,	// ÀåÂø ¾ÆÀÌÅÛ USE ¾÷µ¥ÀÌÆ®
-	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_PLUS,	// ÀåÂø ¾ÆÀÌÅÛ PLUS ¾÷µ¥ÀÌÆ®
-	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_FLAG,	// ÀåÂø ¾ÆÀÌÅÛ FLAG ¾÷µ¥ÀÌÆ®
+	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_USED,	// ìž¥ì°© ì•„ì´í…œ USE ì—…ë°ì´íŠ¸
+	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_PLUS,	// ìž¥ì°© ì•„ì´í…œ PLUS ì—…ë°ì´íŠ¸
+	MSG_SUB_UPDATE_CHANGE_WEAR_ITEM_FLAG,	// ìž¥ì°© ì•„ì´í…œ FLAG ì—…ë°ì´íŠ¸
 
-	MSG_SUB_UPDATE_STASH_PASSWORD_FLAG,		// Ã¢°í ÆÐ½º¿öµå À¯¹«
+	MSG_SUB_UPDATE_STASH_PASSWORD_FLAG,		// ì°½ê³  íŒ¨ìŠ¤ì›Œë“œ ìœ ë¬´
 
 #ifdef DURABILITY
 	MSG_SUB_UPDATE_ITEM_DURABILITY_FOR_INVENTORY,
 	MSG_SUB_UPDATE_ITEM_DURABILITY_FOR_WEAR,
 #endif
 
-	MSG_SUB_UPDATE_STATUS = 100,		// Ä³¸¯ÅÍ Á¤º¸(¸ðµÎ)
+	MSG_SUB_UPDATE_STATUS = 100,		// ìºë¦­í„° ì •ë³´(ëª¨ë‘)
 	MSG_SUB_UPDATE_AT,
 	MSG_SUB_UPDATE_APPEAR_PC,
 	MSG_SUB_UPDATE_APPEAR_NPC,
@@ -73,7 +73,7 @@ enum
 
 	MSG_SUB_UPDATE_DISAPPERAR,
 	MSG_SUB_UPDATE_DISAPPERAR_FOR_CLIENT_EFFECT,
-	MSG_SUB_UPDATE_DISAPPERAR_ALL,		//Å¬¶óÀÌ¾ðÆ®¿¡°Ô Ä³¸¯ÅÍ¸¦ ±âÁØÀ¸·Î ÁÖÀ§¿¡ ÀÖ´Â ¸ðµç °ÍÀ» Áö¿ì¶ó°í ÇÏ´Â ¸í·É ÀÏ¹ÝÀûÀÎ DISAPPEAR¿Í´Â ´Ù¸§
+	MSG_SUB_UPDATE_DISAPPERAR_ALL,		//í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ìºë¦­í„°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì£¼ìœ„ì— ìžˆëŠ” ëª¨ë“  ê²ƒì„ ì§€ìš°ë¼ê³  í•˜ëŠ” ëª…ë ¹ ì¼ë°˜ì ì¸ DISAPPEARì™€ëŠ” ë‹¤ë¦„
 	MSG_SUB_UPDATE_TARGET_CLEAR,
 
 	MSG_SUB_UPDATE_ELEMENTAL_STATUS,
@@ -100,26 +100,30 @@ enum
 	MSG_SUB_UPDATE_PREMIUM_CHAR_JUMP_COUNT,
 	MSG_SUB_UPDATE_PREMIUM_CHAR_END,
 
-	MSG_SUB_UPDATE_PREMIUM_CHAR_CHANGE_FLAG,		// ÇÁ¸®¹Ì¾ö Ä³¸¯ÅÍ »óÅÂ º¯°æ
+	MSG_SUB_UPDATE_PREMIUM_CHAR_CHANGE_FLAG,		// í”„ë¦¬ë¯¸ì—„ ìºë¦­í„° ìƒíƒœ ë³€ê²½
 #endif
 
 	MSG_SUB_UPDATE_ATTR_ITEM_USE,
 	MSG_SUB_UPDATE_ATTR_STATE_FOR_NPC,
 
-	MSG_SUB_UPDATE_CHECK_NOTICE,			//°øÁö È®ÀÎ ±ô¹ÚÀÓ
-	MSG_SUB_UPDATE_CHECK_POPUP_NOTICE,		//ÆË¾÷ °øÁö È®ÀÎ
-	MSG_SUB_UPDATE_CLOSE_POPUP_NOTICE,		//ÆË¿É °øÁö Á¾·á
-	MSG_SUB_UPDATE_CLEAR_POPUP_NOTICE,		//ÆË¾÷ ÀüÃ¼ Á¾·á
+	MSG_SUB_UPDATE_CHECK_NOTICE,			//ê³µì§€ í™•ì¸ ê¹œë°•ìž„
+	MSG_SUB_UPDATE_CHECK_POPUP_NOTICE,		//íŒì—… ê³µì§€ í™•ì¸
+	MSG_SUB_UPDATE_CLOSE_POPUP_NOTICE,		//íŒì˜µ ê³µì§€ ì¢…ë£Œ
+	MSG_SUB_UPDATE_CLEAR_POPUP_NOTICE,		//íŒì—… ì „ì²´ ì¢…ë£Œ
 
 	MSG_SUB_UPDATE_ARTIFACT_SYSMSG,
 	MSG_SUB_UPDATE_ARTIFACT_FIND_USER_COUNT_MSG,
 
-	MSG_SUB_REQUEST_GUILD_RECALL,			//¼­¹ö¿¡¼­ ±æµå¿øµé¿¡°Ô ±æµå¹æ ¸®ÄÝ È®ÀÎ ¿©ºÎ ¿äÃ» ¾÷µ¥ÀÌÆ® ÆÐÅ¶
+	MSG_SUB_REQUEST_GUILD_RECALL,			//ì„œë²„ì—ì„œ ê¸¸ë“œì›ë“¤ì—ê²Œ ê¸¸ë“œë°© ë¦¬ì½œ í™•ì¸ ì—¬ë¶€ ìš”ì²­ ì—…ë°ì´íŠ¸ íŒ¨í‚·
+
+	MSG_SUB_UPDATE_EP_INIT,					//ì´ê·¸ë‹ˆì…˜ í¬ì¸íŠ¸ ì´ˆê¸°í™”
+
+	MSG_SUB_UPDATE_CHAR_HPMP,				//HPMP ì •ë³´ ì—…ë°ì´íŠ¸
 };
 
 #pragma pack(push, 1)
 //////////////////////////////////////////////////////////////////////////
-struct tag_assistinfo // ÀÌ ±¸Á¶Ã¼¸¦ Æ÷ÇÔÇÏ´Â ±¸Á¶Ã¼¿¡¼­´Â Ç×»ó ¸Ç ¸¶Áö¸·¿¡ »ç¿ëÇÒ°Í (0¹è¿­¶§¹®)
+struct tag_assistinfo // ì´ êµ¬ì¡°ì²´ë¥¼ í¬í•¨í•˜ëŠ” êµ¬ì¡°ì²´ì—ì„œëŠ” í•­ìƒ ë§¨ ë§ˆì§€ë§‰ì— ì‚¬ìš©í• ê²ƒ (0ë°°ì—´ë•Œë¬¸)
 {
 	LONGLONG		state;
 	int				count;
@@ -137,13 +141,13 @@ namespace UpdateClient
 {
 struct oldTimerItem : public pTypeBase
 {
-	int memposTime;		// ¸Þ¸ð¸® ½ºÅ©·Ñ
-	int stashextTime;	// °³ÀÎÃ¢°í È®Àå
+	int memposTime;		// ë©”ëª¨ë¦¬ ìŠ¤í¬ë¡¤
+	int stashextTime;	// ê°œì¸ì°½ê³  í™•ìž¥
 };
 
 struct stashPasswordFlag : public pTypeBase
 {
-	unsigned char		flag;		// 0 - ¾øÀ½ , 1 - ÀÖÀ½
+	unsigned char		flag;		// 0 - ì—†ìŒ , 1 - ìžˆìŒ
 };
 
 struct charStatus : public pTypeBase
@@ -226,8 +230,6 @@ struct charStatus : public pTypeBase
 	int				opMoney_buy_rate;
 	int				opMoney_sell_addition;
 	int				opMoney_sell_rate;
-
-	//int				adminLevel;
 };
 
 struct charAtMsg : public pTypeBase
@@ -246,22 +248,18 @@ struct charAtMsg : public pTypeBase
 	float			r;
 	char			yLayer;
 	int				userIndex;
-	int				guildoutdate;
+	int				guildindate;
 	char			plusEffect;
 	unsigned short	mapAttr;
 
 	int				key;
 	int				currentTitle;
 
-#ifdef NO_CHATTING
 	int				chatingFlag;
-#endif
 
 #ifdef ENABLE_SUBJOB
 	int				jobSub;
 #endif
-
-	//int				adminLevel;
 };
 
 struct elementalStatus : public pTypeBase
@@ -374,8 +372,15 @@ struct charStatusPc : public pTypeBase
 	char		pkName;
 	LONGLONG	state;
 	LONGLONG	state2;
+};
 
-	int			adminLevel;
+struct charStatusHPMP : public pTypeBase
+{
+	int			charIndex;
+	int			hp;
+	int			maxHp;
+	int			mp;
+	int			maxMp;	
 };
 
 struct charStatusNpc : public pTypeBase
@@ -506,6 +511,11 @@ struct GuildRoomRecall : public pTypeBase
 {
 };
 
+struct EPInit : public pTypeBase
+{
+	bool isInit;				//true = ì´ˆê¸°í™”, false = ìœ ì§€
+};
+
 #ifndef _CLIENT_
 inline void makeOldTimerItem(CNetMsg::SP& msg, int mempos, int stashext)
 {
@@ -579,6 +589,27 @@ inline void GuildRoomRecallRequestMsg(CNetMsg::SP& msg)
 	packet->type = MSG_UPDATE_DATA_FOR_CLIENT;
 	packet->subType = MSG_SUB_REQUEST_GUILD_RECALL;
 	msg->setSize(sizeof(GuildRoomRecall));
+}
+
+inline void EPInitMsg(CNetMsg::SP& msg, bool isInit)
+{
+	EPInit* packet = reinterpret_cast<EPInit*>(msg->m_buf);
+	packet->type = MSG_UPDATE_DATA_FOR_CLIENT;
+	packet->subType = MSG_SUB_UPDATE_EP_INIT;
+	packet->isInit = isInit;
+	msg->setSize(sizeof(EPInit));
+}
+
+inline void CharStatusHPMP(CNetMsg::SP& msg, int max_hp, int hp, int max_mp, int mp)
+{
+	charStatusHPMP* packet = reinterpret_cast<charStatusHPMP*>(msg->m_buf);
+	packet->type = MSG_UPDATE_DATA_FOR_CLIENT;
+	packet->subType = MSG_SUB_UPDATE_CHAR_HPMP;
+	packet->maxHp = max_hp;
+	packet->hp = hp;
+	packet->maxMp = max_mp;
+	packet->mp = mp;
+	msg->setSize(sizeof(charStatusHPMP));
 }
 #endif
 }

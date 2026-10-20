@@ -1,4 +1,4 @@
-// Àåºñ ³»±¸µµ
+// ì¥ë¹„ ë‚´êµ¬ë„
 #include <boost/format.hpp>
 #include "stdhdrs.h"
 
@@ -76,10 +76,22 @@ static CItem* pre_check_for_item(CPC* ch, int tab_no, int invenIndex, int virtua
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ÀÏ¹İ ¼ö¸®
+// ì¼ë°˜ ìˆ˜ë¦¬
 void process_durability_normal_repair(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::repairDurability* packet = reinterpret_cast<RequestClient::repairDurability*>(msg->m_buf);
+
+	if (ch->m_premiumChar.isActive() == false)
+	{
+		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
+		if (pNpc == NULL)
+		{
+			LOG_ERROR("HACKING? : not found npc. char_index[%d] npcIndex[%d]",
+				ch->m_index, packet->npcIndex);
+			ch->m_desc->Close("not found npc");
+			return;
+		}
+	}
 
 	CItem* weapon = pre_check_for_item(ch, packet->tab_no, packet->invenIndex, packet->virualIndex, __FUNCTION__, __LINE__);
 	if (weapon == NULL)
@@ -101,7 +113,7 @@ void process_durability_normal_repair(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ö¼ö·á (Å¬¶óÀÌ¾ğÆ®´Â º°µµ °è»ê)
+	// ìˆ˜ìˆ˜ë£Œ (í´ë¼ì´ì–¸íŠ¸ëŠ” ë³„ë„ ê³„ì‚°)
 	LONGLONG dmax = weapon->getMaxDurability();
 	LONGLONG dnow = weapon->getNowDurability();
 	LONGLONG fee =  ((dmax - dnow) * 19991) / 10;
@@ -124,7 +136,7 @@ void process_durability_normal_repair(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ö¸®ÇÏÀÚ
+	// ìˆ˜ë¦¬í•˜ì
 	{
 		weapon->setMaxDurability(weapon->getMaxDurability() - 10);
 		if (weapon->getMaxDurability() < 0)
@@ -138,10 +150,10 @@ void process_durability_normal_repair(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¼ö¼ö·á Â÷°¨
+	// ìˆ˜ìˆ˜ë£Œ ì°¨ê°
 	ch->m_inventory.decreaseMoney(fee);
 
-	// °á°ú ¾Ë·ÁÁÖ±â
+	// ê²°ê³¼ ì•Œë ¤ì£¼ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeRepairDurability(rmsg, ERR_NO_DURABILITY_OK);
@@ -149,10 +161,22 @@ void process_durability_normal_repair(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-// Æ¯¼ö ¼ö¸®
+// íŠ¹ìˆ˜ ìˆ˜ë¦¬
 void process_durability_special_repair(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::specialRepairDurability* packet = reinterpret_cast<RequestClient::specialRepairDurability*>(msg->m_buf);
+
+	if (ch->m_premiumChar.isActive() == false)
+	{
+		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
+		if (pNpc == NULL)
+		{
+			LOG_ERROR("HACKING? : not found npc. char_index[%d] npcIndex[%d]",
+				ch->m_index, packet->npcIndex);
+			ch->m_desc->Close("not found npc");
+			return;
+		}
+	}
 
 	CItem* weapon = pre_check_for_item(ch, packet->tab_no, packet->invenIndex, packet->virualIndex, __FUNCTION__, __LINE__);
 	if (weapon == NULL)
@@ -186,7 +210,7 @@ void process_durability_special_repair(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¼ö¸®ÇÏÀÚ
+	// ìˆ˜ë¦¬í•˜ì
 	{
 		weapon->setNowDurability(weapon->getMaxDurability());
 
@@ -196,10 +220,10 @@ void process_durability_special_repair(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ½ÅºñÇÑ ¼ıµ¹ Â÷°¨
+	// ì‹ ë¹„í•œ ìˆ«ëŒ ì°¨ê°
 	ch->m_inventory.decreaseItemCount(material, 1);
 
-	// °á°ú ¾Ë·ÁÁÖ±â
+	// ê²°ê³¼ ì•Œë ¤ì£¼ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeSpecialRepairDurability(rmsg, ERR_NO_DURABILITY_OK);
@@ -235,7 +259,7 @@ void process_durability_recovery(CPC* ch, CNetMsg::SP& msg)
 	if (material == NULL)
 		return;
 
-	// ¼ö·® Ã¼Å©
+	// ìˆ˜ëŸ‰ ì²´í¬
 	if (packet->material_count <= 0)
 	{
 		LOG_ERROR("HACKING? : invalid material item count. char_index[%d] count[%d]",
@@ -260,7 +284,7 @@ void process_durability_recovery(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// º¹±¸ÇÏÀÚ
+	// ë³µêµ¬í•˜ì
 	{
 		weapon->setMaxDurability(weapon->getMaxDurability() + (packet->material_count * 10));
 		if (weapon->getMaxDurability() > weapon->m_itemProto->getDurability())
@@ -273,10 +297,10 @@ void process_durability_recovery(CPC* ch, CNetMsg::SP& msg)
 
 	}
 
-	// ½ÅºñÇÑ ¸ÁÄ¡ °¨¼Ò
+	// ì‹ ë¹„í•œ ë§ì¹˜ ê°ì†Œ
 	ch->m_inventory.decreaseItemCount(material, packet->material_count);
 
-	// °á°ú ¾Ë·ÁÁÖ±â
+	// ê²°ê³¼ ì•Œë ¤ì£¼ê¸°
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::makeRecoveryDurability(rmsg, ERR_NO_DURABILITY_OK);

@@ -3,6 +3,8 @@
 #include <Engine/Interface/UIInternalClasses.h>
 #include "UINickName.h"
 #include <Engine/Interface/UIRadar.h>
+#include <Engine/GameDataManager/GameDataManager.h>
+#include <Engine/Contents/function/TitleData.h>
 
 #define BUTTON_WIDHT				70
 #define BUTTON_HEIGHT				21
@@ -277,8 +279,11 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 			return WMSG_SUCCESS;	
 		}
 
-		for ( int i = m_nScrollBarPos ; i < m_nNickNameListSize ; ++i )
+		for ( int i = m_nScrollBarPos ; i < m_nScrollBarPos + 5 ; ++i )
 		{
+			if ( i > m_nNickNameListSize - 1)
+				break;
+
 			m_NickList[i].pIconNick->MouseMessage( pMsg );
 		}
 
@@ -362,6 +367,7 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 				return WMSG_FAIL;
 
 			CUIManager* pUIManager = CUIManager::getSingleton();
+			TitleNetwork* pTitle = GAMEDATAMGR()->GetTitleNetwork();
 
 			// If holding button doesn't exist
 			if (pUIManager->GetDragIcon() == NULL)
@@ -378,8 +384,9 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 				else if( (wmsgResult = m_btnSelect.MouseMessage( pMsg ) ) == WMSG_COMMAND  ) 				// NickName Select Button
 				{	// Select Button
 					if ( m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor() != _pNetwork->MyCharacterInfo.iNickType) // 선택한 호칭이 현재 적용된 호칭과 다를 경우
-					{				
-						_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ, m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor() );
+					{
+						if (pTitle != NULL)
+							pTitle->SendTitleSelectReq(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor());
 					}
 
 					return WMSG_SUCCESS;				
@@ -388,7 +395,8 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 				{	// NickName Cancel Button
 					if ( _pNetwork->MyCharacterInfo.iNickType > 0 )	// 서버에 호칭 취소 메시지 보내기
 					{
-						_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_REQ, _pNetwork->MyCharacterInfo.iNickType );
+						if (pTitle != NULL)
+							pTitle->SendTitleCancelReq(_pNetwork->MyCharacterInfo.iNickType);
 					}
 
 					return WMSG_SUCCESS;
@@ -407,9 +415,18 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 					}
 					else	// 삭제하려는 호칭이 현재 적용된 호칭이 아닐 경우
 					{
+						if (pUIManager->DoesMessageBoxExist(MSGCMD_NICKNAME_DELETE) == TRUE)
+							pUIManager->CloseMessageBox(MSGCMD_NICKNAME_DELETE);
+
 						//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-						INDEX iItemIndex = CNickNameData::getData(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor())->GetItemIndex();
-						strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  GetName(iItemIndex)); 
+						INDEX iItemIndex = TitleStaticData::getData(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor())->GetItemIndex();
+						INDEX iCustomIndex = m_NickList[m_sbNickNameListBoxNumber].GetCustomIndex();
+						
+						if (CustomTitleData::IsKeepTitleInfo(iCustomIndex) == true)
+							strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  CustomTitleData::m_mapCustomTitleItemInfo[iCustomIndex]->name);
+						else
+							strMsg.PrintF(_S(4836, "%s 호칭을 정말로 삭제하시겠습니까?" ),  GetName(iItemIndex));
+
 						msgInfo.SetMsgBoxInfo( _S(4835, "호칭 삭제"), UMBS_YESNO, UI_NICKNAME, MSGCMD_NICKNAME_DELETE );
 						msgInfo.AddString(strMsg);
 						pUIManager->CreateMessageBox(msgInfo);
@@ -472,8 +489,10 @@ WMSG_RESULT CUINickName::MouseMessage( MSG *pMsg )
 						m_btnDelete.SetEnable( TRUE );
 
 						if ( m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor() != _pNetwork->MyCharacterInfo.iNickType) // 선택한 호칭이 현재 적용된 호칭과 다를 경우
-						{				
-							_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_SELECT_REQ, m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor() );
+						{
+							TitleNetwork* pTitle = GAMEDATAMGR()->GetTitleNetwork();
+							if (pTitle != NULL)
+								GAMEDATAMGR()->GetTitleNetwork()->SendTitleSelectReq(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor());
 						}
 						return WMSG_SUCCESS;
 					}
@@ -529,7 +548,9 @@ void CUINickName::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput 
 	case MSGCMD_NICKNAME_DELETE:	// 호칭 삭제
 		if (bOK)	// 서버에 호칭 삭제 메시지 보내기
 		{
-			_pNetwork->SendNickNameMessage( MSG_EX_TITLE_SYSTEM_TITLE_DELETE_REQ,  m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor() );
+			TitleNetwork* pTitle = GAMEDATAMGR()->GetTitleNetwork();
+			if (pTitle != NULL)
+				GAMEDATAMGR()->GetTitleNetwork()->SendTitleDeleteReq(m_NickList[m_sbNickNameListBoxNumber].GetNickAccessor());
 		}
 		break;
 	}
@@ -622,18 +643,22 @@ void CUINickName::Clear()
 // Name : AddNickNameList()
 // Desc : 호칭 추가
 // ----------------------------------------------------------------------------
-void CUINickName::AddNickNameList( INDEX iNickIndex, LONG lDate )
+void CUINickName::AddNickNameList( INDEX iNickIndex, LONG lDate, int nCustomIndex )
 {
 	INDEX iItemIndex;
 	CUIIcon* pIcon = new CUIIcon;
 
-	iItemIndex = CNickNameData::getData(iNickIndex)->GetItemIndex();
+	iItemIndex = TitleStaticData::getData(iNickIndex)->GetItemIndex();
 	
-	NickListData addNickData = NickListData(iNickIndex, lDate, iItemIndex);
+	NickListData addNickData = NickListData(iNickIndex, lDate, iItemIndex, nCustomIndex);
 	
 	pIcon->Create(this, m_nPosX + 13, m_nPosY + 49, 34, 34, UI_NICKNAME, UBET_ITEM);
 	pIcon->setData(UBET_ITEM, iItemIndex);
 
+	if (CustomTitleData::IsKeepTitleInfo(nCustomIndex) == true)
+		pIcon->getItems()->Item_Used2 = nCustomIndex;
+
+	pIcon->getItems()->Item_Used = lDate;
 	addNickData.pIconNick = pIcon;
 
 	m_NickList.push_back(addNickData);
@@ -645,7 +670,7 @@ void CUINickName::AddNickNameList( INDEX iNickIndex, LONG lDate )
 
 void CUINickName::SortNickNameData()
 {
-	sort(m_NickList.begin(), m_NickList.end(), SortCompare);
+	std::sort(m_NickList.begin(), m_NickList.end(), SortCompare);
 }
 
 // ----------------------------------------------------------------------------
@@ -724,7 +749,7 @@ void CUINickName::RenderText()
 	}
 
 	CTString strNickName, strEndDate;
-	INDEX	iIndex, iItemIndex;
+	INDEX	iIndex, iItemIndex, iCustomIndex;
 	int	nTextPos;
 	int nFontWidth = _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing();
 	int	nInfoX;
@@ -740,10 +765,19 @@ void CUINickName::RenderText()
 		}
 
 		iIndex      = m_NickList[i].GetNickAccessor();
-		//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
-		iItemIndex	= CNickNameData::getData(iIndex)->GetItemIndex();
-		
-		strNickName = GetName(iItemIndex);
+		iCustomIndex = m_NickList[i].GetCustomIndex();
+
+		if (CustomTitleData::IsKeepTitleInfo(iCustomIndex) == true)
+		{
+			strNickName = CustomTitleData::m_mapCustomTitleItemInfo[iCustomIndex]->name;
+		}
+		else
+		{
+			//  [3/25/2010 kiny8216] 호칭 이름을 아이템 lod에서 불러오도록 변경
+			iItemIndex	= TitleStaticData::getData(iIndex)->GetItemIndex();
+			strNickName = GetName(iItemIndex);
+		}
+
 			
 		AddNickNameText(strNickName, 0xBCBCBCFF);
 
@@ -781,6 +815,10 @@ void CUINickName::RenderText()
 // ----------------------------------------------------------------------------
 void CUINickName::RenderSelectedTexture()
 {
+	int nNickCnt = m_NickList.size();
+	if (nNickCnt <= 0)
+		return;
+
 	CDrawPort* pDrawPort = CUIManager::getSingleton()->GetDrawPort();
 
 	// 마우스로 선택한 호칭에 박스 그리기
@@ -795,10 +833,14 @@ void CUINickName::RenderSelectedTexture()
 	// 현재 캐릭터가 착용한 호칭에 박스 그리기
 	INDEX iNickINdex = _pNetwork->MyCharacterInfo.iNickType;
 	int iCurrentIndex;
+
 	if (iNickINdex > 0)
 	{
 		for ( int i = m_nScrollBarPos ; i < m_nScrollBarPos + 5 ; ++i )
 		{
+			if (i >= nNickCnt)
+				break;
+
 			if ( iNickINdex == m_NickList[i].GetNickAccessor() )
 			{
 				iCurrentIndex = i - m_nScrollBarPos;

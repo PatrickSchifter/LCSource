@@ -4,7 +4,7 @@
 #include "../ShareLib/rnsocketiohandler.h"
 #include "../ShareLib/rnsocketioservice.h"
 
-// 1ÃÊ
+// 1ì´ˆ
 class ServerTimerPerSecond : public rnSocketIOHandler
 {
 public:
@@ -18,7 +18,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// 1/10ÃÊ
+// 1/10ì´ˆ
 class ServerTimerPerHundredMSecond : public rnSocketIOHandler
 {
 public:
@@ -32,7 +32,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// 1ºĞ
+// 1ë¶„
 class ServerTimerPerMinute : public rnSocketIOHandler
 {
 public:
@@ -46,7 +46,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ¸Å ½Ã
+// ë§¤ ì‹œ
 class ServerTimerPerHour : public rnSocketIOHandler
 {
 public:
@@ -60,7 +60,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ÀÚÁ¤
+// ìì •
 class ServerTimerPerMidnight : public rnSocketIOHandler
 {
 public:
@@ -74,7 +74,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// endgame(GM ¸í·É¾î) Ã³¸®
+// endgame(GM ëª…ë ¹ì–´) ì²˜ë¦¬
 class EndGameTimer : public rnSocketIOHandler
 {
 public:
@@ -95,7 +95,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// shutdown(GM ¸í·É¾î) Ã³¸®
+// shutdown(GM ëª…ë ¹ì–´) ì²˜ë¦¬
 class ShutdownTimer : public rnSocketIOHandler
 {
 public:
@@ -117,7 +117,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// shutdown(GM ¸í·É¾î) Ã³¸®
+// shutdown(GM ëª…ë ¹ì–´) ì²˜ë¦¬
 class RebootTimer : public rnSocketIOHandler
 {
 public:

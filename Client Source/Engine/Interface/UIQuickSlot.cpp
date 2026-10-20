@@ -8,15 +8,17 @@
 #include <Engine/Interface/UIInventory.h>
 #include <Engine/Interface/UICashShopEX.h>
 #include <Engine/Interface/UIGuild.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Interface/UIMessenger.h>
 #include <Engine/Contents/Base/UICharacterInfoNew.h>
 #include <Engine/Info/MyInfo.h>
 #include <Engine/Contents/Base/UIQuestBookNew.h>
+#include <Engine/Entities/InternalClasses.h>
 
 static BOOL m_bLock = false;
 
 extern int _aSummonSkill[5];
+extern INDEX g_iCountry;
 
 
 // ----------------------------------------------------------------------------
@@ -118,17 +120,19 @@ void CUIQuickSlot::Create( CUIWindow *pParentWnd, int nX, int nY, int nWidth, in
 	m_rtQuestBook.SetUV( 387, 70, 420, 103, fTexWidth, fTexHeight );
 	m_rtQuestBookDown.SetUV( 0, 0, 34, 34, fTexWidth, fTexHeight );
 
-#if defined (G_RUSSIA)
-	m_rtChashShopIdle.SetUV( 469, 679, 525, 735, fTexWidth, fTexHeight );
-	m_rtCashShopOver.SetUV( 530, 679, 586, 735, fTexWidth, fTexHeight );
-	m_rtCashShopDown.SetUV( 591, 679, 647, 735, fTexWidth, fTexHeight );
-#else
-	// [12/10/2012 박훈] UI개편으로 인한 캐쉬샵 수정
-	m_rtChashShopIdle.SetUV( 102, 679, 158, 735, fTexWidth, fTexHeight );
-	m_rtCashShopOver.SetUV( 163, 679, 219, 735, fTexWidth, fTexHeight );
-	m_rtCashShopDown.SetUV( 224, 679, 280, 735, fTexWidth, fTexHeight );
-#endif
-	
+	if (g_iCountry == RUSSIA)
+	{
+		m_rtChashShopIdle.SetUV( 469, 679, 525, 735, fTexWidth, fTexHeight );
+		m_rtCashShopOver.SetUV( 530, 679, 586, 735, fTexWidth, fTexHeight );
+		m_rtCashShopDown.SetUV( 591, 679, 647, 735, fTexWidth, fTexHeight );
+	}
+	else
+	{
+		// [12/10/2012 박훈] UI개편으로 인한 캐쉬샵 수정
+		m_rtChashShopIdle.SetUV( 102, 679, 158, 735, fTexWidth, fTexHeight );
+		m_rtCashShopOver.SetUV( 163, 679, 219, 735, fTexWidth, fTexHeight );
+		m_rtCashShopDown.SetUV( 224, 679, 280, 735, fTexWidth, fTexHeight );
+	}	
 	
 	//선물 도착 알림 버튼 UV	:Su-won
 	fTexWidth = m_ptdGiftTexture->GetPixWidth();
@@ -312,13 +316,18 @@ void CUIQuickSlot::ShowExSlotInfo( BOOL bShowInfo, int nSlotIndex )
 	{
 		int nInfoWidth;
 #if defined(G_THAI)
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strSlotInfo);	
-#elif defined (G_RUSSIA)
-		extern CFontData *_pfdDefaultFont;
-		nInfoWidth = UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, m_strSlotInfo.str_String) + 19;
+		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + FindThaiLen(m_strSlotInfo);		
 #else
-		nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strSlotInfo.Length() *
-			( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		if (g_iCountry == RUSSIA)
+		{
+			extern CFontData *_pfdDefaultFont;
+			nInfoWidth = UTIL_HELP()->GetNoFixedWidth(_pfdDefaultFont, m_strSlotInfo.str_String) + 19;
+		}
+		else
+		{
+			nInfoWidth = 19 - _pUIFontTexMgr->GetFontSpacing() + m_strSlotInfo.Length() *
+							( _pUIFontTexMgr->GetFontWidth() + _pUIFontTexMgr->GetFontSpacing() );
+		}
 #endif
 		int	nInfoHeight = 22;
 		
@@ -1000,6 +1009,9 @@ WMSG_RESULT CUIQuickSlot::MouseMessage( MSG *pMsg )
 							}
 							else
 							{
+								if( ((CPlayerEntity*)CEntity::GetPlayerEntity(0))->IsHudModel_Used() == TRUE )
+									return WMSG_SUCCESS;
+
 								_pNetwork->SendCashItemMessage(MSG_EX_CASHITEM_SHOP_OPEN_REQ);
 							}
 						}
@@ -1208,7 +1220,7 @@ void CUIQuickSlot::UseQuickSlot( int nSlotIndex, int nCurrentPage)
 			}
 			else if (_pNetwork->GetSkillData(nSkillIndex).GetJob() == WILDPET_JOB)
 			{
-				pUIManager->GetWildPetInfo()->UseSkill(nSkillIndex);
+				pUIManager->GetWildPetInfoUI()->UseSkill(nSkillIndex);
 			}
 			else
 			{
@@ -1367,13 +1379,16 @@ void CUIQuickSlot::AddBtnToQuickSlot( int nSlotIndex, int nCurrentPage )
 	case UBET_ACTION:
 		{
 			int	nActionIndex = pDrag->getIndex();
-#if defined (G_RUSSIA)
-			// [2011/05/18 : Sora] 러시아측 요청으로 P2줍기,공격 액션은 퀵슬롯에 등록되지 않게 처리
-			if( nActionIndex == 44 /*P2 공격*/ || nActionIndex == 45 /*P2 줍기*/ )
+
+			if (g_iCountry == RUSSIA)
 			{
-				return;
+				// [2011/05/18 : Sora] 러시아측 요청으로 P2줍기,공격 액션은 퀵슬롯에 등록되지 않게 처리
+				if( nActionIndex == 44 /*P2 공격*/ || nActionIndex == 45 /*P2 줍기*/ )
+				{
+					return;
+				}
 			}
-#endif
+			
 			SendAddBtn( nCurrentPage, nSlotIndex, 1, nActionIndex );
 		}
 		break;
@@ -1535,7 +1550,7 @@ void CUIQuickSlot::AddBtn( int nPage, int nSlotNum, int nSlotType, int nData0, i
 			}
 			else if(_pNetwork->GetSkillData( nData0 ).GetJob() == WILDPET_JOB)
 			{
-				if(pUIManager->GetWildPetInfo()->IsLearnSkill(nData0))
+				if(pUIManager->GetWildPetInfoUI()->IsLearnSkill(nData0))
 				{
 					m_abtnItems[nPage][nSlotNum]->setSkill(nData0);
 

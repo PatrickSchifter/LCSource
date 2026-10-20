@@ -6,20 +6,20 @@
 #include "../ShareLib/MemoryPoolBase.h"
 
 // SHOP CONF
-#define PS_MAX_NORMAL_ITEM			10		// ÀÏ¹Ý ¾ÆÀÌÅÛ °Å·¡ ÃÖ´ë ¼ö
-#define PS_MAX_PACKAGE_ITEM			5		// ÆÐÅ°Áö ÆÇ¸Å °Å·¡ ÃÖ´ë ¼ö
-//#define PS_NEED_MONEY_PREMIUM		5000	// ÇÁ¸®¹Ì¾ö »óÁ¡ °³¼³ ÇÊ¿ä ³ª½º
-#define PS_TEX_PREMIUM				200		// ¼¼À²: ÇÁ¸®¹Ì¾ö: 2%
+#define PS_MAX_NORMAL_ITEM			10		// ì¼ë°˜ ì•„ì´í…œ ê±°ëž˜ ìµœëŒ€ ìˆ˜
+#define PS_MAX_PACKAGE_ITEM			5		// íŒ¨í‚¤ì§€ íŒë§¤ ê±°ëž˜ ìµœëŒ€ ìˆ˜
+//#define PS_NEED_MONEY_PREMIUM		5000	// í”„ë¦¬ë¯¸ì—„ ìƒì  ê°œì„¤ í•„ìš” ë‚˜ìŠ¤
+#define PS_TEX_PREMIUM				200		// ì„¸ìœ¨: í”„ë¦¬ë¯¸ì—„: 2%
 
-#define PS_TEX_NORMAL				0		// ¼¼À²: ÀÏ¹Ý: 0%
+#define PS_TEX_NORMAL				0		// ì„¸ìœ¨: ì¼ë°˜: 0%
 
 // PERSONAL SHOP TYPE
 #define PST_NOSHOP			0
-#define PST_SELL			(1 << 0)		// ÆÇ¸Å
-#define PST_BUY				(1 << 1)		// ±¸¸Å
-#define PST_PREMIUM			(1 << 2)		// ÇÁ¸®¹Ì¾ö
-#define PST_PACKAGE			(1 << 3)		// ÆÐÅ°Áö
-#define PST_SOLDOUT			(1 << 4)		// ÆÇ¸Å Á¾·á
+#define PST_SELL			(1 << 0)		// íŒë§¤
+#define PST_BUY				(1 << 1)		// êµ¬ë§¤
+#define PST_PREMIUM			(1 << 2)		// í”„ë¦¬ë¯¸ì—„
+#define PST_PACKAGE			(1 << 3)		// íŒ¨í‚¤ì§€
+#define PST_SOLDOUT			(1 << 4)		// íŒë§¤ ì¢…ë£Œ
 
 class CPersonalShop : public MemoryPoolBaseWithMutex<CPersonalShop>
 {

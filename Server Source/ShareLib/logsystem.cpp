@@ -91,16 +91,16 @@ CLogger		myLogger( "spooky000" );
 
 int main( int argc, char* argv[] )
 {
-	// �������Ͽ� ${logfile} ���� ���ִ� �κп� ������ ���� �־��ش�.
+	// 설정파일에 ${logfile} 으로 되있는 부분에 적당한 값을 넣어준다.
 	LogSystem::setSubstitutedValuef( "logfile", "login_%s.log", argv[1] );
 
-	// xml�� �� ���������� �д´�.
+	// xml로 된 설정파일을 읽는다.
 	LogSystem::configureXml( "log.xml" );
 
-	// spooky00 �ΰſ� ����� �α׸� ����Ѵ�.
+	// spooky00 로거에 디버그 로그를 출력한다.
 	myLogger.debug( "ssss %d", 1 );
 
-	// ��Ʈ �ΰſ� �α׸� ����Ѵ�.
+	// 루트 로거에 로그를 출력한다.
 	LOG_ERROR( "test root log: %d, %d", 10, 100 );
 	LOG_WARN( "test root log: %d, %d", 10, 100 );
 	LOG_DEBUG( "test root log: %d, %d", 10, 100 );

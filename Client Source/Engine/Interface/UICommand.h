@@ -69,7 +69,10 @@ public:
 	void execute()
 	{
 		if (_pIcon != NULL)
-			UIMGR()->SetHoldBtn(_pIcon);
+		{
+			if (_pIcon->IsEmpty() == false)
+				UIMGR()->SetHoldBtn(_pIcon);
+		}
 	}
 private:
 	CUIIcon*	_pIcon;

@@ -66,7 +66,7 @@ void CGPSDataManager::_remove( int charIndex, int targetIndex )
 
 void CGPSDataManager::_update( CPC* targetPC )
 {
-	//³¯ Å¸°ÙÀ¸·Î ÇÏ°í ÀÖ´Â À¯Àúµé¿¡°Ô ³» Æ÷ÀÎÅÍ Á¤º¸¸¦ ÁØ´Ù.
+	//ë‚  íƒ€ê²Ÿìœ¼ë¡œ í•˜ê³  ìˆëŠ” ìœ ì €ë“¤ì—ê²Œ ë‚´ í¬ì¸í„° ì •ë³´ë¥¼ ì¤€ë‹¤.
 	_MAP::iterator it;
 
 	it = gpsMap.find(targetPC->m_index);

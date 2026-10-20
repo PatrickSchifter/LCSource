@@ -8,7 +8,7 @@ public:
 	~CRockPaperScissorsInfo();
 
 	/**
-	* ½ÃÀÛ ¼³Á¤
+	* ì‹œì‘ ì„¤ì •
 	**/
 	void SetWinCount(char cnt);
 	char GetWinCount();
@@ -29,11 +29,11 @@ public:
 	bool CanPlay();
 
 private:
-	char    m_nWinCount;				// ´©Àû ½Â¼ö
-	char    m_nGameCount;				// ÇöÀç °ÔÀÓ °¡À§¹ÙÀ§º¸ ½Ãµµ ¼ö
-	bool    m_bStart;					// °ÔÀÓ ½ÃÀÛ ¿©ºÎ
-	int     m_nTotalCount;				// °ÔÀÓ ´©Àû ¼ö
-	bool    m_bCanPlay;					// ¼±ÅÃ °¡´É ¿©ºÎ
+	char    m_nWinCount;				// ëˆ„ì  ìŠ¹ìˆ˜
+	char    m_nGameCount;				// í˜„ì¬ ê²Œì„ ê°€ìœ„ë°”ìœ„ë³´ ì‹œë„ ìˆ˜
+	bool    m_bStart;					// ê²Œì„ ì‹œì‘ ì—¬ë¶€
+	int     m_nTotalCount;				// ê²Œì„ ëˆ„ì  ìˆ˜
+	bool    m_bCanPlay;					// ì„ íƒ ê°€ëŠ¥ ì—¬ë¶€
 };
 
 #endif

@@ -380,7 +380,7 @@ CRaidZoneDataProto* CRaidZoneDataProtoList::Find(int index)
 
 bool CRaidInfo::Load()
 {
-	if(!m_RaidObjectDataProtoList.Load())	// m_RaidDataProtoList¸¦ Load ÇÏ±âÀü m_RaidObjectDataProtoList¸ÕÀú Load ÇÏ¿©¾ß ÇÑ´Ù.
+	if(!m_RaidObjectDataProtoList.Load())	// m_RaidDataProtoListë¥¼ Load í•˜ê¸°ì „ m_RaidObjectDataProtoListë¨¼ì € Load í•˜ì—¬ì•¼ í•œë‹¤.
 		return false;
 	if(!m_RaidDataProtoList.Load())
 		return false;
@@ -440,7 +440,7 @@ CRaidObjectDataProto* CRaidDataProto::GetOutput(int idx)
 }
 bool CAreaRaidInfoList::LoadRaidInfo(int ZoneIndex, int difficulty)
 {
-	//Á¸¹øÈ£µµ ¹Þ¾Æ¿Ô°í.. m_RaidData¸¦ °¡Á®¿Â´Ù.
+	//ì¡´ë²ˆí˜¸ë„ ë°›ì•„ì™”ê³ .. m_RaidDataë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 	int nCount = 0;
 	int i;
 	CRaidDataProto* proto = NULL;
@@ -453,7 +453,7 @@ bool CAreaRaidInfoList::LoadRaidInfo(int ZoneIndex, int difficulty)
 
 	else
 		return false;
-	// ·ÎµùÀ» ÇÏ°í..
+	// ë¡œë”©ì„ í•˜ê³ ..
 	int index = 0;
 	int raidDataCount = gserver->m_RaidInfo.m_RaidDataProtoList.GetCount();
 	for(i = 0; i < raidDataCount; i++)
@@ -487,7 +487,7 @@ bool CAreaRaidInfoList::LoadRaidInfo(int ZoneIndex, int difficulty)
 
 	if(!m_objectlist.Load(ZoneIndex))
 	{
-		//TODO :: µ¥ÀÌÅÍ°¡ ¾øÁö¸¸, ·ÎÄÃ¿¡¼­ ERROR·Î ÀÎ½ÄÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ ÀÓ½Ã·Î true Ã³¸®ÇÔ.
+		//TODO :: ë°ì´í„°ê°€ ì—†ì§€ë§Œ, ë¡œì»¬ì—ì„œ ERRORë¡œ ì¸ì‹í•  ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— ìž„ì‹œë¡œ true ì²˜ë¦¬í•¨.
 		//return false;
 		return true;
 	}
@@ -497,7 +497,7 @@ bool CAreaRaidInfoList::LoadRaidInfo(int ZoneIndex, int difficulty)
 
 int CRaidDataProtoList::GetZoneCount(int ZoneIndex, int nDifficulty)
 {
-	int ret = 0;	//return °ª
+	int ret = 0;	//return ê°’
 	int i;
 	for(i = 0; i < m_nCount; i++)
 	{
@@ -617,14 +617,14 @@ int CAreaRaidInfoList::LoadSavePointRaidInfo(int ZoneIndex, int roomindex)
 	}
 
 	int nSaveInfo;
-	cmd.GetRec("a_save_info", nSaveInfo);	// Save´Â DBÀÇ index
+	cmd.GetRec("a_save_info", nSaveInfo);	// SaveëŠ” DBì˜ index
 	m_nSavePoint = nSaveInfo;
 
-	//¿©±â¼­ ¼¼ÆÃÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.*/
+	//ì—¬ê¸°ì„œ ì„¸íŒ…ì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.*/
 	int nCount = GetCount();
 	for(int i = 0; i < nCount; i++)
 	{
-		//loop¸¦ µ¹¸é¼­ ÇöÀç SAVEPOINT¸¦ Ã£´Â´Ù.
+		//loopë¥¼ ëŒë©´ì„œ í˜„ìž¬ SAVEPOINTë¥¼ ì°¾ëŠ”ë‹¤.
 		if(m_RaidData[i].GetProto()->GetSceneNo() <= nSaveInfo)
 		{
 			m_RaidData[i].SetState(RAID_DATA_STATE_COMPLETE);
@@ -799,11 +799,11 @@ void CAreaRaidInfoList::ExcuteTodo(int object_type, int object_index, int object
 		if( m_RaidData[i].GetTodo()->GetProto()->GetObjectType() == object_type &&
 				m_RaidData[i].GetTodo()->GetProto()->GetObjectIndex() == object_index )
 		{
-			// Á¶°Ç°Ë»ç ÇÊ¿ä object_data¿Í precondition È®ÀÎÇÒ °Í.
+			// ì¡°ê±´ê²€ì‚¬ í•„ìš” object_dataì™€ precondition í™•ì¸í•  ê²ƒ.
 			if( m_RaidData[i].GetTodo()->GetProto()->GetObjectData() == -1 &&
 					m_RaidData[i].GetProto()->GetPreCond(0) == -1 &&
 					m_RaidData[i].GetProto()->GetPreCond(1) == -1 &&
-					m_RaidData[i].GetProto()->GetPreCond(2) == -1 )					// Á¶°Ç ¾øÀ½.
+					m_RaidData[i].GetProto()->GetPreCond(2) == -1 )					// ì¡°ê±´ ì—†ìŒ.
 			{
 				if(m_pArea == NULL)
 					return ;
@@ -899,7 +899,7 @@ void CAreaRaidInfoList::ExcuteTodo(int object_type, int object_index, int object
 
 						if(nPCCount == 0)
 						{
-							m_pArea->m_nDelayOpenGate = gserver->getNowSecond()+5;	//5ÃÊ µÚ ¹®¿­¸².
+							m_pArea->m_nDelayOpenGate = gserver->getNowSecond()+5;	//5ì´ˆ ë’¤ ë¬¸ì—´ë¦¼.
 						}
 					}
 				}
@@ -936,7 +936,7 @@ void CAreaRaidInfoList::ExcuteTodo(int object_type, int object_index, int object
 										|| m_RaidData[ai].GetProto()->GetIndex() == 30
 								  )
 								{
-									m_RaidData[ai].SetState(0); // ´ë±â »óÅÂ·Î ¹Ù²Ù±â
+									m_RaidData[ai].SetState(0); // ëŒ€ê¸° ìƒíƒœë¡œ ë°”ê¾¸ê¸°
 									m_RaidData[ai].GetTodo()->SetAttr();
 									for(j = 0; j < 5; j++)
 									{
@@ -977,9 +977,9 @@ void CAreaRaidInfoList::ExcuteTodo(int object_type, int object_index, int object
 					}
 				}
 			}
-			else																	// Á¶°Ç ÀÖÀ½.
+			else																	// ì¡°ê±´ ìžˆìŒ.
 			{
-				// Á¶°ÇÀÌ ÀÖÀ¸¸é Á¶°ÇÀÌ ¿Ï·á µÇ¾ú´ÂÁö °Ë»çÇÒ °Í.
+				// ì¡°ê±´ì´ ìžˆìœ¼ë©´ ì¡°ê±´ì´ ì™„ë£Œ ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•  ê²ƒ.
 
 				int precond1 = -1;
 				int precond2 = -1;
@@ -1057,7 +1057,7 @@ void CAreaRaidInfoList::ExcuteTodo(int object_type, int object_index, int object
 
 				if(CondCount == 0)
 				{
-					// Á¶°Ç ¸¸Á· OutputÀ» ½ÇÇàÇÏ¶ó!!!!
+					// ì¡°ê±´ ë§Œì¡± Outputì„ ì‹¤í–‰í•˜ë¼!!!!
 					int condition = m_RaidData[i].GetState();
 					if(condition == 0)
 					{
@@ -1209,7 +1209,7 @@ void CAreaRaidInfoList::ExcuteOutput(int type, int index, int data, CPC* ch)
 						m_nSavePoint = data;
 						if(!cmd.MoveFirst())
 						{
-							// µ¥ÀÌÅÍ°¡ ¾øÀ¸¹Ç·Î insert ÇÑ´Ù.
+							// ë°ì´í„°ê°€ ì—†ìœ¼ë¯€ë¡œ insert í•œë‹¤.
 							sql.Format("INSERT INTO t_trigger_saveinfo(a_zone_index, a_room_index, a_save_info, a_save_time, a_difficulty) VALUES(%d, %d, %d, now(), %d)",
 									   ch->m_pZone->m_index, ch->m_nJoinInzone_RoomNo, data, this->m_pArea->m_RaidDifficulty);
 							cmd.SetQuery(sql);
@@ -1222,7 +1222,7 @@ void CAreaRaidInfoList::ExcuteOutput(int type, int index, int data, CPC* ch)
 						else
 						{
 							cmd.GetRec("a_index", nDBIndex);
-							// µ¥ÀÌÅÍ°¡ ÀÖÀ¸¹Ç·Î update ÇÑ´Ù.
+							// ë°ì´í„°ê°€ ìžˆìœ¼ë¯€ë¡œ update í•œë‹¤.
 							sql.Format("UPDATE t_trigger_saveinfo SET a_save_info = %d, a_save_time = now(), a_difficulty = %d WHERE a_index = %d", data, this->m_pArea->m_RaidDifficulty, nDBIndex );
 							cmd.SetQuery(sql);
 							if(!cmd.Update())
@@ -1388,7 +1388,7 @@ void CAreaRaidInfoList::ExcuteOutput(int type, int index, int data, CPC* ch)
 							{
 								if(m_pArea->m_zone->m_index == ZONE_AKAN_TEMPLE && type == TOGGLE_GATE && index == 2667)
 								{
-									if (data == 0)		//´ÝÈû.(255)
+									if (data == 0)		//ë‹«íž˜.(255)
 									{
 										m_pArea->m_zone->m_attrMap[0].m_attr[708][501] |= MATT_UNWALKABLE;
 										m_pArea->m_zone->m_attrMap[0].m_attr[708][502] |= MATT_UNWALKABLE;
@@ -1401,7 +1401,7 @@ void CAreaRaidInfoList::ExcuteOutput(int type, int index, int data, CPC* ch)
 										m_pArea->m_zone->m_attrMap[0].m_attr[709][504] |= MATT_UNWALKABLE;
 										m_pArea->m_zone->m_attrMap[0].m_attr[709][505] |= MATT_UNWALKABLE;
 									}
-									else if (data == 1)	//¿­¸² (0)
+									else if (data == 1)	//ì—´ë¦¼ (0)
 									{
 										m_pArea->m_zone->m_attrMap[0].m_attr[708][501] |= MATT_WALKABLE;
 										m_pArea->m_zone->m_attrMap[0].m_attr[708][502] |= MATT_WALKABLE;
@@ -1459,7 +1459,7 @@ void CAreaRaidInfoList::ExcuteOutput(int type, int index, int data, CPC* ch)
 				{
 					if(m_pArea->m_zone->m_CNpcRegenRaidList[i].m_regenList_InstantDoungen[j].m_npcIdx == index)
 					{
-						//Ã£¾ÒÀ¸´Ï±ñ ¸®½ºÆ® ÁÂÇ¥´ë·Î ¼ÒÈ¯ÇÒ °Í.
+						//ì°¾ì•˜ìœ¼ë‹ˆê¹ ë¦¬ìŠ¤íŠ¸ ì¢Œí‘œëŒ€ë¡œ ì†Œí™˜í•  ê²ƒ.
 						npc = gserver->m_npcProtoList.Create(m_pArea->m_zone->m_CNpcRegenRaidList[i].m_regenList_InstantDoungen[j].m_npcIdx, NULL);
 
 						if(!npc)

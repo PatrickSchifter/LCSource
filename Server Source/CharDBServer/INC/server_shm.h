@@ -68,10 +68,10 @@ typedef struct
 #endif
 
 /*
-	LOAD »óÅÂ °ü¸®¸¦ À§ÇÑ ±¸Á¶Ã¼
+	LOAD ìƒíƒœ ê´€ë¦¬ë¥¼ ìœ„í•œ êµ¬ì¡°ì²´
 		alarm : NORMAL, MINOR, MAJOR, CRITICAL
 		mask  : MASK, UNMASK
-	 	usage :  DISK »ç¿ëÀ²(%)[xx.xx]
+	 	usage :  DISK ì‚¬ìš©ìœ¨(%)[xx.xx]
 */
 
 typedef struct
@@ -85,7 +85,7 @@ typedef struct
 
 
 /*
-	ETHERNET PORT »óÅÂ °ü¸®¸¦ À§ÇÑ ±¸Á¶Ã¼
+	ETHERNET PORT ìƒíƒœ ê´€ë¦¬ë¥¼ ìœ„í•œ êµ¬ì¡°ì²´
 		status :  ALIVE, DEAD, ABSENT
 		alarm  :  NORMAL, CRITICAL
 		mask   :  MASK, UNMASK
@@ -102,12 +102,12 @@ typedef struct
 
 
 /*
-	Process »óÅÂ¸¦ °ü¸®ÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+	Process ìƒíƒœë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
 		status 	:  	ALIVE, DEAD, ABSENT
 		alarm  	:  	NORMAL, MINOR, MAJOR, CRITICAL
 		mask	:  	MASK, UNMASK
 		stop	:	STOP, NONSTOP
-		when	: 	ÇÁ·Î¼¼½º »óÅÂ º¯°æ ½Ã°£
+		when	: 	í”„ë¡œì„¸ìŠ¤ ìƒíƒœ ë³€ê²½ ì‹œê°„
 		pid		:  	pid
 */
 
@@ -124,12 +124,12 @@ typedef struct
 
 
 /*
-	Process »óÅÂ¸¦ Àü¼ÛÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+	Process ìƒíƒœë¥¼ ì „ì†¡í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
 		status 	:  	ALIVE, DEAD, ABSENT
 		alarm  	:  	NORMAL, MINOR, MAJOR, CRITICAL
 		mask	:  	MASK, UNMASK
 		stop	:	STOP, NONSTOP
-		when	: 	ÇÁ·Î¼¼½º »óÅÂ º¯°æ ½Ã°£
+		when	: 	í”„ë¡œì„¸ìŠ¤ ìƒíƒœ ë³€ê²½ ì‹œê°„
 */
 
 typedef struct
@@ -143,14 +143,14 @@ typedef struct
 
 
 /*
-	DTAF ½Ã½ºÅÛ ÀüÃ¼¸¦ °ü¸®ÇÏ±â À§ÇÑ Á¤º¸ Å×ÀÌºí
-		alarmlevel 	:  	½Ã½ºÅÛ ÀüÃ¼ Àå¾Ö µî±Ş
-		mpmqful		:	IPC MESSAGE QUEUE FULL »óÅÂ °ü¸®
-		mpcpuload   :	CPU ºÎÇÏÀ²
-		mpmemload	:	MEM ºÎÇÏÀ²
-		mpdisk		:	DISK ºÎÇÏÀ² Á¤º¸
-		mplink		:	ETHERNET »óÅÂ Á¤º¸
-		mpsw		: 	PROCESS »óÅÂ Á¤º¸
+	DTAF ì‹œìŠ¤í…œ ì „ì²´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ì •ë³´ í…Œì´ë¸”
+		alarmlevel 	:  	ì‹œìŠ¤í…œ ì „ì²´ ì¥ì•  ë“±ê¸‰
+		mpmqful		:	IPC MESSAGE QUEUE FULL ìƒíƒœ ê´€ë¦¬
+		mpcpuload   :	CPU ë¶€í•˜ìœ¨
+		mpmemload	:	MEM ë¶€í•˜ìœ¨
+		mpdisk		:	DISK ë¶€í•˜ìœ¨ ì •ë³´
+		mplink		:	ETHERNET ìƒíƒœ ì •ë³´
+		mpsw		: 	PROCESS ìƒíƒœ ì •ë³´
 */
 
 typedef struct
@@ -202,7 +202,7 @@ typedef struct
 
 
 /*
-	Process ¼öÇà ¿©ºÎ¸¦ Áø´ÜÇÏ±â À§ÇÑ Heart Beat Ã³¸®¿ë ±¸Á¶Ã¼
+	Process ìˆ˜í–‰ ì—¬ë¶€ë¥¼ ì§„ë‹¨í•˜ê¸° ìœ„í•œ Heart Beat ì²˜ë¦¬ìš© êµ¬ì¡°ì²´
 */
 
 typedef struct
@@ -273,8 +273,8 @@ typedef struct
 
 typedef struct _st_SW_Info
 {
-	unsigned int    uiPid;    /* ½ÇÇàÁßÀÎ ÇÁ·Î¼¼½ºÀÇ PID */
-	unsigned char	ucActFlag; /* ½ÇÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â flag, McInit¼öÁ¤ÈÄ StartMC·Î Àû¿ë */
+	unsigned int    uiPid;    /* ì‹¤í–‰ì¤‘ì¸ í”„ë¡œì„¸ìŠ¤ì˜ PID */
+	unsigned char	ucActFlag; /* ì‹¤í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” flag, McInitìˆ˜ì •í›„ StartMCë¡œ ì ìš© */
 	unsigned char	ucDoneFlag;
 	unsigned char	szReserved[2];
 	char            szProcName[PROC_NAME_LEN];
@@ -404,13 +404,13 @@ typedef struct _st_GEN_INFO
 	UINT64  ullDelayTime[MAX_PORT_NUM];     // TEMS PACKET DELAY TIME(T_ECRPT)
 	UINT64  ullDelayCnt[MAX_PORT_NUM];      // TEMS PACKET DELAY COUNT(T_ECRPT)
 
-	UINT64  ullUpPktCnt[MAX_PORT_NUM];     	// ÃÖ±Ù 10ÃÊ µ¿¾ÈÀÇ Up Packet Count(BSMS)
-	UINT64  ullDownPktCnt[MAX_PORT_NUM];   	// ÃÖ±Ù 10ÃÊ µ¿¾ÈÀÇ Down Packet Count(BSMS)
-	UINT    ullUpBytes[MAX_PORT_NUM];      	// ÃÖ±Ù 10ÃÊ µ¿¾ÈÀÇ Up Packet Bytes(BSMS)
-	UINT    ullDownBytes[MAX_PORT_NUM];    	// ÃÖ±Ù 10ÃÊ µ¿¾ÈÀÇ Down Packet Bytes(BSMS)
-	TIME_T  tGatherStartTime[MAX_PORT_NUM];	// ¼öÁı ½ÃÀÛ ½Ã°£
+	UINT64  ullUpPktCnt[MAX_PORT_NUM];     	// ìµœê·¼ 10ì´ˆ ë™ì•ˆì˜ Up Packet Count(BSMS)
+	UINT64  ullDownPktCnt[MAX_PORT_NUM];   	// ìµœê·¼ 10ì´ˆ ë™ì•ˆì˜ Down Packet Count(BSMS)
+	UINT    ullUpBytes[MAX_PORT_NUM];      	// ìµœê·¼ 10ì´ˆ ë™ì•ˆì˜ Up Packet Bytes(BSMS)
+	UINT    ullDownBytes[MAX_PORT_NUM];    	// ìµœê·¼ 10ì´ˆ ë™ì•ˆì˜ Down Packet Bytes(BSMS)
+	TIME_T  tGatherStartTime[MAX_PORT_NUM];	// ìˆ˜ì§‘ ì‹œì‘ ì‹œê°„
 
-	INT     dPortUser[MAX_PORT_NUM];        // TEMS Æ÷Æ®º° Á¢¼Ó À¯Àú ¼ö(T_PINGER)
+	INT     dPortUser[MAX_PORT_NUM];        // TEMS í¬íŠ¸ë³„ ì ‘ì† ìœ ì € ìˆ˜(T_PINGER)
 
 	UINT    uiExpBase;
 	UINT    uiGameMoneyBase;

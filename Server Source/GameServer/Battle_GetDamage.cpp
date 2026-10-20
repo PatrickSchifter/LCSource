@@ -27,19 +27,19 @@ const float fMCTProb[11] =
 };
 ////////////////////
 // Function name	: GetHitType
-// Description	    : °ø°İ Å¸ÀÔ °áÁ¤
+// Description	    : ê³µê²© íƒ€ì… ê²°ì •
 // Return type		: char
-//                  : °¡´ÉÇÑ °ø°İ Å¸ÀÔ ºñÆ® ÇÊµå
+//                  : ê°€ëŠ¥í•œ ê³µê²© íƒ€ì… ë¹„íŠ¸ í•„ë“œ
 // Argument         : CCharacter* of
-//                  : °ø°İÀÚ
+//                  : ê³µê²©ì
 // Argument         : CCharacter* df
-//                  : ¹æ¾îÀÚ
+//                  : ë°©ì–´ì
 char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 {
 	if (of && df)
 		return GetHitType_Adult(of, df, type);
 
-	// ÆåÅÍ¿¡ µû¸¥ °ªµé
+	// í™í„°ì— ë”°ë¥¸ ê°’ë“¤
 	int ret = 0;
 
 	int prob = 0;
@@ -59,7 +59,7 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 			switch (df->m_type)
 			{
 			case MSG_CHAR_PC:
-			case MSG_CHAR_ELEMENTAL:	// ¼ÒÈ¯¼ö´Â PC¿Í µ¿ÀÏ
+			case MSG_CHAR_ELEMENTAL:	// ì†Œí™˜ìˆ˜ëŠ” PCì™€ ë™ì¼
 				switch (TO_PC(of)->m_job)
 				{
 				case JOB_TITAN:
@@ -116,11 +116,11 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 			prob = 100;
 			break;
 
-		case MSG_CHAR_ELEMENTAL:		// ¼ÒÈ¯¼ö´Â ¼Ò¼­·¯¿Í µ¿ÀÏ
+		case MSG_CHAR_ELEMENTAL:		// ì†Œí™˜ìˆ˜ëŠ” ì†Œì„œëŸ¬ì™€ ë™ì¼
 			switch (df->m_type)
 			{
 			case MSG_CHAR_PC:
-			case MSG_CHAR_ELEMENTAL:	// ¼ÒÈ¯¼ö´Â PC¿Í µ¿ÀÏ
+			case MSG_CHAR_ELEMENTAL:	// ì†Œí™˜ìˆ˜ëŠ” PCì™€ ë™ì¼
 				prob = 200 * (10 + of->m_level) * of->m_dex / (10 + df->m_level) / (of->m_dex + df->m_dex);
 				break;
 
@@ -167,7 +167,7 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 			prob = 200 * (10 + of->m_level) * of->m_int / (10 + df->m_level) / (of->m_int + df->m_int);
 			break;
 
-		case MSG_CHAR_PET:		// ¾Ö¿Ïµ¿¹°Àº ¸¶¹ı °ø°İ ¾øÀ½
+		case MSG_CHAR_PET:		// ì• ì™„ë™ë¬¼ì€ ë§ˆë²• ê³µê²© ì—†ìŒ
 		default:
 			prob = 0;
 			break;
@@ -189,7 +189,7 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 		break;
 	}
 
-	// ¿É¼Ç ¼öÄ¡ Àû¿ë
+	// ì˜µì…˜ ìˆ˜ì¹˜ ì ìš©
 	int op = 0;
 	switch (type)
 	{
@@ -211,8 +211,8 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 
 	prob += (op * 100);
 
-	// ·¹º§ Æä³ÎÆ¼
-	// ¼ÒÈ¯¼ö/Æêµµ PC¿Í µ¿ÀÏÇÏ°Ô
+	// ë ˆë²¨ í˜ë„í‹°
+	// ì†Œí™˜ìˆ˜/í«ë„ PCì™€ ë™ì¼í•˜ê²Œ
 	bool bIsPCof = (IS_PC(of) || IS_PET(of) || IS_ELEMENTAL(of));
 	bool bIsPCdf = (IS_PC(df) || IS_PET(df) || IS_ELEMENTAL(df));
 	if (bIsPCof && bIsPCdf)
@@ -239,14 +239,14 @@ char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 
 ////////////////////
 // Function name	: SelectHitType
-// Description	    : ÁÖ¾îÁø flag¿¡¼­ Æ¯Á¤ Å¸ÀÔÀ» ¼±ÅÃ
+// Description	    : ì£¼ì–´ì§„ flagì—ì„œ íŠ¹ì • íƒ€ì…ì„ ì„ íƒ
 #ifdef ENABLE_ROGUE_SKILL125_BRZ
 char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, const CMagicProto* magic, const CMagicLevelProto* magiclevel, bool nothelp, int skillLevel)
 #else
 char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, const CMagicProto* magic, const CMagicLevelProto* magiclevel, bool nothelp)
 #endif // ENABLE_ROGUE_SKILL125_BRZ
 {
-#define SAFEDIV(a, b)		{ if ((b) < 1) a /= 1; else a /= (b); }		// a = a / b, b°¡ 0ÀÌ¸é 1·Î °£ÁÖ
+#define SAFEDIV(a, b)		{ if ((b) < 1) a /= 1; else a /= (b); }		// a = a / b, bê°€ 0ì´ë©´ 1ë¡œ ê°„ì£¼
 	if (magic && magiclevel && magic->m_hittype == MHT_CONSTANT)
 	{
 		int hitrate = magiclevel->m_nHitrateValue;
@@ -277,7 +277,7 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 			if(magic->m_type == MT_ASSIST && magic->m_subtype == MST_ASSIST_HOLD)
 			{
 				int diffLevel = df->m_level - of->m_level;
-				if(diffLevel > 5)		// »¡°£»ö ¸÷
+				if(diffLevel > 5)		// ë¹¨ê°„ìƒ‰ ëª¹
 				{
 					switch(skillLevel)
 					{
@@ -301,7 +301,7 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 						break;
 					}
 				}
-				else if(diffLevel > 2)				// ÁÖÈ²»ö ¸÷
+				else if(diffLevel > 2)				// ì£¼í™©ìƒ‰ ëª¹
 				{
 					switch(skillLevel)
 					{
@@ -328,8 +328,8 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 			}
 #endif // ENABLE_ROGUE_SKILL125_BRZ
 
-			// 050331 : bs : pvp¿¡¼­ ¸íÁß·ü Áõ°¨
-			// 050402 : bs : ½ÃÀü, ´ë»óÀÇ ÆÄ¶ó¹ÌÅÍ Ãß°¡
+			// 050331 : bs : pvpì—ì„œ ëª…ì¤‘ë¥  ì¦ê°
+			// 050402 : bs : ì‹œì „, ëŒ€ìƒì˜ íŒŒë¼ë¯¸í„° ì¶”ê°€
 			hitrate = hitrate * CalcSkillParam(of, df, magic->m_hsp, magic->m_htp) / 100;
 			if (hitrate < 1)
 				hitrate = 1;
@@ -370,7 +370,7 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 		if (IS_NPC(df))
 		{
 			CNPC* npc = TO_NPC(df);
-			//¿£ÇÇ½ÃÀÇ m_ct °ªÀÌ 0º¸´Ù Å©°í, npcÀÇ ¸é¿ª ÇÃ·¡±×¿¡ ÇØ´çµÇ´Â ½ºÅ³ÀÌ µé¾î¿ÔÀ» °æ¿ì
+			//ì—”í”¼ì‹œì˜ m_ct ê°’ì´ 0ë³´ë‹¤ í¬ê³ , npcì˜ ë©´ì—­ í”Œë˜ê·¸ì— í•´ë‹¹ë˜ëŠ” ìŠ¤í‚¬ì´ ë“¤ì–´ì™”ì„ ê²½ìš°
 			if( npc->m_ctCount > 0 )
 			{
 				if( npc->m_proto->CheckStateFlag( (1 << magic->m_subtype) ) )
@@ -430,69 +430,69 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 	if (flag & HITTYPE_MISS)
 		return HITTYPE_MISS;
 
-	// °¢ Å¸ÀÔº° È®·ü : ¹Ì½º, ³ë¸ÖÀ» Á¦¿ÜÇÏ°í ¼ø¼­´ë·Î [0À§Å© 1½ºÆ®·Õ 2ÇÏµå 3Å©¸®Æ¼ÄÃ 4µ¥µé¸®]
-	// pc attack ±âÁØ
+	// ê° íƒ€ì…ë³„ í™•ë¥  : ë¯¸ìŠ¤, ë…¸ë©€ì„ ì œì™¸í•˜ê³  ìˆœì„œëŒ€ë¡œ [0ìœ„í¬ 1ìŠ¤íŠ¸ë¡± 2í•˜ë“œ 3í¬ë¦¬í‹°ì»¬ 4ë°ë“¤ë¦¬]
+	// pc attack ê¸°ì¤€
 	int prob_t[5] = {500, 1250, 1000, 900, 600};
 	int ret_t[5] = {HITTYPE_WEAK, HITTYPE_STRONG, HITTYPE_HARD, HITTYPE_CRITICAL, HITTYPE_DEADLY};
 
-	// NPC : ÇÏµå Å©¸® µ¥µé¸® ¾ø±â È®·ü Á¶Á¤
+	// NPC : í•˜ë“œ í¬ë¦¬ ë°ë“¤ë¦¬ ì—†ê¸° í™•ë¥  ì¡°ì •
 	if (IS_NPC(of))
 	{
-// 050225 : bs : º¸½º-Å©¸®&µ¥µé¸®, Áß°£º¸½º-Å©¸® °¡´ÉÇÏ°Ô
+// 050225 : bs : ë³´ìŠ¤-í¬ë¦¬&ë°ë“¤ë¦¬, ì¤‘ê°„ë³´ìŠ¤-í¬ë¦¬ ê°€ëŠ¥í•˜ê²Œ
 
-		prob_t[0] = 2000;		// À§Å©			: 20%
-		prob_t[1] = 2000;		// ½ºÆ®·Õ		: 20%
+		prob_t[0] = 2000;		// ìœ„í¬			: 20%
+		prob_t[1] = 2000;		// ìŠ¤íŠ¸ë¡±		: 20%
 
 		CNPC* npc = TO_NPC(of);
 		if (npc->m_proto->CheckFlag(NPC_BOSS))
 		{
-			prob_t[2] = 1000;	// ÇÏµå			: 10%
-			prob_t[3] = 900;	// Å©¸®			: 9%
-			prob_t[4] = 600;	// µ¥µé¸®		: 6%
+			prob_t[2] = 1000;	// í•˜ë“œ			: 10%
+			prob_t[3] = 900;	// í¬ë¦¬			: 9%
+			prob_t[4] = 600;	// ë°ë“¤ë¦¬		: 6%
 		}
 		else if (npc->m_proto->CheckFlag(NPC_MBOSS))
 		{
-			prob_t[2] = 1000;	// ÇÏµå			: 10%
-			prob_t[3] = 900;	// Å©¸®			: 9%
-			prob_t[4] = 0;		// µ¥µé¸®		: 0%
+			prob_t[2] = 1000;	// í•˜ë“œ			: 10%
+			prob_t[3] = 900;	// í¬ë¦¬			: 9%
+			prob_t[4] = 0;		// ë°ë“¤ë¦¬		: 0%
 		}
 		else
 		{
-			prob_t[2] = 0;		// ÇÏµå			: 0%
-			prob_t[3] = 0;		// Å©¸®			: 0%
-			prob_t[4] = 0;		// µ¥µé¸®		: 0%
+			prob_t[2] = 0;		// í•˜ë“œ			: 0%
+			prob_t[3] = 0;		// í¬ë¦¬			: 0%
+			prob_t[4] = 0;		// ë°ë“¤ë¦¬		: 0%
 		}
 
-// --- 050225 : bs : º¸½º-Å©¸®&µ¥µé¸®, Áß°£º¸½º-Å©¸® °¡´ÉÇÏ°Ô
+// --- 050225 : bs : ë³´ìŠ¤-í¬ë¦¬&ë°ë“¤ë¦¬, ì¤‘ê°„ë³´ìŠ¤-í¬ë¦¬ ê°€ëŠ¥í•˜ê²Œ
 	}
 
-// 050401 : bs : plus¿¡ µû¸¥ Ãß°¡ È¿°ú
-// °¢ Å¸ÀÔº° È®·ü : ¹Ì½º, ³ë¸ÖÀ» Á¦¿ÜÇÏ°í ¼ø¼­´ë·Î [À§Å© ½ºÆ®·Õ ÇÏµå Å©¸®Æ¼ÄÃ µ¥µé¸®]
+// 050401 : bs : plusì— ë”°ë¥¸ ì¶”ê°€ íš¨ê³¼
+// ê° íƒ€ì…ë³„ í™•ë¥  : ë¯¸ìŠ¤, ë…¸ë©€ì„ ì œì™¸í•˜ê³  ìˆœì„œëŒ€ë¡œ [ìœ„í¬ ìŠ¤íŠ¸ë¡± í•˜ë“œ í¬ë¦¬í‹°ì»¬ ë°ë“¤ë¦¬]
 	if (IS_PC(df))
 	{
 		CPC* pc = TO_PC(df);
-		prob_t[0] += pc->m_plusWeak;		// ¹æ¾îÀÚ À§Å© Áõ°¡
+		prob_t[0] += pc->m_plusWeak;		// ë°©ì–´ì ìœ„í¬ ì¦ê°€
 	}
 	if (IS_PC(of))
 	{
 		CPC* pc = TO_PC(of);
-		prob_t[1] += pc->m_plusStrong;		// °ø°İÀÚ °­°ø Áõ°¡
-		prob_t[2] += pc->m_plusHard;		// °ø°İÀÚ ¸Å°­°ø Áõ°¡
-		// Å©¸®Æ¼ÄÃ È®·ü Áõ°¡
+		prob_t[1] += pc->m_plusStrong;		// ê³µê²©ì ê°•ê³µ ì¦ê°€
+		prob_t[2] += pc->m_plusHard;		// ê³µê²©ì ë§¤ê°•ê³µ ì¦ê°€
+		// í¬ë¦¬í‹°ì»¬ í™•ë¥  ì¦ê°€
 		if (pc->m_opAttackCritical > 0)
 			prob_t[3] += prob_t[3] * pc->m_opAttackCritical / 100;
 	}
-// --- 050401 : bs : plus¿¡ µû¸¥ Ãß°¡ È¿°ú
+// --- 050401 : bs : plusì— ë”°ë¥¸ ì¶”ê°€ íš¨ê³¼
 
-	// PC : Å©¸®Æ¼ÄÃ, µ¥µé¸® »ó½Â , ÇÏµå Ãß°¡
-	// - ÆĞ½Ãºê
+	// PC : í¬ë¦¬í‹°ì»¬, ë°ë“¤ë¦¬ ìƒìŠ¹ , í•˜ë“œ ì¶”ê°€
+	// - íŒ¨ì‹œë¸Œ
 	prob_t[2] += of->m_avPassiveAddition.hard
 				 + prob_t[2] * of->m_avPassiveRate.hard / SKILL_RATE_UNIT;
 	prob_t[3] += of->m_avPassiveAddition.critical
 				 +  prob_t[3] * of->m_avPassiveRate.critical / SKILL_RATE_UNIT;
 	prob_t[4] += of->m_avPassiveAddition.deadly
 				 +  prob_t[4] * of->m_avPassiveRate.deadly / SKILL_RATE_UNIT;
-	// - ¾×Æ¼ºê
+	// - ì•¡í‹°ë¸Œ
 	prob_t[2] += of->m_assist.m_avAddition.hard
 				 +  prob_t[2] * of->m_assist.m_avRate.hard / SKILL_RATE_UNIT;
 	prob_t[3] += of->m_assist.m_avAddition.critical
@@ -500,7 +500,7 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 	prob_t[4] += of->m_assist.m_avAddition.deadly
 				 +  prob_t[4] * of->m_assist.m_avRate.deadly / SKILL_RATE_UNIT;
 
-	// Å©¸® ÃÖ´ë È®·ü : ·¹ÀÎÀú Á¦¿Ü
+	// í¬ë¦¬ ìµœëŒ€ í™•ë¥  : ë ˆì¸ì € ì œì™¸
 #ifdef EX_ROGUE
 	if (!IS_PC(of) || (TO_PC(of)->m_job != JOB_ROGUE && TO_PC(of)->m_job != JOB_EX_ROGUE) || (TO_PC(of)->m_job2 != JOB_2ND_RANGER && TO_PC(of)->m_job2 != JOB_2ND_EX_RANGER))
 #else
@@ -516,18 +516,18 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 			prob_t[3] = 5000;
 	}
 
-	// µ¥µé¸® ÃÖ´ë È®·ü
+	// ë°ë“¤ë¦¬ ìµœëŒ€ í™•ë¥ 
 	if (prob_t[4] > 1000)
 		prob_t[4] = 1000;
 
 	if (IS_NPC(df))
 	{
 		CNPC* npc = TO_NPC(df);
-		// ¸Â´Â ÂÊÀÌ ¼ö¼º¿ÀºêÁ§Æ®ÀÌ¸é Å©¸®, µ¥µé¸® ¾øÀ½
+		// ë§ëŠ” ìª½ì´ ìˆ˜ì„±ì˜¤ë¸Œì íŠ¸ì´ë©´ í¬ë¦¬, ë°ë“¤ë¦¬ ì—†ìŒ
 		if (npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))
 		{
-			prob_t[3] = 0;		// Å©¸®			: 0%
-			prob_t[4] = 0;		// µ¥µé¸®		: 0%
+			prob_t[3] = 0;		// í¬ë¦¬			: 0%
+			prob_t[4] = 0;		// ë°ë“¤ë¦¬		: 0%
 		}
 	}
 
@@ -551,21 +551,21 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 
 ////////////////////
 // Function name	: GetDamage
-// Description	    : ´ë¹ÌÁö¸¦ ¾òÀ½
+// Description	    : ëŒ€ë¯¸ì§€ë¥¼ ì–»ìŒ
 // Return type		: int
-//                  : ¾ò¾îÁø ´ë¹ÌÁö
+//                  : ì–»ì–´ì§„ ëŒ€ë¯¸ì§€
 // Argument         : CCharacter* of
-//                  : °ø°İÀÚ
+//                  : ê³µê²©ì
 // Argument         : CCharacter* df
-//                  : ¹æ¾îÀÚ
+//                  : ë°©ì–´ì
 // Argument         : MSG_DAMAGE_TYPE type
-//                  : °ø°İ Á¾·ù
+//                  : ê³µê²© ì¢…ë¥˜
 // Argument         : char flag
-//                  : °ø°İ ÇüÅÂ(¹Ì½º ~ µ¥µé¸®)
+//                  : ê³µê²© í˜•íƒœ(ë¯¸ìŠ¤ ~ ë°ë“¤ë¦¬)
 // Argument         : const CMagicProto* magic
-//                  : »ç¿ë È¿°ú
+//                  : ì‚¬ìš© íš¨ê³¼
 // Argument         : const CMagicLevelProto* magiclevel
-//                  : »ç¿ë È¿°ú ·¹º§
+//                  : ì‚¬ìš© íš¨ê³¼ ë ˆë²¨
 int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, const CMagicProto* magic, const CMagicLevelProto* magiclevel, bool &isCharge)
 {
 	double damFactor = 5;
@@ -582,10 +582,10 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 
 	int ret = 0;
 	const int nPvPSkillFactor = 3;
-	int minDamage = 1;		// ÃÖ¼Ò ´ë¹ÌÁö
+	int minDamage = 1;		// ìµœì†Œ ëŒ€ë¯¸ì§€
 	int deadlyDamage = 0;
 
-	// ½ºÅ³¾ø´Â µ¥µé¸® µ¥¹ÌÁö¸¦ ±¸ÇÑ´Ù
+	// ìŠ¤í‚¬ì—†ëŠ” ë°ë“¤ë¦¬ ë°ë¯¸ì§€ë¥¼ êµ¬í•œë‹¤
 	if (magic != NULL)
 	{
 		bool empty;
@@ -607,10 +607,10 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 	{
 		int nMagicPowerValue = magiclevel->m_nPowerValue;
 
-// 050331 : bs : pvp¿¡¼­´Â µ¥¹ÌÁö°¡ Áõ°¨ÇÔ
-// 050402 : bs : °ø°İ, ¹æ¾îÀÚÀÇ ½ºÅ³ ÆÄ¶ó¹ÌÅÍ Ãß°¡
+// 050331 : bs : pvpì—ì„œëŠ” ë°ë¯¸ì§€ê°€ ì¦ê°í•¨
+// 050402 : bs : ê³µê²©, ë°©ì–´ìì˜ ìŠ¤í‚¬ íŒŒë¼ë¯¸í„° ì¶”ê°€
 		nMagicPowerValue = nMagicPowerValue * CalcSkillParam(of, df, magic->m_psp, magic->m_ptp) / 100;
-// --- 050402 : bs : °ø°İ, ¹æ¾îÀÚÀÇ ½ºÅ³ ÆÄ¶ó¹ÌÅÍ Ãß°¡
+// --- 050402 : bs : ê³µê²©, ë°©ì–´ìì˜ ìŠ¤í‚¬ íŒŒë¼ë¯¸í„° ì¶”ê°€
 
 		bool bIsPCof = (IS_PC(of) || IS_PET(of) || IS_ELEMENTAL(of));
 		bool bIsPCdf = (IS_PC(df) || IS_PET(df) || IS_ELEMENTAL(df));
@@ -632,7 +632,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 
 		if (nMagicPowerValue < 1)
 			nMagicPowerValue = 1;
-// --- 050331 : bs : pvp¿¡¼­´Â µ¥¹ÌÁö°¡ Áõ°¨ÇÔ
+// --- 050331 : bs : pvpì—ì„œëŠ” ë°ë¯¸ì§€ê°€ ì¦ê°í•¨
 
 		if (magiclevel)
 		{
@@ -723,11 +723,11 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 		}
 	}
 
-	// ¾ÆÀÌÅÛ Æä³ÎÆ¼ °ü·Ã
+	// ì•„ì´í…œ í˜ë„í‹° ê´€ë ¨
 	int adef = of->GetAttackLevel() - of->m_level;
 	int ddef = df->GetDefenseLevel() - df->m_level;
 
-// 050311 : bs : ¹°¸® °ø°İ Á¾·ù(±ÙÁ¢,¿ø°Å¸®)°ú ½ºÅÈÀ» ºĞ¸®
+// 050311 : bs : ë¬¼ë¦¬ ê³µê²© ì¢…ë¥˜(ê·¼ì ‘,ì›ê±°ë¦¬)ê³¼ ìŠ¤íƒ¯ì„ ë¶„ë¦¬
 	int usingstat = 0;
 	switch (of->GetUsingStat())
 	{
@@ -740,9 +740,9 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 	case USING_INT:
 		usingstat = of->m_int;
 	}
-// --- 050311 : bs : ¹°¸® °ø°İ Á¾·ù(±ÙÁ¢,¿ø°Å¸®)°ú ½ºÅÈÀ» ºĞ¸®
+// --- 050311 : bs : ë¬¼ë¦¬ ê³µê²© ì¢…ë¥˜(ê·¼ì ‘,ì›ê±°ë¦¬)ê³¼ ìŠ¤íƒ¯ì„ ë¶„ë¦¬
 
-	// ÃÖ´ë Á¦ÇÑ °É¸®´Â ½ºÅÈ »ó½Â
+	// ìµœëŒ€ ì œí•œ ê±¸ë¦¬ëŠ” ìŠ¤íƒ¯ ìƒìŠ¹
 	int addattack80 = 0;
 	int rateattack80 = 0;
 
@@ -789,7 +789,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 	}
 //#endif
 
-	int nCharRate[10][3] =  	// °ø°İ·Â, ¹æ¾î·Â, ÀÌµ¿ ¼Óµµ
+	int nCharRate[10][3] =  	// ê³µê²©ë ¥, ë°©ì–´ë ¥, ì´ë™ ì†ë„
 	{
 		{-20, -20, 0},
 		{-10, -10, 0},
@@ -901,7 +901,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 			awdamage		+= of->GetMeleeLevelBonus();
 			ddefense2		+= df->GetDefenseLevelBonus();
 
-			// ¹«±â ·¹º§°ú À¯Àú ·¹º§ Â÷ÀÌ¿¡ ÀÇÇÑ Æä³ÎÆ¼ Àû¿ë
+			// ë¬´ê¸° ë ˆë²¨ê³¼ ìœ ì € ë ˆë²¨ ì°¨ì´ì— ì˜í•œ í˜ë„í‹° ì ìš©
 			if (adef >= 5 && adef <= 8)
 				awdamage /= 2;
 			else if (adef >= 9 && adef <= 12)
@@ -925,12 +925,12 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				ddefense2 /= 10;
 			}
 
-			// °ø¼º º¸³Ê½º
+			// ê³µì„± ë³´ë„ˆìŠ¤
 			awdamage = awdamage * warBonusAttack / 100;
 			ddefense = ddefense * warBonusDefense / 100;
 			ddefense2 = ddefense2 * warBonusDefense / 100;
 
-			// °­½Å Àû¿ë : ¹°¸®¹æ¾î
+			// ê°•ì‹  ì ìš© : ë¬¼ë¦¬ë°©ì–´
 			if (IS_PC(df))
 			{
 				CPC* pc = TO_PC(df);
@@ -973,7 +973,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				}
 			}
 
-			// Àá¼öÇÔ : ¸íÁßÆĞÄ¡
+			// ì ìˆ˜í•¨ : ëª…ì¤‘íŒ¨ì¹˜
 			if( IS_PC(of) )
 			{
 				float fHit = ((CCharacter*)of)->GetFinalHitRate();
@@ -1155,12 +1155,12 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				ddefense2 /= 10;
 			}
 
-			// °ø¼º º¸³Ê½º
+			// ê³µì„± ë³´ë„ˆìŠ¤
 			awdamage = awdamage * warBonusAttack / 100;
 			ddefense = ddefense * warBonusDefense / 100;
 			ddefense2 = ddefense2 * warBonusDefense / 100;
 
-			// °­½Å Àû¿ë : ¹°¸®¹æ¾î
+			// ê°•ì‹  ì ìš© : ë¬¼ë¦¬ë°©ì–´
 			if (IS_PC(df))
 			{
 				CPC* pc = TO_PC(df);
@@ -1191,7 +1191,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				}
 			}
 
-			// Àá¼öÇÔ : ¸íÁßÆĞÄ¡
+			// ì ìˆ˜í•¨ : ëª…ì¤‘íŒ¨ì¹˜
 			if( IS_PC(of) )
 			{
 				float fHit = ((CCharacter*)of)->GetFinalHitRate();
@@ -1352,12 +1352,12 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				dresist2 /= 10;
 			}
 
-			// °ø¼º º¸³Ê½º
+			// ê³µì„± ë³´ë„ˆìŠ¤
 			awdamage = awdamage * warBonusAttack / 100;
 			dresist = dresist * warBonusDefense / 100;
 			dresist2 = dresist2 * warBonusDefense / 100;
 
-			// °­½Å Àû¿ë : ¸¶°ø
+			// ê°•ì‹  ì ìš© : ë§ˆê³µ
 			if (IS_PC(of))
 			{
 				CPC* pc = TO_PC(of);
@@ -1373,7 +1373,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 				}
 			}
 
-			// °­½Å Àû¿ë : ¸¶¹ı¹æ¾î
+			// ê°•ì‹  ì ìš© : ë§ˆë²•ë°©ì–´
 			if (IS_PC(df))
 			{
 				CPC* pc = TO_PC(df);
@@ -1533,7 +1533,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 			ret *= 10;
 	}
 
-	if (of->m_assist.m_avAddition.hcAttackBerserker && IS_PC(of) && IS_NPC(df))	// 10% È®·ü·Î 2¹èÀÇ µ¥¹ÌÁö
+	if (of->m_assist.m_avAddition.hcAttackBerserker && IS_PC(of) && IS_NPC(df))	// 10% í™•ë¥ ë¡œ 2ë°°ì˜ ë°ë¯¸ì§€
 	{
 		int rate = GetRandom(1,1000);
 		if( rate <= 100 )
@@ -1542,13 +1542,13 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 		}
 	}
 
-	// ½ºÅ³ »ç¿ë½Ã
+	// ìŠ¤í‚¬ ì‚¬ìš©ì‹œ
 	if (IS_PC(of) && IS_PC(df) && magic != NULL)
 	{
-		// °è»êµÈ µ¥¹ÌÁö°¡ µ¥µé¸®º¸´Ù Å¬ °æ¿ì
+		// ê³„ì‚°ëœ ë°ë¯¸ì§€ê°€ ë°ë“¤ë¦¬ë³´ë‹¤ í´ ê²½ìš°
 		if (ret > deadlyDamage)
 		{
-			// ÃÊ°úºĞÀº ÀÏºÎ¸¸ Àû¿ëÇÑ´Ù
+			// ì´ˆê³¼ë¶„ì€ ì¼ë¶€ë§Œ ì ìš©í•œë‹¤
 			ret = deadlyDamage + (ret - deadlyDamage) / nPvPSkillFactor;
 		}
 	}
@@ -1571,13 +1571,13 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 	if (ret < 1)
 		ret = 1;
 
-	if( IS_APET(df) )		// ÆêÀÌ ¹İÇ×»óÅÂÀÌ¸é ¹æ¾îµµ 50 ÇÏ¶ô
+	if( IS_APET(df) )		// í«ì´ ë°˜í•­ìƒíƒœì´ë©´ ë°©ì–´ë„ 50 í•˜ë½
 	{
 		CAPet* apet = TO_APET(df);
 		if( apet->GetFaithLevel() > 0 )
 			ret += ret * 50 / 100;
 	}
-	else if ( IS_APET(of) )		// ÆêÀÌ ¹İÇ×»óÅÂÀÌ¸é °ø°İ·Â 50 °¨¼Ò
+	else if ( IS_APET(of) )		// í«ì´ ë°˜í•­ìƒíƒœì´ë©´ ê³µê²©ë ¥ 50 ê°ì†Œ
 	{
 		CAPet* apet = TO_APET(of);
 		if( apet->GetFaithLevel() > 0 )
@@ -1589,7 +1589,7 @@ int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, c
 		CPC	*ns = TO_PC(of);
 		if( ns->m_job == JOB_NIGHTSHADOW )
 		{
-			CSkill* nocturnal = ns->m_passiveSkillList.Find(870);		// ³ªÀÌÆ® ½¦µµ¿ì ¾ßÇà¼º
+			CSkill* nocturnal = ns->m_passiveSkillList.Find(870);		// ë‚˜ì´íŠ¸ ì‰ë„ìš° ì•¼í–‰ì„±
 
 			struct tm *t;
 			time_t now;
@@ -1691,15 +1691,15 @@ char GetHitType_Adult(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type)
 	if(of->m_type == MSG_CHAR_NPC
 			&& df->m_type == MSG_CHAR_PC)
 	{
-		// 31·¹º§ ÀÌ»ó ÀüÁ÷À» ÇÑ PC°¡ NPC¿¡ ´ëÇÑ È¸ÇÇµµ Áõ°¡
+		// 31ë ˆë²¨ ì´ìƒ ì „ì§ì„ í•œ PCê°€ NPCì— ëŒ€í•œ íšŒí”¼ë„ ì¦ê°€
 		CPC * pPC = TO_PC(df);
 
 		if(pPC->m_level >= 31 && pPC->m_job2 != 0)
 		{
-			int factA = 0;	// Á÷¾÷¿¡ ÀÇÇÑ º¯¼ö
-			int factB = 0;	// È¸ÇÇ¿¡ ÀÇÇÑ º¯¼ö
-			int factC = 0;	// ·¹º§¿¡ ÀÇÇÑ º¯¼ö
-			int factL = pPC->m_level;	// ·¹º§
+			int factA = 0;	// ì§ì—…ì— ì˜í•œ ë³€ìˆ˜
+			int factB = 0;	// íšŒí”¼ì— ì˜í•œ ë³€ìˆ˜
+			int factC = 0;	// ë ˆë²¨ì— ì˜í•œ ë³€ìˆ˜
+			int factL = pPC->m_level;	// ë ˆë²¨
 
 			switch (pPC->m_job)
 			{
@@ -1985,14 +1985,14 @@ char SelectHitType_Adult(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, c
 
 	if (IS_NPC(of))
 	{
-// 050225 : bs : º¸½º-Å©¸®&µ¥µé¸®, Áß°£º¸½º-Å©¸® °¡´ÉÇÏ°Ô
+// 050225 : bs : ë³´ìŠ¤-í¬ë¦¬&ë°ë“¤ë¦¬, ì¤‘ê°„ë³´ìŠ¤-í¬ë¦¬ ê°€ëŠ¥í•˜ê²Œ
 		CNPC* npc = TO_NPC(of);
 		if( ! npc->m_proto->CheckFlag(NPC_MBOSS|NPC_BOSS) )
 		{
-			nTypeProb[4] = 0;		// Å©¸®			: 0%
-			nTypeProb[5] = 0;		// µ¥µé¸®		: 0%
+			nTypeProb[4] = 0;		// í¬ë¦¬			: 0%
+			nTypeProb[5] = 0;		// ë°ë“¤ë¦¬		: 0%
 		}
-// --- 050225 : bs : º¸½º-Å©¸®&µ¥µé¸®, Áß°£º¸½º-Å©¸® °¡´ÉÇÏ°Ô
+// --- 050225 : bs : ë³´ìŠ¤-í¬ë¦¬&ë°ë“¤ë¦¬, ì¤‘ê°„ë³´ìŠ¤-í¬ë¦¬ ê°€ëŠ¥í•˜ê²Œ
 	}
 
 	int i;

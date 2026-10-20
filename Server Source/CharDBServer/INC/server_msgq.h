@@ -6,18 +6,18 @@
 
 typedef struct _st_MsgQ
 {
-	unsigned short	usType;			/* ¼­ºñ½º Å¸ÀÔ */
-	unsigned short	usSvcID;		/* ¼­ºñ½º ID */
-	unsigned short	usMsgID;		/* ¸Ş½ÃÁö ID */
-	unsigned short	usSystemNo;		/* TEMS ¼­¹ö INDEX */
+	unsigned short	usType;			/* ì„œë¹„ìŠ¤ íƒ€ì… */
+	unsigned short	usSvcID;		/* ì„œë¹„ìŠ¤ ID */
+	unsigned short	usMsgID;		/* ë©”ì‹œì§€ ID */
+	unsigned short	usSystemNo;		/* TEMS ì„œë²„ INDEX */
 
 	unsigned short  ucProID;		/* Process ID : Example = SEQ_PROC_SESSIF */
-	unsigned short	usBodyCount;	/* Message Body¿¡ Æ÷ÇÔµÈ MessageµéÀÇ °³¼ö */
+	unsigned short	usBodyCount;	/* Message Bodyì— í¬í•¨ëœ Messageë“¤ì˜ ê°œìˆ˜ */
 	int         	dMsgQID;		/* Source Queue ID */
 
 	unsigned short  usBodyLen;		/* Receive Message Body Length */
 	unsigned short  usRetCode;		/* RetCode */
-	unsigned int	uiIndex;		/* INDEX : ¸í·É¾î Ã³¸®½Ã ÇÊ¿ä */
+	unsigned int	uiIndex;		/* INDEX : ëª…ë ¹ì–´ ì²˜ë¦¬ì‹œ í•„ìš” */
 
 	unsigned long long llSockSessID;
 

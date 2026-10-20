@@ -63,7 +63,7 @@ void do_PKRecoverItemSealed(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// µ· °Ë»ç
+	// ÂµÂ· Â°Ã‹Â»Ã§
 	LONGLONG needmoney  = (LONGLONG)100 * item->GetItemLevel() * item->GetItemLevel();
 
 	switch (item->m_itemProto->getItemTypeIdx())

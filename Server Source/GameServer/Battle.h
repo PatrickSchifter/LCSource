@@ -12,7 +12,7 @@ void ProcDead(CAPet* df, CCharacter* of);
 void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level);
 int ProcAttack(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, CSkill* skill, int magicindex, int damage = 0);
 
-// ¸®´õ »ç¸Á½Ã Ã³¸®ºÎºĞ
+// ë¦¬ë” ì‚¬ë§ì‹œ ì²˜ë¦¬ë¶€ë¶„
 void ProcFollowNPC(CNPC* npc);
 bool CheckInNearCellExt(CCharacter* ch, CCharacter* tch);
 char GetHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type);
@@ -23,7 +23,7 @@ char SelectHitType(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char fl
 #endif // ENABLE_ROGUE_SKILL125_BRZ
 int GetDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, const CMagicProto* magic, const CMagicLevelProto* magiclevel, bool& isCharge);
 CPC* FindPreferencePC(CNPC* npc, int* level, LONGLONG* pnTotalDamage);
-// °æÇèÄ¡ ºĞ¹è : 051228 : BS »õ·Î ÀÛ¼º
+// ê²½í—˜ì¹˜ ë¶„ë°° : 051228 : BS ìƒˆë¡œ ì‘ì„±
 bool DivisionExpSP(CNPC* npc, CPC* pPreferencePC, LONGLONG nTotalDamage);
 void DivisionPartyMoney(CPC* pc, LONGLONG count);
 bool GetItemRandomParty(CPC* pc, CItem* item);
@@ -35,42 +35,42 @@ bool GetItemRandomExped(CPC* pc, CItem* item);
 bool GetItemGiveToBoss(CPC* pc, CItem* item);
 
 CCharacter* CheckAttackPulse(CNPC* npc);
-// tchÀÇ attackchar¿¡¼­ ch¿¡ ÇØ´ç ÇÏ´Â °Í ¸®ÅÏ
+// tchì˜ attackcharì—ì„œ chì— í•´ë‹¹ í•˜ëŠ” ê²ƒ ë¦¬í„´
 CAttackChar* AddAttackList(CCharacter* ch, CCharacter* tch, int hate);
 void DelAttackList(CCharacter* ch);
 void DelTargetFromAttackList(CCharacter* ch, CCharacter* tch);
 void FindFamilyInNear(CCharacter* of, CNPC* npc);
 bool GetSkillPrototypes(const CSkillProto* proto, int level, int magicindex, const CSkillLevelProto** levelproto, const CMagicProto** magic, const CMagicLevelProto** magiclevel);
 void ApplyHateByDamage(CCharacter* of, CCharacter* df, char hittype, int damage);
-// tchÀÇ attackchar¿¡¼­ ch¿¡ ÇØ´ç ÇÏ´Â °Í ¸®ÅÏ
+// tchì˜ attackcharì—ì„œ chì— í•´ë‹¹ í•˜ëŠ” ê²ƒ ë¦¬í„´
 CAttackChar* ApplyHate(CCharacter* of, CCharacter* df, int hate, bool bApplyFamily);
 void ApplyDamage(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE damageType, const CSkillProto* proto, const CMagicProto* magic, int damage, char flag, bool isCharge);
 void CalcPKPoint(CPC* of, CPC* df, bool bDeadPet);
 
-// Á¤´ç¹æÀ§ ¸®½ºÆ® ¼­·Î Ãß°¡
+// ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ ì„œë¡œ ì¶”ê°€
 void AddRaList(CPC* of, CPC* df);
 
-// Á¤´ç¹æÀ§ ¸®½ºÆ®¿¡ ÀÖ´Â°¡ È®ÀÎ
+// ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ì— ìˆëŠ”ê°€ í™•ì¸
 bool IsRaList(CPC* of, CPC* df);
 
-// 060318 : bs : Á¤¹æ¿¡¼­ of°¡ df¸¦ ¼±°øÇÏ¿´´ÂÁö °Ë»ç
+// 060318 : bs : ì •ë°©ì—ì„œ ofê°€ dfë¥¼ ì„ ê³µí•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
 bool IsFirstAttackInAttackList(CPC* of, CPC* df);
 
-// °ø¼º Æ÷ÀÎÆ® °è»êÇÏ´Â ÇÔ¼ö
+// ê³µì„± í¬ì¸íŠ¸ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
 void CalcWarPoint(CCharacter* of, CCharacter* df);
 void DropWarCastleTokenDeadPC(CCharacter* df);
 void DropWarCastleToken(CNPC* npc, CPC* pc, CPC* tpc, int level);
 
 bool DropPetItem(CPet* pet);
 
-// base ±âºĞÀ¸·Î n1°ú n2ÀÇ AI ¿ì¼±¼øÀ§ ºñ±³
-// n1ÀÌ ³ôÀ¸¸é -1, n2°¡ ³ôÀ¸¸é 1, °°À¸¸é 0
+// base ê¸°ë¶„ìœ¼ë¡œ n1ê³¼ n2ì˜ AI ìš°ì„ ìˆœìœ„ ë¹„êµ
+// n1ì´ ë†’ìœ¼ë©´ -1, n2ê°€ ë†’ìœ¼ë©´ 1, ê°™ìœ¼ë©´ 0
 int AIComp(CNPC* base, CNPC* n1, CNPC* n2);
 
 char GetHitType_Adult(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type);
 char SelectHitType_Adult(CCharacter* of, CCharacter* df, MSG_DAMAGE_TYPE type, char flag, const CMagicProto* magic, const CMagicLevelProto* magiclevel, bool nothelp);
 
-//pvp Ä«¿À Æä³ÎÆ¼ Àû¿ë
+//pvp ì¹´ì˜¤ í˜ë„í‹° ì ìš©
 int CalcNewDamage(CCharacter* of, CCharacter* df, int damage);
 void CalcNewHitProb(CCharacter* of, CCharacter* df, float& hit, float& avoid);
 int CalcNewHitProb(CCharacter* of, CCharacter* df, int hit, int avoid);

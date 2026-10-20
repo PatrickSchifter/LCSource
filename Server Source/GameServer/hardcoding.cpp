@@ -22,17 +22,17 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 	CItem*			pItem = NULL;
 
-	// ·¹ÀÌµå µå·Ó µ¥ÀÌÅÍ Ã³¸®
+	// ë ˆì´ë“œ ë“œë¡­ ë°ì´í„° ì²˜ë¦¬
 	vec_raiddropdata_t::iterator it = npc->m_proto->m_listRaidDrop.begin();
 	vec_raiddropdata_t::iterator endit = npc->m_proto->m_listRaidDrop.end();
 	for(; it != endit; ++it)
 	{
 		RAIDDROPDATA& rdd = *(it);
 
-		//·¹ÀÌµå ÀÏ¹İ ¾ÆÀÌÅÛ µå¶ø
+		//ë ˆì´ë“œ ì¼ë°˜ ì•„ì´í…œ ë“œë
 		if (rdd.itemindex > 0 && rdd.itemindex != NAS_ITEM_DB_INDEX)
 		{
-			// È®·ü Àû¿ë
+			// í™•ë¥  ì ìš©
 			int nProb = GetRandom(1, 10000);
 			if (nProb <= rdd.prob)
 			{
@@ -59,7 +59,7 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 						pItem->m_pArea->SendToCell(rmsg, GET_YLAYER(pItem), pItem->m_cellX, pItem->m_cellZ);
 					}
 
-					// 7. °ÔÀÓ ·Î±×
+					// 7. ê²Œì„ ë¡œê·¸
 					GAMELOG << init("RAID MOB DROP")
 							<< "NPC" << delim
 							<< npc->m_idNum << delim
@@ -89,17 +89,17 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 					GAMELOG << "NOT FOUND TARGET....." << end;
 					return;
 				}
-				//ÆÄÆ¼ÀÌ¸é¼­ Å¸ÀÔÀÌ ±Õµî
+				//íŒŒí‹°ì´ë©´ì„œ íƒ€ì…ì´ ê· ë“±
 				if (tpc->IsParty() && (tpc->m_party->GetPartyType(MSG_DIVITYPE_MONEY) == MSG_PARTY_TYPE_RANDOM || tpc->m_party->GetPartyType(MSG_DIVITYPE_MONEY) == MSG_PARTY_TYPE_BATTLE) )
 				{
 					DivisionPartyMoney(tpc, rdd.count);
 				}
-				//¿øÁ¤´ëÀÌ¸é¼­ Å¸ÀÔÀÌ ±ÕµîÀÏ¶§
+				//ì›ì •ëŒ€ì´ë©´ì„œ íƒ€ì…ì´ ê· ë“±ì¼ë•Œ
 				else if ( tpc->IsExped() && (tpc->m_Exped->GetExpedType(MSG_DIVITYPE_MONEY) == MSG_EXPED_TYPE_RANDOM || tpc->m_Exped->GetExpedType(MSG_DIVITYPE_MONEY) == MSG_EXPED_TYPE_BATTLE) )
 				{
 					DivisionExpedMoney(tpc, rdd.count);
 				}
-				//ÀÌµµ Àúµµ ¾Æ´Ò¶§ (°³ÀÎ ÇÃ·¹ÀÌÇÒ¶§)
+				//ì´ë„ ì €ë„ ì•„ë‹ë•Œ (ê°œì¸ í”Œë ˆì´í• ë•Œ)
 				else
 				{
 					int bonus = 0;
@@ -121,7 +121,7 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		}
 	}
 
-	// ½ºÆĞ¼È »óÀÚ µå·Ó Ã³¸®
+	// ìŠ¤íŒ¨ì…œ ìƒì ë“œë¡­ ì²˜ë¦¬
 	RAIDDROPDATA rdd;
 
 	if (npc->m_proto->m_listRaidDrop.empty() == false)
@@ -137,7 +137,7 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	{
 		if(pc && pc->IsParty() && pc->m_party->GetPartyType(MSG_DIVITYPE_SPECIAL)==MSG_PARTY_TYPE_OPENBOX)
 		{
-			//ÆÄÆ¼ »óÀÚ ¿­±â
+			//íŒŒí‹° ìƒì ì—´ê¸°
 			DropRaidBoxItem(npc, pc, MSG_JOINTYPE_PARTY, npc->m_pArea);
 			return;
 		}
@@ -146,7 +146,7 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 				|| (pc && pc->IsExped() && pc->m_Exped->GetExpedType(MSG_DIVITYPE_SPECIAL) == MSG_EXPED_TYPE_FIRSTGET)
 		  )
 		{
-			//¿øÁ¤´ë »óÀÚ ¿­±â
+			//ì›ì •ëŒ€ ìƒì ì—´ê¸°
 			DropRaidBoxItem(npc, pc, MSG_JOINTYPE_EXPED, npc->m_pArea);
 			return;
 		}
@@ -161,24 +161,24 @@ void DropRaidMonsterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	}
 }
 
-//ÆÄÆ¼, ¿øÁ¤´ë ½ºÆä¼È ¾ÆÀÌÅÛ - »óÀÚ¿­±â- »óÀÚ ¾ÆÀÌÅÛ µå¶ø
+//íŒŒí‹°, ì›ì •ëŒ€ ìŠ¤í˜ì…œ ì•„ì´í…œ - ìƒìì—´ê¸°- ìƒì ì•„ì´í…œ ë“œë
 void DropRaidBoxItem(CNPC* npc, CPC* tpc, int IsPartyExped, CArea* pArea)
 {
 	if(!npc || !tpc || !pArea || !npc->m_proto)
 		return;
 
 	int i;
-	int nBoxItemIndex = 4709;		//BOX ¾ÆÀÌÅÛ ÀÎµ¦½º
+	int nBoxItemIndex = 4709;		//BOX ì•„ì´í…œ ì¸ë±ìŠ¤
 
-	// ¸ó½ºÅÍ°¡ ±×·£µå ÀÌ¸é ½ºÆä¼È »óÀÚ´Â ½ºÅµÇÑ´Ù.
+	// ëª¬ìŠ¤í„°ê°€ ê·¸ëœë“œ ì´ë©´ ìŠ¤í˜ì…œ ìƒìëŠ” ìŠ¤í‚µí•œë‹¤.
 	if(npc->m_proto->CheckFlag(NPC_RAID))
 		return;
 
 	if(IsPartyExped == MSG_JOINTYPE_PARTY)
 	{
-		//ÆÄÆ¼¿ø¼ö ¸¸Å­
+		//íŒŒí‹°ì›ìˆ˜ ë§Œí¼
 #ifdef RAIDBOX_DROP_COUNT_MODIFY
-		// tpc°¡ ÆÄÆ¼°¡ ÀÖ´ÂÁö ¾ø´ÂÁö´Â ÇÔ¼öÈ£ÃâÀü °Ë»ç ÇßÀ½.
+		// tpcê°€ íŒŒí‹°ê°€ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ëŠ” í•¨ìˆ˜í˜¸ì¶œì „ ê²€ì‚¬ í–ˆìŒ.
 		CArea* pArea = NULL;
 		pArea = tpc->m_pArea;
 		CPartyMember* pMember = NULL;
@@ -205,7 +205,7 @@ void DropRaidBoxItem(CNPC* npc, CPC* tpc, int IsPartyExped, CArea* pArea)
 				return;
 
 			pItem->SetDropNpc(npc->m_idNum);
-			pItem->m_preferenceIndex = -1;	//¹Ú½º ¾ÆÀÌÅÛ ÀÔ¼ö ¿ì¼±
+			pItem->m_preferenceIndex = -1;	//ë°•ìŠ¤ ì•„ì´í…œ ì…ìˆ˜ ìš°ì„ 
 
 			pArea->DropItem( pItem, tpc );
 			{
@@ -217,7 +217,7 @@ void DropRaidBoxItem(CNPC* npc, CPC* tpc, int IsPartyExped, CArea* pArea)
 	}
 	else if(IsPartyExped == MSG_JOINTYPE_EXPED)
 	{
-		//¿øÁ¤´ë¿ø¼ö ¸¸Å­
+		//ì›ì •ëŒ€ì›ìˆ˜ ë§Œí¼
 #ifdef RAIDBOX_DROP_COUNT_MODIFY
 		CArea* pArea = NULL;
 		pArea = tpc->m_pArea;
@@ -246,7 +246,7 @@ void DropRaidBoxItem(CNPC* npc, CPC* tpc, int IsPartyExped, CArea* pArea)
 				return;
 
 			pItem->SetDropNpc(npc->m_idNum);
-			pItem->m_preferenceIndex = -1;	//¹Ú½º ¾ÆÀÌÅÛ ÀÔ¼ö ¿ì¼±
+			pItem->m_preferenceIndex = -1;	//ë°•ìŠ¤ ì•„ì´í…œ ì…ìˆ˜ ìš°ì„ 
 			{
 				pArea->DropItem( pItem, npc );
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -259,35 +259,35 @@ void DropRaidBoxItem(CNPC* npc, CPC* tpc, int IsPartyExped, CArea* pArea)
 
 void DropGoldenBallItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
-	// 1. ÀÌº¥Æ® ÁøÇà »óÅÂ °Ë»ç : GOLDENBALL_STATUS_VOTE
-	// 2. tpc °Ë»ç
-	// 3. ÆÛ´ø Á¦¿Ü
-	// 4. È®·ü °è»ê : 1/10000, ±âº» 180, -4ºÎÅÍ 0.2%¾¿ °¨¼Ò
-	// 5. È®·ü Àû¿ë
-	// 6. ¾ÆÀÌÅÛ µå·Ó
-	// 7. °ÔÀÓ·Î±×
+	// 1. ì´ë²¤íŠ¸ ì§„í–‰ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_VOTE
+	// 2. tpc ê²€ì‚¬
+	// 3. í¼ë˜ ì œì™¸
+	// 4. í™•ë¥  ê³„ì‚° : 1/10000, ê¸°ë³¸ 180, -4ë¶€í„° 0.2%ì”© ê°ì†Œ
+	// 5. í™•ë¥  ì ìš©
+	// 6. ì•„ì´í…œ ë“œë¡­
+	// 7. ê²Œì„ë¡œê·¸
 
-	// 1. ÀÌº¥Æ® ÁøÇà »óÅÂ °Ë»ç : GOLDENBALL_STATUS_VOTE
+	// 1. ì´ë²¤íŠ¸ ì§„í–‰ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_VOTE
 	if (gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_VOTE)
 		return ;
 
-	// 2. tpc °Ë»ç
+	// 2. tpc ê²€ì‚¬
 	if (tpc == NULL)
 		return ;
 
-	// 3. ÆÛ´ø Á¦¿Ü
+	// 3. í¼ë˜ ì œì™¸
 	if (tpc->m_pZone == NULL || tpc->m_pZone->IsPersonalDungeon())
 		return ;
 
-	// 4. È®·ü °è»ê : 1/10000, ±âº» 180, -4ºÎÅÍ 0.2%¾¿ °¨¼Ò
+	// 4. í™•ë¥  ê³„ì‚° : 1/10000, ê¸°ë³¸ 180, -4ë¶€í„° 0.2%ì”© ê°ì†Œ
 	int nProb = 180;
 	if (tpc->m_level - npc->m_level >= 4)
 		nProb -= (tpc->m_level - npc->m_level - 3) * 20;
 
-	// 5. È®·ü Àû¿ë
+	// 5. í™•ë¥  ì ìš©
 	if (GetRandom(1, 10000) <= nProb)
 	{
-		// 6. ¾ÆÀÌÅÛ µå·Ó
+		// 6. ì•„ì´í…œ ë“œë¡­
 		CItem* pItem = gserver->m_itemProtoList.CreateItem(GOLDENBALL_BALL_INDEX, -1, 0, 0, 1);
 		if (!pItem)
 			return ;
@@ -300,7 +300,7 @@ void DropGoldenBallItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 			pItem->m_pArea->SendToCell(rmsg, GET_YLAYER(pItem), pItem->m_cellX, pItem->m_cellZ);
 		}
 
-		// 7. °ÔÀÓ·Î±×
+		// 7. ê²Œì„ë¡œê·¸
 		GAMELOG << init("EVENT GOLDEN BALL DROP", tpc)
 				<< "NPC" << delim
 				<< npc->m_idNum << delim
@@ -317,11 +317,11 @@ void DropGoldenBallItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 void DropRecommendItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
-	// ÃßÃµ ¼­¹ö¿¡¼­
-	// ¿ì¼±±Ç °®´Â PC°¡ ÀÖ°í
-	// ÆÄ¶õ»ö ¸÷À» ÀâÀº °Ô ¾Æ´Ï°í
-	// 30·¹º§ ÀÌÇÏÀÏ °æ¿ì
-	// 20%ÀÇ È®·ü·Î
+	// ì¶”ì²œ ì„œë²„ì—ì„œ
+	// ìš°ì„ ê¶Œ ê°–ëŠ” PCê°€ ìˆê³ 
+	// íŒŒë€ìƒ‰ ëª¹ì„ ì¡ì€ ê²Œ ì•„ë‹ˆê³ 
+	// 30ë ˆë²¨ ì´í•˜ì¼ ê²½ìš°
+	// 20%ì˜ í™•ë¥ ë¡œ
 	if (!gserver->m_bRecommend)
 		return ;
 	if (!tpc)
@@ -374,15 +374,15 @@ void DropMakeDocument(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (!tpc)
 		return ;
 
-	// npc.level < 10 ÀÌ¸é µå·Ó ¾ÈÇÔ
+	// npc.level < 10 ì´ë©´ ë“œë¡­ ì•ˆí•¨
 	if (nNPCLevel < 10)
 		return ;
 
-	// tpc.level - npc.level > 2 ÀÌ¸é µå·Ó¾ÈÇÔ
+	// tpc.level - npc.level > 2 ì´ë©´ ë“œë¡­ì•ˆí•¨
 	if (tpc->m_level - nNPCLevel > 2)
 		return ;
 
-	// NPC ·¹º§º° È®·ü ±¸ÇÏ±â : {minLevel, maxLevel, prob(1/1000)}
+	// NPC ë ˆë²¨ë³„ í™•ë¥  êµ¬í•˜ê¸° : {minLevel, maxLevel, prob(1/1000)}
 	const int nSizeTable = 4;
 	int tableProb[nSizeTable][3] =
 	{
@@ -406,13 +406,13 @@ void DropMakeDocument(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 	std::vector<int> listItemIndex;
 
-	// ÇØ´ç ·¹º§ ´ëÀÇ ¾ÆÀÌÅÛ ±¸ÇÏ±â
+	// í•´ë‹¹ ë ˆë²¨ ëŒ€ì˜ ì•„ì´í…œ êµ¬í•˜ê¸°
 	for (i = 0; i < gserver->m_itemProtoList.m_nCount; i++)
 	{
 		const CItemProto* pItemProto = gserver->m_itemProtoList.m_protoItems + i;
 		if (pItemProto)
 		{
-			// item.level - 5 <= npc.level <= item.level - 2 ÀÏ°æ¿ì¸¸
+			// item.level - 5 <= npc.level <= item.level - 2 ì¼ê²½ìš°ë§Œ
 			if (pItemProto->getItemTypeIdx() == 2 && pItemProto->getItemSubTypeIdx() == 2 && pItemProto->GetItemProtoLevel() - 5 <= npc->m_level && npc->m_level <= pItemProto->GetItemProtoLevel() - 2)
 			{
 				listItemIndex.push_back(pItemProto->getItemIndex());
@@ -420,15 +420,15 @@ void DropMakeDocument(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		}
 	}
 
-	// ÇØ´ç ·¹º§ ´ëÀÇ ¾ÆÀÌÅÛÀÌ ¾øÀ¸¸é µå·Ó ¾øÀ½
+	// í•´ë‹¹ ë ˆë²¨ ëŒ€ì˜ ì•„ì´í…œì´ ì—†ìœ¼ë©´ ë“œë¡­ ì—†ìŒ
 	if (listItemIndex.empty())
 		return ;
 
-	// Æ¯Á¤ ¾ÆÀÌÅÛ ¼±Á¤ : °¢ ¾ÆÀÌÅÛ ¼±Á¤ È®·üÀº µ¿ÀÏ
+	// íŠ¹ì • ì•„ì´í…œ ì„ ì • : ê° ì•„ì´í…œ ì„ ì • í™•ë¥ ì€ ë™ì¼
 	i = GetRandom(0, listItemIndex.size() - 1);
 	nSelItem = listItemIndex[i];
 
-	// ÇØ´ç ¾ÆÀÌÅÛ µå·Ó
+	// í•´ë‹¹ ì•„ì´í…œ ë“œë¡­
 	CItem* pItem = gserver->m_itemProtoList.CreateItem(nSelItem, -1, 0, 0, 1);
 	if (pItem)
 	{
@@ -500,7 +500,7 @@ void DropBoosterItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 #endif // #ifndef LC_TLD
 }
 
-// ÀÎºñÁö Çª´Â ¾ÆÀÌÅÛ »ç¿ë½Ã
+// ì¸ë¹„ì§€ í‘¸ëŠ” ì•„ì´í…œ ì‚¬ìš©ì‹œ
 int ApplyItem677_or_3579(CCharacter* ch, CSkill* skill, int itemidx)
 {
 	CArea* area = ch->m_pArea;
@@ -555,14 +555,14 @@ int ApplyItem677_or_3579(CCharacter* ch, CSkill* skill, int itemidx)
 	return 0;
 }
 
-// ÆÛ½º³Î ´øÀü3 ÀÔÀå±Ç ÁÖ±â
+// í¼ìŠ¤ë„ ë˜ì „3 ì…ì¥ê¶Œ ì£¼ê¸°
 void DropPersonalDungeon3Ticket(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
 	CQuestProto* proto = NULL;
 	if (!pc)
 		return ;
 
-	// pc levelÀÌ 30ÀÌ»ó
+	// pc levelì´ 30ì´ìƒ
 	proto = gserver->m_questProtoList.FindProto(104);
 	if (proto == NULL)
 		return ;
@@ -570,23 +570,23 @@ void DropPersonalDungeon3Ticket(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (pc->m_level < proto->m_needMinLevel || pc->m_level > proto->m_needMaxLevel )
 		return ;
 
-	// È®·ü : 5%
+	// í™•ë¥  : 5%
 	if (GetRandom(1, 100) > 5)
 		return ;
 
-	// ÀÔÀåÀÌÈÄ ÇÏ·ç Áö³µ´Â°¡?
+	// ì…ì¥ì´í›„ í•˜ë£¨ ì§€ë‚¬ëŠ”ê°€?
 	if (pc->m_pd3Count >= 5)
 		return ;
 
-	// ÀÔÀå±ÇÀ» ¼ÒÁöÇÏ°í ÀÖ³ª?
+	// ì…ì¥ê¶Œì„ ì†Œì§€í•˜ê³  ìˆë‚˜?
 	if (pc->m_inventory.FindByDBIndex(725, 0, 0))
 		return ;
 
-	// ·¹º§ Â÷ÀÌ´Â? : pc->level - npc->level <= 5
+	// ë ˆë²¨ ì°¨ì´ëŠ”? : pc->level - npc->level <= 5
 	if (pc->m_level - npc->m_level > 5)
 		return ;
 
-	// ¾ÆÀÌÅÛ »ı¼º ÈÄ ÀÎº¥Åä¸®¿¡ ³Ö±â
+	// ì•„ì´í…œ ìƒì„± í›„ ì¸ë²¤í† ë¦¬ì— ë„£ê¸°
 	CItem* item = gserver->m_itemProtoList.CreateItem(725, -1, 0, 0, 1);
 	if (!item)
 		return ;
@@ -613,24 +613,24 @@ void DropPersonalDungeon4Ticket(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (pc->m_level < proto->m_needMinLevel || pc->m_level > proto->m_needMaxLevel )
 		return ;
 
-	// È®·ü : 5%
+	// í™•ë¥  : 5%
 	if (GetRandom(1, 100) > 5)
 		return ;
 
-	// ÀÔÀåÀÌÈÄ ÇÏ·ç Áö³µ´Â°¡?
-	// ±×¿Ü 3È¸
+	// ì…ì¥ì´í›„ í•˜ë£¨ ì§€ë‚¬ëŠ”ê°€?
+	// ê·¸ì™¸ 3íšŒ
 	if (pc->m_pd4Count >= 3)
 		return;
 
-	// ÀÔÀå±ÇÀ» ¼ÒÁöÇÏ°í ÀÖ³ª?
+	// ì…ì¥ê¶Œì„ ì†Œì§€í•˜ê³  ìˆë‚˜?
 	if (pc->m_inventory.FindByDBIndex(757, 0, 0))
 		return ;
 
-	// ·¹º§ Â÷ÀÌ´Â? : pc->level - npc->level <= 5
+	// ë ˆë²¨ ì°¨ì´ëŠ”? : pc->level - npc->level <= 5
 	if (pc->m_level - npc->m_level > 5)
 		return ;
 
-	// ¾ÆÀÌÅÛ »ı¼º ÈÄ ÀÎº¥Åä¸®¿¡ ³Ö±â
+	// ì•„ì´í…œ ìƒì„± í›„ ì¸ë²¤í† ë¦¬ì— ë„£ê¸°
 	CItem* item = gserver->m_itemProtoList.CreateItem(757, -1, 0, 0, 1);
 	if (!item)
 		return ;
@@ -652,8 +652,8 @@ void DropPetEgg(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 		if( tpc )
 		{
-			// ÆÇÀÇ ÇÇ¸®³ª µå·¹ÀÌÅ© ¾ËÀ» °¡Áö°í ÀÖÀ¸¸é µå·ÓÇÏÁö ¾Ê´Â´Ù
-			// or ÆêÀÌ ÀÖ°Å³ª
+			// íŒì˜ í”¼ë¦¬ë‚˜ ë“œë ˆì´í¬ ì•Œì„ ê°€ì§€ê³  ìˆìœ¼ë©´ ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤
+			// or í«ì´ ìˆê±°ë‚˜
 			if (tpc->m_inventory.FindByDBIndex(948, 0, 0) || tpc->m_inventory.FindByDBIndex(949, 0, 0) || tpc->m_petList )
 				return;
 		}
@@ -697,7 +697,7 @@ void DropPetEgg(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	}
 }
 
-// °íÁ¦µå·Ó
+// ê³ ì œë“œë¡­
 void DropSpecialRefineStone(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
 	if( npc->m_level > 140 )
@@ -711,11 +711,11 @@ void DropSpecialRefineStone(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 		if (npc->m_pZone->IsPersonalDungeon())
 			prob /= 2;
-#ifdef LC_TLD // ÅÂ±¹ °íÁ¦ µå·ÓÀ² 10ÇÁ·Î Áõ°¡
+#ifdef LC_TLD // íƒœêµ­ ê³ ì œ ë“œë¡­ìœ¨ 10í”„ë¡œ ì¦ê°€
 		prob += prob * 10 / 100;
 #endif
 
-#if defined(LC_BILA)// ¸»·¹½Ã¾Æ °íÁ¦ Æ®·ÓÀ² 50% °¨¼Ò		/// kj
+#if defined(LC_BILA)// ë§ë ˆì‹œì•„ ê³ ì œ íŠ¸ë¡­ìœ¨ 50% ê°ì†Œ		/// kj
 		prob /=  2;
 #endif
 
@@ -762,7 +762,7 @@ void DropWhiteDayItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 			else
 				prob = 600;
 
-			// »çÅÁ µå·Ó
+			// ì‚¬íƒ• ë“œë¡­
 			if (GetRandom(1, 10000) <= prob)
 			{
 				CItem* item = npc->m_pArea->DropItem(556, npc, 0, 0, 1);
@@ -797,7 +797,7 @@ void DropValentineItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 			else
 				prob = 600;
 
-			// ÃÊÄÃ¸´ µå·Ó
+			// ì´ˆì»¬ë¦¿ ë“œë¡­
 			if (GetRandom(1, 10000) <= prob)
 			{
 				CItem* item = npc->m_pArea->DropItem(512, npc, 0, 0, 1);
@@ -845,13 +845,13 @@ void DropNewMoonStoneItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
 	if (level != -1 && level - npc->m_level <= 5)
 	{
-		// Àá¼öÇÔ : ¹®½ºÅæ µå·Ó
+		// ì ìˆ˜í•¨ : ë¬¸ìŠ¤í†¤ ë“œë¡­
 		int prob = 90;
 
 		if (npc->m_pZone->IsPersonalDungeon())
 			prob /= 2;
 
-		// ¹®½ºÅæ»óÀÚ µå·Ó
+		// ë¬¸ìŠ¤í†¤ìƒì ë“œë¡­
 		if (GetRandom(1, 10000) <= prob)
 		{
 			CItem* item = npc->m_pArea->DropItem(2544, npc, 0, 0, 1);
@@ -872,15 +872,15 @@ void DropNewMoonStoneItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 void RegenBlessWarrior(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
-	static const int		nProbWarrior		= 10;					// Àü»çÀÇ ¼Õ±æ È®·ü : 10%
-	static const int		nProbGuard			= 20 + nProbWarrior;	// ¼öÈ£ÀÇ ¼Õ±æ È®·ü : 20%
-	static const int		nProbBrave			= 35 + nProbGuard;		// ¿ë¸ÍÀÇ ¼Õ±æ È®·ü : 35%
-	static const int		nProbProtect		= 35 + nProbBrave;		// º¸È£ÀÇ ¼Õ±æ È®·ü : 35%
+	static const int		nProbWarrior		= 10;					// ì „ì‚¬ì˜ ì†ê¸¸ í™•ë¥  : 10%
+	static const int		nProbGuard			= 20 + nProbWarrior;	// ìˆ˜í˜¸ì˜ ì†ê¸¸ í™•ë¥  : 20%
+	static const int		nProbBrave			= 35 + nProbGuard;		// ìš©ë§¹ì˜ ì†ê¸¸ í™•ë¥  : 35%
+	static const int		nProbProtect		= 35 + nProbBrave;		// ë³´í˜¸ì˜ ì†ê¸¸ í™•ë¥  : 35%
 
-	static const int		nIndexWarrior		= 310;					// Àü»çÀÇ ¼Õ±æ
-	static const int		nIndexGuard			= 311;					// ¼öÈ£ÀÇ ¼Õ±æ
-	static const int		nIndexBrave			= 312;					// ¿ë¸ÍÀÇ ¼Õ±æ
-	static const int		nIndexProtect		= 313;					// º¸È£ÀÇ ¼Õ±æ
+	static const int		nIndexWarrior		= 310;					// ì „ì‚¬ì˜ ì†ê¸¸
+	static const int		nIndexGuard			= 311;					// ìˆ˜í˜¸ì˜ ì†ê¸¸
+	static const int		nIndexBrave			= 312;					// ìš©ë§¹ì˜ ì†ê¸¸
+	static const int		nIndexProtect		= 313;					// ë³´í˜¸ì˜ ì†ê¸¸
 
 	if (pc == NULL && tpc == NULL)
 		return ;
@@ -897,7 +897,7 @@ void RegenBlessWarrior(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		return ;
 #endif // BUGFIX_DROPITEM_LEVEL_CHECK
 
-	int nProb = 6;		// ±âº» È®·ü : 6/1000 : 0.6%
+	int nProb = 6;		// ê¸°ë³¸ í™•ë¥  : 6/1000 : 0.6%
 
 	if (npc->m_level < level)
 		nProb -= level - npc->m_level;
@@ -964,7 +964,7 @@ void DropBlessWarrior(CNPC* pNPC)
 
 			switch (nItemIndex)
 			{
-			case 84:		// ÀÏ¹İ Á¦·Ã¼®Àº ¹«½Ã
+			case 84:		// ì¼ë°˜ ì œë ¨ì„ì€ ë¬´ì‹œ
 				break;
 
 			default:
@@ -995,10 +995,10 @@ void DropBlessWarrior(CNPC* pNPC)
 
 	pNPC->SendDisappearAllInCell(true);
 
-	// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+	// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 	DelAttackList(pNPC);
 
-	// npc »èÁ¦
+	// npc ì‚­ì œ
 	pNPC->m_pArea->CharFromCell(pNPC, true);
 	pNPC->m_pArea->DelNPC(pNPC);
 }
@@ -1158,10 +1158,10 @@ void DropMobScrollSpecialStone(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 		if (npc->m_NextMobIndex == 9)
 		{
-			// ¸ó½ºÅÍ ¼ÒÈ¯¼­·Î ³ª¿Â º¸½º ¸ó½ºÅÍ
-			if (GetRandom(1, 10000) <= 3000)	// 30% È®·ü
+			// ëª¬ìŠ¤í„° ì†Œí™˜ì„œë¡œ ë‚˜ì˜¨ ë³´ìŠ¤ ëª¬ìŠ¤í„°
+			if (GetRandom(1, 10000) <= 3000)	// 30% í™•ë¥ 
 			{
-				CItem* item = gserver->m_itemProtoList.CreateItem(85, -1, 0, 0, 1);	// °í±Ş Á¦·Ã¼®
+				CItem* item = gserver->m_itemProtoList.CreateItem(85, -1, 0, 0, 1);	// ê³ ê¸‰ ì œë ¨ì„
 				if (item)
 				{
 					item->m_preferenceIndex = npc->m_UseCharIndex;
@@ -1262,15 +1262,15 @@ void DropEventGomdori2007(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	const static int nProbLowPerLevel = 0;
 	const static int nProbLimit = 9;
 #else
-	const static int nProbHigh			= 80;		// ³ôÀº ·¹º§ ÀâÀ¸¸é 80%
-	const static int nProbLowPerLevel	= 10;		// ³·Àº ·¹º§ ÀâÀ¸¸é ·¹º§´ç 10%
-	const static int nProbLimit			= 9;		// 9·¹º§ ÀÌÇÏ ·¹º§ ÀâÀ¸¸é 0
+	const static int nProbHigh			= 80;		// ë†’ì€ ë ˆë²¨ ì¡ìœ¼ë©´ 80%
+	const static int nProbLowPerLevel	= 10;		// ë‚®ì€ ë ˆë²¨ ì¡ìœ¼ë©´ ë ˆë²¨ë‹¹ 10%
+	const static int nProbLimit			= 9;		// 9ë ˆë²¨ ì´í•˜ ë ˆë²¨ ì¡ìœ¼ë©´ 0
 #endif //
 
 	if (npc->m_pZone->IsPersonalDungeon())
 		return ;
 
-	// ¿ì¼±¼øÀ§ : tpc, level, pc
+	// ìš°ì„ ìˆœìœ„ : tpc, level, pc
 	if (tpc)
 	{
 		level = tpc->m_level;
@@ -1278,9 +1278,9 @@ void DropEventGomdori2007(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	else
 		return ;
 
-	// µå·Ó °áÁ¤
-	// 1. ½Ã°£ °Ë»ç : ¸Å½Ã x9ºĞ ¶Ç´Â x4ºĞ
-	// 2. ·¹º§¿¡ µû¸¥ º¯°æ : ³ôÀº ¸÷Àº 80%, ³·Àº ¸÷Àº ·¹º§´ç -10%, 9·¹º§ ÀÌÇÏ µå·Ó ¾ÈÇÔ
+	// ë“œë¡­ ê²°ì •
+	// 1. ì‹œê°„ ê²€ì‚¬ : ë§¤ì‹œ x9ë¶„ ë˜ëŠ” x4ë¶„
+	// 2. ë ˆë²¨ì— ë”°ë¥¸ ë³€ê²½ : ë†’ì€ ëª¹ì€ 80%, ë‚®ì€ ëª¹ì€ ë ˆë²¨ë‹¹ -10%, 9ë ˆë²¨ ì´í•˜ ë“œë¡­ ì•ˆí•¨
 #if defined(LC_BILA)
 	int nDropProb = 0;
 	struct tm tmNow = NOW();
@@ -1348,7 +1348,7 @@ void DropEventAprilFoolEvent(CNPC* npc, CPC* pc, CPC* tpc, int level )
 	if(!tpc)
 		return ;
 
-	if(tpc->m_pZone->IsPersonalDungeon())		// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù.
+	if(tpc->m_pZone->IsPersonalDungeon())		// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		return ;
 
 	const static int nDropProbMax = 80;
@@ -1410,7 +1410,7 @@ void DropEventIndependenceDay2007USA(CNPC* npc, CPC* pc, CPC* tpc, int level )
 	if(!tpc)
 		return ;
 
-	if(tpc->m_pZone->IsPersonalDungeon())		// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù.
+	if(tpc->m_pZone->IsPersonalDungeon())		// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		return ;
 
 	const static int nDropProbMax = 80;
@@ -1472,7 +1472,7 @@ void DropEventNpcDropItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (!tpc)
 		return ;
 
-	if(tpc->m_pZone->IsPersonalDungeon())		// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù.
+	if(tpc->m_pZone->IsPersonalDungeon())		// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		return;
 
 	if(npc->m_proto->m_index != gserver->m_bDropItemNpcIdx)
@@ -1488,7 +1488,7 @@ void DropEventNpcDropItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		prob -= diffLevel * diffProb;
 	}
 
-	if (GetRandom(1, 1000) <= prob )			// 1%ÀÇ È®·ü
+	if (GetRandom(1, 1000) <= prob )			// 1%ì˜ í™•ë¥ 
 	{
 		CItem* item = gserver->m_itemProtoList.CreateItem(gserver->m_bDropItemIdx, -1, 0, 0, 1);
 		if (item)
@@ -1516,7 +1516,7 @@ void DropComboGiftMob( CNPC* npc, CPC* pc, CPC* tpc, int level )
 	if( !tpc->m_pZone->IsComboZone() )
 		return ;
 
-	// ¼±¹°»óÀÚ npcÀÎÁö °Ë»ç
+	// ì„ ë¬¼ìƒì npcì¸ì§€ ê²€ì‚¬
 	if(npc->m_proto->m_index == 492)
 	{
 		CItem* item = gserver->m_itemProtoList.CreateItem(npc->m_coinidx, -1, 0, 0, npc->m_coincount);
@@ -1577,18 +1577,18 @@ void DropAPetLifeBook( CNPC* npc, CPC* pc, CPC* tpc, int level )
 
 void DropPhoenix_MembersTicket( CNPC* npc, CPC* pc, CPC* tpc, int level )
 {
-	// ÀÌº¥Æ® ¾ÆÀÌÅÛ µå¶ø
+	// ì´ë²¤íŠ¸ ì•„ì´í…œ ë“œë
 	if (!tpc || !npc || !npc->m_pArea || !tpc->m_pZone)
 		return ;
 
-	// µ¿±¼ Á¸ÀÌ ¾Æ´Ï¸é µå¶øÇÏÁö ¾Ê´Â´Ù.
+	// ë™êµ´ ì¡´ì´ ì•„ë‹ˆë©´ ë“œëí•˜ì§€ ì•ŠëŠ”ë‹¤.
 	if( tpc->m_pZone->m_index != ZONE_SPRIT_CAVE
 			&& tpc->m_pZone->m_index != ZONE_QUANIAN_CAVE
 			&& tpc->m_pZone->m_index != ZONE_GOLEM_CAVE
 			&& tpc->m_pZone->m_index != ZONE_TRIVIA_CANYON )
 		return;
 
-	// °¡ÀÔ±Ç µå¶ø
+	// ê°€ì…ê¶Œ ë“œë
 	if( GetRandom(1, 10000) <= DROP_PHOENIX_MEMBERS_TICKET )
 	{
 		CItem* pItem = gserver->m_itemProtoList.CreateItem( 3217, -1, 0, 0, 1 );
@@ -1622,7 +1622,7 @@ void DropTriggerItem( CNPC* npc, CPC* pc, CPC* tpc, int level )
 	if (!tpc || !npc || !npc->m_pArea || !tpc->m_pZone || !npc->m_proto)
 		return ;
 
-	// Æ®¸®°Å¸¦ »ç¿ëÇÏ´Â Á¸¿¡¼­¸¸ µå¶øÀ» ÇÑ´Ù.
+	// íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ëŠ” ì¡´ì—ì„œë§Œ ë“œëì„ í•œë‹¤.
 	if( !npc->m_pArea->m_bUseTriggerEvent )
 		return;
 
@@ -1632,32 +1632,32 @@ void DropTriggerItem( CNPC* npc, CPC* pc, CPC* tpc, int level )
 	switch(npc->m_proto->m_index)
 	{
 	case 954:
-		// È¸¶û ¿­¼è
+		// íšŒë‘ ì—´ì‡ 
 		itemIndex = 4697;
 		break;
 
 	case 964:
-		// »çÁ¦°ü ¿­¼è
+		// ì‚¬ì œê´€ ì—´ì‡ 
 		itemIndex = 4695;
 		break;
 
 	case 997:
-		// ÃË¸ÅÁ¦
+		// ì´‰ë§¤ì œ
 		itemIndex = 4566;
 		break;
 
 	case 1015:
-		// ¸¸È­°æ
+		// ë§Œí™”ê²½
 		itemIndex = 4571;
 		break;
 
 	case 1016:
-		// µ¶¼ö¸®ÀÇ ³¯°³
+		// ë…ìˆ˜ë¦¬ì˜ ë‚ ê°œ
 		itemIndex = 4569;
 		break;
 
 	case 1017:
-		// ºÓÀº ½ÉÀå
+		// ë¶‰ì€ ì‹¬ì¥
 		itemIndex = 4570;
 		break;
 
@@ -1686,36 +1686,22 @@ void DropLacaRette(CNPC* npc, CPC* pc, CPC* tpc, int level )
 	if (!tpc)
 		return;
 
-	if(tpc->m_pZone->IsPersonalDungeon() )	// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù
+	if(tpc->m_pZone->IsPersonalDungeon() )	// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤
 		return;
 
 	if(npc == NULL)
 		return ;
 
-	if(tpc->m_level - npc->m_level >= 10)		// ³ªÀÇ ·¹º§ÀÌ ¸ó½ºÅÍÀÇ ·¹º§º¸´Ù 10ÀÌ»ó Å¬¶§
+	if(tpc->m_level - npc->m_level >= 15)		// ë‚˜ì˜ ë ˆë²¨ì´ ëª¬ìŠ¤í„°ì˜ ë ˆë²¨ë³´ë‹¤ 10ì´ìƒ í´ë•Œ
 		return ;
 
-	switch(gserver->m_tRealSystemTime.tm_min)	// ¸Å½Ã°£ 9ºĞ, 19ºĞ, 29ºĞ, 39ºĞ, 49ºĞ, 59ºĞ ¿¡¼­ 1ºĞ°£¸¸ µå·ÓµÇ´Â ½Ã°£ÀÌ´Ù.
+	static const int nIndexItem = 5123; // ì¼ë°˜ í† í°
+
+	int nProb = 150;							// ê¸°ë³¸ í™•ë¥ ì€ 1.5%
+
+	if (npc->m_level < tpc->m_level)			// npcë ˆë²¨ì´ ë‚˜ì˜ ë ˆë²¨ë³´ë‹¤ ì‘ì„ë•Œ 0.1%/1lv ìˆ˜ì¹˜ë¡œ í™•ë¥ ì€ ì¤„ì–´ë“¬.
 	{
-	case 9:
-	case 19:
-	case 29:
-	case 39:
-	case 49:
-	case 59:
-		break;
-	default:
-		return;
-		break;
-	}
-
-	static const int nIndexItem = 5123; // ÀÏ¹İ ÅäÅ«
-
-	int nProb = 2000;							// ±âº» È®·üÀº 20%
-
-	if (npc->m_level < tpc->m_level)			// npc·¹º§ÀÌ ³ªÀÇ ·¹º§º¸´Ù ÀÛÀ»¶§ 2%/1lv ¼öÄ¡·Î È®·üÀº ÁÙ¾îµë.
-	{
-		nProb -= (tpc->m_level - npc->m_level) * 200;
+		nProb -= (tpc->m_level - npc->m_level) * 10;
 	}
 
 	int drop_count = 1;
@@ -1725,7 +1711,7 @@ void DropLacaRette(CNPC* npc, CPC* pc, CPC* tpc, int level )
 		CItem* item = gserver->m_itemProtoList.CreateItem(nIndexItem, -1, 0, 0, drop_count);
 		if( item )
 		{
-			//item->m_preferenceIndex = tpc->m_index;		//ÀÌº¥Æ® ÀÏ¹İ ÅäÅ« ÁÖÀÎ ¾ø¾Ú
+			//item->m_preferenceIndex = tpc->m_index;		//ì´ë²¤íŠ¸ ì¼ë°˜ í† í° ì£¼ì¸ ì—†ì•°
 			npc->m_pArea->DropItem( item, npc );
 
 			{
@@ -1748,18 +1734,18 @@ void DropHolyWater(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (!tpc)
 		return;
 
-	if(tpc->m_pZone->IsPersonalDungeon() )	// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù
+	if(tpc->m_pZone->IsPersonalDungeon() )	// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤
 		return;
 
 	if(npc == NULL)
 		return ;
 
-	if(tpc->m_level - npc->m_level >= 10)		// ³ªÀÇ ·¹º§ÀÌ ¸ó½ºÅÍÀÇ ·¹º§º¸´Ù 10ÀÌ»ó Å¬¶§
+	if(tpc->m_level - npc->m_level >= 10)		// ë‚˜ì˜ ë ˆë²¨ì´ ëª¬ìŠ¤í„°ì˜ ë ˆë²¨ë³´ë‹¤ 10ì´ìƒ í´ë•Œ
 		return ;
 
 	static const int nIndexItem = 10295;
 
-	int nProb = 100;							// ±âº» È®·üÀº 1%
+	int nProb = 100;							// ê¸°ë³¸ í™•ë¥ ì€ 1%
 	
 	int drop_count = 1;
 
@@ -1790,7 +1776,7 @@ void DropWorldCupEvent(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (!tpc)
 		return;
 
-	if(tpc->m_pZone->IsPersonalDungeon() )	// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù
+	if(tpc->m_pZone->IsPersonalDungeon() )	// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤
 		return;
 
 	if(tpc->m_assist.FindBySkillIndex(1770) == false)
@@ -1799,12 +1785,12 @@ void DropWorldCupEvent(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if(npc == NULL)
 		return ;
 
-	if(tpc->m_level - npc->m_level >= 10)		// ³ªÀÇ ·¹º§ÀÌ ¸ó½ºÅÍÀÇ ·¹º§º¸´Ù 10ÀÌ»ó Å¬¶§
+	if(tpc->m_level - npc->m_level >= 10)		// ë‚˜ì˜ ë ˆë²¨ì´ ëª¬ìŠ¤í„°ì˜ ë ˆë²¨ë³´ë‹¤ 10ì´ìƒ í´ë•Œ
 		return ;
 
 	static const int nIndexItem = 5345;
 
-	int nProb = 50;							// ±âº» È®·üÀº 0.5%
+	int nProb = 50;							// ê¸°ë³¸ í™•ë¥ ì€ 0.5%
 
 	int drop_count = 1;
 
@@ -1835,7 +1821,7 @@ void DropHalloween2014Event(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if (!tpc)
 		return;
 
-	if(tpc->m_pZone->IsPersonalDungeon() )	// ÆÛ½º³Î ´øÀü¿¡¼­´Â µå·ÓÇÏÁö ¾Ê´Â´Ù
+	if(tpc->m_pZone->IsPersonalDungeon() )	// í¼ìŠ¤ë„ ë˜ì „ì—ì„œëŠ” ë“œë¡­í•˜ì§€ ì•ŠëŠ”ë‹¤
 		return;
 
 	if(tpc->m_assist.FindBySkillIndex(1788) == false)
@@ -1847,12 +1833,12 @@ void DropHalloween2014Event(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if(npc == NULL)
 		return ;
 
-	if(tpc->m_level - npc->m_level >= 10)		// ³ªÀÇ ·¹º§ÀÌ ¸ó½ºÅÍÀÇ ·¹º§º¸´Ù 10ÀÌ»ó Å¬¶§
+	if(tpc->m_level - npc->m_level >= 10)		// ë‚˜ì˜ ë ˆë²¨ì´ ëª¬ìŠ¤í„°ì˜ ë ˆë²¨ë³´ë‹¤ 10ì´ìƒ í´ë•Œ
 		return ;
 
 	static const int nIndexItem = 2491;
 
-	int nProb = 50;							// ±âº» È®·üÀº 0.5%
+	int nProb = 50;							// ê¸°ë³¸ í™•ë¥ ì€ 0.5%
 
 	int drop_count = 1;
 
@@ -1878,7 +1864,7 @@ void DropHalloween2014Event(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	}
 }
 
-//À¯¹° ¾ÆÀÌÅÛ ·£´ı µå·Ó
+//ìœ ë¬¼ ì•„ì´í…œ ëœë¤ ë“œë¡­
 void DropArtifactItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 {
 	if(gserver->m_bNonPK == true)
@@ -1905,12 +1891,12 @@ void DropArtifactItem(CNPC* npc, CPC* pc, CPC* tpc, int level)
 	if(npc == NULL && npc->m_pArea == NULL)
 		return ;
 
-	if(tpc->m_level < 16)		// ³ªÀÇ ·¹º§ÀÌ ¸ó½ºÅÍÀÇ ·¹º§º¸´Ù 10ÀÌ»ó Å¬¶§
+	if(tpc->m_level < 16)		// ë‚˜ì˜ ë ˆë²¨ì´ ëª¬ìŠ¤í„°ì˜ ë ˆë²¨ë³´ë‹¤ 10ì´ìƒ í´ë•Œ
 		return ;
 
 	static const int nIndexItem = ARTIFACT_LEVEL1_ITEM_INDEX;
 
-	int nProb = 100;							// ±âº» È®·üÀº 1%
+	int nProb = 100;							// ê¸°ë³¸ í™•ë¥ ì€ 1%
 
 	int drop_count = 1;
 
@@ -1950,7 +1936,7 @@ void DropTreasureBoxNpc(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		return;
 
 #ifdef SYSTEM_TREASURE_MAP_GAMIGO
-	// º¸¹°Áöµµ°¡ ÀÖ´ÂÁö Ã¼Å©
+	// ë³´ë¬¼ì§€ë„ê°€ ìˆëŠ”ì§€ ì²´í¬
 	if (opc->m_inventory.FindByDBIndex(TREASURE_MAP_ITEM_INDEX) == NULL)
 		return;
 #endif // SYSTEM_TREASURE_MAP_GAMIGO
@@ -2004,14 +1990,14 @@ void DropTreasureMap(CNPC* npc, CPC* pc, CPC* tpc, int level)
 
 		switch( i )
 		{
-		case 0: // º¸¹° Áöµµ
-			prob = 200 - prob; // 2% È®·ü·Î µå¶ø
+		case 0: // ë³´ë¬¼ ì§€ë„
+			prob = 200 - prob; // 2% í™•ë¥ ë¡œ ë“œë
 			if( GetRandom(0, 10000) > prob )
 				continue;
 			dropItemIndex = TREASURE_MAP_ITEM_INDEX;
 			break;
-		case 1: // ÀÏ¹İ º¸¹° »óÀÚ ¿­¼è
-			prob = 1000 - prob; // 10% È®·ü·Î µå¶ø
+		case 1: // ì¼ë°˜ ë³´ë¬¼ ìƒì ì—´ì‡ 
+			prob = 1000 - prob; // 10% í™•ë¥ ë¡œ ë“œë
 			if( GetRandom(0, 10000) > prob )
 				continue;
 			dropItemIndex = TREASURE_KEY_ITEM_INDEX;
@@ -2025,10 +2011,10 @@ void DropTreasureMap(CNPC* npc, CPC* pc, CPC* tpc, int level)
 		if(!pItem)
 			continue;
 
-		// º¸¹°Áöµµ¶ó¸é º¸¹°»óÀÚNPCµµ summon ÇØÁÖ°í pItem¿¡ º¸¹°Áöµµ Á¤º¸¸¦ ¼¼ÆÃÇØÁØ´Ù.
+		// ë³´ë¬¼ì§€ë„ë¼ë©´ ë³´ë¬¼ìƒìNPCë„ summon í•´ì£¼ê³  pItemì— ë³´ë¬¼ì§€ë„ ì •ë³´ë¥¼ ì„¸íŒ…í•´ì¤€ë‹¤.
 		if( pItem->getDBIndex() == TREASURE_MAP_ITEM_INDEX )
 		{
-			if( !opc->m_pZone->SetTresaureMapInfo(pItem) ) // ¿ì¼± npc summon ºÎÅÍ ÇÑ´Ù.
+			if( !opc->m_pZone->SetTresaureMapInfo(pItem) ) // ìš°ì„  npc summon ë¶€í„° í•œë‹¤.
 			{
 				delete pItem;
 				pItem = NULL;

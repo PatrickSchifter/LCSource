@@ -14,10 +14,10 @@ ConnectorInGameConnectTimer* ConnectorInGameConnectTimer::instance()
 
 void ConnectorInGameConnectTimer::operate( rnSocketIOService* service )
 {
-	// Çö Å¸ÀÌ¸Ó »èÁ¦
+	// í˜„ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ¸Þ½ÅÁ® ¼­¹ö¿¡ Á¢¼Ó
+	// ë©”ì‹ ì ¸ ì„œë²„ì— ì ‘ì†
 	ConnectorInGame::instance()->connect();
 }
 
@@ -25,7 +25,7 @@ void ConnectorInGameConnectTimer::operate( rnSocketIOService* service )
 
 void ConnectorInGame::connect()
 {
-	// ¸Þ½ÃÁ¯ ¼­¹ö¿¡ Á¢¼Ó ½Ãµµ
+	// ë©”ì‹œì ¼ ì„œë²„ì— ì ‘ì† ì‹œë„
 	host_ = gserver->m_config.Find("Connector Server", "IP");
 	port_ = atoi(gserver->m_config.Find("Connector Server", "Port"));
 	bnf::instance()->CreateAsyncConnect(host_, port_, this, CONNECT_TYPE_FOR_CNETMSG);
@@ -51,13 +51,13 @@ void ConnectorInGame::operate( rnSocketIOService* service )
 
 void ConnectorInGame::onClose( rnSocketIOService* service )
 {
-	LOG_FATAL("%%%%%%%%%% Disconnected from Connector Server Please Check (%s : %d) %%%%%%%%%%\n",
+	LOG_FATAL("%%%%%%%%%% Disconnected from Connector Server (%s : %d) %%%%%%%%%%\n",
 			  host_.c_str(), port_);
 
 	bnf::instance()->RemoveSession(service);
 	service_ = NULL;
 
-	// ÀçÁ¢¼Ó Å¸ÀÌ¸Ó »ý¼º
+	// ìž¬ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	session_handle handle = bnf::instance()->CreateMSecTimer(RECONNECT_TIMER_FOR_MESSENGER,
 							(void *)ConnectorInGameConnectTimer::instance());
 }
@@ -66,15 +66,15 @@ void ConnectorInGame::onConnect( rnSocketIOService* service )
 {
 	service_ = service;
 
-	// Á¢¼Ó ÈÄ ÃÖÃÊ ¸Þ½ÃÁö Àü´Þ
+	// ì ‘ì† í›„ ìµœì´ˆ ë©”ì‹œì§€ ì „ë‹¬
 	this->WriteToOutput(gserver->m_connectorConnMsg);
 
-	LOG_INFO("connected to Connector server Awsome Keep Going (%s : %d)", host_.c_str(), port_);
+	LOG_INFO("connected to Connector server (%s : %d)", host_.c_str(), port_);
 }
 
 void ConnectorInGame::onConnectFail( rnSocketIOService* service )
 {
-	LOG_INFO("Can't connected to Connector server Check Port And IP (%s : %d)", host_.c_str(), port_);
+	LOG_INFO("Can't connected to Connector server (%s : %d)", host_.c_str(), port_);
 }
 
 ConnectorInGame* ConnectorInGame::instance()

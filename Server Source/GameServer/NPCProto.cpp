@@ -38,11 +38,11 @@ CNPCProto::CNPCProto()
 	memset(m_itemPercent, 0, sizeof(int) * MAX_NPC_DROPITEM);
 	memset(m_product, -1, sizeof(int) * MAX_NPC_PRODUCT);
 
-// 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
-	m_minplus = 0;			// ÃÖ¼Ò ÇÃ·¯½º ¼öÄ¡
-	m_maxplus = 0;			// ÃÖ´ë ÇÃ·¯½º ¼öÄ¡
-	m_probplus = 0;			// ÇÃ·¯½º ºÙÀ» È®·ü
-// --- 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
+// 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
+	m_minplus = 0;			// ìµœì†Œ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
+	m_maxplus = 0;			// ìµœëŒ€ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
+	m_probplus = 0;			// í”ŒëŸ¬ìŠ¤ ë¶™ì„ í™•ë¥ 
+// --- 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
 
 	m_itemCount = 0;
 
@@ -83,7 +83,7 @@ CNPCProto::~CNPCProto()
 }
 
 #ifdef PREMIUM_CHAR
-//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¸ó½ºÅÍ¸¦ Á×¿´À»¶§ È¹µæÇÏ´Â EXP/SP 10% Áõ°¡
+//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ëª¬ìŠ¤í„°ë¥¼ ì£½ì˜€ì„ë•Œ íšë“í•˜ëŠ” EXP/SP 10% ì¦ê°€
 int CNPCProto::getExpForPremiumChar( int premium_type )
 {
 	int ori_exp = m_exp;
@@ -197,12 +197,12 @@ bool CNPCProtoList::Load()
 	{
 		int npcIndex = 0;
 		int npcflag  = 0;
-		int npcflag1 = 0;		//È®Àå ÇÃ·¡±×(Ãß°¡)
+		int npcflag1 = 0;		//í™•ì¥ í”Œë˜ê·¸(ì¶”ê°€)
 		int npcStateFlag = 0;
 		unsigned int npcattr;
 		dbNpc.GetRec("a_index",			npcIndex);
 		dbNpc.GetRec("a_flag",			npcflag);
-		dbNpc.GetRec("a_flag1",			npcflag1);		//È®Àå ÇÃ·¡±×(Ãß°¡)
+		dbNpc.GetRec("a_flag1",			npcflag1);		//í™•ì¥ í”Œë˜ê·¸(ì¶”ê°€)
 		dbNpc.GetRec("a_state_flag",	npcStateFlag);
 
 		if (npcIndex == 334 || npcIndex == 335 || npcIndex == 336)
@@ -216,7 +216,7 @@ bool CNPCProtoList::Load()
 
 		m_npcProtoList[i].m_index = npcIndex;
 		m_npcProtoList[i].m_flag  = npcflag;
-		m_npcProtoList[i].m_flag1 = npcflag1;		//È®Àå ÇÃ·¡±×(Ãß°¡)
+		m_npcProtoList[i].m_flag1 = npcflag1;		//í™•ì¥ í”Œë˜ê·¸(ì¶”ê°€)
 		m_npcProtoList[i].m_stateFlag = npcStateFlag;
 		dbNpc.GetRec(NPC_NAME_FIELD,	m_npcProtoList[i].m_name, true);
 		dbNpc.GetRec("a_level",			m_npcProtoList[i].m_level);
@@ -248,17 +248,17 @@ bool CNPCProtoList::Load()
 		//rvr
 
 #if defined(LC_KOR)
-		if( gserver->m_subno != 1 && npcIndex == 893 )		// ÃÊº¸Áö¿ø NPC 1Ã¤³Î¸¸
+		if( gserver->m_subno != 1 && npcIndex == 893 )		// ì´ˆë³´ì§€ì› NPC 1ì±„ë„ë§Œ
 		{
 			continue;
 		}
 #elif defined (LC_USA) || defined (LC_BILA) || defined (LC_GAMIGO) || defined (LC_RUS)
-		if( gserver->m_subno != 2 && npcIndex == 893 )		// ÃÊº¸Áö¿ø NPC 2Ã¤³Î¸¸
+		if( gserver->m_subno != 2 && npcIndex == 893 )		// ì´ˆë³´ì§€ì› NPC 2ì±„ë„ë§Œ
 		{
 			continue;
 		}
 #else
-		if( gserver->m_subno != 3 && npcIndex == 893 )		// ÃÊº¸Áö¿ø NPC 3Ã¤³Î¸¸
+		if( gserver->m_subno != 3 && npcIndex == 893 )		// ì´ˆë³´ì§€ì› NPC 3ì±„ë„ë§Œ
 		{
 			continue;
 		}
@@ -269,7 +269,7 @@ bool CNPCProtoList::Load()
 			continue;
 		}
 
-		// °ø¼º °ü·Ã NPC´Â °æÇèÄ¡, ³ª½º, ½ºÅ³Æ÷ÀÎÆ® ¾øÀ½
+		// ê³µì„± ê´€ë ¨ NPCëŠ” ê²½í—˜ì¹˜, ë‚˜ìŠ¤, ìŠ¤í‚¬í¬ì¸íŠ¸ ì—†ìŒ
 		if (m_npcProtoList[i].m_flag & (NPC_CASTLE_GUARD | NPC_CASTLE_TOWER))
 		{
 			m_npcProtoList[i].m_price = 0;
@@ -278,7 +278,7 @@ bool CNPCProtoList::Load()
 		}
 
 		CItemProto* itemproto = NULL;
-		// °ø¼º °ü·Ã npc´Â ¾ÆÀÌÅÛ µå·Ó ¾øÀ½
+		// ê³µì„± ê´€ë ¨ npcëŠ” ì•„ì´í…œ ë“œë¡­ ì—†ìŒ
 		m_npcProtoList[i].m_itemCount = 0;
 		int k = 0;
 		for(j = 0; j < MAX_NPC_DROPITEM && !(m_npcProtoList[i].m_flag & (NPC_CASTLE_GUARD | NPC_CASTLE_TOWER)); j++)
@@ -291,7 +291,7 @@ bool CNPCProtoList::Load()
 			itemproto = gserver->m_itemProtoList.FindIndex(m_npcProtoList[i].m_item[j-k]);
 			dbNpc.GetRec(a_item_percent_str[j].c_str(), 	m_npcProtoList[i].m_itemPercent[j-k]);
 
-			// ÀÏº» 50·¹º§ ÀÌ»ó ¹«±â, ¹æ¾î±¸´Â µå·ÓÈ®·ü 1/2·Î
+			// ì¼ë³¸ 50ë ˆë²¨ ì´ìƒ ë¬´ê¸°, ë°©ì–´êµ¬ëŠ” ë“œë¡­í™•ë¥  1/2ë¡œ
 #if defined (LC_TLD)
 			if( itemproto )
 			{
@@ -321,11 +321,11 @@ bool CNPCProtoList::Load()
 		dbNpc.GetRec("a_attacklevel",	m_npcProtoList[i].m_attacklevel);
 		dbNpc.GetRec("a_defenselevel",	m_npcProtoList[i].m_defenselevel);
 
-// 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
+// 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
 		dbNpc.GetRec("a_minplus",		m_npcProtoList[i].m_minplus);
 		dbNpc.GetRec("a_maxplus",		m_npcProtoList[i].m_maxplus);
 		dbNpc.GetRec("a_probplus",		m_npcProtoList[i].m_probplus);
-// --- 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
+// --- 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
 
 		// NPC AI
 		dbNpc.GetRec("a_aitype",		m_npcProtoList[i].m_aitype);
@@ -335,7 +335,7 @@ bool CNPCProtoList::Load()
 		dbNpc.GetRec("a_aileader_idx",	m_npcProtoList[i].m_aileader_idx);
 		dbNpc.GetRec("a_aileader_count",m_npcProtoList[i].m_aileader_count);
 
-		// Å©±âÁ¶Á¤ : ½ºÄÉÀÏ¿¡ ¸ÂÃç¼­
+		// í¬ê¸°ì¡°ì • : ìŠ¤ì¼€ì¼ì— ë§ì¶°ì„œ
 		dbNpc.GetRec("a_scale",			scale);
 		dbNpc.GetRec("a_zone_flag",		m_npcProtoList[i].m_zone_flag);
 		dbNpc.GetRec("a_extra_flag",	m_npcProtoList[i].m_extra_flag);
@@ -343,7 +343,7 @@ bool CNPCProtoList::Load()
 		dbNpc.GetRec("a_bound",			m_npcProtoList[i].m_bound);
 		dbNpc.GetRec("a_lifetime",		m_npcProtoList[i].m_lifetime);
 
-		// º¸¼® µå·Ó È®·ü
+		// ë³´ì„ ë“œë¡­ í™•ë¥ 
 		for( j = 0; j < MAX_NPC_DROPITEM; j++ )
 		{
 			dbNpc.GetRec(a_jewel_str[j].c_str(),	m_npcProtoList[i].m_jewel[j]);
@@ -361,13 +361,13 @@ bool CNPCProtoList::Load()
 		m_npcProtoList[i].m_bound *= scale;
 		// ---
 
-// --- 050311 : bs : ´ë¸¸/Áß±¹¿¡¼­ ¹Ù¾ËÀº Ã¼·Â È¸º¹ÀÌ 3¹è
+// --- 050311 : bs : ëŒ€ë§Œ/ì¤‘êµ­ì—ì„œ ë°”ì•Œì€ ì²´ë ¥ íšŒë³µì´ 3ë°°
 		for (j=0; j < MAX_NPC_PRODUCT; j++)
 		{
 			dbNpc.GetRec(a_product_str[j].c_str(), m_npcProtoList[i].m_product[j]);
 		}
 
-		// ½ºÅ³ ÀÔ·Â
+		// ìŠ¤í‚¬ ì…ë ¥
 		CLCString npcskill(256);
 		for (j = 0; j < MAX_NPC_SKILL; j++)
 		{
@@ -536,7 +536,7 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 
 	npc->m_regenInfo = regenInfo;
 
-	// CNPC ¼Ó¼º
+	// CNPC ì†ì„±
 	npc->m_proto		= proto;
 	npc->m_idNum		= proto->m_index;
 	npc->m_moveArea		= proto->m_moveArea;
@@ -544,17 +544,17 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 
 	npc->ResetStat();
 
-	// CCharacter ¼Ó¼º
+	// CCharacter ì†ì„±
 	npc->m_index		= m_virtualIndex++;
 	npc->m_name			= proto->m_name;
 	npc->m_level		= proto->m_level;
 	npc->m_exp			= proto->m_exp;
-	npc->InitPointsToMax();		// ÃÊ±â ÃÖ´ë HP, MP ¼ÂÆÃ
+	npc->InitPointsToMax();		// ì´ˆê¸° ìµœëŒ€ HP, MP ì…‹íŒ…
 	npc->m_skillPoint	= proto->m_skillPoint;
 
 	npc->m_moveDir		= (GetRandom(0, 1) == 0) ? -1 : 1;
 
-	// Äù½ºÆ® NPCÀÏ °æ¿ì
+	// í€˜ìŠ¤íŠ¸ NPCì¼ ê²½ìš°
 	if (npc->m_proto->m_flag & NPC_QUEST)
 	{
 		int i;
@@ -573,7 +573,7 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 		}
 	}
 
-	// 050221 : bs : NPC ½ºÅ³ »ı¼º
+	// 050221 : bs : NPC ìŠ¤í‚¬ ìƒì„±
 	int i;
 	for (i = 0; i < MAX_NPC_SKILL; i++)
 	{
@@ -582,10 +582,10 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 			npc->m_skills[i] = gserver->m_skillProtoList.Create(proto->m_skillIndex[i], proto->m_skillLevel[i]);
 		}
 	}
-	// --- 050221 : bs : NPC ½ºÅ³ »ı¼º
+	// --- 050221 : bs : NPC ìŠ¤í‚¬ ìƒì„±
 
 #ifdef SYSTEM_TREASURE_MAP
-	npc->m_regenTime = gserver->getNowSecond(); // »ı¼º ½Ã°£À» ÀúÀå ÇÑ´Ù.
+	npc->m_regenTime = gserver->getNowSecond(); // ìƒì„± ì‹œê°„ì„ ì €ì¥ í•œë‹¤.
 #endif
 
 	if (npc->m_proto->m_lifetime > 0)
@@ -596,7 +596,7 @@ CNPC* CNPCProtoList::Create(int npcindex, CNPCRegenInfo* regenInfo)
 	return npc;
 }
 
-// ¸®½ºÆ®¿¡¼­ Ã£±â
+// ë¦¬ìŠ¤íŠ¸ì—ì„œ ì°¾ê¸°
 CNPCProto* CNPCProtoList::FindProto(int npc_idx)
 {
 	map_t::iterator it = map_.find(npc_idx);

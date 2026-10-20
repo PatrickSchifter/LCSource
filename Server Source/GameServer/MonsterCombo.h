@@ -14,15 +14,15 @@ class CArea;
 
 struct MOBTYPE
 {
-	int		npcidx;		// Ãâ¿¬ÇÏ´Â npc ÀÎµ¦½º
-	char	count;		// Ãâ¿¬ÇÏ´Â npc Ä«¿îÆ®
+	int		npcidx;		// ì¶œì—°í•˜ëŠ” npc ì¸ë±ìŠ¤
+	char	count;		// ì¶œì—°í•˜ëŠ” npc ì¹´ìš´íŠ¸
 };
 
 struct MOBREGEN
 {
-	char		step;		// ¸î¹øÂ° ¸®Á¨ÀÎ°¡?
-	char		typecount;	// ¸®Á¨µÇ´Â ¸÷Å¸ÀÔÀÇ °³¼ö
-	MOBTYPE*	mobtype;	// ¸®Á¨µÇ´Â ¸÷Å¸ÀÔ
+	char		step;		// ëª‡ë²ˆì§¸ ë¦¬ì  ì¸ê°€?
+	char		typecount;	// ë¦¬ì  ë˜ëŠ” ëª¹íƒ€ì…ì˜ ê°œìˆ˜
+	MOBTYPE*	mobtype;	// ë¦¬ì  ë˜ëŠ” ëª¹íƒ€ì…
 
 	MOBREGEN()
 	{
@@ -66,12 +66,12 @@ public:
 	int		m_nPoint;
 	CLCString m_name;
 
-	// ¸®Á¨
-	int				m_nRegenCount;		// ¸®Á¨ ´Ü°è
-	MOBREGEN*		m_npcRegen;		// ¸®Á¨ Á¤º¸
+	// ë¦¬ì  
+	int				m_nRegenCount;		// ë¦¬ì   ë‹¨ê³„
+	MOBREGEN*		m_npcRegen;		// ë¦¬ì   ì •ë³´
 
-	// ÆĞ³ÎÆ¼
-	std::vector<PENALTY>	m_listPanalty;		// ÆĞ³ÎÆ¼ °¡´ÉÇÑ ½ºÅ³ÀÎµ¦½º
+	// íŒ¨ë„í‹°
+	std::vector<PENALTY>	m_listPanalty;		// íŒ¨ë„í‹° ê°€ëŠ¥í•œ ìŠ¤í‚¬ì¸ë±ìŠ¤
 
 	bool			LoadProto();
 
@@ -79,7 +79,7 @@ public:
 
 	CMissionCaseProto();
 	~CMissionCaseProto();
-	// º¸»óÇ°
+	// ë³´ìƒí’ˆ
 };
 
 class CMIssionCaseList
@@ -116,17 +116,17 @@ public:
 	virtual ~CMonsterCombo();
 
 	int		m_nIndex;
-	int		m_bIsBattle;		// ½Î¿ò¿©ºÎ
-	int		m_nExtra;			// ÁøÇàÁßÀÎ Àå¼Ò
-	int		m_nStage;			// ÁøÇàÁßÀÎ ½ºÅ×ÀÌÁö
-	int		m_nRegenStep;		// ÁøÇàÁßÀÎ regen
-	char	m_cPlayerCount;		// ³ª´©¾î¼­ ¸®Á¨ÇÏ·Á°í
+	int		m_bIsBattle;		// ì‹¸ì›€ì—¬ë¶€
+	int		m_nExtra;			// ì§„í–‰ì¤‘ì¸ ì¥ì†Œ
+	int		m_nStage;			// ì§„í–‰ì¤‘ì¸ ìŠ¤í…Œì´ì§€
+	int		m_nRegenStep;		// ì§„í–‰ì¤‘ì¸ regen
+	char	m_cPlayerCount;		// ë‚˜ëˆ„ì–´ì„œ ë¦¬ì  í•˜ë ¤ê³ 
 
-	int		m_pulseFirst;		// 1¹øÂ° ÀÌÆåÆ®
-	int		m_pulseSecond;		// 2¹øÂ° ÀÌÆåÆ®
+	int		m_pulseFirst;		// 1ë²ˆì§¸ ì´í™íŠ¸
+	int		m_pulseSecond;		// 2ë²ˆì§¸ ì´í™íŠ¸
 
 	int	    m_nTotalMission;
-	char	m_cPlayerNum;		// stage¿¡ ÀÖ´Â ÆÄÆ¼¿ø¼ö
+	char	m_cPlayerNum;		// stageì— ìˆëŠ” íŒŒí‹°ì›ìˆ˜
 
 	static int m_virtualIndex;
 
@@ -134,7 +134,7 @@ public:
 	bool	m_bPartyRecall;
 #endif // MONSTER_COMBO_FIX
 
-	// ÀÌÆåÆ® À§Ä¡ ÀúÀå
+	// ì´í™íŠ¸ ìœ„ì¹˜ ì €ì¥
 	vec_effectpos_t m_listEffect;
 
 	MISSION*	m_case;
@@ -145,31 +145,31 @@ public:
 	char		Run();
 	void		DeleteAllMob();
 
-	// 0: ¸®Á¨ÁøÇà¾øÀ½  1: ´ÙÀ½¸®Á¨ÁøÇà		2: ¿À·ù
+	// 0: ë¦¬ì  ì§„í–‰ì—†ìŒ  1: ë‹¤ìŒë¦¬ì  ì§„í–‰		2: ì˜¤ë¥˜
 	char		NextNPCRegen();
 
-	// ¹Ì¼Ç¼¼ÆÃ
+	// ë¯¸ì…˜ì„¸íŒ…
 	bool		SetMission(int step, int index);
 
-	// step: ½ºÅ×ÀÌÁö¹øÈ£
+	// step: ìŠ¤í…Œì´ì§€ë²ˆí˜¸
 	const MISSION*	FindMission(int step);
 
-	// ½ºÅ×ÀÌÁö·Î °­Á¦¼ÒÈ¯
+	// ìŠ¤í…Œì´ì§€ë¡œ ê°•ì œì†Œí™˜
 	void RecallToStage();
 
-	// ½ºÅ×ÀÌÁö ½ÃÀÛ
+	// ìŠ¤í…Œì´ì§€ ì‹œì‘
 	bool StartStage();
 
-	// ÆĞ³ÎÆ¼ ÃÊ±âÈ­
+	// íŒ¨ë„í‹° ì´ˆê¸°í™”
 	void ClearPenalty();
 
-	// Æä³ÎÆ¼ Àû¿ë
+	// í˜ë„í‹° ì ìš©
 	void ApplyPenalty(int skillindex, int skilllevel);
 
-	//  ¼±¹°»óÀÚ NPC ¸®Á¨
+	//  ì„ ë¬¼ìƒì NPC ë¦¬ì  
 	void GiftMobRegen();
 
-	//  ¹Ì¼ÇÄÉÀÌ½º ÃÑ Æ÷ÀÎÆ® °è»ê
+	//  ë¯¸ì…˜ì¼€ì´ìŠ¤ ì´ í¬ì¸íŠ¸ ê³„ì‚°
 	int GetTotalPoint();
 
 	//
@@ -195,33 +195,33 @@ public:
 		return temp;
 	}
 
-	// ºÒ±âµÕ ÁØºñ ÀÌÆåÆ®
+	// ë¶ˆê¸°ë‘¥ ì¤€ë¹„ ì´í™íŠ¸
 	void FireEffectReady2();
 
-	// ºÒ±âµÕ ½ÇÇà ÀÌÆåÆ®
+	// ë¶ˆê¸°ë‘¥ ì‹¤í–‰ ì´í™íŠ¸
 	void FireEffectAct();
 
-	// ÀÔÀå·á °è»ê
+	// ì…ì¥ë£Œ ê³„ì‚°
 	int GetTotalNas();
 
-	// °ü¸®ÀÎ npc ¸®Á¨
+	// ê´€ë¦¬ì¸ npc ë¦¬ì  
 	void ComboNPCRegen(/*char bContinue*/);
 
-	// ´ÙÀ½ ¹Ì¼ÇÄÉÀÌ½º º¯¼ö ¼³Á¤
+	// ë‹¤ìŒ ë¯¸ì…˜ì¼€ì´ìŠ¤ ë³€ìˆ˜ ì„¤ì •
 	void SetNextVar();
 
-	// º¯¼ö ÃÊ±âÈ­
+	// ë³€ìˆ˜ ì´ˆê¸°í™”
 	void InitStageVar();
 
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	bool Init(int count);
-	// ÄŞº¸ ÀÎµ¦½º »ı¼º
+	// ì½¤ë³´ ì¸ë±ìŠ¤ ìƒì„±
 	void SetVirtualIndex();
 
-	// ½ºÅ×ÀÌÁö ¾Ë¸²
+	// ìŠ¤í…Œì´ì§€ ì•Œë¦¼
 	void NoticeStage();
 
-	// ÄŞº¸Á¸¿¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î ·Î±× Âï±â
+	// ì½¤ë³´ì¡´ì— ìˆëŠ” í”Œë ˆì´ì–´ ë¡œê·¸ ì°ê¸°
 	void PrintCharIndex();
 
 	void InitAllVar();
@@ -241,26 +241,26 @@ public:
 	CGroundEffect2();
 	virtual ~CGroundEffect2();
 
-	bool	Init(int zone, CArea* area);			// Ã³À½¿¡ ÇÑ¹ø ¼¼ÆÃ
-	void	Start();	// ¹ßµ¿ ½ÃÀÛ
-	void	Stop();								// ¹ßµ¿ ¸ØÃã
-	void	Activity();							// ¹ßµ¿ Áß
+	bool	Init(int zone, CArea* area);			// ì²˜ìŒì— í•œë²ˆ ì„¸íŒ…
+	void	Start();	// ë°œë™ ì‹œì‘
+	void	Stop();								// ë°œë™ ë©ˆì¶¤
+	void	Activity();							// ë°œë™ ì¤‘
 	CArea*	GetArea();
 private:
 	bool	EffectReady();
 	bool	EffectFire();
-	void	Clean();							// º¯¼ö ÃÊ±âÈ­
+	void	Clean();							// ë³€ìˆ˜ ì´ˆê¸°í™”
 
-	vec_effectpos_t m_listEffect;		// ÀÌÆåÆ® ¹ß»ıÀ§Ä¡
+	vec_effectpos_t m_listEffect;		// ì´í™íŠ¸ ë°œìƒìœ„ì¹˜
 
-	// ÃÊ±â¿¡ ¼¼ÆÃ
+	// ì´ˆê¸°ì— ì„¸íŒ…
 	CNPC*	m_effectNPC[30];
 	CArea*	m_area;
 	int		m_zonenum;
 //	int		m_extra;
 
-	int		m_pulseFirst;		// 1¹øÂ° ÀÌÆåÆ®  10ÃÊ¸¶´Ù ÇÑ¹ø
-	int		m_pulseSecond;		// 2¹øÂ° ÀÌÆåÆ®
+	int		m_pulseFirst;		// 1ë²ˆì§¸ ì´í™íŠ¸  10ì´ˆë§ˆë‹¤ í•œë²ˆ
+	int		m_pulseSecond;		// 2ë²ˆì§¸ ì´í™íŠ¸
 
 	bool	m_bEffectStart;
 

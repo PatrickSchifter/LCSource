@@ -70,31 +70,31 @@ int CNoticeSystemAgent::getSize(void)
 
 void CNoticeSystemAgent::operate( rnSocketIOService* service )
 {
-	// ¸Å 11ÃÊ¸¶´Ù
+	// ë§¤ 11ì´ˆë§ˆë‹¤
 
 	if ( getSize() <= 0 )
 		return;
 
-	// Å¥ÀÇ ¸Ç ¾Õ µ¥ÀÌÅÍ ÆË
+	// íì˜ ë§¨ ì• ë°ì´í„° íŒ
 	CUserNotice* pNotice = pop();
 
-	// Å¥ÀÇ ¸Ç ¾Õ µ¥ÀÌÅÍ »èÁ¦
+	// íì˜ ë§¨ ì• ë°ì´í„° ì‚­ì œ
 	pop_front();
 
-	// ºä Ä«¿îÅÍ Áõ°¡
+	// ë·° ì¹´ìš´í„° ì¦ê°€
 	pNotice->increaseVieCount();
 
-	// Å¬¶óÀÌ¾ğÆ®·Î º¸³»±â
+	// í´ë¼ì´ì–¸íŠ¸ë¡œ ë³´ë‚´ê¸°
 	CNetMsg::SP msg(new CNetMsg);
 	SubHelperUserNoticePrint(msg, pNotice->getName(), pNotice->getContents(), pNotice->getViewCount());
 	gserver.SendToAllGameServer(msg);
 
-	// ºä Ä«¿îÅÍ°¡ 3È¸ ÀÌ»óÀÌ¸é ¸Ş¸ğ¸® »èÁ¦
+	// ë·° ì¹´ìš´í„°ê°€ 3íšŒ ì´ìƒì´ë©´ ë©”ëª¨ë¦¬ ì‚­ì œ
 	if ( pNotice->getViewCount() >= 3 )
 	{
 		delete pNotice;
 	}
-	// TODO :: ºä Ä«¿îÅÍ°¡ 3È¸ ¹Ì¸¸ÀÌ¸é Çª½Ã ¹é
+	// TODO :: ë·° ì¹´ìš´í„°ê°€ 3íšŒ ë¯¸ë§Œì´ë©´ í‘¸ì‹œ ë°±
 	else
 	{
 		push_back(pNotice);

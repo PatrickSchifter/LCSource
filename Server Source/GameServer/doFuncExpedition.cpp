@@ -8,10 +8,10 @@
 #include "WarCastle.h"
 
 /////////////////
-// ¿øÁ¤´ë °ü·Ã ÇÔ¼ö
+// ì›ì •ëŒ€ ê´€ë ¨ í•¨ìˆ˜
 void do_Expedition(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¾Èº¸ÀÌ¸é ¹«½Ã
+	// ì•ˆë³´ì´ë©´ ë¬´ì‹œ
 	if (!ch->m_bVisible)
 		return ;
 
@@ -23,67 +23,67 @@ void do_Expedition(CPC* ch, CNetMsg::SP& msg)
 
 	switch (subtype)
 	{
-	case MSG_CREATE_REQ:						// ÆÄÆ¼ => ¿øÁ¤´ë ÀüÈ¯
+	case MSG_CREATE_REQ:						// íŒŒí‹° => ì›ì •ëŒ€ ì „í™˜
 		do_ExpedCreateReq(ch, msg);
 		break;
 
-	case MSG_INVITE_REQ:						// ÃÊ´ë ¿äÃ»
+	case MSG_INVITE_REQ:						// ì´ˆëŒ€ ìš”ì²­
 		do_ExpedInviteReq(ch, msg);
 		break;
 
-	case MSG_ALLOW_REQ:							// ÃÊ´ë ¼ö¶ô
+	case MSG_ALLOW_REQ:							// ì´ˆëŒ€ ìˆ˜ë½
 		do_ExpedAllowReq(ch, msg);
 		break;
 
-	case MSG_REJECT_REQ:						// ÃÊ´ë °ÅºÎ ¿äÃ»
+	case MSG_REJECT_REQ:						// ì´ˆëŒ€ ê±°ë¶€ ìš”ì²­
 		do_ExpedRejectReq(ch, msg);
 		break;
 
-	case MSG_QUIT_REQ:							// Å»Åğ ¿äÃ»
+	case MSG_QUIT_REQ:							// íƒˆí‡´ ìš”ì²­
 		do_ExpedQuitReq(ch, msg);
 		break;
 
-	case MSG_ENDEXPED_REQ:						// ¿øÁ¤´ë ÇØÃ¼
+	case MSG_ENDEXPED_REQ:						// ì›ì •ëŒ€ í•´ì²´
 		do_ExpedEndExpedReq(ch, msg);
 		break;
 
-	case MSG_KICK_REQ:							// Ãß¹æ ¿äÃ»
+	case MSG_KICK_REQ:							// ì¶”ë°© ìš”ì²­
 		do_ExpedKickReq(ch, msg);
 		break;
 
-	case MSG_CHANGETYPE_REQ:					// ¿øÁ¤´ë Å¸ÀÔ º¯°æ
+	case MSG_CHANGETYPE_REQ:					// ì›ì •ëŒ€ íƒ€ì… ë³€ê²½
 		do_ExpedChangeTypeReq(ch, msg);
 		break;
 
-	case MSG_CHANGEBOSS_REQ:					// ¿øÁ¤ ´ëÀå À§ÀÓ(º¯°æ)
+	case MSG_CHANGEBOSS_REQ:					// ì›ì • ëŒ€ì¥ ìœ„ì„(ë³€ê²½)
 		do_ExpedChangeBossReq(ch, msg);
 		break;
 
-	case MSG_SETMBOSS_REQ:						// ºÎ´ëÀå ÀÓ¸í
+	case MSG_SETMBOSS_REQ:						// ë¶€ëŒ€ì¥ ì„ëª…
 		do_ExpedSetMBossReq(ch, msg);
 		break;
 
-	case MSG_RESETMBOSS_REQ:					// ºÎ´ëÀå ÀÓ¸í ÇØÁ¦
+	case MSG_RESETMBOSS_REQ:					// ë¶€ëŒ€ì¥ ì„ëª… í•´ì œ
 		do_ExpedResetMBossReq(ch, msg);
 		break;
 
-	case MSG_MOVEGROUP_REQ:						// ±×·ì ÀÌµ¿
+	case MSG_MOVEGROUP_REQ:						// ê·¸ë£¹ ì´ë™
 		do_ExpedMoveGroupReq(ch, msg);
 		break;
 
-	case MSG_ADDMEMBER_REQ:						// ´ë¿ø Ãß°¡
+	case MSG_ADDMEMBER_REQ:						// ëŒ€ì› ì¶”ê°€
 		do_ExpedAddMemberReq(ch, msg);
 		break;
 
-	case MSG_VIEWDETAIL_REQ:					// »ìÆìº¸±â
+	case MSG_VIEWDETAIL_REQ:					// ì‚´í´ë³´ê¸°
 		do_ExpedViewDetailReq(ch, msg);
 		break;
 
-	case MSG_SET_LABEL_REQ:						// Ç¥½Ä ÁöÁ¤
+	case MSG_SET_LABEL_REQ:						// í‘œì‹ ì§€ì •
 		do_ExpedSetLabelReq(ch, msg);
 		break;
 	case MSG_QUESTITEM_CHECK_REQ:
-		do_ExpedSearchItemReq(ch, msg);			// Collect Trigger item - ¿øÁ¤´ë Trigger ¾ÆÀÌÅÛ ¼öÁı(¿øÁ¤´ëÀå Àü¿ë ±â´É)
+		do_ExpedSearchItemReq(ch, msg);			// Collect Trigger item - ì›ì •ëŒ€ Trigger ì•„ì´í…œ ìˆ˜ì§‘(ì›ì •ëŒ€ì¥ ì „ìš© ê¸°ëŠ¥)
 		break;
 
 	case MSG_EXPEND_OFFLINE:
@@ -92,7 +92,7 @@ void do_Expedition(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//¿øÁ¤´ë »ı¼º(ÆÄÆ¼ ÀüÈ¯)(´ëÀå)
+//ì›ì •ëŒ€ ìƒì„±(íŒŒí‹° ì „í™˜)(ëŒ€ì¥)
 void do_ExpedCreateReq(CPC* ch, CNetMsg::SP& msg)
 {
 	GAMELOG << init("EXPED DEBUG CREATE REQ", ch)
@@ -109,20 +109,20 @@ void do_ExpedCreateReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 #endif
-	//ÆÄÆ¼¿¡ ¼Ò¼ÓµÇ¾î ÀÖ´Â°¡?
+	//íŒŒí‹°ì— ì†Œì†ë˜ì–´ ìˆëŠ”ê°€?
 	if (ch->m_party == NULL)
 	{
-		// ÆÄÆ¼¿¡ ¼Ò¼ÓµÇÁö ¾ÊÀ½(ÆÄÆ¼ ÀüÈ¯ ºÒ°¡)
+		// íŒŒí‹°ì— ì†Œì†ë˜ì§€ ì•ŠìŒ(íŒŒí‹° ì „í™˜ ë¶ˆê°€)
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_PARTY);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//ÆÄÆ¼ÀåÀÎ°¡?
+	//íŒŒí‹°ì¥ì¸ê°€?
 	if(ch->m_party->GetBossIndex() != ch->m_index)
 	{
-		// ÆÄÆ¼ÀåÀÌ ¾Æ´Ï´Ù.	(ÆÄÆ¼ÀüÈ¯ ºÒ°¡)
+		// íŒŒí‹°ì¥ì´ ì•„ë‹ˆë‹¤.	(íŒŒí‹°ì „í™˜ ë¶ˆê°€)
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_PARTYBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -136,7 +136,7 @@ void do_ExpedCreateReq(CPC* ch, CNetMsg::SP& msg)
 	}
 #endif
 
-	//ÆÄÆ¼ ¸É¹ö Áß ÇÑ¸íÀÌ¶óµµ ·Î±×¾Æ¿ô µÇ¾î ÀÖÀ¸¸é ¿øÁ¤´ë ÀüÈ¯ ºÒ°¡.
+	//íŒŒí‹° ë§´ë²„ ì¤‘ í•œëª…ì´ë¼ë„ ë¡œê·¸ì•„ì›ƒ ë˜ì–´ ìˆìœ¼ë©´ ì›ì •ëŒ€ ì „í™˜ ë¶ˆê°€.
 	int onlineCount = ch->m_party->GetMemberCountOnline();
 	int totalCount = ch->m_party->GetMemberCount();
 	if( onlineCount != totalCount )
@@ -154,7 +154,7 @@ void do_ExpedCreateReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//¿øÁ¤´ë ÃÊ´ë(´ëÀå)
+//ì›ì •ëŒ€ ì´ˆëŒ€(ëŒ€ì¥)
 void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int destindex;
@@ -174,7 +174,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pTargetPC->m_party != NULL)
 	{
-		//¿¡·¯: ´Ù¸¥ ±×·ì¿¡ ¼Ò¼ÓµÇ¾î ÀÖÀ½
+		//ì—ëŸ¬: ë‹¤ë¥¸ ê·¸ë£¹ì— ì†Œì†ë˜ì–´ ìˆìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_ALREADY_JOIN_OTHER);
 		SEND_Q(rmsg, ch->m_desc);
@@ -183,7 +183,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -192,7 +192,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_Exped->GetMemberCount() >= MAX_EXPED_MEMBER)
 	{
-		//¿¡·¯: ´õ ÀÌ»ó ¿øÁ¤´ë¿ø Ãß°¡ÇÒ ¼ö ¾øÀ½
+		//ì—ëŸ¬: ë” ì´ìƒ ì›ì •ëŒ€ì› ì¶”ê°€í•  ìˆ˜ ì—†ìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_FULL_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -204,7 +204,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -213,7 +213,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && ((pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS) && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_MBOSS)) )
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -223,7 +223,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pTargetPC->m_Exped  && ch->m_Exped != pTargetPC->m_Exped)
 	{
-		//¿¡·¯: ÀÌ¹Ì ¿øÁ¤´ë¿¡ ¼Ò¼ÓµÇ¾î ÀÖ½À´Ï´Ù.
+		//ì—ëŸ¬: ì´ë¯¸ ì›ì •ëŒ€ì— ì†Œì†ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_ALREADY_JOIN_ME);
 		SEND_Q(rmsg, ch->m_desc);
@@ -231,7 +231,7 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	CPC* pBossPC = ch;
-	// ¿äÃ» Ä³¸¯ÅÍ°¡ ºÎ´ëÀåÀÌ¸é ¿øÁ¤´ëÀå Ã£¾Æ¼­ pBossPC¿¡ ´ëÀÔ
+	// ìš”ì²­ ìºë¦­í„°ê°€ ë¶€ëŒ€ì¥ì´ë©´ ì›ì •ëŒ€ì¥ ì°¾ì•„ì„œ pBossPCì— ëŒ€ì…
 	if (pMember->GetMemberType() == MSG_EXPED_MEMBERTYPE_MBOSS)
 	{
 		int nBossIndex = ch->m_Exped->GetBossIndex();
@@ -253,16 +253,16 @@ void do_ExpedInviteReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//ÃÊ´ë ¼ö¶ô(¸ğµÎ)
+//ì´ˆëŒ€ ìˆ˜ë½(ëª¨ë‘)
 void do_ExpedAllowReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// ¿øÁ¤´ë Á¤º¸°¡ ÀÖ°í
+	// ì›ì •ëŒ€ ì •ë³´ê°€ ìˆê³ 
 	GAMELOG << init("EXPED DEBUG ALLOW REQ", ch)
 			<< end;
 
 	if(ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -276,7 +276,7 @@ void do_ExpedAllowReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// ÆÄÆ¼ ¸ÅÄª¿¡¼­ Á¦°Å
+		// íŒŒí‹° ë§¤ì¹­ì—ì„œ ì œê±°
 		CNetMsg::SP rmsg(new CNetMsg);
 		rmsg->Init(MSG_EXTEND);
 		RefMsg(rmsg) << MSG_EX_PARTY_MATCH
@@ -285,7 +285,7 @@ void do_ExpedAllowReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//ÃÊ´ë °ÅºÎ(¸ğµÎ)
+//ì´ˆëŒ€ ê±°ë¶€(ëª¨ë‘)
 void do_ExpedRejectReq(CPC* ch, CNetMsg::SP& msg)
 {
 	GAMELOG << init("EXPED DEBUG REJECT REQ", ch)
@@ -293,7 +293,7 @@ void do_ExpedRejectReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -305,10 +305,10 @@ void do_ExpedRejectReq(CPC* ch, CNetMsg::SP& msg)
 	SEND_Q(rmsg, gserver->m_helper);
 }
 
-//Å»Åğ(¸ğµÎ)
+//íƒˆí‡´(ëª¨ë‘)
 void do_ExpedQuitReq(CPC* ch, CNetMsg::SP& msg)
 {
-	int nQuitMode;			// Á¤»ó,ºñÁ¤»ó ±¸ºĞ
+	int nQuitMode;			// ì •ìƒ,ë¹„ì •ìƒ êµ¬ë¶„
 
 	RefMsg(msg) >> nQuitMode;
 
@@ -318,7 +318,7 @@ void do_ExpedQuitReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -332,7 +332,7 @@ void do_ExpedQuitReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//¿øÁ¤´ë ÇØÃ¼(´ëÀå)(20ÃÊ ´ë±â)
+//ì›ì •ëŒ€ í•´ì²´(ëŒ€ì¥)(20ì´ˆ ëŒ€ê¸°)
 void do_ExpedEndExpedReq(CPC* ch, CNetMsg::SP& msg)
 {
 	GAMELOG << init("EXPED DEBUG ENDEXPED REQ", ch)
@@ -340,14 +340,14 @@ void do_ExpedEndExpedReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -356,7 +356,7 @@ void do_ExpedEndExpedReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -364,7 +364,7 @@ void do_ExpedEndExpedReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	//<--
 
-	// ¿øÁ¤´ë ÇØÃ¼ ½Ã°£ ¼³Á¤
+	// ì›ì •ëŒ€ í•´ì²´ ì‹œê°„ ì„¤ì •
 	//-->
 	time_t t_now;
 	t_now = time(NULL);
@@ -373,14 +373,14 @@ void do_ExpedEndExpedReq(CPC* ch, CNetMsg::SP& msg)
 	//<--
 
 	{
-		// ¿øÁ¤´ë¿ø ÀüÃ¼¿¡°Ô 20ÃÊ ÈÄ¿¡ ÇØÃ¼ µÊ ¾Ë¸²
+		// ì›ì •ëŒ€ì› ì „ì²´ì—ê²Œ 20ì´ˆ í›„ì— í•´ì²´ ë¨ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedEndExpedStartMsg(rmsg);
 		ch->m_Exped->SendToAllPC(rmsg);
 	}
 }
 
-//Ãß¹æ(´ëÀå,ºÎ´ëÀå)
+//ì¶”ë°©(ëŒ€ì¥,ë¶€ëŒ€ì¥)
 void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nTargetIndex;
@@ -392,7 +392,7 @@ void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -402,7 +402,7 @@ void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 	if (ch->m_index == nTargetIndex)
 		return ;
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -410,7 +410,7 @@ void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS && pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_MBOSS ))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -418,7 +418,7 @@ void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	if(ch->m_Exped->GetBossIndex() == nTargetIndex)
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -432,13 +432,13 @@ void do_ExpedKickReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//¿øÁ¤ ´ëÀå À§ÀÓ(´ëÀå)
+//ì›ì • ëŒ€ì¥ ìœ„ì„(ëŒ€ì¥)
 void do_ExpedChangeBossReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nChangeMode, nNewBossIndex;
 
-	RefMsg(msg) >> nChangeMode						// ¼öµ¿,ÀÚµ¿
-				>> nNewBossIndex;					// ÀÚµ¿(-1)
+	RefMsg(msg) >> nChangeMode						// ìˆ˜ë™,ìë™
+				>> nNewBossIndex;					// ìë™(-1)
 
 	GAMELOG << init("EXPED DEBUG CHANGEBOSS REQ", ch)
 			<< "CHANGEMODE" << delim << nChangeMode << delim
@@ -447,14 +447,14 @@ void do_ExpedChangeBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -463,7 +463,7 @@ void do_ExpedChangeBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -471,7 +471,7 @@ void do_ExpedChangeBossReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	//<--
 
-	//ÀÚ±â ÀÚ½Å À§ÀÓ Ã¼Å©
+	//ìê¸° ìì‹  ìœ„ì„ ì²´í¬
 	if(ch->m_index == nNewBossIndex)
 		return;
 
@@ -482,7 +482,7 @@ void do_ExpedChangeBossReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//Å¸ÀÔ º¯°æ(´ëÀå)
+//íƒ€ì… ë³€ê²½(ëŒ€ì¥)
 void do_ExpedChangeTypeReq(CPC* ch, CNetMsg::SP& msg)
 {
 	char cExpedType, cDiviType;
@@ -496,14 +496,14 @@ void do_ExpedChangeTypeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -512,7 +512,7 @@ void do_ExpedChangeTypeReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -530,7 +530,7 @@ void do_ExpedChangeTypeReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//ºÎ´ëÀå ÀÓ¸í(´ëÀå)
+//ë¶€ëŒ€ì¥ ì„ëª…(ëŒ€ì¥)
 void do_ExpedSetMBossReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nNewMBossIndex;
@@ -543,14 +543,14 @@ void do_ExpedSetMBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -559,7 +559,7 @@ void do_ExpedSetMBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -574,7 +574,7 @@ void do_ExpedSetMBossReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//ºÎ´ëÀå ÇØÀÓ(´ëÀå)
+//ë¶€ëŒ€ì¥ í•´ì„(ëŒ€ì¥)
 void do_ExpedResetMBossReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nNewMBossIndex;
@@ -587,14 +587,14 @@ void do_ExpedResetMBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -603,7 +603,7 @@ void do_ExpedResetMBossReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -618,7 +618,7 @@ void do_ExpedResetMBossReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//±×·ì ÀÌµ¿(´ëÀå)
+//ê·¸ë£¹ ì´ë™(ëŒ€ì¥)
 void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nSourceGroup, nMoveCharIndex, nTargetGroup, nTargetListindex;
@@ -637,14 +637,14 @@ void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -653,7 +653,7 @@ void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -661,7 +661,7 @@ void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	//<--
 
-	//ÀÌµ¿ ´ë»ó ±ÇÇÑ Ã¼Å©
+	//ì´ë™ ëŒ€ìƒ ê¶Œí•œ ì²´í¬
 	//-->
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(nMoveCharIndex);
 	if(!pMember)
@@ -669,16 +669,16 @@ void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() == MSG_EXPED_MEMBERTYPE_BOSS || (pMember->GetMemberType() == MSG_EXPED_MEMBERTYPE_MBOSS)))
 	{
-		//¿¡·¯: ¿øÁ¤´ëÀå, ºÎ´ëÀå ÀÌµ¿ ºÒ°¡
+		//ì—ëŸ¬: ì›ì •ëŒ€ì¥, ë¶€ëŒ€ì¥ ì´ë™ ë¶ˆê°€
 		return;
 	}
 	//<--
 
-	// ´ë»óÀÌ ºñ¾î ÀÖ´ÂÁö Ã¼Å©
+	// ëŒ€ìƒì´ ë¹„ì–´ ìˆëŠ”ì§€ ì²´í¬
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByListIndex(nTargetGroup, nTargetListindex);
 	if(pMember)
 	{
-		//¿¡·¯: ºñ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ë¹„ì–´ ìˆì§€ ì•ŠìŒ
 		return;
 	}
 
@@ -689,7 +689,7 @@ void do_ExpedMoveGroupReq(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//´ë¿ø Ãß°¡(´ëÀå)
+//ëŒ€ì› ì¶”ê°€(ëŒ€ì¥)
 void do_ExpedAddMemberReq(CPC* ch, CNetMsg::SP& msg)
 {
 	CLCString addCharName(MAX_CHAR_NAME_LENGTH + 1);
@@ -706,14 +706,14 @@ void do_ExpedAddMemberReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -722,7 +722,7 @@ void do_ExpedAddMemberReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -730,8 +730,8 @@ void do_ExpedAddMemberReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	//<--
 
-	// Å¸ÀÔÀÌ EXPED_TYPE_BATTLE ÀÌ¸é tch¿Í chÀÇ ·¹º§ Â÷ÀÌ¸¦ °Ë»ç
-	// Â÷ÀÌ°¡ +- 10ÀÌ»óÀÌ¸é ERROR;
+	// íƒ€ì…ì´ EXPED_TYPE_BATTLE ì´ë©´ tchì™€ chì˜ ë ˆë²¨ ì°¨ì´ë¥¼ ê²€ì‚¬
+	// ì°¨ì´ê°€ +- 10ì´ìƒì´ë©´ ERROR;
 	if (ch->m_Exped->GetExpedType(MSG_DIVITYPE_EXP) == MSG_EXPED_TYPE_BATTLE)
 	{
 		if (ABS(pTargetPC->m_level - ch->m_level) > 10)
@@ -741,14 +741,14 @@ void do_ExpedAddMemberReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		//ÃÊ´ë ¿äÃ»
+		//ì´ˆëŒ€ ìš”ì²­
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExpedInviteReqMsg(rmsg, ch->m_index, ch->GetName(), pTargetPC->m_index,pTargetPC->GetName());
 		SEND_Q(rmsg, gserver->m_helper);
 	}
 }
 
-//»ìÆì º¸±â(´ëÀå,ºÎ´ëÀå)
+//ì‚´í´ ë³´ê¸°(ëŒ€ì¥,ë¶€ëŒ€ì¥)
 void do_ExpedViewDetailReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nGroup;
@@ -764,14 +764,14 @@ void do_ExpedViewDetailReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//±ÇÇÑ Ã¼Å©
+	//ê¶Œí•œ ì²´í¬
 	//-->
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
@@ -780,7 +780,7 @@ void do_ExpedViewDetailReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS && pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_MBOSS ))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -792,7 +792,7 @@ void do_ExpedViewDetailReq(CPC* ch, CNetMsg::SP& msg)
 	if(pPC == NULL)
 		return;
 
-	// ÆêÁ¤º¸
+	// í«ì •ë³´
 	//-->
 	CPet* pet = pPC->m_petList;
 	while (pet)
@@ -820,22 +820,22 @@ void do_ExpedViewDetailReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		//ÀÎº¥Åä¸® Á¤º¸
+		//ì¸ë²¤í† ë¦¬ ì •ë³´
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedViewDail_InvenMsg(msg, pPC);
 		SEND_Q(msg, ch->m_desc);
 	}
 }
 
-//Ç¥½Ä ¼³Á¤
+//í‘œì‹ ì„¤ì •
 void do_ExpedSetLabelReq(CPC* ch, CNetMsg::SP& msg)
 {
 	int nType,nMode,nLabel,nDestIndex;
 
-	RefMsg(msg) >> nType				// pc,npc ±¸ºĞ
-				>> nMode				// ¼³Á¤,ÇØÁ¦ ±¸ºĞ
-				>> nLabel				// ¶óº§ Å¸ÀÔ
-				>> nDestIndex;			// ¼³Á¤ ´ë»ó ÀÎµ¦½º(charindex,mob index)
+	RefMsg(msg) >> nType				// pc,npc êµ¬ë¶„
+				>> nMode				// ì„¤ì •,í•´ì œ êµ¬ë¶„
+				>> nLabel				// ë¼ë²¨ íƒ€ì…
+				>> nDestIndex;			// ì„¤ì • ëŒ€ìƒ ì¸ë±ìŠ¤(charindex,mob index)
 
 	GAMELOG << init("EXPED DEBUG SETLABEL REQ", ch)
 			<< "TYPE" << delim << nType << delim
@@ -846,7 +846,7 @@ void do_ExpedSetLabelReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(!ch->IsExped())
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -855,7 +855,7 @@ void do_ExpedSetLabelReq(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->m_nJoinInzone_ZoneNo == -1 &&  ch->m_nJoinInzone_RoomNo == -1)
 	{
-		// ÀÎÁ¸ ³»ºÎ°¡ ¾Æ´Ï¾î¼­ Ç¥½Ä ¼³Á¤ ºÒ°¡.
+		// ì¸ì¡´ ë‚´ë¶€ê°€ ì•„ë‹ˆì–´ì„œ í‘œì‹ ì„¤ì • ë¶ˆê°€.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_SETLABEL_NOTINZONE);
 		SEND_Q(rmsg, ch->m_desc);
@@ -899,41 +899,41 @@ void do_ExpedSetLabelReq(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		//¼º°ø
+		//ì„±ê³µ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedSetLabelRepMsg(rmsg, nType,nMode,nLabel,nDestIndex);
 		ch->m_Exped->SendToAllPC(rmsg);
 	}
 }
 
-// Write : ±Ç»ó¿í
+// Write : ê¶Œìƒìš±
 // Date : 20090825
-// ÀÌµ¿µÇÁö ¾ÊÀº Trigger ItemÀ» ¿øÁ¤´ëÀåÀÌ ¼öµ¿À¸·Î °¡Á®¿À±â ¹öÆ°À» ´­·¯ ItemÀ» °¡Á®¿À´Â ÇÔ¼ö
+// ì´ë™ë˜ì§€ ì•Šì€ Trigger Itemì„ ì›ì •ëŒ€ì¥ì´ ìˆ˜ë™ìœ¼ë¡œ ê°€ì ¸ì˜¤ê¸° ë²„íŠ¼ì„ ëˆŒëŸ¬ Itemì„ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
 void do_ExpedSearchItemReq(CPC* ch, CNetMsg::SP& msg) //
 {
 	GAMELOG << init("EXPED DEBUG SEARCH TRIGGER ITEM REQ", ch)
 			<< "BOSS CHARACTER INDEX" << delim
 			<< ch->m_index << end;
 
-	// ³Ñ¾î¿Â ÄÉ¸¯ÅÍ°¡ NULLÀÎÁö È®ÀÎ.
+	// ë„˜ì–´ì˜¨ ì¼€ë¦­í„°ê°€ NULLì¸ì§€ í™•ì¸.
 	if( ch == NULL )
 		return ;
 
-	// ÇöÀç ÄÉ¸¯ÅÍ°¡ ¿øÁ¤´ë¿¡ ¼Ò¼ÓµÇ¾î ÀÖ´ÂÁö È®ÀÎ
-	// ¿øÁ¤´ë¿¡ ¼Ò¼ÓµÇ¾î ÀÖÁö ¾ÊÀ¸¸é MSG_EXPED_ERROR_NOT_EXPED ¹ß¼Û
+	// í˜„ì¬ ì¼€ë¦­í„°ê°€ ì›ì •ëŒ€ì— ì†Œì†ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
+	// ì›ì •ëŒ€ì— ì†Œì†ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´ MSG_EXPED_ERROR_NOT_EXPED ë°œì†¡
 	// TODO:
 
 	if (ch->m_Exped == NULL)
 	{
-		//¿¡·¯: ¿øÁ¤´ë¿¡ ¼Ò¼Ó µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì— ì†Œì† ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPED);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// ÇöÀç ÄÉ¸¯ÅÍ°¡ ¿øÁ¤´ë list¿¡¼­ ¿øÁ¤´ëÀåÀÎÁö È®ÀÎ
-	// ¿øÁ¤´ëÀåÀÌ ¾Æ´Ï¶ó¸é MSG_EXPED_ERROR_NOT_EXPEDBOSS ¹ß¼Û
+	// í˜„ì¬ ì¼€ë¦­í„°ê°€ ì›ì •ëŒ€ listì—ì„œ ì›ì •ëŒ€ì¥ì¸ì§€ í™•ì¸
+	// ì›ì •ëŒ€ì¥ì´ ì•„ë‹ˆë¼ë©´ MSG_EXPED_ERROR_NOT_EXPEDBOSS ë°œì†¡
 	// TODO:
 
 	CExpedMember* pMember = NULL;
@@ -943,19 +943,19 @@ void do_ExpedSearchItemReq(CPC* ch, CNetMsg::SP& msg) //
 
 	if(pMember && (pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS))
 	{
-		//¿¡·¯: ±ÇÇÑ ½ÇÆĞ
+		//ì—ëŸ¬: ê¶Œí•œ ì‹¤íŒ¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExpedErrorMsg(rmsg, MSG_EXPED_ERROR_NOT_EXPEDBOSS);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ¿øÁ¤´ë¿øµéÀÇ Äù½ºÆ® ¾ÆÀÌÅÛ ÀÎº¥ Á¶»ç
+	// ì›ì •ëŒ€ì›ë“¤ì˜ í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ì¸ë²¤ ì¡°ì‚¬
 	pMember = NULL;
-	bool DidCollect = false;			// ÇÑ¹øÀÌ¶óµµ Trigger ItemÀ» °¡Á®¿ÔÀ¸¸é TRUE, ¾Æ´Ï¸é FALSE
-	bool UsualProcess = true;			// ¼öÁı Áß ºñÁ¤»óÀûÀ¸·Î ¼öÁı ÇÁ·Î¼¼½º°¡ Á¾·áµÉ °æ¿ìFALSE, Á¤»óÀûÀ¸·Î Á¾·áµÉ °æ¿ì TRUE;
-	int GroupNumber = 0;				// ÇÑ ¿øÁ¤´ëÀÇ GroupÀ» Ä«¿îÆ® ÇÏ±â À§ÇÑ º¯¼ö
-	int CountMemberEachbyGroup = 0;		// °¢ ±×·ì´ç ÀÎ¿ø¼ö¸¦ Ä«¿îÆ® ÇÏ±â À§ÇÑ º¯¼ö
+	bool DidCollect = false;			// í•œë²ˆì´ë¼ë„ Trigger Itemì„ ê°€ì ¸ì™”ìœ¼ë©´ TRUE, ì•„ë‹ˆë©´ FALSE
+	bool UsualProcess = true;			// ìˆ˜ì§‘ ì¤‘ ë¹„ì •ìƒì ìœ¼ë¡œ ìˆ˜ì§‘ í”„ë¡œì„¸ìŠ¤ê°€ ì¢…ë£Œë  ê²½ìš°FALSE, ì •ìƒì ìœ¼ë¡œ ì¢…ë£Œë  ê²½ìš° TRUE;
+	int GroupNumber = 0;				// í•œ ì›ì •ëŒ€ì˜ Groupì„ ì¹´ìš´íŠ¸ í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+	int CountMemberEachbyGroup = 0;		// ê° ê·¸ë£¹ë‹¹ ì¸ì›ìˆ˜ë¥¼ ì¹´ìš´íŠ¸ í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
 	CPC* FromChar;
 	CPC* BossChar;
 
@@ -965,31 +965,31 @@ void do_ExpedSearchItemReq(CPC* ch, CNetMsg::SP& msg) //
 	{
 		for( CountMemberEachbyGroup = 0; CountMemberEachbyGroup < MAX_EXPED_GMEMBER; CountMemberEachbyGroup++ )
 		{
-			pMember = BossChar->m_Exped->GetMemberByListIndex(GroupNumber, CountMemberEachbyGroup);	// º¸½ºÄÉ¸¯ÅÍ¿¡¼­ °®°í ÀÖ´Â ¿øÁ¤´ë¿øµéÀ» ¿øÁ¤´ë ¸®½ºÆ®¿¡¼­ »ÌÀ½.
+			pMember = BossChar->m_Exped->GetMemberByListIndex(GroupNumber, CountMemberEachbyGroup);	// ë³´ìŠ¤ì¼€ë¦­í„°ì—ì„œ ê°–ê³  ìˆëŠ” ì›ì •ëŒ€ì›ë“¤ì„ ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë½‘ìŒ.
 
-			if( pMember != NULL && pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS )			// ¿øÁ¤´ë¿øÀÌ NULL¾Æ´Ï°í, ¿øÁ¤´ëÀåÀÌ ¾Æ´Ò¶§,
+			if( pMember != NULL && pMember->GetMemberType() != MSG_EXPED_MEMBERTYPE_BOSS )			// ì›ì •ëŒ€ì›ì´ NULLì•„ë‹ˆê³ , ì›ì •ëŒ€ì¥ì´ ì•„ë‹ë•Œ,
 			{
-				FromChar = PCManager::instance()->getPlayerByCharIndex(pMember->GetCharIndex());						// °ÔÀÓ¼­¹ö ÇÃ·¹ÀÌ¾î ¸®½ºÆ®¿¡¼­ ÄÉ¸¯ÅÍ ÀÎµ¦½º¸¦ °®°í ÇÃ·¹ÀÌ¾î Á¤º¸¸¦ ¾òÀ½.
+				FromChar = PCManager::instance()->getPlayerByCharIndex(pMember->GetCharIndex());						// ê²Œì„ì„œë²„ í”Œë ˆì´ì–´ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì¼€ë¦­í„° ì¸ë±ìŠ¤ë¥¼ ê°–ê³  í”Œë ˆì´ì–´ ì •ë³´ë¥¼ ì–»ìŒ.
 				if( FromChar )
-					SearchTriggerItem(FromChar, BossChar, DidCollect, UsualProcess);					// ¿øÁ¤´ë¿øÀÌ °®°í ÀÖ´Â Trigger ItemÀ» Á¶»ç
+					SearchTriggerItem(FromChar, BossChar, DidCollect, UsualProcess);					// ì›ì •ëŒ€ì›ì´ ê°–ê³  ìˆëŠ” Trigger Itemì„ ì¡°ì‚¬
 			}
 		}
 	}
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		if( (DidCollect == true) && (UsualProcess == true) )											// ÇÑ°³ÀÇ ¾ÆÀÌÅÛÀÌ¶óµµ ¼öÁıÀÌ ¼º°øÇÏ°í, Á¤»óÀûÀ¸·Î ¼öÁı ÇÁ·Î¼¼½º°¡ Á¾·á°¡ µÇ¸é
+		if( (DidCollect == true) && (UsualProcess == true) )											// í•œê°œì˜ ì•„ì´í…œì´ë¼ë„ ìˆ˜ì§‘ì´ ì„±ê³µí•˜ê³ , ì •ìƒì ìœ¼ë¡œ ìˆ˜ì§‘ í”„ë¡œì„¸ìŠ¤ê°€ ì¢…ë£Œê°€ ë˜ë©´
 		{
-			ExpedSearchTriggerItemMsg(rmsg, MSG_GET_QUESTITEM_SUCCESS_REP);								// ¼öÁı ¼º°ø ¸Ş½ÃÁö ¹ß¼Û
+			ExpedSearchTriggerItemMsg(rmsg, MSG_GET_QUESTITEM_SUCCESS_REP);								// ìˆ˜ì§‘ ì„±ê³µ ë©”ì‹œì§€ ë°œì†¡
 			GAMELOG << init("EXPED DEBUG COLLECT TRIGGER ITEM SUCCESS", ch)
 					<< "BOSS CHARACTER INDEX" << delim
 					<< ch->m_index << end;
 		}
-		else																							// ±×¿ÜÀÇ °æ¿ì
+		else																							// ê·¸ì™¸ì˜ ê²½ìš°
 		{
-			// 1. º¸½ºÀÇ Äù½ºÆ® ÀÎº¥ÀÌ °¡µæ Â÷ÀÖ¾î °¡Á®¿À°í ½Í¾îµµ ¸ø°¡Á®¿À´Â °æ¿ì
-			ExpedSearchTriggerItemMsg(rmsg, MSG_GET_QUESTITEM_FAILED_REP);								// 2. ½Ã½ºÅÛÀû ¿À·ù°¡ »ı±æ °æ¿ì
-			GAMELOG << init("EXPED DEBUG COLLECT TRIGGER ITEM FAILED", ch)								// 3. ¿øÁ¤´ë¿øÀ¸·Î ºÎÅÍ °¡Á®¿Ã Trigger ItemÀÌ ¾øÀ» °æ¿ì
+			// 1. ë³´ìŠ¤ì˜ í€˜ìŠ¤íŠ¸ ì¸ë²¤ì´ ê°€ë“ ì°¨ìˆì–´ ê°€ì ¸ì˜¤ê³  ì‹¶ì–´ë„ ëª»ê°€ì ¸ì˜¤ëŠ” ê²½ìš°
+			ExpedSearchTriggerItemMsg(rmsg, MSG_GET_QUESTITEM_FAILED_REP);								// 2. ì‹œìŠ¤í…œì  ì˜¤ë¥˜ê°€ ìƒê¸¸ ê²½ìš°
+			GAMELOG << init("EXPED DEBUG COLLECT TRIGGER ITEM FAILED", ch)								// 3. ì›ì •ëŒ€ì›ìœ¼ë¡œ ë¶€í„° ê°€ì ¸ì˜¬ Trigger Itemì´ ì—†ì„ ê²½ìš°
 					<< "BOSS CHARACTER INDEX" << delim
 					<< ch->m_index << end;
 		}
@@ -997,7 +997,7 @@ void do_ExpedSearchItemReq(CPC* ch, CNetMsg::SP& msg) //
 	}
 }
 
-void SearchTriggerItem(CPC* FromChar, CPC* BossChar, bool& DidCollect, bool& UsualProcess)												// ¿øÁ¤´ë¿ø TriggerItem Ã¼Å©
+void SearchTriggerItem(CPC* FromChar, CPC* BossChar, bool& DidCollect, bool& UsualProcess)												// ì›ì •ëŒ€ì› TriggerItem ì²´í¬
 {
 	item_search_t vec;
 	FromChar->m_inventory.searchFlagByItemProto(ITEM_FLAG_TRIGGER, vec);
@@ -1012,7 +1012,7 @@ void SearchTriggerItem(CPC* FromChar, CPC* BossChar, bool& DidCollect, bool& Usu
 
 void GiveTriggerItemMemberToBoss(CPC* FromChar, CPC* BossChar, item_search_pair_t& p, bool& DidCollect, bool& UsualProcess)
 {
-	if( !BossChar )														// ¿øÁ¤´ëÀå ÄÉ¸¯ÅÍ°¡ NULLÀÏ ¶§
+	if( !BossChar )														// ì›ì •ëŒ€ì¥ ì¼€ë¦­í„°ê°€ NULLì¼ ë•Œ
 	{
 		UsualProcess = false;
 		return ;
@@ -1025,7 +1025,7 @@ void GiveTriggerItemMemberToBoss(CPC* FromChar, CPC* BossChar, item_search_pair_
 		return ;
 	}
 
-	if(item->Count() < 1)												// ¾ÆÀÌÅÛ °³¼ö°¡ 0ÀÌÇÏÀÏ ¶§ ¸®ÅÏ false
+	if(item->Count() < 1)												// ì•„ì´í…œ ê°œìˆ˜ê°€ 0ì´í•˜ì¼ ë•Œ ë¦¬í„´ false
 	{
 		UsualProcess = false;
 		return ;
@@ -1035,7 +1035,7 @@ void GiveTriggerItemMemberToBoss(CPC* FromChar, CPC* BossChar, item_search_pair_
 
 	if (BossChar->m_inventory.addItem(bossitem))
 	{
-		//¼º°øÇÏ¸é »ó´ë¹æ ÀÎº¥Åä¸®¿¡¼­´Â Á¦°Å¸¦ ÇØÁà¾ß ÇÑ´Ù.
+		//ì„±ê³µí•˜ë©´ ìƒëŒ€ë°© ì¸ë²¤í† ë¦¬ì—ì„œëŠ” ì œê±°ë¥¼ í•´ì¤˜ì•¼ í•œë‹¤.
 		{
 			FromChar->m_inventory.deleteItemByItem(item);
 		}
@@ -1069,12 +1069,12 @@ void do_ExpendOffline(CPC* ch, CNetMsg::SP& msg)
 	if( !ch && ch->m_Exped != NULL )
 		return;	
 	
-	// ¿øÁ¤´ë¿ø ·Î±× ¾Æ¿ô Ã³¸®
+	// ì›ì •ëŒ€ì› ë¡œê·¸ ì•„ì›ƒ ì²˜ë¦¬
 	CExpedMember* pMember = NULL;
 	pMember = (CExpedMember*) ch->m_Exped->GetMemberByCharIndex(ch->m_index);
 	if(pMember) pMember->m_nLevel = 0;
 
-	// ÇÛÆÛ·Î ·Î±× ¾Æ¿ô Ã³¸®
+	// í•¼í¼ë¡œ ë¡œê·¸ ì•„ì›ƒ ì²˜ë¦¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		HelperExpendOfflineMsg( rmsg, ch->m_Exped->GetBossIndex() , ch->m_index );

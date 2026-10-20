@@ -6,60 +6,60 @@
 //Packet SubType Client <-> Server
 enum
 {
-	MSG_RVR_REMOVE_REQ,						//Å»Åð ¿äÃ»
-	MSG_RVR_GIVE_JEWEL_REQ,					//º¸¼® ±âºÎ
-	MSG_RVR_SYNDICATE_INFO_USER_REQ,		//°³ÀÎ °á»ç´ë Á¤º¸ ¿äÃ»
-	MSG_RVR_SYNDICATE_INFO_SERVER_REQ,		//°á»ç´ë Á¤º¸ ¿äÃ»
+	MSG_RVR_REMOVE_REQ,						//íƒˆí‡´ ìš”ì²­
+	MSG_RVR_GIVE_JEWEL_REQ,					//ë³´ì„ ê¸°ë¶€
+	MSG_RVR_SYNDICATE_INFO_USER_REQ,		//ê°œì¸ ê²°ì‚¬ëŒ€ ì •ë³´ ìš”ì²­
+	MSG_RVR_SYNDICATE_INFO_SERVER_REQ,		//ê²°ì‚¬ëŒ€ ì •ë³´ ìš”ì²­
 
-	MSG_RVR_ERROR_REP,						//ÀÀ´ä ¿¡·¯ÄÚµå
-	MSG_RVR_SYNDICATE_INFO_USER_REP,		//°á»ç´ë À¯Àú Á¤º¸ ÀÀ´ä
+	MSG_RVR_ERROR_REP,						//ì‘ë‹µ ì—ëŸ¬ì½”ë“œ
+	MSG_RVR_SYNDICATE_INFO_USER_REP,		//ê²°ì‚¬ëŒ€ ìœ ì € ì •ë³´ ì‘ë‹µ
 
-	MSG_RVR_SYNDICATE_INFO_SERVER,			//°á»ç´ë Á¤º¸ ÀÀ´ä
-	MSG_UPDATE_RVR_SYNDICATE_TYPE,			//°á»ç´ë Á¤º¸ ¾÷µ¥ÀÌÆ®
-	MSG_UPDATE_RVR_SYNDICATE_GRADE,			//°á»ç´ë µî±Þ ¾÷µ¥ÀÌÆ®
-	MSG_UPDATE_RVR_CONTRIBUTIONS_POINT,		//°á»ç´ë Æ÷ÀÎÆ® ¾÷µ¥ÀÌÆ®
-	MSG_UPDATE_SYNDICATE_HISTORY_LOG,		//°á»ç´ë È÷½ºÅä¸® ·Î±× ¾÷µ¥ÀÌÆ®
-	MSG_UPDATE_SYNDICATE_PERCENTAGE,		//°á»ç´ë Á¡¼ö ¾÷µ¥ÀÌÆ®
-	MSG_UPDATE_KINGNAME,					//¿Õ Á¤º¸ ¾÷µ¥ÀÌÆ®
+	MSG_RVR_SYNDICATE_INFO_SERVER,			//ê²°ì‚¬ëŒ€ ì •ë³´ ì‘ë‹µ
+	MSG_UPDATE_RVR_SYNDICATE_TYPE,			//ê²°ì‚¬ëŒ€ ì •ë³´ ì—…ë°ì´íŠ¸
+	MSG_UPDATE_RVR_SYNDICATE_GRADE,			//ê²°ì‚¬ëŒ€ ë“±ê¸‰ ì—…ë°ì´íŠ¸
+	MSG_UPDATE_RVR_CONTRIBUTIONS_POINT,		//ê²°ì‚¬ëŒ€ í¬ì¸íŠ¸ ì—…ë°ì´íŠ¸
+	MSG_UPDATE_SYNDICATE_HISTORY_LOG,		//ê²°ì‚¬ëŒ€ ížˆìŠ¤í† ë¦¬ ë¡œê·¸ ì—…ë°ì´íŠ¸
+	MSG_UPDATE_SYNDICATE_PERCENTAGE,		//ê²°ì‚¬ëŒ€ ì ìˆ˜ ì—…ë°ì´íŠ¸
+	MSG_UPDATE_KINGNAME,					//ì™• ì •ë³´ ì—…ë°ì´íŠ¸
 
-	SYSMSG_INCREASE_POINT,					//Æ÷ÀÎÆ® Áõ°¡ ½Ã½ºÅÛ ¸Þ½ÃÁö
+	SYSMSG_INCREASE_POINT,					//í¬ì¸íŠ¸ ì¦ê°€ ì‹œìŠ¤í…œ ë©”ì‹œì§€
 
-	MSG_UPDATE_OUT_NEEDNAS,					//°á»ç´ë Å»Åð½Ã ÇÊ¿äÇÑ ³ª½ºÁ¤º¸
+	MSG_UPDATE_OUT_NEEDNAS,					//ê²°ì‚¬ëŒ€ íƒˆí‡´ì‹œ í•„ìš”í•œ ë‚˜ìŠ¤ì •ë³´
 };
 
 enum
 {
-	JOIN,			// °¡ÀÔ
-	REMOVE,			// Å»Åð
-	DEGRADE,		// °­µî
-	PROMOTION,		// ½Â±Þ
-	WIN,			// ½Â¸®
-	LOSE,			// Áö´Ù
+	JOIN,			// ê°€ìž…
+	REMOVE,			// íƒˆí‡´
+	DEGRADE,		// ê°•ë“±
+	PROMOTION,		// ìŠ¹ê¸‰
+	WIN,			// ìŠ¹ë¦¬
+	LOSE,			// ì§€ë‹¤
 };
 
 #pragma pack(push, 1)
 
 namespace RequestClient
 {
-//Å»Åð ¿äÃ»
+//íƒˆí‡´ ìš”ì²­
 struct RVRRemoveRequest : public pTypeBase
 {
 	int	tab;
 	int invenIndex;
-	int npcIndex;		// Å»Åð NPC
+	int npcIndex;		// íƒˆí‡´ NPC
 };
 
-//Ã¢Á¶ÀÇ º¸¼® ±âºÎ¿äÃ»
+//ì°½ì¡°ì˜ ë³´ì„ ê¸°ë¶€ìš”ì²­
 struct RVRGiveJewel : public pTypeBase
 {
-	int				npcIndex;				// Ã¢Á¶ÀÇ º¸¼® give NPC
-	unsigned int	vIndexByCreateJewel;	// Ã¢Á¶ÀÇ º¸¼® v-index
+	int				npcIndex;				// ì°½ì¡°ì˜ ë³´ì„ give NPC
+	unsigned int	vIndexByCreateJewel;	// ì°½ì¡°ì˜ ë³´ì„ v-index
 };
 
 struct RVRServerInfoReq : public pTypeBase
 {
-	int				syndicateType;			// ¼­¹ö°£ Åë½Å¿¡ »ç¿ë(Å¬¶óÀÌ¾ðÆ®´Â º¸³¾ ÇÊ¿ä ¾øÀ½)
-	int				grade;					// ¼­¹ö°£ Åë½Å¿¡ »ç¿ë(Å¬¶óÀÌ¾ðÆ®´Â º¸³¾ ÇÊ¿ä ¾øÀ½)
+	int				syndicateType;			// ì„œë²„ê°„ í†µì‹ ì— ì‚¬ìš©(í´ë¼ì´ì–¸íŠ¸ëŠ” ë³´ë‚¼ í•„ìš” ì—†ìŒ)
+	int				grade;					// ì„œë²„ê°„ í†µì‹ ì— ì‚¬ìš©(í´ë¼ì´ì–¸íŠ¸ëŠ” ë³´ë‚¼ í•„ìš” ì—†ìŒ)
 };
 
 #ifndef _CLIENT_
@@ -79,21 +79,21 @@ namespace ResponseClient
 {
 enum
 {
-	ERROR_SYNDICATE_JOIN_SUCCESS,					// °á»ç´ë °¡ÀÔ ¼º°ø
-	ERROR_SYNDICATE_REMOVE_SUCCESS,					// °á»ç´ë Å»Åð ¼º°ø
-	ERROR_SYNICATE_GIVE_SUCCESS,					// °á»ç´ë Ã¢Á¶ÀÇ º¸¼® ±âºÎ ¼º°ø
-	ERROR_SYNDICATE_REMOVE_FAIL_NOT_ENOUGH_MONEY,	// Å»ÅðÇÏ±â À§ÇÑ µ·ÀÌ ºÎÁ·
-	ERROR_SYNDICATE_REMOVE_FAIL_ALREADY_EQUIP,		// °á»ç´ë Àü¿ë Àåºñ¸¦ Âø¿ë ÁßÀÌ´Ù.
-	ERROR_SYNDICATE_BUSY,							// °á»ç´ë Á¤º¸°¡ È¥ÀâÇÕ´Ï´Ù.
+	ERROR_SYNDICATE_JOIN_SUCCESS,					// ê²°ì‚¬ëŒ€ ê°€ìž… ì„±ê³µ
+	ERROR_SYNDICATE_REMOVE_SUCCESS,					// ê²°ì‚¬ëŒ€ íƒˆí‡´ ì„±ê³µ
+	ERROR_SYNICATE_GIVE_SUCCESS,					// ê²°ì‚¬ëŒ€ ì°½ì¡°ì˜ ë³´ì„ ê¸°ë¶€ ì„±ê³µ
+	ERROR_SYNDICATE_REMOVE_FAIL_NOT_ENOUGH_MONEY,	// íƒˆí‡´í•˜ê¸° ìœ„í•œ ëˆì´ ë¶€ì¡±
+	ERROR_SYNDICATE_REMOVE_FAIL_ALREADY_EQUIP,		// ê²°ì‚¬ëŒ€ ì „ìš© ìž¥ë¹„ë¥¼ ì°©ìš© ì¤‘ì´ë‹¤.
+	ERROR_SYNDICATE_BUSY,							// ê²°ì‚¬ëŒ€ ì •ë³´ê°€ í˜¼ìž¡í•©ë‹ˆë‹¤.
 };
 
-//À¯Àú °á»ç´ë Á¤º¸
+//ìœ ì € ê²°ì‚¬ëŒ€ ì •ë³´
 struct RVRSyndicateInfoOfUser : public pTypeBase
 {
-	int			syndicateType;								//°á»ç´ë °¡ÀÔ Å¸ÀÔ
-	int			grade;										//µî±Þ
-	LONGLONG	accumulateContributionPoint;				//pcÀÇ ´©Àû ±â¿©µµ
-	LONGLONG	maxPoint;									//µî±Þ º° ÃÖ´ë ¼öÄ¡
+	int			syndicateType;								//ê²°ì‚¬ëŒ€ ê°€ìž… íƒ€ìž…
+	int			grade;										//ë“±ê¸‰
+	LONGLONG	accumulateContributionPoint;				//pcì˜ ëˆ„ì  ê¸°ì—¬ë„
+	LONGLONG	maxPoint;									//ë“±ê¸‰ ë³„ ìµœëŒ€ ìˆ˜ì¹˜
 };
 
 //error response
@@ -122,7 +122,7 @@ struct SyndicateContributePoint : public pTypeBase
 {
 	int syndicateType;
 	bool isFirstJoin;
-	LONGLONG accumulateContributionPoint;	// pcÀÇ ´©Àû ±â¿©µµ
+	LONGLONG accumulateContributionPoint;	// pcì˜ ëˆ„ì  ê¸°ì—¬ë„
 };
 
 struct SyndicateKind : public pTypeBase
@@ -157,9 +157,9 @@ struct SyndicatePercentageData : public pTypeBase
 struct RVRSyndicateInfoOfServer : public pTypeBase
 {
 	int syndicateType;
-	char kingName[MAX_CHAR_NAME_LENGTH + 1];			//´ë»§ ÀÌ¸§
-	int skillIndex;									//¹ÞÀ» ¼ö ÀÖ´Â ¹öÇÁ ÀÎµ¦½º
-	int skillLevel;									//¹ÞÀ» ¼ö ÀÖ´Â ¹öÇÁ ·¹º§
+	char kingName[MAX_CHAR_NAME_LENGTH + 1];			//ëŒ€ë¹µ ì´ë¦„
+	int skillIndex;									//ë°›ì„ ìˆ˜ ìžˆëŠ” ë²„í”„ ì¸ë±ìŠ¤
+	int skillLevel;									//ë°›ì„ ìˆ˜ ìžˆëŠ” ë²„í”„ ë ˆë²¨
 };
 
 struct SyndicateKingNameUpdate : public pTypeBase

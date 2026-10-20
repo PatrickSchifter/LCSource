@@ -10,9 +10,9 @@
 #define BOSSCUBE_START		25
 
 #if defined(LC_BILA)
-#define GUILDCUBE_TIME		7200		// 2½Ã°£
+#define GUILDCUBE_TIME		7200		// 2ì‹œê°„
 #else
-#define GUILDCUBE_TIME		3600		// 1½Ã°£
+#define GUILDCUBE_TIME		3600		// 1ì‹œê°„
 #endif
 
 #if defined (LC_GAMIGO) || defined (LC_BILA) || defined (LC_USA) || defined (LC_RUS)
@@ -34,7 +34,7 @@
 
 #define CRYSTALCOUNT		5
 
-// Å¥ºê»óÅÂ
+// íë¸Œìƒíƒœ
 typedef enum _tagCubeState
 {
 	CUBESTATE_RED = 0,
@@ -44,21 +44,21 @@ typedef enum _tagCubeState
 	CUBESTATE_YELLOW,
 } CUBESTATE;
 
-// Å¥ºê¸â¹öÅ¸ÀÔ
+// íë¸Œë©¤ë²„íƒ€ì…
 typedef enum _tagCubeMemType
 {
 	CUBEMEM_PARTY,
 	CUBEMEM_GUILD,
 } CUBEMEMTYPE;
 
-// Å¥ºê°ø°£Å¸ÀÔ
+// íë¸Œê³µê°„íƒ€ì…
 typedef enum _tagCubeSpaceType
 {
 	BATTLE_SPACE,
 	BOSS_SPACE,
 } CUBESPACETYPE;
 
-// ¸÷¸®Á¨Æ÷ÀÎÆ®
+// ëª¹ë¦¬ì  í¬ì¸íŠ¸
 typedef struct _tagCubeRegenPoint
 {
 	float	regenX;
@@ -79,7 +79,7 @@ typedef struct __tagRegDate
 
 class CExtremeCube;
 
-//////////////////////////////// ¸â¹ö¸®½ºÆ® ///////////////////////////////
+//////////////////////////////// ë©¤ë²„ë¦¬ìŠ¤íŠ¸ ///////////////////////////////
 class CCubeMemList
 {
 public:
@@ -114,10 +114,10 @@ public:
 		return false;
 	}
 
-	// Å¥ºê¿¡ »õ·Î Âü°¡
+	// íë¸Œì— ìƒˆë¡œ ì°¸ê°€
 	bool JoinCube(CPC* pc, int extra);
 
-	// Å¥ºê³»ÀÇ ÀÌµ¿
+	// íë¸Œë‚´ì˜ ì´ë™
 	bool MoveToOtherCube(int cubeidx);
 	int  GetUniqueIdx()
 	{
@@ -144,7 +144,7 @@ public:
 
 	void GetOutAll();
 
-	// Å¬¸®¾î Áõ°¡
+	// í´ë¦¬ì–´ ì¦ê°€
 	void IncreaseWinCount()
 	{
 		m_clearCount++;
@@ -241,7 +241,7 @@ private:
 	CGuild*		m_guild;
 };
 
-///////////////////////////////// Å¥ºê /////////////////////////////////////
+///////////////////////////////// íë¸Œ /////////////////////////////////////
 class CCubeSpace
 {
 public:
@@ -291,7 +291,7 @@ protected:
 	CUBESTATE		m_state;
 };
 
-// ÀÏ¹İÅ¥ºê
+// ì¼ë°˜íë¸Œ
 class CBattleSpace : public CCubeSpace
 {
 public:

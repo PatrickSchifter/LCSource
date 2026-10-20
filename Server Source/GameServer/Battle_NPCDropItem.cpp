@@ -6,7 +6,7 @@
 #include "hardcoding.h"
 #include "Battle.h"
 
-// npc - »ç¸Á npc, pc - °ø°İÇÑ Ä³¸¯ÅÍ, tpc - ¿ì¼±±Ç Ä³¸¯ÅÍ, level - npc¸¦ °ø°İÇÑ Ä³¸¯ÅÍÀÇ Æò±Õ·¹º§
+// npc - ì‚¬ë§ npc, pc - ê³µê²©í•œ ìºë¦­í„°, tpc - ìš°ì„ ê¶Œ ìºë¦­í„°, level - npcë¥¼ ê³µê²©í•œ ìºë¦­í„°ì˜ í‰ê· ë ˆë²¨
 typedef void (*NPC_DROP_FUNCTION) (CNPC* npc, CPC* pc, CPC* tpc, int level);
 void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 {
@@ -17,20 +17,20 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 	}
 
 #ifdef SYSTEM_TREASURE_MAP
-	if( df->m_idNum == TREASURE_BOX_NPC_INDEX ) // npc ÀÏ°æ¿ì º¸¹° »óÀÚ¸¸ µå¶ø ÇÑ´Ù.
+	if( df->m_idNum == TREASURE_BOX_NPC_INDEX ) // npc ì¼ê²½ìš° ë³´ë¬¼ ìƒìë§Œ ë“œë í•œë‹¤.
 	{
 		DropTreasureBoxNpc(df, opc, tpc, level);
 		return;
 	}
 
-	// º¸¹° Áöµµ´Â ÇÊµå¿¡¼­¸¸ µå¶øµÈ´Ù.
+	// ë³´ë¬¼ ì§€ë„ëŠ” í•„ë“œì—ì„œë§Œ ë“œëëœë‹¤.
 	if( df->m_pZone->CheckTreasureDropFlag() && df->m_pZone->IsFieldZone() )
 	{
 		DropTreasureMap(df, opc, tpc, level);
 	}
 #endif
 
-	// ¾ÆÀÌÅÛ µå·ÓÀ² ÁõÆøÁ¦ °Ë»ç
+	// ì•„ì´í…œ ë“œë¡­ìœ¨ ì¦í­ì œ ê²€ì‚¬
 	bool hcSepDrop = false;
 	bool hcDropPlus_S360 = false;
 	bool hcPlatinumDrop = false;
@@ -39,7 +39,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 	{
 		if (opc->m_assist.m_avAddition.hcSepDrop)
 		{
-			opc->m_assist.CureByItemIndex(884);	// ¾ÆÀÌÅÛ
+			opc->m_assist.CureByItemIndex(884);	// ì•„ì´í…œ
 			hcSepDrop = true;
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_DROP);
@@ -48,14 +48,14 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 		if (opc->m_assist.m_avAddition.hcSepDrop_Cash)
 		{
-			opc->m_assist.CureByItemIndex(6096);	// ¾ÆÀÌÅÛ
+			opc->m_assist.CureByItemIndex(6096);	// ì•„ì´í…œ
 			hcSepDrop = true;
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_DROP);
 			SEND_Q(rmsg, opc->m_desc);
 		}
 
-		// ÃßÃµ¼­¹öÆ÷¼Ç µå·ÓÀ² »ó½Â
+		// ì¶”ì²œì„œë²„í¬ì…˜ ë“œë¡­ìœ¨ ìƒìŠ¹
 		else if (opc->m_assist.m_avAddition.hcDropPlus_S360)
 		{
 			opc->m_assist.CureBySkillIndex(360);
@@ -63,12 +63,12 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 		}
 		else if(opc->m_assist.m_avAddition.hcPlatinumDrop)
 		{
-			opc->m_assist.CureByItemIndex(2855);	// ¾ÆÀÌÅÛ
+			opc->m_assist.CureByItemIndex(2855);	// ì•„ì´í…œ
 			hcPlatinumDrop = true;
 		}
-	} // ¾ÆÀÌÅÛ µå·ÓÀ² ÁõÆøÁ¦ °Ë»ç
+	} // ì•„ì´í…œ ë“œë¡­ìœ¨ ì¦í­ì œ ê²€ì‚¬
 
-	// ¾ÆÀÌÅÛ µå·Ó
+	// ì•„ì´í…œ ë“œë¡­
 	int loopcount;
 	bool IsNotDropInCube = true;
 #ifdef EXTREME_CUBE
@@ -84,11 +84,11 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 	for (loopcount = 0; loopcount < itemDropLoop; loopcount++)
 	{
-		// 5·¹º§º¸´Ù Å©¸é ¾ÆÀÌÅÛ µå·Ó ¾øÀ½
-		// 1. µå·ÓÇÒ ¼ö ÀÖ´Â ¼ö ¹üÀ§¿¡¼­ ¾ÆÀÌÅÛ ¼±Á¤
-		// 2. ±× ¾ÆÀÌÆÀÀÇ µå·ÓÈ®·ü·Î µå·Ó¿©ºÎ °áÁ¤
-		// 3. µå·Ó
-#ifdef EVENT_WORLDCUP_2010 // Æ®¶óÀÌ¾Ş±Û º¼(1105) ÀÏ°æ¿ì ¹«Á¶°Ç ¾ÆÀÌÅÛÀ» µå¶ø ÇÑ´Ù
+		// 5ë ˆë²¨ë³´ë‹¤ í¬ë©´ ì•„ì´í…œ ë“œë¡­ ì—†ìŒ
+		// 1. ë“œë¡­í•  ìˆ˜ ìˆëŠ” ìˆ˜ ë²”ìœ„ì—ì„œ ì•„ì´í…œ ì„ ì •
+		// 2. ê·¸ ì•„ì´íŒ€ì˜ ë“œë¡­í™•ë¥ ë¡œ ë“œë¡­ì—¬ë¶€ ê²°ì •
+		// 3. ë“œë¡­
+#ifdef EVENT_WORLDCUP_2010 // íŠ¸ë¼ì´ì•µê¸€ ë³¼(1105) ì¼ê²½ìš° ë¬´ì¡°ê±´ ì•„ì´í…œì„ ë“œë í•œë‹¤
 		if( ( df->m_proto->m_itemCount > 0 &&  ((level != -1 && level - df->m_level <= 5) ||  !IsNotDropInCube) )
 			|| df->m_proto->m_index == 1105)
 #else
@@ -100,8 +100,8 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 #ifdef EVENT_WORLDCUP_2010
 			if( df->m_proto->m_index == 1105 )
 			{
-				// npcÅø µå¶ø Å×ÀÌºí1,2¹ø¿¡ °¢°¢ Ãà±¹°ø, È²±İ Ãà±¸°øÀÌ  100%gÈ®·ü·Î µé¾î°¡ ÀÖ¾î¾ß ÇÑ´Ù.
-				tableindex = GetRandom(1, 10000); // 0. 95%È®·ü·Î Ãà±¸°ø. 1. 5% È®·ü È²±İ Ãà±¸°ø 2. ²Î
+				// npcíˆ´ ë“œë í…Œì´ë¸”1,2ë²ˆì— ê°ê° ì¶•êµ­ê³µ, í™©ê¸ˆ ì¶•êµ¬ê³µì´  100%gí™•ë¥ ë¡œ ë“¤ì–´ê°€ ìˆì–´ì•¼ í•œë‹¤.
+				tableindex = GetRandom(1, 10000); // 0. 95%í™•ë¥ ë¡œ ì¶•êµ¬ê³µ. 1. 5% í™•ë¥  í™©ê¸ˆ ì¶•êµ¬ê³µ 2. ê½
 				if( tableindex <= 9000 )
 					tableindex = 0;
 				else if( tableindex <= 9500)
@@ -118,18 +118,18 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 			if (tpc)
 			{
-				// ÀÚµÎ
+				// ìë‘
 				if (tpc->m_assist.m_avAddition.hcDropPlus_838)
 					dropprob *= 2;
 
-				// Çà¿îÀÇ½ºÅ©·Ñ, 5080°­¿îÀÇ ½ºÅ©·Ñ°ú º¯¼ö¸¦ °°ÀÌ »ç¿ëÇÑ´Ù.
+				// í–‰ìš´ì˜ìŠ¤í¬ë¡¤, 5080ê°•ìš´ì˜ ìŠ¤í¬ë¡¤ê³¼ ë³€ìˆ˜ë¥¼ ê°™ì´ ì‚¬ìš©í•œë‹¤.
 				if (tpc->m_assist.m_avAddition.hcScrollDrop)
 					dropprob *= 2;
 
 				if (tpc->m_assist.m_avAddition.hcScrollDrop_5081)
 					dropprob *= 4;
 
-				// Çà¿î ÁÖ¹®¼­
+				// í–‰ìš´ ì£¼ë¬¸ì„œ
 				if (tpc->m_assist.m_avAddition.hcDropPlus_2141)
 				{
 					if (GetRandom(1, 10000) <= 2000 ) // 20 %
@@ -138,17 +138,17 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 					}
 				}
 
-				// ÇÃ·¡Æ¼´½ Çà¿îÀÇ ½ºÅ©·Ñ
+				// í”Œë˜í‹°ëŠ„ í–‰ìš´ì˜ ìŠ¤í¬ë¡¤
 				if(tpc->m_assist.m_avAddition.hcPlatinumScroll)
 				{
 					dropprob *= 4;
 				}
 			}
 
-			// BS ¼öÁ¤ : ¾ÆÀÌÅÛ µå·Ó ÀÌº¥Æ®
+			// BS ìˆ˜ì • : ì•„ì´í…œ ë“œë¡­ ì´ë²¤íŠ¸
 			dropprob = dropprob * gserver->m_nItemDropEventRate / 100;
 
-			// µå·ÓÀ² »ó½Â %´ÜÀ§ ´©Àû
+			// ë“œë¡­ìœ¨ ìƒìŠ¹ %ë‹¨ìœ„ ëˆ„ì 
 			if (opc && tpc == opc && opc->m_assist.m_avAddition.hcDropPlusPer100 > 0)
 				dropprob += dropprob * opc->m_assist.m_avAddition.hcDropPlusPer100 / 100;
 
@@ -157,11 +157,11 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 				dropprob += dropprob * gserver->m_bDoubleItemPercent / 100;
 #endif // DOUBLE_ITEM_DROP
 
-			// 9¿ù ÀÌº¥Æ® µå·ÓÀ² 10¹è
+			// 9ì›” ì´ë²¤íŠ¸ ë“œë¡­ìœ¨ 10ë°°
 			if (hcSepDrop)
 				dropprob = dropprob * 10;
 
-			// ÃßÃµ¼­¹öÆ÷¼Ç µå·ÓÀ² »ó½Â
+			// ì¶”ì²œì„œë²„í¬ì…˜ ë“œë¡­ìœ¨ ìƒìŠ¹
 			else if (hcDropPlus_S360)
 				dropprob = dropprob * 10;
 
@@ -186,7 +186,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 			}
 
 #ifdef IMP_SPEED_SERVER
-			// Zone Drop ·ü Àû¿ë
+			// Zone Drop ë¥  ì ìš©
 			if( gserver->m_bSpeedServer && tpc && tpc->m_pZone )
 			{
 				dropprob = dropprob * tpc->m_pZone->GetZoneDrop() / 100;
@@ -200,20 +200,20 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 					dropItem = df->m_pArea->DropItem(df->m_proto->m_item[tableindex], df, 0, df->m_level, 1);
 				}
 #if defined (LC_USA) || defined(LC_BILA)
-				// ´ë¸¸°ú ¸»·¹ÀÌ½Ã¾Æ´Â Áß¼ÒÇü Ã¼·Â¾àÀÌ ¼ÒÇüÀ¸·Î ¶³¾îÁø´Ù
+				// ëŒ€ë§Œê³¼ ë§ë ˆì´ì‹œì•„ëŠ” ì¤‘ì†Œí˜• ì²´ë ¥ì•½ì´ ì†Œí˜•ìœ¼ë¡œ ë–¨ì–´ì§„ë‹¤
 				else if( df->m_proto->m_item[tableindex] == 44
 						 || df->m_proto->m_item[tableindex] == 45 )
 				{
 					dropItem = df->m_pArea->DropItem(43, df, 0, 0, 1);
 				}
-				// ´ë¸¸°ú ¸»·¹ÀÌ½Ã¾Æ´Â ÁßÇü ¸¶³ª È¸º¹ ¹°¾àÀÌ µå·ÓµÇÁö ¾Ê´Â´Ù.
+				// ëŒ€ë§Œê³¼ ë§ë ˆì´ì‹œì•„ëŠ” ì¤‘í˜• ë§ˆë‚˜ íšŒë³µ ë¬¼ì•½ì´ ë“œë¡­ë˜ì§€ ì•ŠëŠ”ë‹¤.
 				else if ( df->m_proto->m_item[tableindex] == 485 )
 				{
 					dropItem = NULL;
 				}
 #endif // #if defined (LC_USA) || defined(LC_BILA)
 #if defined (LC_USA) || defined(LC_BILA)
-				// ´ëÇü Èú¸µÆ÷¼Ç Á¦ÀÛ¼­, ´ëÇü ¸¶³ª, ÁßÇü ¸¶³ª ¸Ş´º¾ó µå·Ó ±İÁö
+				// ëŒ€í˜• íë§í¬ì…˜ ì œì‘ì„œ, ëŒ€í˜• ë§ˆë‚˜, ì¤‘í˜• ë§ˆë‚˜ ë©”ë‰´ì–¼ ë“œë¡­ ê¸ˆì§€
 				else if ( df->m_proto->m_item[tableindex] == 1066
 						  || df->m_proto->m_item[tableindex] == 1067
 						  || df->m_proto->m_item[tableindex] == 1068
@@ -224,10 +224,10 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 #endif // #if defined (LC_USA) || defined (LC_BILA)
 				else
 				{
-					// 61·¹º§ ¹«±â·ù ¹× 65·¹º§ ¹æ¾î±¸ µå·Ó ±İÁö Á¦ÀÛ¼­ µå·Ó ±İÁö
+					// 61ë ˆë²¨ ë¬´ê¸°ë¥˜ ë° 65ë ˆë²¨ ë°©ì–´êµ¬ ë“œë¡­ ê¸ˆì§€ ì œì‘ì„œ ë“œë¡­ ê¸ˆì§€
 					switch (df->m_proto->m_item[tableindex])
 					{
-					case -1:	// Áö¿ìÁö ¸»°Í
+					case -1:	// ì§€ìš°ì§€ ë§ê²ƒ
 						dropItem = NULL;
 						break;
 
@@ -246,7 +246,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 			if (dropItem)
 			{
-// 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
+// 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
 				if (df->m_proto->m_minplus >= 0 && df->m_proto->m_maxplus >= df->m_proto->m_minplus && df->m_proto->m_probplus > 0 && dropItem->CanUpgrade())
 				{
 					if (GetRandom(1, 10000) <= df->m_proto->m_probplus)
@@ -255,8 +255,8 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 					}
 				}
 
-				// Drop Msg º¸³»±â
-				// ¾ÆÀÌÅÛ ¿ì¼±±Ç ¼ÂÆÃ (°°Àº µ¥¹ÌÁö °í·Á, ¼±°ø °í·Á)
+				// Drop Msg ë³´ë‚´ê¸°
+				// ì•„ì´í…œ ìš°ì„ ê¶Œ ì…‹íŒ… (ê°™ì€ ë°ë¯¸ì§€ ê³ ë ¤, ì„ ê³µ ê³ ë ¤)
 				if (tpc)
 					dropItem->m_preferenceIndex = tpc->m_index;
 				else
@@ -281,9 +281,9 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 				}
 			}
 		}
-	} // // ¾ÆÀÌÅÛ µå·Ó
+	} // // ì•„ì´í…œ ë“œë¡­
 
-	// opc °ø°İ Ä³¸¯ÅÍ, tpc ¿ì¼±±Ç Ä³¸¯ÅÍ
+	// opc ê³µê²© ìºë¦­í„°, tpc ìš°ì„ ê¶Œ ìºë¦­í„°
 	int job = -1;
 
 	if(tpc)
@@ -322,7 +322,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 		}
 	}
 
-	// ÀÌ ¾ÆÀÌÅÛÀº ·¹º§Á¦ÇÑ ¾øÀÌ ¹«Á¶°Ç ¶³¾îÆ®¸°´Ù.
+	// ì´ ì•„ì´í…œì€ ë ˆë²¨ì œí•œ ì—†ì´ ë¬´ì¡°ê±´ ë–¨ì–´íŠ¸ë¦°ë‹¤.
 	int loopi = 0;
 	for(loopi = 0; loopi < MAX_NPC_DROPITEM; loopi++)
 	{
@@ -357,13 +357,13 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 			}
 		}
 	}
-	// º¸¼® µå·Ó
+	// ë³´ì„ ë“œë¡­
 	for (loopcount = 0; loopcount < MAX_NPC_DROPITEM_LOOP; loopcount++)
 	{
-		// 5·¹º§º¸´Ù Å©¸é ¾ÆÀÌÅÛ µå·Ó ¾øÀ½
-		// 1. µå·ÓÇÒ ¼ö ÀÖ´Â ¼ö ¹üÀ§¿¡¼­ ¾ÆÀÌÅÛ ¼±Á¤
-		// 2. ±× ¾ÆÀÌÆÀÀÇ µå·ÓÈ®·ü·Î µå·Ó¿©ºÎ °áÁ¤
-		// 3. µå·Ó
+		// 5ë ˆë²¨ë³´ë‹¤ í¬ë©´ ì•„ì´í…œ ë“œë¡­ ì—†ìŒ
+		// 1. ë“œë¡­í•  ìˆ˜ ìˆëŠ” ìˆ˜ ë²”ìœ„ì—ì„œ ì•„ì´í…œ ì„ ì •
+		// 2. ê·¸ ì•„ì´íŒ€ì˜ ë“œë¡­í™•ë¥ ë¡œ ë“œë¡­ì—¬ë¶€ ê²°ì •
+		// 3. ë“œë¡­
 		if (df->m_proto->m_jewelCount > 0 &&  ((level != -1 && level - df->m_level <= 5) ||  !IsNotDropInCube)  )
 		{
 			CItem* dropItem = NULL;
@@ -374,7 +374,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 			{
 				switch (df->m_proto->m_jewel[tableindex])
 				{
-				case -1:	// Áö¿ìÁö ¸»°Í
+				case -1:	// ì§€ìš°ì§€ ë§ê²ƒ
 					dropItem = NULL;
 					break;
 
@@ -388,8 +388,8 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 			if (dropItem)
 			{
-				// Drop Msg º¸³»±â
-				// ¾ÆÀÌÅÛ ¿ì¼±±Ç ¼ÂÆÃ (°°Àº µ¥¹ÌÁö °í·Á, ¼±°ø °í·Á)
+				// Drop Msg ë³´ë‚´ê¸°
+				// ì•„ì´í…œ ìš°ì„ ê¶Œ ì…‹íŒ… (ê°™ì€ ë°ë¯¸ì§€ ê³ ë ¤, ì„ ê³µ ê³ ë ¤)
 				if (tpc)
 					dropItem->m_preferenceIndex = tpc->m_index;
 				else
@@ -411,43 +411,43 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 						<< end;
 			}
 		}
-	} // º¸¼® µå·Ó
+	} // ë³´ì„ ë“œë¡­
 	// typedef void (*NPC_DROP_FUNCTION) (CNPC* npc, CPC* pc, CPC* tpc, int level);
-	// pc, tpc´Â NULLÀÌ µÉ ¼ö ÀÖ´Ù
+	// pc, tpcëŠ” NULLì´ ë  ìˆ˜ ìˆë‹¤
 	NPC_DROP_FUNCTION fnNPCDrop[] =
 	{
-		DropBloodGem,						// ºí·¯µåÁª µå·Ó : ´ë¸¸ ÃµÇÏ´ë¶õ
-		DropLuckySpecialStone,				// Çà¿îÀÇ Á¦·Ã¼® µå·Ó : ´ë¸¸ ÃµÇÏ´ë¶õ
-		DropSpecialRefineStone,				// °íÁ¦ µå·Ó
-		DropPersonalDungeon2Ticket,			// ÆÛ½º³Î´øÀü 2 ÀÔÀå±Ç µå·Ó
-		DropBoosterItem,					// ºÎ½ºÅÍ
+		DropBloodGem,						// ë¸”ëŸ¬ë“œì ¬ ë“œë¡­ : ëŒ€ë§Œ ì²œí•˜ëŒ€ë€
+		DropLuckySpecialStone,				// í–‰ìš´ì˜ ì œë ¨ì„ ë“œë¡­ : ëŒ€ë§Œ ì²œí•˜ëŒ€ë€
+		DropSpecialRefineStone,				// ê³ ì œ ë“œë¡­
+		DropPersonalDungeon2Ticket,			// í¼ìŠ¤ë„ë˜ì „ 2 ì…ì¥ê¶Œ ë“œë¡­
+		DropBoosterItem,					// ë¶€ìŠ¤í„°
 
-		DropPersonalDungeon3Ticket,			// ÆÛ½º³Î´øÀü 3 ÀÔÀå±Ç µå·Ó
-		DropPersonalDungeon4Ticket,			// ÆÛ½º³Î´øÀü 4 ÀÔÀå±Ç µå·Ó
+		DropPersonalDungeon3Ticket,			// í¼ìŠ¤ë„ë˜ì „ 3 ì…ì¥ê¶Œ ë“œë¡­
+		DropPersonalDungeon4Ticket,			// í¼ìŠ¤ë„ë˜ì „ 4 ì…ì¥ê¶Œ ë“œë¡­
 
-		DropPetEgg,							// ¾Ö¿Ïµ¿¹° ¾Ë µå·Ó
+		DropPetEgg,							// ì• ì™„ë™ë¬¼ ì•Œ ë“œë¡­
 
 		DropNewMoonStoneItem,
 
 #ifdef EVENT_VALENTINE
-		DropValentineItem,					// ¹ß·»Å¸ÀÎ
+		DropValentineItem,					// ë°œë Œíƒ€ì¸
 #endif
 
 #ifdef EVENT_WHITEDAY
-		DropWhiteDayItem,					// È­ÀÌÆ®µ¥ÀÌ
+		DropWhiteDayItem,					// í™”ì´íŠ¸ë°ì´
 #endif
 
 #ifdef DROP_MAKE_DOCUMENT
-		DropMakeDocument,					// Á¦ÀÛ¹®¼­ µå·Ó
+		DropMakeDocument,					// ì œì‘ë¬¸ì„œ ë“œë¡­
 #endif // DROP_MAKE_DOCUMENT
 
-		DropRecommendItem,					// ÃßÃµ ¼­¹ö Àü¿ë ÀÎ½ºÅÏ½º Æ÷¼Ç ¾ÆÀÌÅÛ
+		DropRecommendItem,					// ì¶”ì²œ ì„œë²„ ì „ìš© ì¸ìŠ¤í„´ìŠ¤ í¬ì…˜ ì•„ì´í…œ
 
-		DropGoldenBallItem,					// °ñµçº¼ ÀÌº¥Æ®
+		DropGoldenBallItem,					// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸
 
-		RegenBlessWarrior,					// Àü»çÀÇ Ãàº¹
+		RegenBlessWarrior,					// ì „ì‚¬ì˜ ì¶•ë³µ
 
-		DropHalloween2006Item,				// 2006 ÇÒ·ÎÀ© ÀÌº¥Æ®
+		DropHalloween2006Item,				// 2006 í• ë¡œìœˆ ì´ë²¤íŠ¸
 
 		DropRaidMonsterItem,
 
@@ -480,9 +480,9 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 #ifdef DEV_EVENT_AUTO
 		DropEventItem,
 #endif // DEV_EVENT_AUTO
-	}; // µå·Ó ÇÔ¼ö Å×ÀÌºí
+	}; // ë“œë¡­ í•¨ìˆ˜ í…Œì´ë¸”
 
-	// ¹æ¾îÄÚµå : tpc°¡ ÀÖ´Âµ¥ m_pZoneÀÌ³ª m_pArea°¡ ¾øÀ¸¸é NULL·Î ¹Ù²Û´Ù
+	// ë°©ì–´ì½”ë“œ : tpcê°€ ìˆëŠ”ë° m_pZoneì´ë‚˜ m_pAreaê°€ ì—†ìœ¼ë©´ NULLë¡œ ë°”ê¾¼ë‹¤
 	if (tpc && (tpc->m_pZone == NULL || tpc->m_pArea == NULL))
 		tpc = NULL;
 
@@ -492,9 +492,9 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 
 	gserver->doEventDropItem(df, opc, tpc);
 
-	// µ· ¶³¾î¶ß¸± È®·ü : default 80 %
-	// BS ¼öÁ¤ : ³·Àº ·¹º§ ¸ó½ºÅÍ ÀâÀ»¶§ ÆĞ³ÎÆ¼¸¸ Á¸Àç
-	// Àá¼öÇÔ : µ· µå·ÓÈ®·ü
+	// ëˆ ë–¨ì–´ëœ¨ë¦´ í™•ë¥  : default 80 %
+	// BS ìˆ˜ì • : ë‚®ì€ ë ˆë²¨ ëª¬ìŠ¤í„° ì¡ì„ë•Œ íŒ¨ë„í‹°ë§Œ ì¡´ì¬
+	// ì ìˆ˜í•¨ : ëˆ ë“œë¡­í™•ë¥ 
 	int moneyDropProb = MONEY_DROP_PROB * gserver->m_moneyDropProb / 100;
 	if (level != -1 && df->m_level - level < 0)
 		moneyDropProb += (df->m_level - level) * 500;
@@ -504,7 +504,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 	{
 		if (opc->m_assist.m_avAddition.hcSepNas)
 		{
-			opc->m_assist.CureByItemIndex(885);	// ³ª½º
+			opc->m_assist.CureByItemIndex(885);	// ë‚˜ìŠ¤
 			hcSepNas = true;
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventErrorMsg(rmsg, MSG_EVENT_ERROR_SEPTEMBER_NAS);
@@ -512,14 +512,14 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 		}
 	}
 
-	// µ· µå·Ó
+	// ëˆ ë“œë¡­
 	//CItem* money = NULL;
 	if (GetRandom(1, 10000) <= moneyDropProb)	// 80%
 	{
-		// µ· ¾×¼ö : +- 50%
+		// ëˆ ì•¡ìˆ˜ : +- 50%
 		if(!df)
 		{
-			//Àß¸øµÈ À§Ä¡¿¡¼­ ¸ó½ºÅÍ¸¦ Àâ¾ÒÀ» °æ¿ì
+			//ì˜ëª»ëœ ìœ„ì¹˜ì—ì„œ ëª¬ìŠ¤í„°ë¥¼ ì¡ì•˜ì„ ê²½ìš°
 			GAMELOG << "NOT FOUND TARGET....."
 					<< df->m_idNum
 					<< end;
@@ -528,12 +528,12 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 		GoldType_t count = df->m_proto->m_price * GetRandom(50, 150) / 100;
 
 #ifdef LC_RUS
-		// ·¯½Ã¾Æ´Â ¸Á°¢ÀÇ ½ÅÀüÀ» Á¦¿ÜÇÑ Áö¿ª¿¡¼­ 65 ·¹º§ ÀÌ»óÀÇ ¸ó½ºÅÍ°¡ ¶³±¸´Â ³ª½º´Â 40% ·Î ÁÙÀÎ´Ù.
+		// ëŸ¬ì‹œì•„ëŠ” ë§ê°ì˜ ì‹ ì „ì„ ì œì™¸í•œ ì§€ì—­ì—ì„œ 65 ë ˆë²¨ ì´ìƒì˜ ëª¬ìŠ¤í„°ê°€ ë–¨êµ¬ëŠ” ë‚˜ìŠ¤ëŠ” 40% ë¡œ ì¤„ì¸ë‹¤.
 		if (df->m_pZone && df->m_pZone->m_index != ZONE_DUNGEON4 && df->m_level >= 65)
 			count = count / 5 * 2;
 #endif // LC_RUS
 
-		// ´õºíÀÌº¥Æ®
+		// ë”ë¸”ì´ë²¤íŠ¸
 		if (gserver->m_bDoubleEvent)
 		{
 #ifdef NEW_DOUBLE_GM_ZONE
@@ -542,11 +542,11 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 				count = count * gserver->m_bDoubleNasPercent / 100 ;
 		}
 
-		// 9¿ù ÀÌº¥Æ® ³ª½º 10¹è
+		// 9ì›” ì´ë²¤íŠ¸ ë‚˜ìŠ¤ 10ë°°
 		if (hcSepNas)
 			count = count * 10;
 
-		// Çà¿î ÁÖ¹®¼­
+		// í–‰ìš´ ì£¼ë¬¸ì„œ
 		if (tpc && tpc->m_assist.m_avAddition.hcDropPlus_2141)
 		{
 			if (GetRandom(1, 10000) <= 8000 ) // 80 %
@@ -562,7 +562,7 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 			CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 			if( opc->m_guildInfo && opc->m_guildInfo->guild()->index() == pCastle->GetOwnerGuildIndex()  )
 			{
-				// ¼¼±İ ¾øÀ½
+				// ì„¸ê¸ˆ ì—†ìŒ
 			}
 			else
 			{
@@ -579,17 +579,17 @@ void ProcDropItemAfterBattle(CNPC* df, CPC* opc, CPC* tpc, int level)
 			return;
 		}
 
-		//ÆÄÆ¼ÀÌ¸é¼­ Å¸ÀÔÀÌ ±ÕµîÀÏ¶§
+		//íŒŒí‹°ì´ë©´ì„œ íƒ€ì…ì´ ê· ë“±ì¼ë•Œ
 		if (tpc->IsParty() && (tpc->m_party->GetPartyType(MSG_DIVITYPE_MONEY) == MSG_PARTY_TYPE_RANDOM || tpc->m_party->GetPartyType(MSG_DIVITYPE_MONEY) == MSG_PARTY_TYPE_BATTLE) )
 		{
 			DivisionPartyMoney(tpc, count);
 		}
-		//¿øÁ¤´ëÀÌ¸é¼­ Å¸ÀÔÀÌ ±ÕµîÀÏ¶§
+		//ì›ì •ëŒ€ì´ë©´ì„œ íƒ€ì…ì´ ê· ë“±ì¼ë•Œ
 		else if ( tpc->IsExped() && (tpc->m_Exped->GetExpedType(MSG_DIVITYPE_MONEY) == MSG_EXPED_TYPE_RANDOM || tpc->m_Exped->GetExpedType(MSG_DIVITYPE_MONEY) == MSG_EXPED_TYPE_BATTLE) )
 		{
 			DivisionExpedMoney(tpc, count);
 		}
-		//ÀÌµµ Àúµµ ¾Æ´Ò¶§ (°³ÀÎ ÇÃ·¹ÀÌÇÒ¶§)
+		//ì´ë„ ì €ë„ ì•„ë‹ë•Œ (ê°œì¸ í”Œë ˆì´í• ë•Œ)
 		else
 		{
 			int bonus = 0;

@@ -80,7 +80,7 @@ bool ItemCollectionData::load()
 		{
 			if(data->need_data[0].need_type == NEED_TYPE_THEME)
 			{
-				//ÇÊ¿äÁ¶°ÇÀÌ Å×¸¶ÀÏ °æ¿ì¿¡´Â Å×¸¶ ¸Ê µ¥ÀÌÅÍ¿¡ µ¥ÀÌÅÍ Ãß°¡.
+				//í•„ìš”ì¡°ê±´ì´ í…Œë§ˆì¼ ê²½ìš°ì—ëŠ” í…Œë§ˆ ë§µ ë°ì´í„°ì— ë°ì´í„° ì¶”ê°€.
 				ST_NEED_DATA_TO_THEME st;
 				st.category_index = data->category_index;
 				st.theme_index = data->theme_index;
@@ -167,7 +167,7 @@ ItemCollectionManager::~ItemCollectionManager()
 
 void ItemCollectionManager::CompleteDoingData(int category_index, int theme_index)
 {
-	//¿Ï·á°¡ µÇ¸é ÇØ´ç Å×¸¶¸¦ ÇÊ¿ä·Î ÇÏ´Â ´Ù¸¥ Å×¸¶¸¦ Ã£¾Æ¼­ doing »óÅÂ·Î º¯°æ½ÃÄÑÁØ´Ù.....
+	//ì™„ë£Œê°€ ë˜ë©´ í•´ë‹¹ í…Œë§ˆë¥¼ í•„ìš”ë¡œ í•˜ëŠ” ë‹¤ë¥¸ í…Œë§ˆë¥¼ ì°¾ì•„ì„œ doing ìƒíƒœë¡œ ë³€ê²½ì‹œì¼œì¤€ë‹¤.....
 	ItemCollectionData::Map_iter it_map = ItemCollectionData::instance()->_map.find(theme_index);
 	if(it_map != ItemCollectionData::instance()->_map.end())
 	{
@@ -203,7 +203,7 @@ bool ItemCollectionManager::updateNeedData( int category_index, int theme_index,
 	multimap_doing_iter upper_it = _multimap_doing.upper_bound(category_index);
 
 
-	//±âÁ¸¿¡ ÀÖ´Â Å×¸¶ µ¥ÀÌÅÍ¿¡ ¾÷µ¥ÀÌÆ® ÇÏ´Â °æ¿ì
+	//ê¸°ì¡´ì— ìˆëŠ” í…Œë§ˆ ë°ì´í„°ì— ì—…ë°ì´íŠ¸ í•˜ëŠ” ê²½ìš°
 	for(; lower_it != upper_it; lower_it++)
 	{
 		if(lower_it->second.theme_index == theme_index)
@@ -223,7 +223,7 @@ bool ItemCollectionManager::updateNeedData( int category_index, int theme_index,
 		}
 	}
 
-	//À§¿¡¼­ ¸®ÅÏÇÏÁö ¸øÇÏ¸é »õ·Î Ãß°¡µÇ´Â µ¥ÀÌÅÍ·Î ÆÇ´Ü.
+	//ìœ„ì—ì„œ ë¦¬í„´í•˜ì§€ ëª»í•˜ë©´ ìƒˆë¡œ ì¶”ê°€ë˜ëŠ” ë°ì´í„°ë¡œ íŒë‹¨.
 	{
 		ST_DOING_DATA st_d;
 		st_d.category_index = category_index;
@@ -365,7 +365,7 @@ bool ItemCollectionManager::checkCanComplete( int category_index, int theme_inde
 
 			for(int i = 0; i < 6; i++)
 			{
-				//ÇÏ³ª¶óµµ ¿Ï·áµÇÁö ¾Ê¾ÒÀ¸¸é
+				//í•˜ë‚˜ë¼ë„ ì™„ë£Œë˜ì§€ ì•Šì•˜ìœ¼ë©´
 				if( data->need_data[i].need_num < lower_it->second.need_data[i] )
 				{
 					return false;
@@ -395,7 +395,7 @@ void ItemCollectionManager::complete( int category_index, int theme_index )
 
 void ItemCollectionManager::sendFinishData(int category_index, int theme_index, int end_time)
 {
-	//¿Ï·áµÈ Ç×¸ñ µ¥ÀÌÅÍ Àü´Ş
+	//ì™„ë£Œëœ í•­ëª© ë°ì´í„° ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateClient::makeItemCollectionEndDataMsg(rmsg, category_index, theme_index, end_time);
 	SEND_Q(rmsg, _owner->m_desc);
@@ -404,7 +404,7 @@ void ItemCollectionManager::sendFinishData(int category_index, int theme_index, 
 
 void ItemCollectionManager::sendDoingData(int category_index, int theme_index, int* need_data)
 {
-	//ÁøÇàÁß Ç×¸ñ µ¥ÀÌÅÍ Àü´Ş
+	//ì§„í–‰ì¤‘ í•­ëª© ë°ì´í„° ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateClient::makeItemCollectionDoingDataMsg(rmsg, category_index, theme_index, need_data);
 	SEND_Q(rmsg, _owner->m_desc);
@@ -415,7 +415,7 @@ void ItemCollectionManager::sendFinishInfo()
 	if(_multimap_finish.empty())
 		return;
 
-	//¿Ï·á ¸®½ºÆ® µ¥ÀÌÅÍ ÆĞÅ¶ Àü´Ş
+	//ì™„ë£Œ ë¦¬ìŠ¤íŠ¸ ë°ì´í„° íŒ¨í‚· ì „ë‹¬
 	int totalcount = _multimap_finish.size();
 	multimap_finish_iter it = _multimap_finish.begin();
 	multimap_finish_iter it_end = _multimap_finish.end();
@@ -448,7 +448,7 @@ void ItemCollectionManager::sendDoingInfo()
 	if(_multimap_doing.empty())
 		return;
 
-	//ÁøÇàÁßÀÎ ¸®½ºÆ® µ¥ÀÌÅÍ ÆĞÅ¶ Àü´Ş
+	//ì§„í–‰ì¤‘ì¸ ë¦¬ìŠ¤íŠ¸ ë°ì´í„° íŒ¨í‚· ì „ë‹¬
 	int totalcount = _multimap_doing.size();
 	multimap_doing_iter it = _multimap_doing.begin();
 	multimap_doing_iter it_end = _multimap_doing.end();

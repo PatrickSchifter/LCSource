@@ -47,7 +47,7 @@ void SyndicateInfoDataManager::sendKingNameInfo( CDescriptor* dest )
 {
 	if(dest == NULL)
 	{
-		//ÀüÃ¼ À¯Àú¿¡°Ô?
+		//ì „ì²´ ìœ ì €ì—ê²Œ?
 	}
 	else
 	{
@@ -70,11 +70,11 @@ void SyndicateInfoDataManager::sendJewelPercentageInfo( CDescriptor* dest )
 {
 	if(dest == NULL)
 	{
-		//ÀüÃ¼ À¯Àú¿¡°Ô?
+		//ì „ì²´ ìœ ì €ì—ê²Œ?
 	}
 	else
 	{
-		//Ä«ÀÌ·è½º¸¦ º¸³»ÁÖ¸é ³ª¸ÓÁö ÆÛ¼¾Æ®´Â ÀÚµ¿ÀûÀ¸·Î ³ª¿À¹Ç·Î ¼­¹ö´Â Ä«ÀÌ·è½ºÀÇ ÆÛ¼¾Å×ÀÌÁö¸¸ º¸³½´Ù.
+		//ì¹´ì´ë£©ìŠ¤ë¥¼ ë³´ë‚´ì£¼ë©´ ë‚˜ë¨¸ì§€ í¼ì„¼íŠ¸ëŠ” ìë™ì ìœ¼ë¡œ ë‚˜ì˜¤ë¯€ë¡œ ì„œë²„ëŠ” ì¹´ì´ë£©ìŠ¤ì˜ í¼ì„¼í…Œì´ì§€ë§Œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		UpdateClient::SyndicatePercentageData* packet = reinterpret_cast<UpdateClient::SyndicatePercentageData*>(rmsg->m_buf);
 
@@ -95,7 +95,7 @@ void SyndicateInfoDataManager::sendSyndicateInfo( CDescriptor* dest )
 {
 	if(dest == NULL)
 	{
-		//ÀüÃ¼ À¯Àú¿¡°Ô?
+		//ì „ì²´ ìœ ì €ì—ê²Œ?
 	}
 	else
 	{

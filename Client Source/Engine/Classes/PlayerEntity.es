@@ -232,13 +232,16 @@ functions:
 	virtual void HUD_DrawModel(CDrawPort* pdp, FLOAT fMinX, FLOAT fMinY, FLOAT fMaxX, FLOAT fMaxY, INDEX iType, FLOAT fDistance, FLOAT fHeight) {};
 	virtual FLOAT GetAnimationTime() { return 0.0f; }
 	virtual void HUD_SetCharModelData(INDEX iJob, INDEX iHairStyle, INDEX iFaceStyle) {};
-	virtual void HUD_SetModelData(INDEX iType, INDEX iIndex) {};
+	virtual void HUD_SetModelData(INDEX iType, INDEX iIndex, INDEX iUIType) {};
 	virtual void HUD_WearingModel(INDEX iType, INDEX iJob, INDEX iItem, BOOL bLogin) {};
 	virtual void HUD_ChangeHairMesh(INDEX iJob, INDEX iHairStyle) {};
 	virtual void HUD_ChangeFaceMesh(INDEX iJob, INDEX iFaceStyle) {};
 	virtual void HUD_PlayAnimation(INDEX iJob, INDEX AnimID) {};
 	virtual void HUD_PlayAnimation(CTString strAniName) {};
 	virtual void HUD_SetModelColor(const COLOR ModelColor)	{};
+	virtual void HUD_SetTitleEffect(CTString strEffectName) {};
+	virtual BOOL IsHudModel_Used() { return FALSE; }
+	virtual void SetHudModel_Use(BOOL bUse) {};
 	virtual void SetDecoModeCamera( FLOAT fDistance, FLOAT fHeight ) {};
 	virtual void SetAppearanceData( int inde, SBYTE hairstyle, SBYTE facestyle ) {};
   /* Get name of this player. */

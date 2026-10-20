@@ -8,7 +8,7 @@ typedef struct __tagRareOptionData
 	int						optionlevel;	// option level
 	int						optionval;		// option value
 	int						optionprob;		// option prob.
-	int						rarebit;		// bit field : ÇöÀç µ¥ÀÌÅÍÀÇ ºñÆ® ÇÊµå °ª
+	int						rarebit;		// bit field : í˜„ì¬ ë°ì´í„°ì˜ ë¹„íŠ¸ í•„ë“œ ê°’
 } RAREOPTIONDATA;
 
 class CRareOptionProto

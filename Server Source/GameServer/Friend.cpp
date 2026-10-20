@@ -11,9 +11,9 @@ CFriendMember::CFriendMember()
 	: m_strFriendName(MAX_CHAR_NAME_LENGTH + 1)
 {
 	m_nChaIndex = -1;
-//	m_nLastConnectDate = 0; //ÃÖ±ÙÁ¢¼ÓÀÏÀÚ
-	m_nJobType = -1; //Á¾Á·
-	m_nCondition = 	MSG_FRIEND_CONDITION_OFFLINE; //»óÅÂ
+//	m_nLastConnectDate = 0; //ìµœê·¼ì ‘ì†ì¼ì
+	m_nJobType = -1; //ì¢…ì¡±
+	m_nCondition = 	MSG_FRIEND_CONDITION_OFFLINE; //ìƒíƒœ
 	m_groupIndex = 0;
 	m_pPc = NULL;
 }
@@ -105,7 +105,7 @@ CFriendMember* CFriend::FindFriendMember(const char* name)
 	return NULL;
 }
 
-//Ä£±¸µî·Ï
+//ì¹œêµ¬ë“±ë¡
 int CFriend::AddFriend(int chaindex, const char* name, int job, int nCon, int groupIndex)
 {
 	if (m_nFriendCnt >= FRIEND_MAX_MEMBER)
@@ -135,14 +135,14 @@ int CFriend::AddFriend(int chaindex, const char* name, int job, int nCon, int gr
 
 			m_pFriendMember[i] = pFriendMember;
 			m_nFriendCnt++;
-			return i;	//¸®½ºÆ®ÀÇ ÀÎµ¦½º°¡ µÇ°ÚÁö..
+			return i;	//ë¦¬ìŠ¤íŠ¸ì˜ ì¸ë±ìŠ¤ê°€ ë˜ê² ì§€..
 		}
 	}
 
 	return -1;
 }
 
-//Ä£±¸»èÁ¦
+//ì¹œêµ¬ì‚­ì œ
 void CFriend::RemoveFriend(int chaindex)
 {
 	for (int i = 0; i < FRIEND_MAX_MEMBER; i++)
@@ -191,19 +191,19 @@ void CFriend::SendToAll(CNetMsg::SP& msg)
 
 int CFriend::addGroup(const char* gName, int gIndex)
 {
-	// ¹®ÀÚ¿­ °Ë»ç
+	// ë¬¸ìì—´ ê²€ì‚¬
 	if (strinc(gName, "'") || strinc(gName, "%") || strinc(gName, " "))
 	{
 		return -1;
 	}
 
-	// ÃÖ´ë °¹¼ö°¡ ³ÑÀ¸¸é
+	// ìµœëŒ€ ê°¯ìˆ˜ê°€ ë„˜ìœ¼ë©´
 	if (this->m_groupList.size() >= FRIEND_GROUP_MAX_NUMBER)
 	{
 		return -1;
 	}
 
-	// µ¿ÀÏ ±×·ì¸íÀÌ ÀÖ´ÂÁö °Ë»ö
+	// ë™ì¼ ê·¸ë£¹ëª…ì´ ìˆëŠ”ì§€ ê²€ìƒ‰
 	BOOST_FOREACH(map_t::value_type& p, this->m_groupList)
 	{
 		CFriendGroup* pGroup = p.second;
@@ -211,7 +211,7 @@ int CFriend::addGroup(const char* gName, int gIndex)
 			return -1;
 	}
 
-	// µğºñ¿¡¼­ ÀĞÀº µ¥ÀÌÅÍÀÌ¸é ¹Ù·Î ÀÔ·Â Ã³¸®
+	// ë””ë¹„ì—ì„œ ì½ì€ ë°ì´í„°ì´ë©´ ë°”ë¡œ ì…ë ¥ ì²˜ë¦¬
 	CFriendGroup* pGroup = NULL;
 	if (gIndex != -1)
 	{
@@ -219,14 +219,14 @@ int CFriend::addGroup(const char* gName, int gIndex)
 	}
 	else
 	{
-		// ÃÖÁ¾ ÀÎµ¦½º¸¦ ±¸ÇÔ
+		// ìµœì¢… ì¸ë±ìŠ¤ë¥¼ êµ¬í•¨
 		if (this->m_groupList.empty())
 		{
 			gIndex = 0;
 		}
 		else
 		{
-			// std::mapÀº ÀÚµ¿À¸·Î ¿À¸§Â÷¼øÀ¸·Î Á¤¸®µÇ¹Ç·Î ¸Ç¸¶Áö¸· key°ªÀÌ °¡Àå Å­
+			// std::mapì€ ìë™ìœ¼ë¡œ ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œ ì •ë¦¬ë˜ë¯€ë¡œ ë§¨ë§ˆì§€ë§‰ keyê°’ì´ ê°€ì¥ í¼
 			map_t::iterator it = --m_groupList.end();
 			gIndex = (it->first) + 1;
 		}

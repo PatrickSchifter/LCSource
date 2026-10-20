@@ -180,36 +180,36 @@ bool CDBCmd::GetRec(int fieldno, unsigned char& ch)
 
 bool CDBCmd::GetRec(int fieldno, CLCString& str, bool bTrim)
 {
-	// µ¥ÀÌÅÍ ÀĞ±â
+	// ë°ì´í„° ì½ê¸°
 	char* ret = GetRec(fieldno);
 
-	// NULLÀÌ¸é ¿À·ù
+	// NULLì´ë©´ ì˜¤ë¥˜
 	if (ret == NULL)
 		return false;
 
 	char* p = ret;
 
-	// left trim Ã³¸®
+	// left trim ì²˜ë¦¬
 	if (bTrim)
 	{
 		while (*p && CLCString::IsSpace(*p))
 			p++;
 	}
 
-	// ½ÃÀÛ Æ÷ÀÎÆ® ¼³Á¤
+	// ì‹œì‘ í¬ì¸íŠ¸ ì„¤ì •
 	char* pStart = p;
 
-	// ½ÃÀÛ Æ÷ÀÎÆ® ÀÌÈÄ ±æÀÌ°¡ 1º¸´Ù ÀÛÀ¸¸é
+	// ì‹œì‘ í¬ì¸íŠ¸ ì´í›„ ê¸¸ì´ê°€ 1ë³´ë‹¤ ì‘ìœ¼ë©´
 	if (strlen(pStart) < 1)
 	{
 		str = "";
 		return true;
 	}
 
-	// ³¡ Æ÷ÀÎÆ® ¼³Á¤(NULL ¾ÕÀÚ¸®)
+	// ë í¬ì¸íŠ¸ ì„¤ì •(NULL ì•ìë¦¬)
 	char* pEnd = pStart + strlen(pStart) - 1;
 
-	// right trim Ã³¸®
+	// right trim ì²˜ë¦¬
 	if (bTrim)
 	{
 		while (pEnd >= pStart)
@@ -221,17 +221,17 @@ bool CDBCmd::GetRec(int fieldno, CLCString& str, bool bTrim)
 		}
 	}
 
-	// trim¿¡ ÀÇÇØ ±æÀÌ°¡ 0°¡ µÇ¸é ¸®ÅÏ
+	// trimì— ì˜í•´ ê¸¸ì´ê°€ 0ê°€ ë˜ë©´ ë¦¬í„´
 	if (pEnd < pStart)
 	{
 		str = "";
 		return true;
 	}
 
-	// ¿©±â¿¡ ¿À¸é pStart¿¡¼­ pEnd±îÁö ¹®ÀÚ¸¦ º¹»çÇÏ¸é µÊ
-	int len = pEnd - pStart + 2;	// °á°ú ¹®ÀÚ¿­ ±æÀÌ (NULL Æ÷ÇÔ)
+	// ì—¬ê¸°ì— ì˜¤ë©´ pStartì—ì„œ pEndê¹Œì§€ ë¬¸ìë¥¼ ë³µì‚¬í•˜ë©´ ë¨
+	int len = pEnd - pStart + 2;	// ê²°ê³¼ ë¬¸ìì—´ ê¸¸ì´ (NULL í¬í•¨)
 
-	// Ãâ·Â ¹öÆÛÀÇ Å©±â¿Í ºñ±³ ÀÛÀº °ÍÀ» ÅÃÇÔ
+	// ì¶œë ¥ ë²„í¼ì˜ í¬ê¸°ì™€ ë¹„êµ ì‘ì€ ê²ƒì„ íƒí•¨
 	if (len > str.BufferSize())
 		len = str.BufferSize();
 

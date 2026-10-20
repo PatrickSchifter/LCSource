@@ -9,7 +9,7 @@ namespace RequestClient
 {
 struct action : public pTypeBase
 {
-	int		targetIndex;		// AGT_THROW_WATER ÀÏ¶§¸¸ À¯È¿ÇÔ
+	int		targetIndex;		// AGT_THROW_WATER ì¼ë•Œë§Œ ìœ íš¨í•¨
 	char	type;
 	char	index;
 };

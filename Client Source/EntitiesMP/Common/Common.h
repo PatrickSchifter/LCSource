@@ -567,32 +567,42 @@ public:
 	HUD_MLData()
 	{
 		bEnable = FALSE;
+		bHud_Use = FALSE;
 		Init();
 	}
 
 	~HUD_MLData()
 	{
 		HUD_DeleteMI();
+		HUD_DeleteBG();
 	}
 
 public:
 	//CModelInstance*	hud_MI;
 	CEntity		hud_MI;
+	CEntity		hud_BG;
 	CItemEffect	hud_ItemEffect;
 	CEffectGroupManager::my_list listProcess;
 	BOOL bEnable;
-	INDEX iWearingItems[7]; // 0 Weapon // 날개는 패스~
+	INDEX iWearingItems[8]; // 0 Weapon // 7 등장비
 	INDEX iAnim;
-	
+	INDEX iRenderType;
+	BOOL bHud_Use; // Hud 데이타가 이미 사용중인지
 
 	void Init()
 	{
 		hud_MI.en_EntityUseType = CEntity::EU_DUMMY;
+		hud_BG.en_EntityUseType = CEntity::EU_DUMMY;
+
 		hud_MI.InitAsSkaModel();
+		hud_BG.InitAsSkaModel();
+
 		hud_ItemEffect.SetItemERType(ER_IN_UI);
 		HUD_CreateMI();
+		HUD_CreateBG();
+		iRenderType = 0;
 
-		for (int i=0; i<7; ++i)
+		for (int i =0 ; i < 8; ++i)
 		{
 			iWearingItems[i] = 0;
 		}
@@ -611,8 +621,16 @@ public:
 		}
 		else
 		{
-			if (iRef > 0)
+			if (iRef > 0 && iItem > 0)
 			{
+				CItemData* pItemData = _pNetwork->GetItemData(iItem);
+				CTString strItemSmc = pItemData->GetItemSmcFileName();
+
+				if (strItemSmc == MODEL_TREASURE)
+				{
+					return;
+				}
+
 				_pGameState->DeleteDefaultArmor(hud_MI.GetModelInstance(), iType, iJob);
 			}
 		}
@@ -651,7 +669,7 @@ public:
 				hud_MI.AddAnimation(ska_GetIDFromStringTable(pInfo->GetAnimationName(_pNetwork->MyCharacterInfo.job, ANIM_IDLE)),
 				AN_LOOPING|AN_CLEAR, 1.0f, 0x03, ESKA_MASTER_MODEL_INSTANCE);
 			}
-			else
+			else if (iWearingItems[iRef] > 0)
 			{
 				CTFileName fnFileName;
 				MeshInstance *mi;
@@ -662,7 +680,6 @@ public:
 				case WEAR_HELMET:
 					iWearPos = HEAD;
 					break;
-					
 				case WEAR_JACKET:
 					iWearPos = BODYUP;
 					break;
@@ -857,6 +874,17 @@ public:
 		bEnable = FALSE;
 	}
 
+	void HUD_CreateBG()
+	{
+		hud_BG.en_pmiModelInstance = CreateModelInstance("");
+		hud_BG.en_pmiModelInstance->mi_bDummyModel = TRUE;
+	}
+
+	void HUD_DeleteBG()
+	{
+		hud_BG.End();
+	}
+
 	void HUD_CopyMI(CModelInstance* copyMI)
 	{
 		hud_MI.GetModelInstance()->Copy((*copyMI));
@@ -891,4 +919,30 @@ public:
 		hud_ItemEffect.Refresh(&hud_MI.GetModelInstance()->m_tmSkaTagManager, 1);
 	}
 
+	void HUD_RenderUIType(INDEX iUIType)
+	{
+		iRenderType = iUIType;
+	}
+
+	void HUD_SetTitleEffect(const char* strEffectName)
+	{
+		hud_ItemEffect.AddNickEffect(strEffectName, &hud_MI.GetModelInstance()->m_tmSkaTagManager);
+		hud_ItemEffect.SetItemERSubType(ERS_MAKETITLE);
+		hud_ItemEffect.Refresh(&hud_MI.GetModelInstance()->m_tmSkaTagManager, 1);
+	}
+
+	void HUD_DeleteTitleEffect()
+	{
+		hud_ItemEffect.DeleteNickEffect();
+	}
+
+	BOOL IsHudModelUsed()
+	{
+		return bHud_Use;
+	}
+
+	void SetHUDModelUse(BOOL bUse)
+	{
+		bHud_Use = bUse;
+	}
 };

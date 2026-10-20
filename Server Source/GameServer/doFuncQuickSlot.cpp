@@ -6,7 +6,7 @@
 #include "doFunc.h"
 
 ///////////////////////
-// Quick Slot ∞¸∑√ «‘ºˆ
+// Quick Slot ‡∏êÔ£Ö‡∏ó‡∏£ ‡∏ß‡∏¥‡∏ú‡πñ
 
 void do_QuickSlot(CPC* ch, CNetMsg::SP& msg)
 {

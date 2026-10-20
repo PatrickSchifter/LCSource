@@ -39,10 +39,17 @@ CUITab::CUITab()
 	: m_pCurTabBt(NULL)
 	, m_pCurTabPage(NULL)
 	, m_nCurSel(-1)
+	, m_pCmdChange(NULL)
+	, m_func_change(NULL)
 {
 	m_eType = eUI_CONTROL_TAB;
 }
 
+CUITab::~CUITab()
+{
+	SAFE_DELETE(m_pCmdChange);
+	Destroy();
+}
 
 CUIBase* CUITab::Clone()
 {
@@ -160,8 +167,11 @@ void CUITab::OnChangeTab( int idx )
 	CUIFocus::getSingleton()->setUI(NULL);
 
 	// 창이 바뀌었을 경우 명령 실행
-	if (m_pCmd != NULL)
-		m_pCmd->execute();
+	if (m_pCmdChange != NULL)
+		m_pCmdChange->execute();
+
+	if (m_func_change)
+		m_func_change(this);
 }
 
 CUICheckButton* CUITab::getCheckBtn( int nIdx )
@@ -172,6 +182,9 @@ CUICheckButton* CUITab::getCheckBtn( int nIdx )
 	return m_vecTabBt[nIdx];
 }
 
+void CUITab::CmdErase()
+{
+	m_func_change = NULL;
 
-
-
+	CUIBase::CmdErase();
+}

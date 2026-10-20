@@ -248,7 +248,7 @@ bool CSkillProto::IsSeal() const
 
 bool CSkillProto::IsSameJob(CPC* pc) const
 {
-	// Á÷¾÷ °Ë»ç
+	// ì§ì—… ê²€ì‚¬
 	if (m_job == pc->m_job)
 	{
 		if (m_job2)
@@ -316,7 +316,7 @@ bool CSkillProto::IsSameJob(CPet* pet) const
 
 bool CSkillProto::IsSameJob(CAPet* apet) const
 {
-	// Á÷¾÷ °Ë»ç
+	// ì§ì—… ê²€ì‚¬
 	if ( !apet )
 		return false;
 
@@ -354,8 +354,8 @@ float CSkillProto::GetFireRange(CCharacter* ch) const
 	}
 	else if (IS_NPC(ch))
 	{
-		// NPCÀÇ °æ¿ì ¼¿ÇÁ½ºÅ³Àº »çÁ¤°Å¸®°¡ Àû¿ë¹üÀ§±îÁö Æ÷ÇÔ
-		// ÆÄÆ¼ÀÇ °æ¿ì 999¹ÌÅÍ
+		// NPCì˜ ê²½ìš° ì…€í”„ìŠ¤í‚¬ì€ ì‚¬ì •ê±°ë¦¬ê°€ ì ìš©ë²”ìœ„ê¹Œì§€ í¬í•¨
+		// íŒŒí‹°ì˜ ê²½ìš° 999ë¯¸í„°
 		switch (m_targetType)
 		{
 		case STT_SELF_RANGE:
@@ -430,13 +430,13 @@ int CSkillProto::CheckUseState(CCharacter* ch) const
 
 	if (pc && (m_useState & SCT_WEAPON))
 	{
-		// ¹ÌÂø¿ë
+		// ë¯¸ì°©ìš©
 		if (pc->m_wearInventory.wearItemInfo[WEARING_WEAPON] == NULL)
 			return SCT_WEAPON;
-		// ¹«±â ¾Æ´Ô
+		// ë¬´ê¸° ì•„ë‹˜
 		if (!pc->m_wearInventory.wearItemInfo[WEARING_WEAPON]->IsWeaponType())
 			return SCT_WEAPON;
-		// Çã¿ë ¹«±â ¾Æ´Ô
+		// í—ˆìš© ë¬´ê¸° ì•„ë‹˜
 		int sub = pc->m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemSubTypeIdx();
 		if ((m_useWeaponType0 >= 0 || m_useWeaponType1 >= 0) && (sub != m_useWeaponType0 && sub != m_useWeaponType1))
 			return SCT_WEAPON;
@@ -444,10 +444,10 @@ int CSkillProto::CheckUseState(CCharacter* ch) const
 
 	if (pc && (m_useState & SCT_SHIELD))
 	{
-		// ¹ÌÂø¿ë
+		// ë¯¸ì°©ìš©
 		if (pc->m_wearInventory.wearItemInfo[WEARING_SHIELD] == NULL)
 			return SCT_SHIELD;
-		// ¹æÆĞ ¾Æ´Ô
+		// ë°©íŒ¨ ì•„ë‹˜
 		if (pc->m_wearInventory.wearItemInfo[WEARING_SHIELD]->m_itemProto->getItemTypeIdx() != ITYPE_WEAR)
 			return SCT_SHIELD;
 		if (pc->m_wearInventory.wearItemInfo[WEARING_SHIELD]->m_itemProto->getItemSubTypeIdx() != IWEAR_SHIELD)
@@ -473,11 +473,11 @@ int CSkillProto::CheckUseState(CCharacter* ch) const
 	if ((m_useState & SCT_PEACEZONE) && ch->IsInPeaceZone(false))
 		return SCT_PEACEZONE;
 
-	// ´ÙÅ©´Ï½º ¸ğµåÀÏ¶§ ´ÙÅ©´Ï½º Àü¿ë ½ºÅ³ÀÌ ¾Æ´Ï¸é »ç¿ë ºÒ°¡
+	// ë‹¤í¬ë‹ˆìŠ¤ ëª¨ë“œì¼ë•Œ ë‹¤í¬ë‹ˆìŠ¤ ì „ìš© ìŠ¤í‚¬ì´ ì•„ë‹ˆë©´ ì‚¬ìš© ë¶ˆê°€
 	if (pc && !(m_useState & SCT_DARKNESS) && pc->IsSetPlayerState(PLAYER_STATE_DARKNESS))
 		return SCT_DARKNESS;
 
-	// »ç¿ë Á¶°Ç °Ë»ç : È¿°ú »óÅÂ
+	// ì‚¬ìš© ì¡°ê±´ ê²€ì‚¬ : íš¨ê³¼ ìƒíƒœ
 	if (pc)
 	{
 		int i;
@@ -669,7 +669,7 @@ bool CSkill::IsReady(CCharacter* ch)
 	if (m_proto == NULL)
 		return false;
 	float reusetime = m_proto->m_reuseTime;
-	// ÀÌºÎºĞ ¼öÁ¤ÇÏ°í...
+	// ì´ë¶€ë¶„ ìˆ˜ì •í•˜ê³ ...
 
 #if defined(BUGFIX_GUILD_SKILL_COOLTIME) || defined(SKILL_TYPE_NO_COOL_TIME)
 	if (1
@@ -691,7 +691,7 @@ bool CSkill::IsReady(CCharacter* ch)
 			int prob = pPC->m_opDecreaseSkillDelay + pPC->m_skillCooltime;
 			/*if(prob > 100)
 				prob = 100;*/
-			// ÀÌºÎºĞ ¼öÁ¤ÇÏ°í...
+			// ì´ë¶€ë¶„ ìˆ˜ì •í•˜ê³ ...
 #if defined(BUGFIX_GUILD_SKILL_COOLTIME) || defined(SKILL_TYPE_NO_COOL_TIME)
 			if (1
 #ifdef BUGFIX_GUILD_SKILL_COOLTIME
@@ -702,8 +702,7 @@ bool CSkill::IsReady(CCharacter* ch)
 #endif
 			   )
 #endif // defined(BUGFIX_GUILD_SKILL_COOLTIME || SKILL_TYPE_NO_COOL_TIME)
-				//reusetime = reusetime * ( 150.00 / (150 + prob )) * (100.00 / (100 + prob));
-                                reusetime -= reusetime * (prob) / 100;
+				reusetime = reusetime * ( 150.00 / (150 + prob )) * (100.00 / (100 + prob));
 		}
 	}
 	if(IS_ELEMENTAL(ch))
@@ -720,19 +719,19 @@ bool CSkill::IsReady(CCharacter* ch)
 		reusetime = reusetime / 100;
 	}
 
-	//if(reusetime < 1)
-	//	reusetime = 10;
+	if(reusetime < 1)
+		reusetime = 10;
 
-	//ÇØ´ç ½ºÅ³ÀÌ ±æµå ½ºÅ³ÀÎ °æ¿ì
+	//í•´ë‹¹ ìŠ¤í‚¬ì´ ê¸¸ë“œ ìŠ¤í‚¬ì¸ ê²½ìš°
 	if(this->m_proto->m_flag & SF_GUILD)
 	{
-		//À¯Àú
+		//ìœ ì €
 		if(IS_PC(ch))
 		{
 			CPC* pc = TO_PC(ch);
 			if(pc->m_guildInfo == NULL)
 			{
-				//ÇØÅ·½Ãµµ Á¢¼Ó Á¾·á
+				//í•´í‚¹ì‹œë„ ì ‘ì† ì¢…ë£Œ
 				LOG_ERROR("HACKING? : invalid skill guildinfo. char_index[%d], skill_index[%d]", pc->m_index, this->m_proto->m_index);
 				pc->m_desc->Close("Invalid guildInfo");
 				return false;
@@ -741,12 +740,12 @@ bool CSkill::IsReady(CCharacter* ch)
 
 			if(it == m_gskill_usetime.end())
 			{
-				//¾øÀ¸¸é
+				//ì—†ìœ¼ë©´
 				return true;
 			}
 			else
 			{
-				//ÀÖÀ¸¸é
+				//ìˆìœ¼ë©´
 				if(gserver->m_pulse - it->second < reusetime)
 					return false;
 			}
@@ -773,7 +772,7 @@ void CSkill::Ready(CCharacter* tch)
 
 	m_state = SKILL_CON_READY;
 
-	//±æµå½ºÅ³ÀÎ °æ¿ì¿¡´Â ÄğÅ¸ÀÓÀ» ±æµå°´Ã¼¿¡¼­ µû·Î °ü¸®ÇÑ´Ù.
+	//ê¸¸ë“œìŠ¤í‚¬ì¸ ê²½ìš°ì—ëŠ” ì¿¨íƒ€ì„ì„ ê¸¸ë“œê°ì²´ì—ì„œ ë”°ë¡œ ê´€ë¦¬í•œë‹¤.
 	if(this->m_proto->m_flag & SF_GUILD)
 	{
 		if(IS_PC(tch) == false)
@@ -782,7 +781,7 @@ void CSkill::Ready(CCharacter* tch)
 		CPC* pc = TO_PC(tch);
 		if(pc->m_guildInfo == NULL)
 		{
-			//ÇØÅ·½Ãµµ Á¢¼Ó Á¾·á
+			//í•´í‚¹ì‹œë„ ì ‘ì† ì¢…ë£Œ
 			LOG_ERROR("HACKING? : invalid skill guildinfo. char_index[%d], skill_index[%d]", pc->m_index, this->m_proto->m_index);
 			pc->m_desc->Close("Invalid guildInfo");
 			return;
@@ -791,12 +790,12 @@ void CSkill::Ready(CCharacter* tch)
 		GUILD_SKILL_USETIME_DATA::iterator it = m_gskill_usetime.find(pc->m_index);
 		if(it == m_gskill_usetime.end())
 		{
-			//¾øÀ¸¸é Ãß°¡
+			//ì—†ìœ¼ë©´ ì¶”ê°€
 			m_gskill_usetime.insert(GUILD_SKILL_USETIME_DATA::value_type(pc->m_index, gserver->m_pulse));
 		}
 		else
 		{
-			//ÀÖÀ¸¸é update
+			//ìˆìœ¼ë©´ update
 			it->second = gserver->m_pulse;
 		}
 	}
@@ -821,7 +820,7 @@ void CSkill::Fire()
 
 void CSkill::Cancel(CCharacter* pCharSkill)
 {
-	// Áö¼Ó ½ºÅ³À» »ç¿ëÇÏ´Â »óÅÂ¿´À¸¸é ÇØÁ¦ ½ÃÅ²´Ù.
+	// ì§€ì† ìŠ¤í‚¬ì„ ì‚¬ìš©í•˜ëŠ” ìƒíƒœì˜€ìœ¼ë©´ í•´ì œ ì‹œí‚¨ë‹¤.
 	if (IS_PC(pCharSkill))
 	{
 		CPC* pPC = TO_PC(pCharSkill);
@@ -834,7 +833,7 @@ void CSkill::Cancel(CCharacter* pCharSkill)
 				pPC->m_pArea->SendToCell(rmsg, pPC, true);
 			}
 
-			// ½ºÅ³ÀÇ Å¸°ÙÀ» Ã£´Â´Ù
+			// ìŠ¤í‚¬ì˜ íƒ€ê²Ÿì„ ì°¾ëŠ”ë‹¤
 			CCharacter*	target = NULL;
 			target = pPC->m_pArea->FindCharInCell(pPC, m_targetIndex, m_targetType, false);
 
@@ -1057,7 +1056,7 @@ bool CSkillProtoList::Load()
 			cmd2.GetRec("a_use_count", useCount);
 			cmd2.GetRec("a_targetNum", targetNum);
 
-			// È¿°ú ¸®½ºÆ®¿¡¼­ ÇØ´ç È¿°ú Ã£±â
+			// íš¨ê³¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ í•´ë‹¹ íš¨ê³¼ ì°¾ê¸°
 			const CMagicProto* magic[3];
 			magic[0] = gserver->m_magicProtoList.Find(magicIndex[0]);
 			magic[1] = gserver->m_magicProtoList.Find(magicIndex[1]);
@@ -1423,13 +1422,13 @@ bool CSkillList::AddOptionSkill(CSkill* skill, int prob, int wearPos)
 	CSkill* p = Find(skill->m_proto->m_index);
 	CSkillListNode* node = FindNode(skill->m_proto->m_index);
 
-	//ÀÌ¹Ì µî·ÏµÈ ½ºÅ³ÀÎ °æ¿ì
+	//ì´ë¯¸ ë“±ë¡ëœ ìŠ¤í‚¬ì¸ ê²½ìš°
 	if(node)
 	{
-		//°°Àº ÀåºñÀÌ¸é return;
+		//ê°™ì€ ì¥ë¹„ì´ë©´ return;
 		if( node->m_wearPos & (1 << wearPos) )
 			return false;
-		//´Ù¸¥ ÀåºñÀÌ¸é
+		//ë‹¤ë¥¸ ì¥ë¹„ì´ë©´
 		else
 		{
 			p->m_optionSkillProb += prob;
@@ -1437,14 +1436,14 @@ bool CSkillList::AddOptionSkill(CSkill* skill, int prob, int wearPos)
 			return true;
 		}
 	}
-	//»õ·Î µî·ÏµÇ´Â ½ºÅ³ÀÎ °æ¿ì
+	//ìƒˆë¡œ ë“±ë¡ë˜ëŠ” ìŠ¤í‚¬ì¸ ê²½ìš°
 	else
 	{
 		skill->m_optionSkillProb = prob;
 		CSkillListNode* node = new CSkillListNode(skill);
 		node->m_wearPos |= (1 << wearPos);
 
-		if (m_head)			//ÀÌ¹Ì ÇÏ³ª ÀÌ»óÀÇ ½ºÅ³ÀÌ ÀÖ´Â °æ¿ì.
+		if (m_head)			//ì´ë¯¸ í•˜ë‚˜ ì´ìƒì˜ ìŠ¤í‚¬ì´ ìˆëŠ” ê²½ìš°.
 		{
 			m_tail->next(node);
 			node->prev(m_tail);
@@ -1452,7 +1451,7 @@ bool CSkillList::AddOptionSkill(CSkill* skill, int prob, int wearPos)
 			m_count++;
 			return true;
 		}
-		else				//¿É¼Ç ½ºÅ³ÀÌ ÇÏ³ªµµ µî·Ï µÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì.
+		else				//ì˜µì…˜ ìŠ¤í‚¬ì´ í•˜ë‚˜ë„ ë“±ë¡ ë˜ì–´ ìˆì§€ ì•Šì€ ê²½ìš°.
 		{
 			m_head = m_tail = node;
 			m_count = 1;
@@ -1466,17 +1465,17 @@ bool CSkillList::AddOptionSkill(CSkill* skill, int prob, int wearPos)
 
 /////////////////////
 // Function name	: ApplyMagic
-// Description	    : È¿°ú Àû¿ë
+// Description	    : íš¨ê³¼ ì ìš©
 // Argument         : CCharacter* ch
-//                  : »ç¿ëÇÏ´Â Ä³¸¯ÅÍ Ä³¸¯ÅÍ
+//                  : ì‚¬ìš©í•˜ëŠ” ìºë¦­í„° ìºë¦­í„°
 // Argument         : CCharacter* tch
-//                  : Àû¿ëµÇ´Â Ä³¸¯ÅÍ
+//                  : ì ìš©ë˜ëŠ” ìºë¦­í„°
 // Argument         : const CMagicProto* magic
-//                  : È¿°ú ÇÁ·ÎÅä
+//                  : íš¨ê³¼ í”„ë¡œí† 
 // Argument         : const CMagicLevelProto* magiclevel
-//                  : È¿°ú ·¹º§ ¼³Á¤
+//                  : íš¨ê³¼ ë ˆë²¨ ì„¤ì •
 // Argument         : bool& bApply
-//                  : È¿°ú Àû¿ë ¿©ºÎ, Àû¿ëÇÏ¸é true, ¾Æ´Ï¸é false·Î ¼¼ÆÃµÊ
+//                  : íš¨ê³¼ ì ìš© ì—¬ë¶€, ì ìš©í•˜ë©´ true, ì•„ë‹ˆë©´ falseë¡œ ì„¸íŒ…ë¨
 void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, bool bForce, bool& bApply)
 {
 	const CSkillProto* proto = skill->m_proto;
@@ -1500,8 +1499,8 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 	int currentSkillLevel = tch->m_assist.FindBySkillIndex(proto->m_index);
 	if (currentSkillLevel != 0)
 	{
-		// ½ºÅ³ÀÌ Áßº¹µÈ °æ¿ì
-		// rvr ½ºÅ³ °°Àº °æ¿ì¿¡´Â ¿¹¿ÜÀûÀ¸·Î Ã³¸® ·¹º§ÀÌ ³·¾Æµµ ³·Àº ·¹º§ ½ºÅ³À» Àû¿ë ½ÃÄÑ¾ß ÇÑ´Ù.
+		// ìŠ¤í‚¬ì´ ì¤‘ë³µëœ ê²½ìš°
+		// rvr ìŠ¤í‚¬ ê°™ì€ ê²½ìš°ì—ëŠ” ì˜ˆì™¸ì ìœ¼ë¡œ ì²˜ë¦¬ ë ˆë²¨ì´ ë‚®ì•„ë„ ë‚®ì€ ë ˆë²¨ ìŠ¤í‚¬ì„ ì ìš© ì‹œì¼œì•¼ í•œë‹¤.
 		if( ( (proto->m_index != 1756) && (proto->m_index != 1757) ) && ( skill->m_level < currentSkillLevel ) )
 			return;
 	}
@@ -1514,7 +1513,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 			return ;
 	}
 //#endif
-	// Å×ÀÌ¹Ö°ú È¥µ·Àº NPC¿¡°Ô¸¸ »ç¿ë
+	// í…Œì´ë°ê³¼ í˜¼ëˆì€ NPCì—ê²Œë§Œ ì‚¬ìš©
 	if( magic->m_type == MT_ASSIST &&
 			( magic->m_subtype == MST_ASSIST_TAMING ||
 			  magic->m_subtype == MST_ASSIST_CONFUSED ||
@@ -1536,7 +1535,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 		return;
 	}
 
-	// ¸íÁß ÆÇ´Ü
+	// ëª…ì¤‘ íŒë‹¨
 #ifdef ENABLE_ROGUE_SKILL125_BRZ
 	if (!bForce && SelectHitType(ch, tch, MSG_DAMAGE_MAGIC, HITTYPE_MISS | HITTYPE_NORMAL, magic, magiclevel, (skill->m_proto->m_flag & SF_NOTHELP) ? true : false, skill->m_level) == HITTYPE_MISS)
 #else
@@ -1559,23 +1558,23 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 	}
 
 	int nPowerValue = magiclevel->m_nPowerValue;
-	// ½ÃÀü, ´ë»óÀÇ ÆÄ¶ó¹ÌÅÍ Ãß°¡
+	// ì‹œì „, ëŒ€ìƒì˜ íŒŒë¼ë¯¸í„° ì¶”ê°€
 	nPowerValue = nPowerValue * CalcSkillParam(ch, tch, magic->m_psp, magic->m_ptp) / 100;
 
-	// ÁïÈ¿¼º º¸Á¶ È¿°úµé
+	// ì¦‰íš¨ì„± ë³´ì¡° íš¨ê³¼ë“¤
 	switch (magic->m_type)
 	{
 	case MT_ASSIST:
 		switch (magic->m_subtype)
 		{
-		// warning ¹ß»ıÇÏ´Â °Í ¾ø¾Ö±â À§ÇÑ ÀÓ½Ã ÄÚµå
+		// warning ë°œìƒí•˜ëŠ” ê²ƒ ì—†ì• ê¸° ìœ„í•œ ì„ì‹œ ì½”ë“œ
 		case MST_ASSIST_POISON:
 			break;
 
 		case MST_ASSIST_SAFEGUARD:
 			if (IS_PC(tch))
 			{
-				// PC¿¡°Ô¸¸ ½ÃÀü °¡´É
+				// PCì—ê²Œë§Œ ì‹œì „ ê°€ëŠ¥
 				CPC * pc = TO_PC(tch);
 				if (pc != NULL)
 				{
@@ -1600,7 +1599,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 			break;
 
 		case MST_ASSIST_TAMING:
-			// Å×ÀÌ¹ÖÀÌ µÇ´Â npc´Â ÁÖÀÎÀ» ³Ö¾î ÁÖ¾î¾ß ÇÑ´Ù.
+			// í…Œì´ë°ì´ ë˜ëŠ” npcëŠ” ì£¼ì¸ì„ ë„£ì–´ ì£¼ì–´ì•¼ í•œë‹¤.
 			if ( IS_NPC(tch) && ( IS_PC(ch) || IS_APET(ch) ) )
 			{
 				CNPC* pNPC = TO_NPC(tch);
@@ -1643,7 +1642,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 		case MST_ASSIST_AURA_DARKNESS:
 		case MST_ASSIST_AURA_WEAKNESS:
 		case MST_ASSIST_AURA_ILLUSION:
-			// ¿À¿À¶ó°¡ ÀÌÀü¿¡ ¹ßµ¿µÇ¾úÀ¸¸é Áö¿öÁØ´Ù. ´ë½Å »õ ¹öÇÁ°¡ µé¾î¿Â´Ù.
+			// ì˜¤ì˜¤ë¼ê°€ ì´ì „ì— ë°œë™ë˜ì—ˆìœ¼ë©´ ì§€ì›Œì¤€ë‹¤. ëŒ€ì‹  ìƒˆ ë²„í”„ê°€ ë“¤ì–´ì˜¨ë‹¤.
 			ch->m_assist.CureAssist(MST_ASSIST_AURA_DARKNESS, 99);
 			ch->m_assist.CureAssist(MST_ASSIST_AURA_WEAKNESS, 99);
 			ch->m_assist.CureAssist(MST_ASSIST_AURA_ILLUSION, 99);
@@ -2077,7 +2076,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 						{
 						case WCJF_ATTACK_GUILD:
 							{
-								// ºÎÈ°ÁøÁö°¡ ¾øÀ¸¸é »ç¿ëºÒ°¡
+								// ë¶€í™œì§„ì§€ê°€ ì—†ìœ¼ë©´ ì‚¬ìš©ë¶ˆê°€
 								int gindex = pc->m_guildInfo->guild()->index();
 								int i;
 								for(i = 0; i < 7; i++)
@@ -2108,7 +2107,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 
 						case WCJF_OWNER:
 						case WCJF_DEFENSE_GUILD:
-							// ¿öÇÁÅ¸¿ö°¡ ¾øÀ¸¸é »ç¿ëºÒ°¡
+							// ì›Œí”„íƒ€ì›Œê°€ ì—†ìœ¼ë©´ ì‚¬ìš©ë¶ˆê°€
 							if( pCastle->GetTowerStatus(7) == 0)
 							{
 								if(IS_PC(ch))
@@ -2134,7 +2133,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 					tch->m_mp = tch->m_maxMP / 2;
 
 				{
-					// »ì¾Æ³­°Å ¾Ë¸®±â
+					// ì‚´ì•„ë‚œê±° ì•Œë¦¬ê¸°
 					CNetMsg::SP rmsg(new CNetMsg);
 					RebirthMsg(rmsg, tch);
 					if (tch->m_pArea)
@@ -2204,7 +2203,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 
 		case MST_CURE_NOTHELP:
 			{
-				// not ÇïÇÁ°¡ ¾Æ´Ñ ¹öÇÁ¸¦ ¸ğµÎ Ä¡·á
+				// not í—¬í”„ê°€ ì•„ë‹Œ ë²„í”„ë¥¼ ëª¨ë‘ ì¹˜ë£Œ
 				tch->m_assist.ClearAssist(true, false, false, true, false);
 			}
 			bApply = true;
@@ -2292,10 +2291,10 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 		case MST_OTHER_TOUNT:
 			if (ch != tch && IS_NPC(tch))
 			{
-				// ½ÃÀüÀÚ¿Í ´ë»óÀÌ ´Ù¸¦¶§, ´ë»óÀÇ ÃÖ°í hate ¼öÄ¡ + ½ºÅ³ ÆÄ¿ö·Î ½ÃÀüÀÚ hate°¡ °áÁ¤µÇ¸ç, ÃÖ°í ¼öÄ¡ÀÇ ÇØ´çÀÚ´Â ½ÃÀüÀÚÀÇ hate·Î ¼³Á¤
-				// ½ÃÀüÀÚÀÇ ´ë»ó¿¡´ëÇÑ hate => a
-				// ´ë»óÀÇ ÃÖ°í hate ¼öÄ¡ => b
-				// ´ë»óÀÇ ÃÖ°í hate Ä³¸¯ÅÍ => c
+				// ì‹œì „ìì™€ ëŒ€ìƒì´ ë‹¤ë¥¼ë•Œ, ëŒ€ìƒì˜ ìµœê³  hate ìˆ˜ì¹˜ + ìŠ¤í‚¬ íŒŒì›Œë¡œ ì‹œì „ì hateê°€ ê²°ì •ë˜ë©°, ìµœê³  ìˆ˜ì¹˜ì˜ í•´ë‹¹ìëŠ” ì‹œì „ìì˜ hateë¡œ ì„¤ì •
+				// ì‹œì „ìì˜ ëŒ€ìƒì—ëŒ€í•œ hate => a
+				// ëŒ€ìƒì˜ ìµœê³  hate ìˆ˜ì¹˜ => b
+				// ëŒ€ìƒì˜ ìµœê³  hate ìºë¦­í„° => c
 				// c.hate = a
 				// a = b + skill
 				CAttackChar* p = tch->m_attackList;
@@ -2341,7 +2340,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 			{
 				CNPC* pNPC = TO_NPC(ch);
 
-				// ¼ÒÈ¯ ¼³Á¤ÀÌ ÀÔ·Â µÇ¾î ÀÖÀ¸¸é
+				// ì†Œí™˜ ì„¤ì •ì´ ì…ë ¥ ë˜ì–´ ìˆìœ¼ë©´
 				if ( pNPC->m_proto->m_aileader_idx > 0 && pNPC->m_proto->m_aileader_count > 0 )
 				{
 					for(int i = 0; i < pNPC->m_proto->m_aileader_count; i++)
@@ -2428,13 +2427,13 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 				CNPC* pNPC = TO_NPC(tch);
 				int count = 0;
 
-				// °¡Áö°í ÀÖ´Â ¿µÈ¥ÀÇ °³¼ö¸¦ ÇÑ°³ ´Ã¸°´Ù.
+				// ê°€ì§€ê³  ìˆëŠ” ì˜í˜¼ì˜ ê°œìˆ˜ë¥¼ í•œê°œ ëŠ˜ë¦°ë‹¤.
 				if(pPC && pPC->m_desc && ch->m_pArea && pNPC && !pNPC->Check_MobFlag(STATE_MONSTER_NO_SOUL)
 						&& pPC->m_currentSkill && pPC->m_currentSkill->m_state == SKILL_CON_FIRE)
 				{
 					count = pPC->GetSoul_Count();
 
-					// ¿µÈ¥ °³¼ö´Â 10°³°¡ ÃÖ´ëÀÌ´Ù.
+					// ì˜í˜¼ ê°œìˆ˜ëŠ” 10ê°œê°€ ìµœëŒ€ì´ë‹¤.
 					if (count < MAX_SOUL_COUNT)
 					{
 						count++;
@@ -2442,13 +2441,13 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 					}
 
 					{
-						// ¿µÈ¥ °³¼ö ¸Å¼¼Áö º¸³»±â
+						// ì˜í˜¼ ê°œìˆ˜ ë§¤ì„¸ì§€ ë³´ë‚´ê¸°
 						CNetMsg::SP rmsg(new CNetMsg);
 						ResponseClient::makeSkillSoulCountMsg(rmsg, pPC->GetSoul_Count());
 						SEND_Q(rmsg, pPC->m_desc);
 					}
 
-					// ½ºÅ³À» »ç¿ëÁßÀ¸·Î »óÅÂ ¹Ù²Ş
+					// ìŠ¤í‚¬ì„ ì‚¬ìš©ì¤‘ìœ¼ë¡œ ìƒíƒœ ë°”ê¿ˆ
 					pPC->SetPlayerState(PLAYER_STATE_SKILL);
 
 					{
@@ -2457,21 +2456,21 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 						ch->m_pArea->SendToCell(rmsg, ch, true);
 					}
 
-					// NPC´Â ´õÀÌ»ó ¿µÈ¥À» »©¾Ñ±âÁö ¾Ê´Â´Ù.
+					// NPCëŠ” ë”ì´ìƒ ì˜í˜¼ì„ ë¹¼ì•—ê¸°ì§€ ì•ŠëŠ”ë‹¤.
 					pNPC->Set_MobFlag( STATE_MONSTER_NO_SOUL );
 
-					// NPC ¿µÈ¥ Àç»ıÀ» À§ÇÑ µô·¹ÀÌ¸¦ À§ÇØ ÇöÀç ÆŞ½º¸¦ ÀúÀåÇÑ´Ù.
+					// NPC ì˜í˜¼ ì¬ìƒì„ ìœ„í•œ ë”œë ˆì´ë¥¼ ìœ„í•´ í˜„ì¬ í„ìŠ¤ë¥¼ ì €ì¥í•œë‹¤.
 					pNPC->m_pulseSoulRecover = gserver->m_pulse;
 					bApply = true;
 				}
 			}
 			break;
 
-		// ³ªÀÌÆ® ½¦µµ¿ì ¿öÇÁ
+		// ë‚˜ì´íŠ¸ ì‰ë„ìš° ì›Œí”„
 		case MST_OTHER_WARP:
 			if (ch->m_pArea)
 			{
-				// skill ready¿¡¼­ ¹Ì¸® ÀúÀå ÇØ µĞ ÁÂÇ¥·Î ÀÌµ¿½ÃÅ²´Ù.
+				// skill readyì—ì„œ ë¯¸ë¦¬ ì €ì¥ í•´ ë‘” ì¢Œí‘œë¡œ ì´ë™ì‹œí‚¨ë‹¤.
 				ch->m_pArea->MoveChar(ch, GET_YLAYER(ch), GET_X(ch), GET_Z(ch), GET_H(ch), GET_R(ch), MSG_MOVE_STOP, NULL);
 				bApply = true;
 			}
@@ -2482,7 +2481,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 			{
 				CPC* pPC = TO_PC(ch);
 
-				// ³¯±â¿¡ °üÇÑ È¿°ú
+				// ë‚ ê¸°ì— ê´€í•œ íš¨ê³¼
 				if(pPC && ch->m_pArea)
 				{
 					if(pPC->IsSetPlayerState(PLAYER_STATE_FLYING))
@@ -2502,7 +2501,7 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 			break;
 		case MSG_OTHER_SUMMON_NPC:
 			{
-				//npc ¼ÒÈ¯
+				//npc ì†Œí™˜
 				CNPC* npc = gserver->m_npcProtoList.Create(skill->m_proto->m_summonIDX, NULL );
 
 				if( npc == NULL )
@@ -2544,17 +2543,17 @@ void ApplyMagic(CCharacter* ch, CCharacter* tch, CSkill* skill, int magicindex, 
 
 /////////////////////
 // Function name	: ApplySkill
-// Description	    : ½ºÅ³ Àû¿ë, ½ÃÀüÀÚ »ç¸Á½Ã -1 ¸®ÅÏ, ´ë»ó »ç¸Á½Ã 1 ¸®ÅÏ, ±×¿Ü 0
+// Description	    : ìŠ¤í‚¬ ì ìš©, ì‹œì „ì ì‚¬ë§ì‹œ -1 ë¦¬í„´, ëŒ€ìƒ ì‚¬ë§ì‹œ 1 ë¦¬í„´, ê·¸ì™¸ 0
 // Argument         : CCharacter* ch
-//                  : ½ÃÀüÀÚ
+//                  : ì‹œì „ì
 // Argument         : CCharacter* tch
-//                  : ´ë»ó
+//                  : ëŒ€ìƒ
 // Argument         : CSkill* skill
-//                  : ½ºÅ³
+//                  : ìŠ¤í‚¬
 // Argument         : int itemidx
-//                  : ¾ÆÀÌÅÛ¿¡ ÀÇÇÑ ½ºÅ³ÀÏ °æ¿ì ¾ÆÀÌÅÛ ÀÎµ¦½º, ±×¿Ü´Â -1
+//                  : ì•„ì´í…œì— ì˜í•œ ìŠ¤í‚¬ì¼ ê²½ìš° ì•„ì´í…œ ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
 // Argument         : bool& bApply
-//                  : ½ºÅ³ÀÌ Á¤»óÀûÀ¸·Î Àû¿ëµÇ¸é true, ¾Æ´Ï¸é false
+//                  : ìŠ¤í‚¬ì´ ì •ìƒì ìœ¼ë¡œ ì ìš©ë˜ë©´ true, ì•„ë‹ˆë©´ false
 int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool& bApply)
 {
 	bApply = false;
@@ -2574,7 +2573,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 	if(IS_PC(ch))
 	{
 		CPC* pc = TO_PC(ch);
-		//pvpº¸È£ ¾ÆÀÌÅÛ Ã¼Å©
+		//pvpë³´í˜¸ ì•„ì´í…œ ì²´í¬
 		if( (skill->m_proto->m_flag & SF_HELP) == false )
 		{
 			if (checkPvPProtect(pc, tch) == false)
@@ -2582,8 +2581,8 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		}
 	}
 
-	//¾ÆÀÌÅÛ ½ºÅ³ÀÏ °æ¿ì 
-	if(itemidx > 0)
+	//ì•„ì´í…œ ìŠ¤í‚¬ì¼ ê²½ìš° 
+	if(itemidx > 0 && skill->m_proto->m_targetType != STT_PARTY_ALL)
 	{
 		if(ch->checkItemCoolTime(itemidx, skill) == false)
 			return 0;
@@ -2591,7 +2590,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 	if(skill->m_proto->m_index == 1081)
 	{
-		// GP¼Ò¸ğÇÏ¿© °æÇèÄ¡ ÁÜ.
+		// GPì†Œëª¨í•˜ì—¬ ê²½í—˜ì¹˜ ì¤Œ.
 		if(!IS_PC(tch))
 			return 0;
 		CPC* pc = TO_PC(tch);
@@ -2603,9 +2602,9 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 	if(skill->m_proto->m_index == SKILL_GUILD_ROOM_WARP)
 	{
-		// ÀÌµ¿ °¡´É °Ë»ç
+		// ì´ë™ ê°€ëŠ¥ ê²€ì‚¬
 		CPC* pc = TO_PC(ch);
-		//ÀÌµ¿À» ½ÃÅ³°ÍÀÌ±â ¶§¹®¿¡ ÇöÀç ½ºÅ³ »ç¿ëµ¥ÀÌÅÍ ÃÊ±âÈ­
+		//ì´ë™ì„ ì‹œí‚¬ê²ƒì´ê¸° ë•Œë¬¸ì— í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš©ë°ì´í„° ì´ˆê¸°í™”
 		if(pc->m_currentSkill != NULL)
 		{
 			pc->m_currentSkill->m_state = SKILL_CON_NORMAL;
@@ -2621,14 +2620,14 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 			return 0;
 		}
 
-		// 10ÃÊÈÄ ÀÌµ¿ÇÏ°Ô ÇÏ±â
+		// 10ì´ˆí›„ ì´ë™í•˜ê²Œ í•˜ê¸°
 		pc->m_reqWarpType_skill = IONCE_WARP_RETURN;
 		pc->m_reqWarpData_skill = ZONE_GUILDROOM;
 		pc->m_reqWarpTime_skill = PULSE_WARPDELAY;
 		pc->SetPlayerState(PLAYER_STATE_WARP);
 
 		{
-			// »ç¿ëÇßÀ½À» ¾Ë¸®±â
+			// ì‚¬ìš©í–ˆìŒì„ ì•Œë¦¬ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			WarpStartMsg(rmsg, pc);
 			pc->m_pArea->SendToCell(rmsg, ch, true);
@@ -2639,7 +2638,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 	if(skill->m_proto->m_index == SKILL_GUILD_ROOM_RECALL)
 	{
-		//ÇöÀç Á¢¼ÓÁßÀÎ ¸ğµç ±æµå¿ø¿¡°Ô ¸Ş½ÃÁö Àü¼Û
+		//í˜„ì¬ ì ‘ì†ì¤‘ì¸ ëª¨ë“  ê¸¸ë“œì›ì—ê²Œ ë©”ì‹œì§€ ì „ì†¡
 		CPC* pc = TO_PC(ch);
 		
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2648,12 +2647,12 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 		return 0;
 	}
-	// 060227 : bs : Áßº¹¾ÈµÇ´Â ½ºÅ³ÀÎÁö °Ë»ç
+	// 060227 : bs : ì¤‘ë³µì•ˆë˜ëŠ” ìŠ¤í‚¬ì¸ì§€ ê²€ì‚¬
 	if ((skill->m_proto->m_flag & SF_NOTDUPLICATE) && tch->m_assist.FindBySkillIndex(skill->m_proto->m_index))
 	{
 		if(IS_PC(ch))
 		{
-			/*Áßº¹»ç¿ë ºÒ°¡ ¿¡·¯ ¸Ş½ÃÁö*/
+			/*ì¤‘ë³µì‚¬ìš© ë¶ˆê°€ ì—ëŸ¬ ë©”ì‹œì§€*/
 			CNetMsg::SP rmsg(new CNetMsg);
 			ResponseClient::makeSkillErrorMsg(rmsg, MSG_SKILL_ERROR_DUPLICATE, skill->m_proto->m_index, 0);
 			SEND_Q(rmsg, TO_PC(ch)->m_desc);
@@ -2696,18 +2695,18 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		{
 			CNPC * pTemp = TO_NPC(tch);
 			if (pTemp != NULL
-					&& pTemp->m_proto->m_index != 303 /*¾Ç¸¶ÀÇ ¹¦Áö*/)
+					&& pTemp->m_proto->m_index != 303 /*ì•…ë§ˆì˜ ë¬˜ì§€*/)
 			{
 				pc->m_pulseLastAttackSkill = gserver->m_pulse;
 			}
 		}
 	}
 
-	// NPC°¡ °ø°İÀ» ÇØµµ ÀüÅõ »óÅÂ¸¦ ÀúÀå
+	// NPCê°€ ê³µê²©ì„ í•´ë„ ì „íˆ¬ ìƒíƒœë¥¼ ì €ì¥
 	if (IS_NPC(ch))
 		TO_NPC(ch)->m_nRaidMoveTime = gserver->m_pulse + GetRandom(PULSE_MONSTER_RAID_MOVE * 9 / 10, PULSE_MONSTER_RAID_MOVE * 11 / 10);
 
-	// NPC°¡ ¸Â¾Æµµ ÀúÀå
+	// NPCê°€ ë§ì•„ë„ ì €ì¥
 	if (IS_NPC(tch))
 		TO_NPC(tch)->m_nRaidMoveTime = gserver->m_pulse + GetRandom(PULSE_MONSTER_RAID_MOVE * 9 / 10, PULSE_MONSTER_RAID_MOVE * 11 / 10);
 
@@ -2726,7 +2725,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		}
 	}
 
-	// °á°è°É¸° ´ë»óÀº °ø°İ ¸øÇÑ´Ù.
+	// ê²°ê³„ê±¸ë¦° ëŒ€ìƒì€ ê³µê²© ëª»í•œë‹¤.
 	if ( tch->m_assist.m_state & AST_FREEZE )
 		return 0;
 
@@ -2746,7 +2745,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 			return 0;
 	}
 
-	// SSF_APP_ °Ë»ç
+	// SSF_APP_ ê²€ì‚¬
 	if (proto->CheckSorcererFlag(SSF_APP_ALL))
 	{
 		if (tch->m_type == MSG_CHAR_ELEMENTAL)
@@ -2786,11 +2785,11 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		}
 	}
 
-	// ±× ¾î¶² ½ºÅ³µµ ÇÇ½ºÁ¸¿¡¼­ ´Ù¸¥ Áö¿ªÀ¸·Î »ç¿ë ºÒ°¡
+	// ê·¸ ì–´ë–¤ ìŠ¤í‚¬ë„ í”¼ìŠ¤ì¡´ì—ì„œ ë‹¤ë¥¸ ì§€ì—­ìœ¼ë¡œ ì‚¬ìš© ë¶ˆê°€
 	if (ch->IsInPeaceZone(true) && !tch->IsInPeaceZone(false)
 			&& skill->m_proto->m_index != ROYAL_RUMBLE_DEBUFF_SKILL
 			&& skill->m_proto->m_index != 1359
-			&& skill->m_proto->m_index != 511) ///=== 511, ½ºÆ®·¹ÀÌ¾Æ³ª ¸Ê ½ºÅ³ Á¦¿Ü
+			&& skill->m_proto->m_index != 511) ///=== 511, ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë§µ ìŠ¤í‚¬ ì œì™¸
 	{
 		return 0;
 	}
@@ -2798,37 +2797,37 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 	bool bHelp = (proto->m_flag & SF_HELP) ? true : false;
 	bool bNotHelp = (proto->m_flag & SF_NOTHELP) ? true : false;
 
-	// ¹öÇÁÇü NPC´Â Ä³¸¯ÅÍ¿¡°Ô ¹öÇÁ¸¦ helpÅ¸ÀÔÀ¸·Î ½ÃÀü ÇØ¾ßÇÏ¹Ç·Î ÀÚ½ÅÀÌ ÀÚ½Å¿¡°Ô »ç¿ëÇÏ´Â °ÍÃ³·³ ÇÑ´Ù.
+	// ë²„í”„í˜• NPCëŠ” ìºë¦­í„°ì—ê²Œ ë²„í”„ë¥¼ helpíƒ€ì…ìœ¼ë¡œ ì‹œì „ í•´ì•¼í•˜ë¯€ë¡œ ìì‹ ì´ ìì‹ ì—ê²Œ ì‚¬ìš©í•˜ëŠ” ê²ƒì²˜ëŸ¼ í•œë‹¤.
 	if( IS_NPC(ch) &&
 		(TO_NPC(ch)->Check_MobFlag(STATE_MONSTER_TOTEM_BUFF) ||  TO_NPC(ch)->Check_MobFlag(STATE_MONSTER_TOTEM_ITEM_BUFF)))
 	{
 		ch = tch;
-	} // ÀÚ±â ÀÚ½ÅÀÌ ½º½º·Î¿¡°Ô ¹öÇÁ¸¦ °Å´Â °ÍÃ³·³ ²Ù¹ÌÀÚ ¤Ñ¤Ñ;;
+	} // ìê¸° ìì‹ ì´ ìŠ¤ìŠ¤ë¡œì—ê²Œ ë²„í”„ë¥¼ ê±°ëŠ” ê²ƒì²˜ëŸ¼ ê¾¸ë¯¸ì ã…¡ã…¡;;
 	
-	// !((help on && Àû¾Æ´Ô) || (nothelp && Àû)) => ½ºÅ³ »ç¿ë ºÒ°¡
+	// !((help on && ì ì•„ë‹˜) || (nothelp && ì )) => ìŠ¤í‚¬ ì‚¬ìš© ë¶ˆê°€
 	if (!((bHelp && !ch->IsEnemy(tch)) || (bNotHelp && ch->IsEnemy(tch)))
-			&& skill->m_proto->m_index != 511  ///=== 511, ½ºÆ®·¹ÀÌ¾Æ³ª ¸Ê ½ºÅ³ Á¦¿Ü
+			&& skill->m_proto->m_index != 511  ///=== 511, ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë§µ ìŠ¤í‚¬ ì œì™¸
 			&& itemidx != -2
 			&& skill->m_proto->m_index != 1158
 			&& skill->m_proto->m_index != ROYAL_RUMBLE_DEBUFF_SKILL
 			&& skill->m_proto->m_index != 1359
-	   )	// ¾ÆÀÌÅÛ ÀÎµ¦½º°¡ -2´Â Æ®¸®°Å¿¡ ÀÇÇÑ ½ºÅ³ ¹ßµ¿ÀÌ¹Ç·Î ÆĞ½º
+	   )	// ì•„ì´í…œ ì¸ë±ìŠ¤ê°€ -2ëŠ” íŠ¸ë¦¬ê±°ì— ì˜í•œ ìŠ¤í‚¬ ë°œë™ì´ë¯€ë¡œ íŒ¨ìŠ¤
 	{
 		return 0;
 	}
 
-	// NOT HELP´Â ÇÇ½ºÁ¸¿¡¼­ »ç¿ë ºÒ°¡
+	// NOT HELPëŠ” í”¼ìŠ¤ì¡´ì—ì„œ ì‚¬ìš© ë¶ˆê°€
 	if ((bNotHelp && ch->IsInPeaceZone(true))
 			&& skill->m_proto->m_index != ROYAL_RUMBLE_DEBUFF_SKILL
 			&& skill->m_proto->m_index != 1359
-			&& skill->m_proto->m_index != 511) ///=== 511, ½ºÆ®·¹ÀÌ¾Æ³ª ¸Ê ½ºÅ³ Á¦¿Ü
+			&& skill->m_proto->m_index != 511) ///=== 511, ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë§µ ìŠ¤í‚¬ ì œì™¸
 	{
 		return 0;
 	}
 
 	if (!ch->CanVisible(tch))
 	{
-		// TODO : ÀÎºñÀúºíÀ» ÇØÁ¦ÇÏ´Â ½ºÅ³ Ãß°¡½Ã ÀÎµ¦½º °Ë»çÇÏ¿©, ÇØÁ¦ ½ºÅ³Àº »ç¿ë°¡´ÉÅä·Ï
+		// TODO : ì¸ë¹„ì €ë¸”ì„ í•´ì œí•˜ëŠ” ìŠ¤í‚¬ ì¶”ê°€ì‹œ ì¸ë±ìŠ¤ ê²€ì‚¬í•˜ì—¬, í•´ì œ ìŠ¤í‚¬ì€ ì‚¬ìš©ê°€ëŠ¥í† ë¡
 		if (proto->m_index != 146)
 			return 0;
 	}
@@ -2836,21 +2835,21 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 	if( IS_PC(ch) && proto->m_type == ST_SUMMON_SKILL)
 	{
 		CPC* pPc = TO_PC(ch);
-		// ¸ó½ºÅÍ¸¦ ¼ÒÈ¯ÇÑ´Ù.
+		// ëª¬ìŠ¤í„°ë¥¼ ì†Œí™˜í•œë‹¤.
 		CNPC * pSummonNpc = NULL;
-		int SummonNpcIdx = 0; // ¼ÒÈ¯ÇÒ NPC Index;
+		int SummonNpcIdx = 0; // ì†Œí™˜í•  NPC Index;
 		if( proto->Level(1)->m_magic[0]->m_type == MT_ASSIST )
 		{
 			switch( proto->Level(1)->m_magic[0]->m_subtype  )
 			{
-			case MST_ASSIST_SOUL_TOTEM_BUFF: // Æ®ÅÛ
+			case MST_ASSIST_SOUL_TOTEM_BUFF: // íŠ¸í…œ
 			case MST_ASSIST_SOUL_TOTEM_ATTK:
 				SummonNpcIdx = proto->m_summonIDX;
 				pSummonNpc = pPc->GetSummonNpc(SUMMON_NPC_TYPE_TOTEM);
 				if(pSummonNpc)
 					return 0;
 				break;
-			case MST_ASSIST_TRAP: // ÀÚÆø.
+			case MST_ASSIST_TRAP: // ìí­.
 				{
 					if ( pPc->GetBombSummonCont() >= 3)
 						return 0;
@@ -2891,16 +2890,16 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 		switch( proto->Level(1)->m_magic[0]->m_subtype  )
 		{
-		case MST_ASSIST_SOUL_TOTEM_BUFF: // Æ®ÅÛ
+		case MST_ASSIST_SOUL_TOTEM_BUFF: // íŠ¸í…œ
 			pSummonNpc->m_assist.m_state |= AST_SOUL_TOTEM_BUFF;
 			break;
 		case MST_ASSIST_SOUL_TOTEM_ATTK:
 			pSummonNpc->m_assist.m_state |= AST_SOUL_TOTEM_ATTK;
 			break;
-		case MST_ASSIST_TRAP: // ÀÚÆø.
+		case MST_ASSIST_TRAP: // ìí­.
 			{
-				// ÀÎºñÁ®ºí ½ºÅ³Àº µû·Î ¸ÕÀú ³Ö¾îÁÖÀÚ.
-				CSkill*	pSkill = gserver->m_skillProtoList.Create( 1158 ); // Æ®·¦ Àü¿ë ÀÎºñÁ®ºí ½ºÅ³
+				// ì¸ë¹„ì ¸ë¸” ìŠ¤í‚¬ì€ ë”°ë¡œ ë¨¼ì € ë„£ì–´ì£¼ì.
+				CSkill*	pSkill = gserver->m_skillProtoList.Create( 1158 ); // íŠ¸ë© ì „ìš© ì¸ë¹„ì ¸ë¸” ìŠ¤í‚¬
 				if( pSkill )
 				{
 					ApplySkill( pPc, pSummonNpc, pSkill, -1, bApply);
@@ -2932,18 +2931,18 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 		switch( proto->Level(1)->m_magic[0]->m_subtype  )
 		{
-		case MST_ASSIST_SOUL_TOTEM_BUFF: // Æ®ÅÛ
+		case MST_ASSIST_SOUL_TOTEM_BUFF: // íŠ¸í…œ
 		case MST_ASSIST_SOUL_TOTEM_ATTK:
 			pPc->SetSummonNpc(SUMMON_NPC_TYPE_TOTEM, pSummonNpc);
 			break;
-		case MST_ASSIST_TRAP: // ÀÚÆø.
+		case MST_ASSIST_TRAP: // ìí­.
 			pPc->SetBombSummonNPC(pSummonNpc);
 			break;
 		case MST_ASSIST_TOTEM_ITEM_BUFF:
 		case MST_ASSIST_TOTEM_ITEM_ATTK:
 			{
 				pPc->SetSummonNpc(SUMMON_NPC_TYPE_TOTEM_ITEM, pSummonNpc);
-				//½Ã½ºÅÛ ¸Ş½ÃÁö Àü¼Û
+				//ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì „ì†¡
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_SUMMON_TOTEM_NPC);
 				SEND_Q(rmsg, pPc->m_desc);
@@ -2958,10 +2957,10 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 	switch( proto->m_index )
 	{
-	case 1129:	// ¹°ÀÇ Á¤·É Ãàº¹
-	case 1130:	// ¶¥ÀÇ Á¤·É Ãàº¹
-	case 1131:	// ºÒÀÇ Á¤·É Ãàº¹
-	case 1132:	// ¹Ù¶÷ÀÇ Á¤·É Ãàº¹
+	case 1129:	// ë¬¼ì˜ ì •ë ¹ ì¶•ë³µ
+	case 1130:	// ë•…ì˜ ì •ë ¹ ì¶•ë³µ
+	case 1131:	// ë¶ˆì˜ ì •ë ¹ ì¶•ë³µ
+	case 1132:	// ë°”ëŒì˜ ì •ë ¹ ì¶•ë³µ
 		ch->m_assist.CureBySkillIndex( 1129 );
 		ch->m_assist.CureBySkillIndex( 1130 );
 		ch->m_assist.CureBySkillIndex( 1131 );
@@ -2969,7 +2968,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		break;
 	}
 
-	// ½ºÅ³ »ç¿ëÀÏ °æ¿ì ½ºÅ³ ÀÌÆåÆ® ¸Ş½ÃÁö º¸³¿
+	// ìŠ¤í‚¬ ì‚¬ìš©ì¼ ê²½ìš° ìŠ¤í‚¬ ì´í™íŠ¸ ë©”ì‹œì§€ ë³´ëƒ„
 	if (proto)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2977,15 +2976,15 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		tch->m_pArea->SendToCell(rmsg, tch, true);
 	}
 
-	// Àû¿ëÁ¶°Ç °Ë»ç
+	// ì ìš©ì¡°ê±´ ê²€ì‚¬
 	if (!tch->CanApplySkill(proto, levelproto))
 		return 0;
 
-	// ch¿Í tch°¡ Æ²¸±¶§
+	// chì™€ tchê°€ í‹€ë¦´ë•Œ
 	if (ch != tch)
 	{
-		// hate Àû¿ë
-		// not help´Â Å¸°Ù¿¡°Ô ¹Ù·Î Àû¿ë
+		// hate ì ìš©
+		// not helpëŠ” íƒ€ê²Ÿì—ê²Œ ë°”ë¡œ ì ìš©
 		if (bNotHelp)
 		{
 			if (IS_PC(ch) && IS_PC(tch))
@@ -2997,10 +2996,10 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 			}
 			ApplyHate(ch, tch, levelproto->m_hate, true);
 		}
-		// help´Â Å¸°ÙÀÇ attack listÀÇ ´ë»óµé¿¡°Ô Àû¿ë
+		// helpëŠ” íƒ€ê²Ÿì˜ attack listì˜ ëŒ€ìƒë“¤ì—ê²Œ ì ìš©
 		else if (bHelp)
 		{
-			// ach : tch°¡ °ø°İÇÑ ¸®½ºÆ®
+			// ach : tchê°€ ê³µê²©í•œ ë¦¬ìŠ¤íŠ¸
 			CAttackChar* ach = tch->m_attackList;
 			while (ach)
 			{
@@ -3078,7 +3077,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 		switch (magic->m_type)
 		{
 		case MT_ATTACK:
-			// °ø°İÀº ¹«Á¶°Ç Á¤»ó Àû¿ëÀ¸·Î
+			// ê³µê²©ì€ ë¬´ì¡°ê±´ ì •ìƒ ì ìš©ìœ¼ë¡œ
 			bApply = true;
 
 			ch->m_attratt = attratt;
@@ -3095,10 +3094,10 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 					return 0;
 				break;
 			}
-			// Æ®·ç½ÃÀ× ÄÚµ¦½º¿Í »ó±Ş Æ®·ç½ÃÀ× ÄÚµ¦½º
+			// íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤ì™€ ìƒê¸‰ íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤
 			if (itemidx == 677 || itemidx == 3579)
 				ApplyMagic(ch, tch, skill, i, true, bApply);
-			// ³ªÀÌÆ® ½¦µµ¿ì 100% µÇ¾ß ÇÏ´Â ½ºÅ³µé
+			// ë‚˜ì´íŠ¸ ì‰ë„ìš° 100% ë˜ì•¼ í•˜ëŠ” ìŠ¤í‚¬ë“¤
 			else if(magic->m_subtype == (unsigned char)MST_ASSIST_CONFUSED
 					|| magic->m_subtype == (unsigned char)MST_ASSIST_AURA_DARKNESS
 					|| magic->m_subtype == (unsigned char)MST_ASSIST_AURA_WEAKNESS
@@ -3118,7 +3117,7 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 			{
 				if(magic->m_subtype == MST_OTHER_REFLEX)
 					bHit[0] = true;
-				// Æ®·ç½ÃÀ× ÄÚµ¦½º¿Í »ó±Ş Æ®·ç½ÃÀ× ÄÚµ¦½º
+				// íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤ì™€ ìƒê¸‰ íŠ¸ë£¨ì‹œì‰ ì½”ë±ìŠ¤
 				if (itemidx == 677 || itemidx == 3579)
 					ApplyMagic(ch, tch, skill, i, true, bApply);
 				else
@@ -3142,11 +3141,11 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 	{
 		if (bApply == true)
 		{
-			// ¾ÆÀÌÅÛ Á¤»ó »ç¿ë Ä³¸¯ÅÍ ¾÷µ¥ÀÌÆ®
+			// ì•„ì´í…œ ì •ìƒ ì‚¬ìš© ìºë¦­í„° ì—…ë°ì´íŠ¸
 		}
 		else
 		{
-			// ¾ÆÀÌÅÛ Á¤»óÀûÀ¸·Î »ç¿ë ¸øÇÔ.
+			// ì•„ì´í…œ ì •ìƒì ìœ¼ë¡œ ì‚¬ìš© ëª»í•¨.
 			CNetMsg::SP rmsg(new CNetMsg);
 			ResponseClient::ItemNotUseMsg(rmsg, MSG_ITEM_USE_ERROR_DEATH_PENALTY);
 			SEND_Q(rmsg, TO_PC(tch)->m_desc);
@@ -3165,8 +3164,8 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 	}
 	int remain = -1;
 	int remainCnt = -1;
-	// È¿°úÀû¿ë : assist¿¡¼­ durtimeÀÌ ÀÖ´Â ½ºÅ³Àº Ãß°¡µÇ°í ¾øÀ¸¸é ¾ÈµÇ´Ï±î ¹«Á¶°Ç Ãß°¡È£Ãâ
-	// ¼öÈ£Å¾, ±ÇÁÂ¿¡´Â ¹öÇÁ ¾È°É¸²
+	// íš¨ê³¼ì ìš© : assistì—ì„œ durtimeì´ ìˆëŠ” ìŠ¤í‚¬ì€ ì¶”ê°€ë˜ê³  ì—†ìœ¼ë©´ ì•ˆë˜ë‹ˆê¹Œ ë¬´ì¡°ê±´ ì¶”ê°€í˜¸ì¶œ
+	// ìˆ˜í˜¸íƒ‘, ê¶Œì¢Œì—ëŠ” ë²„í”„ ì•ˆê±¸ë¦¼
 	bool bCastleObject = false;
 	if (IS_NPC(tch))
 	{
@@ -3222,15 +3221,15 @@ int ApplySkill(CCharacter* ch, CCharacter* tch, CSkill* skill, int itemidx, bool
 
 /////////////////////
 // Function name	: ApplySkillParty
-// Description	    : ÆÄÆ¼¿¡ Àû¿ë ½ÃÀüÀÚ Æ÷ÇÔ
+// Description	    : íŒŒí‹°ì— ì ìš© ì‹œì „ì í¬í•¨
 // Argument         : CPC* ch
-//                  : ½ÃÀüÀÚ
+//                  : ì‹œì „ì
 // Argument         : CSkill* skill
-//                  : ½ºÅ³
+//                  : ìŠ¤í‚¬
 // Argument         : int itemidx
-//                  : ¾ÆÀÌÅÛ¿¡ ÀÇÇÑ ½ºÅ³ÀÏ °æ¿ì ¾ÆÀÌÅÛ ÀÎµ¦½º, ±×¿Ü´Â -1
+//                  : ì•„ì´í…œì— ì˜í•œ ìŠ¤í‚¬ì¼ ê²½ìš° ì•„ì´í…œ ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
 // Argument         : bool& bApply
-//                  : ½ºÅ³ÀÌ Á¤»óÀûÀ¸·Î Àû¿ëµÇ¸é true, ¾Æ´Ï¸é false
+//                  : ìŠ¤í‚¬ì´ ì •ìƒì ìœ¼ë¡œ ì ìš©ë˜ë©´ true, ì•„ë‹ˆë©´ false
 void ApplySkillParty(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 {
 	if (ch->m_pArea == NULL || ch->m_pZone == NULL)
@@ -3242,6 +3241,15 @@ void ApplySkillParty(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 		return ;
 	}
 
+	if(itemidx > 0)
+	{
+		if(ch->checkItemCoolTime(itemidx, skill) == false)
+		{
+			bApply = false;
+			return ;
+		}
+	}
+
 	bool bApplyParty = false;
 	int i;
 	for (i = 0; i < MAX_PARTY_MEMBER; i++)
@@ -3249,7 +3257,7 @@ void ApplySkillParty(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 		if (ch->m_party->GetNearMember(ch, i))
 		{
 			int retApplySkill = ApplySkill(ch, ch->m_party->GetNearMember(ch, i), skill, itemidx, bApply);
-			// ÆÄÆ¼¿ø Áß ÇÑ¸í¿¡°Ô¶óµµ bApply°¡ true°¡ µÇ¸é ¹İÈ¯µÇ´Â bApplyµµ true·Î ÇÑ´Ù.
+			// íŒŒí‹°ì› ì¤‘ í•œëª…ì—ê²Œë¼ë„ bApplyê°€ trueê°€ ë˜ë©´ ë°˜í™˜ë˜ëŠ” bApplyë„ trueë¡œ í•œë‹¤.
 			if (bApply)
 				bApplyParty = true;
 			if (retApplySkill == -1)
@@ -3265,7 +3273,7 @@ void ApplySkillParty(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 
 ////////////////////
 // Function name	: CalcSkillParam
-// Description	    : ch°¡ tch¿¡¼¼ ½ºÅ³ »ç¿ë½Ã, ÆÄ¸®¹ÌÅÍÀÇ ÃÖÁ¾ °ª(1/100´ÜÀ§)¸¦ ±¸ÇÑ´Ù
+// Description	    : chê°€ tchì—ì„¸ ìŠ¤í‚¬ ì‚¬ìš©ì‹œ, íŒŒë¦¬ë¯¸í„°ì˜ ìµœì¢… ê°’(1/100ë‹¨ìœ„)ë¥¼ êµ¬í•œë‹¤
 int CalcSkillParam(const CCharacter* ch, const CCharacter* tch, int selfparam, int targetparam)
 {
 	if (!IS_PC(ch) || !IS_PC(tch))
@@ -3350,16 +3358,16 @@ void ApplySkillGuild(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 }
 /////////////////////
 // Function name	: ApplySkillExped
-// Description	    : ¿øÁ¤´ë¿¡ Àû¿ë ½ÃÀüÀÚ Æ÷ÇÔ
+// Description	    : ì›ì •ëŒ€ì— ì ìš© ì‹œì „ì í¬í•¨
 // Argument         : CPC* ch
-//                  : ½ÃÀüÀÚ
+//                  : ì‹œì „ì
 // Argument         : CSkill* skill
-//                  : ½ºÅ³
+//                  : ìŠ¤í‚¬
 // Argument         : int itemidx
-//                  : ¾ÆÀÌÅÛ¿¡ ÀÇÇÑ ½ºÅ³ÀÏ °æ¿ì ¾ÆÀÌÅÛ ÀÎµ¦½º, ±×¿Ü´Â -1
+//                  : ì•„ì´í…œì— ì˜í•œ ìŠ¤í‚¬ì¼ ê²½ìš° ì•„ì´í…œ ì¸ë±ìŠ¤, ê·¸ì™¸ëŠ” -1
 // Argument         : bool& bApply
-//                  : ½ºÅ³ÀÌ Á¤»óÀûÀ¸·Î Àû¿ëµÇ¸é true, ¾Æ´Ï¸é false
-// ¿øÁ¤´ë °°Àº ±×·ì¿¡¸¸ Àû¿ë µÇ°Ô ÇÔ
+//                  : ìŠ¤í‚¬ì´ ì •ìƒì ìœ¼ë¡œ ì ìš©ë˜ë©´ true, ì•„ë‹ˆë©´ false
+// ì›ì •ëŒ€ ê°™ì€ ê·¸ë£¹ì—ë§Œ ì ìš© ë˜ê²Œ í•¨
 void ApplySkillExped(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 {
 	if (ch->m_pArea == NULL || ch->m_pZone == NULL)
@@ -3384,7 +3392,7 @@ void ApplySkillExped(CPC* ch, CSkill* skill, int itemidx, bool& bApply)
 				if (ch->m_Exped->GetNearMember(ch, nGroup, j))
 				{
 					int retApplySkill = ApplySkill(ch, ch->m_Exped->GetNearMember(ch, nGroup, j), skill, itemidx, bApply);
-					// ÆÄÆ¼¿ø Áß ÇÑ¸í¿¡°Ô¶óµµ bApply°¡ true°¡ µÇ¸é ¹İÈ¯µÇ´Â bApplyµµ true·Î ÇÑ´Ù.
+					// íŒŒí‹°ì› ì¤‘ í•œëª…ì—ê²Œë¼ë„ bApplyê°€ trueê°€ ë˜ë©´ ë°˜í™˜ë˜ëŠ” bApplyë„ trueë¡œ í•œë‹¤.
 					if (bApply)
 						bApplyExped = true;
 					if (retApplySkill == -1)
@@ -3409,7 +3417,7 @@ void CSkillList::DeleteInstantSkill(int flag)
 	{
 		if(p->skill()->m_proto->m_flag & flag)
 		{
-			//½ºÅ³¸®½ºÆ®¿¡¼­»èÁ¦
+			//ìŠ¤í‚¬ë¦¬ìŠ¤íŠ¸ì—ì„œì‚­ì œ
 			tmp = p->skill();
 			p = p->next();
 			Remove(tmp);
@@ -3523,7 +3531,7 @@ void CSkillProtoList::LearnAllSkill(CPC* ch)
 			}
 		}
 
-		// ¼ÒÈ¯¼ö ½ºÅ³Àº ¼ÒÈ¯¼ö¿¡°Ôµµ Ãß°¡ : ¾×Æ¼ºê¸¸
+		// ì†Œí™˜ìˆ˜ ìŠ¤í‚¬ì€ ì†Œí™˜ìˆ˜ì—ê²Œë„ ì¶”ê°€ : ì•¡í‹°ë¸Œë§Œ
 		if ((pSkillProto->m_type == ST_MELEE || pSkillProto->m_type == ST_RANGE || pSkillProto->m_type == ST_MAGIC) && pSkillProto->CheckSorcererFlag(SSF_USE_ALL))
 		{
 			int needFlag = 0;
@@ -3592,7 +3600,7 @@ bool ApplyWarSkill(CPC* ch, int zone_index)
 
 	CWarCastle* castle = NULL;
 
-	//°ø¼º Áö¿ª¿¡ Á¸ÀçÇÏ´Â Ä³¸¯ÅÍ ¹× °¡´É ·¹º§ Ã¼Å©
+	//ê³µì„± ì§€ì—­ì— ì¡´ì¬í•˜ëŠ” ìºë¦­í„° ë° ê°€ëŠ¥ ë ˆë²¨ ì²´í¬
 	if(zone_index == ZONE_MERAC)
 	{
 		castle = CWarCastle::GetCastleObject(ZONE_MERAC);
@@ -3616,17 +3624,17 @@ bool ApplyWarSkill(CPC* ch, int zone_index)
 		return false;
 	}
 
-	//°ø¼º ÁßÀÌ ¾Æ´Ï¶ó¸é
+	//ê³µì„± ì¤‘ì´ ì•„ë‹ˆë¼ë©´
 	if(castle->GetState() != WCSF_WAR_CASTLE)
 		return false;
 	
-	//¼ö¼º ¹× °ø¼ºÀ» ½ÅÃ»ÇÑ Ä³¸¯ÅÍ.
+	//ìˆ˜ì„± ë° ê³µì„±ì„ ì‹ ì²­í•œ ìºë¦­í„°.
 	if(castle->CheckJoin(ch) == WCJF_NONE)
 		return false;
 
 	int skill_index = 0;
 
-	//Á÷¾÷º° ½ºÅ³
+	//ì§ì—…ë³„ ìŠ¤í‚¬
 	if(zone_index == ZONE_DRATAN)
 	{
 		switch(job)

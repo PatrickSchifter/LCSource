@@ -13,7 +13,7 @@ public:
 	CGMCmd(std::string command, int level, GMFunction fun);
 	~CGMCmd(void);
 
-	// ½ÇÇà
+	// ì‹¤í–‰
 	void run(CPC* pc, const char* arg, std::vector<std::string>& vec);
 
 	// get command
@@ -26,9 +26,9 @@ public:
 	GMFunction getFunction(void) const;
 
 private:
-	std::string m_command;		// GM Command	: ¸í·É¾î
-	int m_level;				// GM Level		: ½ÇÇà °¡´É GM ·¹º§
-	GMFunction m_function;		// GM Function	: ½ÇÇà ÇÔ¼ö Æ÷ÀÎÅÍ
+	std::string m_command;		// GM Command	: ëª…ë ¹ì–´
+	int m_level;				// GM Level		: ì‹¤í–‰ ê°€ëŠ¥ GM ë ˆë²¨
+	GMFunction m_function;		// GM Function	: ì‹¤í–‰ í•¨ìˆ˜ í¬ì¸í„°
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,22 +43,22 @@ public:
 
 	~CGMCmdList(void);
 
-	// GMCmd ·Îµå
+	// GMCmd ë¡œë“œ
 	void load(void);
 
-	// ½ÇÇà
+	// ì‹¤í–‰
 	void run(CPC* pc, const char* arg);
 
 	static CGMCmdList* getInstance(void);
 
 private:
-	// GMCmd Ãß°¡
+	// GMCmd ì¶”ê°€
 	void add(CGMCmd* gmcmd);
 
-	// °Ë»ö
+	// ê²€ìƒ‰
 	CGMCmd* find(std::string& command);
 
-	// ½ÇÇà °¡´ÉÇÑÁö È®ÀÎ
+	// ì‹¤í–‰ ê°€ëŠ¥í•œì§€ í™•ì¸
 	bool canRun(CGMCmd* gmcmd, CPC* pc);
 
 private:

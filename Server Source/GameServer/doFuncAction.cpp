@@ -13,7 +13,7 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 
 	RequestClient::action* packet = reinterpret_cast<RequestClient::action*>(msg->m_buf);
 
-	//ÀÎÁ¸¾È¿¡¼­ (Æê)°í¼ÓÀÌµ¿ »ç¿ë ºÒ°¡
+	//ì¸ì¡´ì•ˆì—ì„œ (íŽ«)ê³ ì†ì´ë™ ì‚¬ìš© ë¶ˆê°€
 	if(ch->m_nJoinInzone_ZoneNo >=0 && ch->m_nJoinInzone_RoomNo >= 0)
 	{
 		if(packet->index == 38)
@@ -26,14 +26,14 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 		{
 			switch (packet->index)
 			{
-			case AGT_SITDOWN:				// ¾É±â ¼­±â
-			case AGT_PET_SITDOWN:			// Æê ¾É±â ¼­±â
+			case AGT_SITDOWN:				// ì•‰ê¸° ì„œê¸°
+			case AGT_PET_SITDOWN:			// íŽ« ì•‰ê¸° ì„œê¸°
 				{
-					// Á×Àº »óÅÂ¸é ¹«½Ã
+					// ì£½ì€ ìƒíƒœë©´ ë¬´ì‹œ
 					if (DEAD(ch) || ch->m_personalshop != NULL || ch->IsSetPlayerState(PLAYER_STATE_CHANGE))
 						return ;
 
-					// Æê ¾É±â ¼­±â µî±â¸é ÆêÀ» Å¸°í ÀÖ¾î¾ß ÇÔ
+					// íŽ« ì•‰ê¸° ì„œê¸° ë“±ê¸°ë©´ íŽ«ì„ íƒ€ê³  ìžˆì–´ì•¼ í•¨
 					if (packet->index == AGT_PET_SITDOWN)
 					{
 						if (!ch->GetPet() || !ch->GetPet()->IsMount())
@@ -54,7 +54,7 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 				}
 				break;
 
-			case AGT_PKMODE:			// ÆòÈ­/´ë°á ¸ðµå
+			case AGT_PKMODE:			// í‰í™”/ëŒ€ê²° ëª¨ë“œ
 				{
 #ifdef BLOCK_PVP
 					return;
@@ -79,7 +79,7 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 					if (ch->m_level <= PKMODE_LIMIT_LEVEL)
 					{
 						bool bSkipLevel = false;
-						// °ø¼º ÁøÇà Áß °ø¼º Áö¿ª ³»¿¡¼­´Â Àú·¹º§µµ PK °¡´É
+						// ê³µì„± ì§„í–‰ ì¤‘ ê³µì„± ì§€ì—­ ë‚´ì—ì„œëŠ” ì €ë ˆë²¨ë„ PK ê°€ëŠ¥
 						if (ch->m_pZone->m_index == CWarCastle::GetCurSubServerCastleZoneIndex() && ch->GetMapAttr() & MATT_WAR)
 						{
 							CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
@@ -107,7 +107,7 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 					if (ch->GetMapAttr() & MATT_FREEPKZONE)
 						return ;
 
-					// PVP ¾Æ·¹³ª Á¸ÀÌ¸éÀº ÇÁ¸®ÇÇÄÉÀÌ °ø°£ ¸»°í´Â ¸ðµÎ pk¸ðµå°¡ ¾ÈµÇ°Ô ¸·À½..   yhj
+					// PVP ì•„ë ˆë‚˜ ì¡´ì´ë©´ì€ í”„ë¦¬í”¼ì¼€ì´ ê³µê°„ ë§ê³ ëŠ” ëª¨ë‘ pkëª¨ë“œê°€ ì•ˆë˜ê²Œ ë§‰ìŒ..   yhj
 					if ( !(ch->GetMapAttr() & MATT_FREEPKZONE)
 							&& !(ch->GetMapAttr() & MATT_PEACE)
 							&& ch->m_pZone->m_index == ZONE_PK_TOURNAMENT )
@@ -115,8 +115,8 @@ void do_Action(CPC* ch, CNetMsg::SP& msg)
 						return ;
 					}
 
-					// ½ºÆ®·¹ÀÌ¾Æ³ª ¸¶À» °è´Ü¿¡¼­ pk¸ðµå°¡ ¾ÈµÇ°Ô ¸·À½..   yhj
-					// ´ÙÀ½ ÁÂÇ¥´Â ½ºÆ®·¹ÀÌ¾Æ³ª ¸¶À»ÀÇ ³»ºÎÁÂÇ¥
+					// ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë§ˆì„ ê³„ë‹¨ì—ì„œ pkëª¨ë“œê°€ ì•ˆë˜ê²Œ ë§‰ìŒ..   yhj
+					// ë‹¤ìŒ ì¢Œí‘œëŠ” ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë§ˆì„ì˜ ë‚´ë¶€ì¢Œí‘œ
 					if ( (ch->GetMapAttr() & MATT_STAIR_UP || ch->GetMapAttr() & MATT_STAIR_DOWN )
 							&& ch->m_pZone->m_index == ZONE_STREIANA
 							&& GET_X(ch) >= 940.0 && GET_X(ch) <= 1090.0

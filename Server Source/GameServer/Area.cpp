@@ -21,7 +21,7 @@ CArea::CArea()
 	: m_zone(NULL)
 {
 	m_nDelayOpenGate = 0;
-	memset(m_AkanPCList, 0, sizeof(CPC*)*8); // 8¸í. ÀÎ¿øÁ¦ÇÑÀÌ Ç®¸± ¶§ ¸ÂÃçÁà¾ß ÇÔ.
+	memset(m_AkanPCList, 0, sizeof(CPC*)*8); // 8ëª…. ì¸ì›ì œí•œì´ í’€ë¦´ ë•Œ ë§ì¶°ì¤˜ì•¼ í•¨.
 	m_pBossAppearNPC = NULL;
 	m_nPauseIndex = 0;
 	m_nPauseMobActivity = 0;
@@ -168,7 +168,7 @@ void CArea::Init(CZone* z, int index, int w, int h, int ycnt)
 			m_env[i][j] = new CEnv[m_size[1]];
 	}
 
-	// ½Ì±Û´øÀüÀÇ °æ¿ì ÇÑ Area¿¡ Cell ÇÏ³ª
+	// ì‹±ê¸€ë˜ì „ì˜ ê²½ìš° í•œ Areaì— Cell í•˜ë‚˜
 	if (z->IsGuildRoom() || z->IsPersonalDungeon() || z->IsComboZone() || z->IsExtremeCube())
 	{
 		m_size[0] = 1;
@@ -190,16 +190,16 @@ void CArea::Init(CZone* z, int index, int w, int h, int ycnt)
 		m_monsterCombo->SetArea(this);
 	}
 
-	// zone index·Î Æ®¸®°Å ¼¼Æ® Å¸ÀÔÀ» ¾Ë¾Æ ³½ µÚ
+	// zone indexë¡œ íŠ¸ë¦¬ê±° ì„¸íŠ¸ íƒ€ì…ì„ ì•Œì•„ ë‚¸ ë’¤
 	int triggerSetType = gserver->GetTriggerSetTypeToZoneIndex(z->m_index);
 
-	// Æ®¸®°Å ±âº» DBÁ¤º¸
+	// íŠ¸ë¦¬ê±° ê¸°ë³¸ DBì •ë³´
 	if( m_CTriggerList.LoadTriggerInfo(triggerSetType) )
 	{
-		// ºÒ·¯¿À±â ¼º°øÇÏ¸é Æ®¸®°Å »ç¿ëÇÏ´Â Area·Î Ç¥½Ã
+		// ë¶ˆëŸ¬ì˜¤ê¸° ì„±ê³µí•˜ë©´ íŠ¸ë¦¬ê±° ì‚¬ìš©í•˜ëŠ” Areaë¡œ í‘œì‹œ
 		m_bUseTriggerEvent = true;
 
-		// Ç¥½Ã ÈÄ Area ÁÖ¼Ò Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+		// í‘œì‹œ í›„ Area ì£¼ì†Œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
 		m_CTriggerList.SetArea(this);
 
 		GAMELOG << init("TRIGGER_SYSTEM : AREA LOADING SUCCESS")
@@ -256,7 +256,7 @@ void CArea::CharToCell(CCharacter* ch, char cy, int cx, int cz)
 	}
 
 	//if (cy < 0 || cy >= m_ycnt)
-	// yLayer ¼öÁ¤
+	// yLayer ìˆ˜ì •
 	if (cy < 0 || cy > ((m_ycnt - 1) * 2))
 	{
 //#ifdef MONSTER_COMBO_BUGFIX
@@ -291,7 +291,7 @@ void CArea::CharToCellForSummonNpc(CCharacter* owner, CCharacter* ch, char cy, i
 	}
 
 	//if (cy < 0 || cy >= m_ycnt)
-	// yLayer ¼öÁ¤
+	// yLayer ìˆ˜ì •
 	if (cy < 0 || cy > ((m_ycnt - 1) * 2))
 	{
 		//#ifdef MONSTER_COMBO_BUGFIX
@@ -349,7 +349,7 @@ void CArea::CharFromCell(CCharacter* ch, bool bDeleteAttackList)
 void CArea::ItemToCell(CItem* item, char cy, int cx, int cz)
 {
 	//if (cy < 0 || cy >= m_ycnt)
-	// yLayer ¼öÁ¤
+	// yLayer ìˆ˜ì •
 	if (cy < 0 || cy > ((m_ycnt - 1) * 2))
 		return ;
 
@@ -398,7 +398,7 @@ void CArea::SendCellInfo(CPC* ch, bool bExcludeOwnPetElemental)
 			while ((pChar = pNext))
 			{
 				pNext = pChar->m_pCellNext;
-				// ¿ø·¡´Â pc°¡ ¾Æ´Ï¸é Á×Àº °ÍÀº Appear ¾ÈµÇ³ª ¹«Á¶°Ç µÇµµ·Ï ¼öÁ¤ : bs : 050806
+				// ì›ë˜ëŠ” pcê°€ ì•„ë‹ˆë©´ ì£½ì€ ê²ƒì€ Appear ì•ˆë˜ë‚˜ ë¬´ì¡°ê±´ ë˜ë„ë¡ ìˆ˜ì • : bs : 050806
 				if (pChar != ch)
 				{
 					if (bExcludeOwnPetElemental && IS_ELEMENTAL(pChar) && TO_ELEMENTAL(pChar)->GetOwner() == ch)
@@ -435,6 +435,15 @@ void CArea::SendCellInfo(CPC* ch, bool bExcludeOwnPetElemental)
 							UpdateClient::holyWaterStateMsg(rmsg, pc->m_index, pc->holy_water_item->getDBIndex());
 							SEND_Q(rmsg, ch->m_desc);
 						}
+						{
+							std::map<int, MAKE_TITLE*>::iterator it = pc->_map_title.find(pc->m_custom_title_index);
+							if(it != pc->_map_title.end())
+							{
+								CNetMsg::SP rmsg(new CNetMsg);
+								TitleUserInfoMsg(rmsg, pc->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+								SEND_Q(rmsg, ch->m_desc);
+							}
+						}
 					}
 					if( TO_PC(pChar) )
 					{
@@ -450,7 +459,7 @@ void CArea::SendCellInfo(CPC* ch, bool bExcludeOwnPetElemental)
 			while ((pItem = pItemNext))
 			{
 				pItemNext = pItem->m_pCellNext;
-				// ³ªÅ¸³²
+				// ë‚˜íƒ€ë‚¨
 				CNetMsg::SP rmsg(new CNetMsg);
 				ItemAppearMsg(rmsg, pItem);
 				SEND_Q(rmsg, ch->m_desc);
@@ -468,47 +477,47 @@ bool CArea::IsNotBlocked(char sy, float sx, float sz, float tx, float tz, bool b
 {
 	ty = sy;
 
-	// ¿µ¿ª °Ë»ç
+	// ì˜ì—­ ê²€ì‚¬
 	if (tx < 0 || tx >= m_zone->m_attrMap[0].m_size[0] || tz < 0 || tz >= m_zone->m_attrMap[0].m_size[1])
 		return false;
 
-	// ¸ñÇ¥ ÁöÁ¡ÀÇ ¼Ó¼º
+	// ëª©í‘œ ì§€ì ì˜ ì†ì„±
 	unsigned short newatt;
-	// ÇöÀç ÁöÁ¡ÀÇ ¼Ó¼º
+	// í˜„ì¬ ì§€ì ì˜ ì†ì„±
 	unsigned short curattr;
-	// °è´Ü °Ë»ç ·çÆ¾¿¡ µé¾î°¬¾ú´ÂÁö °Ë»ç
+	// ê³„ë‹¨ ê²€ì‚¬ ë£¨í‹´ì— ë“¤ì–´ê°”ì—ˆëŠ”ì§€ ê²€ì‚¬
 	bool bTestStair = false;
 
 	char maxY = (m_zone->m_countY - 1) * 2;
 
 RETRY:
-	// Ãş À¯È¿¼º °Ë»ç
+	// ì¸µ ìœ íš¨ì„± ê²€ì‚¬
 	if (sy < 0 || sy > maxY)
 		return false;
 
-	// ¸ñÇ¥ ÁöÁ¡ÀÇ ¼Ó¼º
+	// ëª©í‘œ ì§€ì ì˜ ì†ì„±
 	newatt = GetAttr(sy, tx, tz);
-	// ÇöÀç ÁöÁ¡ÀÇ ¼Ó¼º
+	// í˜„ì¬ ì§€ì ì˜ ì†ì„±
 	curattr = GetAttr(sy, sx, sz);
 
-	// ¸ñÇ¥ ÁöÁ¡ÀÌ »ı»êÁö¿ª, ÇÇ½ºÁ¸ÀÌ¸é ºí·°°ú °°°Ô Ã³¸®
+	// ëª©í‘œ ì§€ì ì´ ìƒì‚°ì§€ì—­, í”¼ìŠ¤ì¡´ì´ë©´ ë¸”ëŸ­ê³¼ ê°™ê²Œ ì²˜ë¦¬
 	if( (newatt & MATT_PEACE) || (newatt & MATT_PRODUCT_PUBLIC) || (newatt & MATT_PRODUCT_PRIVATE) )
 	{
 		newatt |= MATT_UNWALKABLE;
 	}
 
-	// °ø¼º ¼öÈ£º´ÀÌ¸é MAPATT_WARZONEÀÌ ¾Æ´Ñ°÷Àº ºí·°
+	// ê³µì„± ìˆ˜í˜¸ë³‘ì´ë©´ MAPATT_WARZONEì´ ì•„ë‹Œê³³ì€ ë¸”ëŸ­
 	if(bCastleNPC && !(newatt & MATT_WAR))
 		newatt |= MATT_UNWALKABLE;
 	
-	// ºí·°À» ´çÇÏ¸é
+	// ë¸”ëŸ­ì„ ë‹¹í•˜ë©´
 	if (newatt & MATT_UNWALKABLE)
 	{
-		// ÀÌ¹Ì °è´ÜÀ» Àû¿ëÇßÀ¸¸é ºí·°
+		// ì´ë¯¸ ê³„ë‹¨ì„ ì ìš©í–ˆìœ¼ë©´ ë¸”ëŸ­
 		if (bTestStair)
 			return false;
 
-		// ÇöÀç °è´ÜÀÌ¸é À­Ãş °Ë»ç
+		// í˜„ì¬ ê³„ë‹¨ì´ë©´ ìœ—ì¸µ ê²€ì‚¬
 		if (sy % 2 == 1)
 		{
 			bTestStair = true;
@@ -519,28 +528,28 @@ RETRY:
 			return false;
 	}
 
-	// °Ë»ç´Â Á¤»ó ¿Ï·á°¡ µÇ¾úÀ¸¹Ç·Î ÃÖÁ¾ y°ªÀ» ±¸ÇÑ´Ù
-	// ÀÌµ¿ÇÑ ¿µ¿ªÀÌ »óÇâ °è´Ü
+	// ê²€ì‚¬ëŠ” ì •ìƒ ì™„ë£Œê°€ ë˜ì—ˆìœ¼ë¯€ë¡œ ìµœì¢… yê°’ì„ êµ¬í•œë‹¤
+	// ì´ë™í•œ ì˜ì—­ì´ ìƒí–¥ ê³„ë‹¨
 	if (newatt & MATT_STAIR_UP)
 	{
-		// ÀÏ¹İ¿µ¿ª¿¡¼­ °£ °æ¿ì
+		// ì¼ë°˜ì˜ì—­ì—ì„œ ê°„ ê²½ìš°
 		if (ty % 2 == 0)
 			ty++;
-		// °è´ÜÀÌ¾úÀ¸¸é
+		// ê³„ë‹¨ì´ì—ˆìœ¼ë©´
 		else
 			ty = sy - sy % 2 + 1;
 	}
-	// ÀÌµ¿ÇÑ ¿µ¿ªÀÌ ÇÏÇâ °è´Ü
+	// ì´ë™í•œ ì˜ì—­ì´ í•˜í–¥ ê³„ë‹¨
 	else if (newatt & MATT_STAIR_DOWN)
 	{
-		// ÀÏ¹İ¿µ¿ª¿¡¼­ °£ °æ¿ì
+		// ì¼ë°˜ì˜ì—­ì—ì„œ ê°„ ê²½ìš°
 		if (ty % 2 == 0)
 			ty--;
-		// °è´ÜÀÌ¾úÀ¸¸é
+		// ê³„ë‹¨ì´ì—ˆìœ¼ë©´
 		else
 			ty = sy - sy % 2 - 1;
 	}
-	// ±×¿ÜÀÇ °æ¿ì´Â °è´ÜÀÌ ¾Æ´Ñ Ãş¹øÈ£
+	// ê·¸ì™¸ì˜ ê²½ìš°ëŠ” ê³„ë‹¨ì´ ì•„ë‹Œ ì¸µë²ˆí˜¸
 	else
 		ty = sy - sy % 2;
 
@@ -551,14 +560,14 @@ bool CArea::IsNotBlocked(CCharacter* ch, char y, float x, float z, bool battack,
 {
 	outYlayer = y;
 
-	// ¿µ¿ª °Ë»ç
+	// ì˜ì—­ ê²€ì‚¬
 	if (x < 0 || x >= m_zone->m_attrMap[(int)y/2].m_size[0] || z < 0 || z >= m_zone->m_attrMap[(int)y/2].m_size[1])
 	{
 		outYlayer = GET_YLAYER(ch);
 		return false;
 	}
 
-	// ¸÷ÀÌ ¾Æ´Ï¸é Å¬¶óÀÌ¾ğÆ®¸¦ ¹Ï°í
+	// ëª¹ì´ ì•„ë‹ˆë©´ í´ë¼ì´ì–¸íŠ¸ë¥¼ ë¯¿ê³ 
 	if (!IS_NPC(ch) && !battack)
 		return true;
 
@@ -569,7 +578,7 @@ bool CArea::IsNotBlocked(CCharacter* ch, char y, float x, float z, bool battack,
 		bCastleNPC = (npc->m_proto->CheckFlag(NPC_CASTLE_GUARD | NPC_CASTLE_TOWER)) ? true  : false;
 	}
 
-	// °ø°İÀÏ¶§´Â ³»°¡ ÀÖ´Â ÀÚ¸®´Â °Ë»ç ¾ÈÇÑ´Ù
+	// ê³µê²©ì¼ë•ŒëŠ” ë‚´ê°€ ìˆëŠ” ìë¦¬ëŠ” ê²€ì‚¬ ì•ˆí•œë‹¤
 	int inc_start = 0;
 	if (battack && !IS_PC(ch))
 		inc_start = 1;
@@ -685,8 +694,8 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 
 	if(m_zone->m_index == ZONE_DRATAN)
 	{
-		///=== ÀÌºÎºĞ º¯°æ½Ã ¹ØÀÇ nRealCountNPC ·Î º¯°æ ºÎºĞµµ ¼öÁ¤ÀÌ ÇÊ¿ä
-		///=== ¼³°è»óÀÇ Àß¸ø ¸®ÆåÅä¸µ ÇÊ¿ä!!!
+		///=== ì´ë¶€ë¶„ ë³€ê²½ì‹œ ë°‘ì˜ nRealCountNPC ë¡œ ë³€ê²½ ë¶€ë¶„ë„ ìˆ˜ì •ì´ í•„ìš”
+		///=== ì„¤ê³„ìƒì˜ ì˜ëª» ë¦¬í™í† ë§ í•„ìš”!!!
 		m_nCountNPC += 30;
 	}
 
@@ -704,11 +713,6 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 
 		if (data.pNPCProto->CheckFlag(NPC_RAID))
 		{
-#if !defined (LC_TLD) && !defined (LC_GAMIGO)  && !defined(LC_KOR) && !defined(LC_RUS) && !defined(LC_BILA)
-			if ( m_zone->m_index != ZONE_START
-			   )
-			{
-#endif // !defined (LC_TLD)
 				CNPCRegenInfo* pNewRegenInfo = new CNPCRegenInfo;
 				pNewRegenInfo->m_index = data.index;
 				pNewRegenInfo->m_npcIdx = data.npcIndex;
@@ -724,10 +728,6 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 				pNewRegenInfo->m_regenSec = data.regenSec;
 				pNewRegenInfo->m_npcProto = data.pNPCProto;
 				m_raidNPCRegenList.push_back(pNewRegenInfo);
-
-#if !defined (LC_TLD) && !defined (LC_GAMIGO)  && !defined(LC_KOR) && !defined(LC_RUS) && !defined(LC_BILA)
-			}
-#endif // !defined (LC_TLD)
 		}
 		else
 		{
@@ -743,7 +743,7 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 			{
 				if( !(data.pNPCProto->CheckFlag(NPC_MINERAL | NPC_ENERGY | NPC_CROPS | NPC_GUARD)) )
 				{
-					if (data.npcIndex != 484 && data.npcIndex != 486)  // Å©¸®½º ¸¶½º ÀÌº¥Æ®¿ë Æ®¸® NPC´Â »«´Ù
+					if (data.npcIndex != 484 && data.npcIndex != 486)  // í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ ì´ë²¤íŠ¸ìš© íŠ¸ë¦¬ NPCëŠ” ëº€ë‹¤
 					{
 						m_NpcPortal_NpcList.insert(data.npcIndex);
 					}
@@ -762,7 +762,7 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 	}
 
 	{
-		// shop npc Á¤º¸µµ ´ã¾ÆÁÖÀÚ
+		// shop npc ì •ë³´ë„ ë‹´ì•„ì£¼ì
 		for(int i = 0; i < m_zone->m_nShopCount; i++)
 		{
 			m_NpcPortal_NpcList.insert(m_zone->m_shopList[i].m_keeperIdx);
@@ -781,14 +781,14 @@ void CArea::LoadNPC(std::vector<tag_npc_regen_info>& vec)
 			nRealCountNPC++;
 			gserver->addNpcRegenInfo( m_npcRegenList.GetNpcRegenInfo(m_npcRegenList.m_wPos-1 ) );
 		}
-	} // zone_Index °¡ 0, 4, 7, ÀÏ°æ¿ì¸¸ MPC µî·Ï - Áê³ë, µå¶óÅº, ¸Ş¶óÅ© Áö¿ª
+	} // zone_Index ê°€ 0, 4, 7, ì¼ê²½ìš°ë§Œ MPC ë“±ë¡ - ì¥¬ë…¸, ë“œë¼íƒ„, ë©”ë¼í¬ ì§€ì—­
 
 	m_npcRegenList.m_nCount = nRealCountNPC;
 	if(m_zone->m_index == ZONE_DRATAN)
 	{
-		// µå¶óÅºÀÌ¸é ¼öÈ£º´ÀÇ ÃÖ´ëÄ¡ ¸¸Å­
-		///== SetCount()¸¦ »ç¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡ ½ÇÁ¦ »çÀÌÁî¸¦ ´Ã¸®·Á¸é
-		///== SetCount()È£ÃâÇÏ´Â °÷¿¡¼­µµ ´Ã·Á¾ß ÇÑ´Ù.
+		// ë“œë¼íƒ„ì´ë©´ ìˆ˜í˜¸ë³‘ì˜ ìµœëŒ€ì¹˜ ë§Œí¼
+		///== SetCount()ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ì‹¤ì œ ì‚¬ì´ì¦ˆë¥¼ ëŠ˜ë¦¬ë ¤ë©´
+		///== SetCount()í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œë„ ëŠ˜ë ¤ì•¼ í•œë‹¤.
 		m_npcRegenList.m_nCount += 30;
 	}
 
@@ -860,7 +860,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 
 	m_nCountNPC = 0;
 
-	// ½Ì±Û´øÀü
+	// ì‹±ê¸€ë˜ì „
 	m_nMakeNPC = 0;
 
 	CNPC* npc;
@@ -880,14 +880,14 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 	if(nRaidRoomNum != -1)
 		m_nRaidRoomNo = nRaidRoomNum;
 
-	// ·¹ÀÌµå ´øÀüÀÏ °æ¿ì ¸®Á¨ ¹æ½ÄÀÌ ´Ù¸£¹Ç·Î µ¶¸³ÀûÀ¸·Î °ü¸®ÇÑ´Ù.
+	// ë ˆì´ë“œ ë˜ì „ì¼ ê²½ìš° ë¦¬ì   ë°©ì‹ì´ ë‹¤ë¥´ë¯€ë¡œ ë…ë¦½ì ìœ¼ë¡œ ê´€ë¦¬í•œë‹¤.
 	if (m_zone->m_index == ZONE_ALTER_OF_DARK
 			|| m_zone->m_index == ZONE_CAPPELLA_1)
 	{
-		// Æ®¸®°Å ¸®½ºÆ®¸¦ ¸ÕÀú ·ÎµùÇÑ´Ù.
+		// íŠ¸ë¦¬ê±° ë¦¬ìŠ¤íŠ¸ë¥¼ ë¨¼ì € ë¡œë”©í•œë‹¤.
 		m_CTriggerList.LoadTriggerSaveInfo(nRaidRoomNum);
 
-		// ¼­¹ö ÀçºÎÆÃ½Ã, À¯Áö½Ã ¸ğµÎ ÀÌ ÇÃ·¡±× »ç¿ë
+		// ì„œë²„ ì¬ë¶€íŒ…ì‹œ, ìœ ì§€ì‹œ ëª¨ë‘ ì´ í”Œë˜ê·¸ ì‚¬ìš©
 		if (m_CTriggerList.Check_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1018_BEFORE))
 		{
 			Change_NpcRegenRaid(TRIGGER_SAVE_ALTER_OF_DARK_1018);
@@ -902,19 +902,19 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 		}
 		else
 		{
-			// ÃÊ¹İ ¸®Á¨Àº level 0 ºÎÅÍÀÌ´Ù.
+			// ì´ˆë°˜ ë¦¬ì  ì€ level 0 ë¶€í„°ì´ë‹¤.
 			Change_NpcRegenRaid(0);
 		}
 	}
 	else
 
-		// ÃßÈÄ Å¬¶óÀÌ¾ğÆ®·Î ºÎÅÍ ³­ÀÌµµ ¼³Á¤À» ¹ŞÀ» ¶§ ¾Æ·¡ ÁÖ¼®À» Á¦°ÅÇÊ¿ä.
-		// m_RaidDifficulty = ³­ÀÌµµ ¼³Á¤
+		// ì¶”í›„ í´ë¼ì´ì–¸íŠ¸ë¡œ ë¶€í„° ë‚œì´ë„ ì„¤ì •ì„ ë°›ì„ ë•Œ ì•„ë˜ ì£¼ì„ì„ ì œê±°í•„ìš”.
+		// m_RaidDifficulty = ë‚œì´ë„ ì„¤ì •
 		// m_RaidInfoList[DUNGEON_DIFFICULTY_NORMAL].m_pArea = this;
 		// m_RaidInfoList[DUNGEON_DIFFICULTY_HARD].m_pArea = this;
 		if (m_zone->m_index == ZONE_AKAN_TEMPLE)
 		{
-			// ÇöÀç SAVE POINT¸¦ Ã£¾Æ¼­ ¼³Á¤ÇÑ´Ù.
+			// í˜„ì¬ SAVE POINTë¥¼ ì°¾ì•„ì„œ ì„¤ì •í•œë‹¤.
 			//m_RaidInfoList[DUNGEON_DIFFICULTY_NORMAL].LoadSavePointRaidInfo(ZONE_AKAN_TEMPLE, nRaidRoomNum);
 			//m_RaidInfoList[DUNGEON_DIFFICULTY_HARD].LoadSavePointRaidInfo(ZONE_AKAN_TEMPLE, nRaidRoomNum);
 			m_RaidInfoList[this->m_RaidDifficulty].LoadSavePointRaidInfo(ZONE_AKAN_TEMPLE, nRaidRoomNum);
@@ -932,8 +932,8 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 
 		else
 
-			// ½Ì±Û´øÀüÀÌ ¾Æ´Ñ°æ¿ì¿¡¸¸  ÀÏ¹İ NPC ¸®Á¨
-			// TODO : ÃßÈÄ ½Ì±Û´øÀü¿¡ MobÀÌ ¾Æ´Ñ NPC°¡ µé¾î°¥ °æ¿ì ¼öÁ¤ ¿ä.
+			// ì‹±ê¸€ë˜ì „ì´ ì•„ë‹Œê²½ìš°ì—ë§Œ  ì¼ë°˜ NPC ë¦¬ì  
+			// TODO : ì¶”í›„ ì‹±ê¸€ë˜ì „ì— Mobì´ ì•„ë‹Œ NPCê°€ ë“¤ì–´ê°ˆ ê²½ìš° ìˆ˜ì • ìš”.
 			if (!m_zone->IsPersonalDungeon())
 			{
 				for (i = 0; i < m_npcRegenList.m_nCount; i++)
@@ -946,11 +946,11 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 					if ( !p->m_bRegen )
 						continue;
 
-					// ÃşÀû¿ë ¸÷¹èÄ¡ È®ÀÎ
+					// ì¸µì ìš© ëª¹ë°°ì¹˜ í™•ì¸
 					npc = gserver->m_npcProtoList.Create(p->m_npcIdx, p);
 					if (!npc)	continue ;
 
-					// ¼Ó¼º¸Ê»ó ÇÇ½ºÁ¸ÀÌ°í ÇÇ½º NPC°¡ ¾Æ´Ï¸é ¸®Á¨¾ÈÇÔ
+					// ì†ì„±ë§µìƒ í”¼ìŠ¤ì¡´ì´ê³  í”¼ìŠ¤ NPCê°€ ì•„ë‹ˆë©´ ë¦¬ì  ì•ˆí•¨
 					if (!npc->m_proto->CheckFlag(NPC_PEACEFUL))
 					{
 						unsigned short mapattr = GetAttr(p->m_regenY, p->m_regenX, p->m_regenZ);
@@ -979,7 +979,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 					GET_YLAYER(npc) = p->m_regenY;
 					GET_Z(npc) = p->m_regenZ;
 
-					// ¾îÅÃ °¡´ÉÇÑ NPC
+					// ì–´íƒ ê°€ëŠ¥í•œ NPC
 					if (npc->m_proto->CheckFlag(NPC_ATTACK) && npc->m_proto->m_index != 339)
 						GET_R(npc) = GetRandom(0, (int) (PI_2 * 10000)) / 10000;
 					else
@@ -1022,7 +1022,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 					CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 					if(m_zone->m_index == ZONE_DRATAN_CASTLE_DUNGEON && !npc->m_proto->CheckFlag(NPC_ZONEMOVER))
 					{
-						int nMobRate[10][4] =  	// °ø°İ·Â, ¹æ¾î·Â, ÃÖ´ëÃ¼·Â, ½Ã¾ß¹üÀ§
+						int nMobRate[10][4] =  	// ê³µê²©ë ¥, ë°©ì–´ë ¥, ìµœëŒ€ì²´ë ¥, ì‹œì•¼ë²”ìœ„
 						{
 							{20, 20, 30, 0},
 							{10, 10, 15, 0},
@@ -1042,7 +1042,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 							midx = 9;
 						}
 
-						// °ø°İ·Â Àû¿ë
+						// ê³µê²©ë ¥ ì ìš©
 						if(npc->m_attackType == MSG_DAMAGE_MELEE)
 						{
 							npc->m_eqMelee = npc->m_proto->m_attack + npc->m_proto->m_attack * nMobRate[midx][0] / 100;
@@ -1068,10 +1068,10 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 							}
 						}
 
-						// ¹æ¾î·Â Àû¿ë
+						// ë°©ì–´ë ¥ ì ìš©
 						npc->m_eqDefense = npc->m_proto->m_defense + npc->m_proto->m_defense * nMobRate[midx][1] / 100;
 
-						// ÃÖ´ë Ã¼·Â Àû¿ë
+						// ìµœëŒ€ ì²´ë ¥ ì ìš©
 						npc->m_maxHP = npc->m_proto->m_hp + npc->m_proto->m_hp * nMobRate[midx][2] / 100;
 						if(npc->m_maxHP < 0)
 						{
@@ -1079,7 +1079,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 						}
 						npc->m_hp = npc->m_maxHP;
 
-						// ½Ã¾ß °Å¸® Àû¿ë
+						// ì‹œì•¼ ê±°ë¦¬ ì ìš©
 						if(nMobRate[midx][3] != 0 && npc->m_attackRange != 0)
 						{
 							npc->m_attackRange = npc->m_proto->m_attackArea + npc->m_proto->m_attackArea * nMobRate[midx][3] / 100;
@@ -1100,7 +1100,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 					}
 				}
 			}
-	// ½Ì±Û ´øÀüÀÏ °æ¿ì ¸®Á¨¸®½ºÆ®¼¼ÆÃ
+	// ì‹±ê¸€ ë˜ì „ì¼ ê²½ìš° ë¦¬ì  ë¦¬ìŠ¤íŠ¸ì„¸íŒ…
 			else
 			{
 				m_regenList = new int[m_npcRegenList.m_nCount];
@@ -1111,7 +1111,7 @@ void CArea::SetEnable(int nRaidRoomNum, int nDifficulty)
 				}
 			}
 
-	// »óÁ¡ ¸®Á¨
+	// ìƒì  ë¦¬ì  
 	for (i=0; i < m_zone->m_nShopCount; i++)
 	{
 		if (GetAttr(m_zone->m_shopList[i].m_yLayer, m_zone->m_shopList[i].m_x, m_zone->m_shopList[i].m_z) & MATT_WAR)
@@ -1150,11 +1150,11 @@ void CArea::SetDisable()
 	{
 		for (j = 0; j < m_size[1]; j++)
 		{
-			// Ä³¸¯ÅÍ »©±â
+			// ìºë¦­í„° ë¹¼ê¸°
 			while (m_cell[i][j].m_listChar)
 				CharFromCell(m_cell[i][j].m_listChar, true);
 
-			// ¾ÆÀÌÅÛ »©±â
+			// ì•„ì´í…œ ë¹¼ê¸°
 			CItem* item;
 			CItem* nItem;
 
@@ -1164,7 +1164,7 @@ void CArea::SetDisable()
 			{
 				nItem = nItem->m_pCellNext;
 
-				// ¼¿ ¸®½ºÆ®¿¡¼­ »©°í »èÁ¦
+				// ì…€ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¹¼ê³  ì‚­ì œ
 				ItemFromCell(item);
 				item->m_pArea = NULL;
 				delete item;
@@ -1195,20 +1195,20 @@ void CArea::SetDisable()
 		m_npcRegenList.m_infoList[i].m_numRegen = 0;
 	}
 
-	// ½Ì±Û ´øÀü
+	// ì‹±ê¸€ ë˜ì „
 	m_nMakeNPC = 0;
 	m_bBoss = false;
 	if( m_regenList)
 		delete m_regenList;
 	m_regenList = NULL;
 
-	// Æ®¸®°Å ÃÊ±âÈ­µµ ½ÃÅ²´Ù.
+	// íŠ¸ë¦¬ê±° ì´ˆê¸°í™”ë„ ì‹œí‚¨ë‹¤.
 	if(m_bUseTriggerEvent)
 		m_CTriggerList.ResetTriggerInfo(false);
 
 	if(m_zone->m_index == ZONE_AKAN_TEMPLE)
 	{
-		//SceneÁ¤º¸¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+		//Sceneì •ë³´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
 		m_GroundEffect2.Stop();
 		//m_RaidInfoList[DUNGEON_DIFFICULTY_NORMAL].ResetRaidInfo(ZONE_AKAN_TEMPLE);
 		if(this->m_RaidDifficulty != -1)
@@ -1267,7 +1267,7 @@ CItem* CArea::DropItem(CItem* item, CCharacter* ch)
 	if( item->getDBIndex() == NAS_ITEM_DB_INDEX)
 		return NULL;
 
-	// ½Ì±Û´øÀü itemdrop
+	// ì‹±ê¸€ë˜ì „ itemdrop
 	if (m_zone->IsGuildRoom() || m_zone->IsPersonalDungeon())
 	{
 		item->m_pos = CPos(GET_X(ch), GET_Z(ch), ch->m_pos.m_h, GET_R(ch), GET_YLAYER(ch));
@@ -1281,20 +1281,20 @@ CItem* CArea::DropItem(CItem* item, CCharacter* ch)
 						   GET_YLAYER(ch));
 	}
 
-	// ÁÂÇ¥ º¸Á¤
+	// ì¢Œí‘œ ë³´ì •
 	if (GET_X(item) < 0)		GET_X(item) = 0;
 	if (GET_Z(item) < 0)		GET_Z(item) = 0;
-	// 050207 - bs : Ãş¿¡ °ü°è¾øÀÌ »çÀÌÁî´Â 0¹ø Ãş¿¡¼­ ÂüÁ¶
+	// 050207 - bs : ì¸µì— ê´€ê³„ì—†ì´ ì‚¬ì´ì¦ˆëŠ” 0ë²ˆ ì¸µì—ì„œ ì°¸ì¡°
 	if (GET_X(item) >= m_zone->m_attrMap[0].m_size[0])
 		GET_X(item) = m_zone->m_attrMap[0].m_size[0];
 	if (GET_Z(item) >= m_zone->m_attrMap[0].m_size[1])
 		GET_Z(item) = m_zone->m_attrMap[0].m_size[1];
-	// 050207 - bs : Ãş¿¡ °ü°è¾øÀÌ »çÀÌÁî´Â 0¹ø Ãş¿¡¼­ ÂüÁ¶
+	// 050207 - bs : ì¸µì— ê´€ê³„ì—†ì´ ì‚¬ì´ì¦ˆëŠ” 0ë²ˆ ì¸µì—ì„œ ì°¸ì¡°
 
 	if (GetAttr(GET_YLAYER(item), GET_X(item), GET_Z(item)) & MATT_UNWALKABLE)
 		item->m_pos = CPos(GET_X(ch), GET_Z(ch), GET_H(ch), GET_R(ch), GET_YLAYER(ch));
 
-	// ¼¿¿¡ ³Ö±â
+	// ì…€ì— ë„£ê¸°
 	item->m_pArea = this;
 	item->m_groundPulse = gserver->m_pulse;
 
@@ -1318,7 +1318,7 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 	if (!dropitem)
 		return NULL;
 
-	// ½Ì±Û´øÀü itemdrop
+	// ì‹±ê¸€ë˜ì „ itemdrop
 	if (m_zone->IsGuildRoom() || m_zone->IsPersonalDungeon())
 	{
 		dropitem->m_pos = CPos(GET_X(ch), GET_Z(ch), ch->m_pos.m_h, GET_R(ch), GET_YLAYER(ch));
@@ -1332,21 +1332,21 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 							   GET_YLAYER(ch));
 	}
 
-	// ·¹¾î ¾ÆÀÌÅÛÀº ¿É¼Ç ¾øÀ½
+	// ë ˆì–´ ì•„ì´í…œì€ ì˜µì…˜ ì—†ìŒ
 	if (dropitem->IsRareItem())
 		bOption = false;
 
 	if (dropitem->IsOriginItem())
 		bOption = false;
 
-	// ¾Ç¼¼»ç¸® ÀÏ¶§ Option Setting
+	// ì•…ì„¸ì‚¬ë¦¬ ì¼ë•Œ Option Setting
 	if (bOption && dropitem->IsAccessary() && dropitem->m_nOption < 1)
 	{
-		// 060227 : bs : ÇÏµåÄÚµù ¾Ç¼¼¼­¸® °Ë»ç, ¿É¼Ç ¾øÀÌ
+		// 060227 : bs : í•˜ë“œì½”ë”© ì•…ì„¸ì„œë¦¬ ê²€ì‚¬, ì˜µì…˜ ì—†ì´
 		bool bSkipAddOption = false;
 		switch (dropitem->getDBIndex())
 		{
-		case 1301:		// ÇÏµåÄÚµù ¾Ç¼¼¼­¸®
+		case 1301:		// í•˜ë“œì½”ë”© ì•…ì„¸ì„œë¦¬
 		case 1302:
 		case 1303:
 		case 1304:
@@ -1362,7 +1362,7 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 
 		if (!bSkipAddOption)
 		{
-			// ¼ø¼­´ë·Î 5,4,3,1°³ ºÙÀ» È®·ü
+			// ìˆœì„œëŒ€ë¡œ 5,4,3,1ê°œ ë¶™ì„ í™•ë¥ 
 			static const int factor[] = {10, 40, 80, 100};
 			static const int limit[] = {500, 2000, 4000, 5000};
 
@@ -1375,9 +1375,9 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 					prob[i] = limit[i];
 			}
 
-			// ¿É¼Ç ¼ö °áÁ¤
+			// ì˜µì…˜ ìˆ˜ ê²°ì •
 			int result = GetRandom(1, 10000);
-			int num = 2;	// default 2°³
+			int num = 2;	// default 2ê°œ
 			int* type;
 
 			if (result <= prob[0])
@@ -1393,25 +1393,25 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 
 			type = new int[num];
 
-			LONGLONG bitfield = 0;		// TODO : ¿É¼ÇÀÌ 64°³ ³ÑÀ¸¸é °íÃÄ¾ß ÇÔ!
-			const int maxnumoption = 24;	// TODO : ³ªÁß¿¡ MAX_NUM_OPTIONÀ¸·Î ´ëÃ¼
+			LONGLONG bitfield = 0;		// TODO : ì˜µì…˜ì´ 64ê°œ ë„˜ìœ¼ë©´ ê³ ì³ì•¼ í•¨!
+			const int maxnumoption = 24;	// TODO : ë‚˜ì¤‘ì— MAX_NUM_OPTIONìœ¼ë¡œ ëŒ€ì²´
 
-			// ¿É¼Ç Å¸ÀÔ °áÁ¤
+			// ì˜µì…˜ íƒ€ì… ê²°ì •
 			i = 0;
 			while (i < num)
 			{
-				// type[i] °áÁ¤
+				// type[i] ê²°ì •
 				type[i] = GetRandom(0, maxnumoption - 1);
 
-				// type[i]°¡ Áßº¹ÀÎ °Ë»ç
-				// Áßº¹ÀÌ¸é type[i]¸¦ 1¾¿ Áõ°¡ÇÏ¸é¼­ Áßº¹ °Ë»ç
+				// type[i]ê°€ ì¤‘ë³µì¸ ê²€ì‚¬
+				// ì¤‘ë³µì´ë©´ type[i]ë¥¼ 1ì”© ì¦ê°€í•˜ë©´ì„œ ì¤‘ë³µ ê²€ì‚¬
 				for (j = 0; j < maxnumoption; j++)
 				{
 					if ((bitfield & ((LONGLONG)1 << ((type[i] + j) % maxnumoption))) == 0)
 						break;
 				}
 
-				// ´õÀÌ»ó ¿É¼ÇÀ» ºÙÀÏ ¼ö ¾øÀ½
+				// ë”ì´ìƒ ì˜µì…˜ì„ ë¶™ì¼ ìˆ˜ ì—†ìŒ
 				if (j == maxnumoption)
 					num = i;
 				else
@@ -1419,19 +1419,19 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 
 				bitfield |= ((LONGLONG)1 << type[i]);
 
-				// ¿É¼Ç¹øÈ£·Î ºÙÀ» ¼ö ÀÖ´Â ¿É¼ÇÀÎÁö °Ë»ç
+				// ì˜µì…˜ë²ˆí˜¸ë¡œ ë¶™ì„ ìˆ˜ ìˆëŠ” ì˜µì…˜ì¸ì§€ ê²€ì‚¬
 				COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
 				if (!proto)
 					continue;
 
-				// ¾Ç¼¼»ç¸®Áß¿¡¼­ ºÙÀ» ¼ö ¾øÀ¸¸é ´Ù½Ã
+				// ì•…ì„¸ì‚¬ë¦¬ì¤‘ì—ì„œ ë¶™ì„ ìˆ˜ ì—†ìœ¼ë©´ ë‹¤ì‹œ
 				if (!((1 << dropitem->m_itemProto->getItemSubTypeIdx()) & proto->m_accessoryType))
 					continue ;
 
 				i++;
 			}
 
-			// ¿É¼Ç ºÎ¿©
+			// ì˜µì…˜ ë¶€ì—¬
 			for (i=0; i < num; i++)
 			{
 				COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
@@ -1439,7 +1439,7 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 				if (!proto)
 					continue;
 
-				// Level, Value ¼ÂÆÃ
+				// Level, Value ì…‹íŒ…
 				dropitem->m_option[dropitem->m_nOption].MakeOptionValue(proto, ch->m_level, num);
 				++dropitem->m_nOption;
 			}
@@ -1448,20 +1448,20 @@ CItem* CArea::DropItem(int item_db_idx, CCharacter* ch, int plus, int flag, LONG
 		}
 	}
 
-	// ÁÂÇ¥ º¸Á¤
+	// ì¢Œí‘œ ë³´ì •
 	if (GET_X(dropitem) < 0)		GET_X(dropitem) = 0;
 	if (GET_Z(dropitem) < 0)		GET_Z(dropitem) = 0;
-	// 050207 - bs : Ãş¿¡ °ü°è¾øÀÌ »çÀÌÁî´Â 0¹ø Ãş¿¡¼­ ÂüÁ¶
+	// 050207 - bs : ì¸µì— ê´€ê³„ì—†ì´ ì‚¬ì´ì¦ˆëŠ” 0ë²ˆ ì¸µì—ì„œ ì°¸ì¡°
 	if (GET_X(dropitem) >= m_zone->m_attrMap[0].m_size[0])
 		GET_X(dropitem) = m_zone->m_attrMap[0].m_size[0];
 	if (GET_Z(dropitem) >= m_zone->m_attrMap[0].m_size[1])
 		GET_Z(dropitem) = m_zone->m_attrMap[0].m_size[1];
-	// 050207 - bs : Ãş¿¡ °ü°è¾øÀÌ »çÀÌÁî´Â 0¹ø Ãş¿¡¼­ ÂüÁ¶
+	// 050207 - bs : ì¸µì— ê´€ê³„ì—†ì´ ì‚¬ì´ì¦ˆëŠ” 0ë²ˆ ì¸µì—ì„œ ì°¸ì¡°
 
 	if (GetAttr(GET_YLAYER(dropitem), GET_X(dropitem), GET_Z(dropitem)) & MATT_UNWALKABLE)
 		dropitem->m_pos = CPos(GET_X(ch), GET_Z(ch), GET_H(ch), GET_R(ch), GET_YLAYER(ch));
 
-	// ¼¿¿¡ ³Ö±â
+	// ì…€ì— ë„£ê¸°
 	dropitem->m_pArea = this;
 	dropitem->m_groundPulse = gserver->m_pulse;
 
@@ -1488,21 +1488,21 @@ void CArea::GroundItemControl()
 			while ((item = nItem))
 			{
 				nItem = nItem->m_pCellNext;
-				// EGG ¾ÆÀÌÅÛ ¿î¿µÀÚ°¡ ¶³¾î¶ß¸° °ÍÀº »ç¶óÁöÁö ¾Ê´Â´Ù.
+				// EGG ì•„ì´í…œ ìš´ì˜ìê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒì€ ì‚¬ë¼ì§€ì§€ ì•ŠëŠ”ë‹¤.
 				if( item->getDBIndex() == 2148 && item->getUsed() == 1 && gserver->isActiveEvent( A_EVENT_EGGS_HUNT) )
 					continue;
 
 				if (gserver->m_pulse - item->m_groundPulse >= GROUND_ITEM_PULSE)	// 5 minutes
 				{
 					{
-						// ¾ø¾Ö´Â Msg
+						// ì—†ì• ëŠ” Msg
 						CNetMsg::SP rmsg(new CNetMsg);
 						ItemDisappearMsg(rmsg, item->getVIndex());
 						SendToCell(rmsg, GET_YLAYER(item), cx, cz);
 					}
 
 					// ITEM_JUNK Log
-					if(item->getDBIndex() != 6593) // ¿úÀÇ ¾Ë ITEM_JUNK ·Î±× ³²±âÁö ¾ÊÀ½
+					if(item->getDBIndex() != 6593) // ì›œì˜ ì•Œ ITEM_JUNK ë¡œê·¸ ë‚¨ê¸°ì§€ ì•ŠìŒ
 					{
 						GAMELOG << init("ITEM_JUNK")
 								<< itemlog(item)
@@ -1514,7 +1514,7 @@ void CArea::GroundItemControl()
 						ArtifactManager::instance()->calcDropCount(item, true);
 					}
 
-					// ¼¿ ¸®½ºÆ®¿¡¼­ »©°í »èÁ¦
+					// ì…€ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¹¼ê³  ì‚­ì œ
 					ItemFromCell(item);
 					item->m_pArea = NULL;
 					delete item;
@@ -1523,7 +1523,7 @@ void CArea::GroundItemControl()
 					this->m_nJunkItems++;
 				}
 
-				// ¿ì¼±±Ç ÇØÁ¦
+				// ìš°ì„ ê¶Œ í•´ì œ
 				else if (gserver->m_pulse - item->m_groundPulse >= ITEM_PREPERENCE_PULSE)
 				{
 					if(item->m_itemProto && !(item->m_itemProto->getItemFlag() & ITEM_FLAG_NO_STASH))
@@ -1572,7 +1572,7 @@ void CArea::MoveAllChar(int nIndex, int nExtra)
 		return;
 	}
 
-	// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+	// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 	std::vector<CPC*> m_MovePCList;
 
 	for (cx = 0 ; cx < m_size[0]; cx++)
@@ -1629,7 +1629,7 @@ CNPC* CArea::FindNearestFamily(CNPC* npc, int aitype, int hpParam)
 	float dist = 999.9f;
 	CNPC* ret = NULL;
 
-	// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+	// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 	for (x = sx; x <= ex; x++)
 	{
 		if (x < 0 || x >= m_size[0]) continue;
@@ -1639,38 +1639,38 @@ CNPC* CArea::FindNearestFamily(CNPC* npc, int aitype, int hpParam)
 			CCharacter *pChar;
 			for (pChar = m_cell[x][z].m_listChar; pChar; pChar = pChar->m_pCellNext)
 			{
-				// ÀÚ½ÅÀº Á¦¿ÜÇÏ°í
+				// ìì‹ ì€ ì œì™¸í•˜ê³ 
 				if (pChar == npc)
 					continue ;
 
-				// Á×Àº³Ñ Á¦¿Ü
+				// ì£½ì€ë„˜ ì œì™¸
 				if (DEAD(pChar))
 					continue ;
 
-				// ´Ù¸¥Ãş Á¦¿Ü
+				// ë‹¤ë¥¸ì¸µ ì œì™¸
 				if (ABS(GET_YLAYER(npc) - GET_YLAYER(pChar)) >= 2)
 					continue ;
 
-				// NPC¸¸
+				// NPCë§Œ
 				if (!IS_NPC(pChar))
 					continue ;
 
 				CNPC* tnpc = TO_NPC(pChar);
 
-				// µ¿Á·ÀÌ°í
+				// ë™ì¡±ì´ê³ 
 				if (tnpc->m_proto->m_family != npc->m_proto->m_family)
 					continue ;
 
-				// aitypeÀÌ ÀÏÄ¡ÇÏ°í
+				// aitypeì´ ì¼ì¹˜í•˜ê³ 
 				if (aitype != -1 && aitype != tnpc->m_proto->m_aitype)
 					continue ;
 
-				// Ã¼·Â °Ë»ç
+				// ì²´ë ¥ ê²€ì‚¬
 				if (tnpc->m_hp > tnpc->m_maxHP * hpParam / 100)
 					continue ;
 
 
-				// Å×ÀÌ¹Ö ÁßÀÎ ¸ó½ºÅÍ³ª È¥¶õ ÁßÀÎ ¸ó½ºÅÍ´Â µ¿Á·À¸·Î º¸Áö ¾Ê´Â´Ù.
+				// í…Œì´ë° ì¤‘ì¸ ëª¬ìŠ¤í„°ë‚˜ í˜¼ë€ ì¤‘ì¸ ëª¬ìŠ¤í„°ëŠ” ë™ì¡±ìœ¼ë¡œ ë³´ì§€ ì•ŠëŠ”ë‹¤.
 				if ( tnpc->Check_MobFlag( STATE_MONSTER_TAMING ) || tnpc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 					continue;
 
@@ -1680,7 +1680,7 @@ CNPC* CArea::FindNearestFamily(CNPC* npc, int aitype, int hpParam)
 				if ( tnpc->Check_MobFlag( STATE_MONSTER_TOTEM_BUFF) || tnpc->Check_MobFlag( STATE_MONSTER_TOTEM_ATTK ) )
 					continue;
 
-				// °Å¸® Á¦ÀÏ °¡±î¿î ³Ñ Ã£±â
+				// ê±°ë¦¬ ì œì¼ ê°€ê¹Œìš´ ë„˜ ì°¾ê¸°
 				if (GetDistance(npc, tnpc) < dist)
 				{
 					dist = GetDistance(npc, tnpc);
@@ -1704,7 +1704,7 @@ CCharacter* CArea::FindCharInCell(CCharacter* ch, int idx, MSG_CHAR_TYPE tchType
 	int ez = ch->m_cellZ + CELL_EXT;
 	int x, z;
 
-	// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+	// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 	for (x = sx; x <= ex; x++)
 	{
 		if (x < 0 || x >= m_size[0]) continue;
@@ -1725,11 +1725,11 @@ CCharacter* CArea::FindCharInCell(CCharacter* ch, int idx, MSG_CHAR_TYPE tchType
 
 bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r, MSG_MOVE_TYPE movekind, CCharacter* target)
 {
-	// ¸÷ÀÎµ¥ ¸ø ¿òÁ÷ÀÌ°Å³ª, ¸®Á¨ ÈÄ ¾ó¸¶ Áö³ªÁö ¾Ê¾ÒÀ¸¸é °¡¸¸È÷
+	// ëª¹ì¸ë° ëª» ì›€ì§ì´ê±°ë‚˜, ë¦¬ì   í›„ ì–¼ë§ˆ ì§€ë‚˜ì§€ ì•Šì•˜ìœ¼ë©´ ê°€ë§Œíˆ
 	if (IS_NPC(ch) && !ch->CanMove())
 		return false;
 
-	bool change_position = false; //ÁÂÇ¥°¡ º¯°æµÇ¾ú´ÂÁö ¿©ºÎ
+	bool change_position = false; //ì¢Œí‘œê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
 
 	char outY;
 	if (!IsNotBlocked(ch, y, x, z, false, outY))
@@ -1743,7 +1743,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 	CPC* pc = (IS_PC(ch)) ? TO_PC(ch) : NULL;
 	CNPC* npc = (IS_NPC(ch)) ? TO_NPC(ch) : NULL;
 
-	// ¸÷ÀÏ¶§
+	// ëª¹ì¼ë•Œ
 	if (IS_NPC(ch))
 	{
 		CCharacter* pChar;
@@ -1761,7 +1761,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 				p_Z = ABS(GET_Z(pChar) - z);
 				p_H = ABS(GET_H(pChar) - h);
 
-				// pChar°¡ chÀÇ ¿òÁ÷ÀÓ¿¡ °É¸®Àû °Å¸°´Ù
+				// pCharê°€ chì˜ ì›€ì§ì„ì— ê±¸ë¦¬ì  ê±°ë¦°ë‹¤
 				if (p_X < 0.2 && p_Z < 0.2 && p_H < 0.2)
 				{
 					float nx, nz, nh;
@@ -1776,7 +1776,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 					{
 						r += GetRandom((int)(-PI_HALF * 1000), (int)(PI_HALF * 1000)) / 2000.0f;
 
-						// ³ôÀÌÀû¿ë
+						// ë†’ì´ì ìš©
 						x = GET_X(ch) + (float)cos(r) * 0.5f;
 						z = GET_Z(ch) + (float)sin(r) * 0.5f;
 						h = GetHeight(GET_YLAYER(ch), x, z);
@@ -1787,37 +1787,37 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 						z = GET_Z(ch) + (float)sin(r) * 0.5 * (float)sin(trh);
 						h = GetHeight(y, x, z);
 
-						// delay¸¦ ¹İÀ¸·ç
+						// delayë¥¼ ë°˜ìœ¼ë£¨
 						npc->m_delay = 0;
 						change_position = true;
 					}
-					// °É¸®Àû °Å¸®´Â ³ÑÀÌ Å¸°ÙÀÌ¸é ÀÌµ¿ÇÑ Ã´
+					// ê±¸ë¦¬ì  ê±°ë¦¬ëŠ” ë„˜ì´ íƒ€ê²Ÿì´ë©´ ì´ë™í•œ ì²™
 					if (target == pChar)
 						return true;
 				}
 			}
 		}
 
-		// ÁÂÇ¥ ¹Ù²öµ¥µÎ ºí·°ÀÎ °æ¿ì
+		// ì¢Œí‘œ ë°”ëˆë°ë‘ ë¸”ëŸ­ì¸ ê²½ìš°
 		if (change_position && !IsNotBlocked(npc, y, x, z, false, outY))
 			return false;
 
 		y = outY;
 
-		// ¾Èº¸ÀÌ´Â »óÅÂÀÌ¸é
+		// ì•ˆë³´ì´ëŠ” ìƒíƒœì´ë©´
 		if (npc->m_disableTime != 0)
 		{
 			npc->Move(x, z, h, r, y);
 			return true;
 		}
-	} // ¸÷ÀÏ¶§
+	} // ëª¹ì¼ë•Œ
 
-	// ÀÌµ¿½Ã ½ºÅ³ ÇØÁ¦µÇ´Â °Í Ã³¸®
+	// ì´ë™ì‹œ ìŠ¤í‚¬ í•´ì œë˜ëŠ” ê²ƒ ì²˜ë¦¬
 	ch->m_assist.CancelFakeDeath();
 
-	// ¼¿ ¾È ÀÌµ¿°ú ¼¿ ÀÌµ¿ ±¸ºĞ Ã³¸®
+	// ì…€ ì•ˆ ì´ë™ê³¼ ì…€ ì´ë™ êµ¬ë¶„ ì²˜ë¦¬
 
-	// ¼¿ ¾È ÀÌµ¿
+	// ì…€ ì•ˆ ì´ë™
 	if (ch->m_cellX == cx && ch->m_cellZ == cz)
 	{
 		{
@@ -1843,7 +1843,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 				}
 			}
 #endif
-			// ºí·°¾Æ´Ñ ÇÇ½ºÁ¸À¸·Î µé¾î°¡¸é PKMODE ÇØÁ¦
+			// ë¸”ëŸ­ì•„ë‹Œ í”¼ìŠ¤ì¡´ìœ¼ë¡œ ë“¤ì–´ê°€ë©´ PKMODE í•´ì œ
 			if (pc->IsSetPlayerState(PLAYER_STATE_PKMODE) && pc->IsInPeaceZone(false))
 			{
 				pc->ResetPlayerState(PLAYER_STATE_PKMODE | PLAYER_STATE_PKMODEDELAY);
@@ -1862,7 +1862,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 		ch->Move(x, z, h, r, y);
 		CharToCell(ch, y, cx, cz);
 
-		// ÀÌµ¿ ¸Ş½ÃÁö...
+		// ì´ë™ ë©”ì‹œì§€...
 		CNetMsg::SP mMoveMsg(new CNetMsg);
 		ResponseClient::makeMoveMsg(mMoveMsg, movekind, ch);
 
@@ -1904,9 +1904,9 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 			{
 				if (j < 0 || j >= m_size[1]) continue ;
 
-				// ¿ø·¡ ÀÖ´ø ¹æ
+				// ì›ë˜ ìˆë˜ ë°©
 				bwas = (ABS(ocx - i) <= CELL_EXT && ABS(ocz - j) <= CELL_EXT);
-				// Áö±İ ÀÖ´Â ¹æ
+				// ì§€ê¸ˆ ìˆëŠ” ë°©
 				bnew = (ABS(cx - i) <= CELL_EXT && ABS(cz - j) <= CELL_EXT);
 
 				if (!bwas && !bnew)
@@ -1920,23 +1920,23 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 					if (pChar == ch)
 						continue ;
 
-					// ¿ø·¡ ÀÖ´ø ¼¿
+					// ì›ë˜ ìˆë˜ ì…€
 					if (bwas)
 					{
-						// Áö±İµµ ÀÖ´Â ¼¿
+						// ì§€ê¸ˆë„ ìˆëŠ” ì…€
 						if (bnew)
 						{
-							// »ó´ë¿¡°Ô ³»°¡ ¿òÁ÷ÀÓÀ» ¾Ë¸²
+							// ìƒëŒ€ì—ê²Œ ë‚´ê°€ ì›€ì§ì„ì„ ì•Œë¦¼
 							if (IS_PC(pChar))
 							{
 								SEND_Q(/*movemsg*/mMoveMsg, TO_PC(pChar)->m_desc);
 							}
 						}
 
-						// Áö±İÀº ¾ø´Â ¼¿
+						// ì§€ê¸ˆì€ ì—†ëŠ” ì…€
 						else
 						{
-							// »ó´ë¿¡°Ô ³»°¡ »ç¶óÁüÀ» ¾Ë¸²
+							// ìƒëŒ€ì—ê²Œ ë‚´ê°€ ì‚¬ë¼ì§ì„ ì•Œë¦¼
 							if (IS_PC(pChar))
 							{
 								if(IS_APET(ch) && TO_APET(ch)->GetOwner() == pChar)
@@ -1950,7 +1950,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 
 							if (pc)
 							{
-								// ³ª¿¡°Ô »ó´ë°¡ »ç¶óÁüÀ» ¾Ë¸²
+								// ë‚˜ì—ê²Œ ìƒëŒ€ê°€ ì‚¬ë¼ì§ì„ ì•Œë¦¼
 								if(pChar == pc->GetAPet() || pChar == pc->GetPet())
 								{
 									pChar->Move(GET_X(pc), GET_Z(pc), GET_H(pc), GET_R(pc), GET_YLAYER(pc));
@@ -1968,16 +1968,37 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 						}
 					}
 
-					// ÀÌÀü¿¡ ¾ø´Ù°¡ Áö±İ ÀÖ´Â ¼¿
+					// ì´ì „ì— ì—†ë‹¤ê°€ ì§€ê¸ˆ ìˆëŠ” ì…€
 					else if (bnew)
 					{
-						// »ó´ë¿¡°Ô ³»°¡ ³ªÅ¸³²À» ¾Ë¸²
+						// ìƒëŒ€ì—ê²Œ ë‚´ê°€ ë‚˜íƒ€ë‚¨ì„ ì•Œë¦¼
 						if (IS_PC(pChar))
 						{
+							CPC* _pc = TO_PC(pChar);
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
 								AppearMsg(rmsg, ch);
-								SEND_Q(rmsg, TO_PC(pChar)->m_desc);
+								SEND_Q(rmsg, _pc->m_desc);
+
+								if(_pc->GetAPet() == ch)
+								{
+									{
+										CNetMsg::SP rmsg(new CNetMsg);
+										ExAPetStatusMsg(rmsg, TO_APET(ch));
+										SEND_Q( rmsg , _pc->m_desc );
+									}
+									{
+										CNetMsg::SP rmsg(new CNetMsg);
+										APetAIListMsg(rmsg, TO_APET(ch));
+										SEND_Q(rmsg, _pc->m_desc);
+									}
+								}
+								else if(_pc->GetPet() == ch)
+								{
+									CNetMsg::SP rmsg(new CNetMsg);
+									ExPetStatusMsg(rmsg, TO_PET(ch));
+									SEND_Q(rmsg, _pc->m_desc);
+								}
 							}
 							if( pc )
 							{
@@ -1987,6 +2008,15 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 									GuildPointRankingMsg( rmsg, pc->m_index, pc->m_guildInfo->guild()->index(), pc->m_guildInfo->guild()->GetGuildPointRanking() );
 									SEND_Q(rmsg, TO_PC(pChar)->m_desc);
 								}
+								{
+									std::map<int, MAKE_TITLE*>::iterator it = pc->_map_title.find(pc->m_custom_title_index);
+									if(it != pc->_map_title.end())
+									{
+										CNetMsg::SP rmsg(new CNetMsg);
+										TitleUserInfoMsg(rmsg, pc->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+										SEND_Q(rmsg, TO_PC(pChar)->m_desc);
+									}
+								}
 							}
 							if (pc)
 							{
@@ -1995,15 +2025,19 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 								SEND_Q(rmsg, TO_PC(pChar)->m_desc);
 							}
 						}
-						// ³ª¿¡°Ô »ó´ëÀÇ µîÀåÀ» ¾Ë¸²
+						// ë‚˜ì—ê²Œ ìƒëŒ€ì˜ ë“±ì¥ì„ ì•Œë¦¼
 						/*speed_ksw before*/
 						//AppearMsg(tappmsg, pChar);
 						/*speed_ksw before*/
 						if (pc)
 						{
-							CNetMsg::SP rmsg(new CNetMsg);
-							AppearMsg(rmsg, pChar);
-							SEND_Q(rmsg, pc->m_desc);
+							if(pc->GetAPet() != pChar && pc->GetPet() != pChar)
+							{
+								CNetMsg::SP rmsg(new CNetMsg);
+								AppearMsg(rmsg, pChar);
+								SEND_Q(rmsg, pc->m_desc);
+							}
+
 							CPC* tpc = TO_PC(pChar);
 							if( tpc )
 							{
@@ -2012,6 +2046,16 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 									CNetMsg::SP rmsg(new CNetMsg);
 									GuildPointRankingMsg( rmsg, tpc->m_index, tpc->m_guildInfo->guild()->index(), tpc->m_guildInfo->guild()->GetGuildPointRanking() );
 									SEND_Q(rmsg, pc->m_desc);
+								}
+
+								{
+									std::map<int, MAKE_TITLE*>::iterator it = tpc->_map_title.find(tpc->m_custom_title_index);
+									if(it != tpc->_map_title.end())
+									{
+										CNetMsg::SP rmsg(new CNetMsg);
+										TitleUserInfoMsg(rmsg, tpc->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+										SEND_Q(rmsg, pc->m_desc);
+									}
 								}
 							}
 							if( TO_PC(pChar) )
@@ -2031,14 +2075,14 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 					pItemNext = pItem->m_pCellNext;
 					if (bnew && !bwas)
 					{
-						// ³ªÅ¸³²
+						// ë‚˜íƒ€ë‚¨
 						CNetMsg::SP rmsg(new CNetMsg);
 						ItemAppearMsg(rmsg, pItem);
 						SEND_Q(rmsg, pc->m_desc);
 					}
 					else if (!bnew && bwas)
 					{
-						// ¾ø¾îÁü
+						// ì—†ì–´ì§
 						CNetMsg::SP rmsg(new CNetMsg);
 						ItemDisappearMsg(rmsg, pItem->getVIndex());
 						SEND_Q(rmsg, pc->m_desc);
@@ -2063,7 +2107,7 @@ bool CArea::MoveChar(CCharacter* ch, char y, float x, float z, float h, float r,
 			}
 #endif
 
-			// ºí·°¾Æ´Ñ ÇÇ½ºÁ¸À¸·Î µé¾î°¡¸é PKMODE ÇØÁ¦
+			// ë¸”ëŸ­ì•„ë‹Œ í”¼ìŠ¤ì¡´ìœ¼ë¡œ ë“¤ì–´ê°€ë©´ PKMODE í•´ì œ
 			if (pc->IsSetPlayerState(PLAYER_STATE_PKMODE) && pc->IsInPeaceZone(false))
 			{
 				pc->ResetPlayerState(PLAYER_STATE_PKMODE | PLAYER_STATE_PKMODEDELAY);
@@ -2189,10 +2233,10 @@ bool CArea::SendToCell(CNetMsg::SP& msg, char /* y */, int cx, int cz, int celle
 	return true;
 }
 
-// ¼±°ø npcÀÇ °æ¿ì °¡±î¿î target Ã£±â
+// ì„ ê³µ npcì˜ ê²½ìš° ê°€ê¹Œìš´ target ì°¾ê¸°
 CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 {
-	// °¡±î¿î °ø°İ´ë»ó Ã£±â
+	// ê°€ê¹Œìš´ ê³µê²©ëŒ€ìƒ ì°¾ê¸°
 	int cx, cz;
 	PointToCellNum(GET_X(npc), GET_Z(npc), &cx, &cz);
 
@@ -2205,7 +2249,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 	float tdist = npc->m_proto->m_sight;
 
 	CCharacter* ret = NULL;
-	int towerSkillIndex = -1;	// °ø¼ºÅ¾ ½ºÅ³ ÀÎµ¦½º
+	int towerSkillIndex = -1;	// ê³µì„±íƒ‘ ìŠ¤í‚¬ ì¸ë±ìŠ¤
 
 	int i, j;
 	for (i = sx; i <= ex; i++)
@@ -2218,7 +2262,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 
 			CCharacter* pChar;
 			CCharacter* pCharNext = cell->m_listChar;
-			CPC* owner = NULL;			// pChar°¡ PCÀÌ¸é ÀÚ½Å, PetÀÌ³ª ¼ÒÈ¯¼ö¸é owner
+			CPC* owner = NULL;			// pCharê°€ PCì´ë©´ ìì‹ , Petì´ë‚˜ ì†Œí™˜ìˆ˜ë©´ owner
 
 			while ((pChar = pCharNext))
 			{
@@ -2226,15 +2270,15 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 
 				owner = NULL;
 
-				// Á×Àº °Íµµ ¾Æ´Ï°í
+				// ì£½ì€ ê²ƒë„ ì•„ë‹ˆê³ 
 				if (DEAD(pChar))
 					continue ;
 //#ifdef RAID_MONSTER_SKIP_FAKEDEATH
-//				// ·¹ÀÌµå ¸÷ÀÏ °æ¿ì  Á×ÀºÃ´ ÇÏ°í ÀÕÀ»¶§µµ °ø°İ
+//				// ë ˆì´ë“œ ëª¹ì¼ ê²½ìš°  ì£½ì€ì²™ í•˜ê³  ì‡ì„ë•Œë„ ê³µê²©
 //				if (!npc->m_proto->CheckFlag(NPC_RAID))
 //				{
 //#endif // RAID_MONSTER_SKIP_FAKEDEATH
-				// Á×Àº Ã´ ÇÏ°í ÀÖÁö ¾ÊÀ¸¸é
+				// ì£½ì€ ì²™ í•˜ê³  ìˆì§€ ì•Šìœ¼ë©´
 				if (pChar->m_assist.m_state & AST_FAKEDEATH)
 					continue ;
 //#ifdef RAID_MONSTER_SKIP_FAKEDEATH
@@ -2242,42 +2286,42 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 //#endif // RAID_MONSTER_SKIP_FAKEDEATH
 
 				///*speed_ksw before*/
-				//// ¾Èº¸ÀÌ¸é skip
+				//// ì•ˆë³´ì´ë©´ skip
 				//if (!npc->CanVisible(pChar))
 				//	continue ;
 
-				//// ½Ã¾ß ¹ÛÀÌ°Å³ª ÀÌÀü °ªº¸´Ù ¸Ö¸é ½ºÅµ
+				//// ì‹œì•¼ ë°–ì´ê±°ë‚˜ ì´ì „ ê°’ë³´ë‹¤ ë©€ë©´ ìŠ¤í‚µ
 				//if (tdist < GetDistance(pChar, npc))
 				//	continue ;
 				///*speed_ksw before*/
-				// PCÀÏ °æ¿ì
+				// PCì¼ ê²½ìš°
 				if (IS_PC(pChar))
 				{
 					CPC* pc = TO_PC(pChar);
 
-					// immortalµµ ¾Æ´Ï°í
+					// immortalë„ ì•„ë‹ˆê³ 
 					if ( (pc->m_bImmortal && pc->m_bFirstDoIt == false)|| pc->IsDisable() )
 						continue ;
 
-					// º¯½Åµµ ½ºÅµ
+					// ë³€ì‹ ë„ ìŠ¤í‚µ
 					if (pc->IsSetPlayerState(PLAYER_STATE_CHANGE))
 						continue ;
 					owner = pc;
 				}
 
-				// PetÀÏ °æ¿ì
+				// Petì¼ ê²½ìš°
 				else if (IS_PET(pChar))
 				{
 					CPet* pet = TO_PET(pChar);
 
-					// ÁÖÀÎ ¾ø´Â ÆêÀº ½ºÅµ
+					// ì£¼ì¸ ì—†ëŠ” í«ì€ ìŠ¤í‚µ
 					if (pet->GetOwner() == NULL)
 						continue ;
 
 					owner = pet->GetOwner();
 				}
 
-				// ¼ÒÈ¯¼ö
+				// ì†Œí™˜ìˆ˜
 				else if (IS_ELEMENTAL(pChar))
 				{
 					CElemental* pElemental = TO_ELEMENTAL(pChar);
@@ -2285,7 +2329,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 					if (!pc)
 						continue ;
 
-					// immortalµµ ¾Æ´Ï°í
+					// immortalë„ ì•„ë‹ˆê³ 
 					if ( pc->m_bImmortal || pc->IsDisable() )
 						continue ;
 
@@ -2302,7 +2346,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 					owner = apet->GetOwner();
 				}
 
-				// npc ÀÏ¶§ °¢ state ¿¡ µû¸¥ Çàµ¿
+				// npc ì¼ë•Œ ê° state ì— ë”°ë¥¸ í–‰ë™
 				else if ( IS_NPC(pChar)  )
 				{
 					CNPC* pNpc = TO_NPC(pChar);
@@ -2316,26 +2360,26 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 					}
 					else if( npc->Check_MobFlag(STATE_MONSTER_SUICIDE) || npc->Check_MobFlag(STATE_MONSTER_TRAP) )
 					{
-						if( IS_NPC(pChar) && TO_NPC(pChar)->m_idNum == 491 ) // ¹Ù´Û µ¥¹ÌÁö¸¦ Å¸°ÙÀ¸·Î Àâ¾Æ ¿òÁ÷ÀÌÁö ¾ÊÀ¸´Ï ³Í ÆĞ½º
+						if( IS_NPC(pChar) && TO_NPC(pChar)->m_idNum == 491 ) // ë°”ë‹¦ ë°ë¯¸ì§€ë¥¼ íƒ€ê²Ÿìœ¼ë¡œ ì¡ì•„ ì›€ì§ì´ì§€ ì•Šìœ¼ë‹ˆ ë„Œ íŒ¨ìŠ¤
 							continue;
 
 						if( pNpc->GetOwner() )
 							owner = pNpc->GetOwner();
 					}
 					else
-						// ÀÏ¹İ ¸ó½ºÅÍ´Â ½ºÅµ
+						// ì¼ë°˜ ëª¬ìŠ¤í„°ëŠ” ìŠ¤í‚µ
 						if ( !pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION) && !pNpc->Check_MobFlag( STATE_MONSTER_TAMING ) )
 						{
 							continue;
 						}
 
-					// È¥¶õ ¸ó½ºÅÍµµ ½ºÅµ
+					// í˜¼ë€ ëª¬ìŠ¤í„°ë„ ìŠ¤í‚µ
 						else if( pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION) && !pNpc->Check_MobFlag( STATE_MONSTER_TAMING ) )
 						{
 							continue;
 						}
 
-					// Å×ÀÌ¹ÖµÈ ¸ó½ºÅÍ´Â °ø°İ
+					// í…Œì´ë°ëœ ëª¬ìŠ¤í„°ëŠ” ê³µê²©
 						else if( !pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION) && pNpc->Check_MobFlag( STATE_MONSTER_TAMING ) )
 						{
 						}
@@ -2356,7 +2400,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 						{
 							continue;
 						}
-					// ¹ö±×ÀÏ °æ¿ì ÀÌ°÷À¸·Î ¿À°í ¹«Á¶°Ç ½ºÅµ
+					// ë²„ê·¸ì¼ ê²½ìš° ì´ê³³ìœ¼ë¡œ ì˜¤ê³  ë¬´ì¡°ê±´ ìŠ¤í‚µ
 						else
 						{
 							// NPC_JUNK Log
@@ -2370,7 +2414,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 							continue;
 						}
 				}
-				// ÀÌµµ Àúµµ ¾Æ´Ï¸é ½ºÅµ
+				// ì´ë„ ì €ë„ ì•„ë‹ˆë©´ ìŠ¤í‚µ
 				else
 					continue ;
 
@@ -2385,14 +2429,14 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 						int zoneindex = npc->GetOwner()->m_pZone->m_index;
 						CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 
-						if( castle != NULL && castle->GetState() != WCSF_NORMAL // °ø¼º ÁßÀÌ°í
-								&& npc->GetOwner()->GetMapAttr() & MATT_WAR  // °ø¼º Áö¿ªÀÌ°í
+						if( castle != NULL && castle->GetState() != WCSF_NORMAL // ê³µì„± ì¤‘ì´ê³ 
+								&& npc->GetOwner()->GetMapAttr() & MATT_WAR  // ê³µì„± ì§€ì—­ì´ê³ 
 								&& ( IS_ATTACK_TEAM( npc->GetOwner()->GetJoinFlag( npc->GetOwner()->m_pZone->m_index ) )
-									 || IS_DEFENSE_TEAM( npc->GetOwner()->GetJoinFlag( npc->GetOwner()->m_pZone->m_index ) ) ) ) // ¿À³Ê°¡ °ø¼º¿¡ Âü¿©ÇØ ÀÖ´Ù¸é
+									 || IS_DEFENSE_TEAM( npc->GetOwner()->GetJoinFlag( npc->GetOwner()->m_pZone->m_index ) ) ) ) // ì˜¤ë„ˆê°€ ê³µì„±ì— ì°¸ì—¬í•´ ìˆë‹¤ë©´
 						{
 							if(owner)
 							{
-								if( IS_ATTACK_TEAM(npc->GetOwner()->GetJoinFlag(npc->GetOwner()->m_pZone->m_index) ) )// °ø¼º ÃøÀÌ¶ó¸é
+								if( IS_ATTACK_TEAM(npc->GetOwner()->GetJoinFlag(npc->GetOwner()->m_pZone->m_index) ) )// ê³µì„± ì¸¡ì´ë¼ë©´
 								{
 									if( !IS_DEFENSE_TEAM( owner->GetJoinFlag(npc->GetOwner()->m_pZone->m_index) )  )
 										continue;
@@ -2403,7 +2447,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 										continue;
 								}
 							}
-							else if(IS_NPC(pChar) && IS_DEFENSE_TEAM(npc->GetOwner()->GetJoinFlag(npc->GetOwner()->m_pZone->m_index) ) ) // ¼ö¼º ÃøÀÌ¶ó¸é
+							else if(IS_NPC(pChar) && IS_DEFENSE_TEAM(npc->GetOwner()->GetJoinFlag(npc->GetOwner()->m_pZone->m_index) ) ) // ìˆ˜ì„± ì¸¡ì´ë¼ë©´
 							{
 								if( TO_NPC(pChar)->m_proto->CheckFlag(NPC_WARCASTLE) )
 									continue;
@@ -2412,7 +2456,7 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 					}
 				}
 
-				// ¼öÈ£º´Àº °ø¼º ¿ëº´/±æµå¸¸ °ø°İ
+				// ìˆ˜í˜¸ë³‘ì€ ê³µì„± ìš©ë³‘/ê¸¸ë“œë§Œ ê³µê²©
 				if (npc->m_proto->CheckFlag(NPC_CASTLE_GUARD | NPC_CASTLE_TOWER))
 				{
 					bool bTarget = false;
@@ -2430,14 +2474,14 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 						continue ;
 				}
 
-				// ¼öÈ£Å¾Àº ½ºÅ³ ÃÖ¼Ò°Å¸® ÀÌ»óµÇ´Â Àû¿¡°Ô¸¸ °ø°İ °¡´É
-				// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+				// ìˆ˜í˜¸íƒ‘ì€ ìŠ¤í‚¬ ìµœì†Œê±°ë¦¬ ì´ìƒë˜ëŠ” ì ì—ê²Œë§Œ ê³µê²© ê°€ëŠ¥
+				// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 				int sloop = -1;
 				if (npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))
 				{
 					for (sloop = 0; sloop < MAX_NPC_SKILL; sloop++)
 					{
-						// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+						// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 						if (npc->m_skills[sloop]
 								&& (sloop == 0 || towerSkillIndex == -1 || npc->m_proto->m_skillProb[sloop] >= GetRandom(1, 10000))
 								&& npc->m_skills[sloop]->IsReady(npc)
@@ -2451,31 +2495,31 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 							break ;
 						}
 					}
-					// ½ºÅ³ ¾øÀ¸¸é ¼öÈ£Å¾Àº Å¸°Ù ¾øÀ½
+					// ìŠ¤í‚¬ ì—†ìœ¼ë©´ ìˆ˜í˜¸íƒ‘ì€ íƒ€ê²Ÿ ì—†ìŒ
 					if (sloop == MAX_NPC_SKILL)
 						continue ;
 				}
 				/* speed_ksw after */
-				// ¾Èº¸ÀÌ¸é skip
+				// ì•ˆë³´ì´ë©´ skip
 				if (!npc->CanVisible(pChar))
 					continue ;
 
-				// ½Ã¾ß ¹ÛÀÌ°Å³ª ÀÌÀü °ªº¸´Ù ¸Ö¸é ½ºÅµ
+				// ì‹œì•¼ ë°–ì´ê±°ë‚˜ ì´ì „ ê°’ë³´ë‹¤ ë©€ë©´ ìŠ¤í‚µ
 				if (tdist < GetDistance(pChar, npc))
 					continue ;
 				/* speed_ksw after */
 
-				// ½Ã¾ß ¾È¿¡ µé¾î¿ÔÀ¸¸é Å¸°ÙÀ¸·Î
+				// ì‹œì•¼ ì•ˆì— ë“¤ì–´ì™”ìœ¼ë©´ íƒ€ê²Ÿìœ¼ë¡œ
 				char outY;
 
-				// npc -> pChar ½Ã¾ß¾È¿¡¼­ ¹ß°ß ½Ã npc¿Í pCharÀÇ Á÷¼±°æ·Î¿¡¼­ ºí·°ÀÌ ÀÖ´Â °æ¿ì
+				// npc -> pChar ì‹œì•¼ì•ˆì—ì„œ ë°œê²¬ ì‹œ npcì™€ pCharì˜ ì§ì„ ê²½ë¡œì—ì„œ ë¸”ëŸ­ì´ ìˆëŠ” ê²½ìš°
 				if (!IsNotBlocked(npc, pChar, true, outY))
 					continue;
 
 				tdist = GetDistance(pChar, npc);
 				ret = pChar;
 
-				// ¼öÈ£Å¾ ¾Æ´Ï¸é Å¸°Ù ÀâÈ÷´Â´ë·Î ¸®ÅÏ, ¼öÈ£Å¾Àº ½ºÅ³ ¹øÈ£ ÀúÀå
+				// ìˆ˜í˜¸íƒ‘ ì•„ë‹ˆë©´ íƒ€ê²Ÿ ì¡íˆëŠ”ëŒ€ë¡œ ë¦¬í„´, ìˆ˜í˜¸íƒ‘ì€ ìŠ¤í‚¬ ë²ˆí˜¸ ì €ì¥
 				if (!npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))
 					return ret;
 				else
@@ -2486,10 +2530,10 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 
 	if (npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))
 	{
-		// ¼öÈ£Å¾Àº ½ºÅ³ ¾øÀ¸¸é Å¸°Ùµµ ¾ø´Ù
+		// ìˆ˜í˜¸íƒ‘ì€ ìŠ¤í‚¬ ì—†ìœ¼ë©´ íƒ€ê²Ÿë„ ì—†ë‹¤
 		if (towerSkillIndex == -1)
 			return NULL;
-		// ¼öÈ£Å¾ÀÏ °æ¿ì ½ºÅ³ ¼¼ÆÃµµ ÇÔ²²
+		// ìˆ˜í˜¸íƒ‘ì¼ ê²½ìš° ìŠ¤í‚¬ ì„¸íŒ…ë„ í•¨ê»˜
 		npc->m_currentSkill = npc->m_skills[towerSkillIndex];
 		npc->m_currentSkill->m_targetType = ret->m_type;
 		npc->m_currentSkill->m_targetIndex = ret->m_index;
@@ -2503,9 +2547,9 @@ CCharacter* CArea::FindNearestTarget(CNPC* npc, float* dist)
 	return ret;
 }
 
-CCharacter* CArea::FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist) // Å×ÀÌ¹ÖµÈ npc°¡ °¡±î¿î npc¸¦ Ã£±â
+CCharacter* CArea::FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist) // í…Œì´ë°ëœ npcê°€ ê°€ê¹Œìš´ npcë¥¼ ì°¾ê¸°
 {
-	// °¡±î¿î °ø°İ´ë»ó Ã£±â
+	// ê°€ê¹Œìš´ ê³µê²©ëŒ€ìƒ ì°¾ê¸°
 	int cx, cz;
 	PointToCellNum(GET_X(npc), GET_Z(npc), &cx, &cz);
 
@@ -2534,29 +2578,29 @@ CCharacter* CArea::FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist) 
 				if(!pChar)
 					continue;
 
-				// Á×Àº °Íµµ ¾Æ´Ï°í
+				// ì£½ì€ ê²ƒë„ ì•„ë‹ˆê³ 
 				if (DEAD(pChar))
 					continue ;
 
-				// ¾Èº¸ÀÌ¸é skip
+				// ì•ˆë³´ì´ë©´ skip
 				if (!npc->CanVisible(pChar))
 					continue ;
 
-				// ½Ã¾ß ¹ÛÀÌ°Å³ª ÀÌÀü °ªº¸´Ù ¸Ö¸é ½ºÅµ
+				// ì‹œì•¼ ë°–ì´ê±°ë‚˜ ì´ì „ ê°’ë³´ë‹¤ ë©€ë©´ ìŠ¤í‚µ
 				if (tdist < GetDistance(pChar, npc))
 					continue ;
 
-				// ½Ã¾ß ¾È¿¡ µé¾î¿ÔÀ¸¸é Å¸°ÙÀ¸·Î
+				// ì‹œì•¼ ì•ˆì— ë“¤ì–´ì™”ìœ¼ë©´ íƒ€ê²Ÿìœ¼ë¡œ
 				char outY;
 
-				// npc -> pChar ½Ã¾ß¾È¿¡¼­ ¹ß°ß ½Ã npc¿Í pCharÀÇ Á÷¼±°æ·Î¿¡¼­ ºí·°ÀÌ ÀÖ´Â °æ¿ì
+				// npc -> pChar ì‹œì•¼ì•ˆì—ì„œ ë°œê²¬ ì‹œ npcì™€ pCharì˜ ì§ì„ ê²½ë¡œì—ì„œ ë¸”ëŸ­ì´ ìˆëŠ” ê²½ìš°
 				if (!IsNotBlocked(npc, pChar, true, outY))
 					continue;
 
-				// ¸¸¾à PC°¡ Å¸°ÙÀÌ¸é Å×ÀÌ¹ÖµÈ ¸ó½ºÅÍ°¡ ÈúÀ» ¾µ ¶§¸¸ »ç¿ë
+				// ë§Œì•½ PCê°€ íƒ€ê²Ÿì´ë©´ í…Œì´ë°ëœ ëª¬ìŠ¤í„°ê°€ íì„ ì“¸ ë•Œë§Œ ì‚¬ìš©
 				if (IS_PC(pChar))
 				{
-					// ¸ó½ºÅÍ°¡ È¥¶õ ÁßÀÌ¸é ½ºÅµ
+					// ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ì¤‘ì´ë©´ ìŠ¤í‚µ
 					if ( npc->Check_MobFlag(STATE_MONSTER_CONFUSION) )
 					{
 						continue;
@@ -2568,32 +2612,32 @@ CCharacter* CArea::FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist) 
 					}
 				}
 
-				// Å×ÀÌ¹Ö µÇÁö ¾ÊÀº NPC¸¸ °ø°İ
+				// í…Œì´ë° ë˜ì§€ ì•Šì€ NPCë§Œ ê³µê²©
 				else if (IS_NPC(pChar))
 				{
 					CNPC* target_is_npc = NULL;
 					target_is_npc = TO_NPC(pChar);
 
-					// ¾Èº¸ÀÌ´Â »óÅÂÀÌ¸é ½ºÅµ
+					// ì•ˆë³´ì´ëŠ” ìƒíƒœì´ë©´ ìŠ¤í‚µ
 					if ( npc->m_disableTime != 0 )
 					{
 						continue;
 					}
 
-					// ¸ó½ºÅÍ ÀÚ½ÅÀÌ¸é ½ºÅµ
+					// ëª¬ìŠ¤í„° ìì‹ ì´ë©´ ìŠ¤í‚µ
 					if ( target_is_npc == npc )
 					{
 						continue;
 					}
 
-					// ¸ó½ºÅÍ°¡ È¥¶õ ÁßÀÌ¶ó¸é È¥¶õ ÁßÀÎ ¸ó½ºÅÍ¸¸ °ø°İ
+					// ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ì¤‘ì´ë¼ë©´ í˜¼ë€ ì¤‘ì¸ ëª¬ìŠ¤í„°ë§Œ ê³µê²©
 					else if ( target_is_npc->Check_MobFlag(STATE_MONSTER_CONFUSION)
 							  && npc->Check_MobFlag(STATE_MONSTER_CONFUSION) )
 					{
 						*dist = GetDistance(pChar, npc);
 						return pChar;
 					}
-					// È¥¶õ ÁßÀÌ ¾Æ´Ï¸é Å×ÀÌ¹Ö ÁßÀÌ¹Ç·Î ÀÏ¹İ ¸ó½ºÅÍ °ø°İ
+					// í˜¼ë€ ì¤‘ì´ ì•„ë‹ˆë©´ í…Œì´ë° ì¤‘ì´ë¯€ë¡œ ì¼ë°˜ ëª¬ìŠ¤í„° ê³µê²©
 					else if ( !target_is_npc->Check_MobFlag(STATE_MONSTER_TAMING) && npc->Check_MobFlag(STATE_MONSTER_TAMING) )
 					{
 						*dist = GetDistance(pChar, npc);
@@ -2605,7 +2649,7 @@ CCharacter* CArea::FindNearestTarget_Taming_or_Confused(CNPC* npc, float* dist) 
 						return pChar;
 					}
 
-					// À§ÀÇ Á¶°ÇÀ» ¸¸Á· ¸øÇÏ¸é »õ·Î¿î Å¸°ÙÀ» Ã£´Â´Ù
+					// ìœ„ì˜ ì¡°ê±´ì„ ë§Œì¡± ëª»í•˜ë©´ ìƒˆë¡œìš´ íƒ€ê²Ÿì„ ì°¾ëŠ”ë‹¤
 					else
 					{
 						continue;
@@ -2638,7 +2682,7 @@ CNPC* CArea::FindProtoNPCInCell(float fx, float fz, int nData, bool bIsFlagMask,
 
 	int x, z;
 
-	// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+	// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 	for (x = sx; x <= ex; x++)
 	{
 		if (x < 0 || x >= m_size[0]) continue;
@@ -2674,7 +2718,7 @@ void CArea::RunComboZone()
 	if(!m_monsterCombo)
 		return ;
 
-	// ret: 0 Á¤»ó¿Ï·á  1 ÁøÇàÁß 2 ¿À·ù
+	// ret: 0 ì •ìƒì™„ë£Œ  1 ì§„í–‰ì¤‘ 2 ì˜¤ë¥˜
 	char ret;
 	ret = m_monsterCombo->Run();
 
@@ -2740,7 +2784,7 @@ int CArea::CountMobInCombo()
 	{
 		npcNext = npc->m_pNPCNext;
 
-		// ÆòÈ­¸÷¿¡ ÀÖ´Â npc ÀÌ°Å³ª ÀÌÆåÆ® npc ÀÎ°æ¿ì Á¦¿Ü
+		// í‰í™”ëª¹ì— ìˆëŠ” npc ì´ê±°ë‚˜ ì´í™íŠ¸ npc ì¸ê²½ìš° ì œì™¸
 		if(npc->m_proto->CheckFlag(NPC_PEACEFUL) || npc->m_proto->m_index == 491)
 			continue;
 
@@ -2754,7 +2798,7 @@ int CArea::CountMobInCombo()
 
 void CArea::CloseComboZone()
 {
-	// Ä³¸¯ÅÍ µå¶óÅºÀ¸·Î ÀÌµ¿
+	// ìºë¦­í„° ë“œë¼íƒ„ìœ¼ë¡œ ì´ë™
 	if(m_zone->m_index != ZONE_COMBO_DUNGEON)
 		return ;
 
@@ -2810,7 +2854,7 @@ void CArea::GotoAllClient_StartPoint()
 	if (pZone == NULL)
 		return;
 
-	// ¸ÕÀú ÀÌµ¿½ÃÅ³ À¯Àú¸¦ ¼±º°ÈÄ ÀÌµ¿ // ´Ù¸¥¼¿·Î ÀÌµ¿½Ã ¶Ç´Â ÀÌµ¿Áß »èÁ¦½Ã ¹®Á¦ ¹ß»ı
+	// ë¨¼ì € ì´ë™ì‹œí‚¬ ìœ ì €ë¥¼ ì„ ë³„í›„ ì´ë™ // ë‹¤ë¥¸ì…€ë¡œ ì´ë™ì‹œ ë˜ëŠ” ì´ë™ì¤‘ ì‚­ì œì‹œ ë¬¸ì œ ë°œìƒ
 	std::vector<CPC*> m_MovePCList;
 
 	for (cx = 0 ; cx < m_size[0]; cx++)
@@ -2831,7 +2875,7 @@ void CArea::GotoAllClient_StartPoint()
 					{
 						m_MovePCList.push_back( pPC );
 						
-						//Å¸°Ù ÃÊ±âÈ­(Å¬¶óÀÌ¾ğÆ® ¿äÃ»¿¡ÀÇÇØ)
+						//íƒ€ê²Ÿ ì´ˆê¸°í™”(í´ë¼ì´ì–¸íŠ¸ ìš”ì²­ì—ì˜í•´)
 						pPC->m_targetPC = NULL;
 						CNetMsg::SP rmsg(new CNetMsg);
 						TargetClearMsg(rmsg, -1);
@@ -2882,11 +2926,11 @@ void CArea::Change_NpcRegenRaid( int level, int exceptingNpcIndex )
 	CNPC* npc;
 	CNPC* npcNext = m_npcList;
 
-	// ÃÖ´ë ·¹º§À» Áö³ª¸é ½ºÅµ
+	// ìµœëŒ€ ë ˆë²¨ì„ ì§€ë‚˜ë©´ ìŠ¤í‚µ
 	if(!m_zone || m_zone->m_MaxLevelNpcRegen <= level)
 		return;
 
-	// npc¸¦ ÇöÀç area¿¡¼­ ¿ÏÀüÈ÷ Á¦°Å
+	// npcë¥¼ í˜„ì¬ areaì—ì„œ ì™„ì „íˆ ì œê±°
 	while((npc = npcNext))
 	{
 		if(!npc)
@@ -2906,25 +2950,25 @@ void CArea::Change_NpcRegenRaid( int level, int exceptingNpcIndex )
 		  )
 			continue;
 
-		// Á¦¿ÜÇØ¾ß ÇÏ´Â npc °Ë»ç, Á×Àº ³×ÀÓµå npc ¿©±â¼­ Áö¿ì¸é ¼­¹ö ´Ù¿îµÈ´Ù..
+		// ì œì™¸í•´ì•¼ í•˜ëŠ” npc ê²€ì‚¬, ì£½ì€ ë„¤ì„ë“œ npc ì—¬ê¸°ì„œ ì§€ìš°ë©´ ì„œë²„ ë‹¤ìš´ëœë‹¤..
 		if(npc->m_proto->m_index == exceptingNpcIndex)
 			continue;
 
-		// 1003 ÁÒ½´´Â Áö¿ì´Â °Í Á¦¿Ü... Æ®¸®°Å¿¡ ÀÇÇØ ¼ÒÈ¯ÀÌ µÇ¹Ç·Î ¸®Á¨ ¸®½ºÆ®¿¡ ¾ø¾î¼­~
+		// 1003 ì£ ìŠˆëŠ” ì§€ìš°ëŠ” ê²ƒ ì œì™¸... íŠ¸ë¦¬ê±°ì— ì˜í•´ ì†Œí™˜ì´ ë˜ë¯€ë¡œ ë¦¬ì   ë¦¬ìŠ¤íŠ¸ì— ì—†ì–´ì„œ~
 		if(npc->m_proto->m_index == 1003)
 			continue;
 
 		npc->SendDisappearAllInCell(true);
 
-		// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+		// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 		DelAttackList(npc);
 
-		// npc »èÁ¦
+		// npc ì‚­ì œ
 		CharFromCell(npc, true);
 		DelNPC(npc);
 	}
 
-	// ÇØ´ç levelÀÇ npc¸¦ ¸®Á¨ÇÑ´Ù.
+	// í•´ë‹¹ levelì˜ npcë¥¼ ë¦¬ì  í•œë‹¤.
 	if (m_zone && m_zone->m_CNpcRegenRaidList)
 	{
 		for (int i=0; i < m_zone->m_CNpcRegenRaidList[level].m_nCount_regen; i++)

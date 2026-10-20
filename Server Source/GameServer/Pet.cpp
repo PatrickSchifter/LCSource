@@ -9,7 +9,7 @@
 
 CPet::CPet(CPC* owner, int index, char petTypeGrade, int level) : CCharacter()
 {
-	// ·¹º§ 1ÀÇ »óÅÂ·Î ¸¸µé±â
+	// ë ˆë²¨ 1ì˜ ìƒíƒœë¡œ ë§Œë“¤ê¸°
 	m_type = MSG_CHAR_PET;
 	m_index = index;
 	m_level = level;
@@ -33,7 +33,7 @@ CPet::CPet(CPC* owner, int index, char petTypeGrade, int level) : CCharacter()
 	m_bMount = false;
 	m_wasnear = true;
 
-	// 060221 : bs : Æê »ç¸Á ½Ã°£
+	// 060221 : bs : í« ì‚¬ë§ ì‹œê°„
 	m_nRemainRebirth = 0;
 
 	InitStat();
@@ -50,7 +50,7 @@ CPet::~CPet()
 bool CPet::UpdateSympathyPoint(bool bnear)
 {
 	int oldval = GetSympathyPoint();
-	//ÆêÀÌ ÆêÃ¢°í¿¡ ¸Ã°ÜÁ® ÀÖ´Â »óÅÂ¶ó¸é
+	//í«ì´ í«ì°½ê³ ì— ë§¡ê²¨ì ¸ ìˆëŠ” ìƒíƒœë¼ë©´
 	if(this->GetOwner()->m_petStashManager.GetPetItemByPlus(this->m_index))
 	{
 		if(m_petStashSeconds + (60 * 60 /*sec*/) < gserver->m_nowseconds)
@@ -58,12 +58,12 @@ bool CPet::UpdateSympathyPoint(bool bnear)
 			m_petStashSeconds = gserver->m_nowseconds;
 			++m_sympathy;
 			this->GetOwner()->m_petStashManager.UpdatePetData(this->m_index);
-			//Ã¢°í ÆŞ½º´Â ¹è°íÇÄ»óÅÂ¸¦ Áõ°¡ÇÏ°í ÀúÀåÇÑ´Ù.
+			//ì°½ê³  í„ìŠ¤ëŠ” ë°°ê³ í””ìƒíƒœë¥¼ ì¦ê°€í•˜ê³  ì €ì¥í•œë‹¤.
 		}
 	}
 	else if (IsWearing())
 	{
-		// 5ºĞ + ÆĞ³ÎÆ¼
+		// 5ë¶„ + íŒ¨ë„í‹°
 		int needTime = PULSE_PET_SYMPATHY_INCREASE;
 		if (m_owner->m_level < m_level)
 			needTime += (m_level - m_owner->m_level) / 2;
@@ -72,7 +72,7 @@ bool CPet::UpdateSympathyPoint(bool bnear)
 
 		m_pulseSympathy = gserver->m_pulse;
 
-		// ¹è°íÇÄ : 5ºĞ¸¶´Ù ±³°¨µµ 1Æ÷ÀÎÆ® ÇÏ¶ô 050309: bw
+		// ë°°ê³ í”” : 5ë¶„ë§ˆë‹¤ êµê°ë„ 1í¬ì¸íŠ¸ í•˜ë½ 050309: bw
 		if (!IsActive())
 		{
 			m_sympathy--;
@@ -86,7 +86,7 @@ bool CPet::UpdateSympathyPoint(bool bnear)
 		}
 
 		// 050309: bw
-		// Æê°ú ÁÖÀÎÀÌ ±ÙÃ³¿¡ ÀÖÁö ¾ÊÀ»¶§ ½ÉÆ÷´Ï »ó½Â ¾øÀ½
+		// í«ê³¼ ì£¼ì¸ì´ ê·¼ì²˜ì— ìˆì§€ ì•Šì„ë•Œ ì‹¬í¬ë‹ˆ ìƒìŠ¹ ì—†ìŒ
 		if( !bnear )
 			return false;
 
@@ -97,7 +97,7 @@ bool CPet::UpdateSympathyPoint(bool bnear)
 	}
 	else
 	{
-		// 1½Ã°£
+		// 1ì‹œê°„
 		if (m_pulseSympathy + PULSE_PET_SYMPATHY_DECREASE > gserver->m_pulse)
 			return false;
 
@@ -132,7 +132,7 @@ bool CPet::IncreaseHungryPoint(int val)
 
 bool CPet::DecreaseHungryPoint()
 {
-	// Ã³À½Àº ±×³É ÆŞ½º¸¸ ¼³Á¤ÇÏ°í Á¾·á || ÆêÀÌ ÆêÃ¢°í¿¡ ÀÖ´Â °æ¿ì¿¡µµ Á¾·á
+	// ì²˜ìŒì€ ê·¸ëƒ¥ í„ìŠ¤ë§Œ ì„¤ì •í•˜ê³  ì¢…ë£Œ || í«ì´ í«ì°½ê³ ì— ìˆëŠ” ê²½ìš°ì—ë„ ì¢…ë£Œ
 	if (m_pulseHungry == 0 || this->GetOwner()->m_petStashManager.GetPetItemByPlus(this->m_index))
 	{
 		m_pulseHungry = gserver->m_pulse;
@@ -142,7 +142,7 @@ bool CPet::DecreaseHungryPoint()
 	int oldval = GetHungryPoint();
 	if (IsWearing())
 	{
-		// 5ºĞ + ÆĞ³ÎÆ¼
+		// 5ë¶„ + íŒ¨ë„í‹°
 		if (m_pulseHungry + PULSE_PET_HUNGRY_DECREASE > gserver->m_pulse)
 			return false;
 
@@ -202,29 +202,29 @@ bool CPet::AddExp()
 	if(this->GetHungryPoint() <= 0)
 		return false;
 
-	// Á¢¼Ó ÀÌÈÄ Ã³À½ÀÌ°Å³ª ¸Å 3ÃÊ¸¶´Ù
-	if (m_pulseExpUp == 0 || m_pulseExpUp + PULSE_REAL_SEC * 30 < gserver->m_pulse)
+	// ì ‘ì† ì´í›„ ì²˜ìŒì´ê±°ë‚˜ ë§¤ 3ì´ˆë§ˆë‹¤
+	if (m_pulseExpUp == 0 || m_pulseExpUp + PULSE_REAL_SEC * 3 < gserver->m_pulse)
 	{
 		m_pulseExpUp = gserver->m_pulse;
 
-		// ¼ÒÀ¯ÀÚ°¡ Âø¿ë ÁßÀÌ°í
+		// ì†Œìœ ìê°€ ì°©ìš© ì¤‘ì´ê³ 
 		if (IsWearing())
 		{
-			// ¼ÒÀ¯ÀÚ°¡ °ø°İ Áß
+			// ì†Œìœ ìê°€ ê³µê²© ì¤‘
 			if (m_owner->IsCombatMode()
 					&& (gserver->m_pulse - m_owner->m_pulseLastAttackSkill) < PULSE_ATTACKMODE_DELAY
 					&& m_owner->m_bNotMiss)
 			{
-				addexp = 1000;
+				addexp = 1;
 #ifdef DOUBLE_PET_EXP
 				if( gserver->m_bDoublePetExpEvent == true )
-					addexp = addexp * gserver->m_PetExpPercent / 10000;
+					addexp = addexp * gserver->m_PetExpPercent / 100;
 #endif // DOUBLE_PET_EXP
 
 				if( m_owner->m_assist.m_avAddition.hcCashPetExpUp_2358 == true )
-					m_exp += 200 * addexp;
+					m_exp += 2 * addexp;
 				else if( m_owner->m_assist.m_avAddition.hcCashPetExpUp_2359 == true )
-					m_exp += 300 * addexp;
+					m_exp += 3 * addexp;
 				else
 					m_exp += addexp;
 
@@ -276,7 +276,7 @@ void CPet::Appear(bool bIncludeOwner)
 	if (area == NULL)
 		return ;
 
-	// ¼ÒÈ¯ÇÒ ¼ö ÀÖ´Â Á¸ÀÏ¶§
+	// ì†Œí™˜í•  ìˆ˜ ìˆëŠ” ì¡´ì¼ë•Œ
 	if (!area->m_zone->m_bCanSummonPet)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -285,7 +285,7 @@ void CPet::Appear(bool bIncludeOwner)
 		return ;
 	}
 
-	// ¼¿¿¡ ³Ö±â
+	// ì…€ì— ë„£ê¸°
 	m_pZone = area->m_zone;
 	m_pArea = area;
 	m_pos = m_owner->m_pos;
@@ -294,7 +294,7 @@ void CPet::Appear(bool bIncludeOwner)
 	area->CharToCell(this, GET_YLAYER(this), cx, cz);
 
 	{
-		// ³ªÅ¸³²À» ¾Ë¸²
+		// ë‚˜íƒ€ë‚¨ì„ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		AppearMsg(rmsg, this, true);
 		area->SendToCell(rmsg, this, bIncludeOwner);
@@ -315,17 +315,17 @@ void CPet::Disappear()
 	if (!IsSummon())
 		return ;
 
-	// ¾îÅÃ ¸®½ºÆ® Áö¿ì°í
+	// ì–´íƒ ë¦¬ìŠ¤íŠ¸ ì§€ìš°ê³ 
 	DelAttackList(this);
 
 	{
-		// »ç¶óÁüÀ» ¾Ë¸®°í
+		// ì‚¬ë¼ì§ì„ ì•Œë¦¬ê³ 
 		CNetMsg::SP rmsg(new CNetMsg);
 		DisappearMsg(rmsg, this);
 		area->SendToCell(rmsg, this, true);
 	}
 
-	// ¼¿¿¡¼­ Á¦°Å
+	// ì…€ì—ì„œ ì œê±°
 	area->CharFromCell(this, true);
 	m_pZone = NULL;
 	m_pArea = NULL;
@@ -374,15 +374,15 @@ bool CPet::ResetSkill()
 
 void CPet::Mount(bool bMount)
 {
-	// Å»¼ö ÀÖ´Â ÆêÀÌ°í
+	// íƒˆìˆ˜ ìˆëŠ” í«ì´ê³ 
 	if (!IsMountType())
 		return ;
 
-	// Å¸°í ¾ÈÅ¸°íÀÇ »óÅÂ°¡ ÇöÀç¿Í ´Ù¸£°í
+	// íƒ€ê³  ì•ˆíƒ€ê³ ì˜ ìƒíƒœê°€ í˜„ì¬ì™€ ë‹¤ë¥´ê³ 
 	if (IsMount() == bMount)
 		return ;
 
-	// ÁÖÀÎÀÌ ÀÖ°í
+	// ì£¼ì¸ì´ ìˆê³ 
 	if (!GetOwner() || GetOwner()->m_pZone == NULL)
 		return ;
 
@@ -391,7 +391,7 @@ void CPet::Mount(bool bMount)
 
 		if (bMount)
 		{
-			// Å» ¼ö ÀÖ´Â Á¸ÀÏ¶§
+			// íƒˆ ìˆ˜ ìˆëŠ” ì¡´ì¼ë•Œ
 			if (!GetOwner()->m_pZone->m_bCanMountPet)
 			{
 				CNetMsg::SP tmsg(new CNetMsg);
@@ -400,7 +400,7 @@ void CPet::Mount(bool bMount)
 				return ;
 			}
 
-			// Å¸±â
+			// íƒ€ê¸°
 			m_bMount = true;
 			ExPetMountMsg(rmsg, GetOwner()->m_index, GetPetTypeGrade());
 
@@ -409,7 +409,7 @@ void CPet::Mount(bool bMount)
 		}
 		else
 		{
-			// ³»¸®±â
+			// ë‚´ë¦¬ê¸°
 			m_bMount = false;
 			ExPetMountMsg(rmsg, GetOwner()->m_index, 0);
 		}
@@ -452,29 +452,29 @@ void CPet::LevelUp()
 		m_pArea->SendToCell(rmsg, this, true);
 	}
 
-	const int nHorseStartIndex = 0;		// Å×ÀÌºí¿¡¼­ ¸» ½ºÅ³ ½ÃÀÛ ÀÎµ¦½º
-	const int nHorseCount = 3;			// Å×ÀÌºí¿¡¼­ ¸» ½ºÅ³ °³¼ö
-	const int nDragonStartIndex = 3;	// Å×ÀÌºí¿¡¼­ µå·¡°ï ½ºÅ³ ½ÃÀÛ ÀÎµ¦½º
-	const int nDragonCount = 5;			// Å×ÀÌºí¿¡¼­ ¸» ½ºÅ³ °³¼ö
+	const int nHorseStartIndex = 0;		// í…Œì´ë¸”ì—ì„œ ë§ ìŠ¤í‚¬ ì‹œì‘ ì¸ë±ìŠ¤
+	const int nHorseCount = 3;			// í…Œì´ë¸”ì—ì„œ ë§ ìŠ¤í‚¬ ê°œìˆ˜
+	const int nDragonStartIndex = 3;	// í…Œì´ë¸”ì—ì„œ ë“œë˜ê³¤ ìŠ¤í‚¬ ì‹œì‘ ì¸ë±ìŠ¤
+	const int nDragonCount = 5;			// í…Œì´ë¸”ì—ì„œ ë§ ìŠ¤í‚¬ ê°œìˆ˜
 	const int nAutoLearn = nDragonStartIndex + nDragonCount;
 	const int autoTable[nAutoLearn][2] =
 	{
-		// ¸»
-		{271, 4},		// °í°³ Èçµé±â : ·¹º§4
-		{272, 8},		// µŞ¹ßÁú : ·¹º§8
-		{273, 12},		// ¸»¿ïÀ½ : ·¹º§12
+		// ë§
+		{271, 4},		// ê³ ê°œ í”ë“¤ê¸° : ë ˆë²¨4
+		{272, 8},		// ë’·ë°œì§ˆ : ë ˆë²¨8
+		{273, 12},		// ë§ìš¸ìŒ : ë ˆë²¨12
 
-		// ¿ë
-		{284, 3},		// ·Î¾î : ·¹º§3
-		{285, 6},		// ¾Ö±³ : ·¹º§6
-		{286, 9},		// ³¯°³Áş : ·¹º§9
-		{287, 12},		// ºÒ»Õ±â : ·¹º§12
-		{288, 15}		// ±¸¾Ö : ·¹º§15
+		// ìš©
+		{284, 3},		// ë¡œì–´ : ë ˆë²¨3
+		{285, 6},		// ì• êµ : ë ˆë²¨6
+		{286, 9},		// ë‚ ê°œì§“ : ë ˆë²¨9
+		{287, 12},		// ë¶ˆë¿œê¸° : ë ˆë²¨12
+		{288, 15}		// êµ¬ì•  : ë ˆë²¨15
 	};
 
 	if( GetPetGrade() != PET_GRADE_MOUNT )
 	{
-		// ÀÚµ¿½Àµæ
+		// ìë™ìŠµë“
 		int nStartIndex = nAutoLearn + 1;
 		int nCount = 0;
 		if (GetPetType() == PET_TYPE_HORSE
@@ -505,7 +505,7 @@ void CPet::LevelUp()
 					skill = gserver->m_skillProtoList.Create(autoTable[i][0]);
 					if (skill)
 					{
-						// °ÔÀÓ ·Î±×
+						// ê²Œì„ ë¡œê·¸
 						// TODO : petlog
 						GAMELOG << init("PET SKILL LEARN AUTO", m_owner)
 								<< "PET" << delim
@@ -531,7 +531,7 @@ void CPet::LevelUp()
 			|| this->GetPetType() == PET_TYPE_UNKOWN_DRAGON )
 			&& (m_level == 5 || m_level == 10) )
 	{
-		// 25ÇÁ·ÎÀÇ È®·ü·Î º¯°æµÇ´Âµğ
+		// 25í”„ë¡œì˜ í™•ë¥ ë¡œ ë³€ê²½ë˜ëŠ”ë””
 		int ran = GetRandom(0, 1000);
 		if( ran <= 250 )
 		{
@@ -545,11 +545,11 @@ void CPet::SetRemainRebirthTime(int nRemainRebirth)
 	if (nRemainRebirth < 0)
 	{
 		if (m_level >= 41)
-			nRemainRebirth = 17 * 60 * 60;		// 41ÀÌ»ó 17½Ã°£
+			nRemainRebirth = 17 * 60 * 60;		// 41ì´ìƒ 17ì‹œê°„
 		else if (m_level >= 21)
-			nRemainRebirth = 12 * 60 * 60;		// 21ÀÌ»ó 12½Ã°£
+			nRemainRebirth = 12 * 60 * 60;		// 21ì´ìƒ 12ì‹œê°„
 		else
-			nRemainRebirth = 5 * 60 * 60;		// 20ÀÌÇÏ 5½Ã°£
+			nRemainRebirth = 5 * 60 * 60;		// 20ì´í•˜ 5ì‹œê°„
 	}
 
 	m_nRemainRebirth = nRemainRebirth;
@@ -558,7 +558,7 @@ void CPet::SetRemainRebirthTime(int nRemainRebirth)
 		m_hp = 0;
 }
 
-// 050309: bw ¿À³Ê¿Í °Å¸® ±¸ÇÏ±â ÇÔ¼ö
+// 050309: bw ì˜¤ë„ˆì™€ ê±°ë¦¬ êµ¬í•˜ê¸° í•¨ìˆ˜
 float CPet::GetDistanceFromOwner()
 {
 	if (!IS_IN_CELL(this))
@@ -602,18 +602,18 @@ void CPet::ChangePetType()
 		return;
 	}
 
-	// ¼ÒÈ¯µÇ¾î ÀÖ´Â ÆêÀº ¼¿¿¡¼­ Á¦°Å
+	// ì†Œí™˜ë˜ì–´ ìˆëŠ” í«ì€ ì…€ì—ì„œ ì œê±°
 	if (this->IsSummon())
 	{
 		this->Disappear();
 	}
-	// Å¸°í ÀÖÀ¸¸é ³»¸®±â
+	// íƒ€ê³  ìˆìœ¼ë©´ ë‚´ë¦¬ê¸°
 	else if (this->IsMount())
 	{
 		this->Mount(false);
 	}
 
-	// Item ¼ö·® º¯°æ
+	// Item ìˆ˜ëŸ‰ ë³€ê²½
 	CItem* item = owner->m_inventory.FindByDBIndex(deleteItemdbIndex, this->m_index, 0);
 	if (item == NULL)
 		return;

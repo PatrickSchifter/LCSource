@@ -27,11 +27,11 @@ private:
 	int m_chaos_minus1_prob;
 	int m_chaos_minus2_prob;
 	int m_chaos_minus3_prob;
-	int m_eventComposeProb;					//º¸¼® ÇÕ¼º ÀÌº¥Æ® È®·ü °ª
-	int m_eventChaosCreateProb;				//Ä«¿À½º º¸¼® »ı¼º ÀÌº¥Æ® È®·ü °ª
-	int m_eventUpgradeProb;					//º¸¼® µî±Ş»ó½Â ÀÌº¥Æ® È®·ü °ª
-	int m_eventCombineProb;					//º¸¼® °áÇÕ ÀÌº¥Æ® È®·ü °ª
-	int m_eventCollectProb;					//º¸¼® °áÇÕ ½ÇÆĞ½Ã ÀÌº¥Æ® È¸¼ö È®·ü Áõ°¡ °ª
+	int m_eventComposeProb;					//ë³´ì„ í•©ì„± ì´ë²¤íŠ¸ í™•ë¥  ê°’
+	int m_eventChaosCreateProb;				//ì¹´ì˜¤ìŠ¤ ë³´ì„ ìƒì„± ì´ë²¤íŠ¸ í™•ë¥  ê°’
+	int m_eventUpgradeProb;					//ë³´ì„ ë“±ê¸‰ìƒìŠ¹ ì´ë²¤íŠ¸ í™•ë¥  ê°’
+	int m_eventCombineProb;					//ë³´ì„ ê²°í•© ì´ë²¤íŠ¸ í™•ë¥  ê°’
+	int m_eventCollectProb;					//ë³´ì„ ê²°í•© ì‹¤íŒ¨ì‹œ ì´ë²¤íŠ¸ íšŒìˆ˜ í™•ë¥  ì¦ê°€ ê°’
 
 public:
 	void setEventComposeProb( int composeProb )
@@ -146,13 +146,13 @@ class CJewelDataList
 public:
 	typedef std::map<int, CJewelData*> map_t;
 
-	map_t m_jewelDataList;			//º¸¼® µ¥ÀÌÅÍ ¸®½ºÆ® (key : º¸¼® µî±Ş)
-	CJewelData* m_jewelData;		//º¸¼® ¾ÆÀÌÅÛ
+	map_t m_jewelDataList;			//ë³´ì„ ë°ì´í„° ë¦¬ìŠ¤íŠ¸ (key : ë³´ì„ ë“±ê¸‰)
+	CJewelData* m_jewelData;		//ë³´ì„ ì•„ì´í…œ
 	//int m_nCount;
-	int **m_gradedJewel;			//µî±Şº° º¸¼® Á¾·ù
-	int **m_gradedChaosJewel;		//µî±Şº° Ä«¿À½º º¸¼® Á¾·ù
-	int m_nJewelItemKindCount;		//º¸¼® Á¾·ù °³¼ö
-	int m_nJewelItemKindCount_Chaos; //Ä«¿À½º º¸¼® Á¾·ù °³¼ö
+	int **m_gradedJewel;			//ë“±ê¸‰ë³„ ë³´ì„ ì¢…ë¥˜
+	int **m_gradedChaosJewel;		//ë“±ê¸‰ë³„ ì¹´ì˜¤ìŠ¤ ë³´ì„ ì¢…ë¥˜
+	int m_nJewelItemKindCount;		//ë³´ì„ ì¢…ë¥˜ ê°œìˆ˜
+	int m_nJewelItemKindCount_Chaos; //ì¹´ì˜¤ìŠ¤ ë³´ì„ ì¢…ë¥˜ ê°œìˆ˜
 	int m_JewelPocketItem[JEWEL_POCKET_MAX_LEVEL];
 	int m_ChaosJewelPocketItem[JEWEL_POCKET_MAX_LEVEL];
 

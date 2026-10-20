@@ -3,39 +3,39 @@
 
 #include "../ShareLib/MemoryPoolBase.h"
 
-#define SKILL_RATE_UNIT		100		// ½ºÅ³ rate ´ÜÀ§ 10000
+#define SKILL_RATE_UNIT		100		// ìŠ¤í‚¬ rate ë‹¨ìœ„ 10000
 
 ////////////////////////
-// ½ºÅ³ °ü·Ã
-#define MAX_SKILL_LEARN_SKILL			3			// ½ºÅ³ ¹è¿ì´Âµ¥ ÇÊ¿äÇÑ ½ºÅ³ ÃÖ´ë Á¾·ù
-#define MAX_SKILL_LEARN_ITEM			3			// ½ºÅ³ ¹è¿ì´Âµ¥ ÇÊ¿äÇÑ ¾ÆÀÌÅÛ ÃÖ´ë Á¾·ù
-#define MAX_SKILL_CHANGE				4			// ÇÏ³ªÀÇ ½ºÅ³·Î ÀÎÇÑ »óÅÂ º¯È­ ÃÖ´ë Á¾·ù
-#define MAX_SKILL_NEED_ITEM				2			// ½ºÅ³ »ç¿ë½Ã ¼Ò¸ğµÇ´Â ¾ÆÀÌÅÛ Á¾·ù
-#define MAX_SKILL_APP_MAGIC				3			// ½ºÅ³´ç Àû¿ëÁ¶°Ç È¿°ú ¼ö
-#define MAX_SKILL_USE_MAGIC				3			// ½ºÅ³´ç »ç¿ëÁ¶°Ç È¿°ú ¼ö
-#define MAX_SKILL_MAGIC					3			// ½ºÅ³´ç È¿°ú ¼ö
-#define MAX_SKILL_LEVEL					10			// ½ºÅ³ ÃÖ´ë ·¹º§
-#define UNIT_SKILLPOINT					10000		// ½ºÅ³ Æ÷ÀÎÆ® »ç¿ë ´ÜÀ§
-#define MAX_SOUL_COUNT					10			// ³ªÀÌÆ® ½¦µµ¿ì ¿µÈ¥ ÃÖ´ë ¼ÒÀ¯ °³¼ö
+// ìŠ¤í‚¬ ê´€ë ¨
+#define MAX_SKILL_LEARN_SKILL			3			// ìŠ¤í‚¬ ë°°ìš°ëŠ”ë° í•„ìš”í•œ ìŠ¤í‚¬ ìµœëŒ€ ì¢…ë¥˜
+#define MAX_SKILL_LEARN_ITEM			3			// ìŠ¤í‚¬ ë°°ìš°ëŠ”ë° í•„ìš”í•œ ì•„ì´í…œ ìµœëŒ€ ì¢…ë¥˜
+#define MAX_SKILL_CHANGE				4			// í•˜ë‚˜ì˜ ìŠ¤í‚¬ë¡œ ì¸í•œ ìƒíƒœ ë³€í™” ìµœëŒ€ ì¢…ë¥˜
+#define MAX_SKILL_NEED_ITEM				2			// ìŠ¤í‚¬ ì‚¬ìš©ì‹œ ì†Œëª¨ë˜ëŠ” ì•„ì´í…œ ì¢…ë¥˜
+#define MAX_SKILL_APP_MAGIC				3			// ìŠ¤í‚¬ë‹¹ ì ìš©ì¡°ê±´ íš¨ê³¼ ìˆ˜
+#define MAX_SKILL_USE_MAGIC				3			// ìŠ¤í‚¬ë‹¹ ì‚¬ìš©ì¡°ê±´ íš¨ê³¼ ìˆ˜
+#define MAX_SKILL_MAGIC					3			// ìŠ¤í‚¬ë‹¹ íš¨ê³¼ ìˆ˜
+#define MAX_SKILL_LEVEL					10			// ìŠ¤í‚¬ ìµœëŒ€ ë ˆë²¨
+#define UNIT_SKILLPOINT					10000		// ìŠ¤í‚¬ í¬ì¸íŠ¸ ì‚¬ìš© ë‹¨ìœ„
+#define MAX_SOUL_COUNT					10			// ë‚˜ì´íŠ¸ ì‰ë„ìš° ì˜í˜¼ ìµœëŒ€ ì†Œìœ  ê°œìˆ˜
 
-#define FACTORY_UNION_REG_SKILL			655			// Á¦ÀÛ ¿¬ÇÕ µî·Ï ½ºÅ³ ¹øÈ£
+#define FACTORY_UNION_REG_SKILL			655			// ì œì‘ ì—°í•© ë“±ë¡ ìŠ¤í‚¬ ë²ˆí˜¸
 
 ////////////
-// ½ºÅ³ »óÅÂ
-#define SKILL_CON_NORMAL				0			// ÀÏ¹İ »óÅÂ
-#define SKILL_CON_READY					1			// ½ÃÀü »óÅÂ
-#define SKILL_CON_FIRE					2			// ¹ßµ¿ »óÅÂ
+// ìŠ¤í‚¬ ìƒíƒœ
+#define SKILL_CON_NORMAL				0			// ì¼ë°˜ ìƒíƒœ
+#define SKILL_CON_READY					1			// ì‹œì „ ìƒíƒœ
+#define SKILL_CON_FIRE					2			// ë°œë™ ìƒíƒœ
 
 // OLD ATTRIBUTE VARIABLE REUSE, Elenoa 2013.01.09
-// ¼Ó¼º »ó¼ö
-#define	AT_NONE					0			// ¹«
-#define	AT_FIRE					1			// È­
-#define	AT_WATER				2			// ¼ö
-#define	AT_EARTH				3			// Áö
-#define	AT_WIND					4			// Ç³
-#define	AT_DARK					5			// ¾Ï
-#define	AT_LIGHT				6			// ±¤
-#define AT_RANDOM				7			// random ¼­ºêÅ¸ÀÔ
+// ì†ì„± ìƒìˆ˜
+#define	AT_NONE					0			// ë¬´
+#define	AT_FIRE					1			// í™”
+#define	AT_WATER				2			// ìˆ˜
+#define	AT_EARTH				3			// ì§€
+#define	AT_WIND					4			// í’
+#define	AT_DARK					5			// ì•”
+#define	AT_LIGHT				6			// ê´‘
+#define AT_RANDOM				7			// random ì„œë¸Œíƒ€ì…
 #define AT_LEVELMAX				5
 #define AT_MASK			0xFL
 #define AT_LVVEC		4
@@ -49,201 +49,201 @@
 #define GET_AT_ATT(m)	(((m) >> AT_ADVEC) & AT_AD_MASK)
 
 ///////////
-// È¿°ú»ó¼ö
+// íš¨ê³¼ìƒìˆ˜
 
-// È¿°ú Å¸ÀÔ
-#define MT_STAT					0			// ½ºÅÈ
+// íš¨ê³¼ íƒ€ì…
+#define MT_STAT					0			// ìŠ¤íƒ¯
 // OLD ATTRIBUTE VARIABLE REUSE, Elenoa 2013.01.09
-#define MT_ATTRIBUTE			1			// ¼Ó¼ºÁö¼Ó
-#define MT_ASSIST				2			// »óÅÂº¯È­
-#define MT_ATTACK				3			// °ø°İ
-#define MT_RECOVER				4			// È¸º¹
-#define MT_CURE					5			// Ä¡À¯
-#define MT_OTHER				6			// ±×¿Ü
-#define MT_REDUCE				7			// ´ë¹ÌÁö Èí¼ö
-#define MT_IMMUNE				8			// ¸é¿ª
-#define MT_CASTLE_WAR			9			// °ø¼º Àü¿ë
-#define MT_MONEY				10			// µ·
+#define MT_ATTRIBUTE			1			// ì†ì„±ì§€ì†
+#define MT_ASSIST				2			// ìƒíƒœë³€í™”
+#define MT_ATTACK				3			// ê³µê²©
+#define MT_RECOVER				4			// íšŒë³µ
+#define MT_CURE					5			// ì¹˜ìœ 
+#define MT_OTHER				6			// ê·¸ì™¸
+#define MT_REDUCE				7			// ëŒ€ë¯¸ì§€ í¡ìˆ˜
+#define MT_IMMUNE				8			// ë©´ì—­
+#define MT_CASTLE_WAR			9			// ê³µì„± ì „ìš©
+#define MT_MONEY				10			// ëˆ
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - ½ºÅÈ
-#define MST_STAT_ATTACK			0			// °ø°İ
-#define MST_STAT_DEFENSE		1			// ¹æ¾î
-#define MST_STAT_MAGIC			2			// ¸¶¹ı
-#define MST_STAT_RESIST			3			// ÀúÇ×
-#define MST_STAT_HITRATE		4			// ¸íÁß
-#define MST_STAT_AVOID			5			// È¸ÇÇ
-#define MST_STAT_CRITICAL		6			// Å©¸®
-#define MST_STAT_ATTACKSPD		7			// °ø¼Ó
-#define MST_STAT_MAGICSPD		8			// ¸¶¼Ó
-#define MST_STAT_MOVESPD		9			// ÀÌ¼Ó
-#define MST_STAT_RECOVERHP		10			// HPÈ¸º¹
-#define MST_STAT_RECOVERMP		11			// MPÈ¸º¹
-#define MST_STAT_MAXHP			12			// ÃÖ´ëHP Áõ°¡
-#define MST_STAT_MAXMP			13			// ÃÖ´ëMP Áõ°¡
-#define MST_STAT_DEADLY			14			// µ¥µé¸® È®·ü Áõ°¡
-#define MST_STAT_MAGICHITRATE	15			// ¸¶¹ı ¸íÁß
-#define MST_STAT_MAGICAVOID		16			// ¸¶¹ı È¸ÇÇ
-#define MST_STAT_ATTACKDIST		17			// °ø°İ°Å¸® Áõ°¡
-#define MST_STAT_ATTACK_MELEE	18			// ±ÙÁ¢°ø°İ Áõ°¡
-#define MST_STAT_ATTACK_RANGE	19			// ¿ø±â¸®¹°¸® °ø°İ Áõ°¡
-#define MST_STAT_HITRATE_SKILL	20			// ½ºÅ³ ¸íÁß·ü
-#define MST_STAT_ATTACK_80		21			// °ø°İ·Â 80
-#define MST_STAT_MAXHP_450		22			// ÃÖ´ëHP Áõ°¡ 450
-#define MST_STAT_SKILLSPD		23			// ½ºÅ³ ½ÃÀü ¼ÓµµÁõ°¡
-#define	MST_STAT_VALOR			24			// ÆÄÆ¼¿ø¼ö¿¡ ºñ·ÊÇÏ¿© °ø°İ·Â Çâ»ó
-#define MST_STAT_STATPALL		25			// ½ºÅÈ Áõ°¨
-#define MST_STAT_ATTACK_PER		26			// °ø°İ %
-#define MST_STAT_DEFENSE_PER	27			// ¹æ¾î %
-#define MST_STAT_STATPALL_PER	28			// ½ºÅÈ Áõ°¨ %
-#define MST_STAT_STR			29			// Èû
-#define MST_STAT_DEX			30			// ¹ÎÃ¸
-#define MST_STAT_INT			31			// ÁöÇı
-#define MST_STAT_CON			32			// Ã¼Áú
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ìŠ¤íƒ¯
+#define MST_STAT_ATTACK			0			// ê³µê²©
+#define MST_STAT_DEFENSE		1			// ë°©ì–´
+#define MST_STAT_MAGIC			2			// ë§ˆë²•
+#define MST_STAT_RESIST			3			// ì €í•­
+#define MST_STAT_HITRATE		4			// ëª…ì¤‘
+#define MST_STAT_AVOID			5			// íšŒí”¼
+#define MST_STAT_CRITICAL		6			// í¬ë¦¬
+#define MST_STAT_ATTACKSPD		7			// ê³µì†
+#define MST_STAT_MAGICSPD		8			// ë§ˆì†
+#define MST_STAT_MOVESPD		9			// ì´ì†
+#define MST_STAT_RECOVERHP		10			// HPíšŒë³µ
+#define MST_STAT_RECOVERMP		11			// MPíšŒë³µ
+#define MST_STAT_MAXHP			12			// ìµœëŒ€HP ì¦ê°€
+#define MST_STAT_MAXMP			13			// ìµœëŒ€MP ì¦ê°€
+#define MST_STAT_DEADLY			14			// ë°ë“¤ë¦¬ í™•ë¥  ì¦ê°€
+#define MST_STAT_MAGICHITRATE	15			// ë§ˆë²• ëª…ì¤‘
+#define MST_STAT_MAGICAVOID		16			// ë§ˆë²• íšŒí”¼
+#define MST_STAT_ATTACKDIST		17			// ê³µê²©ê±°ë¦¬ ì¦ê°€
+#define MST_STAT_ATTACK_MELEE	18			// ê·¼ì ‘ê³µê²© ì¦ê°€
+#define MST_STAT_ATTACK_RANGE	19			// ì›ê¸°ë¦¬ë¬¼ë¦¬ ê³µê²© ì¦ê°€
+#define MST_STAT_HITRATE_SKILL	20			// ìŠ¤í‚¬ ëª…ì¤‘ë¥ 
+#define MST_STAT_ATTACK_80		21			// ê³µê²©ë ¥ 80
+#define MST_STAT_MAXHP_450		22			// ìµœëŒ€HP ì¦ê°€ 450
+#define MST_STAT_SKILLSPD		23			// ìŠ¤í‚¬ ì‹œì „ ì†ë„ì¦ê°€
+#define	MST_STAT_VALOR			24			// íŒŒí‹°ì›ìˆ˜ì— ë¹„ë¡€í•˜ì—¬ ê³µê²©ë ¥ í–¥ìƒ
+#define MST_STAT_STATPALL		25			// ìŠ¤íƒ¯ ì¦ê°
+#define MST_STAT_ATTACK_PER		26			// ê³µê²© %
+#define MST_STAT_DEFENSE_PER	27			// ë°©ì–´ %
+#define MST_STAT_STATPALL_PER	28			// ìŠ¤íƒ¯ ì¦ê° %
+#define MST_STAT_STR			29			// í˜
+#define MST_STAT_DEX			30			// ë¯¼ì²©
+#define MST_STAT_INT			31			// ì§€í˜œ
+#define MST_STAT_CON			32			// ì²´ì§ˆ
 //  [5/21/2009 KwonYongDae]
-#define MST_STAT_HARD			33			// °­ÇÑ°ø°İ
-#define MST_STAT_STRONG			34			// °­ÀÎÇÔ
-#define MST_STAT_NPCATTACK		35			// NPC ¿¡°Ô¸¸ ¹°¸®/¿ø°Å¸® °ø°İ·Â Áõ°¡
-#define MST_STAT_NPCMAGIC		36			// NPC ¿¡°Ô¸¸ ¸¶¹ı °ø°İ·Â Áõ°¡
-#define MST_STAT_SKILLCOOLTIME	37			// ½ºÅ³ ÄğÅ¸ÀÓ
-#define MST_STAT_DECREASE_MANA_SPEND 38		// ¸¶³ª¼Òºñ °¨¼Ò
+#define MST_STAT_HARD			33			// ê°•í•œê³µê²©
+#define MST_STAT_STRONG			34			// ê°•ì¸í•¨
+#define MST_STAT_NPCATTACK		35			// NPC ì—ê²Œë§Œ ë¬¼ë¦¬/ì›ê±°ë¦¬ ê³µê²©ë ¥ ì¦ê°€
+#define MST_STAT_NPCMAGIC		36			// NPC ì—ê²Œë§Œ ë§ˆë²• ê³µê²©ë ¥ ì¦ê°€
+#define MST_STAT_SKILLCOOLTIME	37			// ìŠ¤í‚¬ ì¿¨íƒ€ì„
+#define MST_STAT_DECREASE_MANA_SPEND 38		// ë§ˆë‚˜ì†Œë¹„ ê°ì†Œ
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - »óÅÂÀÌ»ó
-#define MST_ASSIST_POISON		0			// µ¶
-#define MST_ASSIST_HOLD			1			// È¦µå
-#define MST_ASSIST_CONFUSION	2			// È¥¶õ
-#define MST_ASSIST_STONE		3			// ¼®È­
-#define MST_ASSIST_SILENT		4			// ºÀÀÎ
-#define MST_ASSIST_BLOOD		5			// ÃâÇ÷
-#define MST_ASSIST_BLIND		6			// ºí¶óÀÎµå
-#define MST_ASSIST_STURN		7			// ½ºÅÏ
-#define MST_ASSIST_SLEEP		8			// ½½¸³
-#define MST_ASSIST_HP			9			// HPÈ¸º¹
-#define MST_ASSIST_MP			10			// MPÈ¸º¹
-#define MST_ASSIST_MOVESPD		11			// ÀÌ¼Ó Çâ»ó
-#define MST_ASSIST_HP_CANCEL	12			// HPº¯È­(0, MAX¿¡¼­ Ãë¼Ò)
-#define MST_ASSIST_MP_CANCEL	13			// MPº¯È­(0, MAX¿¡¼­ Ãë¼Ò)
-#define MST_ASSIST_DIZZY		14			// Çö±âÁõ
-#define MST_ASSIST_INVISIBLE	15			// ÀÎºñÀúºí
-#define MST_ASSIST_SLOTH		16			// ½½·Î½º : °ø¼ÓÇÏ¶ô
-#define MST_ASSIST_FEAR			17			// °øÆ÷ : ÇØ´ç NPC°¡ µµ¸Á
-#define MST_ASSIST_FAKEDEATH	18			// Á×ÀºÃ´
-#define MST_ASSIST_PERFECTBODY	19			// Å¸ÀÌÅº ÆÛÆå ¹Ùµğ
-#define MST_ASSIST_FRENZY		20			// Å¸ÀÌÅº ÇÁ·»Áö
-#define MST_ASSIST_DAMAGELINK	21			// ´ë¹ÌÁö¸µÅ©
-#define MST_ASSIST_BERSERK		22			// ¹ö¼­Å©
-#define MST_ASSIST_DESPAIR		23			// Àı¸Á
-#define MST_ASSIST_MANASCREEN	24			// ¸¶³ª ½ºÅ©¸°
-#define MST_ASSIST_BLESS		25			// ºí·¹½Ì
-#define MST_ASSIST_SAFEGUARD	26			// º¸È£¸Á(ÀüÅõºÒ°¡´É)
-#define MST_ASSIST_MANTLE		27			// ¸ÁÅä
-#define MST_ASSIST_GUARD		28			// °æºñº´ ¼ÒÈ¯
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ìƒíƒœì´ìƒ
+#define MST_ASSIST_POISON		0			// ë…
+#define MST_ASSIST_HOLD			1			// í™€ë“œ
+#define MST_ASSIST_CONFUSION	2			// í˜¼ë€
+#define MST_ASSIST_STONE		3			// ì„í™”
+#define MST_ASSIST_SILENT		4			// ë´‰ì¸
+#define MST_ASSIST_BLOOD		5			// ì¶œí˜ˆ
+#define MST_ASSIST_BLIND		6			// ë¸”ë¼ì¸ë“œ
+#define MST_ASSIST_STURN		7			// ìŠ¤í„´
+#define MST_ASSIST_SLEEP		8			// ìŠ¬ë¦½
+#define MST_ASSIST_HP			9			// HPíšŒë³µ
+#define MST_ASSIST_MP			10			// MPíšŒë³µ
+#define MST_ASSIST_MOVESPD		11			// ì´ì† í–¥ìƒ
+#define MST_ASSIST_HP_CANCEL	12			// HPë³€í™”(0, MAXì—ì„œ ì·¨ì†Œ)
+#define MST_ASSIST_MP_CANCEL	13			// MPë³€í™”(0, MAXì—ì„œ ì·¨ì†Œ)
+#define MST_ASSIST_DIZZY		14			// í˜„ê¸°ì¦
+#define MST_ASSIST_INVISIBLE	15			// ì¸ë¹„ì €ë¸”
+#define MST_ASSIST_SLOTH		16			// ìŠ¬ë¡œìŠ¤ : ê³µì†í•˜ë½
+#define MST_ASSIST_FEAR			17			// ê³µí¬ : í•´ë‹¹ NPCê°€ ë„ë§
+#define MST_ASSIST_FAKEDEATH	18			// ì£½ì€ì²™
+#define MST_ASSIST_PERFECTBODY	19			// íƒ€ì´íƒ„ í¼í™ ë°”ë””
+#define MST_ASSIST_FRENZY		20			// íƒ€ì´íƒ„ í”„ë Œì§€
+#define MST_ASSIST_DAMAGELINK	21			// ëŒ€ë¯¸ì§€ë§í¬
+#define MST_ASSIST_BERSERK		22			// ë²„ì„œí¬
+#define MST_ASSIST_DESPAIR		23			// ì ˆë§
+#define MST_ASSIST_MANASCREEN	24			// ë§ˆë‚˜ ìŠ¤í¬ë¦°
+#define MST_ASSIST_BLESS		25			// ë¸”ë ˆì‹±
+#define MST_ASSIST_SAFEGUARD	26			// ë³´í˜¸ë§(ì „íˆ¬ë¶ˆê°€ëŠ¥)
+#define MST_ASSIST_MANTLE		27			// ë§í† 
+#define MST_ASSIST_GUARD		28			// ê²½ë¹„ë³‘ ì†Œí™˜
 
-#define MST_ASSIST_CHARGEATC	29			// ÀåÅº(attack)
-#define MST_ASSIST_CHARGEMGC	30			// ÀåÅº(magic)
+#define MST_ASSIST_CHARGEATC	29			// ì¥íƒ„(attack)
+#define MST_ASSIST_CHARGEMGC	30			// ì¥íƒ„(magic)
 
-#define MST_ASSIST_DISEASE		31			// Áúº´
-#define MST_ASSIST_CURSE		32			// ÀúÁÖ
-#define MST_ASSIST_CONFUSED			33			// ¸ó½ºÅÍ¸¸ È¥¶õ¿¡ °É¸®°Ô ÇÔ
-#define MST_ASSIST_TAMING			34			// ¸ó½ºÅÍ¸¦ ÀÏÁ¤½Ã°£ ¾Æ±ºÀ¸·Î ¸¸µë
-#define MST_ASSIST_FREEZE			35			// °á°è (¼­·Î °ø°İ ¸øÇÔ, °É¸° °ÍÀº ÀÌµ¿ ¸øÇÔ)
-#define MST_ASSIST_INVERSE_DAMAGE	36			// ÇÇ°İ´çÇÏ¸é µ¥¹ÌÁö ¸¸Å­ HP È¸º¹
-#define MST_ASSIST_HP_DOT			37			// Áö¼Óµ¥¹ÌÁö ÀÔÀ½
-#define MST_ASSIST_REBIRTH			38			// ºÎÈ°
-#define MST_ASSIST_DARKNESS_MODE	39			// »çµµ ¸ğµå
-#define MST_ASSIST_AURA_DARKNESS	40			// ¿À¿À¶ó - ´ÙÅ©´Ï½º
-#define MST_ASSIST_AURA_WEAKNESS	41			// ¿À¿À¶ó - À§Å©´Ï½º
-#define MST_ASSIST_AURA_ILLUSION	42			// ¿À¿À¶ó - ÀÏ·çÁ¯
-#define MST_ASSIST_MERCENARY		43		// ¸ó½ºÅÍ¸¦ ¿ëº´À¸·Î ¹Ù²Ş.
-#define MST_ASSIST_SOUL_TOTEM_BUFF	44		// °í´ë ¹«±â(ÅäÅÛ))ÀÇ Á¤·É(¹öÇÁÇü)
-#define MST_ASSIST_SOUL_TOTEM_ATTK	45		// °í´ë ¹«±â(ÅäÅÛ)ÀÇ Á¤·É(°ø°İÇü)
-#define MST_ASSIST_TRAP				46		// ¸ó½ºÅÍ¸¦ Æ®·¦À¸·Î
-#define MST_ASSIST_PARASITE			47		// ÆĞ·¯»çÀÌÆ® °¨¿° (°¨¿°µÈ »óÅÂ·Î Á×À¸¸é ÀÚÆø¸ó½ºÅÍ¸¦ ¼ÒÈ¯ÇÏ¿© µ¿Á·À» Á×ÀÓ)
-#define MST_ASSIST_SUICIDE			48		// ¸ó½ºÅÍ¸¦ ÀÚÆø½ÃÅ´
-#define MST_ASSIST_INVINCIBILITY	49		// ¹«Àû ¸ğµå
+#define MST_ASSIST_DISEASE		31			// ì§ˆë³‘
+#define MST_ASSIST_CURSE		32			// ì €ì£¼
+#define MST_ASSIST_CONFUSED			33			// ëª¬ìŠ¤í„°ë§Œ í˜¼ë€ì— ê±¸ë¦¬ê²Œ í•¨
+#define MST_ASSIST_TAMING			34			// ëª¬ìŠ¤í„°ë¥¼ ì¼ì •ì‹œê°„ ì•„êµ°ìœ¼ë¡œ ë§Œë“¬
+#define MST_ASSIST_FREEZE			35			// ê²°ê³„ (ì„œë¡œ ê³µê²© ëª»í•¨, ê±¸ë¦° ê²ƒì€ ì´ë™ ëª»í•¨)
+#define MST_ASSIST_INVERSE_DAMAGE	36			// í”¼ê²©ë‹¹í•˜ë©´ ë°ë¯¸ì§€ ë§Œí¼ HP íšŒë³µ
+#define MST_ASSIST_HP_DOT			37			// ì§€ì†ë°ë¯¸ì§€ ì…ìŒ
+#define MST_ASSIST_REBIRTH			38			// ë¶€í™œ
+#define MST_ASSIST_DARKNESS_MODE	39			// ì‚¬ë„ ëª¨ë“œ
+#define MST_ASSIST_AURA_DARKNESS	40			// ì˜¤ì˜¤ë¼ - ë‹¤í¬ë‹ˆìŠ¤
+#define MST_ASSIST_AURA_WEAKNESS	41			// ì˜¤ì˜¤ë¼ - ìœ„í¬ë‹ˆìŠ¤
+#define MST_ASSIST_AURA_ILLUSION	42			// ì˜¤ì˜¤ë¼ - ì¼ë£¨ì ¼
+#define MST_ASSIST_MERCENARY		43		// ëª¬ìŠ¤í„°ë¥¼ ìš©ë³‘ìœ¼ë¡œ ë°”ê¿ˆ.
+#define MST_ASSIST_SOUL_TOTEM_BUFF	44		// ê³ ëŒ€ ë¬´ê¸°(í† í…œ))ì˜ ì •ë ¹(ë²„í”„í˜•)
+#define MST_ASSIST_SOUL_TOTEM_ATTK	45		// ê³ ëŒ€ ë¬´ê¸°(í† í…œ)ì˜ ì •ë ¹(ê³µê²©í˜•)
+#define MST_ASSIST_TRAP				46		// ëª¬ìŠ¤í„°ë¥¼ íŠ¸ë©ìœ¼ë¡œ
+#define MST_ASSIST_PARASITE			47		// íŒ¨ëŸ¬ì‚¬ì´íŠ¸ ê°ì—¼ (ê°ì—¼ëœ ìƒíƒœë¡œ ì£½ìœ¼ë©´ ìí­ëª¬ìŠ¤í„°ë¥¼ ì†Œí™˜í•˜ì—¬ ë™ì¡±ì„ ì£½ì„)
+#define MST_ASSIST_SUICIDE			48		// ëª¬ìŠ¤í„°ë¥¼ ìí­ì‹œí‚´
+#define MST_ASSIST_INVINCIBILITY	49		// ë¬´ì  ëª¨ë“œ
 #define MST_ASSIST_GPS				50		// GPS
-#define MST_ASSIST_ATTACK_TOWER		51		// °ø¼º Å¸¿ö µ¥¹ÌÁö Ãß°¡
-#define MST_ASSIST_ARTIFACT_GPS		52		// À¯¹° gps
-#define MST_ASSIST_TOTEM_ITEM_BUFF	53		// ÅäÅÛ ¾ÆÀÌÅÛ ¹öÇÁ
-#define MST_ASSIST_TOTEM_ITEM_ATTK	54		// ÅäÅÛ ¾ÆÀÌÅÛ ¹öÇÁ
+#define MST_ASSIST_ATTACK_TOWER		51		// ê³µì„± íƒ€ì›Œ ë°ë¯¸ì§€ ì¶”ê°€
+#define MST_ASSIST_ARTIFACT_GPS		52		// ìœ ë¬¼ gps
+#define MST_ASSIST_TOTEM_ITEM_BUFF	53		// í† í…œ ì•„ì´í…œ ë²„í”„
+#define MST_ASSIST_TOTEM_ITEM_ATTK	54		// í† í…œ ì•„ì´í…œ ë²„í”„
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - °ø°İ
-#define MST_ATTACK_NORMAL		0			// ÀÏ¹İ °ø°İ
-#define MST_ATTACK_CRITICAL		1			// Å©¸®Æ¼ÄÃ °ø°İ
-#define MST_ATTACK_DRAIN		2			// µå·¹ÀÎ : Àû hp¸¦ ³»°ÍÀ¸·Î Èí¼ö
-#define MST_ATTACK_ONESHOTKILL	3			// Áï»ç
-#define MST_ATTACK_DEADLY		4			// µ¥µé¸® °ø°İ
-#define MST_ATTACK_HARD			5			// ¸Å¿ì °­ÇÑ °ø°İ
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ê³µê²©
+#define MST_ATTACK_NORMAL		0			// ì¼ë°˜ ê³µê²©
+#define MST_ATTACK_CRITICAL		1			// í¬ë¦¬í‹°ì»¬ ê³µê²©
+#define MST_ATTACK_DRAIN		2			// ë“œë ˆì¸ : ì  hpë¥¼ ë‚´ê²ƒìœ¼ë¡œ í¡ìˆ˜
+#define MST_ATTACK_ONESHOTKILL	3			// ì¦‰ì‚¬
+#define MST_ATTACK_DEADLY		4			// ë°ë“¤ë¦¬ ê³µê²©
+#define MST_ATTACK_HARD			5			// ë§¤ìš° ê°•í•œ ê³µê²©
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - È¸º¹
-#define MST_RECOVER_HP			0			// HPÈ¸º¹
-#define MST_RECOVER_MP			1			// MPÈ¸º¹
-#define MST_RECOVER_STM			2			// °ø°İÇü Æê ½ºÅ×¹Ì³Ê È¸º¹
-#define MST_RECOVER_FAITH		3			// °ø°İÇü Æê Ãæ¼ºµµ È¸º¹
-#define MST_RECOVER_EXP			4			// °æÇèÄ¡ º¹±¸
-#define MST_RECOVER_SP			5			// ¼÷·Ãµµ º¹±¸
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - íšŒë³µ
+#define MST_RECOVER_HP			0			// HPíšŒë³µ
+#define MST_RECOVER_MP			1			// MPíšŒë³µ
+#define MST_RECOVER_STM			2			// ê³µê²©í˜• í« ìŠ¤í…Œë¯¸ë„ˆ íšŒë³µ
+#define MST_RECOVER_FAITH		3			// ê³µê²©í˜• í« ì¶©ì„±ë„ íšŒë³µ
+#define MST_RECOVER_EXP			4			// ê²½í—˜ì¹˜ ë³µêµ¬
+#define MST_RECOVER_SP			5			// ìˆ™ë ¨ë„ ë³µêµ¬
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - Ä¡À¯
-#define MST_CURE_POISON			0			// µ¶
-#define MST_CURE_HOLD			1			// È¦µå : TODO : »ç¿ëÇÏÁö ¾ÊÀ½
-#define MST_CURE_CONFUSION		2			// È¥¶õ
-#define MST_CURE_STONE			3			// ¼®È­
-#define MST_CURE_SILENT			4			// ºÀÀÎ
-#define MST_CURE_BLOOD			5			// ÃâÇ÷
-#define MST_CURE_REBIRTH		6			// ºÎÈ°
-#define MST_CURE_INVISIBLE		7			// ÀÎºñÀúºí »óÅÂ¸¦ ÇØÁ¦
-#define MST_CURE_STURN			8			// ½ºÅÏ ÇØÁ¦
-#define MST_CURE_SLOTH			9			// ½½·Î½º ÇØÁ¦
-#define MST_CURE_NOTHELP		10			// not helpÀÎ assist¸¦ ¸ğµÎ ÇØÁ¦
-#define MST_CURE_BLIND			11			// ºí¶óÀÎµå
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ì¹˜ìœ 
+#define MST_CURE_POISON			0			// ë…
+#define MST_CURE_HOLD			1			// í™€ë“œ : TODO : ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+#define MST_CURE_CONFUSION		2			// í˜¼ë€
+#define MST_CURE_STONE			3			// ì„í™”
+#define MST_CURE_SILENT			4			// ë´‰ì¸
+#define MST_CURE_BLOOD			5			// ì¶œí˜ˆ
+#define MST_CURE_REBIRTH		6			// ë¶€í™œ
+#define MST_CURE_INVISIBLE		7			// ì¸ë¹„ì €ë¸” ìƒíƒœë¥¼ í•´ì œ
+#define MST_CURE_STURN			8			// ìŠ¤í„´ í•´ì œ
+#define MST_CURE_SLOTH			9			// ìŠ¬ë¡œìŠ¤ í•´ì œ
+#define MST_CURE_NOTHELP		10			// not helpì¸ assistë¥¼ ëª¨ë‘ í•´ì œ
+#define MST_CURE_BLIND			11			// ë¸”ë¼ì¸ë“œ
 
-#define MST_CURE_DISEASE		12			// Áúº´ ÇØÁ¦
-#define MST_CURE_CURSE			13			// ÀúÁÖ ÇØÁ¦
-#define MSG_CURE_ALL			14			// µğ¹öÇÁ ¸ğµÎ »èÁ¦ <<-- MST_CURE_NOTHELP ¿Í Áßº¹È®ÀÎ ÇÊ¿ä
-#define MST_CURE_INSTANTDEATH	15			// Áï»ç(Á×À½ÀÇ ¼±°í ÇØÁ¦)
+#define MST_CURE_DISEASE		12			// ì§ˆë³‘ í•´ì œ
+#define MST_CURE_CURSE			13			// ì €ì£¼ í•´ì œ
+#define MSG_CURE_ALL			14			// ë””ë²„í”„ ëª¨ë‘ ì‚­ì œ <<-- MST_CURE_NOTHELP ì™€ ì¤‘ë³µí™•ì¸ í•„ìš”
+#define MST_CURE_INSTANTDEATH	15			// ì¦‰ì‚¬(ì£½ìŒì˜ ì„ ê³  í•´ì œ)
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - ±×¿Ü
-#define MST_OTHER_INSTANTDEATH	0			// Áï»ç
-#define MST_OTHER_SKILLCANCEL	1			// ½ºÅ³ ½ÃÀü Ãë¼Ò
-#define MST_OTHER_TACKLE		2			// ÅÂÅ¬
-#define MST_OTHER_TACKLE2		3			// ÅÂÅ¬2
-#define MST_OTHER_REFLEX		4			// ¹İ»ç ´ë¹ÌÁö (ÀÏ¹İ °ø°İ, 25m³»)
-#define MST_OTHER_DEATHEXPPLUS	5			// Á×À»¶§ °æÇèÄ¡ ÆĞ³ÎÆ¼ ÁÙ¿©
-#define MST_OTHER_DEATHSPPLUS	6			// Á×À»¶§ SP ÆĞ³ÎÆ¼ ÁÙ¿©
-#define MST_OTHER_TELEKINESIS	7			// ÅÚ·¹Å°³×½Ã½º
-#define MST_OTHER_TOUNT			8			// Å¸¿îÆ® : ÇìÀÌÆ® º¯°æ
-#define MST_OTHER_SUMMON		9			// ¼ÒÈ¯
-#define MST_OTHER_EVOCATION		10			// °­½Å
-#define MST_OTHER_TARGETFREE	11			// Å¸°Ù ÇÁ¸®
-#define MST_OTHER_CURSE			12			// Å¸ÄÏ ½ºÅÈ ÇÏ¶ô
-#define MST_OTHER_PEACE			13			// ÆòÈ­ÀÇ Â¡Ç¥
-#define MST_OTHER_SOUL_DRAIN	14			// ¿µÈ¥ Èí¼ö, °³¼ö Ã¤¿ò
-#define MST_OTHER_KNOCKBACK		15			// ³Ë¹é
-#define MST_OTHER_WARP			16			// ¿öÇÁ
-#define MST_OTHER_FLY			17			// ºñÇà
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ê·¸ì™¸
+#define MST_OTHER_INSTANTDEATH	0			// ì¦‰ì‚¬
+#define MST_OTHER_SKILLCANCEL	1			// ìŠ¤í‚¬ ì‹œì „ ì·¨ì†Œ
+#define MST_OTHER_TACKLE		2			// íƒœí´
+#define MST_OTHER_TACKLE2		3			// íƒœí´2
+#define MST_OTHER_REFLEX		4			// ë°˜ì‚¬ ëŒ€ë¯¸ì§€ (ì¼ë°˜ ê³µê²©, 25më‚´)
+#define MST_OTHER_DEATHEXPPLUS	5			// ì£½ì„ë•Œ ê²½í—˜ì¹˜ íŒ¨ë„í‹° ì¤„ì—¬
+#define MST_OTHER_DEATHSPPLUS	6			// ì£½ì„ë•Œ SP íŒ¨ë„í‹° ì¤„ì—¬
+#define MST_OTHER_TELEKINESIS	7			// í…”ë ˆí‚¤ë„¤ì‹œìŠ¤
+#define MST_OTHER_TOUNT			8			// íƒ€ìš´íŠ¸ : í—¤ì´íŠ¸ ë³€ê²½
+#define MST_OTHER_SUMMON		9			// ì†Œí™˜
+#define MST_OTHER_EVOCATION		10			// ê°•ì‹ 
+#define MST_OTHER_TARGETFREE	11			// íƒ€ê²Ÿ í”„ë¦¬
+#define MST_OTHER_CURSE			12			// íƒ€ì¼“ ìŠ¤íƒ¯ í•˜ë½
+#define MST_OTHER_PEACE			13			// í‰í™”ì˜ ì§•í‘œ
+#define MST_OTHER_SOUL_DRAIN	14			// ì˜í˜¼ í¡ìˆ˜, ê°œìˆ˜ ì±„ì›€
+#define MST_OTHER_KNOCKBACK		15			// ë„‰ë°±
+#define MST_OTHER_WARP			16			// ì›Œí”„
+#define MST_OTHER_FLY			17			// ë¹„í–‰
 #define MST_OTHER_EXP			18			// EXP
 #define MST_OTHER_SP			19			// SP
-#define MST_OTHER_ITEMDROP		20			// ¾ÆÀÌÅÛ ¹Ù´Ú¿¡ µå¶ø
-#define MST_OTHER_SKILL			21			// ½ºÅ³»ç¿ë
-#define MST_OTHER_PK_DISPOSITION 22			// PK ¼ºÇâ Æ÷ÀÎÆ®
-#define MST_OTHER_AFFINITY		23			// Ä£È­µµ ºÎ½ºÅÍ
-#define MST_OTHER_AFFINITY_QUEST	24		// Ä£È­µµ Äù½ºÆ®
-#define MST_OTHER_AFFINITY_MONSTER	25		// Ä£È­µµ ¸ó½ºÅÍ
-#define MST_OTHER_AFFINITY_ITEM		26		// Ä£È­µµ ¾ÆÀÌÅÛ
-#define MST_OTHER_QUEST_EXP			27		// Äù½ºÆ® °æÇèÄ¡
-#define MST_OTHER_GUILD_PARTY_EXP	28		// ±æµå¿ø ÆÄÆ¼ °æÇèÄ¡ È¹µæ·®
-#define MST_OTHER_GUILD_PARTY_SP	29		// ±æµå¿ø ÆÄÆ¼ ½ºÅ³Æ÷ÀÎÆ® È¹µæ·®
-#define MSG_OTHER_SUMMON_NPC		30		// NPC ¼ÒÈ¯
+#define MST_OTHER_ITEMDROP		20			// ì•„ì´í…œ ë°”ë‹¥ì— ë“œë
+#define MST_OTHER_SKILL			21			// ìŠ¤í‚¬ì‚¬ìš©
+#define MST_OTHER_PK_DISPOSITION 22			// PK ì„±í–¥ í¬ì¸íŠ¸
+#define MST_OTHER_AFFINITY		23			// ì¹œí™”ë„ ë¶€ìŠ¤í„°
+#define MST_OTHER_AFFINITY_QUEST	24		// ì¹œí™”ë„ í€˜ìŠ¤íŠ¸
+#define MST_OTHER_AFFINITY_MONSTER	25		// ì¹œí™”ë„ ëª¬ìŠ¤í„°
+#define MST_OTHER_AFFINITY_ITEM		26		// ì¹œí™”ë„ ì•„ì´í…œ
+#define MST_OTHER_QUEST_EXP			27		// í€˜ìŠ¤íŠ¸ ê²½í—˜ì¹˜
+#define MST_OTHER_GUILD_PARTY_EXP	28		// ê¸¸ë“œì› íŒŒí‹° ê²½í—˜ì¹˜ íšë“ëŸ‰
+#define MST_OTHER_GUILD_PARTY_SP	29		// ê¸¸ë“œì› íŒŒí‹° ìŠ¤í‚¬í¬ì¸íŠ¸ íšë“ëŸ‰
+#define MSG_OTHER_SUMMON_NPC		30		// NPC ì†Œí™˜
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - ´ë¹ÌÁö Èí¼ö
-#define MST_REDUCE_MELEE		0			// ±ÙÁ¢ °ø°İ Èí¼ö
-#define MST_REDUCE_RANGE		1			// ¿ø°Å¸® °ø°İ Èí¼ö
-#define MST_REDUCE_MAGIC		2			// ¸¶¹ı °ø°İ Èí¼ö
-#define MST_REDUCE_SKILL		3			// ½ºÅ³ °ø°İ Èí¼ö
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ëŒ€ë¯¸ì§€ í¡ìˆ˜
+#define MST_REDUCE_MELEE		0			// ê·¼ì ‘ ê³µê²© í¡ìˆ˜
+#define MST_REDUCE_RANGE		1			// ì›ê±°ë¦¬ ê³µê²© í¡ìˆ˜
+#define MST_REDUCE_MAGIC		2			// ë§ˆë²• ê³µê²© í¡ìˆ˜
+#define MST_REDUCE_SKILL		3			// ìŠ¤í‚¬ ê³µê²© í¡ìˆ˜
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - ¸é¿ª
-#define MST_IMMUNE_BLIND		0			// ºí¶óÀÎµå
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ë©´ì—­
+#define MST_IMMUNE_BLIND		0			// ë¸”ë¼ì¸ë“œ
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - °ø¼º
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ê³µì„±
 #define MST_WAR_REDUCE_MELEE	0
 #define MST_WAR_REDUCE_RANGE	1
 #define MST_WAR_REDUCE_MAGIC	2
@@ -252,136 +252,136 @@
 #define MST_WAR_RESIST			5
 #define MST_WAR_TOWER_ATTACK	6
 
-// ´ë¹ÌÁö Å¸ÀÔ
-#define MDT_ONLYPOWER			0			// ½ºÅ³ À§·Â¸¸
-#define MDT_ADDITION			1			// ½ºÅÈ¿¡ µ¡¼À
-#define MDT_RATE				2			// ½ºÅÈ¿¡ ºñÀ²·Î °ö¼À
+// ëŒ€ë¯¸ì§€ íƒ€ì…
+#define MDT_ONLYPOWER			0			// ìŠ¤í‚¬ ìœ„ë ¥ë§Œ
+#define MDT_ADDITION			1			// ìŠ¤íƒ¯ì— ë§ì…ˆ
+#define MDT_RATE				2			// ìŠ¤íƒ¯ì— ë¹„ìœ¨ë¡œ ê³±ì…ˆ
 
-// ¼Ó¼º µ¥¹ÌÁö Å¸ÀÔ
+// ì†ì„± ë°ë¯¸ì§€ íƒ€ì…
 #define MDT_NONE				0
 #define MDT_ATTACK				1
 #define MDT_DEFENCE				2
 
-// ¸íÁß Å¸ÀÔ
-#define MHT_CONSTANT			0			// °íÁ¤
-#define MHT_VARIABLE			1			// ¼ö½Ä
+// ëª…ì¤‘ íƒ€ì…
+#define MHT_CONSTANT			0			// ê³ ì •
+#define MHT_VARIABLE			1			// ìˆ˜ì‹
 
-// È¿°ú ¼­ºêÅ¸ÀÔ - µ·(MONEY)
-#define MST_MONEY_BUY		0			// ±¸¸Å
-#define MST_MONEY_SELL		1			// ÆÇ¸Å
-#define MST_MONEY_NAS		2			// Ãß°¡ ³ª½º
+// íš¨ê³¼ ì„œë¸Œíƒ€ì… - ëˆ(MONEY)
+#define MST_MONEY_BUY		0			// êµ¬ë§¤
+#define MST_MONEY_SELL		1			// íŒë§¤
+#define MST_MONEY_NAS		2			// ì¶”ê°€ ë‚˜ìŠ¤
 
 ////////////
-// ½ºÅ³ »ó¼ö
+// ìŠ¤í‚¬ ìƒìˆ˜
 
-// ½ºÅ³ Á¾·ù
-#define ST_MELEE				0			// ±ÙÁ¢
-#define ST_RANGE				1			// ¿ø°Å¸®
-#define ST_MAGIC				2			// ¸¶¹ı
-#define ST_PASSIVE				3			// ÆĞ½Ãºê
-#define ST_PET_COMMAND			4			// Æê Ä¿¸Çµå
-#define ST_PET_SKILL_PASSIVE	5			// Æê ½ºÅ³(ÆĞ½Ãºê)
-#define ST_PET_SKILL_ACTIVE		6			// Æê ½ºÅ³(¾×Æ¼ºê)
-#define ST_GUILD_SKILL_PASSIVE	7			// ±æµå ½ºÅ³(ÆĞ½Ãºê)
-#define ST_SEAL					8			// Á¦ÀÛ ½Ã½ºÅÛ ½ºÅ³(ÁõÇ¥)
-#define ST_SUMMON_SKILL			9			// ÅäÅÛ ¼ÒÈ¯ ½ºÅ³
+// ìŠ¤í‚¬ ì¢…ë¥˜
+#define ST_MELEE				0			// ê·¼ì ‘
+#define ST_RANGE				1			// ì›ê±°ë¦¬
+#define ST_MAGIC				2			// ë§ˆë²•
+#define ST_PASSIVE				3			// íŒ¨ì‹œë¸Œ
+#define ST_PET_COMMAND			4			// í« ì»¤ë§¨ë“œ
+#define ST_PET_SKILL_PASSIVE	5			// í« ìŠ¤í‚¬(íŒ¨ì‹œë¸Œ)
+#define ST_PET_SKILL_ACTIVE		6			// í« ìŠ¤í‚¬(ì•¡í‹°ë¸Œ)
+#define ST_GUILD_SKILL_PASSIVE	7			// ê¸¸ë“œ ìŠ¤í‚¬(íŒ¨ì‹œë¸Œ)
+#define ST_SEAL					8			// ì œì‘ ì‹œìŠ¤í…œ ìŠ¤í‚¬(ì¦í‘œ)
+#define ST_SUMMON_SKILL			9			// í† í…œ ì†Œí™˜ ìŠ¤í‚¬
 
-// Å¸°ÙÆÃ ¹æ½Ä
-#define STT_SELF_ONE			0			// ¼¿ÇÁ
-#define STT_SELF_RANGE			1			// ¼¿ÇÁ ¹üÀ§
-#define STT_TARGET_ONE			2			// Å¸°Ù
-#define STT_TARGET_RANGE		3			// Å¸°Ù ¹üÀ§
-#define STT_PARTY_ONE			4			// ÆÄÆ¼ 1ÀÎ
-#define STT_PARTY_ALL			5			// ÆÄÆ¼ ÀüÃ¼
-#define STT_TARGET_D120			6			// Å¸°Ù 120µµ
-#define STT_TARGET_RECT			7			// Å¸°Ù Á÷»ç°¢
-#define STT_ELEMENTAL_ONE		8			// ¿¤¸®¸àÅ» ´ë»ó ½ºÅ³
-#define STT_GUILD_ALL			9			// ±æµå ÀüÃ¼¿¡°Ô ÁÖ´Â HELP ½ºÅ³
-#define STT_GUILD_ONE			10			// ±æµå ÇÑ¸í¿¡°Ô ÁÖ´Â HELP ½ºÅ³
-#define STT_GUILD_SELF_RANGE	11			// ½ÃÀüÀÚ ÁÖÀ§ NPC¿¡°Ô ÁÖ´Â ATTACK SKILL
-#define STT_GUILD_MEMBER_SELF	12			// ±æµå¸â¹ö ¼¿ÇÁ
+// íƒ€ê²ŸíŒ… ë°©ì‹
+#define STT_SELF_ONE			0			// ì…€í”„
+#define STT_SELF_RANGE			1			// ì…€í”„ ë²”ìœ„
+#define STT_TARGET_ONE			2			// íƒ€ê²Ÿ
+#define STT_TARGET_RANGE		3			// íƒ€ê²Ÿ ë²”ìœ„
+#define STT_PARTY_ONE			4			// íŒŒí‹° 1ì¸
+#define STT_PARTY_ALL			5			// íŒŒí‹° ì „ì²´
+#define STT_TARGET_D120			6			// íƒ€ê²Ÿ 120ë„
+#define STT_TARGET_RECT			7			// íƒ€ê²Ÿ ì§ì‚¬ê°
+#define STT_ELEMENTAL_ONE		8			// ì—˜ë¦¬ë©˜íƒˆ ëŒ€ìƒ ìŠ¤í‚¬
+#define STT_GUILD_ALL			9			// ê¸¸ë“œ ì „ì²´ì—ê²Œ ì£¼ëŠ” HELP ìŠ¤í‚¬
+#define STT_GUILD_ONE			10			// ê¸¸ë“œ í•œëª…ì—ê²Œ ì£¼ëŠ” HELP ìŠ¤í‚¬
+#define STT_GUILD_SELF_RANGE	11			// ì‹œì „ì ì£¼ìœ„ NPCì—ê²Œ ì£¼ëŠ” ATTACK SKILL
+#define STT_GUILD_MEMBER_SELF	12			// ê¸¸ë“œë©¤ë²„ ì…€í”„
 
-// ÇÃ·¡±×
-#define	SF_SINGLEMODE			(1 << 0)	// ½Ì±Û¸ğµå
-#define	SF_HELP					(1 << 1)	// µµ¿òÀ» ÁÖ´Â ½ºÅ³
-#define	SF_NOTHELP				(1 << 2)	// ÇØ²¿Áö ½ºÅ³
-#define SF_ABSTIME				(1 << 3)	// 060227 : bs : Àı´ë½Ã°£ »ç¿ë
-#define SF_NOTDUPLICATE			(1 << 4)	// 060227 : bs : Áßº¹ »ç¿ë ºÒ°¡ : Áßº¹µÇ´Â ½ºÅ³ÀÌ ÀÖÀ¸¸é ·¹º§¿¡ °ü°è¾øÀÌ »ç¿ëÀÌ ¾ÈµÊ
-#define SF_NOCANCEL				(1 << 5)	// ´Ù¸¥ ½ºÅ³/»ç¸Á¿¡ ÀÇÇØ Ãë¼Ò ¾ÈµÊ
-#define	SF_COMBO				(1 << 6)	// ½Ã°£»ó°ü¾øÀÌ Àû¿ëµÊ(Á¢¼ÓÁ¾·á, °ø°£ÀÌµ¿, Á×¾úÀ» ¶§ »ç¶óÁü)
-#define	SF_LOGOUT				(1 << 7)	// Á¢¼ÓÁ¾·á ½Ã »ç¶óÁü
-#define SF_INSTANT				(1 << 8)	// 100420 : swkwon : ¾ÆÀÌÅÛ ½ºÅ³ ·Î±×¾Æ¿ôÇÒ¶§ ½ºÅ³ ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÔ.
-#define SF_GUILD				(1 << 9)	// 100615 : swkwon : ±æµå½ºÅ³
-#define SF_INFINITE				(1 << 10)	// ¹«ÇÑ½ºÅ³ - ½ºÅ³ ½Ã°£ÀÌ ¸¸·áµÇ¸é ´Ù½Ã ½ºÅ³ÀÌ Àû¿ëµÊ
-#define SF_ZONE					(1 << 11)	// Á¸ÀÌµ¿½Ã ¹öÇÁ »èÁ¦
-#define SF_SUMMON_NPC			(1 << 12)	// summon Npc°¡ »ç¿ëÇÏ´Â ½ºÅ³ÀÎÁö Ã¼Å© // Ã¼Å©ÇÏ¸é ÀÌÆåÆ®¸¦ º¸¿©ÁØ´Ù.
-#define SF_NOTBLESS				(1 << 13)	// ÇÃ·¡±×°¡ ÀÖÀ¸¸é ¼Ò¼­·¯ ºí·¹½ºÀÇ ¿µÇâÀ» ¹ŞÁö ¾Ê´Â´Ù.
-#define SF_ITEMSKILL			(1 << 14)	// ¾ÆÀÌÅÛ ½ºÅ³
-#define SF_NOT_BOSS				(1 << 15)	// ÇÃ·¡±×°¡ ÀÖÀ¸¸é º¸½º¿¡°Ô »ç¿ëÇÒ ¼ö ¾ø´Â ½ºÅ³ÀÌ´Ù.
-#define SF_NOT_SINGLE			(1 << 16)	// ÇÃ·¡±×°¡ ÀÖÀ¸¸é °³ÀÎ´øÀü¿¡¼­´Â ½ºÅ³»ç¿ëÀ» ÇÒ ¼ö ¾ø´Ù.
-#define SF_TOGGLE				(1 << 17)	// Åä±Û ½ºÅ³
+// í”Œë˜ê·¸
+#define	SF_SINGLEMODE			(1 << 0)	// ì‹±ê¸€ëª¨ë“œ
+#define	SF_HELP					(1 << 1)	// ë„ì›€ì„ ì£¼ëŠ” ìŠ¤í‚¬
+#define	SF_NOTHELP				(1 << 2)	// í•´ê¼¬ì§€ ìŠ¤í‚¬
+#define SF_ABSTIME				(1 << 3)	// 060227 : bs : ì ˆëŒ€ì‹œê°„ ì‚¬ìš©
+#define SF_NOTDUPLICATE			(1 << 4)	// 060227 : bs : ì¤‘ë³µ ì‚¬ìš© ë¶ˆê°€ : ì¤‘ë³µë˜ëŠ” ìŠ¤í‚¬ì´ ìˆìœ¼ë©´ ë ˆë²¨ì— ê´€ê³„ì—†ì´ ì‚¬ìš©ì´ ì•ˆë¨
+#define SF_NOCANCEL				(1 << 5)	// ë‹¤ë¥¸ ìŠ¤í‚¬/ì‚¬ë§ì— ì˜í•´ ì·¨ì†Œ ì•ˆë¨
+#define	SF_COMBO				(1 << 6)	// ì‹œê°„ìƒê´€ì—†ì´ ì ìš©ë¨(ì ‘ì†ì¢…ë£Œ, ê³µê°„ì´ë™, ì£½ì—ˆì„ ë•Œ ì‚¬ë¼ì§)
+#define	SF_LOGOUT				(1 << 7)	// ì ‘ì†ì¢…ë£Œ ì‹œ ì‚¬ë¼ì§
+#define SF_INSTANT				(1 << 8)	// 100420 : swkwon : ì•„ì´í…œ ìŠ¤í‚¬ ë¡œê·¸ì•„ì›ƒí• ë•Œ ìŠ¤í‚¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•¨.
+#define SF_GUILD				(1 << 9)	// 100615 : swkwon : ê¸¸ë“œìŠ¤í‚¬
+#define SF_INFINITE				(1 << 10)	// ë¬´í•œìŠ¤í‚¬ - ìŠ¤í‚¬ ì‹œê°„ì´ ë§Œë£Œë˜ë©´ ë‹¤ì‹œ ìŠ¤í‚¬ì´ ì ìš©ë¨
+#define SF_ZONE					(1 << 11)	// ì¡´ì´ë™ì‹œ ë²„í”„ ì‚­ì œ
+#define SF_SUMMON_NPC			(1 << 12)	// summon Npcê°€ ì‚¬ìš©í•˜ëŠ” ìŠ¤í‚¬ì¸ì§€ ì²´í¬ // ì²´í¬í•˜ë©´ ì´í™íŠ¸ë¥¼ ë³´ì—¬ì¤€ë‹¤.
+#define SF_NOTBLESS				(1 << 13)	// í”Œë˜ê·¸ê°€ ìˆìœ¼ë©´ ì†Œì„œëŸ¬ ë¸”ë ˆìŠ¤ì˜ ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
+#define SF_ITEMSKILL			(1 << 14)	// ì•„ì´í…œ ìŠ¤í‚¬
+#define SF_NOT_BOSS				(1 << 15)	// í”Œë˜ê·¸ê°€ ìˆìœ¼ë©´ ë³´ìŠ¤ì—ê²Œ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ìŠ¤í‚¬ì´ë‹¤.
+#define SF_NOT_SINGLE			(1 << 16)	// í”Œë˜ê·¸ê°€ ìˆìœ¼ë©´ ê°œì¸ë˜ì „ì—ì„œëŠ” ìŠ¤í‚¬ì‚¬ìš©ì„ í•  ìˆ˜ ì—†ë‹¤.
+#define SF_TOGGLE				(1 << 17)	// í† ê¸€ ìŠ¤í‚¬
 
-// »ç¿ë/Àû¿ë Á¶°Ç
-#define SCT_DEATH				(1 << 0)	// »ç¸Á
-#define SCT_WEAPON				(1 << 1)	// ¹«±âÀåºñ
-#define SCT_SITDOWN				(1 << 2)	// ¾É±â
-#define SCT_PEACEZONE			(1 << 3)	// ÆòÈ­Áö¿ª
-#define SCT_SHIELD				(1 << 4)	// ¹æÆĞÂø¿ë
-#define SCT_STAND				(1 << 5)	// ¼­±â
-#define SCT_DARKNESS			(1 << 6)    // ³ªÀÌÆ® ½¦µµ¿ì »çµµ ¸ğµå¿¡¼­¸¸ »ç¿ëÇÏ´Â ½ºÅ³ÀÎÁö È®ÀÎ
-#define SCT_NO_COOL_TIME		(1 << 7)	// ÄğÅ¸ÀÓ°¨¼Ò Àû¿ë ºÒ°¡
+// ì‚¬ìš©/ì ìš© ì¡°ê±´
+#define SCT_DEATH				(1 << 0)	// ì‚¬ë§
+#define SCT_WEAPON				(1 << 1)	// ë¬´ê¸°ì¥ë¹„
+#define SCT_SITDOWN				(1 << 2)	// ì•‰ê¸°
+#define SCT_PEACEZONE			(1 << 3)	// í‰í™”ì§€ì—­
+#define SCT_SHIELD				(1 << 4)	// ë°©íŒ¨ì°©ìš©
+#define SCT_STAND				(1 << 5)	// ì„œê¸°
+#define SCT_DARKNESS			(1 << 6)    // ë‚˜ì´íŠ¸ ì‰ë„ìš° ì‚¬ë„ ëª¨ë“œì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ìŠ¤í‚¬ì¸ì§€ í™•ì¸
+#define SCT_NO_COOL_TIME		(1 << 7)	// ì¿¨íƒ€ì„ê°ì†Œ ì ìš© ë¶ˆê°€
 
-// »óÅÂÀÌ»ó ºñÆ® ÇÊµå °ª
-#define AST_POISON				((LONGLONG)1 << MST_ASSIST_POISON)		// µ¶
-#define AST_HOLD				((LONGLONG)1 << MST_ASSIST_HOLD)			// È¦µå
-#define AST_CONFUSION			((LONGLONG)1 << MST_ASSIST_CONFUSION)		// È¦¶õ
-#define AST_STONE				((LONGLONG)1 << MST_ASSIST_STONE)			// ¼®È­
-#define AST_SILENT				((LONGLONG)1 << MST_ASSIST_SILENT)		// ºÀÀÎ
-#define AST_BLOOD				((LONGLONG)1 << MST_ASSIST_BLOOD)			// ÃâÇ÷
-#define AST_BLIND				((LONGLONG)1 << MST_ASSIST_BLIND)			// ºí¶óÀÎµå
-#define AST_STURN				((LONGLONG)1 << MST_ASSIST_STURN)			// ½ºÅÏ
-#define AST_SLEEP				((LONGLONG)1 << MST_ASSIST_SLEEP)			// ½½¸³
-#define AST_HP					((LONGLONG)1 << MST_ASSIST_HP)			// Ã¼·Â
-#define AST_MP					((LONGLONG)1 << MST_ASSIST_MP)			// ¸¶³ª
-#define AST_MOVESPD				((LONGLONG)1 << MST_ASSIST_MOVESPD)		// ÀÌ¼Ó Çâ»ó
-#define AST_HP_CANCEL			((LONGLONG)1 << MST_ASSIST_HP_CANCEL)		// HPº¯È­(0, MAX¿¡¼­ Ãë¼Ò)
-#define AST_MP_CANCEL			((LONGLONG)1 << MST_ASSIST_MP_CANCEL)		// MPº¯È­(0, MAX¿¡¼­ Ãë¼Ò)
-#define AST_DIZZY				((LONGLONG)1 << MST_ASSIST_DIZZY)			// Çö±âÁõ
-#define AST_INVISIBLE			((LONGLONG)1 << MST_ASSIST_INVISIBLE)		// ÀÎºñÀúºô¸®Æ¼
-#define AST_SLOTH				((LONGLONG)1 << MST_ASSIST_SLOTH)			// ½½·Î½º(°ø¼ÓÇÏ¶ô)
-#define AST_FEAR				((LONGLONG)1 << MST_ASSIST_FEAR)			// °øÆ÷
-#define AST_FAKEDEATH			((LONGLONG)1 << MST_ASSIST_FAKEDEATH)		// Á×ÀºÃ´ÇÏ±â
-#define AST_PERFECTBODY			((LONGLONG)1 << MST_ASSIST_PERFECTBODY)	// Å¸ÀÌÅº ÆÛÆå ¹Ùµğ
-#define AST_FRENZY				((LONGLONG)1 << MST_ASSIST_FRENZY)		// Å¸ÀÌÅº ÇÁ·»Áö
-#define AST_DAMAGELINK			((LONGLONG)1 << MST_ASSIST_DAMAGELINK)	// µ¥¹ÌÁö ¸µÅ©
-#define AST_BERSERK				((LONGLONG)1 << MST_ASSIST_BERSERK)		// ¹ö¼­Å©
-#define AST_DESPAIR				((LONGLONG)1 << MST_ASSIST_DESPAIR)		// Àı¸Á
-#define AST_MANASCREEN			((LONGLONG)1 << MST_ASSIST_MANASCREEN)	// ¸¶³ª ½ºÅ©¸°
-#define AST_BLESS				((LONGLONG)1 << MST_ASSIST_BLESS)			// ºí·¹½Ì
-#define AST_SAFEGUARD			((LONGLONG)1 << MST_ASSIST_SAFEGUARD)		// º¸È£¸Á
-#define AST_MANTLE				((LONGLONG)1 << MST_ASSIST_MANTLE)		// ¸ÁÅä
-#define AST_GUARD				((LONGLONG)1 << MST_ASSIST_GUARD)			// °æºñº´ ¼ÒÈ¯
-//-- (-2) ÀåÅº 2Á¾ »ç¿ë¾ÈÇÔ
-#define AST_DISEASE				((LONGLONG)1 << (MST_ASSIST_DISEASE-2) )	// ¸ÁÅä
-#define AST_CURSE				((LONGLONG)1 << (MST_ASSIST_CURSE-2) )		// °æºñº´ ¼ÒÈ¯
-#define AST_CONFUSED			((LONGLONG)1 << MST_ASSIST_CONFUSED)		// ¸ó½ºÅÍ¸¸ È¥¶õ¿¡ °É¸®°Ô ÇÔ
-#define AST_TAMING				((LONGLONG)1 << MST_ASSIST_TAMING)			// ¸ó½ºÅÍ¸¦ ÀÏÁ¤½Ã°£ ¾Æ±ºÀ¸·Î ¸¸µë
-#define AST_FREEZE				((LONGLONG)1 << MST_ASSIST_FREEZE)			// °á°è (¼­·Î °ø°İ ¸øÇÔ, °É¸° °ÍÀº ÀÌµ¿ ¸øÇÔ)
-#define AST_INVERSE_DAMAGE		((LONGLONG)1 << MST_ASSIST_INVERSE_DAMAGE)	// ÇÇ°İ´çÇÏ¸é µ¥¹ÌÁö ¸¸Å­ HP È¸º¹
-#define AST_HP_DOT				((LONGLONG)1 << MST_ASSIST_HP_DOT)			// Áö¼Óµ¥¹ÌÁö ÀÔÀ½
-#define AST_REBIRTH				((LONGLONG)1 << MST_ASSIST_REBIRTH)			// Á×À»¶§ ÀÌ ¹öÇÁ°¡ ÀÖÀ¸¸é ¹Ù·Î ºÎÈ°
-#define AST_DARKNESS_MODE		((LONGLONG)1 << MST_ASSIST_DARKNESS_MODE)	// »çµµ ¸ğµå
-#define AST_AURA_DARKNESS		((LONGLONG)1 << MST_ASSIST_AURA_DARKNESS)	// ¿À¿À¶ó - ´ÙÅ©´Ï½º
-#define AST_AURA_WEAKNESS		((LONGLONG)1 << MST_ASSIST_AURA_WEAKNESS)	// ¿À¿À¶ó - À§Å©´Ï½º
-#define AST_AURA_ILUSYON		((LONGLONG)1 << MST_ASSIST_AURA_ILLUSION)	// ¿À¿À¶ó - ÀÏ·çÁ¯
-#define AST_MERCENARY			((LONGLONG)1 << MST_ASSIST_MERCENARY)		// ¸ó½ºÅÍ¸¦ ¿ëº´À¸·Î ¸¸µë
-#define AST_SOUL_TOTEM_BUFF		((LONGLONG)1 << MST_ASSIST_SOUL_TOTEM_BUFF)	// ¸ó½ºÅÍ ÅäÅÛ ¹öÇÁÇü
-#define AST_SOUL_TOTEM_ATTK		((LONGLONG)1 << MST_ASSIST_SOUL_TOTEM_ATTK)	// ¸ó½ºÅÍ ÅäÅÛ °ø°İÇü
-#define AST_TRAP				((LONGLONG)1 << MST_ASSIST_TRAP)			// Æ®·¦
-#define AST_PARASITE			((LONGLONG)1 << MST_ASSIST_PARASITE)		// ±â»ıÃæ °¨¿°
-#define AST_SUICIDE				((LONGLONG)1 << MST_ASSIST_SUICIDE)			// ÀÚÆø
-#define AST_INVINCIBILITY		((LONGLONG)1 << MST_ASSIST_INVINCIBILITY)	// ¹«Àû
-#define AST_TOWER_ATTACK		((LONGLONG)1 << MST_ASSIST_ATTACK_TOWER)	// °ø¼º Å¸¿ö µ¥¹ÌÁö Ãß°¡
+// ìƒíƒœì´ìƒ ë¹„íŠ¸ í•„ë“œ ê°’
+#define AST_POISON				((LONGLONG)1 << MST_ASSIST_POISON)		// ë…
+#define AST_HOLD				((LONGLONG)1 << MST_ASSIST_HOLD)			// í™€ë“œ
+#define AST_CONFUSION			((LONGLONG)1 << MST_ASSIST_CONFUSION)		// í™€ë€
+#define AST_STONE				((LONGLONG)1 << MST_ASSIST_STONE)			// ì„í™”
+#define AST_SILENT				((LONGLONG)1 << MST_ASSIST_SILENT)		// ë´‰ì¸
+#define AST_BLOOD				((LONGLONG)1 << MST_ASSIST_BLOOD)			// ì¶œí˜ˆ
+#define AST_BLIND				((LONGLONG)1 << MST_ASSIST_BLIND)			// ë¸”ë¼ì¸ë“œ
+#define AST_STURN				((LONGLONG)1 << MST_ASSIST_STURN)			// ìŠ¤í„´
+#define AST_SLEEP				((LONGLONG)1 << MST_ASSIST_SLEEP)			// ìŠ¬ë¦½
+#define AST_HP					((LONGLONG)1 << MST_ASSIST_HP)			// ì²´ë ¥
+#define AST_MP					((LONGLONG)1 << MST_ASSIST_MP)			// ë§ˆë‚˜
+#define AST_MOVESPD				((LONGLONG)1 << MST_ASSIST_MOVESPD)		// ì´ì† í–¥ìƒ
+#define AST_HP_CANCEL			((LONGLONG)1 << MST_ASSIST_HP_CANCEL)		// HPë³€í™”(0, MAXì—ì„œ ì·¨ì†Œ)
+#define AST_MP_CANCEL			((LONGLONG)1 << MST_ASSIST_MP_CANCEL)		// MPë³€í™”(0, MAXì—ì„œ ì·¨ì†Œ)
+#define AST_DIZZY				((LONGLONG)1 << MST_ASSIST_DIZZY)			// í˜„ê¸°ì¦
+#define AST_INVISIBLE			((LONGLONG)1 << MST_ASSIST_INVISIBLE)		// ì¸ë¹„ì €ë¹Œë¦¬í‹°
+#define AST_SLOTH				((LONGLONG)1 << MST_ASSIST_SLOTH)			// ìŠ¬ë¡œìŠ¤(ê³µì†í•˜ë½)
+#define AST_FEAR				((LONGLONG)1 << MST_ASSIST_FEAR)			// ê³µí¬
+#define AST_FAKEDEATH			((LONGLONG)1 << MST_ASSIST_FAKEDEATH)		// ì£½ì€ì²™í•˜ê¸°
+#define AST_PERFECTBODY			((LONGLONG)1 << MST_ASSIST_PERFECTBODY)	// íƒ€ì´íƒ„ í¼í™ ë°”ë””
+#define AST_FRENZY				((LONGLONG)1 << MST_ASSIST_FRENZY)		// íƒ€ì´íƒ„ í”„ë Œì§€
+#define AST_DAMAGELINK			((LONGLONG)1 << MST_ASSIST_DAMAGELINK)	// ë°ë¯¸ì§€ ë§í¬
+#define AST_BERSERK				((LONGLONG)1 << MST_ASSIST_BERSERK)		// ë²„ì„œí¬
+#define AST_DESPAIR				((LONGLONG)1 << MST_ASSIST_DESPAIR)		// ì ˆë§
+#define AST_MANASCREEN			((LONGLONG)1 << MST_ASSIST_MANASCREEN)	// ë§ˆë‚˜ ìŠ¤í¬ë¦°
+#define AST_BLESS				((LONGLONG)1 << MST_ASSIST_BLESS)			// ë¸”ë ˆì‹±
+#define AST_SAFEGUARD			((LONGLONG)1 << MST_ASSIST_SAFEGUARD)		// ë³´í˜¸ë§
+#define AST_MANTLE				((LONGLONG)1 << MST_ASSIST_MANTLE)		// ë§í† 
+#define AST_GUARD				((LONGLONG)1 << MST_ASSIST_GUARD)			// ê²½ë¹„ë³‘ ì†Œí™˜
+//-- (-2) ì¥íƒ„ 2ì¢… ì‚¬ìš©ì•ˆí•¨
+#define AST_DISEASE				((LONGLONG)1 << (MST_ASSIST_DISEASE-2) )	// ë§í† 
+#define AST_CURSE				((LONGLONG)1 << (MST_ASSIST_CURSE-2) )		// ê²½ë¹„ë³‘ ì†Œí™˜
+#define AST_CONFUSED			((LONGLONG)1 << MST_ASSIST_CONFUSED)		// ëª¬ìŠ¤í„°ë§Œ í˜¼ë€ì— ê±¸ë¦¬ê²Œ í•¨
+#define AST_TAMING				((LONGLONG)1 << MST_ASSIST_TAMING)			// ëª¬ìŠ¤í„°ë¥¼ ì¼ì •ì‹œê°„ ì•„êµ°ìœ¼ë¡œ ë§Œë“¬
+#define AST_FREEZE				((LONGLONG)1 << MST_ASSIST_FREEZE)			// ê²°ê³„ (ì„œë¡œ ê³µê²© ëª»í•¨, ê±¸ë¦° ê²ƒì€ ì´ë™ ëª»í•¨)
+#define AST_INVERSE_DAMAGE		((LONGLONG)1 << MST_ASSIST_INVERSE_DAMAGE)	// í”¼ê²©ë‹¹í•˜ë©´ ë°ë¯¸ì§€ ë§Œí¼ HP íšŒë³µ
+#define AST_HP_DOT				((LONGLONG)1 << MST_ASSIST_HP_DOT)			// ì§€ì†ë°ë¯¸ì§€ ì…ìŒ
+#define AST_REBIRTH				((LONGLONG)1 << MST_ASSIST_REBIRTH)			// ì£½ì„ë•Œ ì´ ë²„í”„ê°€ ìˆìœ¼ë©´ ë°”ë¡œ ë¶€í™œ
+#define AST_DARKNESS_MODE		((LONGLONG)1 << MST_ASSIST_DARKNESS_MODE)	// ì‚¬ë„ ëª¨ë“œ
+#define AST_AURA_DARKNESS		((LONGLONG)1 << MST_ASSIST_AURA_DARKNESS)	// ì˜¤ì˜¤ë¼ - ë‹¤í¬ë‹ˆìŠ¤
+#define AST_AURA_WEAKNESS		((LONGLONG)1 << MST_ASSIST_AURA_WEAKNESS)	// ì˜¤ì˜¤ë¼ - ìœ„í¬ë‹ˆìŠ¤
+#define AST_AURA_ILUSYON		((LONGLONG)1 << MST_ASSIST_AURA_ILLUSION)	// ì˜¤ì˜¤ë¼ - ì¼ë£¨ì ¼
+#define AST_MERCENARY			((LONGLONG)1 << MST_ASSIST_MERCENARY)		// ëª¬ìŠ¤í„°ë¥¼ ìš©ë³‘ìœ¼ë¡œ ë§Œë“¬
+#define AST_SOUL_TOTEM_BUFF		((LONGLONG)1 << MST_ASSIST_SOUL_TOTEM_BUFF)	// ëª¬ìŠ¤í„° í† í…œ ë²„í”„í˜•
+#define AST_SOUL_TOTEM_ATTK		((LONGLONG)1 << MST_ASSIST_SOUL_TOTEM_ATTK)	// ëª¬ìŠ¤í„° í† í…œ ê³µê²©í˜•
+#define AST_TRAP				((LONGLONG)1 << MST_ASSIST_TRAP)			// íŠ¸ë©
+#define AST_PARASITE			((LONGLONG)1 << MST_ASSIST_PARASITE)		// ê¸°ìƒì¶© ê°ì—¼
+#define AST_SUICIDE				((LONGLONG)1 << MST_ASSIST_SUICIDE)			// ìí­
+#define AST_INVINCIBILITY		((LONGLONG)1 << MST_ASSIST_INVINCIBILITY)	// ë¬´ì 
+#define AST_TOWER_ATTACK		((LONGLONG)1 << MST_ASSIST_ATTACK_TOWER)	// ê³µì„± íƒ€ì›Œ ë°ë¯¸ì§€ ì¶”ê°€
 
 #define SKILL_PARAM_MIN			75
 #define SKILL_PARAM_MAX			125
@@ -392,27 +392,27 @@
 #define SPARAM_INT				3
 #define SPARAM_CON				4
 
-// ¼Ò¼­·¯ ÇÃ·¡±×
-#define SSF_APP_CHARACTER		(1 << 0)	// Ä³¸¯ÅÍ
-#define SSF_APP_FIRE			(1 << 1)	// ºÒÀÇÁ¤·É
-#define SSF_APP_WIND			(1 << 2)	// ¹Ù¶÷ÀÇÁ¤·É
-#define SSF_APP_EARTH			(1 << 3)	// ´ëÁöÀÇÁ¤·É
-#define SSF_APP_WATER			(1 << 4)	// ¹°ÀÇÁ¤·É
-#define SSF_APP_HELLOUND		(1 << 5)	// Çï¿îµå
-#define SSF_APP_ELENEN			(1 << 6)	// ¿¤·¹³Ù
-#define SSF_APP_APET			(1 << 7)	// °ø°İÇü Æê
+// ì†Œì„œëŸ¬ í”Œë˜ê·¸
+#define SSF_APP_CHARACTER		(1 << 0)	// ìºë¦­í„°
+#define SSF_APP_FIRE			(1 << 1)	// ë¶ˆì˜ì •ë ¹
+#define SSF_APP_WIND			(1 << 2)	// ë°”ëŒì˜ì •ë ¹
+#define SSF_APP_EARTH			(1 << 3)	// ëŒ€ì§€ì˜ì •ë ¹
+#define SSF_APP_WATER			(1 << 4)	// ë¬¼ì˜ì •ë ¹
+#define SSF_APP_HELLOUND		(1 << 5)	// í—¬ìš´ë“œ
+#define SSF_APP_ELENEN			(1 << 6)	// ì—˜ë ˆë„¨
+#define SSF_APP_APET			(1 << 7)	// ê³µê²©í˜• í«
 #define SSF_APP_ALL				(SSF_APP_CHARACTER | SSF_APP_FIRE | SSF_APP_WIND | SSF_APP_EARTH | SSF_APP_WATER | SSF_APP_HELLOUND | SSF_APP_ELENEN | SSF_APP_APET)
-#define SSF_USE_CHARACTER		(1 << 16)	// Ä³¸¯ÅÍ
-#define SSF_USE_FIRE			(1 << 17)	// ºÒÀÇÁ¤·É
-#define SSF_USE_WIND			(1 << 18)	// ¹Ù¶÷ÀÇÁ¤·É
-#define SSF_USE_EARTH			(1 << 19)	// ´ëÁöÀÇÁ¤·É
-#define SSF_USE_WATER			(1 << 20)	// ¹°ÀÇÁ¤·É
-#define SSF_USE_HELLOUND		(1 << 21)	// Çï¿îµå
-#define SSF_USE_ELENEN			(1 << 22)	// ¿¤·¹³Ù
-#define SSF_USE_APET			(1 << 23)	// °ø°İÇü Æê
+#define SSF_USE_CHARACTER		(1 << 16)	// ìºë¦­í„°
+#define SSF_USE_FIRE			(1 << 17)	// ë¶ˆì˜ì •ë ¹
+#define SSF_USE_WIND			(1 << 18)	// ë°”ëŒì˜ì •ë ¹
+#define SSF_USE_EARTH			(1 << 19)	// ëŒ€ì§€ì˜ì •ë ¹
+#define SSF_USE_WATER			(1 << 20)	// ë¬¼ì˜ì •ë ¹
+#define SSF_USE_HELLOUND		(1 << 21)	// í—¬ìš´ë“œ
+#define SSF_USE_ELENEN			(1 << 22)	// ì—˜ë ˆë„¨
+#define SSF_USE_APET			(1 << 23)	// ê³µê²©í˜• í«
 #define SSF_USE_ALL				(SSF_USE_CHARACTER | SSF_USE_FIRE | SSF_USE_WIND | SSF_USE_EARTH | SSF_USE_WATER | SSF_USE_HELLOUND | SSF_USE_ELENEN | SSF_USE_APET)
 
-#define IMMOTAL_BUF				469			//¹«Àû ¹öÇÁ ½ºÅ³ÀÎµ¦½º
+#define IMMOTAL_BUF				469			//ë¬´ì  ë²„í”„ ìŠ¤í‚¬ì¸ë±ìŠ¤
 #define FLY_SKILL				688
 #define DARKNESS_SKILL			682
 #define PVP_PROTECT_SKILL_INDEX	1791
@@ -430,12 +430,12 @@ class CAPet;
 
 /////////////////////
 // Class name	    : CMagicLevelProto
-// Description	    : È¿°ú ·¹º§º° ¼³Á¤
+// Description	    : íš¨ê³¼ ë ˆë²¨ë³„ ì„¤ì •
 class CMagicLevelProto
 {
 public:
-	int				m_nPowerValue;		// À§·Â
-	int				m_nHitrateValue;	// ¸íÁß·ü
+	int				m_nPowerValue;		// ìœ„ë ¥
+	int				m_nHitrateValue;	// ëª…ì¤‘ë¥ 
 	int	GetSummonNpcIndex()
 	{
 		return m_nPowerValue;
@@ -445,24 +445,24 @@ public:
 
 /////////////////////
 // Class name	    : CMagicProto
-// Description	    : È¿°ú ¼³Á¤
+// Description	    : íš¨ê³¼ ì„¤ì •
 class CMagicProto
 {
 public:
-	int					m_index;		// ¹øÈ£
-	char				m_maxlevel;		// ÃÖ´ë·¹º§
-	char				m_type;			// Å¸ÀÔ
-	char				m_subtype;		// ¼­ºêÅ¸ÀÔ
-	char				m_damagetype;	// ´ë¹ÌÁö Å¸ÀÔ
-	char				m_hittype;		// ¸íÁß Å¸ÀÔ
-	char				m_attribute;	// ¼Ó¼º
-	int					m_psp;			// ½ºÅ³ »ç¿ëÀÚÀÇ ´ë¹ÌÁö ÆÄ¶ó¹ÌÅÍ
-	int					m_ptp;			// ½ºÅ³ ´ë»óÀÇ ´ë¹ÌÁö ÆÄ¶ó¹ÌÅÍ
-	int					m_hsp;			// ½ºÅ³ »ç¿ëÀÚÀÇ ¸íÁß ÆÄ¶ó¹ÌÅÍ
-	int					m_htp;			// ½ºÅ³ ´ë»óÀÇ ¸íÁß ÆÄ¶ó¹ÌÅÍ
-	int					m_bTogel;		// ½ºÅ³ Åä±ÛÀÌ °¡´ÉÇÑ°¡?
+	int					m_index;		// ë²ˆí˜¸
+	char				m_maxlevel;		// ìµœëŒ€ë ˆë²¨
+	char				m_type;			// íƒ€ì…
+	char				m_subtype;		// ì„œë¸Œíƒ€ì…
+	char				m_damagetype;	// ëŒ€ë¯¸ì§€ íƒ€ì…
+	char				m_hittype;		// ëª…ì¤‘ íƒ€ì…
+	char				m_attribute;	// ì†ì„±
+	int					m_psp;			// ìŠ¤í‚¬ ì‚¬ìš©ìì˜ ëŒ€ë¯¸ì§€ íŒŒë¼ë¯¸í„°
+	int					m_ptp;			// ìŠ¤í‚¬ ëŒ€ìƒì˜ ëŒ€ë¯¸ì§€ íŒŒë¼ë¯¸í„°
+	int					m_hsp;			// ìŠ¤í‚¬ ì‚¬ìš©ìì˜ ëª…ì¤‘ íŒŒë¼ë¯¸í„°
+	int					m_htp;			// ìŠ¤í‚¬ ëŒ€ìƒì˜ ëª…ì¤‘ íŒŒë¼ë¯¸í„°
+	int					m_bTogel;		// ìŠ¤í‚¬ í† ê¸€ì´ ê°€ëŠ¥í•œê°€?
 
-	CMagicLevelProto**	m_levelproto;	// ·¹º§ ¼³Á¤
+	CMagicLevelProto**	m_levelproto;	// ë ˆë²¨ ì„¤ì •
 
 	CMagicProto(int index, char maxlevel, char type, char subtype, char damagetype, char hittype, char attribute, int psp, int ptp, int hsp, int htp, int bTogel, CMagicLevelProto** levelproto);
 
@@ -473,7 +473,7 @@ public:
 
 /////////////////////
 // Class name	    : CSkillLevelProto
-// Description	    : ½ºÅ³ ·¹º§ ¼³Á¤
+// Description	    : ìŠ¤í‚¬ ë ˆë²¨ ì„¤ì •
 class CSkillLevelProto
 {
 public:
@@ -509,7 +509,7 @@ public:
 
 /////////////////////
 // Class name	    : CSkillProto
-// Description	    : ½ºÅ³ ¼³Á¤
+// Description	    : ìŠ¤í‚¬ ì„¤ì •
 class CSkillProto
 {
 public:
@@ -567,7 +567,7 @@ public:
 
 	/////////////////////
 	// Function name	: IsActive
-	// Description	    : ¾×Æ¼ºê ½ºÅ³ °Ë»ç
+	// Description	    : ì•¡í‹°ë¸Œ ìŠ¤í‚¬ ê²€ì‚¬
 	bool IsActive() const
 	{
 		return is_active_flag;
@@ -575,7 +575,7 @@ public:
 
 	/////////////////////
 	// Function name	: IsPassive
-	// Description	    : ÆĞ½Ãºê ½ºÅ³ °Ë»ç
+	// Description	    : íŒ¨ì‹œë¸Œ ìŠ¤í‚¬ ê²€ì‚¬
 	bool IsPassive() const
 	{
 		return is_passive_flag;
@@ -583,7 +583,7 @@ public:
 
 	/////////////////////
 	// Function name	: IsSummon
-	// Description	    : ¼­¸Õ ½ºÅ³ °Ë»ç
+	// Description	    : ì„œë¨¼ ìŠ¤í‚¬ ê²€ì‚¬
 	bool IsSummon() const
 	{
 		return is_summon_flag;
@@ -598,7 +598,7 @@ public:
 
 	////////////////////
 	// Function name	: IsSameJob
-	// Description	    : °°Àº Á÷¾÷ÀÎÁö °Ë»ç
+	// Description	    : ê°™ì€ ì§ì—…ì¸ì§€ ê²€ì‚¬
 	bool IsSameJob(CPC* pc) const;
 	bool IsSameJob(CPet* pet) const;
 
@@ -606,14 +606,14 @@ public:
 
 	////////////////////
 	// Function name	: GetFireRange
-	// Description	    : »çÁ¤°Å¸® °Ë»ç, NPC´Â 1¹ø, PC´Â ¹«±â¿¡ µû¶ó
+	// Description	    : ì‚¬ì •ê±°ë¦¬ ê²€ì‚¬, NPCëŠ” 1ë²ˆ, PCëŠ” ë¬´ê¸°ì— ë”°ë¼
 	float GetFireRange(CCharacter* ch) const;
 
 	////////////////////
 	// Function name	: CheckUseState
-	// Description	    : »ç¿ë °¡´É °Ë»ç
+	// Description	    : ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 	// Return type		: int
-	//                  : »ç¿ë ºÒ°¡´É½Ã¿¡ ºÒÃæºĞÇÑ »óÅÂ ¹İÈ¯, -1Àº magic ºÒ´É¿¡¼­
+	//                  : ì‚¬ìš© ë¶ˆê°€ëŠ¥ì‹œì— ë¶ˆì¶©ë¶„í•œ ìƒíƒœ ë°˜í™˜, -1ì€ magic ë¶ˆëŠ¥ì—ì„œ
 	int CheckUseState(CCharacter* ch) const;
 
 	// a_minRange
@@ -629,7 +629,7 @@ public:
 		return m_job;
 	}
 
-	// ¼Ò¼­·¯¿ë ÇÃ·¡±× È®ÀÎ
+	// ì†Œì„œëŸ¬ìš© í”Œë˜ê·¸ í™•ì¸
 	int CheckSorcererFlag(int mask) const
 	{
 		return (m_sorcerer_flag & mask);
@@ -667,7 +667,7 @@ private:
 
 /////////////////////
 // Class name	    : CMagicProtoList
-// Description	    : È¿°ú ¼³Á¤ ¸®½ºÆ®
+// Description	    : íš¨ê³¼ ì„¤ì • ë¦¬ìŠ¤íŠ¸
 class CMagicProtoList
 {
 public:
@@ -683,22 +683,22 @@ public:
 
 	/////////////////////
 	// Function name	: Load
-	// Description	    : È¿°ú ¸®½ºÆ® ÀĞ±â
+	// Description	    : íš¨ê³¼ ë¦¬ìŠ¤íŠ¸ ì½ê¸°
 	// Return type		: bool
-	//            		: ¼º°ø ¿©ºÎ
+	//            		: ì„±ê³µ ì—¬ë¶€
 	bool Load();
 
 	/////////////////////
 	// Function name	: Find
-	// Description	    : Æ¯Á¤ ÀÎµ¦½ºÀÇ È¿°ú Ã£±â
+	// Description	    : íŠ¹ì • ì¸ë±ìŠ¤ì˜ íš¨ê³¼ ì°¾ê¸°
 	// Return type		: const CMagicProto*
-	//            		: Ã£Àº È¿°ú Æ÷ÀÎÅÍ, ½ÇÆĞ½Ã NULL
+	//            		: ì°¾ì€ íš¨ê³¼ í¬ì¸í„°, ì‹¤íŒ¨ì‹œ NULL
 	// Argument         : int index
-	//                  : Ã£°íÀÚ ÇÏ´Â È¿°ú ¹øÈ£
+	//                  : ì°¾ê³ ì í•˜ëŠ” íš¨ê³¼ ë²ˆí˜¸
 	const CMagicProto* Find(int index);
 };
 
-// ¸ó½ºÅÍ ¸ÖÆ¼Å¸°Ù¿ë ±¸Á¶Ã¼
+// ëª¬ìŠ¤í„° ë©€í‹°íƒ€ê²Ÿìš© êµ¬ì¡°ì²´
 struct MultiTarget : public MemoryPoolBase<MultiTarget>
 {
 	CCharacter*		mtarget;
@@ -717,12 +717,12 @@ struct MultiTarget : public MemoryPoolBase<MultiTarget>
 
 /////////////////////
 // Class name	    : CSkill
-// Description	    : ½ºÅ³
+// Description	    : ìŠ¤í‚¬
 class CSkill : public MemoryPoolBaseWithMutex<CSkill>
 {
 public:
-	const CSkillProto*	m_proto;			// ½ºÅ³ ÇÁ·ÎÅä
-	char				m_level;			// ½ºÅ³ ·¹º§
+	const CSkillProto*	m_proto;			// ìŠ¤í‚¬ í”„ë¡œí† 
+	char				m_level;			// ìŠ¤í‚¬ ë ˆë²¨
 
 	int					m_state;
 	int					m_usetime;
@@ -739,7 +739,7 @@ public:
 	typedef std::map<int/*char_index*/, int/*usetime*/> GUILD_SKILL_USETIME_DATA;
 	GUILD_SKILL_USETIME_DATA m_gskill_usetime;
 
-	int					m_optionSkillProb;	//¿É¼Ç ½ºÅ³ ¹ßµ¿ È®·ü
+	int					m_optionSkillProb;	//ì˜µì…˜ ìŠ¤í‚¬ ë°œë™ í™•ë¥ 
 
 	bool				m_toggle;
 
@@ -747,30 +747,30 @@ public:
 
 	/////////////////////
 	// Function name	: IsReady
-	// Description	    : ½ºÅ³ Àç»ç¿ë °¡´É °Ë»ç
+	// Description	    : ìŠ¤í‚¬ ì¬ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 	// Argument         : CCharacter* ch
-	//                  : ½ºÅ³ ¾²´Â »ç¶÷
+	//                  : ìŠ¤í‚¬ ì“°ëŠ” ì‚¬ëŒ
 	bool IsReady(CCharacter* ch);
 
 	/////////////////////
 	// Function name	: Ready
-	// Description	    : ½ÃÀü »óÅÂ·Î ¸¸µë
+	// Description	    : ì‹œì „ ìƒíƒœë¡œ ë§Œë“¬
 	void Ready(CCharacter* tch);
 
 	/////////////////////
 	// Function name	: Fire
-	// Description	    : ¹ß»ç »óÅÊ·Î ¸¸µë
+	// Description	    : ë°œì‚¬ ìƒíƒ±ë¡œ ë§Œë“¬
 	void Fire();
 
 	/////////////////////
 	// Function name	: Cancel
-	// Description	    : ½ÃÀü Ãë¼Ò
+	// Description	    : ì‹œì „ ì·¨ì†Œ
 	void Cancel(CCharacter* pCharSkill);
 };
 
 /////////////////////
 // Class name	    : CSkillProtoList
-// Description	    : ½ºÅ³ ¸®½ºÆ®
+// Description	    : ìŠ¤í‚¬ ë¦¬ìŠ¤íŠ¸
 class CSkillProtoList
 {
 public:
@@ -781,44 +781,44 @@ public:
 
 	/////////////////////
 	// Function name	: Load
-	// Description	    : ½ºÅ³ ¸®½ºÆ® ÀĞ±â
+	// Description	    : ìŠ¤í‚¬ ë¦¬ìŠ¤íŠ¸ ì½ê¸°
 	// Return type		: bool
-	//            		: ¼º°ø ¿©ºÎ
+	//            		: ì„±ê³µ ì—¬ë¶€
 	bool Load();
 
 	/////////////////////
 	// Function name	: Find
-	// Description	    : Æ¯Á¤ ½ºÅ³ Ã£±â
+	// Description	    : íŠ¹ì • ìŠ¤í‚¬ ì°¾ê¸°
 	// Return type		: const CSkillProto*
-	//            		: Ã£Àº ½ºÅ³ ÇÁ·ÎÅä, ½ÇÆĞ½Ã NULL
+	//            		: ì°¾ì€ ìŠ¤í‚¬ í”„ë¡œí† , ì‹¤íŒ¨ì‹œ NULL
 	// Argument         : int skillIndex
-	//                  : Ã£°íÀÚ ÇÏ´Â ½ºÅ³ ¹øÈ£
+	//                  : ì°¾ê³ ì í•˜ëŠ” ìŠ¤í‚¬ ë²ˆí˜¸
 	const CSkillProto* Find(int skillIndex);
 
 	/////////////////////
 	// Function name	: Create
-	// Description	    : ½ºÅ³ »ı¼º
+	// Description	    : ìŠ¤í‚¬ ìƒì„±
 	// Return type		: CSkill*
-	//            		: »ı¼ºµÈ ½ºÅ³ Æ÷ÀÎÅÍ
+	//            		: ìƒì„±ëœ ìŠ¤í‚¬ í¬ì¸í„°
 	// Argument         : int skillIndex
-	//                  : »ı¼ºÇÒ ½ºÅ³ ¹øÈ£
+	//                  : ìƒì„±í•  ìŠ¤í‚¬ ë²ˆí˜¸
 	// Argument         : int level = 1
-	//                  : »ı¼ºÇÒ ½ºÅ³ ·¹º§
+	//                  : ìƒì„±í•  ìŠ¤í‚¬ ë ˆë²¨
 	CSkill* Create(int skillIndex, int level = 1);
 
 	void LearnAllSkill(CPC* ch);
 
 private:
 	map_t			map_;
-	CSkillProto**	m_list;		// ½ºÅ³ Á¤º¸
-	int				m_count;	// ½ºÅ³ Á¤º¸ °³¼ö
+	CSkillProto**	m_list;		// ìŠ¤í‚¬ ì •ë³´
+	int				m_count;	// ìŠ¤í‚¬ ì •ë³´ ê°œìˆ˜
 };
 
 class CSkillListNode
 {
-	CSkill*			m_skill;	// ½ºÅ³ µ¥ÀÌÅÍ
-	CSkillListNode*	m_prev;		// ÀÌÀü Æ÷ÀÎÅÍ
-	CSkillListNode* m_next;		// ÀÌÈÄ Æ÷ÀÎÅÍ
+	CSkill*			m_skill;	// ìŠ¤í‚¬ ë°ì´í„°
+	CSkillListNode*	m_prev;		// ì´ì „ í¬ì¸í„°
+	CSkillListNode* m_next;		// ì´í›„ í¬ì¸í„°
 
 public:
 	CSkillListNode(CSkill* skill);
@@ -841,12 +841,12 @@ public:
 
 /////////////////////
 // Class name	    : CSkillList
-// Description	    : Ä³¸¯ÅÍ ½ºÅ³ ¸®½ºÆ®
+// Description	    : ìºë¦­í„° ìŠ¤í‚¬ ë¦¬ìŠ¤íŠ¸
 class CSkillList
 {
-	CSkillListNode*		m_head;		// Çì´õ
-	CSkillListNode*		m_tail;		// Å×ÀÏ
-	int					m_count;	// °³¼ö
+	CSkillListNode*		m_head;		// í—¤ë”
+	CSkillListNode*		m_tail;		// í…Œì¼
+	int					m_count;	// ê°œìˆ˜
 
 public:
 	void DeleteInstantSkill(int flag);
@@ -855,77 +855,77 @@ public:
 
 	/////////////////////
 	// Function name	: Add
-	// Description	    : ½ºÅ³ Ãß°¡, ±âÁ¸ÀÇ ½ºÅ³°ú Áßº¹ µÉ °æ¿ì ·¹º§¸¸ Àç¼³Á¤
+	// Description	    : ìŠ¤í‚¬ ì¶”ê°€, ê¸°ì¡´ì˜ ìŠ¤í‚¬ê³¼ ì¤‘ë³µ ë  ê²½ìš° ë ˆë²¨ë§Œ ì¬ì„¤ì •
 	// Return type		: bool
-	//            		: ¼º°ø¿©ºÎ
+	//            		: ì„±ê³µì—¬ë¶€
 	// Argument         : CSkill* skill
-	//                  : Ãß°¡ÇÒ ½ºÅ³, ±âÁ¸ ½ºÅ³°ú Áßº¹ µÉ °æ¿ì ¸Ş¸ğ¸® ÇØÁ¦ÈÄ, ±âÁ¸ ½ºÅ³·Î ¼³Á¤µÊ
+	//                  : ì¶”ê°€í•  ìŠ¤í‚¬, ê¸°ì¡´ ìŠ¤í‚¬ê³¼ ì¤‘ë³µ ë  ê²½ìš° ë©”ëª¨ë¦¬ í•´ì œí›„, ê¸°ì¡´ ìŠ¤í‚¬ë¡œ ì„¤ì •ë¨
 	bool Add(CSkill*& skill);
 
 	/////////////////////
 	// Function name	: Find
-	// Description	    : ½ºÅ³ Ã£±â
+	// Description	    : ìŠ¤í‚¬ ì°¾ê¸°
 	// Return type		: CSkill*
-	//            		: Ã£Àº ½ºÅ³, ½ÇÆĞ½Ã NULL
+	//            		: ì°¾ì€ ìŠ¤í‚¬, ì‹¤íŒ¨ì‹œ NULL
 	// Argument         : int index
-	//                  : Ã£À» ½ºÅ³ ¹øÈ£
+	//                  : ì°¾ì„ ìŠ¤í‚¬ ë²ˆí˜¸
 	CSkill* Find(int index);
-	//node Ã£±â
+	//node ì°¾ê¸°
 	CSkillListNode* FindNode(int index);
 
 	/////////////////////
 	// Function name	: count
-	// Description	    : ½ºÅ³ °³¼ö
+	// Description	    : ìŠ¤í‚¬ ê°œìˆ˜
 	int count();
 
 	/////////////////////
 	// Function name	: GetIndexString
-	// Description	    : ½ºÅ³ ÀÎµ¦½º ½ºÆ®¸µ ¾ò±â
+	// Description	    : ìŠ¤í‚¬ ì¸ë±ìŠ¤ ìŠ¤íŠ¸ë§ ì–»ê¸°
 	// Return type		: char*
-	//            		: ÀÔ·ÂµÈ ¹®ÀÚ¿­ Æ÷ÀÎÅÍ
+	//            		: ì…ë ¥ëœ ë¬¸ìì—´ í¬ì¸í„°
 	// Argument         : char* buf
-	//                  : ½ºÆ®¸µ ¹öÆÛ
+	//                  : ìŠ¤íŠ¸ë§ ë²„í¼
 	char* GetIndexString(char* buf);
 	void GetIndexString(std::string& bnf);
 
 	/////////////////////
 	// Function name	: GetLevelString
-	// Description	    : ½ºÅ³ ·¹º§ ½ºÆ®¸µ ¾ò±â
+	// Description	    : ìŠ¤í‚¬ ë ˆë²¨ ìŠ¤íŠ¸ë§ ì–»ê¸°
 	// Return type		: char*
-	//            		: ÀÔ·ÂµÈ ½ºÆ®¸µ Æ÷ÀÎÅÍ
+	//            		: ì…ë ¥ëœ ìŠ¤íŠ¸ë§ í¬ì¸í„°
 	// Argument         : char* buf
-	//                  : ½ºÆ®¸µ ¹öÆÛ
+	//                  : ìŠ¤íŠ¸ë§ ë²„í¼
 	char* GetLevelString(char* buf);
 	void GetLevelString(std::string& bnf);
 
 	/////////////////////
 	// Function name	: GetHeadPosition
-	// Description	    : ¸®½ºÆ® Ã³À½ À§Ä¡¸¦ ¹İÈ¯, ºñ¾úÀ¸¸é NULL
+	// Description	    : ë¦¬ìŠ¤íŠ¸ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ë°˜í™˜, ë¹„ì—ˆìœ¼ë©´ NULL
 	void* GetHeadPosition();
 
 	/////////////////////
 	// Function name	: GetNext
-	// Description	    : ¸®½ºÆ®ÀÇ ½ºÅ³À» ¹İÈ¯
+	// Description	    : ë¦¬ìŠ¤íŠ¸ì˜ ìŠ¤í‚¬ì„ ë°˜í™˜
 	// Argument         : void*& p
-	//                  : in: ÀĞÀ» µ¥ÀÌÅÍ À§Ä¡, out: ´ÙÀ½ µ¥ÀÌÅÍ À§Ä¡, ´õÀÌ»ó ¾øÀ¸¸é NULL
+	//                  : in: ì½ì„ ë°ì´í„° ìœ„ì¹˜, out: ë‹¤ìŒ ë°ì´í„° ìœ„ì¹˜, ë”ì´ìƒ ì—†ìœ¼ë©´ NULL
 	CSkill* GetNext(void*& p);
 
 	////////////////////
 	// Function name	: RemoveSkillFor2ndJob
-	// Description	    : ÀüÁ÷ Á÷¾÷¿ë ½ºÅ³ Áö¿ì±â
-	int RemoveSkillFor2ndJob();		// reutrn ¼Ò¿äµÈ skillpoint
+	// Description	    : ì „ì§ ì§ì—…ìš© ìŠ¤í‚¬ ì§€ìš°ê¸°
+	int RemoveSkillFor2ndJob();		// reutrn ì†Œìš”ëœ skillpoint
 
-	// ½ºÅ³ ÃÊ±âÈ­
+	// ìŠ¤í‚¬ ì´ˆê¸°í™”
 	void Clear();
 	void clearReadySkill();
 
 	/////////////////////
 	// Function name	: Remove
-	// Description	    : ½ºÅ³ »èÁ¦ (¿À¸®Áö³¯ ¿É¼Ç/¼¼Æ® ¾ÆÀÌÅÛÀ¸·Î ÀÎÇÑ ½ºÅ³ »èÁ¦)
+	// Description	    : ìŠ¤í‚¬ ì‚­ì œ (ì˜¤ë¦¬ì§€ë‚  ì˜µì…˜/ì„¸íŠ¸ ì•„ì´í…œìœ¼ë¡œ ì¸í•œ ìŠ¤í‚¬ ì‚­ì œ)
 	// Return type		: bool
-	//            		: ¼º°ø¿©ºÎ
+	//            		: ì„±ê³µì—¬ë¶€
 	// Argument         : CSkill* skill
-	//                  : »èÁ¦ÇÒ ½ºÅ³
+	//                  : ì‚­ì œí•  ìŠ¤í‚¬
 	bool Remove(CSkill* skill);
 
 	bool Disable(CSkill* skill);

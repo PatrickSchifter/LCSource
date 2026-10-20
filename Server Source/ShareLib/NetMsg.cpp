@@ -15,7 +15,7 @@ struct tag_pool {};
 typedef boost::singleton_pool<tag_pool, (MAX_MESSAGE_SIZE + sizeof(int))> g_netmsgpool;
 
 //////////////////////////////////////////////////////////////////////
-// SEED ¾ÏÈ£È­¸¦ À§ÇÑ ÃÊ±âÈ­
+// SEED ì•”í˜¸í™”ë¥¼ ìœ„í•œ ì´ˆê¸°í™”
 static DWORD pdwRoundKey[48];
 static BYTE pbUserKey[32] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 							 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f
@@ -172,7 +172,7 @@ void CNetMsg::WriteRaw(void* buf, long size)
 
 CNetMsg& CNetMsg::operator >> (CLCString& str)
 {
-	// ÇöÀç Æ÷ÀÎÆ®¿¡¼­ NULLÀ» Ã£´Â´Ù
+	// í˜„ì¬ í¬ì¸íŠ¸ì—ì„œ NULLì„ ì°¾ëŠ”ë‹¤
 	int i;
 	for (i = m_ptr; i < m_size; i++)
 	{
@@ -180,30 +180,30 @@ CNetMsg& CNetMsg::operator >> (CLCString& str)
 			break;
 	}
 
-	// NULLÀ» Ã£À¸¸é
+	// NULLì„ ì°¾ìœ¼ë©´
 	if (i < m_size)
 	{
-		// ±æÀÌ(NULL Æ÷ÇÔ)À» ±¸ÇÏ°í
+		// ê¸¸ì´(NULL í¬í•¨)ì„ êµ¬í•˜ê³ 
 		int len = i - m_ptr + 1;
-		// ½ÇÁ¦ ÀĞÀ» ±æÀÌ¸¦ ±¸ÇÔ
+		// ì‹¤ì œ ì½ì„ ê¸¸ì´ë¥¼ êµ¬í•¨
 		int realRead = len;
-		// ±æÀÌ°¡ Ãâ·Â ¹öÆÛ(str)º¸´Ù Å©¸é Ãâ·Â ¹öÆÛ Å©±â¿¡ ¸ÂÃá´Ù
+		// ê¸¸ì´ê°€ ì¶œë ¥ ë²„í¼(str)ë³´ë‹¤ í¬ë©´ ì¶œë ¥ ë²„í¼ í¬ê¸°ì— ë§ì¶˜ë‹¤
 		if (realRead > str.BufferSize())
 			realRead = str.BufferSize();
-		// µ¥ÀÌÅÍ¸¦ ÀĞÀ½
+		// ë°ì´í„°ë¥¼ ì½ìŒ
 		char* tmp = new char[realRead];
 		memcpy(tmp, m_buf + m_ptr, realRead - 1);
 		tmp[realRead - 1] = '\0';
 		str = tmp;
 		delete [] tmp;
-		// ½ÇÁ¦ ÀĞÀº µ¥ÀÌÅÍ¿Í °ü°è¾øÀÌ NULL ´ÙÀ½À¸·Î m_ptr ÀÌµ¿
+		// ì‹¤ì œ ì½ì€ ë°ì´í„°ì™€ ê´€ê³„ì—†ì´ NULL ë‹¤ìŒìœ¼ë¡œ m_ptr ì´ë™
 		m_ptr += len;
 	}
-	// ¸øÃ£À¸¸é
+	// ëª»ì°¾ìœ¼ë©´
 	else
 	{
-		// ÀĞÀº µ¥ÀÌÅÍ´Â ¾ø°í
-		// ´ÙÀ½ ÀĞ±â Æ÷ÀÎÅÍµµ ¾øµµ·Ï ÇÏ¿© µ¥ÀÌÅÍ ÀĞ±â°¡ ¿Ï·áµÈ´Ù
+		// ì½ì€ ë°ì´í„°ëŠ” ì—†ê³ 
+		// ë‹¤ìŒ ì½ê¸° í¬ì¸í„°ë„ ì—†ë„ë¡ í•˜ì—¬ ë°ì´í„° ì½ê¸°ê°€ ì™„ë£Œëœë‹¤
 		str = "";
 		m_ptr = m_size;
 	}
@@ -216,7 +216,7 @@ CNetMsg& CNetMsg::operator << (const char* str)
 	if (str == NULL)
 		return *this;
 
-	// NULLÀ» Æ÷ÇÔÇØ¼­ ³ÖÀ» ¼ö ÀÖÀ¸¸é ³Ö°í ¾Æ´Ï¸é NULL¸¸ ³Ö´Â´Ù, NULLµµ ¸ø ³ÖÀ¸¸é ±×³É ½ºÅµ
+	// NULLì„ í¬í•¨í•´ì„œ ë„£ì„ ìˆ˜ ìˆìœ¼ë©´ ë„£ê³  ì•„ë‹ˆë©´ NULLë§Œ ë„£ëŠ”ë‹¤, NULLë„ ëª» ë„£ìœ¼ë©´ ê·¸ëƒ¥ ìŠ¤í‚µ
 	if (CanWrite(strlen(str) + 1))
 	{
 		Write((void*)((const char*)str), strlen(str) + 1);
@@ -304,7 +304,7 @@ void CNetMsg::makeHeader()
 	h->reliable = (1 << 0) | (1 << 7) | (1 << 8);
 	HTONS(h->reliable);
 
-	// seq´Â rnsocketioserviceTCP¿¡¼­ ¸¸µê
+	// seqëŠ” rnsocketioserviceTCPì—ì„œ ë§Œë“¦
 	h->id = 0;
 	h->size = m_size;
 	HTONL(h->size);
@@ -312,7 +312,7 @@ void CNetMsg::makeHeader()
 	make_header_flag_ = true;
 }
 
-// m_buf + pos¿¡¼­ length ¸¸Å­ ÆĞÅ¶ÀÇ ±æÀÌ¸¦ ÁÙÀÎ´Ù.
+// m_buf + posì—ì„œ length ë§Œí¼ íŒ¨í‚·ì˜ ê¸¸ì´ë¥¼ ì¤„ì¸ë‹¤.
 void CNetMsg::Reduce( int pos, int length )
 {
 	::memmove(m_buf + pos, m_buf + pos + length, m_size - length);

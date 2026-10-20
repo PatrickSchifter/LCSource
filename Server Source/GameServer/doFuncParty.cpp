@@ -8,10 +8,10 @@
 #include "WarCastle.h"
 
 /////////////////
-// ∆ƒ∆º ∞¸∑√ «‘ºˆ
+// ÌååÌã∞ Í¥ÄÎ†® Ìï®Ïàò
 void do_Party(CPC* ch, CNetMsg::SP& msg)
 {
-	// æ»∫∏¿Ã∏È π´Ω√
+	// ÏïàÎ≥¥Ïù¥Î©¥ Î¨¥Ïãú
 	if (!ch->m_bVisible)
 		return ;
 
@@ -112,7 +112,7 @@ void do_PartyInvite(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-// << kjban 080110 ∞¯º∫ø° ¬¸∞°«— ∞ÊøÏ
+// << kjban 080110 Í≥µÏÑ±Ïóê Ï∞∏Í∞ÄÌïú Í≤ΩÏö∞
 	CPC * pPC = PCManager::instance()->getPlayerByCharIndex(destindex);
 	if(pPC == NULL)
 	{
@@ -135,7 +135,7 @@ void do_PartyInvite(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ∞∞¿∫ ∆Ì¿Œ ∞ÊøÏ ∏∏ ∆ƒ∆º ∞°¥…
+	// Í∞ôÏùÄ Ìé∏Ïù∏ Í≤ΩÏö∞ Îßå ÌååÌã∞ Í∞ÄÎä•
 	switch(ch->GetJoinFlag(ZONE_MERAC))
 	{
 	case WCJF_ATTACK_GUILD:
@@ -161,7 +161,7 @@ void do_PartyInvite(CPC* ch, CNetMsg::SP& msg)
 		break;
 	}
 
-// ∞∞¿∫ ∆Ì¿Œ ∞ÊøÏ ∏∏ ∆ƒ∆º ∞°¥…
+// Í∞ôÏùÄ Ìé∏Ïù∏ Í≤ΩÏö∞ Îßå ÌååÌã∞ Í∞ÄÎä•
 	switch(ch->GetJoinFlag(ZONE_DRATAN))
 	{
 	case WCJF_ATTACK_GUILD:
@@ -186,7 +186,7 @@ void do_PartyInvite(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 	}
-	// «ˆ¿Á ¡∏¿Ã RVR ¡∏¿Ã∂Û∏È ∞∞¿∫ ∞·ªÁ¥Î º“º”∏∏ ∞°¥…
+	// ÌòÑÏû¨ Ï°¥Ïù¥ RVR Ï°¥Ïù¥ÎùºÎ©¥ Í∞ôÏùÄ Í≤∞ÏÇ¨ÎåÄ ÏÜåÏÜçÎßå Í∞ÄÎä•
 	if (ch->m_pZone->isRVRZone())
 	{
 		if (!pPC->m_pZone->isRVRZone())
@@ -215,7 +215,7 @@ void do_PartyInvite(CPC* ch, CNetMsg::SP& msg)
 
 void do_PartyAllow(CPC* ch, CNetMsg::SP& msg /* msg */)
 {
-	// ∆ƒ∆º ¡§∫∏∞° ¿÷∞Ì
+	// ÌååÌã∞ Ï†ïÎ≥¥Í∞Ä ÏûàÍ≥†
 	GAMELOG << init("PARTY DEBUG ALLOW", ch)
 			<< end;
 
@@ -226,7 +226,7 @@ void do_PartyAllow(CPC* ch, CNetMsg::SP& msg /* msg */)
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ≥ª∞° ø‰√ª πﬁ¿∫ ªÁ∂˜¿Ã∏È
+	// ÎÇ¥Í∞Ä ÏöîÏ≤≠ Î∞õÏùÄ ÏÇ¨ÎûåÏù¥Î©¥
 	if (ch->m_party->GetRequestIndex() != ch->m_index)
 		return ;
 
@@ -242,7 +242,7 @@ void do_PartyReject(CPC* ch, CNetMsg::SP& msg /* msg */)
 	GAMELOG << init("PARTY DEBUG REJECT", ch)
 			<< end;
 
-	// ∆ƒ∆º ¡§∫∏∞° ¿÷∞Ì
+	// ÌååÌã∞ Ï†ïÎ≥¥Í∞Ä ÏûàÍ≥†
 	if (ch->m_party == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -266,13 +266,11 @@ void do_PartyQuit(CPC* ch, CNetMsg::SP& msg /* msg */)
 	GAMELOG << init("PARTY DEBUG QUIT", ch)
 			<< end;
 
-	// ∆ƒ∆º ¡ﬂ¿Ã∞Ì
+	// ÌååÌã∞ Ï§ëÏù¥Í≥†
 	if (ch->m_party == NULL)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER QUIT: NOT_PARTY", ch)
 				<< end;
-#endif // PARTY_BUG_GER
 		return ;
 	}
 
@@ -292,36 +290,32 @@ void do_PartyKick(CPC* ch, CNetMsg::SP& msg)
 			<< index
 			<< end;
 
-	// ∆ƒ∆º ¡ﬂ¿Ã∞Ì
+	// ÌååÌã∞ Ï§ëÏù¥Í≥†
 	if (ch->m_party == NULL)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER KICK: NOT_PARTY", ch)
 				<< index
 				<< end;
-#endif // PARTY_BUG_GER
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_PARTY);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ∫∏Ω∫¿Ã∞Ì
+	// Î≥¥Ïä§Ïù¥Í≥†
 	if (ch->m_party->GetBossIndex() != ch->m_index)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER KICK: NOT_BOSS", ch)
 				<< "BOSSINDEX" << delim << ch->m_party->GetBossIndex() << delim
 				<< "TARGETINDEX" << delim << index
 				<< end;
-#endif // PARTY_BUG_GER
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// ¿⁄Ω≈¿Ã æ∆¥œ∞Ì
+	// ÏûêÏã†Ïù¥ ÏïÑÎãàÍ≥†
 	if (ch->m_index == index)
 		return ;
 
@@ -370,11 +364,9 @@ void do_PartyChangeBoss(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_party == NULL)
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("PARTY_BUG_GER CHANGEBOSS: NOT_PARTY", ch)
 				<< name
 				<< end;
-#endif // PARTY_BUG_GER
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_PARTY);
 		SEND_Q(rmsg, ch->m_desc);
@@ -383,13 +375,11 @@ void do_PartyChangeBoss(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_party->GetBossIndex() != ch->m_index)
 	{
-		// ∆ƒ∆º¿Â¿Ã æ∆¥‘ ∏ﬁºº¡ˆ ∫∏≥ª∞Ì
-#ifdef PARTY_BUG_GER
+		// ÌååÌã∞Ïû•Ïù¥ ÏïÑÎãò Î©îÏÑ∏ÏßÄ Î≥¥ÎÇ¥Í≥†
 		GAMELOG << init("PARTY_BUG_GER CHANGEBOSS: NOT_BOSS", ch)
 				<< "BOSSINDEX" << delim << ch->m_party->GetBossIndex() << delim
 				<< "CHARINDEX" << delim << ch->m_index
 				<< end;
-#endif // PARTY_BUG_GER
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -398,7 +388,7 @@ void do_PartyChangeBoss(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_pZone && ch->m_pZone->IsComboZone())
 	{
-		// ƒﬁ∫∏ ¡∏ø°º≠¥¬ ∆ƒ∆º¿Â ¿ß¿”ø° æ»µ»¥Ÿ.
+		// ÏΩ§Î≥¥ Ï°¥ÏóêÏÑúÎäî ÌååÌã∞Ïû• ÏúÑÏûÑÏóê ÏïàÎêúÎã§.
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_DO_NOT_CHANGE_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -468,8 +458,8 @@ void do_PartyChangeType(CPC* ch, CNetMsg::SP& msg)
 
 	char cPartyType, cDiviType, cAllOneSet;
 
-	RefMsg(msg) >> cPartyType      // ¿œπ›(±’µÓ),¿‘ºˆøÏº±,¿¸≈ı«¸,ªÛ¿⁄ø≠±‚ ±∏∫–
-				>> cDiviType	   // ∞Ê«Ëƒ°,æ∆¿Ã≈€,Ω∫∆‰º» æ∆¿Ã≈€ ±∏∫–
+	RefMsg(msg) >> cPartyType      // ÏùºÎ∞ò(Í∑†Îì±),ÏûÖÏàòÏö∞ÏÑ†,Ï†ÑÌà¨Ìòï,ÏÉÅÏûêÏó¥Í∏∞ Íµ¨Î∂Ñ
+				>> cDiviType	   // Í≤ΩÌóòÏπò,ÏïÑÏù¥ÌÖú,Ïä§ÌéòÏÖú ÏïÑÏù¥ÌÖú Íµ¨Î∂Ñ
 				>> cAllOneSet;
 
 	if (ch->m_party == NULL)
@@ -482,7 +472,7 @@ void do_PartyChangeType(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_party->GetBossIndex() != ch->m_index)
 	{
-		// ∆ƒ∆º¿Â¿Ã æ∆¥‘ ∏ﬁºº¡ˆ ∫∏≥ª∞Ì
+		// ÌååÌã∞Ïû•Ïù¥ ÏïÑÎãò Î©îÏÑ∏ÏßÄ Î≥¥ÎÇ¥Í≥†
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -502,7 +492,7 @@ void do_PartyChangeType(CPC* ch, CNetMsg::SP& msg)
 	}
 #endif
 
-	// ¿¸≈ı«¸ ∆ƒ∆º
+	// Ï†ÑÌà¨Ìòï ÌååÌã∞
 	if(cPartyType == MSG_PARTY_TYPE_BATTLE)
 	{
 		int bosslevel;
@@ -553,7 +543,7 @@ void do_PartyChangeType(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//∆ƒ∆º «ÿ√º(20√  ¥Î±‚)
+//ÌååÌã∞ Ìï¥Ï≤¥(20Ï¥à ÎåÄÍ∏∞)
 void do_PartyEndPartyReq(CPC* ch, CNetMsg::SP& msg)
 {
 	if (ch->m_party == NULL)
@@ -566,14 +556,14 @@ void do_PartyEndPartyReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_party->GetBossIndex() != ch->m_index)
 	{
-		// ∆ƒ∆º¿Â¿Ã æ∆¥‘ ∏ﬁºº¡ˆ ∫∏≥ª∞Ì
+		// ÌååÌã∞Ïû•Ïù¥ ÏïÑÎãò Î©îÏÑ∏ÏßÄ Î≥¥ÎÇ¥Í≥†
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyErrorMsg(rmsg, MSG_PARTY_ERROR_NOT_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ∆ƒ∆º «ÿ√º Ω√∞£ º≥¡§
+	// ÌååÌã∞ Ìï¥Ï≤¥ ÏãúÍ∞Ñ ÏÑ§Ï†ï
 	//-->
 	time_t t_now;
 	t_now = time(NULL);
@@ -582,7 +572,7 @@ void do_PartyEndPartyReq(CPC* ch, CNetMsg::SP& msg)
 	//<--
 
 	{
-		// ∆ƒ∆ºø¯ ¿¸√ºø°∞‘ 20√  »ƒø° «ÿ√º µ  æÀ∏≤
+		// ÌååÌã∞Ïõê Ï†ÑÏ≤¥ÏóêÍ≤å 20Ï¥à ÌõÑÏóê Ìï¥Ï≤¥ Îê® ÏïåÎ¶º
 		CNetMsg::SP rmsg(new CNetMsg);
 		PartyEndPartyStartMsg(rmsg);
 		ch->m_party->SendToAllPC(rmsg);

@@ -9,16 +9,16 @@ class COptionProto
 {
 public:
 
-	// DB Á¤º¸
+	// DB ì •ë³´
 	int		m_idNum;						// DB Index
-	int		m_type;							// ¿É¼Ç ¹øÈ£
+	int		m_type;							// ì˜µì…˜ ë²ˆí˜¸
 
 	std::vector<int> m_levelValue;
 	std::vector<int> m_probValue;
 
-	int		m_weaponType;					// ¾î¶² ¹«±â¿¡ ºÙ´Â°¡
-	int		m_wearType;						// ¾î¶² ¹æ¾î±¸¿¡ ºÙ´Â°¡
-	int		m_accessoryType;				// ¾î¶² ¾Ç¼¼»ç¸®¿¡ ºÙ´Â°¡
+	int		m_weaponType;					// ì–´ë–¤ ë¬´ê¸°ì— ë¶™ëŠ”ê°€
+	int		m_wearType;						// ì–´ë–¤ ë°©ì–´êµ¬ì— ë¶™ëŠ”ê°€
+	int		m_accessoryType;				// ì–´ë–¤ ì•…ì„¸ì‚¬ë¦¬ì— ë¶™ëŠ”ê°€
 	COptionProto();
 };
 

@@ -23,7 +23,7 @@ public:
 	};
 
 	CUIBase* Clone();
-	void AddArrayItem( CUIArrayItem* pItem );
+	void AddArrayItem( CUIArrayItem* pItem, bool bUpdate = true );
 	CUIArrayItem* GetArrayItem( int idx );
 
 	CUIArrayItem* GetArrayItemTemplate()		{ return m_pArrayTemp; }
@@ -32,6 +32,8 @@ public:
 	int	GetArrayChildCount()					{ return m_vecArrayChild.size(); }
 
 	void deleteChildList();
+	void deleteChildItem(int pos);
+	void deleteChildItem(CUIBase* pt);
 
 	// 게임 재시작 등에 사용됨
 	// ArrayItem 만 정리함.
@@ -69,7 +71,6 @@ public:
 
 	// Msg Proc
 	WMSG_RESULT OnLButtonDown(UINT16 x, UINT16 y);
-	WMSG_RESULT OnLButtonUp(UINT16 x, UINT16 y);
 	WMSG_RESULT	OnMouseMove(UINT16 x, UINT16 y, MSG* pMsg);
 
 #ifdef UI_TOOL

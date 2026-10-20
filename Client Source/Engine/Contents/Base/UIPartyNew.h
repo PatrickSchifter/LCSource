@@ -105,6 +105,10 @@ protected:
 	CUIList*			m_pListParty;
 	CTString			m_strDivisionType[3];
 	CTString			m_strExpeditionType[4];
+
+	bool				m_bDrag;
+	int					m_nOriX, m_nOriY;
+	CUIBase*			m_pDragArea;
 };
 
 

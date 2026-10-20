@@ -17,7 +17,7 @@
 class CNPC;
 
 //////////////////
-// ÀÌµ¿°ü·Ã ÇÔ¼ö
+// ì´ë™ê´€ë ¨ í•¨ìˆ˜
 
 void do_pd_Move(CPC* ch, CNetMsg::SP& msg)
 {
@@ -196,13 +196,13 @@ void do_Move(CPC* ch, CNetMsg::SP& msg)
 
 		chMove = ch;
 
-		// ÀÌµ¿¼Óµµ °Ë»ç
+		// ì´ë™ì†ë„ ê²€ì‚¬
 		if (ch->m_admin < 1)
 		{
-			// ÆÛ½º³Î ´øÀüÀº Á¦¿Ü
-			//if (!ch->m_pZone->IsPersonalDungeon() && !ch->m_pZone->IsGuildRoom()) : ¿Ö pd´Â °Ë»çÇÏÁö ¾Ê´Â°¡? X, ZÀÇ °Å¸®¸¸ °Ë»çÇÏµµ·Ï ¼öÁ¤ bw
+			// í¼ìŠ¤ë„ ë˜ì „ì€ ì œì™¸
+			//if (!ch->m_pZone->IsPersonalDungeon() && !ch->m_pZone->IsGuildRoom()) : ì™œ pdëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ê°€? X, Zì˜ ê±°ë¦¬ë§Œ ê²€ì‚¬í•˜ë„ë¡ ìˆ˜ì • bw
 			//{
-			// 060109 : BS : BEGIN : 200¹ÌÅÍ ÀÌ»ó ÀÌµ¿ ºÒ°¡
+			// 060109 : BS : BEGIN : 200ë¯¸í„° ì´ìƒ ì´ë™ ë¶ˆê°€
 			float walkSpeed = ch->m_walkSpeed;
 			float runSpeed = ch->GetRunSpeed();
 			float flySpeed = ch->m_flySpeed;
@@ -297,7 +297,7 @@ void do_Move(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// »óÅÂ ¼³Á¤
+		// ìƒíƒœ ì„¤ì •
 		switch (packet->moveType)
 		{
 		case MSG_MOVE_WALK:
@@ -349,7 +349,7 @@ void do_Move(CPC* ch, CNetMsg::SP& msg)
 			CElemental* elemental = TO_ELEMENTAL(chMove);
 			if (elemental)
 			{
-				// ÁÖÀÎÀÌ ¸í·ÉÇÏ°í
+				// ì£¼ì¸ì´ ëª…ë ¹í•˜ê³ 
 				if (elemental->GetOwner() != ch)
 					return ;
 			}
@@ -393,7 +393,7 @@ void do_Move(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_assist.FindBySkillIndex(IMMOTAL_BUF) && ch->m_bFirstDoIt == false)
 	{
-		//³²Àº ½Ã°£À» 15ÃÊ·Î¼³Á¤, º¯°æµÈ µ¥ÀÌÅÍ ÆĞÅ¶ Àü¼Û
+		//ë‚¨ì€ ì‹œê°„ì„ 15ì´ˆë¡œì„¤ì •, ë³€ê²½ëœ ë°ì´í„° íŒ¨í‚· ì „ì†¡
 		CAssistData* data = ch->m_assist.m_help.getHead();
 		while(data)
 		{
@@ -443,12 +443,12 @@ void do_Move(CPC* ch, CNetMsg::SP& msg)
 		ch->m_isWarSkillCheck = false;
 	}
 
-	//À¯¹° ¾ÆÀÌÅÛÀ» µé°íÀÖ´Â ³ğÀÌ ÇÇ½ºÁ¸À¸·Î ÀÌµ¿Çß´Ù¸é
+	//ìœ ë¬¼ ì•„ì´í…œì„ ë“¤ê³ ìˆëŠ” ë†ˆì´ í”¼ìŠ¤ì¡´ìœ¼ë¡œ ì´ë™í–ˆë‹¤ë©´
 	if(ch->m_bChangeStatus == true && ArtifactManager::instance()->isOwnerPC(ch->m_index) == true)
 	{
 		ch->CalcStatus(true);
 		
-		//ÆÄÆ¼°¡ ÀÖ´Ù¸é
+		//íŒŒí‹°ê°€ ìˆë‹¤ë©´
 		if(ch->m_party != NULL)
 		{
 			ch->m_party->updateCalcMember();
@@ -470,7 +470,7 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 
 	RequestClient::moveGoZone* packet = reinterpret_cast<RequestClient::moveGoZone*>(msg->m_buf);
 
-	//rvr Å¸ÀÔÀÌ ÀÖ´Â °æ¿ì ºñ±³.
+	//rvr íƒ€ì…ì´ ìˆëŠ” ê²½ìš° ë¹„êµ.
 	if (ch->m_pZone->isRVRZone())
 	{
 		CNPCProto* npcProto = gserver->m_npcProtoList.FindProto(packet->npcIndex);
@@ -493,7 +493,7 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 	bool bRoyal = false;
 	if(ch->m_admin < 1)
 	{
-		// µÑ´Ù ¿ä°ÇÀ» ¸¸Á·ÇÏ¸é bRoyal = true; ·Î¾â·³ºí·Î °¡´Â°Å´Ù!!!
+		// ë‘˜ë‹¤ ìš”ê±´ì„ ë§Œì¡±í•˜ë©´ bRoyal = true; ë¡œì–„ëŸ¼ë¸”ë¡œ ê°€ëŠ”ê±°ë‹¤!!!
 		if((packet->zone == 38) && (gserver->m_RoyalRumble.m_WaitPlayerList.FindNode(ch->m_index)))
 			bRoyal = true;
 	}
@@ -504,11 +504,11 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 
 	if( !ch->m_pZone->IsPersonalDungeon() )
 	{
-		// Á¸ÀÌµ¿ À¯È¿¼º °Ë»ç
+		// ì¡´ì´ë™ ìœ íš¨ì„± ê²€ì‚¬
 		bool bHackGoZone = false;
 		bool bSkipFindNPC = false;
 
-		// ´øÀüÀÇ ¿öÇÁ À¯È¿¼º °Ë»ç
+		// ë˜ì „ì˜ ì›Œí”„ ìœ íš¨ì„± ê²€ì‚¬
 		const int nSizeOfTable = 9;
 		// Current Zone, Request Zone, Request Position, Valid Position, Valid Cell Size
 		static int nCheckValidWarp[nSizeOfTable][5] =
@@ -546,7 +546,7 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			if( packet->npcIndex == 89 )		// ±ÙÀ§´ëÀå ¹«Á¶°Ç ÀÌµ¿
+			if( packet->npcIndex == 89 )		// ê·¼ìœ„ëŒ€ì¥ ë¬´ì¡°ê±´ ì´ë™
 			{
 				bSkipFindNPC = true;
 				break;
@@ -586,11 +586,11 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// µ¿ÀÏ ½Ì±Û ´øÀüÀ¸·Î´Â ÀÌµ¿ ºÒ°¡
+	// ë™ì¼ ì‹±ê¸€ ë˜ì „ìœ¼ë¡œëŠ” ì´ë™ ë¶ˆê°€
 	if ((ch->m_pZone->IsPersonalDungeon() || ch->m_pZone->IsGuildRoom() || ch->m_pZone->IsComboZone()) && ch->m_pZone->m_index == packet->zone)
 		return ;
 
-	// Á¸À» Ã£¾Æ¼­
+	// ì¡´ì„ ì°¾ì•„ì„œ
 	CZone* pZone  = gserver->FindZone(packet->zone);
 	if (pZone == NULL)
 		return;
@@ -606,7 +606,7 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 			{
 				if( ch->m_inventory.getMoney() < EGEHA_ZONE_PAYMENT )
 				{
-					// ÇöÀç °¡Áö°í ÀÖ´Â ³ª½º ºÎÁ· ¿¡·¯¸Ş¼¼Áö Àü¼Û
+					// í˜„ì¬ ê°€ì§€ê³  ìˆëŠ” ë‚˜ìŠ¤ ë¶€ì¡± ì—ëŸ¬ë©”ì„¸ì§€ ì „ì†¡
 					CNetMsg::SP rmsg(new CNetMsg);
 					SysMsg( rmsg, MSG_SYS_SHORT_MONEY);
 					SEND_Q( rmsg, ch->m_desc );
@@ -664,14 +664,14 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 			quest = ch->m_questList.FindQuest(questindex);
 			if(!quest)
 			{
-				// Äù½ºÆ®¸¦ ¹ŞÁö ¾ÊÀ½.
+				// í€˜ìŠ¤íŠ¸ë¥¼ ë°›ì§€ ì•ŠìŒ.
 				GAMELOG << init("GO_ZONE_FAILED: QUEST NOT EXIST", ch) << questindex << end;
 				return ;
 			}
 
 			if(quest->IsCompleted())
 			{
-				// ÀÌ¹Ì ¿Ï·á µÇ¾úÀ½.
+				// ì´ë¯¸ ì™„ë£Œ ë˜ì—ˆìŒ.
 				GAMELOG << init("GO_ZONE_FAILED: QUEST COMPLETE", ch) << questindex << end;
 				return ;
 			}
@@ -689,8 +689,8 @@ void do_GoZone(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-// ITS 4620 : Á¶°Ç »ç¶óÁü
-// #ifdef BLOODYMIR_MOVE_LIMIT // °¡¹Ì°í ºí·¯µå ÀÔÀå Á¦ÇÑ
+// ITS 4620 : ì¡°ê±´ ì‚¬ë¼ì§
+// #ifdef BLOODYMIR_MOVE_LIMIT // ê°€ë¯¸ê³  ë¸”ëŸ¬ë“œ ì…ì¥ ì œí•œ
 //	if( zone == ZONE_BLOODYMIR)
 //	{
 //		if( !(ch->m_questList.FindQuest(580, QUEST_STATE_DONE) || ch->m_questList.FindQuest(580, QUEST_STATE_RUN)) )
@@ -716,7 +716,7 @@ bool GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *fn
 		return breturn;
 	}
 
-	//°ø¼º ½ºÅ³ Àû¿ë ¹× »èÁ¦
+	//ê³µì„± ìŠ¤í‚¬ ì ìš© ë° ì‚­ì œ
 	if ( ch->GetMapAttr() & MATT_WAR || ch->m_pZone->IsWarZone(GET_X(ch), GET_Z(ch)) == true )
 	{
 		if( ApplyWarSkill(ch, pZone->m_index) == false )
@@ -778,7 +778,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 	if(ArtifactManager::instance()->isOwnerPC(ch->m_index) == true)
 	{
-		//À¯¹°À» °®°í ÀÖ´Â À¯ÀúÀÏ °æ¿ì ¾Æ·¡ Á¸À¸·Î ÀÔÀåÇÏ·Á°í ÇÏ¸é return
+		//ìœ ë¬¼ì„ ê°–ê³  ìˆëŠ” ìœ ì €ì¼ ê²½ìš° ì•„ë˜ ì¡´ìœ¼ë¡œ ì…ì¥í•˜ë ¤ê³  í•˜ë©´ return
 		if(ArtifactManager::instance()->canMove(zone) == false)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -812,7 +812,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 	int nTempRaidAreaNum = -1;
 	CExpedition* pExped = NULL;
 
-	// ¾É¾ÆÀÖÀ¸¸é ÀÏÀ¸ÄÑ ¼¼¿î´Ù.
+	// ì•‰ì•„ìˆìœ¼ë©´ ì¼ìœ¼ì¼œ ì„¸ìš´ë‹¤.
 	if(ch->IsSetPlayerState(PLAYER_STATE_SITDOWN))
 	{
 		ch->TogglePlayerState(PLAYER_STATE_SITDOWN);
@@ -822,7 +822,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 	int i = 0;
 	if (ch->m_pZone->m_index == zone)
 	{
-		// °°Àº Á¸¾È¿¡¼­ÀÇ ÀÌµ¿
+		// ê°™ì€ ì¡´ì•ˆì—ì„œì˜ ì´ë™
 		bGoto = true;
 		bValid = true;
 		pZone = ch->m_pZone;
@@ -835,7 +835,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 		if (pZone->m_bRemote)
 		{
-			// ¿ÜºÎ ¼­¹ö´Â ÀÎ½ºÅÏ½º ´øÀüÀº ºÒ°¡´É
+			// ì™¸ë¶€ ì„œë²„ëŠ” ì¸ìŠ¤í„´ìŠ¤ ë˜ì „ì€ ë¶ˆê°€ëŠ¥
 			if (!pZone->IsGuildRoom() && !pZone->IsPersonalDungeon())
 			{
 				bGoto = false;
@@ -856,13 +856,13 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 	if(pZone->isRVRZone())
 	{
-		//ÀÌ±×´Ï¼Ç ¹öÇÁ°¡ ÀÖ´Ù¸é »èÁ¦
+		//ì´ê·¸ë‹ˆì…˜ ë²„í”„ê°€ ìˆë‹¤ë©´ ì‚­ì œ
 		ch->m_assist.CureBySkillIndex(1062);
 		ch->m_assist.CureBySkillIndex(1063);
 		ch->m_assist.CureBySkillIndex(1064);
 		ch->m_assist.CureBySkillIndex(1065);
 
-		//Æê ¹öÇÁ°¡ ÀÖ´Ù¸é »èÁ¦
+		//í« ë²„í”„ê°€ ìˆë‹¤ë©´ ì‚­ì œ
 		ch->m_assist.CureByPetSkill();
 	}
 
@@ -874,7 +874,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 		return false;
 	}
 
-	// Á¸ÀÌ ¹Ù²î¸é
+	// ì¡´ì´ ë°”ë€Œë©´
 	if (pCurZone != pZone)
 	{
 		int errortype = ch->CanWarp() ;
@@ -894,7 +894,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			return false;
 		}
 
-		// area°¡ disableµÇ´Â »óÈ²ÀÌ¸é ÆÄÆ¼ÀÇ areanumÀ» ÃÊ±âÈ­ ½ÃÅ²´Ù.
+		// areaê°€ disableë˜ëŠ” ìƒí™©ì´ë©´ íŒŒí‹°ì˜ areanumì„ ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
 		if (pCurZone && (pCurZone->m_index == ZONE_ALTER_OF_DARK || pCurZone->m_index == ZONE_CAPPELLA_1 || pCurZone->m_index == ZONE_AKAN_TEMPLE
 						 || pCurZone->m_index == ZONE_TARIAN_DUNGEON
 						)
@@ -915,18 +915,18 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			}
 		}
 
-		// ÆÄÆ¼ Ã³¸®
+		// íŒŒí‹° ì²˜ë¦¬
 		if (ch->m_party != NULL)
 		{
 			ch->m_party->deletePartyRecallMember(ch->m_index);
-			// ÃÊ´ëÇÏ°Å³ª, ÃÊ´ë¹ŞÀº »ç¶÷ÀÏ °æ¿ì °ÅÀı·Î Ã³¸®
+			// ì´ˆëŒ€í•˜ê±°ë‚˜, ì´ˆëŒ€ë°›ì€ ì‚¬ëŒì¼ ê²½ìš° ê±°ì ˆë¡œ ì²˜ë¦¬
 			if (ch->m_party->GetRequestIndex() > 0 && (ch->m_party->GetBossIndex() == ch->m_index || ch->m_party->GetRequestIndex() == ch->m_index))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				PartyMsg(rmsg, MSG_PARTY_REJECT);
 				do_Party(ch, rmsg);
 			}
-			// °¥°÷ÀÌ ÆÛ´øÀÌ¸é ÆÄÆ¼Å»Åğ
+			// ê°ˆê³³ì´ í¼ë˜ì´ë©´ íŒŒí‹°íƒˆí‡´
 			else if (pZone->IsPersonalDungeon()
 					 || pZone->IsWarGroundZone()
 					 || pZone->IsPersonalRaid()
@@ -938,7 +938,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			}
 			else if (pZone->isRVRZone())
 			{
-				// ´Ù¸¥ ÆÄÆ¼¿øµé°ú °á»ç´ë°¡ ´Ù¸£´Ù¸é ÆÄÆ¼ Å»Åğ
+				// ë‹¤ë¥¸ íŒŒí‹°ì›ë“¤ê³¼ ê²°ì‚¬ëŒ€ê°€ ë‹¤ë¥´ë‹¤ë©´ íŒŒí‹° íƒˆí‡´
 				for (int i = 0; i < MAX_PARTY_MEMBER; ++i)
 				{
 					if (	ch->m_party->m_listMember[i] != NULL
@@ -970,17 +970,17 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			ch->m_party = NULL;
 		}
 
-		// ¿øÁ¤´ë Ã³¸®
+		// ì›ì •ëŒ€ ì²˜ë¦¬
 		if (ch->IsExped())
 		{
 			if (ch->m_Exped->GetRequestIndex() > 0 && (ch->m_Exped->GetBossIndex() == ch->m_index || ch->m_Exped->GetRequestIndex() == ch->m_index))
 			{
-				// ÃÊ´ë °ÅºÎ
+				// ì´ˆëŒ€ ê±°ë¶€
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExpedRejectReqMsg(rmsg);
 				do_Expedition(ch, rmsg);
 			}
-			// °¥°÷ÀÌ ÆÛ´øÀÌ¸é ¿øÁ¤´ë Å»Åğ
+			// ê°ˆê³³ì´ í¼ë˜ì´ë©´ ì›ì •ëŒ€ íƒˆí‡´
 			else if (pZone->IsPersonalDungeon()
 					 || pZone->IsWarGroundZone()
 					 || pZone->IsPersonalRaid()
@@ -995,7 +995,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			}
 			else if (pZone->isRVRZone())
 			{
-				// ´Ù¸¥ ·¹ÀÌµå¸â¹ö °á»ç´ë°¡ ´Ù¸£´Ù¸é ·¹ÀÌµå Å»Åğ
+				// ë‹¤ë¥¸ ë ˆì´ë“œë©¤ë²„ ê²°ì‚¬ëŒ€ê°€ ë‹¤ë¥´ë‹¤ë©´ ë ˆì´ë“œ íƒˆí‡´
 				for (int i = 0; i < MAX_EXPED_GROUP; ++i)
 				{
 					for (int j = 0; j < MAX_EXPED_GMEMBER; ++j)
@@ -1022,11 +1022,11 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 		}
 
 		ArtifactManager::instance()->move_zone(ch, zone);
-	} // Á¸ÀÌ ¹Ù²î¸é
+	} // ì¡´ì´ ë°”ë€Œë©´
 
 	bool bSetPrePlay = false;
 
-	if( !pZone->IsExpedRaidZone() && !pZone->IsPartyRaidZone() ) // ÀÌµ¿ÇÒ Á¸ÀÌ ·¹ÀÌµå Á¸ÀÌ ¾Æ´Ï¸é ÀÎÁ¸ Á¤º¸ ÃÊ±âÈ­
+	if( !pZone->IsExpedRaidZone() && !pZone->IsPartyRaidZone() ) // ì´ë™í•  ì¡´ì´ ë ˆì´ë“œ ì¡´ì´ ì•„ë‹ˆë©´ ì¸ì¡´ ì •ë³´ ì´ˆê¸°í™”
 	{
 		ch->m_nJoinInzone_ZoneNo = -1;
 		ch->m_nJoinInzone_RoomNo = -1;
@@ -1037,14 +1037,14 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 	{
 		ch->ProcDisconnect(false, (pCurZone == pZone));
 
-		// ¼­¹ö³»ÀÇ ÀÌµ¿
+		// ì„œë²„ë‚´ì˜ ì´ë™
 
 		i = pCurArea - pCurZone->m_area;
 
-		// Á¸ÀÌ ¹Ù²î¸é
+		// ì¡´ì´ ë°”ë€Œë©´
 		if (pCurZone != pZone)
 		{
-			// °¡¾ßÇÒ Á¸ÀÌ ·¹ÀÌ¾î Á¸ ÀÌ¸é
+			// ê°€ì•¼í•  ì¡´ì´ ë ˆì´ì–´ ì¡´ ì´ë©´
 			if (pZone->m_countArea > 1)
 			{
 				if (pZone->IsGuildRoom())
@@ -1073,7 +1073,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 					if (idx == pZone->m_countArea)
 					{
 						i = pZone->SetEnableArea();
-						// ºó ¿µ¾ï ¾øÀ½
+						// ë¹ˆ ì˜ì–µ ì—†ìŒ
 						if (i == -1)
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
@@ -1084,7 +1084,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 						pZone->m_area[i].m_guildIndex = ch->m_guildInfo->guild()->index();
 					}
 				}
-				// ÄŞº¸´øÀü
+				// ì½¤ë³´ë˜ì „
 				else if(pZone->IsComboZone())
 				{
 					if(pParty)
@@ -1103,10 +1103,10 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 							}
 						}
 
-						// area ¾øÀ½, »õ·Î area ¸¸µé¾î¼­ ÀÔÀå
+						// area ì—†ìŒ, ìƒˆë¡œ area ë§Œë“¤ì–´ì„œ ì…ì¥
 						if(idx == pZone->m_countArea)
 						{
-							// ÆÄÀå¸¸ area »ı¼ºÇÒ ¼ö ÀÖÀ½
+							// íŒŒì¥ë§Œ area ìƒì„±í•  ìˆ˜ ìˆìŒ
 							if(pParty->GetBossIndex() != ch->m_index)
 								goto RETURN_RESTORE_PARTY_AND_EXPED;
 
@@ -1119,16 +1119,16 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 								goto RETURN_RESTORE_PARTY_AND_EXPED;
 							}
 
-							// ÄŞº¸Á¸ ¹Ì¼ÇÄÉÀÌ½º ¼³Á¤
+							// ì½¤ë³´ì¡´ ë¯¸ì…˜ì¼€ì´ìŠ¤ ì„¤ì •
 							if(!pZone->m_area[i].m_monsterCombo->SetMonsterCombo(ch))
 								goto RETURN_RESTORE_PARTY_AND_EXPED;
 
-							// ÆÄÆ¼ ÄŞº¸ÀÎµ¦½º ¼³Á¤
+							// íŒŒí‹° ì½¤ë³´ì¸ë±ìŠ¤ ì„¤ì •
 							pParty->m_comboAreaIndex = pZone->m_area[i].m_monsterCombo->m_nIndex;
 
-							// ÆíÁıµ¥ÀÌÅÍ »èÁ¦
+							// í¸ì§‘ë°ì´í„° ì‚­ì œ
 							ch->m_listSaveComboData.clear();
-							// ´Ù¸¥ ÆÄÆ¼¿ø ¼ÒÈ¯
+							// ë‹¤ë¥¸ íŒŒí‹°ì› ì†Œí™˜
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
 								HelperComboGotoWaitRoomPrompt(rmsg, ch->m_index, (const char*)ch->m_name);
@@ -1149,12 +1149,12 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 					}
 					else
 					{
-						// ÆíÁıÇÑ µ¥ÀÌÅÍ°¡ ÀÖ´ÂÁö È®ÀÎ
+						// í¸ì§‘í•œ ë°ì´í„°ê°€ ìˆëŠ”ì§€ í™•ì¸
 						if(ch->m_listSaveComboData.size() < 1)
 							goto RETURN_RESTORE_PARTY_AND_EXPED;
 
 						i = pZone->SetEnableArea();
-						// ºó ¿µ¿ª ¾øÀ½
+						// ë¹ˆ ì˜ì—­ ì—†ìŒ
 						if(i == -1)
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
@@ -1163,11 +1163,11 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 							goto RETURN_RESTORE_PARTY_AND_EXPED;
 						}
 
-						// ¹Ì¼ÇÄÉÀÌ½º ¼¼ÆÃ
+						// ë¯¸ì…˜ì¼€ì´ìŠ¤ ì„¸íŒ…
 						if(!pZone->m_area[i].m_monsterCombo->SetMonsterCombo(ch))
 							goto RETURN_RESTORE_PARTY_AND_EXPED;
 
-						// ¹Ì¼ÇÄÉÀÌ½º ÆíÁı Á¤º¸ »èÁ¦
+						// ë¯¸ì…˜ì¼€ì´ìŠ¤ í¸ì§‘ ì •ë³´ ì‚­ì œ
 						ch->m_listSaveComboData.clear();
 
 						GAMELOG << init("CREATE COMBO AREA", ch)
@@ -1185,9 +1185,9 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 #ifdef EXTREME_CUBE
 				else if(pZone !=NULL && pZone->IsExtremeCube())
 				{
-					// °¡¾ßÇÒ °÷ÀÌ cube ÀÌ¸é
-					// memlist ¿¡ Ãß°¡½ÃÅ²´Ù.
-					// 1. memlist Ã£±â
+					// ê°€ì•¼í•  ê³³ì´ cube ì´ë©´
+					// memlist ì— ì¶”ê°€ì‹œí‚¨ë‹¤.
+					// 1. memlist ì°¾ê¸°
 					CCubeMemList* memlist = NULL;
 					if(gserver->m_extremeCube.IsGuildCubeTime())
 					{
@@ -1215,7 +1215,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 					}
 					if(!memlist->GetCubeNum(i))
 					{
-						// ¿¡·¯
+						// ì—ëŸ¬
 						GAMELOG << init("EXTREME CUBE MOVE ERROR 1", ch) << "CUBEIDX" << delim << memlist->GetIndex() << end;
 						goto RETURN_RESTORE_PARTY_AND_EXPED;
 					}
@@ -1235,7 +1235,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 					else
 					{
 						//i = 0;
-						// gozone ¸í·ÉÀ¸·Î ·¹ÀÌµå Á¸Àº ¸ø µé¾î°£´Ù.
+						// gozone ëª…ë ¹ìœ¼ë¡œ ë ˆì´ë“œ ì¡´ì€ ëª» ë“¤ì–´ê°„ë‹¤.
 						CNetMsg::SP rmsg(new CNetMsg);
 						SysMsg(rmsg, MSG_SYS_DO_NOT_GO_ZONE_GMORDER);
 						SEND_Q(rmsg, ch->m_desc);
@@ -1272,7 +1272,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 				else
 				{
 					i = pZone->SetEnableArea();
-					// ºó ¿µ¾ï ¾øÀ½
+					// ë¹ˆ ì˜ì–µ ì—†ìŒ
 					if (i == -1)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -1287,19 +1287,19 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 				i= 0;
 			}
 
-			// ´Ù¸¥ Á¸À¸·Î ÀÌµ¿
-			// Ä³¸¯ÅÍ¸¦ ÇÁ¸®ÇÃ·¹ÀÌ »óÅÂ·Î
+			// ë‹¤ë¥¸ ì¡´ìœ¼ë¡œ ì´ë™
+			// ìºë¦­í„°ë¥¼ í”„ë¦¬í”Œë ˆì´ ìƒíƒœë¡œ
 			ch->m_bPlaying = false;
 			STATE(ch->m_desc) = CON_PREPARE_PLAY;
 			bSetPrePlay = true;
-		} // ´Ù¸¥ Á¸À¸·Î ÀÌµ¿
+		} // ë‹¤ë¥¸ ì¡´ìœ¼ë¡œ ì´ë™
 		else
 		{
 #ifdef EXTREME_CUBE
-			// °°Àº Á¸À¸·Î ÀÌµ¿
+			// ê°™ì€ ì¡´ìœ¼ë¡œ ì´ë™
 			if(pCurZone !=NULL && pCurZone->IsExtremeCube())
 			{
-				// ÀÌµ¿¸¸ ÇÑ´Ù.
+				// ì´ë™ë§Œ í•œë‹¤.
 				CCubeMemList* memlist = NULL;
 				if(gserver->m_extremeCube.IsGuildCubeTime())
 				{
@@ -1323,7 +1323,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 				}
 				if(!memlist->GetCubeNum(i))
 				{
-					// ¿¡·¯
+					// ì—ëŸ¬
 					GAMELOG << init("EXTREME CUBE MOVE ERROR 2", ch) << "CUBEIDX" << delim << memlist->GetIndex() << end;
 					goto RETURN_RESTORE_PARTY_AND_EXPED;
 				}
@@ -1337,7 +1337,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 #endif // EXTREME_CUBE
 		}
 
-		// Ä³¸¯ÅÍÀÇ À§Ä¡ ¼³Á¤
+		// ìºë¦­í„°ì˜ ìœ„ì¹˜ ì„¤ì •
 		ch->m_pZone = pZone;
 		if(ch->m_pZone && ch->m_pZone->m_area)
 		{
@@ -1355,15 +1355,15 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 		if( !ch->m_pArea )
 			goto RETURN_RESTORE_PARTY_AND_EXPED;
-		// ·¹ÀÌµå ´øÀüÀÌ¸é SetEnable¸¦ µû·Î ÇØÁà¾ß ÇÑ´Ù.
+		// ë ˆì´ë“œ ë˜ì „ì´ë©´ SetEnableë¥¼ ë”°ë¡œ í•´ì¤˜ì•¼ í•œë‹¤.
 		if (pZone->m_index == ZONE_ALTER_OF_DARK || pZone->m_index == ZONE_CAPPELLA_1 || pZone->m_index == ZONE_AKAN_TEMPLE
 				|| pZone->m_index == ZONE_TARIAN_DUNGEON
 		   )
 		{
-			// Ä³¸¯ÅÍ°¡ µé¾î°¥ area¿¡ ¾Æ¹«µµ ¾øÀ» ¶§¸¸ ÃÊ±âÈ­
+			// ìºë¦­í„°ê°€ ë“¤ì–´ê°ˆ areaì— ì•„ë¬´ë„ ì—†ì„ ë•Œë§Œ ì´ˆê¸°í™”
 			ch->m_pArea->m_inCount++;
 
-			//ÀÌµ¿À» ½ÃÀÛÇÔ bInCount ÀÌ true°¡ µÇ¾î¾ß ¿ÏÀüÈ÷ ÀÌµ¿ÀÌ ¿Ï·áµÈ »óÅÂ°¡ µÊ
+			//ì´ë™ì„ ì‹œì‘í•¨ bInCount ì´ trueê°€ ë˜ì–´ì•¼ ì™„ì „íˆ ì´ë™ì´ ì™„ë£Œëœ ìƒíƒœê°€ ë¨
 			ch->bMoveInsDunFinish = false;
 			if (ch->m_pArea->GetAllClientCount_Area() < 1)
 			{
@@ -1443,6 +1443,16 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 				ch->m_pArea->SendToCell(rmsg, ch, true);
 			}
 
+			{
+				std::map<int, MAKE_TITLE*>::iterator it = ch->_map_title.find(ch->m_custom_title_index);
+				if(it != ch->_map_title.end())
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					TitleUserInfoMsg(rmsg, ch->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+					ch->m_pArea->SendToCell(rmsg, ch, true);
+				}
+			}
+
 			ch->m_pArea->SendCellInfo(ch, true);
 			if( ch->m_guildInfo && ch->m_guildInfo->guild() )
 			{
@@ -1491,7 +1501,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 		if (!DEAD(ch))
 		{
-			// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+			// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_GOZONE);
 			ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -1532,7 +1542,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 		else
 			ch->CureGuildGradeSkill();
 
-		//À¯¹° ¼ÒÀ¯ÀÚ°¡ ÀÌµ¿ÇÏ´Â °æ¿ì Ã¼Å©
+		//ìœ ë¬¼ ì†Œìœ ìê°€ ì´ë™í•˜ëŠ” ê²½ìš° ì²´í¬
 		if(ArtifactManager::instance()->isOwnerPC(ch->m_index))
 		{
 			ch->CalcStatus(true);
@@ -1548,16 +1558,16 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 			ch->CalcStatus(true);
 		}
 
-		// Á¸ÀÌµ¿½Ã PK¸ğµå Ã¼Å©
+		// ì¡´ì´ë™ì‹œ PKëª¨ë“œ ì²´í¬
 		if (ch->IsSetPlayerState(PLAYER_STATE_PKMODE) == false)
 		{
-			// PK¸ğµå°¡ ¾Æ´Ò °æ¿ì
+			// PKëª¨ë“œê°€ ì•„ë‹ ê²½ìš°
 			return true;
 		}
 
 		bool bPKState = false;
 
-		// °ø¼º Ã¼Å©
+		// ê³µì„± ì²´í¬
 		castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 		if (castle)
 		{
@@ -1572,7 +1582,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 
 		if (ch->IsInPeaceZone(false) == false)
 		{
-			// PKÁ¸
+			// PKì¡´
 			if (ch->GetMapAttr() & MATT_FREEPKZONE)
 			{
 				bPKState = true;
@@ -1589,9 +1599,9 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 	}
 	else
 	{
-		// ¼­¹ö ¿ÜºÎ·Î ÀÌµ¿ Ã³¸®
+		// ì„œë²„ ì™¸ë¶€ë¡œ ì´ë™ ì²˜ë¦¬
 
-		// Á¸ ÀÌµ¿ ¸Ş½ÃÁö »ı¼º
+		// ì¡´ ì´ë™ ë©”ì‹œì§€ ìƒì„±
 		ResponseClient::makeGoZone(ch->m_desc->m_msgGoZone, pZone->m_index, 0,
 								   pZone->m_remoteIP, pZone->m_remotePort);
 //#ifdef GER_LOG
@@ -1604,7 +1614,7 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 //			<< LOG_VAL("level", ch->m_level ) << blank
 //			<< endGer;
 //#endif // GER_LOG
-		// ÁÂÇ¥ ¼³Á¤
+		// ì¢Œí‘œ ì„¤ì •
 		ch->m_pZone = pZone;
 		ch->m_pArea = NULL;
 		GET_YLAYER(ch)	= ylayer;
@@ -1613,14 +1623,14 @@ bool __GoZoneBase(CPC* ch, int zone, char ylayer, float x, float z, const char *
 		ch->m_desc->m_bGoZone = true;
 		ch->m_desc->m_bGoZoneSent = false;
 		ch->m_desc->Close("GoZone - CHAR_ZONE_TRANSITION");
-		return true; // gozone ¼º°ø
+		return true; // gozone ì„±ê³µ
 	}
 
-	return true; // ½ÇÆĞ´ø ¼º°øÀÌ´ø ³¡
+	return true; // ì‹¤íŒ¨ë˜ ì„±ê³µì´ë˜ ë
 
 RETURN_RESTORE_PARTY_AND_EXPED:
 
-	// Á¸ÀÌµ¿À» ÇÏ¸é ÆÄÆ¼¿¡¼­ Á¦¿Ü½ÃÅ°´Âµ¥ Á¸ÀÌµ¿ ½ÇÆĞ½Ã ´Ù½Ã ÆÄÆ¼·Î º¹±Í ½ÃÄÑÁÖ´Â ÇÔ¼ö
+	// ì¡´ì´ë™ì„ í•˜ë©´ íŒŒí‹°ì—ì„œ ì œì™¸ì‹œí‚¤ëŠ”ë° ì¡´ì´ë™ ì‹¤íŒ¨ì‹œ ë‹¤ì‹œ íŒŒí‹°ë¡œ ë³µê·€ ì‹œì¼œì£¼ëŠ” í•¨ìˆ˜
 	if(pParty)
 	{
 		pParty->SetMemberRegister_AfterGoZone(ch);
@@ -1679,10 +1689,10 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 		pCastle->CheckRespond(TO_PC(ch));
 	}
 
-	// ¼¿¾È¿¡ ¾Ë¸®°í
+	// ì…€ì•ˆì— ì•Œë¦¬ê³ 
 	ch->SendDisappearAllInCell(true);
 
-	// ¼¿¿¡¼­ »©°í
+	// ì…€ì—ì„œ ë¹¼ê³ 
 	ch->m_pArea->CharFromCell(ch, true);
 
 	if(IS_APET(ch))
@@ -1693,10 +1703,10 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 			apet->m_pArea = ower->m_pArea;
 	}
 
-	// ÀÌµ¿
+	// ì´ë™
 	ch->Move(x, z, h, r, y);
 
-	// ¼¿¿¡ ³Ö°í
+	// ì…€ì— ë„£ê³ 
 	int cx, cz;
 	ch->m_pArea->PointToCellNum(x, z, &cx, &cz);
 	ch->m_pArea->CharToCell(ch, y, cx, cz);
@@ -1705,7 +1715,7 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 	{
 		TO_PC(ch)->SummonNpcRemoveAll(true);
 
-		// ÇöÀç ½ºÅ³ ½ÃÀü Ãë¼Ò
+		// í˜„ì¬ ìŠ¤í‚¬ ì‹œì „ ì·¨ì†Œ
 		if( ch->m_currentSkill != NULL )
 		{
 			ch->m_currentSkill->Cancel(ch);
@@ -1719,12 +1729,12 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 		pc->ResetPlayerState(PLAYER_STATE_SITDOWN);
 
 		{
-			// ÀÌµ¿ °á°ú ¾Ë¸®°í
+			// ì´ë™ ê²°ê³¼ ì•Œë¦¬ê³ 
 			CNetMsg::SP rmsg(new CNetMsg);
 			ResponseClient::makeGoMsg(rmsg, pc, bHack);
 			SEND_Q(rmsg, pc->m_desc);
 		}
-		// ¼¿ Á¤º¸ º¸³»°í
+		// ì…€ ì •ë³´ ë³´ë‚´ê³ 
 		pc->m_pArea->SendCellInfo(pc, true);
 
 		CWarCastle * castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
@@ -1741,7 +1751,7 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 		}
 	}
 
-	// ³ªÅ¸³ª´Â °Å ¾Ë¸®°í
+	// ë‚˜íƒ€ë‚˜ëŠ” ê±° ì•Œë¦¬ê³ 
 	if (IS_PC(ch))
 	{
 		{
@@ -1762,6 +1772,16 @@ void GoTo(CCharacter* ch, char y, float x, float z, float h, float r, char bHack
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildNameColorStateMsg(rmsg, TO_PC(ch) );
 			ch->m_pArea->SendToCell( rmsg, TO_PC(ch) );
+		}
+
+		{
+			std::map<int, MAKE_TITLE*>::iterator it = pc->_map_title.find(pc->m_custom_title_index);
+			if(it != pc->_map_title.end())
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				TitleUserInfoMsg(rmsg, pc->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+				pc->m_pArea->SendToCell(rmsg, pc, true);
+			}
 		}
 	}
 	else
@@ -1864,10 +1884,10 @@ void GoZoneForceBase(CPC* ch, int zone, char ylayer, float x, float z, const cha
 		do_Exchange(ch, rmsg);
 	}
 
-	// ÆÄÆ¼ ½ÅÃ» ÁßÀÌ¸é °ÅÀıÇÑ´Ù.
+	// íŒŒí‹° ì‹ ì²­ ì¤‘ì´ë©´ ê±°ì ˆí•œë‹¤.
 	if (ch->m_party != NULL)
 	{
-		// ÃÊ´ëÇÏ°Å³ª, ÃÊ´ë¹ŞÀº »ç¶÷ÀÏ °æ¿ì °ÅÀı·Î Ã³¸®
+		// ì´ˆëŒ€í•˜ê±°ë‚˜, ì´ˆëŒ€ë°›ì€ ì‚¬ëŒì¼ ê²½ìš° ê±°ì ˆë¡œ ì²˜ë¦¬
 		if (ch->m_party->GetRequestIndex() > 0 && (ch->m_party->GetBossIndex() == ch->m_index || ch->m_party->GetRequestIndex() == ch->m_index))
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1928,7 +1948,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 	int i = 0;
 	if (ch->m_pZone->m_index == zone)
 	{
-		// °°Àº Á¸¾È¿¡¼­ÀÇ ÀÌµ¿
+		// ê°™ì€ ì¡´ì•ˆì—ì„œì˜ ì´ë™
 		bGoto = true;
 		bValid = true;
 		pZone = ch->m_pZone;
@@ -1941,7 +1961,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 
 		if (pZone->m_bRemote)
 		{
-			// ¿ÜºÎ ¼­¹ö´Â ÀÎ½ºÅÏ½º ´øÀüÀº ºÒ°¡´É
+			// ì™¸ë¶€ ì„œë²„ëŠ” ì¸ìŠ¤í„´ìŠ¤ ë˜ì „ì€ ë¶ˆê°€ëŠ¥
 			if (!pZone->IsGuildRoom() && !pZone->IsPersonalDungeon())
 			{
 				bGoto = false;
@@ -1957,27 +1977,27 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 
 	if (!bValid)
 	{
-		// ¿À·ù
+		// ì˜¤ë¥˜
 		return false;
 	}
 
 	CZone* pCurZone = ch->m_pZone;
 	CArea* pCurArea = ch->m_pArea;
 
-	// Á¸ÀÌ ¹Ù²î¸é
+	// ì¡´ì´ ë°”ë€Œë©´
 	if (pCurZone != pZone)
 	{
-		// ÆÄÆ¼ Ã³¸®
+		// íŒŒí‹° ì²˜ë¦¬
 		if (ch->m_party != NULL)
 		{
-			// ÃÊ´ëÇÏ°Å³ª, ÃÊ´ë¹ŞÀº »ç¶÷ÀÏ °æ¿ì °ÅÀı·Î Ã³¸®
+			// ì´ˆëŒ€í•˜ê±°ë‚˜, ì´ˆëŒ€ë°›ì€ ì‚¬ëŒì¼ ê²½ìš° ê±°ì ˆë¡œ ì²˜ë¦¬
 			if (ch->m_party->GetRequestIndex() > 0 && (ch->m_party->GetBossIndex() == ch->m_index || ch->m_party->GetRequestIndex() == ch->m_index))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				PartyMsg(rmsg, MSG_PARTY_REJECT);
 				do_Party(ch, rmsg);
 			}
-			// °¥°÷ÀÌ ÆÛ´øÀÌ¸é ÆÄÆ¼Å»Åğ
+			// ê°ˆê³³ì´ í¼ë˜ì´ë©´ íŒŒí‹°íƒˆí‡´
 			else if (pZone->IsPersonalDungeon()
 					 || pZone->IsWarGroundZone()
 					 || pZone->IsPersonalRaid()
@@ -1989,7 +2009,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 			}
 			else if (pZone->isRVRZone())
 			{
-				// ´Ù¸¥ ÆÄÆ¼¿øµé°ú °á»ç´ë°¡ ´Ù¸£´Ù¸é ÆÄÆ¼ Å»Åğ
+				// ë‹¤ë¥¸ íŒŒí‹°ì›ë“¤ê³¼ ê²°ì‚¬ëŒ€ê°€ ë‹¤ë¥´ë‹¤ë©´ íŒŒí‹° íƒˆí‡´
 				for (int i = 0; i < MAX_PARTY_MEMBER; ++i)
 				{
 					if (	ch->m_party->m_listMember[i] != NULL
@@ -2000,6 +2020,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 						CNetMsg::SP rmsg(new CNetMsg);
 						PartyMsg(rmsg, MSG_PARTY_QUIT);
 						do_Party(ch, rmsg);
+						break;
 					}
 				}
 			}
@@ -2014,17 +2035,17 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 			ch->m_party = NULL;
 		}
 
-		// ¿øÁ¤´ë Ã³¸®
+		// ì›ì •ëŒ€ ì²˜ë¦¬
 		if (ch->IsExped())
 		{
 			if (ch->m_Exped->GetRequestIndex() > 0 && (ch->m_Exped->GetBossIndex() == ch->m_index || ch->m_Exped->GetRequestIndex() == ch->m_index))
 			{
-				// ÃÊ´ë °ÅºÎ
+				// ì´ˆëŒ€ ê±°ë¶€
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExpedRejectReqMsg(rmsg);
 				do_Expedition(ch, rmsg);
 			}
-			// °¥°÷ÀÌ ÆÛ´øÀÌ¸é ¿øÁ¤´ë Å»Åğ
+			// ê°ˆê³³ì´ í¼ë˜ì´ë©´ ì›ì •ëŒ€ íƒˆí‡´
 			else if (pZone->IsPersonalDungeon()
 					 || pZone->IsWarGroundZone()
 					 || pZone->IsPersonalRaid()
@@ -2036,7 +2057,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 			}
 			else if (pZone->isRVRZone())
 			{
-				// ´Ù¸¥ ·¹ÀÌµå¸â¹öµé°ú °á»ç´ë°¡ ´Ù¸£´Ù¸é ·¹ÀÌµå Å»Åğ
+				// ë‹¤ë¥¸ ë ˆì´ë“œë©¤ë²„ë“¤ê³¼ ê²°ì‚¬ëŒ€ê°€ ë‹¤ë¥´ë‹¤ë©´ ë ˆì´ë“œ íƒˆí‡´
 				for (int i = 0; i < MAX_EXPED_GROUP; ++i)
 				{
 					for (int j = 0; j < MAX_EXPED_GMEMBER; ++j)
@@ -2059,18 +2080,18 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 			ch->m_Exped->SetMemberPCPtr(ch->m_index, NULL);
 			ch->m_Exped = NULL;
 		}
-	} // Á¸ÀÌ ¹Ù²î¸é
+	} // ì¡´ì´ ë°”ë€Œë©´
 
 	bool bSetPrePlay = false;
 	if (bGoto)
 	{
 		ch->ProcDisconnect(false, (pCurZone == pZone));
 
-		// ¼­¹ö³»ÀÇ ÀÌµ¿
+		// ì„œë²„ë‚´ì˜ ì´ë™
 
 		i = pCurArea - pCurZone->m_area;
 
-		// °¡¾ßÇÒ Á¸ÀÌ ·¹ÀÌ¾î Á¸ ÀÌ¸é
+		// ê°€ì•¼í•  ì¡´ì´ ë ˆì´ì–´ ì¡´ ì´ë©´
 		if (pZone->m_countArea > 1)
 		{
 			if(pc->m_pArea->m_bEnable)
@@ -2081,17 +2102,17 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 		else
 			i= 0;
 
-		// Á¸ÀÌ ¹Ù²î¸é
+		// ì¡´ì´ ë°”ë€Œë©´
 		if (pCurZone != pZone)
 		{
-			// ´Ù¸¥ Á¸À¸·Î ÀÌµ¿
-			// Ä³¸¯ÅÍ¸¦ ÇÁ¸®ÇÃ·¹ÀÌ »óÅÂ·Î
+			// ë‹¤ë¥¸ ì¡´ìœ¼ë¡œ ì´ë™
+			// ìºë¦­í„°ë¥¼ í”„ë¦¬í”Œë ˆì´ ìƒíƒœë¡œ
 			ch->m_bPlaying = false;
 			STATE(ch->m_desc) = CON_PREPARE_PLAY;
 			bSetPrePlay = true;
-		} // ´Ù¸¥ Á¸À¸·Î ÀÌµ¿
+		} // ë‹¤ë¥¸ ì¡´ìœ¼ë¡œ ì´ë™
 
-		// Ä³¸¯ÅÍÀÇ À§Ä¡ ¼³Á¤
+		// ìºë¦­í„°ì˜ ìœ„ì¹˜ ì„¤ì •
 		ch->m_pZone = pZone;
 		ch->m_pArea = ch->m_pZone->m_area + i;
 
@@ -2187,7 +2208,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 
 		if (!DEAD(ch))
 		{
-			// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+			// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			EffectEtcMsg(rmsg, ch, MSG_EFFECT_ETC_GOZONE);
 			ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -2222,16 +2243,16 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 
 		ch->m_bChangeStatus = true;
 
-// 		// Á¸ÀÌµ¿½Ã PK¸ğµå Ã¼Å©
+// 		// ì¡´ì´ë™ì‹œ PKëª¨ë“œ ì²´í¬
 // 		if (ch->IsSetPlayerState(PLAYER_STATE_PKMODE) == false)
 // 		{
-// 			// PK¸ğµå°¡ ¾Æ´Ò °æ¿ì
+// 			// PKëª¨ë“œê°€ ì•„ë‹ ê²½ìš°
 // 			return false;
 // 		}
 
 		bool bPKState = false;
 
-		// °ø¼º Ã¼Å©
+		// ê³µì„± ì²´í¬
 		CWarCastle * castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 		if (castle)
 		{
@@ -2246,7 +2267,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 
 		if (ch->IsInPeaceZone(false) == false)
 		{
-			// PKÁ¸
+			// PKì¡´
 			if (ch->GetMapAttr() & MATT_FREEPKZONE)
 			{
 				bPKState = true;
@@ -2263,9 +2284,9 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 	}
 	else
 	{
-		// ¼­¹ö ¿ÜºÎ·Î ÀÌµ¿ Ã³¸®
+		// ì„œë²„ ì™¸ë¶€ë¡œ ì´ë™ ì²˜ë¦¬
 
-		// Á¸ ÀÌµ¿ ¸Ş½ÃÁö »ı¼º
+		// ì¡´ ì´ë™ ë©”ì‹œì§€ ìƒì„±
 		ResponseClient::makeGoZone(ch->m_desc->m_msgGoZone, pZone->m_index, 0,
 								   pZone->m_remoteIP, pZone->m_remotePort);
 //#ifdef GER_LOG
@@ -2278,7 +2299,7 @@ bool _GMGoZone(CPC* ch, CPC* pc)
 //			<< LOG_VAL("level", ch->m_level ) << blank
 //			<< endGer;
 //#endif // GER_LOG
-		// ÁÂÇ¥ ¼³Á¤
+		// ì¢Œí‘œ ì„¤ì •
 		ch->m_pZone = pZone;
 		ch->m_pArea = NULL;
 		GET_YLAYER(ch)	= ylayer;

@@ -19,7 +19,7 @@ CPuzzleGame::~CPuzzleGame(void)
 
 bool CPuzzleGame::CanPlay(CPC* user)
 {
-	// ÀÎº¥Åä¸®¿¡ ÆÛÁñ ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö Ã£¾Æº¸ÀÚ. ÆÛÁñ ¾ÆÀÌÅÛÀÌ ¾øÀ¸¸é, ÇÃ·¹ÀÌÇÒ ¼ö ¾ø´Ù.
+	// ì¸ë²¤í† ë¦¬ì— í¼ì¦ ì•„ì´í…œì´ ìžˆëŠ”ì§€ ì°¾ì•„ë³´ìž. í¼ì¦ ì•„ì´í…œì´ ì—†ìœ¼ë©´, í”Œë ˆì´í•  ìˆ˜ ì—†ë‹¤.
 	std::vector<int>::iterator itr = m_puzzelIdx.begin();
 	std::vector<int>::iterator itrEnd = m_puzzelIdx.end();
 	for ( ; itr != itrEnd ; ++itr)
@@ -33,8 +33,8 @@ bool CPuzzleGame::CanPlay(CPC* user)
 
 bool CPuzzleGame::Play(CPC* user)
 {
-	// ÆÛÁñ °ÔÀÓÀ» ½ÃÀÛÇØº¾½Ã´Ù. ¿©±â¼­´Â ÆÛÁñ ¾ÆÀÌÅÛÀ» »èÁ¦¸¸ ÇÕ´Ï´Ù.
-	// 1. ÆÛÁñ ¾ÆÀÌÅÛÀ» »èÁ¦ÇÏ±â À§ÇØ ÀÎº¥Åä¸®ÀÇ ¾ÆÀÌÅÛ Æ÷ÀÎÅÍµéÀ» º¤ÅÍ¿¡ ¸ð¾Æº¾½Ã´Ù.
+	// í¼ì¦ ê²Œìž„ì„ ì‹œìž‘í•´ë´…ì‹œë‹¤. ì—¬ê¸°ì„œëŠ” í¼ì¦ ì•„ì´í…œì„ ì‚­ì œë§Œ í•©ë‹ˆë‹¤.
+	// 1. í¼ì¦ ì•„ì´í…œì„ ì‚­ì œí•˜ê¸° ìœ„í•´ ì¸ë²¤í† ë¦¬ì˜ ì•„ì´í…œ í¬ì¸í„°ë“¤ì„ ë²¡í„°ì— ëª¨ì•„ë´…ì‹œë‹¤.
 	std::vector<CItem*> itemList;
 
 	std::vector<int>::iterator itr = m_puzzelIdx.begin();
@@ -45,7 +45,7 @@ bool CPuzzleGame::Play(CPC* user)
 			return false;
 	}
 
-	// 2. ¾ÆÀÌÅÛÀ» ÁøÂ¥ »èÁ¦ÇÕ½Ã´Ù.
+	// 2. ì•„ì´í…œì„ ì§„ì§œ ì‚­ì œí•©ì‹œë‹¤.
 	RemoveItem(user, itemList);
 
 	return true;
@@ -53,7 +53,7 @@ bool CPuzzleGame::Play(CPC* user)
 
 bool CPuzzleGame::IsExistItem(CPC* user, int index)
 {
-	// ÀÎº¥Åä¸®¿¡ ÆÛÁñ ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö È®ÀÎÇØº¸ÀÚ.
+	// ì¸ë²¤í† ë¦¬ì— í¼ì¦ ì•„ì´í…œì´ ìžˆëŠ”ì§€ í™•ì¸í•´ë³´ìž.
 	if (user->m_inventory.FindByDBIndex(index, 0, 0) == NULL)
 		return false;
 
@@ -90,9 +90,9 @@ void CPuzzleGame::GiveReward(CPC* user)
 	{
 		if( gserver->m_rewardMgr.doReward(user, m_rewardIdx) )
 		{
-			// ¾ÆÀÌÅÛ Áö±Þ ¸Þ½ÃÁö º¸³»ÀÚ.
+			// ì•„ì´í…œ ì§€ê¸‰ ë©”ì‹œì§€ ë³´ë‚´ìž.
 
-			// ÃÊ±âÈ­
+			// ì´ˆê¸°í™”
 			user->m_RockPaperScissorsInfo.SetWinCount(0);
 			user->m_RockPaperScissorsInfo.SetGameCount(0);
 			user->m_RockPaperScissorsInfo.SetStart(false);
@@ -101,5 +101,5 @@ void CPuzzleGame::GiveReward(CPC* user)
 		}
 	}
 
-	// ¾ÆÀÌÅÛ Áö±Þ ½ÇÆÐ ¸Þ½ÃÁö
+	// ì•„ì´í…œ ì§€ê¸‰ ì‹¤íŒ¨ ë©”ì‹œì§€
 }

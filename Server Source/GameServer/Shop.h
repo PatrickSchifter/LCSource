@@ -39,7 +39,7 @@ public:
 		m_itemDBIdx = NULL;
 	}
 
-	// shop ©║╪╜ ╬фюлеш юж╢баЖ х╝юн
+	// shop Л≈░Л└° Л∙└Л²╢М┘° Л·┬К┼■Л╖─ М≥∙Л²╦
 	bool ThersIsItem(int itemDBIdx)
 	{
 		int i;

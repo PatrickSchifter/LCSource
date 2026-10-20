@@ -150,11 +150,11 @@ private:
 	int m_rewardIndex;
 	int m_probType;
 
-	// º¸»ó ¸®½ºÆ®
+	// ë³´ìƒ ë¦¬ìŠ¤íŠ¸
 	std::vector<CRewardData> m_rewardDataList;
 };
 
-// º¸»ó µ¥ÀÌÅÍ ±¸Á¶Ã¼
+// ë³´ìƒ ë°ì´í„° êµ¬ì¡°ì²´
 typedef struct __reward_data_info
 {
 	int type;
@@ -183,13 +183,13 @@ public:
 		m_dataList.clear();
 	}
 
-	// DB¿¡¼­ µ¥ÀÌÅÍ¸¦ ·ÎµùÇÑ´Ù.
+	// DBì—ì„œ ë°ì´í„°ë¥¼ ë¡œë”©í•œë‹¤.
 	bool loadReward(MYSQL * _dataDB);
 
-	// º¸»óµ¥ÀÌÆ®¸¦ ¸ÕÀú ÃßÃâÇÏ¿© º¸»óÀÌ °¡´ÉÇÑÁö ÆÇ´ÜÇÑ´Ù.
+	// ë³´ìƒë°ì´íŠ¸ë¥¼ ë¨¼ì € ì¶”ì¶œí•˜ì—¬ ë³´ìƒì´ ê°€ëŠ¥í•œì§€ íŒë‹¨í•œë‹¤.
 	bool setRewardData(CPC * _pCh, int _rewardIndex, int _prob = -1, int _pos = -1 );
 
-	// setRewardData() ¿¡¼­ ¸¸µé¾îÁø ¸®½ºÆ®¸¦ pc¿¡°Ô Áö±ŞÇÑ´Ù.
+	// setRewardData() ì—ì„œ ë§Œë“¤ì–´ì§„ ë¦¬ìŠ¤íŠ¸ë¥¼ pcì—ê²Œ ì§€ê¸‰í•œë‹¤.
 	bool doReward( CPC * _pCh, int _rewardIndex);
 
 	const std::vector<REWAD_DATA_INFO> * getRewardDataList()
@@ -209,33 +209,33 @@ public:
 
 protected:
 
-	// Á¶°Ç¿¡ ¸Â´Â ³ÑÀº ¸ğµÎ Áö±Ş ÇÏ´Â ¹æ½Ä
+	// ì¡°ê±´ì— ë§ëŠ” ë„˜ì€ ëª¨ë‘ ì§€ê¸‰ í•˜ëŠ” ë°©ì‹
 	bool setRewardDataMulti		(CPC * _pCh, CReward * _rward, int _prob);
 
-	// È®·ü¿¡ µû¸¥ ÇÑ°³¸¸ Áö±ŞÇÏ´Â ¹æ½Ä
+	// í™•ë¥ ì— ë”°ë¥¸ í•œê°œë§Œ ì§€ê¸‰í•˜ëŠ” ë°©ì‹
 	bool setRewardDataOnceRandom(CPC * _pCh, CReward * _rward, int _porb);
 
-	// ¸®½ºÆ®Áß ÇÑ°³¸¸ ¼±ÅÃÇÏ¿© Áö±Ş ÇÏ´Â ¹æ½Ä
+	// ë¦¬ìŠ¤íŠ¸ì¤‘ í•œê°œë§Œ ì„ íƒí•˜ì—¬ ì§€ê¸‰ í•˜ëŠ” ë°©ì‹
 	bool setRewardDataOnceSelect(CPC * _pCh, CReward * _rward, int _pos);
 
-	// º¸»ó ¸ñ·Ï ¸®½ºÆ®¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+	// ë³´ìƒ ëª©ë¡ ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
 	void initRewardDataInfo()
 	{
 		m_rewardDataList.clear();
 		m_invenSlot = 0;
 	}
 
-	// ¾ÆÀÌÅÛ, ½ºÅ³ »ı¼ºÀÌ °¡´ÉÇÑÁö proto ¸®½ºÆ®¿¡¼­ È®ÀÎ
+	// ì•„ì´í…œ, ìŠ¤í‚¬ ìƒì„±ì´ ê°€ëŠ¥í•œì§€ proto ë¦¬ìŠ¤íŠ¸ì—ì„œ í™•ì¸
 	bool checkProto( CRewardData * _rData );
 
-	// ·¹º§ ¹× Á÷¾÷ Á¶°ÇµîÀ» È®ÀÎ
+	// ë ˆë²¨ ë° ì§ì—… ì¡°ê±´ë“±ì„ í™•ì¸
 	bool checkRewardCondition(CPC * _pCh, CRewardData * _rData, int _prob, bool _checkRandom=true);
 
-	// º¸»ó ¸ñ·Ï¿¡ µ¥ÀÌÅÍ¸¦ ¹Ğ¾î ³Ö´Â´Ù.
+	// ë³´ìƒ ëª©ë¡ì— ë°ì´í„°ë¥¼ ë°€ì–´ ë„£ëŠ”ë‹¤.
 	bool pushRewardData			( CRewardData * _rData);
 	bool pushRewardDataItem		( CRewardData * _rData);
 
-	// pc¿¡±â º¸»óÇ°À» Áö±ŞÇÑ´Ù.
+	// pcì—ê¸° ë³´ìƒí’ˆì„ ì§€ê¸‰í•œë‹¤.
 	bool reward2Pc	( CPC * _pCh );
 	bool item2PC	( CPC * _pCh, REWAD_DATA_INFO* _rewarddata);
 	bool nas2PC		( CPC * _pCh, REWAD_DATA_INFO* _rewarddata);

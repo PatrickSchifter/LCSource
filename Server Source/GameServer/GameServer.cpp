@@ -8,7 +8,6 @@
 #include "DBManager.h"
 #include "ServerTimer.h"
 
-
 #include "../ShareLib/PrintExcuteInfo.h"
 
 #ifdef SERVER_AUTHENTICATION
@@ -22,7 +21,7 @@ int main(int argc, char* argv[], char* envp[])
 	gserver = new CServer;
 
 	//////////////////////////////////////////////////////////////////////////
-	// »ç³» ¼­¹öÀÏ °æ¿ì¸¦ Ã¼Å©
+	// ì‚¬ë‚´ ì„œë²„ì¼ ê²½ìš°ë¥¼ ì²´í¬
 	gserver->barunsongames_flag = false;
 
 	if (argc == 3)
@@ -37,11 +36,11 @@ int main(int argc, char* argv[], char* envp[])
 
 	if (!gserver->LoadSettingFile())
 	{
-		puts("Setting Error!! Please Check Your files If Your Not Owner Of these Files Delete These Now");
+		puts("Setting Error!!");
 		exit(0);
 	}
 
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	std::string tstr = boost::str(boost::format("Gameserver_%1%_%2%") % gserver->m_serverno % gserver->m_subno);
 	LogSystem::setSubstitutedValue("logfile", tstr.c_str());
 	LogSystem::configureXml("../log.xml");
@@ -74,13 +73,13 @@ int main(int argc, char* argv[], char* envp[])
 
 	if (!gserver->ConnectDB())
 	{
-		LOG_INFO("Cannot Connect DB!! Please Check Your SQL Information [ROSEON]");
+		LOG_INFO("Cannot Connect DB!!");
 		exit(0);
 	}
 
 	if (!gserver->LoadSettings())
 	{
-		LOG_INFO("Setting Error!! Check Your Newstrom Files [ROSEON]");
+		LOG_INFO("Setting Error!!");
 		exit(0);
 	}
 
@@ -96,7 +95,7 @@ int main(int argc, char* argv[], char* envp[])
 	LOG_INFO("Force start zone 0");
 
 	char tmpBuf[100] = {0,};
-	strcpy (tmpBuf, "InfernalPower LC Running...");
+	strcpy (tmpBuf, "LastChaos Running...");
 
 #ifdef IMP_SPEED_SERVER
 	if( gserver->m_bSpeedServer )
@@ -112,7 +111,7 @@ int main(int argc, char* argv[], char* envp[])
 	if (DBManager::instance()->Init() == false)
 		return 1;
 
-	// °¢ ¼­¹ö¿¡ Á¢¼Ó
+	// ê° ì„œë²„ì— ì ‘ì†
 	gserver->m_messenger->connect();
 	gserver->m_connector->connect();
 	gserver->m_helper->connect();
@@ -127,7 +126,7 @@ int main(int argc, char* argv[], char* envp[])
 #endif
 	if (bnf::instance()->CreateListen(gserver->m_serverAddr, gserver->m_serverPort, wait_time_sec, gserver) == SessionBase::INVALID_SESSION_HANDLE)
 	{
-		puts("GameServer : can't bind listen session It Your Server IP Dummy xD");
+		puts("GameServer : can't bind listen session");
 		return 1;
 	}
 
@@ -147,7 +146,7 @@ int main(int argc, char* argv[], char* envp[])
 	ServerAuthentication::instance()->setServerInfo(LC_LOCAL_CODE, (const char *)gserver->m_serverAddr, gserver->m_serverPort);
 #endif
 
-	puts("Game server started...Enjoy And have Fun");
+	puts("Game server started...");
 	bnf::instance()->Run();
 	//////////////////////////////////////////////////////////////////////////
 

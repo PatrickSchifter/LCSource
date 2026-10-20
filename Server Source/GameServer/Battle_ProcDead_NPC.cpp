@@ -10,8 +10,10 @@
 void ProcDead_PD2(CNPC* df);
 void ProcDead_RVR(CPC* op, CNPC* df);
 #ifdef PARTY_QUEST_ITEM_BUG_
-void ProcDeadQuestProc(CPC * opc,CNPC * df, int partyScale); //[2009/12/28 derek] ¸·Å¸ Ä£³Ñ°ú µ¥¹ÌÁö ¸¹ÀÌ ÁØ³ÑÀÌ ´Ù¸¥ ³ÑÀÏ °æ¿ì Äù½ºÆ® °Ë»öÀ» ÇÏÁö ¾Ê¾Æ¼­ Äù½ºÆ® Ã³¸®ºÎºĞÀ» ÇÔ¼ö·Î »°´Ù.
+void ProcDeadQuestProc(CPC * opc,CNPC * df, int partyScale); //[2009/12/28 derek] ë§‰íƒ€ ì¹œë„˜ê³¼ ë°ë¯¸ì§€ ë§ì´ ì¤€ë„˜ì´ ë‹¤ë¥¸ ë„˜ì¼ ê²½ìš° í€˜ìŠ¤íŠ¸ ê²€ìƒ‰ì„ í•˜ì§€ ì•Šì•„ì„œ í€˜ìŠ¤íŠ¸ ì²˜ë¦¬ë¶€ë¶„ì„ í•¨ìˆ˜ë¡œ ëºë‹¤.
 #endif
+
+extern bool do_ItemUsePotion(CPC* ch, CItem* item, int extra1);
 
 void ProcDead(CNPC* df, CCharacter* of)
 {
@@ -21,7 +23,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 	CElemental*	oelemental		= NULL;
 	CAPet*		oapet			= NULL;
 
-	bool bNPCKilledNPC = false; // npc°¡ npc¸¦ Á×ÀÎ °æ¿ì ²À ÀÌ°ÍÀ» true·Î ÇØÁà¾ßÇÑ´Ù.
+	bool bNPCKilledNPC = false; // npcê°€ npcë¥¼ ì£½ì¸ ê²½ìš° ê¼­ ì´ê²ƒì„ trueë¡œ í•´ì¤˜ì•¼í•œë‹¤.
 
 	switch (of->m_type)
 	{
@@ -59,20 +61,20 @@ void ProcDead(CNPC* df, CCharacter* of)
 		goto END_PROC;
 	}
 #ifdef SYSTEM_TREASURE_MAP
-//	if( df->m_idNum == TREASURE_BOX_NPC_INDEX)	 // º¸¹°»óÀÚ npc¸¦ Àâ¾Ò´Ù. Á¤º¸¸¦ ¾ø¾ÖÁÖÀÚ.
+//	if( df->m_idNum == TREASURE_BOX_NPC_INDEX)	 // ë³´ë¬¼ìƒì npcë¥¼ ì¡ì•˜ë‹¤. ì •ë³´ë¥¼ ì—†ì• ì£¼ì.
 //		df->m_pZone->RemoveTreasureBoxNpc(df );
 #endif
 
-	// °øÁÖ±¸Ãâ Äù½ºÆ® (ÆÛ½º³Î ´øÀü 2) ½ÇÆĞ
+	// ê³µì£¼êµ¬ì¶œ í€˜ìŠ¤íŠ¸ (í¼ìŠ¤ë„ ë˜ì „ 2) ì‹¤íŒ¨
 	ProcDead_PD2(df);
 
-	// Á×Àº °ÍÀÌ Å×ÀÌ¹Ö ¸ó½ºÅÍÀÏ °æ¿ì
+	// ì£½ì€ ê²ƒì´ í…Œì´ë° ëª¬ìŠ¤í„°ì¼ ê²½ìš°
 	if (df->Check_MobFlag( STATE_MONSTER_TAMING ) )
 	{
-		CPC* owner = NULL;			// ¸ó½ºÅÍ¸¦ Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ
-		owner = df->GetOwner();		// ¸ó½ºÅÍ°¡ Å×ÀÌ¹Ö µÇ¾ú´ÂÁö È®ÀÎ
+		CPC* owner = NULL;			// ëª¬ìŠ¤í„°ë¥¼ í…Œì´ë°í•œ ìºë¦­í„°
+		owner = df->GetOwner();		// ëª¬ìŠ¤í„°ê°€ í…Œì´ë° ë˜ì—ˆëŠ”ì§€ í™•ì¸
 
-		// ÁÖÀÎÀÌ °ø°İÇÏ°í ÀÖ´Â Å¸°ÙÀ» Áö¿öÁØ´Ù. ÁÖÀÎÀÌ Å×ÀÌ¹Ö ÁßÀÌ ¾Æ´Ñ°É·Î ¹Ù²ãÁØ´Ù.
+		// ì£¼ì¸ì´ ê³µê²©í•˜ê³  ìˆëŠ” íƒ€ê²Ÿì„ ì§€ì›Œì¤€ë‹¤. ì£¼ì¸ì´ í…Œì´ë° ì¤‘ì´ ì•„ë‹Œê±¸ë¡œ ë°”ê¿”ì¤€ë‹¤.
 		if ( owner )
 		{
 			owner->DeleteSlave( df );
@@ -80,24 +82,24 @@ void ProcDead(CNPC* df, CCharacter* of)
 		goto SKIP_DROP;
 	}
 
-	// Á×ÀÎ °ÍÀÌ Å×ÀÌ¹Ö ¸ó½ºÅÍÀÏ °æ¿ì
+	// ì£½ì¸ ê²ƒì´ í…Œì´ë° ëª¬ìŠ¤í„°ì¼ ê²½ìš°
 	if (onpc && onpc->Check_MobFlag( STATE_MONSTER_TAMING ) )
 	{
-		CPC* owner = NULL;				// ¸ó½ºÅÍ¸¦ Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ
-		owner = onpc->GetOwner();		// ¸ó½ºÅÍ°¡ Å×ÀÌ¹Ö µÇ¾ú´ÂÁö È®ÀÎ
+		CPC* owner = NULL;				// ëª¬ìŠ¤í„°ë¥¼ í…Œì´ë°í•œ ìºë¦­í„°
+		owner = onpc->GetOwner();		// ëª¬ìŠ¤í„°ê°€ í…Œì´ë° ë˜ì—ˆëŠ”ì§€ í™•ì¸
 
-		// ÁÖÀÎÀÌ °ø°İÇÏ°í ÀÖ´Â Å¸°ÙÀ» Áö¿öÁØ´Ù.
+		// ì£¼ì¸ì´ ê³µê²©í•˜ê³  ìˆëŠ” íƒ€ê²Ÿì„ ì§€ì›Œì¤€ë‹¤.
 		if ( owner )
 		{
 			owner->SetOwners_target(NULL);
-			// opc¿¡ ÁÖÀÎÀ» ³Ö¾îÁØ´Ù.
+			// opcì— ì£¼ì¸ì„ ë„£ì–´ì¤€ë‹¤.
 			opc = owner;
 			bNPCKilledNPC = true;
 		}
 		else
 			goto SKIP_DROP;
 	}
-	else if( onpc && onpc->GetOwner() ) // °ø°İÇÑ NPC°¡ ¿À³Ê°¡ ÀÖ´Ù¸é
+	else if( onpc && onpc->GetOwner() ) // ê³µê²©í•œ NPCê°€ ì˜¤ë„ˆê°€ ìˆë‹¤ë©´
 	{
 		CNPC* sumNpc = onpc->GetOwner()->GetSummonNpc(onpc);
 		if( sumNpc )
@@ -114,9 +116,9 @@ void ProcDead(CNPC* df, CCharacter* of)
 			goto SKIP_DROP;
 	}
 
-	if( df && df->GetOwner() ) // Á×Àº ³ÑÀÌ owner ÀÖ´Ù¸é
+	if( df && df->GetOwner() ) // ì£½ì€ ë„˜ì´ owner ìˆë‹¤ë©´
 	{
-		if( df->Check_MobFlag(STATE_MONSTER_PARASITE) ) // ÆĞ·¯»çÀÌÆ®¿¡ °É·ÁÀÖ´Ù¸é.
+		if( df->Check_MobFlag(STATE_MONSTER_PARASITE) ) // íŒ¨ëŸ¬ì‚¬ì´íŠ¸ì— ê±¸ë ¤ìˆë‹¤ë©´.
 		{
 			int parasiteCnt = GetRandom(0,3);
 			parasiteCnt -= df->GetOwner()->GetBombSummonCont();
@@ -149,7 +151,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 
 						pParasiteNPC->CalcStatus(false);
 
-						CSkill * pSkill = gserver->m_skillProtoList.Create( 1133 ); // ÀÚ»ì °ø°İ
+						CSkill * pSkill = gserver->m_skillProtoList.Create( 1133 ); // ìì‚´ ê³µê²©
 						if( pSkill == NULL )
 						{
 							delete pParasiteNPC ;
@@ -210,33 +212,33 @@ void ProcDead(CNPC* df, CCharacter* of)
 
 	*/
 
-	// ÀÌ°÷À¸·Î ³Ñ¾î¿À¸é Å×ÀÌ¹ÖÀÌ ¾Æ´Ï¹Ç·Î, ¸ğµç ¸ó½ºÅÍ´Â ¸ó½ºÅÍ¿¡°Ô Á×À¸¸é ÆĞ½º
+	// ì´ê³³ìœ¼ë¡œ ë„˜ì–´ì˜¤ë©´ í…Œì´ë°ì´ ì•„ë‹ˆë¯€ë¡œ, ëª¨ë“  ëª¬ìŠ¤í„°ëŠ” ëª¬ìŠ¤í„°ì—ê²Œ ì£½ìœ¼ë©´ íŒ¨ìŠ¤
 	else if (onpc && !bNPCKilledNPC)
 	{
 		goto SKIP_DROP;
 	}
 
-	// pc°¡ npc¸¦ Á×ÀÌ¸é Å×ÀÌ¹Ö ¸ó½ºÅÍÀÇ Å¸°ÙÀ» Áö¿öÁØ´Ù.
+	// pcê°€ npcë¥¼ ì£½ì´ë©´ í…Œì´ë° ëª¬ìŠ¤í„°ì˜ íƒ€ê²Ÿì„ ì§€ì›Œì¤€ë‹¤.
 	if (opc)
 	{
 		opc->SetOwners_target(NULL);
 		opc->SetSummonOwners_target(NULL);
 	}
 
-	// ¸®´õ »ç¸Á½Ã Ã³¸®
+	// ë¦¬ë” ì‚¬ë§ì‹œ ì²˜ë¦¬
 	if (!df->m_proto->CheckFlag(NPC_RAID))
 		ProcFollowNPC(df);
 
-	// °ø¼º Æ÷ÀÎÆ® °è»ê
+	// ê³µì„± í¬ì¸íŠ¸ ê³„ì‚°
 	if (opc)
 		CalcWarPoint(opc, df);
 
-	// Á×Àº NPC°¡ °ø¼ºÅ¾ÀÌ³ª ¼öÈ£º´ÀÌ ¾Æ´Ò °æ¿ì Ã³¸®
+	// ì£½ì€ NPCê°€ ê³µì„±íƒ‘ì´ë‚˜ ìˆ˜í˜¸ë³‘ì´ ì•„ë‹ ê²½ìš° ì²˜ë¦¬
 	if (!df->m_proto->CheckFlag(NPC_CASTLE_TOWER | NPC_CASTLE_GUARD))
 	{
 		int level = -1;
 		LONGLONG nTotalDamage = 0;
-		// ¿ì¼±±Ç PC, Æò±Õ ·¹º§ ±¸ÇÏ±â
+		// ìš°ì„ ê¶Œ PC, í‰ê·  ë ˆë²¨ êµ¬í•˜ê¸°
 		CPC* tpc = FindPreferencePC(df, &level, &nTotalDamage);
 #ifdef GER_LOG
 		if( IS_PC( of ))
@@ -253,7 +255,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 					   << endGer;
 		}
 #endif
-		// º¸½º¸÷
+		// ë³´ìŠ¤ëª¹
 		if (df->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS | NPC_RAID))
 		{
 			GAMELOG << init("MOB DEAD")
@@ -288,7 +290,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 
 			if (df->m_proto->CheckFlag(NPC_BOSS | NPC_MBOSS))
 			{
-				// Ä«¿À ¼ºÇâ È¸º¹ : º¸½º¸÷À» ÀâÀ¸¸é È¸º¹ º¸³Ê½º
+				// ì¹´ì˜¤ ì„±í–¥ íšŒë³µ : ë³´ìŠ¤ëª¹ì„ ì¡ìœ¼ë©´ íšŒë³µ ë³´ë„ˆìŠ¤
 				if (opc && opc->IsChaotic() && tpc == opc)
 				{
 					if( !gserver->m_bNonPK )
@@ -306,34 +308,34 @@ void ProcDead(CNPC* df, CCharacter* of)
 					opc->m_bChangeStatus = true;
 				}
 			}
-		} // º¸½º¸÷
+		} // ë³´ìŠ¤ëª¹
 
 		if(opc && opc->m_pArea && df->m_proto->m_index == 1002 && df->m_pZone && df->m_pZone->m_index == ZONE_ALTER_OF_DARK)
 		{
-			// ³×ÀÓµå ¸ó½ºÅÍ Á×Àº °ÍÀ¸·Î Ã¼Å©
+			// ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì£½ì€ ê²ƒìœ¼ë¡œ ì²´í¬
 			opc->m_pArea->m_CTriggerList.Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1);
 			opc->m_pArea->m_CTriggerList.Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1002_BEFORE);
-			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1002, opc->m_nJoinInzone_RoomNo);	//Æ®¸®°Å Á¤º¸ ÀúÀå
+			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1002, opc->m_nJoinInzone_RoomNo);	//íŠ¸ë¦¬ê±° ì •ë³´ ì €ì¥
 			opc->m_pArea->Change_NpcRegenRaid(TRIGGER_SAVE_ALTER_OF_DARK_1002, 1002);
 		}
 		else if(opc && opc->m_pArea && df->m_proto->m_index == 1003 && df->m_pZone && df->m_pZone->m_index == ZONE_ALTER_OF_DARK)
 		{
-			// ³×ÀÓµå ¸ó½ºÅÍ Á×Àº °ÍÀ¸·Î Ã¼Å©
+			// ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì£½ì€ ê²ƒìœ¼ë¡œ ì²´í¬
 			opc->m_pArea->m_CTriggerList.Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH2);
 			opc->m_pArea->m_CTriggerList.Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1003_BEFORE);
-			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1003, opc->m_nJoinInzone_RoomNo);	//Æ®¸®°Å Á¤º¸ ÀúÀå
+			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1003, opc->m_nJoinInzone_RoomNo);	//íŠ¸ë¦¬ê±° ì •ë³´ ì €ì¥
 			opc->m_pArea->Change_NpcRegenRaid(TRIGGER_SAVE_ALTER_OF_DARK_1003, 1003);
 		}
 		else if(opc && opc->m_pArea && df->m_proto->m_index == 1018 && df->m_pZone && df->m_pZone->m_index == ZONE_ALTER_OF_DARK)
 		{
-			// ³×ÀÓµå ¸ó½ºÅÍ Á×Àº °ÍÀ¸·Î Ã¼Å©
+			// ë„¤ì„ë“œ ëª¬ìŠ¤í„° ì£½ì€ ê²ƒìœ¼ë¡œ ì²´í¬
 			opc->m_pArea->m_CTriggerList.Set_TriggerFlag(TRIGGER_FLAG_NAMEDNPC_DEATH1018_BEFORE);
-			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1018, opc->m_nJoinInzone_RoomNo);	//Æ®¸®°Å Á¤º¸ ÀúÀå
+			opc->m_pArea->m_CTriggerList.SaveTriggerInfo(TRIGGER_SAVE_ALTER_OF_DARK_1018, opc->m_nJoinInzone_RoomNo);	//íŠ¸ë¦¬ê±° ì •ë³´ ì €ì¥
 			opc->m_pArea->Change_NpcRegenRaid(TRIGGER_SAVE_ALTER_OF_DARK_1018, 1018);
 		}
 		else if (opc && opc->m_pArea && df->m_proto->m_index == 963 && df->m_pZone && df->m_pZone->m_index == ZONE_CAPPELLA_1)
 		{
-			// Æ®¸®°Å¸¦ »ç¿ëÇÏ±â À§ÇÑ npc963 Á×Àº count ¼¼±â
+			// íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ npc963 ì£½ì€ count ì„¸ê¸°
 			opc->m_pArea->m_CTriggerList.m_nNPC963_KilledCount += 1;
 		}
 
@@ -342,8 +344,8 @@ void ProcDead(CNPC* df, CCharacter* of)
 
 		switch(nAkanNpcIdx)
 		{
-		case 1115:				// ÆÄµ¶½ºÀÇ ÀÎÇü(Hard)
-		case 1170:				// ÆÄµ¶½ºÀÇ ÀÎÇü(Normal)
+		case 1115:				// íŒŒë…ìŠ¤ì˜ ì¸í˜•(Hard)
+		case 1170:				// íŒŒë…ìŠ¤ì˜ ì¸í˜•(Normal)
 			{
 				nObjectData = 10;
 				if(opc && opc->m_pArea && df->m_pZone && df->m_pZone->m_index == ZONE_AKAN_TEMPLE)
@@ -354,20 +356,20 @@ void ProcDead(CNPC* df, CCharacter* of)
 				}
 			}
 			break;
-		case 1112:				// Åø¸¸
-		case 1116:				// ÆÄµ¶½º
-		case 1120:				// ÄïÅ¸
-		case 1124:				// À¯ÀÛ
-		case 1126:				// °íÀ§ ¿¬±İ¼ú»ç Á¦·Ò
-		case 1127:				// °íÀ§ ¸¶¹ı¼ú»ç ¹Ì¿¤
-		case 1128:				// Á¦»çÀå ¹ÌÄí
-		case 1167:				// Åø¸¸
-		case 1171:				// ÆÄµ¶½º
-		case 1175:				// ÄïÅ¸
-		case 1179:				// À¯ÀÛ
-		case 1180:				// °íÀ§ ¿¬±İ¼ú»ç Á¦·Ò
-		case 1181:				// °íÀ§ ¸¶¹ı¼ú»ç ¹Ì¿¤
-		case 1182:				// Á¦»çÀå ¹ÌÄí
+		case 1112:				// íˆ´ë§Œ
+		case 1116:				// íŒŒë…ìŠ¤
+		case 1120:				// ì¿¤íƒ€
+		case 1124:				// ìœ ì‘
+		case 1126:				// ê³ ìœ„ ì—°ê¸ˆìˆ ì‚¬ ì œë¡¬
+		case 1127:				// ê³ ìœ„ ë§ˆë²•ìˆ ì‚¬ ë¯¸ì—˜
+		case 1128:				// ì œì‚¬ì¥ ë¯¸ì¿ 
+		case 1167:				// íˆ´ë§Œ
+		case 1171:				// íŒŒë…ìŠ¤
+		case 1175:				// ì¿¤íƒ€
+		case 1179:				// ìœ ì‘
+		case 1180:				// ê³ ìœ„ ì—°ê¸ˆìˆ ì‚¬ ì œë¡¬
+		case 1181:				// ê³ ìœ„ ë§ˆë²•ìˆ ì‚¬ ë¯¸ì—˜
+		case 1182:				// ì œì‚¬ì¥ ë¯¸ì¿ 
 			{
 				nObjectData = 1;
 				if(opc && opc->m_pArea && df->m_pZone && df->m_pZone->m_index == ZONE_AKAN_TEMPLE)
@@ -380,7 +382,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 				}
 			}
 			break;
-		case 1259:	//¸Á°¢ÀÇ ½ÅÀü
+		case 1259:	//ë§ê°ì˜ ì‹ ì „
 			{
 				nObjectData = 1;
 				if(opc && opc->m_pArea && df->m_pZone && df->m_pZone->m_index == ZONE_DUNGEON4)
@@ -405,7 +407,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 			break;
 		}
 
-#ifdef REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû :: npc¸¦ ÀâÀ¸¸é ¹«Á¶°Ç ÇåÅÍ ÂÊÀ¸·Î Çâ»ó ½ÃÄÑÁØ´Ù.
+#ifdef REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼ :: npcë¥¼ ì¡ìœ¼ë©´ ë¬´ì¡°ê±´ í—Œí„° ìª½ìœ¼ë¡œ í–¥ìƒ ì‹œì¼œì¤€ë‹¤.
 		if( !gserver->m_bNonPK )
 		{
 			if(df && opc)
@@ -419,13 +421,13 @@ void ProcDead(CNPC* df, CCharacter* of)
 				else if( nlevel <= -5 && nlevel >= -10)
 					pkPenalty += 5;
 
-				// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦¸¦ »ç¿ë ÁßÀÌ¶ó¸é
+				// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œë¥¼ ì‚¬ìš© ì¤‘ì´ë¼ë©´
 				if( opc->m_assist.m_avRate.pkDispositionPointValue > 0 )
 				{
 					pkPenalty = pkPenalty * opc->m_assist.m_avRate.pkDispositionPointValue;
-					opc->m_assist.CureByItemIndex(7474);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-					opc->m_assist.CureByItemIndex(7475);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
-					opc->m_assist.CureByItemIndex(7476);	// ¼ºÇâ ¼öÄ¡ »ó½Â ÁõÆøÁ¦
+					opc->m_assist.CureByItemIndex(7474);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+					opc->m_assist.CureByItemIndex(7475);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
+					opc->m_assist.CureByItemIndex(7476);	// ì„±í–¥ ìˆ˜ì¹˜ ìƒìŠ¹ ì¦í­ì œ
 				}
 				opc->AddPkPenalty( pkPenalty );
 
@@ -438,7 +440,7 @@ void ProcDead(CNPC* df, CCharacter* of)
 				opc->m_bChangeStatus = true;
 			}
 		}
-#else // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
+#else // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
 		if (opc && opc->IsChaotic() && df->m_level >= opc->m_level - 5)
 		{
 			opc->m_pkRecoverNPCCount++;
@@ -457,17 +459,17 @@ void ProcDead(CNPC* df, CCharacter* of)
 
 				opc->m_bChangeStatus = true;
 			}
-		} // Ä«¿À ¼ºÇâ È¸º¹
-#endif // REFORM_PK_PENALTY_201108 // PK ÆĞ³ÎÆ¼ ¸®Æû
-		// Exp, SP ºĞ¹è
-		// ÀÌ·çÆ¾Áß ·¹º§¾÷À» ÇÏ¿© Á¸ÀÌµ¿À» ÇÏ¿´À» °æ¿ì ³ª¸ÓÁö ½ÇÇàÇÏÁö ¾Ê´Â´Ù.
+		} // ì¹´ì˜¤ ì„±í–¥ íšŒë³µ
+#endif // REFORM_PK_PENALTY_201108 // PK íŒ¨ë„í‹° ë¦¬í¼
+		// Exp, SP ë¶„ë°°
+		// ì´ë£¨í‹´ì¤‘ ë ˆë²¨ì—…ì„ í•˜ì—¬ ì¡´ì´ë™ì„ í•˜ì˜€ì„ ê²½ìš° ë‚˜ë¨¸ì§€ ì‹¤í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		if( DivisionExpSP(df, tpc, nTotalDamage) )
 			goto END_PROC;
 
-		// ¾ÆÀÌÅÛ µå·Ó
+		// ì•„ì´í…œ ë“œë¡­
 		ProcDropItemAfterBattle(df, opc, tpc, level);
 
-		// ÁøÇàÁßÀÎ Quest Áß Á×Àº npc·Î ÁøÇàÁßÀÌ¸é UpdateData
+		// ì§„í–‰ì¤‘ì¸ Quest ì¤‘ ì£½ì€ npcë¡œ ì§„í–‰ì¤‘ì´ë©´ UpdateData
 		if (opc && opc == tpc)
 		{
 			if( opc->m_pZone->IsPersonalDungeon() )
@@ -499,14 +501,14 @@ void ProcDead(CNPC* df, CCharacter* of)
 			}
 
 #ifdef PARTY_QUEST_ITEM_BUG_
-			ProcDeadQuestProc(opc, df, QTYPE_SCALE_PERSONAL); // ³»°¡ ¾î±×·Îµµ ¸Ô°í ¸ó½ºÅÍµµ ¸·Å¸ ÃÆ´Ü´Ù.
+			ProcDeadQuestProc(opc, df, QTYPE_SCALE_PERSONAL); // ë‚´ê°€ ì–´ê·¸ë¡œë„ ë¨¹ê³  ëª¬ìŠ¤í„°ë„ ë§‰íƒ€ ì³¤ë‹¨ë‹¤.
 #else
 			CQuest* pQuest = NULL;
 			CQuest* pQuestNext = opc->m_questList.GetNextQuest(NULL, QUEST_STATE_RUN);
 			while ((pQuest = pQuestNext))
 			{
 				pQuestNext = opc->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-				// Äù½ºÆ® ÀÖ°í ¼öÇàÁßÀÌ°í ¹İº¹, ¼öÁı, °İÆÄ, ±¸Ãâ Äù½ºÆ®ÀÌ¸é
+				// í€˜ìŠ¤íŠ¸ ìˆê³  ìˆ˜í–‰ì¤‘ì´ê³  ë°˜ë³µ, ìˆ˜ì§‘, ê²©íŒŒ, êµ¬ì¶œ í€˜ìŠ¤íŠ¸ì´ë©´
 				switch (pQuest->GetQuestType0())
 				{
 				case QTYPE_KIND_REPEAT:
@@ -562,10 +564,10 @@ void ProcDead(CNPC* df, CCharacter* of)
 #endif // PARTY_QUEST_ITEM_BUG_
 		}
 #ifdef PARTY_QUEST_ITEM_BUG_
-		else if(opc) // [2010/12/28 derek] opc == NULL ÀÎµ¥µµ µé¾î°¡Á®¼­ Äù½ºÆ® Ã£´Ù°¡ ¼­¹ö ´Ù¿îµÇ¾î Ãß°¡ÇÔ.
+		else if(opc) // [2010/12/28 derek] opc == NULL ì¸ë°ë„ ë“¤ì–´ê°€ì ¸ì„œ í€˜ìŠ¤íŠ¸ ì°¾ë‹¤ê°€ ì„œë²„ ë‹¤ìš´ë˜ì–´ ì¶”ê°€í•¨.
 		{
 #ifdef _BATTLEGROUP_QUEST_BUG_PIX
-			if( opc->IsExped() ) // ¾î±ÛÀº ¾Ê¸Ô¾úÁö¸¸ ¸·Å¸·Î Àâ¾ÒÀ¸¸é
+			if( opc->IsExped() ) // ì–´ê¸€ì€ ì•Šë¨¹ì—ˆì§€ë§Œ ë§‰íƒ€ë¡œ ì¡ì•˜ìœ¼ë©´
 				ProcDeadQuestProc(opc, df, QTYPE_SCALE_BATTLEGROUP);
 			else
 #endif
@@ -573,19 +575,19 @@ void ProcDead(CNPC* df, CCharacter* of)
 		}
 
 #endif //PARTY_QUEST_ITEM_BUG_
-	} // Á×Àº NPC°¡ °ø¼ºÅ¾ÀÌ³ª ¼öÈ£º´ÀÌ ¾Æ´Ò °æ¿ì Ã³¸®
+	} // ì£½ì€ NPCê°€ ê³µì„±íƒ‘ì´ë‚˜ ìˆ˜í˜¸ë³‘ì´ ì•„ë‹ ê²½ìš° ì²˜ë¦¬
 	else
 	{
 		int level = -1;
 		LONGLONG nTotalDamage = 0;
-		// ¿ì¼±±Ç PC, Æò±Õ ·¹º§ ±¸ÇÏ±â
+		// ìš°ì„ ê¶Œ PC, í‰ê·  ë ˆë²¨ êµ¬í•˜ê¸°
 		CPC* tpc = FindPreferencePC(df, &level, &nTotalDamage);
 		DropWarCastleToken(df, opc, tpc, level);
 	}
 
 SKIP_DROP:
 
-	// ¼öÈ£Å¾Àº DelNPC() ¾ÈÇÏ°í UpdateGateState() ÈÄ¿¡ ¸Ş½ÃÁö·Î ¾Ë¸°´Ù.
+	// ìˆ˜í˜¸íƒ‘ì€ DelNPC() ì•ˆí•˜ê³  UpdateGateState() í›„ì— ë©”ì‹œì§€ë¡œ ì•Œë¦°ë‹¤.
 	if (df->m_proto->CheckFlag(NPC_CASTLE_TOWER) != 0)
 	{
 		int gstate_old = 0, gstate_new = 0;
@@ -623,17 +625,17 @@ SKIP_DROP:
 
 			if (df->m_proto->CheckFlag(NPC_WARCASTLE) != 0)
 			{
-				// NPC_CASTLE_TOWER ¿¡ NPC_WARCASTLE ¸é
-				// ¸¶½ºÅÍ Å¸¿ö¿Í ºÎÈ°ÁøÁö
+				// NPC_CASTLE_TOWER ì— NPC_WARCASTLE ë©´
+				// ë§ˆìŠ¤í„° íƒ€ì›Œì™€ ë¶€í™œì§„ì§€
 				int qindex = df->m_proto->m_index;
 				if (qindex >= 390 && qindex <= 396)
 				{
-					// ºÎÈ°ÁøÁö ÆÄ±« ¾Ë¸²
+					// ë¶€í™œì§„ì§€ íŒŒê´´ ì•Œë¦¼
 					CNetMsg::SP rmsg(new CNetMsg);
 					CastleTowerQuartersCrushMsg(rmsg, qindex);
 					of->m_pArea->SendToAllClient(rmsg);
 
-					// ºÎÈ°ÁøÁö ÆÄ±« Ã³¸®
+					// ë¶€í™œì§„ì§€ íŒŒê´´ ì²˜ë¦¬
 					/*pCastle->m_nRebrithGuild[df->m_proto->m_index - 390] =  -1;
 					memset((void *)pCastle->m_strRebrithGuild[df->m_proto->m_index - 390], 0, 51);*/
 				}
@@ -653,34 +655,29 @@ SKIP_DROP:
 		{
 			if( df->m_proto->m_index == 351)
 			{
-				// ¸¶½ºÅÍ Å¸¿ö
-				// ¸ğµç Å¸¿ö ±â´É Á¤Áö
+				// ë§ˆìŠ¤í„° íƒ€ì›Œ
+				// ëª¨ë“  íƒ€ì›Œ ê¸°ëŠ¥ ì •ì§€
 				pCastle->StopCastleTower();
 			}
 			else if (df->m_proto->CheckFlag(NPC_CASTLE_TOWER) != 0)
 			{
-				// °ø°İ ¼öÈ£»ó (°á°èÀÇ ´« µî..) ·Î±×
+				// ê³µê²© ìˆ˜í˜¸ìƒ (ê²°ê³„ì˜ ëˆˆ ë“±..) ë¡œê·¸
 				GAMELOG << init("DRATAN CASTLE NPC DEAD : ") << df->m_proto->m_name
 						<< " BROKEN BY : " << of->m_name << end;
-				// ¸¶½ºÅÍ Å¸¿ö°¡ ¾Æ´Ñ ¸ğµç Å¸¿ö
+				// ë§ˆìŠ¤í„° íƒ€ì›Œê°€ ì•„ë‹Œ ëª¨ë“  íƒ€ì›Œ
 				int  i;
-				// ºÎÈ° ÁøÁö »èÁ¦
-//				for (i=0; i<7; i++)
-//				{
-//					if (pCastle->m_pRebrithNPC[i] == df)
-//					{
-//						pCastle->m_pRebrithNPC[i] = NULL;
-//						pCastle->m_nRebrithGuild[i] = -1;
-//						memset((void *)pCastle->m_strRebrithGuild[i], 0, 51);
-//#ifdef BUGFIX_WARCASTLE_REGEN
-//						pCastle->m_nRegenTimeRebirthNPC[i] = gserver->getNowSecond() + pCastle->GetRegenNPCRebirthTime();
-//#else
-//						pCastle->m_nRegenTimeRebirthNPC[i] = gserver->m_pulse + pCastle->GetRegenNPCRebirthTime();
-//#endif // BUGFIX_WARCASTLE_REGEN
-//					}
-//				}
+				// ë¶€í™œ ì§„ì§€ ì‚­ì œ
+				for (i=0; i<7; i++)
+				{
+					if (pCastle->m_pRebrithNPC[i] == df)
+					{
+						pCastle->m_pRebrithNPC[i] = NULL;
+						pCastle->m_nRebrithGuild[i] = -1;
+						memset((void *)pCastle->m_strRebrithGuild[i], 0, 51);
+					}
+				}
 
-				// ¿öÇÁ Å¸¿ö »èÁ¦
+				// ì›Œí”„ íƒ€ì›Œ ì‚­ì œ
 				for (i=0; i<5; i++)
 				{
 					if (pCastle->m_pWarpNPC[i] == df)
@@ -689,7 +686,7 @@ SKIP_DROP:
 					}
 				}
 
-				// °á°èÀÇ ´« »èÁ¦
+				// ê²°ê³„ì˜ ëˆˆ ì‚­ì œ
 				for (i=0; i<5; i++)
 				{
 					if (pCastle->m_gateNPC[i] == df)
@@ -698,13 +695,13 @@ SKIP_DROP:
 					}
 				}
 
-				// ¾Ë¸²
+				// ì•Œë¦¼
 				of->m_pArea->CharFromCell(df, true);
 				of->m_pArea->DelNPC(df);
 			}
 		}
 		return ;
-	} // ¼öÈ£Å¾Àº DelNPC() ¾ÈÇÏ°í UpdateGateState() ÈÄ¿¡ ¸Ş½ÃÁö·Î ¾Ë¸°´Ù.
+	} // ìˆ˜í˜¸íƒ‘ì€ DelNPC() ì•ˆí•˜ê³  UpdateGateState() í›„ì— ë©”ì‹œì§€ë¡œ ì•Œë¦°ë‹¤.
 //#endif
 
 #ifdef EXTREME_CUBE
@@ -713,8 +710,6 @@ SKIP_DROP:
 		CCubeSpace* cube = gserver->m_extremeCube.GetExtremeCube(df->m_pArea->m_index);
 		if(cube)
 		{
-			cube->DelMob(df);
-
 			if(gserver->m_extremeCube.IsGuildCubeTime() && opc && opc->m_guildInfo && opc->m_guildInfo->guild())
 			{
 				CCubeMemList* CubeMemList;
@@ -797,17 +792,17 @@ SKIP_DROP:
 
 END_PROC:
 
-	//rvr Á¸¿¡¼­ °ø°İ½Ã¿¡ µ¿ÀÛÇØ¾ß µÇ´Â ÇÔ¼ö (NPC °¡ Á×¾úÀ» °æ¿ì)
+	//rvr ì¡´ì—ì„œ ê³µê²©ì‹œì— ë™ì‘í•´ì•¼ ë˜ëŠ” í•¨ìˆ˜ (NPC ê°€ ì£½ì—ˆì„ ê²½ìš°)
 	if(opc != NULL && of->m_pZone->isRVRZone() && df->m_pZone->isRVRZone())
 	{
 		ProcDead_RVR(opc, df);
 	}
 
-	// ¸ğµç ¸ó½ºÅÍ´Â ¸ó½ºÅÍ¿¡°Ô Á×À¸¸é ÆĞ½º
+	// ëª¨ë“  ëª¬ìŠ¤í„°ëŠ” ëª¬ìŠ¤í„°ì—ê²Œ ì£½ìœ¼ë©´ íŒ¨ìŠ¤
 	if ( onpc || bNPCKilledNPC )
 	{
-		// ÇØ´ç ¿¡¾î¸®¾î¿¡ Á×Àº ¼ö¸¦ Ç¥½ÃÇÑ´Ù.  ¿©±â¼­´Â ¹Ù·Î ¾ÈÁö¿ì°í µû·Î Ã³¸®..
-		// MobActivity.cpp::MobActivity() Å¸°í µé¾î¿À¸é ²À ¿©±æ °ÅÃÄ¾ßÇÑ´Ù.
+		// í•´ë‹¹ ì—ì–´ë¦¬ì–´ì— ì£½ì€ ìˆ˜ë¥¼ í‘œì‹œí•œë‹¤.  ì—¬ê¸°ì„œëŠ” ë°”ë¡œ ì•ˆì§€ìš°ê³  ë”°ë¡œ ì²˜ë¦¬..
+		// MobActivity.cpp::MobActivity() íƒ€ê³  ë“¤ì–´ì˜¤ë©´ ê¼­ ì—¬ê¸¸ ê±°ì³ì•¼í•œë‹¤.
 		onpc->m_pArea->m_nNPC_Killed_NPC++;
 	}
 	else
@@ -816,16 +811,64 @@ END_PROC:
 		of->m_pArea->CharFromCell(df, true);
 		of->m_pArea->DelNPC(df);
 	}
+
+	//ëª¬ìŠ¤í„° ì£½ì—ˆì„ ë•Œ ë°œë™ë˜ëŠ” í† ê¸€í˜• ì•„ì´í…œ ì²´í¬
+	if(opc != NULL)
+	{
+		if(opc->m_deadnpc_toggle_item.size() > 0)
+		{
+			std::vector<CItem*>::iterator it = opc->m_deadnpc_toggle_item.begin();
+
+			CItem* item;
+
+			for(; it != opc->m_deadnpc_toggle_item.end(); )
+			{
+				item = opc->m_inventory.getItem( (*it)->tab(), (*it)->getInvenIndex() );
+				
+				if(item == NULL)
+				{
+					it = opc->m_deadnpc_toggle_item.erase(it);
+					continue;
+				}
+
+				if( (item->m_itemProto->getItemFlag() & ITEM_FLAG_TOGGLE) == false )
+				{
+					it = opc->m_deadnpc_toggle_item.erase(it);
+					continue;
+				}
+
+				if(item->m_toggle == true)
+				{
+					if( do_ItemUsePotion(opc, item, 0) == false)
+					{
+						it++;
+						continue;
+					}
+					
+					if(item->getItemCount() == 1)
+						it = opc->m_deadnpc_toggle_item.erase(it);
+					else
+						it++;
+
+					opc->m_inventory.decreaseItemCount(item, 1);
+				}
+				else
+				{
+					it = opc->m_deadnpc_toggle_item.erase(it);
+				}
+			}
+		}
+	}
 }
 
 void ProcDead_RVR(CPC* op, CNPC* df)
 {
-	//Àû npc ¸¦ Á×¿´À» °æ¿ì¿¡´Â µî±Ş°ú °¢ °á»ç´ë°¡ ¼ÒÀ¯ÇÑ º¸¼®·®¿¡ µû¶ó¼­ ±â¿©µµ¸¦ ºÎ¿©ÇØÁØ´Ù.
+	//ì  npc ë¥¼ ì£½ì˜€ì„ ê²½ìš°ì—ëŠ” ë“±ê¸‰ê³¼ ê° ê²°ì‚¬ëŒ€ê°€ ì†Œìœ í•œ ë³´ì„ëŸ‰ì— ë”°ë¼ì„œ ê¸°ì—¬ë„ë¥¼ ë¶€ì—¬í•´ì¤€ë‹¤.
 	int jewelKailuxPoint		= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_KAILUX);
 	int jewelDealerMoonPoint	= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_DEALERMOON);
 	int grade = df->m_proto->m_rvr_grade;
 
-	//°ø°İÀÚ°¡ Ä«ÀÌ·è½º ÀÎ °æ¿ì
+	//ê³µê²©ìê°€ ì¹´ì´ë£©ìŠ¤ ì¸ ê²½ìš°
 	if(op->getSyndicateType() == SYNDICATE::eSYNDICATE_KAILUX)
 	{
 		if (jewelKailuxPoint < jewelDealerMoonPoint)
@@ -833,39 +876,39 @@ void ProcDead_RVR(CPC* op, CNPC* df)
 			switch(grade)
 			{
 			case 1:
-				op->m_syndicateManager.increaseSyndicatePoint(200);
+				op->m_syndicateManager.increaseSyndicatePoint(2);
 				break;
 			case 2:
-				op->m_syndicateManager.increaseSyndicatePoint(320);
+				op->m_syndicateManager.increaseSyndicatePoint(3);
 				break;
 			case 3:
-				op->m_syndicateManager.increaseSyndicatePoint(500);
+				op->m_syndicateManager.increaseSyndicatePoint(5);
 				break;
 			}
 		}
 		else
 		{
-			op->m_syndicateManager.increaseSyndicatePoint(1200);
+			op->m_syndicateManager.increaseSyndicatePoint(1);
 		}
 	}
 	else if(op->getSyndicateType() == SYNDICATE::eSYNDICATE_DEALERMOON)
 	{
 		if (jewelKailuxPoint < jewelDealerMoonPoint)
 		{
-			op->m_syndicateManager.increaseSyndicatePoint(1500);
+			op->m_syndicateManager.increaseSyndicatePoint(1);
 		}
 		else
 		{
 			switch(grade)
 			{
 			case 1:
-				op->m_syndicateManager.increaseSyndicatePoint(200);
+				op->m_syndicateManager.increaseSyndicatePoint(2);
 				break;
 			case 2:
-				op->m_syndicateManager.increaseSyndicatePoint(320);
+				op->m_syndicateManager.increaseSyndicatePoint(3);
 				break;
 			case 3:
-				op->m_syndicateManager.increaseSyndicatePoint(500);
+				op->m_syndicateManager.increaseSyndicatePoint(5);
 				break;
 			}
 		}
@@ -900,7 +943,7 @@ void ProcDead_PD2(CNPC* df)
 		if (!pc)
 			return ;
 
-		// Äù½ºÆ® ½ÇÆĞ
+		// í€˜ìŠ¤íŠ¸ ì‹¤íŒ¨
 		CQuest* pQuest = NULL;
 		CQuest* pQuestNext = NULL;
 		const CQuestProto* pQuestProto = NULL;
@@ -908,18 +951,18 @@ void ProcDead_PD2(CNPC* df)
 		while ((pQuest = pQuestNext))
 		{
 			pQuestNext = pc->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-			// ±¸ÃâÇü Äù½ºÆ® ÀÌ°í
+			// êµ¬ì¶œí˜• í€˜ìŠ¤íŠ¸ ì´ê³ 
 			if (pQuest->GetQuestType0() == QTYPE_KIND_SAVE)
 			{
 				pQuestProto = pQuest->GetQuestProto();
 				int j;
 				for (j = 0; j < QUEST_MAX_CONDITION; j++)
 				{
-					// Á×Àº df°¡ ±¸ÃâÇÒ °øÁÖ ÀÌ¸é
+					// ì£½ì€ dfê°€ êµ¬ì¶œí•  ê³µì£¼ ì´ë©´
 					if (pQuestProto->m_conditionType[j] == QCONDITION_NPC &&
 							pQuestProto->m_conditionIndex[j] == df->m_proto->m_index)
 					{
-						// ¾ÆÀÌÅÛ »èÁ¦
+						// ì•„ì´í…œ ì‚­ì œ
 						pQuest->RemoeQuestItem(pc);
 
 						// Quest Fail Log
@@ -943,13 +986,13 @@ void ProcDead_PD2(CNPC* df)
 void ProcDeadQuestProc(CPC * opc,CNPC * df, int partyScale)
 {
 #ifdef HUNT_QUEST_COMPLETE_FOR_OTHER_PARTYMEMBER
-	// ÆÄÆ¼ ½ºÄÉÀÏÀÌ ¾î¶²°ÍÀÌ ³Ñ¾î¿Àµç »ó°ü¾ø´Ù.
-	// ¸·Å¸Ä£»ç¶÷ÀÌ ¿øÁ¤´ëÀÎÁö, ÆÄÆ¼ÀÎÁö, ¼Ö·ÎÀÎÁö¸¸ Ã¼Å©ÇÑ´Ù.
-	// ¿øÁ¤´ëÀÏ °æ¿ì ¿øÁ¤´ë Äù½ºÆ®¸¸ ¼öÇàµÈ´Ù. ¼Ö·ÎÄù½ºÆ®µµ ¼öÇàÀÌ ¾ÈµÈ´Ù.
-	// ¼Ö·Î³ª ÆÄÆ¼ÀÏ°æ¿ì ÀÚ±â Äù½ºÆ®µµ µÇ°í, ÆÄÆ¼¿ø Äù½ºÆ®µµ °°ÀÌ µÈ´Ù.
+	// íŒŒí‹° ìŠ¤ì¼€ì¼ì´ ì–´ë–¤ê²ƒì´ ë„˜ì–´ì˜¤ë“  ìƒê´€ì—†ë‹¤.
+	// ë§‰íƒ€ì¹œì‚¬ëŒì´ ì›ì •ëŒ€ì¸ì§€, íŒŒí‹°ì¸ì§€, ì†”ë¡œì¸ì§€ë§Œ ì²´í¬í•œë‹¤.
+	// ì›ì •ëŒ€ì¼ ê²½ìš° ì›ì •ëŒ€ í€˜ìŠ¤íŠ¸ë§Œ ìˆ˜í–‰ëœë‹¤. ì†”ë¡œí€˜ìŠ¤íŠ¸ë„ ìˆ˜í–‰ì´ ì•ˆëœë‹¤.
+	// ì†”ë¡œë‚˜ íŒŒí‹°ì¼ê²½ìš° ìê¸° í€˜ìŠ¤íŠ¸ë„ ë˜ê³ , íŒŒí‹°ì› í€˜ìŠ¤íŠ¸ë„ ê°™ì´ ëœë‹¤.
 	if(opc->IsExped())
 	{
-		// ¿øÁ¤´ë Äù½ºÆ®
+		// ì›ì •ëŒ€ í€˜ìŠ¤íŠ¸
 		int i, j;
 		CPC* pExpedPC = NULL;
 		if(opc->m_Exped)
@@ -992,7 +1035,7 @@ void ProcDeadQuestProc(CPC * opc,CNPC * df, int partyScale)
 	}
 	else
 	{
-		if(!opc->IsParty()) // ÆÄÆ¼°¡ ¾øÀ¸¸é ³ª¸¸ Äù½ºÆ® ¾÷µ¥ÀÌÆ®
+		if(!opc->IsParty()) // íŒŒí‹°ê°€ ì—†ìœ¼ë©´ ë‚˜ë§Œ í€˜ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
 		{
 			CQuest* pQuest = NULL;
 			CQuest* pQuestNext = opc->m_questList.GetNextQuest(NULL, QUEST_STATE_RUN);
@@ -1062,7 +1105,7 @@ void ProcDeadQuestProc(CPC * opc,CNPC * df, int partyScale)
 	while ((pQuest = pQuestNext))
 	{
 		pQuestNext = opc->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-		// Äù½ºÆ® ÀÖ°í ¼öÇàÁßÀÌ°í ¹İº¹, ¼öÁı, °İÆÄ, ±¸Ãâ Äù½ºÆ®ÀÌ¸é
+		// í€˜ìŠ¤íŠ¸ ìˆê³  ìˆ˜í–‰ì¤‘ì´ê³  ë°˜ë³µ, ìˆ˜ì§‘, ê²©íŒŒ, êµ¬ì¶œ í€˜ìŠ¤íŠ¸ì´ë©´
 		if( (partyScale == QTYPE_SCALE_PARTY && pQuest->GetPartyScale() != QTYPE_SCALE_PARTY )
 #ifdef _BATTLEGROUP_QUEST_BUG_PIX
 				|| (partyScale == QTYPE_SCALE_BATTLEGROUP && pQuest->GetPartyScale() != QTYPE_SCALE_BATTLEGROUP )

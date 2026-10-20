@@ -10,7 +10,9 @@
 #include <Engine/Ska/StringTable.h>
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
+#include <Engine/Contents/function/WildPetTargetUI.h>
+#include <Engine/Contents/function/PetTargetUI.h>
 #include <Engine/Interface/UIQuickSlot.h>
 #include <Engine/Info/MyInfo.h>
 
@@ -80,6 +82,7 @@ CPetTarget::~CPetTarget(void)
 	if (pet_OwnerIndex == _pNetwork->MyCharacterInfo.index)
 	{
 		pInfo->GetMyPetInfo()->Init();
+		pUIMgr->GetPetTargetUI()->closeUI();
 	}
 
 	if (m_pEntity != NULL)
@@ -210,9 +213,10 @@ CWildPetTarget::~CWildPetTarget()
 
 	if (m_nOwnerIndex == _pNetwork->MyCharacterInfo.index)
 	{
-		pUIMgr->RearrangeOrder(UI_WILDPETTARGETINFO,FALSE);
+		pUIMgr->GetWildPetTargetInfo()->closeUI();
 		pInfo->SetMyApet(NULL);
-		pUIMgr->GetWildPetInfo()->AIClear();
+		pUIMgr->GetWildPetInfoUI()->AIClear();
+		pUIMgr->GetWildPetInfoUI()->closeUI();
 	}
 
 	pUIMgr->StopTargetEffect(m_nIdxServer);

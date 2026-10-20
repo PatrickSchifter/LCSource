@@ -49,7 +49,7 @@ public:
 	void addOwner(CPC* owner, CItem* item, bool isTake = false);
 	void changeOnwer(CPC* newOwner, CItem* item);
 
-	//¾ÆÀÌÅÛ ÇÕ¼º
+	//ì•„ì´í…œ í•©ì„±
 	void compose( CPC* owner, CItem* mat_item1, CItem* mat_item2,  CItem* result_item );
 
 	void sendToAllSysMsg(CPC* owner, int item_index, int systype, int zone_index = -1);

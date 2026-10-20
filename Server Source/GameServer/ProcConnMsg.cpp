@@ -212,7 +212,7 @@ void CServer::ProcessBilling(CNetMsg::SP& msg)
 	//LOG_INFO("DEBUG_FUNC : END : subtype : %d", subtype);
 }
 
-// ¹°Ç°ÀÌ ÆÈ·ÈÀ»¶§ Ä¿³ØÅÍ°¡ ÇÑÁ¤ÆÇ¸Å ¹°Ç° °»½Å ¸Ş¼¼Áö¸¦ º¸³¿
+// ë¬¼í’ˆì´ íŒ”ë ¸ì„ë•Œ ì»¤ë„¥í„°ê°€ í•œì •íŒë§¤ ë¬¼í’ˆ ê°±ì‹  ë©”ì„¸ì§€ë¥¼ ë³´ëƒ„
 void OnLimitCatalog(CNetMsg::SP& msg)
 {
 	int ctid, sell, count, i;
@@ -229,7 +229,7 @@ void OnLimitCatalog(CNetMsg::SP& msg)
 	}
 }
 
-//XX ·Î±×ÀÎ 2
+//XX ë¡œê·¸ì¸ 2
 void OnLoginRep(CNetMsg::SP& msg)
 {
 	CLCString id(MAX_ID_NAME_LENGTH + 1);
@@ -243,13 +243,13 @@ void OnLoginRep(CNetMsg::SP& msg)
 
 	if (desc == NULL)
 	{
-		// ºô¸µ ¸Ş½ÃÁö¿¡ ÇØ´çÇÏ´Â »ç¿ëÀÚ ¾øÀ½
+		// ë¹Œë§ ë©”ì‹œì§€ì— í•´ë‹¹í•˜ëŠ” ì‚¬ìš©ì ì—†ìŒ
 		GAMELOG << init("SYS_ERR") << "Connector descriptor not fount :" << id << ": " << errcode << end;
 
-		// TODO : ·Î±×¾Æ¿ô ½ÃÄÑ¾ß ÇÏ´Â ¿À·ù ÄÚµå °Ë»ç
+		// TODO : ë¡œê·¸ì•„ì›ƒ ì‹œì¼œì•¼ í•˜ëŠ” ì˜¤ë¥˜ ì½”ë“œ ê²€ì‚¬
 		if (errcode == MSG_CONN_ERROR_SUCCESS)
 		{
-			// ·Î±×¾Æ¿ô º¸³»±â
+			// ë¡œê·¸ì•„ì›ƒ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnLogoutMsg(rmsg, id);
 			SEND_Q(rmsg, gserver->m_connector);
@@ -282,7 +282,7 @@ void OnLoginRep(CNetMsg::SP& msg)
 		desc->m_proSite = proSite;
 
 #ifdef HANARO_EVENT
-		// ÄÚµå Á¶ÀÛÀ» ·Î±×ÀÎ ÇÑ À¯Àú¸¦ ¹æÁö ÇÏ±â À§ÇØ.
+		// ì½”ë“œ ì¡°ì‘ì„ ë¡œê·¸ì¸ í•œ ìœ ì €ë¥¼ ë°©ì§€ í•˜ê¸° ìœ„í•´.
 		if (strcmp(desc->m_proSite, "HF") != 0 && strcmp(desc->m_proSite, "hf") != 0)
 		{
 			desc->m_hanaroCode = "";
@@ -295,9 +295,9 @@ void OnLoginRep(CNetMsg::SP& msg)
 		DescManager::instance()->changeUserIndex(desc->m_index, index);
 		desc->m_index = index;
 		
-		// Connect server·Î ºÎÅÍ ÀÎÁõÀ» Àß ¹Ş¾Ò´Ù.
+		// Connect serverë¡œ ë¶€í„° ì¸ì¦ì„ ì˜ ë°›ì•˜ë‹¤.
 		STATE(desc) = CON_GET_IDEN_MSG;
-		DBManager::instance()->PushCharacterList(desc); // DBManager·Î Ä³¸¯ÅÍ ¸®½ºÆ®Á¤º¸¸¦ ¿äÃ»ÇÔ
+		DBManager::instance()->PushCharacterList(desc); // DBManagerë¡œ ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ì •ë³´ë¥¼ ìš”ì²­í•¨
 
 		return;
 	}
@@ -305,7 +305,7 @@ void OnLoginRep(CNetMsg::SP& msg)
 	if ( errcode != MSG_CONN_ERROR_ALREADY)
 		desc->m_logined = LOGIN_STATE_FAIL;
 
-	// °¢ °æ¿ì¿¡ ÇØ´çÇÏ´Â ·Î±× ³²±â±â°í, ¼¼¼ÇÀ» Á¾·áÇÑ´Ù.
+	// ê° ê²½ìš°ì— í•´ë‹¹í•˜ëŠ” ë¡œê·¸ ë‚¨ê¸°ê¸°ê³ , ì„¸ì…˜ì„ ì¢…ë£Œí•œë‹¤.
 	switch (errcode)
 	{
 	case MSG_CONN_ERROR_ALREADY:
@@ -390,10 +390,10 @@ void OnMoveServerOK(CNetMsg::SP& msg)
 
 void OnCashItemPurchaseHistory(CNetMsg::SP& msg)
 {
-	//MSG_CONN_CASHITEM_PURCHASEHISTORY_REP,//ÀÀ´ä		: charindex(n) errorcode(uc) count(n) ctid(n)
+	//MSG_CONN_CASHITEM_PURCHASEHISTORY_REP,//ì‘ë‹µ		: charindex(n) errorcode(uc) count(n) ctid(n)
 	int charindex, count, ctid, i, ctcount;
 	unsigned char errorcode;
-	//MSG_EX_CASHITEM_PURCHASEHISTORY_REP,// ÀÀ´ä				: errorcode(uc) count(n) ctid(n)
+	//MSG_EX_CASHITEM_PURCHASEHISTORY_REP,// ì‘ë‹µ				: errorcode(uc) count(n) ctid(n)
 
 	RefMsg(msg) >> charindex
 				>> errorcode
@@ -432,7 +432,7 @@ void OnCashItemBring(CNetMsg::SP& msg)
 
 void OnCashItemBringProcess(CNetMsg::SP& msg, bool bPresent)
 {
-	//MSG_CONN_CASHITEM_BRING_REP,	// ÀÀ´ä				: charindex(n) errorCode(uc) count(n) ctid(n)
+	//MSG_CONN_CASHITEM_BRING_REP,	// ì‘ë‹µ				: charindex(n) errorCode(uc) count(n) ctid(n)
 	int charindex, count, i;
 	unsigned char errorcode;
 	int ctid[10];
@@ -468,8 +468,8 @@ void OnCashItemBringProcess(CNetMsg::SP& msg, bool bPresent)
 	if((!bPresent && errorcode == MSG_EX_CASHITEM_ERROR_SUCCESS) ||
 			(bPresent && errorcode == MSG_EX_CASHITEM_ERROR_GIFTRECV_SUCCESS))
 	{
-		// ¼º°ø ¸Ş¼¼Áö¸¦ º¸³¿
-		// ÄÉ¸¯ÅÍ ¶ôÇØÁ¦
+		// ì„±ê³µ ë©”ì„¸ì§€ë¥¼ ë³´ëƒ„
+		// ì¼€ë¦­í„° ë½í•´ì œ
 		pc->ResetPlayerState(PLAYER_STATE_CASHITEM);
 		pc->m_billReqTime = 0;
 
@@ -499,7 +499,7 @@ void OnCashItemBringProcess(CNetMsg::SP& msg, bool bPresent)
 	}
 
 	CCtItemList* ctItemList = NULL;
-	// ·Ñ¹é
+	// ë¡¤ë°±
 	for(i = 0; i < count; i++)
 	{
 		int j = 0;
@@ -508,7 +508,7 @@ void OnCashItemBringProcess(CNetMsg::SP& msg, bool bPresent)
 
 		if(!m_catalog)
 		{
-			// »óÇ° ¸ñ·ÏÀÌ ¾ø¾î¼­ ·Ñ¹é ¸óÇÑ´Ù
+			// ìƒí’ˆ ëª©ë¡ì´ ì—†ì–´ì„œ ë¡¤ë°± ëª¬í•œë‹¤
 			return;
 		}
 
@@ -566,10 +566,14 @@ void OnCashItemPurchaselist(CNetMsg::SP& msg)
 		return;
 	}
 
+	pc->m_cash_purchase_list.clear();
+
 	for(i = 0; i < count; i++)
 	{
 		RefMsg(msg) >> idx[i]
 					>> ctid[i];
+
+		pc->m_cash_purchase_list.push_back(std::pair<int, int>(idx[i], ctid[i]));
 	}
 
 	{
@@ -581,7 +585,7 @@ void OnCashItemPurchaselist(CNetMsg::SP& msg)
 
 void OnCashItemPurchase(CNetMsg::SP& msg)
 {
-	//MSG_CONN_CASHITEM_PURCHASE_REP,	// ÀÀ´ä				: userid(str) errorcode(c) cashBalance(n)
+	//MSG_CONN_CASHITEM_PURCHASE_REP,	// ì‘ë‹µ				: userid(str) errorcode(c) cashBalance(n)
 	unsigned char errorcode;
 	int cashBalance;
 	int userindex;
@@ -612,7 +616,7 @@ void OnCashItemPurchase(CNetMsg::SP& msg)
 
 	pc->m_cashBalance = cashBalance;
 
-	// Ä³½¬ ¸Ş¼¼Áö º¸³¿
+	// ìºì‰¬ ë©”ì„¸ì§€ ë³´ëƒ„
 	CNetMsg::SP rmsg(new CNetMsg);
 	pc->ResetPlayerState(PLAYER_STATE_CASHITEM);
 	pc->m_billReqTime = 0;
@@ -643,7 +647,7 @@ void OnCashBalance(CNetMsg::SP& msg)
 	}
 
 	pc->m_cashBalance = cashBalance;
-	// Ä³½¬ ¸Ş¼¼Áö º¸³¿
+	// ìºì‰¬ ë©”ì„¸ì§€ ë³´ëƒ„
 	CNetMsg::SP rmsg(new CNetMsg);
 	CashItemBalanceRepMsg(rmsg, (MSG_EX_CASHITEM_ERROR_TYPE) errorcode, cashBalance);
 	SEND_Q(rmsg, pc->m_desc);
@@ -929,7 +933,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 					GAMELOG << init("PACKAGE_ITEM_GIVE_FAIL", pc->m_name, pc->m_desc->m_idname)
 							<< pItemIdx[i] << end;
 
-					// ·Ñ¹é
+					// ë¡¤ë°±
 					for(int j = i - 1; j >= 0; j--)
 					{
 						CItemProto* pItemProto = gserver->m_itemProtoList.FindIndex(pItemIdx[j]);
@@ -993,7 +997,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 		}
 
 		{
-			// ½ÇÆĞÀÌ¸é ¿¡·¯ÄÚµå¸¦ ±×´ë·Î Å¬¶óÀÌ¾ğÆ®¿¡°Ô Àü´Ş
+			// ì‹¤íŒ¨ì´ë©´ ì—ëŸ¬ì½”ë“œë¥¼ ê·¸ëŒ€ë¡œ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì „ë‹¬
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventErrorMsg(rmsg, (MSG_EVENT_ERROR_TYPE) errorCode );
 			SEND_Q(rmsg, pc->m_desc);
@@ -1150,7 +1154,7 @@ void OnCouponUse(CNetMsg::SP& msg)
 	{
 		if( errorCode != MSG_EVENT_ERROR_COUPON_SUCCESS )
 		{
-			// ·Ñ¹é
+			// ë¡¤ë°±
 			for(int i = 0; i < nCount; i++)
 			{
 				if (pItemIdx[i] <= 0)
@@ -1176,7 +1180,7 @@ void OnCouponUse(CNetMsg::SP& msg)
 		}
 	}// if(pc) end
 }
-#else // ¸»·¹ÀÌ½Ã¾Æ, È«ÄáÀ» Á¦¿ÜÇÑ ³ª¶óµé
+#else // ë§ë ˆì´ì‹œì•„, í™ì½©ì„ ì œì™¸í•œ ë‚˜ë¼ë“¤
 void OnCouponConfirm(CNetMsg::SP& msg)
 {
 	int charindex, i;
@@ -1192,7 +1196,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 
 	if( pc )
 	{
-		// ¾ÆÀÌÅÛ ÀÎµ¦½º¸¦ ÀÏº» ÀÇ»ó ¾ÆÀÌÅÛÀ¸·Î
+		// ì•„ì´í…œ ì¸ë±ìŠ¤ë¥¼ ì¼ë³¸ ì˜ìƒ ì•„ì´í…œìœ¼ë¡œ
 		if( type == 1 && pc->m_job > JOB_SORCERER)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -1203,15 +1207,15 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 
 		if( errorCode == MSG_EVENT_ERROR_COUPON_SUCCESS )
 		{
-			// 2Â÷ ¾ÆÀÌÅÛÀ¸·Î
+			// 2ì°¨ ì•„ì´í…œìœ¼ë¡œ
 			const static int japanItem_table[5][5] =
 			{
-				{ 1254, 1255, 1256, 1257, 1258 },		// Å¸ÀÌÅº
-				{ 1259, 1260, 1261, 1262, 1263 },		// ³ªÀÌÆ®
-				{ 1264, 1265, 1266, 1267, 1268 },		// Èú·¯
-				{ 1269, 1270, 1271, 1272, 1273 },		// ¸ŞÀÌÁö
+				{ 1254, 1255, 1256, 1257, 1258 },		// íƒ€ì´íƒ„
+				{ 1259, 1260, 1261, 1262, 1263 },		// ë‚˜ì´íŠ¸
+				{ 1264, 1265, 1266, 1267, 1268 },		// íëŸ¬
+				{ 1269, 1270, 1271, 1272, 1273 },		// ë©”ì´ì§€
 				{ 1274, 1275, 1276, 1277, 1278 }
-			};		// ·Î±×
+			};		// ë¡œê·¸
 
 			const static int japanEvent2_table[2][4]  =
 			{
@@ -1225,12 +1229,12 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 			{
 				for( i = 0; i < 5; i++ )
 				{
-					// ¼º°øÀÌ¸é ¾ÆÀÌÅÛÀ» Áö±ŞÇÏ°í Ä¿³ØÅÍ¿¡°Ô ÄÁÆßÀ» º¸³¿
+					// ì„±ê³µì´ë©´ ì•„ì´í…œì„ ì§€ê¸‰í•˜ê³  ì»¤ë„¥í„°ì—ê²Œ ì»¨íŒì„ ë³´ëƒ„
 					if( !pc->GiveItem(japanItem_table[(int)pc->m_job][i], 0, 0, 1, false) )
 					{
 						GAMELOG << init("PACKAGE_ITEM_GIVE_FAIL", pc->m_name, pc->m_desc->m_idname)
 								<< japanItem_table[(int)pc->m_job][i] << end;
-						// ·Ñ¹é
+						// ë¡¤ë°±
 						for(i = i-1; i >= 0; i--)
 						{
 							CItem* item = pc->m_inventory.FindByDBIndex(japanItem_table[(int)pc->m_job][i], 0 , 0);
@@ -1248,13 +1252,13 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 			{
 				for( i = 0; i < 4; i++ )
 				{
-					// ¼º°øÀÌ¸é ¾ÆÀÌÅÛÀ» Áö±ŞÇÏ°í Ä¿³ØÅÍ¿¡°Ô ÄÁÆßÀ» º¸³¿
+					// ì„±ê³µì´ë©´ ì•„ì´í…œì„ ì§€ê¸‰í•˜ê³  ì»¤ë„¥í„°ì—ê²Œ ì»¨íŒì„ ë³´ëƒ„
 					if( !pc->GiveItem(japanEvent2_table[0][i], 0, 0, japanEvent2_table[1][i], false) )
 					{
 						GAMELOG << init("PACKAGE_ITEM_GIVE_FAIL", pc->m_name, pc->m_desc->m_idname)
 								<< japanEvent2_table[0][i] << delim
 								<< japanEvent2_table[1][i] << end;
-						// ·Ñ¹é
+						// ë¡¤ë°±
 						for(i = i-1; i >= 0; i--)
 						{
 							item_search_t vec;
@@ -1274,12 +1278,12 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 			{
 				if( !pc->GiveItem(japanEvent3_table, 0, 0, 1, false) )
 				{
-					// ¼º°øÀÌ¸é ¾ÆÀÌÅÛÀ» Áö±ŞÇÏ°í Ä¿³ØÅÍ¿¡°Ô ÄÁÆßÀ» º¸³¿
+					// ì„±ê³µì´ë©´ ì•„ì´í…œì„ ì§€ê¸‰í•˜ê³  ì»¤ë„¥í„°ì—ê²Œ ì»¨íŒì„ ë³´ëƒ„
 					GAMELOG << init("PACKAGE_ITEM_GIVE_FAIL", pc->m_name, pc->m_desc->m_idname)
 							<< japanEvent3_table << delim
 							<< 1 << end;
 
-					// ·Ñ¹é
+					// ë¡¤ë°±
 					CItem* item = pc->m_inventory.FindByDBIndex(japanEvent3_table, 0 , 0);
 					if (item)
 					{
@@ -1306,7 +1310,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ·Ñ¹é
+				// ë¡¤ë°±
 				if( type == 1 )
 				{
 					for(i = i-1; i >= 0; i--)
@@ -1337,7 +1341,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 				}
 
 				{
-					// Áö±ŞÇÑ ¾ÆÀÌÅÛÀ» ·Ñ¹é ÇÏ°í ¾ø´Â ÄíÆù¹øÈ£¶ó°í Å¬¶óÀÌ¾ğÆ®¿¡°Ô º¸³¿
+					// ì§€ê¸‰í•œ ì•„ì´í…œì„ ë¡¤ë°± í•˜ê³  ì—†ëŠ” ì¿ í°ë²ˆí˜¸ë¼ê³  í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë³´ëƒ„
 					CNetMsg::SP rmsg(new CNetMsg);
 					EventErrorMsg(msg, MSG_EVENT_ERROR_NOT_COUPON );
 					SEND_Q(msg, pc->m_desc);
@@ -1348,7 +1352,7 @@ void OnCouponConfirm(CNetMsg::SP& msg)
 		}  // end if( errorCode == MSG_EVENT_ERROR_COUPON_SUCCESS )
 
 		{
-			// ½ÇÆĞÀÌ¸é ¿¡·¯ÄÚµå¸¦ ±×´ë·Î Å¬¶óÀÌ¾ğÆ®¿¡°Ô Àü´Ş
+			// ì‹¤íŒ¨ì´ë©´ ì—ëŸ¬ì½”ë“œë¥¼ ê·¸ëŒ€ë¡œ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì „ë‹¬
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventErrorMsg(msg, (MSG_EVENT_ERROR_TYPE) errorCode );
 			SEND_Q(msg, pc->m_desc);
@@ -1369,15 +1373,15 @@ void OnCouponUse(CNetMsg::SP& msg)
 
 	if( pc )
 	{
-		// 2Â÷ ¾ÆÀÌÅÛÀ¸·Î
+		// 2ì°¨ ì•„ì´í…œìœ¼ë¡œ
 		const static int japanItem_table[5][5] =
 		{
-			{ 1254, 1255, 1256, 1257, 1258 },		// Å¸ÀÌÅº
-			{ 1259, 1260, 1261, 1262, 1263 },		// ³ªÀÌÆ®
-			{ 1264, 1265, 1266, 1267, 1268 },		// Èú·¯
-			{ 1269, 1270, 1271, 1272, 1273 },		// ¸ŞÀÌÁö
+			{ 1254, 1255, 1256, 1257, 1258 },		// íƒ€ì´íƒ„
+			{ 1259, 1260, 1261, 1262, 1263 },		// ë‚˜ì´íŠ¸
+			{ 1264, 1265, 1266, 1267, 1268 },		// íëŸ¬
+			{ 1269, 1270, 1271, 1272, 1273 },		// ë©”ì´ì§€
 			{ 1274, 1275, 1276, 1277, 1278 }
-		};		// ·Î±×
+		};		// ë¡œê·¸
 
 		const static int japanEvent2_table[2][4]  =
 		{
@@ -1389,7 +1393,7 @@ void OnCouponUse(CNetMsg::SP& msg)
 
 		if( errorCode != MSG_EVENT_ERROR_COUPON_SUCCESS )
 		{
-			// ·Ñ¹é
+			// ë¡¤ë°±
 			if( type == 1 )
 			{
 				for(i = 0; i < 5; i++)
@@ -1477,7 +1481,7 @@ void OnCashItemGiftRecvHistory(CNetMsg::SP& msg)
 
 void OnCashItemGiftPresentHistory(CNetMsg::SP& msg, bool bSend)
 {
-	// ÀÀ´ä				: errorcode(uc) count(n) ctid(n) sendcharName(str)
+	// ì‘ë‹µ				: errorcode(uc) count(n) ctid(n) sendcharName(str)
 	unsigned char errCode;
 	int count, ctid, charindex;
 	CLCString charName(MAX_CHAR_NAME_LENGTH + 1);
@@ -1518,11 +1522,9 @@ void OnCashItemGiftRecvList(CNetMsg::SP& msg)
 	if( !pc )
 		return;
 
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		CashItemGiftRecvListRepMsg(rmsg, listflag, msg);
-		SEND_Q(rmsg, pc->m_desc);
-	}
+	CNetMsg::SP rmsg(new CNetMsg);
+	CashItemGiftRecvListRepMsg(rmsg, listflag, pc->m_cash_gift_list, msg);
+	SEND_Q(rmsg, pc->m_desc);
 }
 void OnCashItemGiftRecv(CNetMsg::SP& msg)
 {
@@ -1602,13 +1604,13 @@ void OnConnEventXmas2007( CNetMsg::SP& msg )
 
 	RefMsg(msg) >> cSubtype;
 
-	CZone* pZone = gserver->FindZone(ZONE_START);		//ÁÖ³ë
+	CZone* pZone = gserver->FindZone(ZONE_START);		//ì£¼ë…¸
 	if (pZone == NULL)
-		return;			// ÁÖ³ëÁö¿ª ¾øÀ½
+		return;			// ì£¼ë…¸ì§€ì—­ ì—†ìŒ
 
 	CArea *area = pZone->m_area;
 	if ( area == NULL )
-		return;			// Áö¿ªÁ¤º¸ ¾øÀ½
+		return;			// ì§€ì—­ì •ë³´ ì—†ìŒ
 
 	switch( cSubtype )
 	{
@@ -1622,9 +1624,9 @@ void OnConnEventXmas2007( CNetMsg::SP& msg )
 			while ( npc )
 			{
 //#ifdef EVENT_XMAS_2007_GAMIGO_10TH
-//				if( npc->m_idNum == 1304 )		//°¡¹Ì°í 10ÁÖ³â ÀÌº¥Æ®·Î ÄÉÀÍ npc·Î »ç¿ëÇÑ´Ù.
+//				if( npc->m_idNum == 1304 )		//ê°€ë¯¸ê³  10ì£¼ë…„ ì´ë²¤íŠ¸ë¡œ ì¼€ìµ npcë¡œ ì‚¬ìš©í•œë‹¤.
 //#else
-				if( npc->m_idNum == 484 || npc->m_idNum == 486 /*Å©¸®½º¸¶½º Æ®¸® 2Á¾ */ )		// Å©¸®½º ¸¶½º Æ®¸® NPC ´Ù¼ö
+				if( npc->m_idNum == 484 || npc->m_idNum == 486 /*í¬ë¦¬ìŠ¤ë§ˆìŠ¤ íŠ¸ë¦¬ 2ì¢… */ )		// í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ íŠ¸ë¦¬ NPC ë‹¤ìˆ˜
 //#endif
 				{
 					npc->m_maxHP = npc->m_hp = (int) unPoint;
@@ -1644,7 +1646,7 @@ void OnConnEventXmas2007( CNetMsg::SP& msg )
 
 			if( nRemainTime == 5 )
 			{
-				// ¸ğµç Å¬¶óÀÌ¾ğÆ®¿¡ ¾ÆÀÌÅÛ µå¶ø ±îÁö ³²Àº ½Ã°£ Ç¥½Ã
+				// ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì— ì•„ì´í…œ ë“œë ê¹Œì§€ ë‚¨ì€ ì‹œê°„ í‘œì‹œ
 				CNetMsg::SP rmsg(new CNetMsg);
 				EventXmas2007Msg( rmsg, MSG_EVENT_XMASTREE_DROP_ITEM );
 				RefMsg(rmsg) << nRemainTime;
@@ -1653,19 +1655,19 @@ void OnConnEventXmas2007( CNetMsg::SP& msg )
 			else if ( nRemainTime == 0 )
 			{
 				/*const int nXmasEventItem[7][2] = {
-					{ 2590, 40 },			// ¼ÒÇü »¡°£¶ì ¸·´ë»çÅÁ 40°³
-					{ 2591, 30 },			// ÁßÇü »¡°£¶ì ¸·´ë»çÅÁ 30°³
-					{ 2592, 20 },			// ´ëÇü »¡°£¶ì ¸·´ë»çÅÁ 20°³
-					{ 2593, 40 },			// ¼ÒÇü ÆÄ¶õ¶ì ¸·´ë»çÅÁ 40°³
-					{ 2594, 30 },			// ÁßÇü ÆÄ¶õ¶ì ¸·´ë»çÅÁ 30°³
-					{ 2595, 20 },			// ´ëÇü ÆÄ¶õ¶ì ¸·´ë»çÅÁ 20°³
-					{ 2596, 20 },			// ÇÒ·Ï´Ş·Ï ¸·´ë»çÅÁ 20°³
+					{ 2590, 40 },			// ì†Œí˜• ë¹¨ê°„ë  ë§‰ëŒ€ì‚¬íƒ• 40ê°œ
+					{ 2591, 30 },			// ì¤‘í˜• ë¹¨ê°„ë  ë§‰ëŒ€ì‚¬íƒ• 30ê°œ
+					{ 2592, 20 },			// ëŒ€í˜• ë¹¨ê°„ë  ë§‰ëŒ€ì‚¬íƒ• 20ê°œ
+					{ 2593, 40 },			// ì†Œí˜• íŒŒë€ë  ë§‰ëŒ€ì‚¬íƒ• 40ê°œ
+					{ 2594, 30 },			// ì¤‘í˜• íŒŒë€ë  ë§‰ëŒ€ì‚¬íƒ• 30ê°œ
+					{ 2595, 20 },			// ëŒ€í˜• íŒŒë€ë  ë§‰ëŒ€ì‚¬íƒ• 20ê°œ
+					{ 2596, 20 },			// í• ë¡ë‹¬ë¡ ë§‰ëŒ€ì‚¬íƒ• 20ê°œ
 				};*/
 
 				CNPC* npc = area->m_npcList;
 				while ( npc )
 				{
-					if( npc->m_idNum == 484/*¸ŞÀÎ Å©¸®½º¸¶½º Æ®¸®*/ )		// Å©¸®½º ¸¶½º Æ®¸® NPC ´Ù¼ö
+					if( npc->m_idNum == 484/*ë©”ì¸ í¬ë¦¬ìŠ¤ë§ˆìŠ¤ íŠ¸ë¦¬*/ )		// í¬ë¦¬ìŠ¤ ë§ˆìŠ¤ íŠ¸ë¦¬ NPC ë‹¤ìˆ˜
 					{
 						break;
 					}
@@ -1673,13 +1675,13 @@ void OnConnEventXmas2007( CNetMsg::SP& msg )
 				}
 
 				if( npc == NULL )
-					return;		// NPC ³ª¹«°¡ ¾ø´Ù.
+					return;		// NPC ë‚˜ë¬´ê°€ ì—†ë‹¤.
 
 				int nDropItemPos = GetRandom(0,100) % gserver->m_dropItemMgr.getDropItemListCount(19);
 
-				// ¹«Á¶°Ç µå¶øÀÌ¹Ç·Î °¡¶ó ÇÇ¾¾¸¦ ±¸ÇÏÀÚ.
+				// ë¬´ì¡°ê±´ ë“œëì´ë¯€ë¡œ ê°€ë¼ í”¼ì”¨ë¥¼ êµ¬í•˜ì.
 
-				CPC * pc = NULL; // npc¿Í ºñ±³ÇÒ °¡¶ó ÇÇ¾¾°¡ ÇÊ¿äÇÏ´Ù ¾Æ¹«°Å³ª ´ëÃæ °ñ¶óº¸ÀÚ.
+				CPC * pc = NULL; // npcì™€ ë¹„êµí•  ê°€ë¼ í”¼ì”¨ê°€ í•„ìš”í•˜ë‹¤ ì•„ë¬´ê±°ë‚˜ ëŒ€ì¶© ê³¨ë¼ë³´ì.
 
 				PCManager::map_t& playerMap			= PCManager::instance()->getPlayerMap();
 				PCManager::map_t::iterator iter		= playerMap.begin();
@@ -1733,7 +1735,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 
 		switch(errortype )
 		{
-		case MSG_CONN_LACARETTE_TOKEN_ERROR_SUC: // ÅäÅ« Áö±Ş °¡´É
+		case MSG_CONN_LACARETTE_TOKEN_ERROR_SUC: // í† í° ì§€ê¸‰ ê°€ëŠ¥
 			{
 				int tokenIndex = 5123;
 
@@ -1748,7 +1750,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 				}
 
 				{
-					// ÇØ´ç À¯Àú¿¡°Ôµµ ¸Ş½ÃÁö¸¦ ³¯¸®ÀÚ.
+					// í•´ë‹¹ ìœ ì €ì—ê²Œë„ ë©”ì‹œì§€ë¥¼ ë‚ ë¦¬ì.
 					CNetMsg::SP rmsg(new CNetMsg);
 					lacaretteTokenReadyErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_SUC);
 					SEND_Q(rmsg, ch->m_desc);
@@ -1756,7 +1758,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			}
 			break;
 
-		case MSG_CONN_LACARETTE_TOKEN_ERROR_ALREADY: // ÀÌ¹Ì Áö±Ş
+		case MSG_CONN_LACARETTE_TOKEN_ERROR_ALREADY: // ì´ë¯¸ ì§€ê¸‰
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_ALREADY);
@@ -1764,7 +1766,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			}
 			break;
 
-		case MSG_CONN_LACARETTE_TOKEN_ERROR: // ±âÅ¸ ¿¡·¯
+		case MSG_CONN_LACARETTE_TOKEN_ERROR: // ê¸°íƒ€ ì—ëŸ¬
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR);
@@ -1774,13 +1776,13 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 		}
 		break;
 
-	case MSG_CONN_LACARETTE_TOKEN_REP: // ÅäÅ« Áö±Ş ´äº¯
+	case MSG_CONN_LACARETTE_TOKEN_REP: // í† í° ì§€ê¸‰ ë‹µë³€
 
 		switch( errortype )
 		{
-		case MSG_CONN_LACARETTE_TOKEN_ERROR_SUC: // ÅäÅ« Áö±Ş °¡´É
+		case MSG_CONN_LACARETTE_TOKEN_ERROR_SUC: // í† í° ì§€ê¸‰ ê°€ëŠ¥
 			{
-				// DB¿¡ Áö±ŞÀÏÀÚ¸¦ ÀûÀÚ.
+				// DBì— ì§€ê¸‰ì¼ìë¥¼ ì ì.
 				CNetMsg::SP rmsg(new CNetMsg);
 				ConnLacaretteTokenAddMag(rmsg, userindex, charindex);
 				SEND_Q(rmsg, gserver->m_connector);
@@ -1788,7 +1790,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			}
 			break;
 
-		case MSG_CONN_LACARETTE_TOKEN_ERROR_ALREADY: // ÀÌ¹Ì Áö±Ş
+		case MSG_CONN_LACARETTE_TOKEN_ERROR_ALREADY: // ì´ë¯¸ ì§€ê¸‰
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_ALREADY);
@@ -1796,7 +1798,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			}
 			break;
 
-		case MSG_CONN_LACARETTE_TOKEN_ERROR: // ±âÅ¸ ¿¡·¯
+		case MSG_CONN_LACARETTE_TOKEN_ERROR: // ê¸°íƒ€ ì—ëŸ¬
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR);
@@ -1805,7 +1807,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			break;
 		}
 		break;
-	case MSG_CONN_LACARETTE_TOKEN_WRITE: // ÅäÅ« Áö±Ş ´äº¯
+	case MSG_CONN_LACARETTE_TOKEN_WRITE: // í† í° ì§€ê¸‰ ë‹µë³€
 		{
 			switch( subtype )
 			{
@@ -1815,7 +1817,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 					int itemCount = 15;
 					CItem* pItem = gserver->m_itemProtoList.CreateItem(tokenIndex, -1, 0, 0, itemCount);
 
-					if( pItem ) // ¾ÆÀÌÅÛ »ı¼º¿¡ ½ÇÆĞ ÇßÀ»¶§
+					if( pItem ) // ì•„ì´í…œ ìƒì„±ì— ì‹¤íŒ¨ í–ˆì„ë•Œ
 					{
 						if (ch->m_inventory.addItem(pItem) == false)
 						{
@@ -1829,7 +1831,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 							}
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
-								ConnLacaretteTokenAddMag(rmsg ,ch->m_desc->m_index, ch->m_index, -1);// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+								ConnLacaretteTokenAddMag(rmsg ,ch->m_desc->m_index, ch->m_index, -1);// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 								SEND_Q(rmsg,gserver->m_connector);
 							}
 
@@ -1837,7 +1839,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 						}
 
 						{
-							// ÇØ´ç À¯Àú¿¡°Ô ¸Ş½ÃÁö¸¦ ³¯¸®ÀÚ.
+							// í•´ë‹¹ ìœ ì €ì—ê²Œ ë©”ì‹œì§€ë¥¼ ë‚ ë¦¬ì.
 							CNetMsg::SP rmsg(new CNetMsg);
 							lacaretteTokenErrorMSg(rmsg, MSG_EX_LACARETTE_TOKEN_ERROR_SUC);
 							SEND_Q(rmsg, ch->m_desc);
@@ -1854,7 +1856,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							ConnLacaretteTokenAddMag(rmsg, ch->m_desc->m_index, ch->m_index, -1);// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+							ConnLacaretteTokenAddMag(rmsg, ch->m_desc->m_index, ch->m_index, -1);// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 							SEND_Q(rmsg, gserver->m_connector);
 						}
 
@@ -1879,12 +1881,12 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 		{
 		case MSG_CONN_LACARETTE_RETTE_ERROR_SUC:
 			{
-				// 0. »ç¿ëÈ½¼ö Åë°ú ( Ä¿³ØÅÍ ¼­¹ö¿¡¼­ È®ÀÎ)
-				// 1. ÅäÅ« °¹¼ö È®ÀÎ
-				// 2. Áö±Ş »óÇ° »Ì±â
-				// 3. Áö±Ş ¾ÆÀÌÅÛ »ı¼º °¡´É È®ÀÎ
-				// 4. ÀÎº¥ ºóÀÚ¸® ¹«°Ô È®ÀÎ
-				// 5. Áö±Ş
+				// 0. ì‚¬ìš©íšŸìˆ˜ í†µê³¼ ( ì»¤ë„¥í„° ì„œë²„ì—ì„œ í™•ì¸)
+				// 1. í† í° ê°¯ìˆ˜ í™•ì¸
+				// 2. ì§€ê¸‰ ìƒí’ˆ ë½‘ê¸°
+				// 3. ì§€ê¸‰ ì•„ì´í…œ ìƒì„± ê°€ëŠ¥ í™•ì¸
+				// 4. ì¸ë²¤ ë¹ˆìë¦¬ ë¬´ê²Œ í™•ì¸
+				// 5. ì§€ê¸‰
 
 				int cosArrNum, cosIndex, tokenIndex, repeat;
 				RefMsg(msg) >> cosArrNum >> cosIndex >> tokenIndex >> repeat;
@@ -1942,7 +1944,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 					return;
 				}
 
-				// ÅäÅ« ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´ÂÁö È®ÀÎ
+				// í† í° ì•„ì´í…œì„ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸
 				int tokenArrNum = -1;
 				int needToeknCount = gserver->m_lacarette.GetNeedTokenCount(cosArrNum, tokenIndex, repeat, tokenArrNum );
 				item_search_t vec;
@@ -1991,7 +1993,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 			{
 			case MSG_CONN_LACARETTE_RETTE_ERROR_SUC:
 				{
-					// DB ±â·ÏÀÌ µÇ¾ú´Ù¸é ¾ÆÀÌÅÛ Áö±Ş
+					// DB ê¸°ë¡ì´ ë˜ì—ˆë‹¤ë©´ ì•„ì´í…œ ì§€ê¸‰
 					if( ch->m_lacaretteCosArrNum == -1
 							|| ch->m_lacaretteItemArrNum == -1
 							|| ch->m_lacaretteTokenArrNum == -1
@@ -2037,7 +2039,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 						}
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 ); // DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 ); // DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 							SEND_Q(rmsg, gserver->m_connector);
 						}
 
@@ -2058,20 +2060,20 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 						}
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 							SEND_Q(rmsg, gserver->m_connector);
 						}
 
 						return;
 					}
 
-					// ÅäÅ« ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´ÂÁö È®ÀÎ
+					// í† í° ì•„ì´í…œì„ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸
 					int needToeknCount = 0;
 					item_search_t vec;
 					int sc = ch->m_inventory.searchItemByCondition(cos->coinIndex[TokenArrNum], 0, 0, vec);
 					if (sc > 0)
 					{
-						// ¾ÆÀÌÅÛÀÌ ÀÖ´Ù °¹¼ö¸¦ È®ÀÎÇÏÀÚ
+						// ì•„ì´í…œì´ ìˆë‹¤ ê°¯ìˆ˜ë¥¼ í™•ì¸í•˜ì
 
 						needToeknCount = gserver->m_lacarette.GetNeedTokenCount(CosArrNum
 										 , cos->coinIndex[TokenArrNum]
@@ -2086,7 +2088,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 							}
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
-								ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+								ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 								SEND_Q(rmsg, gserver->m_connector);
 							}
 
@@ -2095,7 +2097,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 					}
 					else
 					{
-						// ÅäÅ«ÀÌ ¾ø´Ù.
+						// í† í°ì´ ì—†ë‹¤.
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
 							lacaretteResultErrorMSg(rmsg, MSG_EX_LACARETTE_RESULT_ERROR_TOKEN);
@@ -2103,7 +2105,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 						}
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 							SEND_Q(rmsg, gserver->m_connector);
 						}
 
@@ -2125,7 +2127,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 							}
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
-								ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+								ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 								SEND_Q(rmsg, gserver->m_connector);
 							}
 
@@ -2134,7 +2136,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 					}
 					else
 					{
-						// Áö±Ş ¾ÆÀÌÅÛ ÁÖÁö ¸øÇßÀ¸´Ï.... ÅäÅ« ¾ÆÀÌÅÛÀ» µÇµ¹·ÁÁØ´Ù.
+						// ì§€ê¸‰ ì•„ì´í…œ ì£¼ì§€ ëª»í–ˆìœ¼ë‹ˆ.... í† í° ì•„ì´í…œì„ ë˜ëŒë ¤ì¤€ë‹¤.
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
 							lacaretteResultErrorMSg(rmsg, MSG_EX_LACARETTE_RESULT_ERROR);
@@ -2142,7 +2144,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 						}
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ±â·ÏÀ» ´Ù½Ã µÇµ¹¸®ÀÚ
+							ConnLacaretteRepeatAddMsg(rmsg ,ch->m_desc->m_index, ch->m_index, 0, -1 );// DB ê¸°ë¡ì„ ë‹¤ì‹œ ë˜ëŒë¦¬ì
 							SEND_Q(rmsg, gserver->m_connector);
 						}
 
@@ -2163,7 +2165,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 
 							ch->m_inventory.deleteItem(vec, needToeknCount);
 
-							// Áö¿î ÈÄ ³²Àº °¹¼ö¸¦ ´Ù½Ã °Ë»ö
+							// ì§€ìš´ í›„ ë‚¨ì€ ê°¯ìˆ˜ë¥¼ ë‹¤ì‹œ ê²€ìƒ‰
 							sc = ch->m_inventory.searchItemByCondition(cos->coinIndex[TokenArrNum], 0, 0, vec);
 						}
 
@@ -2171,24 +2173,24 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 					}
 
 					{
-						// °á°ú ¸Ş½ÃÁö·Ñ ´Ù½Ã º¸³»ÀÚ
+						// ê²°ê³¼ ë©”ì‹œì§€ë¡¤ ë‹¤ì‹œ ë³´ë‚´ì
 						CNetMsg::SP rmsg(new CNetMsg);
 						lacaretteResultErrorSucMSg(rmsg, RepeatCnt+1);
 						SEND_Q(rmsg, ch->m_desc);
 					}
 
 					GAMELOG << init("LACARETTE_SUC", ch)
-							<< cos->index << delim							// ÄÚ½º ÀÎµ¦½º
-							<< cos->coinIndex[TokenArrNum] << delim			// ÅäÅ« ÀÎµ¦½º
-							<< tokencurrcont + needToeknCount << delim		// ÅäÅ« º¸À¯·®
-							<< needToeknCount << delim						// ÅäÅ« »ç¿ë·®
-							<< tokencurrcont << delim						// ÅäÅ« ³²Àº·®
-							<< RepeatCnt << delim							// ¶óÄ«·¿ È½¼ö(ÀÏÀÏ ´©Àû È½¼ö)
-							<< gItemInfo->index << delim					// º¸»ó ¾ÆÀÌÅÛ ÀÎµ¦½º
-							<< gItemInfo->flag << delim						// º¸»ó ¾ÆÀÌÅÛ ÇÃ·¹±×
-							<< gItemInfo->count << end;						// º¸»ó ¾ÆÀÌÅÛ Áö±Ş °³¼ö
+							<< cos->index << delim							// ì½”ìŠ¤ ì¸ë±ìŠ¤
+							<< cos->coinIndex[TokenArrNum] << delim			// í† í° ì¸ë±ìŠ¤
+							<< tokencurrcont + needToeknCount << delim		// í† í° ë³´ìœ ëŸ‰
+							<< needToeknCount << delim						// í† í° ì‚¬ìš©ëŸ‰
+							<< tokencurrcont << delim						// í† í° ë‚¨ì€ëŸ‰
+							<< RepeatCnt << delim							// ë¼ì¹´ë › íšŸìˆ˜(ì¼ì¼ ëˆ„ì  íšŸìˆ˜)
+							<< gItemInfo->index << delim					// ë³´ìƒ ì•„ì´í…œ ì¸ë±ìŠ¤
+							<< gItemInfo->flag << delim						// ë³´ìƒ ì•„ì´í…œ í”Œë ˆê·¸
+							<< gItemInfo->count << end;						// ë³´ìƒ ì•„ì´í…œ ì§€ê¸‰ ê°œìˆ˜
 
-					// 1µî »óÇ°ÀÌ ´çÃ·µÇ¸é ¾Ë¸®Àå.
+					// 1ë“± ìƒí’ˆì´ ë‹¹ì²¨ë˜ë©´ ì•Œë¦¬ì¥.
 					if(ItemArrNum == 0)
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
@@ -2200,7 +2202,7 @@ void OnLacaretteSystem(CNetMsg::SP& msg)
 				break;
 			case MSG_CONN_LACARETTE_RETTE_ERROR:
 				{
-					// DB update ½ÇÆĞ
+					// DB update ì‹¤íŒ¨
 					CNetMsg::SP rmsg(new CNetMsg);
 					lacaretteResultErrorMSg(rmsg, MSG_EX_LACARETTE_RESULT_ERROR);
 					SEND_Q(rmsg, ch->m_desc);
@@ -2269,14 +2271,14 @@ void OnEventPromotion2GiveItem(CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¹«°Ô Ã¼Å©
+	// ë¬´ê²Œ ì²´í¬
 	int i;
 	for(i=0; i<promitem->count; i++)
 	{
 		CItemProto * pItem = gserver->m_itemProtoList.FindIndex( promitem->itemlist[i].index );
 		if( !pItem )
 		{
-			// Áö±ŞÇÒ ¾ÆÀÌÅÛÀÌ ¼­¹ö¿¡ ¾ø³ß. ¹ÈÁ¦°¡ ÀÖÀ¸´Ï error ¸Ş½ÃÁö ³¯¸®ÀÚ.
+			// ì§€ê¸‰í•  ì•„ì´í…œì´ ì„œë²„ì— ì—†ë„¹. ë¯„ì œê°€ ìˆìœ¼ë‹ˆ error ë©”ì‹œì§€ ë‚ ë¦¬ì.
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventPromotion2RepErrorMsg(rmsg, MSG_EVENT_PROMOTION2_REP_ERROR_FAIL);
 			SEND_Q(rmsg, ch->m_desc);
@@ -2284,7 +2286,7 @@ void OnEventPromotion2GiveItem(CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// ÀÎº¥ Ã¼Å©
+	// ì¸ë²¤ ì²´í¬
 	if( ch->m_inventory.getEmptyCount() < promitem->count )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2300,12 +2302,12 @@ void OnEventPromotion2GiveItem(CPC* ch, CNetMsg::SP& msg )
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ¾ÆÀÌÅÛÀ» ¸ğµÎ »ı¼ºÇÏÀÚ.
+	// ì•„ì´í…œì„ ëª¨ë‘ ìƒì„±í•˜ì.
 	for(i=0; i<promitem->count; i++)
 	{
 		if( !ch->GiveItem(promitem->itemlist[i].index , promitem->itemlist[i].plus, promitem->itemlist[i].flag, promitem->itemlist[i].count ) )
 		{
-			// Áö±Ş¿¡ ½ÇÆĞ Çß´Ù. ½ÇÆĞÇÑ ¾ÆÀÌÅÛÀ» »©ÁÖÀÚ
+			// ì§€ê¸‰ì— ì‹¤íŒ¨ í–ˆë‹¤. ì‹¤íŒ¨í•œ ì•„ì´í…œì„ ë¹¼ì£¼ì
 			for(int j = 0; j < i; j++)
 			{
 				CItem* item = ch->m_inventory.FindByDBIndex(promitem->itemlist[i].index, 0, 0);
@@ -2328,7 +2330,7 @@ void OnEventPromotion2GiveItem(CPC* ch, CNetMsg::SP& msg )
 		}
 	}
 
-	// Áö±Ş¿¡ ¼º°ø Çß´Ù. DB¿¡¼­ ÄíÆùÀ» »ç¿ëÇÏÁö ¸øÇÏ°Ô ¸·ÀÚ.
+	// ì§€ê¸‰ì— ì„±ê³µ í–ˆë‹¤. DBì—ì„œ ì¿ í°ì„ ì‚¬ìš©í•˜ì§€ ëª»í•˜ê²Œ ë§‰ì.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnPromotion2CouponItemReqMsg(rmsg, ch->m_desc->m_index, ch->m_index, keyindex );
@@ -2403,7 +2405,7 @@ void OnCashShopWishList(CNetMsg::SP& msg)
 						type[arrayindex] = pCatalog->GetCategory();
 					}
 				}
-				// °¡°İ°ú ³²Àº°³¼ö¸¦ Ã£¾Æ¾ß ÇÑ´Ù..¤Ğ.¤Ğ
+				// ê°€ê²©ê³¼ ë‚¨ì€ê°œìˆ˜ë¥¼ ì°¾ì•„ì•¼ í•œë‹¤..ã… .ã… 
 				std::set<int>::iterator it = gserver->m_limitCT.begin();
 				std::set<int>::iterator endit = gserver->m_limitCT.end();
 				for(; it != endit; ++it)
@@ -2469,7 +2471,7 @@ void onEventUserComeback(CNetMsg::SP& msg)
 	if( pc == NULL )
 		return;
 
-	if( errortype != (char)MSG_EVENT_USER_COMEBACK_ERROR_SUC ) // ¿À·ù
+	if( errortype != (char)MSG_EVENT_USER_COMEBACK_ERROR_SUC ) // ì˜¤ë¥˜
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		EventUserComebackErrorMsg(rmsg, (MSG_EVENT_USER_COMEBACK_ERROR_TYPE)errortype );
@@ -2555,9 +2557,9 @@ void onEventEUR2Promotion(CNetMsg::SP& msg)
 	{
 	case MSG_EVENT_EUR2_PROMOTION_SUCCESS:
 		{
-			// ¼º°ø ÇßÀ¸´Ï ¾ÆÀÌÅÛ Áö±ŞÇÏÀÚ.
+			// ì„±ê³µ í–ˆìœ¼ë‹ˆ ì•„ì´í…œ ì§€ê¸‰í•˜ì.
 			GiveItem(pc);
-			// Ä³¸¯ÅÍ¿¡°Ô ¸Ş½ÃÁö¸¦ º¸³»ÀÚ.
+			// ìºë¦­í„°ì—ê²Œ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ì.
 			CNetMsg::SP rmsg(new CNetMsg);
 			EventEUR2PromotionMsg(rmsg, (MSG_EVENT_EUR2_PROMOTION_ERROR_TYPE)type);
 			SEND_Q(rmsg, pc->m_desc);
@@ -2629,7 +2631,7 @@ void GiveItem(CPC* pc)
 			return;
 		}
 
-		// ÀÎº¥¿¡ ³Ö¾îÁØ´Ù.
+		// ì¸ë²¤ì— ë„£ì–´ì¤€ë‹¤.
 		if (pc->m_inventory.addItem(pItem) == false)
 		{
 			delete pItem;

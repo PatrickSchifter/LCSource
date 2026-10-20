@@ -5,7 +5,7 @@
 #include "../ShareLib/DBCmd.h"
 #include "WarCastle.h"
 
-// ·¹º§¾÷½Ã °¢ ½ºÅÈ´ç hp, mp Áõ°¡·®
+// ë ˆë²¨ì—…ì‹œ ê° ìŠ¤íƒ¯ë‹¹ hp, mp ì¦ê°€ëŸ‰
 extern int levelup_hp[JOBCOUNT][4];
 extern int levelup_mp[JOBCOUNT][4];
 
@@ -52,7 +52,7 @@ bool COptionProtoList::Load()
 	m_nCount = dbOption.m_nrecords;
 	m_proto = new COptionProto[m_nCount];
 
-	// ½ºÅ³º° ¼³Á¤
+	// ìŠ¤í‚¬ë³„ ì„¤ì •
 	int i, j;
 
 	if(!dbOption.MoveFirst())
@@ -122,8 +122,8 @@ void COption::MakeOptionValue(COptionProto* proto, int factLevel, int num)
 	m_proto = proto;
 	m_type = proto->m_type;
 
-	// ¼ø¼­´ë·Î 5,4,3,2 ·¹º§·Î ºÙÀ» È®·ü
-	// ¾Ç¼¼»ç¸® µå·Ó½Ã ¿É¼Ç ·¹º§
+	// ìˆœì„œëŒ€ë¡œ 5,4,3,2 ë ˆë²¨ë¡œ ë¶™ì„ í™•ë¥ 
+	// ì•…ì„¸ì‚¬ë¦¬ ë“œë¡­ì‹œ ì˜µì…˜ ë ˆë²¨
 	int factor[] =
 	{
 		m_proto->m_probValue[4],
@@ -149,11 +149,11 @@ void COption::MakeOptionValue(COptionProto* proto, int factLevel, int num)
 			prob[i] += prob[i - 1];
 	}
 
-	// Level °áÁ¤
+	// Level ê²°ì •
 	int result = GetRandom(1, 10000);
 	int optionLevel;
 
-	// ÀÏ´Ü 3·¹º§±îÁö¸¸ ³ª¿Ã ¼ö ÀÖµµ·Ï ÇÑ´Ù
+	// ì¼ë‹¨ 3ë ˆë²¨ê¹Œì§€ë§Œ ë‚˜ì˜¬ ìˆ˜ ìˆë„ë¡ í•œë‹¤
 	/*if (result <= prob[0])
 		optionLevel = 3;
 	else if (result <= prob[1])
@@ -298,16 +298,16 @@ void COption::ApplyOptionValue(CAPet* apet, int nType, int nValue, CItem* pItem)
 		break;
 
 	case OPTION_MOVESPEED:
-		//apet->m_runSpeed += apet->m_runSpeed * nValue / 1000;
-		apet->SetRunSpeed(apet->GetRunSpeed() + apet->GetRunSpeed() * nValue / 1000);
+		//apet->m_runSpeed += apet->m_runSpeed * nValue / 100;
+		apet->SetRunSpeed(apet->GetRunSpeed() + apet->GetRunSpeed() * nValue / 100);
 		break;
 	case OPTION_APET_TRANS_END:
 		{
-			if( nValue == 0 )	// °­Á¦·Î º¯½Å ÇØÁ¦
+			if( nValue == 0 )	// ê°•ì œë¡œ ë³€ì‹  í•´ì œ
 			{
 				apet->m_cForceTrans = 2;
 			}
-			else if ( nValue > 99 ) // °­Á¦·Î º¯½Å
+			else if ( nValue > 99 ) // ê°•ì œë¡œ ë³€ì‹ 
 			{
 				apet->m_cForceTrans = 1;
 			}
@@ -327,7 +327,7 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 {
 	int idx;
 
-	// ÀüÁ÷ ÀÌÀü
+	// ì „ì§ ì´ì „
 	switch (pc->m_job)
 	{
 	case JOB_TITAN:
@@ -354,7 +354,7 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 		return;
 	if (nPosition > -1)
 	{
-		nValue = nValue * pItem->getOriginVar(nPosition) / 1000;
+		nValue = nValue * pItem->getOriginVar(nPosition) / 100;
 	}
 	switch(nType)
 	{
@@ -516,20 +516,20 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 
 	case OPTION_RESIST_STONE:
 		pc->m_opResistStone += nValue;
-		if(pc->m_opResistStone > 100)
-			pc->m_opResistStone = 100;
+		if(pc->m_opResistStone > 80)
+			pc->m_opResistStone = 80;
 		break;
 
 	case OPTION_RESIST_STURN:
 		pc->m_opResistSturn += nValue;
-		if(pc->m_opResistSturn > 100)
-			pc->m_opResistSturn = 100;
+		if(pc->m_opResistSturn > 80)
+			pc->m_opResistSturn = 80;
 		break;
 
 	case OPTION_RESIST_SILENT:
 		pc->m_opResistSilent += nValue;
-		if(pc->m_opResistSilent > 100)
-			pc->m_opResistSilent = 100;
+		if(pc->m_opResistSilent > 80)
+			pc->m_opResistSilent = 80;
 		break;
 
 	case OPTION_BLOCKING:
@@ -542,7 +542,7 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 		break;
 
 	case OPTION_FLYSPEED :
-		pc->m_flySpeed += (float)nValue / 10.0f;		//ÀÌµ¿¼Óµµ´Â 10´ÜÀ§
+		pc->m_flySpeed += (float)nValue / 10.0f;		//ì´ë™ì†ë„ëŠ” 10ë‹¨ìœ„
 		break;
 
 	case OPTION_ATTACK_DEADLY :
@@ -755,10 +755,10 @@ void COption::ApplyOptionValue(CPC* pc, int nType, int nValue, CItem* pItem, int
 		break;
 	}
 
-	// °ø¼º Áö¿ª ¾È¿¡¼­¸¸
+	// ê³µì„± ì§€ì—­ ì•ˆì—ì„œë§Œ
 	if (pc->GetMapAttr() & MATT_WAR)
 	{
-		// °ø¼º ÁøÇà Áß¿¡ °ø¼º Âü¿©ÀÚ¸¸
+		// ê³µì„± ì§„í–‰ ì¤‘ì— ê³µì„± ì°¸ì—¬ìë§Œ
 		CWarCastle* castle = CWarCastle::GetCastleObject(pc->m_pZone->m_index);
 		if (castle && castle->GetState() != WCSF_NORMAL && pc->GetJoinFlag(pc->m_pZone->m_index) != WCJF_NONE)
 		{

@@ -18,7 +18,7 @@ void process_after_signal(int signo);
 
 int main(int argc, char* argv[], char* envp[])
 {
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	LogSystem::setSubstitutedValue("logfile", "Messenger");
 	LogSystem::configureXml("../log.xml");
 
@@ -50,7 +50,7 @@ int main(int argc, char* argv[], char* envp[])
 	if (SubHelperInMessenger::instance()->Init() == false)
 		return 1;
 
-	// ¸Þ½ÃÁö¸¦ Áö¿ì±â À§ÇÑ Å¸ÀÌ¸Ó »ý¼º
+	// ë©”ì‹œì§€ë¥¼ ì§€ìš°ê¸° ìœ„í•œ íƒ€ì´ë¨¸ ìƒì„±
 	bnf::instance()->CreateMSecTimer(1 * 1000, ClearMessageListTimer::instance());
 
 #ifdef SERVER_AUTHENTICATION

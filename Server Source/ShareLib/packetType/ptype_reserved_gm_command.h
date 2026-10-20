@@ -3,7 +3,7 @@
 
 #include "ptype_base.h"
 
-#define RESERVED_GM_COMMAND_MAX_STRING			(25)
+#define RESERVED_GM_COMMAND_MAX_STRING			(200)
 #define RESERVED_GM_COMMAND_TITLE_MAX_STRING	(30)
 #define RESERVED_GM_COMMAND_DESC_MAX_STRING		(100)
 
@@ -15,15 +15,23 @@ enum
 	MSG_SUB_ACTION_RESERVED_GM_COMMAND,
 	MSG_SUB_ADD_RESERVED_GM_COMMAND,
 	MSG_SUB_DELETE_RESERVED_GM_COMMAND,
+
+
+	////////////////////////////////////////////////////////////////////////
+	//gmëª…ë ¹ì–´ë¥¼ ì´ìš©í•œ ëª…ë ¹ì–´ ì˜ˆì•½
+	MSG_SUB_ADD_RESERVED_GM_COMMAND_BY_GMCOMMAND,
+	MSG_SUB_DELETE_RESERVED_GM_COMMAND_BY_GMCOMMAND,
+	MSG_SUB_LIST_RESERVED_GM_COMMAND_BY_GMCOMMAND,
+	MSG_SUB_ACTION_RESERVED_GM_COMMAND_BY_GMCOMMAND,
 };
 
 enum
 {
-	eEVENT_TYPE_REGULAR, // Á¤±â
-	eEVENT_TYPE_FREQUENTLY, // ¼ö½Ã
-	eEVENT_TYPE_OTHERS, // ÀÓ½Ã
+	eEVENT_TYPE_REGULAR, // ì •ê¸°
+	eEVENT_TYPE_FREQUENTLY, // ìˆ˜ì‹œ
+	eEVENT_TYPE_OTHERS, // ìž„ì‹œ
 
-	eEVENT_TYPE_INFO = 99, // GM¸í·É¾î¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â ´Ü¼ø Á¤º¸ Ã³¸®
+	eEVENT_TYPE_INFO = 99, // GMëª…ë ¹ì–´ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ë‹¨ìˆœ ì •ë³´ ì²˜ë¦¬
 };
 
 #pragma pack(push, 1)
@@ -45,16 +53,43 @@ struct reservedGMCommandElement
 	char	a_desc[RESERVED_GM_COMMAND_DESC_MAX_STRING + 1];
 };
 
+struct reservedGMCommandData
+{
+	int index;
+	int startTime;
+	int subno;	
+	char command[RESERVED_GM_COMMAND_MAX_STRING + 1];
+};
+
 //////////////////////////////////////////////////////////////////////////
 namespace RequestClient
 {
-// year == 0 && month == 0ÀÌ¸é ÇöÀç ½Ã°£À» ±âÁØÀ¸·Î ¸®½ºÆ®¸¦ ÀÛ¼º
+// year == 0 && month == 0ì´ë©´ í˜„ìž¬ ì‹œê°„ì„ ê¸°ì¤€ìœ¼ë¡œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìž‘ì„±
 struct reservedGMCommandList : public pTypeBase
 {
 	int m_Index;			// user_index
 	unsigned short year;
 	unsigned short month;
 };
+
+//GM ì»¤ë§¨ë“œë¥¼ ì´ìš©í•œ ëª…ë ¹
+struct reservedGMCommandAddByGMCommand : public pTypeBase
+{
+	int subNo;
+	int startTime;
+	char command[RESERVED_GM_COMMAND_MAX_STRING + 1];
+};
+
+struct reservedGMCommandDeleteByGMCommand : public pTypeBase
+{
+	int index;
+};
+
+struct reservedGMCommandListByGMCommand : public pTypeBase
+{
+	int char_index;
+};
+//
 }
 
 namespace ResponseClient
@@ -67,6 +102,13 @@ struct reservedGMCommandList : public pTypeBase
 	unsigned short month;
 	unsigned short count;
 	reservedGMCommandElement ele[0];
+};
+
+struct reservedGMCommandListByGm : public pTypeBase
+{
+	int char_index;
+	int count;
+	reservedGMCommandData data[0];
 };
 }
 //////////////////////////////////////////////////////////////////////////
@@ -87,7 +129,7 @@ namespace ResponseGMTool
 {
 enum
 {
-	ERR_INVALID_START_TIME = 100,			// GM TOOL¿¡¼­ °ú°Å ½Ã°£À¸·Î º¸³½ °æ¿ì ¹ß»ý
+	ERR_INVALID_START_TIME = 100,			// GM TOOLì—ì„œ ê³¼ê±° ì‹œê°„ìœ¼ë¡œ ë³´ë‚¸ ê²½ìš° ë°œìƒ
 	ERR_INVALID_END_TIME,
 	ERR_END_TIME_LESS_THAN_START_TIME,
 	ERR_INVALID_START_PARAMETER,
@@ -124,6 +166,12 @@ struct addReservedGMCommand : public pTypeBase
 	char command[RESERVED_GM_COMMAND_MAX_STRING + 1];
 };
 
+struct addReservedGMCommandByGm : public pTypeBase
+{
+	char command[RESERVED_GM_COMMAND_MAX_STRING + 1];
+	int subno;
+};
+
 #ifndef _CLIENT_
 inline void makeAddReservedGMCommand(CNetMsg::SP& msg, std::string gmstr)
 {
@@ -134,6 +182,18 @@ inline void makeAddReservedGMCommand(CNetMsg::SP& msg, std::string gmstr)
 	packet->command[RESERVED_GM_COMMAND_MAX_STRING] = '\0';
 	msg->setSize(sizeof(addReservedGMCommand));
 }
+
+inline void makeAddReservedGMCommandByGmCommand(CNetMsg::SP& msg, std::string command, int subno)
+{
+	addReservedGMCommandByGm* packet = reinterpret_cast<addReservedGMCommandByGm*>(msg->m_buf);
+	msg->m_mtype = packet->type = MSG_RESERVED_GM_COMMAND;
+	packet->subType = MSG_SUB_ACTION_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+	strcpy(packet->command, command.c_str());
+	packet->command[RESERVED_GM_COMMAND_MAX_STRING] = '\0';
+	packet->subno = subno;
+	msg->setSize(sizeof(addReservedGMCommandByGm));
+}
+
 #endif
 }
 //////////////////////////////////////////////////////////////////////////

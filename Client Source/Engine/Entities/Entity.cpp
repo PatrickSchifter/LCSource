@@ -5151,3 +5151,8 @@ void CEntity::ReleaseChche( EntityComponentType eType, SLONG slID )
 {
 	en_pecClass->ec_pdecDLLClass->ReleaseCache(eType, slID);		
 }
+
+void CEntity::SetCustomTitleEffect( CTString effectName )
+{
+	// Nothing
+}

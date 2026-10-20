@@ -1,10 +1,12 @@
 #ifdef LC_RUS
 
-#define JUNO_RENEWAL_MESSAGEBOX					// µ¶ÀÏ¿ë, ½Å±ÔÄ³¸¯ÅÍ ÀÌµ¿ ½Ã Áê³ë·Î °¬´Ù°¡ ¹ö¹ðÅ©·Î °£´Ù.
-#define SERVER_AUTHENTICATION		// ¼­¹ö ±âµ¿ Á¦ÇÑ ½Ã½ºÅÛ
-#define GIVE_ITEM_IN_CHANGE_JOB		// ÀüÁ÷½Ã ¾ÆÀÌÅÛ Áö±ÞÇÏ±â
+#define DOUBLE_PET_EXP
 
-////// ±¹°¡ ÇÊµå ¼³Á¤ //////////////////////////////////////////////////////////////////////////
+#define JUNO_RENEWAL_MESSAGEBOX					// ë…ì¼ìš©, ì‹ ê·œìºë¦­í„° ì´ë™ ì‹œ ì¥¬ë…¸ë¡œ ê°”ë‹¤ê°€ ë²„ë±…í¬ë¡œ ê°„ë‹¤.
+#define SERVER_AUTHENTICATION		// ì„œë²„ ê¸°ë™ ì œí•œ ì‹œìŠ¤í…œ
+#define GIVE_ITEM_IN_CHANGE_JOB		// ì „ì§ì‹œ ì•„ì´í…œ ì§€ê¸‰í•˜ê¸°
+
+////// êµ­ê°€ í•„ë“œ ì„¤ì • //////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define ITEM_NAME_FIELD         "a_name_rus"
@@ -13,120 +15,120 @@
 #define EVENT_ENABLE_FIELD      "a_enable_rus"
 #define EVENT_EXTRA_FILED       "a_extra_rus"
 
-////// IP ÀÚµ¿ Á¦ÇÑ ¼³Á¤ ///////////////////////////////////////////////////////////////////////
+////// IP ìžë™ ì œí•œ ì„¤ì • ///////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define IP_BLOCK_AUTO
 #if defined (IP_BLOCK_AUTO )
-#define IP_BLOCKNOKICK_AUTO     // ¾ÆÀÌÇÇ ºí·°¸ðµå ÀÏ¶§ Å±ÇÏÁö ¾Ê°í ·Î±×¸¸ ³²±è
+#define IP_BLOCKNOKICK_AUTO     // ì•„ì´í”¼ ë¸”ëŸ­ëª¨ë“œ ì¼ë•Œ í‚¥í•˜ì§€ ì•Šê³  ë¡œê·¸ë§Œ ë‚¨ê¹€
 #endif // #if defined (IP_BLOCK_AUTO )
 
-////// ÇØ¿Ü ·ÎÄÃ Á¦ÇÑ ¼³Á¤ /////////////////////////////////////////////////////////////////////
+////// í•´ì™¸ ë¡œì»¬ ì œí•œ ì„¤ì • /////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-////// OX QUIZ ±¹°¡ ÄÚµå ///////////////////////////////////////////////////////////////////////
+////// OX QUIZ êµ­ê°€ ì½”ë“œ ///////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define OX_QUIZ_COUNTRY_CODE    17
 
-////// »ó½Ã ÀÌº¥Æ® /////////////////////////////////////////////////////////////////////////////
+////// ìƒì‹œ ì´ë²¤íŠ¸ /////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-////// ¾÷µ¥ÀÌÆ® ////////////////////////////////////////////////////////////////////////////////
+////// ì—…ë°ì´íŠ¸ ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define ENABLE_SUBJOB							// »óÀÎ
+#define ENABLE_SUBJOB							// ìƒì¸
 #define XTRAP
 #define DURABILITY
 #define PREMIUM_CHAR
-#define RUS_BCRYPT										// ·¯½Ã¾Æ Botan bcrypt Àû¿ë
+#define RUS_BCRYPT										// ëŸ¬ì‹œì•„ Botan bcrypt ì ìš©
 #define ASSIST_DECREASE_SKILL_MP
 #define ASSIST_REDUCE_SKILL
 #define SKILL_TYPE_NO_COOL_TIME
-#define EX_ROGUE	// EX ·Î±× Ä³¸¯ÅÍ
-#define DROP_MAKE_DOCUMENT                              // Á¦ÀÛ¼­ µå·Ó
+#define EX_ROGUE	// EX ë¡œê·¸ ìºë¦­í„°
+#define DROP_MAKE_DOCUMENT                              // ì œìž‘ì„œ ë“œë¡­
 
-#define MAX_UPGRADE_PLUS                25              // ¾ÆÀÌÅÛ ¾÷±×·¹ÀÌµå ÃÖ´ë ÇÃ·¯½º ¼öÄ¡
+#define MAX_UPGRADE_PLUS                25              // ì•„ì´í…œ ì—…ê·¸ë ˆì´ë“œ ìµœëŒ€ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
 
-#define PULSE_GUILD_POINT_UPDATE        (5 * 60)        // ±æµå ·©Å³¿ë °æÇèÄ¡ ÀúÀå °£°Ý
+#define PULSE_GUILD_POINT_UPDATE        (5 * 60)        // ê¸¸ë“œ ëž­í‚¬ìš© ê²½í—˜ì¹˜ ì €ìž¥ ê°„ê²©
 
 
 #define RECOMMEND_SERVER_POTION_INDEX   1393
-#define RECOMMEND_SERVER_LEVEL          60              // 2008 ¿©¸§ÀÌº¥Æ® ÀÌÈÄ 30 -> 60À¸·Î º¯°æ
+#define RECOMMEND_SERVER_LEVEL          60              // 2008 ì—¬ë¦„ì´ë²¤íŠ¸ ì´í›„ 30 -> 60ìœ¼ë¡œ ë³€ê²½
 
-#define PARTY_QUEST_ITEM_BUG_			// ÆÄÆ¼ Äù½ºÆ® ¾ÆÀÌÅÛ Áö±ÞÀÌ µÇÁö ¾Ê´ø ¹®Á¦
-#define HUNT_QUEST_COMPLETE_FOR_OTHER_PARTYMEMBER	//ÆÄÆ¼¿øÀÌ ³» Äù½ºÆ® ÇØÁÖ±â(¸÷ Àâ¾ÆÁÖ¸é Ä«¿îÆ® µÇ°Ô ÇÔ. ±âÁ¸¿£ ÆÄÆ¼¿øµµ µ¿ÀÏÇÑ Äù°¡ ÀÖ¾î¾ß °°ÀÌ µÇ¾úÀ½)
+#define PARTY_QUEST_ITEM_BUG_			// íŒŒí‹° í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ì§€ê¸‰ì´ ë˜ì§€ ì•Šë˜ ë¬¸ì œ
+#define HUNT_QUEST_COMPLETE_FOR_OTHER_PARTYMEMBER	//íŒŒí‹°ì›ì´ ë‚´ í€˜ìŠ¤íŠ¸ í•´ì£¼ê¸°(ëª¹ ìž¡ì•„ì£¼ë©´ ì¹´ìš´íŠ¸ ë˜ê²Œ í•¨. ê¸°ì¡´ì—” íŒŒí‹°ì›ë„ ë™ì¼í•œ í€˜ê°€ ìžˆì–´ì•¼ ê°™ì´ ë˜ì—ˆìŒ)
 
 
 
-// Ãß°¡ À¯·á¾ÆÀÌÅÛ 7Á¾
+// ì¶”ê°€ ìœ ë£Œì•„ì´í…œ 7ì¢…
 
 #define DEFAULT_LIMIT_EXP 250
 
 
-#define RANDOM_ZUNO									   // ÁÖ³ë Áö¿ª ¸®½ºÆù À§Ä¡ Ãß°¡
+#define RANDOM_ZUNO									   // ì£¼ë…¸ ì§€ì—­ ë¦¬ìŠ¤í° ìœ„ì¹˜ ì¶”ê°€
 
-#define DEFAULT_NAS_PERCENT             50				// ³ª½º µå·ÓÈ®·ü Á¶Àý
-#define DEFAULT_NAS_GET_PERCENT         100				// ³ª½º ½Àµæ·® Á¶Àý
-#define DEFAULT_EXP_PERCENT             100				// °æÇèÄ¡ È¹µæ·® Á¶Àý
-#define DEFAULT_SP_PERCENT              100				// sp È¹µæ·® Á¶Àý
-#define DEFAULT_PRO_PERCENT             80				// »ý»ê ½Àµæ È®·ü Á¶Àý
-#define DEFAULT_PRO_GET_NUMBER          1				// »ý»ê ½Àµæ °¹¼ö
+#define DEFAULT_NAS_PERCENT             50				// ë‚˜ìŠ¤ ë“œë¡­í™•ë¥  ì¡°ì ˆ
+#define DEFAULT_NAS_GET_PERCENT         100				// ë‚˜ìŠ¤ ìŠµë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_EXP_PERCENT             100				// ê²½í—˜ì¹˜ íšë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_SP_PERCENT              100				// sp íšë“ëŸ‰ ì¡°ì ˆ
+#define DEFAULT_PRO_PERCENT             80				// ìƒì‚° ìŠµë“ í™•ë¥  ì¡°ì ˆ
+#define DEFAULT_PRO_GET_NUMBER          1				// ìƒì‚° ìŠµë“ ê°¯ìˆ˜
 
 
-#define CHAT_BLOCK_USA									// ¿ÜÄ¡±â
-#define CHAT_BLOCK_USA_NEXT_TIME	30	// ´ÙÀ½ ¿ÜÄ¥¼ö ÀÖ´Â ½Ã°£
-#define CHAT_BLOCK_USA_LEVEL		1 // ¿ÜÄ¡±â °¡´ÉÇÑ ·¹º§
+#define CHAT_BLOCK_USA									// ì™¸ì¹˜ê¸°
+#define CHAT_BLOCK_USA_NEXT_TIME	30	// ë‹¤ìŒ ì™¸ì¹ ìˆ˜ ìžˆëŠ” ì‹œê°„
+#define CHAT_BLOCK_USA_LEVEL		1 // ì™¸ì¹˜ê¸° ê°€ëŠ¥í•œ ë ˆë²¨
 
-#define EVENT_PACKAGE_ITEM								// ÆÐÅ°Áö ½Ã¸®¾óÀ» ÀÌ¿ëÇÑ ¾ÆÀÌÅÛ Áö±Þ
+#define EVENT_PACKAGE_ITEM								// íŒ¨í‚¤ì§€ ì‹œë¦¬ì–¼ì„ ì´ìš©í•œ ì•„ì´í…œ ì§€ê¸‰
 #define EVENT_PACKAGE_ITEM_DBLOG
 
 
 
-#define MONSTER_AI										// ¸ó½ºÅÍ AI
+#define MONSTER_AI										// ëª¬ìŠ¤í„° AI
 
-#define SETTING_IF_INNER_IP								// ¿ÜºÎ ¾ÆÀÌÇÇ¿Í ³»ºÎ ¾ÆÀÌÇÇ°¡ ³ª´µ¸é »ç¿ë ...yhj
+#define SETTING_IF_INNER_IP								// ì™¸ë¶€ ì•„ì´í”¼ì™€ ë‚´ë¶€ ì•„ì´í”¼ê°€ ë‚˜ë‰˜ë©´ ì‚¬ìš© ...yhj
 
-#define RAID_NPC_RAGE_SKILL				394				// ·¹ÀÌµå ¸÷ ºÐ³ë ½ºÅ³ ÀÎµ¦½º
-#define RAID_NPC_RAGE_SKILL_LEVEL		2				// ·¹ÀÌµå ¸÷ ºÐ³ë ½ºÅ³ ·¹º§
+#define RAID_NPC_RAGE_SKILL				394				// ë ˆì´ë“œ ëª¹ ë¶„ë…¸ ìŠ¤í‚¬ ì¸ë±ìŠ¤
+#define RAID_NPC_RAGE_SKILL_LEVEL		2				// ë ˆì´ë“œ ëª¹ ë¶„ë…¸ ìŠ¤í‚¬ ë ˆë²¨
 #define RAID_NPC_NOTICE_CELL_EXT		5
-#define MAX_RARE_OPTION_SETTING			10				// ·¹¾î ¿É¼Ç´ç ¿É¼Ç ¼¼ÆÃ ¼ö
-#define MAX_RARE_OPTION_ITEM			10				// ¾ÆÀÌÅÛ´ç ·¹¾î ¿É¼Ç ¼ö
-#define PULSE_MONSTER_RAID_MOVE		(14 * PULSE_REAL_MIN)	// ¸ó½ºÅÍ ·¹ÀÌµå ÀÌµ¿ ½Ã°£
+#define MAX_RARE_OPTION_SETTING			10				// ë ˆì–´ ì˜µì…˜ë‹¹ ì˜µì…˜ ì„¸íŒ… ìˆ˜
+#define MAX_RARE_OPTION_ITEM			10				// ì•„ì´í…œë‹¹ ë ˆì–´ ì˜µì…˜ ìˆ˜
+#define PULSE_MONSTER_RAID_MOVE		(14 * PULSE_REAL_MIN)	// ëª¬ìŠ¤í„° ë ˆì´ë“œ ì´ë™ ì‹œê°„
 
-#define WARCASTLE_SUBNUMBER_MEMBER_VALUE				// ¸Þ¶óÅ© °ø¼ºÀü ¼­¹ö ´À·ÁÁö´Â °Í Ã¼Å©ÇÏ±â À§ÇÑ ÀÓ½Ã ÆÐÄ¡
-#define EGEHA_ZONE_PAYMENT				500000			// ¿¡°ÔÇÏ ÀÔÀå·á
-#define NEW_ACCERY_ADD									// »õ·Î¿î ¾Ç¼¼»ç¸® 4Á¾
-#define MAL_DISABLE_PKPENALTY							// ÀÚÀ¯ÀüÅõ ±¸¿ª(2Ã¤³Î)
+#define WARCASTLE_SUBNUMBER_MEMBER_VALUE				// ë©”ë¼í¬ ê³µì„±ì „ ì„œë²„ ëŠë ¤ì§€ëŠ” ê²ƒ ì²´í¬í•˜ê¸° ìœ„í•œ ìž„ì‹œ íŒ¨ì¹˜
+#define EGEHA_ZONE_PAYMENT				500000			// ì—ê²Œí•˜ ìž…ìž¥ë£Œ
+#define NEW_ACCERY_ADD									// ìƒˆë¡œìš´ ì•…ì„¸ì‚¬ë¦¬ 4ì¢…
+#define MAL_DISABLE_PKPENALTY							// ìžìœ ì „íˆ¬ êµ¬ì—­(2ì±„ë„)
 
-#define HANARO_EVENT									// ÇÏ³ª·Î ÀÌº¥Æ® 2009
+#define HANARO_EVENT									// í•˜ë‚˜ë¡œ ì´ë²¤íŠ¸ 2009
 
 #define PET_TURNTO_NPC_ITEM
 
 //-----------    Update 13
-#define EXTREME_CUBE					// ÀÍ½ºÆ®¸² Å¥ºê
-#define TRADE_AGENT_LOG_SPEED_CHECK		// °Å·¡´ëÇà ·Î±× Ãß°¡
+#define EXTREME_CUBE					// ìµìŠ¤íŠ¸ë¦¼ íë¸Œ
+#define TRADE_AGENT_LOG_SPEED_CHECK		// ê±°ëž˜ëŒ€í–‰ ë¡œê·¸ ì¶”ê°€
 
 
-////////////////////  È®ÀåÆÑ  ////////////////////
-#define RESTRICT_PVP_SKILL         3		// ¾ö°ÝÇÑ ½ºÅ³ ±ÔÄ¢ : ¸÷¿¡ Å¸°ÙÆÃ µÇ¾î ÀÖÀ» °æ¿ì, PK¸ðµå, Á¤´ç¹æÀ§ ¸ðµå ÀÎºñ/µ¥½º¸ð¼Ç ºÒ°¡´É
-// ¾ÏÈæÀÇ Á¦´Ü¿¡¼­ ÀÎºñÀúºô¸®Æ¼°¡ ¾È½áÁö·Á¸é ÀÖ¾î¾ß ÇÏ´Â define
-#define NO_PERIOD_COMPOSITE					// Á¶ÇÕ¾ÆÀÌÅÛ Áß ±â°£ÀÌ ¾ø´Â ¾ÆÀÌÅÛ Ãß°¡
+////////////////////  í™•ìž¥íŒ©  ////////////////////
+#define RESTRICT_PVP_SKILL         3		// ì—„ê²©í•œ ìŠ¤í‚¬ ê·œì¹™ : ëª¹ì— íƒ€ê²ŸíŒ… ë˜ì–´ ìžˆì„ ê²½ìš°, PKëª¨ë“œ, ì •ë‹¹ë°©ìœ„ ëª¨ë“œ ì¸ë¹„/ë°ìŠ¤ëª¨ì…˜ ë¶ˆê°€ëŠ¥
+// ì•”í‘ì˜ ì œë‹¨ì—ì„œ ì¸ë¹„ì €ë¹Œë¦¬í‹°ê°€ ì•ˆì¨ì§€ë ¤ë©´ ìžˆì–´ì•¼ í•˜ëŠ” define
+#define NO_PERIOD_COMPOSITE					// ì¡°í•©ì•„ì´í…œ ì¤‘ ê¸°ê°„ì´ ì—†ëŠ” ì•„ì´í…œ ì¶”ê°€
 
 #define _COMPOSITE_ITEM_UPGRADE_BUG_FIX
 
-//#define QUEST_EXTEND_REPEAT_DAY				// ÀÏÀÏ Äù½ºÆ®
-////////////////////  È®ÀåÆÑ  ////////////////////
+//#define QUEST_EXTEND_REPEAT_DAY				// ì¼ì¼ í€˜ìŠ¤íŠ¸
+////////////////////  í™•ìž¥íŒ©  ////////////////////
 
-#define LACARETTE_SYSTEM						// ¶óÄ«·¿ ½Ã½ºÅÛ (¹®½ºÅæ2)
+#define LACARETTE_SYSTEM						// ë¼ì¹´ë › ì‹œìŠ¤í…œ (ë¬¸ìŠ¤í†¤2)
 
-#define DUNGEON_TIME_SAVEFILE	".dungeontime"	// ´øÀüÅ¸ÀÓ ¼¼ÆÃ ÀúÀå ÆÄÀÏ.
-
-
+#define DUNGEON_TIME_SAVEFILE	".dungeontime"	// ë˜ì „íƒ€ìž„ ì„¸íŒ… ì €ìž¥ íŒŒì¼.
 
 
 
-#define DEV_SYSTEM_SKILL_EXTEND_2ND			// Ä³¸¯ÅÍ ½ºÅ³ È®Àå 2Â÷
+
+
+#define DEV_SYSTEM_SKILL_EXTEND_2ND			// ìºë¦­í„° ìŠ¤í‚¬ í™•ìž¥ 2ì°¨
 
 
 
@@ -136,7 +138,7 @@
 
 // -- Mini Package 2011 -- //
 
-#define RAIDBOX_DROP_COUNT_MODIFY		// ½ºÆä¼È »óÀÚ µå·Ó ±ÔÄ¢ º¯°æ
+#define RAIDBOX_DROP_COUNT_MODIFY		// ìŠ¤íŽ˜ì…œ ìƒìž ë“œë¡­ ê·œì¹™ ë³€ê²½
 // -- End of Mini Package 2011 -- //
 
 // test server [110513], live server [110517]
@@ -145,26 +147,25 @@
 // test server [110519], live server [110531]
 // ---------------- Update 1104 -----------------------
 #ifdef EXTREME_CUBE
-#define EXTREME_CUBE_VER2									// Å¥ºê2
+#define EXTREME_CUBE_VER2									// íë¸Œ2
 #endif // EXTREME_CUBE
 #define SYSTEM_MONSTER_MERCENARY_CARD_EX
 #define SYSTEM_MONSTER_MERCENARY_CARD_LOW_LEVEL_SUPPORT
 // ---------------- Update 1104 -----------------------
 
 // test server [110608], live server [110614]
-#define CHANGE_WARCASTLE_SETTING				// °ø¼º Àü PVP ¼³Á¤ º¯°æ
 
 // ---------------- Update 1105 -----------------------
 // test server : [110615], live server [110628]
 #define DEV_LETS_PARTYTIME
-#define SYSTEM_TREASURE_MAP										// º¸¹° Ã£±â ½Ã½ºÅÛ
+#define SYSTEM_TREASURE_MAP										// ë³´ë¬¼ ì°¾ê¸° ì‹œìŠ¤í…œ
 #define SYSTEM_TREASURE_MAP_GAMIGO
 #define GM_TREASURE_MAP_SAVE_FILE		 ".treasuremapsave"
 #define SYSTEM_TREASURE_MAP_LINKZONE_DROP
 // ---------------- Update 1105 -----------------------
 
 // ---------------- Event ------------------
-#define UPGRADE_EVENT_AUTO			// ¾÷±×·¹ÀÌµå ÀÌº¥Æ® ÀÚµ¿È­
+#define UPGRADE_EVENT_AUTO			// ì—…ê·¸ë ˆì´ë“œ ì´ë²¤íŠ¸ ìžë™í™”
 #define UPGRADE_EVENT_AUTO_SAVEFILE		".upgradeevent"
 
 // --------------- BugFix -------------------
@@ -173,13 +174,13 @@
 
 
 
-#define DISCONNECT_HACK_CHARACTER			// ÇÙ ÇÁ·Î±×·¥ À¯Àú ¹æÃâ
+#define DISCONNECT_HACK_CHARACTER			// í•µ í”„ë¡œê·¸ëž¨ ìœ ì € ë°©ì¶œ
 
-#define BUGFIX_MERCENARY_GETOWNER_NULL_SERVERDOWN	// ¿ëº´ÀÇ ÁÖÀÎÀÌ ¾øÀ» ¶§ ³ª´Â Å©·¡½Ã¸¦ ¸·±â À§ÇÑ ¼öÁ¤
+#define BUGFIX_MERCENARY_GETOWNER_NULL_SERVERDOWN	// ìš©ë³‘ì˜ ì£¼ì¸ì´ ì—†ì„ ë•Œ ë‚˜ëŠ” í¬ëž˜ì‹œë¥¼ ë§‰ê¸° ìœ„í•œ ìˆ˜ì •
 
 
 
-#define BUGFIX_GUILD_SKILL_COOLTIME		// ±æµå½ºÅ³ ÄðÅ¸ÀÓ °¨¼Ò¿É¼Ç Àû¿ë¾ÈµÇ°Ô ¼öÁ¤
+#define BUGFIX_GUILD_SKILL_COOLTIME		// ê¸¸ë“œìŠ¤í‚¬ ì¿¨íƒ€ìž„ ê°ì†Œì˜µì…˜ ì ìš©ì•ˆë˜ê²Œ ìˆ˜ì •
 
 // test server [110513], live server [110517]
 
@@ -193,8 +194,8 @@
 
 #define REFORM_PK_PENALTY_201108
 #ifdef REFORM_PK_PENALTY_201108
-#define REFORM_PK_PENALTY_BATTLE_201108	 // °ø°Ý/¹æ¾î ÆÐ³ÎÆ¼
-#define REFORM_PK_PENALTY_SHOP_201108	 // »óÁ¡ ÀÌ¿ë ÆÐ³ÎÆ¼
+#define REFORM_PK_PENALTY_BATTLE_201108	 // ê³µê²©/ë°©ì–´ íŒ¨ë„í‹°
+#define REFORM_PK_PENALTY_SHOP_201108	 // ìƒì  ì´ìš© íŒ¨ë„í‹°
 #endif
 
 
@@ -202,19 +203,19 @@
 
 #define NO_CHATTING
 
-//////// UPDATE 121Q (12³â 4¿ù 26ÀÏ ) ////////
+//////// UPDATE 121Q (12ë…„ 4ì›” 26ì¼ ) ////////
 
-#define DEV_GUILD_MARK		// ±æµå ¸¶Å©
-#define DEV_GUILD_STASH		// ±æµå Ã¢°í
+#define DEV_GUILD_MARK		// ê¸¸ë“œ ë§ˆí¬
+#define DEV_GUILD_STASH		// ê¸¸ë“œ ì°½ê³ 
 
-#define NOTICE_SYSTEM           // °øÁö ½Ã½ºÅÛ
+#define NOTICE_SYSTEM           // ê³µì§€ ì‹œìŠ¤í…œ
 
-#define GUILD_REMOTE_INVITE		// ±æµå ¿ø°Ý °¡ÀÔ ½Ã½ºÅÛ
+#define GUILD_REMOTE_INVITE		// ê¸¸ë“œ ì›ê²© ê°€ìž… ì‹œìŠ¤í…œ
 
-//////// UPDATE 121Q-1 (12³â 4¿ù 26ÀÏ ) ////////
+//////// UPDATE 121Q-1 (12ë…„ 4ì›” 26ì¼ ) ////////
 
 #define EX_MAGE
-////// ¿î¿µÀÚ ·¹º§ Á¦ÇÑ ////////////////////////////////////////////////////////////////////////
+////// ìš´ì˜ìž ë ˆë²¨ ì œí•œ ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define     GM_LEVEL_ECHO               7
@@ -233,7 +234,7 @@
 #define     GM_LEVEL_LEVELUP            8
 #define     GM_LEVEL_KICK               7
 #define     GM_LEVEL_COMON              7
-#define     GM_LEVEL_SUMMON             8
+#define     GM_LEVEL_SUMMON             9
 #define     GM_LEVEL_SILENCE            1
 #define     GM_LEVEL_WHERE_AM_I         3
 #define     GM_LEVEL_QUEST_COMPLETE     8

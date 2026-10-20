@@ -8,12 +8,12 @@
 
 enum
 {
-	ERR_ITEM_EXCHANGE_OK, // ¼º°ø
+	ERR_ITEM_EXCHANGE_OK, // ì„±ê³µ
 
-	ERR_ITEM_EXCHANGE_CANT_CREATE_RESULT_ITEM, // °á°ú ¾ÆÀÌÅÛÀ» ¸¸µéÁö ¸øÇÔ
-	ERR_ITEM_EXCHANGE_NOT_ENOUGH_SPACE, // °á°ú ¾ÆÀÌÅÛÀ» ³ÖÀ» °ø°£ÀÌ ºÎÁ·ÇÔ
+	ERR_ITEM_EXCHANGE_CANT_CREATE_RESULT_ITEM, // ê²°ê³¼ ì•„ì´í…œì„ ë§Œë“¤ì§€ ëª»í•¨
+	ERR_ITEM_EXCHANGE_NOT_ENOUGH_SPACE, // ê²°ê³¼ ì•„ì´í…œì„ ë„£ì„ ê³µê°„ì´ ë¶€ì¡±í•¨
 
-	// ¿©±â¼­ ºÎÅÍ´Â ¼­¹ö¿ë
+	// ì—¬ê¸°ì„œ ë¶€í„°ëŠ” ì„œë²„ìš©
 	ERR_ITEM_EXCHANGE_NOT_FOUND_INDEX = 100,
 	ERR_ITEM_EXCHANGE_NOT_EQUAL_LIST_COUNT,
 	ERR_ITEM_EXCHANGE_NOT_EQUAL_ITEM_INDEX,

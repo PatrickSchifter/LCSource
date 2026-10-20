@@ -19,6 +19,11 @@ CGuildMember::CGuildMember()
 	m_online = 0;
 	m_pc = NULL;
 
+	m_contributeExp_min = 0;
+	m_contributeExp_max = 0;
+	m_contributeFame_min = 0;
+	m_contributeFame_max = 0;
+
 	m_contributeExp		= 0;
 	m_contributeFame	= 0;
 	m_cumulatePoint		= 0;
@@ -50,7 +55,7 @@ char CGuildMember::GetGuildMark()
 	return 0;
 }
 
-CGuild::CGuild(int guildindex, const char* name, int level, int battleIndex, int battlePrize, int battleTime, int battleZone, int battleKillCount, int battleState)
+CGuild::CGuild(int guildindex, const char* name, int level, int battleIndex, int battlePrize_nas, int battleTime, int battleZone, int battleKillCount, int battleState)
 	: m_name(MAX_GUILD_NAME_LENGTH + 1)
 {
 	if (name && level > 0)
@@ -66,7 +71,7 @@ CGuild::CGuild(int guildindex, const char* name, int level, int battleIndex, int
 		m_index = guildindex;
 
 		m_battleIndex = battleIndex;
-		m_battlePrize = battlePrize;
+		m_battlePrize_nas = battlePrize_nas;
 		m_battleTime = battleTime;
 		m_battleZone = battleZone;
 		m_killCount = battleKillCount;
@@ -107,6 +112,13 @@ CGuild::CGuild(int guildindex, const char* name, int level, int battleIndex, int
 	m_Background_col		= -1;
 	m_GuildMarkExpire		= -1;
 #endif
+
+	m_isUseTheStashAndSkill = true;
+
+	m_guild_contribute_all_exp_min      = 0;
+	m_guild_contribute_all_exp_max      = 0;
+	m_guild_contribute_all_fame_min     = 0;
+	m_guild_contribute_all_fame_max     = 0;
 }
 
 CGuild::~CGuild()
@@ -164,7 +176,7 @@ int CGuild::addmember(int charindex, const char* name)
 				pmember = new CGuildMember();
 				pmember->charindex(charindex);
 				pmember->name(name);
-				//member nickºÎºĞ »èÁ¦ : bw 060403
+				//member nickë¶€ë¶„ ì‚­ì œ : bw 060403
 //				if( (nick != NULL) && (strcmp(nick, "") != 0) )
 //					pmember->nick(nick);
 				pmember->pos(MSG_GUILD_POSITION_MEMBER);
@@ -251,24 +263,29 @@ CGuildList::~CGuildList()
 	}
 }
 
-CGuild* CGuildList::create(int guildindex, const char* guildname, int charindex, const char* bossname)
+CGuild* CGuildList::create(int guildindex, const char* guildname, int charindex, const char* bossname, int create_date, int battle_win_count, int battle_lose_count, int battle_total_count)
 {
 	if (guildname == NULL || guildindex < 1 || charindex < 1 || bossname == NULL)
 		return NULL;
 	if (strlen(guildname) < 1 || strlen(bossname) < 1)
 		return NULL;
 
-	// ±æµå ¸¸µé°í
+	// ê¸¸ë“œ ë§Œë“¤ê³ 
 	CGuild* guild = new CGuild(guildindex, guildname, 1);
-	// ±æµå¿¡ Ãß°¡
+	// ê¸¸ë“œì— ì¶”ê°€
 	int listindex = guild->addmember(charindex, bossname);
-	// º¸½º ÁöÁ¤
+	// ë³´ìŠ¤ ì§€ì •
 	guild->changeboss(listindex);
+	guild->m_create_date = create_date;
+
+	guild->m_battle_win_count = battle_win_count;
+	guild->m_battle_lose_count = battle_lose_count;
+	guild->m_battle_total_count = battle_total_count;
 
 	return guild;
 }
 
-CGuild* CGuildList::create(int guildindex, const char* guildname, int guildlevel, int battleIndex, int battlePrize, int battleTime, int battleZone, int battleKillCount, int battleState)
+CGuild* CGuildList::create(int guildindex, const char* guildname, int guildlevel, int battleIndex, int battlePrize, int battleTime, int battleZone, int battleKillCount, int battleState, int create_date, int battle_win_count, int battle_lose_count, int battle_total_count)
 {
 	if (guildname == NULL || guildindex < 1 || guildlevel < 1 || guildlevel > GUILD_MAX_GUILD_LEVEL)
 		return NULL;
@@ -281,13 +298,18 @@ CGuild* CGuildList::create(int guildindex, const char* guildname, int guildlevel
 	if (battleIndex != -1)
 	{
 		if (battleZone != ZONE_START && battleZone != ZONE_DRATAN && battleZone != ZONE_MERAC && battleZone != ZONE_EGEHA
-				&& battleZone != ZONE_STREIANA && battleZone != ZONE_MONDSHINE && battleZone != ZONE_TARIAN && battleZone != ZONE_BLOODYMIR )
+				&& battleZone != ZONE_STREIANA && battleZone != ZONE_MONDSHINE && battleZone != ZONE_TARIAN && battleZone != ZONE_BLOODYMIR && battleZone != ZONE_PK_TOURNAMENT )
 			return NULL;
 		if (battleKillCount < 0 || battleState < 0)
 			return NULL;
 	}
 
 	CGuild* guild = new CGuild(guildindex, guildname, guildlevel, battleIndex, battlePrize, battleTime, battleZone, battleKillCount, battleState);
+	guild->m_create_date = create_date;
+
+	guild->m_battle_win_count = battle_win_count;
+	guild->m_battle_lose_count = battle_lose_count;
+	guild->m_battle_total_count = battle_total_count;
 
 	return guild;
 }
@@ -335,7 +357,7 @@ CGuild* CGuildList::findguild(const char* guildname)
 
 CGuildMember* CGuildList::findmember(int charindex)
 {
-	// TODO : GUILD : ±æµå Æ®¸®½Ã 2°³ ±æµå¿¡ ¸ğµÎ ÀÖ´Â °æ¿ì °Ë»ç
+	// TODO : GUILD : ê¸¸ë“œ íŠ¸ë¦¬ì‹œ 2ê°œ ê¸¸ë“œì— ëª¨ë‘ ìˆëŠ” ê²½ìš° ê²€ì‚¬
 	CGuildMember* ret = NULL;
 	CGuild* p = m_head;
 	while (p)
@@ -358,8 +380,8 @@ void CGuild::SendToAll(CNetMsg::SP& msg, bool bCell)
 		{
 			if (m_member[i]->GetPC() != NULL
 // << kjban
-					&& m_member[i]->online() == 1				// ¿Â¶óÀÎ »óÅÂÀÎ °æ¿ì
-					&& m_member[i]->GetPC()->m_desc != NULL)	// µğ½ºÅ©¸³ÅÍ°¡ Á¸Àç ÇÏ´Â °æ¿ì
+					&& m_member[i]->online() == 1				// ì˜¨ë¼ì¸ ìƒíƒœì¸ ê²½ìš°
+					&& m_member[i]->GetPC()->m_desc != NULL)	// ë””ìŠ¤í¬ë¦½í„°ê°€ ì¡´ì¬ í•˜ëŠ” ê²½ìš°
 // >>
 			{
 				SEND_Q(msg, m_member[i]->GetPC()->m_desc);
@@ -408,8 +430,8 @@ void CGuild::SendToAllStatusMsg()
 		{
 			if (m_member[i]->GetPC() != NULL
 				// << kjban
-				&& m_member[i]->online() == 1				// ¿Â¶óÀÎ »óÅÂÀÎ °æ¿ì
-				&& m_member[i]->GetPC()->m_desc != NULL)	// µğ½ºÅ©¸³ÅÍ°¡ Á¸Àç ÇÏ´Â °æ¿ì
+				&& m_member[i]->online() == 1				// ì˜¨ë¼ì¸ ìƒíƒœì¸ ê²½ìš°
+				&& m_member[i]->GetPC()->m_desc != NULL)	// ë””ìŠ¤í¬ë¦½í„°ê°€ ì¡´ì¬ í•˜ëŠ” ê²½ìš°
 				// >>
 			{
 				m_member[i]->GetPC()->CalcStatus(true);
@@ -432,9 +454,9 @@ void CGuildList::Reset()
 
 void CGuildList::Remove(CGuild* guild)
 {
-	// TODO : GUILD : Æ®¸®±¸¼º½Ã ÃÖ»óÀ§ ±æµå¿ÜÀÇ ±æµå Ã³¸®
+	// TODO : GUILD : íŠ¸ë¦¬êµ¬ì„±ì‹œ ìµœìƒìœ„ ê¸¸ë“œì™¸ì˜ ê¸¸ë“œ ì²˜ë¦¬
 
-	// ÇØ´ç ±æµå¿ø Á¤º¸ º¯°æ
+	// í•´ë‹¹ ê¸¸ë“œì› ì •ë³´ ë³€ê²½
 	int i;
 	int guildMaxMember = guild->maxmember();
 	for (i = 0; i < guildMaxMember; i++)
@@ -656,7 +678,7 @@ bool CGuild::CheckGradeExPosCount( int pos, int charIndex )
 
 	switch( pos )
 	{
-	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// µ¹°İÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// ëŒê²©ì¡° ëŒ€ì¥
 		if(member != NULL)
 		{
 			if(m_nCountRushCaptain >= 1 && member->pos() != pos)
@@ -668,7 +690,7 @@ bool CGuild::CheckGradeExPosCount( int pos, int charIndex )
 				return false;
 		}		
 		break;
-	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:		// Áö¿øÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:		// ì§€ì›ì¡° ëŒ€ì¥
 		if(member != NULL)
 		{
 			if( m_nCountSupportCaptain >= 1 && member->pos() != pos)
@@ -680,7 +702,7 @@ bool CGuild::CheckGradeExPosCount( int pos, int charIndex )
 				return false;
 		}		
 		break;
-	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// Á¤ÂûÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// ì •ì°°ì¡° ëŒ€ì¥
 		if(member != NULL)
 		{
 			if( m_nCountReconCaptain >= 1 && member->pos() != pos)
@@ -692,9 +714,9 @@ bool CGuild::CheckGradeExPosCount( int pos, int charIndex )
 				return false;
 		}
 		break;
-	case MSG_GUILD_POSITION_RUSH_MEMBER:			// µ¹°İÁ¶¿ø
-	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// Áö¿øÁ¶¿ø
-	case MSG_GUILD_POSITION_RECON_MEMBER:			// Á¤ÂûÁ¶¿ø:
+	case MSG_GUILD_POSITION_RUSH_MEMBER:			// ëŒê²©ì¡°ì›
+	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// ì§€ì›ì¡°ì›
+	case MSG_GUILD_POSITION_RECON_MEMBER:			// ì •ì°°ì¡°ì›:
 		if( member != NULL &&
 			m_nCountTotalGradeEx >= GUILD_MAX_GRADE_EX && member->pos() != pos)
 			return false;
@@ -716,18 +738,18 @@ void CGuild::DelGradeExPosCount(int pos)
 {
 	switch( pos )
 	{
-	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// µ¹°İÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// ëŒê²©ì¡° ëŒ€ì¥
 		m_nCountRushCaptain --;
 		break;
-	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// Áö¿øÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// ì§€ì›ì¡° ëŒ€ì¥
 		m_nCountSupportCaptain --;
 		break;
-	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// Á¤ÂûÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// ì •ì°°ì¡° ëŒ€ì¥
 		m_nCountReconCaptain --;
 		break;
-	case MSG_GUILD_POSITION_RUSH_MEMBER:				// µ¹°İÁ¶¿ø
-	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// Áö¿øÁ¶¿ø
-	case MSG_GUILD_POSITION_RECON_MEMBER:			// Á¤ÂûÁ¶¿ø:
+	case MSG_GUILD_POSITION_RUSH_MEMBER:				// ëŒê²©ì¡°ì›
+	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// ì§€ì›ì¡°ì›
+	case MSG_GUILD_POSITION_RECON_MEMBER:			// ì •ì°°ì¡°ì›:
 		m_nCountTotalGradeEx --;
 		break;
 	}
@@ -737,18 +759,18 @@ void CGuild::AddGradeExPosCount( int pos )
 {
 	switch( pos )
 	{
-	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// µ¹°İÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RUSH_CAPTAIN:			// ëŒê²©ì¡° ëŒ€ì¥
 		m_nCountRushCaptain ++;
 		break;
-	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// Áö¿øÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:			// ì§€ì›ì¡° ëŒ€ì¥
 		m_nCountSupportCaptain ++;
 		break;
-	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// Á¤ÂûÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RECON_CAPTAIN:			// ì •ì°°ì¡° ëŒ€ì¥
 		m_nCountReconCaptain ++;
 		break;
-	case MSG_GUILD_POSITION_RUSH_MEMBER:				// µ¹°İÁ¶¿ø
-	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// Áö¿øÁ¶¿ø
-	case MSG_GUILD_POSITION_RECON_MEMBER:			// Á¤ÂûÁ¶¿ø:
+	case MSG_GUILD_POSITION_RUSH_MEMBER:				// ëŒê²©ì¡°ì›
+	case MSG_GUILD_POSITION_SUPPORT_MEMBER:			// ì§€ì›ì¡°ì›
+	case MSG_GUILD_POSITION_RECON_MEMBER:			// ì •ì°°ì¡°ì›:
 		m_nCountTotalGradeEx ++;
 		break;
 	}
@@ -758,14 +780,14 @@ int CGuild::GetGradeExPosNeedGuilPoint( int pos )
 {
 	switch( pos )
 	{
-	case MSG_GUILD_POSITION_RUSH_CAPTAIN:		// µ¹°İÁ¶ ´ëÀå
-	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:	// Áö¿øÁ¶ ´ëÀå
-	case MSG_GUILD_POSITION_RECON_CAPTAIN:		// Á¤ÂûÁ¶ ´ëÀå
+	case MSG_GUILD_POSITION_RUSH_CAPTAIN:		// ëŒê²©ì¡° ëŒ€ì¥
+	case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:	// ì§€ì›ì¡° ëŒ€ì¥
+	case MSG_GUILD_POSITION_RECON_CAPTAIN:		// ì •ì°°ì¡° ëŒ€ì¥
 		return 1000;
 		break;
-	case MSG_GUILD_POSITION_RUSH_MEMBER:		// µ¹°İÁ¶¿ø
-	case MSG_GUILD_POSITION_SUPPORT_MEMBER:		// Áö¿øÁ¶¿ø
-	case MSG_GUILD_POSITION_RECON_MEMBER:		// Á¤ÂûÁ¶¿ø
+	case MSG_GUILD_POSITION_RUSH_MEMBER:		// ëŒê²©ì¡°ì›
+	case MSG_GUILD_POSITION_SUPPORT_MEMBER:		// ì§€ì›ì¡°ì›
+	case MSG_GUILD_POSITION_RECON_MEMBER:		// ì •ì°°ì¡°ì›
 		return 500;
 		break;
 	}
@@ -780,8 +802,8 @@ void CGuild::SetGuildMark(char gm_row, char gm_col, char bg_row, char bg_col, in
 	m_GuildMark_col = gm_col;
 	m_Background_row = bg_row;
 	m_Background_col = bg_col;
-	// ±æµå¸¶Å© ½Ã°£Àº ½ÇÁ¦ ·ÎÄÃ ½Ã°£À¸·Î ÀúÀåµÇ¾î ÀÖÁö¸¸ °ÔÀÓ¿¡¼­ »ç¿ëÇÒ¶§´Â °ÔÀÓ½Ã°£À» Å¬¶óÀÌ¾ğÆ®¿¡ º¸³»ÁØ´Ù.
-	// ½ÇÁ¦ ½Ã°£ÀÌ ÀúÀåÀÌ µÈ´Ù.
+	// ê¸¸ë“œë§ˆí¬ ì‹œê°„ì€ ì‹¤ì œ ë¡œì»¬ ì‹œê°„ìœ¼ë¡œ ì €ì¥ë˜ì–´ ìˆì§€ë§Œ ê²Œì„ì—ì„œ ì‚¬ìš©í• ë•ŒëŠ” ê²Œì„ì‹œê°„ì„ í´ë¼ì´ì–¸íŠ¸ì— ë³´ë‚´ì¤€ë‹¤.
+	// ì‹¤ì œ ì‹œê°„ì´ ì €ì¥ì´ ëœë‹¤.
 	m_GuildMarkExpire = markTime;
 }
 
@@ -807,12 +829,12 @@ char CGuild::GetBackgroundCol()
 
 int CGuild::GetMarkTime()
 {
-	// ±æµå¸¶Å© ½Ã°£Àº ½ÇÁ¦ ·ÎÄÃ ½Ã°£À¸·Î ÀúÀåµÇ¾î ÀÖÁö¸¸ °ÔÀÓ¿¡¼­ »ç¿ëÇÒ¶§´Â °ÔÀÓ½Ã°£À» Å¬¶óÀÌ¾ğÆ®¿¡ º¸³»ÁØ´Ù.
+	// ê¸¸ë“œë§ˆí¬ ì‹œê°„ì€ ì‹¤ì œ ë¡œì»¬ ì‹œê°„ìœ¼ë¡œ ì €ì¥ë˜ì–´ ìˆì§€ë§Œ ê²Œì„ì—ì„œ ì‚¬ìš©í• ë•ŒëŠ” ê²Œì„ì‹œê°„ì„ í´ë¼ì´ì–¸íŠ¸ì— ë³´ë‚´ì¤€ë‹¤.
 	return m_GuildMarkExpire;
 }
 int CGuild::GetMarkTimeConvertGameTime()
 {
-	// ±æµå¸¶Å© ½Ã°£Àº ½ÇÁ¦ ·ÎÄÃ ½Ã°£À¸·Î ÀúÀåµÇ¾î ÀÖÁö¸¸ °ÔÀÓ¿¡¼­ »ç¿ëÇÒ¶§´Â °ÔÀÓ½Ã°£À» Å¬¶óÀÌ¾ğÆ®¿¡ º¸³»ÁØ´Ù.
+	// ê¸¸ë“œë§ˆí¬ ì‹œê°„ì€ ì‹¤ì œ ë¡œì»¬ ì‹œê°„ìœ¼ë¡œ ì €ì¥ë˜ì–´ ìˆì§€ë§Œ ê²Œì„ì—ì„œ ì‚¬ìš©í• ë•ŒëŠ” ê²Œì„ì‹œê°„ì„ í´ë¼ì´ì–¸íŠ¸ì— ë³´ë‚´ì¤€ë‹¤.
 	if(m_GuildMarkExpire == -1)
 		return -1;
 	int tGap = 0;
@@ -844,7 +866,7 @@ bool CGuild::isPossibleKickMaster(void)
 
 int CGuild::getStandardTimeForKick(void)
 {
-	// 7ÀÏ Àü ½Ã°£ ±¸ÇÏ±â
+	// 7ì¼ ì „ ì‹œê°„ êµ¬í•˜ê¸°
 	CLCString getStandardTimeQuery(512);
 	getStandardTimeQuery.Format("SELECT UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 7 DAY))");
 
@@ -929,34 +951,34 @@ int CGuild::getNewBossByKick(void)
 {
 	int _newBossIndex = 0;
 
-	std::vector<int> _vecCandidate;	// ÈÄº¸ÀÚ ¸®½ºÆ®
+	std::vector<int> _vecCandidate;	// í›„ë³´ì ë¦¬ìŠ¤íŠ¸
 
-	// ÈÄº¸ÀÚ ¼±Ãâ
-	// 1¼øÀ§ : ±æµå ºÎÀå(¾øÀ¸¸é ÀÏ¹İ ±æµå¿ø)
+	// í›„ë³´ì ì„ ì¶œ
+	// 1ìˆœìœ„ : ê¸¸ë“œ ë¶€ì¥(ì—†ìœ¼ë©´ ì¼ë°˜ ê¸¸ë“œì›)
 	CGuildMember* _officer1 = officer(0);
 	CGuildMember* _officer2 = officer(1);
 
 	if (_officer1 && _officer2)
 	{
-		// µÑ´Ù Á¸Àç
+		// ë‘˜ë‹¤ ì¡´ì¬
 		_vecCandidate.push_back(_officer1->charindex());
 		_vecCandidate.push_back(_officer2->charindex());
 	}
 	else if (_officer1 && !_officer2)
 	{
-		// ºÎÀå ÇÑ¸í¸¸ Á¸Àç : ´Üµ¶ Ãâ¸¶ ´ç¼±
+		// ë¶€ì¥ í•œëª…ë§Œ ì¡´ì¬ : ë‹¨ë… ì¶œë§ˆ ë‹¹ì„ 
 		_newBossIndex = _officer1->charindex();
 		return _newBossIndex;
 	}
 	else if (_officer2 && !_officer1)
 	{
-		// ºÎÀå ÇÑ¸í¸¸ Á¸Àç : ´Üµ¶ Ãâ¸¶ ´ç¼±
+		// ë¶€ì¥ í•œëª…ë§Œ ì¡´ì¬ : ë‹¨ë… ì¶œë§ˆ ë‹¹ì„ 
 		_newBossIndex = _officer2->charindex();
 		return _newBossIndex;
 	}
 	else
 	{
-		// ºÎÀåÀÌ ¾øÀ» ¶§´Â ¸ğµç ±æµå¿øÀÌ ÈÄº¸
+		// ë¶€ì¥ì´ ì—†ì„ ë•ŒëŠ” ëª¨ë“  ê¸¸ë“œì›ì´ í›„ë³´
 		for (int i = 0; i < GUILD_MAX_MEMBER; i++)
 		{
 			if (m_member[i])
@@ -970,9 +992,9 @@ int CGuild::getNewBossByKick(void)
 	if (_vecCandidate.empty())
 		return _newBossIndex;
 
-	// 2¼øÀ§ : ÃÖ±Ù Á¢¼Ó ÀÏÀÚ
-	// 3¼øÀ§ : Ä³¸¯ÅÍ ·¹º§
-	// 4¼øÀ§ : ±æµå Æ÷ÀÎÆ® ±â¿©µµ
+	// 2ìˆœìœ„ : ìµœê·¼ ì ‘ì† ì¼ì
+	// 3ìˆœìœ„ : ìºë¦­í„° ë ˆë²¨
+	// 4ìˆœìœ„ : ê¸¸ë“œ í¬ì¸íŠ¸ ê¸°ì—¬ë„
 	CLCString cadidateDataQuery(1024);
 	cadidateDataQuery.Format("SELECT ch.a_index FROM t_characters as ch, t_extend_guildmember as eg "
 							 "WHERE eg.a_guild_index = %d and eg.a_char_index = ch.a_index ORDER BY ch.a_datestamp DESC, ch.a_level DESC, eg.a_point DESC, ch.a_index"

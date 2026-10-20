@@ -12,33 +12,33 @@ public:
 	~CDescriptor();
 
 	rnSocketIOService*	service_;
-	bool		client_type_;				// °ÔÀÓ¼­¹ö¿Í À¯Àú Å¬¶óÀÌ¾ğÆ®¸¦ ±¸ºĞ
-	// true = °ÔÀÓ¼­¹ö, false = À¯Àú Å¬¶óÀÌ¾ğÆ®
+	bool		client_type_;				// ê²Œì„ì„œë²„ì™€ ìœ ì € í´ë¼ì´ì–¸íŠ¸ë¥¼ êµ¬ë¶„
+	// true = ê²Œì„ì„œë²„, false = ìœ ì € í´ë¼ì´ì–¸íŠ¸
 
-	int			m_serverNo;					// Á¢¼ÓÇÑ ¼­¹ö ¹øÈ£
-	int			m_subNo;					// Á¢¼Ó ¼­ºê ¹øÈ£
-	int*		m_zones;					// ¼Ò¼Ó Á¸ ¸®½ºÆ®
-	int			m_countZone;				// ¼Ò¼Ó Á¸ °³¼ö
+	int			m_serverNo;					// ì ‘ì†í•œ ì„œë²„ ë²ˆí˜¸
+	int			m_subNo;					// ì ‘ì† ì„œë¸Œ ë²ˆí˜¸
+	int*		m_zones;					// ì†Œì† ì¡´ ë¦¬ìŠ¤íŠ¸
+	int			m_countZone;				// ì†Œì† ì¡´ ê°œìˆ˜
 
 	////////////
-	// »óÅÂ °ü·Ã
-	int			m_connected;				// CON_ »ó¼ö °ªÀ» ÀúÀå : Á¢¼Ó »óÅÂ
+	// ìƒíƒœ ê´€ë ¨
+	int			m_connected;				// CON_ ìƒìˆ˜ ê°’ì„ ì €ì¥ : ì ‘ì† ìƒíƒœ
 	int			m_uniqeKey;
 
 	////////////
-	// ¸µÅ© °ü·Ã
-	CDescriptor* m_pPrev;					// ¸®½ºÆ® ¸µÅ©
+	// ë§í¬ ê´€ë ¨
+	CDescriptor* m_pPrev;					// ë¦¬ìŠ¤íŠ¸ ë§í¬
 	CDescriptor* m_pNext;
 
 	virtual void onClose(rnSocketIOService* service);
 	virtual void operate(rnSocketIOService* service);
 
-	void WriteToOutput(CNetMsg::SP& msg);	// ¾²±â
+	void WriteToOutput(CNetMsg::SP& msg);	// ì“°ê¸°
 
-	bool GetLogin(CNetMsg::SP& msg);		// Á¢¼Ó ¿äÃ» Ã³¸®
-	int FindZone(int zone);					// ÇØ´ç Á¸ ¹øÈ£ Ã£±â
+	bool GetLogin(CNetMsg::SP& msg);		// ì ‘ì† ìš”ì²­ ì²˜ë¦¬
+	int FindZone(int zone);					// í•´ë‹¹ ì¡´ ë²ˆí˜¸ ì°¾ê¸°
 
-	bool userAuth(CNetMsg::SP& msg);		// À¯Àú ÀÎÁõ
+	bool userAuth(CNetMsg::SP& msg);		// ìœ ì € ì¸ì¦
 
 private:
 	static int getUniqueKey();

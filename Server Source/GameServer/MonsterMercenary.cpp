@@ -272,7 +272,7 @@ bool CMonsterMercenary::SetMercenaryData( CItem* pItem, int classIdx, int npcInd
 
 	MonsterMercenaryInfo * mmd;
 
-	// ÁöÁ¤µÈ Å¬·¡½ºÀÇ Á¤º¸ ¹Ş´Â´Ù.
+	// ì§€ì •ëœ í´ë˜ìŠ¤ì˜ ì •ë³´ ë°›ëŠ”ë‹¤.
 	if( classIdx < 0 )
 		mmd = GetClassInfo();
 	else
@@ -284,19 +284,19 @@ bool CMonsterMercenary::SetMercenaryData( CItem* pItem, int classIdx, int npcInd
 		return false;
 	}
 
-	// ¾ÆÀÌÅÛ »ç¿ë °¡´É½Ã°£ ±â°£Á¦ / ½Ã°£Á¦(ABS)
+	// ì•„ì´í…œ ì‚¬ìš© ê°€ëŠ¥ì‹œê°„ ê¸°ê°„ì œ / ì‹œê°„ì œ(ABS)
 	if( pItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS )
 	{
 		pItem->setUsed(-1);
 	}
 	else
 	{
-		// ±â°£Á¦ ¾ÆÀÌÅÛÀº Áö±ŞÇÒ¶§ºÎÅÍ ½Ã°£ Ã¼Å©
+		// ê¸°ê°„ì œ ì•„ì´í…œì€ ì§€ê¸‰í• ë•Œë¶€í„° ì‹œê°„ ì²´í¬
 		pItem->setUsed(gserver->getNowSecond() + pItem->m_itemProto->getItemNum3() * 24 * 60 * 60); // m_num3 = day
-		pItem->setFlag(pItem->getFlag() | FLAG_ITEM_SEALED); // °Å·¡°¡ ¾ÊµÇµµ·Ï ºÀÀÎ ÇØ¹ö¸°´Ù.
+		pItem->setFlag(pItem->getFlag() | FLAG_ITEM_SEALED); // ê±°ë˜ê°€ ì•Šë˜ë„ë¡ ë´‰ì¸ í•´ë²„ë¦°ë‹¤.
 	}
 
-	// Npc DBIndex ¼¼ÆÃ.
+	// Npc DBIndex ì„¸íŒ….
 	if( npcIndex < 0 )
 	{
 		pItem->setPlus(gserver->m_MonsterMercenary.GetMercenaryIndex(mmd->nClassIdx)); // Mercenary npc index
@@ -307,17 +307,17 @@ bool CMonsterMercenary::SetMercenaryData( CItem* pItem, int classIdx, int npcInd
 	}
 
 	pItem->setUsed_2(mmd->nClassIdx);  // classIdx
-	pItem->setPlus_2(0); // ¾ÕÀÇ 16 ºñÆ®´Â °ø°İ·ÂÀ» ³Ö´Â´Ù. µÚÀÇ 16ºñÆ®´Â ¹æ¾î·ÂÀ» ³Ö´Â´Ù.
+	pItem->setPlus_2(0); // ì•ì˜ 16 ë¹„íŠ¸ëŠ” ê³µê²©ë ¥ì„ ë„£ëŠ”ë‹¤. ë’¤ì˜ 16ë¹„íŠ¸ëŠ” ë°©ì–´ë ¥ì„ ë„£ëŠ”ë‹¤.
 
 	int att=0, def=0;
 	int nRand = GetRandom(0,1);
 
 	switch( nRand )
 	{
-	case 0: // °ø°İ¸¸ º¸³Ê½ºÁØ´Ù.
+	case 0: // ê³µê²©ë§Œ ë³´ë„ˆìŠ¤ì¤€ë‹¤.
 		att = GetRandom(mmd->nBonusMini, mmd->nBonusMax);
 		break;
-	case 1: // ¼öºñ¸¸ µğÆæ½º¸¦ ÁØ´Ù.
+	case 1: // ìˆ˜ë¹„ë§Œ ë””íœìŠ¤ë¥¼ ì¤€ë‹¤.
 		def = GetRandom(mmd->nBonusMini, mmd->nBonusMax);
 		break;
 	}

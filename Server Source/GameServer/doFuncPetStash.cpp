@@ -48,13 +48,13 @@ void do_PetStash_Take(CPC* ch, CNetMsg::SP& msg)
 	if( ch == NULL )
 		return;
 
-	//¾ÆÀÌÅÛ ºÎÅÍ ¸¸µé¾û
+	//ì•„ì´í…œ ë¶€í„° ë§Œë“¤ì—‰
 	RequestClient::PetStashTake* p = reinterpret_cast<RequestClient::PetStashTake*>(msg->m_buf);
 	CItem *item = ch->m_petStashManager.GetPetItemByVIndex(p->petItemVIndex);
 
-	//Reponse Packet ¿¡¼­´Â À¯È¿¼º °Ë»ç¸¸ ÇÑ´Ù.
-	//Update Packet ¿¡¼­´Â µ¥ÀÌÅÍ¸¦ °è»ê ÈÄ ÆĞÅ¶À» º¸³½´Ù.
-	//±×·¡¾ßÁö ÃßÈÄ¿¡ Update ÆĞÅ¶À» ÀçÈ°¿ë ÇÒ ¼ö ÀÖ´Ù.
+	//Reponse Packet ì—ì„œëŠ” ìœ íš¨ì„± ê²€ì‚¬ë§Œ í•œë‹¤.
+	//Update Packet ì—ì„œëŠ” ë°ì´í„°ë¥¼ ê³„ì‚° í›„ íŒ¨í‚·ì„ ë³´ë‚¸ë‹¤.
+	//ê·¸ë˜ì•¼ì§€ ì¶”í›„ì— Update íŒ¨í‚·ì„ ì¬í™œìš© í•  ìˆ˜ ìˆë‹¤.
 
 	if(item == NULL)
 	{
@@ -99,9 +99,9 @@ void do_PetStash_Keep(CPC* ch, CNetMsg::SP& msg)
 	RequestClient::PetStashKeep* p = reinterpret_cast<RequestClient::PetStashKeep*>(msg->m_buf);
 	CItem* item = ch->m_inventory.FindByVirtualIndex(p->petItemVIndex);
 
-	//Reponse Packet ¿¡¼­´Â À¯È¿¼º °Ë»ç¸¸ ÇÑ´Ù.
-	//Update Packet ¿¡¼­´Â µ¥ÀÌÅÍ¸¦ °è»ê ÈÄ ÆĞÅ¶À» º¸³½´Ù.
-	//±×·¡¾ßÁö ÃßÈÄ¿¡ Update ÆĞÅ¶À» ÀçÈ°¿ë ÇÒ ¼ö ÀÖ´Ù.
+	//Reponse Packet ì—ì„œëŠ” ìœ íš¨ì„± ê²€ì‚¬ë§Œ í•œë‹¤.
+	//Update Packet ì—ì„œëŠ” ë°ì´í„°ë¥¼ ê³„ì‚° í›„ íŒ¨í‚·ì„ ë³´ë‚¸ë‹¤.
+	//ê·¸ë˜ì•¼ì§€ ì¶”í›„ì— Update íŒ¨í‚·ì„ ì¬í™œìš© í•  ìˆ˜ ìˆë‹¤.
 
 	if(item == NULL)
 	{
@@ -132,7 +132,7 @@ void do_PetStash_Keep(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		//Âø¿ëÁß
+		//ì°©ìš©ì¤‘
 		if(apet->IsMount() || apet->IsSummon() || apet->IsWearing())
 		{
 			LOG_ERROR("PET_STASH : PetMount or PetSummon or PetWearing. character index : %d, character name : %s, petIndex = %d", ch->m_index, ch->GetName(), apet->m_index);
@@ -141,7 +141,7 @@ void do_PetStash_Keep(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
-		//ºÀÀÎ»óÅÂ
+		//ë´‰ì¸ìƒíƒœ
 		if( DEAD( apet ) )
 		{
 			LOG_ERROR("PET_STASH : Dead Pet. character index : %d, character name : %s, petIndex = %d", ch->m_index, ch->GetName(), apet->m_index);
@@ -162,7 +162,7 @@ void do_PetStash_Keep(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-		//Âø¿ëÁß
+		//ì°©ìš©ì¤‘
 		if(pet->IsMount() || pet->IsSummon() || pet->IsWearing())
 		{
 			LOG_ERROR("PET_STASH : PetMount or PetSummon or PetWearing. character index : %d, character name : %s, petIndex = %d", ch->m_index, ch->GetName(), pet->m_index);
@@ -171,7 +171,7 @@ void do_PetStash_Keep(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
-		//ºÀÀÎ»óÅÂ
+		//ë´‰ì¸ìƒíƒœ
 		if(pet->GetRemainRebirthTime() > 0)
 		{
 			LOG_ERROR("PET_STASH : Dead Pet. character index : %d, character name : %s, petIndex = %d", ch->m_index, ch->GetName(), pet->m_index);
@@ -227,13 +227,13 @@ void do_PetStash_Proxy(CPC* ch, CNetMsg::SP& msg)
 	if( ch == NULL )
 		return;
 
-	//¾ÆÀÌÅÛ ºÎÅÍ ¸¸µé¾û
+	//ì•„ì´í…œ ë¶€í„° ë§Œë“¤ì—‰
 	RequestClient::PetStashProxyReg* p = reinterpret_cast<RequestClient::PetStashProxyReg*>(msg->m_buf);
 	CItem *item = ch->m_petStashManager.GetPetItemByVIndex(p->petItemVIndex);
 
-	//Reponse Packet ¿¡¼­´Â À¯È¿¼º °Ë»ç¸¸ ÇÑ´Ù.
-	//Update Packet ¿¡¼­´Â µ¥ÀÌÅÍ¸¦ °è»ê ÈÄ ÆĞÅ¶À» º¸³½´Ù.
-	//±×·¡¾ßÁö ÃßÈÄ¿¡ Update ÆĞÅ¶À» ÀçÈ°¿ë ÇÒ ¼ö ÀÖ´Ù.
+	//Reponse Packet ì—ì„œëŠ” ìœ íš¨ì„± ê²€ì‚¬ë§Œ í•œë‹¤.
+	//Update Packet ì—ì„œëŠ” ë°ì´í„°ë¥¼ ê³„ì‚° í›„ íŒ¨í‚·ì„ ë³´ë‚¸ë‹¤.
+	//ê·¸ë˜ì•¼ì§€ ì¶”í›„ì— Update íŒ¨í‚·ì„ ì¬í™œìš© í•  ìˆ˜ ìˆë‹¤.
 
 	if(item == NULL)
 	{

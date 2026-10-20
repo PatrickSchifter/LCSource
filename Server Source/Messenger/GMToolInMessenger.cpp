@@ -145,7 +145,7 @@ void GMToolProcessInMessenger::operate( rnSocketIOService* service )
 	}
 }
 
-// ¸ğµç °ÔÀÓ ¼­¹ö¿¡°Ô Àü´Ş
+// ëª¨ë“  ê²Œì„ ì„œë²„ì—ê²Œ ì „ë‹¬
 void GMToolProcessInMessenger::process_alluser( CNetMsg::SP& msg )
 {
 	RequestGMTool::sendItemToPlayingUser* packet = reinterpret_cast<RequestGMTool::sendItemToPlayingUser*>(msg->m_buf);
@@ -230,7 +230,7 @@ void GMToolProcessInMessenger::process_alluser( CNetMsg::SP& msg )
 			 packet->server_no, packet->zone_no, packet->item_index, packet->item_count, packet->nas, packet->sender);
 }
 
-// Æ¯Á¤ ¼­¹ö±º¿¡°Ô Àü´Ş
+// íŠ¹ì • ì„œë²„êµ°ì—ê²Œ ì „ë‹¬
 void GMToolProcessInMessenger::process_server_group( CNetMsg::SP& msg )
 {
 	RequestGMTool::sendItemToPlayingUser* packet = reinterpret_cast<RequestGMTool::sendItemToPlayingUser*>(msg->m_buf);
@@ -318,7 +318,7 @@ void GMToolProcessInMessenger::process_server_group( CNetMsg::SP& msg )
 			 packet->server_no, packet->zone_no, packet->item_index, packet->item_count, packet->nas, packet->sender);
 }
 
-// Æ¯Á¤ ¼­¹ö, Æ¯Á¤ Á¸¿¡°Ô ÀÚ·á¸¦ Àü´Ş
+// íŠ¹ì • ì„œë²„, íŠ¹ì • ì¡´ì—ê²Œ ìë£Œë¥¼ ì „ë‹¬
 void GMToolProcessInMessenger::process_zone( CNetMsg::SP& msg )
 {
 	RequestGMTool::sendItemToPlayingUser* packet = reinterpret_cast<RequestGMTool::sendItemToPlayingUser*>(msg->m_buf);
@@ -570,7 +570,7 @@ void GMToolProcessInMessenger::process_reserved_gm_command_add( CNetMsg::SP& msg
 		}
 	}
 	//////////////////////////////////////////////////////////////////////////
-	// ¸ğµç À¯È¿¼º °Ë»ç°¡ ³¡³µÀ¸¹Ç·Î ¸ğµç SubHelper·Î ÆĞÅ¶ Àü´Ş
+	// ëª¨ë“  ìœ íš¨ì„± ê²€ì‚¬ê°€ ëë‚¬ìœ¼ë¯€ë¡œ ëª¨ë“  SubHelperë¡œ íŒ¨í‚· ì „ë‹¬
 	SubHelperInMessenger::instance()->sendMsgToAll(msg);
 
 	LOG_INFO("OK gm command : index[%d] eventType[%d] startTime[%d] startString[%s] endTime[%d] endString[%s] "
@@ -592,7 +592,7 @@ void GMToolProcessInMessenger::process_reserved_gm_command_add( CNetMsg::SP& msg
 
 bool GMToolProcessInMessenger::isValidGmCommand( std::string tstr )
 {
-	// °¢ ¸í·É¾îÀÇ À¯È¿¼º °Ë»ç
+	// ê° ëª…ë ¹ì–´ì˜ ìœ íš¨ì„± ê²€ì‚¬
 	typedef boost::tokenizer<boost::char_separator<char> > stokenizer;
 	boost::char_separator<char> sep(" ", NULL, boost::drop_empty_tokens);
 	stokenizer tok(tstr, sep);

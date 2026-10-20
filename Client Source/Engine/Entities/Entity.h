@@ -809,6 +809,7 @@ public:
 	void DelSkaModel(const CTString &fnmModel);
 	bool HasSkaModel(const CTString &fnmModel);
 	virtual void SetNickNameDamageEffect(INDEX iNickIndex, NickNameEffectType iType);
+	virtual void SetCustomTitleEffect(CTString effectName);
 };
 
 // all standard smart pointer functions are here as inlines

@@ -1,7 +1,7 @@
 #ifndef __LCSTRING_H__
 #define __LCSTRING_H__
 
-// »ý¼ºÀÚ¿¡ Å©±â¸¦ ÁöÁ¤ÇÏÁö ¾Æ´ÏÇÏ°í, ¹è¿­·Î ¼±¾ðÇÒ °æ¿ì¸¦ ´ëºñÇØ ´ÙÀ½ Á¤±Ô½ÄÀ» Ã£¾Æº»´Ù
+// ìƒì„±ìžì— í¬ê¸°ë¥¼ ì§€ì •í•˜ì§€ ì•„ë‹ˆí•˜ê³ , ë°°ì—´ë¡œ ì„ ì–¸í•  ê²½ìš°ë¥¼ ëŒ€ë¹„í•´ ë‹¤ìŒ ì •ê·œì‹ì„ ì°¾ì•„ë³¸ë‹¤
 // CLCString\:b+\:i\[
 
 #include <stdio.h>
@@ -177,11 +177,11 @@ inline void CLCString::Trim(bool bOnlySpace)
 	int len = Length();
 	int index = 0, i;
 
-	// °ø¹éÀÌ ¾Æ´Ñ Ã³À½ ¹®ÀÚ ±¸ÇÔ
+	// ê³µë°±ì´ ì•„ë‹Œ ì²˜ìŒ ë¬¸ìž êµ¬í•¨
 	while ((bOnlySpace && m_strBuf[index] == ' ') || (!bOnlySpace && CLCString::IsSpace(m_strBuf[index])))
 		index++;
 
-	// °ø¹é¸¸Å­ ´ç±â±â
+	// ê³µë°±ë§Œí¼ ë‹¹ê¸°ê¸°
 	if (index > 0)
 	{
 		int count = len - index;
@@ -191,7 +191,7 @@ inline void CLCString::Trim(bool bOnlySpace)
 		m_strBuf[i] = '\0';
 	}
 
-	// µÚÀÇ °ø¹é Á¦°Å
+	// ë’¤ì˜ ê³µë°± ì œê±°
 	for (i = len - 1; i > 0; i--)
 	{
 		if ((bOnlySpace && m_strBuf[i] != ' ') || (!bOnlySpace && !CLCString::IsSpace(m_strBuf[i])))
@@ -273,7 +273,7 @@ inline CLCString& CLCString::operator+=(const char* str)
 	int strLength = strlen(str);
 	if (curLength + strLength + 1 > m_nSize)
 		strLength = m_nSize - curLength - 1;
-	// ¿ø·¡ ¹®ÀÚ¿­ curLength ÀÌÈÄ¿¡ str¿¡¼­ strLength ¸¸Å­ º¹»çÇÏ°í NULLÀ» Âï´Â´Ù
+	// ì›ëž˜ ë¬¸ìžì—´ curLength ì´í›„ì— strì—ì„œ strLength ë§Œí¼ ë³µì‚¬í•˜ê³  NULLì„ ì°ëŠ”ë‹¤
 	if (strLength > 0)
 	{
 		memcpy(m_strBuf + curLength, str, strLength);

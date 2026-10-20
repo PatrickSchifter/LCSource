@@ -17,6 +17,7 @@
 #include <Engine/Object/ActorMgr.h>
 #include <Engine/Network/CharacterTarget.h>
 #include <Engine/Info/MyInfo.h>
+#include <Engine/Contents/function/TitleData.h>
 //강동민 수정 끝 1차 버그 수정 작업		08.20
 
 // Check Attack Flag
@@ -2166,13 +2167,13 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 			CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
 
 			pTarget->cha_itemEffect.Refresh(NULL, (pTarget->m_nType == NIGHTSHADOW) ? 1 : pTarget->cha_sbItemEffectOption);
-			pTarget->cha_statusEffect.Refresh(NULL, CStatusEffect::R_NONE);
-
-			pTarget->cha_itemEffect.AddHolyWaterEffect(pTarget->cha_iHitType,
-					&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
-
-			pTarget->cha_itemEffect.RefreshPetStashEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
-			pTarget->cha_itemEffect.RefreshRelicEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
+// 			pTarget->cha_statusEffect.Refresh(NULL, CStatusEffect::R_NONE);
+// 
+// 			pTarget->cha_itemEffect.AddHolyWaterEffect(pTarget->cha_iHitType,
+// 					&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
+// 
+// 			pTarget->cha_itemEffect.RefreshPetStashEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
+// 			pTarget->cha_itemEffect.RefreshRelicEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
 		}
 	}
 
@@ -2262,11 +2263,22 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 
 			if (pTarget != NULL)
 			{
-				pTarget->cha_itemEffect.AddHolyWaterEffect(pTarget->cha_iHitType,
-					&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
+				pTarget->cha_itemEffect.Refresh(&(pMI->m_tmSkaTagManager), 1);
 
-				pTarget->cha_itemEffect.RefreshPetStashEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
-				pTarget->cha_itemEffect.RefreshRelicEffect(&(pTarget->m_pEntity->en_pmiModelInstance->m_tmSkaTagManager));
+				if (pTarget->cha_NickType > 0)
+				{
+					int t_index = pTarget->cha_CustomTitle.nEffectIdx;
+
+					if (t_index < 0)
+					{
+
+						pTarget->m_pEntity->SetNickNameDamageEffect(pTarget->cha_NickType, CEntity::NICKNAME_ATTACH_EFFECT);
+					}
+					else
+					{
+						pTarget->m_pEntity->SetCustomTitleEffect(CustomTitleData::m_vecCustomTitleEffect[t_index].c_str());
+					}
+				}
 			}
 		}
 	}
@@ -2530,10 +2542,28 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 					{
 						CCharacterTarget* pTarget = static_cast< CCharacterTarget* >(pObject);
 
-						pTarget->cha_itemEffect.Refresh(&GetCurrentPlayerModelInstance()->m_tmSkaTagManager, 
-							(pTarget->m_nType == NIGHTSHADOW) ? 1 : pTarget->cha_sbItemEffectOption);
-						pTarget->cha_statusEffect.Refresh(&GetCurrentPlayerModelInstance()->m_tmSkaTagManager, 
-							CStatusEffect::R_NONE);
+						if (pTarget != NULL)
+						{
+							pTarget->cha_itemEffect.Refresh(&GetCurrentPlayerModelInstance()->m_tmSkaTagManager, 
+								(pTarget->m_nType == NIGHTSHADOW) ? 1 : pTarget->cha_sbItemEffectOption);
+							pTarget->cha_statusEffect.Refresh(&GetCurrentPlayerModelInstance()->m_tmSkaTagManager, 
+								CStatusEffect::R_NONE);
+
+							if (pTarget->cha_NickType > 0)
+							{
+								int t_index = pTarget->cha_CustomTitle.nEffectIdx;
+
+								if (t_index < 0)
+								{
+
+									pTarget->m_pEntity->SetNickNameDamageEffect(pTarget->cha_NickType, CEntity::NICKNAME_ATTACH_EFFECT);
+								}
+								else
+								{
+									pTarget->m_pEntity->SetCustomTitleEffect(CustomTitleData::m_vecCustomTitleEffect[t_index].c_str());
+								}
+							}
+						}
 					}
 				}
 			}		
@@ -3576,26 +3606,34 @@ void GetTargetDirection(FLOAT3D &vTargetPos, FLOAT3D &vDirection)
 		
 		if(iNickIndex > 0 && iType == NICKNAME_ATTACK_EFFECT)	// 호칭이 있으면
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetAttackEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetAttackEffectFile();
 		}
 		else if(iNickIndex > 0 && iType == NICKNAME_DAMAGE_EFFECT)
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetDamageEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetDamageEffectFile();
 		}
 		else if(iNickIndex > 0 && iType == NICKNAME_ATTACH_EFFECT)
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetEffectFile();
 		}
 
 		if(strNickDamageFile != CTString("") && iType != NICKNAME_ATTACH_EFFECT)
 		{
 			StartEffectGroup(strNickDamageFile
-						, &this->en_pmiModelInstance->m_tmSkaTagManager
+						, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager
 						, _pTimer->GetLerpedCurrentTick());
 		}
 		else if(strNickDamageFile != CTString("") && iType == NICKNAME_ATTACH_EFFECT)
 		{
-			en_pCharacterTarget->cha_itemEffect.AddNickEffect(strNickDamageFile, &this->en_pmiModelInstance->m_tmSkaTagManager);
+			en_pCharacterTarget->cha_itemEffect.AddNickEffect(strNickDamageFile, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager);
+		}
+	}
+
+	void SetCustomTitleEffect(CTString effectName)
+	{
+		if(effectName != CTString(""))
+		{
+			en_pCharacterTarget->cha_itemEffect.AddNickEffect(effectName, &GetCurrentPlayerModelInstance()->m_tmSkaTagManager);
 		}
 	}
 /////////////////////////

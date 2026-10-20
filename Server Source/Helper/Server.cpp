@@ -301,7 +301,7 @@ bool CServer::LoadSettings()
 
 	if(cnt == 0)
 	{
-		// Å×ÀÌºí¿¡ ³»¿ëÀÌ ¾øÀ»¶§
+		// í…Œì´ë¸”ì— ë‚´ìš©ì´ ì—†ì„ë•Œ
 		cmdNewGuild.SetQuery("insert into t_characters_guildpoint select a_index, 0, 0 from t_characters");
 		cmdNewGuild.Open();
 	}
@@ -318,7 +318,7 @@ bool CServer::LoadSettings()
 
 	if(cnt == 0)
 	{
-		// Å×ÀÌºí¿¡ ³»¿ëÀÌ ¾øÀ»¶§
+		// í…Œì´ë¸”ì— ë‚´ìš©ì´ ì—†ì„ë•Œ
 		cmdNewGuild.SetQuery("insert into t_extend_guild select a_index, 0, 5+a_level*5, 0, '', '', '' from t_guild");
 		cmdNewGuild.Open();
 	}
@@ -335,17 +335,17 @@ bool CServer::LoadSettings()
 
 	if(cnt == 0)
 	{
-		// Å×ÀÌºí¿¡ ³»¿ëÀÌ ¾øÀ»¶§
+		// í…Œì´ë¸”ì— ë‚´ìš©ì´ ì—†ì„ë•Œ
 		cmdNewGuild.SetQuery("insert into t_extend_guildmember select a_guild_index, a_char_index, '', 0, 0, 0 from t_guildmember");
 		cmdNewGuild.Open();
 	}
 	//!===>
 
 #ifdef DEV_GUILD_MARK
-	cmd.SetQuery( "SELECT g.*, eg.a_guild_point, eg.a_guild_incline, eg.a_guild_maxmember, eg.a_guild_land, eg.a_passiveskill_index, eg.a_passiveskill_level, eg.a_gm_row, eg.a_gm_col, eg.a_bg_row, eg.a_bg_col, eg.a_marktime, eg.a_kick_status, eg.a_kick_request_char_index, eg.a_kick_request_time"
+	cmd.SetQuery( "SELECT g.*, UNIX_TIMESTAMP(g.a_createdate) as a_unix_createdate, eg.a_guild_point, eg.a_guild_incline, eg.a_guild_maxmember, eg.a_guild_land, eg.a_passiveskill_index, eg.a_passiveskill_level, eg.a_gm_row, eg.a_gm_col, eg.a_bg_row, eg.a_bg_col, eg.a_marktime, eg.a_kick_status, eg.a_kick_request_char_index, eg.a_kick_request_time, eg.a_contribute_exp_min, eg.a_contribute_exp_max, eg.a_contribute_fame_min, eg.a_contribute_fame_max"
 				  " FROM t_guild AS g, t_extend_guild AS eg WHERE g.a_index = eg.a_guild_index AND g.a_enable = 1 ORDER BY g.a_index " );
 #else
-	cmd.SetQuery( "SELECT g.*, eg.a_guild_point, eg.a_guild_incline, eg.a_guild_maxmember, eg.a_guild_land, eg.a_passiveskill_index, eg.a_passiveskill_level, eg.a_kick_status, eg.a_kick_request_char_index, eg.a_kick_request_time"
+	cmd.SetQuery( "SELECT g.*, UNIX_TIMESTAMP(g.a_createdate) as a_unix_createdate, eg.a_guild_point, eg.a_guild_incline, eg.a_guild_maxmember, eg.a_guild_land, eg.a_passiveskill_index, eg.a_passiveskill_level, eg.a_kick_status, eg.a_kick_request_char_index, eg.a_kick_request_time"
 				  " FROM t_guild AS g, t_extend_guild AS eg WHERE g.a_index = eg.a_guild_index AND g.a_enable = 1 ORDER BY g.a_index " );
 #endif
 	if (!cmd.Open())
@@ -381,10 +381,19 @@ bool CServer::LoadSettings()
 		int kickRequestChar		= 0;
 		int kickRequestTime		= 0;
 		//int lastTimeBossChange	= 0;
+		int	create_date;
+
+		int battle_total_count = 0;
+		int battle_win_count = 0;
+		int battle_lose_count = 0;
+
+		int contribute_exp_min = 0, contribute_exp_max = 0;
+		int contribute_fame_min = 0, contribute_fame_max = 0;
 
 		cmd.GetRec("a_index", guildindex);
 		cmd.GetRec("a_name", guildname);
 		cmd.GetRec("a_level", guildlevel);
+		cmd.GetRec("a_unix_createdate", create_date);
 
 		cmd.GetRec("a_battle_index",	battleIndex);
 		cmd.GetRec("a_battle_prize",	battlePrize);
@@ -392,6 +401,9 @@ bool CServer::LoadSettings()
 		cmd.GetRec("a_battle_time",		battleTime);
 		cmd.GetRec("a_battle_killcount",battleKillCount);
 		cmd.GetRec("a_battle_state",	battleState);
+		cmd.GetRec("a_battle_fight",	battle_total_count);
+		cmd.GetRec("a_battle_win",		battle_win_count);
+		cmd.GetRec("a_battle_lose",		battle_lose_count);
 #ifdef DEV_GUILD_MARK
 		cmd.GetRec("a_gm_row", gm_row);
 		cmd.GetRec("a_gm_col", gm_col);
@@ -403,6 +415,11 @@ bool CServer::LoadSettings()
 		cmd.GetRec("a_kick_status", kickStatus);
 		cmd.GetRec("a_kick_request_char_index", kickRequestChar);
 		cmd.GetRec("a_kick_request_time", kickRequestTime);
+
+		cmd.GetRec("a_contribute_exp_min", contribute_exp_min);
+		cmd.GetRec("a_contribute_exp_max", contribute_exp_max);
+		cmd.GetRec("a_contribute_fame_min", contribute_fame_min);
+		cmd.GetRec("a_contribute_fame_max", contribute_fame_max);
 
 		int guildpoint;
 		int incline;
@@ -447,7 +464,7 @@ bool CServer::LoadSettings()
 		}
 
 		std::string select_guild_member_query = boost::str(boost::format(
-				"SELECT g.*, eg.a_position_name, eg.a_contribute_exp, eg.a_contribute_fame, a_point"
+				"SELECT g.*, eg.a_position_name, eg.a_contribute_exp, eg.a_contribute_fame, eg.a_contribute_exp_min as a_contribute_exp_min, eg.a_contribute_exp_max as a_contribute_exp_max, eg.a_contribute_fame_min as a_contribute_fame_min, eg.a_contribute_fame_max as a_contribute_fame_max, a_point"
 				" FROM t_guildmember AS g, t_extend_guildmember AS eg "
 				" WHERE g.a_guild_index = eg.a_guild_index AND g.a_char_index = eg.a_char_index AND g.a_guild_index = %d ")
 												% guildindex);
@@ -466,11 +483,20 @@ bool CServer::LoadSettings()
 			continue ;
 		}
 
-		// TODO : GUILD : Â÷ÈÄ Æ®¸® ±¸Á¶ °í·Á
-		CGuild * guild = m_guildlist.create(guildindex, guildname, guildlevel, battleIndex, battlePrize, battleTime, battleZone, battleKillCount, battleState);
+		// TODO : GUILD : ì°¨í›„ íŠ¸ë¦¬ êµ¬ì¡° ê³ ë ¤
+		CGuild * guild = m_guildlist.create(guildindex, guildname, guildlevel, battleIndex, battlePrize, battleTime, battleZone, battleKillCount, battleState, create_date);
 
 		if (guild == NULL)
 			continue ;
+
+		guild->m_battle_total_count = battle_total_count;
+		guild->m_battle_win_count = battle_win_count;
+		guild->m_battle_lose_count = battle_lose_count;
+
+		guild->m_guild_contribute_all_exp_min  = contribute_exp_min;
+		guild->m_guild_contribute_all_exp_max  = contribute_exp_max;
+		guild->m_guild_contribute_all_fame_min = contribute_fame_min;
+		guild->m_guild_contribute_all_fame_max = contribute_fame_max;
 
 		m_guildlist.add(guild);
 		GAMELOG << init("NEW_GUILD" )
@@ -522,27 +548,37 @@ bool CServer::LoadSettings()
 			//char positionname[GUILD_POSITION_NAME+1];
 			int	contributeExp;
 			int contributeFame;
+			int exp_min, exp_max;
+			int fame_min, fame_max;
 			int point;
 
 			cmd2.GetRec( "a_position_name", positionname );
 			cmd2.GetRec( "a_contribute_exp", contributeExp );
 			cmd2.GetRec( "a_contribute_fame", contributeFame );
+			cmd2.GetRec( "a_contribute_exp_min", exp_min );
+			cmd2.GetRec( "a_contribute_exp_max", exp_max );
+			cmd2.GetRec( "a_contribute_fame_min", fame_min );
+			cmd2.GetRec( "a_contribute_fame_max", fame_max );
 			cmd2.GetRec( "a_point", point );
 
 			guild->member(listidx)->contributeExp( contributeExp );
 			guild->member(listidx)->contributeFame( contributeFame );
 			guild->member(listidx)->positionName( positionname );
 			guild->member(listidx)->cumulatePoint( point );
+			guild->member(listidx)->SetContributeExp_min(exp_min);
+			guild->member(listidx)->SetContributeExp_max(exp_max);
+			guild->member(listidx)->SetContributeFame_min(fame_min);
+			guild->member(listidx)->SetContributeFame_max(fame_max);
 
 			switch( pos )
 			{
-			case MSG_GUILD_POSITION_RUSH_CAPTAIN:		// µ¹°İÁ¶ ´ëÀå
-			case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:	// Áö¿øÁ¶ ´ëÀå
-			case MSG_GUILD_POSITION_RECON_CAPTAIN:		// Á¤ÂûÁ¶ ´ëÀå
-			case MSG_GUILD_POSITION_RUSH_MEMBER:		// µ¹°İÁ¶¿ø
-			case MSG_GUILD_POSITION_SUPPORT_MEMBER:		// Áö¿øÁ¶¿ø
-			case MSG_GUILD_POSITION_RECON_MEMBER:		// Á¤ÂûÁ¶¿ø
-			case MSG_GUILD_POSITION_MEMBER:				// ÀÏ¹İ ±æµå¿ø
+			case MSG_GUILD_POSITION_RUSH_CAPTAIN:		// ëŒê²©ì¡° ëŒ€ì¥
+			case MSG_GUILD_POSITION_SUPPORT_CAPTAIN:	// ì§€ì›ì¡° ëŒ€ì¥
+			case MSG_GUILD_POSITION_RECON_CAPTAIN:		// ì •ì°°ì¡° ëŒ€ì¥
+			case MSG_GUILD_POSITION_RUSH_MEMBER:		// ëŒê²©ì¡°ì›
+			case MSG_GUILD_POSITION_SUPPORT_MEMBER:		// ì§€ì›ì¡°ì›
+			case MSG_GUILD_POSITION_RECON_MEMBER:		// ì •ì°°ì¡°ì›
+			case MSG_GUILD_POSITION_MEMBER:				// ì¼ë°˜ ê¸¸ë“œì›
 				guild->member(listidx)->pos(pos);
 				break;
 			}
@@ -638,7 +674,7 @@ bool CServer::LoadSettings()
 	GAMELOG << end;
 #endif // DEV_GUILD_STASH
 
-	// RVR Ã¢Á¶ÀÇ º¸¼® ·Îµù
+	// RVR ì°½ì¡°ì˜ ë³´ì„ ë¡œë”©
 	m_syndicate.load();
 	return true;
 }
@@ -807,10 +843,10 @@ void CServer::SendGuildMemberList(CGuild* guild, CDescriptor* desc)
 	CGuildMember* guildmember[maxmember];
 	CGuildMember* member;
 
-	int startidx = 0;			// ¿øº» µ¥ÀÌÅÍ index
-	int count;					// 1È¸ Àü¼Û½Ã µ¥ÀÌÅÍ count
-	int sendcount = 0;			// ÀüÃ¼ Àü¼Û¿Ï·áÇÑ µ¥ÀÌÅÍ count
-	int sendmaxmember = guild->membercount();			// µ¥ÀÌÅÍ º¸³»¾ßÇÒ ÀüÃ¼ ±æµå¸â¹ö count
+	int startidx = 0;			// ì›ë³¸ ë°ì´í„° index
+	int count;					// 1íšŒ ì „ì†¡ì‹œ ë°ì´í„° count
+	int sendcount = 0;			// ì „ì²´ ì „ì†¡ì™„ë£Œí•œ ë°ì´í„° count
+	int sendmaxmember = guild->membercount();			// ë°ì´í„° ë³´ë‚´ì•¼í•  ì „ì²´ ê¸¸ë“œë©¤ë²„ count
 
 	do
 	{
@@ -847,7 +883,7 @@ void CServer::SendGuildMemberList(CGuild* guild, CDescriptor* desc)
 				}
 				else
 				{
-					// ·Î±×Âï±â : error
+					// ë¡œê·¸ì°ê¸° : error
 					GAMELOG << init("GUILD MEMBER SEND ERROR")
 							<< guild->index() << delim
 							<< sendmaxmember << delim
@@ -910,6 +946,10 @@ void CServer::SendExtendGuildMemberList(CGuild* guild, CDescriptor* desc)
 					RefMsg(rmsg) << guildmember[i]->charindex();
 					RefMsg(rmsg) << guildmember[i]->GetcontributeExp()
 								 << guildmember[i]->GetcontributeFame()
+								 << guildmember[i]->GetcontributeExp_min()
+								 << guildmember[i]->GetcontributeExp_max()
+								 << guildmember[i]->GetcontributeFame_min()
+								 << guildmember[i]->GetcontributeFame_max()
 								 << guildmember[i]->GetcumulatePoint()
 								 << guildmember[i]->GetPositionName()
 								 << guildmember[i]->GetChannel()
@@ -917,7 +957,7 @@ void CServer::SendExtendGuildMemberList(CGuild* guild, CDescriptor* desc)
 				}
 				else
 				{
-					// ·Î±×Âï±â error
+					// ë¡œê·¸ì°ê¸° error
 					GAMELOG << init("EXTEND GUILD MEMBER SEND ERROR")
 							<< guild->index() << delim
 							<< sendmaxmember << delim
@@ -937,7 +977,6 @@ void CServer::SendExtendGuildMemberList(CGuild* guild, CDescriptor* desc)
 	while( (startidx < GUILD_MAX_MEMBER) && sendcount < sendmaxmember);
 }
 
-#ifdef PARTY_BUG_GER
 void CServer::PrintPartyMemberList(int nSubNo, int nFindCharIdx)
 {
 	CParty* party = gserver.FindPartyByMemberIndex(nSubNo, nFindCharIdx, true);
@@ -965,7 +1004,6 @@ void CServer::PrintPartyMemberList(int nSubNo, int nFindCharIdx)
 				<< end;
 	}
 }
-#endif // PARTY_BUG_GER
 
 #ifdef EXTREME_CUBE_VER2
 void CServer::CubePointRanking(int CubePointUpdateTime)
@@ -982,7 +1020,7 @@ void CServer::CubePointRanking(int CubePointUpdateTime)
 	cmd.SetQuery(sql);
 	cmd.Update();
 
-	// 1. ±æµåÅ¥ºêÆ÷ÀÎÆ® ¼øÀ§
+	// 1. ê¸¸ë“œíë¸Œí¬ì¸íŠ¸ ìˆœìœ„
 	sql.Format("SELECT c.* FROM t_cubepoint c, t_guild g "
 			   "WHERE g.a_enable=1 AND g.a_index=c.a_guild_index AND c.a_week_date=%d"
 			   " ORDER BY c.a_cubepoint desc, c.a_update_date asc LIMIT 5", CubePointUpdateTime);
@@ -1023,7 +1061,7 @@ void CServer::CubePointRanking(int CubePointUpdateTime)
 					<< end;
 		}
 
-		// ±æµåÆ÷ÀÎÆ®¸¦ Áõ°¡½ÃÄÑÁØ´Ù.
+		// ê¸¸ë“œí¬ì¸íŠ¸ë¥¼ ì¦ê°€ì‹œì¼œì¤€ë‹¤.
 		switch(rank)
 		{
 		case 1:
@@ -1048,7 +1086,7 @@ void CServer::CubePointRanking(int CubePointUpdateTime)
 		guild = gserver.m_guildlist.findguild(guildidx);
 		if(guildpoint > 0 && guild)
 		{
-			// ±æµåÆ÷ÀÎÆ® ³Ö¾îÁÜ(º¸»ó)
+			// ê¸¸ë“œí¬ì¸íŠ¸ ë„£ì–´ì¤Œ(ë³´ìƒ)
 			sql2.Format("UPDATE t_extend_guild eg, t_guild g SET eg.a_guild_point=eg.a_guild_point+%d"
 						" WHERE g.a_index=eg.a_guild_index AND g.a_index=1 AND eg.a_guild_index=%d",
 						guildpoint,
@@ -1080,7 +1118,7 @@ void CServer::CubePointRanking(int CubePointUpdateTime)
 		rank++;
 	}
 
-	// 2. °³ÀÎÅ¥ºêÆ÷ÀÎÆ® ¼øÀ§
+	// 2. ê°œì¸íë¸Œí¬ì¸íŠ¸ ìˆœìœ„
 	rank = 1;
 	sql.Format("SELECT cp.* FROM t_cubepoint_personal cp, t_characters c "
 			   "WHERE c.a_enable=1 AND c.a_index=cp.a_char_idx AND cp.a_week_date=%d"
@@ -1211,7 +1249,7 @@ void timerPerMinute::operate( rnSocketIOService* service )
 {
 	mysql_ping(&gserver.m_dbchar);
 
-	// ÀÚµ¿ ÀúÀå rvr - Á¤º¸
+	// ìë™ ì €ì¥ rvr - ì •ë³´
 	gserver.m_syndicate.save();
 }
 
@@ -1266,7 +1304,7 @@ timerPerHour* timerPerHour::instance()
 
 //////////////////////////////////////////////////////////////////////////
 
-// ÀÌ ÇÔ¼ö´Â ¸Å 1ÃÊ¸¶´Ù È£ÃâµÊ
+// ì´ í•¨ìˆ˜ëŠ” ë§¤ 1ì´ˆë§ˆë‹¤ í˜¸ì¶œë¨
 void ClearMessageListTimer::operate( rnSocketIOService* service )
 {
 	CMsgListNode* nowNode = NULL;
@@ -1295,7 +1333,7 @@ void ClearMessageListTimer::operate( rnSocketIOService* service )
 					<< "server" << delim << server << delim << "sub" << delim << subno << delim
 					<< "messege" << delim << msg->m_mtype << delim << subtype << end;
 
-			// ³ëµå Áö¿ì±â
+			// ë…¸ë“œ ì§€ìš°ê¸°
 			REMOVE_FROM_BILIST(nowNode, gserver.m_msgList.m_head, m_pPrev, m_pNext);
 			delete nowNode;
 		}
@@ -1320,8 +1358,8 @@ void timerPerMidnight::Init()
 	nowtm.tm_min = 0;
 	nowtm.tm_sec = 0;
 
-	time_t newtime = mktime(&nowtm);	// ¿À´Ã 0½Ã 0ºĞ 0ÃÊ
-	newtime += 86400;					// ³»ÀÏ 0½Ã 0ºĞ 0ÃÊ
+	time_t newtime = mktime(&nowtm);	// ì˜¤ëŠ˜ 0ì‹œ 0ë¶„ 0ì´ˆ
+	newtime += 86400;					// ë‚´ì¼ 0ì‹œ 0ë¶„ 0ì´ˆ
 
 	int remain_sec = (int)(newtime - nowtime);
 
@@ -1329,7 +1367,7 @@ void timerPerMidnight::Init()
 
 #ifdef PREMIUM_CHAR
 	//////////////////////////////////////////////////////////////////////////
-	// DB¿¡¼­ ÀÌÀü¿¡ ÃÊ±âÈ­ ÇÑ ½Ã°£À» ¾òÀ½
+	// DBì—ì„œ ì´ì „ì— ì´ˆê¸°í™” í•œ ì‹œê°„ì„ ì–»ìŒ
 	CDBCmd dbChar;
 	dbChar.Init(&gserver.m_dbchar);
 	dbChar.SetQuery("SELECT UNIX_TIMESTAMP(reset_time) as reset_time FROM t_premiumchar_reset_jumpcount ORDER BY reset_time DESC LIMIT 1");
@@ -1340,7 +1378,7 @@ void timerPerMidnight::Init()
 
 	int resetTime = 0;
 
-	// ÃÖÃÊ Áï, µ¥ÀÌÅÍ°¡ ¾ø´Â °æ¿ì
+	// ìµœì´ˆ ì¦‰, ë°ì´í„°ê°€ ì—†ëŠ” ê²½ìš°
 	if (dbChar.m_nrecords == 0)
 	{
 		resetTime = (int)mktime(&nowtm);
@@ -1388,7 +1426,7 @@ void timerPerMidnight::operate( rnSocketIOService* service )
 	dbChar.Update();
 
 	{
-		// ¸ğµç °ÔÀÓ¼­¹ö¿¡°Ô reset ÆĞÅ¶ Àü¼Û
+		// ëª¨ë“  ê²Œì„ì„œë²„ì—ê²Œ reset íŒ¨í‚· ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ServerToServerPacket::premiumCharResetJumpCount* packet = reinterpret_cast<ServerToServerPacket::premiumCharResetJumpCount*>(rmsg->m_buf);
 		packet->type = MSG_PREMIUM_CHAR;

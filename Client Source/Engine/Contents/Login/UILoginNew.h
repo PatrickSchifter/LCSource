@@ -4,6 +4,8 @@
 class CUIComboBox;
 class CUISpriteAni;
 class CUICheckButton;
+class CUIImage;
+class CUIButton;
 
 class ENGINE_API CUILoginNew : public CUIWindow
 {
@@ -14,8 +16,8 @@ public:
 	void	PressLoginBtn();
 	void	PressCloseBtn();
 	void	PressCheckSave();
-	BOOL	TryToLogin();			// 로그인 시도
-
+	BOOL	TryToLogin();		// 로그인 시도
+	
 	void	OpenUI();
 	void	CloseUI();
 
@@ -45,7 +47,7 @@ public:
 	
 	void setVersion(const char* strVer);
 	const char* getVersion()		{ return m_strVersion.c_str(); }
-
+	
 #ifdef DEV_LOGIN
 	void	ReadTextDevPreviousIdPw(); // Login.txt 에 저장된 아이디 패스워드 얻어오기
 #endif // DEV_LOGIN
@@ -53,6 +55,12 @@ public:
 	WMSG_RESULT OnKeyMessage(MSG* pMsg);
 private:
 	void	sendIP();
+	void	updateLogo();
+	void	updateLogoHal(float fDelta);
+	void	updateLogoXmas(float fDelta);
+
+	void	updateLogoAlpha(CUIImage* pUpdateImage, float fAlphaLv);
+	float	calcLogoAlphaLv(int iType, float fCurAlphaLv, bool bUp, float fDeltaTime);
 
 	CUISpriteAni*	m_pLogoFrame;
 	CUIButton*		m_pBtnLogin;
@@ -62,19 +70,12 @@ private:
 	CUIEditBox*		m_pEbId;
 	CUIEditBox*		m_pEbPw;
 	CUIImage*		m_pImgLogo;	// 기본 라카 로고
-#ifdef	HOLLOWEEN_EVENT_LOGIN
 	CUIImage*		m_pImgLogoHal; // 할로윈 이벤트용 로고
 	CUIImage*		m_pImgHalEye; // 할로윈 이벤트 로고의 눈 이미지
-#endif	// HOLLOWEEN_EVENT_LOGIN
-
-#ifdef CHRISTMAS_LOGO
-	CUIImage*		m_pImgLogoChris;
-	CUIImage*		m_pImgChrisEffect1;
-	CUIImage*		m_pImgChrisEffect2;
-#endif	//	CHRISTMAS_LOGO
-	std::string			m_strVersion;
+	CUIImage*		m_pImgLogoXmas;
+	CUIImage*		m_pImgXmasEffect1;
+	CUIImage*		m_pImgXmasEffect2;
+	std::string		m_strVersion;
+	int				m_nLogoType;
 };
-
-
-
 #endif	//	__CUILOGIN_NEW_H__

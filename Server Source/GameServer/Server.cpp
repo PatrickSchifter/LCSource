@@ -25,6 +25,7 @@
 #include "../ShareLib/packetType/ptype_old_do_skill.h"
 #include "../ShareLib/packetType/ptype_old_do_move.h"
 #include "../ShareLib/packetType/ptype_old_do_sskill.h"
+#include "../ShareLib/packetType/ptype_old_do_title.h"
 
 #include "TitleSystem.h"
 #include "RaidData.h"
@@ -41,11 +42,12 @@
 #include "ItemCollection.h"
 #include "Notice.h"
 #include "Artifact_Manager.h"
+#include "GuildBattleManager.h"
 
-// DescManager¿¡¼­ userIndex¸¦ À¯´ÏÅ©ÇÏ°Ô °ü¸®¸¦ ÇØ¾ßÇÏ´Âµ¥
-// ÃÖÃÊ Á¢¼Ó½Ã¿¡´Â userIndex¸¦ ¸ğ¸§À¸·Î ´õ¹Ì°ªÀ» ³Ö¾îÁÖ°í
-// Connector·Î ºÎÅÍ ½ÇÁ¦°ªÀ» ¹ŞÀ¸¸é ¹Ù²Ù¾îÁØ´Ù.
-// À½¼öÀÇ ÃÖ´ëÄ¡ÀÎ -2147483647¿¡¼­ -1À» »©¸é 2147483647ÀÌ µÊ
+// DescManagerì—ì„œ userIndexë¥¼ ìœ ë‹ˆí¬í•˜ê²Œ ê´€ë¦¬ë¥¼ í•´ì•¼í•˜ëŠ”ë°
+// ìµœì´ˆ ì ‘ì†ì‹œì—ëŠ” userIndexë¥¼ ëª¨ë¦„ìœ¼ë¡œ ë”ë¯¸ê°’ì„ ë„£ì–´ì£¼ê³ 
+// Connectorë¡œ ë¶€í„° ì‹¤ì œê°’ì„ ë°›ìœ¼ë©´ ë°”ê¾¸ì–´ì¤€ë‹¤.
+// ìŒìˆ˜ì˜ ìµœëŒ€ì¹˜ì¸ -2147483647ì—ì„œ -1ì„ ë¹¼ë©´ 2147483647ì´ ë¨
 static int local_dummy_user_index = 0;
 
 CServer* gserver = NULL;
@@ -57,7 +59,7 @@ int		g_nUpgradeProb;
 
 void ServerSrandom(unsigned long initial_seed);
 
-bool IsApllyDebuffSkilltoNPC( CPC* aPc, CNPC* tNpc); // ³ªÀÌÆ® ½¦µµ¿ì ½ºÅ³ #764,765 ½ºÅ³ ÀÌ ¸ó½ºÅÍ ¿ëº´¿¡ Àû¿ëµÇÁö ¾Êµµ·Ï ¿¹¿ÜÃ³¸®.
+bool IsApllyDebuffSkilltoNPC( CPC* aPc, CNPC* tNpc); // ë‚˜ì´íŠ¸ ì‰ë„ìš° ìŠ¤í‚¬ #764,765 ìŠ¤í‚¬ ì´ ëª¬ìŠ¤í„° ìš©ë³‘ì— ì ìš©ë˜ì§€ ì•Šë„ë¡ ì˜ˆì™¸ì²˜ë¦¬.
 
 static LONGLONG local_seq_index = 0;
 
@@ -365,6 +367,11 @@ CServer::CServer()
 #ifdef TLD_EVENT_SONG
 	tld_event = false;
 #endif
+
+	m_battle_guild_index = -1;
+	m_battle_guild_gm = -1;
+
+	gm_list_init();
 }
 
 CServer::~CServer()
@@ -617,9 +624,9 @@ bool CServer::LoadSettings()
 
 	ComposeItem::instance()->load();
 
-	//°øÁö»çÇ× ·Îµå
+	//ê³µì§€ì‚¬í•­ ë¡œë“œ
 	Notice::instance()->load();
-	//ÆË¾÷ °øÁö»çÇ× ·Îµå
+	//íŒì—… ê³µì§€ì‚¬í•­ ë¡œë“œ
 	PopupNotice::instance()->load();
 
 	CEquipExchangeExtend::instance()->load_();
@@ -647,6 +654,15 @@ bool CServer::LoadSettings()
 		return false;
 	}
 #endif // XTRAP
+
+	GAMELOG << init("SYSTEM")
+		<< "Load MakeTitle Data"
+		<< end;
+	if(!m_titleMakedata.load())
+	{
+		GAMELOG << init("ERROR : CANNOT LOAD MAKE TITLE DATA") << end;
+		return false;
+	}
 
 	// item proto loading
 	GAMELOG << init("SYSTEM")
@@ -851,7 +867,7 @@ bool CServer::LoadSettings()
 
 		if(m_zones[i].m_index == 21)
 		{
-			// °ø¼º º¸»ó ´øÀü
+			// ê³µì„± ë³´ìƒ ë˜ì „
 			CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 			pCastle->m_dvd.SetZone( &m_zones[i] );
 		}
@@ -945,7 +961,7 @@ bool CServer::LoadSettings()
 	gserver->m_bWhiteDayEvent = true;
 #endif
 
-//0704 ÀÌº¥Æ®¿¡ °üÇÑ °øÁö ¼¼ÆÃ.
+//0704 ì´ë²¤íŠ¸ì— ê´€í•œ ê³µì§€ ì„¸íŒ….
 #ifdef NOTICE_EVENT
 	i =0;
 	memset(m_aNotice, 0, sizeof(int) * 5);
@@ -992,7 +1008,7 @@ bool CServer::LoadSettings()
 
 #if defined(LC_KOR)
 #ifdef HANARO_EVENT
-	// Config_Localize¿¡ define ¼öÁ¤ ÇÊ¿ä.
+	// Config_Localizeì— define ìˆ˜ì • í•„ìš”.
 	addNotice(i, HANARO_EVENT);
 	i++;
 #endif // HANARO_EVENT
@@ -1022,7 +1038,7 @@ bool CServer::LoadSettings()
 		return false;
 	}
 
-	// Ãâ¼® ÀÌº¥Æ® º¸»ó ¾ÆÀÌÅÛ ·Îµå
+	// ì¶œì„ ì´ë²¤íŠ¸ ë³´ìƒ ì•„ì´í…œ ë¡œë“œ
 	if( !m_rewardItemList.init())
 	{
 		GAMELOG << init("ERROR : CANNOT LOAD REWARDEVENTITEM SYSTEM DATA") << end;
@@ -1046,9 +1062,6 @@ bool CServer::LoadSettings()
 		return false;
 	}
 	//CEquipExchangeExtend::instance()->load_();
-
-	// Load the buffing system
-	gserver->m_buffSystem.Init();
 		
 	return true;
 }
@@ -1091,7 +1104,7 @@ bool CServer::ConnectDB()
 		return false;
 	}
 
-	// ÅÂ±¹ »óÇ° Å×ÀÌºíÀ» ¸¶½ºÅÍ µğºñ·Î ³õÀ»°ÅÀÓ
+	// íƒœêµ­ ìƒí’ˆ í…Œì´ë¸”ì„ ë§ˆìŠ¤í„° ë””ë¹„ë¡œ ë†“ì„ê±°ì„
 #ifdef USE_TENTER_BILLING
 	const char* ip = m_config.Find("Catalog DB", "IP");
 	const char* user = m_config.Find("Catalog DB", "User");
@@ -1126,7 +1139,7 @@ bool CServer::ConnectDB()
 		return false;
 	}
 
-// 060221 : bs : Æê »ç¸Á½Ã°£ ÇÊµå °Ë»ç
+// 060221 : bs : í« ì‚¬ë§ì‹œê°„ í•„ë“œ ê²€ì‚¬
 	cmdCheckCharDB.SetQuery("SELECT a_time_rebirth FROM t_pet LIMIT 1");
 	if (!cmdCheckCharDB.Open())
 	{
@@ -1134,16 +1147,16 @@ bool CServer::ConnectDB()
 		return false;
 	}
 
-	// 060227 : bs : À¯·áÈ­ ¾ÆÀÌÅÛ 2Â÷
+	// 060227 : bs : ìœ ë£Œí™” ì•„ì´í…œ 2ì°¨
 	cmdCheckCharDB.SetQuery("SELECT a_index, a_char_index, a_item_index, a_end_time, a_skill_index, a_skill_level, a_hit0, a_hit1, a_hit2 FROM t_assist_abstime LIMIT 1");
 	if (!cmdCheckCharDB.Open())
 	{
 		GAMELOG << init("Error: Character DB Check: Not Found t_assist_abstime!") << end;
 		return false;
 	}
-	// 060227 : bs : À¯·áÈ­ ¾ÆÀÌÅÛ 2Â÷
+	// 060227 : bs : ìœ ë£Œí™” ì•„ì´í…œ 2ì°¨
 
-	// ÀÚµ¿ Áö±Ş Å×ÀÌºí
+	// ìë™ ì§€ê¸‰ í…Œì´ë¸”
 
 	cmdCheckCharDB.SetQuery("SELECT a_index, a_char_index, a_item_index, a_item_plus, a_item_flag, a_item_used, a_item_count, a_item_option0, a_item_option1, a_item_option2, a_item_option3, a_item_option4 FROM t_auto_give LIMIT 1");
 	if (!cmdCheckCharDB.Open())
@@ -1152,7 +1165,7 @@ bool CServer::ConnectDB()
 		return false;
 	}
 
-	// Ä³¸¯ÅÍ »èÁ¦ µô·¹ÀÌ ÇÊµå
+	// ìºë¦­í„° ì‚­ì œ ë”œë ˆì´ í•„ë“œ
 	cmdCheckCharDB.SetQuery("SELECT a_deletedelay FROM t_characters LIMIT 1");
 	if (!cmdCheckCharDB.Open())
 	{
@@ -1930,12 +1943,12 @@ void CServer::CloseSocket(CDescriptor* d)
 
 			PCManager::instance()->deletePlayerByPC(d->m_pChar);
 
-			// µ· °¡Áø°Å ·Î±× ³²±â±â
+			// ëˆ ê°€ì§„ê±° ë¡œê·¸ ë‚¨ê¸°ê¸°
 			GAMELOG << init("HAVE_MONEY", d->m_pChar->m_name, d->m_pChar->m_nick, d->m_idname)
 					<< d->m_pChar->m_inventory.getMoney()
 					<< end;
 
-			// Âø¿ë ¾ÆÀÌÅÛ ·Î±× ³²±â±â
+			// ì°©ìš© ì•„ì´í…œ ë¡œê·¸ ë‚¨ê¸°ê¸°
 			for (int i = 0; i < MAX_WEARING; i++)
 			{
 				if (d->m_pChar->m_wearInventory.wearItemInfo[i])
@@ -1947,7 +1960,7 @@ void CServer::CloseSocket(CDescriptor* d)
 				}
 			}
 
-			// ¼ÒÀ¯ Æê ·Î±× ³²±â±â
+			// ì†Œìœ  í« ë¡œê·¸ ë‚¨ê¸°ê¸°
 			CPet* petNext = d->m_pChar->m_petList;
 			CPet* pet;
 			while ((pet = petNext))
@@ -1976,7 +1989,7 @@ void CServer::CloseSocket(CDescriptor* d)
 						<< "LEVEL" << delim << apet->m_level << delim << "EXP" << delim << apet->m_exp << end ;
 			}
 
-			// Ä³½¬ ¾ÆÀÌÅÛ ¹öÇÁ ·Î±× ³²±â±â
+			// ìºì‰¬ ì•„ì´í…œ ë²„í”„ ë¡œê·¸ ë‚¨ê¸°ê¸°
 			int nAssistABSTypeCount = d->m_pChar->m_assist.GetABSTimeTypeList(NULL);
 			if (nAssistABSTypeCount > 0)
 			{
@@ -2001,7 +2014,7 @@ void CServer::CloseSocket(CDescriptor* d)
 							<< nAssistABSEndTime[i] << end;
 				}
 			}
-			// ¸Ş¸ğ¸® ½ºÅ©·Ñ °³ÀÎ Ã¢°í È®Àå Ä«µå ³²Àº ½Ã°£ ·Î±× ³²±â±â
+			// ë©”ëª¨ë¦¬ ìŠ¤í¬ë¡¤ ê°œì¸ ì°½ê³  í™•ì¥ ì¹´ë“œ ë‚¨ì€ ì‹œê°„ ë¡œê·¸ ë‚¨ê¸°ê¸°
 			GAMELOG << init("CASH_MEMPOS_STASH_TIME", d->m_pChar)
 					<< d->m_pChar->m_memposTime << delim
 					<< d->m_pChar->m_stashextTime << end;
@@ -2022,19 +2035,43 @@ void CServer::CloseSocket(CDescriptor* d)
 					   << LOG_VAL("char-id", d->m_pChar->m_name ) << blank
 					   //<< LOG_VAL("in-game", buf) << blank
 					   << endGer;
-			// ÃÖÁ¾ °ÔÀÓÇÑ ½Ã°£ °èÁ¤ ÇÊ¿ä.
+			// ìµœì¢… ê²Œì„í•œ ì‹œê°„ ê³„ì • í•„ìš”.
 #endif // GER_LOG
 			GAMELOG << init("DISCONNECT", d->m_pChar->m_name, d->m_pChar->m_nick, d->m_idname)
 					<< end;
 
-			//ÀÌº¸ÄÉÀÌ¼Ç »óÅÂ Ç®±â
+			//ì´ë³´ì¼€ì´ì…˜ ìƒíƒœ í’€ê¸°
 			if(d->m_pChar->m_evocationIndex > EVOCATION_NONE)
 			{
 				d->m_pChar->Unevocation();
 			}
+
+
+			if(d->m_pChar->m_guildInfo != NULL && d->m_pChar->m_guildInfo->guild() != NULL)
+			{
+				CGuild* guild = d->m_pChar->m_guildInfo->guild();
+				if(guild->boss()->GetPC() == d->m_pChar)
+				{
+					GuildBattleManager::instance()->delete_banish(guild->index());
+					if( GuildBattleManager::instance()->cancel(guild->index()) == true)
+					{
+						guild->m_isUseTheStashAndSkill = true;
+
+						CNetMsg::SP rmsg(new CNetMsg);
+						ServerToServerPacket::makeGuildBattleStashLockOff(rmsg, guild->index());
+						SEND_Q(rmsg, gserver->m_helper);
+					}
+				}
+
+				if (guild->battleState() == GUILD_BATTLE_STATE_ING)
+				{
+					//ê¸¸ë“œì „ ì¢…ë£Œ ì²˜ë¦¬
+					GuildBattleManager::instance()->giveup(d->m_pChar->m_index);
+				}
+			}
 			LOG_INFO("LOGOUT_INFO > name[%s], exp[%d], sp[%d], fp[%d]", d->m_pChar->GetName(), d->m_pChar->m_exp, d->m_pChar->m_skillPoint, d->m_pChar->m_syndicateManager.getSyndicatePoint(d->m_pChar->getSyndicateType()));
 		}
-		// TODO - Ä³¸¯ÅÍÀÇ Á¤º¸¸¦ DB thread·Î º¸³»¾î ÀúÀåÇÏµµ·Ï ÇÔ
+		// TODO - ìºë¦­í„°ì˜ ì •ë³´ë¥¼ DB threadë¡œ ë³´ë‚´ì–´ ì €ì¥í•˜ë„ë¡ í•¨
 		DBManager::instance()->SaveCharacterInfo(d, true);
 	}
 
@@ -2057,12 +2094,12 @@ void CServer::CloseSocket(CDescriptor* d)
 					);
 		}
 
-		// ·Î±×ÀÎÀº ÁøÇàÀ» ÇÏ°í, ÀÎ¸ÊÀ» ÇÏÁö ¾ÊÀ»¶§ Ã³¸®
-		// ¸¸¾à ÀÎ¸ÊÀ» Çß´Ù¸é, µ¥ÀÌÅÍ ÀúÀå ÈÄ Ã³¸®
+		// ë¡œê·¸ì¸ì€ ì§„í–‰ì„ í•˜ê³ , ì¸ë§µì„ í•˜ì§€ ì•Šì„ë•Œ ì²˜ë¦¬
+		// ë§Œì•½ ì¸ë§µì„ í–ˆë‹¤ë©´, ë°ì´í„° ì €ì¥ í›„ ì²˜ë¦¬
 		if (d->m_pChar == NULL)
 		{
-			// Connector Server·Î ·Î±×¾Æ¿ô º¸³»±â
-			// Connector Server¿¡¼­´Â id¸¦ Ã£Áö ¸øÇÏ¸é returnÇÔ
+			// Connector Serverë¡œ ë¡œê·¸ì•„ì›ƒ ë³´ë‚´ê¸°
+			// Connector Serverì—ì„œëŠ” idë¥¼ ì°¾ì§€ ëª»í•˜ë©´ returní•¨
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnLogoutMsg(rmsg, d->m_idname);
 			SEND_Q(rmsg, m_connector);
@@ -2070,7 +2107,7 @@ void CServer::CloseSocket(CDescriptor* d)
 			LOG_INFO("send logout msg to Connector : user_index[%d] id[%s]", d->m_index, (const char *)d->m_idname);
 			
 			{
-				// Helper, SubHelper¿¡°Ô Á¢¼Ó Á¤º¸¸¦ Àü´Ş
+				// Helper, SubHelperì—ê²Œ ì ‘ì† ì •ë³´ë¥¼ ì „ë‹¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				ServerToServerPacket::makeLogoutUserInfo(rmsg, d->m_index);
 				SEND_Q(rmsg, gserver->m_helper);
@@ -2095,10 +2132,19 @@ void CServer::CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg)
 	{
 		if (m_pulse - d->m_checktics >= PULSE_REAL_SEC)
 		{
-			// 1ÃÊ¸¶´Ù °ø°İ ¹× ¸í·É Ä«¿îÅÍ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-			// Áï, 1ÃÊ¿¡ ¸î°³ÀÇ ¸í·ÉÀ» ¼öÇàÇÒ ¼ö ÀÖ´ÂÁö Á¤ÇÏ°í
-			// ÀÌ°÷¿¡¼­ ÃÊ±âÈ­ µÇ±â Àü¿¡ ¸í·ÉÀÇ °³¼ö¸¦ ³Ñ±â´Â °æ¿ì ÇÙÀ¸·Î °£ÁÖÇÏ¸é µÈ´Ù
-			if (d->m_commandcount > 20)
+			// 1ì´ˆë§ˆë‹¤ ê³µê²© ë° ëª…ë ¹ ì¹´ìš´í„°ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+			// ì¦‰, 1ì´ˆì— ëª‡ê°œì˜ ëª…ë ¹ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ”ì§€ ì •í•˜ê³ 
+			// ì´ê³³ì—ì„œ ì´ˆê¸°í™” ë˜ê¸° ì „ì— ëª…ë ¹ì˜ ê°œìˆ˜ë¥¼ ë„˜ê¸°ëŠ” ê²½ìš° í•µìœ¼ë¡œ ê°„ì£¼í•˜ë©´ ëœë‹¤
+			if(d->m_commandcount > 1000)
+			{
+				GAMELOG << init("HACK COMMAND TOO MANY PACKET", d->m_pChar->m_name, d->m_pChar->m_nick, d->m_idname)
+					<< d->m_commandcount
+					<< end;
+
+				d->Close("HACK COMMAND TOO MANY PACKET");
+				return;
+			}
+			else if (d->m_commandcount > 20)
 			{
 				if (d->m_pChar)
 					GAMELOG << init("HACK COMMAND", d->m_pChar->m_name, d->m_pChar->m_nick, d->m_idname);
@@ -2107,12 +2153,13 @@ void CServer::CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg)
 				GAMELOG << d->m_commandcount
 						<< end;
 
-				// TODO : ÇÙ Ä«¿îÆ® Áõ°¡
+				// TODO : í•µ ì¹´ìš´íŠ¸ ì¦ê°€
 				if( d->IncreaseHackCount(1) == true)
 				{
 					return;
 				}
 			}
+			
 			d->m_checktics = m_pulse;
 			d->m_commandcount = 0;
 		}
@@ -2136,8 +2183,8 @@ void CServer::CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg)
 void CServer::DecreaseTimeForPC(CPC* ch)
 {
 	/////////////////////////////////////////////
-	// BANGWALL : 2005-06-27 ¿ÀÈÄ 7:09:33
-	// Comment : pd4 ½Ã°£Ã³¸®
+	// BANGWALL : 2005-06-27 ì˜¤í›„ 7:09:33
+	// Comment : pd4 ì‹œê°„ì²˜ë¦¬
 
 	if(ch->m_pd4StartTime > 0)
 	{
@@ -2157,9 +2204,9 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 				{
 					///////////////////////////////////
-					// pd4 Äù½ºÆ®ÀÌ¸é helper ·©Å·¿¡ µî·Ï : BW
+					// pd4 í€˜ìŠ¤íŠ¸ì´ë©´ helper ë­í‚¹ì— ë“±ë¡ : BW
 					//
-					// char index¸¦ º¸³¿
+					// char indexë¥¼ ë³´ëƒ„
 					CNetMsg::SP rmsg(new CNetMsg);
 
 					rmsg->Init(MSG_HELPER_COMMAND);
@@ -2205,13 +2252,13 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// »çÁ¦ ½Ã½ºÅÛ ½Ã°£ Ã¼Å©
+	// ì‚¬ì œ ì‹œìŠ¤í…œ ì‹œê°„ ì²´í¬
 	if (ch->m_teachType != MSG_TEACH_NO_TYPE && ch->m_teachType != MSG_TEACH_NO_STUDENT_TYPE )
 	{
-		// °ß½À»ıÀÌ Á¢¼ÓÇÑÁö 10ÀÏÀÌ Áö³µ´Ù¸é °ü°è¸¦ ÇØÁö·Î º¯°æÇÑ´Ù.
+		// ê²¬ìŠµìƒì´ ì ‘ì†í•œì§€ 10ì¼ì´ ì§€ë‚¬ë‹¤ë©´ ê´€ê³„ë¥¼ í•´ì§€ë¡œ ë³€ê²½í•œë‹¤.
 		if( ch->m_teachType == MSG_TEACH_TEACHER_TYPE  )
 		{
-			// ÃÊ°íÁ¦ ¹ŞÀ¸¶ó´Â ¸Ş¼¼Áö
+			// ì´ˆê³ ì œ ë°›ìœ¼ë¼ëŠ” ë©”ì„¸ì§€
 			if( ch->m_displayCanSstone
 					&& ((ch->m_fame >= 200  && ch->m_superstone < 1 )
 						|| (ch->m_fame >= 300 && ch->m_superstone < 2 )
@@ -2227,7 +2274,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 				ch->m_displayCanSstone = false;
 			}
 		}
-		else if( ch->m_teachType == MSG_TEACH_LIMITE_DAY_FAIL)  // »çÁ¦ °ü°è°¡ 10ÀÏÀÌ Áö³ª ²÷¾îÁø °ß½À»ıÀÎ °æ¿ì
+		else if( ch->m_teachType == MSG_TEACH_LIMITE_DAY_FAIL)  // ì‚¬ì œ ê´€ê³„ê°€ 10ì¼ì´ ì§€ë‚˜ ëŠì–´ì§„ ê²¬ìŠµìƒì¸ ê²½ìš°
 		{
 			if( ch->m_teachTime[0] >= TEACH_STUDENT_MAX_GIVEUP )
 				ch->m_teachType = MSG_TEACH_NO_STUDENT_TYPE;
@@ -2248,10 +2295,10 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// Á¤´ç¹æÀ§ÀÏ¶§
+	// ì •ë‹¹ë°©ìœ„ì¼ë•Œ
 	if (ch->IsSetPlayerState(PLAYER_STATE_RAMODE))
 	{
-		// Á¤´ç¹æÀ§ ¸®½ºÆ®°¡ ÀÖ´Ù
+		// ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ê°€ ìˆë‹¤
 		bool bHaveTarget = false;
 
 		CRaChar* raList;
@@ -2261,7 +2308,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		{
 			raListNext = raList->m_next;
 
-			// °¡ÇØÀÚ¸¸ ÇØ´ç
+			// ê°€í•´ìë§Œ í•´ë‹¹
 			if (!raList->m_bAttacker)
 				continue;
 			raList->m_raPulse -= TIME_ONE_SECOND;
@@ -2300,7 +2347,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			ch->ResetPlayerState(PLAYER_STATE_RAMODE);
 	}
 
-	// º¯½ÅÁßÀÏ¶§
+	// ë³€ì‹ ì¤‘ì¼ë•Œ
 	if (ch->IsSetPlayerState(PLAYER_STATE_CHANGE) && ch->m_changeIndex != -1)
 	{
 		//ch->m_changePulse--;
@@ -2312,7 +2359,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			ch->CancelChange();
 	}
 
-	// 1½Ã°£¿¡ PK ¼ºÇâ 1Æ÷ÀÎÆ® È¸º¹
+	// 1ì‹œê°„ì— PK ì„±í–¥ 1í¬ì¸íŠ¸ íšŒë³µ
 	if (ch->m_pkRecoverPulse != 0 && ch->m_pArea)
 	{
 		//ch->m_pkRecoverPulse--;
@@ -2338,15 +2385,15 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// ÇöÀç ½ºÅ³À» ¾²°í ÀÖ´Ù¸é, Áö¼Ó ½Ã°£ÀÌ ±æ´Ù¸é, AppearMsg¸¦ º¸³»¾ß ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+	// í˜„ì¬ ìŠ¤í‚¬ì„ ì“°ê³  ìˆë‹¤ë©´, ì§€ì† ì‹œê°„ì´ ê¸¸ë‹¤ë©´, AppearMsgë¥¼ ë³´ë‚´ì•¼ í•˜ëŠ” ìƒí™©ì´ë¼ë©´
 	if (ch->m_currentSkill && ch->m_currentSkill->m_state == SKILL_CON_FIRE && ch->m_bCheckAppear)
 	{
-		// Å¸°Ù °Ë»ç, ÀÌÀü Å¸°ÙÀÌ ÀÖ°í
+		// íƒ€ê²Ÿ ê²€ì‚¬, ì´ì „ íƒ€ê²Ÿì´ ìˆê³ 
 		if (ch->m_currentSkill->m_targetIndex != -1 && ch->m_pArea)
 		{
-			// ÇöÀç Å¸°ÙÀ» ±¸ÇØ¼­
+			// í˜„ì¬ íƒ€ê²Ÿì„ êµ¬í•´ì„œ
 			CCharacter* tch = ch->m_pArea->FindCharInCell(ch, ch->m_currentSkill->m_targetIndex, ch->m_currentSkill->m_targetType, false);
-			// Å¸°ÙÀÌ ¾ø°Å³ª ÀÌÀü°ú ´Ù¸£¸é
+			// íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ì´ì „ê³¼ ë‹¤ë¥´ë©´
 			if (tch)
 			{
 				boost::scoped_array<MultiTarget> temp(new MultiTarget[ch->m_skillTargetCount]);
@@ -2363,13 +2410,13 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			}
 		}
 
-		// skillfireMsg¸¦ º¸³ÂÀ¸¹Ç·Î ÇØÁ¦
+		// skillfireMsgë¥¼ ë³´ëƒˆìœ¼ë¯€ë¡œ í•´ì œ
 		ch->m_bCheckAppear = false;
 	}
 
-	// ½ºÅ³ Ãë¼Ò »óÅÂ·Î
-	// Á×°Å³ª
-	// ½ºÅ³ ¹ßµ¿ÀÌÈÄ ½Ã°£ Áö³µÀ»¶§
+	// ìŠ¤í‚¬ ì·¨ì†Œ ìƒíƒœë¡œ
+	// ì£½ê±°ë‚˜
+	// ìŠ¤í‚¬ ë°œë™ì´í›„ ì‹œê°„ ì§€ë‚¬ì„ë•Œ
 	if (ch->m_currentSkill
 			&& (DEAD(ch) ||	(ch->m_currentSkill->m_state == SKILL_CON_FIRE && m_pulse - ch->m_currentSkill->m_usetime > ch->m_currentSkill->m_proto->m_readyTime + ch->m_currentSkill->m_proto->m_stillTime + ch->m_currentSkill->m_proto->m_fireTime)))
 	{
@@ -2377,17 +2424,17 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		ch->m_currentSkill = NULL;
 	}
 
-	// assist ½Ã°£ °¨¼Ò
+	// assist ì‹œê°„ ê°ì†Œ
 	ch->m_assist.DecreaseTime();
 
-	// pc »óÅÂ È¸º¹
+	// pc ìƒíƒœ íšŒë³µ
 	if (!DEAD(ch) && m_pulse - ch->m_recoverPulse >= PC_RECOVER_PULSE)
 	{
 		ch->RecoverPC();
 		ch->m_recoverPulse = m_pulse;
 	}
 
-	// ¾ÆÀÌÅÛ È¸º¹ Ã³¸®
+	// ì•„ì´í…œ íšŒë³µ ì²˜ë¦¬
 	if (ch->m_recoverHPItemTime > 0)
 	{
 		if (DEAD(ch))
@@ -2426,7 +2473,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// ºô¸µ ¾ÆÀÌÅÛ Ã³¸®
+	// ë¹Œë§ ì•„ì´í…œ ì²˜ë¦¬
 	if ( ch->m_billReqTime > 0)
 	{
 		ch->m_billReqTime -= TIME_ONE_SECOND;
@@ -2437,7 +2484,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// ¼ø°£ ÀÌµ¿ Ã³¸®
+	// ìˆœê°„ ì´ë™ ì²˜ë¦¬
 	if (ch->m_reqWarpTime > 0)
 	{
 		if (DEAD(ch))
@@ -2466,9 +2513,9 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 						int zonepos;
 						CZone* pZone = NULL;
 
-						// ÅÂ±¹ pvp Á¸ ÀÌµ¿ ¾ÆÀÌÅÛÀÌ
-						// ±ÍÈ¯ ½ºÅ©·ÑÀÇ num1À» Á¸¹øÈ£·Î ¾¹´Ï´ç.
-						// °í·Î ¿ä°Å Ãß°¡ÇÕ´Ï´ç : bw
+						// íƒœêµ­ pvp ì¡´ ì´ë™ ì•„ì´í…œì´
+						// ê·€í™˜ ìŠ¤í¬ë¡¤ì˜ num1ì„ ì¡´ë²ˆí˜¸ë¡œ ì”ë‹ˆë‹¹.
+						// ê³ ë¡œ ìš”ê±° ì¶”ê°€í•©ë‹ˆë‹¹ : bw
 						if(ch->m_reqWarpData != -1 )
 						{
 							zone = ch->m_reqWarpData;
@@ -2486,7 +2533,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 								zonepos = 0;
 							}
 
-							// ·¹ÀÌµå¿¡¼­ ³ª°¡¸é ¸óµå»şÀÎ ¸¶À»·Î °£´Ù.
+							// ë ˆì´ë“œì—ì„œ ë‚˜ê°€ë©´ ëª¬ë“œìƒ¤ì¸ ë§ˆì„ë¡œ ê°„ë‹¤.
 							if(ch->m_pZone->m_index == ZONE_ALTER_OF_DARK
 									|| ch->m_pZone->m_index == ZONE_CAPPELLA_1
 									|| ch->m_pZone->m_index == ZONE_CAPPELLA_2)
@@ -2524,7 +2571,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 						if (pZone)
 						{
-							// 060109 : BS : BEGIN : Á¸ÀÌµ¿ ¸Ş½ÃÁö »ç¿ëÇÏÁö ¾Ê°í Á÷Á¢ È£Ãâ
+							// 060109 : BS : BEGIN : ì¡´ì´ë™ ë©”ì‹œì§€ ì‚¬ìš©í•˜ì§€ ì•Šê³  ì§ì ‘ í˜¸ì¶œ
 							GoZone(ch, zone,
 								   pZone->m_zonePos[zonepos][0],														// ylayer
 								   GetRandom(pZone->m_zonePos[zonepos][1], pZone->m_zonePos[zonepos][3]) / 2.0f,		// x
@@ -2584,9 +2631,9 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 						if(pZone == NULL)
 							break;
 
-						// ÅÂ±¹ pvp Á¸ ÀÌµ¿ ¾ÆÀÌÅÛÀÌ
-						// ±ÍÈ¯ ½ºÅ©·ÑÀÇ num1À» Á¸¹øÈ£·Î ¾¹´Ï´ç.
-						// °í·Î ¿ä°Å Ãß°¡ÇÕ´Ï´ç : bw
+						// íƒœêµ­ pvp ì¡´ ì´ë™ ì•„ì´í…œì´
+						// ê·€í™˜ ìŠ¤í¬ë¡¤ì˜ num1ì„ ì¡´ë²ˆí˜¸ë¡œ ì”ë‹ˆë‹¹.
+						// ê³ ë¡œ ìš”ê±° ì¶”ê°€í•©ë‹ˆë‹¹ : bw
 
 						if (!ch->m_guildInfo || !(ch->m_guildInfo->guild()))
 						{
@@ -2612,7 +2659,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 						if (idx == pZone->m_countArea)
 						{
 							area_count = pZone->SetEnableArea();
-							// ºó ¿µ¾ï ¾øÀ½
+							// ë¹ˆ ì˜ì–µ ì—†ìŒ
 							if (area_count == -1)
 							{
 								CNetMsg::SP rmsg(new CNetMsg);
@@ -2625,7 +2672,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 						if (pZone)
 						{
-							// 060109 : BS : BEGIN : Á¸ÀÌµ¿ ¸Ş½ÃÁö »ç¿ëÇÏÁö ¾Ê°í Á÷Á¢ È£Ãâ
+							// 060109 : BS : BEGIN : ì¡´ì´ë™ ë©”ì‹œì§€ ì‚¬ìš©í•˜ì§€ ì•Šê³  ì§ì ‘ í˜¸ì¶œ
 							GoZone(ch, ZONE_GUILDROOM,
 								pZone->m_zonePos[0][0],														// ylayer
 								GetRandom(pZone->m_zonePos[0][1], pZone->m_zonePos[0][3]) / 2.0f,		// x
@@ -2643,7 +2690,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		}
 	}
 
-	// ÆÛ½º³Î ´øÀü ÀÔÀå Ä«¿îÆ® ¸®¼Â
+	// í¼ìŠ¤ë„ ë˜ì „ ì…ì¥ ì¹´ìš´íŠ¸ ë¦¬ì…‹
 	time_t pdtime;
 	struct tm tm1 = NOW();
 
@@ -2673,13 +2720,13 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 	int quest_index = 0;
 	while ((pQuest = pQuestNext))
 	{
-		/////////////////// µğ¹ö±ë Á¤º¸ swkwon (10.03.16)///////////////////
+		/////////////////// ë””ë²„ê¹… ì •ë³´ swkwon (10.03.16)///////////////////
 		index_debug = ch->m_index;
 		level_debug = ch->m_level;
 		loop_count_debug++;
 		if(pQuestNext != NULL)
 			quest_index = pQuestNext->GetQuestIndex();
-		/////////////////// µğ¹ö±ë Á¤º¸ swkwon (10.03.16)///////////////////
+		/////////////////// ë””ë²„ê¹… ì •ë³´ swkwon (10.03.16)///////////////////
 		pQuestNext = ch->m_questList.GetNextQuest(pQuestNext);
 		switch( pQuest->GetQuestState() )
 		{
@@ -2689,7 +2736,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			{
 				if(pQuest->GetFailValue() < gserver->getNowSecond())
 				{
-					// Å¸ÀÓ¾îÅÃ Äù½ºÆ® ½ÇÆĞ
+					// íƒ€ì„ì–´íƒ í€˜ìŠ¤íŠ¸ ì‹¤íŒ¨
 					CNetMsg::SP rmsg(new CNetMsg);
 					QuestFailMsg(rmsg, pQuest);
 					SEND_Q(rmsg, ch->m_desc);
@@ -2700,14 +2747,14 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 			else if((pQuest->GetQuestType1() == QTYPE_REPEAT_DAY) && (pQuest->GetQuestState() == QUEST_STATE_DONE))
 			{
-				// ³¯ ³Ñ¾î°¬À¸¸é »èÁ¦
+				// ë‚  ë„˜ì–´ê°”ìœ¼ë©´ ì‚­ì œ
 				time_t nowtime;
 				time(&nowtime);
 				if(nowtime >= pQuest->GetCompleteTime())
 				{
 					ch->m_questList.DelQuest(ch, pQuest, QUEST_STATE_DONE );
 
-					// Äù½ºÆ® »èÁ¦ ¸Ş½ÃÁö Àü´Ş
+					// í€˜ìŠ¤íŠ¸ ì‚­ì œ ë©”ì‹œì§€ ì „ë‹¬
 				}
 			}
 			break;
@@ -2716,9 +2763,9 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 
 	////////////////////////
-	// ¸ÅÃÊ °Ë»çÇØ¾ß ÇÒ ·çÆ¾
+	// ë§¤ì´ˆ ê²€ì‚¬í•´ì•¼ í•  ë£¨í‹´
 	{
-		// OX ÄûÁî Á¾·áÈÄ µ¹¾Æ°¡±â
+		// OX í€´ì¦ˆ ì¢…ë£Œí›„ ëŒì•„ê°€ê¸°
 		if (ch->m_pZone->IsOXQuizRoom() && ch->m_admin < 2)
 		{
 			if (!gserver->m_bEventOX)
@@ -2735,7 +2782,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			}
 		}
 
-		// °ø¼º/¼ö¼º ¸®Á¨ Àå¼Ò¿¡¼­ È¸º¹ Áõ°¡
+		// ê³µì„±/ìˆ˜ì„± ë¦¬ì   ì¥ì†Œì—ì„œ íšŒë³µ ì¦ê°€
 		if (!DEAD(ch) && ch->m_pZone && ch->GetMapAttr() & MATT_WAR)
 		{
 			int joinflag = ch->GetJoinFlag(ch->m_pZone->m_index);
@@ -2791,12 +2838,12 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			}
 		}
 
-		// Æê »óÅÂ °»½Å
+		// í« ìƒíƒœ ê°±ì‹ 
 		ch->UpdatePetValue();
 		ch->UpdateAPetValue();
 
 #ifdef EVENT_SEARCHFRIEND_TIME
-		// ÈŞ¸é ÄÉ¸¯ ÀÌº¥Æ®
+		// íœ´ë©´ ì¼€ë¦­ ì´ë²¤íŠ¸
 		if (((ch->m_bEventSearchFriendSelect == true)
 				&& (ch->m_nEventSearchFriendListCount >= 1)
 				&& ch->m_pulseEventSearchFriend + PULSE_REAL_MIN * 5 >= gserver->m_pulse)
@@ -2806,14 +2853,14 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 			if ((ch->m_nTimeEventSearchFriend % 3600) == 0)
 			{
-				//1½Ã°£ °£°İÀ¸·Î ÈŞ¸éÄÉ¸¯ »ç³É½Ã ¾Ë¸².
+				//1ì‹œê°„ ê°„ê²©ìœ¼ë¡œ íœ´ë©´ì¼€ë¦­ ì‚¬ëƒ¥ì‹œ ì•Œë¦¼.
 				CNetMsg::SP rmsg(new CNetMsg);
 				ch->m_bGoodEventSearchFriendListImprove = true;
 				EventHelperSearchFriendOneTimeCheckReqMsg(rmsg, ch->m_nTimeEventSearchFriend, ch->m_index);
 				SEND_Q(rmsg, m_helper);
 			}
 		}
-		//º¸»ó¿©ºÎ °»½Å µÇ´Â ºÎºĞ.
+		//ë³´ìƒì—¬ë¶€ ê°±ì‹  ë˜ëŠ” ë¶€ë¶„.
 		if((ch->m_bGoodEventSearchFriendListImprove == false)&& ch->m_pulseEventSearchFriendList + PULSE_REAL_MIN * 5 <= gserver->m_pulse)
 		{
 			ch->m_bGoodEventSearchFriendListImprove = true;
@@ -2823,46 +2870,79 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		ch->m_inventory.checkItemTime();
 		ch->m_wearInventory.checkItemTime();
 
-		int title = ch->m_nCurrentTitle;
+		int title_index = ch->m_nCurrentTitle;
+		CTitle* title = ch->m_titleList.Find(title_index);
 
-		if(!ch->m_titleList.HaveTitle(title) && title != 0)											// ÀÌ ºÎºĞÀº ¾Ë¼ö¾ø´Â ¿À·ù·Î ÀÎÇÑ Ã³¸® ºÎºĞÀ¸·Î½á
+		if( title != NULL)
 		{
-			// ¸Ó¸®¿¡ ´Ş°í ÀÖ´Â È£ÄªÀÌ ¸®½ºÆ®¿¡ º¸À¯ÇÏ°í ÀÖ´Â È£ÄªÀÌ ¾Æ´Ò°æ¿ì
-			CNetMsg::SP rmsg(new CNetMsg);																			//
-			ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;											// È£ÄªÀ» ¶¼¾î ¹ö¸®´Â ºÎºĞÀÌ´Ù.
-			TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_SUCCESS, title, ch->m_index);		// ÀÌ·¯ÇÑ ¿À·ù´Â ÀÖ¾î¼­´Â ¾ÈµÇ´Â ºÎºĞÀÎµ¥..
-			SEND_Q(rmsg, ch->m_desc);																// ¿¹¿Ü»óÈ²ÀÇ ¿ì·Á·Î ÀÎÇØ Ãß°¡ÇÏ°Ô µÇ¾úÀ½.
-			ch->m_pArea->SendToCell(rmsg, ch);														//
-			GAMELOG << init("TITLE SYSTEM ERROR", ch) << delim										//
+			if(!ch->m_titleList.HaveTitle(title_index) && title_index != 0)											// ì´ ë¶€ë¶„ì€ ì•Œìˆ˜ì—†ëŠ” ì˜¤ë¥˜ë¡œ ì¸í•œ ì²˜ë¦¬ ë¶€ë¶„ìœ¼ë¡œì¨
+			{
+				// ë¨¸ë¦¬ì— ë‹¬ê³  ìˆëŠ” í˜¸ì¹­ì´ ë¦¬ìŠ¤íŠ¸ì— ë³´ìœ í•˜ê³  ìˆëŠ” í˜¸ì¹­ì´ ì•„ë‹ê²½ìš°
+				CNetMsg::SP rmsg(new CNetMsg);																			//
+				ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;											// í˜¸ì¹­ì„ ë–¼ì–´ ë²„ë¦¬ëŠ” ë¶€ë¶„ì´ë‹¤.
+				TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_CANCEL_SUCCESS, title_index, ch->m_index, title->m_custom_title_index);		// ì´ëŸ¬í•œ ì˜¤ë¥˜ëŠ” ìˆì–´ì„œëŠ” ì•ˆë˜ëŠ” ë¶€ë¶„ì¸ë°..
+				SEND_Q(rmsg, ch->m_desc);																// ì˜ˆì™¸ìƒí™©ì˜ ìš°ë ¤ë¡œ ì¸í•´ ì¶”ê°€í•˜ê²Œ ë˜ì—ˆìŒ.
+				ch->m_pArea->SendToCell(rmsg, ch);														//
+				GAMELOG << init("TITLE SYSTEM ERROR", ch) << delim										//
 					<< "This title is not exist in Title list" << delim								//
-					<< "TITLE INDEX" << delim << title << end;										//
-		}																							// ¾Ë¼ö¾ø´Â ¿À·ù ÁÖ¼® ³¡.
-		if(ch->m_titleList.CheckTitleTime(title))													// ¿©±â if¹®Àº ½Ã°£ ¸¸·á µÇ¾úÀ»¶§ Ã³¸®ÇÏ´Â °Í.
-		{
-			ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
-			ch->CalcStatus(true);
-
+					<< "TITLE INDEX" << delim << title_index << end;										//
+			}																							// ì•Œìˆ˜ì—†ëŠ” ì˜¤ë¥˜ ì£¼ì„ ë.
+			if(ch->m_titleList.CheckTitleTime(title_index))													// ì—¬ê¸° ifë¬¸ì€ ì‹œê°„ ë§Œë£Œ ë˜ì—ˆì„ë•Œ ì²˜ë¦¬í•˜ëŠ” ê²ƒ.
 			{
-				CNetMsg::SP rmsg(new CNetMsg);
-				SysMsg(rmsg, MSG_SYS_TITLE_EXPIRED);
-				RefMsg(rmsg) << 1 << title;
-				SEND_Q(rmsg, ch->m_desc);
-			}
+				if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+				{
+					std::map<int, MAKE_TITLE*>::iterator it = ch->_map_title.find(ch->m_custom_title_index);
+					if( it != ch->_map_title.end() )
+					{
+						std::string query = boost::str(boost::format("DELETE FROM t_title_make where a_index = %d") % it->second->title_index);
+						DBManager::instance()->pushQuery(0, query);
 
-			{
-				CNetMsg::SP rmsg(new CNetMsg);
-				TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED, title, ch->m_index);
-				SEND_Q(rmsg, ch->m_desc);
-				ch->m_pArea->SendToCell(rmsg, ch);
-			}
+						{
+							CNetMsg::SP rmsg(new CNetMsg);
+							TitleDeleteInfoMsg(rmsg, it->second->title_index);
+							SEND_Q(rmsg, ch->m_desc);
+						}
 
-			GAMELOG << init("TITLE EXPIRED TIME", ch) << delim
-					<< "TITLE INDEX" << delim << title << end;
+						{
+							CNetMsg::SP rmsg(new CNetMsg);
+							TitleUserInfoMsg(rmsg, ch->m_index, -1, -1, -1, "");
+							ch->m_pArea->SendToCell(rmsg, ch, true);
+						}
+						
+						delete[] it->second->option_index;
+						delete[] it->second->option_level;
+						delete it->second;
 
-			{
-				CNetMsg::SP rmsg(new CNetMsg);
-				SubHelperTitleSystemTitleDelReq(rmsg, ch->m_index, title);
-				SEND_Q(rmsg, gserver->m_subHelper);
+						ch->_map_title.erase(ch->m_custom_title_index);
+					}
+				}
+
+				ch->m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
+				ch->m_custom_title_index = -1;
+				ch->CalcStatus(true);
+
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SysMsg(rmsg, MSG_SYS_TITLE_EXPIRED);
+					RefMsg(rmsg) << 1 << title_index;
+					SEND_Q(rmsg, ch->m_desc);
+				}
+
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED, title_index, ch->m_index, title->m_custom_title_index);
+					SEND_Q(rmsg, ch->m_desc);
+					ch->m_pArea->SendToCell(rmsg, ch);
+				}
+
+				GAMELOG << init("TITLE EXPIRED TIME", ch) << delim
+					<< "TITLE INDEX" << delim << title_index << end;
+
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SubHelperTitleSystemTitleDelReq(rmsg, ch->m_index, title_index, title->m_custom_title_index);
+					SEND_Q(rmsg, gserver->m_subHelper);
+				}
 			}
 		}
 
@@ -2871,7 +2951,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			ch->m_nRestrictPvPSkillDelaySec--;
 #endif // RESTRICT_PVP_SKILL
 
-		// ³ªÀÌÆ® ½¦µµ¿ìÀÇ ¿À¿À¶ó ½ºÅ³
+		// ë‚˜ì´íŠ¸ ì‰ë„ìš°ì˜ ì˜¤ì˜¤ë¼ ìŠ¤í‚¬
 		CAssistData *  outData;
 		bool outHelp = false;
 		int aura_type = 0;
@@ -2879,7 +2959,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 		if(IS_IN_CELL(ch) && ch->CanSpell() && !ch->IsSetPlayerState(PLAYER_STATE_WARP))
 		{
-			// ¿À¿À¶ó¸¦ »ç¿ëÇÏ°í ÀÖ´ÂÁö È®ÀÎ
+			// ì˜¤ì˜¤ë¼ë¥¼ ì‚¬ìš©í•˜ê³  ìˆëŠ”ì§€ í™•ì¸
 			if (ch->m_assist.FindByType(MT_ASSIST, MST_ASSIST_AURA_DARKNESS))
 				aura_type = MST_ASSIST_AURA_DARKNESS;
 			else if (ch->m_assist.FindByType(MT_ASSIST, MST_ASSIST_AURA_WEAKNESS))
@@ -2887,7 +2967,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			else if (ch->m_assist.FindByType(MT_ASSIST, MST_ASSIST_AURA_ILLUSION))
 				aura_type = MST_ASSIST_AURA_ILLUSION;
 
-			// ¿À¿À¶ó »ç¿ëÇÏ¸é µ¥ÀÌÅÍ °¡Á®¿Â´Ù.
+			// ì˜¤ì˜¤ë¼ ì‚¬ìš©í•˜ë©´ ë°ì´í„° ê°€ì ¸ì˜¨ë‹¤.
 			if(aura_type > 0)
 				level = ch->m_assist.FindByType(MT_ASSIST, aura_type, &outHelp, &outData);
 
@@ -2898,7 +2978,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 				ch->m_pArea->PointToCellNum(GET_X(ch), GET_Z(ch), &cx, &cz);
 
-				// Ä³¸¯ÅÍ°¡ ÀÖ´Â ¼¿ÀÇ npc¿¡°Ô ÀÚµ¿À¸·Î µğ¹öÇÁ¸¦, pc¿¡°Ô ÀÚµ¿À¸·Î ¹öÇÁ¸¦ °Ç´Ù.
+				// ìºë¦­í„°ê°€ ìˆëŠ” ì…€ì˜ npcì—ê²Œ ìë™ìœ¼ë¡œ ë””ë²„í”„ë¥¼, pcì—ê²Œ ìë™ìœ¼ë¡œ ë²„í”„ë¥¼ ê±´ë‹¤.
 				CCharacter* pChar;
 				CCharacter* pCharNext = ch->m_pArea->m_cell[cx][cz].m_listChar;
 				while ((pChar = pCharNext))
@@ -2908,7 +2988,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 					// find char
 					if(IS_PC(pChar))
 					{
-						//Áö¿ª°Ë»ç pvpÁ¸ ¶Ç´Â °ø°İ¸ğµå°¡ ¾Æ´Ï¸é return;
+						//ì§€ì—­ê²€ì‚¬ pvpì¡´ ë˜ëŠ” ê³µê²©ëª¨ë“œê°€ ì•„ë‹ˆë©´ return;
 						if( ch->CanPvP(pChar, false) == false && outData->m_proto->m_index != 766)
 							continue;
 
@@ -2933,27 +3013,27 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 					}
 					ch->applyAuraSkill(pChar, auraCount, level, outData);
 
-					// ¿À¿À¶ó Ä«¿îÆ®°¡ ÃÑ 5È¸ÀÌ¸é loop¸¦ ºüÁ® ³ª°£´Ù.
+					// ì˜¤ì˜¤ë¼ ì¹´ìš´íŠ¸ê°€ ì´ 5íšŒì´ë©´ loopë¥¼ ë¹ ì ¸ ë‚˜ê°„ë‹¤.
 					if(auraCount >= 5)
 						break;
 				} // while
 			} // if
 		}// if
 
-		// Ä³¸¯ÅÍ »óÅÂ°¡ ´ÙÅ©´Ï½º ¸ğµå°¡ ¾Æ´Ï¸é ¹öÇÁ¸¦ Ç®¾îÁØ´Ù.
+		// ìºë¦­í„° ìƒíƒœê°€ ë‹¤í¬ë‹ˆìŠ¤ ëª¨ë“œê°€ ì•„ë‹ˆë©´ ë²„í”„ë¥¼ í’€ì–´ì¤€ë‹¤.
 		if(!ch->IsSetPlayerState(PLAYER_STATE_DARKNESS))
 			ch->m_assist.CureAssist(MST_ASSIST_DARKNESS_MODE, 99);
 
 		if(!ch->IsParty() && ch->m_pZone->IsPartyRaidZone())
 		{
-			// ÆÄÆ¼°¡ ¾Æ´Ï¸é¼­ ÆÄÆ¼ ·¹ÀÌµå Á¸¿¡ ÀÔÀåÇÏ¸é ³»º¸³½´Ù.
+			// íŒŒí‹°ê°€ ì•„ë‹ˆë©´ì„œ íŒŒí‹° ë ˆì´ë“œ ì¡´ì— ì…ì¥í•˜ë©´ ë‚´ë³´ë‚¸ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidInzoneQuitReq(rmsg,1,0);
 			do_Raid(ch, rmsg);
 		}
 		else if (!ch->IsExped() && ch->m_pZone->IsExpedRaidZone())
 		{
-			// ¿øÁ¤´ë°¡ ¾Æ´Ï¸é¼­ ¿øÁ¤´ë ·¹ÀÌµå Á¸¿¡ ÀÔÀåÇÏ¸é ³»º¸³½´Ù.
+			// ì›ì •ëŒ€ê°€ ì•„ë‹ˆë©´ì„œ ì›ì •ëŒ€ ë ˆì´ë“œ ì¡´ì— ì…ì¥í•˜ë©´ ë‚´ë³´ë‚¸ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidInzoneQuitReq(rmsg,1,0);
 			do_Raid(ch, rmsg);
@@ -2968,7 +3048,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			ch->SetPlayerState(PLAYER_STATE_PKMODE);
 			//ch->CancelInvisible();
 
-			//PKÁ¸¿¡ µé¾î°¡¸é ¹«Àû¹öÇÁ¸¦ Áö¿î´Ù.
+			//PKì¡´ì— ë“¤ì–´ê°€ë©´ ë¬´ì ë²„í”„ë¥¼ ì§€ìš´ë‹¤.
 			if (ch->m_assist.FindBySkillIndex(IMMOTAL_BUF))
 				ch->m_assist.CureBySkillIndex(IMMOTAL_BUF);
 
@@ -2977,7 +3057,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 			ch->m_pArea->SendToCell(rmsg, ch, true);
 		}
 
-		// Áö¿ªÀÌ ¹Ù²î¸é ¾ÆÀÌÅÛ Á¤º¸ °»½ÅÀ» À§ÇØ Àç°è»êÀº ÇÑ´Ù : °ø¼º Àü¿ë ¾ÆÀÌÅÛÀ» À§ÇØ ÇÊ¿ä
+		// ì§€ì—­ì´ ë°”ë€Œë©´ ì•„ì´í…œ ì •ë³´ ê°±ì‹ ì„ ìœ„í•´ ì¬ê³„ì‚°ì€ í•œë‹¤ : ê³µì„± ì „ìš© ì•„ì´í…œì„ ìœ„í•´ í•„ìš”
 		if (ch->GetMapAttr() & MATT_WAR || ch->m_recentAtt & MATT_WAR)
 			ch->CalcStatus(true);
 
@@ -2985,7 +3065,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 		ch->m_bChangeStatus = true;
 	}
 
-	// °ø¼ºÁö¿ªÀÌ ¾Æ´Ñ °÷¿¡¼­ Àú·¹º§ PvP ¸ğµå ÇØÁ¦
+	// ê³µì„±ì§€ì—­ì´ ì•„ë‹Œ ê³³ì—ì„œ ì €ë ˆë²¨ PvP ëª¨ë“œ í•´ì œ
 	if (ch->m_level <= PKMODE_LIMIT_LEVEL && ch->IsSetPlayerState(PLAYER_STATE_PKMODE | PLAYER_STATE_PKMODEDELAY))
 	{
 		bool bPvPOff = true;
@@ -3044,7 +3124,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 	CElemental* pElementalNext = ch->m_elementalList;
 	while ((pElemental = pElementalNext))
 	{
-		// yhj ¼öÁ¤.. ¿¤·¹¸àÅ» NULL Ã¼Å©¸¦ ¾ÈÇØ¼­ ¼­¹ö°¡ ³»·Á°¨.. ÀÌ NULLÃ¼Å© ¹®Á¦°¡ µÇ¸é ´Ù¸¥ ¹æ¹ıÀ» »ç¿ëÇÏÀÚ.
+		// yhj ìˆ˜ì •.. ì—˜ë ˆë©˜íƒˆ NULL ì²´í¬ë¥¼ ì•ˆí•´ì„œ ì„œë²„ê°€ ë‚´ë ¤ê°.. ì´ NULLì²´í¬ ë¬¸ì œê°€ ë˜ë©´ ë‹¤ë¥¸ ë°©ë²•ì„ ì‚¬ìš©í•˜ì.
 		if(!pElemental)
 			break;
 		pElementalNext = pElemental->m_nextElemental;
@@ -3062,12 +3142,12 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 
 	int posioncount = 0;
 
-	bool bHpRemain = false;	// ÄğÅ¸ÀÓ
-	bool bMpRemain = false;	// ÄğÅ¸ÀÓ
+	bool bHpRemain = false;	// ì¿¨íƒ€ì„
+	bool bMpRemain = false;	// ì¿¨íƒ€ì„
 
 	if (hp < maxhp * 0.5 && hp > 0)
 	{
-		// Ã¼·ÂÀÌ Àı¹İ ÀÌÇÏ
+		// ì²´ë ¥ì´ ì ˆë°˜ ì´í•˜
 		CAssistData *  outData = NULL;
 		bool outHelp = false;
 		ch->m_assist.FindByType(MT_ASSIST, MST_ASSIST_HP, &outHelp, &outData);
@@ -3076,7 +3156,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 				&& outData != NULL
 				&& outData->m_remain > 0)
 		{
-			// Ã¼·Â È¸º¹ ¹°¾àÀ» ¸Ô¾ú´ø °æ¿ì
+			// ì²´ë ¥ íšŒë³µ ë¬¼ì•½ì„ ë¨¹ì—ˆë˜ ê²½ìš°
 			bHpRemain = true;
 		}
 
@@ -3122,7 +3202,7 @@ void CServer::DecreaseTimeForPC(CPC* ch)
 USE_HP_POTION:
 	if (mp < maxmp * 0.5 )
 	{
-		// ¸¶³ª°¡ Àı¹İ ÀÌÇÏ
+		// ë§ˆë‚˜ê°€ ì ˆë°˜ ì´í•˜
 		CAssistData *  outData = NULL;
 		bool outHelp = false;
 		ch->m_assist.FindByType(MT_ASSIST, MST_ASSIST_MP, &outHelp, &outData);
@@ -3131,7 +3211,7 @@ USE_HP_POTION:
 				&& outData != NULL
 				&& outData->m_remain > 0)
 		{
-			// ¸¶³ª È¸º¹ ¹°¾àÀ» ¸Ô¾ú´ø °æ¿ì
+			// ë§ˆë‚˜ íšŒë³µ ë¬¼ì•½ì„ ë¨¹ì—ˆë˜ ê²½ìš°
 			bMpRemain = true;
 		}
 
@@ -3182,7 +3262,7 @@ USE_MP_POTION:
 	   )
 
 	{
-		// Ã¼·ÂÀÌ³ª ¸¶³ª°¡ 50% ÀÌÇÏ¿¡¼­ »ç¿ëÇÒ Æ÷¼ÇÀÌ ¾øÀ» °æ¿ì
+		// ì²´ë ¥ì´ë‚˜ ë§ˆë‚˜ê°€ 50% ì´í•˜ì—ì„œ ì‚¬ìš©í•  í¬ì…˜ì´ ì—†ì„ ê²½ìš°
 		bool bWare = true;
 		for( int k = WEARING_ACCESSORY1; k <= WEARING_ACCESSORY3; k++ )
 		{
@@ -3209,14 +3289,14 @@ USE_MP_POTION:
 
 		if(bWare == false)
 		{
-			// ÀÚµ¿ ¹°¾à »ç¿ë ¾ÆÀÌÅÛÀÌ ¹ş°ÜÁø °æ¿ì
+			// ìë™ ë¬¼ì•½ ì‚¬ìš© ì•„ì´í…œì´ ë²—ê²¨ì§„ ê²½ìš°
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg( rmsg, MSG_SYS_NO_AUTO_ITEM );
 			SEND_Q(rmsg, ch->m_desc);
 		}
 	}
 
-	// ½ºÆ®·¹ÀÌ¾Æ³ª µ¶
+	// ìŠ¤íŠ¸ë ˆì´ì•„ë‚˜ ë…
 	ch->m_SkillTime_511 += TIME_ONE_SECOND;
 	if(ch->m_SkillTime_511 >= 2 * TIME_ONE_MIN)
 	{
@@ -3239,13 +3319,13 @@ USE_MP_POTION:
 		}
 	}
 
-	// µğ¹öÇÁ¸¦ ÁØ´Ù.
+	// ë””ë²„í”„ë¥¼ ì¤€ë‹¤.
 	if(ch && ch->m_pZone->IsWarGroundZone())
 	{
 		int skilllevel = 1;
 		CWaitPlayer* p = NULL;
 		p = gserver->m_RoyalRumble.m_WaitPlayerList.GetNode(ch->m_index);
-		if(p && p->GetIsEntered()) // Ä³¸¯ÅÍ°¡ ·Î¾â·³ºí¿¡ Âü°¡ ÁßÀÎ »óÅÂ¿¡¼­ ÇÇ½ºÁ¸¿¡ µé¾î°¬´Ù.
+		if(p && p->GetIsEntered()) // ìºë¦­í„°ê°€ ë¡œì–„ëŸ¼ë¸”ì— ì°¸ê°€ ì¤‘ì¸ ìƒíƒœì—ì„œ í”¼ìŠ¤ì¡´ì— ë“¤ì–´ê°”ë‹¤.
 		{
 			skilllevel += p->GetLevelType();
 			if(ch->IsInPeaceZone(true))
@@ -3283,7 +3363,7 @@ USE_MP_POTION:
 #endif //XTRAP_DUMP
 
 		{
-			// Å¬¶óÀÌ¾ğÆ®¿¡ XTRAP È®ÀÎ ¿äÃ»
+			// í´ë¼ì´ì–¸íŠ¸ì— XTRAP í™•ì¸ ìš”ì²­
 			CNetMsg::SP rmsg(new CNetMsg);
 			rmsg->Init( MSG_EXTEND );
 			RefMsg(rmsg) << MSG_EX_XTRAP ;
@@ -3303,7 +3383,7 @@ USE_MP_POTION:
 	ch->m_gpsManager.sendGpsTargetMoveInfo();
 	ch->m_arti_gpsManager.sendGpsTargetMoveInfo();
 
-	//½áÄ¡¶óÀÌÇÁ
+	//ì¨ì¹˜ë¼ì´í”„
 	if(ch->IsSearchLife() == true)
 	{
 		if(ch->m_targetPC != NULL && ch->m_targetPC->m_type != MSG_CHAR_UNKNOWN)
@@ -3342,7 +3422,7 @@ bool CServer::DropProbLoad()
 	if (!cmd.GetRec("a_item_prob",	m_itemDropProb) || !cmd.GetRec("a_money_prob",	m_moneyDropProb))
 		return false;
 
-	// ÃÖ´ë 300 ÃÖ¼Ò 50 Á¦ÇÑ
+	// ìµœëŒ€ 300 ìµœì†Œ 50 ì œí•œ
 	if (m_itemDropProb > 300)
 		m_itemDropProb = 300;
 	else if (m_itemDropProb < 50)
@@ -3356,7 +3436,7 @@ void CServer::MoonStoneEndProcess(CPC* ch)
 {
 }
 
-// ¼¼¾× -> ¼ºÁ¤º¸
+// ì„¸ì•¡ -> ì„±ì •ë³´
 void CServer::SaveTax()
 {
 	CDBCmd cmd;
@@ -3365,7 +3445,7 @@ void CServer::SaveTax()
 
 	udpate_castle_query += boost::str(boost::format("UPDATE t_castle SET a_tax_item = a_tax_item + %1%, a_tax_produce = a_tax_produce + %2% WHERE a_zone_index=7") % (m_taxItem / 3) % (m_taxProduceCastle / 3) );
 
-#ifdef LC_TLD // ÅÂ±¹ ¼¼±İ 1/3·Î ÇÑ´Ù
+#ifdef LC_TLD // íƒœêµ­ ì„¸ê¸ˆ 1/3ë¡œ í•œë‹¤
 	m_taxItem /= 3;
 	m_taxProduceCastle /= 3;
 #endif
@@ -3420,10 +3500,10 @@ void CServer::SaveTax()
 	}
 }
 
-// ¼¼±İ -> ±æµå
+// ì„¸ê¸ˆ -> ê¸¸ë“œ
 void CServer::DivideTax()
 {
-	// ¼º¼¼±İ
+	// ì„±ì„¸ê¸ˆ
 	CDBCmd cmd;
 	cmd.Init(&m_dbcastle);
 
@@ -3446,11 +3526,11 @@ void CServer::DivideTax()
 		cmd.GetRec("a_tax_produce", taxProduce);
 		cmd.GetRec("a_tax_wday", wday);
 
-		// ÃÖ±Ù ÀúÀå ¿äÀÏÀÌ ¿À´ÃÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸
+		// ìµœê·¼ ì €ì¥ ìš”ì¼ì´ ì˜¤ëŠ˜ì´ ì•„ë‹ ê²½ìš°ì—ë§Œ
 		struct tm tmCur = NOW();
 		if (wday != tmCur.tm_wday)
 		{
-			// ÇïÆÛ¿¡¼­ ÃÖ¼Ò ±İ¾×À» º¸ÀåÇÑ´Ù
+			// í—¬í¼ì—ì„œ ìµœì†Œ ê¸ˆì•¡ì„ ë³´ì¥í•œë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildStashSaveTaxReqMsg(rmsg, guildindex, ZONE_MERAC, taxItem, taxProduce);
 			SEND_Q(rmsg, m_helper);
@@ -3479,11 +3559,11 @@ void CServer::DivideTax()
 		cmd2.GetRec("a_tax_produce", taxProduce);
 		cmd2.GetRec("a_tax_wday", wday);
 
-		// ÃÖ±Ù ÀúÀå ¿äÀÏÀÌ ¿À´ÃÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸
+		// ìµœê·¼ ì €ì¥ ìš”ì¼ì´ ì˜¤ëŠ˜ì´ ì•„ë‹ ê²½ìš°ì—ë§Œ
 		struct tm tmCur = NOW();
 		if (wday != tmCur.tm_wday)
 		{
-			// ÇïÆÛ¿¡¼­ ÃÖ¼Ò ±İ¾×À» º¸ÀåÇÑ´Ù
+			// í—¬í¼ì—ì„œ ìµœì†Œ ê¸ˆì•¡ì„ ë³´ì¥í•œë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			HelperGuildStashSaveTaxReqMsg(rmsg, guildindex, ZONE_DRATAN, taxItem, taxProduce);
 			SEND_Q(rmsg, m_helper);
@@ -3546,8 +3626,8 @@ void CServer::ChangeTaxGuild()
 
 CZone* CServer::FindNearestZone(int zone, float x, float z, int* nearZone, int* nearZonePos, int syndicateType)
 {
-	// x, z°¡ À½¼öÀÌ¸é x, z ¹«½ÃÇØ¾ß ÇÔ
-	// ±âº» À§Ä¡
+	// x, zê°€ ìŒìˆ˜ì´ë©´ x, z ë¬´ì‹œí•´ì•¼ í•¨
+	// ê¸°ë³¸ ìœ„ì¹˜
 	*nearZone = ZONE_START;
 	*nearZonePos = 0;
 
@@ -3567,7 +3647,7 @@ CZone* CServer::FindNearestZone(int zone, float x, float z, int* nearZone, int* 
 		*nearZonePos = 0;
 		break;
 
-	case ZONE_SINGLE_DUNGEON_TUTORIAL:	// Áê³ë 2¹ø¿¡¼­ ½ÃÀÛ
+	case ZONE_SINGLE_DUNGEON_TUTORIAL:	// ì¥¬ë…¸ 2ë²ˆì—ì„œ ì‹œì‘
 		*nearZone = ZONE_START;
 		*nearZonePos = 0;
 		break;
@@ -3623,7 +3703,7 @@ CZone* CServer::FindNearestZone(int zone, float x, float z, int* nearZone, int* 
 		*nearZonePos = syndicateType;
 		break;
 
-	case ZONE_START:	// Áê³ë ½ÃÀÛ
+	case ZONE_START:	// ì¥¬ë…¸ ì‹œì‘
 	case ZONE_DUNGEON1:
 	case ZONE_SINGLE_DUNGEON1:
 	case ZONE_SINGLE_DUNGEON2:
@@ -3737,19 +3817,19 @@ int CServer::addChatGroup(int& makeCharIndex, int& chatIndex, CLCString charName
 	CChatGroup* chatGroup = this->FindChatGroup(makeCharIndex, chatIndex);
 	if( chatGroup )
 	{
-		// ¼¼¼ÇÀÌ ¸¸µé¾îÁø »óÅÂ
+		// ì„¸ì…˜ì´ ë§Œë“¤ì–´ì§„ ìƒíƒœ
 		std::set<CLCString>::iterator it = chatGroup->m_charNameList.find(charName);
 		if( it == chatGroup->m_charNameList.end() )
 		{
 			if( chatGroup->CheckSameName(charName) == false )
 			{
-				// Áßº¹ Ã¼Å©
+				// ì¤‘ë³µ ì²´í¬
 				return 0;
 			}
 			chatGroup->m_charNameList.insert(charName);
 			if( chatGroup->m_charNameList.size() == 1 )
 			{
-				// Ã³À½ »ı¼º½Ã
+				// ì²˜ìŒ ìƒì„±ì‹œ
 				return -1;
 			}
 			return 1;
@@ -3799,7 +3879,7 @@ void CServer::delChatGroup(int makeCharIndex, int chatIndex, CLCString charName)
 			chatGroup->m_charNameList.erase(sit);
 			if (chatGroup->m_charNameList.empty())
 			{
-				//¹æ¿øÀÌ Á¸Àç
+				//ë°©ì›ì´ ì¡´ì¬
 				LONGLONG key = MAKE_LONGLONG_KEY(makeCharIndex, chatIndex);
 				m_chatList.erase(key);
 				delete chatGroup;
@@ -3926,7 +4006,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	if(d->m_pChar->IsSetPlayerState(PLAYER_STATE_CASH_ZONE_MOVE))
 		bCashZoneMove = true;
 	d->m_pChar->ResetPlayerState(~PLAYER_STATE_RESET);
-	//ÃÊ±âÈ­ ÇÑ ÈÄ Á¤´ç¹æÀ§ ¸®½ºÆ®¸¦ °Ë»ö ÇÑ ÈÄ µ¥ÀÌÅÍ°¡ ÀÖÀ» °æ¿ì¿¡´Â Á¤´ç¹æÀ§ »óÅÂ·Î ¸¸µé¾îÁØ´Ù.
+	//ì´ˆê¸°í™” í•œ í›„ ì •ë‹¹ë°©ìœ„ ë¦¬ìŠ¤íŠ¸ë¥¼ ê²€ìƒ‰ í•œ í›„ ë°ì´í„°ê°€ ìˆì„ ê²½ìš°ì—ëŠ” ì •ë‹¹ë°©ìœ„ ìƒíƒœë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
 	if(d->m_pChar->m_raList != NULL && d->m_pChar->m_raList->m_raPulse > 0)
 	{
 		d->m_pChar->SetPlayerState(PLAYER_STATE_RAMODE);
@@ -3937,12 +4017,12 @@ void CServer::CharPrePlay(CDescriptor* d)
 	d->m_pChar->m_inventory.CheckCompositeValidation();
 
 
-	// Á×Àº »óÅÂ¸é ºÎÈ°
+	// ì£½ì€ ìƒíƒœë©´ ë¶€í™œ
 	if (DEAD(d->m_pChar))
 	{
 		d->m_pChar->m_hp= d->m_pChar->m_dbHP / 2;
 
-		// MP´Â ¹İÀÌ»ó ÀÖÀ¸¸é ±×´ë·Î..
+		// MPëŠ” ë°˜ì´ìƒ ìˆìœ¼ë©´ ê·¸ëŒ€ë¡œ..
 		if (d->m_pChar->m_mp < d->m_pChar->m_dbMP / 2)
 			d->m_pChar->m_mp = d->m_pChar->m_dbMP / 2;
 	}
@@ -3961,7 +4041,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 
 	int i;
 
-	// ÇÏµåÄÚµù : Æ©Åä¸®¾ó Äù½ºÆ® ¼öÇàÁßÀÎÁö °Ë»ç ÈÄ ¿©À¯ ¿µ¿ªÀÌ ÀÖ´Â°¡ °Ë»ç
+	// í•˜ë“œì½”ë”© : íŠœí† ë¦¬ì–¼ í€˜ìŠ¤íŠ¸ ìˆ˜í–‰ì¤‘ì¸ì§€ ê²€ì‚¬ í›„ ì—¬ìœ  ì˜ì—­ì´ ìˆëŠ”ê°€ ê²€ì‚¬
 	if( d->m_pChar->m_job == JOB_NIGHTSHADOW )
 	{	}
 	else
@@ -3984,7 +4064,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 				d->m_pChar->m_pZone = pZone;
 				int idx = d->m_pChar->m_pZone->SetEnableArea();
 
-				// ºó ¿µ¾ï ¾øÀ½ : Á¢¼ÓÀ» ²÷´Â´Ù
+				// ë¹ˆ ì˜ì–µ ì—†ìŒ : ì ‘ì†ì„ ëŠëŠ”ë‹¤
 				if (idx == -1)
 				{
 					LOG_ERROR("Not found area");
@@ -4004,7 +4084,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 	}
 
-	// ±æµå Á¤º¸ ¼¼ÆÃ
+	// ê¸¸ë“œ ì •ë³´ ì„¸íŒ…
 	CGuildMember* member = m_guildlist.findmember(d->m_pChar->m_index);
 	if (member && member->guild())
 	{
@@ -4015,16 +4095,16 @@ void CServer::CharPrePlay(CDescriptor* d)
 		d->m_pChar->m_guildInfo = NULL;
 	}
 
-	// °ø¼º Á¤º¸ ¹İ¿µ
+	// ê³µì„± ì •ë³´ ë°˜ì˜
 	CWarCastle::CheckJoinAll(d->m_pChar);
 
-	// °ø¼º Âü¿© À¯Àú°¡ °ø¼º Áö¿ªÀ¸·Î ÀÌµ¿ÇÏ¸é °ø¼º ¸®Á¨Æ÷ÀÎÆ®·Î ÀÌµ¿ ¹¯±â
+	// ê³µì„± ì°¸ì—¬ ìœ ì €ê°€ ê³µì„± ì§€ì—­ìœ¼ë¡œ ì´ë™í•˜ë©´ ê³µì„± ë¦¬ì  í¬ì¸íŠ¸ë¡œ ì´ë™ ë¬»ê¸°
 	int posPromptMove = -1;
 	int zonePromptMove = -1;
 	int gstate =0;
 	int castlezone = CWarCastle::GetCurSubServerCastleZoneIndex();
 
-	// ÇöÀç ¼­¹öÀÇ °ø¼º Á¤º¸
+	// í˜„ì¬ ì„œë²„ì˜ ê³µì„± ì •ë³´
 	CWarCastle* castle = CWarCastle::GetCastleObject(castlezone);
 	if (castle != NULL
 			&& d->m_pChar->GetJoinFlag(castlezone) != WCJF_NONE)
@@ -4050,7 +4130,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 	}
 
-	// °ø¼º Âü¿© À¯Àú°¡ °ø¼º Áö¿ªÀ¸·Î ÀÌµ¿ÇÏ¸é °ø¼º ¸®Á¨Æ÷ÀÎÆ®·Î ÀÌµ¿ ¹¯±â
+	// ê³µì„± ì°¸ì—¬ ìœ ì €ê°€ ê³µì„± ì§€ì—­ìœ¼ë¡œ ì´ë™í•˜ë©´ ê³µì„± ë¦¬ì  í¬ì¸íŠ¸ë¡œ ì´ë™ ë¬»ê¸°
 	int posPromptMove_Dratan = -1;
 	int zonePromptMove_Dratan = -1;
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
@@ -4058,7 +4138,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	{
 		area = d->m_pChar->m_pArea;
 	}
-	// ÇöÀç ¼­¹öÀÇ °ø¼º Á¤º¸
+	// í˜„ì¬ ì„œë²„ì˜ ê³µì„± ì •ë³´
 	if (d->m_pChar->GetJoinFlag(pCastle->GetZoneIndex()) != WCJF_NONE
 			&& gserver->m_subno == WAR_CASTLE_SUBNUMBER_DRATAN)
 	{
@@ -4104,7 +4184,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 #ifdef JUNO_RENEWAL_MESSAGEBOX
 		if(d->m_pChar->m_etcEvent & ETC_EVENT_JUNO_RENEWAL_MESSAGEBOX_POPUP)
 		{
-			extra = 0;		//  ¶õµ¹·Î
+			extra = 0;		//  ë€ëŒë¡œ
 			d->m_pChar->m_pos.m_x = GetRandom(d->m_pChar->m_pZone->m_zonePos[extra][1], d->m_pChar->m_pZone->m_zonePos[extra][3]) / 2.0f;
 			d->m_pChar->m_pos.m_z = GetRandom(d->m_pChar->m_pZone->m_zonePos[extra][2], d->m_pChar->m_pZone->m_zonePos[extra][4]) / 2.0f;
 			bMessageBoxPopUp = true;
@@ -4120,7 +4200,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 #endif // JUNO_RENEWAL_MESSAGEBOX
 			if( d->m_pChar->m_etcEvent & ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE && !bCashZoneMove )
 			{
-				extra = 6;		// ³óÀåÀ¸·Î
+				extra = 6;		// ë†ì¥ìœ¼ë¡œ
 				if(d->m_pChar->m_questList.FindQuest(386, QUEST_STATE_DONE))
 				{
 					d->m_pChar->m_etcEvent &= ~ETC_EVENT_JUNO_RENEWAL_QUESTCOMPLETE;
@@ -4130,7 +4210,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 				d->m_pChar->m_pos.m_z = GetRandom(d->m_pChar->m_pZone->m_zonePos[extra][2], d->m_pChar->m_pZone->m_zonePos[extra][4]) / 2.0f;
 			}
 			else
-				extra = 0;		// ¶õµ¹·Î
+				extra = 0;		// ë€ëŒë¡œ
 		float x;
 		float z;
 		x = d->m_pChar->m_pos.m_x*2.0f;
@@ -4148,12 +4228,12 @@ void CServer::CharPrePlay(CDescriptor* d)
 	area->CharToCell(d->m_pChar, GET_YLAYER(d->m_pChar), cx, cz);
 
 	{
-		// Ä³¸¯ÅÍ¿¡°Ô Ã³À½ ½ÃÀÛÇÏ´Â À§Ä¡¸¦ ¾Ë¸².
+		// ìºë¦­í„°ì—ê²Œ ì²˜ìŒ ì‹œì‘í•˜ëŠ” ìœ„ì¹˜ë¥¼ ì•Œë¦¼.
 		CNetMsg::SP rmsg(new CNetMsg);
 		AtMsg(rmsg, d->m_pChar);
 		SEND_Q(rmsg, d);
 	}
-	// ±æµå Á¤º¸
+	// ê¸¸ë“œ ì •ë³´
 	if (d->m_pChar->m_guildInfo)
 	{
 		if (d->m_pChar->m_first_inmap)
@@ -4187,14 +4267,14 @@ void CServer::CharPrePlay(CDescriptor* d)
 		SEND_Q(rmsg, d);
 	}
 
-	// ÇÏµåÄÚµù : 0Â¥¸® Á¦·Ã¼® 40·¹º§·Î ¹Ù²Ş
+	// í•˜ë“œì½”ë”© : 0ì§œë¦¬ ì œë ¨ì„ 40ë ˆë²¨ë¡œ ë°”ê¿ˆ
 	CItem* item = d->m_pChar->m_inventory.FindByDBIndex(84, 0 ,0);
 	if (item)
 	{
 		item->setFlag(40);
 	}
 
-	// ¼ºÁÖ ¹«±â »©¾Ñ°Å³ª Áö±Ş
+	// ì„±ì£¼ ë¬´ê¸° ë¹¼ì•—ê±°ë‚˜ ì§€ê¸‰
 	bool bProcLordItem = false;
 	if (d->m_pChar->m_guildInfo && d->m_pChar->m_guildInfo->guild())
 	{
@@ -4220,7 +4300,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			delete [] ownZoneIndex;
 		}
 	}
-	// ¼ºÁÖ°¡ ¾Æ´Ï¶ó¼­ ¾Æ¹« Ã³¸® ¾ÈÇßÀ¸¸é ¼ºÁÖ Àü¿ë ¾ÆÀÌÅÛ Ã£¾Æ¼­ Áö¿ì±â
+	// ì„±ì£¼ê°€ ì•„ë‹ˆë¼ì„œ ì•„ë¬´ ì²˜ë¦¬ ì•ˆí–ˆìœ¼ë©´ ì„±ì£¼ ì „ìš© ì•„ì´í…œ ì°¾ì•„ì„œ ì§€ìš°ê¸°
 	if (!bProcLordItem)
 	{
 		BOOST_FOREACH(CItemProto* flagload_item, gserver->m_itemProtoList.m_flagload)
@@ -4250,7 +4330,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 	}
 
-// yhj ¼öÁ¤ 090528... ÇöÀç±îÁø ¹ö±× ¾øÀ½
+// yhj ìˆ˜ì • 090528... í˜„ì¬ê¹Œì§„ ë²„ê·¸ ì—†ìŒ
 	CPet* pet = d->m_pChar->m_petList;
 	while (pet)
 	{
@@ -4266,21 +4346,15 @@ void CServer::CharPrePlay(CDescriptor* d)
 			SEND_Q(rmsg, d);
 		}
 
-		// ¼ÒÈ¯ÁßÀÎ ÆêÀÌ ¸¶¿îÆ® Å¸ÀÔÀÌ ¾Æ´Ï¸é Appear ½ÃÅ°±â
-		if (pet->IsWearing())
+		// ì†Œí™˜ì¤‘ì¸ í«ì´ ë§ˆìš´íŠ¸ íƒ€ì…ì´ ì•„ë‹ˆë©´ Appear ì‹œí‚¤ê¸°
+		if (pet->IsWearing() && gserver->m_subno != 4)
 		{
-			if (d->m_pChar->m_pZone->m_bCanMountPet)
-			{
-				if (pet->IsMountType())
-					pet->Mount(true);
-				else if (!pet->IsMountType() && d->m_pChar->m_pZone->m_bCanSummonPet)
-					pet->Appear(false);
-			}
+			if(pet->IsMountType() && d->m_pChar->m_pZone->m_bCanMountPet)
+				pet->Mount(true);
+			else if(!pet->IsMountType() && d->m_pChar->m_pZone->m_bCanSummonPet)
+				pet->Appear(false);
 			else
-			{
-				//Äü ½½·Ô¿¡¼­ pet ½ºÅ³À» ¸ğµÎ Áö¿î´Ù.
 				d->m_pChar->RemovePetSkillFromQuickSlot();
-			}
 		}
 		pet = pet->m_nextPet;
 	}
@@ -4288,8 +4362,8 @@ void CServer::CharPrePlay(CDescriptor* d)
 	CAPet* apet = d->m_pChar->m_pApetlist;
 	while ( apet )
 	{
-		// Pet »óÅÂ MSG
-		if( apet->IsWearing() && !DEAD(apet) )
+		// Pet ìƒíƒœ MSG
+		if( apet->IsWearing() && !DEAD(apet) && gserver->m_subno != 4)
 		{
 			if ( d->m_pChar->m_pZone->m_bCanSummonPet )
 			{
@@ -4320,7 +4394,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			else
 			{
 				apet->m_bMount = false;
-				//Äü ½½·Ô¿¡¼­ apet ½ºÅ³À» ¸ğµÎ Áö¿î´Ù.
+				//í€µ ìŠ¬ë¡¯ì—ì„œ apet ìŠ¤í‚¬ì„ ëª¨ë‘ ì§€ìš´ë‹¤.
 				d->m_pChar->RemoveApetSkillFromQuickSlot();
 			}
 		}
@@ -4339,7 +4413,11 @@ void CServer::CharPrePlay(CDescriptor* d)
 		apet = apet->m_pNextPet;
 	}
 
-	// °ñµçº¼ ÀÌº¥Æ® ÀÀ¸ğ Ä«µå È¸¼ö : ÀÌº¥Æ® ÁøÇà ÁßÀÌ ¾Æ´Ï¸é
+	//í« ë²„í”„ê°€ ìˆë‹¤ë©´ ì‚­ì œ
+	if(gserver->m_subno == 4)
+		d->m_pChar->m_assist.CureByPetSkill();
+
+	// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸ ì‘ëª¨ ì¹´ë“œ íšŒìˆ˜ : ì´ë²¤íŠ¸ ì§„í–‰ ì¤‘ì´ ì•„ë‹ˆë©´
 	if (m_clGoldenBall.GetStatus() == GOLDENBALL_STATUS_NOTHING)
 	{
 		CItem* pItemCard = d->m_pChar->m_inventory.FindByDBIndex(GOLDENBALL_CARD_INDEX);
@@ -4358,7 +4436,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	{
 		if (d->m_pChar->m_wearInventory.wearItemInfo[i])
 		{
-			// ¼­Æ÷ÅÍ ¾ÆÀÌÅÛ
+			// ì„œí¬í„° ì•„ì´í…œ
 			if (d->m_pChar->m_wearInventory.wearItemInfo[i]->m_itemProto->getItemIndex() == 1912)
 				d->m_pChar->SetPlayerState(PLAYER_STATE_SUPPORTER);
 		}
@@ -4366,6 +4444,16 @@ void CServer::CharPrePlay(CDescriptor* d)
 
 	// inven
 	d->m_pChar->m_inventory.sendInfoToClient();
+
+	if(d->m_pChar->m_ep == -1)
+	{
+		//ep ì´ˆê¸°í™” íŒ¨í‚· ì „ë‹¬
+		CNetMsg::SP rmsg(new CNetMsg);
+		UpdateClient::EPInitMsg(rmsg, true);
+		SEND_Q(rmsg, d);
+
+		d->m_pChar->m_ep = 0;
+	}
 
 	// status
 	d->m_pChar->SendStatus();
@@ -4440,7 +4528,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	}
 
 	{
-		// »çÁ¦½Ã½ºÅÛ
+		// ì‚¬ì œì‹œìŠ¤í…œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TeachInfoMsg(rmsg, d->m_pChar);
 		SEND_Q(rmsg, d);
@@ -4456,7 +4544,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	//0627
 	if((d->m_userFlag & NOVICE) && d->m_pChar->m_teachType == MSG_TEACH_NO_TYPE)
 	{
-		//¸ğµç »çÁ¦¿¡°Ô ½Å±ÔÀ¯Àú°¡ Á¢¼Ó ÇßÀ½À» ¾Ë¸°´Ù.
+		//ëª¨ë“  ì‚¬ì œì—ê²Œ ì‹ ê·œìœ ì €ê°€ ì ‘ì† í–ˆìŒì„ ì•Œë¦°ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		NoviceNotifyMsg(rmsg, d->m_pChar->GetName() );
 
@@ -4464,10 +4552,10 @@ void CServer::CharPrePlay(CDescriptor* d)
 		d->m_userFlag = d->m_userFlag &~ NOVICE;
 	}
 
-	// ±æµå Á¤º¸
+	// ê¸¸ë“œ ì •ë³´
 	if (d->m_pChar->m_guildInfo)
 	{
-		// ±æµåÀü ÀÏ¶§ status msg Àü¼Û
+		// ê¸¸ë“œì „ ì¼ë•Œ status msg ì „ì†¡
 		CGuild* g = d->m_pChar->m_guildInfo->guild();
 		if (g && g->battleState() != GUILD_BATTLE_STATE_PEACE)
 		{
@@ -4478,7 +4566,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 				{
 					if (g->boss() && g->boss()->charindex() == d->m_pChar->m_index)
 					{
-						d->m_pChar->m_inventory.increaseMoney(g->battlePrize());
+						d->m_pChar->m_inventory.increaseMoney(g->battlePrizeNas());
 
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
@@ -4498,7 +4586,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	}
 
 #ifdef NOTICE_EVENT
-//0704  ÀÌº¥Æ® °øÁö ³¯¸®±â.
+//0704  ì´ë²¤íŠ¸ ê³µì§€ ë‚ ë¦¬ê¸°.
 	for(i =0; i< MAX_NOTICE; i++)
 	{
 		if(d->m_notice[i] != 0)
@@ -4526,18 +4614,28 @@ void CServer::CharPrePlay(CDescriptor* d)
 		d->m_pChar->m_pArea->SendToCell(rmsg, d->m_pChar, true);
 	}
 
-	// ¹æ ÁÖÀ§ÀÇ Ä³¸¯ÅÍµéÀÇ Á¤º¸¸¦ º¸³»ÁÜ...
+	{
+		std::map<int, MAKE_TITLE*>::iterator it = d->m_pChar->_map_title.find(d->m_pChar->m_custom_title_index);
+		if(it != d->m_pChar->_map_title.end())
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			TitleUserInfoMsg(rmsg, d->m_pChar->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+			d->m_pChar->m_pArea->SendToCell(rmsg, d->m_pChar, true);
+		}
+	}
+
+	// ë°© ì£¼ìœ„ì˜ ìºë¦­í„°ë“¤ì˜ ì •ë³´ë¥¼ ë³´ë‚´ì¤Œ...
 	area->SendCellInfo(d->m_pChar, false);
 
 	{
-		// GO_ZONE È¿°ú ¸Ş½ÃÁö Àü¼Û
+		// GO_ZONE íš¨ê³¼ ë©”ì‹œì§€ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		EffectEtcMsg(rmsg, d->m_pChar, MSG_EFFECT_ETC_GOZONE);
 		area->SendToCell(rmsg, d->m_pChar, true);
 	}
 
-// ¿©±â¿¡ ¸Ş½ÅÀú ÃÊ±âµ¥ÀÌÅ¸ º¸³½´Ù..
-	//MSG_EX_MESSENGER_GROUP_LIST, // ±×·ì ¸®½ºÆ® º¸³»±â : count(n) gIndex(n) gName(str)
+// ì—¬ê¸°ì— ë©”ì‹ ì € ì´ˆê¸°ë°ì´íƒ€ ë³´ë‚¸ë‹¤..
+	//MSG_EX_MESSENGER_GROUP_LIST, // ê·¸ë£¹ ë¦¬ìŠ¤íŠ¸ ë³´ë‚´ê¸° : count(n) gIndex(n) gName(str)
 	if( d->m_pChar->m_Friend)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -4587,14 +4685,14 @@ void CServer::CharPrePlay(CDescriptor* d)
 		SEND_Q(rmsg, m_helper);
 	}
 	{
-		// ºí·°¸®½ºÆ® º¸³»±â
+		// ë¸”ëŸ­ë¦¬ìŠ¤íŠ¸ ë³´ë‚´ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		BlockPCListMsg(rmsg, d);
 	}
 
-	// ½ÅÃ» °¡´É ½Ã°£ÀÌ¸é È®Á¤ ¸Ş½ÃÁö¸¦
-	// °ø¼ºÀü ÁøÇà ÁßÀÌ¸é ÁøÇà ¸Ş½ÃÁö¸¦ º¸³½´Ù
-	///=== ¸Ş¼¼Áö ¸·±â kjtest
+	// ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ì´ë©´ í™•ì • ë©”ì‹œì§€ë¥¼
+	// ê³µì„±ì „ ì§„í–‰ ì¤‘ì´ë©´ ì§„í–‰ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¤
+	///=== ë©”ì„¸ì§€ ë§‰ê¸° kjtest
 	{
 		castle = CWarCastle::GetCastleObject(CWarCastle::GetCurSubServerCastleZoneIndex());
 		if (castle)
@@ -4620,7 +4718,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			}
 		}
 
-		// ÀÌµ¿ ¹¯±â
+		// ì´ë™ ë¬»ê¸°
 		if (zonePromptMove != -1)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4629,8 +4727,8 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 	}
 
-	// ½ÅÃ» °¡´É ½Ã°£ÀÌ¸é È®Á¤ ¸Ş½ÃÁö¸¦
-	// °ø¼ºÀü ÁøÇà ÁßÀÌ¸é ÁøÇà ¸Ş½ÃÁö¸¦ º¸³½´Ù
+	// ì‹ ì²­ ê°€ëŠ¥ ì‹œê°„ì´ë©´ í™•ì • ë©”ì‹œì§€ë¥¼
+	// ê³µì„±ì „ ì§„í–‰ ì¤‘ì´ë©´ ì§„í–‰ ë©”ì‹œì§€ë¥¼ ë³´ë‚¸ë‹¤
 	{
 		pCastle = CDratanCastle::CreateInstance();
 		if (pCastle->GetState() == WCSF_NORMAL)
@@ -4651,7 +4749,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			SEND_Q(rmsg, d);
 		}
 
-		// ÀÌµ¿ ¹¯±â
+		// ì´ë™ ë¬»ê¸°
 		if (zonePromptMove_Dratan != -1)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4661,7 +4759,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	}
 
 #ifdef GER_LOG
-	// ÄÉ¸¯ÅÍ ·Î±×ÀÎ ½Ã°£±â·Ï
+	// ì¼€ë¦­í„° ë¡œê·¸ì¸ ì‹œê°„ê¸°ë¡
 //	d->m_pChar->SetLoginTime();
 
 	GAMELOGGEM << init( 0 , "CHAR_ENTER_GAME")
@@ -4672,11 +4770,12 @@ void CServer::CharPrePlay(CDescriptor* d)
 			   << endGer;
 #endif // GER_LOG
 	GAMELOG << init("JOIN", d->m_pChar->m_name, d->m_pChar->m_nick, d->m_idname)
+			<< d->m_pChar->m_index << delim
 			<< d->m_pChar->m_pZone->m_index	<< delim
 			<< d->getHostString()
 			<< end;
 
-	// Ä³¸¯ÅÍ ½Ã°£ Á¤º¸ ÃÊ±âÈ­
+	// ìºë¦­í„° ì‹œê°„ ì •ë³´ ì´ˆê¸°í™”
 	d->SetHackCheckPulse();
 
 #ifdef RANKER_NOTICE
@@ -4687,12 +4786,12 @@ void CServer::CharPrePlay(CDescriptor* d)
 	}
 #endif // RANKER_NOTICE
 
-	if( d->m_pChar->m_guildInfo && d->m_pChar->m_guildInfo->guild() )
+	/*if( d->m_pChar->m_guildInfo && d->m_pChar->m_guildInfo->guild() )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnGuildPointRankerReqMsg( rmsg, d->m_pChar->m_guildInfo->guild()->index(), d->m_pChar->m_index );
 		SEND_Q(rmsg, gserver->m_connector );
-	}
+	}*/
 
 	if( d->m_pChar->m_guildInfo && d->m_pChar->m_guildInfo->guild() && d->m_pChar->m_pArea)
 	{
@@ -4708,17 +4807,15 @@ void CServer::CharPrePlay(CDescriptor* d)
 		SEND_Q(rmsg, d->m_pChar->m_desc);
 	}
 
-	// ÆÄÆ¼ ¸®½ºÆ®¿¡¼­ ÇöÀç À¯ÀúÀÇ ÆÄÆ¼ Á¤º¸¸¦ Ã£¾Æ ¼³Á¤ÇÑ´Ù
+	// íŒŒí‹° ë¦¬ìŠ¤íŠ¸ì—ì„œ í˜„ì¬ ìœ ì €ì˜ íŒŒí‹° ì •ë³´ë¥¼ ì°¾ì•„ ì„¤ì •í•œë‹¤
 	d->m_pChar->m_party = FindPartyByMemberIndex(d->m_pChar->m_index, false);
 	if (d->m_pChar->IsParty())
 	{
-#ifdef PARTY_BUG_GER
 		GAMELOG << init("SET_PARTY_MEMBER", d->m_pChar)
 				<< "BOSSINDEX" << delim << d->m_pChar->m_party->GetBossIndex()
 				<< end;
-#endif // PARTY_BUG_GER
 
-#ifdef BATTLE_PARTY_BOSS_CHANGE // ÀüÅõÆÄÆ¼ ¹ö±× ¼öÁ¤. ÀÚ±â¿Í ÆÄÀåÀÇ ·¹º§Â÷ÀÌ°¡ 10·¹º§ÀÌ»ó Â÷ÀÌ ³¯¶§ ·Î±×¿ÀÇÁ Çß´Ù°¡ µé¾î¿À´Â »ç¶÷Àº ÆÄÅ»ÇÔ.
+#ifdef BATTLE_PARTY_BOSS_CHANGE // ì „íˆ¬íŒŒí‹° ë²„ê·¸ ìˆ˜ì •. ìê¸°ì™€ íŒŒì¥ì˜ ë ˆë²¨ì°¨ì´ê°€ 10ë ˆë²¨ì´ìƒ ì°¨ì´ ë‚ ë•Œ ë¡œê·¸ì˜¤í”„ í–ˆë‹¤ê°€ ë“¤ì–´ì˜¤ëŠ” ì‚¬ëŒì€ íŒŒíƒˆí•¨.
 		if( d->m_pChar->m_party->GetPartyType(0) == MSG_PARTY_TYPE_BATTLE &&
 				d->m_pChar->m_party->GetPartyType(3) == MSG_PARTY_TYPE_BATTLE &&
 				d->m_pChar->m_party->GetPartyType(4) == MSG_PARTY_TYPE_BATTLE )
@@ -4732,7 +4829,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 				}
 				else
 				{
-					// ·Î±×ÀÎ À¯Àú ÆÄÆ¼ Å»Åğ
+					// ë¡œê·¸ì¸ ìœ ì € íŒŒí‹° íƒˆí‡´
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
 						HelperPartyQuitReqMsg(rmsg, d->m_pChar->m_party->GetBossIndex(), d->m_pChar->m_index);
@@ -4748,7 +4845,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 #endif // BATTLE_PARTY_BOSS_CHANGE
 	}
 
-	// ¿øÁ¤´ë ¸®½ºÆ®¿¡¼­ ÇöÀç À¯ÀúÀÇ ¿øÁ¤´ë Á¤º¸¸¦ Ã£¾Æ ¼³Á¤ÇÑ´Ù
+	// ì›ì •ëŒ€ ë¦¬ìŠ¤íŠ¸ì—ì„œ í˜„ì¬ ìœ ì €ì˜ ì›ì •ëŒ€ ì •ë³´ë¥¼ ì°¾ì•„ ì„¤ì •í•œë‹¤
 	d->m_pChar->m_Exped = FindExpedByMemberIndex(d->m_pChar->m_index, false);
 	if(d->m_pChar->IsExped())
 	{
@@ -4836,7 +4933,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			ApplySkill( d->m_pChar, d->m_pChar, pSkill, -1 , bApply );
 			if( !bApply )
 			{
-				GAMELOG << init("EVENT XMAS SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ½ºÅ³ Àû¿ë ½ÇÆĞ
+				GAMELOG << init("EVENT XMAS SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 			}
 		}
 	}
@@ -4863,13 +4960,13 @@ void CServer::CharPrePlay(CDescriptor* d)
 			ApplySkill(d->m_pChar, d->m_pChar, pSkill, -1 , bApply);
 			if(bApply == false)
 			{
-				GAMELOG << init("EVENT_PCBANG_2NDS SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ½ºÅ³ Àû¿ë ½ÇÆĞ
+				GAMELOG << init("EVENT_PCBANG_2NDS SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 			}
 		}
 	}
 #endif // EVENT_PCBANG_2ND
 
-	// ÇÇ´Ğ½º ÄÉ¸¯ÅÍ ÀÌ¸é¼­ 100 ·¹º§ÀÌ ³ÑÁö ¾Ê´Â´Ù¸é ÇÇ´Ğ½º ¹öÇÁ¸¦ ÁØ´Ù.
+	// í”¼ë‹‰ìŠ¤ ì¼€ë¦­í„° ì´ë©´ì„œ 100 ë ˆë²¨ì´ ë„˜ì§€ ì•ŠëŠ”ë‹¤ë©´ í”¼ë‹‰ìŠ¤ ë²„í”„ë¥¼ ì¤€ë‹¤.
 	if( d->m_pChar->m_bPhoenix_Char == 1 && d->m_pChar->m_level <= 100 )
 	{
 		CSkill * pSkill1 = gserver->m_skillProtoList.Create( 516, 1 );
@@ -4879,14 +4976,14 @@ void CServer::CharPrePlay(CDescriptor* d)
 			ApplySkill(d->m_pChar, d->m_pChar, pSkill1, -1 , bApply);
 			if(bApply == false)
 			{
-				GAMELOG << init("EVENT_PHOENIX SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ½ºÅ³ Àû¿ë ½ÇÆĞ
+				GAMELOG << init("EVENT_PHOENIX SKILL FAILED (LOGIN) ", d->m_pChar ) << end;// ìŠ¤í‚¬ ì ìš© ì‹¤íŒ¨
 			}
 		}
 	}
 
 	if (pCastle != NULL && d->m_pChar != NULL && d->m_pChar->m_pZone->m_index == ZONE_DRATAN)
 	{
-		// °ø¼ºÁßÀÌ¸é ºÎÈ° ÁøÁö Á¤º¸ Àü¼Û
+		// ê³µì„±ì¤‘ì´ë©´ ë¶€í™œ ì§„ì§€ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		CastletowerQuartersListMsg(rmsg, pCastle);
 		SEND_Q(rmsg, d);
@@ -4914,10 +5011,10 @@ void CServer::CharPrePlay(CDescriptor* d)
 		break;
 	}
 
-	// Æ®¸®°Å¸¦ »ç¿ëÇÏ´Â AreaÀÌ¸é
+	// íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ëŠ” Areaì´ë©´
 	if (area && area->m_bUseTriggerEvent)
 	{
-		// ÇØ´ç AreaÀÇ Æ®¸®°Å ¸®½ºÆ® Á¤º¸¸¦ º¸³»ÁØ´Ù.
+		// í•´ë‹¹ Areaì˜ íŠ¸ë¦¬ê±° ë¦¬ìŠ¤íŠ¸ ì •ë³´ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 		area->m_CTriggerList.SyncForClient_TriggerInfo(d->m_pChar);
 	}
 
@@ -4928,10 +5025,10 @@ void CServer::CharPrePlay(CDescriptor* d)
 		SEND_Q(rmsg, d);
 	}
 
-	// ´øÀüÅ¸ÀÓÁßÀÏ ¶§ ¾Ë¸² º¸³¾°Í.
+	// ë˜ì „íƒ€ì„ì¤‘ì¼ ë•Œ ì•Œë¦¼ ë³´ë‚¼ê²ƒ.
 	if(m_bDungeonTimeToggle == true && m_bIsTime == true)
 	{
-		//msg ±¸¼º ÇÒ °Í.
+		//msg êµ¬ì„± í•  ê²ƒ.
 		int exp = 100;
 		for(int i = 0; i < gserver->m_iZoneCount; i++)
 		{
@@ -4976,7 +5073,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 		if(loop == 8)
 		{
-			// ¾ÆÄ­»ç¿ø ÀÎ¿øÀº ²ËÃ£´Âµ¥, ´õ µé¾î¿Ô´Ù. Æ¨°Ü¹ö·Á!
+			// ì•„ì¹¸ì‚¬ì› ì¸ì›ì€ ê½‰ì°¾ëŠ”ë°, ë” ë“¤ì–´ì™”ë‹¤. íŠ•ê²¨ë²„ë ¤!
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidInzoneQuitReq(rmsg,1,0);
 			do_Raid(d->m_pChar, rmsg);
@@ -5003,7 +5100,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 		if(loop == 8)
 		{
-			// ¾ÆÄ­»ç¿ø ÀÎ¿øÀº ²ËÃ£´Âµ¥, ´õ µé¾î¿Ô´Ù. Æ¨°Ü¹ö·Á!
+			// ì•„ì¹¸ì‚¬ì› ì¸ì›ì€ ê½‰ì°¾ëŠ”ë°, ë” ë“¤ì–´ì™”ë‹¤. íŠ•ê²¨ë²„ë ¤!
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidInzoneQuitReq(rmsg,1,0);
 			do_Raid(d->m_pChar, rmsg);
@@ -5016,7 +5113,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	if(!d->m_pChar->CheckCastellanType(castleNum, bCastellan))
 		castleNum = -1;
 
-	// castleNum Á¦¿ÜµÈ ¾ÆÀÌÅÛ, È£ÄªÁö¿ò
+	// castleNum ì œì™¸ëœ ì•„ì´í…œ, í˜¸ì¹­ì§€ì›€
 	d->m_pChar->m_inventory.CastllanItemRemove(castleNum, false, true, bCastellan);
 	d->m_pChar->CastllanTitleDelete(castleNum, true, bCastellan);
 
@@ -5105,7 +5202,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 			}
 		}
 	}
-	// Á¸ÀÌµ¿ ½Ã ITEM_FLAG_ZONEMOVE_DEL ÀÎ ¾ÆÀÌÅÛÀº Áö¿ö¹ö¸².
+	// ì¡´ì´ë™ ì‹œ ITEM_FLAG_ZONEMOVE_DEL ì¸ ì•„ì´í…œì€ ì§€ì›Œë²„ë¦¼.
 	{
 		item_search_t vec;
 		d->m_pChar->m_inventory.searchFlagByItemProto(ITEM_FLAG_ZONEMOVE_DEL, vec);
@@ -5121,7 +5218,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 		}
 	}
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ÆĞ³ÎÆ¼ ¸®Æû
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgSubHelperPKPenaltyRewardInfoReq( rmsg, d->m_pChar->m_index );
@@ -5140,7 +5237,7 @@ void CServer::CharPrePlay(CDescriptor* d)
 	if( d->m_pChar->m_pArea->GetPCCount() > 1
 			&& d->m_pChar->m_admin == 0
 			&& d->m_pChar->m_pZone->IsComboZone()
-			&& (!d->m_pChar->IsParty()) )			// area¿¡ ´Ù¸¥ »ç¶÷ÀÌ ÀÖ´Âµ¥ ³»°¡ ÆÄÆ¼°¡ ¾Æ´Ï´Ù. ±×·¯¸é ÆÄÆ¼ ¸ó½ºÅÍ ÄŞº¸ÀÎµ¥ ³»°¡ Àß¸øµé¾î°£ °ÍÀÌ´Ù. ´Ù½Ã ³ª°£´Ù.
+			&& (!d->m_pChar->IsParty()) )			// areaì— ë‹¤ë¥¸ ì‚¬ëŒì´ ìˆëŠ”ë° ë‚´ê°€ íŒŒí‹°ê°€ ì•„ë‹ˆë‹¤. ê·¸ëŸ¬ë©´ íŒŒí‹° ëª¬ìŠ¤í„° ì½¤ë³´ì¸ë° ë‚´ê°€ ì˜ëª»ë“¤ì–´ê°„ ê²ƒì´ë‹¤. ë‹¤ì‹œ ë‚˜ê°„ë‹¤.
 	{
 		int extra = 0;
 		CZone* pZone = gserver->FindZone(ZONE_DRATAN);
@@ -5181,13 +5278,13 @@ void CServer::CharPrePlay(CDescriptor* d)
 #ifdef PREMIUM_CHAR
 	d->m_pChar->m_premiumChar.sendInfo();
 
-	// ÀÌ ±¸¹®Àº ·Î±×¾Æ¿ô»óÅÂ¿¡¼­ ½Ã°£ÀÌ Á¾·áµÇ¾úÀ» ‹š¸¦ °Ë»çÇÔ
+	// ì´ êµ¬ë¬¸ì€ ë¡œê·¸ì•„ì›ƒìƒíƒœì—ì„œ ì‹œê°„ì´ ì¢…ë£Œë˜ì—ˆì„ Â‹Âšë¥¼ ê²€ì‚¬í•¨
 	d->m_pChar->m_premiumChar.checkExpireTime(gserver->getNowSecond());
 
 	d->m_pChar->m_premiumChar.checkJumpCount();
 #endif
 
-	d->m_pChar->m_first_inmap = false;	// ÀÌ ±¸¹®Àº Ç×»ó ÇÔ¼ö ¸Ç ¸¶Áö¸·¿¡ »ç¿ëÇÒ°Í
+	d->m_pChar->m_first_inmap = false;	// ì´ êµ¬ë¬¸ì€ í•­ìƒ í•¨ìˆ˜ ë§¨ ë§ˆì§€ë§‰ì— ì‚¬ìš©í• ê²ƒ
 }
 
 #ifdef GMTOOL
@@ -5396,7 +5493,7 @@ void CServer::ProcEndExped()
 {
 	time_t t_now = time(NULL);
 
-	//¿øÁ¤´ë ÇØÃ¼ Ã³¸®
+	//ì›ì •ëŒ€ í•´ì²´ ì²˜ë¦¬
 	map_listexped_t::iterator it = m_listExped.begin();
 	map_listexped_t::iterator endit = m_listExped.end();
 	for(; it != endit; ++it)
@@ -5406,10 +5503,10 @@ void CServer::ProcEndExped()
 		int nEndExpedStartTime = pExped->GetEndExpedTime();
 		if(nEndExpedStartTime > 0)
 		{
-			//20 ÃÊ°ú Ã¼Å©
+			//20 ì´ˆê³¼ ì²´í¬
 			if((t_now - nEndExpedStartTime) >= 20)
 			{
-				//¿øÁ¤´ë ÇØÃ¼ ¸Ş¼¼Áö Àü¼Û
+				//ì›ì •ëŒ€ í•´ì²´ ë©”ì„¸ì§€ ì „ì†¡
 				if (gserver->isRunHelper())
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -5427,7 +5524,7 @@ void CServer::ProcEndParty()
 {
 	time_t t_now = time(NULL);
 
-	//ÆÄÆ¼ ÇØÃ¼ Ã³¸®
+	//íŒŒí‹° í•´ì²´ ì²˜ë¦¬
 	map_listparty_t::iterator it = m_listParty.begin();
 	map_listparty_t::iterator endit = m_listParty.end();
 	for(; it != endit; ++it)
@@ -5437,10 +5534,10 @@ void CServer::ProcEndParty()
 		int nEndPartyStartTime = pParty->GetEndPartyTime();
 		if(nEndPartyStartTime > 0)
 		{
-			//20 ÃÊ°ú Ã¼Å©
+			//20 ì´ˆê³¼ ì²´í¬
 			if((t_now - nEndPartyStartTime) >= 20)
 			{
-				//ÆÄÆ¼ ÇØÃ¼ ¸Ş¼¼Áö Àü¼Û
+				//íŒŒí‹° í•´ì²´ ë©”ì„¸ì§€ ì „ì†¡
 				if (gserver->isRunHelper())
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
@@ -5464,12 +5561,12 @@ void CServer::ProcTrigger()
 			continue ;
 		for (j=0; j< m_zones[i].m_countArea; j++)
 		{
-			// Æ®¸®°Å¸¦ »ç¿ëÇÏ´Â AreaÀÌ¸é
+			// íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ëŠ” Areaì´ë©´
 			if (m_zones[i].m_area[j].m_bEnable && m_zones[i].m_area[j].m_bUseTriggerEvent)
 			{
 				if (m_pulse - m_zones[i].m_area[j].m_pulseProcTrigger >= PULSE_TRIGGER_SYSTEM)
 				{
-					// Å¸ÀÌ¸Ó Ã¼Å©ÇÏ´Â ÇÔ¼ö »ç¿ë, hardcording ÇÑ °ÍÀ» Ã³¸®ÇÏ±â
+					// íƒ€ì´ë¨¸ ì²´í¬í•˜ëŠ” í•¨ìˆ˜ ì‚¬ìš©, hardcording í•œ ê²ƒì„ ì²˜ë¦¬í•˜ê¸°
 					m_zones[i].m_area[j].m_pulseProcTrigger = m_pulse;
 					m_zones[i].m_area[j].m_CTriggerList.TriggerTimerCheck();
 				}
@@ -5478,7 +5575,7 @@ void CServer::ProcTrigger()
 	}
 }
 
-/* Ãß°¡ ¿ä¸Á...³ªÁß¿¡ Á¸ÀÎµ¦½º Ãß°¡µÇ¸é ¿©±â ¼öÁ¤*/
+/* ì¶”ê°€ ìš”ë§...ë‚˜ì¤‘ì— ì¡´ì¸ë±ìŠ¤ ì¶”ê°€ë˜ë©´ ì—¬ê¸° ìˆ˜ì •*/
 int	CServer::GetTriggerSetTypeToZoneIndex(int zoneIndex)
 {
 	int triggerSetType = 0;
@@ -5554,8 +5651,8 @@ void CGrobalEcho::Set( CNetMsg::SP& _msg , unsigned int _repeatTime, unsigned in
 	int idx = FindIndex();
 	msg[idx].reset();
 	msg[idx] = _msg;
-	repeatTime[idx] = _repeatTime * 60;		// ºĞ´ÜÀ§·Î ÀÔ·ÂÇØ¼­ ÃÊ·Î º¯È¯
-	remainTime[idx] = _time * 60;			// ºĞ´ÜÀ§·Î ÀÔ·ÂÇØ¿¡ ÃÊ·Î º¯È¯
+	repeatTime[idx] = _repeatTime * 60;		// ë¶„ë‹¨ìœ„ë¡œ ì…ë ¥í•´ì„œ ì´ˆë¡œ ë³€í™˜
+	remainTime[idx] = _time * 60;			// ë¶„ë‹¨ìœ„ë¡œ ì…ë ¥í•´ì— ì´ˆë¡œ ë³€í™˜
 }
 
 void CGrobalEcho::Print( )
@@ -5626,16 +5723,16 @@ void CServer::SetDungeonTime()
 		}
 	}
 
-	// FILE OPEN ÇÏ¿©¼­ ¼¼ÆÃµÈ °ª ÀĞ¾î¿À±â.
+	// FILE OPEN í•˜ì—¬ì„œ ì„¸íŒ…ëœ ê°’ ì½ì–´ì˜¤ê¸°.
 	FILE* fDungeonTime = fopen(DUNGEON_TIME_SAVEFILE, "rt");
 	if(fDungeonTime == NULL)
 	{
-		//±âº» ¼¼ÆÃ°ª ÆÄÀÏ¿¡ ÀúÀå.
+		//ê¸°ë³¸ ì„¸íŒ…ê°’ íŒŒì¼ì— ì €ì¥.
 		SaveDungeonTime(m_iZoneCount);
 	}
 	else
 	{
-		//ÆÄÀÏÀúÀå°ª load.
+		//íŒŒì¼ì €ì¥ê°’ load.
 		fclose(fDungeonTime);
 		fDungeonTime = NULL;
 		LoadDungeonTime(m_iZoneCount);
@@ -5725,7 +5822,7 @@ void CServer::LoadDungeonTime(int count)
 				bStart = true;
 		}
 
-		if(bLoadFail == false)								// bLoadFailÀÌ true ÀÌ¸é ±âº» ¼¼ÆÃÀ¸·Î ³öµĞ´Ù.
+		if(bLoadFail == false)								// bLoadFailì´ true ì´ë©´ ê¸°ë³¸ ì„¸íŒ…ìœ¼ë¡œ ë†”ë‘”ë‹¤.
 		{
 			for(i = 0; i < count; i++)
 			{
@@ -5744,7 +5841,7 @@ void CServer::LoadDungeonTime(int count)
 }
 void CServer::CheckDungeonTime()
 {
-	// ½ÃÀÛ ½Ã°£
+	// ì‹œì‘ ì‹œê°„
 	LOG_INFO("DUNGEON TIME > RealSystemTime.Hour : %d and TimeTable : %d", m_tRealSystemTime.tm_hour, m_bTimeTable[m_tRealSystemTime.tm_hour] ? 1 : 0);
 	for(int i=0; i<24; i++)
 	{
@@ -5753,7 +5850,7 @@ void CServer::CheckDungeonTime()
 
 	if(m_bTimeTable[m_tRealSystemTime.tm_hour] == true)
 	{
-		// ´øÀüÅ¸ÀÓ ½ÃÀÛ ¸Ş¼¼Áö Àü ÇÃ·¹ÀÌ¾îµé¿¡°Ô Àü¼Û
+		// ë˜ì „íƒ€ì„ ì‹œì‘ ë©”ì„¸ì§€ ì „ í”Œë ˆì´ì–´ë“¤ì—ê²Œ ì „ì†¡
 		m_iStartTime = m_tRealSystemTime.tm_hour;
 		m_iEndTime = m_iStartTime + m_iTimeInterval;
 
@@ -5783,8 +5880,8 @@ void CServer::CheckDungeonTime()
 
 	else if (m_tRealSystemTime.tm_hour == m_iEndTime)
 	{
-		// Á¾·á
-		// ´øÀüÅ¸ÀÓ Á¾·á ¸Ş¼¼Áö Àü ÇÃ·¹ÀÌ¾îµé¿¡°Ô Àü¼Û
+		// ì¢…ë£Œ
+		// ë˜ì „íƒ€ì„ ì¢…ë£Œ ë©”ì„¸ì§€ ì „ í”Œë ˆì´ì–´ë“¤ì—ê²Œ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		DungeonTimeNoticeMsg(rmsg, MSG_EX_DUNGEONTIME_END, -1, -1, -1);
 		LOG_INFO("DUNGEON TIME END > StartTime : %d and EndTime : %d and Interval : %d", m_iStartTime, m_iEndTime, m_iTimeInterval);
@@ -5831,8 +5928,8 @@ void CServer::ModifyDungeonTime(int flag)
 		iEnd -= 24;
 		if(nowtime >= iStart || nowtime < iEnd)
 		{
-			//Áö±İÀº ´øÀüÅ¸ÀÓ!!!
-			//false¿¡¼­ true·Î ¹Ù²î¸é °øÁö!!!
+			//ì§€ê¸ˆì€ ë˜ì „íƒ€ì„!!!
+			//falseì—ì„œ trueë¡œ ë°”ë€Œë©´ ê³µì§€!!!
 			int exp = 100;
 			for(int i = 0; i < gserver->m_iZoneCount; i++)
 			{
@@ -5870,8 +5967,8 @@ void CServer::ModifyDungeonTime(int flag)
 		}
 		else
 		{
-			// Áö±İÀº ½¬´Â Å¸ÀÓ
-			// true¿¡¼­ false·Î ¹Ù²î¾úÀ¸¸é Á¾·á °øÁö!!
+			// ì§€ê¸ˆì€ ì‰¬ëŠ” íƒ€ì„
+			// trueì—ì„œ falseë¡œ ë°”ë€Œì—ˆìœ¼ë©´ ì¢…ë£Œ ê³µì§€!!
 			m_bIsTime = false;
 			if(bTime == true)
 			{
@@ -5886,8 +5983,8 @@ void CServer::ModifyDungeonTime(int flag)
 	{
 		if (iStart <= nowtime && iEnd > nowtime)
 		{
-			// Áö±İÀº ´øÀü Å¸ÀÓ!!!
-			// false ¿¡¼­ true ·Î ¹Ù²î¸é °øÁö!!!
+			// ì§€ê¸ˆì€ ë˜ì „ íƒ€ì„!!!
+			// false ì—ì„œ true ë¡œ ë°”ë€Œë©´ ê³µì§€!!!
 			int exp = 100;
 			for(int i = 0; i < gserver->m_iZoneCount; i++)
 			{
@@ -5919,8 +6016,8 @@ void CServer::ModifyDungeonTime(int flag)
 		}
 		else
 		{
-			// Áö±İÀº ½¬´Â Å¸ÀÓ
-			// true¿¡¼­ false·Î ¹Ù²î¸é °øÁö!!!
+			// ì§€ê¸ˆì€ ì‰¬ëŠ” íƒ€ì„
+			// trueì—ì„œ falseë¡œ ë°”ë€Œë©´ ê³µì§€!!!
 			m_bIsTime = false;
 			if(bTime == true)
 			{
@@ -5952,14 +6049,14 @@ void CServer::CheckRaidReset()
 				this->m_tRealSystemTime.tm_min == this->m_nResetmin )
 		{
 			m_tRaidResetProcess = mktime(&m_tRealSystemTime);
-			// Ã¹¹øÂ° °øÁö ½ÃÀÛ
+			// ì²«ë²ˆì§¸ ê³µì§€ ì‹œì‘
 			// (5 - m_nProcess)
 			GAMELOG << init("RAID AUTO RESET REMAIN") << (5-m_nProcess) << end;
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysRaidZoneRemain(rmsg, (5-m_nProcess));
 
 			PCManager::instance()->sendToAll(rmsg);
-			// Ã¹¹øÂ° °øÁö ³¡
+			// ì²«ë²ˆì§¸ ê³µì§€ ë
 			m_tRaidResetProcess += 60;
 			m_nProcess++;
 			m_bIsCheckTime = true;
@@ -5971,7 +6068,7 @@ void CServer::CheckRaidReset()
 	{
 		if( mktime(&m_tRealSystemTime) >= m_tRaidResetProcess )
 		{
-			// 1~nÂ÷ °øÁö
+			// 1~nì°¨ ê³µì§€
 			if(m_nProcess <= 5)
 			{
 				//(5 - m_nProcess)
@@ -5995,19 +6092,19 @@ void CServer::CheckRaidReset()
 
 			if(m_nProcess == 6)
 			{
-				// ÃÊ±âÈ­
+				// ì´ˆê¸°í™”
 				GAMELOG << init("START RAID RESET") << end;
 				ResetRaid();
 			}
 
 			if(m_nProcess == 10)
 			{
-				// Á¾·á°øÁö½ÃÀÛ
+				// ì¢…ë£Œê³µì§€ì‹œì‘
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysMsg(rmsg, MSG_SYS_RAID_RESET_COMPLETE);
 				PCManager::instance()->sendToAll(rmsg);
 				GAMELOG << init("END RAID RESET") << end;
-				// Á¾·á°øÁö ³¡
+				// ì¢…ë£Œê³µì§€ ë
 				m_bCanEnterTheRaidDungeon = true;
 				m_bIsCheckTime = false;
 				m_tRaidResetProcess = 0;
@@ -6044,9 +6141,9 @@ void CServer::ResetRaid()
 						AreaArrayIndex++;
 					}
 				}
-				// ÀÌÁ¦ ¿©±â¼­ ¸Ş½ÃÁö¸¦ ¸¸µé°í Helper·Î º¸³½´Ù.
-				// º¸³»´Â Á¤º¸. »èÁ¦ ¿äÃ» ¸Ş½ÃÁö << AreaArrayIndex << zoneNo. << roomNo. << diffyculty
-				// ÁÖÀÇ!!! ¿©±â Á¤º¸¸¸ Á¦¿ÜÇÏ°í ´Ù¸¥ °ÍµéÀ» »èÁ¦ÇØ¾ßÇÑ´Ù!!!!
+				// ì´ì œ ì—¬ê¸°ì„œ ë©”ì‹œì§€ë¥¼ ë§Œë“¤ê³  Helperë¡œ ë³´ë‚¸ë‹¤.
+				// ë³´ë‚´ëŠ” ì •ë³´. ì‚­ì œ ìš”ì²­ ë©”ì‹œì§€ << AreaArrayIndex << zoneNo. << roomNo. << diffyculty
+				// ì£¼ì˜!!! ì—¬ê¸° ì •ë³´ë§Œ ì œì™¸í•˜ê³  ë‹¤ë¥¸ ê²ƒë“¤ì„ ì‚­ì œí•´ì•¼í•œë‹¤!!!!
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					HelperAutoResetRaid(rmsg, AreaArrayIndex, m_zones[i].m_index, Area);
@@ -6121,7 +6218,7 @@ void CServer::CheckEventTime()
 #ifdef UPGRADE_EVENT_AUTO
 	if(curtime >= gserver->m_tUpgradeEventStart && curtime < gserver->m_tUpgradeEventEnd)
 	{
-		// ÀÌº¥Æ® ½Ã°£ÀÓ.
+		// ì´ë²¤íŠ¸ ì‹œê°„ì„.
 		if(g_bUpgradeEvent == false)
 		{
 			GAMELOG << init("UPGRADE_EVENT_START") << "prob" << delim << g_nUpgradeProb << end;
@@ -6169,7 +6266,7 @@ void CServer::CheckEventTime()
 
 	if(curtime >= starttime && curtime < endtime)
 	{
-		// ÀÌº¥Æ® ½Ã°£ÀÓ.
+		// ì´ë²¤íŠ¸ ì‹œê°„ì„.
 		m_bExpLimit = true;
 		if(bBoolean == false)
 		{
@@ -6180,7 +6277,7 @@ void CServer::CheckEventTime()
 	}
 	else
 	{
-		// ÀÌº¥Æ® ½Ã°£ÀÌ ¾Æ´Ô.
+		// ì´ë²¤íŠ¸ ì‹œê°„ì´ ì•„ë‹˜.
 		m_bExpLimit = false;
 		if(bBoolean == true)
 		{
@@ -6215,7 +6312,7 @@ void CServer::CheckEventTime()
 
 	if(curtime >= starttime && curtime < endtime)
 	{
-		// ÀÌº¥Æ® ½Ã°£ÀÓ.
+		// ì´ë²¤íŠ¸ ì‹œê°„ì„.
 		m_bIsItemdrop = true;
 		if(bBoolean == false)
 		{
@@ -6226,7 +6323,7 @@ void CServer::CheckEventTime()
 	}
 	else
 	{
-		// ÀÌº¥Æ® ½Ã°£ÀÌ ¾Æ´Ô.
+		// ì´ë²¤íŠ¸ ì‹œê°„ì´ ì•„ë‹˜.
 		m_bIsItemdrop = false;
 		gserver->m_nItemDropEventRate = 100;
 		if(bBoolean == true)
@@ -6260,7 +6357,7 @@ void CServer::CheckEventTime()
 
 	if(curtime >= starttime && curtime < endtime)
 	{
-		// ÀÌº¥Æ® ½Ã°£
+		// ì´ë²¤íŠ¸ ì‹œê°„
 		m_bIsDEtime = true;
 		if(bBoolean == false)
 		{
@@ -6277,7 +6374,7 @@ void CServer::CheckEventTime()
 	}
 	else
 	{
-		// ÀÌº¥Æ® ½Ã°£ ¾Æ´Ô.
+		// ì´ë²¤íŠ¸ ì‹œê°„ ì•„ë‹˜.
 		m_bIsDEtime = false;
 		if(bBoolean == true)
 		{
@@ -6324,7 +6421,7 @@ void CServer::CheckEventTime()
 		gserver->NewDoubleEventAuto();
 		if (bBoolean == false)
 		{
-			// º¯°æµÇ¾ú´Ù´Â °ÔÀÓ·Î±×
+			// ë³€ê²½ë˜ì—ˆë‹¤ëŠ” ê²Œì„ë¡œê·¸
 			GAMELOG << init("Combo Double Event Auto Reservation Time") << "Start" << end;
 		}
 	}
@@ -6334,7 +6431,7 @@ void CServer::CheckEventTime()
 		gserver->m_bDoubleEventAutoOn = false;
 		if(bBoolean == true)
 		{
-			// º¯°æµÇ¾ú´Ù´Â °ÔÀÓ·Î±×
+			// ë³€ê²½ë˜ì—ˆë‹¤ëŠ” ê²Œì„ë¡œê·¸
 			GAMELOG << init("Combo Double Event Auto Reservation Time") << "End" << end;
 		}
 	}
@@ -6476,7 +6573,7 @@ void CServer::readTreasureMapSaveFile()
 }
 #endif
 
-#ifdef REFORM_PK_PENALTY_201108 // Á¤½Ã¿¡ ÇÑ¹ø ¼ºÇâ ¼öÁö ÀåÄ¡ ¹öÇÁ°¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô pk ¼ºÇâ Æ÷ÀÎÆ® º¸»ó º¸»óÇØÁà¾ßÇÑ´Ù.
+#ifdef REFORM_PK_PENALTY_201108 // ì •ì‹œì— í•œë²ˆ ì„±í–¥ ìˆ˜ì§€ ì¥ì¹˜ ë²„í”„ê°€ ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ pk ì„±í–¥ í¬ì¸íŠ¸ ë³´ìƒ ë³´ìƒí•´ì¤˜ì•¼í•œë‹¤.
 void CServer::CheckPkDisPosiotionPointReward()
 {
 	PCManager::map_t& playerMap			= PCManager::instance()->getPlayerMap();
@@ -6994,13 +7091,13 @@ bool CServer::removeActiveEvent(int _eventIndex, bool _dbUpdate)
 	if( !m_eventAutomationMgr.removeActiveEvent(_eventIndex, _dbUpdate) )
 		return false;
 
-	//ÀÌº¥Æ®°¡ À¯¹° ÀÌº¥Æ® ÀÌ¸é ÇØ´ç ¾ÆÀÌÅÛÀ» ¸ğµÎ Á¦°Å
+	//ì´ë²¤íŠ¸ê°€ ìœ ë¬¼ ì´ë²¤íŠ¸ ì´ë©´ í•´ë‹¹ ì•„ì´í…œì„ ëª¨ë‘ ì œê±°
 	if( _eventIndex == EVENT_ARTIFACT)
 	{
 		ArtifactManager::instance()->eventOff();
 	}
 
-	// ¸ğµçÁ¸À» °Ë»çÇØ¼­ ÇØ´ç npc¸¦ »èÁ¦ÇÒ±î? ¤Ñ¤Ñ;;
+	// ëª¨ë“ ì¡´ì„ ê²€ì‚¬í•´ì„œ í•´ë‹¹ npcë¥¼ ì‚­ì œí• ê¹Œ? ã…¡ã…¡;;
 	CEventInfo * eInfo = getEventInfo(_eventIndex);
 	if( !eInfo )
 		return false;
@@ -7076,9 +7173,9 @@ void CServer::doEventDropItem(CNPC* npc, CPC* pc, CPC* tpc)
 
 bool CServer::GetOutDratanDungeon(CPC* pc)
 {
-	// °ø¼ºÀü ÁøÇà ÁßÀÌ°í, ÀÌµ¿ÇÏ·Á´Â °÷ÀÌ µå¶óÅº º¸»ó ´øÀü(Å×¿ÀÀÇ ¹«´ı)ÀÌ¸é, µå¶óÅºÀ¸·Î º¸³½´Ù.
+	// ê³µì„±ì „ ì§„í–‰ ì¤‘ì´ê³ , ì´ë™í•˜ë ¤ëŠ” ê³³ì´ ë“œë¼íƒ„ ë³´ìƒ ë˜ì „(í…Œì˜¤ì˜ ë¬´ë¤)ì´ë©´, ë“œë¼íƒ„ìœ¼ë¡œ ë³´ë‚¸ë‹¤.
 	// Return Value
-	// true : º¸³ÂÀ½, false : ¾Èº¸³ÂÀ½
+	// true : ë³´ëƒˆìŒ, false : ì•ˆë³´ëƒˆìŒ
 	if ( CDratanCastle::CreateInstance()->GetState() != WCSF_NORMAL )
 	{
 		if ( pc->m_pZone->m_index == ZONE_DRATAN_CASTLE_DUNGEON )
@@ -7248,3 +7345,17 @@ void CServer::checkTldEvent()
 	}
 }
 #endif
+
+
+void CServer::gm_list_init()
+{
+	set_gmlist.insert(std::set<std::string>::value_type("echo"));
+	set_gmlist.insert(std::set<std::string>::value_type("silence"));
+	set_gmlist.insert(std::set<std::string>::value_type("doubleexp_event"));
+	set_gmlist.insert(std::set<std::string>::value_type("upgrade_event"));
+	set_gmlist.insert(std::set<std::string>::value_type("event"));
+	set_gmlist.insert(std::set<std::string>::value_type("automationevent"));
+	set_gmlist.insert(std::set<std::string>::value_type("jewelrye"));
+	set_gmlist.insert(std::set<std::string>::value_type("double_event"));
+	set_gmlist.insert(std::set<std::string>::value_type("godbless"));	
+}

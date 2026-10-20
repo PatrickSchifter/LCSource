@@ -96,7 +96,7 @@ void ServerTimerPerMinute::operate( rnSocketIOService* service )
 	//LOG_INFO("DEBUG_FUNC : START");
 	gserver->PingDB();
 
-	// ÀÚµ¿ ÀúÀå
+	// ìë™ ì €ì¥
 	int seq = ((int)time(0) / 60) % AUTO_SAVE_SEQUENCT;
 	BOOST_FOREACH(CDescriptor* desc, CDescriptor::auto_set[seq])
 	{
@@ -112,9 +112,6 @@ void ServerTimerPerMinute::operate( rnSocketIOService* service )
 			gserver->ProcStatistics();
 		}
 	}
-
-	if(gserver->m_buffSystem.Started())
-		gserver->m_buffSystem.TickSystem();
 
 	PopupNotice::instance()->SendDataForLoop();
 	//LOG_INFO("DEBUG_FUNC : END");
@@ -139,7 +136,7 @@ void ServerTimerPerMinute::Init()
 void ServerTimerPerHour::operate( rnSocketIOService* service )
 {
 	//LOG_INFO("DEBUG_FUNC : START");
-	time_t nowtime = time(0); //ÃÊ´ÜÀ§·Î ¹İÈ¯
+	time_t nowtime = time(0); //ì´ˆë‹¨ìœ„ë¡œ ë°˜í™˜
 
 	memcpy(&gserver->m_tRealSystemTime, localtime(&nowtime), sizeof(gserver->m_tRealSystemTime));
 
@@ -147,12 +144,12 @@ void ServerTimerPerHour::operate( rnSocketIOService* service )
 
 	gserver->CheckDungeonTime();
 
-#ifdef REFORM_PK_PENALTY_201108 // Á¤½Ã¿¡ ÇÑ¹ø ¼ºÇâ ¼öÁö ÀåÄ¡ ¹öÇÁ°¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô pk ¼ºÇâ Æ÷ÀÎÆ® º¸»ó º¸»óÇØÁà¾ßÇÑ´Ù.
+#ifdef REFORM_PK_PENALTY_201108 // ì •ì‹œì— í•œë²ˆ ì„±í–¥ ìˆ˜ì§€ ì¥ì¹˜ ë²„í”„ê°€ ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ pk ì„±í–¥ í¬ì¸íŠ¸ ë³´ìƒ ë³´ìƒí•´ì¤˜ì•¼í•œë‹¤.
 	gserver->CheckPkDisPosiotionPointReward();
 #endif
 
-	//Á¤½Ã¿¡ ÇÑ¹ø Ã¼Å©¸¦ ÇÏ°í
-	//3½Ã°£¿¡ ÇÑ¹ø¾¿ 3½Ã°£µ¿¾È À¯Áö°¡ µÇ¾ú´ÂÁö È®ÀÎ ÈÄ¿¡ º¸»óÀ» ÇØ ÁØ´Ù.
+	//ì •ì‹œì— í•œë²ˆ ì²´í¬ë¥¼ í•˜ê³ 
+	//3ì‹œê°„ì— í•œë²ˆì”© 3ì‹œê°„ë™ì•ˆ ìœ ì§€ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸ í›„ì— ë³´ìƒì„ í•´ ì¤€ë‹¤.
 	gserver->CheckDratanCastleDungeon( (nowtime / 60 / 60) % gserver->m_DratanCheckTime );
 	if( (((nowtime / 60 / 60) % gserver->m_DratanCheckTime) == 0) && gserver->m_subno == 1)
 	{
@@ -227,8 +224,8 @@ void ServerTimerPerMidnight::Init()
 	nowtm.tm_min = 0;
 	nowtm.tm_sec = 0;
 
-	time_t newtime = mktime(&nowtm);	// ¿À´Ã 0½Ã 0ºĞ 0ÃÊ
-	newtime += 86400;					// ³»ÀÏ 0½Ã 0ºĞ 0ÃÊ
+	time_t newtime = mktime(&nowtm);	// ì˜¤ëŠ˜ 0ì‹œ 0ë¶„ 0ì´ˆ
+	newtime += 86400;					// ë‚´ì¼ 0ì‹œ 0ë¶„ 0ì´ˆ
 
 	int remain_sec = (int)(newtime - nowtime);
 
@@ -312,14 +309,14 @@ void ShutdownTimer::operate( rnSocketIOService* service )
 	}
 
 	{
-		// À¯Àú¿¡°Ô ¼­¹ö ´Ù¿î ³²Àº ½Ã°£À» Àü¼Û
+		// ìœ ì €ì—ê²Œ ì„œë²„ ë‹¤ìš´ ë‚¨ì€ ì‹œê°„ì„ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		std::string tstr = boost::str(boost::format("%1%") % remain_sec_);
 		SayMsg(rmsg, MSG_CHAT_NOTICE_SERVERDOWN, 0, "", "", tstr.c_str());
 		PCManager::instance()->sendToAll(rmsg);
 	}
 
-	// Ä«¿îÆ® °¨¼Ò
+	// ì¹´ìš´íŠ¸ ê°ì†Œ
 	--remain_sec_;
 }
 
@@ -365,7 +362,7 @@ void RebootTimer::operate( rnSocketIOService* service )
 	}
 
 	{
-		// À¯Àú¿¡°Ô ¼­¹ö ´Ù¿î ³²Àº ½Ã°£À» Àü¼Û
+		// ìœ ì €ì—ê²Œ ì„œë²„ ë‹¤ìš´ ë‚¨ì€ ì‹œê°„ì„ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		std::string tstr = boost::str(boost::format("%1%") % remain_sec_);
 		SayMsg(rmsg, MSG_CHAT_NOTICE_SERVERDOWN, 0, "", "", tstr.c_str());

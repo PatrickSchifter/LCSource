@@ -342,8 +342,10 @@ void CUIReformSystem::SetUIRect(const int nHeight)
 
 void CUIReformSystem::Render()
 {
+	CUIManager* pUiManager = CUIManager::getSingleton();
+
 	// 리폼 활성화시 일부 상호작용 거부 [9/25/2012 Ranma]
-	InteractionMsgBoxReject();
+	pUiManager->InteractionMsgBoxReject();
 
 	// 프로그레스바 추가 [9/12/2012 Ranma]
 	_calcCmdTimer();
@@ -352,8 +354,6 @@ void CUIReformSystem::Render()
 
 	int nX, nY;
 	GetAbsPos(nX, nY);
-
-	CUIManager* pUiManager = CUIManager::getSingleton();
 
 	if(m_fNPCPosX >= 0.0f && m_fNPCPosZ >= 0.0f)
 	{
@@ -790,102 +790,6 @@ WMSG_RESULT	CUIReformSystem::MouseMessage(MSG *pMsg )
 void CUIReformSystem::MsgBoxCommand( int nCommandCode, BOOL bOK, CTString &strInput )
 {
 }
-
-void CUIReformSystem::InteractionMsgBoxReject()
-{
-	CUIManager* pUIManager = CUIManager::getSingleton();
-
-	// 파티 초대[신청받음]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_PARTY_ALLOW))
-	{
-		pUIManager->GetMessageBox(MSGCMD_PARTY_ALLOW)->ReturnCommand(FALSE);
-	}
-
-	// 파티 초대[신청]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_PARTY_INVITE))
-	{
-		pUIManager->GetMessageBox(MSGCMD_PARTY_INVITE)->ReturnCommand(FALSE);
-	}
-
-	// 파티리콜[신청 받음]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_EX_PARTY_RECALL_PROMPT))
-	{
-		pUIManager->GetMessageBox(MSGCMD_EX_PARTY_RECALL_PROMPT)->ReturnCommand(FALSE);
-	}
-
-	// 교환 요청 [요청]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_EXCH_REQ_SRC))
-	{
-		pUIManager->GetMessageBox(MSGCMD_EXCH_REQ_SRC)->ReturnCommand(FALSE);
-	}
-
-	// 교환 요청 [요청받음]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_EXCH_REQ_DEST))
-	{
-		pUIManager->GetMessageBox(MSGCMD_EXCH_REQ_DEST)->ReturnCommand(FALSE);
-	}
-
-	// 길드 가입 요청 [요청받음]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_GUILD_JOIN))
-	{
-		pUIManager->GetMessageBox(MSGCMD_GUILD_JOIN)->ReturnCommand(FALSE);
-	}
-
-	// 길드 가입 요청 [요청]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_GUILD_JOIN_REQ))
-	{
-		pUIManager->GetMessageBox(MSGCMD_GUILD_JOIN_REQ)->ReturnCommand(FALSE);
-	}
-
-	// 길드 전투 요청
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_GUILD_BATTLE_REQ))
-	{
-		pUIManager->GetMessageBox(MSGCMD_GUILD_BATTLE_REQ)->ReturnCommand(FALSE);
-	}
-
-	// 길드 전투 신청 창
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_GUILD_BATTLE_MESSAGE))
-	{
-		pUIManager->GetMessageBox(MSGCMD_GUILD_BATTLE_MESSAGE)->ReturnCommand(FALSE);
-	}
-	
-	// 길드 전투 수락창 [요청 받음]
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_GUILD_BATTLE_ACCEPT))
-	{
-		pUIManager->GetMessageBox(MSGCMD_GUILD_BATTLE_ACCEPT)->ReturnCommand(FALSE);
-	}
-
-	// 순간이동 요청을 받았을 경우 sessionState에서 처리 
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_WARP_TO_REQ_CALL))
-	{
-		pUIManager->GetMessageBox(MSGCMD_WARP_TO_REQ_CALL)->ReturnCommand(FALSE);
-	}
-
-	// 소환 요청을 받았을 경우 sessionState에서 처리
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_WARP_TAKE_REQ_CALL))
-	{
-		pUIManager->GetMessageBox(MSGCMD_WARP_TAKE_REQ_CALL)->ReturnCommand(FALSE);
-	}
-
-	// 공성 지역 이동 확인
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM))
-	{
-		pUIManager->GetMessageBox(MSGCMD_SIEGE_WARFARE_MOVEING_CONFIRM)->ReturnCommand(FALSE);
-	}
-
-	// 후견인으로 등록 확인
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_HELPER_STUDENT_ACCEPT))
-	{
-		pUIManager->GetMessageBox(MSGCMD_HELPER_STUDENT_ACCEPT)->ReturnCommand(FALSE);
-	}
-
-	// go to royal rumble zone.
-	if(pUIManager->DoesMessageBoxExist(MSGCMD_ROYALRUMBLE_GO_ZONE))
-	{
-		pUIManager->GetMessageBox(MSGCMD_ROYALRUMBLE_GO_ZONE)->ReturnCommand(FALSE);
-	}
-}
-
 
 void CUIReformSystem::BtnSetItemCheckforPos()
 {

@@ -35,6 +35,7 @@ DECL_GM_CMD(go_zone);
 DECL_GM_CMD(logout);
 DECL_GM_CMD(ic_checkitem);
 DECL_GM_CMD(show_attr);
+DECL_GM_CMD(autoprobMasterstone);
 
 
 #endif		// GM_COMMAND_DECL_H_

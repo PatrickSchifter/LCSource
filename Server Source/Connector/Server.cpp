@@ -196,14 +196,6 @@ void CServer::CommandInterpreter(CDescriptor* d, CNetMsg::SP& msg)
 				ConnLogout(d, msg);
 				break;
 
-			case MSG_CONN_BLOGIN_REQ:
-				ConnBLogin(d, msg);
-				break;
-
-			case MSG_CONN_BLOGOUT_REQ:
-				ConnBLogout(d, msg);
-				break;
-
 			case MSG_CONN_PLAYER_REQ:
 				ConnPlayerReq(d, msg);
 				break;
@@ -286,14 +278,14 @@ void CServer::ProcessLogout(CUser* user)
 	GAMELOG << init("LOGOUT", user->m_name)
 			<< end;
 
-	// Á¸º° »ç¿ëÀÚ ¼ö °¨¼Ò
-	m_userList[subno - 1].m_playersPerZone[user->m_zone]--;
+	// ì¡´ë³„ ì‚¬ìš©ì ìˆ˜ ê°ì†Œ
+	m_user_list->decreasePlayerZoneCount(user->m_subnum, user->m_zone);
 
-	// ºô¸µ¿¡ ·Î±×¾Æ¿ô ¾Ë¸®±â
+	// ë¹Œë§ì— ë¡œê·¸ì•„ì›ƒ ì•Œë¦¬ê¸°
 	if (m_billing.IsRunning())
 		m_billing.Logout(user->m_name);
 
-	// DB¿¡ ÀúÀå
+	// DBì— ì €ì¥
 	int playtime = time(0) - user->m_timestamp;
 
 	if (WriteDB(user->m_index, user->m_server, subno, -1, playtime, NULL, NULL, false) != MSG_CONN_ERROR_SUCCESS)
@@ -302,7 +294,7 @@ void CServer::ProcessLogout(CUser* user)
 #ifdef EVENT_PCBANG_2ND
 	if(user->m_location == BILL_LOCATION_PCBANG)
 	{
-		// ÇÇ¾¾¹æ ·Î±× ¾Æ¿ô ±â·Ï ³²±â±â
+		// í”¼ì”¨ë°© ë¡œê·¸ ì•„ì›ƒ ê¸°ë¡ ë‚¨ê¸°ê¸°
 		CDBCmd cmd;
 		cmd.Init(&gserver.m_dbauth);
 
@@ -344,8 +336,8 @@ void CServer::ProcessLogout(CUser* user)
 
 #endif // LOGIN_TIME_CHECK
 
-	// À¯Àú¸¦ ¸®½ºÆ®¿¡¼­ »èÁ¦
-	m_userList[subno - 1].Remove(user);
+	// ìœ ì €ë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
+	m_user_list->delete_(user);
 }
 
 void ServerSrandom(unsigned long initial_seed);
@@ -357,6 +349,8 @@ CServer::~CServer()
 
 	if (m_nEventGomdori2007Status)
 		delete [] m_nEventGomdori2007Status;
+
+	delete m_user_list;
 }
 
 char* CServer::GetServerPath()
@@ -512,8 +506,6 @@ bool CServer::ConnectDB()
 
 bool CServer::InitGame()
 {
-	m_userList = new CUserList[m_maxSubServer];
-
 	ServerSrandom((unsigned long)time(0));
 	InitUserData();
 
@@ -528,7 +520,7 @@ bool CServer::InitGame()
 	i = 0;
 	cmd.Init(&gserver.m_dbuser);
 
-	// ÆÈ¸° »óÇ° °¹¼ö ·Îµù
+	// íŒ”ë¦° ìƒí’ˆ ê°¯ìˆ˜ ë¡œë”©
 	std::string selectQuery = boost::str(boost::format(
 			"SELECT * FROM t_ct_limit WHERE a_server = %d ") % this->m_serverno);
 
@@ -557,12 +549,14 @@ bool CServer::InitGame()
 
 	GAMELOG << init("SYSTEM") << "Entering Connector Loop" << end;
 
+	m_user_list = new UserList(this->m_maxSubServer);
+
 	return true;
 }
 
 void CServer::InitUserData()
 {
-	// t_userÀÇ ¿¬°á ÃÊ±âÈ­
+	// t_userì˜ ì—°ê²° ì´ˆê¸°í™”
 	// UPDATE t_users SET a_zone_num=-1 WHERE a_server_num=serverno AND a_subnum=subnum
 	std::string updateQuery = boost::str(boost::format(
 			"UPDATE t_users SET a_zone_num=-1 WHERE a_server_num = %d") % m_serverno);
@@ -668,27 +662,14 @@ int CServer::GetMaxPlayers()
 
 void CServer::CloseSocket(CDescriptor* d)
 {
-	// ·Î±× ³²±â°í »ç¿ëÀÚ Á¤¸®
+	// ë¡œê·¸ ë‚¨ê¸°ê³  ì‚¬ìš©ì ì •ë¦¬
 	GAMELOG << init("DISCONNECT", d->service_->ip().c_str())
 			<< end;
 
-	// »ç¿ëÀÚ ·çÇÁ µ¹¸é¼­
+	// ì‚¬ìš©ì ë£¨í”„ ëŒë©´ì„œ
 	if (!d->m_bLoginServer && d->m_subno > 0)
 	{
-		int i;
-		for (i = 0; i <= m_userList[d->m_subno - 1].m_last; i++)
-		{
-			// ÇöÀç Á¢¼Ó Á¾·áµÈ ¼­¹öÀÇ »ç¿ëÀÚÀÌ¸é
-			if (m_userList[d->m_subno - 1].m_users[i] && m_userList[d->m_subno - 1].m_users[i]->m_descserver == d)
-			{
-				// ·Î±×¾Æ¿ô Ã³¸®
-				CNetMsg::SP rmsg(new CNetMsg);
-				rmsg->Init(MSG_CONN_REQ);
-				RefMsg(rmsg) << (unsigned char)MSG_CONN_LOGOUT_REQ
-							 << m_userList[d->m_subno - 1].m_users[i]->m_name;
-				ConnLogout(d, rmsg);
-			}
-		}
+		m_user_list->logout_all(d);
 	}
 
 	REMOVE_FROM_BILIST(d, m_desclist, m_pPrev, m_pNext);
@@ -708,14 +689,14 @@ void CServer::SavePlayersCount()
 
 	cmd.Init(&m_dbuser);
 
-	// Á¸º° »ç¿ëÀÚ ¼ö ÀúÀå
+	// ì¡´ë³„ ì‚¬ìš©ì ìˆ˜ ì €ì¥
 	for (s = 0; s < m_maxSubServer; s++)
 	{
-		// ÆÈ¸´ °¹¼ö¿¡ º­È­°¡ ÀÖÀ¸¸é ÀúÀå
+		// íŒ”ë¦¿ ê°¯ìˆ˜ì— ë²¼í™”ê°€ ìˆìœ¼ë©´ ì €ì¥
 		if(gserver.m_changeLimit)
 		{
-			// ÇÑÁ¤ ÆÇ¸Å ÆÈ¸° ¼ö·®µµ 5ºĞ¸¶´Ù ÀÏ´Ü ÀúÀå
-			// ÇÑÁ¤ »óÇ°ÀÌ ÆÈ¸° °¹¼ö¸¦ µğºñ¿¡ ÀúÀå
+			// í•œì • íŒë§¤ íŒ”ë¦° ìˆ˜ëŸ‰ë„ 5ë¶„ë§ˆë‹¤ ì¼ë‹¨ ì €ì¥
+			// í•œì • ìƒí’ˆì´ íŒ”ë¦° ê°¯ìˆ˜ë¥¼ ë””ë¹„ì— ì €ì¥
 			map_limitsell_t::iterator it = gserver.m_limitSell.begin();
 			map_limitsell_t::iterator endit = gserver.m_limitSell.end();
 			for(; it != endit; ++it)
@@ -728,7 +709,7 @@ void CServer::SavePlayersCount()
 						"UPDATE t_ct_limit SET a_sell = %d WHERE a_server = %d and a_ct_id = %d ") % limit->GetSell() % gserver.m_serverno % limit->GetIndex() );
 
 				cmd.SetQuery(updateQuery);
-				// ¾÷µ¥ÀÌÆ®°¡ ½ÇÆĞÇÏ¸é ÇöÀç µî·Ï¾ÈµÈ »óÇ°ÀÌ´Ï±î ÀÎ¼­Æ®
+				// ì—…ë°ì´íŠ¸ê°€ ì‹¤íŒ¨í•˜ë©´ í˜„ì¬ ë“±ë¡ì•ˆëœ ìƒí’ˆì´ë‹ˆê¹Œ ì¸ì„œíŠ¸
 				if( !cmd.Update() || cmd.m_nrecords < 1)
 				{
 					std::string insertQuery = boost::str(boost::format(
@@ -745,26 +726,26 @@ void CServer::SavePlayersCount()
 
 		for (i = 0; i < MAX_ZONES; i++)
 		{
-			if (m_userList[s].m_playersPerZone[i] < 0)
-				continue ;
+			if(m_user_list->getPlayerZoneCount(s + 1, i) < 0)
+				continue;
 
-			// t_connect_count °»½Å: 10ºĞ
+			// t_connect_count ê°±ì‹ : 10ë¶„
 			if (m_pulseSaveCount <= now)
 			{
 				// INSERT INTO t_connect_count (a_count, a_date, a_server, a_sub_num, a_zone_num) VALUES (count, date, server, subno, zoneno)
 				std::string insertSql = boost::str(boost::format(
 													   "INSERT INTO t_connect_count (a_count, a_date, a_server, a_sub_num, a_zone_num) VALUES "
-													   "(%d, FROM_UNIXTIME(%d), %d, %d, %d)") % m_userList[s].m_playersPerZone[i] % (int) m_pulseSaveCount % m_serverno % (s + 1) % i);
+													   "(%d, FROM_UNIXTIME(%d), %d, %d, %d)") % m_user_list->getPlayerZoneCount(s + 1, i) % (int) m_pulseSaveCount % m_serverno % (s + 1) % i);
 				cmd.SetQuery(insertSql);
 				cmd.Update();
 
-				GAMELOG << init("COUNT") << "Sub" << delim << (s + 1) << delim << "Zone" << delim << i << delim << m_userList[s].m_playersPerZone[i] << end;
+				GAMELOG << init("COUNT") << "Sub" << delim << (s + 1) << delim << "Zone" << delim << i << delim << m_user_list->getPlayerZoneCount(s + 1, i) << end;
 			}
 
-			// t_connect_max °»½Å: 2ºĞ
+			// t_connect_max ê°±ì‹ : 2ë¶„
 			if (m_pulseSaveMax <= now)
 			{
-				// ¿À´Ã ³¯Â¥·Î Ã£°í
+				// ì˜¤ëŠ˜ ë‚ ì§œë¡œ ì°¾ê³ 
 				// SELECT * FROM t_connect_max WHERE a_date=CURDATE() AND a_server=server AND a_sub_num=subno AND a_zone_num=zone
 				std::string selectQuery = boost::str(boost::format(
 						"SELECT * FROM t_connect_max WHERE a_date=CURDATE() AND a_server = %d AND a_sub_num = %d AND a_zone_num = %d")
@@ -776,29 +757,29 @@ void CServer::SavePlayersCount()
 				{
 					if (cmd.MoveNext())
 					{
-						// ÀÖÀ¸¸é Ä«¿îÆ® ºñ±³ÇØ¼­ Å«¼ö ÀúÀåÇÏ°í
+						// ìˆìœ¼ë©´ ì¹´ìš´íŠ¸ ë¹„êµí•´ì„œ í°ìˆ˜ ì €ì¥í•˜ê³ 
 						LONGLONG index;
 						int countmax = 0;
 						cmd.GetRec("a_index", index);
 						cmd.GetRec("a_count_max", countmax);
-						if (countmax < m_userList[s].m_playersPerZone[i])
-							countmax = m_userList[s].m_playersPerZone[i];
-						// ¾÷µ¥ÀÌÆ®
+						if (countmax < m_user_list->getPlayerZoneCount(s + 1, i))
+							countmax = m_user_list->getPlayerZoneCount(s + 1, i);
+						// ì—…ë°ì´íŠ¸
 						// UPDATE t_connect_max SET a_count=count, a_count_max=countmax WHERE a_index=index
 						std::string updateQuery = boost::str(boost::format(
 								"UPDATE t_connect_max SET a_count = %d, a_count_max = %d WHERE a_index = %d")
-															 % m_userList[s].m_playersPerZone[i] % countmax % index);
+															 % m_user_list->getPlayerZoneCount(s + 1, i) % countmax % index);
 
 						cmd.SetQuery(updateQuery);
 						cmd.Update();
 					}
 					else
 					{
-						// ¾øÀ¸¸é Ãß°¡
+						// ì—†ìœ¼ë©´ ì¶”ê°€
 						// INSERT INTO t_connect_max (a_count, a_count_max, a_date, a_server, a_sub_num, a_zone_num) VALUES (count, countmax, CURDATE(), server, subno, zone)
 						std::string insertQuery = boost::str(boost::format(
 								"INSERT INTO t_connect_max (a_count, a_count_max, a_date, a_server, a_sub_num, a_zone_num) VALUES (%d, %d, CURDATE(), %d, %d, %d) ")
-															 % m_userList[s].m_playersPerZone[i] % m_userList[s].m_playersPerZone[i] % m_serverno % (s + 1) % i);
+															 % m_user_list->getPlayerZoneCount(s + 1, i) % m_user_list->getPlayerZoneCount(s + 1, i) % m_serverno % (s + 1) % i);
 
 						cmd.SetQuery(insertQuery);
 						cmd.Update();
@@ -844,18 +825,18 @@ void CServer::SendAllGameServer(CNetMsg::SP& msg)
 
 void CServer::TimerToGameServer()
 {
-	// ½Ã°£¿¡ µû¶ó °øÁö ³¯¸®±â
+	// ì‹œê°„ì— ë”°ë¼ ê³µì§€ ë‚ ë¦¬ê¸°
 	struct tm currentTime = NOW();
 	int nXMasTreeTimeDiff;
 	if( m_nEventXmasTreeNoticeTime > 0 )
 	{
-		// 5ºĞ Å¸ÀÌ¸Ó Ã¼Å© ½ÃÀÛ
+		// 5ë¶„ íƒ€ì´ë¨¸ ì²´í¬ ì‹œì‘
 		if( !m_bEventXmasTimerStart && m_nEventXmasTreeNoticeTime%6 == 5 )
 		{
-			// 5ºĞ ³²À½ °øÁö
+			// 5ë¶„ ë‚¨ìŒ ê³µì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnEventXmas2007Msg( rmsg , MSG_CONN_EVENT_XMASTREE_ITEMDROP) ;
-			RefMsg(rmsg) << (int) 5;		// 5ºĞ ³²¾ÒÀ½ MSG
+			RefMsg(rmsg) << (int) 5;		// 5ë¶„ ë‚¨ì•˜ìŒ MSG
 			gserver.SendAllGameServer(rmsg);
 			m_bEventXmasTimerStart = true;
 
@@ -867,7 +848,7 @@ void CServer::TimerToGameServer()
 			// ITEM DROP
 			CNetMsg::SP rmsg(new CNetMsg);
 			ConnEventXmas2007Msg( rmsg , MSG_CONN_EVENT_XMASTREE_ITEMDROP) ;
-			RefMsg(rmsg) << (int) 0;		// 0ºĞ ³²¾ÒÀ½ MSG ITEM DROP
+			RefMsg(rmsg) << (int) 0;		// 0ë¶„ ë‚¨ì•˜ìŒ MSG ITEM DROP
 			gserver.SendAllGameServer(rmsg);
 
 			GAMELOG << init("DROP XMAS EVENT ITEM : Remain Time " ) <<  m_nEventXmasTreeNoticeTime << end;
@@ -902,7 +883,7 @@ void ServerAliveTimer::operate( rnSocketIOService* service )
 #if !defined (USE_TENTER_BILLING)
 	if (gserver.m_billing.IsRunning())
 	{
-		// ºô¸µ¼­¹ö¿¡ ¾ó¶óÀÌºê ÆĞÅ¶À» º¸³½´Ù.
+		// ë¹Œë§ì„œë²„ì— ì–¼ë¼ì´ë¸Œ íŒ¨í‚·ì„ ë³´ë‚¸ë‹¤.
 		CBPacket::SP pack(new CBPacket);
 		pack->Init(MSG_BILLITEM_SERVERLIVE);
 		gserver.m_billing.WriteToOutput(pack);

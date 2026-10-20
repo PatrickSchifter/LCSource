@@ -21,7 +21,7 @@ typedef struct __tagRaidDropData
 #ifdef BUGFIX_SPECIALBOX_DROPRATE
 	int			spec_itemindex[14];
 #else
-	int			spec_itemindex1;     // ½ºÆä¼È ¾ÆÀÌÅÛ
+	int			spec_itemindex1;     // ìŠ¤í˜ì…œ ì•„ì´í…œ
 	int			spec_itemindex2;
 	int			spec_itemindex3;
 	int			spec_itemindex4;
@@ -60,18 +60,18 @@ public:
 	~CNPCProto();
 
 	/////////////////////////////////////
-	// DB ¿¡¼­ ÀĞ¾î¿À´Â NPC¿¡ ´ëÇÑ Á¤º¸µé
-	int		m_index;			// ¸÷ ¹øÈ£
-	CLCString m_name;			// ÀÌ¸§
+	// DB ì—ì„œ ì½ì–´ì˜¤ëŠ” NPCì— ëŒ€í•œ ì •ë³´ë“¤
+	int		m_index;			// ëª¹ ë²ˆí˜¸
+	CLCString m_name;			// ì´ë¦„
 
-	int		m_level;			// ·¾
-	int		m_price;			// µ·
-	float	m_sight;			// ½Ã¾ß
-	float	m_walkSpeed;		// °È±âÀÌµ¿¼Óµµ
-	float	m_runSpeed;			// ¶Ù±âÀÌµ¿¼Óµµ
-	float	m_size;				// Å©±â(¹İÁö¸§)
-	int		m_hp;				// Ã¼·Â
-	int		m_mp;				// ¸¶³ª
+	int		m_level;			// ë ™
+	int		m_price;			// ëˆ
+	float	m_sight;			// ì‹œì•¼
+	float	m_walkSpeed;		// ê±·ê¸°ì´ë™ì†ë„
+	float	m_runSpeed;			// ë›°ê¸°ì´ë™ì†ë„
+	float	m_size;				// í¬ê¸°(ë°˜ì§€ë¦„)
+	int		m_hp;				// ì²´ë ¥
+	int		m_mp;				// ë§ˆë‚˜
 
 	int		getExp()				{ return m_exp; }
 	void	setExp(int exp)			{ m_exp = exp; }
@@ -84,55 +84,55 @@ public:
 #endif
 
 private:
-	int		m_exp;				// °æÇèÄ¡
-	int		m_skillPoint;		// ½ºÅ³Æ÷ÀÎÆ®
+	int		m_exp;				// ê²½í—˜ì¹˜
+	int		m_skillPoint;		// ìŠ¤í‚¬í¬ì¸íŠ¸
 
-	int		m_flag;				// ¼Ó¼º
-	int		m_flag1;			// ¼Ó¼º(È®Àå)
-	int		m_stateFlag;		// »óÅÂÀÌ»ó ÇÃ·¡±×
+	int		m_flag;				// ì†ì„±
+	int		m_flag1;			// ì†ì„±(í™•ì¥)
+	int		m_stateFlag;		// ìƒíƒœì´ìƒ í”Œë˜ê·¸
 
 public:
-	int		m_family;			// µ¿Á·¹øÈ£ ¾øÀ¸¸é -1
-	int		m_recoverHP;		// È¸º¹HP
-	int		m_recoverMP;		// È¸º¹MP
-	int		m_item[MAX_NPC_DROPITEM];			// µå·Ó¾ÆÀÌÅÛ
-	int		m_itemPercent[MAX_NPC_DROPITEM];	// ¾ÆÀÌÅÛ µå·Ó È®·ü
-	int		m_itemCount;		// µå·Ó Å×ÀÌºíÀÇ ¼ö
-	int		m_product[MAX_NPC_PRODUCT];		// »ı»êÇ°
+	int		m_family;			// ë™ì¡±ë²ˆí˜¸ ì—†ìœ¼ë©´ -1
+	int		m_recoverHP;		// íšŒë³µHP
+	int		m_recoverMP;		// íšŒë³µMP
+	int		m_item[MAX_NPC_DROPITEM];			// ë“œë¡­ì•„ì´í…œ
+	int		m_itemPercent[MAX_NPC_DROPITEM];	// ì•„ì´í…œ ë“œë¡­ í™•ë¥ 
+	int		m_itemCount;		// ë“œë¡­ í…Œì´ë¸”ì˜ ìˆ˜
+	int		m_product[MAX_NPC_PRODUCT];		// ìƒì‚°í’ˆ
 
-// 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
-	int		m_minplus;			// ÃÖ¼Ò ÇÃ·¯½º ¼öÄ¡
-	int		m_maxplus;			// ÃÖ´ë ÇÃ·¯½º ¼öÄ¡
-	int		m_probplus;			// ÇÃ·¯½º ºÙÀ» È®·ü
-// --- 050303 : bs : ¸ó½ºÅÍ¿¡°Ô¼­ plus ºÙÀº ¾ÆÀÌÅÛ ¸¸µé±â
+// 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
+	int		m_minplus;			// ìµœì†Œ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
+	int		m_maxplus;			// ìµœëŒ€ í”ŒëŸ¬ìŠ¤ ìˆ˜ì¹˜
+	int		m_probplus;			// í”ŒëŸ¬ìŠ¤ ë¶™ì„ í™•ë¥ 
+// --- 050303 : bs : ëª¬ìŠ¤í„°ì—ê²Œì„œ plus ë¶™ì€ ì•„ì´í…œ ë§Œë“¤ê¸°
 
-	int		m_str;				// Èû
+	int		m_str;				// í˜
 	int		m_dex;
 	int		m_int;
 	int		m_con;
 
-	int		m_attack;			// °ø°İ
-	int		m_magic;			// ¸¶¹ı
-	int		m_defense;			// ¹æ¾î
-	int		m_resist;			// ¸¶¹æ
+	int		m_attack;			// ê³µê²©
+	int		m_magic;			// ë§ˆë²•
+	int		m_defense;			// ë°©ì–´
+	int		m_resist;			// ë§ˆë°©
 
-	int		m_attacklevel;		// °ø°İ·¹º§
-	int		m_defenselevel;		// ¹æ¾î·¹º§
+	int		m_attacklevel;		// ê³µê²©ë ˆë²¨
+	int		m_defenselevel;		// ë°©ì–´ë ˆë²¨
 
-	// ¹°¸®¾îÅÃ ·ù
+	// ë¬¼ë¦¬ì–´íƒ ë¥˜
 	char	m_attackType;
-	char	m_attackSpeed;		// °ø°İ´ç ½Ã°£(0.1ÃÊ)
-	float	m_attackArea;		// ¹É¸®°ø°İ »çÁ¤°Å¸®
+	char	m_attackSpeed;		// ê³µê²©ë‹¹ ì‹œê°„(0.1ì´ˆ)
+	float	m_attackArea;		// ë¯ˆë¦¬ê³µê²© ì‚¬ì •ê±°ë¦¬
 
-	// ½ºÅ³ ·ù
+	// ìŠ¤í‚¬ ë¥˜
 	int		m_nSkill;
 	int		m_skillIndex[MAX_NPC_SKILL];
 	int		m_skillLevel[MAX_NPC_SKILL];
 	int		m_skillProb[MAX_NPC_SKILL];
 
-	int		m_moveArea;			// ÀÌµ¿¿µ¿ª
+	int		m_moveArea;			// ì´ë™ì˜ì—­
 
-	// ai °ü·Ã
+	// ai ê´€ë ¨
 	int		m_aitype;
 	int		m_aiflag;
 	int		m_aileader_flag;
@@ -155,8 +155,8 @@ public:
 
 	vec_affinityList_t	m_affinityList;
 
-	int		m_jewel[MAX_NPC_DROPITEM];			// µå·Ó¾ÆÀÌÅÛ
-	int		m_jewelPercent[MAX_NPC_DROPITEM];	// ¾ÆÀÌÅÛ µå·Ó È®·ü
+	int		m_jewel[MAX_NPC_DROPITEM];			// ë“œë¡­ì•„ì´í…œ
+	int		m_jewelPercent[MAX_NPC_DROPITEM];	// ì•„ì´í…œ ë“œë¡­ í™•ë¥ 
 	int		m_jewelCount;
 	int		m_jobdropitem[JOBCOUNT];
 	int		m_jobdropitemprob[JOBCOUNT];
@@ -166,8 +166,8 @@ public:
 
 	int		m_summonIdx;
 
-	LONGLONG		m_zone_flag;			//°ø°£ÀÌµ¿ÀÌ °¡´ÉÇÑ npcÀÏ°æ¿ìÀÇ ÀÌµ¿½ÃÄÑ ÁÙ ¼ö ÀÖ´Â Á¸Á¤º¸
-	LONGLONG		m_extra_flag;			//°ø°£ÀÌµ¿ÀÌ °¡´ÉÇÑ npcÀÇ ÀÌµ¿°¡´ÉÇÑ Á¸ÀÇ Áö¿ª Á¤º¸
+	LONGLONG		m_zone_flag;			//ê³µê°„ì´ë™ì´ ê°€ëŠ¥í•œ npcì¼ê²½ìš°ì˜ ì´ë™ì‹œì¼œ ì¤„ ìˆ˜ ìˆëŠ” ì¡´ì •ë³´
+	LONGLONG		m_extra_flag;			//ê³µê°„ì´ë™ì´ ê°€ëŠ¥í•œ npcì˜ ì´ë™ê°€ëŠ¥í•œ ì¡´ì˜ ì§€ì—­ ì •ë³´
 
 	int		m_rvr_value;
 	int		m_rvr_grade;
@@ -176,8 +176,8 @@ public:
 	
 	int		m_lifetime;
 
-	bool			m_bSydicateJoinGiveQuestNPC;	// °á»ç´ë °¡ÀÔ Äù½ºÆ® ºÎ¿© NPC
-	// m_flag °Ë»ç
+	bool			m_bSydicateJoinGiveQuestNPC;	// ê²°ì‚¬ëŒ€ ê°€ì… í€˜ìŠ¤íŠ¸ ë¶€ì—¬ NPC
+	// m_flag ê²€ì‚¬
 	int		CheckFlag(int mask) const
 	{
 		return m_flag  & mask;
@@ -204,13 +204,13 @@ public:
 		return m_stateFlag;
 	}
 
-	// m_aiflag °Ë»ç : bit¹øÈ£
+	// m_aiflag ê²€ì‚¬ : bitë²ˆí˜¸
 	int		CheckAIBit(int bit)
 	{
 		return m_aiflag & (1 << bit);
 	}
 
-	// m_aileader_flag °Ë»ç : bit¹øÈ£
+	// m_aileader_flag ê²€ì‚¬ : bitë²ˆí˜¸
 	int		CheckLeaderBit(int bit)
 	{
 		return m_aileader_flag & (1 << bit);
@@ -229,13 +229,13 @@ public:
 	~CNPCProtoList();
 
 	map_t		map_;
-	CNPCProto*	m_npcProtoList;		// NPC ±âº» Á¤º¸ ¸®½ºÆ®
-	int			m_nCount;			// °³¼ö
-	int			m_virtualIndex;		// °¡»ó ÀÎµ¦½º
+	CNPCProto*	m_npcProtoList;		// NPC ê¸°ë³¸ ì •ë³´ ë¦¬ìŠ¤íŠ¸
+	int			m_nCount;			// ê°œìˆ˜
+	int			m_virtualIndex;		// ê°€ìƒ ì¸ë±ìŠ¤
 
-	bool Load();						// NPC ±âº» Á¤º¸ ÀĞ±â
-	CNPC* Create(int npcindex, CNPCRegenInfo* regenInfo);			// ÇØ´ç idxÀÇ NPC »ı¼ºÇÏ±â
-	CNPCProto* FindProto(int npc_idx);	// ÇØ´ç idxÀÇ Á¤º¸ ¹İÈ¯
+	bool Load();						// NPC ê¸°ë³¸ ì •ë³´ ì½ê¸°
+	CNPC* Create(int npcindex, CNPCRegenInfo* regenInfo);			// í•´ë‹¹ idxì˜ NPC ìƒì„±í•˜ê¸°
+	CNPCProto* FindProto(int npc_idx);	// í•´ë‹¹ idxì˜ ì •ë³´ ë°˜í™˜
 
 private:
 	std::vector<std::string> a_item_str;

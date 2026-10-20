@@ -100,7 +100,6 @@ public:
 	void SetTitle( CTString strTitle );
 
 public:
-	WMSG_RESULT	OnLButtonUp(UINT16 x, UINT16 y);
 	WMSG_RESULT	OnMouseWheel(UINT16 x, UINT16 y, int wheel);
 
 	void		setUVDataBack( UIRectUV uv );

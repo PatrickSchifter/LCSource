@@ -34,8 +34,8 @@ public:
 struct PopupNoticeData
 {
 	int html_num;
-	int runtime;		//Áö¼Ó½Ã°£
-	int start_time;		//½ÃÀÛ½Ã°£
+	int runtime;		//ì§€ì†ì‹œê°„
+	int start_time;		//ì‹œì‘ì‹œê°„
 	bool isSend;
 
 	PopupNoticeData():isSend(false){}

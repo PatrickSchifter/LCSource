@@ -100,7 +100,7 @@ void CAPet::Appear(bool bIncludeOwner, bool bAction )
 		return ;
 	}
 
-	// ¼¿¿¡ ³Ö±â
+	// ì…€ì— ë„£ê¸°
 	m_pZone = area->m_zone;
 	m_pArea = area;
 	m_pos = m_pOwner->m_pos;
@@ -110,7 +110,7 @@ void CAPet::Appear(bool bIncludeOwner, bool bAction )
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		// ³ªÅ¸³²À» ¾Ë¸²
+		// ë‚˜íƒ€ë‚¨ì„ ì•Œë¦¼
 		AppearMsg(rmsg, this, true, true);
 		area->SendToCell(rmsg, this, bIncludeOwner);
 	}
@@ -179,17 +179,17 @@ void CAPet::Disappear()
 		return ;
 	}
 
-	// ¾îÅÃ ¸®½ºÆ® Áö¿ì°í
+	// ì–´íƒ ë¦¬ìŠ¤íŠ¸ ì§€ìš°ê³ 
 	DelAttackList(this);
 
 	{
-		// »ç¶óÁüÀ» ¾Ë¸®°í
+		// ì‚¬ë¼ì§ì„ ì•Œë¦¬ê³ 
 		CNetMsg::SP rmsg(new CNetMsg);
 		DisappearMsg(rmsg, this);
 		area->SendToCell(rmsg, this, true);
 	}
 
-	// ¼¿¿¡¼­ Á¦°Å
+	// ì…€ì—ì„œ ì œê±°
 	area->CharFromCell(this, true);
 	m_pZone = NULL;
 	m_pArea = NULL;
@@ -289,7 +289,7 @@ bool CAPet::IncreaseStat()
 
 	if(this->GetOwner()->m_petStashManager.GetPetItemByPlus(this->m_index))
 	{
-		//Ã¢°í¿¡ º¸°üÁßÀÎ »óÅÂÀÏ¶§´Â Ãæ¼ºµµ, ¹è°íÇÄ ¼öÄ¡ 1½Ã°£´ç 1¾¿ È¸º¹
+		//ì°½ê³ ì— ë³´ê´€ì¤‘ì¸ ìƒíƒœì¼ë•ŒëŠ” ì¶©ì„±ë„, ë°°ê³ í”” ìˆ˜ì¹˜ 1ì‹œê°„ë‹¹ 1ì”© íšŒë³µ
 		if ( m_nPetStashSeconds + (60 * 60/*sec*/) < gserver->m_nowseconds)
 		{
 			m_nPetStashSeconds = gserver->m_nowseconds;
@@ -314,7 +314,7 @@ bool CAPet::IncreaseStat()
 			bChanged = true;
 		}
 
-		// ±â¾Æ°¡ ¾Æ´Ò¶§¸¸ Ãæ¼ºµµ Áõ°¡
+		// ê¸°ì•„ê°€ ì•„ë‹ë•Œë§Œ ì¶©ì„±ë„ ì¦ê°€
 		if ( GetStmLevel() == 0 && m_nFaithPulse + (PULSE_REAL_MIN*5) < gserver->m_pulse)
 		{
 			m_nFaithPulse = gserver->m_pulse;
@@ -335,10 +335,10 @@ bool CAPet::DecreaseStat()
 {
 	bool bChanged = false;
 
-	//Ã¢°í¿¡ ¸Ã°ÜÁ® ÀÖ´Â »óÅÂÀÇ ÆêÀÌ¶ó¸é ¼ÒÈ¯ µô·¹ÀÌ¿Í ÄğÅ¸ÀÓ¸¸ °¨¼Ò½ÃÅ²´Ù.
+	//ì°½ê³ ì— ë§¡ê²¨ì ¸ ìˆëŠ” ìƒíƒœì˜ í«ì´ë¼ë©´ ì†Œí™˜ ë”œë ˆì´ì™€ ì¿¨íƒ€ì„ë§Œ ê°ì†Œì‹œí‚¨ë‹¤.
 	if(this->GetOwner()->m_petStashManager.GetPetItemByPlus(this->m_index))
 	{
-		// ¼ÒÈ¯ µô·¹ÀÌ °¨¼Ò
+		// ì†Œí™˜ ë”œë ˆì´ ê°ì†Œ
 		if( m_nDelay > 0 )
 		{
 			m_nDelay -= TIME_ONE_SECOND;
@@ -346,7 +346,7 @@ bool CAPet::DecreaseStat()
 				m_nDelay = 0;
 		}
 
-		// ÄğÅ¸ÀÓ °¨¼Ò : °è»êÀº ÃÊ
+		// ì¿¨íƒ€ì„ ê°ì†Œ : ê³„ì‚°ì€ ì´ˆ
 		if ( m_nRemainCooltime > 0 )
 		{
 			m_nRemainCooltime -= TIME_ONE_SECOND;
@@ -358,15 +358,15 @@ bool CAPet::DecreaseStat()
 	}
 	else
 	{
-		// stm Âø¿ë 5ºĞ¿¡ 2Æ÷ÀÎÆ®, ¹ÌÂø¿ë 30ºĞ¿¡ 1Æ÷ÀÎÆ®
-		// fath ¹ÌÂø¿ë 20ºĞ¿¡ 1Æ÷ÀÎÆ®
+		// stm ì°©ìš© 5ë¶„ì— 2í¬ì¸íŠ¸, ë¯¸ì°©ìš© 30ë¶„ì— 1í¬ì¸íŠ¸
+		// fath ë¯¸ì°©ìš© 20ë¶„ì— 1í¬ì¸íŠ¸
 		if( IsWearing() )
 		{
 			if ( m_nStmPulse + PULSE_REAL_MIN*5 < gserver->m_pulse)
 			{
 				m_nStmPulse = gserver->m_pulse;
 				int leveldef = ( m_level - m_pOwner->m_level ) / 2 ;
-				int nAddStm = 2 + (leveldef>0? leveldef:0) + ( GetStmLevel()?1:0 ) ;	// ±â¾Æ»óÅÂÀÏ¶§ ½ºÅ×¹Ì³Ê 1 Ãß°¡ ÇÏ¶ô
+				int nAddStm = 2 + (leveldef>0? leveldef:0) + ( GetStmLevel()?1:0 ) ;	// ê¸°ì•„ìƒíƒœì¼ë•Œ ìŠ¤í…Œë¯¸ë„ˆ 1 ì¶”ê°€ í•˜ë½
 
 				AddStamina( -nAddStm );
 				bChanged = true;
@@ -391,7 +391,7 @@ bool CAPet::DecreaseStat()
 			}
 		}
 
-		// ¼ÒÈ¯ µô·¹ÀÌ °¨¼Ò
+		// ì†Œí™˜ ë”œë ˆì´ ê°ì†Œ
 		if( m_nDelay > 0 )
 		{
 			m_nDelay -= TIME_ONE_SECOND;
@@ -399,7 +399,7 @@ bool CAPet::DecreaseStat()
 				m_nDelay = 0;
 		}
 
-		// ÄğÅ¸ÀÓ °¨¼Ò : °è»êÀº ÃÊ
+		// ì¿¨íƒ€ì„ ê°ì†Œ : ê³„ì‚°ì€ ì´ˆ
 		if ( m_nRemainCooltime > 0 )
 		{
 			m_nRemainCooltime -= TIME_ONE_SECOND;
@@ -423,13 +423,13 @@ bool CAPet::TransFormationCheck()
 			{
 				int nowsec = gserver->getNowSecond() % 3600;
 
-				if (nowsec == (3600 - 30) || nowsec == (3600 / 2) - 30)	// 30ÃÊ Àü
+				if (nowsec == (3600 - 30) || nowsec == (3600 / 2) - 30)	// 30ì´ˆ ì „
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
 					SysMsg(rmsg, MSG_SYS_TRANSLATE_START );
 					SEND_Q(rmsg, m_pOwner->m_desc);
 				}
-				else if (nowsec >= 0 && nowsec <= (3600 / 2)) // Á¤°¢s
+				else if (nowsec >= 0 && nowsec <= (3600 / 2)) // ì •ê°s
 				{
 					m_cTransSate = 0;
 				}
@@ -447,15 +447,15 @@ bool CAPet::TransFormationCheck()
 			break;
 		}
 
-		// ¿É¼ÇÀÌ 0 ¶Ç´Â 100 ÀÌ»óÀÏ¶§ °­Á¦·Î ¼³Á¤ÇØÁÖ´Â ºÎºĞ
-		if( m_cForceTrans == 1 )			// ¹«Á¶°Ç º¯½Å
+		// ì˜µì…˜ì´ 0 ë˜ëŠ” 100 ì´ìƒì¼ë•Œ ê°•ì œë¡œ ì„¤ì •í•´ì£¼ëŠ” ë¶€ë¶„
+		if( m_cForceTrans == 1 )			// ë¬´ì¡°ê±´ ë³€ì‹ 
 			this->m_cTransSate = 1;
-		else if ( m_cForceTrans == 2 )		// ¹«Á¶°Ç º¯½Å ¾ÈÇÔ
+		else if ( m_cForceTrans == 2 )		// ë¬´ì¡°ê±´ ë³€ì‹  ì•ˆí•¨
 			this->m_cTransSate = 0;
 
 		if( oldState != m_cTransSate )
 		{
-			// º¯½ÅÇß´Âµ¥ ¸¶¿îÆ® Å¸ÀÔÀÌ ¾Æ´Ñ°æ¿ì
+			// ë³€ì‹ í–ˆëŠ”ë° ë§ˆìš´íŠ¸ íƒ€ì…ì´ ì•„ë‹Œê²½ìš°
 			if( m_pProto->m_nMount[ (unsigned int)m_cTransSate ] < 1 && IsMount() )
 			{
 				Mount(false);
@@ -520,7 +520,7 @@ void CAPet::CheckItemTime()
 
 void CAPet::UpdateStatPlus( int nStr, int nDex, int nInt , int nCon )
 {
-	// STAT ¿¡ µû¸¥ ¼öÄ¡ »ó½Â
+	// STAT ì— ë”°ë¥¸ ìˆ˜ì¹˜ ìƒìŠ¹
 	if( nStr > 0 )
 	{
 		m_nPlusStr = nStr;
@@ -548,10 +548,10 @@ void CAPet::InitStat()
 {
 	int nReduction = m_nPlusStr + m_nPlusCon + m_nPlusDex + m_nPlusInt ;
 	m_nRemainStat += nReduction;
-	// Áö±Ş ½ºÅİ È®ÀÎ
+	// ì§€ê¸‰ ìŠ¤í…Ÿ í™•ì¸
 	if( m_nRemainStat != ( (m_level - 1) * 9 ) )
 	{
-		// ¿î¿µÀÚÀÏ °¡´É¼º
+		// ìš´ì˜ìì¼ ê°€ëŠ¥ì„±
 		m_nRemainStat = (m_level - 1) * 9;
 	}
 	m_nPlusStr = m_nPlusCon = m_nPlusDex = m_nPlusInt = 0;
@@ -560,7 +560,7 @@ void CAPet::InitStat()
 
 void CAPet::CalcStatus(bool bSend)
 {
-	// ¿É¼Ç°ª ÃÊ±âÈ­
+	// ì˜µì…˜ê°’ ì´ˆê¸°í™”
 	m_eqDefense = m_eqResist = m_eqMelee = m_eqRange = m_eqMagic = 0;
 	m_opStr = m_opCon = m_opDex = m_opInt = m_opMelee = m_opMagic = m_opDMelee = m_opResist = 0;
 	m_opMeleeHitRate = m_opMagicHitRate = m_opMeleeAvoid = m_opRangeAvoid = m_opResistAvoid = 0;
@@ -615,7 +615,7 @@ void CAPet::CalcStatus(bool bSend)
 	m_recoverMP += m_assist.m_avAddition.recovermp + m_recoverMP * m_assist.m_avRate.recovermp / SKILL_RATE_UNIT;
 	m_nMagicDefence += m_assist.m_avAddition.resist + m_nMagicDefence * m_assist.m_avRate.resist / SKILL_RATE_UNIT;
 
-	// ¸¶¿îÆ® ÇÒ¼ö ÀÖ´Â ÆêÀÌ¸é Ä³¸¯ÅÍµµ »óÅÂ °Ë»ç
+	// ë§ˆìš´íŠ¸ í• ìˆ˜ ìˆëŠ” í«ì´ë©´ ìºë¦­í„°ë„ ìƒíƒœ ê²€ì‚¬
 	if( m_pProto->m_nMount[(int)m_cTransSate] > 0 )
 	{
 		GetOwner()->CalcStatus(false);
@@ -634,17 +634,20 @@ void CAPet::ApplyItemValue( )
 	CItem* item;
 	int i,j;
 
-	// ¹æ¾î±¸, ¹«±â, ¾Ç¼¼
+	// ë°©ì–´êµ¬, ë¬´ê¸°, ì•…ì„¸
 	for( i=0; i< APET_WEARPOINT; i++ )
 	{
 		item = m_wearing[i];
 		if( item )
 		{
-			// ¾ÆÀÌÅÛ Å¸ÀÔ °Ë»ç ÇØ¼­ ³Ö¾îÁÖ±â
+			// ì•„ì´í…œ íƒ€ì… ê²€ì‚¬ í•´ì„œ ë„£ì–´ì£¼ê¸°
 			if( i==APET_WEAR_HEAD || i== APET_WEAR_BODY )
 			{
 				m_eqDefense += item->m_itemProto->getItemNum0();
+				applyItemPlusValue(m_eqDefense, item->getPlus());
+
 				m_eqResist	+= item->m_itemProto->getItemNum1();
+				applyItemPlusValue(m_eqResist, item->getPlus());
 			}
 			else if ( i==APET_WEAR_WEAPON )
 			{
@@ -654,14 +657,17 @@ void CAPet::ApplyItemValue( )
 				if( item->IsMagicWeapon() )
 				{
 					m_eqMagic += item->m_itemProto->getItemNum1();
+					applyItemPlusValue(m_eqMagic, item->getPlus());
 				}
 				else if ( item->IsRangeWeapon() )
 				{
 					m_eqRange += item->m_itemProto->getItemNum0();
+					applyItemPlusValue(m_eqRange, item->getPlus());
 				}
 				else
 				{
 					m_eqMelee += item->m_itemProto->getItemNum0();
+					applyItemPlusValue(m_eqMelee, item->getPlus());
 				}
 			}
 
@@ -677,7 +683,7 @@ void CAPet::ApplyItemValue( )
 							COption::ApplyOptionValue(this, rod->optiontype, rod->optionval, item);
 						}
 					}
-					// ½ºÅÈ »ó½Â Àû¿ë
+					// ìŠ¤íƒ¯ ìƒìŠ¹ ì ìš©
 					COption::ApplyOptionValue(this, OPTION_DAMAGE_UP,  item->m_pRareOptionProto->GetDamageUp(), NULL);
 					COption::ApplyOptionValue(this, OPTION_DEFENSE_UP, item->m_pRareOptionProto->GetDefenseUp(), NULL);
 					COption::ApplyOptionValue(this, OPTION_MAGIC_UP,   item->m_pRareOptionProto->GetMagicUp(), NULL);
@@ -695,6 +701,12 @@ void CAPet::ApplyItemValue( )
 			}
 		}
 	}
+}
+
+void CAPet::applyItemPlusValue(int& value, int plus)
+{
+	const float plus_cst = 1.09;
+	value = value * pow(plus_cst, plus);
 }
 
 float CAPet::GetHitrate(CCharacter* df, MSG_DAMAGE_TYPE type)
@@ -736,7 +748,7 @@ float CAPet::GetAvoid(CCharacter* of, MSG_DAMAGE_TYPE type)
 
 bool CAPet::AddExpSP( LONGLONG exp, int sp, bool bDirect )
 {
-	if( GetStmLevel() > 1 || GetFaithLevel() > 1 )		// Ãæ¼ºµµ³ª ±â¾Æ ·¹º§ 2 ÀÌ»óÀÌ¸é °æÇèÄ¡ È¹µæ ¾øÀ½
+	if( GetStmLevel() > 1 || GetFaithLevel() > 1 )		// ì¶©ì„±ë„ë‚˜ ê¸°ì•„ ë ˆë²¨ 2 ì´ìƒì´ë©´ ê²½í—˜ì¹˜ íšë“ ì—†ìŒ
 		return false;
 
 	if( m_level >= MAX_APET_LEVEL )
@@ -768,13 +780,13 @@ bool CAPet::AddExpSP( LONGLONG exp, int sp, bool bDirect )
 
 #ifdef DOUBLE_PET_EXP
 		if( gserver->m_bDoublePetExpEvent == true )
-			add_exp = add_exp * gserver->m_PetExpPercent / 10000000;
+			add_exp = add_exp * gserver->m_PetExpPercent / 100;
 #endif // DOUBLE_PET_EXP
 	}
 
-	if(add_exp > exp * (1500000 / 1000))	// 1500%ÀÌ»ó ¸ø¸Ô°Ô ÇÔ.
+	if(add_exp > exp * (1500 / 100))	// 1500%ì´ìƒ ëª»ë¨¹ê²Œ í•¨.
 	{
-		add_exp = exp * (1500000 / 1000);
+		add_exp = exp * (1500 / 100);
 	}
 
 	m_exp += add_exp;
@@ -794,15 +806,15 @@ void CAPet::AddExpSP_Direct( LONGLONG _exp, int _sp )
 	m_exp += _exp;
 	m_nSP += _sp;
 
-	// EXP ÃÖ´ëÄ¡ °Ë»ç
+	// EXP ìµœëŒ€ì¹˜ ê²€ì‚¬
 	if (m_level >= MAX_APET_LEVEL && m_exp > GetNeedExp())
 		m_exp = GetNeedExp();
 
-	// SP ÃÖ´ëÄ¡ °Ë»ç
+	// SP ìµœëŒ€ì¹˜ ê²€ì‚¬
 	if (m_nSP > MAX_SKILLPOINT)
 		m_nSP = MAX_SKILLPOINT;
 
-	// ·¹º§¾÷ È®ÀÎ
+	// ë ˆë²¨ì—… í™•ì¸
 	CalcLevelup();
 }
 
@@ -826,7 +838,7 @@ void CAPet::CalcLevelup()
 			m_exp -= GetNeedExp();
 			m_level++;
 
-			// ·¹º§¾÷ È¿°ú
+			// ë ˆë²¨ì—… íš¨ê³¼
 			LevelUp(true);
 
 			if( m_level >= MAX_APET_LEVEL )
@@ -845,7 +857,7 @@ void CAPet::CalcLevelup()
 
 void CAPet::LevelUp( bool bSendEffect )
 {
-	// stat point Áõ°¡
+	// stat point ì¦ê°€
 	if( !IsProtoFlag( APET_FLAG_EXP ) )
 		m_nRemainStat += 9;
 
@@ -958,17 +970,17 @@ void CAPet::Mount( bool bMount )
 {
 	m_bMount = bMount;
 
-	// ÁÖÀÎ°ü·Ã Ã³¸®
+	// ì£¼ì¸ê´€ë ¨ ì²˜ë¦¬
 	if( m_pOwner )
 	{
 		CArea* area = m_pOwner->m_pArea;
 
-		if( bMount )		// Å»¶§
+		if( bMount )		// íƒˆë•Œ
 		{
-			if(m_pArea != NULL) // NULLÀÌ ¾Æ´Ï¸é ½ÇÇà, NULLÀÌ¸é °Ç³Ê¶Û°Í.
+			if(m_pArea != NULL) // NULLì´ ì•„ë‹ˆë©´ ì‹¤í–‰, NULLì´ë©´ ê±´ë„ˆë›¸ê²ƒ.
 				m_pArea->MoveChar( this, GET_YLAYER(m_pOwner), GET_X(m_pOwner), GET_Z(m_pOwner), GET_H(m_pOwner), GET_R(m_pOwner), MSG_MOVE_STOP, NULL );
 
-			// ¼ÒÈ¯ ÇØÁ¦
+			// ì†Œí™˜ í•´ì œ
 			while ( m_pOwner->m_elementalList)
 				m_pOwner->UnsummonElemental(m_pOwner->m_elementalList);
 		}
@@ -976,7 +988,7 @@ void CAPet::Mount( bool bMount )
 		if(area)
 		{
 			{
-				// »ç¶óÁ³´Ù ³ªÅ¸³ª±â
+				// ì‚¬ë¼ì¡Œë‹¤ ë‚˜íƒ€ë‚˜ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				DisappearMsg(rmsg, this);
 				area->SendToCell(rmsg, this, true);
@@ -1009,11 +1021,11 @@ void CAPet::Mount( bool bMount )
 
 void CAPet::ApplyPassive()
 {
-	// ÃÊ±âÈ­
+	// ì´ˆê¸°í™”
 	memset(&m_avPassiveAddition, 0, sizeof(m_avPassiveAddition));
 	memset(&m_avPassiveRate, 0, sizeof(m_avPassiveRate));
 
-	// ÆĞ½Ãºê ¸®½ºÆ®¿¡¼­ Àû¿ë
+	// íŒ¨ì‹œë¸Œ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì ìš©
 	CSkill* pSkill;
 	void* pos = m_passiveSkillList.GetHeadPosition();
 	while (pos)
@@ -1064,7 +1076,7 @@ void CAPet::ResetCooltime()
 
 void CAPet::SetCooltime( int _min )
 {
-	// ÇöÀç ¼³Á¤µÇ¾îÀÖ´Â ÄğÅ¸ÀÓº¸´Ù Å©¸é Àû¿ë
+	// í˜„ì¬ ì„¤ì •ë˜ì–´ìˆëŠ” ì¿¨íƒ€ì„ë³´ë‹¤ í¬ë©´ ì ìš©
 	if( _min * 60 > m_nRemainCooltime )
 		m_nRemainCooltime = _min * 60 ;
 }
@@ -1100,7 +1112,7 @@ void CAPet::AddAccExp( LONGLONG _exp , LONGLONG _charLevelupExp )
 {
 	if( m_pProto->IsFlag(APET_FLAG_EXP) && GetCooltime() == 0 )
 	{
-		m_llAccExp += _exp * (LONGLONG)GetAccRate( m_level ) / 1000;
+		m_llAccExp += _exp * (LONGLONG)GetAccRate( m_level ) / 100;
 		if( m_llAccExp > GetMaxAccExp( m_level, _charLevelupExp ) )
 		{
 			m_llAccExp =  GetMaxAccExp( m_level, _charLevelupExp );
@@ -1112,7 +1124,7 @@ void CAPet::AddAccExp( LONGLONG _exp , LONGLONG _charLevelupExp )
 
 void CAPet::UseAccExp( CPC* _pc )
 {
-	// ´Ù½Ã Àû¿ëµÇÁö ¾Ê°Ô ÁÖÀÇ pc->AddExpSP ¾Èµ¥ AddAccExp °¡ ÀÖ´Ù.
+	// ë‹¤ì‹œ ì ìš©ë˜ì§€ ì•Šê²Œ ì£¼ì˜ pc->AddExpSP ì•ˆë° AddAccExp ê°€ ìˆë‹¤.
 	if( !_pc )
 		return;
 
@@ -1123,14 +1135,14 @@ void CAPet::UseAccExp( CPC* _pc )
 }
 bool CAPet::UseAccExp( CAPet* _apet, bool bDirect )
 {
-	// ´Ù½Ã Àû¿ëµÇÁö ¾Ê°Ô ÁÖÀÇ pc->AddExpSP ¾Èµ¥ AddAccExp °¡ ÀÖ´Ù.
+	// ë‹¤ì‹œ ì ìš©ë˜ì§€ ì•Šê²Œ ì£¼ì˜ pc->AddExpSP ì•ˆë° AddAccExp ê°€ ìˆë‹¤.
 	if( !_apet )
 		return false;
 
-	// ÆÖ ·¹º§¿¡ µû¸¥ °æÇèÄ¡ Àû¿ë 2012-02-22
-	LONGLONG llAddExp = ( _apet->GetNeedExp() * ( 50 - (_apet->m_level * 1818 ) / 10000 ) ) / 1000;
+	// íŒ» ë ˆë²¨ì— ë”°ë¥¸ ê²½í—˜ì¹˜ ì ìš© 2012-02-22
+	LONGLONG llAddExp = ( _apet->GetNeedExp() * ( 50 - (_apet->m_level * 1818 ) / 10000 ) ) / 100;
 
-	// Àû¿ë °¡´ÉÇÑ °æÇèÄ¡¿Í ÃàÀûµÈ °æÇèÄ¡¸¦ ºñ±³
+	// ì ìš© ê°€ëŠ¥í•œ ê²½í—˜ì¹˜ì™€ ì¶•ì ëœ ê²½í—˜ì¹˜ë¥¼ ë¹„êµ
 	if( llAddExp > m_llAccExp )
 		llAddExp = m_llAccExp;
 

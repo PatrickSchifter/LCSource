@@ -15,10 +15,10 @@
 #include "../ShareLib/packetType/ptype_old_do_move.h"
 #include "ExtremeCube.h"
 
-// npc È¸º¹
+// npc íšŒë³µ
 void MobRecover(CNPC* npc);
 
-// npc ½ºÅ³ »ç¿ë, ÀÌÈÄ npc ai ½ºÅµÀÌ ÇÊ¿äÇÏ¸é true
+// npc ìŠ¤í‚¬ ì‚¬ìš©, ì´í›„ npc ai ìŠ¤í‚µì´ í•„ìš”í•˜ë©´ true
 bool MobProcSkill(CNPC* npc);
 
 //bool MobProcSkillMercenary(CNPC *npc);
@@ -28,43 +28,43 @@ bool MobProcSkillSuicide_Attk(CNPC *npc);
 bool MobProcSkillItemTotem_Buff(CNPC *npc);
 int GetSummonNpcMultiTarget(CNPC* npc, MultiTarget *multitarget, int mcount);
 
-// npc ÇÇ¾î Ã³¸®, ÇÇ¾î·Î µµ¸Á°¡´Â npcÀÌ¸é true
+// npc í”¼ì–´ ì²˜ë¦¬, í”¼ì–´ë¡œ ë„ë§ê°€ëŠ” npcì´ë©´ true
 bool MobProcFear(CNPC* npc, CCharacter* target);
 
 ////////////////////
 // Function name	: MobMoveTo
-// Description	    : npc¸¦ x, z·Î ÀÌµ¿
+// Description	    : npcë¥¼ x, zë¡œ ì´ë™
 // Return type		: float
-//                  : ´ë»óÁöÁ¡°úÀÇ ³²Àº °Å¸®
+//                  : ëŒ€ìƒì§€ì ê³¼ì˜ ë‚¨ì€ ê±°ë¦¬
 // Argument         : CNPC* npc
-//                  : ÀÌµ¿ÇÒ NPC
+//                  : ì´ë™í•  NPC
 // Argument         : float x
 // Argument         : float z
-//                  : ÀÌµ¿ÇÒ À§Ä¡
+//                  : ì´ë™í•  ìœ„ì¹˜
 // Argument         : bool bRun
-//                  : ¶Ù¾î¼­ ÀÌµ¿ÇÒÁö ¿©ºÎ
+//                  : ë›°ì–´ì„œ ì´ë™í• ì§€ ì—¬ë¶€
 // Argument         : bool bAttack
-//                  : °ø°İÀ» À§ÇÑ ÀÌµ¿ÀÎÁö ¿©ºÎ (x, z ÁÂÇ¥ÀÇ ¼Ó¼º¸ÊÀ» °Ë»çÇÒÁö °áÁ¤ÇÏ´Âµ¥ ¾²ÀÓ)
+//                  : ê³µê²©ì„ ìœ„í•œ ì´ë™ì¸ì§€ ì—¬ë¶€ (x, z ì¢Œí‘œì˜ ì†ì„±ë§µì„ ê²€ì‚¬í• ì§€ ê²°ì •í•˜ëŠ”ë° ì“°ì„)
 // Argument         : CCharacter* target
-//                  : targetÀº ÀÌµ¿¿¡¼­ ºí·°µÇÁö ¾ÊÀ½
+//                  : targetì€ ì´ë™ì—ì„œ ë¸”ëŸ­ë˜ì§€ ì•ŠìŒ
 float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter* target);
 
-// npcÀÇ °ø°İ ´ë»ó ¼±Á¤
+// npcì˜ ê³µê²© ëŒ€ìƒ ì„ ì •
 CCharacter* MobSelectTarget(CNPC* npc);
 
 CCharacter* MobSelectTarget_Taming_or_Confused(CNPC* npc);
 
-// npc ·£´ı ÀÌµ¿
+// npc ëœë¤ ì´ë™
 void MobMoveRandom(CNPC* npc);
 
-// npc ½ºÅ³ ¼±ÅÃ
+// npc ìŠ¤í‚¬ ì„ íƒ
 CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target);
 
-// npc ½ºÅ³ ·¹µğ, ·¹µğ ÇßÀ¸¸é true
+// npc ìŠ¤í‚¬ ë ˆë””, ë ˆë”” í–ˆìœ¼ë©´ true
 bool MobReadySkill(CNPC* npc, CCharacter* target);
 
 /////////////////////////////////////////////////////////////////
-// ¸÷ Çàµ¿ ·çÆ¾
+// ëª¹ í–‰ë™ ë£¨í‹´
 void CArea::MobActivity()
 {
 	CNPC* npc = NULL;
@@ -72,8 +72,18 @@ void CArea::MobActivity()
 
 	CCharacter* target = NULL;
 
-	while ((npc = tnpc) && npc->m_proto != NULL)
+	while ((npc = tnpc))
 	{
+		//í•˜ë“œì½”ì–´ ì„œë²„ì˜ ê²½ìš° activity í•¨ìˆ˜ì•ˆì—ì„œ areaê°€ falseê°€ ë  ìˆ˜ ìˆìŒ
+		if(this->m_bEnable == false)
+			return;
+
+		if(npc->m_proto == NULL)
+		{
+			tnpc = npc->m_pNPCNext;
+			continue;
+		}
+
 		tnpc = npc->m_pNPCNext;
 
 		if(tnpc != NULL && this->m_zone->m_index != tnpc->m_pZone->m_index)
@@ -85,11 +95,11 @@ void CArea::MobActivity()
 				|| npc->Check_MobFlag(STATE_MONSTER_TRAP)
 				|| npc->Check_MobFlag(STATE_MONSTER_SUICIDE) )
 		{
-			// ÀÌ³ÑµéÀº ¹Ù·Î»èÁ¦°¡ ¾Æ´Ñ
+			// ì´ë„˜ë“¤ì€ ë°”ë¡œì‚­ì œê°€ ì•„ë‹Œ
 			if( npc->m_hp == 0 )
 				continue;
 
-			// ¿À³Ê°¡ ¾øÀ¸¸é ¹«Á¶°Ç »èÁ¦
+			// ì˜¤ë„ˆê°€ ì—†ìœ¼ë©´ ë¬´ì¡°ê±´ ì‚­ì œ
 			if( !npc->GetOwner() )
 			{
 				npc->m_hp = 0;
@@ -111,7 +121,7 @@ void CArea::MobActivity()
 				&& npc->m_regenInfo
 				&& m_zone->m_index == ZONE_DRATAN)
 		{
-			// µå¶óÅº ¼öÈ£º´ÀÎ °æ¿ì °ø¼ºÀü ½Ã°£ÀÌ ¾Æ´Ò ¶§  ¿òÁ÷ÀÌÁö ¾ÊÀ½
+			// ë“œë¼íƒ„ ìˆ˜í˜¸ë³‘ì¸ ê²½ìš° ê³µì„±ì „ ì‹œê°„ì´ ì•„ë‹ ë•Œ  ì›€ì§ì´ì§€ ì•ŠìŒ
 			CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 			if( pCastle->GetState() == WCSF_NORMAL)
 			{
@@ -168,16 +178,16 @@ void CArea::MobActivity()
 			}
 		}
 
-		// NPC È¸º¹
+		// NPC íšŒë³µ
 		MobRecover(npc);
 
 		if (gserver->m_pulse - npc->m_aipulse < npc->m_delay)
 			continue ;
 
-		static const int		nIndexWarrior		= 310;					// Àü»çÀÇ ¼Õ±æ
-		static const int		nIndexGuard			= 311;					// ¼öÈ£ÀÇ ¼Õ±æ
-		static const int		nIndexBrave			= 312;					// ¿ë¸ÍÀÇ ¼Õ±æ
-		static const int		nIndexProtect		= 313;					// º¸È£ÀÇ ¼Õ±æ
+		static const int		nIndexWarrior		= 310;					// ì „ì‚¬ì˜ ì†ê¸¸
+		static const int		nIndexGuard			= 311;					// ìˆ˜í˜¸ì˜ ì†ê¸¸
+		static const int		nIndexBrave			= 312;					// ìš©ë§¹ì˜ ì†ê¸¸
+		static const int		nIndexProtect		= 313;					// ë³´í˜¸ì˜ ì†ê¸¸
 
 		switch (npc->m_idNum)
 		{
@@ -195,11 +205,11 @@ void CArea::MobActivity()
 		if (npc == NULL)
 			continue ;
 
-		// »óÁ¡, Á¸ÀÌµ¿, ¿¬±İ¼ú»ç, Äù½ºÆ®, ½ºÅ³¸¶½ºÅÍ, Æ¯¼ö½ºÅ³¸¶½ºÅÍ, ¸éÁËºÎ, ÀÌº¥Æ® NPC, ±ÇÁÂ ¹«½Ã
+		// ìƒì , ì¡´ì´ë™, ì—°ê¸ˆìˆ ì‚¬, í€˜ìŠ¤íŠ¸, ìŠ¤í‚¬ë§ˆìŠ¤í„°, íŠ¹ìˆ˜ìŠ¤í‚¬ë§ˆìŠ¤í„°, ë©´ì£„ë¶€, ì´ë²¤íŠ¸ NPC, ê¶Œì¢Œ ë¬´ì‹œ
 		if (npc->m_proto->CheckFlag(NPC_SHOPPER | NPC_ZONEMOVER | NPC_REFINER | NPC_QUEST | NPC_REMISSION | NPC_EVENT | NPC_LORD_SYMBOL))
 			continue ;
 
-		// ½ºÅ³ Ã³¸®
+		// ìŠ¤í‚¬ ì²˜ë¦¬
 		if( npc->Check_MobFlag(STATE_MONSTER_TOTEM_BUFF) )
 		{
 			if( MobProcSkillTotem_Buff(npc) )
@@ -223,10 +233,10 @@ void CArea::MobActivity()
 		else if (MobProcSkill(npc))
 			continue;
 
-		// ½ºÅ³ Ã³¸® ÀÌÈÄ¿¡ ½ºÅ³ÀÌ SKILL_CON_NORMALÀÌ¸é ½ºÅ³ ´ë»óÀ» ÇâÇØ ÀÌµ¿ÇÏµµ·Ï ÇÔ
+		// ìŠ¤í‚¬ ì²˜ë¦¬ ì´í›„ì— ìŠ¤í‚¬ì´ SKILL_CON_NORMALì´ë©´ ìŠ¤í‚¬ ëŒ€ìƒì„ í–¥í•´ ì´ë™í•˜ë„ë¡ í•¨
 		if (npc->m_currentSkill && npc->m_currentSkill->m_state == SKILL_CON_NORMAL)
 		{
-			// ½ºÅ³ÀÇ Å¸°ÙÀ» Ã£´Â´Ù
+			// ìŠ¤í‚¬ì˜ íƒ€ê²Ÿì„ ì°¾ëŠ”ë‹¤
 			target = npc->m_pArea->FindCharInCell(npc, npc->m_currentSkill->m_targetIndex, npc->m_currentSkill->m_targetType, false);
 			if ( target == NULL || target == npc || (!npc->CanMove() && GetDistance((CCharacter*)npc, target) > npc->m_currentSkill->m_proto->GetFireRange(npc) + 1.0f) )
 			{
@@ -235,14 +245,14 @@ void CArea::MobActivity()
 			}
 		}
 
-		// 1ÃÊ
+		// 1ì´ˆ
 		npc->m_aipulse = gserver->m_pulse;
 		npc->m_delay = NPC_ACTIVITY_DELAY;
 
-		// µ¶¸³ÀûÀ¸·Î Ã³¸®
+		// ë…ë¦½ì ìœ¼ë¡œ ì²˜ë¦¬
 		if ( npc->Check_MobFlag( STATE_MONSTER_TAMING ) )
 		{
-			// npc°¡ Å×ÀÌ¹Ö¿¡ °É¸®Áö ¾Ê¾ÒÀ¸¸é ¸÷ÇÃ·¹±×µµ ÇØÁ¦½ÃÅ²´Ù.
+			// npcê°€ í…Œì´ë°ì— ê±¸ë¦¬ì§€ ì•Šì•˜ìœ¼ë©´ ëª¹í”Œë ˆê·¸ë„ í•´ì œì‹œí‚¨ë‹¤.
 //			if(npc->m_assist.FindByType(MT_ASSIST, MST_ASSIST_TAMING) <= 0)
 //				npc->reSet_MobFlag(STATE_MONSTER_TAMING);
 //			else
@@ -252,7 +262,7 @@ void CArea::MobActivity()
 
 		else if ( npc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 		{
-			// npc°¡ È¥µ·¿¡ °É¸®Áö ¾Ê¾ÒÀ¸¸é ¸÷ÇÃ·¹±×µµ ÇØÁ¦½ÃÅ²´Ù.
+			// npcê°€ í˜¼ëˆì— ê±¸ë¦¬ì§€ ì•Šì•˜ìœ¼ë©´ ëª¹í”Œë ˆê·¸ë„ í•´ì œì‹œí‚¨ë‹¤.
 			if(npc->m_assist.FindByType(MT_ASSIST, MST_ASSIST_CONFUSED) <= 0)
 				npc->reSet_MobFlag(STATE_MONSTER_CONFUSION);
 			else
@@ -261,7 +271,7 @@ void CArea::MobActivity()
 		}
 
 
-#ifndef BUGFIX_MERCENARY_GETOWNER_NULL_SERVERDOWN // ¾Æ·¡¿¡µµ Ã³¸®ÇÏ´Â ·çÆ¾ÀÌ ÀÖÀ½ »èÁ¦ÇÏ´Â °ÍÀÌ ÁÁÀ»µí.
+#ifndef BUGFIX_MERCENARY_GETOWNER_NULL_SERVERDOWN // ì•„ë˜ì—ë„ ì²˜ë¦¬í•˜ëŠ” ë£¨í‹´ì´ ìˆìŒ ì‚­ì œí•˜ëŠ” ê²ƒì´ ì¢‹ì„ë“¯.
 		if ( npc->Check_MobFlag( STATE_MONSTER_MERCENARY ) )
 		{
 			MobActivity_Mercenary(npc);
@@ -289,17 +299,17 @@ void CArea::MobActivity()
 				continue;
 			}
 		}
-		// ÇÇ¾î Ã³¸®
+		// í”¼ì–´ ì²˜ë¦¬
 		if (MobProcFear(npc, NULL))
 			continue ;
 
-		// Å¸°Ù ¼±Á¤
+		// íƒ€ê²Ÿ ì„ ì •
 		if (!target)
 		{
 			target = MobSelectTarget(npc);
 
-			// ÅÊÄ¿ Å¸ÀÔ ÇÃ·¡±× 2ÀÌ¸é HP°¡ 20%¹Ì¸¸ÀÏ¶§ µµ¸Á
-			// µ¥¹ÌÁö µô·¯ Å¸ÀÔ ÇÃ·¡±× 3ÀÌ¸é HP°¡ 20% ¹Ì¸¸ÀÏ¶§ µµ¸Á
+			// íƒ±ì»¤ íƒ€ì… í”Œë˜ê·¸ 2ì´ë©´ HPê°€ 20%ë¯¸ë§Œì¼ë•Œ ë„ë§
+			// ë°ë¯¸ì§€ ë”œëŸ¬ íƒ€ì… í”Œë˜ê·¸ 3ì´ë©´ HPê°€ 20% ë¯¸ë§Œì¼ë•Œ ë„ë§
 			if ( (npc->m_proto->m_aitype == NPC_AI_TANKER && npc->m_proto->CheckAIBit(2) && npc->m_hp < npc->m_maxHP * 20 / 100) ||
 					(npc->m_proto->m_aitype == NPC_AI_DAMAGEDEALER && npc->m_proto->CheckAIBit(3) && npc->m_hp < npc->m_maxHP * 20 / 100) )
 			{
@@ -307,7 +317,7 @@ void CArea::MobActivity()
 				continue ;
 			}
 
-			// ¸÷ ½ºÅ³ ¼±ÅÃ
+			// ëª¹ ìŠ¤í‚¬ ì„ íƒ
 			target = MobSelectSkill(npc, target);
 		}
 #ifdef MONSTER_AI
@@ -332,7 +342,7 @@ void CArea::MobActivity()
 			if (npc->m_postregendelay)
 				continue;
 
-			// Å¸°ÙÀÌ ¾ø°Å³ª, Å¸°ÙÀÌ ÀÖ´Âµ¥, 1ºĞµ¿¾È ¹«Àû »óÅÂ¿´´Ù¸é »ç¶óÁø´Ù.
+			// íƒ€ê²Ÿì´ ì—†ê±°ë‚˜, íƒ€ê²Ÿì´ ìˆëŠ”ë°, 1ë¶„ë™ì•ˆ ë¬´ì  ìƒíƒœì˜€ë‹¤ë©´ ì‚¬ë¼ì§„ë‹¤.
 			if (!target || (target && npc->m_pulseMoveLock != 0 && gserver->m_pulse >= npc->m_pulseMoveLock + PULSE_REAL_MIN))
 			{
 				npc->m_bMoveLock = false;
@@ -355,7 +365,17 @@ void CArea::MobActivity()
 		}
 #endif
 
-		// Å¸°ÙÀÌ ¾øÀ¸¸é ·£´ı ÀÌµ¿
+		if(target && IS_PC(target))
+		{
+			CPC* pc = TO_PC(target);
+			if(pc->m_bVisible == false)
+			{
+				DelAttackList(target);
+				target = NULL;
+			}
+		}
+
+		// íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ëœë¤ ì´ë™
 		if (!target)
 		{
 			if ( !this->IsFreeze(gserver->m_pulse) )
@@ -372,7 +392,7 @@ void CArea::MobActivity()
 		}
 #endif // RESTRICT_PVP_SKILL
 
-		// NPC°¡ °ø°İÀ» ÇØµµ ÀüÅõ »óÅÂ¸¦ ÀúÀå
+		// NPCê°€ ê³µê²©ì„ í•´ë„ ì „íˆ¬ ìƒíƒœë¥¼ ì €ì¥
 		if (target && !IS_NPC(target))
 			npc->m_nRaidMoveTime = gserver->m_pulse + GetRandom(PULSE_MONSTER_RAID_MOVE * 9 / 10, PULSE_MONSTER_RAID_MOVE * 11 / 10);
 
@@ -386,15 +406,15 @@ void CArea::MobActivity()
 			if( target->m_index != npc->m_index )
 			{
 #ifdef ATTACK_LIST_BUG_FIX
-				// ÀÏ¹İ ¸ó½ºÅÍ°¡ È¥¶õ ¸ó½ºÅÍ¸¦ ¶§¸®´Â Çö»ó ¼öÁ¤
+				// ì¼ë°˜ ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ëª¬ìŠ¤í„°ë¥¼ ë•Œë¦¬ëŠ” í˜„ìƒ ìˆ˜ì •
 				if ( pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 				{
 					DelAttackList(target);
 					continue ;
 				}
 #else //ATTACK_LIST_BUG_FIX
-				// ÀÏ¹İ ¸ó½ºÅÍ°¡ ´Ù¸¥ ÀÏ¹İ ¸ó½ºÅÍ¸¦ µû¶ó°¡´Â Çö»ó ¼öÁ¤
-				// ¾îÅÃ¸®½ºÆ®¿¡ Ãß°¡°¡ µÇ³ª °ø°İÀº ¸øÇÏ¹Ç·Î µû¶ó¸¸ ´Ù´Ï°Ô µÈ °ÍÀÌ¾úÀ½
+				// ì¼ë°˜ ëª¬ìŠ¤í„°ê°€ ë‹¤ë¥¸ ì¼ë°˜ ëª¬ìŠ¤í„°ë¥¼ ë”°ë¼ê°€ëŠ” í˜„ìƒ ìˆ˜ì •
+				// ì–´íƒë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€ê°€ ë˜ë‚˜ ê³µê²©ì€ ëª»í•˜ë¯€ë¡œ ë”°ë¼ë§Œ ë‹¤ë‹ˆê²Œ ëœ ê²ƒì´ì—ˆìŒ
 				if( !pNpc->Check_MobFlag( STATE_MONSTER_TAMING ) && !pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 				{
 					DelAttackList(target);
@@ -407,21 +427,21 @@ void CArea::MobActivity()
 					continue ;
 				}
 
-				// ÀÏ¹İ ¸ó½ºÅÍ°¡ È¥¶õ ¸ó½ºÅÍ¸¦ ¶§¸®´Â Çö»ó ¼öÁ¤
+				// ì¼ë°˜ ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ëª¬ìŠ¤í„°ë¥¼ ë•Œë¦¬ëŠ” í˜„ìƒ ìˆ˜ì •
 				else if ( pNpc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 				{
 					DelAttackList(target);
 					continue ;
 				}
 
-				// ÀÏ¹İ ¸ó½ºÅÍ°¡ È¥¶õ ¸ó½ºÅÍ¸¦ ¶§¸®´Â Çö»ó ¼öÁ¤
+				// ì¼ë°˜ ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ëª¬ìŠ¤í„°ë¥¼ ë•Œë¦¬ëŠ” í˜„ìƒ ìˆ˜ì •
 				else if ( pNpc->Check_MobFlag( STATE_MONSTER_TOTEM_BUFF ) )
 				{
 					DelAttackList(target);
 					continue ;
 				}
 
-				// ÀÏ¹İ ¸ó½ºÅÍ°¡ È¥¶õ ¸ó½ºÅÍ¸¦ ¶§¸®´Â Çö»ó ¼öÁ¤
+				// ì¼ë°˜ ëª¬ìŠ¤í„°ê°€ í˜¼ë€ ëª¬ìŠ¤í„°ë¥¼ ë•Œë¦¬ëŠ” í˜„ìƒ ìˆ˜ì •
 				else if ( pNpc->Check_MobFlag( STATE_MONSTER_TOTEM_ATTK ) )
 				{
 					DelAttackList(target);
@@ -432,19 +452,12 @@ void CArea::MobActivity()
 			}
 		}
 
-		// Å¸°ÙÀÌ ÀÖÀ¸¸é Å¸°ÙÀ» ÇâÇØ ÀÌµ¿
+		// íƒ€ê²Ÿì´ ìˆìœ¼ë©´ íƒ€ê²Ÿì„ í–¥í•´ ì´ë™
 		if(target->m_pArea->m_zone->isRVRZone() &&
 				target->getSyndicateType() == npc->getSyndicateType())
 		{
 			DelAttackList(target);
 			continue;
-		}
-
-		if(IS_PC(target))
-		{
-			CPC* pc = TO_PC(target);
-			if(pc->m_bVisible == false)
-				continue;
 		}
 
 		float dist = MobMoveTo(npc, GET_X(target), GET_Z(target), true, true, target);
@@ -458,8 +471,8 @@ void CArea::MobActivity()
 #endif // defined (LC_GAMIGO)
 		   )
 		{
-			// °ø°İ Ã³¸®
-			// ¾îÅÃÇßÀ»°æ¿ì AI°ü·Ãº¯¼ö ÃÊ±âÈ­
+			// ê³µê²© ì²˜ë¦¬
+			// ì–´íƒí–ˆì„ê²½ìš° AIê´€ë ¨ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 
 #ifdef MONSTER_AI
@@ -476,7 +489,7 @@ void CArea::MobActivity()
 			}
 			if (target)
 			{
-				// ¼öÈ£Å¾Àº ½ºÅ³¸¸ »ç¿ë°¡´É
+				// ìˆ˜í˜¸íƒ‘ì€ ìŠ¤í‚¬ë§Œ ì‚¬ìš©ê°€ëŠ¥
 				if (!(npc->m_currentSkill == NULL && (npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))))
 				{
 					if (!MobReadySkill(npc, target) && gserver->m_pulse - npc->m_pulseAttack >= npc->m_attackSpeed * 15 / 10 && npc->IsEnemy(target))
@@ -488,13 +501,13 @@ void CArea::MobActivity()
 			}
 		}
 #ifdef MONSTER_AI
-		// Å¸°ÙÀº ÀÖÁö¸¸, °ø°İÀÌ ¾ÈµÉ °æ¿ì
+		// íƒ€ê²Ÿì€ ìˆì§€ë§Œ, ê³µê²©ì´ ì•ˆë  ê²½ìš°
 		else
 		{
 			if (npc->m_bMoveLock)
 				continue;
 
-			// ¸ó½ºÅÍ À§Ä¡°¡ º¯ÇÏÁö ¾ÊÀ¸¸é
+			// ëª¬ìŠ¤í„° ìœ„ì¹˜ê°€ ë³€í•˜ì§€ ì•Šìœ¼ë©´
 			if (npc->m_nOldDist == dist)
 			{
 				npc->m_bMoveLock = true;
@@ -502,7 +515,7 @@ void CArea::MobActivity()
 			}
 			else
 			{
-				// ¸®Á¨ À§Ä¡¿Í 100M ÀÌ»ó or Å¸°Ù°úÀÇ °Å¸®°¡ 50M ÀÌ»ó
+				// ë¦¬ì   ìœ„ì¹˜ì™€ 100M ì´ìƒ or íƒ€ê²Ÿê³¼ì˜ ê±°ë¦¬ê°€ 50M ì´ìƒ
 				if (GetDistance((CCharacter*)npc, target) > 50.0f || npc->GetDistToRegen() > 100.0f)
 				{
 					npc->m_hp = npc->m_maxHP;
@@ -534,21 +547,21 @@ CNPC* CArea::MobTimeCheck(CNPC* npc)
 	if (DEAD(npc))
 		return NULL;
 
-	// TODO : ¸÷ »óÅÂ¿¡ °ü·ÃµÈ ½Ã°£ °Ë»ç
+	// TODO : ëª¹ ìƒíƒœì— ê´€ë ¨ëœ ì‹œê°„ ê²€ì‚¬
 
 	npc->m_assist.DecreaseTime();
 
-	// ¸ó½ºÅÍ°¡ ¿µÈ¥À» »©¾Ñ±ä µÚ ÀÏÁ¤ ½Ã°£ÀÌ Áö³ª¸é ¿µÈ¥À» ´Ù½Ã Àç»ıÇÑ´Ù.
+	// ëª¬ìŠ¤í„°ê°€ ì˜í˜¼ì„ ë¹¼ì•—ê¸´ ë’¤ ì¼ì • ì‹œê°„ì´ ì§€ë‚˜ë©´ ì˜í˜¼ì„ ë‹¤ì‹œ ì¬ìƒí•œë‹¤.
 	if (npc->m_pulseSoulRecover != 0 && npc->m_pulseSoulRecover + PULSE_REAL_MIN < gserver->m_pulse)
 	{
 		npc->m_pulseSoulRecover = 0;
 		npc->reSet_MobFlag(STATE_MONSTER_NO_SOUL);
 	}
 
-	// º¸ÀÌ¸é return
+	// ë³´ì´ë©´ return
 	if (npc->m_disableTime <= 0)
 	{
-		// 050310 : bs : ¸®Á¨ÀÌÈÄ ÀÏÁ¤½Ã°£ ¸ØÃã
+		// 050310 : bs : ë¦¬ì  ì´í›„ ì¼ì •ì‹œê°„ ë©ˆì¶¤
 		if (!npc->m_postregendelay)
 		{
 			return npc;
@@ -563,10 +576,10 @@ CNPC* CArea::MobTimeCheck(CNPC* npc)
 
 			return npc;
 		}
-		// --- 050310 : bs : ¸®Á¨ÀÌÈÄ ÀÏÁ¤½Ã°£ ¸ØÃã
+		// --- 050310 : bs : ë¦¬ì  ì´í›„ ì¼ì •ì‹œê°„ ë©ˆì¶¤
 	}
 
-	// ¸®Á¨ ÈÄ µô·¹ÀÌ°¡ Ç®¸®¸é ¸®Á¨ ¸Ş½ÃÁö¸¦ º¸³»°í
+	// ë¦¬ì   í›„ ë”œë ˆì´ê°€ í’€ë¦¬ë©´ ë¦¬ì   ë©”ì‹œì§€ë¥¼ ë³´ë‚´ê³ 
 	else if (npc->m_disableTime <= time(0))
 	{
 		npc->m_disableTime = 0;
@@ -576,12 +589,12 @@ CNPC* CArea::MobTimeCheck(CNPC* npc)
 			SendToCell(rmsg, npc);
 		}
 
-		// 050310 : bs : ¸®Á¨ÀÌÈÄ ÀÏÁ¤½Ã°£ ¸ØÃã : ¼±°ø ¸ó½ºÅÍ¸¸
+		// 050310 : bs : ë¦¬ì  ì´í›„ ì¼ì •ì‹œê°„ ë©ˆì¶¤ : ì„ ê³µ ëª¬ìŠ¤í„°ë§Œ
 		if (npc->m_proto->CheckFlag(NPC_FIRSTATTACK))
 			npc->m_postregendelay = gserver->m_pulse;
 		else
 			npc->m_postregendelay = 0;
-		// --- 050310 : bs : ¸®Á¨ÀÌÈÄ ÀÏÁ¤½Ã°£ ¸ØÃã
+		// --- 050310 : bs : ë¦¬ì  ì´í›„ ì¼ì •ì‹œê°„ ë©ˆì¶¤
 
 		return NULL;
 	}
@@ -607,6 +620,9 @@ void CArea::AddNPC(CNPC* npc)
 
 void CArea::DelNPC(CNPC* npc)
 {
+	if(npc == NULL)
+		return;
+
 	if (npc->m_pArea != this)
 		return ;
 	REMOVE_FROM_BILIST(npc, m_npcList, m_pNPCPrev, m_pNPCNext);
@@ -626,6 +642,19 @@ void CArea::DelNPC(CNPC* npc)
 		CArea::m_lifetime_set.erase(npc);
 	}
 
+#ifdef EXTREME_CUBE
+
+	if(npc->m_bCubeRegen)
+	{
+		CCubeSpace* cube = gserver->m_extremeCube.GetExtremeCube(npc->m_pArea->m_index);
+		if(cube)
+		{
+			cube->DelMob(npc);
+		}
+	}
+#endif // EXTREME_CUBE
+
+
 	npc->m_pZone = NULL;
 	npc->m_pArea = NULL;
 	npc->DeleteNPC();
@@ -638,12 +667,12 @@ void CArea::MobRegen()
 {
 	bool bRegenRaid = false;
 
-	// npc RegenList Áß¿¡¼­
+	// npc RegenList ì¤‘ì—ì„œ
 	for (int i=0; i < m_npcRegenList.m_nCount; i++)
 	{
 		CNPCRegenInfo* p = m_npcRegenList.m_infoList + i;
 
-		// npc RegenInfo Áß¿¡ »ì¾Æ³¯ ½Ã°£ÀÌ µÇ°í
+		// npc RegenInfo ì¤‘ì— ì‚´ì•„ë‚  ì‹œê°„ì´ ë˜ê³ 
 		if (p && p->m_bRegen && p->m_lastDieTime != 0)
 		{
 			int cx, cz;
@@ -662,7 +691,7 @@ void CArea::MobRegen()
 			}
 #endif
 
-			// º¸½º¸÷Àº Á¦¿Ü
+			// ë³´ìŠ¤ëª¹ì€ ì œì™¸
 			CNPCProto* pNPCProto = gserver->m_npcProtoList.FindProto(p->m_npcIdx);
 			if (!pNPCProto)
 				continue ;
@@ -672,15 +701,15 @@ void CArea::MobRegen()
 				CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 				if(pCastle->GetState() == WCSF_NORMAL)
 				{
-					// °ø¼ºÀüÀÌ ¾Æ´Ï¸é
+					// ê³µì„±ì „ì´ ì•„ë‹ˆë©´
 					continue;
 				}
 			}
 
 			if (pNPCProto->CheckFlag(NPC_BOSS | NPC_MBOSS | NPC_RAID) == 0
-					&& !(m_zone->m_index == ZONE_DRATAN && pNPCProto->CheckFlag(NPC_CASTLE_GUARD)))	// µå¶óÅº ¼öÈ£º´ Á¦¿Ü
+					&& !(m_zone->m_index == ZONE_DRATAN && pNPCProto->CheckFlag(NPC_CASTLE_GUARD)))	// ë“œë¼íƒ„ ìˆ˜í˜¸ë³‘ ì œì™¸
 			{
-				// ¸®Á¨ µÇ´Â ¼¿À» Áß½ÉÀ¸·Î 3x3À» °Ë»çÇÏ¿© ¸®Á¨½Ã°£À» Á¶Á¤ÇÑ´Ù. ( ÇØ´ç ¼¿ÀÇ ¸®Á¨ÀÌ ÀÖÀ» °æ¿ì¸¸ )
+				// ë¦¬ì   ë˜ëŠ” ì…€ì„ ì¤‘ì‹¬ìœ¼ë¡œ 3x3ì„ ê²€ì‚¬í•˜ì—¬ ë¦¬ì  ì‹œê°„ì„ ì¡°ì •í•œë‹¤. ( í•´ë‹¹ ì…€ì˜ ë¦¬ì  ì´ ìˆì„ ê²½ìš°ë§Œ )
 				PointToCellNum(p->m_regenX, p->m_regenZ, &cx, &cz);
 				if (m_cell[cx][cz].m_nTotalRegen > 0)
 				{
@@ -714,7 +743,7 @@ void CArea::MobRegen()
 						fAdjust -= fAdjust / 2;
 					nRegenSecAdjust = (int)(nRegenSecAdjust * fAdjust);
 
-					// ÃÖ¼Ò NPC ¸®Á¨Àº 10ÃÊ
+					// ìµœì†Œ NPC ë¦¬ì  ì€ 10ì´ˆ
 					if (p->m_regenSec > 100 && nRegenSecAdjust < 100)
 						nRegenSecAdjust = 100;
 				}
@@ -728,11 +757,11 @@ void CArea::MobRegen()
 			if (gserver->m_pulse - p->m_lastDieTime < nRegenSecAdjust)
 				continue ;
 
-			// totalnumÀÌ -1ÀÌ¸é ¹«ÇÑ¸®Á¨
-			// totalnumÀÌ 0ÀÌ¸é ½ºÅµ
+			// totalnumì´ -1ì´ë©´ ë¬´í•œë¦¬ì  
+			// totalnumì´ 0ì´ë©´ ìŠ¤í‚µ
 			if (p->m_totalNum == 0)
 				continue ;
-			//  totalNumÀÌ -1 ¾Æ´Ï°í numRegenÀÌ totalNum º¸´Ù Å©¸é NPC°¡ ÀÖÀ¸¸é ¸®Á¨¾ÈÇÔ
+			//  totalNumì´ -1 ì•„ë‹ˆê³  numRegenì´ totalNum ë³´ë‹¤ í¬ë©´ NPCê°€ ìˆìœ¼ë©´ ë¦¬ì  ì•ˆí•¨
 			if ((p->m_totalNum != -1) && (p->m_numRegen >= p->m_totalNum))
 				continue;
 
@@ -744,7 +773,7 @@ void CArea::MobRegen()
 				continue;
 			}
 
-			// ¼Ó¼º¸Ê»ó ÇÇ½ºÁ¸ÀÌ°í ÇÇ½º NPC°¡ ¾Æ´Ï¸é ¸®Á¨¾ÈÇÔ
+			// ì†ì„±ë§µìƒ í”¼ìŠ¤ì¡´ì´ê³  í”¼ìŠ¤ NPCê°€ ì•„ë‹ˆë©´ ë¦¬ì  ì•ˆí•¨
 			if (!npc->m_proto->CheckFlag(NPC_PEACEFUL))
 			{
 				unsigned short mapAttr = GetAttr(p->m_regenY, p->m_regenX, p->m_regenZ);
@@ -773,7 +802,7 @@ void CArea::MobRegen()
 			GET_YLAYER(npc) = p->m_regenY;
 			GET_Z(npc) = p->m_regenZ;
 
-			// ¾îÅÃ °¡´ÉÇÑ NPC
+			// ì–´íƒ ê°€ëŠ¥í•œ NPC
 			if (npc->m_proto->CheckFlag(NPC_ATTACK) && npc->m_proto->m_index != 339)
 				GET_R(npc) = GetRandom(0, (int) (PI_2 * 10000)) / 10000;
 			else
@@ -842,7 +871,7 @@ void CArea::MobRegen()
 			CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 			if(m_zone->m_index == ZONE_DRATAN_CASTLE_DUNGEON && !npc->m_proto->CheckFlag(NPC_ZONEMOVER))
 			{
-				static const int nMobRate[10][4] =  	// °ø°İ·Â, ¹æ¾î·Â, ÃÖ´ëÃ¼·Â, ½Ã¾ß¹üÀ§
+				static const int nMobRate[10][4] =  	// ê³µê²©ë ¥, ë°©ì–´ë ¥, ìµœëŒ€ì²´ë ¥, ì‹œì•¼ë²”ìœ„
 				{
 					{20, 20, 30, 0},
 					{10, 10, 15, 0},
@@ -862,7 +891,7 @@ void CArea::MobRegen()
 					midx = 9;
 				}
 
-				// °ø°İ·Â Àû¿ë
+				// ê³µê²©ë ¥ ì ìš©
 				if(npc->m_attackType == MSG_DAMAGE_MELEE)
 				{
 					npc->m_eqMelee = npc->m_proto->m_attack + npc->m_proto->m_attack * nMobRate[midx][0] / 100;
@@ -888,14 +917,14 @@ void CArea::MobRegen()
 					}
 				}
 
-				// ¹æ¾î·Â Àû¿ë
+				// ë°©ì–´ë ¥ ì ìš©
 				npc->m_eqDefense = npc->m_proto->m_defense + npc->m_proto->m_defense * nMobRate[midx][1] / 100;
 				if(npc->m_eqDefense < 0)
 				{
 					npc->m_eqDefense = 1;
 				}
 
-				// ÃÖ´ë Ã¼·Â Àû¿ë
+				// ìµœëŒ€ ì²´ë ¥ ì ìš©
 				npc->m_maxHP = npc->m_proto->m_hp + npc->m_proto->m_hp * nMobRate[midx][2] / 100;
 				if(npc->m_maxHP < 0)
 				{
@@ -903,7 +932,7 @@ void CArea::MobRegen()
 				}
 				npc->m_hp = npc->m_maxHP;
 
-				// ½Ã¾ß °Å¸® Àû¿ë
+				// ì‹œì•¼ ê±°ë¦¬ ì ìš©
 				if(nMobRate[midx][3] != 0 && npc->m_attackRange != 0)
 				{
 					npc->m_attackRange = npc->m_proto->m_attackArea + npc->m_proto->m_attackArea * nMobRate[midx][3] / 100;
@@ -943,17 +972,17 @@ bool CArea::RaidMobRegen(float x, float z, float r, char y)
 
 		if ((p->m_lastDieTime != 0) && (gserver->m_pulse - p->m_lastDieTime >= p->m_regenSec))
 		{
-			// totalnumÀÌ -1ÀÌ¸é ¹«ÇÑ¸®Á¨
-			// totalnumÀÌ 0ÀÌ¸é ½ºÅµ
+			// totalnumì´ -1ì´ë©´ ë¬´í•œë¦¬ì  
+			// totalnumì´ 0ì´ë©´ ìŠ¤í‚µ
 			if (p->m_totalNum == 0)
 				continue ;
-			//  totalNumÀÌ -1 ¾Æ´Ï°í numRegenÀÌ totalNum º¸´Ù Å©¸é NPC°¡ ÀÖÀ¸¸é ¸®Á¨¾ÈÇÔ
+			//  totalNumì´ -1 ì•„ë‹ˆê³  numRegenì´ totalNum ë³´ë‹¤ í¬ë©´ NPCê°€ ìˆìœ¼ë©´ ë¦¬ì  ì•ˆí•¨
 			if ((p->m_totalNum != -1) && (p->m_numRegen >= p->m_totalNum))
 				continue;
 
-//#ifndef LC_MEX  ºê¶óÁú ¼³Á¤¿¡ ¸ÂÃç¾ßÇÏ±â ¶§¹®¿¡ ÁÖ¼®
-			int pub = GetRandom(1,100);
-			if (!p->m_bRaidMoveRandom && pub <= 99)
+//#ifndef LC_MEX  ë¸Œë¼ì§ˆ ì„¤ì •ì— ë§ì¶°ì•¼í•˜ê¸° ë•Œë¬¸ì— ì£¼ì„
+			int pub = GetRandom(1,10000);
+			if (!p->m_bRaidMoveRandom && pub <= 9900)
 				continue;
 
 //#endif
@@ -967,7 +996,7 @@ bool CArea::RaidMobRegen(float x, float z, float r, char y)
 				continue;
 			}
 
-			// ¼Ó¼º¸Ê»ó ÇÇ½ºÁ¸ÀÌ°í ÇÇ½º NPC°¡ ¾Æ´Ï¸é ¸®Á¨¾ÈÇÔ
+			// ì†ì„±ë§µìƒ í”¼ìŠ¤ì¡´ì´ê³  í”¼ìŠ¤ NPCê°€ ì•„ë‹ˆë©´ ë¦¬ì  ì•ˆí•¨
 			if (!npc->m_proto->CheckFlag(NPC_PEACEFUL))
 			{
 				unsigned short mapAttr = GetAttr(y, x, z);
@@ -979,7 +1008,7 @@ bool CArea::RaidMobRegen(float x, float z, float r, char y)
 				}
 			}
 
-			// ÁÖº¯¿¡ ´Ù¸¥ ·¹ÀÌµå ¸÷ÀÌ ÀÖÀ¸¸é ±×°÷¿¡´Â ¸®Á¨ ¾ÈÇÔ
+			// ì£¼ë³€ì— ë‹¤ë¥¸ ë ˆì´ë“œ ëª¹ì´ ìˆìœ¼ë©´ ê·¸ê³³ì—ëŠ” ë¦¬ì   ì•ˆí•¨
 			if (this->FindProtoNPCInCell(x, z, NPC_RAID, true, CELL_EXT * 2, false) != NULL)
 			{
 				delete npc;
@@ -990,7 +1019,7 @@ bool CArea::RaidMobRegen(float x, float z, float r, char y)
 			GET_YLAYER(npc) = y;
 			GET_Z(npc) = z;
 
-			// ¾îÅÃ °¡´ÉÇÑ NPC
+			// ì–´íƒ ê°€ëŠ¥í•œ NPC
 			if (npc->m_proto->CheckFlag(NPC_ATTACK))
 				GET_R(npc) = GetRandom(0, (int) (PI_2 * 10000)) / 10000;
 			else
@@ -1042,7 +1071,7 @@ bool CArea::RaidMobRegen(float x, float z, float r, char y)
 
 void MobRecover(CNPC* npc)
 {
-	// NPC È¸º¹
+	// NPC íšŒë³µ
 	if (gserver->m_pulse - npc->m_recoverPulse >= NPC_RECOVER_PULSE)
 	{
 		if (npc->m_hp != npc->m_maxHP || npc->m_mp != npc->m_maxMP)
@@ -1073,7 +1102,7 @@ void MobRecover(CNPC* npc)
 bool MobProcSkill(CNPC* npc)
 {
 	bool bSkip = false;
-	// ÇöÀç ½ºÅ³ »ç¿ëÁßÀÎ°¡
+	// í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš©ì¤‘ì¸ê°€
 	if(npc->m_currentSkill)
 	{
 		CCharacter* tskillTarget = NULL;
@@ -1086,18 +1115,18 @@ bool MobProcSkill(CNPC* npc)
 		case SKILL_CON_READY:
 			try
 			{
-				// ½ºÅ³ ·¹µğ->ÆÄÀÌ¾î °Ë»ç
+				// ìŠ¤í‚¬ ë ˆë””->íŒŒì´ì–´ ê²€ì‚¬
 				if (npc->m_currentSkill->m_usetime + npc->m_currentSkill->m_proto->m_readyTime + npc->m_currentSkill->m_proto->m_stillTime <= gserver->m_pulse)
 				{
-					// hp, mp °Ë»ç
+					// hp, mp ê²€ì‚¬
 					if (npc->m_hp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needHP
 							|| npc->m_mp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needMP)
 						throw 0;
 
-					// Å¸°Ù °Ë»ç
+					// íƒ€ê²Ÿ ê²€ì‚¬
 					if (npc->m_currentSkill->m_targetIndex != -1)
 					{
-						// ÇöÀç Å¸°ÙÀ» ±¸ÇØ¼­
+						// í˜„ì¬ íƒ€ê²Ÿì„ êµ¬í•´ì„œ
 						tskillTarget = npc->m_pArea->FindCharInCell(npc, npc->m_currentSkill->m_targetIndex, npc->m_currentSkill->m_targetType, false);
 						if (tskillTarget == NULL || tskillTarget->IsInPeaceZone(false))
 							throw 0;
@@ -1124,7 +1153,7 @@ bool MobProcSkill(CNPC* npc)
 					if (mcount < 1)
 						mcount = 0;
 
-					if (mcount > 0)			// ¸ÖÆ¼ Å¸°Ù ±¸ÇÏ±â : °Å¸® Á¦ÀÏ °¡±î¿î ´ë»óÀ¸·Î
+					if (mcount > 0)			// ë©€í‹° íƒ€ê²Ÿ êµ¬í•˜ê¸° : ê±°ë¦¬ ì œì¼ ê°€ê¹Œìš´ ëŒ€ìƒìœ¼ë¡œ
 					{
 						i = 0;
 						for (x = sx; x <= ex; x++)
@@ -1182,7 +1211,7 @@ bool MobProcSkill(CNPC* npc)
 									{
 										if (ABS(GET_YLAYER(pChar) - GET_YLAYER(tcenter)) <= 1 && tdist <= npc->m_currentSkill->m_proto->m_appRange)
 										{
-											// Àü¹æ120, Àü¹æ Á÷»ç°¢ °Ë»ç
+											// ì „ë°©120, ì „ë°© ì§ì‚¬ê° ê²€ì‚¬
 											switch (npc->m_currentSkill->m_proto->m_targetType)
 											{
 											case STT_TARGET_D120:
@@ -1276,8 +1305,8 @@ bool MobProcSkill(CNPC* npc)
 						npc->m_pArea->SendToCell(rmsg, npc, false);
 					}
 
-					// ½ºÅ³ Àû¿ë
-					// Å¸°ÔÆÃ¿¡ µû¶ó
+					// ìŠ¤í‚¬ ì ìš©
+					// íƒ€ê²ŒíŒ…ì— ë”°ë¼
 					bool bApply;
 					switch (npc->m_currentSkill->m_proto->m_targetType)
 					{
@@ -1301,16 +1330,16 @@ bool MobProcSkill(CNPC* npc)
 												<< "char index "  << delim << multitarget[i].mtargetindex << end;
 										break;
 									}
-									// npc°¡ Å×ÀÌ¹ÖµÈ »óÅÂÀÌ¸é
+									// npcê°€ í…Œì´ë°ëœ ìƒíƒœì´ë©´
 									if ( npc->Check_MobFlag( STATE_MONSTER_TAMING )
 											|| npc->Check_MobFlag( STATE_MONSTER_MERCENARY ) )
 									{
 										const CSkillProto* proto = npc->m_currentSkill->m_proto;
 
-										// ½ºÅ³ÀÌ ÇØ²¿Áö Å¸ÀÔÀÌ¸é
+										// ìŠ¤í‚¬ì´ í•´ê¼¬ì§€ íƒ€ì…ì´ë©´
 										if ( proto && proto->m_flag & SF_NOTHELP && multitarget[i].mtargettype != MSG_CHAR_NPC )
 										{
-											// NPC¸¸ µ¥¹ÌÁö¸¦ ÀÔ´Â´Ù.
+											// NPCë§Œ ë°ë¯¸ì§€ë¥¼ ì…ëŠ”ë‹¤.
 											continue;
 										}
 									}
@@ -1334,6 +1363,9 @@ bool MobProcSkill(CNPC* npc)
 							{
 								if (ApplySkill(npc, tskillTarget, npc->m_currentSkill, -1, bApply) != -1)
 								{
+									if(npc->m_proto == NULL)
+										break;
+									
 									for (i = 0; i < mcount; i++)
 									{
 										if (multitarget[i].mtarget->m_index <= 0)
@@ -1346,16 +1378,16 @@ bool MobProcSkill(CNPC* npc)
 													<< "char index "  << delim << multitarget[i].mtargetindex << end;
 											break;
 										}
-										// npc°¡ Å×ÀÌ¹ÖµÈ »óÅÂÀÌ¸é
+										// npcê°€ í…Œì´ë°ëœ ìƒíƒœì´ë©´
 										if ( npc->Check_MobFlag( STATE_MONSTER_TAMING )
 												|| npc->Check_MobFlag( STATE_MONSTER_MERCENARY ) )
 										{
 											const CSkillProto* proto = npc->m_currentSkill->m_proto;
 
-											// ½ºÅ³ÀÌ ÇØ²¿Áö Å¸ÀÔÀÌ¸é
+											// ìŠ¤í‚¬ì´ í•´ê¼¬ì§€ íƒ€ì…ì´ë©´
 											if ( proto && proto->m_flag & SF_NOTHELP && multitarget[i].mtargettype != MSG_CHAR_NPC )
 											{
-												// NPC¸¸ µ¥¹ÌÁö¸¦ ÀÔ´Â´Ù.
+												// NPCë§Œ ë°ë¯¸ì§€ë¥¼ ì…ëŠ”ë‹¤.
 												continue;
 											}
 										}
@@ -1415,7 +1447,7 @@ bool MobProcSkill(CNPC* npc)
 					}
 					if( npc->Check_MobFlag(STATE_MONSTER_SUICIDE) || npc->Check_MobFlag(STATE_MONSTER_TRAP) )
 					{
-						if( mcount > 0 || tskillTarget )  // ÇÑ¹øÀÌ¶óµµ ½ºÅ³À» »ç¿ëÇß´Ù¸é
+						if( mcount > 0 || tskillTarget )  // í•œë²ˆì´ë¼ë„ ìŠ¤í‚¬ì„ ì‚¬ìš©í–ˆë‹¤ë©´
 						{
 							npc->GetOwner()->SummonNpcRemove(npc);
 							bSkip = true;
@@ -1458,7 +1490,7 @@ bool MobProcSkill(CNPC* npc)
 
 CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 {
-	// ÇöÀç ½ºÅ³ »ç¿ëÁßÀÌ¸é ½ºÅµ
+	// í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš©ì¤‘ì´ë©´ ìŠ¤í‚µ
 	if (npc->m_currentSkill)
 		return target;
 
@@ -1484,15 +1516,15 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 			return NULL;
 
 		if( (target && ( target->m_pZone->m_index != npc->m_pZone->m_index || GetDistance(target, (CCharacter*)npc) >= 40.0f ))
-				|| GetDistance( (CCharacter*)npc->GetOwner(), (CCharacter*)npc) > 40.0f ) // °°Àº Á¸¿¡ ÀÖÁö ¾Ê°Å³ª °Å¸®°¡ ³Ê¹« ¸Ö¸é ¿À³Ê¿Í ³Ê¹« ¸Ö¾îÁö¸é °ø°İÀ» Ãë¼ÒÇÏÀÚ.
+				|| GetDistance( (CCharacter*)npc->GetOwner(), (CCharacter*)npc) > 40.0f ) // ê°™ì€ ì¡´ì— ìˆì§€ ì•Šê±°ë‚˜ ê±°ë¦¬ê°€ ë„ˆë¬´ ë©€ë©´ ì˜¤ë„ˆì™€ ë„ˆë¬´ ë©€ì–´ì§€ë©´ ê³µê²©ì„ ì·¨ì†Œí•˜ì.
 		{
 			npc->GetOwner()->SetSummonOwners_target(NULL);
 			return NULL;
 		}
 	}
 
-	// È¸º¹ ½ºÅ³À» °¡Áø npc°¡ Å×ÀÌ¹Ö µÇ¾úÀ» °æ¿ì
-	// Å×ÀÌ¹Ö ¸ó½ºÅÍ ÀÌ¸é¼­ Èú·¯´Â ÇÃ·¡±× 2ÀÏ¶§ HP 80% ¹Ì¸¸ÀÇ ÀÚ½Å°ú PC¿¡°Ô ÁïÈ¿¼º ½ºÅ³ »ç¿ë
+	// íšŒë³µ ìŠ¤í‚¬ì„ ê°€ì§„ npcê°€ í…Œì´ë° ë˜ì—ˆì„ ê²½ìš°
+	// í…Œì´ë° ëª¬ìŠ¤í„° ì´ë©´ì„œ íëŸ¬ëŠ” í”Œë˜ê·¸ 2ì¼ë•Œ HP 80% ë¯¸ë§Œì˜ ìì‹ ê³¼ PCì—ê²Œ ì¦‰íš¨ì„± ìŠ¤í‚¬ ì‚¬ìš©
 	//bool bHealerFlag2_Taming = ( npc->m_proto->m_aitype == NPC_AI_HEALER && npc->m_proto->CheckAIBit(2) );
 	if ( /*bHealerFlag2_Taming &&*/ ( npc->Check_MobFlag( STATE_MONSTER_TAMING ) ) )
 	{
@@ -1503,7 +1535,7 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 
 		int a, b;
 
-		// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+		// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 		for (a = sx1; a <= ex1; a++)
 		{
 			if (a < 0 || a >= npc->m_pArea->m_size[0]) continue;
@@ -1513,11 +1545,11 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 				CCharacter *pChar;
 				for (pChar = npc->m_pArea->m_cell[a][b].m_listChar; pChar; pChar = pChar->m_pCellNext)
 				{
-					// Á×Àº³Ñ Á¦¿Ü, ´Ù¸¥Ãş Á¦¿Ü
+					// ì£½ì€ë„˜ ì œì™¸, ë‹¤ë¥¸ì¸µ ì œì™¸
 					if ( DEAD(pChar) || ABS( GET_YLAYER(npc) - GET_YLAYER(pChar) ) >= 2)
 						continue;
 
-					// npcÀÌ¸é ÀÚ±â ÀÚ½Å ¸»°í´Â Á¦¿Ü
+					// npcì´ë©´ ìê¸° ìì‹  ë§ê³ ëŠ” ì œì™¸
 					if ( IS_NPC(pChar) )
 					{
 						CNPC* check_npc = TO_NPC(pChar);
@@ -1527,7 +1559,7 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 						}
 					}
 
-					// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+					// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 					int skillindex = -1;
 					int i;
 					for (i = 0; i < MAX_NPC_SKILL; i++)
@@ -1541,10 +1573,10 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 								&& pChar->CanApplySkill(npc->m_skills[i]->m_proto, npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level))
 								&& (npc->CanMove() || GetDistance(npc, pChar) - npc->m_skills[i]->m_proto->GetFireRange(npc) <= 0.3))
 						{
-							// AI Type¿¡ µû¶ó »ç¿ëÇÒ ½ºÅ³ Á¾·ù °áÁ¤(Áö¼Ó, ÁïÈ¿)
+							// AI Typeì— ë”°ë¼ ì‚¬ìš©í•  ìŠ¤í‚¬ ì¢…ë¥˜ ê²°ì •(ì§€ì†, ì¦‰íš¨)
 							if (    ( //bHealerFlag2_Taming &&
 										npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level)->m_durtime < 1
-										&& pChar->m_hp < pChar->m_maxHP * 80 / 100)										// Èú·¯ ÇÃ·¡±×2´Â ÁïÈ¿¼º¸¸ Ã¼·ÂºÎÁ· ´ë»ó¿¡°Ô °É¾îÁÜ
+										&& pChar->m_hp < pChar->m_maxHP * 80 / 100)										// íëŸ¬ í”Œë˜ê·¸2ëŠ” ì¦‰íš¨ì„±ë§Œ ì²´ë ¥ë¶€ì¡± ëŒ€ìƒì—ê²Œ ê±¸ì–´ì¤Œ
 							   )
 							{
 								skillindex = i;
@@ -1553,7 +1585,7 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 						}
 					}
 
-					// ½ºÅ³ ´ë»ó ¼±Á¤ ¸¶Áö¸·
+					// ìŠ¤í‚¬ ëŒ€ìƒ ì„ ì • ë§ˆì§€ë§‰
 					if ( skillindex >= 0 )
 					{
 						target = pChar;
@@ -1567,9 +1599,9 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 		}  // for
 	}  // if
 
-	// µ¥¹ÌÁöµô·¯´Â ÇÃ·¡±× 2ÀÏ¶§ ÁÖº¯ µ¿Á·¿¡°Ô ¹öÇÁ¸¦ °É¾îÁØ´Ù
-	// Èú·¯´Â ÇÃ·¡±× 0ÀÏ¶§ ÁÖº¯ µ¿Á·¿¡°Ô ¹öÇÁ¸¦ °É¾îÁØ´Ù
-	// Èú·¯´Â ÇÃ·¡±× 2ÀÏ¶§ ÁÖº¯ µ¿Á·(ÀÚ½ÅÆ÷ÇÔ) HP 80% ¹Ì¸¸¿¡°Ô ÁïÈ¿¼º ½ºÅ³ »ç¿ë
+	// ë°ë¯¸ì§€ë”œëŸ¬ëŠ” í”Œë˜ê·¸ 2ì¼ë•Œ ì£¼ë³€ ë™ì¡±ì—ê²Œ ë²„í”„ë¥¼ ê±¸ì–´ì¤€ë‹¤
+	// íëŸ¬ëŠ” í”Œë˜ê·¸ 0ì¼ë•Œ ì£¼ë³€ ë™ì¡±ì—ê²Œ ë²„í”„ë¥¼ ê±¸ì–´ì¤€ë‹¤
+	// íëŸ¬ëŠ” í”Œë˜ê·¸ 2ì¼ë•Œ ì£¼ë³€ ë™ì¡±(ìì‹ í¬í•¨) HP 80% ë¯¸ë§Œì—ê²Œ ì¦‰íš¨ì„± ìŠ¤í‚¬ ì‚¬ìš©
 	bool bDamageDealerFlag2 = (target && npc->m_proto->m_aitype == NPC_AI_DAMAGEDEALER && npc->m_proto->CheckAIBit(2) && npc->m_hp >= npc->m_maxHP * 80 / 100 && npc->m_proto->m_family != -1);
 	bool bHealerFlag0 = (target && npc->m_proto->m_aitype == NPC_AI_HEALER && npc->m_proto->CheckAIBit(0) && npc->m_hp >= npc->m_maxHP * 80 / 100 && npc->m_proto->m_family != -1);
 	bool bHealerFlag2 = (npc->m_proto->m_aitype == NPC_AI_HEALER && npc->m_proto->CheckAIBit(2) && npc->m_proto->m_family != -1);
@@ -1585,7 +1617,7 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 		CNPC* ret = NULL;
 		CSkill* retSkill = NULL;
 
-		// ÀÏ´Ü ´Ù¸¥ ÃşÀº °Ë»ç ¾ÈÇÑ´Ù
+		// ì¼ë‹¨ ë‹¤ë¥¸ ì¸µì€ ê²€ì‚¬ ì•ˆí•œë‹¤
 		for (x = sx; x <= ex; x++)
 		{
 			if (x < 0 || x >= npc->m_pArea->m_size[0]) continue;
@@ -1595,17 +1627,17 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 				CCharacter *pChar;
 				for (pChar = npc->m_pArea->m_cell[x][z].m_listChar; pChar; pChar = pChar->m_pCellNext)
 				{
-					// NPC¸¸, Á×Àº³Ñ Á¦¿Ü, ´Ù¸¥Ãş Á¦¿Ü
+					// NPCë§Œ, ì£½ì€ë„˜ ì œì™¸, ë‹¤ë¥¸ì¸µ ì œì™¸
 					if (!IS_NPC(pChar) || DEAD(pChar) || ABS(GET_YLAYER(npc) - GET_YLAYER(pChar)) >= 2)
 						continue ;
 
 					CNPC* tnpc = TO_NPC(pChar);
 
-					// µ¿Á·ÀÌ°í
+					// ë™ì¡±ì´ê³ 
 					if (tnpc->m_proto->m_family != npc->m_proto->m_family)
 						continue ;
 
-					// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+					// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 					int skillindex = -1;
 					int i;
 					for (i = 0; i < MAX_NPC_SKILL; i++)
@@ -1619,18 +1651,18 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 								&& tnpc->CanApplySkill(npc->m_skills[i]->m_proto, npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level))
 								&& (npc->CanMove() || GetDistance(npc, tnpc) - npc->m_skills[i]->m_proto->GetFireRange(npc) <= 0.3))
 						{
-							// AI Type¿¡ µû¶ó »ç¿ëÇÒ ½ºÅ³ Á¾·ù °áÁ¤(Áö¼Ó, ÁïÈ¿)
+							// AI Typeì— ë”°ë¼ ì‚¬ìš©í•  ìŠ¤í‚¬ ì¢…ë¥˜ ê²°ì •(ì§€ì†, ì¦‰íš¨)
 							if (    (bDamageDealerFlag2
 									 && npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level)->m_durtime > 0
-									 && !tnpc->m_assist.FindBySkillIndex(npc->m_skills[i]->m_proto->m_index))		// ´ë¹ÌÁö µô·¯´Â ¹öÇÁ¸¸ ¾È°É¸° ´ë»ó¿¡°Ô °É¾îÁÜ
+									 && !tnpc->m_assist.FindBySkillIndex(npc->m_skills[i]->m_proto->m_index))		// ëŒ€ë¯¸ì§€ ë”œëŸ¬ëŠ” ë²„í”„ë§Œ ì•ˆê±¸ë¦° ëŒ€ìƒì—ê²Œ ê±¸ì–´ì¤Œ
 
 									|| (bHealerFlag0
 										&& npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level)->m_durtime > 0
-										&& !tnpc->m_assist.FindBySkillIndex(npc->m_skills[i]->m_proto->m_index))		// Èú·¯ ÇÃ·¡±×0´Â ¹öÇÁ¸¸ ¾È°É¸° ´ë»ó¿¡°Ô °É¾îÁÜ
+										&& !tnpc->m_assist.FindBySkillIndex(npc->m_skills[i]->m_proto->m_index))		// íëŸ¬ í”Œë˜ê·¸0ëŠ” ë²„í”„ë§Œ ì•ˆê±¸ë¦° ëŒ€ìƒì—ê²Œ ê±¸ì–´ì¤Œ
 
 									|| (bHealerFlag2
 										&& npc->m_skills[i]->m_proto->Level(npc->m_skills[i]->m_level)->m_durtime < 1
-										&& tnpc->m_hp < tnpc->m_maxHP * 80 / 100)										// Èú·¯ ÇÃ·¡±×2´Â ÁïÈ¿¼º¸¸ Ã¼·ÂºÎÁ· ´ë»ó¿¡°Ô °É¾îÁÜ
+										&& tnpc->m_hp < tnpc->m_maxHP * 80 / 100)										// íëŸ¬ í”Œë˜ê·¸2ëŠ” ì¦‰íš¨ì„±ë§Œ ì²´ë ¥ë¶€ì¡± ëŒ€ìƒì—ê²Œ ê±¸ì–´ì¤Œ
 							   )
 							{
 								skillindex = i;
@@ -1639,11 +1671,11 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 						}
 					}
 
-					// ½ºÅ³ ´ë»ó ¼±Á¤ ¸¶Áö¸·
+					// ìŠ¤í‚¬ ëŒ€ìƒ ì„ ì • ë§ˆì§€ë§‰
 					if (skillindex >= 0)
 					{
-						// ±âÁ¸°ú Å¸ÀÔ°Ë»ç : ÅÊÄ¿, ÀÚ½ÅÀÇÅ¸ÀÔ, ±×¿Ü, ¾øÀ½
-						// Å¸ÀÔÀÌ °°À¸¸é °Å¸®·Î ºñ±³
+						// ê¸°ì¡´ê³¼ íƒ€ì…ê²€ì‚¬ : íƒ±ì»¤, ìì‹ ì˜íƒ€ì…, ê·¸ì™¸, ì—†ìŒ
+						// íƒ€ì…ì´ ê°™ìœ¼ë©´ ê±°ë¦¬ë¡œ ë¹„êµ
 						int resComp = AIComp(npc, tnpc, ret);
 						if (resComp < 0 || (resComp == 0 && dist > GetDistance(npc, tnpc)))
 						{
@@ -1666,10 +1698,10 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 		}
 	}
 
-	// ·¹ÀÌµå ¸÷ ºĞ³ë Ã³¸® : Ã¼·ÂÀÌ 50% ÀÌÇÏ·Î ¶³¾îÁú¶§
+	// ë ˆì´ë“œ ëª¹ ë¶„ë…¸ ì²˜ë¦¬ : ì²´ë ¥ì´ 50% ì´í•˜ë¡œ ë–¨ì–´ì§ˆë•Œ
 	if (npc->m_proto->CheckFlag(NPC_RAID) && npc->m_hp <= npc->m_maxHP / 2)
 	{
-		// ¾ÆÁ÷ ºĞ³ë ½ºÅ³À» »ç¿ëÇÏÁö ¾Ê¾ÒÀ» ¶§
+		// ì•„ì§ ë¶„ë…¸ ìŠ¤í‚¬ì„ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ì„ ë•Œ
 		if (npc->m_assist.FindBySkillIndex(RAID_NPC_RAGE_SKILL) == 0)
 		{
 			npc->m_currentSkill = gserver->m_skillProtoList.Create(RAID_NPC_RAGE_SKILL, RAID_NPC_RAGE_SKILL_LEVEL);
@@ -1682,10 +1714,10 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 		}
 	}
 
-	// Å¸°ÙÀÌ ÀÖÀ» ¶§ : ÀÌ°æ¿ì´Â Àû¿¡°Ô¸¸ Àû¿ë
+	// íƒ€ê²Ÿì´ ìˆì„ ë•Œ : ì´ê²½ìš°ëŠ” ì ì—ê²Œë§Œ ì ìš©
 	if (target)
 	{
-		// È¥¶õÀÌ³ª Å×ÀÌ¹ÖµÈ npc´Â unhelpÅ¸ÀÔ ½ºÅ³ Å¸°ÙÀ» pc·Î ÀâÀ» ¼ö ¾ø´Ù.
+		// í˜¼ë€ì´ë‚˜ í…Œì´ë°ëœ npcëŠ” unhelpíƒ€ì… ìŠ¤í‚¬ íƒ€ê²Ÿì„ pcë¡œ ì¡ì„ ìˆ˜ ì—†ë‹¤.
 		if( IS_PC(target)
 				&& ( npc->Check_MobFlag( STATE_MONSTER_TAMING ) || npc->Check_MobFlag( STATE_MONSTER_CONFUSION ) )
 		  )
@@ -1702,7 +1734,7 @@ CCharacter* MobSelectSkill(CNPC* npc, CCharacter* target)
 			for (i = 0; i < MAX_NPC_SKILL; i++)
 			{
 				int skillprob = GetRandom(1, 10000);
-				// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+				// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 				if (npc->m_skills[i]
 						&& npc->m_proto->m_skillProb[i] >= skillprob
 						&& npc->m_skills[i]->IsReady(npc)
@@ -1768,18 +1800,18 @@ bool MobReadySkill(CNPC* npc, CCharacter* target)
 
 bool MobProcFear(CNPC* npc, CCharacter* target)
 {
-	// ÇÇ¾î °É¸° NPCÀÎ°¡? : ÇÇ½ºNPC, ÀÌµ¿ºÒ°¡ NPC´Â ÇÇ¾î ¹«½Ã
+	// í”¼ì–´ ê±¸ë¦° NPCì¸ê°€? : í”¼ìŠ¤NPC, ì´ë™ë¶ˆê°€ NPCëŠ” í”¼ì–´ ë¬´ì‹œ
 	if (npc->m_proto->CheckFlag(NPC_PEACEFUL) ||
 			!npc->m_proto->CheckFlag(NPC_MOVING) ||
 			(target == NULL && npc->m_assist.m_avAddition.hcFearIndex < 1))
 		return false;
 
-	// ÇÇ¾î ´ë»ó Ã£±â
+	// í”¼ì–´ ëŒ€ìƒ ì°¾ê¸°
 	if (target == NULL && npc->m_assist.m_avAddition.hcFearIndex > 0)
 	{
 		target = npc->m_pArea->FindCharInCell(npc, npc->m_assist.m_avAddition.hcFearIndex, npc->m_assist.m_avAddition.hcFearType, false);
 
-		// ÇÇ¾î ´ë»óÀÌ ½Ã¾ß³»¿¡ ¾øÀ¸¸é Ç®±â
+		// í”¼ì–´ ëŒ€ìƒì´ ì‹œì•¼ë‚´ì— ì—†ìœ¼ë©´ í’€ê¸°
 		if (!target)
 		{
 			npc->m_assist.CureAssist(MST_ASSIST_FEAR, 99);
@@ -1787,7 +1819,7 @@ bool MobProcFear(CNPC* npc, CCharacter* target)
 		}
 	}
 
-	// ÇÇ¾îÀÇ ´ë»óÀ¸·ÎºÎÅÍ µµ¸Á
+	// í”¼ì–´ì˜ ëŒ€ìƒìœ¼ë¡œë¶€í„° ë„ë§
 	float tr = (float)atan2(GET_Z(npc) - GET_Z(target), GET_X(npc) - GET_X(target));
 	float dist = npc->GetRunSpeed();
 	float x = GET_X(npc) + dist * (float)cos(tr);
@@ -1817,15 +1849,15 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 		return dist;
 	}
 
-	// ¶Ù±â¸ğµå ¼³Á¤
+	// ë›°ê¸°ëª¨ë“œ ì„¤ì •
 	npc->m_bMoveRun = bRun;
-	// ÃÖ´ë ÀÌµ¿ °Å¸®¸¦ ÀÌ¼Ó¿¡¼­ °¡Á®¿È
+	// ìµœëŒ€ ì´ë™ ê±°ë¦¬ë¥¼ ì´ì†ì—ì„œ ê°€ì ¸ì˜´
 	float moveSpeed = (bRun) ? npc->GetRunSpeed() : npc->m_walkSpeed;
 
-	// ¹æÇâ
+	// ë°©í–¥
 	float tr = (float)atan2(z - GET_Z(npc), x - GET_X(npc));
 
-	// ´ë»ó ÁöÁ¡ÀÇ ³ôÀÌ
+	// ëŒ€ìƒ ì§€ì ì˜ ë†’ì´
 	float h = npc->m_pArea->GetHeight(GET_YLAYER(npc), x, z);
 
 	float trh = 0.0f;
@@ -1833,10 +1865,10 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 
 	char outY;
 
-	// ÀÌµ¿½Ã ºí·°¹°ÀÌ ÀÖ´ÂÁö °Ë»ç
+	// ì´ë™ì‹œ ë¸”ëŸ­ë¬¼ì´ ìˆëŠ”ì§€ ê²€ì‚¬
 	if (npc->m_pArea->IsNotBlocked(npc, GET_YLAYER(npc), x, z, bAttack, outY))
 	{
-		// Å¸°Ù°úÀÇ °Å¸® °Ë»ç H Æ÷ÇÔ
+		// íƒ€ê²Ÿê³¼ì˜ ê±°ë¦¬ ê²€ì‚¬ H í¬í•¨
 		dist = GetDistance(x, z, h, npc);
 		if (target)
 			dist -= target->GetSize();
@@ -1847,11 +1879,11 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 
 		dist_for_attack = dist;
 
-		// ÀÌµ¿ °Å¸®°¡ 0.3 ¹Ì¸¸ÀÌ¸é ¹«½Ã
+		// ì´ë™ ê±°ë¦¬ê°€ 0.3 ë¯¸ë§Œì´ë©´ ë¬´ì‹œ
 		if (dist <= 0.3f)
 			return 0.0f;
 
-		// ÀÌµ¿°Å¸®º¸´Ù ÀÛÀ¸¸é µô·¹ÀÌ¸¦ ¹İÀ¸·ç ÁÙ¿©¼­ ÀÌµ¿
+		// ì´ë™ê±°ë¦¬ë³´ë‹¤ ì‘ìœ¼ë©´ ë”œë ˆì´ë¥¼ ë°˜ìœ¼ë£¨ ì¤„ì—¬ì„œ ì´ë™
 		if (dist < moveSpeed)
 		{
 			if (dist < (moveSpeed / 2))
@@ -1869,41 +1901,41 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 
 		dist_for_attack = 9999.0f;
 
-		// AI ÀÌµ¿°æ·Î¿¡¼­ ºí·°´çÇÑÀûÀÌ ÀÖ°í ¹æÇâ ¹Ù²ã¾ß ÇÏ¸é ¹æÇâ ÀüÈ¯
+		// AI ì´ë™ê²½ë¡œì—ì„œ ë¸”ëŸ­ë‹¹í•œì ì´ ìˆê³  ë°©í–¥ ë°”ê¿”ì•¼ í•˜ë©´ ë°©í–¥ ì „í™˜
 		if (npc->m_nBlockAI != 0 && npc->m_bChangeDir)
 			npc->m_moveDir *= -1;
 
-		// ¾çÂÊ¹æÇâÀ¸·Î ¹Ù²Ù¸é¼­ ½Ãµµ È½¼ö 3¹ø±îÁö ÃÊ°ú½Ã ·£´ıÀÌµ¿(Å¸°ÙÀÌ ¾ø´Â°ÍÃ³·³)
+		// ì–‘ìª½ë°©í–¥ìœ¼ë¡œ ë°”ê¾¸ë©´ì„œ ì‹œë„ íšŸìˆ˜ 3ë²ˆê¹Œì§€ ì´ˆê³¼ì‹œ ëœë¤ì´ë™(íƒ€ê²Ÿì´ ì—†ëŠ”ê²ƒì²˜ëŸ¼)
 		if (npc->m_nBlockAI > 3)
 		{
 			tr = GetRandom((int)(-PI* 1000), (int)(PI * 1000)) / 1000.0f;
 			dist = npc->m_walkSpeed;
 			npc->m_bMoveRun= false;
 
-			// AI°ü·Ãº¯¼ö ÃÊ±âÈ­
+			// AIê´€ë ¨ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 		}
-		// 90µµ²©±â
+		// 90ë„êº½ê¸°
 		else
 		{
 			if (npc->m_bFail45)
-				// Create ½Ã Á¤ÇØÁø ¹æÇâÀ¸·Î 90µµ È¸Àü 45µµ È¸ÀüÀÌ ½ÇÆĞÀÏ°æ¿ì ½Ãµµ
+				// Create ì‹œ ì •í•´ì§„ ë°©í–¥ìœ¼ë¡œ 90ë„ íšŒì „ 45ë„ íšŒì „ì´ ì‹¤íŒ¨ì¼ê²½ìš° ì‹œë„
 				tr += npc->m_moveDir * PI_HALF;
 			else
-				// Á¤ÇØÁø ¹æÇâÀ¸·Î 45µµ È¸Àü
+				// ì •í•´ì§„ ë°©í–¥ìœ¼ë¡œ 45ë„ íšŒì „
 				tr += npc->m_moveDir * PI_HALF / 2;
 
-			// ¹æÇâ ¾È¹Ù²ãµµ µÈ´Ù
+			// ë°©í–¥ ì•ˆë°”ê¿”ë„ ëœë‹¤
 			npc->m_bChangeDir = false;
 
-			// runSpeed ¸¸Å­ ÀÌµ¿
+			// runSpeed ë§Œí¼ ì´ë™
 			//dist = npc->m_runSpeed;
 			npc->m_bMoveRun =true;
 			dist = 1.0f;
 			npc->m_delay = 0;
 		}
 
-		// ³ôÀÌÀû¿ë
+		// ë†’ì´ì ìš©
 		x = GET_X(npc) + dist * (float)cos(tr);
 		z = GET_Z(npc) + dist * (float)sin(tr);
 		h = npc->m_pArea->GetHeight(GET_YLAYER(npc), x, z);
@@ -1932,17 +1964,17 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 
 	bool bTeleportToRegen = false;
 
-	// ÀÌµ¿ ¿µ¿ª ¾ÈÀÎ°¡ º¸°í
+	// ì´ë™ ì˜ì—­ ì•ˆì¸ê°€ ë³´ê³ 
 	if (!target)
 	{
 		if (ABS(npc->m_regenX - x) > npc->m_moveArea || ABS(npc->m_regenZ - z) > npc->m_moveArea)
 			bTeleportToRegen = true;
-		// Å¸°ÙÀÌ ¾ø°í ÀÌµ¿¿µ¿ª ¾È¿¡ ÀÖ´Â °æ¿ì
+		// íƒ€ê²Ÿì´ ì—†ê³  ì´ë™ì˜ì—­ ì•ˆì— ìˆëŠ” ê²½ìš°
 		else
 			npc->m_nBlockRegen = 0;
 	}
 
-	// ÆòÈ­Á¸¿¡ ÀÖÀ» °æ¿ì ¹«Á¶°Ç ¸®Á¨ À§Ä¡¸¦ ÇâÇØ µ¹¾Æ°£´Ù
+	// í‰í™”ì¡´ì— ìˆì„ ê²½ìš° ë¬´ì¡°ê±´ ë¦¬ì   ìœ„ì¹˜ë¥¼ í–¥í•´ ëŒì•„ê°„ë‹¤
 	if (npc->IsInPeaceZone(true))
 		bTeleportToRegen = true;
 
@@ -1972,21 +2004,21 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 				npc->m_pArea->SendToCell(rmsg, npc, false);
 			}
 
-			// AI °ü·Ã º¯¼ö ÃÊ±âÈ­
+			// AI ê´€ë ¨ ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 
 			return 999.9f;
 		}
 		else
 		{
-			// ¿µ¿ª ¹ÛÀÌ¸é ¸®Á¨ À§Ä¡¸¦ ÇâÇØ ÀÌµ¿ÇÏ°í
+			// ì˜ì—­ ë°–ì´ë©´ ë¦¬ì   ìœ„ì¹˜ë¥¼ í–¥í•´ ì´ë™í•˜ê³ 
 			tr = (float)atan2(npc->m_regenZ - GET_Z(npc), npc->m_regenX - GET_X(npc));
 
 			x = GET_X(npc) + (float)cos(tr) * npc->GetRunSpeed();
 			z = GET_Z(npc) + (float)sin(tr) * npc->GetRunSpeed();
 			float h = npc->m_pArea->GetHeight(GET_YLAYER(npc), x, z);
 
-			// ³ôÀÌ°ª Àû¿ë
+			// ë†’ì´ê°’ ì ìš©
 			float fValidCheck = (h - GET_H(npc)) / (GetDistance(x, GET_X(npc), z, GET_Z(npc), h, GET_H(npc)) + 0.01f);
 			if (fValidCheck > 1.0f)
 				fValidCheck = 1.0f;
@@ -2004,18 +2036,18 @@ float MobMoveTo(CNPC* npc, float x, float z, bool bRun, bool bAttack, CCharacter
 	{
 		if (!npc->m_pArea->MoveChar(npc, outY, x, z, npc->m_pArea->GetHeight(outY, x, z), tr, MSG_MOVE_RUN, target))
 		{
-			// AIÀû¿ë ½Ã Move¸¦ ½ÇÆĞÇÑ°æ¿ì Ä«¿îÆ® Áõ°¡ ¹æÇâÀüÈ¯ ¼ÂÆÃ
+			// AIì ìš© ì‹œ Moveë¥¼ ì‹¤íŒ¨í•œê²½ìš° ì¹´ìš´íŠ¸ ì¦ê°€ ë°©í–¥ì „í™˜ ì…‹íŒ…
 			if (bRunAI)
 			{
 				npc->m_nBlockAI++;
 				npc->m_bChangeDir = true;
 			}
 
-			// 45µµ ¼º°øÀÌ¾ú´Ù¸é ½ÇÆĞ·Î
+			// 45ë„ ì„±ê³µì´ì—ˆë‹¤ë©´ ì‹¤íŒ¨ë¡œ
 			if (!npc->m_bFail45)
 				npc->m_bFail45 = true;
 
-			// ¸®Á¨ ½Ã ½ÇÆĞ µÈ °æ¿ì
+			// ë¦¬ì   ì‹œ ì‹¤íŒ¨ ëœ ê²½ìš°
 			if (bTeleportToRegen)
 				npc->m_nBlockRegen++;
 
@@ -2048,24 +2080,24 @@ CCharacter* MobSelectTarget(CNPC* npc)
 	if (npc->m_attackList)
 		target = CheckAttackPulse(npc);
 
-	// ÆòÈ­ NPC´Â Å¸°Ù ¼±Àü ¾ÈÇÔ
+	// í‰í™” NPCëŠ” íƒ€ê²Ÿ ì„ ì „ ì•ˆí•¨
 	if (npc->m_proto->CheckFlag(NPC_PEACEFUL))
 		return NULL;
 
-	// µ¥¹ÌÁö µô·¯ÀÇ HP°¡ 80% ÀÌ»óÀÏ¶§
+	// ë°ë¯¸ì§€ ë”œëŸ¬ì˜ HPê°€ 80% ì´ìƒì¼ë•Œ
 	bool bDamageDealerFlag1 = (npc->m_proto->m_aitype == NPC_AI_DAMAGEDEALER && (target == NULL || npc->m_hp >= npc->m_maxHP * 80 / 100) && npc->m_proto->CheckAIBit(1));
 	bool bDamageDealerFlag0 = (npc->m_proto->m_aitype == NPC_AI_DAMAGEDEALER && (target == NULL || npc->m_hp >= npc->m_maxHP * 80 / 100) && npc->m_proto->CheckAIBit(0));
-	// Èú·¯ flag 1
+	// íëŸ¬ flag 1
 	bool bHealerFlag0 = (npc->m_proto->m_aitype == NPC_AI_HEALER && (target == NULL || npc->m_hp >= npc->m_maxHP * 80 / 100) && npc->m_proto->CheckAIBit(1));
 	if (bDamageDealerFlag1 || bDamageDealerFlag0 || bHealerFlag0)
 	{
 		CNPC* familyForHelp = NULL;
 
-		// ´ë¹ÌÁö µô·¯ flag 1 ¿¡¼­ ÁÖº¯¿¡ Èú·¯ÀÇ Ã¼·ÂÀÌ 60%¹Ì¸¸ÀÌ¸é Èú·¯ Áö¿ø
+		// ëŒ€ë¯¸ì§€ ë”œëŸ¬ flag 1 ì—ì„œ ì£¼ë³€ì— íëŸ¬ì˜ ì²´ë ¥ì´ 60%ë¯¸ë§Œì´ë©´ íëŸ¬ ì§€ì›
 		if (familyForHelp == NULL && bDamageDealerFlag1)
 			familyForHelp = npc->m_pArea->FindNearestFamily(npc, NPC_AI_HEALER, 60);
 
-		// ´ë¹ÌÁö µô·¯ flag 0/Èú·¯ flag 1 ¿¡¼­ ÁÖº¯¿¡ ÅÊÄ¿ Å¸°ÙÀ» Áö¿ø
+		// ëŒ€ë¯¸ì§€ ë”œëŸ¬ flag 0/íëŸ¬ flag 1 ì—ì„œ ì£¼ë³€ì— íƒ±ì»¤ íƒ€ê²Ÿì„ ì§€ì›
 		if (familyForHelp == NULL && (bDamageDealerFlag0 || bHealerFlag0))
 			familyForHelp = npc->m_pArea->FindNearestFamily(npc, NPC_AI_TANKER);
 
@@ -2083,12 +2115,12 @@ CCharacter* MobSelectTarget(CNPC* npc)
 		}
 	}
 
-	// ¼öÈ£Å¾Àº ¾ğÁ¦³ª »õ·Î ¼±Á¤
+	// ìˆ˜í˜¸íƒ‘ì€ ì–¸ì œë‚˜ ìƒˆë¡œ ì„ ì •
 	if (npc->m_proto->CheckFlag(NPC_CASTLE_TOWER))
 		target = NULL;
 
-	// Å¸°Ù ¾ø°í
-	// ¼±°øÀÌ¸é ÁÖº¯ Ä³¸¯ÅÍ Ã£±â
+	// íƒ€ê²Ÿ ì—†ê³ 
+	// ì„ ê³µì´ë©´ ì£¼ë³€ ìºë¦­í„° ì°¾ê¸°
 	float dist = 999.9f;
 	if (!npc->m_pArea->IsFreeze(gserver->m_pulse))
 	{
@@ -2098,7 +2130,7 @@ CCharacter* MobSelectTarget(CNPC* npc)
 			{
 				target = npc->m_pArea->FindNearestTarget(npc, &dist);
 
-				// ÇÇ½ºÁ¸ ¾È¿¡¼­´Â Å¸°ÙÀÌ µÉ ¼ö ¾ø´Ù
+				// í”¼ìŠ¤ì¡´ ì•ˆì—ì„œëŠ” íƒ€ê²Ÿì´ ë  ìˆ˜ ì—†ë‹¤
 				if (target && target->IsInPeaceZone(false))
 					target = NULL;
 								
@@ -2146,11 +2178,11 @@ CCharacter* MobSelectTarget_Taming_or_Confused(CNPC* npc)
 {
 	CCharacter* target = NULL;
 
-	// ¸¸¾à °è¼Ó ¸ñÇ¥°¡ ¹Ù²î¸é ÀÌ°Í ¿­¾î¾ß ÇÔ
+	// ë§Œì•½ ê³„ì† ëª©í‘œê°€ ë°”ë€Œë©´ ì´ê²ƒ ì—´ì–´ì•¼ í•¨
 	//if (npc->m_attackList)
 	//	target = CheckAttackPulse(npc);
 
-	// ¸ó½ºÅÍ°¡ ¸ó½ºÅÍ¸¦ ¶§¸²
+	// ëª¬ìŠ¤í„°ê°€ ëª¬ìŠ¤í„°ë¥¼ ë•Œë¦¼
 	float dist = 999.9f;
 	if (!target)
 	{
@@ -2158,7 +2190,7 @@ CCharacter* MobSelectTarget_Taming_or_Confused(CNPC* npc)
 		{
 			target = npc->m_pArea->FindNearestTarget_Taming_or_Confused(npc, &dist);
 
-			// ÇÇ½ºÁ¸ ¾È¿¡¼­´Â Å¸°ÙÀÌ µÉ ¼ö ¾ø´Ù
+			// í”¼ìŠ¤ì¡´ ì•ˆì—ì„œëŠ” íƒ€ê²Ÿì´ ë  ìˆ˜ ì—†ë‹¤
 			if (target && target->IsInPeaceZone(false))
 				target = NULL;
 
@@ -2172,13 +2204,13 @@ CCharacter* MobSelectTarget_Taming_or_Confused(CNPC* npc)
 
 void MobMoveRandom(CNPC* npc)
 {
-	// ÀÌµ¿ºÒ°¡´É
+	// ì´ë™ë¶ˆê°€ëŠ¥
 	if (!npc->CanMove())
 		return ;
 
-	// 20%ÀÇ È®·ü·Î ·£´ı ¿òÁ÷ÀÓ
-	// ¸®Á¨ Á÷ÈÄ »óÅÂÀÌ¸é 100% ·£´ı ¿òÁ÷ÀÓ(¾Èº¸ÀÓ)
-	// 10%ÀÇ È®·ü·Î ·£´ıÀÌµ¿
+	// 20%ì˜ í™•ë¥ ë¡œ ëœë¤ ì›€ì§ì„
+	// ë¦¬ì   ì§í›„ ìƒíƒœì´ë©´ 100% ëœë¤ ì›€ì§ì„(ì•ˆë³´ì„)
+	// 10%ì˜ í™•ë¥ ë¡œ ëœë¤ì´ë™
 	/*speed_ksw before*/
 	if ((npc->m_disableTime !=0) || (GetRandom(1, 100) <= 20))
 		/*speed_ksw before*/
@@ -2190,7 +2222,7 @@ void MobMoveRandom(CNPC* npc)
 	{
 		float tr = GetRandom((int)(-PI* 1000), (int)(PI * 1000)) / 1000.0f;
 		npc->m_bMoveRun = false;
-		// ³ôÀÌÀû¿ë
+		// ë†’ì´ì ìš©
 		float x = GET_X(npc) + (npc->m_walkSpeed + npc->m_proto->m_size) * (float)cos(tr);
 		float z = GET_Z(npc) + (npc->m_walkSpeed + npc->m_proto->m_size) * (float)sin(tr);
 		MobMoveTo(npc, x, z, false, false, NULL);
@@ -2199,12 +2231,12 @@ void MobMoveRandom(CNPC* npc)
 
 void CArea::MobActivity_Taming(CNPC* npc)
 {
-	CPC*	owner = NULL;				// ¸ó½ºÅÍ¸¦ Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ
-	CNPC*	target_tamingNpc = NULL;	// Å×ÀÌ¹ÖµÈ ¸ó½ºÅÍ°¡ ³ë¸®´Â ¸ó½ºÅÍ
-	//CPC*	target_for_heal = NULL;		// npc°¡ ÈúÀ» ÇØÁÖ´Â PC
+	CPC*	owner = NULL;				// ëª¬ìŠ¤í„°ë¥¼ í…Œì´ë°í•œ ìºë¦­í„°
+	CNPC*	target_tamingNpc = NULL;	// í…Œì´ë°ëœ ëª¬ìŠ¤í„°ê°€ ë…¸ë¦¬ëŠ” ëª¬ìŠ¤í„°
+	//CPC*	target_for_heal = NULL;		// npcê°€ íì„ í•´ì£¼ëŠ” PC
 	CCharacter* temp = NULL;
 
-	// ÁÖÀÎÀ» Ã£´Â´Ù.
+	// ì£¼ì¸ì„ ì°¾ëŠ”ë‹¤.
 	owner = npc->GetOwner();
 	if (owner == NULL)
 	{
@@ -2216,7 +2248,7 @@ void CArea::MobActivity_Taming(CNPC* npc)
 		return ;
 	}
 
-	// ÁÖÀÎÀÌ Á×°Å³ª ¸Ö¸® ¶³¾îÁö¸é(100¹ÌÅÍ) Å×ÀÌ¹ÖÀÌ Ç®¸®°í ·£´ı ÀÌµ¿
+	// ì£¼ì¸ì´ ì£½ê±°ë‚˜ ë©€ë¦¬ ë–¨ì–´ì§€ë©´(100ë¯¸í„°) í…Œì´ë°ì´ í’€ë¦¬ê³  ëœë¤ ì´ë™
 	if ( owner->m_hp <= 0 ) // || GetDistance(owner, npc) >= 100.0f )
 	{
 		npc->reSet_MobFlag( STATE_MONSTER_TAMING );
@@ -2224,25 +2256,25 @@ void CArea::MobActivity_Taming(CNPC* npc)
 		DelAttackList(npc);
 		MobMoveRandom(npc);
 
-		// ÁÖÀÎÀÌ ÀÖ´ÂÁö È®ÀÎ, ÀÖÀ¸¸é Å×ÀÌ¹Ö ÁßÀ» ÇØÁ¦
+		// ì£¼ì¸ì´ ìˆëŠ”ì§€ í™•ì¸, ìˆìœ¼ë©´ í…Œì´ë° ì¤‘ì„ í•´ì œ
 		owner->DeleteSlave(npc);
 
-		// npcÀÇ ÁÖÀÎµµ Áö¿ö ÁÜ
+		// npcì˜ ì£¼ì¸ë„ ì§€ì›Œ ì¤Œ
 		npc->SetOwner(NULL);
 		return;
 	}
 	else
 	{
-		// ÁÖÀÎÀÌ °ø°İÇÑ ¸ó½ºÅÍ¸¦ °ø°İÇÑ´Ù.
+		// ì£¼ì¸ì´ ê³µê²©í•œ ëª¬ìŠ¤í„°ë¥¼ ê³µê²©í•œë‹¤.
 		temp = owner->GetOwners_target();
 	}
 
-	// ÃÊ±â¿¡´Â ÁÖº¯ÀÇ ÀÏ¹İ ¸ó½ºÅÍ¸¦ Ã£¾Æ¼­ ¼±°øÀÌ¾ú´Ù... Áö±İÀº ÁÖÀÎÀÌ °ø°İÇÑ ¸ó½ºÅÍ¸¦ °ø°İÇÑ´Ù.
-	// ÁÖº¯ ¸ó½ºÅÍ ¼±°øÀ¸·Î ¹Ù²ÙÀÚ ÇÏ¸é ÀÌ°ÍÀÇ ÁÖ¼®À» ÇØÁ¦ÇÏ¸é µÈ´Ù.    yhj
+	// ì´ˆê¸°ì—ëŠ” ì£¼ë³€ì˜ ì¼ë°˜ ëª¬ìŠ¤í„°ë¥¼ ì°¾ì•„ì„œ ì„ ê³µì´ì—ˆë‹¤... ì§€ê¸ˆì€ ì£¼ì¸ì´ ê³µê²©í•œ ëª¬ìŠ¤í„°ë¥¼ ê³µê²©í•œë‹¤.
+	// ì£¼ë³€ ëª¬ìŠ¤í„° ì„ ê³µìœ¼ë¡œ ë°”ê¾¸ì í•˜ë©´ ì´ê²ƒì˜ ì£¼ì„ì„ í•´ì œí•˜ë©´ ëœë‹¤.    yhj
 	//temp = MobSelectTarget_Taming_or_Confused(npc);
 
-	/* //  ÀÓ½Ã·Î Å×ÀÌ¹ÖµÈ npc´Â ½ºÅ³À» »ç¿ë ¸øÇÏ°Ô ¸·´Â´Ù.
-	// ¸÷ ½ºÅ³ ¼±ÅÃ
+	/* //  ì„ì‹œë¡œ í…Œì´ë°ëœ npcëŠ” ìŠ¤í‚¬ì„ ì‚¬ìš© ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤.
+	// ëª¹ ìŠ¤í‚¬ ì„ íƒ
 	temp = MobSelectSkill(npc, temp); */
 
 	if ( temp && IS_NPC(temp) )
@@ -2253,29 +2285,29 @@ void CArea::MobActivity_Taming(CNPC* npc)
 	/*
 	else if( temp && IS_PC(temp) )
 	{
-		// ÈúÀÌ¸é Å¸°ÙÀ» PC·Î Àâ´Â´Ù.
+		// íì´ë©´ íƒ€ê²Ÿì„ PCë¡œ ì¡ëŠ”ë‹¤.
 		target_for_heal = TO_PC(temp);
 	}
 
-	// ÈúÀÌ¸é Å¸°Ù¿¡°Ô ½ºÅ³À» »ç¿ëÇÑ´Ù.
+	// íì´ë©´ íƒ€ê²Ÿì—ê²Œ ìŠ¤í‚¬ì„ ì‚¬ìš©í•œë‹¤.
 	if ( target_for_heal )
 	{
-		// ½ºÅ³Àº ¹Ù·Î »ç¿ëÇÑ´Ù.
+		// ìŠ¤í‚¬ì€ ë°”ë¡œ ì‚¬ìš©í•œë‹¤.
 		MobReadySkill(npc, target_for_heal);
 		return;
 	}
 
-	else *///  ÀÓ½Ã·Î Å×ÀÌ¹ÖµÈ npc´Â ½ºÅ³À» »ç¿ë ¸øÇÏ°Ô ¸·´Â´Ù.
+	else *///  ì„ì‹œë¡œ í…Œì´ë°ëœ npcëŠ” ìŠ¤í‚¬ì„ ì‚¬ìš© ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤.
 
 	if( target_tamingNpc && target_tamingNpc != npc)
 	{
-		// Å¸°ÙÀÌ ÀÖÀ¸¸é Å¸°ÙÀ» ÇâÇØ ÀÌµ¿
+		// íƒ€ê²Ÿì´ ìˆìœ¼ë©´ íƒ€ê²Ÿì„ í–¥í•´ ì´ë™
 		float dist = MobMoveTo(npc, GET_X(target_tamingNpc), GET_Z(target_tamingNpc), true, true, (CCharacter*)target_tamingNpc);
 
 		if (dist <= 0.3f && npc->m_proto->CheckFlag(NPC_ATTACK) && npc->CanAttack())
 		{
-			// °ø°İ Ã³¸®
-			// ¾îÅÃÇßÀ»°æ¿ì AI°ü·Ãº¯¼ö ÃÊ±âÈ­
+			// ê³µê²© ì²˜ë¦¬
+			// ì–´íƒí–ˆì„ê²½ìš° AIê´€ë ¨ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 
 			if (!npc->m_bStop)
@@ -2286,7 +2318,7 @@ void CArea::MobActivity_Taming(CNPC* npc)
 				SendToCell(rmsg, npc, false);
 			}
 
-			//  ÀÓ½Ã·Î Å×ÀÌ¹ÖµÈ npc´Â ½ºÅ³À» »ç¿ë ¸øÇÏ°Ô ¸·´Â´Ù.
+			//  ì„ì‹œë¡œ í…Œì´ë°ëœ npcëŠ” ìŠ¤í‚¬ì„ ì‚¬ìš© ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤.
 			if (/*!MobReadySkill(npc, target_tamingNpc) && */gserver->m_pulse - npc->m_pulseAttack >= npc->m_attackSpeed * 15 / 10 )
 			{
 				npc->m_pulseAttack = gserver->m_pulse;
@@ -2294,7 +2326,7 @@ void CArea::MobActivity_Taming(CNPC* npc)
 			}
 		}
 	}
-	// Å¸°ÙÀÌ ¾øÀ¸¸é Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ¸¦ µû¶ó ÀÌµ¿
+	// íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ í…Œì´ë°í•œ ìºë¦­í„°ë¥¼ ë”°ë¼ ì´ë™
 	else if ( owner )
 	{
 		MobMoveTo(npc, GET_X(owner), GET_Z(owner), true, false, owner);
@@ -2304,16 +2336,16 @@ void CArea::MobActivity_Taming(CNPC* npc)
 
 void CArea::MobActivity_Confused(CNPC* npc)
 {
-	CNPC*	target_ConfusedNpc = NULL;	// È¥¶õ »óÅÂÀÇ ¸ó½ºÅÍ°¡ ³ë¸®´Â ¸ó½ºÅÍ
+	CNPC*	target_ConfusedNpc = NULL;	// í˜¼ë€ ìƒíƒœì˜ ëª¬ìŠ¤í„°ê°€ ë…¸ë¦¬ëŠ” ëª¬ìŠ¤í„°
 	CCharacter* temp = NULL;
 
-	// È¥¶õ »óÅÂ¶ó¸é
+	// í˜¼ë€ ìƒíƒœë¼ë©´
 	int nConfusing = npc->Check_MobFlag( STATE_MONSTER_CONFUSION );
 	if ( nConfusing )
 	{
 		temp = MobSelectTarget_Taming_or_Confused(npc);
 
-		// ¸÷ ½ºÅ³ ¼±ÅÃ//  ÀÓ½Ã·Î È¥¶õ »óÅÂÀÇ npc´Â ½ºÅ³À» »ç¿ë ¸øÇÏ°Ô ¸·´Â´Ù.
+		// ëª¹ ìŠ¤í‚¬ ì„ íƒ//  ì„ì‹œë¡œ í˜¼ë€ ìƒíƒœì˜ npcëŠ” ìŠ¤í‚¬ì„ ì‚¬ìš© ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤.
 		//temp = MobSelectSkill(npc, temp);
 		if ( temp && IS_NPC(temp) )
 		{
@@ -2323,13 +2355,13 @@ void CArea::MobActivity_Confused(CNPC* npc)
 
 	if( target_ConfusedNpc && target_ConfusedNpc != npc )
 	{
-		// Å¸°ÙÀÌ ÀÖÀ¸¸é Å¸°ÙÀ» ÇâÇØ ÀÌµ¿
+		// íƒ€ê²Ÿì´ ìˆìœ¼ë©´ íƒ€ê²Ÿì„ í–¥í•´ ì´ë™
 		float dist = MobMoveTo(npc, GET_X(target_ConfusedNpc), GET_Z(target_ConfusedNpc), true, true, target_ConfusedNpc);
 
 		if (dist <= 0.3f && npc->m_proto->CheckFlag(NPC_ATTACK) && npc->CanAttack())
 		{
-			// °ø°İ Ã³¸®
-			// ¾îÅÃÇßÀ»°æ¿ì AI°ü·Ãº¯¼ö ÃÊ±âÈ­
+			// ê³µê²© ì²˜ë¦¬
+			// ì–´íƒí–ˆì„ê²½ìš° AIê´€ë ¨ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 
 			if (!npc->m_bStop)
@@ -2340,7 +2372,7 @@ void CArea::MobActivity_Confused(CNPC* npc)
 				SendToCell(rmsg, npc, false);
 			}
 
-			//  ÀÓ½Ã·Î È¥¶õ »óÅÂÀÇ npc´Â ½ºÅ³À» »ç¿ë ¸øÇÏ°Ô ¸·´Â´Ù.
+			//  ì„ì‹œë¡œ í˜¼ë€ ìƒíƒœì˜ npcëŠ” ìŠ¤í‚¬ì„ ì‚¬ìš© ëª»í•˜ê²Œ ë§‰ëŠ”ë‹¤.
 			if (/*!MobReadySkill(npc, target_ConfusedNpc) &&*/ gserver->m_pulse - npc->m_pulseAttack >= npc->m_attackSpeed * 15 / 10 )
 			{
 				npc->m_pulseAttack = gserver->m_pulse;
@@ -2349,14 +2381,14 @@ void CArea::MobActivity_Confused(CNPC* npc)
 		}
 	}
 
-	// Å¸°ÙÀÌ ¾øÀ¸¸é ·£´ı ÀÌµ¿
+	// íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ëœë¤ ì´ë™
 	else if ( !target_ConfusedNpc )
 	{
 		MobMoveRandom(npc);
 	}
 }
 
-// nCount´Â ÇöÀç Area¿¡¼­ npc°¡ npc¸¦ Á×ÀÎ ¼ö...yhj
+// nCountëŠ” í˜„ì¬ Areaì—ì„œ npcê°€ npcë¥¼ ì£½ì¸ ìˆ˜...yhj
 void CArea::Monster_synchronization( int nCount )
 {
 	CNPC* npc = NULL;
@@ -2368,7 +2400,7 @@ void CArea::Monster_synchronization( int nCount )
 	if ( tnpc == NULL || tnpc->m_pArea == NULL )
 		return;
 
-	// npcList¸¦ °Ë»çÇÑ´Ù. ´Ü ÇÑ¸í¸¸ »èÁ¦ÇÏ°í ·çÇÁ¸¦ ³ª¿Â´Ù.
+	// npcListë¥¼ ê²€ì‚¬í•œë‹¤. ë‹¨ í•œëª…ë§Œ ì‚­ì œí•˜ê³  ë£¨í”„ë¥¼ ë‚˜ì˜¨ë‹¤.
 	while ((npc = tnpc))
 	{
 		tnpc = npc->m_pNPCNext;
@@ -2382,7 +2414,7 @@ void CArea::Monster_synchronization( int nCount )
 		if ( npc->m_hp == 0 && npc->IsFlag(NPC_LORD_SYMBOL) == 0)
 		{
 			nCount--;
-			// npc->m_pArea-> ÀÌ°Íº¸´Ù this-> ÀÌ°Ô ¾ÈÀüÇÒ ¼öµµ... ¹®Á¦°¡ µÇ¸é ¹Ù²ÙÀÚ
+			// npc->m_pArea-> ì´ê²ƒë³´ë‹¤ this-> ì´ê²Œ ì•ˆì „í•  ìˆ˜ë„... ë¬¸ì œê°€ ë˜ë©´ ë°”ê¾¸ì
 			npc->m_pArea->m_nNPC_Killed_NPC = nCount;
 
 			DelAttackList(npc);
@@ -2392,8 +2424,8 @@ void CArea::Monster_synchronization( int nCount )
 		}
 	} // while ((npc = tnpc))
 
-	// ¾ÆÁ÷ Á×Àº npc°¡ ³²¾Æ ÀÖ´Ù¸é Àç±Í ÇÔ¼ö È£Ãâ
-	// µ¿½Ã¿¡ ¿©·¯¸íÀ» »èÁ¦ÇÏ¸é NULL ÂüÁ¶°¡ ¹ß»ıÇÏ¿© ¼­¹ö ´Ù¿î µÊ...
+	// ì•„ì§ ì£½ì€ npcê°€ ë‚¨ì•„ ìˆë‹¤ë©´ ì¬ê·€ í•¨ìˆ˜ í˜¸ì¶œ
+	// ë™ì‹œì— ì—¬ëŸ¬ëª…ì„ ì‚­ì œí•˜ë©´ NULL ì°¸ì¡°ê°€ ë°œìƒí•˜ì—¬ ì„œë²„ ë‹¤ìš´ ë¨...
 	if ( nCount > 0 )
 	{
 		if( tnpc && tnpc->m_pArea )
@@ -2405,9 +2437,9 @@ void CArea::Monster_synchronization( int nCount )
 
 void CArea::MobActivity_Mercenary(CNPC* npc)
 {
-	CPC*	owner = NULL;					// ¸ó½ºÅÍ¸¦ Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ
-	CCharacter * target_Attack = NULL;		// ¿ëº´ ¸ó½ºÅÍ°¡ ³ë¸®´Â Å¸°Ù
-	CCharacter * target_Heal = NULL;		// npc°¡ ÈúÀ» ÇØÁÖ´Â PC(owner)
+	CPC*	owner = NULL;					// ëª¬ìŠ¤í„°ë¥¼ í…Œì´ë°í•œ ìºë¦­í„°
+	CCharacter * target_Attack = NULL;		// ìš©ë³‘ ëª¬ìŠ¤í„°ê°€ ë…¸ë¦¬ëŠ” íƒ€ê²Ÿ
+	CCharacter * target_Heal = NULL;		// npcê°€ íì„ í•´ì£¼ëŠ” PC(owner)
 	CCharacter* temp = NULL;
 
 	owner = npc->GetOwner();
@@ -2415,7 +2447,7 @@ void CArea::MobActivity_Mercenary(CNPC* npc)
 	if( !owner )
 		return;
 
-	// ÁÖº¯¿¡ ¼±ÅÂÇÑ Å¸°ÙÀÌ Á¸ÀçÇÏ´ÂÁö ºÎÅÍ È®ÀÎÇÏÀÚ.
+	// ì£¼ë³€ì— ì„ íƒœí•œ íƒ€ê²Ÿì´ ì¡´ì¬í•˜ëŠ”ì§€ ë¶€í„° í™•ì¸í•˜ì.
 	if( owner->GetSummonOwners_target() != NULL )
 	{
 		int i=0;
@@ -2445,7 +2477,7 @@ void CArea::MobActivity_Mercenary(CNPC* npc)
 
 	if( temp && IS_PC(temp)  )
 	{
-		if( npc->GetOwner() == TO_PC(temp) ) // ¼±ÅÃÇÑ ÀÚ°¡ ¿À³ÊÀÌ¸é ÈúÇØÁØ´Ù.
+		if( npc->GetOwner() == TO_PC(temp) ) // ì„ íƒí•œ ìê°€ ì˜¤ë„ˆì´ë©´ íí•´ì¤€ë‹¤.
 			target_Heal = temp;
 		else
 			target_Attack = temp;
@@ -2453,23 +2485,23 @@ void CArea::MobActivity_Mercenary(CNPC* npc)
 	else
 		target_Attack = temp;
 
-	// ÈúÀÌ¸é Å¸°Ù¿¡°Ô ½ºÅ³À» »ç¿ëÇÑ´Ù.
+	// íì´ë©´ íƒ€ê²Ÿì—ê²Œ ìŠ¤í‚¬ì„ ì‚¬ìš©í•œë‹¤.
 	if ( target_Heal )
 	{
-		// ½ºÅ³Àº ¹Ù·Î »ç¿ëÇÑ´Ù.
+		// ìŠ¤í‚¬ì€ ë°”ë¡œ ì‚¬ìš©í•œë‹¤.
 		MobReadySkill(npc, target_Heal);
 		return;
 	}
 
 	if( target_Attack && target_Attack != npc)
 	{
-		// Å¸°ÙÀÌ ÀÖÀ¸¸é Å¸°ÙÀ» ÇâÇØ ÀÌµ¿
+		// íƒ€ê²Ÿì´ ìˆìœ¼ë©´ íƒ€ê²Ÿì„ í–¥í•´ ì´ë™
 		float dist = MobMoveTo(npc, GET_X(target_Attack), GET_Z(target_Attack), true, true, target_Attack);
 
 		if (dist <= 0.3f && npc->m_proto->CheckFlag(NPC_ATTACK) && npc->CanAttack())
 		{
-			// °ø°İ Ã³¸®
-			// ¾îÅÃÇßÀ»°æ¿ì AI°ü·Ãº¯¼ö ÃÊ±âÈ­
+			// ê³µê²© ì²˜ë¦¬
+			// ì–´íƒí–ˆì„ê²½ìš° AIê´€ë ¨ë³€ìˆ˜ ì´ˆê¸°í™”
 			npc->InitAIVar();
 
 			if (!npc->m_bStop)
@@ -2487,7 +2519,7 @@ void CArea::MobActivity_Mercenary(CNPC* npc)
 			}
 		}
 	}
-	// Å¸°ÙÀÌ ¾øÀ¸¸é Å×ÀÌ¹ÖÇÑ Ä³¸¯ÅÍ¸¦ µû¶ó ÀÌµ¿
+	// íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ í…Œì´ë°í•œ ìºë¦­í„°ë¥¼ ë”°ë¼ ì´ë™
 	else if ( owner  && GetDistance((CCharacter*)owner,(CCharacter*)npc) > 3.0f)
 	{
 		float fRand = GetRandom(0,100)%2 ? 1.0f : -1.0f ;
@@ -2511,7 +2543,7 @@ void CArea::MobActivity_Totem(CNPC *npc)
 		return;
 	}
 
-	if( npc->m_currentSkill ) // ½ºÅ³À» »ç¿ëÁßÀÌ¸é
+	if( npc->m_currentSkill ) // ìŠ¤í‚¬ì„ ì‚¬ìš©ì¤‘ì´ë©´
 		return;
 
 	if( npc->Check_MobFlag(STATE_MONSTER_TOTEM_BUFF))
@@ -2566,13 +2598,13 @@ void CArea::MobActivity_Suicide(CNPC *npc)
 		npc->m_currentSkill->m_state = SKILL_CON_READY;
 
 		dist = GetDistance( (CCharacter*)npc, (CCharacter*)target);
-		if( dist > npc->m_skills[0]->m_proto->m_appRange ) // ½ºÅ³ À¯À¯È¿±â¸®º¸´Ù ÂªÀ¸¸é ¦i¾Æ°¡¶ó.
+		if( dist > npc->m_skills[0]->m_proto->m_appRange ) // ìŠ¤í‚¬ ìœ ìœ íš¨ê¸°ë¦¬ë³´ë‹¤ ì§§ìœ¼ë©´ ?ì•„ê°€ë¼.
 		{
 			MobMoveTo(npc, GET_X(target), GET_Z(target), true, false, target);
 		}
 		return;
 	}
-	else if( owner )// Å¸°ÙÀÌ ¾øÀ¸¸é µ¹¾Æ´ó±â¶ó~
+	else if( owner )// íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ëŒì•„ëŒ•ê¸°ë¼~
 	{
 		float fRand = GetRandom(0,100)%2 ? 1.0f : -1.0f ;
 		float x  = GET_X(npc->GetOwner()) + ( fRand * ((float)(GetRandom( 500 , 1000 ) / 100.0f)) );
@@ -2600,7 +2632,7 @@ void CArea::MobActivity_Item_Totem(CNPC *npc)
 		{
 			owner->SummonNpcRemove(npc, true);
 
-			//ÁÖÀÎ¿¡°Ô »ç¶óÁüÀ» ¾Ë·ÁÁØ´Ù. (Disappear ÆĞÅ¶À» ÀÌ¿ëÇØ¼­)
+			//ì£¼ì¸ì—ê²Œ ì‚¬ë¼ì§ì„ ì•Œë ¤ì¤€ë‹¤. (Disappear íŒ¨í‚·ì„ ì´ìš©í•´ì„œ)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				DisappearMsgForClientEffect(rmsg, npc, owner->m_index);
@@ -2610,7 +2642,7 @@ void CArea::MobActivity_Item_Totem(CNPC *npc)
 		return;
 	}
 
-	if( npc->m_currentSkill ) // ½ºÅ³À» »ç¿ëÁßÀÌ¸é
+	if( npc->m_currentSkill ) // ìŠ¤í‚¬ì„ ì‚¬ìš©ì¤‘ì´ë©´
 		return;
 
 	////
@@ -2623,7 +2655,7 @@ void CArea::MobActivity_Item_Totem(CNPC *npc)
 	for (i = 0; i < MAX_NPC_SKILL; i++)
 	{
 		int skillprob = GetRandom(1, 10000);
-		// ½ºÅ³ »ç¿ë °¡´É °Ë»ç
+		// ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ê²€ì‚¬
 		if (npc->m_skills[i]
 		&& npc->m_proto->m_skillProb[i] >= skillprob
 			&& npc->m_skills[i]->IsReady(npc)
@@ -2649,7 +2681,7 @@ void CArea::MobActivity_Item_Totem(CNPC *npc)
 /*
 bool MobProcSkillMercenary(CNPC *npc)
 {
-	// ÇöÀç ½ºÅ³ »ç¿ëÁßÀÎ°¡
+	// í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš©ì¤‘ì¸ê°€
 	if (!npc->m_currentSkill )
 		return false;
 
@@ -2663,7 +2695,7 @@ bool MobProcSkillMercenary(CNPC *npc)
 
 bool MobProcSkillTotem_Buff(CNPC *npc)
 {
-	// ÇöÀç ½ºÅ³ »ç¿ëÁßÀÎ°¡
+	// í˜„ì¬ ìŠ¤í‚¬ ì‚¬ìš©ì¤‘ì¸ê°€
 	if (!npc->m_currentSkill )
 		return false;
 
@@ -2677,10 +2709,10 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 	case SKILL_CON_READY:
 		try
 		{
-			// ½ºÅ³ ·¹µğ->ÆÄÀÌ¾î °Ë»ç
+			// ìŠ¤í‚¬ ë ˆë””->íŒŒì´ì–´ ê²€ì‚¬
 			if (npc->m_currentSkill->m_usetime + npc->m_currentSkill->m_proto->m_readyTime + npc->m_currentSkill->m_proto->m_stillTime <= gserver->m_pulse)
 			{
-				// hp, mp °Ë»ç
+				// hp, mp ê²€ì‚¬
 				if (npc->m_hp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needHP
 						|| npc->m_mp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needMP)
 					throw 0;
@@ -2706,7 +2738,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 						mcount++;
 					}
 
-					// ÆÖµµ ÁÖÀÚ
+					// íŒ»ë„ ì£¼ì
 					if( owner->GetAPet() )
 					{
 						dist = GetDistance((CCharacter*)npc, (CCharacter*)owner->GetAPet());
@@ -2720,7 +2752,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 						}
 					}
 
-					// ¼ÒÈ¯ÁÖ¼öµµ ÁÖÀÚ
+					// ì†Œí™˜ì£¼ìˆ˜ë„ ì£¼ì
 					if( owner->m_job == JOB_SORCERER )
 					{
 						CElemental* elemental = owner->m_elementalList;
@@ -2739,7 +2771,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 						}
 					}
 				}
-				else if( owner->m_party || owner->m_Exped )// ÆÄÆ¼¿ø¿¡°Ô ¸ğµÎ ¹öÇÁ¸¦ »Ñ¸°´Ù.
+				else if( owner->m_party || owner->m_Exped )// íŒŒí‹°ì›ì—ê²Œ ëª¨ë‘ ë²„í”„ë¥¼ ë¿Œë¦°ë‹¤.
 				{
 					int realCount = 0;
 					int nCount;
@@ -2807,7 +2839,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 									}
 								}
 							}
-							// ÆÖµµ ÁÖÀÚ
+							// íŒ»ë„ ì£¼ì
 							if( pPC->GetAPet() )
 							{
 								dist = GetDistance((CCharacter*)npc, (CCharacter*)pPC->GetAPet());
@@ -2835,7 +2867,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 								}
 							}
 
-							// ¼ÒÈ¯ÁÖ¼öµµ ÁÖÀÚ
+							// ì†Œí™˜ì£¼ìˆ˜ë„ ì£¼ì
 							if( pPC->m_job == JOB_SORCERER )
 							{
 								CElemental* elemental = pPC->m_elementalList;
@@ -2885,7 +2917,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 						npc->m_pArea->SendToCell(rmsg, npc, false);
 					}
 
-					// ½ºÅ³ Àû¿ë.
+					// ìŠ¤í‚¬ ì ìš©.
 					for(i=0; i<mcount; i++)
 					{
 						ApplySkill(npc, multitarget[i].mtarget, npc->m_currentSkill, -1, bApply);
@@ -2927,7 +2959,7 @@ bool MobProcSkillTotem_Buff(CNPC *npc)
 
 bool MobProcSkillTrap_Attk(CNPC *npc)
 {
-	if (npc->GetOwner() == NULL		// ÁÖÀÎ ¾ø´Ù.
+	if (npc->GetOwner() == NULL		// ì£¼ì¸ ì—†ë‹¤.
 			|| (npc->GetOwner()
 				&& ( npc->GetOwner()->m_hp <= 0
 					 || GetDistance((CCharacter*)npc->GetOwner(), (CCharacter*)npc) >= 100.0f
@@ -2940,7 +2972,7 @@ bool MobProcSkillTrap_Attk(CNPC *npc)
 		return true;
 	}
 
-	if( !npc->m_currentSkill ) // °­Á¦ ¼¼ÆÃ
+	if( !npc->m_currentSkill ) // ê°•ì œ ì„¸íŒ…
 	{
 		npc->m_currentSkill = npc->m_skills[0];
 		npc->m_currentSkill->m_targetIndex = npc->m_index;
@@ -2954,15 +2986,15 @@ bool MobProcSkillTrap_Attk(CNPC *npc)
 	case SKILL_CON_READY:
 		try
 		{
-			// ½ºÅ³ ·¹µğ->ÆÄÀÌ¾î °Ë»ç
+			// ìŠ¤í‚¬ ë ˆë””->íŒŒì´ì–´ ê²€ì‚¬
 			if (npc->m_currentSkill->m_usetime + npc->m_currentSkill->m_proto->m_readyTime + npc->m_currentSkill->m_proto->m_stillTime <= gserver->m_pulse)
 			{
-				// hp, mp °Ë»ç
+				// hp, mp ê²€ì‚¬
 				if (npc->m_hp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needHP
 						|| npc->m_mp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needMP)
 					throw 0;
 
-				int	mcount = npc->m_currentSkill->m_proto->m_levelproto[npc->m_currentSkill->m_level - 1]->m_targetNum ; // °ø°İ °¡´É¼ö´Â 10¸í
+				int	mcount = npc->m_currentSkill->m_proto->m_levelproto[npc->m_currentSkill->m_level - 1]->m_targetNum ; // ê³µê²© ê°€ëŠ¥ìˆ˜ëŠ” 10ëª…
 				boost::scoped_array<MultiTarget> multitarget(new MultiTarget[mcount]);
 				mcount = GetSummonNpcMultiTarget(npc, multitarget.get(), mcount);
 
@@ -2981,7 +3013,7 @@ bool MobProcSkillTrap_Attk(CNPC *npc)
 						npc->m_pArea->SendToCell(rmsg, npc, false);
 					}
 
-					// ½ºÅ³ Àû¿ë
+					// ìŠ¤í‚¬ ì ìš©
 					bool bApply = false;
 					for(int i = 0; i < mcount; i++)
 					{
@@ -3036,15 +3068,15 @@ bool MobProcSkillSuicide_Attk(CNPC *npc)
 	case SKILL_CON_READY:
 		try
 		{
-			// ½ºÅ³ ·¹µğ->ÆÄÀÌ¾î °Ë»ç
+			// ìŠ¤í‚¬ ë ˆë””->íŒŒì´ì–´ ê²€ì‚¬
 			if (npc->m_currentSkill->m_usetime + npc->m_currentSkill->m_proto->m_readyTime + npc->m_currentSkill->m_proto->m_stillTime <= gserver->m_pulse)
 			{
-				// hp, mp °Ë»ç
+				// hp, mp ê²€ì‚¬
 				if (npc->m_hp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needHP
 						|| npc->m_mp <= npc->m_currentSkill->m_proto->Level(npc->m_currentSkill->m_level)->m_needMP)
 					throw 0;
 
-				int	mcount = npc->m_currentSkill->m_proto->m_levelproto[npc->m_currentSkill->m_level - 1]->m_targetNum ; // °ø°İ °¡´É¼ö´Â 10¸í
+				int	mcount = npc->m_currentSkill->m_proto->m_levelproto[npc->m_currentSkill->m_level - 1]->m_targetNum ; // ê³µê²© ê°€ëŠ¥ìˆ˜ëŠ” 10ëª…
 				boost::scoped_array<MultiTarget> multitarget(new MultiTarget[mcount]);
 				mcount = GetSummonNpcMultiTarget(npc, multitarget.get(), mcount);
 
@@ -3064,7 +3096,7 @@ bool MobProcSkillSuicide_Attk(CNPC *npc)
 						npc->m_pArea->SendToCell(rmsg, npc, false);
 					}
 
-					// ½ºÅ³ Àû¿ë.
+					// ìŠ¤í‚¬ ì ìš©.
 					bool bApply = false;
 					int i;
 					for(i=0; i<mcount; i++)
@@ -3179,7 +3211,7 @@ int GetSummonNpcMultiTarget(CNPC* npc, MultiTarget *multitarget, int mcount)
 				bool bTarget = false;
 
 				float tdist = GetDistance((CCharacter*)npc, pChar);
-				// °ø°İ °¡´ÉÇÑ°¡ »óÅÂÀÎ°¡?
+				// ê³µê²© ê°€ëŠ¥í•œê°€ ìƒíƒœì¸ê°€?
 				if( pChar != npc && !DEAD(pChar) && pChar != (CCharacter*)owner
 						&& ABS(GET_YLAYER(pChar) - GET_YLAYER(npc)) <= 1
 						&& tdist <= npc->m_currentSkill->m_proto->m_appRange )
@@ -3187,12 +3219,12 @@ int GetSummonNpcMultiTarget(CNPC* npc, MultiTarget *multitarget, int mcount)
 					int zoneindex = owner->m_pZone->m_index;
 					CWarCastle* castle = CWarCastle::GetCastleObject(zoneindex);
 
-					if( castle != NULL && castle->GetState() != WCSF_NORMAL // °ø¼º ÁßÀÌ°í
-							&& owner->GetMapAttr() & MATT_WAR  // °ø¼º Áö¿ªÀÌ°í
+					if( castle != NULL && castle->GetState() != WCSF_NORMAL // ê³µì„± ì¤‘ì´ê³ 
+							&& owner->GetMapAttr() & MATT_WAR  // ê³µì„± ì§€ì—­ì´ê³ 
 							&& ( IS_ATTACK_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) )
-								 || IS_DEFENSE_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) ) ) ) // ¿À³Ê°¡ °ø¼º¿¡ Âü¿©ÇØ ÀÖ´Ù¸é
+								 || IS_DEFENSE_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) ) ) ) // ì˜¤ë„ˆê°€ ê³µì„±ì— ì°¸ì—¬í•´ ìˆë‹¤ë©´
 					{
-						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// °ø¼º ÃøÀÌ¶ó¸é
+						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// ê³µì„± ì¸¡ì´ë¼ë©´
 						{
 							if( ptowner)
 							{
@@ -3205,7 +3237,7 @@ int GetSummonNpcMultiTarget(CNPC* npc, MultiTarget *multitarget, int mcount)
 									bTarget = true;
 							}
 						}
-						else if(IS_DEFENSE_TEAM( owner->GetJoinFlag(owner->m_pZone->m_index) ) ) // ¼ö¼º ÃøÀÌ¶ó¸é
+						else if(IS_DEFENSE_TEAM( owner->GetJoinFlag(owner->m_pZone->m_index) ) ) // ìˆ˜ì„± ì¸¡ì´ë¼ë©´
 						{
 							if( ptowner )
 							{
@@ -3238,7 +3270,7 @@ int GetSummonNpcMultiTarget(CNPC* npc, MultiTarget *multitarget, int mcount)
 					{
 						if( TO_NPC(pChar)->m_proto->CheckFlag(NPC_CASTLE_TOWER | NPC_GUARD | NPC_CASTLE_GUARD)
 								|| TO_NPC(pChar)->m_idNum==491
-						  ) // ¸ó½ºÅÍ ÄŞº¸Á¸ÀÇ ¹Ù´Ú µ¥ÀÌ¹ÌÁö´Â »©ÀÚ
+						  ) // ëª¬ìŠ¤í„° ì½¤ë³´ì¡´ì˜ ë°”ë‹¥ ë°ì´ë¯¸ì§€ëŠ” ë¹¼ì
 							continue;
 						bTarget = true;
 					}

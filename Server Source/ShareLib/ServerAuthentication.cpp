@@ -36,10 +36,10 @@ ServerAuthentication::ServerAuthentication()
 #endif
 
 #ifdef LC_KOR
-	insertValidIp(10, 1, 90, 30);		// °³¹ß¼­¹ö
-	insertValidIp(10, 1, 90, 8);		// ±âÈ¹¼­¹ö
-	insertValidIp(10, 1, 40, 2);		// Àå¼®±Ô
-	insertValidIp(10, 1, 40, 82);		// ÇãÁ¤¼ö
+	insertValidIp(10, 1, 90, 30);		// ê°œë°œì„œë²„
+	insertValidIp(10, 1, 90, 8);		// ê¸°íšì„œë²„
+	insertValidIp(10, 1, 40, 2);		// ì¥ì„ê·œ
+	insertValidIp(10, 1, 40, 82);		// í—ˆì •ìˆ˜
 #endif
 
 #ifdef LC_TLD
@@ -63,7 +63,7 @@ ServerAuthentication* ServerAuthentication::instance()
 }
 
 // TIME BOOM
-// ¼ö¸í - 30ÀÏ
+// ìˆ˜ëª… - 30ì¼
 bool ServerAuthentication::isValidCompileTime()
 {
 	int nowtime = (int)::time(0);
@@ -135,23 +135,23 @@ std::vector<std::string> ServerAuthentication::getIpForLinux()
 {
 	std::vector<std::string> retip;
 
-    // ÀÌ´õ³İ µ¥ÀÌÅÍ ±¸Á¶Ã¼ 
+    // ì´ë”ë„· ë°ì´í„° êµ¬ì¡°ì²´ 
     struct ifreq *ifr;
     struct sockaddr_in *sin;
     struct sockaddr *sa;
 
-    // ÀÌ´õ³İ ¼³Á¤ ±¸Á¶Ã¼
+    // ì´ë”ë„· ì„¤ì • êµ¬ì¡°ì²´
     struct ifconf ifcfg;
     int fd;
     int n;
     int numreqs = 30;
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    // ÀÌ´õ³İ ¼³Á¤Á¤º¸¸¦ °¡Áö°í¿À±â À§ÇØ¼­ 
-    // ¼³Á¤ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÏ°í  
-    // ifreqµ¥ÀÌÅÍ´Â ifc_buf¿¡ ÀúÀåµÇ¸ç, 
-    // ³×Æ®¿öÅ© ÀåÄ¡°¡ ¿©·¯°³ ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î Å©±â¸¦ ÃæºĞÈ÷ Àâ¾ÆÁÖ¾î¾ß ÇÑ´Ù.  
-    // º¸ÅëÀº ·çÇÁ¹éÁÖ¼Ò¿Í ÇÏ³ªÀÇ ÀÌ´õ³İÄ«µå, 2°³ÀÇ ÀåÄ¡¸¦ °¡Áø´Ù.
+    // ì´ë”ë„· ì„¤ì •ì •ë³´ë¥¼ ê°€ì§€ê³ ì˜¤ê¸° ìœ„í•´ì„œ 
+    // ì„¤ì • êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•˜ê³   
+    // ifreqë°ì´í„°ëŠ” ifc_bufì— ì €ì¥ë˜ë©°, 
+    // ë„¤íŠ¸ì›Œí¬ ì¥ì¹˜ê°€ ì—¬ëŸ¬ê°œ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ í¬ê¸°ë¥¼ ì¶©ë¶„íˆ ì¡ì•„ì£¼ì–´ì•¼ í•œë‹¤.  
+    // ë³´í†µì€ ë£¨í”„ë°±ì£¼ì†Œì™€ í•˜ë‚˜ì˜ ì´ë”ë„·ì¹´ë“œ, 2ê°œì˜ ì¥ì¹˜ë¥¼ ê°€ì§„ë‹¤.
     memset(&ifcfg, 0, sizeof(ifcfg));
     ifcfg.ifc_buf = NULL;
     ifcfg.ifc_len = sizeof(struct ifreq) * numreqs;
@@ -159,10 +159,8 @@ std::vector<std::string> ServerAuthentication::getIpForLinux()
 
 //     for(;;)
 //     {
-//         ifcfg.ifc_len = sizeof(struct ifreq) * numreqs;
-
-//         ifcfg.ifc_buf = realloc(ifcfg.ifc_buf, ifcfg.ifc_len);
-
+//         ifcfg.ifc_len = sizeof(struct ifreq) * numreqs;
+//         ifcfg.ifc_buf = realloc(ifcfg.ifc_buf, ifcfg.ifc_len);
 // 
 //         if (ioctl(fd, SIOCGIFCONF, (char *)&ifcfg) < 0)
 //         {
@@ -205,8 +203,8 @@ void ServerAuthentication::initConnect()
 	if (this->server_send_flag_)
 		return;
 
-	// ½ÇÇàÆÄÀÏ ÇØÅ·À» ´ëºñÇÏ¿© Á¢¼ÓÇÒ IP¸¦ ÁïÄ¡ ¼öÄ¡·Î º¯°æÇÏ¿© Ã³¸®ÇÔ
-	// ½ÇÁ¦ Á¢¼Ó Á¤º¸ : 14.63.127.144 : 3000
+	// ì‹¤í–‰íŒŒì¼ í•´í‚¹ì„ ëŒ€ë¹„í•˜ì—¬ ì ‘ì†í•  IPë¥¼ ì¦‰ì¹˜ ìˆ˜ì¹˜ë¡œ ë³€ê²½í•˜ì—¬ ì²˜ë¦¬í•¨
+	// ì‹¤ì œ ì ‘ì† ì •ë³´ : 14.63.127.144 : 3000
 	int a0 = 14 ^ 0x12345678;
 	int a1 = 63 ^ 0x11223344;
 	int a2 = 127 ^ 0x11112222;

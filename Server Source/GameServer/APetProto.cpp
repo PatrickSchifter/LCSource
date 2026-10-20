@@ -1,4 +1,4 @@
-// ½Å±Ô °ø°ÝÇü Æê ±âº» DB Á¤º¸
+// ì‹ ê·œ ê³µê²©í˜• íŽ« ê¸°ë³¸ DB ì •ë³´
 #include <boost/format.hpp>
 #include "stdhdrs.h"
 
@@ -32,9 +32,9 @@ void CAPetProto::InitValue()
 	m_nDeadly=m_nCritical=m_nAwful=m_nStrong=m_nNormal=m_nWeek=1;
 	m_nDelay = 0;
 	m_nBagicSkill1 = m_nBagicSkill2 = -1;
-	m_TansType = APET_TRANS_NONE;		// º¯½ÅµÉ¶§ »ç¿ëÇÏ´Â Å¸ÀÔ
+	m_TansType = APET_TRANS_NONE;		// ë³€ì‹ ë ë•Œ ì‚¬ìš©í•˜ëŠ” íƒ€ìž…
 	m_nTransStart = m_nTransEnd = 0;
-	m_nMount[0] = m_nMount[1] = 0;		// ÅÂ¿ï¼ö ÀÖ´Â ÃÖ´ë ÀÎ¿ø¼ö
+	m_nMount[0] = m_nMount[1] = 0;		// íƒœìš¸ìˆ˜ ìžˆëŠ” ìµœëŒ€ ì¸ì›ìˆ˜
 	m_nSummonSkill[0] = m_nSummonSkill[1] = -1;
 	m_nSpeed[0] = m_nSpeed[1] = 0;
 	m_nFlag = 0;
@@ -109,7 +109,7 @@ bool CAPetProtoList::Load()
 		int idx=-1;
 		if( i > count )
 			return false;
-		// ±âº»
+		// ê¸°ë³¸
 		cmdAPet.GetRec("a_index",idx);
 		m_pApetProtoList[i].Index(idx);
 		cmdAPet.GetRec("a_type",m_pApetProtoList[i].m_Type );
@@ -126,7 +126,7 @@ bool CAPetProtoList::Load()
 		cmdAPet.GetRec("a_recoverHP",m_pApetProtoList[i].m_nRecoverHP );
 		cmdAPet.GetRec("a_recoverMP",m_pApetProtoList[i].m_nRecoverMP );
 		cmdAPet.GetRec("a_AISlot",m_pApetProtoList[i].m_nAISlot );
-		// °ø°Ý
+		// ê³µê²©
 		cmdAPet.GetRec("a_attack",m_pApetProtoList[i].m_nAttack );
 		cmdAPet.GetRec("a_defence",m_pApetProtoList[i].m_nDefence );
 		cmdAPet.GetRec("a_Mattack",m_pApetProtoList[i].m_nMagicAttack );
@@ -135,7 +135,7 @@ bool CAPetProtoList::Load()
 		cmdAPet.GetRec("a_avoidpoint",m_pApetProtoList[i].m_nAvoidPoint );
 		cmdAPet.GetRec("a_Mavoidpoint",m_pApetProtoList[i].m_nMagicAvoidPoint );
 		cmdAPet.GetRec("a_attackSpeed",m_pApetProtoList[i].m_nAttackSpeed );
-		// ±âº» µ¥¹ÌÁö
+		// ê¸°ë³¸ ë°ë¯¸ì§€
 		cmdAPet.GetRec("a_deadly",m_pApetProtoList[i].m_nDeadly );
 		cmdAPet.GetRec("a_critical",m_pApetProtoList[i].m_nCritical );
 		cmdAPet.GetRec("a_awful",m_pApetProtoList[i].m_nAwful );
@@ -222,8 +222,8 @@ CAPet* CAPetProtoList::Create( CPC* pOwner, int dbpet_idx, int proto_idx  )
 		attackPet->m_type	= MSG_CHAR_APET;
 		attackPet->m_index	= dbpet_idx;
 		attackPet->SetOwner(pOwner);
-		// ÇØ´ç Æê ¾ÆÀÌÅÛÀÌ ¾øÀ» °æ¿ì ¾ÆÀÌÅÛ protolist¿¡¼­ ÀÌ¸§À» ¹Ù·Î Ã£¾Æ¼­ ³Ö¾úÀ½.
-		// ¾ÆÀÌÅÛÀÌ ¾øÀ» °æ¿ì ¾ÆÀÌÅÛÀÌ ¾ø´Ù´Â stringÀÌ µé¾î°¡°Ô µÊ.
+		// í•´ë‹¹ íŽ« ì•„ì´í…œì´ ì—†ì„ ê²½ìš° ì•„ì´í…œ protolistì—ì„œ ì´ë¦„ì„ ë°”ë¡œ ì°¾ì•„ì„œ ë„£ì—ˆìŒ.
+		// ì•„ì´í…œì´ ì—†ì„ ê²½ìš° ì•„ì´í…œì´ ì—†ë‹¤ëŠ” stringì´ ë“¤ì–´ê°€ê²Œ ë¨.
 		CItemProto* pItemProto = NULL;
 		pItemProto = gserver->m_itemProtoList.FindIndex( attackPet->m_pProto->m_nItemIndex );
 

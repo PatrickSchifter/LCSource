@@ -19,38 +19,38 @@
 CItem::CItem()
 {
 	//////////////////
-	// DB Á¤º¸ º¯¼ö
+	// DB ì •ë³´ ë³€ìˆ˜
 	m_itemProto = NULL;
 
 	/////////////////////
-	// ÀÎº¥Åä¸® À§Ä¡ °ü·Ã
-	m_tab_idx = -1;								// ÅÇ
-	m_invenIndex = -1;							// ÀÎº¥ ÀÎµ¦½º
+	// ì¸ë²¤í† ë¦¬ ìœ„ì¹˜ ê´€ë ¨
+	m_tab_idx = -1;								// íƒ­
+	m_invenIndex = -1;							// ì¸ë²¤ ì¸ë±ìŠ¤
 
 	//////////////
-	// ¾ÆÀÌÅÛ ¼Ó¼º
-	m_virualIndex = -1;								// °¡»ó ÀÎµ¦½º
-	m_dbIndex = -1;								// DB ÀÎµ¦½º
-	m_wearPos = -1;								// Âø¿ë ¾ÈÇÑ »óÅÂ
-	m_plus = 0;									// + ¼öÄ¡
-	m_flag = 0;									// ¼Ó¼º
-	m_count = 0;								// °³¼ö
-	m_used = -1;								// ³»±¸µµ
-	m_used_2 = -1;								// °áÇÕ ½Ã°£
+	// ì•„ì´í…œ ì†ì„±
+	m_virualIndex = -1;								// ê°€ìƒ ì¸ë±ìŠ¤
+	m_dbIndex = -1;								// DB ì¸ë±ìŠ¤
+	m_wearPos = -1;								// ì°©ìš© ì•ˆí•œ ìƒíƒœ
+	m_plus = 0;									// + ìˆ˜ì¹˜
+	m_flag = 0;									// ì†ì„±
+	m_count = 0;								// ê°œìˆ˜
+	m_used = -1;								// ë‚´êµ¬ë„
+	m_used_2 = -1;								// ê²°í•© ì‹œê°„
 
 	////////////
-	// ±âÅ¸ ¼Ó¼º
+	// ê¸°íƒ€ ì†ì„±
 	m_pArea = NULL;
-	m_pos = CPos(0, 0, 0, 0, 0);				// ÁÂÇ¥
-	m_cellX = NO_CELL;							// ¼¿ À§Ä¡
+	m_pos = CPos(0, 0, 0, 0, 0);				// ì¢Œí‘œ
+	m_cellX = NO_CELL;							// ì…€ ìœ„ì¹˜
 	m_cellZ = NO_CELL;
-	m_pCellPrev = NULL;							// ¼¿ ¸µÅ©µå ¸®½ºÆ®
+	m_pCellPrev = NULL;							// ì…€ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸
 	m_pCellNext = NULL;
 
-	m_groundPulse = 0;							// ¾ÆÀÌÅÛÀÌ ¶³¾îÁø ½Ã°£ ÀúÀå
-	m_preferenceIndex = -1;						// ÀÌ ¾ÆÀÌÅÛ¿¡ ¿ì¼±±ÇÀÌ ÀÖ´Â pcÀÇ ÀÎµ¦½º ÀúÀå ¾øÀ¸¸é -1
+	m_groundPulse = 0;							// ì•„ì´í…œì´ ë–¨ì–´ì§„ ì‹œê°„ ì €ì¥
+	m_preferenceIndex = -1;						// ì´ ì•„ì´í…œì— ìš°ì„ ê¶Œì´ ìˆëŠ” pcì˜ ì¸ë±ìŠ¤ ì €ì¥ ì—†ìœ¼ë©´ -1
 
-	m_nOption = 0;								// ¾ÆÀÌÅÛ ¿É¼Ç ¼ö
+	m_nOption = 0;								// ì•„ì´í…œ ì˜µì…˜ ìˆ˜
 
 	m_nCompositeItem = -1;
 
@@ -62,7 +62,7 @@ CItem::CItem()
 	m_pSetItemProto = 0;
 	m_nSetWearCnt = 0;
 	m_nSetOption = 0;
-	m_MercenaryIndex = -1;;	// ¼­È¯ÇÑ ¸ó½ºÅÍ ¿ëº´ÀÇ index;
+	m_MercenaryIndex = -1;;	// ì„œí™˜í•œ ëª¬ìŠ¤í„° ìš©ë³‘ì˜ index;
 	memset(m_OriginVar, 0, sizeof(int) * MAX_VARIATION_COUNT);
 
 #ifdef DURABILITY
@@ -126,7 +126,7 @@ void CItem::IdentifyRareOption(bool reform_, unsigned int count_)
 }
 
 #ifdef PREMIUM_CHAR
-//XX - ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ : ¸ğµç Àåºñ¸¦ 3·¹º§ ¸ÕÀú ÀÛ¿ë
+//XX - í”„ë¦¬ë¯¸ì—„ìºë¦­í„° : ëª¨ë“  ì¥ë¹„ë¥¼ 3ë ˆë²¨ ë¨¼ì € ì‘ìš©
 int CItem::GetItemLevelForPremiumChar(int premiumType) const
 {
 	int get_level = this->GetItemLevel();
@@ -383,7 +383,7 @@ bool CItemList::Load()
 		DBItem.GetRec("a_set_2",		pItemProto->m_set2);
 		DBItem.GetRec("a_set_3",		pItemProto->m_set3);
 		DBItem.GetRec("a_set_4",		pItemProto->m_set4);
-		DBItem.GetRec("a_grade",		pItemProto->m_grade);	// Æê¹«±âÅ¸ÀÔÀ¸·Î »ç¿ë.
+		DBItem.GetRec("a_grade",		pItemProto->m_grade);	// í«ë¬´ê¸°íƒ€ì…ìœ¼ë¡œ ì‚¬ìš©.
 
 		for (int i = 0; i < MAX_MAKE_ITEM_MATERIAL; i++)
 		{
@@ -427,22 +427,22 @@ bool CItemList::Load()
 			m_flagGuildWar.push_back(&m_protoItems[ridx]);
 		}
 
-		// Æ¯Á¤ ¾ÆÀÌÅÛ Ã£±â : ÀÎµ¦½º·Î
+		// íŠ¹ì • ì•„ì´í…œ ì°¾ê¸° : ì¸ë±ìŠ¤ë¡œ
 		switch (pItemProto->m_index)
 		{
-		case 84:	// ÀÏ¹İ Á¦·Ã¼®
+		case 84:	// ì¼ë°˜ ì œë ¨ì„
 			m_normalRefineItem = m_protoItems + ridx;
 			break;
 
-		case 85:	// °í±Ş Á¦·Ã¼®
+		case 85:	// ê³ ê¸‰ ì œë ¨ì„
 			m_specialRefineItem = m_protoItems + ridx;
 			break;
 
-		case 141:	// ½Ì±Û´øÀü2 ÀÔÀå±Ç
+		case 141:	// ì‹±ê¸€ë˜ì „2 ì…ì¥ê¶Œ
 			m_sTicketItem2 = m_protoItems + ridx;
 			break;
 
-		case 142:	// ½Ì±Û´øÀü1 ÀÔÀå±Ç
+		case 142:	// ì‹±ê¸€ë˜ì „1 ì…ì¥ê¶Œ
 			m_sTicketItem1 = m_protoItems + ridx;
 			break;
 
@@ -450,11 +450,11 @@ bool CItemList::Load()
 			break;
 		}
 
-		// ¹«±â ´ë¿©¿ë ¾ÆÀÌÅÛ ¸®½ºÆ® ¸¸µé±â
-		// ¹«±â Å¸ÀÔ Áß
+		// ë¬´ê¸° ëŒ€ì—¬ìš© ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ ë§Œë“¤ê¸°
+		// ë¬´ê¸° íƒ€ì… ì¤‘
 		// ITEM_FLAG_LENT
-		// °¡°İÀÌ ¼³Á¤ µÇ¾î ÀÖÀ» ¶§
-		// ·¹º§ 37/41/45/49/53/57/61/65
+		// ê°€ê²©ì´ ì„¤ì • ë˜ì–´ ìˆì„ ë•Œ
+		// ë ˆë²¨ 37/41/45/49/53/57/61/65
 		static const int nNormalWeaponFlag = ITEM_FLAG_LENT;
 		if (pItemProto->m_typeIdx == ITYPE_WEAPON && (pItemProto->m_flag & nNormalWeaponFlag) == nNormalWeaponFlag && pItemProto->m_price > 0)
 		{
@@ -487,7 +487,7 @@ bool CItemList::Load()
 
 				default:
 					break;
-				} // ·¹º§
+				} // ë ˆë²¨
 				break;
 
 			case IWEAPON_MINING:
@@ -495,8 +495,8 @@ bool CItemList::Load()
 			case IWEAPON_CHARGE:
 			default:
 				break;
-			} // ¼­ºê Å¸ÀÔ
-		} // ¹«±â && ÀÏ¹İÇÃ·¡±×
+			} // ì„œë¸Œ íƒ€ì…
+		} // ë¬´ê¸° && ì¼ë°˜í”Œë˜ê·¸
 
 		if (pItemProto->m_price < 0)
 		{
@@ -743,34 +743,34 @@ bool CItemList::Load()
 			break;
 		}
 
-		// RVR Áö¿ª¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Â ¾ÆÀÌÅÛ
+		// RVR ì§€ì—­ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ì•„ì´í…œ
 		pItemProto->is_rvr_not_use_ = false;
 		switch(pItemProto->getItemIndex())
 		{
-		case 2407:	// ±¤¼Ó 5ÀÏ
-		case 2408:	// ±¤¼Ó 30ÀÏ
-		case 2500:	// ÀÌº¥Æ® ±¤¼Ó 5ÀÏ
-		case 2609:	// Å©¸®½º¸¶½º ±¤¼Ó 5ÀÏ
-		case 5018:	// ±¤¼Ó2 5ÀÏ
-		case 5019:	// ±¤¼Ó2 30ÀÏ
-		case 47:	// ¸Ş¸ğ¸® ½ºÅ©·Ñ
-		case 858:	// ¼ÒÈ¯ ¸¶¹ı¼­
-		case 857:	// ¼ø°£ ÀÌµ¿ ¸¶¹ı¼­
-		case 1298:	// ÆÄÆ¼ ¸®Äİ 1ÀÏ Á¤¾×±Ç
-		case 1299:	// ÆÄÆ¼ ¸®Äİ 7ÀÏ Á¤¾×±Ç
-		case 1300:	// ÆÄÆ¼ ¸®Äİ 30ÀÏ Á¤¾×±Ç
-		case 1413:	// ÆÄÆ¼ ¸®Äİ 3½Ã°£ Á¤¾×±Ç
-		case 1415:	// ÆÄÆ¼ ¸®Äİ 1½Ã°£ Á¤¾×±Ç
-		case 2945:	// ¾ÆÀÌ¸®½º ÆÄÆ¼ ¸®Äİ Á¤¾×±Ç
-		case 2946:	// ¾Æ½ºÄ«µğ¾Æ ÆÄÆ¼ ¸®Äİ Á¤¾×±Ç
-		case 6252:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 1½Ã°£
-		case 6253:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 3½Ã°£
-		case 6254:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 9½Ã°£
-		case 6255:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 24½Ã°£
-		case 6805:	// ÃÊº¸ÀÚ ¸ó½ºÅÍ ¿ëº´ Ä«µå
-		case 6985:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 1ÀÏ
-		case 6986:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 7ÀÏ
-		case 6987:	// ¸ó½ºÅÍ ¿ëº´ Ä«µå 30ÀÏ
+		case 2407:	// ê´‘ì† 5ì¼
+		case 2408:	// ê´‘ì† 30ì¼
+		case 2500:	// ì´ë²¤íŠ¸ ê´‘ì† 5ì¼
+		case 2609:	// í¬ë¦¬ìŠ¤ë§ˆìŠ¤ ê´‘ì† 5ì¼
+		case 5018:	// ê´‘ì†2 5ì¼
+		case 5019:	// ê´‘ì†2 30ì¼
+		case 47:	// ë©”ëª¨ë¦¬ ìŠ¤í¬ë¡¤
+		case 858:	// ì†Œí™˜ ë§ˆë²•ì„œ
+		case 857:	// ìˆœê°„ ì´ë™ ë§ˆë²•ì„œ
+		case 1298:	// íŒŒí‹° ë¦¬ì½œ 1ì¼ ì •ì•¡ê¶Œ
+		case 1299:	// íŒŒí‹° ë¦¬ì½œ 7ì¼ ì •ì•¡ê¶Œ
+		case 1300:	// íŒŒí‹° ë¦¬ì½œ 30ì¼ ì •ì•¡ê¶Œ
+		case 1413:	// íŒŒí‹° ë¦¬ì½œ 3ì‹œê°„ ì •ì•¡ê¶Œ
+		case 1415:	// íŒŒí‹° ë¦¬ì½œ 1ì‹œê°„ ì •ì•¡ê¶Œ
+		case 2945:	// ì•„ì´ë¦¬ìŠ¤ íŒŒí‹° ë¦¬ì½œ ì •ì•¡ê¶Œ
+		case 2946:	// ì•„ìŠ¤ì¹´ë””ì•„ íŒŒí‹° ë¦¬ì½œ ì •ì•¡ê¶Œ
+		case 6252:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 1ì‹œê°„
+		case 6253:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 3ì‹œê°„
+		case 6254:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 9ì‹œê°„
+		case 6255:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 24ì‹œê°„
+		case 6805:	// ì´ˆë³´ì ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ
+		case 6985:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 1ì¼
+		case 6986:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 7ì¼
+		case 6987:	// ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ 30ì¼
 			pItemProto->is_rvr_not_use_ = true;
 			break;
 
@@ -789,7 +789,7 @@ bool CItemList::Load()
 			m_flagchange.push_back(&m_protoItems[ridx]);
 		}
 
-		// ÀüÀå¿¡¼­ »ç¿ë°¡´ÉÇÑ ¾ÆÀÌÅÛÀÎÁö ±¸ºĞ
+		// ì „ì¥ì—ì„œ ì‚¬ìš©ê°€ëŠ¥í•œ ì•„ì´í…œì¸ì§€ êµ¬ë¶„
 		if( pItemProto->getItemTypeIdx() == ITYPE_ONCE && pItemProto->getItemSubTypeIdx() == IONCE_WARP
 				|| pItemProto->getItemTypeIdx() == ITYPE_ONCE && pItemProto->getItemSubTypeIdx() == IONCE_SUMMON
 				|| pItemProto->getItemTypeIdx() == ITYPE_ACCESSORY && pItemProto->getItemSubTypeIdx() == IACCESSORY_PET
@@ -851,14 +851,14 @@ CItem* CItemList::CreateDBItem( int idx, char wearPos, int plus, int flag, int u
 	if (idx == 0)
 		idx = NAS_ITEM_DB_INDEX;
 
-	// ÇÁ·ÎÅä Å¸ÀÔ Ã£±â
+	// í”„ë¡œí†  íƒ€ì… ì°¾ê¸°
 	CItemProto* proto = FindIndex(idx);
 	if (!proto)
 	{
 		return NULL;
 	}
 
-	// ¾ÆÀÌÅÛ ¼³Á¤
+	// ì•„ì´í…œ ì„¤ì •
 	CItem* item = new CItem;
 
 	item->m_itemProto = proto;
@@ -949,15 +949,15 @@ CItem* CItemList::CreateDBItem( int idx, char wearPos, int plus, int flag, int u
 	}
 
 	if( ( proto->m_index == 2047 || proto->m_index == 2633 )
-			&& item->getUsed() == -1)					// ÃÊÄÚ¼öÁı»óÀÚ or »õÇØ ¼Ò¸Á»óÀÚ
+			&& item->getUsed() == -1)					// ì´ˆì½”ìˆ˜ì§‘ìƒì or ìƒˆí•´ ì†Œë§ìƒì
 	{
 		item->setUsed(0);
 	}
 
 	if (proto->m_index == 1577 || proto->m_index == 1578)
 	{
-		// °ïÃæ Ã¤Áı »óÀÚµéÀº m_used°ªÀ» ´Ù¸¥¹æ¹ıÀ¸·Î »ç¿ëÇÏ¹Ç·Î
-		// -1·Î »ı¼º½Ã 0À¸·Î ÃÊ±âÈ­
+		// ê³¤ì¶© ì±„ì§‘ ìƒìë“¤ì€ m_usedê°’ì„ ë‹¤ë¥¸ë°©ë²•ìœ¼ë¡œ ì‚¬ìš©í•˜ë¯€ë¡œ
+		// -1ë¡œ ìƒì„±ì‹œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
 		if(item->getUsed() == -1)
 		{
 			item->setUsed(0);
@@ -1019,7 +1019,7 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 	if (idx == 0)
 		idx = NAS_ITEM_DB_INDEX;
 
-	// ÇÁ·ÎÅä Å¸ÀÔ Ã£±â
+	// í”„ë¡œí†  íƒ€ì… ì°¾ê¸°
 	CItemProto* proto = FindIndex(idx);
 	if (!proto)
 	{
@@ -1045,7 +1045,7 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 	item->setPlus(plus);
 	item->setFlag(flag);
 
-	// »ı¼ºÇÏ·Á´Â ¾ÆÀÌÅÛÀÌ NASÀÏ °æ¿ì µû·Î Ã³¸®ÇÏ°í ¸®ÅÏÇÔ
+	// ìƒì„±í•˜ë ¤ëŠ” ì•„ì´í…œì´ NASì¼ ê²½ìš° ë”°ë¡œ ì²˜ë¦¬í•˜ê³  ë¦¬í„´í•¨
 	if (item->getDBIndex() == NAS_ITEM_DB_INDEX)
 	{
 		item->setItemCount(count);
@@ -1079,8 +1079,8 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 
 	if (proto->m_index == 1577 || proto->m_index == 1578)
 	{
-		// °ïÃæ Ã¤Áı »óÀÚµéÀº m_used°ªÀ» ´Ù¸¥¹æ¹ıÀ¸·Î »ç¿ëÇÏ¹Ç·Î
-		// »ı¼º½Ã 0À¸·Î ÃÊ±âÈ­
+		// ê³¤ì¶© ì±„ì§‘ ìƒìë“¤ì€ m_usedê°’ì„ ë‹¤ë¥¸ë°©ë²•ìœ¼ë¡œ ì‚¬ìš©í•˜ë¯€ë¡œ
+		// ìƒì„±ì‹œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
 		item->setUsed(0);
 	}
 
@@ -1088,13 +1088,13 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 
 	item->setItemCount(this->calcItemCount(proto, count));
 
-	// 060227 : bs : ÆÄÆ¼¸®Äİ
+	// 060227 : bs : íŒŒí‹°ë¦¬ì½œ
 	if (proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_WARP && proto->getItemNum0() == IONCE_WARP_PARTYRECALL)
 	{
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 	}
 
-// Ã¢°í ÀÌ¿ë ÁÖ¹®¼­
+// ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ
 	if( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_CASH && proto->getItemNum3() > 0)
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 
@@ -1113,7 +1113,7 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 		item->setUsed(gserver->getNowSecond() + 30 * 24 * 60 * 60);
 	}
 
-	// À¯·á ¾ÆÀÌÅÛ : num4¿¡ ÀÏ´ÜÀ§
+	// ìœ ë£Œ ì•„ì´í…œ : num4ì— ì¼ë‹¨ìœ„
 	if (proto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 	{
 #ifdef CHARGE_ITEM_PERIOD
@@ -1134,27 +1134,27 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 	{
 		if(proto->getItemNum4() != -1)
 		{
-			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 24 * 60 * 60);	// ½ÇÁ¦ ÇÏ·ç
+			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 24 * 60 * 60);	// ì‹¤ì œ í•˜ë£¨
 		}
 	}
 
 	if (proto->getItemFlag() & ITEM_FLAG_ABS)
 	{
-		// ½Ã°£Á¦ ¾ÆÀÌÅÛÀº m_num4¿¡ ½Ã°£ÀÌ µé¾î°£´Ù
+		// ì‹œê°„ì œ ì•„ì´í…œì€ m_num4ì— ì‹œê°„ì´ ë“¤ì–´ê°„ë‹¤
 #ifdef SYSTEM_TREASURE_MAP
-		if(proto->m_index == TREASURE_MAP_ITEM_INDEX ) // ÀÌ³ÑÀº ºĞÀ¸·Î °è»êÇÑ´Ù.
+		if(proto->m_index == TREASURE_MAP_ITEM_INDEX ) // ì´ë„˜ì€ ë¶„ìœ¼ë¡œ ê³„ì‚°í•œë‹¤.
 			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 60);
 		else
 #endif
-		//Ã¢Á¶ÀÇ º¸¼®Àº ºĞ´ÜÀ§·Î °è»êÇÑ´Ù.
+		//ì°½ì¡°ì˜ ë³´ì„ì€ ë¶„ë‹¨ìœ„ë¡œ ê³„ì‚°í•œë‹¤.
 		if(proto->m_typeIdx == ITYPE_ETC && proto->m_subtypeIdx == IETC_RVR_JEWEL)
 			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 60);
 		else
 			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 60 * 60);
 	}
 
-	// °ñµçº¼ ÀÌº¥Æ® ÀÀ¸ğ±Ç : GOLDENBALL_CARD_INDEX
-	// used¿¡ °æ±â ½ÃÀÛ ½Ã°£(ÀÀ¸ğ ¸¶°¨ ½Ã°£)À» ÀúÀå
+	// ê³¨ë“ ë³¼ ì´ë²¤íŠ¸ ì‘ëª¨ê¶Œ : GOLDENBALL_CARD_INDEX
+	// usedì— ê²½ê¸° ì‹œì‘ ì‹œê°„(ì‘ëª¨ ë§ˆê° ì‹œê°„)ì„ ì €ì¥
 	if (proto->m_index == GOLDENBALL_CARD_INDEX)
 	{
 		item->setUsed(gserver->m_clGoldenBall.GetVoteEndTime());
@@ -1165,12 +1165,12 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 		item->setUsed(gserver->getNowSecond() + 24 * 60 * 60);
 	}
 
-	if( proto->m_index == 2047 || proto->m_index == 2633 )	// ÃÊÄÚ¼öÁı»óÀÚ or »õÇØ ¼Ò¸Á»óÀÚ
+	if( proto->m_index == 2047 || proto->m_index == 2633 )	// ì´ˆì½”ìˆ˜ì§‘ìƒì or ìƒˆí•´ ì†Œë§ìƒì
 	{
 		item->setUsed(0);
 	}
 
-	if (proto->m_index == 2137)		// gpara ¾Ç¼¼
+	if (proto->m_index == 2137)		// gpara ì•…ì„¸
 	{
 		short nGparaOption[5] =
 		{
@@ -1198,13 +1198,13 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 		}
 	}
 
-	// hc ¶óÄ«±âÀÚ´Ü È®¼º±â ±â°£ 30ÀÏ
+	// hc ë¼ì¹´ê¸°ìë‹¨ í™•ì„±ê¸° ê¸°ê°„ 30ì¼
 	if(proto->m_index == 2882)
 	{
 		item->setUsed(gserver->getNowSecond() + 30 * 24 * 60 * 60);
 	}
 
-	// ÇÇ´Ğ½º Åõ±¸ ¾ÆÀÌÅÛÀÏ °æ¿ì ±â°£ ¹«Á¦ÇÑ
+	// í”¼ë‹‰ìŠ¤ íˆ¬êµ¬ ì•„ì´í…œì¼ ê²½ìš° ê¸°ê°„ ë¬´ì œí•œ
 	if( proto->m_index >= 3006 && proto->m_index <= 3011 )
 	{
 		item->setUsed(-1);
@@ -1248,16 +1248,16 @@ CItem* CItemList::CreateItem(int idx, char wearPos, int plus, int flag, LONGLONG
 		item->setUsed(-1);
 		item->setPlus(gserver->m_MonsterMercenary.GetMercenaryIndex(mmd->nClassIdx)); // Mercenary npc index
 		item->setUsed_2(mmd->nClassIdx);  // classIdx
-		item->setPlus_2(0); // ¾ÕÀÇ 16 ºñÆ®´Â °ø°İ·ÂÀ» ³Ö´Â´Ù. µÚÀÇ 16ºñÆ®´Â ¹æ¾î·ÂÀ» ³Ö´Â´Ù.
+		item->setPlus_2(0); // ì•ì˜ 16 ë¹„íŠ¸ëŠ” ê³µê²©ë ¥ì„ ë„£ëŠ”ë‹¤. ë’¤ì˜ 16ë¹„íŠ¸ëŠ” ë°©ì–´ë ¥ì„ ë„£ëŠ”ë‹¤.
 		int att=0, def=0;
 
 		int nRand = GetRandom(0,1);
 		switch( nRand )
 		{
-		case 0: // °ø°İ¸¸ º¸³Ê½ºÁØ´Ù.
+		case 0: // ê³µê²©ë§Œ ë³´ë„ˆìŠ¤ì¤€ë‹¤.
 			att = GetRandom(mmd->nBonusMini, mmd->nBonusMax);
 			break;
-		case 1: // ¼öºñ¸¸ µğÆæ½º¸¦ ÁØ´Ù.
+		case 1: // ìˆ˜ë¹„ë§Œ ë””íœìŠ¤ë¥¼ ì¤€ë‹¤.
 			def = GetRandom(mmd->nBonusMini, mmd->nBonusMax);
 			break;
 		}
@@ -1301,14 +1301,14 @@ CItem* CItemList::CreateAutoGiveDBItem(int idx, char wearPos, int plus, int flag
 	if (idx == 0)
 		idx = NAS_ITEM_DB_INDEX;
 
-	// ÇÁ·ÎÅä Å¸ÀÔ Ã£±â
+	// í”„ë¡œí†  íƒ€ì… ì°¾ê¸°
 	CItemProto* proto = FindIndex(idx);
 	if (!proto)
 	{
 		return NULL;
 	}
 
-	// ¾ÆÀÌÅÛ ¼³Á¤
+	// ì•„ì´í…œ ì„¤ì •
 	CItem* item = new CItem;
 
 	item->m_itemProto = proto;
@@ -1372,22 +1372,22 @@ CItem* CItemList::CreateAutoGiveDBItem(int idx, char wearPos, int plus, int flag
 	}
 
 	if( ( proto->m_index == 2047 || proto->m_index == 2633 )
-			&& item->getUsed() == -1)					// ÃÊÄÚ¼öÁı»óÀÚ or »õÇØ ¼Ò¸Á»óÀÚ
+			&& item->getUsed() == -1)					// ì´ˆì½”ìˆ˜ì§‘ìƒì or ìƒˆí•´ ì†Œë§ìƒì
 	{
 		item->setUsed(0);
 	}
 
 	if (proto->m_index == 1577 || proto->m_index == 1578)
 	{
-		// °ïÃæ Ã¤Áı »óÀÚµéÀº m_used°ªÀ» ´Ù¸¥¹æ¹ıÀ¸·Î »ç¿ëÇÏ¹Ç·Î
-		// -1·Î »ı¼º½Ã 0À¸·Î ÃÊ±âÈ­
+		// ê³¤ì¶© ì±„ì§‘ ìƒìë“¤ì€ m_usedê°’ì„ ë‹¤ë¥¸ë°©ë²•ìœ¼ë¡œ ì‚¬ìš©í•˜ë¯€ë¡œ
+		// -1ë¡œ ìƒì„±ì‹œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
 		if(item->getUsed() == -1)
 		{
 			item->setUsed(0);
 		}
 	}
 
-	// À¯·á ¾ÆÀÌÅÛ : num4¿¡ ÀÏ´ÜÀ§
+	// ìœ ë£Œ ì•„ì´í…œ : num4ì— ì¼ë‹¨ìœ„
 	if (proto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 	{
 #ifdef CHARGE_ITEM_PERIOD
@@ -1406,13 +1406,13 @@ CItem* CItemList::CreateAutoGiveDBItem(int idx, char wearPos, int plus, int flag
 			}
 	}
 
-	// hc ¶óÄ«±âÀÚ´Ü È®¼º±â ±â°£ 30ÀÏ
+	// hc ë¼ì¹´ê¸°ìë‹¨ í™•ì„±ê¸° ê¸°ê°„ 30ì¼
 	if(proto->m_index == 2882)
 	{
 		item->setUsed(gserver->getNowSecond() + 30 * 24 * 60 * 60);
 	}
 
-	// ÇÇ´Ğ½º Åõ±¸ ¾ÆÀÌÅÛÀÏ °æ¿ì ±â°£ ¹«Á¦ÇÑ
+	// í”¼ë‹‰ìŠ¤ íˆ¬êµ¬ ì•„ì´í…œì¼ ê²½ìš° ê¸°ê°„ ë¬´ì œí•œ
 	if( proto->m_index >= 3006 && proto->m_index <= 3011 )
 	{
 		item->setUsed(-1);
@@ -1422,15 +1422,15 @@ CItem* CItemList::CreateAutoGiveDBItem(int idx, char wearPos, int plus, int flag
 	{
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 	}
-	// Ã¢°í ÀÌ¿ë ÁÖ¹®¼­
+	// ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ
 	if( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_CASH && proto->getItemNum3() > 0)
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 
-	// ÀâÈ­»ó ÀÌ¿ë ÁÖ¹®¼­
+	// ì¡í™”ìƒ ì´ìš© ì£¼ë¬¸ì„œ
 	if( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_CASH && proto->getItemNum3() > 0)
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 
-	// ½áÄ¡ ¶óÀÌÇÁ
+	// ì¨ì¹˜ ë¼ì´í”„
 	if( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_CASH && proto->getItemNum3() > 0)
 		item->setUsed(gserver->getNowSecond() + proto->getItemNum3() * 60 * 60);
 	if (proto->m_index == ONE_PERIOD_ITEM || proto->m_index == 2610 || proto->m_index == 4940 )
@@ -1452,15 +1452,15 @@ CItem* CItemList::CreateAutoGiveDBItem(int idx, char wearPos, int plus, int flag
 	{
 		if(proto->m_num4 != -1)
 		{
-			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 24 * 60 * 60);	// ½ÇÁ¦ ÇÏ·ç
+			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 24 * 60 * 60);	// ì‹¤ì œ í•˜ë£¨
 		}
 	}
 
 	if (proto->getItemFlag() & ITEM_FLAG_ABS)
 	{
-		// ½Ã°£Á¦ ¾ÆÀÌÅÛÀº m_num4¿¡ ½Ã°£ÀÌ µé¾î°£´Ù
+		// ì‹œê°„ì œ ì•„ì´í…œì€ m_num4ì— ì‹œê°„ì´ ë“¤ì–´ê°„ë‹¤
 #ifdef SYSTEM_TREASURE_MAP
-		if(proto->m_index == TREASURE_MAP_ITEM_INDEX ) // ÀÌ³ÑÀº ºĞÀ¸·Î °è»êÇÑ´Ù.
+		if(proto->m_index == TREASURE_MAP_ITEM_INDEX ) // ì´ë„˜ì€ ë¶„ìœ¼ë¡œ ê³„ì‚°í•œë‹¤.
 			item->setUsed(gserver->getNowSecond() + proto->getItemNum4() * 60);
 		else
 #endif
@@ -1785,12 +1785,12 @@ bool CCatalogList::Load()
 
 	do
 	{
-		//int		m_index;		// Ä«Å»·Î±× ÀÎµ¦½º
+		//int		m_index;		// ì¹´íƒˆë¡œê·¸ ì¸ë±ìŠ¤
 		//CLCString m_name;
-		//int		m_type;			// Å¸ÀÔ
-		//int		m_cash;			// °¡°İ
-		//int		m_mileage;		// ¸¶ÀÏ¸®Áö
-		//int		m_toSell;			// ÆÇ¸Å ³²Àº °¹¼ö
+		//int		m_type;			// íƒ€ì…
+		//int		m_cash;			// ê°€ê²©
+		//int		m_mileage;		// ë§ˆì¼ë¦¬ì§€
+		//int		m_toSell;			// íŒë§¤ ë‚¨ì€ ê°¯ìˆ˜
 		//int		m_flag;
 		//bool		m_enable;
 		int index, type, cash, mileage, flag;
@@ -2029,7 +2029,7 @@ bool CCatalogList::Reload()
 	}
 	while( cmd.MoveNext() );
 
-	// ·ÎµùÈÄ ¹Ù²ãÄ¡±â
+	// ë¡œë”©í›„ ë°”ê¿”ì¹˜ê¸°
 	CCatalog* temp = catalog;
 	catalog = pNewcatalog;
 	delete[]	temp;
@@ -2208,7 +2208,7 @@ void CItem::originReform(unsigned int count_)
 
 	int i, j, min = 50, max, variation = 0;
 
-	min = min + (count_ * 5 / 10);	// È²±İ µ¸º¸±â ÇÏ³ª´ç 0.5% ¾¿ Áõ°¡ 50Àº minimum
+	min = min + (count_ * 5 / 10);	// í™©ê¸ˆ ë‹ë³´ê¸° í•˜ë‚˜ë‹¹ 0.5% ì”© ì¦ê°€ 50ì€ minimum
 
 	for (i = 0; i < MAX_ORIGIN_OPTION; i++)
 	{

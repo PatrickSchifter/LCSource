@@ -223,6 +223,7 @@ public:
 					BOOL _bShowPercent = FALSE, COLOR colText = 0xFFFFFFF );
 
 	void SetCmdComplete(Command* pCmd)	{SAFE_DELETE(m_pCmdComplete); m_pCmdComplete = pCmd;}
+	void		updateWidth()	{ _setTextureGap(); }
 #ifdef UI_TOOL
 	void		setStringIdx(_tagProgressStatus eState, INDEX idx)		{ m_iStringIdx[eState] = idx; }
 	INDEX		getStringIdx(_tagProgressStatus eState)					{ return m_iStringIdx[eState];		}

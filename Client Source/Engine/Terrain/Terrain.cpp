@@ -298,6 +298,12 @@ static void ReadTerrainVersion17_t( CTerrain *ptrTerrain, CTStream *istrFile )
 				break;
 			}
 		}
+
+		if (pubAttributeMap != NULL)
+		{
+			FreeMemory( pubAttributeMap );
+			pubAttributeMap = NULL;
+		}	
 	}
 
 	// Terrain data end

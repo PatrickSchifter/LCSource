@@ -289,7 +289,7 @@ inline void makeSkillLearnMsg(CNetMsg::SP& msg, CSkill* pSkill, CCharacter* ch)
 
 inline void makeSkillReadyMsg(CNetMsg::SP& msg, CCharacter* ch, CSkill* pSkill, CCharacter* tch)
 {
-	// ½ºÅ³ÀÌ ¼¿ÇÁ, ÆÄÆ¼ Å¸ÀÔÀÌ¸é tch¸¦ ch·Î »ç¿ë
+	// ìŠ¤í‚¬ì´ ì…€í”„, íŒŒí‹° íƒ€ìž…ì´ë©´ tchë¥¼ chë¡œ ì‚¬ìš©
 	switch (pSkill->m_proto->m_targetType)
 	{
 	case STT_SELF_ONE:
@@ -371,7 +371,7 @@ inline void makeSkillAutoUseMSg(CNetMsg::SP& msg, int skillIndex)
 inline void makeSkillFireMsg(CNetMsg::SP& msg, CCharacter* ch, CSkill* pSkill, CCharacter* tch,
 							 int count,  MultiTarget *pTarget, int cMoveChar, float x, float z, float h, float r, int yLayer)
 {
-	// ½ºÅ³ÀÌ ¼¿ÇÁ, ÆÄÆ¼ Å¸ÀÔÀÌ¸é tch¸¦ ch·Î »ç¿ë
+	// ìŠ¤í‚¬ì´ ì…€í”„, íŒŒí‹° íƒ€ìž…ì´ë©´ tchë¥¼ chë¡œ ì‚¬ìš©
 	switch (pSkill->m_proto->m_targetType)
 	{
 	case STT_SELF_ONE:

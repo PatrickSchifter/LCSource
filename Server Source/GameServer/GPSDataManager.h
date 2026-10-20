@@ -16,9 +16,9 @@ public:
 
 public:
 	//Data
-	void _insert(int charIndex, int targetIndex);	//gps ¾ÆÀÌÅÛÀ» »ç¿ëÇÏ¿´À» ¶§
-	void _remove(int charIndex, int targetIndex);	//¾ÆÀÌÅÛ »ç¿ë ½Ã°£ÀÌ Áö³ª¼­ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇØ¾ßµÇ´Â °æ¿ì
-	void _update(CPC* targetPc);				//Å¸°ÙÀÎ À¯Àú°¡ Á¢¼ÓÇÏ¿´À» ¶§
+	void _insert(int charIndex, int targetIndex);	//gps ì•„ì´í…œì„ ì‚¬ìš©í•˜ì˜€ì„ ë•Œ
+	void _remove(int charIndex, int targetIndex);	//ì•„ì´í…œ ì‚¬ìš© ì‹œê°„ì´ ì§€ë‚˜ì„œ ë°ì´í„°ë¥¼ ì‚­ì œí•´ì•¼ë˜ëŠ” ê²½ìš°
+	void _update(CPC* targetPc);				//íƒ€ê²Ÿì¸ ìœ ì €ê°€ ì ‘ì†í•˜ì˜€ì„ ë•Œ
 };
 
 #endif

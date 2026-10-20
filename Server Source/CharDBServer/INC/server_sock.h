@@ -9,10 +9,10 @@ typedef struct _st_1stPktHdr
 {
 	INT64		llMagicNumber;     	/* 0x3812121281282828L */
 	TIME_T64 	tCurTime;          	/* time_t + micro time */
-	UINT64   	ullSessID;         	/* TEMS Session ID, ¸ğ¸¦¶© 0x00 */
+	UINT64   	ullSessID;         	/* TEMS Session ID, ëª¨ë¥¼ë• 0x00 */
 	USHORT   	usTotLen;          	/* sizeof(st_1stPktHdr) + sizeof(st_2ndPktHdr) + sizeof(data) */
-	USHORT    	usSerial;			/* ½Ã¸®¾ó ¹øÈ£, ³»ºÎ¿¡¼­´Â CSMS¹øÈ£·Î »ç¿ë */
-	UINT      	uiCRC;				/* CRC ÆĞÅ¶ÀÇ ÀÌ»óÀ¯¹« ÆÇ´Ü */
+	USHORT    	usSerial;			/* ì‹œë¦¬ì–¼ ë²ˆí˜¸, ë‚´ë¶€ì—ì„œëŠ” CSMSë²ˆí˜¸ë¡œ ì‚¬ìš© */
+	UINT      	uiCRC;				/* CRC íŒ¨í‚·ì˜ ì´ìƒìœ ë¬´ íŒë‹¨ */
 } st_1stPktHdr, *pst_1stPktHdr;
 
 #define FIRST_HEADER_LEN		sizeof(st_1stPktHdr)
@@ -44,13 +44,13 @@ typedef struct _st_PktHdr
 
 typedef struct _st_UDPHeader
 {
-	UCHAR	szStartPK[2];	//ÆĞÅ¶ ±¸ºĞÀÚ
-	SHORT	usPKLen;		//ÆĞÅ¶ ±æÀÌ
-	SHORT	usSvcID;		//¼­ºñ½º ¾ÆÀÌµğ
-	SHORT	usMsgID;		//¸Ş½ÃÁö ¾ÆÀÌµğ
-	UINT64	ullSessID;		//ÇÚµåÆù ¹øÈ£
-	SHORT	usPKVer;		//ÆĞÅ¶ ¹öÀü
-	SHORT	usResult;		//ÀÀ´äÄÚµå
+	UCHAR	szStartPK[2];	//íŒ¨í‚· êµ¬ë¶„ì
+	SHORT	usPKLen;		//íŒ¨í‚· ê¸¸ì´
+	SHORT	usSvcID;		//ì„œë¹„ìŠ¤ ì•„ì´ë””
+	SHORT	usMsgID;		//ë©”ì‹œì§€ ì•„ì´ë””
+	UINT64	ullSessID;		//í•¸ë“œí° ë²ˆí˜¸
+	SHORT	usPKVer;		//íŒ¨í‚· ë²„ì „
+	SHORT	usResult;		//ì‘ë‹µì½”ë“œ
 	UINT	uiMySeq;
 	UINT	uiServSeq;
 	UINT	uiReserved;
@@ -64,17 +64,17 @@ typedef struct _st_SockHeader
 {
 	INT64       llMagicNumber;     /* 0x3812121281282828L */
 	TIME_T64    tCurTime;          /* time_t + micro time */
-	INT64       llSessID;          /* TEMS Session ID, ¸ğ¸¦¶© 0x00 */
+	INT64       llSessID;          /* TEMS Session ID, ëª¨ë¥¼ë• 0x00 */
 	USHORT      usTotLen;          /* sizeof(st_1stPktHdr) + sizeof(st_2ndPktHdr) + sizeof(data) */
-	UCHAR       ucEncFlag;         /* 0x00 : ¾ÏÈ£È­ ¹Ì»ç¿ë, 0x01 : ¾ÏÈ£È­ »ç¿ë */
-	UCHAR       ucEncType;         /* 0x00 : ¹Ì»ç¿ë default, 0x01 : JvEn(De)cryption »ç¿ë */
-	USHORT      usPktVer;          /* Ã³À½ 0x10 */
+	UCHAR       ucEncFlag;         /* 0x00 : ì•”í˜¸í™” ë¯¸ì‚¬ìš©, 0x01 : ì•”í˜¸í™” ì‚¬ìš© */
+	UCHAR       ucEncType;         /* 0x00 : ë¯¸ì‚¬ìš© default, 0x01 : JvEn(De)cryption ì‚¬ìš© */
+	USHORT      usPktVer;          /* ì²˜ìŒ 0x10 */
 	USHORT      usHashVal;
 	USHORT      usSvcID;               /* Service ID */
 	USHORT      usMsgID;               /* Message ID */
-	USHORT      usSerial;              /* ½Ã¸®¾ó ¹øÈ£ */
+	USHORT      usSerial;              /* ì‹œë¦¬ì–¼ ë²ˆí˜¸ */
 	USHORT      usResult;              /* Result */
-	UINT        uiCRC;                 /* CRC ÆĞÅ¶ÀÇ ÀÌ»óÀ¯¹« ÆÇ´Ü */
+	UINT        uiCRC;                 /* CRC íŒ¨í‚·ì˜ ì´ìƒìœ ë¬´ íŒë‹¨ */
 	UINT        uiClientIPAddr;        /* Client IP Address */
 	UINT        uiServerIPAddr;        /* Server IP Address */
 	USHORT      usClientPort;          /* Client Port */
@@ -85,7 +85,7 @@ typedef struct _st_SockHeader
 #define SOCK_HEADER_LEN        sizeof(st_SockHeader)
 
 
-//Index¸¦ ¹Ù·Î Ã£±â À§ÇØ event ±¸Á¶Ã¼¿¡ ´ÙÀ½ ±¸Á¶Ã¼¸¦ °¡¸£Å°°Ô ÇÑ´Ù
+//Indexë¥¼ ë°”ë¡œ ì°¾ê¸° ìœ„í•´ event êµ¬ì¡°ì²´ì— ë‹¤ìŒ êµ¬ì¡°ì²´ë¥¼ ê°€ë¥´í‚¤ê²Œ í•œë‹¤
 typedef struct _st_cli_info
 {
 	unsigned long long llKey;
@@ -133,24 +133,24 @@ typedef struct _st_SOCKINFO
 
 	UINT        uiIPAddr;
 	USHORT      usPort;
-	UCHAR       ucFirstPackInfo;            	// »ç¿ë¿©ºÎ DEF_USABLE : 0  DEF_USED : 1
+	UCHAR       ucFirstPackInfo;            	// ì‚¬ìš©ì—¬ë¶€ DEF_USABLE : 0  DEF_USED : 1
 	UCHAR       ucWriteFlag;
 
-	INT         dSockFd;            			// µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÎ Å¬¶óÀÌ¾ğÆ®ÀÇ ¼ÒÄÏ ÀÎÀÚ
-	INT         dWSockFd;           			// µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÒ Å¬¶óÀÌ¾ğÆ®ÀÇ ¼ÒÄÏ ÀÎÀÚ
+	INT         dSockFd;            			// ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¸ í´ë¼ì´ì–¸íŠ¸ì˜ ì†Œì¼“ ì¸ì
+	INT         dWSockFd;           			// ë°ì´í„°ë¥¼ ì „ì†¡í•  í´ë¼ì´ì–¸íŠ¸ì˜ ì†Œì¼“ ì¸ì
 
-	UINT        uiLastPos;          			// szSockBuf¿¡ ¸¶Áö¸·À¸·Î ¾´ À§Ä¡
-	UINT        uiReadPos;          			// T_DCRPT°¡ szSockBuf¿¡¼­ ÀĞÀº À§Ä¡
+	UINT        uiLastPos;          			// szSockBufì— ë§ˆì§€ë§‰ìœ¼ë¡œ ì“´ ìœ„ì¹˜
+	UINT        uiReadPos;          			// T_DCRPTê°€ szSockBufì—ì„œ ì½ì€ ìœ„ì¹˜
 
-	UINT        uiWritePos;         			// szWSockBuf¿¡ ¸¶Áö¸·À¸·Î ¾´ À§Ä¡
-	UINT        uiWSockPos;         			// ¸¶Áö¸·À¸·Î SEND ÇÑ À§Ä¡
+	UINT        uiWritePos;         			// szWSockBufì— ë§ˆì§€ë§‰ìœ¼ë¡œ ì“´ ìœ„ì¹˜
+	UINT        uiWSockPos;         			// ë§ˆì§€ë§‰ìœ¼ë¡œ SEND í•œ ìœ„ì¹˜
 
 	time_t      tLastUpdateTime;
 
-	UCHAR       szSockBuf[MAX_SOCKBUF_SIZE]; 	// Å¬¶óÀÌ¾ğÆ®·Î ºÎÅÍ ¼ÒÄÏÀ» ÀĞÀ» ¶§ »ç¿ëÇÏ´Â ¹öÆÛ
-	UCHAR       szWSockBuf[MAX_SOCKBUF_SIZE]; 	// Å¬¶óÀÌ¾ğÆ®·Î Àü¼ÛÇÒ µ¥ÀÌÅÍ¸¦ ´ã°í ÀÖ´Â ¹öÆÛ
+	UCHAR       szSockBuf[MAX_SOCKBUF_SIZE]; 	// í´ë¼ì´ì–¸íŠ¸ë¡œ ë¶€í„° ì†Œì¼“ì„ ì½ì„ ë•Œ ì‚¬ìš©í•˜ëŠ” ë²„í¼
+	UCHAR       szWSockBuf[MAX_SOCKBUF_SIZE]; 	// í´ë¼ì´ì–¸íŠ¸ë¡œ ì „ì†¡í•  ë°ì´í„°ë¥¼ ë‹´ê³  ìˆëŠ” ë²„í¼
 
-	UINT        uiSendPos;          			// ½ÇÁ¦·Î ¼ÒÄÏÀ» ÅëÇØ º¸³½ µ¥ÀÌÅÍ À§Ä¡
+	UINT        uiSendPos;          			// ì‹¤ì œë¡œ ì†Œì¼“ì„ í†µí•´ ë³´ë‚¸ ë°ì´í„° ìœ„ì¹˜
 	USHORT      usSerialServ;
 	UCHAR       ucPingFlag;
 	UCHAR       ucLastMsgFlag;

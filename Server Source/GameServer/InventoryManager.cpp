@@ -97,7 +97,7 @@ int Inventory::searchItemByDBIndexWithoutWearItem( unsigned int itemIndex, item_
 	return total;
 }
 
-// itemIndex¿¡ ÇØ´çÇÏ´Â ¸ğµç ¾ÆÀÌÅÛÀÇ À§Ä¡¿Í °¹¼ö¸¦ ±¸ÇØ¼­ vector¿¡ ³Ö´Â´Ù.
+// itemIndexì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  ì•„ì´í…œì˜ ìœ„ì¹˜ì™€ ê°¯ìˆ˜ë¥¼ êµ¬í•´ì„œ vectorì— ë„£ëŠ”ë‹¤.
 int Inventory::searchItemByDBIndex( unsigned int itemIndex, item_search_t& vec )
 {
 	int total = 0;
@@ -278,7 +278,7 @@ bool Inventory::deleteItem( unsigned int index )
 
 	if (tab_ != INVENTORY_TAB_STASH)
 	{
-		// quick slotÀ» °Ë»çÇÏ°Ô ÇÔ
+		// quick slotì„ ê²€ì‚¬í•˜ê²Œ í•¨
 		owner_->RemoveItemFromQuickSlot(buffer_[index]);
 	}
 		
@@ -315,22 +315,22 @@ bool Inventory::isEmpty(unsigned int& index)
 
 bool Inventory::addItem( CItem* pitem, addItemResult& retVal )
 {
-	// ½ºÅÃ °¡´ÉÇÑ ¾ÆÀÌÅÛÀÏ¶§¸¸ °ãÄ¡±â°¡ °¡´ÉÇÑÁö °Ë»ç
+	// ìŠ¤íƒ ê°€ëŠ¥í•œ ì•„ì´í…œì¼ë•Œë§Œ ê²¹ì¹˜ê¸°ê°€ ê°€ëŠ¥í•œì§€ ê²€ì‚¬
 	if (pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)
 	{
 		item_search_t vec;
 		this->searchItemByCondition(pitem->m_itemProto->getItemIndex(), pitem->getPlus(), pitem->getFlag(), vec);
 		if (vec.empty() == false)
 		{
-			// µ¿ÀÏ ¾ÆÀÌÅÛÀÌ ÀÖÀ» °æ¿ì ½ºÅÃ°¡´ÉÇÑÁö °Ë»ç
+			// ë™ì¼ ì•„ì´í…œì´ ìˆì„ ê²½ìš° ìŠ¤íƒê°€ëŠ¥í•œì§€ ê²€ì‚¬
 			BOOST_FOREACH(item_search_pair_t& p, vec)
 			{
-				if ((pitem->Count() + p.pItem->Count()) > p.pItem->m_itemProto->getStackCount()) // °¹¼ö ÃÊ°ú
+				if ((pitem->Count() + p.pItem->Count()) > p.pItem->m_itemProto->getStackCount()) // ê°¯ìˆ˜ ì´ˆê³¼
 					continue;
 
-				// °ãÄ¥¼ö ÀÖÀ½
+				// ê²¹ì¹ ìˆ˜ ìˆìŒ
 				p.pItem->m_count += pitem->Count();
-				pitem->setVIndex(p.pItem->getVIndex());			// °ãÃÆÀ¸¸é °¡»óÀÎµ¦½º¸¦ ÅëÀÏ ½ÃÄÑÁà¾ß ´Ù¸¥ ·ÎÁ÷ÀÇ ÆĞÅ¶ Ã³¸®¸¦ ÇÒ ¼ö ÀÖ´Ù.
+				pitem->setVIndex(p.pItem->getVIndex());			// ê²¹ì³¤ìœ¼ë©´ ê°€ìƒì¸ë±ìŠ¤ë¥¼ í†µì¼ ì‹œì¼œì¤˜ì•¼ ë‹¤ë¥¸ ë¡œì§ì˜ íŒ¨í‚· ì²˜ë¦¬ë¥¼ í•  ìˆ˜ ìˆë‹¤.
 
 				retVal.result = true;
 				retVal.delete_flag = true;
@@ -350,12 +350,12 @@ bool Inventory::addItem( CItem* pitem, addItemResult& retVal )
 		}
 	}
 
-	// ºó°ø°£ÀÌ ÀÖ´ÂÁö °Ë»ç
+	// ë¹ˆê³µê°„ì´ ìˆëŠ”ì§€ ê²€ì‚¬
 	unsigned int invenIndex = -1;
 	if (this->isEmpty(invenIndex) == false)
 		return false;
 
-	// ºó°ø°£ÀÌ ÀÖ´Ù¸é ³Ö´Â´Ù.
+	// ë¹ˆê³µê°„ì´ ìˆë‹¤ë©´ ë„£ëŠ”ë‹¤.
 	pitem->m_tab_idx = tab_;
 	pitem->m_invenIndex = invenIndex;
 	buffer_[invenIndex] = pitem;
@@ -445,13 +445,13 @@ bool Inventory::decreaseCountItem( unsigned int index, unsigned int count, bool&
 {
 	CItem* pItem = buffer_[index];
 	int newCount = pItem->m_count - count;
-	if (newCount < 0) // Áö¿ï °¹¼ö°¡ ¸ğÀÚ¸§
+	if (newCount < 0) // ì§€ìš¸ ê°¯ìˆ˜ê°€ ëª¨ìë¦„
 	{
 		newCount = 0;
 		LOG_ERROR("not enought item count. now count[%d], delete count[%d]", pItem->Count(), count);
 	}
 
-	if (newCount == 0) // °è»êÇÑ °¹¼ö°¡ 0ÀÎ °æ¿ì, ¾ÆÀÌÅÛÀ» »èÁ¦ÇØ¾ßÇÔ
+	if (newCount == 0) // ê³„ì‚°í•œ ê°¯ìˆ˜ê°€ 0ì¸ ê²½ìš°, ì•„ì´í…œì„ ì‚­ì œí•´ì•¼í•¨
 	{
 		deleteFlag = true;
 		return deleteItem(index);
@@ -579,7 +579,7 @@ void Inventory::getSaveString( int table_no, int charIndex, std::vector<std::str
 				str += boost::str(boost::format("%d,") % pitem->GetItemPlus());
 
 
-#ifndef LC_TLD		// ÆêÀÌ¸é Á¢Á¾½Ã ¹ş±â
+#ifndef LC_TLD		// í«ì´ë©´ ì ‘ì¢…ì‹œ ë²—ê¸°
 			str += boost::str(boost::format("%d,") % (int)pitem->getWearPos());
 #else
 			if( pitem->IsPet() )
@@ -592,7 +592,7 @@ void Inventory::getSaveString( int table_no, int charIndex, std::vector<std::str
 
 			if (pitem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS)
 			{
-				// ½Ã°£Á¦ ¾ÆÀÌÅÛ
+				// ì‹œê°„ì œ ì•„ì´í…œ
 				if( pitem->m_itemProto->getItemTypeIdx() == ITYPE_ETC
 						&& pitem->m_itemProto->getItemSubTypeIdx() == IETC_MONSTER_MERCENARY_CARD )
 				{
@@ -621,7 +621,7 @@ void Inventory::getSaveString( int table_no, int charIndex, std::vector<std::str
 
 			if ((pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (pitem->getFlag() & FLAG_ITEM_COMPOSITION))
 			{
-				// °áÇÕµÈ ÀÇ»ó ¾ÆÀÌÅÛÀº °áÇÕµÈ ÀÏ¹İ ¾ÆÀÌÅÛÀÇ virtualIndex¸¦ °¡Áö°í ÀÖÀ½
+				// ê²°í•©ëœ ì˜ìƒ ì•„ì´í…œì€ ê²°í•©ëœ ì¼ë°˜ ì•„ì´í…œì˜ virtualIndexë¥¼ ê°€ì§€ê³  ìˆìŒ
 				CItem* pItemEquip = owner_->m_inventory.FindByVirtualIndex(pitem->m_nCompositeItem);
 				if (pItemEquip)
 				{
@@ -896,7 +896,7 @@ void Inventory::eraseNotFree( unsigned int invenIndex )
 {
 	if (tab_ != INVENTORY_TAB_STASH)
 	{
-		// quick slotÀ» °Ë»çÇÏ°Ô ÇÔ
+		// quick slotì„ ê²€ì‚¬í•˜ê²Œ í•¨
 		if (buffer_[invenIndex])
 		{
 			owner_->RemoveItemFromQuickSlot(buffer_[invenIndex]);
@@ -921,7 +921,7 @@ void Inventory::makeVirtualCount()
 	}
 }
 
-// CNetMsgÀÇ ¹öÆÛÅ©±â¸¦ °í·ÁÇÏ¿© 20°³¾¿ ²÷¾î¼­ º¸³½´Ù.
+// CNetMsgì˜ ë²„í¼í¬ê¸°ë¥¼ ê³ ë ¤í•˜ì—¬ 20ê°œì”© ëŠì–´ì„œ ë³´ë‚¸ë‹¤.
 void Inventory::sendInfoToClient()
 {
 	item_search_t vec;
@@ -936,7 +936,7 @@ void Inventory::sendInfoToClient()
 		packet->type = MSG_UPDATE_DATA_FOR_CLIENT;
 		packet->subType = MSG_SUB_UPDATE_INVEN_LIST;
 		packet->tab_no = tab_;
-		packet->count = 0; // for¹®À» µ¹¸é¼­ °¹¼ö¸¦ Ä«¿îÆ®ÇÔ
+		packet->count = 0; // forë¬¸ì„ ëŒë©´ì„œ ê°¯ìˆ˜ë¥¼ ì¹´ìš´íŠ¸í•¨
 		rmsg->setSize(sizeof(UpdateClient::invenList));
 		SEND_Q(rmsg, owner_->m_desc);
 
@@ -951,7 +951,7 @@ void Inventory::sendInfoToClient()
 		packet->subType = MSG_SUB_UPDATE_INVEN_LIST;
 
 		packet->tab_no = tab_;
-		packet->count = 0; // for¹®À» µ¹¸é¼­ °¹¼ö¸¦ Ä«¿îÆ®ÇÔ
+		packet->count = 0; // forë¬¸ì„ ëŒë©´ì„œ ê°¯ìˆ˜ë¥¼ ì¹´ìš´íŠ¸í•¨
 
 		for (int i = 0; i < 20 && k < count; ++i, ++k)
 		{
@@ -1042,7 +1042,7 @@ void Inventory::sort()
 	this->sendInfoToClient();
 
 	{
-		// Äü½½·Ô Ã³¸® (¸¸¾à ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´Ù¸é »õ·Ó°Ô Ã³¸®ÇØÁÜ)
+		// í€µìŠ¬ë¡¯ ì²˜ë¦¬ (ë§Œì•½ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆë‹¤ë©´ ìƒˆë¡­ê²Œ ì²˜ë¦¬í•´ì¤Œ)
 		for (int page = 0; page < QUICKSLOT_PAGE_NUM; ++page)
 		{
 			for (int slot = 0; slot < QUICKSLOT_MAXSLOT; ++slot)
@@ -1066,7 +1066,7 @@ void Inventory::sort()
 
 bool Inventory::addItemToInvenIndex( CItem* pitem, addItemResult& retVal, unsigned int invenIndex )
 {
-	// ºó°ø°£ÀÌ ÀÖ´Ù¸é ³Ö´Â´Ù.
+	// ë¹ˆê³µê°„ì´ ìˆë‹¤ë©´ ë„£ëŠ”ë‹¤.
 	pitem->m_tab_idx = tab_;
 	pitem->m_invenIndex = invenIndex;
 	buffer_[invenIndex] = pitem;
@@ -1154,7 +1154,7 @@ bool InventoryManager::checkValid( unsigned int tab, unsigned int index )
 	return true;
 }
 
-// Ä³¸¯ÅÍ ·Îµù(ÀÎ¸Ê)½Ã¿¡¸¸ »ç¿ëÇÔ
+// ìºë¦­í„° ë¡œë”©(ì¸ë§µ)ì‹œì—ë§Œ ì‚¬ìš©í•¨
 bool InventoryManager::insertItem( unsigned int tab, unsigned int index, CItem* pItem )
 {
 	if (this->checkValid(tab, index) == false)
@@ -1187,7 +1187,7 @@ bool InventoryManager::insertItem( unsigned int tab, unsigned int index, CItem* 
 	return true;
 }
 
-// Ä³¸¯ÅÍ ·Îµù(ÀÎ¸Ê)½Ã¿¡¸¸ »ç¿ëÇÔ
+// ìºë¦­í„° ë¡œë”©(ì¸ë§µ)ì‹œì—ë§Œ ì‚¬ìš©í•¨
 bool InventoryManager::inserItemInStash(CItem* pItem)
 {
 	if (pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)
@@ -1386,10 +1386,10 @@ bool InventoryManager::addItem( CItem* pitem )
 		return false;
 	}
 
-	// °ú°Å »ç¿ëÇß´ø Á¤º¸¸¦ »èÁ¦ÇÔ
-	// ¿¹Àü ÄÚµå¿¡¼­´Â °ãÃÄÁö´Â ¾ÆÀÌÅÛÀ» ÀÏÀÏÀÌ ¼öÀÛ¾÷À» Áö¿üÀ½
-	// ±×·¡¼­ °ãÃÄÁö´Â ¾ÆÀÌÅÛÀÇ Æ÷ÀÎÅÍ¸¦ ÇÔ¼ö È£ÃâÈÄ¿¡µµ °è¼Ó »ç¿ëÇÏ°í ÀÖ¾úÀ½.
-	// ÀÌ¿¡ ¹Ù·Î Áö¿ìÁö ¾Ê°í, ÇÑ ÅÛÆ÷ ´À¸®°Ô »èÁ¦ÇÏ´Â°ÍÀÓ
+	// ê³¼ê±° ì‚¬ìš©í–ˆë˜ ì •ë³´ë¥¼ ì‚­ì œí•¨
+	// ì˜ˆì „ ì½”ë“œì—ì„œëŠ” ê²¹ì³ì§€ëŠ” ì•„ì´í…œì„ ì¼ì¼ì´ ìˆ˜ì‘ì—…ì„ ì§€ì› ìŒ
+	// ê·¸ë˜ì„œ ê²¹ì³ì§€ëŠ” ì•„ì´í…œì˜ í¬ì¸í„°ë¥¼ í•¨ìˆ˜ í˜¸ì¶œí›„ì—ë„ ê³„ì† ì‚¬ìš©í•˜ê³  ìˆì—ˆìŒ.
+	// ì´ì— ë°”ë¡œ ì§€ìš°ì§€ ì•Šê³ , í•œ í…œí¬ ëŠë¦¬ê²Œ ì‚­ì œí•˜ëŠ”ê²ƒì„
 	if (add_item_result_.delete_flag)
 	{
 		delete add_item_result_.addItem;
@@ -1417,7 +1417,7 @@ bool InventoryManager::addItem( CItem* pitem )
 
 	if (pitem->m_itemProto->getItemIndex() == NAS_ITEM_DB_INDEX)
 	{
-		// µ·(³ª½º)ÀÏ °æ¿ì Ã³¸®¸¦ ÇÔ, °ú°ÅÀÇ ÀÜÀç
+		// ëˆ(ë‚˜ìŠ¤)ì¼ ê²½ìš° ì²˜ë¦¬ë¥¼ í•¨, ê³¼ê±°ì˜ ì”ì¬
 		if (this->increaseMoney(pitem->Count()))
 		{
 			add_item_result_.result = true;
@@ -1435,7 +1435,7 @@ bool InventoryManager::addItem( CItem* pitem )
 		}
 	}
 
-	// ½ºÅÃ °¡´ÉÇÑ ¾ÆÀÌÅÛÀÌ¶ó¸é ±âÁ¸¿¡ µ¿ÀÏ ¾ÆÀÌÅÛÀ» ¸ğµÎ °Ë»çÇÏ¿© ½ºÅÃÀÌ °¡´ÉÇÑÁö ºñ±³ÇØº»´Ù.
+	// ìŠ¤íƒ ê°€ëŠ¥í•œ ì•„ì´í…œì´ë¼ë©´ ê¸°ì¡´ì— ë™ì¼ ì•„ì´í…œì„ ëª¨ë‘ ê²€ì‚¬í•˜ì—¬ ìŠ¤íƒì´ ê°€ëŠ¥í•œì§€ ë¹„êµí•´ë³¸ë‹¤.
 	if (pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)
 	{
 		item_search_t vec;
@@ -1465,7 +1465,7 @@ bool InventoryManager::addItem( CItem* pitem )
 				SEND_Q(rmsg, owner_->m_desc);
 
 				{
-					// Á¤»óÀûÀ¸·Î ¾ÆÀÌÅÛÀ» µî·ÏÇÏ¿´´Ù¸é Äù½ºÆ® Á¶°Ç °Ë»ç¸¦ ¼öÇàÇÔ
+					// ì •ìƒì ìœ¼ë¡œ ì•„ì´í…œì„ ë“±ë¡í•˜ì˜€ë‹¤ë©´ í€˜ìŠ¤íŠ¸ ì¡°ê±´ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•¨
 					item_search_t vec;
 					int sc = this->searchItemByCondition(pitem->getDBIndex(), 0, 0, vec);
 					::CheckQuestCondition(owner_, pitem, sc);
@@ -1505,7 +1505,7 @@ bool InventoryManager::addItem( CItem* pitem )
 			continue;
 
 		{
-			// Á¤»óÀûÀ¸·Î ¾ÆÀÌÅÛÀ» µî·ÏÇÏ¿´´Ù¸é Äù½ºÆ® Á¶°Ç °Ë»ç¸¦ ¼öÇàÇÔ
+			// ì •ìƒì ìœ¼ë¡œ ì•„ì´í…œì„ ë“±ë¡í•˜ì˜€ë‹¤ë©´ í€˜ìŠ¤íŠ¸ ì¡°ê±´ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•¨
 			item_search_t vec;
 			int sc = this->searchItemByCondition(pitem->getDBIndex(), 0, 0, vec);
 			::CheckQuestCondition(owner_, pitem, sc);
@@ -1566,7 +1566,7 @@ void InventoryManager::deleteItem(item_search_t& vec, unsigned int del_count)
 
 		if (del_count <= 0)
 		{
-			// ¸ğµÎ Áö¿üÀ¸¹Ç·Î break;
+			// ëª¨ë‘ ì§€ì› ìœ¼ë¯€ë¡œ break;
 			break;
 		}
 	}
@@ -1631,7 +1631,7 @@ bool InventoryManager::decreaseItemCount(CItem* pItem, unsigned int count)
 	return decreaseItemCount(tab, invenIndex, count);
 }
 
-// targetÀÌ ºñ¾îÀÖÁö ¾ÊÀ¸¸é false
+// targetì´ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´ false
 bool InventoryManager::moveItem( unsigned int stab, unsigned int sindex, unsigned int ttab, unsigned tindex )
 {
 	if (this->checkValid(stab, sindex) == false)
@@ -1672,12 +1672,12 @@ bool InventoryManager::swapItem( unsigned int stab, unsigned int sindex, unsigne
 	if (tInven.isUsable() == false)
 		return false;
 
-	// ¼­·Î ±³È¯
+	// ì„œë¡œ êµí™˜
 	CItem* pTemp = tInven[tindex];
 	tInven.setItemPtr(tindex, sInven[sindex]);
 	sInven.setItemPtr(sindex, pTemp);
 
-	// ±³È¯ °á°ú¸¦ Å¬¶ó¿¡°Ô Àü¼Û
+	// êµí™˜ ê²°ê³¼ë¥¼ í´ë¼ì—ê²Œ ì „ì†¡
 	CItem* sItem = sInven.buffer_[sindex];
 	CItem* tItem = tInven.buffer_[tindex];
 
@@ -1867,7 +1867,7 @@ LONGLONG InventoryManager::decreaseMoneyInStash( LONGLONG nas )
 	return nowMoney;
 }
 
-// Ä³¸¯ÅÍ ÀúÀå¿¡ ÇÊ¿äÇÑ ¹®ÀÚ¿­À» »ı¼º
+// ìºë¦­í„° ì €ì¥ì— í•„ìš”í•œ ë¬¸ìì—´ì„ ìƒì„±
 void InventoryManager::getSaveString( std::vector<std::string>& vec )
 {
 	int table_no = owner_->m_index % 10;
@@ -1898,7 +1898,7 @@ void InventoryManager::getSaveStringInStach( std::vector<std::string>& vec )
 
 void InventoryManager::sendInfoToClient()
 {
-	//if( NULL != owner_->m_wearInventory.wearing_cost_set ) // [110208:selo] ÇÑ ¹ú ÀÇ»ó
+	//if( NULL != owner_->m_wearInventory.wearing_cost_set ) // [110208:selo] í•œ ë²Œ ì˜ìƒ
 	//{
 	//	CNetMsg::SP rmsg(new CNetMsg);
 	//	PreInventorySuitMsg(rmsg, owner_);
@@ -1907,7 +1907,7 @@ void InventoryManager::sendInfoToClient()
 	//else
 	//{
 	//	CNetMsg::SP rmsg(new CNetMsg);
-	//	PreInventoryMsg(rmsg, owner_);	// Inventory Á¤º¸¸¦ ³Ñ±â±â Àü¿¡ ÄÚ½ºÆ¬ Á¤º¸¸¦ ¸ÕÀú ³Ñ±ä´Ù.
+	//	PreInventoryMsg(rmsg, owner_);	// Inventory ì •ë³´ë¥¼ ë„˜ê¸°ê¸° ì „ì— ì½”ìŠ¤íŠ¬ ì •ë³´ë¥¼ ë¨¼ì € ë„˜ê¸´ë‹¤.
 	//	SEND_Q(rmsg, owner_->m_desc);
 	//}
 
@@ -1978,13 +1978,13 @@ void InventoryManager::checkItemTime()
 			if (pItem == NULL)
 				continue;
 
-			// ¸ó½ºÅÍ Ä«µå¶ó¸é...
+			// ëª¬ìŠ¤í„° ì¹´ë“œë¼ë©´...
 			if( pItem->m_itemProto->getItemTypeIdx() == ITYPE_ETC
 					&& pItem->m_itemProto->getItemSubTypeIdx() == IETC_MONSTER_MERCENARY_CARD)
 			{
 				if( pItem->getUsed() != -1 && pItem->getUsed() < gserver->getNowSecond() )
 				{
-					// ¿ì¼± ¿ëº´ÀÌ ¼ÒÈ¯ »óÅÂ¶ó¸é Á¦°Å
+					// ìš°ì„  ìš©ë³‘ì´ ì†Œí™˜ ìƒíƒœë¼ë©´ ì œê±°
 					if( owner_->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY)
 							&& owner_->GetSummonNpc(SUMMON_NPC_TYPE_MERCENARY)->m_index == pItem->m_MercenaryIndex )
 					{
@@ -1995,7 +1995,7 @@ void InventoryManager::checkItemTime()
 						SEND_Q(rmsg, owner_->m_desc);
 					}
 
-					// º¸»ó ¾ÆÀÌÅÛ Áö±Ş ¼³Á¤Àº ¹Ì¸®
+					// ë³´ìƒ ì•„ì´í…œ ì§€ê¸‰ ì„¤ì •ì€ ë¯¸ë¦¬
 					bool gift1 = false;
 					bool gift2 = false;
 					switch( pItem->m_itemProto->getItemNum2())
@@ -2012,7 +2012,7 @@ void InventoryManager::checkItemTime()
 					}
 
 					{
-						// ¿ëº´ Ä«µå »èÁ¦
+						// ìš©ë³‘ ì¹´ë“œ ì‚­ì œ
 						GAMELOG << init("MONSTER MERCENARY SUC :: TIME LIMIT ITEM DELETE", owner_)
 								<< itemlog(pItem) << end;
 
@@ -2021,7 +2021,7 @@ void InventoryManager::checkItemTime()
 
 					if( gift1 )
 					{
-						if (owner_->GiveItem(6259, 0,0,1, true ) == false)  // 6259 ¸ó½ºÅÍ ¿ëº´Ä«µå º¸»ó1
+						if (owner_->GiveItem(6259, 0,0,1, true ) == false)  // 6259 ëª¬ìŠ¤í„° ìš©ë³‘ì¹´ë“œ ë³´ìƒ1
 						{
 							GAMELOG << init("MONSTER MERCENARY FAIL :: Give item", owner_)
 									<< "item index : " <<  6259  << end;
@@ -2035,7 +2035,7 @@ void InventoryManager::checkItemTime()
 
 					if( gift2 )
 					{
-						if (owner_->GiveItem(6260, 0,0,1, true ) == false) // 6260 ¸ó½ºÅÍ ¿ëº´Ä«µå º¸»ó2
+						if (owner_->GiveItem(6260, 0,0,1, true ) == false) // 6260 ëª¬ìŠ¤í„° ìš©ë³‘ì¹´ë“œ ë³´ìƒ2
 						{
 							GAMELOG << init("MONSTER MERCENARY FAIL :: Give item", owner_)
 									<< "item index : " << 6260 << end;
@@ -2050,7 +2050,7 @@ void InventoryManager::checkItemTime()
 					continue;
 				}
 
-				// 5ºĞ ³²Àº ¸Ş½ÃÁö¸¦ º¸³»ÁØ´Ù.
+				// 5ë¶„ ë‚¨ì€ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 				if( pItem->getUsed() != -1 &&  pItem->getPlus_2() == 0 && pItem->getUsed() <= gserver->getNowSecond() + (5*60))
 				{
 					pItem->setPlus_2(1);
@@ -2082,7 +2082,7 @@ void InventoryManager::checkItemTime()
 				if ((pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE )
 						&& pItem->m_itemProto->getItemNum4() == - 1)
 				{
-					// ±â°£ ¹«Á¦ÇÑ ¾ÆÀÌÅÛ
+					// ê¸°ê°„ ë¬´ì œí•œ ì•„ì´í…œ
 					continue;
 				}
 
@@ -2091,7 +2091,7 @@ void InventoryManager::checkItemTime()
 					&& pItem->m_itemProto->getItemNum0() == IONCE_WARP_PARTYRECALL
 					&& pItem->getUsed() < gserver->getNowSecond())
 			{
-				// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+				// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 				GAMELOG << init("ITEM USE TIMEOUT", owner_)
 						<< "ITEM" << delim
 						<< itemlog(pItem)
@@ -2102,7 +2102,7 @@ void InventoryManager::checkItemTime()
 			}
 			else if((pItem->getDBIndex() >= 4927 && pItem->getDBIndex() <= 4932) || pItem->getDBIndex() == 6228)
 			{
-				// ÇÒ·ÎÀ© ÀÌº¥Æ® È£¹Ú¸Ó¸® ±â°£ Áö³ª¸é »èÁ¦
+				// í• ë¡œìœˆ ì´ë²¤íŠ¸ í˜¸ë°•ë¨¸ë¦¬ ê¸°ê°„ ì§€ë‚˜ë©´ ì‚­ì œ
 				if((pItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS) &&
 						(pItem->getUsed() < gserver->getNowSecond()))
 				{
@@ -2141,21 +2141,21 @@ void InventoryManager::checkItemTime()
 			}
 			else if (pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 			{
-				// °áÇÕ ÀÇ»ó Ã¼Å©°¡ ÇÃ·¡Æ¼´½º¸´Ù À§¿¡ ÀÖ¾î¾ß ÇÔ
-				// ÀÇ»óµµ ÇÃ·¡Æ¼´½ ¸Æ½º ÇÃ·¯½º »ç¿ë -_-;
-				// °áÇÕ¿ë ÀÇ»ó ¾ÆÀÌÅÛ
-				// °áÇÕµÈ ¾ÆÀÌÅÛ
+				// ê²°í•© ì˜ìƒ ì²´í¬ê°€ í”Œë˜í‹°ëŠ„ë³´ë‹¤ ìœ„ì— ìˆì–´ì•¼ í•¨
+				// ì˜ìƒë„ í”Œë˜í‹°ëŠ„ ë§¥ìŠ¤ í”ŒëŸ¬ìŠ¤ ì‚¬ìš© -_-;
+				// ê²°í•©ìš© ì˜ìƒ ì•„ì´í…œ
+				// ê²°í•©ëœ ì•„ì´í…œ
 				if (!(pItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS))
 				{
-					// ±â°£Á¦
+					// ê¸°ê°„ì œ
 					if (pItem->getUsed_2() > 0
 							&& pItem->getUsed_2() < gserver->getNowSecond())
 					{
-						// °áÇÕ ÁÖ¹®¼­ ½Ã°£ ¸¸·á
-						// °áÇÕÇÑ ¾ÆÀÌÅÛÀÌ ÀÖ´Â°¡?
-						// ÀÖÀ¸¸é °áÇÕÀ» ÇØÁ¦ÇÏ°í
-						// Âø¿ë ÁßÀÌ¸é Âø¿ë ÇØÁ¦ÇÏ°í
-						// ÀÎº¥¿¡ »ğÀÔ
+						// ê²°í•© ì£¼ë¬¸ì„œ ì‹œê°„ ë§Œë£Œ
+						// ê²°í•©í•œ ì•„ì´í…œì´ ìˆëŠ”ê°€?
+						// ìˆìœ¼ë©´ ê²°í•©ì„ í•´ì œí•˜ê³ 
+						// ì°©ìš© ì¤‘ì´ë©´ ì°©ìš© í•´ì œí•˜ê³ 
+						// ì¸ë²¤ì— ì‚½ì…
 						if (pItem->getFlag() & FLAG_ITEM_COMPOSITION)
 						{
 							CItem * pItemEquip = owner_->m_inventory.FindByVirtualIndex(pItem->m_nCompositeItem);
@@ -2189,16 +2189,16 @@ void InventoryManager::checkItemTime()
 								SEND_Q(rmsg, owner_->m_desc);
 							}
 						}
-					}	// °áÇÕµÈ ¾ÆÀÌÅÛ
+					}	// ê²°í•©ëœ ì•„ì´í…œ
 				}
 
 				if (pItem->getUsed() < gserver->getNowSecond())
 				{
-					// À¯·á ÀÇ»ó ½Ã°£ ¸¸·á
-					// °áÇÕÇÑ ¾ÆÀÌÅÛÀÌ ÀÖ´Â°¡?
-					// ÀÖÀ¸¸é °áÇÕÀ» ÇØÁ¦ÇÏ°í
-					// Âø¿ë ÁßÀÌ¸é Âø¿ë ÇØÁ¦ÇÏ°í
-					// ÀÎº¥¿¡¼­ Á¦°Å
+					// ìœ ë£Œ ì˜ìƒ ì‹œê°„ ë§Œë£Œ
+					// ê²°í•©í•œ ì•„ì´í…œì´ ìˆëŠ”ê°€?
+					// ìˆìœ¼ë©´ ê²°í•©ì„ í•´ì œí•˜ê³ 
+					// ì°©ìš© ì¤‘ì´ë©´ ì°©ìš© í•´ì œí•˜ê³ 
+					// ì¸ë²¤ì—ì„œ ì œê±°
 					if (pItem->getFlag() & FLAG_ITEM_COMPOSITION)
 					{
 						pItem->setFlag(pItem->getFlag() & ~FLAG_ITEM_COMPOSITION);
@@ -2231,16 +2231,16 @@ void InventoryManager::checkItemTime()
 					this->decreaseItemCount(pItem, pItem->Count());
 					continue;
 				}
-			} // ÀÇ»ó
+			} // ì˜ìƒ
 			else if( pItem->IsUsedPlatinumSpecial() )
 			{
 				if (pItem->getUsed() < gserver->getNowSecond())
 				{
-					// »èÁ¦ ÈÄ ¸®ÅÏ
+					// ì‚­ì œ í›„ ë¦¬í„´
 					int platinumPlus = pItem->getFlag() & PLATINUM_MAX_PLUS;
 					pItem->setPlus(pItem->getPlus() - platinumPlus);
 
-					if(pItem->getPlus() <= 0) // LC-TR-P20100428-018 ¹ö±× ³»¿ë ¼öÁ¤ ( ÇÃ·¡Æ¼³Ñ ±â°£ ¸¸·á½Ã 0 º¸´Ù ÀÛ°Ô µÇ´Â °æ¿ì ¼öÁ¤)
+					if(pItem->getPlus() <= 0) // LC-TR-P20100428-018 ë²„ê·¸ ë‚´ìš© ìˆ˜ì • ( í”Œë˜í‹°ë„˜ ê¸°ê°„ ë§Œë£Œì‹œ 0 ë³´ë‹¤ ì‘ê²Œ ë˜ëŠ” ê²½ìš° ìˆ˜ì •)
 					{
 						pItem->setPlus(0);
 					}
@@ -2274,10 +2274,10 @@ void InventoryManager::checkItemTime()
 
 					continue;
 				}
-			} // ÇÃ·¡Æ¼´½
+			} // í”Œë˜í‹°ëŠ„
 			else if (pItem->getDBIndex() == GOLDENBALL_CARD_INDEX)
 			{
-				// °ñµçº¼ ÀÀ¸ğ±Ç
+				// ê³¨ë“ ë³¼ ì‘ëª¨ê¶Œ
 				time_t tItemTime = pItem->getUsed();
 				time_t tEndTime = gserver->m_clGoldenBall.GetVoteEndTime();
 				if (gserver->m_clGoldenBall.GetStatus() == GOLDENBALL_STATUS_NOTHING || tItemTime != tEndTime)
@@ -2292,13 +2292,13 @@ void InventoryManager::checkItemTime()
 
 					continue;
 				}
-			} // °ñµçº¼
+			} // ê³¨ë“ ë³¼
 			else if (pItem->IsLent())
 			{
-				// ´ë¿© ¹«±â
+				// ëŒ€ì—¬ ë¬´ê¸°
 				if (pItem->getUsed() < gserver->getNowSecond())
 				{
-					// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+					// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 					GAMELOG << init("ITEM USE TIMEOUT", owner_)
 							<< "ITEM" << delim
 							<< itemlog(pItem)
@@ -2312,7 +2312,7 @@ void InventoryManager::checkItemTime()
 					this->decreaseItemCount(pItem, pItem->Count());
 					continue;
 				}
-			} // // ´ë¿© ¹«±â
+			} // // ëŒ€ì—¬ ë¬´ê¸°
 
 			switch (pItem->m_itemProto->getItemIndex())
 			{
@@ -2327,8 +2327,8 @@ void InventoryManager::checkItemTime()
 					if( pItem->getUsed() != -1
 							&& pItem->getUsed() < gserver->getNowSecond())
 					{
-						// ±â°£ ¸¸·á
-						// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+						// ê¸°ê°„ ë§Œë£Œ
+						// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 						GAMELOG << init("ITEM USE TIMEOUT", owner_)
 								<< "ITEM" << delim
 								<< itemlog(pItem)
@@ -2351,8 +2351,8 @@ void InventoryManager::checkItemTime()
 				{
 					if( pItem->getUsed() != -1 && pItem->getUsed() < gserver->getNowSecond())
 					{
-						// ±â°£ ¸¸·á
-						// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+						// ê¸°ê°„ ë§Œë£Œ
+						// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 						GAMELOG << init("ITEM USE TIMEOUT", owner_)
 								<< "ITEM" << delim
 								<< itemlog(pItem)
@@ -2371,8 +2371,8 @@ void InventoryManager::checkItemTime()
 				{
 					if( pItem->getUsed() < gserver->getNowSecond())
 					{
-						// ±â°£ ¸¸·á
-						// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+						// ê¸°ê°„ ë§Œë£Œ
+						// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 						GAMELOG << init("ITEM USE TIMEOUT", owner_)
 								<< "ITEM" << delim
 								<< itemlog(pItem)
@@ -2402,7 +2402,7 @@ void InventoryManager::checkItemTime()
 				{
 					if( pItem->getUsed() != -1 && pItem->getUsed() < gserver->getNowSecond() )
 					{
-						//±â°£ ¸¸·á ¾ÆÀÌÅÛ »èÁ¦
+						//ê¸°ê°„ ë§Œë£Œ ì•„ì´í…œ ì‚­ì œ
 						GAMELOG << init("COMPETITION ITEM USE TIEMOUT", owner_ )
 								<< "ITEM" << delim
 								<< itemlog(pItem )
@@ -2418,7 +2418,7 @@ void InventoryManager::checkItemTime()
 				{
 					if (pItem->getUsed() < gserver->getNowSecond())
 					{
-						// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+						// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 						GAMELOG << init("ITEM USE TIMEOUT", owner_)
 								<< "ITEM" << delim
 								<< itemlog(pItem)
@@ -2431,13 +2431,13 @@ void InventoryManager::checkItemTime()
 				break;
 			}
 
-			// ATTACK_PET  °ü·Ã ¾ÆÀÌÅÛ ½Ã°£ Ã¼Å©
+			// ATTACK_PET  ê´€ë ¨ ì•„ì´í…œ ì‹œê°„ ì²´í¬
 			if( ( pItem->m_itemProto->getItemJobFlag()&(1<<JOB_APET) ) &&
 					( pItem->m_itemProto->getItemFlag()&ITEM_FLAG_ABS) )
 			{
 				if (pItem->getUsed() < gserver->getNowSecond())
 				{
-					// AI ¾ÆÀÌÅÛÀº AI ¸®½ºÆ®¿¡¼­µµ »èÁ¦
+					// AI ì•„ì´í…œì€ AI ë¦¬ìŠ¤íŠ¸ì—ì„œë„ ì‚­ì œ
 					if (pItem->m_itemProto->getItemTypeIdx() == ITYPE_ETC && pItem->m_itemProto->getItemSubTypeIdx() == IETC_PET_AI)
 					{
 						CAPet * pAPetNetxt = owner_->m_pApetlist;
@@ -2456,7 +2456,7 @@ void InventoryManager::checkItemTime()
 							SEND_Q(rmsg, owner_->m_desc);
 						}
 					}
-					// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+					// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 					GAMELOG << init("ITEM USE TIMEOUT ATTACK_PET", owner_)
 							<< "ITEM" << delim
 							<< itemlog(pItem)
@@ -2494,7 +2494,7 @@ void InventoryManager::checkItemTime()
 				}
 			}
 
-			// ·¹ÀÌµå ´øÀü ÀÔÀå Ä«µå
+			// ë ˆì´ë“œ ë˜ì „ ì…ì¥ ì¹´ë“œ
 			if((pItem->m_itemProto->getItemIndex() == 4913))
 			{
 				if (pItem->getUsed() < gserver->getNowSecond() && owner_->m_pZone)
@@ -2536,6 +2536,42 @@ void InventoryManager::checkItemTime()
 							<< end;
 						
 						this->decreaseItemCount(pItem, pItem->Count());
+						continue;
+					}
+				}
+
+				if (pItem->getDBIndex() == CUSTOM_TITLE_ITEM_INDEX)
+				{
+					if (pItem->getUsed() != -1 && pItem->getUsed() < gserver->getNowSecond())
+					{
+						GAMELOG << init("Custom TitleItem Delete", owner_)
+							<< "ITEM" << delim
+							<< itemlog(pItem)
+							<< end;
+
+						{
+							//íƒ€ì´í‹€ ì§€ìš°ê³ 
+							CNetMsg::SP rmsg(new CNetMsg);
+							TitleDeleteInfoMsg(rmsg, pItem->getUsed_2());
+							SEND_Q(rmsg, owner_->m_desc);
+
+							std::string query = boost::str(boost::format("DELETE FROM t_title_make where a_index = %d") % pItem->getUsed_2());
+							DBManager::instance()->pushQuery(0, query);
+
+							std::map<int, MAKE_TITLE*>::iterator it = owner_->_map_title.find(pItem->getUsed_2());
+							
+							if( it != owner_->_map_title.end() )
+							{
+								delete[] it->second->option_index;
+								delete[] it->second->option_level;
+								delete it->second;
+
+								owner_->_map_title.erase(pItem->getUsed_2());
+							}
+						}
+
+						this->decreaseItemCount(pItem, pItem->Count());
+
 						continue;
 					}
 				}
@@ -2669,10 +2705,10 @@ void InventoryManager::CheckCompositeValidation( void )
 
 		if (pitem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 		{
-			// ÇÕ¼ºµÈ ÀÇ»óÀº ÇØ´ç Àåºñ¸¦ Ã£¾Æº»´Ù
+			// í•©ì„±ëœ ì˜ìƒì€ í•´ë‹¹ ì¥ë¹„ë¥¼ ì°¾ì•„ë³¸ë‹¤
 			if (this->FindByVirtualIndex(pitem->m_nCompositeItem) == NULL)
 			{
-				// ÀÇ»óÀº ÇÕ¼ºÀÌ µÇ¾î ÀÖ´Âµ¥ ÇØ´ç Àåºñ°¡ ¾øÀ¸¸é ÇÕ¼º »óÅÂ ÇØÁ¦
+				// ì˜ìƒì€ í•©ì„±ì´ ë˜ì–´ ìˆëŠ”ë° í•´ë‹¹ ì¥ë¹„ê°€ ì—†ìœ¼ë©´ í•©ì„± ìƒíƒœ í•´ì œ
 				GAMELOG << init("COMPOSITE VALID", owner_)
 						<< itemlog(pitem)
 						<< "COMPOSITE EQUIP" << delim
@@ -2684,7 +2720,7 @@ void InventoryManager::CheckCompositeValidation( void )
 		}
 		else
 		{
-			// ÇÕ¼ºµÈ Àåºñ´Â ÇØ´ç ÀÇ»óÀ» Ã£´Â´Ù
+			// í•©ì„±ëœ ì¥ë¹„ëŠ” í•´ë‹¹ ì˜ìƒì„ ì°¾ëŠ”ë‹¤
 			item_search_t tvec;
 			int sc = this->searchFlagByItem(FLAG_ITEM_COMPOSITION, tvec);
 			if (sc > 0)
@@ -2831,7 +2867,7 @@ void InventoryManager::CastllanItemRemove( CItem* pItem, bool bDelete )
 			}
 		}
 	}
-	else // ÀÏ¹İ ¾ÆÀÌÅÛ
+	else // ì¼ë°˜ ì•„ì´í…œ
 	{
 		if (pItem->m_wearPos != WEARING_NONE)
 		{
@@ -2937,7 +2973,7 @@ bool InventoryManager::isPossibleAdd(std::vector<possible_search_t>& search_vec)
 
 		if (item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)
 		{
-			// °¡¹æº°·Î µ¹¸é¼­ °ãÄ¡±â°¡ °¡´ÉÇÑÁö °Ë»ç
+			// ê°€ë°©ë³„ë¡œ ëŒë©´ì„œ ê²¹ì¹˜ê¸°ê°€ ê°€ëŠ¥í•œì§€ ê²€ì‚¬
 			bool success = false;
 
 			for (int i = 0; i < INVENTORY_TAB_STASH; ++i)
@@ -2949,7 +2985,7 @@ bool InventoryManager::isPossibleAdd(std::vector<possible_search_t>& search_vec)
 
 				item_search_t vec;
 				int sc = pInven.searchItemByCondition(item->getDBIndex(), item->getPlus(), item->getFlag(), vec);
-				if (sc > 0) // µ¿ÀÏ ¾ÆÀÌÅÛÀÌ ÀÖ´Ù¸é
+				if (sc > 0) // ë™ì¼ ì•„ì´í…œì´ ìˆë‹¤ë©´
 				{
 					BOOST_FOREACH(item_search_pair_t& pp, vec)
 					{
@@ -2967,19 +3003,19 @@ bool InventoryManager::isPossibleAdd(std::vector<possible_search_t>& search_vec)
 
 			} // end for
 
-			if (success) // °ãÄ¡±â°¡ °¡´ÉÇÏ¹Ç·Î ´ÙÀ½ ¾ÆÀÌÅÛ °Ë»ç
+			if (success) // ê²¹ì¹˜ê¸°ê°€ ê°€ëŠ¥í•˜ë¯€ë¡œ ë‹¤ìŒ ì•„ì´í…œ ê²€ì‚¬
 				continue;
 		}
 
-		// °ãÄ¥¼ö ¾ø´Â °æ¿ìÀÌ°Å³ª, °ãÄ¡±â°¡ ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛÀÌ¶ó¸é?
+		// ê²¹ì¹ ìˆ˜ ì—†ëŠ” ê²½ìš°ì´ê±°ë‚˜, ê²¹ì¹˜ê¸°ê°€ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œì´ë¼ë©´?
 		if (empty_count > 0)
 		{
-			// ºó °ø°£ÀÌ ÀÖÀ¸¹Ç·Î ´ÙÀ½ ¾ÆÀÌÅÛÀ» °Ë»ç
+			// ë¹ˆ ê³µê°„ì´ ìˆìœ¼ë¯€ë¡œ ë‹¤ìŒ ì•„ì´í…œì„ ê²€ì‚¬
 			--empty_count;
 			continue;
 		}
 
-		// ºó °ø°£ÀÌ ¾øÀ¸¹Ç·Î false·Î ¸®ÅÏ
+		// ë¹ˆ ê³µê°„ì´ ì—†ìœ¼ë¯€ë¡œ falseë¡œ ë¦¬í„´
 		return false;
 	}
 
@@ -2996,11 +3032,11 @@ bool InventoryManager::isPossibleAddInStash( std::vector<possible_search_t>& sea
 	BOOST_FOREACH(possible_search_t& p, search_vec)
 	{
 		CItem* item = p.first;
-		if (item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)		// °ãÄ¡±â°¡ °¡´ÉÇÏ´Ù¸é
+		if (item->m_itemProto->getItemFlag() & ITEM_FLAG_COUNT)		// ê²¹ì¹˜ê¸°ê°€ ê°€ëŠ¥í•˜ë‹¤ë©´
 		{
 			item_search_t vec;
 			int sc = pInven.searchItemByConditionInStash(item->getDBIndex(), item->getPlus(), item->getFlag(), vec);
-			if (sc > 0) // µ¿ÀÏ ¾ÆÀÌÅÛÀÌ ÀÖ´Ù¸é
+			if (sc > 0) // ë™ì¼ ì•„ì´í…œì´ ìˆë‹¤ë©´
 			{
 				bool success = false;
 
@@ -3014,20 +3050,20 @@ bool InventoryManager::isPossibleAddInStash( std::vector<possible_search_t>& sea
 					}
 				}
 
-				if (success) // °ãÄ¥¼ö ÀÖÀ¸¹Ç·Î ´ÙÀ½ ¾ÆÀÌÅÛÀ» °Ë»ç
+				if (success) // ê²¹ì¹ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë‹¤ìŒ ì•„ì´í…œì„ ê²€ì‚¬
 					continue;
 			}
 		}
 
-		// °ãÄ¥¼ö ¾ø´Â °æ¿ìÀÌ°Å³ª, °ãÄ¡±â°¡ ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛÀÌ¶ó¸é?
+		// ê²¹ì¹ ìˆ˜ ì—†ëŠ” ê²½ìš°ì´ê±°ë‚˜, ê²¹ì¹˜ê¸°ê°€ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œì´ë¼ë©´?
 		if (empty_count > 0)
 		{
-			// ºó °ø°£ÀÌ ÀÖÀ¸¹Ç·Î ´ÙÀ½ ¾ÆÀÌÅÛÀ» °Ë»ç
+			// ë¹ˆ ê³µê°„ì´ ìˆìœ¼ë¯€ë¡œ ë‹¤ìŒ ì•„ì´í…œì„ ê²€ì‚¬
 			--empty_count;
 			continue;
 		}
 
-		// ºó °ø°£ÀÌ ¾øÀ¸¹Ç·Î false·Î ¸®ÅÏ
+		// ë¹ˆ ê³µê°„ì´ ì—†ìœ¼ë¯€ë¡œ falseë¡œ ë¦¬í„´
 		return false;
 	}
 

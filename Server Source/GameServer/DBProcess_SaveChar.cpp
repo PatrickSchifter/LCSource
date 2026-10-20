@@ -370,15 +370,15 @@ void DBProcess::SaveChar( boost::any& argv )
 
 	if (disconnect_flag)
 	{
-		// °ÔÀÓÀ» Á¾·áÇÏ¸é¼­ ÀúÀåÇÏ´Â °ÍÀÌ¶ó¸é
-		// Connector Server·Î ·Î±×¾Æ¿ô º¸³»±â
-		// Connector Server¿¡¼­´Â id¸¦ Ã£Áö ¸øÇÏ¸é returnÇÔ
+		// ê²Œìž„ì„ ì¢…ë£Œí•˜ë©´ì„œ ì €ìž¥í•˜ëŠ” ê²ƒì´ë¼ë©´
+		// Connector Serverë¡œ ë¡œê·¸ì•„ì›ƒ ë³´ë‚´ê¸°
+		// Connector Serverì—ì„œëŠ” idë¥¼ ì°¾ì§€ ëª»í•˜ë©´ returní•¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnLogoutMsg(rmsg, id.c_str());
 		SEND_Q(rmsg, gserver->m_connector);
 
 		{
-			// Helper, SubHelper¿¡°Ô Á¢¼Ó Á¤º¸¸¦ Àü´Þ
+			// Helper, SubHelperì—ê²Œ ì ‘ì† ì •ë³´ë¥¼ ì „ë‹¬
 			CNetMsg::SP rmsg(new CNetMsg);
 			ServerToServerPacket::makeLogoutUserInfo(rmsg, userIndex);
 			SEND_Q(rmsg, gserver->m_helper);

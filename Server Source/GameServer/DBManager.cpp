@@ -66,7 +66,7 @@ void DBManager::JoinAll()
 
 	stop_flag_ = true;
 
-	// ÇöÀç Á¢¼ÓÇÏ¿© °ÔÀÓÁßÀÎ ¸ğµç »ç¿ëÀÚÀÇ Á¤º¸¸¦ ÀúÀå
+	// í˜„ì¬ ì ‘ì†í•˜ì—¬ ê²Œì„ì¤‘ì¸ ëª¨ë“  ì‚¬ìš©ìì˜ ì •ë³´ë¥¼ ì €ì¥
 	DescManager::instance()->saveAllBeforServerDown();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ void DBManager::JoinAll()
 	db_process_ = NULL;
 }
 
-//XX ·Î±×ÀÎ 3
+//XX ë¡œê·¸ì¸ 3
 void DBManager::PushCharacterList( CDescriptor* desc )
 {
 	DBProcess::charlist_t data(desc->m_seq_index, desc->m_index, desc->m_playmode, desc->m_nPrepareSeed);
@@ -94,7 +94,7 @@ void DBManager::PushCharacterList( CDescriptor* desc )
 	db_process_[index].queue_.push_signal(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ»ı¼º 2
+//XX ìºë¦­í„°ìƒì„± 2
 void DBManager::PushCreateChar( CDescriptor* desc, CreateCharacterInfo* cinfo )
 {
 	DBProcess::createchar_t data(desc->m_seq_index, desc->m_index, cinfo);
@@ -104,7 +104,7 @@ void DBManager::PushCreateChar( CDescriptor* desc, CreateCharacterInfo* cinfo )
 	db_process_[index].queue_.push_signal(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ»èÁ¦ 2
+//XX ìºë¦­í„°ì‚­ì œ 2
 void DBManager::PushDeleteCharacter( CDescriptor* desc, int char_index, int guildoutdate )
 {
 	DBProcess::delchar_t data(desc->m_seq_index, desc->m_index, char_index, desc->getExtendCharacterSlotTime(), guildoutdate);
@@ -114,7 +114,7 @@ void DBManager::PushDeleteCharacter( CDescriptor* desc, int char_index, int guil
 	db_process_[index].queue_.push_signal(pushdata);
 }
 
-//XX Ä³¸¯ÅÍº¹¿ø 2
+//XX ìºë¦­í„°ë³µì› 2
 void DBManager::PushCancelDeleteCharacter( CDescriptor* desc, int char_index )
 {
 	DBProcess::canceldelchar_t data(desc->m_seq_index, desc->m_index, char_index);
@@ -124,7 +124,7 @@ void DBManager::PushCancelDeleteCharacter( CDescriptor* desc, int char_index )
 	db_process_[index].queue_.push_signal(pushdata);
 }
 
-//XX Ä³¸¯ÅÍ¼±ÅÃ 2
+//XX ìºë¦­í„°ì„ íƒ 2
 void DBManager::PushSelectCharacter( CDescriptor* desc, int char_index, void* guild )
 {
 	DBProcess::selectchar_t data(desc->m_seq_index, desc->m_index, char_index, desc->m_playmode, (const char *)desc->m_proSite, (const char *)desc->m_idname, guild);
@@ -163,9 +163,11 @@ void DBManager::PushExpressList( CDescriptor* desc, int pageIndex )
 
 	int index = desc->m_index % thread_count_;
 	db_process_[index].queue_.push_signal(pushdata);
+
+	desc->m_pChar->use_express_flag = true;
 }
 
-//XX °Å·¡´ëÇà - Ã£±â 2
+//XX ê±°ë˜ëŒ€í–‰ - ì°¾ê¸° 2
 void DBManager::PushExpressTake( CDescriptor* desc, expressIndex_t expressIndex )
 {
 	DBProcess::expresstake_t data(desc->m_seq_index, desc->m_index, desc->m_pChar->m_index, expressIndex);
@@ -173,6 +175,19 @@ void DBManager::PushExpressTake( CDescriptor* desc, expressIndex_t expressIndex 
 
 	int index = desc->m_index % thread_count_;
 	db_process_[index].queue_.push_signal(pushdata);
+
+	desc->m_pChar->use_express_flag = true;
+}
+
+void DBManager::PushExpressTakeAll(CDescriptor* desc, int pageIndex)
+{
+	DBProcess::expresstakeall_t data(desc->m_seq_index, desc->m_index, desc->m_pChar->m_index, pageIndex);
+	DBProcess::type_t pushdata(DB_PROC_EXPRESS_TAKE_ALL, data);
+
+	int index = desc->m_index % thread_count_;
+	db_process_[index].queue_.push_signal(pushdata);
+
+	desc->m_pChar->use_express_flag = true;
 }
 
 void DBManager::PushExpressInputItem( CDescriptor* desc, ExpressSystemItemInfo* itemInfo, bool contentsFlag )
@@ -249,7 +264,7 @@ void DBManager::PushExpressInputNasNotConnectUser( int charIndex, unsigned int n
 	db_process_[index].queue_.push_signal(pushdata);
 }
 
-// main thread¿¡¼­ Á¤»óÀûÀ¸·Î ¾ÆÀÌÅÛ(¶Ç´Â µ·)À» ¼ö·ÉÇÏ¿´À» °æ¿ì Ã¢°íNPC¿¡°Ô¼­ »èÁ¦ÇÔ
+// main threadì—ì„œ ì •ìƒì ìœ¼ë¡œ ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ìˆ˜ë ¹í•˜ì˜€ì„ ê²½ìš° ì°½ê³ NPCì—ê²Œì„œ ì‚­ì œí•¨
 void DBManager::PushExpressDelete( CDescriptor* desc, expressIndex_t expressIndex, bool send_flag )
 {
 	DBProcess::expressdelete_t data(desc->m_seq_index, desc->m_index, desc->m_pChar->m_index, expressIndex, send_flag);
@@ -257,6 +272,19 @@ void DBManager::PushExpressDelete( CDescriptor* desc, expressIndex_t expressInde
 
 	int index = desc->m_index % thread_count_;
 	db_process_[index].queue_.push_signal(pushdata);
+
+	desc->m_pChar->use_express_flag = true;
+}
+
+void DBManager::PushExpressDeleteAll(CDescriptor* desc, int pageIndex, bool send_flag)
+{
+	DBProcess::expressdeleteall_t data(desc->m_seq_index, desc->m_index, desc->m_pChar->m_index, pageIndex, send_flag);
+	DBProcess::type_t pushdata(DB_PROC_EXPRESS_DELETE_ALL, data);
+
+	int index = desc->m_index % thread_count_;
+	db_process_[index].queue_.push_signal(pushdata);
+
+	desc->m_pChar->use_express_flag = true;
 }
 
 void DBManager::pushQuery( int userIndex, std::string& query )
@@ -333,6 +361,15 @@ void DBManager::pushGetCharIndexByGPS( CDescriptor* desc, std::string& name, int
 {
 	DBProcess::getcharindexbyGPS_t data(desc->m_seq_index, desc->m_index, name, itemVindex);
 	DBProcess::type_t pushdata(DB_PROC_GET_CHAR_INDEX_BY_GPS, data);
+
+	int index = desc->m_index % thread_count_;
+	db_process_[index].queue_.push_signal(pushdata);
+}
+
+void DBManager::pushMakeTitleInfo( CDescriptor* desc, int char_index, int v_index, char color, char background_color, char effect, std::string name, int* option_index, int* option_level)
+{
+	DBProcess::title_make_t data(desc->m_seq_index, desc->m_index, desc->m_pChar->m_index, v_index, color, background_color, effect, name, option_index, option_level);
+	DBProcess::type_t pushdata(DB_PROC_INSERT_MAKETITLE_INFO, data);
 
 	int index = desc->m_index % thread_count_;
 	db_process_[index].queue_.push_signal(pushdata);
@@ -511,6 +548,10 @@ void DBProcess::Run()
 			ExpressTake(data.second);
 			break;
 
+		case DB_PROC_EXPRESS_TAKE_ALL:
+			ExpressTakeAll(data.second);
+			break;
+
 		case DB_PROC_EXPRESS_INPUT_ITEM:
 			ExpressInputItem(data.second);
 			break;
@@ -521,6 +562,10 @@ void DBProcess::Run()
 
 		case DB_PROC_EXPRESS_DELETE:
 			ExpressDelete(data.second);
+			break;
+
+		case DB_PROC_EXPRESS_DELETE_ALL:
+			ExpressDeleteAll(data.second);
 			break;
 
 		case DB_PROC_QUERY:
@@ -561,6 +606,10 @@ void DBProcess::Run()
 			getCharIndexByGPS(data.second);
 			break;
 
+		case DB_PROC_INSERT_MAKETITLE_INFO:
+			InsertMakeTitleInfo(data.second);
+			break;
+
 		default:
 			LOG_ERROR("Invalid Command[%d]", data.first);
 			break;
@@ -585,7 +634,7 @@ void  DBProcess::SendMessageToClient( LONGLONG& seq_index, int userIndex, CNetMs
 
 //////////////////////////////////////////////////////////////////////////
 
-//XX ·Î±×ÀÎ 4
+//XX ë¡œê·¸ì¸ 4
 void DBProcess::CharacterList( boost::any& argv )
 {
 	charlist_t data = boost::any_cast<charlist_t>(argv);
@@ -602,7 +651,7 @@ void DBProcess::CharacterList( boost::any& argv )
 
 	if (m_playmode == MSG_LOGIN_RE)
 	{
-		// ¼­¹ö ÀÌµ¿ÀÏ °æ¿ì ÄÉ¸¯ÅÍ ½½·Ô Á¤º¸´Â ¾È º¸³½´Ù
+		// ì„œë²„ ì´ë™ì¼ ê²½ìš° ì¼€ë¦­í„° ìŠ¬ë¡¯ ì •ë³´ëŠ” ì•ˆ ë³´ë‚¸ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		DBCharEndMsg(rmsg, slot0, slot1, m_nPrepareSeed);
 		SendMessageToClient(seq_index, m_index, rmsg);
@@ -639,7 +688,7 @@ void DBProcess::CharacterList( boost::any& argv )
 	}
 
 	{
-		// ÇØ´ç À¯ÀúÀÇ »èÁ¦ ´ë±â Áß Ä³¸¯Áß¿¡ »èÁ¦ µÉ ³à¼®µé Áö¿ì±â
+		// í•´ë‹¹ ìœ ì €ì˜ ì‚­ì œ ëŒ€ê¸° ì¤‘ ìºë¦­ì¤‘ì— ì‚­ì œ ë  ë…€ì„ë“¤ ì§€ìš°ê¸°
 		{
 			query = boost::str(boost::format(
 								   "SELECT a_index FROM t_characters WHERE a_user_index=%d AND a_server=%d AND a_enable=1 "
@@ -679,7 +728,7 @@ void DBProcess::CharacterList( boost::any& argv )
 	if (res == NULL)
 		return;
 
-	// ·çÇÁ : ÀÖ´Â ¸¸Å­
+	// ë£¨í”„ : ìˆëŠ” ë§Œí¼
 	int row_count = char_db_.getrowcount();
 	for (int rc = 0; rc < row_count; ++rc)
 	{
@@ -713,7 +762,7 @@ void DBProcess::CharacterList( boost::any& argv )
 					wear[i - WEARING_SHOW_START] = -1;
 			}
 		}
-		// 050223 : bs : plus È¿°ú¸¦ À§ÇÑ Á¤º¸ Ãß°¡
+		// 050223 : bs : plus íš¨ê³¼ë¥¼ ìœ„í•œ ì •ë³´ ì¶”ê°€
 		int plus[DEFAULT_MAX_WEARING];
 		for (int i = 0; i < DEFAULT_MAX_WEARING; i++)
 		{
@@ -727,8 +776,8 @@ void DBProcess::CharacterList( boost::any& argv )
 					plus[i - WEARING_SHOW_START] = 0;
 			}
 		}
-		// --- 050223 : bs : plus È¿°ú¸¦ À§ÇÑ Á¤º¸ Ãß°¡
-		// Ä³¸¯ÅÍ »èÁ¦ µô·¹ÀÌ
+		// --- 050223 : bs : plus íš¨ê³¼ë¥¼ ìœ„í•œ ì •ë³´ ì¶”ê°€
+		// ìºë¦­í„° ì‚­ì œ ë”œë ˆì´
 		int nDeleteDelayRemain = 0;
 		nDeleteDelayRemain = atoi(row[char_db_.findfield("a_delete_delay_reamin")]);
 		if (nDeleteDelayRemain < 0)
@@ -757,7 +806,7 @@ void DBProcess::CharacterList( boost::any& argv )
 					   plus,
 					   nDeleteDelayRemain);
 
-		// ±æµå Á¤º¸ °¡Á®¿À±â
+		// ê¸¸ë“œ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		{
 			CDBCmd dbGuild;
 			dbGuild.Init(char_db_.getMYSQL());
@@ -773,7 +822,7 @@ void DBProcess::CharacterList( boost::any& argv )
 			RefMsg(rmsg) << guildName;
 		}
 
-		// 90 Level Ä³¸¯ÅÍ °Ë»ç
+		// 90 Level ìºë¦­í„° ê²€ì‚¬
 		if( job == JOB_NIGHTSHADOW )
 			return_charlist.m_bNotCreateNightShadow = true;
 
@@ -784,7 +833,7 @@ void DBProcess::CharacterList( boost::any& argv )
 	}
 
 	{
-		// ¾ÆÀÌÅÛÀº ¾´ÀûÀÖ´ÂÁö È®ÀÎÇÑ´Ù
+		// ì•„ì´í…œì€ ì“´ì ìˆëŠ”ì§€ í™•ì¸í•œë‹¤
 		query = boost::str(boost::format("SELECT * FROM t_nscard WHERE a_user_index = %d") % m_index);
 		BOOST_MYSQL_RES res = char_db_.select(query);
 		if(res != NULL && char_db_.getrowcount() > 0)
@@ -794,15 +843,15 @@ void DBProcess::CharacterList( boost::any& argv )
 
 		if( (return_charlist.m_bCreate90Lv && !(return_charlist.m_bNotCreateNightShadow)) )
 		{
-			// 90·¹º§ÀÌ»ó Ä³¸¯ÅÍ ÀÖ°í NS Ä³¸¯ÅÍ°¡ ¾ø´Ù
+			// 90ë ˆë²¨ì´ìƒ ìºë¦­í„° ìˆê³  NS ìºë¦­í„°ê°€ ì—†ë‹¤
 			CNetMsg::SP rmsg(new CNetMsg);
 			DBNSCreateMsg(rmsg);
 			SendMessageToClient(seq_index, m_index, rmsg);
 		}
 		else if(!return_charlist.m_bCreate90Lv && !(return_charlist.m_bNotCreateNightShadow) )
 		{
-			// 90·¹º§ÀÌ»ó Ä³¸¯ÅÍ ¾ø°í NS Ä³¸¯ÅÍ°¡ ¾ø´Ù
-			if(return_charlist.m_bIsNSCreateCardUse)  // ¾ÆÀÌÅÛ »ç¿ë¿©ºÎ
+			// 90ë ˆë²¨ì´ìƒ ìºë¦­í„° ì—†ê³  NS ìºë¦­í„°ê°€ ì—†ë‹¤
+			if(return_charlist.m_bIsNSCreateCardUse)  // ì•„ì´í…œ ì‚¬ìš©ì—¬ë¶€
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				DBNSCreateMsg(rmsg);
@@ -812,19 +861,19 @@ void DBProcess::CharacterList( boost::any& argv )
 	}
 
 	{
-		// Ä³¸¯ÅÍ Á¤º¸¸¦ ÀĞÀ¸¸é¼­ CDescriptor¸¦ º¯°æÇÒ Á¤º¸¸¦ Event SessionÀ» ÀÌ¿ëÇÏ¿© Àü´Ş
+		// ìºë¦­í„° ì •ë³´ë¥¼ ì½ìœ¼ë©´ì„œ CDescriptorë¥¼ ë³€ê²½í•  ì •ë³´ë¥¼ Event Sessionì„ ì´ìš©í•˜ì—¬ ì „ë‹¬
 		EventProcessForDB::instance()->pushCharList(return_charlist);
 	}
 
 	{
-		// Ä³¸¯ÅÍ ¸¶Áö¸· Á¤º¸ Àü¼Û
+		// ìºë¦­í„° ë§ˆì§€ë§‰ ì •ë³´ ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		DBCharEndMsg(rmsg, slot0, slot1, m_nPrepareSeed);
 		SendMessageToClient(seq_index, m_index, rmsg);
 	}
 }
 
-//XX Ä³¸¯ÅÍ»èÁ¦ 3
+//XX ìºë¦­í„°ì‚­ì œ 3
 void DBProcess::DeleteChar( boost::any& argv )
 {
 	delchar_t data = boost::any_cast<delchar_t>(argv);
@@ -873,7 +922,7 @@ void DBProcess::DeleteChar( boost::any& argv )
 
 			if(count > 4)
 			{
-				// »èÁ¦ ºÒ°¡ MSG_FAIL_DB_CANNOT_DEL_CHAR
+				// ì‚­ì œ ë¶ˆê°€ MSG_FAIL_DB_CANNOT_DEL_CHAR
 				CNetMsg::SP rmsg(new CNetMsg);
 				FailMsg(rmsg, MSG_FAIL_DB_CANNOT_DEL_CHAR);
 				SendMessageToClient(seq_index, m_index, rmsg);
@@ -886,7 +935,7 @@ void DBProcess::DeleteChar( boost::any& argv )
 		std::string query = "";
 
 		{
-			// °¡¹Ì°í ·Î±×¸¦ Ãâ·ÂÇÏ±â À§ÇØ ÀÌ¸§°ú Á÷¾÷À» ¾ò¾î¿È
+			// ê°€ë¯¸ê³  ë¡œê·¸ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•´ ì´ë¦„ê³¼ ì§ì—…ì„ ì–»ì–´ì˜´
 			query = boost::str(boost::format(
 								   "SELECT a_name, a_job FROM t_characters WHERE a_index=%1% AND a_user_index=%2% AND a_server=%3% LIMIT 1")
 							   % char_index % m_index % gserver->m_serverno);
@@ -907,7 +956,7 @@ void DBProcess::DeleteChar( boost::any& argv )
 		query = "UPDATE t_characters SET a_deletedelay=UNIX_TIMESTAMP(NOW())+24*60*60, a_datestamp=now()";
 
 #if defined (LC_GAMIGO)
-		query += boost::str(boost::format(", a_guildoutdate=%1%") % m_guildoutdate);
+		query += boost::str(boost::format(", a_guildindate=%1%") % m_guildoutdate);
 #endif
 
 		query += boost::str(boost::format(" WHERE a_user_index=%1% AND a_server=%2% AND a_index=%3% AND a_enable=1")
@@ -929,7 +978,7 @@ void DBProcess::DeleteChar( boost::any& argv )
 	}
 }
 
-//XX Ä³¸¯ÅÍº¹¿ø 3
+//XX ìºë¦­í„°ë³µì› 3
 void DBProcess::CancelDeleteChar( boost::any& argv )
 {
 	canceldelchar_t data = boost::any_cast<canceldelchar_t>(argv);
@@ -970,15 +1019,15 @@ void DBProcess::FixItemUsedTime(CItem* pItem)
 
 	int dbTime = 0;
 
-	// ±â°£Á¦, ÀÏÈ¸¿ë, Ä³½¬¾ÆÀÌÅÛ : Ã¢°í ÀÌ¿ë ÁÖ¹®¼­, ÀâÈ­»ó ÀÌ¿ë ÁÖ¹®¼­, ½áÄ¡¶óÀÌÇÁ, ¾ÆÀÌÅÛÆÇ¸Å´ëÇà»óÀÎ, ½ºÅ³¸¶½ºÅÍÀÌ¿ë±Ç
+	// ê¸°ê°„ì œ, ì¼íšŒìš©, ìºì‰¬ì•„ì´í…œ : ì°½ê³  ì´ìš© ì£¼ë¬¸ì„œ, ì¡í™”ìƒ ì´ìš© ì£¼ë¬¸ì„œ, ì¨ì¹˜ë¼ì´í”„, ì•„ì´í…œíŒë§¤ëŒ€í–‰ìƒì¸, ìŠ¤í‚¬ë§ˆìŠ¤í„°ì´ìš©ê¶Œ
 	if ( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_CASH && proto->getItemNum3() > 0 )
 		dbTime = proto->getItemNum3() * 60 * 60;
 
-	// ÆÄÆ¼¸®Äİ
+	// íŒŒí‹°ë¦¬ì½œ
 	if ( proto->getItemTypeIdx() == ITYPE_ONCE && proto->getItemSubTypeIdx() == IONCE_WARP && proto->getItemNum0() == IONCE_WARP_PARTYRECALL )
 		dbTime = proto->getItemNum3() * 60 * 60;
 
-	// ¿ÀÅäÆ÷¼Ç
+	// ì˜¤í† í¬ì…˜
 	if ( itemIndex == ONE_PERIOD_ITEM || itemIndex == 2610 || itemIndex == 4940 )
 		dbTime = 1 * 24 * 60 * 60;
 
@@ -991,19 +1040,19 @@ void DBProcess::FixItemUsedTime(CItem* pItem)
 	if (proto->isRvrJewel())
 		dbTime = proto->getItemNum3() * 60;
 
-	// °áÇÕ ¾ÆÀÌÅÛ
+	// ê²°í•© ì•„ì´í…œ
 	if ( proto->getItemFlag() & ITEM_FLAG_COMPOSITE )
 	{
 		if ( pItem->getFlag() & FLAG_ITEM_COMPOSITION )
 		{
-			// °áÇÕÇÑ »óÅÂ
+			// ê²°í•©í•œ ìƒíƒœ
 			if ( proto->getItemFlag() & ITEM_FLAG_ABS )
 			{
-				// ½Ã°£Á¦ : used °ª¿¡ ³²Àº ½Ã°£, used_2 °ª¿¡ ¸¸·á ±â°£À» ÀúÀå
+				// ì‹œê°„ì œ : used ê°’ì— ë‚¨ì€ ì‹œê°„, used_2 ê°’ì— ë§Œë£Œ ê¸°ê°„ì„ ì €ì¥
 				dbTime = proto->getItemNum4() * 60 * 60;
 				dbTime += gserver->getNowSecond();
 
-				// ¸¸·á ±â°£ = ³²Àº ½Ã°£ + °ÔÀÓ Å¸ÀÓ
+				// ë§Œë£Œ ê¸°ê°„ = ë‚¨ì€ ì‹œê°„ + ê²Œì„ íƒ€ì„
 				if ( pItem->getUsed_2() > dbTime )
 					pItem->setUsed_2(pItem->getUsed() + gserver->getNowSecond());
 
@@ -1011,7 +1060,7 @@ void DBProcess::FixItemUsedTime(CItem* pItem)
 			}
 			else
 			{
-				// ±â°£Á¦ : used, used_2 °ª¿¡ ¸¸·á ±â°£À» ÀúÀå
+				// ê¸°ê°„ì œ : used, used_2 ê°’ì— ë§Œë£Œ ê¸°ê°„ì„ ì €ì¥
 				dbTime = proto->getItemNum4() * 24 * 60 * 60;
 				dbTime += gserver->getNowSecond();
 
@@ -1027,56 +1076,56 @@ void DBProcess::FixItemUsedTime(CItem* pItem)
 		}
 		else
 		{
-			// °áÇÕÇÏÁö ¾ÊÀº »óÅÂ¸é
+			// ê²°í•©í•˜ì§€ ì•Šì€ ìƒíƒœë©´
 			if ( proto->getItemFlag() & ITEM_FLAG_ABS )
 			{
-				// ½Ã°£Á¦ : used¿¡ ³²Àº ½Ã°£, used_2´Â »ç¿ë¾ÈÇÔ(-1)
+				// ì‹œê°„ì œ : usedì— ë‚¨ì€ ì‹œê°„, used_2ëŠ” ì‚¬ìš©ì•ˆí•¨(-1)
 				return;
 			}
 			else
 			{
-				// ±â°£Á¦ : used¿¡ ¸¸·á ±â°£, used_2´Â »ç¿ë¾ÈÇÔ(-1)
+				// ê¸°ê°„ì œ : usedì— ë§Œë£Œ ê¸°ê°„, used_2ëŠ” ì‚¬ìš©ì•ˆí•¨(-1)
 				dbTime = proto->getItemNum4() * 24 * 60 * 60;
 			}
 		}
 	}
 
-	// ÇÃ·¡Æ¼´½ ¾ÆÀÌÅÛ
-	// ÇÃ·¡Æ¼´½ ¾ÆÀÌÅÛÀº ÃÖ´ë 30ÀÏº¸´Ù °ªÀÌ Å©¸é, 30ÀÏ·Î ¸ÂÃá´Ù.
+	// í”Œë˜í‹°ëŠ„ ì•„ì´í…œ
+	// í”Œë˜í‹°ëŠ„ ì•„ì´í…œì€ ìµœëŒ€ 30ì¼ë³´ë‹¤ ê°’ì´ í¬ë©´, 30ì¼ë¡œ ë§ì¶˜ë‹¤.
 	int platinumPlus = 0;
 	FLAG_ITEM_PLATINUM_GET(pItem->getFlag(), platinumPlus);
 	if ( platinumPlus > 0 && (pItem->m_itemProto->getItemTypeIdx() == ITYPE_WEAPON || pItem->m_itemProto->getItemTypeIdx() == ITYPE_WEAR))
 		dbTime = 30 * 24 * 60 * 60;
 
-	// ÄÚ½ºÆ¬2 ¾ÆÀÌÅÛ
+	// ì½”ìŠ¤íŠ¬2 ì•„ì´í…œ
 	if ( proto->getItemFlag() & ITEM_FLAG_COSTUME2 )
 		dbTime = proto->getItemNum4() * 24 * 60 * 60;
 
 #ifdef SYSTEM_TREASURE_MAP
-	// º¸¹°»óÀÚ
+	// ë³´ë¬¼ìƒì
 	if ( itemIndex == TREASURE_MAP_ITEM_INDEX )
 		dbTime = proto->getItemNum4() * 60;
 #endif
 
-	// ´ë¿© ¾ÆÀÌÅÛ
+	// ëŒ€ì—¬ ì•„ì´í…œ
 	if ( pItem->IsLent() )
 		dbTime =  24 * 60 * 60;
 
-	// ¶óÄ« ±âÀÚ´Ü ¾ÆÀÌÅÛ 30ÀÏ
+	// ë¼ì¹´ ê¸°ìë‹¨ ì•„ì´í…œ 30ì¼
 	if ( itemIndex == 2882 )
 		dbTime = 30 * 24 * 60 * 60;
 
 	if ( proto->getItemTypeIdx() == ITYPE_ACCESSORY && proto->getItemNum4() > 0 )
-		// ±â°£Á¦ ¾Ç¼¼¼­¸® ¾ÆÀÌÅÛ
+		// ê¸°ê°„ì œ ì•…ì„¸ì„œë¦¬ ì•„ì´í…œ
 		dbTime = proto->getItemNum4() * 24 * 60 * 60;
 
-	// ±â°£Á¦ ¾ÆÀÌÅÛ ¾Æ´Ï¸é ¸®ÅÏ
+	// ê¸°ê°„ì œ ì•„ì´í…œ ì•„ë‹ˆë©´ ë¦¬í„´
 	if ( dbTime == 0 )
 		return;
 
 	dbTime += gserver->getNowSecond();
 
-	// ³²Àº ±â°£ÀÌ ¼³Á¤ °¡´ÉÇÑ ÃÖ´ë ½Ã°£º¸´Ù Å©¸é ÃÖ´ë ½Ã°£À¸·Î ¼öÁ¤
+	// ë‚¨ì€ ê¸°ê°„ì´ ì„¤ì • ê°€ëŠ¥í•œ ìµœëŒ€ ì‹œê°„ë³´ë‹¤ í¬ë©´ ìµœëŒ€ ì‹œê°„ìœ¼ë¡œ ìˆ˜ì •
 	if ( pItem->getUsed() > dbTime )
 		pItem->setUsed(dbTime);
 }
@@ -1136,7 +1185,7 @@ void DBProcess::ExpressList( boost::any& argv )
 	if (res == NULL)
 		return;
 
-	// ¸®½ºÆ®¸¦ Àü¼ÛÇÏÀÚ
+	// ë¦¬ìŠ¤íŠ¸ë¥¼ ì „ì†¡í•˜ì
 	CNetMsg::SP rmsg(new CNetMsg);
 	ResponseClient::expressList* p = reinterpret_cast<ResponseClient::expressList*>(rmsg->m_buf);
 	p->type = MSG_EXPRESS_SYSTEM;
@@ -1149,7 +1198,7 @@ void DBProcess::ExpressList( boost::any& argv )
 	}
 	else
 	{
-		// ÇÑ ÆäÀÌÁö¿¡ Ç¥½ÃÇÏ´Â ¼ıÀÚº¸´Ù ¸¹´Ù´Â ¾ê±â´Â, ´ÙÀ½ ÆäÀÌÁö¸¦ Ç¥½ÃÇÒ ¼ö ÀÖ´Ù´Â ¾ê±â
+		// í•œ í˜ì´ì§€ì— í‘œì‹œí•˜ëŠ” ìˆ«ìë³´ë‹¤ ë§ë‹¤ëŠ” ì–˜ê¸°ëŠ”, ë‹¤ìŒ í˜ì´ì§€ë¥¼ í‘œì‹œí•  ìˆ˜ ìˆë‹¤ëŠ” ì–˜ê¸°
 		p->nextPage = 1;
 		p->count = EXPRESS_SYSTEM_COUNT_PER_PAGE;
 	}
@@ -1163,7 +1212,7 @@ void DBProcess::ExpressList( boost::any& argv )
 	SendMessageToClient(seq_index, user_index, rmsg);
 }
 
-//XX °Å·¡´ëÇà - Ã£±â 3
+//XX ê±°ë˜ëŒ€í–‰ - ì°¾ê¸° 3
 void DBProcess::ExpressTake( boost::any& argv )
 {
 	expresstake_t data = boost::any_cast<expresstake_t>(argv);
@@ -1195,12 +1244,56 @@ void DBProcess::ExpressTake( boost::any& argv )
 		return;
 	}
 
-	// main thread·Î Á¤º¸¸¦ Àü´ŞÇÏ¿© ¾ÆÀÌÅÛ(¶Ç´Â µ·À» ¼ö·ÉÇÏµµ·Ï ÇÑ´Ù)
-	// Æ÷ÀÎÅÍ »èÁ¦´Â main thread¿¡¼­ Ã³¸®ÇÔ
+	// main threadë¡œ ì •ë³´ë¥¼ ì „ë‹¬í•˜ì—¬ ì•„ì´í…œ(ë˜ëŠ” ëˆì„ ìˆ˜ë ¹í•˜ë„ë¡ í•œë‹¤)
+	// í¬ì¸í„° ì‚­ì œëŠ” main threadì—ì„œ ì²˜ë¦¬í•¨
 	EventProcessForDB::expressTake retData;
 	retData.m_index = m_index;
 	getItemByExpress(&retData.itemInfo, res.get());
+	retData.isSend = true;
 	EventProcessForDB::instance()->pushExpressTake(retData);
+}
+
+void DBProcess::ExpressTakeAll(boost::any& argv)
+{
+	expresslist_t data = boost::any_cast<expresslist_t>(argv);
+	LONGLONG seq_index = boost::tuples::get<0>(data);
+	int& user_index = boost::tuples::get<1>(data);
+	int& char_index = boost::tuples::get<2>(data);
+	int& pageIndex = boost::tuples::get<3>(data);
+
+	int startIndex = pageIndex * EXPRESS_SYSTEM_COUNT_PER_PAGE;
+	int endIndex = EXPRESS_SYSTEM_COUNT_PER_PAGE;
+
+	std::string qry = express_select_string;
+	qry += boost::str(boost::format("WHERE a_char_index=%1% AND now() < a_expire_date LIMIT %2%, %3%")
+		% char_index % startIndex % endIndex);
+	BOOST_MYSQL_RES res = char_db_.select(qry);
+	if (res == NULL)
+		return;
+
+	int count = char_db_.getrowcount();
+
+	if(count == 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_NO_TAKE_ITEM);
+		SendMessageToClient(seq_index, user_index, rmsg);
+
+		LOG_ERROR("EXPRESS SYSTEM TAKE. NOT EXIST ITEM(row) index : %d, charIndex : %d", user_index, char_index);
+		return;
+	}
+
+	for(int i = 0 ; i < count; i ++)
+	{
+		EventProcessForDB::expressTake retData;
+		retData.m_index = user_index;
+		getItemByExpress(&retData.itemInfo, res.get());
+
+		if( i == (count - 1) )
+			retData.isSend = true;
+
+		EventProcessForDB::instance()->pushExpressTake(retData);
+	}
 }
 
 void DBProcess::ExpressInputItem( boost::any& argv )
@@ -1211,7 +1304,7 @@ void DBProcess::ExpressInputItem( boost::any& argv )
 	ExpressSystemItemInfo* itemInfo = boost::tuples::get<2>(data);
 	bool contentsFlag = boost::tuples::get<3>(data);
 
-	boost::scoped_ptr<ExpressSystemItemInfo> _auto_delete(itemInfo);		// ÀÚµ¿ »èÁ¦
+	boost::scoped_ptr<ExpressSystemItemInfo> _auto_delete(itemInfo);		// ìë™ ì‚­ì œ
 
 	char tsender[128];
 	mysql_real_escape_string(char_db_.getMYSQL(), tsender, itemInfo->sender, strlen(itemInfo->sender));
@@ -1277,7 +1370,7 @@ void DBProcess::ExpressInputItem( boost::any& argv )
 	if (char_db_.excute(qry) == false)
 		return;
 
-	// SubHelper·Î ÆĞÅ¶À» Àü´ŞÇÏ¿© ÇØ´ç À¯Àú¿¡°Ô Ã¢°íNPC¿¡ ¾ÆÀÌÅÛ(¶Ç´Â µ·)ÀÌ ÀÖ´Ù°í ¾Ë·ÁÁÜ
+	// SubHelperë¡œ íŒ¨í‚·ì„ ì „ë‹¬í•˜ì—¬ í•´ë‹¹ ìœ ì €ì—ê²Œ ì°½ê³ NPCì— ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì´ ìˆë‹¤ê³  ì•Œë ¤ì¤Œ
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		RequestGMTool::sendItemToOneUser* packet = reinterpret_cast<RequestGMTool::sendItemToOneUser*>(rmsg->m_buf);
@@ -1290,7 +1383,7 @@ void DBProcess::ExpressInputItem( boost::any& argv )
 		gserver->m_subHelper->WriteToOutput(rmsg);
 	}
 
-	// ·Î±× ±â·Ï (GM TOOLÀ» ÀÌ¿ëÇÑ °æ¿ì¿¡¸¸ ·Î±×¸¦ ±â·ÏÇÔ)
+	// ë¡œê·¸ ê¸°ë¡ (GM TOOLì„ ì´ìš©í•œ ê²½ìš°ì—ë§Œ ë¡œê·¸ë¥¼ ê¸°ë¡í•¨)
 	if (contentsFlag)
 		return;
 }
@@ -1316,12 +1409,12 @@ void DBProcess::ExpressInputNas( boost::any& argv )
 	if (char_db_.excute(qry) == false)
 		return;
 
-	// ÇØ´ç À¯Àú¿¡°Ô Ã¢°íNPC¿¡ ¾ÆÀÌÅÛ(¶Ç´Â µ·)ÀÌ ÀÖ´Ù°í ¾Ë·ÁÁÜ
+	// í•´ë‹¹ ìœ ì €ì—ê²Œ ì°½ê³ NPCì— ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì´ ìˆë‹¤ê³  ì•Œë ¤ì¤Œ
 	CNetMsg::SP rmsg(new CNetMsg);
 	ResponseClient::makeExpressExist(rmsg, 1);
 	SendMessageToClient(seq_index, user_index, rmsg);
 
-	// ·Î±× ±â·Ï (GM TOOLÀ» ÀÌ¿ëÇÑ °æ¿ì¿¡¸¸ ·Î±×¸¦ ±â·ÏÇÔ)
+	// ë¡œê·¸ ê¸°ë¡ (GM TOOLì„ ì´ìš©í•œ ê²½ìš°ì—ë§Œ ë¡œê·¸ë¥¼ ê¸°ë¡í•¨)
 	if (contentsFlag)
 		return;
 }
@@ -1335,7 +1428,31 @@ void DBProcess::ExpressDelete( boost::any& argv )
 	expressIndex_t& expressIndex = boost::tuples::get<3>(data);
 	bool send_flag = boost::tuples::get<4>(data);
 
-	LOG_INFO("EXPRESS SYSTEM DELETE. char_index : %d, expressIndex : %d, send_flag : %d", char_index, expressIndex, (int)send_flag);
+	std::string select_qry = express_select_string;
+	select_qry += boost::str(boost::format("WHERE a_char_index=%1% and a_index=%2%")
+		% char_index % expressIndex);
+	BOOST_MYSQL_RES res = char_db_.select(select_qry);
+	if (res == NULL)
+		return;
+
+	int count = char_db_.getrowcount();
+
+	if(count != 1)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_NO_TAKE_ITEM);
+		SendMessageToClient(seq_index, user_index, rmsg);
+
+		LOG_ERROR("EXPRESS SYSTEM TAKE. NOT EXIST ITEM(row) index : %d, charIndex : %d", user_index, char_index);
+		return;
+	}
+
+	MYSQL_ROW row = mysql_fetch_row(res.get());
+	int item_index = atoi(row[char_db_.findfield("a_item_index")]);
+	int item_count = atoi(row[char_db_.findfield("a_item_count")]);
+	GoldType_t nas = atoi(row[char_db_.findfield("a_nas")]);
+
+	LOG_INFO("EXPRESS SYSTEM DELETE. char_index : %d, item_index : %d, item_count : %d, nas : %lld", char_index, item_index, item_count, nas);
 
 	std::string qry = boost::str(boost::format(
 									 "DELETE FROM t_express_system WHERE a_index=%1% AND a_char_index=%2% LIMIT 1") % expressIndex % char_index);
@@ -1346,12 +1463,92 @@ void DBProcess::ExpressDelete( boost::any& argv )
 		CNetMsg::SP rmsg(new CNetMsg);
 		if (qbool)
 		{
-			LOG_INFO("EXPRESS ITEM DELETE SUCCESS. expressIndex : %d, charIndex : %d", expressIndex, char_index);
+			LOG_INFO("EXPRESS ITEM DELETE SUCCESS. char_index : %d, item_index : %d, item_count : %d, nas : %d", char_index, item_index, item_count, nas);
 			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_NO_ERROR);
 		}
 		else
 		{
-			LOG_ERROR("EXPRESS ITEM DELETE FAIL. expressIndex : %d, charIndex : %d", expressIndex, char_index);
+			LOG_ERROR("EXPRESS ITEM DELETE FAIL. char_index : %d, item_index : %d, item_count : %d, nas : %d", char_index, item_index, item_count, nas);
+			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_DB_ERROR);
+		}
+		this->SendMessageToClient(seq_index, user_index, rmsg);
+	}
+}
+
+void DBProcess::ExpressDeleteAll( boost::any& argv )
+{
+	expressdeleteall_t data = boost::any_cast<expressdeleteall_t>(argv);
+	LONGLONG seq_index = boost::tuples::get<0>(data);
+	int user_index = boost::tuples::get<1>(data);
+	int char_index = boost::tuples::get<2>(data);
+	int pageIndex = boost::tuples::get<3>(data);
+	bool send_flag = boost::tuples::get<4>(data);
+
+	int startIndex = pageIndex * EXPRESS_SYSTEM_COUNT_PER_PAGE;
+	int endIndex = EXPRESS_SYSTEM_COUNT_PER_PAGE;
+
+	std::string qry = express_select_string;
+	qry += boost::str(boost::format("WHERE a_char_index=%1% AND now() < a_expire_date LIMIT %2%, %3%")
+		% char_index % startIndex % endIndex);
+	BOOST_MYSQL_RES res = char_db_.select(qry);
+	if (res == NULL)
+		return;
+
+	int count = char_db_.getrowcount();
+
+	if(count == 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		ResponseClient::makeExpressTake(rmsg, ResponseClient::ERR_NO_TAKE_ITEM);
+		SendMessageToClient(seq_index, user_index, rmsg);
+
+		LOG_ERROR("EXPRESS SYSTEM TAKE. NOT EXIST ITEM(row) index : %d, charIndex : %d", user_index, char_index);
+		return;
+	}
+
+	qry = boost::str(boost::format("DELETE from t_express_system where a_char_index = %d and a_index in (")	% char_index );
+	std::string index_str;
+	int index = 0;
+
+	int item_index;
+	std::string item_index_str;
+	int item_count;
+	std::string item_count_str;
+	GoldType_t nas;
+	std::string nas_str;
+
+	for(int i = 0 ; i < count; i++)
+	{
+		MYSQL_ROW row = mysql_fetch_row(res.get());
+		index = atoi(row[char_db_.findfield("a_index")]);
+		index_str += boost::str(boost::format("%d, ") % index);
+
+		//lod data
+		item_index = atoi(row[char_db_.findfield("a_item_index")]);
+		item_count = atoi(row[char_db_.findfield("a_item_count")]);
+		nas = ATOLL(row[char_db_.findfield("a_nas")]);
+
+		item_index_str += boost::str(boost::format("%d, ") % item_index);
+		item_count_str += boost::str(boost::format("%d, ") % item_count);
+		nas_str += boost::str(boost::format("%d, ") % nas);
+	}
+	int pos = index_str.rfind(",");
+	index_str.erase(pos);
+	qry = qry + index_str + ")";
+
+	bool qbool = char_db_.excute(qry);
+
+	if(send_flag == true)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		if (qbool)
+		{
+			LOG_INFO("EXPRESS ITEM DELETE SUCCESS. item_index(%s), item_count(%s), nas(%s) charIndex : %d", item_index_str.c_str(), item_count_str.c_str(), nas_str.c_str(), char_index);
+			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_NO_ERROR);
+		}
+		else
+		{
+			LOG_ERROR("EXPRESS ITEM DELETE FAIL. item_index(%s), item_count(%s), nas(%s) charIndex : %d", item_index_str.c_str(), item_count_str.c_str(), nas_str.c_str(), char_index);
 			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_DB_ERROR);
 		}
 		this->SendMessageToClient(seq_index, user_index, rmsg);
@@ -1441,7 +1638,7 @@ void DBProcess::sendAnyInfoAfterLogin( boost::any& argv )
 	int charIndex = boost::tuples::get<2>(data);
 
 	{
-		// ±¸¸Å´ëÇàÀÇ ÆÇ¸Å Ç×¸ñ ¶Ç´Â ¹İÇ°Ç×¸ñÀ» Àü´Ş
+		// êµ¬ë§¤ëŒ€í–‰ì˜ íŒë§¤ í•­ëª© ë˜ëŠ” ë°˜í’ˆí•­ëª©ì„ ì „ë‹¬
 		std::string qry = boost::str(boost::format(
 										 "SELECT a_msg_type, a_item_index, a_item_count FROM t_tradeagent_after_sell_returned"
 										 " WHERE a_char_index = %1%") % charIndex);
@@ -1513,7 +1710,7 @@ void DBProcess::ExpressSendItemToNickName( boost::any& argv )
 	std::string receiver = boost::tuples::get<4>(data);
 	int sender_type = boost::tuples::get<5>(data);
 
-	// ¹Ş´Â À¯Àú °Ë»ö (±âº»ÀûÀ¸·Î Å¬¶óÀÌ¾ğÆ®¿¡¼­ °Ë»öÀ» ÁøÇàÇÑ ÈÄ º¸³»¹Ç·Î ¹«Á¶°Ç Ã£¾Æ¾ßÇÔ)
+	// ë°›ëŠ” ìœ ì € ê²€ìƒ‰ (ê¸°ë³¸ì ìœ¼ë¡œ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ê²€ìƒ‰ì„ ì§„í–‰í•œ í›„ ë³´ë‚´ë¯€ë¡œ ë¬´ì¡°ê±´ ì°¾ì•„ì•¼í•¨)
 	char tnickName[MAX_CHAR_NAME_LENGTH * 2];
 	mysql_real_escape_string(char_db_.getMYSQL(), tnickName, receiver.c_str(), receiver.length());
 
@@ -1522,7 +1719,7 @@ void DBProcess::ExpressSendItemToNickName( boost::any& argv )
 	BOOST_MYSQL_RES res = char_db_.select(qry);
 	if (res == NULL || char_db_.getrowcount() == 0)
 	{
-		// ¸¸¾à Äõ¸® ¿¡·¯ÀÌ°Å³ª, À¯Àú¸¦ Ã£Áö ¸øÇÏ¸é ÀÚ½ÅÀÇ Express·Î ´Ù½Ã ³Ö¾îÁÜ
+		// ë§Œì•½ ì¿¼ë¦¬ ì—ëŸ¬ì´ê±°ë‚˜, ìœ ì €ë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ìì‹ ì˜ Expressë¡œ ë‹¤ì‹œ ë„£ì–´ì¤Œ
 		if (sender_type == EXPRESS_SENDER_TYPE_MARBLE)
 		{
 			LOG_ERROR("MARBLE_SEND : not found user : charIndex : %d, itemIndex : %d, plsu : %d, flag : %d, itemCount : %d, receiver : %s",
@@ -1585,7 +1782,7 @@ void DBProcess::DelCharForGM( boost::any& argv )
 	}
 
 	{
-		// ±æµå¿¡ °¡ÀÔÇÑ Ä³¸¯ÅÍÀÎÁö °Ë»ç¸¦ ÇÑ´Ù.
+		// ê¸¸ë“œì— ê°€ì…í•œ ìºë¦­í„°ì¸ì§€ ê²€ì‚¬ë¥¼ í•œë‹¤.
 		std::string qry = boost::str(boost::format("SELECT a_char_index FROM t_guildmember WHERE a_char_index = %d LIMIT 1") % char_index);
 		BOOST_MYSQL_RES res = char_db_.select(qry);
 		if (res == NULL || char_db_.getrowcount() > 0)
@@ -1599,7 +1796,7 @@ void DBProcess::DelCharForGM( boost::any& argv )
 	}
 
 	{
-		// ¸ğµç Á¶°ÇÀ» ¸¸Á·ÇßÀ¸¹Ç·Î Ä³¸¯ÅÍ¸¦ Áö¿î´Ù.
+		// ëª¨ë“  ì¡°ê±´ì„ ë§Œì¡±í–ˆìœ¼ë¯€ë¡œ ìºë¦­í„°ë¥¼ ì§€ìš´ë‹¤.
 		std::string qry = boost::str(boost::format(
 										 "UPDATE t_characters SET a_enable = 0 WHERE a_index = %d LIMIT 1") % char_index);
 		if (char_db_.excute(qry) == false)
@@ -1647,7 +1844,7 @@ void DBProcess::getCharIndexByGPS( boost::any& argv )
 	BOOST_MYSQL_RES res = char_db_.select(query);
 	if (res == NULL || char_db_.getrowcount() == 0)
 	{
-		// Ã£Áö ¸øÇÑ °æ¿ì
+		// ì°¾ì§€ ëª»í•œ ê²½ìš°
 		retval.char_index = 0;
 	}
 	else
@@ -1657,4 +1854,59 @@ void DBProcess::getCharIndexByGPS( boost::any& argv )
 	}
 
 	EventProcessForDB::instance()->pushGetCharIndexByGPS(retval);
+}
+
+void DBProcess::InsertMakeTitleInfo( boost::any& argv )
+{
+	title_make_t data = boost::any_cast<title_make_t>(argv);
+	LONGLONG seq_index = boost::tuples::get<0>(data);
+	int user_index = boost::tuples::get<1>(data);
+	int char_index = boost::tuples::get<2>(data);
+	int v_index = boost::tuples::get<3>(data);
+	char color = boost::tuples::get<4>(data);
+	char background_color = boost::tuples::get<5>(data);
+	char effect = boost::tuples::get<6>(data);
+	std::string name = boost::tuples::get<7>(data);
+	int* option_index = boost::tuples::get<8>(data);
+	int* option_level = boost::tuples::get<9>(data);
+
+	EventProcessForDB::getMakeTitleInfo retval;
+	retval.seq_index = seq_index;
+	retval.user_index = user_index;
+	retval.char_index = char_index;
+	retval.v_index = v_index;
+	retval.color = color;
+	retval.background_color = background_color;
+	retval.effect = effect;
+	retval.name = name;
+	retval.option_index = option_index;
+	retval.option_level = option_level;
+	
+	std::string query = boost::str(
+		boost::format( "insert into t_title_make (a_char_index, a_color, a_background, a_effect, a_name, "
+		"a_option1, a_option1_level, "
+		"a_option2, a_option2_level, "
+		"a_option3, a_option3_level, "
+		"a_option4, a_option4_level, "
+		"a_option5, a_option5_level) "
+		" values (%d, %d, %d, %d, '%s', "
+		"%d, %d, "
+		"%d, %d, "
+		"%d, %d, "
+		"%d, %d, "
+		"%d, %d )")
+		% char_index % (int)color % (int)background_color % (int)effect % name.c_str() % option_index[0] % option_level[0] % option_index[1] % option_level[1] % option_index[2] % option_level[2] % option_index[3] % option_level[3] % option_index[4] % option_level[4]);
+
+	if (char_db_.excute(query) == false)
+	{
+		delete option_index;
+		delete option_level;
+		LOG_ERROR("CUSTOM_TITLE QUERY ERROR. INSERT FAIL. query[%s], error[%s]", query.c_str(), mysql_error(char_db_.getMYSQL()));
+		return;
+	}
+
+	int index = char_db_.insertid();
+	retval.title_index = index;
+
+	EventProcessForDB::instance()->pushGetMakeTitleInfo(retval);
 }

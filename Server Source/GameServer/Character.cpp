@@ -10,6 +10,7 @@
 #include "Log.h"
 #include "../ShareLib/packetType/ptype_old_do_skill.h"
 #include "../ShareLib/packetType/ptype_old_extend.h"
+#include "../ShareLib/packetType/ptype_old_do_title.h"
 
 extern void DelAttackList(CCharacter* ch);
 extern int levelup_hp[JOBCOUNT][4];
@@ -115,29 +116,29 @@ CCharacter::CCharacter()
 	memset(&m_avPassiveAddition, 0, sizeof(m_avPassiveAddition));
 	memset(&m_avPassiveRate, 0, sizeof(m_avPassiveRate));
 
-	m_hackAttackCount = PULSE_HACK_ATTACK_COUNT;	// æÓ≈√∏ﬁºº¡ˆ ø¬ ºˆ ¿˙¿Â
-	m_AttackServerTime = 0;	// ∞¯º”ø° µ˚∏• √÷¥Î æÓ≈√ Ω√∞£
-	m_AttackClientTime = 0; // ≈¨∂Û¿Ãæ∆Æ∞° ∫∏≥Ω æÓ≈√Ω√∞£
+	m_hackAttackCount = PULSE_HACK_ATTACK_COUNT;	// Ïñ¥ÌÉùÎ©îÏÑ∏ÏßÄ Ïò® Ïàò Ï†ÄÏû•
+	m_AttackServerTime = 0;	// Í≥µÏÜçÏóê Îî∞Î•∏ ÏµúÎåÄ Ïñ¥ÌÉù ÏãúÍ∞Ñ
+	m_AttackClientTime = 0; // ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏Í∞Ä Î≥¥ÎÇ∏ Ïñ¥ÌÉùÏãúÍ∞Ñ
 	m_lastAttackPulse = 0;
 
 	m_pulseDisable = 0;
 #ifdef NEW_ACCERY_ADD
 	m_AddProb	= 0;
 #endif // NEW_ACCERY_ADD
-	cooltime_2142 = 0;			// ∞«∞≠¿« π∞æ‡
-	cooltime_2143 = 0;			// ¡ˆ∑¬¿« π∞æ‡
+	cooltime_2142 = 0;			// Í±¥Í∞ïÏùò Î¨ºÏïΩ
+	cooltime_2143 = 0;			// ÏßÄÎ†•Ïùò Î¨ºÏïΩ
 	MobScroll = 0;
 
-	m_cooltime_Competition = 0;	// ¥Î¿¸øÎ æ∆¿Ã≈€
+	m_cooltime_Competition = 0;	// ÎåÄÏ†ÑÏö© ÏïÑÏù¥ÌÖú
 
 	m_nFinalHitrate = 0;
 	m_nFinalAvoidrate = 0;
 
-	m_flySpeed = 15.0f;		// ≥Ø±‚ º”µµ
+	m_flySpeed = 15.0f;		// ÎÇ†Í∏∞ ÏÜçÎèÑ
 	m_attacktype = ATTACK_TYPE_NORMAL;
 	m_attackcount = 0;
 
-	// ø¯¡§¥Î «•Ωƒ
+	// ÏõêÏ†ïÎåÄ ÌëúÏãù
 	m_nExpedLabel = -1;
 
 	m_ep = 0;
@@ -163,28 +164,28 @@ void CCharacter::SetVisible()
 {
 	if (m_bVisible)
 	{
-		// ∫∏¿Ã¥¬ ªÛ≈¬¿Ã∏È
-		// ∞¯∞› πﬁ¡ˆ æ ∞‘ «œ∞Ì
+		// Î≥¥Ïù¥Îäî ÏÉÅÌÉúÏù¥Î©¥
+		// Í≥µÍ≤© Î∞õÏßÄ ÏïäÍ≤å ÌïòÍ≥†
 		DelAttackList(this);
 		{
-			// ¡÷∫Øø° ¿Ø¿˙ø°∞‘ ªÁ∂Û¡¯¥Ÿ∞Ì æÀ∏Æ∞Ì
+			// Ï£ºÎ≥ÄÏóê Ïú†Ï†ÄÏóêÍ≤å ÏÇ¨ÎùºÏßÑÎã§Í≥† ÏïåÎ¶¨Í≥†
 			CNetMsg::SP rmsg(new CNetMsg);
 			DisappearMsg(rmsg, this);
 			m_pArea->SendToCell(rmsg, this);
 		}
-		// ªÛ≈¬ ≈‰±€
+		// ÏÉÅÌÉú ÌÜ†Í∏Ä
 		m_bVisible = false;
 		if (IS_PC(this))
 			TO_PC(this)->m_bImmortal = true;
 	}
 	else
 	{
-		// æ»∫∏¿Ã¥¬ ªÛ≈¬¿Ã∏È
-		// ªÛ≈¬ ≈‰±€
+		// ÏïàÎ≥¥Ïù¥Îäî ÏÉÅÌÉúÏù¥Î©¥
+		// ÏÉÅÌÉú ÌÜ†Í∏Ä
 		m_bVisible = !m_bVisible;
 		TO_PC(this)->m_bImmortal = false;
 		{
-			// ¡÷∫Ø ¿Ø¿˙ø°∞‘ ≥™≈∏≥≤¿ª æÀ∏Æ∞Ì
+			// Ï£ºÎ≥Ä Ïú†Ï†ÄÏóêÍ≤å ÎÇòÌÉÄÎÇ®ÏùÑ ÏïåÎ¶¨Í≥†
 			CNetMsg::SP rmsg(new CNetMsg);
 			AppearMsg(rmsg, this, true);
 			m_pArea->SendToCell(rmsg, this);
@@ -201,6 +202,14 @@ void CCharacter::SetVisible()
 			CNetMsg::SP rmsg(new CNetMsg);
 			GuildNameColorStateMsg(rmsg, TO_PC(this) );
 			m_pArea->SendToCell( rmsg, this );
+
+			std::map<int, MAKE_TITLE*>::iterator it = TO_PC(this)->_map_title.find(TO_PC(this)->m_custom_title_index);
+			if(it != TO_PC(this)->_map_title.end())
+			{
+				CNetMsg::SP rmsg(new CNetMsg);
+				TitleUserInfoMsg(rmsg, TO_PC(this)->m_index, it->second->color, it->second->background_color, it->second->effect, it->second->name);
+				m_pArea->SendToCell( rmsg, this );
+			}
 		}
 	}
 }
@@ -209,7 +218,7 @@ void CCharacter::SendDisappearAllInCell(bool bSendOtherDisappear)
 {
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		// ≈∏ƒ≥∏Ø≈Õø°∞‘ ªÁ∂Û¡¸ æÀ∏≤
+		// ÌÉÄÏ∫êÎ¶≠ÌÑ∞ÏóêÍ≤å ÏÇ¨ÎùºÏßê ÏïåÎ¶º
 		DisappearMsg(rmsg, this);
 		if (IS_PC(this))
 			m_pArea->SendToCell(rmsg, this);
@@ -244,7 +253,7 @@ bool CCharacter::CanApplySkill(const CSkillProto* proto, const CSkillLevelProto*
 	if (levelproto == NULL)
 		return false;
 
-	// ¿˚øÎ¡∂∞« ∞ÀªÁ : state
+	// Ï†ÅÏö©Ï°∞Í±¥ Í≤ÄÏÇ¨ : state
 	if ((proto->m_applyState & SCT_DEATH) && !DEAD(this))
 		return false;
 	if (!(proto->m_applyState & SCT_DEATH) && DEAD(this))
@@ -267,7 +276,7 @@ bool CCharacter::CanApplySkill(const CSkillProto* proto, const CSkillLevelProto*
 			return false;
 		if (!(proto->m_applyState & SCT_STAND) || !(proto->m_applyState & SCT_SITDOWN))
 		{
-			// µ—¥Ÿ ≤®¡Æ ¿÷¥¬ ∞ÊøÏ¥¬ µ—¥Ÿ ƒ—¡Æ ¿÷¥¬ ∞ÊøÏøÕ µø¿œ
+			// ÎëòÎã§ Í∫ºÏ†∏ ÏûàÎäî Í≤ΩÏö∞Îäî ÎëòÎã§ ÏºúÏ†∏ ÏûàÎäî Í≤ΩÏö∞ÏôÄ ÎèôÏùº
 			if ((proto->m_applyState & SCT_SITDOWN) || (proto->m_applyState & SCT_STAND))
 			{
 				if (proto->m_applyState & SCT_SITDOWN && !pc->IsSetPlayerState(PLAYER_STATE_SITDOWN))
@@ -279,19 +288,19 @@ bool CCharacter::CanApplySkill(const CSkillProto* proto, const CSkillLevelProto*
 		if (proto->m_applyState & SCT_SHIELD && pc->m_wearInventory.wearItemInfo[WEARING_SHIELD] == NULL)
 			return false;
 
-		if (proto->m_index == 433	// ∞«∞≠¿« π∞æ‡
+		if (proto->m_index == 433	// Í±¥Í∞ïÏùò Î¨ºÏïΩ
 				&& cooltime_2142 > gserver->getNowSecond())
 		{
 			return false;
 		}
 
-		if (proto->m_index == 434	// ¡ˆ∑¬¿« π∞æ‡
+		if (proto->m_index == 434	// ÏßÄÎ†•Ïùò Î¨ºÏïΩ
 				&& cooltime_2143 > gserver->getNowSecond())
 		{
 			return false;
 		}
 
-		if( proto->m_index == 465 // ±§º”
+		if( proto->m_index == 465 // Í¥ëÏÜç
 				&& m_cooltime_Competition > gserver->getNowSecond() )
 		{
 			return false;
@@ -301,7 +310,7 @@ bool CCharacter::CanApplySkill(const CSkillProto* proto, const CSkillLevelProto*
 	if ((proto->m_applyState & SCT_PEACEZONE) && IsInPeaceZone(false))
 		return false;
 
-	// ¿˚øÎ¡∂∞« ∞ÀªÁ : »ø∞˙
+	// Ï†ÅÏö©Ï°∞Í±¥ Í≤ÄÏÇ¨ : Ìö®Í≥º
 	int i;
 	for (i = 0; i < MAX_SKILL_USE_MAGIC; i++)
 	{
@@ -341,7 +350,7 @@ bool CCharacter::CanAttack()
 		return false;
 	if (m_assist.m_state & AST_FREEZE)
 		return false;
-	if(m_assist.m_state & AST_SOUL_TOTEM_BUFF || m_assist.m_state & AST_SOUL_TOTEM_ATTK ) // ≈‰≈€¿∫ ∞¯∞› ∫“∞° Ω∫≈≥∏∏ ªÁøÎ ∞°¥…
+	if(m_assist.m_state & AST_SOUL_TOTEM_BUFF || m_assist.m_state & AST_SOUL_TOTEM_ATTK ) // ÌÜ†ÌÖúÏùÄ Í≥µÍ≤© Î∂àÍ∞Ä Ïä§ÌÇ¨Îßå ÏÇ¨Ïö© Í∞ÄÎä•
 		return false;
 	if(IS_PC(this))
 	{
@@ -430,7 +439,7 @@ void CCharacter::ApplyAssistData(ASSISTVALUE* add, ASSISTVALUE* rate)
 	m_maxMP += add->maxmp;
 	m_maxMP += m_maxMP * rate->maxmp / SKILL_RATE_UNIT;
 
-	// 060227 : bs : ¿Ø∑· HP,MP »Æ¿Â
+	// 060227 : bs : Ïú†Î£å HP,MP ÌôïÏû•
 	if (rate->hcCashMaxHPUp > 0)
 	{
 		m_maxHP += m_maxHP * rate->hcCashMaxHPUp / SKILL_RATE_UNIT;
@@ -485,21 +494,21 @@ bool CCharacter::IsInRaidZone()
 void CCharacter::applyAuraSkill( CCharacter* ch, int& auraCount, int level, CAssistData* outData )
 {
 	int skillIndex = 0;
-	// npc∞° ø¿ø¿∂Û µπˆ«¡∞° ¿ÃπÃ ∞…∑¡ ¿÷¥¬¡ˆ »Æ¿Œ
-	// ¿ßø° ¿÷¥¬ MT_ASSIST, MST_ASSIST_AURA_DARKNESS µÓµÓ ≈∏¿‘¿∏∑Œ √£¥¬ ∞Õ¿∫ ∫“∞°¥…«œ¥Ÿ.
-	// ¿ß¿« ≈∏¿‘¿∫ ≥™¿Ã∆ÆΩ¶µµøÏ ¿⁄Ω≈ø°∞‘ ∞≈¥¬ πˆ«¡¿Œ ø¿ø¿∂Û∞Ì ø©±‚ø° Ω∫≈≥ ¿Œµ¶Ω∫∑Œ µ«æÓ ¿÷¥¬ ∞Õ¿∫ ¥ÎªÛø°∞‘ µÈæÓ∞°¥¬ µπˆ«¡¿Ã¥Ÿ.
+	// npcÍ∞Ä Ïò§Ïò§Îùº ÎîîÎ≤ÑÌîÑÍ∞Ä Ïù¥ÎØ∏ Í±∏Î†§ ÏûàÎäîÏßÄ ÌôïÏù∏
+	// ÏúÑÏóê ÏûàÎäî MT_ASSIST, MST_ASSIST_AURA_DARKNESS Îì±Îì± ÌÉÄÏûÖÏúºÎ°ú Ï∞æÎäî Í≤ÉÏùÄ Î∂àÍ∞ÄÎä•ÌïòÎã§.
+	// ÏúÑÏùò ÌÉÄÏûÖÏùÄ ÎÇòÏù¥Ìä∏ÏâêÎèÑÏö∞ ÏûêÏã†ÏóêÍ≤å Í±∞Îäî Î≤ÑÌîÑÏù∏ Ïò§Ïò§ÎùºÍ≥† Ïó¨Í∏∞Ïóê Ïä§ÌÇ¨ Ïù∏Îç±Ïä§Î°ú ÎêòÏñ¥ ÏûàÎäî Í≤ÉÏùÄ ÎåÄÏÉÅÏóêÍ≤å Îì§Ïñ¥Í∞ÄÎäî ÎîîÎ≤ÑÌîÑÏù¥Îã§.
 	if (ch && outData->m_proto && !ch->m_assist.FindBySkillIndex(898) && !ch->m_assist.FindBySkillIndex(899))
 	{
-		// notHelp ø¿∑Ø¥¬ ƒ≥∏Ø≈Õ πˆ«¡øÕ ∏ÛΩ∫≈Õ µπˆ«¡ Ω∫≈≥ µŒ∞≥∞° ¿÷¥Ÿ.
-		// ƒ≥∏Ø≈Õ πˆ«¡∑Œ ∏ÛΩ∫≈Õø°∞‘ ∞…∏± µπˆ«¡∞° ∞·¡§µ»¥Ÿ.
+		// notHelp Ïò§Îü¨Îäî Ï∫êÎ¶≠ÌÑ∞ Î≤ÑÌîÑÏôÄ Î™¨Ïä§ÌÑ∞ ÎîîÎ≤ÑÌîÑ Ïä§ÌÇ¨ ÎëêÍ∞úÍ∞Ä ÏûàÎã§.
+		// Ï∫êÎ¶≠ÌÑ∞ Î≤ÑÌîÑÎ°ú Î™¨Ïä§ÌÑ∞ÏóêÍ≤å Í±∏Î¶¥ ÎîîÎ≤ÑÌîÑÍ∞Ä Í≤∞Ï†ïÎêúÎã§.
 		switch(outData->m_proto->m_index)
 		{
-		// ø¿∑Øø¿∫Í¥Ÿ≈©¥œΩ∫
+		// Ïò§Îü¨Ïò§Î∏åÎã§ÌÅ¨ÎãàÏä§
 		case 764:
 			skillIndex = 898;
 			break;
 
-		// ø¿∑Øø¿∫Í¿ß≈©¥œΩ∫
+		// Ïò§Îü¨Ïò§Î∏åÏúÑÌÅ¨ÎãàÏä§
 		case 765:
 			if(IS_PET(ch))
 			{
@@ -521,7 +530,7 @@ void CCharacter::applyAuraSkill( CCharacter* ch, int& auraCount, int level, CAss
 			skillIndex = 899;
 			break;
 
-		//ø¿∑Øø¿∫Í¿œ∑Á¡Ø
+		//Ïò§Îü¨Ïò§Î∏åÏùºÎ£®Ï†º
 		case 766:
 			if(IS_NPC(ch))
 				return;
@@ -538,7 +547,7 @@ void CCharacter::applyAuraSkill( CCharacter* ch, int& auraCount, int level, CAss
 		{
 			CSkill * skill = gserver->m_skillProtoList.Create(skillIndex, level) ;
 			bool apply = false;
-			// ƒ≥∏Ø≈Õ∑Œ Ω∫≈≥¿ª ∞…∏È npc∞° ∞¯∞›«œπ«∑Œ npc∞° npcø°∞‘ πˆ«¡∏¶ ∞…µµ∑œ º≥¡§
+			// Ï∫êÎ¶≠ÌÑ∞Î°ú Ïä§ÌÇ¨ÏùÑ Í±∏Î©¥ npcÍ∞Ä Í≥µÍ≤©ÌïòÎØÄÎ°ú npcÍ∞Ä npcÏóêÍ≤å Î≤ÑÌîÑÎ•º Í±∏ÎèÑÎ°ù ÏÑ§Ï†ï
 			if(skill)
 			{
 				ApplySkill(ch, ch, skill, -2, apply);
@@ -547,7 +556,7 @@ void CCharacter::applyAuraSkill( CCharacter* ch, int& auraCount, int level, CAss
 		}
 	}
 
-	// πˆ«¡∞° ¿ÃπÃ ∞…∑¡ ¿÷¥¬ npc∏¶ √£æ∆µµ ø¿ø¿∂Û ƒ´øÓ∆Æ¥¬ ø√∑¡¡ÿ¥Ÿ.
+	// Î≤ÑÌîÑÍ∞Ä Ïù¥ÎØ∏ Í±∏Î†§ ÏûàÎäî npcÎ•º Ï∞æÏïÑÎèÑ Ïò§Ïò§Îùº Ïπ¥Ïö¥Ìä∏Îäî Ïò¨Î†§Ï§ÄÎã§.
 	else
 		auraCount++;
 }
@@ -563,7 +572,7 @@ void CCharacter::addItemCoolTime( int item_index )
 
 bool CCharacter::checkItemCoolTime( int item_index, CSkill* skill )
 {
-	//æ∆¿Ã≈€ Ω∫≈≥ ƒ≈∏¿” √º≈© «— »ƒ æ∆¡˜ ªÁøÎ Ω√∞£¿Ã æ»µ«æÓ ¿÷¿∏∏È return 0;
+	//ÏïÑÏù¥ÌÖú Ïä§ÌÇ¨ Ïø®ÌÉÄÏûÑ Ï≤¥ÌÅ¨ Ìïú ÌõÑ ÏïÑÏßÅ ÏÇ¨Ïö© ÏãúÍ∞ÑÏù¥ ÏïàÎêòÏñ¥ ÏûàÏúºÎ©¥ return 0;
 	std::map<int, int>::iterator it = this->m_itemCoolMap.find(item_index);
 	if(it != this->m_itemCoolMap.end())
 	{
@@ -579,7 +588,7 @@ void CCharacter::setSyndicateType( int syndicateType )
 	if(IS_NPC(this))
 	{
 		CNPC* npc = TO_NPC(this);
-		if(npc->GetOwner() != NULL)
+		if(npc->GetOwner() != NULL && npc->Check_MobFlag(STATE_MONSTER_PARASITE) == false)
 		{
 			m_syndicateType = TO_NPC(this)->GetOwner()->getSyndicateType();
 			return;
@@ -592,7 +601,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 	if (this == tch)
 		return false;
 
-	//ππ∞° µ∆¥¯ rvr¡∏ø°º≠¥¬ ∞·ªÁ¥Î≈∏¿‘¿Ã ∞∞¿∏∏È æ∆±∫
+	//Î≠êÍ∞Ä ÎêêÎçò rvrÏ°¥ÏóêÏÑúÎäî Í≤∞ÏÇ¨ÎåÄÌÉÄÏûÖÏù¥ Í∞ôÏúºÎ©¥ ÏïÑÍµ∞
 	if( (this->m_pZone != NULL && this->m_pZone->isRVRZone() == true) &&
 		(tch->m_pZone != NULL && tch->m_pZone->isRVRZone() == true) )
 	{
@@ -608,7 +617,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 		switch (tch->m_type)
 		{
 		case MSG_CHAR_NPC:
-			// PC∞° ºˆ»£∫¥¿ª ∞¯∞›«“ ∂ßø°¥¬ ∞¯º∫ ¡ˆø™≥ªø° ¿÷æÓæﬂ ¿˚¿∏∑Œ ¿ŒΩƒ«—¥Ÿ
+			// PCÍ∞Ä ÏàòÌò∏Î≥ëÏùÑ Í≥µÍ≤©Ìï† ÎïåÏóêÎäî Í≥µÏÑ± ÏßÄÏó≠ÎÇ¥Ïóê ÏûàÏñ¥Ïïº Ï†ÅÏúºÎ°ú Ïù∏ÏãùÌïúÎã§
 			if (TO_NPC(tch)->m_proto->CheckFlag(NPC_CASTLE_GUARD))
 			{
 				if (GetMapAttr() & MATT_WAR && IS_ATTACK_TEAM(TO_PC(this)->GetJoinFlag(m_pZone->m_index)))
@@ -630,16 +639,16 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 				CPC* ch = TO_PC(this);
 				CPC* target = TO_PC(tch);
 
-				// ∞∞¿∫ ∆ƒ∆º¥¬ ¿˚¿Ã µ… ºˆ æ¯¿Ω : ∆ƒ∆º∞° ∞°¿Â ≥Ù¿∫ øÏº±º¯¿ß∏¶ ∞°¡¸
+				// Í∞ôÏùÄ ÌååÌã∞Îäî Ï†ÅÏù¥ Îê† Ïàò ÏóÜÏùå : ÌååÌã∞Í∞Ä Í∞ÄÏû• ÎÜíÏùÄ Ïö∞ÏÑ†ÏàúÏúÑÎ•º Í∞ÄÏßê
 				if (ch->IsParty() && target->IsParty() && ch->m_party == target->m_party)
 					return false;
 				if( ch->IsExped() && target->IsExped() && ch->m_Exped == target->m_Exped )
 					return false;
 
-				// ∞∞¿∫ ±ÊµÂ¥¬ ¿˚¿Ã µ… ºˆ æ¯¿Ω -> ∞·ªÁ¥Î∞° ¥Ÿ∏£¥Ÿ∏È ¿˚¿Ã µ…ºˆµµ ¿÷¿Ω
+				// Í∞ôÏùÄ Í∏∏ÎìúÎäî Ï†ÅÏù¥ Îê† Ïàò ÏóÜÏùå -> Í≤∞ÏÇ¨ÎåÄÍ∞Ä Îã§Î•¥Îã§Î©¥ Ï†ÅÏù¥ Îê†ÏàòÎèÑ ÏûàÏùå
 				if (ch->m_guildInfo && target->m_guildInfo && ch->m_guildInfo->guild() == target->m_guildInfo->guild())
 				{
-					// ¡Í≥Î∏∂¿ª FREEPKZONE ø°º≠¥¬ ∞∞¿∫ ±ÊµÂµµ ∞¯∞›∞°¥…
+					// Ï•¨ÎÖ∏ÎßàÏùÑ FREEPKZONE ÏóêÏÑúÎäî Í∞ôÏùÄ Í∏∏ÎìúÎèÑ Í≥µÍ≤©Í∞ÄÎä•
 					if(ch->m_pZone && ((ch->m_pZone->m_index == ZONE_START) || (ch->m_pZone->IsWarGroundZone()))
 							&& (ch->GetMapAttr() & MATT_FREEPKZONE)
 							&& ch->IsSetPlayerState(PLAYER_STATE_PKMODE)
@@ -650,7 +659,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 						return true;
 					}
 
-					//µÂ∂Û≈∫ PVP ∞Ê±‚¿Âø°º≠¥¬ ∞∞¿∫ ±ÊµÂµµ ∞¯∞›¿Ã ∞°¥…«œµµ∑œ «—¥Ÿ.
+					//ÎìúÎùºÌÉÑ PVP Í≤ΩÍ∏∞Ïû•ÏóêÏÑúÎäî Í∞ôÏùÄ Í∏∏ÎìúÎèÑ Í≥µÍ≤©Ïù¥ Í∞ÄÎä•ÌïòÎèÑÎ°ù ÌïúÎã§.
 					if( ch->IsSetPlayerState(PLAYER_STATE_PKMODE)
 							&& ch->m_pArea->m_zone->m_index == ZONE_PK_TOURNAMENT
 							&& target->IsSetPlayerState(PLAYER_STATE_PKMODE)
@@ -661,8 +670,8 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 #ifdef EXTREME_CUBE
 					if(!gserver->m_extremeCube.IsGuildCubeTime())
 					{
-						// ∆ƒ∆º≈•∫Í¿œ ∂ß
-						// ≈•∫Í æ»ø°º≠¥¬ ∞∞¿∫ ±ÊµÂ∂Ûµµ ∞¯∞›∞°¥…
+						// ÌååÌã∞ÌÅêÎ∏åÏùº Îïå
+						// ÌÅêÎ∏å ÏïàÏóêÏÑúÎäî Í∞ôÏùÄ Í∏∏ÎìúÎùºÎèÑ Í≥µÍ≤©Í∞ÄÎä•
 						if(ch->m_pZone != NULL && !ch->m_pZone->IsExtremeCube())
 							return false;
 
@@ -675,7 +684,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 
 					return false;
 				}
-				// ±ÊµÂ¿¸
+				// Í∏∏ÎìúÏ†Ñ
 				if (ch->m_guildInfo && (ch->m_guildInfo->guild()->battleState() == GUILD_BATTLE_STATE_ING)
 						&& target->m_guildInfo && (target->m_guildInfo->guild()->battleState() == GUILD_BATTLE_STATE_ING))
 				{
@@ -686,79 +695,29 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 					}
 				}
 
-				// µ—¥Ÿ ∞¯º∫ ¬¸ø©¿⁄ ¿Ã∏È
-				// º≠∑Œ¿« ¬¸ø© «√∑°±◊∞° ¿˚¥Î¿˚¿Ã∏È ¿˚¿Ã¥Ÿ
-#ifdef CHANGE_WARCASTLE_SETTING
-				int nZoneIdx = -1;
-				CWarCastle* castle = CWarCastle::GetCastleObject(ZONE_DRATAN);
-				if (castle && castle->GetState() != WCSF_NORMAL)
-				{
-					nZoneIdx = ZONE_DRATAN;
-				}
-				else
-				{
-					castle = CWarCastle::GetCastleObject(ZONE_MERAC);
-					if (castle && castle->GetState() != WCSF_NORMAL)
-					{
-						nZoneIdx = ZONE_MERAC;
-					}
-				}
-				if ( nZoneIdx > 0 )
-				{
-					// º≠∑Œ ¿˚¥Î ∞¸∞‘¿œ ∞ÊøÏ ¿¸¿Â ≥ª, ¿¸¿Â π€ ∏µŒ ∞¯∞› ∞°¥…«œ¥Ÿ.
-					if ( (IS_DEFENSE_TEAM(ch->GetJoinFlag(nZoneIdx)) && IS_ATTACK_TEAM(target->GetJoinFlag(nZoneIdx))) ||
-							( IS_ATTACK_TEAM(ch->GetJoinFlag(nZoneIdx)) && target->GetJoinFlag(nZoneIdx) != WCJF_NONE) )
-					{
-						return true;
-					}
-					// ∞¯∞›¿⁄∞° ∞¯ºˆº∫¿Ã∏È, 3ºº∑¬ ∞¯∞› ∞°¥…«œ¥Ÿ.
-#ifdef CHECK_CASTLE_AREA
-					// ∞¯º∫¡∏¿Ã∞Ì, ∞¯º∫ ¡ˆø™ ≥ª¿Ã¥Ÿ.
-					if ((ch->m_pZone->m_index == nZoneIdx && tch->m_pZone->m_index == nZoneIdx) &&
-							(ch->GetMapAttr() & MATT_WAR || ch->m_pZone->IsWarZone((int)ch->m_pos.m_x, (int)ch->m_pos.m_z)) &&
-							(tch->GetMapAttr() & MATT_WAR || tch->m_pZone->IsWarZone((int)tch->m_pos.m_x, (int)tch->m_pos.m_z)) )
-#else
-					if ( ch->m_pZone->m_index == nZoneIdx && tch->m_pZone->m_index == nZoneIdx && ch->GetMapAttr() == tch->GetMapAttr() && ch->GetMapAttr() & MATT_WAR )
-#endif // CHECK_CASTLE_AREA
-					{
-						// ∞¯,ºˆº∫ vs 3ºº∑¬
-						if ( (IS_DEFENSE_TEAM(ch->GetJoinFlag(nZoneIdx)) && target->GetJoinFlag(nZoneIdx) == WCJF_NONE ) ||
-								( IS_ATTACK_TEAM(ch->GetJoinFlag(nZoneIdx)) && target->GetJoinFlag(nZoneIdx) == WCJF_NONE) )
-							return true;
-					}
-
-#else // CHANGE_WARCASTLE_SETTING
 				CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 				if (castle && castle->GetState() != WCSF_NORMAL)
 				{
-#ifdef CHECK_CASTLE_AREA
 					if ((ch->GetMapAttr() & MATT_WAR || ch->m_pZone->IsWarZone((int)ch->m_pos.m_x, (int)ch->m_pos.m_z))
 							&& (tch->GetMapAttr() & MATT_WAR || tch->m_pZone->IsWarZone((int)tch->m_pos.m_x, (int)tch->m_pos.m_z)))
 					{
 						if ( (IS_DEFENSE_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && IS_ATTACK_TEAM(target->GetJoinFlag(ch->m_pZone->m_index))) ||
-								( IS_ATTACK_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && target->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)  )
+								( IS_ATTACK_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && ( (target->GetJoinFlag(ch->m_pZone->m_index) != WCJF_ATTACK_GUILD) &&
+																							 (target->GetJoinFlag(ch->m_pZone->m_index) != WCJF_ATTACK_CHAR) ) ) ) 
 							return true;
 
-						if( ch->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE )
-							return true;
+						if( ch->m_pZone->m_index == ZONE_DRATAN )
+						{
+							if(IS_DEFENSE_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && IS_DEFENSE_TEAM(target->GetJoinFlag(ch->m_pZone->m_index)))
+								return false;
 
-						if( target->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)
-							return false;
+							return true;
+						}
 					}
-#else
-					if (ch->GetMapAttr() == tch->GetMapAttr() && ch->GetMapAttr() & MATT_WAR)
-					{
-						if ( (IS_DEFENSE_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && IS_ATTACK_TEAM(target->GetJoinFlag(ch->m_pZone->m_index))) ||
-								( IS_ATTACK_TEAM(ch->GetJoinFlag(ch->m_pZone->m_index)) && target->GetJoinFlag(ch->m_pZone->m_index) != WCJF_NONE)  )
-							return true;
-					}
-
-#endif // CHECK_CASTLE_AREA
-#endif // CHANGE_WARCASTLE_SETTING
 				}
 //#endif
 				/////////////////////////////////////////////
-				// BANGWALL : 2005-07-18 ø¿¿¸ 11:38:17
+				// BANGWALL : 2005-07-18 Ïò§Ï†Ñ 11:38:17
 				// Comment : freepkzone
 
 				if ( ch->GetMapAttr() == tch->GetMapAttr() && ch->GetMapAttr() & MATT_FREEPKZONE )
@@ -773,12 +732,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 				{
 					bool bSkipLevel = false;
 
-#ifdef CHANGE_WARCASTLE_SETTING
-					// ∞¯º∫¿¸ ¡ˆø™ø°º≠ ∞¯º∫ ¡¯«‡Ω√ø°¥¬ ∑π∫ß ∞ÀªÁ æ»«‘
-					if (ch->m_pZone->m_index == tch->m_pZone->m_index && ch->GetMapAttr() == tch->GetMapAttr() && ch->GetMapAttr() & MATT_WAR)
-#else	// CHANGE_WARCASTLE_SETTING
 					if (ch->m_pZone->m_index == tch->m_pZone->m_index && ch->m_pZone->m_index == CWarCastle::GetCurSubServerCastleZoneIndex() && ch->GetMapAttr() == tch->GetMapAttr() && ch->GetMapAttr() & MATT_WAR)
-#endif	// CHANGE_WARCASTLE_SETTING
 					{
 						CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 						if (castle && castle->GetState() != WCSF_NORMAL)
@@ -863,7 +817,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 			case MSG_CHAR_APET :
 				tpc = TO_APET(tch)->GetOwner();
 				break;
-			// ¿œπ› ∏ÛΩ∫≈Õ∞° ≈◊¿Ãπ÷µ» ∏ÛΩ∫≈Õ∏¶ ¿˚¿∏∑Œ ¿ŒΩƒ
+			// ÏùºÎ∞ò Î™¨Ïä§ÌÑ∞Í∞Ä ÌÖåÏù¥Î∞çÎêú Î™¨Ïä§ÌÑ∞Î•º Ï†ÅÏúºÎ°ú Ïù∏Ïãù
 			case MSG_CHAR_NPC :
 				{
 					CNPC* target_npc = TO_NPC(tch);
@@ -886,17 +840,17 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 				break;
 			}
 
-			// ø©±‚∑Œ ≥—æÓø¿∏È ≈◊¿Ãπ÷ npc∞° ¿œπ› npc∏¶ ≈∏∞Ÿ¿∏∑Œ ªÛ¥Î«œ¥¬ ¡ﬂ¿Ã¥Ÿ.
-			// tpc∞° æ¯∞Ì npc ¿Ã∏È ¿œπ› ∏ÛΩ∫≈Õ ¿Ãπ«∑Œ ¿˚¿Ã¥Ÿ.
+			// Ïó¨Í∏∞Î°ú ÎÑòÏñ¥Ïò§Î©¥ ÌÖåÏù¥Î∞ç npcÍ∞Ä ÏùºÎ∞ò npcÎ•º ÌÉÄÍ≤üÏúºÎ°ú ÏÉÅÎåÄÌïòÎäî Ï§ëÏù¥Îã§.
+			// tpcÍ∞Ä ÏóÜÍ≥† npc Ïù¥Î©¥ ÏùºÎ∞ò Î™¨Ïä§ÌÑ∞ Ïù¥ÎØÄÎ°ú Ï†ÅÏù¥Îã§.
 			if ( tpc == NULL && IS_NPC(tch) && TO_NPC(this)->Check_MobFlag( STATE_MONSTER_TAMING ) )
 			{
-				// ¿⁄±‚ ¿⁄Ω≈¿Ã∏È ¿˚¿Ã æ∆¥‘
+				// ÏûêÍ∏∞ ÏûêÏã†Ïù¥Î©¥ Ï†ÅÏù¥ ÏïÑÎãò
 				if ( this == tch )
 				{
 					return false;
 				}
 
-				// ¥Ÿ∏• ∏ÛΩ∫≈Õ¥¬ ¿˚
+				// Îã§Î•∏ Î™¨Ïä§ÌÑ∞Îäî Ï†Å
 				else
 				{
 					return true;
@@ -923,7 +877,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 							&& ( IS_ATTACK_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) )
 								 || IS_DEFENSE_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) ) ) )
 					{
-						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// ∞¯º∫ √¯¿Ã∂Û∏È
+						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// Í≥µÏÑ± Ï∏°Ïù¥ÎùºÎ©¥
 						{
 							if( TO_NPC(tch)->m_proto->CheckFlag(NPC_WARCASTLE) )
 								return true;
@@ -936,7 +890,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 
 			if (tpc)
 			{
-				// ºˆ»£∫¥¿∫ ∞¯º∫√¯∏∏ ¿˚¿∏∑Œ ¿ŒΩƒ
+				// ÏàòÌò∏Î≥ëÏùÄ Í≥µÏÑ±Ï∏°Îßå Ï†ÅÏúºÎ°ú Ïù∏Ïãù
 				CNPC* npc_ = TO_NPC(this);
 				if (npc_->m_proto->CheckFlag(NPC_CASTLE_GUARD | NPC_CASTLE_TOWER))
 				{
@@ -946,7 +900,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 						return false;
 				}
 
-				// ≈◊¿Ãπ÷µ» npc¥¬ pc∏¶ æ∆±∫¿∏∑Œ ¿ŒΩƒ, »˙ Ω∫≈≥¿ª ªÁøÎ«ÿ¡ÿ¥Ÿ.
+				// ÌÖåÏù¥Î∞çÎêú npcÎäî pcÎ•º ÏïÑÍµ∞ÏúºÎ°ú Ïù∏Ïãù, Ìûê Ïä§ÌÇ¨ÏùÑ ÏÇ¨Ïö©Ìï¥Ï§ÄÎã§.
 				if ( npc_->Check_MobFlag( STATE_MONSTER_TAMING )  )
 				{
 					return false;
@@ -964,7 +918,7 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 					if( owner == tpc )
 						return false;
 
-					if( IsRaList(owner, tpc) ) // ø¿≥ øÕ ¡§¥ÁπÊ¿ß PC∂Û∏È ¿˚¿Ã¥Ÿ.
+					if( IsRaList(owner, tpc) ) // Ïò§ÎÑàÏôÄ Ï†ïÎãπÎ∞©ÏúÑ PCÎùºÎ©¥ Ï†ÅÏù¥Îã§.
 						return true;
 
 					if( npc_->Check_MobFlag( STATE_MONSTER_TRAP) || npc_->Check_MobFlag( STATE_MONSTER_SUICIDE ) )
@@ -978,14 +932,14 @@ bool CCharacter::IsEnemy(CCharacter* tch)
 
 					if( castle != NULL && castle->GetState() != WCSF_NORMAL && owner->GetMapAttr() & MATT_WAR
 							&& ( IS_ATTACK_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) )
-								 || IS_DEFENSE_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) ) ) ) // ø¿≥ ∞° ∞¯º∫ø° ¬¸ø©«ÿ ¿÷¥Ÿ∏È
+								 || IS_DEFENSE_TEAM( owner->GetJoinFlag( owner->m_pZone->m_index ) ) ) ) // Ïò§ÎÑàÍ∞Ä Í≥µÏÑ±Ïóê Ï∞∏Ïó¨Ìï¥ ÏûàÎã§Î©¥
 					{
-						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// ∞¯º∫ √¯¿Ã∂Û∏È
+						if( IS_ATTACK_TEAM(owner->GetJoinFlag( owner->m_pZone->m_index) ) )// Í≥µÏÑ± Ï∏°Ïù¥ÎùºÎ©¥
 						{
 							if( IS_DEFENSE_TEAM( tpc->GetJoinFlag(owner->m_pZone->m_index) )  )
 								return true;
 						}
-						else if(IS_DEFENSE_TEAM( owner->GetJoinFlag(owner->m_pZone->m_index) ) ) // ºˆº∫ √¯¿Ã∂Û∏È
+						else if(IS_DEFENSE_TEAM( owner->GetJoinFlag(owner->m_pZone->m_index) ) ) // ÏàòÏÑ± Ï∏°Ïù¥ÎùºÎ©¥
 						{
 							if( IS_ATTACK_TEAM( tpc->GetJoinFlag(owner->m_pZone->m_index) )  )
 								return true;
@@ -1141,7 +1095,7 @@ unsigned short CCharacter::GetMapAttr()
 
 void CCharacter::ApplyPassiveSkill(CSkill* skill, int param)
 {
-	// ∆–Ω√∫Í æ¯¥¬ ƒ≥∏Ø¿∫ Ω∫≈µ
+	// Ìå®ÏãúÎ∏å ÏóÜÎäî Ï∫êÎ¶≠ÏùÄ Ïä§ÌÇµ
 	switch (m_type)
 	{
 	case MSG_CHAR_APET:
@@ -1172,7 +1126,7 @@ void CCharacter::ApplyPassiveSkill(CSkill* skill, int param)
 	if (slp == NULL)
 		return ;
 
-	// « ø‰ Ω∫≈» ∞ÀªÁ : PC
+	// ÌïÑÏöî Ïä§ÌÉØ Í≤ÄÏÇ¨ : PC
 	if (IS_PC(this))
 	{
 		CPC* pc = TO_PC(this);
@@ -1189,7 +1143,7 @@ void CCharacter::ApplyPassiveSkill(CSkill* skill, int param)
 			return ;
 	}
 
-	// ¿˚øÎ ¡∂∞« ∞ÀªÁ
+	// Ï†ÅÏö© Ï°∞Í±¥ Í≤ÄÏÇ¨
 	if (!CanApplySkill(sp, slp))
 		return ;
 
@@ -1205,7 +1159,7 @@ void CCharacter::ApplyPassiveSkill(CSkill* skill, int param)
 		int realPowerValue = mlp->m_nPowerValue * param / 100;
 		int realHitrateValue = mlp->m_nHitrateValue * param / 100;
 
-		// »ø∞˙ ¿˚øÎ
+		// Ìö®Í≥º Ï†ÅÏö©
 #define APPVAL(v)		{ \
 						switch (mp->m_damagetype) \
 						{ \
@@ -1218,7 +1172,7 @@ void CCharacter::ApplyPassiveSkill(CSkill* skill, int param)
 						} \
 					}
 
-		// πÊæÓ ∞¸∑√¿∫ º“»ØºˆµÈµµ ¿˚øÎ
+		// Î∞©Ïñ¥ Í¥ÄÎ†®ÏùÄ ÏÜåÌôòÏàòÎì§ÎèÑ Ï†ÅÏö©
 		switch (mp->m_type)
 		{
 		case MT_STAT:
@@ -1557,7 +1511,7 @@ bool CCharacter::IsDisable()
 
 bool CCharacter::ChekAttackType()
 {
-	// true ∞¯º”∞ÀªÁ , false ∞ÀªÁ æ»«‘
+	// true Í≥µÏÜçÍ≤ÄÏÇ¨ , false Í≤ÄÏÇ¨ ÏïàÌï®
 	if( m_attacktype == ATTACK_TYPE_NORMAL )
 	{
 		m_attackcount = 0;
@@ -1615,7 +1569,7 @@ void CPC::ApplyTitle()
 
 	int title_count = 0;
 	title_count = this->m_titleList.m_nCount;
-	// ∏∏æ‡ title¿Ã æ¯¿∏∏È return;
+	// ÎßåÏïΩ titleÏù¥ ÏóÜÏúºÎ©¥ return;
 	if (title_count == 0)
 		return ;
 
@@ -1638,330 +1592,350 @@ void CPC::ApplyTitle()
 			if(proto == NULL)
 				return ;
 			nvalue = proto->m_levelValue[temp->m_proto->m_option[i][TITLE_SYSTEM_OPTION_LEVEL]-1];
+		}
+		else if (temp->m_custom_title_index != -1)
+		{
+			MAKE_TITLE* data;
+			
+			std::map<int, MAKE_TITLE*>::iterator it;
+			it = this->_map_title.find(temp->m_custom_title_index);
+			
+			if(it == this->_map_title.end())
+				return;
 
-			switch(ntype)
+			data = it->second;
+
+			proto = gserver->m_optionProtoList.FindProto(data->option_index[i]);
+			if(proto == NULL)
+				return;
+			ntype = proto->m_type;
+			nvalue = proto->m_levelValue[data->option_level[i] - 1];
+		}
+		else
+			return;
+
+		switch(ntype)
+		{
+		case OPTION_STR_UP:
+			m_opStr += nvalue;
+			m_str += nvalue;
+			m_maxHP += nvalue * levelup_hp[idx][0];
+			break;
+		case OPTION_DEX_UP:
+			m_opDex += nvalue;
+			m_dex += nvalue;
+			break;
+		case OPTION_INT_UP:
+			m_opInt += nvalue;
+			m_int += nvalue;
+			m_maxMP += nvalue * levelup_mp[idx][2];
+			break;
+		case OPTION_CON_UP:
+			m_opCon += nvalue;
+			m_con += nvalue;
+			m_maxHP += nvalue * levelup_hp[idx][3];
+			m_maxMP += nvalue * levelup_mp[idx][3];
+			break;
+		case OPTION_HP_UP:
+			m_maxHP += nvalue;
+			break;
+		case OPTION_MP_UP:
+			m_maxMP += nvalue;
+			break;
+		case OPTION_DAMAGE_UP:
+			m_opMelee += nvalue;
+			m_opRange += nvalue;
+			break;
+		case OPTION_MELEE_DAMAGE_UP:
+			m_opMelee += nvalue;
+			break;
+		case OPTION_RANGE_DAMAGE_UP:
+			m_opRange += nvalue;
+			break;
+		case OPTION_MELEE_HIT_UP:
+			m_opMeleeHitRate += nvalue;
+			break;
+		case OPTION_RANGE_HIT_UP:
+			m_opRangeHitRate += nvalue;
+			break;
+		case OPTION_DEFENSE_UP:
+			m_opDMelee += nvalue;
+			m_opDRange += nvalue;
+			break;
+		case OPTION_MELEE_DEFENSE_UP:
+			m_opDMelee += nvalue;
+			break;
+		case OPTION_RANGE_DEFENSE_UP:
+			m_opDRange += nvalue;
+			break;
+		case OPTION_MELEE_AVOID_UP:
+			m_opMeleeAvoid += nvalue;
+			break;
+		case OPTION_RANGE_AVOID_UP:
+			m_opRangeAvoid += nvalue;
+			break;
+		case OPTION_MAGIC_UP:
+			m_opMagic += nvalue;
+			break;
+		case OPTION_MAGIC_HIT_UP:
+			m_opMagicHitRate += nvalue;
+			break;
+		case OPTION_RESIST_UP:
+			m_opResist += nvalue;
+			break;
+		case OPTION_RESIST_AVOID_UP:
+			m_opResistAvoid += nvalue;
+			break;
+		case OPTION_ALL_DAMAGE_UP:
+			m_opMelee += nvalue;
+			m_opRange += nvalue;
+			m_opMagic += nvalue;
+			break;
+		case OPTION_ALL_HIT_UP:
+			m_opMeleeHitRate += nvalue;
+			m_opRangeHitRate += nvalue;
+			m_opMagicHitRate += nvalue;
+			break;
+		case OPTION_ALL_DEFENSE_UP:
+			m_opDMelee += nvalue;
+			m_opDRange += nvalue;
+			m_opResist += nvalue;
+			break;
+		case OPTION_ALL_AVOID_UP:
+			m_opMeleeAvoid += nvalue;
+			m_opRangeAvoid += nvalue;
+			m_opResistAvoid += nvalue;
+			break;
+		case OPTION_NOT_USED_24:
+			break;
+		case OPTION_NOT_USED_25:
+			break;
+			////////// Ïó¨Í∏∞ÏÑú Î∂ÄÌÑ∞Îäî Í≥µÏÑ± Ï°∞Ìï© ÏïÑÏù¥ÌÖúÏö© ÏòµÏÖò //////////
+		case OPTION_MIX_STR:
+			break;
+		case OPTION_MIX_DEX:
+			break;
+		case OPTION_MIX_INT:
+			break;
+		case OPTION_MIX_CON:
+			break;
+		case OPTION_MIX_ATTACK:
+			break;
+		case OPTION_MIX_MAGIC:
+			break;
+		case OPTION_MIX_DEFENSE:
+			break;
+		case OPTION_MIX_RESIST:
+			break;
+		case OPTION_MIX_STURN:
+			break;
+		case OPTION_MIX_BLOOD:
+			break;
+		case OPTION_MIX_MOVE:
+			break;
+		case OPTION_MIX_POISON:
+			break;
+		case OPTION_MIX_SLOW:
+			break;
+			////////// Ïó¨Í∏∞ÍπåÏßÄ Î∂ÄÌÑ∞Îäî Í≥µÏÑ± Ï°∞Ìï© ÏïÑÏù¥ÌÖúÏö© ÏòµÏÖò //////////
+		case OPTION_DOWN_LIMITLEVEL: //// ÏïÑÏù¥ÌÖúÏóê Î∞úÎ¶∞ ÏòµÏÖò ÏÇ¨Ïö©Î∂àÍ∞Ä
+			break;
+		case OPTION_INCREASE_INVEN:
+			m_opIncreaseInven += nvalue;
+			break;
+		case OPTION_STEAL_MP:
+			m_opMPSteal += nvalue;
+			break;
+		case OPTION_STEAL_HP:
+			m_opHPSteal += nvalue;
+			break;
+		case OPTION_ATTACK_BLIND:
+			if (m_opAttackBlind < nvalue) m_opAttackBlind = nvalue;
+			break;
+		case OPTION_ATTACK_POISON:
+			if (m_opAttackPoison < nvalue) m_opAttackPoison = nvalue;
+			break;
+		case OPTION_ATTACK_CRITICAL:
+			m_opAttackCritical += nvalue;
+			break;
+		case OPTION_RECOVER_HP:
+			m_opRecoverHP += nvalue;
+			break;
+		case OPTION_RECOVER_MP:
+			m_opRecoverMP += nvalue;
+			break;
+		case OPTION_DECREASE_SKILL_DELAY:
+			m_opDecreaseSkillDelay += nvalue;
+			break;
+		case OPTION_DECREASE_SKILL_MP:
+			m_opDecreaseSkillMP += nvalue;
+			break;
+		case OPTION_RESIST_STONE:
+			m_opResistStone += nvalue;
+			if(m_opResistStone > 80)
+				m_opResistStone = 80;
+			break;
+		case OPTION_RESIST_STURN:
+			m_opResistSturn += nvalue;
+			if(m_opResistSturn > 80)
+				m_opResistSturn = 80;
+			break;
+		case OPTION_RESIST_SILENT:
+			m_opResistSilent += nvalue;
+			if(m_opResistSilent > 80)
+				m_opResistSilent = 80;
+			break;
+		case OPTION_BLOCKING:
+			m_opBlocking += nvalue;
+			break;
+		case OPTION_MOVESPEED:
+			//m_runSpeed += m_runSpeed * nvalue / 100;
+			SetRunSpeed(GetRunSpeed() + GetRunSpeed() * nvalue / 100);
+			break;
+		case OPTION_FLYSPEED:
+			m_flySpeed += (float)nvalue / 10.0f;
+			break;
+		case OPTION_ATTACK_DEADLY:
+			m_opAttackDeadly += nvalue;
+			break;
+		case OPTION_STR_UP_RATE:
+			nvalue = m_dbStr * nvalue / 100;
+			m_opStr += nvalue;
+			m_str += nvalue;
+			m_maxHP += nvalue * levelup_hp[idx][0];
+			break;
+		case OPTION_DEX_UP_RATE:
+			nvalue = m_dbDex * nvalue / 100;
+			m_opDex += nvalue;
+			m_dex += nvalue;
+			break;
+		case OPTION_INT_UP_RATE:
+			nvalue = m_dbInt * nvalue / 100;
+			m_opInt += nvalue;
+			m_int += nvalue;
+			m_maxMP += nvalue * levelup_mp[idx][2];
+			break;
+		case OPTION_CON_UP_RATE:
+			nvalue = m_dbCon * nvalue / 100;
+			m_opCon += nvalue;
+			m_con += nvalue;
+			m_maxHP += nvalue * levelup_hp[idx][3];
+			m_maxMP += nvalue * levelup_mp[idx][3];
+			break;
+		case OPTION_HP_UP_RATE:
+			nvalue = m_dbHP * nvalue / 100;
+			m_maxHP += nvalue;
+			break;
+		case OPTION_MP_UP_RATE:
+			nvalue = m_dbMP * nvalue / 100;
+			m_maxMP += nvalue;
+			break;
+		case OPTION_WEAPON_UP_RATE:
+			if(m_wearInventory.wearItemInfo[WEARING_WEAPON])
 			{
-			case OPTION_STR_UP:
-				m_opStr += nvalue;
-				m_str += nvalue;
-				m_maxHP += nvalue * levelup_hp[idx][0];
-				break;
-			case OPTION_DEX_UP:
-				m_opDex += nvalue;
-				m_dex += nvalue;
-				break;
-			case OPTION_INT_UP:
-				m_opInt += nvalue;
-				m_int += nvalue;
-				m_maxMP += nvalue * levelup_mp[idx][2];
-				break;
-			case OPTION_CON_UP:
-				m_opCon += nvalue;
-				m_con += nvalue;
-				m_maxHP += nvalue * levelup_hp[idx][3];
-				m_maxMP += nvalue * levelup_mp[idx][3];
-				break;
-			case OPTION_HP_UP:
-				m_maxHP += nvalue;
-				break;
-			case OPTION_MP_UP:
-				m_maxMP += nvalue;
-				break;
-			case OPTION_DAMAGE_UP:
-				m_opMelee += nvalue;
-				m_opRange += nvalue;
-				break;
-			case OPTION_MELEE_DAMAGE_UP:
-				m_opMelee += nvalue;
-				break;
-			case OPTION_RANGE_DAMAGE_UP:
-				m_opRange += nvalue;
-				break;
-			case OPTION_MELEE_HIT_UP:
-				m_opMeleeHitRate += nvalue;
-				break;
-			case OPTION_RANGE_HIT_UP:
-				m_opRangeHitRate += nvalue;
-				break;
-			case OPTION_DEFENSE_UP:
-				m_opDMelee += nvalue;
-				m_opDRange += nvalue;
-				break;
-			case OPTION_MELEE_DEFENSE_UP:
-				m_opDMelee += nvalue;
-				break;
-			case OPTION_RANGE_DEFENSE_UP:
-				m_opDRange += nvalue;
-				break;
-			case OPTION_MELEE_AVOID_UP:
-				m_opMeleeAvoid += nvalue;
-				break;
-			case OPTION_RANGE_AVOID_UP:
-				m_opRangeAvoid += nvalue;
-				break;
-			case OPTION_MAGIC_UP:
-				m_opMagic += nvalue;
-				break;
-			case OPTION_MAGIC_HIT_UP:
-				m_opMagicHitRate += nvalue;
-				break;
-			case OPTION_RESIST_UP:
-				m_opResist += nvalue;
-				break;
-			case OPTION_RESIST_AVOID_UP:
-				m_opResistAvoid += nvalue;
-				break;
-			case OPTION_ALL_DAMAGE_UP:
-				m_opMelee += nvalue;
-				m_opRange += nvalue;
-				m_opMagic += nvalue;
-				break;
-			case OPTION_ALL_HIT_UP:
-				m_opMeleeHitRate += nvalue;
-				m_opRangeHitRate += nvalue;
-				m_opMagicHitRate += nvalue;
-				break;
-			case OPTION_ALL_DEFENSE_UP:
-				m_opDMelee += nvalue;
-				m_opDRange += nvalue;
-				m_opResist += nvalue;
-				break;
-			case OPTION_ALL_AVOID_UP:
-				m_opMeleeAvoid += nvalue;
-				m_opRangeAvoid += nvalue;
-				m_opResistAvoid += nvalue;
-				break;
-			case OPTION_NOT_USED_24:
-				break;
-			case OPTION_NOT_USED_25:
-				break;
-////////// ø©±‚º≠ ∫Œ≈Õ¥¬ ∞¯º∫ ¡∂«’ æ∆¿Ã≈€øÎ ø…º« //////////
-			case OPTION_MIX_STR:
-				break;
-			case OPTION_MIX_DEX:
-				break;
-			case OPTION_MIX_INT:
-				break;
-			case OPTION_MIX_CON:
-				break;
-			case OPTION_MIX_ATTACK:
-				break;
-			case OPTION_MIX_MAGIC:
-				break;
-			case OPTION_MIX_DEFENSE:
-				break;
-			case OPTION_MIX_RESIST:
-				break;
-			case OPTION_MIX_STURN:
-				break;
-			case OPTION_MIX_BLOOD:
-				break;
-			case OPTION_MIX_MOVE:
-				break;
-			case OPTION_MIX_POISON:
-				break;
-			case OPTION_MIX_SLOW:
-				break;
-////////// ø©±‚±Ó¡ˆ ∫Œ≈Õ¥¬ ∞¯º∫ ¡∂«’ æ∆¿Ã≈€øÎ ø…º« //////////
-			case OPTION_DOWN_LIMITLEVEL: //// æ∆¿Ã≈€ø° πﬂ∏∞ ø…º« ªÁøÎ∫“∞°
-				break;
-			case OPTION_INCREASE_INVEN:
-				m_opIncreaseInven += nvalue;
-				break;
-			case OPTION_STEAL_MP:
-				m_opMPSteal += nvalue;
-				break;
-			case OPTION_STEAL_HP:
-				m_opHPSteal += nvalue;
-				break;
-			case OPTION_ATTACK_BLIND:
-				if (m_opAttackBlind < nvalue) m_opAttackBlind = nvalue;
-				break;
-			case OPTION_ATTACK_POISON:
-				if (m_opAttackPoison < nvalue) m_opAttackPoison = nvalue;
-				break;
-			case OPTION_ATTACK_CRITICAL:
-				m_opAttackCritical += nvalue;
-				break;
-			case OPTION_RECOVER_HP:
-				m_opRecoverHP += nvalue;
-				break;
-			case OPTION_RECOVER_MP:
-				m_opRecoverMP += nvalue;
-				break;
-			case OPTION_DECREASE_SKILL_DELAY:
-				m_opDecreaseSkillDelay += nvalue;
-				break;
-			case OPTION_DECREASE_SKILL_MP:
-				m_opDecreaseSkillMP += nvalue;
-				break;
-			case OPTION_RESIST_STONE:
-				m_opResistStone += nvalue;
-				if(m_opResistStone > 100)
-					m_opResistStone = 100;
-				break;
-			case OPTION_RESIST_STURN:
-				m_opResistSturn += nvalue;
-				if(m_opResistSturn > 100)
-					m_opResistSturn = 100;
-				break;
-			case OPTION_RESIST_SILENT:
-				m_opResistSilent += nvalue;
-				if(m_opResistSilent > 100)
-					m_opResistSilent = 100;
-				break;
-			case OPTION_BLOCKING:
-				m_opBlocking += nvalue;
-				break;
-			case OPTION_MOVESPEED:
-				//m_runSpeed += m_runSpeed * nvalue / 100;
-				SetRunSpeed(GetRunSpeed() + GetRunSpeed() * nvalue / 100);
-				break;
-			case OPTION_FLYSPEED:
-				m_flySpeed += (float)nvalue / 10.0f;
-				break;
-			case OPTION_ATTACK_DEADLY:
-				m_opAttackDeadly += nvalue;
-				break;
-			case OPTION_STR_UP_RATE:
-				nvalue = m_dbStr * nvalue / 100;
-				m_opStr += nvalue;
-				m_str += nvalue;
-				m_maxHP += nvalue * levelup_hp[idx][0];
-				break;
-			case OPTION_DEX_UP_RATE:
-				nvalue = m_dbDex * nvalue / 100;
-				m_opDex += nvalue;
-				m_dex += nvalue;
-				break;
-			case OPTION_INT_UP_RATE:
-				nvalue = m_dbInt * nvalue / 100;
-				m_opInt += nvalue;
-				m_int += nvalue;
-				m_maxMP += nvalue * levelup_mp[idx][2];
-				break;
-			case OPTION_CON_UP_RATE:
-				nvalue = m_dbCon * nvalue / 100;
-				m_opCon += nvalue;
-				m_con += nvalue;
-				m_maxHP += nvalue * levelup_hp[idx][3];
-				m_maxMP += nvalue * levelup_mp[idx][3];
-				break;
-			case OPTION_HP_UP_RATE:
-				nvalue = m_dbHP * nvalue / 100;
-				m_maxHP += nvalue;
-				break;
-			case OPTION_MP_UP_RATE:
-				nvalue = m_dbMP * nvalue / 100;
-				m_maxMP += nvalue;
-				break;
-			case OPTION_WEAPON_UP_RATE:
-				if(m_wearInventory.wearItemInfo[WEARING_WEAPON])
+				if(m_wearInventory.wearItemInfo[WEARING_WEAPON]->IsRangeWeapon())
 				{
-					if(m_wearInventory.wearItemInfo[WEARING_WEAPON]->IsRangeWeapon())
-					{
-						m_opRange += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum0() * nvalue / 100;
-					}
-					else
-					{
-						m_opMelee += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum0() * nvalue / 100;
-					}
-
-					m_opMagic += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum1() * nvalue / 100;
+					m_opRange += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum0() * nvalue / 100;
 				}
-				break;
-			case OPTION_ARMOR_UP_RATE:
+				else
 				{
-					const int amor_count = 7;
-					static int armors[] = {WEARING_HELMET, WEARING_ARMOR_UP, WEARING_ARMOR_DOWN, WEARING_SHIELD, WEARING_GLOVE, WEARING_BOOTS, WEARING_BACKWING };
-
-					int i;
-					CItem *item;
-					int deffence = 0, deffence2 = 0;
-					for (i = 0; i < amor_count; i++)
-					{
-						item = m_wearInventory.wearItemInfo[armors[i]];
-						if (item && item->IsArmorType() && !(item->getFlag() & FLAG_ITEM_SEALED))
-						{
-							deffence += item->m_itemProto->getItemNum0();
-							deffence2 += item->m_itemProto->getItemNum1();
-						}
-					}
-
-					m_opDMelee += deffence * nvalue / 100;
-					m_opDRange += deffence * nvalue / 100;
-					m_opResist += deffence2 * nvalue / 100;
+					m_opMelee += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum0() * nvalue / 100;
 				}
-				break;
-			case OPTION_MELEE_HIT_UP_RATE:
-				nvalue = (int)GetHitrate(this, MSG_DAMAGE_MELEE) * nvalue / 100;
-				m_opMeleeHitRate += nvalue;
-				m_opRangeHitRate += nvalue;
-				break;
-			case OPTION_MAGIC_HIT_UP_RATE:
-				nvalue = (int)GetHitrate(this, MSG_DAMAGE_MAGIC) * nvalue / 100;
-				m_opMagicHitRate += nvalue;
-				break;
-			case OPTION_MELEE_AVOID_RATE:
-				nvalue = (int)GetAvoid(this, MSG_DAMAGE_MELEE) * nvalue / 100;
-				m_opMeleeAvoid += nvalue;
-				m_opRangeAvoid += nvalue;
-				break;
-			case OPTION_MAGIC_AVOID_RATE:
-				nvalue = (int)GetAvoid(this, MSG_DAMAGE_MAGIC) * nvalue / 100;
-				m_opResistAvoid += nvalue;
-				break;
-			case OPTION_RECOVER_HP_RATE:
-				nvalue = m_recoverHP * nvalue / 100;
-				m_opRecoverHP += nvalue;
-				break;
-			case OPTION_RECOVER_MP_RATE:
-				nvalue = m_recoverMP * nvalue / 100;
-				m_opRecoverMP += nvalue;
-				break;
-			case OPTION_EXP_UP_RATE:
-				m_opExpRate += nvalue;
-				break;
-			case OPTION_SP_UP_RATE:
-				m_opSPRate += nvalue;
-				break;
-			case OPTION_APET_ELEMENT_ATTUP:
-				if(GetAPet())
-				{
-					GetAPet()->m_opMelee += nvalue;
-					GetAPet()->m_opRange += nvalue;
-				}
-				break;
-			case OPTION_ALL_STAT_UP:
-				m_opStr += nvalue;
-				m_opDex += nvalue;
-				m_opInt += nvalue;
-				m_opCon += nvalue;
-				break;
-			case OPTION_PVP_DAMAGE_ABSOLB:
-				m_absorbPVPDamageRate += nvalue;
-				break;
-			case OPTION_DEBUF_DECR_TIME:
-				m_decreaseDBufTimeRate += nvalue;
-				break;
-			case OPTION_RECOVER_HP_NOTRATE:
-				m_opRecoverHP_NoRate += nvalue;
-				break;
-			case OPTION_RECOVER_MP_NOTRATE:
-				m_opRecoverMP_NoRate += nvalue;
-				break;
-			case OPTION_INCREASE_STRONG:
-				m_opStrong += nvalue;
-				break;
-			case OPTION_INCREASE_HARD:
-				m_plusHard += nvalue;
-				break;
-			case OPTION_INCREASE_HP:
-				m_maxHP += nvalue;
-				break;
-			default:
-				break;
+
+				m_opMagic += m_wearInventory.wearItemInfo[WEARING_WEAPON]->m_itemProto->getItemNum1() * nvalue / 100;
 			}
+			break;
+		case OPTION_ARMOR_UP_RATE:
+			{
+				const int amor_count = 7;
+				static int armors[] = {WEARING_HELMET, WEARING_ARMOR_UP, WEARING_ARMOR_DOWN, WEARING_SHIELD, WEARING_GLOVE, WEARING_BOOTS, WEARING_BACKWING };
+
+				int i;
+				CItem *item;
+				int deffence = 0, deffence2 = 0;
+				for (i = 0; i < amor_count; i++)
+				{
+					item = m_wearInventory.wearItemInfo[armors[i]];
+					if (item && item->IsArmorType() && !(item->getFlag() & FLAG_ITEM_SEALED))
+					{
+						deffence += item->m_itemProto->getItemNum0();
+						deffence2 += item->m_itemProto->getItemNum1();
+					}
+				}
+
+				m_opDMelee += deffence * nvalue / 100;
+				m_opDRange += deffence * nvalue / 100;
+				m_opResist += deffence2 * nvalue / 100;
+			}
+			break;
+		case OPTION_MELEE_HIT_UP_RATE:
+			nvalue = (int)GetHitrate(this, MSG_DAMAGE_MELEE) * nvalue / 100;
+			m_opMeleeHitRate += nvalue;
+			m_opRangeHitRate += nvalue;
+			break;
+		case OPTION_MAGIC_HIT_UP_RATE:
+			nvalue = (int)GetHitrate(this, MSG_DAMAGE_MAGIC) * nvalue / 100;
+			m_opMagicHitRate += nvalue;
+			break;
+		case OPTION_MELEE_AVOID_RATE:
+			nvalue = (int)GetAvoid(this, MSG_DAMAGE_MELEE) * nvalue / 100;
+			m_opMeleeAvoid += nvalue;
+			m_opRangeAvoid += nvalue;
+			break;
+		case OPTION_MAGIC_AVOID_RATE:
+			nvalue = (int)GetAvoid(this, MSG_DAMAGE_MAGIC) * nvalue / 100;
+			m_opResistAvoid += nvalue;
+			break;
+		case OPTION_RECOVER_HP_RATE:
+			nvalue = m_recoverHP * nvalue / 100;
+			m_opRecoverHP += nvalue;
+			break;
+		case OPTION_RECOVER_MP_RATE:
+			nvalue = m_recoverMP * nvalue / 100;
+			m_opRecoverMP += nvalue;
+			break;
+		case OPTION_EXP_UP_RATE:
+			m_opExpRate += nvalue;
+			break;
+		case OPTION_SP_UP_RATE:
+			m_opSPRate += nvalue;
+			break;
+		case OPTION_APET_ELEMENT_ATTUP:
+			if(GetAPet())
+			{
+				GetAPet()->m_opMelee += nvalue;
+				GetAPet()->m_opRange += nvalue;
+			}
+			break;
+		case OPTION_ALL_STAT_UP:
+			m_opStr += nvalue;
+			m_opDex += nvalue;
+			m_opInt += nvalue;
+			m_opCon += nvalue;
+			break;
+		case OPTION_PVP_DAMAGE_ABSOLB:
+			m_absorbPVPDamageRate += nvalue;
+			break;
+		case OPTION_DEBUF_DECR_TIME:
+			m_decreaseDBufTimeRate += nvalue;
+			break;
+		case OPTION_RECOVER_HP_NOTRATE:
+			m_opRecoverHP_NoRate += nvalue;
+			break;
+		case OPTION_RECOVER_MP_NOTRATE:
+			m_opRecoverMP_NoRate += nvalue;
+			break;
+		case OPTION_INCREASE_STRONG:
+			m_opStrong += nvalue;
+			break;
+		case OPTION_INCREASE_HARD:
+			m_plusHard += nvalue;
+			break;
+		case OPTION_INCREASE_HP:
+			m_maxHP += nvalue;
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -1974,7 +1948,8 @@ void CPC::TitleCurrentSkillCure(int titleIndex , bool blistDelete )
 	if( m_nCurrentTitle != titleIndex )
 		return;
 
-	int title = m_nCurrentTitle;
+	int title_index = m_nCurrentTitle;
+	CTitle* title = this->m_titleList.Find(title_index);
 	m_nCurrentTitle = TITLE_SYSTEM_NO_TITLE;
 
 	CalcStatus(true);
@@ -1982,24 +1957,24 @@ void CPC::TitleCurrentSkillCure(int titleIndex , bool blistDelete )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_TITLE_EXPIRED);
-		RefMsg(rmsg) << 1 << title;
+		RefMsg(rmsg) << 1 << title_index;
 		SEND_Q(rmsg, m_desc);
 	}
 
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED, title, m_index);
+		TitleSystemMsg(rmsg, MSG_EX_TITLE_SYSTEM_TITLE_EXPIRED, title_index, m_index, title->m_custom_title_index);
 		SEND_Q(rmsg, m_desc);
 		m_pArea->SendToCell(rmsg, this);
 	}
 
 	GAMELOG << init("TITLE CURRENT DELETE", this) << delim
-			<< "TITLE INDEX" << delim << title << end;
+			<< "TITLE INDEX" << delim << title_index << end;
 
 	if(blistDelete == true )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubHelperTitleSystemDeleteReq(rmsg, m_index, title);
+		SubHelperTitleSystemDeleteReq(rmsg, m_index, title_index);
 		SEND_Q(rmsg, gserver->m_subHelper);
 	}
 }
@@ -2013,7 +1988,7 @@ void CPC::CastllanTitleDelete(int castleZoneindex, bool bExclude, char bCastella
 		{
 			bool bDelete = false;
 			CTitle * title = node->m_title;
-			if(bExclude)		// castleZoneindex ¿Ãø‹¿« ∞Õ¿ª ¡ˆøÚ
+			if(bExclude)		// castleZoneindex Ïù¥Ïô∏Ïùò Í≤ÉÏùÑ ÏßÄÏõÄ
 			{
 				if( castleZoneindex == -1 || title->m_proto->m_castleNum != castleZoneindex )
 				{
@@ -2021,7 +1996,7 @@ void CPC::CastllanTitleDelete(int castleZoneindex, bool bExclude, char bCastella
 				}
 				else
 				{
-					// ∞∞¿∫ castle »£ƒ™¿Ã∏È ¡ˆ¿ß∞ÀªÁ∏¶ «—¥Ÿ.
+					// Í∞ôÏùÄ castle Ìò∏Ïπ≠Ïù¥Î©¥ ÏßÄÏúÑÍ≤ÄÏÇ¨Î•º ÌïúÎã§.
 					CItemProto* proto = gserver->m_itemProtoList.FindIndex(title->m_proto->m_itemidx);
 					if(proto && (proto->getItemFlag() & ITEM_FLAG_CASTLLAN) && ((proto->getItemNum3() >> 16 & 0xffff) !=  !bCastellan) )
 					{
@@ -2029,7 +2004,7 @@ void CPC::CastllanTitleDelete(int castleZoneindex, bool bExclude, char bCastella
 					}
 				}
 			}
-			else					// castleZoneindex µø¿œ«— ∞Õ¿ª ¡ˆøÚ
+			else					// castleZoneindex ÎèôÏùºÌïú Í≤ÉÏùÑ ÏßÄÏõÄ
 			{
 				if( title->m_proto->m_castleNum == castleZoneindex )
 				{
@@ -2051,6 +2026,68 @@ void CPC::CastllanTitleDelete(int castleZoneindex, bool bExclude, char bCastella
 	}
 }
 
+
+bool CPC::is_valid_cash_purchase_list(int purchaseindex, int ctid)
+{
+	std::vector<std::pair<int, int> >::iterator sit = m_cash_purchase_list.begin();
+	std::vector<std::pair<int, int> >::iterator eit = m_cash_purchase_list.end();
+	for (; sit != eit; ++sit)
+	{
+		std::pair<int, int> t = *sit;
+		if (t.first == purchaseindex && t.second == ctid)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CPC::erase_cash_purchase_list(int purchaseindex, int ctid)
+{
+	std::vector<std::pair<int, int> >::iterator sit = m_cash_purchase_list.begin();
+	std::vector<std::pair<int, int> >::iterator eit = m_cash_purchase_list.end();
+	for (; sit != eit; ++sit)
+	{
+		std::pair<int, int> t = *sit;
+		if (t.first == purchaseindex && t.second == ctid)
+		{
+			m_cash_purchase_list.erase(sit);
+			return;
+		}
+	}
+}
+
+bool CPC::is_valid_cash_gift_list(int purchaseindex, int ctid)
+{
+	std::vector<std::pair<int, int> >::iterator sit = m_cash_gift_list.begin();
+	std::vector<std::pair<int, int> >::iterator eit = m_cash_gift_list.end();
+	for (; sit != eit; ++sit)
+	{
+		std::pair<int, int> t = *sit;
+		if (t.first == purchaseindex && t.second == ctid)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CPC::erase_cash_gift_list(int purchaseindex, int ctid)
+{
+	std::vector<std::pair<int, int> >::iterator sit = m_cash_gift_list.begin();
+	std::vector<std::pair<int, int> >::iterator eit = m_cash_gift_list.end();
+	for (; sit != eit; ++sit)
+	{
+		std::pair<int, int> t = *sit;
+		if (t.first == purchaseindex && t.second == ctid)
+		{
+			m_cash_gift_list.erase(sit);
+			return;
+		}
+	}
+}
 
 bool CPC::AddExpUseGP(LONGLONG exp)
 {
@@ -2096,7 +2133,7 @@ bool CPC::AddExpUseGP(LONGLONG exp)
 				SEND_Q(rmsg, gserver->m_subHelper);
 			}
 
-			// stat point ¡ı∞°
+			// stat point Ï¶ùÍ∞Ä
 			if (m_job2)
 			{
 				m_statpt_remain += 3;
@@ -2113,7 +2150,7 @@ bool CPC::AddExpUseGP(LONGLONG exp)
 				SEND_Q(rmsg, m_desc);
 			}
 
-			// ∑π∫ßæ˜ »ø∞˙
+			// Î†àÎ≤®ÏóÖ Ìö®Í≥º
 			LevelUp(true);
 
 			{
@@ -2157,7 +2194,7 @@ void CCharacter::AddEP(int ep_ )
 		m_ep = 0;
 }
 
-// [101214: selo] ∫∏ªÛ æ∆¿Ã≈€ µÂ∑” ºˆ¡§
+// [101214: selo] Î≥¥ÏÉÅ ÏïÑÏù¥ÌÖú ÎìúÎ°≠ ÏàòÏ†ï
 bool CPC::CheckInvenForQuestPrize(const CQuestProto* pQuestProto, const int& optItemIndex)
 {
 	if( NULL == m_desc )
@@ -2184,7 +2221,7 @@ bool CPC::CheckInvenForQuestPrize(const CQuestProto* pQuestProto, const int& opt
 		++totalPrizeSpace_Normal;
 	}
 
-	// ø…º« æ∆¿Ã≈€
+	// ÏòµÏÖò ÏïÑÏù¥ÌÖú
 	if(optItemIndex != -1)
 	{
 		for (int j =0; j < QUEST_MAX_OPTPRIZE; j++)
@@ -2262,8 +2299,8 @@ bool CPC::CheckInvenForProduceNoramlPrize(const int& itemdbIndex, const int& gra
 bool CPC::CheckInvenForProduceRandomPrize()
 {
 	// [101216: selo]
-	// «ˆ¿Á±Ó¡ˆ¿« ªÛ»≤¿∏∑Œ Normal ¿Œ∫•¿∏∑Œ∏∏ µÈæÓ∞°±‚ø° Normal ¿Œ∫•¿« ∞¯∞£¿∏∑Œ∏∏ ∫Ò±≥
-	// ±◊∏Æ∞Ì π´∞‘¥¬ ∏µŒ 1∑Œ ∞°¡§«‘
+	// ÌòÑÏû¨ÍπåÏßÄÏùò ÏÉÅÌô©ÏúºÎ°ú Normal Ïù∏Î≤§ÏúºÎ°úÎßå Îì§Ïñ¥Í∞ÄÍ∏∞Ïóê Normal Ïù∏Î≤§Ïùò Í≥µÍ∞ÑÏúºÎ°úÎßå ÎπÑÍµê
+	// Í∑∏Î¶¨Í≥† Î¨¥Í≤åÎäî Î™®Îëê 1Î°ú Í∞ÄÏ†ïÌï®
 	if( this->m_inventory.getEmptyCount() < 1 )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2457,7 +2494,7 @@ void CPC::ChangeQuickSlot( CItem* item, int itemSlotType )
 #ifdef XTRAP
 void CPC::xTrapSessionInit()
 {
-	XTrap_S_SessionInit( 120, CSFILE_NUM, gserver->m_XTrapMap, m_xtrapSessionBuf );// ITS-5545 ∞°πÃ∞Ì ø‰√ªø° ¿««— ¡¯¥‹Ω√∞£ ºˆ¡§ (300 -> 120 )
+	XTrap_S_SessionInit( 120, CSFILE_NUM, gserver->m_XTrapMap, m_xtrapSessionBuf );// ITS-5545 Í∞ÄÎØ∏Í≥† ÏöîÏ≤≠Ïóê ÏùòÌïú ÏßÑÎã®ÏãúÍ∞Ñ ÏàòÏ†ï (300 -> 120 )
 }
 #endif
 
@@ -2618,7 +2655,7 @@ bool CPC::isWarZone()
 
 	CWarCastle* castle = NULL;
 
-	//∞¯º∫ ¡ˆø™ø° ¡∏¿Á«œ¥¬ ƒ≥∏Ø≈Õ π◊ ∞°¥… ∑π∫ß √º≈©
+	//Í≥µÏÑ± ÏßÄÏó≠Ïóê Ï°¥Ïû¨ÌïòÎäî Ï∫êÎ¶≠ÌÑ∞ Î∞è Í∞ÄÎä• Î†àÎ≤® Ï≤¥ÌÅ¨
 	if(zone_index == ZONE_MERAC)
 	{
 		castle = CWarCastle::GetCastleObject(ZONE_MERAC);

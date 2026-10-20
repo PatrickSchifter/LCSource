@@ -68,7 +68,7 @@ void do_RVRRemoveSyndicate(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// °á»ç´ë Àåºñ¸¦ Âø¿ëÇÏ°í ÀÖ´ÂÁö °Ë»ç
+	// ê²°ì‚¬ëŒ€ ìž¥ë¹„ë¥¼ ì°©ìš©í•˜ê³  ìžˆëŠ”ì§€ ê²€ì‚¬
 	if (ch->m_wearInventory.isSyndicateEquipment())
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -78,7 +78,7 @@ void do_RVRRemoveSyndicate(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	CItem* item = ch->m_inventory.getItem(p->tab, p->invenIndex);	
-	// °á»ç´ë Å»Åð Ã³¸®
+	// ê²°ì‚¬ëŒ€ íƒˆí‡´ ì²˜ë¦¬
 	ch->m_syndicateManager.removeSyndicate(item);
 }
 
@@ -110,7 +110,7 @@ void do_RVRGiveJewel(CPC* ch, CNetMsg::SP& msg)
 
 void do_RVRUserInfo(CPC* ch, CNetMsg::SP& msg)
 {
-	//À¯ÀúÀÇ °á»ç´ë Á¤º¸¸¦ º¸³»ÁØ´Ù.
+	//ìœ ì €ì˜ ê²°ì‚¬ëŒ€ ì •ë³´ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 	ch->m_syndicateManager.sendUserInfo();
 	ch->m_syndicateManager.historyManager_.sendHistory(ch->getSyndicateType());
 	SyndicateInfoDataManager::instance()->sendJewelPercentageInfo(ch->m_desc);

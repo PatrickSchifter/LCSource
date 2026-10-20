@@ -10,7 +10,7 @@
 #include "../ShareLib/packetType/ptype_syndicate.h"
 
 //////////////////////////////////////////
-// È÷½ºÅä¸® ·Î±×
+// ížˆìŠ¤í† ë¦¬ ë¡œê·¸
 SyndicateHistoryManager::SyndicateHistoryManager(CPC* pc)
 	:_owner(pc)
 {
@@ -275,26 +275,26 @@ void SyndicateManager::joinSyndicate(int syndicateType)
 		this->setSyndicateGrade(syndicateType, grade);
 	}
 
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ ¸¹°Å³ª °°´Ù¸é 10°³ ÇÏ¶ô
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ Àû´Ù¸é 10°³ »ó½Â
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ë§Žê±°ë‚˜ ê°™ë‹¤ë©´ 10ê°œ í•˜ë½
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ì ë‹¤ë©´ 10ê°œ ìƒìŠ¹
 
-	// °¡ÀÔ Á¤º¸ helper·Î Àü¼Û
+	// ê°€ìž… ì •ë³´ helperë¡œ ì „ì†¡
 	{
 		CNetMsg::SP joinMsg(new CNetMsg);
 		UpdateServer::HelperServerRVRJoinRequest(joinMsg, syndicateType);
 		SEND_Q(joinMsg, gserver->m_helper);
 	}
 
-	//  °¡ÀÔ ·Î±×
+	//  ê°€ìž… ë¡œê·¸
 	historyManager_.joinHistory(syndicateType);
 
-	// ±â¿©µµ
+	// ê¸°ì—¬ë„
 	{
 		CNetMsg::SP pointMsg(new CNetMsg);
 		UpdateClient::makeUpdateSyndicateContributePoint(pointMsg, syndicateType, bFirstJoin, point);
 		SEND_Q(pointMsg, _owner->m_desc);
 	}
-	// µî±Þ
+	// ë“±ê¸‰
 	{
 		CNetMsg::SP kindMsg(new CNetMsg);
 		UpdateClient::makeUpdateSyndicateKind(kindMsg, syndicateType, grade, _owner->m_index);
@@ -308,7 +308,7 @@ void SyndicateManager::joinSyndicate(int syndicateType)
 		SEND_Q(errMsg, _owner->m_desc);
 	}
 
-	// È÷½ºÅä¸® Àü´Þ
+	// ížˆìŠ¤í† ë¦¬ ì „ë‹¬
 	historyManager_.sendHistory(syndicateType);
 
 	if(syndicateType == SYNDICATE::eSYNDICATE_KAILUX)
@@ -520,7 +520,7 @@ void SyndicateManager::syndicateAddJewel(int vItemIndex)
 		return;
 	}
 
-	// ¾ÆÀÌÅÛÀÌ ±âºÎ ¾ÆÀÌÅÛÀÌ ¸Â´ÂÁö¿¡ ´ëÇÑ Ã¼Å© ÇÊ¿ä
+	// ì•„ì´í…œì´ ê¸°ë¶€ ì•„ì´í…œì´ ë§žëŠ”ì§€ì— ëŒ€í•œ ì²´í¬ í•„ìš”
 	if (pItem->m_itemProto->isRvrJewel() == false)
 	{
 		LOG_ERROR("HACKING : not rvr_jewel item. charIndex[%d]", _owner->m_index);
@@ -530,7 +530,7 @@ void SyndicateManager::syndicateAddJewel(int vItemIndex)
 
 	int syndicateType = _owner->getSyndicateType();
 
-	// Ã¢Á¶ÀÇ º¸¼®¿¡ µû¸¥ ±â¿©µµ Áõ°¡
+	// ì°½ì¡°ì˜ ë³´ì„ì— ë”°ë¥¸ ê¸°ì—¬ë„ ì¦ê°€
 	_owner->m_syndicateManager.increaseSyndicatePoint((LONGLONG)pItem->m_itemProto->getItemNum0());
 
 	CNetMsg::SP rmsg(new CNetMsg);
@@ -539,20 +539,20 @@ void SyndicateManager::syndicateAddJewel(int vItemIndex)
 
 	int count = pItem->m_itemProto->getItemNum0();
 
-	// Ã¢Á¶ÀÇ º¸¼® Áõ°¡ -> helper¿¡¼­ Ã³¸®
+	// ì°½ì¡°ì˜ ë³´ì„ ì¦ê°€ -> helperì—ì„œ ì²˜ë¦¬
 	CNetMsg::SP sendHelpeMsg(new CNetMsg);
 	UpdateServer::HelperServerRVRIncreaseCreateJewel(sendHelpeMsg, _owner->getSyndicateType(), count);
 	SEND_Q(sendHelpeMsg, gserver->m_helper);
 
 	LOG_INFO("FACTION_CONTRIBUTE > name[%s], itemIndex[%d], AddPoint[%d], TotalPoint[%lld]", _owner->GetName(), pItem->getDBIndex(), count, _owner->m_syndicateManager.getSyndicatePoint(_owner->getSyndicateType()) + count);
 
-	// ¾ÆÀÌÅÛ »èÁ¦
+	// ì•„ì´í…œ ì‚­ì œ
 	_owner->m_inventory.deleteItemByItem(pItem);
 }
 
 void SyndicateManager::syndicateDelJewel( int count )
 {
-	// Ã¢Á¶ÀÇ º¸¼® °¨¼Ò -> helper¿¡¼­ Ã³¸®
+	// ì°½ì¡°ì˜ ë³´ì„ ê°ì†Œ -> helperì—ì„œ ì²˜ë¦¬
 	CNetMsg::SP sendHelpeMsg(new CNetMsg);
 	UpdateServer::HelperServerRVRDecreaseCreateJewel(sendHelpeMsg, _owner->getSyndicateType(), count);
 	SEND_Q(sendHelpeMsg, gserver->m_helper);
@@ -576,12 +576,12 @@ void SyndicateManager::send()
 		grade = syndicateData_.syndicate_grade_k;
 	}
 
-	// ±â¿©µµ Àü¼Û
+	// ê¸°ì—¬ë„ ì „ì†¡
 	CNetMsg::SP pointMsg(new CNetMsg);
 	UpdateClient::makeUpdateSyndicateContributePoint(pointMsg, syndicateType, false, point);
 	SEND_Q(pointMsg, _owner->m_desc);
 
-	// µî±Þ
+	// ë“±ê¸‰
 	CNetMsg::SP gradeMsg(new CNetMsg);
 	UpdateClient::makeUpdateSyndicateKind(gradeMsg, syndicateType, grade, _owner->m_index);
 	SEND_Q(gradeMsg, _owner->m_desc);
@@ -598,7 +598,7 @@ void SyndicateManager::save(std::vector<std::string>& vec)
 
 	vec.push_back(updateStr);
 
-	// history DB ÀúÀå
+	// history DB ì €ìž¥
 	historyManager_.save(vec);
 }
 
@@ -616,10 +616,10 @@ void SyndicateManager::changeGrade(int syndicateType)
 	{
 		if (oldGrade < newGrade)
 		{
-			// ½Â±Þ ·Î±×
+			// ìŠ¹ê¸‰ ë¡œê·¸
 			historyManager_.promotionHistory(syndicateType, newGrade);
 
-			//°øÀÛÀ¸·Î ½Â±ÞÇß´Ù¸é ÇïÆÛÀÇ °øÀÛ°ü¸® ¸®½ºÆ®¿¡ Ãß°¡
+			//ê³µìž‘ìœ¼ë¡œ ìŠ¹ê¸‰í–ˆë‹¤ë©´ í—¬í¼ì˜ ê³µìž‘ê´€ë¦¬ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
 			if(	(syndicateType == SYNDICATE::eSYNDICATE_DEALERMOON && newGrade == SYNDICATE::MAGUS) ||
 					(syndicateType == SYNDICATE::eSYNDICATE_KAILUX && newGrade == SYNDICATE::DUKA)	)
 			{
@@ -630,10 +630,10 @@ void SyndicateManager::changeGrade(int syndicateType)
 		}
 		else
 		{
-			// °­µî ·Î±×
+			// ê°•ë“± ë¡œê·¸
 			historyManager_.degradeHistory(syndicateType, newGrade);
 
-			//°øÀÛ¿¡¼­ °­µî´çÇÑ´Ù¸é ÇïÆÛÀÇ °øÀÛ°ü¸® ¸®½ºÆ®¿¡¼­ Á¦°Å
+			//ê³µìž‘ì—ì„œ ê°•ë“±ë‹¹í•œë‹¤ë©´ í—¬í¼ì˜ ê³µìž‘ê´€ë¦¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
 			if(	(syndicateType == SYNDICATE::eSYNDICATE_DEALERMOON && oldGrade == SYNDICATE::MAGUS) ||
 					(syndicateType == SYNDICATE::eSYNDICATE_KAILUX && oldGrade == SYNDICATE::DUKA)	)
 			{
@@ -650,7 +650,7 @@ void SyndicateManager::changeGrade(int syndicateType)
 	}
 	else
 	{
-		//µî±ÞÀÌ °øÀÛ ÀÌ»óÀÌ¶ó¸é ¹«Á¶°Ç ÇïÆÛ·Î ±â¿©µµ Á¤º¸Àü¼Û
+		//ë“±ê¸‰ì´ ê³µìž‘ ì´ìƒì´ë¼ë©´ ë¬´ì¡°ê±´ í—¬í¼ë¡œ ê¸°ì—¬ë„ ì •ë³´ì „ì†¡
 		if(	(syndicateType == SYNDICATE::eSYNDICATE_DEALERMOON && oldGrade >= SYNDICATE::MAGUS) ||
 				(syndicateType == SYNDICATE::eSYNDICATE_KAILUX && oldGrade >= SYNDICATE::DUKA)	)
 		{
@@ -663,8 +663,8 @@ void SyndicateManager::changeGrade(int syndicateType)
 
 int SyndicateManager::getContributionPointByJoin(int syndicateType)
 {
-	// °á»ç´ë Âü¿© ÀÎ¿øÀÌ ¸¹Àº °÷
-	// ÀûÀº°÷Àº 1000
+	// ê²°ì‚¬ëŒ€ ì°¸ì—¬ ì¸ì›ì´ ë§Žì€ ê³³
+	// ì ì€ê³³ì€ 1000
 	int joinKailuxCount		= SyndicateInfoDataManager::instance()->getJoinCount(SYNDICATE::eSYNDICATE_KAILUX);
 	int joinDealerMoonCount	= SyndicateInfoDataManager::instance()->getJoinCount(SYNDICATE::eSYNDICATE_DEALERMOON);
 	int increasePoint = 0;
@@ -693,9 +693,9 @@ int SyndicateManager::getContributionPointByJoin(int syndicateType)
 
 void SyndicateManager::sendJoinCreateJewel(int syndicateType)
 {
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ ¸¹°Å³ª °°´Ù¸é 10°³ ÇÏ¶ô
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ Àû´Ù¸é 10°³ »ó½Â
-	// helper·Î Àü¼Û
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ë§Žê±°ë‚˜ ê°™ë‹¤ë©´ 10ê°œ í•˜ë½
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ì ë‹¤ë©´ 10ê°œ ìƒìŠ¹
+	// helperë¡œ ì „ì†¡
 	int jewelKailuxPoint		= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_KAILUX);
 	int jewelDealerMoonPoint	= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_DEALERMOON);
 	if (jewelKailuxPoint == 0 && jewelDealerMoonPoint == 0)
@@ -710,13 +710,13 @@ void SyndicateManager::sendJoinCreateJewel(int syndicateType)
 		{
 			if (jewelKailuxPoint < jewelDealerMoonPoint)
 			{
-				// Áõ°¡
+				// ì¦ê°€
 				penalty_point = 10;
 				bIncrease = true;
 			}
 			else
 			{
-				// °¨¼Ò
+				// ê°ì†Œ
 				penalty_point = 10;
 			}
 		}
@@ -725,12 +725,12 @@ void SyndicateManager::sendJoinCreateJewel(int syndicateType)
 		{
 			if (jewelKailuxPoint < jewelDealerMoonPoint)
 			{
-				// °¨¼Ò
+				// ê°ì†Œ
 				penalty_point = 10;
 			}
 			else
 			{
-				// Áõ°¡
+				// ì¦ê°€
 				penalty_point = 10;
 				bIncrease = true;
 			}
@@ -752,9 +752,9 @@ void SyndicateManager::sendJoinCreateJewel(int syndicateType)
 
 void SyndicateManager::sendLeaveCreateJewel(int syndicateType)
 {
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ ¸¹°Å³ª °°´Ù¸é 10°³ ÇÏ¶ô
-	// Ã¢Á¶ÀÇ º¸¼®ÀÌ Àû´Ù¸é 10°³ »ó½Â
-	// helper·Î Àü¼Û
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ë§Žê±°ë‚˜ ê°™ë‹¤ë©´ 10ê°œ í•˜ë½
+	// ì°½ì¡°ì˜ ë³´ì„ì´ ì ë‹¤ë©´ 10ê°œ ìƒìŠ¹
+	// helperë¡œ ì „ì†¡
 	LONGLONG jewelKailuxPoint		= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_KAILUX);
 	LONGLONG jewelDealerMoonPoint	= SyndicateInfoDataManager::instance()->getJewelPoint(SYNDICATE::eSYNDICATE_DEALERMOON);
 	if (jewelKailuxPoint == 0 && jewelDealerMoonPoint == 0)
@@ -769,13 +769,13 @@ void SyndicateManager::sendLeaveCreateJewel(int syndicateType)
 		{
 			if (jewelKailuxPoint < jewelDealerMoonPoint)
 			{
-				// Áõ°¡
+				// ì¦ê°€
 				penalty_point = 10;
 				bIncrease = true;
 			}
 			else
 			{
-				// °¨¼Ò
+				// ê°ì†Œ
 				penalty_point = 10;
 			}
 		}
@@ -784,12 +784,12 @@ void SyndicateManager::sendLeaveCreateJewel(int syndicateType)
 		{
 			if (jewelKailuxPoint < jewelDealerMoonPoint)
 			{
-				// °¨¼Ò
+				// ê°ì†Œ
 				penalty_point = 10;
 			}
 			else
 			{
-				// Áõ°¡
+				// ì¦ê°€
 				penalty_point = 10;
 				bIncrease = true;
 			}
@@ -840,14 +840,14 @@ void SyndicateManager::sendRemove()
 
 	_owner->m_syndicateManager.setSyndicateType(SYNDICATE::eSYNDICATE_NONE);
 
-	// ±â¿©µµ Àü¼Û
+	// ê¸°ì—¬ë„ ì „ì†¡
 	{
 		CNetMsg::SP pointMsg(new CNetMsg);
 		UpdateClient::makeUpdateSyndicateContributePoint(pointMsg, syndicateType, false, point);
 		SEND_Q(pointMsg, _owner->m_desc);
 
 	}
-	// µî±Þ
+	// ë“±ê¸‰
 	{
 		CNetMsg::SP gradeMsg(new CNetMsg);
 		UpdateClient::makeUpdateSyndicateKind(gradeMsg, _owner->getSyndicateType(), 0, _owner->m_index);
@@ -855,7 +855,7 @@ void SyndicateManager::sendRemove()
 		_owner->m_pArea->SendToCell(gradeMsg, _owner, false);
 
 	}
-	// ·Î±× Ãß°¡ ¹× È÷½ºÅä¸® Àü´Þ
+	// ë¡œê·¸ ì¶”ê°€ ë° ížˆìŠ¤í† ë¦¬ ì „ë‹¬
 	{
 		historyManager_.removeHistory(syndicateType);
 		historyManager_.sendHistory(syndicateType);
@@ -896,6 +896,7 @@ void SyndicateManager::applySyndicateSkill( int syndicateType )
 	{
 	case SYNDICATE::eSYNDICATE_KAILUX:
 		{
+			_owner->m_assist.CureBySkillIndex(1756);
 			CSkill* skill;
 			skill = gserver->m_skillProtoList.Create(1756, _owner->m_syndicateManager.getSyndicateGrade(_owner->getSyndicateType()));
 			bool bApply = false;
@@ -904,6 +905,7 @@ void SyndicateManager::applySyndicateSkill( int syndicateType )
 		break;
 	case SYNDICATE::eSYNDICATE_DEALERMOON:
 		{
+			_owner->m_assist.CureBySkillIndex(1757);
 			CSkill* skill;
 			skill = gserver->m_skillProtoList.Create(1757, _owner->m_syndicateManager.getSyndicateGrade(_owner->getSyndicateType()));
 			bool bApply = false;

@@ -31,7 +31,7 @@ public:
 		endno_ = _endno;
 	}
 
-	// return value°¡ falseÀÌ¸é ÀÚµ¿ Áõ°¡µÈ »óÅÂ
+	// return valueê°€ falseì´ë©´ ìë™ ì¦ê°€ëœ ìƒíƒœ
 	bool pop(_Ty &data)
 	{
 		bool flag = true;

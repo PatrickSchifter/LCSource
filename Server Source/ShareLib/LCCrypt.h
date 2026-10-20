@@ -12,7 +12,7 @@
 #define LC_DES3_OLD_KEY_HIGH			(0x53653453)
 #define LC_DES3_OLD_KEY_LOW				(0x51476296)
 
-// Àü¿ª º¯¼ö »ç¿ëÀ» ±İÇÏ°í LCDES3CONTEXT µ¥ÀÌÅÍ¸¦ ÀÌ¿ëÇÏ¿© ¾ÏÈ£ º¹È£¿¡ È°¿ëÇÑ´Ù
+// ì „ì—­ ë³€ìˆ˜ ì‚¬ìš©ì„ ê¸ˆí•˜ê³  LCDES3CONTEXT ë°ì´í„°ë¥¼ ì´ìš©í•˜ì—¬ ì•”í˜¸ ë³µí˜¸ì— í™œìš©í•œë‹¤
 typedef struct __tagLCDES3CONTEXT
 {
 	unsigned int KnL[32];
@@ -27,13 +27,13 @@ typedef struct __tagLCDES3CONTEXT
 	}
 } LCDES3CONTEXT;
 
-// ¾ÏÈ£Å° Á¤º¸ µ¥ÀÌÅÍ
+// ì•”í˜¸í‚¤ ì •ë³´ ë°ì´í„°
 #define CNM_KEY_TYPE				LCDES3CONTEXT
 
-// ¾ÏÈ£/º¹È£ ¹öÆÛ Å©±â
+// ì•”í˜¸/ë³µí˜¸ ë²„í¼ í¬ê¸°
 #define CNM_TEMP_BUFFER_LENGTH	(MAX_MESSAGE_DATA + LCCNM_META_DATA_SIZE)
 
-// ¶óÀÌºê·¯¸®¿¡¼­ Á¤ÀÇµÇ¾ß µÇ´Â ÇÔ¼ö
+// ë¼ì´ë¸ŒëŸ¬ë¦¬ì—ì„œ ì •ì˜ë˜ì•¼ ë˜ëŠ” í•¨ìˆ˜
 
 #ifdef _MSC_VER
 #ifdef  __cplusplus
@@ -41,50 +41,50 @@ extern "C" {
 #endif // __cplusplus
 #endif // _MSC_VER
 
-// ¾ÏÈ£Å° ÃÊ±âÈ­ ÇÔ¼ö
+// ì•”í˜¸í‚¤ ì´ˆê¸°í™” í•¨ìˆ˜
 extern void CNM_InitKeyValue(CNM_KEY_TYPE* pKey);
 
-// ¾ÏÈ£Å° »ı¼º ÇÔ¼ö : ÇöÀç ¾ÏÈ£Å°·ÎºÎÅÍ ´ÙÀ½ ¾ÏÈ£Å°¸¦ »ı¼º
+// ì•”í˜¸í‚¤ ìƒì„± í•¨ìˆ˜ : í˜„ì¬ ì•”í˜¸í‚¤ë¡œë¶€í„° ë‹¤ìŒ ì•”í˜¸í‚¤ë¥¼ ìƒì„±
 extern void CNM_NextKey(CNM_KEY_TYPE* pKey);
 
-// ¾ÏÈ£Å° º¹»ç
+// ì•”í˜¸í‚¤ ë³µì‚¬
 extern void CNM_CopyKey(CNM_KEY_TYPE* pDestKey, const CNM_KEY_TYPE* pSrcKey);
 
-// ¾ÏÈ£È­
-// return value		¾ÏÈ£È­ÈÄ ±æÀÌ, ¿À·ù ¹ß»ı½Ã À½¼ö
-// pSrc				¿øº» µ¥ÀÌÅÍ
-// nLenSrc			¿øº» µ¥ÀÌÅÍ ±æÀÌ
-// pKey				¾ÏÈ£Å° µ¥ÀÌÅÍ
-// pDest			´ë»ó ¹öÆÛ
+// ì•”í˜¸í™”
+// return value		ì•”í˜¸í™”í›„ ê¸¸ì´, ì˜¤ë¥˜ ë°œìƒì‹œ ìŒìˆ˜
+// pSrc				ì›ë³¸ ë°ì´í„°
+// nLenSrc			ì›ë³¸ ë°ì´í„° ê¸¸ì´
+// pKey				ì•”í˜¸í‚¤ ë°ì´í„°
+// pDest			ëŒ€ìƒ ë²„í¼
 extern int CNM_Crypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsigned char* pDest, unsigned char* pTmpBuf);
 extern int CNM_OldCrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsigned char* pDest, unsigned char* pTmpBuf);
 
-// º¹È£È­
-// return value		º¹È£ÈÄ ±æÀÌ, ¿À·ù ¹ß»ı½Ã 0 ¶Ç´Â À½¼ö
-// pSrc				º¹È£µÈ µ¥ÀÌÅÍ
-// nLenSrc			º¹È£µÈ µ¥ÀÌÅÍ ±æÀÌ
-// pKey				º¹È£Å° µ¥ÀÌÅÍ
-// pDest			´ë»ó ¹öÆÛ
-// pTmpBuf			º¹È£¿ë ÀÓ½Ã ¹öÆÛ
+// ë³µí˜¸í™”
+// return value		ë³µí˜¸í›„ ê¸¸ì´, ì˜¤ë¥˜ ë°œìƒì‹œ 0 ë˜ëŠ” ìŒìˆ˜
+// pSrc				ë³µí˜¸ëœ ë°ì´í„°
+// nLenSrc			ë³µí˜¸ëœ ë°ì´í„° ê¸¸ì´
+// pKey				ë³µí˜¸í‚¤ ë°ì´í„°
+// pDest			ëŒ€ìƒ ë²„í¼
+// pTmpBuf			ë³µí˜¸ìš© ì„ì‹œ ë²„í¼
 extern int CNM_Decrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsigned char* pDest, unsigned char* pTmpBuf);
 extern int CNM_OldDecrypt(const unsigned char* pSrc, int nLenSrc, CNM_KEY_TYPE* pKey, unsigned char* pDest, unsigned char* pTmpBuf);
 
-// Seed »ı¼º : Client
-// return value		»ı¼ºµÈ Seed Value
+// Seed ìƒì„± : Client
+// return value		ìƒì„±ëœ Seed Value
 // strID			User ID
 // strPW			User Password
 // nTickCount		return value of GetTickCount()
 extern unsigned int CNM_MakeSeedForClient(const char* strID, const char* strPW, unsigned long nTickCount);
 
-// Seed »ı¼º : Server
-// return value		»ı¼ºµÈ Seed Value
+// Seed ìƒì„± : Server
+// return value		ìƒì„±ëœ Seed Value
 // nRandom			Random Value
 // nPulse			Server Pulse
 extern unsigned int CNM_MakeSeedForServer(int nRandomValue, int nServerPulse);
 
-// Seed¿¡¼­ Key »ı¼º
-// pKey				»ı¼ºµÈ Key¸¦ ÀúÀåÇÒ °÷
-// nSeed			»ç¿ëÇÒ Seed Value
+// Seedì—ì„œ Key ìƒì„±
+// pKey				ìƒì„±ëœ Keyë¥¼ ì €ì¥í•  ê³³
+// nSeed			ì‚¬ìš©í•  Seed Value
 extern void CNM_MakeKeyFromSeed(CNM_KEY_TYPE* pKey, unsigned int nSeed);
 
 #ifdef _MSC_VER

@@ -15,10 +15,10 @@ HelperInGameConnectTimer* HelperInGameConnectTimer::instance()
 
 void HelperInGameConnectTimer::operate( rnSocketIOService* service )
 {
-	// Çö Å¸ÀÌ¸Ó »èÁ¦
+	// í˜„ íƒ€ì´ë¨¸ ì‚­ì œ
 	bnf::instance()->RemoveSession(service);
 
-	// ¸Þ½ÅÁ® ¼­¹ö¿¡ Á¢¼Ó
+	// ë©”ì‹ ì ¸ ì„œë²„ì— ì ‘ì†
 	HelperInGame::instance()->connect();
 }
 
@@ -26,7 +26,7 @@ void HelperInGameConnectTimer::operate( rnSocketIOService* service )
 
 void HelperInGame::connect()
 {
-	// ¸Þ½ÃÁ¯ ¼­¹ö¿¡ Á¢¼Ó ½Ãµµ
+	// ë©”ì‹œì ¼ ì„œë²„ì— ì ‘ì† ì‹œë„
 	host_ = gserver->m_config.Find("Helper Server", "IP");
 	port_ = atoi(gserver->m_config.Find("Helper Server", "Port"));
 	bnf::instance()->CreateAsyncConnect(host_, port_, this, CONNECT_TYPE_FOR_CNETMSG);
@@ -58,7 +58,7 @@ void HelperInGame::onClose( rnSocketIOService* service )
 	bnf::instance()->RemoveSession(service);
 	service_ = NULL;
 
-	// ÀçÁ¢¼Ó Å¸ÀÌ¸Ó »ý¼º
+	// ìž¬ì ‘ì† íƒ€ì´ë¨¸ ìƒì„±
 	session_handle handle = bnf::instance()->CreateMSecTimer(RECONNECT_TIMER_FOR_MESSENGER,
 							(void *)HelperInGameConnectTimer::instance());
 }
@@ -67,7 +67,7 @@ void HelperInGame::onConnect( rnSocketIOService* service )
 {
 	service_ = service;
 
-	// Á¢¼Ó ÈÄ ÃÖÃÊ ¸Þ½ÃÁö Àü´Þ
+	// ì ‘ì† í›„ ìµœì´ˆ ë©”ì‹œì§€ ì „ë‹¬
 	this->WriteToOutput(gserver->m_helperConnMsg);
 
 	CNetMsg::SP rmsg(new CNetMsg);

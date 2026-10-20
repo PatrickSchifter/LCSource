@@ -58,6 +58,8 @@
 #include <Engine/Entities/LevelupGuide.h>
 #include <Engine/Contents/function/ItemCollectionData.h>
 #include <Engine/Info/ServerInfo.h>
+#include <Engine/Contents/function/TitleData.h>
+#include <Engine/Base/InterfaceSymbol.h>
 
 #ifndef NO_GAMEGUARD
 //	#include <NPGameLib.h>
@@ -168,10 +170,10 @@ INDEX g_iShowHelp1Icon = 1;
 INDEX g_iSaveID = 0;
 extern CTString g_strSaveID = "";
 
-#ifdef EUROUPEAN_SERVER_LOGIN
+//#ifdef EUROUPEAN_SERVER_LOGIN
 // 유로피안 서버 접속 여부 [10/18/2012 Ranma]
 INDEX g_iConnectEuroupean = 0;
-#endif
+//#endif
 
 // [7/9/2009 rumist] rejection.
 INDEX g_iRejectExchange = 0;
@@ -418,6 +420,9 @@ NTSTATUS NewZwOpenProcess(
 	return status;
 }
 */
+
+bool g_bDrawportRus;
+
 // WSS_NPROTECT 070402 ------------------------------->>
 #ifndef NO_GAMEGUARD
 ENGINE_API CTString g_szHackMsg;
@@ -741,7 +746,7 @@ inline bool GetOneLine(CTString& str, CTString& line)
 // [2013/01/16] sykim70
 ENGINE_API bool SE_CheckEngine()
 {
-#if !defined(_DEBUG) && !defined(KALYDO) && !defined(G_KOR) && !defined(VER_TEST) && !defined(G_CHINA)
+#if !defined(_DEBUG) && !defined(KALYDO) && !defined(VER_TEST) && !defined(G_CHINA) && !defined(G_USA)  //PWESTY FIXED VER_TEST
 	AnalyzeApplicationPath();
 
 	// check binary.lod
@@ -1015,11 +1020,6 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShell->DeclareSymbol("persistent      INDEX g_iSaveID;", &g_iSaveID);	
 	_pShell->DeclareSymbol("persistent user CTString g_strSaveID;", &g_strSaveID);
 
-#ifdef EUROUPEAN_SERVER_LOGIN
-	// 유로피안 서버 접속 여부 [10/18/2012 Ranma]
-	_pShell->DeclareSymbol("persistent      INDEX g_iConnectEuroupean;", &g_iConnectEuroupean);
-#endif
-
 	// [7/9/2009 rumist] rejection
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectExchange;", &g_iRejectExchange);
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectParty;", &g_iRejectParty);
@@ -1087,10 +1087,24 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	InitStreams();
 
 	// load persistent symbols
-	if (!_bDedicatedServer) {
-//안태훈 수정 시작	//(Taiwan Closed beta)(0.2)
+	if (!_bDedicatedServer) 
+	{
 		_pShell->Execute(CTString("decode \"")+fnmPersistentSymbols+"\";");
-//안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
+
+		if (IsGamigo(g_iCountry) == TRUE)
+		{
+			_pShell->DeclareSymbol("persistent      INDEX g_iConnectEuroupean;", &g_iConnectEuroupean);
+			_pShell->Execute(CTString("decode \"")+fnmPersistentSymbols+"\";");
+		}
+	}	
+
+	if (g_iCountry == RUSSIA)
+	{
+		g_bDrawportRus = true;
+	}
+	else
+	{
+		g_bDrawportRus = false;
 	}
 
 	// Create log file for console if not allready created
@@ -1207,7 +1221,7 @@ ENGINE_API void EndLodData()
 	CSetItemData::release();
 	CAction::release();
 	CMissionCase::release();
-	CNickNameData::release();
+	TitleStaticData::release();
 	CQuestStaticData::release();
 	CMobData::release();
 	CNpcHelp::release();
@@ -1238,8 +1252,10 @@ ENGINE_API void SE_EndEngine(void)
 
 	CUIManager::destroy();
 
+#ifndef		UI_TOOL
 	GameDataManager::getSingleton()->DestroyAll();
 	GameDataManager::destroy();
+#endif		// UI_TOOL
 
 	StageMgr::getSingleton()->DestroyAll();
 	StageMgr::destroy();
@@ -1248,6 +1264,7 @@ ENGINE_API void SE_EndEngine(void)
 	CArmorPreview::Destroy();
 	CTEventString::Destroy();
 	CTradeItem::Destroy();
+	CustomTitleData::clearCustomItemInfo();
 
 	EndLodData();
 
@@ -1259,16 +1276,18 @@ ENGINE_API void SE_EndEngine(void)
 	MyInfo::destroy();
 	ServerInfo::destroy();
 	ObjInfo::destroy();
+	CInterfaceSymbol::destroy();
 
 	_pfdDisplayFont->Clear();
 	FONT_STOCK_RELEASE(_pfdDisplayFont);
 	_pfdConsoleFont->Clear();
 	FONT_STOCK_RELEASE(_pfdConsoleFont);
 
-#ifdef G_RUSSIA
-	_pfdDefaultFont->Clear();
-	FONT_STOCK_RELEASE(_pfdDefaultFont);
-#endif // G_RUSSIA
+	if (g_bDrawportRus == true)
+	{
+		_pfdDefaultFont->Clear();
+		FONT_STOCK_RELEASE(_pfdDefaultFont);
+	}
 
 	// free stocks
 	delete _pEntityClassStock;   _pEntityClassStock   = NULL;
@@ -1331,9 +1350,9 @@ ENGINE_API void SE_LoadDefaultFonts(void)
 		_pfdConsoleFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Console1.fnt"));
 
 		//_pfdGameFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Korean.fnt") );
-#if defined (G_RUSSIA)
-		_pfdDefaultFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Russia.fnt"));
-#endif
+
+		if (g_bDrawportRus == true)
+			_pfdDefaultFont = _pFontStock->Obtain_t( CTFILENAME( "Fonts\\Russia.fnt"));
 	}
 	catch (char *strError) {
 		FatalError( TRANS("Error loading font: %s."), strError);

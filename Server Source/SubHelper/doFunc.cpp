@@ -35,14 +35,14 @@ void do_Request(CNetMsg::SP& msg, CDescriptor* dest)
 		if (STATE(pDesc) != CON_PLAYING)
 			continue ;
 
-		// serverno°¡ -1(¸ğµÎ)ÀÌ°Å³ª
-		// ÇØ´ç ¼­¹ö±º ÀÌ°í
-		// ±× ¼­¹ö¿¡ Á¸ÀçÇÏ´Â Á¸ÀÌ°Å³ª
-		// ¸ğµç Á¸ÀÌ¸é Ãß°¡
-		if (((serverno == -1/* && pDesc->m_serverNo != LOGIN_SERVER_NUM && pDesc->m_serverNo != CONNECTOR_SERVER_NUM*/)	// ÄÁ³ØÅÍ, ·Î±×ÀÎ¼­¹ö Á¦¿ÜÇÑ
+		// servernoê°€ -1(ëª¨ë‘)ì´ê±°ë‚˜
+		// í•´ë‹¹ ì„œë²„êµ° ì´ê³ 
+		// ê·¸ ì„œë²„ì— ì¡´ì¬í•˜ëŠ” ì¡´ì´ê±°ë‚˜
+		// ëª¨ë“  ì¡´ì´ë©´ ì¶”ê°€
+		if (((serverno == -1/* && pDesc->m_serverNo != LOGIN_SERVER_NUM && pDesc->m_serverNo != CONNECTOR_SERVER_NUM*/)	// ì»¨ë„¥í„°, ë¡œê·¸ì¸ì„œë²„ ì œì™¸í•œ
 				|| pDesc->m_serverNo == serverno) && (subno == -1 || pDesc->m_subNo == subno) && (zone == -1 || pDesc->FindZone(zone) != -1))
 		{
-			// ¼¼¼Ç¿¡°Ô ¸Ş½ÃÁö Àü¼Û, Ã³¸®´Â °¢ GameServer°¡ ´ã´ç
+			// ì„¸ì…˜ì—ê²Œ ë©”ì‹œì§€ ì „ì†¡, ì²˜ë¦¬ëŠ” ê° GameServerê°€ ë‹´ë‹¹
 			SEND_Q(msg, pDesc);
 
 			if (node->m_bReq)
@@ -52,7 +52,7 @@ void do_Request(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 	}
 
-	// ÀÀ´äÀÌ ÇÊ¿ä¾ø´Â ¸Ş½ÃÁöÀÇ °æ¿ì ÀúÀåÇÏÁö ¾Ê°í ¹Ù·Î Áö¿ò
+	// ì‘ë‹µì´ í•„ìš”ì—†ëŠ” ë©”ì‹œì§€ì˜ ê²½ìš° ì €ì¥í•˜ì§€ ì•Šê³  ë°”ë¡œ ì§€ì›€
 	if (node->m_bReq == false)
 	{
 		gserver.m_msgList.Remove(node);
@@ -74,7 +74,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 				>> zoneno
 				>> subtype;
 
-	// seq¸¦ Ã£°í
+	// seqë¥¼ ì°¾ê³ 
 	CMsgListNode* node;
 	CMsgListNode* nodeNext = gserver.m_msgList.m_head;
 	CDescriptor* pServer = NULL;
@@ -85,7 +85,7 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 		if (node->m_seq == seq)
 		{
 			bool bAllReceived = true;
-			// ¼­¹ö¸¦ Ã£°í
+			// ì„œë²„ë¥¼ ì°¾ê³ 
 			CMsgListNodeServerNode* snode;
 			CMsgListNodeServerNode* snodeNext = node->m_head;
 			while ((snode = snodeNext))
@@ -93,22 +93,22 @@ void do_Reply(CNetMsg::SP& msg, CDescriptor* dest)
 				snodeNext = snode->m_pNext;
 				if (snode->m_server->m_serverNo == dest->m_serverNo && snode->m_server->m_subNo == dest->m_subNo)
 				{
-					// ¼­¹ö ÀÀ´ä ¹ŞÀ½À¸·Î °»½Å
+					// ì„œë²„ ì‘ë‹µ ë°›ìŒìœ¼ë¡œ ê°±ì‹ 
 					snode->m_recieved = true;
 					pServer = snode->m_server;
 					continue ;
 				}
 
-				// ¸ğµÎ ÀÀ´ä ¹Ş¾Ò´ÂÁö °Ë»ç
+				// ëª¨ë‘ ì‘ë‹µ ë°›ì•˜ëŠ”ì§€ ê²€ì‚¬
 				if (!snode->m_recieved)
 					bAllReceived = false;
 			}
 
-			// ¿äÃ»ÇÑ ¼­¹ö°¡ ¾øÀ¸¸é
+			// ìš”ì²­í•œ ì„œë²„ê°€ ì—†ìœ¼ë©´
 			if (!pServer)
 				continue ;
 
-			// ´Ù ¹Ş¾ÒÀ¸¸é ³ëµå¿¡¼­ Á¦°Å
+			// ë‹¤ ë°›ì•˜ìœ¼ë©´ ë…¸ë“œì—ì„œ ì œê±°
 			if (bAllReceived)
 			{
 				gserver.m_msgList.Remove(node);

@@ -11,7 +11,7 @@ void FailMsg(CNetMsg::SP& msg, MSG_FAIL_TYPE failtype)
 	RefMsg(msg) << (unsigned char)failtype;
 }
 
-void do_Command_TitleSystem_InsertTitleRep(CNetMsg::SP& msg, int char_index, int title_index, int endtime, int errortype, int tab, int invenIndex, CLCString serial)
+void do_Command_TitleSystem_InsertTitleRep(CNetMsg::SP& msg, int char_index, int title_index, int endtime, int errortype, int tab, int invenIndex, CLCString serial, int custom_title_index)
 {
 	msg->Init(MSG_SUBHELPER_COMMAND);
 	RefMsg(msg) << MSG_SUBHELPER_TITLESYSTEM_INSERT_TITLE_REP
@@ -21,7 +21,8 @@ void do_Command_TitleSystem_InsertTitleRep(CNetMsg::SP& msg, int char_index, int
 				<< errortype
 				<< tab
 				<< invenIndex
-				<< serial;
+				<< serial
+				<< custom_title_index;
 }
 
 void do_Command_TitleSystem_DisableRep(CNetMsg::SP& msg, int char_index, int count)
@@ -38,10 +39,10 @@ void do_Command_TitleSystem_DeleteRep(CNetMsg::SP& msg, int char_index, int titl
 	RefMsg(msg) << MSG_SUBHELPER_TITLE_SYSTEM_TITLE_DELETE_REP
 				<< char_index
 				<< title_index
-				<< errortype;			// errortype = 1 ÀÌ¸é update true, errortype = 0 ÀÌ¸é update false ÀÓ.
+				<< errortype;			// errortype = 1 ì´ë©´ update true, errortype = 0 ì´ë©´ update false ìž„.
 }
 
-// [selo: 101105] Á¾·á ½Ã°£ °­Á¦ º¯°æ
+// [selo: 101105] ì¢…ë£Œ ì‹œê°„ ê°•ì œ ë³€ê²½
 void do_Command_TitleSystem_ForceChangeTime(CNetMsg::SP& msg, int char_index, int title_index, int endtime)
 {
 	msg->Init(MSG_SUBHELPER_COMMAND);

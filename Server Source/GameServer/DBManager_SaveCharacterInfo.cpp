@@ -55,6 +55,8 @@ void DBManager::_SaveCharaterQuery(std::vector<std::string> & vec, CPC* pChar, i
 
 	updateQuery += boost::str(boost::format(", a_blood_point=%d") % pChar->m_bloodPoint);
 
+	updateQuery += boost::str(boost::format(", a_ep=%d") % pChar->m_ep);
+
 	updateQuery += ", a_datestamp=now()";
 
 	updateQuery += boost::str(boost::format(", a_was_x=%0.4f") % GET_X(pChar));
@@ -70,7 +72,7 @@ void DBManager::_SaveCharaterQuery(std::vector<std::string> & vec, CPC* pChar, i
 	updateQuery += boost::str(boost::format(", a_pkrecover=%d") % pChar->m_pkRecoverPulse);
 	updateQuery += boost::str(boost::format(", a_pkpenaltyhp=%d") % pChar->m_pkPenaltyHP);
 	updateQuery += boost::str(boost::format(", a_pkpenaltymp=%d") % pChar->m_pkPenaltyMP);
-	updateQuery += boost::str(boost::format(", a_guildoutdate=%d") % pChar->m_guildoutdate);
+	updateQuery += boost::str(boost::format(", a_guildindate=%d") % pChar->m_guild_in_date);
 	updateQuery += boost::str(boost::format(", a_pluseffect_option=%d") % (int)pChar->m_plusEffect);
 	updateQuery += boost::str(boost::format(", a_fame=%d") % pChar->m_fame);
 
@@ -495,7 +497,7 @@ void DBManager::_SaveCharacterMemposQuery(std::vector<std::string> & vec, CPC* p
 
 	vec.push_back(selectQuery);
 
-	// MySQL ¹®ÀÚ¿­ º¸È£¿ë ÀÓ½Ã µ¥ÀÌÅÍ
+	// MySQL ë¬¸ìì—´ ë³´í˜¸ìš© ì„ì‹œ ë°ì´í„°
 	char tComment[MEMPOS_COMMENT_LENGTH * 2 + 1];
 
 	// update query
@@ -603,7 +605,7 @@ void DBManager::_SaveCharacterPetPreQuery(std::vector<std::string> & vec, CPC* p
 
 void DBManager::_SaveCharacterPetQuery(std::vector<std::string> & vec, CPC* pChar, CPet* pet)
 {
-	// update / insert¸¦ ±¸ºĞÇÏ±â À§ÇÔ
+	// update / insertë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•¨
 	std::string selectQuery = boost::str(boost::format(
 			"SELECT a_index FROM t_pet WHERE a_index=%d AND a_owner=%d LIMIT 1") % pet->m_index % pChar->m_index);
 	vec.push_back(selectQuery);
@@ -704,7 +706,7 @@ void DBManager::_SaveCharacterPetNameQuery(std::vector<std::string> & vec, CPC* 
 
 void DBManager::_SaveCharacterPetTempDeleteQuery(std::vector<std::string> & vec, CPC* pChar)
 {
-	// ÀÓ½ÃÀúÀå ¾Ö¿Ïµ¿¹° »èÁ¦ : a_enable == 2
+	// ì„ì‹œì €ì¥ ì• ì™„ë™ë¬¼ ì‚­ì œ : a_enable == 2
 	std::string deleteQuery = boost::str(boost::format(
 			"DELETE FROM t_pet WHERE a_owner=%d AND a_enable=2") % pChar->m_index);
 
@@ -713,7 +715,7 @@ void DBManager::_SaveCharacterPetTempDeleteQuery(std::vector<std::string> & vec,
 
 void DBManager::_SaveCharacterAttackPetPreQuery(std::vector<std::string> & vec, CPC* pChar)
 {
-	// ¾Ö¿Ïµ¿¹° »óÅÂ¸¦ 2·Î º¯°æÈÄ¿¡ Áö±İ µé°í ÀÖ´Â ÆêÀº ´Ù½Ã 1·Î º¯°æÇÏ¸é¼­ ÀúÀåÇÏ°í ³ª¸ÓÁö »èÁ¦
+	// ì• ì™„ë™ë¬¼ ìƒíƒœë¥¼ 2ë¡œ ë³€ê²½í›„ì— ì§€ê¸ˆ ë“¤ê³  ìˆëŠ” í«ì€ ë‹¤ì‹œ 1ë¡œ ë³€ê²½í•˜ë©´ì„œ ì €ì¥í•˜ê³  ë‚˜ë¨¸ì§€ ì‚­ì œ
 	std::string updateQuery = boost::str(boost::format("UPDATE t_apets SET a_enable=2 WHERE a_owner=%d") % pChar->m_index);
 
 	vec.push_back(updateQuery);
@@ -722,7 +724,7 @@ void DBManager::_SaveCharacterAttackPetPreQuery(std::vector<std::string> & vec, 
 void DBManager::_SaveCharacterAttackPetQuery(std::vector<std::string> & vec, CPC* pChar, CAPet* apet)
 {
 	{
-		// update / insert¸¦ ±¸ºĞÇÏ±â À§ÇØ
+		// update / insertë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•´
 		std::string str = boost::str(boost::format("SELECT a_index FROM t_apets WHERE a_index=%d AND a_owner=%d LIMIT 1") % apet->m_index % pChar->m_index);
 
 		vec.push_back(str);
@@ -819,7 +821,7 @@ void DBManager::_SaveCharacterAttackPetInvenQuery(std::vector<std::string> & vec
 	vec;
 	pChar;
 	apet;
-	// Æê ÀÎº¥ 4Ä­ ÀúÀå //////////////////////////////////////////////////////
+	// í« ì¸ë²¤ 4ì¹¸ ì €ì¥ //////////////////////////////////////////////////////
 
 	std::string deleteQuery = boost::str(boost::format("DELETE FROM t_apets_inven WHERE a_apet_idx=%d") % apet->m_index );
 	vec.push_back(deleteQuery);
@@ -892,8 +894,8 @@ void DBManager::_SaveCharacterAttackPetAIQuery(std::vector<std::string> & vec, C
 	if (apet->m_nAICount)
 	{
 
-		// ¸ğµÎ DELETE ÈÄ¿¡ ´Ù½Ã INSERT¸¦ ÇÑ´Ù.´ë½Å ·Î±×·Î Áö¿öÁø Á¤º¸´Â ³²±è.
-		// ÆêAI ÀúÀå - DELETE
+		// ëª¨ë‘ DELETE í›„ì— ë‹¤ì‹œ INSERTë¥¼ í•œë‹¤.ëŒ€ì‹  ë¡œê·¸ë¡œ ì§€ì›Œì§„ ì •ë³´ëŠ” ë‚¨ê¹€.
+		// í«AI ì €ì¥ - DELETE
 		std::string deleteQuery = boost::str(boost::format("DELETE FROM t_apets_ai WHERE a_char_idx = %d and a_apet_idx = %d") % pChar->m_index % apet->m_index);
 		vec.push_back(deleteQuery);
 
@@ -931,7 +933,7 @@ void DBManager::_SaveCharacterAttackPetTempDeleteQuery(std::vector<std::string> 
 {
 	vec;
 	pChar;
-	// ÀÓ½ÃÀúÀå ¾Ö¿Ïµ¿¹° »èÁ¦ : a_enable == 2
+	// ì„ì‹œì €ì¥ ì• ì™„ë™ë¬¼ ì‚­ì œ : a_enable == 2
 	std::string deletQuery = boost::str(boost::format("DELETE FROM t_apets WHERE a_owner=%d AND a_enable=2") % pChar->m_index);
 	vec.push_back(deletQuery);
 }
@@ -1041,7 +1043,7 @@ void DBManager::_SaveCharacterEventGomdoriQuery(std::vector<std::string> & vec, 
 {
 	if( gserver->isActiveEvent(A_EVENT_BEAR_DOLL) )
 	{
-		// insert Ã¼Å©¿ëÀ¸·Î »ç¿ëÇÔ
+		// insert ì²´í¬ìš©ìœ¼ë¡œ ì‚¬ìš©í•¨
 
 		std::string selectQuery = boost::str(boost::format("SELECT a_char_index FROM t_event_gomdori_2007 WHERE a_char_index=%d LIMIT 1") % pChar->m_index);
 		vec.push_back(selectQuery);
@@ -1202,7 +1204,7 @@ void DBManager::SaveCharacterInfo(CDescriptor* d, bool disconnect)
 		while (pet)
 		{
 			{
-				//Pet Pre Query :: ¾Ö¿Ï µ¿¹° »óÅÂ¸¦ 2·Î º¯°æ
+				//Pet Pre Query :: ì• ì™„ ë™ë¬¼ ìƒíƒœë¥¼ 2ë¡œ ë³€ê²½
 				_SaveCharacterPetPreQuery((*pushdata)[CHAR_SAVE_TYPE_TCHAR_PET_PRE], pChar);
 			}
 
@@ -1227,7 +1229,7 @@ void DBManager::SaveCharacterInfo(CDescriptor* d, bool disconnect)
 	{
 		// Attack Pet Query
 		{
-			// Attack Pet Pre Query :: ¾Ö¿Ï µ¿¹° »óÅÂ¸¦ 2·Î º¯°æ
+			// Attack Pet Pre Query :: ì• ì™„ ë™ë¬¼ ìƒíƒœë¥¼ 2ë¡œ ë³€ê²½
 			_SaveCharacterAttackPetPreQuery((*pushdata)[CHAR_SAVE_TYPE_TCHAR_APET_PRE], pChar);
 		}
 

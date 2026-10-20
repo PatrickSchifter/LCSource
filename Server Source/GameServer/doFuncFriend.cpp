@@ -9,7 +9,7 @@
 #include "../ShareLib/packetType/ptype_old_do_friend.h"
 //#include "Friend.h"
 
-//Å¬¶óÀÌ¾ğÆ®·ÎºÎÅÍ ¸Ş½ÃÁö ¹Ş´Â ºÎºĞ...
+//í´ë¼ì´ì–¸íŠ¸ë¡œë¶€í„° ë©”ì‹œì§€ ë°›ëŠ” ë¶€ë¶„...
 void do_Friend(CPC* ch, CNetMsg::SP& msg)
 {
 	unsigned char subtype;
@@ -18,15 +18,15 @@ void do_Friend(CPC* ch, CNetMsg::SP& msg)
 
 	switch (subtype)
 	{
-	case MSG_FRIEND_REGIST_REQUEST://Ä£±¸ µî·Ï ¿äÃ»
+	case MSG_FRIEND_REGIST_REQUEST://ì¹œêµ¬ ë“±ë¡ ìš”ì²­
 		do_FriendRegistRequest(ch, msg);
 		break;
 
-	case MSG_FRIEND_REGIST_ALLOW: // µî·Ï ½ÂÀÎ
+	case MSG_FRIEND_REGIST_ALLOW: // ë“±ë¡ ìŠ¹ì¸
 		do_FriendRegistAllow(ch, msg);
 		break;
 
-	case MSG_FRIEND_REGIST_CANCEL: // µî·Ï °ÅÀı
+	case MSG_FRIEND_REGIST_CANCEL: // ë“±ë¡ ê±°ì ˆ
 		do_FriendRegistRefuse(ch, msg);
 		break;
 
@@ -34,7 +34,7 @@ void do_Friend(CPC* ch, CNetMsg::SP& msg)
 		do_FriendDeleteMember(ch, msg);
 		break;
 	
-	case MSG_FRIEND_SET_CONDITION: //»óÅÂº¯°æ
+	case MSG_FRIEND_SET_CONDITION: //ìƒíƒœë³€ê²½
 		do_FriendSetCondition(ch, msg);
 		break;
 
@@ -47,7 +47,7 @@ void do_Friend(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//Å¬¶ó¾î¾ğÆ®·ÎºÎÅÍ Ä£±¸µî·Ï ¿äÃ» ¸Ş½ÃÁö°¡ ¿ÔÀ»¶§...
+//í´ë¼ì–´ì–¸íŠ¸ë¡œë¶€í„° ì¹œêµ¬ë“±ë¡ ìš”ì²­ ë©”ì‹œì§€ê°€ ì™”ì„ë•Œ...
 void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doFriendRegReq *packet = reinterpret_cast<RequestClient::doFriendRegReq*>(msg->m_buf);
@@ -61,7 +61,7 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
-	// ÀÌ¸§ °Ë»ç
+	// ì´ë¦„ ê²€ì‚¬
 	int lenname = strlen(packet->name);
 	if (lenname < 2 || lenname > 16)
 	{
@@ -87,7 +87,7 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 
 	CPC* pPc = PCManager::instance()->getPlayerByName(packet->name, true);
 
-	//ÇØ´ç Ä³¸¯ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é...
+	//í•´ë‹¹ ìºë¦­ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´...
 	if (pPc == NULL)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -112,7 +112,7 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	//Á¤¿ø ÃÊ°úÇß´ÂÁö Ã¼Å©...
+	//ì •ì› ì´ˆê³¼í–ˆëŠ”ì§€ ì²´í¬...
 	int friendcnt;
 	friendcnt = pPc->m_Friend->GetFriendSum();
 
@@ -133,7 +133,7 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-//¿äÃ»ÀÚ°¡ ÀÌ¹Ì µî·ÏµÇ¾î ÀÖ´ÂÁö Ã¼Å©..
+//ìš”ì²­ìê°€ ì´ë¯¸ ë“±ë¡ë˜ì–´ ìˆëŠ”ì§€ ì²´í¬..
 	CFriendMember* pFriendMem = pPc->m_Friend->FindFriendMember(packet->requesterindex);
 	if(pFriendMem != NULL)
 	{
@@ -142,7 +142,7 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
-//ÀÌ¹Ì ´Ù¸¥ »ç¶÷ÀÇ Ä£±¸¿äÃ»ÀÇ ´äº¯À» ±â´Ù¶ó´Â »óÅÂ¶ó¸é,,
+//ì´ë¯¸ ë‹¤ë¥¸ ì‚¬ëŒì˜ ì¹œêµ¬ìš”ì²­ì˜ ë‹µë³€ì„ ê¸°ë‹¤ë¼ëŠ” ìƒíƒœë¼ë©´,,
 	if (pPc->m_nRegFriend != 0 && pPc->m_nRegFriend  != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -155,14 +155,14 @@ void do_FriendRegistRequest(CPC* ch, CNetMsg::SP& msg)
 	ch->m_nRegFriend = pPc->m_index;
 
 	{
-		//¸Ş½ÃÁö ±×´ë·Î º¸³½´Ù.
+		//ë©”ì‹œì§€ ê·¸ëŒ€ë¡œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::FriendRegReqMsg(rmsg, packet->requesterindex, ch->GetName());		
-		SEND_Q(rmsg, pPc->m_desc); //µî·Ï ´çÇÏ´ÂÀÚ¿¡°Ô º¸³»±â.
+		SEND_Q(rmsg, pPc->m_desc); //ë“±ë¡ ë‹¹í•˜ëŠ”ìì—ê²Œ ë³´ë‚´ê¸°.
 	}
 }
 
-//Ä£±¸µî·ÏÀ» Çã¶ôÇß´Ù...
+//ì¹œêµ¬ë“±ë¡ì„ í—ˆë½í–ˆë‹¤...
 void do_FriendRegistAllow(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doFriendRegAllow *packet = reinterpret_cast<RequestClient::doFriendRegAllow*>(msg->m_buf);
@@ -178,7 +178,7 @@ void do_FriendRegistAllow(CPC* ch, CNetMsg::SP& msg)
 		ch->m_nRegFriend = 0;
 		return ;
 	}
-//¼­·ÎÀÇ ÀÎµ¦½º°¡ ¸ÂÁö ¾Ê´Â´Ù¸é..
+//ì„œë¡œì˜ ì¸ë±ìŠ¤ê°€ ë§ì§€ ì•ŠëŠ”ë‹¤ë©´..
 	if (pPc->m_nRegFriend != ch->m_index || ch->m_nRegFriend != pPc->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -207,7 +207,7 @@ void do_FriendRegistAllow(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 }
-//Ä£±¸ µî·ÏÀ» °ÅÀıÇß´Ù...
+//ì¹œêµ¬ ë“±ë¡ì„ ê±°ì ˆí–ˆë‹¤...
 void do_FriendRegistRefuse(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doFriendRegCancel *packet = reinterpret_cast<RequestClient::doFriendRegCancel*>(msg->m_buf);
@@ -232,7 +232,7 @@ void do_FriendDeleteMember(CPC* ch, CNetMsg::SP& msg)
 	RequestClient::doFriendDeleteMember *packet = reinterpret_cast<RequestClient::doFriendDeleteMember*>(msg->m_buf);
 	packet->name[MAX_CHAR_NAME_LENGTH] = '\0';
 	
-	//ÀÚ½ÅÀ» Áö¿ì·Á°í Çß°Å³ª, ¿äÃ»ÀÚ°¡ ÀÚ½ÅÀÌ ¾Æ´Ï¶ó¸é...
+	//ìì‹ ì„ ì§€ìš°ë ¤ê³  í–ˆê±°ë‚˜, ìš”ì²­ìê°€ ìì‹ ì´ ì•„ë‹ˆë¼ë©´...
 	if (packet->targetIndex == ch->m_index || packet->requestIndex != ch->m_index)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -250,7 +250,7 @@ void do_FriendDeleteMember(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	int lenname = strlen(packet->name);
-	if (lenname < 2 || lenname > 16)
+	if (lenname < 2 || lenname > MAX_CHAR_NAME_LENGTH)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::FriendErrorMsg(rmsg, MSG_FRIEND_ERROR_FRIENDNAME);
@@ -273,7 +273,7 @@ void do_FriendDeleteMember(CPC* ch, CNetMsg::SP& msg)
 }
 
 
-// »óÅÂ º¯°æÇÏ±â..
+// ìƒíƒœ ë³€ê²½í•˜ê¸°..
 void do_FriendSetCondition(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doFriendSetCondition* packet = reinterpret_cast<RequestClient::doFriendSetCondition*>(msg->m_buf);
@@ -288,14 +288,14 @@ void do_FriendSetCondition(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		//ÀÓ½Ã..¸±·¹ÀÌ.
+		//ì„ì‹œ..ë¦´ë ˆì´.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::FriendSetConditionMsg(rmsg, packet->charIndex, packet->condition);
 		SEND_Q(rmsg, ch->m_desc);
 	}
 }
 
-//ºí·° ¸â¹ö »èÁ¦
+//ë¸”ëŸ­ ë©¤ë²„ ì‚­ì œ
 void do_FriendDeleteBlock(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::doFriendDeleteBlock* packet = reinterpret_cast<RequestClient::doFriendDeleteBlock*>(msg->m_buf);

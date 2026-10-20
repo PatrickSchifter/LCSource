@@ -16,8 +16,7 @@
 #include <Engine/Interface/UIEditBox.h>
 #include <Engine/Interface/UIScrollBar.h>
 #include <Engine/Interface/UIRectString.h>
-#include <vector>
-#include <Entities/ItemData.h>
+#include <Engine/Contents/function/TitleData.h>
 
 #define NICKNAME_WIDTH		251
 #define NICKNAME_HEIGHT		285
@@ -31,12 +30,14 @@ protected:
 		INDEX		NickAccessor;	// È£Äª ÀÎµ¦½º(È£Äª µ¥ÀÌÅÍ Á¢±ÙÀÚ)
 		LONG		lDate;			// ¸¸·á ³¯Â¥
 		INDEX		NickItemIndex;	// È£Äª ¾ÆÀÌÅÛ ÀÎµ¦½º
+		INDEX		CustomIndex;
 		CUIIcon*	pIconNick;		// È£Äª ¹öÆ°
 
-		NickListData() : NickAccessor(0), lDate(0), NickItemIndex(0) {}
+		NickListData() : NickAccessor(0), lDate(0), NickItemIndex(0), CustomIndex(-1) {}
 
-		NickListData(INDEX l, LONG r, INDEX i) : NickAccessor(l), lDate(r), NickItemIndex(i) {}
-		INDEX GetNickAccessor(void) { return NickAccessor; }
+		NickListData(INDEX l, LONG r, INDEX i, INDEX ic) : NickAccessor(l), lDate(r), NickItemIndex(i), CustomIndex(ic){}
+		INDEX GetNickAccessor(void) { return NickAccessor;	}
+		INDEX GetCustomIndex(void)	{ return CustomIndex;	}
 	};
 
 	UIRectUV			m_rtBackGround;				// BackGround UV
@@ -100,7 +101,7 @@ public:
 
 	CTString	CulEndDate( INDEX iIndex );		// EndDate
 
-	void		AddNickNameList( INDEX iIndex, LONG lDate );		// Add NickName
+	void		AddNickNameList( INDEX iIndex, LONG lDate, int nCustomIndex = -1 );		// Add NickName
 	void		DelNickNameList( INDEX iIndex );	// Delete NickName
 	void		SortNickNameData();
 
@@ -112,8 +113,8 @@ public:
 
 	static bool SortCompare(const NickListData& pNickData1, const NickListData& pNickData2)
 	{
-		int nLIndex = CNickNameData::getData(pNickData1.NickAccessor)->GetItemIndex();
-		int nRIndex = CNickNameData::getData(pNickData2.NickAccessor)->GetItemIndex();
+		int nLIndex = TitleStaticData::getData(pNickData1.NickAccessor)->GetItemIndex();
+		int nRIndex = TitleStaticData::getData(pNickData2.NickAccessor)->GetItemIndex();
 
 		std::string strL = CItemData::getData(nLIndex)->GetName();
 		std::string strR = CItemData::getData(nRIndex)->GetName();

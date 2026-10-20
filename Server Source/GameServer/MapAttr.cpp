@@ -50,7 +50,7 @@ bool CMapAttr::Load(int zone, int ylayer, int w, int h, const char* attrmap, con
 
 	boost::shared_ptr<FILE> _auto_close_height(fpHeight, fclose);
 
-	// ÆÄÀÏ »çÀÌÁî¸¦ °Ë»ç ¹× µ¥ÀÌÅÍ ·Îµù
+	// íŒŒì¼ ì‚¬ì´ì¦ˆë¥¼ ê²€ì‚¬ ë° ë°ì´í„° ë¡œë”©
 	fseek(fpAttr, 0, SEEK_END);
 	int fpAttr_filesize = ftell(fpAttr);
 	fseek(fpAttr, 0, SEEK_SET);

@@ -63,7 +63,7 @@ namespace UpdateClient
 
 	struct GPSTargetMoveInfo : public pTypeBase
 	{
-		bool isSameZone;		//false ¸é ? Ã³¸®
+		bool isSameZone;		//false Â¸Ã© ? Ä‚Å‚Â¸Â®
 		float x;
 		float z;
 		float h;

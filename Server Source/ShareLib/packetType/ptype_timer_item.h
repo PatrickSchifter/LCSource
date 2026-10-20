@@ -3,11 +3,11 @@
 
 #include "ptype_base.h"
 
-// ╠Б╟ёа╕ ╬фюлеш
+// Й╦╟Й╟└Л═° Л∙└Л²╢М┘°
 enum
 {
 	TIMERITEM_NON,
-	TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM,		// ©Ь╟щ ц╒╟МNPC
+	TIMETITEM_TYPE_REMOTE_EXPRESS_SYSTEM,		// Л⌡░Й╡╘ Л╟╫ЙЁ═NPC
 
 	TIMERITEM_TYPE_CASH_INVENTORY_1,
 	TIMERITEM_TYPE_CASH_INVENTORY_2,
@@ -16,12 +16,12 @@ enum
 	TIMERITEM_MAX,
 };
 
-// фпе╤ sub type
+// М▄╗М┌╥ sub type
 enum
 {
-	MSG_SUB_TIMER_ITEM_LIST,		// ╠Б╟ёа╕ ╬фюлеш ╦╝╫╨ф╝
-	MSG_SUB_TIMER_ITEM_MODIFY,		// ╠Б╟ёа╕ ╬фюлеш цъ╟║ ╧в ╫ц╟ё ╨╞╟Ф
-	MSG_SUB_TIMER_ITEM_DELETE,		// ╠Б╟ёа╕ ╬фюлеш ╩Ха╕
+	MSG_SUB_TIMER_ITEM_LIST,		// Й╦╟Й╟└Л═° Л∙└Л²╢М┘° К╕╛Л┼╓М┼╦
+	MSG_SUB_TIMER_ITEM_MODIFY,		// Й╦╟Й╟└Л═° Л∙└Л²╢М┘° Л╤■Й╟─ К╟▐ Л▀°Й╟└ КЁ─Й╡╫
+	MSG_SUB_TIMER_ITEM_DELETE,		// Й╦╟Й╟└Л═° Л∙└Л²╢М┘° Л┌╜Л═°
 };
 
 #pragma pack(push, 1)

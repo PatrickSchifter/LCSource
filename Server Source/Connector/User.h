@@ -1,30 +1,32 @@
 #ifndef __USER_H__
 #define __USER_H__
 
-class CUser
+#include "../ShareLib/MemoryPoolBase.h"
+
+class CUser : public MemoryPoolBase<CUser>
 {
 public:
-	int				m_index;		// user ÀÎµ¦½º : Æ÷ÅĞ ÀÎµ¦½º
+	int				m_index;		// user ì¸ë±ìŠ¤ : í¬í„¸ ì¸ë±ìŠ¤
 	CLCString		m_name;			// user id
-	CLCString		m_ip;			// Á¢¼Ó ¾ÆÀÌÇÇ
-	int				m_server;		// ¼­¹ö±º
-	int				m_subnum;		// ¼­¹ö ¹øÈ£
-	int				m_zone;			// Á¸ ¹øÈ£
-	int				m_listindex;	// ¸®½ºÆ®¿¡¼­ÀÇ ÀÎµ¦½º
-	int				m_state;		// »óÅÂ
-	int				m_timestamp;	// ÇÃ·¹ÀÌ ½Ã°£
-	CDescriptor*	m_descserver;	// Á¢¼ÓÇÑ ¼­¹öÀÇ µğ½ºÅ©¸³ÅÍ
-	int				m_checkTics;	// Á¢¼Ó Ã¼Å© Æ½
-	char			m_preopen_chk;	// ÇÁ¸®¿ÀÇÂ Ã¼Å©
+	CLCString		m_ip;			// ì ‘ì† ì•„ì´í”¼
+	int				m_server;		// ì„œë²„êµ°
+	int				m_subnum;		// ì„œë²„ ë²ˆí˜¸
+	int				m_zone;			// ì¡´ ë²ˆí˜¸
+	int				m_listindex;	// ë¦¬ìŠ¤íŠ¸ì—ì„œì˜ ì¸ë±ìŠ¤
+	int				m_state;		// ìƒíƒœ
+	int				m_timestamp;	// í”Œë ˆì´ ì‹œê°„
+	CDescriptor*	m_descserver;	// ì ‘ì†í•œ ì„œë²„ì˜ ë””ìŠ¤í¬ë¦½í„°
+	int				m_checkTics;	// ì ‘ì† ì²´í¬ í‹±
+	char			m_preopen_chk;	// í”„ë¦¬ì˜¤í”ˆ ì²´í¬
 
 //0627
-	int				m_userFlag;		// ½Å±Ô°¡ÀÔÀÚ, ¼±¹° ¹Ş¾Ò´ÂÁö, ¼ºÀÎÀÎÁö
+	int				m_userFlag;		// ì‹ ê·œê°€ì…ì, ì„ ë¬¼ ë°›ì•˜ëŠ”ì§€, ì„±ì¸ì¸ì§€
 
-	// ºô¸µ¿¡ ÀÇÁ¸µÇ´Â ºÎºĞ
-	int				m_usertype;		// »ç¿ëÀÚ Å¸ÀÔ(ÀÏ¹İ/ÆĞÅ°Áö/´ººñ/±âÅ¸ µîµî)
-	int				m_timeremain;	// °èÁ¤ ¸¸·á ³²Àº ½Ã°£
-	int				m_paytype;		// ÁöºÒ ¹æ¹ı
-	int				m_location;		// Á¢¼Ó Àå¼Ò(ÀÏ¹İ/°ÔÀÓ¹æ/±âÅ¸ µîµî)
+	// ë¹Œë§ì— ì˜ì¡´ë˜ëŠ” ë¶€ë¶„
+	int				m_usertype;		// ì‚¬ìš©ì íƒ€ì…(ì¼ë°˜/íŒ¨í‚¤ì§€/ë‰´ë¹„/ê¸°íƒ€ ë“±ë“±)
+	int				m_timeremain;	// ê³„ì • ë§Œë£Œ ë‚¨ì€ ì‹œê°„
+	int				m_paytype;		// ì§€ë¶ˆ ë°©ë²•
+	int				m_location;		// ì ‘ì† ì¥ì†Œ(ì¼ë°˜/ê²Œì„ë°©/ê¸°íƒ€ ë“±ë“±)
 	CLCString			m_proSite;
 
 #ifdef CHARDEL_CHECKID
@@ -33,24 +35,5 @@ public:
 
 	CUser(int index, const char* name, int server, int subnum, const char* ip, const char* ident = NULL);
 };
-
-class CUserList
-{
-public:
-	CUser**			m_users;
-	int				m_count;
-	int				m_last;
-	int				m_playersPerZone[MAX_ZONES];
-
-
-	CUserList();
-	~CUserList();
-
-	CUser* Add(CUser* user);
-	bool Remove(CUser* user, bool bFree = true);
-	CUser* Find(const char* name);
-	CUser* FindByUserIndex(int userindex);
-};
-
 #endif
 //

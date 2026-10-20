@@ -521,7 +521,13 @@ IMPL_GM_CMD(ic_checkitem)
 IMPL_GM_CMD(show_attr)
 {
 	CTString strOut;
-	strOut.PrintF("Attr(%d)", _pNetwork->MyCharacterInfo.sbAttributePos);
+	strOut.PrintF("Attr(0x%02X)", _pNetwork->MyCharacterInfo.sbAttributePos);
 	UICHAT()->AddSysMessage(strOut);
+	return true;
+}
+
+IMPL_GM_CMD(autoprobMasterstone)
+{
+	UIMGR()->GetMixNew()->MasterStoneAutoTestProb();
 	return true;
 }

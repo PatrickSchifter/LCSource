@@ -12,7 +12,7 @@
 #include "../ShareLib/packetType/ptype_old_login.h"
 
 #ifdef PASSWORD_ENCRYPT_SHA256
-#include "LCSha256.h"
+#include "../Sharelib/LCSha256.h"
 #endif // PASSWORD_ENCRYPT_SHA256
 #if defined(BCRYPT_USA) && !defined (CIRCLE_WINDOWS)
 #include "../ShareLib/CheckPassword.h"
@@ -29,10 +29,10 @@ void OnLoginLocalLog(int usercode, const char* idname, const char* host, const c
 
 void CDescriptorReconnectTimer::operate( rnSocketIOService* service )
 {
-	// ÀÚ½ÅÀÇ Å¸ÀÌ¸Ó Á¦°Å
+	// ìì‹ ì˜ íƒ€ì´ë¨¸ ì œê±°
 	bnf::instance()->RemoveSession(service);
 
-	// Àç ¿¬°á ½Ãµµ
+	// ì¬ ì—°ê²° ì‹œë„
 	desc_->Connect();
 }
 
@@ -98,7 +98,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 		if (msg->m_mtype != MSG_LOGIN)
 		{
-			throw MSG_FAIL_LOGIN_SERVER;		// Àß¸øµÈ ÀÔ·Â
+			throw MSG_FAIL_LOGIN_SERVER;		// ì˜ëª»ëœ ì…ë ¥
 		}
 
 		RequestClient::LoginFromClient* packet = reinterpret_cast<RequestClient::LoginFromClient*>(msg->m_buf);
@@ -129,19 +129,19 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		if (gserver.m_bOnlyLocal)
 		{
 #ifdef LC_KOR
-			// Æ¯¼ö °èÁ¤ÀÌ ¾Æ´Ï°í
+			// íŠ¹ìˆ˜ ê³„ì •ì´ ì•„ë‹ˆê³ 
 			if (strcmp(packet->id, "guest01") && strcmp(packet->id, "guest02") && strcmp(packet->id, "guest03") && strcmp(packet->id, "cbx030"))
 			{
 #endif // LC_KOR
-				// Æ¼¿£ÅÍ PC ¹æµµ ¾Æ´Ï°í
+				// í‹°ì—”í„° PC ë°©ë„ ì•„ë‹ˆê³ 
 				if ((service_->ip() != "121.65.246.125")
 #ifdef LC_KOR
 						&& (service_->ip() != "123.127.98")
 #endif
-						&& strncmp(service_->ip().c_str(), "10.1.", strlen("10.1."))					// ¸¶ÄÉÆÃ
+						&& strncmp(service_->ip().c_str(), "10.1.", strlen("10.1."))					// ë§ˆì¼€íŒ…
 				   )
 				{
-					// GM °èÁ¤µµ ¾Æ´Ï°í
+					// GM ê³„ì •ë„ ì•„ë‹ˆê³ 
 					if (strcmp(gserver.m_config.Find("GM ID", packet->id), "") == 0)
 					{
 						int nIP[4];
@@ -191,13 +191,13 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		}
 #endif
 
-		// ·Î±ä ¸ğµå ¿¡·¯
+		// ë¡œê¸´ ëª¨ë“œ ì—ëŸ¬
 		//if (mode != MSG_LOGIN_NEW)
 		//	throw MSG_FAIL_LOGIN_NEW;
 
 		if (strinc(packet->id, "'"))
 		{
-			throw MSG_FAIL_LOGINSERV_WRONG_CHAR;			// ¾ÆÀÌµğ¿¡ ' µé¾î°¨
+			throw MSG_FAIL_LOGINSERV_WRONG_CHAR;			// ì•„ì´ë””ì— ' ë“¤ì–´ê°
 		}
 
 		int len = strlen(packet->id);
@@ -228,12 +228,12 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 				{
 					if(blocktime != 0 && blocktime > nowtime)
 					{
-						// ºí·°µÆÀ½À» ¾Ë¸²
+						// ë¸”ëŸ­ëìŒì„ ì•Œë¦¼
 						throw MSG_FAIL_LOGINSERV_BLOCK_USER;
 					}
 					else if(blocktime != 0 && blocktime <= nowtime)
 					{
-						// 30ºĞ ½Ã°£ÃÊ°ú ºí·°ÇØÁ¦
+						// 30ë¶„ ì‹œê°„ì´ˆê³¼ ë¸”ëŸ­í•´ì œ
 						sqlblock.Format("UPDATE t_users SET a_block_time = 0, a_fail_count = 0 WHERE a_portal_index = %d AND a_idname = '%s'", userindex, (const char*)m_idname);
 						dbUser_block.SetQuery(sqlblock);
 						if(dbUser_block.Update())
@@ -256,7 +256,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 		if (strinc(packet->pw, "'"))
 		{
-			throw MSG_FAIL_LOGINSERV_WRONG_PASSWORD;		// ¾ÏÈ£¿¡ ' µé¾î°¨
+			throw MSG_FAIL_LOGINSERV_WRONG_PASSWORD;		// ì•”í˜¸ì— ' ë“¤ì–´ê°
 		}
 
 		len = strlen(packet->pw);
@@ -289,7 +289,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 #endif
 
 		CLCString sql(1024);
-		// ÀÎÁõ DB Á¢¼Ó ID, PW °Ë»ç
+		// ì¸ì¦ DB ì ‘ì† ID, PW ê²€ì‚¬
 #if /*defined LC_KOR*/ defined (BCRYPT_USA) && !defined (CIRCLE_WINDOWS)
 		CLCString buf(1024);
 		buf.Format("SELECT user_code, user_id, passwd FROM bg_user WHERE user_id='%s'",(const char*)m_idname);
@@ -301,7 +301,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		CLCString dbpassword(100);
 		dbAuth.GetRec("passwd", dbpassword);
 		std::string dbpass((const char*)dbpassword);
-		std::string pass((const char*)m_passwd); // bcryptµé¾î°¡¸é ¼ø¼ö ÅØ½ºÆ®·Î¸¸ ¹Ş¾Æ¾ßÁö...
+		std::string pass((const char*)m_passwd); // bcryptë“¤ì–´ê°€ë©´ ìˆœìˆ˜ í…ìŠ¤íŠ¸ë¡œë§Œ ë°›ì•„ì•¼ì§€...
 
 		//int crypttype = CCheckPassword::kPlainText;
 		//if		(dbpass.size() == 60)	crpyttype = CCheckPassword::kBcryptedText;
@@ -320,7 +320,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		CLCString dbpassword(100);
 		dbAuth.GetRec("passwd", dbpassword);
 		std::string dbpass((const char*)dbpassword);
-		std::string pass((const char*)m_passwd); // bcryptµé¾î°¡¸é ¼ø¼ö ÅØ½ºÆ®·Î¸¸ ¹Ş¾Æ¾ßÁö...
+		std::string pass((const char*)m_passwd); // bcryptë“¤ì–´ê°€ë©´ ìˆœìˆ˜ í…ìŠ¤íŠ¸ë¡œë§Œ ë°›ì•„ì•¼ì§€...
 
 		if(!CCheckPassword::checkPass(pass, dbpass))
 			throw MSG_FAIL_LOGINSERV_WRONG_PASSWORD;
@@ -372,7 +372,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 #endif
 		int usercode;
 #ifdef LC_TLD
-		// ÅÂ±¹ ¹Ì¼º³âÀÚ Á¢¼Ó ±İÁö
+		// íƒœêµ­ ë¯¸ì„±ë…„ì ì ‘ì† ê¸ˆì§€
 		char m_specialsw;
 		char m_special;
 		dbAuth.GetRec("a_index", usercode);
@@ -392,8 +392,8 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		dbAuth.GetRec("user_code", usercode);
 #endif
 
-#if !defined(INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS) && defined(IP_NATION_CHECK)
-		// ALTER TABLE t_users ADD a_lastip varchar(15) , ADD a_lastnation varchar(3); ÇÊ¿ä
+//#if !defined(INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS) && defined(IP_NATION_CHECK)
+		// ALTER TABLE t_users ADD a_lastip varchar(15) , ADD a_lastnation varchar(3); í•„ìš”
 		CDBCmd dbUser_check;
 		dbUser_check.Init(&gserver.m_dbuser);
 
@@ -419,18 +419,18 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		OnLoginLocalLog(usercode, (const char*) m_idname, (const char*) service_->ip().c_str(), (const char*) strNation);
 #endif //LOCAL_LOGIN_LOG
 
-#endif //IP_NATION_CHECK
+//#endif //IP_NATION_CHECK
 #if defined(INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS)
-		CLCString	nationString;			// DB·ÎºÎÅÍ ¹Ş¾Æ ¿Ã ±¹°¡ÄÚµå
+		CLCString	nationString;			// DBë¡œë¶€í„° ë°›ì•„ ì˜¬ êµ­ê°€ì½”ë“œ
 		bool		bCheckNation = false;
 
-		// 4Dot ÁÖ¼ÒÃ¼°è ¿¡¼­ network byte order ÀÎ long ÇüÅÂ·Î ¹Ù²Û´Ù.
-		unsigned long ipAddr_before = inet_addr((const char*)service_->ip().c_str());
+		// 4Dot ì£¼ì†Œì²´ê³„ ì—ì„œ network byte order ì¸ long í˜•íƒœë¡œ ë°”ê¾¼ë‹¤.
+		ipAddr_before = inet_addr((const char*)service_->ip().c_str());
 
-		// network byte order(10Áø¼ö) -> host byte order(16Áø¼ö)
-		unsigned long ipAddr_real	= ntohl(ipAddr_before);
+		// network byte order(10ì§„ìˆ˜) -> host byte order(16ì§„ìˆ˜)
+		ipAddr_real	= ntohl(ipAddr_before);
 
-		// ip ±Û·Î¹ú Å×ÀÌºíÀ» °Ë»öÇÑ´Ù.
+		// ip ê¸€ë¡œë²Œ í…Œì´ë¸”ì„ ê²€ìƒ‰í•œë‹¤.
 		sql.Format("SELECT a_nation_S FROM t_iplist WHERE a_ipstart_N <= %u and a_ipend_N >= %u ", ipAddr_real, ipAddr_real);
 		dbAuth.SetQuery(sql);
 
@@ -442,31 +442,30 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		dbAuth.GetRec("a_nation_S", nationString);
 
 #ifdef IP_NATION_CHECK
-		CDBCmd dbUser_check;
-		dbUser_check.Init(&gserver.m_dbuser);
+		dbUser_check;
 		sql.Format("UPDATE t_users SET a_lastip = '%s' , a_lastnation = '%s' WHERE a_portal_index = %d ",(const char*) service_->ip().c_str(), (const char*)nationString, usercode);
 		dbUser_check.SetQuery(sql);
 		dbUser_check.Update();
 #endif //IP_NATION_CHECK
 
 #ifdef LC_SPN
-		// ½ºÆäÀÎ¿¡¼­ ¼­ºñ½ºÇÏ´Â °ÍÀº µ¶ÀÏ, ÇÁ¶û½º, ½ºÆäÀÎ, Æú¶õµå, ÀÌÅ»¸®¾Æ, ³×µ¨¶õµå, ÅÍÅ°°¡ µé¾î°£´Ù.
-		// ±âÁ¸ÀÇ À¯Àú´Â µé¾î°¥ ¼ö ÀÖ°í, ½Å±Ô À¯Àú¿¡ ÇÑÇØ¼­ Á¦ÇÑÇÑ´Ù.
+		// ìŠ¤í˜ì¸ì—ì„œ ì„œë¹„ìŠ¤í•˜ëŠ” ê²ƒì€ ë…ì¼, í”„ë‘ìŠ¤, ìŠ¤í˜ì¸, í´ë€ë“œ, ì´íƒˆë¦¬ì•„, ë„¤ë¸ë€ë“œ, í„°í‚¤ê°€ ë“¤ì–´ê°„ë‹¤.
+		// ê¸°ì¡´ì˜ ìœ ì €ëŠ” ë“¤ì–´ê°ˆ ìˆ˜ ìˆê³ , ì‹ ê·œ ìœ ì €ì— í•œí•´ì„œ ì œí•œí•œë‹¤.
 		int			nationCodeCount = 7;
 		char*		nationCode[7] = {"DE", "FR", "ES", "PL", "IT", "NL", "TR"};
 #endif // LC_SPN
 
 #if defined(LC_MEX)
 
-		// [2010-10-5 derek] 2010-10-05 ÀÌÀü ¼³Á¤
-		// ¸ß½ÃÄÚ¿¡¼­ ¼­ºñ½º ÇÏ´Â °ÍÀº ³²¾Æ¸Ş¸®Ä« ±¹°¡°¡ µé¾î°£´Ù.
+		// [2010-10-5 derek] 2010-10-05 ì´ì „ ì„¤ì •
+		// ë©•ì‹œì½”ì—ì„œ ì„œë¹„ìŠ¤ í•˜ëŠ” ê²ƒì€ ë‚¨ì•„ë©”ë¦¬ì¹´ êµ­ê°€ê°€ ë“¤ì–´ê°„ë‹¤.
 		//int			nationCodeCount = 19;
 		//char*		nationCode[19] = {"MX", "AR", "BO", "CL", "CR", "CU", "EC", "SV", "GT", "HN",
 		//								"NI", "PA", "PY", "PE", "DO", "UY", "VE", "CO","BR"};
-		//[2009/12/8 derek] ÇØ¿ÜÁö¿øÆÀÀÇ ¿äÃ»À¸·Î , "PR" Puerto Rico »èÁ¦
-		//[2009/12/16 derek] "BR" Brazil Ãß°¡
+		//[2009/12/8 derek] í•´ì™¸ì§€ì›íŒ€ì˜ ìš”ì²­ìœ¼ë¡œ , "PR" Puerto Rico ì‚­ì œ
+		//[2009/12/16 derek] "BR" Brazil ì¶”ê°€
 
-		// [2010-10-5 derek] 2010-10-05 ÀÌÈÄ ¼³Á¤ :: ÇØ´ç ±¹°¡¸¦ ¸·¾Æ¾ßÇÑ´Ù.
+		// [2010-10-5 derek] 2010-10-05 ì´í›„ ì„¤ì • :: í•´ë‹¹ êµ­ê°€ë¥¼ ë§‰ì•„ì•¼í•œë‹¤.
 		int			nationCodeCount = 9;
 		char*		nationCode[9] = {"DE", "FR", "ES", "PL", "IT", "NL", "TR", "CA", "US"};
 
@@ -477,7 +476,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 		char*		nationCode[1] = {"CN"};
 #endif // LC_GER
 
-#if defined(LC_MEX) || defined(LC_GER)// ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é Á¢¼ÓÀ» ¸·´Â´Ù.
+#if defined(LC_MEX) || defined(LC_GER)// í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ì ‘ì†ì„ ë§‰ëŠ”ë‹¤.
 
 		bCheckNation = true;
 		int i=0;
@@ -490,7 +489,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 			}
 		}
 #else
-		// ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é ¹«»çÈ÷ ³Ñ¾î°£´Ù
+		// í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ë¬´ì‚¬íˆ ë„˜ì–´ê°„ë‹¤
 		int i=0;
 		for (i=0; i < nationCodeCount; i++)
 		{
@@ -500,11 +499,11 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 				break;
 			}
 		}
-#endif //#if defined(LC_MEX) // ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é Á¢¼ÓÀ» ¸·´Â´Ù.
+#endif //#if defined(LC_MEX) // í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ì ‘ì†ì„ ë§‰ëŠ”ë‹¤.
 
 		if (!bCheckNation)
 		{
-			// È¸»ç ¾ÆÀÌÇÇ´Â ±×³É Åë°úÀÌ´Ù.
+			// íšŒì‚¬ ì•„ì´í”¼ëŠ” ê·¸ëƒ¥ í†µê³¼ì´ë‹¤.
 			if (strncmp(service_->ip().c_str(), "121.65.246.125", strlen("121.65.246.125")) != 0
 					&& strncmp(service_->ip().c_str(), "10.1.", strlen("10.1.")) != 0
 			   )
@@ -524,13 +523,13 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 #endif // INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS
 
-		// IP °Ë»ç¿ë
+		// IP ê²€ì‚¬ìš©
 		CLCString temp(50);
 		CLCString blockBand(50);
 
 		// user DB
 
-// 050226 : bs : a_enable °Ë»ç Ãß°¡
+// 050226 : bs : a_enable ê²€ì‚¬ ì¶”ê°€
 		sql.Format("SELECT unix_timestamp(a_regi_date) as a_regtime, a_enable, a_server_num, a_subnum, a_zone_num FROM t_users WHERE a_portal_index=%d", usercode);
 
 		CDBCmd dbUser;
@@ -549,10 +548,10 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 			throw MSG_FAIL_LOGINSERV_BLOCK_CHAR;
 		}
 
-// --- 050226 : bs : a_enable °Ë»ç Ãß°¡
+// --- 050226 : bs : a_enable ê²€ì‚¬ ì¶”ê°€
 
 		///////////////
-		// ¾ÆÀÌÇÇ °Ë»ç
+		// ì•„ì´í”¼ ê²€ì‚¬
 		char blockTemp[50];
 		int blockCount;
 
@@ -566,7 +565,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 			for(int j = 0; j < blockCount; j++)
 			{
-				// Å¬¶óÀÌ¾ğÆ® ip¿Í ºñ±³
+				// í´ë¼ì´ì–¸íŠ¸ ipì™€ ë¹„êµ
 
 				temp.Format("IP%d", j);
 
@@ -589,7 +588,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 			for(int j = 0; j < blockCount; j++)
 			{
-				// Å¬¶óÀÌ¾ğÆ® ip¿Í ºñ±³
+				// í´ë¼ì´ì–¸íŠ¸ ipì™€ ë¹„êµ
 
 				temp.Format("Band%d", j);
 				blockBand = gserver.m_config.Find("Block Band", temp);
@@ -669,12 +668,12 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 		if(notime > regdate)
 		{
-			// ¾ÆÀÌÇÇ °Ë»ç¸¦ Åë°úÇÏ¸é
-			// ½Ãµµ È¸¼ö °Ë»ç¿¡ µé¾î°¨
-			// 1. ¸®¼ÂÇØ¾ßÇÏ³ª °Ë»ç
-			// 2. Á¦¿Ü ¾ÆÀÌÇÇ °Ë»ç
-			// 3. Å×ÀÌºí¿¡¼­ ½Ãµµ È¸¼ö °Ë»ç
-			// 4. Å×ÀÌºí °»½Å
+			// ì•„ì´í”¼ ê²€ì‚¬ë¥¼ í†µê³¼í•˜ë©´
+			// ì‹œë„ íšŒìˆ˜ ê²€ì‚¬ì— ë“¤ì–´ê°
+			// 1. ë¦¬ì…‹í•´ì•¼í•˜ë‚˜ ê²€ì‚¬
+			// 2. ì œì™¸ ì•„ì´í”¼ ê²€ì‚¬
+			// 3. í…Œì´ë¸”ì—ì„œ ì‹œë„ íšŒìˆ˜ ê²€ì‚¬
+			// 4. í…Œì´ë¸” ê°±ì‹ 
 			if (gserver.m_autoBlockPulse + PULSE_REAL_HOUR * atoi(gserver.m_config.Find("Auto Block", "Refresh")) < gserver.m_pulse)
 			{
 				gserver.m_autoBlockPulse = gserver.m_pulse;
@@ -692,7 +691,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 			sprintf(tmpBuf1, "ExID%s", (const char*)packet->id);
 			if ( strlen(gserver.m_config.Find("Auto Block", tmpBuf)) == 0 && strlen(gserver.m_config.Find("Block ExID", tmpBuf1)) == 0 )
 			{
-				// Á¦¿Ü ¾Æ´Ô
+				// ì œì™¸ ì•„ë‹˜
 				int count = 0;
 				bool bFound = false;
 				AUTO_BLOCK_INFO* p = gserver.m_autoBlockTable;
@@ -751,17 +750,17 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 
 		if (zone >= 0)
 		{
-			// ÀÌ¹Ì Á¢¼ÓµÇ¾î ÀÖÀ½
-			// ¸Ş½ÅÀú¿¡°Ô Á¢Á¾ Ã³¸® ¿äÃ» ¸Ş¼¼Áö
+			// ì´ë¯¸ ì ‘ì†ë˜ì–´ ìˆìŒ
+			// ë©”ì‹ ì €ì—ê²Œ ì ‘ì¢… ì²˜ë¦¬ ìš”ì²­ ë©”ì„¸ì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			LogoutReqMsg(rmsg, server, subnum, zone, this);
 			MessengerInLogin::instance()->WriteToOutput(rmsg);
 			throw MSG_FAIL_LOGINSERV_ALREADY_CONNECT;
 		}
 
-//#ifdef CHECKIP_USA
-//		IsUSA = CheckIPForUSA(service_->ip().c_str());
-//#endif // CHECKIP_USA
+#ifdef CHECKIP_USA
+		IsUSA = CheckIPForUSA(service_->ip().c_str());
+#endif // CHECKIP_USA
 
 		GAMELOG << init("LOGIN", packet->id)
 				<< service_->ip().c_str()
@@ -776,7 +775,7 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 #endif //INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS
 		for (i=0; i < gserver.m_nConnector; i++)
 		{
-			// »ç¿ëÀÚ ¼ö Àü¼Û
+			// ì‚¬ìš©ì ìˆ˜ ì „ì†¡
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				PlayerNumMsg(rmsg, server, subnum, i);
@@ -799,16 +798,16 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 FIRST_CONNECT:
 
 #ifdef INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_NEW_USER
-		CLCString	strNationCode;			// DB·ÎºÎÅÍ ¹Ş¾Æ ¿Ã ±¹°¡ÄÚµå
+		CLCString	strNationCode;			// DBë¡œë¶€í„° ë°›ì•„ ì˜¬ êµ­ê°€ì½”ë“œ
 		bool		bCheckNation = false;
 
-		// 4Dot ÁÖ¼ÒÃ¼°è ¿¡¼­ network byte order ÀÎ long ÇüÅÂ·Î ¹Ù²Û´Ù.
+		// 4Dot ì£¼ì†Œì²´ê³„ ì—ì„œ network byte order ì¸ long í˜•íƒœë¡œ ë°”ê¾¼ë‹¤.
 		unsigned long itr_ipAddr_before = inet_addr((const char*)service_->ip().c_str());
 
 		// network byte order -> host byte order
 		unsigned long itr_ipAddr_real	= ntohl(itr_ipAddr_before);
 
-		// ip ±Û·Î¹ú Å×ÀÌºíÀ» °Ë»öÇÑ´Ù.
+		// ip ê¸€ë¡œë²Œ í…Œì´ë¸”ì„ ê²€ìƒ‰í•œë‹¤.
 		sql.Format("SELECT a_nation_S FROM t_iplist WHERE a_ipstart_N <= %u and a_ipend_N >= %u ", itr_ipAddr_real, itr_ipAddr_real);
 		dbAuth.SetQuery(sql);
 
@@ -820,28 +819,28 @@ FIRST_CONNECT:
 		dbAuth.GetRec("a_nation_S", strNationCode);
 
 #if  defined(LC_SPN)
-		// ½ºÆäÀÎ¿¡¼­ ¼­ºñ½ºÇÏ´Â °ÍÀº µ¶ÀÏ, ÇÁ¶û½º, ½ºÆäÀÎ, Æú¶õµå, ÀÌÅ»¸®¾Æ, ³×µ¨¶õµå, ÅÍÅ°°¡ µé¾î°£´Ù.
-		// ±âÁ¸ÀÇ À¯Àú´Â µé¾î°¥ ¼ö ÀÖ°í, ½Å±Ô À¯Àú¿¡ ÇÑÇØ¼­ Á¦ÇÑÇÑ´Ù.
+		// ìŠ¤í˜ì¸ì—ì„œ ì„œë¹„ìŠ¤í•˜ëŠ” ê²ƒì€ ë…ì¼, í”„ë‘ìŠ¤, ìŠ¤í˜ì¸, í´ë€ë“œ, ì´íƒˆë¦¬ì•„, ë„¤ë¸ë€ë“œ, í„°í‚¤ê°€ ë“¤ì–´ê°„ë‹¤.
+		// ê¸°ì¡´ì˜ ìœ ì €ëŠ” ë“¤ì–´ê°ˆ ìˆ˜ ìˆê³ , ì‹ ê·œ ìœ ì €ì— í•œí•´ì„œ ì œí•œí•œë‹¤.
 		int			nationCodeCount = 7;
 		char*		nationCode[7] = {"DE", "FR", "ES", "PL", "IT", "NL", "TR"};
 #elif defined(LC_MEX)
-		// [2010-10-5 derek] 2010-10-05 ÀÌÀü ¼³Á¤
-		// ¸ß½ÃÄÚ¿¡¼­ ¼­ºñ½º ÇÏ´Â °ÍÀº ³²¾Æ¸Ş¸®Ä« ±¹°¡°¡ µé¾î°£´Ù.
+		// [2010-10-5 derek] 2010-10-05 ì´ì „ ì„¤ì •
+		// ë©•ì‹œì½”ì—ì„œ ì„œë¹„ìŠ¤ í•˜ëŠ” ê²ƒì€ ë‚¨ì•„ë©”ë¦¬ì¹´ êµ­ê°€ê°€ ë“¤ì–´ê°„ë‹¤.
 		//int			nationCodeCount = 19;
 		//char*		nationCode[19] = {"MX", "AR", "BO", "CL", "CR", "CU", "EC", "SV", "GT", "HN",
 		//								"NI", "PA", "PY", "PE", "DO", "UY", "VE", "CO","BR"};
-		//[2009/12/8 derek] ÇØ¿ÜÁö¿øÆÀÀÇ ¿äÃ»À¸·Î , "PR" Puerto Rico »èÁ¦
-		//[2009/12/16 derek] "BR" Brazil Ãß°¡
+		//[2009/12/8 derek] í•´ì™¸ì§€ì›íŒ€ì˜ ìš”ì²­ìœ¼ë¡œ , "PR" Puerto Rico ì‚­ì œ
+		//[2009/12/16 derek] "BR" Brazil ì¶”ê°€
 
-		// [2010-10-5 derek] 2010-10-05 ÀÌÈÄ ¼³Á¤ :: ¸·¾Æ¾ßÇÒ ±¹°¡·Î ¼³Á¤.
+		// [2010-10-5 derek] 2010-10-05 ì´í›„ ì„¤ì • :: ë§‰ì•„ì•¼í•  êµ­ê°€ë¡œ ì„¤ì •.
 		int			nationCodeCount = 9;
 		char*		nationCode[9] = {"DE", "FR", "ES", "PL", "IT", "NL", "TR", "CA", "US"};
 #else
-		int			nationCodeCount = 0;			// ÄÄÆÄÀÏ¿¡·¯ ¹æÁö¿ë DEFAULT
+		int			nationCodeCount = 0;			// ì»´íŒŒì¼ì—ëŸ¬ ë°©ì§€ìš© DEFAULT
 		char*		nationCode[1] = {"NONE"};
 #endif // LC_MEX
 
-#if defined(LC_MEX) // ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é Á¢¼ÓÀ» ¸·´Â´Ù.
+#if defined(LC_MEX) // í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ì ‘ì†ì„ ë§‰ëŠ”ë‹¤.
 		bCheckNation = true;
 		int i=0;
 		for (i=0; i < nationCodeCount; i++)
@@ -853,7 +852,7 @@ FIRST_CONNECT:
 			}
 		}
 #else
-		// ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é ¹«»çÈ÷ ³Ñ¾î°£´Ù
+		// í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ë¬´ì‚¬íˆ ë„˜ì–´ê°„ë‹¤
 		for (i=0; i < nationCodeCount; i++)
 		{
 			if(strcmp((const char*)strNationCode, nationCode[i]) == 0)
@@ -862,11 +861,11 @@ FIRST_CONNECT:
 				break;
 			}
 		}
-#endif  // #if defined(LC_MEX) // ÇØ´ç ±¹°¡°¡ ¸ÂÀ¸¸é Á¢¼ÓÀ» ¸·´Â´Ù.
+#endif  // #if defined(LC_MEX) // í•´ë‹¹ êµ­ê°€ê°€ ë§ìœ¼ë©´ ì ‘ì†ì„ ë§‰ëŠ”ë‹¤.
 
 		if (!bCheckNation)
 		{
-			// È¸»ç ¾ÆÀÌÇÇ´Â ±×³É Åë°úÀÌ´Ù.
+			// íšŒì‚¬ ì•„ì´í”¼ëŠ” ê·¸ëƒ¥ í†µê³¼ì´ë‹¤.
 			if (strncmp(service_->ip().c_str(), "121.65.246.125", strlen("121.65.246.125")) != 0
 					&& strncmp(service_->ip().c_str(), "10.1.", strlen("10.1.")) != 0
 			   )
@@ -874,9 +873,9 @@ FIRST_CONNECT:
 		}
 #endif // INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_NEW_USER
 
-//#ifdef CHECKIP_USA
-//		IsUSA = CheckIPForUSA(service_->ip().c_str());
-//#endif // CHECKIP_USA
+#ifdef CHECKIP_USA
+		IsUSA = CheckIPForUSA(service_->ip().c_str());
+#endif // CHECKIP_USA
 
 		GAMELOG << init("LOGIN", m_idname)
 				<< service_->ip().c_str()
@@ -888,7 +887,7 @@ FIRST_CONNECT:
 
 		for (i=0; i < gserver.m_nConnector; i++)
 		{
-			// Ã³À½ Á¢¼Ó »ç¿ëÀÚ ¼ö Àü¼Û
+			// ì²˜ìŒ ì ‘ì† ì‚¬ìš©ì ìˆ˜ ì „ì†¡
 #if defined (BILA_INTERGRATION_SERVER)
 			if ( packet->nation == INTERGRATION_BRAZIL )
 			{
@@ -941,7 +940,7 @@ FIRST_CONNECT:
 						dbUser.GetRec("a_fail_count", failcount))
 				{
 					failcount++;
-					if(failcount >= 3)		// 30°£ ºí·°
+					if(failcount >= 3)		// 30ê°„ ë¸”ëŸ­
 					{
 						sql.Format("UPDATE t_users SET a_block_time = unix_timestamp(NOW()) + 60 * 30, a_fail_count = 0 WHERE a_idname = '%s'" , (const char*)m_idname);
 						dbUser.SetQuery(sql);
@@ -993,18 +992,18 @@ FIRST_CONNECT:
 #ifdef INTERNATIONAL_LOCAL_ACCESS_RESTRICTIONS_SPN
 bool CDescriptor::IPBlockSouthAmerica(const char *u_IP)
 {
-	CLCString	strNationCode;			// DB·ÎºÎÅÍ ¹Ş¾Æ ¿Ã ±¹°¡ÄÚµå
+	CLCString	strNationCode;			// DBë¡œë¶€í„° ë°›ì•„ ì˜¬ êµ­ê°€ì½”ë“œ
 	CLCString	sql(1024);
 	CDBCmd		dbAuth;
 	dbAuth.Init(&gserver.m_dbAuth);
 
-	// 4Dot ÁÖ¼ÒÃ¼°è ¿¡¼­ network byte order ÀÎ long ÇüÅÂ·Î ¹Ù²Û´Ù.
+	// 4Dot ì£¼ì†Œì²´ê³„ ì—ì„œ network byte order ì¸ long í˜•íƒœë¡œ ë°”ê¾¼ë‹¤.
 	unsigned long itr_ipAddr_before = inet_addr((const char*)service_->ip().c_str());
 
 	// network byte order -> host byte order
 	unsigned long itr_ipAddr_real	= ntohl(itr_ipAddr_before);
 
-	// ip ±Û·Î¹ú Å×ÀÌºíÀ» °Ë»öÇÑ´Ù.
+	// ip ê¸€ë¡œë²Œ í…Œì´ë¸”ì„ ê²€ìƒ‰í•œë‹¤.
 	sql.Format("SELECT a_nation_S FROM t_iplist WHERE a_ipstart_N <= %u and a_ipend_N >= %u ", itr_ipAddr_real, itr_ipAddr_real);
 	dbAuth.SetQuery(sql);
 
@@ -1013,7 +1012,7 @@ bool CDescriptor::IPBlockSouthAmerica(const char *u_IP)
 
 	if(!dbAuth.MoveFirst())
 	{
-		// ¶óÄ« °³¹ßÆÀ Á¦¿Ü
+		// ë¼ì¹´ ê°œë°œíŒ€ ì œì™¸
 		if(strncmp(service_->ip().c_str(), "10.1.40.", strlen("10.1.40.")) == 0)
 			return false;
 
@@ -1022,7 +1021,7 @@ bool CDescriptor::IPBlockSouthAmerica(const char *u_IP)
 
 	dbAuth.GetRec("a_nation_S", strNationCode);
 
-	// ÁöÁ¤µÈ ³²¹Ì ±¹°¡ ¸®½ºÆ®¿Í ÀÏÄ¡ÇÏ¸é IP Block
+	// ì§€ì •ëœ ë‚¨ë¯¸ êµ­ê°€ ë¦¬ìŠ¤íŠ¸ì™€ ì¼ì¹˜í•˜ë©´ IP Block
 	static const int	nationCodeCount = 19;
 	static const char*	nationCode[nationCodeCount] =
 	{
@@ -1115,7 +1114,7 @@ void CDescriptor::onClose( rnSocketIOService* service )
 	}
 	else
 	{
-		// Connector server·Î ÀçÁ¢¼ÓÇÒ Å¸ÀÌ¸Ó »ı¼º
+		// Connector serverë¡œ ì¬ì ‘ì†í•  íƒ€ì´ë¨¸ ìƒì„±
 		bnf::instance()->CreateMSecTimer(RECONNECT_TIME_TO_CONNECTOR_SERVER, &reconnect_timer_);
 
 		for (int j = 0; j < m_nMaxServer; ++j)
@@ -1149,7 +1148,7 @@ void CDescriptor::onConnect( rnSocketIOService* service )
 		CNetMsg::SP rmsg(new CNetMsg);
 		rmsg->Init(MSG_CONN_CONNECT);
 		RefMsg(rmsg) << SERVER_VERSION
-					 << (int)LOGIN_SERVER_NUM;	// ¼­¹ö±º¹øÈ£ ¼öÁ¤
+					 << (int)LOGIN_SERVER_NUM;	// ì„œë²„êµ°ë²ˆí˜¸ ìˆ˜ì •
 
 		if( gserver.m_bOnlyLocal )
 			RefMsg(rmsg) << (int) 0;

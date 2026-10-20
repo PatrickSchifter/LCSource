@@ -14,7 +14,7 @@
 
 void do_Raid(CPC* ch, CNetMsg::SP& msg)
 {
-	// Á×°Å³ª ±³È¯ÁßÀÌ¸é ¹«½Ã
+	// ì£½ê±°ë‚˜ êµí™˜ì¤‘ì´ë©´ ë¬´ì‹œ
 	if (!ch || DEAD(ch) || ch->m_currentSkill != NULL || ch->m_personalshop != NULL)
 		return ;
 
@@ -34,11 +34,11 @@ void do_Raid(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//°¢ À¯Àú ÀÎÁ¸ ÀÔÀå ¿äÃ»
-//ÀÎÁ¸¿¡ È¥ÀÚ¼­µµ ÀÔÀå ÇÒ ¼ö ¾ø´Ù
+//ê° ìœ ì € ì¸ì¡´ ì…ì¥ ìš”ì²­
+//ì¸ì¡´ì— í˜¼ìì„œë„ ì…ì¥ í•  ìˆ˜ ì—†ë‹¤
 void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 {
-	int nZoneNo;	//Á¸¹øÈ£(µé¾î°¥)
+	int nZoneNo;	//ì¡´ë²ˆí˜¸(ë“¤ì–´ê°ˆ)
 	int nDifficulty = -1;
 
 	RefMsg(msg) >> nZoneNo;
@@ -72,9 +72,9 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 
 	GAMELOG << end;
 
-	if(gserver->m_bCanEnterTheRaidDungeon == false) // ·¹ÀÌµå ´øÀüÀ» µé¾î°¥ ¼ö ¾ø´Â »óÈ²ÀÌ¶ó¸é...false°¡ ¸øµé¾î°£´Ù.
+	if(gserver->m_bCanEnterTheRaidDungeon == false) // ë ˆì´ë“œ ë˜ì „ì„ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ëŠ” ìƒí™©ì´ë¼ë©´...falseê°€ ëª»ë“¤ì–´ê°„ë‹¤.
 	{
-		//¿¡·¯¸Ş½ÃÁö ¹ß¼Û
+		//ì—ëŸ¬ë©”ì‹œì§€ ë°œì†¡
 		//MSG_RAID_ERROR_INZONE_INIT_TIME
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_INIT_TIME);
@@ -84,7 +84,7 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->IsSetPlayerState(PLAYER_STATE_WARP))
 	{
-		// ÀÌµ¿ÇÒ ¼ö ¾ø´Â »óÅÂÀÔ´Ï´Ù.
+		// ì´ë™í•  ìˆ˜ ì—†ëŠ” ìƒíƒœì…ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_CANT_WARP_OTHER);
 		SEND_Q(rmsg, ch->m_desc);
@@ -93,7 +93,7 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 
 	if(!ch->IsParty() && !ch->IsExped())
 	{
-		//¿¡·¯: ÆÄÆ¼ ¹× ¿øÁ¤´ë¿¡ °¡ÀÔ µÇ¾î ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: íŒŒí‹° ë° ì›ì •ëŒ€ì— ê°€ì… ë˜ì–´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_NOTJOIN_PARTYOREXPED);
 		SEND_Q(rmsg, ch->m_desc);
@@ -109,37 +109,37 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 	}
-	//¾ÏÈæÀÇ Á¦´Ü(¿øÁ¤´ë)
+	//ì•”í‘ì˜ ì œë‹¨(ì›ì •ëŒ€)
 	if((nZoneNo == ZONE_ALTER_OF_DARK || nZoneNo == ZONE_AKAN_TEMPLE
 			|| nZoneNo == ZONE_TARIAN_DUNGEON
 	   ) && ch->m_Exped==NULL)
 	{
-		//¿¡·¯: ÇØ´ç Á¸Àº ¿øÁ¤´ë Á¸
+		//ì—ëŸ¬: í•´ë‹¹ ì¡´ì€ ì›ì •ëŒ€ ì¡´
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_THISZONE_EXPEDZONE);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	//¿¹¹è´ç(ÆÄÆ¼)
+	//ì˜ˆë°°ë‹¹(íŒŒí‹°)
 	if(nZoneNo == ZONE_CAPPELLA_1 && !ch->IsParty())
 	{
-		//¿¡·¯: ÇØ´ç Á¸Àº ÆÄÆ¼ Á¸
+		//ì—ëŸ¬: í•´ë‹¹ ì¡´ì€ íŒŒí‹° ì¡´
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_THISZONE_PARTYZONE);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ·¹ÀÌµå ÀÔÀå Ä«µå°¡ ÀÖÀ¸¸é ±âÁ¸ º¸´Ù 10 ·¹º§ Àû°Ô Á¦ÇÑµÈ´Ù.
-	// ÀÎº¥Åä¸® ¾ÆÀÌÅÛ °Ë»ç, ·¹ÀÌµå ÀÔÀå Ä«µå
+	// ë ˆì´ë“œ ì…ì¥ ì¹´ë“œê°€ ìˆìœ¼ë©´ ê¸°ì¡´ ë³´ë‹¤ 10 ë ˆë²¨ ì ê²Œ ì œí•œëœë‹¤.
+	// ì¸ë²¤í† ë¦¬ ì•„ì´í…œ ê²€ì‚¬, ë ˆì´ë“œ ì…ì¥ ì¹´ë“œ
 	if (ch->m_inventory.FindByDBIndex(4913, 0, 0))
 	{
-		//ÀÎÁ¸ ÀÔÀå PC·¹º§ Á¦ÇÑ
+		//ì¸ì¡´ ì…ì¥ PCë ˆë²¨ ì œí•œ
 		if( (nZoneNo == ZONE_ALTER_OF_DARK && (ch->m_level < RAID_JOIN_LEVEL_LIMIT_ALTER_OF_DARK - 10)) ||
 				(nZoneNo == ZONE_CAPPELLA_1 && (ch->m_level < RAID_JOIN_LEVEL_LIMIT_CAPPELLA - 10)))
 		{
-			//¿¡·¯: ·¹º§ Á¦ÇÑÀ¸·Î ÀÔÀåÇÒ¼ö ¾øÀ½
+			//ì—ëŸ¬: ë ˆë²¨ ì œí•œìœ¼ë¡œ ì…ì¥í• ìˆ˜ ì—†ìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_INVALIDELEVEL);
 			SEND_Q(rmsg, ch->m_desc);
@@ -176,11 +176,11 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 
-		//ÀÎÁ¸ ÀÔÀå PC·¹º§ Á¦ÇÑ
+		//ì¸ì¡´ ì…ì¥ PCë ˆë²¨ ì œí•œ
 		if( (nZoneNo == ZONE_ALTER_OF_DARK && (ch->m_level < RAID_JOIN_LEVEL_LIMIT_ALTER_OF_DARK)) ||
 				(nZoneNo == ZONE_CAPPELLA_1 && (ch->m_level < RAID_JOIN_LEVEL_LIMIT_CAPPELLA)))
 		{
-			//¿¡·¯: ·¹º§ Á¦ÇÑÀ¸·Î ÀÔÀåÇÒ¼ö ¾øÀ½
+			//ì—ëŸ¬: ë ˆë²¨ ì œí•œìœ¼ë¡œ ì…ì¥í• ìˆ˜ ì—†ìŒ
 			CNetMsg::SP rmsg(new CNetMsg);
 			RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_JOIN_INVALIDELEVEL);
 			SEND_Q(rmsg, ch->m_desc);
@@ -214,20 +214,20 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 			return;
 		}
 
-	// ¿øÁ¤´ëÀÌ¸é ¿øÁ¤´ë ·¹ÀÌµå Ã¤³Î °Ë»ç
+	// ì›ì •ëŒ€ì´ë©´ ì›ì •ëŒ€ ë ˆì´ë“œ ì±„ë„ ê²€ì‚¬
 	if (ch->IsExped() && ch->m_Exped->m_nSubNumber != RAID_SUBNUMBER)
 	{
-		//¿¡·¯: ÇöÀç Ã¤³ÎÀº ¿øÁ¤´ë ·¹ÀÌµå Ã¤³ÎÀÌ ¾Æ´Ô
+		//ì—ëŸ¬: í˜„ì¬ ì±„ë„ì€ ì›ì •ëŒ€ ë ˆì´ë“œ ì±„ë„ì´ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_NOT_EXPED_RAID_SUBNUMBER);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ÆÄÆ¼ÀÌ¸é ÆÄÆ¼ ·¹ÀÌµå Ã¤³Î °Ë»ç
+	// íŒŒí‹°ì´ë©´ íŒŒí‹° ë ˆì´ë“œ ì±„ë„ ê²€ì‚¬
 	else if (ch->IsParty() && ch->m_party->m_nSubNumber != RAID_SUBNUMBER)
 	{
-		//¿¡·¯: ÇöÀç Ã¤³ÎÀº ¿øÁ¤´ë ·¹ÀÌµå Ã¤³ÎÀÌ ¾Æ´Ô
+		//ì—ëŸ¬: í˜„ì¬ ì±„ë„ì€ ì›ì •ëŒ€ ë ˆì´ë“œ ì±„ë„ì´ ì•„ë‹˜
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_NOT_EXPED_RAID_SUBNUMBER);
 		SEND_Q(rmsg, ch->m_desc);
@@ -249,10 +249,10 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 		nJoinType = MSG_JOINTYPE_EXPED;
 	}
 
-	// ¿øÁ¤´ë ÀÌ¸é¼­ ¿øÁ¤´ëÀåÀº ¾Æ´Ï°í ¿øÁ¤´ëÀåÀÌ µé¾î°¡ ÀÖÁö ¾Ê´Ù¸é ÀÔÀå ºÒ°¡
+	// ì›ì •ëŒ€ ì´ë©´ì„œ ì›ì •ëŒ€ì¥ì€ ì•„ë‹ˆê³  ì›ì •ëŒ€ì¥ì´ ë“¤ì–´ê°€ ìˆì§€ ì•Šë‹¤ë©´ ì…ì¥ ë¶ˆê°€
 	if (ch->IsExped() && ch->m_index != nBossIndex && ch->m_Exped->m_nRaidAreaNum == -1)
 	{
-		//¿¡·¯: ¿øÁ¤´ëÀåÀÌ ÀÔÀåÇØ ÀÖÁö ¾ÊÀ½
+		//ì—ëŸ¬: ì›ì •ëŒ€ì¥ì´ ì…ì¥í•´ ìˆì§€ ì•ŠìŒ
 		CNetMsg::SP rmsg(new CNetMsg);
 		RaidErrorMsg(rmsg, MSG_RAID_ERROR_INZONE_NOT_JOIN_BOSS);
 		SEND_Q(rmsg, ch->m_desc);
@@ -290,9 +290,9 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¿øÁ¤´ë¿ø ÀÌ¸é¼­ ¿øÁ¤´ëÀåÀº (Normal || Hard)ÀÎµ¥ ¿øÁ¤´ë¿øÀÌ ±× ¹İ´ë ³­ÀÌµµ·Î ÁøÀÔÇÏ·Á´Â °æ¿ì
-	// ¿øÁ¤´ëÀåÀÌ ÀÖ´ÂÁö´Â À§¿¡¼­ °Ë»ç¸¦ ÇßÀ¸´Ï±î...
-	// ÇöÀç Ä³¸¯ÅÍ°¡ ¼±ÅÃÇÑ ³­ÀÌµµ°¡ ¿øÁ¤´ëÀÇ ³­ÀÌµµ°¡ Æ²¸². ±×·¡¼­ ÀÔÀå ºÒ°¡...
+	// ì›ì •ëŒ€ì› ì´ë©´ì„œ ì›ì •ëŒ€ì¥ì€ (Normal || Hard)ì¸ë° ì›ì •ëŒ€ì›ì´ ê·¸ ë°˜ëŒ€ ë‚œì´ë„ë¡œ ì§„ì…í•˜ë ¤ëŠ” ê²½ìš°
+	// ì›ì •ëŒ€ì¥ì´ ìˆëŠ”ì§€ëŠ” ìœ„ì—ì„œ ê²€ì‚¬ë¥¼ í–ˆìœ¼ë‹ˆê¹Œ...
+	// í˜„ì¬ ìºë¦­í„°ê°€ ì„ íƒí•œ ë‚œì´ë„ê°€ ì›ì •ëŒ€ì˜ ë‚œì´ë„ê°€ í‹€ë¦¼. ê·¸ë˜ì„œ ì…ì¥ ë¶ˆê°€...
 	if( ch->IsExped() &&
 			nZoneNo == ZONE_AKAN_TEMPLE &&
 			ch->m_Exped->m_nDifficulty > -1 &&
@@ -310,7 +310,7 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 		ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_REJECT, NULL, NULL);
 		do_Exchange(ch, rmsg);
 	}
-	//´ë¿ø ¸ğµÎ ¿äÃ»
+	//ëŒ€ì› ëª¨ë‘ ìš”ì²­
 	{
 		ch->SetPlayerState(PLAYER_STATE_WARP);
 
@@ -321,19 +321,19 @@ void do_Raid_InzoneJoin(CPC* ch, CNetMsg::SP& msg)
 	}
 }
 
-//Á¸¿¡¼­ ³ª¿È(Á×À½ÈÄ)
+//ì¡´ì—ì„œ ë‚˜ì˜´(ì£½ìŒí›„)
 void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 {
 	int i;
 
-	int nZoneNo = -1;		//Á¸¹øÈ£(³ª°¥)
+	int nZoneNo = -1;		//ì¡´ë²ˆí˜¸(ë‚˜ê°ˆ)
 	int nPcZoneNo,nPcRoomNo;
-	int nExtra = -1;			//À§Ä¡ ¼­¹ö¿¡¼­ ÁöÁ¤
-	int nGoZone=1;		//Á¸ÀÌµ¿ ÇÏ³ª?(1:ÀÌµ¿ 0:ÀÌµ¿ ¾ÈÇÔ)
-	int nRebirth=0;		//ºÎÈ°ÀÎ°¡?(1:ºÎÈ°)
+	int nExtra = -1;			//ìœ„ì¹˜ ì„œë²„ì—ì„œ ì§€ì •
+	int nGoZone=1;		//ì¡´ì´ë™ í•˜ë‚˜?(1:ì´ë™ 0:ì´ë™ ì•ˆí•¨)
+	int nRebirth=0;		//ë¶€í™œì¸ê°€?(1:ë¶€í™œ)
 	CZone* pCurZone=NULL;
 
-	if(msg->CanRead(sizeof(nGoZone)))	//µ¥ÀÌÅ¸°¡ ÀÖÀ» °æ¿ì¿¡¸¸ Ã³¸®
+	if(msg->CanRead(sizeof(nGoZone)))	//ë°ì´íƒ€ê°€ ìˆì„ ê²½ìš°ì—ë§Œ ì²˜ë¦¬
 	{
 		RefMsg(msg) >> nGoZone
 					>> nRebirth
@@ -343,7 +343,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 
 	if(ch->IsSetPlayerState(PLAYER_STATE_WARP))
 	{
-		// ÀÌµ¿ÇÒ ¼ö ¾ø´Â »óÅÂÀÔ´Ï´Ù.
+		// ì´ë™í•  ìˆ˜ ì—†ëŠ” ìƒíƒœì…ë‹ˆë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_CANT_WARP_OTHER);
 		SEND_Q(rmsg, ch->m_desc);
@@ -372,7 +372,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			<< "nRebirth" << delim << nRebirth
 			<< end;
 
-	//Á¸¹øÈ£ ,·ë¹øÈ£ ¹é¾÷
+	//ì¡´ë²ˆí˜¸ ,ë£¸ë²ˆí˜¸ ë°±ì—…
 	nPcZoneNo = ch->m_nJoinInzone_ZoneNo;
 	nPcRoomNo = ch->m_nJoinInzone_RoomNo;
 
@@ -388,7 +388,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 		if(!area)
 			goto ERROR_RETURN;
 
-		if(ch->m_nJoinInzone_ZoneNo==ZONE_ALTER_OF_DARK)	// ÇöÀç Á¸: ¾ÏÈæÀÇ Àç´Ü
+		if(ch->m_nJoinInzone_ZoneNo==ZONE_ALTER_OF_DARK)	// í˜„ì¬ ì¡´: ì•”í‘ì˜ ì¬ë‹¨
 		{
 			nZoneNo = ZONE_MONDSHINE;
 
@@ -401,7 +401,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 				nExtra = 3;
 			}
 		}
-		else if(ch->m_nJoinInzone_ZoneNo==ZONE_CAPPELLA_1 && nZoneNo == -1)	// ÇöÀç Á¸: ¿¹¹è´ç 1, 2
+		else if(ch->m_nJoinInzone_ZoneNo==ZONE_CAPPELLA_1 && nZoneNo == -1)	// í˜„ì¬ ì¡´: ì˜ˆë°°ë‹¹ 1, 2
 		{
 			nZoneNo = ZONE_MONDSHINE;
 			if(nRebirth==1)
@@ -413,7 +413,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 				nExtra = 1;
 			}
 		}
-		else if(ch->m_nJoinInzone_ZoneNo==ZONE_CAPPELLA_1 && nZoneNo != -1)	// ¿¹¹è´ç¿¡¼­ ¿¹¹è´ç ÁöÇÏ·Î °£´Ù.
+		else if(ch->m_nJoinInzone_ZoneNo==ZONE_CAPPELLA_1 && nZoneNo != -1)	// ì˜ˆë°°ë‹¹ì—ì„œ ì˜ˆë°°ë‹¹ ì§€í•˜ë¡œ ê°„ë‹¤.
 		{
 			if(nZoneNo == ZONE_MONDSHINE)
 				nExtra = 1;
@@ -426,7 +426,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 		{
 			if(nExtra == -1)
 				nExtra = 4;
-			// ¾ÆÄ­»ç¿ø¿¡¼­ Á¸À» ³ª°¥ ¶§ Á¤º¸..
+			// ì•„ì¹¸ì‚¬ì›ì—ì„œ ì¡´ì„ ë‚˜ê°ˆ ë•Œ ì •ë³´..
 			if(nRebirth == 1)
 			{
 				nZoneNo = ZONE_EGEHA;
@@ -434,7 +434,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if(nRebirth == 0)
 			{
-				nZoneNo = ZONE_EGEHA;		// ¿¡°ÔÇÏ·Î Æ¨°Ü¹ö·Á!
+				nZoneNo = ZONE_EGEHA;		// ì—ê²Œí•˜ë¡œ íŠ•ê²¨ë²„ë ¤!
 //				nExtra = 0;
 			}
 			else
@@ -444,7 +444,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 		{
 			if(nExtra == -1)
 				nExtra = 1;
-			// ¾ÆÄ­»ç¿ø¿¡¼­ Á¸À» ³ª°¥ ¶§ Á¤º¸..
+			// ì•„ì¹¸ì‚¬ì›ì—ì„œ ì¡´ì„ ë‚˜ê°ˆ ë•Œ ì •ë³´..
 			if(nRebirth == 1)
 			{
 				nZoneNo = ZONE_TARIAN;
@@ -452,7 +452,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			}
 			else if(nRebirth == 0)
 			{
-				nZoneNo = ZONE_TARIAN;		// ¿¡°ÔÇÏ·Î Æ¨°Ü¹ö·Á!
+				nZoneNo = ZONE_TARIAN;		// ì—ê²Œí•˜ë¡œ íŠ•ê²¨ë²„ë ¤!
 //				nExtra = 0;
 			}
 			else
@@ -485,7 +485,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 				if (nExtra < 0 || nExtra >= pZone->m_countZonePos)
 					goto ERROR_RETURN;
 
-				//ÇöÀç µé¿À¿Â Á¸, ·ë¹øÈ£ ÃÊ±âÈ­
+				//í˜„ì¬ ë“¤ì˜¤ì˜¨ ì¡´, ë£¸ë²ˆí˜¸ ì´ˆê¸°í™”
 				CArea* area = NULL;
 				
 				ch->m_nJoinInzone_ZoneNo = -1;
@@ -499,7 +499,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÆÄÆ¼ ·¹ÀÌµå´Â ÀÌ°÷À¸·Î ¿Â´Ù.
+		// íŒŒí‹° ë ˆì´ë“œëŠ” ì´ê³³ìœ¼ë¡œ ì˜¨ë‹¤.
 		else if (ch->IsParty() && nGoZone==1)
 		{
 			CZone* pZone = gserver->FindZone(nZoneNo);
@@ -512,7 +512,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			if (nExtra < 0 || nExtra >= pZone->m_countZonePos)
 				goto ERROR_RETURN;
 
-			//ÇöÀç µé¿À¿Â Á¸, ·ë¹øÈ£ ÃÊ±âÈ­
+			//í˜„ì¬ ë“¤ì˜¤ì˜¨ ì¡´, ë£¸ë²ˆí˜¸ ì´ˆê¸°í™”
 			ch->m_nJoinInzone_ZoneNo = -1;
 			ch->m_nJoinInzone_RoomNo = -1;
 			ch->m_nJoinInzone_AreaNo = -1;
@@ -523,7 +523,7 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 				   GetRandom(pZone->m_zonePos[nExtra][2], pZone->m_zonePos[nExtra][4]) / 2.0f);	// z
 		}
 
-		// ¾î¶² °Íµµ ¾Æ´Ï¸é ¸óµå»şÀÎ ¸¶À»·Î °£´Ù
+		// ì–´ë–¤ ê²ƒë„ ì•„ë‹ˆë©´ ëª¬ë“œìƒ¤ì¸ ë§ˆì„ë¡œ ê°„ë‹¤
 		else
 		{
 			CZone* pZone = gserver->FindZone(nZoneNo);
@@ -533,10 +533,10 @@ void do_Raid_InzoneQuit(CPC* ch, CNetMsg::SP& msg)
 			if (pZone->m_zonePos == NULL)
 				goto ERROR_RETURN;
 
-			// 0ÀÌ ¸óµå»şÀÎ
+			// 0ì´ ëª¬ë“œìƒ¤ì¸
 			nExtra = 0;
 
-			//ÇöÀç µé¿À¿Â Á¸, ·ë¹øÈ£ ÃÊ±âÈ­
+			//í˜„ì¬ ë“¤ì˜¤ì˜¨ ì¡´, ë£¸ë²ˆí˜¸ ì´ˆê¸°í™”
 			ch->m_nJoinInzone_ZoneNo = -1;
 			ch->m_nJoinInzone_RoomNo = -1;
 			ch->m_nJoinInzone_AreaNo = -1;

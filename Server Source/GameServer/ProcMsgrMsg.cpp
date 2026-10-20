@@ -167,7 +167,7 @@ void CServer::ProcessMessengerMessage(CNetMsg::SP& msg)
 						>> server >> subno >> zone
 						>> subtype;
 
-			//¼ºÁÖ ¸Ş½ÃÁö Â÷´ÜµÊ(°ËÅä)
+			//ì„±ì£¼ ë©”ì‹œì§€ ì°¨ë‹¨ë¨(ê²€í† )
 			if (server != -1 && (server != gserver->m_serverno || (subno != -1 && subno != gserver->m_subno)))
 				return ;
 
@@ -664,7 +664,7 @@ void ProcessEventOXMessage(int server, int subno, CNetMsg::SP& msg)
 		gserver->m_nOXQuizSeqNo = 1;
 		gserver->m_nOXQuizRealNo = -1;
 
-// ºê¶óÁúÀº ½Ã°£ÀÌ ¾È¸ÂÀ¸¹Ç·Î ´Ù¸¥ ¹æ¹ıÀ» »ç¿ëÇÔ...   yhj
+// ë¸Œë¼ì§ˆì€ ì‹œê°„ì´ ì•ˆë§ìœ¼ë¯€ë¡œ ë‹¤ë¥¸ ë°©ë²•ì„ ì‚¬ìš©í•¨...   yhj
 #if defined(LC_RUS) ||defined(LC_BILA)
 		struct tm	tmStart = NOW();
 		tmStart.tm_year = nYear - 1900;
@@ -806,7 +806,7 @@ void ProcessMessengerMessage_WhisperReq(CNetMsg::SP& msg, int nSeq, int nServer,
 	CPC* receiver = PCManager::instance()->getPlayerByName(rname, true );
 	if (receiver == NULL)
 	{
-		// ¼ö½ÅÀÚ°¡ ¾øÀ» ¶§
+		// ìˆ˜ì‹ ìê°€ ì—†ì„ ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrRepWhisperNotFoundMsg(rmsg, nSeq, nServer, nSubNo, nZone, sidx, sname);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -814,7 +814,7 @@ void ProcessMessengerMessage_WhisperReq(CNetMsg::SP& msg, int nSeq, int nServer,
 	else
 	{
 		{
-			// ¼ö½ÅÀÚ°¡ ÀÖÀ» ¶§
+			// ìˆ˜ì‹ ìê°€ ìˆì„ ë•Œ
 			CNetMsg::SP rmsg(new CNetMsg);
 			ChatWhisperMsg(rmsg, sidx, sname, receiver->GetName(), chat);
 			if( !receiver->IsBlockPC(sidx, sname) )
@@ -822,7 +822,7 @@ void ProcessMessengerMessage_WhisperReq(CNetMsg::SP& msg, int nSeq, int nServer,
 		}
 
 		{
-			// ¸Ş½ÅÀú¿¡ ÀÀ´ä º¸³»±â
+			// ë©”ì‹ ì €ì— ì‘ë‹µ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrRepWhisperRepMsg(rmsg, nSeq, nServer, nSubNo, nZone, sidx, sname, receiver->GetName(), chat);
 			SEND_Q(rmsg, gserver->m_messenger);
@@ -831,7 +831,7 @@ void ProcessMessengerMessage_WhisperReq(CNetMsg::SP& msg, int nSeq, int nServer,
 #ifdef GMTOOL
 		if(receiver->m_bGmMonitor)
 		{
-			// ¸Ş½ÅÀú¸¦ ÅëÇØ¼­ ¹ŞÀº ³»¿ëÀ» Åø·Î º¸³½´Ù.
+			// ë©”ì‹ ì €ë¥¼ í†µí•´ì„œ ë°›ì€ ë‚´ìš©ì„ íˆ´ë¡œ ë³´ë‚¸ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrNoticeGmChatMonitorWhisperMsg(rmsg, -1, 1, 1, 0, gserver->m_serverno, gserver->m_subno, -1, chat, receiver->m_index, receiver->m_name, (unsigned char)MSG_CHAT_WHISPER, sname);
 			SEND_Q(rmsg, gserver->m_messenger);
@@ -927,7 +927,7 @@ void ProcessMessengerMessage_PlayerCountReq(CNetMsg::SP& msg, int nSeq, int nSer
 		{
 			countPC[pc->m_pZone - gserver->m_zones]++;
 
-			// »ı»êÁßÀÎ°¡ : pcÀÇ AttackList Áß »ı»ê npc°¡ ÀÖ´Â°¡
+			// ìƒì‚°ì¤‘ì¸ê°€ : pcì˜ AttackList ì¤‘ ìƒì‚° npcê°€ ìˆëŠ”ê°€
 			bool bProduce = false;
 			CAttackChar* attackCh = pc->m_attackList;
 			while (attackCh)
@@ -943,19 +943,19 @@ void ProcessMessengerMessage_PlayerCountReq(CNetMsg::SP& msg, int nSeq, int nSer
 				attackCh = attackCh->m_next;
 			}
 
-			// »ı»êÁßÀÎ°¡
+			// ìƒì‚°ì¤‘ì¸ê°€
 			if (bProduce)
 				countProduce[pc->m_pZone - gserver->m_zones]++;
-			// °³ÀÎ»óÁ¡À» ¿­¾ú´Â°¡
+			// ê°œì¸ìƒì ì„ ì—´ì—ˆëŠ”ê°€
 			else if (pc->m_personalshop)
 				countShop[pc->m_pZone - gserver->m_zones]++;
-			// ÀÏ¹İ ÇÃ·¹ÀÌ À¯Àú
+			// ì¼ë°˜ í”Œë ˆì´ ìœ ì €
 			else
 				countPlay[pc->m_pZone - gserver->m_zones]++;
 		}
 	}
 
-	// ¸®¸ğÆ®¸¦ Á¦¿ÜÇÑ Á¸ÀÇ °³¼ö¸¦ ±¸ÇÔ
+	// ë¦¬ëª¨íŠ¸ë¥¼ ì œì™¸í•œ ì¡´ì˜ ê°œìˆ˜ë¥¼ êµ¬í•¨
 	for (i = 0; i < gserver->m_numZone; i++)
 	{
 		if (countPC[i] != 0)
@@ -1428,7 +1428,7 @@ void ProcessMessengerMessage_MessengerChatOneReq(CNetMsg::SP& msg, int nSeq, int
 	CPC * receiver = PCManager::instance()->getPlayerByCharIndex( tCharIndex );
 	if (receiver != NULL)
 	{
-		// ¼ö½ÅÀÚ°¡ ÀÖÀ» ¶§
+		// ìˆ˜ì‹ ìê°€ ìˆì„ ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		ChatOneMessengerMsg( rmsg, sCharIndex, sname, tCharIndex, receiver->GetName(), ChatColor, chat );
 		SEND_Q( rmsg, receiver->m_desc );
@@ -1449,7 +1449,7 @@ void ProcessMessengerMessage_MessengerChatReq(CNetMsg::SP& msg, int nSeq, int nS
 	CPC* receiver = PCManager::instance()->getPlayerByName(rname, true );
 	if (receiver == NULL)
 	{
-		// ¼ö½ÅÀÚ°¡ ¾øÀ» ¶§
+		// ìˆ˜ì‹ ìê°€ ì—†ì„ ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrRepMessengerNotFoundMsg(rmsg, nSeq, nServer, nSubNo, nZone, sidx, sname);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -1457,14 +1457,14 @@ void ProcessMessengerMessage_MessengerChatReq(CNetMsg::SP& msg, int nSeq, int nS
 	else
 	{
 		{
-			// ¼ö½ÅÀÚ°¡ ÀÖÀ» ¶§
+			// ìˆ˜ì‹ ìê°€ ìˆì„ ë•Œ
 			CNetMsg::SP rmsg(new CNetMsg);
 			ChatMessengerMsg(rmsg, sidx, sname, receiver->GetName(), chat);
 			SEND_Q(rmsg, receiver->m_desc);
 		}
 
 		{
-			// ¸Ş½ÅÀú¿¡ ÀÀ´ä º¸³»±â
+			// ë©”ì‹ ì €ì— ì‘ë‹µ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrRepMessengerChatRepMsg(rmsg, nSeq, nServer, nSubNo, nZone, sidx, sname, receiver->GetName() , chat);
 			SEND_Q(rmsg, gserver->m_messenger);
@@ -1486,7 +1486,7 @@ void ProcessMessengerMessage_WhisperRep(CNetMsg::SP& msg)
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´
 		CNetMsg::SP rmsg(new CNetMsg);
 		ChatWhisperMsg(rmsg, sidx, sname, rname, chat);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1503,7 +1503,7 @@ void ProcessMessengerMessage_WhisperNotfound(CNetMsg::SP& msg)
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é ¿À·ù ¾Ë¸²
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´ ì˜¤ë¥˜ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysWhisperNotFoundMsg(rmsg);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1699,7 +1699,7 @@ void ProcessMessengerMessage_MessengerChatRep(CNetMsg::SP& msg)
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´
 		CNetMsg::SP rmsg(new CNetMsg);
 		ChatMessengerMsg(rmsg, sidx, sname, rname, chat);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1716,7 +1716,7 @@ void ProcessMessengerMessage_MessengerchatNotfound(CNetMsg::SP& msg)
 	CPC* sender = PCManager::instance()->getPlayerByCharIndex(sidx);
 	if (sender != NULL)
 	{
-		// ¼Û½ÅÀÚ°¡ ÀÖÀ¸¸é ¿À·ù ¾Ë¸²
+		// ì†¡ì‹ ìê°€ ìˆìœ¼ë©´ ì˜¤ë¥˜ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysFriendNotFoundMsg(rmsg);
 		SEND_Q(rmsg, sender->m_desc);
@@ -1948,7 +1948,7 @@ void ProcessMessengerMessage_ChannelChat( CNetMsg::SP& msg)
 				>> chatType;
 
 	{
-		//¸Ş¼¼Áö Å¬¶ó¿¡ Àü¼Û
+		//ë©”ì„¸ì§€ í´ë¼ì— ì „ì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayChannelMsg( rmsg, chatType, sender_index, name, channel, chat );
 		PCManager::instance()->sendToAll(rmsg);
@@ -2352,7 +2352,7 @@ void ProcessMessengerMessage_GmToolChatMonitorNotice(CNetMsg::SP& msg)
 		}
 		else
 		{
-			// ÅøÀÌ ¾øÀ¸¸é °¨½Ã ÇØÁ¦ÇÑ´Ù.
+			// íˆ´ì´ ì—†ìœ¼ë©´ ê°ì‹œ í•´ì œí•œë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrGmToolChatMonitorOffMsg(rmsg, -1, server, sub, zone, charindex);
 			SEND_Q(rmsg, gserver->m_messenger);
@@ -2732,7 +2732,7 @@ void ProcessMessengerMessage_GmWhisperReq(CNetMsg::SP& msg, int nSeq, int nServe
 
 	if (receiver == NULL)
 	{
-		// ¼ö½ÅÀÚ°¡ ¾øÀ» ¶§
+		// ìˆ˜ì‹ ìê°€ ì—†ì„ ë•Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrRepGMWhisperNotFoundMsg(rmsg, nSeq, 1, 1, 0, sidx);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -2740,14 +2740,14 @@ void ProcessMessengerMessage_GmWhisperReq(CNetMsg::SP& msg, int nSeq, int nServe
 	else
 	{
 		{
-			// ¼ö½ÅÀÚ°¡ ÀÖÀ» ¶§
+			// ìˆ˜ì‹ ìê°€ ìˆì„ ë•Œ
 			CNetMsg::SP rmsg(new CNetMsg);
-			ChatGMWhisperMsg(rmsg, sidx, /*sname*/ "GM", receiver->GetName(), chat);		// ÅøÀÌ À¯Àú¿¡°Ô º¸³»´Â ¸Ş½ÃÁö Å¬¶óÀÌ¾ğÆ®¿Í ÇùÀÇ
+			ChatGMWhisperMsg(rmsg, sidx, /*sname*/ "GM", receiver->GetName(), chat);		// íˆ´ì´ ìœ ì €ì—ê²Œ ë³´ë‚´ëŠ” ë©”ì‹œì§€ í´ë¼ì´ì–¸íŠ¸ì™€ í˜‘ì˜
 			SEND_Q(rmsg, receiver->m_desc);
 		}
 
 		{
-			// ¸Ş½ÅÀú¿¡ ÀÀ´ä º¸³»±â
+			// ë©”ì‹ ì €ì— ì‘ë‹µ ë³´ë‚´ê¸°
 			CNetMsg::SP rmsg(new CNetMsg);
 			MsgrRepGMWhisperRepMsg(rmsg, nSeq, 1, 1, 0, receiver->m_index, receiver->GetName(), chat, gserver->m_serverno, gserver->m_subno, sidx);
 			SEND_Q(rmsg, gserver->m_messenger);
@@ -2879,7 +2879,7 @@ void ProcessMessengerMessage_DoubleItemEventReq(CNetMsg::SP& msg, int nSeq, int 
 			{
 				gserver->m_bDoubleItemEvent = true;
 				RefMsg(msg) >> gserver->m_bDoubleItemPercent;
-				/*        /////// yhj    081014 ///////////////// È®·ü Á¦ÇÑÇØÁ¦
+				/*        /////// yhj    081014 ///////////////// í™•ë¥  ì œí•œí•´ì œ
 				if( gserver->m_bDoubleItemPercent < 0 || gserver->m_bDoubleItemPercent > 200 )
 				{
 					gserver->m_bDoubleItemPercent = 100;
@@ -3355,7 +3355,7 @@ void ProcessMessengerMessage_EventDropItemRep(CNetMsg::SP& msg)
 				message += "stop";
 			}
 			break;
-		case 3:		// ¿î¿µÀÚ¸í·É¾î ½ÇÇà½ÇÆĞ
+		case 3:		// ìš´ì˜ìëª…ë ¹ì–´ ì‹¤í–‰ì‹¤íŒ¨
 			{
 				message += "Not Abailable";
 			}
@@ -3426,7 +3426,7 @@ void ProcessMessengerMessage_SetExpLimit( CNetMsg::SP& msg)
 			SEND_Q(rmsg, pc->m_desc);
 		}
 	}
-	// ÆÄÀÏ ÀúÀå ÇÒ °Í.
+	// íŒŒì¼ ì €ì¥ í•  ê²ƒ.
 	FILE* fpExpLimit = fopen(GM_EXP_LIMIT_AUTO_SAVEFILE, "wt");
 	if(fpExpLimit)
 	{
@@ -3490,9 +3490,9 @@ void ProcessMessengerMessage_DoubleEventAutoReq(CNetMsg::SP& msg, int nSeq, int 
 			{
 				RefMsg(msg) >> gserver->m_iDoubleEventEnd[i];
 			}
-			// member º¯¼ö¿¡ ÀúÀå
+			// member ë³€ìˆ˜ì— ì €ì¥
 
-			// ÆÄÀÏ¿¡ ½Ã°£ ÀúÀå
+			// íŒŒì¼ì— ì‹œê°„ ì €ì¥
 			FILE* fpDoubleEvent = fopen(NEW_DOUBLE_EVENT_AUTO_SAVEFILE, "wt");
 			if (fpDoubleEvent)
 			{
@@ -3960,10 +3960,10 @@ void ProcessMessengerMessage_DungeonTimeToggleSetReq(CNetMsg::SP& msg)
 
 void ProcessMessengerMessage_ReloadCatalog( CNetMsg::SP& msg )
 {
-	//Ä³½¬¾ÆÀÌÅÛ ¶ô
-	//Ä³½¬¾ÆÀÌÅÛ ¸®·Îµå
+	//ìºì‰¬ì•„ì´í…œ ë½
+	//ìºì‰¬ì•„ì´í…œ ë¦¬ë¡œë“œ
 	gserver->m_catalogList.Reload();
-	//Ä³½¬¾ÆÀÌÅÛ ¾ğ¶ô
+	//ìºì‰¬ì•„ì´í…œ ì–¸ë½
 	return;
 }
 void ProcessMessengerMessage_ModifyCashShop( CNetMsg::SP& msg )
@@ -3972,9 +3972,9 @@ void ProcessMessengerMessage_ModifyCashShop( CNetMsg::SP& msg )
 	RefMsg(msg) >> cmd;
 	switch(cmd)
 	{
-	case 0:	// Live Áß CashShop ¼öÁ¤ ½ÃÀÛ
+	case 0:	// Live ì¤‘ CashShop ìˆ˜ì • ì‹œì‘
 		{
-			// Ä³½¬»óÁ¡ ¶ô Å¬¶ó·Î ¹ß¼Û
+			// ìºì‰¬ìƒì  ë½ í´ë¼ë¡œ ë°œì†¡
 			CNetMsg::SP rmsg(new CNetMsg);
 			gserver->m_bCashShopLock = true;
 			MsgCashShopLock(rmsg, MSG_EX_CASHITEM_SHOP_LOCK);
@@ -3982,15 +3982,15 @@ void ProcessMessengerMessage_ModifyCashShop( CNetMsg::SP& msg )
 			GAMELOG << init("CASH SHOP LOCK") << end;
 		}
 		break;
-	case 1: // Live Áß CashShop °¡°İ ¸®·Îµù
+	case 1: // Live ì¤‘ CashShop ê°€ê²© ë¦¬ë¡œë”©
 		{
 			gserver->m_catalogList.ReloadPrice();
 			GAMELOG << init("CATALOG RELOAD PRICE") << end;
 		}
 		break;
-	case 2: // Live Áß CashShop ¼öÁ¤ ³¡
+	case 2: // Live ì¤‘ CashShop ìˆ˜ì • ë
 		{
-			// Ä³½¬¾ÆÀÌÅÛ ¾ğ¶ô
+			// ìºì‰¬ì•„ì´í…œ ì–¸ë½
 			CNetMsg::SP rmsg(new CNetMsg);
 			gserver->m_bCashShopLock = false;
 			MsgCashShopLock(rmsg, MSG_EX_CASHITEM_SHOP_UNLOCK);
@@ -4022,7 +4022,7 @@ void ProcessMessengerMessage_NpcEcho( CNetMsg::SP& msg , int nZone )
 void ProcessMessengerMessage_ResetRaidNow(CNetMsg::SP& msg)
 {
 	gserver->m_tRaidResetProcess = mktime(&gserver->m_tRealSystemTime);
-	// Ã¹¹øÂ° °øÁö ½ÃÀÛ
+	// ì²«ë²ˆì§¸ ê³µì§€ ì‹œì‘
 	// (5 - m_nProcess)
 	GAMELOG << init("RAID AUTO RESET REMAIN") << (5-gserver->m_nProcess) << end;
 
@@ -4032,7 +4032,7 @@ void ProcessMessengerMessage_ResetRaidNow(CNetMsg::SP& msg)
 		PCManager::instance()->sendToAll(rmsg);
 	}
 
-	// Ã¹¹øÂ° °øÁö ³¡
+	// ì²«ë²ˆì§¸ ê³µì§€ ë
 	gserver->m_tRaidResetProcess += 60;
 	gserver->m_nProcess++;
 	gserver->m_bIsCheckTime = true;
@@ -4046,7 +4046,7 @@ void ProcessMessengerMessage_ResetRaidSet(CNetMsg::SP& msg)
 	RefMsg(msg) >> resetday >> resethr >> resetmin;
 	GAMELOG << init("RAID DUNGEON RESET TIME SET") << "Day" << delim << resetday << delim
 			<< "Time " << resethr << delim << resetmin << end;
-	// ÀÌÁ¦ ÆÄÀÏ¿¡´Ù ¾²°í..
+	// ì´ì œ íŒŒì¼ì—ë‹¤ ì“°ê³ ..
 	FILE* fp = fopen(RESET_RAID_SAVEFILE, "wt");
 	if(fp)
 	{
@@ -4057,7 +4057,7 @@ void ProcessMessengerMessage_ResetRaidSet(CNetMsg::SP& msg)
 		fp = NULL;
 		GAMELOG << init("WROTE FILE ABOUT RAID RESET INFORMATION") << end;
 	}
-	// ¸â¹öº¯¼ö¸¦ º¯°æÇØÁØ´Ù.
+	// ë©¤ë²„ë³€ìˆ˜ë¥¼ ë³€ê²½í•´ì¤€ë‹¤.
 	gserver->m_nResetDay = resetday;
 	gserver->m_nResethr = resethr;
 	gserver->m_nResetmin = resetmin;
@@ -4066,12 +4066,12 @@ void ProcessMessengerMessage_ResetRaidSet(CNetMsg::SP& msg)
 
 void ProcessMessengerMessage_Notice(CNetMsg::SP& msg)
 {
-	// Å¬¶óÀÌ¾ğÆ®¿¡°Ô Âü°¡ÇÏ¶ó´Â ¸Ş½ÃÁö º¸³»±â
+	// í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì°¸ê°€í•˜ë¼ëŠ” ë©”ì‹œì§€ ë³´ë‚´ê¸°
 	int cmd;
 	RefMsg(msg) >> cmd;
 	switch(cmd)
 	{
-	case 0:				// Âü°¡½Ã°£ ÀÔ´Ï´Ù.
+	case 0:				// ì°¸ê°€ì‹œê°„ ì…ë‹ˆë‹¤.
 		{
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4086,14 +4086,14 @@ void ProcessMessengerMessage_Notice(CNetMsg::SP& msg)
 			}
 		}
 		break;
-	case 1:				// 5ºĞ ³²¾Ò½À´Ï´Ù.
+	case 1:				// 5ë¶„ ë‚¨ì•˜ìŠµë‹ˆë‹¤.
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			RoyalRumbleNotice(rmsg, 1);
 			PCManager::instance()->sendToAll(rmsg);
 		}
 		break;
-	case 2:				// Á¾·áµÇ¾ú½À´Ï´Ù.
+	case 2:				// ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.
 		{
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -4131,9 +4131,9 @@ void ProcessMessengerMessage_Winner(CNetMsg::SP& msg)
 #ifdef SYSTEM_TREASURE_MAP
 void ProcMgrMsgTreasureMap( CNetMsg::SP& msg)
 {
-	// 1. ´øÀü µå¶ø ¼³Á¤ [ on | off ]
-	// 2. ¸Ê ¾ÆÀÌÅÛ µå¶ø ¼³Á¤ [ on | 0ff ]
-	// 3. µå¶øÇÒ Á¸ ÀÎµ¦½º  [ all | zoneindex .... ]
+	// 1. ë˜ì „ ë“œë ì„¤ì • [ on | off ]
+	// 2. ë§µ ì•„ì´í…œ ë“œë ì„¤ì • [ on | 0ff ]
+	// 3. ë“œëí•  ì¡´ ì¸ë±ìŠ¤  [ all | zoneindex .... ]
 
 	int charindex;
 	CLCString str(1000);
@@ -4227,10 +4227,10 @@ void ProcessMsgrEventActiveUpdate(CNetMsg::SP& msg)
 			if( gserver->m_aNotice[i] == 0 )
 				gserver->m_aNotice[i] = eventIndex;
 		}
-		// ÀÌº¥Æ®¿¡ µû¶ó ÀÌº¥Æ® Å×ÀÌºí ÃÊ±âÈ­ ÇÒ °Í.
-		// °õµ¹ÀÌ ÀÌº¥Æ®(35)		CharDB.t_event_gomdori_2007		UserDB.t_event_gomdori_count
-		// ÇÒ·ÎÀ© ÀÌº¥Æ®(49)		CharDB.t_event_halloween2007
-		// Å©¸®½º¸¶½º ÀÌº¥Æ®(50)	UserDB.t_event_xmastree_point
+		// ì´ë²¤íŠ¸ì— ë”°ë¼ ì´ë²¤íŠ¸ í…Œì´ë¸” ì´ˆê¸°í™” í•  ê²ƒ.
+		// ê³°ëŒì´ ì´ë²¤íŠ¸(35)		CharDB.t_event_gomdori_2007		UserDB.t_event_gomdori_count
+		// í• ë¡œìœˆ ì´ë²¤íŠ¸(49)		CharDB.t_event_halloween2007
+		// í¬ë¦¬ìŠ¤ë§ˆìŠ¤ ì´ë²¤íŠ¸(50)	UserDB.t_event_xmastree_point
 		if(eventIndex == A_EVENT_BEAR_DOLL || eventIndex == A_EVENT_HALLOWEEN)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4259,7 +4259,7 @@ void ProcessMsgrEventActiveUpdate(CNetMsg::SP& msg)
 
 		if(eventIndex == A_EVENT_XMAS)
 		{
-			// Å©¸®½º¸¶½º ÀÌº¥Æ® CharDB.t_pet.a_pet_turnto_npc ¾÷µ¥ÀÌÆ® ÇÊ¿ä
+			// í¬ë¦¬ìŠ¤ë§ˆìŠ¤ ì´ë²¤íŠ¸ CharDB.t_pet.a_pet_turnto_npc ì—…ë°ì´íŠ¸ í•„ìš”
 			CNetMsg::SP rmsg(new CNetMsg);
 			rmsg->Init(MSG_HELPER_COMMAND);
 			RefMsg(rmsg) << MSG_HELPER_EVENT_TABLE_INIT << eventIndex;
@@ -4403,7 +4403,7 @@ void ProcessMessengerMessage_PopupNotice_Clear(CNetMsg::SP& msg)
 {
 	PopupNotice::instance()->_clear();
 
-	//DB¿¡¼­ ¸ğµÎ »èÁ¦
+	//DBì—ì„œ ëª¨ë‘ ì‚­ì œ
 	{
 		std::string query = boost::str(boost::format("delete from t_popup_notice where a_server = %d and a_subserver = %d") % gserver->m_serverno % gserver->m_subno);
 		DBManager::instance()->pushQueryForDataDB(0, query);

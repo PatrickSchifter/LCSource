@@ -11,13 +11,13 @@ public:
 
 	enum eWINNER
 	{
-		RESULT_WIN_USER		= 0,	// À¯Àú ½Â¸®
-		RESULT_DRAW			= 1,	// ¹«½ÂºÎ
-		RESULT_WIN_SERVER	= 2,	// ¼­¹ö ½Â¸®
+		RESULT_WIN_USER		= 0,	// ìœ ì € ìŠ¹ë¦¬
+		RESULT_DRAW			= 1,	// ë¬´ìŠ¹ë¶€
+		RESULT_WIN_SERVER	= 2,	// ì„œë²„ ìŠ¹ë¦¬
 	};
 
 	/**
-	* °ÔÀÓ ½ÇÇà
+	* ê²Œì„ ì‹¤í–‰
 	* param1 : _in_	user choice
 	* param2 : _out_ server choice
 	* return value : eWINNER
@@ -25,69 +25,69 @@ public:
 	int Play(CPC* user, const unsigned char userChoice, unsigned char& serverChoice);
 
 	/**
-	* ÀüÃ¼ ½ºÅ×ÀÌÁö Ä«¿îÆ®
-	* return value : ÃÑ ½ºÅ×ÀÌÁö ¼ö
+	* ì „ì²´ ìŠ¤í…Œì´ì§€ ì¹´ìš´íŠ¸
+	* return value : ì´ ìŠ¤í…Œì´ì§€ ìˆ˜
 	**/
 	const int GetTotalStage(void) const;
 
 	/**
-	* º¸»ó Áö±Ş
-	* param1 : º¸»ó Áö±Ş À¯Àú
-	* return value : true:¼º°ø, false:½ÇÆĞ
+	* ë³´ìƒ ì§€ê¸‰
+	* param1 : ë³´ìƒ ì§€ê¸‰ ìœ ì €
+	* return value : true:ì„±ê³µ, false:ì‹¤íŒ¨
 	**/
 	bool GiveReward(CPC* user);
 
 	/**
-	* È®·ü º¯°æ
-	* In Game È®·ü º¯°æ
-	* DB È®·ü º¯°æ
-	* param1 : º¯°æÇÒ ·¹º§
-	* parma2 : º¯°æÇÒ À¯Àú ½Â¸® È®·ü
-	* param3 : º¯°æÇÒ ¼­¹ö ½Â¸® È®·ü
-	* param4 : º¯°æÇÒ ºñ±æ È®·ü
-	* return value : true(¼º°ø), false(½ÇÆĞ)
+	* í™•ë¥  ë³€ê²½
+	* In Game í™•ë¥  ë³€ê²½
+	* DB í™•ë¥  ë³€ê²½
+	* param1 : ë³€ê²½í•  ë ˆë²¨
+	* parma2 : ë³€ê²½í•  ìœ ì € ìŠ¹ë¦¬ í™•ë¥ 
+	* param3 : ë³€ê²½í•  ì„œë²„ ìŠ¹ë¦¬ í™•ë¥ 
+	* param4 : ë³€ê²½í•  ë¹„ê¸¸ í™•ë¥ 
+	* return value : true(ì„±ê³µ), false(ì‹¤íŒ¨)
 	**/
 	bool ChangeProb(int level, unsigned char userProb, unsigned char serverProb, unsigned char drawProb);
 
 	/**
-	* È®·ü Á¤º¸ ¾ò±â
-	* param1 : ¾ò¾î¿Ã ·¹º§
-	* return value : È®·ü Á¤º¸
+	* í™•ë¥  ì •ë³´ ì–»ê¸°
+	* param1 : ì–»ì–´ì˜¬ ë ˆë²¨
+	* return value : í™•ë¥  ì •ë³´
 	**/
 	const CRockPaperScissorsProb* GetProb(int level);
 
 private:
 	/**
-	* ¼­¹ö ¼±ÅÃ°ª ±¸ÇÏ±â
-	* param1 : ½ÂÀÚ
-	* param2 : À¯Àú ¼±ÅÃ°ª
+	* ì„œë²„ ì„ íƒê°’ êµ¬í•˜ê¸°
+	* param1 : ìŠ¹ì
+	* param2 : ìœ ì € ì„ íƒê°’
 	**/
 	unsigned char GetServerChoice(const eWINNER winner, const unsigned char userChoice);
 
 	/**
-	* È®·ü Å×ÀÌºí ¼¼ÆÃÇÏ±â
-	* param1 : È®·ü Å×ÀÌºí ÀÎµ¦½º·Î t_rps_probÀÇ a_system_idx ÇÊµå°ª
+	* í™•ë¥  í…Œì´ë¸” ì„¸íŒ…í•˜ê¸°
+	* param1 : í™•ë¥  í…Œì´ë¸” ì¸ë±ìŠ¤ë¡œ t_rps_probì˜ a_system_idx í•„ë“œê°’
 	**/
 	void SetProbTable(void);
 
 	/**
-	* È®·ü ½Ã½ºÅÛ ÀÎµ¦½º
+	* í™•ë¥  ì‹œìŠ¤í…œ ì¸ë±ìŠ¤
 	**/
 	int m_probIdx;
 
-	/** º¸»ó ¾ÆÀÌÅÛ ¸®½ºÆ®
+	/** ë³´ìƒ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 	* Reward DB Index
-	* º¸»ó ¾ÆÀÌÅÛÀº ½Â¸® È½¼ö¿¡ µû¶ó¼­ °áÁ¤µÈ´Ù.
+	* ë³´ìƒ ì•„ì´í…œì€ ìŠ¹ë¦¬ íšŸìˆ˜ì— ë”°ë¼ì„œ ê²°ì •ëœë‹¤.
 	**/
 	int m_rewardIdx;
 
 	/**
-	* ÀüÃ¼ ½ºÅ×ÀÌÁö ¼ö
+	* ì „ì²´ ìŠ¤í…Œì´ì§€ ìˆ˜
 	**/
 	int m_totalStageCount;
 
 	/**
-	* ½Â¸® È®·ü
+	* ìŠ¹ë¦¬ í™•ë¥ 
 	**/
 	std::map<int, CRockPaperScissorsProb*> m_winProb;
 };

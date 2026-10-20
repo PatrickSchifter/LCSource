@@ -6,10 +6,12 @@
 #include "doFunc.h"
 #include "Battle.h"
 #include "Log.h"
+#include "DBManager.h"
+#include "WearInvenManager.h"
 #include "../ShareLib/packetType/ptype_old_do_sskill.h"
 
 ///////////////////////
-// Quest °ü·Ã ÇÔ¼ö
+// Quest ê´€ë ¨ í•¨ìˆ˜
 
 void getRvrQuest(CNPC* npc, int* questIndex)
 {
@@ -22,11 +24,11 @@ void getRvrQuest(CNPC* npc, int* questIndex)
 	{
 		if (0 < kailuxJoinCount)
 		{
-			kailuxJoinPercent		= kailuxJoinCount / totalJoinCount * 1000;
+			kailuxJoinPercent		= kailuxJoinCount / totalJoinCount * 100;
 		}
 		if (0 < dealermoonJoinCount)
 		{
-			dealermoonJoinPercent	= dealermoonJoinCount / totalJoinCount * 1000;
+			dealermoonJoinPercent	= dealermoonJoinCount / totalJoinCount * 100;
 		}
 	}
 
@@ -92,25 +94,25 @@ void do_Quest(CPC* ch, CNetMsg::SP& msg)
 		break;
 	// BW
 
-	case MSG_QUEST_PD4_RANK_VIEW_REQ:			// ·©Å© ºä¿äÃ»
+	case MSG_QUEST_PD4_RANK_VIEW_REQ:			// ë­í¬ ë·°ìš”ì²­
 		do_QuestPD4RankView(ch, msg);
 		break;
-	case MSG_QUEST_PD4_RANK_REWARD_RANK_REQ:	// º¸»ó ºä¿äÃ»
+	case MSG_QUEST_PD4_RANK_REWARD_RANK_REQ:	// ë³´ìƒ ë·°ìš”ì²­
 		do_QuestPD4RankRewardView(ch, msg);
 		break;
-	case MSG_QUEST_PD4_REWARD:					// º¸»ó ¿äÃ»
+	case MSG_QUEST_PD4_REWARD:					// ë³´ìƒ ìš”ì²­
 		do_QuestPD4RankReward(ch, msg);
 		break;
 
 	case MSG_QUEST_COLLECT:
-		do_QuestCollect(ch, msg);				// ¼öÁı Äù½ºÆ®
+		do_QuestCollect(ch, msg);				// ìˆ˜ì§‘ í€˜ìŠ¤íŠ¸
 		break;
 
 	case MSG_QUEST_RESTORE_ABANDON:
-		do_QuestRestoreAbandon(ch, msg);		// Æ÷±â Äù½ºÆ® º¹±¸
+		do_QuestRestoreAbandon(ch, msg);		// í¬ê¸° í€˜ìŠ¤íŠ¸ ë³µêµ¬
 		break;
 	case MSG_QUEST_ITEM_REQ:
-		do_QuestItemReq(ch, msg);				// ¿Ï·áÇÑ Äù½ºÆ®Áß Äù½ºÆ® ¾ÆÀÌÅÛ ¹Ş±â
+		do_QuestItemReq(ch, msg);				// ì™„ë£Œí•œ í€˜ìŠ¤íŠ¸ì¤‘ í€˜ìŠ¤íŠ¸ ì•„ì´í…œ ë°›ê¸°
 		break;
 	}
 }
@@ -118,7 +120,7 @@ void do_Quest(CPC* ch, CNetMsg::SP& msg)
 void do_QuestPD4RankView(CPC* ch, CNetMsg::SP& msg)
 {
 	/////////////
-	// helper¿¡°Ô ·©Å© ºä ¿äÃ» : BW
+	// helperì—ê²Œ ë­í¬ ë·° ìš”ì²­ : BW
 	//MSG_HELPER_PD4_RANK_VIEW_REQ : charindex(n) charjob(c)
 	//MSG_HELPER_PD4_RANK_VIEW_REP : charindex(n) multicount(c), charname(str), bclear(c), deadmon(n), ctime(ll);
 	char charjob;
@@ -169,7 +171,7 @@ void do_QuestPD4RankView(CPC* ch, CNetMsg::SP& msg)
 void do_QuestPD4RankRewardView(CPC* ch, CNetMsg::SP& msg)
 {
 	//////////////////////////
-	//ÇïÆÛ¿¡°Ô º¸»óºä ¿äÃ»
+	//í—¬í¼ì—ê²Œ ë³´ìƒë·° ìš”ì²­
 	//MSG_HELPER_PD4_REWARD_VIEW_REQ : charindex(n) charjob(c)
 	//MSG_HELPER_PD4_REWARD_VIEW_REP : charindex(n) multicount(c), charname(str)
 #ifdef NPC_CHECK
@@ -215,8 +217,8 @@ void do_QuestPD4RankRewardView(CPC* ch, CNetMsg::SP& msg)
 void do_QuestPD4RankReward(CPC* ch, CNetMsg::SP& msg)
 {
 	//////////////////////////////////
-	// ÇïÆÛ¿¡°Ô º¸»ó ¹ŞÀ» »ç¶÷ ¿äÃ»
-	// º¸»ó ¾ÈÇØÁÖ¸é Á¸³» ¸Â´Â°Å´Ù ¾ó¾¾±¸
+	// í—¬í¼ì—ê²Œ ë³´ìƒ ë°›ì„ ì‚¬ëŒ ìš”ì²­
+	// ë³´ìƒ ì•ˆí•´ì£¼ë©´ ì¡´ë‚´ ë§ëŠ”ê±°ë‹¤ ì–¼ì”¨êµ¬
 	//MSG_HELPER_PD4_REWARD_REQ : charindex(n)
 	//MSG_HELPER_PD4_REWARD_REP : charindex(n) charrank(c) breward(c)
 #ifdef NPC_CHECK
@@ -263,12 +265,12 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> subtype
 				>> npcIndex;
 
-	// ÇØ´ç Quest npc°¡ ÁÖÀ§¿¡ ÀÖ´Â°¡
+	// í•´ë‹¹ Quest npcê°€ ì£¼ìœ„ì— ìˆëŠ”ê°€
 	CCharacter* tch = NULL;
 
 	CNPC* npc = TO_NPC(ch->m_pArea->FindProtoNPCInCell( (CCharacter*)ch, npcIndex, false));
 
-	// ÁÖÀ§¿¡ ÇØ´ç npc ¾øÀ½
+	// ì£¼ìœ„ì— í•´ë‹¹ npc ì—†ìŒ
 	if (!npc)
 		return;
 
@@ -285,20 +287,20 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			<< npcIndex
 			<< end;
 
-	// npc°¡ º¸¿©ÁÙ ÃÖ´ë Äù½ºÆ® ¼ö
+	// npcê°€ ë³´ì—¬ì¤„ ìµœëŒ€ í€˜ìŠ¤íŠ¸ ìˆ˜
 	int	count = npc-> m_nQuestCount+ QUEST_MAX_PC;
 
-	// Äù½ºÆ® ÇÃ·¡±×
+	// í€˜ìŠ¤íŠ¸ í”Œë˜ê·¸
 	int* flag;
 	flag = new int [count];
 	memset(flag, -1, sizeof(int) * count);
 
-	// Äù½ºÆ® ÀÎµ¦½º
+	// í€˜ìŠ¤íŠ¸ ì¸ë±ìŠ¤
 	int* index;
 	index = new int [count];
 	memset(index, -1, sizeof(int) * count);
 
-	// Äù½ºÆ® º¸»óÀÇ °æ¿ì
+	// í€˜ìŠ¤íŠ¸ ë³´ìƒì˜ ê²½ìš°
 	int i;
 	int questCount = 0;
 
@@ -318,7 +320,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// Äù½ºÆ®¸¦ ¹ŞÀ¸·Á´Â °æ¿ì
+	// í€˜ìŠ¤íŠ¸ë¥¼ ë°›ìœ¼ë ¤ëŠ” ê²½ìš°
 	int rvrQuestInex[2] = {0,};
 	getRvrQuest(npc, rvrQuestInex);
 	for (i=0; i < npc->m_nQuestCount; i++)
@@ -354,9 +356,9 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 
 		CQuest* pQuest;
 
-		if (proto->m_type[1] == QTYPE_REPEAT_ONCE || proto->m_type[1] == QTYPE_REPEAT_DAY) // ¼öÇàÇÑ Äù½ºÆ®´Â ¸®½ºÆ®¿¡¼­ Á¦¿Ü
+		if (proto->m_type[1] == QTYPE_REPEAT_ONCE || proto->m_type[1] == QTYPE_REPEAT_DAY) // ìˆ˜í–‰í•œ í€˜ìŠ¤íŠ¸ëŠ” ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œì™¸
 		{
-			bool bOnce = false;		// ÀÌ¹Ì ¼öÇàÇÑ Äù½ºÆ® ÀÎ°¡
+			bool bOnce = false;		// ì´ë¯¸ ìˆ˜í–‰í•œ í€˜ìŠ¤íŠ¸ ì¸ê°€
 
 			CQuest* pQuestNext = ch->m_questList.GetNextQuest(NULL);
 			while ((pQuest = pQuestNext))
@@ -379,15 +381,15 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 				continue;
 		}
 
-		// ¼öÇàÁßÀÎ°¡
+		// ìˆ˜í–‰ì¤‘ì¸ê°€
 		pQuest = ch->m_questList.FindQuest(proto->m_index);
-		// ¼öÇàÁßÀÌ¸é¼­
+		// ìˆ˜í–‰ì¤‘ì´ë©´ì„œ
 		if (pQuest && pQuest->GetQuestState() == QUEST_STATE_RUN)
 		{
-			// ¿Ï·á¸é ¾ÈµÊ
+			// ì™„ë£Œë©´ ì•ˆë¨
 			if (pQuest->IsCompleted())
 				continue;
-			// ¿Ï·á ¾Æ´Ï¸é
+			// ì™„ë£Œ ì•„ë‹ˆë©´
 			else
 			{
 				flag[questCount] = (int)MSG_QUEST_FLAG_ING;
@@ -397,7 +399,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÇÊ¿ä ·¹º§ Á¶°Ç
+		// í•„ìš” ë ˆë²¨ ì¡°ê±´
 		if (proto->m_needMinLevel > ch->m_level || proto->m_needMaxLevel < ch->m_level)
 		{
 			flag[questCount] = (int)MSG_QUEST_FLAG_NOT_LEVEL;
@@ -406,7 +408,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			continue;
 		}
 
-		// °æÇèÄ¡°¡ ºÎÁ·ÇÏ´Ù..
+		// ê²½í—˜ì¹˜ê°€ ë¶€ì¡±í•˜ë‹¤..
 		/*if((proto->m_needMinLevel == ch->m_level) && proto->m_needExp != 0 &&	(ch->m_exp < proto->m_needExp) )
 		{
 			flag[questCount] = (int)MSG_QUEST_FLAG_NOT_EXP;
@@ -415,7 +417,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			continue;
 		}*/
 
-		//¼±ÇàÄù½ºÆ®¸¦ ¼öÇàÇÏ¿´´Â°¡...
+		//ì„ í–‰í€˜ìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•˜ì˜€ëŠ”ê°€...
 		if(proto->m_prequestNum != 0)
 		{
 			bool bOnce = false;
@@ -431,7 +433,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			if (!bOnce)//¾ÆÁ÷ ¼±Çà Äù½ºÆ®¸¦ ¿Ï·áÇÏÁö ¾Ê¾Ò´Ù¸é,
+			if (!bOnce)//ì•„ì§ ì„ í–‰ í€˜ìŠ¤íŠ¸ë¥¼ ì™„ë£Œí•˜ì§€ ì•Šì•˜ë‹¤ë©´,
 			{
 				flag[questCount] = (int)MSG_QUEST_FLAG_NOT_PREQUEST;
 				index[questCount] = proto->m_index;
@@ -440,7 +442,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÇÊ¿ä Á÷¾÷ Á¶°Ç
+		// í•„ìš” ì§ì—… ì¡°ê±´
 		if (proto->m_needJob != -1 && proto->m_needJob != ch->m_job)
 		{
 			flag[questCount] = (int)MSG_QUEST_FLAG_NOT_JOB;
@@ -449,7 +451,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			continue;
 		}
 
-		// rvr Äù½ºÆ®ÀÏ ¶§ ÇÊ¿äÁ¶°Ç
+		// rvr í€˜ìŠ¤íŠ¸ì¼ ë•Œ í•„ìš”ì¡°ê±´
 		if (proto->m_needRvRType > 0)
 		{
 			if(	proto->m_needRvRType != ch->getSyndicateType() ||
@@ -459,9 +461,9 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÇÊ¿ä ¾ÆÀÌÅÛ Ã¼Å©
+		// í•„ìš” ì•„ì´í…œ ì²´í¬
 		int k;
-		bool bNeedItem = true;	// ÇÊ¿ä¾ÆÀÌÅÛ Á¶°Ç ¸¸Á·
+		bool bNeedItem = true;	// í•„ìš”ì•„ì´í…œ ì¡°ê±´ ë§Œì¡±
 
 		for (j=0; j < QUEST_MAX_NEED_ITEM; j++)
 		{
@@ -485,21 +487,21 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			continue;
 		}
 
-		// °İÆÄ, ±¸Ãâ Äù½ºÆ®ÀÇ °æ¿ì ½Ì±Û´øÀü ¿©À¯ºĞ Ã¼Å©
+		// ê²©íŒŒ, êµ¬ì¶œ í€˜ìŠ¤íŠ¸ì˜ ê²½ìš° ì‹±ê¸€ë˜ì „ ì—¬ìœ ë¶„ ì²´í¬
 		if (proto->m_type[0] == QTYPE_KIND_DEFEAT || proto->m_type[0] == QTYPE_KIND_SAVE)
 		{
 			int zoneidx = -1;
 
 			switch (proto->m_index)
 			{
-			case 13:		// ¹ß·Ï °İÆÄ
+			case 13:		// ë°œë¡ ê²©íŒŒ
 				zoneidx = ZONE_SINGLE_DUNGEON1;
 				break;
-			case 14:		// °øÁÖ ±¸Ãâ
+			case 14:		// ê³µì£¼ êµ¬ì¶œ
 				zoneidx = ZONE_SINGLE_DUNGEON2;
 				break;
-			case 104:		// ¾ÆÀÚÄ« Çù°î
-				// ÇÏ·ç 3È¸ ±îÁö¸¸
+			case 104:		// ì•„ìì¹´ í˜‘ê³¡
+				// í•˜ë£¨ 3íšŒ ê¹Œì§€ë§Œ
 				if (!ch->CheckDungeonData(ZONE_SINGLE_DUNGEON3))
 				{
 					flag[questCount] = (int)MSG_QUEST_FLAG_OVERCOUNT;
@@ -509,8 +511,8 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 				}
 				zoneidx = ZONE_SINGLE_DUNGEON3;
 				break;
-			case 105:		// Â÷¿øÀÇ ¹®
-				// ÇÏ·ç 3È¸ ±îÁö¸¸
+			case 105:		// ì°¨ì›ì˜ ë¬¸
+				// í•˜ë£¨ 3íšŒ ê¹Œì§€ë§Œ
 				if (!ch->CheckDungeonData(ZONE_SINGLE_DUNGEON4))
 				{
 					flag[questCount] = (int)MSG_QUEST_FLAG_OVERCOUNT;
@@ -538,7 +540,7 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 				if (!pZone->m_area[j].m_bEnable)
 					break;
 			}
-			// ½Ì±Û´øÀü ¸ğµÎ ²ËÂ÷´Ù ¸ñ·Ï¿¡ ³ª¿ÀÁö ¾Êµµ·Ï continue;
+			// ì‹±ê¸€ë˜ì „ ëª¨ë‘ ê½‰ì°¨ë‹¤ ëª©ë¡ì— ë‚˜ì˜¤ì§€ ì•Šë„ë¡ continue;
 			if (j == pZone->m_countArea)
 			{
 				flag[questCount] = (int)MSG_QUEST_FLAG_NOTENOUGH_AREA;
@@ -548,11 +550,11 @@ void do_QuestRequest(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÇÏµåÄÚµù : »ı»ê½ºÅ³½Àµæ Äù½ºÆ® »õ·Î ³ª¿ÀÁö ¾Êµµ·Ï Á¶Á¤
+		// í•˜ë“œì½”ë”© : ìƒì‚°ìŠ¤í‚¬ìŠµë“ í€˜ìŠ¤íŠ¸ ìƒˆë¡œ ë‚˜ì˜¤ì§€ ì•Šë„ë¡ ì¡°ì •
 //		if (proto->m_index == 27 || proto->m_index == 28 || proto->m_index == 29)
 //			continue;
 
-		// ÃÊ±â°ª ±×´ë·Î¶ó¸é ¼öÇà °¡´É
+		// ì´ˆê¸°ê°’ ê·¸ëŒ€ë¡œë¼ë©´ ìˆ˜í–‰ ê°€ëŠ¥
 		if (flag[questCount] == -1)
 		{
 			flag[questCount] = (int)MSG_QUEST_FLAG_CAN;
@@ -583,7 +585,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> subtype
 				>> questIndex;
 
-	// 10°³ ÃÊ°ú
+	// 10ê°œ ì´ˆê³¼
 	if (ch->m_questList.GetCountRun() >= QUEST_MAX_PC)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -597,7 +599,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	if (!proto)
 		return false;
 
-	// ½ÃÀÛ Á¶°Ç
+	// ì‹œì‘ ì¡°ê±´
 	if (proto->m_startType == QSTART_LEVEL)
 	{
 		if (proto->m_startData > ch->m_level)
@@ -610,7 +612,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	}
 	else if(proto->m_startType == QSTART_NPC)
 	{
-		// NPC¿ÍÀÇ ¼¿ 2Ä­
+		// NPCì™€ì˜ ì…€ 2ì¹¸
 		CNPC* npc = ch->m_pArea->FindProtoNPCInCell(ch, proto->m_startData, false, 2);
 		if (npc == NULL)
 		{
@@ -635,7 +637,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	else
 		return false;
 
-	// 1È¸¿ë Äù½ºÆ® ÀÌ¸é¼­ ½ÇÇàÇß´ÂÁö
+	// 1íšŒìš© í€˜ìŠ¤íŠ¸ ì´ë©´ì„œ ì‹¤í–‰í–ˆëŠ”ì§€
 	CQuest* pQuest;
 	CQuest* pQuestNext;
 #if defined (LC_GAMIGO) || defined (QUEST_EXTEND_REPEAT_DAY)
@@ -658,7 +660,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ¼öÇàÁßÀÎ°¡
+	// ìˆ˜í–‰ì¤‘ì¸ê°€
 	pQuest = ch->m_questList.FindQuest(proto->m_index);
 	if (pQuest)
 	{
@@ -668,7 +670,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		return false;
 	}
 
-	// ÇÊ¿ä ·¹º§ Á¶°Ç
+	// í•„ìš” ë ˆë²¨ ì¡°ê±´
 	if (proto->m_needMinLevel > ch->m_level || proto->m_needMaxLevel < ch->m_level)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -677,7 +679,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		return false;
 	}
 
-	// ÇÊ¿ä Á÷¾÷ Á¶°Ç
+	// í•„ìš” ì§ì—… ì¡°ê±´
 	if (proto->m_needJob != -1 && proto->m_needJob != ch->m_job)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -686,7 +688,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		return false;
 	}
 
-	// rvr Äù½ºÆ®ÀÏ ¶§ ÇÊ¿äÁ¶°Ç
+	// rvr í€˜ìŠ¤íŠ¸ì¼ ë•Œ í•„ìš”ì¡°ê±´
 	if (proto->m_needRvRType > 0)
 	{
 		if(	proto->m_needRvRType != ch->getSyndicateType() ||
@@ -699,21 +701,21 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// °İÆÄ, ±¸Ãâ Äù½ºÆ®ÀÇ °æ¿ì ½Ì±Û´øÀü ¿©À¯ºĞ Ã¼Å©
-	// ÀÔÀå Á¦ÇÑ
+	// ê²©íŒŒ, êµ¬ì¶œ í€˜ìŠ¤íŠ¸ì˜ ê²½ìš° ì‹±ê¸€ë˜ì „ ì—¬ìœ ë¶„ ì²´í¬
+	// ì…ì¥ ì œí•œ
 	if (proto->m_type[0] == QTYPE_KIND_DEFEAT || proto->m_type[0] == QTYPE_KIND_SAVE)
 	{
 		int zoneidx = -1;
 		switch (proto->m_index)
 		{
-		case 13:		// ¹ß·Ï °İÆÄ
+		case 13:		// ë°œë¡ ê²©íŒŒ
 			zoneidx = ZONE_SINGLE_DUNGEON1;
 			break;
-		case 14:		// °øÁÖ ±¸Ãâ
+		case 14:		// ê³µì£¼ êµ¬ì¶œ
 			zoneidx = ZONE_SINGLE_DUNGEON2;
 			break;
-		case 104:		// ¾ÆÀÚÄ« Çù°î
-			// ÇÏ·ç 3È¸ ±îÁö¸¸
+		case 104:		// ì•„ìì¹´ í˜‘ê³¡
+			// í•˜ë£¨ 3íšŒ ê¹Œì§€ë§Œ
 			if (!ch->CheckDungeonData(ZONE_SINGLE_DUNGEON3))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -724,8 +726,8 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 			zoneidx = ZONE_SINGLE_DUNGEON3;
 			break;
-		case 105:		// Â÷¿øÀÇ ¹®
-			// ÇÏ·ç 3È¸ ±îÁö¸¸
+		case 105:		// ì°¨ì›ì˜ ë¬¸
+			// í•˜ë£¨ 3íšŒ ê¹Œì§€ë§Œ
 			if (!ch->CheckDungeonData(ZONE_SINGLE_DUNGEON4))
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -734,7 +736,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 				return false;
 			}
 
-			ch->m_pd4StartTime = TIME_ONE_HOUR; //1½Ã°£
+			ch->m_pd4StartTime = TIME_ONE_HOUR; //1ì‹œê°„
 
 			zoneidx = ZONE_SINGLE_DUNGEON4;
 			break;
@@ -756,7 +758,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 			if (!pZone->m_area[i].m_bEnable)
 				break;
 		}
-		// ½Ì±Û´øÀü ¸ğµÎ ²ËÂ÷´Ù
+		// ì‹±ê¸€ë˜ì „ ëª¨ë‘ ê½‰ì°¨ë‹¤
 		if (i == pZone->m_countArea)
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -766,7 +768,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// ÇÊ¿ä ¾ÆÀÌÅÛ Ã¼Å©
+	// í•„ìš” ì•„ì´í…œ ì²´í¬
 	item_search_t delete_vec[QUEST_MAX_NEED_ITEM];
 	for (int i = 0; i < QUEST_MAX_NEED_ITEM; i++)
 	{
@@ -784,7 +786,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// Àü´Ş Äù½ºÆ®ÀÏ°æ¿ì Àü´ŞÇÒ ¾ÆÀÌÅÛÀ» ¹ŞÀ» °ø°£ÀÌ ÀÖ´ÂÁö ¹Ì¸® °Ë»ç
+		// ì „ë‹¬ í€˜ìŠ¤íŠ¸ì¼ê²½ìš° ì „ë‹¬í•  ì•„ì´í…œì„ ë°›ì„ ê³µê°„ì´ ìˆëŠ”ì§€ ë¯¸ë¦¬ ê²€ì‚¬
 		if (proto->m_type[0] == QTYPE_KIND_DELIVERY && questIndex != 153)
 		{
 			int empty_count = 0;
@@ -805,7 +807,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_inventory.getEmptyCount() < empty_count)
 			{
-				// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+				// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 				GAMELOG << init("QUEST ERROR", ch)
 						<< proto->m_index << delim
 						<< (int)MSG_QUEST_ERR_DELIVERY_FULL
@@ -823,7 +825,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	if (pQuest == NULL)
 		return false;
 
-	// ¾ÆÀÌÅÛ ¼ö·® º¯°æ
+	// ì•„ì´í…œ ìˆ˜ëŸ‰ ë³€ê²½
 	for (int i = 0; i < QUEST_MAX_NEED_ITEM; i++)
 	{
 		if (proto->m_needItemIndex[i] == -1)
@@ -837,7 +839,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	pQuest->SetComplete2(false);
 
 	///////////////////////////////////
-	// pd4 Äù½ºÆ®ÀÌ¸é helper ·©Å·¿¡ µî·Ï : BW
+	// pd4 í€˜ìŠ¤íŠ¸ì´ë©´ helper ë­í‚¹ì— ë“±ë¡ : BW
 	//
 	if (proto->m_index == 105)
 	{
@@ -845,7 +847,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 		if (gserver->isRunHelper())
 		{
-			// char index¸¦ º¸³¿
+			// char indexë¥¼ ë³´ëƒ„
 			CNetMsg::SP rmsg(new CNetMsg);
 
 			rmsg->Init(MSG_HELPER_COMMAND);
@@ -881,20 +883,20 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 	}
 
 
-	// Äù½ºÆ® ½ÃÀÛ ½Ã ¹º°¡ ÇÏ´Â °Íµé
+	// í€˜ìŠ¤íŠ¸ ì‹œì‘ ì‹œ ë­”ê°€ í•˜ëŠ” ê²ƒë“¤
 	switch (proto->m_type[0])
 	{
-	// Àü´Ş Äù½ºÆ®
+	// ì „ë‹¬ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_DELIVERY:
 		{
-			//  [2/28/2007 KwonYongDae] 153¹ø Äù½ºÆ® ÀÎ°æ¿ì ¾ÆÀÌÅÛ Áö±Ş ±İÁö ÀÀ±Ş Ã³Ä¡
+			//  [2/28/2007 KwonYongDae] 153ë²ˆ í€˜ìŠ¤íŠ¸ ì¸ê²½ìš° ì•„ì´í…œ ì§€ê¸‰ ê¸ˆì§€ ì‘ê¸‰ ì²˜ì¹˜
 			if( questIndex == 153 )
 			{
-				ch->m_questList.CheckComplete( ch );		// Äù½ºÆ® ¿Ï·á Ã¼Å©
+				ch->m_questList.CheckComplete( ch );		// í€˜ìŠ¤íŠ¸ ì™„ë£Œ ì²´í¬
 				break;
 			}
 
-			// rvr Äù½ºÆ® ¹Ù·Î ¿Ï·á Ã³¸®
+			// rvr í€˜ìŠ¤íŠ¸ ë°”ë¡œ ì™„ë£Œ ì²˜ë¦¬
 			if (questIndex == 682 || questIndex == 683)
 			{
 				ch->m_questList.CheckComplete(ch);
@@ -917,7 +919,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 						if (ch->m_inventory.addItem(item) == false)
 						{
-							// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+							// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 							GAMELOG << init("QUEST ERROR", ch)
 									<< proto->m_index << delim
 									<< (int)MSG_QUEST_ERR_DELIVERY_FULL
@@ -963,9 +965,9 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 			if( pQuest->GetQuestProto()->m_index == 370 )
 			{
-				// ÈÄ°ßÀÎ°ú °ü°è¸¦ ¸ÎÀº »óÅÂ¶ó¸é ¹Ù·Î ¿Ï·á ¸Ş½ÃÁö¸¦ ³¯·ÁÁØ´Ù.
+				// í›„ê²¬ì¸ê³¼ ê´€ê³„ë¥¼ ë§ºì€ ìƒíƒœë¼ë©´ ë°”ë¡œ ì™„ë£Œ ë©”ì‹œì§€ë¥¼ ë‚ ë ¤ì¤€ë‹¤.
 				if( ch->m_teachType == MSG_TEACH_STUDENT_TYPE
-//					|| ch->m_teachType == MSG_TEACH_NO_STUDENT_TYPE  // ÇÑ¹øÀÌ¶óµµ »çÁ¦ °ü°è¸¦ ¸Î¾ú´ø °ß½À»ıµµ Äù½ºÆ® ¿Ï·á¸¦ ÇØÁÖ·Á¸é ÁÖ¼®À» Ç®¾î¹ö¸®»ï
+//					|| ch->m_teachType == MSG_TEACH_NO_STUDENT_TYPE  // í•œë²ˆì´ë¼ë„ ì‚¬ì œ ê´€ê³„ë¥¼ ë§ºì—ˆë˜ ê²¬ìŠµìƒë„ í€˜ìŠ¤íŠ¸ ì™„ë£Œë¥¼ í•´ì£¼ë ¤ë©´ ì£¼ì„ì„ í’€ì–´ë²„ë¦¬ì‚¼
 				  )
 				{
 					pQuest->SetComplete1(true);
@@ -975,10 +977,10 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 					QuestCompleteMsg(rmsg, pQuest);
 					SEND_Q(rmsg, ch->m_desc);
 				}
-				return true; // ¸®ÅÏÇÏÁø ¾ÊÀ¸¸é ¹Ù·Î ¿Ï·áµÈ´Ù.
+				return true; // ë¦¬í„´í•˜ì§„ ì•Šìœ¼ë©´ ë°”ë¡œ ì™„ë£Œëœë‹¤.
 			}
 
-			// Complete Msg ÃÖÃÊÀü¼ÛÀÎ°æ¿ì¿¡¸¸ Àü¼Û
+			// Complete Msg ìµœì´ˆì „ì†¡ì¸ê²½ìš°ì—ë§Œ ì „ì†¡
 			if (!pQuest->IsCompleted()	)
 			{
 				if (pQuest->GetComplete2())
@@ -988,7 +990,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 							<< pQuest->GetQuestIndex()
 							<< end;
 
-					// ¿Ï·á ¸Ş½ÃÁö
+					// ì™„ë£Œ ë©”ì‹œì§€
 					CNetMsg::SP rmsg(new CNetMsg);
 					QuestCompleteMsg(rmsg, pQuest);
 					SEND_Q(rmsg, ch->m_desc);
@@ -998,7 +1000,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	// Ã¤±¼, Ã¤Áı, Â÷Áö Ã¼Çè Äù½ºÆ®
+	// ì±„êµ´, ì±„ì§‘, ì°¨ì§€ ì²´í—˜ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_MINING_EXPERIENCE:
 	case QTYPE_KIND_GATHERING_EXPERIENCE:
 	case QTYPE_KIND_CHARGE_EXPERIENCE:
@@ -1012,7 +1014,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// »ı»êµµ±¸ Áö±Ş
+			// ìƒì‚°ë„êµ¬ ì§€ê¸‰
 			CItem* tool = NULL;
 
 			for (int i = 0; i < gserver->m_itemProtoList.m_nCount; i++)
@@ -1049,7 +1051,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_inventory.addItem(tool) == false)
 			{
-				// Drop Msg º¸³»±â
+				// Drop Msg ë³´ë‚´ê¸°
 				tool = ch->m_pArea->DropItem(tool, ch);
 				if (!tool)
 					return false;
@@ -1069,7 +1071,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 		}
 		break;
 
-	// ½ÃÀÛ½Ã ¾ÆÀÌÅÛÀ» Á¦°øÇÏ´Â Äù½ºÆ®
+	// ì‹œì‘ì‹œ ì•„ì´í…œì„ ì œê³µí•˜ëŠ” í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_PROCESS_EXPERIENCE :
 	case QTYPE_KIND_MAKE_EXPERIENCE :
 		{
@@ -1085,7 +1087,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// QUEST 150 : ±¸¸® °¡°ø È®·ü¸¸ 100%
+			// QUEST 150 : êµ¬ë¦¬ ê°€ê³µ í™•ë¥ ë§Œ 100%
 			CItem * itemOfferd = NULL ;
 			int		iOfferdIndex = -1;
 			//int		itemOfferdIndex = -1;
@@ -1093,16 +1095,16 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 			{
 			case 150 :
 				iOfferdIndex = 269;
-				break;		// ½ºÅæ Á¤Á¦ Ã¼Çè - ½ºÅæ¿Â Á¤·Ã¼­
+				break;		// ìŠ¤í†¤ ì •ì œ ì²´í—˜ - ìŠ¤í†¤ì˜¨ ì •ë ¨ì„œ
 			case 151 :
 				iOfferdIndex = 279;
-				break;		// ¿ø¼Ò Á¤Á¦ Ã¼Çè - Eµî±Ş ¿ø¼Ò Á¤Á¦¼­
+				break;		// ì›ì†Œ ì •ì œ ì²´í—˜ - Eë“±ê¸‰ ì›ì†Œ ì •ì œì„œ
 			case 152 :
 				iOfferdIndex = 274;
-				break;		// ½Ä¹° °¡°ø Ã¼Çè - Å©¶ôÀÇ ³ë¶õÀÙ °¡°ø¼­
+				break;		// ì‹ë¬¼ ê°€ê³µ ì²´í—˜ - í¬ë½ì˜ ë…¸ë€ì ê°€ê³µì„œ
 			case 154 :
 				iOfferdIndex = 397;
-				break;		// ¹«±â Á¦ÀÛ Ã¼Çè - 25·¹º§ ¹«±âÁ¦ÀÛ¼­
+				break;		// ë¬´ê¸° ì œì‘ ì²´í—˜ - 25ë ˆë²¨ ë¬´ê¸°ì œì‘ì„œ
 			default :
 				iOfferdIndex = -1;
 			}
@@ -1119,7 +1121,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 				if( !itemOfferd )
 					return false;
 
-				// Drop Msg º¸³»±â
+				// Drop Msg ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				itemOfferd->m_preferenceIndex = ch->m_index;
 				ItemDropMsg(rmsg, ch, itemOfferd);
@@ -1189,7 +1191,7 @@ bool do_QuestStart(CPC* ch, CNetMsg::SP& msg)
 
 			if(bNormalItem==0)
 			{
-				//	pQuest->SetComplete2(true); // Á¤Ã¼°¡ ¹¹³Ä? ¿Ö Æ®·ç ÇØÁÖ³Ä?  [7/31/2009 derek]
+				//	pQuest->SetComplete2(true); // ì •ì²´ê°€ ë­ëƒ? ì™œ íŠ¸ë£¨ í•´ì£¼ëƒ?  [7/31/2009 derek]
 			}
 		}
 		break;
@@ -1218,7 +1220,7 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 
 	pQuest = ch->m_questList.FindQuest(questIndex);
 
-	// ¾ø´Â Äù½ºÆ®
+	// ì—†ëŠ” í€˜ìŠ¤íŠ¸
 	if (pQuest == NULL)
 	{
 		CQuestProto* proto = gserver->m_questProtoList.FindProto(questIndex);
@@ -1263,7 +1265,7 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 
 	switch (pQuestProto->m_type[0])
 	{
-	// ¼öÁı, Àü´Ş, ±¸Ãâ Äù½ºÆ®
+	// ìˆ˜ì§‘, ì „ë‹¬, êµ¬ì¶œ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_COLLECTION:
 	case QTYPE_KIND_DELIVERY:
 	case QTYPE_KIND_SAVE:
@@ -1282,7 +1284,7 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 				{
 				case QCONDITION_ITEM:
 					{
-						// Äù½ºÆ® ÀÎº¥Åä¸®¿¡¼­¸¸
+						// í€˜ìŠ¤íŠ¸ ì¸ë²¤í† ë¦¬ì—ì„œë§Œ
 						CItem* item = ch->m_inventory.FindByDBIndex(pQuestProto->m_conditionIndex[i], 0, 0);
 						if (item == NULL)
 							continue;
@@ -1325,8 +1327,8 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 			<< pQuestProto->m_index
 			<< end;
 
-	// ¿©±â¼­ Æ÷±âÇÑ Äù½ºÆ® ÀÎµ¦½º¸¦ ÀúÀåÇÏ¿© ´ÙÀ½¿¡´Â ¹ŞÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
-	// Æ÷±âÇÑ Äù½ºÆ®¸¦ ÀúÀåÇÑ´Ù.
+	// ì—¬ê¸°ì„œ í¬ê¸°í•œ í€˜ìŠ¤íŠ¸ ì¸ë±ìŠ¤ë¥¼ ì €ì¥í•˜ì—¬ ë‹¤ìŒì—ëŠ” ë°›ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
+	// í¬ê¸°í•œ í€˜ìŠ¤íŠ¸ë¥¼ ì €ì¥í•œë‹¤.
 	if (pQuestProto->m_type[1] == QTYPE_REPEAT_ONCE)
 	{
 		ch->m_questList.SetQuestState(pQuest, QUEST_STATE_ABANDON);
@@ -1355,17 +1357,17 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// °İÆÄ, ±¸Ãâ Å×½ºÆ®ÀÇ °æ¿ì Á¸ÀÌµ¿
+	// ê²©íŒŒ, êµ¬ì¶œ í…ŒìŠ¤íŠ¸ì˜ ê²½ìš° ì¡´ì´ë™
 	if (bGoZone)
 	{
-		// °¡±î¿î ¸¶À»·Î
+		// ê°€ê¹Œìš´ ë§ˆì„ë¡œ
 		int nearZone;
 		int nearZonePos;
 		CZone* pZone = gserver->FindNearestZone(ch->m_pZone->m_index, GET_X(ch), GET_Z(ch), &nearZone, &nearZonePos);
 		if (pZone == NULL)
 			return;
 
-		// Ã³À½ µé¾î¿Â Ä³¸¯ÅÍ´Â Áê³ë ÀÔ±¸¿¡ º¸³»ÁØ´Ù.
+		// ì²˜ìŒ ë“¤ì–´ì˜¨ ìºë¦­í„°ëŠ” ì¥¬ë…¸ ì…êµ¬ì— ë³´ë‚´ì¤€ë‹¤.
 		if(bNewTutorial)
 		{
 			if(pZone->m_countZonePos > 6)
@@ -1390,7 +1392,7 @@ void do_QuestGiveUp(CPC* ch, CNetMsg::SP& msg)
 				   GetRandom(pZone->m_zonePos[nearZonePos][2], pZone->m_zonePos[nearZonePos][4]) / 2.0f);		// z
 	}
 
-	// Æ÷±âÇßÀ¸¸é ½Ì±Û´øÀü ÀÔÀå±Ç ¹ŞÀ» ±âÈ¸ ÁÙÀÎ´Ù. ÃÖ¼Ò 0
+	// í¬ê¸°í–ˆìœ¼ë©´ ì‹±ê¸€ë˜ì „ ì…ì¥ê¶Œ ë°›ì„ ê¸°íšŒ ì¤„ì¸ë‹¤. ìµœì†Œ 0
 	ch->m_questList.DecreaseQuestComepleteCount();
 }
 
@@ -1420,7 +1422,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 	const CQuestProto* pQuestProto = pQuest->GetQuestProto();
 
 
-	// pQuest º¸»óÀ» ¹ŞÀ» npc°¡ ¸Â´ÂÁö
+	// pQuest ë³´ìƒì„ ë°›ì„ npcê°€ ë§ëŠ”ì§€
 	if (pQuestProto->m_prizeNPC != npcIndex)
 		return;
 
@@ -1440,22 +1442,22 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
-	// rvr °¡ÀÔ º¸»óÀÏ °æ¿ì
+	// rvr ê°€ì… ë³´ìƒì¼ ê²½ìš°
 	bool bSyndicate = ch->isSyndicate();
 	if (questIndex == 684 && npcIndex == 1541)
 	{
-		// Ä«ÀÌ·è½º °¡ÀÔ
+		// ì¹´ì´ë£©ìŠ¤ ê°€ì…
 		if (!bSyndicate)
 			ch->m_syndicateManager.joinSyndicate(SYNDICATE::eSYNDICATE_KAILUX);
 	}
 	else if (questIndex == 685 && npcIndex == 1542)
 	{
-		// µô¶ó¹® °¡ÀÔ
+		// ë”œë¼ë¬¸ ê°€ì…
 		if (!bSyndicate)
 			ch->m_syndicateManager.joinSyndicate(SYNDICATE::eSYNDICATE_DEALERMOON);
 	}
 
-	//¾ÆÀÌÅÛÀ» º¸»ó¹Ş´Â Äù½ºÆ® ÀÏ °æ¿ì
+	//ì•„ì´í…œì„ ë³´ìƒë°›ëŠ” í€˜ìŠ¤íŠ¸ ì¼ ê²½ìš°
 
 	for( int i=0; i<QUEST_MAX_PRIZE; i++)
 	{
@@ -1472,7 +1474,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 	}
 
 
-	// [101214: selo] º¸»ó ¾ÆÀÌÅÛ µå·Ó ¼öÁ¤
+	// [101214: selo] ë³´ìƒ ì•„ì´í…œ ë“œë¡­ ìˆ˜ì •
 	if( !ch->CheckInvenForQuestPrize(pQuestProto, optItemIndex) )
 	{
 		return;
@@ -1482,9 +1484,9 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 	switch (pQuestProto->m_type[0])
 	{
-	// Àü´Ş Äù½ºÆ®
-	// ¼öÁı Äù½ºÆ®
-	// ±¸Ãâ Äù½ºÆ®
+	// ì „ë‹¬ í€˜ìŠ¤íŠ¸
+	// ìˆ˜ì§‘ í€˜ìŠ¤íŠ¸
+	// êµ¬ì¶œ í€˜ìŠ¤íŠ¸
 	case QTYPE_KIND_COLLECTION:
 	case QTYPE_KIND_DELIVERY:
 	case QTYPE_KIND_SAVE:
@@ -1496,7 +1498,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 		{
 			for (i=0; i < QUEST_MAX_CONDITION; i++)
 			{
-				// ¾Æ¿¹ ¾øÀ¸¸é
+				// ì•„ì˜ˆ ì—†ìœ¼ë©´
 				if (pQuestProto->m_conditionType[i] == -1)
 					continue;
 
@@ -1504,7 +1506,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				{
 				case QCONDITION_ITEM:
 					{
-						// Àü´Ş Äù½ºÆ® ¾ÆÀÌÅÛÀº Äù½ºÆ® ÀÎº¥¿¡¼­¸¸ !!!
+						// ì „ë‹¬ í€˜ìŠ¤íŠ¸ ì•„ì´í…œì€ í€˜ìŠ¤íŠ¸ ì¸ë²¤ì—ì„œë§Œ !!!
 						item_search_t vec;
 						int search_count = ch->m_inventory.searchItemByCondition(pQuestProto->m_conditionIndex[i], 0, 0, vec);
 						if (search_count == 0 || search_count < pQuestProto->m_conditionNum[i])
@@ -1521,14 +1523,14 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 							return;
 						}
 
-						// Item ¼ö·® º¯°æ
+						// Item ìˆ˜ëŸ‰ ë³€ê²½
 						ch->m_inventory.deleteItem(vec, pQuestProto->m_conditionNum[i]);
 					}
 					break;
 
 				case QCONDITION_ITEM_NORMAL:
 					{
-						// Æê ¾ÆÀÌÅÛ Ã¼Å©.. (ÆêÀ» °¡Áö°í ÀÖ´Ù¸é º¸»óÀ» ¹ŞÁö ¾Ê°í ¹«½ÃÇÑ´Ù. return
+						// í« ì•„ì´í…œ ì²´í¬.. (í«ì„ ê°€ì§€ê³  ìˆë‹¤ë©´ ë³´ìƒì„ ë°›ì§€ ì•Šê³  ë¬´ì‹œí•œë‹¤. return
 						if( ch->m_petList )
 						{
 							int petCount = 0;
@@ -1548,7 +1550,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 							}
 						}
 
-						//ÀÏ¹İ¾ÆÀÌÅÛ Ã¼Å©.
+						//ì¼ë°˜ì•„ì´í…œ ì²´í¬.
 						item_search_t vec;
 						int sc = ch->m_inventory.searchItemByCondition(pQuestProto->m_conditionIndex[i], 0, 0, vec);
 						if (sc == 0 || sc < pQuestProto->m_conditionNum[i])
@@ -1565,7 +1567,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 							return;
 						}
 
-						// Item ¼ö·® º¯°æ
+						// Item ìˆ˜ëŸ‰ ë³€ê²½
 						ch->m_inventory.deleteItem(vec, pQuestProto->m_conditionNum[i]);
 					}
 					break;
@@ -1589,7 +1591,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 		switch (pQuestProto->m_prizeType[i])
 		{
 		case QPRIZE_ITEM:
-			// º¸»ó ¾ÆÀÌÅÛ ÁÖ±â
+			// ë³´ìƒ ì•„ì´í…œ ì£¼ê¸°
 			{
 				CItem* item = gserver->m_itemProtoList.CreateItem(pQuestProto->m_prizeIndex[i], -1, 0, 0, pQuestProto->m_prizeData[i]);
 
@@ -1597,42 +1599,42 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 					continue;
 
 #ifdef SYSTEM_MONSTER_MERCENARY_CARD_LOW_LEVEL_SUPPORT
-				if( pQuestProto->m_index==494 && item->getDBIndex()==6805 )	// ÃÊº¸Áö¿ø¿ë ¸ó½ºÅÍ ¿ëº´ Ä«µå ¾ÆÀÌÅÛ
+				if( pQuestProto->m_index==494 && item->getDBIndex()==6805 )	// ì´ˆë³´ì§€ì›ìš© ëª¬ìŠ¤í„° ìš©ë³‘ ì¹´ë“œ ì•„ì´í…œ
 				{
 					int npcIndex =-1;
 					switch( ch->m_job )
 					{
 					case JOB_TITAN:
 						npcIndex=950;
-						break;	// ÇüÁ¦´Ü ±â¼úÀÚ
+						break;	// í˜•ì œë‹¨ ê¸°ìˆ ì
 					case JOB_KNIGHT:
 						npcIndex=901;
-						break;	// ÇÏ¾á ·çÆ®
+						break;	// í•˜ì–€ ë£¨íŠ¸
 					case JOB_HEALER:
 						npcIndex=920;
-						break;	// ²Ş²Ù´Â Å×¶ó
+						break;	// ê¿ˆê¾¸ëŠ” í…Œë¼
 					case JOB_MAGE:
 						npcIndex=478;
-						break;	// ¾Æ´©ºñ½º ÁÖ¼ú»ç
+						break;	// ì•„ëˆ„ë¹„ìŠ¤ ì£¼ìˆ ì‚¬
 					case JOB_ROGUE:
 						npcIndex=953;
-						break;	// ÇüÁ¦´Ü Àç±Ô¾î
+						break;	// í˜•ì œë‹¨ ì¬ê·œì–´
 					case JOB_SORCERER:
 						npcIndex=919;
-						break;	// ÇÍºû Èò ³ª¹« Á¤·É
+						break;	// í•ë¹› í° ë‚˜ë¬´ ì •ë ¹
 #ifdef EX_ROGUE
 					case JOB_EX_ROGUE:
 						npcIndex=953;
-						break;	// ÇüÁ¦´Ü Àç±Ô¾î
+						break;	// í˜•ì œë‹¨ ì¬ê·œì–´
 #endif // EX_ROGUE
 #ifdef EX_MAGE
 					case JOB_EX_MAGE:
 						npcIndex=478;
-						break;    // ¾Æ´©ºñ½º ÁÖ¼ú»ç
+						break;    // ì•„ëˆ„ë¹„ìŠ¤ ì£¼ìˆ ì‚¬
 #endif // EX_MAGE
 					}
 
-					gserver->m_MonsterMercenary.SetMercenaryData( item, 3, npcIndex ); // BÀÇ ¾ÆÀÌÅÛÀ¸·Î npc ¼¼ÆÃ.
+					gserver->m_MonsterMercenary.SetMercenaryData( item, 3, npcIndex ); // Bì˜ ì•„ì´í…œìœ¼ë¡œ npc ì„¸íŒ….
 				}
 #endif
 
@@ -1652,14 +1654,14 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 				if (ch->m_inventory.addItem(item) == false)
 				{
-					// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+					// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 					// Quest Error Log
 					GAMELOG << init("QUEST ERROR", ch)
 							<< pQuestProto->m_index << delim
-							<< (int)MSG_QUEST_ERR_PRIZE_FULL
+							<< (int)MSG_QUEST_ERR_DONT_HAVE_SPACE
 							<< end;
 
-					// Æê ¾ÆÀÌÅÛÀÏ °æ¿ì ²Ë Â÷¸é µå·Ó½ÃÅ°Áö ¾Ê°í ÇÇ¸®¸¦ ´Ù½Ã Áı¾î ³Ö°í ÄÁÆ¼´º
+					// í« ì•„ì´í…œì¼ ê²½ìš° ê½‰ ì°¨ë©´ ë“œë¡­ì‹œí‚¤ì§€ ì•Šê³  í”¼ë¦¬ë¥¼ ë‹¤ì‹œ ì§‘ì–´ ë„£ê³  ì»¨í‹°ë‰´
 					if( item->IsPet() )
 					{
 						int egg_index = 0;
@@ -1688,7 +1690,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 							continue;
 						}
 
-						// Item ¼ö·® º¯°æ
+						// Item ìˆ˜ëŸ‰ ë³€ê²½
 						ch->m_inventory.deleteItemByDBIndex(item->getDBIndex(), pQuestProto->m_prizeData[i]);
 
 						ch->GiveItem(egg_index, 0, 0, 1, true);
@@ -1699,7 +1701,31 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 						continue;
 					}
 
-					// ÀÎº¥Åä¸® °¡µæÂü
+					// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
+			////////////////////////////////////////////////////////////////////////////////////////
+			if (!item)
+			return;
+
+						GAMELOG << init("INVENFULL_QUESTPRIZE", ch)
+						<< itemlog(item)
+						<< end;
+
+
+		int itemindex = item->getDBIndex();
+		int itemcount = item->getItemCount();
+
+			std::string str = boost::str(boost::format("insert into t_express_system values (NULL, '%s', '%s', '0', '0', '0', 'QUESTSYTEM', '%s', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', '-1', '-1', '-1', '-1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', 'Quest System', now(), '2018-05-01 00:00:01', '-1', '-1', '-1')") % ch->m_index % itemindex % itemcount);
+			//if (extra_db_.excute(str) == false)
+			//	DBLOG	<< init("DB ERROR : INSERT GMLOG.") << end;
+				
+			CDBCmd dbchar;
+			dbchar.Init(&gserver->m_dbchar);
+			dbchar.SetQuery( str );
+			if (!dbchar.Update())
+				DBLOG << init("DB ERROR : INSERT QUEST ITEM STATUE.") << mysql_error(dbchar.m_dbconn) << end;
+			
+			////////////////////////////////////////////////////////////////////////////////////////
+			/*
 					item = ch->m_pArea->DropItem(item, ch);
 					if (!item)
 						continue;
@@ -1710,10 +1736,10 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 						ItemDropMsg(rmsg, ch, item);
 						ch->m_pArea->SendToCell(rmsg, ch, true);
 					}
-
+					*/
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
-						QuestErrorMsg(rmsg, MSG_QUEST_ERR_PRIZE_FULL);
+						QuestErrorMsg(rmsg, MSG_QUEST_ERR_DONT_HAVE_SPACE);
 						SEND_Q(rmsg, ch->m_desc);
 					}
 				}
@@ -1731,7 +1757,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 						<< pQuestProto->m_prizeData[i]
 						<< end;
 
-				// Æê Äù½ºÆ® ÀÏ °æ¿ì ÇïÆÛ¿¡ »ı¼º ¿äÃ» : ÇÒÀÏ
+				// í« í€˜ìŠ¤íŠ¸ ì¼ ê²½ìš° í—¬í¼ì— ìƒì„± ìš”ì²­ : í• ì¼
 				if ( pQuest->IsPetQuest() )
 				{
 					if( gserver->isRunHelper() )
@@ -1820,7 +1846,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 		case QPRIZE_EXP:
 			{
-				// º¸»ó °æÇèÄ¡ ÁÖ±â
+				// ë³´ìƒ ê²½í—˜ì¹˜ ì£¼ê¸°
 				LONGLONG exp = ch->m_exp;
 				LONGLONG prize_exp = pQuestProto->m_prizeData[i];
 
@@ -1830,7 +1856,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				}
 				if(ch->m_avPassiveRate.quest_exp > 0)
 				{
-					prize_exp = prize_exp * (ch->m_avPassiveRate.quest_exp - 1000) / SKILL_RATE_UNIT;
+					prize_exp = prize_exp * (ch->m_avPassiveRate.quest_exp - 100) / SKILL_RATE_UNIT;
 				}
 #ifdef CASHITEM_EXPSP_LIMIT_BUG
 				ch->AddExpSP(prize_exp, 0, true, true);
@@ -1852,7 +1878,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 		case QPRIZE_SP:
 			{
 				int sp = ch->m_skillPoint;
-				// º¸»ó SP ÁÖ±â
+				// ë³´ìƒ SP ì£¼ê¸°
 #ifdef CASHITEM_EXPSP_LIMIT_BUG
 				ch->AddExpSP((LONGLONG)0, pQuestProto->m_prizeData[i] * 10000, true, true);
 #else
@@ -1886,7 +1912,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				if (!sskill)
 					continue;
 
-				bool bAdd = true;		// Ãß°¡ÇÏ´Â°¡?
+				bool bAdd = true;		// ì¶”ê°€í•˜ëŠ”ê°€?
 
 				CSSkillNode* node;
 				CSSkillNode* nodeNext = ch->m_sSkillList.m_head;
@@ -1896,7 +1922,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 					if ( (sskill->m_proto->m_index == node->m_sskill->m_proto->m_index) )
 					{
-						if (sskill->m_level > node->m_sskill->m_level)	// ½Àµæ ·¹º§ º¸´Ù ³ô´Ù.
+						if (sskill->m_level > node->m_sskill->m_level)	// ìŠµë“ ë ˆë²¨ ë³´ë‹¤ ë†’ë‹¤.
 							node->m_sskill->m_level = sskill->m_level;
 						bAdd = false;
 					}
@@ -1907,7 +1933,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 					if (!ch->m_sSkillList.Add(sskill))
 						continue;
 
-					// ½ºÅ³ ¹è¿ò ¸Ş½ÃÁö Àü¼Û
+					// ìŠ¤í‚¬ ë°°ì›€ ë©”ì‹œì§€ ì „ì†¡
 					CNetMsg::SP rmsg(new CNetMsg);
 					ResponseClient::makeSSkillLearn(rmsg, sskill);
 					SEND_Q(rmsg, ch->m_desc);
@@ -1933,7 +1959,6 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 					<< ch->m_syndicateManager.getSyndicatePoint(ch->getSyndicateType()) << delim
 					<< pQuestProto->m_prizeData[i]
 				<< end;
-
 				ch->m_syndicateManager.increaseSyndicatePoint(pQuestProto->m_prizeData[i]);
 			}
 			break;
@@ -1957,10 +1982,10 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				   << endGer;
 	}
 #endif // GER_LOG
-	// Ãß°¡ º¸»ó ¾ÆÀÌÅÛ
+	// ì¶”ê°€ ë³´ìƒ ì•„ì´í…œ
 	if(optItemIndex != -1)
 	{
-		//Ãß°¡ ¾ÆÀÌÅÛÀº ÇÏ³ª»ÓÀÌ´Ù.
+		//ì¶”ê°€ ì•„ì´í…œì€ í•˜ë‚˜ë¿ì´ë‹¤.
 		bool bFind = false;
 		bool bFoundSameType = false;
 		CItemProto* pItemProtoNeed = gserver->m_itemProtoList.FindIndex(optItemIndex);
@@ -1997,12 +2022,12 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 			if(bFoundSameType && proto && proto->getItemTypeIdx() == ITYPE_WEAR)
 			{
-				if(plus < 0 || plus > 4) // +4ÀÌ»óÀÇ ¾ÆÀÌÅÛÀ» º¸»óÀ¸·Î ÁÖÁø ¾Ê´Â´Ù. //  [2/28/2007 KwonYongDae]
+				if(plus < 0 || plus > 4) // +4ì´ìƒì˜ ì•„ì´í…œì„ ë³´ìƒìœ¼ë¡œ ì£¼ì§„ ì•ŠëŠ”ë‹¤. //  [2/28/2007 KwonYongDae]
 				{
 					plus = 0;
 				}
 
-				CItem* item = gserver->m_itemProtoList.CreateItem(optItemIndex, -1, plus, 0, 1);	// ¹æ¾î±¸¶ó¼­ count´Â ¹«Á¶°Ç 1·Î ÇÔ
+				CItem* item = gserver->m_itemProtoList.CreateItem(optItemIndex, -1, plus, 0, 1);	// ë°©ì–´êµ¬ë¼ì„œ countëŠ” ë¬´ì¡°ê±´ 1ë¡œ í•¨
 
 				if (!item)
 				{
@@ -2019,14 +2044,37 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 				if (ch->m_inventory.addItem(item) == false)
 				{
-					// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+					// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 					// Quest Error Log
 					GAMELOG << init("QUEST ERROR", ch)
 							<< pQuestProto->m_index << delim
-							<< (int)MSG_QUEST_ERR_PRIZE_FULL
+							<< (int)MSG_QUEST_ERR_DONT_HAVE_SPACE
 							<< end;
 
-					// ÀÎº¥Åä¸® °¡µæÂü
+					// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
+			////////////////////////////////////////////////////////////////////////////////////////
+			if (!item)
+			return;
+
+						GAMELOG << init("INVENFULL_QUESTPRIZE", ch)
+						<< itemlog(item)
+						<< end;
+
+		int itemindex = item->getDBIndex();
+		int itemcount = item->getItemCount();
+
+			std::string str = boost::str(boost::format("insert into t_express_system values (NULL, '%s', '%s', '0', '0', '0', 'QUESTSYTEM', '%s', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', '-1', '-1', '-1', '-1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', 'Quest System', now(), '2018-05-01 00:00:45', '-1', '-1', '-1')") % ch->m_index % itemindex % itemcount);
+			//if (extra_db_.excute(str) == false)
+			//	DBLOG	<< init("DB ERROR : INSERT GMLOG.") << end;
+				
+			CDBCmd dbchar;
+			dbchar.Init(&gserver->m_dbchar);
+			dbchar.SetQuery( str );
+			if (!dbchar.Update())
+				DBLOG << init("DB ERROR : INSERT QUEST ITEM STATUE.") << mysql_error(dbchar.m_dbconn) << end;
+			
+			////////////////////////////////////////////////////////////////////////////////////////
+						/*
 					item = ch->m_pArea->DropItem(item, ch);
 					if (!item)
 						return;
@@ -2037,12 +2085,13 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 						ItemDropMsg(rmsg, ch, item);
 						ch->m_pArea->SendToCell(rmsg, ch, true);
 					}
-
+										*/
 					{
 						CNetMsg::SP rmsg(new CNetMsg);
-						QuestErrorMsg(rmsg, MSG_QUEST_ERR_PRIZE_FULL);
+						QuestErrorMsg(rmsg, MSG_QUEST_ERR_DONT_HAVE_SPACE);
 						SEND_Q(rmsg, ch->m_desc);
 					}
+
 				}
 			}
 			else
@@ -2058,9 +2107,9 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 			switch (pQuestProto->m_optPrizeType[i])
 			{
 			case QPRIZE_ITEM:
-				// Ãß°¡ º¸»ó ¾ÆÀÌÅÛ ÁÖ±â
+				// ì¶”ê°€ ë³´ìƒ ì•„ì´í…œ ì£¼ê¸°
 				{
-					if(plus < 0 || plus > 4) // +4 ÀÌ»óÀÇ ¾ÆÀÌÅÛÀ» º¸»óÀ¸·Î ÁÖÁø ¾Ê´Â´Ù.
+					if(plus < 0 || plus > 4) // +4 ì´ìƒì˜ ì•„ì´í…œì„ ë³´ìƒìœ¼ë¡œ ì£¼ì§„ ì•ŠëŠ”ë‹¤.
 					{
 						plus = 0;
 					}
@@ -2097,14 +2146,38 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 					}
 					else
 					{
-						// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§
+						// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ
 						// Quest Error Log
 						GAMELOG << init("QUEST ERROR", ch)
 								<< pQuestProto->m_index << delim
-								<< (int)MSG_QUEST_ERR_PRIZE_FULL
+								<< (int)MSG_QUEST_ERR_DONT_HAVE_SPACE
 								<< end;
 
-						// ÀÎº¥Åä¸® °¡µæÂü
+						// ì¸ë²¤í† ë¦¬ ê°€ë“ì°¸
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			if (!item)
+							return;
+
+						GAMELOG << init("INVENFULL_QUESTPRIZE", ch)
+						<< itemlog(item)
+						<< end;
+
+		int itemindex = item->getDBIndex();
+		int itemcount = item->getItemCount();
+
+			std::string str = boost::str(boost::format("insert into t_express_system values (NULL, '%s', '%s', '0', '0', '0', 'QUESTSYTEM', '%s', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', '-1', '-1', '-1', '-1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', 'Quest System', now(), '2018-05-01 00:00:45', '-1', '-1', '-1')") % ch->m_index % itemindex % itemcount);
+			//if (extra_db_.excute(str) == false)
+			//	DBLOG	<< init("DB ERROR : INSERT GMLOG.") << end;
+				
+			CDBCmd dbchar;
+			dbchar.Init(&gserver->m_dbchar);
+			dbchar.SetQuery( str );
+			if (!dbchar.Update())
+				DBLOG << init("DB ERROR : INSERT QUEST ITEM STATUE.") << mysql_error(dbchar.m_dbconn) << end;
+			
+			////////////////////////////////////////////////////////////////////////////////////////
+			/*
 						item = ch->m_pArea->DropItem(item, ch);
 						if (!item)
 							return;
@@ -2115,10 +2188,10 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 							ItemDropMsg(rmsg, ch, item);
 							ch->m_pArea->SendToCell(rmsg, ch, true);
 						}
-
+						*/
 						{
 							CNetMsg::SP rmsg(new CNetMsg);
-							QuestErrorMsg(rmsg, MSG_QUEST_ERR_PRIZE_FULL);
+							QuestErrorMsg(rmsg, MSG_QUEST_ERR_DONT_HAVE_SPACE);
 							SEND_Q(rmsg, ch->m_desc);
 						}
 					}
@@ -2147,7 +2220,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				break;
 
 			case QPRIZE_EXP:
-				// º¸»ó °æÇèÄ¡ ÁÖ±â
+				// ë³´ìƒ ê²½í—˜ì¹˜ ì£¼ê¸°
 #ifdef CASHITEM_EXPSP_LIMIT_BUG
 				ch->AddExpSP((LONGLONG)pQuestProto->m_prizeData[i], 0, true, true);
 #else
@@ -2164,7 +2237,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				break;
 
 			case QPRIZE_SP:
-				// º¸»ó SP ÁÖ±â
+				// ë³´ìƒ SP ì£¼ê¸°
 #ifdef CASHITEM_EXPSP_LIMIT_BUG
 				ch->AddExpSP((LONGLONG)0, pQuestProto->m_prizeData[i] * 10000, true, true);
 #else
@@ -2182,15 +2255,15 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 			case QPRIZE_SKILL:
 				break;
 
-			default: //Ãß°¡º¸»óÀº ¾ÆÀÌÅÛ¸¸ °¡´ÉÇÏ´Ù.
+			default: //ì¶”ê°€ë³´ìƒì€ ì•„ì´í…œë§Œ ê°€ëŠ¥í•˜ë‹¤.
 				{
 					CNetMsg::SP rmsg(new CNetMsg);
-					QuestErrorMsg(rmsg, MSG_QUEST_ERR_PRIZE_FULL);
+					QuestErrorMsg(rmsg, MSG_QUEST_ERR_DONT_HAVE_SPACE);
 					SEND_Q(rmsg, ch->m_desc);
 				}
 				//return;
 			}
-		}//findÀÇ else
+		}//findì˜ else
 	}
 
 	{
@@ -2200,7 +2273,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// 1È¸¿ë Äù½ºÆ® ÀúÀå
+	// 1íšŒìš© í€˜ìŠ¤íŠ¸ ì €ì¥
 	if (pQuestProto->m_type[1] == QTYPE_REPEAT_ONCE)
 	{
 		ch->m_questList.SetQuestState(pQuest, QUEST_STATE_DONE);
@@ -2209,7 +2282,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 	{
 		ch->m_questList.SetQuestState(pQuest, QUEST_STATE_DONE);
 
-		// »èÁ¦ÇÒ ½Ã°£ ÀúÀå ÀÚÁ¤À» ±âÁØÀ¸·Î ¹«Á¶°Ç °»½ÅÇÑ´Ù
+		// ì‚­ì œí•  ì‹œê°„ ì €ì¥ ìì •ì„ ê¸°ì¤€ìœ¼ë¡œ ë¬´ì¡°ê±´ ê°±ì‹ í•œë‹¤
 		tm tmNext = NOW();
 		tmNext.tm_mday = tmNext.tm_mday + 1;
 		tmNext.tm_hour = 0;
@@ -2219,21 +2292,21 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 
 		pQuest->SetCompleteTime(mktime(&tmNext));
 	}
-	// Ä³¸¯ÅÍ ¸®½ºÆ®¿¡¼­ »èÁ¦
+	// ìºë¦­í„° ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 	else
 		ch->m_questList.DelQuest(ch, pQuest);
 
 	bool bTicket = true;
-	// ½Ì±Û´øÀü Äù½ºÆ®ÀÌ¸é ÀÔÀå±Ç nComplete Áõ°¡ ÇÏÁö ¾Ê´Â´Ù
+	// ì‹±ê¸€ë˜ì „ í€˜ìŠ¤íŠ¸ì´ë©´ ì…ì¥ê¶Œ nComplete ì¦ê°€ í•˜ì§€ ì•ŠëŠ”ë‹¤
 	if (pQuestProto->m_type[0] == QTYPE_KIND_DEFEAT || pQuestProto->m_type[0] == QTYPE_KIND_SAVE)
 		bTicket = false;
 
 	if (bTicket)
 	{
-		// ¿ÂÀüÇÏ°Ô º¸»ó ¹Ş¾Ò´Ù¸é
+		// ì˜¨ì „í•˜ê²Œ ë³´ìƒ ë°›ì•˜ë‹¤ë©´
 		ch->m_questList.IncreaseQuestComepleteCount();
 
-		// 5È¸ ÀÌ»óÀÌ°í ½Ì±Û´øÀü1,2ÀÇ ·¹º§ Á¶°ÇÀÌ¸é
+		// 5íšŒ ì´ìƒì´ê³  ì‹±ê¸€ë˜ì „1,2ì˜ ë ˆë²¨ ì¡°ê±´ì´ë©´
 		if (ch->m_questList.GetQuestComepleteCount() >= S2_TICKET_QUEST_DONE && ch->m_level >= S2_TICKET_LEVEL_START && ch->m_level <= S2_TICKET_LEVEL_END)
 		{
 			ch->m_questList.ResetQuestComepleteCount();
@@ -2251,7 +2324,31 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 			}
 			else
 			{
-				// ÀÎÁ¨Åä¸® ²ËÂ÷¼­ ¸ø ¹ŞÀ» ¶§ Drop
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			if (!item)
+			return;
+
+						GAMELOG << init("INVENFULL_QUESTPRIZE", ch)
+						<< itemlog(item)
+						<< end;
+
+		int itemindex = item->getDBIndex();
+		int itemcount = item->getItemCount();
+
+			std::string str = boost::str(boost::format("insert into t_express_system values (NULL, '%s', '%s', '0', '0', '0', 'QUESTSYTEM', '%s', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', '-1', '-1', '-1', '-1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', 'Quest System', now(), '2018-05-01 00:00:45', '-1', '-1', '-1')") % ch->m_index % itemindex % itemcount);
+			//if (extra_db_.excute(str) == false)
+			//	DBLOG	<< init("DB ERROR : INSERT GMLOG.") << end;
+				
+			CDBCmd dbchar;
+			dbchar.Init(&gserver->m_dbchar);
+			dbchar.SetQuery( str );
+			if (!dbchar.Update())
+				DBLOG << init("DB ERROR : INSERT QUEST ITEM STATUE.") << mysql_error(dbchar.m_dbconn) << end;
+			
+			////////////////////////////////////////////////////////////////////////////////////////
+				// ì¸ì  í† ë¦¬ ê½‰ì°¨ì„œ ëª» ë°›ì„ ë•Œ Drop
+			/*
 				item = ch->m_pArea->DropItem(item, ch);
 				if (!item)
 					return;
@@ -2261,6 +2358,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 				ItemDropMsg(rmsg, ch, item);
 				ch->m_pArea->SendToCell(rmsg, ch, true);
 				return ;
+				*/
 			}
 		}
 	}
@@ -2287,7 +2385,7 @@ void do_QuestPrize(CPC* ch, CNetMsg::SP& msg)
 			}
 			if(ch->m_avPassiveRate.affinity_quest > 0)
 			{
-				bonus = point * (ch->m_avPassiveRate.affinity_quest - 1000) / SKILL_RATE_UNIT;
+				bonus = point * (ch->m_avPassiveRate.affinity_quest - 100) / SKILL_RATE_UNIT;
 			}
 			affinity->AddPoint(point, ch, bonus);
 		}
@@ -2318,12 +2416,12 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 
 	switch (pQuestProto->m_type[0])
 	{
-	// ±¸Ãâ Äù½ºÆ® ¿Ï·á Validation °Ë»ç!!
+	// êµ¬ì¶œ í€˜ìŠ¤íŠ¸ ì™„ë£Œ Validation ê²€ì‚¬!!
 	case QTYPE_KIND_SAVE:
 		{
 			for (i=0; i < QUEST_MAX_CONDITION; i++)
 			{
-				// ¾Æ¿¹ ¾øÀ¸¸é
+				// ì•„ì˜ˆ ì—†ìœ¼ë©´
 				if (pQuestProto->m_conditionType[i] == -1)
 					continue;
 
@@ -2331,7 +2429,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 				{
 				case QCONDITION_ITEM:
 					{
-						// Àü´Ş Äù½ºÆ® ¾ÆÀÌÅÛÀº Äù½ºÆ® ÀÎº¥¿¡¼­¸¸ !!!
+						// ì „ë‹¬ í€˜ìŠ¤íŠ¸ ì•„ì´í…œì€ í€˜ìŠ¤íŠ¸ ì¸ë²¤ì—ì„œë§Œ !!!
 						item_search_t vec;
 						int search_count = ch->m_inventory.searchItemByCondition(pQuestProto->m_conditionIndex[i], 0, 0, vec);
 						if (search_count == 0 || search_count < pQuestProto->m_conditionNum[i])
@@ -2385,15 +2483,40 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 
 			if (ch->m_inventory.addItem(item) == false)
 			{
+				
+			////////////////////////////////////////////////////////////////////////////////////////
+			if (!item)
+			return;
+
+						GAMELOG << init("INVENFULL_QUESTPRIZE", ch)
+						<< itemlog(item)
+						<< end;
+
+		int itemindex = item->getDBIndex();
+		int itemcount = item->getItemCount();
+
+			std::string str = boost::str(boost::format("insert into t_express_system values (NULL, '%s', '%s', '0', '0', '0', 'QUESTSYTEM', '%s', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', '-1', '-1', '-1', '-1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', 'Quest System', now(), '2018-05-01 00:00:45', '-1', '-1', '-1')") % ch->m_index % itemindex % itemcount);
+			//if (extra_db_.excute(str) == false)
+			//	DBLOG	<< init("DB ERROR : INSERT GMLOG.") << end;
+				
+			CDBCmd dbchar;
+			dbchar.Init(&gserver->m_dbchar);
+			dbchar.SetQuery( str );
+			if (!dbchar.Update())
+				DBLOG << init("DB ERROR : INSERT QUEST ITEM STATUE.") << mysql_error(dbchar.m_dbconn) << end;
+			
+			////////////////////////////////////////////////////////////////////////////////////////
+		/*
 				item = ch->m_pArea->DropItem(item, ch);
 				if (!item)
 					return;
 
-				// Drop Msg º¸³»±â
+				// Drop Msg ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				item->m_preferenceIndex = ch->m_index;
 				ItemDropMsg(rmsg, ch, item);
 				ch->m_pArea->SendToCell(rmsg, GET_YLAYER(item), item->m_cellX, item->m_cellZ);
+				*/
 			}
 
 			// Item LOG
@@ -2401,7 +2524,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 					<< itemlog(item)
 					<< end;
 
-			// Complete Msg ÃÖÃÊÀü¼ÛÀÎ°æ¿ì¿¡¸¸ Àü¼Û
+			// Complete Msg ìµœì´ˆì „ì†¡ì¸ê²½ìš°ì—ë§Œ ì „ì†¡
 
 			if (!pQuest->IsCompleted() || pQuest->GetQuestIndex() == 45)
 			{
@@ -2430,7 +2553,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 							<< pQuestProto->m_index
 							<< end;
 
-					// ¿Ï·á ¸Ş½ÃÁö
+					// ì™„ë£Œ ë©”ì‹œì§€
 					CNetMsg::SP rmsg(new CNetMsg);
 					QuestCompleteMsg(rmsg, pQuest);
 					SEND_Q(rmsg, ch->m_desc);
@@ -2463,7 +2586,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 				SEND_Q(rmsg, ch->m_desc);
 			}
 
-			// 1È¸¿ë Äù½ºÆ® ÀúÀå
+			// 1íšŒìš© í€˜ìŠ¤íŠ¸ ì €ì¥
 			if (pQuestProto->m_type[1] == QTYPE_REPEAT_ONCE)
 			{
 				ch->m_questList.SetQuestState(pQuest, QUEST_STATE_DONE);
@@ -2482,7 +2605,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Complete Msg ÃÖÃÊÀü¼ÛÀÎ°æ¿ì¿¡¸¸ Àü¼Û
+	// Complete Msg ìµœì´ˆì „ì†¡ì¸ê²½ìš°ì—ë§Œ ì „ì†¡
 	if (!pQuest->IsCompleted())
 	{
 		if(pQuest->GetComplete2())
@@ -2507,7 +2630,7 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 						   << endGer;
 			}
 #endif //GER_LOG
-			// ¿Ï·á ¸Ş½ÃÁö
+			// ì™„ë£Œ ë©”ì‹œì§€
 			CNetMsg::SP rmsg(new CNetMsg);
 			QuestCompleteMsg(rmsg, pQuest);
 			SEND_Q(rmsg, ch->m_desc);
@@ -2515,7 +2638,15 @@ void do_QuestComplete(CPC* ch, CNetMsg::SP& msg)
 		pQuest->SetComplete1(true);
 	}
 }
+		/*	//ALEX - Here we add to check if inventory is full, it is sent to mysterious statue. Prevents items from being dropped on ground from quests.
+				extern ExpressSystemItemInfo* makeExpressSystemItemInfo(CItem* pItem, int itemCount, int sendType, const char* sendName);
 
+				void sendToLCE_QUEST()
+				{
+					ExpressSystemItemInfo* expressItem = makeExpressSystemItemInfo(pItem, pItem->Count(), EXPRESS_SEND_UNSEARCHABLE_STONESTATUS, "Quest System");
+					DBManager::instance()->PushExpressSendItemToNickName(ch->m_desc, expressItem, (const char *)ch->m_name, EXPRESS_SENDER_TYPE_WEAR_INVENTORY);
+				}
+				*/
 CItem* OptionSettingItem(CPC* ch, CItem* item)
 {
 	if (item->IsRareItem())
@@ -2527,9 +2658,9 @@ CItem* OptionSettingItem(CPC* ch, CItem* item)
 	if( (item->m_itemProto->getItemFlag() & ITEM_FLAG_CASH ))
 		return item;
 
-	// ¾Ç¼¼»ç¸® ÀÏ¶§ Option Setting
+	// ì•…ì„¸ì‚¬ë¦¬ ì¼ë•Œ Option Setting
 
-	// ¼ø¼­´ë·Î 5,4,3,1°³ ºÙÀ» È®·ü
+	// ìˆœì„œëŒ€ë¡œ 5,4,3,1ê°œ ë¶™ì„ í™•ë¥ 
 	const int factor[] = {10, 40, 80, 100};
 	const int limit[] = {500, 2000, 4000, 5000};
 
@@ -2542,9 +2673,9 @@ CItem* OptionSettingItem(CPC* ch, CItem* item)
 			prob[i] = limit[i];
 	}
 
-	// ¿É¼Ç ¼ö °áÁ¤
+	// ì˜µì…˜ ìˆ˜ ê²°ì •
 	int result = GetRandom(1, 10000);
-	int num = 2;	// default 2°³
+	int num = 2;	// default 2ê°œ
 	int* type;
 
 	if (result <= prob[0])
@@ -2560,25 +2691,25 @@ CItem* OptionSettingItem(CPC* ch, CItem* item)
 
 	type = new int[num];
 
-	LONGLONG bitfield = 0;		// TODO : ¿É¼ÇÀÌ 64°³ ³ÑÀ¸¸é °íÃÄ¾ß ÇÔ!
-	const int maxnumoption = 24;	// TODO : ³ªÁß¿¡ MAX_NUM_OPTIONÀ¸·Î ´ëÃ¼
+	LONGLONG bitfield = 0;		// TODO : ì˜µì…˜ì´ 64ê°œ ë„˜ìœ¼ë©´ ê³ ì³ì•¼ í•¨!
+	const int maxnumoption = 24;	// TODO : ë‚˜ì¤‘ì— MAX_NUM_OPTIONìœ¼ë¡œ ëŒ€ì²´
 
-	// ¿É¼Ç Å¸ÀÔ °áÁ¤
+	// ì˜µì…˜ íƒ€ì… ê²°ì •
 	i = 0;
 	while (i < num)
 	{
-		// type[i] °áÁ¤
+		// type[i] ê²°ì •
 		type[i] = GetRandom(0, maxnumoption - 1);
 
-		// type[i]°¡ Áßº¹ÀÎ °Ë»ç
-		// Áßº¹ÀÌ¸é type[i]¸¦ 1¾¿ Áõ°¡ÇÏ¸é¼­ Áßº¹ °Ë»ç
+		// type[i]ê°€ ì¤‘ë³µì¸ ê²€ì‚¬
+		// ì¤‘ë³µì´ë©´ type[i]ë¥¼ 1ì”© ì¦ê°€í•˜ë©´ì„œ ì¤‘ë³µ ê²€ì‚¬
 		for (j = 0; j < maxnumoption; j++)
 		{
 			if ((bitfield & ((LONGLONG)1 << ((type[i] + j) % maxnumoption))) == 0)
 				break;
 		}
 
-		// ´õÀÌ»ó ¿É¼ÇÀ» ºÙÀÏ ¼ö ¾øÀ½
+		// ë”ì´ìƒ ì˜µì…˜ì„ ë¶™ì¼ ìˆ˜ ì—†ìŒ
 		if (j == maxnumoption)
 			num = i;
 		else
@@ -2586,19 +2717,19 @@ CItem* OptionSettingItem(CPC* ch, CItem* item)
 
 		bitfield |= ((LONGLONG)1 << type[i]);
 
-		// ¿É¼Ç¹øÈ£·Î ºÙÀ» ¼ö ÀÖ´Â ¿É¼ÇÀÎÁö °Ë»ç
+		// ì˜µì…˜ë²ˆí˜¸ë¡œ ë¶™ì„ ìˆ˜ ìˆëŠ” ì˜µì…˜ì¸ì§€ ê²€ì‚¬
 		COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
 		if (!proto)
 			continue;
 
-		// ¾Ç¼¼»ç¸®Áß¿¡¼­ ºÙÀ» ¼ö ¾øÀ¸¸é ´Ù½Ã
+		// ì•…ì„¸ì‚¬ë¦¬ì¤‘ì—ì„œ ë¶™ì„ ìˆ˜ ì—†ìœ¼ë©´ ë‹¤ì‹œ
 		if (!((1 << item->m_itemProto->getItemSubTypeIdx()) & proto->m_accessoryType))
 			continue ;
 
 		i++;
 	}
 
-	// ¿É¼Ç ºÎ¿©
+	// ì˜µì…˜ ë¶€ì—¬
 	for (i=0; i < num; i++)
 	{
 		COptionProto* proto = gserver->m_optionProtoList.FindProto(type[i]);
@@ -2606,7 +2737,7 @@ CItem* OptionSettingItem(CPC* ch, CItem* item)
 		if (!proto)
 			continue;
 
-		// Level, Value ¼ÂÆÃ
+		// Level, Value ì…‹íŒ…
 		item->m_option[item->m_nOption].MakeOptionValue(proto, ch->m_level, num);
 		++item->m_nOption;
 	}
@@ -2623,38 +2754,38 @@ void do_QuestCollect(CPC* ch, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> nNPCIndex;
 
-	// ÀÌÀü ¼öÁı ½Ã°£ °Ë»ç : 2ÃÊ(PULSE_PRODUCE_DELAY)
+	// ì´ì „ ìˆ˜ì§‘ ì‹œê°„ ê²€ì‚¬ : 2ì´ˆ(PULSE_PRODUCE_DELAY)
 	if (gserver->m_pulse - ch->m_nLastCollectRequest < PULSE_PRODUCE_DELAY - PULSE_HACK_ATTACK_THRESHOLD)
 		return ;
 
-	// NPC Ã£±â
+	// NPC ì°¾ê¸°
 	CNPC* pNPC = (CNPC*)ch->m_pArea->FindCharInCell(ch, nNPCIndex, MSG_CHAR_NPC);
 	if (!pNPC)
 		return ;
 
-	// NPC¿ÍÀÇ °Å¸® °Ë»ç : 5¹ÌÅÍ
+	// NPCì™€ì˜ ê±°ë¦¬ ê²€ì‚¬ : 5ë¯¸í„°
 	if (GetDistance(ch, pNPC) >= pNPC->m_proto->m_attackArea + 0.5)
 		return ;
 
-	// ÀÌÀü NPC¿Í µ¿ÀÏ ¿©ºÎ °Ë»ç
+	// ì´ì „ NPCì™€ ë™ì¼ ì—¬ë¶€ ê²€ì‚¬
 	if (ch->m_nCollectRequestNPCIndex != nNPCIndex)
 		ch->m_nCollectRequestCount = 0;
 
 	if( pNPC->m_proto->m_family > 0 )
 		FindFamilyInNear( ch, pNPC );
 
-	// º¯¼ö°ª ¼³Á¤
+	// ë³€ìˆ˜ê°’ ì„¤ì •
 	ch->m_nLastCollectRequest = gserver->m_pulse;
 	ch->m_nCollectRequestNPCIndex = nNPCIndex;
 	ch->m_nCollectRequestCount++;
 
-	// ¾ÆÀÌÅÛ ½Àµæ ¿©ºÎ °áÁ¤ : 4È¸
+	// ì•„ì´í…œ ìŠµë“ ì—¬ë¶€ ê²°ì • : 4íšŒ
 	if (ch->m_nCollectRequestCount >= 4)
 	{
-		// º¯¼ö ¸®¼Â
+		// ë³€ìˆ˜ ë¦¬ì…‹
 		ch->m_nLastCollectRequest = 0;
 
-		// ¾ÆÀÌÅÛ °áÁ¤
+		// ì•„ì´í…œ ê²°ì •
 		int nMaxRandom = MAX_NPC_PRODUCT - 1;
 		while (nMaxRandom >= 0)
 		{
@@ -2670,7 +2801,7 @@ void do_QuestCollect(CPC* ch, CNetMsg::SP& msg)
 
 		if (nItemIndex > 0)
 		{
-			// ¾ÆÀÌÅÛ »ı¼º
+			// ì•„ì´í…œ ìƒì„±
 			CItem* pItem = gserver->m_itemProtoList.CreateItem(nItemIndex, -1, 0, 0, 1);
 			if (pItem)
 			{
@@ -2694,13 +2825,13 @@ void do_QuestCollect(CPC* ch, CNetMsg::SP& msg)
 			nItemIndex = 0;
 		}
 		{
-			// °á°ú ¾Ë¸²
+			// ê²°ê³¼ ì•Œë¦¼
 			CNetMsg::SP rmsg(new CNetMsg);
 			QuestCollectMsg(rmsg, nNPCIndex, ch->m_index, nItemIndex);
 			pNPC->m_pArea->SendToCell(rmsg, pNPC, true);
 		}
 
-		// NPC »ç¸Á
+		// NPC ì‚¬ë§
 		DelAttackList(pNPC);
 		ch->m_pArea->CharFromCell(pNPC, true);
 		ch->m_pArea->DelNPC(pNPC);
@@ -2708,7 +2839,7 @@ void do_QuestCollect(CPC* ch, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// °á°ú ¾Ë¸²
+		// ê²°ê³¼ ì•Œë¦¼
 		CNetMsg::SP rmsg(new CNetMsg);
 		QuestCollectMsg(rmsg, nNPCIndex, ch->m_index, nItemIndex);
 		pNPC->m_pArea->SendToCell(rmsg, pNPC, true);
@@ -2742,10 +2873,10 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> clientNas;
 #endif
 
-	// º¹±¸¿¡ ÇÊ¿äÇÑ ³ª½º °è»ê
+	// ë³µêµ¬ì— í•„ìš”í•œ ë‚˜ìŠ¤ ê³„ì‚°
 	LONGLONG necessaryNas = (ch->m_level) * (ch->m_level) * 1000;
 
-	// ³ª½º °è»êÀÌ ¼­¹ö¿Í Æ²¸®´Ù.
+	// ë‚˜ìŠ¤ ê³„ì‚°ì´ ì„œë²„ì™€ í‹€ë¦¬ë‹¤.
 	if (clientNas != necessaryNas)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2754,7 +2885,7 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// Äù½ºÆ® º¹±¸ °Ë»ç
+	// í€˜ìŠ¤íŠ¸ ë³µêµ¬ ê²€ì‚¬
 	int nRestoreCount = 0;
 	CQuest* pQuest;
 	CQuest* pQuestNext = ch->m_questList.GetNextQuest(NULL, QUEST_STATE_ABANDON);
@@ -2762,12 +2893,12 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 	{
 		pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_ABANDON);
 
-		// ·¹º§ÀÌ ¸Â´Â Äù½ºÆ®¸¸ º¹±¸½ÃÅ²´Ù.
+		// ë ˆë²¨ì´ ë§ëŠ” í€˜ìŠ¤íŠ¸ë§Œ ë³µêµ¬ì‹œí‚¨ë‹¤.
 		if(pQuest && pQuest->GetQuestProto() && pQuest->GetQuestProto()->m_needMinLevel <= ch->m_level && pQuest->GetQuestProto()->m_needMaxLevel + 4 >= ch->m_level)
 			nRestoreCount++;
 	}
 
-	// ÇöÀç ·¹º§¿¡ ¸Â´Â º¹±¸ÇÒ Æ÷±â Äù½ºÆ®°¡ ¾ø´Ù.
+	// í˜„ì¬ ë ˆë²¨ì— ë§ëŠ” ë³µêµ¬í•  í¬ê¸° í€˜ìŠ¤íŠ¸ê°€ ì—†ë‹¤.
 	if(nRestoreCount == 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -2776,21 +2907,21 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// µ·°Ë»ç
+	// ëˆê²€ì‚¬
 	if ((ch->m_inventory.getMoney() >= necessaryNas))
 	{
 		ch->m_inventory.decreaseMoney(necessaryNas);
 	}
 	else
 	{
-		// º¸À¯ ³ª½º°¡ ºÎÁ·
+		// ë³´ìœ  ë‚˜ìŠ¤ê°€ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		QuestErrorMsg(rmsg, MSG_QUEST_ERR_DONT_HAVE_NAS);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
 
-	// ·¹º§ ½ÃÀÛÇü Äù½ºÆ®°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+	// ë ˆë²¨ ì‹œì‘í˜• í€˜ìŠ¤íŠ¸ê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
 	int index = 0;
 	pQuestNext = ch->m_questList.GetNextQuest(NULL, QUEST_STATE_ABANDON);
 	while ((pQuest = pQuestNext))
@@ -2799,15 +2930,15 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 
 		if(pQuest && pQuest->GetQuestProto())
 		{
-			// ·¹º§ ½ÃÀÛÇü Äù½ºÆ® ÀÎÁö °Ë»ç
+			// ë ˆë²¨ ì‹œì‘í˜• í€˜ìŠ¤íŠ¸ ì¸ì§€ ê²€ì‚¬
 			if (pQuest->GetQuestProto()->m_startType != QSTART_LEVEL)
 				continue;
 
-			// ÇÊ¿ä Á÷¾÷ Á¶°Ç
+			// í•„ìš” ì§ì—… ì¡°ê±´
 			if (pQuest->GetQuestProto()->m_needJob != -1 && pQuest->GetQuestProto()->m_needJob != ch->m_job)
 				continue;
 
-			// rvr Äù½ºÆ®ÀÏ ¶§ ÇÊ¿äÁ¶°Ç
+			// rvr í€˜ìŠ¤íŠ¸ì¼ ë•Œ í•„ìš”ì¡°ê±´
 			if (pQuest->GetQuestProto()->m_needRvRType > 0)
 			{
 				if(	pQuest->GetQuestProto()->m_needRvRType != ch->getSyndicateType() ||
@@ -2817,11 +2948,11 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// ÇÏµåÄÚµù : ÆÛ½º³Î ´øÀü Äù½ºÆ® , Æ©Åä¸®¾ó Äù½ºÆ® Á¦¿Ü
+			// í•˜ë“œì½”ë”© : í¼ìŠ¤ë„ ë˜ì „ í€˜ìŠ¤íŠ¸ , íŠœí† ë¦¬ì–¼ í€˜ìŠ¤íŠ¸ ì œì™¸
 			if (pQuest->GetQuestProto()->m_index == 42 || pQuest->GetQuestProto()->m_index == 45)
 				continue;
 
-			// ·¹º§ÀÌ ¸Â´Â Äù½ºÆ®ÀÎÁö °Ë»ç
+			// ë ˆë²¨ì´ ë§ëŠ” í€˜ìŠ¤íŠ¸ì¸ì§€ ê²€ì‚¬
 			if(pQuest->GetQuestProto()->m_needMinLevel <= ch->m_level && pQuest->GetQuestProto()->m_needMaxLevel + 4 >= ch->m_level)
 			{
 				index++;
@@ -2835,7 +2966,7 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 		index = 0;
 		memset(qIndex, -1, sizeof(int) * index);
 
-		// ·¹º§ ½ÃÀÛÇü Äù½ºÆ®´Â µû·Î ½ÃÀÛÇÏ°Ô²û ¸Ş¼¼Áö¸¦ º¸³»ÁØ´Ù.
+		// ë ˆë²¨ ì‹œì‘í˜• í€˜ìŠ¤íŠ¸ëŠ” ë”°ë¡œ ì‹œì‘í•˜ê²Œë” ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 		pQuestNext = ch->m_questList.GetNextQuest(NULL, QUEST_STATE_ABANDON);
 		while ((pQuest = pQuestNext))
 		{
@@ -2843,15 +2974,15 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 
 			if(pQuest && pQuest->GetQuestProto())
 			{
-				// ·¹º§ ½ÃÀÛÇü Äù½ºÆ® ÀÎÁö °Ë»ç
+				// ë ˆë²¨ ì‹œì‘í˜• í€˜ìŠ¤íŠ¸ ì¸ì§€ ê²€ì‚¬
 				if (pQuest->GetQuestProto()->m_startType != QSTART_LEVEL)
 					continue;
 
-				// ÇÊ¿ä Á÷¾÷ Á¶°Ç
+				// í•„ìš” ì§ì—… ì¡°ê±´
 				if (pQuest->GetQuestProto()->m_needJob != -1 && pQuest->GetQuestProto()->m_needJob != ch->m_job)
 					continue;
 
-				// rvr Äù½ºÆ®ÀÏ ¶§ ÇÊ¿äÁ¶°Ç
+				// rvr í€˜ìŠ¤íŠ¸ì¼ ë•Œ í•„ìš”ì¡°ê±´
 				if (pQuest->GetQuestProto()->m_needRvRType > 0)
 				{
 					if(	pQuest->GetQuestProto()->m_needRvRType != ch->getSyndicateType() ||
@@ -2861,11 +2992,11 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 					}
 				}
 
-				// ÇÏµåÄÚµù : ÆÛ½º³Î ´øÀü Äù½ºÆ® , Æ©Åä¸®¾ó Äù½ºÆ® Á¦¿Ü
+				// í•˜ë“œì½”ë”© : í¼ìŠ¤ë„ ë˜ì „ í€˜ìŠ¤íŠ¸ , íŠœí† ë¦¬ì–¼ í€˜ìŠ¤íŠ¸ ì œì™¸
 				if (pQuest->GetQuestProto()->m_index == 42 || pQuest->GetQuestProto()->m_index == 45)
 					continue;
 
-				// ·¹º§ÀÌ ¸Â´Â Äù½ºÆ®ÀÎÁö °Ë»ç
+				// ë ˆë²¨ì´ ë§ëŠ” í€˜ìŠ¤íŠ¸ì¸ì§€ ê²€ì‚¬
 				if(pQuest->GetQuestProto()->m_needMinLevel <= ch->m_level && pQuest->GetQuestProto()->m_needMaxLevel + 4 >= ch->m_level)
 				{
 					qIndex[index] = pQuest->GetQuestIndex();
@@ -2883,7 +3014,7 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 		delete [] qIndex;
 	}
 
-	// Äù½ºÆ® º¹±¸ ½ÃÀÛ
+	// í€˜ìŠ¤íŠ¸ ë³µêµ¬ ì‹œì‘
 	int* nRestoreIndex = new int [nRestoreCount];
 	index = 0;
 	memset(nRestoreIndex, -1, sizeof(int) * nRestoreCount);
@@ -2893,7 +3024,7 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 	{
 		pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_ABANDON);
 
-		// ·¹º§ÀÌ ¸Â´Â Äù½ºÆ®¸¸ Áö¿î´Ù.
+		// ë ˆë²¨ì´ ë§ëŠ” í€˜ìŠ¤íŠ¸ë§Œ ì§€ìš´ë‹¤.
 		if(pQuest && pQuest->GetQuestProto() && pQuest->GetQuestProto()->m_needMinLevel <= ch->m_level && pQuest->GetQuestProto()->m_needMaxLevel + 4 >= ch->m_level)
 		{
 			nRestoreIndex[index] = pQuest->GetQuestIndex();
@@ -2903,7 +3034,7 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 	}
 
 	{
-		// Äù½ºÆ® º¹±¸ ¿Ï·á
+		// í€˜ìŠ¤íŠ¸ ë³µêµ¬ ì™„ë£Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		QuestRestoreAbandonMsg(rmsg, nRestoreCount, nRestoreIndex);
 		SEND_Q(rmsg, ch->m_desc);
@@ -2914,8 +3045,8 @@ void do_QuestRestoreAbandon(CPC* ch, CNetMsg::SP& msg)
 
 void do_QuestItemReq(CPC* ch, CNetMsg::SP& msg)
 {
-	// ÀÌºÎºĞÀº ÀÌ¹Ì ¿Ï·áÇÑ Äù½ºÆ®ÀÎµ¥ ¾ÆÀÌÅÛÀÌ ¾ø¾îÁ®¼­, »ç¿ëÇØ¼­ ¾øÀ»¶§, ±×·±µ¥ ¶Ç ÇÊ¿äÇÒ¶§ Äù½ºÆ®¾ÆÀÌÅÛÀ» Áö±ŞÇØÁÖ´Â ºÎºĞÀÔ´Ï´Ù.
-	// º¸»óºÎºĞ¿¡¼­ Äù½ºÆ® ¾ÆÀÌÅÛ¸¸ Áö±ŞÀ» ÇØÁİ´Ï´Ù. ÀÏ¹İ ¾ÆÀÌÅÛÀÇ °æ¿ì´Â Àı´ë Áö±ŞÇØÁÙ ¼ö ¾ø½À´Ï´Ù.
+	// ì´ë¶€ë¶„ì€ ì´ë¯¸ ì™„ë£Œí•œ í€˜ìŠ¤íŠ¸ì¸ë° ì•„ì´í…œì´ ì—†ì–´ì ¸ì„œ, ì‚¬ìš©í•´ì„œ ì—†ì„ë•Œ, ê·¸ëŸ°ë° ë˜ í•„ìš”í• ë•Œ í€˜ìŠ¤íŠ¸ì•„ì´í…œì„ ì§€ê¸‰í•´ì£¼ëŠ” ë¶€ë¶„ì…ë‹ˆë‹¤.
+	// ë³´ìƒë¶€ë¶„ì—ì„œ í€˜ìŠ¤íŠ¸ ì•„ì´í…œë§Œ ì§€ê¸‰ì„ í•´ì¤ë‹ˆë‹¤. ì¼ë°˜ ì•„ì´í…œì˜ ê²½ìš°ëŠ” ì ˆëŒ€ ì§€ê¸‰í•´ì¤„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 	int nQuestIndex = 0;
 	int nItemIndex[5] = {0,};
 	LONGLONG nItemCount[5] = {0,};
@@ -2929,19 +3060,19 @@ void do_QuestItemReq(CPC* ch, CNetMsg::SP& msg)
 		pQuest = ch->m_questList.FindQuest(nQuestIndex, QUEST_STATE_DONE);
 		if(pQuest == NULL)
 		{
-			// ¿äÃ»ÇÑ Äù½ºÆ®°¡ ¸®½ºÆ®¿¡ ¾øÀ½. ¹ŞÀ» ¼ö ¾øÀ½.
+			// ìš”ì²­í•œ í€˜ìŠ¤íŠ¸ê°€ ë¦¬ìŠ¤íŠ¸ì— ì—†ìŒ. ë°›ì„ ìˆ˜ ì—†ìŒ.
 			return ;
 		}
 
 		if(pQuest->GetQuestState() != QUEST_STATE_DONE)
 		{
-			//Äù½ºÆ®°¡ ÀÖÀ¸³ª ÇöÀç ¼öÇàÁß ¹ŞÀ» ¼ö ¾øÀ½. ¹ŞÀ» ¼ö ¾øÀ½.
+			//í€˜ìŠ¤íŠ¸ê°€ ìˆìœ¼ë‚˜ í˜„ì¬ ìˆ˜í–‰ì¤‘ ë°›ì„ ìˆ˜ ì—†ìŒ. ë°›ì„ ìˆ˜ ì—†ìŒ.
 			return ;
 		}*/
 
 	if(!ch->m_questList.FindQuest(nQuestIndex, QUEST_STATE_DONE))
 	{
-		// Äù½ºÆ® Á¾·á ¸øÇßÀ½.
+		// í€˜ìŠ¤íŠ¸ ì¢…ë£Œ ëª»í–ˆìŒ.
 		return ;
 	}
 
@@ -2988,7 +3119,7 @@ void do_QuestItemReq(CPC* ch, CNetMsg::SP& msg)
 				continue;
 			}
 
-			// ¿©±â±îÁö ¿ÔÀ¸¸é..Äù½ºÆ® ¾ÆÀÌÅÛ±îÁö °É·¯³½°Å°í..ÀÎº¥¿¡ Áö±ŞÇØÁÖ¸é µÇ³ª?
+			// ì—¬ê¸°ê¹Œì§€ ì™”ìœ¼ë©´..í€˜ìŠ¤íŠ¸ ì•„ì´í…œê¹Œì§€ ê±¸ëŸ¬ë‚¸ê±°ê³ ..ì¸ë²¤ì— ì§€ê¸‰í•´ì£¼ë©´ ë˜ë‚˜?
 			if (ch->m_inventory.addItem(pItem) == false)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -3007,7 +3138,7 @@ void do_QuestItemReq(CPC* ch, CNetMsg::SP& msg)
 	}
 	if(NoItem == QUEST_MAX_PRIZE)
 	{
-		// ¹ŞÀ» ¾ÆÀÌÅÛ ¾øÀ½.
+		// ë°›ì„ ì•„ì´í…œ ì—†ìŒ.
 		return ;
 	}
 }

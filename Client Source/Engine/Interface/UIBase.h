@@ -10,10 +10,36 @@
 
 class CDrawPort;
 
+struct stTooltipInfo
+{
+	stTooltipInfo(char* tooltip, COLOR col = 0xFFFFFFFF, eALIGN_H align = eALIGN_H_LEFT)
+	{
+		colText = col;
+		str = tooltip;		
+		align_h = align;
+	}
+
+	CTString str;
+	COLOR colText;
+	eALIGN_H	align_h;
+};
 
 class ENGINE_API CUIBase 
 {
 public:
+	// List or Array에서 상태에 따라 차일드 상태 변경을 위해 추가.
+	// ex) 리스트 아이템에 모든 UIText의 폰트 컬러 변경.
+	enum eCHILD_ITEM_STATE
+	{
+		eSTATE_IDLE = 0,
+		eSTATE_ENTER,
+		eSTATE_SELECT,
+		eSTATE_MAX
+	};
+
+	typedef std::vector<stTooltipInfo>				  vec_tooltip;
+	typedef std::vector<stTooltipInfo>::iterator	  vec_tooltip_iter;
+
 	CUIBase();
 	virtual ~CUIBase();
 
@@ -29,6 +55,7 @@ public:
 
 	//--------------------------------------------------------------------
 	bool addChild(CUIBase* child);
+	bool insertChild(CUIBase* child, int pos);
 	bool deleteChild(const char* child_name);
 	bool deleteChild(int vPos);
 	bool deleteChild(CUIBase* pChild, bool bDelete = true);
@@ -53,9 +80,17 @@ public:
 	virtual void setTexString( const char* strTex );
 	const char* getTexString()	{ return m_strTex.c_str(); }
 
-	void setTooltip(const char* strTooltip)		{ m_strTooltip = strTooltip; }
-	const char* getTooltip()					{ return m_strTooltip.c_str(); }
-	bool hasTooltip()							{ return !m_strTooltip.empty(); }
+	void setTooltip(const char* strTooltip, COLOR col = DEF_UI_COLOR_WHITE, bool bclear = true);
+	void addTooltip(const char* strTooltip, COLOR colText, eALIGN_H align = eALIGN_H_LEFT)
+	{
+		m_vec_tooltip.push_back(stTooltipInfo((char*)strTooltip, colText, align));
+	}
+
+	stTooltipInfo getTooltip(int idx = 0);
+	bool hasTooltip()		{ return !m_vec_tooltip.empty();	}				
+	
+	vec_tooltip getTooltipCont()	{ return m_vec_tooltip;	}
+	void clearTooltipCont()	{ m_vec_tooltip.clear();	}
 
 	void setParent(CUIBase* parent);
 	CUIBase* getParent() { return m_pParent; }
@@ -68,6 +103,7 @@ public:
 	void	InitPos( int x, int y, int w, int h );
 	void	updatePosition(bool bUpdateChild = false);
 	virtual void OnUpdatePosition() {}
+	virtual void OnUpdatePositionPost() {}
 	void	updatePositionChild(bool bUpdateChild);
 	void	SetPos( int nX, int nY );
 	void	SetPosX( int nX ) { m_nPosX = nX;	m_nOrigX = nX; }
@@ -108,7 +144,7 @@ public:
 		nX -= nAbsX;	nY -= nAbsY;
 	}
 	// Window region
-	BOOL	IsInside( int nX, int nY )
+	virtual BOOL	IsInside( int nX, int nY )
 	{
 		ConvertToWindow( nX, nY );
 
@@ -153,10 +189,6 @@ public:
 
 	SLONG			getTexWidth();
 	SLONG			getTexHeight();
-
-	//--------------------------------------------------------------------
-	virtual BOOL	IsFocused() const { return FALSE; }
-	//-----------------------------------------------------------------
 	
 	void SetCommand(Command* pCmd)		{ SAFE_DELETE(m_pCmd); m_pCmd = pCmd; }
 	void SetCommandOn(Command* pCmd)	{ SAFE_DELETE(m_pCmdOn); m_pCmdOn = pCmd; }	// 버튼을 누르고 있을경우 커멘드
@@ -168,17 +200,26 @@ public:
 	void SetCommandDBL(Command* pCmd)	{ SAFE_DELETE(m_pCmdDBL); m_pCmdDBL = pCmd; }
 	void SetCommandWheelUp(Command* pCmd)	{ SAFE_DELETE(m_pCmdWheelUp); m_pCmdWheelUp = pCmd; }
 	void SetCommandWheelDown(Command* pCmd)	{ SAFE_DELETE(m_pCmdWheelDown); m_pCmdWheelDown = pCmd; }
-	void CmdErase();
+	virtual void CmdErase();
+
+	void SetCommandF(_ui_func func)		{ m_func = func; }
+	void SetCommandFOn(_ui_func func)	{ m_funcOn = func;	}
+	void SetCommandFUp(_ui_func func)	{ m_funcUp = func; }
+	void SetCommandFR(_ui_func func)	{ m_funcR = func; }
+	void SetCommandFRUp(_ui_func func)	{ m_funcRUp = func; }
+	void SetCommandFEnter(_ui_func func)	{ m_funcOnEnter = func; }
+	void SetCommandFLeave(_ui_func func)	{ m_funcOnLeave = func; }
+	void SetCommandFDBL(_ui_func func)	{ m_funcDBL = func;	}
 
 	//-----------------------------------------------------------------
 	// Msg
 	virtual WMSG_RESULT		MouseMessage( MSG *pMsg );		// 기존 메세지와 연결
 
-	virtual WMSG_RESULT		OnLButtonDown(UINT16 x, UINT16 y) { return WMSG_FAIL; }
-	virtual WMSG_RESULT		OnLButtonUp(UINT16 x, UINT16 y) { return WMSG_FAIL; }
-	virtual WMSG_RESULT		OnLButtonDBLClick(UINT16 x, UINT16 y) { return WMSG_FAIL; }
-	virtual WMSG_RESULT		OnRButtonDown(UINT16 x, UINT16 y) { return WMSG_FAIL; }
-	virtual WMSG_RESULT		OnRButtonUp(UINT16 x, UINT16 y) { return WMSG_FAIL; }
+	virtual WMSG_RESULT		OnLButtonDown(UINT16 x, UINT16 y);
+	virtual WMSG_RESULT		OnLButtonUp(UINT16 x, UINT16 y);
+	virtual WMSG_RESULT		OnLButtonDBLClick(UINT16 x, UINT16 y);
+	virtual WMSG_RESULT		OnRButtonDown(UINT16 x, UINT16 y);
+	virtual WMSG_RESULT		OnRButtonUp(UINT16 x, UINT16 y);
 	virtual WMSG_RESULT		OnRButtonDBLClick(UINT16 x, UINT16 y) { return WMSG_FAIL; }
 	virtual WMSG_RESULT		OnMouseMove(UINT16 x, UINT16 y, MSG* pMsg) { return WMSG_FAIL; }
 	virtual WMSG_RESULT		OnMouseWheel(UINT16 x, UINT16 y, int wheel) { return WMSG_FAIL; }
@@ -230,6 +271,32 @@ public:
 	void		setControlIndex(int nIdx)	{ m_nControlIndex = nIdx;	}
 	int			getControlIndex()			{ return m_nControlIndex;	}
 
+	// Window state
+	void	SetWndState( DWORD dwWndState ) { m_dwWndState = dwWndState; }
+	virtual void	SetEnable( BOOL bEnable ) { bEnable ? m_dwWndState |= UWS_ENABLE : m_dwWndState &= ~UWS_ENABLE; }
+	void	SetVisible( BOOL bVisible ) { bVisible ? m_dwWndState |= UWS_VISIBLE : m_dwWndState &= ~UWS_VISIBLE; }
+	virtual void	SetFocus( BOOL bVisible ) { bVisible ? m_dwWndState |= UWS_FOCUS : m_dwWndState &= ~UWS_FOCUS; }
+	DWORD	GetWndState() const { return m_dwWndState; }
+	BOOL	IsEnabled() const { return (m_dwWndState & UWS_ENABLE) ? TRUE : FALSE; }
+	BOOL	IsVisible() const { return (m_dwWndState & UWS_VISIBLE) ? TRUE : FALSE; }
+	virtual BOOL	IsFocused() const { return (m_dwWndState & UWS_FOCUS) ? TRUE : FALSE; }
+
+	vec_tooltip	gettooltips();
+
+	// List or Array에서 상태에 따라 차일드 상태 변경을 위해 추가.
+	// ex) 리스트 아이템에 모든 UIText의 폰트 컬러 변경.
+	virtual void ChildItemSelect();
+	virtual void ChildItemEnter();
+	virtual void ChildItemLeave();
+	virtual void ChildItemIdle();
+
+	void setTooltipF(_ui_func func)			{ m_funcSetTooltip = func; }
+	void procSetTooltipFunc();
+
+	void updateTooltipTextF();
+	void setUpdateTooltipF(_ui_func func)	{ m_funcUpdateTooltipText = func; }
+	bool hasUpdateTooltipF()				{ return m_funcUpdateTooltipText != NULL ? true : false; }
+
 protected:
 	typedef std::vector< CUIBase* >					  vec_uinode;
 	typedef std::vector< CUIBase* >::iterator		  vec_uinode_iter;
@@ -241,7 +308,8 @@ protected:
 	std::string		m_strID;
 	std::string		m_strPID;		// ParentID
 	std::string		m_strTex;
-	std::string		m_strTooltip;	
+	// 여러개의 스트링을 툴팁으로 사용할 경우 컨테이너에 저장.
+	vec_tooltip		m_vec_tooltip; 
 	CUIBase*		m_pParent;		// Pointer of parent window
 	int				m_nPosX, m_nPosY;			// Position of window
 	int				m_nOrigX, m_nOrigY;			// Position Orig
@@ -266,12 +334,31 @@ protected:
 
 	int				m_nControlIndex;
 
+	_ui_func		m_func;
+	_ui_func		m_funcOn;
+	_ui_func		m_funcUp;
+	_ui_func		m_funcR;
+	_ui_func		m_funcRUp;
+	_ui_func		m_funcOnEnter;
+	_ui_func		m_funcOnLeave;
+	_ui_func		m_funcDBL;
+	_ui_func		m_funcWheelUp;
+	_ui_func		m_funcWheelDown;
+
+	DWORD			m_dwWndState;				// State flags of window
+	eCHILD_ITEM_STATE m_eChildItemState;
+
 #ifdef	UI_TOOL
 	BOOL			m_bSelect;
 	BOOL			m_bRearrangeMark;
 	std::string		m_OriginPID;
 	int				m_nTooltipIndex;
 #endif	//UI_TOOL
+	static stTooltipInfo temp_tooltip_data;
+
+	_ui_func		m_funcSetTooltip;
+	_ui_func		m_funcUpdateTooltipText;
+
 };
 
 #endif		// _UI_BASE_H_

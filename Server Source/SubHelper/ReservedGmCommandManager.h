@@ -12,8 +12,8 @@ class ReservedGmCommandManager : public rnSocketIOHandler
 public:
 	struct dataInfo
 	{
-		bool start_active_flag_;			// falseÀÌ¸é ¸ğµç ÀÛµ¿¿¡¼­ Á¦¿Ü¸¦ ½ÃÅ²´Ù.
-		bool end_active_flag_;				// falseÀÌ¸é ¸ğµç ÀÛµ¿¿¡¼­ Á¦¿Ü¸¦ ½ÃÅ²´Ù.
+		bool start_active_flag_;			// falseì´ë©´ ëª¨ë“  ì‘ë™ì—ì„œ ì œì™¸ë¥¼ ì‹œí‚¨ë‹¤.
+		bool end_active_flag_;				// falseì´ë©´ ëª¨ë“  ì‘ë™ì—ì„œ ì œì™¸ë¥¼ ì‹œí‚¨ë‹¤.
 		int start_year;
 		int start_month;
 		int end_year;
@@ -23,7 +23,16 @@ public:
 		dataInfo() : start_active_flag_(true), end_active_flag_(true) {}
 	};
 
+	struct dataInfoToGmCommand
+	{
+		int index;
+		int subno;
+		int startTime;
+		char command[RESERVED_GM_COMMAND_MAX_STRING + 1];
+	};
+
 	typedef std::map<int/*a_index*/, dataInfo> map_t;
+	typedef std::map<int, dataInfoToGmCommand> map_gm_t;
 
 public:
 	ReservedGmCommandManager(void) {}
@@ -34,6 +43,7 @@ public:
 	bool Init();
 	virtual void operate(rnSocketIOService* service);
 	void sendListToClient(rnSocketIOService* service, int m_Index, int year, int month);
+	void sendListToClinetByGm(rnSocketIOService* service, int char_index);
 
 	void process(CNetMsg::SP& msg);
 
@@ -42,8 +52,14 @@ private:
 	void Add(reservedGMCommandElement& ele);
 	void makeMap(reservedGMCommandElement& ele);
 
+public:
+	void Delete_gm(int a_index);
+	void Add_gm(dataInfoToGmCommand& data);
+	void makeMap_gm(dataInfoToGmCommand& data);
+
 private:
 	map_t			map_;			// key = a_index
+	map_gm_t		map_gm_;
 };
 
 #endif

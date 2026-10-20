@@ -19,6 +19,7 @@
 #include <Engine/Object/ActorMgr.h>
 #include <Common/Packet/ptype_old_do_move.h>
 #include <Common/Packet/ptype_old_do_skill.h>
+#include <Engine/Contents/function/TitleData.h>
 
 #include "EntitiesMP/RestrictedField.h"
 #include "EntitiesMP/Common/RestrictedFieldContainer.h"
@@ -1088,11 +1089,11 @@ functions:
 
 		if(iNickIndex > 0 && iType == NICKNAME_ATTACK_EFFECT)	// 호칭이 있으면
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetAttackEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetAttackEffectFile();
 		}
 		else if(iNickIndex > 0 && iType == NICKNAME_DAMAGE_EFFECT)
 		{
-			strNickDamageFile = CNickNameData::getData(iNickIndex)->GetDamageEffectFile();
+			strNickDamageFile = TitleStaticData::getData(iNickIndex)->GetDamageEffectFile();
 		}
 
 		if( strNickDamageFile != CTString(""))

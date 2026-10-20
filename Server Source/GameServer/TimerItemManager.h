@@ -56,14 +56,14 @@ private:
 	CPC*				owner_;
 	map_t				map_;
 
-	bool				flag_[TIMERITEM_MAX]; // ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â ±â°£Á¦ ¾ÆÀÌÅÛÀÌ ÀÖ´Ù¸é true
+	bool				flag_[TIMERITEM_MAX]; // ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê¸°ê°„ì œ ì•„ì´í…œì´ ìˆë‹¤ë©´ true
 
 	//////////////////////////////////////////////////////////////////////////
 public:
 	static void AllcheckExpireTime(unsigned int nowtime);
 
 private:
-	static set_t		static_set_; // ±â°£Á¦ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´Â °´Ã¼¸¦ ÀúÀå, ¸ÅÃÊ¸¶´Ù Á¶°Ç ºñ±³¸¦ ÃÖ¼ÒÈ­ÇÏ±â À§ÇÑ Á¶Ä¡
+	static set_t		static_set_; // ê¸°ê°„ì œ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆëŠ” ê°ì²´ë¥¼ ì €ì¥, ë§¤ì´ˆë§ˆë‹¤ ì¡°ê±´ ë¹„êµë¥¼ ìµœì†Œí™”í•˜ê¸° ìœ„í•œ ì¡°ì¹˜
 };
 
 #endif

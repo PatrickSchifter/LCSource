@@ -42,14 +42,14 @@
 #define GUILD_LEVEL7_NEED_GP		18000
 #define GUILD_LEVEL7_NEED_MONEY		2500000
 
-#define GUILD_EXTEND_BASE_LEVEL			7			// ·¹º§ È®Àå ½Ã º¯È­µÇ´Â ·¹º§ÀÇ ±âº»°ª
+#define GUILD_EXTEND_BASE_LEVEL			7			// ë ˆë²¨ í™•ì¥ ì‹œ ë³€í™”ë˜ëŠ” ë ˆë²¨ì˜ ê¸°ë³¸ê°’
 #define GUILD_POSITION_NAME		12
 #define GUILD_NOTICE_TITLE_MAX	64
 #define GUILD_NOTICE_TEXT_MAX	1024
 
-#define GUILD_INCLINE_GENERAL		0		// ÀÏ¹İ ±æµå
-#define GUILD_INCLINE_CHAO			1		// Ä«¿À ±æµå
-#define GUILD_INCLINE_HUNTER		2		// ÇåÅÍ ±æµå
+#define GUILD_INCLINE_GENERAL		0		// ì¼ë°˜ ê¸¸ë“œ
+#define GUILD_INCLINE_CHAO			1		// ì¹´ì˜¤ ê¸¸ë“œ
+#define GUILD_INCLINE_HUNTER		2		// í—Œí„° ê¸¸ë“œ
 
 
 #define GUILD_BATTLE_MIN_MEMBER		10
@@ -62,17 +62,17 @@
 #define GUILD_BATTLE_MAX_PRIZE		1000000
 #endif
 
-#define GUILD_BATTLE_MIN_TIME		6000		// ÃÖ¼Ò 10ºĞ
-#define GUILD_BATTLE_MAX_TIME		180000		// ÃÖ´ë 300ºĞ
+#define GUILD_BATTLE_MIN_TIME		6000		// ìµœì†Œ 10ë¶„
+#define GUILD_BATTLE_MAX_TIME		180000		// ìµœëŒ€ 300ë¶„
 
-#define GUILD_BATTLE_WAIT_TIME		1200	// 1ºĞ
+#define GUILD_BATTLE_WAIT_TIME		1200	// 1ë¶„
 
-#define GUILD_BATTLE_STATE_PEACE		-1		// ÆòÈ­ »óÅÂ
-#define GUILD_BATTLE_STATE_START_WAIT	0		// ±æµåÀü ½ÅÃ» Áß
-#define	GUILD_BATTLE_STATE_WAIT			1		// ±æµåÀü ´ë±â
-#define	GUILD_BATTLE_STATE_ING			2		// ±æµåÀü ÁøÇà
-#define GUILD_BATTLE_STATE_STOP_WAIT	3		// ±æµåÀü Áß´Ü ½ÅÃ» Áß
-#define	GUILD_BATTLE_STATE_PRIZE		4		// ±æµåÀü ÈÄ »ó±İ ´ë±â ¸ğµå
+#define GUILD_BATTLE_STATE_PEACE		-1		// í‰í™” ìƒíƒœ
+#define GUILD_BATTLE_STATE_START_WAIT	0		// ê¸¸ë“œì „ ì‹ ì²­ ì¤‘
+#define	GUILD_BATTLE_STATE_WAIT			1		// ê¸¸ë“œì „ ëŒ€ê¸°
+#define	GUILD_BATTLE_STATE_ING			2		// ê¸¸ë“œì „ ì§„í–‰
+#define GUILD_BATTLE_STATE_STOP_WAIT	3		// ê¸¸ë“œì „ ì¤‘ë‹¨ ì‹ ì²­ ì¤‘
+#define	GUILD_BATTLE_STATE_PRIZE		4		// ê¸¸ë“œì „ í›„ ìƒê¸ˆ ëŒ€ê¸° ëª¨ë“œ
 
 #define MANAGE_NEED_LEVEL				5
 
@@ -92,12 +92,17 @@ class CGuildMember
 	int				m_listindex;
 	char			m_online;
 
-	int				m_contributeExp;	// °æÇèÄ¡¿¡¼­ ±æµå Æ÷ÀÎÆ®·Î ±â¿©ÇÒ %
-	int				m_contributeFame;	// ¸í¼ºÄ¡¿¡¼­ ±æµå Æ÷ÀÎÆ®·Î ±â¿©ÇÒ %
-	int				m_cumulatePoint;	// ±â¿©ÇÑ ´©Àû Æ÷ÀÎÆ®
+	int				m_contributeExp_min;
+	int				m_contributeExp_max;
+	int				m_contributeFame_min;
+	int				m_contributeFame_max;
+
+	int				m_contributeExp;	// ê²½í—˜ì¹˜ì—ì„œ ê¸¸ë“œ í¬ì¸íŠ¸ë¡œ ê¸°ì—¬í•  %
+	int				m_contributeFame;	// ëª…ì„±ì¹˜ì—ì„œ ê¸¸ë“œ í¬ì¸íŠ¸ë¡œ ê¸°ì—¬í•  %
+	int				m_cumulatePoint;	// ê¸°ì—¬í•œ ëˆ„ì  í¬ì¸íŠ¸
 	CLCString		m_positionName;
-	int				m_channel;			// ÇöÀç Á¢¼ÓÇÑ Ã¤³Î
-	int				m_zoneindex;			// ÇöÀç Á¢¼ÓÇÑ À§Ä¡
+	int				m_channel;			// í˜„ì¬ ì ‘ì†í•œ ì±„ë„
+	int				m_zoneindex;			// í˜„ì¬ ì ‘ì†í•œ ìœ„ì¹˜
 
 	CGuildMember();
 
@@ -115,7 +120,7 @@ public:
 
 	const char* GetName()
 	{
-		//member nickºÎºĞ »èÁ¦ : bw 060403
+		//member nickë¶€ë¶„ ì‚­ì œ : bw 060403
 		//if(strcmp((const char*) m_nick, "") != 0)
 		//	return (const char*)m_nick;
 		return (const char*) m_name;
@@ -221,6 +226,42 @@ public:
 		return m_zoneindex;
 	}
 
+	void SetContributeExp_min(int value)
+	{
+		m_contributeExp_min = value;
+	}
+	void SetContributeExp_max(int value)
+	{
+		m_contributeExp_max = value;
+	}
+	int GetcontributeExp_min()
+	{
+		return m_contributeExp_min;
+	}
+	int GetcontributeExp_max()
+	{
+		return m_contributeExp_max;
+	}
+
+	void SetContributeFame_min(int value)
+	{
+		m_contributeFame_min = value;
+	}
+	void SetContributeFame_max(int value)
+	{
+		m_contributeFame_max = value;
+	}
+	int GetcontributeFame_min()
+	{
+		return m_contributeFame_min;
+	}
+	int GetcontributeFame_max()
+	{
+		return m_contributeFame_max;
+	}
+	
+
+
 private:
 	void listindex(int idx)
 	{
@@ -242,9 +283,10 @@ class CGuild
 	CGuild*			m_next;
 	CGuild*			m_prev;
 
-	// ±æµåÀü -------------------
+	// ê¸¸ë“œì „ -------------------
 	int				m_battleIndex;
-	int				m_battlePrize;
+	int				m_battlePrize_nas;
+	int				m_battlePrize_gp;
 	int				m_battleZone;
 	int				m_battleTime;
 	int				m_killCount;
@@ -253,17 +295,19 @@ class CGuild
 	// ---------------------------
 
 	int				m_landcount;
-	int				m_land[256];					// ¼ÒÀ¯Áö
-	int				m_GuildPoint;			// ÀüÃ¼ ±æµå Æ÷ÀÎÆ®
-	char			m_incline;				// ±æµå ¼ºÇâ -> Ä«¿ÀÀÎÁö ÇåÅÍÀÎÁö ±¸ºĞ
+	int				m_land[256];					// ì†Œìœ ì§€
+	int				m_GuildPoint;			// ì „ì²´ ê¸¸ë“œ í¬ì¸íŠ¸
+	char			m_incline;				// ê¸¸ë“œ ì„±í–¥ -> ì¹´ì˜¤ì¸ì§€ í—Œí„°ì¸ì§€ êµ¬ë¶„
 	int				m_maxmember;
-	int				m_GuildPointRanking;		// ±æµå Æ÷ÀÎÆ® ·©Å·
+	int				m_GuildPointRanking;		// ê¸¸ë“œ í¬ì¸íŠ¸ ë­í‚¹
 
-	bool m_bRebirthPos;	// ºÎÈ° ÁøÁö¸¦ ¸Ô¾ú´ÂÁö Ã¼Å© ÇÏ´Â ºÎºĞ
+	bool m_bRebirthPos;	// ë¶€í™œ ì§„ì§€ë¥¼ ë¨¹ì—ˆëŠ”ì§€ ì²´í¬ í•˜ëŠ” ë¶€ë¶„
 
 public:
 	CGuild(int guildindex, const char* name, int level, int battleIndex = -1, int battlePrize = 0, int battleTime = 0, int batttleZone = -1, int battleKillCount = 0, int battleState = -1);
 	~CGuild();
+
+	int m_create_date;
 
 	void landcount( int landcount )
 	{
@@ -389,16 +433,21 @@ public:
 		return (idx < 0 || idx >= GUILD_MAX_MEMBER) ? NULL : m_member[idx];
 	}
 
-	// ±æµåÀü Ãß°¡
+	// ê¸¸ë“œì „ ì¶”ê°€
 
 	int battleIndex()
 	{
 		return m_battleIndex;
 	}
 
-	int battlePrize()
+	int battlePrizeNas()
 	{
-		return m_battlePrize;
+		return m_battlePrize_nas;
+	}
+
+	int battlePrizeGp()
+	{
+		return m_battlePrize_gp;
 	}
 
 	int battleZone()
@@ -406,11 +455,12 @@ public:
 		return m_battleZone;
 	}
 
-	void BattleSet (int i, int m, int z)
+	void BattleSet (int index, int nas, int zone_index, int gp)
 	{
-		m_battleIndex = i;
-		m_battlePrize = m;
-		m_battleZone = z;
+		m_battleIndex = index;
+		m_battlePrize_nas = nas;
+		m_battleZone = zone_index;
+		m_battlePrize_gp = gp;
 	}
 
 	int battlePulse()
@@ -458,18 +508,18 @@ public:
 
 	////////////////////
 	// Function name	: addmember
-	// Description	    : ¸â¹ö Ãß°¡,
+	// Description	    : ë©¤ë²„ ì¶”ê°€,
 	// Return type		: int
-	//                  : ¼º°ø: Ãß°¡µÈ ¸â¹öÀÇ ¸®½ºÆ® ÀÎµ¦½º, ½ÇÆĞ: -1
+	//                  : ì„±ê³µ: ì¶”ê°€ëœ ë©¤ë²„ì˜ ë¦¬ìŠ¤íŠ¸ ì¸ë±ìŠ¤, ì‹¤íŒ¨: -1
 	int addmember(int charindex, const char* name);
 
 	void removemember(CGuildMember* delmember);
 
 	////////////////////
 	// Function name	: changeboss
-	// Description	    : ±æµåÀå º¯°æ
+	// Description	    : ê¸¸ë“œì¥ ë³€ê²½
 	// Return type		: CGuildMember*
-	//                  : º¯°æ ÀÌÀü ±æµåÀå ¸â¹ö Æ÷ÀÎÅÍ
+	//                  : ë³€ê²½ ì´ì „ ê¸¸ë“œì¥ ë©¤ë²„ í¬ì¸í„°
 	CGuildMember* changeboss(int newbosslistindex);
 
 	void appoint(int listindex);
@@ -478,7 +528,7 @@ public:
 
 	////////////////////
 	// Function name	: findmember
-	// Description	    : ±æµå¿øÀ» Ã£´Â´Ù.
+	// Description	    : ê¸¸ë“œì›ì„ ì°¾ëŠ”ë‹¤.
 	CGuildMember* findmember(int charindex);
 
 #ifdef GMTOOL
@@ -503,7 +553,7 @@ private:
 	char m_GuildMark_col;
 	char m_Background_row;
 	char m_Background_col;
-	// ±æµå¸¶Å© ½Ã°£Àº ½ÇÁ¦ ·ÎÄÃ ½Ã°£À¸·Î ÀúÀåµÇ¾î ÀÖÁö¸¸ °ÔÀÓ¿¡¼­ »ç¿ëÇÒ¶§´Â °ÔÀÓ½Ã°£À» Å¬¶óÀÌ¾ğÆ®¿¡ º¸³»ÁØ´Ù.
+	// ê¸¸ë“œë§ˆí¬ ì‹œê°„ì€ ì‹¤ì œ ë¡œì»¬ ì‹œê°„ìœ¼ë¡œ ì €ì¥ë˜ì–´ ìˆì§€ë§Œ ê²Œì„ì—ì„œ ì‚¬ìš©í• ë•ŒëŠ” ê²Œì„ì‹œê°„ì„ í´ë¼ì´ì–¸íŠ¸ì— ë³´ë‚´ì¤€ë‹¤.
 	int m_GuildMarkExpire;
 public:
 	void SetGuildMark(char gm_row, char gm_col, char bg_row, char bg_col, int markTime);
@@ -523,9 +573,21 @@ private:
 public:
 	CGuildKick* getGuildKick(void);
 
-	bool isPossibleKickMaster(void);		// º¸½º Ãß¹æÀÌ °¡´ÉÇÑÁö?
-	bool isPastLastChangeBoss(void);		// ÃÖÁ¾ º¸½º°¡ º¯°æµÈ ÈÄ 7ÀÏÀÌ Áö³µ´ÂÁö?
-	int getNewBossByKick(void);				// Ãß¹æÀ¸·Î ÀÎÇÑ »õ·Î¿î º¸½º ±¸ÇÏ±â
+	bool isPossibleKickMaster(void);		// ë³´ìŠ¤ ì¶”ë°©ì´ ê°€ëŠ¥í•œì§€?
+	bool isPastLastChangeBoss(void);		// ìµœì¢… ë³´ìŠ¤ê°€ ë³€ê²½ëœ í›„ 7ì¼ì´ ì§€ë‚¬ëŠ”ì§€?
+	int getNewBossByKick(void);				// ì¶”ë°©ìœ¼ë¡œ ì¸í•œ ìƒˆë¡œìš´ ë³´ìŠ¤ êµ¬í•˜ê¸°
+
+	bool m_isUseTheStashAndSkill;
+
+	int m_battle_win_count;
+	int m_battle_lose_count;
+	int m_battle_total_count;
+
+	int m_guild_contribute_all_exp_min;
+	int m_guild_contribute_all_exp_max;
+
+	int m_guild_contribute_all_fame_min;
+	int m_guild_contribute_all_fame_max;
 };
 
 class CGuildList
@@ -539,9 +601,9 @@ public:
 
 	////////////////////
 	// Function name	: create
-	// Description	    : ±æµå¸¦ »ı¼º -> ¸â¹ö¿¡ bossÃß°¡ -> boss ¼³Á¤ -> 1¸íÂ¥¸® ¿ÂÀüÇÑ µ¶¸³ ±æµå »ı¼º
-	static CGuild* create(int guildindex, const char* guildname, int charindex, const char* bossname);
-	static CGuild* create(int guildindex, const char* guildname, int guildlevel, int battleIndex, int battlePrize, int battleTime, int batttleZone, int battleKillCount, int battleState);
+	// Description	    : ê¸¸ë“œë¥¼ ìƒì„± -> ë©¤ë²„ì— bossì¶”ê°€ -> boss ì„¤ì • -> 1ëª…ì§œë¦¬ ì˜¨ì „í•œ ë…ë¦½ ê¸¸ë“œ ìƒì„±
+	static CGuild* create(int guildindex, const char* guildname, int charindex, const char* bossname, int create_date);
+	static CGuild* create(int guildindex, const char* guildname, int guildlevel, int battleIndex, int battlePrize, int battleTime, int batttleZone, int battleKillCount, int battleState, int create_date);
 
 	void add(CGuild* guild);
 	void Remove(CGuild* guild);
@@ -550,7 +612,7 @@ public:
 
 	////////////////////
 	// Function name	: findmember
-	// Description	    : Æ¯Á¤ Ä³¸¯ÅÍ°¡ ¼Ò¼ÓµÈ ±æµå¸¦ Ã£´Â´Ù
+	// Description	    : íŠ¹ì • ìºë¦­í„°ê°€ ì†Œì†ëœ ê¸¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
 	CGuildMember* findmember(int charindex);
 
 	void Reset();
@@ -561,7 +623,7 @@ public:
 	}
 };
 
-// Àû´ë ±æµå ¸®½ºÆ®
+// ì ëŒ€ ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸
 class CHostilityGuildList
 {
 	CGuild*		m_head;
@@ -578,7 +640,7 @@ public:
 
 	////////////////////
 	// Function name	: findmember
-	// Description	    : Æ¯Á¤ Ä³¸¯ÅÍ°¡ ¼Ò¼ÓµÈ ±æµå¸¦ Ã£´Â´Ù
+	// Description	    : íŠ¹ì • ìºë¦­í„°ê°€ ì†Œì†ëœ ê¸¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
 	CGuildMember* findmember(int charindex);
 
 	void Reset();
@@ -589,7 +651,7 @@ public:
 	}
 };
 
-// µ¿¸Í ±æµå ¸®½ºÆ®
+// ë™ë§¹ ê¸¸ë“œ ë¦¬ìŠ¤íŠ¸
 class CAllyGuildList
 {
 	CGuild*		m_head;
@@ -606,7 +668,7 @@ public:
 
 	////////////////////
 	// Function name	: findmember
-	// Description	    : Æ¯Á¤ Ä³¸¯ÅÍ°¡ ¼Ò¼ÓµÈ ±æµå¸¦ Ã£´Â´Ù
+	// Description	    : íŠ¹ì • ìºë¦­í„°ê°€ ì†Œì†ëœ ê¸¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
 	CGuildMember* findmember(int charindex);
 
 	void Reset();

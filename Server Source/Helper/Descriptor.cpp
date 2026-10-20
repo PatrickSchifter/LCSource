@@ -123,11 +123,11 @@ bool CDescriptor::GetLogin(CNetMsg::SP& msg)
 	HelperEventMoonStoneLoadMsg(mmsg, moonstone_nas);
 	SEND_Q(mmsg, this);
 
-	// ÆÄÆ¼ Á¤º¸ º¸³»±â
+	// íŒŒí‹° ì •ë³´ ë³´ë‚´ê¸°
 	SendPartyInfo();
 
 #ifdef PREMIUM_CHAR
-	// °ÔÀÓ ¼­¹ö¶ó¸é ÇÁ¸®¹Ì¾öÄ³¸¯ÅÍ Á¡ÇÁ Ä«¿îÆ®¸¦ ÃÊ±âÈ­ ÇÏ´Â ½Ã°£À» Àü¼Û
+	// ê²Œì„ ì„œë²„ë¼ë©´ í”„ë¦¬ë¯¸ì—„ìºë¦­í„° ì í”„ ì¹´ìš´íŠ¸ë¥¼ ì´ˆê¸°í™” í•˜ëŠ” ì‹œê°„ì„ ì „ì†¡
 	if (version == SERVER_VERSION)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);

@@ -31,7 +31,7 @@ public:
 	static GMToolInMessenger* instance();
 
 private:
-	bool	gmToolLogined_;				// GM TOOLÀÌ Á¢¼ÓÇÏ¸é true, Áï 1°³ÀÇ GM TOOL¸¸ÀÌ Á¢¼Ó °¡´É
+	bool	gmToolLogined_;				// GM TOOLì´ ì ‘ì†í•˜ë©´ true, ì¦‰ 1ê°œì˜ GM TOOLë§Œì´ ì ‘ì† ê°€ëŠ¥
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -25,9 +25,9 @@ CPartyMember::~CPartyMember()
 CParty::CParty(int nSubNo, char nPartyType, int nBossIndex, const char* strBossName, int nRequest, const char* strRequest, int nBossLevel )
 	: m_strRequest(MAX_CHAR_NAME_LENGTH + 1)
 {
-	m_nPartyType[MSG_DIVITYPE_EXP]		= nPartyType;			   // °æÇèÄ¡(±Õµî(·£´ø),ÀÔ¼ö¿ì¼±,ÀüÅõ)
-	m_nPartyType[MSG_DIVITYPE_ITEM]		= MSG_PARTY_TYPE_FIRSTGET; // µğÆúÅÍ ¼³Á¤(ÀÔ¼ö¿ì¼±)
-	m_nPartyType[MSG_DIVITYPE_SPECIAL]	= MSG_PARTY_TYPE_OPENBOX;  // µğÆúÅÍ ¼³Á¤(»óÀÚ¿­±â)
+	m_nPartyType[MSG_DIVITYPE_EXP]		= nPartyType;			   // ê²½í—˜ì¹˜(ê· ë“±(ëœë˜),ì…ìˆ˜ìš°ì„ ,ì „íˆ¬)
+	m_nPartyType[MSG_DIVITYPE_ITEM]		= MSG_PARTY_TYPE_FIRSTGET; // ë””í´í„° ì„¤ì •(ì…ìˆ˜ìš°ì„ )
+	m_nPartyType[MSG_DIVITYPE_SPECIAL]	= MSG_PARTY_TYPE_OPENBOX;  // ë””í´í„° ì„¤ì •(ìƒìì—´ê¸°)
 	m_nPartyType[MSG_DIVITYPE_SP]		= nPartyType;
 	m_nPartyType[MSG_DIVITYPE_MONEY]	= nPartyType;
 
@@ -79,7 +79,7 @@ int CParty::GetMemberCountOnline()
 	return ret;
 }
 
-//ÆÄÆ¼ ´ëÇ¥°ª ¼³Á¤
+//íŒŒí‹° ëŒ€í‘œê°’ ì„¤ì •
 void CParty::SetPartyTypeAll(char cPartyType)
 {
 	m_nPartyType[MSG_DIVITYPE_EXP]		= cPartyType;
@@ -131,7 +131,7 @@ int CParty::JoinRequest(const char* strRequestName, int nLevel )
 	if (GetRequestIndex() < 1)
 		return -1;
 
-	// ºóÀÚ¸®¸¦ Ã£°í
+	// ë¹ˆìë¦¬ë¥¼ ì°¾ê³ 
 	int i;
 	for (i = 0; i < MAX_PARTY_MEMBER; i++)
 	{
@@ -144,11 +144,11 @@ int CParty::JoinRequest(const char* strRequestName, int nLevel )
 		return -1;
 	}
 
-	// ºóÀÚ¸®¿¡ ¼³Á¤ÇÏ°í
+	// ë¹ˆìë¦¬ì— ì„¤ì •í•˜ê³ 
 	m_listMember[i] = new CPartyMember(m_nRequest, strRequestName, nLevel );
 	m_nCount++;
 
-	// request ÃÊ±âÈ­ ÇÏ°í
+	// request ì´ˆê¸°í™” í•˜ê³ 
 	m_nRequest = -1;
 
 	return i;
@@ -177,6 +177,10 @@ void CParty::DeleteMember(int nCharIndex)
 		{
 			m_listMember[i] = m_listMember[i + 1];
 			m_listMember[i + 1] = NULL;
+
+			if(m_listMember[i] == NULL)
+				continue;
+			
 			if (i == 0)
 			{
 				LONGLONG key = MAKE_LONGLONG_KEY(this->GetSubNo(), m_listMember[i]->GetCharIndex());

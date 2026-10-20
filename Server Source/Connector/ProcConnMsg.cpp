@@ -11,7 +11,7 @@
 #include "../ShareLib/CheckPassword.h"
 #endif
 #ifdef PASSWORD_ENCRYPT_SHA256
-#include "LCSha256.h"
+#include "../Sharelib/LCSha256.h"
 #endif // PASSWORD_ENCRYPT_SHA256
 #include <boost/format.hpp>
 
@@ -19,7 +19,7 @@
 
 MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subno, const char* ip, CUser** user, char playmode)
 {
-	// Æ÷ÅĞ¿¡¼­ ¾ÆÀÌµğ/ÆĞ½º¿öµå °Ë»ç
+	// í¬í„¸ì—ì„œ ì•„ì´ë””/íŒ¨ìŠ¤ì›Œë“œ ê²€ì‚¬
 	CLCString sql(MAX_STRING_LENGTH);
 
 #if defined(BCRYPT_USA) && !defined(CIRCLE_WINDOWS)
@@ -176,8 +176,8 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 #endif//#ifdef LC_TLD
 #endif//#ifdef CHARDEL_CHECKID
 
-	// °ÔÀÓ µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ Ã£±â
-	// ÀÌ¸§À¸·Î Ã£±â
+	// ê²Œì„ ë°ì´í„°ë² ì´ìŠ¤ì—ì„œ ì°¾ê¸°
+	// ì´ë¦„ìœ¼ë¡œ ì°¾ê¸°
 
 
 	std::string selectQuery = "";
@@ -203,7 +203,7 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 	time_t	currenttime;
 	time(&currenttime);
 	int regi_time = 0;
-	// 050124 - bs - °èÁ¤ ÀÌ¸§À¸·Î °Ë»çÇÏ¿© Æ÷ÅĞ ÀÎµ¦½º È®ÀÎ
+	// 050124 - bs - ê³„ì • ì´ë¦„ìœ¼ë¡œ ê²€ì‚¬í•˜ì—¬ í¬í„¸ ì¸ë±ìŠ¤ í™•ì¸
 	if (cmd.m_nrecords > 0 && cmd.MoveNext())
 	{
 		int oldportalindex;
@@ -224,7 +224,7 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 			{
 				int comeday;
 				comeUserCmd.GetRec("comeday" , comeday);
-				if( comeday >= 60*60*24*EVENT_USER_COMEBACK_AUTO_REG_DAY ) // ÇØ´ç ÀÏÀÌ Áö³µ´Ù¸é. DB¿¡ ±â·ÏÇÏÀÚ.
+				if( comeday >= 60*60*24*EVENT_USER_COMEBACK_AUTO_REG_DAY ) // í•´ë‹¹ ì¼ì´ ì§€ë‚¬ë‹¤ë©´. DBì— ê¸°ë¡í•˜ì.
 				{
 					int userIndex = oldportalindex;
 					if( portal_idx != oldportalindex)
@@ -263,8 +263,8 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 
 	if (bFirstConn)
 	{
-		// Ã³À½ °ÔÀÓ¿¡ Á¢¼Ó
-		// °ÔÀÓ À¯Àú Å×ÀÌºí¿¡ Ãß°¡
+		// ì²˜ìŒ ê²Œì„ì— ì ‘ì†
+		// ê²Œì„ ìœ ì € í…Œì´ë¸”ì— ì¶”ê°€
 		// INSERT INTO t_users (a_idname, a_portal_index, a_regi_date, a_end_date) VALUES ('name', portal_idx, NOW(), NOW())
 
 		std::string insertQuery = "";
@@ -302,12 +302,12 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 	}
 	else
 	{
-		// ÀÌÀü¿¡ ÇÃ·¹ÀÌ ÇÑ Àû ÀÖ´Â À¯Àú
+		// ì´ì „ì— í”Œë ˆì´ í•œ ì  ìˆëŠ” ìœ ì €
 		int oldzone;
 		if (!cmd.GetRec("a_zone_num", oldzone))
 			return MSG_CONN_ERROR_SYSTEM;
 
-// 050226 : bs : a_enable °Ë»ç
+// 050226 : bs : a_enable ê²€ì‚¬
 		switch (atoi(cmd.GetRec("a_enable")))
 		{
 		case 0:
@@ -317,15 +317,18 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 		default:
 			return MSG_CONN_ERROR_BLOCKEDUSER;
 		}
-// --- 050226 : bs : a_enable == 0 °Ë»ç
+// --- 050226 : bs : a_enable == 0 ê²€ì‚¬
 
 		if (oldzone < 0)
 		{
 #ifdef LOGIN_TIME_CHECK
 			int logincheck;
 			cmd.GetRec("logincheck", logincheck);
-			if(logincheck >= 60 || logincheck < 0)
-				return MSG_CONN_ERROR_NOTALLOW_LOGINSERVER;
+			if(playmode != MSG_LOGIN_GM)
+			{
+				if(logincheck >= 60 || logincheck < 0)
+					return MSG_CONN_ERROR_NOTALLOW_LOGINSERVER;
+			}
 #endif // LOGIN_TIME_CHECK
 
 #ifdef CHARDEL_CHECKID
@@ -350,7 +353,7 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 			{
 				(*user)->m_location = BILL_LOCATION_PCBANG;
 
-				// ÇÇ¾¾¹æ ·Î±×ÀÎ ±â·Ï ³²±â±â
+				// í”¼ì”¨ë°© ë¡œê·¸ì¸ ê¸°ë¡ ë‚¨ê¸°ê¸°
 				CDBCmd cmdPCBang;
 				cmdPCBang.Init(&gserver.m_dbuser);
 
@@ -407,8 +410,8 @@ MSG_CONN_ERRORCODE ReadDB(const char* name, const char* pw, int server, int subn
 
 MSG_CONN_ERRORCODE WriteDB(int index, int server, int subno, int zone, int playtime, const char* name, const char* ip, bool bLogin, int pcbangTime)
 {
-	// 0¹ø Á¸¿¡ Á¢¼ÓÇÑ °ÍÀ¸·Î ÀÏ´Ü ¼³Á¤
-	// ÀÌÈÄ ´Ù½Ã ¾÷µ¥ÀÌÆ®¸¦ ÅëÇØ ½ÇÁ¦ Á¸À» ¼³Á¤ (MSG_MENU_START¸¦ ¹Ş´Â ½ÃÁ¡¿¡¼­)
+	// 0ë²ˆ ì¡´ì— ì ‘ì†í•œ ê²ƒìœ¼ë¡œ ì¼ë‹¨ ì„¤ì •
+	// ì´í›„ ë‹¤ì‹œ ì—…ë°ì´íŠ¸ë¥¼ í†µí•´ ì‹¤ì œ ì¡´ì„ ì„¤ì • (MSG_MENU_STARTë¥¼ ë°›ëŠ” ì‹œì ì—ì„œ)
 	// UPDATE t_users SET a_end_date=NOW(), a_server_num=server, a_subnum=subnum, a_zone_num=zone, a_timestamp=timestamp WHERE a_portal_index=index
 	std::string updateQuery = boost::str(boost::format(
 			"UPDATE t_users SET "
@@ -450,14 +453,12 @@ MSG_CONN_ERRORCODE WriteDB(int index, int server, int subno, int zone, int playt
 
 bool WriteDB(const char* name)
 {
-	// 0¹ø Á¸¿¡ Á¢¼ÓÇÑ °ÍÀ¸·Î ÀÏ´Ü ¼³Á¤
-	// ÀÌÈÄ ´Ù½Ã ¾÷µ¥ÀÌÆ®¸¦ ÅëÇØ ½ÇÁ¦ Á¸À» ¼³Á¤ (MSG_MENU_START¸¦ ¹Ş´Â ½ÃÁ¡¿¡¼­)
+	// 0ë²ˆ ì¡´ì— ì ‘ì†í•œ ê²ƒìœ¼ë¡œ ì¼ë‹¨ ì„¤ì •
+	// ì´í›„ ë‹¤ì‹œ ì—…ë°ì´íŠ¸ë¥¼ í†µí•´ ì‹¤ì œ ì¡´ì„ ì„¤ì • (MSG_MENU_STARTë¥¼ ë°›ëŠ” ì‹œì ì—ì„œ)
 	// UPDATE t_users SET a_end_date=NOW(), a_zone_num=zone WHERE a_name=name
 
 	std::string updateQuery = boost::str(boost::format(
 			"UPDATE t_users SET a_end_date = NOW(), a_zone_num = -1 WHERE a_idname = '%s'")	% name);
-	;
-
 
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbuser);
@@ -496,7 +497,7 @@ void ConnPlaying(CDescriptor* d, CNetMsg::SP& msg)
 		return ;
 	}
 
-	CUser* user = gserver.m_userList[d->m_subno - 1].Find(id);
+	CUser* user = gserver.m_user_list->findByUserName(id.getBuffer());
 
 	if (!user)
 	{
@@ -515,9 +516,9 @@ void ConnPlaying(CDescriptor* d, CNetMsg::SP& msg)
 			<< zone
 			<< end;
 
-	gserver.m_userList[d->m_subno - 1].m_playersPerZone[user->m_zone]--;
-	gserver.m_userList[d->m_subno - 1].m_playersPerZone[zone]++;
-
+	gserver.m_user_list->decreasePlayerZoneCount(user->m_subnum, user->m_zone);
+	gserver.m_user_list->increasePlayerZoneCount(user->m_subnum, zone);
+	
 	user->m_state = (mode == MSG_LOGIN_NEW) ? CONN_PLAYING : CONN_CHANGE_SERVER;
 	user->m_zone = zone;
 	user->m_checkTics = 0;
@@ -525,7 +526,7 @@ void ConnPlaying(CDescriptor* d, CNetMsg::SP& msg)
 
 	if (user->m_state == CONN_CHANGE_SERVER)
 	{
-		// ¼­¹ö ÀÌµ¿À» ¿Ï·á ½ÃÄÑÁÖ±â À§ÇØ ÀÀ´äÀ» ÁØ´Ù
+		// ì„œë²„ ì´ë™ì„ ì™„ë£Œ ì‹œì¼œì£¼ê¸° ìœ„í•´ ì‘ë‹µì„ ì¤€ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		MoveServerOKMsg(rmsg, user->m_index);
 		SEND_Q(rmsg, d);
@@ -581,7 +582,7 @@ void ConnRankerReq(CDescriptor* d, CNetMsg::SP& msg)
 
 	if( cmd.m_nrecords > 0 )
 	{
-		// ·©Ä¿¶ó´Â ¸Ş¼¼Áö
+		// ë­ì»¤ë¼ëŠ” ë©”ì„¸ì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		RankerRepMsg(rmsg, charindex);
 		SEND_Q(rmsg, d);
@@ -619,7 +620,7 @@ void ConnCouponConfirm(CDescriptor* d, CNetMsg::SP& msg)
 
 	if( !cmd.Open() || !cmd.MoveFirst() )
 	{
-		// ÄíÆù ¾øÀ½ ¿¡·¯ ¸Ş¼¼Áö
+		// ì¿ í° ì—†ìŒ ì—ëŸ¬ ë©”ì„¸ì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		CouponConfirmMsg(rmsg, charindex, MSG_EVENT_ERROR_NOT_COUPON);
 #if defined (LC_GAMIGO)
@@ -635,7 +636,7 @@ void ConnCouponConfirm(CDescriptor* d, CNetMsg::SP& msg)
 
 	if (useDate > 0)
 	{
-		// ÀÌ¹Ì »ç¿ëÇÑ ÄíÆù
+		// ì´ë¯¸ ì‚¬ìš©í•œ ì¿ í°
 		CNetMsg::SP rmsg(new CNetMsg);
 		CouponConfirmMsg(rmsg, charindex, MSG_EVENT_ERROR_ALREADY_USE_COUNPON);
 #if defined (LC_GAMIGO)
@@ -645,7 +646,7 @@ void ConnCouponConfirm(CDescriptor* d, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ¸»·¹ÀÌ½Ã¾Æ, È«ÄáÀ» Á¦¿ÜÇÑ ³ª¶ó
+	// ë§ë ˆì´ì‹œì•„, í™ì½©ì„ ì œì™¸í•œ ë‚˜ë¼
 	if( strcmp(kind, "open1") == 0)
 	{
 		type = 1;
@@ -662,7 +663,7 @@ void ConnCouponConfirm(CDescriptor* d, CNetMsg::SP& msg)
 #if !defined(LC_GAMIGO)
 	else
 	{
-		// ÄíÆù ¾øÀ½ ¿¡·¯ ¸Ş¼¼Áö
+		// ì¿ í° ì—†ìŒ ì—ëŸ¬ ë©”ì„¸ì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		CouponConfirmMsg(rmsg, charindex, MSG_EVENT_ERROR_NOT_COUPON);
 		SEND_Q(rmsg, d);
@@ -764,7 +765,7 @@ void ConnCouponConfirm(CDescriptor* d, CNetMsg::SP& msg)
 	}
 #endif // (LC_GAMIGO)
 
-	// ¸Â´Ù ¸Ş¼¼Áö
+	// ë§ë‹¤ ë©”ì„¸ì§€
 	CNetMsg::SP rmsg(new CNetMsg);
 	CouponConfirmMsg(rmsg, charindex, MSG_EVENT_ERROR_COUPON_SUCCESS, atoi(cmd.GetRec("a_index")), type);
 #if defined (LC_GAMIGO)
@@ -915,10 +916,10 @@ void ConnCouponUse(CDescriptor* d, CNetMsg::SP& msg)
 #endif // LC_GAMIGO
 
 #ifdef EVENT_PACKAGE_ITEM_DBLOG
-// µğºñ Å×ÀÌºí¿¡ ·Î±× ³²±â±â
+// ë””ë¹„ í…Œì´ë¸”ì— ë¡œê·¸ ë‚¨ê¸°ê¸°
 // t_key_log
 // a_id : a_nick : a_serial : a_serverno : a_usetime
-// À¯Àú¾ÆÀÌµğ : Ä³¸¯ÅÍ ÀÌ¸§ : ½Ã¸®¾ó³Ñ¹ö : ¼­¹ö±º¹øÈ£ : »ç¿ë½Ã°£
+// ìœ ì €ì•„ì´ë”” : ìºë¦­í„° ì´ë¦„ : ì‹œë¦¬ì–¼ë„˜ë²„ : ì„œë²„êµ°ë²ˆí˜¸ : ì‚¬ìš©ì‹œê°„
 	char insert_key_log_query[MAX_STRING_LENGTH] = {0,};
 	sprintf(insert_key_log_query, "INSERT INTO t_key_log VALUES ('%s', '%s', '%s', %d, now())",
 			(const char *)idname, (const char *)nick, (const char *)coupon, serverno);
@@ -1114,8 +1115,8 @@ void ConnGMToolChatting( CDescriptor* d, CNetMsg::SP& msg )
 void ConnEventXmas2007( CDescriptor* d, CNetMsg::SP& msg )
 {
 // KYD TO DO
-	// ÇöÀç Æ®¸® Æ÷ÀÎÆ® ¿äÃ»
-	// ÀÚ½ÅÀÇ ¼­¹ö Æ÷ÀÎÆ® Àû¸³
+	// í˜„ì¬ íŠ¸ë¦¬ í¬ì¸íŠ¸ ìš”ì²­
+	// ìì‹ ì˜ ì„œë²„ í¬ì¸íŠ¸ ì ë¦½
 	//	MSG_CONN_EVENT_XMASTREE_ADDPOINT,	// REQ : (un)point,
 	CNetMsg			rmsg;
 	unsigned char	cSubType = 0;
@@ -1131,7 +1132,7 @@ void ConnEventXmas2007( CDescriptor* d, CNetMsg::SP& msg )
 			unOldPoint = gserver.m_unEventXmasTreePoint;
 			gserver.m_unEventXmasTreePoint += unPoint;
 
-			// 1000 Point ¸¶´Ù Àü Ã¼³Î¿¡ ¾ÆÀÌÅÛ µå¶ø & ÀüÃ¼³Î¿¡ ³ª¹« ¾÷µ¥ÀÌÆ® MSG
+			// 1000 Point ë§ˆë‹¤ ì „ ì²´ë„ì— ì•„ì´í…œ ë“œë & ì „ì²´ë„ì— ë‚˜ë¬´ ì—…ë°ì´íŠ¸ MSG
 			int nDropCount = (int)(gserver.m_unEventXmasTreePoint/1000) - (int)(unOldPoint/1000);
 			if ( nDropCount > 0 )
 			{
@@ -1143,7 +1144,7 @@ void ConnEventXmas2007( CDescriptor* d, CNetMsg::SP& msg )
 
 				// ItemDrop Count Setting
 				gserver.m_nEventXmasTreeNoticeTime += (nDropCount * 6);
-				//  TimerToGameServer ¿¡¼­ °è»ê
+				//  TimerToGameServer ì—ì„œ ê³„ì‚°
 			}
 		}
 		break;
@@ -1185,7 +1186,7 @@ void ConnLacaretteSystemMsg(CDescriptor* d, CNetMsg::SP& msg)
 			SEND_Q(rmsg, d);
 		}
 		break;
-	case MSG_CONN_LACARETTE_TOKEN_REQ: // DB¿¡¼­ ÅäÅ« Áö±Ş °¡´É È®ÀÎ
+	case MSG_CONN_LACARETTE_TOKEN_REQ: // DBì—ì„œ í† í° ì§€ê¸‰ ê°€ëŠ¥ í™•ì¸
 		{
 			unsigned char errortype;
 			errortype = LacaretteToken(userindex, charindex, false);
@@ -1261,7 +1262,7 @@ void ConnLacaretteSystemMsg(CDescriptor* d, CNetMsg::SP& msg)
 			int giveitemindex, bAdd, errortype, repeat=0;
 			RefMsg(msg) >> giveitemindex >> bAdd;
 
-			if( bAdd == 1) // È½¼ö Áõ°¡
+			if( bAdd == 1) // íšŸìˆ˜ ì¦ê°€
 			{
 				errortype  = LacaretteRepeat(userindex, charindex, repeat, true);
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -1276,7 +1277,7 @@ void ConnLacaretteSystemMsg(CDescriptor* d, CNetMsg::SP& msg)
 
 				SEND_Q(rmsg, d);
 			}
-			else if( bAdd == -1 ) // È½¼ö °¨¼Ò
+			else if( bAdd == -1 ) // íšŸìˆ˜ ê°ì†Œ
 			{
 				errortype = LacaretteRepeat(userindex, charindex, repeat, true, false);
 				if( errortype ==MSG_CONN_LACARETTE_RETTE_ERROR )
@@ -1317,7 +1318,7 @@ unsigned char LacaretteToken(int userindex, int charindex, bool bWrite, bool bAd
 	if( !cmd.Open() )
 		return MSG_CONN_LACARETTE_TOKEN_ERROR;
 
-	if( !cmd.MoveFirst() && bAdd ) // ¾ø´Ù¸é Áö±Ş °¡´É»óÅÂ DB¿¡ ±â·Ï ÇØÁØ´Ù.
+	if( !cmd.MoveFirst() && bAdd ) // ì—†ë‹¤ë©´ ì§€ê¸‰ ê°€ëŠ¥ìƒíƒœ DBì— ê¸°ë¡ í•´ì¤€ë‹¤.
 	{
 		if( bWrite )
 		{
@@ -1335,12 +1336,12 @@ unsigned char LacaretteToken(int userindex, int charindex, bool bWrite, bool bAd
 		return MSG_CONN_LACARETTE_TOKEN_ERROR_SUC;
 	}
 
-	// ÀÖ´Ù¸é Áö±Ş ¹ŞÀº ³¯ÀÚ È®ÀÎ
+	// ìˆë‹¤ë©´ ì§€ê¸‰ ë°›ì€ ë‚ ì í™•ì¸
 	std::string select_lacarette_log_query1 = boost::str(boost::format("SELECT * FROM t_lacarette_log WHERE a_user_idx=%d AND a_date > (now() - interval 1 day )") % userindex);
 	cmd.SetQuery(select_lacarette_log_query1);
 	cmd.Open();
 
-	if( !cmd.MoveFirst() ) // ¾ø´Ù¸é Áö±Ş °¡´É »óÅÂ DB¿¡ ±â·ÏÇØÁØ´Ù.
+	if( !cmd.MoveFirst() ) // ì—†ë‹¤ë©´ ì§€ê¸‰ ê°€ëŠ¥ ìƒíƒœ DBì— ê¸°ë¡í•´ì¤€ë‹¤.
 	{
 		if( bWrite && bAdd)
 		{
@@ -1357,7 +1358,7 @@ unsigned char LacaretteToken(int userindex, int charindex, bool bWrite, bool bAd
 
 		return MSG_CONN_LACARETTE_TOKEN_ERROR_SUC;
 	}
-	else // ÀÌ¹Ì Áö±İµÇ¾úÀ½
+	else // ì´ë¯¸ ì§€ê¸ˆë˜ì—ˆìŒ
 	{
 		if( bWrite && !bAdd)
 		{
@@ -1388,11 +1389,11 @@ unsigned char LacaretteRepeat(int userindex, int charindex, int &repeat, bool bW
 	if( !cmd.Open() )
 		return MSG_CONN_LACARETTE_RETTE_ERROR;
 
-	if( !cmd.MoveFirst() ) // ¾ø´Ù¸é Áö±Ş °¡´É»óÅÂ DB¿¡ ±â·Ï ÇØÁØ´Ù.
+	if( !cmd.MoveFirst() ) // ì—†ë‹¤ë©´ ì§€ê¸‰ ê°€ëŠ¥ìƒíƒœ DBì— ê¸°ë¡ í•´ì¤€ë‹¤.
 	{
 		if( bWrite && bAdd )
 		{
-			// Áö±Ş ¹ŞÀº ±â·ÏÀÌ ¾ø´Â °ÍÀÌ¹Ç·Î a_date´Â Àü ³¯ÀÚ·Î ÇØÁØ´Ù. ÅäÅ«À» Áö±Ş ¹ŞÀ» ¼ö ÀÖµµ·Ï
+			// ì§€ê¸‰ ë°›ì€ ê¸°ë¡ì´ ì—†ëŠ” ê²ƒì´ë¯€ë¡œ a_dateëŠ” ì „ ë‚ ìë¡œ í•´ì¤€ë‹¤. í† í°ì„ ì§€ê¸‰ ë°›ì„ ìˆ˜ ìˆë„ë¡
 			std::string insert_lacarette_log_query = boost::str(boost::format("INSERT INTO t_lacarette_log VALUES (%d, %d, (now() - interval 1 day ), 1, now())") % userindex % charindex);
 			cmd.SetQuery(insert_lacarette_log_query);
 
@@ -1445,7 +1446,7 @@ unsigned char LacaretteRepeat(int userindex, int charindex, int &repeat, bool bW
 		}
 		return MSG_CONN_LACARETTE_RETTE_ERROR_SUC;
 	}
-	else // ³¯Â¥°¡ ÇÏ·ç Áö³µ´Ù
+	else // ë‚ ì§œê°€ í•˜ë£¨ ì§€ë‚¬ë‹¤
 	{
 		if( bWrite && bAdd )
 		{
@@ -1534,7 +1535,7 @@ void EventPromotion2CouponUseReq(CDescriptor * d, CNetMsg::SP& msg)
 				cmd.SetQuery(select_promotion2_key_query1);
 				if( !cmd.Open() || !cmd.MoveFirst() )
 				{
-					// »ç¿ë ±â°£ ÀÌ Áö³µ´Ù.
+					// ì‚¬ìš© ê¸°ê°„ ì´ ì§€ë‚¬ë‹¤.
 					errorType = (int)MSG_CONN_PROMOTION2_REP_ERROR_DATE;
 				}
 			}
@@ -1615,14 +1616,14 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 
 			if(!cmd.Open() || !cmd.MoveFirst() || !cmd.GetRec("a_ctids", ctids))
 			{
-				// ¾ø´Ù°í ¸Ş¼¼Áö º¸³»±â
+				// ì—†ë‹¤ê³  ë©”ì„¸ì§€ ë³´ë‚´ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				ConnWishlistRep(rmsg, count, ctid, user_index, char_index);
 				SEND_Q(rmsg, d);
 			}
 			else
 			{
-				// µ¥ÀÌÅÍ ÀÖÀ½. ÅäÅ«Â¥¸£°í...½ºÆ®¸µÀº ctids(str)·Î µé¾î°¬À½...
+				// ë°ì´í„° ìˆìŒ. í† í°ì§œë¥´ê³ ...ìŠ¤íŠ¸ë§ì€ ctids(str)ë¡œ ë“¤ì–´ê°”ìŒ...
 				arg = ctids;
 				for(i = 0; i < 8; i++)
 				{
@@ -1649,7 +1650,7 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 
 			if(!cmd.Open())
 			{
-				// ½Ã½ºÅÛ ¿¡·¯
+				// ì‹œìŠ¤í…œ ì—ëŸ¬
 				CNetMsg::SP rmsg(new CNetMsg);
 				ConnWishlistSaveRep(rmsg, user_index, char_index, 2, id);
 				SEND_Q(rmsg, d);
@@ -1657,18 +1658,18 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 			else if(!cmd.MoveFirst())
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				// Å×ÀÌºí ¿ÀÇÂ ¼º°ø ±Ùµ¥ °ªÀÌ ¾ø¾î
-				// ±×·¯¸é °ªÀ» ½ºÆ®¸µÀ¸·Î ¹Ù²ã¼­ ÀúÀå~¿©±ä INSERT
+				// í…Œì´ë¸” ì˜¤í”ˆ ì„±ê³µ ê·¼ë° ê°’ì´ ì—†ì–´
+				// ê·¸ëŸ¬ë©´ ê°’ì„ ìŠ¤íŠ¸ë§ìœ¼ë¡œ ë°”ê¿”ì„œ ì €ì¥~ì—¬ê¸´ INSERT
 				std::string insert_wishlist_query = boost::str(boost::format("INSERT INTO t_wishlist(a_userindex, a_ctids) VALUES (%d, '%d')") % user_index % id);
 				cmd.SetQuery(insert_wishlist_query);
 				if(!cmd.Update())
 				{
-					// ¾÷µ¥ÀÌÆ® ½ÇÆĞ
+					// ì—…ë°ì´íŠ¸ ì‹¤íŒ¨
 					ConnWishlistSaveRep(rmsg, user_index, char_index, 2, id);
 				}
 				else
 				{
-					// ¼º°ø
+					// ì„±ê³µ
 					ConnWishlistSaveRep(rmsg, user_index, char_index, 0, id);
 				}
 				SEND_Q(rmsg, d);
@@ -1676,7 +1677,7 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 			else
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				// µ¥ÀÌÅÍ ÀÖÀ½. °¹¼ö »ı°¢ÇØ¼­ UPDATE ÇÏ±â
+				// ë°ì´í„° ìˆìŒ. ê°¯ìˆ˜ ìƒê°í•´ì„œ UPDATE í•˜ê¸°
 				if(!cmd.GetRec("a_ctids", ctids))
 				{
 					ConnWishlistSaveRep(rmsg, user_index, char_index, 2, id);
@@ -1735,14 +1736,14 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 			cmd.SetQuery(select_wishlist_query);
 			if(!cmd.Open())
 			{
-				// ½Ã½ºÅÛ ¿¡·¯ void ConnWishListDelRep(CNetMsg::SP& msg, int user_index, int char_index, unsigned char ErrorCode, int ctid)
+				// ì‹œìŠ¤í…œ ì—ëŸ¬ void ConnWishListDelRep(CNetMsg::SP& msg, int user_index, int char_index, unsigned char ErrorCode, int ctid)
 				ConnWishlistDelRep(rmsg, user_index, char_index, 2, id);
 			}
-			else if(!cmd.MoveFirst())	// µ¥ÀÌÅÍ ¾øÀ½. Áï Áö¿ï°Ô ¾øÀ½
+			else if(!cmd.MoveFirst())	// ë°ì´í„° ì—†ìŒ. ì¦‰ ì§€ìš¸ê²Œ ì—†ìŒ
 			{
 				ConnWishlistDelRep(rmsg, user_index, char_index, 1, id);
 			}
-			else						// µ¥ÀÌÅÍ Ã£¾ÒÀ½ GetRec ÇØ¼­ »èÁ¦¿äÃ» µé¾î¿Â id°¡ ÅØ½ºÆ®¿¡ ÀÖ´ÂÁö °Ë»öÀ» ÇÑ´Ù
+			else						// ë°ì´í„° ì°¾ì•˜ìŒ GetRec í•´ì„œ ì‚­ì œìš”ì²­ ë“¤ì–´ì˜¨ idê°€ í…ìŠ¤íŠ¸ì— ìˆëŠ”ì§€ ê²€ìƒ‰ì„ í•œë‹¤
 			{
 				if(!cmd.GetRec("a_ctids", ctids))
 				{
@@ -1766,14 +1767,14 @@ void ConnWishListMsg(CDescriptor* d, CNetMsg::SP& msg)
 							{
 								break;
 							}
-							arg = AnyOneArg(arg, tmpBuf, true); // Ã£À¸¸é ÇÑ¹ø´õ ¼öÇà
+							arg = AnyOneArg(arg, tmpBuf, true); // ì°¾ìœ¼ë©´ í•œë²ˆë” ìˆ˜í–‰
 						}
 						ctid[i] = atoi(tmpBuf);
 
 						count++;
-					} // ¿©±â±îÁö ´Ù Ã£¾Ò°í, Ã£´Â°Ô ÀÖÀ¸¸é Áö¿üÀ½.
+					} // ì—¬ê¸°ê¹Œì§€ ë‹¤ ì°¾ì•˜ê³ , ì°¾ëŠ”ê²Œ ìˆìœ¼ë©´ ì§€ì› ìŒ.
 
-					if(count == 0)	// Ã£¾Ò°í..Áö¿ü°í..³ÖÀ» µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é »èÁ¦
+					if(count == 0)	// ì°¾ì•˜ê³ ..ì§€ì› ê³ ..ë„£ì„ ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ì‚­ì œ
 					{
 						std::string delete_wishlist_query = boost::str(boost::format("DELETE FROM t_wishlist WHERE a_userindex = %d") % user_index);
 						cmd.SetQuery(delete_wishlist_query);
@@ -1838,7 +1839,7 @@ void ConnEventUserComeback(CDescriptor* d, CNetMsg::SP& msg)
 	cmd.Init(&gserver.m_dbuser);
 	cmd.SetQuery(select_event_usercomeback_query);
 
-	if( !cmd.Open() || !cmd.MoveFirst() ) // Áö±Ş ´ë»ó¿¡ ¾øÀ½.
+	if( !cmd.Open() || !cmd.MoveFirst() ) // ì§€ê¸‰ ëŒ€ìƒì— ì—†ìŒ.
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEventUserComebackRepMsg( rmsg, (char)MSG_EVENT_USER_COMEBACK_ERROR_NOT_USER , userindex, charindex );
@@ -1849,7 +1850,7 @@ void ConnEventUserComeback(CDescriptor* d, CNetMsg::SP& msg)
 	int dbcharidx;
 	cmd.GetRec("a_char_idx", dbcharidx);
 
-	if( dbcharidx > 0) // ÀÌ¹Ì ¹Ş¾Ò³ß
+	if( dbcharidx > 0) // ì´ë¯¸ ë°›ì•˜ë„¹
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEventUserComebackRepMsg( rmsg, (char)MSG_EVENT_USER_COMEBACK_ERROR_NO_MORE , userindex, charindex );
@@ -1862,7 +1863,7 @@ void ConnEventUserComeback(CDescriptor* d, CNetMsg::SP& msg)
 
 	cmd.SetQuery(delete_event_usercomeback_query);
 
-	if( !cmd.Update() ) // DB »èÁ¦ ½ÇÆĞ
+	if( !cmd.Update() ) // DB ì‚­ì œ ì‹¤íŒ¨
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEventUserComebackRepMsg( rmsg, (char)MSG_EVENT_USER_COMEBACK_ERROR_NOT_USER , userindex, charindex );
@@ -1876,7 +1877,7 @@ void ConnEventUserComeback(CDescriptor* d, CNetMsg::SP& msg)
 	}
 	else
 	{
-		// DB ·Î±×¸¦ ³²±âÁö ¾ÊÀ¸´Ï ·Î±×·Î¶óµµ ³²±ä´Ù.
+		// DB ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•Šìœ¼ë‹ˆ ë¡œê·¸ë¡œë¼ë„ ë‚¨ê¸´ë‹¤.
 		GAMELOG << init("EVENT_USER_COMEBACK : ITEM GIVE SUC")
 				<< "userIDX" << delim << userindex << delim
 				<< "ServerNum" << delim << gserver.m_serverno << delim
@@ -1887,7 +1888,7 @@ void ConnEventUserComeback(CDescriptor* d, CNetMsg::SP& msg)
 
 	cmd.SetQuery(update_event_usercomeback_query);
 
-	if( !cmd.Update() ) // DB ¾÷µ¥ÀÌÆ® ½ÇÆĞ
+	if( !cmd.Update() ) // DB ì—…ë°ì´íŠ¸ ì‹¤íŒ¨
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEventUserComebackRepMsg( rmsg, (char)MSG_EVENT_USER_COMEBACK_ERROR_NOT_USER , userindex, charindex );
@@ -1919,7 +1920,7 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 
 	RefMsg(msg) >> charindex >> userindex >> key >> bInvenSpace >> bWeight;
 
-	// 1. key°ªÀ¸·Î record°Ë»ö ¾øÀ¸¸é Invalid Key
+	// 1. keyê°’ìœ¼ë¡œ recordê²€ìƒ‰ ì—†ìœ¼ë©´ Invalid Key
 	sql.Format("SELECT * FROM t_eur2_promotion WHERE a_key = '%s'", (const char*)key);
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbuser);
@@ -1934,23 +1935,23 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 		GAMELOG << init("EUR2 PROMOTION ERROR") << "KEY IS INVALID" << delim << "User Index" << delim << userindex << delim
 				<< "Char Index" << delim << charindex << delim
 				<< "Key"		 << delim << key << end;
-		// ÀÔ·ÂÇÑ °ªÀÌ DB¿¡ ¾øÀ½.
+		// ì…ë ¥í•œ ê°’ì´ DBì— ì—†ìŒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_WRONG_KEY, charindex);
 		SEND_Q(rmsg, d);
 		return ;
 	}
-	// 2. record¸¦ Ã£¾Ò´Âµ¥ UserIndex Field¿¡ °ªÀÌ ÀÖÀ¸¸é, »ç¿ëÇßÀ½. Invalid Key
+	// 2. recordë¥¼ ì°¾ì•˜ëŠ”ë° UserIndex Fieldì— ê°’ì´ ìˆìœ¼ë©´, ì‚¬ìš©í–ˆìŒ. Invalid Key
 	cmd.GetRec("a_user_index", record_val);
 	if(record_val > 0)
 	{
-		// ÀÌ¹Ì »ç¿ëÇßÀ½.
+		// ì´ë¯¸ ì‚¬ìš©í–ˆìŒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_ALREADY_USED, charindex);
 		SEND_Q(rmsg, d);
 		return ;
 	}
-	// 3. UserIndex °Ë»ç Áö±Ş ¹Ş¾ÒÀ½.
+	// 3. UserIndex ê²€ì‚¬ ì§€ê¸‰ ë°›ì•˜ìŒ.
 	sql.Format("SELECT * FROM t_eur2_promotion WHERE a_user_index = %d", userindex);
 	cmd.SetQuery(sql);
 	if(!cmd.Open())
@@ -1960,22 +1961,22 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 	}
 	if(cmd.MoveFirst())
 	{
-		// µ¥ÀÌÅÍ°¡ ÀÖ´Ù!!! ÀÌÀ¯Àú´Â ¾²¸é ¾ÈµÅ!!!
+		// ë°ì´í„°ê°€ ìˆë‹¤!!! ì´ìœ ì €ëŠ” ì“°ë©´ ì•ˆë¼!!!
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_CANT_USE_USER, charindex);
 		SEND_Q(rmsg, d);
 		return ;
 	}
-	// 4. bInvenSpace == 0 ÀÌ¸é inven°ø°£ ºÎÁ· »ç¿ëºÒ°¡
+	// 4. bInvenSpace == 0 ì´ë©´ invenê³µê°„ ë¶€ì¡± ì‚¬ìš©ë¶ˆê°€
 	if(bInvenSpace == 0)
 	{
-		// ÀÎº¥°ø°£ ºÎÁ·
+		// ì¸ë²¤ê³µê°„ ë¶€ì¡±
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_LACK_INVENTORY, charindex);
 		SEND_Q(rmsg, d);
 		return ;
 	}
-	// 5. ¹«°Å¿ö!!!!
+	// 5. ë¬´ê±°ì›Œ!!!!
 	if(bWeight == 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1983,7 +1984,7 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 		SEND_Q(rmsg, d);
 		return ;
 	}
-	// 6. keyµµ »ç¿ëÇÒ ¼ö ÀÖ´Â keyÀÌ°í ¾Æ¹« À¯Àúµµ »ç¿ëÇÏÁö ¾Ê¾ÒÀ¸¸é...userindex field, charindex field, use date¾÷µ¥ÀÌÆ®
+	// 6. keyë„ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” keyì´ê³  ì•„ë¬´ ìœ ì €ë„ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ìœ¼ë©´...userindex field, charindex field, use dateì—…ë°ì´íŠ¸
 	sql.Format("UPDATE t_eur2_promotion SET a_user_index = %d, a_char_index = %d, a_use_date = NOW() WHERE a_key = '%s'", userindex, charindex, (const char*)key);
 	cmd.SetQuery(sql);
 	if(!cmd.Update())
@@ -1991,7 +1992,7 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 		GAMELOG << init("UPDATE FAIL") << "User Index" << delim << userindex << delim
 				<< "Char Index" << delim << charindex << delim
 				<< "Key"		 << delim << key << end;
-		// UPDATE FAIL ¸Ş½ÃÁö ¹ß¼Û. »ç¿ë¾ÈµÊ.
+		// UPDATE FAIL ë©”ì‹œì§€ ë°œì†¡. ì‚¬ìš©ì•ˆë¨.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_SYS_ERROR_NOT_USED, charindex);
 		SEND_Q(rmsg, d);
@@ -2003,7 +2004,7 @@ void ConnEventEUR2Promotion(CDescriptor* d, CNetMsg::SP& msg)
 				<< "User Index" << delim << userindex << delim
 				<< "Char Index" << delim << charindex << delim
 				<< "Key"		<< delim << key << end;
-		//¼º°ø¸Ş½ÃÁö ¹ß¼Û
+		//ì„±ê³µë©”ì‹œì§€ ë°œì†¡
 		CNetMsg::SP rmsg(new CNetMsg);
 		ConnEUR2PromotionRepMsg(rmsg, MSG_EVENT_EUR2_PROMOTION_SUCCESS, charindex);
 		SEND_Q(rmsg, d);

@@ -4,7 +4,7 @@
 #include "ptype_base.h"
 #include "ptype_char_status.h"
 
-#define PREMIUM_CHAR_JUMP_COUNT_MAX			(15)	// цж╢К 15х╦(юо)
+#define PREMIUM_CHAR_JUMP_COUNT_MAX			(15)	// Л╣°К▄─ 15М ▄(Л²╪)
 #define PREMIUM_CHAR_ITEM_INDEX				(10799)
 
 enum
@@ -16,7 +16,7 @@ enum
 };
 
 // main type = MSG_PREMIUM_CHAR
-// ╪╜╨Й фпе╤ е╦ют
+// Л└°К╦▄ М▄╗М┌╥ М┐─Л·┘
 enum
 {
 	MSG_SUB_PREMIUM_CHAR_USE_ITEM,
@@ -27,17 +27,17 @@ enum
 	MSG_SUB_PREMIUM_CHAR_RESET_JUMP_COUNT,
 };
 
-// ©║╥╞ дз╣Е
+// Л≈░К÷╛ Л╫■К⌠°
 enum
 {
 	ERR_PREMIUM_CHAR_NONE,					//
-	ERR_PREMIUM_CHAR_ALREADY_USED,			// юл╧л ╩Г©Каъ
-	ERR_PREMIUM_CHAR_NOT_FOUNC_CHAR,		// а║гн ╢К╩Сю╩ цёю╩ ╪Ж ╬Ью╫
-	ERR_PREMIUM_CHAR_INVALID_JUMPING_POSITION,		// а║гнгр ╪Ж ╬Ь╢б ю╖д║
-	ERR_PREMIUM_CHAR_MAX_JUMP_COUNT,		// а║гн╪Ж╦╕ цй╟Згт
-	ERR_PREMIUM_CHAR_NOT_PREMIUM_CHAR,		// га╦╝╧л╬Ж дЁ╦╞ем ╩Себ╟║ ╬ф╢т
-	ERR_PREMIUM_CHAR_FRIEND_IS_OFFLINE,		// дё╠╦╟║ offline╩Себ
-	ERR_PREMIUM_CHAR_NOT_JUMP_STATUS,		// а║гагр ╪Ж ╬Ь╢б ╩Себ
+	ERR_PREMIUM_CHAR_ALREADY_USED,			// Л²╢К╞╦ Л┌╛Л ╘Л╓▒
+	ERR_PREMIUM_CHAR_NOT_FOUNC_CHAR,		// Л═░М∙▒ К▄─Л┐│Л²└ Л╟╬Л²└ Л┬≤ Л≈├Л²▄
+	ERR_PREMIUM_CHAR_INVALID_JUMPING_POSITION,		// Л═░М∙▒М∙═ Л┬≤ Л≈├К┼■ Л°└Л╧≤
+	ERR_PREMIUM_CHAR_MAX_JUMP_COUNT,		// Л═░М∙▒Л┬≤К╔╪ Л╢┬ЙЁ╪М∙╗
+	ERR_PREMIUM_CHAR_NOT_PREMIUM_CHAR,		// М■└К╕╛К╞╦Л≈└ Л╨░К╕╜М└╟ Л┐│М┐°Й╟─ Л∙└К▀≤
+	ERR_PREMIUM_CHAR_FRIEND_IS_OFFLINE,		// Л╧°Й╣╛Й╟─ offlineЛ┐│М┐°
+	ERR_PREMIUM_CHAR_NOT_JUMP_STATUS,		// Л═░М■└М∙═ Л┬≤ Л≈├К┼■ Л┐│М┐°
 };
 
 #pragma pack(push, 1)

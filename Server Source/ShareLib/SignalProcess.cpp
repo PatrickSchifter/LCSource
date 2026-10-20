@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <signal.h>
-#include <execinfo.h>
 #endif
 
 #include "bnf.h"
@@ -35,49 +34,6 @@ static const int exceptionSignals[] =
 	SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS, SIGINT, SIGHUP, -1
 };
 
-#define SIZEOZ 100
-void PrintStack(int sig, siginfo_t* info, void* secret) {
-  void *trace[16];
-  char **messages = (char **)NULL;
-  int i, trace_size = 0;
-  ucontext_t *uc = (ucontext_t *)secret;
-
-  /* Do something useful with siginfo_t */
-  if (sig == SIGSEGV)
-    LOG_INFO("Got signal %d, faulty address is %p, "
-           "from %p\n", sig, info->si_addr, 
-           uc->uc_mcontext.gregs[REG_EIP]);
-  else
-    LOG_INFO("Got signal %d#92;\n", sig);
-
-  trace_size = backtrace(trace, 16);
-  /* overwrite sigaction with caller's address */
-  trace[1] = (void *) uc->uc_mcontext.gregs[REG_EIP];
-
-  messages = backtrace_symbols(trace, trace_size);
-  /* skip first stack frame (points here) */
-  LOG_INFO("[bt] Execution path:#92;\n");
-  for (i=1; i<trace_size; ++i)
-  {
-    LOG_INFO("[bt] %s#92;\n", messages[i]);
-
-    /* find first occurence of '(' or ' ' in message[i] and assume
-     * everything before that is the file name. (Don't go beyond 0 though
-     * (string terminator)*/
-    size_t p = 0;
-    while(messages[i][p] != '(' && messages[i][p] != ' '
-            && messages[i][p] != 0)
-        ++p;
-
-    char syscom[256];
-    sprintf(syscom,"addr2line %p -e %.*s", trace[i] , p, messages[i] );
-           //last parameter is the filename of the symbol
-    system(syscom);
-
-  }
-}
-#undef SIZEOZ
-
 void sig_handler(int signo, siginfo_t* info, void* uc)
 {
 	LOG_FATAL("receive SIGNAL : %d", signo);
@@ -86,8 +42,6 @@ void sig_handler(int signo, siginfo_t* info, void* uc)
 
 	if (local_func != NULL)
 		(*local_func)(signo);
-
-	PrintStack(signo, info, uc);
 
 	PrintExcuteInfo::Instance()->PrintEnd();
 }

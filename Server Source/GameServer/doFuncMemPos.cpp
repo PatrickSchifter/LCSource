@@ -9,7 +9,7 @@
 #include "../ShareLib/packetType/ptype_old_mempos.h"
 
 /////////////////
-// Àå¼Ò ±â¾ï °ü·Ã
+// ì¥ì†Œ ê¸°ì–µ ê´€ë ¨
 
 void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 {
@@ -30,11 +30,11 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 			if(findPercentChar(packet->comment) != NULL)
 				return;
 
-			// ¾ÆÀÌÅÛ °Ë»ç
+			// ì•„ì´í…œ ê²€ì‚¬
 			if (ch->m_inventory.FindByDBIndex(47, 0, 0) == NULL)
 				return ;
 
-			// ±â¾ï ºÒ°¡´É Á¸ÀÌ¸é ¿À·ù
+			// ê¸°ì–µ ë¶ˆê°€ëŠ¥ ì¡´ì´ë©´ ì˜¤ë¥˜
 			if (!ch->m_pZone || !ch->m_pZone->m_bCanMemPos)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -43,7 +43,7 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// BLOCK¿¡´Â ºÒ°¡
+			// BLOCKì—ëŠ” ë¶ˆê°€
 			if (ch->m_pArea->GetAttr(GET_YLAYER(ch), GET_X(ch), GET_Z(ch)) & MATT_UNWALKABLE)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -98,7 +98,7 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// Á¸ °Ë»ç : °°Àº Á¸¿¡¼­¸¸
+			// ì¡´ ê²€ì‚¬ : ê°™ì€ ì¡´ì—ì„œë§Œ
 			if (!ch->m_pZone || ch->m_pZone->m_index != ch->m_mempos.m_data[slot]->m_zone)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -107,14 +107,14 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 				return ;
 			}
 
-			// BLOCK¿¡´Â ºÒ°¡
+			// BLOCKì—ëŠ” ë¶ˆê°€
 			if (ch->m_pArea->GetAttr(GET_YLAYER(ch), GET_X(ch), GET_Z(ch)) & MATT_UNWALKABLE)
 				return ;
 
 			CWarCastle* castle = CWarCastle::GetCastleObject(ch->m_pZone->m_index);
 			if (castle)
 			{
-				// °ø¼ºÁßÀÌ°Å³ª ½ÃÀÛ 1ºĞ Àü¿¡´Â °ø¼ºÁö¿ªÀ¸·Î ÀÌµ¿ ºÒ°¡
+				// ê³µì„±ì¤‘ì´ê±°ë‚˜ ì‹œì‘ 1ë¶„ ì „ì—ëŠ” ê³µì„±ì§€ì—­ìœ¼ë¡œ ì´ë™ ë¶ˆê°€
 				if (castle->GetState() != WCSF_NORMAL || castle->IsWarCastleReady())
 				{
 					if (ch->m_pArea->GetAttr(ch->m_mempos.m_data[slot]->m_ylayer, ch->m_mempos.m_data[slot]->m_x, ch->m_mempos.m_data[slot]->m_z ) & MATT_WAR
@@ -126,7 +126,7 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 						return;
 					}
 
-					//°ø¼º½Ã°£¿¡ ¸Å¸ğ¸® ½ºÅ¬·Ñ »ç¿ë·Î±×
+					//ê³µì„±ì‹œê°„ì— ë§¤ëª¨ë¦¬ ìŠ¤í´ë¡¤ ì‚¬ìš©ë¡œê·¸
 					GAMELOG << init(" MEMORY SCROLL IN WARTIME " , ch )
 							<< "CUR : " << ch->m_pos.m_yLayer << "," << ch->m_pos.m_x << "," << ch->m_pos.m_z << delim
 							<< "MOV : " << ch->m_mempos.m_data[slot]->m_ylayer << "," << ch->m_mempos.m_data[slot]->m_x << ","
@@ -134,7 +134,7 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 				}
 			}
 
-			// ¾ÆÀÌÅÛ °Ë»ç
+			// ì•„ì´í…œ ê²€ì‚¬
 			CItem* item = ch->m_inventory.FindByDBIndex(47, 0, 0);
 			if (item == NULL)
 			{
@@ -143,17 +143,17 @@ void do_MemPos(CPC* ch, CNetMsg::SP& msg)
 				return;
 			}
 
-			// Ä«¿îÆ® ÁÙÀÌ±â
+			// ì¹´ìš´íŠ¸ ì¤„ì´ê¸°
 			ch->m_inventory.decreaseItemCount(item, 1);
 
-			// 10ÃÊÈÄ ÀÌµ¿ÇÏ°Ô ÇÏ±â
+			// 10ì´ˆí›„ ì´ë™í•˜ê²Œ í•˜ê¸°
 			ch->m_reqWarpType = IONCE_WARP_MEMPOS;
 			ch->m_reqWarpData = slot;
 			ch->m_reqWarpTime = PULSE_WARPDELAY;
 			ch->SetPlayerState(PLAYER_STATE_WARP);
 
 			{
-				// »ç¿ëÇßÀ½À» ¾Ë¸®±â
+				// ì‚¬ìš©í–ˆìŒì„ ì•Œë¦¬ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				WarpStartMsg(rmsg, ch);
 				ch->m_pArea->SendToCell(rmsg, ch, true);

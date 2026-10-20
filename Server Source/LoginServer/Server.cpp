@@ -16,14 +16,14 @@ CServer gserver;
 void ServerSrandom(unsigned long initial_seed);
 
 //////////////////////////////////////////////////////////////////////////
-// 1ÃÊ´ç
+// 1ì´ˆë‹¹
 void CServerTimer::operate( rnSocketIOService* service )
 {
 	static int _local_sec = 0;
 
 	gserver.m_pulse += 20;
 
-	// ¸Å 10ÃÊ¸¶´Ù Á¢¼ÓµÈ ¸ğµç Connector server¿¡°Ô ÇöÀç »ç¿ëÀÚ Á¤º¸¸¦ ¿ä±¸ÇÑ´Ù.
+	// ë§¤ 10ì´ˆë§ˆë‹¤ ì ‘ì†ëœ ëª¨ë“  Connector serverì—ê²Œ í˜„ì¬ ì‚¬ìš©ì ì •ë³´ë¥¼ ìš”êµ¬í•œë‹¤.
 	if (((++_local_sec) % 10) == 0)
 	{
 		_local_sec = 0;
@@ -48,7 +48,7 @@ CServerTimer* CServerTimer::instance()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// 1ºĞ´ç
+// 1ë¶„ë‹¹
 void CServerTimerPerMinute::operate( rnSocketIOService* service )
 {
 	mysql_ping(&gserver.m_dbuser);
@@ -246,20 +246,20 @@ bool CServer::LoadSettingFile()
 
 void CServer::CheckInternalIP(const char* strData)
 {
-	unsigned int		nIP[8];							// ip 4ÀÚ¸® + ¼­ºê³İ¸¶½ºÅ© 4ÀÚ¸®
+	unsigned int		nIP[8];							// ip 4ìë¦¬ + ì„œë¸Œë„·ë§ˆìŠ¤í¬ 4ìë¦¬
 	const char*			pData				= strData;
 	unsigned int		nData;
 	char				strBuf[256];
 	char*				pBuf;
-	int					nState				= 0;		// state	: 0 - ¾ÆÀÌÇÇ ÀĞ±â ½ÃÀÛ
-	//			: 1 - ¾ÆÀÌÇÇ µÑÂ° ÀÚ¸®
-	//			: 2 - ¾ÆÀÌÇÇ ¼ÂÂ° ÀÚ¸®
-	//			: 3 - ¾ÆÀÌÇÇ ³İÂ° ÀÚ¸®
-	//			: 4 - ¼­ºê³İ ÀĞ±â ½ÃÀÛ
-	//			: 5 - ¼­ºê³İ µÑÂ° ÀÚ¸®
-	//			: 6 - ¼­ºê³İ ¼ÂÂ° ÀÚ¸®
-	//			: 7 - ¼­ºê³İ ³İÂ° ÀÚ¸®
-	//			: 8 - ÀĞ±â ¿Ï·á
+	int					nState				= 0;		// state	: 0 - ì•„ì´í”¼ ì½ê¸° ì‹œì‘
+	//			: 1 - ì•„ì´í”¼ ë‘˜ì§¸ ìë¦¬
+	//			: 2 - ì•„ì´í”¼ ì…‹ì§¸ ìë¦¬
+	//			: 3 - ì•„ì´í”¼ ë„·ì§¸ ìë¦¬
+	//			: 4 - ì„œë¸Œë„· ì½ê¸° ì‹œì‘
+	//			: 5 - ì„œë¸Œë„· ë‘˜ì§¸ ìë¦¬
+	//			: 6 - ì„œë¸Œë„· ì…‹ì§¸ ìë¦¬
+	//			: 7 - ì„œë¸Œë„· ë„·ì§¸ ìë¦¬
+	//			: 8 - ì½ê¸° ì™„ë£Œ
 
 	memset(strBuf, 0, sizeof(strBuf));
 	pBuf = strBuf;
@@ -315,7 +315,7 @@ void CServer::CheckInternalIP(const char* strData)
 
 	if (strcmp(strData, m_config.Find("Server", "IP")) == 0)
 	{
-		// ¼­¹ö ¾ÆÀÌÇÇ¸¦ »ç¿ëÇÒ °æ¿ì ¼­ºê³İÀº ±âº»ÀûÀ¸·Î 255.255.255.0
+		// ì„œë²„ ì•„ì´í”¼ë¥¼ ì‚¬ìš©í•  ê²½ìš° ì„œë¸Œë„·ì€ ê¸°ë³¸ì ìœ¼ë¡œ 255.255.255.0
 		nIP[4] = 255;
 		nIP[5] = 255;
 		nIP[6] = 255;
@@ -326,8 +326,8 @@ void CServer::CheckInternalIP(const char* strData)
 		goto EXIT_FUNC_DEFAULT;
 	}
 
-	// ¿©±â±îÁö ¿À¸é 111.222.123.234/255.255.254.0ÀÌ¸é
-	// nIP °¡ {111, 222, 123, 234, 255, 255, 254, 0} ÀÌ µÈ´Ù
+	// ì—¬ê¸°ê¹Œì§€ ì˜¤ë©´ 111.222.123.234/255.255.254.0ì´ë©´
+	// nIP ê°€ {111, 222, 123, 234, 255, 255, 254, 0} ì´ ëœë‹¤
 	m_nInternalIPFilter = ((nIP[0] << 24) & 0xff000000)
 						  + ((nIP[1] << 16) & 0x00ff0000)
 						  + ((nIP[2] <<  8) & 0x0000ff00)
@@ -505,7 +505,7 @@ void CServer::ProcConnector(CNetMsg::SP& msg)
 	if (msg->m_mtype != MSG_CONN_REP)
 		return;
 
-	// MSG_CONN_PLAYER_REP,		// ¼­¹ö±ºº° À¯Àú¼ö ÀÀ´ä	: serverno(n) serversubno(n) usercount(n)
+	// MSG_CONN_PLAYER_REP,		// ì„œë²„êµ°ë³„ ìœ ì €ìˆ˜ ì‘ë‹µ	: serverno(n) serversubno(n) usercount(n)
 	char subtype;
 
 	RefMsg(msg) >> subtype;
@@ -519,7 +519,7 @@ void CServer::ProcConnector(CNetMsg::SP& msg)
 			int i, j, k;
 			int hardcore_flag = 0;
 
-			// ¼­ºê ¼­¹ö ¼ıÀÚ ´õ ÀÛÀº°É·Î ¼±ÅÃ(ÄÁ³ØÅÍ, ·Î±ä¼­¹öÁß)
+			// ì„œë¸Œ ì„œë²„ ìˆ«ì ë” ì‘ì€ê±¸ë¡œ ì„ íƒ(ì»¨ë„¥í„°, ë¡œê¸´ì„œë²„ì¤‘)
 			int maxServer;
 
 			RefMsg(msg) >> server
@@ -528,14 +528,14 @@ void CServer::ProcConnector(CNetMsg::SP& msg)
 
 			for (i=0; i < m_nConnector; i++)
 			{
-				// ¼­¹ö±º ¹øÈ£°¡ °°Àº ÀÎµ¦½º Ã£À½
+				// ì„œë²„êµ° ë²ˆí˜¸ê°€ ê°™ì€ ì¸ë±ìŠ¤ ì°¾ìŒ
 				if (m_connector[i]->isRun())
 				{
 					if (server == m_connector[i]->m_serverNo)
 					{
 						m_connector[i]->m_hardcore_flag = hardcore_flag;
 
-						// ´õ ÀÛÀº°É·Î
+						// ë” ì‘ì€ê±¸ë¡œ
 						if (serverCount < m_connector[i]->m_nMaxServer)
 							maxServer = serverCount;
 						else
@@ -558,12 +558,12 @@ void CServer::ProcConnector(CNetMsg::SP& msg)
 					LOG_TRACE("receivce player info : subNo[%d] / player[%d] / ip[%s] / port[%d]",
 							  subNo, player, (const char *)ip, port);
 
-#ifdef SETTING_IF_INNER_IP // ¿ÜºÎ ¾ÆÀÌÇÇ¿Í ³»ºÎ ¾ÆÀÌÇÇ°¡ ³ª´µ¸é »ç¿ë ...yhj
+#ifdef SETTING_IF_INNER_IP // ì™¸ë¶€ ì•„ì´í”¼ì™€ ë‚´ë¶€ ì•„ì´í”¼ê°€ ë‚˜ë‰˜ë©´ ì‚¬ìš© ...yhj
 					if(  strcmp(m_config.Find("Connector Server", "EX_IP"),"") != 0 )
 						ip.Format("%s", m_config.Find("Connector Server", "EX_IP") );
 #endif // SETTING_IF_INNER_IP
 
-					// ·Î±ä¼­¹öÀÇ ¼­ºê ¼­¹ö ¹øÈ£ Áß¿¡¼­ Ã£±â
+					// ë¡œê¸´ì„œë²„ì˜ ì„œë¸Œ ì„œë²„ ë²ˆí˜¸ ì¤‘ì—ì„œ ì°¾ê¸°
 					for (k=0; k < m_connector[i]->m_nMaxServer; k++)
 					{
 						if (subNo == m_connector[i]->m_serverSubNo[k])
@@ -736,7 +736,7 @@ void CServer::BlockIPLog( const char* user_ip )
 
 void CServer::operate( rnSocketIOService* service )
 {
-	// Å¬¶óÀÌ¾ğÆ® Accept Ã³¸® ºÎºĞ
+	// í´ë¼ì´ì–¸íŠ¸ Accept ì²˜ë¦¬ ë¶€ë¶„
 	CDescriptor* newd = new CDescriptor(service, CLIENT_TYPE_CLIENT);
 	service->SetUserData((void *)newd);
 	service->setCrypt();

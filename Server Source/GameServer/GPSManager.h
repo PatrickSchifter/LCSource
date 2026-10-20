@@ -13,13 +13,13 @@ public:
 
 private:
 	CPC* _owner;
-	CPC* m_gpsTarget;				//Å¸°Ù Ä³¸¯ÅÍ
-	std::string m_gpsTargetName;	//Å¸ÄÏ ÀÌ¸§
-	int m_gpsTargetIndex;			//Å¸°Ù Ä³¸¯ÅÍ ÀÎµ¦½º
-	bool m_isGps;					//gps ¾ÆÀÌÅÛ »ç¿ë ¿©ºÎ
-	bool m_isGpsInterrupt;			//gps ¹æÇØ¾ÆÀÌÅÛ »ç¿ë ¿©ºÎ
+	CPC* m_gpsTarget;				//íƒ€ê²Ÿ ìºë¦­í„°
+	std::string m_gpsTargetName;	//íƒ€ì¼“ ì´ë¦„
+	int m_gpsTargetIndex;			//íƒ€ê²Ÿ ìºë¦­í„° ì¸ë±ìŠ¤
+	bool m_isGps;					//gps ì•„ì´í…œ ì‚¬ìš© ì—¬ë¶€
+	bool m_isGpsInterrupt;			//gps ë°©í•´ì•„ì´í…œ ì‚¬ìš© ì—¬ë¶€
 
-	bool isNotFoundSend;			//¸øÃ£°í ÀÖÀ»¶§ ÆĞÅ¶À» º¸³¾ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î °ü¸®ÇØÁÖ´Â º¯¼ö°¡ ÇÊ¿ä (ÇÑ¹øÀÌ¶óµµ º¸³ÂÀ¸¸é true, ¾Æ´Ï¸é false)
+	bool isNotFoundSend;			//ëª»ì°¾ê³  ìˆì„ë•Œ íŒ¨í‚·ì„ ë³´ë‚¼ í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ ê´€ë¦¬í•´ì£¼ëŠ” ë³€ìˆ˜ê°€ í•„ìš” (í•œë²ˆì´ë¼ë„ ë³´ëƒˆìœ¼ë©´ true, ì•„ë‹ˆë©´ false)
 
 	void sendNotFound();
 public:
@@ -47,7 +47,7 @@ public:
 class ArtifactGPSManager
 {
 private:
-	bool m_isGps;					//gps ¾ÆÀÌÅÛ »ç¿ë ¿©ºÎ
+	bool m_isGps;					//gps ì•„ì´í…œ ì‚¬ìš© ì—¬ë¶€
 	CPC* _owner;
 
 public:

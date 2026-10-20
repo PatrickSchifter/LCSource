@@ -10,14 +10,14 @@
 #include "Artifact_Manager.h"
 
 /////////////////
-// ±³È¯ °ü·Ã ÇÔ¼ö
+// êµí™˜ ê´€ë ¨ í•¨ìˆ˜
 
 void do_Exchange(CPC* ch, CNetMsg::SP& msg)
 {
 	CDratanCastle * pCastle = CDratanCastle::CreateInstance();
 	pCastle->CheckRespond(ch);
 
-	// ¾Èº¸ÀÌ¸é ¹«½Ã
+	// ì•ˆë³´ì´ë©´ ë¬´ì‹œ
 	if (!ch->m_bVisible || ch->m_personalshop != NULL)
 		return ;
 
@@ -79,9 +79,9 @@ void do_ExchangeItem(CPC* ch, CNetMsg::SP& msg)
 		do_ExchangeItemAdd(ch, msg);
 		break;
 	case MSG_EXCHANGE_ITEM_DEL:
-// 050224 : bs : ±³È¯¿¡¼­ ¾ÆÀÌÅÛ ³»¸®±â ¸·±â
+// 050224 : bs : êµí™˜ì—ì„œ ì•„ì´í…œ ë‚´ë¦¬ê¸° ë§‰ê¸°
 //		do_ExchangeItemDel(ch, msg);
-// --- 050224 : bs : ±³È¯¿¡¼­ ¾ÆÀÌÅÛ ³»¸®±â ¸·±â
+// --- 050224 : bs : êµí™˜ì—ì„œ ì•„ì´í…œ ë‚´ë¦¬ê¸° ë§‰ê¸°
 		break;
 	}
 }
@@ -103,16 +103,16 @@ void do_ExchangeReqReq(CPC* ch, CNetMsg::SP& msg)
 	if (ch->IsSetPlayerState(PLAYER_STATE_CHANGE))
 		return;
 
-	// º¸³½ »ç¶÷ÀÌ ±× »ç¶÷ ¸Â³ª?
+	// ë³´ë‚¸ ì‚¬ëžŒì´ ê·¸ ì‚¬ëžŒ ë§žë‚˜?
 	if (ch->m_index != srcIndex)
 		return ;
 
-	// »ó´ë¹æÀ» Ã£ÀÚ
+	// ìƒëŒ€ë°©ì„ ì°¾ìž
 	CPC* dest = TO_PC(ch->m_pArea->FindCharInCell(ch, destIndex, MSG_CHAR_PC));
 
 	if (!dest)
 	{
-		// »ó´ë°¡ ¾ø´Ù
+		// ìƒëŒ€ê°€ ì—†ë‹¤
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_EXCHANGE_NOTFOUND);
 		SEND_Q(rmsg, ch->m_desc);
@@ -121,7 +121,7 @@ void do_ExchangeReqReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_exchange || dest->m_exchange)
 	{
-		// ÀÌ¹Ì ±³È¯ Áß
+		// ì´ë¯¸ êµí™˜ ì¤‘
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_EXCHANGE_ALREADY);
 		SEND_Q(rmsg, ch->m_desc);
@@ -130,14 +130,14 @@ void do_ExchangeReqReq(CPC* ch, CNetMsg::SP& msg)
 
 	if (ch->m_pZone->isRVRZone() && dest->m_pZone->isRVRZone() && ch->getSyndicateType() != dest->getSyndicateType())
 	{
-		// rvr Á¸¿¡¼­´Â ´Ù¸¥ °á»ç´ë¿Í´Â °Å·¡°¡ ¼º¸³ µÇÁö ¾ÊÀ½.
+		// rvr ì¡´ì—ì„œëŠ” ë‹¤ë¥¸ ê²°ì‚¬ëŒ€ì™€ëŠ” ê±°ëž˜ê°€ ì„±ë¦½ ë˜ì§€ ì•ŠìŒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		SysMsg(rmsg, MSG_SYS_DO_NOT_SYSTEM_NOT_EQ_RVRTYPE);
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
 
-	// ±³È¯ ¼³Á¤
+	// êµí™˜ ì„¤ì •
 	CExchangeItems* exchange = new CExchangeItems;
 	exchange->SetCharacter(ch, dest);
 	ch->m_exchange = dest->m_exchange = exchange;
@@ -151,7 +151,7 @@ void do_ExchangeReqReq(CPC* ch, CNetMsg::SP& msg)
 	else		GAMELOG << "dest is null" << end;
 
 	{
-		// »ó´ë¹æ¿¡°Ô ÀÇ»ç¸¦ ¹¯±â
+		// ìƒëŒ€ë°©ì—ê²Œ ì˜ì‚¬ë¥¼ ë¬»ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_REQ, ch, dest);
 		SEND_Q(rmsg, dest->m_desc);
@@ -174,14 +174,14 @@ void do_ExchangeReqRep(CPC* ch, CNetMsg::SP& msg)
 	CPC* src = exc->m_src.m_ch;
 	CPC* dest = exc->m_dest.m_ch;
 
-	// ±³È¯ »óÅÂ°¡ ¿äÃ» ÀÇ»ç¸¦ ¹¯°í ÀÖ³ª?
+	// êµí™˜ ìƒíƒœê°€ ìš”ì²­ ì˜ì‚¬ë¥¼ ë¬»ê³  ìžˆë‚˜?
 	if (exc->m_status != MSG_EXCHANGE_REQ_REQ)
 		return ;
 
 	exc->m_status = MSG_EXCHANGE_REQ_REP;
 
 	{
-		// ±³È¯ ½ÃÀÛ ¾Ë¸®±â
+		// êµí™˜ ì‹œìž‘ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_REP, src, dest);
 		SEND_Q(rmsg, src->m_desc);
@@ -191,7 +191,7 @@ void do_ExchangeReqRep(CPC* ch, CNetMsg::SP& msg)
 
 void do_ExchangeReqReject(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±³È¯ Áß?
+	// êµí™˜ ì¤‘?
 	if (ch->m_exchange == NULL)
 		return ;
 
@@ -202,7 +202,7 @@ void do_ExchangeReqReject(CPC* ch, CNetMsg::SP& msg)
 	if( !src || !dest )
 		return;
 
-	// ´©°¡ ±³È¯ Ãë¼ÒÀÏ±î?
+	// ëˆ„ê°€ êµí™˜ ì·¨ì†Œì¼ê¹Œ?
 	bool bCancelBySrc;
 	if (src == ch)
 		bCancelBySrc = true;
@@ -228,7 +228,7 @@ void do_ExchangeReqReject(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> subtype
 				>> reqtype;
 
-	// ±³È¯ Ãë¼Ò
+	// êµí™˜ ì·¨ì†Œ
 	delete exc;
 	exc = NULL;
 
@@ -249,7 +249,7 @@ void do_ExchangeReqReject(CPC* ch, CNetMsg::SP& msg)
 
 void do_ExchangeReqReady(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±³È¯ Áß?
+	// êµí™˜ ì¤‘?
 	if (ch->m_exchange == NULL)
 		return ;
 
@@ -257,7 +257,7 @@ void do_ExchangeReqReady(CPC* ch, CNetMsg::SP& msg)
 	CPC* src = exc->m_src.m_ch;
 	CPC* dest = exc->m_dest.m_ch;
 
-	// ´©°¡ ÁØºñ ¿Ï·áÀÏ±î?
+	// ëˆ„ê°€ ì¤€ë¹„ ì™„ë£Œì¼ê¹Œ?
 	bool bReadyBySrc;
 	if (src == ch)
 		bReadyBySrc = true;
@@ -281,51 +281,51 @@ void do_ExchangeReqReady(CPC* ch, CNetMsg::SP& msg)
 
 	switch (exc->CanExchange())
 	{
-	case 0:		// °¡´É
+	case 0:		// ê°€ëŠ¥
 		isSuccess = true;
 		break;
 
-	case 1:		// src ½ÇÆÐ
+	case 1:		// src ì‹¤íŒ¨
 		ExchangeReqMsg(retmsg, MSG_EXCHANGE_REQ_FULL_SRC, src, dest);
 		exc->m_status = MSG_EXCHANGE_REQ_REP;
 		goto SEND_AND_EXIT;
 
-	case 2:		// dest ½ÇÆÐ
+	case 2:		// dest ì‹¤íŒ¨
 		ExchangeReqMsg(retmsg, MSG_EXCHANGE_REQ_FULL_DEST, src, dest);
 		exc->m_status = MSG_EXCHANGE_REQ_REP;
 		goto SEND_AND_EXIT;
-	case 3:		// dest ½ÇÆÐ
+	case 3:		// dest ì‹¤íŒ¨
 		ExchangeReqMsg(retmsg, MSG_EXCHANGE_REQ_SRC_PET_ANYMORE, src, dest);
 		exc->m_status = MSG_EXCHANGE_REQ_REP;
 		goto SEND_AND_EXIT;
-	case 4:		// dest ½ÇÆÐ
+	case 4:		// dest ì‹¤íŒ¨
 		ExchangeReqMsg(retmsg, MSG_EXCHANGE_REQ_DEST_PET_ANYMORE, src, dest);
 		exc->m_status = MSG_EXCHANGE_REQ_REP;
 		goto SEND_AND_EXIT;
 	}
 
-	// Áö±Ý »óÅÂ¿¡ µû¶ó¼­
+	// ì§€ê¸ˆ ìƒíƒœì— ë”°ë¼ì„œ
 	if (exc->m_status == MSG_EXCHANGE_REQ_REP)
 	{
-		// ¾Æ¹«µµ ÁØºñ ¿Ï·á ¾ÈÇß´Ù
-		// ¼º°øÀÌ¸é 1´Ü°è ÁØºñ ¿Ï·á »óÅÂ·Î ¼³Á¤
+		// ì•„ë¬´ë„ ì¤€ë¹„ ì™„ë£Œ ì•ˆí–ˆë‹¤
+		// ì„±ê³µì´ë©´ 1ë‹¨ê³„ ì¤€ë¹„ ì™„ë£Œ ìƒíƒœë¡œ ì„¤ì •
 		exc->m_status = (bReadyBySrc) ? MSG_EXCHANGE_REQ_READY_SRC : MSG_EXCHANGE_REQ_READY_DEST;
-		// ±× °á°ú¸¦ ¾Ë¸®±â
+		// ê·¸ ê²°ê³¼ë¥¼ ì•Œë¦¬ê¸°
 		ExchangeReqMsg(retmsg, exc->m_status, src, dest);
 	}
 
 	else if ( (exc->m_status == MSG_EXCHANGE_REQ_READY_SRC && !bReadyBySrc)
 			  || (exc->m_status == MSG_EXCHANGE_REQ_READY_DEST && bReadyBySrc) )
 	{
-		// µÑ ´Ù ÁØºñ ¿Ï·á¸¦ Çß´Ù
-		// ±×·¯¸é 2´Ü°è ÁØºñ ¿Ï·á »óÅÂ·Î ÀüÈ¯
+		// ë‘˜ ë‹¤ ì¤€ë¹„ ì™„ë£Œë¥¼ í–ˆë‹¤
+		// ê·¸ëŸ¬ë©´ 2ë‹¨ê³„ ì¤€ë¹„ ì™„ë£Œ ìƒíƒœë¡œ ì „í™˜
 		exc->m_status = MSG_EXCHANGE_REQ_READY;
-		// ±× °á°ú¸¦ ¾Ë¸®±â
+		// ê·¸ ê²°ê³¼ë¥¼ ì•Œë¦¬ê¸°
 		ExchangeReqMsg(retmsg, exc->m_status, src, dest);
 	}
 	else
 	{
-		// ÀÌ °æ¿ì ¾Æ´Ï¸é ÁØºñ¿Ï·á ¸Þ½ÃÁö°¡ ¿À¸é ¾ÈµÈ´Ù
+		// ì´ ê²½ìš° ì•„ë‹ˆë©´ ì¤€ë¹„ì™„ë£Œ ë©”ì‹œì§€ê°€ ì˜¤ë©´ ì•ˆëœë‹¤
 		return ;
 	}
 
@@ -343,7 +343,7 @@ SEND_AND_EXIT:
 
 void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±³È¯ Áß?
+	// êµí™˜ ì¤‘?
 	if (ch->m_exchange == NULL)
 		return ;
 
@@ -351,7 +351,7 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 	CPC* src = exc->m_src.m_ch;
 	CPC* dest = exc->m_dest.m_ch;
 
-	// ´©°¡ È®ÀÎÀÏ±î?
+	// ëˆ„ê°€ í™•ì¸ì¼ê¹Œ?
 	bool bOKBySrc;
 	if (src == ch)
 		bOKBySrc = true;
@@ -367,13 +367,13 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 	RefMsg(msg) >> subtype
 				>> reqtype;
 
-	// Áö±Ý »óÅÂ¿¡ µû¶ó¼­
+	// ì§€ê¸ˆ ìƒíƒœì— ë”°ë¼ì„œ
 	if (exc->m_status == MSG_EXCHANGE_REQ_READY)
 	{
-		// ¾Æ¹«µµ È®ÀÎ ¾ÈÇß´Ù
-		// ¿øÀÎ Á¦°øÀÚ 1´Ü°è È®ÀÎ »óÅÂ·Î
+		// ì•„ë¬´ë„ í™•ì¸ ì•ˆí–ˆë‹¤
+		// ì›ì¸ ì œê³µìž 1ë‹¨ê³„ í™•ì¸ ìƒíƒœë¡œ
 		exc->m_status = (bOKBySrc) ? MSG_EXCHANGE_REQ_OK_SRC : MSG_EXCHANGE_REQ_OK_DEST;
-		// ±× °á°ú¸¦ ¾Ë¸®±â
+		// ê·¸ ê²°ê³¼ë¥¼ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		ExchangeReqMsg(rmsg, exc->m_status, src, dest);
 		SEND_Q(rmsg, src->m_desc);
@@ -383,28 +383,28 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 	else if ( (exc->m_status == MSG_EXCHANGE_REQ_OK_SRC && !bOKBySrc)
 			  || (exc->m_status == MSG_EXCHANGE_REQ_OK_DEST && bOKBySrc) )
 	{
-		// ±³È¯ °¡´É °Ë»ç
+		// êµí™˜ ê°€ëŠ¥ ê²€ì‚¬
 		switch (exc->CanExchange())
 		{
-		case 0:		// ±³È¯ °¡´É
+		case 0:		// êµí™˜ ê°€ëŠ¥
 			{
-				// ±³È¯ ÇÏ±â
-				// ±³È¯ ÇÔ¼ö ¾È¿¡¼­ º¯°æ ¸Þ½ÃÁöµé º¸³¿
+				// êµí™˜ í•˜ê¸°
+				// êµí™˜ í•¨ìˆ˜ ì•ˆì—ì„œ ë³€ê²½ ë©”ì‹œì§€ë“¤ ë³´ëƒ„
 				exc->DoExchange();
 
-				// ±³È¯ ¼º°ø
+				// êµí™˜ ì„±ê³µ
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_OK, src, dest);
 				SEND_Q(rmsg, src->m_desc);
 				SEND_Q(rmsg, dest->m_desc);
 
-				// ½Ç½Ã°£ ÀúÀå
+				// ì‹¤ì‹œê°„ ì €ìž¥
 				DBManager::instance()->SaveCharacterInfo(src->m_desc, false);
 				DBManager::instance()->SaveCharacterInfo(dest->m_desc, false);
 			}
 			break;
 
-		case 1:		// srcÀÇ ±³È¯ ºÒ°¡
+		case 1:		// srcì˜ êµí™˜ ë¶ˆê°€
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_REJECT_SRC, src, dest);
@@ -413,7 +413,7 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 			}
 			break;
 
-		case 2:		// destÀÇ ±³È¯ ºÒ°¡
+		case 2:		// destì˜ êµí™˜ ë¶ˆê°€
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				ExchangeReqMsg(rmsg, MSG_EXCHANGE_REQ_REJECT_DEST, src, dest);
@@ -423,7 +423,7 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 			break;
 		}
 
-		// ±³È¯ ¸®¼Â
+		// êµí™˜ ë¦¬ì…‹
 		delete exc;
 		exc = NULL;
 
@@ -435,13 +435,13 @@ void do_ExchangeReqOK(CPC* ch, CNetMsg::SP& msg)
 
 void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±³È¯ ÁßÀÎ°¡?
+	// êµí™˜ ì¤‘ì¸ê°€?
 	if (ch->m_exchange == NULL)
 		return ;
 
 	CPC* his;
 	bool bSrc;
-	// ³»°¡ ´©±¸ÀÎ°¡?
+	// ë‚´ê°€ ëˆ„êµ¬ì¸ê°€?
 	if (ch->m_exchange->m_src.m_ch == ch)
 	{
 		his = ch->m_exchange->m_dest.m_ch;
@@ -459,17 +459,17 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 	CPC* src = exc->m_src.m_ch;
 	CPC* dest = exc->m_dest.m_ch;
 
-	// ¾ÆÀÌÅÛ °¡´É »óÅÂ°¡ ¾Æ´Ï¸é ¹«½Ã
+	// ì•„ì´í…œ ê°€ëŠ¥ ìƒíƒœê°€ ì•„ë‹ˆë©´ ë¬´ì‹œ
 	switch (exc->m_status)
 	{
 	case MSG_EXCHANGE_REQ_READY_SRC:
-		// ³»°¡ srcÀÌ°í ÁØºñ »óÅÂ
+		// ë‚´ê°€ srcì´ê³  ì¤€ë¹„ ìƒíƒœ
 		if (bSrc)
 			return ;
 		break;
 
 	case MSG_EXCHANGE_REQ_READY_DEST:
-		// ³»°¡ destÀÌ°í ÁØºñ »óÅÂ
+		// ë‚´ê°€ destì´ê³  ì¤€ë¹„ ìƒíƒœ
 		if (!bSrc)
 			return ;
 		break;
@@ -507,19 +507,25 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 
 	if(item_idx != NAS_ITEM_DB_INDEX)
 	{
-		// °°Àº ¾ÆÀÌÅÛÀÌ ÀÌ¹Ì Ãß°¡µÇ¾î ÀÖ´ÂÁö °Ë»ç
+		// ê°™ì€ ì•„ì´í…œì´ ì´ë¯¸ ì¶”ê°€ë˜ì–´ ìžˆëŠ”ì§€ ê²€ì‚¬
 		int exidx = exc->Find(ch, item_idx);
 		LONGLONG preCount = 0;
 		if (exidx != -1)
 			preCount = (bSrc) ? exc->m_src.m_count[exidx] : exc->m_dest.m_count[exidx];
 
-		// ´õÀÌ»ó µî·Ï ºÒ°¡?
+		// ë”ì´ìƒ ë“±ë¡ ë¶ˆê°€?
 		if (exidx == -1 && ((bSrc && exc->m_src.m_regCount >= MAX_EXCHANGE_ITEMS) || (!bSrc && exc->m_dest.m_regCount >= MAX_EXCHANGE_ITEMS)))
 			return ;
 
-		// ÀÎº¥¿¡ ÀÖ°í, °³¼ö°¡ ¿©À¯°¡ µÇ°í, ±³È¯ °¡´ÉÇÏ°í, ¹ÌÂø¿ëÀÎ°¡?
-		// 060406 : bs : ºÀÀÎµÈ ¾ÆÀÌÅÛ ±³È¯ ºÒ°¡
+		// ì¸ë²¤ì— ìžˆê³ , ê°œìˆ˜ê°€ ì—¬ìœ ê°€ ë˜ê³ , êµí™˜ ê°€ëŠ¥í•˜ê³ , ë¯¸ì°©ìš©ì¸ê°€?
+		// 060406 : bs : ë´‰ì¸ëœ ì•„ì´í…œ êµí™˜ ë¶ˆê°€
 		CItem* item = ch->m_inventory.FindByVirtualIndex(item_idx);
+
+		if (item == NULL || item->CanExchange() == false)
+			return;
+
+		if (((exidx == -1 && item->Count() < count) || (exidx != -1 && item->Count() < count + preCount)))
+			return ;
 
 		if(item->IsBelong() == true)
 		{
@@ -528,12 +534,6 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 			SEND_Q(rmsg, ch->m_desc);
 			return;
 		}
-
-		if (item == NULL || item->CanExchange() == false)
-			return;
-
-		if (((exidx == -1 && item->Count() < count) || (exidx != -1 && item->Count() < count + preCount)))
-			return ;
 
 #ifdef ENABLE_SUBJOB
 		if( item && item->CanUseTrader( TRADE_EXCHANGE, ch->IsSubJob(JOB_SUB_TRADER) ) == false )
@@ -566,7 +566,7 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 			}
 		}
 
-		// ÆêÀÏ °æ¿ì ½ºÅ³À» ÇÏ³ª¶óµµ ¹è¿î °ÍÀº ±³È¯ ºÒ°¡
+		// íŽ«ì¼ ê²½ìš° ìŠ¤í‚¬ì„ í•˜ë‚˜ë¼ë„ ë°°ìš´ ê²ƒì€ êµí™˜ ë¶ˆê°€
 		CPet* pet = NULL;
 		if (item->IsPet())
 		{
@@ -590,7 +590,7 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 
 		if (!bUpdate)
 		{
-			// ÆêÀÌ¸é ¸ÕÀú ÆêÁ¤º¸ º¸³»±â
+			// íŽ«ì´ë©´ ë¨¼ì € íŽ«ì •ë³´ ë³´ë‚´ê¸°
 			if (pet)
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
@@ -626,13 +626,13 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 	else
 	{
 		item = gserver->m_itemProtoList.CreateItem(item_idx, WEARING_NONE, 0, 0, count);
-		//º¸³½ ÆÐÅ¶ÀÌ ³ª½ºÀÏ¶§
+		//ë³´ë‚¸ íŒ¨í‚·ì´ ë‚˜ìŠ¤ì¼ë•Œ
 		if(bSrc)
 		{
 			if( src->m_inventory.getMoney() < count )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				SysMsg(rmsg, MSG_SYS_NOT_ENOUGH_MONEY);			//µ·ÀÌ ºÎÁ·ÇÔ
+				SysMsg(rmsg, MSG_SYS_NOT_ENOUGH_MONEY);			//ëˆì´ ë¶€ì¡±í•¨
 				SEND_Q(rmsg, src->m_desc);
 			}
 			else
@@ -648,7 +648,7 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 			if( dest->m_inventory.getMoney() < count )
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
-				SysMsg(rmsg, MSG_SYS_NOT_ENOUGH_MONEY);			//µ·ÀÌ ºÎÁ·ÇÔ
+				SysMsg(rmsg, MSG_SYS_NOT_ENOUGH_MONEY);			//ëˆì´ ë¶€ì¡±í•¨
 				SEND_Q(rmsg, dest->m_desc);
 			}
 			else
@@ -664,13 +664,13 @@ void do_ExchangeItemAdd(CPC* ch, CNetMsg::SP& msg)
 
 void do_ExchangeItemDel(CPC* ch, CNetMsg::SP& msg)
 {
-	// ±³È¯ ÁßÀÎ°¡?
+	// êµí™˜ ì¤‘ì¸ê°€?
 	if (ch->m_exchange == NULL)
 		return ;
 
 	CPC* his;
 	bool bSrc;
-	// ³»°¡ ´©±¸ÀÎ°¡?
+	// ë‚´ê°€ ëˆ„êµ¬ì¸ê°€?
 	if (ch->m_exchange->m_src.m_ch == ch)
 	{
 		his = ch->m_exchange->m_dest.m_ch;
@@ -688,17 +688,17 @@ void do_ExchangeItemDel(CPC* ch, CNetMsg::SP& msg)
 	CPC* src = exc->m_src.m_ch;
 	CPC* dest = exc->m_dest.m_ch;
 
-	// ¾ÆÀÌÅÛ °¡´É »óÅÂ°¡ ¾Æ´Ï¸é ¹«½Ã
+	// ì•„ì´í…œ ê°€ëŠ¥ ìƒíƒœê°€ ì•„ë‹ˆë©´ ë¬´ì‹œ
 	switch (exc->m_status)
 	{
 	case MSG_EXCHANGE_REQ_READY_SRC:
-		// ³»°¡ srcÀÌ°í ÁØºñ »óÅÂ
+		// ë‚´ê°€ srcì´ê³  ì¤€ë¹„ ìƒíƒœ
 		if (bSrc)
 			return ;
 		break;
 
 	case MSG_EXCHANGE_REQ_READY_DEST:
-		// ³»°¡ destÀÌ°í ÁØºñ »óÅÂ
+		// ë‚´ê°€ destì´ê³  ì¤€ë¹„ ìƒíƒœ
 		if (!bSrc)
 			return ;
 		break;
@@ -723,7 +723,7 @@ void do_ExchangeItemDel(CPC* ch, CNetMsg::SP& msg)
 				>> count
 				>> nasCount;
 
-	// Ãß°¡ÇÑ ¾ÆÀÌÅÛÀÎ°¡?
+	// ì¶”ê°€í•œ ì•„ì´í…œì¸ê°€?
 	int exidx = exc->Find(ch, item_idx);
 	if (exidx == -1)
 		return ;
@@ -737,15 +737,15 @@ void do_ExchangeItemDel(CPC* ch, CNetMsg::SP& msg)
 	if (item == NULL)
 		return ;
 
-	// »¬ ¸¸Å­ ¿©À¯°¡ ÀÖ³ª?
+	// ëº„ ë§Œí¼ ì—¬ìœ ê°€ ìžˆë‚˜?
 	LONGLONG preCount = (bSrc) ? exc->m_src.m_count[exidx] : exc->m_dest.m_count[exidx];
 	if (preCount < count)
 		return ;
 
-	// »©°í
+	// ë¹¼ê³ 
 	int idx = exc->Del(ch, item_idx, count);
 
-	// ³ª¼­ ³²Àº°Ô ÀÖ³ª?
+	// ë‚˜ì„œ ë‚¨ì€ê²Œ ìžˆë‚˜?
 	if (idx == -1)
 		return;
 
@@ -754,12 +754,12 @@ void do_ExchangeItemDel(CPC* ch, CNetMsg::SP& msg)
 
 		if ((bSrc && exc->m_src.m_count[idx] == 0) || (!bSrc && exc->m_dest.m_count[idx] == 0))
 		{
-			// ³²Àº °Å ¾øÀ½
+			// ë‚¨ì€ ê±° ì—†ìŒ
 			ExchangeItemMsg(rmsg, (bSrc) ? MSG_EXCHANGE_ITEM_DEL_SRC : MSG_EXCHANGE_ITEM_DEL_DEST, item, 0, nasCount);
 		}
 		else
 		{
-			// ³²Àº °Å ÀÖÀ½
+			// ë‚¨ì€ ê±° ìžˆìŒ
 			if (bSrc)
 				ExchangeItemMsg(rmsg, MSG_EXCHANGE_ITEM_UPDATE_SRC, item, exc->m_src.m_count[idx], nasCount);
 			else

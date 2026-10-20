@@ -54,18 +54,18 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 	CPet* pet1 = NULL;
 	CPet* pet2 = NULL;
 
-	// ¹ş±â°í ÀÔ±â
+	// ë²—ê¸°ê³  ì…ê¸°
 	CItem* takeOffWearItem = NULL;
-	if ( wearItemInfo[wearPos] != NULL )	//ÀåÂøÇÏ·Á´Â ÀÚ¸®¿¡ ¾ÆÀÌÅÛÀÌ ÀÌ¹Ì Á¸ÀçÇÑ´Ù¸é
+	if ( wearItemInfo[wearPos] != NULL )	//ì¥ì°©í•˜ë ¤ëŠ” ìë¦¬ì— ì•„ì´í…œì´ ì´ë¯¸ ì¡´ì¬í•œë‹¤ë©´
 	{
-		takeOffWearItem = getWearItem(wearPos);		//¹ş±æ ¾ÆÀÌÅÛ
+		takeOffWearItem = getWearItem(wearPos);		//ë²—ê¸¸ ì•„ì´í…œ
 
 		if (!takeOffWearItem->IsAPet() &&	takeOffWearItem->getFlag() & FLAG_ITEM_SEALED)
 			return false;
 
 		if (takeOffWearItem->IsPet())
 		{
-			// Âø¿ë ¾ÆÀÌÅÛ¿¡ ÇØ´çÇÏ´Â ÆêÀ» Ã£´Â´Ù
+			// ì°©ìš© ì•„ì´í…œì— í•´ë‹¹í•˜ëŠ” í«ì„ ì°¾ëŠ”ë‹¤
 			CPet* pet = _owner->GetPet(takeOffWearItem->getPlus());
 			if (pet)
 			{
@@ -94,15 +94,15 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 		}
 
 		CItem *pItemNormal = takeOffWearItem;
-		//°áÇÕ ¾ÆÀÌÅÛÀÎ °æ¿ì
+		//ê²°í•© ì•„ì´í…œì¸ ê²½ìš°
 		if((pItemNormal->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (pItemNormal->getFlag() & FLAG_ITEM_COMPOSITION))
 		{
 			pItemNormal = _owner->m_inventory.FindByVirtualIndex(pItemNormal->m_nCompositeItem);
 		}
-		//¿À¸®Áø ¿É¼Ç ÀÎ °æ¿ì
+		//ì˜¤ë¦¬ì§„ ì˜µì…˜ ì¸ ê²½ìš°
 		if ( pItemNormal != NULL && pItemNormal->IsOriginItem() )
 		{
-			// ¿À¸®Áö³¯ ¿É¼Ç ¹× ¼¼Æ® ¾ÆÀÌÅÛÀÇ ½ºÅ³ »èÁ¦
+			// ì˜¤ë¦¬ì§€ë‚  ì˜µì…˜ ë° ì„¸íŠ¸ ì•„ì´í…œì˜ ìŠ¤í‚¬ ì‚­ì œ
 			for (int i = MAX_ORIGIN_OPTION; i < MAX_ORIGIN; i++)
 			{
 				int nIndex = pItemNormal->GetOriginIndex(i);
@@ -114,7 +114,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 				{
 					if (pSkill->m_proto->IsActive())
 					{
-						//¾ÆÀÌÅÛ ½ºÅ³ ÄğÅ¸ÀÓÀ» ÀúÀå
+						//ì•„ì´í…œ ìŠ¤í‚¬ ì¿¨íƒ€ì„ì„ ì €ì¥
 						{
 							CSkill* skill = _owner->m_activeSkillList.Find(pSkill->m_proto->m_index);
 							if(skill == NULL)
@@ -156,7 +156,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 				}
 			}
 
-			// ¼¼Æ® ¾ÆÀÌÅÛ Âø¿ë °³¼ö °¨¼Ò ¹× ¼¼Æ® È¿°ú ½ºÅ³ »èÁ¦
+			// ì„¸íŠ¸ ì•„ì´í…œ ì°©ìš© ê°œìˆ˜ ê°ì†Œ ë° ì„¸íŠ¸ íš¨ê³¼ ìŠ¤í‚¬ ì‚­ì œ
 			if (pItemNormal->m_itemProto->GetSetIndex())
 			{
 				_owner->CountSetItem(pItemNormal, false);
@@ -176,7 +176,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 		_owner->m_optionDefSkillList.Clear();
 	}
 
-	// ¾ç¼Õ¹«±â¿Í ¹æÆĞ¸¦ °°ÀÌ Âø¿ëÇÏÁö ¸øÇÏ°Ô
+	// ì–‘ì†ë¬´ê¸°ì™€ ë°©íŒ¨ë¥¼ ê°™ì´ ì°©ìš©í•˜ì§€ ëª»í•˜ê²Œ
 	switch (item->m_itemProto->getItemTypeIdx())
 	{
 	case ITYPE_WEAPON:
@@ -274,7 +274,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 		}
 		break;
 	}
-	// --- ¾ç¼Õ¹«±â¿Í ¹æÆĞ¸¦ °°ÀÌ Âø¿ëÇÏÁö ¸øÇÏ°Ô
+	// --- ì–‘ì†ë¬´ê¸°ì™€ ë°©íŒ¨ë¥¼ ê°™ì´ ì°©ìš©í•˜ì§€ ëª»í•˜ê²Œ
 
 	CItem *pItemNormal = item;
 	if((pItemNormal->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (pItemNormal->getFlag() & FLAG_ITEM_COMPOSITION))
@@ -283,14 +283,14 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 	}
 	if (pItemNormal && pItemNormal->IsOriginItem())
 	{
-		// ±Í¼Ó ¼³Á¤
+		// ê·€ì† ì„¤ì •
 		if (pItemNormal->GetBelongType() != ORIGIN_OPTION_BELONG_NONE && !pItemNormal->IsBelong())
 		{
 			pItemNormal->setFlag(pItemNormal->getFlag() | FLAG_ITEM_BELONG);
 			GAMELOG << init("ITEM WEAR BELONG", _owner) << itemlog(pItemNormal) << end;
 		}
 
-		// Âø¿ë °³¼ö, ¿É¼Ç Àû¿ë
+		// ì°©ìš© ê°œìˆ˜, ì˜µì…˜ ì ìš©
 		if (pItemNormal->m_itemProto->GetSetIndex())
 		{
 			_owner->CountSetItem(pItemNormal);
@@ -302,10 +302,10 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 		pItemNormal = _owner->m_inventory.FindByVirtualIndex(item->m_nCompositeItem);
 	}
 
-	// ¾Ö¿Ïµ¿¹° ÀÔÀ» ¶§¿¡´Â ¾Ö¿Ïµ¿¹°À» Appear
+	// ì• ì™„ë™ë¬¼ ì…ì„ ë•Œì—ëŠ” ì• ì™„ë™ë¬¼ì„ Appear
 	if (item->IsPet())
 	{
-		// Âø¿ë ¾ÆÀÌÅÛ¿¡ ÇØ´çÇÏ´Â ÆêÀ» Ã£´Â´Ù
+		// ì°©ìš© ì•„ì´í…œì— í•´ë‹¹í•˜ëŠ” í«ì„ ì°¾ëŠ”ë‹¤
 		CPet* pet = _owner->GetPet(item->getPlus());
 		if (pet)
 		{
@@ -319,7 +319,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 			{
 				pet->Appear(true);
 			}
-			//Æê¿¡°Ôµµ ³ªÀÇ °á»ç´ë Å¸ÀÔÀ» º¹»ç
+			//í«ì—ê²Œë„ ë‚˜ì˜ ê²°ì‚¬ëŒ€ íƒ€ì…ì„ ë³µì‚¬
 			pet->setSyndicateType(_owner->getSyndicateType());
 		}
 	}
@@ -340,7 +340,7 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 
 	_owner->CalcStatus(true);
 
-	if( item->IsAPet() )	// °ø°İÇü ¾Ö¿Ïµ¿¹° Appear
+	if( item->IsAPet() )	// ê³µê²©í˜• ì• ì™„ë™ë¬¼ Appear
 	{
 		CAPet* apet = _owner->GetAPet(item->getPlus());
 
@@ -410,11 +410,11 @@ bool CWearInvenManager::AddNormalItem( CItem* item, int wearPos )
 
 bool CWearInvenManager::AddCostumItem( CItem* item, int wearPos )
 {
-	//À¯È¿¼º °Ë»ç
+	//ìœ íš¨ì„± ê²€ì‚¬
 	if( CanDressCostum(item, wearPos) == false )
 		return false;
 
-	//ÇÑ¹ú ÀÇ»óÀ» ÀÔ°í ÀÖ´Â °æ¿ì
+	//í•œë²Œ ì˜ìƒì„ ì…ê³  ìˆëŠ” ê²½ìš°
 	if( NULL != getCosWearSuitItem() )
 	{
 		if(DelCostumSuitItem() == false)
@@ -422,7 +422,7 @@ bool CWearInvenManager::AddCostumItem( CItem* item, int wearPos )
 			return false;
 		}
 	}
-	//°³º° ÄÚ½ºÆ¬ ¾ÆÀÌÅÛ ÀåÂø
+	//ê°œë³„ ì½”ìŠ¤íŠ¬ ì•„ì´í…œ ì¥ì°©
 	this->DressCostum(item, wearPos);
 
 	return true;
@@ -435,7 +435,7 @@ bool CWearInvenManager::DelNormalItem( int wearPos, short tab /*= -1*/, short in
 	if(item == NULL)
 		return false;
 
-	//¹şÀ» ¼ö ÀÖ´ÂÁö¿¡ ´ëÇÑ À¯È¿¼º °Ë»ç
+	//ë²—ì„ ìˆ˜ ìˆëŠ”ì§€ì— ëŒ€í•œ ìœ íš¨ì„± ê²€ì‚¬
 	if (CanUndressNormal(item, wearPos) == false)
 	{
 		/*CNetMsg::SP rmsg(new CNetMsg);
@@ -446,10 +446,10 @@ bool CWearInvenManager::DelNormalItem( int wearPos, short tab /*= -1*/, short in
 		return false;
 	}
 
-	//¹şÀº ¾ÆÀÌÅÛÀÇ À§Ä¡Á¤º¸°¡ ÀÖ´Â °æ¿ì
+	//ë²—ì€ ì•„ì´í…œì˜ ìœ„ì¹˜ì •ë³´ê°€ ìˆëŠ” ê²½ìš°
 	if( tab >= 0 && invenIndex >= 0)
 	{
-		//µå·¡±× ¾Ø µå¶øÀ¸·Î ¾ÆÀÌÅÛÀ» ¹ş´Â °æ¿ì¿¡´Â ÀÎº¥Åä¸®¿¡¼­ ÇØ´ç À§Ä¡ÀÇ ¾ÆÀÌÅÛÀ» °¡Á®¿Í¼­ ºñ±³ ÇÑ ÈÄ Ã³¸®
+		//ë“œë˜ê·¸ ì•¤ ë“œëìœ¼ë¡œ ì•„ì´í…œì„ ë²—ëŠ” ê²½ìš°ì—ëŠ” ì¸ë²¤í† ë¦¬ì—ì„œ í•´ë‹¹ ìœ„ì¹˜ì˜ ì•„ì´í…œì„ ê°€ì ¸ì™€ì„œ ë¹„êµ í•œ í›„ ì²˜ë¦¬
 		CItem* dressItem = _owner->m_inventory.getItem(tab, invenIndex);
 		if(dressItem == NULL)
 		{
@@ -488,9 +488,9 @@ bool CWearInvenManager::DelNormalItem( int wearPos, short tab /*= -1*/, short in
 		SEND_Q(rmsg, _owner->m_desc);
 	}
 
-	//ÀåÂø ÇØÁ¦ÇÑ ¾ÆÀÌÅÛµé¿¡ ´ëÇÑ ¿É¼Ç Àû¿ë »©±â
+	//ì¥ì°© í•´ì œí•œ ì•„ì´í…œë“¤ì— ëŒ€í•œ ì˜µì…˜ ì ìš© ë¹¼ê¸°
 	ApplyDeleteItem(item, wearPos);
-	//ÀåÂø ÇØÁ¦ÇÑ ¾ÆÀÌÅÛµéÀÇ Äü ½½·Ô µ¥ÀÌÅÍ¸¦ À¯Áö½ÃÄÑÁØ´Ù. (ÀÎº¥Åä¸® Á¤º¸·Î ¼¼ÆÃ)
+	//ì¥ì°© í•´ì œí•œ ì•„ì´í…œë“¤ì˜ í€µ ìŠ¬ë¡¯ ë°ì´í„°ë¥¼ ìœ ì§€ì‹œì¼œì¤€ë‹¤. (ì¸ë²¤í† ë¦¬ ì •ë³´ë¡œ ì„¸íŒ…)
 	_owner->ChangeQuickSlot(item, QUICKSLOT_TYPE_ITEM);
 
 	switch(item->getDBIndex())
@@ -517,7 +517,7 @@ bool CWearInvenManager::DelCostumItem( int wearPos, short tab /*= -1*/, short in
 
 	CItem* TakeOffItem = _owner->m_wearInventory.wearItemInfo[wearPos + COSTUME2_WEARING_START];
 
-	//À¯È¿¼º °Ë»ç
+	//ìœ íš¨ì„± ê²€ì‚¬
 	if (CanUndressCostum(TakeOffItem, wearPos) == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -529,7 +529,7 @@ bool CWearInvenManager::DelCostumItem( int wearPos, short tab /*= -1*/, short in
 
 	if (tab >= 0 && invenIndex >= 0)
 	{
-		//µå·¡±× ¾Ø µå¶øÀ¸·Î ¾ÆÀÌÅÛÀ» ¹ş´Â °æ¿ì¿¡´Â ÀÎº¥Åä¸®¿¡¼­ ÇØ´ç À§Ä¡ÀÇ ¾ÆÀÌÅÛÀ» °¡Á®¿Í¼­ ºñ±³ ÇÑ ÈÄ Ã³¸®
+		//ë“œë˜ê·¸ ì•¤ ë“œëìœ¼ë¡œ ì•„ì´í…œì„ ë²—ëŠ” ê²½ìš°ì—ëŠ” ì¸ë²¤í† ë¦¬ì—ì„œ í•´ë‹¹ ìœ„ì¹˜ì˜ ì•„ì´í…œì„ ê°€ì ¸ì™€ì„œ ë¹„êµ í•œ í›„ ì²˜ë¦¬
 		CItem* dressItem = _owner->m_inventory.getItem(tab, invenIndex);
 		if(dressItem == NULL)
 		{
@@ -544,7 +544,14 @@ bool CWearInvenManager::DelCostumItem( int wearPos, short tab /*= -1*/, short in
 		{
 			this->UndressCostum(TakeOffItem, wearPos);
 			AddCostumItem(dressItem, dressItem->m_itemProto->getItemWearing());
-			_owner->m_inventory.addItemToInvenIndex(TakeOffItem, tab, invenIndex);
+			if(_owner->m_inventory.isUsable(tab) == true)
+			{
+				_owner->m_inventory.addItemToInvenIndex(TakeOffItem, tab, invenIndex);
+			}
+			else
+			{
+				_owner->m_inventory.addItem(TakeOffItem);
+			}
 		}
 		else
 		{
@@ -617,11 +624,11 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		char castellan;
 		bool ret = _owner->CheckCastellanType(zonenum, castellan);
 
-		if(item->m_itemProto->getItemNum3() & 0xffff0000)  // ¼ºÁÖ¸â¹ö¿ë ¾ÆÀÌÅÛ
+		if(item->m_itemProto->getItemNum3() & 0xffff0000)  // ì„±ì£¼ë©¤ë²„ìš© ì•„ì´í…œ
 		{
 			if(!ret || castellan)
 			{
-				// ¼ºÁÖ¸â¹ö°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ë©¤ë²„ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN_GUILD);
 				SEND_Q(rmsg, _owner->m_desc);
@@ -632,16 +639,16 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 
 			if(zonenum != (item->m_itemProto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 				return false;
 			}
 		}
-		else		// ¼ºÁÖ¿ë ¾ÆÀÌÅÛ
+		else		// ì„±ì£¼ìš© ì•„ì´í…œ
 		{
 			if(!ret || !castellan)
 			{
-				// ¼ºÁÖ¸â¹ö°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ë©¤ë²„ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN);
 				SEND_Q(rmsg, _owner->m_desc);
@@ -650,21 +657,21 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 			}
 			if(zonenum != (item->m_itemProto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 				return false;
 			}
 		}
 	}
 
-	//¾ÆÀÌÅÛ Á÷¾÷ °Ë»ç
+	//ì•„ì´í…œ ì§ì—… ê²€ì‚¬
 	if (!(item->m_itemProto->getItemJobFlag() & (1 << _owner->m_job)))
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 		return false;
 	}
 
-	// ¸í¼ºÄ¡ °Ë»ç
+	// ëª…ì„±ì¹˜ ê²€ì‚¬
 	if (item->m_itemProto->getItemFrame() != -1)
 	{
 		if (_owner->m_fame < item->m_itemProto->getItemFrame())
@@ -677,7 +684,16 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		}
 	}
 
-	if( item->IsAPet() )	// Àç»ç¿ë½Ã°£ÀÌ ¾ÆÁ÷ ³²¾ÒÀ½
+	if(item->IsAPet() || item->IsPet())
+	{
+		if( gserver->m_subno == 4 )
+		{
+			_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
+			return false;
+		}
+	}
+
+	if( item->IsAPet() )	// ì¬ì‚¬ìš©ì‹œê°„ì´ ì•„ì§ ë‚¨ì•˜ìŒ
 	{
 		CAPet *pet = _owner->GetAPet(item->getPlus());
 		if( pet && pet->m_nDelay > 0 )
@@ -690,11 +706,11 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		}
 	}
 
-	// Âø¿ë À§Ä¡°¡ ¿Ã¹Ù¸¥Áö °Ë»ç
+	// ì°©ìš© ìœ„ì¹˜ê°€ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬
 	if (item->m_itemProto->getItemWearing() != wearPos)
 	{
-		// ¿Ã¹Ù¸£Áö ¾ÊÀº Âø¿ë À§Ä¡ÀÌ¸é Âø¿ë ¾ÆÀÌÅÛÀÌ ¾Ç¼¼ÀÎÁö °Ë»ç
-		// ¾Ç¼¼»ç¸®´Â ¿Ã¹Ù¸£Áö ¾ÊÀº Âø¿ë À§Ä¡°¡ ¿À¸é ¼­¹ö¿¡¼­ Á¶Á¤ÇÔ
+		// ì˜¬ë°”ë¥´ì§€ ì•Šì€ ì°©ìš© ìœ„ì¹˜ì´ë©´ ì°©ìš© ì•„ì´í…œì´ ì•…ì„¸ì¸ì§€ ê²€ì‚¬
+		// ì•…ì„¸ì‚¬ë¦¬ëŠ” ì˜¬ë°”ë¥´ì§€ ì•Šì€ ì°©ìš© ìœ„ì¹˜ê°€ ì˜¤ë©´ ì„œë²„ì—ì„œ ì¡°ì •í•¨
 		if (item->IsAccessary())
 		{
 			int i;
@@ -716,14 +732,14 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		}
 	}
 
-	// ÀÔ´Â ¾ÆÀÌÅÛÀÌ °áÇÕµÈ ¾ÆÀÌÅÛÀÌ¸é ºÒ°¡´É
+	// ì…ëŠ” ì•„ì´í…œì´ ê²°í•©ëœ ì•„ì´í…œì´ë©´ ë¶ˆê°€ëŠ¥
 	if (item->CanWear() == false)
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 		return false;
 	}
 
-	// 060221 : bs : Æê Âø¿ë½Ã ÃÖ±Ù Á×Àº ½Ã°£À» °Ë»ç
+	// 060221 : bs : í« ì°©ìš©ì‹œ ìµœê·¼ ì£½ì€ ì‹œê°„ì„ ê²€ì‚¬
 	if (item->IsPet())
 	{
 		CPet* pet = _owner->GetPet(item->getPlus());
@@ -773,7 +789,7 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 	}
 
 	CItem* pCompositItem = NULL;
-	// ·¹¾î ¾ÆÀÌÅÛÀº Âø¿ë·¹º§¸¸ Á¦ÇÑÀ» °Ë»çÇÑ´Ù
+	// ë ˆì–´ ì•„ì´í…œì€ ì°©ìš©ë ˆë²¨ë§Œ ì œí•œì„ ê²€ì‚¬í•œë‹¤
 
 	CItem* pEquip = item;
 	if (item->getFlag() & FLAG_ITEM_COMPOSITION)
@@ -787,8 +803,8 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 
 	if (pCompositItem &&  (pCompositItem->IsRareItem() || pCompositItem->IsOriginItem()))
 	{
-		/** °áÇÕ ¾ÆÀÌÅÛÀÇ ·¹º§ Ã¼Å©
-		* ·¡¾î ¾ÆÀÌÅÛ, ¿À¸®Áö³¯ ¿É¼Ç ¾ÆÀÌÅÛÀÏ °æ¿ì¿¡¸¸ ·¹º§ Ã¼Å©
+		/** ê²°í•© ì•„ì´í…œì˜ ë ˆë²¨ ì²´í¬
+		* ë˜ì–´ ì•„ì´í…œ, ì˜¤ë¦¬ì§€ë‚  ì˜µì…˜ ì•„ì´í…œì¼ ê²½ìš°ì—ë§Œ ë ˆë²¨ ì²´í¬
 		**/
 #ifdef PREMIUM_CHAR
 		int itemLevel = pCompositItem->GetItemLevelForPremiumChar(_owner->m_premiumChar.getPremiumType());
@@ -803,7 +819,7 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		}
 	}
 
-	//À¯¹° ¾ÆÀÌÅÛÀÏ °æ¿ì¿¡´Â ·¹º§ Ã¼Å© ÇÑ´Ù. (ÇÁ¸®¹Ì¾ö Ä³¸¯ÅÍ Àû¿ë X)
+	//ìœ ë¬¼ ì•„ì´í…œì¼ ê²½ìš°ì—ëŠ” ë ˆë²¨ ì²´í¬ í•œë‹¤. (í”„ë¦¬ë¯¸ì—„ ìºë¦­í„° ì ìš© X)
 	if(item->m_itemProto->getItemTypeIdx() == ITYPE_ACCESSORY && item->m_itemProto->getItemSubTypeIdx() == IACCESSORY_ARTIFACT)
 	{
 		int itemLevel = item->GetItemLevel();
@@ -847,14 +863,14 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 
 	switch(item->m_itemProto->getItemIndex())
 	{
-	case 2669:	// Å¸ÀÌÅº ¸ñ°ÉÀÌ
-	case 2670:	// ³ªÀÌÆ® ¸ñ°ÉÀÌ
-	case 2671:	// Èú·¯ ¸ñ°ÉÀÌ
-	case 2672:	// ¸ŞÀÌÁö ¸ñ°ÉÀÌ
-	case 2673:	// ·Î±× ¸ñ°ÉÀÌ
-	case 2674:	// ¼Ò¼­·¯ ¸ñ°ÉÀÌ
+	case 2669:	// íƒ€ì´íƒ„ ëª©ê±¸ì´
+	case 2670:	// ë‚˜ì´íŠ¸ ëª©ê±¸ì´
+	case 2671:	// íëŸ¬ ëª©ê±¸ì´
+	case 2672:	// ë©”ì´ì§€ ëª©ê±¸ì´
+	case 2673:	// ë¡œê·¸ ëª©ê±¸ì´
+	case 2674:	// ì†Œì„œëŸ¬ ëª©ê±¸ì´
 
-		if(_owner->m_level > 45)		// 45·¹º§ ÃÊ°ú½Ã »ç¿ë±İÁö
+		if(_owner->m_level > 45)		// 45ë ˆë²¨ ì´ˆê³¼ì‹œ ì‚¬ìš©ê¸ˆì§€
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
 			SysMsg(rmsg, MSG_SYS_CANNOT_WEAR);
@@ -873,9 +889,9 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		return false;
 	}
 
-	CItem * item2 = _owner->m_wearInventory.wearItemInfo[wearPos];		// ¹ş´Â ¾ÆÀÌÅÛ
+	CItem * item2 = _owner->m_wearInventory.wearItemInfo[wearPos];		// ë²—ëŠ” ì•„ì´í…œ
 
-	// ÆêÀº ¾ÉÀº »óÅÂ·Î ÀÔ°Å³ª ¹ş±â ºÒ°¡
+	// í«ì€ ì•‰ì€ ìƒíƒœë¡œ ì…ê±°ë‚˜ ë²—ê¸° ë¶ˆê°€
 	if (_owner->IsSetPlayerState(PLAYER_STATE_SITDOWN) && ((item->IsPet()) || (item2 && item2->IsPet())))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -885,7 +901,7 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		return false;
 	}
 
-	// ³ªÀÌÆ® ½¦µµ¿ì´Â ¸¶¿îÆ® Å¸ÀÔ Âø¿ë ºÒ°¡
+	// ë‚˜ì´íŠ¸ ì‰ë„ìš°ëŠ” ë§ˆìš´íŠ¸ íƒ€ì… ì°©ìš© ë¶ˆê°€
 	if ( _owner->m_job == JOB_NIGHTSHADOW && item->IsPet() )
 	{
 		CPet *pet = _owner->GetPet( item->getPlus() );
@@ -899,7 +915,7 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		}
 	}
 
-	// µÑ´Ù NULL ÀÌ¸é ¹«½Ã
+	// ë‘˜ë‹¤ NULL ì´ë©´ ë¬´ì‹œ
 	if (!item && !item2)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -909,10 +925,10 @@ bool CWearInvenManager::CanDressNormal( CItem* item, int wearPos )
 		return false;
 	}
 
-	// ¹ş±âÀÌ¸é ¹«Á¶°Ç À§Ä¡°¡ ¿Ã¹Ù¸£°Ô Àü´ŞµÇ¾ß ÇÔ
+	// ë²—ê¸°ì´ë©´ ë¬´ì¡°ê±´ ìœ„ì¹˜ê°€ ì˜¬ë°”ë¥´ê²Œ ì „ë‹¬ë˜ì•¼ í•¨
 	if (item2 != NULL && item2->m_itemProto->getItemWearing() != wearPos)
 	{
-		// ¾Ç¼¼´Â À§Ä¡ ºñ±³½Ã 2, 3 ÀÚ¸®¸¦ °Ë»ç
+		// ì•…ì„¸ëŠ” ìœ„ì¹˜ ë¹„êµì‹œ 2, 3 ìë¦¬ë¥¼ ê²€ì‚¬
 		if (item2->IsAccessary())
 		{
 			if (wearPos < WEARING_ACCESSORY1 || wearPos > WEARING_ACCESSORY3)
@@ -945,7 +961,7 @@ bool CWearInvenManager::CanUndressNormal( CItem* item, int wearPos )
 		return false;
 	}
 
-	// ºÀÀÎ ¾ÆÀÌÅÛ ºÒ°¡´É
+	// ë´‰ì¸ ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 	if ( item->IsAPet() == false
 			&& item->getFlag() & FLAG_ITEM_SEALED )
 	{
@@ -953,7 +969,7 @@ bool CWearInvenManager::CanUndressNormal( CItem* item, int wearPos )
 		return false;
 	}
 
-	// ¹æ¾îÄÚµå : ¿ø·¡ ¹ş¾ú¾ú´Âµ¥ ¶Ç ¹şÀ»¶ó ÇÏ¹È ¸®ÅÏ
+	// ë°©ì–´ì½”ë“œ : ì›ë˜ ë²—ì—ˆì—ˆëŠ”ë° ë˜ ë²—ì„ë¼ í•˜ë¯„ ë¦¬í„´
 	if (item->getWearPos() == WEARING_NONE)
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_TAKEOFF;
@@ -1027,7 +1043,16 @@ void CWearInvenManager::DressNormal( CItem* item, int wearPos )
 		takeOffItem->unWearPos();
 		_owner->m_wearInventory.UndressNormal(takeOffItem, wearPos);
 		_owner->m_wearInventory.DressNormal(item, wearPos);
-		_owner->m_inventory.addItemToInvenIndex(takeOffItem, tab, invenIndex);
+		
+		if(_owner->m_inventory.isUsable(tab) == true)
+		{
+			_owner->m_inventory.addItemToInvenIndex(takeOffItem, tab, invenIndex);
+		}
+		else
+		{
+			_owner->m_inventory.addItem(takeOffItem);
+		}
+		
 		_owner->ChangeQuickSlot(takeOffItem, QUICKSLOT_TYPE_ITEM);
 
 		return ;
@@ -1159,13 +1184,13 @@ void CWearInvenManager::SaveWearInvenInfo(std::vector<std::string>& vec)
 
 	int count = 0;
 	CItem* wearItem;
-	//ÀÏ¹İ Àåºñ ºÎÅÍ ºÙÀÌ°í
+	//ì¼ë°˜ ì¥ë¹„ ë¶€í„° ë¶™ì´ê³ 
 	for(int i = 0; i <= WEARING_BACKWING; i++)
 	{
 		wearItem = this->wearItemInfo[i];
 		makeSaveInfo( &insertstr, wearItem, &count, i );
 	}
-	//ÄÚ½ºÆ¬ ¾ÆÀÌÅÛ ÀúÀå
+	//ì½”ìŠ¤íŠ¬ ì•„ì´í…œ ì €ì¥
 	CItem* wearCostItem = _owner->m_wearInventory.getCosWearSuitItem();
 	if ( wearCostItem != NULL )
 	{
@@ -1190,7 +1215,7 @@ void CWearInvenManager::SaveWearInvenInfo(std::vector<std::string>& vec)
 
 bool CWearInvenManager::CanDressCostum( CItem* item, int wearPos )
 {
-	if (item == NULL)	// ÀÔ´Â ¾ÆÀÌÅÛµµ ¹ş´Â ¾ÆÀÌÅÛµµ ¾øÀ½.
+	if (item == NULL)	// ì…ëŠ” ì•„ì´í…œë„ ë²—ëŠ” ì•„ì´í…œë„ ì—†ìŒ.
 	{
 		this->_lastError = ResponseClient::WEAR_ERR_INVALID_ITEM_INFO;
 		return false;
@@ -1207,7 +1232,7 @@ bool CWearInvenManager::CanDressCostum( CItem* item, int wearPos )
 		return false;
 	}
 
-	/////////////////////////////////// RETURN µÇ´Â Á¶°Ç °Ë»ç ///////////////////////////////////
+	/////////////////////////////////// RETURN ë˜ëŠ” ì¡°ê±´ ê²€ì‚¬ ///////////////////////////////////
 
 	if(item && item->m_itemProto->getItemFlag() & ITEM_FLAG_CASTLLAN)
 	{
@@ -1216,11 +1241,11 @@ bool CWearInvenManager::CanDressCostum( CItem* item, int wearPos )
 		bool ret;
 		ret = _owner->CheckCastellanType(zonenum, castellan);
 
-		if(item->m_itemProto->getItemNum3() & 0xffff0000)  // ¼ºÁÖ¸â¹ö¿ë ¾ÆÀÌÅÛ
+		if(item->m_itemProto->getItemNum3() & 0xffff0000)  // ì„±ì£¼ë©¤ë²„ìš© ì•„ì´í…œ
 		{
 			if(!ret || castellan)
 			{
-				// ¼ºÁÖ¸â¹ö°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ë©¤ë²„ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN_GUILD);
 				SEND_Q(rmsg, _owner->m_desc);
@@ -1229,16 +1254,16 @@ bool CWearInvenManager::CanDressCostum( CItem* item, int wearPos )
 			}
 			if(zonenum != (item->m_itemProto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 				return false;
 			}
 		}
-		else		// ¼ºÁÖ¿ë ¾ÆÀÌÅÛ
+		else		// ì„±ì£¼ìš© ì•„ì´í…œ
 		{
 			if(!ret || !castellan)
 			{
-				// ¼ºÁÖ¸â¹ö°¡ ¾Æ´Ï´Ù.
+				// ì„±ì£¼ë©¤ë²„ê°€ ì•„ë‹ˆë‹¤.
 				CNetMsg::SP rmsg(new CNetMsg);
 				CastllanErrorMsg(rmsg, MSG_EX_CASTLLAN_ERROR_NOT_CASTLLAN);
 				SEND_Q(rmsg, _owner->m_desc);
@@ -1247,26 +1272,26 @@ bool CWearInvenManager::CanDressCostum( CItem* item, int wearPos )
 			}
 			if(zonenum != (item->m_itemProto->getItemNum3() & 0xffff))
 			{
-				// ¼Ò¼ÓµÈ ¼ºÀÇ ¾ÆÀÌÅÛÀÌ ¾Æ´Ô
+				// ì†Œì†ëœ ì„±ì˜ ì•„ì´í…œì´ ì•„ë‹˜
 				_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 				return false;
 			}
 		}
 	}
 
-	if (!(item->m_itemProto->getItemFlag() & ITEM_FLAG_COSTUME2))												// ÀÔ´Â¾ÆÀÌÅÛÀÌ COSTUME2 Flag°¡ ¾Æ´Ï¸é.
+	if (!(item->m_itemProto->getItemFlag() & ITEM_FLAG_COSTUME2))												// ì…ëŠ”ì•„ì´í…œì´ COSTUME2 Flagê°€ ì•„ë‹ˆë©´.
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 		return false;
 	}
 
-	if ((item->getFlag() & FLAG_ITEM_COMPOSITION) && (item->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE))	// ÀÔ´Â¾ÆÀÌÅÛÀÌ °áÇÕ µÇ¾ú°Å³ª °áÇÕ °¡´ÉÇÑ ¾ÆÀÌÅÛÀÌ¸é.
+	if ((item->getFlag() & FLAG_ITEM_COMPOSITION) && (item->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE))	// ì…ëŠ”ì•„ì´í…œì´ ê²°í•© ë˜ì—ˆê±°ë‚˜ ê²°í•© ê°€ëŠ¥í•œ ì•„ì´í…œì´ë©´.
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 		return false;
 	}
 
-	if (wearPos != item->m_itemProto->getItemWearing())													// ÀÔ´Â ¾ÆÀÌÅÛÀÇ ÀÔ´Â À§Ä¡¿Í wear_pos¿Í Æ²¸®¸é.
+	if (wearPos != item->m_itemProto->getItemWearing())													// ì…ëŠ” ì•„ì´í…œì˜ ì…ëŠ” ìœ„ì¹˜ì™€ wear_posì™€ í‹€ë¦¬ë©´.
 	{
 		_lastError = ResponseClient::WEAR_ERR_CANNOT_WEAR;
 		return false;
@@ -1330,7 +1355,7 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 	}
 	if (pItemNormal && pItemNormal->IsOriginItem())
 	{
-		// ¿À¸®Áö³¯ ¿É¼Ç ¹× ¼¼Æ® ¾ÆÀÌÅÛÀÇ ½ºÅ³ »èÁ¦
+		// ì˜¤ë¦¬ì§€ë‚  ì˜µì…˜ ë° ì„¸íŠ¸ ì•„ì´í…œì˜ ìŠ¤í‚¬ ì‚­ì œ
 		for (int i = MAX_ORIGIN_OPTION; i < MAX_ORIGIN; i++)
 		{
 			int nIndex = pItemNormal->GetOriginIndex(i);
@@ -1342,7 +1367,7 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 			{
 				if (pSkill->m_proto->IsActive())
 				{
-					//¾ÆÀÌÅÛ ½ºÅ³ ÄğÅ¸ÀÓÀ» ÀúÀå
+					//ì•„ì´í…œ ìŠ¤í‚¬ ì¿¨íƒ€ì„ì„ ì €ì¥
 					{
 						CSkill* skill = _owner->m_activeSkillList.Find(pSkill->m_proto->m_index);
 
@@ -1386,7 +1411,7 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 			}
 		}
 
-		// ¼¼Æ® ¾ÆÀÌÅÛ Âø¿ë °³¼ö °¨¼Ò ¹× ¼¼Æ® È¿°ú ½ºÅ³ »èÁ¦
+		// ì„¸íŠ¸ ì•„ì´í…œ ì°©ìš© ê°œìˆ˜ ê°ì†Œ ë° ì„¸íŠ¸ íš¨ê³¼ ìŠ¤í‚¬ ì‚­ì œ
 		if (pItemNormal->m_itemProto->GetSetIndex())
 		{
 			_owner->CountSetItem(pItemNormal, false);
@@ -1403,10 +1428,10 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 		}
 	}
 
-	// ¾Ö¿Ïµ¿¹° ¹şÀ» ¶§¿¡´Â ¾Ö¿Ïµ¿¹°À» disappear ½ÃÅ²´Ù
+	// ì• ì™„ë™ë¬¼ ë²—ì„ ë•Œì—ëŠ” ì• ì™„ë™ë¬¼ì„ disappear ì‹œí‚¨ë‹¤
 	if (item->IsPet())
 	{
-		// Âø¿ë ¾ÆÀÌÅÛ¿¡ ÇØ´çÇÏ´Â ÆêÀ» Ã£´Â´Ù
+		// ì°©ìš© ì•„ì´í…œì— í•´ë‹¹í•˜ëŠ” í«ì„ ì°¾ëŠ”ë‹¤
 		CPet* pet = _owner->GetPet(item->getPlus());
 		if (pet)
 		{
@@ -1431,7 +1456,7 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 				pet->Mount(false);
 			}
 			pet->m_nDelay = pet->m_pProto->m_nDelay ;
-			// ¼ÒÈ®½Ã ¹ß»ıÇÏ´Â ½ºÅ³ »ç¿ë-- Å¬¶óÀÌ¾ğÆ® Ã³¸®
+			// ì†Œí™•ì‹œ ë°œìƒí•˜ëŠ” ìŠ¤í‚¬ ì‚¬ìš©-- í´ë¼ì´ì–¸íŠ¸ ì²˜ë¦¬
 			pet->Disappear();
 		}
 	}
@@ -1465,12 +1490,12 @@ void CWearInvenManager::ApplyDeleteItem( CItem* item, int wearPos )
 		if( bClear )
 			_owner->m_assist.CureByItemIndex(item->m_itemProto->getItemIndex());
 	}
-	//°Ë»ç ´Ù~ÇÏ°í Ä³¸¯ÅÍÀÇ º¸¼® ½ºÅ³ ¿É¼Ç ¸ñ·ÏÀ» ÃÊ±âÈ­ ÇØÁØ´Ù
+	//ê²€ì‚¬ ë‹¤~í•˜ê³  ìºë¦­í„°ì˜ ë³´ì„ ìŠ¤í‚¬ ì˜µì…˜ ëª©ë¡ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤
 	_owner->m_optionAttSkillList.Clear();
 	_owner->m_optionDefSkillList.Clear();
 
 	_owner->CalcStatus(true);
-	//ÆêÀÇ HP,MP¸¦ ¿Ã·ÁÁÙ ¼ö ÀÖ´Â º¸¼®Àº ÇÑ °³¸¸ ¹ÛÀ» ¼ö ÀÖ´Ù°í ÇÔ.
+	//í«ì˜ HP,MPë¥¼ ì˜¬ë ¤ì¤„ ìˆ˜ ìˆëŠ” ë³´ì„ì€ í•œ ê°œë§Œ ë°–ì„ ìˆ˜ ìˆë‹¤ê³  í•¨.
 	if(_owner->GetAPet(0))
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1596,13 +1621,13 @@ CItem* CWearInvenManager::FindByVirtualIndex( int vIndex )
 
 void CWearInvenManager::DressCostumSuit(CItem* pSuit)
 {
-	//¾ÆÀÌÅÛ ÀåÂø
+	//ì•„ì´í…œ ì¥ì°©
 	setCosWearSuitItem(pSuit);
-	//¾ÆÀÌÅÛ ¼¼ÆÃ
+	//ì•„ì´í…œ ì„¸íŒ…
 	getCosWearSuitItem()->setWearPos(COSTUME2_WEARING_SUIT);
 
 
-	//°³º°ÀÇ»óÀÇ ¾ÆÀÌÅÛÀ» »ı¼ºÇÏ¿© ¾ÆÀÌÅÛ ¿É¼Ç ¼¼ÆÃ ¹× ÀåÂø Á¤º¸ ¾÷µ¥ÀÌÆ®
+	//ê°œë³„ì˜ìƒì˜ ì•„ì´í…œì„ ìƒì„±í•˜ì—¬ ì•„ì´í…œ ì˜µì…˜ ì„¸íŒ… ë° ì¥ì°© ì •ë³´ ì—…ë°ì´íŠ¸
 	CItem* pItem = NULL;
 	int itemIndex = -1;
 	bool bWearing = false;
@@ -1638,7 +1663,7 @@ void CWearInvenManager::DressCostumSuit(CItem* pSuit)
 		bWearing = true;
 	}
 
-	//Æ÷Ãó ¹öÇÁ Áö±Ş
+	//í¬ì¸ˆ ë²„í”„ ì§€ê¸‰
 	if (bWearing)
 	{
 		int skill_index = 0, skill_level = 0;
@@ -1656,7 +1681,7 @@ void CWearInvenManager::DressCostumSuit(CItem* pSuit)
 		}
 	}
 
-	//ÆĞÅ¶ Àü¼Û
+	//íŒ¨í‚· ì „ì†¡
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		UpdateClient::ItemWearCostumeSuitMsg(rmsg, pSuit);
@@ -1673,7 +1698,7 @@ void CWearInvenManager::DressCostumSuit(CItem* pSuit)
 
 void CWearInvenManager::UndressCostumeSuit()
 {
-	//Âø¿ë ¾ÆÀÌÅÛÀÇ Æ÷Ãó ¿É¼Ç Á¦°Å
+	//ì°©ìš© ì•„ì´í…œì˜ í¬ì¸ˆ ì˜µì…˜ ì œê±°
 	int skill_index = 0, skill_level = 0;
 	gserver->m_Fortunelist.Resolve_fortune_value(skill_index, skill_level, getCosWearSuitItem()->getPlus());
 	_owner->m_assist.CureBySkillIndex(skill_index);
@@ -1692,7 +1717,7 @@ void CWearInvenManager::UndressCostumeSuit()
 		wearItemInfo[i] = NULL;
 	}
 
-	//ÀåÂø ÇØÁ¦ ÆĞÅ¶ Àü¼Û
+	//ì¥ì°© í•´ì œ íŒ¨í‚· ì „ì†¡
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::CostSuitItemTakeOffMsg(rmsg, GetLastError());
@@ -1740,7 +1765,16 @@ void CWearInvenManager::DressCostum( CItem* item, int wearPos )
 
 		_owner->m_wearInventory.UndressCostum(takeOffItem, wearPos);
 		_owner->m_wearInventory.DressCostum(item, wearPos);
-		_owner->m_inventory.addItemToInvenIndex(takeOffItem, tab, invenIndex);
+		
+		if(_owner->m_inventory.isUsable(tab) == true)
+		{
+			_owner->m_inventory.addItemToInvenIndex(takeOffItem, tab, invenIndex);
+		}
+		else
+		{
+			_owner->m_inventory.addItem(takeOffItem);
+		}
+		
 		_owner->ChangeQuickSlot(takeOffItem, QUICKSLOT_TYPE_ITEM);
 
 		return;
@@ -1782,7 +1816,7 @@ void CWearInvenManager::UndressCostum( CItem* item, int wearPos )
 	item->unWearPos();
 	wearItemInfo[(int)wearPos + COSTUME2_WEARING_START] = NULL;
 
-	//Âø¿ë ÇØÁ¦ ¾ÆÀÌÅÛ ¿É¼Ç Á¦°Å
+	//ì°©ìš© í•´ì œ ì•„ì´í…œ ì˜µì…˜ ì œê±°
 	ApplyDeleteItem(item, wearPos);
 
 	{
@@ -1797,36 +1831,36 @@ void CWearInvenManager::UndressCostum( CItem* item, int wearPos )
 		_owner->m_pArea->SendToCell(rmsg, _owner, false);
 	}
 
-	//Âø¿ëÇÏ°í ÀÖ´Â ÄÚ½ºÆ¬ °³¼ö Á¤º¸ °¨¼Ò
+	//ì°©ìš©í•˜ê³  ìˆëŠ” ì½”ìŠ¤íŠ¬ ê°œìˆ˜ ì •ë³´ ê°ì†Œ
 	this->dressCostumCount--;
 }
 
 bool CWearInvenManager::AddCostumSuitItem( CItem *item )
 {
-	//À¯È¿¼º °Ë»ç
+	//ìœ íš¨ì„± ê²€ì‚¬
 	if(CanDressCostumSuit(item) == false)
 	{
 		return false;
 	}
 
-	//ÇÑ¹ú ÀÇ»óÀ» ÀÔ°í ÀÖ´Â °æ¿ì
+	//í•œë²Œ ì˜ìƒì„ ì…ê³  ìˆëŠ” ê²½ìš°
 	if( NULL != getCosWearSuitItem() )
 	{
-		//ÇÑ¹úÀÇ»ó Á¦°Å
+		//í•œë²Œì˜ìƒ ì œê±°
 		if(DelCostumSuitItem(item->tab(), item->getInvenIndex()) == false)
 		{
 			return false;
 		}
 	}
-	//°³º° ÄÚ½ºÆ¬ ÀÇ»óÀ» ÀÔ°í ÀÖ´Â °æ¿ì(½Ï´Ù È¸¼ö)
+	//ê°œë³„ ì½”ìŠ¤íŠ¬ ì˜ìƒì„ ì…ê³  ìˆëŠ” ê²½ìš°(ì‹¹ë‹¤ íšŒìˆ˜)
 	else if( dressCostumCount > 0 )
 	{
-		//ÀåÂø ÇØÁ¦¸¦ ÇÏ·Á¸é ÀÎº¥Åä¸® °Ë»ç
+		//ì¥ì°© í•´ì œë¥¼ í•˜ë ¤ë©´ ì¸ë²¤í† ë¦¬ ê²€ì‚¬
 		if(_owner->m_inventory.getEmptyCount() < dressCostumCount )
 		{
 			return false;
 		}
-		//°³º°ÀÇ»ó ¸ğµÎ ÀåÂø ÇØÁ¦
+		//ê°œë³„ì˜ìƒ ëª¨ë‘ ì¥ì°© í•´ì œ
 		UndressCostumeAll();
 		DressCostumSuit(item);
 		_owner->m_inventory.eraseNotFree(item);
@@ -1857,7 +1891,7 @@ bool CWearInvenManager::DelCostumSuitItem(short tab, short invenIndex)
 
 	if (tab >= 0 && invenIndex >= 0)
 	{
-		//µå·¡±× ¾Ø µå¶øÀ¸·Î ¾ÆÀÌÅÛÀ» ¹ş´Â °æ¿ì¿¡´Â ÀÎº¥Åä¸®¿¡¼­ ÇØ´ç À§Ä¡ÀÇ ¾ÆÀÌÅÛÀ» °¡Á®¿Í¼­ ºñ±³ ÇÑ ÈÄ Ã³¸®
+		//ë“œë˜ê·¸ ì•¤ ë“œëìœ¼ë¡œ ì•„ì´í…œì„ ë²—ëŠ” ê²½ìš°ì—ëŠ” ì¸ë²¤í† ë¦¬ì—ì„œ í•´ë‹¹ ìœ„ì¹˜ì˜ ì•„ì´í…œì„ ê°€ì ¸ì™€ì„œ ë¹„êµ í•œ í›„ ì²˜ë¦¬
 		CItem* dressItem = _owner->m_inventory.getItem(tab, invenIndex);
 		if(dressItem == NULL)
 		{
@@ -1874,7 +1908,15 @@ bool CWearInvenManager::DelCostumSuitItem(short tab, short invenIndex)
 			UndressCostumeSuit();
 			DressCostumSuit(dressItem);
 			_owner->m_inventory.eraseNotFree(dressItem);
-			_owner->m_inventory.addItemToInvenIndex(item, tab, invenIndex);
+
+			if(_owner->m_inventory.isUsable(tab) == true)
+			{
+				_owner->m_inventory.addItemToInvenIndex(item, tab, invenIndex);
+			}
+			else
+			{
+				_owner->m_inventory.addItem(item);
+			}
 		}
 		else
 		{
@@ -1913,7 +1955,7 @@ void CWearInvenManager::makeSaveInfo( std::string* insertstr, CItem* wearItem, i
 		int used = 0;
 		if (wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS)
 		{
-			// ½Ã°£Á¦ ¾ÆÀÌÅÛ
+			// ì‹œê°„ì œ ì•„ì´í…œ
 			if( wearItem->m_itemProto->getItemTypeIdx() == ITYPE_ETC
 					&& wearItem->m_itemProto->getItemSubTypeIdx() == IETC_MONSTER_MERCENARY_CARD )
 			{
@@ -1938,7 +1980,7 @@ void CWearInvenManager::makeSaveInfo( std::string* insertstr, CItem* wearItem, i
 								);
 		if ((wearItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (wearItem->getFlag() & FLAG_ITEM_COMPOSITION))
 		{
-			// °áÇÕµÈ ÀÇ»ó ¾ÆÀÌÅÛÀº °áÇÕµÈ ÀÏ¹İ ¾ÆÀÌÅÛÀÇ virtualIndex¸¦ °¡Áö°í ÀÖÀ½
+			// ê²°í•©ëœ ì˜ìƒ ì•„ì´í…œì€ ê²°í•©ëœ ì¼ë°˜ ì•„ì´í…œì˜ virtualIndexë¥¼ ê°€ì§€ê³  ìˆìŒ
 			CItem* pItemEquip = _owner->m_inventory.FindByVirtualIndex(wearItem->m_nCompositeItem);
 			if (pItemEquip)
 			{
@@ -2094,7 +2136,7 @@ CItem* CWearInvenManager::getCalcWear( int index )
 	if (item == NULL)
 		return NULL;
 
-	if (item->getFlag() & FLAG_ITEM_SEALED) // ºÀÀÎ
+	if (item->getFlag() & FLAG_ITEM_SEALED) // ë´‰ì¸
 		return NULL;
 
 #ifdef DURABILITY
@@ -2105,7 +2147,7 @@ CItem* CWearInvenManager::getCalcWear( int index )
 	}
 #endif
 
-	// °áÇÕ °Ë»ç
+	// ê²°í•© ê²€ì‚¬
 	if ((item->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (item->getFlag() & FLAG_ITEM_COMPOSITION))
 	{
 #ifdef DURABILITY
@@ -2157,37 +2199,37 @@ void CWearInvenManager::sendToLCE_Only_hardcore()
 
 		CItem* pItem = wearItemInfo[i];
 
-		// LCE·Î µ¹¸®Áö ¸»¾Æ¾ßÇÒ ¾ÆÀÌÅÛ
-		// ±â°£Á¦
+		// LCEë¡œ ëŒë¦¬ì§€ ë§ì•„ì•¼í•  ì•„ì´í…œ
+		// ê¸°ê°„ì œ
 		if (pItem->m_itemProto->isTimer())
 			continue;
 
-		// Ä³½¬
+		// ìºì‰¬
 		if (pItem->m_itemProto->getItemFlag() & ITEM_FLAG_CASH)
 			continue;
 
-		// °áÇÕ
+		// ê²°í•©
 		if ((pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE) && (pItem->getFlag() & FLAG_ITEM_COMPOSITION))
 			continue;
 
-		// °­È­
+		// ê°•í™”
 		if (pItem->getPlus() > 0)
 			continue;
 
-		// Æê
+		// í«
 		if (pItem->IsPet() || pItem->IsAPet())
 			continue;
 
-		// ´ë¿©
+		// ëŒ€ì—¬
 		if (pItem->IsLent())
 			continue;
 
-		// ºÀÀÎ
+		// ë´‰ì¸
 		if (pItem->m_itemProto->getItemFlag() & FLAG_ITEM_SEALED)
 			continue;
 
 		{
-			// ¼ºÁÖ
+			// ì„±ì£¼
 			if (pItem->m_itemProto->getItemFlag() & ITEM_FLAG_LORD)
 				continue;
 
@@ -2235,13 +2277,13 @@ void CWearInvenManager::checkItemTime()
 		if ((pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE )
 				&& pItem->m_itemProto->getItemNum4() == - 1)
 		{
-			// ±â°£ ¹«Á¦ÇÑ ¾ÆÀÌÅÛ
+			// ê¸°ê°„ ë¬´ì œí•œ ì•„ì´í…œ
 			continue;
 		}
 
 		if((pItem->getDBIndex() >= 4927 && pItem->getDBIndex() <= 4932) || pItem->getDBIndex() == 6228)
 		{
-			// ÇÒ·ÎÀ© ÀÌº¥Æ® È£¹Ú¸Ó¸® ±â°£ Áö³ª¸é »èÁ¦
+			// í• ë¡œìœˆ ì´ë²¤íŠ¸ í˜¸ë°•ë¨¸ë¦¬ ê¸°ê°„ ì§€ë‚˜ë©´ ì‚­ì œ
 			if((pItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS) &&
 					(pItem->getUsed() < gserver->getNowSecond()))
 			{
@@ -2272,12 +2314,12 @@ void CWearInvenManager::checkItemTime()
 				continue;
 			}
 		}
-		// ´ë¿© ¹«±â
+		// ëŒ€ì—¬ ë¬´ê¸°
 		else if (pItem->IsLent())
 		{
 			if (pItem->getUsed() < gserver->getNowSecond())
 			{
-				// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+				// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 				GAMELOG << init("ITEM USE TIMEOUT", _owner)
 						<< "ITEM" << delim
 						<< itemlog(pItem)
@@ -2292,25 +2334,25 @@ void CWearInvenManager::checkItemTime()
 				_owner->m_wearInventory.RemoveItem(i);
 				continue;
 			}
-		}// ´ë¿© ¹«±â
-		// °áÇÕ ÀÇ»ó
+		}// ëŒ€ì—¬ ë¬´ê¸°
+		// ê²°í•© ì˜ìƒ
 		else if (pItem->m_itemProto->getItemFlag() & ITEM_FLAG_COMPOSITE)
 		{
-			// °áÇÕ ÀÇ»ó Ã¼Å©°¡ ÇÃ·¡Æ¼´½º¸´Ù À§¿¡ ÀÖ¾î¾ß ÇÔ
-			// ÀÇ»óµµ ÇÃ·¡Æ¼´½ ¸Æ½º ÇÃ·¯½º »ç¿ë -_-;
-			// °áÇÕ¿ë ÀÇ»ó ¾ÆÀÌÅÛ
-			// °áÇÕµÈ ¾ÆÀÌÅÛ
+			// ê²°í•© ì˜ìƒ ì²´í¬ê°€ í”Œë˜í‹°ëŠ„ë³´ë‹¤ ìœ„ì— ìˆì–´ì•¼ í•¨
+			// ì˜ìƒë„ í”Œë˜í‹°ëŠ„ ë§¥ìŠ¤ í”ŒëŸ¬ìŠ¤ ì‚¬ìš© -_-;
+			// ê²°í•©ìš© ì˜ìƒ ì•„ì´í…œ
+			// ê²°í•©ëœ ì•„ì´í…œ
 			if (!(pItem->m_itemProto->getItemFlag() & ITEM_FLAG_ABS))
 			{
-				// ±â°£Á¦
+				// ê¸°ê°„ì œ
 				if (pItem->getUsed_2() > 0
 						&& pItem->getUsed_2() < gserver->getNowSecond())
 				{
-					// °áÇÕ ÁÖ¹®¼­ ½Ã°£ ¸¸·á
-					// °áÇÕÇÑ ¾ÆÀÌÅÛÀÌ ÀÖ´Â°¡?
-					// ÀÖÀ¸¸é °áÇÕÀ» ÇØÁ¦ÇÏ°í
-					// Âø¿ë ÁßÀÌ¸é Âø¿ë ÇØÁ¦ÇÏ°í
-					// ÀÎº¥¿¡ »ğÀÔ
+					// ê²°í•© ì£¼ë¬¸ì„œ ì‹œê°„ ë§Œë£Œ
+					// ê²°í•©í•œ ì•„ì´í…œì´ ìˆëŠ”ê°€?
+					// ìˆìœ¼ë©´ ê²°í•©ì„ í•´ì œí•˜ê³ 
+					// ì°©ìš© ì¤‘ì´ë©´ ì°©ìš© í•´ì œí•˜ê³ 
+					// ì¸ë²¤ì— ì‚½ì…
 					if (pItem->getFlag() & FLAG_ITEM_COMPOSITION)
 					{
 						CItem * pItemEquip = _owner->m_inventory.FindByVirtualIndex(pItem->m_nCompositeItem);
@@ -2338,16 +2380,16 @@ void CWearInvenManager::checkItemTime()
 						}
 						RemoveItem(i);
 					}
-				}	// °áÇÕµÈ ¾ÆÀÌÅÛ
+				}	// ê²°í•©ëœ ì•„ì´í…œ
 			}
 
 			if (pItem->getUsed() < gserver->getNowSecond())
 			{
-				// À¯·á ÀÇ»ó ½Ã°£ ¸¸·á
-				// °áÇÕÇÑ ¾ÆÀÌÅÛÀÌ ÀÖ´Â°¡?
-				// ÀÖÀ¸¸é °áÇÕÀ» ÇØÁ¦ÇÏ°í
-				// Âø¿ë ÁßÀÌ¸é Âø¿ë ÇØÁ¦ÇÏ°í
-				// ÀÎº¥¿¡¼­ Á¦°Å
+				// ìœ ë£Œ ì˜ìƒ ì‹œê°„ ë§Œë£Œ
+				// ê²°í•©í•œ ì•„ì´í…œì´ ìˆëŠ”ê°€?
+				// ìˆìœ¼ë©´ ê²°í•©ì„ í•´ì œí•˜ê³ 
+				// ì°©ìš© ì¤‘ì´ë©´ ì°©ìš© í•´ì œí•˜ê³ 
+				// ì¸ë²¤ì—ì„œ ì œê±°
 				if (pItem->getFlag() & FLAG_ITEM_COMPOSITION)
 				{
 					pItem->setFlag(pItem->getFlag() & ~FLAG_ITEM_COMPOSITION);
@@ -2380,16 +2422,16 @@ void CWearInvenManager::checkItemTime()
 				this->RemoveItem(i);
 				continue;
 			}
-		} //°áÇÕ ÀÇ»ó
+		} //ê²°í•© ì˜ìƒ
 		else if( pItem->IsUsedPlatinumSpecial() )
 		{
 			if (pItem->getUsed() < gserver->getNowSecond())
 			{
-				// »èÁ¦ ÈÄ ¸®ÅÏ
+				// ì‚­ì œ í›„ ë¦¬í„´
 				int platinumPlus = pItem->getFlag() & PLATINUM_MAX_PLUS;
 				pItem->setPlus(pItem->getPlus() - platinumPlus);
 
-				if(pItem->getPlus() <= 0) // LC-TR-P20100428-018 ¹ö±× ³»¿ë ¼öÁ¤ ( ÇÃ·¡Æ¼³Ñ ±â°£ ¸¸·á½Ã 0 º¸´Ù ÀÛ°Ô µÇ´Â °æ¿ì ¼öÁ¤)
+				if(pItem->getPlus() <= 0) // LC-TR-P20100428-018 ë²„ê·¸ ë‚´ìš© ìˆ˜ì • ( í”Œë˜í‹°ë„˜ ê¸°ê°„ ë§Œë£Œì‹œ 0 ë³´ë‹¤ ì‘ê²Œ ë˜ëŠ” ê²½ìš° ìˆ˜ì •)
 				{
 					pItem->setPlus(0);
 				}
@@ -2423,7 +2465,7 @@ void CWearInvenManager::checkItemTime()
 
 				continue;
 			}
-		} // ÇÃ·¡Æ¼´½
+		} // í”Œë˜í‹°ëŠ„
 
 		switch (pItem->m_itemProto->getItemIndex())
 		{
@@ -2438,8 +2480,8 @@ void CWearInvenManager::checkItemTime()
 				if( pItem->getUsed() != -1
 						&& pItem->getUsed() < gserver->getNowSecond())
 				{
-					// ±â°£ ¸¸·á
-					// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+					// ê¸°ê°„ ë§Œë£Œ
+					// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 					GAMELOG << init("ITEM USE TIMEOUT", _owner)
 							<< "ITEM" << delim
 							<< itemlog(pItem)
@@ -2469,13 +2511,13 @@ void CWearInvenManager::checkItemTime()
 			break;
 		}
 
-		// ATTACK_PET  °ü·Ã ¾ÆÀÌÅÛ ½Ã°£ Ã¼Å©
+		// ATTACK_PET  ê´€ë ¨ ì•„ì´í…œ ì‹œê°„ ì²´í¬
 		if( ( pItem->m_itemProto->getItemJobFlag()&(1<<JOB_APET) ) &&
 				( pItem->m_itemProto->getItemFlag()&ITEM_FLAG_ABS) )
 		{
 			if (pItem->getUsed() < gserver->getNowSecond())
 			{
-				// AI ¾ÆÀÌÅÛÀº AI ¸®½ºÆ®¿¡¼­µµ »èÁ¦
+				// AI ì•„ì´í…œì€ AI ë¦¬ìŠ¤íŠ¸ì—ì„œë„ ì‚­ì œ
 				if (pItem->m_itemProto->getItemTypeIdx() == ITYPE_ETC && pItem->m_itemProto->getItemSubTypeIdx() == IETC_PET_AI)
 				{
 					CAPet * pAPetNetxt = _owner->m_pApetlist;
@@ -2494,7 +2536,7 @@ void CWearInvenManager::checkItemTime()
 						SEND_Q(rmsg, _owner->m_desc);
 					}
 				}
-				// ¾ÆÀÌÅÛ »èÁ¦ ÈÄ ¸®ÅÏ
+				// ì•„ì´í…œ ì‚­ì œ í›„ ë¦¬í„´
 				GAMELOG << init("ITEM USE TIMEOUT ATTACK_PET", _owner)
 						<< "ITEM" << delim
 						<< itemlog(pItem)
@@ -2581,13 +2623,13 @@ void CWearInvenManager::checkItemTime()
 
 void CWearInvenManager::initCostumSuitItem( CItem* item )
 {
-	//¾ÆÀÌÅÛ ÀåÂø
+	//ì•„ì´í…œ ì¥ì°©
 	setCosWearSuitItem(item);
-	//¾ÆÀÌÅÛ ¼¼ÆÃ
+	//ì•„ì´í…œ ì„¸íŒ…
 	getCosWearSuitItem()->setWearPos(COSTUME2_WEARING_SUIT);
 
 
-	//°³º°ÀÇ»óÀÇ ¾ÆÀÌÅÛÀ» »ı¼ºÇÏ¿© ¾ÆÀÌÅÛ ¿É¼Ç ¼¼ÆÃ ¹× ÀåÂø Á¤º¸ ¾÷µ¥ÀÌÆ®
+	//ê°œë³„ì˜ìƒì˜ ì•„ì´í…œì„ ìƒì„±í•˜ì—¬ ì•„ì´í…œ ì˜µì…˜ ì„¸íŒ… ë° ì¥ì°© ì •ë³´ ì—…ë°ì´íŠ¸
 	CItem* pItem = NULL;
 	int itemIndex = -1;
 	bool bWearing = false;
@@ -2623,7 +2665,7 @@ void CWearInvenManager::initCostumSuitItem( CItem* item )
 		bWearing = true;
 	}
 
-	//Æ÷Ãó ¹öÇÁ Áö±Ş
+	//í¬ì¸ˆ ë²„í”„ ì§€ê¸‰
 	if (bWearing)
 	{
 		int skill_index = 0, skill_level = 0;

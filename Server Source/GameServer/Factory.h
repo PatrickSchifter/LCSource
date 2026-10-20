@@ -14,8 +14,8 @@ class CFactoryProto
 {
 	int				m_nIndex;
 	int				m_nJob;
-	int				m_nSealType;			// а╕юш ╫╨еЁ е╦ют
-	int				m_nItemType;			// ╬фюлеш ╪╜╨Й е╦ют (╪р╦Пг╟ю╨ е╦ют)
+	int				m_nSealType;			// Л═°Л·▒ Л┼╓М┌╛ М┐─Л·┘
+	int				m_nItemType;			// Л∙└Л²╢М┘° Л└°К╦▄ М┐─Л·┘ (Л├▄К╙╗М▓┬Л²─ М┐─Л·┘)
 	int				m_nItemIdx;
 	LONGLONG		m_llMakeExp;
 	LONGLONG		m_llNeedExp;
@@ -87,7 +87,7 @@ public:
 };
 
 ///////////////////////////
-// дЁ╦╞ем а╕юш ╬фюлеш ╦╝╫╨ф╝
+// Л╨░К╕╜М└╟ Л═°Л·▒ Л∙└Л²╢М┘° К╕╛Л┼╓М┼╦
 //
 class CFactoryList
 {

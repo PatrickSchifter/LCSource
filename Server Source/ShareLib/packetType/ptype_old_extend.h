@@ -9,13 +9,13 @@ namespace RequestClient
 {
 	struct doSetTargetInfo : public pTypeThirdBase
 	{
-		int charIndex;			//PCÀÇ ÀÎµ¦½º ³ª¸ÓÁö´Â -1,(NPC,PET,ELE...)
+		int charIndex;			//PCì˜ ì¸ë±ìŠ¤ ë‚˜ë¨¸ì§€ëŠ” -1,(NPC,PET,ELE...)
 	};
 }
 
 namespace ResponseClient
 {
-// Ä³¸¯ÅÍ ¼±ÅÃÃ¢À¸·Î µ¹¾Æ°¡±â
+// ìºë¦­í„° ì„ íƒì°½ìœ¼ë¡œ ëŒì•„ê°€ê¸°
 // pTypeThirdBase:thirdType = 0 (by user), = 1 (by hardcore system)
 struct exRestart : public pTypeThirdBase
 {

@@ -44,8 +44,10 @@
 #include "../ShareLib/packetType/ptype_premium_char.h"
 #endif
 
+#include "../ShareLib/packetType/ptype_reserved_gm_command.h"
+
 ///////////////////
-// ¿î¿µÀÚ ¸í·É °ü·Ã
+// ìš´ì˜ì ëª…ë ¹ ê´€ë ¨
 
 void do_GM(CPC* ch, CNetMsg::SP& msg)
 {
@@ -106,71 +108,6 @@ void do_GM(CPC* ch, CNetMsg::SP& msg)
 void do_GMEcho(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
-#ifdef GMTOOL
-	if(ch->m_desc->m_userFlag & IS_GM_CHAR)
-	{
-		*tmpBuf = '\0';		// argument for arg
-		if (!arg || !(*arg))		return ;
-
-		int serverno, subno;
-		char* p1;
-		arg = AnyOneArg(arg, tmpBuf);
-		p1 = tmpBuf;
-		while (*p1)
-		{
-			if (!isdigit(*p1))
-				return ;		//goto INVALID_FORMAT;
-			p1++;
-		}
-		serverno = atoi(tmpBuf);
-
-		if (!arg || !(*arg))
-			return;
-
-		arg = AnyOneArg(arg, tmpBuf);
-		p1 = tmpBuf;
-		while (*p1)
-		{
-			if (!isdigit(*p1))
-				return ;		//goto INVALID_FORMAT;
-			p1++;
-		}
-		subno = atoi(tmpBuf);
-
-		arg = AnyOneArg(arg, tmpBuf, true);
-		// 0: server, 1: all, 2: subserver
-		int type;
-		if (strcmp(tmpBuf, GM_CMD_ECHO_SERVER) == 0)		type = 0;
-		else if (strcmp(tmpBuf, GM_CMD_ECHO_ALL) == 0)	type = 1;
-		else if (strcmp(tmpBuf, GM_CMD_ECHO_SUBSERVER) == 0)		type = 2;
-		else return ;
-
-		arg = SkipSpaces(arg);
-		if (!arg || !(*arg))		return ;
-
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			switch (type)
-			{
-			case 0:
-				MsgrNoticeMsg(rmsg, -1, serverno, -1, -1, arg);
-				break;
-			case 1:
-				MsgrNoticeMsg(rmsg, -1, -1, -1, -1, arg);
-				//DB¿¡ ³»¿ë(arg) ÀúÀå ¹× °ÔÀÓ ¼­¹ö ¸®ºñÀü ¹øÈ£ ¾÷µ¥ÀÌÆ®
-				//¸®ºñÀü ¹øÈ£¸¦ ³»°¡ ¾Ë°í ÀÖ´Â °Í¿¡ +1 À» ÇØ¼­ ÀúÀå ÇÏµµ·Ï ÇÔ.
-				//ÈÄ¿¡ ¸Ş½ÅÀú ¼­¹ö¿¡¼­ ÆĞÅ¶À» ¹ŞÀ¸¸é ¸®ºñÀü ¹øÈ£¸¦ +1 ÇØÁÜ.
-				break;
-			case 2:
-				MsgrNoticeMsg(rmsg, -1, serverno, subno, -1, arg);
-				break;
-			}
-			SEND_Q(rmsg, gserver->m_messenger);
-		}
-
-		return ;
-	}
-#endif // GMTOOL
 	*tmpBuf = '\0';		// argument for arg
 	if (!arg || !(*arg))		return ;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -212,9 +149,9 @@ void do_GMEcho(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			break;
 		case 2:
 			MsgrNoticeMsg(rmsg, -1, -1, -1, -1, arg);
-			//¸®ºñÀüÀ» 1 Áõ°¡ ½ÃÅ² ÈÄ
+			//ë¦¬ë¹„ì „ì„ 1 ì¦ê°€ ì‹œí‚¨ í›„
 			Notice::instance()->setLastRev(Notice::instance()->getLastRev() + 1);
-			//DB¿¡ ÀúÀå
+			//DBì— ì €ì¥
 			{
 				std::string query = boost::str(boost::format("INSERT INTO t_notice_all values(%d, '%s', now())") % Notice::instance()->getLastRev() % arg);
 				DBManager::instance()->pushQueryForDataDB(0, query);
@@ -341,7 +278,7 @@ void do_GMGoZone(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 	}
 
-	// µ¿ÀÏ ½Ì±Û ´øÀüÀ¸·Î´Â ÀÌµ¿ ºÒ°¡
+	// ë™ì¼ ì‹±ê¸€ ë˜ì „ìœ¼ë¡œëŠ” ì´ë™ ë¶ˆê°€
 	if ((ch->m_pZone->IsPersonalDungeon() || ch->m_pZone->IsGuildRoom()) && ch->m_pZone->m_index == zone)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -350,7 +287,7 @@ void do_GMGoZone(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return ;
 	}
 
-	// Á¸À» Ã£¾Æ¼­
+	// ì¡´ì„ ì°¾ì•„ì„œ
 	CZone* pZone = gserver->FindZone(zone);
 	if (pZone == NULL)
 	{
@@ -388,7 +325,7 @@ void do_GMGoto(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	char ylayer = (char)atoi(tmpBuf);
 
 	//if (ylayer < 0 || ylayer >= ch->m_pZone->m_countY)
-	// yLayer ¼öÁ¤
+	// yLayer ìˆ˜ì •
 	if (ylayer < 0 || ylayer > ((ch->m_pZone->m_countY - 1) * 2))
 		return ;
 
@@ -446,7 +383,7 @@ void do_GMItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if (socketcount > 0 && item->m_itemProto->getItemFlag() & ITEM_FLAG_SOCKET)
 	{
-		if(socketcount > 10)//old socket »ı¼º
+		if(socketcount > 10)//old socket ìƒì„±
 		{
 			if(item->m_socketList.SetSocketCountForAdmin(socketcount, true))
 			{
@@ -463,7 +400,7 @@ void do_GMItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	if( item->getDBIndex() == 2148 && gserver->isActiveEvent( A_EVENT_EGGS_HUNT) )
-		item->setUsed(1);	// 1: ¿î¿µÀÚ°¡ ¶³¾î¶ß¸° °Í, -1: ¸ó½ºÅÍ°¡ ¶³¾î¶ß¸° °Í
+		item->setUsed(1);	// 1: ìš´ì˜ìê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ, -1: ëª¬ìŠ¤í„°ê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ
 
 	// itemdrop <index> <plus> <flag> <count> <option_count> <option_type> <option_level>
 	if (arg && (*arg))
@@ -527,7 +464,7 @@ void do_GMItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 		else
 		{
-			// ¿É¼Ç ºÎºĞ Ãß°¡
+			// ì˜µì…˜ ë¶€ë¶„ ì¶”ê°€
 			if (optionCount > 0 && optionCount <= MAX_ITEM_OPTION)
 			{
 				optionType.reset(new int[optionCount]);
@@ -555,7 +492,7 @@ void do_GMItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					if (optionType[i] < 0 || optionType[i] >= MAX_NUM_OPTION || optionLevel[i] < 1 )
 						continue;
 
-					// Option ºÙÀÌ±â
+					// Option ë¶™ì´ê¸°
 					COptionProto* proto = gserver->m_optionProtoList.FindProto(optionType[i]);
 
 					if (!proto)
@@ -583,7 +520,7 @@ void do_GMItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 #ifdef SYSTEM_TREASURE_MAP
 	if( item->getDBIndex() == TREASURE_MAP_ITEM_INDEX )
 	{
-		// µå¶ø Áö¿ªµµ ¾Æ´Ï°í µå¶øÁö¿ªÀÌ ÇÊµåµµ ¾Æ´Ï°í ¾ÆÀÌÅÛ¿¡ ¸Ê ¼ÂÆÃÀÌ Á¦´ë·Î ¾ÊµÇ¾úµû¸é µå¶øÇÏÁö ¾Ê´Â´Ù.
+		// ë“œë ì§€ì—­ë„ ì•„ë‹ˆê³  ë“œëì§€ì—­ì´ í•„ë“œë„ ì•„ë‹ˆê³  ì•„ì´í…œì— ë§µ ì…‹íŒ…ì´ ì œëŒ€ë¡œ ì•Šë˜ì—ˆë”°ë©´ ë“œëí•˜ì§€ ì•ŠëŠ”ë‹¤.
 		if( !ch->m_pZone->CheckTreasureDropFlag() || !ch->m_pZone->IsFieldZone() || !ch->m_pZone->SetTresaureMapInfo( item ) )
 		{
 			delete item;
@@ -644,17 +581,17 @@ void do_GMCountPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	{
-		// ¸Ş½ÅÀú¿¡ ¿äÃ»
+		// ë©”ì‹ ì €ì— ìš”ì²­
 		CNetMsg::SP rmsg(new CNetMsg);
 		switch (mode)
 		{
-		case 0:		// ÇöÀç ¼­¹ö - ¼­ºê
+		case 0:		// í˜„ì¬ ì„œë²„ - ì„œë¸Œ
 			MsgrPlayerCountReq(rmsg, gserver->m_serverno, gserver->m_subno, ch->m_index);
 			break;
-		case 1:		// ÀüÃ¼ ¼­¹ö
+		case 1:		// ì „ì²´ ì„œë²„
 			MsgrPlayerCountReq(rmsg, -1, -1, ch->m_index);
 			break;
-		case 2:		// Æ¯Á¤ ¼­¹ö±º
+		case 2:		// íŠ¹ì • ì„œë²„êµ°
 			MsgrPlayerCountReq(rmsg, server, -1, ch->m_index);
 			break;
 		default:
@@ -896,21 +833,21 @@ void do_GMGoPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if (!arg || !(*arg))		return;
 
-	// ÀÌ¸§ °¡Á® ¿À±â
+	// ì´ë¦„ ê°€ì ¸ ì˜¤ê¸°
 	CLCString name = arg;
 	name.Trim();
 
-	// ³ª¶û ºñ±³
+	// ë‚˜ë‘ ë¹„êµ
 	if (strcmp(name, ch->m_name) == 0 || strcmp(name, ch->m_nick) == 0)
 		return ;
 
-	// ÀüÃ¼ À¯Àú Áß¿¡
+	// ì „ì²´ ìœ ì € ì¤‘ì—
 	CPC* pc = PCManager::instance()->getPlayerByName(name, true);
 
 	if (pc == NULL)
 	{
-		// TODO : ¾Æ¿¹ ¾øÀ¸¸é Use ¸Ş½ÅÀú
-		// ¾øÀ¸¸é ¸Ş½ÃÁö
+		// TODO : ì•„ì˜ˆ ì—†ìœ¼ë©´ Use ë©”ì‹ ì €
+		// ì—†ìœ¼ë©´ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", "Not Found the PC");
 		SEND_Q(rmsg, ch->m_desc);
@@ -1019,7 +956,7 @@ void do_GMGoNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	CNPC* ret = NULL;
 	float dist;
 
-	// ÀÚ½Å ÁÖº¯¿¡¼­
+	// ìì‹  ì£¼ë³€ì—ì„œ
 	for (i = sx; i <= ex; i++)
 	{
 		if (i < 0 || i >= area->m_size[0])
@@ -1030,7 +967,7 @@ void do_GMGoNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			if (j < 0 || j >= area->m_size[1])
 				continue ;
 
-			// NPC¸¦ Ã£±â
+			// NPCë¥¼ ì°¾ê¸°
 			p = area->m_cell[i][j].m_listChar;
 
 			while (p)
@@ -1040,7 +977,7 @@ void do_GMGoNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					npc = TO_NPC(p);
 					if ((index == -1 && strcmp(npc->m_name, name) == 0) || (index != -1 && npc->m_idNum == index))
 					{
-						// °Å¸®¸¦ ºñ±³ÇØ¼­ °¡±î¿î ³ÑÀ¸·Î
+						// ê±°ë¦¬ë¥¼ ë¹„êµí•´ì„œ ê°€ê¹Œìš´ ë„˜ìœ¼ë¡œ
 						dist = GetDistance(ch, npc);
 						if (dist < retdist)
 						{
@@ -1056,7 +993,7 @@ void do_GMGoNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if (ret == NULL)
 	{
-		// ¾øÀ¸¸é ¸Ş½ÃÁö
+		// ì—†ìœ¼ë©´ ë©”ì‹œì§€
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", "Not Found the NPC");
 		SEND_Q(rmsg, ch->m_desc);
@@ -1068,7 +1005,7 @@ void do_GMGoNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		GoTo(ret, GET_YLAYER(ch), GET_X(ch), GET_Z(ch), ret->m_pArea->GetHeight(GET_YLAYER(ch), GET_X(ch), GET_Z(ch)), GET_R(ret));
 	}
 	else
-		// ÀÌµ¿ ½ÃÅ°±â
+		// ì´ë™ ì‹œí‚¤ê¸°
 		GoTo(ch, GET_YLAYER(ret), GET_X(ret), GET_Z(ret), ch->m_pArea->GetHeight(GET_YLAYER(ret), GET_X(ret), GET_Z(ret)), GET_R(ch));
 }
 
@@ -1128,11 +1065,11 @@ void do_GMComon(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if (!arg || !(*arg))		return;
 
-	// ÀÌ¸§ °¡Á® ¿À±â
+	// ì´ë¦„ ê°€ì ¸ ì˜¤ê¸°
 	CLCString name = arg;
 	name.Trim();
 
-	// ³ª¶û ºñ±³
+	// ë‚˜ë‘ ë¹„êµ
 	if (strcmp(name, ch->m_nick) == 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1152,14 +1089,14 @@ void do_GMComon(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return;
 	}
 
-	// °°Àº Á¸
+	// ê°™ì€ ì¡´
 	if (pc->m_pZone == ch->m_pZone)
 	{
-		// ÀÌµ¿ ½ÃÅ°±â
+		// ì´ë™ ì‹œí‚¤ê¸°
 		GoTo(pc, GET_YLAYER(ch), GET_X(ch), GET_Z(ch), pc->m_pArea->GetHeight(GET_YLAYER(ch), GET_X(ch), GET_Z(ch)), GET_R(pc));
 		return ;
 	}
-	// °°Àº Á¸¿¡ ¾øÀ¸¸é ÇØ´çÁ¸À¸·Î chÀÇ ÁÂÇ¥·Î ÀÌµ¿
+	// ê°™ì€ ì¡´ì— ì—†ìœ¼ë©´ í•´ë‹¹ì¡´ìœ¼ë¡œ chì˜ ì¢Œí‘œë¡œ ì´ë™
 	else
 	{
 		if (ch->m_pZone->IsPersonalDungeon() || ch->m_pZone->IsGuildRoom())
@@ -1292,7 +1229,6 @@ void do_GMSilence(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 #ifdef GMTOOL
-	if(ch->m_desc->m_userFlag & IS_GM_CHAR)
 	{
 		if (!arg || !(*arg))		return ;
 
@@ -1366,6 +1302,7 @@ void do_GMSilence(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 		return ;
 	}
+	
 #endif // GMTOOL
 
 	if (!arg || !(*arg))		return ;
@@ -1386,7 +1323,7 @@ void do_GMSilence(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		CPC* pc = (*iter).pPlayer;
 		if (pc == NULL)
 			continue;
-		// À¯Àú °Ë»ç
+		// ìœ ì € ê²€ì‚¬
 		if (( strcmp(pc->m_name, tmpBuf) == 0 || strcmp(pc->m_nick, tmpBuf) == 0 ))
 		{
 			arg = AnyOneArg(arg, tmpBuf);
@@ -1452,7 +1389,7 @@ void do_GMQuestComplete(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			if(pQuest == NULL)
 				return;
 			pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-			// ÁøÇàÁßÀÎ Äù½ºÆ®°¡ ÀÖ°í ¿Ï·áµÇÁö ¾Ê¾Ò°í index°¡ °°À¸¸é
+			// ì§„í–‰ì¤‘ì¸ í€˜ìŠ¤íŠ¸ê°€ ìˆê³  ì™„ë£Œë˜ì§€ ì•Šì•˜ê³  indexê°€ ê°™ìœ¼ë©´
 			if (!pQuest->IsCompleted())
 			{
 				pQuest->SetComplete1(true);
@@ -1473,7 +1410,7 @@ void do_GMQuestComplete(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		while ((pQuest = pQuestNext))
 		{
 			pQuestNext = ch->m_questList.GetNextQuest(pQuestNext, QUEST_STATE_RUN);
-			// ÁøÇàÁßÀÎ Äù½ºÆ®°¡ ÀÖ°í ¿Ï·áµÇÁö ¾Ê¾Ò°í index°¡ °°À¸¸é
+			// ì§„í–‰ì¤‘ì¸ í€˜ìŠ¤íŠ¸ê°€ ìˆê³  ì™„ë£Œë˜ì§€ ì•Šì•˜ê³  indexê°€ ê°™ìœ¼ë©´
 			if (!pQuest->IsCompleted() && pQuest->GetQuestIndex() == index)
 			{
 				// Quest Complete Log
@@ -1603,7 +1540,18 @@ void do_GMSetRegenSec(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	for (i=0; i < ch->m_pArea->m_npcRegenList.m_nCount; i++)
 	{
 		if (ch->m_pArea->m_npcRegenList.m_infoList[i].m_npcIdx == index)
+		{
 			ch->m_pArea->m_npcRegenList.m_infoList[i].m_regenSec = regenSec;
+			ch->m_pArea->m_npcRegenList.m_infoList[i].m_lastDieTime = 1;
+		}
+	}
+	for (i = 0 ; i < ch->m_pArea->m_raidNPCRegenList.size(); i++)
+	{
+		if(ch->m_pArea->m_raidNPCRegenList[i]->m_npcIdx == index)
+		{
+			ch->m_pArea->m_raidNPCRegenList[i]->m_regenSec = regenSec;
+			ch->m_pArea->m_raidNPCRegenList[i]->m_lastDieTime = 1;
+		}
 	}
 }
 
@@ -1622,11 +1570,23 @@ void do_GMNPCRegen(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	int i;
 	for (i=0; i < ch->m_pArea->m_npcRegenList.m_nCount; i++)
 	{
-		// ÇØ´ç npcÀÌ°í bAlive°¡ falseÀÌ¸é
-		if (ch->m_pArea->m_npcRegenList.m_infoList[i].m_npcIdx == index &&
-				!ch->m_pArea->m_npcRegenList.m_infoList[i].m_bAlive)
-			// ¹Ù·Î ¸®Á¨
+		// í•´ë‹¹ npcì´ê³  bAliveê°€ falseì´ë©´
+		if ( ch->m_pArea->m_npcRegenList.m_infoList[i].m_npcIdx == index &&
+			 ch->m_pArea->m_npcRegenList.m_infoList[i].m_bAlive == false)
+		{
 			ch->m_pArea->m_npcRegenList.m_infoList[i].m_regenSec = 0;
+			ch->m_pArea->m_npcRegenList.m_infoList[i].m_lastDieTime = 1;
+		}
+	}
+
+	for (i = 0 ; i < ch->m_pArea->m_raidNPCRegenList.size(); i++)
+	{
+		if( ch->m_pArea->m_raidNPCRegenList[i]->m_npcIdx == index &&
+			ch->m_pArea->m_raidNPCRegenList[i]->m_bAlive == false)
+		{
+			ch->m_pArea->m_raidNPCRegenList[i]->m_regenSec = 0;
+			ch->m_pArea->m_raidNPCRegenList[i]->m_lastDieTime = 1;
+		}
 	}
 }
 
@@ -1642,7 +1602,7 @@ void do_GMKillNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if (distance <= 0)
 		return;
 
-	// Cell 2°³ Á¤µµ¿¡¼­
+	// Cell 2ê°œ ì •ë„ì—ì„œ
 	int sx = ch->m_cellX - 2;
 	int ex = ch->m_cellX + 2;
 	int sz = ch->m_cellZ - 2;
@@ -1666,7 +1626,7 @@ void do_GMKillNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			{
 				tchNext = tchNext->m_pCellNext;
 
-				// npcÀÌ°í
+				// npcì´ê³ 
 				if (IS_NPC(tch))
 				{
 					CNPC* tnpc = TO_NPC(tch);
@@ -1674,8 +1634,8 @@ void do_GMKillNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					if( tnpc->GetOwner() )
 						continue;
 
-					if( tnpc->m_proto->m_index == 491 ||				// ¹Ù´Úµ¥¹ÌÁö »èÁ¦ ºÒ°¡
-							( tnpc->m_flag & NPC_WARCASTLE ) )				// °ø¼º NPC »èÁ¦ ºÒ°¡
+					if( tnpc->m_proto->m_index == 491 ||				// ë°”ë‹¥ë°ë¯¸ì§€ ì‚­ì œ ë¶ˆê°€
+							( tnpc->m_flag & NPC_WARCASTLE ) )				// ê³µì„± NPC ì‚­ì œ ë¶ˆê°€
 						continue;
 
 #ifdef EXTREME_CUBE
@@ -1691,15 +1651,15 @@ void do_GMKillNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					}
 #endif // EXTREME_CUBE
 
-					// ¿úÀÇ µÕÁö
+					// ì›œì˜ ë‘¥ì§€
 					if(tnpc->m_proto->m_index == 1152)
 						continue;
 
-					// npc¿Í ÇØ´ç°Å¸®³»¿¡ ÀÖÀ¸¸é
+					// npcì™€ í•´ë‹¹ê±°ë¦¬ë‚´ì— ìˆìœ¼ë©´
 					if (GetDistance(ch, tnpc) < distance)
 					{
 						{
-							// °á°ú ¸Ş½ÃÁö º¸³¿
+							// ê²°ê³¼ ë©”ì‹œì§€ ë³´ëƒ„
 							CNetMsg::SP rmsg(new CNetMsg);
 							DamageMsg(rmsg, ch, tnpc, MSG_DAMAGE_MELEE, -1, 1, HITTYPE_NORMAL, -1);
 							tnpc->m_pArea->SendToCell(rmsg, tnpc, false);
@@ -1709,22 +1669,12 @@ void do_GMKillNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 						if (DEAD(tnpc))
 						{
-#ifdef EXTREME_CUBE
-							if(tnpc->m_bCubeRegen)
-							{
-								CCubeSpace* cube = gserver->m_extremeCube.GetExtremeCube(tnpc->m_pArea->m_index);
-								if(cube)
-								{
-									cube->DelMob(tnpc);
-								}
-							}
-#endif // EXTREME_CUBE
 							tnpc->SendDisappearAllInCell(true);
 
-							// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+							// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 							DelAttackList(tnpc);
 
-							// npc »èÁ¦
+							// npc ì‚­ì œ
 							ch->m_pArea->CharFromCell(tnpc, true);
 							ch->m_pArea->DelNPC(tnpc);
 						}
@@ -1856,7 +1806,7 @@ void do_GMObserve(CPC* ch, const char* arg, std::vector<std::string>& vec)
 void do_GMChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	int i;
-	// ÀÖÀ¸¸é ÇØÁ¦
+	// ìˆìœ¼ë©´ í•´ì œ
 	for (i = 0; i < 20; i++)
 	{
 		if (gserver->m_chatmonitor[i] == ch->m_desc)
@@ -1874,7 +1824,7 @@ void do_GMChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 	}
 
-	// ¾øÀ¸¸é Ãß°¡
+	// ì—†ìœ¼ë©´ ì¶”ê°€
 	if (i == 20)
 	{
 		for (i = 0; i < 20; i++)
@@ -1887,7 +1837,7 @@ void do_GMChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 	}
 
-	// 20¸í±îÁö °¡´É
+	// 20ëª…ê¹Œì§€ ê°€ëŠ¥
 	if (i == 20)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1895,7 +1845,7 @@ void do_GMChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// ´ë»ó Ä³¸¯ÅÍ Ã£±â
+	// ëŒ€ìƒ ìºë¦­í„° ì°¾ê¸°
 	if (!arg || !*arg)
 		return ;
 
@@ -1936,13 +1886,13 @@ void do_GMChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& vec)
 void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 #ifdef EVENT_DOUBLE
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
-	int	zonenum;			// ´ë»ó Á¸ ¹øÈ£: -1: all, 0 ~ : zonenum
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
+	int	zonenum;			// ëŒ€ìƒ ì¡´ ë²ˆí˜¸: -1: all, 0 ~ : zonenum
 	int subno = -1;
 	zonenum = -1;
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -1954,7 +1904,7 @@ void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -1967,7 +1917,7 @@ void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// Ã¤³Î ÀĞ±â
+	// ì±„ë„ ì½ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -1980,7 +1930,7 @@ void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		subno = gserver->m_subno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -1993,7 +1943,7 @@ void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -2018,7 +1968,7 @@ void do_GMDoubleEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			zonenum = -1;
 		else
 		{
-			// all ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+			// all ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 			char* p = tmpBuf;
 			while (*p)
 			{
@@ -2127,10 +2077,10 @@ INVALID_FORMAT:
 
 void do_GMDoubleExpEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -2142,7 +2092,7 @@ void do_GMDoubleExpEvent(CPC* ch, const char* arg, std::vector<std::string>& vec
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -2155,7 +2105,7 @@ void do_GMDoubleExpEvent(CPC* ch, const char* arg, std::vector<std::string>& vec
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -2303,12 +2253,12 @@ void do_GMSpeedUp(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	int spd = atoi(tmpBuf);
 	if (spd < 1)
 	{
-		// ¿ø·¡ ¼Óµµ·Î
+		// ì›ë˜ ì†ë„ë¡œ
 		ch->m_speedup = 0;
 	}
 	else
 	{
-		// ÀÔ·Â ¼Óµµ·Î
+		// ì…ë ¥ ì†ë„ë¡œ
 		ch->m_speedup = spd;
 	}
 	ch->CalcStatus(true);
@@ -2420,7 +2370,7 @@ void do_GMKickID(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 		{
 			char buf2[MAX_MESSAGE_SIZE] = {0,};
-			// º¸³Â´Ù´Â ¸Ş½ÃÁö
+			// ë³´ëƒˆë‹¤ëŠ” ë©”ì‹œì§€
 			sprintf(buf2, "Sending Kick ID: %s", id);
 			CNetMsg::SP rmsg(new CNetMsg);
 			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", buf2);
@@ -2513,7 +2463,7 @@ void do_GMSetLimit(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
-	// ¸Ş¼¼Áö º¸³½´Ù.
+	// ë©”ì„¸ì§€ ë³´ë‚¸ë‹¤.
 
 	if( gserver->isRunConnector())
 	{
@@ -2636,7 +2586,7 @@ void do_GMLoginServer(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 void do_GMEventGoldenBall_End(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ÀÌº¥Æ® Á¾·á		: /event gball end
+	// ì´ë²¤íŠ¸ ì¢…ë£Œ		: /event gball end
 	CNetMsg::SP rmsg(new CNetMsg);
 	MsgrEventGoldenballEndMsg(rmsg, ch->m_index);
 	SEND_Q(rmsg, gserver->m_messenger);
@@ -2644,9 +2594,9 @@ void do_GMEventGoldenBall_End(CPC* ch, const char* arg, std::vector<std::string>
 
 void do_GMEventGoldenBall_Status(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ÇöÀç »óÅÂ º¸±â	: /event gball status
-	//					: ÀÀ¸ğÁß - A/BÆÀ ÀÌ¸§°ú Á¾·áÀÏ½Ã ¾Ë·ÁÁÜ
-	//					: º¸»óÁß - A/BÆÀ ÀÌ¸§/Á¡¼ö¿Í Á¾·áÀÏ½Ã ¾Ë·ÁÁÜ
+	// í˜„ì¬ ìƒíƒœ ë³´ê¸°	: /event gball status
+	//					: ì‘ëª¨ì¤‘ - A/BíŒ€ ì´ë¦„ê³¼ ì¢…ë£Œì¼ì‹œ ì•Œë ¤ì¤Œ
+	//					: ë³´ìƒì¤‘ - A/BíŒ€ ì´ë¦„/ì ìˆ˜ì™€ ì¢…ë£Œì¼ì‹œ ì•Œë ¤ì¤Œ
 
 	CLCString strStatus(1000);
 	switch (gserver->m_clGoldenBall.GetStatus())
@@ -2703,19 +2653,19 @@ void do_GMEventGoldenBall_Status(CPC* ch, const char* arg, std::vector<std::stri
 
 void do_GMEventGoldenBall_Gift(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// º¸»ó ½ÃÀÛÇÏ±â	: /event gball gift <team1 score> <team2 score> <year> <month> <day> <hour> <min>
-	//					: ÇöÀçºÎÅÍ º¸»ó ½ÃÀÛÇÏ¿© ÁöÁ¤µÈ ÀÏ½Ã¿¡ º¸»ó Á¾·á
+	// ë³´ìƒ ì‹œì‘í•˜ê¸°	: /event gball gift <team1 score> <team2 score> <year> <month> <day> <hour> <min>
+	//					: í˜„ì¬ë¶€í„° ë³´ìƒ ì‹œì‘í•˜ì—¬ ì§€ì •ëœ ì¼ì‹œì— ë³´ìƒ ì¢…ë£Œ
 
-	// 1. ÇöÀç »óÅÂ °Ë»ç : GOLDENBALL_STATUS_VOTE_END
-	// 2. ¸í·É¾î¿¡¼­ °¢ µ¥ÀÌÅÍ ÆÄ½Ì
-	// 3. ÇöÀç ½Ã°£°ú ÀÔ·Â ½Ã°£ ºñ±³
-	// 4. ¸Ş½ÅÀú·Î Àü´Ş
+	// 1. í˜„ì¬ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_VOTE_END
+	// 2. ëª…ë ¹ì–´ì—ì„œ ê° ë°ì´í„° íŒŒì‹±
+	// 3. í˜„ì¬ ì‹œê°„ê³¼ ì…ë ¥ ì‹œê°„ ë¹„êµ
+	// 4. ë©”ì‹ ì €ë¡œ ì „ë‹¬
 
-	// 1. ÇöÀç »óÅÂ °Ë»ç : GOLDENBALL_STATUS_VOTE_END OR GOLDENBALL_STATUS_GIFT
+	// 1. í˜„ì¬ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_VOTE_END OR GOLDENBALL_STATUS_GIFT
 	if (gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_VOTE_END && gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_GIFT)
 		return ;
 
-	// 2. ¸í·É¾î¿¡¼­ °¢ µ¥ÀÌÅÍ ÆÄ½Ì
+	// 2. ëª…ë ¹ì–´ì—ì„œ ê° ë°ì´í„° íŒŒì‹±
 	int			nTeam1Score;
 	int			nTeam2Score;
 	int			nYear;
@@ -2754,7 +2704,7 @@ void do_GMEventGoldenBall_Gift(CPC* ch, const char* arg, std::vector<std::string
 	if (*tmpBuf == '\0') return ;
 	nMin		= atoi(tmpBuf);
 
-	// 3. ÇöÀç ½Ã°£°ú ÀÔ·Â ½Ã°£ ºñ±³
+	// 3. í˜„ì¬ ì‹œê°„ê³¼ ì…ë ¥ ì‹œê°„ ë¹„êµ
 	time_t tCurrent;
 	time(&tCurrent);
 	struct tm tmEndGift;
@@ -2769,7 +2719,7 @@ void do_GMEventGoldenBall_Gift(CPC* ch, const char* arg, std::vector<std::string
 	if (tEndGift <= tCurrent)
 		return ;
 
-	// 4. ¸Ş½ÅÀú·Î Àü´Ş
+	// 4. ë©”ì‹ ì €ë¡œ ì „ë‹¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrEventGoldenballGiftMsg(rmsg, ch->m_index, gserver->m_clGoldenBall.GetTeam1Name(), nTeam1Score, gserver->m_clGoldenBall.GetTeam2Name(), nTeam2Score, nYear, nMonth, nDay, nHour, nMin, gserver->m_clGoldenBall.GetVoteEndTime());
@@ -2779,19 +2729,19 @@ void do_GMEventGoldenBall_Gift(CPC* ch, const char* arg, std::vector<std::string
 
 void do_GMEventGoldenBall_Vote(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ÀÀ¸ğ ½ÃÀÛÇÏ±â	: /event gball vote <team1> <team2> <year> <month> <day> <hour> <min>
-	//					: ÇöÀçºÎÅÍ ÀÀ¸ğ ½ÃÀÛÇÏ¿© ÁöÁ¤µÈ ÀÏ½Ã¿¡ ÀÀ¸ğ Á¾·á
+	// ì‘ëª¨ ì‹œì‘í•˜ê¸°	: /event gball vote <team1> <team2> <year> <month> <day> <hour> <min>
+	//					: í˜„ì¬ë¶€í„° ì‘ëª¨ ì‹œì‘í•˜ì—¬ ì§€ì •ëœ ì¼ì‹œì— ì‘ëª¨ ì¢…ë£Œ
 
-	// 1. ÇöÀç »óÅÂ °Ë»ç : GOLDENBALL_STATUS_NOTHING
-	// 2. ¸í·É¾î¿¡¼­ °¢ µ¥ÀÌÅÍ ÆÄ½Ì
-	// 3. ÇöÀç ½Ã°£°ú ÀÔ·Â ½Ã°£ ºñ±³
-	// 4. ¸Ş½ÅÀú·Î Àü´Ş
+	// 1. í˜„ì¬ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_NOTHING
+	// 2. ëª…ë ¹ì–´ì—ì„œ ê° ë°ì´í„° íŒŒì‹±
+	// 3. í˜„ì¬ ì‹œê°„ê³¼ ì…ë ¥ ì‹œê°„ ë¹„êµ
+	// 4. ë©”ì‹ ì €ë¡œ ì „ë‹¬
 
-	// 1. ÇöÀç »óÅÂ °Ë»ç : GOLDENBALL_STATUS_NOTHING
+	// 1. í˜„ì¬ ìƒíƒœ ê²€ì‚¬ : GOLDENBALL_STATUS_NOTHING
 	if (gserver->m_clGoldenBall.GetStatus() != GOLDENBALL_STATUS_NOTHING)
 		return ;
 
-	// 2. ¸í·É¾î¿¡¼­ °¢ µ¥ÀÌÅÍ ÆÄ½Ì
+	// 2. ëª…ë ¹ì–´ì—ì„œ ê° ë°ì´í„° íŒŒì‹±
 	CLCString	strTeam1(GOLDENBALL_TEAM_NAME_LENGTH + 1);
 	CLCString	strTeam2(GOLDENBALL_TEAM_NAME_LENGTH + 1);
 	int			nYear;
@@ -2830,7 +2780,7 @@ void do_GMEventGoldenBall_Vote(CPC* ch, const char* arg, std::vector<std::string
 	if (*tmpBuf == '\0') return ;
 	nMin		= atoi(tmpBuf);
 
-	// 3. ÇöÀç ½Ã°£°ú ÀÔ·Â ½Ã°£ ºñ±³
+	// 3. í˜„ì¬ ì‹œê°„ê³¼ ì…ë ¥ ì‹œê°„ ë¹„êµ
 	time_t tCurrent;
 	time(&tCurrent);
 	struct tm tmEndVote;
@@ -2845,7 +2795,7 @@ void do_GMEventGoldenBall_Vote(CPC* ch, const char* arg, std::vector<std::string
 	if (tEndVote <= tCurrent)
 		return ;
 
-	// 4. ¸Ş½ÅÀú·Î Àü´Ş
+	// 4. ë©”ì‹ ì €ë¡œ ì „ë‹¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrEventGoldenballVoteMsg(rmsg, ch->m_index, strTeam1, strTeam2, nYear, nMonth, nDay, nHour, nMin);
@@ -2855,14 +2805,14 @@ void do_GMEventGoldenBall_Vote(CPC* ch, const char* arg, std::vector<std::string
 
 void do_GMEventGoldenBall(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ÀÀ¸ğ ½ÃÀÛÇÏ±â	: /event gball vote <team1> <team2> <year> <month> <day> <hour> <min>
-	//					: ÇöÀçºÎÅÍ ÀÀ¸ğ ½ÃÀÛÇÏ¿© ÁöÁ¤µÈ ÀÏ½Ã¿¡ ÀÀ¸ğ Á¾·á
-	// º¸»ó ½ÃÀÛÇÏ±â	: /event gball gift <team1 score> <team2 score> <year> <month> <day> <hour> <min>
-	//					: ÇöÀçºÎÅÍ º¸»ó ½ÃÀÛÇÏ¿© ÁöÁ¤µÈ ÀÏ½Ã¿¡ º¸»ó Á¾·á
-	// ÇöÀç »óÅÂ º¸±â	: /event gball status
-	//					: ÀÀ¸ğÁß - A/BÆÀ ÀÌ¸§°ú Á¾·áÀÏ½Ã ¾Ë·ÁÁÜ
-	//					: º¸»óÁß - A/BÆÀ ÀÌ¸§/Á¡¼ö¿Í Á¾·áÀÏ½Ã ¾Ë·ÁÁÜ
-	// ÀÌº¥Æ® Á¾·á		: /event gball end
+	// ì‘ëª¨ ì‹œì‘í•˜ê¸°	: /event gball vote <team1> <team2> <year> <month> <day> <hour> <min>
+	//					: í˜„ì¬ë¶€í„° ì‘ëª¨ ì‹œì‘í•˜ì—¬ ì§€ì •ëœ ì¼ì‹œì— ì‘ëª¨ ì¢…ë£Œ
+	// ë³´ìƒ ì‹œì‘í•˜ê¸°	: /event gball gift <team1 score> <team2 score> <year> <month> <day> <hour> <min>
+	//					: í˜„ì¬ë¶€í„° ë³´ìƒ ì‹œì‘í•˜ì—¬ ì§€ì •ëœ ì¼ì‹œì— ë³´ìƒ ì¢…ë£Œ
+	// í˜„ì¬ ìƒíƒœ ë³´ê¸°	: /event gball status
+	//					: ì‘ëª¨ì¤‘ - A/BíŒ€ ì´ë¦„ê³¼ ì¢…ë£Œì¼ì‹œ ì•Œë ¤ì¤Œ
+	//					: ë³´ìƒì¤‘ - A/BíŒ€ ì´ë¦„/ì ìˆ˜ì™€ ì¢…ë£Œì¼ì‹œ ì•Œë ¤ì¤Œ
+	// ì´ë²¤íŠ¸ ì¢…ë£Œ		: /event gball end
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 	arg = AnyOneArg(arg, tmpBuf);
 	CLCString strSubCommand = tmpBuf;
@@ -2898,7 +2848,7 @@ void do_GMEventOXQuiz_Quiz(CPC* ch, const char* arg, std::vector<std::string>& v
 	arg = AnyOneArg(arg, tmpBuf);
 	int nSec = (tmpBuf[0]) ? atoi(tmpBuf) : 20;
 
-	// ¸Ş½ÅÀú·Î ¸ğµç ¼­¹ö±º¿¡ Àü´ŞÇÑ´Ù
+	// ë©”ì‹ ì €ë¡œ ëª¨ë“  ì„œë²„êµ°ì— ì „ë‹¬í•œë‹¤
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrEventOXQuizMsg(rmsg, ch->m_index, nIndex, nSec);
@@ -2908,7 +2858,7 @@ void do_GMEventOXQuiz_Quiz(CPC* ch, const char* arg, std::vector<std::string>& v
 
 void do_GMEventOXQuiz_End(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ¸Ş½ÅÀú·Î ¸ğµç ¼­¹ö±º¿¡ Àü´ŞÇÑ´Ù
+	// ë©”ì‹ ì €ë¡œ ëª¨ë“  ì„œë²„êµ°ì— ì „ë‹¬í•œë‹¤
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrEventOXEndMsg(rmsg, ch->m_index);
@@ -2918,7 +2868,7 @@ void do_GMEventOXQuiz_End(CPC* ch, const char* arg, std::vector<std::string>& ve
 
 void do_GMEventOXQuiz_Start(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ½ÃÀÛ ½Ã°£ ±¸ÇÏ±â
+	// ì‹œì‘ ì‹œê°„ êµ¬í•˜ê¸°
 	struct tm tmStart;
 	int	year, mon, day, hour, min;
 	memset(&tmStart, 0, sizeof(tmStart));
@@ -2953,13 +2903,13 @@ void do_GMEventOXQuiz_Start(CPC* ch, const char* arg, std::vector<std::string>& 
 
 	time_t timeStart = mktime(&tmStart);
 
-	// ÇöÀç ½Ã°£°ú ºñ±³
+	// í˜„ì¬ ì‹œê°„ê³¼ ë¹„êµ
 	time_t timeCurrent;
 	time(&timeCurrent);
 	if (timeCurrent >= timeStart)
 		return ;
 
-	// ¸Ş½ÅÀú·Î ÇöÀç ¼­ºê Ã¤³ÎÀÇ Á¸¼­¹ö¿¡ ¸ğµÎ Àü´Ş
+	// ë©”ì‹ ì €ë¡œ í˜„ì¬ ì„œë¸Œ ì±„ë„ì˜ ì¡´ì„œë²„ì— ëª¨ë‘ ì „ë‹¬
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrEventOXSetStartMsg(rmsg, ch->m_index, year + 1900, mon + 1, day, hour, min);
@@ -2969,12 +2919,12 @@ void do_GMEventOXQuiz_Start(CPC* ch, const char* arg, std::vector<std::string>& 
 
 void do_GMEventOXQuiz(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// ½ÃÀÛÇÏ±â		: oxevent start <year> <mon> <day> <hour> <min>
-	//				: ¹Ù·Î ÀÔÀå °¡´ÉÇÏ¸ç minºĞÈÄ ÀÌº¥Æ® ½ÃÀÛ, ÇØ´ç Á¢¼Ó Ã¤³Î¿¡¸¸ Àû¿ë
-	// Á¾·áÇÏ±â		: oxevent end
-	//				: oxevent °¡ ¹Ù·Î Á¾·áµÇ¸ç, Á¸¾ÈÀÇ À¯ÀúµéÀº ¸ğµÎ ÁÖ³ë¸¶À»·Î ÀÌµ¿ÇÑ´Ù., ÀüÃ¼ ¼­¹ö±º Àû¿ë
-	// ¹®Á¦ ³»±â	: oxevent quiz <num> <sec>
-	//				: num¿¡ ÇØ´çÇÏ´Â ÄûÁî Á¦½Ã, Á¦ÇÑ½Ã°£ sec ÃÊ, secÀÌ ¾øÀ¸¸é ±âº»20ÃÊ, ÀüÃ¼ ¼­¹ö±º Àû¿ë
+	// ì‹œì‘í•˜ê¸°		: oxevent start <year> <mon> <day> <hour> <min>
+	//				: ë°”ë¡œ ì…ì¥ ê°€ëŠ¥í•˜ë©° minë¶„í›„ ì´ë²¤íŠ¸ ì‹œì‘, í•´ë‹¹ ì ‘ì† ì±„ë„ì—ë§Œ ì ìš©
+	// ì¢…ë£Œí•˜ê¸°		: oxevent end
+	//				: oxevent ê°€ ë°”ë¡œ ì¢…ë£Œë˜ë©°, ì¡´ì•ˆì˜ ìœ ì €ë“¤ì€ ëª¨ë‘ ì£¼ë…¸ë§ˆì„ë¡œ ì´ë™í•œë‹¤., ì „ì²´ ì„œë²„êµ° ì ìš©
+	// ë¬¸ì œ ë‚´ê¸°	: oxevent quiz <num> <sec>
+	//				: numì— í•´ë‹¹í•˜ëŠ” í€´ì¦ˆ ì œì‹œ, ì œí•œì‹œê°„ sec ì´ˆ, secì´ ì—†ìœ¼ë©´ ê¸°ë³¸20ì´ˆ, ì „ì²´ ì„œë²„êµ° ì ìš©
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 	arg = AnyOneArg(arg, tmpBuf);
 	CLCString strSubCommand = tmpBuf;
@@ -3094,9 +3044,9 @@ void do_GMEventNewYear2006(CPC* ch, const char* arg, std::vector<std::string>& v
 //		: -1 - ing
 void do_GMEventItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 	TrimString(tmpBuf);
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -3107,7 +3057,7 @@ void do_GMEventItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -3120,7 +3070,7 @@ void do_GMEventItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	tmpBuf[0] = '\0';
 	TrimString(tmpBuf);
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -3138,7 +3088,7 @@ void do_GMEventItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 		if (strcmp(tmpBuf, "start") == 0)
 		{
-			// rate Á¤ÇÏ±â
+			// rate ì •í•˜ê¸°
 			tmpBuf[0] = '\0';
 			TrimString(tmpBuf);
 			arg = AnyOneArg(arg, tmpBuf, true);
@@ -3165,7 +3115,7 @@ void do_GMEventItemDrop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		else
 			goto INVALID_FORMAT;
 
-#ifdef EVENT_ITEMDROP_AUTO // /MsgrEventReqMsg ÇÔ¼ö°¡ ´Ù¸¥ °÷¿¡¼­µµ »ç¿ëÇÏ¹Ç·Î ¿ÜºÎ¿¡¼­ rmsg ±¸¼ºÇÔ.
+#ifdef EVENT_ITEMDROP_AUTO // /MsgrEventReqMsg í•¨ìˆ˜ê°€ ë‹¤ë¥¸ ê³³ì—ì„œë„ ì‚¬ìš©í•˜ë¯€ë¡œ ì™¸ë¶€ì—ì„œ rmsg êµ¬ì„±í•¨.
 		int i;
 		for(i = 0; i < 6; i++)
 		{
@@ -3290,7 +3240,7 @@ void do_GMToolChatMonitor(CPC* ch, const char* arg, std::vector<std::string>& ve
 	if (!arg || !*arg)
 		return ;
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
-	// ÀÌ¸§
+	// ì´ë¦„
 	arg = AnyOneArg(arg, tmpBuf);
 	TrimString(tmpBuf);
 	if (strlen(tmpBuf) < 1)
@@ -3374,10 +3324,10 @@ INVALID_FORMAT:
 void do_GMDoubleItemEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 #ifdef DOUBLE_ITEM_DROP
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -3389,7 +3339,7 @@ void do_GMDoubleItemEvent(CPC* ch, const char* arg, std::vector<std::string>& ve
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -3402,7 +3352,7 @@ void do_GMDoubleItemEvent(CPC* ch, const char* arg, std::vector<std::string>& ve
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -3417,7 +3367,7 @@ void do_GMDoubleItemEvent(CPC* ch, const char* arg, std::vector<std::string>& ve
 			arg = AnyOneArg(arg, tmpBuf, true);
 			TrimString(tmpBuf);
 
-			///// yhj  081014  ///////////////////// È®·ü Á¦ÇÑÇØÁ¦
+			///// yhj  081014  ///////////////////// í™•ë¥  ì œí•œí•´ì œ
 			//if( atoi(g_buf) < 0 || atoi(g_buf) > 200)
 			//	goto INVALID_FORMAT;
 			///////////////////////////////////////
@@ -3462,9 +3412,9 @@ void do_GMDoublePetExpEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 {
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 #ifdef DOUBLE_PET_EXP
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -3475,7 +3425,7 @@ void do_GMDoublePetExpEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -3488,7 +3438,7 @@ void do_GMDoublePetExpEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -3509,7 +3459,7 @@ void do_GMDoublePetExpEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 				goto INVALID_FORMAT;
 
 #ifdef DOUBLE_PET_EXP_AUTO
-			// ½Ã°£ ¼³Á¤ ºÎºĞ..
+			// ì‹œê°„ ì„¤ì • ë¶€ë¶„..
 			int start_dt[6];
 			int end_dt[6];
 			memset(start_dt, -1, sizeof(start_dt));
@@ -3590,10 +3540,10 @@ INVALID_FORMAT:
 void do_GMDoubleAttackEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 #ifdef DOUBLE_ATTACK
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -3605,7 +3555,7 @@ void do_GMDoubleAttackEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -3618,7 +3568,7 @@ void do_GMDoubleAttackEvent(CPC* ch, const char* arg, std::vector<std::string>& 
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -3691,7 +3641,7 @@ void do_GMDropItemEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -3704,7 +3654,7 @@ void do_GMDropItemEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -3974,7 +3924,7 @@ void do_GMExpLimit(CPC* ch, const char* arg, std::vector<std::string>& vec)
 #ifdef GM_EXP_LIMIT_AUTO
 	else if (strcmp(tmpBuf, "ing") == 0)
 	{
-		// ½Ã°£ ¹× ÇöÀç LIMIT Àü¼Û.
+		// ì‹œê°„ ë° í˜„ì¬ LIMIT ì „ì†¡.
 		sprintf(tmpBuf, "EXP Limit:%d SP Limit:%d Start Time:%d-%d-%d %d:%d:%d End Time:%d-%d-%d %d:%d:%d",
 				gserver->m_nExpLimit,
 				gserver->m_nSpLimit,
@@ -4002,7 +3952,7 @@ void do_GMExpLimit(CPC* ch, const char* arg, std::vector<std::string>& vec)
 #endif
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -4015,7 +3965,7 @@ void do_GMExpLimit(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 #ifdef GM_EXP_LIMIT_AUTO
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
@@ -4049,7 +3999,7 @@ void do_GMExpLimit(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 #ifdef GM_EXP_LIMIT_AUTO
-		// ¸Ş¼¼Áö Àç±¸¼º
+		// ë©”ì„¸ì§€ ì¬êµ¬ì„±
 		MsgrSetExpLimitMsg( rmsg, target, ch->m_index, nLimitStart, nLimitEnd, start_dt, end_dt );
 #else
 		MsgrSetExpLimitMsg( rmsg, target, ch->m_index, nLimit );
@@ -4078,12 +4028,12 @@ INVALID_FORMAT:
 void do_GMDoubleEventAuto(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 #ifdef NEW_DOUBLE_EVENT_AUTO
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
-	int	zonenum;			// ´ë»ó Á¸ ¹øÈ£: -1: all, 0 ~ : zonenum
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
+	int	zonenum;			// ëŒ€ìƒ ì¡´ ë²ˆí˜¸: -1: all, 0 ~ : zonenum
 	zonenum = -1;
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -4095,7 +4045,7 @@ void do_GMDoubleEventAuto(CPC* ch, const char* arg, std::vector<std::string>& ve
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -4108,7 +4058,7 @@ void do_GMDoubleEventAuto(CPC* ch, const char* arg, std::vector<std::string>& ve
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -4183,11 +4133,11 @@ INVALID_FORMAT:
 
 void do_GMUpgradeEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	int target = -1;			// ´ë»ó ¼­¹ö ±º ¹øÈ£: -1: all, 1 ~ n: server group
+	int target = -1;			// ëŒ€ìƒ ì„œë²„ êµ° ë²ˆí˜¸: -1: all, 1 ~ n: server group
 	int prob = 0;
 	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
 
-	// ´ë»ó ¼­¹ö±º Á¤ÇÏ±â
+	// ëŒ€ìƒ ì„œë²„êµ° ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 
@@ -4199,7 +4149,7 @@ void do_GMUpgradeEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		target = gserver->m_serverno;
 	else
 	{
-		// all, cur ¸ğµÎ ¾Æ´Ï¸é ¼ıÀÚ¿©¾ßÇÔ
+		// all, cur ëª¨ë‘ ì•„ë‹ˆë©´ ìˆ«ìì—¬ì•¼í•¨
 		char* p = tmpBuf;
 		while (*p)
 		{
@@ -4212,7 +4162,7 @@ void do_GMUpgradeEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			goto INVALID_FORMAT;
 	}
 
-	// ¸í·É Á¤ÇÏ±â
+	// ëª…ë ¹ ì •í•˜ê¸°
 	if (!arg || !(*arg))
 		goto INVALID_FORMAT;
 	arg = AnyOneArg(arg, tmpBuf, true);
@@ -4376,8 +4326,14 @@ void do_GMKickGuildMember(CPC* ch, const char* arg, std::vector<std::string>& ve
 		CPC* bosspc = PCManager::instance()->getPlayerByCharIndex(boss->charindex());
 		if(bosspc)
 		{
+			int out_date = 0;
+			if(guildmember->GetPC() != NULL)
+			{
+				out_date = guildmember->GetPC()->m_guild_in_date;
+			}
+
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildKickReqMsg(rmsg, guild->index(), boss->charindex(), guildmember->charindex());
+			HelperGuildKickReqMsg(rmsg, guild->index(), boss->charindex(), guildmember->charindex(), out_date);
 			SEND_Q(rmsg, gserver->m_helper);
 		}
 	}
@@ -4442,7 +4398,7 @@ void do_GMApplySkill(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					CPC* tpc = (*iter).pPlayer;
 					if (tpc == NULL)
 						continue;
-					// À¯Àú °Ë»ç
+					// ìœ ì € ê²€ì‚¬
 					if (( strcmp(tpc->m_name, name) == 0 || strcmp(tpc->m_nick, name) == 0))
 					{
 						targetCh = tpc;
@@ -4492,7 +4448,7 @@ void do_GMApplySkill(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 }
 
-// Å¬¶óÀÌ¾ğÆ®¿¡¼­ Ä³¸¯ÅÍ »óÅÂÇÃ·¡±× º¯È­¸¦ È®ÀÎÇÏ±â À§ÇÑ ¸í·É¾î
+// í´ë¼ì´ì–¸íŠ¸ì—ì„œ ìºë¦­í„° ìƒíƒœí”Œë˜ê·¸ ë³€í™”ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ ëª…ë ¹ì–´
 void do_GMStateFlag(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	int stateflag = 0;
@@ -4533,7 +4489,7 @@ void do_GMDate(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 }
 
-// Æ®¸®°Å ¸î °³¸¦ µ¿½Ã¿¡ È°¼ºÈ­ÇÏ´Â Å×½ºÆ®¸¦ À§ÇÑ ¸í·É¾î
+// íŠ¸ë¦¬ê±° ëª‡ ê°œë¥¼ ë™ì‹œì— í™œì„±í™”í•˜ëŠ” í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•œ ëª…ë ¹ì–´
 void do_GMPlayTrigger(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if (!arg || !(*arg))
@@ -4562,7 +4518,7 @@ void do_GMPlayTrigger(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 }
 
-// ±æµåÅä³Ê¸ÕÆ® ½ÃÀÛ ¸í·É
+// ê¸¸ë“œí† ë„ˆë¨¼íŠ¸ ì‹œì‘ ëª…ë ¹
 void do_GMBattleStart(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	int guildindex1;
@@ -4600,7 +4556,7 @@ void do_GMBattleStart(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if (!g1 ||!g2)
 		return;
 
-	// ±æ¸¶°¡ ¾ø´Ù¸é ½ÃÀÛ ½ÃÅ°Áö ¾Ê´Â´Ù.
+	// ê¸¸ë§ˆê°€ ì—†ë‹¤ë©´ ì‹œì‘ ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
 	CPC * boss1 = g1->boss()->GetPC();
 	CPC * boss2 = g2->boss()->GetPC();
 
@@ -4617,9 +4573,9 @@ void do_GMBattleStart(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		CLCString	rmsgStr(512);
 
 		{
-			// Åä³Ê¸ÕÆ®¿¡¼± º¸»ó±İÀÌ ¾ø´Ù.
+			// í† ë„ˆë¨¼íŠ¸ì—ì„  ë³´ìƒê¸ˆì´ ì—†ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
-			HelperGuildBattleReqMsg(rmsg, guildindex1, guildindex2, 0 /*prize is 0 */, zone, time);
+			HelperGuildBattleReqMsg(rmsg, guildindex1, guildindex2, 0 /*prize is 0 */, 0, zone, time);
 			SEND_Q(rmsg, gserver->m_helper);
 		}
 	}
@@ -4632,7 +4588,7 @@ void do_GMBattleStart(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 }
 
-//±æµåÅä³Ê¸ÕÆ® Á¾·á ¸í·É
+//ê¸¸ë“œí† ë„ˆë¨¼íŠ¸ ì¢…ë£Œ ëª…ë ¹
 void do_GMBattleStop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	int guildindex1;
@@ -4675,7 +4631,7 @@ void do_GMBattleStop(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 }
 
-// ·¹ÀÌµå °ü·Ã DBµ¥ÀÌÅÍ¸¦ ÃÊ±âÈ­ ÇÏ±â À§ÇÑ ¸í·É¾î
+// ë ˆì´ë“œ ê´€ë ¨ DBë°ì´í„°ë¥¼ ì´ˆê¸°í™” í•˜ê¸° ìœ„í•œ ëª…ë ¹ì–´
 void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if (arg && (*arg))
@@ -4688,7 +4644,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		arg = AnyOneArg(arg, tmpBuf);
 		if(strcmp(tmpBuf, "now") == 0)
 		{
-			// ¿©±â¼­ ¸Ş½ÅÀú·Î Àü ¼­¹ö±º¿¡ »Ñ¸®°í ·¹ÀÌµå Ã¤³ÎÀº Áö±İºÎÅÍ 10ºĞ°£ ·¹ÀÌµå ÃÊ±âÈ­¿¡ µé¾î°£´Ù.
+			// ì—¬ê¸°ì„œ ë©”ì‹ ì €ë¡œ ì „ ì„œë²„êµ°ì— ë¿Œë¦¬ê³  ë ˆì´ë“œ ì±„ë„ì€ ì§€ê¸ˆë¶€í„° 10ë¶„ê°„ ë ˆì´ë“œ ì´ˆê¸°í™”ì— ë“¤ì–´ê°„ë‹¤.
 			CNetMsg::SP rmsg(new CNetMsg);
 			rmsg->Init(MSG_MSGR_REQ);
 			RefMsg(rmsg) << (int)-1
@@ -4700,7 +4656,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 		else if(strcmp(tmpBuf, "check") == 0)
 		{
-			// ¼¼ÆÃµÈ ½Ã°£ È®ÀÎÇÏ±â
+			// ì„¸íŒ…ëœ ì‹œê°„ í™•ì¸í•˜ê¸°
 			sprintf(buf2, "RAID RESET TIME > ");
 			switch(gserver->m_nResetDay)
 			{
@@ -4751,7 +4707,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 		else
 		{
-			// ¿äÀÏº° ¸®¼Â³¯Â¥ Á¤ÇÏ±â
+			// ìš”ì¼ë³„ ë¦¬ì…‹ë‚ ì§œ ì •í•˜ê¸°
 			if(strcmp(tmpBuf, "sun") == 0)	resetday = 0;
 			else if(strcmp(tmpBuf, "mon") == 0)	resetday = 1;
 			else if(strcmp(tmpBuf, "tue") == 0)	resetday = 2;
@@ -4776,7 +4732,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					resetmin = 0;
 			}
 
-			// ¿äÀÏ, ½Ã, ºĞÀ» ÀüºÎ ÀÔ·Â ¹Ş¾ÒÀ¸´Ï È­¸é¿¡ ¼¼ÆÃ ³¯Â¥¸¦ »Ñ·ÁÁÖ°í ¸Ş½ÅÀú·Î º¸³»¼­ Àü ¼­¹ö±ºÀ¸·Î Àü´ŞÇÑ´Ù.
+			// ìš”ì¼, ì‹œ, ë¶„ì„ ì „ë¶€ ì…ë ¥ ë°›ì•˜ìœ¼ë‹ˆ í™”ë©´ì— ì„¸íŒ… ë‚ ì§œë¥¼ ë¿Œë ¤ì£¼ê³  ë©”ì‹ ì €ë¡œ ë³´ë‚´ì„œ ì „ ì„œë²„êµ°ìœ¼ë¡œ ì „ë‹¬í•œë‹¤.
 			sprintf(buf2, "RAID RESET TIME > ");
 			switch(resetday)
 			{
@@ -4843,7 +4799,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return ;
 	}
 
-	// ¿øÁ¤´ë DB Á¤º¸¸¦ ÃÊ±âÈ­
+	// ì›ì •ëŒ€ DB ì •ë³´ë¥¼ ì´ˆê¸°í™”
 	{
 		{
 			CNetMsg::SP rmsg(new CNetMsg);
@@ -4873,7 +4829,7 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		SEND_Q(rmsg, ch->m_desc);
 	}
 
-	// Æ®¸®°Å°¡ ÀÖ´Â ·¹ÀÌµå DB Á¤º¸ ÃÊ±âÈ­
+	// íŠ¸ë¦¬ê±°ê°€ ìˆëŠ” ë ˆì´ë“œ DB ì •ë³´ ì´ˆê¸°í™”
 	for (i=0; i < gserver->m_numZone; i++)
 	{
 		if (gserver->m_zones[i].m_index != ZONE_ALTER_OF_DARK && gserver->m_zones[i].m_index != ZONE_CAPPELLA_1)
@@ -4895,14 +4851,14 @@ void do_GMResetRaid(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	{
-		// Á¤»óÀûÀ¸·Î ¿Ï·áÇß´Ù°í Àü´ŞÇØÁÜ
+		// ì •ìƒì ìœ¼ë¡œ ì™„ë£Œí–ˆë‹¤ê³  ì „ë‹¬í•´ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", "resetraid Complete");
 		SEND_Q(rmsg, ch->m_desc);
 	}
 }
 
-// Á¦ÀÛ ¾ÆÀÌÅÛ ·¹º§ ¾÷À» À§ÇÑ ¸í·É¾î
+// ì œì‘ ì•„ì´í…œ ë ˆë²¨ ì—…ì„ ìœ„í•œ ëª…ë ¹ì–´
 void do_GMSetSealExp(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if (!arg || !(*arg))
@@ -4931,7 +4887,7 @@ void do_GMSetSealExp(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	{
-		// Á¤»óÀûÀ¸·Î ¿Ï·áÇß´Ù°í Àü´ŞÇØÁÜ
+		// ì •ìƒì ìœ¼ë¡œ ì™„ë£Œí–ˆë‹¤ê³  ì „ë‹¬í•´ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", "setsealexp Complete");
 		SEND_Q(rmsg, ch->m_desc);
@@ -4948,7 +4904,7 @@ void do_GMEndSubHelper(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	return ;
 }
 
-// ³»°¡ admin levelÀÌ ¸î ÀÎÁö È®ÀÎÇÏ´Â ¸í·É¾î
+// ë‚´ê°€ admin levelì´ ëª‡ ì¸ì§€ í™•ì¸í•˜ëŠ” ëª…ë ¹ì–´
 void do_GMMyAdmin(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	if(!ch)
@@ -4973,7 +4929,7 @@ void do_GMDTTimeSet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	arg = AnyOneArg(arg, tmpBuf, true);
 	if(strcmp(tmpBuf, "ing") == 0)
 	{
-		// ÇöÀç »óÈ² Ãâ·Â.
+		// í˜„ì¬ ìƒí™© ì¶œë ¥.
 		char str[1024];
 		int count = 0;
 		strcpy(str, "Dungeon Time set :");
@@ -5007,7 +4963,7 @@ void do_GMDTTimeSet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	{
 		if(strcmp(tmpBuf, "0") != 0)
 		{
-			time = -1; // error ¿î¿µÀÚ ÀÔ·Â ¿À·ù.
+			time = -1; // error ìš´ì˜ì ì…ë ¥ ì˜¤ë¥˜.
 		}
 	}
 
@@ -5040,7 +4996,7 @@ void do_GMDTTimeSet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	{
-		// ¿©±â¼­ ½Ã°£°ú(time) toggleÀ» MSGR·Î º¸³»¼­ Àü ¼­¹ö¿¡ Àû¿ë ½ÃÅ³ °Í.
+		// ì—¬ê¸°ì„œ ì‹œê°„ê³¼(time) toggleì„ MSGRë¡œ ë³´ë‚´ì„œ ì „ ì„œë²„ì— ì ìš© ì‹œí‚¬ ê²ƒ.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrDungeonTimeReqMsg(rmsg, MSG_MSRG_DUNGEON_TIME_TIMESET, time, arg2);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -5092,7 +5048,7 @@ void do_GMDTExpSet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return ;
 
 	{
-		// ¿©±â¼­ setÀ» MSGR·Î ¹ß¼Û.
+		// ì—¬ê¸°ì„œ setì„ MSGRë¡œ ë°œì†¡.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrDungeonTimeReqMsg(rmsg, MSG_MSRG_DUNGEON_TIME_EXPSET, set, -1);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -5147,7 +5103,7 @@ void do_GMDTTimeInterval(CPC* ch, const char* arg, std::vector<std::string>& vec
 	}
 
 	{
-		// ¿©±â¼­ setÀ» MSGR·Î ¹ß¼Û.
+		// ì—¬ê¸°ì„œ setì„ MSGRë¡œ ë°œì†¡.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrDungeonTimeReqMsg(rmsg, MSG_MSRG_DUNGEON_TIME_INTERVAL, interval, -1);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -5195,7 +5151,7 @@ void do_GMDTToggle(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return ;
 
 	{
-		// ¿©±â¼­ setÀ» MSGR·Î ¹ß¼Û.
+		// ì—¬ê¸°ì„œ setì„ MSGRë¡œ ë°œì†¡.
 		CNetMsg::SP rmsg(new CNetMsg);
 		MsgrDungeonTimeReqMsg(rmsg, MSG_MSRG_DUNGEON_TIME_TOGGLE, arg1, -1);
 		SEND_Q(rmsg, gserver->m_messenger);
@@ -5216,7 +5172,7 @@ void do_GMReloadCatalog(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 bool ParsingTime(const char*& arg, int start_dt[], int end_dt[])
 {
-	/////////////////////////////////////////////////¿©±âºÎÅÍ ½ºÅ¸Æ® Å¸ÀÓ.
+	/////////////////////////////////////////////////ì—¬ê¸°ë¶€í„° ìŠ¤íƒ€íŠ¸ íƒ€ì„.
 	/////// year
 	char* p;
 	if(!arg || !(*arg))
@@ -5276,12 +5232,12 @@ bool ParsingTime(const char*& arg, int start_dt[], int end_dt[])
 	}
 	else
 	{
-		if(start_dt[0]/4 == 0 && (start_dt[0] % 100 != 0 || start_dt[0] % 400 == 0))		//À±³â
+		if(start_dt[0]/4 == 0 && (start_dt[0] % 100 != 0 || start_dt[0] % 400 == 0))		//ìœ¤ë…„
 		{
 			if(start_dt[2] < 1 || start_dt[2] > 29)
 				return false;
 		}
-		else	//Æò³â
+		else	//í‰ë…„
 		{
 			if(start_dt[2] < 1 || start_dt[2] > 28)
 				return false;
@@ -5335,8 +5291,8 @@ bool ParsingTime(const char*& arg, int start_dt[], int end_dt[])
 	start_dt[5] = atoi(tmpBuf);
 	if(start_dt[5] < 0 || start_dt[5] > 59)
 		return false;
-	/////////////////////////////////////////////////¿©±â±îÁö ½ºÅ¸Æ® Å¸ÀÓ.
-	/////////////////////////////////////////////////¿©±âºÎÅÍ Á¾·á Å¸ÀÓ.
+	/////////////////////////////////////////////////ì—¬ê¸°ê¹Œì§€ ìŠ¤íƒ€íŠ¸ íƒ€ì„.
+	/////////////////////////////////////////////////ì—¬ê¸°ë¶€í„° ì¢…ë£Œ íƒ€ì„.
 	/////// year
 	if(!arg || !(*arg))
 		return false;
@@ -5393,12 +5349,12 @@ bool ParsingTime(const char*& arg, int start_dt[], int end_dt[])
 	}
 	else
 	{
-		if(end_dt[0]/4 == 0 && (end_dt[0] % 100 != 0 || end_dt[0] % 400 == 0))		//À±³â
+		if(end_dt[0]/4 == 0 && (end_dt[0] % 100 != 0 || end_dt[0] % 400 == 0))		//ìœ¤ë…„
 		{
 			if(end_dt[2] < 1 || end_dt[2] > 29)
 				return false;
 		}
-		else	//Æò³â
+		else	//í‰ë…„
 		{
 			if(end_dt[2] < 1 || end_dt[2] > 28)
 				return false;
@@ -5452,7 +5408,7 @@ bool ParsingTime(const char*& arg, int start_dt[], int end_dt[])
 	end_dt[5] = atoi(tmpBuf);
 	if(end_dt[5] < 0 || end_dt[5] > 59)
 		return false;
-	/////////////////////////////////////////////////¿©±â±îÁö Á¾·á Å¸ÀÓ.
+	/////////////////////////////////////////////////ì—¬ê¸°ê¹Œì§€ ì¢…ë£Œ íƒ€ì„.
 	return true;
 }
 
@@ -5717,7 +5673,7 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					int prob = GetRandom(1, 100);
 					int upprob = 18;
 
-					// ¼º°ø/º¯ÇÔ¾øÀ½(+3¹Ì¸¸)/½ÇÆĞ
+					// ì„±ê³µ/ë³€í•¨ì—†ìŒ(+3ë¯¸ë§Œ)/ì‹¤íŒ¨
 					if (prob <= upprob)
 					{
 						nResultSuccess++;
@@ -5725,7 +5681,7 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					else
 					{
 						prob -= upprob;
-						// ÇÏ¶ô 62%/±×¿Ü´Â ¹«º¯
+						// í•˜ë½ 62%/ê·¸ì™¸ëŠ” ë¬´ë³€
 						int downprob = 62;
 						if (prob <= downprob)
 							nResultMinus++;
@@ -5741,7 +5697,7 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					if (upprob < 1)
 						upprob = 1;
 
-					// ¼º°ø/º¯ÇÔ¾øÀ½(+3¹Ì¸¸)/½ÇÆĞ
+					// ì„±ê³µ/ë³€í•¨ì—†ìŒ(+3ë¯¸ë§Œ)/ì‹¤íŒ¨
 					if (prob <= upprob)
 						nResultSuccess++;
 
@@ -5752,7 +5708,7 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 						prob -= upprob;
 						int destruct = 5;
 
-						// ÆÄ±« 5%
+						// íŒŒê´´ 5%
 						if (prob <= destruct)
 						{
 							nResultBroken++;
@@ -5760,7 +5716,7 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 						else
 						{
 							prob -= destruct;
-							// ÇÏ¶ô 13%/±×¿Ü´Â ¹«º¯
+							// í•˜ë½ 13%/ê·¸ì™¸ëŠ” ë¬´ë³€
 							int downprob = 13;
 							if (prob <= downprob)
 								nResultMinus++;
@@ -5786,12 +5742,12 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 					int nUpProb[4] = { 0,0,100,0 };
 
-					nUpProb[0] = 75 - (nNowPlusValue * 4 ) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 75 - (nNowPlusValue * 4 ) + nLevelDiff;	// ì„±ê³µ
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = nNowPlusValue;							// ÇÏ¶ô
-					nUpProb[2] = 25 - nNowPlusValue;						// À¯Áö
-					nUpProb[3] = 75 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = nNowPlusValue;							// í•˜ë½
+					nUpProb[2] = 25 - nNowPlusValue;						// ìœ ì§€
+					nUpProb[3] = 75 - nUpProb[0];							// íŒŒê´´
 					int idx = 0;
 					while( nProb > 0 )
 					{
@@ -5803,16 +5759,16 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					{
 					case 0:
 						nResultSuccess++;
-						break;		// ¼º°ø
+						break;		// ì„±ê³µ
 					case 1:
 						nResultMinus++;
-						break;		// ÇÏ¶ô
+						break;		// í•˜ë½
 					case 2:
 						nResultNoCodition++;
-						break;		// À¯Áö
+						break;		// ìœ ì§€
 					case 3:
 						nResultBroken++;
-						break;		// ÆÄ±«
+						break;		// íŒŒê´´
 					default:
 						nResultNoCodition++;
 						break;
@@ -5835,12 +5791,12 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 					int nUpProb[4] = { 0,0,100,0 };
 
-					nUpProb[0] = 95 - (nNowPlusValue * 5 ) + nLevelDiff;	// ¼º°ø
+					nUpProb[0] = 95 - (nNowPlusValue * 5 ) + nLevelDiff;	// ì„±ê³µ
 					if( nUpProb[0] < 1 )
 						nUpProb[0] = 1;
-					nUpProb[1] = 0;											// ÇÏ¶ô
-					nUpProb[2] = 0;											// À¯Áö
-					nUpProb[3] = 100 - nUpProb[0];							// ÆÄ±«
+					nUpProb[1] = 0;											// í•˜ë½
+					nUpProb[2] = 0;											// ìœ ì§€
+					nUpProb[3] = 100 - nUpProb[0];							// íŒŒê´´
 					int idx = 0;
 					while( nProb > 0 )
 					{
@@ -5852,16 +5808,16 @@ void do_GMEnchant(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					{
 					case 0:
 						nResultSuccess++;
-						break;		// ¼º°ø
+						break;		// ì„±ê³µ
 					case 1:
 						nResultMinus++;
-						break;		// ÇÏ¶ô
+						break;		// í•˜ë½
 					case 2:
 						nResultNoCodition++;
-						break;		// À¯Áö
+						break;		// ìœ ì§€
 					case 3:
 						nResultBroken++;
-						break;		// ÆÄ±«
+						break;		// íŒŒê´´
 					default:
 						nResultNoCodition++;
 						break;
@@ -6054,6 +6010,28 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			CNetMsg::SP rmsg(new CNetMsg);
 			insideServer_do_ItemDelete(rmsg, p.pItem);
 			do_Item(ch, rmsg);
+
+			if(p.pItem->getDBIndex() == CUSTOM_TITLE_ITEM_INDEX)
+			{
+				//íƒ€ì´í‹€ ì§€ìš°ê³ 
+				CNetMsg::SP rmsg(new CNetMsg);
+				TitleDeleteInfoMsg(rmsg, p.pItem->getUsed_2());
+				SEND_Q(rmsg, ch->m_desc);
+
+				std::string query = boost::str(boost::format("DELETE FROM t_title_make where a_index = %d") % p.pItem->getUsed_2());
+				DBManager::instance()->pushQuery(0, query);
+
+				std::map<int, MAKE_TITLE*>::iterator it_custom = ch->_map_title.find(p.pItem->getUsed_2());
+				
+				if(it_custom != ch->_map_title.end())
+				{
+					delete[] it_custom->second->option_index;
+					delete[] it_custom->second->option_level;
+					delete it_custom->second;
+
+					ch->_map_title.erase(p.pItem->getUsed_2());
+				}
+			}
 		}
 	}
 	else if(strcmp(tmpBuf, "raid_normal") == 0)
@@ -6175,7 +6153,7 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		int gp = 0;
 		arg = AnyOneArg(arg, tmpBuf);
 		gp = atoi(tmpBuf);
-		if(gp < 0 || gp > 100000) // 0º¸´Ù ÀÛ°Å³ª, 100,000º¸´Ù Å©¸é return
+		if(gp < 0 || gp > 100000) // 0ë³´ë‹¤ ì‘ê±°ë‚˜, 100,000ë³´ë‹¤ í¬ë©´ return
 			return ;
 		if( ch
 				&& NULL != ch->m_guildInfo
@@ -6504,7 +6482,7 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		item_index = atoi(tmpBuf);
 		if (item_index < 0)
 			return;
-		// Cell 2°³ Á¤µµ¿¡¼­
+		// Cell 2ê°œ ì •ë„ì—ì„œ
 		int sx = ch->m_cellX - 2;
 		int ex = ch->m_cellX + 2;
 		int sz = ch->m_cellZ - 2;
@@ -6550,7 +6528,7 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		if (item_index < 0)
 			return;
 
-		// Cell 2°³ Á¤µµ¿¡¼­
+		// Cell 2ê°œ ì •ë„ì—ì„œ
 		int sx = ch->m_cellX - 2;
 		int ex = ch->m_cellX + 2;
 		int sz = ch->m_cellZ - 2;
@@ -6594,7 +6572,7 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		if (distance <= 0)
 			return;
 
-		// Cell 2°³ Á¤µµ¿¡¼­
+		// Cell 2ê°œ ì •ë„ì—ì„œ
 		int sx = ch->m_cellX - 2;
 		int ex = ch->m_cellX + 2;
 		int sz = ch->m_cellZ - 2;
@@ -6618,7 +6596,7 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 				{
 					tchNext = tchNext->m_pCellNext;
 
-					// npcÀÌ°í
+					// npcì´ê³ 
 					if (IS_NPC(tch))
 					{
 						CNPC* tnpc = TO_NPC(tch);
@@ -6626,8 +6604,8 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 						if( tnpc->GetOwner() )
 							continue;
 
-						if( tnpc->m_proto->m_index == 491 ||				// ¹Ù´Úµ¥¹ÌÁö »èÁ¦ ºÒ°¡
-								( tnpc->m_flag & NPC_WARCASTLE ) )				// °ø¼º NPC »èÁ¦ ºÒ°¡
+						if( tnpc->m_proto->m_index == 491 ||				// ë°”ë‹¥ë°ë¯¸ì§€ ì‚­ì œ ë¶ˆê°€
+								( tnpc->m_flag & NPC_WARCASTLE ) )				// ê³µì„± NPC ì‚­ì œ ë¶ˆê°€
 							continue;
 
 #ifdef EXTREME_CUBE
@@ -6643,11 +6621,11 @@ void do_GMFunc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 						}
 #endif // EXTREME_CUBE
 
-						// ¿úÀÇ µÕÁö
+						// ì›œì˜ ë‘¥ì§€
 						if(tnpc->m_proto->m_index == 1152)
 							continue;
 
-						// npc¿Í ÇØ´ç°Å¸®³»¿¡ ÀÖÀ¸¸é
+						// npcì™€ í•´ë‹¹ê±°ë¦¬ë‚´ì— ìˆìœ¼ë©´
 						if (GetDistance(ch, tnpc) < distance)
 						{
 							ApplyHateByDamage(ch, tnpc, 16, tnpc->m_hp);
@@ -6781,7 +6759,7 @@ void do_GMEchoNpc(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	else return ;
 
 	// npc index
-	int npcIndex = 0;		// 0 ÀÌ¸é ÁÖº¯ ¸ğµç NPC, -1 ÁÖº¯ ÆòÈ­, -2 ÁÖº¯ ÆòÈ­X, Æ¯Á¤ index
+	int npcIndex = 0;		// 0 ì´ë©´ ì£¼ë³€ ëª¨ë“  NPC, -1 ì£¼ë³€ í‰í™”, -2 ì£¼ë³€ í‰í™”X, íŠ¹ì • index
 	arg = AnyOneArg(arg, tmpBuf, true);
 	npcIndex = atoi(tmpBuf);
 
@@ -6909,9 +6887,9 @@ void do_GMDeathEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 void do_GMAttendanceChange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 
-	int attentDay; // Ãâ¼®ÀÏ
-	int attentMax; // ÃÖ´ë Ãâ¼®ÀÏ
-	int rewardPoint; // º¸»ó¹ŞÀº³¯Â¥. ( 50 / 100 / 150 / 200 / 250 / 300 / 365 )
+	int attentDay; // ì¶œì„ì¼
+	int attentMax; // ìµœëŒ€ ì¶œì„ì¼
+	int rewardPoint; // ë³´ìƒë°›ì€ë‚ ì§œ. ( 50 / 100 / 150 / 200 / 250 / 300 / 365 )
 
 	if (!arg || !(*arg))
 	{
@@ -7411,13 +7389,13 @@ void do_GMJobChange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	for(int i = 0; i < COSTUME2_WEARING_BACK; i++)	// WEARING_HELMET to COSTUME2_WEARING_BACK
 	{
 		itemWear	= ch->m_wearInventory.wearItemInfo[i];
-		// ¹ş±â±â
+		// ë²—ê¸°ê¸°
 		if(itemWear)
 		{
-			//³ªÇÑÅ× ¹ş±â
+			//ë‚˜í•œí…Œ ë²—ê¸°
 			ch->m_wearInventory.DelNormalItem(i);
 			{
-				// ³²µéÇÑÅ× ¹ş±â±â
+				// ë‚¨ë“¤í•œí…Œ ë²—ê¸°ê¸°
 				CNetMsg::SP rmsg(new CNetMsg);
 				WearingMsg(rmsg, ch, i, -1, 0);
 				ch->m_pArea->SendToCell(rmsg, ch, false);
@@ -7502,7 +7480,7 @@ void do_GMItemGet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	}
 
 	if( item->getDBIndex() == 2148 && gserver->isActiveEvent( A_EVENT_EGGS_HUNT) )
-		item->setUsed(1);	// 1: ¿î¿µÀÚ°¡ ¶³¾î¶ß¸° °Í, -1: ¸ó½ºÅÍ°¡ ¶³¾î¶ß¸° °Í
+		item->setUsed(1);	// 1: ìš´ì˜ìê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ, -1: ëª¬ìŠ¤í„°ê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ
 
 	// itemdrop <index> <plus> <flag> <count> <option_count> <option_type> <option_level>
 	if (arg && (*arg))
@@ -7566,7 +7544,7 @@ void do_GMItemGet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		}
 		else
 		{
-			// ¿É¼Ç ºÎºĞ Ãß°¡
+			// ì˜µì…˜ ë¶€ë¶„ ì¶”ê°€
 			if (optionCount > 0 && optionCount <= MAX_ITEM_OPTION)
 			{
 				optionType.reset(new int[optionCount]);
@@ -7594,7 +7572,7 @@ void do_GMItemGet(CPC* ch, const char* arg, std::vector<std::string>& vec)
 					if (optionType[i] < 0 || optionType[i] >= MAX_NUM_OPTION || optionLevel[i] < 1 )
 						continue;
 
-					// Option ºÙÀÌ±â
+					// Option ë¶™ì´ê¸°
 					COptionProto* proto = gserver->m_optionProtoList.FindProto(optionType[i]);
 
 					if (!proto)
@@ -7709,7 +7687,7 @@ void do_GMItemGetRange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	for(; dbindex <= dbindex2; dbindex++)
 	{
-		if (dbindex == NAS_ITEM_DB_INDEX) // nas´Â ¹ßÇàÇÏÁö ¾ÊÀ½
+		if (dbindex == NAS_ITEM_DB_INDEX) // nasëŠ” ë°œí–‰í•˜ì§€ ì•ŠìŒ
 			continue;
 
 		CItem* item = gserver->m_itemProtoList.CreateItem(dbindex, -1, plus, flag, count);
@@ -7718,7 +7696,7 @@ void do_GMItemGetRange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			continue ;
 
 		if( item->getDBIndex() == 2148 && gserver->isActiveEvent( A_EVENT_EGGS_HUNT) )
-			item->setUsed(1);	// 1: ¿î¿µÀÚ°¡ ¶³¾î¶ß¸° °Í, -1: ¸ó½ºÅÍ°¡ ¶³¾î¶ß¸° °Í
+			item->setUsed(1);	// 1: ìš´ì˜ìê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ, -1: ëª¬ìŠ¤í„°ê°€ ë–¨ì–´ëœ¨ë¦° ê²ƒ
 
 		// itemdrop <index> <plus> <flag> <count> <option_count> <option_type> <option_level>
 		if (arg && (*arg))
@@ -7782,7 +7760,7 @@ void do_GMItemGetRange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 			}
 			else
 			{
-				// ¿É¼Ç ºÎºĞ Ãß°¡
+				// ì˜µì…˜ ë¶€ë¶„ ì¶”ê°€
 				if (optionCount > 0 && optionCount <= MAX_ITEM_OPTION)
 				{
 					optionType.reset(new int[optionCount]);
@@ -7810,7 +7788,7 @@ void do_GMItemGetRange(CPC* ch, const char* arg, std::vector<std::string>& vec)
 						if (optionType[i] < 0 || optionType[i] >= MAX_NUM_OPTION || optionLevel[i] < 1 )
 							continue;
 
-						// Option ºÙÀÌ±â
+						// Option ë¶™ì´ê¸°
 						COptionProto* proto = gserver->m_optionProtoList.FindProto(optionType[i]);
 
 						if (!proto)
@@ -7912,11 +7890,11 @@ void do_GMXMASPuzzle(CPC* ch, const char* arg, std::vector<std::string>& vec)
 void doGMRoyalRumbleSetting(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 	/*
-	* Á¶°Ç 1. minÀº 4º¸´Ù Å« ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
-	* Á¶°Ç 2. max´Â min º¸´Ù Å« ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
-	* Á¶°Ç 3. max´Â 40º¸´Ù Å¬ ¼ö ¾ø´Ù.
-	* Á¶°Ç 4. startHour´Â 0 ~ 23ÀÎ ¾ç¼öÀÌ¾î¾ß ÇÑ´Ù.
-	* ¸í·É¾î ±ÔÄ¢
+	* ì¡°ê±´ 1. minì€ 4ë³´ë‹¤ í° ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	* ì¡°ê±´ 2. maxëŠ” min ë³´ë‹¤ í° ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	* ì¡°ê±´ 3. maxëŠ” 40ë³´ë‹¤ í´ ìˆ˜ ì—†ë‹¤.
+	* ì¡°ê±´ 4. startHourëŠ” 0 ~ 23ì¸ ì–‘ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	* ëª…ë ¹ì–´ ê·œì¹™
 	* /royalrumble <min> <max> <startHour>
 	*/
 
@@ -7948,7 +7926,7 @@ void doGMRoyalRumbleSetting(CPC* ch, const char* arg, std::vector<std::string>& 
 		return ;
 	}
 	/*
-	* °ª¿¡ ÀÌ»óÀÌ ¾øÀ¸´Ï ¸Ş½ÅÁ®·Î º¸³½´Ù.
+	* ê°’ì— ì´ìƒì´ ì—†ìœ¼ë‹ˆ ë©”ì‹ ì ¸ë¡œ ë³´ë‚¸ë‹¤.
 	*/
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -8100,68 +8078,86 @@ void do_GMJewelEvent(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		kind = atoi(tmpBuf);
 
 	arg = AnyOneArg(arg, tmpBuf);
-	int eventData = atoi(tmpBuf);
 
-	switch (kind)
+	if( strcmp(tmpBuf, "ing") == 0)
 	{
-	case 0:
-		{
-			gserver->m_jewelDataList.m_jewelData->setEventChaosCreateProb(eventData);
-			message.Format("ChaosCreate Event setting values is %d", eventData);
-			CNetMsg::SP rmsg(new CNetMsg);
-			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
-			SEND_Q(rmsg, ch->m_desc);
-		}
-		break;
-	case 1:
-		{
-			gserver->m_jewelDataList.m_jewelData->setEventComposeProb(eventData);
-			message.Format("JewelCompose Event setting values is %d", eventData);
-			CNetMsg::SP rmsg(new CNetMsg);
-			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
-			SEND_Q(rmsg, ch->m_desc);
-		}
-		break;
-	case 2:
-		{
-			gserver->m_jewelDataList.m_jewelData->setEventUpgradePorb(eventData);
-			message.Format("JewelUpgrade Event setting values is %d", eventData);
-			CNetMsg::SP rmsg(new CNetMsg);
-			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
-			SEND_Q(rmsg, ch->m_desc);
-		}
-		break;
-	case 3:
-		{
-			gserver->m_jewelDataList.m_jewelData->setEventCombineProb(eventData);
-			message.Format("JewelCombine Event setting values is %d", eventData);
-			CNetMsg::SP rmsg(new CNetMsg);
-			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
-			SEND_Q(rmsg, ch->m_desc);
-		}
-		break;
-	case 4:
-		{
-			gserver->m_jewelDataList.m_jewelData->setEventCollectProb(eventData);
-			message.Format("JewelCollect Event setting values is %d", eventData);
-			CNetMsg::SP rmsg(new CNetMsg);
-			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
-			SEND_Q(rmsg, ch->m_desc);
-		}
-		break;
-	}
+		message.Format("JewelALL Event ChaosCreate[%d], Compose[%d], Upgrade[%d], Combine[%d], Collect[%d]", 
+			gserver->m_jewelDataList.m_jewelData->getEventCreateChaosProb(),
+			gserver->m_jewelDataList.m_jewelData->getEventComposeProb(),
+			gserver->m_jewelDataList.m_jewelData->getEventUpgradeProb(),
+			gserver->m_jewelDataList.m_jewelData->getEventCombineProb(),
+			gserver->m_jewelDataList.m_jewelData->getEventCollectProb()
+			);
 
-	if( isAll )
-	{
-		gserver->m_jewelDataList.m_jewelData->setEventChaosCreateProb(eventData);
-		gserver->m_jewelDataList.m_jewelData->setEventComposeProb(eventData);
-		gserver->m_jewelDataList.m_jewelData->setEventUpgradePorb(eventData);
-		gserver->m_jewelDataList.m_jewelData->setEventCombineProb(eventData);
-		gserver->m_jewelDataList.m_jewelData->setEventCollectProb(eventData);
-		message.Format("JewelALL Event setting values is %d", eventData);
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
 		SEND_Q(rmsg, ch->m_desc);
+	}
+	else
+	{
+		int eventData = atoi(tmpBuf);
+
+		switch (kind)
+		{
+		case 0:
+			{
+				gserver->m_jewelDataList.m_jewelData->setEventChaosCreateProb(eventData);
+				message.Format("ChaosCreate Event setting values is %d", eventData);
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+				SEND_Q(rmsg, ch->m_desc);
+			}
+			break;
+		case 1:
+			{
+				gserver->m_jewelDataList.m_jewelData->setEventComposeProb(eventData);
+				message.Format("JewelCompose Event setting values is %d", eventData);
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+				SEND_Q(rmsg, ch->m_desc);
+			}
+			break;
+		case 2:
+			{
+				gserver->m_jewelDataList.m_jewelData->setEventUpgradePorb(eventData);
+				message.Format("JewelUpgrade Event setting values is %d", eventData);
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+				SEND_Q(rmsg, ch->m_desc);
+			}
+			break;
+		case 3:
+			{
+				gserver->m_jewelDataList.m_jewelData->setEventCombineProb(eventData);
+				message.Format("JewelCombine Event setting values is %d", eventData);
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+				SEND_Q(rmsg, ch->m_desc);
+			}
+			break;
+		case 4:
+			{
+				gserver->m_jewelDataList.m_jewelData->setEventCollectProb(eventData);
+				message.Format("JewelCollect Event setting values is %d", eventData);
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+				SEND_Q(rmsg, ch->m_desc);
+			}
+			break;
+		}
+
+		if( isAll )
+		{
+			gserver->m_jewelDataList.m_jewelData->setEventChaosCreateProb(eventData);
+			gserver->m_jewelDataList.m_jewelData->setEventComposeProb(eventData);
+			gserver->m_jewelDataList.m_jewelData->setEventUpgradePorb(eventData);
+			gserver->m_jewelDataList.m_jewelData->setEventCombineProb(eventData);
+			gserver->m_jewelDataList.m_jewelData->setEventCollectProb(eventData);
+			message.Format("JewelALL Event setting values is %d", eventData);
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", message);
+			SEND_Q(rmsg, ch->m_desc);
+		}
 	}
 }
 
@@ -8173,7 +8169,7 @@ extern void process_expressInputItem(CNetMsg::SP& msg);
 
 void do_Crash(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	// °­Á¦·Î ¼­¹ö Å©·¡½¬¸¦ À¯¹ßÇÏ´Â ÇÔ¼ö
+	// ê°•ì œë¡œ ì„œë²„ í¬ë˜ì‰¬ë¥¼ ìœ ë°œí•˜ëŠ” í•¨ìˆ˜
 	char* p = NULL;
 
 	*p = 0;
@@ -8269,7 +8265,7 @@ void do_TradeAgent_Fee(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	{
 		g_TradeAgent_Fee = atof(vec[0].c_str());
 
-		// subHelper·Î Àü¼ÛÇÏ¿© °ªÀ» º¯°æÇÏµµ·Ï ÇÔ
+		// subHelperë¡œ ì „ì†¡í•˜ì—¬ ê°’ì„ ë³€ê²½í•˜ë„ë¡ í•¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::TradeAgentChangeFee* packet = reinterpret_cast<ResponseClient::TradeAgentChangeFee*>(rmsg->m_buf);
 		packet->type = MSG_TRADEAGENT;
@@ -8294,7 +8290,7 @@ void do_TradeAgent_Deposit(CPC* ch, const char* arg, std::vector<std::string>& v
 	{
 		g_TradeAgent_Deposit = atoi(vec[0].c_str());
 
-		// subHelper·Î Àü¼ÛÇÏ¿© ¸ğµç Å¬¶óÀÌ¾ğÆ®°¡ ÀÎ½ÄÇÏµµ·Ï ÇÑ´Ù.
+		// subHelperë¡œ ì „ì†¡í•˜ì—¬ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ê°€ ì¸ì‹í•˜ë„ë¡ í•œë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::TradeAgentChangeDeposit* packet = reinterpret_cast<ResponseClient::TradeAgentChangeDeposit*>(rmsg->m_buf);
 		packet->type = MSG_TRADEAGENT;
@@ -8527,10 +8523,10 @@ void do_GoNextPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	for (; it != endIt; ++it)
 	{
 		CPC* pChar = (*it).pPlayer;
-		// ¸í·É¾î¸¦ ³»¸° Ä³¸¯ÅÍ°¡ ¾Æ´Ï°í
-		// °°Àº Á¸¿¡ ÀÖ°í
-		// ÀÌÀü¿¡ Ã£¾Æ°¡Áö ¾ÊÀº Ä³¸¯ÅÍÀÌ°í
-		// Ã£¾Æ°¥ Ä³¸¯ÅÍÀÇ À§Ä¡°¡ °³ÀÎ´øÀüÀÌ ¾Æ´Ï¶ó¸é
+		// ëª…ë ¹ì–´ë¥¼ ë‚´ë¦° ìºë¦­í„°ê°€ ì•„ë‹ˆê³ 
+		// ê°™ì€ ì¡´ì— ìˆê³ 
+		// ì´ì „ì— ì°¾ì•„ê°€ì§€ ì•Šì€ ìºë¦­í„°ì´ê³ 
+		// ì°¾ì•„ê°ˆ ìºë¦­í„°ì˜ ìœ„ì¹˜ê°€ ê°œì¸ë˜ì „ì´ ì•„ë‹ˆë¼ë©´
 		if (ch->m_index != pChar->m_index && ch->m_pZone == pChar->m_pZone
 				&& pChar->m_index != previous_char_index && pChar->m_pZone->IsPersonalDungeon() == false)
 		{
@@ -8540,7 +8536,7 @@ void do_GoNextPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if (cpc_vec.empty())
 	{
-		previous_char_index = 0; // ÇöÀç 1¸íÀÌ ÀÖ°í, ÀÌÀü¿¡ Ã£¾Æ°£ÀûÀÌ ÀÖÀ» °æ¿ì - ´Ù½Ã Ã£¾Æ°¡±â À§ÇØ¼­
+		previous_char_index = 0; // í˜„ì¬ 1ëª…ì´ ìˆê³ , ì´ì „ì— ì°¾ì•„ê°„ì ì´ ìˆì„ ê²½ìš° - ë‹¤ì‹œ ì°¾ì•„ê°€ê¸° ìœ„í•´ì„œ
 
 		CNetMsg::SP rmsg(new CNetMsg);
 		SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", "Nobody is in this zone.");
@@ -8594,14 +8590,14 @@ void do_VirtualReform(CPC* ch, const char* arg, std::vector<std::string>& vec)
 		return;
 	}
 
-	CItem* maginfireItem = ch->m_inventory.FindByDBIndex(1839); // È²±İ µ¸º¸±â
+	CItem* maginfireItem = ch->m_inventory.FindByDBIndex(1839); // í™©ê¸ˆ ë‹ë³´ê¸°
 	if (maginfireItem == NULL)
 	{
 		LOG_INFO("not found maginifire item");
 		return;
 	}
 
-	// NPCÀÇ virtual indexÃ£±â
+	// NPCì˜ virtual indexì°¾ê¸°
 	int npcVirtualIndex = ch->m_pArea->findNpcVIndex(1520);
 	if (npcVirtualIndex == -1)
 	{
@@ -8724,7 +8720,7 @@ void do_GMTheosChangePollution(CPC* ch, const char* arg, std::vector<std::string
 	pCastle->m_isNotChange = true;
 
 	{
-		// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+		// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 		pCastle->m_dvd.SetEnvRate(nRate);
 		pCastle->m_dvd.setOwnerMode(mode);
 
@@ -8765,7 +8761,7 @@ void do_GMTheosChangeDifficulty(CPC* ch, const char* arg, std::vector<std::strin
 	pCastle->m_isNotChange = true;
 
 	{
-		// ÇïÆÛ¿¡ º¯°æ ¿äÃ» nRate
+		// í—¬í¼ì— ë³€ê²½ ìš”ì²­ nRate
 		pCastle->m_dvd.SetMobRate(nRate);
 		pCastle->m_dvd.setOwnerMode(mode);
 
@@ -9449,7 +9445,7 @@ void do_GM_apetAccExp(CPC* ch, const char* arg, std::vector<std::string>& vec)
 void do_GM_svrInfo(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
 #ifndef LC_VER
-#define LC_VER "°³¹ßÀÚ PC"
+#define LC_VER "ê°œë°œì PC"
 #endif
 
 	std::string str = boost::str(boost::format("LC-%s-Game-v %s ") % LC_LOCAL_STRING % LC_VER );
@@ -9643,7 +9639,7 @@ void do_GM_pkPenalty(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if (vec.size() != 1)
 		return;
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ÆĞ³ÎÆ¼ ¸®Æû
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼
 	int pkpenalty = atoi(vec[0].c_str());
 
 	if (pkpenalty < PK_CHAOTIC_POINT_MAX)
@@ -9717,7 +9713,7 @@ void do_GM_goPOS(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 void do_GM_pdNPC(CPC* ch, const char* arg, std::vector<std::string>& vec)
 {
-	//MSG_NPC_REGEN,				// NPC ¸®Á¨ °ü·Ã	: index(n) dbIndex(n) x(f) z(f) h(f) r(f) yLayer(int) entityindex(n)
+	//MSG_NPC_REGEN,				// NPC ë¦¬ì   ê´€ë ¨	: index(n) dbIndex(n) x(f) z(f) h(f) r(f) yLayer(int) entityindex(n)
 	CNetMsg::SP rmsg(new CNetMsg);
 	rmsg->Init(MSG_NPC_REGEN);
 	RefMsg(rmsg) << -1
@@ -9930,8 +9926,8 @@ void do_GM_PremiumChar_Reset(CPC* ch, const char* arg, std::vector<std::string>&
 		return;
 	}
 
-	// ·Î±×¸¦ ³²±â´Â ÀÛ¾÷ÀÌ¹Ç·Î, ¸Ş¸ğ¸® µ¥ÀÌÅÍ¸¦ ÃÊ±âÈ­(reset()) ÇÏ±â ÀÌÀü¿¡ È£ÃâÇÒ°Í
-	LOG_INFO("PREMIUM_CHAR_RESET (by GM command) - charIndex : %d", ch->m_index);	// ÇâÈÄ °Ë»öÀ» ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇÑ ÀÛ¾÷
+	// ë¡œê·¸ë¥¼ ë‚¨ê¸°ëŠ” ì‘ì—…ì´ë¯€ë¡œ, ë©”ëª¨ë¦¬ ë°ì´í„°ë¥¼ ì´ˆê¸°í™”(reset()) í•˜ê¸° ì´ì „ì— í˜¸ì¶œí• ê²ƒ
+	LOG_INFO("PREMIUM_CHAR_RESET (by GM command) - charIndex : %d", ch->m_index);	// í–¥í›„ ê²€ìƒ‰ì„ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•œ ì‘ì—…
 	ch->m_premiumChar.saveResetLog();
 
 	ch->m_premiumChar.reset();
@@ -10030,7 +10026,7 @@ void do_GM_Attendance_assure_set_expire_time(CPC* ch, const char* arg, std::vect
 		return;
 	}
 
-	//»ç¿ëÁßÀÌ¶ó¸é Áö±İ °É·ÁÀÖ´Â ¹öÇÁ¿¡¼­ Ãâ¼® À¯Áö º¸Çè ¹öÇÁ¸¦ Ã£¾Æ¼­ ³²Àº ½Ã°£À» Á¶Á¤ÇÑ´Ù.
+	//ì‚¬ìš©ì¤‘ì´ë¼ë©´ ì§€ê¸ˆ ê±¸ë ¤ìˆëŠ” ë²„í”„ì—ì„œ ì¶œì„ ìœ ì§€ ë³´í—˜ ë²„í”„ë¥¼ ì°¾ì•„ì„œ ë‚¨ì€ ì‹œê°„ì„ ì¡°ì •í•œë‹¤.
 	int sec = atoi(vec[0].c_str());
 
 	ch->m_assist.m_help.getHead();
@@ -10106,7 +10102,7 @@ void do_popup_notice(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if (!arg || !(*arg))		
 		return ;
 	
-	//¼­¹öÁ¤º¸
+	//ì„œë²„ì •ë³´
 	arg = AnyOneArg(arg, tmpBuf, true);
 	int type;
 	
@@ -10119,7 +10115,7 @@ void do_popup_notice(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if (strcmp(tmpBuf, "list") == 0)
 	{
-		//list Àü´Ş
+		//list ì „ë‹¬
 		PopupNotice::instance()->SendAdminSystemMsg(ch);		
 		return ;	
 	}
@@ -10128,7 +10124,7 @@ void do_popup_notice(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if (strcmp(tmpBuf, "clear") == 0)
 	{
-		//clear msg Àü´Ş 
+		//clear msg ì „ë‹¬ 
 		CNetMsg::SP rmsg(new CNetMsg);
 
 		switch (type)
@@ -10150,10 +10146,10 @@ void do_popup_notice(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if(vec.size() < 3 || vec.size() > 8)
 		 return;
 
-	//html ÆÄÀÏ Á¤º¸ (³Ñ¹ö)
+	//html íŒŒì¼ ì •ë³´ (ë„˜ë²„)
 	int html_num = atoi(vec[1].c_str());
 
-	//runtime Á¤º¸
+	//runtime ì •ë³´
 	int runtime = atoi(vec[2].c_str());
 
 	if(html_num == 0 || runtime == 0)
@@ -10163,7 +10159,7 @@ void do_popup_notice(CPC* ch, const char* arg, std::vector<std::string>& vec)
 
 	if(vec.size() != 3 && vec.size() == 8)
 	{
-		//¿¹¾à ½Ã°£ Á¤º¸
+		//ì˜ˆì•½ ì‹œê°„ ì •ë³´
 		struct tm t;
 		time_t t2;
 		time(&t2);
@@ -10218,7 +10214,7 @@ void do_popup_noticeoff(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	if (!arg || !(*arg))		
 		return ;
 
-	//¼­¹öÁ¤º¸
+	//ì„œë²„ì •ë³´
 	arg = AnyOneArg(arg, tmpBuf, true);
 	int type;
 
@@ -10231,7 +10227,7 @@ void do_popup_noticeoff(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	else 
 		return ;
 
-	//html ÆÄÀÏ Á¤º¸ (³Ñ¹ö)
+	//html íŒŒì¼ ì •ë³´ (ë„˜ë²„)
 	int html_num = atoi(vec[1].c_str());
 	
 	CNetMsg::SP rmsg(new CNetMsg);
@@ -10250,12 +10246,344 @@ void do_popup_noticeoff(CPC* ch, const char* arg, std::vector<std::string>& vec)
 	SEND_Q(rmsg, gserver->m_messenger);
 }
 
+void do_masterstone_prob_test( CPC* ch, const char* arg, std::vector<std::string>& vec )
+{
+	//1 : ë§ˆìŠ¤í„° ìŠ¤í†¤ ì•„ì´í…œ ì¸ë±ìŠ¤
+	//2 : ë°˜ë³µ íšŸìˆ˜
+
+	if (vec.size() != 2)
+		return;
+
+	int master_stone_index = atoi(vec[0].c_str());
+	int nCount = atoi(vec[1].c_str());
+
+	FILE* file = fopen("MasterStone_Prob_Test.txt", "w");
+	std::string upgrade_str;
+	
+
+	CItem* pUpgradeItem = gserver->m_itemProtoList.CreateItem(12, 2, 0, 0, 1);
+
+	char error = 0;
+	int gap = 0;
+	int try_count = 0;
+
+	int total_reach_array[30] = {0,};
+	int first_reach_array[30] = {0,};
+	int first_reach_count = 0;
+	int old_plus = 0;
+
+	for( int i = 0; i < nCount; i++ )
+	{
+		while(1)
+		{
+			try_count ++;
+
+			switch( master_stone_index )
+			{
+			case LOWER_MASTERSTONE:
+				gap = 17 - pUpgradeItem->getPlus();
+				break;
+			case LOW_MASTERSTONE:
+				gap = 19 - pUpgradeItem->getPlus();
+				break;
+			case NORMAL_MASTERSTONE:
+				gap = 21 - pUpgradeItem->getPlus();
+				break;
+			case HIGH_MASTERSTONE:
+				gap = 23 - pUpgradeItem->getPlus();
+				break;
+			case HIGHER_MASTERSTONE:
+				gap = 25 - pUpgradeItem->getPlus();
+				break;
+			case MASTERSTONE:
+				gap = 26 - pUpgradeItem->getPlus();
+				break;
+			case ARMOR_MASTERSTONE:
+				gap = 25 - pUpgradeItem->getPlus();
+				break;
+			case LOWER_MASTERTONE2:
+				gap = 18 - pUpgradeItem->getPlus();
+				break;
+			case LOW_MASTERSTONE2:
+				gap = 20 - pUpgradeItem->getPlus();
+				break;
+			case NORMAL_MASTERSTONE2:
+				gap = 22 - pUpgradeItem->getPlus();
+				break;
+			case HIGH_MASTERSTONE2:
+				gap = 24 - pUpgradeItem->getPlus();
+				break;
+			case MASTERSTONE2:
+				gap = 27 - pUpgradeItem->getPlus();
+				break;
+			case MASTERSTONE3:
+				gap = 28 - pUpgradeItem->getPlus();
+				break;
+			case MASTERSTONE4:
+				gap = 28 - pUpgradeItem->getPlus();
+				break;
+			case MASTERSTONE5:
+				gap = 29 - pUpgradeItem->getPlus();
+				break;
+			default:
+				{
+					CNetMsg::SP rmsg(new CNetMsg);
+					SayMsg(rmsg, MSG_CHAT_NOTICE, 0, "", "", "Check the MasterStone Item Index");
+					SEND_Q(rmsg, ch->m_desc);
+					return;
+				}
+				break;
+			}
+
+			if(gap >= 12)
+				gap = 12;
+
+			int random_success = 0;
+
+			int success_prob = MASTERSTONE_SUCCESS_START_PROB;
+			int no_change_prob = MASTERSTONE_SUCCESS_NOCHANGE_PROB;
+			int fail_prob = MASTERSTONE_SUCCESS_FAIL_PROB;
+
+			success_prob += (gap * 2 * 100);
+			no_change_prob -= (gap * 100);
+			fail_prob -= (gap * 100);
+
+			int rand = GetRandom(1, 10000);
+
+			if(rand <= success_prob)
+				random_success = MASTERSTONE_INCREASE;
+			else if(rand <= success_prob + no_change_prob)
+				random_success = MASTERSTONE_NOT_CHANGE;
+			else
+				random_success = MASTERSTONE_DECREASE;
+
+			if(pUpgradeItem->getPlus() <= 16)
+			{
+				random_success = MASTERSTONE_INCREASE;
+			}
+
+			switch(random_success)
+			{
+				//ìƒìŠ¹
+			case MASTERSTONE_INCREASE:
+				total_reach_array[pUpgradeItem->getPlus()] += 1;			
+				pUpgradeItem->setPlus(pUpgradeItem->getPlus() + 1);
+				first_reach_count ++;
+
+				if(pUpgradeItem->getPlus() > old_plus)
+				{
+					first_reach_array[old_plus] = first_reach_count;
+					old_plus = pUpgradeItem->getPlus();
+					first_reach_count = 0;
+				}
+
+				if(pUpgradeItem->getPlus() == 30)
+				{
+					//íŒŒì¼ì— ì“°ê³  ì¤„ë°”ê¿ˆ
+					upgrade_str = "MasterStone Prob Test ";
+
+					for(int j = 0;  j < 30;  j ++)
+					{
+						upgrade_str += boost::str(boost::format("L%d : %3d(%3d) ") % j % total_reach_array[j] % first_reach_array[j]);
+						total_reach_array[j] = 0;
+						first_reach_array[j] = 0;
+					}
+					upgrade_str += boost::str(boost::format("-total : %d\n") % try_count);
+					fwrite(upgrade_str.c_str(), upgrade_str.length(), 1, file);
+
+					//ì´ˆê¸°í™”
+					try_count = 0;
+					pUpgradeItem->setPlus(0);
+				}
+				break;
+				//ìœ ì§€
+			case MASTERSTONE_NOT_CHANGE:
+				total_reach_array[pUpgradeItem->getPlus()] += 1;
+				if(pUpgradeItem->getPlus() >= 17)
+					first_reach_count++;
+
+				break;
+				//í•˜ë½
+			case MASTERSTONE_DECREASE:
+				total_reach_array[pUpgradeItem->getPlus()] += 1;
+				if(pUpgradeItem->getPlus() >= 17)
+					first_reach_count++;
+
+				pUpgradeItem->setPlus(pUpgradeItem->getPlus() - 1);
+				break;
+			}
+
+			if(try_count == 0)
+				break;
+		}	
+		old_plus = 0;
+	}
+	fclose(file);
+}
+
+void do_guild_battle_score(CPC* ch, const char* arg, std::vector<std::string>& vec)
+{
+	std::string message;
+
+	if(vec.size() != 2)
+	{
+		message = boost::str(boost::format("Invalid gm command"));
+		CNetMsg::SP rmsg(new CNetMsg);
+		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	char guild_name[MAX_MESSAGE_SIZE] = {0,};
+
+	CGuild* guild = gserver->m_guildlist.findguild(vec[1].c_str());
+	
+	if(guild == NULL)
+	{
+		message = boost::str(boost::format("Not Found Guild"));
+		CNetMsg::SP rmsg(new CNetMsg);
+		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	int zone_index = guild->battleZone();
+
+	if (strcmp(vec[0].c_str(), "all") == 0)
+	{
+		if(gserver->m_battle_guild_index != -1)
+		{
+			message = boost::str(boost::format("Already reg score data."));
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		gserver->m_battle_guild_index = guild->index();
+	}
+	else if (strcmp(vec[0].c_str(), "gm") == 0)
+	{
+		if(gserver->m_battle_guild_index != -1)
+		{
+			message = boost::str(boost::format("Already reg score data."));
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+
+		gserver->m_battle_guild_index = guild->index();
+		gserver->m_battle_guild_gm = ch->m_index;
+	}
+	else if (strcmp(vec[0].c_str(), "off") == 0)
+	{
+		gserver->m_battle_guild_index = -1;
+		gserver->m_battle_guild_gm = -1;
+
+		//ì´ˆê¸°í™” íŒ¨í‚· ë§Œë“¤ì–´ì„œ ì „ì²´ì— ì „ë‹¬ (í´ë¼ì´ì–¸íŠ¸ì—ì„œ íŒë‹¨í•˜ì— ê¸¸ë“œì „ì¸ ìœ ì €ë“¤ì€ ì´ˆê¸°í™”ë¥¼ ê±´ë„ˆë›°ë„ë¡ í•œë‹¤.)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			GuildBattleCoreInitMsg(rmsg);
+			CZone* zone = gserver->FindZone(zone_index);
+
+			if(zone == NULL)
+			{
+				message = boost::str(boost::format("Can not found zone index."));
+				CNetMsg::SP rmsg(new CNetMsg);
+				SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+				SEND_Q(rmsg, ch->m_desc);
+				return;
+			}
+
+			for(int i = 0 ; i < zone->m_countArea; i++)
+			{
+				zone->m_area[i].SendToAllClient(rmsg);
+			}
+		}
+	}
+	return ;
+}
+
+void do_guild_battle_list(CPC* ch, const char* arg, std::vector<std::string>& vec)
+{
+	if(vec.size() != 1)
+	{
+		std::string message = boost::str(boost::format("Invalid gm command"));
+		CNetMsg::SP rmsg(new CNetMsg);
+		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	//std::vector<string> guild_name;
+	std::map<CGuild*, CGuild*> data;
+
+	int zone_index = -1;
+
+	if(strcmp(vec[0].c_str(), "all") == 0)
+	{
+		CGuild* ret = gserver->m_guildlist.head();
+		while (ret)
+		{
+			if(ret->battleState() != GUILD_BATTLE_STATE_PEACE)
+			{
+				CGuild* guild = gserver->m_guildlist.findguild(ret->battleIndex());
+
+				std::map<CGuild*, CGuild*>::iterator it_first = data.find(ret);
+				std::map<CGuild*, CGuild*>::iterator it_second = data.find(guild);
+				
+				if(it_first == data.end() && it_second == data.end())
+				{
+					data.insert(std::map<CGuild*, CGuild*>::value_type(ret, guild));
+				}
+			}
+			ret = ret->nextguild();
+		}
+	}
+	else
+	{
+		zone_index = atoi(vec[0].c_str());
+
+		CGuild* ret = gserver->m_guildlist.head();
+		while (ret)
+		{
+			if(ret->battleState() != GUILD_BATTLE_STATE_PEACE && ret->battleZone() == zone_index)
+			{
+				CGuild* guild = gserver->m_guildlist.findguild(ret->battleIndex());
+
+				std::map<CGuild*, CGuild*>::iterator it_first = data.find(ret);
+				std::map<CGuild*, CGuild*>::iterator it_second = data.find(guild);
+
+				if(it_first == data.end() && it_second == data.end())
+				{
+					data.insert(std::map<CGuild*, CGuild*>::value_type(ret, guild));
+				}
+			}
+			ret = ret->nextguild();
+		}
+	}
+
+	std::map<CGuild*, CGuild*>::iterator it = data.begin();
+	std::map<CGuild*, CGuild*>::iterator it_end = data.end();
+
+	for(; it != it_end; it++)
+	{
+		std::string message = boost::str(boost::format("G_BATTLE zone : %d, %s vs %s") 
+			% it->first->battleZone() % it->first->name() % it->second->name());
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", message.c_str());
+		SEND_Q(rmsg, ch->m_desc);
+	}
+}
+
 void do_test( CPC* ch, const char* arg, std::vector<std::string>& vec )
 {
 	/*CNetMsg::SP rmsg(new CNetMsg);
 	do_GuildRecall(ch, rmsg);*/
 
-	// ÀÌµ¿ °¡´É °Ë»ç
+	// ì´ë™ ê°€ëŠ¥ ê²€ì‚¬
 	int canWarp = ch->CanWarp();
 	if (canWarp != 0)
 	{
@@ -10265,14 +10593,14 @@ void do_test( CPC* ch, const char* arg, std::vector<std::string>& vec )
 		return;
 	}
 
-	// 10ÃÊÈÄ ÀÌµ¿ÇÏ°Ô ÇÏ±â
+	// 10ì´ˆí›„ ì´ë™í•˜ê²Œ í•˜ê¸°
 	ch->m_reqWarpType_skill = IONCE_WARP_RETURN;
 	ch->m_reqWarpData_skill = ZONE_GUILDROOM;
 	ch->m_reqWarpTime_skill = PULSE_WARPDELAY;
 	ch->SetPlayerState(PLAYER_STATE_WARP);
 
 	{
-		// »ç¿ëÇßÀ½À» ¾Ë¸®±â
+		// ì‚¬ìš©í–ˆìŒì„ ì•Œë¦¬ê¸°
 		CNetMsg::SP rmsg(new CNetMsg);
 		WarpStartMsg(rmsg, ch);
 		ch->m_pArea->SendToCell(rmsg, ch, true);
@@ -10281,18 +10609,251 @@ void do_test( CPC* ch, const char* arg, std::vector<std::string>& vec )
 	return ;
 }
 
-void do_buff_system( CPC* ch, const char* arg, std::vector<std::string>& vec ) {
-	if(vec.size() > 0) {
-		if(vec[0] == "on") {
-			gserver->m_buffSystem.TurnOn();
+void do_GM_Guild_Memberout_Time( CPC* ch, const char* arg, std::vector<std::string>& vec )
+{
+	if(ch == NULL)
+		return;
+
+	if(ch->m_guildInfo == NULL)
+		return;
+
+	if(ch->m_guildInfo->guild() == NULL)
+		return;
+
+	if( arg == NULL)
+		return;
+
+	if(vec.size() == 0)
+		return;
+
+	struct tm tmStart;
+	int	year, mon, day, hour, min;
+	memset(&tmStart, 0, sizeof(tmStart));
+	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	year = atoi(tmpBuf) - 1900;
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	mon = atoi(tmpBuf) - 1;
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	day = atoi(tmpBuf);
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	hour = atoi(tmpBuf);
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	min = atoi(tmpBuf);
+
+	tmStart.tm_year = year;
+	tmStart.tm_mon  = mon;
+	tmStart.tm_mday = day;
+	tmStart.tm_hour = hour;
+	tmStart.tm_min  = min;
+	tmStart.tm_isdst = -1;
+
+	time_t timeStart = mktime(&tmStart);
+
+	time_t timeCurrent;
+	time(&timeCurrent);
+	if (timeStart >= timeCurrent)
+		return ;
+
+	ch->m_guild_in_date = timeStart / 60 / 60 / 24;
+
+	std::string str = boost::str(boost::format("Guild Out Time Set : %d-%d-%d") % (year + 1900) % (mon + 1) % day);
+	CNetMsg::SP rmsg(new CNetMsg);
+	SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", str.c_str());
+	SEND_Q(rmsg, ch->m_desc);
+
+	return;
+}
+
+void do_GM_Guild_Create_time( CPC* ch, const char* arg, std::vector<std::string>& vec )
+{
+	if(ch == NULL)
+		return;
+
+	if(ch->m_guildInfo == NULL)
+		return;
+
+	if(ch->m_guildInfo->guild() == NULL)
+		return;
+
+	if( arg == NULL)
+		return;
+
+	if(vec.size() == 0)
+		return;
+
+	struct tm tmStart;
+	int	year, mon, day, hour, min;
+	memset(&tmStart, 0, sizeof(tmStart));
+	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	year = atoi(tmpBuf) - 1900;
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	mon = atoi(tmpBuf) - 1;
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	day = atoi(tmpBuf);
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	hour = atoi(tmpBuf);
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	min = atoi(tmpBuf);
+
+	tmStart.tm_year = year;
+	tmStart.tm_mon  = mon;
+	tmStart.tm_mday = day;
+	tmStart.tm_hour = hour;
+	tmStart.tm_min  = min;
+	tmStart.tm_isdst = -1;
+
+	time_t timeStart = mktime(&tmStart);
+
+	time_t timeCurrent;
+	time(&timeCurrent);
+	if (timeStart >= timeCurrent)
+		return ;
+
+	CGuild* guild = ch->m_guildInfo->guild();
+
+	guild->m_create_date = timeStart;
+
+	std::string str = boost::str(boost::format("Guild Create Time Set : %d-%d-%d %d:%d") % (year + 1900) % (mon + 1) % day % hour % min);
+	CNetMsg::SP rmsg(new CNetMsg);
+	SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", str.c_str());
+	SEND_Q(rmsg, ch->m_desc);
+}
+
+void do_GM_reserve_command(CPC* ch, const char* arg, std::vector<std::string>& vec)
+{
+	struct tm tmStart;
+	int	year, mon, day, hour, min;
+	memset(&tmStart, 0, sizeof(tmStart));
+	char tmpBuf[MAX_MESSAGE_SIZE] = {0,};
+
+	tmpBuf[0] = '\0';
+	arg = AnyOneArg(arg, tmpBuf);
+	if(strcmp(tmpBuf, "add") == 0)
+	{
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+		year = atoi(tmpBuf) - 1900;
+
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+		mon = atoi(tmpBuf) - 1;
+
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+		day = atoi(tmpBuf);
+
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+		hour = atoi(tmpBuf);
+
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+		min = atoi(tmpBuf);
+
+		tmStart.tm_year = year;
+		tmStart.tm_mon  = mon;
+		tmStart.tm_mday = day;
+		tmStart.tm_hour = hour;
+		tmStart.tm_min  = min;
+		tmStart.tm_isdst = -1;
+
+		time_t timeStart = mktime(&tmStart);
+
+		time_t timeCurrent;
+		time(&timeCurrent);
+		if (timeStart <= timeCurrent)
+			return ;
+
+		arg = AnyOneArg(arg, tmpBuf);
+		int subNo = atoi(tmpBuf);
+
+		//gm command check
+		AnyOneArg(arg, tmpBuf);
+		if(gserver->set_gmlist.find(tmpBuf) == gserver->set_gmlist.end())
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			SayMsg(rmsg, MSG_CHAT_GM, 0, "", "", "check the gm_command.");
+			SEND_Q(rmsg, ch->m_desc);
+			return;
 		}
 
-		if(vec[0] == "off") {
-			gserver->m_buffSystem.TurnOff();
-		}
+		std::string gm_command;
+		do 
+		{
+			arg = AnyOneArg(arg, tmpBuf);
+			gm_command += tmpBuf;
+			gm_command += " ";
 
-		if(vec[0] == "reload") {
-			gserver->m_buffSystem.ReloadTable();
+		} while (strcmp(arg, "") != 0);
+
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			RequestClient::reservedGMCommandAddByGMCommand* packet = reinterpret_cast<RequestClient::reservedGMCommandAddByGMCommand*>(rmsg->m_buf);
+			packet->type = MSG_RESERVED_GM_COMMAND;
+			packet->subType = MSG_SUB_ADD_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+			strncpy(packet->command, gm_command.c_str(), RESERVED_GM_COMMAND_MAX_STRING + 1);
+			packet->startTime = timeStart;
+			packet->subNo = subNo;
+			rmsg->setSize(sizeof(RequestClient::reservedGMCommandAddByGMCommand));
+
+			SEND_Q(rmsg, gserver->m_subHelper);
+
+			LOG_INFO("RESERVE GM COMMAND ADD. char_index[%d], command[%s]", ch->m_index, gm_command.c_str());
 		}
+	}
+	else if(strcmp(tmpBuf, "del") == 0)
+	{
+		tmpBuf[0] = '\0';
+		arg = AnyOneArg(arg, tmpBuf);
+
+		int index = atoi(tmpBuf);
+
+		CNetMsg::SP rmsg(new CNetMsg);
+		RequestClient::reservedGMCommandDeleteByGMCommand* packet = reinterpret_cast<RequestClient::reservedGMCommandDeleteByGMCommand*>(rmsg->m_buf);
+		packet->type = MSG_RESERVED_GM_COMMAND;
+		packet->subType = MSG_SUB_DELETE_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+		packet->index = index;
+		rmsg->setSize(sizeof(RequestClient::reservedGMCommandDeleteByGMCommand));
+
+		SEND_Q(rmsg, gserver->m_subHelper);
+
+		LOG_INFO("RESERVE GM COMMAND DEL. char_index[%d], command_index[%d]", ch->m_index, index);
+	}
+	else if(strcmp(tmpBuf, "list") == 0)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		RequestClient::reservedGMCommandListByGMCommand* packet = reinterpret_cast<RequestClient::reservedGMCommandListByGMCommand*>(rmsg->m_buf);
+		packet->type = MSG_RESERVED_GM_COMMAND;
+		packet->subType = MSG_SUB_LIST_RESERVED_GM_COMMAND_BY_GMCOMMAND;
+		packet->char_index = ch->m_index;
+		rmsg->setSize(sizeof(RequestClient::reservedGMCommandListByGMCommand));
+
+		SEND_Q(rmsg, gserver->m_subHelper);
+	}
+	else
+	{
+		return;
 	}
 }

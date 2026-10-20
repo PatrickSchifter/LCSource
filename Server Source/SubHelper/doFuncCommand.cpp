@@ -103,45 +103,57 @@ void do_Command_TitleSystem_InsertTitleReq(CNetMsg::SP& msg, CDescriptor* dest, 
 	int tab;
 	int invenIndex;
 	CLCString serial;
+	int custom_title_index;
 
-	RefMsg(msg) >> char_index >> title_index >> endtime >> tab >> invenIndex >> serial;
+	RefMsg(msg) >> char_index >> title_index >> endtime >> tab >> invenIndex >> serial >> custom_title_index;
 
 	CLCString sql(1024);
 	CDBCmd cmd;
 	cmd.Init(&gserver.m_dbchar);
 ////////////////////////////////////////
-//SUBHELPER ºÎÇÏ½Ã Å¬¶óÀÌ¾ğÆ®¿¡¼­ ¿©·¯¹øÀÇ ¸Ş¼¼Áö°¡ ¿Ã°æ¿ì DB¿¡ ¶È°°Àº µ¥ÀÌÅÍ°¡ ½×ÀÎ´Ù.
+//SUBHELPER ë¶€í•˜ì‹œ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì—¬ëŸ¬ë²ˆì˜ ë©”ì„¸ì§€ê°€ ì˜¬ê²½ìš° DBì— ë˜‘ê°™ì€ ë°ì´í„°ê°€ ìŒ“ì¸ë‹¤.
 	sql.Format("SELECT a_char_index FROM t_titlelist where a_char_index = %d and a_title_index = %d limit 1", char_index, title_index);
 	cmd.SetQuery(sql);
-	if (!cmd.Open())
-		return ;
+
+	if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+	{
+		sql.Format("DELETE FROM t_titlelist where a_char_index = %d and a_title_index = %d", char_index, title_index);
+		cmd.SetQuery(sql);
+		cmd.Update();
+	}
 	else
 	{
-		if(cmd.m_nrecords > 0)
+		if (!cmd.Open())
 			return ;
+		else
+		{
+			if(cmd.m_nrecords > 0)
+				return ;
+		}
 	}
 ////////////////////////////////////////
-	sql.Format("INSERT DELAYED INTO t_titlelist(a_char_index, a_title_index, a_endtime) values(%d, %d, %d)", char_index, title_index, endtime);
+	sql.Format("INSERT DELAYED INTO t_titlelist(a_char_index, a_title_index, a_endtime, a_custom_title_index) values(%d, %d, %d, %d)", char_index, title_index, endtime, custom_title_index);
 	GAMELOG << init("DB INSERT TO TITLE LIST") << delim
 			<< "CHAR_INDEX" << delim << char_index << delim
-			<< "TITLE_INDEX" << delim << title_index << end;
+			<< "TITLE_INDEX" << delim << title_index << delim
+			<< "CUSTOM_TITLE_INDEX" << delim << custom_title_index << end;
 	cmd.SetQuery(sql);
 	if(!cmd.Update())
 	{
-		do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 0, tab, invenIndex, serial);
+		do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 0, tab, invenIndex, serial, custom_title_index);
 	}
 	else
 	{
 		if(!force)
 		{
-			do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 1, tab, invenIndex, serial);
+			do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 1, tab, invenIndex, serial, custom_title_index);
 		}
 		else
 		{
-			// [selo: 101109] errortype 2 ´Â °­Á¦ Àû¿ë
-			// °­Á¦ Àû¿ë½Ã¿¡¼­´Â dest=NULL À» ÇØÁÖ¾î SEND_Q ¿¡¼­ ¹ö±×³ª ¹®Á¦°¡ »ı±æ ºÎºĞÀ» ¾ø¾Ø´Ù.
-			// ¸ğµç °ÔÀÓ ¼­¹ö¿¡ Àü´ŞÇÑ´Ù.
-			do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 2, tab, invenIndex, serial);
+			// [selo: 101109] errortype 2 ëŠ” ê°•ì œ ì ìš©
+			// ê°•ì œ ì ìš©ì‹œì—ì„œëŠ” dest=NULL ì„ í•´ì£¼ì–´ SEND_Q ì—ì„œ ë²„ê·¸ë‚˜ ë¬¸ì œê°€ ìƒê¸¸ ë¶€ë¶„ì„ ì—†ì•¤ë‹¤.
+			// ëª¨ë“  ê²Œì„ ì„œë²„ì— ì „ë‹¬í•œë‹¤.
+			do_Command_TitleSystem_InsertTitleRep(rmsg, char_index, title_index, endtime, 2, tab, invenIndex, serial, custom_title_index);
 			gserver.SendToAllGameServer(rmsg);
 		}
 	}
@@ -154,6 +166,7 @@ void do_Command_TitleSystem_DisableReq(CNetMsg::SP& msg, CDescriptor* dest)
 	int count = 0;
 	int char_index = 0;
 	int title_index = 0;
+	int custom_title_index = 0;
 	CLCString sql(1024);
 	RefMsg(msg) >> char_index;
 	RefMsg(msg) >> count;
@@ -164,13 +177,21 @@ void do_Command_TitleSystem_DisableReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
+	CDBCmd cmd;
+	cmd.Init(&gserver.m_dbchar);
+
 	for(int i = 0; i < count; i++)
 	{
-		RefMsg(msg) >> title_index;
+		RefMsg(msg) >> title_index
+			>> custom_title_index;
+		if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+		{
+			sql.Format("DELETE FROM t_title_make where a_index = %d and a_char_index = %d", custom_title_index, char_index);
+			cmd.SetQuery(sql);
+			cmd.Update();
+		}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		sql.Format("DELETE from t_titlelist where a_char_index = %d and a_title_index = %d", char_index, title_index);
-		CDBCmd cmd;
-		cmd.Init(&gserver.m_dbchar);
 		cmd.SetQuery(sql);
 		if( cmd.Update() )
 		{
@@ -188,10 +209,11 @@ void do_Command_TitleSystem_DeleteReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int char_index;
 	int title_index;
+	int custom_title_index;
 	CLCString sql(1024);
 	CDBCmd cmd;
 	CNetMsg::SP rmsg(new CNetMsg);
-	RefMsg(msg) >> char_index >> title_index;
+	RefMsg(msg) >> char_index >> title_index >> custom_title_index;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	sql.Format("DELETE from t_titlelist where a_char_index = %d and a_title_index = %d", char_index, title_index);
@@ -211,6 +233,13 @@ void do_Command_TitleSystem_DeleteReq(CNetMsg::SP& msg, CDescriptor* dest)
 				<< "TITLE INDEX" << delim << title_index << end;
 		do_Command_TitleSystem_DeleteRep(rmsg, char_index, title_index, 0);
 	}
+
+	if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+	{
+		sql.Format("DELETE from t_title_make where a_index = %d and a_char_index = %d", custom_title_index, char_index);
+		cmd.SetQuery(sql);
+		cmd.Update();
+	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	SEND_Q(rmsg, dest);
 }
@@ -219,9 +248,10 @@ void do_Command_TitleSystem_AutoDelete(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int char_index;
 	int title_index;
+	int custom_title_index;
 	CLCString sql(1024);
 	CDBCmd cmd;
-	RefMsg(msg) >> char_index >> title_index;
+	RefMsg(msg) >> char_index >> title_index >> custom_title_index;
 	sql.Format("DELETE from t_titlelist where a_char_index = %d and a_title_index = %d", char_index, title_index);
 	cmd.Init(&gserver.m_dbchar);
 	cmd.SetQuery(sql);
@@ -236,6 +266,13 @@ void do_Command_TitleSystem_AutoDelete(CNetMsg::SP& msg, CDescriptor* dest)
 		GAMELOG << init("CANT DELETE TITLE") << delim
 				<< "CHAR INDEX" << delim << char_index << delim
 				<< "TITLE INDEX" << delim << title_index << end;
+	}
+
+	if(title_index == CUSTOM_TITLE_DUMMY_INDEX)
+	{
+		sql.Format("DELETE from t_title_make where a_char_index = %d and a_index = %d", char_index, custom_title_index);
+		cmd.SetQuery(sql);
+		cmd.Update();
 	}
 }
 
@@ -253,13 +290,13 @@ void do_Command_LCBallinfo( CNetMsg::SP& msg, CDescriptor* dest )
 
 	RefMsg(msg) >> charIndex >> coinIndex >> courseIndex ;
 
-	// ¿©±â¼­ºÎÅÍ ¸Ş½ÃÁö¸¦ ¸¸µéÀÚ
+	// ì—¬ê¸°ì„œë¶€í„° ë©”ì‹œì§€ë¥¼ ë§Œë“¤ì
 	CNetMsg::SP	rmsg(new CNetMsg);
 	rmsg->Init(MSG_SUBHELPER_COMMAND);
 	RefMsg(rmsg) << MSG_SUBHELPER_LCBALL_INFO
 				 << charIndex;
 
-	// ÅäÅ« Á¤º¸ °¡Á®¿À±â
+	// í† í° ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 	cmd.SetQuery("select a_tocken_index from t_lcball group by a_tocken_index order by a_item_order;");
 	if( !cmd.Open() )
 	{
@@ -271,19 +308,19 @@ void do_Command_LCBallinfo( CNetMsg::SP& msg, CDescriptor* dest )
 	{
 		int nCoinIndex = 0;
 		cmd.GetRec("a_tocken_index", nCoinIndex );
-		if( coinIndex == 0 )			// ¿äÃ»ÇÑ ÄÚÀÎÀÌ ¾øÀ¸¸é ÃÖÃÊ °Ë»öµÈ ÄÚÀÎÀ¸·Î º¯°æ
+		if( coinIndex == 0 )			// ìš”ì²­í•œ ì½”ì¸ì´ ì—†ìœ¼ë©´ ìµœì´ˆ ê²€ìƒ‰ëœ ì½”ì¸ìœ¼ë¡œ ë³€ê²½
 			coinIndex = nCoinIndex;
 		RefMsg(rmsg) << nCoinIndex;
 	}
 
-	// °¢ ÄÚ½ºº° Á¤º¸ °¡Á®¿À±â
+	// ê° ì½”ìŠ¤ë³„ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 	sql.Format(" SELECT a_course_code, sum(a_item_max) as max, sum(a_item_remain) as remain "
 			   " FROM t_lcball WHERE a_tocken_index=%d GROUP BY a_tocken_index , a_course_code ORDER BY a_course_code ;" , coinIndex );
 	cmd.SetQuery( sql );
 	if( !cmd.Open() )
 		return;
 
-	RefMsg(rmsg) << (char) cmd.m_nrecords;		// ÄÚ½º °¹¼ö
+	RefMsg(rmsg) << (char) cmd.m_nrecords;		// ì½”ìŠ¤ ê°¯ìˆ˜
 	while( cmd.MoveNext() )
 	{
 		char	curCourse =0;
@@ -291,7 +328,7 @@ void do_Command_LCBallinfo( CNetMsg::SP& msg, CDescriptor* dest )
 		unsigned int courseItemCount=0;
 
 		cmd.GetRec("a_course_code", curCourse );
-		//if( courseIndex == 0)		// ¿äÃ»ÇÑ Á¤º¸°¡ 0 ÀÌ¸é ÃÖÃÊ °Ë»öµÈ ÄÚ½º·Î º¯°æ
+		//if( courseIndex == 0)		// ìš”ì²­í•œ ì •ë³´ê°€ 0 ì´ë©´ ìµœì´ˆ ê²€ìƒ‰ëœ ì½”ìŠ¤ë¡œ ë³€ê²½
 		//	courseIndex = curCourse;
 		sql.Format( "SELECT a_item_index , a_item_count FROM t_lcball WHERE a_tocken_index=%d AND a_course_code=%d AND a_order=0", coinIndex, curCourse );
 		cmd2.SetQuery( sql);
@@ -306,16 +343,16 @@ void do_Command_LCBallinfo( CNetMsg::SP& msg, CDescriptor* dest )
 		cmd.GetRec("remain", nRemain );
 		RefMsg(rmsg) << courseItem << courseItemCount << nRemain << nMax;
 	}
-	// ÇöÀç ÄÚÀÎ °ú ÄÚ½º ÀÎµ¦½º
+	// í˜„ì¬ ì½”ì¸ ê³¼ ì½”ìŠ¤ ì¸ë±ìŠ¤
 	RefMsg(rmsg) << coinIndex << courseIndex;
 
-	// ¿äÃ»ÇÑ ÄÚ½º Á¤º¸
+	// ìš”ì²­í•œ ì½”ìŠ¤ ì •ë³´
 	sql.Format(" SELECT a_item_index, a_item_count, a_item_max, a_item_remain FROM t_lcball WHERE a_tocken_index = %d AND a_course_code = %d ORDER BY a_order " , coinIndex, courseIndex );
 	cmd.SetQuery( sql );
 	if( !cmd.Open() )
 		return;
 
-	RefMsg(rmsg) << (char) cmd.m_nrecords;		// ÄÚ½º °¹¼ö
+	RefMsg(rmsg) << (char) cmd.m_nrecords;		// ì½”ìŠ¤ ê°¯ìˆ˜
 	while( cmd.MoveNext() )
 	{
 		nItemIndex = nItemCount = nRemain = nMax = 0;
@@ -326,7 +363,7 @@ void do_Command_LCBallinfo( CNetMsg::SP& msg, CDescriptor* dest )
 		cmd.GetRec("a_item_remain", nRemain );
 		RefMsg(rmsg) << nItemIndex << nItemCount << nRemain << nMax;
 	}
-	// Á¤º¸ ¸¸µé¾î¼­ µ¹·Áº¸³»±â
+	// ì •ë³´ ë§Œë“¤ì–´ì„œ ëŒë ¤ë³´ë‚´ê¸°
 	SEND_Q( rmsg, dest );
 	return;
 }
@@ -341,7 +378,7 @@ void do_Command_LCBalluse( CNetMsg::SP& msg, CDescriptor* dest )
 	char	courseIndex = 0;
 	RefMsg(msg) >> charIndex >> coinIndex >> courseIndex ;
 
-	// Áö±Ş¾ÆÀÌÅÛ °áÁ¤
+	// ì§€ê¸‰ì•„ì´í…œ ê²°ì •
 	struct COURSEITEM
 	{
 		int itemIndex;
@@ -427,15 +464,15 @@ void do_Command_LCBallsuccess( CNetMsg::SP& msg, CDescriptor* dest )
 	int			itemIndex;
 	RefMsg(msg) >>	name >> itemIndex;
 
-	// ¸ŞÀÎ¾ÆÀÌÅÛÀÎ°æ¿ì
+	// ë©”ì¸ì•„ì´í…œì¸ê²½ìš°
 	if( cOrder == 0 )
 	{
-		// ¼­¹ö ÇØ´ç¾ÆÀÌÅÛ reflash
+		// ì„œë²„ í•´ë‹¹ì•„ì´í…œ reflash
 		sql.Format("UPDATE t_lcball SET a_item_remain = a_item_max WHERE a_tocken_index=%d and a_course_code=%d ", coinIndex, courseIndex );
 		cmd.SetQuery(sql);
 		cmd.Update();
 
-		// Àü¼­¹ö MSG Àü´Ş
+		// ì „ì„œë²„ MSG ì „ë‹¬
 		CNetMsg::SP rmsg(new CNetMsg);
 		SubHelperLCBallSuccessMsg( rmsg, name, itemIndex );
 		gserver.SendToAllGameServer( rmsg );
@@ -459,11 +496,11 @@ void do_Command_LCBallReset( CNetMsg::SP& msg, CDescriptor* dest )
 	{
 		sql.Format("UPDATE t_lcball SET a_item_remain = a_item_max WHERE a_tocken_index=%d and a_course_code=%d ", coinIndex, courseIndex );
 	}
-	else if ( coinIndex > 0 && courseIndex < 0 ) // ÄÚÀÎ¾ÆÀÌÅÛ ÀüºÎ ¸®¼Â
+	else if ( coinIndex > 0 && courseIndex < 0 ) // ì½”ì¸ì•„ì´í…œ ì „ë¶€ ë¦¬ì…‹
 	{
 		sql.Format("UPDATE t_lcball SET a_item_remain = a_item_max WHERE a_tocken_index=%d ", coinIndex );
 	}
-	else if ( coinIndex < 0 && courseIndex < 0 ) // ÀüºÎ ¸®¼Â
+	else if ( coinIndex < 0 && courseIndex < 0 ) // ì „ë¶€ ë¦¬ì…‹
 	{
 		sql.Format("UPDATE t_lcball SET a_item_remain = a_item_max " );
 	}
@@ -481,7 +518,7 @@ void do_Command_RankingEX_Refresh( CNetMsg::SP& msg, CDescriptor* dest )
 	int charIdx;
 	RefMsg(msg) >> charIdx;
 
-	// ·©Å· °»½Å ÁßÀÌ¸é, ¸®ÅÏ
+	// ë­í‚¹ ê°±ì‹  ì¤‘ì´ë©´, ë¦¬í„´
 	if ( gserver.m_RankingSystem.IsLock() )
 	{
 		SubHelperRankingEXError(msg, MSG_EX_RANKING_SYSTEM_ERROR_REFRESH_TIME, charIdx);
@@ -497,7 +534,7 @@ void do_Command_RankingEX_ListReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	RefMsg(msg) >> type >> subtype;
 
-	// ·©Å· °»½Å ÁßÀÌ¸é, ¸®ÅÏ
+	// ë­í‚¹ ê°±ì‹  ì¤‘ì´ë©´, ë¦¬í„´
 	if ( gserver.m_RankingSystem.IsLock() )
 	{
 		int charIdx;
@@ -517,7 +554,7 @@ void do_Command_RankingEX_SearchReq( CNetMsg::SP& msg, CDescriptor* dest )
 
 	RefMsg(msg) >> type >> subtype;
 
-	// ·©Å· °»½Å ÁßÀÌ¸é, ¸®ÅÏ
+	// ë­í‚¹ ê°±ì‹  ì¤‘ì´ë©´, ë¦¬í„´
 	if ( gserver.m_RankingSystem.IsLock() )
 	{
 		int charIdx;
@@ -563,7 +600,7 @@ void do_CommandPKPenalryReform(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 }
 
-// º¸»ó Á¤º¸¸¦ º¸³»ÁÖÀÚ.
+// ë³´ìƒ ì •ë³´ë¥¼ ë³´ë‚´ì£¼ì.
 void do_CommandPKPenalryReformRewardInfoReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int charIndex;
@@ -584,10 +621,10 @@ void do_CommandPKPenalryReformRewardInfoReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	if(!cmd.MoveFirst())
 	{
-		// ±â·ÏµÈ°Ô ¾ø´Ù¸é insert ÇØÁØ´Ù.
+		// ê¸°ë¡ëœê²Œ ì—†ë‹¤ë©´ insert í•´ì¤€ë‹¤.
 		sql.Format("INSERT INTO t_pkpenalty_reward(a_char_idx, a_reward_flag) VALUES(%d, 0 )", charIndex);
 		cmd.SetQuery(sql);
-		if(!cmd.Update()) // insert °¡ ¾ÊµÈ´Ù¸é.. ¹¹ ¾îÂ¼¶õ ¸»ÀÌ³Ä ¤Ñ¤Ñ;;
+		if(!cmd.Update()) // insert ê°€ ì•Šëœë‹¤ë©´.. ë­ ì–´ì©Œë€ ë§ì´ëƒ ã…¡ã…¡;;
 		{
 			GAMELOG << init("DB_ERROR") << "CAN NOT INSERT t_pkpenalty_reward table." << end;
 			return ;
@@ -601,7 +638,7 @@ void do_CommandPKPenalryReformRewardInfoReq(CNetMsg::SP& msg, CDescriptor* dest)
 	SEND_Q(rmsg, dest);
 }
 
-// º¸»óÀ» ÇØÁÖ±â À§ÇØ DB¿¡ ±â·ÏÀ» ÇØº¸ÀÚ.
+// ë³´ìƒì„ í•´ì£¼ê¸° ìœ„í•´ DBì— ê¸°ë¡ì„ í•´ë³´ì.
 void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 {
 	int charIndex;
@@ -645,7 +682,7 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 	int rewardFlag;
 	cmd.GetRec("a_reward_flag", rewardFlag);
 
-	// ÀÌ¹Ì º¸»ó ¹Ş¾Ò´ÂÁö È®ÀÎ
+	// ì´ë¯¸ ë³´ìƒ ë°›ì•˜ëŠ”ì§€ í™•ì¸
 	if( rewardFlag & ( 1 << rewardNum )  )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -654,7 +691,7 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// Å¸ÀÌÆ²À» ¹Ğ¾î ³Ö¾îÁÖÀÚ.
+	// íƒ€ì´í‹€ì„ ë°€ì–´ ë„£ì–´ì£¼ì.
 	sql.Format("SELECT a_char_index FROM t_titlelist where a_char_index = %d and a_title_index = %d limit 1", charIndex, titleIndex);
 	cmd.SetQuery(sql);
 	if (!cmd.Open() )
@@ -667,14 +704,14 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 	}
 	else
 	{
-		// Å¸ÀÌÆ²ÀÌ ÀÖ´ÂÁö È®ÀÎ
+		// íƒ€ì´í‹€ì´ ìˆëŠ”ì§€ í™•ì¸
 		if(cmd.m_nrecords > 0)
 		{
 			GAMELOG << init("ALREADY Pkpenalty title ") << "REWARD NUM" << rewardNum << delim << end;
 			CNetMsg::SP rmsg(new CNetMsg);
 			SubHelperPKPenaltyReformRewardRep( rmsg, charIndex, rewardNum, titleIndex, MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_ONCE );
 			SEND_Q(rmsg, dest);
-			// ¿©±â¿¡ µé¾î¿À¸é Å¸ÀÌ¸¬Àº ÀÖ´Â Áö±Ş ±â·ÏÀÌ ¾ø´Â °Í. rewardFlag´Â ±â·ÏÇØÁÖÀÚ.
+			// ì—¬ê¸°ì— ë“¤ì–´ì˜¤ë©´ íƒ€ì´ë¦ì€ ìˆëŠ” ì§€ê¸‰ ê¸°ë¡ì´ ì—†ëŠ” ê²ƒ. rewardFlagëŠ” ê¸°ë¡í•´ì£¼ì.
 			rewardFlag |= ( 1 << rewardNum ) ;
 			sql.Format("UPDATE t_pkpenalty_reward SET a_reward_flag=%d WHERE a_char_idx = %d", rewardFlag, charIndex);
 			cmd.SetQuery(sql);
@@ -683,7 +720,7 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 		}
 		else
 		{
-			// Å¸ÀÌÆ²À» ¹Ğ¾î ³Ö¾îÁÖÀÚ.
+			// íƒ€ì´í‹€ì„ ë°€ì–´ ë„£ì–´ì£¼ì.
 			sql.Format("INSERT DELAYED INTO t_titlelist(a_char_index, a_title_index, a_endtime) values(%d, %d, -1)", charIndex, titleIndex );
 			cmd.SetQuery(sql);
 			if( !cmd.Update() )
@@ -696,7 +733,7 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 			}
 		}
 	}
-	// º¸»ó Á¤º¸¸¦ ÀÌÁ¦ ¾÷µ¥ÀÌÆ® ÇÏÀÚ
+	// ë³´ìƒ ì •ë³´ë¥¼ ì´ì œ ì—…ë°ì´íŠ¸ í•˜ì
 	rewardFlag |= ( 1 << rewardNum ) ;
 	sql.Format("UPDATE t_pkpenalty_reward SET a_reward_flag=%d WHERE a_char_idx = %d", rewardFlag, charIndex);
 	cmd.SetQuery(sql);
@@ -710,12 +747,12 @@ void do_CommandPKPenalryReformRewardReq(CNetMsg::SP& msg, CDescriptor* dest)
 		return ;
 	}
 
-	// ¿©±â±îÁö ¿ÔÀ¸¸é ¼º°ø.
+	// ì—¬ê¸°ê¹Œì§€ ì™”ìœ¼ë©´ ì„±ê³µ.
 	CNetMsg::SP rmsg(new CNetMsg);
 	SubHelperPKPenaltyReformRewardRep( rmsg, charIndex, rewardNum, titleIndex, MSG_EX_PKPENALTY_REFORM_REWARD_ERROR_SUC );
 	SEND_Q(rmsg, dest);
 }
-#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK ÆĞ³ÎÆ¼ ¸®Æû
+#endif // REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼
 
 void doInsertToExtendTable(CLCString& sql, int& _userIndex, CDBCmd& cmd, unsigned char& _ret, int& _days)
 {
@@ -750,7 +787,7 @@ void do_CommandExtCharacterSlotItemUse(CNetMsg::SP& msg, CDescriptor* dest)
 	int _days;
 	unsigned int _time = 0;
 	int _remainTime = 0;
-	unsigned char _ret = 0; // 0: ½ÇÆĞ, 1: ¼º°ø, 2: ÀÜ¿©½Ã°£ ³²À½
+	unsigned char _ret = 0; // 0: ì‹¤íŒ¨, 1: ì„±ê³µ, 2: ì”ì—¬ì‹œê°„ ë‚¨ìŒ
 
 	RefMsg(msg) >> _userIndex >> _charIndex >> _tab >> _invenIndex >> _serial >> _days;
 

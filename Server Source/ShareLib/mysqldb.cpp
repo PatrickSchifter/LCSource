@@ -86,7 +86,7 @@ BOOST_MYSQL_RES mysqldb::select( std::string& query )
 		row_count_ = (int)mysql_num_rows(ret.get());
 		if (row_count_ > 0)
 		{
-			// ÇÊµå¸íÀ» ÀÌ¿ëÇÏ¿© std::mapÀ» ±¸¼º
+			// í•„ë“œëª…ì„ ì´ìš©í•˜ì—¬ std::mapì„ êµ¬ì„±
 			field_name_.clear();
 
 			int fieldcount = (int)mysql_num_fields(ret.get());

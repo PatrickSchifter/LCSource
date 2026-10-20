@@ -47,7 +47,7 @@ void PremiumChar::load( MYSQL* mysql_conn )
 
 	if (dbChar.m_nrecords <= 0)
 	{
-		// µ¥ÀÌÅÍ°¡ ¾ø´Â °æ¿ì
+		// ë°ì´í„°ê°€ ì—†ëŠ” ê²½ìš°
 		query = boost::str(boost::format(
 			"INSERT INTO t_premiumchar(a_charIndex, a_premiumType, a_expireTime, a_jumpCount, a_jumpTime)"
 			"VALUES(%1%, 0, 0, 0, 0)") % owner_->m_index);
@@ -58,7 +58,7 @@ void PremiumChar::load( MYSQL* mysql_conn )
 		return;
 	}
 
-	// µ¥ÀÌÅÍ ÀÐ±â
+	// ë°ì´í„° ì½ê¸°
 	dbChar.MoveNext();
 	dbChar.GetRec("a_premiumType", this->premiumType_);
 	dbChar.GetRec("a_expireTime", this->expireTime_);
@@ -67,14 +67,14 @@ void PremiumChar::load( MYSQL* mysql_conn )
 
 	if (this->expireTime_ == 0)
 	{
-		// ¾ÆÀÌÅÛÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
+		// ì•„ì´í…œì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
 		this->reset();
 	}
 	else
 	{
 		this->isActive_ = true;
 
-		// Áß¿ä : ·Îµù½Ã expire °Ë»ç´Â Server::CharPrePlay()¿¡¼­ Á¤º¸¸¦ ³»·ÁÁØ ÈÄ ¹Ù·Î °Ë»ç
+		// ì¤‘ìš” : ë¡œë”©ì‹œ expire ê²€ì‚¬ëŠ” Server::CharPrePlay()ì—ì„œ ì •ë³´ë¥¼ ë‚´ë ¤ì¤€ í›„ ë°”ë¡œ ê²€ì‚¬
 	}
 }
 
@@ -117,7 +117,7 @@ void PremiumChar::sendEnd()
 	owner_->SendStatus();
 }
 
-// ¸Å ÃÊ¸¶´Ù Ã¼Å©ÇÏ´Â ºÎºÐ
+// ë§¤ ì´ˆë§ˆë‹¤ ì²´í¬í•˜ëŠ” ë¶€ë¶„
 void PremiumChar::checkExpireTime( int chk_t )
 {
 	if (expireTime_ == 0)
@@ -126,10 +126,10 @@ void PremiumChar::checkExpireTime( int chk_t )
 	if (expireTime_ >= chk_t)
 		return;
 
-	// ·Î±×¸¦ ³²±â´Â ÀÛ¾÷ÀÌ¹Ç·Î, ¸Þ¸ð¸® µ¥ÀÌÅÍ¸¦ ÃÊ±âÈ­(reset()) ÇÏ±â ÀÌÀü¿¡ È£ÃâÇÒ°Í
+	// ë¡œê·¸ë¥¼ ë‚¨ê¸°ëŠ” ìž‘ì—…ì´ë¯€ë¡œ, ë©”ëª¨ë¦¬ ë°ì´í„°ë¥¼ ì´ˆê¸°í™”(reset()) í•˜ê¸° ì´ì „ì— í˜¸ì¶œí• ê²ƒ
 	this->saveResetLog();
 
-	// ½Ã°£ ¸¸·á
+	// ì‹œê°„ ë§Œë£Œ
 	this->reset();
 	this->sendEnd();
 	this->saveNow();
@@ -144,7 +144,7 @@ void PremiumChar::reset()
 	jumpCount_ = 0;
 	jumpTime_ = 0;
 
-	// Áö¿ªÀÇ ´Ù¸¥ Ä³¸¯ÅÍ¿¡°Ô Àü´Þ
+	// ì§€ì—­ì˜ ë‹¤ë¥¸ ìºë¦­í„°ì—ê²Œ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateClient::makeChangePremiumCharFlag(rmsg, owner_->m_index, this->isActive_);
 	owner_->m_pZone->m_area->SendToAllClient(rmsg);
@@ -183,7 +183,7 @@ void PremiumChar::saveNow()
 
 void PremiumChar::saveSetLog()
 {
-	// DB¿¡ ·Î±× ³²±â±â
+	// DBì— ë¡œê·¸ ë‚¨ê¸°ê¸°
 	std::string query = boost::str(boost::format(
 		"INSERT INTO t_premiumchar_log VALUES(%1%, %2%, %3%, %4%, %5%)")
 		% owner_->m_index
@@ -203,7 +203,7 @@ void PremiumChar::saveSetLog()
 
 void PremiumChar::saveResetLog()
 {
-	// DB¿¡ ·Î±× ³²±â±â
+	// DBì— ë¡œê·¸ ë‚¨ê¸°ê¸°
 	std::string query = boost::str(boost::format(
 		"INSERT INTO t_premiumchar_log VALUES(%1%, %2%, %3%, %4%, %5%)")
 		% owner_->m_index
@@ -230,7 +230,7 @@ void PremiumChar::setActive()
 {
 	isActive_ = true;
 
-	// Áö¿ªÀÇ ´Ù¸¥ Ä³¸¯ÅÍ¿¡°Ô Àü´Þ
+	// ì§€ì—­ì˜ ë‹¤ë¥¸ ìºë¦­í„°ì—ê²Œ ì „ë‹¬
 	CNetMsg::SP rmsg(new CNetMsg);
 	UpdateClient::makeChangePremiumCharFlag(rmsg, owner_->m_index, this->isActive_);
 	owner_->m_pZone->m_area->SendToAllClient(rmsg);

@@ -13,7 +13,9 @@
 //////////////////////////////////////////////////////////////////////////
 void process_expressList(CPC* ch, CNetMsg::SP& msg);
 void process_expressTake(CPC* ch, CNetMsg::SP& msg);
+void process_expressTake_all(CPC* ch, CNetMsg::SP& msg);
 void process_expressDelete(CPC* ch, CNetMsg::SP& msg);
+void process_expressDelete_all(CPC* ch, CNetMsg::SP& msg);
 void process_unsearchable_stonestatue_searchName(CPC* ch, CNetMsg::SP& msg);
 void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg);
 ExpressSystemItemInfo* makeExpressSystemItemInfo(CItem* pItem, int itemCount, int sendType, const char* sendName);
@@ -33,8 +35,16 @@ void do_ExpressSystem(CPC* ch, CNetMsg::SP& msg)
 		process_expressTake(ch, msg);
 		break;
 
+	case MSG_SUB_EXPRESS_TAKE_ALL:
+		process_expressTake_all(ch, msg);
+		break;
+
 	case MSG_SUB_EXPRESS_DELETE:
 		process_expressDelete(ch, msg);
+		break;
+
+	case MSG_SUB_EXPRESS_DELETE_ALL:
+		process_expressDelete_all(ch, msg);
 		break;
 
 	case MSG_SUB_EXPRESS_SEARCH_NICKNAME:
@@ -60,7 +70,7 @@ void process_expressList(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::expressList* packet = reinterpret_cast<RequestClient::expressList*>(msg->m_buf);
 
-	// ¿ø°Ý Ã¢°í ±â°£Á¦ ¾ÆÀÌÅÛÃ¼Å©, ¾øÀ¸¸é NCP Ã¼Å©
+	// ì›ê²© ì°½ê³  ê¸°ê°„ì œ ì•„ì´í…œì²´í¬, ì—†ìœ¼ë©´ NCP ì²´í¬
 	if (ch->m_TimerItem.isRemoteExpressSystem() == false)
 	{
 		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
@@ -70,17 +80,25 @@ void process_expressList(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
+	if(ch->use_express_flag == true)
+	{
+		//hacking
+		LOG_ERROR("HACKING?. express_system already use. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("express_system already use");
+		return;
+	}
+
 	DBManager::instance()->PushExpressList(ch->m_desc, packet->pageIndex);
 }
 
-//XX °Å·¡´ëÇà - Ã£±â 1
+//XX ê±°ëž˜ëŒ€í–‰ - ì°¾ê¸° 1
 void process_expressTake(CPC* ch, CNetMsg::SP& msg)
 {
 	RequestClient::expressTake* packet = reinterpret_cast<RequestClient::expressTake*>(msg->m_buf);
 
 	LOG_INFO("EXPRESS SYSTEM TAKE. TRYING TO TAKE. charIndex : %d, expressIndex : %d", ch->m_index, packet->index);
 
-	// ¿ø°Ý Ã¢°í ±â°£Á¦ ¾ÆÀÌÅÛÃ¼Å©, ¾øÀ¸¸é NCP Ã¼Å©
+	// ì›ê²© ì°½ê³  ê¸°ê°„ì œ ì•„ì´í…œì²´í¬, ì—†ìœ¼ë©´ NCP ì²´í¬
 	if (ch->m_TimerItem.isRemoteExpressSystem() == false)
 	{
 		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
@@ -93,14 +111,22 @@ void process_expressTake(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
+	if(ch->use_express_flag == true)
+	{
+		//hacking
+		LOG_ERROR("HACKING?. express_system already use. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("express_system already use");
+		return;
+	}
+
 	DBManager::instance()->PushExpressTake(ch->m_desc, packet->index);
 }
 
-void process_expressDelete(CPC* ch, CNetMsg::SP& msg)
+void process_expressTake_all(CPC* ch, CNetMsg::SP& msg)
 {
-	RequestClient::expressDelete* packet = reinterpret_cast<RequestClient::expressDelete*>(msg->m_buf);
+	RequestClient::expressTake_all* packet = reinterpret_cast<RequestClient::expressTake_all*>(msg->m_buf);
 
-	// ¿ø°Ý Ã¢°í ±â°£Á¦ ¾ÆÀÌÅÛÃ¼Å©, ¾øÀ¸¸é NCP Ã¼Å©
+	// ì›ê²© ì°½ê³  ê¸°ê°„ì œ ì•„ì´í…œì²´í¬, ì—†ìœ¼ë©´ NCP ì²´í¬
 	if (ch->m_TimerItem.isRemoteExpressSystem() == false)
 	{
 		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
@@ -113,7 +139,71 @@ void process_expressDelete(CPC* ch, CNetMsg::SP& msg)
 		}
 	}
 
+	if(ch->use_express_flag == true)
+	{
+		//hacking
+		LOG_ERROR("HACKING?. express_system already use. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("express_system already use");
+		return;
+	}
+
+	DBManager::instance()->PushExpressTakeAll(ch->m_desc, packet->pageIndex);
+}
+
+void process_expressDelete(CPC* ch, CNetMsg::SP& msg)
+{
+	RequestClient::expressDelete* packet = reinterpret_cast<RequestClient::expressDelete*>(msg->m_buf);
+
+	// ì›ê²© ì°½ê³  ê¸°ê°„ì œ ì•„ì´í…œì²´í¬, ì—†ìœ¼ë©´ NCP ì²´í¬
+	if (ch->m_TimerItem.isRemoteExpressSystem() == false)
+	{
+		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
+		if (pNpc == NULL)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_NOT_FOUND_NPC);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+	}
+
+	if(ch->use_express_flag == true)
+	{
+		//hacking
+		LOG_ERROR("HACKING?. express_system already use. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("express_system already use");
+		return;
+	}
+
 	DBManager::instance()->PushExpressDelete(ch->m_desc, packet->index, true);
+}
+
+void process_expressDelete_all(CPC* ch, CNetMsg::SP& msg)
+{
+	RequestClient::expressDelete_all* packet = reinterpret_cast<RequestClient::expressDelete_all*>(msg->m_buf);
+
+	// ì›ê²© ì°½ê³  ê¸°ê°„ì œ ì•„ì´í…œì²´í¬, ì—†ìœ¼ë©´ NCP ì²´í¬
+	if (ch->m_TimerItem.isRemoteExpressSystem() == false)
+	{
+		CNPC* pNpc = ch->m_pArea->FindProtoNPCInCell(ch, packet->npcIndex, false, 2);
+		if (pNpc == NULL)
+		{
+			CNetMsg::SP rmsg(new CNetMsg);
+			ResponseClient::makeExpressDelete(rmsg, ResponseClient::ERR_NOT_FOUND_NPC);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+	}
+
+	if(ch->use_express_flag == true)
+	{
+		//hacking
+		LOG_ERROR("HACKING?. express_system already use. char_index[%d]", ch->m_index);
+		ch->m_desc->Close("express_system already use");
+		return;
+	}
+
+	DBManager::instance()->PushExpressDeleteAll(ch->m_desc, packet->pageIndex, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +218,7 @@ void process_expressInputItem(CNetMsg::SP& msg)
 		return;
 	}
 
-	if (packet->nas <= 0 && packet->item_index > 0) // ¾ÆÀÌÅÛ Àü¼ÛÀÇ °æ¿ì item indexÀÇ À¯È¿¼º °ËÁõ
+	if (packet->nas <= 0 && packet->item_index > 0) // ì•„ì´í…œ ì „ì†¡ì˜ ê²½ìš° item indexì˜ ìœ íš¨ì„± ê²€ì¦
 	{
 		CItemProto* pItemProto = gserver->m_itemProtoList.FindIndex(packet->item_index);
 		if (pItemProto == NULL)
@@ -143,7 +233,7 @@ void process_expressInputItem(CNetMsg::SP& msg)
 	case MSG_SUB_EXPRESS_ALL_USER:
 	case MSG_SUB_EXPRESS_SERVER_GROUP:
 		{
-			// Ã¢°íNPC¿¡ ¾ÆÀÌÅÛ(¶Ç´Â µ·)À» ÀúÀå
+			// ì°½ê³ NPCì— ì•„ì´í…œ(ë˜ëŠ” ëˆ)ì„ ì €ìž¥
 			PCManager::map_t& playerMap			= PCManager::instance()->getPlayerMap();
 			PCManager::map_t::iterator it		= playerMap.begin();
 			PCManager::map_t::iterator endit	= playerMap.end();
@@ -230,7 +320,7 @@ void process_unsearchable_stonestatue_searchName(CPC* ch, CNetMsg::SP& msg)
 	if(findPercentChar(packet->nickName) != NULL)
 		return ;
 
-	// ÀÚ±â ÀÚ½ÅÀÏ °æ¿ì ¹Ù·Î Ã³¸®
+	// ìžê¸° ìžì‹ ì¼ ê²½ìš° ë°”ë¡œ ì²˜ë¦¬
 	{
 		std::string tname = packet->nickName;
 		if ((const char *)ch->m_nick == tname)
@@ -257,7 +347,7 @@ void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½ °Ë»ç
+	// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬ ê²€ì‚¬
 	if (ch->m_inventory.isValidNormalInventory(packet->tab, packet->invenIndex) == false)
 	{
 		LOG_ERROR("HACKING? : invalid packet. char_index[%d] tab[%d] invenIndex[%d]",
@@ -292,7 +382,7 @@ void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// º¸³»´Â ¾ÆÀÌÅÛ °Ë»ç
+	// ë³´ë‚´ëŠ” ì•„ì´í…œ ê²€ì‚¬
 	if (ch->m_inventory.isValidNormalInventory(packet->send_tab, packet->send_invenIndex) == false)
 	{
 		LOG_ERROR("HACKING? : invalid packet. char_index[%d] tab[%d] invenIndex[%d]",
@@ -318,7 +408,7 @@ void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	//ÇÃ·¡Æ¼´½ °áÇÕ¾ÆÀÌÅÛÀº ºÒ°¡´É
+	//í”Œëž˜í‹°ëŠ„ ê²°í•©ì•„ì´í…œì€ ë¶ˆê°€ëŠ¥
 	if(sendItem->IsUsedPlatinumSpecial())
 	{
 		LOG_ERROR("HACKING? : item used platinumSpecial. char_index[%d] tab[%d] invenIndex[%d]",
@@ -327,7 +417,7 @@ void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	// ±Í¼Ó ¾ÆÀÌÅÛ ºÒ°¡´É
+	// ê·€ì† ì•„ì´í…œ ë¶ˆê°€ëŠ¥
 	if(sendItem->IsBelong() == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -431,13 +521,13 @@ void process_use_unsearchable_stonestatue(CPC* ch, CNetMsg::SP& msg)
 	GAMELOG << init("MARBLE_SEND", ch) << itemlog(sendItem) << " : move count : " << packet->itemCount << " <=> " << packet->toNickName <<  end;
 
 
-	// ½ÅºñÇÑ ¼®»óÀÇ ±¸½½ »èÁ¦
+	// ì‹ ë¹„í•œ ì„ìƒì˜ êµ¬ìŠ¬ ì‚­ì œ
 	ch->m_inventory.decreaseItemCount(gemItem, 1);
 
-	// º¸³½ ¾ÆÀÌÅÛ »èÁ¦
+	// ë³´ë‚¸ ì•„ì´í…œ ì‚­ì œ
 	ch->m_inventory.decreaseItemCount(sendItem, packet->itemCount);
 
-	// ÇØ´ç ¾ÆÀÌÅÛÀÌ Äü½½·Ô¿¡ ÀÖ´Ù¸é Äü½½·Ô¿¡¼­ »èÁ¦
+	// í•´ë‹¹ ì•„ì´í…œì´ í€µìŠ¬ë¡¯ì— ìžˆë‹¤ë©´ í€µìŠ¬ë¡¯ì—ì„œ ì‚­ì œ
 	ch->RemoveItemFromQuickSlot(sendItem);
 }
 

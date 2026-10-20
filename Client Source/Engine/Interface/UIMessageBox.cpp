@@ -8,7 +8,7 @@
 #include <Engine/Contents/Base/ChattingUI.h>
 #include <Engine/Interface/UIGamble.h>
 #include <Engine/Interface/UIInventory.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Contents/Base/UIQuestNew.h>
 #include <Engine/Info/ServerInfo.h>
 #include <Engine/Info/MyInfo.h>
@@ -2259,6 +2259,8 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 		{
 			if( IsInside( nX, nY ) )
 			{
+				SetFocus(TRUE);
+
 				nOldX = nX;		nOldY = nY;
 
 				//Combo Box
@@ -2348,6 +2350,10 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 				pUIManager->RearrangeOrder( m_nUIIndex, TRUE );
 				return WMSG_SUCCESS;
 			}
+			else
+			{
+				SetFocus(FALSE);
+			}
 		}
 		break;
 
@@ -2408,7 +2414,12 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 
 						CTString str;
 						LONGLONG llnas = nData * SERVER_INFO()->GetDG_EnvNas();
-						str.PrintF( _s("%s: %I64d %s%s"), _S(1058, "필요나스"), llnas, _S(1762, "나스"), _s("   ") );
+
+						CTString strNas;
+						strNas.PrintF("%I64d", llnas);
+						pUIManager->InsertCommaToString(strNas);
+
+						str.PrintF( _s("%s: %s %s%s"), _S(1058, "필요나스"), strNas, _S(1762, "나스"), _s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 
@@ -2418,7 +2429,11 @@ WMSG_RESULT CUIMessageBox::MouseMessage( MSG *pMsg )
 						LONGLONG llnas = nData * SERVER_INFO()->GetDG_MonsterNas();
 
 						CTString str;
-						str.PrintF( _s("%s: %I64d %s%s"), _S(1058, "필요나스"), llnas, _S(1762, "나스"), _s("   ") );
+						CTString strNas;
+						strNas.PrintF("%I64d", llnas);
+						pUIManager->InsertCommaToString(strNas);
+
+						str.PrintF( _s("%s: %s %s%s"), _S(1058, "필요나스"), strNas, _S(1762, "나스"), _s("   ") );
 						this->SetString(m_nCurStringCount-1, str);
 					}
 					return WMSG_SUCCESS;
@@ -2768,10 +2783,15 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 		iHaveCount[0] =pUIManager->GetInventory()->GetItemCount(iReqMaterial[0]);
 		iHaveCount[1] =pUIManager->GetInventory()->GetItemCount(iReqMaterial[1]);
 
-		CTString strTemp;
-		strTemp.PrintF( _S(3646, "%s (%d/%d)개"), _pNetwork->GetItemName(iReqMaterial[0]), iHaveCount[0], iReqCount[0]);
+		CTString strTemp, strCur, strCon;
+		strCur = pUIManager->IntegerToCommaString(iHaveCount[0]);
+		strCon = pUIManager->IntegerToCommaString(iReqCount[0]);
+		strTemp.PrintF( _S(3646, "%s (%s/%s)개"), _pNetwork->GetItemName(iReqMaterial[0]), strCur, strCon);
 		this->SetString(3, strTemp, iHaveCount[0] >=iReqCount[0] ? 0xFFFFFFFF : 0xB3B3B3FF);
-		strTemp.PrintF( _S(3646, "%s (%d/%d)개"), _pNetwork->GetItemName(iReqMaterial[1]), iHaveCount[1], iReqCount[1]);
+
+		strCur = pUIManager->IntegerToCommaString(iHaveCount[1]);
+		strCon = pUIManager->IntegerToCommaString(iReqCount[1]);
+		strTemp.PrintF( _S(3646, "%s (%s/%s)개"), _pNetwork->GetItemName(iReqMaterial[1]), strCur, strCon);
 		this->SetString(4, strTemp, iHaveCount[1] >=iReqCount[1] ? 0xFFFFFFFF : 0xB3B3B3FF);
 
 		//재료가 부족하면 슬롯에 아이템을 올려놓고 확인 버튼 비활성화 상태에서 리턴
@@ -2918,7 +2938,7 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 		{
 			sPetItem_Info pWildPetInfo;
 			__int64 temExp, UseExp = 0;
-			pUIManager->GetWildPetInfo()->GetWildPetInfo(pItems->GetItemPlus(), pWildPetInfo);
+			pUIManager->GetWildPetInfoUI()->GetWildPetInfo(pItems->GetItemPlus(), pWildPetInfo);
 
 			int level = pWildPetInfo.pet_level;
 
@@ -2934,7 +2954,7 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 			UseExp = (temExp * (50-(level*1818)/10000))/100;
 
 			sPetItem_Info temPetitem;
-			pUIManager->GetWildPetInfo()->GetWildPetInfo(MY_APET_INFO()->m_nIdxServer, temPetitem);
+			pUIManager->GetWildPetInfoUI()->GetWildPetInfo(MY_APET_INFO()->m_nIdxServer, temPetitem);
 
 			if (temPetitem.pet_accexp < UseExp)
 			{
@@ -2942,7 +2962,10 @@ void CUIMessageBox::SetBtnSlot(int nBtn)
 			}
 			
 			CTString strTemp;
-			strTemp.PrintF( _S(5671,"적용 가능한 경험치: %I64d"), UseExp);
+			CTString strExp;
+			strExp.PrintF("%I64d", UseExp);
+			pUIManager->InsertCommaToString(strExp);
+			strTemp.PrintF( _S(5671,"적용 가능한 경험치: %s"), strExp);
 			this->SetString(m_nCurStringCount, strTemp, 0xfd9d28FF);
 			m_taAlign[m_nCurStringCount] = TEXT_CENTER;
 			m_nStrPosX[m_nCurStringCount] = m_nWidth / 2;

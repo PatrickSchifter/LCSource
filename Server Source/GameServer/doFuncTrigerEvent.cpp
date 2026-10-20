@@ -20,17 +20,17 @@ void do_TriggerEvent(CPC* ch, CNetMsg::SP& msg)
 	msg->MoveFirst();
 	RefMsg(msg) >> subtype >> touch_ID;
 
-	// chÀÇ pArea¿¡ ¼ÓÇÑ triggerList °¡Á®¿È
+	// chì˜ pAreaì— ì†í•œ triggerList ê°€ì ¸ì˜´
 	CTrigger_List* triggerList = &ch->m_pArea->m_CTriggerList;
 
 	if (!triggerList || !triggerList->m_Trigger)
 		return;
 
-	// ÀúÀåµÈ Æ®¸®°Å ÃÑ ¼ö¸¦ ±¸ÇÑ´Ù.
+	// ì €ì¥ëœ íŠ¸ë¦¬ê±° ì´ ìˆ˜ë¥¼ êµ¬í•œë‹¤.
 	triggerCount = triggerList->m_nCount;
 	for ( i=0; i < triggerCount; i++ )
 	{
-		// DB¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ Áß ÇØ´çµÇ´Â touch_ID¸¦ Ã£´Â´Ù.
+		// DBì— ì €ì¥ëœ ë°ì´í„° ì¤‘ í•´ë‹¹ë˜ëŠ” touch_IDë¥¼ ì°¾ëŠ”ë‹¤.
 		int ID = triggerList->m_Trigger[i].m_trigger_touchID;
 
 		if ( ID == touch_ID )
@@ -113,7 +113,7 @@ void do_TriggerEvent_ItemComposition(CPC* ch, CNetMsg::SP& msg, CTrigger* trigge
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -122,7 +122,7 @@ void do_TriggerEvent_ItemComposition(CPC* ch, CNetMsg::SP& msg, CTrigger* trigge
 		return;
 	}
 
-	// ¾ÆÀÌÅÛ Á¶ÇÕµÇ´Â °ÍÀ¸·Î ÇØ´ç ·¹ÀÌµå ¸É¹ö º¯¼ö¿¡ ³Ö¾î ÁÜ
+	// ì•„ì´í…œ ì¡°í•©ë˜ëŠ” ê²ƒìœ¼ë¡œ í•´ë‹¹ ë ˆì´ë“œ ë§´ë²„ ë³€ìˆ˜ì— ë„£ì–´ ì¤Œ
 	CItem* pItem = gserver->m_itemProtoList.CreateItem(trigger->m_nItem_index_ItemComposition, -1, 0, 0, 1);
 	if ( pItem == NULL )
 	{
@@ -133,14 +133,14 @@ void do_TriggerEvent_ItemComposition(CPC* ch, CNetMsg::SP& msg, CTrigger* trigge
 		goto TRIGGER_ERROR;
 	}
 
-	// ÇØ´ç ·¹ÀÌµå¿¡ Á¶ÇÕ¿¡ ÇÊ¿äÇÑ ¾ÆÀÌÅÛÀÌ ¸ğµÎ ¸ğ¿´´ÂÁö Ã¼Å©
+	// í•´ë‹¹ ë ˆì´ë“œì— ì¡°í•©ì— í•„ìš”í•œ ì•„ì´í…œì´ ëª¨ë‘ ëª¨ì˜€ëŠ”ì§€ ì²´í¬
 	for (int i = 0; i < trigger->m_nMeterial_IndexCount; i++)
 	{
 		item_search_t vec;
 		int search_count = ch->m_inventory.searchItemByCondition(trigger->m_nMeterial_index[i], 0, 0, vec);
 		if( search_count == 0 || search_count >= trigger->m_nMeterial_count[i] )
 		{
-			//¸ğÀº Á¶ÇÕ ¾ÆÀÌÅÛµé Áö¿öÁÖ±â
+			//ëª¨ì€ ì¡°í•© ì•„ì´í…œë“¤ ì§€ì›Œì£¼ê¸°
 			ch->m_inventory.deleteItem(vec, trigger->m_nMeterial_count[i]);
 		}
 		else
@@ -155,20 +155,20 @@ void do_TriggerEvent_ItemComposition(CPC* ch, CNetMsg::SP& msg, CTrigger* trigge
 		goto TRIGGER_ERROR;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ITEM_COMPOSITION, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -176,7 +176,7 @@ void do_TriggerEvent_ItemComposition(CPC* ch, CNetMsg::SP& msg, CTrigger* trigge
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -224,7 +224,7 @@ void do_TriggerEvent_ItemDrop(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	}
 #endif
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -235,7 +235,7 @@ void do_TriggerEvent_ItemDrop(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 
 	CItem* pItem = gserver->m_itemProtoList.CreateItem( trigger->m_ItemDrop_index, -1, 0, 0, 1 );
 
-	// ¾ÆÀÌÅÛÀÌ µå¶ø µÉ È®·ü·Î Ã¼Å©
+	// ì•„ì´í…œì´ ë“œë ë  í™•ë¥ ë¡œ ì²´í¬
 	int percent = GetRandom(0, 100);
 	if ( percent > trigger->m_ItemDrop_percent )
 	{
@@ -243,7 +243,7 @@ void do_TriggerEvent_ItemDrop(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		goto TRIGGER_DONT_ENOUGH_CONDITION;
 	}
 
-	// ¾ÆÀÌÅÛ µå¶ø
+	// ì•„ì´í…œ ë“œë
 	if ( pItem == NULL )
 	{
 		GAMELOG << init("TRIGGER_ERROR : ITEM DROP 1")
@@ -262,20 +262,20 @@ void do_TriggerEvent_ItemDrop(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		pItem->m_pArea->SendToCell( rmsg, GET_YLAYER( pItem ), pItem->m_cellX, pItem->m_cellZ );
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ITEM_DROP, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -284,7 +284,7 @@ void do_TriggerEvent_ItemDrop(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	}
 	pItem = NULL;
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -325,7 +325,7 @@ void do_TriggerEvent_OpenTheDoor(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -334,7 +334,7 @@ void do_TriggerEvent_OpenTheDoor(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼­ºê Å¸ÀÔ¿¡ µû¶ó Æ®¸®°Å Àû¿ëÀÌ ´Ş¶ó Áü
+	// ì„œë¸Œ íƒ€ì…ì— ë”°ë¼ íŠ¸ë¦¬ê±° ì ìš©ì´ ë‹¬ë¼ ì§
 	switch( trigger->m_nType_sub )
 	{
 	case TRIGGER_SUBTYPE_NONE_OPEN_THE_DOOR:
@@ -358,7 +358,7 @@ void do_TriggerEvent_OpenTheDoor(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 						goto TRIGGER_DONT_ENOUGH_CONDITION;
 				}
 
-				// ´Ù ÀÖÀ¸¸é ¾ÆÀÌÅÛ ÇÊ¿ä ¼ö·®¸¸Å­ Áö¿öÁØ´Ù.
+				// ë‹¤ ìˆìœ¼ë©´ ì•„ì´í…œ í•„ìš” ìˆ˜ëŸ‰ë§Œí¼ ì§€ì›Œì¤€ë‹¤.
 				for (int i = 0; i < loopcount; i++)
 				{
 					ch->m_inventory.deleteItem(vec[i], trigger->m_NeedItem_Count[i]);
@@ -374,20 +374,20 @@ void do_TriggerEvent_OpenTheDoor(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		break;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_OPEN_THE_DOOR, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¹® ¿­±â´Â ¹®À» Á÷Á¢ Å¬¸¯ÀÌ ¾Æ´Ï¸é¼­ È°¼ºÈ­°¡ µÇ¾ß ÇÑ´Ù¸é ¿ÀºêÁ§Æ® È°¼ºÈ­ ¸Ş¼¼Áö¸¦ º¸³»ÁØ´Ù.
+	// ë¬¸ ì—´ê¸°ëŠ” ë¬¸ì„ ì§ì ‘ í´ë¦­ì´ ì•„ë‹ˆë©´ì„œ í™œì„±í™”ê°€ ë˜ì•¼ í•œë‹¤ë©´ ì˜¤ë¸Œì íŠ¸ í™œì„±í™” ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 	if(touchID != playID && playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -395,7 +395,7 @@ void do_TriggerEvent_OpenTheDoor(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -436,7 +436,7 @@ void do_TriggerEvent_StartRaid(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -445,21 +445,21 @@ void do_TriggerEvent_StartRaid(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
-		// ·¹ÀÌµå ½ºÅ¸Æ®´Â ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ µû·Î ÇÊ¿ä ¾ø´Ù.
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
+		// ë ˆì´ë“œ ìŠ¤íƒ€íŠ¸ëŠ” ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ ë”°ë¡œ í•„ìš” ì—†ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_START_RAID, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -484,7 +484,7 @@ void do_TriggerEvent_MessagePrint(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -493,15 +493,15 @@ void do_TriggerEvent_MessagePrint(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
-	// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
-	// MessagePrint´Â StringIndex¸¦ Ãß°¡ÇØ¼­ Å¬¶ó¿¡°Ô µ¥ÀÌÅÍ º¸³»ÁÜ
-	// StringIndex°¡ 0 ÀÌ¸é ¸Ş¼¼Áö¸¦ º¸³»Áö ¾Ê´Â´Ù.
+	// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
+	// MessagePrintëŠ” StringIndexë¥¼ ì¶”ê°€í•´ì„œ í´ë¼ì—ê²Œ ë°ì´í„° ë³´ë‚´ì¤Œ
+	// StringIndexê°€ 0 ì´ë©´ ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì§€ ì•ŠëŠ”ë‹¤.
 	if (trigger->m_nStringIndex > 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -510,7 +510,7 @@ void do_TriggerEvent_MessagePrint(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -518,7 +518,7 @@ void do_TriggerEvent_MessagePrint(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -543,7 +543,7 @@ void do_TriggerEvent_SummonNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -552,18 +552,18 @@ void do_TriggerEvent_SummonNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// npc¸¦ Á¤ÇØÁø count ¸¸Å­ ¼ÒÈ¯ÇÑ´Ù.
+	// npcë¥¼ ì •í•´ì§„ count ë§Œí¼ ì†Œí™˜í•œë‹¤.
 	int i, j;
 	for(i=0; i < trigger->m_nSummonNpc_indexCount; i++)
 	{
 		for (j=0; j < trigger->m_nSummonNpc_count[i]; j++)
 		{
-			// ³ªÁß¿¡ ¸®Á¨ Á¤º¸°¡ Á¤¸®µÇ¸é ÀÌ°ÍÀ» »ç¿ëÇÑ´Ù.
+			// ë‚˜ì¤‘ì— ë¦¬ì   ì •ë³´ê°€ ì •ë¦¬ë˜ë©´ ì´ê²ƒì„ ì‚¬ìš©í•œë‹¤.
 			//CNPCRegenInfo* p = area->m_npcRegenList.m_infoList + i;
 			//if (p->m_totalNum != 0)
 			//	continue ;
 
-			// ¸®Á¨ Á¤º¸°¡ ¾ø¾î¼­ ÀÓ½Ã·Î »ç¿ë
+			// ë¦¬ì   ì •ë³´ê°€ ì—†ì–´ì„œ ì„ì‹œë¡œ ì‚¬ìš©
 			float x = 0.0f;
 			float z = 0.0f;
 			int nTry = 0;
@@ -633,20 +633,20 @@ void do_TriggerEvent_SummonNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		} // for
 	} // for
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_SUMMON_NPC, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -654,7 +654,7 @@ void do_TriggerEvent_SummonNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -687,7 +687,7 @@ void do_TriggerEvent_UseDebuf(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -696,7 +696,7 @@ void do_TriggerEvent_UseDebuf(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// debuf¸¦ Á¤ÇØÁø ¸¸Å­ ¹Ş´Â´Ù.
+	// debufë¥¼ ì •í•´ì§„ ë§Œí¼ ë°›ëŠ”ë‹¤.
 	int i;
 	for (i=0; i < trigger->m_nUseDebuf_indexCount; i++)
 	{
@@ -711,8 +711,8 @@ void do_TriggerEvent_UseDebuf(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 			goto TRIGGER_ERROR;
 		}
 
-		// ¾ÆÀÌÅÛ ÀÎµ¦½º¿¡ -2´Â Æ®¸®°Å¿¡ ÀÇÇÑ ½ºÅ³ ¹ßµ¿ÀÓÀ» ³ªÅ¸³¿
-		/* Ãß°¡ ¿ä¸Á Á¸ °Ë»çÇØ¼­ ·¹ÀÌµå Á¸ÀÌ¸é ¿øÁ¤´ë°¡ ¸ğµÎ °É¸®°Ô ÇÏ°í ±× ¿Ü´Â ÆÄÆ¼°¡ ¸ğµÎ °É¸®°Ô ÇÑ´Ù.*/
+		// ì•„ì´í…œ ì¸ë±ìŠ¤ì— -2ëŠ” íŠ¸ë¦¬ê±°ì— ì˜í•œ ìŠ¤í‚¬ ë°œë™ì„ì„ ë‚˜íƒ€ëƒ„
+		/* ì¶”ê°€ ìš”ë§ ì¡´ ê²€ì‚¬í•´ì„œ ë ˆì´ë“œ ì¡´ì´ë©´ ì›ì •ëŒ€ê°€ ëª¨ë‘ ê±¸ë¦¬ê²Œ í•˜ê³  ê·¸ ì™¸ëŠ” íŒŒí‹°ê°€ ëª¨ë‘ ê±¸ë¦¬ê²Œ í•œë‹¤.*/
 		bool bDebuffApply = false;
 
 		if (ch->m_pZone && ch->m_pArea
@@ -735,20 +735,20 @@ void do_TriggerEvent_UseDebuf(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		pDebuff = NULL;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_USE_DEBUF, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -756,7 +756,7 @@ void do_TriggerEvent_UseDebuf(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -789,7 +789,7 @@ void do_TriggerEvent_ActiveObject(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -798,20 +798,20 @@ void do_TriggerEvent_ActiveObject(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_OBJECT, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -836,7 +836,7 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -845,7 +845,7 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼­ºê Å¸ÀÔ¿¡ µû¶ó Æ®¸®°Å Àû¿ëÀÌ ´Ş¶ó Áü
+	// ì„œë¸Œ íƒ€ì…ì— ë”°ë¼ íŠ¸ë¦¬ê±° ì ìš©ì´ ë‹¬ë¼ ì§
 	switch( trigger->m_nType_sub )
 	{
 	case TRIGGER_SUBTYPE_NONE_REMOVE_NPC:
@@ -861,10 +861,10 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 
 			int itemCount = pItem->Count();
 
-			// item´ç Á×Àº npc ¼ö¸¦ ÀÌ¿ëÇØ ÃÑ Á×´Â npc¸¦ ±¸ÇÑ´Ù.
+			// itemë‹¹ ì£½ì€ npc ìˆ˜ë¥¼ ì´ìš©í•´ ì´ ì£½ëŠ” npcë¥¼ êµ¬í•œë‹¤.
 			int totalKilledNpc = itemCount * trigger->m_KillCount;
 
-			// Á×ÀÏ npc¸¦ Ã£¾Æ¼­ ÃÑ Á×´Â ¼ö¸¸Å­ Á¦°ÅÇÑ´Ù.
+			// ì£½ì¼ npcë¥¼ ì°¾ì•„ì„œ ì´ ì£½ëŠ” ìˆ˜ë§Œí¼ ì œê±°í•œë‹¤.
 			CNPC* tnpc = ch->m_pArea->m_npcList;
 			if ( tnpc == NULL || tnpc->m_pArea == NULL )
 			{
@@ -883,30 +883,30 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 				if ( npc->m_pArea == NULL )
 					continue ;
 
-				// Á×´Â npc°¡ ¸Â´Ù¸é Á¦°Å, npc´Â ÃÑ Á×´Â ¼ö¸¸Å­¸¸ Á×´Â´Ù.
+				// ì£½ëŠ” npcê°€ ë§ë‹¤ë©´ ì œê±°, npcëŠ” ì´ ì£½ëŠ” ìˆ˜ë§Œí¼ë§Œ ì£½ëŠ”ë‹¤.
 				if ( npc->m_proto->m_index == trigger->m_KilledNpc_Index_ForRemoveNpc && totalKilledNpc > 0)
 				{
 					npc->SendDisappearAllInCell(true);
 
-					// ¾îÅÃ¸®½ºÆ®¿¡¼­ »èÁ¦
+					// ì–´íƒë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
 					DelAttackList(npc);
 
-					// npc »èÁ¦
+					// npc ì‚­ì œ
 					npc->m_pArea->CharFromCell(npc, true);
 					npc->m_pArea->DelNPC(npc);
 
-					// ÃÑ Á×´Â ¼ö ÇÏ³ª ÁÙÀÌ±â
+					// ì´ ì£½ëŠ” ìˆ˜ í•˜ë‚˜ ì¤„ì´ê¸°
 					totalKilledNpc--;
 				}
 			}
 
-			// ³²´Â item °³¼ö ±¸ÇÏ±â
+			// ë‚¨ëŠ” item ê°œìˆ˜ êµ¬í•˜ê¸°
 			int itemCount_rest;
 			if ( totalKilledNpc <= 0 )
 				itemCount_rest = 0;
 			else
 				itemCount_rest = totalKilledNpc / trigger->m_KillCount;
-			// Á×´Â npc ¸¸Å­ itemµµ ÁÙ¾î¾ß ÇÑ´Ù.
+			// ì£½ëŠ” npc ë§Œí¼ itemë„ ì¤„ì–´ì•¼ í•œë‹¤.
 			itemCount = itemCount - itemCount_rest;
 			ch->m_inventory.decreaseItemCount(pItem, itemCount);
 		}
@@ -919,20 +919,20 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		break;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_REMOVE_NPC, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -940,7 +940,7 @@ void do_TriggerEvent_RemoveNpc(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -981,7 +981,7 @@ void do_TriggerEvent_TimeLimit(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -993,25 +993,25 @@ void do_TriggerEvent_TimeLimit(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	time_t curTime;
 	time(&curTime);
 
-	// Å¸ÀÌ¸Ó ÇÔ¼ö·Î ±ÇÇÑÀ» ³Ñ±ä´Ù. ÇöÀç ½Ã°£ ÀúÀå
+	// íƒ€ì´ë¨¸ í•¨ìˆ˜ë¡œ ê¶Œí•œì„ ë„˜ê¸´ë‹¤. í˜„ì¬ ì‹œê°„ ì €ì¥
 	trigger->SetTriggerTime(curTime);
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
-		// TimeLimit´Â Á¦ÇÑ ½Ã°£À» Ãß°¡ÇØ¼­ Å¬¶ó¿¡°Ô µ¥ÀÌÅÍ º¸³»ÁÜ. Å¸ÀÌ¸Ó¸¦ ¾²´Â ¸ğµç Æ®¸®°Å´Â ½Ã°£ Á¤º¸±îÁö Áà¾ß ÇÔ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
+		// TimeLimitëŠ” ì œí•œ ì‹œê°„ì„ ì¶”ê°€í•´ì„œ í´ë¼ì—ê²Œ ë°ì´í„° ë³´ë‚´ì¤Œ. íƒ€ì´ë¨¸ë¥¼ ì“°ëŠ” ëª¨ë“  íŠ¸ë¦¬ê±°ëŠ” ì‹œê°„ ì •ë³´ê¹Œì§€ ì¤˜ì•¼ í•¨
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_TIME_LIMIT, touchID, playID, trigger->m_bContinue);
 		RefMsg(rmsg) << trigger->m_TimeLimitSec;
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1019,7 +1019,7 @@ void do_TriggerEvent_TimeLimit(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1044,7 +1044,7 @@ void do_TriggerEvent_QuestComplete(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1096,20 +1096,20 @@ void do_TriggerEvent_QuestComplete(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		}
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ITEM_DROP, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1117,7 +1117,7 @@ void do_TriggerEvent_QuestComplete(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1143,7 +1143,7 @@ void do_TriggerEvent_ItemGetInven(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1152,13 +1152,13 @@ void do_TriggerEvent_ItemGetInven(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ÀÎº¥Åä¸® °¡´É °Ë»ç
+	// ì¸ë²¤í† ë¦¬ ê°€ëŠ¥ ê²€ì‚¬
 	if ( ch->m_inventory.getEmptyCount() < trigger->m_nGetItem_TotalCount )
 		goto TRIGGER_ERROR;
 
 	for (i=0; i < trigger->m_nGetItem_TotalCount; i++)
 	{
-		// È®·ü¿¡ ¸ø¹ÌÄ¡¸é ½ºÅµ
+		// í™•ë¥ ì— ëª»ë¯¸ì¹˜ë©´ ìŠ¤í‚µ
 		int rand = GetRandom(1, 100);
 		int ItemProb = trigger->m_nGetItem_Prob[i];
 		if (rand > ItemProb)
@@ -1177,20 +1177,20 @@ void do_TriggerEvent_ItemGetInven(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		}
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ITEM_GET_INVEN, touchID, playID, trigger->m_bContinue);
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1198,7 +1198,7 @@ void do_TriggerEvent_ItemGetInven(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1219,7 +1219,7 @@ ITEM_FAIL:
 			ch->m_inventory.deleteItem(vec, trigger->m_nGetItem_Count[i]);
 		}
 	}
-	// TRIGGER_ERROR·Î ³Ñ¾î°¡¼­ ¸Ş¼¼Áö¸¦ º¸³»ÁØ´Ù.
+	// TRIGGER_ERRORë¡œ ë„˜ì–´ê°€ì„œ ë©”ì„¸ì§€ë¥¼ ë³´ë‚´ì¤€ë‹¤.
 
 TRIGGER_ERROR:
 	{
@@ -1243,7 +1243,7 @@ void do_TriggerEvent_ConsecutiveDialogue(CPC* ch, CNetMsg::SP& msg, CTrigger* tr
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1252,15 +1252,15 @@ void do_TriggerEvent_ConsecutiveDialogue(CPC* ch, CNetMsg::SP& msg, CTrigger* tr
 		return;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
-		// ¿¬¼Ó ´ëÈ­´Â Æ®¸®°Å ¾ÆÀÌµğ¿Í ½ºÆ®¸µ ÀÎµ¦½º¸¦ ¸Ş¼¼Áö·Î º¸³½´Ù.
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
+		// ì—°ì† ëŒ€í™”ëŠ” íŠ¸ë¦¬ê±° ì•„ì´ë””ì™€ ìŠ¤íŠ¸ë§ ì¸ë±ìŠ¤ë¥¼ ë©”ì„¸ì§€ë¡œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_CONSECUTIVE_DIALOGUE, touchID, playID, trigger->m_bContinue);
 		RefMsg(rmsg) << trigger->m_nMainDialogueString
@@ -1278,7 +1278,7 @@ void do_TriggerEvent_ConsecutiveDialogue(CPC* ch, CNetMsg::SP& msg, CTrigger* tr
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1286,7 +1286,7 @@ void do_TriggerEvent_ConsecutiveDialogue(CPC* ch, CNetMsg::SP& msg, CTrigger* tr
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1311,7 +1311,7 @@ void do_TriggerEvent_ActiveEffect(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 	touchID = trigger->m_trigger_touchID;
 	playID	= trigger->m_trigger_playID;
 
-	// ÀÌ¹Ì ½ÇÇàÇßÀ¸¸é ½ºÅµ
+	// ì´ë¯¸ ì‹¤í–‰í–ˆìœ¼ë©´ ìŠ¤í‚µ
 	if(trigger->m_bUsed == true)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1320,15 +1320,15 @@ void do_TriggerEvent_ActiveEffect(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		return;
 	}
 
-	// ¼º°ø ÇßÀ¸¹Ç·Î ½ÇÇàµÈ °ÍÀ¸·Î Ã¼Å©, Áö¼Ó Æ®¸®°ÅÀÌ¸é ´ÙÀ½¿¡µµ °¡´É ÇÔ
+	// ì„±ê³µ í–ˆìœ¼ë¯€ë¡œ ì‹¤í–‰ëœ ê²ƒìœ¼ë¡œ ì²´í¬, ì§€ì† íŠ¸ë¦¬ê±°ì´ë©´ ë‹¤ìŒì—ë„ ê°€ëŠ¥ í•¨
 	if (trigger->m_bContinue)
 		trigger->m_bUsed = false;
 	else
 		trigger->m_bUsed = true;
 
 	{
-		// ¼º°ø Çß´Ù´Â ¸Ş¼¼Áö º¸³» ÁÜ
-		// ÀÌÆåÆ® È°¼ºÈ­´Â ÀÌÆåÆ® ÀÌ¸§°ú ÀÚ½ÅÀÎÁö ´Ù¸¥ npcÀÎÁö, npcÀÇ ÀÎµ¦½º¸¦ ¸Ş¼¼Áö·Î º¸³½´Ù.
+		// ì„±ê³µ í–ˆë‹¤ëŠ” ë©”ì„¸ì§€ ë³´ë‚´ ì¤Œ
+		// ì´í™íŠ¸ í™œì„±í™”ëŠ” ì´í™íŠ¸ ì´ë¦„ê³¼ ìì‹ ì¸ì§€ ë‹¤ë¥¸ npcì¸ì§€, npcì˜ ì¸ë±ìŠ¤ë¥¼ ë©”ì„¸ì§€ë¡œ ë³´ë‚¸ë‹¤.
 		CNetMsg::SP rmsg(new CNetMsg);
 		TriggerEvnetMsg(rmsg, MSG_EX_TRIGGER_EVENT_ACTIVE_EFFECT, touchID, playID, trigger->m_bContinue);
 		RefMsg(rmsg) << trigger->m_strEffectName
@@ -1338,7 +1338,7 @@ void do_TriggerEvent_ActiveEffect(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// ¿ÀºêÁ§Æ® È°¼ºÈ­°¡ ÇÊ¿äÇÏ¸é È°¼ºÈ­ ½ÃÅ²´Ù.
+	// ì˜¤ë¸Œì íŠ¸ í™œì„±í™”ê°€ í•„ìš”í•˜ë©´ í™œì„±í™” ì‹œí‚¨ë‹¤.
 	if(playID != 0)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1346,7 +1346,7 @@ void do_TriggerEvent_ActiveEffect(CPC* ch, CNetMsg::SP& msg, CTrigger* trigger)
 		ch->m_pArea->SendToAllClient(rmsg);
 	}
 
-	// µµ¹Ì³ë Çü½ÄÀÇ ¿¬¼âÀûÀÎ Æ®¸®°Å ¹ßµ¿, touchID¿Í playID°¡ °°À¸¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁö¹Ç·Î Ã¼Å©ÇØ ÁØ´Ù.
+	// ë„ë¯¸ë…¸ í˜•ì‹ì˜ ì—°ì‡„ì ì¸ íŠ¸ë¦¬ê±° ë°œë™, touchIDì™€ playIDê°€ ê°™ìœ¼ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§€ë¯€ë¡œ ì²´í¬í•´ ì¤€ë‹¤.
 	if (trigger->m_bDomino && touchID != playID)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
@@ -1537,7 +1537,7 @@ void do_ExRaidSceneTodoTakeItem(CPC* ch, CNetMsg::SP& msg)
 		{
 			GAMELOG << init("ADD TO INVENTORY AKAN TEMPLE RAID ITEM", ch) << itemlog(pItem) << end;
 
-			ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_ITEM, index, 0);		//object »óÅÂ ¼³Á¤
+			ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_ITEM, index, 0);		//object ìƒíƒœ ì„¤ì •
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				SendRaidSceneObjectRefreshMsg(rmsg, ch, OBJECT_ITEM, index, 0);
@@ -1549,7 +1549,7 @@ void do_ExRaidSceneTodoTakeItem(CPC* ch, CNetMsg::SP& msg)
 		{
 			delete pItem;
 
-			// ÀÎº¥ÀÌ °¡µæÂ÷¼­ ¾ÆÀÌÅÛ ½Àµæ ºÒ°¡.
+			// ì¸ë²¤ì´ ê°€ë“ì°¨ì„œ ì•„ì´í…œ ìŠµë“ ë¶ˆê°€.
 			{
 				CNetMsg::SP rmsg(new CNetMsg);
 				SysFullInventoryMsg(rmsg, 0);
@@ -1637,7 +1637,7 @@ void do_ExRaidSceneTouchField(CPC* ch, CNetMsg::SP& msg)
 	int index, data;
 	RefMsg(msg) >> index
 				>> data;
-	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_TOUCH_FIELD, index, data);		//object »óÅÂ ¼³Á¤
+	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_TOUCH_FIELD, index, data);		//object ìƒíƒœ ì„¤ì •
 	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].ExcuteOutput(TOUCH_FIELD, index, data, ch);
 	return ;
 }
@@ -1709,7 +1709,7 @@ void do_ExRaidSceneToggleGate(CPC* ch, CNetMsg::SP& msg)
 	int index, data;
 	RefMsg(msg) >> index
 				>> data;
-	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_GATE, index, data);	//object »óÅÂ ¼³Á¤
+	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_GATE, index, data);	//object ìƒíƒœ ì„¤ì •
 	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].ExcuteOutput(TOGGLE_GATE, index, data, ch);
 	return ;
 }
@@ -1720,7 +1720,7 @@ void do_ExRaidSceneTogglePortal(CPC* ch, CNetMsg::SP& msg)
 	int index, data;
 	RefMsg(msg) >> index
 				>> data;
-	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_PORTAL, index, data);	//object »óÅÂ ¼³Á¤
+	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_PORTAL, index, data);	//object ìƒíƒœ ì„¤ì •
 	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].ExcuteOutput(TOGGLE_PORTAL, index, data, ch);
 	return ;
 }
@@ -1731,7 +1731,7 @@ void do_ExRaidSceneCreateItemObject(CPC* ch, CNetMsg::SP& msg)
 	int index, data;
 	RefMsg(msg) >> index
 				>> data;
-	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_ITEM, index, data);	//object »óÅÂ ¼³Á¤
+	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].SetTheObjectState(OBJECT_ITEM, index, data);	//object ìƒíƒœ ì„¤ì •
 	ch->m_pArea->m_RaidInfoList[ch->m_pArea->m_RaidDifficulty].ExcuteOutput(CREATE_ITEM_OBJECT, index, data, ch);
 	return ;
 }
@@ -1747,7 +1747,7 @@ void do_ExRaidSceneDebuffSkill(CPC* ch, CNetMsg::SP& msg)
 }
 void do_ExRaidSceneEndRaid(CPC* ch, CNetMsg::SP& msg)
 {
-	// Room Á¤º¸ ÇÏ°í ·¹ÀÌµå Âü¿© Á¤º¸ ÃÊ±âÈ­
+	// Room ì •ë³´ í•˜ê³  ë ˆì´ë“œ ì°¸ì—¬ ì •ë³´ ì´ˆê¸°í™”
 	return ;
 }
 void do_ExRaidScenePauseArea(CPC* ch, CNetMsg::SP& msg)
@@ -1778,7 +1778,7 @@ void do_ExRaidSceneToggleCamera(CPC* ch, CNetMsg::SP& msg)
 	int nRoomNo;
 	nRoomNo = ch->m_nJoinInzone_RoomNo;
 
-	//ÇïÆÛ·Î room no ÃÊ±âÈ­ ¹ß¼Û.
+	//í—¬í¼ë¡œ room no ì´ˆê¸°í™” ë°œì†¡.
 
 	return ;
 }

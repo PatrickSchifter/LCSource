@@ -13,12 +13,12 @@
 #include "../ShareLib/packetType/ptype_tradeAgent_system.h"
 #include "DBManager.h"
 
-float g_TradeAgent_Fee = 5.0f;	// °Å·¡´ëÇà ¼ö¼ö·á
-int g_TradeAgent_Deposit= 1000;		// °Å·¡´ëÇà º¸Áõ±İ
+float g_TradeAgent_Fee = 5.0f;	// ê±°ë˜ëŒ€í–‰ ìˆ˜ìˆ˜ë£Œ
+int g_TradeAgent_Deposit= 1000;		// ê±°ë˜ëŒ€í–‰ ë³´ì¦ê¸ˆ
 
 void do_TradeAgent(CPC* ch, CNetMsg::SP& msg)
 {
-	// Á×°Å³ª ±³È¯ÁßÀÌ¸é ¹«½Ã
+	// ì£½ê±°ë‚˜ êµí™˜ì¤‘ì´ë©´ ë¬´ì‹œ
 	pTypeBase* pBase = reinterpret_cast<pTypeBase*>(msg->m_buf);
 
 	if(pBase->subType != MSG_TRADEAGENT_REG_LIST)
@@ -64,32 +64,36 @@ void do_TradeAgent(CPC* ch, CNetMsg::SP& msg)
 	case MSG_TRADEAGENT_ERROR:
 		do_TradeAgent_Error(ch, msg);
 		break;
+
+	default:
+		LOG_ERROR("ERROR - invalid packet type(%d)", pBase->subType);
+		ch->m_desc->Close("invalid packet type");
+		return;
 	}
 }
 
-// µî·Ï ¸®½ºÆ® ¿äÃ»
+// ë“±ë¡ ë¦¬ìŠ¤íŠ¸ ìš”ì²­
 void do_TradeAgent_RegListReq(CPC* ch, CNetMsg::SP& msg)
 {
-	if (gserver->isRunSubHelper())
-	{
-		/*CNetMsg::SP rmsg(msg);
-		RequestClient::TradeAgentSystemRegList *p = reinterpret_cast<RequestClient::TradeAgentSystemRegList*>(rmsg->m_buf);
-		rmsg->setSize(sizeof(RequestClient::TradeAgentSystemRegList));
-		p->charIndex = ch->m_index;
-		SEND_Q(rmsg, gserver->m_subHelper);*/
-		RequestClient::TradeAgentSystemRegList *p = reinterpret_cast<RequestClient::TradeAgentSystemRegList*>(msg->m_buf);
-		p->charIndex = ch->m_index;
-		SEND_Q(msg, gserver->m_subHelper);
-	}
-	else
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_SEARCH_ERROR);
 		SEND_Q(rmsg, ch->m_desc);
+		return;
 	}
+
+	/*CNetMsg::SP rmsg(msg);
+	RequestClient::TradeAgentSystemRegList *p = reinterpret_cast<RequestClient::TradeAgentSystemRegList*>(rmsg->m_buf);
+	rmsg->setSize(sizeof(RequestClient::TradeAgentSystemRegList));
+	p->charIndex = ch->m_index;
+	SEND_Q(rmsg, gserver->m_subHelper);*/
+	RequestClient::TradeAgentSystemRegList *p = reinterpret_cast<RequestClient::TradeAgentSystemRegList*>(msg->m_buf);
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 
-// µî·Ï ¿äÃ»
+// ë“±ë¡ ìš”ì²­
 void do_TradeAgent_RegReq(CPC* ch, CNetMsg::SP& msg)
 {
 	if (gserver->isRunSubHelper() == false)
@@ -100,215 +104,217 @@ void do_TradeAgent_RegReq(CPC* ch, CNetMsg::SP& msg)
 		return ;
 	}
 
+	RequestClient::TradeAgentSystemReg *p = reinterpret_cast<RequestClient::TradeAgentSystemReg*>(msg->m_buf);
+
+	//í˜„ì¬ ë“±ë¡ì´ ì²˜ë¦¬ì¤‘ì¸ì§€ ì²´í¬(ì—ëŸ¬ ë©”ì„¸ì§€ ë³´ë‚´ì§€ ì•Šê³  ì°¨ë‹¨)
+	if(ch->m_bTradeAgentRegIng == true)
 	{
-		RequestClient::TradeAgentSystemReg *p = reinterpret_cast<RequestClient::TradeAgentSystemReg*>(msg->m_buf);
+		LOG_ERROR("tradeagent - registering. charIndex[%d]", ch->m_index);
+		ch->m_desc->Close("tradeagent - registering");
+		return ;
+	}
 
-		//ÇöÀç µî·ÏÀÌ Ã³¸®ÁßÀÎÁö Ã¼Å©(¿¡·¯ ¸Ş¼¼Áö º¸³»Áö ¾Ê°í Â÷´Ü)
-		if(ch->m_bTradeAgentRegIng == true)
-		{
-			LOG_ERROR("tradeagent - registering. charIndex[%d]", ch->m_index);
-			return ;
-		}
-
-		if(ch->m_tradeAgentRegCount >= MAX_REG_COUNT)
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_REG_FULL);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		// ¾ÆÀÌÅÛ Ã£±â
-		CItem* item = ch->m_inventory.getItem(p->tab, p->invenIndex);
-		if (item == NULL || item->getDBIndex() != p->itemIndex || item->getWearPos() != WEARING_NONE)
-			return;
-
-		const CItemProto* itemproto = item->m_itemProto;
-		if (itemproto == NULL)
-			return;
-
-		if(item->m_socketList.GetSocketCount() > 0 && item->m_socketList.getSocketPos(0)->GetJewelDBIdx() == -1)
-			return;
-
-		//¾ÆÀÌÅÛ ¼ö·® Ã¼Å©
-		if(p->quantity <= 0 || item->Count() < p->quantity)
-		{
-			// ¿¡·¯ ¸Ş¼¼Áö: ¾ÆÀÌÅÛ °³¼ö ºÎÁ¤È®
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_EXIST_ITEM);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		//µ· Ã¼Å© (°Ô·±Æ¼)
-		if(ch->m_inventory.getMoney() < (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit)
-		{
-			// ¿¡·¯ ¸Ş¼¼Áö: µ· ºÎÁ·
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_ENOUGH_MONEY);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		//ÃÑ ±İ¾× Ã¼Å©
-		if(p->TotalMoney <= 0)
-		{
-			// ¿¡·¯ ¸Ş¼¼Áö: ÆÇ¸Å ÃÑ ±İ¾× ºÎÁ¤È®
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_INCORRECT_MONEY);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-#ifdef ENABLE_SUBJOB
-		if( item && item->CheckTrader() && item->CanUseTrader( TRADE_TRADEAGENT, ch->IsSubJob(JOB_SUB_TRADER) ) == false )
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		if( !item->CheckTrader() )
-		{
-#endif //ENABLE_SUBJOB
-			if( !(itemproto->getItemFlag() & ITEM_FLAG_EXCHANGE) ||
-					(itemproto->getItemFlag() & ITEM_FLAG_COMPOSITE) ||
-					(item->getFlag() & FLAG_ITEM_SEALED) ||
-					(item->getFlag() & FLAG_ITEM_COMPOSITION) ||
-					(item->getFlag() & FLAG_ITEM_LENT) ||
-					(item->getFlag() & FLAG_ITEM_BELONG) ||
-					( item->getUsed() > 0 ) || ( item->getUsed_2() > 0 ) || (itemproto->getItemFlag() & ITEM_FLAG_NOTTRADEAGENT)
-			  )
-			{
-				// ¿¡·¯ ¸Ş¼¼Áö: °Å·¡ ºÒ°¡´É ¾ÆÀÌÅÛ
-				CNetMsg::SP rmsg(new CNetMsg);
-				makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
-				SEND_Q(rmsg, ch->m_desc);
-				return;
-			}
-#ifdef ENABLE_SUBJOB
-		}
-#endif //ENABLE_SUBJOB
-		//¾Ç¼¼»ç¸® , ¾Ö¿Ïµ¿¹° °Å·¡ ºÒ°¡ || ¾Ç¼¼»ç¸® , °ø°İÇü ¾Ö¿Ïµ¿¹° °Å·¡ ºÒ°¡
-		if( ((itemproto->getItemTypeIdx() == 5) && (itemproto->getItemSubTypeIdx() == 6)) ||
-				((itemproto->getItemTypeIdx() == 5) && (itemproto->getItemSubTypeIdx() == 7)) )
-		{
-			// ¿¡·¯ ¸Ş¼¼Áö: °Å·¡ ºÒ°¡´É ¾ÆÀÌÅÛ
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		int itemCount;
-		itemCount = item->Count();
-
+	if(ch->m_tradeAgentRegCount >= MAX_REG_COUNT)
+	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		rmsg->BufferClear();
-		RequestClient::TradeAgentSystemRegServer* packet = reinterpret_cast<RequestClient::TradeAgentSystemRegServer *>(rmsg->m_buf);
-		packet->type = MSG_TRADEAGENT;
-		packet->subType = MSG_TRADEAGENT_REG;
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_REG_FULL);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
 
-		packet->itemIndex = item->getDBIndex();
-		packet->item.item_index = item->getDBIndex();
-		packet->charIndex = ch->m_index;
-		strcpy(packet->charName, (const char*)ch->m_nick);
-		packet->Guarantee = (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit;
-		strcpy(packet->item.serial, item->m_serial.c_str());
-		packet->item.flag = item->getFlag();
-		packet->item.plus = item->getPlus();
-		packet->item.plus2 = item->getPlus_2();
-		packet->item.item_level = item->GetItemLevel();
-		packet->itemCount = itemCount;
-		packet->quantity = p->quantity;
-		packet->TotalMoney = p->TotalMoney;
+	// ì•„ì´í…œ ì°¾ê¸°
+	CItem* item = ch->m_inventory.getItem(p->tab, p->invenIndex);
+	if (item == NULL || item->getDBIndex() != p->itemIndex || item->getWearPos() != WEARING_NONE)
+	{
+		ch->m_desc->Close("invalid inventory tab/index");
+		return;
+	}
+
+	const CItemProto* itemproto = item->m_itemProto;
+	if (itemproto == NULL)
+	{
+		ch->m_desc->Close("not found item");
+		return;
+	}
+
+	if(item->m_socketList.GetSocketCount() > 0 && item->m_socketList.getSocketPos(0)->GetJewelDBIdx() == -1)
+	{
+		ch->m_desc->Close("item socket is not 0");
+		return;
+	}
+
+	//ì•„ì´í…œ ìˆ˜ëŸ‰ ì²´í¬
+	if(p->quantity <= 0 || item->Count() < p->quantity)
+	{
+		// ì—ëŸ¬ ë©”ì„¸ì§€: ì•„ì´í…œ ê°œìˆ˜ ë¶€ì •í™•
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_EXIST_ITEM);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	//ëˆ ì²´í¬ (ê²ŒëŸ°í‹°)
+	if(ch->m_inventory.getMoney() < (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit)
+	{
+		// ì—ëŸ¬ ë©”ì„¸ì§€: ëˆ ë¶€ì¡±
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_ENOUGH_MONEY);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	//ì´ ê¸ˆì•¡ ì²´í¬
+	if(p->TotalMoney <= 0)
+	{
+		// ì—ëŸ¬ ë©”ì„¸ì§€: íŒë§¤ ì´ ê¸ˆì•¡ ë¶€ì •í™•
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_INCORRECT_MONEY);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+#ifdef ENABLE_SUBJOB
+	if( item && item->CheckTrader() && item->CanUseTrader( TRADE_TRADEAGENT, ch->IsSubJob(JOB_SUB_TRADER) ) == false )
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	if( !item->CheckTrader() )
+	{
+#endif //ENABLE_SUBJOB
+		if( !(itemproto->getItemFlag() & ITEM_FLAG_EXCHANGE) ||
+			(itemproto->getItemFlag() & ITEM_FLAG_COMPOSITE) ||
+			(item->getFlag() & FLAG_ITEM_SEALED) ||
+			(item->getFlag() & FLAG_ITEM_COMPOSITION) ||
+			(item->getFlag() & FLAG_ITEM_LENT) ||
+			(item->getFlag() & FLAG_ITEM_BELONG) ||
+			( item->getUsed() > 0 ) || ( item->getUsed_2() > 0 ) || (itemproto->getItemFlag() & ITEM_FLAG_NOTTRADEAGENT)
+			)
+		{
+			// ì—ëŸ¬ ë©”ì„¸ì§€: ê±°ë˜ ë¶ˆê°€ëŠ¥ ì•„ì´í…œ
+			CNetMsg::SP rmsg(new CNetMsg);
+			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
+			SEND_Q(rmsg, ch->m_desc);
+			return;
+		}
+#ifdef ENABLE_SUBJOB
+	}
+#endif //ENABLE_SUBJOB
+	//ì•…ì„¸ì‚¬ë¦¬ , ì• ì™„ë™ë¬¼ ê±°ë˜ ë¶ˆê°€ || ì•…ì„¸ì‚¬ë¦¬ , ê³µê²©í˜• ì• ì™„ë™ë¬¼ ê±°ë˜ ë¶ˆê°€
+	if( ((itemproto->getItemTypeIdx() == 5) && (itemproto->getItemSubTypeIdx() == 6)) ||
+		((itemproto->getItemTypeIdx() == 5) && (itemproto->getItemSubTypeIdx() == 7)) )
+	{
+		// ì—ëŸ¬ ë©”ì„¸ì§€: ê±°ë˜ ë¶ˆê°€ëŠ¥ ì•„ì´í…œ
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_NOT_TRADEITEM);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	int itemCount;
+	itemCount = item->Count();
+
+	CNetMsg::SP rmsg(new CNetMsg);
+	rmsg->BufferClear();
+	RequestClient::TradeAgentSystemRegServer* packet = reinterpret_cast<RequestClient::TradeAgentSystemRegServer *>(rmsg->m_buf);
+	packet->type = MSG_TRADEAGENT;
+	packet->subType = MSG_TRADEAGENT_REG;
+
+	packet->itemIndex = item->getDBIndex();
+	packet->item.item_index = item->getDBIndex();
+	packet->charIndex = ch->m_index;
+	strcpy(packet->charName, (const char*)ch->m_nick);
+	packet->Guarantee = (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit;
+	strcpy(packet->item.serial, item->m_serial.c_str());
+	packet->item.flag = item->getFlag();
+	packet->item.plus = item->getPlus();
+	packet->item.plus2 = item->getPlus_2();
+	packet->item.item_level = item->GetItemLevel();
+	packet->itemCount = itemCount;
+	packet->quantity = p->quantity;
+	packet->TotalMoney = p->TotalMoney;
 #ifdef DURABILITY
-		packet->item.now_durability = item->getNowDurability();
-		packet->item.max_durability = item->getMaxDurability();
+	packet->item.now_durability = item->getNowDurability();
+	packet->item.max_durability = item->getMaxDurability();
 #endif
-		if(item->IsRareItem())
+	if(item->IsRareItem())
+	{
+		//ê°ì •ëœ ì•„ì´í…œì´ë©´
+		if( item->m_pRareOptionProto != NULL
+			&& item->m_pRareOptionProto->GetIndex() > 0)
 		{
-			//°¨Á¤µÈ ¾ÆÀÌÅÛÀÌ¸é
-			if( item->m_pRareOptionProto != NULL
-					&& item->m_pRareOptionProto->GetIndex() > 0)
-			{
-				//·¹¾î ¾ÆÀÌÅÛÀÌ¸é µî±ŞÀ» µû·Î »Ì¾Æ Àü´ŞÇØÁØ´Ù.
-				packet->item.rareGrade = item->m_pRareOptionProto->GetGrade();
-			}
-			//¹Ì°¨Á¤ ¾ÆÀÌÅÛÀÌ¸é
-			else
-			{
-				packet->item.rareGrade = eITEM_GRADE_RARE_NOTOPEN;
-			}
+			//ë ˆì–´ ì•„ì´í…œì´ë©´ ë“±ê¸‰ì„ ë”°ë¡œ ë½‘ì•„ ì „ë‹¬í•´ì¤€ë‹¤.
+			packet->item.rareGrade = item->m_pRareOptionProto->GetGrade();
 		}
-		else if(item->IsOriginItem())
-		{
-			packet->item.rareGrade = eITEM_GRADE_ORIGIN;
-		}
+		//ë¯¸ê°ì • ì•„ì´í…œì´ë©´
 		else
 		{
-			packet->item.rareGrade = eITEM_GRADE_NORMAL;
+			packet->item.rareGrade = eITEM_GRADE_RARE_NOTOPEN;
 		}
-
-		packet->item.option_count = item->m_nOption;
-		for( int i = 0; i< item->m_nOption; i++)
-		{
-			packet->item.option_type[i] = item->m_option[i].m_type;
-			packet->item.option_level[i] = item->m_option[i].m_level;
-		}
-
-		packet->item.socketCount = item->m_socketList.GetSocketCount();
-		memset(packet->item.socket, -1, sizeof(packet->item.socket));
-		if (packet->item.socketCount > 0)
-		{
-			int count = (item->m_socketList.GetJewelAt(0) == -1) ? 1 : 0;
-			int end = (item->m_socketList.GetJewelAt(0) == -1) ? item->m_socketList.GetSocketCount() + 1 : item->m_socketList.GetSocketCount();
-			for( int i = count; i < end; i++)
-			{
-				packet->item.socket[i] = item->m_socketList.GetJewelAt(i);
-			}
-		}
-
-		for( int i = 0; i < MAX_VARIATION_COUNT; i++)
-		{
-			packet->item.item_origin[i] = item->m_OriginVar[i];
-		}
-		packet->tab = p->tab;
-		packet->invenIndex = p->invenIndex;
-		packet->itemCount = item->Count() - p->quantity;
-
-		rmsg->setSize(sizeof(RequestClient::TradeAgentSystemRegServer));
-
-		//³ª½º Áö¿ì°í, ¾ÆÀÌÅÛ Áö¿ì°í (¸Ş¸ğ¸®»ó¿¡¼­¸¸ »èÁ¦)
-
-		{
-			int Guarantee = (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit;
-			ch->m_inventory.decreaseMoney(Guarantee);
-			ch->m_inventory.decreaseItemCount(item, p->quantity);
-
-			// ¼­¹ö Å©·¡½Ã¶§ ¾ÆÀÌÅÛ º¹»ç¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ ½Ç½Ã°£ ÀúÀåÀ» ÇÔ
-			DBManager::instance()->SaveCharacterInfo(ch->m_desc, false);
-		}
-
-		// ¼­¹ö Å©·¡½Ã¶§ Ã³¸®¸¦ À§ÇØ Ä³¸¯ÅÍ Á¤º¸¸¦ ¸ÕÀú ÀúÀåÇÏ°í SubHelper·Î Á¤º¸¸¦ º¸³¿
-		SEND_Q(rmsg, gserver->m_subHelper);
-
-		//ÇöÀç µî·Ï Ã³¸® Áß ¼³Á¤
-		ch->m_bTradeAgentRegIng = true;
 	}
-}
-
-// µî·Ï Ãë¼Ò
-void do_TradeAgent_RegCancelReq(CPC* ch, CNetMsg::SP& msg)
-{
-	if (gserver->isRunSubHelper())
+	else if(item->IsOriginItem())
 	{
-		RequestClient::TradeAgentSystemRegCancel *p = reinterpret_cast<RequestClient::TradeAgentSystemRegCancel*>(msg->m_buf);
-		p->charIndex = ch->m_index;
-		SEND_Q(msg, gserver->m_subHelper);
+		packet->item.rareGrade = eITEM_GRADE_ORIGIN;
 	}
 	else
+	{
+		packet->item.rareGrade = eITEM_GRADE_NORMAL;
+	}
+
+	packet->item.option_count = item->m_nOption;
+	for( int i = 0; i< item->m_nOption; i++)
+	{
+		packet->item.option_type[i] = item->m_option[i].m_type;
+		packet->item.option_level[i] = item->m_option[i].m_level;
+	}
+
+	packet->item.socketCount = item->m_socketList.GetSocketCount();
+	memset(packet->item.socket, -1, sizeof(packet->item.socket));
+	if (packet->item.socketCount > 0)
+	{
+		int count = (item->m_socketList.GetJewelAt(0) == -1) ? 1 : 0;
+		int end = (item->m_socketList.GetJewelAt(0) == -1) ? item->m_socketList.GetSocketCount() + 1 : item->m_socketList.GetSocketCount();
+		for( int i = count; i < end; i++)
+		{
+			packet->item.socket[i] = item->m_socketList.GetJewelAt(i);
+		}
+	}
+
+	for( int i = 0; i < MAX_VARIATION_COUNT; i++)
+	{
+		packet->item.item_origin[i] = item->m_OriginVar[i];
+	}
+	packet->tab = p->tab;
+	packet->invenIndex = p->invenIndex;
+	packet->itemCount = item->Count() - p->quantity;
+
+	rmsg->setSize(sizeof(RequestClient::TradeAgentSystemRegServer));
+
+	//ë‚˜ìŠ¤ ì§€ìš°ê³ , ì•„ì´í…œ ì§€ìš°ê³  (ë©”ëª¨ë¦¬ìƒì—ì„œë§Œ ì‚­ì œ)
+
+	{
+		int Guarantee = (ch->m_tradeAgentRegCount + 1) * g_TradeAgent_Deposit;
+		ch->m_inventory.decreaseMoney(Guarantee);
+		ch->m_inventory.decreaseItemCount(item, p->quantity);
+
+		// ì„œë²„ í¬ë˜ì‹œë•Œ ì•„ì´í…œ ë³µì‚¬ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ì‹¤ì‹œê°„ ì €ì¥ì„ í•¨
+		DBManager::instance()->SaveCharacterInfo(ch->m_desc, false);
+	}
+
+	// ì„œë²„ í¬ë˜ì‹œë•Œ ì²˜ë¦¬ë¥¼ ìœ„í•´ ìºë¦­í„° ì •ë³´ë¥¼ ë¨¼ì € ì €ì¥í•˜ê³  SubHelperë¡œ ì •ë³´ë¥¼ ë³´ëƒ„
+	SEND_Q(rmsg, gserver->m_subHelper);
+
+	//í˜„ì¬ ë“±ë¡ ì²˜ë¦¬ ì¤‘ ì„¤ì •
+	ch->m_bTradeAgentRegIng = true;
+}
+
+// ë“±ë¡ ì·¨ì†Œ
+void do_TradeAgent_RegCancelReq(CPC* ch, CNetMsg::SP& msg)
+{
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		ResponseClient::TradeAgentSystemError *p = reinterpret_cast<ResponseClient::TradeAgentSystemError*>(rmsg->m_buf);
@@ -316,59 +322,83 @@ void do_TradeAgent_RegCancelReq(CPC* ch, CNetMsg::SP& msg)
 		SEND_Q(rmsg, ch->m_desc);
 		return ;
 	}
+
+	RequestClient::TradeAgentSystemRegCancel *p = reinterpret_cast<RequestClient::TradeAgentSystemRegCancel*>(msg->m_buf);
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 
-// Á¶È¸
+// ì¡°íšŒ
 void do_TradeAgent_SearchReq(CPC* ch, CNetMsg::SP& msg)
 {
-	if (gserver->isRunSubHelper())
-	{
-		RequestClient::TradeAgentSystemListBase *p = reinterpret_cast<RequestClient::TradeAgentSystemListBase*>(msg->m_buf);
-
-		if(findPercentChar(p->itemName) != NULL)
-		{
-			CNetMsg::SP rmsg(new CNetMsg);
-			makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_SEARCH_ERROR);
-			SEND_Q(rmsg, ch->m_desc);
-			return;
-		}
-
-		if(p->itemTypeTab < 2)
-		{
-			const int nGrade[] = { eITEM_GRADE_MAX,
-								   eITEM_GRADE_NORMAL,
-								   eITEM_GRADE_RARE_BASIC,
-								   eITEM_GRADE_RARE_MAGIC,
-								   eITEM_GRADE_RARE_RARE,
-								   eITEM_GRADE_RARE_UNIQUE,
-								   eITEM_GRADE_RARE_HERO,
-								   eITEM_GRADE_ORIGIN,
-								   eITEM_GRADE_RARE_NOTOPEN
-								 };
-
-			RequestClient::TradeAgentSystemList *packet = reinterpret_cast<RequestClient::TradeAgentSystemList*>(msg->m_buf);
-			packet->itemGrade = nGrade[packet->itemGrade];
-			packet->charIndex = ch->m_index;
-			SEND_Q(msg, gserver->m_subHelper);
-		}
-		else
-		{
-			p->charIndex = ch->m_index;
-			SEND_Q(msg, gserver->m_subHelper);
-		}
-	}
-	else
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_SEARCH_ERROR);
 		SEND_Q(rmsg, ch->m_desc);
 		return;
 	}
+
+	RequestClient::TradeAgentSystemList *p = reinterpret_cast<RequestClient::TradeAgentSystemList*>(msg->m_buf);
+	p->itemName[sizeof(p->itemName) - 1] = '\0';
+
+	if (p->pageNo < 1)
+	{
+		ch->m_desc->Close("invalid page no");
+		return;
+	}
+
+	if (p->itemTypeTab < 0 || p->itemTypeTab > 2)
+	{
+		ch->m_desc->Close("invalid itemTypeTab");
+		return;
+	}
+
+	if(findPercentChar(p->itemName) != NULL)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_SEARCH_ERROR);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
+	if(p->itemTypeTab < 2)
+	{
+		static const int nGrade[] = { eITEM_GRADE_MAX,
+			eITEM_GRADE_NORMAL,
+			eITEM_GRADE_RARE_BASIC,
+			eITEM_GRADE_RARE_MAGIC,
+			eITEM_GRADE_RARE_RARE,
+			eITEM_GRADE_RARE_UNIQUE,
+			eITEM_GRADE_RARE_HERO,
+			eITEM_GRADE_ORIGIN,
+			eITEM_GRADE_RARE_NOTOPEN
+		};
+
+		if (p->itemGrade < 0 || p->itemGrade >= (sizeof(nGrade) / sizeof(nGrade[0])))
+		{
+			ch->m_desc->Close("invalid itemgrade");
+			return;
+		}
+
+		p->itemGrade = nGrade[p->itemGrade];
+	}
+
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 
-// ±¸¸Å
+// êµ¬ë§¤
 void do_TradeAgent_BuyReq(CPC* ch, CNetMsg::SP& msg)
 {
+	if (gserver->isRunSubHelper() == false)
+	{
+		CNetMsg::SP rmsg(new CNetMsg);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_BUY_FAIL);
+		SEND_Q(rmsg, ch->m_desc);
+		return;
+	}
+
 	RequestClient::TradeAgentSystemBuy *p = reinterpret_cast<RequestClient::TradeAgentSystemBuy*>(msg->m_buf);
 
 	CCharacter::tradestash_t::iterator it = ch->m_tradeAgentViewMap.find(p->TradeAgentIndex);
@@ -392,37 +422,26 @@ void do_TradeAgent_BuyReq(CPC* ch, CNetMsg::SP& msg)
 		return;
 	}
 
-	if (gserver->isRunSubHelper())
-	{
-		ch->m_inventory.decreaseMoneyNotSend(needNas);
+	ch->m_inventory.decreaseMoneyNotSend(needNas);
 
-		GAMELOG << init("TRADEAGENT BUY.1.(GameServer)", ch)
-				<< "TradeAgent Index" << delim
-				<< p->TradeAgentIndex << delim
-				<< "needNas" << delim
-				<< needNas << end;
+	GAMELOG << init("TRADEAGENT BUY.1.(GameServer)", ch)
+		<< "TradeAgent Index" << delim
+		<< p->TradeAgentIndex << delim
+		<< "needNas" << delim
+		<< needNas << end;
 
-		//±¸¸Å ÆĞÅ¶ ¸¸µé¾î¼­ Àü¼Û
-		RequestClient::TradeAgentSystemBuy *packet = reinterpret_cast<RequestClient::TradeAgentSystemBuy*>(msg->m_buf);
-		packet->charIndex = ch->m_index;
-		packet->needNas = needNas;
-		packet->TradeAgentIndex = p->TradeAgentIndex;
-		SEND_Q(msg, gserver->m_subHelper);
-		return;
-	}
-	else
-	{
-		CNetMsg::SP rmsg(new CNetMsg);
-		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_BUY_FAIL);
-		SEND_Q(rmsg, ch->m_desc);
-		return;
-	}
+	//êµ¬ë§¤ íŒ¨í‚· ë§Œë“¤ì–´ì„œ ì „ì†¡
+	RequestClient::TradeAgentSystemBuy *packet = reinterpret_cast<RequestClient::TradeAgentSystemBuy*>(msg->m_buf);
+	packet->charIndex = ch->m_index;
+	packet->needNas = needNas;
+	packet->TradeAgentIndex = p->TradeAgentIndex;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 
 void do_TradeAgent_Error(CPC* ch, CNetMsg::SP& msg)
 {
-	//Æ¯Á¤ Á¶°ÇÀÇ ¿¡·¯ÀÏ °æ¿ì¿¡´Â ¾ÆÀÌÅÛÀ» º¹±¸ÇØÁÖ¾î¾ß ÇÑ´Ù.
-	//µî·Ï ½ÇÆĞÇÏ¿´À» °æ¿ì....
+	//íŠ¹ì • ì¡°ê±´ì˜ ì—ëŸ¬ì¼ ê²½ìš°ì—ëŠ” ì•„ì´í…œì„ ë³µêµ¬í•´ì£¼ì–´ì•¼ í•œë‹¤.
+	//ë“±ë¡ ì‹¤íŒ¨í•˜ì˜€ì„ ê²½ìš°....
 	ResponseClient::TradeAgentSystemError *p = reinterpret_cast<ResponseClient::TradeAgentSystemError*>(msg->m_buf);
 	CPC *pc = PCManager::instance()->getPlayerByCharIndex(p->charIndex);
 
@@ -435,47 +454,44 @@ void do_TradeAgent_Error(CPC* ch, CNetMsg::SP& msg)
 
 void do_TradeAgent_LikeListReq(CPC* ch, CNetMsg::SP& msg)
 {
-	if (gserver->isRunSubHelper())
-	{
-		RequestClient::TradeAgentSystemLikeList *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeList*>(msg->m_buf);
-		p->charIndex = ch->m_index;
-		SEND_Q(msg, gserver->m_subHelper);
-	}
-	else
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_BUY_FAIL);
+		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_LIKE_LIST_FAIL);
 		SEND_Q(rmsg, ch->m_desc);
+		return;
 	}
+
+	RequestClient::TradeAgentSystemLikeList *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeList*>(msg->m_buf);
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 void do_TradeAgent_LikeRegReq(CPC* ch, CNetMsg::SP& msg)
 {
-	if (gserver->isRunSubHelper())
-	{
-		RequestClient::TradeAgentSystemLikeReg *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeReg*>(msg->m_buf);
-		p->charIndex = ch->m_index;
-		SEND_Q(msg, gserver->m_subHelper);
-	}
-	else
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_LIKE_REG_FAIL);
 		SEND_Q(rmsg, ch->m_desc);
+		return;
 	}
+
+	RequestClient::TradeAgentSystemLikeReg *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeReg*>(msg->m_buf);
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 void do_TradeAgent_LikeCancel(CPC* ch, CNetMsg::SP& msg)
 {
-	if (gserver->isRunSubHelper())
-	{
-		RequestClient::TradeAgentSystemLikeCancel *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeCancel*>(msg->m_buf);
-		p->charIndex = ch->m_index;
-		SEND_Q(msg, gserver->m_subHelper);
-	}
-	else
+	if (gserver->isRunSubHelper() == false)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
 		makeTradeAgentError(rmsg, ResponseClient::TRADEAGENT_ERROR_ITEM_LIKE_CANCEL_FAIL);
 		SEND_Q(rmsg, ch->m_desc);
+		return;
 	}
+
+	RequestClient::TradeAgentSystemLikeCancel *p = reinterpret_cast<RequestClient::TradeAgentSystemLikeCancel*>(msg->m_buf);
+	p->charIndex = ch->m_index;
+	SEND_Q(msg, gserver->m_subHelper);
 }
 

@@ -18,7 +18,7 @@
 #include "EntitiesMP/PlayerWeapons.h"
 // #include <Engine/SlaveInfo.h>
 #include <Engine/Interface/UIManager.h>
-#include <Engine/Interface/UIWildPetInfo.h>
+#include <Engine/Contents/function/WildPetInfoUI.h>
 #include <Engine/Contents/Base/UICharacterInfoNew.h>
 #include <Engine/Info/MyInfo.h>
 	
@@ -598,7 +598,7 @@ functions:
 		}
 		
 		// FIXED : wild pet skill cool time bug [12/20/2010 rumist]
-		if( !pUIManager->GetWildPetInfo()->IsUsableSkill( iSkillIndex ) )
+		if( !pUIManager->GetWildPetInfoUI()->IsUsableSkill( iSkillIndex ) )
 		{
 			return FALSE;
 		}
@@ -822,10 +822,10 @@ functions:
 	{
 		CUIManager* pUIManager = SE_Get_UIManagerPtr();
 
-		if (pUIManager->GetWildPetInfo()->GetAIActive())
+		if (pUIManager->GetWildPetInfoUI()->GetAIActive())
 		{
-			sWildPet_AI_Slot* sPetAI = pUIManager->GetWildPetInfo()->GetPetAI();
-			INDEX nSlotnum = pUIManager->GetWildPetInfo()->GetPetAISlotCount();
+			sWildPet_AI_Slot* sPetAI = pUIManager->GetWildPetInfoUI()->GetPetAI();
+			INDEX nSlotnum = pUIManager->GetWildPetInfoUI()->GetPetAISlotCount();
 
 			for (int nSlot = 0; nSlot < nSlotnum; nSlot++)
 			{
@@ -843,7 +843,7 @@ functions:
 						{
 							if(!(m_penEnemy->GetFlags() & ENF_ITEM)) // [100428 : sora] 스킬사용시 타겟이 아이템일 경우 제외 
 							{
-								if( !MY_INFO()->GetSkillLevel(nSlot))
+								if( !MY_INFO()->GetSkillDelay(sPetAI[nSlot].m_nActionSlot))
 								{
 									if(UseSkill(sPetAI[nSlot].m_nActionSlot))
 									{

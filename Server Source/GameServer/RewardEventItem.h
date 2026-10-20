@@ -61,12 +61,12 @@ public:
 	}
 
 private:
-	//// º¸»óÀÏ,ÀÎµ¦½º,ÇÃ·¯½º,ÇÃ·¡±×,°¹¼ö
-	int rewardDate; // º¸»óÀÏ
-	int index;		// ÀÎµ¦½º
-	int plus;		// ÇÃ·¯½º
-	int flag;		// ÇÃ·¡±×
-	int count;		// °³¼ö
+	//// ë³´ìƒì¼,ì¸ë±ìŠ¤,í”ŒëŸ¬ìŠ¤,í”Œë˜ê·¸,ê°¯ìˆ˜
+	int rewardDate; // ë³´ìƒì¼
+	int index;		// ì¸ë±ìŠ¤
+	int plus;		// í”ŒëŸ¬ìŠ¤
+	int flag;		// í”Œë˜ê·¸
+	int count;		// ê°œìˆ˜
 
 };
 //

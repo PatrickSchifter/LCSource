@@ -1,5 +1,3 @@
-void ConnBLogin(CDescriptor* d, CNetMsg::SP& msg);
-void ConnBLogout(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemBringReq(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemBalanceReq(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemPurchaseReq(CDescriptor* d, CNetMsg::SP& msg);
@@ -11,7 +9,7 @@ void ConnCashItemRecvHistory(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemRecvList(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemRecv(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemPresentHistory(CDescriptor* d, CNetMsg::SP& msg, bool bSend );
-// cashItemRecv, BringReq µ—¥Ÿ æ∏, º±π∞¿Œ∞° æ∆¥—∞°.
+// cashItemRecv, BringReq ÎëòÎã§ ÏîÄ, ÏÑ†Î¨ºÏù∏Í∞Ä ÏïÑÎãåÍ∞Ä.
 void ConnCashItemBringProcess(CDescriptor* d, CNetMsg::SP& msg, bool bPresent);
 void ConnCashItemCouponListReq(CDescriptor* d, CNetMsg::SP& msg);
 void ConnCashItemPurchaseByCoupon(CDescriptor* d, CNetMsg::SP& msg);

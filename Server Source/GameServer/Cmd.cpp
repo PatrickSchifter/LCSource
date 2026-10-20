@@ -19,62 +19,62 @@ CCmdList::CCmdList()
 void CCmdList::AddMessage()
 {
 	// Chatting
-	Add(MSG_CHAT, do_Chat, 0, true, true);			// Ã¤ÆÃ
+	Add(MSG_CHAT, do_Chat, 0, true, true);			// ì±„íŒ…
 
-	// ÀÌµ¿ °ü·Ã
-	Add(MSG_MOVE, do_Move, 0, false, false);			// ÀÌµ¿
-	Add(MSG_GO_ZONE, do_GoZone, 0, false, false);		// Á¸ÀÌµ¿
+	// ì´ë™ ê´€ë ¨
+	Add(MSG_MOVE, do_Move, 0, false, false);			// ì´ë™
+	Add(MSG_GO_ZONE, do_GoZone, 0, false, false);		// ì¡´ì´ë™
 
 //N1InPersonalDungeon : bw
 	Add(MSG_PD_ATTACK, do_pd_Attack, 0, false, true);
 	Add(MSG_PD_MOVE, do_pd_Move, 0, false, true);
 
-	// °ø°Ý °ü·Ã
+	// ê³µê²© ê´€ë ¨
 	Add(MSG_ATTACK, do_Attack, 0, false, false);
 
-	// ¾ÆÀÌÅÛ °ü·Ã
+	// ì•„ì´í…œ ê´€ë ¨
 	Add(MSG_ITEM, do_Item, 0, false, false);
 
-	// ±³È¯ °ü·Ã
+	// êµí™˜ ê´€ë ¨
 	Add(MSG_EXCHANGE, do_Exchange, 0, false, false);
 
-	// Àå¼Ò ±â¾ï °ü·Ã
+	// ìž¥ì†Œ ê¸°ì–µ ê´€ë ¨
 	Add(MSG_MEMPOS, do_MemPos, 0, false, false);
 
-	// ¿î¿µÀÚ °ü·Ã
+	// ìš´ì˜ìž ê´€ë ¨
 	Add(MSG_GM, do_GM, 1, true, true);
 
-	// ÆÄÆ¼ °ü·Ã
+	// íŒŒí‹° ê´€ë ¨
 	Add(MSG_PARTY, do_Party, 0, false, false);
 
-	// Äü½½·Ô°ü·Ã
+	// í€µìŠ¬ë¡¯ê´€ë ¨
 	Add(MSG_QUICKSLOT, do_QuickSlot, 0, false, true);
 
-	// ½Ì±Û´øÀü - NPC ¸®Á¨
+	// ì‹±ê¸€ë˜ì „ - NPC ë¦¬ì  
 	Add(MSG_NPC_REGEN, do_NPCRegen, 0, false, true);
 
-	// ½ºÅ³
+	// ìŠ¤í‚¬
 	Add(MSG_SKILL, do_Skill, 0, false, false);
 
-	// ºÎÈ°¸Þ½ÃÁö
+	// ë¶€í™œë©”ì‹œì§€
 	Add(MSG_PC_REBIRTH, do_Rebirth, 0, false, false);
 
-	// ¾×¼Ç ¸Þ½ÃÁö
+	// ì•¡ì…˜ ë©”ì‹œì§€
 	Add(MSG_ACTION, do_Action, 0, false, false);
 
-	// Äù½ºÆ®
+	// í€˜ìŠ¤íŠ¸
 	Add(MSG_QUEST, do_Quest, 0, false, false);
 
-	// ¼ºÀå Æ÷ÀÎÆ® °ü·Ã
+	// ì„±ìž¥ í¬ì¸íŠ¸ ê´€ë ¨
 	Add(MSG_STATPOINT, do_StatPoint, 0, false, true);
 
-	// ÀÌµ¿ ÀåÄ¡ °ü·Ã
+	// ì´ë™ ìž¥ì¹˜ ê´€ë ¨
 	Add(MSG_WARP, do_Warp, 0, true, false);
 
-	// ÆÞ½º °ü·Ã
+	// íŽ„ìŠ¤ ê´€ë ¨
 	Add(MSG_PULSE, do_Pulse, 0, true, true);
 
-	// Æ¯¼ö½ºÅ³ °ü·Ã
+	// íŠ¹ìˆ˜ìŠ¤í‚¬ ê´€ë ¨
 	Add(MSG_SSKILL, do_SSkill, 0, false, false);
 
 	Add(MSG_PK, do_PK, 0, false, false);
@@ -122,12 +122,11 @@ void CCmdList::AddMessage()
 #endif
 	Add(MSG_GPS, do_GPS, 0, false, false);
 	Add(MSG_ITEM_COLLECTION, do_ItemCollection, 0, false, false);
+	Add(MSG_GUILD_BATTLE, do_Guild_Battle_Extend, 0, false, false);
 
 #ifdef PREMIUM_CHAR
 	Add(MSG_PREMIUM_CHAR, do_PremiumChar, 0, false, false);
 #endif
-
-	Add(MSG_SYS, do_ReportForced, 0, false, false);
 }
 
 void CCmdList::AddExMessage()
@@ -143,7 +142,7 @@ void CCmdList::AddExMessage()
 	Add(MSG_EX_PET_REBIRTH, do_ExPetRebirth, 0, false, false);
 	Add( MSG_EX_PET_CHANGE_NAME, do_PetNameChange, 0, false, false );
 
-	Add(MSG_EX_NAMECHANGE,	do_Ex_NameChange, 0, false, false);		// ÀÌ¸§ º¯°æ ¾ÆÀÌÅÛ	: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) name(str)
+	Add(MSG_EX_NAMECHANGE,	do_Ex_NameChange, 0, false, false);		// ì´ë¦„ ë³€ê²½ ì•„ì´í…œ	: tab_idx(uc) row_idx(uc) col_idx(uc) item_idx(n) name(str)
 	Add(MSG_EX_CASHITEM,	do_Ex_CashItem, 0, false, false);
 
 	Add(MSG_EX_CASTLE_MAP_RECENT, do_ExCastleMapRecent, 0, false, false);
@@ -175,7 +174,7 @@ void CCmdList::AddExMessage()
 	Add( MSG_EX_INIT_SSKILL, do_ExInitSSkill, 0, false, false );
 
 #ifdef DISCONNECT_HACK_CHARACTER
-	// ÆÞ½º °ü·Ã
+	// íŽ„ìŠ¤ ê´€ë ¨
 	Add(MSG_EX_DISCONNECT_HACK_CHARACTER, do_Disconnect_Hack_Character, 0, true, true);
 #endif
 
@@ -187,7 +186,7 @@ void CCmdList::AddExMessage()
 
 	Add(MSG_EX_NPC_PORTAL_SCROLL, do_NpcPortalScroll, 0, false, false);
 
-	Add(MSG_EX_TITLE_SYSTEM, do_ExTitleSytem, 0, false, false);
+	Add(MSG_EX_TITLE_SYSTEM, do_FuncTitle, 0, false, false);
 
 #ifdef LACARETTE_SYSTEM
 	Add(MSG_EX_LACARETTE_SYSTEM, do_ExLacaretteSystem, 0, false, false);
@@ -235,7 +234,7 @@ void CCmdList::AddExMessage()
 
 	Add(MSG_EX_RANKING_SYSTEM_EX, do_rankingSystem, 0, false, false );
 
-#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK ÆÐ³ÎÆ¼ ¸®Æû
+#ifdef REFORM_PK_PENALTY_201108 // 2011-08 PK íŒ¨ë„í‹° ë¦¬í¼
 	Add(MSG_EX_PKPENALTY_REFORM, do_ExPKPeneltyReform, 0, false, false);
 #endif
 
@@ -272,7 +271,7 @@ void CCmdList::Run(int cmd_num, CPC* ch, CNetMsg::SP& msg)
 
 	CCmd* p = it->second;
 
-	// ÀÌµ¿ ÀåÄ¡ »ç¿ëÁß¿¡ ºÒ°¡´ÉÇÑÁö °Ë»ç
+	// ì´ë™ ìž¥ì¹˜ ì‚¬ìš©ì¤‘ì— ë¶ˆê°€ëŠ¥í•œì§€ ê²€ì‚¬
 	if (!p->m_bCanDoWhileWarp && ch->IsSetPlayerState(PLAYER_STATE_WARP))
 		return ;
 

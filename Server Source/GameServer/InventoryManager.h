@@ -41,8 +41,8 @@ struct addItemResult
 	bool			delete_flag;
 	unsigned int	tab;
 	unsigned int	invenIndex;
-	CItem*			pItem;			// ¿µÇâÀ» ¹ŞÀ» Æ÷ÀÎÅÍ
-	CItem*			addItem;		// additem()À» ÅëÇØ ÀÔ·ÂÇÑ Æ÷ÀÎÅÍ
+	CItem*			pItem;			// ì˜í–¥ì„ ë°›ì„ í¬ì¸í„°
+	CItem*			addItem;		// additem()ì„ í†µí•´ ì…ë ¥í•œ í¬ì¸í„°
 
 	addItemResult() : result(false), delete_flag(false), tab(-1), invenIndex(-1), pItem(NULL) {}
 };
@@ -135,14 +135,14 @@ private:
 private:
 	CPC*			owner_;
 	unsigned int	size_;
-	unsigned int	normal_size_;		// Ã¢°í¿¡¸¸ »ç¿ë,
+	unsigned int	normal_size_;		// ì°½ê³ ì—ë§Œ ì‚¬ìš©,
 	unsigned int	tab_;
 	vector_t		buffer_;
-	std::vector<int>	virtual_count_;	// ´Ù¼ö°³ÀÇ ¾ÆÀÌÅÛÀ» µî·ÏÇÒ¶§ »çÀü °Ë»ç¸¦ À§ÇÑ °¡»ó °¹¼ö
+	std::vector<int>	virtual_count_;	// ë‹¤ìˆ˜ê°œì˜ ì•„ì´í…œì„ ë“±ë¡í• ë•Œ ì‚¬ì „ ê²€ì‚¬ë¥¼ ìœ„í•œ ê°€ìƒ ê°¯ìˆ˜
 
-	bool			time_flag_;			// À¯È¿±â°£À» °¡Áú¼ö ÀÖÀ¸¸é true
+	bool			time_flag_;			// ìœ íš¨ê¸°ê°„ì„ ê°€ì§ˆìˆ˜ ìˆìœ¼ë©´ true
 
-	bool			money_flag_;		// µ·(³ª½º)À» °¡Áú¼ö ÀÖÀ¸¸é true
+	bool			money_flag_;		// ëˆ(ë‚˜ìŠ¤)ì„ ê°€ì§ˆìˆ˜ ìˆìœ¼ë©´ true
 	LONGLONG		money_;
 };
 //////////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ public:
 	CItem * const FindByDBIndex(unsigned int index, unsigned int plus = INVEN_NON_CHECK_FLAG, unsigned int flag = INVEN_NON_CHECK_FLAG);
 	CItem * const FindBySerial(std::string serial);
 
-	CItem * const getItemOld(unsigned int row, unsigned int col); // ±âÁ¸ ÄÚµå¸¦ À§ÇØ
+	CItem * const getItemOld(unsigned int row, unsigned int col); // ê¸°ì¡´ ì½”ë“œë¥¼ ìœ„í•´
 	CItem * const getItem(unsigned int tab, unsigned int invenIndex);
 
 	bool addItem(CItem* pitem);
@@ -191,19 +191,19 @@ public:
 	bool moveItem(unsigned int stab, unsigned int sindex, unsigned int ttab, unsigned tindex);
 	bool swapItem(unsigned int stab, unsigned int sindex, unsigned int ttab, unsigned tindex);
 
-	void InitMoney(LONGLONG nas);				// Ä³¸¯ÅÍ ·Îµù½Ã¿¡¸¸ »ç¿ëÇÔ
-	LONGLONG getMoney();						// Ã¹¹øÂ° °¡¹æÀÌ °¡Áö°í ÀÖ´Â µ·
-	void setMoney(LONGLONG nas);				// Ã¹¹øÂ° °¡¹æÀÌ °¡Áö°í ÀÖ´Â µ·
-	LONGLONG increaseMoney(LONGLONG nas, LONGLONG bonus = 0);		// Ã¹¹øÂ° °¡¹æÀÌ °¡Áö°í ÀÖ´Â µ·
-	LONGLONG decreaseMoney(LONGLONG nas);		// Ã¹¹øÂ° °¡¹æÀÌ °¡Áö°í ÀÖ´Â µ·
+	void InitMoney(LONGLONG nas);				// ìºë¦­í„° ë¡œë”©ì‹œì—ë§Œ ì‚¬ìš©í•¨
+	LONGLONG getMoney();						// ì²«ë²ˆì§¸ ê°€ë°©ì´ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	void setMoney(LONGLONG nas);				// ì²«ë²ˆì§¸ ê°€ë°©ì´ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	LONGLONG increaseMoney(LONGLONG nas, LONGLONG bonus = 0);		// ì²«ë²ˆì§¸ ê°€ë°©ì´ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	LONGLONG decreaseMoney(LONGLONG nas);		// ì²«ë²ˆì§¸ ê°€ë°©ì´ ê°€ì§€ê³  ìˆëŠ” ëˆ
 
-	LONGLONG decreaseMoneyNotSend(LONGLONG nas);		// Ã¹¹øÂ° °¡¹æÀÌ °¡Áö°í ÀÖ´Â µ·
+	LONGLONG decreaseMoneyNotSend(LONGLONG nas);		// ì²«ë²ˆì§¸ ê°€ë°©ì´ ê°€ì§€ê³  ìˆëŠ” ëˆ
 
-	void InitMoneyInStash(LONGLONG nas);		// Ä³¸¯ÅÍ ·Îµù½Ã¿¡¸¸ »ç¿ëÇÔ
-	LONGLONG getMoneyInStash();					// °èÁ¤ Ã¢°í°¡ °¡Áö°í ÀÖ´Â µ·
-	void setMoneyInStash(LONGLONG nas);			// °èÁ¤ Ã¢°í°¡ °¡Áö°í ÀÖ´Â µ·
-	LONGLONG increaseMoneyInStash(LONGLONG nas); // °èÁ¤ Ã¢°í°¡ °¡Áö°í ÀÖ´Â µ·
-	LONGLONG decreaseMoneyInStash(LONGLONG nas); // °èÁ¤ Ã¢°í°¡ °¡Áö°í ÀÖ´Â µ·
+	void InitMoneyInStash(LONGLONG nas);		// ìºë¦­í„° ë¡œë”©ì‹œì—ë§Œ ì‚¬ìš©í•¨
+	LONGLONG getMoneyInStash();					// ê³„ì • ì°½ê³ ê°€ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	void setMoneyInStash(LONGLONG nas);			// ê³„ì • ì°½ê³ ê°€ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	LONGLONG increaseMoneyInStash(LONGLONG nas); // ê³„ì • ì°½ê³ ê°€ ê°€ì§€ê³  ìˆëŠ” ëˆ
+	LONGLONG decreaseMoneyInStash(LONGLONG nas); // ê³„ì • ì°½ê³ ê°€ ê°€ì§€ê³  ìˆëŠ” ëˆ
 
 	void getSaveString(std::vector<std::string>& vec);
 	void getSaveStringInStach(std::vector<std::string>& vec);

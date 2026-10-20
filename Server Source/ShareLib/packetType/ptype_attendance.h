@@ -9,17 +9,17 @@ enum
 	//Requset
 	MSG_SUB_ATTENDANCE_CHECK_REQ,
 	MSG_SUB_ATTENDANCE_REWARD_REQ,
-	MSG_SUB_ATTENDANCE_ASSURE_CANCEL_OK_REQ,	//º¸Çè ¾ÆÀÌÅÛ »ç¿ë Á¾·á ÇÏ°Ú´Ù
+	MSG_SUB_ATTENDANCE_ASSURE_CANCEL_OK_REQ,	//ë³´í—˜ ì•„ì´í…œ ì‚¬ìš© ì¢…ë£Œ í•˜ê² ë‹¤
 
 	//Response
-	MSG_SUB_ATTENDANCE_CHECK_RES,				//±âÁ¸ RESPONSE 1¹ø
-	MSG_SUB_ATTENDANCE_REWARD_RES,				//±âÁ¸ RESPONSE 3¹ø
+	MSG_SUB_ATTENDANCE_CHECK_RES,				//ê¸°ì¡´ RESPONSE 1ë²ˆ
+	MSG_SUB_ATTENDANCE_REWARD_RES,				//ê¸°ì¡´ RESPONSE 3ë²ˆ
 
 	//Update
-	MSG_SUB_ATTENDANCE_FINISH,					//±âÁ¸ RESPONSE 2¹ø
-	MSG_SUB_ATTENDANCE_INFO_UPD,				//±âÁ¸ RESPONSE 0¹ø
-	MSG_SUB_ATTENDANCE_ASSURE_CANCEL_OK_UPD,	//º¸Çè ¾ÆÀÌÅÛ »ç¿ë ÇØÁ¦ ÇÏ°Ú´Ï?
-	MSG_SUB_ATTENDANCE_SYS_MSG,					//Ãâ¼® ½Ã½ºÅÛ ¸Þ½ÃÁö
+	MSG_SUB_ATTENDANCE_FINISH,					//ê¸°ì¡´ RESPONSE 2ë²ˆ
+	MSG_SUB_ATTENDANCE_INFO_UPD,				//ê¸°ì¡´ RESPONSE 0ë²ˆ
+	MSG_SUB_ATTENDANCE_ASSURE_CANCEL_OK_UPD,	//ë³´í—˜ ì•„ì´í…œ ì‚¬ìš© í•´ì œ í•˜ê² ë‹ˆ?
+	MSG_SUB_ATTENDANCE_SYS_MSG,					//ì¶œì„ ì‹œìŠ¤í…œ ë©”ì‹œì§€
 };
 
 //error code
@@ -33,9 +33,9 @@ enum
 //system message
 enum
 {
-	ATTENDANCE_SYS_MSG_TIME_END = 1,					//Ãâ¼® À¯Áö º¸ÇèÀÇ »ç¿ë ±â°£ÀÌ ¸¸·áµÇ¾ú½À´Ï´Ù.
-	ATTENDANCE_SYS_MSG_END_OK = 2,						//Ãâ¼® À¯Áö º¸ÇèÀÌ ÇØÁ¦µÇ¾ú½À´Ï´Ù. ÇöÀç ¿¬¼ÓÃâ¼®....
-	ATTENDANCE_SYS_MSG_TIME_END_INIT_ATTENDANCE = 3,	//Ãâ¼® À¯Áö º¸ÇèÀÌ ¸¸·áµÈ ÈÄ ¿¬¼Ó Ãâ¼®À» ÇÏÁö ¾Ê¾Æ Ãâ¼® ÀÏ ¼ö°¡ ÃÊ±âÈ­ µÇ¾ú½À´Ï´Ù.
+	ATTENDANCE_SYS_MSG_TIME_END = 1,					//ì¶œì„ ìœ ì§€ ë³´í—˜ì˜ ì‚¬ìš© ê¸°ê°„ì´ ë§Œë£Œë˜ì—ˆìŠµë‹ˆë‹¤.
+	ATTENDANCE_SYS_MSG_END_OK = 2,						//ì¶œì„ ìœ ì§€ ë³´í—˜ì´ í•´ì œë˜ì—ˆìŠµë‹ˆë‹¤. í˜„ìž¬ ì—°ì†ì¶œì„....
+	ATTENDANCE_SYS_MSG_TIME_END_INIT_ATTENDANCE = 3,	//ì¶œì„ ìœ ì§€ ë³´í—˜ì´ ë§Œë£Œëœ í›„ ì—°ì† ì¶œì„ì„ í•˜ì§€ ì•Šì•„ ì¶œì„ ì¼ ìˆ˜ê°€ ì´ˆê¸°í™” ë˜ì—ˆìŠµë‹ˆë‹¤.
 };
 
 #pragma pack(push, 1)

@@ -33,7 +33,7 @@ itemExchangeProto* itemExchangeProto::instance()
 	return &__instance;
 }
 
-// ¾ÆÀÌÅÛ °Ë»ç¸¦ ÇÔÀ¸·Î item µ¥ÀÌÅÍ¸¦ ¸ğµÎ ÀĞÀº ÈÄ ½ÇÇàÇÏµµ·Ï ÇÒ°Í
+// ì•„ì´í…œ ê²€ì‚¬ë¥¼ í•¨ìœ¼ë¡œ item ë°ì´í„°ë¥¼ ëª¨ë‘ ì½ì€ í›„ ì‹¤í–‰í•˜ë„ë¡ í• ê²ƒ
 bool itemExchangeProto::Load()
 {
 	CDBCmd cmd;
@@ -78,7 +78,7 @@ bool itemExchangeProto::Load()
 			datainfo.source.push_back(listinfo);
 		}
 
-		// Àç·á ¾ÆÀÌÅÛÀ» itemindex¿¡ ¸Â°Ô ¼ÒÆÃÇÔ
+		// ì¬ë£Œ ì•„ì´í…œì„ itemindexì— ë§ê²Œ ì†ŒíŒ…í•¨
 		std::sort(datainfo.source.begin(), datainfo.source.end(),
 				  boost::lambda::bind(&tag_sourceInfo::itemIndex, boost::lambda::_1)
 				  <
@@ -133,7 +133,7 @@ itemExchangeProto::tag_resultInfo itemExchangeProto::exchange( int index, std::v
 		return r;
 	}
 
-	// Àç·á ¾ÆÀÌÅÛÀ» itemindex¿¡ ¸Â°Ô ¼ÒÆÃÇÔ
+	// ì¬ë£Œ ì•„ì´í…œì„ itemindexì— ë§ê²Œ ì†ŒíŒ…í•¨
 	std::sort(vec.begin(), vec.end(),
 			  boost::lambda::bind(&tag_sourceInfo::itemIndex, boost::lambda::_1)
 			  <

@@ -9,11 +9,11 @@ const int listen_port_for_client = 3001;
 
 int main(int argc, char* argv[], char* envp[])
 {
-	// ·Î±× ÃÊ±âÈ­
+	// ë¡œê·¸ ì´ˆê¸°í™”
 	LogSystem::setSubstitutedValue("logfile", "authentication");
 	LogSystem::configureXml("./log.xml");
 
-	// °ÔÀÓ ¼­¹ö¸¦ À§ÇÑ listen
+	// ê²Œìž„ ì„œë²„ë¥¼ ìœ„í•œ listen
 	if (bnf::instance()->CreateListen("0.0.0.0", listen_port_for_server, 10, ClientForServerListen::instance())
 		== SessionBase::INVALID_SESSION_HANDLE)
 	{
@@ -21,7 +21,7 @@ int main(int argc, char* argv[], char* envp[])
 		return 1;
 	}
 
-	// Å¬¶óÀÌ¾ðÆ®¸¦ À§ÇÑ listen
+	// í´ë¼ì´ì–¸íŠ¸ë¥¼ ìœ„í•œ listen
 	if (bnf::instance()->CreateListen("0.0.0.0", listen_port_for_client, 0, ClientForClientListen::instance())
 		== SessionBase::INVALID_SESSION_HANDLE)
 	{

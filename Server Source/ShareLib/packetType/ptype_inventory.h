@@ -4,7 +4,7 @@
 #include "ptype_base.h"
 #include "ptype_char_status.h"
 
-// °¢ inventoryÀÇ Å©±â
+// ê° inventoryì˜ í¬ê¸°
 enum
 {
 	ITEM_COUNT_IN_INVENTORY_NORMAL = 100,
@@ -18,21 +18,21 @@ enum
 	MAX_STASH_TAKE = 10,
 };
 
-// »õ·Î¿î °¡¹æÀ» ¸¸µé°æ¿ì INVENTORY_TAB_STASH º¸´Ù °ªÀ» ÀÛ°Ô ¸¸µé¸é µÊ
+// ìƒˆë¡œìš´ ê°€ë°©ì„ ë§Œë“¤ê²½ìš° INVENTORY_TAB_STASH ë³´ë‹¤ ê°’ì„ ì‘ê²Œ ë§Œë“¤ë©´ ë¨
 enum
 {
 	INVENTORY_TAB_NORMAL,
 	INVENTORY_TAB_CASH_1,
 	INVENTORY_TAB_CASH_2,
-	INVENTORY_TAB_STASH,	// °èÁ¤ Ã¢°í
+	INVENTORY_TAB_STASH,	// ê³„ì • ì°½ê³ 
 
 	INVENTORY_TAB_MAX,
 };
 
 enum
 {
-	NAS_DESC_REASON_GUILD_KEEP,				// ±æµåÃ¢°í¿¡ ¸Ã±æ¶§
-	NAS_DESC_REASON_STASH_KEEP,				// °èÁ¤Ã¢°í¿¡ ¸Ã±æ¶§
+	NAS_DESC_REASON_GUILD_KEEP,				// ê¸¸ë“œì°½ê³ ì— ë§¡ê¸¸ë•Œ
+	NAS_DESC_REASON_STASH_KEEP,				// ê³„ì •ì°½ê³ ì— ë§¡ê¸¸ë•Œ
 };
 
 #pragma pack(push, 1)
@@ -44,10 +44,10 @@ namespace UpdateClient
 {
 struct itemInfo
 {
-	short		invenIndex;			// ÀÎº¥Åä¸®³»¿¡¼­ÀÇ À§Ä¡ 0 ~
+	short		invenIndex;			// ì¸ë²¤í† ë¦¬ë‚´ì—ì„œì˜ ìœ„ì¹˜ 0 ~
 
-	int			virtualIndex;		// ¼­¹ö°¡ ¹ßÇàÇÑ °¡»ó index
-	int			dbIndex;			// DB»óÀÇ Index
+	int			virtualIndex;		// ì„œë²„ê°€ ë°œí–‰í•œ ê°€ìƒ index
+	int			dbIndex;			// DBìƒì˜ Index
 	char		wearPos;
 	int			plus;
 	int			plus_2;
@@ -79,7 +79,7 @@ struct money : public pTypeBase
 	LONGLONG	bonus;
 };
 
-struct moneyDescReason : public pTypeBase	// NAS °¨¼Ò ÀÌÀ¯¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô Àü´Ş
+struct moneyDescReason : public pTypeBase	// NAS ê°ì†Œ ì´ìœ ë¥¼ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì „ë‹¬
 {
 	short		reason;
 	LONGLONG	nas;

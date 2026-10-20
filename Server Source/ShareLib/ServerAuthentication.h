@@ -8,7 +8,7 @@
 class ServerAuthentication : public rnSocketIOHandler
 {
 public:
-	struct ipInfo // ¹®ÀÚ¿­·Î IP¸¦ °¡Áö°í ÀÖÀ» °æ¿ì ÇØÅ·¿¡ Ãë¾àÇÔ
+	struct ipInfo // ë¬¸ìì—´ë¡œ IPë¥¼ ê°€ì§€ê³  ìˆì„ ê²½ìš° í•´í‚¹ì— ì·¨ì•½í•¨
 	{
 		int		a0;
 		short	a1;
@@ -45,7 +45,7 @@ private:
 	int			compile_unixtime_;
 	ip_vector_t	valid_ip_;
 
-	bool			server_send_flag_;		// Á¤º¸¸¦ Àü¼ÛÇÏ¸é true
+	bool			server_send_flag_;		// ì •ë³´ë¥¼ ì „ì†¡í•˜ë©´ true
 	int				server_nation_;
 	std::string		server_listen_ip_;
 	int				server_listen_port_;

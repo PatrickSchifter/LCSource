@@ -28,10 +28,10 @@ void do_ExSubJobRegist( CPC* ch, CNetMsg::SP& msg )
 	RefMsg(msg) >> subjob;
 
 	int			needMinLevel	= 50;
-	int			needMaxLevel	= 999; // 55
+	int			needMaxLevel	= 55;
 	int			needFame		= 5;
-	int			needSP			= 2000 * 10000;
-	LONGLONG	needMoney		= 100000000; // 1¾ï
+	int			needSP			= 2000 * 10000 ;
+	LONGLONG	needMoney		= 100000000; // 1ì–µ
 
 	if( !ch )
 		return;
@@ -39,7 +39,7 @@ void do_ExSubJobRegist( CPC* ch, CNetMsg::SP& msg )
 	if( ch->m_level < needMinLevel || ch->m_level > needMaxLevel )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubJobErrorMsg(rmsg, 1 );			// ·¹º§ÀÌ ¸ÂÁö ¾ÊÀ½
+		SubJobErrorMsg(rmsg, 1 );			// ë ˆë²¨ì´ ë§žì§€ ì•ŠìŒ
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -47,7 +47,7 @@ void do_ExSubJobRegist( CPC* ch, CNetMsg::SP& msg )
 	if( ch->m_skillPoint < needSP )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubJobErrorMsg(rmsg, 3 );			// ¼÷·Ãµµ ¸ðÀÚ¶÷
+		SubJobErrorMsg(rmsg, 3 );			// ìˆ™ë ¨ë„ ëª¨ìžëžŒ
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
@@ -55,16 +55,16 @@ void do_ExSubJobRegist( CPC* ch, CNetMsg::SP& msg )
 	if( ch->m_fame < needFame )
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubJobErrorMsg(rmsg, 2 );			// ¸í¼ºÄ¡ ¸ðÀÚ¶÷
+		SubJobErrorMsg(rmsg, 2 );			// ëª…ì„±ì¹˜ ëª¨ìžëžŒ
 		SEND_Q( rmsg, ch->m_desc );
 		return;
 	}
 
-	// µ· Â÷°¨
+	// ëˆ ì°¨ê°
 	if (ch->m_inventory.getMoney() < needMoney)
 	{
 		CNetMsg::SP rmsg(new CNetMsg);
-		SubJobErrorMsg(rmsg, 4 );			// ³ª½ººÎÁ·
+		SubJobErrorMsg(rmsg, 4 );			// ë‚˜ìŠ¤ë¶€ì¡±
 		SEND_Q( rmsg, ch->m_desc );
 		return ;
 	}
@@ -73,16 +73,16 @@ void do_ExSubJobRegist( CPC* ch, CNetMsg::SP& msg )
 		ch->m_inventory.decreaseMoney(needMoney);
 	}
 
-	// ¼÷·Ãµµ Â÷°¨
+	// ìˆ™ë ¨ë„ ì°¨ê°
 	ch->m_skillPoint -= needSP ;
-	// ¸í¼ºÄ¡ Â÷°¨
+	// ëª…ì„±ì¹˜ ì°¨ê°
 	ch->m_fame -= needFame;
 
-	// »óÀÎµî·Ï
+	// ìƒì¸ë“±ë¡
 	ch->m_jobSub |= subjob ;
 	ch->CalcStatus(true);
 
-	// ¼º°ø¸Þ¼¼Áö
+	// ì„±ê³µë©”ì„¸ì§€
 	CNetMsg::SP rmsg(new CNetMsg);
 	SubJobMsg(rmsg, MSG_EX_SUBJOB_ERROR_SUCESS );
 	RefMsg(rmsg) << subjob;
