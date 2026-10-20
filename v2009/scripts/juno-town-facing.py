@@ -8,9 +8,9 @@ casts rays every 5 degrees on the installed .sat (1 m cells, 255 = blocked), smo
 distance over +-20 degrees and faces the most open direction: NPCs stand with their backs to a
 building, facing the street.
 Heading convention (a_pos_r, degrees): a player with heading h looks along (-sin h, -cos h) in
-(x, z) (Serious Engine: 0 looks to -z, 90 to -x; matches the Animal Trainer's /whereami), and NPC
-models face the other way from a player with the same heading (checked in game), so an NPC
-looking along (cos a, sin a) gets r = atan2(-cos a, -sin a) + 180 = atan2(cos a, sin a).
+(x, z) (Serious Engine: 0 looks to -z, 90 to -x; matches the Animal Trainer's /whereami), , the same
+for NPCs (the Animal Trainer looks right with the user's /whereami heading as is), so an NPC
+looking along (cos a, sin a) gets r = atan2(-cos a, -sin a).
 Rows set by hand in zone0-town-manual.sql are applied after this file and win.
 """
 import math
@@ -43,7 +43,7 @@ def heading(x, z):
     n = len(raw)
     sm = [sum(raw[(i + k) % n] for k in range(-4, 5)) for i in range(n)]
     a = math.radians(5 * max(range(n), key=lambda i: sm[i]))
-    return round(math.degrees(math.atan2(math.cos(a), math.sin(a))), 1)
+    return round(math.degrees(math.atan2(-math.cos(a), -math.sin(a))), 1)
 
 
 def sql(q):
