@@ -1,7 +1,6 @@
--- Schema fixes applied on top of openlastchaos/lastchaos-database so it matches this server source.
--- Safe to run more than once (MariaDB).
+-- Schema fixes applied on top of the November 2018 dumps (lc2018_* databases) so they match this
+-- server source. Safe to run more than once (MariaDB).
 --   mysql < server-config/db-fixes.sql
-
--- GameServer reads and saves it (DBProcess_SelectChar.cpp, DBManager_SaveCharacterInfo.cpp);
--- without it entering the game aborts the GameServer.
-ALTER TABLE newproject_db.t_characters ADD COLUMN IF NOT EXISTS a_guildoutdate INT NOT NULL DEFAULT 0;
+--
+-- None needed yet. (The 2015 fix for t_characters.a_guildoutdate does not apply: the 2018 server
+-- does not use that column.)
