@@ -3049,9 +3049,10 @@ void do_GMSilence(CPC*  ch , const char* arg)
 
 void do_GMWhereAmI(CPC* ch, const char* /* arg */)
 {
-	CLCString chat(100);
+	CLCString chat(200);
 
-	chat.Format("Server: %d, Subserver: %d, Zone: %d, Area: %d", gserver.m_serverno, gserver.m_subno, ch->m_pZone->m_index, ch->m_pArea->m_index);
+	chat.Format("Server: %d, Subserver: %d, Zone: %d, Area: %d, X: %.1f, Z: %.1f, H: %.1f, R: %.2f, YLayer: %d", gserver.m_serverno, gserver.m_subno, ch->m_pZone->m_index, ch->m_pArea->m_index, GET_X(ch), GET_Z(ch), GET_H(ch), GET_R(ch), GET_YLAYER(ch));
+	GAMELOG << init("GM WHEREAMI", ch) << ch->m_pZone->m_index << delim << GET_X(ch) << delim << GET_Z(ch) << delim << GET_R(ch) << delim << GET_YLAYER(ch) << end;
 
 	CNetMsg msg;
 	SayMsg(msg, MSG_CHAT_NOTICE, 0, "", "", chat);
