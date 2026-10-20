@@ -49,7 +49,7 @@ echo "applying db-fixes.sql"
 # v2009/scripts/fix-regen-positions.py): zone 0 is the old Juno, the others are small fixes for
 # maps converted from the 2015 port. zone0-mobs-map.sql (v2009/scripts/juno-from-map.py) then lays
 # out the zone 0 monster spawns after the classic Juno map, zone0-gathering.sql puts the gathering
-# nodes in their production circles (set in game), and zone0-town-mapdta.sql
+# nodes in their production areas (v2009/scripts/juno-gathering.py, spots set in game), and zone0-town-mapdta.sql
 # (v2009/scripts/juno-town-from-mapdta.py) puts the town NPCs where the classic client's Map.dta shows them;
 # zone0-town-removed.sql disables the zone 0 NPCs the classic game doesn't have; zone0-town-facing.sql turns the town
 # NPCs to the open street (v2009/scripts/juno-town-facing.py); zone0-town-manual.sql has
